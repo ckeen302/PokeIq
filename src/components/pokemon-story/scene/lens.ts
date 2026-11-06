@@ -21,6 +21,11 @@ interface LensSpec {
   whip?: boolean;
   streak?: number;
   mblur?: number;
+  /** Pass-2 grade overrides (real black point, hue-held highlights, bloom on hot cores only). */
+  black?: number;
+  hueKeep?: number;
+  bloomCap?: number;
+  split?: Look["split"];
 }
 
 const ramp = (t: number, a: number, b: number) => Math.max(0, Math.min(1, (t - a) / (b - a)));
@@ -28,10 +33,13 @@ const mix3 = (a: Vec3, b: Vec3, k: number): Vec3 => [a[0] + (b[0] - a[0]) * k, a
 
 const SPECS: Record<string, LensSpec> = {
   collector: {
+    black: 0.06,
     // Golden-hour air over the field, then a grey city haze once it's paved.
     fog: (t, b) => {
       const k = ramp(t, b("paved") + 0.5, b("paved") + 4);
-      return { color: mix3([0.42, 0.27, 0.12], [0.1, 0.1, 0.12], k), density: 0.009 - 0.003 * k, height: 0, falloff: 0.55, sky: 0.12 };
+      // Thinner round the jar, so the sunset keeps its depth and the trees stay dark.
+      const jar = ramp(t, b("jar") - 1.2, b("jar")) * (1 - ramp(t, b("paved") - 0.5, b("paved") + 1));
+      return { color: mix3([0.42, 0.27, 0.12], [0.1, 0.1, 0.12], k), density: (0.009 - 0.003 * k) * (1 - 0.6 * jar), height: 0, falloff: 0.55, sky: 0.12 * (1 - jar) };
     },
     streak: 0.22,
   },
@@ -41,7 +49,14 @@ const SPECS: Record<string, LensSpec> = {
     streak: 0.25,
   },
   cable: { streak: 0.2 },
-  "six-years": { whip: true },
+  "six-years": {
+    whip: true,
+    // The wall of 151 glows through the room's air (in-scatter toward it from where the camera stands).
+    fog: (t, b) => {
+      const k = ramp(t, b("151") + 0.5, b("151") + 2.5) * (1 - ramp(t, b("mew") - 0.4, b("mew") + 0.4));
+      return k > 0.01 ? { color: [0.03, 0.025, 0.03], density: 0.05 * k, height: 1.5, falloff: 0.25, sun: { dir: [0.55, 0.22, -0.8], color: [0.5, 0.3, 0.12] }, sky: 0 } : undefined;
+    },
+  },
   "red-green": {
     // Morning mist in the village, warming toward dusk.
     fog: (t, b) => {
@@ -56,7 +71,7 @@ const SPECS: Record<string, LensSpec> = {
     grade: (t, b, L) => {
       const k = ramp(t, b("world") - 0.4, b("world") + 0.4) * (1 - ramp(t, b("catch") - 0.3, b("catch")));
       // The card burst ran hot under the filmic curve: hold it down so the foil reads, not white.
-      const cards = 1 - ramp(t, b("anime") - 0.5, b("anime"));
+      const cards = 0.3 * (1 - ramp(t, b("anime") - 0.5, b("anime")));
       return { exposure: L.exposure * (1 + 0.38 * k) * (1 - 0.2 * cards), bloomThreshold: L.bloomThreshold + 0.08 * cards, lift: [L.lift[0] + 0.01 * k, L.lift[1] + 0.012 * k, L.lift[2] + 0.02 * k] };
     },
     streak: 0.25,
@@ -75,12 +90,17 @@ const SPECS: Record<string, LensSpec> = {
     },
   },
   together: {
-    fog: (t, b) => (t > b("alola") + 3 ? { color: [0.62, 0.76, 0.86], density: 0.004, height: 0, falloff: 0.3, sky: 0.12 } : undefined),
+    fog: (t, b) => {
+      if (t > b("alola") + 3) return { color: [0.62, 0.76, 0.86], density: 0.004, height: 0, falloff: 0.3, sky: 0.12 };
+      // A teal glade haze behind Xerneas, so it stands clear of the dark.
+      if (t > b("fold") - 0.2 && t < b("outbreak") - 0.2) return { color: [0.02, 0.09, 0.11], density: 0.03, height: 0.5, falloff: 0.25, sky: 0.1 };
+      return undefined;
+    },
   },
   outside: {
     whip: true,
     // Night air in the city, so the towers stack in depth.
-    fog: (t, b) => (t > b("launch") + 0.6 ? { color: [0.025, 0.05, 0.05], density: 0.006, height: 0, falloff: 0.06, sky: 0.2 } : undefined),
+    fog: (t, b) => (t > b("launch") + 0.6 ? { color: [0.03, 0.075, 0.08], density: 0.011, height: 0, falloff: 0.05, sky: 0.25 } : undefined),
     streak: 0.25,
   },
   "open-worlds": {
@@ -88,6 +108,11 @@ const SPECS: Record<string, LensSpec> = {
     fog: (t, b) => {
       if (t > b("hisui") - 0.2 && t < b("open") - 0.2) return { color: [0.7, 0.55, 0.45], density: 0.008, height: 0, falloff: 0.3, sky: 0.15 };
       if (t > b("open") - 0.2 && t < b("champion") - 0.3) return { color: [0.66, 0.76, 0.88], density: 0.004, height: 0, falloff: 0.04, sky: 0.25 };
+      // Stadium haze, so the floodlight beams stand in the air and the stands fall back in depth.
+      const stadium = (t > b("galar") - 0.2 && t < b("twenty-five") - 0.2) || (t > b("champion") - 0.2 && t < b("farewell") - 0.2);
+      if (stadium) return { color: [0.07, 0.05, 0.07], density: 0.022, height: 1, falloff: 0.07, sky: 0 };
+      // Lumiose: warm city haze low between the blocks, so the avenue recedes and the tower stands over it.
+      if (t > b("lumiose") - 0.2) return { color: [0.1, 0.065, 0.07], density: 0.014, height: 0, falloff: 0.06, sky: 0.3 };
       return undefined;
     },
     streak: 0.25,
@@ -150,6 +175,15 @@ export function lens(id: string, rig: ChapterRig, ctx: ChapterCtx): ChapterRig {
         mblur: L.mblur ?? spec.mblur ?? 0.7,
         fog,
       };
+      // Pass 2: real blacks, hot lights keep their hue, bloom only on what is truly hot (capped, so a bright mass can't
+      // box out the frame), flashes as light rather than a grey veil, cool shadows against warm highlights.
+      out.black = L.black ?? spec.black ?? 0.04;
+      out.hueKeep = L.hueKeep ?? spec.hueKeep ?? 0.8;
+      out.bloomKnee = L.bloomKnee ?? 0.7;
+      out.bloomCap = L.bloomCap ?? spec.bloomCap ?? 4;
+      out.flashHdr = L.flashHdr ?? true;
+      out.split = L.split ?? spec.split ?? { shadows: [-0.012, 0.0, 0.03], highlights: [0.03, 0.012, -0.02] };
+      out.chroma = Math.min(out.chroma, 0.25);
       if (spec.whip && kick > 0.02 && !L.whip) out.whip = { dir: [dir, 0], k: kick * 0.9 };
       return out;
     },

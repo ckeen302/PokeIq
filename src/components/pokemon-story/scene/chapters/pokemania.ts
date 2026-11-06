@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import type { Key, Vec3 } from "@/lib/world-history/camera";
-import { col, makeGlow, makeLightning, makeParticles, makeRing, makeShaft, makeSky, makeStreaks, merge, placed, ramp, rng } from "@/components/world-history/scene/kit";
+import { col, makeGlow, makeLightning, makeParticles, makeRing, makeShaft, makeSky, makeStreaks, makeSunburst, merge, placed, ramp, rng } from "@/components/world-history/scene/kit";
 import { makeCanvasPanel, makeCity } from "@/components/world-history/scene/props";
 import { lights, loadFigures, lookAt, pointPixel, spike } from "@/components/world-history/scene/chapters/common";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
@@ -57,8 +57,16 @@ export const build: ChapterBuilder = async (ctx) => {
   pack.position.set(AT.cards, 1.5, 0);
   scene.add(pack);
   D.add({ dispose: () => { packTop.geometry.dispose(); (packTop.material as THREE.Material).dispose(); } });
-  const cards = D.add(makeCardBurst({ count: Math.round(260 * P) + 60, center: [AT.cards, 1.5, 0], radius: 3.6, size: 0.5, seed: 6 }));
+  // Fewer, bigger cards than a confetti of them: each one reads as a card, and one in five flies past the lens.
+  const cards = D.add(makeCardBurst({ count: Math.round(110 * P) + 50, center: [AT.cards, 1.5, 0], radius: 3.9, size: 0.74, seed: 6, light: [0.1, 0.35, -1] }));
   scene.add(cards.mesh);
+  // The burst is backlit: a hot gold-pink sunburst behind the pack, its rays breaking out round the cards.
+  const burstRays = D.add(makeSunburst({ size: 22, color: "#ffc070", core: "#fff0c8", intensity: 1.1, rays: 11, coreK: 1.2, seed: 6 }));
+  burstRays.mesh.position.set(AT.cards, 1.6, -4.5);
+  scene.add(burstRays.mesh);
+  const tearRing = D.add(makeRing({ color: "#ffd8f0", intensity: 2.4, thickness: 0.03 }));
+  tearRing.mesh.position.set(AT.cards, 1.5, -0.2);
+  scene.add(tearRing.mesh);
   const packGlow = D.add(makeGlow({ pos: [AT.cards, 1.6, -0.6], size: 4.2, color: "#ffd0f0", intensity: 0 }));
   scene.add(packGlow.sprite);
   const speed = D.add(makeStreaks({ count: Math.round(220 * P) + 40, center: [AT.cards, 1.5, -6], extent: [8, 5, 10], velocity: [0, 0, 14], life: 1.2, length: 1.6, width: 0.025, color: "#ffd6f0", intensity: 1.4, seed: 4 }));
@@ -263,6 +271,7 @@ export const build: ChapterBuilder = async (ctx) => {
   const R = 5;
   const globe = D.add(makeGlobe({ radius: R, count: Math.round(9000 * Math.max(0.4, P)), land: "#ffb84a", lit: "#ffd23a", sea: "#0c1f48", seed: 8 }));
   globe.group.position.set(AT.globe, 0, 0);
+  globe.shell.uAtmo.value = 0.9;
   scene.add(globe.group);
   const atmo = D.add(makeGlow({ pos: [AT.globe, 0, -1], size: R * 2.9, color: "#ffb84a", intensity: 0 }));
   scene.add(atmo.sprite);
@@ -334,7 +343,7 @@ export const build: ChapterBuilder = async (ctx) => {
   ]);
   const starts = [0, tAnime - 0.25, tCompany, tMovie - 0.2, tWorld - 0.2, tCatch];
   const SKIES: [string, string, string, number][] = [
-    ["#07030f", "#3a0f4a", "#040208", 0],
+    ["#12042a", "#6a1650", "#08021a", 0],
     ["#08060c", "#140e1c", "#040306", 0],
     ["#1b2a6a", "#ff9a5a", "#201018", 0],
     ["#020203", "#06040c", "#000000", 0],
@@ -373,6 +382,17 @@ export const build: ChapterBuilder = async (ctx) => {
       cards.u.uTime.value = ambient;
       cards.mesh.visible = st === 0 && t > tCards + 0.4;
       packGlow.set("#ffc0e8", 0.14 + 0.32 * spike(t, tCards + 0.55, 0.08, 0.9));
+      const rays = st === 0 ? ramp(t, tCards + 0.3, tCards + 1.0) : 0;
+      burstRays.mesh.visible = rays > 0.001;
+      burstRays.u.uOpacity.value = rays * (0.8 + 0.6 * spike(t, tCards + 0.55, 0.08, 1.2));
+      burstRays.u.uK.value = 0.6 + 0.4 * rays;
+      burstRays.u.uTime.value = ambient;
+      burstRays.mesh.quaternion.copy(cam.quaternion);
+      tearRing.u.uK.value = ramp(t, tCards + 0.5, tCards + 2.2);
+      tearRing.u.uOpacity.value = st === 0 && t > tCards + 0.5 ? 1 - ramp(t, tCards + 1.4, tCards + 2.4) : 0;
+      tearRing.u.uTime.value = ambient;
+      tearRing.mesh.scale.setScalar(5);
+      tearRing.mesh.quaternion.copy(cam.quaternion);
       speed.u.uTime.value = ambient;
       speed.u.uOpacity.value = st === 0 ? ramp(t, tCards + 0.6, tCards + 1.4) * 0.7 : 0;
       glitter.u.uTime.value = ambient; glitter.u.uPixel.value = px;
@@ -494,8 +514,8 @@ export const build: ChapterBuilder = async (ctx) => {
       confetti.u.uTime.value = ambient; confetti.u.uPixel.value = px; confetti.u.uOpacity.value = st === 5 ? ramp(t, tCatch + 0.2, tCatch + 0.8) : 0;
       titleGlow.set("#ffcb05", st === 5 ? 0.18 + 0.5 * spike(t, tCatch + 0.15, 0.05, 0.6) : 0);
     },
-    look: (t) =>
-      lookAt(t, { ...STOCK.pop }, {
+    look: (t) => ({
+      ...lookAt(t, { ...STOCK.pop }, {
         exposure: [[0, 0.9], [tAnime - 0.3, 0.9], [tAnime, 0.8], [tCompany - 0.01, 0.8], [tCompany, 0.85], [tMovie, 0.85], [tWorld, 1.1], [end, 1.0]],
         bloom: [[0, 0.75], [tCards + 0.6, 0.95], [tCards + 3, 0.8], [tAnime, 0.7], [tWorld, 1.0], [tCatch, 0.9], [end, 0.85]],
         bloomThreshold: [[0, 0.86], [tAnime - 0.3, 0.86], [tAnime, 0.8], [end, 0.8]],
@@ -504,6 +524,9 @@ export const build: ChapterBuilder = async (ctx) => {
         saturation: [[0, 1.25], [end, 1.25]],
         fade: [[0, 0.5], [1.0, 0]],
       }),
+      // The burst: focus on the cards just past the pack, the ones flying by the lens soft (high quality).
+      ...(t < tAnime - 0.3 ? { dof: { focus: 2.6, k: 0.55 * ramp(t, tCards + 0.6, tCards + 1.6) } } : {}),
+    }),
     dispose() { D.dispose(); },
   };
 };

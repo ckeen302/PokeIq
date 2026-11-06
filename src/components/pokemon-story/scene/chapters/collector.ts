@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
-import { col, makeGlow, makeParticles, makeShaft, makeSky, makeTerrain, merge, noise2, placed, ramp, rng, stoneMaterial } from "@/components/world-history/scene/kit";
+import { col, makeGlow, makeParticles, makeShaft, makeSky, makeTerrain, merge, noise2, placed, ramp, rng, stoneMaterial, makeSunburst } from "@/components/world-history/scene/kit";
 import { makeCity } from "@/components/world-history/scene/props";
 import { figureStyle, lights, loadFigures, lookAt, pointPixel } from "@/components/world-history/scene/chapters/common";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
@@ -172,12 +172,20 @@ export const build: ChapterBuilder = async (ctx) => {
   jar.add(jarBody, lid, rimLight);
   scene.add(jar);
   D.add({ dispose: () => { jarBody.geometry.dispose(); lid.geometry.dispose(); rimLight.geometry.dispose(); glass.dispose(); (lid.material as THREE.Material).dispose(); (rimLight.material as THREE.Material).dispose(); } });
-  const inJar = D.add(makeParticles({ count: 34, shape: "box", center: [jarAt[0], jarAt[1] + 0.4, jarAt[2]], extent: [0.2, 0.26, 0.2], velocity: [0, 0.015, 0], spread: [0.03, 0.02, 0.03], life: 9, size: [0.035, 0.07], colors: ["#e6ff8a", "#f6ffb0", "#ffe27a"], intensity: 4.2, turbulence: 0.1, flicker: 0.35, fadeIn: 0.08, fadeOut: 0.08, seed: 9 }));
+  const inJar = D.add(makeParticles({ count: 56, shape: "box", center: [jarAt[0], jarAt[1] + 0.4, jarAt[2]], extent: [0.2, 0.26, 0.2], velocity: [0, 0.015, 0], spread: [0.03, 0.02, 0.03], life: 9, size: [0.035, 0.07], colors: ["#e6ff8a", "#f6ffb0", "#ffe27a"], intensity: 4.2, turbulence: 0.1, flicker: 0.35, fadeIn: 0.08, fadeOut: 0.08, seed: 9 }));
   inJar.u.uTurb.value = 0.08;
   inJar.u.uVel.value.set(0, 0.004, 0);
   scene.add(inJar.points);
   const jarGlow = D.add(makeGlow({ pos: [jarAt[0], jarAt[1] + 0.4, jarAt[2]], size: 0.9, color: "#e8ff9a", intensity: 0 }));
   scene.add(jarGlow.sprite);
+  // The sun going down just past the jar's shoulder: rays breaking out through the gap in the trees.
+  const sunRays = D.add(makeSunburst({ size: 30, color: "#ff9a40", core: "#ffe0a0", intensity: 0.6, rays: 14, coreK: 0.6, seed: 2 }));
+  sunRays.mesh.position.set(4.2, 1.9, -24);
+  scene.add(sunRays.mesh);
+  // The jar's own light on the post and the grass round it.
+  const jarLight = new THREE.PointLight(col("#e8ff9a"), 0, 3, 1.6);
+  jarLight.position.set(jarAt[0], jarAt[1] + 0.45, jarAt[2] + 0.2);
+  scene.add(jarLight);
   // Out-of-focus fireflies between the lens and the jar (the slow-motion bokeh).
   const bokeh = [[-0.55, 1.75, 10.4, 0.28], [0.75, 1.05, 10.1, 0.22], [-0.25, 0.75, 10.9, 0.34], [0.95, 1.95, 9.6, 0.18], [-1.1, 1.3, 9.2, 0.2]].map(([x, y, z, s]) => { const g = D.add(makeGlow({ pos: [x, y, z], size: s, color: "#e6ff8a", intensity: 0 })); scene.add(g.sprite); return g; });
 
@@ -234,8 +242,9 @@ export const build: ChapterBuilder = async (ctx) => {
       { t: tJar - 0.2, pos: [2.6, 0.85, 7.5], look: [1.7, 0.35, 5.5], fov: 34 },
     ]],
     [tJar - 0.2, [
-      { t: tJar - 0.2, pos: [1.3, 1.6, 11.6], look: [0, 1.25, 8.8], fov: 36 },
-      { t: tJar + 4.5, pos: [0.55, 1.4, 10.6], look: [0, 1.3, 9], fov: 30, stop: true },
+      // Low in the grass, looking up a little: the jar against the sunset, the sun just past its shoulder.
+      { t: tJar - 0.2, pos: [1.0, 1.0, 11.5], look: [0.15, 1.3, 8.6], fov: 36 },
+      { t: tJar + 4.5, pos: [0.42, 0.98, 10.55], look: [0.08, 1.28, 9], fov: 31, stop: true },
       { t: tPaved + 0.5, pos: [0.45, 1.42, 10.9], look: [0, 1.32, 9], fov: 30 },
     ]],
     [tPaved + 0.5, [
@@ -324,6 +333,11 @@ export const build: ChapterBuilder = async (ctx) => {
       inJar.u.uPixel.value = px;
       inJar.u.uOpacity.value = jarOn;
       jarGlow.set("#e8ff9a", 0.6 * jarOn * (0.85 + 0.15 * Math.sin(ambient * 2.3)));
+      jarLight.intensity = 3.5 * jarOn;
+      sunRays.mesh.visible = jarOn > 0.01;
+      sunRays.u.uOpacity.value = jarOn * (1 - paved);
+      sunRays.u.uTime.value = ambient;
+      sunRays.mesh.quaternion.copy(cam.quaternion);
       bokeh.forEach((g, i) => g.set("#e6ff8a", 0.55 * jarOn * ramp(t, tJar - 0.4, tJar + 0.6) * (0.6 + 0.4 * Math.sin(ambient * (1.3 + i * 0.4) + i * 2))));
       // The city rises around the camera; the road takes the field.
       cityGroup.scale.set(1, Math.max(0.001, paved), 1);

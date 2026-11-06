@@ -1,9 +1,12 @@
 import * as THREE from "three";
 import type { Key, Vec3 } from "@/lib/world-history/camera";
-import { NOISE, col, makeCloudLayer, makeGlow, makeParticles, makeShaft, makeSky, makeTerrain, merge, noise2, placed, ramp, rng } from "@/components/world-history/scene/kit";
-import { lights, loadFigures, lookAt, pointPixel } from "@/components/world-history/scene/chapters/common";
+import { NOISE, col, makeCloudLayer, makeGlow, makeParticles, makeRing, makeShaft, makeSky, makeSunburst, makeTerrain, merge, noise2, placed, ramp, rng } from "@/components/world-history/scene/kit";
+import { figureStyle, lights, loadFigures, lookAt, pointPixel } from "@/components/world-history/scene/chapters/common";
+import { actionCurve } from "@/components/world-history/scene/figures";
+import { keyShadow, receiveShadows } from "@/components/world-history/scene/light";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
-import { bowlPoints, makeCrowd, makeSilhouette, makeStadium, makeStreetLamps, makeTowers, makeWords, type TowerSpec } from "../story-kit";
+import { makeCrowd, makeSilhouette, makeStreetLamps, makeTowers, makeWords, type TowerSpec } from "../story-kit";
+import { makeArena, makeGlowPoints } from "../relief-kit";
 import { bag, heroFigure, shots, stageAt, STOCK, type Hero } from "./base";
 import { makeVillage } from "./red-green";
 
@@ -43,27 +46,63 @@ export const build: ChapterBuilder = async (ctx) => {
   // ---- A. Kanto again: Chapter V's village in modern light.
   const V = D.add(makeVillage(scene, 2, [-12, 10, 6]));
 
-  // ---- B/F. The stadium: crowds, spotlights, and confetti that can hang in the air.
+  // ---- B/F. The stadium at night: two tiers of seats under a canopy, floodlight masts, a lit battle court, a crowd of
+  // lights on the real seat rows (phones held up), floodlight beams converging through the haze, and for the champion a
+  // podium with a gold rim at the centre of the court.
   const S0: Vec3 = [AT.stadium, 0, 0];
-  const stadium = D.add(makeStadium({ inner: 12, outer: 30, height: 12, pitch: "#3a7a3a", stand: "#2a2e40" }));
+  const stadium = D.add(makeArena({ inner: 15, outer: 34, height: 14, masts: 8, seed: 25, crowd: Math.round(9000 * P) + 1600 }));
   stadium.group.position.set(...S0);
   scene.add(stadium.group);
-  const crowd = D.add(makeCrowd({ points: bowlPoints({ inner: 13, outer: 30, height: 12, count: Math.round(5000 * P) + 600, center: S0 }), colors: ["#ffe8c0", "#ff8a8a"], size: 0.22, intensity: 1.3 }));
+  const crowd = D.add(makeCrowd({ points: stadium.crowd.map(([x, y, z]) => [x + AT.stadium, y, z] as Vec3), colors: ["#fff0d0", "#ff6a7a"], size: 0.2, intensity: 1.5 }));
   scene.add(crowd.points);
-  const beams = [0, 1, 2, 3].map((i) => { const a = (i / 4) * Math.PI * 2 + 0.6; const s = D.add(makeShaft({ from: [AT.stadium + Math.cos(a) * 26, 22, Math.sin(a) * 22], to: [AT.stadium, 0, 0], r0: 0.4, r1: 3.2, color: "#fff4e0", intensity: 0.6, noise: 0.4 })); scene.add(s.mesh); return s; });
-  const spot = new THREE.SpotLight(col("#fff4e0"), 0, 40, 0.32, 0.5, 1.2);
-  spot.position.set(AT.stadium, 22, 4);
-  spot.target.position.set(AT.stadium, 0, 0);
+  const flood = D.add(makeGlowPoints({ points: stadium.heads.map(([x, y, z]) => [x * 0.98 + AT.stadium, y - 0.2, z] as Vec3), color: "#f4f6ff", size: 7 }));
+  scene.add(flood.points);
+  const beams = stadium.heads.map(([x, y, z], i) => { const s = D.add(makeShaft({ from: [x * 0.95 + AT.stadium, y - 0.6, z], to: [AT.stadium + x * 0.03, 0.6, z * 0.03], r0: 0.5, r1: 2.6 + (i % 2) * 0.8, color: i % 3 === 0 ? "#ffe0a0" : "#eef2ff", intensity: 0.32, noise: 0.5 })); scene.add(s.mesh); return s; });
+  // The podium: a dark stone drum, a gold rim that glows, a ring of light round it on the court.
+  const podiumMat = new THREE.MeshStandardMaterial({ color: col("#14151c"), roughness: 0.55, metalness: 0.3 });
+  const podium = new THREE.Mesh(merge([placed(new THREE.CylinderGeometry(2.0, 2.3, 0.5, 48), [0, 0.25, 0]), placed(new THREE.CylinderGeometry(2.6, 2.7, 0.12, 48), [0, 0.06, 0])]), podiumMat);
+  const rimMat = new THREE.MeshBasicMaterial({ color: col("#ffcf6a", 2.4), toneMapped: false });
+  const podiumRim = new THREE.Mesh(new THREE.TorusGeometry(2.02, 0.035, 6, 96).rotateX(Math.PI / 2), rimMat);
+  podiumRim.position.y = 0.5;
+  const podiumG = new THREE.Group();
+  podiumG.add(podium, podiumRim);
+  podiumG.position.set(...S0);
+  scene.add(podiumG);
+  D.add({ dispose: () => { podium.geometry.dispose(); podiumMat.dispose(); podiumRim.geometry.dispose(); rimMat.dispose(); } });
+  const courtRing = D.add(makeRing({ color: "#ffd27a", intensity: 2.2, thickness: 0.025 }));
+  courtRing.mesh.rotation.x = -Math.PI / 2;
+  courtRing.mesh.position.set(AT.stadium, 0.06, 0);
+  scene.add(courtRing.mesh);
+  const POD = 0.5;
+  // The spotlight from the canopy on the podium, and two coloured rims from behind (the chapter's red, and gold).
+  const spot = new THREE.SpotLight(col("#fff4e0"), 0, 40, 0.22, 0.45, 1.2);
+  spot.position.set(AT.stadium + 1, 22, 5);
+  spot.target.position.set(AT.stadium, POD, 0);
   scene.add(spot, spot.target);
-  const stadLight = new THREE.PointLight(col("#ffe8d0"), 0, 70, 1.2);
+  const rimL = new THREE.SpotLight(col("#ff4554"), 0, 24, 0.35, 0.6, 1.4);
+  rimL.position.set(AT.stadium - 6, 6, -7);
+  rimL.target.position.set(AT.stadium, 1.2, 0);
+  const rimR = new THREE.SpotLight(col("#ffc860"), 0, 24, 0.35, 0.6, 1.4);
+  rimR.position.set(AT.stadium + 6, 7, -6);
+  rimR.target.position.set(AT.stadium, 1.2, 0);
+  scene.add(rimL, rimL.target, rimR, rimR.target);
+  const stadLight = new THREE.PointLight(col("#ffe8d0"), 0, 80, 1.2);
   stadLight.position.set(AT.stadium, 18, 0);
   scene.add(stadLight);
+  // The key casts Pikachu's shadow onto the podium (medium and up).
+  const champSh = keyShadow(ctx.q, L.key, { radius: 6, center: [AT.stadium, POD, 0] });
+  receiveShadows(podium);
+  const champBurst = D.add(makeSunburst({ size: 9, color: "#ffd890", core: "#fff4d0", intensity: 0.9, rays: 13, coreK: 0.5, seed: 3 }));
+  champBurst.mesh.position.set(AT.stadium, 1.6, -1.2);
+  scene.add(champBurst.mesh);
   const swirl = D.add(makeParticles({ count: Math.round(900 * P) + 120, shape: "cylinder", center: [AT.stadium, 3, 0], extent: [7, 3, 7], velocity: [0, 0.8, 0], spread: [0.3, 0.5, 0.3], life: 2.6, size: [0.05, 0.14], colors: ["#ffffff", "#ff5a6a", "#d0102a"], intensity: 2.2, turbulence: 0.6, swirl: 1.6 }));
   scene.add(swirl.points);
   // Gold confetti as instanced flakes, positions a pure function of the clock (it can hang still).
   const nConf = Math.round(700 * P) + 120;
-  const conf = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.22, 0.12), new THREE.MeshStandardMaterial({ color: col("#f2c96b"), metalness: 0.9, roughness: 0.25, emissive: col("#7a5a10"), emissiveIntensity: 0.5, side: THREE.DoubleSide }), nConf);
+  const conf = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.2, 0.11), new THREE.MeshStandardMaterial({ color: col("#ffffff"), metalness: 0.75, roughness: 0.3, emissive: col("#5a4010"), emissiveIntensity: 0.6, side: THREE.DoubleSide }), nConf);
   const confSeed = Array.from({ length: nConf }, () => [r(), r(), r(), r()]);
+  // Mostly gold, some white and a few in the chapter's red.
+  confSeed.forEach(([a], i) => conf.setColorAt(i, col(a < 0.62 ? "#f2c96b" : a < 0.86 ? "#fff4e0" : "#ff4554")));
   scene.add(conf);
   D.add({ dispose: () => { conf.geometry.dispose(); (conf.material as THREE.Material).dispose(); conf.dispose(); } });
   const m4 = new THREE.Matrix4(), q4 = new THREE.Quaternion(), e4 = new THREE.Euler(), v4 = new THREE.Vector3(), s4 = new THREE.Vector3(1, 1, 1);
@@ -208,16 +247,39 @@ export const build: ChapterBuilder = async (ctx) => {
   pave.position.set(LUM, 0.01, 0);
   scene.add(pave);
   D.add({ dispose: () => { pave.geometry.dispose(); (pave.material as THREE.Material).dispose(); } });
+  // The tower: four tapering steel legs with X-bracing and lit decks, lights strung up every leg, and a glowing prism
+  // for a crown, its rays breaking out over the city.
+  const TH = 46, legAt = (y: number) => 3.4 * (1 - y / TH) + 0.5;
   const towerParts: THREE.BufferGeometry[] = [];
-  for (let k = 0; k < 4; k++) { const a = (k / 4) * Math.PI * 2 + Math.PI / 4; towerParts.push(new THREE.CylinderGeometry(0.25, 0.6, 40, 6).translate(0, 20, 0).rotateZ(0.04).rotateY(a).translate(AT.lumiose + Math.cos(a) * 1.6, 0, Math.sin(a) * 1.6)); }
-  for (let y = 4; y < 40; y += 4) towerParts.push(new THREE.TorusGeometry(2.0 - y * 0.03, 0.12, 6, 24).rotateX(Math.PI / 2).translate(AT.lumiose, y, 0));
+  const strand: Vec3[] = [];
+  const legDir = (k: number) => (k / 4) * Math.PI * 2 + Math.PI / 4;
+  const pt = (k: number, y: number) => new THREE.Vector3(AT.lumiose + Math.cos(legDir(k)) * legAt(y), y, Math.sin(legDir(k)) * legAt(y));
+  const strut = (a: THREE.Vector3, b: THREE.Vector3, r: number) => { const d = b.clone().sub(a); const g = new THREE.CylinderGeometry(r, r, d.length(), 5).translate(0, d.length() / 2, 0); g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize())); g.translate(a.x, a.y, a.z); return g; };
+  for (let k = 0; k < 4; k++) {
+    towerParts.push(strut(pt(k, 0), pt(k, TH), 0.28));
+    for (let y = 0; y < TH - 4; y += 4.5) {
+      // X-bracing on each face between this leg and the next.
+      towerParts.push(strut(pt(k, y), pt(k + 1, y + 4.5), 0.07), strut(pt(k + 1, y), pt(k, y + 4.5), 0.07));
+    }
+    for (let y = 1; y < TH; y += 1.1) { const p = pt(k, y); strand.push([p.x, p.y, p.z]); }
+  }
+  for (const y of [9, 22, 34]) towerParts.push(new THREE.CylinderGeometry(legAt(y) + 0.5, legAt(y) + 0.5, 0.4, 24).translate(AT.lumiose, y, 0));
   const towerGeo = merge(towerParts);
   towerParts.forEach((g) => g.dispose());
-  const towerMat = new THREE.MeshStandardMaterial({ color: col("#d8e0f0"), metalness: 0.8, roughness: 0.3, emissive: col("#ffe8a0"), emissiveIntensity: 0.55 });
+  const towerMat = new THREE.MeshStandardMaterial({ color: col("#5a6070"), metalness: 0.7, roughness: 0.4, emissive: col("#ffd8a0"), emissiveIntensity: 0.12 });
   const tower = new THREE.Mesh(towerGeo, towerMat);
   scene.add(tower);
-  D.add({ dispose: () => { towerGeo.dispose(); towerMat.dispose(); } });
-  const towerGlow = D.add(makeGlow({ pos: [AT.lumiose, 40, 0], size: 14, color: "#ffe8a0", intensity: 0 }));
+  const prismMat = new THREE.MeshBasicMaterial({ color: col("#cfeeff", 1.6), toneMapped: false });
+  const prism = new THREE.Mesh(new THREE.OctahedronGeometry(1.4, 0).scale(1, 2.2, 1), prismMat);
+  prism.position.set(AT.lumiose, TH + 2.6, 0);
+  scene.add(prism);
+  const strandG = D.add(makeGlowPoints({ points: strand, color: "#ffd890", size: 0.9 }));
+  scene.add(strandG.points);
+  const prismRays = D.add(makeSunburst({ size: 30, color: "#9ad4ff", core: "#e8f6ff", intensity: 0.55, rays: 10, coreK: 0.4, seed: 9 }));
+  prismRays.mesh.position.set(AT.lumiose, TH + 2.6, 0);
+  scene.add(prismRays.mesh);
+  D.add({ dispose: () => { towerGeo.dispose(); towerMat.dispose(); prism.geometry.dispose(); prismMat.dispose(); } });
+  const towerGlow = D.add(makeGlow({ pos: [AT.lumiose, TH + 2.6, 0], size: 16, color: "#bfe4ff", intensity: 0 }));
   scene.add(towerGlow.sprite);
   const avenues = D.add(makeParticles({ count: Math.round(1400 * P) + 200, shape: "disc", center: [AT.lumiose, 0.3, 0], extent: [58, 0.1, 58], velocity: [0, 0, 0], spread: [0.05, 0, 0.05], life: 6, size: [0.08, 0.2], colors: ["#ffffff", "#ffd890", "#ff9a5a"], intensity: 1.1, flicker: 0.4 }));
   scene.add(avenues.points);
@@ -239,6 +301,9 @@ export const build: ChapterBuilder = async (ctx) => {
     h.set(k, ambient, viewH, cam, bob, glow);
   };
 
+  /** The slow-motion hang: the confetti, Pikachu's leap and the crowd hold still. */
+  const champHang = (t: number) => ramp(t, tChamp + 0.6, tChamp + 1.4) * (1 - ramp(t, tChamp + 4.5, tChamp + 5.5));
+
   // ---- The camera: one stretch per stage.
   const glideZ = (t: number) => -(t - tOpen) * 26;
   const glideKeys: Key[] = [0, 0.25, 0.5, 0.75, 1].map((u) => {
@@ -256,7 +321,7 @@ export const build: ChapterBuilder = async (ctx) => {
     ]],
     [tGalar - 0.15, [
       // Already inside the bowl, over the stands (never through the outer wall).
-      { t: tGalar - 0.15, pos: [AT.stadium, 17, 26], look: [AT.stadium, 2, 0], fov: 48 },
+      { t: tGalar - 0.15, pos: [AT.stadium, 13, 20], look: [AT.stadium, 2, 0], fov: 48 },
       { t: tGalar + 3, pos: [AT.stadium + 5, 6.5, 17], look: [AT.stadium, 3, 0], fov: 44 },
       { t: t25, pos: [AT.stadium - 3, 4, 13], look: [AT.stadium, 3, 0], fov: 44 },
     ]],
@@ -269,17 +334,19 @@ export const build: ChapterBuilder = async (ctx) => {
     ]],
     [tOpen - 0.2, glideKeys],
     [tChamp - 0.15, [
-      { t: tChamp - 0.15, pos: [AT.stadium + 0.6, 2.2, 9], look: [AT.stadium, 1.2, 0], fov: 40 },
-      { t: tChamp + 3, pos: [AT.stadium + 0.2, 1.4, 4.2], look: [AT.stadium, 0.8, 0], fov: 38 },
-      { t: tBye, pos: [AT.stadium, 1.2, 3.4], look: [AT.stadium, 0.8, 0], fov: 36 },
+      // Low on the court, looking up at the podium: the stands, the floodlights and the beams behind Pikachu.
+      { t: tChamp - 0.15, pos: [AT.stadium + 1.6, 0.7, 7.6], look: [AT.stadium, 1.9, 0], fov: 42 },
+      { t: tChamp + 3, pos: [AT.stadium + 0.8, 0.8, 5.4], look: [AT.stadium, 2.0, 0.2], fov: 40 },
+      { t: tBye, pos: [AT.stadium + 0.5, 0.9, 4.6], look: [AT.stadium, 1.8, 0.2], fov: 38 },
     ]],
     [tBye - 0.15, [
       { t: tBye - 0.15, pos: [AT.road + 0.6, 1.4, 6], look: [AT.road, 1, -10], fov: 42 },
       { t: tLum, pos: [AT.road + 0.3, 2.4, 9], look: [AT.road, 1.4, -30], fov: 40 },
     ]],
     [tLum - 0.15, [
-      { t: tLum - 0.15, pos: [AT.lumiose + 40, 30, 70], look: [AT.lumiose, 14, 0], fov: 46 },
-      { t: end, pos: [AT.lumiose + 10, 22, 44], look: [AT.lumiose, 20, 0], fov: 46 },
+      // Over the roofs, close to the tower: it stands in the middle of the frame, the avenues of lamps radiating from its foot.
+      { t: tLum - 0.15, pos: [AT.lumiose + 32, 24, 52], look: [AT.lumiose, 23, 0], fov: 50 },
+      { t: end, pos: [AT.lumiose + 25, 21, 43], look: [AT.lumiose, 24, 0], fov: 50 },
     ]],
   ]);
   // Paldea's sun: low, ahead and to the right of the glide, so the hills model and the runners are rimmed.
@@ -293,7 +360,7 @@ export const build: ChapterBuilder = async (ctx) => {
     ["#2f7ae0", "#d8ecff", "#5a7a3a", 0.0014, "#c8dcf4", 2.5, 0.55, 1],
     ["#030408", "#0a0a18", "#000000", 0.0, "#000000", 0.1, 0.12, 1],
     ["#3a2a5a", "#ff8a3a", "#2a1a10", 0.004, "#ff9a6a", 0.8, 0.5, 1],
-    ["#060a1e", "#3a2c48", "#000000", 0.004, "#1a1628", 0.1, 0.2, 1],
+    ["#020618", "#4a2c4c", "#000000", 0.004, "#1c1628", 0.1, 0.2, 1],
   ];
 
   return {
@@ -315,8 +382,11 @@ export const build: ChapterBuilder = async (ctx) => {
       clouds.u.uTime.value = ambient;
       L.key.intensity = kk; L.hemi.intensity = hk;
       // A low sun from the side over Paldea, so the hills model; the usual key elsewhere.
-      if (st === 3) L.key.position.set(cam.position.x + PSUN[0] * 130, cam.position.y + PSUN[1] * 130, cam.position.z + PSUN[2] * 130); else L.key.position.set(-12, 10, 6);
-      L.key.target.position.set(st === 3 ? cam.position.x : 0, st === 3 ? cam.position.y - 10 : 0, st === 3 ? cam.position.z : 0);
+      if (st === 3) L.key.position.set(cam.position.x + PSUN[0] * 130, cam.position.y + PSUN[1] * 130, cam.position.z + PSUN[2] * 130);
+      else if (st === 4) L.key.position.set(AT.stadium + 5, 24, 9);
+      else L.key.position.set(-12, 10, 6);
+      L.key.target.position.set(st === 3 ? cam.position.x : st === 4 ? AT.stadium : 0, st === 3 ? cam.position.y - 10 : 0, st === 3 ? cam.position.z : 0);
+      if (st === 4) { L.key.intensity = 1.1; L.key.color.copy(col("#fff0d8")); }
       L.key.target.updateMatrixWorld();
 
       // A. Pikachu and Eevee walk side by side down the lane.
@@ -328,30 +398,49 @@ export const build: ChapterBuilder = async (ctx) => {
         setH(pika, ramp(t, tHome - 1, tHome + 0.6), [-0.55, Math.abs(Math.sin(ambient * 6)) * 0.05, z], Math.PI, ambient, viewH, cam, 0.0, 0.04);
         setH(eevee, ramp(t, tHome - 0.8, tHome + 0.8), [0.55, Math.abs(Math.sin(ambient * 6 + 1)) * 0.05, z + 0.2], Math.PI, ambient, viewH, cam, 0.0, 0.04);
       } else if (st === 4) {
-        setH(pika, 1, [AT.stadium, 0, 0], 0.15, ambient, viewH, cam, 0.0, 0.1);
+        // The champion: a leap on the podium, frozen at its height while the confetti hangs, then down.
+        const jc = tChamp + (t - tChamp) * (1 - champHang(t) * 0.97);
+        const jk = ramp(jc, tChamp + 0.35, tChamp + 1.25);
+        const jump = Math.sin(Math.PI * Math.min(1, jk * 1.0)) * 0.75;
+        setH(pika, 1, [AT.stadium, POD + jump, 0.2], 0.1, ambient, viewH, cam, 0.0, 0.12);
+        if (pika) { pika.fig.setHeight(1.45); figureStyle(pika.fig, { act: actionCurve(jc, tChamp + 0.35, { pre: 0.3, post: 0.5 }), rim: "#ffd27a", rimK: 2.2 }); }
         setH(eevee, 0, null, undefined, ambient, viewH, cam);
       } else if (st === 5) {
         const away = (t - tBye) * 0.9;
+        if (pika) { pika.fig.setHeight(0.95); figureStyle(pika.fig, { rim: "#ffcb05", rimK: 1.3 }); }
         setH(pika, 1, [AT.road - 0.5, Math.abs(Math.sin(ambient * 6)) * 0.04, -2 - away], 0, ambient, viewH, cam, 0, 0.06);
         setH(eevee, 0, null, undefined, ambient, viewH, cam);
       } else { setH(pika, 0, null, undefined, ambient, viewH, cam); setH(eevee, 0, null, undefined, ambient, viewH, cam); }
 
       // B. The stadium, Zacian and Zamazenta in red energy.
-      stadium.group.visible = crowd.points.visible = inStadium;
+      stadium.group.visible = crowd.points.visible = flood.points.visible = podiumG.visible = inStadium;
+      stadium.setLit(inStadium ? (st === 4 ? 0.75 : 1) : 0);
       crowd.u.uTime.value = ambient; crowd.u.uPixel.value = px;
-      crowd.u.uCheer.value = st === 1 ? 1 : 1 - ramp(t, tChamp + 1, tChamp + 3);
-      crowd.u.uK.value = st === 4 ? 1.3 * (1 - 0.6 * ramp(t, tChamp + 1, tChamp + 3)) : 1.3;
-      beams.forEach((b) => { b.u.uOpacity.value = st === 1 ? 1 : 0; b.u.uTime.value = ambient; });
-      stadLight.intensity = st === 1 ? 90 : st === 4 ? 12 : 0;
-      spot.intensity = st === 4 ? 120 : 0;
+      crowd.u.uCheer.value = st === 1 ? 1 : 1 - champHang(t);
+      crowd.u.uK.value = st === 4 ? 1.7 : 1.4;
+      flood.u.uPixel.value = px; flood.u.uK.value = inStadium ? 0.85 : 0;
+      beams.forEach((b) => { b.u.uOpacity.value = st === 1 ? 0.8 : st === 4 ? 1 : 0; b.u.uTime.value = ambient; });
+      stadLight.intensity = st === 1 ? 90 : st === 4 ? 22 : 0;
+      spot.intensity = st === 4 ? 85 : 0;
+      rimL.intensity = rimR.intensity = st === 4 ? 70 : 0;
+      champSh.enable(st === 4);
+      if (st === 4) champSh.follow([AT.stadium, POD + 0.6, 0.2]);
+      rimMat.color.copy(col("#ffcf6a", st === 4 ? 1.6 : 0.8));
+      courtRing.u.uK.value = st === 4 ? 0.35 + 0.65 * ((ambient * 0.35) % 1) : 0;
+      courtRing.u.uOpacity.value = st === 4 ? 0.7 : 0;
+      courtRing.u.uTime.value = ambient;
+      courtRing.mesh.scale.setScalar(4.5);
+      champBurst.mesh.visible = st === 4;
+      champBurst.u.uOpacity.value = st === 4 ? 0.5 + 0.7 * ramp(t, tChamp + 0.3, tChamp + 0.9) : 0;
+      champBurst.u.uTime.value = ambient;
+      champBurst.mesh.quaternion.copy(cam.quaternion);
       const face = st === 1 ? ramp(t, tGalar + 0.4, tGalar + 2) : 0;
       setH(zacian, face, null, undefined, ambient, viewH, cam, 0.05, 0.1);
       setH(zamazenta, face, null, undefined, ambient, viewH, cam, 0.05, 0.1);
       swirl.u.uTime.value = ambient; swirl.u.uPixel.value = px; swirl.u.uOpacity.value = face;
       // Confetti: falling through the 25, hanging still for the champion.
       if (st === 4) {
-        const hang = ramp(t, tChamp + 0.6, tChamp + 1.4) * (1 - ramp(t, tChamp + 4.5, tChamp + 5.5));
-        placeConfetti([AT.stadium, 4, 0], [6, 4, 4], tChamp + (t - tChamp) * (1 - hang * 0.97));
+        placeConfetti([AT.stadium, 3.4, 2.4], [6, 3.6, 4.4], tChamp + (t - tChamp) * (1 - champHang(t) * 0.97));
       }
       conf.visible = st === 4;
 
@@ -395,17 +484,22 @@ export const build: ChapterBuilder = async (ctx) => {
 
       // H. Lumiose.
       const lum = st === 6;
-      lumi.mesh.visible = tower.visible = lumLight.group.visible = pave.visible = lum;
+      lumi.mesh.visible = tower.visible = lumLight.group.visible = pave.visible = prism.visible = strandG.points.visible = prismRays.mesh.visible = lum;
+      strandG.u.uPixel.value = px; strandG.u.uK.value = 0.8 + 0.2 * Math.sin(ambient * 3);
+      prism.rotation.y = ambient * 0.3;
+      prismRays.u.uTime.value = ambient; prismRays.u.uOpacity.value = lum ? 1 : 0; prismRays.mesh.quaternion.copy(cam.quaternion);
+      lumi.u.uGlowAt.value.set(AT.lumiose, 6, 0, 22);
+      lumi.u.uGlowCol.value.copy(col("#ffc890", lum ? 0.35 : 0));
       lumi.u.uTime.value = ambient;
       lumLight.u.uPixel.value = px;
-      towerGlow.set("#ffe8a0", lum ? 0.3 + 0.1 * Math.sin(ambient * 2) : 0);
+      towerGlow.set("#9ad4ff", lum ? 0.2 + 0.06 * Math.sin(ambient * 2) : 0);
       avenues.u.uTime.value = ambient; avenues.u.uPixel.value = px; avenues.u.uOpacity.value = lum ? 0.25 : 0;
       V.town.visible = st === 0;
       V.extras.visible = st === 0;
       V.grass.u.uTime.value = ambient;
     },
-    look: (t) =>
-      lookAt(t, { ...STOCK.modern }, {
+    look: (t) => ({
+      ...lookAt(t, { ...STOCK.modern }, {
         exposure: [[0, 1.0], [tGalar, 0.95], [t25, 1.0], [tOpen, 1.0], [tChamp, 0.95], [tBye, 1.0], [tLum, 1.0], [end, 1.0]],
         contrast: [[0, 1.06], [tGalar - 0.2, 1.06], [tGalar, 1.18], [t25 - 0.2, 1.18], [t25, 1.06], [tChamp - 0.2, 1.06], [tChamp, 1.2], [tBye - 0.2, 1.2], [tBye, 1.06], [end, 1.06]],
         bloom: [[0, 0.8], [tGalar, 0.95], [t25, 1.05], [tHisui, 0.95], [tOpen, 0.8], [tChamp, 1.05], [tBye, 1.0], [tLum, 1.1], [end, 1.1]],
@@ -414,6 +508,9 @@ export const build: ChapterBuilder = async (ctx) => {
         fade: [[0, 0.5], [1.0, 0]],
         rays: [[tOpen - 0.3, 0], [tOpen - 0.2, 0.1], [tChamp - 0.2, 0.1], [tChamp - 0.15, 0]],
       }, (() => { const c = camera(t).pos; return { pos: [c[0] + PSUN[0] * 600, c[1] + PSUN[1] * 600, c[2] + PSUN[2] * 600] as Vec3, color: [1.0, 0.9, 0.7] as Vec3 }; })()),
+      // The champion: focus on Pikachu, the near confetti soft (high quality).
+      ...(t > tChamp - 0.15 && t < tBye - 0.15 ? { dof: { focus: [AT.stadium, 1.6, 0.2] as Vec3, k: 0.6 } } : {}),
+    }),
     dispose() { D.dispose(); },
   };
 };

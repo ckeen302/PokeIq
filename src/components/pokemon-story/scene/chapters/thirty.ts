@@ -189,14 +189,14 @@ export const build: ChapterBuilder = async (ctx) => {
   galGeo.setAttribute("position", new THREE.BufferAttribute(gPos, 3));
   galGeo.setAttribute("aFrom", new THREE.BufferAttribute(gFrom, 3));
   galGeo.setAttribute("aSeed", new THREE.BufferAttribute(gSeed, 2));
-  const galU = { uK: { value: 0 }, uSpin: { value: 0 }, uShow: { value: 0 }, uTime: { value: 0 }, uPixel: { value: 600 }, uSize: { value: 0.6 }, uTex: { value: atlasTex }, uC: { value: new THREE.Vector3(AT.galaxy, 0, 0) } };
+  const galU = { uK: { value: 0 }, uSpin: { value: 0 }, uShow: { value: 0 }, uTime: { value: 0 }, uPixel: { value: 600 }, uSize: { value: 0.75 }, uTex: { value: atlasTex }, uC: { value: new THREE.Vector3(AT.galaxy, 0, 0) } };
   const galMat = new THREE.ShaderMaterial({
     uniforms: galU,
     transparent: true,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
     vertexShader: /* glsl */ `
-      attribute vec3 aFrom; attribute vec2 aSeed; uniform float uK, uSpin, uTime, uPixel, uSize; uniform vec3 uC; varying float vCell; varying float vS; varying float vOn;
+      attribute vec3 aFrom; attribute vec2 aSeed; uniform float uK, uSpin, uTime, uPixel, uSize; uniform vec3 uC; varying float vCell; varying float vS; varying float vOn; varying float vHeart;
       void main(){
         float k = clamp(uK * 1.4 - aSeed.y * 0.4, 0.0, 1.0);
         float e = 1.0 - (1.0 - k) * (1.0 - k);
@@ -205,17 +205,19 @@ export const build: ChapterBuilder = async (ctx) => {
         rel = vec3(rel.x * c - rel.z * s, rel.y, rel.x * s + rel.z * c);
         vec3 p = mix(aFrom, uC + rel, e);
         vCell = aSeed.x; vS = aSeed.y; vOn = k;
+        // The heart is crowded: dim the shapes there so they read as shapes, not a blown-out blob.
+        vHeart = 0.3 + 0.7 * smoothstep(2.0, 10.0, length(rel.xz));
         vec4 mv = modelViewMatrix * vec4(p, 1.0);
         gl_Position = projectionMatrix * mv;
-        gl_PointSize = clamp(uSize * uPixel / -mv.z, 2.0, 40.0);
+        gl_PointSize = clamp(uSize * uPixel / -mv.z, 2.0, 72.0);
       }`,
     fragmentShader: /* glsl */ `
-      uniform sampler2D uTex; uniform float uShow, uTime; varying float vCell; varying float vS; varying float vOn;
+      uniform sampler2D uTex; uniform float uShow, uTime; varying float vCell; varying float vS; varying float vOn; varying float vHeart;
       void main(){
         vec2 pc = vec2(gl_PointCoord.x, 1.0 - gl_PointCoord.y);
         vec2 uv = (vec2(mod(vCell, 8.0), 7.0 - floor(vCell / 8.0)) + pc) / 8.0;
-        float a = texture2D(uTex, uv).a * uShow * (0.35 + 0.65 * vOn);
-        vec3 tint = mix(vec3(1.0, 0.86, 0.5), vec3(0.6, 0.85, 1.0), vS) * (0.55 + 0.2 * sin(uTime * 2.0 + vS * 40.0));
+        float a = texture2D(uTex, uv).a * uShow * (0.35 + 0.65 * vOn) * vHeart;
+        vec3 tint = mix(vec3(1.0, 0.86, 0.5), vec3(0.6, 0.85, 1.0), vS) * (0.44 + 0.16 * sin(uTime * 2.0 + vS * 40.0));
         gl_FragColor = vec4(tint * a, a);
       }`,
   });
@@ -223,6 +225,33 @@ export const build: ChapterBuilder = async (ctx) => {
   galaxy.frustumCulled = false;
   scene.add(galaxy);
   D.add({ dispose: () => { galGeo.dispose(); galMat.dispose(); atlasTex.dispose(); } });
+  // The galaxy's body: a disc of gold and blue light along the same three spiral arms, so it has colour and volume
+  // between the little shapes, brightest at the heart.
+  const nebU = { uK: { value: 0 }, uSpin: { value: 0 }, uTime: { value: 0 } };
+  const nebMat = new THREE.ShaderMaterial({
+    uniforms: nebU, transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending,
+    vertexShader: /* glsl */ `varying vec2 vP; void main(){ vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: /* glsl */ `${NOISE}
+      uniform float uK, uSpin, uTime; varying vec2 vP;
+      void main(){
+        float r = length(vP);
+        // Local y is world -z, so the arms (angle = r * 0.22 in world xz) wind the other way here.
+        float a = atan(vP.y, vP.x) + uSpin;
+        float arms = 0.5 + 0.5 * cos(3.0 * (a + r * 0.22));
+        arms = arms * arms * arms;
+        float n = whNoise(vec3(vP * 0.18, uTime * 0.05)) * 0.6 + whNoise(vec3(vP * 0.5, 3.0)) * 0.4;
+        float fall = exp(-r / 9.0);
+        float body = fall * (0.18 + 0.82 * arms) * (0.55 + 0.6 * n) * smoothstep(30.0, 18.0, r);
+        vec3 c = mix(vec3(0.35, 0.55, 1.0), vec3(1.0, 0.74, 0.36), exp(-r / 7.0));
+        float heart = exp(-r * r / 5.0) * 0.45;
+        gl_FragColor = vec4((c * body * 0.42 + vec3(1.0, 0.85, 0.6) * heart) * uK, 1.0);
+      }`,
+  });
+  const nebula = new THREE.Mesh(new THREE.PlaneGeometry(64, 64), nebMat);
+  nebula.rotation.x = -Math.PI / 2;
+  nebula.position.set(AT.galaxy, -0.3, 0);
+  scene.add(nebula);
+  D.add({ dispose: () => { nebula.geometry.dispose(); nebMat.dispose(); } });
   const core = D.add(makeGlow({ pos: [AT.galaxy, 0, 0], size: 22, color: "#ffe0a0", intensity: 0 }));
   scene.add(core.sprite);
   const dust = D.add(makeParticles({ count: Math.round(1400 * P) + 200, shape: "disc", center: [AT.galaxy, 0, 0], extent: [28, 0.8, 28], velocity: [0, 0, 0], spread: [0.05, 0.05, 0.05], life: 6, size: [0.05, 0.14], colors: ["#ffffff", "#ffe0a0", "#9ac8ff"], intensity: 0.5, swirl: 0.12, flicker: 0.5 }));
@@ -282,9 +311,10 @@ export const build: ChapterBuilder = async (ctx) => {
       { t: tThousand - 0.3, pos: [AT.city, 30, -340], look: [AT.city, -10, -480], fov: 50 },
     ]],
     [tThousand - 0.2, [
-      { t: tThousand - 0.2, pos: [AT.galaxy, 22, 64], look: [AT.galaxy, 0, 0], fov: 50 },
-      { t: tThousand + 4, pos: [AT.galaxy, 12, 40], look: [AT.galaxy, 0, 0], fov: 50 },
-      { t: tYours - 0.2, pos: [AT.galaxy, 4.5, 22], look: [AT.galaxy, 0, 2], fov: 46 },
+      // Down into the disc: the arms sweep past the lens, the first three and Mew in front, Pikachu at the heart.
+      { t: tThousand - 0.2, pos: [AT.galaxy + 8, 16, 46], look: [AT.galaxy, 0, 0], fov: 50 },
+      { t: tThousand + 4, pos: [AT.galaxy + 3, 6.5, 18], look: [AT.galaxy, -0.6, 0], fov: 52 },
+      { t: tYours - 0.2, pos: [AT.galaxy + 1.2, 3.6, 14.5], look: [AT.galaxy, 0.2, 2], fov: 48 },
     ]],
     [tYours, [
       { t: tYours, pos: [AT.field + 0.5, 14, 18], look: [AT.field, 0, -2], fov: 50 },
@@ -358,7 +388,11 @@ export const build: ChapterBuilder = async (ctx) => {
       galU.uShow.value = st === 2 ? 1 - ramp(t, tYours - 1.4, tYours - 0.2) : 0;
       galU.uTime.value = ambient; galU.uPixel.value = px;
       galaxy.visible = st === 2;
-      core.set("#ffe0a0", st === 2 ? 0.12 + 0.2 * gk : 0);
+      core.set("#ffe0a0", st === 2 ? 0.05 + 0.06 * gk : 0);
+      nebula.visible = st === 2;
+      nebU.uK.value = st === 2 ? gk * galU.uShow.value : 0;
+      nebU.uSpin.value = galU.uSpin.value;
+      nebU.uTime.value = ambient;
       dust.u.uTime.value = ambient; dust.u.uPixel.value = px; dust.u.uOpacity.value = st === 2 ? gk : 0;
       heroes.forEach((h, i) => {
         if (!h) return;

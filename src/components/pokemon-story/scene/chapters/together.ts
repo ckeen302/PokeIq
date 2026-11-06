@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import type { Key } from "@/lib/world-history/camera";
-import { col, makeGlow, makeParticles, makeShaft, makeSky, makeTerrain, merge, noise2, placed, ramp, rng } from "@/components/world-history/scene/kit";
+import { col, makeGlow, makeParticles, makeRing, makeShaft, makeSky, makeSunburst, makeTerrain, merge, noise2, placed, ramp, rng } from "@/components/world-history/scene/kit";
+import { keyShadow, receiveShadows } from "@/components/world-history/scene/light";
 import { makeCity } from "@/components/world-history/scene/props";
 import { lights, loadFigures, lookAt, pointPixel, spike } from "@/components/world-history/scene/chapters/common";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
@@ -40,6 +41,8 @@ export const build: ChapterBuilder = async (ctx) => {
   const R = 6;
   const globe = D.add(makeGlobe({ radius: R, count: Math.round(11000 * Math.max(0.45, P)), land: "#3a5a8a", lit: "#9a7634", sea: "#030612", seed: 21 }));
   globe.group.position.set(AT.globe, 0, 0);
+  globe.shell.uAtmo.value = 0.7;
+  globe.shell.uColor.value.copy(col("#7ac8ff"));
   globe.u.uSize.value = R * 0.0085;
   scene.add(globe.group);
   const wrap = new THREE.Mesh(new THREE.TorusGeometry(R * 1.04, 0.035, 8, 160), new THREE.MeshBasicMaterial({ color: col("#bff0ff", 3), transparent: true, opacity: 0, toneMapped: false }));
@@ -55,9 +58,9 @@ export const build: ChapterBuilder = async (ctx) => {
   const sheetU = { uMap: { value: null as THREE.Texture | null }, uOpacity: { value: 0 }, uAspect: { value: 1 }, uTint: { value: col("#5a9ad8") } };
   const sheetMat = new THREE.ShaderMaterial({
     uniforms: sheetU, transparent: true, side: THREE.DoubleSide, depthWrite: false,
-    vertexShader: /* glsl */ `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    vertexShader: /* glsl */ `varying vec2 vUv; varying vec3 vN; varying vec3 vV; void main(){ vUv = uv; vN = normalize(mat3(modelMatrix) * normal); vec4 wp = modelMatrix * vec4(position, 1.0); vV = normalize(cameraPosition - wp.xyz); gl_Position = projectionMatrix * viewMatrix * wp; }`,
     fragmentShader: /* glsl */ `
-      uniform sampler2D uMap; uniform float uOpacity, uAspect; uniform vec3 uTint; varying vec2 vUv;
+      uniform sampler2D uMap; uniform float uOpacity, uAspect; uniform vec3 uTint; varying vec2 vUv; varying vec3 vN; varying vec3 vV;
       void main(){
         vec2 uv = vec2((vUv.x - 0.5) * uAspect + 0.5, vUv.y);
         vec2 cell = floor(uv * 44.0);
@@ -67,15 +70,22 @@ export const build: ChapterBuilder = async (ctx) => {
         float a = step(0.5, c.a) * inside;
         vec2 f = fract(uv * 44.0);
         float grid = step(0.08, f.x) * step(0.08, f.y);
-        vec3 paper = uTint * 0.16;
-        vec3 col = mix(paper, c.rgb * (0.75 + 0.25 * grid), a);
-        gl_FragColor = vec4(col, uOpacity * mix(0.35, 1.0, a));
+        // Origami paper: pale, lit fold by fold (a face turned to the key is bright, the next one falls into shade),
+        // with a cool bounce in the shadowed folds and a warm sheen on the lit ones.
+        vec3 n = normalize(vN);
+        if (dot(n, vV) < 0.0) n = -n;
+        float lam = max(0.0, dot(n, normalize(vec3(0.55, 0.35, 0.75))));
+        vec3 paper = vec3(0.32, 0.5, 0.6);
+        vec3 col = mix(paper, c.rgb * (0.8 + 0.2 * grid) + vec3(0.04, 0.08, 0.1), a);
+        col *= vec3(0.12, 0.2, 0.3) + vec3(1.0, 0.96, 0.9) * lam * 0.95;
+        // The sprite's pixels are printed on a ghost of a sheet: only they are solid.
+        gl_FragColor = vec4(col, uOpacity * mix(0.12, 1.0, a));
       }`,
   });
-  const seamMat = new THREE.MeshBasicMaterial({ color: col("#e8fbff", 0.9), transparent: true, opacity: 1, toneMapped: false, depthWrite: false, blending: THREE.AdditiveBlending });
+  const seamMat = new THREE.MeshBasicMaterial({ color: col("#bff4ff", 1.6), transparent: true, opacity: 1, toneMapped: false, depthWrite: false, blending: THREE.AdditiveBlending });
   const stripGeo = new THREE.PlaneGeometry(SW, SH).translate(SW / 2, SH / 2, 0);
   const stripGeos = Array.from({ length: STRIPS }, (_, i) => { const g = stripGeo.clone(); const uv = g.getAttribute("uv"); for (let k = 0; k < uv.count; k++) uv.setX(k, (i + uv.getX(k)) / STRIPS); return g; });
-  const seamGeo = new THREE.PlaneGeometry(0.018, SH).translate(0, SH / 2, 0.01);
+  const seamGeo = new THREE.PlaneGeometry(0.012, SH).translate(0, SH / 2, 0.01);
   const sheet = new THREE.Group();
   sheet.position.set(AT.fold - (STRIPS * SW) / 2, 0, 0.6);
   scene.add(sheet);
@@ -85,7 +95,9 @@ export const build: ChapterBuilder = async (ctx) => {
   for (let i = 0; i < STRIPS; i++) {
     const g = new THREE.Group();
     if (i > 0) g.position.x = SW;
-    g.add(new THREE.Mesh(stripGeos[i], sheetMat));
+    const leaf = new THREE.Mesh(stripGeos[i], sheetMat);
+    leaf.castShadow = true;
+    g.add(leaf);
     const seam = new THREE.Mesh(seamGeo, seamMat);
     g.add(seam);
     parent.add(g);
@@ -95,10 +107,25 @@ export const build: ChapterBuilder = async (ctx) => {
   D.add({ dispose: () => { stripGeo.dispose(); stripGeos.forEach((g) => g.dispose()); seamGeo.dispose(); sheetMat.dispose(); seamMat.dispose(); } });
   const foldGlow = D.add(makeGlow({ pos: [AT.fold, 2.4, 0.4], size: 9, color: "#9ad8ff", intensity: 0 }));
   scene.add(foldGlow.sprite);
-  const foldFloor = new THREE.Mesh(new THREE.CircleGeometry(6, 64).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: col("#0a1424"), roughness: 0.95, metalness: 0 }));
+  // A dark glade floor that holds the light (low roughness), a ring of light round Xerneas, a backlight breaking round it.
+  const foldFloor = new THREE.Mesh(new THREE.CircleGeometry(60, 64).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: col("#0c2430"), roughness: 0.4, metalness: 0.3 }));
   foldFloor.position.set(AT.fold, 0, 0);
   scene.add(foldFloor);
   D.add({ dispose: () => { foldFloor.geometry.dispose(); (foldFloor.material as THREE.Material).dispose(); } });
+  const foldRing = D.add(makeRing({ color: "#8affe6", intensity: 2.0, thickness: 0.02 }));
+  foldRing.mesh.rotation.x = -Math.PI / 2;
+  foldRing.mesh.position.set(AT.fold + 0.6, 0.03, 0);
+  scene.add(foldRing.mesh);
+  const foldRays = D.add(makeSunburst({ size: 16, color: "#8ae8ff", core: "#e8fcff", intensity: 0.55, rays: 9, coreK: 0.4, seed: 8 }));
+  foldRays.mesh.position.set(AT.fold + 0.6, 2.8, -2.6);
+  scene.add(foldRays.mesh);
+  const foldLight = new THREE.PointLight(col("#7affe0"), 0, 12, 1.6);
+  foldLight.position.set(AT.fold + 0.6, 1.2, -1.6);
+  scene.add(foldLight);
+  const foldSh = keyShadow(ctx.q, L.key, { radius: 6, center: [AT.fold, 1.5, 0] });
+  receiveShadows(foldFloor);
+  const glade = D.add(makeParticles({ count: Math.round(500 * P) + 80, shape: "box", center: [AT.fold, 2.5, -1], extent: [9, 3, 5], velocity: [0, 0.15, 0], spread: [0.1, 0.1, 0.1], life: 6, size: [0.015, 0.045], colors: ["#bff4ff", "#ffd8f4", "#fff6c0"], intensity: 1.8, turbulence: 0.4, flicker: 0.6 }));
+  scene.add(glade.points);
   const foldSpark = D.add(makeParticles({ count: Math.round(420 * P) + 60, shape: "box", center: [AT.fold, 2.3, 0.6], extent: [2.6, 2.3, 0.3], velocity: [0, 0.3, 0.2], spread: [0.3, 0.3, 0.3], life: 1.8, size: [0.015, 0.04], colors: ["#ffffff", "#bff0ff", "#ffd8f0"], intensity: 2.6, turbulence: 0.5, flicker: 0.6 }));
   scene.add(foldSpark.points);
 
@@ -207,7 +234,7 @@ export const build: ChapterBuilder = async (ctx) => {
 
   // ---- The figures.
   const figs = await loadFigures(ctx, [716, 717, 25, 791, 792]);
-  const xerneas = heroFigure(figs.get(716), { pos: [AT.fold + 0.6, 0, 0], height: 4.2, accent: "#9ad8ff", scene, rotY: -0.25 });
+  const xerneas = heroFigure(figs.get(716), { pos: [AT.fold + 0.6, 0, 0], height: 4.4, accent: "#8affe6", scene, rotY: -0.25 });
   const yveltal = heroFigure(figs.get(717), { pos: [AT.fold - 4.6, 0.2, -2.5], height: 4.0, accent: "#ff4a6a", scene, rotY: 0.5 });
   const solgaleo = heroFigure(figs.get(791), { pos: [AT.alola - 30, 14, -66], height: 16, accent: "#ffb05a", scene, rotY: 0.4 });
   const lunala = heroFigure(figs.get(792), { pos: [AT.alola + 30, 14, -66], height: 16, accent: "#b8a0ff", scene, rotY: -0.4 });
@@ -240,10 +267,11 @@ export const build: ChapterBuilder = async (ctx) => {
   const orbitG = (k: number, t: number): Key => { const a = 0.4 + k * 1.2; return { t, pos: [AT.globe + Math.sin(a) * 17, 4 + k * 2, Math.cos(a) * 17], look: [AT.globe, 0, 0], fov: 40 }; };
   const camera = shots([
     [0, [orbitG(0, 0), orbitG(0.4, tSame + 2), orbitG(0.8, tSame + 5), orbitG(1, tFold)]],
+    // Low and three-quarter, so the folds stand in depth and Xerneas towers.
     [tFold - 0.2, [
-      { t: tFold - 0.2, pos: [AT.fold + 1.5, 2.4, 9.5], look: [AT.fold, 2.3, 0], fov: 40 },
-      { t: tFold + 2.4, pos: [AT.fold + 0.6, 2.3, 7.2], look: [AT.fold, 2.3, 0], fov: 40 },
-      { t: tOutbreak, pos: [AT.fold - 1.6, 2.6, 8.2], look: [AT.fold - 1, 2.4, 0], fov: 42 },
+      { t: tFold - 0.2, pos: [AT.fold + 3.6, 1.2, 8.8], look: [AT.fold + 0.2, 2.4, 0], fov: 40 },
+      { t: tFold + 2.4, pos: [AT.fold + 2.4, 1.3, 6.9], look: [AT.fold + 0.3, 2.5, 0], fov: 40 },
+      { t: tOutbreak, pos: [AT.fold - 0.8, 1.6, 7.8], look: [AT.fold - 0.8, 2.5, 0], fov: 42 },
     ]],
     [tOutbreak - 0.2, [
       { t: tOutbreak - 0.2, pos: [AT.street - 10, 1.2, 6.5], look: [AT.street - 4, 0.9, 0.5], fov: 44 },
@@ -265,7 +293,7 @@ export const build: ChapterBuilder = async (ctx) => {
   const starts = [0, tFold - 0.2, tOutbreak - 0.2, tTwenty - 0.2, tAlola - 0.2];
   const SKIES: [string, string, string][] = [
     ["#01030a", "#05102a", "#000000"],
-    ["#02040c", "#0a1830", "#000000"],
+    ["#010812", "#0a3a48", "#000305"],
     ["#1a2a6a", "#ff8a5a", "#100810"],
     ["#0a0a12", "#14141e", "#050508"],
     ["#3a6ac0", "#ffc08a", "#1a3a5a"],
@@ -284,7 +312,7 @@ export const build: ChapterBuilder = async (ctx) => {
       const [top, hor, bot] = SKIES[st];
       sky.u.uTop.value.copy(col(top)); sky.u.uHorizon.value.copy(col(hor)); sky.u.uBottom.value.copy(col(bot));
       stars.points.visible = st <= 1;
-      L.key.intensity = [0.4, 0.5, 0.9, 0.6, 1.5][st];
+      L.key.intensity = [0.4, 1.1, 0.9, 0.6, 1.5][st];
       L.hemi.intensity = [0.2, 0.25, 0.85, 0.35, 0.8][st];
       posts.visible = pools.visible = st === 2;
 
@@ -304,19 +332,37 @@ export const build: ChapterBuilder = async (ctx) => {
       // B. The sheet opens out of its folds; Xerneas gains its depth; seams of light.
       const open = ramp(t, tFold + 0.6, tFold + 3.0);
       const e = open * open * (3 - 2 * open);
-      strips.forEach((g, i) => { g.rotation.y = i === 0 ? 0 : (i % 2 ? 1 : -1) * (1 - e) * 2.6; });
+      const peel = ramp(t, tFold + 1.6, tFold + 2.9);
+      strips.forEach((g, i) => { g.rotation.y = i === 0 ? 0 : (i % 2 ? 1 : -1) * ((1 - e) * 2.6 + peel * 0.5); g.position.z = peel * (i % 2 ? 0.5 : -0.3); });
       sheet.rotation.y = (1 - e) * 0.4;
       sheet.position.x = AT.fold - (STRIPS * SW) / 2 + (1 - e) * 1.4;
-      sheetU.uOpacity.value = st === 1 && xMap ? 1 - ramp(t, tFold + 2.2, tFold + 3.4) : 0;
-      seamMat.opacity = st === 1 ? Math.sin(Math.PI * Math.min(1, ramp(t, tFold + 0.4, tFold + 3.8))) : 0;
+      sheetU.uOpacity.value = st === 1 && xMap ? 1 - ramp(t, tFold + 1.7, tFold + 2.9) : 0;
+      // Seams of light only while the folds move (and thin), not bars across the picture.
+      seamMat.opacity = st === 1 ? 0.3 * Math.sin(Math.PI * open) * (1 - ramp(t, tFold + 1.2, tFold + 2.0)) : 0;
       sheet.visible = st === 1 && t < tFold + 4;
       if (xerneas && xFig) {
-        xerneas.set(st === 1 ? ramp(t, tFold + 1.2, tFold + 2.8) : 0, ambient, viewH, cam, 0.03, 0.1);
-        xFig.group.scale.z = xScale * (0.02 + 0.98 * ramp(t, tFold + 1.6, tFold + 3.6));
+        xerneas.set(st === 1 ? ramp(t, tFold + 0.9, tFold + 2.2) : 0, ambient, viewH, cam, 0.03, 0.1);
+        xFig.group.scale.z = xScale * (0.02 + 0.98 * ramp(t, tFold + 1.1, tFold + 2.8));
         xFig.group.visible = st === 1;
       }
       if (yveltal) { yveltal.set(st === 1 ? ramp(t, tFold + 4, tFold + 5.4) : 0, ambient, viewH, cam, 0.05, 0.05); yveltal.fig.group.visible = st === 1; }
-      foldGlow.set("#9ad8ff", st === 1 ? 0.12 + 0.3 * Math.sin(Math.PI * open) : 0);
+      foldGlow.set("#7affe0", st === 1 ? 0.08 + 0.18 * Math.sin(Math.PI * open) : 0);
+      const fx = st === 1 ? ramp(t, tFold + 0.4, tFold + 1.6) : 0;
+      foldRays.mesh.visible = fx > 0.001;
+      foldRays.u.uOpacity.value = fx * (0.6 + 0.5 * ramp(t, tFold + 1.6, tFold + 3.4));
+      foldRays.u.uTime.value = ambient;
+      foldRays.mesh.quaternion.copy(cam.quaternion);
+      foldRing.u.uK.value = 0.4 + 0.6 * ramp(t, tFold + 1.2, tFold + 3.6);
+      foldRing.u.uOpacity.value = fx * 0.8;
+      foldRing.u.uTime.value = ambient;
+      foldRing.mesh.scale.setScalar(3.4);
+      foldLight.intensity = 30 * fx;
+      glade.u.uTime.value = ambient; glade.u.uPixel.value = px; glade.u.uOpacity.value = st === 1 ? 1 : 0;
+      foldSh.enable(st === 1);
+      if (st === 1) {
+        L.key.position.set(AT.fold + 6, 10, 8); L.key.target.position.set(AT.fold, 0, 0); L.key.target.updateMatrixWorld();
+        foldSh.follow([AT.fold, 1.5, 0]);
+      } else { L.key.position.set(6, 12, 8); L.key.target.position.set(0, 0, 0); L.key.target.updateMatrixWorld(); }
       foldSpark.u.uTime.value = ambient; foldSpark.u.uPixel.value = px; foldSpark.u.uOpacity.value = st === 1 ? Math.sin(Math.PI * open) : 0;
 
       // C. The parade: rows of Pikachu bobbing in step, marching along the quay.
@@ -358,14 +404,17 @@ export const build: ChapterBuilder = async (ctx) => {
       if (solgaleo) { solgaleo.set(skyK, ambient, viewH, cam, 0.2, 0.25); solgaleo.fig.group.visible = st === 4; }
       if (lunala) { lunala.set(skyK, ambient, viewH, cam, 0.2, 0.25); lunala.fig.group.visible = st === 4; }
     },
-    look: (t) =>
-      lookAt(t, { ...STOCK.modern }, {
+    look: (t) => ({
+      ...lookAt(t, { ...STOCK.modern }, {
         exposure: [[0, 0.95], [tSame + 1, 1.05], [tFold, 0.95], [tOutbreak, 1.0], [tAlola, 1.0], [end, 1.05]],
         bloom: [[0, 0.8], [tSame + 1.1, 1.1], [tSame + 3, 0.85], [tFold + 1, 1.0], [tOutbreak, 0.85], [tAlola + 4, 0.95], [end, 1.0]],
         bloomThreshold: [[0, 0.78], [end, 0.78]],
         flash: [[tSame + 0.9, 0], [tSame + 1.0, 0.25], [tSame + 1.5, 0], [tAlola + 3.9, 0], [tAlola + 4.1, 0.3], [tAlola + 4.6, 0]],
         fade: [[0, 0.5], [1.0, 0]],
       }),
+      // The fold: focus on Xerneas, the near folds soft (high quality).
+      ...(t > tFold - 0.2 && t < tOutbreak - 0.2 ? { dof: { focus: [AT.fold + 0.4, 2.2, 0] as [number, number, number], k: 0.45 } } : {}),
+    }),
     dispose() { D.dispose(); },
   };
 };

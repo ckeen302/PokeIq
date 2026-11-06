@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
-import { col, makeGlow, makeParticles, makeRing, makeShaft, makeSky, ramp, rng } from "@/components/world-history/scene/kit";
+import { col, makeGlow, makeParticles, makeRing, makeShaft, makeSky, makeSunburst, ramp, rng } from "@/components/world-history/scene/kit";
 import { lights, loadFigures, lookAt, pointPixel, spike } from "@/components/world-history/scene/chapters/common";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
 import { REGION_MAPS } from "@/lib/timeline/types";
@@ -79,15 +79,21 @@ export const build: ChapterBuilder = async (ctx) => {
 
   // ---- Online: a planet of points under Sinnoh, threaded with links.
   const GR = 46, GC: Vec3 = [0, -58, Z.sinnoh - 40];
-  const globe = D.add(makeGlobe({ radius: GR, count: Math.round(14000 * Math.max(0.45, P)), land: "#8ab8ff", lit: "#bfe8ff", sea: "#02060f", seed: 3 }));
+  const globe = D.add(makeGlobe({ radius: GR, count: Math.round(14000 * Math.max(0.45, P)), land: "#8ab8ff", lit: "#bfe8ff", sea: "#0a2250", seed: 3 }));
+  globe.shell.uAtmo.value = 1.4;
+  globe.shell.uColor.value.copy(col("#6ac8ff"));
+  // The sun just past the planet's limb, rays breaking round it.
+  const orbitSun = D.add(makeSunburst({ size: 70, color: "#bfe0ff", core: "#ffffff", intensity: 0.9, rays: 12, coreK: 0.9, seed: 4 }));
+  orbitSun.mesh.position.set(10, -10, Z.sinnoh - 150);
+  scene.add(orbitSun.mesh);
   globe.group.position.set(...GC);
   globe.u.uSize.value = GR * 0.014;
   scene.add(globe.group);
   const gr = rng(29);
-  const pairs: [Vec3, Vec3][] = Array.from({ length: Math.round(90 * Math.max(0.5, P)) }, () => [spherePoint(gr, 0.9), spherePoint(gr, 0.9)]);
+  const pairs: [Vec3, Vec3][] = Array.from({ length: Math.round(140 * Math.max(0.5, P)) }, () => [spherePoint(gr, 0.9), spherePoint(gr, 0.9)]);
   const links = D.add(makeArcs({ radius: GR, pairs, color: "#bfe8ff", perArc: 50, lift: 0.3 }));
   links.points.position.set(...GC);
-  links.u.uSize.value = 0.9;
+  links.u.uSize.value = 1.3;
   scene.add(links.points);
 
   // ---- Worlds: a night arena (two tiers, a lit concourse, a canopy, floodlight masts), its crowd of lights, spot shafts, a cup.
@@ -173,8 +179,8 @@ export const build: ChapterBuilder = async (ctx) => {
   const lugia = mk(249, [0, 18, Z.johto], 6.6, "#9ad8ff");
   const groudon = mk(383, [-11, 0.2, Z.hoenn - 6], 8, "#ff5a2a", 0.9);
   const kyogre = mk(382, [11, 0.6, Z.hoenn - 6], 8, "#3a8aff", -0.9);
-  const dialga = mk(483, [-19, 12, Z.sinnoh - 44], 10, "#6ab8ff", 0.5);
-  const palkia = mk(484, [19, 12, Z.sinnoh - 44], 10, "#ff9ad8", -0.5);
+  const dialga = mk(483, [-17, 8, Z.sinnoh - 40], 11, "#6ab8ff", 0.5);
+  const palkia = mk(484, [17, 8, Z.sinnoh - 40], 11, "#ff9ad8", -0.5);
   const reshiram = mk(643, [0, 12, Z.unova - 10], 8.5, "#ffd8b0");
   const zekrom = mk(644, [0, 12, Z.unova - 10], 8.5, "#6ab8ff");
 
@@ -190,8 +196,9 @@ export const build: ChapterBuilder = async (ctx) => {
     { t: tColour + 5.2, pos: [0, 9, Z.hoenn + 17], look: [0, 4, Z.hoenn - 8], fov: 50 },
     { t: tOnline - 1.2, pos: [0, 11, Z.hoenn - 30], look: [0, 2, Z.sinnoh], fov: 50 },
     { t: tOnline + 0.6, pos: [0, 16, Z.sinnoh + 22], look: [0, 0, Z.sinnoh - 4], fov: 52 },
-    { t: tOnline + 2.4, pos: [0, 44, Z.sinnoh + 30], look: [0, -14, Z.sinnoh - 40], fov: 54 },
-    { t: tOnline + 6, pos: [0, 62, Z.sinnoh + 44], look: [0, 2, Z.sinnoh - 60], fov: 54 },
+    // Into orbit, close over the planet's curve: the limb and its air across the frame, the links beneath.
+    { t: tOnline + 2.4, pos: [0, 30, Z.sinnoh + 22], look: [-4, -12, Z.sinnoh - 44], fov: 54 },
+    { t: tOnline + 6, pos: [6, 40, Z.sinnoh + 32], look: [-4, -4, Z.sinnoh - 56], fov: 54 },
     { t: tWorlds - 1, pos: [0, 30, Z.stadium + 64], look: [0, 2, Z.stadium], fov: 50 },
     { t: tWorlds + 1.6, pos: [0, 15, Z.stadium + 15], look: [0, 2, Z.stadium - 6], fov: 52 },
     { t: tWorlds + 4.6, pos: [2.5, 7.5, Z.stadium + 9.5], look: [0, 2.6, Z.stadium - 8], fov: 52 },
@@ -288,6 +295,9 @@ export const build: ChapterBuilder = async (ctx) => {
       // Online: the planet, the links, the pair at the edge of space.
       const orb = ramp(t, tOnline + 0.8, tOnline + 2.6) * (1 - ramp(t, tWorlds - 1, tWorlds + 0.5));
       globe.group.visible = links.points.visible = orb > 0.01;
+      orbitSun.mesh.visible = orb > 0.01;
+      orbitSun.u.uOpacity.value = orb; orbitSun.u.uTime.value = ambient;
+      orbitSun.mesh.quaternion.copy(cam.quaternion);
       globe.u.uAll.value = 0.3;
       globe.u.uSpread.value = ramp(t, tOnline + 1, tOnline + 6) * 3.2;
       globe.u.uFrom.value.set(0, 1, 0.3).normalize();
@@ -296,8 +306,8 @@ export const build: ChapterBuilder = async (ctx) => {
       links.points.rotation.copy(globe.group.rotation);
       links.u.uGrow.value = ramp(t, tOnline + 0.9, tOnline + 4.5);
       links.u.uTime.value = ambient; links.u.uPixel.value = px;
-      set(dialga, orb * ramp(t, tOnline + 2.0, tOnline + 3.4), [-19, 12, Z.sinnoh - 44], 0.5, ambient, viewH, cam, 0.03);
-      set(palkia, orb * ramp(t, tOnline + 2.3, tOnline + 3.7), [19, 12, Z.sinnoh - 44], -0.5, ambient, viewH, cam, 0.03);
+      set(dialga, orb * ramp(t, tOnline + 2.0, tOnline + 3.4), [-17, 8, Z.sinnoh - 40], 0.5, ambient, viewH, cam, 0.03);
+      set(palkia, orb * ramp(t, tOnline + 2.3, tOnline + 3.7), [17, 8, Z.sinnoh - 40], -0.5, ambient, viewH, cam, 0.03);
 
       // Worlds: the stadium lights up.
       const st = ramp(t, tWorlds - 0.5, tWorlds + 1.5) * (1 - ramp(t, tFresh, tFresh + 1.5));

@@ -2,8 +2,9 @@ import * as THREE from "three";
 import type { Key, Vec3 } from "@/lib/world-history/camera";
 import { col, makeCloudLayer, makeGlow, makeSky, makeTerrain, merge, noise2, placed, ramp, rng, stoneMaterial } from "@/components/world-history/scene/kit";
 import { makeCanvasPanel } from "@/components/world-history/scene/props";
-import { lights, loadFigures, lookAt, pointPixel } from "@/components/world-history/scene/chapters/common";
+import { figureStyle, lights, loadFigures, lookAt, pointPixel } from "@/components/world-history/scene/chapters/common";
 import { withDetail } from "@/components/world-history/scene/materials";
+import { castShadows, keyShadow, receiveShadows } from "@/components/world-history/scene/light";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
 import { drawCritter, makeBall, makeDevice, makeGrass, makeSunShadows, makeThreads } from "../story-kit";
 import { bag, heroFigure, shots, STOCK } from "./base";
@@ -253,7 +254,7 @@ export function makeVillage(scene: THREE.Object3D, seed = 2, sun: Vec3 = [-0.82,
   for (const [mat, tag] of [[terrain.mesh.material, "terrain"], [pathMat, "path"], [hedgeMat, "hedge"], [fenceMat, "fence"]] as [THREE.MeshStandardMaterial, string][]) sh.patch(mat, tag);
   const warm = col("#ffd8a0");
   return {
-    spots, town, extras, grass, shadows: sh,
+    spots, town, extras, grass, shadows: sh, terrain: terrain.mesh,
     /** Window light per house (0 day glow … 1 lit at dusk). */
     windows(k: number[]) {
       let o = 0;
@@ -295,7 +296,7 @@ export const build: ChapterBuilder = async (ctx) => {
   // Early morning: a low warm sun off to the left, long shadows across the green.
   const SUN: Vec3 = [-0.82, 0.27, -0.5];
   const sunV = new THREE.Vector3(...SUN).normalize();
-  const sky = D.add(makeSky({ top: "#4a7fcc", horizon: "#f6d6a8", bottom: "#5a6a3a", sunDir: SUN, sunColor: "#ffd8a0", sunSize: 700, sunGlow: 0.45 }));
+  const sky = D.add(makeSky({ top: "#2a5cb8", horizon: "#ffd29a", bottom: "#5a6a3a", sunDir: SUN, sunColor: "#ffd8a0", sunSize: 700, sunGlow: 0.45 }));
   scene.add(sky.mesh);
   scene.fog = new THREE.FogExp2(col("#dcc6a2"), 0.0048);
   const clouds = D.add(makeCloudLayer({ size: 700, y: 70, color: "#fff4e4", shadow: "#c0a8a8", density: 0.2, scale: 0.006, speed: [1, 0, 0.3], intensity: 1.05 }));
@@ -380,7 +381,13 @@ export const build: ChapterBuilder = async (ctx) => {
   const balls = [-1.2, 0, 1.2].map((x) => { const b = D.add(makeBall({ radius: 0.17 })); b.group.position.set(x, 1.18, 2); b.group.rotation.y = 0; scene.add(b.group); return b; });
   const figs = await loadFigures(ctx, [1, 4, 7, 151]);
   const RIM = ["#5aff8a", "#ff9a3a", "#5ab8ff"];
-  const starters = [1, 4, 7].map((a, i) => heroFigure(figs.get(a), { pos: [(i - 1) * 1.2, 1.02, 2.1], height: 0.9, accent: RIM[i], scene }));
+  const starters = [1, 4, 7].map((a, i) => heroFigure(figs.get(a), { pos: [(i - 1) * 1.2, 1.02, 2.1], height: 1.05, accent: RIM[i], scene }));
+  // Less neon: the element colour as a rim on a solid figure, not a glow over it.
+  starters.forEach((h) => h && figureStyle(h.fig, { rimK: 0.8 }));
+  // The low sun throws the starters' and the table's long shadows across the cloth and the grass.
+  const labSh = keyShadow(ctx.q, L.key, { radius: 5, center: [0, 1, 2] });
+  receiveShadows(cloth, table, V.terrain);
+  castShadows(table);
   starters.forEach((s) => s && D.add(s));
   const mew = heroFigure(figs.get(151), { pos: [0, 9, -2], height: 2.8, accent: "#ff9ad0", scene });
   if (mew) D.add(mew);
@@ -415,7 +422,8 @@ export const build: ChapterBuilder = async (ctx) => {
   D.add({ dispose: () => { cartGeo.dispose(); (cart.material as THREE.Material).dispose(); } });
 
   const R = 6.2;
-  const arc = (k: number): Key => { const a = -0.8 + k * 1.6; return { t: tThree + 0.4 + k * 4.6, pos: [Math.sin(a) * 4.6, 1.75, 2 + Math.cos(a) * 4.6], look: [0, 1.35, 2], fov: 38 }; };
+  // Low and close: the starters stand against the morning sky, backlit by the sun, the cloth bright before them.
+  const arc = (k: number): Key => { const a = -0.8 + k * 1.6; return { t: tThree + 0.4 + k * 4.6, pos: [Math.sin(a) * 3.5, 1.32, 2 + Math.cos(a) * 3.5], look: [0, 1.5, 2], fov: 40 }; };
   // Shots: the push through the screen into the village (one move); cut in to the starters' arc; cut to
   // the rooftops for the rumour and the network; cut close on the Blue cartridge.
   const cam = shots([
@@ -453,6 +461,8 @@ export const build: ChapterBuilder = async (ctx) => {
     camera: cam,
     orbit: (t) => ({ target: cam(t).look, limits: { yaw0: 0, yawSpan: 1.1, minPitch: -0.05, maxPitch: 1.2, minDist: 1.5, maxDist: 60 } }),
     update(t, ambient, cam, viewH) {
+      labSh.enable(t > tThree - 0.4 && t < tMew + 1);
+      labSh.follow([0, 1.1, 2]);
       const px = pointPixel(viewH, cam);
       sky.follow(cam);
       const dusk = ramp(t, tWord - 1, tWord + 3);
@@ -506,7 +516,7 @@ export const build: ChapterBuilder = async (ctx) => {
         balls[i].group.visible = t < tMew + 1;
         const form = ramp(t, at + 0.2, at + 1.4) * (1 - ramp(t, tMew + 0.5, tMew + 1.5));
         s?.set(form, ambient, viewH, cam, 0.03, 0.05);
-        halos[i].set(RIM[i], (0.5 * form + 0.9 * Math.max(0, 1 - Math.abs(t - at - 0.4) * 1.6)) * (1 - ramp(t, tMew, tMew + 1)));
+        halos[i].set(RIM[i], (0.18 * form + 0.9 * Math.max(0, 1 - Math.abs(t - at - 0.4) * 1.6)) * (1 - ramp(t, tMew, tMew + 1)));
       });
       // Mew zips across the top of the frame.
       const mz = ramp(t, tMew + 0.2, tMew + 2.6);

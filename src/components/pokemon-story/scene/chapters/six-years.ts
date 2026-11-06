@@ -176,6 +176,9 @@ export const build: ChapterBuilder = async (ctx) => {
   const wallLight = new THREE.PointLight(col("#ffc878"), 0, 16, 1.4);
   wallLight.position.set(0, 3.0, 2.0);
   scene.add(wallLight);
+  // A warm halo behind the wall, so it glows in the haze.
+  const wallHalo = D.add(makeGlow({ pos: [0.4, 3.0, -0.4], size: 15, color: "#ffb860", intensity: 0 }));
+  scene.add(wallHalo.sprite);
   // The view through the glass: a night skyline with a few lit windows (painted once).
   const view = document.createElement("canvas");
   view.width = 256; view.height = 128;
@@ -359,9 +362,10 @@ export const build: ChapterBuilder = async (ctx) => {
       { t: t151 + 0.1, pos: [3.7, 1.82, 2.1], look: [4.5, 1.55, -1.1], fov: 37 },
     ]],
     [t151 + 0.1, [
-      { t: t151 + 0.1, pos: [0.6, 2.4, 5.6], look: [0, 2.4, -0.5], fov: 46 },
-      { t: t151 + 5, pos: [0, 3.0, 8.4], look: [0, 3.0, 0], fov: 50, stop: true },
-      { t: tMew - 0.05, pos: [0.4, 3.0, 8.0], look: [0.5, 3.0, 0], fov: 48 },
+      // Low and raking from the left: the wall recedes across the frame, near tiles big, the room lit by it.
+      { t: t151 + 0.1, pos: [-2.6, 1.3, 4.6], look: [0.6, 2.9, 0.2], fov: 48 },
+      { t: t151 + 5, pos: [-3.4, 1.45, 5.9], look: [0.7, 2.95, 0.2], fov: 50, stop: true },
+      { t: tMew - 0.05, pos: [-3.0, 1.5, 6.2], look: [1.0, 3.0, 0.2], fov: 48 },
     ]],
     [tMew - 0.05, [
       { t: tMew - 0.05, pos: [2.9, 2.75, 6.0], look: [6.0, 2.6, 1.2], fov: 42 },
@@ -416,12 +420,15 @@ export const build: ChapterBuilder = async (ctx) => {
       burst.u.uPixel.value = px;
       burst.u.uOpacity.value = t > t151 + 0.3 ? 1 - ramp(t, t151 + 2.5, t151 + 3.5) : 0;
       const fill = Math.max(0, Math.min(1, (t - t151 - 0.6) / 3.8));
+      const wallUpRim = ramp(t, t151 + 0.8, t151 + 3) * (1 - ramp(t, tMew - 0.4, tMew + 0.8));
       wall151.u.uFill.value = fill * 1.02;
       // On a portrait screen the wall shrinks about its centre to fit the frame's width at its final framing (distance 7.8, fov 50); 1 on desktop.
       wall151.u.uScale.value = Math.min(1, (2 * Math.tan((25 * Math.PI) / 180) * 7.8 * cam.aspect * 0.92) / (17 * 0.42));
       wall151.u.uTime.value = ambient;
       wall151.u.uDim.value = 1 - 0.65 * ramp(t, tMew - 0.4, tMew + 0.8);
-      wallLight.intensity = 5.5 * ramp(t, t151 + 0.8, t151 + 4.4) * (1 - 0.6 * ramp(t, tMew - 0.4, tMew + 0.8));
+      wallLight.intensity = 9 * ramp(t, t151 + 0.8, t151 + 4.4) * (1 - 0.6 * ramp(t, tMew - 0.4, tMew + 0.8));
+      wallHalo.set("#ffb860", 0.22 * fill * (1 - 0.6 * ramp(t, tMew - 0.4, tMew + 0.8)));
+      if (wallUpRim > 0.01) people.forEach((p) => p.setRim("#ffc878", 0.6 + 1.4 * wallUpRim));
       wall151.mesh.visible = t > t151;
       // Mew floats out from behind the grid.
       const mk = ramp(t, tMew + 0.3, tMew + 1.8);
@@ -438,13 +445,14 @@ export const build: ChapterBuilder = async (ctx) => {
     },
     look: (t) =>
       lookAt(t, { ...STOCK.warm }, {
+        rays: [[t151 + 0.6, 0], [t151 + 2.5, 0.22], [tMew - 0.4, 0.22], [tMew + 0.6, 0]],
         exposure: [[0, 0.85], [t151, 0.9], [t151 + 3, 1.0], [end, 1.0]],
         gain: [[0, [0.86, 0.94, 1.12]], [tPika, [0.95, 0.97, 1.02]], [t151 + 2, [1.1, 1.0, 0.84]], [tMew + 1, [1.06, 0.96, 1.0]]],
         saturation: [[0, 0.75], [tPika, 0.9], [t151 + 2, 1.1]],
         bloom: [[0, 0.7], [tPika + 3, 0.9], [t151 + 0.5, 0.75], [t151 + 4, 0.6], [tMew, 0.8], [end, 0.85]],
         bloomThreshold: [[0, 0.72], [t151, 0.72], [t151 + 1, 0.92], [tMew, 0.92], [tMew + 1, 0.75]],
         grain: [[0, 0.08], [end, 0.06]],
-      }),
+      }, { pos: [0.4, 3.0, 0.4], color: [1.0, 0.78, 0.45] }),
     dispose() { D.dispose(); },
   };
 };
