@@ -71,10 +71,10 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
     { id: "battle", label: "Battle Ladder" },
   ];
   const tabRow = (
-    <div className="flex flex-wrap justify-center gap-2" data-testid="leaderboard-tabs">
+    <div className="flex flex-wrap justify-center gap-2 max-md:grid max-md:grid-cols-2" data-testid="leaderboard-tabs">
       {tabs.map((t) => (
-        <Link key={t.id} href={`/leaderboard?board=${t.id}`}>
-          <Badge variant={t.id === board ? "default" : "outline"} className="px-3 py-1 hover:bg-accent">
+        <Link key={t.id} href={`/leaderboard?board=${t.id}`} className="max-md:block">
+          <Badge variant={t.id === board ? "default" : "outline"} className="px-3 py-1 hover:bg-accent max-md:flex max-md:h-10 max-md:w-full max-md:justify-center max-md:text-[11px]">
             {t.label}
           </Badge>
         </Link>

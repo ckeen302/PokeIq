@@ -642,3 +642,11 @@ html.no-splash .boot-splash {
 html[data-dle-cb] .dle-match { background: #f5793a; color: #1f0d02; border-color: #f5793a; }
 html[data-dle-cb] .dle-partial { background: #85c0f9; color: #04213d; border-color: #85c0f9; }
 html[data-dle-cb] .dle-close { background: rgb(133 192 249 / 0.4); border-color: #85c0f9; }
+
+/* mobile-polish: phone-only rules (below md). Nothing here may change wider screens. */
+@media (max-width: 767.98px) {
+  /* A long placeholder ends in "…" instead of being cut mid-word. */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]) {
+    text-overflow: ellipsis;
+  }
+}

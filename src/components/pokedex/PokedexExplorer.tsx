@@ -11,6 +11,7 @@ import { typeColor } from "@/lib/pokemon/type-colors";
 import { boardArtUrl } from "@/lib/pokemon/art";
 import { TypeBadge } from "./TypeBadge";
 import { cn } from "@/lib/utils";
+import { usePlaceholder } from "@/lib/phone";
 
 export interface DexListItem {
   id: number;
@@ -69,6 +70,7 @@ function sortLabel(p: DexListItem, key: SortKey): string | null {
 }
 
 export function PokedexExplorer({ items }: { items: DexListItem[] }) {
+  const searchHint = usePlaceholder("Search name, number or category…  ( / )", "Name, number, category…");
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [types, setTypes] = useState<string[]>([]);
@@ -167,7 +169,7 @@ export function PokedexExplorer({ items }: { items: DexListItem[] }) {
               ref={searchRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search name, number or category…  ( / )"
+              placeholder={searchHint}
               aria-label="Search Pokémon"
               className="h-11 w-full rounded-md border border-input bg-shade/40 pl-9 pr-9 font-display text-sm tracking-wide focus-visible:border-screen/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
             />
@@ -223,6 +225,15 @@ export function PokedexExplorer({ items }: { items: DexListItem[] }) {
           >
             <Shuffle className="h-4 w-4" /> <span className="hidden sm:inline">Surprise me</span>
           </button>
+          {/* Phones: Study mode sits in the toolbar instead of floating over the cards. */}
+          <Link
+            href="/pokedex/study"
+            className="flex h-11 w-11 items-center justify-center rounded-md border border-primary/60 bg-primary/10 text-primary md:hidden"
+            aria-label="Study mode"
+            title="Study mode"
+          >
+            <BookOpenCheck className="h-5 w-5" />
+          </Link>
         </div>
 
         <div id="dex-filters" className={cn("space-y-3", !filtersOpen && "hidden md:block")}>
@@ -304,7 +315,7 @@ export function PokedexExplorer({ items }: { items: DexListItem[] }) {
 
       <Link
         href="/pokedex/study"
-        className="fixed bottom-24 right-4 z-40 flex items-center gap-2 rounded-md bg-primary px-4 py-3 font-display text-sm font-bold uppercase tracking-wider text-primary-foreground shadow-[0_4px_0_hsl(var(--primary-shadow)),0_10px_30px_-8px_hsl(var(--primary)/0.6)] transition active:translate-y-[2px] lg:bottom-8"
+        className="fixed bottom-24 right-4 z-40 flex items-center gap-2 max-md:hidden rounded-md bg-primary px-4 py-3 font-display text-sm font-bold uppercase tracking-wider text-primary-foreground shadow-[0_4px_0_hsl(var(--primary-shadow)),0_10px_30px_-8px_hsl(var(--primary)/0.6)] transition active:translate-y-[2px] lg:bottom-8"
       >
         <BookOpenCheck className="h-5 w-5" /> Study mode
       </Link>

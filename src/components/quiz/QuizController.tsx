@@ -20,6 +20,7 @@ import { CryPlayer, ImageMedia } from "./QuestionMedia";
 import { QuizResults } from "./QuizResults";
 import { GuessBox, TeamBoard, TrainerReveal } from "./WhoseTeam";
 import { cn } from "@/lib/utils";
+import { isPhone } from "@/lib/phone";
 import { preloadAssets, preloadImage, questionAssets } from "@/lib/preload";
 import { ZOOM_SKIP, ZOOM_STEPS } from "@/lib/zoom-reveal";
 import type { NameEntry } from "@/components/pokedle/parts";
@@ -400,6 +401,12 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [phase, question, isBlitz, submit, advance]);
 
+  // Phones: the first question takes the whole screen, so the run starts with the card at the top, not below the page's intro.
+  const firstActive = phase === "active" && question?.index === 0;
+  useEffect(() => {
+    if (firstActive && isPhone()) cardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [firstActive]);
+
   // ---- render -------------------------------------------------------------
   if (phase === "loading" || (phase === "preparing" && question?.index === 0)) return <LoadingCard />;
 
@@ -494,7 +501,7 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
     : "";
 
   return (
-    <Card ref={cardRef} className="mx-auto w-full max-w-2xl scroll-mt-24 overflow-hidden">
+    <Card ref={cardRef} className="mx-auto w-full max-w-2xl scroll-mt-24 overflow-hidden max-md:scroll-mt-[4.25rem]">
       {/* Announces each verdict (the visible text box is decorative typing). */}
       <p className="sr-only" aria-live="polite" role="status">
         {revealed ? verdict : ""}
