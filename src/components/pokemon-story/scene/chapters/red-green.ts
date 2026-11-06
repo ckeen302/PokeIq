@@ -426,7 +426,8 @@ export const build: ChapterBuilder = async (ctx) => {
   const arc = (k: number): Key => { const a = -0.8 + k * 1.6; return { t: tThree + 0.4 + k * 4.6, pos: [Math.sin(a) * 3.5, 1.32, 2 + Math.cos(a) * 3.5], look: [0, 1.5, 2], fov: 40 }; };
   // Shots: the push through the screen into the village (one move); cut in to the starters' arc; cut to
   // the rooftops for the rumour and the network; cut close on the Blue cartridge.
-  const cam = shots([
+  let aspect = 16 / 9;
+  const keyedCam = shots([
     [0, [
       { t: 0, pos: [0, 2.2, 26 + R * 1.6], look: [0, 2.2, 26], fov: 40 },
       { t: tLaunch + 0.6, pos: [0, 2.2, 26 + R * 0.9], look: [0, 2.2, 26], fov: 40 },
@@ -458,9 +459,16 @@ export const build: ChapterBuilder = async (ctx) => {
   return {
     scene,
     portalScale: 1.6,
-    camera: cam,
-    orbit: (t) => ({ target: cam(t).look, limits: { yaw0: 0, yawSpan: 1.1, minPitch: -0.05, maxPitch: 1.2, minDist: 1.5, maxDist: 60 } }),
+    camera: (t: number) => {
+      const p = keyedCam(t);
+      // The starters on a portrait screen: step back along the view so all three stay in frame.
+      if (t < tThree - 0.3 || t >= tMew - 0.1 || aspect >= 1) return p;
+      const k = 1 + Math.min(1, (1 - aspect) / 0.55) * 0.75;
+      return { ...p, pos: [p.look[0] + (p.pos[0] - p.look[0]) * k, p.look[1] + (p.pos[1] - p.look[1]) * k, p.look[2] + (p.pos[2] - p.look[2]) * k] as Vec3 };
+    },
+    orbit: (t) => ({ target: keyedCam(t).look, limits: { yaw0: 0, yawSpan: 1.1, minPitch: -0.05, maxPitch: 1.2, minDist: 1.5, maxDist: 60 } }),
     update(t, ambient, cam, viewH) {
+      aspect = cam.aspect;
       const lab = t > tThree - 0.4 && t < tMew + 1;
       labSh.enable(lab);
       // For the lab beat the key swings round to the side (still low and warm), so long shadows stretch across the cloth.

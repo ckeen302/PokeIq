@@ -365,7 +365,7 @@ export const build: ChapterBuilder = async (ctx) => {
     // The near side of the wire (toward the viewer's usual side of the table, +z).
     let nx = -ch.z, nz = ch.x;
     if (nz < 0) { nx = -nx; nz = -nz; }
-    return { pos: [cp.x + nx * 1.45 - ch.x * 0.2, 1.05, cp.z + nz * 1.45 - ch.z * 0.2], look: [cp.x + ch.x * 0.15, 0.26, cp.z + ch.z * 0.15], fov: 38 };
+    return { pos: [cp.x + nx * 1.25 - ch.x * 0.2, 1.3, cp.z + nz * 1.25 - ch.z * 0.2], look: [cp.x + ch.x * 0.2, 0.26, cp.z + ch.z * 0.2], fov: 38 };
   };
 
   const pt = new THREE.Vector3(), tan = new THREE.Vector3();
