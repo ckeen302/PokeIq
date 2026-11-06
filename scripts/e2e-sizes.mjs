@@ -128,6 +128,14 @@ export async function runSizes({ browser, BASE, OUT, errors, step }) {
     if (Number(await attr("count")) < 1026) errors.push(`sizes: the full line has ${await attr("count")} figures`);
     if (await page.locator('[data-testid="sizes-list"] #size-ref-phone').count()) errors.push("sizes: the phone stands in the full line");
     await page.screenshot({ path: `${OUT}/sizes-play.png` });
+    // Play's speed button steps 1× → 2× → 4× → 1×.
+    const speed = page.getByTestId("sizes-speed");
+    if (!(await speed.count())) errors.push("sizes: no speed button while playing");
+    else {
+      const seen = [];
+      for (let k = 0; k < 3; k++) { seen.push((await speed.innerText()).trim()); await press(page, "sizes-speed"); }
+      if (seen.join(",") !== "1×,2×,4×" || (await speed.innerText()).trim() !== "1×") errors.push(`sizes: the speed button stepped ${seen.join(" → ")}`);
+    }
     await press(page, "sizes-play");
     await stageIs("kind", "explore").catch(() => errors.push("sizes: Stop didn't stop the glide"));
   });

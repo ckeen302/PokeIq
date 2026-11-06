@@ -145,7 +145,22 @@ export interface GlideState {
 }
 
 /** Accelerates from rest and settles to rest (zero speed at both ends). */
-const ease = (f: number) => f - Math.sin(2 * Math.PI * f) / (2 * Math.PI);
+/**
+ * A leg's progress at fraction f of its time: a short ramp up from rest, a steady cruise, a short ramp down to rest.
+ * The ramps take `ramp` of the leg at each end (at most 30%), so the camera never races through the middle of a
+ * long leg the way a whole-leg ease does (twice the average speed at its middle).
+ */
+export function cruise(f: number, ramp: number): number {
+  const r = Math.min(0.3, Math.max(1e-6, ramp));
+  const v = 1 / (1 - r);
+  if (f <= 0) return 0;
+  if (f >= 1) return 1;
+  if (f < r) return (v * f * f) / (2 * r);
+  if (f > 1 - r) return 1 - (v * (1 - f) * (1 - f)) / (2 * r);
+  return v * (f - r / 2);
+}
+/** Seconds the camera takes to reach its cruising speed, or to come to rest. */
+const RAMP_SECONDS = 1.2;
 const smooth = (f: number) => f * f * (3 - 2 * f);
 
 /** Plans a glide over a line of placed figures (small to large). */
@@ -153,9 +168,12 @@ export function buildGlide(placed: Placed[], fr: Framer, lens: Lens, opts: Glide
   const n = placed.length;
   const duration = Math.max(1, opts.duration);
   const intro = Math.min(opts.intro ?? 0.8, duration * 0.12);
-  // Pace: one unit per figure passed, and enough per doubling in size that growth gets its share of the time.
-  const range = n > 1 ? Math.max(0.5, Math.max(...fr.logD) - Math.min(...fr.logD)) : 1;
-  const K = Math.max(6, (n - 1) / range);
+  // Pace: one unit per figure passed, plus some per doubling in size so the camera has time to pull back as they grow.
+  // Growth gets about a fifth of the time on a long line: the crowds of similar-sized Pokémon get the rest, figure by figure.
+  // (Measured on the framing's total up-and-down change, which a crowd's small wobbles add to, not just its overall range.)
+  let swing = 0;
+  for (let i = 1; i < n; i++) swing += Math.abs(fr.logD[i] - fr.logD[i - 1]);
+  const K = Math.max(6, (0.25 * (n - 1)) / Math.max(0.5, swing));
   const cum = [0];
   for (let i = 1; i < n; i++) cum.push(cum[i - 1] + 1 + K * Math.abs(fr.logD[i] - fr.logD[i - 1]));
   const last = n - 1;
@@ -228,7 +246,7 @@ export function glideAt(plan: GlidePlan, t: number): GlideState {
   }
   for (const leg of plan.legs) {
     if (tt >= leg.t0 && tt < leg.t1) {
-      const f = ease((tt - leg.t0) / (leg.t1 - leg.t0));
+      const f = cruise((tt - leg.t0) / (leg.t1 - leg.t0), RAMP_SECONDS / (leg.t1 - leg.t0));
       const p = atWeight(plan, leg.a + (leg.b - leg.a) * f);
       return { x: p.x, d: Math.exp(p.logD), holding: null, finale: false, done };
     }
@@ -238,7 +256,10 @@ export function glideAt(plan: GlidePlan, t: number): GlideState {
   return { x: p.x, d: Math.exp(p.logD), holding: null, finale: false, done };
 }
 
-/** A comfortable length for the live glide over n figures with k pauses. */
+/** Seconds of the live glide per figure: long enough that every Pokémon in the line is actually seen. */
+export const SECONDS_PER_FIGURE = 0.3;
+
+/** A comfortable length for the live glide over n figures with k pauses (the speed button plays it 2× or 4×). */
 export function naturalDuration(n: number, stops: number): number {
-  return Math.round(Math.min(80, Math.max(14, 10 + 0.045 * n + 2 * stops)));
+  return Math.round(Math.min(900, Math.max(14, 6 + SECONDS_PER_FIGURE * n + 2 * stops)));
 }
