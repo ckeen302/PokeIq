@@ -230,7 +230,7 @@ export function makeArena(o: { inner: number; outer: number; height: number; squ
         float wall = step(uOuter - 0.02, rad) * (1.0 - canopy);
         float slot = step(0.9, fract(ang * 36.0 / 6.2832)) * step(0.3, y) * step(y, uH * 0.3);
         col = mix(col, vec3(0.06, 0.06, 0.07) * (0.3 + 0.4 * uLit) + vec3(1.0, 0.8, 0.55) * slot * (0.12 + 0.3 * uLit), wall);
-        col += under * vec3(0.9, 0.95, 1.0) * uLit * 0.7 * step(0.7, fract(ang * 18.0)) * smoothstep(0.0, 0.6, abs(rad - (uR1 + (uH - uH1)) ));
+        col += under * vec3(0.9, 0.95, 1.0) * uLit * 0.35 * step(0.7, fract(ang * 18.0)) * smoothstep(0.0, 0.6, abs(rad - (uR1 + (uH - uH1)) ));
         gl_FragColor = vec4(col, 1.0);
       }`,
   });

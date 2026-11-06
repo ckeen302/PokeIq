@@ -230,7 +230,7 @@ export function StoryText({ focus }: { focus?: Chapter }) {
           People appear only as silhouettes and the things they used. No real photographs, screenshots, logos or box art are shown: every scene is built in 3D for this film.
         </p>
         <p data-testid="ps-music-credits">
-          Music: “Sunrise” by sudocolon, “Happy Adventure” by TinyWorlds, “Happy Clappy Loop” by OwlishMedia and “A Legend Will Rise” by codemanu, CC0 on OpenGameArt.org (<a href="/audio/pokemon-story/CREDITS.md" className="underline underline-offset-2 hover:text-foreground">credits</a>). The Pokémon figures are built from Pokémon HOME renders served by PokéAPI.
+          Music: an original score written for this film, one theme arranged six ways, played with the MuseScore General sound font (MIT; its strings from VSCO 2 Community Edition, CC0). The ambience and effects are made in the browser (<a href="/audio/pokemon-story/CREDITS.md" className="underline underline-offset-2 hover:text-foreground">credits</a>). The Pokémon figures are built from Pokémon HOME renders served by PokéAPI.
         </p>
         <p>Pokémon © Nintendo / Creatures / GAME FREAK. A fan project, not affiliated with them.</p>
       </footer>

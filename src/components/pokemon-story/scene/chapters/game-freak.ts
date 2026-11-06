@@ -1,11 +1,11 @@
 import * as THREE from "three";
-import { poseOnPath, type Key } from "@/lib/world-history/camera";
-import { col, makeGlow, makeParticles, merge, placed, ramp, rng } from "@/components/world-history/scene/kit";
+import { col, makeGlow, makeParticles, makeShaft, merge, placed, ramp, rng } from "@/components/world-history/scene/kit";
+import { castShadows, keyShadow, receiveShadows } from "@/components/world-history/scene/light";
 import { makeCanvasPanel } from "@/components/world-history/scene/props";
 import { lights, lookAt, pointPixel } from "@/components/world-history/scene/chapters/common";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
 import { drawCritter, makeSilhouette, makeWords } from "../story-kit";
-import { bag, STOCK } from "./base";
+import { bag, shots, STOCK } from "./base";
 
 /**
  * II. Game Freak. A neon arcade at night, cabinets of little pixel invaders
@@ -161,7 +161,8 @@ export const build: ChapterBuilder = async (ctx) => {
   const lampGlow = D.add(makeGlow({ pos: bulbAt, size: 0.42, color: "#ffd9a0", intensity: 0 }));
   scene.add(lampGlow.sprite);
   // The room: a plaster back wall lit by the lamp, a night window over Tokyo, a shelf of back issues.
-  const plaster = new THREE.MeshStandardMaterial({ color: col("#7a6450"), roughness: 0.95 });
+  // Cool night plaster: only the lamp's pool is warm, the window's moonlight rims everything else in blue.
+  const plaster = new THREE.MeshStandardMaterial({ color: col("#3e4658"), roughness: 0.95 });
   const backZ = deskZ - 3.42;
   const room = new THREE.Mesh(merge([
     placed(new THREE.PlaneGeometry(3.6, 3.9), [-2.75, 1.95, backZ]),
@@ -281,10 +282,25 @@ export const build: ChapterBuilder = async (ctx) => {
   const leaf = makeCanvasPanel({ w: 1, h: 1, px: [128, 176], basic: false, emissive: 0.18, draw(g, w, h) { g.fillStyle = "#e6dcc2"; g.fillRect(0, 0, w, h); g.fillStyle = "rgba(30,20,10,0.6)"; for (let y = 22; y < h - 10; y += 12) g.fillRect(12, y, 40 + ((y * 37) % 60), 3); } });
   const leafMat = leaf.mat.clone() as THREE.MeshStandardMaterial;
   leafMat.side = THREE.DoubleSide;
+  // Lit, not self-lit: the warm light inside the vortex and the window's blue shape every page.
+  leafMat.emissiveIntensity = 0.03;
   D.add({ dispose: () => { leaf.dispose(); leafMat.dispose(); pageGeo.dispose(); } });
   const swirl = new THREE.InstancedMesh(pageGeo, leafMat, N);
   swirl.frustumCulled = false;
   scene.add(swirl);
+  // The lamp's cone through the dust, and the pages' shadows on the desk and the wall (the key turns into the lamp's light at the desk).
+  // A warm light at the heart of the vortex: the pages glow on their inner faces, moonlit blue outside.
+  const vortexLight = new THREE.PointLight(col("#ffb860"), 0, 3.2, 1.4);
+  scene.add(vortexLight);
+  const vortexGlow = D.add(makeGlow({ pos: [0, 1.5, deskZ], size: 1.6, color: "#ffc880", intensity: 0 }));
+  scene.add(vortexGlow.sprite);
+  const vortexDust = D.add(makeParticles({ count: Math.round(260 * ctx.q.particles) + 40, shape: "sphere", center: [0, 1.5, deskZ], extent: [0.8, 0.6, 0.8], velocity: [0, 0.1, 0], spread: [0.1, 0.1, 0.1], life: 2, size: [0.006, 0.016], colors: ["#fff4d8", "#ffd890", "#ffb860"], intensity: 1.2, turbulence: 0.6, swirl: 1.2 }));
+  scene.add(vortexDust.points);
+  const cone = D.add(makeShaft({ from: bulbAt, to: [0.05, 1.02, deskZ + 0.15], r0: 0.07, r1: 0.95, color: "#ffcf8a", intensity: 0.22, noise: 0.5 }));
+  scene.add(cone.mesh);
+  const deskSh = keyShadow(ctx.q, L.key, { radius: 3.4, center: [0, 1.3, deskZ] });
+  receiveShadows(desk, room, deskTop);
+  castShadows(swirl, lampMesh, writer.mesh, artist.mesh);
   const pr = rng(4);
   const seeds = Array.from({ length: N }, () => [pr(), pr(), pr(), pr()]);
   const fwd = new THREE.Vector3();
@@ -309,23 +325,36 @@ export const build: ChapterBuilder = async (ctx) => {
   sign.mesh.position.set(0.95, 2.35, 0.06);
   doorPivot.add(sign.mesh);
 
-  const keys: Key[] = [
-    { t: 0, pos: [0, 1.7, 26], look: [0, 1.6, 14], fov: 46 },
-    { t: tArc + 3, pos: [0.3, 1.65, 18], look: [-0.2, 1.5, 8], fov: 44 },
-    { t: tZine - 0.3, pos: [0, 2.0, 6], look: [0, 1.2, deskZ], fov: 42 },
-    { t: tZine + 3, pos: [-0.3, 2.3, deskZ + 1.6], look: [0, 1.06, deskZ + 0.1], fov: 38 },
-    { t: tSugi + 3.5, pos: [0.8, 2.25, deskZ + 1.4], look: [0.6, 1.06, deskZ + 0.1], fov: 36 },
-    { t: tPages, pos: [0, 2.0, deskZ + 2.6], look: [0, 1.4, deskZ], fov: 44 },
-    { t: tPages + 4.5, pos: [0.2, 1.8, deskZ + 2.1], look: [0, 1.6, deskZ - 1], fov: 48 },
-    { t: tStudio + 1, pos: [0, 2.05, deskZ + 0.6], look: [0.2, 1.95, doorZ], fov: 44 },
-    { t: end, pos: [0, 1.6, doorZ + 0.9], look: [0, 1.5, doorZ - 1], fov: 52 },
-  ];
+  // Shots: down the arcade aisle; cut to the desk; the vortex of pages; a hard cut to the door as the sign forms.
+  const cam = shots([
+    [0, [
+      { t: 0, pos: [0, 1.7, 26], look: [0, 1.6, 14], fov: 46 },
+      { t: tArc + 3, pos: [0.3, 1.65, 18], look: [-0.2, 1.5, 8], fov: 44 },
+      { t: tZine - 0.3, pos: [0.15, 1.62, 13.5], look: [-0.1, 1.5, 4], fov: 44 },
+    ]],
+    [tZine - 0.3, [
+      { t: tZine - 0.3, pos: [-0.7, 2.45, deskZ + 2.3], look: [0, 1.06, deskZ + 0.1], fov: 40 },
+      { t: tZine + 3, pos: [-0.3, 2.3, deskZ + 1.6], look: [0, 1.06, deskZ + 0.1], fov: 38 },
+      { t: tSugi + 3.5, pos: [0.8, 2.25, deskZ + 1.4], look: [0.6, 1.06, deskZ + 0.1], fov: 36 },
+      { t: tPages - 0.25, pos: [0.85, 2.2, deskZ + 1.5], look: [0.5, 1.1, deskZ], fov: 37 },
+    ]],
+    [tPages - 0.25, [
+      { t: tPages - 0.25, pos: [0, 1.95, deskZ + 2.9], look: [0, 1.4, deskZ], fov: 44 },
+      { t: tPages + 4.5, pos: [0.2, 1.8, deskZ + 2.1], look: [0, 1.6, deskZ - 1], fov: 48 },
+      { t: tStudio + 0.6, pos: [0.15, 1.85, deskZ + 1.7], look: [0.1, 1.75, deskZ - 1.4], fov: 48 },
+    ]],
+    [tStudio + 0.6, [
+      { t: tStudio + 0.6, pos: [0.05, 2.0, deskZ + 0.9], look: [0.2, 1.95, doorZ], fov: 40 },
+      { t: tStudio + 1.6, pos: [0, 2.0, deskZ + 0.5], look: [0.2, 1.93, doorZ], fov: 43 },
+      { t: end, pos: [0, 1.6, doorZ + 0.9], look: [0, 1.5, doorZ - 1], fov: 52 },
+    ]],
+  ]);
 
   return {
     scene,
     portalScale: 1.2,
-    camera: (t) => poseOnPath(keys, t),
-    orbit: (t) => ({ target: poseOnPath(keys, t).look, limits: { yaw0: 0, yawSpan: 0.9, minPitch: -0.1, maxPitch: 1.0, minDist: 0.8, maxDist: 20 } }),
+    camera: cam,
+    orbit: (t) => ({ target: cam(t).look, limits: { yaw0: 0, yawSpan: 0.9, minPitch: -0.1, maxPitch: 1.0, minDist: 0.8, maxDist: 20 } }),
     update(t, ambient, cam, viewH) {
       const px = pointPixel(viewH, cam);
       const deskOn = ramp(t, tZine - 1.6, tZine + 0.6);
@@ -337,8 +366,20 @@ export const build: ChapterBuilder = async (ctx) => {
       haze.u.uTime.value = ambient;
       haze.u.uPixel.value = px;
       haze.u.uOpacity.value = 1 - deskOn * 0.6;
-      L.key.intensity = 1.1 * (1 - deskOn);
-      if (L.rim) L.rim.intensity = 0.9 * (1 - deskOn);
+      // At the desk the key becomes the lamp's light from above (it casts the pages' shadows), the rim the window's moonlight.
+      L.key.intensity = 1.1 * (1 - deskOn) + 1.1 * deskOn;
+      L.key.color.copy(col("#ff5ad0").lerp(col("#ffc880"), deskOn));
+      if (deskOn > 0.5) { L.key.position.set(1.2, 3.6, deskZ + 0.8); L.key.target.position.set(0, 1.0, deskZ); } else { L.key.position.set(0, 6, 10); L.key.target.position.set(0, 0, 0); }
+      L.key.target.updateMatrixWorld();
+      deskSh.enable(deskOn > 0.5);
+      deskSh.follow([0, 1.3, deskZ]);
+      if (L.rim) {
+        L.rim.intensity = 0.9 * (1 - deskOn) + 1.5 * deskOn;
+        L.rim.color.copy(col("#3ff0ff").lerp(col("#6a90ff"), deskOn));
+        if (deskOn > 0.5) { L.rim.position.set(-3.5, 3.2, backZ - 2); L.rim.target.position.set(0, 1.4, deskZ + 0.6); } else { L.rim.position.set(0, 3, 30); L.rim.target.position.set(0, 0, 0); }
+        L.rim.target.updateMatrixWorld();
+      }
+      cone.u.uOpacity.value = deskOn * (t < tStudio + 1 ? 1 : 0); cone.u.uTime.value = ambient;
       L.hemi.intensity = 0.7 - deskOn * 0.4;
       lamp.intensity = 2.7 * deskOn;
       lampGlow.set("#ffd9a0", 2.2 * deskOn);
@@ -351,9 +392,9 @@ export const build: ChapterBuilder = async (ctx) => {
       const join = ramp(t, tSugi - 0.4, tSugi + 1.2);
       artist.mesh.position.set(0.55 + (1 - join) * 2.4, 0.34, deskZ - 0.9);
       artist.mesh.visible = join > 0.01;
-      writer.setRim("#ffcf8a", 0.35);
-      artist.setRim("#ffcf8a", 0.35);
-      wash.intensity = 16 * deskOn;
+      writer.setRim("#ffcf8a", 0.6);
+      artist.setRim("#ffcf8a", 0.6);
+      wash.intensity = 7 * deskOn;
       winMat.color.copy(col("#ffffff", 1.1 * deskOn + 0.05));
       // The pages: off the stack, a swirl at the camera, then into the sign.
       const lift = ramp(t, tPages - 0.2, tPages + 1.2);
@@ -385,6 +426,13 @@ export const build: ChapterBuilder = async (ctx) => {
         swirl.setMatrixAt(i, m4);
       }
       swirl.instanceMatrix.needsUpdate = true;
+      const vk = lift * (1 - settle);
+      const vc = S0.clone().lerp(C, 0.45);
+      vortexLight.position.copy(vc);
+      vortexLight.intensity = 2.6 * vk;
+      vortexGlow.sprite.position.copy(vc);
+      vortexGlow.set("#ffc880", 0.1 * vk);
+      vortexDust.u.uCenter.value.copy(vc); vortexDust.u.uTime.value = ambient; vortexDust.u.uPixel.value = px; vortexDust.u.uOpacity.value = vk;
       swirl.visible = lift > 0.001 && settle < 0.999;
       // The pen follows the ink line's end.
       const [pcx, pcy] = inkPt(Math.max(0.001, ik));
@@ -400,7 +448,7 @@ export const build: ChapterBuilder = async (ctx) => {
         exposure: [[0, 0.9], [tZine, 0.85], [tStudio + 2, 0.9], [end, 1.5]],
         chroma: [[0, 0.5], [tZine - 0.5, 0.4], [tZine + 1, 0.05]],
         bloom: [[0, 1.0], [tZine + 1, 0.6], [tPages + 1, 0.8], [tStudio + 1, 0.7], [end, 1.4]],
-        gain: [[0, [1.02, 0.95, 1.05]], [tZine + 1, [1.12, 1.0, 0.82]]],
+        gain: [[0, [1.02, 0.95, 1.05]], [tZine + 1, [1.06, 1.0, 0.92]]],
         flash: [[end - 1.4, 0], [end, 0.85]],
         grain: [[0, 0.06], [end, 0.05]],
       }),

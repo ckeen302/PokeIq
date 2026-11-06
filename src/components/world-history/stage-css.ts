@@ -41,5 +41,27 @@ html.wh-locked, html.wh-locked body { overflow: hidden; overscroll-behavior: non
 .wh-load-ring{width:46px;height:46px;border-radius:999px;border:2px solid rgb(242 201 107 / .2);border-top-color:#f2c96b;animation:wh-spin 1s linear infinite}
 @keyframes wh-spin{to{transform:rotate(360deg)}}
 .wh-sheet{background:rgb(10 8 22 / .94);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
-@media (prefers-reduced-motion: reduce){.wh-hint,.wh-load-ring{animation:none!important}}
+/* Motion typography (opt-in classes). Title cards: the kicker tracks in, a hairline draws out, words rise out of a mask one by one, then a light sweeps across. */
+.wh-tk{animation:wh-track 1.4s cubic-bezier(.2,.8,.2,1) both}
+@keyframes wh-track{from{letter-spacing:.95em;opacity:0;filter:blur(3px)}to{letter-spacing:.38em;opacity:1;filter:blur(0)}}
+.wh-rule{display:block;height:1px;width:min(16rem,50vw);margin:.7rem auto 0;background:linear-gradient(90deg,transparent,var(--wh-accent,#f2c96b),transparent);transform-origin:center;animation:wh-rule 1.1s .25s cubic-bezier(.2,.8,.2,1) both}
+@keyframes wh-rule{from{transform:scaleX(0);opacity:0}to{transform:scaleX(1);opacity:.9}}
+.wh-words{position:relative;display:inline-block}
+.wh-w{display:inline-block;overflow:hidden;vertical-align:bottom;padding:0 .02em .12em;margin-bottom:-.12em}
+.wh-w > span{display:inline-block;animation:wh-rise 1.05s cubic-bezier(.16,.9,.24,1) both;animation-delay:calc(.35s + var(--i,0) * 90ms)}
+@keyframes wh-rise{from{transform:translateY(105%) rotate(2deg);opacity:0}60%{opacity:1}to{transform:none;opacity:1}}
+.wh-sweep{position:absolute;inset:0;pointer-events:none;color:transparent;text-shadow:none;background:linear-gradient(105deg,transparent 0 40%,rgb(255 248 225 / .95) 48%,rgb(255 230 170 / .7) 52%,transparent 60% 100%);background-size:250% 100%;background-position:120% 0;-webkit-background-clip:text;background-clip:text;animation:wh-sweep 1.6s 1.05s cubic-bezier(.4,0,.2,1) both}
+@keyframes wh-sweep{from{background-position:120% 0}to{background-position:-30% 0}}
+.wh-when{animation:wh-fadeup .9s .85s cubic-bezier(.2,.8,.2,1) both}
+@keyframes wh-fadeup{from{opacity:0;transform:translateY(.5em);filter:blur(4px)}to{opacity:1;transform:none;filter:blur(0)}}
+/* Lower thirds: a hairline in the chapter's colour grows beside the caption; the line wipes in left to right. */
+.wh-lower{position:relative}
+.wh-lower::before{content:"";position:absolute;left:-.9rem;top:.2rem;bottom:.2rem;width:2px;border-radius:2px;background:linear-gradient(180deg,var(--wh-accent,#f2c96b),transparent);transform-origin:top;animation:wh-grow .7s .1s cubic-bezier(.2,.8,.2,1) both}
+@keyframes wh-grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.wh-wipe{animation:wh-wipe .9s .05s cubic-bezier(.3,.7,.2,1) both}
+@keyframes wh-wipe{from{clip-path:inset(-20% 100% -20% 0)}to{clip-path:inset(-20% -2% -20% 0)}}
+.wh-lead-in{animation:wh-track-s .8s cubic-bezier(.2,.8,.2,1) both}
+@keyframes wh-track-s{from{letter-spacing:.42em;opacity:0}to{letter-spacing:.14em;opacity:1}}
+@media (max-width:639px){.wh-lower::before{left:-.55rem}}
+@media (prefers-reduced-motion: reduce){.wh-hint,.wh-load-ring,.wh-tk,.wh-rule,.wh-w > span,.wh-sweep,.wh-when,.wh-lower::before,.wh-wipe,.wh-lead-in{animation:none!important}.wh-sweep{display:none}}
 `;

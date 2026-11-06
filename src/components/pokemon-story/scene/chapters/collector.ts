@@ -1,11 +1,11 @@
 import * as THREE from "three";
 import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
-import { col, makeGlow, makeParticles, makeShaft, makeSky, makeTerrain, merge, noise2, placed, ramp, rng, stoneMaterial } from "@/components/world-history/scene/kit";
+import { col, makeGlow, makeParticles, makeShaft, makeSky, makeTerrain, merge, noise2, placed, ramp, rng, stoneMaterial, makeSunburst } from "@/components/world-history/scene/kit";
 import { makeCity } from "@/components/world-history/scene/props";
 import { figureStyle, lights, loadFigures, lookAt, pointPixel } from "@/components/world-history/scene/chapters/common";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
 import { glassMaterial, makeFireflies, makeFirefly, makeGrass, makeSilhouette } from "../story-kit";
-import { bag, STOCK } from "./base";
+import { bag, shots, STOCK } from "./base";
 
 /**
  * I. The Collector. Machida in the 1970s at golden hour: knee-high grass in
@@ -172,12 +172,20 @@ export const build: ChapterBuilder = async (ctx) => {
   jar.add(jarBody, lid, rimLight);
   scene.add(jar);
   D.add({ dispose: () => { jarBody.geometry.dispose(); lid.geometry.dispose(); rimLight.geometry.dispose(); glass.dispose(); (lid.material as THREE.Material).dispose(); (rimLight.material as THREE.Material).dispose(); } });
-  const inJar = D.add(makeParticles({ count: 34, shape: "box", center: [jarAt[0], jarAt[1] + 0.4, jarAt[2]], extent: [0.2, 0.26, 0.2], velocity: [0, 0.015, 0], spread: [0.03, 0.02, 0.03], life: 9, size: [0.035, 0.07], colors: ["#e6ff8a", "#f6ffb0", "#ffe27a"], intensity: 4.2, turbulence: 0.1, flicker: 0.35, fadeIn: 0.08, fadeOut: 0.08, seed: 9 }));
+  const inJar = D.add(makeParticles({ count: 56, shape: "box", center: [jarAt[0], jarAt[1] + 0.4, jarAt[2]], extent: [0.2, 0.26, 0.2], velocity: [0, 0.015, 0], spread: [0.03, 0.02, 0.03], life: 9, size: [0.035, 0.07], colors: ["#e6ff8a", "#f6ffb0", "#ffe27a"], intensity: 4.2, turbulence: 0.1, flicker: 0.35, fadeIn: 0.08, fadeOut: 0.08, seed: 9 }));
   inJar.u.uTurb.value = 0.08;
   inJar.u.uVel.value.set(0, 0.004, 0);
   scene.add(inJar.points);
   const jarGlow = D.add(makeGlow({ pos: [jarAt[0], jarAt[1] + 0.4, jarAt[2]], size: 0.9, color: "#e8ff9a", intensity: 0 }));
   scene.add(jarGlow.sprite);
+  // The sun going down just past the jar's shoulder: rays breaking out through the gap in the trees.
+  const sunRays = D.add(makeSunburst({ size: 30, color: "#ff9a40", core: "#ffe0a0", intensity: 0.6, rays: 14, coreK: 0.6, seed: 2 }));
+  sunRays.mesh.position.set(4.2, 1.9, -24);
+  scene.add(sunRays.mesh);
+  // The jar's own light on the post and the grass round it.
+  const jarLight = new THREE.PointLight(col("#e8ff9a"), 0, 3, 1.6);
+  jarLight.position.set(jarAt[0], jarAt[1] + 0.45, jarAt[2] + 0.2);
+  scene.add(jarLight);
   // Out-of-focus fireflies between the lens and the jar (the slow-motion bokeh).
   const bokeh = [[-0.55, 1.75, 10.4, 0.28], [0.75, 1.05, 10.1, 0.22], [-0.25, 0.75, 10.9, 0.34], [0.95, 1.95, 9.6, 0.18], [-1.1, 1.3, 9.2, 0.2]].map(([x, y, z, s]) => { const g = D.add(makeGlow({ pos: [x, y, z], size: s, color: "#e6ff8a", intensity: 0 })); scene.add(g.sprite); return g; });
 
@@ -219,19 +227,33 @@ export const build: ChapterBuilder = async (ctx) => {
   const skyGrey = { top: col("#2a2d36"), hor: col("#6c6460"), bot: col("#18171a") };
   const skyNight = { top: col("#0b1024"), hor: col("#3a2a2a"), bot: col("#0a0808") };
 
-  const keys: Key[] = [
-    { t: 0, pos: [-12, 1.05, 16], look: [-5, 0.9, 4], fov: 46 },
-    { t: tFields + 2, pos: [-7, 1.0, 12], look: [-2, 1.0, 0], fov: 44 },
-    { t: tBug, pos: [-3, 1.0, 10.5], look: [0, 0.9, 2], fov: 42 },
-    { t: tLearn - 0.4, pos: [0.5, 1.4, 9.5], look: [2, 0.4, 5], fov: 40 },
-    { t: tLearn + 3, pos: [2.9, 0.75, 7.0], look: [2.1, 0.2, 5], fov: 34 },
-    { t: tJar - 0.2, pos: [1.3, 1.6, 11.6], look: [0, 1.25, 8.8], fov: 36 },
-    { t: tJar + 4.5, pos: [0.55, 1.4, 10.6], look: [0, 1.3, 9], fov: 30 },
-    { t: tPaved + 0.5, pos: [0, 3, 16], look: [0, 2, 4], fov: 44 },
-    { t: tKept - 0.4, pos: [0, 12, 30], look: [0, 4, -2], fov: 48 },
-    { t: tKept + 1.5, pos: [0.4, 2.0, 15], look: [0.2, 1.8, 9], fov: 40 },
-    { t: end, pos: [0.3, 1.7, 12.6], look: [0.3, 1.55, 10], fov: 36 },
-  ];
+  // Four shots with real cuts: the field at knee height, a close low angle on the rock, the jar,
+  // and a wide as the city rises (the old single glide is split where the story turns).
+  const cam = shots([
+    [0, [
+      { t: 0, pos: [-12, 1.05, 16], look: [-5, 0.9, 4], fov: 46 },
+      { t: tFields + 2, pos: [-7, 1.0, 12], look: [-2, 1.0, 0], fov: 44 },
+      { t: tBug, pos: [-3, 1.0, 10.5], look: [0, 0.9, 2], fov: 42 },
+      { t: tLearn - 0.4, pos: [-1.2, 1.15, 9.8], look: [1, 0.8, 3], fov: 41 },
+    ]],
+    [tLearn - 0.4, [
+      { t: tLearn - 0.4, pos: [3.7, 0.5, 6.3], look: [2.1, 0.25, 5], fov: 30 },
+      { t: tLearn + 3, pos: [2.9, 0.68, 7.0], look: [2.1, 0.2, 5], fov: 32, stop: true },
+      { t: tJar - 0.2, pos: [2.6, 0.85, 7.5], look: [1.7, 0.35, 5.5], fov: 34 },
+    ]],
+    [tJar - 0.2, [
+      // Low in the grass, looking up a little: the jar against the sunset, the sun just past its shoulder.
+      { t: tJar - 0.2, pos: [1.0, 1.0, 11.5], look: [0.15, 1.3, 8.6], fov: 36 },
+      { t: tJar + 4.5, pos: [0.42, 0.98, 10.55], look: [0.08, 1.28, 9], fov: 31, stop: true },
+      { t: tPaved + 0.5, pos: [0.45, 1.42, 10.9], look: [0, 1.32, 9], fov: 30 },
+    ]],
+    [tPaved + 0.5, [
+      { t: tPaved + 0.5, pos: [0, 3, 16], look: [0, 2, 4], fov: 44 },
+      { t: tKept - 0.4, pos: [0, 12, 30], look: [0, 4, -2], fov: 48 },
+      { t: tKept + 1.5, pos: [0.4, 2.0, 15], look: [0.2, 1.8, 9], fov: 40 },
+      { t: end, pos: [0.3, 1.7, 12.6], look: [0.3, 1.55, 10], fov: 36 },
+    ]],
+  ]);
   const lastPath: Key[] = [
     { t: tKept - 0.5, pos: [6, 5, 0], look: [0, 0, 0], fov: 1 },
     { t: tKept + 2, pos: [1.5, 2.6, 7], look: [0, 0, 0], fov: 1 },
@@ -242,9 +264,9 @@ export const build: ChapterBuilder = async (ctx) => {
   return {
     scene,
     portalScale: 1.4,
-    camera: (t) => poseOnPath(keys, t),
+    camera: cam,
     orbit: (t) => {
-      const p = poseOnPath(keys, t);
+      const p = cam(t);
       return { target: p.look, limits: { yaw0: 0, yawSpan: 1.0, minPitch: -0.05, maxPitch: 1.1, minDist: 1.2, maxDist: 40 } };
     },
     update(t, ambient, cam, viewH) {
@@ -258,12 +280,17 @@ export const build: ChapterBuilder = async (ctx) => {
       const top = skyDay.top.clone().lerp(skyNight.top, dusk * 0.6).lerp(skyGrey.top, paved * 0.8).lerp(skyNight.top, night);
       const hor = skyDay.hor.clone().lerp(col("#ff8a4a"), dusk * 0.7).lerp(skyGrey.hor, paved).lerp(skyNight.hor, night);
       const bot = skyDay.bot.clone().lerp(skyGrey.bot, paved).lerp(skyNight.bot, night);
+      // Round the jar: a deeper sky overhead and clearer air, so the sunset band glows and the trees stand black.
+      const jarK = ramp(t, tJar - 1.2, tJar) * (1 - ramp(t, tPaved - 0.5, tPaved + 1));
+      top.lerp(col("#141838"), 0.6 * jarK);
+      hor.lerp(col("#c8522a"), 0.55 * jarK);
       sky.u.uTop.value.copy(top);
       sky.u.uHorizon.value.copy(hor);
       sky.u.uBottom.value.copy(bot);
-      sky.u.uSunGlow.value = 0.55 * (1 - paved * 0.85);
+      sky.u.uSunGlow.value = 0.55 * (1 - paved * 0.85) * (1 - 0.45 * jarK);
       sky.u.uSunDir.value.set(0.15, 0.06 - dusk * 0.05, -1).normalize();
-      (scene.fog as THREE.FogExp2).color.copy(hor.clone().multiplyScalar(0.45));
+      (scene.fog as THREE.FogExp2).color.copy(hor.clone().multiplyScalar(0.45 - 0.2 * jarK));
+      (scene.fog as THREE.FogExp2).density = 0.0062 * (1 - 0.7 * jarK);
       L.key.intensity = 2.4 * (1 - paved * 0.6) * (1 - night * 0.6);
       L.hemi.intensity = 0.7 * (1 - night * 0.5);
       grass.u.uTime.value = ambient;
@@ -311,6 +338,11 @@ export const build: ChapterBuilder = async (ctx) => {
       inJar.u.uPixel.value = px;
       inJar.u.uOpacity.value = jarOn;
       jarGlow.set("#e8ff9a", 0.6 * jarOn * (0.85 + 0.15 * Math.sin(ambient * 2.3)));
+      jarLight.intensity = 3.5 * jarOn;
+      sunRays.mesh.visible = jarOn > 0.01;
+      sunRays.u.uOpacity.value = jarOn * (1 - paved);
+      sunRays.u.uTime.value = ambient;
+      sunRays.mesh.quaternion.copy(cam.quaternion);
       bokeh.forEach((g, i) => g.set("#e6ff8a", 0.55 * jarOn * ramp(t, tJar - 0.4, tJar + 0.6) * (0.6 + 0.4 * Math.sin(ambient * (1.3 + i * 0.4) + i * 2))));
       // The city rises around the camera; the road takes the field.
       cityGroup.scale.set(1, Math.max(0.001, paved), 1);
@@ -334,7 +366,7 @@ export const build: ChapterBuilder = async (ctx) => {
     },
     look: (t) =>
       lookAt(t, { ...STOCK.film70s, lift: [0.024, 0.014, 0.005], contrast: 1.12 }, {
-        exposure: [[0, 0.82], [tJar, 0.9], [tJar + 3, 1.0], [tPaved + 1, 0.9], [tKept, 0.85], [end, 0.9]],
+        exposure: [[0, 0.82], [tJar - 0.6, 0.8], [tJar, 0.74], [tJar + 4, 0.76], [tPaved + 1, 0.9], [tKept, 0.85], [end, 0.9]],
         bloom: [[0, 0.6], [tJar - 0.5, 0.75], [tJar + 1.5, 1.05], [tJar + 4, 0.8], [tPaved + 2, 0.55], [tKept + 3, 0.9], [end, 0.8]],
         saturation: [[0, 0.95], [tPaved, 0.95], [tPaved + 3.5, 0.35], [tKept + 2, 0.45], [end, 0.6]],
         gain: [[0, [1.12, 1.0, 0.8]], [tPaved, [1.12, 1.0, 0.8]], [tPaved + 3.5, [0.98, 0.98, 1.0]], [tKept + 3, [1.06, 1.0, 0.88]]],

@@ -1,9 +1,10 @@
 import * as THREE from "three";
 import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
-import { col, makeCloudLayer, makeConverge, makeGlow, makeLightning, makeOcean, makeParticles, makeRing, makeShaft, makeSky, makeStreaks, makeTerrain, noise2, ramp, rng, strikeAt } from "../kit";
+import { col, makeCloudLayer, makeConverge, makeGlow, makeLightning, makeOcean, makeParticles, makeRing, makeShaft, makeSky, makeStreaks, makeSunburst, makeTerrain, noise2, ramp, rng, strikeAt } from "../kit";
 import { makeLanterns, makeMeteor } from "../props";
 import type { ChapterBuilder, Look } from "../types";
-import { billboard, figureStyle, lights, loadFigures, lookAt, place, pointPixel, shake, spike } from "./common";
+import { actionCurve, hitCurve } from "../figures";
+import { billboard, cine, craft, figureStyle, lights, loadFigures, lookAt, place, pointPixel, shake, spike } from "./common";
 
 /**
  * III. The Primal Clash. A drowned world in a storm: Primal Groudon raises
@@ -77,7 +78,7 @@ export const build: ChapterBuilder = async (ctx) => {
   scene.add(clouds.mesh);
   disposers.push(clouds.dispose);
   clouds.u.uHoleGlow.value.copy(col("#3cffa0", 1.4));
-  const rain = makeStreaks({ count: P(3200), center: [0, 18, 6], extent: [70, 22, 60], velocity: [-5, -38, -2], life: 0.9, length: 2.6, width: 0.025, color: "#a8b8d8", intensity: 0.4 });
+  const rain = makeStreaks({ count: P(3600), center: [0, 18, 6], extent: [70, 22, 60], velocity: [-5, -38, -2], life: 0.9, length: 2.8, width: 0.03, color: "#b8d8d0", intensity: 0.75 });
   scene.add(rain.mesh);
   disposers.push(rain.dispose);
   const bolts = [makeLightning({ color: "#bcd0ff", width: 0.45, intensity: 7, branches: 5 }), makeLightning({ color: "#ffd2a8", width: 0.4, intensity: 6, branches: 4 })];
@@ -99,10 +100,14 @@ export const build: ChapterBuilder = async (ctx) => {
   scene.add(seaLight);
 
   // ---- Light.
-  const L = lights(scene, { sky: "#8090b0", ground: "#1a1210", fill: 0.45, key: "#c8d4ff", keyK: 1.1, keyPos: [10, 30, 30], rim: "#ffb080", rimK: 1.0, rimPos: [-30, 10, -60] });
+  const L = lights(scene, { sky: "#6070a0", ground: "#120c0a", fill: 0.3, key: "#c8d4ff", keyK: 1.1, keyPos: [10, 30, 30], rim: "#ffb080", rimK: 1.0, rimPos: [-30, 10, -60] });
 
   // ---- Rayquaza's descent.
-  const shaft = makeShaft({ from: [0, 100, -36], to: [0, 0, -36], r0: 3.5, r1: 18, color: "#6dffb4", intensity: 0.3, noise: 0.6 });
+  const shaft = makeShaft({ from: [0, 100, -36], to: [0, 0, -36], r0: 4.5, r1: 22, color: "#5dffaa", intensity: 0.8, noise: 0.7 });
+  // Emerald rays breaking out around Rayquaza as it comes down through the hole in the storm.
+  const rayBurst = makeSunburst({ size: 90, color: "#5dffaa", core: "#d8ffe8", intensity: 0, rays: 12, coreK: 0.25, seed: 4 });
+  scene.add(rayBurst.mesh);
+  disposers.push(rayBurst.dispose);
   scene.add(shaft.mesh);
   disposers.push(shaft.dispose);
   const halo = makeGlow({ pos: [0, 24, -36], size: 60, color: "#4affa8", intensity: 0 });
@@ -175,13 +180,19 @@ export const build: ChapterBuilder = async (ctx) => {
   const figs = await loadFigures(ctx, [GROUDON, KYOGRE, RAY, MEGA]);
   const groudon = figs.get(GROUDON), kyogre = figs.get(KYOGRE), ray = figs.get(RAY), mega = figs.get(MEGA);
   place(groudon, GROU, 17, 0.55, scene);
-  figureStyle(groudon, { rim: "#ff8a40", rimK: 1.6, glow: "#ff6a20", glowK: 0.05, edge: "#ff9a40" });
+  figureStyle(groudon, { rim: "#ff7a30", rimK: 2.6, glow: "#ff6a20", glowK: 0.05, edge: "#ff9a40" });
   place(kyogre, KYO, 19, -0.5, scene);
-  figureStyle(kyogre, { rim: "#7ad0ff", rimK: 1.6, glow: "#3aa8ff", glowK: 0.05, edge: "#9fe8ff" });
+  figureStyle(kyogre, { rim: "#5ac8ff", rimK: 2.6, glow: "#3aa8ff", glowK: 0.05, edge: "#9fe8ff" });
   place(ray, [0, 90, -36], 24, 0, scene);
-  figureStyle(ray, { rim: "#9affc8", rimK: 1.8, glow: "#3cff9a", glowK: 0.06, edge: "#d8ffe8" });
+  figureStyle(ray, { rim: "#7affb8", rimK: 2.4, glow: "#3cff9a", glowK: 0.06, edge: "#d8ffe8" });
   place(mega, RQ_NIGHT, 26, 0, scene);
   figureStyle(mega, { rim: "#ffe6a0", rimK: 1.6, glow: "#6dffb4", glowK: 0.08, edge: "#ffffff", dissolve: 0 });
+  const sh = craft(ctx, L, {
+    radius: 42, center: [-6, 0, -33],
+    receive: [land.mesh, crater.mesh],
+    figures: [[groudon, { ground: GROU[1] + 0.6, alive: 0.8, depth: 1.5 }], [kyogre, { ground: null, alive: 0.8, depth: 1.5 }], [ray, { ground: null, alive: 1 }], [mega, { ground: null, alive: 1 }]],
+    detail: [[land.mesh.material, { kind: "stone", scale: 0.45, bump: 1.6 }], [crater.mesh.material, { kind: "stone", scale: 0.6, bump: 1.4 }]],
+  });
   const megaMotes = mega ? makeConverge(mega.points, { radius: 3, colors: ["#fff4c8", "#6dffb4"], size: [0.025, 0.07], intensity: 1.2, spin: 1.6 }) : null;
   if (mega && megaMotes) { mega.group.add(megaMotes.points); disposers.push(megaMotes.dispose); }
 
@@ -295,11 +306,14 @@ export const build: ChapterBuilder = async (ctx) => {
       if (groudon) {
         groudon.group.position.set(GROU[0], GROU[1] + Math.sin(ambient * 0.9) * 0.15, GROU[2]);
         groudon.group.rotation.y = 0.55 + Math.sin(ambient * 0.4) * 0.03;
+        // The roar from the sky stops them: both titans flinch back, then hold.
+        figureStyle(groudon, { hit: hitCurve(t, tCalm + 0.05, 1.2), act: actionCurve(t, tClash + 0.6, { pre: 0.5, post: 0.8 }) * 0.8 });
         figureStyle(groudon, { dissolve: night ? 0 : fade, glowK: 0.05 + lv * 0.1 });
       }
       if (kyogre) {
         kyogre.group.position.set(KYO[0], KYO[1] + Math.sin(ambient * 0.7) * 0.8 * (1 - calm), KYO[2]);
         kyogre.group.rotation.y = -0.5 + Math.sin(ambient * 0.5) * 0.04;
+        figureStyle(kyogre, { hit: hitCurve(t, tCalm + 0.12, 1.2), act: actionCurve(t, tClash + 4.2, { pre: 0.5, post: 0.8 }) * 0.8 });
         figureStyle(kyogre, { dissolve: night ? 0 : fade, glowK: 0.05 + lv * 0.1 });
       }
       // Rayquaza: down through the storm; later over the new crater; then Mega Evolution.
@@ -309,6 +323,12 @@ export const build: ChapterBuilder = async (ctx) => {
       shaft.u.uTime.value = ambient;
       shaft.u.uOpacity.value = night ? 0 : desc * (1 - ramp(t, tCalm + 1, tCalm + 3.4) * 0.8);
       halo.sprite.position.copy(rayPos);
+      rayBurst.mesh.position.set(rayPos.x, rayPos.y + 2, rayPos.z - 6);
+      rayBurst.mesh.quaternion.copy(cam.quaternion);
+      rayBurst.u.uTime.value = ambient;
+      rayBurst.u.uK.value = 0.5 + 0.5 * desc;
+      rayBurst.u.uIntensity.value = night ? 0 : desc * (0.55 + 0.5 * spike(t, tCalm, 0.1, 1.4)) * (1 - calm * 0.7);
+      rayBurst.mesh.visible = rayBurst.u.uIntensity.value > 0.002;
       halo.set("#4affa8", night ? 0 : desc * (0.35 + 0.5 * spike(t, tCalm, 0.1, 1.2)) * (1 - calm * 0.6));
       wave.u.uK.value = ramp(t, tCalm, tCalm + 2.4);
       wave.u.uTime.value = ambient;
@@ -317,6 +337,8 @@ export const build: ChapterBuilder = async (ctx) => {
       if (ray) {
         ray.group.position.set(rayPos.x, rayPos.y + Math.sin(ambient * 1.1) * 0.3, rayPos.z);
         ray.group.rotation.y = Math.sin(ambient * 0.4) * 0.08 + (night ? -0.25 : 0);
+        // The descent: coiled, then the long body uncoils as it stops above the sea.
+        figureStyle(ray, { act: actionCurve(t, tCalm, { pre: 0.8, post: 1.1 }), flex: 0.8 });
         figureStyle(ray, { dissolve: night ? 1 - ramp(t, tMega - 0.4, tMega + 0.25) : ramp(t, tRay - 0.6, tRay + 0.1), glowK: 0.06 + 0.2 * spike(t, tCalm, 0.1, 1.4) });
       }
       // The meteoroids: a shower, then one that strikes.
@@ -386,8 +408,8 @@ export const build: ChapterBuilder = async (ctx) => {
           fade: [[cut - 0.5, 0], [cut - 0.08, 1], [cut + 0.12, 1], [cut + 0.8, 0]],
           gain: [[0, [0.92, 0.98, 1.1]], [tCalm, [0.95, 1.02, 1.05]], [tCalm + 2, [0.98, 1.04, 1.02]], [cut, [0.98, 1.04, 1.02]], [cut + 0.1, [0.9, 0.96, 1.14]], [tPeace - 1, [0.95, 0.98, 1.08]], [tPeace + 3, [1.1, 1.0, 0.9]]],
           lift: [[0, [0.012, 0.006, 0.004]], [cut, [0.004, 0.008, 0.008]], [cut + 0.1, [0.0, 0.004, 0.014]], [tPeace + 3, [0.012, 0.008, 0.006]]],
-          saturation: [[0, 1.0], [tCalm, 1.1], [cut, 1.05], [tPeace + 3, 1.15]],
-          contrast: [[0, 1.12], [tCalm + 2, 1.05], [cut + 0.2, 1.1], [end, 1.04]],
+          saturation: [[0, 1.12], [tCalm, 1.2], [cut, 1.08], [tPeace + 3, 1.15]],
+          contrast: [[0, 1.18], [tCalm + 2, 1.1], [cut + 0.2, 1.12], [end, 1.06]],
           chroma: [[tCalm - 0.05, 0], [tCalm, 0.35], [tCalm + 0.8, 0], [tImpact - 0.05, 0], [tImpact, 0.5], [tImpact + 1, 0], [tMega - 0.05, 0], [tMega, 0.3], [tMega + 0.8, 0]],
           vignette: [[0, 0.45], [tCalm + 2, 0.32], [cut + 0.2, 0.5], [end, 0.36]],
           bloom: [[0, 0.75], [tRay, 0.9], [tCalm + 2, 0.75], [cut, 0.8], [tMega, 0.95], [tMega + 3, 0.8]],
@@ -395,10 +417,15 @@ export const build: ChapterBuilder = async (ctx) => {
       );
       L0.flash = Math.min(0.4, lv * 0.12 + 0.25 * spike(t, tCalm, 0.05, 0.35) + 0.4 * spike(t, tImpact, 0.03, 0.25) + 0.18 * spike(t, tMega, 0.05, 0.3));
       // Light shafts: from Rayquaza in the storm, from the Mega Evolution, from the dawn sun.
+      sh.follow(night ? [IMPACT[0], 0, IMPACT[2]] : [-6, 0, -33], night ? 30 : 42);
       if (!night && t > tRay - 0.5) L0.rays = { pos: [0, rayY(t), -36], color: [0.45, 1.0, 0.7], strength: 0.55 * ramp(t, tRay - 0.5, tRay + 1) * (1 - ramp(t, tCalm + 1.5, cut) * 0.7) };
       else if (night && t > tMega - 1 && t < tPeace) L0.rays = { pos: RQ_NIGHT, color: [1.0, 0.9, 0.65], strength: 0.25 * ramp(t, tMega - 1, tMega) * (1 - ramp(t, tMega + 2, tPeace)) };
       else if (night && t >= tPeace - 0.5) L0.rays = { pos: sunPos, color: [1.0, 0.78, 0.55], strength: 0.2 * ramp(t, tPeace - 0.5, tPeace + 3) };
-      return L0;
+      const fog: Look["fog"] = night
+        ? { color: [0.03, 0.045, 0.08], density: 0.003, height: 0, falloff: 0.06, sky: 0.2 }
+        : { color: [0.04, 0.06, 0.09], density: 0.0025, height: 0, falloff: 0.05, sky: 0.2 };
+      const focus: Vec3 = night ? RQ_NIGHT : t > tRay ? [0, rayY(t), -36] : GROU;
+      return cine(L0, { fog, dof: { focus, k: 0.25 }, streak: 0.15 + 0.3 * spike(t, tCalm, 0.05, 1.5), black: 0.06, split: { shadows: [-0.02, 0.0, 0.04], highlights: [0.04, 0.015, -0.02] } });
     },
     dispose() {
       disposers.forEach((d) => d());

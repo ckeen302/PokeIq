@@ -3,7 +3,8 @@ import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
 import { col, makeBeam, makeCloudLayer, makeConverge, makeFlames, makeGlow, makeParticles, makeRing, makeSky, makeStreaks, makeTerrain, merge, noise2, placed, ramp, rng, stoneMaterial, strikeAt } from "../kit";
 import { makeMeadow, makeRobed, makeRuins } from "../props";
 import type { ChapterBuilder, Look } from "../types";
-import { figureStyle, lights, loadFigures, lookAt, place, pointPixel, shake, spike } from "./common";
+import { withDetail } from "../materials";
+import { cine, craft, figureStyle, lights, loadFigures, lookAt, place, pointPixel, shake, spike } from "./common";
 
 /**
  * IV. The Ultimate Weapon. A kingdom burning at night, three thousand
@@ -52,7 +53,7 @@ export const build: ChapterBuilder = async (ctx) => {
   scene.add(sky.mesh);
   disposers.push(sky.dispose);
   const SKY = {
-    war: [col("#07050c"), col("#7a2a16"), col("#050304")],
+    war: [col("#040306"), col("#b8401a"), col("#050304")],
     dusk: [col("#1a1c3a"), col("#d0784a"), col("#0c0a10")],
     ash: [col("#2c2826"), col("#5c544e"), col("#1a1816")],
     dawn: [col("#2e4a82"), col("#d88a7c"), col("#221c28")],
@@ -186,7 +187,7 @@ export const build: ChapterBuilder = async (ctx) => {
     weapon.add(pivot);
     return tilt;
   });
-  const core = makeGlow({ pos: [0, 31.5, 0], size: 16, color: "#ffd0ec", intensity: 0 });
+  const core = makeGlow({ pos: [0, 31.5, 0], size: 10, color: "#ffd0ec", intensity: 0 });
   weapon.add(core.sprite);
   const charge = makeRing({ color: "#ff9ad8", intensity: 2.4, thickness: 0.05 });
   charge.mesh.rotation.x = -Math.PI / 2;
@@ -195,10 +196,14 @@ export const build: ChapterBuilder = async (ctx) => {
   weapon.add(charge.mesh);
   disposers.push(() => { body.geometry.dispose(); petalGeo.dispose(); metal.dispose(); petalMat.dispose(); core.dispose(); charge.dispose(); });
   const coreAt: Vec3 = [WPN[0], WPN[1] + 31.5 * S, WPN[2]];
+  // The crown lights its own petals from inside as it wakes; fires in the valley light the tower from below.
+  const crownLight = new THREE.PointLight(col("#ff5ab8"), 0, 90, 1.4);
+  crownLight.position.set(0, 33, 0);
+  weapon.add(crownLight);
   const gather = makeParticles({ count: P(2200), shape: "shell", center: coreAt, extent: [90, 40, 90], velocity: [0, 0, 0], life: 2.6, size: [0.1, 0.28], colors: ["#ffffff", "#ffb8e0", "#b8d8ff"], intensity: 1.6, pull: 34, swirl: 0.5, seed: 10 });
-  const dust = makeParticles({ count: P(1200), shape: "disc", center: [WPN[0], WPN[1] + 1, WPN[2]], extent: [16, 1, 16], velocity: [0, 4, 0], spread: [3, 2, 3], gravity: [0, -3, 0], life: 3, size: [1.2, 3.4], colors: ["#6a5a50", "#4a3e38", "#2a2420"], intensity: 0.5, additive: false, seed: 11 });
+  const dust = makeParticles({ count: P(1200), shape: "disc", center: [WPN[0], WPN[1] + 1, WPN[2]], extent: [16, 1, 16], velocity: [0, 4, 0], spread: [3, 2, 3], gravity: [0, -3, 0], life: 3, size: [0.5, 1.4], colors: ["#6a5a50", "#4a3e38", "#2a2420"], intensity: 0.4, additive: false, seed: 11 });
   [gather, dust].forEach((p) => { scene.add(p.points); disposers.push(p.dispose); });
-  const beam = makeBeam({ from: coreAt, to: [coreAt[0], 330, coreAt[2]], radius: 2.2, color: "#ffd0ea", intensity: 2 });
+  const beam = makeBeam({ from: coreAt, to: [coreAt[0], 330, coreAt[2]], radius: 2.2, color: "#ff8ad0", intensity: 1.5 });
   scene.add(beam.mesh);
   disposers.push(beam.dispose);
   const pour = makeStreaks({ count: P(1100), center: [0, 110, -90], extent: [260, 50, 190], velocity: [0, -170, 0], life: 0.85, length: 44, width: 0.45, color: "#ffd0ea", intensity: 1.6, seed: 12 });
@@ -222,6 +227,14 @@ export const build: ChapterBuilder = async (ctx) => {
   const floette = figs.get(FLOETTE);
   place(floette, [0.9, 1.6, 0.6], 0.95, -0.3, scene);
   figureStyle(floette, { rim: "#ffd0e0", rimK: 1.6, glow: "#ff8ab0", glowK: 0.12, edge: "#ffffff", dissolve: 0 });
+  const sh = craft(ctx, L, {
+    radius: 40, center: [0, 0, -20],
+    receive: [land.mesh],
+    figures: [[floette, { ground: null, alive: 1.2, depth: 1.4 }]],
+    detail: [[land.mesh.material, { kind: "ground", scale: 0.9, bump: 1.2 }]],
+  });
+  withDetail(castleMat, { kind: "stone", scale: 1.6, bump: 0.9 });
+  if (floette) floette.u.uFlex.value = 0.6;
   const fGlow = makeGlow({ pos: [0.9, 2, 0.6], size: 1.3, color: "#ff9ac0", intensity: 0 });
   scene.add(fGlow.sprite);
   disposers.push(fGlow.dispose);
@@ -280,6 +293,7 @@ export const build: ChapterBuilder = async (ctx) => {
       const ashen = t >= tAsh && t < tAz;
       const dawn = ramp(t, tAz - 0.2, tAz + 3);
       const glowUp = ramp(t, tWeapon + 2.4, tFire);
+      const wake = ramp(t, tWeapon + 0.2, tWeapon + 2.6);
       const burning = ramp(t, tFire + 0.8, tAsh - 0.4);
       // Sky and fog.
       const [top, hor, bot] = [sky.u.uTop.value, sky.u.uHorizon.value, sky.u.uBottom.value];
@@ -309,12 +323,13 @@ export const build: ChapterBuilder = async (ctx) => {
       fires.u.uIntensity.value = 3.2;
       for (const p of [embers, smoke, petals, gather, dust, ash]) { p.u.uPixel.value = px; p.u.uTime.value = ambient; }
       embers.u.uOpacity.value = t < tAsh ? (war ? 1 : 0.5) : 0;
-      smoke.u.uOpacity.value = t < tAsh ? (war ? 1 : 0.6) : 0;
+      smoke.u.uOpacity.value = t < tAsh ? (war ? 1 : 0.6 * (1 - ramp(t, tWeapon - 1, tWeapon) * 0.75)) : 0;
       battle.forEach((b, i) => {
         const s = strikeAt(ambient + i * 0.37, 1.1 + (i % 3) * 0.4, b.seed);
         b.g.set(b.color, t < tWeapon + 2 ? s.level * (war ? 1.4 : 0.6) : 0);
       });
-      fireLight.intensity = t < tAsh ? (war ? 60 : 24) * (0.8 + 0.2 * Math.sin(ambient * 7.1) * Math.sin(ambient * 3.3)) : 0;
+      fireLight.intensity = t < tAsh ? (war ? 60 : 24 + 50 * ramp(t, tWeapon - 0.8, tWeapon + 0.6)) * (0.8 + 0.2 * Math.sin(ambient * 7.1) * Math.sin(ambient * 3.3)) : 0;
+      fireLight.position.set(...(war ? ([0, 18, -80] as Vec3) : ([6, gh(6, -78) + 6, -78] as Vec3)));
       // Light on the scene.
       if (war) { L.key.color.copy(col("#ff9a5a")); L.key.intensity = 1.0; L.hemi.intensity = 0.35; L.hemi.color.copy(col("#ff8a5a")); }
       else if (t < tAsh) { L.key.color.copy(col("#ffb888")); L.key.intensity = 1.6 + burning * 1.6; L.hemi.intensity = 0.5 + burning * 0.4; L.hemi.color.copy(col("#ffb8a0")); }
@@ -333,14 +348,15 @@ export const build: ChapterBuilder = async (ctx) => {
       const open = ramp(t, tWeapon + 2.2, tWeapon + 4.6);
       const ease = open * open * (3 - 2 * open);
       petalPivots.forEach((p, i) => { p.rotation.x = 0.1 + ease * (1.12 + Math.sin(i * 2.1) * 0.05); });
-      petalU.uVein.value = glowUp * (0.8 + 0.2 * Math.sin(ambient * 6)) + spike(t, tFire, 0.1, 1.2) * 1.5;
+      petalU.uVein.value = (wake * 0.45 + glowUp * 0.55) * (0.8 + 0.2 * Math.sin(ambient * 6)) + spike(t, tFire, 0.1, 1.2) * 1.0;
+      crownLight.intensity = (wake * 30 + glowUp * 60) * (0.85 + 0.15 * Math.sin(ambient * 6)) * (t < tAsh ? 1 : 0);
       charge.u.uK.value = 0.55 + 0.1 * Math.sin(ambient * 2);
       charge.u.uTime.value = ambient;
-      charge.u.uOpacity.value = glowUp * (1 - ramp(t, tFire + 0.5, tFire + 2));
+      charge.u.uOpacity.value = Math.max(wake * 0.5, glowUp) * (1 - ramp(t, tFire + 0.5, tFire + 2));
       charge.mesh.visible = charge.u.uOpacity.value > 0.001;
-      metal.emissiveIntensity = glowUp * 0.12;
-      petalMat.emissiveIntensity = glowUp * 0.25;
-      core.set("#ffd0ec", glowUp * 0.9 + spike(t, tFire, 0.08, 0.8) * 1.2);
+      metal.emissiveIntensity = (wake * 0.4 + glowUp * 0.6) * 0.1;
+      petalMat.emissiveIntensity = (wake * 0.4 + glowUp * 0.6) * 0.25;
+      core.set("#ff9ad8", wake * 0.35 + glowUp * 0.55 + spike(t, tFire, 0.08, 0.8) * 0.6);
       gather.u.uOpacity.value = t > tWeapon + 2.4 && t < tFire + 0.3 ? ramp(t, tWeapon + 2.4, tWeapon + 4) : 0;
       dust.u.uOpacity.value = t > tWeapon - 0.6 && t < tWeapon + 3.6 ? 1 - ramp(t, tWeapon + 2, tWeapon + 3.6) : 0;
       const fire = ramp(t, tFire, tFire + 0.55);
@@ -386,17 +402,24 @@ export const build: ChapterBuilder = async (ctx) => {
           gain: [[0, [1.16, 0.93, 0.8]], [cutGarden, [1.16, 0.93, 0.8]], [cutGarden + 0.1, [1.08, 0.97, 0.94]], [tWeapon + 2, [1.06, 0.94, 1.08]], [tFire, [1.04, 0.96, 1.06]], [tAsh, [1.0, 0.99, 0.98]], [tAz, [1.0, 0.99, 0.98]], [tAz + 3, [1.07, 0.98, 1.0]]],
           lift: [[0, [0.012, 0.004, 0.0]], [tAsh - 0.1, [0.012, 0.004, 0.0]], [tAsh, [0.014, 0.013, 0.012]], [tAz, [0.014, 0.013, 0.012]], [tAz + 3, [0.01, 0.006, 0.01]]],
           saturation: [[0, 1.1], [tAsh - 0.1, 1.05], [tAsh, 0.3], [tAz, 0.3], [tAz + 4, 1.12]],
-          contrast: [[0, 1.12], [cutGarden + 0.1, 1.04], [tAsh, 1.04], [tAz, 1.04], [tAz + 3, 1.04]],
+          contrast: [[0, 1.12], [cutGarden + 0.1, 1.04], [tWeapon - 0.8, 1.04], [tWeapon, 1.14], [tAsh - 0.1, 1.14], [tAsh, 1.04], [tAz, 1.04], [tAz + 3, 1.04]],
           chroma: [[tFire - 0.05, 0], [tFire + 0.1, 0.45], [tFire + 1.4, 0.15], [tAsh - 0.2, 0.3], [tAsh, 0]],
           vignette: [[0, 0.5], [cutGarden + 0.1, 0.42], [tFire, 0.5], [tAsh, 0.3], [tAz + 3, 0.38]],
           bloom: [[0, 0.85], [tWeapon + 2, 0.95], [tFire, 1.05], [tAsh, 0.75], [tAz + 2, 0.85]],
         }
       );
       const white = ramp(t, tAsh - 0.55, tAsh - 0.05);
-      L0.flash = t < tAsh ? Math.min(0.92, 0.22 * spike(t, tFire, 0.05, 0.3) + white * white * 0.92) : 0.5 * (1 - ramp(t, tAsh, tAsh + 0.9));
+      L0.flash = t < tAsh ? Math.min(0.6, 0.12 * spike(t, tFire, 0.05, 0.3) + white * white * 0.6) : 0.4 * (1 - ramp(t, tAsh, tAsh + 0.9));
       if (!ashen && t > tWeapon + 2 && t < tAsh) L0.rays = { pos: coreAt, color: [1.0, 0.82, 0.92], strength: 0.7 * ramp(t, tWeapon + 2.4, tFire) * (1 - ramp(t, tFire + 1.6, tAsh)) };
       else if (t >= tAz) L0.rays = { pos: sunPos, color: [1.0, 0.82, 0.78], strength: 0.25 * ramp(t, tAz + 0.5, tAz + 4) };
-      return L0;
+      const garden = t >= cutGarden && t < tWeapon;
+      sh.follow(garden ? [0.9, 0, 0.6] : [0, 0, -20], garden ? 8 : 40);
+      const fog: Look["fog"] = ashen
+        ? { color: [0.32, 0.31, 0.3], density: 0.008, height: 0, falloff: 0.1, sky: 0.5 }
+        : garden ? { color: [0.4, 0.3, 0.32], density: 0.03, height: 0.3, falloff: 0.6, sky: 0 }
+        : { color: [0.2, 0.06, 0.035], density: 0.0035, height: 0, falloff: 0.07, sun: { dir: [-0.56, 0.28, -0.75], color: [0.6, 0.22, 0.08] }, sky: 0.2 };
+      const focus: Vec3 = garden || t >= tAz ? [FL.x, FL.y, FL.z] : coreAt;
+      return cine(L0, { fog, dof: { focus, k: garden ? 0.5 : 0.25 }, streak: 0.15 + 0.3 * ramp(t, tWeapon + 2, tFire) * (1 - ramp(t, tFire + 1.6, tAsh)), streakColor: [1.0, 0.6, 0.85], black: ashen ? 0.02 : 0.05, bloomCap: 3, hueKeep: 0.85 });
     },
     dispose() {
       disposers.forEach((d) => d());

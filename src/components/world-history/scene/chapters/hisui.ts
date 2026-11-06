@@ -1,9 +1,10 @@
 import * as THREE from "three";
 import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
-import { col, makeCloudLayer, makeGlow, makeLightning, makeParticles, makePortal, makeRing, makeSky, makeTerrain, merge, noise2, placed, ramp, rng, strikeAt } from "../kit";
+import { col, makeCloudLayer, makeGlow, makeLightning, makeParticles, makePortal, makeRift, makeRing, makeSky, makeTerrain, merge, noise2, placed, ramp, rng, strikeAt } from "../kit";
 import { makeFoliage, makeHouses, makePagoda, makeRuins } from "../props";
 import type { ChapterBuilder, Look } from "../types";
-import { figureStyle, floatFigure, lights, loadFigures, lookAt, place, pointPixel, shake, spike } from "./common";
+import { actionCurve, hitCurve } from "../figures";
+import { cine, craft, figureStyle, floatFigure, lights, loadFigures, lookAt, place, pointPixel, shake, spike } from "./common";
 
 /**
  * IX. Almighty Sinnoh. Hisui at dawn: a young village under a great
@@ -119,10 +120,16 @@ export const build: ChapterBuilder = async (ctx) => {
   clouds.u.uHoleGlow.value.copy(col("#ff4aa0", 0.8));
   scene.add(clouds.mesh);
   disposers.push(clouds.dispose);
-  const rift = makePortal({ radius: 60, inner: "#1a0a2a", outer: "#ff3a8a", intensity: 1.6, tear: 0.55 });
+  // The torn rim, and the rift itself: a swirling funnel of light receding into the dark beyond.
+  const rift = makePortal({ radius: 60, inner: "#000000", outer: "#ff3a8a", intensity: 0.9, tear: 0.55 });
   rift.mesh.position.set(...RIFT);
   scene.add(rift.mesh);
   disposers.push(rift.dispose);
+  const deep = makeRift({ radius: 40, depth: 220, outer: "#ff4aa0", mid: "#a04aff", deep: "#3a4aff", light: "#ffe0ff", intensity: 2.3, void: "#06010e" });
+  deep.group.position.set(RIFT[0], RIFT[1], RIFT[2] - 4);
+  deep.group.scale.set(1.45, 0.8, 1);
+  scene.add(deep.group);
+  disposers.push(deep.dispose);
   const riftBolts = [makeLightning({ color: "#d07aff", width: 0.8, intensity: 6, branches: 4 }), makeLightning({ color: "#ff8ac8", width: 0.7, intensity: 5, branches: 3 })];
   riftBolts.forEach((b) => { scene.add(b.mesh); disposers.push(b.dispose); });
   const lastBolt = [-1, -1];
@@ -154,6 +161,12 @@ export const build: ChapterBuilder = async (ctx) => {
   figureStyle(gir, { rim: "#ff4a6a", rimK: 2.4, glow: "#2a0010", glowK: 0.1, edge: "#ff6a8a", dissolve: 0, shadow: 0.5 });
   place(arc, ARC, 20, 0, scene);
   figureStyle(arc, { rim: "#fff0c0", rimK: 1.0, glow: "#ffe0a0", glowK: 0.04, edge: "#ffffff", dissolve: 0 });
+  craft(ctx, L, {
+    radius: 60, center: [0, 0, -80],
+    receive: [land.mesh],
+    figures: [dia, pal, gir, arc].map((f) => [f, { ground: null, alive: 0.8, depth: 1.5 }]),
+    detail: [[land.mesh.material, { kind: "ground", scale: 0.6, bump: 1.4 }]],
+  });
 
   const keys: Key[] = [
     { t: 0, pos: [34, 32, 96], look: [0, 30, -220], fov: 50 },
@@ -211,8 +224,8 @@ export const build: ChapterBuilder = async (ctx) => {
       // The clans and their deities: vast apparitions over the mountains.
       blue.cm.emissiveIntensity = 0.25 + godA * 0.6;
       pink.cm.emissiveIntensity = 0.25 + godB * 0.6;
-      if (dia) { floatFigure(dia, DIA_AT, ambient, 0.6, 0, 0.25, 0.03); figureStyle(dia, { dissolve: godA * 0.85, glowK: 0.25 }); }
-      if (pal) { floatFigure(pal, PAL_AT, ambient, 0.6, 1, -0.25, 0.03); figureStyle(pal, { dissolve: godB * 0.85, glowK: 0.25 }); }
+      if (dia) { floatFigure(dia, DIA_AT, ambient, 0.6, 0, 0.25, 0.03); figureStyle(dia, { dissolve: godA * 0.85, glowK: 0.25, hit: hitCurve(t, tTear + 0.1, 1.4), flex: 0.3 + 0.7 * ramp(t, tTear, tTear + 1) * (1 - ramp(t, tClose, tClose + 2)) }); }
+      if (pal) { floatFigure(pal, PAL_AT, ambient, 0.6, 1, -0.25, 0.03); figureStyle(pal, { dissolve: godB * 0.85, glowK: 0.25, hit: hitCurve(t, tTear + 0.2, 1.4), flex: 0.3 + 0.7 * ramp(t, tTear, tTear + 1) * (1 - ramp(t, tClose, tClose + 2)) }); }
       diaGlow.set("#4a8aff", godA * 0.5);
       palGlow.set("#ff8ac8", godB * 0.5);
       // The rift: torn open, a shadow behind it, lightning.
@@ -224,8 +237,12 @@ export const build: ChapterBuilder = async (ctx) => {
       rift.u.uOpen.value = Math.max(0.001, open);
       rift.mesh.visible = open > 0.001;
       rift.mesh.quaternion.copy(cam.quaternion);
+      deep.group.visible = open > 0.001;
+      deep.u.uOpen.value = open;
+      deep.u.uTime.value = ambient;
+      deep.group.lookAt(cam.position);
       riftDust.u.uOpacity.value = open;
-      if (gir) { floatFigure(gir, GI, ambient, 0.8, 2, 0, 0.04); figureStyle(gir, { dissolve: ramp(t, tTear, tTear + 2.5) * (1 - ramp(t, tClose - 0.6, tClose + 0.6)) * 0.9, shadow: 0.5 }); }
+      if (gir) { floatFigure(gir, GI, ambient, 0.8, 2, 0, 0.04); figureStyle(gir, { dissolve: ramp(t, tTear, tTear + 2.5) * (1 - ramp(t, tClose - 0.6, tClose + 0.6)) * 0.9, shadow: 0.5, act: actionCurve(t, tTear + 1.2, { pre: 0.8, post: 1.2 }), flex: 0.8 }); }
       [strikeAt(t, 1.1, 21), strikeAt(t + 0.5, 1.6, 23)].forEach((s, i) => {
         const b = riftBolts[i];
         if (s.level > 0 && open > 0.4 && s.id !== lastBolt[i]) {
@@ -237,7 +254,7 @@ export const build: ChapterBuilder = async (ctx) => {
         b.u.uAlpha.value = open > 0.4 ? s.level * open : 0;
       });
       // Arceus.
-      if (arc) { floatFigure(arc, ARC, ambient, 0.5, 0, 0, 0.03); figureStyle(arc, { dissolve: arcK, glowK: 0.04 + 0.15 * spike(t, tClose, 0.2, 1.4) }); }
+      if (arc) { floatFigure(arc, ARC, ambient, 0.5, 0, 0, 0.03); figureStyle(arc, { dissolve: arcK, glowK: 0.04 + 0.15 * spike(t, tClose, 0.2, 1.4), act: actionCurve(t, tClose, { pre: 0.6, post: 1.2 }) }); }
       halo.u.uK.value = 0.35 + 0.05 * Math.sin(ambient * 1.2);
       halo.u.uTime.value = ambient;
       halo.u.uOpacity.value = arcK * (1 - ramp(t, tName - 0.5, tName + 1));
@@ -269,7 +286,13 @@ export const build: ChapterBuilder = async (ctx) => {
       if (!cel && t > tCreator - 0.5 && t < tName + 2) L0.rays = { pos: ARC, color: [1.0, 0.9, 0.65], strength: 0.3 * ramp(t, tCreator - 0.5, tCreator + 1) * (1 - ramp(t, tName, tName + 2)) };
       else if (!cel && t > tRift && t < tCreator) L0.rays = { pos: RIFT, color: [1.0, 0.55, 0.85], strength: 0.45 * ramp(t, tRift + 0.5, tTear + 1) };
       else if (!cel && (t < cutCel || t >= tName + 2)) L0.rays = { pos: [560, 50, -640], color: [1.0, 0.85, 0.65], strength: 0.3 };
-      return L0;
+      // Layers of haze between the land and the gods, so their scale reads; under the rift it darkens to a bruise.
+      const riftK = ramp(t, tRift, tTear) * (1 - ramp(t, tClose, tClose + 2));
+      const fog: Look["fog"] = cel
+        ? { color: [0.35, 0.38, 0.5], density: 0.004, height: 0, falloff: 0.04, sky: 0.3 }
+        : { color: [0.38 - 0.3 * riftK, 0.35 - 0.3 * riftK, 0.36 - 0.22 * riftK], density: 0.0018, height: 0, falloff: 0.015, sun: { dir: [0.65, 0.06, -0.75], color: [0.4 * (1 - riftK), 0.28 * (1 - riftK), 0.15 * (1 - riftK)] }, sky: 0.15 };
+      const focus: Vec3 = t > tCreator - 0.5 ? ARC : t > tRift ? [0, 120, -170] : [0, 30, -150];
+      return cine(L0, { fog, dof: { focus, k: 0.2 }, streak: 0.12 + 0.3 * riftK, streakColor: [1.0, 0.5, 0.8] });
     },
     dispose() {
       disposers.forEach((d) => d());

@@ -190,7 +190,7 @@ export const build: ChapterBuilder = async (ctx) => {
   flowGeo.setAttribute("position", new THREE.BufferAttribute(fStart, 3));
   flowGeo.setAttribute("aEnd", new THREE.BufferAttribute(fEnd, 3));
   flowGeo.setAttribute("aSeed", new THREE.BufferAttribute(fSeed, 1));
-  const flowU = { uK: { value: 0 }, uShow: { value: 0 }, uTime: { value: 0 }, uPixel: { value: 600 }, uSize: { value: 0.5 } };
+  const flowU = { uK: { value: 0 }, uShow: { value: 0 }, uTime: { value: 0 }, uPixel: { value: 600 }, uSize: { value: 0.62 } };
   const flowMat = new THREE.ShaderMaterial({
     uniforms: flowU,
     transparent: true,
@@ -289,6 +289,12 @@ export const build: ChapterBuilder = async (ctx) => {
   const fly = D.add(makeFirefly({ size: 0.16 }));
   scene.add(fly.group);
   const warm = D.add(makeGlow({ pos: [PK[0], 1, PK[2]], size: 3, color: "#ffd890", intensity: 0 }));
+  // The park full of players glows: a pool of light over it, lighting the grass and the facades round it.
+  const parkGlow = D.add(makeGlow({ pos: [ax, 1.2, az], size: 26, color: "#5affb0", intensity: 0 }));
+  scene.add(parkGlow.sprite);
+  const parkLight = new THREE.PointLight(col("#7affc0"), 0, 26, 1.4);
+  parkLight.position.set(ax, 3, az);
+  scene.add(parkLight);
   scene.add(warm.sprite);
 
   const keys: Key[] = [
@@ -296,8 +302,11 @@ export const build: ChapterBuilder = async (ctx) => {
     { t: tApril + 4, pos: [0.1, 66, 10], look: [0, 0, 0], fov: 44 },
     { t: tLaunch + 0.6, pos: [0, 58, 16], look: [0, 0, 0], fov: 46 },
     { t: tLaunch + 4.4, pos: [-6, 24, 46], look: [0, 4, 0], fov: 48 },
-    { t: tParks, pos: [-2, 44, 40], look: [2, 0, -2], fov: 48 },
-    { t: tParks + 5, pos: [8, 56, 26], look: [4, 0, -4], fov: 48 },
+    // An oblique aerial: the towers frame the foreground, the streams of lights converge on the park, which glows.
+    // Straight down the avenue on the park's east side: towers frame both sides, the streams of lights run along it
+    // into the park, which glows at the end of the street.
+    { t: tParks, pos: [ax + 5.2, 27, az + 36], look: [ax + 0.5, 0, az + 3], fov: 46 },
+    { t: tParks + 5, pos: [ax + 5.2, 23, az + 29], look: [ax, 0, az + 2], fov: 46 },
     { t: tWild - 0.4, pos: [fx + 9, 3.2, fz + 10], look: [fx, 1, fz], fov: 46 },
     { t: tWild + 1.2, pos: [fx + 4, 1.6, fz + 5.2], look: [fx, 0.9, fz], fov: 44 },
   ];
@@ -335,7 +344,7 @@ export const build: ChapterBuilder = async (ctx) => {
       sky.follow(cam);
       const dusk = ramp(t, tLaunch, tParks);
       sky.u.uTop.value.copy(col("#1a3a5a").lerp(col("#040a14"), dusk));
-      sky.u.uHorizon.value.copy(col("#ffb08a").lerp(col("#2a6a6a"), dusk));
+      sky.u.uHorizon.value.copy(col("#ffb08a").lerp(col("#2a7a7a"), dusk));
       L.key.intensity = 1.0 * (1 - dusk * 0.7);
       // The prototype map: icons blink; then the city rises out of it.
       const proto = 1 - ramp(t, tLaunch + 0.4, tLaunch + 2);
@@ -362,6 +371,11 @@ export const build: ChapterBuilder = async (ctx) => {
       flowU.uK.value = ramp(t, tParks + 0.4, tWild - 0.6);
       flowU.uShow.value = ramp(t, tParks - 0.4, tParks + 0.8) * (1 - ramp(t, tTogether - 1, tTogether));
       flowU.uTime.value = ambient; flowU.uPixel.value = px;
+      const crowdIn = ramp(t, tParks - 0.4, tParks + 1.4) * (1 - ramp(t, tWild - 0.6, tWild));
+      parkGlow.set("#6affc0", 0.65 * crowdIn);
+      parkLight.intensity = 160 * crowdIn;
+      cityU.uGlowAt.value.set(ax, 2, az, 10);
+      cityU.uGlowCol.value.copy(col("#5affb0", 0.5 * crowdIn));
       // The spawns.
       spawns.forEach((s) => {
         const k = ramp(t, tWild + s.at, tWild + s.at + 0.8);

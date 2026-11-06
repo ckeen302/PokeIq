@@ -34,6 +34,8 @@ export interface RecordOptions {
   logo: string;
   quality?: Quality;
   fps?: number;
+  /** Renders the scene smaller (0.5..1) and scales it up to 1080 × 1920: a quicker render on slow machines. */
+  scale?: number;
   onProgress(p: number, label: string): void;
   signal: AbortSignal;
 }
@@ -235,9 +237,11 @@ export async function recordHistoryVideo(o: RecordOptions): Promise<RecordResult
   const N = Math.round(plan.seconds * fps);
   o.onProgress(0, "Setting the scene");
   const host = document.createElement("div");
-  host.style.cssText = `position:fixed;left:-20000px;top:0;width:${W}px;height:${H}px;pointer-events:none;`;
+  const k = Math.min(1, Math.max(0.5, o.scale ?? 1));
+  const SW = Math.round((W * k) / 2) * 2, SH = Math.round((H * k) / 2) * 2;
+  host.style.cssText = `position:fixed;left:-20000px;top:0;width:${SW}px;height:${SH}px;pointer-events:none;`;
   document.body.appendChild(host);
-  const scene = createHistoryScene(host, { quality: o.quality ?? "export", film: o.film, chapters: CHAPTERS, font: o.serif, size: { w: W, h: H } });
+  const scene = createHistoryScene(host, { quality: o.quality ?? "export", film: o.film, chapters: CHAPTERS, font: o.serif, size: { w: SW, h: SH } });
   try {
     await scene.ready;
     const compose = document.createElement("canvas");
@@ -264,6 +268,7 @@ export async function recordHistoryVideo(o: RecordOptions): Promise<RecordResult
         ambient: t,
         cut: f.next ? { from: { index: f.chapter, anim: f.anim }, to: { index: f.next.chapter, anim: f.next.anim }, k: f.next.k } : null,
       });
+      g.imageSmoothingQuality = "high";
       g.drawImage(scene.canvas, 0, 0, W, H);
       // Captions: the beat on screen (each story segment quotes its chapter's moment).
       const c = CHAPTERS[f.chapter];

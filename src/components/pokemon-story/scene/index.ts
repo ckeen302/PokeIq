@@ -1,6 +1,7 @@
 import type * as THREE from "three";
 import { createHistoryScene, HALL_LOOK, type HistoryScene, type SceneOptions } from "@/components/world-history/scene";
-import type { Look } from "@/components/world-history/scene/types";
+import type { ChapterBuilder, ChapterRig, Look } from "@/components/world-history/scene/types";
+import { lens } from "./lens";
 import type { Chapter as HistoryChapter } from "@/lib/world-history/types";
 import { CHAPTERS } from "@/lib/pokemon-story/data";
 import { buildArchive } from "./archive";
@@ -11,18 +12,24 @@ import { buildArchive } from "./archive";
  * Story's own chapter builders, its Archive hall and a warmer hall grade.
  */
 
+/** Every chapter is shot through the film's lens (see lens.ts): its grade, air, cuts and figures' life. */
+const lensed = (id: string, load: () => Promise<{ build: ChapterBuilder }>) => async () => {
+  const mod = await load();
+  return { build: async (ctx: Parameters<ChapterBuilder>[0]): Promise<ChapterRig> => lens(id, await mod.build(ctx), ctx) };
+};
+
 const BUILDERS: SceneOptions["builders"] = {
-  collector: () => import("./chapters/collector"),
-  "game-freak": () => import("./chapters/game-freak"),
-  cable: () => import("./chapters/cable"),
-  "six-years": () => import("./chapters/six-years"),
-  "red-green": () => import("./chapters/red-green"),
-  pokemania: () => import("./chapters/pokemania"),
-  growing: () => import("./chapters/growing"),
-  together: () => import("./chapters/together"),
-  outside: () => import("./chapters/outside"),
-  "open-worlds": () => import("./chapters/open-worlds"),
-  thirty: () => import("./chapters/thirty"),
+  collector: lensed("collector", () => import("./chapters/collector")),
+  "game-freak": lensed("game-freak", () => import("./chapters/game-freak")),
+  cable: lensed("cable", () => import("./chapters/cable")),
+  "six-years": lensed("six-years", () => import("./chapters/six-years")),
+  "red-green": lensed("red-green", () => import("./chapters/red-green")),
+  pokemania: lensed("pokemania", () => import("./chapters/pokemania")),
+  growing: lensed("growing", () => import("./chapters/growing")),
+  together: lensed("together", () => import("./chapters/together")),
+  outside: lensed("outside", () => import("./chapters/outside")),
+  "open-worlds": lensed("open-worlds", () => import("./chapters/open-worlds")),
+  thirty: lensed("thirty", () => import("./chapters/thirty")),
 };
 
 const ARCHIVE_LOOK: Look = { ...HALL_LOOK, exposure: 1.1, bloom: 0.85, gain: [1.02, 1.0, 0.92], lift: [0.02, 0.014, 0.008], saturation: 1.0, contrast: 1.0, vignette: 0.55, grain: 0.05 };

@@ -191,7 +191,7 @@ export default function MakeStoryVideo({ film, chapter, onRecording, onClose }: 
               </button>
             )}
             {phase.kind === "error" && <p className="text-sm text-red-300" role="alert" data-testid="ps-video-error">{phase.message}</p>}
-            <p className="text-[11px] leading-relaxed text-white/45">Rendered on this device, frame by frame. Music: CC0 tracks by cynicmusic (OpenGameArt.org). Pokémon figures from Pokémon HOME renders.</p>
+            <p className="text-[11px] leading-relaxed text-white/45">Rendered on this device, frame by frame. Music: the film’s original score (MuseScore General sound font, MIT). Pokémon figures from Pokémon HOME renders.</p>
           </div>
         )}
       </motion.div>

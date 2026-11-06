@@ -216,7 +216,7 @@ export function HistoryText({ focus }: { focus?: Chapter }) {
           The anime and films have their own continuity, kept apart above. Looking for when the games, anime and films came out? See the <Link href="/pokedex/timeline" prefetch={false} className="underline underline-offset-2 hover:text-foreground">Pokémon Timeline</Link>.
         </p>
         <p>
-          Music: “Sirens in Darkness”, “Crystal Cave”, “Icy Realm” and “Epic Endgame Cinematic” by cynicmusic, CC0 on OpenGameArt.org (<a href="/audio/world-history/CREDITS.md" className="underline underline-offset-2 hover:text-foreground">credits</a>). The Pokémon figures are built from Pokémon HOME renders served by PokéAPI.
+          Music: an original score written for this film, one theme arranged as four stems, played with the MuseScore General sound font (MIT; its strings from VSCO 2 Community Edition, CC0). The ambience and effects are made in the browser (<a href="/audio/world-history/CREDITS.md" className="underline underline-offset-2 hover:text-foreground">credits</a>). The Pokémon figures are built from Pokémon HOME renders served by PokéAPI.
         </p>
       </footer>
     </article>

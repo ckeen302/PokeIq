@@ -2,8 +2,10 @@ import * as THREE from "three";
 import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
 import { col, makeBeam, makeGlow, makeOcean, makeParticles, makePortal, makeRing, makeSky, makeTerrain, noise2, ramp, rng } from "../kit";
 import { makeCity, makeCrystals } from "../props";
+import { withDetail } from "../materials";
 import type { ChapterBuilder, Look } from "../types";
-import { figureStyle, floatFigure, lights, loadFigures, lookAt, place, pointPixel, shake, spike } from "./common";
+import { actionCurve, hitCurve } from "../figures";
+import { cine, craft, figureStyle, floatFigure, lights, loadFigures, lookAt, place, pointPixel, shake, spike } from "./common";
 
 /**
  * X. The Blinding One. Underwater volcanoes raise the islands of Alola out
@@ -83,7 +85,7 @@ export const build: ChapterBuilder = async (ctx) => {
   const N_CITY: Vec3 = [CITY[0], 156, CITY[2]];
   const feeds = Array.from({ length: 6 }, (_, i) => {
     const a = (i / 6) * Math.PI * 2;
-    const b = makeBeam({ from: [CITY[0] + Math.cos(a) * 60, 40, CITY[2] + Math.sin(a) * 60], to: N_CITY, radius: 0.6, color: "#fff2c0", intensity: 1.2 });
+    const b = makeBeam({ from: [CITY[0] + Math.cos(a) * 60, 40, CITY[2] + Math.sin(a) * 60], to: N_CITY, radius: 0.6, color: "#ffd070", intensity: 0.9 });
     scene.add(b.mesh);
     disposers.push(b.dispose);
     return b;
@@ -91,7 +93,7 @@ export const build: ChapterBuilder = async (ctx) => {
   const prism = makeParticles({ count: P(1600), shape: "sphere", center: N_CITY, extent: [24, 24, 24], velocity: [0, 0, 0], spread: [3, 3, 3], life: 3, size: [0.4, 1.2], colors: ["#ffffff", "#ffe08a", "#8ad8ff"], intensity: 1.0, swirl: 0.3, seed: 5 });
   const swallow = makeParticles({ count: P(3000), shape: "shell", center: N_CITY, extent: [200, 120, 200], velocity: [0, 0, 0], life: 2.4, size: [0.5, 1.4], colors: ["#fff6d0", "#ffd27a", "#8ac8ff"], intensity: 1.2, pull: 90, swirl: 0.6, seed: 6 });
   [prism, swallow].forEach((p) => { scene.add(p.points); disposers.push(p.dispose); });
-  const nGlow = makeGlow({ pos: N_CITY, size: 40, color: "#fff0c0", intensity: 0 });
+  const nGlow = makeGlow({ pos: N_CITY, size: 30, color: "#fff0c0", intensity: 0 });
   scene.add(nGlow.sprite);
   disposers.push(nGlow.dispose);
   const drainRing = makeRing({ color: "#ffe8a0", intensity: 1.5, thickness: 0.04 });
@@ -136,8 +138,15 @@ export const build: ChapterBuilder = async (ctx) => {
   const nec = figs.get(NECROZMA);
   const tapus = [figs.get(KOKO), figs.get(LELE), figs.get(BULU), figs.get(FINI)];
   place(nec, N_CITY, 30, 0, scene);
-  figureStyle(nec, { rim: "#ffffff", rimK: 1.2, glow: "#ffe8a0", glowK: 0.15, edge: "#ffffff" });
+  figureStyle(nec, { rim: "#ffd870", rimK: 1.8, glow: "#ffe8a0", glowK: 0.06, edge: "#ffffff" });
   tapus.forEach((f, i) => { place(f, [PEAK[i][0], PEAK[i][1] + 0.5, PEAK[i][2]], 5.5, 0, scene); figureStyle(f, { rim: TAPU_COL[i], rimK: 1.8, glow: TAPU_COL[i], glowK: 0.08, edge: "#ffffff", dissolve: 0 }); });
+  craft(ctx, L, {
+    radius: 50, center: [0, 0, -60],
+    receive: isles.map((s) => s.t.mesh),
+    figures: [[nec, { ground: null, alive: 0.8, depth: 1.5 }], ...tapus.map((f) => [f, { ground: null, alive: 1 }] as [typeof f, { ground: null; alive: number }])],
+    detail: isles.map((s) => [s.t.mesh.material, { kind: "ground", scale: 0.7, bump: 1.3 }] as [THREE.Material, { kind: "ground"; scale: number; bump: number }]),
+  });
+  withDetail(towerMat, { kind: "metal", scale: 0.8, bump: 0.5, rough: 0.4 });
 
   const keys: Key[] = [
     { t: 0, pos: [0, 7, 70], look: [0, 6, -90], fov: 50 },
@@ -210,7 +219,7 @@ export const build: ChapterBuilder = async (ctx) => {
       prism.u.uOpacity.value = inCity ? 1 - drain * 0.8 : 0;
       swallow.u.uOpacity.value = inCity ? ramp(t, tDrain - 0.4, tDrain + 0.4) * (1 - ramp(t, tDrain + 2.6, cutBack)) : 0;
       nGlow.sprite.position.set(...(night ? N_ALOLA : N_CITY));
-      nGlow.set(night ? "#c8a0ff" : "#fff0c0", inCity ? 0.25 * (1 - drain) + 0.12 * spike(t, tDrain, 0.1, 1) : night ? 0.12 * ramp(t, tTapu, tTapu + 2) : 0);
+      nGlow.set(night ? "#c8a0ff" : "#ffd890", inCity ? 0.14 * (1 - drain) + 0.1 * spike(t, tDrain, 0.1, 1) : night ? 0.12 * ramp(t, tTapu, tTapu + 2) : 0);
       drainRing.u.uK.value = 1 - ramp(t, tDrain - 0.2, tDrain + 2.2);
       drainRing.u.uTime.value = ambient;
       drainRing.mesh.visible = inCity && t > tDrain - 0.2 && t < tDrain + 2.2;
@@ -223,7 +232,7 @@ export const build: ChapterBuilder = async (ctx) => {
           nec.group.position.set(N_ALOLA[0], N_ALOLA[1] + Math.sin(ambient * 0.7) * 0.6, N_ALOLA[2] - 30 * (1 - come));
           nec.group.rotation.y = Math.sin(ambient * 0.3) * 0.05;
         }
-        figureStyle(nec, { dissolve: inCity ? 1 : night ? ramp(t, cutBack + 0.4, tTapu + 1.6) * (1 - ramp(t, tZ + 3, end - 0.5) * 0.85) : 0, shadow: inCity ? drain * 0.85 : 0.75, glowK: inCity ? 0.15 * (1 - drain) + 0.04 : 0.04, rimK: inCity ? 1.2 : 1.8 });
+        figureStyle(nec, { dissolve: inCity ? 1 : night ? ramp(t, cutBack + 0.4, tTapu + 1.6) * (1 - ramp(t, tZ + 3, end - 0.5) * 0.85) : 0, shadow: inCity ? drain * 0.85 : 0.75, glowK: inCity ? 0.06 * (1 - drain) + 0.03 : 0.04, rimK: inCity ? 2.0 : 1.8, act: inCity ? actionCurve(t, tDrain, { pre: 0.9, post: 1.3 }) : 0, flex: 0.6 });
       }
       // The wormhole and the guardians.
       const open = night ? ramp(t, cutBack + 0.2, tTapu + 1) : 0;
@@ -234,7 +243,7 @@ export const build: ChapterBuilder = async (ctx) => {
       tapus.forEach((f, i) => {
         if (!f) return;
         floatFigure(f, [PEAK[i][0], PEAK[i][1] + 0.5, PEAK[i][2]], ambient, 0.3, i, 0, 0.05);
-        figureStyle(f, { dissolve: night ? ramp(t, tTapu + i * 0.3, tTapu + 1.4 + i * 0.3) : 0, glowK: 0.08 + 0.3 * ramp(t, tTapu + 1.6, tTapu + 2.4) * (1 - ramp(t, tZ, tZ + 2)) });
+        figureStyle(f, { dissolve: night ? ramp(t, tTapu + i * 0.3, tTapu + 1.4 + i * 0.3) : 0, glowK: 0.08 + 0.3 * ramp(t, tTapu + 1.6, tTapu + 2.4) * (1 - ramp(t, tZ, tZ + 2)), act: actionCurve(t, tTapu + 1.6 + i * 0.1, { pre: 0.5, post: 0.9 }), hit: hitCurve(t, tZ + 0.2, 0.8) * 0.3 });
       });
       tapuBeams.forEach((b, i) => {
         const k = night ? ramp(t, tTapu + 1.6 + i * 0.2, tTapu + 2.4 + i * 0.2) * (1 - ramp(t, tZ - 0.5, tZ + 1)) : 0;
@@ -268,10 +277,16 @@ export const build: ChapterBuilder = async (ctx) => {
         }
       );
       L0.flash = Math.min(0.4, 0.35 * spike(t, tDrain, 0.1, 0.8) + 0.12 * spike(t, tTapu + 2, 0.2, 1));
-      if (inCity) L0.rays = { pos: N_CITY, color: [1.0, 0.95, 0.8], strength: 0.35 * (1 - ramp(t, tDrain, tDrain + 2)) };
+      if (inCity) L0.rays = { pos: N_CITY, color: [1.0, 0.85, 0.55], strength: 0.28 * (1 - ramp(t, tDrain, tDrain + 2)) };
       else if (t >= cutBack) L0.rays = { pos: HOLE, color: [0.7, 1.0, 0.95], strength: 0.25 * ramp(t, cutBack + 0.4, tTapu + 1.5) };
       else L0.rays = { pos: [900, 40, -400], color: [1.0, 0.85, 0.6], strength: 0.2 };
-      return L0;
+      // When the light is stolen the city's air goes dark too; a streak on the prism as it drinks the light.
+      const drainK = inCity ? ramp(t, tDrain, tDrain + 2.4) : 0;
+      const fog: Look["fog"] = inCity
+        ? { color: [0.12 * (1 - drainK) + 0.01, 0.11 * (1 - drainK) + 0.012, 0.1 * (1 - drainK) + 0.02], density: 0.002, height: 0, falloff: 0.012, sky: 0.2 }
+        : { color: t >= cutBack ? [0.05, 0.08, 0.12] : [0.42, 0.32, 0.24], density: 0.0025, height: 0, falloff: 0.03, sun: t < cutCity ? { dir: [0.55, 0.2, -0.8], color: [0.5, 0.3, 0.15] } : undefined, sky: 0.25 };
+      L0.bloomThreshold = Math.max(L0.bloomThreshold, inCity ? 0.95 : L0.bloomThreshold);
+      return cine(L0, { fog, dof: { focus: inCity ? N_CITY : [0, 10, -60], k: 0.2 }, streak: inCity ? 0.25 * (1 - drainK) + 0.1 : 0.15, streakColor: [1.0, 0.85, 0.6], black: inCity ? 0.06 : 0.04, bloomCap: 3, hueKeep: 0.9 });
     },
     dispose() {
       disposers.forEach((d) => d());

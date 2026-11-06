@@ -150,13 +150,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <a href="/race/CREDITS.md" className="underline-offset-2 hover:underline">
                 credits
               </a>
-              ). History of the Pokémon World music by cynicmusic, CC0 (
+              ). The two films&apos; scores are original, written for PokéIQ and played with the MuseScore General sound font (MIT; strings from VSCO 2 CE, CC0) (credits:{" "}
               <a href="/audio/world-history/CREDITS.md" className="underline-offset-2 hover:underline">
-                credits
+                History of the Pokémon World
               </a>
-              ). Story of Pokémon music by sudocolon, TinyWorlds, OwlishMedia and codemanu, CC0 (
+              ,{" "}
               <a href="/audio/pokemon-story/CREDITS.md" className="underline-offset-2 hover:underline">
-                credits
+                Story of Pokémon
               </a>
               ).
             </p>

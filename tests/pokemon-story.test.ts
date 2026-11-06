@@ -164,6 +164,26 @@ describe("The Story of Pokémon: deep links and timing", () => {
   });
 });
 
+/** An MPEG-1 Layer III file's length: walk its frames (1152 samples each), skipping the Xing/LAME info frame. */
+function mp3Seconds(file: string): number {
+  const buf = readFileSync(file);
+  let i = 0;
+  if (buf.subarray(0, 3).toString() === "ID3") i = 10 + ((buf[6] << 21) | (buf[7] << 14) | (buf[8] << 7) | buf[9]);
+  const KBPS = [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320];
+  const RATE = [44100, 48000, 32000];
+  let frames = 0, rate = 44100;
+  while (i < buf.length - 4) {
+    if (!(buf[i] === 0xff && (buf[i + 1] & 0xe0) === 0xe0)) { i++; continue; }
+    const kbps = KBPS[buf[i + 2] >> 4], sr = RATE[(buf[i + 2] >> 2) & 3], pad = (buf[i + 2] >> 1) & 1;
+    if (!kbps || !sr) { i++; continue; }
+    const body = buf.subarray(i, i + 64).toString("latin1");
+    if (!(frames === 0 && (body.includes("Xing") || body.includes("Info")))) frames++;
+    rate = sr;
+    i += Math.floor((144000 * kbps) / sr) + pad;
+  }
+  return (frames * 1152) / rate;
+}
+
 describe("The Story of Pokémon: sound", () => {
   it("every music cue names a real beat, with every level in range, and every stem is credited", async () => {
     const { MOODS, MUSIC, HITS, hitsOf, mixAt, mixFor } = await import("@/components/pokemon-story/audio");
@@ -199,13 +219,14 @@ describe("The Story of Pokémon: sound", () => {
       const m = mixFor(film, filmAt(film, t));
       expect(m.bed + m.bright + m.drive + m.swell).toBeGreaterThan(0.2);
     }
-    // One song at a time: the tracks are separate pieces, so at most two are ever audible, and only while one fades into the other.
-    for (let t = 0; t < film.duration; t += 0.25) {
-      const m = mixFor(film, filmAt(film, t));
-      const audible = Object.values(m).filter((v) => v > 0.02);
-      expect(audible.length, `t=${t.toFixed(2)}: ${JSON.stringify(m)}`).toBeLessThanOrEqual(2);
-      if (audible.length === 2) expect(Math.min(...audible), `t=${t.toFixed(2)}: two songs at full level`).toBeLessThan(0.75);
-    }
+    // Never two different songs at once: every layer is a stem of the ONE score (same key, tempo and
+    // form), so each file is exactly one loop of the same length, and they're credited as arrangements.
+    const { LOOP, SOUND } = await import("@/components/pokemon-story/audio");
+    for (const url of Object.values(MUSIC)) expect(Math.abs(mp3Seconds(join(process.cwd(), "public", url)) - LOOP), url).toBeLessThan(0.12);
+    // Hits stay sparse and the effects sit under the music, the ambience lower still.
+    for (const c of CHAPTERS) expect(MOODS[c.id].hits.length, c.id).toBeLessThanOrEqual(4);
+    expect(SOUND.sfxGain).toBeLessThan(0.5);
+    expect(SOUND.ambGain).toBeLessThan(SOUND.sfxGain);
     const credits = readFileSync(join(process.cwd(), "public/audio/pokemon-story/CREDITS.md"), "utf8");
     for (const url of Object.values(MUSIC)) {
       expect(existsSync(join(process.cwd(), "public", url)), url).toBe(true);

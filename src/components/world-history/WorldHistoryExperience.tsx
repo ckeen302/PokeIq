@@ -442,6 +442,7 @@ export function WorldHistoryExperience({ initialChapter, children }: { initialCh
     // For automated checks and screenshots: move the film clock, read where it is.
     (window as unknown as { __wh?: unknown }).__wh = {
       setQuality(q: Quality) { sceneRef.current?.setQuality(q); setQualityState(q); },
+      probe: () => sceneRef.current?.probe() ?? null,
       seek(t: number, freeze = false) { show.current.playhead = show.current.target = t; show.current.frozen = freeze; show.current.frozenFrames = 0; },
       chapterStart: (i: number) => chapterStart(film, i),
       beatTime: (i: number, beat: number) => { const c = film.chapters[i]; return c.start + (c.beats[beat] ? animToFilm(c, c.beats[beat].anim) : 0); },
@@ -705,7 +706,7 @@ export function WorldHistoryExperience({ initialChapter, children }: { initialCh
           <AnimatePresence>
             {ready && ui.title === "prologue" && (
               <motion.div key="pro" className="wh-pro pointer-events-none absolute inset-x-0 top-[18%] z-[6] flex flex-col items-center px-6 text-center text-white" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} transition={{ duration: 0.9 }} data-testid="wh-prologue">
-                <p className="wh-title-k text-[10px] uppercase text-[#f2c96b] sm:text-xs">PokéIQ 3D Lab · In-universe history</p>
+                <p className="wh-title-k wh-tk text-[10px] uppercase text-[#f2c96b] sm:text-xs">PokéIQ 3D Lab · In-universe history</p>
                 <h1 className="wh-serif wh-title mt-3 max-w-4xl text-5xl font-semibold leading-[0.95] sm:text-7xl lg:text-8xl">The History of the Pokémon World</h1>
                 <p className="wh-cap-lead mt-4 max-w-xl text-sm text-white/80 sm:text-base">The story of the Pokémon world, as the games themselves tell it. Every line is sourced.</p>
                 <p className="wh-hint mt-6 inline-flex items-center gap-2 font-display text-[11px] font-semibold uppercase tracking-[0.2em] text-white/75">Scroll, or press play <ArrowDown className="h-3.5 w-3.5" aria-hidden /></p>
@@ -716,10 +717,13 @@ export function WorldHistoryExperience({ initialChapter, children }: { initialCh
           {/* A chapter's title card. */}
           <AnimatePresence>
             {ui.title === "chapter" && chapter && (
-              <motion.div key={`t-${chapter.id}`} className="pointer-events-none absolute inset-x-0 top-[20%] z-[6] flex flex-col items-center px-6 text-center text-white" initial={{ opacity: 0, scale: 1.08, filter: "blur(10px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, y: -14, filter: "blur(6px)" }} transition={{ duration: 0.8, ease: [0.2, 0.8, 0.2, 1] }} data-testid="wh-title-card">
-                <p className="wh-title-k text-[10px] uppercase sm:text-xs" style={{ color: chapter.accent }}>{chapter.numeral} · {chapter.region}</p>
-                <h2 className="wh-serif wh-title mt-2 text-5xl font-semibold leading-none sm:text-7xl">{chapter.title}</h2>
-                <p className="wh-serif wh-cap-lead mt-3 text-lg italic text-white/85 sm:text-2xl">{chapter.when}</p>
+              <motion.div key={`t-${chapter.id}`} className="pointer-events-none absolute inset-x-0 top-[20%] z-[6] flex flex-col items-center px-6 text-center text-white" initial={{ opacity: 0, scale: 1.03 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, y: -14, filter: "blur(6px)" }} transition={{ duration: 0.8, ease: [0.2, 0.8, 0.2, 1] }} data-testid="wh-title-card">
+                <p className="wh-title-k wh-tk text-[10px] uppercase sm:text-xs" style={{ color: chapter.accent }}>{chapter.numeral} · {chapter.region}</p>
+                <i className="wh-rule" style={{ ["--wh-accent" as string]: chapter.accent }} aria-hidden />
+                <h2 className="wh-serif wh-title mt-2 text-5xl font-semibold leading-none sm:text-7xl" aria-label={chapter.title}>
+                  <TitleWords text={chapter.title} />
+                </h2>
+                <p className="wh-serif wh-cap-lead wh-when mt-3 text-lg italic text-white/85 sm:text-2xl">{chapter.when}</p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -743,9 +747,9 @@ export function WorldHistoryExperience({ initialChapter, children }: { initialCh
           <div className="pointer-events-none absolute inset-x-0 bottom-[4.9rem] z-[6] px-4 sm:bottom-[5.6rem] sm:px-8 lg:right-48" aria-live="polite" data-testid="wh-caption-area">
             <AnimatePresence mode="wait">
               {beat && chapter && source && (
-                <motion.figure key={`${chapter.id}-${beat.id}`} className="max-w-[46rem] text-white" initial={{ opacity: 0, y: 14, filter: "blur(4px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} exit={{ opacity: 0, y: -8, filter: "blur(4px)" }} transition={{ duration: 0.55, ease: [0.2, 0.8, 0.2, 1] }} data-testid="wh-caption">
-                  {beat.lead && <p className="wh-cap-lead mb-2 font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-white/80 sm:text-xs">{beat.lead}</p>}
-                  <blockquote className={cn("wh-cap-q whitespace-pre-line text-[1.45rem] sm:text-3xl lg:text-[2.15rem]", !beat.quote && "not-italic")}>
+                <motion.figure key={`${chapter.id}-${beat.id}`} className="wh-lower max-w-[46rem] text-white" style={{ ["--wh-accent" as string]: chapter.accent }} initial={{ opacity: 0, y: 14, filter: "blur(4px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} exit={{ opacity: 0, y: -8, filter: "blur(4px)" }} transition={{ duration: 0.55, ease: [0.2, 0.8, 0.2, 1] }} data-testid="wh-caption">
+                  {beat.lead && <p className="wh-cap-lead wh-lead-in mb-2 font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-white/80 sm:text-xs">{beat.lead}</p>}
+                  <blockquote className={cn("wh-cap-q wh-wipe whitespace-pre-line text-[1.45rem] sm:text-3xl lg:text-[2.15rem]", !beat.quote && "not-italic")}>
                     {beat.quote ? `“${filmLine(beat)}”` : filmLine(beat)}
                   </blockquote>
                   <figcaption className="wh-cap-src mt-2.5 flex flex-wrap items-center gap-2 text-[11px] text-white/70 sm:text-xs">
@@ -839,6 +843,22 @@ export function WorldHistoryExperience({ initialChapter, children }: { initialCh
         </div>
       )}
     </>
+  );
+}
+
+/** A title whose words rise out of a mask one after another, then a light sweeps across them (motion in stage-css). */
+function TitleWords({ text }: { text: string }) {
+  const words = text.split(" ");
+  return (
+    <span className="wh-words">
+      {words.map((w, i) => (
+        <span key={i}>
+          <span className="wh-w" aria-hidden><span style={{ ["--i" as string]: i }}>{w}</span></span>
+          {i < words.length - 1 ? " " : ""}
+        </span>
+      ))}
+      <span className="wh-sweep" aria-hidden>{text}</span>
+    </span>
   );
 }
 

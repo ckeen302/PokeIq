@@ -199,11 +199,37 @@ export type Pose = "stand" | "net" | "seated" | "walk" | "point" | "lean";
 /** A limb segment between two points: a tapered cylinder with a rounded joint at each end. */
 function limb(parts: THREE.BufferGeometry[], a: THREE.Vector3, b: THREE.Vector3, ra: number, rb: number, joints = true) {
   const d = b.clone().sub(a), len = d.length();
-  const g = new THREE.CylinderGeometry(rb, ra, len, 10, 1, true);
+  const g = new THREE.CylinderGeometry(rb, ra, len, 14, 1, true);
   g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize()));
   g.translate((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
   parts.push(g);
-  if (joints) { parts.push(new THREE.SphereGeometry(ra, 10, 8).translate(a.x, a.y, a.z), new THREE.SphereGeometry(rb, 10, 8).translate(b.x, b.y, b.z)); }
+  // Joints as round as the limb and as finely divided, so the rim rolls over them without a seam or a bulge.
+  if (joints) { parts.push(new THREE.SphereGeometry(ra, 14, 10).translate(a.x, a.y, a.z), new THREE.SphereGeometry(rb, 14, 10).translate(b.x, b.y, b.z)); }
+}
+
+/** A hand: a flattened palm, four fingers with a slight curl and a thumb (a silhouette, so the shape is what reads). */
+function hand(parts: THREE.BufferGeometry[], wrist: THREE.Vector3, dir: THREE.Vector3, h: number, spread = 1) {
+  const f = dir.clone().normalize();
+  let side = new THREE.Vector3().crossVectors(f, new THREE.Vector3(0, 1, 0));
+  if (side.lengthSq() < 1e-4) side = new THREE.Vector3(1, 0, 0);
+  side.normalize();
+  const palmN = new THREE.Vector3().crossVectors(side, f).normalize();
+  const palm = wrist.clone().addScaledVector(f, 0.022 * h);
+  const pg = new THREE.SphereGeometry(0.021 * h, 12, 10).scale(1.15, 1.25, 0.5);
+  pg.applyQuaternion(new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(side, f, palmN)));
+  parts.push(pg.translate(palm.x, palm.y, palm.z));
+  for (let i = 0; i < 4; i++) {
+    const o = (i - 1.5) * 0.0105 * h * spread;
+    const base = palm.clone().addScaledVector(f, 0.02 * h).addScaledVector(side, o);
+    const len = (i === 1 || i === 2 ? 0.036 : 0.03) * h;
+    const mid = base.clone().addScaledVector(f, len * 0.55).addScaledVector(side, o * 0.15);
+    const tip = mid.clone().addScaledVector(f, len * 0.45).addScaledVector(palmN, -len * 0.25);
+    limb(parts, base, mid, 0.0056 * h, 0.005 * h);
+    limb(parts, mid, tip, 0.005 * h, 0.0042 * h);
+  }
+  const tb = palm.clone().addScaledVector(side, 0.017 * h).addScaledVector(f, -0.004 * h);
+  const tt = tb.clone().addScaledVector(side, 0.012 * h).addScaledVector(f, 0.022 * h).addScaledVector(palmN, -0.006 * h);
+  limb(parts, tb, tt, 0.0062 * h, 0.0048 * h);
 }
 
 /**
@@ -261,7 +287,7 @@ export function makeSilhouette(o: { height: number; pose?: Pose; child?: boolean
     limb(parts, knee, ankle, 0.036 * h, 0.024 * h);
     parts.push(new THREE.SphereGeometry(0.03 * h, 10, 8).scale(1.05, 0.75, 2.1).translate(ankle.x, ankle.y - 0.012 * h, ankle.z + 0.03 * h));
   });
-  // Arms: upper arm, forearm, a mitten hand; posture per pose.
+  // Arms: upper arm, forearm, a hand with fingers; posture per pose.
   void sh; void hp;
   const shL = up(P.sh - 0.025).add(V(-P.shX * 0.86, 0, 0)), shR = up(P.sh - 0.025).add(V(P.shX * 0.86, 0, 0));
   const arm = (s0: THREE.Vector3, dirE: THREE.Vector3, dirW: THREE.Vector3) => {
@@ -270,7 +296,7 @@ export function makeSilhouette(o: { height: number; pose?: Pose; child?: boolean
     limb(parts, s0, e, 0.032 * h, 0.026 * h);
     limb(parts, e, w, 0.026 * h, 0.02 * h);
     const hd = w.clone().addScaledVector(dirW, 0.03 * h);
-    parts.push(new THREE.SphereGeometry(0.026 * h, 10, 8).scale(0.75, 1.25, 0.6).translate(hd.x, hd.y, hd.z));
+    hand(parts, w, dirW, h, pose === "lean" ? 1.25 : 1);
     return hd;
   };
   let handR: THREE.Vector3;
@@ -639,13 +665,48 @@ export function makeGlobe(o: { radius: number; count: number; land: string; lit:
   });
   const points = new THREE.Points(geo, mat);
   points.frustumCulled = false;
-  // A faint body so the far side is hidden and the globe reads as a sphere.
-  const bodyMat = new THREE.MeshBasicMaterial({ color: col(o.sea ?? "#04101c"), transparent: true, opacity: 0.92 });
+  // A body so the far side is hidden and the globe reads as a sphere: an ocean lit softly from the
+  // upper left (a terminator, not a flat disc), with an atmosphere rim in the land's light.
+  const bodyMat = new THREE.ShaderMaterial({
+    uniforms: { uSea: { value: col(o.sea ?? "#04101c") }, uRim: { value: col(o.lit) } },
+    transparent: true,
+    vertexShader: /* glsl */ `
+      varying vec3 vN; varying vec3 vV;
+      void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }`,
+    fragmentShader: /* glsl */ `
+      uniform vec3 uSea, uRim; varying vec3 vN; varying vec3 vV;
+      void main(){
+        vec3 n = normalize(vN);
+        float key = clamp(dot(n, normalize(vec3(-0.55, 0.6, 0.6))), 0.0, 1.0);
+        float f = clamp(1.0 - dot(n, normalize(vV)), 0.0, 1.0);
+        float rim = f * f * f;
+        vec3 c = uSea * (0.4 + 1.25 * key) + uRim * rim * 0.35;
+        gl_FragColor = vec4(c, 0.94);
+      }`,
+  });
   const body = new THREE.Mesh(new THREE.SphereGeometry(o.radius * 0.985, 48, 32), bodyMat);
   const atmo = makeGlow({ pos: [0, 0, 0], size: o.radius * 3.1, color: o.lit, intensity: 0.22 });
+  // The atmosphere: a thin shell of light hugging the limb, brightest on the lit side (uAtmo 0: none).
+  const shellU = { uColor: { value: col(o.lit) }, uAtmo: { value: 0 } };
+  const shellMat = new THREE.ShaderMaterial({
+    uniforms: shellU, transparent: true, depthWrite: false, side: THREE.BackSide, blending: THREE.AdditiveBlending,
+    vertexShader: /* glsl */ `varying vec3 vN; varying vec3 vV; void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }`,
+    fragmentShader: /* glsl */ `
+      uniform vec3 uColor; uniform float uAtmo; varying vec3 vN; varying vec3 vV;
+      void main(){
+        vec3 n = normalize(vN);
+        float d = dot(n, normalize(vV));
+        float g = clamp(1.0 + d * 2.2, 0.0, 1.0);
+        g = g * g * g;
+        float side = 0.3 + 0.7 * clamp(dot(-n, normalize(vec3(-0.55, 0.6, 0.6))) * 0.5 + 0.5, 0.0, 1.0);
+        gl_FragColor = vec4(uColor * g * side * uAtmo, 1.0);
+      }`,
+  });
+  const shell = new THREE.Mesh(new THREE.SphereGeometry(o.radius * 1.07, 48, 32), shellMat);
+  shell.renderOrder = 4;
   const group = new THREE.Group();
-  group.add(body, points, atmo.sprite);
-  return { group, points, u, positions: new Float32Array(pos), dispose() { geo.dispose(); mat.dispose(); body.geometry.dispose(); bodyMat.dispose(); atmo.dispose(); } };
+  group.add(body, shell, points, atmo.sprite);
+  return { group, points, u, body: bodyMat, shell: shellU, positions: new Float32Array(pos), dispose() { geo.dispose(); mat.dispose(); body.geometry.dispose(); bodyMat.dispose(); shell.geometry.dispose(); shellMat.dispose(); atmo.dispose(); } };
 }
 
 /** Arcs of light over a sphere between pairs of points: drawn as streams of motes that travel and grow in as uGrow goes 0 → 1. */
@@ -775,32 +836,51 @@ export function makeStadium(o: { inner: number; outer: number; height: number; p
 // Cards, pixel creatures, type
 // ---------------------------------------------------------------------------
 
-/** An original trading-card face (gold frame, a holo window, lines of text), not any real card. */
+/** An original trading-card face (gold frame, a coloured body, an art window with a little scene, a name bar, lines of text), not any real card. */
 function cardTexture(seed: number): THREE.CanvasTexture {
   const cv = document.createElement("canvas");
-  cv.width = 128;
-  cv.height = 176;
+  const W = 256, H = 352;
+  cv.width = W;
+  cv.height = H;
   const g = cv.getContext("2d")!;
   const r = rng(seed);
-  const hues = [48, 12, 205, 120, 280, 330];
+  const hues = [48, 12, 205, 120, 280, 330, 190, 28];
   const hue = hues[Math.floor(r() * hues.length)];
-  g.fillStyle = "#f2c94c";
-  g.fillRect(0, 0, 128, 176);
-  g.fillStyle = `hsl(${hue} 70% 55%)`;
-  g.fillRect(7, 7, 114, 162);
-  g.fillStyle = "#fff8e0";
-  g.fillRect(14, 26, 100, 66);
-  g.fillStyle = `hsl(${hue} 60% 40%)`;
-  for (let i = 0; i < 4; i++) g.fillRect(16, 104 + i * 14, 60 + r() * 36, 6);
-  g.fillRect(14, 12, 58, 8);
-  drawCritter(g, 34, 30, 60, seed * 7 + 3, `hsl(${(hue + 180) % 360} 70% 45%)`);
+  // Gold frame with a bevel.
+  const fr = g.createLinearGradient(0, 0, W, H);
+  fr.addColorStop(0, "#fff0a0"); fr.addColorStop(0.5, "#e8b830"); fr.addColorStop(1, "#b07a10");
+  g.fillStyle = fr; g.fillRect(0, 0, W, H);
+  // The body: the type colour, lighter at the top.
+  const bd = g.createLinearGradient(0, 0, 0, H);
+  bd.addColorStop(0, `hsl(${hue} 80% 68%)`); bd.addColorStop(1, `hsl(${hue} 75% 42%)`);
+  g.fillStyle = bd; g.fillRect(12, 12, W - 24, H - 24);
+  // Name bar and a round energy mark.
+  g.fillStyle = `hsl(${hue} 60% 28%)`;
+  g.fillRect(24, 22, 110 + r() * 40, 14);
+  g.fillStyle = "#fff8e8"; g.beginPath(); g.arc(W - 36, 30, 12, 0, Math.PI * 2); g.fill();
+  g.fillStyle = `hsl(${hue} 85% 50%)`; g.beginPath(); g.arc(W - 36, 30, 8, 0, Math.PI * 2); g.fill();
+  // The art window: a little sky and ground, a sun, the creature.
+  const ax = 24, ay = 46, aw = W - 48, ah = 128;
+  g.fillStyle = "#c89a28"; g.fillRect(ax - 4, ay - 4, aw + 8, ah + 8);
+  const sk = g.createLinearGradient(0, ay, 0, ay + ah);
+  sk.addColorStop(0, `hsl(${(hue + 200) % 360} 70% 62%)`); sk.addColorStop(0.65, `hsl(${(hue + 170) % 360} 60% 84%)`); sk.addColorStop(0.66, `hsl(${(hue + 60) % 360} 45% 52%)`); sk.addColorStop(1, `hsl(${(hue + 60) % 360} 50% 34%)`);
+  g.fillStyle = sk; g.fillRect(ax, ay, aw, ah);
+  g.fillStyle = "rgba(255,250,220,0.9)"; g.beginPath(); g.arc(ax + aw * (0.2 + r() * 0.6), ay + 26, 12, 0, Math.PI * 2); g.fill();
+  drawCritter(g, W / 2 - 46, ay + 18, 92, seed * 7 + 3, `hsl(${(hue + 180) % 360} 70% 32%)`);
+  // Text lines, a divider and a little footer.
+  g.fillStyle = "#fff6dc"; g.fillRect(24, 188, W - 48, 118);
+  g.fillStyle = `hsl(${hue} 50% 30%)`;
+  for (let i = 0; i < 5; i++) g.fillRect(34, 200 + i * 20, 120 + r() * 70, 7);
+  g.fillRect(34, 300, W - 68, 2);
+  g.fillStyle = `hsl(${hue} 60% 24%)`; g.fillRect(24, 318, 60, 8); g.fillRect(W - 84, 318, 60, 8);
   const t = new THREE.CanvasTexture(cv);
   t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
   return t;
 }
 
-/** Hundreds of cards bursting out (uBurst 0 → 1) and fanning round a centre, holo-foil shimmering. */
-export function makeCardBurst(o: { count: number; center: Vec3; radius: number; size?: number; seed?: number }) {
+/** Hundreds of cards bursting out (uBurst 0 → 1) and fanning round a centre, holo-foil shimmering in the art window, backlit edges catching the light. */
+export function makeCardBurst(o: { count: number; center: Vec3; radius: number; size?: number; seed?: number; light?: Vec3 }) {
   const n = Math.max(1, Math.round(o.count));
   const base = new THREE.PlaneGeometry(o.size ?? 0.6, (o.size ?? 0.6) * 1.38);
   const geo = new THREE.InstancedBufferGeometry();
@@ -813,7 +893,11 @@ export function makeCardBurst(o: { count: number; center: Vec3; radius: number; 
   geo.setAttribute("aSeed", new THREE.InstancedBufferAttribute(seeds, 4));
   geo.instanceCount = n;
   const texs = [1, 2, 3, 4].map((s) => cardTexture(s + (o.seed ?? 0)));
-  const u = { uBurst: { value: 0 }, uTime: { value: 0 }, uCenter: { value: v3(o.center) }, uRadius: { value: o.radius }, uT0: { value: texs[0] }, uT1: { value: texs[1] }, uT2: { value: texs[2] }, uT3: { value: texs[3] }, uShow: { value: 1 } };
+  const u = {
+    uBurst: { value: 0 }, uTime: { value: 0 }, uCenter: { value: v3(o.center) }, uRadius: { value: o.radius },
+    uT0: { value: texs[0] }, uT1: { value: texs[1] }, uT2: { value: texs[2] }, uT3: { value: texs[3] }, uShow: { value: 1 },
+    uLight: { value: v3(o.light ?? [0, 0.4, -1]).normalize() }, uBright: { value: 1 },
+  };
   const mat = new THREE.ShaderMaterial({
     uniforms: u,
     side: THREE.DoubleSide,
@@ -822,14 +906,20 @@ export function makeCardBurst(o: { count: number; center: Vec3; radius: number; 
       varying vec2 vUv; varying float vPick; varying vec3 vN; varying vec3 vV; varying float vSeed;
       mat3 rotY(float a){ float c = cos(a), s = sin(a); return mat3(c, 0., -s, 0., 1., 0., s, 0., c); }
       mat3 rotX(float a){ float c = cos(a), s = sin(a); return mat3(1., 0., 0., 0., c, s, 0., -s, c); }
+      mat3 rotZ(float a){ float c = cos(a), s = sin(a); return mat3(c, s, 0., -s, c, 0., 0., 0., 1.); }
       void main(){
         float k = clamp(uBurst * 1.25 - aSeed.w * 0.25, 0.0, 1.0);
         float ik = 1.0 - k;
         float e = 1.0 - ik * ik * ik;
         float th = aSeed.x * 6.2831853 + uTime * 0.12 * (0.5 + aSeed.y);
-        float rad = uRadius * (0.35 + 0.65 * aSeed.y) * e;
-        vec3 off = vec3(cos(th) * rad, (aSeed.z - 0.5) * uRadius * 0.9 * e + sin(uTime * 0.7 + aSeed.x * 9.0) * 0.15, sin(th) * rad * 0.7);
-        mat3 R = rotY(th * 0.5 + uTime * (0.6 + aSeed.z) * e) * rotX((aSeed.y - 0.5) * 1.4 * e);
+        // One card in five flies out past the lens (big, close, framing the burst).
+        float near = step(0.8, aSeed.z);
+        float rad = uRadius * (0.35 + 0.65 * aSeed.y) * e * (1.0 + near * 0.55);
+        vec3 off = vec3(cos(th) * rad, (aSeed.z - 0.5) * uRadius * 0.9 * e + sin(uTime * 0.7 + aSeed.x * 9.0) * 0.15, sin(th) * rad * mix(0.7, 1.0, near));
+        // Most cards turn their faces to the lens as they fan out, rocking; one in four tumbles right over.
+        float tumble = step(0.75, fract(aSeed.x * 7.13));
+        float yaw = mix((aSeed.x - 0.5) * 1.4 + sin(uTime * (0.5 + aSeed.z) + aSeed.y * 9.0) * 0.45, th * 0.5 + uTime * (0.4 + aSeed.z * 0.6), tumble);
+        mat3 R = rotY(yaw * e) * rotX((aSeed.y - 0.5) * 0.9 * e) * rotZ((aSeed.w - 0.5) * 0.7 * e);
         vec3 p = R * (position * (0.15 + 0.85 * e));
         vec4 wp = modelMatrix * vec4(uCenter + off + p, 1.0);
         vUv = uv; vPick = floor(aSeed.w * 4.0); vSeed = aSeed.x;
@@ -838,26 +928,37 @@ export function makeCardBurst(o: { count: number; center: Vec3; radius: number; 
         gl_Position = projectionMatrix * viewMatrix * wp;
       }`,
     fragmentShader: /* glsl */ `
-      uniform sampler2D uT0, uT1, uT2, uT3; uniform float uTime, uShow; varying vec2 vUv; varying float vPick; varying vec3 vN; varying vec3 vV; varying float vSeed;
+      uniform sampler2D uT0, uT1, uT2, uT3; uniform float uTime, uShow, uBright; uniform vec3 uLight;
+      varying vec2 vUv; varying float vPick; varying vec3 vN; varying vec3 vV; varying float vSeed;
       void main(){
         if (vSeed > uShow) discard;
         vec3 c = vPick < 0.5 ? texture2D(uT0, vUv).rgb : vPick < 1.5 ? texture2D(uT1, vUv).rgb : vPick < 2.5 ? texture2D(uT2, vUv).rgb : texture2D(uT3, vUv).rgb;
-        float f = dot(vN, vV);
+        vec3 N = normalize(vN), V = normalize(vV);
+        float f = dot(N, V);
+        vec2 q = vUv - 0.5;
+        float edge = max(abs(q.x) * 2.0, abs(q.y) * 2.0);
         // The back: deep navy with a gold border and a swirl (original, no marks).
         if (f < 0.0) {
-          vec2 q = vUv - 0.5;
-          float border = step(0.43, max(abs(q.x) * 1.0, abs(q.y) * 0.74));
+          N = -N;
+          float border = step(0.86, edge);
           float sw = 0.5 + 0.5 * sin(atan(q.y, q.x) * 3.0 + length(q) * 26.0);
-          c = mix(vec3(0.06, 0.09, 0.3) + vec3(0.08, 0.1, 0.3) * sw * smoothstep(0.42, 0.0, length(q)), vec3(0.85, 0.65, 0.25), border);
+          c = mix(vec3(0.03, 0.05, 0.2) + vec3(0.06, 0.08, 0.3) * sw * smoothstep(0.42, 0.0, length(q)), vec3(0.8, 0.58, 0.18), border);
         }
         float af = abs(f);
-        // Lit by the burst's light: brighter face-on, a moving sheen band, rainbow foil at grazing angles.
-        float holo = sin((vUv.x + vUv.y) * 18.0 + f * 9.0 + uTime) * 0.5 + 0.5;
+        // Lit by a soft front fill and the backlight behind the burst: brighter face-on, gold rims where the cards turn edge-on to it.
+        float fill = 0.42 + 0.4 * af;
+        float back = clamp(dot(-N, uLight) * 0.5 + 0.5, 0.0, 1.0);
+        vec3 col = c * fill;
+        // Holo foil only in the art window: rainbow that shifts with the angle, and a sweeping sheen band.
+        float win = step(0.1, vUv.x) * step(vUv.x, 0.9) * step(0.5, vUv.y) * step(vUv.y, 0.87) * step(0.0, f);
+        float holo = sin((vUv.x * 1.3 + vUv.y) * 14.0 + f * 7.0 + uTime * 0.8 + vSeed * 6.0) * 0.5 + 0.5;
         vec3 rainbow = 0.5 + 0.5 * cos(6.2831 * (holo + vec3(0.0, 0.33, 0.67)));
-        float band = smoothstep(0.12, 0.0, abs(fract(vUv.x * 0.7 + vUv.y * 0.5 - uTime * 0.25 + vSeed * 3.0) - 0.5) - 0.3);
+        col = mix(col, col * 0.55 + rainbow * 0.5, win * 0.55);
+        float band = smoothstep(0.1, 0.0, abs(fract(vUv.x * 0.7 + vUv.y * 0.5 - uTime * 0.22 + vSeed * 3.0) - 0.5) - 0.32);
+        col += vec3(1.0, 0.96, 0.86) * band * (0.18 + 0.4 * win) * af;
         float g = clamp(1.0 - af, 0.0, 1.0);
-        c = c * (0.4 + 0.42 * af) + rainbow * (0.12 + 0.4 * g * g) + vec3(1.0, 0.95, 0.85) * band * 0.3;
-        gl_FragColor = vec4(c, 1.0);
+        col += vec3(1.0, 0.78, 0.35) * (g * g * 0.9 + smoothstep(0.9, 1.0, edge) * 0.5) * (0.35 + 0.65 * back);
+        gl_FragColor = vec4(col * uBright, 1.0);
       }`,
   });
   const mesh = new THREE.Mesh(geo, mat);
@@ -1189,13 +1290,15 @@ export function makeTowers(o: { towers: TowerSpec[]; seed?: number; haze?: strin
   const u = {
     uLit: { value: 1 }, uBody: { value: 0.42 }, uTime: { value: 0 }, uHaze: { value: col(o.haze ?? "#1a2236") }, uHazeHigh: { value: col(o.hazeHigh ?? "#0c1220") }, uFog: { value: o.fog ?? 0.012 },
     uStreet: { value: col(o.street ?? "#ff9a4a") }, uMoon: { value: v3(o.moon ?? [-0.4, 0.6, 0.5]).normalize() }, uSky: { value: col("#3a4a6a") },
+    /** A light source in the city (a crowded park, a lit tower): xyz and radius, its colour × strength (0: none). */
+    uGlowAt: { value: new THREE.Vector4(0, 0, 0, 1) }, uGlowCol: { value: new THREE.Color(0, 0, 0) },
   };
   const mat = new THREE.ShaderMaterial({
     uniforms: u,
     vertexShader: /* glsl */ `attribute vec4 aB; varying vec3 vW; varying vec3 vN; varying vec4 vB; void main(){ vec4 wp = modelMatrix * vec4(position, 1.0); vW = wp.xyz; vN = normalize(mat3(modelMatrix) * normal); vB = aB; gl_Position = projectionMatrix * viewMatrix * wp; }`,
     fragmentShader: /* glsl */ `
       ${NOISE}
-      uniform float uLit, uTime, uFog, uBody; uniform vec3 uHaze, uHazeHigh, uStreet, uMoon, uSky;
+      uniform float uLit, uTime, uFog, uBody; uniform vec3 uHaze, uHazeHigh, uStreet, uMoon, uSky, uGlowCol; uniform vec4 uGlowAt;
       varying vec3 vW; varying vec3 vN; varying vec4 vB;
       void main(){
         float seed = vB.x, kind = vB.z;
@@ -1256,6 +1359,10 @@ export function makeTowers(o: { towers: TowerSpec[]; seed?: number; haze?: strin
           // Light bounced up from the lit street.
           c += uStreet * 0.16 * exp(-y * 0.5) * uLit;
         }
+        // Light from the glow source on the walls that face it.
+        vec3 gd = uGlowAt.xyz - vW;
+        float gl = exp(-dot(gd, gd) / (uGlowAt.w * uGlowAt.w)) * (0.35 + 0.65 * max(dot(normalize(vN), normalize(gd + vec3(0.0, 1e-3, 0.0))), 0.0));
+        c += uGlowCol * gl;
         // Haze: thicker low down, blue-violet up high.
         float dist = length(vW - cameraPosition);
         float f = 1.0 - exp(-dist * uFog);
