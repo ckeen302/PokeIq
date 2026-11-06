@@ -71,9 +71,21 @@ export const MIXED_SLOPE = 0.08;
 export const MIXED_SIGMA = 4;
 /**
  * How much tighter than its own framing a big neighbour may stand in the mixed framing (ln distance): it fills up to
- * about 73% of the frame's height instead of 54%, so the shot before and after it needn't pull back quite as far.
+ * about 73% of the frame's height instead of 54% (and never more than MAX_FILL_W of its width), so the shot before
+ * and after it needn't pull back quite as far.
  */
 export const MIXED_ROOM = 0.3;
+/** The most of the frame's width any figure may fill in the mixed framing. */
+export const MAX_FILL_W = 0.9;
+
+/** The least camera distance at which a w × h figure still has room in the mixed framing (never cut off). */
+export function roomDistance(w: number, h: number, lens: Lens): number {
+  const tv = Math.tan(rad(lens.vfov) / 2);
+  const th = tv * lens.aspect;
+  const k = Math.exp(MIXED_ROOM);
+  const fillW = Math.min(MAX_FILL_W, (lens.aspect < 0.8 ? FILL_W_PORTRAIT : FILL_W) * k);
+  return Math.max(h / (FILL_H * k * 2 * tv), w / (fillW * 2 * th), MIN_D);
+}
 
 const gauss = (v: number[], sigma: number) => {
   const R = Math.ceil(sigma * 3);
@@ -101,18 +113,18 @@ function cone(v: number[], slope: number): number[] {
 /**
  * A smooth running envelope over a sequence of log framing distances along a line: the neighbourhood's own framing
  * (a log mean over about eight figures either way, a little loose), raised wherever a bigger neighbour needs more
- * room (each figure's framing less `room`, on a cone of the given slope), then smoothed without corners. Both bounds
- * hold exactly: it changes by at most `slope` per figure and never frames a figure tighter than its framing less
- * `room` (plus a margin for a hold's gentle push-in).
+ * room (`tight`: the least each figure may be framed at, on a cone of the given slope), then smoothed without corners.
+ * Both bounds hold exactly: it changes by at most `slope` per figure and never frames a figure tighter than `tight`
+ * (plus a margin for a hold's gentle push-in).
  */
-export function envelope(raw: number[], slope = MIXED_SLOPE, sigma = MIXED_SIGMA, room = MIXED_ROOM): number[] {
+export function envelope(raw: number[], tight: number[] = raw.map((r) => r - MIXED_ROOM), slope = MIXED_SLOPE, sigma = MIXED_SIGMA): number[] {
   if (raw.length < 2) return raw.slice();
   const around = gauss(raw, 8).map((x) => x + 0.15);
-  const big = cone(raw.map((r) => r - room), slope);
+  const big = cone(tight, slope);
   // A Gaussian takes about slope · sigma · √(2/π) off the tip of a cone: raised by that first.
   const lift = slope * sigma * 0.8;
   const base = cone(around.map((x, i) => Math.max(x, big[i]) + lift), slope);
-  const floor = (i: number) => raw[i] - room + 0.06;
+  const floor = (i: number) => tight[i] + 0.06;
   return cone(gauss(base, sigma).map((x, i) => Math.max(x, floor(i))), slope);
 }
 
@@ -123,7 +135,7 @@ export function envelope(raw: number[], slope = MIXED_SLOPE, sigma = MIXED_SIGMA
 export function framer(placed: Placed[], lens: Lens, framing: Framing = "size"): Framer {
   const raw = placed.map((p) => Math.log(frameDistance(p.w, p.h, lens)));
   const R = 3;
-  const logD = framing === "mixed" ? envelope(raw) : raw.map((_, i) => {
+  const logD = framing === "mixed" ? envelope(raw, placed.map((p) => Math.log(roomDistance(p.w, p.h, lens)))) : raw.map((_, i) => {
     let s = 0, n = 0;
     for (let k = -R; k <= R; k++) {
       const j = i + k;

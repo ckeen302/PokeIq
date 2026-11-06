@@ -10,7 +10,7 @@ import {
   orderRange, orderSegment, orderSpanFact, orderTag, orderTitle, orderValue, parseOrder, parseOrderSegment, ringRuleFor, withOrder, type Order, type OrderKey,
 } from "@/lib/sizes/order";
 import { everythingLine, listCaption, listItems, listNote, listOrder, listRows, neighbourLine } from "@/lib/sizes/list";
-import { FILL_H, MIXED_ROOM, MIXED_SLOPE, envelope, frameDistance, framer, glideAt, type Lens } from "@/lib/sizes/glide";
+import { FILL_H, MAX_FILL_W, MIXED_ROOM, MIXED_SLOPE, envelope, roomDistance, frameDistance, framer, glideAt, type Lens } from "@/lib/sizes/glide";
 import { holdsFor, planPlay } from "@/lib/sizes/play";
 import { planWorld } from "@/lib/sizes/world";
 import { BASE_YAW } from "@/lib/sizes/camera";
@@ -294,7 +294,7 @@ describe("Order by: the camera in a mixed line", () => {
     expect(MOST).toBeLessThan(0.75);
     const fr = framer(placed, lens, "mixed");
     for (let i = 0; i < placed.length; i++) {
-      expect(fr.logD[i]).toBeGreaterThanOrEqual(raw[i] - MIXED_ROOM);
+      expect(fr.logD[i]).toBeGreaterThanOrEqual(Math.log(roomDistance(placed[i].w, placed[i].h, lens)));
       if (i) expect(Math.abs(fr.logD[i] - fr.logD[i - 1])).toBeLessThanOrEqual(MIXED_SLOPE + 1e-9);
     }
     // In this order the sizes jump about: figure to figure, the raw framing swings far more than the envelope.
@@ -324,12 +324,23 @@ describe("Order by: the camera in a mixed line", () => {
       const p = placed[s.index];
       for (let t = s.t0; t <= s.t1; t += 0.05) {
         const st = glideAt(mixed.g, t);
-        expect(st.d).toBeGreaterThanOrEqual(frameDistance(p.w, p.h, lens) * Math.exp(-MIXED_ROOM));
+        expect(st.d).toBeGreaterThanOrEqual(roomDistance(p.w, p.h, lens));
       }
     }
     // Every figure, as the camera reaches it, has that room too.
     const fr = framer(placed, lens, "mixed");
-    for (let i = 0; i < placed.length; i++) expect(fr.at(placed[i].x)).toBeGreaterThanOrEqual(frameDistance(placed[i].w, placed[i].h, lens) * Math.exp(-MIXED_ROOM) * (1 - 1e-9));
+    for (let i = 0; i < placed.length; i++) expect(fr.at(placed[i].x)).toBeGreaterThanOrEqual(roomDistance(placed[i].w, placed[i].h, lens) * (1 - 1e-9));
+    // The same on a phone's tall frame, where a wide giant (Eternamax Eternatus) is bound by the frame's width.
+    const phone: Lens = { vfov: 46, aspect: 390 / 716 };
+    const pg = planPlay(placed, phone, { framing: "mixed" }).glide;
+    const pf = framer(placed, phone, "mixed");
+    for (let i = 0; i < placed.length; i++) {
+      const d = pf.at(placed[i].x);
+      const tv = Math.tan((phone.vfov * Math.PI) / 360);
+      expect(placed[i].h / (2 * d * tv)).toBeLessThanOrEqual(0.75);
+      expect(placed[i].w / (2 * d * tv * phone.aspect)).toBeLessThanOrEqual(MAX_FILL_W + 1e-9);
+    }
+    for (const s of pg.stops) for (let t = s.t0; t <= s.t1; t += 0.1) expect(glideAt(pg, t).d).toBeGreaterThanOrEqual(roomDistance(placed[s.index].w, placed[s.index].h, phone) * 0.95);
   });
 
   it("a mixed line stays on the boulevard unless it ends in giants; Height smallest first keeps its ring", () => {
