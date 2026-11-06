@@ -81,7 +81,7 @@ export const build: ChapterBuilder = async (ctx) => {
   // ---- The tearing: fire to one side, lightning to the other.
   const DRAGON: Vec3 = [0, gh(0, -14) + 4, -14];
   const RES_TO: Vec3 = [-13, gh(-13, -12) + 3, -12], ZEK_TO: Vec3 = [13, gh(13, -12) + 3, -12];
-  const tearRing = makeRing({ color: "#fff4e8", intensity: 1.2, thickness: 0.04 });
+  const tearRing = makeRing({ color: "#ffe8f0", intensity: 0.85, thickness: 0.035 });
   tearRing.mesh.position.set(DRAGON[0], DRAGON[1] + 7, DRAGON[2]);
   tearRing.mesh.scale.setScalar(40);
   scene.add(tearRing.mesh);
@@ -144,8 +144,8 @@ export const build: ChapterBuilder = async (ctx) => {
   const res = figs.get(RESHIRAM), zek = figs.get(ZEKROM), kyu = figs.get(KYUREM);
   place(res, DRAGON, 13, 0, scene);
   place(zek, [DRAGON[0], DRAGON[1], DRAGON[2] - 0.6], 13, 0, scene);
-  figureStyle(res, { rim: "#ffd090", rimK: 2.0, glow: "#ffd8a0", glowK: 0.03, edge: "#ffffff" });
-  figureStyle(zek, { rim: "#6aa8ff", rimK: 2.2, glow: "#4a8aff", glowK: 0.03, edge: "#9ad0ff" });
+  figureStyle(res, { rim: "#ffb860", rimK: 2.6, glow: "#ffd8a0", glowK: 0.03, edge: "#ffffff" });
+  figureStyle(zek, { rim: "#4a90ff", rimK: 2.8, glow: "#4a8aff", glowK: 0.03, edge: "#9ad0ff" });
   const KY: Vec3 = [ICE[0], -0.5, ICE[2] - 12];
   place(kyu, KY, 9, 0, scene);
   figureStyle(kyu, { rim: "#bfe8ff", rimK: 1.8, glow: "#6ab8ff", glowK: 0.06, edge: "#e0f4ff", dissolve: 0, shadow: 0.35 });
