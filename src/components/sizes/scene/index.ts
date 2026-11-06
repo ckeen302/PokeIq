@@ -326,12 +326,15 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     }
     return t;
   };
+  // Low quality (phones): colour maps only. The normal and roughness maps are two thirds of the
+  // city's texture downloads and barely show on a small screen.
+  const lean = quality === "low";
   const pbr = (name: string, tile: number, o: { color?: string; normalScale?: number } = {}): THREE.MeshStandardMaterialParameters => {
     void tile;
     return {
       map: loadTex(name, "diff"),
-      normalMap: loadTex(name, "nor"),
-      roughnessMap: loadTex(name, "rough"),
+      normalMap: lean ? null : loadTex(name, "nor"),
+      roughnessMap: lean ? null : loadTex(name, "rough"),
       normalScale: new THREE.Vector2(o.normalScale ?? 1, o.normalScale ?? 1),
       color: o.color ?? "#ffffff",
       roughness: 1,

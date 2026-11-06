@@ -58,14 +58,14 @@ export default async function SharedResultPage({ params }: PageProps) {
           {view.chips.length > 0 && (
             <div className="flex flex-wrap justify-center gap-2">
               {view.chips.map((c) => (
-                <span key={c} className="rounded-sm border bg-shade/20 px-2 py-1 font-pixel text-[10px] uppercase">
+                <span key={c} className="rounded-sm border bg-shade/20 px-2 py-1 font-pixel text-[10px] uppercase max-sm:rounded-full max-sm:px-3 max-sm:font-sans max-sm:text-xs max-sm:font-medium max-sm:normal-case">
                   {c}
                 </span>
               ))}
             </div>
           )}
           <p className="text-sm text-muted-foreground">Think you can beat it? Free, no sign-up, right in your browser.</p>
-          <Link href={view.playHref} className={cn(buttonVariants({ size: "lg" }), "h-14 w-full text-base")} data-testid="share-play">
+          <Link href={view.playHref} className={cn(buttonVariants({ size: "lg" }), "h-14 w-full text-base max-sm:gap-2 max-sm:px-3 max-sm:tracking-wide")} data-testid="share-play">
             <Play className="h-5 w-5" aria-hidden /> {view.playLabel}
           </Link>
           <Link href="/" className={cn(buttonVariants({ variant: "outline" }), "w-full")}>
