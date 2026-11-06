@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
-import { col, makeCloudLayer, makeConverge, makeGlow, makeLightning, makeOcean, makeParticles, makeRing, makeShaft, makeSky, makeStreaks, makeTerrain, noise2, ramp, rng, strikeAt } from "../kit";
+import { col, makeCloudLayer, makeConverge, makeGlow, makeLightning, makeOcean, makeParticles, makeRing, makeShaft, makeSky, makeStreaks, makeSunburst, makeTerrain, noise2, ramp, rng, strikeAt } from "../kit";
 import { makeLanterns, makeMeteor } from "../props";
 import type { ChapterBuilder, Look } from "../types";
 import { actionCurve, hitCurve } from "../figures";
@@ -78,7 +78,7 @@ export const build: ChapterBuilder = async (ctx) => {
   scene.add(clouds.mesh);
   disposers.push(clouds.dispose);
   clouds.u.uHoleGlow.value.copy(col("#3cffa0", 1.4));
-  const rain = makeStreaks({ count: P(3200), center: [0, 18, 6], extent: [70, 22, 60], velocity: [-5, -38, -2], life: 0.9, length: 2.6, width: 0.025, color: "#a8b8d8", intensity: 0.4 });
+  const rain = makeStreaks({ count: P(3600), center: [0, 18, 6], extent: [70, 22, 60], velocity: [-5, -38, -2], life: 0.9, length: 2.8, width: 0.03, color: "#b8d8d0", intensity: 0.75 });
   scene.add(rain.mesh);
   disposers.push(rain.dispose);
   const bolts = [makeLightning({ color: "#bcd0ff", width: 0.45, intensity: 7, branches: 5 }), makeLightning({ color: "#ffd2a8", width: 0.4, intensity: 6, branches: 4 })];
@@ -103,7 +103,11 @@ export const build: ChapterBuilder = async (ctx) => {
   const L = lights(scene, { sky: "#6070a0", ground: "#120c0a", fill: 0.3, key: "#c8d4ff", keyK: 1.1, keyPos: [10, 30, 30], rim: "#ffb080", rimK: 1.0, rimPos: [-30, 10, -60] });
 
   // ---- Rayquaza's descent.
-  const shaft = makeShaft({ from: [0, 100, -36], to: [0, 0, -36], r0: 3.5, r1: 18, color: "#6dffb4", intensity: 0.3, noise: 0.6 });
+  const shaft = makeShaft({ from: [0, 100, -36], to: [0, 0, -36], r0: 4.5, r1: 22, color: "#5dffaa", intensity: 0.8, noise: 0.7 });
+  // Emerald rays breaking out around Rayquaza as it comes down through the hole in the storm.
+  const rayBurst = makeSunburst({ size: 90, color: "#5dffaa", core: "#d8ffe8", intensity: 0, rays: 12, coreK: 0.25, seed: 4 });
+  scene.add(rayBurst.mesh);
+  disposers.push(rayBurst.dispose);
   scene.add(shaft.mesh);
   disposers.push(shaft.dispose);
   const halo = makeGlow({ pos: [0, 24, -36], size: 60, color: "#4affa8", intensity: 0 });
@@ -319,6 +323,12 @@ export const build: ChapterBuilder = async (ctx) => {
       shaft.u.uTime.value = ambient;
       shaft.u.uOpacity.value = night ? 0 : desc * (1 - ramp(t, tCalm + 1, tCalm + 3.4) * 0.8);
       halo.sprite.position.copy(rayPos);
+      rayBurst.mesh.position.set(rayPos.x, rayPos.y + 2, rayPos.z - 6);
+      rayBurst.mesh.quaternion.copy(cam.quaternion);
+      rayBurst.u.uTime.value = ambient;
+      rayBurst.u.uK.value = 0.5 + 0.5 * desc;
+      rayBurst.u.uIntensity.value = night ? 0 : desc * (0.55 + 0.5 * spike(t, tCalm, 0.1, 1.4)) * (1 - calm * 0.7);
+      rayBurst.mesh.visible = rayBurst.u.uIntensity.value > 0.002;
       halo.set("#4affa8", night ? 0 : desc * (0.35 + 0.5 * spike(t, tCalm, 0.1, 1.2)) * (1 - calm * 0.6));
       wave.u.uK.value = ramp(t, tCalm, tCalm + 2.4);
       wave.u.uTime.value = ambient;
