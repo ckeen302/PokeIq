@@ -82,6 +82,28 @@ describe("indoor cameras", () => {
   });
 });
 
+describe("a throw with no mark", () => {
+  it("keeps the camera in close on the athlete straining, with no flight to follow", () => {
+    // Magikarp can't lift the 7.26 kg shot.
+    const out = runEvent("shot-put", FIELD, 7);
+    const seq = eventShow(out, byKey, { budget: 72 });
+    const beats = seq.beats.filter((b) => b.kind === "action" && b.key === "magikarp");
+    expect(beats.length).toBeGreaterThan(0);
+    const aspect = 16 / 9;
+    for (const b of beats) {
+      for (let t = b.t0; t < b.t1; t += 0.1) {
+        const f = seq.at(t, aspect);
+        const who = f.actors.find((a) => a.key === "magikarp")!.pose;
+        expect(Math.hypot(f.pose.target[0] - who.x, f.pose.target[2] - who.z), `t ${t.toFixed(1)}`).toBeLessThan(3);
+        // The width of the picture where it stands: a 0.9 m fish fills it, not a landing zone.
+        const d = Math.hypot(f.pose.pos[0] - who.x, f.pose.pos[1] - who.y, f.pose.pos[2] - who.z);
+        const across = 2 * d * Math.tan((f.pose.fov * Math.PI) / 360) * aspect;
+        expect(across, `t ${t.toFixed(1)}`).toBeLessThan(5.5);
+      }
+    }
+  });
+});
+
 describe("the Games", () => {
   const all = new Map<string, Athlete>([...GAMES_BY_KEY]);
   const ns = buildNations(DEFAULT_NATIONS.slice(0, 4), all, (RECORDS as unknown as RecordsFile).nations);

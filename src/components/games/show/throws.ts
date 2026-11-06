@@ -137,7 +137,8 @@ export function throwShow(result: ThrowResult, o: ShowOptions): Show {
       case "startlist":
         return drift(framed([lineX - 20, 8, cz + 26 * back], [lineX - 30, 0, cz], 40, 12, aspect, 10, 55), t);
       case "throw":
-        return tau < 0 || !s.pos ? thrower() : mixPose(thrower(), flight(), smooth(0.02, 0.45, tau));
+        // (No flight to follow when it can't lift the implement: the camera stays on the strain.)
+        return tau < 0 || !s.pos || it.plan.noMark ? thrower() : mixPose(thrower(), flight(), smooth(0.02, 0.45, tau));
       case "mark": {
         // The measurement: from just past the mark, looking back the way it came: the implement in the turf,
         // the tape running back to the line, the tracer's arc overhead.
