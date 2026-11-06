@@ -39,8 +39,11 @@ export function HeroCarousel() {
   const [focused, setFocused] = useState(false);
   /** On screen (clips pause and the slideshow waits while it's scrolled away). */
   const [seen, setSeen] = useState(true);
-  /** Slides whose clip may load: the one on screen, and the next shortly before its turn. */
-  const [warm, setWarm] = useState<ReadonlySet<number>>(() => new Set());
+  /** The next slide's clip may load (shortly before its turn). */
+  const [ahead, setAhead] = useState(false);
+  /** The slide fading out keeps its clip (frozen where it was) until it has gone. */
+  const [leaving, setLeaving] = useState<number | null>(null);
+  const shownIndex = useRef(0);
   const root = useRef<HTMLDivElement>(null);
   const count = HOME_SECTIONS.length;
 
@@ -91,11 +94,16 @@ export function HeroCarousel() {
   /** The controls were touched: fetch every poster, so any slide shows at once. */
   const prime = useCallback(() => load(...HOME_SECTIONS.map((_, i) => i)), [load]);
 
-  // The clip on screen may load once the page has settled (the poster is the hero image until then).
+  // A change of slide: the next clip isn't asked for yet; the old one stays while it fades out.
   useEffect(() => {
-    if (!started) return;
-    setWarm((w) => (w.has(index) ? w : new Set([...w, index])));
-  }, [started, index]);
+    const was = shownIndex.current;
+    shownIndex.current = index;
+    setAhead(false);
+    if (was === index) return;
+    setLeaving(was);
+    const gone = window.setTimeout(() => setLeaving(null), FADE_MS);
+    return () => window.clearTimeout(gone);
+  }, [index]);
 
   const next = useCallback(() => setIndex((i) => (i + 1) % count), [count]);
 
@@ -104,7 +112,7 @@ export function HeroCarousel() {
     if (!playing || hidden || focused || !started || !seen) return;
     const prefetch = window.setTimeout(() => {
       load((index + 1) % count);
-      setWarm((w) => new Set([...w, (index + 1) % count]));
+      setAhead(true);
     }, ROTATE_MS - PREFETCH_MS);
     const timer = window.setTimeout(next, ROTATE_MS);
     return () => {
@@ -119,7 +127,7 @@ export function HeroCarousel() {
       if (!playing || focused) return;
       if (times === 1) {
         load((index + 1) % count);
-        setWarm((w) => new Set([...w, (index + 1) % count]));
+        setAhead(true);
       }
       if (times >= PLAYS) next();
     },
@@ -178,7 +186,7 @@ export function HeroCarousel() {
               className={cn("absolute inset-0 transition-opacity ease-in-out motion-reduce:transition-none", on ? "opacity-100" : "opacity-0")}
               style={{ transitionDuration: `${FADE_MS}ms` }}
             >
-              <HeroClip clip={section.clip} active={on} load={warm.has(i)} run={run && on} priority={i === 0} posterReady={mounted.has(i)} onPlayed={on ? played : undefined} />
+              <HeroClip clip={section.clip} active={on} load={started && (on || i === leaving || (ahead && i === (index + 1) % count))} run={run && on} priority={i === 0} posterReady={mounted.has(i)} onPlayed={on ? played : undefined} />
             </div>
           );
         })}

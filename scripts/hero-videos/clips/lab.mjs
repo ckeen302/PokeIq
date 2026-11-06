@@ -5,10 +5,10 @@
  * controls are hidden (the slide's title sits on top of the clip).
  */
 const T = Number(process.env.HERO_LAB_T ?? 186);
-const SECONDS = Number(process.env.HERO_LAB_SECONDS ?? 9.2);
+const SECONDS = Number(process.env.HERO_LAB_SECONDS ?? 7.2);
 
 // Software WebGL is slow: render at the output's own size (1600×900 under the header; a phone at 2×).
-export const setup = (phone) => ({ fps: 30, dpr: phone ? 2 : 1, viewport: phone ? { width: 400, height: 860 } : { width: 1600, height: 956 } });
+export const setup = (phone) => ({ fps: 30, dpr: phone ? 2 : 1, viewport: phone ? { width: 400, height: 860 } : { width: 1280, height: 776 } });
 export const encode = () => ({ fade: 0.8 });
 
 export async function run(rec, { base, phone }) {

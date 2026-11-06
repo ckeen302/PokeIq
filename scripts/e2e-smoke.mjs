@@ -3733,9 +3733,9 @@ async function homeStep() {
       const v = await clip.evaluate((el) => ({ src: el.currentSrc, muted: el.muted, inline: el.playsInline, w: el.videoWidth, t: el.currentTime }));
       if (!/-desktop(\.av1)?\.mp4$/.test(v.src) || !v.muted || !v.inline || v.w !== 1600) errors.push(`home: the ${name} clip is ${JSON.stringify(v)}`);
     }
-    // Only the slide on screen and the next one have a clip.
+    // Only the slide on screen has a clip (with the one fading out, and the next when it's due).
     const clips = await hero.locator("video[data-testid=hero-video]").count();
-    if (clips > 2) errors.push(`home: ${clips} clips on the page on the ${name} slide (at most the one on screen and the next)`);
+    if (clips > 3) errors.push(`home: ${clips} clips on the page on the ${name} slide (at most the one on screen, the one fading out and the next)`);
   }
   // No shared headline; the page's one h1 is there for search engines and screen readers.
   if (await p.getByText(/Guess the place|Win the battle/i).count()) errors.push("home: the old shared headline is still on the page");
