@@ -11,19 +11,24 @@ import { HOME_SECTIONS } from "./sections";
 /** How long each tab stays on screen. */
 const ROTATE_MS = 25_000;
 const FADE_MS = 1200;
+/** The next slide's screenshot starts loading this long before it shows. */
+const PREFETCH_MS = 6000;
 
 /**
  * The title screen's picture: one slide per tab of the site, in the nav's
  * order, changing every 25 seconds with a slow crossfade. PokéGuessr comes
  * first and is the page's hero image (server-rendered, loaded with the page);
- * the other screenshots load once the page has gone idle. Dots pick a slide
+ * the clock starts once the page has gone idle, and each other screenshot
+ * loads shortly before its turn, or as soon as the controls are touched, so
+ * the first load carries only the hero image. Dots pick a slide
  * and a button pauses it (WCAG 2.2.2); it doesn't move by itself for reduced
  * motion, and waits while the tab is in the background.
  */
 export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; map: { src: string; width: number; height: number } } }) {
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
-  const [armed, setArmed] = useState(false);
+  const [started, setStarted] = useState(false);
+  const [mounted, setMounted] = useState<ReadonlySet<number>>(() => new Set([0]));
   const [hidden, setHidden] = useState(false);
   const [focused, setFocused] = useState(false);
   const count = HOME_SECTIONS.length;
@@ -33,12 +38,12 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) setPlaying(false);
   }, []);
 
-  // The other screenshots wait until the page has loaded and gone idle, so the hero image keeps the bandwidth.
+  // The clock starts once the page has loaded and gone idle, so the hero image keeps the bandwidth.
   useEffect(() => {
     let idle: number | undefined;
     let timer: number | undefined;
     const arm = () => {
-      const go = () => setArmed(true);
+      const go = () => setStarted(true);
       if (typeof window.requestIdleCallback === "function") idle = window.requestIdleCallback(go, { timeout: 4000 });
       else timer = window.setTimeout(go, 1500);
     };
@@ -61,17 +66,31 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
     return () => document.removeEventListener("visibilitychange", sync);
   }, []);
 
-  // A fresh 25 seconds after every change, and after the tab comes back.
-  useEffect(() => {
-    if (!playing || hidden || focused || !armed) return;
-    const timer = window.setTimeout(() => setIndex((i) => (i + 1) % count), ROTATE_MS);
-    return () => window.clearTimeout(timer);
-  }, [index, playing, hidden, focused, armed, count]);
-
-  const show = useCallback((i: number) => {
-    setArmed(true);
-    setIndex(i);
+  const load = useCallback((...slides: number[]) => {
+    setMounted((m) => (slides.every((i) => m.has(i)) ? m : new Set([...m, ...slides])));
   }, []);
+  /** The controls were touched: fetch every screenshot, so a dot shows its slide at once. */
+  const prime = useCallback(() => load(...HOME_SECTIONS.map((_, i) => i)), [load]);
+
+  // A fresh 25 seconds after every change, and after the tab comes back; the next screenshot loads a little before.
+  useEffect(() => {
+    if (!playing || hidden || focused || !started) return;
+    const prefetch = window.setTimeout(() => load((index + 1) % count), ROTATE_MS - PREFETCH_MS);
+    const timer = window.setTimeout(() => setIndex((i) => (i + 1) % count), ROTATE_MS);
+    return () => {
+      window.clearTimeout(prefetch);
+      window.clearTimeout(timer);
+    };
+  }, [index, playing, hidden, focused, started, count, load]);
+
+  const show = useCallback(
+    (i: number) => {
+      setStarted(true);
+      prime();
+      setIndex(i);
+    },
+    [prime]
+  );
 
   const active = HOME_SECTIONS[index];
 
@@ -108,7 +127,7 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
               style={{ transitionDuration: `${FADE_MS}ms` }}
             >
               {section.shot ? (
-                armed || on ? (
+                mounted.has(i) ? (
                   <>
                     <Image
                       src={section.shot.src}
@@ -161,11 +180,16 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
       </div>
 
       {/* Pause, then one dot per slide. */}
-      <div className="pointer-events-auto absolute inset-x-0 bottom-3 z-[2] mx-auto flex w-fit items-center gap-1 rounded-full border border-white/10 bg-black/45 px-1.5 backdrop-blur-md sm:bottom-4 lg:inset-x-auto lg:bottom-5 lg:left-[57%] lg:-translate-x-1/2">
+      <div
+        onPointerEnter={prime}
+        onFocus={prime}
+        className="pointer-events-auto absolute inset-x-0 bottom-3 z-[2] mx-auto flex w-fit items-center gap-1 rounded-full border border-white/10 bg-black/45 px-1.5 backdrop-blur-md sm:bottom-4 lg:inset-x-auto lg:bottom-5 lg:left-[57%] lg:-translate-x-1/2"
+      >
         <button
           type="button"
           onClick={() => {
-            setArmed(true);
+            setStarted(true);
+            prime();
             setPlaying((p) => !p);
           }}
           className="flex h-7 w-7 items-center justify-center rounded-full text-white/80 transition-colors hover:text-white"

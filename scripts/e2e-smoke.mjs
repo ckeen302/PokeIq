@@ -3697,7 +3697,8 @@ async function homeStep() {
   if ((await active()) !== "guessr") errors.push(`home: the first slide is ${await active()}, not PokéGuessr`);
   // The first slide's picture is the page's hero image, in the server's HTML.
   const html = await (await p.request.get(BASE)).text();
-  if (!/data-slide="guessr"[^]*?<img[^>]+fetchpriority="high"/i.test(html)) errors.push("home: the PokéGuessr slide's image isn't server-rendered as the priority image");
+  if (!/data-slide="guessr"[^>]*>(?:(?!data-slide=)[^])*?<img /.test(html) || !/<link rel="preload" as="image"[^>]+guessr|<link rel="preload" as="image"[^>]+paldea/.test(html)) errors.push("home: the PokéGuessr slide's image isn't server-rendered and preloaded as the hero image");
+  if (/data-slide="(?!guessr)[a-z]+"[^>]*>(?:(?!data-slide=)[^])*?<img /.test(html)) errors.push("home: another slide's screenshot is in the server's HTML (it should load later)");
   // Every slide's name and button lead to its tab.
   const pause = hero.getByTestId("hero-pause");
   if ((await pause.getAttribute("aria-label")) !== "Pause the slideshow") errors.push(`home: the pause button reads "${await pause.getAttribute("aria-label")}"`);
