@@ -80,7 +80,7 @@ export function GuessrShowcase({
             src={slide.image}
             alt=""
             priority={i === 0}
-            sizes="(min-width: 1152px) 1152px, 100vw"
+            sizes="(min-width: 1152px) 1152px, (min-width: 640px) 100vw, 140vw"
             placeholder={i === 0 ? "blur" : "empty"}
             onLoad={() => setLoaded((s) => (s.has(i) ? s : new Set(s).add(i)))}
             className={cn(

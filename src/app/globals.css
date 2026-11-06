@@ -642,3 +642,39 @@ html.no-splash .boot-splash {
 html[data-dle-cb] .dle-match { background: #f5793a; color: #1f0d02; border-color: #f5793a; }
 html[data-dle-cb] .dle-partial { background: #85c0f9; color: #04213d; border-color: #85c0f9; }
 html[data-dle-cb] .dle-close { background: rgb(133 192 249 / 0.4); border-color: #85c0f9; }
+
+/* mobile-nav-home: the phone's tab bar and More sheet (src/components/layout/MobileTabBar.tsx).
+   --tabbar-h is the bar's height where it shows (below lg) and 0 elsewhere: anything
+   fixed to the bottom of the screen sits above it with bottom: var(--tabbar-h). */
+:root { --tabbar-h: 0px; }
+@media (max-width: 1023px) {
+  :root { --tabbar-h: calc(3.5rem + env(safe-area-inset-bottom)); }
+}
+.tab-item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  font-size: 11px; font-weight: 500; line-height: 1;
+  color: hsl(var(--muted-foreground)); transition: color .15s;
+  -webkit-tap-highlight-color: transparent; user-select: none;
+}
+.tab-pill { display: flex; height: 30px; width: 56px; align-items: center; justify-content: center; border-radius: 999px; transition: background-color .2s, color .2s; }
+.tab-item-on { color: hsl(var(--foreground)); font-weight: 600; }
+.tab-item-on .tab-pill { background: hsl(var(--primary) / 0.16); color: hsl(var(--primary)); }
+.tab-item:active .tab-pill { background: hsl(var(--foreground) / 0.08); }
+.sheet-row {
+  display: flex; min-height: 52px; align-items: center; gap: 14px; padding: 0 16px;
+  font-size: 15px; font-weight: 500; -webkit-tap-highlight-color: transparent; transition: background-color .15s;
+}
+.sheet-row:active { background: hsl(var(--foreground) / 0.06); }
+
+/* mobile-nav-home: on a phone the 3D stages (the films, Sizes, Race, the Timeline) fill the
+   screen like an app: the site's header and tab bar step aside (each stage has its own back
+   button), and the stage keeps clear of the notch and the home indicator. */
+@media (max-width: 1023px) {
+  html:has(.wh-stage, .sz-stage, .rc-stage, .tl-stage) { --tabbar-h: 0px; }
+  html:has(.wh-stage, .sz-stage, .rc-stage, .tl-stage) body > header,
+  html:has(.wh-stage, .sz-stage, .rc-stage, .tl-stage) [data-testid="tabbar"] { display: none; }
+  .wh-stage, .sz-stage, .rc-stage, .tl-stage {
+    top: env(safe-area-inset-top) !important;
+    bottom: env(safe-area-inset-bottom) !important;
+  }
+}

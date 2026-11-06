@@ -25,15 +25,17 @@ export const metadata: Metadata = {
 /** The title screen, a tile per tab, today's puzzles. Everything else lives on its own tab. */
 export default function HomePage() {
   return (
-    <div className="mx-auto -mt-4 max-w-6xl space-y-12 sm:mt-0 sm:space-y-14">
+    <div className="mx-auto -mt-4 max-w-6xl space-y-12 sm:mt-0 sm:space-y-14 max-sm:-mt-[4.5rem] max-sm:space-y-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(websiteWithSearch()) }} />
       <div className="space-y-4 sm:space-y-5">
         <Hero />
         <SectionTiles />
       </div>
 
-      <section className="space-y-5" aria-labelledby="daily-heading">
-        <HudHeading id="daily-heading" index={1} title="Today's puzzles" aside="Resets at local midnight" />
+      <section className="space-y-5 max-md:space-y-1" aria-labelledby="daily-heading">
+        <HudHeading id="daily-heading" index={1} title="Today's puzzles" aside="Resets at local midnight" className="max-md:hidden" />
+        {/* Phones: the plain heading, without the HUD index and note. */}
+        <h2 className="text-xl font-bold md:hidden">Today&apos;s puzzles</h2>
         <DailyCards />
       </section>
 

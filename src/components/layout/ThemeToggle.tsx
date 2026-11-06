@@ -1,12 +1,13 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { applyThemeColor, getTheme, setTheme, type Theme } from "@/lib/theme";
 import { play } from "@/lib/sound";
 
 /** Light / dark switch. The initial theme is applied before paint by the layout. */
-export function ThemeToggle() {
+export function ThemeToggle({ className }: { className?: string } = {}) {
   const [theme, setThemeState] = useState<Theme>("dark");
 
   useEffect(() => {
@@ -27,7 +28,7 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggle}
-      className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+      className={cn("flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground", className)}
       aria-label={label}
       title={label}
     >

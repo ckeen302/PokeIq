@@ -23,69 +23,83 @@ export function DailyCards() {
   const conn = today ? progress?.conn?.results[today] : undefined;
   const pdk = today ? progress?.pdk?.results[today] : undefined;
 
+  const cards: DailyCardProps[] = [
+    {
+      className: "lg:col-span-2 2xl:col-span-1",
+      href: "/daily",
+      icon: <CalendarDays className="h-5 w-5" />,
+      title: "Daily Challenge",
+      number: today ? dailyNumber(today) : null,
+      description: "10 mixed questions. Same quiz for every trainer today.",
+      status: daily ? `Cleared · ${daily.correct}/${daily.total} · IQ ${daily.pokeiq}` : null,
+      cleared: !!daily,
+      streak: progress && today ? currentStreak(progress.daily.last, progress.daily.streak, today) : 0,
+      accent: "340 86% 60%",
+    },
+    {
+      className: "lg:col-span-2 2xl:col-span-1",
+      href: "/pokedle",
+      icon: <Search className="h-5 w-5" />,
+      title: "Pokédle",
+      number: today ? dailyNumber(today) : null,
+      description: "Deduce the mystery Pokémon in 8 guesses from type, generation, size and color.",
+      status: dle?.over ? (dle.solved ? `Solved in ${dle.guesses.length}` : "Missed today") : dle?.guesses.length ? `In progress · ${dle.guesses.length}/8` : null,
+      cleared: !!dle?.over,
+      streak: progress && today ? dleStats(progress.dle.results, today).playStreak : 0,
+      accent: "258 94% 74%",
+    },
+    {
+      className: "lg:col-span-2 2xl:col-span-1",
+      href: "/guessr",
+      icon: <Compass className="h-5 w-5" />,
+      title: "PokéGuessr",
+      number: today ? dailyNumber(today) : null,
+      description: "GeoGuessr for Pokémon: 5 places a day. Look around, drop a pin on the map.",
+      status: geo !== undefined ? `Cleared · ${geo.toLocaleString("en-US")} / 25,000` : null,
+      cleared: geo !== undefined,
+      streak: progress && today ? geoDailyStreak(progress, today) : 0,
+      accent: "154 68% 46%",
+    },
+    {
+      className: "lg:col-span-3 2xl:col-span-1",
+      href: "/connections",
+      icon: <LayoutGrid className="h-5 w-5" />,
+      title: "PokéConnections",
+      number: today ? connNumber(today) : null,
+      description: "16 Pokémon, 4 hidden groups. Find the links with 4 mistakes to spare.",
+      status: conn?.over ? (conn.solved ? (conn.mistakes ? `Solved · ${conn.mistakes} mistake${conn.mistakes === 1 ? "" : "s"}` : "Perfect") : "Missed today") : conn?.guesses.length ? "In progress" : null,
+      cleared: !!conn?.over,
+      streak: progress?.conn && today ? connStats(progress.conn.results, today).playStreak : 0,
+      accent: "42 98% 60%",
+    },
+    {
+      className: "md:col-span-2 lg:col-span-3 2xl:col-span-1",
+      href: "/pikadoku",
+      icon: <Grid3x3 className="h-5 w-5" />,
+      title: "Pikadoku",
+      number: today ? connNumber(today) : null,
+      description: "Pokémon Sudoku: fill a 3×3 grid, one Pokémon per cell. Be rare to score low.",
+      status: pdk?.over ? `${pdk.solved}/9${pdk.score !== null ? ` · score ${pdk.score}` : ""}` : pdk?.guesses.length ? "In progress" : null,
+      cleared: !!pdk?.over,
+      streak: progress?.pdk && today ? currentStreak(progress.pdk.last, progress.pdk.streak, today) : 0,
+      accent: "190 90% 55%",
+    },
+  ];
+
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6 2xl:grid-cols-5">
-      <DailyCard
-        className="lg:col-span-2 2xl:col-span-1"
-        href="/daily"
-        icon={<CalendarDays className="h-5 w-5" />}
-        title="Daily Challenge"
-        number={today ? dailyNumber(today) : null}
-        description="10 mixed questions. Same quiz for every trainer today."
-        status={daily ? `Cleared · ${daily.correct}/${daily.total} · IQ ${daily.pokeiq}` : null}
-        cleared={!!daily}
-        streak={progress && today ? currentStreak(progress.daily.last, progress.daily.streak, today) : 0}
-        accent="340 86% 60%"
-      />
-      <DailyCard
-        className="lg:col-span-2 2xl:col-span-1"
-        href="/pokedle"
-        icon={<Search className="h-5 w-5" />}
-        title="Pokédle"
-        number={today ? dailyNumber(today) : null}
-        description="Deduce the mystery Pokémon in 8 guesses from type, generation, size and color."
-        status={dle?.over ? (dle.solved ? `Solved in ${dle.guesses.length}` : "Missed today") : dle?.guesses.length ? `In progress · ${dle.guesses.length}/8` : null}
-        cleared={!!dle?.over}
-        streak={progress && today ? dleStats(progress.dle.results, today).playStreak : 0}
-        accent="258 94% 74%"
-      />
-      <DailyCard
-        className="lg:col-span-2 2xl:col-span-1"
-        href="/guessr"
-        icon={<Compass className="h-5 w-5" />}
-        title="PokéGuessr"
-        number={today ? dailyNumber(today) : null}
-        description="GeoGuessr for Pokémon: 5 places a day. Look around, drop a pin on the map."
-        status={geo !== undefined ? `Cleared · ${geo.toLocaleString("en-US")} / 25,000` : null}
-        cleared={geo !== undefined}
-        streak={progress && today ? geoDailyStreak(progress, today) : 0}
-        accent="154 68% 46%"
-      />
-      <DailyCard
-        className="lg:col-span-3 2xl:col-span-1"
-        href="/connections"
-        icon={<LayoutGrid className="h-5 w-5" />}
-        title="PokéConnections"
-        number={today ? connNumber(today) : null}
-        description="16 Pokémon, 4 hidden groups. Find the links with 4 mistakes to spare."
-        status={conn?.over ? (conn.solved ? (conn.mistakes ? `Solved · ${conn.mistakes} mistake${conn.mistakes === 1 ? "" : "s"}` : "Perfect") : "Missed today") : conn?.guesses.length ? "In progress" : null}
-        cleared={!!conn?.over}
-        streak={progress?.conn && today ? connStats(progress.conn.results, today).playStreak : 0}
-        accent="42 98% 60%"
-      />
-      <DailyCard
-        className="md:col-span-2 lg:col-span-3 2xl:col-span-1"
-        href="/pikadoku"
-        icon={<Grid3x3 className="h-5 w-5" />}
-        title="Pikadoku"
-        number={today ? connNumber(today) : null}
-        description="Pokémon Sudoku: fill a 3×3 grid, one Pokémon per cell. Be rare to score low."
-        status={pdk?.over ? `${pdk.solved}/9${pdk.score !== null ? ` · score ${pdk.score}` : ""}` : pdk?.guesses.length ? "In progress" : null}
-        cleared={!!pdk?.over}
-        streak={progress?.pdk && today ? currentStreak(progress.pdk.last, progress.pdk.streak, today) : 0}
-        accent="190 90% 55%"
-      />
-    </div>
+    <>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6 2xl:grid-cols-5 max-md:hidden">
+        {cards.map((card) => (
+          <DailyCard key={card.href} {...card} />
+        ))}
+      </div>
+      {/* Phones: one short row per puzzle. */}
+      <ul className="divide-y divide-foreground/[0.06] md:hidden" data-testid="daily-rows">
+        {cards.map((card) => (
+          <DailyRow key={card.href} {...card} />
+        ))}
+      </ul>
+    </>
   );
 }
 
@@ -101,6 +115,32 @@ interface DailyCardProps {
   cleared: boolean;
   streak: number;
   accent: string;
+}
+
+function DailyRow({ href, icon, title, number, status, cleared, streak, accent }: DailyCardProps) {
+  return (
+    <li>
+      <Link href={href} className="flex items-center gap-3.5 py-3.5 active:opacity-70">
+        <span className="screen flex h-11 w-11 shrink-0 items-center justify-center rounded-xl" style={{ color: `hsl(${accent})` }}>
+          <span className="relative z-[3]">{icon}</span>
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-base font-semibold leading-tight">{title}</span>
+          <span className={cn("mt-0.5 block truncate text-sm", cleared ? "text-success" : status ? "text-warning" : "text-muted-foreground")}>
+            {status ?? (number ? `Today's #${number}` : "Today's puzzle")}
+            {streak > 0 && <span className="text-muted-foreground"> · {streak}-day streak</span>}
+          </span>
+        </span>
+        {cleared ? (
+          <span className="shrink-0 text-sm font-medium text-success">Done</span>
+        ) : (
+          <span className="shrink-0 rounded-full px-3.5 py-1.5 text-sm font-semibold text-black" style={{ background: `hsl(${accent})` }}>
+            Play
+          </span>
+        )}
+      </Link>
+    </li>
+  );
 }
 
 function DailyCard({ className, href, icon, title, number, description, status, cleared, streak, accent }: DailyCardProps) {

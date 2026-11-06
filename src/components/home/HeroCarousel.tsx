@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
@@ -33,6 +33,8 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
   const [hidden, setHidden] = useState(false);
   const [focused, setFocused] = useState(false);
   const count = HOME_SECTIONS.length;
+  /** Where a finger came down on the picture (phones swipe between slides). */
+  const swipe = useRef<{ x: number; y: number } | null>(null);
 
   // Reduced motion: no rotation until the player presses Play.
   useEffect(() => {
@@ -117,8 +119,25 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
         if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
       }}
     >
-      {/* The picture: 16:9 on a phone, a wide band across the card on bigger screens (the screenshots keep their tops). */}
-      <div className="relative aspect-video overflow-hidden lg:aspect-[21/10]" aria-live={playing ? "off" : "polite"}>
+      {/* The picture: 16:9 on a tablet, taller and edge to edge on a phone (where a swipe changes the slide), a wide band across the card on bigger screens (the screenshots keep their tops). */}
+      <div
+        className="relative aspect-video overflow-hidden lg:aspect-[21/10] max-sm:aspect-[5/4] max-md:touch-pan-y"
+        aria-live={playing ? "off" : "polite"}
+        onPointerDown={(e) => {
+          if (e.pointerType === "touch") swipe.current = { x: e.clientX, y: e.clientY };
+        }}
+        onPointerUp={(e) => {
+          const from = swipe.current;
+          swipe.current = null;
+          if (!from) return;
+          const dx = e.clientX - from.x;
+          if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(e.clientY - from.y) * 1.5) show(index + (dx < 0 ? 1 : -1));
+        }}
+        onPointerCancel={() => {
+          swipe.current = null;
+        }}
+        data-testid="hero-picture"
+      >
         {HOME_SECTIONS.map((section, i) => {
           const on = i === index;
           return (
@@ -141,10 +160,11 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
                     alt={section.shot.alt}
                     width={section.shot.width}
                     height={section.shot.height}
-                    sizes="(min-width: 1152px) 1152px, 100vw"
+                    sizes="(min-width: 1152px) 1152px, (min-width: 640px) 100vw, 140vw"
                     loading="eager"
                     fetchPriority="low"
-                    className="absolute inset-0 h-full w-full select-none object-cover object-top"
+                    draggable={false}
+                    className="absolute inset-0 h-full w-full select-none object-cover object-top max-sm:object-center"
                   />
                 ) : null
               ) : (
@@ -155,6 +175,8 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
         })}
         {/* Wide screens: a shade under the name and button, so they read over any picture. */}
         <div className="pointer-events-none absolute inset-0 hidden bg-[linear-gradient(to_top,hsl(var(--card))_0%,hsl(var(--card)/0.75)_22%,transparent_55%),linear-gradient(to_right,hsl(var(--card)/0.7)_0%,transparent_45%)] lg:block" />
+        {/* Phones: the picture fades into the page under it. */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-1/4 bg-gradient-to-t from-background to-transparent sm:hidden" />
 
         {/* Previous and next, on the picture's edges. */}
         {(
@@ -168,7 +190,7 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
             type="button"
             onClick={() => show(index + step)}
             className={cn(
-              "absolute top-1/2 z-[3] flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-black/50 text-white/90 backdrop-blur-md transition-colors hover:bg-black/70 hover:text-white lg:h-12 lg:w-12",
+              "absolute top-1/2 z-[3] flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-black/50 text-white/90 backdrop-blur-md transition-colors hover:bg-black/70 hover:text-white lg:h-12 lg:w-12 max-sm:hidden",
               side
             )}
             aria-label={`${key === "next" ? "Next" : "Previous"}: ${target.name}`}
@@ -181,19 +203,19 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
 
       {/* This tab's name, a line and its button: under the picture on a phone, over its lower left on wide screens. */}
       <div
-        className="relative z-[2] px-5 pt-4 sm:px-8 sm:pt-5 lg:absolute lg:bottom-0 lg:left-0 lg:max-w-[46rem] lg:px-12 lg:pb-12 lg:pt-0"
+        className="relative z-[2] px-5 pt-4 sm:px-8 sm:pt-5 max-sm:px-4 max-sm:pt-1 lg:absolute lg:bottom-0 lg:left-0 lg:max-w-[46rem] lg:px-12 lg:pb-12 lg:pt-0"
         style={{ "--accent-c": active.accent } as React.CSSProperties}
       >
         {/* The name and line fade in with each slide; the button stays put, so keyboard focus on it survives a change.
             On a phone the line always takes two lines' room, so the card's height never changes between slides. */}
-        <h2 key={`${active.id}-name`} className="flex items-center gap-3 duration-700 animate-in fade-in motion-reduce:animate-none font-display text-3xl font-bold uppercase leading-none tracking-tight [text-shadow:0_2px_18px_rgb(0_0_0/0.6)] sm:text-4xl lg:text-6xl" data-testid="hero-slide-name">
+        <h2 key={`${active.id}-name`} className="flex items-center gap-3 duration-700 animate-in fade-in motion-reduce:animate-none font-display text-3xl font-bold uppercase leading-none tracking-tight [text-shadow:0_2px_18px_rgb(0_0_0/0.6)] sm:text-4xl lg:text-6xl max-sm:text-[2rem]" data-testid="hero-slide-name">
           <active.icon className="h-7 w-7 shrink-0 text-[hsl(var(--accent-c))] sm:h-8 sm:w-8 lg:h-11 lg:w-11" aria-hidden />
           {active.name}
         </h2>
         <p key={`${active.id}-line`} className="mt-2 line-clamp-2 min-h-[2.6rem] duration-700 animate-in fade-in motion-reduce:animate-none text-[15px] sm:min-h-0 leading-snug text-muted-foreground sm:text-lg lg:mt-3 lg:text-xl lg:text-foreground/85">{active.line}</p>
         <Link
           href={active.href}
-          className="group mt-4 inline-flex h-11 items-center gap-2 rounded-md bg-[hsl(var(--accent-c))] px-5 font-display text-[15px] font-bold uppercase tracking-wider text-black shadow-[0_0_24px_hsl(var(--accent-c)/0.35)] transition-[filter] hover:brightness-110 lg:mt-6 lg:h-12 lg:px-6"
+          className="group mt-4 inline-flex h-11 items-center gap-2 rounded-md bg-[hsl(var(--accent-c))] px-5 font-display text-[15px] font-bold uppercase tracking-wider text-black shadow-[0_0_24px_hsl(var(--accent-c)/0.35)] transition-[filter] hover:brightness-110 lg:mt-6 lg:h-12 lg:px-6 max-sm:mt-5 max-sm:flex max-sm:h-[52px] max-sm:w-full max-sm:justify-center max-sm:rounded-xl max-sm:text-base max-sm:active:brightness-90"
           aria-label={`${active.cta} ${active.name}`}
           data-testid="hero-slide-cta"
         >
@@ -206,7 +228,7 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
       <div
         onPointerEnter={prime}
         onFocus={prime}
-        className="relative z-[2] mx-auto my-4 flex w-fit items-center gap-1 rounded-full border border-white/10 bg-black/45 px-1.5 backdrop-blur-md sm:my-5 lg:absolute lg:bottom-12 lg:right-12 lg:m-0"
+        className="relative z-[2] mx-auto my-4 flex w-fit items-center gap-1 rounded-full border border-white/10 bg-black/45 px-1.5 backdrop-blur-md sm:my-5 lg:absolute lg:bottom-12 lg:right-12 lg:m-0 max-sm:mb-1 max-sm:mt-3 max-sm:border-transparent max-sm:bg-transparent max-sm:backdrop-blur-none"
       >
         <button
           type="button"
