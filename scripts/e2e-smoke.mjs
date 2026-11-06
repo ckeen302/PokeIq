@@ -3674,7 +3674,7 @@ step("name 'em all: hub, a Gen 1 run (aliases, wrong category, pause, give up), 
 
 /** The home page: the title screen's slideshow (a slide per tab, dots, pause), a tile per tab, today's puzzles, at 1440 and 390. */
 async function homeStep() {
-  step("home: a slide per tab with dots and a pause button, a tile per tab, nothing sideways at 390");
+  step("home: a slide per tab (no shared headline, one hidden h1), arrows, keys, dots and pause, a tile per tab, nothing sideways at 390");
   const TABS = [
     ["guessr", "/guessr", "PokéGuessr"],
     ["pokedle", "/pokedle", "Pokédle"],
@@ -3706,10 +3706,10 @@ async function homeStep() {
     await hero.getByRole("button", { name: `Show ${name}`, exact: true }).click();
     await hero.locator(`[data-testid=hero-slide][data-slide="${id}"][data-active=true]`).waitFor({ timeout: 5000 }).catch(() => errors.push(`home: the ${name} dot didn't show its slide`));
     if ((await hero.getByRole("button", { name: `Show ${name}`, exact: true }).getAttribute("aria-current")) !== "true") errors.push(`home: the ${name} dot isn't marked current`);
-    for (const t of ["hero-slide-label", "hero-slide-cta"]) {
-      const got = await hero.getByTestId(t).getAttribute("href");
-      if (got !== href) errors.push(`home: the ${name} slide's ${t} goes to ${got}, not ${href}`);
-    }
+    const got = await hero.getByTestId("hero-slide-cta").getAttribute("href");
+    if (got !== href) errors.push(`home: the ${name} slide's button goes to ${got}, not ${href}`);
+    const shown = (await hero.getByTestId("hero-slide-name").innerText()).trim().toLowerCase();
+    if (shown !== name.toLowerCase()) errors.push(`home: the ${name} slide is titled "${shown}"`);
     if (id !== "guessr") {
       const img = hero.locator(`[data-testid=hero-slide][data-slide="${id}"] img`);
       const ok = await img
@@ -3718,6 +3718,36 @@ async function homeStep() {
       if (!ok) errors.push(`home: the ${name} slide's picture didn't load`);
     }
   }
+  // No shared headline; the page's one h1 is there for search engines and screen readers.
+  if (await p.getByText(/Guess the place|Win the battle/i).count()) errors.push("home: the old shared headline is still on the page");
+  const h1s = await p.locator("h1").allInnerTexts().catch(() => []);
+  if ((await p.locator("h1").count()) !== 1) errors.push(`home: ${await p.locator("h1").count()} h1s on the page, not one`);
+  else if (!/PokéIQ/.test(await p.locator("h1").textContent())) errors.push(`home: the h1 reads "${h1s[0]}"`);
+  // The arrows: named for where they go, and they wrap round.
+  const arrow = (dir) => hero.getByTestId(`hero-${dir}`);
+  const order = TABS.map(([id, , name]) => [id, name]);
+  await hero.getByRole("button", { name: "Show PokéGuessr", exact: true }).click();
+  if ((await arrow("next").getAttribute("aria-label")) !== "Next: Pokédle") errors.push(`home: the next arrow reads "${await arrow("next").getAttribute("aria-label")}" on PokéGuessr`);
+  if ((await arrow("prev").getAttribute("aria-label")) !== "Previous: 3D Lab") errors.push(`home: the previous arrow reads "${await arrow("prev").getAttribute("aria-label")}" on PokéGuessr`);
+  await arrow("prev").click();
+  if ((await active()) !== "lab") errors.push(`home: Previous from the first slide went to ${await active()}, not round to 3D Lab`);
+  await arrow("next").click();
+  if ((await active()) !== "guessr") errors.push(`home: Next from the last slide went to ${await active()}, not round to PokéGuessr`);
+  for (let i = 1; i <= order.length; i++) {
+    await arrow("next").click();
+    const [want, wantName] = order[i % order.length];
+    if ((await active()) !== want) errors.push(`home: Next went to ${await active()}, not ${want}`);
+    const nextName = order[(i + 1) % order.length][1];
+    if ((await arrow("next").getAttribute("aria-label")) !== `Next: ${nextName}`) errors.push(`home: on ${wantName} the next arrow reads "${await arrow("next").getAttribute("aria-label")}"`);
+  }
+  // The keyboard's arrows, with focus in the slideshow.
+  await arrow("next").focus();
+  await p.keyboard.press("ArrowRight");
+  if ((await active()) !== "pokedle") errors.push(`home: → from PokéGuessr went to ${await active()}`);
+  await p.keyboard.press("ArrowLeft");
+  await p.keyboard.press("ArrowLeft");
+  if ((await active()) !== "lab") errors.push(`home: ← ← from Pokédle went to ${await active()}, not round to 3D Lab`);
+  await p.locator("body").click({ position: { x: 5, y: 400 } });
   await hero.getByRole("button", { name: "Show Battle", exact: true }).click();
   // Pause, then play: it moves on by itself after 25 seconds, and not while paused.
   await pause.click();
@@ -3752,7 +3782,7 @@ async function homeStep() {
   await still.getByTestId("hero-pause").and(still.locator('[aria-label="Play the slideshow"]')).waitFor({ timeout: 5000 }).catch(() => errors.push("home: under reduced motion the slideshow still plays"));
   await still.context().close();
 
-  // 390: every slide's picture loads (its own phone crop), in a band above the text; nothing sideways, the tiles two across, the dots big enough to tap.
+  // 390: every slide's picture loads, in a band above the slide's name; nothing sideways, the tiles two across, the dots big enough to tap.
   const m = await newPage({ width: 390, height: 844 });
   await gotoSettled(m, BASE);
   const mhero = m.getByTestId("hero-carousel");
@@ -3763,12 +3793,11 @@ async function homeStep() {
       .evaluate((el) => (el.complete ? Promise.resolve(el.naturalWidth > 0) : new Promise((r) => el.addEventListener("load", () => r(el.naturalWidth > 0), { once: true }))), null, { timeout: 15_000 })
       .catch(() => false);
     if (!loaded) errors.push(`home: the ${name} slide's picture didn't load at 390`);
-    if (id !== "guessr" && !/-sm\.webp|pokedex|pokemon-story/.test(decodeURIComponent((await img.getAttribute("src").catch(() => "")) ?? ""))) errors.push(`home: the ${name} slide doesn't use its phone crop at 390`);
   }
   {
     const band = await mhero.locator("[data-testid=hero-slide][data-active=true]").boundingBox();
-    const kicker = await m.locator("section.dark-scope p").first().boundingBox();
-    if (!band || !kicker || kicker.y < band.y + band.height) errors.push(`home: at 390 the text overlaps the picture (picture ends at ${band && band.y + band.height}, text starts at ${kicker?.y})`);
+    const title = await mhero.getByTestId("hero-slide-name").boundingBox();
+    if (!band || !title || title.y < band.y + band.height) errors.push(`home: at 390 the slide's name overlaps the picture (picture ends at ${band && band.y + band.height}, name starts at ${title?.y})`);
     const shift = await m.evaluate(() => new Promise((r) => { let total = 0; new PerformanceObserver((l) => l.getEntries().forEach((e) => { if (!e.hadRecentInput) total += e.value; })).observe({ type: "layout-shift", buffered: true }); setTimeout(() => r(total), 500); }));
     if (shift > 0) errors.push(`home: layout shift ${shift} at 390`);
   }

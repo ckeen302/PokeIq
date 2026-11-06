@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Pause, Play } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GuessrShowcase, type ShowcaseSlide } from "./GuessrShowcase";
 import { HOME_SECTIONS } from "./sections";
@@ -15,22 +15,21 @@ const FADE_MS = 1200;
 const PREFETCH_MS = 6000;
 
 /**
- * The title screen's picture: one slide per tab of the site, in the nav's
- * order, changing every 25 seconds with a slow crossfade. PokéGuessr comes
- * first and is the page's hero image (server-rendered, loaded with the page);
- * the clock starts once the page has gone idle, and each other screenshot
- * loads shortly before its turn, or as soon as the controls are touched, so
- * the first load carries only the hero image. Dots pick a slide
- * and a button pauses it (WCAG 2.2.2); it doesn't move by itself for reduced
- * motion, and waits while the tab is in the background.
+ * The title screen: one slide per tab of the site, the picture filling the
+ * card, with the tab's name, a line about it and a button to it. It changes
+ * every 25 seconds with a slow crossfade; the arrows (and the keyboard's left
+ * and right arrows) and the dots change it by hand, and the button pauses it
+ * (WCAG 2.2.2). PokéGuessr comes first and is the page's hero image
+ * (server-rendered); the clock starts once the page has gone idle, and each
+ * other screenshot loads shortly before its turn, or as soon as the controls
+ * are touched. It doesn't move by itself for reduced motion, and waits while
+ * the tab is in the background or a keyboard user is inside it.
  */
 export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; map: { src: string; width: number; height: number } } }) {
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [started, setStarted] = useState(false);
   const [mounted, setMounted] = useState<ReadonlySet<number>>(() => new Set([0]));
-  // The wide title screen and a phone crop the screenshots differently; known once the page runs.
-  const [wide, setWide] = useState<boolean | null>(null);
   const [hidden, setHidden] = useState(false);
   const [focused, setFocused] = useState(false);
   const count = HOME_SECTIONS.length;
@@ -62,14 +61,6 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
   }, []);
 
   useEffect(() => {
-    const query = window.matchMedia("(min-width: 1024px)");
-    const sync = () => setWide(query.matches);
-    sync();
-    query.addEventListener("change", sync);
-    return () => query.removeEventListener("change", sync);
-  }, []);
-
-  useEffect(() => {
     const sync = () => setHidden(document.hidden);
     sync();
     document.addEventListener("visibilitychange", sync);
@@ -79,7 +70,7 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
   const load = useCallback((...slides: number[]) => {
     setMounted((m) => (slides.every((i) => m.has(i)) ? m : new Set([...m, ...slides])));
   }, []);
-  /** The controls were touched: fetch every screenshot, so a dot shows its slide at once. */
+  /** The controls were touched: fetch every screenshot, so any slide shows at once. */
   const prime = useCallback(() => load(...HOME_SECTIONS.map((_, i) => i)), [load]);
 
   // A fresh 25 seconds after every change, and after the tab comes back; the next screenshot loads a little before.
@@ -97,30 +88,37 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
     (i: number) => {
       setStarted(true);
       prime();
-      setIndex(i);
+      setIndex(((i % count) + count) % count);
     },
-    [prime]
+    [prime, count]
   );
 
   const active = HOME_SECTIONS[index];
+  const prev = HOME_SECTIONS[(index - 1 + count) % count];
+  const next = HOME_SECTIONS[(index + 1) % count];
 
   return (
     <div
-      className="pointer-events-none absolute inset-0"
+      className="relative"
       role="region"
       aria-roledescription="carousel"
-      aria-label="PokéIQ at a glance"
+      aria-label="PokéIQ's games"
       data-testid="hero-carousel"
-      onFocus={() => setFocused(true)}
+      onKeyDown={(e) => {
+        if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+        e.preventDefault();
+        show(index + (e.key === "ArrowRight" ? 1 : -1));
+      }}
+      onFocus={(e) => {
+        // A keyboard user inside the slideshow holds it still; a click on an arrow doesn't.
+        if (e.target instanceof HTMLElement && e.target.matches(":focus-visible")) setFocused(true);
+      }}
       onBlur={(e) => {
         if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
       }}
     >
-      {/* The picture: a band at the top on a phone; on wide screens, the right of the card, under the text. */}
-      <div
-        className="absolute inset-x-0 top-0 z-0 aspect-video overflow-hidden lg:inset-y-0 lg:left-auto lg:aspect-auto lg:w-[66%]"
-        aria-live={playing ? "off" : "polite"}
-      >
+      {/* The picture: 16:9 on a phone, a wide band across the card on bigger screens. */}
+      <div className="relative aspect-video overflow-hidden lg:aspect-[21/10]" aria-live={playing ? "off" : "polite"}>
         {HOME_SECTIONS.map((section, i) => {
           const on = i === index;
           return (
@@ -137,22 +135,17 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
               style={{ transitionDuration: `${FADE_MS}ms` }}
             >
               {section.shot ? (
-                mounted.has(i) && wide !== null ? (
-                  <>
-                    <Image
-                      src={wide ? section.shot.src : (section.shot.small ?? section.shot.src)}
-                      alt={section.shot.alt}
-                      width={section.shot.width}
-                      height={section.shot.height}
-                      sizes={wide ? "760px" : "100vw"}
-                      loading="eager"
-                      fetchPriority="low"
-                      className="absolute inset-0 h-full w-full select-none object-cover"
-                      style={section.shot.position ? { objectPosition: section.shot.position } : undefined}
-                    />
-                    {/* Wide screens: a shade at the top, so the slide's name and button read over a busy screenshot. */}
-                    <div className="absolute inset-x-0 top-0 hidden h-24 bg-gradient-to-b from-black/60 to-transparent lg:block" />
-                  </>
+                mounted.has(i) ? (
+                  <Image
+                    src={section.shot.src}
+                    alt={section.shot.alt}
+                    width={section.shot.width}
+                    height={section.shot.height}
+                    sizes="(min-width: 1152px) 1152px, 100vw"
+                    loading="eager"
+                    fetchPriority="low"
+                    className="absolute inset-0 h-full w-full select-none object-cover"
+                  />
                 ) : null
               ) : (
                 <GuessrShowcase slides={guessr.slides} map={guessr.map} active={on} className="absolute inset-0" />
@@ -160,42 +153,59 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
             </div>
           );
         })}
-        {/* Wide screens: fade the picture into the card behind the text. On a phone the text sits below it. */}
-        <div className="absolute inset-0 hidden bg-gradient-to-r from-card from-0% via-card/60 via-30% to-transparent to-70% lg:block" />
+        {/* Wide screens: a shade under the name and button, so they read over any picture. */}
+        <div className="pointer-events-none absolute inset-0 hidden bg-[linear-gradient(to_top,hsl(var(--card))_0%,hsl(var(--card)/0.75)_22%,transparent_55%),linear-gradient(to_right,hsl(var(--card)/0.7)_0%,transparent_45%)] lg:block" />
+
+        {/* Previous and next, on the picture's edges. */}
+        {(
+          [
+            ["prev", prev, -1, ChevronLeft, "left-2 sm:left-3"],
+            ["next", next, 1, ChevronRight, "right-2 sm:right-3"],
+          ] as const
+        ).map(([key, target, step, Icon, side]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => show(index + step)}
+            className={cn(
+              "absolute top-1/2 z-[3] flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-black/50 text-white/90 backdrop-blur-md transition-colors hover:bg-black/70 hover:text-white lg:h-12 lg:w-12",
+              side
+            )}
+            aria-label={`${key === "next" ? "Next" : "Previous"}: ${target.name}`}
+            data-testid={`hero-${key}`}
+          >
+            <Icon className="h-5 w-5 lg:h-6 lg:w-6" aria-hidden />
+          </button>
+        ))}
       </div>
 
-      {/* This slide's name and button: on a phone just under the picture, above the text; on wide screens over its corner. */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-[2] aspect-video lg:inset-y-0 lg:left-auto lg:aspect-auto lg:w-[66%]">
-        <div
-          key={active.id}
-          className="pointer-events-auto absolute left-5 top-full mt-3 flex items-center gap-1.5 duration-700 animate-in fade-in motion-reduce:animate-none sm:left-8 lg:left-auto lg:right-5 lg:top-5 lg:mt-0"
-          style={{ "--accent-c": active.accent } as React.CSSProperties}
+      {/* This tab's name, a line and its button: under the picture on a phone, over its lower left on wide screens. */}
+      <div
+        className="relative z-[2] px-5 pt-4 sm:px-8 sm:pt-5 lg:absolute lg:bottom-0 lg:left-0 lg:max-w-[46rem] lg:px-12 lg:pb-12 lg:pt-0"
+        style={{ "--accent-c": active.accent } as React.CSSProperties}
+      >
+        {/* The name and line fade in with each slide; the button stays put, so keyboard focus on it survives a change. */}
+        <h2 key={`${active.id}-name`} className="flex items-center gap-3 duration-700 animate-in fade-in motion-reduce:animate-none font-display text-3xl font-bold uppercase leading-none tracking-tight [text-shadow:0_2px_18px_rgb(0_0_0/0.6)] sm:text-4xl lg:text-6xl" data-testid="hero-slide-name">
+          <active.icon className="h-7 w-7 shrink-0 text-[hsl(var(--accent-c))] sm:h-8 sm:w-8 lg:h-11 lg:w-11" aria-hidden />
+          {active.name}
+        </h2>
+        <p key={`${active.id}-line`} className="mt-2 duration-700 animate-in fade-in motion-reduce:animate-none text-[15px] leading-snug text-muted-foreground sm:text-lg lg:mt-3 lg:text-xl lg:text-foreground/85">{active.line}</p>
+        <Link
+          href={active.href}
+          className="group mt-4 inline-flex h-11 items-center gap-2 rounded-md bg-[hsl(var(--accent-c))] px-5 font-display text-[15px] font-bold uppercase tracking-wider text-black shadow-[0_0_24px_hsl(var(--accent-c)/0.35)] transition-[filter] hover:brightness-110 lg:mt-6 lg:h-12 lg:px-6"
+          aria-label={`${active.cta} ${active.name}`}
+          data-testid="hero-slide-cta"
         >
-          <Link
-            href={active.href}
-            className="inline-flex h-8 items-center gap-1.5 rounded-md border border-white/15 bg-black/55 px-2.5 font-display text-xs font-bold uppercase tracking-wide text-white sm:h-9 sm:gap-2 sm:px-3 sm:text-sm sm:tracking-wider backdrop-blur-md transition-colors hover:border-[hsl(var(--accent-c)/0.7)]"
-            data-testid="hero-slide-label"
-          >
-            <active.icon className="h-3.5 w-3.5 text-[hsl(var(--accent-c))] sm:h-4 sm:w-4" aria-hidden />
-            {active.name}
-          </Link>
-          <Link
-            href={active.href}
-            className="group inline-flex h-8 items-center gap-1.5 rounded-md bg-[hsl(var(--accent-c))] px-2.5 font-display text-xs font-bold uppercase tracking-wide text-black sm:h-9 sm:px-3 sm:text-sm sm:tracking-wider shadow-[0_0_18px_hsl(var(--accent-c)/0.35)] transition-[filter] hover:brightness-110"
-            aria-label={`${active.cta} ${active.name}`}
-            data-testid="hero-slide-cta"
-          >
-            {active.cta}
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" aria-hidden />
-          </Link>
-        </div>
+          {active.cta}
+          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1 motion-reduce:transition-none" aria-hidden />
+        </Link>
       </div>
 
       {/* Pause, then one dot per slide. */}
       <div
         onPointerEnter={prime}
         onFocus={prime}
-        className="pointer-events-auto absolute inset-x-0 bottom-3 z-[2] mx-auto flex w-fit items-center gap-1 rounded-full border border-white/10 bg-black/45 px-1.5 backdrop-blur-md sm:bottom-4 lg:inset-x-auto lg:bottom-5 lg:left-[57%] lg:-translate-x-1/2"
+        className="relative z-[2] mx-auto my-4 flex w-fit items-center gap-1 rounded-full border border-white/10 bg-black/45 px-1.5 backdrop-blur-md sm:my-5 lg:absolute lg:bottom-12 lg:right-12 lg:m-0"
       >
         <button
           type="button"

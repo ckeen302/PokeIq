@@ -80,7 +80,7 @@ export function GuessrShowcase({
             src={slide.image}
             alt=""
             priority={i === 0}
-            sizes="(min-width: 1024px) 760px, 100vw"
+            sizes="(min-width: 1152px) 1152px, 100vw"
             placeholder={i === 0 ? "blur" : "empty"}
             onLoad={() => setLoaded((s) => (s.has(i) ? s : new Set(s).add(i)))}
             className={cn(
@@ -93,7 +93,7 @@ export function GuessrShowcase({
       )}
 
       {/* The world map, with a pin where this view is. */}
-      <div className="absolute right-3 top-3 z-[2] w-[34%] max-w-[200px] overflow-hidden rounded-md border border-white/25 bg-[hsl(214_70%_28%)] shadow-[0_8px_24px_rgb(0_0_0/0.45)] lg:bottom-5 lg:right-5 lg:top-auto lg:w-[30%]">
+      <div className="absolute right-3 top-3 z-[2] w-[34%] max-w-[200px] overflow-hidden rounded-md border border-white/25 bg-[hsl(214_70%_28%)] shadow-[0_8px_24px_rgb(0_0_0/0.45)] lg:right-5 lg:top-5 lg:w-[22%]">
         <div className="relative" style={{ aspectRatio: `${map.width} / ${map.height}` }}>
           <Image src={map.src} alt="" width={map.width} height={map.height} sizes="200px" className="h-full w-full opacity-90" />
           {pin && (
