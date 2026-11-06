@@ -345,8 +345,8 @@ export const build: ChapterBuilder = async (ctx) => {
     ]],
     [tLum - 0.15, [
       // Over the roofs, close to the tower: it stands in the middle of the frame, the avenues of lamps radiating from its foot.
-      { t: tLum - 0.15, pos: [AT.lumiose + 32, 24, 52], look: [AT.lumiose, 23, 0], fov: 50 },
-      { t: end, pos: [AT.lumiose + 25, 21, 43], look: [AT.lumiose, 24, 0], fov: 50 },
+      { t: tLum - 0.15, pos: [AT.lumiose + 32, 25, 52], look: [AT.lumiose, 25.5, 0], fov: 50 },
+      { t: end, pos: [AT.lumiose + 25, 22, 43], look: [AT.lumiose, 26.5, 0], fov: 50 },
     ]],
   ]);
   // Paldea's sun: low, ahead and to the right of the glide, so the hills model and the runners are rimmed.

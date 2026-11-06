@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import type { Key, Vec3 } from "@/lib/world-history/camera";
+import type { Key, Pose, Vec3 } from "@/lib/world-history/camera";
 import { NOISE, col, makeGlow, makeParticles, makeRing, makeShaft, placed, ramp, rng } from "@/components/world-history/scene/kit";
 import { lights, lookAt, pointPixel } from "@/components/world-history/scene/chapters/common";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
@@ -222,8 +222,8 @@ export const build: ChapterBuilder = async (ctx) => {
     const cr = rng(41);
     const pts: number[] = [], part: number[] = [];
     const blob = (c: Vec3, r: Vec3, n: number, tag: number) => { for (let i = 0; i < n; i++) { const u = cr() * 2 - 1, th = cr() * Math.PI * 2, rr = Math.cbrt(cr()); const sq = Math.sqrt(1 - u * u); pts.push(c[0] + r[0] * rr * sq * Math.cos(th), c[1] + r[1] * rr * u, c[2] + r[2] * rr * sq * Math.sin(th)); part.push(tag + cr() * 0.5); } };
-    blob([0, 0.13, 0], [0.2, 0.085, 0.085], 260, 0);
-    blob([0.22, 0.2, 0], [0.075, 0.07, 0.07], 120, 0);
+    blob([0, 0.13, 0], [0.2, 0.085, 0.085], 360, 0);
+    blob([0.22, 0.2, 0], [0.075, 0.07, 0.07], 170, 0);
     blob([0.24, 0.29, 0.035], [0.018, 0.055, 0.016], 26, 0);
     blob([0.24, 0.29, -0.035], [0.018, 0.055, 0.016], 26, 0);
     for (let i = 0; i < 40; i++) { const k = i / 39; pts.push(-0.2 - k * 0.16, 0.15 + k * 0.17 + Math.sin(k * 9) * 0.02, 0); part.push(0.2); }
@@ -247,20 +247,20 @@ export const build: ChapterBuilder = async (ctx) => {
           vB = 0.55 + 0.45 * sin(uTime * 7.0 + h * 40.0);
           vec4 mv = modelViewMatrix * vec4(p, 1.0);
           gl_Position = projectionMatrix * mv;
-          gl_PointSize = clamp(0.022 * uPixel / -mv.z, 1.5, 14.0);
+          gl_PointSize = clamp(0.011 * uPixel / -mv.z, 1.5, 9.0);
         }`,
       fragmentShader: /* glsl */ `uniform float uOpacity; varying float vB; void main(){ float d = length(gl_PointCoord - 0.5); float a = smoothstep(0.5, 0.0, d); vec3 c = mix(vec3(0.6, 0.9, 0.2), vec3(1.0, 1.0, 0.85), vB) * 1.6; gl_FragColor = vec4(c * a * uOpacity, a * uOpacity); }`,
     });
     const points = new THREE.Points(g, m);
     points.frustumCulled = false;
-    points.scale.setScalar(1.25);
+    points.scale.setScalar(1.9);
     return { points, u, dispose() { g.dispose(); m.dispose(); } };
   })();
   D.add(critter);
   scene.add(critter.points);
   const critterLight = new THREE.PointLight(col("#c8ff6a"), 0, 3.2, 1.6);
   scene.add(critterLight);
-  const trail = D.add(makeParticles({ count: 300, shape: "sphere", center: [0, 0, 0], extent: [0.08, 0.08, 0.08], velocity: [0, 0.25, 0], spread: [0.15, 0.15, 0.15], life: 1.2, size: [0.01, 0.025], colors: ["#e6ff9a", "#9bbc0f", "#2a4a10"], intensity: 1.4, turbulence: 0.2 }));
+  const trail = D.add(makeParticles({ count: 300, shape: "sphere", center: [0, 0, 0], extent: [0.08, 0.04, 0.08], velocity: [0, 0.05, 0], spread: [0.1, 0.04, 0.1], life: 1.2, size: [0.008, 0.018], colors: ["#e6ff9a", "#9bbc0f", "#2a4a10"], intensity: 1.4, turbulence: 0.2 }));
   scene.add(trail.points);
 
   // The room around the table: three backlit figures.
@@ -326,18 +326,21 @@ export const build: ChapterBuilder = async (ctx) => {
   const lettersY = 3.6;
 
   const tight = (t: number) => T.orbit(t);
-  const track = [0.02, 0.25, 0.5, 0.75, 0.98].map((u): Key => {
-    const at = tCrawl + 0.6 + (tTrade + 0.3 - tCrawl - 0.6) * u;
+  /** The wire's general heading at u (a chord either side, so the coil's wiggle doesn't swing it). */
+  const heading = (u: number, out = new THREE.Vector3()) => out.copy(T.cable.curve.getPointAt(Math.min(1, u + 0.07))).sub(T.cable.curve.getPointAt(Math.max(0, u - 0.07))).setY(0).normalize();
+  const track = [0.02, 0.14, 0.26, 0.38, 0.5, 0.62, 0.74, 0.86, 0.98].map((u): Key => {
+    const at = tCrawl - 0.9 + (tTrade + 0.3 - tCrawl + 0.9) * u;
     const p = T.cable.curve.getPointAt(u);
-    // Low on the far side of the wire, a little behind the creature: it walks across the frame, backlit by the lamp,
-    // the Game Boys looming behind it.
-    return { t: at, pos: [p.x - 0.95, 0.95, p.z - 1.45], look: [p.x + 0.35, 0.22, p.z + 0.15], fov: 40 };
+    const d = heading(u);
+    // Beside the creature, square to the wire wherever it turns, a little behind and above: it walks across the frame.
+    const nx = -d.z, nz = d.x, nl = Math.hypot(nx, nz) || 1;
+    return { t: at, pos: [p.x + (nx / nl) * 1.35 - d.x * 0.35, 1.0, p.z + (nz / nl) * 1.35 - d.z * 0.35], look: [p.x + d.x * 0.25, 0.22, p.z + d.z * 0.25], fov: 38 };
   });
   // Shots: the orbit of the table; cut to the top-down crawl beside the creature's head; cut low on the
   // second screen for the trade; cut wide to the room for the pitch, then push in on the capsule.
-  const cam = shots([
-    [0, [{ t: 0, ...tight(0), fov: 40 }, { t: tCrawl - 0.4, ...tight(tCrawl - 0.4), fov: 38 }]],
-    [tCrawl - 0.4, [{ ...track[0], t: tCrawl - 0.4 }, ...track]],
+  const keyed = shots([
+    [0, [{ t: 0, ...tight(0), fov: 40 }, { t: tCrawl - 0.9, ...tight(tCrawl - 0.9), fov: 38 }]],
+    [tCrawl - 0.9, track],
     [tTrade + 0.5, [
       { t: tTrade + 0.5, pos: [3.6, 1.3, 3.2], look: [2.3, 0.2, 0.2], fov: 33 },
       { t: tTrade + 0.9, pos: [3.4, 1.4, 3.0], look: [2.3, 0.2, 0.2], fov: 34 },
@@ -351,6 +354,19 @@ export const build: ChapterBuilder = async (ctx) => {
       { t: end, pos: [0, 2.9, 5.2], look: [0, 2.8, 0], fov: 38 },
     ]],
   ]);
+  // The crawl: the camera rides beside the creature itself (square to the wire's broad heading), so it is always
+  // seen side-on, walking across the frame.
+  const cp = new THREE.Vector3(), ch = new THREE.Vector3();
+  const cam = (t: number): Pose => {
+    if (t < tCrawl - 0.9 || t >= tTrade + 0.5) return keyed(t);
+    const u = Math.min(0.995, Math.max(0.005, ramp(t, tCrawl - 0.9, tTrade + 0.3)));
+    T.cable.curve.getPointAt(u, cp);
+    ch.copy(T.cable.curve.getPointAt(Math.min(1, u + 0.18))).sub(T.cable.curve.getPointAt(Math.max(0, u - 0.18))).setY(0).normalize();
+    // The near side of the wire (toward the viewer's usual side of the table, +z).
+    let nx = -ch.z, nz = ch.x;
+    if (nz < 0) { nx = -nx; nz = -nz; }
+    return { pos: [cp.x + nx * 1.25 - ch.x * 0.2, 1.3, cp.z + nz * 1.25 - ch.z * 0.2], look: [cp.x + ch.x * 0.2, 0.26, cp.z + ch.z * 0.2], fov: 38 };
+  };
 
   const pt = new THREE.Vector3(), tan = new THREE.Vector3();
   return {
@@ -361,7 +377,8 @@ export const build: ChapterBuilder = async (ctx) => {
     update(t, ambient, cam, viewH) {
       const px = pointPixel(viewH, cam);
       // The crawl: the head runs the length of the cable; the cable lights behind it.
-      const run = ramp(t, tCrawl + 0.6, tTrade + 0.3);
+      // The creature sets off just before the line, so it is out on the wire through the slow motion.
+      const run = ramp(t, tCrawl - 0.9, tTrade + 0.3);
       T.cable.u.uFuse.value = run;
       T.cable.u.uHead.value = run > 0 && run < 1 ? run : -1;
       const alive = run > 0 && run < 1 ? 1 : 0;
@@ -370,21 +387,21 @@ export const build: ChapterBuilder = async (ctx) => {
       motes.u.uCenter.value.copy(pt);
       motes.u.uTime.value = ambient;
       motes.u.uPixel.value = px;
-      motes.u.uOpacity.value = alive;
+      motes.u.uOpacity.value = 0;
       trail.u.uCenter.value.copy(pt);
       trail.u.uTime.value = ambient;
       trail.u.uPixel.value = px;
-      trail.u.uOpacity.value = alive * 0.8;
+      trail.u.uOpacity.value = alive * 0.25;
       head.sprite.position.copy(pt);
       head.set("#e6ff9a", 0.22 * alive);
       // The creature walks the wire, facing along it.
-      T.cable.curve.getTangentAt(Math.min(0.999, Math.max(0.001, run)), tan);
-      critter.points.position.copy(pt).y -= 0.12;
+      tan.copy(T.cable.curve.getPointAt(Math.min(1, run + 0.18))).sub(T.cable.curve.getPointAt(Math.max(0, run - 0.18))).setY(0).normalize();
+      critter.points.position.copy(pt).y -= 0.2;
       critter.points.rotation.set(0, Math.atan2(-tan.z, tan.x), 0);
       critter.points.visible = alive > 0;
       critter.u.uTime.value = ambient; critter.u.uPixel.value = px; critter.u.uOpacity.value = alive;
       critterLight.position.copy(pt).y += 0.25;
-      critterLight.intensity = 5 * alive;
+      critterLight.intensity = 2.2 * alive;
       // The screens: a creature on the left, it arrives on the right; then they trade places.
       T.state.left = t > tGB + 1.5 ? 1 : -1;
       T.state.right = run >= 1 ? 1 : -1;

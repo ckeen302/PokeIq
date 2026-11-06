@@ -54,7 +54,7 @@ const SPECS: Record<string, LensSpec> = {
     // The wall of 151 glows through the room's air (in-scatter toward it from where the camera stands).
     fog: (t, b) => {
       const k = ramp(t, b("151") + 0.5, b("151") + 2.5) * (1 - ramp(t, b("mew") - 0.4, b("mew") + 0.4));
-      return k > 0.01 ? { color: [0.03, 0.025, 0.03], density: 0.05 * k, height: 1.5, falloff: 0.25, sun: { dir: [0.55, 0.22, -0.8], color: [0.5, 0.3, 0.12] }, sky: 0 } : undefined;
+      return k > 0.01 ? { color: [0.015, 0.012, 0.018], density: 0.03 * k, height: 1.5, falloff: 0.25, sun: { dir: [0.55, 0.22, -0.8], color: [0.32, 0.19, 0.07] }, sky: 0 } : undefined;
     },
   },
   "red-green": {

@@ -383,11 +383,11 @@ export const build: ChapterBuilder = async (ctx) => {
   const RIM = ["#5aff8a", "#ff9a3a", "#5ab8ff"];
   const starters = [1, 4, 7].map((a, i) => heroFigure(figs.get(a), { pos: [(i - 1) * 1.2, 1.02, 2.1], height: 1.05, accent: RIM[i], scene }));
   // Less neon: the element colour as a rim on a solid figure, not a glow over it.
-  starters.forEach((h) => h && figureStyle(h.fig, { rimK: 0.8 }));
+  starters.forEach((h) => h && figureStyle(h.fig, { rimK: 0.55 }));
   // The low sun throws the starters' and the table's long shadows across the cloth and the grass.
   const labSh = keyShadow(ctx.q, L.key, { radius: 5, center: [0, 1, 2] });
   receiveShadows(cloth, table, V.terrain);
-  castShadows(table);
+  castShadows(table, ...balls.map((b) => b.group));
   starters.forEach((s) => s && D.add(s));
   const mew = heroFigure(figs.get(151), { pos: [0, 9, -2], height: 2.8, accent: "#ff9ad0", scene });
   if (mew) D.add(mew);
@@ -426,7 +426,8 @@ export const build: ChapterBuilder = async (ctx) => {
   const arc = (k: number): Key => { const a = -0.8 + k * 1.6; return { t: tThree + 0.4 + k * 4.6, pos: [Math.sin(a) * 3.5, 1.32, 2 + Math.cos(a) * 3.5], look: [0, 1.5, 2], fov: 40 }; };
   // Shots: the push through the screen into the village (one move); cut in to the starters' arc; cut to
   // the rooftops for the rumour and the network; cut close on the Blue cartridge.
-  const cam = shots([
+  let aspect = 16 / 9;
+  const keyedCam = shots([
     [0, [
       { t: 0, pos: [0, 2.2, 26 + R * 1.6], look: [0, 2.2, 26], fov: 40 },
       { t: tLaunch + 0.6, pos: [0, 2.2, 26 + R * 0.9], look: [0, 2.2, 26], fov: 40 },
@@ -458,24 +459,36 @@ export const build: ChapterBuilder = async (ctx) => {
   return {
     scene,
     portalScale: 1.6,
-    camera: cam,
-    orbit: (t) => ({ target: cam(t).look, limits: { yaw0: 0, yawSpan: 1.1, minPitch: -0.05, maxPitch: 1.2, minDist: 1.5, maxDist: 60 } }),
+    camera: (t: number) => {
+      const p = keyedCam(t);
+      // The starters on a portrait screen: step back along the view so all three stay in frame.
+      if (t < tThree - 0.3 || t >= tMew - 0.1 || aspect >= 1) return p;
+      const k = 1 + Math.min(1, (1 - aspect) / 0.55) * 0.75;
+      return { ...p, pos: [p.look[0] + (p.pos[0] - p.look[0]) * k, p.look[1] + (p.pos[1] - p.look[1]) * k, p.look[2] + (p.pos[2] - p.look[2]) * k] as Vec3 };
+    },
+    orbit: (t) => ({ target: keyedCam(t).look, limits: { yaw0: 0, yawSpan: 1.1, minPitch: -0.05, maxPitch: 1.2, minDist: 1.5, maxDist: 60 } }),
     update(t, ambient, cam, viewH) {
-      labSh.enable(t > tThree - 0.4 && t < tMew + 1);
+      aspect = cam.aspect;
+      const lab = t > tThree - 0.4 && t < tMew + 1;
+      labSh.enable(lab);
+      // For the lab beat the key swings round to the side (still low and warm), so long shadows stretch across the cloth.
+      if (lab) L.key.position.set(-26, 11, 6); else L.key.position.set(SUN[0] * 30, SUN[1] * 30, SUN[2] * 30);
+      L.key.color.set(lab ? "#ffc890" : "#ffd8a8");
+      // The lab beat: a stronger low sun and less sky fill, so the long shadows read on the cloth.
       labSh.follow([0, 1.1, 2]);
       const px = pointPixel(viewH, cam);
       sky.follow(cam);
       const dusk = ramp(t, tWord - 1, tWord + 3);
       sky.u.uTop.value.copy(dayTop.clone().lerp(duskTop, dusk));
       sky.u.uHorizon.value.copy(dayHor.clone().lerp(duskHor, dusk));
-      L.key.intensity = 2.5 * (1 - dusk * 0.72);
+      L.key.intensity = 2.5 * (1 - dusk * 0.72) * (lab ? 1.3 : 1);
       L.key.color.copy(col("#ffd8a8").lerp(col("#ff8a50"), dusk));
       clouds.u.uTime.value = ambient;
       clouds.u.uColor.value.copy(col("#fff4e4").lerp(col("#ffb08a"), dusk));
       clouds.u.uShadow.value.copy(col("#d8c8cc").lerp(col("#4a3a6a"), dusk));
       V.grass.u.uTime.value = ambient;
       V.grass.u.uLight.value = 1 - dusk * 0.6;
-      L.hemi.intensity = 0.72 * (1 - dusk * 0.25);
+      L.hemi.intensity = 0.72 * (1 - dusk * 0.25) * (lab ? 0.62 : 1);
       (scene.fog as THREE.FogExp2).color.copy(col("#d2cdbc").lerp(col("#6a4a5a"), dusk));
       // Through the screen: the title's pixels switch off and fall into the village.
       const tA = tLaunch + 1.25;
@@ -516,7 +529,7 @@ export const build: ChapterBuilder = async (ctx) => {
         balls[i].group.visible = t < tMew + 1;
         const form = ramp(t, at + 0.2, at + 1.4) * (1 - ramp(t, tMew + 0.5, tMew + 1.5));
         s?.set(form, ambient, viewH, cam, 0.03, 0.05);
-        halos[i].set(RIM[i], (0.18 * form + 0.9 * Math.max(0, 1 - Math.abs(t - at - 0.4) * 1.6)) * (1 - ramp(t, tMew, tMew + 1)));
+        halos[i].set(RIM[i], (0.06 * form + 0.5 * Math.max(0, 1 - Math.abs(t - at - 0.4) * 1.6)) * (1 - ramp(t, tMew, tMew + 1)));
       });
       // Mew zips across the top of the frame.
       const mz = ramp(t, tMew + 0.2, tMew + 2.6);
@@ -544,6 +557,9 @@ export const build: ChapterBuilder = async (ctx) => {
         exposure: [[0, 0.95], [tLaunch + 2.5, 0.88], [tWord + 2, 0.9], [end, 0.95]],
         bloom: [[0, 0.9], [tLaunch + 2.6, 0.7], [tThree + 1, 0.95], [tMew, 0.75], [tWord + 2, 1.0]],
         rays: [[0, 0.16], [tWord, 0.16], [tWord + 2.5, 0.05]],
+        // A warm morning on the starters' table, a touch of contrast.
+        gain: [[tThree - 0.5, [1.04, 1.0, 0.98]], [tThree, [1.08, 1.0, 0.9]], [tMew, [1.08, 1.0, 0.9]], [tMew + 1, [1.04, 1.0, 0.98]]],
+        contrast: [[tThree - 0.5, 1.1], [tThree, 1.16], [tMew + 1, 1.1]],
       }, { pos: [sunV.x * 500, sunV.y * 500, sunV.z * 500], color: [1.0, 0.82, 0.55] });
       // "Old": for a moment the world flickers back to four shades of green.
       const g = t > tOld + 0.8 && t < tOld + 2.2 && Math.sin((t - tOld) * 22) > -0.6 ? 1 : 0;

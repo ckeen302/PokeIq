@@ -280,12 +280,17 @@ export const build: ChapterBuilder = async (ctx) => {
       const top = skyDay.top.clone().lerp(skyNight.top, dusk * 0.6).lerp(skyGrey.top, paved * 0.8).lerp(skyNight.top, night);
       const hor = skyDay.hor.clone().lerp(col("#ff8a4a"), dusk * 0.7).lerp(skyGrey.hor, paved).lerp(skyNight.hor, night);
       const bot = skyDay.bot.clone().lerp(skyGrey.bot, paved).lerp(skyNight.bot, night);
+      // Round the jar: a deeper sky overhead and clearer air, so the sunset band glows and the trees stand black.
+      const jarK = ramp(t, tJar - 1.2, tJar) * (1 - ramp(t, tPaved - 0.5, tPaved + 1));
+      top.lerp(col("#141838"), 0.6 * jarK);
+      hor.lerp(col("#c8522a"), 0.55 * jarK);
       sky.u.uTop.value.copy(top);
       sky.u.uHorizon.value.copy(hor);
       sky.u.uBottom.value.copy(bot);
-      sky.u.uSunGlow.value = 0.55 * (1 - paved * 0.85);
+      sky.u.uSunGlow.value = 0.55 * (1 - paved * 0.85) * (1 - 0.45 * jarK);
       sky.u.uSunDir.value.set(0.15, 0.06 - dusk * 0.05, -1).normalize();
-      (scene.fog as THREE.FogExp2).color.copy(hor.clone().multiplyScalar(0.45));
+      (scene.fog as THREE.FogExp2).color.copy(hor.clone().multiplyScalar(0.45 - 0.2 * jarK));
+      (scene.fog as THREE.FogExp2).density = 0.0062 * (1 - 0.7 * jarK);
       L.key.intensity = 2.4 * (1 - paved * 0.6) * (1 - night * 0.6);
       L.hemi.intensity = 0.7 * (1 - night * 0.5);
       grass.u.uTime.value = ambient;
@@ -361,7 +366,7 @@ export const build: ChapterBuilder = async (ctx) => {
     },
     look: (t) =>
       lookAt(t, { ...STOCK.film70s, lift: [0.024, 0.014, 0.005], contrast: 1.12 }, {
-        exposure: [[0, 0.82], [tJar, 0.9], [tJar + 3, 1.0], [tPaved + 1, 0.9], [tKept, 0.85], [end, 0.9]],
+        exposure: [[0, 0.82], [tJar - 0.6, 0.8], [tJar, 0.74], [tJar + 4, 0.76], [tPaved + 1, 0.9], [tKept, 0.85], [end, 0.9]],
         bloom: [[0, 0.6], [tJar - 0.5, 0.75], [tJar + 1.5, 1.05], [tJar + 4, 0.8], [tPaved + 2, 0.55], [tKept + 3, 0.9], [end, 0.8]],
         saturation: [[0, 0.95], [tPaved, 0.95], [tPaved + 3.5, 0.35], [tKept + 2, 0.45], [end, 0.6]],
         gain: [[0, [1.12, 1.0, 0.8]], [tPaved, [1.12, 1.0, 0.8]], [tPaved + 3.5, [0.98, 0.98, 1.0]], [tKept + 3, [1.06, 1.0, 0.88]]],
