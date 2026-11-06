@@ -32,7 +32,11 @@ export function encode(take, name, { from = 0, to, fade = 0.6, crf, maxBytes, mi
   // so the clip's last frame leads straight into its first.
   const body = b - a - fadeN;
   if (body <= fadeN) throw new Error(`clip too short: ${b - a} frames`);
-  const scale = `scale=${w}:${h}:flags=lanczos+accurate_rnd+full_chroma_int,setsar=1`;
+  // Frames are the whole viewport at device scale: crop to the take's clip.
+  const c = meta.clip;
+  const d = meta.dpr ?? 2;
+  const crop = `crop=${Math.round(c.width * d)}:${Math.round(c.height * d)}:${Math.round(c.x * d)}:${Math.round(c.y * d)}`;
+  const scale = `${crop},scale=${w}:${h}:flags=lanczos+accurate_rnd+full_chroma_int,setsar=1`;
   const filter = fadeN
     ? `[0:v]trim=start_frame=${a}:end_frame=${b},setpts=PTS-STARTPTS,split[x][y];` +
       `[x]trim=start_frame=${fadeN},setpts=PTS-STARTPTS[main];` +
@@ -69,7 +73,7 @@ export function encode(take, name, { from = 0, to, fade = 0.6, crf, maxBytes, mi
   // Aim for the size budget: start at crf and step until it fits.
   let q = crf ?? (meta.phone ? 24 : 23);
   let bytes = run(q);
-  const max = maxBytes ?? (meta.phone ? 900_000 : 1_450_000);
+  const max = maxBytes ?? (meta.phone ? 1_000_000 : 1_450_000);
   const min = minBytes ?? (meta.phone ? 550_000 : 950_000);
   for (let i = 0; i < 8 && bytes > max; i++) bytes = run(++q);
   for (let i = 0; i < 4 && bytes < min && q > 18; i++) {

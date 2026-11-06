@@ -106,7 +106,7 @@ export class Recorder {
 
   async open(url) {
     const { viewport, phone, dpr } = this.o;
-    this.browser = await chromium.launch({ args: ["--hide-scrollbars", "--force-color-profile=srgb", "--disable-lcd-text", "--autoplay-policy=no-user-gesture-required"] });
+    this.browser = await chromium.launch({ args: ["--hide-scrollbars", "--force-color-profile=srgb", "--disable-lcd-text", "--autoplay-policy=no-user-gesture-required", "--run-all-compositor-stages-before-draw", "--disable-checker-imaging", "--disable-partial-raster"] });
     this.context = await this.browser.newContext({
       viewport,
       deviceScaleFactor: dpr,
@@ -156,6 +156,7 @@ export class Recorder {
 
   async hideChrome(extra = "") {
     await this.css(`body > header, header[data-site-nav], footer, [data-testid=tabbar], nav[aria-label="Primary"], nextjs-portal { display: none !important; }
+      html { scroll-behavior: auto !important; }
       * { caret-color: transparent !important; scrollbar-width: none !important; }
       ${extra}`);
   }
@@ -251,12 +252,13 @@ export class Recorder {
     const [sx, sy] = await this.page.evaluate(stepPage, { dt: this.dt, cursor: { ...c } });
     if (this.onTick) await this.onTick();
     if (this.recording) {
-      const { x, y, width, height } = this.clip;
+      // The whole viewport (always one consistent picture, whatever the scroll); encode.mjs crops to the clip.
+      // (CDP's clip is in document coordinates, CSS pixels; scale is the device scale.)
+      const { width: vw, height: vh } = this.o.viewport;
       const { data } = await this.cdp.send("Page.captureScreenshot", {
         format: "jpeg",
         quality: 94,
-        // CDP's clip is in document coordinates (and must be on screen).
-        clip: { x: x + sx, y: y + sy, width, height, scale: 1 },
+        clip: { x: sx, y: sy, width: vw, height: vh, scale: this.o.dpr },
         captureBeyondViewport: false,
         optimizeForSpeed: true,
       });

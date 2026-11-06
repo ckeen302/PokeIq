@@ -43,4 +43,4 @@ const errs = rec.errors.filter((e) => !/favicon|Failed to load resource.*(404|42
 if (errs.length) console.log(`\n${name}: page errors:\n  ${errs.join("\n  ")}`);
 await rec.close();
 console.log(`\n${name}: ${rec.frame} frames in ${Math.round((Date.now() - t0) / 1000)} s`);
-if (flags["no-encode"] === undefined) encode(name, name, { from: rec.marks.in ?? 0, to: rec.marks.out, ...(mod.encode?.(phone) ?? {}) });
+if (flags["no-encode"] === undefined && rec.marks) encode(name, name, { from: rec.marks.in ?? 0, to: rec.marks.out, ...(mod.encode?.(phone) ?? {}) });
