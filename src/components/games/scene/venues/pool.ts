@@ -189,9 +189,9 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
     uSwim: { value: swimmers },
     uSwimDir: { value: swimDir },
     uRain: { value: 0 },
-    uCeil: { value: new THREE.Color(0.6, 0.68, 0.78) },
-    uDeep: { value: new THREE.Color(0.0, 0.09, 0.2) },
-    uShallow: { value: new THREE.Color(0.02, 0.3, 0.46) },
+    uCeil: { value: new THREE.Color(0.34, 0.42, 0.54) },
+    uDeep: { value: new THREE.Color(0.0, 0.045, 0.15) },
+    uShallow: { value: new THREE.Color(0.0, 0.16, 0.38) },
   };
   const hi = o.quality === "high";
   const water = new THREE.Mesh(
@@ -290,13 +290,13 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
           n = normalize(n + (nd - vec3(0.0, 1.0, 0.0)) * 1.2);
           vec3 v = normalize(cameraPosition - vW);
           float cosv = clamp(dot(n, v), 0.0, 1.0);
-          float fres = 0.02 + 0.98 * pow(1.0 - cosv, 5.0);
+          float fres = 0.02 + 0.55 * pow(1.0 - cosv, 5.0);
           // The ceiling reflected: a soft bright vault with rows of light panels (dark sky when the roof is open).
           vec3 rf = reflect(-v, n);
           float up = clamp(rf.y, 0.0, 1.0);
           vec2 cp = vW.xz + rf.xz / max(0.15, rf.y) * 14.0;
           float panels = step(0.82, fract(cp.x / 6.0)) * step(0.4, fract(cp.y / 9.0)) * step(0.3, up);
-          vec3 ceil = mix(uCeil * 0.55, uCeil, up) + vec3(1.3, 1.25, 1.15) * panels * up * (1.0 - uRain);
+          vec3 ceil = mix(uCeil * 0.55, uCeil, up) + vec3(0.7, 0.68, 0.62) * panels * up * (1.0 - uRain);
           ceil = mix(ceil, vec3(0.08, 0.09, 0.11), uRain * 0.85);
           // The water's own colour: the tiles' light through it (shallower looking straight down).
           vec3 body = mix(uShallow, uDeep, clamp(1.0 - cosv, 0.0, 1.0));
@@ -304,7 +304,7 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
           float foam = clamp(vFoam, 0.0, 1.0) * (0.55 + 0.45 * wh(floor(vW.xz * 40.0) + floor(uTime * 12.0)));
           col = mix(col, vec3(0.95, 0.98, 1.0), foam * 0.85);
           // Mostly the water's own deep blue: the tiles and their caustics show through a little.
-          float a = mix(0.78, 0.97, fres);
+          float a = mix(0.9, 0.99, fres);
           a = max(a, foam);
           gl_FragColor = vec4(col, a);
           #include <tonemapping_fragment>

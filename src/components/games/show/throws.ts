@@ -96,17 +96,16 @@ export function throwShow(result: ThrowResult, o: ShowOptions): Show {
     const back = tall(aspect) ? 1.4 : 1;
     const range = Math.max(4, it.plan.noMark ? 3 : it.plan.attempt.physics.distance);
     const peak = Math.max(1, it.plan.attempt.physics.peak);
-    // The flight: a camera beside the implement chasing it along its arc (a 12 cm shot is lost in a frame that
-    // holds the whole sector), then low beside the landing zone as it comes down.
+    // The flight: beside and above the implement, looking down on it, so the field is behind it (not the stands);
+    // then down onto the landing zone, the sector lines and the tape in view, as it comes down and sticks.
     const flight = (): CamPose => {
       const p = s.pos ?? [lineX, 1, cz];
       const u = clamp01(tau / Math.max(0.3, it.plan.flight));
-      const w = Math.max(9, H * 2.2, Math.min(22, range * 0.28));
-      // A little below it, looking up, the implement just above the centre of the frame.
-      const chase = framed([p[0] + w * 0.4, Math.max(1.4, p[1] * 0.75 + 1), cz + w * 1.15 * back], [p[0] - w * 0.12, Math.max(0.6, p[1] - w * 0.07), cz], w, w * 0.5, aspect, 10, 55);
+      const w = Math.max(9, H * 1.6, Math.min(16, range * 0.2));
+      const chase = framed([p[0] + w * 0.45, Math.max(2, p[1] + 2.5 + w * 0.35), cz + w * 0.95 * back], [p[0] - w * 0.12, Math.max(0.3, p[1] * 0.85), cz], w, w * 0.56, aspect, 10, 60);
       const lx = it.plan.landX;
-      const land = framed([lx + w * 0.25, 1.3, cz + w * 0.95 * back], [lx - w * 0.05, Math.min(2.5, w * 0.12), cz], w, w * 0.45, aspect, 10, 55);
-      return mixPose(chase, land, smooth(0.72, 1, u));
+      const land = framed([lx + w * 0.35, 2.5 + w * 0.42, cz + w * 0.8 * back], [lx - w * 0.05, 0.3, cz], w, w * 0.5, aspect, 10, 60);
+      return mixPose(chase, land, smooth(0.62, 1, u));
     };
     const thrower = (): CamPose => {
       const x = s.com[0];
@@ -120,11 +119,11 @@ export function throwShow(result: ThrowResult, o: ShowOptions): Show {
       case "startlist":
         return drift(framed([lineX - 20, 8, cz + 26 * back], [lineX - 30, 0, cz], 40, 12, aspect, 10, 55), t);
       case "throw":
-        return tau < 0 || !s.pos ? thrower() : mixPose(thrower(), flight(), smooth(0.02, 0.45, tau));
+        return tau < 0 || !s.pos ? thrower() : mixPose(thrower(), flight(), smooth(0.08, 0.6, tau));
       case "mark": {
         const lx = it.plan.landX;
-        const span = Math.max(7, H * 1.6, Math.min(14, range * 0.16));
-        return drift(framed([lx + span * 0.3, 1.5 + span * 0.35, cz + (2 + span * 0.9) * back], [lx, 0.2, cz], span, span * 0.45, aspect, 10, 55), t);
+        const span = Math.max(8, Math.min(16, range * 0.18));
+        return drift(framed([lx + span * 0.55, 2.5 + span * 0.5, cz + (1.5 + span * 0.7) * back], [lx + span * 0.12, 0.1, cz], span, span * 0.5, aspect, 10, 60), t);
       }
       case "replay": {
         // Low behind the circle or the arc, looking out down the sector as the implement leaves the hand.

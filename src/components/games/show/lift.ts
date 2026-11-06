@@ -88,9 +88,18 @@ export function liftShow(result: LiftResult, o: ShowOptions): Show {
     const half = barHalf(pl.weight);
     const back = tall(aspect) ? 1.35 : 1;
     const W = Math.max(3.2, 2 * half + 0.8, 1.5 * pl.dims.w);
+    const bar = liftAt(pl, tau, t).bar;
+    const barY = bar ? bar[1] : 0.6 * H;
+    // From the platform to just over the bar (the plates a good margin inside the frame), whatever the lifter's size.
     const front = (tight: number): CamPose => {
-      const h = (1.5 - 0.25 * tight) * H + 0.5;
-      return framed([0.5 + 0.1 * H, 0.55 + 0.32 * H, (3.4 + 1.5 * Math.max(H, half)) * back], [0, 0.6 * H, 0], W * (1 - 0.15 * tight), h, aspect, 8, 50);
+      const top = Math.max(1.25 * H, barY + 0.45 + 0.1 * H);
+      const h = top * (1.06 - 0.06 * tight) + 0.3;
+      return framed([0.5 + 0.1 * H, 0.45 + 0.4 * top, (3.4 + 1.5 * Math.max(H, half)) * back], [0, h * 0.47, 0], W * (1 - 0.1 * tight), h, aspect, 8, 55);
+    };
+    // The bar overhead, close: the plates across the frame, the lifter's arms and head under them.
+    const barShot = (): CamPose => {
+      const w = 2 * half + 1.4;
+      return framed([0.6, Math.max(1, barY - 0.15 * w), (2.2 + 1.1 * w) * back], [0, barY - 0.12 * w, 0], w, w * 0.62, aspect, 8, 55);
     };
     switch (beat.cam) {
       case "crane":
@@ -102,12 +111,14 @@ export function liftShow(result: LiftResult, o: ShowOptions): Show {
         const walk = framed([3 + H, 0.6 + 0.4 * H, (3 + 1.4 * H) * back], [0, 0.55 * H, pl.z - 1], Math.max(4, 2.2 * H), 1.6 * H + 0.5, aspect, 8, 50);
         const push = smooth(pl.catchT, pl.jerkT + 0.7, tau);
         let pose = mixPose(walk, front(push), smooth(-3.4, -2, tau));
+        // Held overhead: in close on the bar until the referees decide.
+        if (pl.fail !== "clean") pose = mixPose(pose, barShot(), smooth(pl.lockT + 0.2, pl.lockT + 0.8, tau) * (1 - smooth(pl.downT - 0.35, pl.downT - 0.05, tau)));
         const lightsShot = framed([REF_LIGHTS.x + 2.2, 1.6, REF_LIGHTS.z + 3.2], [REF_LIGHTS.x * 0.45, Math.min(1.8, 0.5 * H + 0.6), REF_LIGHTS.z * 0.45], Math.max(5, 1.6 * H), Math.max(3, 1.4 * H), aspect, 10, 55);
         if (tau > pl.downT - 0.1) pose = mixPose(pose, lightsShot, smooth(pl.downT - 0.1, pl.downT + 0.35, tau) * (1 - smooth(pl.downT + 1.4, pl.downT + 1.9, tau)));
         return drift(pose, t, 0.012);
       }
       case "result":
-        return drift(front(0.2), t, 0.02);
+        return drift(front(0), t, 0.02);
       case "replay":
         // Low beside the platform, looking up at the bar as it goes overhead.
         return framed([1.2 + 0.7 * half + 0.5 * H, 0.35, (1.6 + 0.9 * H) * back], [0, 0.75 * H, 0], Math.max(2.4, 1.3 * H, 2 * half), 1.35 * H + 0.4, aspect, 12, 60);
