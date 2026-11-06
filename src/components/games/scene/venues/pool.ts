@@ -163,13 +163,14 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
     group.add(w);
   }
 
-  // ---- The deck round it (light non-slip tiles), and the gutter's edge.
+  // ---- The deck round it (grey non-slip tiles: light, but under the pool's blue so the broadcast's exposure
+  // holds on the water and the swimmers, not a glare off the deck), and the gutter's edge.
   const deckTex = (() => {
     const [c, g] = canvas(256, 256);
-    g.fillStyle = "#e9edf0";
+    g.fillStyle = "#aeb7bf";
     g.fillRect(0, 0, 256, 256);
     for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) {
-      g.fillStyle = `hsl(205, 8%, ${86 + r() * 6}%)`;
+      g.fillStyle = `hsl(205, 7%, ${66 + r() * 5}%)`;
       g.fillRect(i * 64 + 2, j * 64 + 2, 60, 60);
     }
     const t = new THREE.CanvasTexture(c);
@@ -448,7 +449,7 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
       kick.translate(x0 - 0.66, POOL.block + 0.1, z);
       blockParts.push(kick);
     }
-    const blocks = new THREE.Mesh(G(mergeGeometries(blockParts)), M(new THREE.MeshStandardMaterial({ color: "#f3f4f6", roughness: 0.35, metalness: 0.2 })));
+    const blocks = new THREE.Mesh(G(mergeGeometries(blockParts)), M(new THREE.MeshStandardMaterial({ color: "#cfd4da", roughness: 0.4, metalness: 0.2 })));
     blockParts.forEach((p) => p.dispose());
     group.add(blocks);
     // Lane numbers on the blocks' fronts.
