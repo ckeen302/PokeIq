@@ -3,7 +3,8 @@ import { watchContext } from "@/lib/gl/context-loss";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 import { CSM } from "three/examples/jsm/csm/CSM.js";
 import { layoutLine } from "@/lib/sizes/types";
-import { ROOF_Y, planWorld, type WorldPlan } from "@/lib/sizes/world";
+import { ROOF_Y, planWorld, type RingRule, type WorldPlan } from "@/lib/sizes/world";
+import { envelope, type Framing } from "@/lib/sizes/glide";
 import { FACING, poseFor, type View } from "@/lib/sizes/camera";
 import type { FarManifest } from "@/lib/sizes/far";
 import FAR_MANIFEST from "@/data/sizes-far.json";
@@ -119,7 +120,8 @@ export interface FutureView {
 
 export interface SizesScene {
   canvas: HTMLCanvasElement;
-  setLine(items: SceneItem[]): { placed: Placed[]; plan: WorldPlan };
+  /** `framing` and `ring` follow the line's order (lib/sizes/order: framingFor, ringRuleFor); by default a line that grows. */
+  setLine(items: SceneItem[], opts?: { framing?: Framing; ring?: RingRule }): { placed: Placed[]; plan: WorldPlan };
   /** Height of the figures around a point on the line (smoothed, m). */
   heightAt(x: number): number;
   setView(v: View): void;
@@ -406,19 +408,20 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     return { index, item, x, wx, wz, yaw: FACING - at.heading, z, w, h, mesh: [null, null], up: [false, false], loading: [null, null], failed: false, phase: (index * 2.399) % (Math.PI * 2), inView: false, sh: 0, need: Infinity, draw: 0, from: 0, t: 1, seen: false, readyAt: 0, neededAt: 0, lastNear: -1e9 };
   };
 
-  function setLine(items: SceneItem[]) {
+  function setLine(items: SceneItem[], opts: { framing?: Framing; ring?: RingRule } = {}) {
     for (const s of slots) dropSlot(s);
     if (companion) dropSlot(companion);
     companion = null;
     const placed = layoutLine(items.map((i) => ({ m: i.m, length: i.length, bw: i.box[2], bh: i.box[3] })));
-    plan = planWorld(placed);
+    plan = planWorld(placed, opts.ring);
     // The ten-storey building stands a step off the giants' ring on the camera's side (on the paving short of the parterres): on the ring itself it would hide Prism Tower's legs and the giant after it.
     const aside = (item: SceneItem, i: number) => (item.ref === "building" && plan.ring && placed[i].x > plan.ring.s0 ? -Math.min(22, placed[i].w * 1.6) : 0);
     slots = items.map((item, i) => newSlot({ ...item, w: placed[i].w, h: placed[i].h }, i, placed[i].x, placed[i].w, placed[i].h, aside(item, i)));
     xs = slots.map((s) => s.x);
     // Smoothed log heights (same idea as the camera's distance), for aiming.
     const raw = slots.map((s) => Math.log(Math.max(0.02, s.h)));
-    logH = raw.map((_, i) => {
+    // A line whose sizes jump about (a stat order) aims on the same kind of envelope the camera's distance follows, so the aim rises and falls with it.
+    logH = opts.framing === "mixed" ? envelope(raw) : raw.map((_, i) => {
       let sum = 0, n = 0;
       // Bilateral, like the camera's distance: a giant next door must not lift the aim off a human-sized figure.
       for (let k = -3; k <= 3; k++) { const j = i + k; if (j < 0 || j >= raw.length) continue; const dl = raw[j] - raw[i]; const wt = Math.exp(-(k * k) / 4) * Math.exp(-(dl * dl) / 0.18); sum += raw[j] * wt; n += wt; }
@@ -793,11 +796,26 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   function compileFor(o: THREE.Object3D): Promise<unknown> {
     const was = renderer.getRenderTarget();
     renderer.setRenderTarget(post.target);
+    let pending: Set<THREE.Material>;
     try {
-      return renderer.compileAsync(o, camera, scene);
+      pending = renderer.compile(o, camera, scene);
     } finally {
       renderer.setRenderTarget(was);
     }
+    // three.js's compileAsync, except that a material disposed while it compiles (an order change rebuilds the
+    // city's props) drops out of the wait instead of throwing "reading 'isReady'" from a timer.
+    return new Promise((resolve) => {
+      const check = () => {
+        for (const m of pending) {
+          const program = (renderer.properties.get(m) as { currentProgram?: { isReady(): boolean } }).currentProgram;
+          if (!program || program.isReady()) pending.delete(m);
+        }
+        if (pending.size === 0) resolve(o);
+        else setTimeout(check, 10);
+      };
+      if (renderer.extensions.has("KHR_parallel_shader_compile")) check();
+      else setTimeout(check, 10);
+    });
   }
 
   // The stand-ins' materials stay alive: three.js deletes a program when the last material using it is disposed, and the next figure would compile it all over again.

@@ -6,6 +6,7 @@ import { track } from "@vercel/analytics";
 import { Clapperboard, Download, Loader2, Share2, X } from "lucide-react";
 import { DEFAULT_LENGTH, MIN_SECONDS, VIDEO_H, VIDEO_LENGTHS, VIDEO_W } from "@/lib/sizes/export";
 import { PRESETS, presetLineup } from "@/lib/sizes/presets";
+import { dirLabel, isDefaultOrder, orderInfo, orderSegment, orderTitle, type Order } from "@/lib/sizes/order";
 import type { SizeItem } from "@/lib/sizes/types";
 import type { Quality } from "./scene";
 import { MUSIC_URL } from "./audio";
@@ -66,9 +67,11 @@ function qualityFromUrl(): Quality | undefined {
  * is smooth however slow the device; progress shows and it can be
  * cancelled. Then download it, or share the file straight to an app.
  */
-export default function MakeVideo({ items, line, hook, slug, lineLabel, trainer, onRecording, onClose }: {
+export default function MakeVideo({ items, line, order, hook, slug, lineLabel, trainer, onRecording, onClose }: {
   items: SizeItem[];
   line: SizeItem[];
+  /** The page's order: the line (and any preset picked here) stands in it. */
+  order: Order;
   hook: string;
   slug: string;
   lineLabel: string;
@@ -97,8 +100,8 @@ export default function MakeVideo({ items, line, hook, slug, lineLabel, trainer,
   const chosen = useMemo(() => {
     if (source === "current") return { items: line, hook, slug, label: lineLabel };
     const p = PRESETS.find((x) => x.id === source)!;
-    return { items: presetLineup(p, items), hook: p.hook, slug: p.id, label: p.label };
-  }, [source, line, hook, slug, lineLabel, items]);
+    return { items: presetLineup(p, items, order), hook: orderTitle(p.hook, order), slug: isDefaultOrder(order) ? p.id : `${p.id}-by-${orderSegment(order)}`, label: p.label };
+  }, [source, line, hook, slug, lineLabel, items, order]);
 
   const lengths = [...VIDEO_LENGTHS] as number[];
   if (extraLen && !lengths.includes(extraLen)) lengths.unshift(extraLen);
@@ -116,6 +119,7 @@ export default function MakeVideo({ items, line, hook, slug, lineLabel, trainer,
       await document.fonts?.load(`700 40px ${font}`).catch(() => undefined);
       const res = await recordVideo({
         items: chosen.items,
+        order,
         seconds,
         hook: chosen.hook,
         slug: chosen.slug,
@@ -206,6 +210,7 @@ export default function MakeVideo({ items, line, hook, slug, lineLabel, trainer,
                   <option key={p.id} value={p.id}>{p.label}</option>
                 ))}
               </select>
+              {!isDefaultOrder(order) && <p className="mt-1.5 text-xs text-white/55" data-testid="sizes-video-order">{chosen.items.length ? `Ordered by ${orderInfo(order).label}, ${dirLabel(order.by, order.dir).toLowerCase()}: “${chosen.hook.replace(/\s*\p{Extended_Pictographic}+$/u, "")}”` : `This lineup has nothing to order by ${orderInfo(order).label.toLowerCase()}.`}</p>}
             </div>
             <div>
               <div className="font-pixel text-[9px] uppercase tracking-[0.18em] text-white/55">Length</div>
@@ -235,7 +240,7 @@ export default function MakeVideo({ items, line, hook, slug, lineLabel, trainer,
                 </button>
               </div>
             ) : (
-              <button type="button" onClick={record} disabled={support === "none"} className="sz-play inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg font-display text-sm font-bold uppercase tracking-wider disabled:opacity-50" data-testid="sizes-video-record">
+              <button type="button" onClick={record} disabled={support === "none" || !chosen.items.length} className="sz-play inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg font-display text-sm font-bold uppercase tracking-wider disabled:opacity-50" data-testid="sizes-video-record">
                 <Clapperboard className="h-4 w-4" aria-hidden /> Record
               </button>
             )}

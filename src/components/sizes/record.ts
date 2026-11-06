@@ -1,4 +1,5 @@
-import { factFor, spanFact } from "@/lib/sizes/facts";
+import { stopCaption } from "@/lib/sizes/facts";
+import { HEIGHT_ORDER, framingFor, ringRuleFor, type Order } from "@/lib/sizes/order";
 import type { SizeItem } from "@/lib/sizes/types";
 import { planPlay, playAt } from "@/lib/sizes/play";
 import { cardAlpha, frameCount, videoFileName, videoSettings, videoTimeline, type VideoSettings } from "@/lib/sizes/export";
@@ -20,6 +21,8 @@ import { drawBadges } from "./overlay";
 
 export interface RecordOptions {
   items: SizeItem[];
+  /** The line's order (already sorted in it): its framing, pauses, captions and badges follow it. */
+  order?: Order;
   seconds: number;
   hook: string;
   slug: string;
@@ -239,13 +242,14 @@ export async function recordVideo(o: RecordOptions): Promise<RecordResult> {
   const scene = createSizesScene(host, { quality: o.quality ?? "export", size: { w: W, h: H }, urls: o.urls, trainer: o.trainer });
   try {
     await scene.ready;
-    const { placed } = scene.setLine(o.items.map(toSceneItem));
+    const order = o.order ?? HEIGHT_ORDER;
+    const { placed } = scene.setLine(o.items.map(toSceneItem), { framing: framingFor(order), ring: ringRuleFor(order) });
     const lens = { vfov: 46, aspect: W / H };
-    const plan = planPlay(placed, lens, { duration: v.seconds, intro: tl.intro, finale: tl.finale, revealAt: tl.revealAt, hold: Math.min(1.6, v.seconds / 14) });
+    const plan = planPlay(placed, lens, { duration: v.seconds, intro: tl.intro, finale: tl.finale, revealAt: tl.revealAt, hold: Math.min(1.6, v.seconds / 14), framing: framingFor(order) });
     const byKey = new Map(o.items.map((i) => [i.key, i]));
     const holdStarts = plan.glide.stops.map((s) => s.t0);
     const finaleAt = plan.glide.stops.find((s) => s.finale)?.t0 ?? v.seconds - 2;
-    const captions = new Map(plan.glide.stops.map((s) => [s.key, s.finale ? spanFact(o.items) ?? factFor(byKey.get(s.key)!, o.items) : factFor(byKey.get(s.key)!, o.items)]));
+    const captions = new Map(plan.glide.stops.map((s) => [s.key, stopCaption(byKey.get(s.key), o.items, order, s.finale)]));
     const compose = document.createElement("canvas");
     compose.width = W;
     compose.height = H;
@@ -261,7 +265,7 @@ export async function recordVideo(o: RecordOptions): Promise<RecordResult> {
       g.drawImage(scene.canvas, 0, 0, W, H);
       const stop = plan.glide.stops.find((s) => t >= s.t0 && t <= s.t1);
       // Badges keep clear of the hook card and the end card.
-      if (t >= tl.hook && t <= v.seconds - tl.end + 0.25) drawBadges(g, scene.anchors(), pf.focus, byKey, W, H, { font: o.font, scale: 1.2, max: pf.view.rise > 0.3 ? 1 : 3, top: H * 0.07, bottom: H * 0.3 });
+      if (t >= tl.hook && t <= v.seconds - tl.end + 0.25) drawBadges(g, scene.anchors(), pf.focus, byKey, W, H, { font: o.font, scale: 1.2, max: pf.view.rise > 0.3 ? 1 : 3, top: H * 0.07, bottom: H * 0.3, order });
       const cap = stop && t - stop.t0 > 0.25 && t < v.seconds - tl.end ? captions.get(stop.key) ?? null : null;
       drawVideoLayers(g, W, H, t, v.seconds, cap, layers);
     };

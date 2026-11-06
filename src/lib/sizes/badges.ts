@@ -6,8 +6,9 @@ import { typePath } from "./type-icons";
  * The game-style badges over each figure on /pokedex/sizes (and in the
  * videos): a small "#0250" tag, a big outlined name banner, a square
  * height box ("3.8 / meter height", feet underneath, "+" for a Gigantamax
- * minimum, "(Length)" for the long ones) and the types as round icons with
- * their names. Drawn on a 2D canvas so the live page and the exported
+ * minimum, "(Length)" for the long ones), in a stat or weight order a
+ * second box with the line's value ("130 / speed"), and the types as round
+ * icons with their names. Drawn on a 2D canvas so the live page and the exported
  * video share them exactly. Layout is pure (unit-tested); drawing needs a
  * canvas.
  */
@@ -21,6 +22,8 @@ export interface BadgeInfo {
   length: boolean;
   min: boolean;
   types: string[];
+  /** In a stat or weight order, the line's value: a second box beside the height ("130 / speed", "460 / kg weight"). */
+  stat?: { num: string; unit: string; sub: string } | null;
 }
 
 /** The number in the height box: "3.8", "0.1", "14.5", "100", "1.71". */
@@ -40,7 +43,7 @@ export const dexTag = (dex: number) => `#${String(dex).padStart(4, "0")}`;
 export function badgeSize(info: BadgeInfo, s: number, measure: (text: string, px: number) => number): { w: number; h: number; banner: number } {
   const nameW = measure(badgeName(info.name), s * 0.74) + s * 0.9;
   const typesW = info.types.length * s * 1.12;
-  const lowerW = s * 1.62 + (info.types.length ? s * 0.22 + typesW : 0);
+  const lowerW = s * 1.62 + (info.stat ? s * 1.78 : 0) + (info.types.length ? s * 0.22 + typesW : 0);
   const banner = Math.max(nameW, lowerW, s * 2.6);
   const h = (info.dex ? s * 0.5 : 0) + s + s * 0.16 + s * 1.62;
   return { w: banner, h, banner };
@@ -229,10 +232,40 @@ export function drawBadge(g: CanvasRenderingContext2D, info: BadgeInfo, p: { x: 
   g.font = `700 ${s * 0.21}px ${font}`;
   g.fillStyle = "#c8d3de";
   g.fillText(`${formatFeet(info.m)}${info.min ? "+" : ""}`, x + hw / 2, y + hb * 0.88);
+  // The line's value in a stat or weight order: a gold box beside the height.
+  let tx = x + hw;
+  if (info.stat) {
+    const sx = tx + s * 0.16;
+    shadow(s * 0.2);
+    roundRect(g, sx, y, hw, hb, s * 0.16);
+    const gradS = g.createLinearGradient(0, y, 0, y + hb);
+    gradS.addColorStop(0, "#ffcf3a");
+    gradS.addColorStop(1, "#c77c00");
+    g.fillStyle = gradS;
+    g.fill();
+    noShadow();
+    g.lineWidth = Math.max(1.5, s * 0.07);
+    g.strokeStyle = "#fff6d6";
+    g.stroke();
+    let spx = s * 0.74;
+    g.font = `800 ${spx}px ${font}`;
+    const sw = g.measureText(info.stat.num).width;
+    if (sw > hw * 0.86) spx *= (hw * 0.86) / sw;
+    gameText(g, info.stat.num, sx + hw / 2, y + hb * 0.36, spx, font, "#ffffff", ink, spx * 0.16);
+    let lpx2 = s * 0.27;
+    g.font = `800 ${lpx2}px ${font}`;
+    const lw2 = g.measureText(info.stat.unit).width;
+    if (lw2 > hw * 0.9) lpx2 *= (hw * 0.9) / lw2;
+    gameText(g, info.stat.unit, sx + hw / 2, y + hb * 0.68, lpx2, font, "#101a2c", "#fff3c4", lpx2 * 0.14);
+    g.font = `700 ${s * 0.21}px ${font}`;
+    g.fillStyle = "#3a2600";
+    g.fillText(info.stat.sub, sx + hw / 2, y + hb * 0.88);
+    tx = sx + hw;
+  }
   // Types.
   info.types.forEach((t, k) => {
     const d = s * 1.0;
-    const cx = x + hw + s * 0.22 + k * s * 1.12 + d / 2;
+    const cx = tx + s * 0.22 + k * s * 1.12 + d / 2;
     const cy = y + d / 2 + s * 0.02;
     const col = TYPE_COLORS[t] ?? "#888888";
     shadow(s * 0.18);

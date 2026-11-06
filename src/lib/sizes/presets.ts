@@ -1,4 +1,5 @@
-import { bySize, type SizeItem } from "./types";
+import { HEIGHT_ORDER, isHeight, orderCompare, orderItems, type Order } from "./order";
+import { type SizeItem } from "./types";
 
 /**
  * The ready-made lineups on /pokedex/sizes. Each has its own page
@@ -124,17 +125,23 @@ export function refsFor(figures: SizeItem[], all: SizeItem[], presetId?: string)
   });
 }
 
-/** A preset's line: its figures plus the references that fit, small to large. */
-export function presetLineup(preset: SizePreset, all: SizeItem[]): SizeItem[] {
+/**
+ * A preset's line: its figures plus the references that fit, small to large.
+ * In another order the preset still picks the figures; the order sorts them
+ * (and leaves out any without a value, and the references).
+ */
+export function presetLineup(preset: SizePreset, all: SizeItem[], order: Order = HEIGHT_ORDER): SizeItem[] {
   bindPresets(all);
   const figures = all.filter(preset.pick);
-  return [...figures, ...refsFor(figures, all, preset.id)].sort(bySize);
+  if (!isHeight(order)) return orderItems(figures, order);
+  return [...figures, ...refsFor(figures, all, preset.id)].sort(orderCompare(order));
 }
 
-/** A comparison's line: the chosen figures (in size order) plus the human. */
-export function compareLineup(chosen: SizeItem[], all: SizeItem[]): SizeItem[] {
+/** A comparison's line: the chosen figures (in size order) plus the human; in another order, the chosen figures that have a value, in that order. */
+export function compareLineup(chosen: SizeItem[], all: SizeItem[], order: Order = HEIGHT_ORDER): SizeItem[] {
+  if (!isHeight(order)) return orderItems(chosen, order);
   const human = all.filter((i) => i.ref?.kind === "human");
-  return [...chosen, ...human].sort(bySize);
+  return [...chosen, ...human].sort(orderCompare(order));
 }
 
 /** Pokémon the camera pauses on as it passes (when they are in the line). */

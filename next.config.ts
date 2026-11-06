@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import { ROOM_MOVED } from "./src/lib/rooms";
+import { ORDERS } from "./src/lib/sizes/order";
 
 /**
  * Only PokéAPI's sprite CDN (GitHub raw) is allowed as a remote image source.
@@ -57,6 +58,27 @@ const nextConfig: NextConfig = {
     "/guessr/r/**": ["./public/geo/maps/*.webp"],
     // The learn card's facts come from the Pokédex's places, which read the encounter tables from disk.
     "/api/geo/learn": ["./src/data/encounters/*.json"],
+  },
+  // Pokémon Sizes in another order (?by=speed&dir=desc) renders at its own route, so each order is a cached page
+  // while the address people share stays the query; without ?by= (or with an unknown one) it is Height.
+  async rewrites() {
+    const by = { type: "query" as const, key: "by", value: `(?<by>${ORDERS.map((o) => o.param).join("|")})` };
+    const desc = { type: "query" as const, key: "dir", value: "desc" };
+    const noBy = { type: "query" as const, key: "by" };
+    const pages = [
+      ["/pokedex/sizes", "/pokedex/sizes/by"],
+      // A preset's or a Pokémon's page (a comparison reads the query itself).
+      ["/pokedex/sizes/:slug((?!compare$|by$)[a-z0-9-]+)", "/pokedex/sizes/:slug/by"],
+    ];
+    return {
+      beforeFiles: pages.flatMap(([source, to]) => [
+        { source, has: [by, desc], destination: `${to}/:by-desc` },
+        { source, has: [by], destination: `${to}/:by` },
+        { source, has: [desc], missing: [noBy], destination: `${to}/height-desc` },
+      ]),
+      afterFiles: [],
+      fallback: [],
+    };
   },
   // Battle profiles became the trainer's profile; merged chat rooms point to their new room.
   async redirects() {

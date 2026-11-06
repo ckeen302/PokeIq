@@ -1,67 +1,53 @@
 import Link from "next/link";
 import { jsonLd } from "@/lib/seo";
 import { SITE_URL } from "@/lib/site";
-import { SIZE_FORM_ITEMS, SIZE_ITEMS } from "@/lib/sizes/data";
-import { DEFAULT_PRESET, PRESETS, compareLineup, presetLineup, type SizePreset } from "@/lib/sizes/presets";
+import { SIZE_ITEMS } from "@/lib/sizes/data";
+import { DEFAULT_PRESET, PRESETS, type SizePreset } from "@/lib/sizes/presets";
 import { COMPARE_PATH, itemPath, presetPath } from "@/lib/sizes/deeplink";
 import { factFor } from "@/lib/sizes/facts";
-import { KIND_LABEL, bySize, formatFeet, formatMetres, measureOf, type SizeItem } from "@/lib/sizes/types";
+import { everythingLine, listCaption, listItems, listNote, listOrder, listRows, type ListSpec } from "@/lib/sizes/list";
+import { HEIGHT_ORDER, orderTag, withOrder, type Order } from "@/lib/sizes/order";
+import { KIND_LABEL, formatFeet, formatMetres, measureOf, type SizeItem } from "@/lib/sizes/types";
 import { ListHeader } from "@/components/pokedex/detail/DetailParts";
 import { BackButton } from "@/components/ui/BackButton";
 import { SizesExperience } from "./SizesExperience";
-import { SizesList, type ListRow } from "./SizesList";
+import { SizesList } from "./SizesList";
 import { getPokemon } from "@/lib/pokemon/pokedex";
 import { cn } from "@/lib/utils";
-
-/** The full line with every form too: the main page's table. */
-export function everything(): SizeItem[] {
-  const base = presetLineup(DEFAULT_PRESET, SIZE_ITEMS);
-  const have = new Set(base.map((i) => i.key));
-  return [...base, ...SIZE_FORM_ITEMS.filter((f) => !have.has(f.key))].sort(bySize);
-}
-
-/** A Pokémon's neighbours by size (and the adult human), for its own page's table. */
-export function neighbours(focus: SizeItem, n = 12): SizeItem[] {
-  const all = everything();
-  const at = all.findIndex((i) => i.key === focus.key);
-  const near = all.slice(Math.max(0, at - n), at + n + 1);
-  const human = SIZE_ITEMS.find((i) => i.ref?.kind === "human")!;
-  return near.some((i) => i.key === human.key) ? near : [...near, human].sort(bySize);
-}
 
 /** The species' Pokédex page for any form ("charizard-gmax" → "charizard"). */
 export function pokedexSlug(i: SizeItem): string {
   return i.kind === "pokemon" ? i.key : getPokemon(i.species)?.slug ?? i.key;
 }
 
-/** Compact rows for the table (sent once, rendered on the server and in the browser). */
-export function listRows(items: SizeItem[]): ListRow[] {
-  return items.map((i) => [i.key, i.name, i.kind, i.species, i.m, i.length ? 1 : 0, i.min ? 1 : 0, i.kg, i.types.join("/"), i.kind === "ref" ? "" : pokedexSlug(i)]);
-}
-
 const sizeText = (i: SizeItem) => `${formatMetres(i.m)}${i.min ? "+" : ""} (${formatFeet(i.m)}${i.min ? "+" : ""})`;
 
 /**
  * /pokedex/sizes, a preset's page, a Pokémon's own size page and a
- * comparison: the 3D experience over the server-rendered table.
+ * comparison: the 3D experience over the server-rendered table, both in the
+ * address's order (?by=speed&dir=desc; Height, smallest first, without one).
  */
-export function SizesPage({ preset = DEFAULT_PRESET, focus, vs, compare = false }: { preset?: SizePreset; focus?: SizeItem; vs?: SizeItem[]; compare?: boolean }) {
+export function SizesPage({ preset = DEFAULT_PRESET, focus, vs, compare = false, order: asked = HEIGHT_ORDER }: { preset?: SizePreset; focus?: SizeItem; vs?: SizeItem[]; compare?: boolean; order?: Order }) {
   const comparing = !!vs && vs.length >= 2;
-  const rows = comparing ? compareLineup(vs, SIZE_ITEMS) : focus ? neighbours(focus) : preset.id === DEFAULT_PRESET.id ? everything() : presetLineup(preset, SIZE_ITEMS);
+  const spec: ListSpec = { preset: preset.id, focus: focus?.key ?? null, vs: comparing ? vs.map((i) => i.key) : [] };
+  // A Pokémon's own page in an order it has no value in (a Gigantamax form by weight) stands by height.
+  const order = listOrder(SIZE_ITEMS, spec, asked);
+  const rows = listItems(SIZE_ITEMS, spec, order);
   const mons = rows.filter((i) => i.kind !== "ref");
-  const caption = comparing ? `${vs.map((i) => i.name).join(" vs ")} by size` : focus ? `Pokémon close to ${focus.name}'s size` : preset.title;
+  const caption = listCaption(SIZE_ITEMS, spec, order);
+  const path = comparing ? COMPARE_PATH : focus ? itemPath(focus.key) : compare ? COMPARE_PATH : presetPath(preset.id);
   const ld = {
     "@context": "https://schema.org",
     "@type": "ItemList",
     name: caption,
-    url: `${SITE_URL}${focus ? itemPath(focus.key) : presetPath(preset.id)}`,
+    url: `${SITE_URL}${withOrder(focus ? itemPath(focus.key) : presetPath(preset.id), order)}`,
     numberOfItems: mons.length,
-    ...(mons.length <= 160 && { itemListElement: mons.map((i, n) => ({ "@type": "ListItem", position: n + 1, name: `${i.name} (${formatMetres(i.m)})`, url: `${SITE_URL}${itemPath(i.key)}` })) }),
+    ...(mons.length <= 160 && { itemListElement: mons.map((i, n) => ({ "@type": "ListItem", position: n + 1, name: `${i.name} (${orderTag(i, order) ?? formatMetres(i.m)})`, url: `${SITE_URL}${itemPath(i.key)}` })) }),
   };
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(ld) }} />
-      <SizesExperience preset={preset.id} focus={focus?.key ?? null} vs={comparing ? vs.map((i) => i.key) : []} compare={compare}>
+      <SizesExperience preset={preset.id} focus={focus?.key ?? null} vs={spec.vs} compare={compare} order={order}>
         <div className="space-y-6">
           {comparing ? (
             <CompareHeader items={vs} />
@@ -72,7 +58,7 @@ export function SizesPage({ preset = DEFAULT_PRESET, focus, vs, compare = false 
               kicker="Pokémon to scale"
               title="Pokémon "
               accent="Sizes"
-              blurb="Every Pokémon side by side at its real size, from the smallest at 0.1 m to Eternamax Eternatus at 100 m, in a sunny Lumiose City. Play the glide, explore, compare any of them, or make your own size video."
+              blurb="Every Pokémon side by side at its real size, from the smallest at 0.1 m to Eternamax Eternatus at 100 m, in a sunny Lumiose City. Line them up by height, weight or any base stat, play the glide, explore, compare any of them, or make your own size video."
             />
           ) : (
             <ListHeader kicker="Pokémon sizes" title={`${preset.label} `} accent="by size" blurb={preset.blurb} />
@@ -81,7 +67,7 @@ export function SizesPage({ preset = DEFAULT_PRESET, focus, vs, compare = false 
             {PRESETS.map((p) => (
               <Link
                 key={p.id}
-                href={presetPath(p.id)}
+                href={withOrder(presetPath(p.id), order)}
                 prefetch={false}
                 className={cn("rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-colors", !focus && !comparing && p.id === preset.id ? "border-primary/60 text-foreground" : "text-muted-foreground hover:text-foreground")}
               >
@@ -92,10 +78,10 @@ export function SizesPage({ preset = DEFAULT_PRESET, focus, vs, compare = false 
               Compare
             </Link>
           </nav>
-          <SizesList rows={listRows(rows)} focus={focus?.key} caption={caption} />
+          <SizesList rows={listRows(rows, SIZE_ITEMS)} focus={focus?.key} caption={caption} note={listNote(SIZE_ITEMS, spec, order)} spec={spec} order={order} path={path} />
           <p className="text-center text-xs text-muted-foreground">
             Heights and weights from the Pokédex (PokéAPI); Gigantamax heights are the Pokédex&apos;s minimum. Long Pokémon such as serpents and fish are measured by length.
-            Real-world sizes are documented figures, each with its source.
+            Base stats from the Pokédex, and each Mega, regional and Gigantamax form&apos;s own from Pokémon Showdown&apos;s data. Real-world sizes are documented figures, each with its source.
           </p>
         </div>
       </SizesExperience>
@@ -104,7 +90,7 @@ export function SizesPage({ preset = DEFAULT_PRESET, focus, vs, compare = false 
 }
 
 function FocusHeader({ item }: { item: SizeItem }) {
-  const fact = factFor(item, everything());
+  const fact = factFor(item, everythingLine(SIZE_ITEMS));
   return (
     <div className="space-y-3 text-center">
       <div className="text-left">

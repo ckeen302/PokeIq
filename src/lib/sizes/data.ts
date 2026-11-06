@@ -3,12 +3,15 @@ import ART from "@/data/sizes-art.json";
 import FORMS from "@/data/sizes-forms.json";
 import REFS from "@/data/sizes-refs.json";
 import { POKEDEX } from "@/lib/pokemon/pokedex";
-import { isLength, type RefKind, type SizeItem, type SizeKind } from "./types";
+import { formStats } from "./form-stats";
+import { isLength, type RefKind, type SizeItem, type SizeKind, type Stats } from "./types";
 
 /**
- * Build-time list of every figure /pokedex/sizes can show. Heights and
- * weights of default forms come from src/data/pokedex.json (dm, hg); forms
- * from src/data/sizes-forms.json (PokéAPI, cross-checked: scripts/sizes-data.ts);
+ * Build-time list of every figure /pokedex/sizes can show. Heights, weights
+ * and base stats of default forms come from src/data/pokedex.json (dm, hg);
+ * forms' heights and weights from src/data/sizes-forms.json (PokéAPI,
+ * cross-checked: scripts/sizes-data.ts) and their base stats from the
+ * form's own @pkmn/dex entry (lib/sizes/form-stats);
  * proportions from the HOME render's visible box (src/data/sizes-art.json);
  * references from src/data/sizes-refs.json, each with its source.
  */
@@ -52,6 +55,7 @@ const POKEMON: SizeItem[] = POKEDEX.map((p) => {
     mythical: p.mythical,
     kg: p.weight / 10,
     chain: p.chain,
+    stats: [p.stats.hp, p.stats.atk, p.stats.def, p.stats.spa, p.stats.spd, p.stats.spe] as Stats,
   };
 });
 
@@ -77,6 +81,7 @@ const FORM_ITEMS: SizeItem[] = SIZE_FORMS.map((f) => {
     mythical: p.mythical,
     kg: unknownWeight ? null : f.weight / 10,
     chain: p.chain,
+    stats: formStats(f.slug, f.species),
   };
 });
 
@@ -102,6 +107,7 @@ const REF_ITEMS: SizeItem[] = SIZE_REFS.map((r) => {
     mythical: false,
     kg: null,
     chain: 0,
+    stats: null,
     ref: { kind: r.kind, detail: r.detail, source: r.source, url: r.url, fact: r.fact, presets: r.presets },
   };
 });

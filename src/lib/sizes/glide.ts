@@ -57,11 +57,85 @@ export interface Framer {
   nearest(x: number): number;
 }
 
-/** The camera distance along the line: each figure's framing distance, smoothed over its neighbours, interpolated on a log scale. */
-export function framer(placed: Placed[], lens: Lens): Framer {
+/**
+ * How the framing follows the line. "size": the line grows (or shrinks) smoothly, as in the Height order: each
+ * figure's own framing, smoothed over its neighbours of a similar size. "mixed": sizes jump about from one figure to
+ * the next (a stat or weight order): the camera frames the neighbourhood instead, on an envelope of its framing
+ * distances (`envelope`), so it eases out well before a giant and back in well after it rather than pumping in and out.
+ */
+export type Framing = "size" | "mixed";
+
+/** The mixed framing's limit on how fast it may change: ln(distance) per figure passed (Play passes about 3 a second). */
+export const MIXED_SLOPE = 0.08;
+/** The mixed framing's smoothing window (figures, a Gaussian's sigma). */
+export const MIXED_SIGMA = 4;
+/**
+ * How much tighter than its own framing a big neighbour may stand in the mixed framing (ln distance): it fills up to
+ * about 73% of the frame's height instead of 54% (and never more than MAX_FILL_W of its width), so the shot before
+ * and after it needn't pull back quite as far.
+ */
+export const MIXED_ROOM = 0.3;
+/** The most of the frame's width any figure may fill in the mixed framing. */
+export const MAX_FILL_W = 0.9;
+
+/** The least camera distance at which a w × h figure still has room in the mixed framing (never cut off). */
+export function roomDistance(w: number, h: number, lens: Lens): number {
+  const tv = Math.tan(rad(lens.vfov) / 2);
+  const th = tv * lens.aspect;
+  const k = Math.exp(MIXED_ROOM);
+  const fillW = Math.min(MAX_FILL_W, (lens.aspect < 0.8 ? FILL_W_PORTRAIT : FILL_W) * k);
+  return Math.max(h / (FILL_H * k * 2 * tv), w / (fillW * 2 * th), MIN_D);
+}
+
+const gauss = (v: number[], sigma: number) => {
+  const R = Math.ceil(sigma * 3);
+  const w = Array.from({ length: R + 1 }, (_, k) => Math.exp(-(k * k) / (2 * sigma * sigma)));
+  return v.map((_, i) => {
+    let s = 0, n = 0;
+    for (let k = -R; k <= R; k++) {
+      const j = i + k;
+      if (j < 0 || j >= v.length) continue;
+      s += v[j] * w[Math.abs(k)];
+      n += w[Math.abs(k)];
+    }
+    return s / n;
+  });
+};
+
+/** Clamps a sequence to change by at most `slope` per step, only ever raising values (the least such envelope over it). */
+function cone(v: number[], slope: number): number[] {
+  const o = v.slice();
+  for (let i = 1; i < o.length; i++) o[i] = Math.max(o[i], o[i - 1] - slope);
+  for (let i = o.length - 2; i >= 0; i--) o[i] = Math.max(o[i], o[i + 1] - slope);
+  return o;
+}
+
+/**
+ * A smooth running envelope over a sequence of log framing distances along a line: the neighbourhood's own framing
+ * (a log mean over about eight figures either way, a little loose), raised wherever a bigger neighbour needs more
+ * room (`tight`: the least each figure may be framed at, on a cone of the given slope), then smoothed without corners.
+ * Both bounds hold exactly: it changes by at most `slope` per figure and never frames a figure tighter than `tight`
+ * (plus a margin for a hold's gentle push-in).
+ */
+export function envelope(raw: number[], tight: number[] = raw.map((r) => r - MIXED_ROOM), slope = MIXED_SLOPE, sigma = MIXED_SIGMA): number[] {
+  if (raw.length < 2) return raw.slice();
+  const around = gauss(raw, 8).map((x) => x + 0.15);
+  const big = cone(tight, slope);
+  // A Gaussian takes about slope · sigma · √(2/π) off the tip of a cone: raised by that first.
+  const lift = slope * sigma * 0.8;
+  const base = cone(around.map((x, i) => Math.max(x, big[i]) + lift), slope);
+  const floor = (i: number) => tight[i] + 0.06;
+  return cone(gauss(base, sigma).map((x, i) => Math.max(x, floor(i))), slope);
+}
+
+/**
+ * The camera distance along the line: each figure's framing distance, smoothed over its neighbours (or, in a mixed
+ * line, an envelope over them), interpolated on a log scale.
+ */
+export function framer(placed: Placed[], lens: Lens, framing: Framing = "size"): Framer {
   const raw = placed.map((p) => Math.log(frameDistance(p.w, p.h, lens)));
   const R = 3;
-  const logD = raw.map((_, i) => {
+  const logD = framing === "mixed" ? envelope(raw, placed.map((p) => Math.log(roomDistance(p.w, p.h, lens)))) : raw.map((_, i) => {
     let s = 0, n = 0;
     for (let k = -R; k <= R; k++) {
       const j = i + k;
