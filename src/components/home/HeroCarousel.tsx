@@ -29,6 +29,8 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
   const [playing, setPlaying] = useState(true);
   const [started, setStarted] = useState(false);
   const [mounted, setMounted] = useState<ReadonlySet<number>>(() => new Set([0]));
+  // The wide title screen and a phone crop the screenshots differently; known once the page runs.
+  const [wide, setWide] = useState<boolean | null>(null);
   const [hidden, setHidden] = useState(false);
   const [focused, setFocused] = useState(false);
   const count = HOME_SECTIONS.length;
@@ -57,6 +59,14 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
       if (timer !== undefined) window.clearTimeout(timer);
       if (idle !== undefined && typeof window.cancelIdleCallback === "function") window.cancelIdleCallback(idle);
     };
+  }, []);
+
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 1024px)");
+    const sync = () => setWide(query.matches);
+    sync();
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
   }, []);
 
   useEffect(() => {
@@ -127,14 +137,14 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
               style={{ transitionDuration: `${FADE_MS}ms` }}
             >
               {section.shot ? (
-                mounted.has(i) ? (
+                mounted.has(i) && wide !== null ? (
                   <>
                     <Image
-                      src={section.shot.src}
+                      src={wide ? section.shot.src : (section.shot.small ?? section.shot.src)}
                       alt={section.shot.alt}
                       width={section.shot.width}
                       height={section.shot.height}
-                      sizes="(min-width: 1024px) 760px, 100vw"
+                      sizes={wide ? "760px" : "100vw"}
                       loading="eager"
                       fetchPriority="low"
                       className="absolute inset-0 h-full w-full select-none object-cover"

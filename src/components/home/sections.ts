@@ -3,7 +3,10 @@ import { LAB_PATH } from "@/lib/lab";
 
 /** A screenshot in /public for the title screen's slideshow. */
 export interface SectionShot {
+  /** For the wide title screen: the subject sits in the right half, clear of the headline. */
   src: string;
+  /** For phones, where the picture sits above the text: the subject centred. Defaults to `src`. */
+  small?: string;
   width: number;
   height: number;
   alt: string;
@@ -49,7 +52,7 @@ export const HOME_SECTIONS: HomeSection[] = [
     cta: "Play",
     icon: Search,
     accent: "258 94% 74%",
-    shot: { src: "/home/pokedle.webp", width: 1200, height: 892, alt: "A Pokédle board partway through today's game" },
+    shot: { src: "/home/pokedle.webp", small: "/home/pokedle-sm.webp", width: 1200, height: 892, alt: "A Pokédle board partway through today's game" },
   },
   {
     id: "connections",
@@ -59,7 +62,7 @@ export const HOME_SECTIONS: HomeSection[] = [
     cta: "Play",
     icon: LayoutGrid,
     accent: "42 98% 60%",
-    shot: { src: "/home/connections.webp", width: 1200, height: 892, alt: "A PokéConnections board with one group found" },
+    shot: { src: "/home/connections.webp", small: "/home/connections-sm.webp", width: 1200, height: 892, alt: "A PokéConnections board with one group found" },
   },
   {
     id: "pikadoku",
@@ -69,7 +72,7 @@ export const HOME_SECTIONS: HomeSection[] = [
     cta: "Play",
     icon: Grid3x3,
     accent: "190 90% 55%",
-    shot: { src: "/home/pikadoku.webp", width: 1200, height: 892, alt: "A Pikadoku grid with a few Pokémon filled in" },
+    shot: { src: "/home/pikadoku.webp", small: "/home/pikadoku-sm.webp", width: 1200, height: 892, alt: "A Pikadoku grid with a few Pokémon filled in" },
   },
   {
     id: "battle",
@@ -79,7 +82,7 @@ export const HOME_SECTIONS: HomeSection[] = [
     cta: "Battle",
     icon: Swords,
     accent: "340 86% 60%",
-    shot: { src: "/home/battle.webp", width: 1200, height: 892, alt: "A Pokémon battle in progress" },
+    shot: { src: "/home/battle.webp", small: "/home/battle-sm.webp", width: 1200, height: 892, alt: "A Pokémon battle in progress" },
   },
   {
     id: "quizzes",
@@ -89,7 +92,7 @@ export const HOME_SECTIONS: HomeSection[] = [
     cta: "Play",
     icon: Gamepad2,
     accent: "24 95% 58%",
-    shot: { src: "/home/quizzes.webp", width: 1200, height: 892, alt: "The list of PokéIQ quizzes" },
+    shot: { src: "/home/quizzes.webp", small: "/home/quizzes-sm.webp", width: 1200, height: 892, alt: "A Who's That Pokémon question in play" },
   },
   {
     id: "pokedex",
