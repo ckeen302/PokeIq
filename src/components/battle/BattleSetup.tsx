@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
 import { Bot, Loader2, Radio, Swords, UserSearch, X } from "lucide-react";
 import { CPU_LEVEL_INFO, CPU_LEVELS, GROUP_FORMATS, PLAY_FORMAT_INFO, PLAY_FORMATS, battleHref, playerCount, type BattleSeatResponse, type CpuLevel, type GameType, type PlayFormatId, type StandardFormatId } from "@/lib/battle/play";

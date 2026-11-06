@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Download, Image as ImageIcon, Sparkles, Users } from "lucide-react";
 import { track } from "@vercel/analytics";
 import { Button, buttonVariants } from "@/components/ui/button";

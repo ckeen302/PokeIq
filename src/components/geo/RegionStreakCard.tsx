@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { ArrowRight, Flame } from "lucide-react";
 import { useProgress } from "@/lib/progress";
 import { GEO_REGION_STREAK_KEY, GEO_STREAK_REGIONS } from "@/lib/geo-streak-types";

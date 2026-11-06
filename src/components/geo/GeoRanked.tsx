@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { animate, motion, useReducedMotion } from "framer-motion";
 import { Bot, Loader2, Medal, ShieldCheck, Trophy, X } from "lucide-react";
 import {

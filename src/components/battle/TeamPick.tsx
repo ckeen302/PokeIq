@@ -267,7 +267,7 @@ function BuilderDialog({ team, fresh, onClose }: { team: BattleTeam | undefined;
 
   // Portaled out of the setup form, so the builder's buttons and inputs never submit it.
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-2 backdrop-blur-sm sm:p-6">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-2 backdrop-blur-sm max-md:z-[65] sm:p-6">
       <div role="dialog" aria-modal="true" aria-label="Team builder" className="relative w-full max-w-5xl rounded-xl border bg-background shadow-2xl">
         <div className="flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-6">
           <h2 className="font-display text-lg font-bold uppercase tracking-wide">Team builder</h2>

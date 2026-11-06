@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { Crown, Eye, Heart, Link2, Loader2, LogOut, Play, RotateCcw, Swords, UserMinus, Users, X } from "lucide-react";

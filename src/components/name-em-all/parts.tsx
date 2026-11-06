@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { artUrl } from "@/lib/pokemon/art";
 import { NEA_GEN_REGIONS } from "@/lib/name-em-all/categories";
 import type { NeaTarget } from "@/lib/name-em-all/types";

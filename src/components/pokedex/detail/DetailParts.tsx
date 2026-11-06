@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element -- thumbnails come pre-sized from /api/art */
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { BackButton } from "@/components/ui/BackButton";
 import { artUrl } from "@/lib/pokemon/art";
 import { typeColor } from "@/lib/pokemon/type-colors";

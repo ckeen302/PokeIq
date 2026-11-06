@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { DetailHero, DetailNav } from "@/components/pokedex/detail/DetailParts";
 import { pagerFor } from "@/lib/dex/neighbours";

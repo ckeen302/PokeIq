@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element -- artwork comes pre-sized from /api/art */
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import type { Metadata } from "next";
 import { BackButton } from "@/components/ui/BackButton";
 import { WhichPokemonQuiz } from "@/components/which-pokemon/WhichPokemonQuiz";
@@ -42,7 +42,7 @@ export default function WhichPokemonPage() {
       <BackButton href="/play" />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(ld) }} />
       <header className="mx-auto max-w-2xl space-y-2 text-center">
-        <p className="hud-label text-screen">Personality quiz</p>
+        <p className="hud-label max-md:hidden text-screen">Personality quiz</p>
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Which Pokémon Are You?</h1>
         <p className="text-muted-foreground">Seven traits, 200 Pokémon with a personality on record, one match that&apos;s actually you.</p>
       </header>

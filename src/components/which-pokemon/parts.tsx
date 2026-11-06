@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element -- artwork comes pre-sized from /api/art */
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { artUrl } from "@/lib/pokemon/art";
 import { typeColor, typeTextColor } from "@/lib/pokemon/type-colors";
 import { AXES, AXIS_INFO, type Profile } from "@/lib/which-pokemon/types";

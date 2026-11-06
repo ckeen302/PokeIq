@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Loader2 } from "lucide-react";
 import type { BattleProfileResponse } from "@/lib/battle/profile";
 import { battleIdHeaders, ensureBattleId } from "@/lib/battle/replay-client";

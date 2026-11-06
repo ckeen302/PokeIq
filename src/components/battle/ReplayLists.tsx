@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Clapperboard, FileUp, Loader2, Play, Trophy } from "lucide-react";
 import { IMPORT_MAX_BYTES, parseShowdownReplay } from "@/lib/battle/replay-file";
 import type { ReplayData } from "@/lib/battle/replay";

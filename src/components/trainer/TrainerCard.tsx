@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { motion } from "framer-motion";
 import { Pencil } from "lucide-react";
 import { BADGES, connBlock, currentStreak, setTrainerName, useProgress, type Progress } from "@/lib/progress";
@@ -167,7 +167,7 @@ export function TrainerCard() {
             Badges <span className="text-sm font-normal text-muted-foreground">({Object.keys(progress.badges).length}/{BADGES.length})</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <CardContent className="grid grid-cols-2 gap-3 max-[479px]:grid-cols-1 max-[479px]:gap-2 sm:grid-cols-3">
           {BADGES.map((b) => {
             const unlocked = Boolean(progress.badges[b.id]);
             return (
@@ -178,8 +178,8 @@ export function TrainerCard() {
               >
                 <BadgeMedal id={b.id} unlocked={unlocked} />
                 <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold">{b.name}</div>
-                  <div className="text-[11px] leading-tight text-muted-foreground">{b.description}</div>
+                  <div className="truncate text-sm font-semibold max-sm:whitespace-normal">{b.name}</div>
+                  <div className="text-[11px] leading-tight text-muted-foreground max-[479px]:text-xs">{b.description}</div>
                 </div>
               </div>
             );

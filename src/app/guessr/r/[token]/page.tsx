@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element -- the region map pictures are static files */
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Crown, Play } from "lucide-react";

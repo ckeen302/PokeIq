@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { BookOpen, Map as MapIcon } from "lucide-react";
 import type { GeoAnswer } from "@/lib/geo-types";
 import type { GeoLearn } from "@/lib/geo-learn-types";

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { motion } from "framer-motion";
 import { ArrowRight, Target, TrendingUp } from "lucide-react";
 import { coachInsights, type Insight } from "@/lib/coach";

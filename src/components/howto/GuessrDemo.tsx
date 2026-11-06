@@ -130,7 +130,7 @@ export function GuessrDemo() {
               )}
             </motion.div>
           </div>
-          <div className="flex h-9 items-center justify-between gap-2">
+          <div className="flex h-9 items-center justify-between gap-2 max-md:h-[4.25rem] max-md:flex-col max-md:items-start max-md:justify-start max-md:gap-1">
             <span
               ref={guessEl}
               className={`rounded-md border-2 px-3 py-1 text-xs font-bold uppercase transition-transform ${f >= 3 ? "border-primary bg-primary text-primary-foreground" : "border-foreground/15 bg-card text-muted-foreground"} ${pressed ? "scale-90" : ""}`}
@@ -138,7 +138,7 @@ export function GuessrDemo() {
               Guess
             </span>
             {f >= 7 && (
-              <span className="text-right text-xs">
+              <span className="text-right text-xs max-md:text-left max-md:leading-tight">
                 <b className="text-base">
                   <Count to={SCORE} run={!reduced} />
                 </b>{" "}

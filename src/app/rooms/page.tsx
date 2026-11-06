@@ -14,7 +14,7 @@ export default function RoomsPage() {
     <div className="mx-auto max-w-4xl space-y-6">
     <BackButton href="/" />
       <div className="space-y-2">
-        <p className="hud-label">Community</p>
+        <p className="hud-label max-md:hidden">Community</p>
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight">
           Chat <span className="text-primary">rooms</span>
         </h1>

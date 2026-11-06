@@ -6,6 +6,7 @@ import { AlertTriangle, ChevronDown, Eye, Undo2, FastForward, Gauge, Loader2, Sc
 import { CPU_LEVEL_INFO, PLAY_FORMAT_INFO, isGameType, playerCount, teamOf, timerNagMarks, type BattleRequestPokemon, type BattleView, type GameType } from "@/lib/battle/play";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { isPhone } from "@/lib/phone";
 import { Dex } from "@pkmn/dex";
 import { BattleModel, SIDE_IDS, emptySide, endNote, sideOfSeat, textLines, type SideId, type Snap, type Step } from "./model";
 import { preloadSprite } from "./sprites";
@@ -616,12 +617,21 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
 
   // Phones: when it's your move, bring the move buttons into thumb reach (above the tab bar), as Showdown's mobile layout keeps them.
   const controlsCard = useRef<HTMLDivElement>(null);
+  const stageBox = useRef<HTMLDivElement>(null);
   const requestId = showControls ? view.request?.rqid : undefined;
   useEffect(() => {
     if (requestId === undefined || replay || window.innerWidth >= 1024) return;
     const el = controlsCard.current;
     if (!el) return;
     const box = el.getBoundingClientRect();
+    // Phones: the field, both HUDs, the latest line and the moves fit one screen, so the field goes to the top.
+    const field = stageBox.current?.getBoundingClientRect();
+    const moves = el.querySelectorAll("[data-testid=move-button]");
+    const end = moves.length ? moves[moves.length - 1].getBoundingClientRect().bottom : box.bottom;
+    if (isPhone() && field && end - field.top < window.innerHeight - 130) {
+      if (Math.abs(field.top - 68) > 24) stageBox.current!.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
     // The latest line of text stays in view just above the buttons.
     if (box.top > window.innerHeight * 0.6 || box.bottom < 0) window.scrollTo({ top: window.scrollY + box.top - 150, behavior: "smooth" });
   }, [requestId, replay]);
@@ -737,7 +747,8 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
             </div>
           )}
           <MusicControl />
-          {!replay && !watching && <HotkeyHelp open={help.open} onToggle={help.toggle} />}
+          {/* No keyboard on a phone: no key list. */}
+          {!replay && !watching && <span className="contents max-md:hidden"><HotkeyHelp open={help.open} onToggle={help.toggle} /></span>}
           <div className="flex flex-wrap items-center gap-1" role="group" aria-label="Battle log options: text speed and animations" title="Text speed">
             <Gauge className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
             {SPEEDS.map((s) => (
@@ -772,7 +783,9 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
 
         {toolbar}
 
+        <div ref={stageBox} className="max-md:scroll-mt-[4.25rem]">
         <Stage snap={snap} me={me} gameType={gameType} names={four ? names : undefined} popups={popups} onHandle={onHandle} myBalls={myBalls} format={view.format} myRequest={lastTeam} watching={watching} balls={balls} holdArena={versus} />
+        </div>
 
         {/* The text box: the latest line of the battle. */}
         <div className="dialog-box min-h-[4.25rem] text-sm leading-relaxed text-muted-foreground" data-done={showControls} aria-live="polite" data-testid="battle-message">
@@ -799,7 +812,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
         )}
 
         <Card ref={controlsCard}>
-          <CardContent className="p-4">
+          <CardContent className="p-4 max-sm:p-3">
             {showControls ? (
               <Controls
                 key={view.request!.rqid}

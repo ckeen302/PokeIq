@@ -2,11 +2,12 @@
 
 /* eslint-disable @next/next/no-img-element -- party sprites come pre-sized from /api/art */
 import { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Loader2, Search, Star, X } from "lucide-react";
 import { artUrl } from "@/lib/pokemon/art";
 import { teamAnchor, teamTitle } from "@/lib/trainers/format";
 import { cn } from "@/lib/utils";
+import { usePlaceholder } from "@/lib/phone";
 import { TrainerAvatar } from "./TrainerAvatar";
 
 export interface ExplorerGame {
@@ -39,6 +40,7 @@ let indexPromise: Promise<Index> | null = null;
 const loadIndex = () => (indexPromise ??= fetch("/pokedex/trainers/search-index.json").then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status))))));
 
 export function TrainerExplorer({ games, notables, classes, regions, children }: { games: ExplorerGame[]; notables: ExplorerNotable[]; classes: string[]; regions: string[]; children: React.ReactNode }) {
+  const searchHint = usePlaceholder("Search trainers, places or Pokémon…  ( / )");
   const [q, setQ] = useState("");
   const [game, setGame] = useState("");
   const [region, setRegion] = useState("");
@@ -157,7 +159,7 @@ export function TrainerExplorer({ games, notables, classes, regions, children }:
             type="search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search trainers, places or Pokémon…  ( / )"
+            placeholder={searchHint}
             aria-label="Search trainers"
             data-testid="trainers-search"
             maxLength={40}

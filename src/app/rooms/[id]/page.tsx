@@ -1,6 +1,6 @@
 import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { ChevronRight, ShieldCheck } from "lucide-react";
 import { pageMetadata } from "@/lib/seo";

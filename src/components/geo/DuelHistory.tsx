@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { ChevronRight, Loader2, Swords, Trophy, Zap } from "lucide-react";
 import { geoDivisionOf } from "@/lib/geo-ranked";
 import { keepRankedId, rankedId } from "@/lib/ranked-client";

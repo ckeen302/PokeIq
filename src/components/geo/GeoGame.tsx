@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { CalendarRange, Check, Compass, Flame, Globe2, Loader2, Shapes, SlidersHorizontal, MapPin as MapPinIcon, Swords, Trophy, Users, X, Map as MapIcon } from "lucide-react";
@@ -595,15 +595,17 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
       <div className="mx-auto max-w-6xl space-y-12">
         <div className="relative space-y-3 text-center">
           <HowToHelpButton className="absolute right-0 top-0" />
-          <p className="hud-label text-screen">Field survey · {region.name}</p>
+          <p className="hud-label max-md:hidden text-screen">Field survey · {region.name}</p>
           <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-6xl">
             Poké<span className="text-primary">Guessr</span>
           </h1>
           <p className="mx-auto max-w-xl text-muted-foreground">
             GeoGuessr for Pokémon. You&apos;re dropped somewhere in {where(region)}: look around, then drop a pin on the map.
-            Scored like GeoGuessr: up to {fmt(GEO_MAX_ROUND_SCORE)} points a round, falling off the further your pin lands.
+            <span className="max-md:hidden">
+              {" "}Scored like GeoGuessr: up to {fmt(GEO_MAX_ROUND_SCORE)} points a round, falling off the further your pin lands.
+            </span>
           </p>
-          <nav aria-label="PokéGuessr sections" className="flex flex-wrap justify-center gap-1.5 pt-1">
+          <nav aria-label="PokéGuessr sections" className="flex flex-wrap justify-center gap-1.5 pt-1 max-md:hidden">
             {[
               ["play", "Play"],
               ["multiplayer", "Multiplayer"],
@@ -679,6 +681,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
             />
             <HubTile
               testId="geo-daily-card"
+              className="max-sm:order-first"
               tone="warning"
               image={tileImage(dailyMap?.map.src ?? WORLD_MAP_SRC)}
               icon={<Compass className="h-5 w-5" />}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { slugFromKey } from "@/lib/dex/places";
 import { ChevronDown } from "lucide-react";
 import { VERSION_BY_KEY, genColumns, genSummary, type EncGen, type EncRow } from "@/lib/pokemon/encounter-types";

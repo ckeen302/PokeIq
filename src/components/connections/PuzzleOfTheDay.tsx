@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Star, ThumbsUp } from "lucide-react";
 import { customPath } from "@/lib/connections/custom";
 import { creatorPath, type ConnPotdResponse } from "@/lib/connections/social";

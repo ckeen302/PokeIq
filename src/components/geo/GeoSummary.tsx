@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { motion } from "framer-motion";
 import { Check, Copy, Link2, RotateCcw, Trophy } from "lucide-react";
 import { geoBoardKey, type GeoChallenge } from "@/lib/geo-types";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Flag, Link2, Loader2, ThumbsDown, ThumbsUp } from "lucide-react";
 import {
   CONN_LEVELS,

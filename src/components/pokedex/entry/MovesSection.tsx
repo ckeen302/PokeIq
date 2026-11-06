@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { ChevronDown, CircleDot, Search, Sparkle, Swords } from "lucide-react";
 import type { DexMove } from "@/lib/pokemon/dex-types";
 import { TypeBadge } from "../TypeBadge";

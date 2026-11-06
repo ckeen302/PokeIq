@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { ArrowRight, Loader2, Search, User } from "lucide-react";
 import { USER_QUERY_RE, type UserHit } from "@/lib/community";
 

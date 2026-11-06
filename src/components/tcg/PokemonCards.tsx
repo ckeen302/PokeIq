@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import type { CardTile } from "@/lib/tcg/types";
 import { HudHeading } from "@/components/game/HudHeading";
 import { CardGrid } from "./CardGrid";

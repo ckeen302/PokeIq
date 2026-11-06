@@ -31,7 +31,7 @@ export default function PokedexPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-4">
       <div className="space-y-2 text-center">
-        <p className="hud-label text-screen">National database</p>
+        <p className="hud-label max-md:hidden text-screen">National database</p>
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">
           Poké<span className="text-primary">dex</span>
         </h1>

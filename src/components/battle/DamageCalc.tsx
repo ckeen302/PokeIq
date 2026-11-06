@@ -113,7 +113,7 @@ export function DamageCalc() {
       {/* Generation */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="hud-label">Generation</span>
-        <div className="flex rounded-md border border-foreground/10 bg-shade/30 p-0.5" role="group" aria-label="Generation">
+        <div className="flex rounded-md border border-foreground/10 bg-shade/30 p-0.5 max-sm:w-full" role="group" aria-label="Generation">
           {GENS.map((g) => (
             <button
               key={g}
@@ -122,7 +122,7 @@ export function DamageCalc() {
               onClick={() => setGenNum(g)}
               aria-label={`Gen ${g}`}
               className={cn(
-                "whitespace-nowrap rounded-sm px-2.5 py-1.5 font-pixel text-[10px] leading-none",
+                "whitespace-nowrap rounded-sm px-2.5 py-1.5 font-pixel text-[10px] leading-none max-sm:h-10 max-sm:flex-1 max-sm:px-0 max-sm:text-xs",
                 genNum === g ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
               )}
             >

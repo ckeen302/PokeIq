@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Eye, Swords } from "lucide-react";
 import { useAccount } from "@/lib/account";
 import { useCommunity } from "@/lib/friends-client";

@@ -1,6 +1,6 @@
 import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { AuthForm } from "@/components/account/AuthForm";
 import { OAuthButtons } from "@/components/account/OAuthButtons";
 
@@ -11,7 +11,7 @@ export default function LoginPage() {
     <div className="space-y-6">
       <BackButton href="/" />
       <div className="space-y-2 text-center">
-        <p className="hud-label text-screen">Trainer ID</p>
+        <p className="hud-label max-md:hidden text-screen">Trainer ID</p>
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight">Sign in</h1>
         <p className="text-sm text-muted-foreground">Keep your progress on every device.</p>
       </div>

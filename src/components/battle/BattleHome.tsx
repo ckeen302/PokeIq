@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
 import { Bot, Castle, ChevronDown, Clapperboard, Eye, Hammer, Link2, Loader2, Megaphone, MessagesSquare, Search, Shuffle, Swords, Trophy, Users, X, type LucideIcon } from "lucide-react";
 import { PAST_GENS, PLAY_FORMAT_INFO, type PlayFormatId, type StandardFormatId } from "@/lib/battle/play";
@@ -309,7 +309,7 @@ export function BattleHome({ news }: { news: NewsItem[] }) {
     <section className="space-y-5" data-testid="battle-home">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="hud-label flex items-center gap-2 text-screen">
+          <p className="hud-label flex items-center gap-2 text-screen max-md:hidden">
             <span className="led h-1.5 w-1.5 animate-blink text-screen" /> Battle unit · Pokémon Showdown rules
           </p>
           <h1 className="font-display text-5xl font-bold uppercase leading-none tracking-tight">

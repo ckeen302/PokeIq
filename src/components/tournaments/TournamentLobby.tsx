@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
 import { Clock, Crown, Loader2, Plus, Trophy, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -62,18 +62,18 @@ export function TournamentLobby() {
             <ul className="space-y-2" data-testid="tournament-list">
               {data.active.map((t) => (
                 <li key={t.id}>
-                  <Link href={`/battle/tournaments/${t.id}`} className="hud flex items-center gap-3 rounded-lg border bg-card p-3 hover:border-primary/60" data-testid="tournament-row">
+                  <Link href={`/battle/tournaments/${t.id}`} className="hud flex items-center gap-3 rounded-lg border bg-card p-3 hover:border-primary/60 max-sm:flex-wrap max-sm:gap-y-1.5" data-testid="tournament-row">
                     {t.official ? <Crown className="h-5 w-5 shrink-0 text-warning" aria-hidden /> : <Trophy className="h-5 w-5 shrink-0 text-primary" aria-hidden />}
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate font-semibold">{t.title}</span>
+                    <span className="min-w-0 flex-1 max-sm:basis-[calc(100%-2rem)]">
+                      <span className="block truncate font-semibold max-sm:whitespace-normal">{t.title}</span>
                       <span className="block text-xs text-muted-foreground">
                         {t.formatName} · {STYLE_NAME[t.style]} · Bo{t.bestOf}
                       </span>
                     </span>
-                    <span className="flex items-center gap-1 text-sm tabular-nums">
+                    <span className="flex items-center gap-1 text-sm tabular-nums max-sm:ml-8">
                       <Users className="h-3.5 w-3.5" aria-hidden /> {t.players}/{t.maxPlayers}
                     </span>
-                    <span className={cn("w-28 text-right text-xs", t.status === "signup" ? "text-success" : "text-warning")}>
+                    <span className={cn("w-28 text-right text-xs max-sm:ml-auto max-sm:w-auto", t.status === "signup" ? "text-success" : "text-warning")}>
                       {t.status === "signup" ? (
                         <>
                           <Clock className="mr-1 inline h-3 w-3" aria-hidden />

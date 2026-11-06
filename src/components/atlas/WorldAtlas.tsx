@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Compass, Loader2, Maximize2, Minus, Plus, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePlaceholder } from "@/lib/phone";
 import { createAtlas, loadAtlas, type AtlasData, type AtlasEngine, type AtlasPlace, type AtlasRegion } from "./atlas-engine";
 
 type Card = { place: AtlasPlace } | { region: AtlasRegion } | { miss: string } | null;
@@ -16,6 +17,7 @@ const guessrMap = (region: string) => GUESSR_MAP[region] ?? (MAIN.includes(regio
 const KIND_LABEL: Record<AtlasPlace["kind"], string> = { route: "Route", landmark: "Landmark", town: "Town / City" };
 
 export function WorldAtlas({ src }: { src: string }) {
+  const searchHint = usePlaceholder("Search a region, town, route or landmark", "Region, town, route…");
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engine = useRef<AtlasEngine | null>(null);
@@ -104,7 +106,7 @@ export function WorldAtlas({ src }: { src: string }) {
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="space-y-1">
-          <p className="hud-label text-screen">Every mainline region · one map</p>
+          <p className="hud-label max-md:hidden text-screen">Every mainline region · one map</p>
           <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">
             World <span className="text-primary">Atlas</span>
           </h1>
@@ -124,7 +126,7 @@ export function WorldAtlas({ src }: { src: string }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             list="atlas-places"
-            placeholder="Search a region, town, route or landmark"
+            placeholder={searchHint}
             aria-label="Search the map"
             autoComplete="off"
             className="h-10 min-w-0 flex-1 rounded-l-md border border-r-0 border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

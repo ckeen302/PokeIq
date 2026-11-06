@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
 import { Check, Copy, Crown, Loader2, Timer, XCircle } from "lucide-react";
 import { buildMatcher } from "@/lib/name-em-all/match";

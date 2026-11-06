@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { MapPin } from "lucide-react";
 import { SHARE_IMAGES, pageMetadata, jsonLd } from "@/lib/seo";
 import { SITE_URL } from "@/lib/site";

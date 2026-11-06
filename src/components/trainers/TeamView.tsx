@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element -- sprites come pre-sized from /api/art; item icons are tiny remote PNGs */
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { ArrowUpRight, Users } from "lucide-react";
 import { artUrl } from "@/lib/pokemon/art";
 import { typeColor } from "@/lib/pokemon/type-colors";

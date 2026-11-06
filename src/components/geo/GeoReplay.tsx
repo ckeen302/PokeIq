@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { useReducedMotion } from "framer-motion";
 import { Check, ChevronLeft, ChevronRight, Copy, Crown, Link2, Loader2, Pause, Play, SkipBack, SkipForward, Swords, Trophy, Zap } from "lucide-react";
 import { DUEL_HP, type DuelRoundResult } from "@/lib/duel-types";

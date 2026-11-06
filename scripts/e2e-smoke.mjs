@@ -13,6 +13,7 @@ import fs from "fs";
 import { execFileSync } from "child_process";
 import { runIqTest } from "./e2e-iq-test.mjs";
 import { runSizes } from "./e2e-sizes.mjs";
+import { runMobile } from "./e2e-mobile.mjs";
 import { runMassBattle } from "./e2e-mass-battle.mjs";
 import { runRace } from "./e2e-race.mjs";
 import { runWorldHistory } from "./e2e-world-history.mjs";
@@ -2321,6 +2322,7 @@ step("pokédex Timeline: an entry's own link opens its panel, share copies it, t
 }
 
 await runSizes({ browser, BASE, OUT, errors, step });
+await runMobile({ browser, BASE, OUT, errors, step });
 await runMassBattle({ browser, BASE, OUT, errors, step });
 await runRace({ browser, BASE, OUT, errors, step });
 await runWorldHistory({ browser, BASE, OUT, errors, step });
@@ -3873,7 +3875,7 @@ async function phoneNavStep() {
   await m.waitForTimeout(300);
   const under = await m.evaluate(() => {
     const top = document.querySelector("[data-testid=tabbar]").getBoundingClientRect().top;
-    const last = [...document.querySelectorAll("footer *")].filter((e) => e.children.length === 0 && e.getBoundingClientRect().height > 0).pop();
+    const last = [...document.querySelectorAll("footer *")].filter((e) => e.children.length === 0 && e.getBoundingClientRect().height > 0 && (!e.checkVisibility || e.checkVisibility())).pop();
     return last ? last.getBoundingClientRect().bottom - top : 0;
   });
   if (under > 0) errors.push(`phone nav: the footer's last line is ${under}px under the tab bar`);

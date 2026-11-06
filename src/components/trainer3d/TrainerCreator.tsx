@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Brain, Check, Dices, Hand, Loader2, Lock, RotateCcw, Shirt, Swords, Trash2, Trophy, User, Zap } from "lucide-react";
 import {
   BALLS,
