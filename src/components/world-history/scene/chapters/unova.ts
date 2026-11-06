@@ -37,7 +37,7 @@ export const build: ChapterBuilder = async (ctx) => {
   disposers.push(sky.dispose);
   const fog = new THREE.FogExp2(col("#2a2438"), 0.0055);
   scene.fog = fog;
-  const mist = makeCloudLayer({ size: 600, y: 1.5, color: "#a898b8", shadow: "#3a3050", density: 0.6, scale: 0.012, speed: [1, 0, 0.4], intensity: 0.45 });
+  const mist = makeCloudLayer({ size: 600, y: 1.5, color: "#8a7aa8", shadow: "#2a2040", density: 0.55, scale: 0.012, speed: [1, 0, 0.4], intensity: 0.3 });
   scene.add(mist.mesh);
   disposers.push(mist.dispose);
   const smokeSky = makeCloudLayer({ size: 800, y: 60, color: "#4a2a24", shadow: "#0a0606", density: 0.7, scale: 0.008, speed: [3, 0, 1], intensity: 0.9 });
@@ -81,7 +81,7 @@ export const build: ChapterBuilder = async (ctx) => {
   // ---- The tearing: fire to one side, lightning to the other.
   const DRAGON: Vec3 = [0, gh(0, -14) + 4, -14];
   const RES_TO: Vec3 = [-13, gh(-13, -12) + 3, -12], ZEK_TO: Vec3 = [13, gh(13, -12) + 3, -12];
-  const tearRing = makeRing({ color: "#ffffff", intensity: 1.6, thickness: 0.04 });
+  const tearRing = makeRing({ color: "#fff4e8", intensity: 1.2, thickness: 0.04 });
   tearRing.mesh.position.set(DRAGON[0], DRAGON[1] + 7, DRAGON[2]);
   tearRing.mesh.scale.setScalar(40);
   scene.add(tearRing.mesh);
@@ -144,8 +144,8 @@ export const build: ChapterBuilder = async (ctx) => {
   const res = figs.get(RESHIRAM), zek = figs.get(ZEKROM), kyu = figs.get(KYUREM);
   place(res, DRAGON, 13, 0, scene);
   place(zek, [DRAGON[0], DRAGON[1], DRAGON[2] - 0.6], 13, 0, scene);
-  figureStyle(res, { rim: "#fff2d8", rimK: 1.2, glow: "#ffd8a0", glowK: 0.03, edge: "#ffffff" });
-  figureStyle(zek, { rim: "#7ab8ff", rimK: 1.2, glow: "#4a8aff", glowK: 0.03, edge: "#9ad0ff" });
+  figureStyle(res, { rim: "#ffd090", rimK: 2.0, glow: "#ffd8a0", glowK: 0.03, edge: "#ffffff" });
+  figureStyle(zek, { rim: "#6aa8ff", rimK: 2.2, glow: "#4a8aff", glowK: 0.03, edge: "#9ad0ff" });
   const KY: Vec3 = [ICE[0], -0.5, ICE[2] - 12];
   place(kyu, KY, 9, 0, scene);
   figureStyle(kyu, { rim: "#bfe8ff", rimK: 1.8, glow: "#6ab8ff", glowK: 0.06, edge: "#e0f4ff", dissolve: 0, shadow: 0.35 });
@@ -197,15 +197,16 @@ export const build: ChapterBuilder = async (ctx) => {
         fog.color.copy(col("#8aa8c8")); fog.density = 0.02;
       } else {
         const war = sk;
-        sky.u.uTop.value.copy(col("#0c1230").lerp(col("#080404"), war));
-        sky.u.uHorizon.value.copy(col("#a0605a").lerp(col("#7a2a10"), war));
+        // The split: the sky divides into a warm, burning side and a cold, stormy one.
+        sky.u.uTop.value.copy(col("#0c1230").lerp(col("#050818"), argue).lerp(col("#080404"), war));
+        sky.u.uHorizon.value.copy(col("#a0605a").lerp(col("#7a3448"), argue).lerp(col("#7a2a10"), war));
         sky.u.uBottom.value.copy(col("#0a0a14"));
         sky.u.uSunGlow.value = 0.25 * (1 - war);
         sky.u.uSunColor.value.copy(col("#e09060", 0.8 * (1 - war)));
         sky.u.uNeb.value = 0.3 * (1 - war);
         sky.u.uStars.value = 0.03 * (1 - war);
-        fog.color.copy(col("#2a2438").lerp(col("#2a120c"), war));
-        fog.density = 0.0055 - rise * 0.002 + war * 0.003;
+        fog.color.copy(col("#2a2438").lerp(col("#120e20"), argue).lerp(col("#2a120c"), war));
+        fog.density = 0.0055 - rise * 0.002 - argue * 0.0015 + war * 0.003;
       }
       mist.u.uTime.value = ambient;
       mist.u.uOpacity.value = ice ? 0 : 1 - rise * 0.75;
@@ -289,7 +290,14 @@ export const build: ChapterBuilder = async (ctx) => {
       }
       // Light.
       if (ice) { L.key.color.copy(col("#c8e0ff")); L.key.intensity = 1.2; L.hemi.intensity = 0.7; L.key.position.set(ICE[0] - 20, 30, 30); }
-      else { L.key.color.copy(col("#ffe0c0").lerp(col("#ff8a50"), sk)); L.key.intensity = 1.6 - argue * 0.6; L.hemi.intensity = 0.6 - argue * 0.25 - sk * 0.2; L.key.position.set(-10, 30, 40); }
+      else {
+        // Truth and ideals pull apart: a warm key from Reshiram's side, a cold one from Zekrom's.
+        L.key.color.copy(col("#ffe0c0").lerp(col("#ffa860"), argue).lerp(col("#ff8a50"), sk));
+        L.key.intensity = 1.6 + argue * 0.8;
+        L.hemi.intensity = 0.6 - argue * 0.3 - sk * 0.2;
+        L.key.position.set(-10 - 30 * argue, 30 - 8 * argue, 40 - 28 * argue);
+        if (L.rim) { L.rim.color.copy(col("#8ab8ff").lerp(col("#4a7aff"), argue)); L.rim.intensity = 0.8 + argue * 1.8; L.rim.position.set(20 + 20 * argue, 20, -60 + 60 * argue); }
+      }
     },
     look(t) {
       const ice = t >= cutIce;
@@ -301,7 +309,7 @@ export const build: ChapterBuilder = async (ctx) => {
           fade: [[cutIce - 0.45, 0], [cutIce - 0.08, 1], [cutIce + 0.12, 1], [cutIce + 0.7, 0]],
           gain: [[0, [1.04, 0.98, 1.02]], [tBro, [1.02, 0.98, 1.02]], [tTear, [1.04, 1.0, 1.04]], [tSons, [1.14, 0.94, 0.86]], [cutIce, [1.14, 0.94, 0.86]], [cutIce + 0.1, [0.9, 1.0, 1.14]]],
           saturation: [[0, 1.08], [tSons, 1.15], [cutIce, 1.1], [cutIce + 0.1, 0.8]],
-          contrast: [[0, 1.04], [tBro, 1.08], [tSons, 1.15], [cutIce + 0.1, 1.04]],
+          contrast: [[0, 1.06], [tBro, 1.14], [tSons, 1.15], [cutIce + 0.1, 1.04]],
           chroma: [[tTear - 0.05, 0], [tTear + 0.1, 0.6], [tTear + 1.4, 0], [tSons + 0.3, 0.2], [cutIce, 0.1], [cutIce + 0.1, 0]],
           vignette: [[0, 0.38], [tBro, 0.5], [tCeased, 0.36], [tSons, 0.55], [cutIce + 0.1, 0.45]],
           bloom: [[0, 0.8], [tTear, 0.95], [tCeased, 0.85], [tSons, 1.0], [cutIce + 0.1, 0.85]],
@@ -314,8 +322,8 @@ export const build: ChapterBuilder = async (ctx) => {
       const fog: Look["fog"] = ice
         ? { color: [0.4, 0.48, 0.6], density: 0.012, height: -0.5, falloff: 0.2, sky: 0.4 }
         : t > tSons ? { color: [0.16, 0.07, 0.05], density: 0.004, height: -2, falloff: 0.06, sky: 0.3 }
-        : { color: [0.12, 0.1, 0.16], density: 0.004, height: -2, falloff: 0.06, sky: 0.25 };
-      return cine(L0, { fog, dof: { focus: ice ? KY : [DRAGON[0], DRAGON[1] + 5, DRAGON[2]], k: 0.25 }, streak: 0.15 + 0.3 * spike(t, tTear, 0.05, 1.5) });
+        : { color: [0.07, 0.06, 0.12], density: 0.003, height: -2, falloff: 0.08, sky: 0.2 };
+      return cine(L0, { fog, dof: { focus: ice ? KY : [DRAGON[0], DRAGON[1] + 5, DRAGON[2]], k: 0.25 }, streak: 0.15 + 0.3 * spike(t, tTear, 0.05, 1.5), black: 0.05 });
     },
     dispose() {
       disposers.forEach((d) => d());

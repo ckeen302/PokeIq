@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
-import { NOISE, col, keyed, makeConverge, makeGlow, makeLightning, makeParticles, makePortal, makeRing, makeSky, ramp, rng, strikeAt } from "../kit";
+import { NOISE, col, keyed, makeConverge, makeGlow, makeLightning, makeParticles, makePortal, makeRing, makeSky, makeSunburst, ramp, rng, strikeAt } from "../kit";
 import type { ChapterBuilder } from "../types";
 import { actionCurve, hitCurve } from "../figures";
 import { billboard, cine, craft, figureStyle, floatFigure, lights, loadFigures, lookAt, place, pointPixel, shake, spike } from "./common";
@@ -59,17 +59,31 @@ export const build: ChapterBuilder = async (ctx) => {
         return vec2(d1, d2);
       }
       void main(){
-        float f = pow(1.0 - max(dot(normalize(vN), normalize(vV)), 0.0), 2.0);
-        vec3 pearl = mix(vec3(0.92, 0.9, 1.0), vec3(1.0, 0.86, 0.62), 0.5 + 0.5 * sin(dot(vP, vec3(3.0, 5.0, 2.0)) + uTime * 0.3));
-        vec3 irid = 0.5 + 0.5 * cos(6.2831 * (f * 1.2 + vec3(0.0, 0.33, 0.67)));
-        vec3 c = pearl * (0.55 + 0.45 * whFbm3(vP * 3.0)) * 1.4 + irid * f * 1.6;
-        c += vec3(1.0, 0.8, 0.45) * uGlow * 0.45 * (0.6 + 0.4 * sin(uTime * 2.4));
+        vec3 n = normalize(vN), vv = normalize(vV);
+        float fr = 1.0 - clamp(dot(n, vv), 0.0, 1.0);
+        float f2 = fr * fr, f4 = f2 * f2;
+        // A pearl shell modelled by a warm key from above right and a cool fill: a solid object, not a lamp.
+        float key = clamp(dot(n, normalize(vec3(0.55, 0.75, 0.45))) * 0.5 + 0.5, 0.0, 1.0);
+        vec3 pearl = mix(vec3(0.62, 0.6, 0.78), vec3(1.0, 0.9, 0.72), key);
+        float grain = 0.75 + 0.25 * whFbm3(vP * 3.0 + vec3(0.0, uTime * 0.05, 0.0));
+        vec3 c = pearl * (0.1 + 0.55 * key * key) * grain;
+        vec3 irid = 0.5 + 0.5 * cos(6.2831 * (fr * 1.4 + vP.y * 0.2 + vec3(0.0, 0.33, 0.67)));
+        c += irid * f2 * 0.35;
+        // A hot golden rim: the silhouette against the void.
+        c += vec3(1.0, 0.78, 0.45) * f4 * (0.9 + uGlow * 0.6);
+        // Light inside, breathing through the shell like a heartbeat.
+        float beat = 0.5 + 0.5 * sin(uTime * 2.4);
+        c += vec3(1.0, 0.62, 0.25) * uGlow * 0.06 * (0.6 + 0.4 * beat) * (1.0 - fr);
         vec2 v = cells(vP * 3.2);
         float spread = smoothstep(-1.0, 1.0, (vP.y + 0.4) * 1.2 + (uCrack * 3.2 - 1.6));
-        float crack = smoothstep(0.08, 0.0, v.y - v.x) * spread * step(0.01, uCrack);
-        c += vec3(1.0, 0.78, 0.35) * crack * (3.0 + 4.0 * uCrack);
-        // Kept below a few times white, so the bloom glows around the cracks instead of boxing out the frame.
-        gl_FragColor = vec4(min(c, vec3(3.2)), uOpacity);
+        float edge = v.y - v.x;
+        float crack = smoothstep(0.06, 0.0, edge) * spread * step(0.01, uCrack);
+        float seep = smoothstep(0.22, 0.0, edge) * spread * step(0.01, uCrack);
+        c += vec3(1.0, 0.6, 0.25) * seep * seep * (0.15 + 0.35 * uCrack);
+        c += vec3(1.0, 0.85, 0.55) * crack * (3.0 + 6.0 * uCrack);
+        // Faint veins of light before the first crack.
+        c += vec3(1.0, 0.7, 0.35) * smoothstep(0.04, 0.0, edge) * uGlow * 0.18 * beat * (1.0 - step(0.01, uCrack));
+        gl_FragColor = vec4(min(c, vec3(8.0)), uOpacity);
       }`,
   });
   const eggGeo = new THREE.SphereGeometry(1, 96, 64);
@@ -77,9 +91,18 @@ export const build: ChapterBuilder = async (ctx) => {
   egg.position.set(0, 2.6, 0);
   scene.add(egg);
   disposers.push(() => { eggGeo.dispose(); eggMat.dispose(); });
-  const eggGlow = makeGlow({ pos: [0, 2.6, 0], size: 9, color: "#ffd890", intensity: 1.4 });
+  // A tight halo hugging the shell, and rays breaking out from behind it.
+  const eggGlow = makeGlow({ pos: [0, 2.6, 0], size: 5, color: "#ffd890", intensity: 0.4 });
   scene.add(eggGlow.sprite);
   disposers.push(eggGlow.dispose);
+  const eggRays = makeSunburst({ size: 30, color: "#ffc978", core: "#fff0d0", intensity: 0, rays: 11, coreK: 0.4, seed: 3 });
+  eggRays.mesh.position.set(0, 2.6, 0);
+  scene.add(eggRays.mesh);
+  disposers.push(eggRays.dispose);
+  const eggRays2 = makeSunburst({ size: 22, color: "#b9a2ff", core: "#ffffff", intensity: 0, rays: 17, coreK: 0, seed: 9 });
+  eggRays2.mesh.position.set(0, 2.6, -0.2);
+  scene.add(eggRays2.mesh);
+  disposers.push(eggRays2.dispose);
 
   // Shell shards for the burst.
   const SHARDS = 140;
@@ -97,10 +120,10 @@ export const build: ChapterBuilder = async (ctx) => {
   shards.visible = false;
   scene.add(shards);
   disposers.push(() => { shardGeo.dispose(); shardMat.dispose(); });
-  const burst = makeParticles({ count: P(900), shape: "sphere", center: [0, 2.6, 0], extent: [0.8, 1.1, 0.8], velocity: [0, 0, 0], spread: [26, 26, 26], life: 4, size: [0.03, 0.08], colors: ["#ffffff", "#ffd27a", "#ff7ad9"], intensity: 0.7, fadeIn: 0.01, fadeOut: 0.6, burst: true, seed: 5 });
+  const burst = makeParticles({ count: P(900), shape: "sphere", center: [0, 2.6, 0], extent: [0.8, 1.1, 0.8], velocity: [0, 0, 0], spread: [26, 26, 26], life: 4, size: [0.03, 0.08], colors: ["#ffffff", "#ffd27a", "#ff7ad9"], intensity: 0.5, fadeIn: 0.01, fadeOut: 0.6, burst: true, seed: 5 });
   scene.add(burst.points);
   disposers.push(burst.dispose);
-  const shock = makeRing({ color: "#ffe2a6", intensity: 4, thickness: 0.05 });
+  const shock = makeRing({ color: "#ffe2a6", intensity: 2.2, thickness: 0.05 });
   shock.mesh.position.set(0, 2.6, 0);
   shock.mesh.scale.setScalar(26);
   scene.add(shock.mesh);
@@ -357,7 +380,7 @@ export const build: ChapterBuilder = async (ctx) => {
       sky.u.uSwirl.value = 2.2 - 1.9 * made;
       sky.u.uStars.value = 0.06 * made;
       sky.u.uNeb.value = 1.25 - 0.5 * made;
-      sky.u.uFlash.value = spike(t, tBurst, 0.05, 0.35) * 0.5;
+      sky.u.uFlash.value = spike(t, tBurst, 0.05, 0.35) * 0.25;
       for (const ps of [vortex, haze, burst, matter, spirit, spaceOut]) ps.u.uPixel.value = px;
       vortex.u.uTime.value = ambient;
       vortex.u.uOpacity.value = 1 - 0.85 * made;
@@ -373,8 +396,20 @@ export const build: ChapterBuilder = async (ctx) => {
       eggU.uCrack.value = ramp(t, tCrack0, tBurst);
       eggU.uGlow.value = 0.6 + ramp(t, tCrack0, tBurst) * 1.0;
       eggGlow.sprite.visible = appear > 0;
-      eggGlow.set("#ffd890", (0.7 + 0.5 * ramp(t, tCrack0, tBurst)) * appear * (1 - ramp(t, tBurst, tBurst + 0.45)) + 0.12 * appear * (1 - ramp(t, tBurst, tBurst + 2.5)));
-      eggGlow.sprite.scale.setScalar(6 + 4 * spike(t, tBurst, 0.05, 0.4));
+      const crackK = ramp(t, tCrack0, tBurst);
+      eggGlow.set("#ffd890", (0.22 + 0.22 * crackK) * appear * (1 - ramp(t, tBurst, tBurst + 0.45)) + 0.08 * appear * spike(t, tBurst, 0.05, 0.6));
+      eggGlow.sprite.scale.setScalar(4.4 + 0.8 * crackK + 2 * spike(t, tBurst, 0.05, 0.5));
+      // Rays reach out as it cracks, flare at the burst, and fade as the Original One takes shape.
+      const raysOn = appear * (0.3 + 0.7 * crackK) * (1 - ramp(t, tBurst + 0.2, tBurst + 2.4)) + 0.6 * spike(t, tBurst, 0.05, 0.7);
+      eggRays.mesh.visible = eggRays2.mesh.visible = raysOn > 0.002;
+      eggRays.u.uIntensity.value = 0.55 * raysOn;
+      eggRays.u.uK.value = 0.3 + 0.55 * crackK + 0.4 * spike(t, tBurst, 0.05, 1.2);
+      eggRays.u.uTime.value = ambient;
+      eggRays2.u.uIntensity.value = 0.35 * raysOn;
+      eggRays2.u.uK.value = 0.25 + 0.5 * crackK;
+      eggRays2.u.uTime.value = -ambient * 1.3;
+      billboard(eggRays.mesh, cam);
+      billboard(eggRays2.mesh, cam);
       // Shards fly.
       const sd = t - tBurst;
       shards.visible = sd > 0 && sd < 6;
@@ -390,7 +425,7 @@ export const build: ChapterBuilder = async (ctx) => {
           shards.setMatrixAt(i, m);
         }
         shards.instanceMatrix.needsUpdate = true;
-        shardMat.emissiveIntensity = 1.6 * Math.exp(-sd * 0.6);
+        shardMat.emissiveIntensity = 0.9 * Math.exp(-sd * 0.6);
       }
       burst.u.uTime.value = Math.max(0, sd);
       burst.u.uOpacity.value = sd > 0 && sd < 4.2 ? 1 : 0;
@@ -411,7 +446,7 @@ export const build: ChapterBuilder = async (ctx) => {
       ring.rotation.z = ambient * 0.12;
       ringB.rotation.z = -ambient * 0.2;
       ring.position.y = 3.1 + sleep * 2.5;
-      halo.set("#ffcf80", (0.42 + 0.08 * Math.sin(ambient * 1.3)) * ramp(t, tBurst, tBurst + 2) * (1 - sleep * 0.85));
+      halo.set("#ffcf80", (0.22 + 0.04 * Math.sin(ambient * 1.3)) * ramp(t, tBurst + 0.8, tBurst + 2.6) * (1 - sleep * 0.85));
       halo.sprite.position.y = 3.2 + sleep * 2.5;
       arceusLight.intensity = 14 * ramp(t, tBurst, tBurst + 1.5) * (1 - sleep * 0.8);
       galMat.uniforms.uOpacity.value = ramp(t, tBurst + 1, tBurst + 7);
@@ -487,19 +522,19 @@ export const build: ChapterBuilder = async (ctx) => {
         t,
         { bloomRadius: 0.62 },
         {
-          exposure: [[0, 0.9], [tEgg, 1], [tBurst, 1.05], [tBurst + 3, 1.0], [tThird, 0.95], [end, 0.9]],
-          bloom: [[0, 0.85], [tCrack0, 1.0], [tBurst, 1.1], [tBurst + 2, 0.95], [tThird, 1.05], [end, 0.9]],
-          bloomThreshold: [[0, 0.82], [tCrack0, 0.95], [tBurst + 0.4, 1.05], [tBurst + 2.4, 0.86]],
-          flash: [[tBurst - 0.02, 0], [tBurst, 0.24], [tBurst + 0.2, 0.05], [tBurst + 0.6, 0]],
+          exposure: [[0, 0.9], [tEgg, 1], [tBurst, 1.0], [tBurst + 3, 1.0], [tThird, 0.95], [end, 0.9]],
+          bloom: [[0, 0.85], [tEgg, 0.8], [tCrack0, 0.85], [tBurst, 0.6], [tBurst + 1.5, 0.7], [tBurst + 3, 0.9], [tThird, 1.05], [end, 0.9]],
+          bloomThreshold: [[0, 0.82], [tEgg - 0.5, 1.0], [tCrack0, 1.2], [tBurst, 1.5], [tBurst + 2.4, 1.0], [tBurst + 4, 0.9]],
+          flash: [[tBurst - 0.02, 0], [tBurst, 0.1], [tBurst + 0.2, 0.02], [tBurst + 0.6, 0]],
           saturation: [[0, 1.15], [tBurst + 2, 1.08], [tThird, 0.95]],
           chroma: [[0, 0.12], [tBurst, 0.45], [tBurst + 1.5, 0.06], [tThird, 0.12], [tThird + 1.5, 0.3]],
           vignette: [[0, 0.5], [tBurst, 0.3], [tThird, 0.55]],
-          rays: [[tBurst - 0.1, 0], [tBurst + 0.3, 0.65], [tBurst + 3, 0.4], [tSleep + 1, 0.32], [tSleep + 4, 0]],
+          rays: [[tBurst - 0.1, 0], [tBurst + 0.6, 0.3], [tBurst + 3, 0.3], [tSleep + 1, 0.28], [tSleep + 4, 0]],
           gain: [[0, [0.88, 0.95, 1.12]], [tBurst, [1.1, 1.0, 0.9]], [tThird, [0.95, 0.85, 1.05]], [end, [0.95, 0.9, 1.08]]],
           lift: [[0, [0.01, 0.0, 0.03]], [tThird, [0.03, 0.0, 0.02]]],
         },
-        { pos: [0, 3.2, -0.5], color: [1.0, 0.85, 0.55] }
-      ), { streak: 0.2 + 0.45 * spike(t, tBurst, 0.1, 2.4), streakColor: [1.0, 0.8, 0.55], dof: { focus, k: 0.3 }, fringe: 0.35 });
+        { pos: t < tBurst + 1 ? [0, 2.6, 0] : [0, 3.2, -0.5], color: [1.0, 0.85, 0.55] }
+      ), { streak: 0.12 + 0.3 * spike(t, tBurst, 0.1, 2.4), streakColor: [1.0, 0.8, 0.55], dof: { focus, k: 0.3 }, fringe: 0.3, bloomCap: 4, black: 0.04 });
     },
     dispose() {
       disposers.forEach((d) => d());

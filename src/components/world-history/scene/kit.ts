@@ -449,6 +449,51 @@ export function makeShaft(o: { from: Vec3; to: Vec3; r0: number; r1: number; col
   return { mesh, u, dispose() { geo.dispose(); mat.dispose(); } };
 }
 
+/**
+ * Rays of light bursting from a point (a billboard: turn it to the camera
+ * with billboard()): thin, uneven spokes that reach out with `uK` (0..1)
+ * and slowly turn, over a small hot core. Placed at an object's centre,
+ * the object hides the middle and the rays break out around its edge.
+ */
+export function makeSunburst(o: { size: number; color: string; core?: string; intensity?: number; rays?: number; coreK?: number; seed?: number }) {
+  const geo = new THREE.PlaneGeometry(o.size, o.size);
+  const u = {
+    uColor: { value: col(o.color) }, uCore: { value: col(o.core ?? o.color) }, uIntensity: { value: o.intensity ?? 1.5 }, uK: { value: 1 },
+    uRays: { value: o.rays ?? 9 }, uCoreK: { value: o.coreK ?? 1 }, uTime: { value: 0 }, uOpacity: { value: 1 }, uSeed: { value: o.seed ?? 1 },
+  };
+  const mat = new THREE.ShaderMaterial({
+    uniforms: u,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    vertexShader: /* glsl */ `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: /* glsl */ `
+      ${NOISE}
+      uniform vec3 uColor, uCore; uniform float uIntensity, uK, uRays, uCoreK, uTime, uOpacity, uSeed; varying vec2 vUv;
+      void main(){
+        vec2 p = vUv * 2.0 - 1.0;
+        float r = length(p);
+        float a = atan(p.y, p.x) + uTime * 0.05;
+        vec2 ca = vec2(cos(a), sin(a));
+        // Two layers of spokes: a few broad ones and many fine ones, flickering slowly.
+        float broad = whNoise(vec3(ca * uRays * 0.5, uSeed + uTime * 0.12));
+        float fine = whNoise(vec3(ca * uRays * 2.2, uSeed * 3.1 - uTime * 0.2));
+        float sp = smoothstep(0.55, 0.95, broad) * 0.7 + smoothstep(0.62, 1.0, fine) * 0.7;
+        float reach = max(uK, 1e-3);
+        float len = 0.35 + 0.65 * whNoise(vec3(ca * uRays * 0.8, uSeed + 7.0));
+        float along = exp(-r / (reach * len * 0.45)) * smoothstep(1.0, 0.75, r);
+        float rays = sp * along;
+        float core = exp(-r * r * 60.0) * uCoreK + exp(-r * 9.0) * 0.25 * uCoreK;
+        vec3 c = uColor * rays + uCore * core;
+        float k = uOpacity * uIntensity;
+        gl_FragColor = vec4(c * k, 1.0);
+      }`,
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.renderOrder = 5;
+  return { mesh, u, dispose() { geo.dispose(); mat.dispose(); } };
+}
+
 let glowTex: THREE.Texture | null = null;
 function glowTexture(): THREE.Texture {
   if (glowTex) return glowTex;
@@ -899,6 +944,82 @@ export function makePortal(o: { radius: number; inner: string; outer: string; in
   const mesh = new THREE.Mesh(geo, mat);
   mesh.renderOrder = 6;
   return { mesh, u, dispose() { geo.dispose(); mat.dispose(); } };
+}
+
+/**
+ * A rift with depth: a swirling funnel of light that recedes into the
+ * distance (two layers turning at different speeds), a dark void behind
+ * the mouth so the light reads against it, and a light deep inside. Turn
+ * `group` to the camera with lookAt each frame; `uOpen` (0..1) opens it.
+ */
+export function makeRift(o: { radius: number; depth: number; outer: string; mid: string; deep: string; light?: string; intensity?: number; void?: string }) {
+  const group = new THREE.Group();
+  const u = {
+    uTime: { value: 0 }, uOpen: { value: 1 }, uIntensity: { value: o.intensity ?? 1.6 },
+    uOuter: { value: col(o.outer) }, uMid: { value: col(o.mid) }, uDeep: { value: col(o.deep) }, uLight: { value: col(o.light ?? "#ffffff") },
+  };
+  const funnelFrag = (twist: number, speed: number, arms: number, gain: number) => /* glsl */ `
+    ${NOISE}
+    uniform float uTime, uOpen, uIntensity; uniform vec3 uOuter, uMid, uDeep, uLight; varying vec2 vUv;
+    void main(){
+      float a = vUv.x * 6.2831853;
+      float d = 1.0 - vUv.y;
+      float s = a * ${arms.toFixed(1)} + d * ${twist.toFixed(2)} - uTime * ${speed.toFixed(2)};
+      float f = whFbm3(vec3(cos(s) * 1.6, sin(s) * 1.6, d * 5.0 - uTime * 0.7));
+      float g = whNoise(vec3(cos(a) * 3.0, sin(a) * 3.0, d * 9.0 - uTime * 1.4));
+      float arm = 0.5 + 0.5 * sin(s);
+      float strands = smoothstep(0.42, 0.8, f) * (0.35 + arm * arm) + smoothstep(0.6, 0.95, g) * 0.35;
+      vec3 c = mix(uOuter, uMid, smoothstep(0.0, 0.45, d));
+      c = mix(c, uDeep, smoothstep(0.45, 0.95, d));
+      float lightK = exp(-(1.0 - d) * 5.0);
+      // Torn mouth: a ragged edge where the rift meets the sky.
+      float rag = 0.06 + 0.1 * whNoise(vec3(cos(a) * 4.0, sin(a) * 4.0, uTime * 0.2));
+      float mouth = smoothstep(rag, rag + 0.12, d);
+      float k = (strands * (1.25 - d * 0.6) + lightK * 0.8) * mouth * uOpen * ${gain.toFixed(2)};
+      gl_FragColor = vec4((c * strands * (1.25 - d * 0.6) + uLight * lightK * 0.8) * mouth * uOpen * uIntensity * ${gain.toFixed(2)}, k);
+    }`;
+  const mkFunnel = (r: number, depth: number, twist: number, speed: number, arms: number, gain: number) => {
+    const geo = new THREE.CylinderGeometry(r, r * 0.05, depth, 72, 20, true);
+    geo.rotateX(Math.PI / 2);
+    geo.translate(0, 0, -depth / 2);
+    const mat = new THREE.ShaderMaterial({
+      uniforms: u, transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending,
+      vertexShader: /* glsl */ `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+      fragmentShader: funnelFrag(twist, speed, arms, gain),
+    });
+    const m = new THREE.Mesh(geo, mat);
+    m.renderOrder = 6;
+    return m;
+  };
+  // The void: darkens what is behind the mouth (drawn first, writes no depth).
+  const voidGeo = new THREE.CircleGeometry(o.radius * 1.05, 64);
+  const voidMat = new THREE.ShaderMaterial({
+    uniforms: { uOpen: u.uOpen, uTime: u.uTime, uVoid: { value: col(o.void ?? "#05010c") } },
+    transparent: true, depthWrite: false,
+    vertexShader: /* glsl */ `varying vec2 vP; void main(){ vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: /* glsl */ `
+      ${NOISE}
+      uniform float uOpen, uTime; uniform vec3 uVoid; varying vec2 vP;
+      void main(){
+        float r = length(vP) / ${(o.radius * 1.05).toFixed(2)};
+        float a = atan(vP.y, vP.x);
+        float rag = 0.82 + 0.12 * whNoise(vec3(cos(a) * 4.0, sin(a) * 4.0, uTime * 0.2));
+        float k = smoothstep(rag, rag - 0.25, r) * uOpen;
+        gl_FragColor = vec4(uVoid, k * 0.92);
+      }`,
+  });
+  const voidM = new THREE.Mesh(voidGeo, voidMat);
+  voidM.renderOrder = 5;
+  const outer = mkFunnel(o.radius, o.depth, 7.0, 0.9, 3, 1.0);
+  const inner = mkFunnel(o.radius * 0.7, o.depth * 1.15, -11.0, 1.5, 5, 0.7);
+  group.add(voidM, outer, inner);
+  return {
+    group, u,
+    dispose() {
+      voidGeo.dispose(); voidMat.dispose();
+      for (const m of [outer, inner]) { m.geometry.dispose(); (m.material as THREE.Material).dispose(); }
+    },
+  };
 }
 
 // ---------------------------------------------------------------------------

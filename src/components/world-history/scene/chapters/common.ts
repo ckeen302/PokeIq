@@ -128,9 +128,24 @@ export function lookAt(t: number, base: Partial<Look>, k: LookKeys, rays?: { pos
  * on hot lights, camera motion blur on fast moves, and, when given, height
  * fog and a focus pull. Each quality keeps only what it can afford.
  */
-export function cine(L: Look, o: { fog?: Look["fog"]; dof?: Look["dof"]; streak?: number; streakColor?: Vec3; fringe?: number; mblur?: number; whip?: Look["whip"]; tone?: Look["tone"] } = {}): Look {
+export function cine(
+  L: Look,
+  o: {
+    fog?: Look["fog"]; dof?: Look["dof"]; streak?: number; streakColor?: Vec3; fringe?: number; mblur?: number; whip?: Look["whip"]; tone?: Look["tone"];
+    hueKeep?: number; black?: number; split?: Look["split"]; bloomKnee?: number; bloomCap?: number; flashHdr?: boolean;
+  } = {}
+): Look {
   return {
     ...L,
+    // Pass 2 defaults: hot lights keep their colour, real blacks, cool shadows against warm highlights, and bloom only on what is truly hot.
+    // Colour fringing on hits stays a hint (strong fringing reads as a cheap glitch).
+    chroma: Math.min(L.chroma, 0.22),
+    hueKeep: o.hueKeep ?? 0.75,
+    black: o.black ?? 0.035,
+    split: o.split ?? { shadows: [-0.012, 0.0, 0.03], highlights: [0.03, 0.012, -0.02] },
+    bloomKnee: o.bloomKnee ?? 0.7,
+    bloomCap: o.bloomCap ?? 6,
+    flashHdr: o.flashHdr ?? true,
     tone: o.tone ?? "filmic",
     fringe: o.fringe ?? 0.25,
     streak: o.streak ?? 0.18,

@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
-import { col, makeCloudLayer, makeGlow, makeLightning, makeParticles, makePortal, makeRing, makeSky, makeTerrain, merge, noise2, placed, ramp, rng, strikeAt } from "../kit";
+import { col, makeCloudLayer, makeGlow, makeLightning, makeParticles, makePortal, makeRift, makeRing, makeSky, makeTerrain, merge, noise2, placed, ramp, rng, strikeAt } from "../kit";
 import { makeFoliage, makeHouses, makePagoda, makeRuins } from "../props";
 import type { ChapterBuilder, Look } from "../types";
 import { actionCurve, hitCurve } from "../figures";
@@ -120,10 +120,16 @@ export const build: ChapterBuilder = async (ctx) => {
   clouds.u.uHoleGlow.value.copy(col("#ff4aa0", 0.8));
   scene.add(clouds.mesh);
   disposers.push(clouds.dispose);
-  const rift = makePortal({ radius: 60, inner: "#1a0a2a", outer: "#ff3a8a", intensity: 1.6, tear: 0.55 });
+  // The torn rim, and the rift itself: a swirling funnel of light receding into the dark beyond.
+  const rift = makePortal({ radius: 60, inner: "#000000", outer: "#ff3a8a", intensity: 0.9, tear: 0.55 });
   rift.mesh.position.set(...RIFT);
   scene.add(rift.mesh);
   disposers.push(rift.dispose);
+  const deep = makeRift({ radius: 40, depth: 220, outer: "#ff4aa0", mid: "#a04aff", deep: "#3a4aff", light: "#ffe0ff", intensity: 2.3, void: "#06010e" });
+  deep.group.position.set(RIFT[0], RIFT[1], RIFT[2] - 4);
+  deep.group.scale.set(1.45, 0.8, 1);
+  scene.add(deep.group);
+  disposers.push(deep.dispose);
   const riftBolts = [makeLightning({ color: "#d07aff", width: 0.8, intensity: 6, branches: 4 }), makeLightning({ color: "#ff8ac8", width: 0.7, intensity: 5, branches: 3 })];
   riftBolts.forEach((b) => { scene.add(b.mesh); disposers.push(b.dispose); });
   const lastBolt = [-1, -1];
@@ -231,6 +237,10 @@ export const build: ChapterBuilder = async (ctx) => {
       rift.u.uOpen.value = Math.max(0.001, open);
       rift.mesh.visible = open > 0.001;
       rift.mesh.quaternion.copy(cam.quaternion);
+      deep.group.visible = open > 0.001;
+      deep.u.uOpen.value = open;
+      deep.u.uTime.value = ambient;
+      deep.group.lookAt(cam.position);
       riftDust.u.uOpacity.value = open;
       if (gir) { floatFigure(gir, GI, ambient, 0.8, 2, 0, 0.04); figureStyle(gir, { dissolve: ramp(t, tTear, tTear + 2.5) * (1 - ramp(t, tClose - 0.6, tClose + 0.6)) * 0.9, shadow: 0.5, act: actionCurve(t, tTear + 1.2, { pre: 0.8, post: 1.2 }), flex: 0.8 }); }
       [strikeAt(t, 1.1, 21), strikeAt(t + 0.5, 1.6, 23)].forEach((s, i) => {

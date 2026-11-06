@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
-import { col, makeCloudLayer, makeConverge, makeGlow, makeParticles, makePortal, makeRing, makeSky, makeTerrain, merge, noise2, placed, ramp, rng, stoneMaterial } from "../kit";
+import { col, makeCloudLayer, makeConverge, makeGlow, makeParticles, makePortal, makeRift, makeRing, makeSky, makeTerrain, merge, noise2, placed, ramp, rng, stoneMaterial } from "../kit";
 import { makeCrystals, makeHouses, makeLanterns } from "../props";
 import type { ChapterBuilder, Look } from "../types";
 import { actionCurve } from "../figures";
@@ -158,10 +158,15 @@ export const build: ChapterBuilder = async (ctx) => {
   machine.position.set(...MACH);
   scene.add(machine);
   disposers.push(() => { ringGeo.dispose(); ringMat.dispose(); });
-  const gate = makePortal({ radius: 6, inner: "#cfefff", outer: "#7ae0ff", intensity: 1.3, tear: 0 });
+  // The gate: a tunnel of light through time inside the ring (cyan for the past, pink for the future), with a bright rim.
+  const gate = makePortal({ radius: 6, inner: "#000000", outer: "#7ae0ff", intensity: 0.8, tear: 0 });
   gate.mesh.position.set(MACH[0], MACH[1], MACH[2] + 0.05);
   scene.add(gate.mesh);
   disposers.push(gate.dispose);
+  const tunnel = makeRift({ radius: 5.6, depth: 46, outer: "#7ae0ff", mid: "#9a7aff", deep: "#ff7ad8", light: "#f0faff", intensity: 1.3, void: "#020814" });
+  tunnel.group.position.set(MACH[0], MACH[1], MACH[2] - 0.1);
+  scene.add(tunnel.group);
+  disposers.push(tunnel.dispose);
   const pulse = makeRing({ color: "#bff4ff", intensity: 1.2, thickness: 0.04 });
   pulse.mesh.position.set(MACH[0], MACH[1], MACH[2] + 0.2);
   pulse.mesh.scale.setScalar(22);
@@ -279,6 +284,9 @@ export const build: ChapterBuilder = async (ctx) => {
       gate.mesh.visible = charge > 0.001;
       gate.u.uOpen.value = Math.max(0.001, charge);
       gate.u.uTime.value = ambient;
+      tunnel.group.visible = charge > 0.001;
+      tunnel.u.uOpen.value = charge;
+      tunnel.u.uTime.value = ambient;
       ringMat.emissiveIntensity = 0.3 + charge * 0.9 + 0.4 * spike(t, tStep, 0.1, 1.2);
       machine.rotation.z = ambient * 0.05;
       const pk = (ambient * 0.5) % 1;
@@ -334,7 +342,7 @@ export const build: ChapterBuilder = async (ctx) => {
         : inside ? { color: [0.05, 0.09, 0.12], density: 0.02, height: TP[1], falloff: 0.2, sky: 0 }
         : { color: [0.4, 0.3, 0.22], density: 0.0025, height: 0, falloff: 0.03, sun: { dir: [-0.8, 0.12, -0.6], color: [0.5, 0.3, 0.15] }, sky: 0.3 };
       const focus: Vec3 = zero ? (t > tStep ? [MACH[0], 1.6, MACH[2] + 2] : [MACH[0], 1.5, MACH[2] + 6]) : inside ? TP : [0, 5, 0];
-      return cine(L0, { fog, dof: { focus, k: 0.35 }, streak: zero ? 0.25 : 0.15, streakColor: [0.6, 0.9, 1.0] });
+      return cine(L0, { fog, dof: { focus, k: 0.35 }, streak: zero ? 0.2 : 0.15, streakColor: [0.6, 0.9, 1.0], black: zero ? 0.05 : 0.035, bloomCap: 3.5 });
     },
     dispose() {
       disposers.forEach((d) => d());

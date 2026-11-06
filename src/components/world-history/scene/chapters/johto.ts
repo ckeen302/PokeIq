@@ -154,7 +154,7 @@ export const build: ChapterBuilder = async (ctx) => {
   scene.add(fireLight);
 
   // ---- The rainbow.
-  const bowGeo = new THREE.RingGeometry(32, 40, 96, 1, 0, Math.PI);
+  const bowGeo = new THREE.RingGeometry(14, 40, 128, 1, 0, Math.PI);
   const bowMat = new THREE.ShaderMaterial({
     uniforms: { uOpacity: { value: 0 } },
     transparent: true,
@@ -163,11 +163,22 @@ export const build: ChapterBuilder = async (ctx) => {
     side: THREE.DoubleSide,
     vertexShader: /* glsl */ `varying vec2 vP; void main(){ vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
     fragmentShader: /* glsl */ `uniform float uOpacity; varying vec2 vP;
+      vec3 spectrum(float x){
+        // x 0 (violet, inside) .. 1 (red, outside).
+        vec3 c = vec3(smoothstep(0.45, 0.85, x) + smoothstep(0.15, 0.0, x) * 0.5, smoothstep(0.2, 0.5, x) * smoothstep(0.95, 0.6, x), smoothstep(0.55, 0.15, x));
+        return c * 1.25;
+      }
       void main(){
-        float k = clamp((length(vP) - 32.0) / 8.0, 0.0, 1.0);
-        vec3 c = 0.5 + 0.5 * cos(6.2831 * (k * 0.85 + vec3(0.0, 0.33, 0.67)));
-        float edge = smoothstep(0.0, 0.15, k) * smoothstep(1.0, 0.85, k);
-        gl_FragColor = vec4(c * edge * uOpacity * 1.4, edge * uOpacity);
+        float R = length(vP);
+        float k = clamp((R - 33.0) / 5.0, 0.0, 1.0);
+        float edge = smoothstep(0.0, 0.2, k) * smoothstep(1.0, 0.8, k);
+        // The primary bow, a brighter sky inside it, and a faint reversed secondary bow outside.
+        vec3 c = spectrum(k) * edge;
+        c += vec3(1.0, 0.92, 0.85) * 0.12 * smoothstep(33.0, 26.0, R) * smoothstep(14.0, 26.0, R);
+        float k2 = clamp((R - 38.5) / 1.5, 0.0, 1.0);
+        c += spectrum(1.0 - k2) * smoothstep(0.0, 0.3, k2) * smoothstep(1.0, 0.7, k2) * 0.3;
+        float fadeLow = smoothstep(-2.0, 10.0, vP.y);
+        gl_FragColor = vec4(c * uOpacity * fadeLow, 1.0);
       }`,
   });
   const rainbow = new THREE.Mesh(bowGeo, bowMat);
@@ -254,19 +265,21 @@ export const build: ChapterBuilder = async (ctx) => {
       const night = ramp(t, tDead - 1, tDead) * (1 - ramp(t, tFlew - 1, tFlew + 3));
       const dawn = ramp(t, tFlew - 1, tFlew + 4);
       const bow = ramp(t, tDescend - 0.5, tDescend + 2) * (1 - ramp(t, tFlew + 2, end));
+      // Ho-Oh brings the dawn: the night breaks rose and gold as it descends.
+      const daybreak = ramp(t, tDescend - 1.2, tDescend + 1.6);
       // Sky by phase.
       const top = sky.u.uTop.value, hor = sky.u.uHorizon.value, bot = sky.u.uBottom.value;
       if (alph) { top.copy(col("#6a88a8")); hor.copy(col("#d8c8b0")); bot.copy(col("#2a2a2a")); sky.u.uSunGlow.value = 0.3; sky.u.uSunColor.value.copy(col("#fff0d0", 0.6)); fog.color.copy(col("#a8a49c")); fog.density = 0.014; }
       else {
-        top.copy(col("#1e2a58").lerp(col("#0e1018"), storm).lerp(col("#06080e"), night).lerp(col("#3a5a90"), dawn));
-        hor.copy(col("#e07a48").lerp(col("#3a3a44"), storm).lerp(col("#2a2030"), night).lerp(col("#e0a080"), dawn));
+        top.copy(col("#1e2a58").lerp(col("#0e1018"), storm).lerp(col("#06080e"), night).lerp(col("#1c2a66"), daybreak).lerp(col("#3a5a90"), dawn));
+        hor.copy(col("#e07a48").lerp(col("#3a3a44"), storm).lerp(col("#2a2030"), night).lerp(col("#ff8a5a"), daybreak).lerp(col("#f0a878"), dawn));
         bot.copy(col("#1a1a24"));
-        sky.u.uSunGlow.value = 0.7 * (1 - storm) * (1 - night) + dawn * 0.4;
-        sky.u.uSunColor.value.copy(col("#ffc080", (1 - storm) * (1 - night) + dawn));
-        fog.color.copy(col("#a08070").lerp(col("#2a2a30"), storm).lerp(col("#14121a"), night).lerp(col("#d0b0a0"), dawn));
-        fog.density = 0.006 + storm * 0.006 + rainK * 0.006;
+        sky.u.uSunGlow.value = 0.7 * (1 - storm) * (1 - night) + daybreak * 0.9 + dawn * 0.4;
+        sky.u.uSunColor.value.copy(col("#ffc080", (1 - storm) * (1 - night) + daybreak * 1.2 + dawn));
+        fog.color.copy(col("#a08070").lerp(col("#2a2a30"), storm).lerp(col("#14121a"), night).lerp(col("#b07868"), daybreak).lerp(col("#d0b0a0"), dawn));
+        fog.density = (0.006 + storm * 0.006 + rainK * 0.006) * (1 - daybreak * 0.75);
       }
-      sky.u.uStars.value = alph ? 0 : night * 0.04;
+      sky.u.uStars.value = alph ? 0 : night * 0.04 * (1 - daybreak * 0.7);
       sky.follow(cam);
       sky.u.uTime.value = ambient;
       clouds.u.uTime.value = ambient;
@@ -289,7 +302,7 @@ export const build: ChapterBuilder = async (ctx) => {
       fire.u.uTime.value = ambient;
       fire.u.uOpacity.value = burning;
       embers.u.uOpacity.value = burning;
-      smoke.u.uOpacity.value = Math.max(burning, ramp(t, tRain, tRain + 1) * (1 - ramp(t, tDead, tBeasts)) * 0.8);
+      smoke.u.uOpacity.value = Math.max(burning, ramp(t, tRain, tRain + 1) * (1 - ramp(t, tDead - 1, tDescend - 0.5)) * 0.8);
       rain.u.uTime.value = ambient;
       rain.u.uOpacity.value = rainK;
       fireLight.intensity = 60 * burning * (0.8 + 0.2 * Math.sin(ambient * 7) * Math.sin(ambient * 3.1));
@@ -318,7 +331,7 @@ export const build: ChapterBuilder = async (ctx) => {
       }
       plumes.u.uCenter.value.set(hoohPos.x, hoohPos.y - 2, hoohPos.z + 1);
       plumes.u.uOpacity.value = alph ? 0 : ramp(t, tDescend - 0.4, tDescend + 1) * (1 - ramp(t, tFlew + 1, end));
-      bowMat.uniforms.uOpacity.value = alph ? 0 : bow * 0.22;
+      bowMat.uniforms.uOpacity.value = alph ? 0 : bow * 0.7;
       rainbow.quaternion.copy(cam.quaternion);
       // The three: dead in the ashes, then alive again.
       const life = ramp(t, tBeasts - 0.6, tBeasts + 1.6);
@@ -336,9 +349,10 @@ export const build: ChapterBuilder = async (ctx) => {
       reviveRing.mesh.visible = !alph && t > tBeasts + 0.2 && t < tBeasts + 2.3;
       sh.follow(alph ? [ALPH[0], 0, ALPH[2]] : t > tDead - 0.5 ? BEASTS_AT : [BT[0], 0, BT[2] + 8], alph ? 30 : t > tDead - 0.5 ? 14 : 26);
       // Light.
-      L.key.intensity = alph ? 1.4 : 1.8 * (1 - storm * 0.7) * (1 - night * 0.6) + dawn * 0.6 + bow * 0.8;
-      L.key.color.copy(alph ? col("#fff0d8") : col("#ffc890").lerp(col("#c8d0ff"), storm).lerp(col("#ffd8a0"), bow));
-      L.hemi.intensity = alph ? 0.8 : 0.6 - storm * 0.2 - night * 0.2 + dawn * 0.2;
+      L.key.intensity = alph ? 1.4 : 1.8 * (1 - storm * 0.7) * (1 - night * 0.6) + dawn * 0.6 + bow * 1.2;
+      L.key.color.copy(alph ? col("#fff0d8") : col("#ffc890").lerp(col("#c8d0ff"), storm).lerp(col("#ffb878"), bow));
+      L.hemi.intensity = alph ? 0.8 : 0.6 - storm * 0.2 - night * 0.2 + dawn * 0.2 + daybreak * 0.1;
+      L.hemi.color.copy(col("#ffd8b0").lerp(col("#8a98d8"), daybreak * (1 - dawn)));
     },
     look(t) {
       const alph = t < cutTowers;
@@ -346,12 +360,12 @@ export const build: ChapterBuilder = async (ctx) => {
         t,
         { bloom: 0.8, bloomRadius: 0.6 },
         {
-          exposure: [[0, 1.05], [cutTowers, 1.0], [tFire, 0.95], [tStrike + 1, 1.0], [tDead, 0.95], [tDescend + 1, 1.05], [end, 1.05]],
+          exposure: [[0, 1.05], [cutTowers, 1.0], [tFire, 0.95], [tStrike + 1, 1.0], [tDead, 0.95], [tDescend + 1, 1.12], [end, 1.05]],
           fade: [[cutTowers - 0.45, 0], [cutTowers - 0.08, 1], [cutTowers + 0.12, 1], [cutTowers + 0.7, 0]],
           gain: [[0, [1.0, 1.0, 1.02]], [cutTowers, [1.0, 1.0, 1.02]], [cutTowers + 0.1, [1.1, 0.98, 0.9]], [tFire, [0.95, 0.98, 1.08]], [tStrike + 1, [1.12, 0.94, 0.84]], [tRain + 1, [0.92, 0.96, 1.08]], [tDead, [0.94, 0.94, 1.06]], [tDescend + 1, [1.08, 1.0, 0.94]], [end, [1.08, 1.0, 0.94]]],
           lift: [[0, [0.012, 0.012, 0.012]], [cutTowers, [0.012, 0.012, 0.012]], [cutTowers + 0.1, [0.01, 0.005, 0.0]]],
-          saturation: [[0, 0.85], [cutTowers + 0.1, 1.1], [tRain + 1, 0.9], [tDead, 0.8], [tDescend + 1, 1.18], [end, 1.1]],
-          contrast: [[0, 0.98], [cutTowers + 0.1, 1.06], [tStrike, 1.15], [tDead, 1.08], [end, 1.04]],
+          saturation: [[0, 0.85], [cutTowers + 0.1, 1.1], [tRain + 1, 0.9], [tDead, 0.85], [tDescend + 1, 1.25], [end, 1.12]],
+          contrast: [[0, 0.98], [cutTowers + 0.1, 1.06], [tStrike, 1.15], [tDead, 1.1], [tDescend + 1, 1.12], [end, 1.05]],
           chroma: [[tStrike - 0.05, 0], [tStrike, 0.6], [tStrike + 1, 0], [tBeasts, 0], [tBeasts + 0.6, 0.3], [tBeasts + 1.6, 0]],
           vignette: [[0, 0.35], [cutTowers + 0.1, 0.42], [tFire, 0.55], [tDead, 0.55], [tFlew, 0.38]],
           bloom: [[0, 0.75], [tStrike, 1.1], [tStrike + 2, 0.9], [tDescend, 1.05], [tBeasts + 1, 1.1], [end, 0.85]],
@@ -364,7 +378,7 @@ export const build: ChapterBuilder = async (ctx) => {
       const gy = gh(BT[0], BT[2]);
       const fog: Look["fog"] = alph
         ? { color: [0.5, 0.48, 0.42], density: 0.003, height: 0, falloff: 0.05, sky: 0.3 }
-        : t > tFire ? { color: t > tDescend ? [0.45, 0.32, 0.24] : [0.12, 0.09, 0.09], density: 0.009, height: gy + 2, falloff: 0.12, sun: t > tDescend ? { dir: [0.1, 0.4, 0.9], color: [0.6, 0.4, 0.15] } : undefined, sky: 0.35 }
+        : t > tFire ? { color: t > tDescend ? [0.3, 0.17, 0.16] : [0.12, 0.09, 0.09], density: t > tDescend ? 0.002 : 0.009, height: gy + 1, falloff: 0.16, sun: t > tDescend ? { dir: [0.95, 0.06, -0.35], color: [0.7, 0.42, 0.18] } : undefined, sky: 0.2 }
         : { color: [0.35, 0.24, 0.19], density: 0.003, height: gy, falloff: 0.06, sky: 0.3 };
       const hp = hooh?.group.position;
       const focus: Vec3 = alph ? [ALPH[0], 3, ALPH[2]] : t > tDead - 0.5 ? (t > tDescend && hp ? [hp.x, hp.y, hp.z] : BEASTS_AT) : LU;

@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
-import { col, makeBeam, makeCloudLayer, makeGlow, makeLightning, makeParticles, makeRing, makeSky, makeTerrain, noise2, ramp, rng, stoneMaterial, strikeAt } from "../kit";
+import { col, makeBeam, makeCloudLayer, makeGlow, makeLightning, makeParticles, makeRing, makeSky, makeSunburst, makeTerrain, merge, noise2, placed, ramp, rng, stoneMaterial, strikeAt } from "../kit";
 import { makeMeteor, makeRobed } from "../props";
 import type { ChapterBuilder, Look } from "../types";
 import { actionCurve } from "../figures";
@@ -89,7 +89,23 @@ export const build: ChapterBuilder = async (ctx) => {
   const debris = makeParticles({ count: P(2000), shape: "sphere", center: [CRATER[0], 4, CRATER[2]], extent: [5, 3, 5], velocity: [0, 26, 0], spread: [30, 18, 30], gravity: [0, -9.8, 0], life: 5, size: [0.35, 1.2], colors: ["#ffd8c0", "#ff6a50", "#3a1a1a"], intensity: 1.3, burst: true, fadeOut: 0.5, seed: 3 });
   const craterGlow = makeParticles({ count: P(900), shape: "disc", center: [CRATER[0], -6, CRATER[2]], extent: [18, 2, 18], velocity: [0, 3, 0], spread: [1, 1, 1], life: 4, size: [0.15, 0.45], colors: ["#ffb0d0", "#ff3a7a", "#8a0a3a"], intensity: 2.4, turbulence: 0.9, flicker: 0.4, seed: 4 });
   [debris, craterGlow].forEach((p) => { scene.add(p.points); disposers.push(p.dispose); });
-  const redLight = new THREE.PointLight(col("#ff2a6a"), 0, 120, 1);
+  // The impact itself: a burst of light with rays, a fireball, a column of smoke and dust, and standing stones in the foreground for scale.
+  const blast = makeSunburst({ size: 260, color: "#ff8ab8", core: "#fff0f6", intensity: 0, rays: 13, coreK: 0.7, seed: 5 });
+  blast.mesh.position.set(CRATER[0], 6, CRATER[2]);
+  scene.add(blast.mesh);
+  disposers.push(blast.dispose);
+  const fireball = makeGlow({ pos: [CRATER[0], 8, CRATER[2]], size: 70, color: "#ffc0d8", intensity: 0 });
+  scene.add(fireball.sprite);
+  disposers.push(fireball.dispose);
+  const plume = makeParticles({ count: P(260), shape: "sphere", center: [CRATER[0], 4, CRATER[2]], extent: [6, 3, 6], velocity: [0, 16, 0], spread: [16, 7, 16], gravity: [0, -2.5, 0], life: 7, size: [7, 18], colors: ["#3a1420", "#5a2232", "#1e0a12"], intensity: 0.55, additive: false, burst: true, fadeIn: 0.05, fadeOut: 0.6, seed: 14 });
+  scene.add(plume.points);
+  disposers.push(plume.dispose);
+  const megalithMat = stoneMaterial({ color: "#3a3638", roughness: 0.9, dirt: 0.6 });
+  const MEG: [number, number, number, number][] = [[-9, -46, 7, 0.2], [-5, -47, 5.5, -0.1], [15, -42, 8.5, 0.35], [19, -58, 6, -0.2], [-16, -64, 6.5, 0.1]];
+  const megaliths = new THREE.Mesh(merge(MEG.map(([x, z, h, a]) => placed(new THREE.BoxGeometry(2.2, h, 1.4), [x, gh(x, z) + h / 2 - 0.6, z], a, [1, 1, 1], 0, a * 0.15))), megalithMat);
+  scene.add(megaliths);
+  disposers.push(() => { megaliths.geometry.dispose(); megalithMat.dispose(); });
+  const redLight = new THREE.PointLight(col("#ff2a6a"), 0, 300, 1);
   redLight.position.set(CRATER[0], 6, CRATER[2] + 6);
   scene.add(redLight);
 
@@ -193,8 +209,8 @@ export const build: ChapterBuilder = async (ctx) => {
   const keys: Key[] = [
     { t: 0, pos: [0, 16, 86], look: [-30, 46, -200], fov: 52 },
     { t: tMet, pos: [-6, 11, 58], look: [-10, 28, -170], fov: 50 },
-    { t: tImpact - 0.3, pos: [-4, 8, 42], look: [20, 6, -125], fov: 46 },
-    { t: tImpact + 1.6, pos: [4, 9, 16], look: [22, 8, -125], fov: 44 },
+    { t: tImpact - 0.3, pos: [0, 5.5, -26], look: [21, 12, -125], fov: 48 },
+    { t: tImpact + 1.6, pos: [5, 5.5, -40], look: [22, 14, -125], fov: 46 },
     { t: tStorm - 0.6, pos: [16, 7, -72], look: [24, 10, -128], fov: 46 },
     { t: tStorm, pos: [0, 34, 130], look: [14, 42, -150], fov: 56 },
     { t: tStorm + 4, pos: [-24, 10, 52], look: [20, 34, -150], fov: 52 },
@@ -259,7 +275,19 @@ export const build: ChapterBuilder = async (ctx) => {
       const dk = ramp(t, tImpact, tImpact + 1.4);
       dome.visible = after > 0 && after < 1.5;
       dome.scale.setScalar(4 + dk * 60);
-      (dome.material as THREE.MeshBasicMaterial).opacity = (1 - dk) * (1 - dk) * 0.3;
+      (dome.material as THREE.MeshBasicMaterial).opacity = (1 - dk) * (1 - dk) * 0.45;
+      const bk = after > 0 && !tund ? spike(t, tImpact, 0.04, 1.4) : 0;
+      blast.mesh.visible = bk > 0.002;
+      blast.u.uIntensity.value = 0.8 * bk;
+      blast.u.uK.value = 0.35 + 0.65 * ramp(t, tImpact, tImpact + 1.2);
+      blast.u.uTime.value = ambient;
+      blast.mesh.quaternion.copy(cam.quaternion);
+      fireball.set("#ffb0d0", 0.9 * bk + 0.25 * ramp(t, tImpact, tImpact + 0.3) * (1 - ramp(t, tImpact + 0.6, tImpact + 3)));
+      fireball.sprite.scale.setScalar(40 + 50 * ramp(t, tImpact, tImpact + 1.5));
+      plume.u.uTime.value = Math.max(0, after);
+      plume.u.uPixel.value = px;
+      plume.u.uOpacity.value = after > 0 && t < tStorm + 1 && !tund ? 1 - ramp(t, tStorm - 1, tStorm + 1) : 0;
+      megaliths.visible = !tund && t < cutStatue;
       debris.u.uTime.value = Math.max(0, after);
       debris.u.uPixel.value = px;
       debris.u.uOpacity.value = after > 0 && t < tStorm + 2 ? 1 : 0;
@@ -270,7 +298,8 @@ export const build: ChapterBuilder = async (ctx) => {
       land.u.uTime.value = ambient;
       land.u.uLavaK.value = 5 * smoulder * (1 - ramp(t, tTwo, tTwo + 3)) + sk * 2;
       land.u.uFlash.value = spike(t, tImpact, 0.04, 0.5) * 0.6 + lv * 0.2;
-      redLight.intensity = tund ? 0 : 40 * smoulder * (0.85 + 0.15 * Math.sin(ambient * 4)) + sk * 30;
+      redLight.intensity = tund ? 0 : 40 * smoulder * (0.85 + 0.15 * Math.sin(ambient * 4)) + sk * 30 + 400 * (after > 0 ? spike(t, tImpact, 0.04, 1.2) : 0);
+      redLight.color.copy(col("#ff2a6a").lerp(col("#ffd0e0"), after > 0 ? spike(t, tImpact, 0.04, 0.8) : 0));
       // Inside it, something.
       if (eter) {
         const emerge = ramp(t, tImpact + 1.2, tStorm - 1.2);
@@ -360,7 +389,7 @@ export const build: ChapterBuilder = async (ctx) => {
           bloom: [[0, 0.8], [tImpact, 1.0], [tImpact + 2, 0.85], [tStorm, 0.85], [tTwo, 0.9], [cutTundra, 0.9]],
         }
       );
-      L0.flash = Math.min(0.45, 0.4 * spike(t, tImpact, 0.03, 0.22) + lv * 0.08 + 0.12 * spike(t, tTwo, 0.1, 0.5));
+      L0.flash = Math.min(0.35, 0.25 * spike(t, tImpact, 0.03, 0.22) + lv * 0.08 + 0.12 * spike(t, tTwo, 0.1, 0.5));
       if (!tund && t > tImpact && t < tStorm) L0.rays = { pos: [CRATER[0], 6, CRATER[2]], color: [1.0, 0.5, 0.7], strength: 0.6 * ramp(t, tImpact, tImpact + 0.4) * (1 - ramp(t, tStorm - 1, tStorm)) };
       else if (!tund && t > cutStatue) L0.rays = { pos: [700, 40, -400], color: [1.0, 0.86, 0.6], strength: 0.1 + 0.18 * ramp(t, tTwo - 0.3, tTwo + 1.5) };
       else if (tund) L0.rays = { pos: [CAL[0], 3, CAL[2]], color: [0.7, 1.0, 0.85], strength: 0.15 };
@@ -368,10 +397,10 @@ export const build: ChapterBuilder = async (ctx) => {
       const fog: Look["fog"] = tund
         ? { color: [0.4, 0.48, 0.6], density: 0.015, height: 0, falloff: 0.18, sky: 0.4 }
         : plaza ? { color: [0.42, 0.32, 0.28], density: 0.012, height: 0, falloff: 0.3, sun: { dir: [0.7, 0.45, 0.5], color: [0.5, 0.35, 0.2] }, sky: 0.3 }
-        : t > tImpact ? { color: [0.2, 0.05, 0.07], density: 0.0035, height: 0, falloff: 0.05, sky: 0.25 }
-        : { color: [0.05, 0.045, 0.09], density: 0.003, height: 0, falloff: 0.05, sky: 0.2 };
+        : t > tImpact ? { color: [0.1, 0.02, 0.04], density: 0.0025, height: 0, falloff: 0.05, sun: { dir: [0.16, 0.0, -0.99], color: [0.6, 0.12, 0.25] }, sky: 0.15 }
+        : { color: [0.02, 0.025, 0.05], density: 0.0025, height: 0, falloff: 0.05, sky: 0.15 };
       const focus: Vec3 = tund ? CA : plaza ? [SPOT[0], SPOT[1] + 2, SPOT[2]] : [CRATER[0], 4, CRATER[2]];
-      return cine(L0, { fog, dof: { focus, k: 0.25 }, streak: 0.15 + 0.4 * spike(t, tImpact, 0.03, 1.6), streakColor: [1.0, 0.55, 0.75] });
+      return cine(L0, { fog, dof: { focus, k: 0.25 }, streak: 0.15 + 0.35 * spike(t, tImpact, 0.03, 1.6), streakColor: [1.0, 0.55, 0.75], black: tund ? 0.03 : 0.05, bloomCap: 3.5 });
     },
     dispose() {
       disposers.forEach((d) => d());

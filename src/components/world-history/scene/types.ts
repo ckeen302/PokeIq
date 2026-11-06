@@ -89,6 +89,30 @@ export interface Look {
   streakColor?: Vec3;
   /** Chromatic fringing at the frame's edges only (0..1). */
   fringe?: number;
+  /**
+   * Hot sources keep their colour (0..1, filmic and agx only): highlights
+   * roll off on luminance with the hue held, whitening only far above
+   * white, instead of each channel clipping to a flat white disc.
+   */
+  hueKeep?: number;
+  /** A display-space black point (0..0.2): the darkest values go to real black. */
+  black?: number;
+  /** Split toning (display space, small values): a tint added to the shadows and one to the highlights. */
+  split?: { shadows: Vec3; highlights: Vec3 };
+  /**
+   * Bloom on what is over the threshold only (0..1, 1: subtract the
+   * threshold, so broad bright areas glow softly and only hot cores
+   * flare), with each pixel's bloom capped at `bloomCap` (luminance), so a
+   * large bright area can't box out the frame.
+   */
+  bloomKnee?: number;
+  bloomCap?: number;
+  /**
+   * `flash` as a punch of light in HDR (exposure up, highlights flare)
+   * instead of a mix toward white, so a flash never lays a grey veil over
+   * the blacks.
+   */
+  flashHdr?: boolean;
 }
 
 export const BASE_LOOK: Look = {

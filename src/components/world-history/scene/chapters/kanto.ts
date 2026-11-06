@@ -90,7 +90,7 @@ export const build: ChapterBuilder = async (ctx) => {
   const lab = new THREE.Group();
   lab.position.set(...LAB);
   scene.add(lab);
-  const wallMat = stoneMaterial({ color: "#7a808c", roughness: 0.7, dirt: 0.5 });
+  const wallMat = stoneMaterial({ color: "#545a68", roughness: 0.7, dirt: 0.5 });
   wallMat.side = THREE.BackSide;
   const room = new THREE.Mesh(new THREE.BoxGeometry(26, 8, 22), wallMat);
   room.position.set(0, 3.6, -2);
@@ -199,6 +199,10 @@ export const build: ChapterBuilder = async (ctx) => {
   const alarm = new THREE.PointLight(col("#ff2a2a"), 0, 30, 1.2);
   alarm.position.set(LAB[0], 7, LAB[2] - 2);
   scene.add(alarm);
+  // Mewtwo's own psychic light from inside the tank: it lights the room as its rage builds.
+  const psyLight = new THREE.PointLight(col("#b07aff"), 0, 22, 1.3);
+  psyLight.position.set(LAB[0], 3.4, LAB[2] - 4.2);
+  scene.add(psyLight);
 
   // ---- Light.
   const L = lights(scene, { sky: "#c8ffd8", ground: "#1a2a14", fill: 0.6, key: "#fff0c8", keyK: 1.6, keyPos: [10, 30, -10], rim: "#8ab0ff", rimK: 0.4, rimPos: [-10, 10, 20] });
@@ -219,7 +223,7 @@ export const build: ChapterBuilder = async (ctx) => {
   livingFigure(mew, { contact: 0.35, ground: -0.6, alive: 1.2 });
   const TWO: Vec3 = [LAB[0], 0.7, LAB[2] - 6];
   place(two, TWO, 3.4, 0, scene);
-  figureStyle(two, { rim: "#d0a8ff", rimK: 1.6, glow: "#8a4aff", glowK: 0.06, edge: "#e8d0ff", shadow: 0.7 });
+  figureStyle(two, { rim: "#d0a8ff", rimK: 2.4, glow: "#8a4aff", glowK: 0.06, edge: "#e8d0ff", shadow: 0.7 });
   livingFigure(two, { contact: 0.6, ground: 0.61, alive: 0.6 });
   const PAGES: Vec3 = [LAB[0] - 4.2, 1.0, LAB[2] - 1.0];
 
@@ -292,11 +296,12 @@ export const build: ChapterBuilder = async (ctx) => {
         const flick = 0.75 + 0.25 * Math.sin(ambient * 30 + i * 7) * Math.sin(ambient * 7.3 + i);
         (m.mat as THREE.MeshBasicMaterial).color.copy(col("#ffffff", (broken ? 0.9 + 0.5 * Math.max(0, Math.sin(ambient * 13 + i * 3)) : 1.4) * flick));
       });
-      alarm.intensity = alarmOn ? 6 * Math.max(0, Math.sin(ambient * 6)) : 0;
+      alarm.intensity = alarmOn ? 16 * Math.max(0, Math.sin(ambient * 6)) : 0;
       const buzz = broken ? (Math.sin(ambient * 37) * Math.sin(ambient * 11.3) > 0.2 ? 0.25 : 1) : 1;
       strips.visible = inLab;
       stripMat.color.copy(col("#d8ecff", 1.6 * buzz));
-      ceil.forEach((c) => (c.intensity = inLab ? 40 * buzz : 0));
+      ceil.forEach((c) => (c.intensity = inLab ? (40 - 22 * ramp(t, tPower - 0.5, tPower + 0.5)) * buzz : 0));
+      psyLight.intensity = inLab ? 2 + 22 * rage + 50 * spike(t, tBreak, 0.05, 1.2) : 0;
       pages.forEach((pg, i) => { pg.mesh.visible = inLab; (pg.mat as THREE.MeshStandardMaterial).emissiveIntensity = 0.3 + 0.25 * ramp(t, [tJungle, tMew, tBirth, tPower][i], [tJungle, tMew, tBirth, tPower][i] + 1); });
       lamp.intensity = inLab ? 6 * (0.9 + 0.1 * Math.sin(ambient * 17)) : 0;
       // Light.
@@ -329,7 +334,7 @@ export const build: ChapterBuilder = async (ctx) => {
         ? { color: [0.05, 0.06, 0.09], density: 0.02, height: 0.5, falloff: 0.25, sky: 0 }
         : { color: [0.42, 0.55, 0.4], density: 0.05, height: 0.2, falloff: 0.45, sun: { dir: [0.3, 0.6, -0.7], color: [0.6, 0.5, 0.25] }, sky: 0.3 };
       const focus: Vec3 = !inLab ? MEW_AT : t < tPower ? PAGES : lerp3(PAGES, TWO, ramp(t, tPower - 0.2, tPower + 0.5));
-      return cine(L0, { fog, dof: { focus: [focus[0], focus[1] + 1.2 * (inLab && t >= tPower ? 1 : 0), focus[2]], k: inLab ? 0.55 : 0.35 }, streak: inLab ? 0.2 : 0.12 });
+      return cine(L0, { fog, dof: { focus: [focus[0], focus[1] + 1.2 * (inLab && t >= tPower ? 1 : 0), focus[2]], k: inLab ? 0.55 : 0.35 }, streak: inLab ? 0.2 : 0.12, black: inLab ? 0.05 : 0.035 });
     },
     dispose() {
       disposers.forEach((d) => d());

@@ -34,6 +34,8 @@ const param = (k: string) => {
 const lengthFromUrl = () => { const n = Number(param("len")); return Number.isFinite(n) && n >= 3 && n <= 60 ? n : null; };
 /** ?vfps=10 and ?vq=draft: a quicker render (automated checks). */
 const fpsFromUrl = () => { const n = Number(param("vfps")); return Number.isFinite(n) && n >= 10 && n <= 60 ? Math.round(n) : undefined; };
+/** ?vscale=0.89: render the scene smaller and scale it up (slow machines). */
+const scaleFromUrl = () => { const n = Number(param("vscale")); return Number.isFinite(n) && n >= 0.5 && n <= 1 ? n : undefined; };
 const qualityFromUrl = (): Quality | undefined => { const q = param("vq"); return q === "draft" || q === "low" || q === "medium" || q === "high" ? q : undefined; };
 
 /**
@@ -89,6 +91,7 @@ export default function MakeHistoryVideo({ film, chapter, onRecording, onClose }
         logo: "/logo.svg",
         quality: qualityFromUrl(),
         fps: fpsFromUrl(),
+        scale: scaleFromUrl(),
         signal: ac.signal,
         onProgress(p, label) {
           const now = performance.now();

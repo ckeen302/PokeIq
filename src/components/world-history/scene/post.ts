@@ -151,9 +151,19 @@ export function createPost(renderer: THREE.WebGLRenderer, w: number, h: number, 
   if (bloom) {
     // The bloom's first read of the scene: scrubbed (see SAFE_HDR).
     const hp = bloom.materialHighPassFilter;
+    // Opt-in (Look.bloomKnee/bloomCap): only the part over the threshold blooms, each pixel's bloom capped.
+    hp.uniforms.uKnee = { value: 0 };
+    hp.uniforms.uCap = { value: 0 };
     hp.fragmentShader = hp.fragmentShader
-      .replace("void main() {", `${SAFE_HDR}\nvoid main() {`)
-      .replace("vec4 texel = texture2D( tDiffuse, vUv );", "vec4 texel = texture2D( tDiffuse, vUv ); texel.rgb = whSafe( texel.rgb );");
+      .replace("void main() {", `${SAFE_HDR}\nuniform float uKnee, uCap;\nvoid main() {`)
+      .replace("vec4 texel = texture2D( tDiffuse, vUv );", "vec4 texel = texture2D( tDiffuse, vUv ); texel.rgb = whSafe( texel.rgb );")
+      .replace(
+        "gl_FragColor = mix( outputColor, texel, alpha );",
+        `float lv = max( v, 1e-4 );
+        texel.rgb *= mix( 1.0, max( v - luminosityThreshold, 0.0 ) / lv, uKnee );
+        if ( uCap > 0.0 ) texel.rgb *= min( 1.0, uCap / lv );
+        gl_FragColor = mix( outputColor, texel, alpha );`
+      );
     hp.needsUpdate = true;
   }
 
@@ -200,8 +210,11 @@ export function createPost(renderer: THREE.WebGLRenderer, w: number, h: number, 
         float edge = smoothstep(uK * 1.2 - 0.25, uK * 1.2, r);
         vec3 m = mix(b, a, edge);
         float fx = (r - uK * 0.9) * 4.0;
-        float flash = uBurst * exp(-fx * fx) + uBurst * 0.6 * (1.0 - abs(uK - 0.5) * 2.0);
-        gl_FragColor = vec4(m + vec3(1.0, 0.95, 0.85) * flash * 3.0, 1.0);
+        // A ring of light at the seam and a gentle lift through the middle: bright, never a white frame.
+        float ring = exp(-fx * fx);
+        float mid = 1.0 - abs(uK - 0.5) * 2.0;
+        vec3 burst = vec3(1.0, 0.86, 0.62) * ring * 1.15 + vec3(0.9, 0.8, 0.7) * mid * 0.12;
+        gl_FragColor = vec4(m * (1.0 + mid * 0.25) + burst * uBurst, 1.0);
       }`,
     depthTest: false,
     depthWrite: false,
@@ -251,11 +264,13 @@ export function createPost(renderer: THREE.WebGLRenderer, w: number, h: number, 
       uExposure: { value: 1 }, uGain: { value: new THREE.Vector3(1, 1, 1) }, uLift: { value: new THREE.Vector3() },
       uSat: { value: 1 }, uContrast: { value: 1 }, uVignette: { value: 0.3 }, uChroma: { value: 0 }, uFlash: { value: 0 }, uFade: { value: 0 },
       uGrain: { value: 0.04 }, uTime: { value: 0 }, uRes: { value: new THREE.Vector2(w, h) },
-      uTone: { value: 0 }, uToneMix: { value: 0 }, uFringe: { value: 0 }, tStreak: { value: null }, uStreak: { value: 0 }, uStreakColor: { value: new THREE.Vector3(0.55, 0.7, 1.0) },
+      uTone: { value: 0 }, uToneMix: { value: 0 }, uFringe: { value: 0 }, uHueKeep: { value: 0 }, uBlack: { value: 0 }, uFlashHdr: { value: 0 },
+      uSplitLo: { value: new THREE.Vector3() }, uSplitHi: { value: new THREE.Vector3() }, tStreak: { value: null }, uStreak: { value: 0 }, uStreakColor: { value: new THREE.Vector3(0.55, 0.7, 1.0) },
     },
     vertexShader: FULLSCREEN_VERT,
     fragmentShader: /* glsl */ `
-      uniform sampler2D tScene, tRays, tStreak; uniform float uRays, uExposure, uSat, uContrast, uVignette, uChroma, uFlash, uFade, uGrain, uTime, uFringe, uStreak, uToneMix;
+      uniform sampler2D tScene, tRays, tStreak; uniform float uRays, uExposure, uSat, uContrast, uVignette, uChroma, uFlash, uFade, uGrain, uTime, uFringe, uStreak, uToneMix, uHueKeep, uBlack, uFlashHdr;
+      uniform vec3 uSplitLo, uSplitHi;
       uniform int uTone;
       uniform vec3 uRaysColor, uGain, uLift, uStreakColor; uniform vec2 uRes; varying vec2 vUv;
       ${SAFE_HDR}
@@ -291,6 +306,8 @@ export function createPost(renderer: THREE.WebGLRenderer, w: number, h: number, 
         if (uRays > 0.0) col += whSafe(texture2D(tRays, vUv).rgb) * uRaysColor * uRays;
         if (uStreak > 0.0) col += whSafe(texture2D(tStreak, vUv).rgb) * uStreakColor * uStreak;
         col *= uExposure * uGain;
+        float flashMix = uFlash;
+        if (uFlashHdr > 0.5) { col = col * (1.0 + uFlash * 2.5) + vec3(1.0, 0.97, 0.92) * uFlash * 0.06; flashMix = 0.0; }
         vec3 hdr = col;
         col = aces(hdr);
         float l = dot(col, vec3(0.2126, 0.7152, 0.0722));
@@ -300,17 +317,30 @@ export function createPost(renderer: THREE.WebGLRenderer, w: number, h: number, 
         col = clamp(col, 0.0, 1.0);
         if (uToneMix > 0.0) {
           // Display values (about sRGB): contrast pivots on mid grey, not on a linear 0.5, so shadows deepen without crushing.
-          vec3 d = sqrt(uTone == 2 ? agx(hdr) : acesFull(hdr));
+          vec3 tm = uTone == 2 ? agx(hdr) : acesFull(hdr);
+          if (uHueKeep > 0.0) {
+            // The curve on luminance, the hue held; whitening only well above white.
+            float L = dot(hdr, vec3(0.2126, 0.7152, 0.0722));
+            float tl = (uTone == 2 ? agx(vec3(L)) : acesFull(vec3(L))).g;
+            vec3 hk = hdr * (tl / max(L, 1e-5));
+            float mx = max(max(hk.r, hk.g), hk.b);
+            if (mx > 1.0) hk = mix(hk / mx, vec3(1.0), clamp((mx - 1.0) * 0.18, 0.0, 0.6));
+            tm = mix(tm, clamp(hk, 0.0, 1.0), uHueKeep);
+          }
+          vec3 d = sqrt(clamp(tm, 0.0, 1.0));
           float ld = dot(d, vec3(0.2126, 0.7152, 0.0722));
           d = mix(vec3(ld), d, uSat);
           d = (d - 0.5) * uContrast + 0.5;
           d += uLift * (1.0 - d);
+          float ls = clamp(dot(d, vec3(0.2126, 0.7152, 0.0722)), 0.0, 1.0);
+          d += uSplitLo * (1.0 - ls) * (1.0 - ls) + uSplitHi * ls * ls;
+          if (uBlack > 0.0) d = (d - uBlack) / (1.0 - uBlack);
           d = clamp(d, 0.0, 1.0);
           col = mix(col, d * d, uToneMix);
         }
         float v = smoothstep(0.85, 0.2, length(c * vec2(uRes.x / uRes.y, 1.0)) * 0.9);
         col *= mix(1.0, v, uVignette);
-        col = mix(col, vec3(1.0, 0.98, 0.94), clamp(uFlash, 0.0, 1.0));
+        col = mix(col, vec3(1.0, 0.98, 0.94), clamp(flashMix, 0.0, 1.0));
         col *= 1.0 - uFade;
         vec3 s = toSrgb(col);
         s += (hash(vUv * uRes + fract(uTime) * 61.0) - 0.5) * uGrain;
@@ -347,6 +377,8 @@ export function createPost(renderer: THREE.WebGLRenderer, w: number, h: number, 
         bloom.strength = look.bloom;
         bloom.radius = look.bloomRadius;
         bloom.threshold = look.bloomThreshold;
+        bloom.materialHighPassFilter.uniforms.uKnee.value = look.bloomKnee ?? 0;
+        bloom.materialHighPassFilter.uniforms.uCap.value = look.bloomCap ?? 0;
         renderer.setRenderTarget(target);
         // Renders the bloom on top of the target (additive, in place).
         bloom.render(renderer, target, target, 0, false);
@@ -421,6 +453,11 @@ export function createPost(renderer: THREE.WebGLRenderer, w: number, h: number, 
       g.uTone.value = look.tone === "agx" ? 2 : look.tone === "filmic" ? 1 : 0;
       g.uToneMix.value = look.tone && look.tone !== "aces" ? look.toneMix ?? 1 : 0;
       g.uFringe.value = look.fringe ?? 0;
+      g.uHueKeep.value = look.hueKeep ?? 0;
+      g.uFlashHdr.value = look.flashHdr ? 1 : 0;
+      g.uBlack.value = Math.min(0.3, Math.max(0, look.black ?? 0));
+      if (look.split) { g.uSplitLo.value.set(...look.split.shadows); g.uSplitHi.value.set(...look.split.highlights); }
+      else { g.uSplitLo.value.set(0, 0, 0); g.uSplitHi.value.set(0, 0, 0); }
       g.uExposure.value = look.exposure;
       g.uGain.value.set(...look.gain);
       g.uLift.value.set(...look.lift);

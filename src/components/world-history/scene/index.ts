@@ -128,6 +128,12 @@ function blendLook(a: Look, b: Look, k: number): Look {
     dof: k < 0.5 ? (a.dof ? { ...a.dof, k: a.dof.k * (1 - k * 2) } : undefined) : b.dof ? { ...b.dof, k: b.dof.k * (k * 2 - 1) } : undefined,
     mblur: k < 0.5 ? a.mblur : b.mblur,
     whip: k < 0.5 ? a.whip : b.whip,
+    hueKeep: lerp(a.hueKeep ?? 0, b.hueKeep ?? 0, k),
+    black: lerp(a.black ?? 0, b.black ?? 0, k),
+    split: a.split || b.split ? { shadows: v(a.split?.shadows ?? [0, 0, 0], b.split?.shadows ?? [0, 0, 0]), highlights: v(a.split?.highlights ?? [0, 0, 0], b.split?.highlights ?? [0, 0, 0]) } : undefined,
+    bloomKnee: lerp(a.bloomKnee ?? 0, b.bloomKnee ?? 0, k),
+    bloomCap: k < 0.5 ? a.bloomCap : b.bloomCap,
+    flashHdr: k < 0.5 ? a.flashHdr : b.flashHdr,
   };
 }
 

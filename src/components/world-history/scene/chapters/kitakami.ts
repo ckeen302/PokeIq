@@ -33,12 +33,12 @@ export const build: ChapterBuilder = async (ctx) => {
   const r = rng(13);
 
   // ---- Night sky with a moon.
-  const sky = makeSky({ top: "#060a1c", horizon: "#2a2440", bottom: "#05060c", nebulaA: "#2a3a6a", nebulaB: "#4a2a5a", nebula: 0.25, nebulaScale: 1.5, stars: 0.07, sunDir: [-0.35, 0.32, -1], sunColor: "#dfe6ff", sunSize: 2600, sunGlow: 0.25 });
+  const sky = makeSky({ top: "#03061a", horizon: "#1a2448", bottom: "#020308", nebulaA: "#1a3a7a", nebulaB: "#3a1a5a", nebula: 0.3, nebulaScale: 1.5, stars: 0.12, sunDir: [-0.35, 0.32, -1], sunColor: "#dfe6ff", sunSize: 2600, sunGlow: 0.35 });
   scene.add(sky.mesh);
   disposers.push(sky.dispose);
-  const fog = new THREE.FogExp2(col("#141a2c"), 0.012);
+  const fog = new THREE.FogExp2(col("#070b18"), 0.009);
   scene.fog = fog;
-  const mist = makeCloudLayer({ size: 500, y: 1.2, color: "#8a9ac8", shadow: "#2a3050", density: 0.45, scale: 0.02, speed: [1, 0, 0.3], intensity: 0.5 });
+  const mist = makeCloudLayer({ size: 500, y: 1.2, color: "#5a6a9a", shadow: "#141a30", density: 0.35, scale: 0.02, speed: [1, 0, 0.3], intensity: 0.22 });
   scene.add(mist.mesh);
   disposers.push(mist.dispose);
 
@@ -108,6 +108,20 @@ export const build: ChapterBuilder = async (ctx) => {
   scene.add(fireflies.points);
   disposers.push(fireflies.dispose);
 
+  // On the ridge: dark brush framing the fight in the foreground, and fireflies stirred up around it.
+  const brushPts: Vec3[] = [];
+  for (let i = 0; i < 26; i++) {
+    const side = i % 2 ? 1 : -1;
+    const x = RIDGE_AT[0] - 2 + side * (5.5 + r() * 5), z = RIDGE_AT[2] + 9 + r() * 6;
+    brushPts.push([x, gh(x, z) + 0.6 + r() * 1.4, z]);
+  }
+  const brush = makeFoliage({ points: brushPts, size: [1.6, 3.2], colors: ["#040a08", "#0c1a12"], seed: 9, light: 0.25 });
+  scene.add(brush.mesh);
+  disposers.push(brush.dispose);
+  const ridgeFlies = makeParticles({ count: P(420), shape: "box", center: [RIDGE_AT[0] - 1, RIDGE_AT[1] + 2, RIDGE_AT[2] + 3], extent: [10, 2.5, 7], velocity: [0, 0.15, 0], spread: [0.5, 0.3, 0.5], life: 6, size: [0.03, 0.07], colors: ["#d8ff9a", "#9affd0", "#ffe08a"], intensity: 3, turbulence: 0.9, flicker: 0.8, seed: 17 });
+  scene.add(ridgeFlies.points);
+  disposers.push(ridgeFlies.dispose);
+
   // ---- People: the man, the mask maker.
   const man = new THREE.Group();
   const manBody = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.34, 1.6, 12), new THREE.MeshStandardMaterial({ color: col("#3a3240"), roughness: 0.8 }));
@@ -144,7 +158,7 @@ export const build: ChapterBuilder = async (ctx) => {
   disposers.push(leaves.dispose);
 
   // ---- Light.
-  const L = lights(scene, { sky: "#6a7ab8", ground: "#141a14", fill: 0.45, key: "#b8c8ff", keyK: 0.9, keyPos: [-30, 40, -60], rim: "#ffb070", rimK: 0.5, rimPos: [10, 6, 20] });
+  const L = lights(scene, { sky: "#4a5aa8", ground: "#0a100c", fill: 0.3, key: "#a8c0ff", keyK: 1.5, keyPos: [-30, 40, -60], rim: "#ffa860", rimK: 0.45, rimPos: [10, 6, 20] });
   const lampLight = new THREE.PointLight(col("#ffa850"), 4, 26, 1.2);
   lampLight.position.set(0, 3, -2);
   scene.add(lampLight);
@@ -156,7 +170,7 @@ export const build: ChapterBuilder = async (ctx) => {
   const THIEF: Vec3[] = [[RIDGE_AT[0] - 7, RIDGE_AT[1] - 0.3, RIDGE_AT[2] - 1], [RIDGE_AT[0] - 1, RIDGE_AT[1] + 0.2, RIDGE_AT[2] - 3], [RIDGE_AT[0] + 5, RIDGE_AT[1] + 0.8, RIDGE_AT[2] - 1]];
   trio.forEach((f, i) => { place(f, STATUE[i], 2.2, 0, scene); figureStyle(f, { rim: "#cfd8ff", rimK: 1.2, edge: "#ff5a5a", stone: 1 }); });
   place(oger, [7, 0, -40], 1.25, 0, scene);
-  figureStyle(oger, { rim: "#9affd8", rimK: 1.4, glow: "#3ad0a0", glowK: 0.04, edge: "#cfffe8" });
+  figureStyle(oger, { rim: "#9affd8", rimK: 2.2, glow: "#3ad0a0", glowK: 0.04, edge: "#cfffe8" });
   const sh = craft(ctx, L, {
     radius: 14, center: RIDGE_AT,
     receive: [land.mesh, ...pedestals],
@@ -172,7 +186,8 @@ export const build: ChapterBuilder = async (ctx) => {
     { t: cuts[0] + 0.01, pos: [12, 2.4, 16], look: [7, 1.4, 2], fov: 42 },
     { t: cuts[1], pos: [12.5, 2.4, 14], look: [7, 1.4, 6], fov: 42 },
     { t: cuts[1] + 0.01, pos: [RIDGE_AT[0] - 6, RIDGE_AT[1] + 3, RIDGE_AT[2] + 13], look: [RIDGE_AT[0] - 1, RIDGE_AT[1] + 2.2, RIDGE_AT[2] - 2], fov: 44 },
-    { t: tDon, pos: [RIDGE_AT[0] - 5, RIDGE_AT[1] + 2.6, RIDGE_AT[2] + 12], look: [RIDGE_AT[0] - 1, RIDGE_AT[1] + 2, RIDGE_AT[2] - 1], fov: 46 },
+    { t: tDon, pos: [RIDGE_AT[0] - 4.2, RIDGE_AT[1] + 1.9, RIDGE_AT[2] + 10.5], look: [RIDGE_AT[0] - 1.2, RIDGE_AT[1] + 1.9, RIDGE_AT[2] - 0.5], fov: 42 },
+    { t: tDon + 3.4, pos: [RIDGE_AT[0] - 6, RIDGE_AT[1] + 2.4, RIDGE_AT[2] + 11.5], look: [RIDGE_AT[0] - 1, RIDGE_AT[1] + 2, RIDGE_AT[2] - 1], fov: 46 },
     { t: cuts[2], pos: [RIDGE_AT[0] - 9, RIDGE_AT[1] + 4, RIDGE_AT[2] + 18], look: [RIDGE_AT[0] - 1, RIDGE_AT[1] + 2, RIDGE_AT[2] - 1], fov: 50 },
     { t: cuts[2] + 0.01, pos: [0, 3.2, 12], look: [0, 2.3, -6], fov: 44 },
     { t: cuts[3], pos: [5, 2.5, 7], look: [0, 2.3, -6], fov: 40 },
@@ -192,12 +207,17 @@ export const build: ChapterBuilder = async (ctx) => {
       const px = pointPixel(viewH, cam);
       const statues = t < cuts[1] || t >= cuts[2];
       const ridge = t >= cuts[1] && t < cuts[2];
+      brush.mesh.visible = ridge;
+      ridgeFlies.u.uOpacity.value = ridge ? 1 : 0;
       sky.follow(cam);
       sky.u.uTime.value = ambient;
       mist.u.uTime.value = ambient;
       trees.u.uTime.value = ambient;
       fireflies.u.uTime.value = ambient;
       fireflies.u.uPixel.value = px;
+      ridgeFlies.u.uTime.value = ambient;
+      ridgeFlies.u.uPixel.value = px;
+      brush.u.uTime.value = ambient;
       lanterns.update(ambient, 0, px);
       procession.update(ambient, 0, px);
       hutLamp.update(ambient, 0, px);
@@ -287,16 +307,17 @@ export const build: ChapterBuilder = async (ctx) => {
           exposure: [[0, 1.0], [end, 0.95]],
           fade: cuts.flatMap((c) => [[c - 0.45, 0], [c - 0.08, 1], [c + 0.12, 1], [c + 0.7, 0]] as [number, number][]),
           gain: [[0, [0.95, 0.98, 1.1]], [tMasks, [1.02, 0.98, 1.0]], [tStole, [0.92, 1.0, 1.08]], [tThought, [1.0, 0.97, 1.02]], [tHer, [0.92, 0.96, 1.08]], [end, [0.9, 0.95, 1.1]]],
-          saturation: [[0, 1.05], [tStole, 1.12], [tThought, 1.0], [tHer, 0.85], [end, 0.75]],
-          contrast: [[0, 1.06], [tStole, 1.1], [tHer, 1.02]],
-          chroma: [[tDon + 1.55, 0], [tDon + 1.7, 0.45], [tDon + 2.6, 0]],
+          saturation: [[0, 1.12], [tStole, 1.22], [tThought, 1.05], [tHer, 0.9], [end, 0.8]],
+          contrast: [[0, 1.12], [tStole, 1.18], [tHer, 1.08]],
+          chroma: [[tDon + 1.55, 0], [tDon + 1.7, 0.2], [tDon + 2.6, 0]],
           vignette: [[0, 0.45], [tStole, 0.5], [tHer, 0.55], [end, 0.6]],
           bloom: [[0, 0.85], [tDon, 1.05], [tDon + 3, 0.85]],
         }
       );
-      L0.flash = 0.22 * spike(t, tDon + 1.6, 0.05, 0.5);
-      const fog: Look["fog"] = { color: [0.05, 0.065, 0.1], density: 0.005, height: RIDGE_AT[1] - 1, falloff: 0.3, sky: 0.15 };
-      return cine(L0, { fog, dof: { focus: t >= cuts[1] && t < cuts[2] ? [RIDGE_AT[0] - 2, RIDGE_AT[1] + 1, RIDGE_AT[2] + 3] : [7.6, 1, 0], k: 0.4 }, streak: 0.15 + 0.3 * spike(t, tDon + 1.6, 0.05, 1.2), streakColor: [0.5, 1.0, 0.85] });
+      L0.flash = 0.12 * spike(t, tDon + 1.6, 0.05, 0.5);
+      // Moonlit mist only in the hollows below the ridge, a cool blue that keeps the night dark.
+      const fog: Look["fog"] = { color: [0.02, 0.035, 0.07], density: 0.004, height: RIDGE_AT[1] - 3, falloff: 0.35, sun: { dir: [-0.3, 0.3, -0.9], color: [0.05, 0.08, 0.16] }, sky: 0.1 };
+      return cine(L0, { fog, dof: { focus: t >= cuts[1] && t < cuts[2] ? [RIDGE_AT[0] - 2, RIDGE_AT[1] + 1, RIDGE_AT[2] + 3] : [7.6, 1, 0], k: 0.4 }, streak: 0.15 + 0.3 * spike(t, tDon + 1.6, 0.05, 1.2), streakColor: [0.5, 1.0, 0.85], black: 0.05, split: { shadows: [-0.015, 0.0, 0.035], highlights: [0.035, 0.015, -0.02] } });
     },
     dispose() {
       disposers.forEach((d) => d());
