@@ -175,25 +175,27 @@ export function drawLower(g: CanvasRenderingContext2D, W: number, H: number, a: 
   g.restore();
 }
 
-/** The big mark after an attempt. */
-export function drawMark(g: CanvasRenderingContext2D, W: number, H: number, text: string, sub: string | undefined, tone: "good" | "bad" | "lead" | "plain", k: number, o: Gfx) {
-  const s = Math.min(W * 0.11, 84) * o.scale;
+/** The big mark after an attempt (beside a standings board, in the space left of it). */
+export function drawMark(g: CanvasRenderingContext2D, W: number, H: number, text: string, sub: string | undefined, tone: "good" | "bad" | "lead" | "plain", k: number, o: Gfx, besideBoard = false) {
+  // On a wide screen the board takes the right of the frame: the mark centres in what's left.
+  const room = besideBoard && !o.phone ? W - Math.min(W * 0.36, 420 * o.scale) - Math.max(14, W * 0.02) * 2 : W;
+  const s = Math.min(room * 0.11, 84) * o.scale;
   g.save();
   g.globalAlpha = Math.min(1, k * 5, (1 - k) * 6 + 0.15);
   g.textAlign = "center";
   g.textBaseline = "middle";
   const y = H * (o.phone ? 0.3 : 0.27);
   const pop = 1 + 0.18 * Math.exp(-k * 14);
-  g.translate(W / 2, y);
+  g.translate(room / 2, y);
   g.scale(pop, pop);
   const fill = g.createLinearGradient(0, -s, 0, s);
   if (tone === "bad") { fill.addColorStop(0, "#ff8a7a"); fill.addColorStop(1, "#e0262b"); }
   else if (tone === "lead") { fill.addColorStop(0, "#b6ffcf"); fill.addColorStop(1, "#21d07a"); }
   else { fill.addColorStop(0, "#fff27a"); fill.addColorStop(1, "#ffb000"); }
-  const px = fit(g, text, s, o.font, W * 0.9);
+  const px = fit(g, text, s, o.font, room * 0.9);
   gameText(g, text, 0, 0, px, o.font, fill, "#0d1626", px * 0.16);
   if (sub) {
-    const spx = fit(g, sub.toUpperCase(), s * 0.3, o.font, W * 0.86);
+    const spx = fit(g, sub.toUpperCase(), s * 0.3, o.font, room * 0.86);
     gameText(g, sub.toUpperCase(), 0, px * 0.78, spx, o.font, tone === "lead" ? "#b6ffcf" : "#ffffff", "#0d1626", spx * 0.2);
   }
   g.restore();
@@ -326,7 +328,7 @@ export function drawOverlay(g: CanvasRenderingContext2D, W: number, H: number, o
     if (tags.length) drawTags(g, tags, { ...o, avoid });
   }
   if (ov.board) drawBoard(g, W, H, ov.board.title, ov.board.rows, ov.board.k, o, !ov.lower && !ov.mark);
-  if (ov.mark) drawMark(g, W, H, ov.mark.text, ov.mark.sub, ov.mark.tone, ov.mark.k, o);
+  if (ov.mark) drawMark(g, W, H, ov.mark.text, ov.mark.sub, ov.mark.tone, ov.mark.k, o, !!ov.board);
   if (ov.caption && !ov.board) drawCaption(g, W, H, ov.caption, o);
   if (ov.lower) drawLower(g, W, H, byKey.get(ov.lower.key), ov.lower.name, ov.lower.line, ov.lower.tag, ov.lower.k, o);
 }

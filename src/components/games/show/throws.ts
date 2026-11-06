@@ -97,25 +97,31 @@ export function throwShow(result: ThrowResult, o: ShowOptions): Show {
     const range = Math.max(4, it.plan.noMark ? 3 : it.plan.attempt.physics.distance);
     const peak = Math.max(1, it.plan.attempt.physics.peak);
     // The flight, as a director covers it: the athlete and the implement together as it leaves the hand
-    // (from beside and above, so the field is behind them, not the stands), then the implement alone on a
-    // camera that follows it down the sector, then down onto the landing zone as it comes down and lands.
+    // (from beside and above, so the field is behind them, not the stands); then the implement in the air
+    // (the shot from beside and above, its tracer arcing over the sector; the javelin, high and long, from
+    // behind and above it, looking down the sector with its arc traced back towards the lens), followed all
+    // the way into the ground; then a cut to the spot, low beside it.
     const flight = (): CamPose => {
       const p = s.pos ?? [lineX, 1, cz];
       const F = Math.max(0.3, it.plan.flight);
       const u = clamp01(tau / F);
       const ax = it.plan.releaseX + 0.3;
-      // Both in frame: from the athlete to the implement.
       const bx = Math.max(H * 1.6 + 3, ax - p[0] + 4 + H);
       const by = Math.max(p[1], H) + 1.5;
       const bc = (ax + p[0]) / 2;
       const both = framed([bc + bx * 0.12, Math.max(2.5, 1.2 + bx * 0.38 + by * 0.3), cz + (bx * 0.85 + 2) * back], [bc - bx * 0.05, Math.max(0.4, by * 0.42), cz], bx, by, aspect, 10, 62);
-      // The implement alone, followed down the sector with some of its path behind it.
       const w = Math.max(10, H * 1.6, Math.min(20, range * 0.22));
-      const chase = framed([p[0] + w * 0.4, Math.max(2.5, p[1] + 2.5 + w * 0.32), cz + w * 0.95 * back], [p[0] - w * 0.08, Math.max(0.3, p[1] * 0.85), cz], w, w * 0.56, aspect, 10, 60);
+      const air = shot
+        ? framed([p[0] + w * 0.4, Math.max(2.5, p[1] + 2.5 + w * 0.32), cz + w * 0.95 * back], [p[0] - w * 0.08, Math.max(0.3, p[1] * 0.85), cz], w, w * 0.56, aspect, 10, 60)
+        : framed([p[0] + 8, p[1] + 6, cz + 3 * back], [p[0] - 0.6, p[1] - 0.45, cz], 9, 5.5, aspect, 12, 62);
+      // Cuts: off the hand for most of a second, then with it all the way down; a moment after it lands, in
+      // close beside the spot.
+      const cut1 = Math.min(0.3, Math.max(0.12, 0.9 / F));
+      if (u < cut1) return both;
+      if (tau < F + 0.2) return shot ? mixPose(both, air, smooth(cut1, cut1 + 0.18, u)) : air;
       const lx = it.plan.landX;
-      const land = framed([lx + w * 0.35, 2.5 + w * 0.42, cz + w * 0.8 * back], [lx - w * 0.05, 0.3, cz], w, w * 0.5, aspect, 10, 60);
-      const letGo = smooth(0.18, 0.45, u) * smooth(18, 30, bx);
-      return mixPose(mixPose(both, chase, Math.max(letGo, smooth(0.35, 0.5, u))), land, smooth(0.66, 1, u));
+      const lw = shot ? 8 : 11;
+      return framed([lx + lw * 0.3, 1.2 + lw * 0.22, cz + lw * 0.85 * back], [lx - lw * 0.08, 0.5, cz], lw, lw * 0.5, aspect, 10, 60);
     };
     const thrower = (): CamPose => {
       const x = s.com[0];
@@ -131,14 +137,18 @@ export function throwShow(result: ThrowResult, o: ShowOptions): Show {
       case "throw":
         return tau < 0 || !s.pos ? thrower() : mixPose(thrower(), flight(), smooth(0.02, 0.45, tau));
       case "mark": {
+        // The measurement: from just past the mark, looking back the way it came: the implement in the turf,
+        // the tape running back to the line, the tracer's arc overhead.
         const lx = it.plan.landX;
-        const span = Math.max(8, Math.min(16, range * 0.18));
-        return drift(framed([lx + span * 0.55, 2.5 + span * 0.5, cz + (1.5 + span * 0.7) * back], [lx + span * 0.12, 0.1, cz], span, span * 0.5, aspect, 10, 60), t);
+        if (it.plan.noMark) return drift(framed([lx + 3, 2, cz + 4 * back], [lx, 0.4, cz], 6, 3, aspect, 10, 60), t);
+        const reach = Math.min(range, 45);
+        return drift(framed([lx - 12, 6.5, cz + 3 * back], [lx + reach * 0.3, 0, cz], Math.max(12, reach * 0.5), Math.max(6.5, reach * 0.27), aspect, 12, 62), t, 0.02);
       }
       case "replay": {
-        // Low behind the circle or the arc, looking out down the sector as the implement leaves the hand.
+        // Slow motion from low beside the athlete, in close on the release; then off with the implement.
         const x = it.plan.releaseX;
-        return framed([x + 3 + H, 0.5 + H * 0.5, cz + 2.2 + H * 0.8], [x - Math.min(14, range * 0.25), Math.min(peak, 6) * 0.5 + H * 0.3, cz - 0.5], Math.max(10, range * 0.4), Math.max(4, peak * 0.8), aspect, 14, 62);
+        const low = framed([x - 1.5 - H, 0.45 + 0.35 * H, cz + (2.6 + 1.6 * Math.max(H, d.w * 0.6)) * back], [x + 0.2, H * 0.6, cz], Math.max(3, H * 2, d.w * 2), H * 1.8, aspect, 10, 55);
+        return tau < 0 || !s.pos ? low : mixPose(low, flight(), smooth(0.04, 0.5, tau));
       }
       default:
         return framed([lineX - range * 0.4 + 10, 10 + peak * 0.3, cz + (range * 0.55 + 20) * back], [lineX - range * 0.45, 0, cz], range + 10, 12, aspect, 10, 60);

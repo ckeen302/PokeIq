@@ -266,7 +266,7 @@ export function createGamesScene(host: HTMLElement, opts: SceneOptions): GamesSc
   const decalSand = makeDecals(24, texSand, "#ffffff", 0.9);
   const decalDivot = makeDecals(24, texDivot, "#ffffff", 0.95);
   const decalScuff = makeDecals(32, texScuff, "#ffffff", 0.8);
-  const trail = makeTrail(120, new THREE.Color(1.6, 1.25, 0.5));
+  const trail = makeTrail(120, new THREE.Color(1.9, 1.4, 0.45), { tracer: true });
   const fx = new THREE.Group();
   for (const o of [sand.mesh, dust.mesh, water.mesh, chalk.mesh, clay.mesh, confetti.mesh, decalSand.mesh, decalDivot.mesh, decalScuff.mesh, trail.mesh]) fx.add(o);
   scene.add(fx);
@@ -515,7 +515,7 @@ export function createGamesScene(host: HTMLElement, opts: SceneOptions): GamesSc
         const v = p.implement === "shot" ? infield.sp : infield.jt;
         v.setTape(p.tape);
         v.setLeader(p.leader);
-        trail.set(p.trail.map((q) => new THREE.Vector3(...q)), p.implement === "shot" ? 0.24 : 0.17, camera);
+        trail.set(p.trail.map((q) => new THREE.Vector3(...q)), 0.2, camera);
       }
       if (p.kind !== "throw") trail.set([], 0.1, camera);
     }

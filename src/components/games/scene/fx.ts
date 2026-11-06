@@ -147,9 +147,30 @@ export function makeDecals(n: number, texture: THREE.Texture, color: THREE.Color
   };
 }
 
-/** A glowing trail behind a flying implement: streaks between its recent positions. */
-export function makeTrail(n: number, color: THREE.ColorRepresentation): { mesh: THREE.InstancedMesh; set(points: THREE.Vector3[], width: number, cam: THREE.Camera): void; dispose(): void } {
-  const tex = streakTexture();
+/** A tracer's line: a bright core in a soft glow, even along its length (the segments butt together). */
+function tracerTexture(): THREE.Texture {
+  const c = document.createElement("canvas");
+  c.width = 8;
+  c.height = 64;
+  const g = c.getContext("2d")!;
+  for (let y = 0; y < 64; y++) {
+    const d = (y - 31.5) / 31.5;
+    const a = Math.max(Math.exp(-Math.pow(d / 0.18, 2)), 0.45 * Math.exp(-Math.pow(d / 0.55, 2)));
+    g.fillStyle = `rgba(255,255,255,${a.toFixed(3)})`;
+    g.fillRect(0, y, 8, 1);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+/**
+ * A glowing trail behind a flying implement: streaks between its recent positions. As a tracer (the
+ * broadcast's line drawn along a throw's whole path), the line keeps one width on screen however far
+ * away it is or however long the lens.
+ */
+export function makeTrail(n: number, color: THREE.ColorRepresentation, o: { tracer?: boolean } = {}): { mesh: THREE.InstancedMesh; set(points: THREE.Vector3[], width: number, cam: THREE.Camera): void; dispose(): void } {
+  const tex = o.tracer ? tracerTexture() : streakTexture();
   const geo = new THREE.PlaneGeometry(1, 1);
   const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, color });
   const mesh = new THREE.InstancedMesh(geo, mat, n);
@@ -162,6 +183,8 @@ export function makeTrail(n: number, color: THREE.ColorRepresentation): { mesh: 
     mesh,
     set(points, width, cam) {
       cam.getWorldPosition(cp);
+      // A tracer's width is given as seen from 20 m through a 45° lens.
+      const lens = o.tracer && cam instanceof THREE.PerspectiveCamera ? Math.tan((cam.fov * Math.PI) / 360) / Math.tan(Math.PI / 8) / 20 : 0;
       let used = 0;
       for (let i = 1; i < points.length && used < n; i++) {
         const a = points[i - 1], b = points[i];
@@ -174,7 +197,8 @@ export function makeTrail(n: number, color: THREE.ColorRepresentation): { mesh: 
         Z.addScaledVector(X, -Z.dot(X)).normalize();
         Y.crossVectors(Z, X);
         const k = i / points.length;
-        m.makeBasis(X.clone().multiplyScalar(len * 1.6), Y.multiplyScalar(width * (0.3 + 0.7 * k)), Z);
+        const w = o.tracer ? width * Math.max(0.3, Math.min(4, P.distanceTo(cp) * lens)) * (0.75 + 0.25 * k) : width * (0.3 + 0.7 * k);
+        m.makeBasis(X.clone().multiplyScalar(len * (o.tracer ? 1.02 : 1.6)), Y.multiplyScalar(w), Z);
         m.setPosition(P);
         mesh.setMatrixAt(used++, m);
       }

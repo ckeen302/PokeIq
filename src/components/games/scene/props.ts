@@ -124,14 +124,16 @@ export function buildProps(o: { font: string }): GameProps {
     }
   };
 
-  // ---- Judges' lights: three lamps on a stand.
+  // ---- Judges' lights: three lamps on a stand, lit on both faces (the lifter's and the hall's).
   const lights = new THREE.Group();
   const lampGeo = g(new THREE.SphereGeometry(0.09, 16, 12));
   const lamps = [0, 1, 2].map((i) => {
     const lm = m(new THREE.MeshBasicMaterial({ color: new THREE.Color(0.08, 0.08, 0.08), toneMapped: false }));
-    const lamp = new THREE.Mesh(lampGeo, lm);
-    lamp.position.set((i - 1) * 0.28, 1.6, 0);
-    lights.add(lamp);
+    for (const z of [0, -0.2]) {
+      const lamp = new THREE.Mesh(lampGeo, lm);
+      lamp.position.set((i - 1) * 0.28, 1.6, z);
+      lights.add(lamp);
+    }
     return lm;
   });
   const stand = new THREE.Mesh(g(new THREE.BoxGeometry(1.0, 0.32, 0.14)), m(new THREE.MeshStandardMaterial({ color: "#16191f", roughness: 0.6 })));
