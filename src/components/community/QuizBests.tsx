@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { ListChecks, Trophy } from "lucide-react";
 import { FORMAT_INFO, MODULE_INFO, PLAYABLE_FORMATS, moduleHref } from "@/lib/modes";
 import { neaClock } from "@/lib/name-em-all/share";

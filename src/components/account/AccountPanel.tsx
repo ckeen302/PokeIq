@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { LogOut, ShieldCheck, UserPlus } from "lucide-react";
 import { newRecoveryCode, signOut, useAccount } from "@/lib/account";
 import { Button, buttonVariants } from "@/components/ui/button";

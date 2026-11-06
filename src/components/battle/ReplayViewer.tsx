@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { ChevronLeft, ChevronRight, ChevronsRight, Download, Skull, Upload, Loader2, Pause, Play, RotateCcw, Swords, X } from "lucide-react";
 import type { BattleView } from "@/lib/battle/play";
 import { lastTurn, linesThrough, replayResult, type ReplayData } from "@/lib/battle/replay";

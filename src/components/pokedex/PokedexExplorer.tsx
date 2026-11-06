@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element -- thumbnails are pre-sized static files (public/art/160) */
 import { memo, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowDownWideNarrow, ArrowUpNarrowWide, BookOpenCheck, Search, Shuffle, SlidersHorizontal, X } from "lucide-react";

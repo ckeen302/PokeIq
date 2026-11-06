@@ -1,7 +1,7 @@
 import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
 import { cache } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { notFound } from "next/navigation";
 import { BarChart3, CalendarDays, Clapperboard, Search, Swords } from "lucide-react";
 import { pageMetadata } from "@/lib/seo";

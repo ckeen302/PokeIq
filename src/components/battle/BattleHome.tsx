@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
 import { Bot, Castle, ChevronDown, Clapperboard, Eye, Hammer, Link2, Loader2, Megaphone, MessagesSquare, Search, Shuffle, Swords, Trophy, Users, X, type LucideIcon } from "lucide-react";
 import { PAST_GENS, PLAY_FORMAT_INFO, type PlayFormatId, type StandardFormatId } from "@/lib/battle/play";

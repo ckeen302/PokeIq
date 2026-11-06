@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Flame } from "lucide-react";
 import type { GeoPlayerStats, GeoStatRow } from "@/lib/server/geo-round-scores";
 import type { StreakBest } from "@/lib/server/geo-streak";

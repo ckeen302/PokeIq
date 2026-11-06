@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { notFound } from "next/navigation";
 import { adminFromCookies } from "@/lib/server/moderation";
 import { GEO_FLAG_MS, GEO_FLAG_PX, flaggedPlayers } from "@/lib/server/geo-round-scores";

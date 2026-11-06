@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { motion } from "framer-motion";
 import { Pencil } from "lucide-react";
 import { BADGES, connBlock, currentStreak, setTrainerName, useProgress, type Progress } from "@/lib/progress";

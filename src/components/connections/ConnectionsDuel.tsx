@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, LayoutGroup, MotionConfig, motion } from "framer-motion";
 import { CheckCircle2, Crown, Loader2, RotateCcw, Shuffle, Swords, Timer, WifiOff, XCircle } from "lucide-react";

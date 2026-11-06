@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { notFound } from "next/navigation";
 import { Dex } from "@pkmn/dex";
 import { Crown, Flag, Hourglass, ShieldAlert, Swords, TrendingUp } from "lucide-react";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import confetti from "canvas-confetti";
 import { animate, motion, useMotionValue, useTransform } from "framer-motion";
 import { track } from "@vercel/analytics";

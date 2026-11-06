@@ -1,6 +1,6 @@
 import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { AuthForm } from "@/components/account/AuthForm";
 import { OAuthButtons } from "@/components/account/OAuthButtons";
 

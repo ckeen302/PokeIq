@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element -- pre-sized art */
 import { BackButton } from "@/components/ui/BackButton";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { AnimatePresence, motion, useMotionValue, useTransform, type PanInfo } from "framer-motion";
 import { Check, GraduationCap, RotateCcw, Shuffle, X } from "lucide-react";
 import { artUrl } from "@/lib/pokemon/art";

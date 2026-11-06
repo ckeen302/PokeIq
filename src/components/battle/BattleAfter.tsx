@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Activity, Clapperboard, Loader2, Save } from "lucide-react";
 import { PLAY_FORMAT_INFO, type BattleView } from "@/lib/battle/play";
 import { rememberReplay } from "@/lib/battle/replay-client";

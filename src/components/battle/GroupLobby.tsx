@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Bot, Link2, Loader2, Swords, Users } from "lucide-react";
 import { CPU_LEVEL_INFO, CPU_LEVELS, type BattleView, type CpuLevel, type GameType } from "@/lib/battle/play";
 import { useProgress } from "@/lib/progress";

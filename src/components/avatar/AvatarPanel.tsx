@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Clock, Loader2, Lock, Search, Sparkles, Trash2, Upload, UserRound } from "lucide-react";
 import {
   AVATAR_FRAMES,

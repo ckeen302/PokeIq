@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Eye, Loader2, Radio, Swords, Trophy } from "lucide-react";
 import { GROUP_FORMATS, PLAY_FORMAT_INFO, PLAY_FORMATS, type PlayFormatId } from "@/lib/battle/play";
 import { startedAgo, type WatchEntry, type WatchResponse } from "@/lib/battle/watch";

@@ -3,7 +3,7 @@
 import { SourceLink } from "./SourceLink";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, Crown, Loader2, RotateCcw, Swords, WifiOff, XCircle } from "lucide-react";
@@ -650,7 +650,7 @@ function Options({
           >
             {card && (
               <div className="screen relative mx-auto aspect-square w-full max-w-[150px] rounded-md">
-                <Image src={card.imageUrl} alt={card.label} fill priority sizes="150px" className="relative z-[1] object-contain p-2" />
+                <Image src={card.imageUrl} alt={card.label} fill priority unoptimized sizes="150px" className="relative z-[1] object-contain p-2" />
               </div>
             )}
             {images && (

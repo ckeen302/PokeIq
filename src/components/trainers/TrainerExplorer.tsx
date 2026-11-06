@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element -- party sprites come pre-sized from /api/art */
 import { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Loader2, Search, Star, X } from "lucide-react";
 import { artUrl } from "@/lib/pokemon/art";
 import { teamAnchor, teamTitle } from "@/lib/trainers/format";

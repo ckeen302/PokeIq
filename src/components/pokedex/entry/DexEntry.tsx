@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element -- pre-sized art */
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { motion } from "framer-motion";
 import { BookOpenCheck, Gamepad2 } from "lucide-react";
 import type { DexEntryData, DexForm } from "@/lib/pokemon/dex-types";

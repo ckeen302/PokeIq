@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { cn } from "@/lib/utils";
 
 /** The Pokémon list: the Pokédex's main section, shown as the big button above the others. */

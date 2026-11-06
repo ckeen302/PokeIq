@@ -1,6 +1,6 @@
 import { BackButton } from "@/components/ui/BackButton";
 import { notFound } from "next/navigation";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { GameInfo } from "@/components/seo/GameInfo";

@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element -- artwork comes pre-sized from /api/art */
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { ChevronRight, Sparkles } from "lucide-react";
 import { artUrl } from "@/lib/pokemon/art";
 import { QUIZ_PATH } from "@/lib/which-pokemon/match";

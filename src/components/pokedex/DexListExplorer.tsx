@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element -- item sprites are tiny remote PNGs */
 import { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Search, Swords, Sparkle, CircleDot, X } from "lucide-react";
 import { TYPES, capitalize } from "@/lib/pokemon/type-matrix";
 import { typeColor } from "@/lib/pokemon/type-colors";

@@ -1,6 +1,6 @@
 import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 export const metadata: Metadata = {
   title: "Privacy policy",

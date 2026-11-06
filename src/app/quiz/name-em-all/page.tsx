@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import type { Metadata } from "next";
 import { ChevronRight } from "lucide-react";
 import { BackButton } from "@/components/ui/BackButton";

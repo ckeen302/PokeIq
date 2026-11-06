@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { CalendarClock, Check, Gift, History, Lock } from "lucide-react";
 import { GEO_DIVISIONS, geoDivisionOf, type GeoDivisionId } from "@/lib/geo-ranked";
 import { GEO_SEASON_TRACK, geoRewardLabel, geoSeasonTimeLeft, type GeoSeasonRecord, type GeoSeasonView } from "@/lib/geo-seasons";

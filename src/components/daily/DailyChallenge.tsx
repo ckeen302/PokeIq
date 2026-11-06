@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { motion } from "framer-motion";
 import { Flame, Play, Trophy } from "lucide-react";
 import { dailyNumber } from "@/lib/daily";

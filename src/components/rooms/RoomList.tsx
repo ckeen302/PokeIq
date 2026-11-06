@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { MessagesSquare, Users } from "lucide-react";
 import { useVisiblePoll } from "@/lib/use-visible-poll";
 import { ROOMS } from "@/lib/rooms";

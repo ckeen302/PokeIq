@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Flame, Loader2, Trophy } from "lucide-react";
 import { RANKED_PROVISIONAL_GAMES } from "@/lib/ranked";
 import { CONN_RANKED_MATCH, connSeasonLabel } from "@/lib/connections/ranked";

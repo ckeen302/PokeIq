@@ -3,7 +3,7 @@
 import { SourceLink } from "./SourceLink";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { AnimatePresence, motion } from "framer-motion";
 import { track } from "@vercel/analytics";
 import { CheckCircle2, Flame, Heart, RotateCcw, XCircle } from "lucide-react";

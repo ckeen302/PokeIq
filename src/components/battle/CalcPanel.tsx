@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import type { Ability, Generation, Item, Move, Nature, Specie } from "@pkmn/data";
 import { FolderOpen } from "lucide-react";
 import { HpBar } from "@/components/game/HpBar";

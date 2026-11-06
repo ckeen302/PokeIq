@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import { MODULE_INFO, PLAY_MODULES, moduleHref } from "@/lib/modes";

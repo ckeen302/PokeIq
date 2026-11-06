@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Clapperboard, Swords, Trophy } from "lucide-react";
 import type { BattleProfile } from "@/lib/battle/profile";
 import { GlickoBadge } from "./GlickoBadge";

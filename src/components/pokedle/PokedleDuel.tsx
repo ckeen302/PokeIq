@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element -- sprites, artwork and the server-rendered silhouette */
 import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Crown, Eye, Filter, Flame, Lightbulb, Loader2, RotateCcw, Swords, Tag, Timer, Trophy, UserSearch, WifiOff } from "lucide-react";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { animate, motion, useReducedMotion } from "framer-motion";
 import { Flame, Loader2, Medal, Trophy, X } from "lucide-react";
 import { RANKED_PROVISIONAL_GAMES, isProvisional, tierOf, type RankedStanding, type RankedTierId } from "@/lib/ranked";

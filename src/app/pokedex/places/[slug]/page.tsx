@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element -- PokéGuessr screenshots come from the shot proxy */
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { MapPin } from "lucide-react";
 import { SHARE_IMAGES, jsonLd, pageMetadata } from "@/lib/seo";
 import { breadcrumbList } from "@/lib/structured-data";

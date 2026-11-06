@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Flame, Loader2, Medal, Trophy } from "lucide-react";
 import type { RankedLeaderRow } from "@/lib/ranked";
 import { PLAY_FORMAT_INFO, type StandardFormatId } from "@/lib/battle/play";

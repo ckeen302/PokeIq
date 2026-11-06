@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Check, Flame, Loader2, Play, Trophy, X } from "lucide-react";
 import { type GeoRegionInfo } from "@/lib/geo-types";

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { ArrowRight, Bot, Calculator, Castle, Factory, FlaskConical, UserSearch, Users, type LucideIcon } from "lucide-react";
 import { GameInfo } from "@/components/seo/GameInfo";
 import { HudHeading } from "@/components/game/HudHeading";

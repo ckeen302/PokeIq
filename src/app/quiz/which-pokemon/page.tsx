@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element -- artwork comes pre-sized from /api/art */
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import type { Metadata } from "next";
 import { BackButton } from "@/components/ui/BackButton";
 import { WhichPokemonQuiz } from "@/components/which-pokemon/WhichPokemonQuiz";

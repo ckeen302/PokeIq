@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
 import { ArrowLeftRight, Crown, Flag, Loader2, Repeat, Swords, Trophy } from "lucide-react";
 import {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { RotateCcw } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { reportError } from "@/lib/report";

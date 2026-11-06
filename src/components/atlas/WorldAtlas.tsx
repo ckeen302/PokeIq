@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Compass, Loader2, Maximize2, Minus, Plus, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePlaceholder } from "@/lib/phone";

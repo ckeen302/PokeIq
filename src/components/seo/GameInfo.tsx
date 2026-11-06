@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { HowToButton } from "./HowToButton";
 import { webGame } from "@/lib/structured-data";
 import { jsonLd } from "@/lib/seo";
