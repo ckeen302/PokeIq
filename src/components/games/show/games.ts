@@ -1,12 +1,13 @@
 import type { Athlete } from "@/lib/games/athlete";
-import { eventOf, type Venue } from "@/lib/games/events";
+import { eventOf, formatMark, type Venue } from "@/lib/games/events";
 import { medalTable, type GamesResult, type MedalRow } from "@/lib/games/games";
 import { POOL } from "@/lib/games/venues";
 import { eventShow } from "./build";
 import { podiumShow, type Medallist } from "./podium";
+import { clip } from "./clip";
 import { crane } from "./cams";
 import { sequence, type Sequence } from "./sequence";
-import { NO_PROPS, type Overlay, type Show, type ShowFrame } from "./types";
+import { NO_PROPS, beatAt, type Overlay, type Show, type ShowFrame } from "./types";
 
 /**
  * The Games as a broadcast: every event in order, each condensed (its
@@ -67,18 +68,29 @@ export function gamesShow(g: GamesResult, byKey: ReadonlyMap<string, Athlete>, o
 }
 
 /**
- * The Games' summary video: each event's decisive moments (no ceremony),
- * the medal table after each venue's events, and the final table with the
- * Champion of the Games.
+ * The Games' summary video: each event's decisive moment (its slow-motion
+ * replay: the winning attempt, the finish, the ring-out; the champion for
+ * the all-around) under the event's name and its gold, then the final
+ * medal table.
  */
 export function gamesSummary(g: GamesResult, byKey: ReadonlyMap<string, Athlete>): Sequence[] {
   const parts: Sequence[] = [];
   g.outcomes.forEach((out, i) => {
     const ev = eventOf(out.event);
-    const main = eventShow(out, byKey, { budget: 9, quick: true, video: true, podium: false, nations: g.nations, champion: out.event === "all-around" });
-    const last = i === g.outcomes.length - 1;
-    const shows = [...main.parts.map((p) => p.show)];
-    if (last) shows.push(boardShow(out.event, ev.venue, "Final medal table", tableRows(medalTable(g.nations, g.outcomes)), 4.5));
+    const main = eventShow(out, byKey, { budget: 30, quick: true, video: true, podium: false, nations: g.nations, champion: out.event === "all-around" });
+    // The replay of the decisive moment; else (a bout won on the bell) the last few seconds before the last result.
+    const replay = main.beats.find((b) => b.kind === "replay") ?? main.beats.find((b) => b.kind === "result" && b.cam === "champion");
+    const last = [...main.beats].reverse().find((b) => b.kind === "result");
+    const t0 = replay ? replay.t0 - 1.6 : last ? last.t0 - 4.5 : main.resultsAt - 8;
+    const t1 = replay ? replay.t1 + 0.6 : last ? last.t1 + 0.4 : main.resultsAt + 1;
+    const c = clip(main, t0, t1);
+    const gold = out.podium.gold.map((k) => byKey.get(k)?.name ?? k).join(", ");
+    const nation = g.nations.find((n) => n.athletes.some((a) => a.key === out.podium.gold[0]));
+    const line = `Gold: ${gold}${out.event !== "wrestling" && out.podium.gold[0] ? ` · ${formatMark(out.event, out.marks.get(out.podium.gold[0]))}` : ""}${nation ? ` · ${nation.name}` : ""}`;
+    // Every clip says what it is, whatever its own graphics show.
+    const labelled: Show = { ...c, overlay: (t) => { const ov = c.overlay(t); return { ...ov, bug: { title: ev.name, sub: line }, board: undefined, title: undefined, replay: ov.replay || beatAt(c.beats, t).kind === "replay" }; } };
+    const shows: Show[] = [labelled];
+    if (i === g.outcomes.length - 1) shows.push(boardShow(out.event, ev.venue, "Final medal table", tableRows(medalTable(g.nations, g.outcomes)), 4.5));
     parts.push(sequence(shows, { event: out.event, hook: main.hook, headline: main.headline }));
   });
   return parts;
