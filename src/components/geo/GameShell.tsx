@@ -436,6 +436,8 @@ function PhoneMap({ map, button, extra, hasPin, aspect, testId }: { map: (o: { f
 /** The Guess button under the map: grey until a pin is down, then green; Space submits. */
 export function GuessButton({ hasPin, disabled, busy, label, onClick, testId = "geo-guess" }: { hasPin: boolean; disabled?: boolean; busy?: boolean; label?: string; onClick: () => void; testId?: string }) {
   const off = disabled || !hasPin;
+  // A phone's Guess bar shares its row with "Picture": the short words fit on one line.
+  const phone = usePhone();
   return (
     <button
       type="button"
@@ -448,7 +450,7 @@ export function GuessButton({ hasPin, disabled, busy, label, onClick, testId = "
       )}
     >
       {busy ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden /> : null}
-      {label ?? (hasPin ? "Guess" : <span>Place your pin<span className="max-sm:hidden"> on the map</span></span>)}
+      {label ?? (hasPin ? "Guess" : phone ? "Place your pin" : "Place your pin on the map")}
       {hasPin && !busy && !label && <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline [@media(pointer:coarse)]:!hidden">Space</kbd>}
     </button>
   );
