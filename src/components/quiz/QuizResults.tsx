@@ -263,13 +263,13 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
             return focus ? (
               <Link
                 href={focus.href}
-                className="flex items-center justify-between gap-3 rounded-md border border-screen/30 bg-screen/[0.05] px-4 py-3 text-sm transition hover:bg-screen/10"
+                className="flex items-center justify-between gap-3 rounded-md border border-screen/30 bg-screen/[0.05] px-4 py-3 text-sm transition hover:bg-screen/10 max-md:flex-col max-md:items-start max-md:gap-1"
               >
                 <span>
                   <span className="text-muted-foreground">Coach tip: your weakest area is </span>
                   <b>{focus.label}</b> <span className="text-muted-foreground">(~{Math.round(focus.accuracy * 100)}%)</span>
                 </span>
-                <span className="shrink-0 font-semibold text-screen">{focus.cta} →</span>
+                <span className="shrink-0 font-semibold text-screen max-md:shrink">{focus.cta} →</span>
               </Link>
             ) : null;
           })()}

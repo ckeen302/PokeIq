@@ -479,7 +479,8 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
   const isEntry = question.module === "dex" && question.detail?.startsWith("“");
 
   // Picture questions grade by a card id, which means nothing to read out.
-  const answerText = graded ? (isCards ? "the one marked in green" : graded.answer) : "";
+  const isPicture = isCards || !!question.images;
+  const answerText = graded ? (isPicture ? "the one marked in green" : graded.answer) : "";
   const isZoom = !!question.zoom;
   const zoomVerdict = graded
     ? graded.correct
@@ -489,7 +490,7 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
   const verdict = isZoom
     ? zoomVerdict
     : graded
-    ? graded.correct && isCards
+    ? graded.correct && isPicture
       ? streak >= 3 ? `Correct! That's ${streak} in a row!` : "Correct! That's the one!"
       : graded.correct
       ? streak >= 3
@@ -501,7 +502,7 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
     : "";
 
   return (
-    <Card ref={cardRef} className="mx-auto w-full max-w-2xl scroll-mt-24 overflow-hidden max-md:scroll-mt-[4.25rem]">
+    <Card ref={cardRef} className="mx-auto w-full max-w-2xl scroll-mt-24 overflow-hidden max-md:scroll-mt-[4.25rem] max-md:overflow-clip">
       {/* Announces each verdict (the visible text box is decorative typing). */}
       <p className="sr-only" aria-live="polite" role="status">
         {revealed ? verdict : ""}
@@ -691,7 +692,8 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
             )}
 
             {revealed && graded && !isBlitz && (
-              <motion.div className="space-y-3" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+              // Phones: the verdict joins the question's column (display: contents), so Next can stick above the tab bar while the answers scroll.
+              <motion.div className="space-y-3 max-md:contents" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
                 <DialogBox
                   text={verdict}
                   speed={10}
@@ -713,7 +715,7 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
                     </p>
                   )}
                 </DialogBox>
-                <Button className="w-full" size="lg" onClick={() => void advance()} disabled={advancing}>
+                <Button className="w-full max-md:sticky max-md:bottom-[calc(var(--tabbar-h)+0.75rem)] max-md:z-10" size="lg" onClick={() => void advance()} disabled={advancing}>
                   {graded.done ? "See results" : advancing ? "Loading…" : "Next question"} ▶
                 </Button>
               </motion.div>

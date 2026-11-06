@@ -170,7 +170,7 @@ export function WhichPokemonQuiz() {
           <Button variant="ghost" size="sm" onClick={back} disabled={responses.length === 0} data-testid="wp-back">
             <ArrowLeft className="h-4 w-4" aria-hidden /> Back
           </Button>
-          <span className="hud-label">1–5 on the keyboard works too</span>
+          <span className="hud-label max-md:hidden">1–5 on the keyboard works too</span>
         </div>
       </CardContent>
     </Card>
