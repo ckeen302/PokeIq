@@ -58,7 +58,7 @@ const preloadAfterRound = () =>
 /** A game got ready on hover is used for a click this soon after. */
 const PREFETCH_TTL_MS = 60_000;
 import { ShotCarousel, shotFit } from "./ShotCarousel";
-import { CountdownPill, ExitButton, FullscreenButton, GameShell, GuessButton, MapDock, Notch } from "./GameShell";
+import { BAR_BTN, CountdownPill, ExitButton, FullscreenButton, GameShell, GuessButton, HudDials, MapDock, Notch, RoundBadge, TimerDial, ValueDial, usePhone } from "./GameShell";
 import { roundViewsOf } from "@/lib/geo-look";
 import { DifficultyPicker, GeoSettingsButton, RoundsPicker } from "./GeoSettings";
 import { DEFAULT_GEO_SETTINGS, GEO_ZOOM, readGeoSettings, rememberGeoSettings, secondsLeft, visibleViews, zoomOrigin, type GeoPlaySettings } from "@/lib/geo-settings";
@@ -254,6 +254,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   const [shotReady, setShotReady] = useState(false);
   const [now, setNow] = useState(0);
   const [zoomed, setZoomed] = useState(false);
+  const phone = usePhone();
   const [reward, setReward] = useState<Reward | null>(null);
   const [isChallenge, setIsChallenge] = useState(false);
   const [filter, setFilter] = useState<FilterChoice>({ era: undefined, families: [] });
@@ -752,7 +753,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
               </div>
 
               {maps.length > 1 && (
-                <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Map">
+                <div className="flex flex-wrap gap-1.5 max-md:-mx-5 max-md:flex-nowrap max-md:overflow-x-auto max-md:px-5 max-md:pb-1 max-md:[scrollbar-width:none] max-md:[&>*]:shrink-0" role="radiogroup" aria-label="Map">
                   {maps.map((r) => (
                     <button
                       key={r.id}
@@ -775,7 +776,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
               {themed.length > 0 && (
                 <div className="space-y-1.5">
                   <p className="hud-label">Themed maps</p>
-                  <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Themed map">
+                  <div className="flex flex-wrap gap-1.5 max-md:-mx-5 max-md:flex-nowrap max-md:overflow-x-auto max-md:px-5 max-md:pb-1 max-md:[scrollbar-width:none] max-md:[&>*]:shrink-0" role="radiogroup" aria-label="Themed map">
                     {themed.map((r) => (
                       <button
                         key={r.id}
@@ -1053,7 +1054,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   );
   /** Top-right: the score so far (or the streak), and the help button. */
   const chips = (
-    <div className="absolute right-3 top-3 z-20 flex items-center gap-2">
+    <div className="geo-safe-tr absolute right-3 top-3 z-20 flex items-center gap-2">
       {!isStreak && (
         <div className="flex h-9 items-center gap-2 rounded-md bg-black/55 px-3 backdrop-blur" data-testid="geo-score-chip">
           <span className="hud-label hidden !text-white/60 sm:inline">Score</span>
@@ -1081,15 +1082,30 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     <GameShell onExit={() => setPhase("setup")}>
       {({ fs, toggle }) => (
     <div className="relative h-full">
-      <div className="absolute inset-0">
-        <ShotCarousel views={views} index={viewIndex} onIndex={setViewIndex} onZoom={() => setZoomed(true)} zoom={zoom} fs blur={game.round.blur} priority={game.round.index === 0} />
+      <div className="absolute inset-0" style={{ bottom: "var(--geo-bar)" }}>
+        <ShotCarousel views={views} index={viewIndex} onIndex={setViewIndex} onZoom={() => setZoomed(true)} zoom={zoom} fs dock blur={game.round.blur} priority={game.round.index === 0} />
       </div>
-      <div className="absolute left-3 top-3 z-20 flex items-center gap-2">
-        <ExitButton onClick={() => setPhase("setup")} />
-        <FullscreenButton fs={fs} onClick={toggle} />
-      </div>
-      {notch}
-      {chips}
+      {phone ? (
+        <>
+          {/* Phone, GeoGuessr's layout: the dials top-left, the round badge top-right, the tools in the bottom bar. */}
+          {(timeLeft !== null || !isStreak) && (
+            <HudDials>
+              {timeLeft !== null && <TimerDial ms={timeLeft * 1000} totalMs={timer * 1000} urgentMs={10_000} testId="geo-time-left" />}
+              {!isStreak && <ValueDial value={fmt(total)} unit="pts" testId="geo-score-chip" />}
+            </HudDials>
+          )}
+          <RoundBadge testId="geo-round" label={isStreak ? "Streak" : "Round"} value={isStreak ? streak : Math.min(roundNumber, game.rounds)} of={isStreak ? undefined : game.rounds} mode={modeLine} />
+        </>
+      ) : (
+        <>
+          <div className="geo-safe-tl absolute left-3 top-3 z-20 flex items-center gap-2">
+            <ExitButton onClick={() => setPhase("setup")} />
+            <FullscreenButton fs={fs} onClick={toggle} />
+          </div>
+          {notch}
+          {chips}
+        </>
+      )}
 
       {/* GeoGuessr-style mini-map (the atlas): docked bottom-right, grows on hover; a bottom sheet on phones. */}
       <MapDock aspect={mapAspect(game.region)}
@@ -1106,6 +1122,15 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
             }}
           />
         )}
+        tools={
+          <>
+            <button type="button" onClick={() => setPhase("setup")} className={BAR_BTN} aria-label="Back to PokéGuessr" title="Back to PokéGuessr" data-testid="geo-exit" data-keep>
+              <X className="h-5 w-5" />
+            </button>
+            <HowToHelpButton className={cn(BAR_BTN, "!p-0 !text-white")} />
+            <FullscreenButton fs={fs} onClick={toggle} className={cn(BAR_BTN, "!h-11 !w-11 !rounded-full !bg-[#4a3f9e] !backdrop-blur-none")} />
+          </>
+        }
         extra={game.guessGame && pick ? <GameGuessPicker options={gameGuessOptions(game.region, game.filter)} value={gamePick} onChange={setGamePick} /> : undefined}
         button={<GuessButton hasPin={!!pick} busy={phase === "submitting"} disabled={phase === "submitting"} onClick={() => void guess()} />}
       />
@@ -1218,20 +1243,23 @@ function ModeCard({
       disabled={disabled}
       onClick={onClick}
       {...warm}
-      className="menu-item group flex flex-col gap-3 overflow-hidden rounded-lg border bg-card p-4 text-left transition-colors hover:border-screen/60"
+      className="menu-item group flex flex-col gap-3 overflow-hidden rounded-lg border bg-card p-4 text-left transition-colors hover:border-screen/60 max-md:flex-row max-md:items-center max-md:p-3"
     >
       {/* eslint-disable-next-line @next/next/no-img-element -- CDN-cached preview */}
       <img
         src={preview}
         alt=""
-        className="aspect-[16/10] w-full rounded-sm bg-shade/30 object-cover opacity-85 transition-opacity group-hover:opacity-100"
+        className="aspect-[16/10] w-full rounded-sm bg-shade/30 object-cover opacity-85 transition-opacity group-hover:opacity-100 max-md:w-28 max-md:shrink-0"
       />
-      <span className="flex items-center gap-2 text-screen">
-        {icon}
-        <span className="font-display text-2xl font-bold uppercase text-foreground">{title}</span>
+      {/* A phone lists the modes as rows (picture, then the words), so both fit on screen. */}
+      <span className="flex min-w-0 flex-col gap-1 md:contents">
+        <span className="flex items-center gap-2 text-screen">
+          {icon}
+          <span className="font-display text-2xl font-bold uppercase text-foreground max-md:text-lg max-md:leading-tight">{title}</span>
+        </span>
+        <span className="text-sm text-muted-foreground max-md:line-clamp-2 max-md:text-xs">{blurb}</span>
+        {stat && <span className="hud-label text-warning">{stat}</span>}
       </span>
-      <span className="text-sm text-muted-foreground">{blurb}</span>
-      {stat && <span className="hud-label text-warning">{stat}</span>}
     </button>
   );
 }
@@ -1277,11 +1305,12 @@ function RoundReveal({
   const bar = { initial: { width: 0 }, animate: { width: `${(graded.score / GEO_MAX_ROUND_SCORE) * 100}%` }, transition: { duration: reduced ? 0 : SCORE_COUNT_MS / 1000, delay: reduced ? 0 : countDelay / 1000, ease: "easeOut" as const } };
   const rise = (delay: number) => ({ initial: reduced ? false : { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.35, delay: reduced ? 0 : delay, ease: [0.2, 0.8, 0.2, 1] as const } });
   return (
-    <div className="relative h-full" data-testid="geo-reveal">
-      <div className="absolute inset-x-0 top-0 bottom-[8.5rem] md:bottom-[6.75rem]">
+    <div className="relative flex h-full flex-col md:block" data-testid="geo-reveal">
+      {/* Phone: the map takes what the bottom bar leaves, so the camera frames both pins in view. */}
+      <div className="relative min-h-0 flex-1 md:absolute md:inset-x-0 md:top-0 md:bottom-[6.75rem]">
         <GeoMap region={game.region} revealed={[{ guess: g, answer: graded.answer, image: pinImage }]} fit={{ delay: LINE_DRAW_MS, duration: FIT_MS }} fill controls={false} />
       </div>
-      <div className="absolute left-3 top-3 z-20">
+      <div className="geo-safe-tl absolute left-3 top-3 z-20">
         <ExitButton onClick={onExit} />
       </div>
       <Notch>
@@ -1292,8 +1321,8 @@ function RoundReveal({
       </Notch>
 
       {/* The bottom bar. */}
-      <motion.div {...rise(0.15)} className="absolute inset-x-0 bottom-0 z-20 border-t-4 border-[#a99cff] bg-[#1e1a3f]/95 text-white shadow-[0_-12px_40px_rgba(0,0,0,0.5)] backdrop-blur">
-        <div className="mx-auto grid max-w-6xl items-center gap-3 px-4 py-3 sm:gap-6 sm:px-6 md:grid-cols-[1fr_auto_1fr]">
+      <motion.div {...rise(0.15)} className="relative z-20 shrink-0 border-t-4 md:absolute md:inset-x-0 md:bottom-0 border-[#a99cff] bg-[#1e1a3f]/95 text-white shadow-[0_-12px_40px_rgba(0,0,0,0.5)] backdrop-blur">
+        <div className="mx-auto grid max-w-6xl items-center gap-3 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 sm:gap-6 sm:px-6 md:grid-cols-[1fr_auto_1fr]">
           {/* The score (or the streak) and its bar. */}
           <div className="min-w-0 text-center md:text-left">
             {isStreak ? (
@@ -1350,7 +1379,7 @@ function RoundReveal({
               className="flex h-12 w-full max-w-xs items-center justify-center gap-2 rounded-md bg-[#4cbb17] px-6 font-display text-base font-bold uppercase tracking-wider text-white shadow-lg transition-[background-color,transform] hover:bg-[#58d01c] active:scale-[0.98]"
             >
               {graded.done ? (isStreak ? "See results" : "View summary") : "Next round"} ▶
-              <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline">Space</kbd>
+              <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline [@media(pointer:coarse)]:!hidden">Space</kbd>
             </button>
             <div className="text-white/60 [&_button]:text-white/60 [&_button:hover]:text-white">
               <ReportShot key={current.shot} shot={current.shot} mode={game.daily ? "daily" : "solo"} />

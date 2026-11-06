@@ -110,7 +110,7 @@ export function GeoResults({
           {/* The map: every round's pin, flag and line. */}
           <div className="relative h-[42vh] shrink-0 md:h-full md:flex-1">
             <GeoMap region={game.region} revealed={revealed} fill fit={{ duration: 900 }} />
-            <div className="absolute left-3 top-3 z-20">
+            <div className="geo-safe-tl absolute left-3 top-3 z-20">
               <ExitButton onClick={onRestart} />
             </div>
             <Notch>
@@ -225,6 +225,8 @@ export function GeoResults({
                 {children}
               </div>
             )}
+            {/* Clear of a phone's home indicator. */}
+            <div className="h-[env(safe-area-inset-bottom)] shrink-0" aria-hidden />
           </div>
         </div>
       )}

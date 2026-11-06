@@ -37,6 +37,7 @@ export function ShotCarousel({
   onFullscreen,
   blur,
   priority = false,
+  dock = false,
 }: {
   views: string[];
   index: number;
@@ -50,6 +51,8 @@ export function ShotCarousel({
   blur?: string;
   /** Round 1: its picture is fetched ahead of everything else on the page and decoded straight away. */
   priority?: boolean;
+  /** The guess map is docked over the picture (on a phone, the corner minimap): the strip keeps beside it. */
+  dock?: boolean;
 }) {
   const [fits, setFits] = useState<Record<string, Fit>>({});
   const count = views.length;
@@ -139,8 +142,16 @@ export function ShotCarousel({
             </button>
           </>
         )}
-        {/* The bottom-left strip: whole screenshot, the view count and the thumbnails. On phones it sits above the Guess pill. */}
-        <div className={cn("absolute left-3 z-[3] flex max-w-[calc(100%-1.5rem)] items-end gap-1.5 md:max-w-[calc(100%-21rem)]", fs ? "bottom-[5.5rem] md:bottom-3" : "bottom-3")} data-testid="geo-cam-hud">
+        {/* The bottom-left strip: whole screenshot, the view count and the thumbnails. */}
+        <div
+          className={cn(
+            "absolute left-3 z-[3] flex items-end gap-1.5 md:max-w-[calc(100%-21rem)]",
+            // Over the guess map's dock: on a phone the picture already stops above the bottom bar.
+            dock ? "bottom-3 ml-[env(safe-area-inset-left)] max-w-[calc(100%-1.5rem)]" : "max-w-[calc(100%-1.5rem)]",
+            !dock && (fs ? "bottom-[5.5rem] md:bottom-3" : "bottom-3")
+          )}
+          data-testid="geo-cam-hud"
+        >
           <button
             type="button"
             onClick={onZoom}
