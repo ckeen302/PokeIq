@@ -30,6 +30,9 @@ export async function run(rec, { base, phone }) {
   await page.getByTestId("conn-submit").click();
   await page.locator("[data-testid=conn-group]").first().waitFor();
   await page.waitForTimeout(2000);
+  // Two of the next four already picked.
+  for (const id of g[0].slice(0, 2)) await tile(id).click();
+  await page.mouse.move(5, 5);
   await rec.hideChrome();
   const board = page.locator("[data-testid=conn-group], [data-testid=conn-tile]");
   const first = page.locator("[data-testid=conn-group]").first();
@@ -40,21 +43,22 @@ export async function run(rec, { base, phone }) {
   const lastTile = page.getByTestId("conn-tile").last();
   const submit = page.getByTestId("conn-submit");
   if (phone) await rec.frameAround([first, lastTile, submit], { aspect: 4 / 5, pad: 14 });
-  else await rec.frameAround([first, lastTile, submit], { aspect: 16 / 9, pad: 28 });
+  else await rec.frameAround([first, lastTile, submit], { aspect: 16 / 9, pad: 40, shiftY: 26 });
   rec.cursor.x = rec.clip.x + rec.clip.width * 0.8;
   rec.cursor.y = rec.clip.y + rec.clip.height * 0.9;
+  rec.pace = 0.7;
   rec.start();
   await rec.wait(150);
   for (const [n, group] of [g[0], g[2]].entries()) {
-    for (const id of group) {
-      await rec.clickEl(tile(id), { jitter: 0.5 });
-      await rec.wait(120 + rec.rand() * 160);
+    for (const id of n ? group : group.slice(2)) {
+      await rec.clickEl(tile(id), { jitter: 0.5, before: 50 });
+      await rec.wait(40 + rec.rand() * 90);
     }
     await rec.wait(200);
     await rec.clickEl(submit, { jitter: 0.3 });
     await rec.until((k) => document.querySelectorAll("[data-testid=conn-group]").length >= k, n + 2);
     await rec.moveTo(rec.cursor.x + (n ? -60 : 80), rec.cursor.y - 40, 700);
-    await rec.wait(n ? 1600 : 700);
+    await rec.wait(n ? 1300 : 300);
   }
   rec.mark("out");
   await rec.stop();

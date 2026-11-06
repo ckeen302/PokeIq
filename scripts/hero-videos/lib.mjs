@@ -155,7 +155,7 @@ export class Recorder {
   }
 
   async hideChrome(extra = "") {
-    await this.css(`body > header, header[data-site-nav], footer, [data-testid=tabbar], nextjs-portal { display: none !important; }
+    await this.css(`body > header, header[data-site-nav], footer, [data-testid=tabbar], nav[aria-label="Primary"], nextjs-portal { display: none !important; }
       * { caret-color: transparent !important; scrollbar-width: none !important; }
       ${extra}`);
   }
@@ -281,7 +281,7 @@ export class Recorder {
     const x0 = c.x;
     const y0 = c.y;
     const dist = Math.hypot(x - x0, y - y0);
-    ms ??= Math.min(900, 280 + dist * 0.75);
+    ms ??= Math.min(900, 280 + dist * 0.75) * (this.pace ?? 1);
     const n = Math.max(2, Math.round(ms / this.dt));
     // A slight bow, like a wrist.
     const bow = (this.rand() - 0.5) * 0.25 * dist;
