@@ -3713,7 +3713,7 @@ async function homeStep() {
     if (id !== "guessr") {
       const img = hero.locator(`[data-testid=hero-slide][data-slide="${id}"] img`);
       const ok = await img
-        .evaluate((el) => (el.complete ? Promise.resolve(el.naturalWidth > 0) : new Promise((r) => el.addEventListener("load", () => r(true), { once: true }))), null, { timeout: 15_000 })
+        .evaluate((el) => (el.complete ? Promise.resolve(el.naturalWidth > 0) : new Promise((r) => el.addEventListener("load", () => r(el.naturalWidth > 0), { once: true }))), null, { timeout: 15_000 })
         .catch(() => false);
       if (!ok) errors.push(`home: the ${name} slide's picture didn't load`);
     }
@@ -3752,9 +3752,26 @@ async function homeStep() {
   await still.getByTestId("hero-pause").and(still.locator('[aria-label="Play the slideshow"]')).waitFor({ timeout: 5000 }).catch(() => errors.push("home: under reduced motion the slideshow still plays"));
   await still.context().close();
 
-  // 390: nothing sideways, the tiles two across, the dots big enough to tap.
+  // 390: every slide's picture loads (its own phone crop), in a band above the text; nothing sideways, the tiles two across, the dots big enough to tap.
   const m = await newPage({ width: 390, height: 844 });
   await gotoSettled(m, BASE);
+  const mhero = m.getByTestId("hero-carousel");
+  for (const [id, , name] of TABS) {
+    await mhero.getByRole("button", { name: `Show ${name}`, exact: true }).click();
+    const img = mhero.locator(`[data-testid=hero-slide][data-slide="${id}"][data-active=true] img`).first();
+    const loaded = await img
+      .evaluate((el) => (el.complete ? Promise.resolve(el.naturalWidth > 0) : new Promise((r) => el.addEventListener("load", () => r(el.naturalWidth > 0), { once: true }))), null, { timeout: 15_000 })
+      .catch(() => false);
+    if (!loaded) errors.push(`home: the ${name} slide's picture didn't load at 390`);
+    if (id !== "guessr" && !/-sm\.webp|pokedex|pokemon-story/.test(decodeURIComponent((await img.getAttribute("src").catch(() => "")) ?? ""))) errors.push(`home: the ${name} slide doesn't use its phone crop at 390`);
+  }
+  {
+    const band = await mhero.locator("[data-testid=hero-slide][data-active=true]").boundingBox();
+    const kicker = await m.locator("section.dark-scope p").first().boundingBox();
+    if (!band || !kicker || kicker.y < band.y + band.height) errors.push(`home: at 390 the text overlaps the picture (picture ends at ${band && band.y + band.height}, text starts at ${kicker?.y})`);
+    const shift = await m.evaluate(() => new Promise((r) => { let total = 0; new PerformanceObserver((l) => l.getEntries().forEach((e) => { if (!e.hadRecentInput) total += e.value; })).observe({ type: "layout-shift", buffered: true }); setTimeout(() => r(total), 500); }));
+    if (shift > 0) errors.push(`home: layout shift ${shift} at 390`);
+  }
   const overflow = await m.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   if (overflow > 0) errors.push(`home: the page scrolls sideways by ${overflow}px at 390`);
   const tiles = await m.locator("[data-testid^=home-tile-]").evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));

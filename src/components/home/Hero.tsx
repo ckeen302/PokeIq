@@ -8,14 +8,15 @@ import { WORLD_THUMB, showcaseSlides } from "./showcase";
 /**
  * The title screen: what PokéIQ is, in three lines, over a picture that
  * turns through the site's tabs, with one thing to press. On a phone the
- * picture sits on top and the text runs over its lower edge.
+ * picture is its own 16:9 band at the top of the card, then the slide's name
+ * and button, then the text.
  */
 const fmt = (n: number) => n.toLocaleString("en-US");
 
 export function Hero() {
   return (
     <section className="dark-scope relative isolate overflow-hidden rounded-2xl border border-white/10 bg-card shadow-[0_30px_80px_-30px_hsl(var(--screen)/0.45)]">
-      <div className="relative z-[1] space-y-4 px-5 pb-14 pt-[40%] sm:space-y-5 sm:px-8 sm:pb-16 lg:max-w-[52%] lg:px-12 lg:py-16">
+      <div className="relative z-[1] space-y-4 px-5 pb-14 pt-[calc(56.25%+4rem)] sm:space-y-5 sm:pt-[calc(56.25%+4.5rem)] sm:px-8 sm:pb-16 lg:max-w-[52%] lg:px-12 lg:py-16">
         <p className="hud-label flex items-center gap-2 text-success">
           <span className="led h-1.5 w-1.5 animate-blink text-success motion-reduce:animate-none" aria-hidden /> Free · no sign-up · {fmt(POKEDEX.length)} Pokémon
         </p>

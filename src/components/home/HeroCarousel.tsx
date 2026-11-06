@@ -116,7 +116,7 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
         if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
       }}
     >
-      {/* The picture: under the text, faded into the card behind it. */}
+      {/* The picture: a band at the top on a phone; on wide screens, the right of the card, under the text. */}
       <div
         className="absolute inset-x-0 top-0 z-0 aspect-video overflow-hidden lg:inset-y-0 lg:left-auto lg:aspect-auto lg:w-[66%]"
         aria-live={playing ? "off" : "polite"}
@@ -150,8 +150,8 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
                       className="absolute inset-0 h-full w-full select-none object-cover"
                       style={section.shot.position ? { objectPosition: section.shot.position } : undefined}
                     />
-                    {/* A shade at the top, so the slide's name and button read over a busy screenshot. */}
-                    <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/60 to-transparent" />
+                    {/* Wide screens: a shade at the top, so the slide's name and button read over a busy screenshot. */}
+                    <div className="absolute inset-x-0 top-0 hidden h-24 bg-gradient-to-b from-black/60 to-transparent lg:block" />
                   </>
                 ) : null
               ) : (
@@ -160,33 +160,35 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
             </div>
           );
         })}
-        {/* Fade the picture into the card behind the text. */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent from-35% to-card lg:bg-gradient-to-r lg:from-card lg:from-0% lg:via-card/60 lg:via-30% lg:to-transparent lg:to-70%" />
+        {/* Wide screens: fade the picture into the card behind the text. On a phone the text sits below it. */}
+        <div className="absolute inset-0 hidden bg-gradient-to-r from-card from-0% via-card/60 via-30% to-transparent to-70% lg:block" />
       </div>
 
-      {/* This slide's name and button, over the picture's corner. */}
-      <div
-        key={active.id}
-        className="pointer-events-auto absolute left-3 top-3 z-[2] flex items-center gap-1.5 duration-700 animate-in fade-in motion-reduce:animate-none sm:left-4 sm:top-4 lg:left-auto lg:right-5 lg:top-5"
-        style={{ "--accent-c": active.accent } as React.CSSProperties}
-      >
-        <Link
-          href={active.href}
-          className="inline-flex h-8 items-center gap-1.5 rounded-md border border-white/15 bg-black/55 px-2.5 font-display text-xs font-bold uppercase tracking-wide text-white sm:h-9 sm:gap-2 sm:px-3 sm:text-sm sm:tracking-wider backdrop-blur-md transition-colors hover:border-[hsl(var(--accent-c)/0.7)]"
-          data-testid="hero-slide-label"
+      {/* This slide's name and button: on a phone just under the picture, above the text; on wide screens over its corner. */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-[2] aspect-video lg:inset-y-0 lg:left-auto lg:aspect-auto lg:w-[66%]">
+        <div
+          key={active.id}
+          className="pointer-events-auto absolute left-5 top-full mt-3 flex items-center gap-1.5 duration-700 animate-in fade-in motion-reduce:animate-none sm:left-8 lg:left-auto lg:right-5 lg:top-5 lg:mt-0"
+          style={{ "--accent-c": active.accent } as React.CSSProperties}
         >
-          <active.icon className="h-3.5 w-3.5 text-[hsl(var(--accent-c))] sm:h-4 sm:w-4" aria-hidden />
-          {active.name}
-        </Link>
-        <Link
-          href={active.href}
-          className="group inline-flex h-8 items-center gap-1.5 rounded-md bg-[hsl(var(--accent-c))] px-2.5 font-display text-xs font-bold uppercase tracking-wide text-black sm:h-9 sm:px-3 sm:text-sm sm:tracking-wider shadow-[0_0_18px_hsl(var(--accent-c)/0.35)] transition-[filter] hover:brightness-110"
-          aria-label={`${active.cta} ${active.name}`}
-          data-testid="hero-slide-cta"
-        >
-          {active.cta}
-          <ArrowRight className="hidden h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none min-[400px]:block" aria-hidden />
-        </Link>
+          <Link
+            href={active.href}
+            className="inline-flex h-8 items-center gap-1.5 rounded-md border border-white/15 bg-black/55 px-2.5 font-display text-xs font-bold uppercase tracking-wide text-white sm:h-9 sm:gap-2 sm:px-3 sm:text-sm sm:tracking-wider backdrop-blur-md transition-colors hover:border-[hsl(var(--accent-c)/0.7)]"
+            data-testid="hero-slide-label"
+          >
+            <active.icon className="h-3.5 w-3.5 text-[hsl(var(--accent-c))] sm:h-4 sm:w-4" aria-hidden />
+            {active.name}
+          </Link>
+          <Link
+            href={active.href}
+            className="group inline-flex h-8 items-center gap-1.5 rounded-md bg-[hsl(var(--accent-c))] px-2.5 font-display text-xs font-bold uppercase tracking-wide text-black sm:h-9 sm:px-3 sm:text-sm sm:tracking-wider shadow-[0_0_18px_hsl(var(--accent-c)/0.35)] transition-[filter] hover:brightness-110"
+            aria-label={`${active.cta} ${active.name}`}
+            data-testid="hero-slide-cta"
+          >
+            {active.cta}
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" aria-hidden />
+          </Link>
+        </div>
       </div>
 
       {/* Pause, then one dot per slide. */}
