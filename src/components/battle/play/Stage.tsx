@@ -363,7 +363,7 @@ export function Stage({ snap, me, gameType, names, popups, onHandle, myBalls, fo
       </div>
 
       {/* Phones: the HUDs sit around the field instead of over it. */}
-      <div className="mt-2 grid gap-1.5 sm:hidden">
+      <div className={cn("mt-2 grid gap-1.5 sm:hidden", active === 1 && "grid-cols-2 items-start gap-2")}>
         <div className={cn("grid gap-1.5", active > 2 ? "grid-cols-2" : "grid-cols-1")} data-testid="phone-foe">
           <div className={cn("flex flex-wrap items-center justify-between gap-1.5", active > 2 && "col-span-2")}>
             {farSides.map((id) => (
@@ -381,7 +381,7 @@ export function Stage({ snap, me, gameType, names, popups, onHandle, myBalls, fo
             ) : null
           )}
         </div>
-        <div className={cn("grid gap-1.5", active > 2 ? "grid-cols-2" : "grid-cols-1")} data-testid="phone-mine">
+        <div className={cn("grid gap-1.5", active > 2 ? "grid-cols-2" : "grid-cols-1", active === 1 && "order-first")} data-testid="phone-mine">
           {snap.sides[me].active.map((mon, i) => {
             if (!mon) return null;
             const own = myRequest?.find((p) => p.ident === mon.key);
@@ -391,7 +391,7 @@ export function Stage({ snap, me, gameType, names, popups, onHandle, myBalls, fo
               </TapTip>
             );
           })}
-          <div className={cn("flex flex-wrap items-center justify-between gap-1.5", active > 2 && "col-span-2")}>
+          <div className={cn("flex flex-wrap items-center justify-between gap-1.5", active > 2 && "col-span-2", active === 1 && "order-first")}>
             {nearSides.map((id) => (
               <TeamBalls key={id} side={snap.sides[id]} balls={id === me ? myBalls : undefined} label={four ? (id === me && !watching ? "You" : (names?.[id] ?? id)) : undefined} />
             ))}

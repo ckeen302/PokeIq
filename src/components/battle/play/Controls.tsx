@@ -138,7 +138,7 @@ function MoveButton({
       data-testid="move-button"
       aria-keyshortcuts={String(index)}
       className={cn(
-        "battle-move group relative flex min-h-[5.25rem] flex-col justify-between overflow-hidden rounded-lg border-2 px-3 pb-2.5 pt-2 text-left transition-[transform,filter,box-shadow] duration-100 hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0 active:brightness-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 sm:min-h-[4.5rem]",
+        "battle-move group relative flex min-h-[5.25rem] max-sm:min-h-[3.75rem] max-sm:px-2.5 max-sm:pb-2 max-sm:pt-1.5 flex-col justify-between overflow-hidden rounded-lg border-2 px-3 pb-2.5 pt-2 text-left transition-[transform,filter,box-shadow] duration-100 hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0 active:brightness-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 sm:min-h-[4.5rem]",
         tera && "ring-2 ring-offset-2 ring-offset-background"
       )}
       style={{
@@ -150,7 +150,7 @@ function MoveButton({
       }}
     >
       <span className="flex items-start justify-between gap-2">
-        <span className="font-display text-base font-bold uppercase leading-tight tracking-wide">
+        <span className="font-display text-base font-bold uppercase leading-tight tracking-wide max-sm:text-sm">
           <kbd className="mr-1.5 hidden rounded-sm bg-black/25 px-1 align-middle font-pixel text-[9px] font-normal sm:inline">{index}</kbd>
           {info.name}
         </span>
@@ -162,7 +162,7 @@ function MoveButton({
         <span className="rounded-sm bg-black/25 px-1 py-0.5">{type}</span>
         <span>{CATEGORY_MARK[info.category]}</span>
         {info.power > 0 && <span>Pow {info.power}</span>}
-        <span>Acc {info.accuracy === true ? "—" : `${info.accuracy}%`}</span>
+        <span className="max-sm:hidden">Acc {info.accuracy === true ? "—" : `${info.accuracy}%`}</span>
         {info.priority !== 0 && <span>Pri {info.priority > 0 ? `+${info.priority}` : info.priority}</span>}
       </span>
       {shown.length > 0 && (
@@ -659,7 +659,7 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="font-display text-lg font-bold uppercase">What will {actorName} do?</p>
+        <p className="font-display text-lg font-bold uppercase max-sm:text-base">What will {actorName} do?</p>
         <div className="flex items-center gap-3">
           {back}
           {teraType && (
