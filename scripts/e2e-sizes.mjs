@@ -331,7 +331,7 @@ export async function runSizes({ browser, BASE, OUT, errors, step }) {
     if (!(await ready())) throw new Error("the 3D scene never became ready on a phone by weight");
     await stageIs("order", "weight-desc", 60_000).catch(async () => errors.push(`sizes: ?by=weight&dir=desc opened ${await attr("order")}`));
     await press(page, "sizes-lineup");
-    const picker = await page.getByTestId("sizes-order-lineup").boundingBox();
+    const picker = await page.getByTestId("sizes-order-picker-lineup").boundingBox();
     if (!picker || picker.x < 0 || picker.x + picker.width > 391) errors.push("sizes: the order picker is off a 390 px screen");
     if (await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)) errors.push("sizes: the order picker makes the phone layout scroll sideways");
     await page.screenshot({ path: `${OUT}/sizes-order-390.png` });

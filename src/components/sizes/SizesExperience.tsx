@@ -1148,7 +1148,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
 
   /** The order picker: the line's order and its direction (in its own menu on wide screens, in the lineup menu on phones). */
   const orderPicker = (where: "menu" | "lineup") => (
-    <div role="group" aria-label="Order by" className="p-1" data-testid={`sizes-order-${where}`}>
+    <div role="group" aria-label="Order by" className="p-1" data-testid={`sizes-order-picker-${where}`}>
       <p className="px-2 pb-1.5 pt-1 font-pixel text-[9px] uppercase tracking-[0.18em] text-white/55">Order by</p>
       <div className="grid grid-cols-3 gap-1">
         {ORDERS.map((o) => {
