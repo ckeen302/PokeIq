@@ -121,7 +121,7 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
     >
       {/* The picture: 16:9 on a tablet, taller and edge to edge on a phone (where a swipe changes the slide), a wide band across the card on bigger screens (the screenshots keep their tops). */}
       <div
-        className="relative aspect-video overflow-hidden lg:aspect-[21/10] max-sm:aspect-[5/4] max-md:touch-pan-y"
+        className="relative aspect-video overflow-hidden lg:aspect-[21/10] max-sm:aspect-[4/5] max-md:touch-pan-y max-sm:[&_img]:!object-center max-sm:[&_video]:!object-center"
         aria-live={playing ? "off" : "polite"}
         onPointerDown={(e) => {
           if (e.pointerType === "touch") swipe.current = { x: e.clientX, y: e.clientY };
@@ -160,11 +160,10 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
                     alt={section.shot.alt}
                     width={section.shot.width}
                     height={section.shot.height}
-                    sizes="(min-width: 1152px) 1152px, (min-width: 640px) 100vw, 140vw"
+                    sizes="(min-width: 1152px) 1152px, 100vw"
                     loading="eager"
                     fetchPriority="low"
-                    draggable={false}
-                    className="absolute inset-0 h-full w-full select-none object-cover object-top max-sm:object-center"
+                    className="absolute inset-0 h-full w-full select-none object-cover object-top"
                   />
                 ) : null
               ) : (

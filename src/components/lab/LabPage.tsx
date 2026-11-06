@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { ArrowDown, ArrowRight } from "lucide-react";
 import { HudHeading } from "@/components/game/HudHeading";
 import { buttonVariants } from "@/components/ui/button";
@@ -9,6 +9,8 @@ import { LAB_CSS } from "./lab-css";
 
 /** How wide an experience's screenshot is drawn on its card (the hero's floating panels reuse the same file). */
 const CARD_IMAGE_SIZES = "(min-width: 1024px) 680px, 100vw";
+/** Phones take each screenshot file itself, pre-sized, so the server resizes nothing for them. */
+const PHONE = "(max-width: 639px)";
 
 /**
  * /lab: a hero, then one big card per 3D experience. The previews are
@@ -84,7 +86,11 @@ function LabHero({ shots }: { shots: LabExperience[] }) {
                 style={{ transform: pose.transform, animationDelay: pose.delay, "--lab-accent": e.accent } as Vars}
               >
                 {/* The same sizes as the experience's card below, so the browser downloads each screenshot once. */}
-                <Image src={e.image!} alt="" width={1280} height={720} sizes={CARD_IMAGE_SIZES} priority className="block aspect-video h-auto w-full object-cover" />
+                {/* Hidden on a phone, where the card below shows the screenshot file itself (the same download). */}
+                <picture>
+                  <source media={PHONE} srcSet={e.image} />
+                  <Image src={e.image!} alt="" width={1280} height={720} sizes={CARD_IMAGE_SIZES} loading="eager" fetchPriority="high" className="block aspect-video h-auto w-full object-cover" />
+                </picture>
               </div>
             );
           })}
@@ -105,14 +111,19 @@ function LabCard({ experience: e, flip, priority }: { experience: LabExperience;
           className={cn("screen dark-scope relative block aspect-video overflow-hidden lg:aspect-auto lg:min-h-[360px] max-sm:rounded-2xl", flip && "lg:order-2")}
         >
           {e.image ? (
-            <Image
-              src={e.image}
-              alt=""
-              fill
-              sizes={CARD_IMAGE_SIZES}
-              priority={priority}
-              className="lab-kb object-cover"
-            />
+            // Phones take the screenshot file itself (pre-sized, no resizing on the server); bigger screens a resized copy.
+            <picture>
+              <source media={PHONE} srcSet={e.image} />
+              <Image
+                src={e.image}
+                alt=""
+                fill
+                sizes={CARD_IMAGE_SIZES}
+                loading={priority ? "eager" : undefined}
+                fetchPriority={priority ? "high" : undefined}
+                className="lab-kb object-cover"
+              />
+            </picture>
           ) : e.id === "race" ? (
             <RacePreview />
           ) : null}

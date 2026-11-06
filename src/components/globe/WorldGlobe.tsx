@@ -427,7 +427,8 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
             </>
           )}
           <span data-testid="globe-intro-skip" className="absolute bottom-[max(1.5rem,env(safe-area-inset-bottom))] font-pixel text-[9px] uppercase tracking-[0.3em] text-muted-foreground" style={{ animation: "gl-blink 1.2s steps(2) infinite" }}>
-            Click or press any key to skip
+            <span className="max-md:hidden">Click or press any key to skip</span>
+            <span className="md:hidden">Tap to skip</span>
           </span>
         </button>
       )}

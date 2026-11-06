@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { motion } from "framer-motion";
 import { CalendarDays, ChevronRight, Compass, Flame, Grid3x3, LayoutGrid, Search } from "lucide-react";
 import { dailyNumber } from "@/lib/daily";

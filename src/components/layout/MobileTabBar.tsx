@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BookOpen,
@@ -32,6 +31,8 @@ import { getTheme, setTheme, type Theme } from "@/lib/theme";
 import { isMuted, onMuteChange, play, setMuted } from "@/lib/sound";
 import { LAB_PATH, isLabPath } from "@/lib/lab";
 import { Avatar } from "@/components/avatar/Avatar";
+// Links that fetch their page on touch on a phone, not whenever they are on screen: the bar is on every page.
+import Link from "@/components/ui/Link";
 import { cn } from "@/lib/utils";
 
 /** The four tabs before More: the home page and the games most people come for. */
@@ -76,7 +77,8 @@ export function MobileTabBar() {
   const waiting = community.requests + community.challenges.length;
   const [open, setOpen] = useState(false);
   const moreButton = useRef<HTMLButtonElement>(null);
-  const inTabs = TABS.some((t) => tabActive(pathname, t.href));
+  // More is lit on the pages it holds (a share link or a profile lights nothing).
+  const inMore = [...MORE_TILES, ...MORE_LINKS, { href: "/trainer" }, { href: "/login" }].some((t) => tabActive(pathname, t.href));
 
   const close = useCallback((refocus = true) => {
     setOpen(false);
@@ -115,7 +117,7 @@ export function MobileTabBar() {
           <button
             ref={moreButton}
             type="button"
-            className={cn("tab-item", (open || !inTabs) && "tab-item-on")}
+            className={cn("tab-item", (open || inMore) && "tab-item-on")}
             aria-expanded={open}
             aria-controls="more-sheet"
             aria-label={waiting ? `More (${waiting} waiting)` : "More"}
@@ -123,7 +125,7 @@ export function MobileTabBar() {
             data-testid="tab-more"
           >
             <span className="tab-pill relative">
-              <Menu className="h-[22px] w-[22px]" strokeWidth={open || !inTabs ? 2.25 : 1.9} aria-hidden />
+              <Menu className="h-[22px] w-[22px]" strokeWidth={open || inMore ? 2.25 : 1.9} aria-hidden />
               {waiting > 0 && <span className="absolute right-2.5 top-0.5 h-2 w-2 rounded-full bg-primary ring-2 ring-background" aria-hidden />}
             </span>
             More
