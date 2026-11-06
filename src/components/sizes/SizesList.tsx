@@ -74,8 +74,9 @@ export function SizesList({ rows, focus, caption, note, spec, order, path }: { r
 
   const head: { key: SortKey; label: string; cls?: string }[] = [
     { key: "name", label: "Pokémon" },
-    { key: "m", label: "Size" },
+    // The order's value comes first, so it shows on a phone too.
     ...(valueCol ? [{ key: "v" as SortKey, label: orderInfo(by).label, cls: "szt-v" }] : []),
+    { key: "m", label: "Size", cls: valueCol ? "szt-s" : undefined },
     ...(by === "weight" ? [] : [{ key: "kg" as SortKey, label: "Weight", cls: "szt-w" }]),
     { key: "dex", label: "Dex", cls: "szt-d" },
   ];
@@ -140,8 +141,8 @@ export function SizesList({ rows, focus, caption, note, spec, order, path }: { r
                     </>
                   )}
                 </td>
-                <td><b>{formatMetres(m)}{plus}</b><small>{formatFeet(m)}{plus}{length ? " · length" : ""}</small></td>
                 {valueCol && <td className="szt-v">{v == null ? "—" : by === "weight" ? `${v.toLocaleString("en-US")} kg` : v}</td>}
+                <td className={valueCol ? "szt-s" : undefined}><b>{formatMetres(m)}{plus}</b><small>{formatFeet(m)}{plus}{length ? " · length" : ""}</small></td>
                 {by !== "weight" && <td className="szt-w">{kg != null ? `${kg.toLocaleString("en-US")} kg` : "—"}</td>}
                 <td className="szt-d">{ref ? null : <Link href={`/pokemon/${slug}`} prefetch={false}>{dexTag(dex)}</Link>}</td>
               </tr>
