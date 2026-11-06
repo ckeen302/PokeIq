@@ -1,14 +1,14 @@
-import Link from "next/link";
+import { HoverPrefetchLink } from "./HoverPrefetchLink";
 import { HOME_SECTIONS } from "./sections";
 
-/** One small tile per tab of the site, in the same order as the title screen's slides. */
+/** One small tile per tab of the site, in the same order as the title screen's slides. Each page is fetched on hover, not on load. */
 export function SectionTiles() {
   return (
     <nav aria-label="Everything on PokéIQ">
       <ul className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-4">
         {HOME_SECTIONS.map(({ id, href, name, line, icon: Icon, accent }) => (
           <li key={id}>
-            <Link
+            <HoverPrefetchLink
               href={href}
               className="group flex h-full flex-col rounded-lg border bg-card p-3 transition-[border-color,transform] hover:-translate-y-0.5 hover:border-[hsl(var(--accent-c)/0.6)] motion-reduce:transition-none sm:p-4"
               style={{ "--accent-c": accent } as React.CSSProperties}
@@ -21,7 +21,7 @@ export function SectionTiles() {
                 <span className="min-w-0 font-display text-[15px] font-bold uppercase leading-tight tracking-wide sm:text-base">{name}</span>
               </span>
               <span className="mt-2 block text-[13px] leading-snug text-muted-foreground">{line}</span>
-            </Link>
+            </HoverPrefetchLink>
           </li>
         ))}
       </ul>
