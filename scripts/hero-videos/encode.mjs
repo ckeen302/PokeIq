@@ -6,7 +6,8 @@
  * <take> is a folder of frames from lib.mjs (with meta.json). The clip runs
  * from..to, its last `fade` seconds crossfading into its own start, so it
  * loops softly. Writes public/home/clips/<out-name>.mp4 (H.264, no audio
- * track, faststart) and <out-name>.webp (its first frame: the poster).
+ * track, faststart), <out-name>.av1.mp4 (AV1, smaller, for browsers that
+ * play it) and <out-name>.webp (its first frame: the poster).
  * Desktop takes come out 1600×900, phone takes 800×1000 (4:5).
  */
 import fs from "node:fs";
@@ -87,9 +88,39 @@ export function encode(take, name, { from = 0, to, fade = 0.6, crf, maxBytes, mi
     }
     if (bytes === prev) break;
   }
+  // AV1 too (smaller, and what browsers without H.264 play), from the H.264 cut's exact frames' source.
+  const av1 = path.join(outDir, `${name}.av1.mp4`);
+  const runAv1 = (q) => {
+    execFileSync(
+      "ffmpeg",
+      [
+        "-y", "-v", "error",
+        "-framerate", String(fps),
+        "-i", path.join(dir, "f%05d.jpg"),
+        "-filter_complex", filter,
+        "-map", "[v]",
+        "-an",
+        "-c:v", "libsvtav1",
+        "-preset", "4",
+        "-crf", String(q),
+        "-g", String(fps * 2),
+        "-pix_fmt", "yuv420p",
+        "-svtav1-params", "tune=0",
+        "-color_primaries", "bt709", "-color_trc", "bt709", "-colorspace", "bt709",
+        "-movflags", "+faststart",
+        av1,
+      ],
+      { stdio: "inherit" }
+    );
+    return fs.statSync(av1).size;
+  };
+  // About two thirds of the H.264 file.
+  let qa = meta.phone ? 36 : 34;
+  let av1Bytes = runAv1(qa);
+  for (let i = 0; i < 6 && av1Bytes > bytes * 0.75; i++) av1Bytes = runAv1((qa += 2));
   execFileSync("ffmpeg", ["-y", "-v", "error", "-i", mp4, "-frames:v", "1", "-c:v", "libwebp", "-quality", "82", "-compression_level", "6", poster], { stdio: "inherit" });
   const dur = Number(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", mp4], { encoding: "utf8" }).trim());
-  const info = { name, crf: q, bytes, poster: fs.statSync(poster).size, duration: dur, width: w, height: h };
+  const info = { name, crf: q, bytes, av1Crf: qa, av1Bytes, poster: fs.statSync(poster).size, duration: dur, width: w, height: h };
   console.log(JSON.stringify(info));
   return info;
 }

@@ -192,8 +192,14 @@ export class Recorder {
     if (w / h < aspect) w = h * aspect;
     else h = w / aspect;
     const { width: vw, height: vh } = this.o.viewport;
-    if (w > vw) (w = vw), (h = w / aspect);
-    if (h > vh) (h = vh), (w = h * aspect);
+    if (w > vw) {
+      w = vw;
+      h = w / aspect;
+    }
+    if (h > vh) {
+      h = vh;
+      w = h * aspect;
+    }
     const cx = (x0 + x1) / 2 + shiftX;
     const cy = (top ? y0 + h / 2 : (y0 + y1) / 2) + shiftY;
     const x = Math.min(Math.max(0, cx - w / 2), vw - w);

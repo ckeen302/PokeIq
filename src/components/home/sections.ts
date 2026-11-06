@@ -1,16 +1,35 @@
 import { BookOpen, Box, Compass, Gamepad2, Grid3x3, LayoutGrid, Search, Swords, type LucideIcon } from "lucide-react";
 import { LAB_PATH } from "@/lib/lab";
 
-/** A screenshot in /public for the title screen's slideshow. */
-export interface SectionShot {
-  /** 16:9, the subject centred: the picture fills the card on every screen. */
-  src: string;
+/** One cut of a slide's clip: H.264 and AV1 MP4s and their first frame (the poster), in /public/home/clips. */
+export interface ClipCut {
+  video: string;
+  /** The same clip in AV1: smaller, and playable where H.264 isn't. */
+  av1: string;
+  poster: string;
   width: number;
   height: number;
+}
+
+/**
+ * A slide's clip: the tab played on the real site, recorded by
+ * scripts/hero-videos (16:9 for wider screens, 4:5 at a phone's layout).
+ */
+export interface SectionClip {
+  desktop: ClipCut;
+  phone: ClipCut;
+  /** What the clip shows, for the poster's alt text. */
   alt: string;
-  /** CSS object-position: which part of the shot stays in view when the box crops it. */
+  /** CSS object-position: which part stays in view when the box crops the 16:9 cut. */
   position?: string;
 }
+
+const clip = (id: string, alt: string, position?: string): SectionClip => ({
+  desktop: { video: `/home/clips/${id}-desktop.mp4`, av1: `/home/clips/${id}-desktop.av1.mp4`, poster: `/home/clips/${id}-desktop.webp`, width: 1600, height: 900 },
+  phone: { video: `/home/clips/${id}-phone.mp4`, av1: `/home/clips/${id}-phone.av1.mp4`, poster: `/home/clips/${id}-phone.webp`, width: 800, height: 1000 },
+  alt,
+  ...(position && { position }),
+});
 
 export interface HomeSection {
   id: "guessr" | "pokedle" | "connections" | "pikadoku" | "battle" | "quizzes" | "pokedex" | "lab";
@@ -23,13 +42,13 @@ export interface HomeSection {
   icon: LucideIcon;
   /** HSL triplet. */
   accent: string;
-  /** The slide's picture (PokéGuessr draws its own showcase instead). */
-  shot?: SectionShot;
+  /** The slide's clip. */
+  clip: SectionClip;
 }
 
 /**
  * The site's main tabs, for the title screen's slideshow and the tiles under
- * it. PokéGuessr leads (its view is the page's hero image); the rest follow
+ * it. PokéGuessr leads (its poster is the page's hero image); the rest follow
  * the top nav.
  */
 export const HOME_SECTIONS: HomeSection[] = [
@@ -41,6 +60,7 @@ export const HOME_SECTIONS: HomeSection[] = [
     cta: "Play",
     icon: Compass,
     accent: "154 68% 46%",
+    clip: clip("guessr", "A PokéGuessr round: a pin dropped on the map of Paldea, then the score"),
   },
   {
     id: "pokedle",
@@ -50,7 +70,7 @@ export const HOME_SECTIONS: HomeSection[] = [
     cta: "Play",
     icon: Search,
     accent: "258 94% 74%",
-    shot: { src: "/home/pokedle.webp", width: 1600, height: 900, alt: "A Pokédle board partway through today's game" },
+    clip: clip("pokedle", "A Pokédle game solved on the fourth guess"),
   },
   {
     id: "connections",
@@ -60,7 +80,7 @@ export const HOME_SECTIONS: HomeSection[] = [
     cta: "Play",
     icon: LayoutGrid,
     accent: "42 98% 60%",
-    shot: { src: "/home/connections.webp", width: 1600, height: 900, alt: "A PokéConnections board with one group found" },
+    clip: clip("connections", "Two PokéConnections groups found"),
   },
   {
     id: "pikadoku",
@@ -70,7 +90,7 @@ export const HOME_SECTIONS: HomeSection[] = [
     cta: "Play",
     icon: Grid3x3,
     accent: "190 90% 55%",
-    shot: { src: "/home/pikadoku.webp", width: 1600, height: 900, alt: "A Pikadoku grid with a few Pokémon filled in" },
+    clip: clip("pikadoku", "A Pikadoku grid filled to the last cell"),
   },
   {
     id: "battle",
@@ -80,7 +100,7 @@ export const HOME_SECTIONS: HomeSection[] = [
     cta: "Battle",
     icon: Swords,
     accent: "340 86% 60%",
-    shot: { src: "/home/battle.webp", width: 1600, height: 900, alt: "A Pokémon battle in progress" },
+    clip: clip("battle", "A battle against the computer, ending in a knockout"),
   },
   {
     id: "quizzes",
@@ -90,7 +110,7 @@ export const HOME_SECTIONS: HomeSection[] = [
     cta: "Play",
     icon: Gamepad2,
     accent: "24 95% 58%",
-    shot: { src: "/home/quizzes.webp", width: 1600, height: 900, alt: "A Who's That Pokémon question in play" },
+    clip: clip("quizzes", "Who's That Pokémon? silhouettes named and revealed"),
   },
   {
     id: "pokedex",
@@ -100,7 +120,7 @@ export const HOME_SECTIONS: HomeSection[] = [
     cta: "Explore",
     icon: BookOpen,
     accent: "214 90% 64%",
-    shot: { src: "/home/pokedex.webp", width: 1600, height: 900, alt: "The Pokédex grid" },
+    clip: clip("pokedex", "The Pokédex: Pikachu's entry, its stats and evolutions"),
   },
   {
     id: "lab",
@@ -110,6 +130,6 @@ export const HOME_SECTIONS: HomeSection[] = [
     cta: "Explore",
     icon: Box,
     accent: "300 75% 68%",
-    shot: { src: "/lab/pokemon-story.webp", width: 1280, height: 720, alt: "A scene from The Story of Pokémon, a 3D film" },
+    clip: clip("lab", "A scene from The Story of Pokémon, a 3D film"),
   },
 ];

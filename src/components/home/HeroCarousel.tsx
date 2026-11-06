@@ -1,37 +1,47 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import Image from "next/image";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { GuessrShowcase, type ShowcaseSlide } from "./GuessrShowcase";
+import { HeroClip } from "./HeroClip";
 import { HOME_SECTIONS } from "./sections";
 
-/** How long each tab stays on screen. */
+/** The longest a tab stays on screen (its clip normally moves it on sooner, after two plays). */
 const ROTATE_MS = 25_000;
+/** A clip plays this many times before the slideshow moves on. */
+const PLAYS = 2;
 const FADE_MS = 1200;
-/** The next slide's screenshot starts loading this long before it shows. */
+/** The next slide's poster and clip start loading this long before it shows. */
 const PREFETCH_MS = 6000;
 
 /**
- * The title screen: one slide per tab of the site, the picture filling the
- * card, with the tab's name, a line about it and a button to it. It changes
- * every 25 seconds with a slow crossfade; the arrows (and the keyboard's left
- * and right arrows) and the dots change it by hand, and the button pauses it
- * (WCAG 2.2.2). PokéGuessr comes first and is the page's hero image
- * (server-rendered); the clock starts once the page has gone idle, and each
- * other screenshot loads shortly before its turn, or as soon as the controls
- * are touched. It doesn't move by itself for reduced motion, and waits while
- * the tab is in the background or a keyboard user is inside it.
+ * The title screen: one slide per tab of the site, a clip of the tab being
+ * played filling the card, with the tab's name, a line about it and a button
+ * to it. A slide moves on once its clip has played twice (25 seconds at
+ * most) with a slow crossfade; the arrows (and the keyboard's left and right
+ * arrows) and the dots change it by hand, and the button pauses it, clip and
+ * all (WCAG 2.2.2). PokéGuessr comes first: its poster (the clip's first
+ * frame) is the page's hero image, server-rendered. The clips start once the
+ * page has gone idle; only the one on screen loads in full, the next one a
+ * little before its turn, and each other poster loads shortly before its
+ * turn, or as soon as the controls are touched. For reduced motion (or Save
+ * Data) the posters stay still and nothing moves by itself; nothing plays
+ * while the tab is in the background or the slideshow is off screen, and the
+ * slideshow waits while a keyboard user is inside it.
  */
-export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; map: { src: string; width: number; height: number } } }) {
+export function HeroCarousel() {
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [started, setStarted] = useState(false);
   const [mounted, setMounted] = useState<ReadonlySet<number>>(() => new Set([0]));
   const [hidden, setHidden] = useState(false);
   const [focused, setFocused] = useState(false);
+  /** On screen (clips pause and the slideshow waits while it's scrolled away). */
+  const [seen, setSeen] = useState(true);
+  /** Slides whose clip may load: the one on screen, and the next shortly before its turn. */
+  const [warm, setWarm] = useState<ReadonlySet<number>>(() => new Set());
+  const root = useRef<HTMLDivElement>(null);
   const count = HOME_SECTIONS.length;
 
   // Reduced motion: no rotation until the player presses Play.
@@ -67,22 +77,54 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
     return () => document.removeEventListener("visibilitychange", sync);
   }, []);
 
+  useEffect(() => {
+    const node = root.current;
+    if (!node || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(([entry]) => setSeen(entry.isIntersecting), { threshold: 0.15 });
+    io.observe(node);
+    return () => io.disconnect();
+  }, []);
+
   const load = useCallback((...slides: number[]) => {
     setMounted((m) => (slides.every((i) => m.has(i)) ? m : new Set([...m, ...slides])));
   }, []);
-  /** The controls were touched: fetch every screenshot, so any slide shows at once. */
+  /** The controls were touched: fetch every poster, so any slide shows at once. */
   const prime = useCallback(() => load(...HOME_SECTIONS.map((_, i) => i)), [load]);
 
-  // A fresh 25 seconds after every change, and after the tab comes back; the next screenshot loads a little before.
+  // The clip on screen may load once the page has settled (the poster is the hero image until then).
   useEffect(() => {
-    if (!playing || hidden || focused || !started) return;
-    const prefetch = window.setTimeout(() => load((index + 1) % count), ROTATE_MS - PREFETCH_MS);
-    const timer = window.setTimeout(() => setIndex((i) => (i + 1) % count), ROTATE_MS);
+    if (!started) return;
+    setWarm((w) => (w.has(index) ? w : new Set([...w, index])));
+  }, [started, index]);
+
+  const next = useCallback(() => setIndex((i) => (i + 1) % count), [count]);
+
+  // At most 25 seconds after every change, and after the tab comes back; the next poster and clip load a little before.
+  useEffect(() => {
+    if (!playing || hidden || focused || !started || !seen) return;
+    const prefetch = window.setTimeout(() => {
+      load((index + 1) % count);
+      setWarm((w) => new Set([...w, (index + 1) % count]));
+    }, ROTATE_MS - PREFETCH_MS);
+    const timer = window.setTimeout(next, ROTATE_MS);
     return () => {
       window.clearTimeout(prefetch);
       window.clearTimeout(timer);
     };
-  }, [index, playing, hidden, focused, started, count, load]);
+  }, [index, playing, hidden, focused, started, seen, count, load, next]);
+
+  /** The clip on screen has played `times` times: get the next one ready after the first, move on after the second. */
+  const played = useCallback(
+    (times: number) => {
+      if (!playing || focused) return;
+      if (times === 1) {
+        load((index + 1) % count);
+        setWarm((w) => new Set([...w, (index + 1) % count]));
+      }
+      if (times >= PLAYS) next();
+    },
+    [playing, focused, index, count, load, next]
+  );
 
   const show = useCallback(
     (i: number) => {
@@ -94,11 +136,13 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
   );
 
   const active = HOME_SECTIONS[index];
-  const prev = HOME_SECTIONS[(index - 1 + count) % count];
-  const next = HOME_SECTIONS[(index + 1) % count];
+  const prevSection = HOME_SECTIONS[(index - 1 + count) % count];
+  const nextSection = HOME_SECTIONS[(index + 1) % count];
+  const run = playing && started && !hidden && seen;
 
   return (
     <div
+      ref={root}
       className="relative"
       role="region"
       aria-roledescription="carousel"
@@ -117,7 +161,7 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
         if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
       }}
     >
-      {/* The picture: 16:9 on a phone, a wide band across the card on bigger screens (the screenshots keep their tops). */}
+      {/* The picture: 16:9 on a phone, a wide band across the card on bigger screens. */}
       <div className="relative aspect-video overflow-hidden lg:aspect-[21/10]" aria-live={playing ? "off" : "polite"}>
         {HOME_SECTIONS.map((section, i) => {
           const on = i === index;
@@ -134,22 +178,7 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
               className={cn("absolute inset-0 transition-opacity ease-in-out motion-reduce:transition-none", on ? "opacity-100" : "opacity-0")}
               style={{ transitionDuration: `${FADE_MS}ms` }}
             >
-              {section.shot ? (
-                mounted.has(i) ? (
-                  <Image
-                    src={section.shot.src}
-                    alt={section.shot.alt}
-                    width={section.shot.width}
-                    height={section.shot.height}
-                    sizes="(min-width: 1152px) 1152px, 100vw"
-                    loading="eager"
-                    fetchPriority="low"
-                    className="absolute inset-0 h-full w-full select-none object-cover object-top"
-                  />
-                ) : null
-              ) : (
-                <GuessrShowcase slides={guessr.slides} map={guessr.map} active={on} className="absolute inset-0" />
-              )}
+              <HeroClip clip={section.clip} active={on} load={warm.has(i)} run={run && on} priority={i === 0} posterReady={mounted.has(i)} onPlayed={on ? played : undefined} />
             </div>
           );
         })}
@@ -159,8 +188,8 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
         {/* Previous and next, on the picture's edges. */}
         {(
           [
-            ["prev", prev, -1, ChevronLeft, "left-2 sm:left-3"],
-            ["next", next, 1, ChevronRight, "right-2 sm:right-3"],
+            ["prev", prevSection, -1, ChevronLeft, "left-2 sm:left-3"],
+            ["next", nextSection, 1, ChevronRight, "right-2 sm:right-3"],
           ] as const
         ).map(([key, target, step, Icon, side]) => (
           <button

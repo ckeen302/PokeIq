@@ -3701,8 +3701,14 @@ async function homeStep() {
   if ((await active()) !== "guessr") errors.push(`home: the first slide is ${await active()}, not PokéGuessr`);
   // The first slide's picture is the page's hero image, in the server's HTML.
   const html = await (await p.request.get(BASE)).text();
-  if (!/data-slide="guessr"[^>]*>(?:(?!data-slide=)[^])*?<img /.test(html) || !/<link rel="preload" as="image"[^>]+guessr|<link rel="preload" as="image"[^>]+paldea/.test(html)) errors.push("home: the PokéGuessr slide's image isn't server-rendered and preloaded as the hero image");
-  if (/data-slide="(?!guessr)[a-z]+"[^>]*>(?:(?!data-slide=)[^])*?<img /.test(html)) errors.push("home: another slide's screenshot is in the server's HTML (it should load later)");
+  {
+    // Its clip's poster, fetched first; no video in the HTML (clips start once the page has settled).
+    const slide = /data-slide="guessr"[^>]*>((?:(?!data-slide=)[^])*)/.exec(html)?.[1] ?? "";
+    const img = /<img [^>]*>/.exec(slide)?.[0] ?? "";
+    if (!/guessr-desktop\.webp/.test(img) || !/fetchpriority="high"/i.test(img) || !/<source media="\(max-width: 639px\)"[^>]*guessr-phone\.webp/.test(slide)) errors.push("home: the PokéGuessr slide's poster isn't server-rendered as the hero image (with its phone cut)");
+    if (/<video/.test(html)) errors.push("home: a clip is in the server's HTML (clips should start once the page has settled)");
+  }
+  if (/data-slide="(?!guessr)[a-z]+"[^>]*>(?:(?!data-slide=)[^])*?<img /.test(html)) errors.push("home: another slide's poster is in the server's HTML (it should load later)");
   // Every slide's name and button lead to its tab.
   const pause = hero.getByTestId("hero-pause");
   if ((await pause.getAttribute("aria-label")) !== "Pause the slideshow") errors.push(`home: the pause button reads "${await pause.getAttribute("aria-label")}"`);
@@ -3714,13 +3720,22 @@ async function homeStep() {
     if (got !== href) errors.push(`home: the ${name} slide's button goes to ${got}, not ${href}`);
     const shown = (await hero.getByTestId("hero-slide-name").innerText()).trim().toLowerCase();
     if (shown !== name.toLowerCase()) errors.push(`home: the ${name} slide is titled "${shown}"`);
-    if (id !== "guessr") {
-      const img = hero.locator(`[data-testid=hero-slide][data-slide="${id}"] img`);
-      const ok = await img
-        .evaluate((el) => (el.complete ? Promise.resolve(el.naturalWidth > 0) : new Promise((r) => el.addEventListener("load", () => r(el.naturalWidth > 0), { once: true }))), null, { timeout: 15_000 })
-        .catch(() => false);
-      if (!ok) errors.push(`home: the ${name} slide's picture didn't load`);
+    // Its poster loads, then its clip plays over it (the 16:9 cut here).
+    const img = hero.locator(`[data-testid=hero-slide][data-slide="${id}"] img[data-testid=hero-poster]`);
+    const ok = await img
+      .evaluate((el) => (el.complete ? Promise.resolve(el.naturalWidth > 0) : new Promise((r) => el.addEventListener("load", () => r(el.naturalWidth > 0), { once: true }))), null, { timeout: 15_000 })
+      .catch(() => false);
+    if (!ok) errors.push(`home: the ${name} slide's poster didn't load`);
+    const clip = hero.locator(`[data-testid=hero-slide][data-slide="${id}"] video[data-testid=hero-video]`);
+    const playing = await clip.and(hero.locator("[data-playing=true]")).waitFor({ timeout: 15_000 }).then(() => true, () => false);
+    if (!playing) errors.push(`home: the ${name} slide's clip didn't play`);
+    else {
+      const v = await clip.evaluate((el) => ({ src: el.currentSrc, muted: el.muted, inline: el.playsInline, w: el.videoWidth, t: el.currentTime }));
+      if (!/-desktop(\.av1)?\.mp4$/.test(v.src) || !v.muted || !v.inline || v.w !== 1600) errors.push(`home: the ${name} clip is ${JSON.stringify(v)}`);
     }
+    // Only the slide on screen and the next one have a clip.
+    const clips = await hero.locator("video[data-testid=hero-video]").count();
+    if (clips > 2) errors.push(`home: ${clips} clips on the page on the ${name} slide (at most the one on screen and the next)`);
   }
   // No shared headline; the page's one h1 is there for search engines and screen readers.
   if (await p.getByText(/Guess the place|Win the battle/i).count()) errors.push("home: the old shared headline is still on the page");
@@ -3784,6 +3799,10 @@ async function homeStep() {
   const still = await newPage({ width: 1440, height: 900 }, { reducedMotion: "reduce" });
   await gotoSettled(still, BASE);
   await still.getByTestId("hero-pause").and(still.locator('[aria-label="Play the slideshow"]')).waitFor({ timeout: 5000 }).catch(() => errors.push("home: under reduced motion the slideshow still plays"));
+  // ...and its clips stay as posters.
+  await still.waitForTimeout(3000);
+  if (await still.locator("video[data-testid=hero-video]").count()) errors.push("home: under reduced motion a clip plays");
+  if (!(await still.locator("[data-testid=hero-slide][data-active=true] img[data-testid=hero-poster]").evaluate((el) => el.complete && el.naturalWidth > 0).catch(() => false))) errors.push("home: under reduced motion the poster doesn't show");
   await still.context().close();
 
   // 390: every slide's picture loads, in a band above the slide's name; nothing sideways, the tiles two across, the dots big enough to tap.
@@ -3799,6 +3818,10 @@ async function homeStep() {
       .evaluate((el) => (el.complete ? Promise.resolve(el.naturalWidth > 0) : new Promise((r) => el.addEventListener("load", () => r(el.naturalWidth > 0), { once: true }))), null, { timeout: 15_000 })
       .catch(() => false);
     if (!loaded) errors.push(`home: the ${name} slide's picture didn't load at 390`);
+    // A phone gets the 4:5 cut, recorded at a phone's layout.
+    const cut = await mhero.locator(`[data-testid=hero-slide][data-slide="${id}"] video[data-testid=hero-video]`).evaluate((el) => el.getAttribute("src")).catch(() => null);
+    if (cut && !/-phone(\.av1)?\.mp4$/.test(cut)) errors.push(`home: the ${name} slide plays ${cut} at 390, not its phone cut`);
+    if (/-desktop\.webp/.test((await img.getAttribute("src").catch(() => "")) ?? "") && !(await img.evaluate((el) => /-phone\.webp/.test(el.currentSrc)))) errors.push(`home: the ${name} slide shows its 16:9 poster at 390`);
   }
   // A change of slide never moves the page below the hero.
   if (heights.size !== 1) errors.push(`home: the hero's height changes between slides at 390 (${[...heights].join(", ")})`);

@@ -62,7 +62,6 @@ export async function run(rec, { base, phone }) {
     await page.waitForTimeout(1200);
     await rec.freeze();
     const stage = page.locator("main h2").first();
-    const score = page.getByText(/^Score$/i).first();
     const opts = page.locator("[data-answer-tile]");
     // A phone's card is taller than the hero: frame the picture and the answers.
     if (phone) await rec.frameAround([page.locator("main img").last(), opts.last()], { aspect: 4 / 5, pad: 8 });

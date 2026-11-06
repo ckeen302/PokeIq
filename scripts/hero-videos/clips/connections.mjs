@@ -34,7 +34,6 @@ export async function run(rec, { base, phone }) {
   for (const id of g[0].slice(0, 2)) await tile(id).click();
   await page.mouse.move(5, 5);
   await rec.hideChrome();
-  const board = page.locator("[data-testid=conn-group], [data-testid=conn-tile]");
   const first = page.locator("[data-testid=conn-group]").first();
   const top = await first.boundingBox();
   await page.evaluate((y) => window.scrollTo(0, y), Math.max(0, top.y - (phone ? 90 : 120)));
