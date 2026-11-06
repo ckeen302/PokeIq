@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
+import { GAMES_LIVE } from "@/lib/lab";
 import { GAMES_BY_KEY } from "@/lib/games/data";
 import { eventOf, formatMark } from "@/lib/games/events";
 import { runEvent } from "@/lib/games/games";
@@ -37,6 +38,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Search 
     description: w ? `${w.name} ${event === "wrestling" ? "wins the bracket" : `wins with ${formatMark(event, out.marks.get(w.key))}`}. ${e.name} from their real stats, in 3D on PokéIQ.` : `${e.name} in 3D on PokéIQ.`,
     path: path.startsWith(RUN_PATH) ? path : `${RUN_PATH}?e=${event}`,
     image: { url: `${RUN_PATH}/og${q.startsWith("?") ? q : `?e=${event}`}`, alt: title },
+    noindex: !GAMES_LIVE,
   });
 }
 

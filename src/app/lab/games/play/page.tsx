@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
+import { GAMES_LIVE } from "@/lib/lab";
 import { GAMES_BY_KEY } from "@/lib/games/data";
 import { DEFAULT_NATIONS, PLAY_PATH, parseGamesSeed, parseNations, parseRain, playPath } from "@/lib/games/deeplink";
 import { GamesPlayPage } from "@/components/games/GamesPages";
@@ -21,6 +22,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Search 
     description: "Up to eight nations of three Pokémon through the 100 m, long jump, shot put, weightlifting, swimming, wrestling and more, with a live medal table and the Champion of the Games, in 3D.",
     path,
     image: { url: `${PLAY_PATH}/og${path.includes("?") ? path.slice(path.indexOf("?")) : ""}`, alt: "The PokéIQ Games medal table" },
+    noindex: !GAMES_LIVE,
   });
 }
 
