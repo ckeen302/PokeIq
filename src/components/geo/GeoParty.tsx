@@ -234,7 +234,7 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
             )}
             <div className="absolute inset-x-0 top-12 z-20">{notice}</div>
             <PartyEmoteFeed view={view} />
-            <div className="absolute left-3 top-3 z-30 flex items-center gap-2">
+            <div className="geo-safe-tl absolute left-3 top-3 z-30 flex items-center gap-2">
               {leaveButton}
               {livePill}
             </div>
@@ -499,7 +499,7 @@ function PartyReveal({
           <GeoMap region={map} revealed={revealed} fit={{ delay: LINE_DRAW_MS, duration: FIT_MS }} fill controls={false} />
         </div>
         {notice && <div className="absolute inset-x-0 top-16 z-30 px-4">{notice}</div>}
-        <div className="absolute left-3 top-3 z-20">{livePill}</div>
+        <div className="geo-safe-tl absolute left-3 top-3 z-20">{livePill}</div>
         {emoteButton}
         <PartyEmoteFeed view={view} />
         {/* The round's scores, best first. */}

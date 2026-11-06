@@ -287,6 +287,14 @@
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
   clip-path: polygon(0 0, 100% 0, calc(100% - 14px) calc(100% - 10px), calc(100% - 18px) calc(100% - 4px), calc(100% - 26px) 100%, 26px 100%, 18px calc(100% - 4px), 14px calc(100% - 10px));
 }
+/* Phones: the notch grows down past the camera cut-out (env() is 0 everywhere else). */
+.geo-notch { border-top: env(safe-area-inset-top) solid #27224f; }
+/* HUD corners keep clear of the notch and, on a phone on its side, the rounded edges. */
+.geo-safe-tl { margin-top: env(safe-area-inset-top); margin-left: env(safe-area-inset-left); }
+.geo-safe-tr { margin-top: env(safe-area-inset-top); margin-right: env(safe-area-inset-right); }
+.geo-band { margin-top: env(safe-area-inset-top); }
+/* The phone's corner minimap: its width, which the picture's bottom-left strip keeps clear of. */
+.geo-frame { --geo-mm: min(42vw, 16rem, 52vh); }
 /* The countdown pill's last seconds. */
 .geo-pill-urgent {
   animation: geo-pill-flash 0.5s ease-in-out infinite alternate;
@@ -706,4 +714,14 @@ html[data-dle-cb] .dle-close { background: rgb(133 192 249 / 0.4); border-color:
     top: env(safe-area-inset-top) !important;
     bottom: env(safe-area-inset-bottom) !important;
   }
+}
+
+/* mobile-nav-home: a PokéGuessr game (a round, its result, the summary, a duel or party) is
+   full screen on a phone too: the header and tab bar step aside under its frame, the page
+   can't scroll or bounce behind it, and a double tap doesn't zoom the page. */
+@media (max-width: 1023px) {
+  html:has(.geo-frame) { --tabbar-h: 0px; overscroll-behavior: none; }
+  html:has(.geo-frame) body > header,
+  html:has(.geo-frame) [data-testid="tabbar"] { display: none; }
+  .geo-frame { touch-action: manipulation; overscroll-behavior: none; }
 }

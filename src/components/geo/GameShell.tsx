@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronsDown, Maximize, Minimize, Pin, PinOff, Shrink, Expand, X, Map as MapIcon } from "lucide-react";
+import { Expand, Image as ImageIcon, Maximize, Minimize, Pin, PinOff, Shrink, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface FullscreenApi {
@@ -198,11 +198,12 @@ const remember = (key: string, value: string) => {
   }
 };
 
-/** True below Tailwind's `md` (phones): the map becomes a bottom sheet there. */
+/** Phones: below Tailwind's `md`, or a touch screen on its side (short and coarse). The map becomes the corner minimap there. */
+export const PHONE_QUERY = "(max-width: 767px), (pointer: coarse) and (max-height: 520px)";
 export function usePhone(): boolean {
   const [phone, setPhone] = useState(false);
   useEffect(() => {
-    const mq = window.matchMedia("(max-width: 767px)");
+    const mq = window.matchMedia(PHONE_QUERY);
     const on = () => setPhone(mq.matches);
     on();
     mq.addEventListener("change", on);
@@ -269,7 +270,7 @@ export function MapDock({
     leaveTimer.current = window.setTimeout(() => setHot(false), COLLAPSE_MS);
   };
 
-  if (phone) return <MapSheet map={map} button={button} extra={extra} hasPin={hasPin} testId={testId} />;
+  if (phone) return <PhoneMap map={map} button={button} extra={extra} hasPin={hasPin} aspect={aspect} testId={testId} />;
 
   const open = hot || sticky;
   // Open: one step up from the chosen size (XL is the top: it stays, so the button under it never flickers).
@@ -309,65 +310,125 @@ export function MapDock({
   );
 }
 
-/** The phone layout: a pill opens the map as a bottom sheet, dragged by its handle to resize or close. */
-function MapSheet({ map, button, extra, hasPin, testId }: { map: (o: { fill: boolean }) => React.ReactNode; button: React.ReactNode; extra?: React.ReactNode; hasPin: boolean; testId: string }) {
-  const [open, setOpen] = useState(false);
-  const [vh, setVh] = useState(70);
-  const drag = useRef<{ y: number; vh: number } | null>(null);
+/** A swipe this far (px) up the minimap opens the map, or down the map's foot closes it. */
+const SWIPE_PX = 36;
 
-  const onPointerDown = (e: React.PointerEvent) => {
-    drag.current = { y: e.clientY, vh };
-    e.currentTarget.setPointerCapture(e.pointerId);
-  };
-  const onPointerMove = (e: React.PointerEvent) => {
-    if (!drag.current) return;
-    const dy = drag.current.y - e.clientY;
-    setVh(Math.max(20, Math.min(92, drag.current.vh + (dy / window.innerHeight) * 100)));
-  };
-  const onPointerUp = () => {
-    if (!drag.current) return;
-    drag.current = null;
-    if (vh < 30) {
+/**
+ * The phone layout, GeoGuessr's: the live map sits small in the bottom-right
+ * corner (with the pin, once there is one). A tap or a swipe up opens it to
+ * the whole screen, where a tap drops the pin, a pinch zooms and a drag moves;
+ * Guess is the full-width bar at its foot, beside "Picture", which (like a
+ * swipe down on the bar, or Escape) shrinks it back. With a pin down, a
+ * small Guess shows under the minimap too. It is one map throughout, so the
+ * pin and the view carry over.
+ */
+function PhoneMap({ map, button, extra, hasPin, aspect, testId }: { map: (o: { fill: boolean }) => React.ReactNode; button: React.ReactNode; extra?: React.ReactNode; hasPin: boolean; aspect: number; testId: string }) {
+  const [open, setOpen] = useState(false);
+  const swipe = useRef<number | null>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      e.stopImmediatePropagation();
       setOpen(false);
-      setVh(70);
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [open]);
+  const onDown = (e: React.PointerEvent) => {
+    swipe.current = e.clientY;
+  };
+  const onMove = (e: React.PointerEvent) => {
+    if (swipe.current === null) return;
+    const dy = e.clientY - swipe.current;
+    if (!open && dy < -SWIPE_PX) {
+      swipe.current = null;
+      setOpen(true);
+    } else if (open && dy > SWIPE_PX) {
+      swipe.current = null;
+      setOpen(false);
     }
   };
-
+  const onUp = () => {
+    swipe.current = null;
+  };
+  // The minimap's width (--geo-mm on the frame: 42% of the screen, at most 16rem, or about half a sideways phone's height),
+  // and its shape: the map's own, kept between 5:4 and 16:9 so a wide world isn't a sliver.
+  const mm = "var(--geo-mm)";
+  const shape = Math.min(16 / 9, Math.max(1.25, aspect));
+  const foot = "calc(0.75rem + env(safe-area-inset-bottom))";
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        data-testid="geo-map-pill"
-        className={cn(
-          "absolute bottom-5 left-1/2 z-10 flex h-14 -translate-x-1/2 items-center gap-2 rounded-full px-6 font-display text-lg font-bold uppercase tracking-wide text-white shadow-xl transition-[transform,opacity] duration-[250ms]",
-          hasPin ? "bg-[#4cbb17]" : "bg-[#1e1a3f]/95 ring-2 ring-white/15",
-          open && "pointer-events-none translate-y-6 opacity-0"
-        )}
-        aria-expanded={open}
-      >
-        <MapIcon className="h-5 w-5" aria-hidden /> Guess
-      </button>
       <div
         data-testid={testId}
         data-open={open ? "true" : undefined}
-        className={cn("absolute inset-x-0 bottom-0 z-30 flex flex-col rounded-t-2xl bg-[#14112b] shadow-[0_-12px_40px_rgba(0,0,0,0.5)] transition-transform duration-[250ms] ease-out", open ? "translate-y-0" : "translate-y-full")}
-        style={{ height: `${vh}vh` }}
-        role="dialog"
-        aria-label="Guess map"
-        aria-hidden={!open}
+        data-phone="true"
+        className={cn(
+          "geo-minimap absolute overflow-hidden bg-[#165c96] transition-[right,bottom,width,height,border-radius,box-shadow] duration-[250ms] ease-out motion-reduce:transition-none",
+          open ? "z-[15] rounded-none" : "z-10 rounded-xl shadow-[0_6px_24px_rgba(0,0,0,0.55)] ring-2 ring-white/85"
+        )}
+        style={
+          open
+            ? { right: 0, bottom: 0, width: "100%", height: "100%" }
+            : { right: "0.75rem", bottom: hasPin ? `calc(${foot} + 3.5rem)` : foot, width: mm, height: `calc(${mm} / ${shape.toFixed(3)})` }
+        }
+        role={open ? "dialog" : undefined}
+        aria-label={open ? "Guess map" : undefined}
       >
-        <div className="flex shrink-0 items-center justify-between px-3 pt-2" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp} style={{ touchAction: "none" }}>
-          <span className="w-9" />
-          <span className="h-1.5 w-12 rounded-full bg-white/30" aria-hidden />
-          <button type="button" onClick={() => setOpen(false)} className="flex h-9 w-9 items-center justify-center rounded-full text-white/70 hover:bg-white/10" aria-label="Close the map">
-            <ChevronsDown className="h-5 w-5" />
-          </button>
+        <div className={cn("h-full w-full", open ? "[&_[data-map-controls]]:!top-1/2 [&_[data-map-controls]]:!right-3 [&_[data-map-controls]]:-translate-y-1/2 [&_[data-map-controls]_button]:!h-10 [&_[data-map-controls]_button]:!w-10" : "[&_[data-map-controls]]:hidden")}>
+          {map({ fill: true })}
         </div>
-        <div className="min-h-0 flex-1 overflow-hidden rounded-md px-2 pb-2">{map({ fill: true })}</div>
-        {extra && <div className="shrink-0 px-2 pb-2">{extra}</div>}
-        <div className="shrink-0 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">{button}</div>
+        {!open && (
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            onPointerDown={onDown}
+            onPointerMove={onMove}
+            onPointerUp={onUp}
+            onPointerCancel={onUp}
+            data-testid="geo-map-pill"
+            className="absolute inset-0 z-[3] flex items-start justify-end p-1.5 [-webkit-tap-highlight-color:transparent]"
+            style={{ touchAction: "none" }}
+            aria-label={hasPin ? "Open the map to move your pin" : "Open the map to place your pin"}
+            aria-expanded={false}
+          >
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur" aria-hidden>
+              <Expand className="h-3.5 w-3.5" />
+            </span>
+          </button>
+        )}
+        {open && (
+          <div
+            className="absolute inset-x-0 bottom-0 z-[4] bg-gradient-to-t from-[#0f0d1f]/90 via-[#0f0d1f]/60 to-transparent px-3 pt-8"
+            style={{ paddingBottom: foot, touchAction: "none" }}
+            onPointerDown={onDown}
+            onPointerMove={onMove}
+            onPointerUp={onUp}
+            onPointerCancel={onUp}
+          >
+            <span className="mx-auto mb-2 block h-1.5 w-12 rounded-full bg-white/40" aria-hidden />
+            {extra && <div className="mb-2">{extra}</div>}
+            <div className="flex items-stretch gap-2">
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                data-testid="geo-map-collapse"
+                className="flex h-12 shrink-0 items-center gap-1.5 rounded-md bg-[#1e1a3f]/95 px-3.5 font-display text-sm font-bold uppercase tracking-wide text-white shadow-lg ring-1 ring-white/15 active:scale-[0.98]"
+                aria-label="Back to the picture"
+              >
+                <ImageIcon className="h-5 w-5" aria-hidden />
+                Picture
+              </button>
+              <div className="min-w-0 flex-1">{button}</div>
+            </div>
+          </div>
+        )}
       </div>
+      {!open && hasPin && (
+        <div className="absolute right-3 z-10" style={{ bottom: foot, width: mm }}>
+          {button}
+        </div>
+      )}
     </>
   );
 }
@@ -387,7 +448,7 @@ export function GuessButton({ hasPin, disabled, busy, label, onClick, testId = "
       )}
     >
       {busy ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden /> : null}
-      {label ?? (hasPin ? "Guess" : "Place your pin on the map")}
+      {label ?? (hasPin ? "Guess" : <>Place your pin<span className="max-sm:hidden"> on the map</span></>)}
       {hasPin && !busy && !label && <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline">Space</kbd>}
     </button>
   );

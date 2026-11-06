@@ -58,10 +58,11 @@ const shotLoaded = (p) =>
 /** Drops a pin at (at, at) across the map and presses Guess: through the dock, or the phone's sheet. */
 async function pinAndGuess(p, phone, at, shots) {
   if (phone) {
+    // The corner minimap opens to the whole screen.
     await p.getByTestId("geo-map-pill").click();
     await p.locator("[data-testid=geo-dock][data-open=true]").waitFor();
     await p.waitForTimeout(350);
-    if (shots) await p.screenshot({ path: `${OUT}/${shots}-sheet.png` });
+    if (shots) await p.screenshot({ path: `${OUT}/${shots}-map.png` });
   } else {
     const dock = p.getByTestId("geo-dock");
     if (shots) {
@@ -92,7 +93,48 @@ async function pinAndGuess(p, phone, at, shots) {
     await p.screenshot({ path: `${OUT}/fail-pin.png` });
     throw new Error(`Guess stays disabled after a pin (${await p.getByTestId("geo-round").innerText().catch(() => "?")}, at ${at}, box ${JSON.stringify(box)})`);
   }
+  if (phone && shots) await phoneMinimapGuess(p);
   await guess.click();
+}
+
+/**
+ * A phone round, the GeoGuessr way: the minimap sits small in the corner, opens
+ * to fill the screen (the HUD stays on top), "Picture" shrinks it back with the
+ * pin kept, and a pin down puts a Guess under the minimap.
+ */
+async function phoneMinimapGuess(p) {
+  const vp = p.viewportSize();
+  const open = await p.getByTestId("geo-dock").boundingBox();
+  if (open.width < vp.width - 1 || open.height < vp.height * 0.6) errors.push(`phone: the open map doesn't fill the screen (${JSON.stringify(open)})`);
+  if (!(await p.getByTestId("geo-notch").isVisible())) errors.push("phone: the round notch hides behind the open map");
+  await p.getByTestId("geo-map-collapse").click();
+  await p.locator("[data-testid=geo-dock]:not([data-open])").waitFor();
+  await p.waitForTimeout(350);
+  const mini = await p.getByTestId("geo-dock").boundingBox();
+  if (mini.width > vp.width * 0.5 || mini.x + mini.width < vp.width - 20 || mini.y < vp.height / 2) errors.push(`phone: the minimap isn't small in the bottom-right corner (${JSON.stringify(mini)})`);
+  if ((await p.locator("[data-testid=geo-dock] svg g").count()) === 0) errors.push("phone: the minimap lost the pin");
+  const guess = p.locator("[data-testid=geo-guess]:not([disabled])");
+  if (!(await guess.isVisible())) errors.push("phone: no Guess under the minimap with a pin down");
+  // Nothing else on the page moves: no scroll behind the game, no header or tab bar showing.
+  const page = await p.evaluate(() => ({
+    y: window.scrollY,
+    header: getComputedStyle(document.querySelector("body > header") ?? document.body).display,
+    tabbar: document.querySelector('[data-testid="tabbar"]') ? getComputedStyle(document.querySelector('[data-testid="tabbar"]')).display : "none",
+  }));
+  if (page.y !== 0) errors.push(`phone: the page scrolled behind the game (${page.y})`);
+  if (page.header !== "none" || page.tabbar !== "none") errors.push(`phone: the site header or tab bar is still up in a round (${page.header}, ${page.tabbar})`);
+  await p.screenshot({ path: `${OUT}/guessr-round-pinned-${vp.width}.png` });
+  // Swiping up the minimap opens it again; then Guess from the full-screen map.
+  const pill = await p.getByTestId("geo-map-pill").boundingBox();
+  await p.getByTestId("geo-map-pill").dispatchEvent("pointerdown", { clientX: pill.x + pill.width / 2, clientY: pill.y + pill.height - 6, pointerId: 7, isPrimary: true });
+  await p.getByTestId("geo-map-pill").dispatchEvent("pointermove", { clientX: pill.x + pill.width / 2, clientY: pill.y - 60, pointerId: 7, isPrimary: true });
+  const swiped = await p.locator("[data-testid=geo-dock][data-open=true]").waitFor({ timeout: 3_000 }).then(() => true, () => false);
+  if (!swiped) {
+    errors.push("phone: a swipe up the minimap doesn't open the map");
+    await p.getByTestId("geo-map-pill").click();
+    await p.locator("[data-testid=geo-dock][data-open=true]").waitFor();
+  }
+  await p.waitForTimeout(300);
 }
 
 // ---------------------------------------------------------------------------

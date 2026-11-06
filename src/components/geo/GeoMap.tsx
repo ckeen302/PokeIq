@@ -270,7 +270,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
         </svg>
       )}
       {controls && (
-        <div className="absolute right-1.5 top-1.5 z-[2] flex flex-col gap-1">
+        <div className="absolute right-1.5 top-1.5 z-[2] flex flex-col gap-1" data-map-controls>
           {[
             { label: "Zoom in", icon: <Plus className="h-3.5 w-3.5" />, act: () => engine.current?.zoomBy(1.6) },
             { label: "Zoom out", icon: <Minus className="h-3.5 w-3.5" />, act: () => engine.current?.zoomBy(1 / 1.6) },

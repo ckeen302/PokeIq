@@ -270,7 +270,7 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
           <div className="absolute inset-0">
             <ShotCarousel views={[run.shot]} index={0} onIndex={() => undefined} onZoom={() => setZoomed(true)} fs />
           </div>
-          <div className="absolute left-3 top-3 z-20 flex items-center gap-2">
+          <div className="geo-safe-tl absolute left-3 top-3 z-20 flex items-center gap-2">
             <ExitButton onClick={() => setPhase("setup")} label="Back to Region Streak" />
             <FullscreenButton fs={fs} onClick={toggle} />
           </div>
@@ -350,7 +350,7 @@ function StreakReveal({ world, current, streak, notch, onNext, onExit }: { world
       <div className="absolute inset-x-0 top-0 bottom-[8.5rem] md:bottom-[6.75rem]">
         <GeoMap region={world} revealed={[{ guess: null, answer: graded.answer }]} fit={{ delay: LINE_DRAW_MS / 2, duration: FIT_MS }} fill controls={false} />
       </div>
-      <div className="absolute left-3 top-3 z-20">
+      <div className="geo-safe-tl absolute left-3 top-3 z-20">
         <ExitButton onClick={onExit} label="Back to Region Streak" />
       </div>
       {notch}
