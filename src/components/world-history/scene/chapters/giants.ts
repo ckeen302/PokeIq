@@ -61,12 +61,12 @@ export const build: ChapterBuilder = async (ctx) => {
   const shore = makeTerrain({ size: [70, 30], segments: Math.round(q.grid * 0.4), height: (x, z) => -2.5 + Math.max(0, 1 - (Math.abs(x) / 34) ** 2) * Math.max(0, 1 - ((z + 2) / 13) ** 2) * 3.4 + nz.fbm(x * 0.2, z * 0.2) * 0.4, color: (h) => (h > 0.4 ? [0.36, 0.33, 0.28] : [0.2, 0.19, 0.17]), center: [0, 0, 20] });
   scene.add(shore.mesh);
   disposers.push(shore.dispose);
-  const mist = makeCloudLayer({ size: 600, y: 2.5, color: "#c89098", shadow: "#2a1a38", density: 0.4, scale: 0.01, speed: [1.5, 0, 0.6], intensity: 0.28 });
+  const mist = makeCloudLayer({ size: 600, y: 2.5, color: "#c89098", shadow: "#2a1a38", density: 0.35, scale: 0.01, speed: [1.5, 0, 0.6], intensity: 0.16 });
   scene.add(mist.mesh);
   disposers.push(mist.dispose);
 
   // ---- Light.
-  const L = lights(scene, { sky: "#7a8ad8", ground: "#2a1810", fill: 0.42, key: "#ffb070", keyK: 2.8, keyPos: [-20, 12, -60], rim: "#6a90ff", rimK: 0.8, rimPos: [30, 20, 40] });
+  const L = lights(scene, { sky: "#8a9ae0", ground: "#3a2014", fill: 0.62, key: "#ffb070", keyK: 2.6, keyPos: [-20, 12, -60], rim: "#6a90ff", rimK: 0.8, rimPos: [30, 20, 40] });
 
   // ---- Figures.
   const figs = await loadFigures(ctx, [GIGAS, ROCK, ICE, STEEL]);
@@ -75,7 +75,7 @@ export const build: ChapterBuilder = async (ctx) => {
   const GIG: Vec3 = [0, -4.5, -18];
   const SPOTS: Vec3[] = [[-7, 0.4, 19], [0, 0.6, 21], [7, 0.4, 19]];
   place(gigas, GIG, 22, 0, scene);
-  figureStyle(gigas, { rim: "#ffb070", rimK: 2.4, glow: "#ffe2a0", glowK: 0.02 });
+  figureStyle(gigas, { rim: "#ffb070", rimK: 1.7, glow: "#ffe2a0", glowK: 0.02 });
   regis.forEach((f, i) => { place(f, SPOTS[i], 3.8, [0.3, 0, -0.3][i], scene); figureStyle(f, { rim: ["#ffb070", "#a8e8ff", "#c8d0ff"][i], rimK: 1.2, edge: ["#ff9a50", "#bff4ff", "#e0e6ff"][i], dissolve: 0 }); });
   // Shadows from the low sun behind the titan fall toward us across the land; the three stand on the shore.
   const sh = craft(ctx, L, {
@@ -97,6 +97,11 @@ export const build: ChapterBuilder = async (ctx) => {
     makeParticles({ count: P(500), shape: "sphere", center: SPOTS[2], extent: [3, 3, 3], velocity: [0, 1.2, 0], life: 2.4, size: [0.04, 0.12], colors: ["#fff2b0", "#ff8a30", "#ff3010"], intensity: 2.6, pull: 1.5, flicker: 0.5, seed: 3 }),
   ];
   elements.forEach((e) => { scene.add(e.points); disposers.push(e.dispose); });
+
+  // Sea spray thrown up around the titan's legs as it hauls.
+  const spray = makeParticles({ count: P(900), shape: "disc", center: [GIG[0], 0.5, GIG[2] + 2], extent: [14, 0.5, 6], velocity: [0, 3.2, 1.2], spread: [1.2, 1.4, 1.2], gravity: [0, -3, 0], life: 2.2, size: [0.12, 0.4], colors: ["#fff4e8", "#ffd8b0", "#c8d8e8"], intensity: 1.3, turbulence: 0.6, seed: 31 });
+  scene.add(spray.points);
+  disposers.push(spray.dispose);
 
   // ---- Ropes of light from its hands to the landmass.
   const ropeU = { uTime: { value: 0 }, uOpacity: { value: 0 } };
@@ -186,7 +191,7 @@ export const build: ChapterBuilder = async (ctx) => {
 
   const keys: Key[] = [
     { t: 0, pos: [0, 8, 96], look: [0, 10, -20], fov: 48 },
-    { t: tTowed, pos: [14, 4, 50], look: [0, 11, -20], fov: 44 },
+    { t: tTowed, pos: [10, 2.4, 33], look: [-1, 10.5, -20], fov: 46 },
     { t: tHisui, pos: [-30, 26, 42], look: [-12, 2, -70], fov: 50 },
     { t: tHisui + 4, pos: [-18, 15, 38], look: [-6, 5, -52], fov: 48 },
     { t: tShaped, pos: [3, 3.2, 35], look: [0, 2.8, 19], fov: 44 },
@@ -221,6 +226,9 @@ export const build: ChapterBuilder = async (ctx) => {
         figureStyle(gigas, { act: heave * 0.8, lean: -0.05 * ramp(t, tTowed - 0.5, tTowed + 0.5) * (1 - ramp(t, tShaped - 1, tShaped)) + heave * 0.03, flex: 0.3 });
       }
       sh.follow(t > cut ? [CAVE[0], 2, CAVE[2] - 8] : t > tShaped - 0.5 ? [0, 0.5, 19] : [GIG[0], 0, GIG[2] + 6], t > cut ? 16 : t > tShaped - 0.5 ? 14 : 30);
+      spray.u.uTime.value = ambient;
+      spray.u.uPixel.value = px;
+      spray.u.uOpacity.value = t < cut ? ramp(t, tTowed - 1, tTowed) * (1 - ramp(t, tShaped - 1, tShaped)) : 0;
       ropeU.uTime.value = ambient;
       ropeU.uOpacity.value = ramp(t, tTowed - 1.5, tTowed) * (1 - ramp(t, tShaped - 1, tShaped + 1));
       const step = Math.floor(t * 20);
@@ -258,14 +266,14 @@ export const build: ChapterBuilder = async (ctx) => {
       (wall.mat as THREE.MeshBasicMaterial).color.copy(col("#ffffff", 0.2 + 1.6 * braille * (0.85 + 0.15 * Math.sin(ambient * 1.7))));
       caveLight.intensity = t > cut ? 34 * (1 - ramp(t, tLong + 0.5, end) * 0.5) : 0;
       glow.set("#ffb860", t > cut ? 0.35 * braille : 0);
-      L.key.intensity = t > cut ? 0.4 : 2.8;
-      L.hemi.intensity = t > cut ? 0.45 : 0.42;
+      L.key.intensity = t > cut ? 0.4 : 2.6;
+      L.hemi.intensity = t > cut ? 0.45 : 0.62;
     },
     look(t) {
       const inCave = t > cut;
       const fog: Look["fog"] = inCave
         ? { color: [0.1, 0.075, 0.05], density: 0.02, height: 0, falloff: 0.18, sky: 0 }
-        : { color: [0.22, 0.12, 0.09], density: 0.0016, height: -2, falloff: 0.08, sun: { dir: [-0.54, 0.04, -0.84], color: [0.55, 0.28, 0.1] }, sky: 0.12 };
+        : { color: [0.22, 0.12, 0.09], density: 0.0016, height: -2, falloff: 0.08, sun: { dir: [-0.54, 0.04, -0.84], color: [0.3, 0.15, 0.05] }, sky: 0.1 };
       const focus: Vec3 = inCave ? [CAVE[0], 3, CAVE[2] - 12] : t > tShaped - 0.5 ? [0, 2.5, 19] : [GIG[0], 10, GIG[2]];
       return cine(lookAt(
         t,
@@ -278,7 +286,7 @@ export const build: ChapterBuilder = async (ctx) => {
           vignette: [[0, 0.4], [cut + 0.2, 0.6]],
           bloom: [[0, 0.75], [tSealed + 1, 1.0]],
           contrast: [[0, 1.12], [cut, 1.12], [cut + 0.2, 1.06]],
-          rays: [[0, 0.3], [cut - 0.2, 0.3], [cut, 0]],
+          rays: [[0, 0.12], [cut - 0.2, 0.12], [cut, 0]],
         },
         // Shafts from the low sun behind the titan.
         { pos: [-650, 50, -1000], color: [1.0, 0.7, 0.4] }

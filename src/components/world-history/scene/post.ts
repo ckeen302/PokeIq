@@ -324,7 +324,9 @@ export function createPost(renderer: THREE.WebGLRenderer, w: number, h: number, 
             float tl = (uTone == 2 ? agx(vec3(L)) : acesFull(vec3(L))).g;
             vec3 hk = hdr * (tl / max(L, 1e-5));
             float mx = max(max(hk.r, hk.g), hk.b);
-            if (mx > 1.0) hk = mix(hk / mx, vec3(1.0), clamp((mx - 1.0) * 0.18, 0.0, 0.6));
+            if (mx > 1.0) hk /= mx;
+            // Only truly hot cores (a sun, a burst) whiten; glowing rings and beams keep their hue.
+            hk = mix(hk, vec3(1.0), smoothstep(2.5, 14.0, L) * 0.85);
             tm = mix(tm, clamp(hk, 0.0, 1.0), uHueKeep);
           }
           vec3 d = sqrt(clamp(tm, 0.0, 1.0));

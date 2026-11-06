@@ -140,7 +140,7 @@ export const build: ChapterBuilder = async (ctx) => {
   scene.add(bubbles.points);
   disposers.push(bubbles.dispose);
   const shards = makeParticles({ count: P(1600), shape: "cylinder", center: [LAB[0], 3, LAB[2] - 6], extent: [1.9, 2.4, 1.9], velocity: [0, 1, 0], spread: [7, 4, 7], gravity: [0, -9.8, 0], life: 2.2, size: [0.03, 0.1], colors: ["#ffffff", "#c8ffe8", "#8affc8"], intensity: 2, burst: true, fadeOut: 0.4, seed: 8 });
-  const psychic = makeParticles({ count: P(1200), shape: "sphere", center: [LAB[0], 3, LAB[2] - 6], extent: [3.2, 3.2, 3.2], velocity: [0, 0.3, 0], spread: [0.3, 0.3, 0.3], life: 2.6, size: [0.04, 0.12], colors: ["#ffffff", "#d08aff", "#7a3aff"], intensity: 2, swirl: 1.4, turbulence: 0.6, seed: 9 });
+  const psychic = makeParticles({ count: P(1200), shape: "sphere", center: [LAB[0], 3, LAB[2] - 6], extent: [3.2, 3.2, 3.2], velocity: [0, 0.3, 0], spread: [0.3, 0.3, 0.3], life: 2.6, size: [0.04, 0.12], colors: ["#ffffff", "#d08aff", "#7a3aff"], intensity: 1.1, swirl: 1.4, turbulence: 0.6, seed: 9 });
   [shards, psychic].forEach((p) => { scene.add(p.points); disposers.push(p.dispose); });
   // Monitors: waveforms and readouts, flickering.
   const monitor = (seed: number) => makeCanvasPanel({
@@ -285,7 +285,7 @@ export const build: ChapterBuilder = async (ctx) => {
         floatFigure(two, [TWO[0], TWO[1] + (broken ? ramp(t, tBreak, tBreak + 2) * 0.6 : 0), TWO[2]], ambient, broken ? 0.06 : 0.02, 0, 0, 0.02);
         // The break: a gathering crouch, then the release and a stretch that settles; the tail and arms trail it.
         const act = actionCurve(t, tBreak, { pre: 0.9, post: 1.0 });
-        figureStyle(two, { dissolve: inLab ? 1 : 0, shadow: broken ? 0.05 : 0.7 - rage * 0.3, glowK: 0.06 + rage * 0.2 + 0.3 * spike(t, tBreak, 0.1, 1.2), act, flex: 0.4 * rage + 0.6 * spike(t, tBreak, 0.05, 1.4), alive: 0.6 + rage * 0.6 });
+        figureStyle(two, { dissolve: inLab ? 1 : 0, shadow: broken ? 0.05 : 0.7 - rage * 0.3, glowK: 0.04 + rage * 0.08 + 0.1 * spike(t, tBreak, 0.1, 1.2), act, flex: 0.4 * rage + 0.6 * spike(t, tBreak, 0.05, 1.4), alive: 0.6 + rage * 0.6 });
       }
       // The shadow box follows the subject.
       if (inLab) sh.follow([LAB[0] - 1.5, 1, LAB[2] - 4], 9);
@@ -301,7 +301,7 @@ export const build: ChapterBuilder = async (ctx) => {
       strips.visible = inLab;
       stripMat.color.copy(col("#d8ecff", 1.6 * buzz));
       ceil.forEach((c) => (c.intensity = inLab ? (40 - 22 * ramp(t, tPower - 0.5, tPower + 0.5)) * buzz : 0));
-      psyLight.intensity = inLab ? 2 + 22 * rage + 50 * spike(t, tBreak, 0.05, 1.2) : 0;
+      psyLight.intensity = inLab ? 2 + 9 * rage + 12 * spike(t, tBreak, 0.05, 1.2) : 0;
       pages.forEach((pg, i) => { pg.mesh.visible = inLab; (pg.mat as THREE.MeshStandardMaterial).emissiveIntensity = 0.3 + 0.25 * ramp(t, [tJungle, tMew, tBirth, tPower][i], [tJungle, tMew, tBirth, tPower][i] + 1); });
       lamp.intensity = inLab ? 6 * (0.9 + 0.1 * Math.sin(ambient * 17)) : 0;
       // Light.
@@ -326,7 +326,7 @@ export const build: ChapterBuilder = async (ctx) => {
           bloom: [[0, 0.8], [cutLab + 0.1, 0.9], [tBreak, 1.05], [end, 0.9]],
         }
       );
-      L0.flash = 0.25 * spike(t, tBreak, 0.04, 0.3);
+      L0.flash = 0.15 * spike(t, tBreak, 0.04, 0.3);
       if (!inLab) L0.rays = { pos: [40, 70, -90], color: [1.0, 0.95, 0.75], strength: 0.45 };
       else if (t > tPower) L0.rays = { pos: [LAB[0], 2.6, LAB[2] - 6], color: [0.8, 0.6, 1.0], strength: 0.4 * ramp(t, tPower, tBreak) };
       // Ground mist in the jungle, a cold haze in the lab; focus racks from the journals to the tank as it breaks.

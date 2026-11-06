@@ -163,7 +163,7 @@ export const build: ChapterBuilder = async (ctx) => {
   gate.mesh.position.set(MACH[0], MACH[1], MACH[2] + 0.05);
   scene.add(gate.mesh);
   disposers.push(gate.dispose);
-  const tunnel = makeRift({ radius: 5.6, depth: 46, outer: "#7ae0ff", mid: "#9a7aff", deep: "#ff7ad8", light: "#f0faff", intensity: 1.3, void: "#020814" });
+  const tunnel = makeRift({ radius: 5.6, depth: 46, outer: "#7ae0ff", mid: "#9a7aff", deep: "#ff7ad8", light: "#b890ff", intensity: 1.5, void: "#01040c" });
   tunnel.group.position.set(MACH[0], MACH[1], MACH[2] - 0.1);
   scene.add(tunnel.group);
   disposers.push(tunnel.dispose);

@@ -276,7 +276,7 @@ export const build: ChapterBuilder = async (ctx) => {
         bot.copy(col("#1a1a24"));
         sky.u.uSunGlow.value = 0.7 * (1 - storm) * (1 - night) + daybreak * 0.9 + dawn * 0.4;
         sky.u.uSunColor.value.copy(col("#ffc080", (1 - storm) * (1 - night) + daybreak * 1.2 + dawn));
-        fog.color.copy(col("#a08070").lerp(col("#2a2a30"), storm).lerp(col("#14121a"), night).lerp(col("#b07868"), daybreak).lerp(col("#d0b0a0"), dawn));
+        fog.color.copy(col("#a08070").lerp(col("#2a2a30"), storm).lerp(col("#14121a"), night).lerp(col("#2a1824"), daybreak).lerp(col("#d0b0a0"), dawn));
         fog.density = (0.006 + storm * 0.006 + rainK * 0.006) * (1 - daybreak * 0.75);
       }
       sky.u.uStars.value = alph ? 0 : night * 0.04 * (1 - daybreak * 0.7);

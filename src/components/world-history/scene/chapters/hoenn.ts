@@ -100,7 +100,7 @@ export const build: ChapterBuilder = async (ctx) => {
   scene.add(seaLight);
 
   // ---- Light.
-  const L = lights(scene, { sky: "#8090b0", ground: "#1a1210", fill: 0.45, key: "#c8d4ff", keyK: 1.1, keyPos: [10, 30, 30], rim: "#ffb080", rimK: 1.0, rimPos: [-30, 10, -60] });
+  const L = lights(scene, { sky: "#6070a0", ground: "#120c0a", fill: 0.3, key: "#c8d4ff", keyK: 1.1, keyPos: [10, 30, 30], rim: "#ffb080", rimK: 1.0, rimPos: [-30, 10, -60] });
 
   // ---- Rayquaza's descent.
   const shaft = makeShaft({ from: [0, 100, -36], to: [0, 0, -36], r0: 3.5, r1: 18, color: "#6dffb4", intensity: 0.3, noise: 0.6 });
@@ -176,11 +176,11 @@ export const build: ChapterBuilder = async (ctx) => {
   const figs = await loadFigures(ctx, [GROUDON, KYOGRE, RAY, MEGA]);
   const groudon = figs.get(GROUDON), kyogre = figs.get(KYOGRE), ray = figs.get(RAY), mega = figs.get(MEGA);
   place(groudon, GROU, 17, 0.55, scene);
-  figureStyle(groudon, { rim: "#ff8a40", rimK: 1.6, glow: "#ff6a20", glowK: 0.05, edge: "#ff9a40" });
+  figureStyle(groudon, { rim: "#ff7a30", rimK: 2.6, glow: "#ff6a20", glowK: 0.05, edge: "#ff9a40" });
   place(kyogre, KYO, 19, -0.5, scene);
-  figureStyle(kyogre, { rim: "#7ad0ff", rimK: 1.6, glow: "#3aa8ff", glowK: 0.05, edge: "#9fe8ff" });
+  figureStyle(kyogre, { rim: "#5ac8ff", rimK: 2.6, glow: "#3aa8ff", glowK: 0.05, edge: "#9fe8ff" });
   place(ray, [0, 90, -36], 24, 0, scene);
-  figureStyle(ray, { rim: "#9affc8", rimK: 1.8, glow: "#3cff9a", glowK: 0.06, edge: "#d8ffe8" });
+  figureStyle(ray, { rim: "#7affb8", rimK: 2.4, glow: "#3cff9a", glowK: 0.06, edge: "#d8ffe8" });
   place(mega, RQ_NIGHT, 26, 0, scene);
   figureStyle(mega, { rim: "#ffe6a0", rimK: 1.6, glow: "#6dffb4", glowK: 0.08, edge: "#ffffff", dissolve: 0 });
   const sh = craft(ctx, L, {
@@ -398,8 +398,8 @@ export const build: ChapterBuilder = async (ctx) => {
           fade: [[cut - 0.5, 0], [cut - 0.08, 1], [cut + 0.12, 1], [cut + 0.8, 0]],
           gain: [[0, [0.92, 0.98, 1.1]], [tCalm, [0.95, 1.02, 1.05]], [tCalm + 2, [0.98, 1.04, 1.02]], [cut, [0.98, 1.04, 1.02]], [cut + 0.1, [0.9, 0.96, 1.14]], [tPeace - 1, [0.95, 0.98, 1.08]], [tPeace + 3, [1.1, 1.0, 0.9]]],
           lift: [[0, [0.012, 0.006, 0.004]], [cut, [0.004, 0.008, 0.008]], [cut + 0.1, [0.0, 0.004, 0.014]], [tPeace + 3, [0.012, 0.008, 0.006]]],
-          saturation: [[0, 1.0], [tCalm, 1.1], [cut, 1.05], [tPeace + 3, 1.15]],
-          contrast: [[0, 1.12], [tCalm + 2, 1.05], [cut + 0.2, 1.1], [end, 1.04]],
+          saturation: [[0, 1.12], [tCalm, 1.2], [cut, 1.08], [tPeace + 3, 1.15]],
+          contrast: [[0, 1.18], [tCalm + 2, 1.1], [cut + 0.2, 1.12], [end, 1.06]],
           chroma: [[tCalm - 0.05, 0], [tCalm, 0.35], [tCalm + 0.8, 0], [tImpact - 0.05, 0], [tImpact, 0.5], [tImpact + 1, 0], [tMega - 0.05, 0], [tMega, 0.3], [tMega + 0.8, 0]],
           vignette: [[0, 0.45], [tCalm + 2, 0.32], [cut + 0.2, 0.5], [end, 0.36]],
           bloom: [[0, 0.75], [tRay, 0.9], [tCalm + 2, 0.75], [cut, 0.8], [tMega, 0.95], [tMega + 3, 0.8]],
@@ -413,9 +413,9 @@ export const build: ChapterBuilder = async (ctx) => {
       else if (night && t >= tPeace - 0.5) L0.rays = { pos: sunPos, color: [1.0, 0.78, 0.55], strength: 0.2 * ramp(t, tPeace - 0.5, tPeace + 3) };
       const fog: Look["fog"] = night
         ? { color: [0.03, 0.045, 0.08], density: 0.003, height: 0, falloff: 0.06, sky: 0.2 }
-        : { color: [0.1, 0.12, 0.16], density: 0.0035, height: 0, falloff: 0.05, sky: 0.3 };
+        : { color: [0.04, 0.06, 0.09], density: 0.0025, height: 0, falloff: 0.05, sky: 0.2 };
       const focus: Vec3 = night ? RQ_NIGHT : t > tRay ? [0, rayY(t), -36] : GROU;
-      return cine(L0, { fog, dof: { focus, k: 0.25 }, streak: 0.15 + 0.3 * spike(t, tCalm, 0.05, 1.5) });
+      return cine(L0, { fog, dof: { focus, k: 0.25 }, streak: 0.15 + 0.3 * spike(t, tCalm, 0.05, 1.5), black: 0.06, split: { shadows: [-0.02, 0.0, 0.04], highlights: [0.04, 0.015, -0.02] } });
     },
     dispose() {
       disposers.forEach((d) => d());
