@@ -294,7 +294,7 @@ export const build: ChapterBuilder = async (ctx) => {
   scene.add(vortexLight);
   const vortexGlow = D.add(makeGlow({ pos: [0, 1.5, deskZ], size: 1.6, color: "#ffc880", intensity: 0 }));
   scene.add(vortexGlow.sprite);
-  const vortexDust = D.add(makeParticles({ count: Math.round(260 * ctx.q.particles) + 40, shape: "sphere", center: [0, 1.5, deskZ], extent: [0.8, 0.6, 0.8], velocity: [0, 0.1, 0], spread: [0.1, 0.1, 0.1], life: 2, size: [0.006, 0.016], colors: ["#fff4d8", "#ffd890", "#ffb860"], intensity: 2.2, turbulence: 0.6, swirl: 1.2 }));
+  const vortexDust = D.add(makeParticles({ count: Math.round(260 * ctx.q.particles) + 40, shape: "sphere", center: [0, 1.5, deskZ], extent: [0.8, 0.6, 0.8], velocity: [0, 0.1, 0], spread: [0.1, 0.1, 0.1], life: 2, size: [0.006, 0.016], colors: ["#fff4d8", "#ffd890", "#ffb860"], intensity: 1.2, turbulence: 0.6, swirl: 1.2 }));
   scene.add(vortexDust.points);
   const cone = D.add(makeShaft({ from: bulbAt, to: [0.05, 1.02, deskZ + 0.15], r0: 0.07, r1: 0.95, color: "#ffcf8a", intensity: 0.22, noise: 0.5 }));
   scene.add(cone.mesh);
@@ -429,9 +429,9 @@ export const build: ChapterBuilder = async (ctx) => {
       const vk = lift * (1 - settle);
       const vc = S0.clone().lerp(C, 0.45);
       vortexLight.position.copy(vc);
-      vortexLight.intensity = 9 * vk;
+      vortexLight.intensity = 2.6 * vk;
       vortexGlow.sprite.position.copy(vc);
-      vortexGlow.set("#ffc880", 0.35 * vk);
+      vortexGlow.set("#ffc880", 0.1 * vk);
       vortexDust.u.uCenter.value.copy(vc); vortexDust.u.uTime.value = ambient; vortexDust.u.uPixel.value = px; vortexDust.u.uOpacity.value = vk;
       swirl.visible = lift > 0.001 && settle < 0.999;
       // The pen follows the ink line's end.
