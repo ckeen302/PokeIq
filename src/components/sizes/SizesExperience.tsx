@@ -96,8 +96,10 @@ function qualityParam(): Quality | null {
 const LADDER: Quality[] = ["low", "medium", "high"];
 /** A frame-time average above this (ms) is slow on any screen. */
 const SLOW_MS = 18;
-/** The speeds the Play button's speed control steps through. */
-const PLAY_SPEEDS = [1, 2, 4];
+/** The speeds the Play button's speed control steps through, from the normal 1×: faster, then half speed, then back. */
+const PLAY_SPEEDS = [1, 2, 4, 0.5];
+/** A speed as the button shows it (½× rather than 0.5×). */
+const speedLabel = (v: number) => (v === 0.5 ? "½×" : `${v}×`);
 
 /** The drag follows the pointer this closely (per second); everything else eases at its RATE. */
 const RATE_DRAG = 22;
@@ -1344,8 +1346,8 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
                   {playing ? "Stop" : kind === "hold" ? "Replay" : "Play"}
                 </button>
                 {playing && (
-                  <button type="button" onClick={cycleSpeed} className={cn(chip, "h-11 min-w-[3.25rem] justify-center px-3 font-display text-sm font-bold")} aria-label={`Play speed ${playSpeed}×. Change speed`} title="Play speed" data-testid="sizes-speed">
-                    {playSpeed}×
+                  <button type="button" onClick={cycleSpeed} className={cn(chip, "h-11 min-w-[3.25rem] justify-center px-3 font-display text-sm font-bold")} aria-label={`Play speed ${playSpeed === 0.5 ? "half" : `${playSpeed}×`}. Change speed`} title="Play speed" data-testid="sizes-speed">
+                    {speedLabel(playSpeed)}
                   </button>
                 )}
                 <button type="button" onClick={() => (compareOpen ? closeCompare() : openCompare())} className={cn(chip, "h-11", compareOpen && "border-[#ffd84a]/70 text-[#ffd84a]")} aria-pressed={compareOpen} disabled={!ready} aria-label="Compare sizes" data-testid="sizes-compare">
