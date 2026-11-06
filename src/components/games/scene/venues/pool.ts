@@ -296,7 +296,7 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
           float up = clamp(rf.y, 0.0, 1.0);
           vec2 cp = vW.xz + rf.xz / max(0.15, rf.y) * 14.0;
           float panels = step(0.82, fract(cp.x / 6.0)) * step(0.4, fract(cp.y / 9.0)) * step(0.3, up);
-          vec3 ceil = mix(uCeil * 0.55, uCeil, up) + vec3(3.2, 3.1, 2.9) * panels * (1.0 - uRain);
+          vec3 ceil = mix(uCeil * 0.55, uCeil, up) + vec3(1.3, 1.25, 1.15) * panels * up * (1.0 - uRain);
           ceil = mix(ceil, vec3(0.08, 0.09, 0.11), uRain * 0.85);
           // The water's own colour: the tiles' light through it (shallower looking straight down).
           vec3 body = mix(uShallow, uDeep, clamp(1.0 - cosv, 0.0, 1.0));
@@ -355,7 +355,7 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
         const tri = new THREE.BufferGeometry();
         tri.setAttribute("position", new THREE.Float32BufferAttribute([fx, 1.8, z - 0.18, fx, 1.8, z + 0.18, fx, 1.5, z], 3));
         tri.setAttribute("normal", new THREE.Float32BufferAttribute([1, 0, 0, 1, 0, 0, 1, 0, 0], 3));
-        const c = flagCols[Math.round((z - z0) * 2) % 3];
+        const c = flagCols[(((Math.round((z - z0) * 2)) % 3) + 3) % 3];
         for (let q = 0; q < 3; q++) colors.push(c.r, c.g, c.b);
         parts.push(tri);
       }

@@ -87,7 +87,14 @@ export function swimShow(race: SwimRace, o: ShowOptions): Show {
         const finishK = smooth(D - 12, D - 4, L.x);
         // The dive from the side; the rail camera with the leader; the turn from behind the wall; the finish from behind the pads.
         const dive = framed([x0 + 9, 4.2, 20 * back], [x0 + 6, 0, 0], 26 * wide, 9, aspect, 10, 55);
-        const rail = framed([lx + 3.5, 5.5, 21 * back], [lx - 1.5, -0.3, 0], 24 * wide, 9, aspect, 10, 55);
+        // The rail camera frames the leaders: wide enough for the biggest of them, close enough to see a small one.
+        const front = plans.map((p) => ({ p, x: swimAt(p.run.trace, t).x })).sort((a, b) => b.x - a.x).slice(0, 3);
+        const span = Math.max(11, Math.min(36, 7 + 3.2 * Math.max(...front.map((f) => f.p.len))));
+        const zc = front.reduce((s, f) => s + f.p.z, 0) / front.length;
+        // On the deck at the most (not in the stands): further than that, it climbs instead.
+        const want = zc + (4 + span * 0.85) * back;
+        const rz = Math.min(15.5, want);
+        const rail = framed([lx + span * 0.12, 1.2 + span * 0.2 + (want - rz) * 0.9, rz], [lx - span * 0.08, -0.2, zc * 0.6], span * wide, span * 0.42, aspect, 10, 60);
         const turnCam = framed([x1 + 3.5, 3.4, 9 * back], [x1 - 7, -0.2, -1], 26 * wide, 9, aspect, 10, 60);
         const wallX = D === 100 ? x0 : x1, dir = D === 100 ? -1 : 1;
         const fin = framed([wallX + dir * 5, 3.2, 11 * back], [wallX - dir * 9, -0.2, 0], 26 * wide, 9, aspect, 10, 60);
@@ -104,7 +111,8 @@ export function swimShow(race: SwimRace, o: ShowOptions): Show {
         // Low over the water at the finish wall, the touch in slow motion.
         const wallX = D === 100 ? x0 : x1, dir = D === 100 ? -1 : 1;
         const wp = plans.find((p) => p.run === win)!;
-        return framed([wallX - dir * 3.5, 1.1, wp.z + 8 * back], [wallX - dir * 2, 0, wp.z], 12 * wide, 5, aspect, 12, 60);
+        const w = Math.max(5, wp.len * 3.2);
+        return framed([wallX - dir * w * 0.45, 0.35 + w * 0.08, wp.z + (1.5 + w * 0.55) * back], [wallX - dir * w * 0.3, 0.05, wp.z], w * wide, w * 0.42, aspect, 12, 60);
       }
       default:
         return drift(framed([0, 14, 34 * back], [0, 0, 0], 54 * wide, 18, aspect, 10, 60), show, 0.02);

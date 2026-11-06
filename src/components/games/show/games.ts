@@ -3,6 +3,7 @@ import { eventOf, type Venue } from "@/lib/games/events";
 import { medalTable, type GamesResult, type MedalRow } from "@/lib/games/games";
 import { POOL } from "@/lib/games/venues";
 import { eventShow } from "./build";
+import { podiumShow, type Medallist } from "./podium";
 import { crane } from "./cams";
 import { sequence, type Sequence } from "./sequence";
 import { NO_PROPS, type Overlay, type Show, type ShowFrame } from "./types";
@@ -54,7 +55,13 @@ export function gamesShow(g: GamesResult, byKey: ReadonlyMap<string, Athlete>, o
     const last = i === g.outcomes.length - 1;
     const tail = boardShow(out.event, ev.venue === "pool" ? "pool" : ev.venue, last ? "Final medal table" : `Medal table · after ${ev.lower}`, tableRows(table), last ? 6 : 3.6);
     const champ = last && g.champion ? byKey.get(g.champion) : null;
-    parts.push(sequence([main.parts.length ? main : main, tail], { event: out.event, hook: main.hook, headline: champ ? `${champ.name} is the Champion of the Games` : main.headline }));
+    const shows: Show[] = [...main.parts.map((p) => p.show), tail];
+    // The close: the top three nations on the podium, each represented by its first athlete.
+    if (last) {
+      const meds: Medallist[] = table.slice(0, 3).filter((r) => r.nation.athletes[0]).map((r) => ({ athlete: r.nation.athletes[0], medal: Math.min(3, r.rank) as 1 | 2 | 3, mark: `${r.gold} gold · ${r.silver} silver · ${r.bronze} bronze`, nation: { name: r.nation.name, color: r.nation.color } }));
+      if (meds.length) shows.push(podiumShow("all-around", "stadium", meds, { video: o.video, title: "The Games · the nations" }));
+    }
+    parts.push(sequence(shows, { event: out.event, hook: main.hook, headline: champ ? `${champ.name} is the Champion of the Games` : main.headline }));
   });
   return { parts };
 }

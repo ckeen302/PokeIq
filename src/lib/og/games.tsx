@@ -38,7 +38,9 @@ function Podium({ rows }: { rows: { a: Athlete; mark: string; medal: 1 | 2 | 3 }
     <div style={{ display: "flex", position: "relative", width: W, height: H, borderRadius: 16, overflow: "hidden", background: "linear-gradient(180deg,#0b1a3a,#060b18)", border: "3px solid #2a2745" }}>
       {order.map((m, i) => {
         const r = rows.find((x) => x.medal === m);
-        const x = 20 + i * 145;
+        // A head to head has no third step.
+        if (!r && m === 3) return null;
+        const x = 20 + i * 145 + (rows.length < 3 ? 72 : 0);
         return (
           <div key={m} style={{ display: "flex", position: "absolute", left: x, bottom: 0, width: 140, height: H, flexDirection: "column", alignItems: "center", justifyContent: "flex-end" }}>
             {r && <Render a={r.a} size={m === 1 ? 130 : 108} />}
