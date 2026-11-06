@@ -189,9 +189,9 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
     uSwim: { value: swimmers },
     uSwimDir: { value: swimDir },
     uRain: { value: 0 },
-    uCeil: { value: new THREE.Color(0.75, 0.82, 0.9) },
-    uDeep: { value: new THREE.Color(0.0, 0.16, 0.28) },
-    uShallow: { value: new THREE.Color(0.06, 0.42, 0.55) },
+    uCeil: { value: new THREE.Color(0.6, 0.68, 0.78) },
+    uDeep: { value: new THREE.Color(0.0, 0.09, 0.2) },
+    uShallow: { value: new THREE.Color(0.02, 0.3, 0.46) },
   };
   const hi = o.quality === "high";
   const water = new THREE.Mesh(
@@ -303,7 +303,8 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
           vec3 col = mix(body, ceil, fres);
           float foam = clamp(vFoam, 0.0, 1.0) * (0.55 + 0.45 * wh(floor(vW.xz * 40.0) + floor(uTime * 12.0)));
           col = mix(col, vec3(0.95, 0.98, 1.0), foam * 0.85);
-          float a = mix(0.62, 0.97, fres);
+          // Mostly the water's own deep blue: the tiles and their caustics show through a little.
+          float a = mix(0.78, 0.97, fres);
           a = max(a, foam);
           gl_FragColor = vec4(col, a);
           #include <tonemapping_fragment>
@@ -597,7 +598,7 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
   return {
     group,
     env,
-    fog: new THREE.FogExp2(new THREE.Color(0.55, 0.62, 0.7), 0.0035),
+    fog: new THREE.FogExp2(new THREE.Color(0.45, 0.52, 0.6), 0.002),
     update(t, _cam, ex) {
       time.value = t;
       crowd.update(t, ex);
