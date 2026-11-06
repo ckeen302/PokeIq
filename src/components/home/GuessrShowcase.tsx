@@ -16,10 +16,21 @@ const SLIDE_MS = 4200;
  * PokéGuessr in one glance on the title screen: a real in-game view per
  * region, and a pin dropping where it is on the world map. Only the first
  * view loads with the page (it's the hero image); the rest load once the page
- * has settled, and the cycle pauses off screen, in a background tab and for
- * reduced motion.
+ * has settled, and the cycle pauses off screen, in a background tab, while
+ * another slide of the title screen is showing, and for reduced motion.
  */
-export function GuessrShowcase({ slides, map, className }: { slides: ShowcaseSlide[]; map: { src: string; width: number; height: number }; className?: string }) {
+export function GuessrShowcase({
+  slides,
+  map,
+  active = true,
+  className,
+}: {
+  slides: ShowcaseSlide[];
+  map: { src: string; width: number; height: number };
+  /** False while the title screen shows another tab: the views hold still. */
+  active?: boolean;
+  className?: string;
+}) {
   const [index, setIndex] = useState(0);
   const [armed, setArmed] = useState(false);
   const [loaded, setLoaded] = useState<Set<number>>(() => new Set([0]));
@@ -43,7 +54,7 @@ export function GuessrShowcase({ slides, map, className }: { slides: ShowcaseSli
   }, []);
 
   useEffect(() => {
-    if (!armed) return;
+    if (!armed || !active) return;
     const timer = window.setInterval(() => {
       if (document.hidden || !visible.current) return;
       setIndex((i) => {
@@ -56,7 +67,7 @@ export function GuessrShowcase({ slides, map, className }: { slides: ShowcaseSli
       });
     }, SLIDE_MS);
     return () => window.clearInterval(timer);
-  }, [armed, loaded, slides.length]);
+  }, [armed, active, loaded, slides.length]);
 
   const pin = slides[index].pin;
 
@@ -69,7 +80,7 @@ export function GuessrShowcase({ slides, map, className }: { slides: ShowcaseSli
             src={slide.image}
             alt=""
             priority={i === 0}
-            sizes="(min-width: 1024px) 760px, 100vw"
+            sizes="(min-width: 1152px) 1152px, 100vw"
             placeholder={i === 0 ? "blur" : "empty"}
             onLoad={() => setLoaded((s) => (s.has(i) ? s : new Set(s).add(i)))}
             className={cn(
@@ -82,7 +93,7 @@ export function GuessrShowcase({ slides, map, className }: { slides: ShowcaseSli
       )}
 
       {/* The world map, with a pin where this view is. */}
-      <div className="absolute right-3 top-3 z-[2] w-[34%] max-w-[200px] overflow-hidden rounded-md border border-white/25 bg-[hsl(214_70%_28%)] shadow-[0_8px_24px_rgb(0_0_0/0.45)] lg:bottom-5 lg:right-5 lg:top-auto lg:w-[30%]">
+      <div className="absolute right-3 top-3 z-[2] w-[34%] max-w-[200px] overflow-hidden rounded-md border border-white/25 bg-[hsl(214_70%_28%)] shadow-[0_8px_24px_rgb(0_0_0/0.45)] lg:right-5 lg:top-5 lg:w-[22%]">
         <div className="relative" style={{ aspectRatio: `${map.width} / ${map.height}` }}>
           <Image src={map.src} alt="" width={map.width} height={map.height} sizes="200px" className="h-full w-full opacity-90" />
           {pin && (
