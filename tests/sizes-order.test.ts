@@ -13,6 +13,7 @@ import { everythingLine, listCaption, listItems, listNote, listOrder, listRows, 
 import { FILL_H, MIXED_ROOM, MIXED_SLOPE, envelope, frameDistance, framer, glideAt, type Lens } from "@/lib/sizes/glide";
 import { holdsFor, planPlay } from "@/lib/sizes/play";
 import { planWorld } from "@/lib/sizes/world";
+import { BASE_YAW } from "@/lib/sizes/camera";
 import { stopCaption } from "@/lib/sizes/facts";
 import { badgeSize } from "@/lib/sizes/badges";
 import { bySize, fromRow, layoutLine, toRow, type SizeItem } from "@/lib/sizes/types";
@@ -337,7 +338,15 @@ describe("Order by: the camera in a mixed line", () => {
     expect(framingFor({ by: "height", dir: "desc" })).toBe("size");
     expect(ringRuleFor(HEIGHT_ORDER)).toBe("first-big");
     expect(ringRuleFor(speed)).toBe("tail");
-    expect(planWorld(placed, ringRuleFor(speed)).ring).toBeNull();
+    const sw = planWorld(placed, ringRuleFor(speed));
+    expect(sw.ring).toBeNull();
+    // Eternamax Eternatus stands out on the boulevard: the camera's side opens into an esplanade wider than the camera ever stands back.
+    const giant = placed.find((p) => p.key === "eternatus-eternamax")!;
+    const far = Math.max(...[lens, { vfov: 46, aspect: 390 / 716 }].map((l) => frameDistance(giant.w, giant.h, l)));
+    expect(sw.open).toBeGreaterThan(far * Math.cos(BASE_YAW));
+    // Lines with no giant out on the street, and Height smallest first, keep their street wall.
+    expect(planWorld(layoutLine(presetLineup(PRESET_BY_ID.get("gen-1")!, SIZE_ITEMS, speed)), "tail").open).toBe(0);
+    expect(planWorld(layoutLine(every()), "first-big").open).toBe(0);
     const h = every();
     const hp = layoutLine(h);
     expect(JSON.stringify(planWorld(hp, ringRuleFor(HEIGHT_ORDER)))).toBe(JSON.stringify(planWorld(hp)));

@@ -127,7 +127,16 @@ export interface WorldPlan {
   /** Directions (radians round the tower, atan2(z - cz, x - cx)) of the radial avenues; the first is the boulevard's own. */
   avenues: number[];
   districts: District[];
+  /**
+   * How far the camera's side of the boulevard is open (m from the line; 0: its street wall stands as usual). A line
+   * in a stat or weight order may have a giant out on the boulevard, framed from far back: the camera's side is then
+   * an open esplanade, so no building stands between the camera and the line.
+   */
+  open: number;
 }
+
+/** Figures at least this big (m) on the boulevard need the camera further back than the near street wall. */
+export const OPEN_M = 12;
 
 /**
  * Where the ring round Prism Tower begins. "first-big": at the line's first big figure (a line that grows: the
@@ -185,7 +194,11 @@ export function planWorld(placed: PlacedFigure[], rule: RingRule = "first-big"):
     const am = (a0 + a1) / 2, pr = r + 205;
     return { ...d, a0, a1, plaza: { x: cx + Math.cos(am) * pr, z: cz + Math.sin(am) * pr, r: 34 } };
   });
-  return { x0, x1, plaza: { cx, cz, r }, tower: { x: cx, z: cz }, lineStart, lineEnd, path: { ...linePath(ring), tower: { x: cx, z: cz } }, ring, avenues, districts };
+  // A giant on the straight part of a line that doesn't grow: open the camera's side out past where the camera frames it from (about 3.5 times its size on a phone).
+  const onStreet = placed.filter((p) => !ring || p.x < ring.s0).map((p) => Math.max(p.h, p.w));
+  const biggest = onStreet.length ? Math.max(...onStreet) : 0;
+  const open = rule === "tail" && biggest >= OPEN_M ? Math.min(1500, Math.max(160, biggest * 4)) : 0;
+  return { x0, x1, plaza: { cx, cz, r }, tower: { x: cx, z: cz }, lineStart, lineEnd, path: { ...linePath(ring), tower: { x: cx, z: cz } }, ring, avenues, districts, open };
 }
 
 /** An angle in (-π, π]. */

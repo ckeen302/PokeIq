@@ -389,7 +389,8 @@ export function buildProps(plan: WorldPlan, shared: Shared, tex: { bark: THREE.M
       canopy[v].push(place(x, 0, z, yaw, sc, sc * (0.9 + r() * 0.2)));
       leafCols[v].push(new THREE.Color().setHSL(0.23 + r() * 0.05, 0.35 + r() * 0.2, 0.62 + r() * 0.12));
     };
-    for (const side of [1, -1]) for (let x = x0 + 4; x < endAt(side * STREET.trees); x += 10.5) tree(x + (r() - 0.5) * 0.6, side * STREET.trees);
+    // (Not on the camera's side when it is an open esplanade: the camera frames from far back there, over the trees' row.)
+    for (const side of plan.open ? [1] : [1, -1]) for (let x = x0 + 4; x < endAt(side * STREET.trees); x += 10.5) tree(x + (r() - 0.5) * 0.6, side * STREET.trees);
     // A ring of trees round the plaza's edge, leaving the ways out open.
     const ringR = plan.plaza.r - 9;
     const count = Math.round((Math.PI * 2 * ringR) / 12);

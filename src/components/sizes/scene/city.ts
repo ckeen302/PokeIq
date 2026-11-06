@@ -318,11 +318,13 @@ function flowerTexture(color: string): THREE.CanvasTexture {
 /** Whether a block (an annular sector round the plaza's centre) would stand in the boulevard's corridor or on a colour plaza. */
 function blocked(plan: WorldPlan, C: { x: number; z: number }, r0: number, r1: number, a0: number, a1: number): boolean {
   const corridor = STREET.facade + STREET.depth + 14;
+  // An open esplanade on the camera's side (plan.open) keeps that side clear much further out.
+  const near = plan.open ? plan.open + 14 : corridor;
   for (let i = 0; i <= 4; i++) {
     for (let j = 0; j <= 4; j++) {
       const r = r0 + ((r1 - r0) * i) / 4, a = a0 + ((a1 - a0) * j) / 4;
       const x = C.x + Math.cos(a) * r, z = C.z + Math.sin(a) * r;
-      if (Math.abs(z) < corridor && x < plan.plaza.cx + 10 && x > plan.x0 - 40) return true;
+      if (z < corridor && z > -near && x < plan.plaza.cx + 10 && x > plan.x0 - 40) return true;
       for (const d of plan.districts) if (Math.hypot(x - d.plaza.x, z - d.plaza.z) < d.plaza.r + 26) return true;
     }
   }
@@ -343,6 +345,8 @@ export function buildCity(plan: WorldPlan, shared: Shared, tex: CityTextures, qu
   const crossEvery = 132;
   const crossW = 16;
   for (const [side, seedBase] of [[1, 1], [-1, 2]] as const) {
+    // The camera's side is an open esplanade when the line has a giant on the boulevard (plan.open).
+    if (side < 0 && plan.open) continue;
     const z = side * F;
     const xEnd = boulevardEnd(plan, z, 12) - 3;
     const n = new THREE.Vector3(0, 0, -side);
@@ -509,6 +513,8 @@ function buildGround(plan: WorldPlan, shared: Shared, tex: CityTextures, detail 
   // The boulevard: promenade (a lawn with stone edging) on into the plaza, then per side road and pavement up to the plaza.
   strip("promenade", prom, x0, lineIn + 6, -STREET.promenade, STREET.promenade, -0.006, 2.3);
   strip("lawn", lineLawn, x0, lineIn + (ring ? 0.5 : 4), -STREET.promenade + 1.1, STREET.promenade - 1.1, 0, 0.9);
+  // The camera's open side (plan.open): a long lawn past the pavement.
+  if (plan.open) strip("esplanade", grass, x0 - 40, boulevardEnd(plan, -STREET.facade), -plan.open, -STREET.facade - 0.6, 0.06, 2);
   for (const s of [1, -1]) {
     const lo = (a: number, b: number) => [Math.min(s * a, s * b), Math.max(s * a, s * b)] as const;
     const [p0, p1] = lo(STREET.roadOut + 0.3, STREET.facade + 0.6);
