@@ -1354,7 +1354,7 @@ function RoundReveal({
               className="flex h-12 w-full max-w-xs items-center justify-center gap-2 rounded-md bg-[#4cbb17] px-6 font-display text-base font-bold uppercase tracking-wider text-white shadow-lg transition-[background-color,transform] hover:bg-[#58d01c] active:scale-[0.98]"
             >
               {graded.done ? (isStreak ? "See results" : "View summary") : "Next round"} ▶
-              <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline">Space</kbd>
+              <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline [@media(pointer:coarse)]:!hidden">Space</kbd>
             </button>
             <div className="text-white/60 [&_button]:text-white/60 [&_button:hover]:text-white">
               <ReportShot key={current.shot} shot={current.shot} mode={game.daily ? "daily" : "solo"} />

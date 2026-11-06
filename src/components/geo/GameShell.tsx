@@ -449,7 +449,7 @@ export function GuessButton({ hasPin, disabled, busy, label, onClick, testId = "
     >
       {busy ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden /> : null}
       {label ?? (hasPin ? "Guess" : <>Place your pin<span className="max-sm:hidden"> on the map</span></>)}
-      {hasPin && !busy && !label && <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline">Space</kbd>}
+      {hasPin && !busy && !label && <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline [@media(pointer:coarse)]:!hidden">Space</kbd>}
     </button>
   );
 }
