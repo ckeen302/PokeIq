@@ -161,7 +161,7 @@ export function HeroCarousel() {
         if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
       }}
     >
-      {/* The picture: 16:9 on a phone, a wide band across the card on bigger screens. */}
+      {/* The picture: 16:9 on a phone, a wide band across the card on bigger screens (the screenshots keep their tops). */}
       <div className="relative aspect-video overflow-hidden lg:aspect-[21/10]" aria-live={playing ? "off" : "polite"}>
         {HOME_SECTIONS.map((section, i) => {
           const on = i === index;

@@ -70,7 +70,7 @@ export const HOME_SECTIONS: HomeSection[] = [
     cta: "Play",
     icon: Search,
     accent: "258 94% 74%",
-    clip: clip("pokedle", "A Pokédle game solved on the fourth guess"),
+    clip: clip("pokedle", "A Pokédle game solved on the fourth guess", "center top"),
   },
   {
     id: "connections",
@@ -80,7 +80,7 @@ export const HOME_SECTIONS: HomeSection[] = [
     cta: "Play",
     icon: LayoutGrid,
     accent: "42 98% 60%",
-    clip: clip("connections", "Two PokéConnections groups found"),
+    clip: clip("connections", "Two PokéConnections groups found", "center top"),
   },
   {
     id: "pikadoku",
@@ -120,7 +120,7 @@ export const HOME_SECTIONS: HomeSection[] = [
     cta: "Explore",
     icon: BookOpen,
     accent: "214 90% 64%",
-    clip: clip("pokedex", "The Pokédex: Pikachu's entry, its stats and evolutions"),
+    clip: clip("pokedex", "The Pokédex: Pikachu's entry, its stats and evolutions", "center top"),
   },
   {
     id: "lab",

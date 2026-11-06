@@ -108,7 +108,7 @@ export function HeroClip({
   useEffect(() => setShown(false), [src]);
 
   const position = clip.position ?? "center";
-  const common = { alt: clip.alt, sizes: "(min-width: 1152px) 1152px, 100vw", ...(priority ? { priority: true } : { loading: "eager" as const, fetchPriority: "low" as const }) };
+  const common = { alt: clip.alt, sizes: "(min-width: 1152px) 1152px, 100vw", loading: "eager" as const, fetchPriority: priority ? ("high" as const) : ("low" as const) };
   const desktop = getImageProps({ ...common, src: clip.desktop.poster, width: clip.desktop.width, height: clip.desktop.height }).props;
   const mobile = getImageProps({ ...common, sizes: "100vw", src: clip.phone.poster, width: clip.phone.width, height: clip.phone.height }).props;
 
