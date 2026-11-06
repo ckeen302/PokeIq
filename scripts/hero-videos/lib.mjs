@@ -162,8 +162,16 @@ export class Recorder {
 
   /** From here the page's clock only moves when we step it. */
   async freeze() {
-    const now = await this.page.evaluate(() => Date.now());
-    await this.page.clock.pauseAt(now + 50);
+    // A little ahead of the page's clock (which keeps running while we ask).
+    for (let ahead = 200; ; ahead *= 4) {
+      const now = await this.page.evaluate(() => Date.now());
+      try {
+        await this.page.clock.pauseAt(now + ahead);
+        break;
+      } catch (e) {
+        if (ahead > 60_000) throw e;
+      }
+    }
     this.frozen = true;
   }
 
@@ -193,6 +201,18 @@ export class Recorder {
     const r = (v) => Math.round(v * 2) / 2;
     this.clip = { x: r(x), y: r(y), width: r(w), height: r(h) };
     return this.clip;
+  }
+
+  /** Lets the page run in real time again (its animations play on). */
+  async thaw() {
+    await this.page.evaluate(() => {
+      const hv = window.__hv;
+      if (!hv) return;
+      for (const a of document.getAnimations()) if (hv.anims.has(a) && a.playState === "paused") a.play();
+      hv.anims = new WeakMap();
+    });
+    await this.page.clock.resume();
+    this.frozen = false;
   }
 
   /** Sets the recorded region (CSS pixels, relative to the viewport). */

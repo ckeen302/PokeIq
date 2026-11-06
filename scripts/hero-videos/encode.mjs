@@ -14,13 +14,14 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { OUT_ROOT } from "./lib.mjs";
 
-export function encode(take, name, { from = 0, to, fade = 0.6, crf, maxBytes, minBytes, size } = {}) {
+export function encode(take, name, { from = 0, to, fade = 0.6, crf, maxBytes, minBytes, size, maxSeconds = 9.6 } = {}) {
   const dir = path.isAbsolute(take) ? take : path.join(OUT_ROOT, take);
   const meta = JSON.parse(fs.readFileSync(path.join(dir, "meta.json"), "utf8"));
   const at = (v, dflt) => (v === undefined ? dflt : typeof v === "number" ? v : meta.marks[v] ?? Number(v));
   const fps = meta.fps;
   const a = at(from, 0);
-  const b = at(to, meta.frames);
+  // At most maxSeconds once looped (the fade overlaps the start).
+  const b = Math.min(at(to, meta.frames), a + Math.round((maxSeconds + fade) * meta.fps));
   const fadeN = Math.round(fade * fps);
   const [w, h] = size ?? (meta.phone ? [800, 1000] : [1600, 900]);
   const outDir = path.resolve("public/home/clips");
