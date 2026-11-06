@@ -209,12 +209,13 @@ export function createPost(renderer: THREE.WebGLRenderer, w: number, h: number, 
         vec3 b = whSafe(texture2D(tB, 0.5 + c * zoomB).rgb);
         float edge = smoothstep(uK * 1.2 - 0.25, uK * 1.2, r);
         vec3 m = mix(b, a, edge);
-        float fx = (r - uK * 0.9) * 4.0;
+        float fx = (r - uK * 0.9) * 13.0;
         // A ring of light at the seam and a gentle lift through the middle: bright, never a white frame.
         float ring = exp(-fx * fx);
         float mid = 1.0 - abs(uK - 0.5) * 2.0;
-        vec3 burst = vec3(1.0, 0.86, 0.62) * ring * 1.15 + vec3(0.9, 0.8, 0.7) * mid * 0.12;
-        gl_FragColor = vec4(m * (1.0 + mid * 0.25) + burst * uBurst, 1.0);
+        // (a thin ring: the seam between the two scenes, never a wash over the frame)
+        vec3 burst = vec3(1.0, 0.86, 0.62) * ring * 0.9 + vec3(0.9, 0.8, 0.7) * mid * 0.06;
+        gl_FragColor = vec4(m * (1.0 + mid * 0.15) + burst * uBurst, 1.0);
       }`,
     depthTest: false,
     depthWrite: false,
