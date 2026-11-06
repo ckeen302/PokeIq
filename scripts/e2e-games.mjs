@@ -74,7 +74,7 @@ export async function runGames({ browser, BASE, OUT, errors, step }) {
     await seek(podium[2] + 1.2);
     await frames();
     await page.screenshot({ path: `${OUT}/games-100m-podium.png` });
-    await seek(st.end - 0.05);
+    await seek(st.end + 0.05);
     await page.waitForFunction(() => document.querySelector('[data-testid="games-stage"]')?.dataset.phase === "end", null, { timeout: 120_000 }).catch(() => errors.push("games: the 100 m never reached its end"));
     const rows = await page.getByTestId("games-result-row").count();
     if (rows !== 8) errors.push(`games: the 100 m results panel has ${rows} rows`);
@@ -105,7 +105,7 @@ export async function runGames({ browser, BASE, OUT, errors, step }) {
     await page.evaluate((n) => window.__games.part(n - 1), st0.parts);
     await page.waitForFunction((n) => window.__games.state().part === n - 1 && ["show", "end"].includes(window.__games.state().phase), st0.parts, { timeout: 300_000 });
     const st = await state();
-    await seek(st.end - 0.05);
+    await seek(st.end + 0.05);
     await page.waitForFunction(() => document.querySelector('[data-testid="games-stage"]')?.dataset.phase === "end", null, { timeout: 120_000 }).catch(() => errors.push("games: the Games never reached the end"));
     const rows = await page.getByTestId("games-medal-row").count();
     if (rows < 2) errors.push(`games: the medal table has ${rows} rows`);

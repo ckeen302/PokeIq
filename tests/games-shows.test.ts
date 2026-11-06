@@ -9,6 +9,7 @@ import type { RecordsFile } from "@/lib/games/records";
 import { eventShow } from "@/components/games/show/build";
 import { gamesShow, gamesSummary } from "@/components/games/show/games";
 import type { ShowFrame } from "@/components/games/show/types";
+import { keepOut } from "@/components/games/show/cams";
 
 /**
  * The broadcasts are pure functions of the show clock: every event's show
@@ -65,6 +66,19 @@ describe.each(EVENT_IDS)("the %s broadcast", (event) => {
     const again = eventShow(runEvent(event, field, 7), byKey, { budget: 72 });
     expect(again.end).toBe(seq.end);
     for (const t of [1, seq.end * 0.3, seq.end * 0.6, seq.end - 0.5]) expect(JSON.stringify(again.at(t, 1.6).pose)).toBe(JSON.stringify(seq.at(t, 1.6).pose));
+  });
+});
+
+describe("indoor cameras", () => {
+  it("stay out of the stands, climbing and widening to keep the framing", () => {
+    const p = keepOut({ pos: [0, 3, 25], target: [0, 1, 0], fov: 30 }, "arena");
+    expect(Math.max(Math.abs(p.pos[0]), Math.abs(p.pos[2]))).toBeLessThanOrEqual(13.6 + 1e-9);
+    expect(p.pos[1]).toBeGreaterThan(3);
+    expect(p.fov).toBeGreaterThan(30);
+    const q = keepOut({ pos: [5, 4, 29], target: [5, 0, 0], fov: 40 }, "pool");
+    expect(q.pos[2]).toBeLessThanOrEqual(15.6 + 1e-9);
+    const s = { pos: [0, 3, 25] as [number, number, number], target: [0, 1, 0] as [number, number, number], fov: 30 };
+    expect(keepOut(s, "stadium")).toBe(s);
   });
 });
 

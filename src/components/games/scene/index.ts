@@ -13,6 +13,7 @@ import { LAYER, buildStadium, type Stadium, type StadiumUrls } from "@/component
 import { createPost, type Post } from "@/components/world-history/scene/post";
 import { BASE_LOOK, type Look, type Spec } from "@/components/world-history/scene/types";
 import type { ShowFrame } from "../show/types";
+import { keepOut } from "../show/cams";
 import { blobShadows, loadActor, poseActor, type Actor } from "./actors";
 import { makeConfetti, makeDecals, makeParticles, makeTrail, markTexture, type Particles } from "./fx";
 import { buildInfield, type Infield } from "./venues/infield";
@@ -432,7 +433,8 @@ export function createGamesScene(host: HTMLElement, opts: SceneOptions): GamesSc
     if (ctxWatch.lost) return [];
     frameNo++;
     setVenue(f.venue);
-    const { pose } = f;
+    // Indoors, never a camera in the crowd.
+    const pose = keepOut(f.pose, f.venue);
     const jumped = !lastPose || Math.hypot(pose.pos[0] - lastPose.pos[0], pose.pos[1] - lastPose.pos[1], pose.pos[2] - lastPose.pos[2]) > 6 || Math.abs(pose.fov - lastPose.fov) > 8;
     lastPose = pose;
     camera.position.set(...pose.pos);

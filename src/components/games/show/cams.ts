@@ -34,6 +34,33 @@ export function crane(target: Vec3, k: number, aspect: number, o: { from: Vec3; 
   return { pos, target, fov: Math.min(75, fov0 + (fov1 - fov0) * e) };
 }
 
+/**
+ * Keeps a camera out of the stands indoors: in the arena inside the field
+ * of play (the first row is 15 m out), at the pool over the deck (the
+ * stands start 17 m out). A camera that wanted to stand further back
+ * climbs instead, and widens to keep the same framing.
+ */
+export function keepOut(p: CamPose, venue: "stadium" | "arena" | "pool"): CamPose {
+  if (venue === "stadium") return p;
+  let [x, y, z] = p.pos;
+  let excess = 0;
+  if (venue === "arena") {
+    const lim = 13.6;
+    const m = Math.max(Math.abs(x), Math.abs(z));
+    if (m > lim) { excess = m - lim; x *= lim / m; z *= lim / m; }
+  } else {
+    const lim = 15.6;
+    if (Math.abs(z) > lim) { excess = Math.abs(z) - lim; z = Math.sign(z) * lim; }
+    if (Math.abs(x) > 38) { excess = Math.max(excess, Math.abs(x) - 38); x = Math.sign(x) * 38; }
+  }
+  if (excess <= 0) return p;
+  y += excess * 0.75;
+  const d0 = Math.hypot(p.pos[0] - p.target[0], p.pos[1] - p.target[1], p.pos[2] - p.target[2]);
+  const d1 = Math.hypot(x - p.target[0], y - p.target[1], z - p.target[2]);
+  const half = Math.atan(Math.tan((p.fov * DEG) / 2) * (d0 / Math.max(0.5, d1)));
+  return { pos: [x, y, z], target: p.target, fov: Math.min(80, (2 * half) / DEG) };
+}
+
 /** A slow drift (a hand-held operator holding a shot). */
 export function drift(p: CamPose, t: number, k = 0.04): CamPose {
   return { ...p, pos: [p.pos[0] + Math.sin(t * 0.37) * k * 3, p.pos[1] + Math.sin(t * 0.53 + 1) * k, p.pos[2] + Math.cos(t * 0.29) * k * 3] };
