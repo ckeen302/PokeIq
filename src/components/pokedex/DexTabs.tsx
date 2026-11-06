@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
+/** The Pokémon list: the Pokédex's main section, shown as the big button above the others. */
+const MAIN = { id: "pokemon", label: "Pokémon", href: "/pokedex" } as const;
+
+/** The reference sections under it. (Timeline, Sizes and Race live in the 3D Lab.) */
 const TABS = [
-  { id: "pokemon", label: "Pokémon", href: "/pokedex" },
   { id: "moves", label: "Moves", href: "/pokedex/moves" },
   { id: "abilities", label: "Abilities", href: "/pokedex/abilities" },
   { id: "items", label: "Items", href: "/pokedex/items" },
@@ -11,24 +14,31 @@ const TABS = [
   { id: "natures", label: "Natures", href: "/pokedex/natures" },
   { id: "trainers", label: "Trainers", href: "/pokedex/trainers" },
   { id: "tcg", label: "TCG", href: "/pokedex/tcg" },
-  { id: "timeline", label: "Timeline", href: "/pokedex/timeline" },
-  { id: "sizes", label: "Sizes", href: "/pokedex/sizes" },
-  { id: "race", label: "Race", href: "/pokedex/race" },
 ] as const;
 
-export type DexTabId = (typeof TABS)[number]["id"];
+export type DexTabId = typeof MAIN.id | (typeof TABS)[number]["id"];
 
-/** Top-level Pokédex tabs. Each tab is its own static page so no tab ships another tab's data. */
+/** Top-level Pokédex sections. Each is its own static page so no section ships another's data. */
 export function DexTabs({ active }: { active: DexTabId }) {
+  const main = active === MAIN.id;
   return (
-    <nav aria-label="Pokédex sections" className="flex justify-center">
-      <div className="flex flex-wrap justify-center rounded-md border border-foreground/10 bg-shade/30 p-1" role="tablist">
+    <nav aria-label="Pokédex sections" className="flex flex-col items-center gap-2">
+      <Link
+        href={MAIN.href}
+        aria-current={main ? "page" : undefined}
+        data-testid={`dex-tab-${MAIN.id}`}
+        className={cn(
+          "flex w-full max-w-xl items-center justify-center rounded-md border px-6 py-3 font-display text-lg font-bold uppercase tracking-[0.14em] transition-colors sm:text-xl",
+          main ? "border-transparent bg-primary text-primary-foreground" : "border-foreground/15 bg-card text-foreground hover:border-screen/60"
+        )}
+      >
+        {MAIN.label}
+      </Link>
+      <div className="flex flex-wrap justify-center rounded-md border border-foreground/10 bg-shade/30 p-1">
         {TABS.map((t) => (
           <Link
             key={t.id}
             href={t.href}
-            role="tab"
-            aria-selected={active === t.id}
             aria-current={active === t.id ? "page" : undefined}
             data-testid={`dex-tab-${t.id}`}
             className={cn(
