@@ -3773,7 +3773,7 @@ async function homeStep() {
   for (const gone of ["home-timeline-card", "home-sizes-card", "home-race-card", "play-which-pokemon"]) {
     if (await p.getByTestId(gone).count()) errors.push(`home: ${gone} is still on the page`);
   }
-  if (await p.getByRole("heading", { name: /Research tools|^Quizzes$/ }).count()) errors.push("home: an old section heading is still on the page");
+  if ((await p.getByRole("heading", { name: /Research tools/ }).count()) || (await p.locator("#quiz-heading, #tools-heading").count())) errors.push("home: an old section heading is still on the page");
   await p.context().close();
 
   // Reduced motion: it doesn't move by itself, and the button offers Play.
@@ -3786,14 +3786,18 @@ async function homeStep() {
   const m = await newPage({ width: 390, height: 844 });
   await gotoSettled(m, BASE);
   const mhero = m.getByTestId("hero-carousel");
+  const heights = new Set();
   for (const [id, , name] of TABS) {
     await mhero.getByRole("button", { name: `Show ${name}`, exact: true }).click();
+    heights.add(Math.round((await mhero.boundingBox())?.height ?? 0));
     const img = mhero.locator(`[data-testid=hero-slide][data-slide="${id}"][data-active=true] img`).first();
     const loaded = await img
       .evaluate((el) => (el.complete ? Promise.resolve(el.naturalWidth > 0) : new Promise((r) => el.addEventListener("load", () => r(el.naturalWidth > 0), { once: true }))), null, { timeout: 15_000 })
       .catch(() => false);
     if (!loaded) errors.push(`home: the ${name} slide's picture didn't load at 390`);
   }
+  // A change of slide never moves the page below the hero.
+  if (heights.size !== 1) errors.push(`home: the hero's height changes between slides at 390 (${[...heights].join(", ")})`);
   {
     const band = await mhero.locator("[data-testid=hero-slide][data-active=true]").boundingBox();
     const title = await mhero.getByTestId("hero-slide-name").boundingBox();

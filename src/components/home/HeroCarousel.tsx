@@ -117,7 +117,7 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
         if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
       }}
     >
-      {/* The picture: 16:9 on a phone, a wide band across the card on bigger screens. */}
+      {/* The picture: 16:9 on a phone, a wide band across the card on bigger screens (the screenshots keep their tops). */}
       <div className="relative aspect-video overflow-hidden lg:aspect-[21/10]" aria-live={playing ? "off" : "polite"}>
         {HOME_SECTIONS.map((section, i) => {
           const on = i === index;
@@ -144,7 +144,7 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
                     sizes="(min-width: 1152px) 1152px, 100vw"
                     loading="eager"
                     fetchPriority="low"
-                    className="absolute inset-0 h-full w-full select-none object-cover"
+                    className="absolute inset-0 h-full w-full select-none object-cover object-top"
                   />
                 ) : null
               ) : (
@@ -184,12 +184,13 @@ export function HeroCarousel({ guessr }: { guessr: { slides: ShowcaseSlide[]; ma
         className="relative z-[2] px-5 pt-4 sm:px-8 sm:pt-5 lg:absolute lg:bottom-0 lg:left-0 lg:max-w-[46rem] lg:px-12 lg:pb-12 lg:pt-0"
         style={{ "--accent-c": active.accent } as React.CSSProperties}
       >
-        {/* The name and line fade in with each slide; the button stays put, so keyboard focus on it survives a change. */}
+        {/* The name and line fade in with each slide; the button stays put, so keyboard focus on it survives a change.
+            On a phone the line always takes two lines' room, so the card's height never changes between slides. */}
         <h2 key={`${active.id}-name`} className="flex items-center gap-3 duration-700 animate-in fade-in motion-reduce:animate-none font-display text-3xl font-bold uppercase leading-none tracking-tight [text-shadow:0_2px_18px_rgb(0_0_0/0.6)] sm:text-4xl lg:text-6xl" data-testid="hero-slide-name">
           <active.icon className="h-7 w-7 shrink-0 text-[hsl(var(--accent-c))] sm:h-8 sm:w-8 lg:h-11 lg:w-11" aria-hidden />
           {active.name}
         </h2>
-        <p key={`${active.id}-line`} className="mt-2 duration-700 animate-in fade-in motion-reduce:animate-none text-[15px] leading-snug text-muted-foreground sm:text-lg lg:mt-3 lg:text-xl lg:text-foreground/85">{active.line}</p>
+        <p key={`${active.id}-line`} className="mt-2 line-clamp-2 min-h-[2.6rem] duration-700 animate-in fade-in motion-reduce:animate-none text-[15px] sm:min-h-0 leading-snug text-muted-foreground sm:text-lg lg:mt-3 lg:text-xl lg:text-foreground/85">{active.line}</p>
         <Link
           href={active.href}
           className="group mt-4 inline-flex h-11 items-center gap-2 rounded-md bg-[hsl(var(--accent-c))] px-5 font-display text-[15px] font-bold uppercase tracking-wider text-black shadow-[0_0_24px_hsl(var(--accent-c)/0.35)] transition-[filter] hover:brightness-110 lg:mt-6 lg:h-12 lg:px-6"
