@@ -965,7 +965,9 @@ export function makeRift(o: { radius: number; depth: number; outer: string; mid:
       float a = vUv.x * 6.2831853;
       float d = 1.0 - vUv.y;
       float s = a * ${arms.toFixed(1)} + d * ${twist.toFixed(2)} - uTime * ${speed.toFixed(2)};
-      float f = whFbm3(vec3(cos(s) * 1.6, sin(s) * 1.6, d * 5.0 - uTime * 0.7));
+      // Two octaves of noise (cheap: a funnel can fill the screen).
+      vec3 q = vec3(cos(s) * 1.6, sin(s) * 1.6, d * 5.0 - uTime * 0.7);
+      float f = whNoise(q) * 0.66 + whNoise(q * 2.03 + 1.7) * 0.34;
       float g = whNoise(vec3(cos(a) * 3.0, sin(a) * 3.0, d * 9.0 - uTime * 1.4));
       float arm = 0.5 + 0.5 * sin(s);
       float strands = smoothstep(0.42, 0.8, f) * (0.35 + arm * arm) + smoothstep(0.6, 0.95, g) * 0.35;
@@ -983,7 +985,8 @@ export function makeRift(o: { radius: number; depth: number; outer: string; mid:
     geo.rotateX(Math.PI / 2);
     geo.translate(0, 0, -depth / 2);
     const mat = new THREE.ShaderMaterial({
-      uniforms: u, transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending,
+      // Only the inside walls (seen from the mouth): half the fill of a two-sided funnel.
+      uniforms: u, transparent: true, depthWrite: false, side: THREE.BackSide, blending: THREE.AdditiveBlending,
       vertexShader: /* glsl */ `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
       fragmentShader: funnelFrag(twist, speed, arms, gain),
     });
