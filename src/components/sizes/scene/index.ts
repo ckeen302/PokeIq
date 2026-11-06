@@ -796,11 +796,26 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   function compileFor(o: THREE.Object3D): Promise<unknown> {
     const was = renderer.getRenderTarget();
     renderer.setRenderTarget(post.target);
+    let pending: Set<THREE.Material>;
     try {
-      return renderer.compileAsync(o, camera, scene);
+      pending = renderer.compile(o, camera, scene);
     } finally {
       renderer.setRenderTarget(was);
     }
+    // three.js's compileAsync, except that a material disposed while it compiles (an order change rebuilds the
+    // city's props) drops out of the wait instead of throwing "reading 'isReady'" from a timer.
+    return new Promise((resolve) => {
+      const check = () => {
+        for (const m of pending) {
+          const program = (renderer.properties.get(m) as { currentProgram?: { isReady(): boolean } }).currentProgram;
+          if (!program || program.isReady()) pending.delete(m);
+        }
+        if (pending.size === 0) resolve(o);
+        else setTimeout(check, 10);
+      };
+      if (renderer.extensions.has("KHR_parallel_shader_compile")) check();
+      else setTimeout(check, 10);
+    });
   }
 
   // The stand-ins' materials stay alive: three.js deletes a program when the last material using it is disposed, and the next figure would compile it all over again.
