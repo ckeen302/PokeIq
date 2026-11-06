@@ -458,7 +458,7 @@
         { "id": "wiki-pikachu", "publisher": "Wikipedia", "title": "Pikachu: as the franchise's mascot", "year": "2026", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Pikachu" },
         { "id": "wiki-pokemon", "publisher": "Wikipedia", "title": "Pokémon: the English slogan “Gotta catch 'em all”", "year": "2026", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Pok%C3%A9mon" }
       ],
-      "video": "world",
+      "video": "cards",
       "slow": [{ "beat": "cards", "offset": 0.7, "dur": 1.4, "rate": 0.4 }],
       "extra": { "cards": 1.0, "world": 1.6, "catch": 0.6 }
     },
@@ -609,7 +609,7 @@
         { "id": "serebii-rb", "publisher": "Serebii.net", "title": "Pokémon Red and Blue on the Nintendo 3DS Virtual Console", "year": "2016", "kind": "press", "url": "https://www.serebii.net/rb/" },
         { "id": "wiki-sm", "publisher": "Wikipedia", "title": "Pokémon Sun and Moon", "year": "2026", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Pok%C3%A9mon_Sun_and_Moon" }
       ],
-      "video": "same-day",
+      "video": "fold",
       "slow": [{ "beat": "fold", "offset": 0.8, "dur": 1.6, "rate": 0.4 }],
       "extra": { "same-day": 1.0, "fold": 1.8, "alola": 1.2 }
     },
@@ -781,7 +781,7 @@
         { "id": "wiki-arceus", "publisher": "Wikipedia", "title": "Pokémon Legends: Arceus, revealed at the 25th-anniversary Pokémon Presents", "year": "2026", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Pok%C3%A9mon_Legends:_Arceus" },
         { "id": "anime-ash", "publisher": "Wikipedia (Japanese)", "title": "ポケットモンスター (2019年のアニメ)", "year": "2026", "kind": "reference", "url": "https://ja.wikipedia.org/wiki/%E3%83%9D%E3%82%B1%E3%83%83%E3%83%88%E3%83%A2%E3%83%B3%E3%82%B9%E3%82%BF%E3%83%BC_(2019%E5%B9%B4%E3%81%AE%E3%82%A2%E3%83%8B%E3%83%A1)" }
       ],
-      "video": "open",
+      "video": "champion",
       "slow": [{ "beat": "champion", "offset": 0.8, "dur": 1.8, "rate": 0.45 }],
       "extra": { "galar": 1.0, "open": 1.8, "champion": 1.8, "farewell": 1.2 }
     },
