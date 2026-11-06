@@ -406,7 +406,7 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
         const s = show.current;
         const seq = s.seq;
         const b = seq ? seq.beats.find((x) => s.t < x.t1) : null;
-        return { t: s.t, end: seq?.end ?? null, phase: s.phase, beat: b ? [b.kind, b.cam, b.t0, b.t1] : null, beats: seq?.beats.map((x) => [x.kind, x.cam, x.t0, x.t1]) ?? [], results: seq?.resultsAt ?? null, part: partIdx, parts: playlist.length, quality: sceneRef.current?.quality ?? null, stats: sceneRef.current?.stats() ?? null, prof: { ...s.prof }, venue: seq?.venue ?? null };
+        return { t: s.t, end: seq?.end ?? null, phase: s.phase, beat: b ? [b.kind, b.cam, b.t0, b.t1] : null, beats: seq?.beats.map((x) => [x.kind, x.cam, x.t0, x.t1, x.title ?? ""]) ?? [], results: seq?.resultsAt ?? null, part: partIdx, parts: playlist.length, quality: sceneRef.current?.quality ?? null, stats: sceneRef.current?.stats() ?? null, prof: { ...s.prof }, venue: seq?.venue ?? null };
       },
       frame(t: number) {
         const seq = show.current.seq;

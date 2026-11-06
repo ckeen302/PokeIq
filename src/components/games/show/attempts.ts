@@ -51,23 +51,30 @@ export function scoreAttempts(list: Omit<Attempt, "score">[], podium: string[], 
   return { attempts, leads, winning };
 }
 
-/** Picks cuts within a budget (s): full attempts cost `full` s, short ones `short`, replays `replay`. */
-export function pickAttempts(scored: { attempts: Attempt[]; leads: Set<number>; winning: number }, budget: number, cost: { full: number; short: number; replay: number }): Pick[] {
+export type Cost = { full: number; short: number; replay: number } | ((a: Attempt, cut: "full" | "short" | "replay") => number);
+
+/**
+ * Picks cuts within a budget (s): what a full attempt, a short one and a
+ * replay cost, as fixed seconds or worked out per attempt (a giant's
+ * flight takes longer than a person's).
+ */
+export function pickAttempts(scored: { attempts: Attempt[]; leads: Set<number>; winning: number }, budget: number, costs: Cost): Pick[] {
   const { attempts, leads, winning } = scored;
+  const cost = typeof costs === "function" ? costs : (_a: Attempt, k: "full" | "short" | "replay") => costs[k];
   const picks: Pick[] = attempts.map((a) => ({ a, cut: "skip", replay: false, lead: leads.has(a.i) }));
   let left = budget;
   // The winning attempt, full, with its replay; then the rest by score: full while the budget lasts, then short.
   const byScore = [...picks].sort((p, q) => q.a.score - p.a.score || p.a.i - q.a.i);
   for (const p of byScore) {
-    if (p.a.i === winning) { p.cut = "full"; p.replay = true; left -= cost.full + cost.replay; }
+    if (p.a.i === winning) { p.cut = "full"; p.replay = true; left -= cost(p.a, "full") + cost(p.a, "replay"); }
   }
   for (const p of byScore) {
     if (p.cut !== "skip") continue;
-    if (p.a.score >= 6 && left >= cost.full) { p.cut = "full"; left -= cost.full; }
+    if (p.a.score >= 6 && left >= cost(p.a, "full")) { p.cut = "full"; left -= cost(p.a, "full"); }
   }
   for (const p of byScore) {
     if (p.cut !== "skip") continue;
-    if (left >= cost.short) { p.cut = "short"; left -= cost.short; }
+    if (left >= cost(p.a, "short")) { p.cut = "short"; left -= cost(p.a, "short"); }
   }
   return picks;
 }

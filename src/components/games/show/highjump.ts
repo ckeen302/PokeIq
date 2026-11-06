@@ -45,16 +45,20 @@ export function highJumpShow(result: HighJumpResult, o: ShowOptions): Show {
     if (firstOf.has(i)) s += 2;
     return { ...x, i, s };
   });
-  // Budget: the winning clearance (full + replay), then by score, full while it lasts, then short.
+  // Budget: the winning clearance (full + replay), then by score, full while it lasts, then short, each costed
+  // from its own jump (a giant's flight takes longer than a person's).
   let left = Math.max(10, o.budget - (o.quick ? 4 : 11));
   const cut = new Map<number, "full" | "short">();
-  if (winIdx >= 0) { cut.set(winIdx, "full"); left -= 6 + 5.5; }
+  const plans = new Map<number, ReturnType<typeof planHighJump>>();
+  const planOf = (x: { i: number; jump: HjJump }) => { let p = plans.get(x.i); if (!p) { p = planHighJump(byKey.get(x.jump.key)!, x.jump); plans.set(x.i, p); } return p; };
+  const cost = (x: { i: number; jump: HjJump }, c: "full" | "short") => { const p = planOf(x); return c === "full" ? Math.min(2.4, p.tApp) + p.tLand + 1.6 + 1.7 + 1.2 : Math.min(0.85, p.tApp) + p.tLand + 0.9 + 1.1; };
+  if (winIdx >= 0) { const w = scored[winIdx]; cut.set(winIdx, "full"); left -= cost(w, "full") + (planOf(w).tLand + 0.8) / 0.3; }
   for (const x of [...scored].sort((p, q) => q.s - p.s || p.i - q.i)) {
     if (cut.has(x.i)) continue;
-    if (x.s >= 6 && left >= 6) { cut.set(x.i, "full"); left -= 6; }
-    else if (left >= 3.4) { cut.set(x.i, "short"); left -= 3.4; }
+    if (x.s >= 6 && left >= cost(x, "full")) { cut.set(x.i, "full"); left -= cost(x, "full"); }
+    else if (left >= cost(x, "short")) { cut.set(x.i, "short"); left -= cost(x, "short"); }
   }
-  const items: Item[] = scored.filter((x) => cut.has(x.i)).map((x) => ({ jump: x.jump, plan: planHighJump(byKey.get(x.jump.key)!, x.jump), cut: cut.get(x.i)!, replay: x.i === winIdx, jumpOff: x.jumpOff, i: x.i }));
+  const items: Item[] = scored.filter((x) => cut.has(x.i)).map((x) => ({ jump: x.jump, plan: planOf(x), cut: cut.get(x.i)!, replay: x.i === winIdx, jumpOff: x.jumpOff, i: x.i }));
   const tl = new Timeline();
   const first = items[0];
   if (!o.quick) {

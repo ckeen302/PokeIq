@@ -68,7 +68,8 @@ export async function runGames({ browser, BASE, OUT, errors, step }) {
     const st = await state();
     const podium = st.beats.find((b) => b[0] === "podium");
     if (!podium) throw new Error("the 100 m has no medal ceremony");
-    const race = st.beats.find((b) => b[0] === "action");
+    // The race itself (the Race's broadcast opens on a crane and the lane intros).
+    const race = st.beats.find((b) => b[0] === "action" && b[4] === "race") ?? st.beats.find((b) => b[0] === "action");
     if (race) { await seek((race[2] + race[3]) / 2); await frames(); await page.screenshot({ path: `${OUT}/games-100m-race.png` }); }
     await seek(podium[2] + 1.2);
     await frames();

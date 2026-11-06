@@ -35,7 +35,18 @@ export function longJumpShow(result: LongJumpResult, o: ShowOptions): Show {
   for (let r = 0; r < 3; r++) for (const c of result.turns) list.push({ i: list.length, key: c.athlete.key, round: r + 1, mark: c.attempts[r]?.mark ?? null });
   const podium = result.order.filter((c) => c.best != null).slice(0, 3).map((c) => c.athlete.key);
   const scored = scoreAttempts(list, podium, (a, b) => a > b);
-  const picks = pickAttempts(scored, Math.max(8, o.budget - (o.quick ? 4 : 12)), { full: 6.2, short: 3.2, replay: 5.5 });
+  const planFor = new Map<number, LongJumpPlan>();
+  const planOf = (a: { i: number; key: string; round: number }) => {
+    let pl = planFor.get(a.i);
+    if (!pl) { const card = result.cards.find((c) => c.athlete.key === a.key)!; pl = planLongJump(card.athlete, card.attempts[a.round - 1]); planFor.set(a.i, pl); }
+    return pl;
+  };
+  const picks = pickAttempts(scored, Math.max(8, o.budget - (o.quick ? 4 : 12) - 3.3), (a, cut) => {
+    const pl = planOf(a);
+    const F = pl.attempt.physics.flight;
+    if (cut === "replay") return (F + 0.95) / 0.3;
+    return cut === "full" ? Math.min(2.6, pl.run.T) + F + 1.6 + 1.9 : Math.min(0.95, pl.run.T * 0.5) + F + 0.9 + 1.2;
+  });
   const pitFar = Math.max(10, ...result.cards.flatMap((c) => c.attempts.map((x) => x.physics.distance)));
   const items: Item[] = [];
   let leader: number | null = null;
@@ -43,7 +54,7 @@ export function longJumpShow(result: LongJumpResult, o: ShowOptions): Show {
   for (const p of picks) {
     const card = result.cards.find((c) => c.athlete.key === p.a.key)!;
     const att = card.attempts[p.a.round - 1];
-    const item: Item = { pick: p, plan: planLongJump(card.athlete, att), leaderBefore: leader, standing: [] };
+    const item: Item = { pick: p, plan: planOf(p.a), leaderBefore: leader, standing: [] };
     if (att.mark != null) {
       if (leader == null || att.mark > leader) leader = att.mark;
       bests.set(p.a.key, Math.max(bests.get(p.a.key) ?? -1, att.mark));
