@@ -47,7 +47,7 @@ export function MassBattlePage({ preset, battle, question, playback }: { preset?
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <BackButton href={LAB_PATH} label="3D Lab" />
-          <p className="hud-label flex items-center gap-2 text-screen">
+          <p className="hud-label flex items-center gap-2 text-screen max-sm:hidden">
             <span className="led h-1.5 w-1.5 text-success" aria-hidden /> <Link href={LAB_PATH} className="hover:text-foreground">3D Lab</Link> {"//"} Mass Battle
           </p>
         </div>
