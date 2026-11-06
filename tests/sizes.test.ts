@@ -377,6 +377,34 @@ describe("the camera: Play, Explore and the finale", () => {
     expect(glideAt(plan.glide, 59).d).toBeGreaterThan(glideAt(plan.glide, 1).d * 50);
   });
 
+  it("Play passes every Pokémon at a steady pace: no bursts through the crowds, time for each figure", () => {
+    const plan = planPlay(placed, lens);
+    const g = plan.glide;
+    // Long enough to see the whole line (the speed button plays it faster).
+    expect(g.duration).toBeGreaterThanOrEqual(placed.length * 0.25);
+    // Figures passed per second, over half-second windows while moving.
+    const xs = placed.map((p) => p.x);
+    const indexAt = (x: number) => { let i = 0; while (i < xs.length - 1 && xs[i + 1] <= x) i++; return i + (x - xs[i]) / Math.max(1e-9, (xs[i + 1] ?? xs[i] + 1) - xs[i]); };
+    const rates: number[] = [];
+    for (const leg of g.legs) {
+      for (let t = leg.t0; t + 0.5 <= leg.t1; t += 0.5) rates.push((indexAt(glideAt(g, t + 0.5).x) - indexAt(glideAt(g, t).x)) / 0.5);
+    }
+    rates.sort((a, b) => a - b);
+    const median = rates[Math.floor(rates.length / 2)];
+    const p99 = rates[Math.floor(rates.length * 0.99)];
+    // Never faster than about five figures a second, and no window races at several times the usual pace.
+    expect(p99).toBeLessThan(5);
+    expect(p99 / median).toBeLessThan(1.6);
+    // Every figure: the camera spends at least a fifth of a second within half a figure of it.
+    const near = new Array(xs.length).fill(0);
+    for (let t = 0; t < g.duration; t += 0.05) {
+      const k = indexAt(glideAt(g, t).x);
+      const i = Math.round(k);
+      if (Math.abs(k - i) <= 0.5) near[i] += 0.05;
+    }
+    expect(Math.min(...near)).toBeGreaterThanOrEqual(0.15);
+  });
+
   it("frames the figure it holds on", () => {
     const fr = framer(placed, lens);
     const plan = buildGlide(placed, fr, lens, { duration: 30, holds: ["pikachu"] });

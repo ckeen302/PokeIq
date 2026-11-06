@@ -96,6 +96,11 @@ function qualityParam(): Quality | null {
 const LADDER: Quality[] = ["low", "medium", "high"];
 /** A frame-time average above this (ms) is slow on any screen. */
 const SLOW_MS = 18;
+/** The speeds the Play button's speed control steps through, from the normal 1×: faster, then half speed, then back. */
+const PLAY_SPEEDS = [1, 2, 4, 0.5];
+/** A speed as the button shows it (½× rather than 0.5×). */
+const speedLabel = (v: number) => (v === 0.5 ? "½×" : `${v}×`);
+
 /** The drag follows the pointer this closely (per second); everything else eases at its RATE. */
 const RATE_DRAG = 22;
 const LZ_MIN = Math.log(ZOOM_MIN), LZ_MAX = Math.log(ZOOM_MAX);
@@ -201,6 +206,8 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
     /** The flights' own clock (it slows with the camera when loading falls behind). */
     flightNow: 0,
     play: null as { plan: PlayPlan; t: number; stop: string | null; finale: boolean } | null,
+    /** Play's speed, from the speed button (1×, 2× or 4×). */
+    playSpeed: 1,
     /** Camera speed, 1 normally: eased down while a figure on screen still waits for its detail, never for long. */
     ease: 1,
     easedFor: 0,
@@ -373,6 +380,13 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
     if (c.kind !== "explore") toExplore(0.6);
   }, [startBlend, toExplore]);
 
+  const [playSpeed, setPlaySpeed] = useState(1);
+  /** The speed button: 1× → 2× → 4× → 1×. */
+  const cycleSpeed = useCallback(() => {
+    const next = PLAY_SPEEDS[(PLAY_SPEEDS.indexOf(ctl.current.playSpeed) + 1) % PLAY_SPEEDS.length];
+    ctl.current.playSpeed = next;
+    setPlaySpeed(next);
+  }, []);
   const startPlay = useCallback((showHook: boolean) => {
     const placed = placedRef.current;
     if (!placed.length) return;
@@ -586,7 +600,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
       let view: View;
       let focusNow: string | null = null;
       if (c.kind === "play" && c.play) {
-        c.play.t += mdt;
+        c.play.t += mdt * c.playSpeed;
         const pt = c.play.t;
         const pf = playAt(c.play.plan, pt, scene.heightAt);
         view = pf.view;
@@ -1331,6 +1345,11 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
                   {playing ? <Square className="h-4 w-4 fill-current" aria-hidden /> : <Play className="h-4 w-4 fill-current" aria-hidden />}
                   {playing ? "Stop" : kind === "hold" ? "Replay" : "Play"}
                 </button>
+                {playing && (
+                  <button type="button" onClick={cycleSpeed} className={cn(chip, "h-11 min-w-[3.25rem] justify-center px-3 font-display text-sm font-bold")} aria-label={`Play speed ${playSpeed === 0.5 ? "half" : `${playSpeed}×`}. Change speed`} title="Play speed" data-testid="sizes-speed">
+                    {speedLabel(playSpeed)}
+                  </button>
+                )}
                 <button type="button" onClick={() => (compareOpen ? closeCompare() : openCompare())} className={cn(chip, "h-11", compareOpen && "border-[#ffd84a]/70 text-[#ffd84a]")} aria-pressed={compareOpen} disabled={!ready} aria-label="Compare sizes" data-testid="sizes-compare">
                   <Scale className="h-4 w-4" aria-hidden /> <span className="hidden min-[420px]:inline">Compare</span>
                 </button>

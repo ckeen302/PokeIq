@@ -6,7 +6,6 @@ import { DEFAULT_PRESET, PRESETS, compareLineup, presetLineup, type SizePreset }
 import { COMPARE_PATH, itemPath, presetPath } from "@/lib/sizes/deeplink";
 import { factFor } from "@/lib/sizes/facts";
 import { KIND_LABEL, bySize, formatFeet, formatMetres, measureOf, type SizeItem } from "@/lib/sizes/types";
-import { DexTabs } from "@/components/pokedex/DexTabs";
 import { ListHeader } from "@/components/pokedex/detail/DetailParts";
 import { BackButton } from "@/components/ui/BackButton";
 import { SizesExperience } from "./SizesExperience";
@@ -78,7 +77,6 @@ export function SizesPage({ preset = DEFAULT_PRESET, focus, vs, compare = false 
           ) : (
             <ListHeader kicker="Pokémon sizes" title={`${preset.label} `} accent="by size" blurb={preset.blurb} />
           )}
-          <DexTabs active="sizes" />
           <nav aria-label="Lineups" className="flex flex-wrap justify-center gap-2">
             {PRESETS.map((p) => (
               <Link

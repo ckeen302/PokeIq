@@ -111,9 +111,10 @@ export async function runSizes({ browser, BASE, OUT, errors, step }) {
   const stageIs = (name, value, ms = 120_000) => page.waitForFunction(([n, v]) => document.querySelector('[data-testid="sizes-stage"]')?.dataset[n] === v, [name, value], { timeout: ms });
 
   await part(errors, "tab", async () => {
+    // Sizes lives in the 3D Lab, not in the Pokédex's sections.
     await page.goto(`${BASE}/pokedex`, { waitUntil: "load" });
-    await page.getByTestId("dex-tab-sizes").click();
-    await page.waitForURL(/\/pokedex\/sizes$/);
+    if (await page.getByTestId("dex-tab-sizes").count()) errors.push("sizes: the Pokédex still has a Sizes tab");
+    await page.goto(`${BASE}/pokedex/sizes`, { waitUntil: "load" });
     if (!(await page.locator('[data-testid="sizes-list"] #size-pikachu').count())) errors.push("sizes: the server-rendered table is missing Pikachu");
   });
   // The rest at the light test quality, as a first visit again.
@@ -127,6 +128,14 @@ export async function runSizes({ browser, BASE, OUT, errors, step }) {
     if (Number(await attr("count")) < 1026) errors.push(`sizes: the full line has ${await attr("count")} figures`);
     if (await page.locator('[data-testid="sizes-list"] #size-ref-phone').count()) errors.push("sizes: the phone stands in the full line");
     await page.screenshot({ path: `${OUT}/sizes-play.png` });
+    // Play's speed button steps 1× → 2× → 4× → ½× → 1×.
+    const speed = page.getByTestId("sizes-speed");
+    if (!(await speed.count())) errors.push("sizes: no speed button while playing");
+    else {
+      const seen = [];
+      for (let k = 0; k < 4; k++) { seen.push((await speed.innerText()).trim()); await press(page, "sizes-speed"); }
+      if (seen.join(",") !== "1×,2×,4×,½×" || (await speed.innerText()).trim() !== "1×") errors.push(`sizes: the speed button stepped ${seen.join(" → ")}`);
+    }
     await press(page, "sizes-play");
     await stageIs("kind", "explore").catch(() => errors.push("sizes: Stop didn't stop the glide"));
   });
