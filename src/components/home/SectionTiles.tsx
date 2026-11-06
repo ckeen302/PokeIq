@@ -3,7 +3,7 @@ import { HoverPrefetchLink } from "./HoverPrefetchLink";
 import { HOME_SECTIONS } from "./sections";
 
 /**
- * One small tile per tab of the site, in the same order as the title screen's slides. Each page is fetched on hover, not on load.
+ * One small tile per tab of the site, PokéGuessr first, then the top nav's order. Each page is fetched on hover, not on load.
  * On a phone the tiles become one list: an icon, the name and its line, a chevron.
  */
 export function SectionTiles() {

@@ -72,7 +72,7 @@ export function GuessrShowcase({
   const pin = slides[index].pin;
 
   return (
-    <div ref={root} className={cn("pointer-events-none select-none", className)} aria-hidden>
+    <div ref={root} className={cn("pointer-events-none select-none", className)} data-testid="home-showcase" data-index={index} aria-hidden>
       {slides.map((slide, i) =>
         i === 0 || armed ? (
           <Image
