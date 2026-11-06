@@ -67,11 +67,21 @@ export function mixAt(film: Film, index: number, anim: number): Record<Layer, nu
     const t0 = beatAnim(film, index, a) + da, t1 = beatAnim(film, index, b) + db;
     epic = Math.max(epic, smoothstep(t0 - 1.5, t0 + 0.5, anim) * (1 - smoothstep(t1 - 0.5, t1 + 2.5, anim)));
   }
-  return { bed: m.bed * (1 - epic * 0.35), bright: m.bright * (1 - epic * 0.4), drive: m.drive * (1 - epic * 0.25), swell: epic };
+  // The swell lives inside its chapter, so the hall only ever hands one track to the next: it rises after the
+  // chapter opens and is gone before it ends (the last chapter keeps it into the epilogue, for the finale).
+  const end = film.chapters[index].anim;
+  epic *= smoothstep(0, 1.2, anim);
+  if (index < film.chapters.length - 1) epic *= 1 - smoothstep(end - 4, end - 0.5, anim);
+  // One track at a time: the four tracks are separate pieces in different keys and tempos, so layering them
+  // clashes. Each chapter plays its leading track alone, and its big moment crossfades into the orchestral swell.
+  const lead: Exclude<Layer, "swell"> = m.drive > m.bed && m.drive >= m.bright ? "drive" : m.bright > m.bed ? "bright" : "bed";
+  const out: Record<Layer, number> = { bed: 0, bright: 0, drive: 0, swell: epic };
+  out[lead] = Math.max(m[lead], 0.6) * (1 - epic);
+  return out;
 }
 
 /** The Archive between chapters: the piano alone. */
-const HALL_MIX: Record<Layer, number> = { bed: 0.8, bright: 0.05, drive: 0, swell: 0 };
+const HALL_MIX: Record<Layer, number> = { bed: 0.8, bright: 0, drive: 0, swell: 0 };
 
 /** The mix at any film state (the hall between chapters is the bed alone). */
 export function mixFor(film: Film, s: FilmState): Record<Layer, number> {
@@ -205,6 +215,8 @@ function scheduleWhoosh(ctx: BaseAudioContext, dest: AudioNode, noise: AudioBuff
   noiseHit(ctx, [dest], noise, at, { type: "bandpass", f0: 300, f1: 2400, q: 1.1, dur: 1.4, gain: 0.2 * gain, attack: 0.7 });
 }
 
+/** The synthesised hits sit well under the music: accents, not a second soundtrack. */
+const HIT_LEVEL = 0.45;
 const LAYER_GAIN: Record<Layer, number> = { bed: 0.75, bright: 0.5, drive: 0.55, swell: 0.85 };
 
 // ---------------------------------------------------------------------------
@@ -298,10 +310,10 @@ export function createStoryAudio(film: Film): StoryAudio {
       const prev = last;
       last = state;
       if (!prev || !(dt > 0)) return;
-      if (prev.kind === "hall" && state.kind === "chapter") scheduleWhoosh(c, dry, noise, now, 1);
+      if (prev.kind === "hall" && state.kind === "chapter") scheduleWhoosh(c, dry, noise, now, HIT_LEVEL);
       if (state.kind === "chapter" && prev.kind === "chapter" && prev.index === state.index) {
         const a0 = prev.anim, a1 = state.anim;
-        if (a1 > a0 && a1 - a0 < 0.6) for (const h of hitsOf(film, state.index)) if (h.at > a0 && h.at <= a1) scheduleHit(c, dry, wet, noise, h.kind, now);
+        if (a1 > a0 && a1 - a0 < 0.6) for (const h of hitsOf(film, state.index)) if (h.at > a0 && h.at <= a1) scheduleHit(c, dry, wet, noise, h.kind, now, HIT_LEVEL);
       }
     },
     dispose() {
@@ -361,9 +373,9 @@ export async function renderVideoAudio(film: Film, plan: VideoPlan, rate: number
       for (const h of hitsOf(film, sg.chapter)) {
         if (h.at < sg.from || h.at > sg.to) continue;
         const at = sg.t0 + ((h.at - sg.from) / Math.max(1e-6, sg.to - sg.from)) * (sg.t1 - sg.t0);
-        if (at > 0.1 && at < seconds - 0.3) scheduleHit(ctx, dry, wet, noise, h.kind, at, 0.9);
+        if (at > 0.1 && at < seconds - 0.3) scheduleHit(ctx, dry, wet, noise, h.kind, at, HIT_LEVEL);
       }
-      if (i > 0 && plan.cut > 0) scheduleWhoosh(ctx, dry, noise, Math.max(0, sg.t0 - plan.cut * 0.8), 0.9);
+      if (i > 0 && plan.cut > 0) scheduleWhoosh(ctx, dry, noise, Math.max(0, sg.t0 - plan.cut * 0.8), HIT_LEVEL);
     }
     return await ctx.startRendering();
   } catch {

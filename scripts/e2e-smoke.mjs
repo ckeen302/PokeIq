@@ -2139,11 +2139,15 @@ step("pokédex Trainers tab: search, notable filter, a game by route, an area's 
   await page.getByTestId("notable-blurb").waitFor();
 }
 
-step("pokédex Timeline tab: intro (once, skippable), 3D scene, scroll + drag, open an entry, track filters, scrubber, list view");
+step("Pokémon timeline (a 3D Lab page): intro (once, skippable), 3D scene, scroll + drag, open an entry, track filters, scrubber, list view");
 {
+  // The Pokédex's sections lead with the big Pokémon button; the 3D pages (Timeline, Sizes, Race) live in the 3D Lab.
   await gotoSettled(page, `${BASE}/pokedex`);
-  await page.getByTestId("dex-tab-timeline").click();
-  await page.waitForURL(/\/pokedex\/timeline$/);
+  for (const id of ["timeline", "sizes", "race"]) if (await page.getByTestId(`dex-tab-${id}`).count()) errors.push(`pokédex: still has a ${id} tab`);
+  const mainBox = await page.getByTestId("dex-tab-pokemon").boundingBox();
+  const movesBox = await page.getByTestId("dex-tab-moves").boundingBox();
+  if (!mainBox || !movesBox || mainBox.y + mainBox.height > movesBox.y + 1 || mainBox.width <= movesBox.width) errors.push("pokédex: the Pokémon button isn't the big one above the other sections");
+  await gotoSettled(page, `${BASE}/pokedex/timeline`);
   // First visit: the intro plays; a click skips it straight away.
   const intro = page.getByTestId("timeline-intro");
   if (!(await intro.waitFor({ timeout: 30_000 }).then(() => true, () => false))) errors.push("timeline: the intro didn't play on the first visit");

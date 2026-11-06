@@ -112,9 +112,10 @@ export async function runSizes({ browser, BASE, OUT, errors, step }) {
   const stageIs = (name, value, ms = 120_000) => page.waitForFunction(([n, v]) => document.querySelector('[data-testid="sizes-stage"]')?.dataset[n] === v, [name, value], { timeout: ms });
 
   await part(errors, "tab", async () => {
+    // Sizes lives in the 3D Lab, not in the Pokédex's sections.
     await page.goto(`${BASE}/pokedex`, { waitUntil: "load" });
-    await page.getByTestId("dex-tab-sizes").click();
-    await page.waitForURL(/\/pokedex\/sizes$/);
+    if (await page.getByTestId("dex-tab-sizes").count()) errors.push("sizes: the Pokédex still has a Sizes tab");
+    await page.goto(`${BASE}/pokedex/sizes`, { waitUntil: "load" });
     if (!(await page.locator('[data-testid="sizes-list"] #size-pikachu').count())) errors.push("sizes: the server-rendered table is missing Pikachu");
   });
   // The rest at the light test quality, as a first visit again.
