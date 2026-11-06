@@ -229,7 +229,7 @@ export function LevelLegend({ size, symbols, className }: { size: ConnSize; symb
   const levels = connLevels(size);
   return (
     <div
-      className={cn("flex flex-wrap items-center justify-center gap-1 text-[10px] sm:gap-1.5 sm:text-[11px]", className)}
+      className={cn("mp-dense flex flex-wrap items-center justify-center gap-1 text-[10px] sm:gap-1.5 sm:text-[11px] max-md:text-[length:11px]", className)}
       role="img"
       aria-label={`Group colours, easiest to trickiest: ${levels.map((l) => CONN_LEVELS[l].name).join(", ")}`}
       data-testid="conn-legend"

@@ -100,7 +100,7 @@ function GenTable({ rows }: { rows: EncRow[] }) {
       <tbody className="max-md:block">
         {rows.map((r, i) => (
           <tr key={i} className="border-b border-foreground/5 align-top transition-colors hover:bg-foreground/[0.03] max-md:flex max-md:flex-wrap max-md:items-baseline max-md:pb-1.5">
-            <td className="p-2 max-md:w-16 max-md:shrink-0">
+            <td className="p-2 max-md:w-[4.75rem] max-md:shrink-0">
               <Badges versions={r.v} />
             </td>
             {r.x ? (
@@ -109,7 +109,7 @@ function GenTable({ rows }: { rows: EncRow[] }) {
               </td>
             ) : (
               <>
-                <td className="p-2 font-semibold max-md:min-w-0 max-md:basis-[calc(100%-4rem)]">
+                <td className="p-2 font-semibold max-md:min-w-0 max-md:basis-[calc(100%-4.75rem)]">
                   {r.a && slugFromKey(r.a) ? (
                     <span className="inline-flex flex-wrap items-baseline gap-x-1.5">
                       <Link href={`/pokedex/places/${slugFromKey(r.a)}`} data-testid="enc-place-link" className="underline-offset-2 hover:text-primary hover:underline">
@@ -128,7 +128,7 @@ function GenTable({ rows }: { rows: EncRow[] }) {
                   )}
                   {r.n && <div className="text-[11px] font-normal text-muted-foreground">{r.n}</div>}
                 </td>
-                <td className="p-2 max-md:ml-16 max-md:py-0 max-md:text-[13px] max-md:text-muted-foreground">{r.m}</td>
+                <td className="p-2 max-md:ml-[4.75rem] max-md:py-0 max-md:text-[13px] max-md:text-muted-foreground">{r.m}</td>
                 {showLv && <td className="p-2 font-mono text-xs tabular-nums max-md:py-0 max-md:before:mr-1 max-md:before:font-sans max-md:before:text-muted-foreground max-md:before:content-['Lv']">{r.lv ?? "—"}</td>}
                 {!showRate ? null : r.t ? (
                   r.t.map((v, k) => (
