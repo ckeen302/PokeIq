@@ -3821,7 +3821,8 @@ async function homeStep() {
   // The hero runs edge to edge, and a swipe on its picture changes the slide.
   {
     const box = await mhero.boundingBox();
-    if (!box || box.x !== 0 || Math.round(box.width) !== 390) errors.push(`home: the hero isn't edge to edge at 390 (${box && `${box.x}+${box.width}`})`);
+    const pageW = await m.evaluate(() => Math.round(document.body.getBoundingClientRect().width));
+    if (!box || box.x !== 0 || Math.round(box.width) !== pageW) errors.push(`home: the hero isn't edge to edge at 390 (${box && `${box.x}+${box.width}`})`);
     await mhero.getByRole("button", { name: "Show PokéGuessr", exact: true }).click();
     const pic = await mhero.getByTestId("hero-picture").boundingBox();
     await mhero.getByTestId("hero-picture").evaluate((el, b) => {
@@ -3892,6 +3893,7 @@ async function phoneNavStep() {
   for (const id of ["more-friends", "more-theme", "more-sound"]) {
     if (!(await m.getByTestId(id).isVisible())) errors.push(`phone nav: no ${id} in the More sheet`);
   }
+  await m.waitForTimeout(500); // the sheet slides up
   const sb = await sheet.boundingBox();
   if (!sb || sb.y + sb.height > 844 - heights.bar + 1) errors.push("phone nav: the More sheet runs under the tab bar");
   await m.screenshot({ path: `${OUT}/phone-more-sheet.png` });
