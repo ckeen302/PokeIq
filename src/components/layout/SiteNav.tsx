@@ -7,13 +7,12 @@ import {
   MessagesSquare,
   Trophy,
 } from "lucide-react";
-import { useProgress } from "@/lib/progress";
 import { useAccount } from "@/lib/account";
 import { Avatar } from "@/components/avatar/Avatar";
 import { cn } from "@/lib/utils";
 import { LAB_PATH, isLabPath } from "@/lib/lab";
+import { AccountMenu } from "./AccountMenu";
 import { MuteToggle } from "./MuteToggle";
-import { ThemeToggle } from "./ThemeToggle";
 import { FriendsButton } from "@/components/community/FriendsButton";
 
 const DESKTOP_LINKS: { href: string; label: string; wideOnly?: boolean }[] = [
@@ -38,7 +37,6 @@ function isActive(pathname: string, href: string) {
 
 export function DesktopNav() {
   const pathname = usePathname();
-  const progress = useProgress();
   const account = useAccount();
   return (
     // `contents`: the links and the actions sit in the header's grid, so the links are centred on the page itself.
@@ -72,17 +70,18 @@ export function DesktopNav() {
           })}
         </div>
       </div>
+      {/* The header keeps the community icons, the sound switch and the avatar; the theme switch lives in the avatar's menu. */}
       <div className="flex items-center gap-1 justify-self-end max-[399px]:gap-0">
         <Link
           href="/rooms"
           aria-label="Chat rooms"
           title="Chat rooms"
           className={cn(
-            "rounded-md p-2 text-muted-foreground transition-colors hover:text-foreground max-md:hidden",
+            "flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground max-md:hidden",
             isActive(pathname, "/rooms") && "text-foreground",
           )}
         >
-          <MessagesSquare className="h-5 w-5" aria-hidden />
+          <MessagesSquare className="h-4 w-4" aria-hidden />
         </Link>
         <FriendsButton className="max-md:hidden" />
         <Link
@@ -98,7 +97,6 @@ export function DesktopNav() {
         >
           <Trophy className="h-4 w-4" aria-hidden />
         </Link>
-        <ThemeToggle className="max-md:hidden" />
         <MuteToggle className="max-md:hidden" />
         {account.status === "ready" && account.enabled && !account.user && (
           <Link
@@ -108,20 +106,16 @@ export function DesktopNav() {
             Sign in
           </Link>
         )}
+        {/* Phones: the avatar leads straight to the trainer card (the More sheet holds the settings). */}
         <Link
           href="/trainer"
           aria-label="Your trainer profile"
-          className={cn(
-            "ml-1 flex items-center gap-2 rounded-md border bg-card px-2 py-1.5 sm:px-3 text-sm text-muted-foreground transition-colors hover:border-screen/60 hover:text-foreground max-md:-mr-1 max-md:rounded-full max-md:border-transparent max-md:bg-transparent max-md:p-1.5",
-            isActive(pathname, "/trainer") &&
-              "border-screen/60 text-foreground",
-          )}
+          className="-mr-1 flex items-center rounded-full border border-transparent p-1.5 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+          aria-current={isActive(pathname, "/trainer") ? "page" : undefined}
         >
-          <Avatar avatar={account.user?.avatar} size={22} className="max-md:!h-7 max-md:!w-7" />
-          <span className="hidden max-w-[4rem] truncate font-display font-semibold min-[420px]:inline sm:max-w-[9rem] lg:hidden 2xl:inline max-md:!hidden">
-            {account.user?.username ?? (progress?.name || "Trainer")}
-          </span>
+          <Avatar avatar={account.user?.avatar} size={22} className="!h-7 !w-7" />
         </Link>
+        <AccountMenu className="max-md:hidden" />
       </div>
     </nav>
   );

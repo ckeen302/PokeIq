@@ -13,6 +13,7 @@ import fs from "fs";
 import { execFileSync } from "child_process";
 import { runIqTest } from "./e2e-iq-test.mjs";
 import { runSizes } from "./e2e-sizes.mjs";
+import { runRankings } from "./e2e-rankings.mjs";
 import { runMobile } from "./e2e-mobile.mjs";
 import { runDesktopTripwire } from "./e2e-desktop-tripwire.mjs";
 import { runMassBattle } from "./e2e-mass-battle.mjs";
@@ -132,6 +133,7 @@ if (process.env.E2E_ONLY === "which-pokemon") {
 if (process.env.E2E_ONLY === "home") {
   await homeStep();
   await phoneNavStep();
+  await desktopNavStep();
   await finish();
 }
 
@@ -172,6 +174,7 @@ async function playTriviaRun(p, slug) {
 
 await homeStep();
 await phoneNavStep();
+await desktopNavStep();
 
 step("pokédex entry: Where to find it");
 await gotoSettled(page, `${BASE}/pokemon/starly`);
@@ -2327,6 +2330,8 @@ step("pokédex Timeline: an entry's own link opens its panel, share copies it, t
 }
 
 await runSizes({ browser, BASE, OUT, errors, step });
+
+await runRankings({ browser, BASE, errors, step });
 await runMobile({ browser, BASE, OUT, errors, step });
 await runMassBattle({ browser, BASE, OUT, errors, step });
 await runRace({ browser, BASE, OUT, errors, step });
@@ -4049,6 +4054,71 @@ async function phoneNavStep() {
   if (await st.locator("body > header").isVisible()) errors.push("phone nav: the header shows over the Sizes stage");
   if (await st.getByTestId("tabbar").isVisible()) errors.push("phone nav: the tab bar shows over the Sizes stage");
   await st.context().close();
+}
+
+/**
+ * The desktop header: logo, tabs, then Chat, Friends, Leaderboard, Sound and the avatar menu (no theme button).
+ * The avatar opens an account and settings menu: the trainer card, Theme (Dark / Light) and Sound, sign in;
+ * Escape, a click outside and a new page close it. The trainer card has the same Settings.
+ */
+async function desktopNavStep() {
+  step("desktop nav: Chat, Friends, Leaderboard, Sound, avatar menu (theme switch, Escape, outside click, new page), trainer Settings");
+  for (const width of [1024, 1440]) {
+    const d = await newPage({ width, height: 900 });
+    await gotoSettled(d, BASE);
+    const header = d.locator("body > header");
+    const icons = await header.locator('a[href="/rooms"], [data-testid=friends-button], [data-testid=nav-leaderboard], button[aria-label*="sound"], [data-testid=account-menu-button]').evaluateAll((els) =>
+      els.filter((e) => e.getBoundingClientRect().width > 0).map((e) => e.getAttribute("data-testid") ?? e.getAttribute("aria-label") ?? e.getAttribute("href")),
+    );
+    const want = ["chat rooms", "friends-button", "nav-leaderboard", "sound", "account-menu-button"];
+    if (icons.length !== want.length || !want.every((w, i) => icons[i].toLowerCase().includes(w))) errors.push(`desktop nav ${width}: the header's icons read ${icons.join(", ")}`);
+    if (await header.locator('button[aria-label*="mode"]').count()) errors.push(`desktop nav ${width}: the header still has a theme button`);
+    const over = await d.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    if (over > 0) errors.push(`desktop nav ${width}: the page scrolls sideways by ${over}px`);
+    const button = d.getByTestId("account-menu-button");
+    const menu = d.getByTestId("account-menu");
+    if (await menu.count()) errors.push(`desktop nav ${width}: the account menu shows before the avatar is clicked`);
+    await button.click();
+    await menu.waitFor({ state: "visible" });
+    if ((await button.getAttribute("aria-expanded")) !== "true") errors.push(`desktop nav ${width}: the avatar isn't marked expanded with its menu open`);
+    if (!(await menu.locator('a[href="/trainer"]').count())) errors.push(`desktop nav ${width}: the menu has no trainer card link`);
+    const signedOut = (await menu.getByTestId("account-menu-signin").count()) + (await menu.getByTestId("account-menu-signout").count());
+    if (signedOut !== 1) errors.push(`desktop nav ${width}: the menu has ${signedOut} sign in / sign out rows`);
+    const theme = menu.getByTestId("account-menu-theme");
+    await theme.getByRole("button", { name: "Light" }).click();
+    if (!(await d.evaluate(() => document.documentElement.classList.contains("light")))) errors.push(`desktop nav ${width}: the menu's Light didn't turn the light theme on`);
+    if ((await theme.getByRole("button", { name: "Light" }).getAttribute("aria-pressed")) !== "true") errors.push(`desktop nav ${width}: Light isn't marked pressed`);
+    if ((await d.evaluate(() => localStorage.getItem("pokeiq-theme"))) !== "light") errors.push(`desktop nav ${width}: the light theme wasn't kept`);
+    if (width === 1440) await d.screenshot({ path: `${OUT}/desktop-account-menu-light.png` });
+    await theme.getByRole("button", { name: "Dark" }).click();
+    if (await d.evaluate(() => document.documentElement.classList.contains("light"))) errors.push(`desktop nav ${width}: the menu's Dark didn't turn the light theme off`);
+    // The menu's Sound row and the header's sound button show the same state.
+    const sound = menu.getByTestId("account-menu-sound");
+    await sound.getByRole("button", { name: "Off" }).click();
+    if (!/Unmute/.test((await header.locator('button[aria-label*="sound"]').getAttribute("aria-label")) ?? "")) errors.push(`desktop nav ${width}: the header's sound button didn't follow the menu's Sound off`);
+    await sound.getByRole("button", { name: "On" }).click();
+    await d.keyboard.press("Escape");
+    await menu.waitFor({ state: "detached" }).catch(() => errors.push(`desktop nav ${width}: Escape didn't close the menu`));
+    if (!(await button.evaluate((b) => b === document.activeElement))) errors.push(`desktop nav ${width}: Escape didn't return focus to the avatar`);
+    await button.click();
+    await menu.waitFor({ state: "visible" });
+    await d.mouse.click(width / 2, 500);
+    await menu.waitFor({ state: "detached" }).catch(() => errors.push(`desktop nav ${width}: a click outside didn't close the menu`));
+    await button.click();
+    await menu.getByTestId("account-menu-trainer").click();
+    await d.waitForURL(/\/trainer$/);
+    await menu.waitFor({ state: "detached" }).catch(() => errors.push(`desktop nav ${width}: the menu stayed open on the next page`));
+    if (width === 1440) {
+      // The trainer card's Settings: the same switches.
+      const card = d.getByTestId("trainer-settings");
+      await card.waitFor();
+      await card.getByTestId("trainer-settings-theme").getByRole("button", { name: "Light" }).click();
+      if (!(await d.evaluate(() => document.documentElement.classList.contains("light")))) errors.push("trainer settings: Light didn't turn the light theme on");
+      await card.getByTestId("trainer-settings-theme").getByRole("button", { name: "Dark" }).click();
+      if (await d.evaluate(() => document.documentElement.classList.contains("light"))) errors.push("trainer settings: Dark didn't turn the light theme off");
+    }
+    await d.context().close();
+  }
 }
 
 /** Which Pokémon Are You?: the quiz end to end at 1440 and 390, the result page, the story share card and a compare link. */

@@ -15,6 +15,7 @@ import { BackButton } from "@/components/ui/BackButton";
 import { RACE_CSS } from "@/components/race/race-css";
 import { GamesExperience } from "./GamesExperience";
 import { GamesInfo } from "./GamesInfo";
+import { GamesStadium } from "./GamesStadium";
 import { cn } from "@/lib/utils";
 
 /**
@@ -153,7 +154,10 @@ export function GamesPlayPage({ nations = DEFAULT_NATIONS, seed = null, rain = f
   );
 }
 
-/** /lab/games: single events, the Games, the records and head to heads. */
+/** The event's group on the stadium's event board. */
+const groupOf = (kind: string) => (kind === "sprint" ? "Track" : kind === "swim" ? "Pool" : kind === "lift" || kind === "wrestle" ? "Arena" : "Field");
+
+/** /lab/games: the stadium entry and event board over the plain page (single events, the Games, the records and head to heads). */
 export function GamesHub() {
   const h2h: { event: EventId; a: string; b: string }[] = [
     { event: "weightlifting", a: "snorlax", b: "machamp" },
@@ -163,7 +167,12 @@ export function GamesHub() {
     { event: "high-jump", a: "pikachu", b: "eevee" },
     { event: "shot-put", a: "machamp", b: "conkeldurr" },
   ];
+  const groups = ["Track", "Field", "Pool", "Arena"];
+  const events = EVENTS.map((e) => ({ id: e.id, name: e.name, emoji: e.emoji, question: e.question, href: eventPath(e.id), group: groupOf(e.kind) }));
+  const records = EVENTS.map((e) => ({ label: `${e.name} records`, href: recordsPath(e.id) }));
+  const pairs = h2h.map((x) => ({ label: h2hQuestion(x.event, GAMES_BY_KEY.get(x.a)!.name, GAMES_BY_KEY.get(x.b)!.name), href: eventRunPath(x.event, { keys: [x.a, x.b] }) }));
   return (
+    <GamesStadium events={events} groups={groups} playHref={PLAY_PATH} records={records} h2h={pairs} backHref={LAB_PATH}>
     <div className="mx-auto max-w-5xl space-y-10" data-testid="games-hub">
       <ListHeader back={{ href: LAB_PATH, label: "3D Lab" }} kicker="3D Lab · real sport, real stats" title="The PokéIQ " accent="Games" blurb="Real track and field, weightlifting, swimming and wrestling for every Pokémon: scored from their base stats, height, weight and body shape with real physics and each sport's real rules, then played out in 3D in a stadium, an arena and an aquatics centre." />
       <section aria-labelledby="hub-events" className="space-y-3">
@@ -213,5 +222,6 @@ export function GamesHub() {
         </ul>
       </section>
     </div>
+    </GamesStadium>
   );
 }
