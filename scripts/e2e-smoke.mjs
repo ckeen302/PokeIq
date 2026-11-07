@@ -3763,7 +3763,7 @@ async function homeStep() {
     const today = await p.evaluate(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; });
     const body = await (await p.request.get(`${BASE}/api/geo/daily-shot?date=${today}`)).json();
     if (Object.keys(body).some((k) => k !== "shot" && k !== "blur" && k !== "sharpTo") || (showsToday && body.shot !== heroShot)) errors.push(`home: the daily-shot API sent ${JSON.stringify(Object.keys(body))} / ${body.shot} (hero shows ${heroShot})`);
-    if (typeof body.sharpTo !== "number" || body.sharpTo % 100 !== 0) errors.push(`home: the daily-shot API's sharpTo isn't a coarse width: ${body.sharpTo}`);
+    if (typeof body.sharpTo !== "number" || body.sharpTo % 50 !== 0) errors.push(`home: the daily-shot API's sharpTo isn't a coarse width: ${body.sharpTo}`);
     if ((await p.request.get(`${BASE}/api/geo/daily-shot?date=2001-01-01`)).status() !== 400) errors.push("home: the daily-shot API answered for a date that isn't today");
   }
   // The words: PokéGuessr, free, one line; one h1; no counts, no NEW badges, no puzzle numbers, consistent names.

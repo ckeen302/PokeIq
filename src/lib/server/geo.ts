@@ -916,13 +916,13 @@ function shotDetail(id: string, family: GeoFamilyId | null | undefined): number 
 }
 
 /**
- * The widest a screenshot can be drawn (CSS pixels, in steps of 100) and
+ * The widest a screenshot can be drawn (CSS pixels, in steps of 50) and
  * stay sharp, or 0 when it's too small for a big picture. Coarse on purpose:
  * it says how big the picture can go, not which game it's from (every old
  * handheld game reads 0), so it gives nothing about the place away.
  */
 function sharpTo(id: string, family: GeoFamilyId | null | undefined): number {
-  const fit = Math.floor(shotDetail(id, family) / GEO_SHARP_RATIO / 100) * 100;
+  const fit = Math.floor(shotDetail(id, family) / GEO_SHARP_RATIO / 50) * 50;
   return fit >= SHARP_MIN ? fit : 0;
 }
 

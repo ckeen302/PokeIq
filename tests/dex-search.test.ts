@@ -57,8 +57,8 @@ describe("the Daily's first picture for the home page", () => {
     const seen = new Set<number>();
     for (let i = 0; i < 60; i++) {
       const { sharpTo } = geoDailyFirstShot(new Date(day + i * 86_400_000).toISOString().slice(0, 10))!;
-      // Steps of 100 px, and nothing between 0 and 500: an old handheld game's picture never reads as big.
-      expect(sharpTo % 100).toBe(0);
+      // Steps of 50 px, and nothing between 0 and 500: an old handheld game's picture never reads as big.
+      expect(sharpTo % 50).toBe(0);
       expect(sharpTo === 0 || sharpTo >= 500).toBe(true);
       seen.add(sharpTo);
     }
