@@ -4,7 +4,7 @@ import { QUIZ_PRESETS } from "@/lib/modes";
 import { NEA_CATEGORIES, NEA_PATH } from "@/lib/name-em-all/categories";
 import { ABILITIES, ITEMS, MOVES } from "@/lib/dex/data";
 import { SITE_URL } from "@/lib/site";
-import { LAB_PATH, MASS_BATTLE_LIVE, POKEMON_STORY_LIVE, WORLD_HISTORY_LIVE } from "@/lib/lab";
+import { GAMES_LIVE, LAB_PATH, MASS_BATTLE_LIVE, POKEMON_STORY_LIVE, WORLD_HISTORY_LIVE } from "@/lib/lab";
 import { CHAPTER_IDS as STORY_CHAPTER_IDS } from "@/lib/pokemon-story/data";
 import { STORY_PATH, chapterPath as storyChapterPath } from "@/lib/pokemon-story/deeplink";
 import { PRESETS as MASS_BATTLE_PRESETS } from "@/lib/mass-battle/presets";
@@ -24,6 +24,9 @@ import { DEFAULT_PRESET, PRESETS } from "@/lib/sizes/presets";
 import { SIZES_PATH, itemPath, presetPath } from "@/lib/sizes/deeplink";
 import { PRESETS as RACE_PRESETS } from "@/lib/race/presets";
 import { HUB_PRESET, RACE_PATH, presetPath as racePresetPath } from "@/lib/race/deeplink";
+import { EVENT_IDS as GAMES_EVENT_IDS } from "@/lib/games/events";
+import { GAMES_PATH, PLAY_PATH as GAMES_PLAY_PATH, eventPath as gamesEventPath, pokemonPath as gamesPokemonPath, recordsPath as gamesRecordsPath } from "@/lib/games/deeplink";
+import { GAMES_ATHLETES } from "@/lib/games/data";
 
 // Card pages are in /pokedex/tcg/sitemap/<n>.xml (see src/app/pokedex/tcg/sitemap.ts).
 // TCG sets come from the Pokémon TCG API: refresh daily; without the API the sitemap simply omits them.
@@ -65,6 +68,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...PRESETS.filter((p) => p.id !== DEFAULT_PRESET.id).map((p) => ({ url: `${SITE_URL}${presetPath(p.id)}`, changeFrequency: "monthly" as const, priority: 0.6 })),
     ...SIZE_ITEMS.filter((i) => i.kind !== "ref").map((i) => ({ url: `${SITE_URL}${itemPath(i.key)}`, changeFrequency: "yearly" as const, priority: 0.3 })),
     { url: `${SITE_URL}${RACE_PATH}`, changeFrequency: "monthly", priority: 0.8 },
+    ...(GAMES_LIVE
+      ? [
+          { url: `${SITE_URL}${GAMES_PATH}`, changeFrequency: "monthly" as const, priority: 0.8 },
+          { url: `${SITE_URL}${GAMES_PLAY_PATH}`, changeFrequency: "monthly" as const, priority: 0.7 },
+          ...GAMES_EVENT_IDS.map((id) => ({ url: `${SITE_URL}${gamesEventPath(id)}`, changeFrequency: "monthly" as const, priority: 0.7 })),
+          ...GAMES_EVENT_IDS.map((id) => ({ url: `${SITE_URL}${gamesRecordsPath(id)}`, changeFrequency: "monthly" as const, priority: 0.7 })),
+          ...GAMES_ATHLETES.filter((a) => a.entrant.kind === "pokemon").map((a) => ({ url: `${SITE_URL}${gamesPokemonPath(a.key)}`, changeFrequency: "yearly" as const, priority: 0.3 })),
+        ]
+      : []),
     ...RACE_PRESETS.filter((p) => p.id !== HUB_PRESET).map((p) => ({ url: `${SITE_URL}${racePresetPath(p.id)}`, changeFrequency: "monthly" as const, priority: 0.6 })),
     { url: `${SITE_URL}/pokedex/types`, changeFrequency: "monthly", priority: 0.7 },
     ...TYPES.map((t) => ({ url: `${SITE_URL}/pokedex/types/${t}`, changeFrequency: "monthly" as const, priority: 0.6 })),

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Battle, Teams } from "pokemon-showdown";
 import { canShift, firstChoice, forcedSwitchSlots, moveSlotOptions, moveTargets, randomChoice, targetSpots } from "@/lib/battle/choices";
-import { fillPasses, slotPasses } from "@/components/battle/play/choice";
+import { aimableSpots, fillPasses, slotPasses } from "@/components/battle/play/choice";
 import { chooseCpu } from "@/lib/battle/cpu-policy";
 import { seededRandom } from "@/lib/battle/cpu-policy";
 import { SimSession, randomTeam, sideOf, type PlayerSide } from "@/lib/server/battle-engine/engine";
@@ -117,6 +117,32 @@ describe("triples: shifting and forced switches", () => {
       expect(now[1]).toBe(left);
       expect(now[0]).toBe(centre);
     }
+  });
+
+  it("aims at the Pokémon in reach, and with nobody in reach still offers the empty spots, never only Back", () => {
+    // The grid's order: the far half right to left by slot, then yours. From the left edge a single-target
+    // move reaches the foe across, the centre foe and the centre ally.
+    const spots = targetSpots("normal", 0, "triples");
+    const grid = [...spots.filter((t) => t.loc > 0).sort((a, b) => b.loc - a.loc), ...spots.filter((t) => t.loc < 0).sort((a, b) => b.loc - a.loc)];
+    const aim = (occupied: number[]) => aimableSpots(grid, (loc) => !occupied.includes(loc)).map((t) => t.loc);
+    expect(aim([1, 2, 3, -1, -2, -3])).toEqual([3, 2, -2]);
+    expect(aim([1, 2, -1, -3])).toEqual([2]);
+    // The last foe on the far edge and the centre ally gone: nobody in reach, so the empty spots in reach.
+    expect(aim([1, -1, -3])).toEqual([3, 2, -2]);
+
+    // The simulator takes a move aimed at an empty spot in reach (and plays on): three a side, the foe across
+    // from the left edge knocked out on turn 1 with nobody to replace it.
+    const set = (s: string, level: number) => `${s}\nLevel: ${level}\nAbility: ${s === "Snorlax" ? "Thick Fat" : s === "Magikarp" ? "Swift Swim" : "Natural Cure"}\n- Tackle\n- Protect`;
+    const mine = Teams.pack(Teams.import(["Snorlax", "Blissey", "Chansey"].map((s) => set(s, 50)).join("\n\n"))!);
+    const theirs = Teams.pack(Teams.import([set("Chansey", 50), set("Blissey", 50), set("Magikarp", 1)].join("\n\n"))!);
+    const session = SimSession.create({ formatid: "gen9triples", seed: "5,6,7,8", players: [{ name: "Trainer A", team: mine }, { name: "Trainer B", team: theirs }] });
+    for (const side of ["p1", "p2"] as const) session.choose(side, "default");
+    expect(session.choose("p1", "move 1 3, move 2, move 2")).toEqual({ ok: true });
+    expect(session.choose("p2", "move 2, move 2, move 1 1")).toEqual({ ok: true });
+    expect(session.battle.p2.active[2].fainted).toBe(true);
+    expect(session.choose("p1", "move 1 3, move 2, move 2")).toEqual({ ok: true });
+    expect(session.choose("p2", firstChoice(session.pending("p2")!, "triples"))).toEqual({ ok: true });
+    expect(session.battle.turn).toBe(3);
   });
 
   it("passes the spots it has nobody left to fill", () => {

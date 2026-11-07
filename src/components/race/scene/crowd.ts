@@ -17,6 +17,14 @@ export interface CrowdOptions {
   /** Share of seats taken (fewer spectators on slower devices). */
   occupancy: number;
   flashes: number;
+  /**
+   * Other stands than the stadium bowl (the PokéIQ Games' indoor arena and
+   * aquatics centre): rows of seats, each a list of seat points (x, z),
+   * the seat's height, and the direction it faces (towards the floor).
+   */
+  rows?: { pts: { x: number; z: number; nx: number; nz: number }[]; y: number; tier: 0 | 1 }[];
+  /** Where the lights shine in from (the stadium's floodlights by default). */
+  light?: { y: number };
 }
 
 export interface Crowd {
@@ -97,7 +105,23 @@ export function buildCrowd(o: CrowdOptions): Crowd {
   const sections: Inst[] = Array.from({ length: SECTIONS * 2 }, () => ({ pos: [], dir: [], shirt: [], skin: [], hair: [], phase: [], scale: [] }));
   const heads: THREE.Vector3[] = [];
   let count = 0;
-  for (const [ti, tier] of [TIERS.lower, TIERS.upper].entries()) {
+  const seat = (ti: number, i: number, n: number, p: { x: number; z: number; nx: number; nz: number }, y: number) => {
+    if (r() > o.occupancy) return;
+    const sec = sections[ti * SECTIONS + Math.floor((i / n) * SECTIONS)];
+    sec.pos.push(p.x, y, p.z);
+    sec.dir.push(-p.nx, -p.nz);
+    const shirt = pick(shirts), skin = pick(skins);
+    const hair = r() < 0.16 ? pick(shirts) : pick(hairs);
+    sec.shirt.push(shirt.r, shirt.g, shirt.b);
+    sec.skin.push(skin.r, skin.g, skin.b);
+    sec.hair.push(hair.r, hair.g, hair.b);
+    sec.phase.push(r() * 100 + ti * 0.5);
+    sec.scale.push(0.9 + r() * 0.2);
+    count++;
+    if (r() < 0.06) heads.push(new THREE.Vector3(p.x - p.nx * 0.2, y + 1.15, p.z - p.nz * 0.2));
+  };
+  for (const row of o.rows ?? []) row.pts.forEach((p, i) => seat(row.tier, i, row.pts.length, p, row.y));
+  if (!o.rows) for (const [ti, tier] of [TIERS.lower, TIERS.upper].entries()) {
     const rows = Math.floor((tier.d1 - tier.d0) / ROW_D);
     for (let row = 0; row < rows; row++) {
       const d = tier.d0 + row * ROW_D + 0.35;
@@ -128,13 +152,14 @@ export function buildCrowd(o: CrowdOptions): Crowd {
   const uniforms = {
     uTime: { value: 0 },
     uExcite: { value: 0.2 },
+    uLightY: { value: o.light?.y ?? 46 },
   };
   const material = new THREE.ShaderMaterial({
     uniforms,
     vertexShader: /* glsl */ `
       attribute float aPart; attribute float aArm;
       attribute vec3 iPos; attribute vec2 iDir; attribute vec3 iShirt; attribute vec3 iSkin; attribute vec3 iHair; attribute float iPhase; attribute float iScale;
-      uniform float uTime; uniform float uExcite;
+      uniform float uTime; uniform float uExcite; uniform float uLightY;
       varying vec3 vColor; varying float vLight; varying float vDist;
       vec3 rotX(vec3 p, float a) { float c = cos(a), s = sin(a); return vec3(p.x, p.y * c - p.z * s, p.y * s + p.z * c); }
       vec3 rotZ(vec3 p, float a) { float c = cos(a), s = sin(a); return vec3(p.x * c - p.y * s, p.x * s + p.y * c, p.z); }
@@ -170,7 +195,7 @@ export function buildCrowd(o: CrowdOptions): Crowd {
         vec3 legs = h3 < 0.45 ? vec3(0.025, 0.035, 0.07) : h3 < 0.8 ? vec3(0.012) : vec3(0.16, 0.12, 0.07);
         vColor = aPart < 0.5 ? iShirt : aPart < 1.5 ? iSkin : aPart < 2.5 ? iHair : legs;
         // The floodlights shine in from over the field; the back of the upper tier is darker.
-        vec3 toField = normalize(vec3(-iPos.x * 0.55, 46.0 - iPos.y, -iPos.z * 0.55));
+        vec3 toField = normalize(vec3(-iPos.x * 0.55, uLightY - iPos.y, -iPos.z * 0.55));
         float key = max(dot(wn, toField), 0.0);
         float sky = 0.5 + 0.5 * wn.y;
         vLight = (0.22 + 0.62 * key + 0.16 * sky) * mix(1.0, 0.62, smoothstep(2.0, 34.0, iPos.y));

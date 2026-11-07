@@ -57,17 +57,49 @@ async function noSideways(page, errors, where) {
 }
 
 /**
+ * What a battle page with nothing to press is showing, on one line, with a
+ * full-page picture of it at `shot`: the turn, the line under the controls
+ * (sending, the computer thinking, the turn playing), the latest message,
+ * any alert, a target grid's title and the buttons on the page (greyed ones
+ * marked). A page too busy to answer says so.
+ */
+async function stuckState(p, shot) {
+  if (shot) await p.screenshot({ path: shot, fullPage: true, timeout: 15_000 }).catch(() => undefined);
+  const seen = p.evaluate(() => {
+    const text = (el) => (el?.textContent ?? "").replace(/\s+/g, " ").trim();
+    const buttons = [...document.querySelectorAll("main button")].filter((b) => b.getClientRects().length).map((b) => `${b.dataset.testid ?? text(b).slice(0, 24)}${b.disabled ? " (greyed)" : ""}`);
+    return [
+      [...document.querySelectorAll(".hud-label")].map(text).find((t) => /^Turn \d+$/i.test(t)) ?? "no turn shown",
+      `waiting: ${text(document.querySelector("[data-testid=battle-waiting]")) || "-"}`,
+      `message: ${text(document.querySelector("[data-testid=battle-message]")).slice(0, 90) || "-"}`,
+      `alert: ${[...document.querySelectorAll("[role=alert]")].map(text).join(" / ") || "-"}`,
+      `grid: ${text(document.querySelector("[data-testid=target-grid] p")) || "-"}`,
+      `buttons: ${buttons.join(", ").slice(0, 400) || "none"}`,
+    ].join("; ");
+  });
+  const late = new Promise((resolve) => setTimeout(() => resolve("the page didn't answer within 10 s"), 10_000));
+  return Promise.race([seen, late]).catch((e) => `the page couldn't be read: ${String(e?.message ?? e).split("\n")[0]}`);
+}
+
+/**
  * Plays the battle on `p` until it ends (or `maxSteps` choices): leads at team
  * preview, the strongest-looking move aimed at the first spot in reach, a
- * switch when one is due. `shots` takes screenshots on the way.
+ * switch when one is due. `shots` takes screenshots on the way. When nothing
+ * comes up to press, the error says what the page shows, and `stuck` (a file
+ * path) gets its picture.
  */
-async function play(p, { maxSteps = 400, shots = {}, errors, label }) {
+async function play(p, { maxSteps = 400, shots = {}, errors, label, stuck }) {
   let aimed = false;
   for (let i = 0; i < maxSteps; i++) {
     const ready = p.locator(
       "[data-testid=move-button]:not([disabled]), [data-testid=switch-button]:not([disabled]), [data-testid=lead-button]:not([disabled]), [data-testid=battle-result], [data-testid=target-button]:not([disabled])"
     );
-    await ready.first().waitFor({ timeout: WAIT });
+    await ready
+      .first()
+      .waitFor({ timeout: WAIT })
+      .catch(async (err) => {
+        throw new Error(`${String(err?.message ?? err).split("\n")[0]} at choice ${i} (${await stuckState(p, stuck)})`);
+      });
     if (await p.locator("[data-testid=battle-result]").count()) return i;
     if (shots.each) await shots.each();
     if (i === 2 && shots.mid) await shots.mid();
@@ -127,6 +159,7 @@ export async function runGroupBattles({ browser, BASE, OUT, errors, step, shotsD
       await play(p, {
         errors,
         label: `triples ${width}`,
+        stuck: `${SHOTS}/triples-stuck-${width}.png`,
         shots: {
           // An edge Pokémon's moves offer Shift; the centre one's don't.
           each: async () => {
@@ -166,6 +199,7 @@ export async function runGroupBattles({ browser, BASE, OUT, errors, step, shotsD
       await play(p, {
         errors,
         label: `ffa ${width}`,
+        stuck: `${SHOTS}/ffa-stuck-${width}.png`,
         shots: {
           mid: async () => {
             await noSideways(p, errors, "a Free-For-All");
@@ -197,6 +231,7 @@ export async function runGroupBattles({ browser, BASE, OUT, errors, step, shotsD
       await play(p, {
         errors,
         label: `multi ${width}`,
+        stuck: `${SHOTS}/multi-stuck-${width}.png`,
         shots: {
           mid: async () => {
             await noSideways(p, errors, "a Multi Battle");
