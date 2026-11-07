@@ -21,8 +21,8 @@ const SIZES = "(min-width: 1024px) 760px, 100vw";
  * picture the Daily deals first (so Play opens on a picture that's already
  * here). The server can't know the player's date, so the page is sent with a
  * fixed PokéGuessr view (the page's LCP image, sized for the screen), and
- * today's place is fetched once the page has loaded and fades in over it. Nothing about where it
- * is: no map, no pin, no name.
+ * today's place is fetched once the page has loaded and fades in over it.
+ * Nothing about where it is: no map, no pin, no name.
  */
 export function HeroPicture({ fallback }: { fallback: StaticImageData }) {
   const today = useToday();
