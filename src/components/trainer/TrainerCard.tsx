@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CoachPanel } from "./CoachPanel";
 import { AccountPanel } from "@/components/account/AccountPanel";
+import { SettingsCard } from "@/components/settings/SiteSettings";
 import { MyBattleRecord } from "@/components/battle/MyBattleRecord";
 import { BadgeMedal } from "@/components/game/BadgeMedal";
 import { ModeIcon } from "@/components/game/ModeIcon";
@@ -135,6 +136,8 @@ export function TrainerCard() {
       </motion.div>
 
       <AccountPanel />
+
+      <SettingsCard />
 
       <AvatarPanel />
 

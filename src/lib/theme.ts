@@ -6,6 +6,7 @@
 export type Theme = "dark" | "light";
 
 const THEME_KEY = "pokeiq-theme";
+const THEME_EVENT = "pokeiq:theme";
 const THEME_COLORS: Record<Theme, string> = { dark: "#08071a", light: "#f6f5fc" };
 
 /** Inline <head> script: runs before paint so a light-mode user never sees a dark flash. */
@@ -40,4 +41,13 @@ export function setTheme(theme: Theme): void {
   } catch {
     // Storage blocked (private mode): the choice just won't persist.
   }
+  window.dispatchEvent(new Event(THEME_EVENT));
+}
+
+/** Calls `listener` whenever any theme switch on the page changes the theme. */
+export function onThemeChange(listener: (theme: Theme) => void): () => void {
+  if (typeof window === "undefined") return () => undefined;
+  const handler = () => listener(getTheme());
+  window.addEventListener(THEME_EVENT, handler);
+  return () => window.removeEventListener(THEME_EVENT, handler);
 }
