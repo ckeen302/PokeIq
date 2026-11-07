@@ -28,6 +28,7 @@ import {
   GEO_FALLOFF,
   GEO_MAX_ROUND_SCORE,
   GEO_ROUNDS,
+  geoDailyRegion,
   geoRoundsOf,
   isGeoRounds,
   type GeoAnswer,
@@ -874,6 +875,21 @@ export function geoChallengeFirstShot(token: unknown): string | null {
   if (!isGeoSpec(spec)) return null;
   const first = dealRounds(spec, challenge.seed, challenge.plan).rounds[0];
   return first ? shotUrl(first.shot) : null;
+}
+
+/**
+ * The Daily's first screenshot on a date (the same for everyone), for the
+ * home page's picture: only its URL (a random id that says nothing about the
+ * place) and its blurred placeholder. The game deals the same picture first,
+ * so a player who starts from the home page already has round 1's picture.
+ */
+export function geoDailyFirstShot(date: string): { shot: string; blur?: string } | null {
+  const spec: GeoSpec = { region: geoDailyRegion(date, isGeoSpec({ region: WORLD_REGION, kind: "game" })), kind: "game", daily: date };
+  if (!isGeoSpec(spec)) return null;
+  const first = dealRounds(spec, `geo-daily:${date}`, undefined).rounds[0];
+  if (!first) return null;
+  const blur = shotBlur(first.shot);
+  return { shot: shotUrl(first.shot), ...(blur ? { blur } : {}) };
 }
 
 /**
