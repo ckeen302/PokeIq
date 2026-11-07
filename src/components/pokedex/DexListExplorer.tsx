@@ -2,13 +2,14 @@
 
 /* eslint-disable @next/next/no-img-element -- item sprites are tiny remote PNGs */
 import { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Search, Swords, Sparkle, CircleDot, X } from "lucide-react";
 import { TYPES, capitalize } from "@/lib/pokemon/type-matrix";
 import { typeColor } from "@/lib/pokemon/type-colors";
 import { itemSpriteUrl } from "@/lib/dex/build";
 import { TypeBadge } from "./TypeBadge";
 import { cn } from "@/lib/utils";
+import { usePlaceholder } from "@/lib/phone";
 
 export interface MoveListItem {
   slug: string;
@@ -119,6 +120,7 @@ export function DexListExplorer({ kind, items }: { kind: DexListKind; items: Ite
   }, []);
 
   const label = kind;
+  const searchHint = usePlaceholder(`Search ${label}…  ( / )`);
   const hasFilters = query || type || cls || category || region || placeType;
   const reset = () => {
     setQuery("");
@@ -139,7 +141,7 @@ export function DexListExplorer({ kind, items }: { kind: DexListKind; items: Ite
               ref={searchRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={`Search ${label}…  ( / )`}
+              placeholder={searchHint}
               aria-label={`Search ${label}`}
               className="h-11 w-full rounded-md border border-input bg-shade/40 pl-9 pr-9 font-display text-sm tracking-wide focus-visible:border-screen/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
             />

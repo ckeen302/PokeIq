@@ -1,6 +1,6 @@
 import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 export const metadata: Metadata = {
   title: "Privacy policy",
@@ -24,7 +24,7 @@ export default function PrivacyPage() {
     <article className="mx-auto max-w-2xl space-y-8">
     <BackButton href="/" />
       <header className="space-y-2">
-        <p className="hud-label text-screen">The short version</p>
+        <p className="hud-label max-md:hidden text-screen">The short version</p>
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight">Privacy policy</h1>
         <p className="text-sm text-muted-foreground">
           PokéIQ is a free, non-commercial fan project. We collect as little as we can, use it only to run the game,

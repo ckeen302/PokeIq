@@ -14,7 +14,7 @@ export default function TrainerAvatarPage() {
     <div className="mx-auto max-w-6xl space-y-4">
       <BackButton href="/trainer" label="Back to trainer card" />
       <header className="space-y-1">
-        <p className="hud-label text-screen">Trainer creator</p>
+        <p className="hud-label max-md:hidden text-screen">Trainer creator</p>
         <h1 className="font-display text-3xl font-bold uppercase tracking-wide sm:text-4xl">Make your trainer</h1>
       </header>
       <TrainerCreator />

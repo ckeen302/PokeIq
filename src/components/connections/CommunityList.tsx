@@ -44,7 +44,7 @@ export function CommunityList() {
   return (
     <div className="mx-auto max-w-3xl space-y-8">
       <div className="space-y-2 text-center">
-        <p className="hud-label text-screen">PokéConnections · Community</p>
+        <p className="hud-label max-md:hidden text-screen">PokéConnections · Community</p>
         <h1 className="font-display text-3xl font-bold uppercase tracking-tight sm:text-4xl">Trainer-made puzzles</h1>
         <p className="text-sm text-muted-foreground">Puzzles other trainers built. Play one, vote it up, or make your own and share the link.</p>
         <a href="/connections/create" className={cn(buttonVariants({ size: "sm" }), "mt-1")} data-testid="community-create">

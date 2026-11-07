@@ -3,7 +3,7 @@
 import { BackButton } from "@/components/ui/BackButton";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { CalendarDays, Swords } from "lucide-react";
 import type { ShareCard } from "@/lib/session-types";
 import { MODULE_INFO } from "@/lib/modes";

@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element -- thumbnails come pre-sized from /api/art */
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { BackButton } from "@/components/ui/BackButton";
 import { artUrl } from "@/lib/pokemon/art";
 import { typeColor } from "@/lib/pokemon/type-colors";
@@ -97,10 +97,10 @@ export function SpeciesGrid({ list }: { list: SpeciesChip[] }) {
             <span className="flex-1" style={{ background: typeColor(p.types[0]) }} />
             <span className="flex-1" style={{ background: typeColor(p.types[1] ?? p.types[0]) }} />
           </div>
-          <div className="flex items-center gap-2 p-2">
-            <img src={artUrl(p.id, 96)} alt="" loading="lazy" decoding="async" width={48} height={48} className="h-12 w-12 shrink-0 object-contain" />
+          <div className="flex items-center gap-2 p-2 max-md:gap-1.5">
+            <img src={artUrl(p.id, 96)} alt="" loading="lazy" decoding="async" width={48} height={48} className="h-12 w-12 shrink-0 object-contain max-md:h-10 max-md:w-10" />
             <div className="min-w-0 space-y-1">
-              <div className="truncate font-display text-sm font-bold uppercase tracking-wide group-hover:text-screen">{p.name}</div>
+              <div className="truncate font-display text-sm font-bold uppercase tracking-wide group-hover:text-screen max-md:tracking-normal max-md:whitespace-normal max-md:leading-tight">{p.name}</div>
               <div className="flex flex-wrap gap-1">
                 {p.types.map((t) => (
                   <TypeBadge key={t} type={t} size="sm" />

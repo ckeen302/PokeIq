@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link2, Loader2, LogOut, Swords, WifiOff } from "lucide-react";
 import type { DuelPlayerView } from "@/lib/duel-types";

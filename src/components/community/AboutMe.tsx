@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Check, Loader2, Pencil, Search, Share2, Sparkles, X } from "lucide-react";
 import { useAccount } from "@/lib/account";
 import { artUrl } from "@/lib/pokemon/art";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { CARD_SLOTS, GAME_SLOTS, POKEMON_SLOTS, RULE_HINT, aboutIsEmpty, choiceLabel, type AboutCard, type AboutData, type PokemonSlot } from "@/lib/about-data";
 import type { CardTile } from "@/lib/tcg/types";
 import { Button } from "@/components/ui/button";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
 import { Clock, Crown, Loader2, Plus, Trophy, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -62,18 +62,18 @@ export function TournamentLobby() {
             <ul className="space-y-2" data-testid="tournament-list">
               {data.active.map((t) => (
                 <li key={t.id}>
-                  <Link href={`/battle/tournaments/${t.id}`} className="hud flex items-center gap-3 rounded-lg border bg-card p-3 hover:border-primary/60" data-testid="tournament-row">
+                  <Link href={`/battle/tournaments/${t.id}`} className="hud flex items-center gap-3 rounded-lg border bg-card p-3 hover:border-primary/60 max-sm:flex-wrap max-sm:gap-y-1.5" data-testid="tournament-row">
                     {t.official ? <Crown className="h-5 w-5 shrink-0 text-warning" aria-hidden /> : <Trophy className="h-5 w-5 shrink-0 text-primary" aria-hidden />}
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate font-semibold">{t.title}</span>
+                    <span className="min-w-0 flex-1 max-sm:basis-[calc(100%-2rem)]">
+                      <span className="block truncate font-semibold max-sm:whitespace-normal">{t.title}</span>
                       <span className="block text-xs text-muted-foreground">
                         {t.formatName} · {STYLE_NAME[t.style]} · Bo{t.bestOf}
                       </span>
                     </span>
-                    <span className="flex items-center gap-1 text-sm tabular-nums">
+                    <span className="flex items-center gap-1 text-sm tabular-nums max-sm:ml-8">
                       <Users className="h-3.5 w-3.5" aria-hidden /> {t.players}/{t.maxPlayers}
                     </span>
-                    <span className={cn("w-28 text-right text-xs", t.status === "signup" ? "text-success" : "text-warning")}>
+                    <span className={cn("w-28 text-right text-xs max-sm:ml-auto max-sm:w-auto", t.status === "signup" ? "text-success" : "text-warning")}>
                       {t.status === "signup" ? (
                         <>
                           <Clock className="mr-1 inline h-3 w-3" aria-hidden />
@@ -95,10 +95,10 @@ export function TournamentLobby() {
             <ul className="divide-y rounded-lg border bg-card text-sm" data-testid="tournament-history">
               {data.history.map((t) => (
                 <li key={t.id}>
-                  <Link href={`/battle/tournaments/${t.id}`} className="flex items-center gap-3 px-3 py-2 hover:bg-accent">
-                    <span className="min-w-0 flex-1 truncate">{t.title}</span>
-                    <span className="text-xs text-muted-foreground">{t.endedAt ? new Date(t.endedAt).toLocaleString([], { dateStyle: "short", timeStyle: "short" }) : ""}</span>
-                    <span className="w-36 truncate text-right">
+                  <Link href={`/battle/tournaments/${t.id}`} className="flex items-center gap-3 px-3 py-2 hover:bg-accent max-md:min-h-14 max-md:flex-wrap max-md:gap-x-3 max-md:gap-y-0.5 max-md:py-2.5">
+                    <span className="min-w-0 flex-1 truncate max-md:basis-full max-md:font-medium">{t.title}</span>
+                    <span className="text-xs text-muted-foreground max-md:flex-1">{t.endedAt ? new Date(t.endedAt).toLocaleString([], { dateStyle: "short", timeStyle: "short" }) : ""}</span>
+                    <span className="w-36 truncate text-right max-md:w-auto max-md:max-w-[50%] max-md:text-xs">
                       {t.status === "cancelled" ? <span className="text-muted-foreground">Cancelled</span> : <span className="font-semibold text-warning">🏆 {t.winner}</span>}
                     </span>
                   </Link>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Eye, Flag, Loader2, Pause, Play, RotateCcw, SkipForward, Sparkles, Timer, Trophy } from "lucide-react";
 import { buildMatcher } from "@/lib/name-em-all/match";
 import { NEA_PATH, standardMinutes } from "@/lib/name-em-all/categories";

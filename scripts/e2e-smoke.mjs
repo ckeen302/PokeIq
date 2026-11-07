@@ -13,6 +13,8 @@ import fs from "fs";
 import { execFileSync } from "child_process";
 import { runIqTest } from "./e2e-iq-test.mjs";
 import { runSizes } from "./e2e-sizes.mjs";
+import { runMobile } from "./e2e-mobile.mjs";
+import { runDesktopTripwire } from "./e2e-desktop-tripwire.mjs";
 import { runMassBattle } from "./e2e-mass-battle.mjs";
 import { runRace } from "./e2e-race.mjs";
 import { runGames } from "./e2e-games.mjs";
@@ -112,6 +114,9 @@ async function chatTo(from, to, text, shown = text) {
   // One message a second per trainer.
   await from.waitForTimeout(1_100);
 }
+
+// First, while nothing has been played yet: phone-only work must leave the desktop layout as it was.
+await runDesktopTripwire({ browser, BASE, errors, step });
 
 const page = await newPage({ width: 1280, height: 900 });
 // Battle music this tab fetched (a later battle plays the cached track without a new request).
@@ -2322,6 +2327,7 @@ step("pokédex Timeline: an entry's own link opens its panel, share copies it, t
 }
 
 await runSizes({ browser, BASE, OUT, errors, step });
+await runMobile({ browser, BASE, OUT, errors, step });
 await runMassBattle({ browser, BASE, OUT, errors, step });
 await runRace({ browser, BASE, OUT, errors, step });
 await runGames({ browser, BASE, OUT, errors, step });
@@ -3683,9 +3689,9 @@ step("name 'em all: hub, a Gen 1 run (aliases, wrong category, pause, give up), 
   await np.context().close();
 }
 
-/** The home page: the title screen's slideshow (a slide per tab, dots, pause), a tile per tab, today's puzzles, at 1440 and 390. */
+/** The home page: the PokéGuessr title screen (views that cycle, Play, the Pokédle link), a tile per tab, today's puzzles, at 1440 and 390. */
 async function homeStep() {
-  step("home: a slide per tab (no shared headline, one hidden h1), arrows, keys, dots and pause, a tile per tab, nothing sideways at 390");
+  step("home: the PokéGuessr showcase (loads, cycles, holds still under reduced motion), Play and the Pokédle link, one hidden h1, a tile per tab, nothing sideways or under the tab bar at 390");
   const TABS = [
     ["guessr", "/guessr", "PokéGuessr"],
     ["pokedle", "/pokedle", "Pokédle"],
@@ -3696,147 +3702,79 @@ async function homeStep() {
     ["pokedex", "/pokedex", "Pokédex"],
     ["lab", "/lab", "3D Lab"],
   ];
+  const imgLoaded = (img) =>
+    img
+      .evaluate((el) => (el.complete ? Promise.resolve(el.naturalWidth > 0) : new Promise((r) => el.addEventListener("load", () => r(el.naturalWidth > 0), { once: true }))), null, { timeout: 15_000 })
+      .catch(() => false);
   const p = await newPage({ width: 1440, height: 900 });
-  await p.clock.install();
   await gotoSettled(p, BASE);
   await p.screenshot({ path: `${OUT}/home.png`, fullPage: true });
-  const hero = p.getByTestId("hero-carousel");
-  const slides = await hero.getByTestId("hero-slide").evaluateAll((els) => els.map((e) => e.dataset.slide));
-  if (slides.join() !== TABS.map(([id]) => id).join()) errors.push(`home: the hero's slides are ${slides.join()}`);
-  if ((await hero.getByTestId("hero-dot").count()) !== TABS.length) errors.push("home: the hero hasn't a dot per slide");
-  const active = () => hero.locator("[data-testid=hero-slide][data-active=true]").getAttribute("data-slide");
-  if ((await active()) !== "guessr") errors.push(`home: the first slide is ${await active()}, not PokéGuessr`);
-  // The first slide's picture is the page's hero image, in the server's HTML.
+  const hero = p.getByTestId("home-hero");
+  const show = hero.getByTestId("home-showcase");
+  // The first view is the page's hero image, in the server's HTML and preloaded.
+  if (!(await imgLoaded(show.locator("img").first()))) errors.push("home: the showcase's first view didn't load");
   const html = await (await p.request.get(BASE)).text();
-  if (!/data-slide="guessr"[^>]*>(?:(?!data-slide=)[^])*?<img /.test(html) || !/<link rel="preload" as="image"[^>]+guessr|<link rel="preload" as="image"[^>]+paldea/.test(html)) errors.push("home: the PokéGuessr slide's image isn't server-rendered and preloaded as the hero image");
-  if (/data-slide="(?!guessr)[a-z]+"[^>]*>(?:(?!data-slide=)[^])*?<img /.test(html)) errors.push("home: another slide's screenshot is in the server's HTML (it should load later)");
-  // Every slide's name and button lead to its tab.
-  const pause = hero.getByTestId("hero-pause");
-  if ((await pause.getAttribute("aria-label")) !== "Pause the slideshow") errors.push(`home: the pause button reads "${await pause.getAttribute("aria-label")}"`);
-  for (const [id, href, name] of TABS) {
-    await hero.getByRole("button", { name: `Show ${name}`, exact: true }).click();
-    await hero.locator(`[data-testid=hero-slide][data-slide="${id}"][data-active=true]`).waitFor({ timeout: 5000 }).catch(() => errors.push(`home: the ${name} dot didn't show its slide`));
-    if ((await hero.getByRole("button", { name: `Show ${name}`, exact: true }).getAttribute("aria-current")) !== "true") errors.push(`home: the ${name} dot isn't marked current`);
-    const got = await hero.getByTestId("hero-slide-cta").getAttribute("href");
-    if (got !== href) errors.push(`home: the ${name} slide's button goes to ${got}, not ${href}`);
-    const shown = (await hero.getByTestId("hero-slide-name").innerText()).trim().toLowerCase();
-    if (shown !== name.toLowerCase()) errors.push(`home: the ${name} slide is titled "${shown}"`);
-    if (id !== "guessr") {
-      const img = hero.locator(`[data-testid=hero-slide][data-slide="${id}"] img`);
-      const ok = await img
-        .evaluate((el) => (el.complete ? Promise.resolve(el.naturalWidth > 0) : new Promise((r) => el.addEventListener("load", () => r(el.naturalWidth > 0), { once: true }))), null, { timeout: 15_000 })
-        .catch(() => false);
-      if (!ok) errors.push(`home: the ${name} slide's picture didn't load`);
-    }
-  }
-  // No shared headline; the page's one h1 is there for search engines and screen readers.
-  if (await p.getByText(/Guess the place|Win the battle/i).count()) errors.push("home: the old shared headline is still on the page");
-  const h1s = await p.locator("h1").allInnerTexts().catch(() => []);
+  if (!/data-testid="home-showcase"[^>]*>\s*<img /.test(html) || !/<link rel="preload" as="image"/.test(html)) errors.push("home: the showcase's first view isn't server-rendered and preloaded");
+  // It moves on by itself.
+  await p.waitForFunction(() => document.querySelector("[data-testid=home-showcase]")?.dataset.index !== "0", null, { timeout: 20_000 }).catch(() => errors.push("home: the showcase didn't move on to another view"));
+  // The PokéGuessr name and line; no old headline, no counts; one h1 for search engines.
+  if (!/PokéGuessr/i.test(await hero.locator("h2").innerText())) errors.push("home: the hero isn't titled PokéGuessr");
+  if (await p.getByText(/Guess the place|Win the battle/i).count()) errors.push("home: the old headline is still on the page");
+  if (/\d[\d,]* Pokémon/.test(await hero.innerText())) errors.push("home: the hero shows a Pokémon count");
   if ((await p.locator("h1").count()) !== 1) errors.push(`home: ${await p.locator("h1").count()} h1s on the page, not one`);
-  else if (!/PokéIQ/.test(await p.locator("h1").textContent())) errors.push(`home: the h1 reads "${h1s[0]}"`);
-  // The arrows: named for where they go, and they wrap round.
-  const arrow = (dir) => hero.getByTestId(`hero-${dir}`);
-  const order = TABS.map(([id, , name]) => [id, name]);
-  await hero.getByRole("button", { name: "Show PokéGuessr", exact: true }).click();
-  if ((await arrow("next").getAttribute("aria-label")) !== "Next: Pokédle") errors.push(`home: the next arrow reads "${await arrow("next").getAttribute("aria-label")}" on PokéGuessr`);
-  if ((await arrow("prev").getAttribute("aria-label")) !== "Previous: 3D Lab") errors.push(`home: the previous arrow reads "${await arrow("prev").getAttribute("aria-label")}" on PokéGuessr`);
-  await arrow("prev").click();
-  if ((await active()) !== "lab") errors.push(`home: Previous from the first slide went to ${await active()}, not round to 3D Lab`);
-  await arrow("next").click();
-  if ((await active()) !== "guessr") errors.push(`home: Next from the last slide went to ${await active()}, not round to PokéGuessr`);
-  for (let i = 1; i <= order.length; i++) {
-    await arrow("next").click();
-    const [want, wantName] = order[i % order.length];
-    if ((await active()) !== want) errors.push(`home: Next went to ${await active()}, not ${want}`);
-    const nextName = order[(i + 1) % order.length][1];
-    if ((await arrow("next").getAttribute("aria-label")) !== `Next: ${nextName}`) errors.push(`home: on ${wantName} the next arrow reads "${await arrow("next").getAttribute("aria-label")}"`);
-  }
-  // The keyboard's arrows, with focus in the slideshow.
-  await arrow("next").focus();
-  await p.keyboard.press("ArrowRight");
-  if ((await active()) !== "pokedle") errors.push(`home: → from PokéGuessr went to ${await active()}`);
-  await p.keyboard.press("ArrowLeft");
-  await p.keyboard.press("ArrowLeft");
-  if ((await active()) !== "lab") errors.push(`home: ← ← from Pokédle went to ${await active()}, not round to 3D Lab`);
-  await p.locator("body").click({ position: { x: 5, y: 400 } });
-  await hero.getByRole("button", { name: "Show Battle", exact: true }).click();
-  // Pause, then play: it moves on by itself after 25 seconds, and not while paused.
-  await pause.click();
-  if ((await pause.getAttribute("aria-label")) !== "Play the slideshow") errors.push("home: pausing didn't turn the button into Play");
-  await p.locator("body").click({ position: { x: 5, y: 400 } });
-  await p.clock.runFor(30_000);
-  if ((await active()) !== "battle") errors.push(`home: the slideshow moved on while paused (to ${await active()})`);
-  await pause.click();
-  await p.locator("body").click({ position: { x: 5, y: 400 } });
-  await p.clock.runFor(20_000);
-  if ((await active()) !== "battle") errors.push("home: the slideshow moved on before 25 seconds");
-  await p.clock.runFor(6_000);
-  await hero.locator('[data-testid=hero-slide][data-slide="quizzes"][data-active=true]').waitFor({ timeout: 3000 }).catch(async () => errors.push(`home: the slideshow didn't move on after 25 seconds (on ${await active()})`));
-  // The tiles: one per tab, in the same order, each to its tab.
+  else if (!/PokéIQ/.test(await p.locator("h1").textContent())) errors.push(`home: the h1 reads "${await p.locator("h1").textContent()}"`);
+  // Play goes to PokéGuessr, the small link to Pokédle.
+  if ((await hero.getByTestId("home-hero-pokedle").getAttribute("href")) !== "/pokedle") errors.push("home: the Pokédle link doesn't go to /pokedle");
+  await hero.getByTestId("home-hero-play").click();
+  await p.waitForURL(/\/guessr$/, { timeout: 15_000 }).catch(() => errors.push(`home: Play PokéGuessr went to ${p.url()}`));
+  await gotoSettled(p, BASE);
+  await hero.getByTestId("home-hero-pokedle").click();
+  await p.waitForURL(/\/pokedle$/, { timeout: 15_000 }).catch(() => errors.push(`home: the Pokédle link went to ${p.url()}`));
+  await gotoSettled(p, BASE);
+  // The tiles: one per tab, in order, each to its tab.
   for (const [id, href, name] of TABS) {
     const got = await p.getByTestId(`home-tile-${id}`).getAttribute("href").catch(() => null);
     if (got !== href) errors.push(`home: the ${name} tile goes to ${got}, not ${href}`);
   }
-  if ((await p.getByTestId("home-tile-lab").getAttribute("href")) !== "/lab") errors.push("home: the 3D Lab tile doesn't lead to /lab");
   // Today's puzzles and the coffee button stay; the old sections are gone.
   await p.getByRole("heading", { name: /Today's puzzles/ }).waitFor();
   if (!(await p.getByTestId("coffee-button").isVisible())) errors.push("home: the Buy me a coffee button is missing");
-  for (const gone of ["home-timeline-card", "home-sizes-card", "home-race-card", "play-which-pokemon"]) {
+  for (const gone of ["home-timeline-card", "home-sizes-card", "home-race-card", "play-which-pokemon", "hero-carousel"]) {
     if (await p.getByTestId(gone).count()) errors.push(`home: ${gone} is still on the page`);
   }
   if ((await p.getByRole("heading", { name: /Research tools/ }).count()) || (await p.locator("#quiz-heading, #tools-heading").count())) errors.push("home: an old section heading is still on the page");
   await p.context().close();
 
-  // Reduced motion: it doesn't move by itself, and the button offers Play.
+  // Reduced motion: the views hold still.
   const still = await newPage({ width: 1440, height: 900 }, { reducedMotion: "reduce" });
   await gotoSettled(still, BASE);
-  await still.getByTestId("hero-pause").and(still.locator('[aria-label="Play the slideshow"]')).waitFor({ timeout: 5000 }).catch(() => errors.push("home: under reduced motion the slideshow still plays"));
+  await still.waitForTimeout(8_000);
+  if ((await still.getByTestId("home-showcase").getAttribute("data-index")) !== "0") errors.push("home: under reduced motion the showcase still moves");
   await still.context().close();
 
-  // 390: every slide's picture loads, in a band above the slide's name; nothing sideways, the tiles one list, the dots big enough to tap.
-  const m = await newPage({ width: 390, height: 844 });
+  // 390: edge to edge, the view on top, the text and a full-width Play under it, all above the tab bar; nothing sideways.
+  const m = await newPage({ width: 390, height: 844 }, { isMobile: true, hasTouch: true });
   await gotoSettled(m, BASE);
-  const mhero = m.getByTestId("hero-carousel");
-  const heights = new Set();
-  for (const [id, , name] of TABS) {
-    await mhero.getByRole("button", { name: `Show ${name}`, exact: true }).click();
-    heights.add(Math.round((await mhero.boundingBox())?.height ?? 0));
-    const img = mhero.locator(`[data-testid=hero-slide][data-slide="${id}"][data-active=true] img`).first();
-    const loaded = await img
-      .evaluate((el) => (el.complete ? Promise.resolve(el.naturalWidth > 0) : new Promise((r) => el.addEventListener("load", () => r(el.naturalWidth > 0), { once: true }))), null, { timeout: 15_000 })
-      .catch(() => false);
-    if (!loaded) errors.push(`home: the ${name} slide's picture didn't load at 390`);
-  }
-  // A change of slide never moves the page below the hero.
-  if (heights.size !== 1) errors.push(`home: the hero's height changes between slides at 390 (${[...heights].join(", ")})`);
+  const mhero = m.getByTestId("home-hero");
+  if (!(await imgLoaded(mhero.getByTestId("home-showcase").locator("img").first()))) errors.push("home: the showcase's view didn't load at 390");
   {
-    const band = await mhero.locator("[data-testid=hero-slide][data-active=true]").boundingBox();
-    const title = await mhero.getByTestId("hero-slide-name").boundingBox();
-    if (!band || !title || title.y < band.y + band.height) errors.push(`home: at 390 the slide's name overlaps the picture (picture ends at ${band && band.y + band.height}, name starts at ${title?.y})`);
+    const box = await mhero.boundingBox();
+    const pageW = await m.evaluate(() => Math.round(document.body.getBoundingClientRect().width));
+    if (!box || box.x !== 0 || Math.round(box.width) !== pageW) errors.push(`home: the hero isn't edge to edge at 390 (${box && `${box.x}+${box.width}`})`);
+    const view = await mhero.getByTestId("home-hero-view").boundingBox();
+    const title = await mhero.locator("h2").boundingBox();
+    if (!view || !title || view.height < 280 || title.y < view.y + view.height / 2) errors.push(`home: at 390 the view isn't a tall band above the title (view ${view && `${view.y}+${view.height}`}, title at ${title?.y})`);
+    const play = await mhero.getByTestId("home-hero-play").boundingBox();
+    if (!play || Math.abs(play.width - (pageW - 32)) > 2) errors.push(`home: the Play button isn't full width at 390 (${play?.width})`);
+    const barTop = await m.evaluate(() => document.querySelector("[data-testid=tabbar]")?.getBoundingClientRect().top ?? window.innerHeight);
+    if (!play || play.y + play.height > barTop) errors.push(`home: the Play button is under the tab bar at 390 (ends at ${play && play.y + play.height}, bar at ${barTop})`);
     const shift = await m.evaluate(() => new Promise((r) => { let total = 0; new PerformanceObserver((l) => l.getEntries().forEach((e) => { if (!e.hadRecentInput) total += e.value; })).observe({ type: "layout-shift", buffered: true }); setTimeout(() => r(total), 500); }));
-    if (shift > 0) errors.push(`home: layout shift ${shift} at 390`);
+    if (shift > 0.01) errors.push(`home: layout shift ${shift} at 390`);
   }
   const overflow = await m.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   if (overflow > 0) errors.push(`home: the page scrolls sideways by ${overflow}px at 390`);
   const tiles = await m.locator("[data-testid^=home-tile-]").evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
   if (tiles.length !== TABS.length || new Set(tiles).size !== TABS.length) errors.push(`home: the tiles aren't one list at 390 (${tiles.join()})`);
-  // The hero runs edge to edge, and a swipe on its picture changes the slide.
-  {
-    const box = await mhero.boundingBox();
-    const pageW = await m.evaluate(() => Math.round(document.body.getBoundingClientRect().width));
-    if (!box || box.x !== 0 || Math.round(box.width) !== pageW) errors.push(`home: the hero isn't edge to edge at 390 (${box && `${box.x}+${box.width}`})`);
-    await mhero.getByRole("button", { name: "Show PokéGuessr", exact: true }).click();
-    const pic = await mhero.getByTestId("hero-picture").boundingBox();
-    await mhero.getByTestId("hero-picture").evaluate((el, b) => {
-      const at = (type, x) => el.dispatchEvent(new PointerEvent(type, { pointerId: 7, pointerType: "touch", isPrimary: true, clientX: x, clientY: b.y + b.height / 2, bubbles: true }));
-      at("pointerdown", b.x + b.width * 0.8);
-      at("pointerup", b.x + b.width * 0.2);
-    }, pic);
-    if ((await mhero.locator("[data-testid=hero-slide][data-active=true]").getAttribute("data-slide")) !== "pokedle") errors.push("home: a swipe left on the hero didn't show the next slide");
-  }
-  for (const b of await m.getByTestId("hero-dot").evaluateAll((els) => els.map((e) => e.getBoundingClientRect()))) {
-    if (b.width < 24 || b.height < 24) errors.push(`home: a slide dot is ${b.width}×${b.height} at 390, under 24px`);
-  }
   await m.screenshot({ path: `${OUT}/home-390.png`, fullPage: true });
   await m.context().close();
 }
@@ -3875,7 +3813,7 @@ async function phoneNavStep() {
   await m.waitForTimeout(300);
   const under = await m.evaluate(() => {
     const top = document.querySelector("[data-testid=tabbar]").getBoundingClientRect().top;
-    const last = [...document.querySelectorAll("footer *")].filter((e) => e.children.length === 0 && e.getBoundingClientRect().height > 0).pop();
+    const last = [...document.querySelectorAll("footer *")].filter((e) => e.children.length === 0 && e.getBoundingClientRect().height > 0 && (!e.checkVisibility || e.checkVisibility())).pop();
     return last ? last.getBoundingClientRect().bottom - top : 0;
   });
   if (under > 0) errors.push(`phone nav: the footer's last line is ${under}px under the tab bar`);

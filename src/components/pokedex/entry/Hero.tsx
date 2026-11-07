@@ -4,7 +4,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { slugify } from "@/lib/dex/build";
 import { Flag, Medal, Ruler, Sparkles, Swords, Volume2 } from "lucide-react";
 import { GAMES_LIVE, MASS_BATTLE_LIVE } from "@/lib/lab";

@@ -1,9 +1,9 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { HowToButton } from "./HowToButton";
 import { webGame } from "@/lib/structured-data";
 import { jsonLd } from "@/lib/seo";
 
-/** Static SEO copy under a game: intro, how to play, FAQ (collapsed), more-games links and JSON-LD. */
+/** Static SEO copy under a game: intro, how to play, FAQ (collapsed), more-games links and JSON-LD. Phones keep just the how-to and the FAQ: the tab bar already links the games. */
 
 export interface Faq {
   q: string;
@@ -23,7 +23,7 @@ const GAMES = [
 
 export function MoreGames({ current }: { current?: string }) {
   return (
-    <nav aria-label="More games" className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+    <nav aria-label="More games" className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground max-md:hidden">
       <span className="font-semibold text-foreground">More games:</span>
       {GAMES.filter((g) => g.href !== current).map((g) => (
         <Link key={g.href} href={g.href} className="underline-offset-2 hover:text-foreground hover:underline">
@@ -64,7 +64,7 @@ export function GameInfo({ path, name, intro, steps, faqs, description, howToBut
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(faq) }} />
       <div className="space-y-3 text-sm text-muted-foreground">
         <h2 className="font-display text-base font-bold uppercase tracking-wider text-foreground">How to play {name}</h2>
-        <p>{intro}</p>
+        <p className="max-md:hidden">{intro}</p>
         {howToButton ? (
           <HowToButton name={name} />
         ) : (

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { ChevronRight } from "lucide-react";
 import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { DexTabs } from "@/components/pokedex/DexTabs";

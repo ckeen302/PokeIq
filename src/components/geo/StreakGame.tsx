@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Check, Flame, Loader2, Play, Trophy, X } from "lucide-react";
 import { type GeoRegionInfo } from "@/lib/geo-types";
@@ -159,7 +159,7 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
     return (
       <div className="mx-auto max-w-3xl space-y-8" data-testid="streak-setup">
         <div className="space-y-3 text-center">
-          <p className="hud-label text-screen">Field survey · the Pokémon world</p>
+          <p className="hud-label max-md:hidden text-screen">Field survey · the Pokémon world</p>
           <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-6xl">
             Region <span className="text-primary">Streak</span>
           </h1>
@@ -270,7 +270,7 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
           <div className="absolute inset-0">
             <ShotCarousel views={[run.shot]} index={0} onIndex={() => undefined} onZoom={() => setZoomed(true)} fs />
           </div>
-          <div className="absolute left-3 top-3 z-20 flex items-center gap-2">
+          <div className="geo-safe-tl absolute left-3 top-3 z-20 flex items-center gap-2">
             <ExitButton onClick={() => setPhase("setup")} label="Back to Region Streak" />
             <FullscreenButton fs={fs} onClick={toggle} />
           </div>
@@ -350,7 +350,7 @@ function StreakReveal({ world, current, streak, notch, onNext, onExit }: { world
       <div className="absolute inset-x-0 top-0 bottom-[8.5rem] md:bottom-[6.75rem]">
         <GeoMap region={world} revealed={[{ guess: null, answer: graded.answer }]} fit={{ delay: LINE_DRAW_MS / 2, duration: FIT_MS }} fill controls={false} />
       </div>
-      <div className="absolute left-3 top-3 z-20">
+      <div className="geo-safe-tl absolute left-3 top-3 z-20">
         <ExitButton onClick={onExit} label="Back to Region Streak" />
       </div>
       {notch}
@@ -379,7 +379,7 @@ function StreakReveal({ world, current, streak, notch, onNext, onExit }: { world
               className="flex h-12 w-full max-w-xs items-center justify-center gap-2 rounded-md bg-[#4cbb17] px-6 font-display text-base font-bold uppercase tracking-wider text-white shadow-lg transition-[background-color,transform] hover:bg-[#58d01c] active:scale-[0.98]"
             >
               {graded.done ? "See results" : "Next shot"} ▶
-              <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline">Space</kbd>
+              <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline [@media(pointer:coarse)]:!hidden">Space</kbd>
             </button>
             <div className="text-white/60 [&_button]:text-white/60 [&_button:hover]:text-white">
               <ReportShot key={current.shot} shot={current.shot} mode="solo" />

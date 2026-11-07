@@ -94,11 +94,11 @@ export function NewDuelCard({
   return (
     <Card className="overflow-hidden border-primary/40">
       <form className="grid md:grid-cols-[1fr_auto]" onSubmit={create}>
-        <CardContent className="space-y-2 p-6">
+        <CardContent className="space-y-2 p-6 max-md:p-5">
           <p className="hud-label flex items-center gap-1.5 text-primary">
             <Swords className="h-3.5 w-3.5" aria-hidden /> Duel a friend
           </p>
-          <p className="font-display text-2xl font-bold uppercase">{heading}</p>
+          <p className="font-display text-2xl font-bold uppercase max-md:text-xl max-md:leading-tight">{heading}</p>
           <p className="text-sm text-muted-foreground">{blurb}</p>
           {children}
           {info && <HowItWorks>{info}</HowItWorks>}
@@ -108,7 +108,7 @@ export function NewDuelCard({
             </p>
           )}
         </CardContent>
-        <div className="flex flex-col justify-center gap-2 p-6 pt-0 md:w-72 md:pt-6">
+        <div className="flex flex-col justify-center gap-2 p-6 pt-0 max-md:px-5 max-md:pb-5 md:w-72 md:pt-6">
           <label htmlFor={id} className="hud-label">
             Your trainer name
           </label>
@@ -149,7 +149,7 @@ export function NewDuelCard({
             </>
           )}
           {match && !finder.searching && (
-            <p className="text-center text-xs text-muted-foreground">Create a duel and send the link, or get paired with anyone searching for the same game right now.</p>
+            <p className="text-center text-xs text-muted-foreground max-md:hidden">Create a duel and send the link, or get paired with anyone searching for the same game right now.</p>
           )}
         </div>
       </form>

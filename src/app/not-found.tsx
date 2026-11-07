@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element -- pre-sized art */
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { buttonVariants } from "@/components/ui/button";
 
 export default function NotFound() {

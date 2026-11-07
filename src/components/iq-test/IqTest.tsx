@@ -22,7 +22,7 @@ export function IqTest() {
   return (
     <div className="space-y-8">
       <div className="mx-auto max-w-2xl space-y-3 text-center">
-        <p className="hud-label text-screen">The PokéIQ Test</p>
+        <p className="hud-label max-md:hidden text-screen">The PokéIQ Test</p>
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">
           A cognitive test <span className="text-primary">made of Pokémon</span>
         </h1>
@@ -64,7 +64,9 @@ export function IqTest() {
               <Button size="lg" className="h-14 w-full text-base" onClick={() => setPlaying(true)} data-testid="iq-start">
                 <Play className="h-5 w-5" aria-hidden /> Start the test
               </Button>
-              <p className="text-center text-xs text-muted-foreground">Keys 1–6 pick an option. Every retake draws fresh items.</p>
+              <p className="text-center text-xs text-muted-foreground">
+                <span className="max-md:hidden">Keys 1–6 pick an option. </span>Every retake draws fresh items.
+              </p>
             </CardContent>
           </Card>
         </motion.div>

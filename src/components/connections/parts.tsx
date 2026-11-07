@@ -168,10 +168,10 @@ export const GridTile = forwardRef<
       <span
         style={fit}
         className={cn(
-          "block w-full overflow-hidden whitespace-nowrap font-display font-bold uppercase leading-tight",
+          "mp-dense block w-full overflow-hidden whitespace-nowrap font-display font-bold uppercase leading-tight",
           compact
-            ? "text-[min(10px,calc(100cqw/(var(--conn-chars)*0.8)))] sm:text-[min(12px,calc(100cqw/(var(--conn-chars)*0.76)))]"
-            : "text-[min(11px,calc(100cqw/(var(--conn-chars)*0.72)))] sm:text-[min(14px,calc(100cqw/(var(--conn-chars)*0.76)))] sm:tracking-wide"
+            ? "text-[min(10px,calc(100cqw/(var(--conn-chars)*0.88)))] sm:text-[min(12px,calc(100cqw/(var(--conn-chars)*0.76)))]"
+            : "text-[min(11px,calc(100cqw/(var(--conn-chars)*0.8)))] sm:text-[min(14px,calc(100cqw/(var(--conn-chars)*0.76)))] sm:tracking-wide"
         )}
       >
         {tile.name}
@@ -229,7 +229,7 @@ export function LevelLegend({ size, symbols, className }: { size: ConnSize; symb
   const levels = connLevels(size);
   return (
     <div
-      className={cn("flex flex-wrap items-center justify-center gap-1 text-[10px] sm:gap-1.5 sm:text-[11px]", className)}
+      className={cn("mp-dense flex flex-wrap items-center justify-center gap-1 text-[10px] sm:gap-1.5 sm:text-[11px] max-md:text-[length:11px]", className)}
       role="img"
       aria-label={`Group colours, easiest to trickiest: ${levels.map((l) => CONN_LEVELS[l].name).join(", ")}`}
       data-testid="conn-legend"

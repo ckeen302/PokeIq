@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { ClipboardPaste, Eraser, FolderOpen, Plus } from "lucide-react";
 import { HpBar } from "@/components/game/HpBar";
 import { BATTLE_FORMATS } from "@/lib/battle/formats";

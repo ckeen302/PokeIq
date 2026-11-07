@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element -- card scans are hot-linked from the TCG API's own image CDN */
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import type { CardTile } from "@/lib/tcg/types";
 import { formatPrice } from "@/lib/tcg/prices";
 import { cn } from "@/lib/utils";

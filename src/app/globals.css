@@ -197,15 +197,22 @@
     content: "▶" / "";
     @apply pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-primary opacity-0 transition-opacity;
   }
-  .menu-item:not(:disabled):hover,
   .menu-item:not(:disabled):focus-visible,
   .menu-item[data-selected="true"] {
     @apply pl-7;
   }
-  .menu-item:not(:disabled):hover::before,
   .menu-item:not(:disabled):focus-visible::before,
   .menu-item[data-selected="true"]::before {
     @apply animate-nudge opacity-100;
+  }
+  /* mobile-polish: only a real pointer slides the cursor in; a tap on a phone would leave it stuck. */
+  @media (hover: hover) {
+    .menu-item:not(:disabled):hover {
+      @apply pl-7;
+    }
+    .menu-item:not(:disabled):hover::before {
+      @apply animate-nudge opacity-100;
+    }
   }
 
   /* Classic "Who's That Pokémon?" sunburst behind silhouettes. */
@@ -279,6 +286,18 @@
   background: linear-gradient(180deg, #27224f, #1e1a3f);
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
   clip-path: polygon(0 0, 100% 0, calc(100% - 14px) calc(100% - 10px), calc(100% - 18px) calc(100% - 4px), calc(100% - 26px) 100%, 26px 100%, 18px calc(100% - 4px), 14px calc(100% - 10px));
+}
+/* Phones: the notch grows down past the camera cut-out (env() is 0 everywhere else). */
+.geo-notch { border-top: env(safe-area-inset-top) solid #27224f; }
+/* HUD corners keep clear of the notch and, on a phone on its side, the rounded edges. */
+.geo-safe-tl { margin-top: env(safe-area-inset-top); margin-left: env(safe-area-inset-left); }
+.geo-safe-tr { margin-top: env(safe-area-inset-top); margin-right: env(safe-area-inset-right); }
+.geo-band { margin-top: env(safe-area-inset-top); }
+/* The phone's corner minimap: its width, which the picture's bottom-left strip keeps clear of. */
+.geo-frame { --geo-bar: 0px; }
+/* Phones (as usePhone in GameShell.tsx): the round's solid bottom bar, which the picture stops above. */
+@media (max-width: 767px), (pointer: coarse) and (max-height: 520px) {
+  .geo-frame { --geo-bar: calc(5rem + env(safe-area-inset-bottom)); }
 }
 /* The countdown pill's last seconds. */
 .geo-pill-urgent {
@@ -643,6 +662,31 @@ html[data-dle-cb] .dle-match { background: #f5793a; color: #1f0d02; border-color
 html[data-dle-cb] .dle-partial { background: #85c0f9; color: #04213d; border-color: #85c0f9; }
 html[data-dle-cb] .dle-close { background: rgb(133 192 249 / 0.4); border-color: #85c0f9; }
 
+/* mobile-polish: phone-only rules (below md). Nothing here may change wider screens.
+   In the components layer, so a utility class on an element still wins. */
+@layer components {
+  @media (max-width: 767.98px) {
+    /* Plain panels: no targeting-bracket corners on a small screen. */
+    .hud {
+      background-image: none;
+    }
+    /* mobile-perfect: HUD labels read in the display face on a phone (see the type scale below). */
+    .hud-label {
+      font-family: var(--font-display), var(--font-body), sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.1;
+      letter-spacing: 0.1em;
+    }
+  }
+}
+@media (max-width: 767.98px) {
+  /* A long placeholder ends in "…" instead of being cut mid-word. */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]) {
+    text-overflow: ellipsis;
+  }
+}
+
 /* mobile-nav-home: the phone's tab bar and More sheet (src/components/layout/MobileTabBar.tsx).
    --tabbar-h is the bar's height where it shows (below lg) and 0 elsewhere: anything
    fixed to the bottom of the screen sits above it with bottom: var(--tabbar-h). */
@@ -677,4 +721,45 @@ html[data-dle-cb] .dle-close { background: rgb(133 192 249 / 0.4); border-color:
     top: env(safe-area-inset-top) !important;
     bottom: env(safe-area-inset-bottom) !important;
   }
+}
+
+/* mobile-nav-home: a PokéGuessr game (a round, its result, the summary, a duel or party) is
+   full screen on a phone too: the header and tab bar step aside under its frame, the page
+   can't scroll or bounce behind it, and a double tap doesn't zoom the page. */
+@media (max-width: 1023px) {
+  html:has(.geo-frame) { --tabbar-h: 0px; overscroll-behavior: none; }
+  html:has(.geo-frame) body > header,
+  html:has(.geo-frame) [data-testid="tabbar"] { display: none; }
+  .geo-frame { touch-action: manipulation; overscroll-behavior: none; }
+}
+
+/* mobile-perfect: the phone design system (below md only; tablets and desktops never see it).
+   Type scale on a phone: body 15px+, labels 12px+. The pixel face (Silkscreen) is kept for
+   display sizes, but its tiny 7-11px labels can't be read on a phone, so they switch to the
+   display face at 12px with the same all-caps tracking. Opt out with .mp-dense on a tight grid. */
+@media (max-width: 767.98px) {
+  .font-pixel:is([class^="text-[7px]"], [class*=" text-[7px]"], [class*="max-md:text-[7px]"], [class*="max-sm:text-[7px]"], [class^="text-[8px]"], [class*=" text-[8px]"], [class*="max-md:text-[8px]"], [class*="max-sm:text-[8px]"], [class^="text-[9px]"], [class*=" text-[9px]"], [class*="max-md:text-[9px]"], [class*="max-sm:text-[9px]"], [class^="text-[10px]"], [class*=" text-[10px]"], [class*="max-md:text-[10px]"], [class*="max-sm:text-[10px]"], [class^="text-[11px]"], [class*=" text-[11px]"], [class*="max-md:text-[11px]"], [class*="max-sm:text-[11px]"]):not(.mp-dense, .mp-dense *) {
+    font-family: var(--font-display), var(--font-body), sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+  }
+  :is([class^="text-[7px]"], [class*=" text-[7px]"], [class*="max-md:text-[7px]"], [class*="max-sm:text-[7px]"], [class^="text-[8px]"], [class*=" text-[8px]"], [class*="max-md:text-[8px]"], [class*="max-sm:text-[8px]"], [class^="text-[9px]"], [class*=" text-[9px]"], [class*="max-md:text-[9px]"], [class*="max-sm:text-[9px]"], [class^="text-[10px]"], [class*=" text-[10px]"], [class*="max-md:text-[10px]"], [class*="max-sm:text-[10px]"], [class^="text-[11px]"], [class*=" text-[11px]"], [class*="max-md:text-[11px]"], [class*="max-sm:text-[11px]"]):not(.font-pixel, .mp-dense, .mp-dense *, [data-testid="tabbar"] *) {
+    font-size: 12px;
+  }
+  /* Inputs at 16px: iOS zooms the page into any smaller field. */
+  :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"]), select, textarea):not(.text-base, .text-lg, .text-xl, .text-2xl, .text-3xl) {
+    font-size: 16px !important;
+  }
+  /* Toggle chips and tabs: a thumb-sized target. */
+  main :is(button[aria-pressed], [role="tab"], [role="radio"]):not(.mp-dense, .mp-dense *) {
+    min-height: 40px;
+  }
+}
+
+/* mobile-perfect: a battle in progress gets the whole phone screen, like a PokéGuessr round:
+   the tab bar steps aside so the move menu fits (the header stays, with Forfeit on the page). */
+@media (max-width: 767.98px) {
+  html:has([data-testid="battle-message"]):not(:has([data-testid="battle-result"])) { --tabbar-h: 0px; }
+  html:has([data-testid="battle-message"]):not(:has([data-testid="battle-result"])) [data-testid="tabbar"] { display: none; }
 }

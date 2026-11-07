@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
 import { Ban, Check, ChevronDown, Eye, Loader2, MoreHorizontal, Search, Swords, UserMinus, UserPlus, X } from "lucide-react";
 import { useAccount } from "@/lib/account";

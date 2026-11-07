@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element -- pre-sized art */
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { motion } from "framer-motion";
 import type { DexEntryData } from "@/lib/pokemon/dex-types";
 import { artUrl } from "@/lib/pokemon/art";

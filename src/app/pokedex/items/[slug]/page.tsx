@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element -- item sprites are tiny remote PNGs */
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { SHARE_IMAGES, jsonLd, pageMetadata } from "@/lib/seo";
 import { breadcrumbList } from "@/lib/structured-data";
 import { ITEMS, getItem, moveFromApiSlug, speciesBySlug } from "@/lib/dex/data";

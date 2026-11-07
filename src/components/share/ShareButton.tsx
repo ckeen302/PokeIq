@@ -76,7 +76,7 @@ function CopiedToast({ show }: { show: boolean }) {
   useEffect(() => setMounted(true), []);
   if (!mounted) return null;
   return createPortal(
-    <div className="pointer-events-none fixed inset-x-0 bottom-8 z-[70] flex justify-center" role="status" aria-live="polite">
+    <div className="pointer-events-none fixed inset-x-0 bottom-8 z-[70] flex justify-center max-lg:bottom-[calc(var(--tabbar-h,calc(4rem+env(safe-area-inset-bottom)))+0.75rem)]" role="status" aria-live="polite">
       <AnimatePresence>
         {show && (
           <motion.div

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import confetti from "canvas-confetti";
 import { animate, motion, useMotionValue, useTransform } from "framer-motion";
 import { track } from "@vercel/analytics";
@@ -263,13 +263,13 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
             return focus ? (
               <Link
                 href={focus.href}
-                className="flex items-center justify-between gap-3 rounded-md border border-screen/30 bg-screen/[0.05] px-4 py-3 text-sm transition hover:bg-screen/10"
+                className="flex items-center justify-between gap-3 rounded-md border border-screen/30 bg-screen/[0.05] px-4 py-3 text-sm transition hover:bg-screen/10 max-md:flex-col max-md:items-start max-md:gap-1"
               >
                 <span>
                   <span className="text-muted-foreground">Coach tip: your weakest area is </span>
                   <b>{focus.label}</b> <span className="text-muted-foreground">(~{Math.round(focus.accuracy * 100)}%)</span>
                 </span>
-                <span className="shrink-0 font-semibold text-screen">{focus.cta} →</span>
+                <span className="shrink-0 font-semibold text-screen max-md:shrink">{focus.cta} →</span>
               </Link>
             ) : null;
           })()}
@@ -334,14 +334,14 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
 
           <div className="flex flex-col gap-2 sm:flex-row">
             {!isDaily && (
-              <Button className="flex-1" size="lg" variant="secondary" onClick={onRestart}>
+              <Button className="flex-1 max-sm:flex-none" size="lg" variant="secondary" onClick={onRestart}>
                 <RotateCcw className="h-4 w-4" aria-hidden /> Play again
               </Button>
             )}
             {ranked && (
               <Link
                 href={isDaily ? `/leaderboard?board=daily&date=${result.spec.daily}` : "/leaderboard?board=iq"}
-                className={cn(buttonVariants({ variant: "outline", size: "lg" }), "flex-1")}
+                className={cn(buttonVariants({ variant: "outline", size: "lg" }), "flex-1 max-sm:flex-none")}
               >
                 <Trophy className="h-4 w-4" aria-hidden /> Leaderboard
               </Link>

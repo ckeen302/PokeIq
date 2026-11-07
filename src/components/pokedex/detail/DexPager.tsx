@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Pager, PagerLink } from "@/lib/dex/neighbours";
 import { PagerKeys } from "./PagerKeys";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { motion } from "framer-motion";
 import { Loader2, Medal, Trophy } from "lucide-react";
 import { CONN_LEVELS, CONN_MAX_MISTAKES, type ConnBoardRow, type ConnBoardStanding } from "@/lib/connections/types";

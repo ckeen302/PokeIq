@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Check, Loader2, UserPlus } from "lucide-react";
 import { useAccount } from "@/lib/account";
 import { friendAction, openFriends, refreshFriends, useCommunity } from "@/lib/friends-client";

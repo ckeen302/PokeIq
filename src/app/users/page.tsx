@@ -15,7 +15,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
     <div className="mx-auto max-w-2xl space-y-6">
     <BackButton href="/" />
       <div className="space-y-2">
-        <p className="hud-label text-screen">Community</p>
+        <p className="hud-label max-md:hidden text-screen">Community</p>
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">
           Find a <span className="text-primary [text-shadow:0_0_30px_hsl(var(--primary)/0.45)]">trainer</span>
         </h1>

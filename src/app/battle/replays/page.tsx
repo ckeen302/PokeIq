@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { BattleHeader } from "@/components/battle/BattleHeader";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { FileUp, Radio } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { ReplayLists } from "@/components/battle/ReplayLists";

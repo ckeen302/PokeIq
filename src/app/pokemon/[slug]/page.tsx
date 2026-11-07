@@ -1,7 +1,7 @@
 import { BackButton } from "@/components/ui/BackButton";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { jsonLd, pageMetadata } from "@/lib/seo";
 import { dexBreadcrumbs, dexDescription, dexSummary, dexTitle } from "@/lib/pokemon/dex-seo";
 import { POKEDEX, artworkUrl, getPokemonBySlug } from "@/lib/pokemon/pokedex";
