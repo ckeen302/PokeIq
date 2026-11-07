@@ -40,7 +40,8 @@ async function newPage(viewport, { noWebGL = false, ...extra } = {}) {
   }
   const page = await context.newPage();
   page.on("console", (msg) => {
-    if (msg.type() === "error" && !/Failed to load resource/.test(msg.text())) errors.push(`[${page.url()}] ${msg.text()}`);
+    // Without WebGL, three.js reports each 3D trainer it couldn't start (they show their flat look instead).
+    if (msg.type() === "error" && !/Failed to load resource/.test(msg.text()) && !(noWebGL && /Error creating WebGL context/.test(msg.text()))) errors.push(`[${page.url()}] ${msg.text()}`);
   });
   page.on("pageerror", (err) => errors.push(`[${page.url()}] PAGEERROR: ${err.message}`));
   return page;

@@ -309,8 +309,9 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
       return true;
     };
     // A label of one or more lines ("\n"), centred on its point; skipped if it would overlap one already drawn.
-    const label = (text: string, wx: number, wy: number, font: string, size: number, dy: number, color: string, track = 0, dx = 0): boolean => {
-      const x = wx * s + tx + dx;
+    // `keepIn`: a region's name whose point is on screen slides in from the edge rather than being cut off by it.
+    const label = (text: string, wx: number, wy: number, font: string, size: number, dy: number, color: string, track = 0, dx = 0, keepIn = false): boolean => {
+      let x = wx * s + tx + dx;
       const y = wy * s + ty + dy;
       ctx.font = font.replace("SIZE", `${size}px`);
       ctx.letterSpacing = `${track}px`;
@@ -329,6 +330,7 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
       // Room around each label, so two never run together into one ("JOHTO KANTO"): the later (lower-priority) one waits for more zoom.
       const padX = Math.max(3, size * 0.4);
       const padY = Math.max(1, size * 0.15);
+      if (keepIn && x >= 0 && x <= W && w + 2 * padX < W) x = Math.min(W - w / 2 - padX, Math.max(w / 2 + padX, x));
       if (!fits(x - w / 2 - padX, y - size - padY, w + 2 * padX, size + 6 + (lines.length - 1) * lineH + 2 * padY)) return false;
       ctx.lineWidth = Math.max(3, size / 4);
       ctx.strokeStyle = "rgba(8,18,32,.88)";
@@ -362,7 +364,9 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
           size,
           size / 3,
           r.tier === 1 ? "#ffffff" : "#d7e6f7",
-          r.tier === 1 ? 2 : 0.5
+          r.tier === 1 ? 2 : 0.5,
+          0,
+          true
         );
       }
     }

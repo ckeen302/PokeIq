@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/alt-text, @next/next/no-img-element -- Satori draws plain <img> */
 import "server-only";
-import { C, localImage, ogCard } from "./card";
+import { C, ScreenshotVisual, localImage, ogCard } from "./card";
 import type { GeoShareView } from "@/lib/server/geo-share";
 import { DUEL_HP } from "@/lib/duel-types";
 import { GEO_MAX_ROUND_SCORE } from "@/lib/geo-types";
@@ -82,5 +82,21 @@ export async function guessrResultCard(view: GeoShareView) {
     accent,
     visual: view.kind === "duel" ? <DuelVisual view={view} /> : await MapVisual({ view }),
     footer: `Can you beat it? ${view.playLabel} →`,
+  });
+}
+
+/**
+ * A party invite's card: the same for every room (it never reads the room, so
+ * it gives nothing away and needs no database while an app waits on it).
+ */
+export async function partyInviteCard() {
+  const [shot, map] = await Promise.all([localImage("src/assets/guessr/galar.webp", 940), localImage("public/geo/maps/world-thumb.webp", 336)]);
+  return ogCard({
+    eyebrow: "PokéGuessr party",
+    title: ["You're invited", ["to a party", C.green]],
+    subtitle: "Friends on the same places, everyone at once. No sign-up: open it, pick a name and join.",
+    accent: C.green,
+    visual: <ScreenshotVisual src={shot} map={map} pin={null} />,
+    footer: "Battle Royale or team duels · tap to join →",
   });
 }

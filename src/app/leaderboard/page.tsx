@@ -649,8 +649,8 @@ function GeoBoardInvite({ kind, current, label, href, empty, count = 0 }: GeoInv
           <Icon className="h-7 w-7" />
         </span>
         <p className="hud-label">{label}</p>
-        <h2 className="font-display text-2xl font-bold uppercase leading-tight sm:text-3xl">{title}</h2>
-        <p className="max-w-md text-sm text-muted-foreground">{current ? blurb : daily ? "That day's board stayed empty. Today's is open." : "That week's board stayed empty. This week's is open."}</p>
+        <h2 className="text-balance font-display text-2xl font-bold uppercase leading-tight sm:text-3xl">{title}</h2>
+        <p className="max-w-md text-balance text-sm text-muted-foreground">{current ? blurb : daily ? "That day's board stayed empty. Today's is open." : "That week's board stayed empty. This week's is open."}</p>
         <Link href={playHref} className={cn(buttonVariants({ size: "lg", variant: weekly ? "success" : "default" }), "mt-1 w-full sm:w-auto")} data-testid="geo-board-play">
           <Icon className="h-4 w-4" aria-hidden /> {playLabel}
         </Link>

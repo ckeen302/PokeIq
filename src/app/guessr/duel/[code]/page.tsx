@@ -22,7 +22,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const map = geoRegions().find((r) => r.id === duel.region);
   const where = !map || map.id === WORLD_REGION ? "the Pokémon world" : map.name;
   const title = guest ? `${host} vs ${guest}: a PokéGuessr duel` : `${host || "A trainer"} challenges you to a PokéGuessr duel`;
-  const description = `Head to head in ${where}: the same places for both of you, ${DUEL_HP.toLocaleString("en-US")} HP each, GeoGuessr Duels rules.`;
+  const description =
+    duel.mode === "race"
+      ? `A points race in ${where}: the same ${duel.maxRounds} places for both of you, and the most points wins.`
+      : `Head to head in ${where}: the same places for both of you, ${DUEL_HP.toLocaleString("en-US")} HP each, GeoGuessr Duels rules.`;
   return inviteMetadata(title, description);
 }
 
