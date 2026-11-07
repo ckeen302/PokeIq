@@ -46,10 +46,10 @@ export function ConnectionsRankedCard() {
     <Card className="overflow-hidden border-warning/40" data-testid="conn-ranked-card">
       <CardContent className="grid gap-5 p-6 md:grid-cols-[1fr_15rem]">
         <div className="min-w-0 space-y-3">
-          <p className="hud-label flex items-center gap-1.5 text-warning">
+          <p className="hud-label flex items-center gap-1.5 text-warning max-md:flex-wrap max-md:leading-snug">
             <Trophy className="h-3.5 w-3.5" aria-hidden /> Ranked · PokéConnections
             {state.status === "ready" && (
-              <span className="text-muted-foreground">
+              <span className="text-muted-foreground max-md:basis-full">
                 {" "}
                 · {connSeasonLabel(state.season)} season, {daysLeft(state.endsAt)}
               </span>

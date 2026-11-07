@@ -38,7 +38,7 @@ export function OptionGrid({ count, picked, correct, onPick, render, columns = 3
             transition={{ delay: 0.04 * i, duration: 0.22 }}
             className={cn(
               "menu-item relative flex min-h-[64px] w-full items-center justify-center rounded-md border-2 border-foreground/10 bg-shade/30 p-2 font-display text-lg font-semibold",
-              square && "aspect-square",
+              square && "aspect-square max-md:aspect-auto max-md:h-24",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               !locked && "hover:border-screen/60 hover:bg-screen/[0.06] active:scale-[0.98]",
               isPicked && correct === true && "border-success bg-success/15",
@@ -59,8 +59,9 @@ export function OptionGrid({ count, picked, correct, onPick, render, columns = 3
 
 export function MatrixView({ item, ...opts }: OptionProps & { item: MatrixItem }) {
   return (
-    <div className="space-y-5">
-      <div className="mx-auto grid w-full max-w-[330px] grid-cols-3 gap-1.5 rounded-lg border border-foreground/10 bg-shade/20 p-1.5" data-testid="cog-matrix" aria-label="The 3 by 3 pattern, last cell missing">
+    <div className="space-y-5 max-md:space-y-3">
+      {/* Phones: the pattern drawn a size down, so the options sit on the same screen. */}
+      <div className="mx-auto grid w-full max-w-[330px] grid-cols-3 gap-1.5 rounded-lg border border-foreground/10 bg-shade/20 p-1.5 max-md:[zoom:0.6]" data-testid="cog-matrix" aria-label="The 3 by 3 pattern, last cell missing">
         {item.cells.map((c, i) => (
           <div key={i} className={cn("flex aspect-square items-center justify-center rounded-md bg-background/60", c.k === "blank" && "border-2 border-dashed border-screen/50")}>
             <CellView cell={c} box={88} />

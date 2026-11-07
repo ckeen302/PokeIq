@@ -318,7 +318,7 @@ export function Board({
               key={c.key}
               role="columnheader"
               title={close ? COLUMN_HELP[c.key] : COLUMN_HELP[c.key].replace(/ Close:.*$/, " ▲ / ▼ only, no close state.")}
-              className="cursor-help truncate text-[8px] tracking-normal underline decoration-dotted decoration-foreground/30 underline-offset-2 sm:text-[10px] sm:tracking-[0.12em]"
+              className="mp-dense cursor-help truncate text-[8px] tracking-normal underline decoration-dotted decoration-foreground/30 underline-offset-2 sm:text-[10px] sm:tracking-[0.12em] max-md:font-display max-md:text-[length:10.5px] max-md:font-semibold"
             >
               {c.label}
             </div>
@@ -391,7 +391,7 @@ export const clueText = (label: string, cell: DleCell) => `${label} ${cell.value
 function Cell({ cell, label, delay, onClick }: { cell: DleCell; label: string; delay: number | null; onClick?: () => void }) {
   const text = clueText(label, cell);
   const className = cn(
-    "flex h-11 w-full flex-col items-center justify-center gap-0.5 rounded-lg border px-0.5 text-center text-[10px] font-semibold leading-tight sm:h-12 sm:px-1 sm:text-[11px]",
+    "mp-dense flex h-11 w-full flex-col items-center justify-center gap-0.5 rounded-lg border px-0.5 text-center text-[10px] font-semibold leading-tight sm:h-12 sm:px-1 sm:text-[11px]",
     CELL_STYLES[cell.status],
     onClick && "cursor-pointer transition-[filter] hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
   );

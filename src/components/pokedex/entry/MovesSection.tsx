@@ -125,7 +125,7 @@ export function MovesSection({ moves, game }: { moves: DexMove[]; game: string }
                       <Link
                         href={`/pokedex/moves/${m.slug}`}
                         onClick={(e) => e.stopPropagation()}
-                        className="ml-2 text-[10px] font-normal uppercase tracking-wider text-muted-foreground hover:text-screen"
+                        className="ml-2 text-[10px] font-normal uppercase tracking-wider text-muted-foreground hover:text-screen max-md:ml-0 max-md:mt-0.5 max-md:block max-md:w-fit"
                         aria-label={`${m.name} move page`}
                       >
                         Page →

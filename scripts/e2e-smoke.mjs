@@ -14,6 +14,7 @@ import { execFileSync } from "child_process";
 import { runIqTest } from "./e2e-iq-test.mjs";
 import { runSizes } from "./e2e-sizes.mjs";
 import { runMobile } from "./e2e-mobile.mjs";
+import { runDesktopTripwire } from "./e2e-desktop-tripwire.mjs";
 import { runMassBattle } from "./e2e-mass-battle.mjs";
 import { runRace } from "./e2e-race.mjs";
 import { runWorldHistory } from "./e2e-world-history.mjs";
@@ -112,6 +113,9 @@ async function chatTo(from, to, text, shown = text) {
   // One message a second per trainer.
   await from.waitForTimeout(1_100);
 }
+
+// First, while nothing has been played yet: phone-only work must leave the desktop layout as it was.
+await runDesktopTripwire({ browser, BASE, errors, step });
 
 const page = await newPage({ width: 1280, height: 900 });
 // Battle music this tab fetched (a later battle plays the cached track without a new request).
