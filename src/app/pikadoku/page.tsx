@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { Pikadoku } from "@/components/pikadoku/Pikadoku";
-import { PikadokuDuelCard } from "@/components/pikadoku/PikadokuDuel";
 import { GameInfo } from "@/components/seo/GameInfo";
 import { publicDailies } from "@/lib/server/pikadoku";
 import { ensureMaster } from "@/lib/server/pikadoku-master";
@@ -27,9 +26,6 @@ export default async function PikadokuPage() {
   return (
     <div className="space-y-10">
       <Pikadoku initial={publicDailies()} />
-      <div id="pdk-duel" className="mx-auto max-w-3xl scroll-mt-24">
-        <PikadokuDuelCard />
-      </div>
       <GameInfo
         howToButton
         path="/pikadoku"

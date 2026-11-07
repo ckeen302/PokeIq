@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { PikadokuDuelCard } from "./PikadokuDuel";
 import dynamic from "next/dynamic";
 import { MotionConfig } from "framer-motion";
 import { Archive, BarChart3, ChevronDown, CircleHelp, Dices, Flag, Loader2, Settings, Swords, X } from "lucide-react";
@@ -98,6 +99,11 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
   const dex = useDex();
   const names = useMemo(() => new Map(dex.map((p) => [p.id, p.name])), [dex]);
   const [mode, setMode] = useState<Mode>("daily");
+  // Tic Tac Toe is its own tab: the duel lobby replaces the board while it's open.
+  const [ttt, setTtt] = useState(false);
+  useEffect(() => {
+    if (/^#(pdk-duel|tic-tac-toe)$/.test(window.location.hash)) setTtt(true);
+  }, []);
   const [prefs, setPrefs] = useState<Prefs | null>(null);
   const [seed, setSeed] = useState<string | null>(null);
   /** Settings that came with a challenge link (they win over this device's until the next grid), and the result to beat. */
@@ -513,7 +519,7 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
         <div className="space-y-3 text-center sm:space-y-4">
           <div className="space-y-1 sm:space-y-2">
             <p className="hud-label text-screen" data-testid="pdk-title">
-              {heading}
+              {ttt ? "Tic Tac Toe" : heading}
             </p>
             {/* The title between the tools, as in Wordle: it keeps the grid above the fold on a phone. */}
             <div className="flex items-center justify-between gap-1 sm:justify-center sm:gap-4" role="toolbar" aria-label="Pikadoku options">
@@ -582,37 +588,53 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
             <div className="flex justify-center rounded-md border border-foreground/15 bg-card p-0.5" role="radiogroup" aria-label="Pikadoku mode">
               {(
                 [
-                  { id: "daily", label: "Daily Puzzle", title: "Today's grid, the same for everyone", on: () => setMode("daily") },
-                  { id: "practice", label: "Unlimited", title: "A fresh grid every time", on: () => (seed ? setMode("practice") : newPractice()) },
+                  { id: "daily", label: "Daily Puzzle", title: "Today's grid, the same for everyone", on: () => (setTtt(false), setMode("daily")) },
+                  { id: "practice", label: "Unlimited", title: "A fresh grid every time", on: () => (setTtt(false), seed ? setMode("practice") : newPractice()) },
                 ] as const
               ).map((m) => (
                 <button
                   key={m.id}
                   type="button"
                   role="radio"
-                  aria-checked={m.id === "daily" ? mode !== "practice" : mode === m.id}
+                  aria-checked={!ttt && (m.id === "daily" ? mode !== "practice" : mode === m.id)}
                   title={m.title}
                   onClick={m.on}
                   data-testid={`pdk-mode-${m.id}`}
                   className={cn(
                     "rounded px-2.5 py-1.5 font-display text-xs sm:min-w-24 sm:px-4 sm:text-sm font-semibold uppercase tracking-wider transition-colors sm:min-w-24 sm:px-4",
-                    (m.id === "daily" ? mode !== "practice" : mode === m.id) ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                    !ttt && (m.id === "daily" ? mode !== "practice" : mode === m.id) ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   {m.label}
                 </button>
               ))}
-              <a
-                href="#pdk-duel"
+              <button
+                type="button"
+                role="radio"
+                aria-checked={ttt}
+                data-testid="pdk-mode-ttt"
+                onClick={() => {
+                  setTtt(true);
+                  history.replaceState(null, "", "#tic-tac-toe");
+                }}
                 title="Tic Tac Toe: take turns claiming cells against a friend or a stranger"
-                className="flex items-center justify-center gap-1.5 rounded px-2.5 py-1.5 font-display text-xs sm:text-sm font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground sm:min-w-24 sm:px-4"
+                className={cn(
+                  "flex items-center justify-center gap-1.5 rounded px-2.5 py-1.5 font-display text-xs sm:text-sm font-semibold uppercase tracking-wider transition-colors sm:min-w-24 sm:px-4",
+                  ttt ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                )}
               >
                 <Swords className="h-3.5 w-3.5" aria-hidden /> Tic Tac Toe
-              </a>
+              </button>
             </div>
           </div>
         </div>
 
+        {ttt ? (
+          <div id="pdk-duel" data-testid="pdk-ttt">
+            <PikadokuDuelCard />
+          </div>
+        ) : (
+        <>
         {mode === "weekly" && weeklyInfo && (
           <p className="mx-auto max-w-md rounded-md border border-warning/50 bg-warning/10 px-3 py-2 text-center text-sm" data-testid="pdk-weekly">
             <b>{weeklyInfo.theme}</b>: {weeklyInfo.blurb} Live until Sunday {weeklyInfo.sunday}. Doesn&apos;t count toward your daily streak.
@@ -832,6 +854,8 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
               </ol>
             )}
           </section>
+        )}
+        </>
         )}
       </div>
 
