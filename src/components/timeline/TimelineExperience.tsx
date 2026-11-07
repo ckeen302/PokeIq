@@ -654,7 +654,7 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
 
   function webglReadyHint() {
     return (
-      {/* Phones: on the back button's row, at its right, instead of a row of its own. */}
+      // Phones: on the back button's row, at its right, instead of a row of its own.
           <div className="mb-4 flex justify-end max-md:relative max-md:z-10 max-md:mb-0 max-md:h-0">
         <button type="button" onClick={() => setMode("3d")} className="rounded-md border bg-card px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:border-screen/60 hover:text-foreground max-md:h-9 max-md:py-0" data-testid="timeline-3d-view">
           Open the 3D timeline
