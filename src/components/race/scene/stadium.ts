@@ -120,6 +120,8 @@ export interface Stadium {
   setRace(distance: Distance): void;
   /** Make room in the infield for the big pool (lib/race/pool), `inner` metres across from the kerb (negative), or put things back (null). */
   setBigPool(inner: number | null): void;
+  /** Shows or hides the infield's simple long jump pit and high jump mat (the PokéIQ Games build their own field-event venues there). */
+  showFieldEvents(on: boolean): void;
   /** Which lanes are pools (shared with the floor's and paint's shaders). */
   pool: PoolUniforms;
   textures: THREE.Texture[];
@@ -792,6 +794,9 @@ export function buildStadium(opts: { urls: StadiumUrls; font: string; q: Quality
     },
     setRace() {
       // Marks for every distance are painted; nothing to change per race yet.
+    },
+    showFieldEvents(on) {
+      fieldEvents.visible = on;
     },
     setBigPool(inner) {
       // The field-event furniture stands where a big pool would run; the trackside clock moves in past its inner wall.

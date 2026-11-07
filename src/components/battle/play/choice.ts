@@ -60,6 +60,20 @@ export function emptiedSlots(request: BattleRequest, parts: string[]): number[] 
   return wanting.slice(Math.max(0, left));
 }
 
+/**
+ * The spots a move can be aimed at on the triples and four-player grid, in
+ * the grid's order: the ones in reach with a Pokémon in them. With nobody
+ * left in reach (an edge Pokémon whose foes in reach have all fainted, no
+ * one left to replace them), every spot in reach, as Showdown takes the
+ * move at an empty spot (the simulator then aims it at a Pokémon in reach,
+ * or it fails): the grid still has something to press besides Back.
+ */
+export function aimableSpots<T extends { loc: number; legal: boolean }>(spots: readonly T[], empty: (loc: number) => boolean): T[] {
+  const inReach = spots.filter((t) => t.legal);
+  const occupied = inReach.filter((t) => !empty(t.loc));
+  return occupied.length ? occupied : inReach;
+}
+
 /** The M key: no special move, then each one the request offers in turn, then none again. */
 export function cycleExtra<T>(current: T | null, extras: readonly T[]): T | null {
   const next = (current === null ? -1 : extras.indexOf(current)) + 1;
