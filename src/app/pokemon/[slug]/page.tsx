@@ -10,6 +10,7 @@ import { DexEntry } from "@/components/pokedex/entry/DexEntry";
 import { PokemonCards } from "@/components/tcg/PokemonCards";
 import { cardLinksForDex } from "@/lib/tcg/card-index";
 import { capitalize } from "@/lib/pokemon/type-matrix";
+import { RANKINGS_PATH, rankingFacts } from "@/lib/dex/rankings";
 
 /** Static, crawlable study page for every species (1,025 pages at build time). */
 
@@ -39,6 +40,7 @@ export default async function PokemonPage({ params }: PageProps) {
   if (!p) notFound();
   const data = getDexEntry(p);
   const cards = await cardLinksForDex(p.id, 6);
+  const facts = rankingFacts(p.slug);
 
   const pageLd = {
     "@context": "https://schema.org",
@@ -72,6 +74,16 @@ export default async function PokemonPage({ params }: PageProps) {
               {capitalize(t)}-type Pokémon
             </Link>
           ))}
+        </p>
+        <p className="flex flex-wrap gap-x-4 gap-y-1" data-testid="dex-ranking-facts">
+          {facts.map((f) => (
+            <Link key={f.href} href={f.href} className="underline-offset-2 hover:text-foreground hover:underline">
+              {f.text}
+            </Link>
+          ))}
+          <Link href={RANKINGS_PATH} className="underline-offset-2 hover:text-foreground hover:underline">
+            Pokémon rankings
+          </Link>
         </p>
         {cards.total > 0 && (
           <p className="flex flex-wrap gap-x-4 gap-y-1" data-testid="dex-card-links">

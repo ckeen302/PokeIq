@@ -86,7 +86,7 @@ export function PokedexExplorer({ items }: { items: DexListItem[] }) {
   const [animateCards, setAnimateCards] = useState(false);
   useEffect(() => setAnimateCards(true), []);
 
-  // Deep links from the coach / Pokédex pages (?type=fire&gen=3&sort=spe).
+  // Deep links from the coach / Pokédex pages (?type=fire&gen=3&sort=spe, &dir=asc for smallest first).
   // Read after mount so the default grid stays in the static HTML for SEO.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -97,7 +97,7 @@ export function PokedexExplorer({ items }: { items: DexListItem[] }) {
     const sortKey = SORTS.find((s) => s.key === params.get("sort"))?.key;
     if (sortKey) {
       setSort(sortKey);
-      setDesc(sortKey !== "id" && sortKey !== "name");
+      setDesc(params.get("dir") === "asc" ? false : params.get("dir") === "desc" || (sortKey !== "id" && sortKey !== "name"));
     }
   }, []);
   const [visible, setVisible] = useState(PAGE);
