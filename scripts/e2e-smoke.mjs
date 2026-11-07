@@ -3683,92 +3683,246 @@ step("name 'em all: hub, a Gen 1 run (aliases, wrong category, pause, give up), 
   await np.context().close();
 }
 
-/** The home page: the PokéGuessr title screen (views that cycle, Play, the Pokédle link), a tile per tab, today's puzzles, at 1440 and 390. */
+/**
+ * The home page at 1440 and 390: the hero (today's first PokéGuessr place, never its answer; Play straight into
+ * the Daily), Today (the five dailies, done and streak from this device's progress, all done), the 3D Lab band,
+ * the Pokédex search, More to play; the phone's first screen, its swipe row, nothing sideways or under the tab bar.
+ */
 async function homeStep() {
-  step("home: the PokéGuessr showcase (loads, cycles, holds still under reduced motion), Play and the Pokédle link, one hidden h1, a tile per tab, nothing sideways or under the tab bar at 390");
-  const TABS = [
-    ["guessr", "/guessr", "PokéGuessr"],
-    ["pokedle", "/pokedle", "Pokédle"],
-    ["connections", "/connections", "Connections"],
-    ["pikadoku", "/pikadoku", "Pikadoku"],
-    ["battle", "/battle", "Battle"],
-    ["quizzes", "/play", "Quizzes"],
-    ["pokedex", "/pokedex", "Pokédex"],
-    ["lab", "/lab", "3D Lab"],
-  ];
+  step("home: today's PokéGuessr place (no pin, no name) and Play into the Daily, Today's five dailies (done, streak, all done), the 3D Lab, search, More to play, phone layout");
   const imgLoaded = (img) =>
     img
       .evaluate((el) => (el.complete ? Promise.resolve(el.naturalWidth > 0) : new Promise((r) => el.addEventListener("load", () => r(el.naturalWidth > 0), { once: true }))), null, { timeout: 15_000 })
       .catch(() => false);
+  /** This device's progress, seeded before the page loads: `state` "returning" (PokéGuessr and Pokédle done, a 4-day Pokédle streak) or "all" (all five done). */
+  const seedProgress = (state) => {
+    const day = (n) => {
+      const d = new Date();
+      d.setDate(d.getDate() - n);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    };
+    const today = day(0);
+    const dle = {};
+    for (let i = 3; i >= 0; i--) dle[day(i)] = { guesses: [25, 4, 7], solved: true, over: true };
+    const p = {
+      v: 1, name: "", xp: 0, rating: null, runs: 0, answered: 0, correct: 0, bestStreak: 0, modulesPlayed: [], badges: {}, skills: {},
+      best: { [`geo-daily:${today}`]: 18240, "geo:dailyStreak": 1, "geo:dailyBest": 1, "geo:dailyLast": Number(today.replaceAll("-", "")) },
+      daily: { last: null, streak: 0, best: 0, results: {} },
+      dle: { last: today, streak: 4, best: 4, results: dle },
+    };
+    if (state === "all") {
+      p.daily = { last: today, streak: 1, best: 1, results: { [today]: { score: 820, correct: 8, total: 10, grid: "", pokeiq: 118 } } };
+      p.conn = { last: today, streak: 1, best: 1, results: { [today]: { guesses: [], solved: true, over: true, mistakes: 1 } } };
+      p.pdk = { last: today, streak: 1, best: 1, results: { [today]: { guesses: [], won: false, over: true, solved: 7, score: 143 } } };
+    }
+    localStorage.setItem("pokeiq:progress:v1", JSON.stringify(p));
+  };
+  const REGIONS = /\b(Kanto|Johto|Hoenn|Sinnoh|Unova|Kalos|Alola|Galar|Paldea|Hisui|Kitakami|Orre|Fiore|Almia|Oblivia|Sevii|Lumiose)\b/;
+  const LAB_HREFS = { games: "/lab/games", "pokemon-story": "/lab/pokemon-story", "world-history": "/lab/world-history", sizes: "/pokedex/sizes", race: "/pokedex/race", "mass-battle": "/lab/mass-battle", globe: "/guessr/globe", timeline: "/pokedex/timeline" };
+
+  // ---- 1440, a new visitor ----
   const p = await newPage({ width: 1440, height: 900 });
   await gotoSettled(p, BASE);
-  await p.screenshot({ path: `${OUT}/home.png`, fullPage: true });
   const hero = p.getByTestId("home-hero");
-  const show = hero.getByTestId("home-showcase");
-  // The first view is the page's hero image, in the server's HTML and preloaded.
-  if (!(await imgLoaded(show.locator("img").first()))) errors.push("home: the showcase's first view didn't load");
+  // The server's picture is the LCP image: in the HTML, preloaded; then today's place fades in over it.
   const html = await (await p.request.get(BASE)).text();
-  if (!/data-testid="home-showcase"[^>]*>\s*<img /.test(html) || !/<link rel="preload" as="image"/.test(html)) errors.push("home: the showcase's first view isn't server-rendered and preloaded");
-  // It moves on by itself.
-  await p.waitForFunction(() => document.querySelector("[data-testid=home-showcase]")?.dataset.index !== "0", null, { timeout: 20_000 }).catch(() => errors.push("home: the showcase didn't move on to another view"));
-  // The PokéGuessr name and line; no old headline, no counts; one h1 for search engines.
+  if (!/data-testid="home-hero-shot"[^>]*>\s*<img /.test(html) || !/<link rel="preload" as="image"/.test(html)) errors.push("home: the hero's picture isn't server-rendered and preloaded");
+  await p.waitForFunction(() => document.querySelector("[data-testid=home-hero-shot]")?.dataset.shot?.startsWith("/api/geo/shot/"), null, { timeout: 20_000 }).catch(() => errors.push("home: today's PokéGuessr place never replaced the hero's fixed picture"));
+  const heroShot = await hero.getByTestId("home-hero-shot").getAttribute("data-shot");
+  for (const img of await hero.getByTestId("home-hero-shot").locator("img").all()) if (!(await imgLoaded(img))) errors.push("home: a hero picture didn't load");
+  // Never the answer: no map, no pin, no place or region name, and the API only gives the picture's random id.
+  if (await hero.locator('img[src*="/geo/maps/"], svg path[d^="M12 0C5.4"], [data-testid=home-showcase]').count()) errors.push("home: the hero shows a map or a pin");
+  if (REGIONS.test(await hero.innerText())) errors.push(`home: the hero names a place: ${(await hero.innerText()).match(REGIONS)[0]}`);
+  if (!/Where is this\?/i.test(await hero.getByTestId("home-hero-question").innerText())) errors.push("home: the hero doesn't ask Where is this?");
+  {
+    const today = await p.evaluate(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; });
+    const body = await (await p.request.get(`${BASE}/api/geo/daily-shot?date=${today}`)).json();
+    if (Object.keys(body).some((k) => k !== "shot" && k !== "blur") || body.shot !== heroShot) errors.push(`home: the daily-shot API sent ${JSON.stringify(Object.keys(body))} / ${body.shot} (hero shows ${heroShot})`);
+    if ((await p.request.get(`${BASE}/api/geo/daily-shot?date=2001-01-01`)).status() !== 400) errors.push("home: the daily-shot API answered for a date that isn't today");
+  }
+  // The words: PokéGuessr, free, one line; one h1; no counts, no NEW badges, no puzzle numbers, consistent names.
   if (!/PokéGuessr/i.test(await hero.locator("h2").innerText())) errors.push("home: the hero isn't titled PokéGuessr");
-  if (await p.getByText(/Guess the place|Win the battle/i).count()) errors.push("home: the old headline is still on the page");
-  if (/\d[\d,]* Pokémon/.test(await hero.innerText())) errors.push("home: the hero shows a Pokémon count");
+  if (!/Free · no sign-up/i.test(await hero.innerText())) errors.push("home: the hero lost Free · no sign-up");
+  if (!/Plus a daily Pokédle, battles and Pokémon in 3D/.test(await hero.getByTestId("home-hero-more").innerText())) errors.push("home: the line under Play is missing");
   if ((await p.locator("h1").count()) !== 1) errors.push(`home: ${await p.locator("h1").count()} h1s on the page, not one`);
   else if (!/PokéIQ/.test(await p.locator("h1").textContent())) errors.push(`home: the h1 reads "${await p.locator("h1").textContent()}"`);
-  // Play goes to PokéGuessr, the small link to Pokédle.
-  if ((await hero.getByTestId("home-hero-pokedle").getAttribute("href")) !== "/pokedle") errors.push("home: the Pokédle link doesn't go to /pokedle");
-  await hero.getByTestId("home-hero-play").click();
-  await p.waitForURL(/\/guessr$/, { timeout: 15_000 }).catch(() => errors.push(`home: Play PokéGuessr went to ${p.url()}`));
-  await gotoSettled(p, BASE);
-  await hero.getByTestId("home-hero-pokedle").click();
-  await p.waitForURL(/\/pokedle$/, { timeout: 15_000 }).catch(() => errors.push(`home: the Pokédle link went to ${p.url()}`));
-  await gotoSettled(p, BASE);
-  // The tiles: one per tab, in order, each to its tab.
-  for (const [id, href, name] of TABS) {
-    const got = await p.getByTestId(`home-tile-${id}`).getAttribute("href").catch(() => null);
-    if (got !== href) errors.push(`home: the ${name} tile goes to ${got}, not ${href}`);
+  const text = await p.locator("main").innerText();
+  for (const [re, what] of [[/\d[\d,]* Pokémon/, "a Pokémon count"], [/No\.\s?0\d\d/, "a puzzle number"], [/PokéConnections/, "PokéConnections"], [/1,025/, "1,025"]]) {
+    if (re.test(text)) errors.push(`home: the page shows ${what}`);
   }
-  // Today's puzzles and the coffee button stay; the old sections are gone.
-  await p.getByRole("heading", { name: /Today's puzzles/ }).waitFor();
+  if ((await p.getByTestId("home-search-input").getAttribute("placeholder")) !== "Search any Pokémon…") errors.push("home: the search box's placeholder changed");
+  // Still pictures only: no 3D, no video.
+  if (await p.locator("main canvas, main video").count()) errors.push("home: the page has a canvas or a video");
+  await p.screenshot({ path: `${OUT}/home.png`, fullPage: true });
+
+  // Today: one even row of the five dailies, each to its game, all to play.
+  const cards = p.locator("[data-testid^=home-today-card-]");
+  const boxes = await cards.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.top), Math.round(r.width), Math.round(r.height)]; }));
+  if (boxes.length !== 5 || new Set(boxes.map((b) => b.join())).size !== 1) errors.push(`home: Today isn't one even row of five at 1440 (${boxes.map((b) => b.join("/")).join(" ")})`);
+  const DAILY_HREFS = [["daily", "/daily"], ["pokedle", "/pokedle"], ["guessr", "/guessr?play=daily"], ["connections", "/connections"], ["pikadoku", "/pikadoku"]];
+  for (const [id, href] of DAILY_HREFS) {
+    const card = p.getByTestId(`home-today-card-${id}`);
+    if ((await card.getAttribute("href")) !== href) errors.push(`home: the ${id} card goes to ${await card.getAttribute("href")}, not ${href}`);
+    const cardText = await card.innerText();
+    if ((await card.getAttribute("data-state")) !== "new" || !/Play/.test(cardText)) errors.push(`home: the ${id} card isn't new with Play for a new visitor`);
+    if (/\bnew\b|No\.\s?\d/i.test(cardText)) errors.push(`home: the ${id} card has a NEW badge or a puzzle number`);
+  }
+  if (await p.getByTestId("home-today-streak").count()) errors.push("home: a streak shows for a new visitor");
+
+  // The 3D Lab: live experiences only, the films first, each card to its page (and the page is there).
+  const lab = await p.locator("[data-testid^=home-lab-]:not([data-testid=home-lab-row]):not([data-testid=home-lab-all])").evaluateAll((els) => els.filter((e) => e.tagName === "A").map((e) => [e.dataset.testid.replace("home-lab-", ""), e.getAttribute("href")]));
+  if (lab.length < 4 || lab.length > 6) errors.push(`home: the 3D Lab shows ${lab.length} cards`);
+  if (lab[0] && !["games", "pokemon-story"].includes(lab[0][0])) errors.push(`home: the 3D Lab leads with ${lab[0][0]}`);
+  for (const [id, href] of lab) {
+    if (LAB_HREFS[id] !== href) errors.push(`home: the 3D Lab's ${id} card goes to ${href}`);
+    else if ((await p.request.get(`${BASE}${href}`)).status() !== 200) errors.push(`home: the 3D Lab's ${id} page doesn't load`);
+  }
+  if ((await p.getByTestId("home-lab-all").getAttribute("href")) !== "/lab") errors.push("home: See all doesn't go to /lab");
+  {
+    const [feature, second] = await p.locator("[data-testid=home-lab-row] > li").evaluateAll((els) => els.slice(0, 2).map((e) => e.getBoundingClientRect().width));
+    if (!(feature > second * 1.6)) errors.push(`home: the 3D Lab's first card isn't the big one at 1440 (${feature} vs ${second})`);
+  }
+  // More to play: Battle, Quizzes, Pokédex.
+  for (const [id, href] of [["battle", "/battle"], ["quizzes", "/play"], ["pokedex", "/pokedex"]]) {
+    if ((await p.getByTestId(`home-more-${id}`).getAttribute("href")) !== href) errors.push(`home: More to play's ${id} doesn't go to ${href}`);
+  }
   if (!(await p.getByTestId("coffee-button").isVisible())) errors.push("home: the Buy me a coffee button is missing");
-  for (const gone of ["home-timeline-card", "home-sizes-card", "home-race-card", "play-which-pokemon", "hero-carousel"]) {
-    if (await p.getByTestId(gone).count()) errors.push(`home: ${gone} is still on the page`);
-  }
-  if ((await p.getByRole("heading", { name: /Research tools/ }).count()) || (await p.locator("#quiz-heading, #tools-heading").count())) errors.push("home: an old section heading is still on the page");
+  for (const gone of ["home-showcase", "home-hero-pokedle", "daily-rows"]) if (await p.getByTestId(gone).count()) errors.push(`home: ${gone} is still on the page`);
+
+  // Search: the keyboard picks a Pokémon and opens its entry; See all opens the Pokédex on the search.
+  const search = p.getByTestId("home-search-input");
+  await search.click();
+  await search.fill("pikach");
+  await p.getByTestId("home-search-option").first().waitFor({ timeout: 15_000 }).catch(() => errors.push("home: the search showed nothing for pikach"));
+  if (!/Pikachu/.test(await p.getByTestId("home-search-option").first().innerText().catch(() => ""))) errors.push("home: Pikachu isn't the first result for pikach");
+  await search.press("Enter");
+  await p.waitForURL(/\/pokemon\/pikachu$/, { timeout: 15_000 }).catch(() => errors.push(`home: Enter in the search went to ${p.url()}`));
+  await gotoSettled(p, BASE);
+  await search.click();
+  await search.fill("chrmander");
+  await p.getByTestId("home-search-option").first().waitFor({ timeout: 15_000 }).catch(() => {});
+  if (!/Charmander/.test(await p.getByTestId("home-search-option").first().innerText().catch(() => ""))) errors.push("home: the search didn't forgive a typo (chrmander)");
+  await search.press("ArrowDown");
+  await search.press("ArrowUp");
+  if (!(await p.locator("[data-testid=home-search-option][aria-selected=true]").first().innerText()).includes("Charmander")) errors.push("home: the arrow keys don't move the search's highlight");
+  await search.fill("mouse");
+  await p.getByTestId("home-search-all").click();
+  await p.waitForURL(/\/pokedex\?q=mouse$/, { timeout: 15_000 }).catch(() => errors.push(`home: See all went to ${p.url()}`));
+  await p.waitForFunction(() => document.querySelector('input[aria-label="Search Pokémon"]')?.value === "mouse", null, { timeout: 15_000 }).catch(() => errors.push("home: the Pokédex didn't open on the search"));
+
+  // Play: straight into today's Daily, on the picture the hero showed (already fetched).
+  await gotoSettled(p, BASE);
+  await p.waitForFunction(() => document.querySelector("[data-testid=home-hero-shot]")?.dataset.shot?.startsWith("/api/geo/shot/"), null, { timeout: 20_000 }).catch(() => {});
+  if ((await hero.getByTestId("home-hero-play").getAttribute("href")) !== "/guessr?play=daily") errors.push("home: Play doesn't go to today's Daily");
+  await hero.getByTestId("home-hero-play").click();
+  await p.waitForURL(/\/guessr/, { timeout: 15_000 }).catch(() => errors.push(`home: Play went to ${p.url()}`));
+  await p.locator(`img[src="${heroShot}"]`).first().waitFor({ timeout: 20_000 }).catch(() => errors.push("home: Play didn't open the Daily on the hero's picture"));
+  if (!/Daily #\d+/i.test(await p.locator("body").innerText())) errors.push("home: Play didn't start the Daily");
+  if (/[?&]play=/.test(p.url())) errors.push(`home: the Daily's URL kept ?play (${p.url()})`);
   await p.context().close();
 
-  // Reduced motion: the views hold still.
-  const still = await newPage({ width: 1440, height: 900 }, { reducedMotion: "reduce" });
-  await gotoSettled(still, BASE);
-  await still.waitForTimeout(8_000);
-  if ((await still.getByTestId("home-showcase").getAttribute("data-index")) !== "0") errors.push("home: under reduced motion the showcase still moves");
-  await still.context().close();
+  // ---- A returning player: PokéGuessr and Pokédle done, a Pokédle streak ----
+  for (const [w, h] of [[1440, 900], [390, 844]]) {
+    const r = await newPage({ width: w, height: h }, w < 500 ? { isMobile: true, hasTouch: true } : {});
+    await r.addInitScript(seedProgress, "returning");
+    await gotoSettled(r, BASE);
+    const rh = r.getByTestId("home-hero");
+    await rh.getByTestId("home-hero-done").waitFor({ timeout: 10_000 }).catch(() => errors.push(`home ${w}: the hero didn't show today's PokéGuessr as done`));
+    if ((await rh.getByTestId("home-hero-score").innerText().catch(() => "")) !== "18,240") errors.push(`home ${w}: the hero's score isn't the stored 18,240`);
+    if (!/Next places in \d+h \d+m|Next places in \d+m/.test(await rh.getByTestId("home-hero-next").innerText().catch(() => ""))) errors.push(`home ${w}: the hero doesn't say when the next places come`);
+    if ((await rh.getByTestId("home-hero-free").getAttribute("href").catch(() => null)) !== "/guessr?play=game") errors.push(`home ${w}: Play a free game doesn't start a free game`);
+    if (await rh.getByTestId("home-hero-play").count()) errors.push(`home ${w}: the hero still offers today's places after they're done`);
+    const prefix = w < 500 ? "home-today-" : "home-today-card-";
+    const states = {};
+    for (const [id] of DAILY_HREFS) states[id] = await r.getByTestId(`${prefix}${id}`).getAttribute("data-state");
+    if (states.guessr !== "done" || states.pokedle !== "done" || ["daily", "connections", "pikadoku"].some((id) => states[id] !== "new")) errors.push(`home ${w}: Today's states read ${JSON.stringify(states)}`);
+    if (!/18,240/.test(await r.getByTestId(`${prefix}guessr`).innerText()) || !/Solved in 3/.test(await r.getByTestId(`${prefix}pokedle`).innerText())) errors.push(`home ${w}: Today doesn't show today's results`);
+    if ((await r.getByTestId(`${prefix}guessr`).getAttribute("href")) !== "/guessr") errors.push(`home ${w}: a finished PokéGuessr still restarts the Daily`);
+    if (!/4-day Pokédle streak/.test(await r.getByTestId("home-today-streak").innerText().catch(() => ""))) errors.push(`home ${w}: the streak line doesn't read 4-day Pokédle streak`);
+    if (await r.getByTestId("home-today-alldone").count()) errors.push(`home ${w}: all done shows with two of five done`);
+    await r.screenshot({ path: `${OUT}/home-returning-${w}.png` });
+    await r.context().close();
+  }
 
-  // 390: edge to edge, the view on top, the text and a full-width Play under it, all above the tab bar; nothing sideways.
+  // ---- All five done ----
+  {
+    const a = await newPage({ width: 1440, height: 900 });
+    await a.addInitScript(seedProgress, "all");
+    await gotoSettled(a, BASE);
+    const line = await a.getByTestId("home-today-alldone").innerText({ timeout: 10_000 }).catch(() => "");
+    if (!/All done for today · new puzzles in \d+(h \d+)?m/.test(line)) errors.push(`home: all done reads "${line}"`);
+    if (await a.locator("[data-testid^=home-today-card-]:not([data-state=done])").count()) errors.push("home: a daily isn't done with all five played");
+    await a.context().close();
+  }
+
+  // ---- Reduced motion: today's place appears without the fade ----
+  {
+    const still = await newPage({ width: 1440, height: 900 }, { reducedMotion: "reduce" });
+    await gotoSettled(still, BASE);
+    await still.waitForFunction(() => document.querySelector("[data-testid=home-hero-shot]")?.dataset.shot?.startsWith("/api/geo/shot/"), null, { timeout: 20_000 }).catch(() => {});
+    const motion = await still.locator("[data-testid=home-hero-shot] img").last().evaluate((el) => getComputedStyle(el).transitionProperty);
+    if (motion !== "none" && motion !== "all") errors.push(`home: under reduced motion the hero's picture still transitions (${motion})`);
+    await still.context().close();
+  }
+
+  // ---- 390: the first screen, the swipe row, nothing sideways or under the tab bar ----
   const m = await newPage({ width: 390, height: 844 }, { isMobile: true, hasTouch: true });
   await gotoSettled(m, BASE);
   const mhero = m.getByTestId("home-hero");
-  if (!(await imgLoaded(mhero.getByTestId("home-showcase").locator("img").first()))) errors.push("home: the showcase's view didn't load at 390");
+  if (!(await imgLoaded(mhero.getByTestId("home-hero-shot").locator("img").first()))) errors.push("home: the hero's picture didn't load at 390");
   {
     const box = await mhero.boundingBox();
     const pageW = await m.evaluate(() => Math.round(document.body.getBoundingClientRect().width));
     if (!box || box.x !== 0 || Math.round(box.width) !== pageW) errors.push(`home: the hero isn't edge to edge at 390 (${box && `${box.x}+${box.width}`})`);
     const view = await mhero.getByTestId("home-hero-view").boundingBox();
     const title = await mhero.locator("h2").boundingBox();
-    if (!view || !title || view.height < 280 || title.y < view.y + view.height / 2) errors.push(`home: at 390 the view isn't a tall band above the title (view ${view && `${view.y}+${view.height}`}, title at ${title?.y})`);
+    if (!view || !title || view.height < 280 || title.y < view.y + view.height / 2) errors.push(`home: at 390 the picture isn't a tall band above the title (view ${view && `${view.y}+${view.height}`}, title at ${title?.y})`);
     const play = await mhero.getByTestId("home-hero-play").boundingBox();
     if (!play || Math.abs(play.width - (pageW - 32)) > 2) errors.push(`home: the Play button isn't full width at 390 (${play?.width})`);
     const barTop = await m.evaluate(() => document.querySelector("[data-testid=tabbar]")?.getBoundingClientRect().top ?? window.innerHeight);
     if (!play || play.y + play.height > barTop) errors.push(`home: the Play button is under the tab bar at 390 (ends at ${play && play.y + play.height}, bar at ${barTop})`);
+    // Today peeks above the tab bar on the first screen.
+    const today = await m.locator("#home-today").boundingBox();
+    if (!today || today.y + today.height > barTop) errors.push(`home: Today doesn't peek above the tab bar at 390 (heading at ${today && today.y}, bar at ${barTop})`);
     const shift = await m.evaluate(() => new Promise((r) => { let total = 0; new PerformanceObserver((l) => l.getEntries().forEach((e) => { if (!e.hadRecentInput) total += e.value; })).observe({ type: "layout-shift", buffered: true }); setTimeout(() => r(total), 500); }));
     if (shift > 0.01) errors.push(`home: layout shift ${shift} at 390`);
+    const rows = await m.locator("[data-testid=home-today-rows] > li").evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
+    if (rows.length !== 5 || new Set(rows).size !== 5) errors.push(`home: Today isn't one row per game at 390 (${rows.join()})`);
+    const fieldSize = await m.getByTestId("home-search-input").evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+    if (fieldSize < 16) errors.push(`home: the search box is ${fieldSize}px at 390 (iOS zooms under 16px)`);
+  }
+  // The 3D Lab swipes sideways, a card at a time, inside the page.
+  {
+    const row = m.getByTestId("home-lab-row");
+    await row.scrollIntoViewIfNeeded();
+    const info = await row.evaluate((el) => ({ snap: getComputedStyle(el).scrollSnapType, over: el.scrollWidth - el.clientWidth }));
+    if (!/x/.test(info.snap) || info.over < 100) errors.push(`home: the 3D Lab row isn't a snapping swipe row at 390 (${JSON.stringify(info)})`);
+    await row.evaluate((el) => el.scrollBy({ left: el.clientWidth * 0.8, behavior: "instant" }));
+    await m.waitForTimeout(600);
+    const left = await row.evaluate((el) => el.scrollLeft);
+    if (left < 100) errors.push(`home: the 3D Lab row didn't scroll at 390 (${left})`);
+    const second = await m.locator("[data-testid=home-lab-row] > li").nth(1).boundingBox();
+    if (!second || second.x < 0 || second.x > 40) errors.push(`home: the 3D Lab row didn't snap to the next card at 390 (x ${second?.x})`);
   }
   const overflow = await m.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   if (overflow > 0) errors.push(`home: the page scrolls sideways by ${overflow}px at 390`);
-  const tiles = await m.locator("[data-testid^=home-tile-]").evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
-  if (tiles.length !== TABS.length || new Set(tiles).size !== TABS.length) errors.push(`home: the tiles aren't one list at 390 (${tiles.join()})`);
+  // Nothing left under the tab bar at the bottom of the page.
+  await m.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await m.waitForTimeout(500);
+  const under = await m.evaluate(() => {
+    const bar = document.querySelector("[data-testid=tabbar]");
+    if (!bar) return [];
+    const top = bar.getBoundingClientRect().top;
+    const out = [];
+    for (const el of document.querySelectorAll("main a[href], main button, main input, footer a[href], footer button")) {
+      const r = el.getBoundingClientRect();
+      if (!r.width || !r.height || r.bottom <= top + 2 || r.top >= window.innerHeight) continue;
+      if (bar.contains(document.elementFromPoint(r.left + r.width / 2, Math.min(window.innerHeight - 1, r.bottom - 2)))) out.push((el.innerText || el.getAttribute("aria-label") || "").trim().slice(0, 30));
+    }
+    return out;
+  });
+  if (under.length) errors.push(`home: under the tab bar at 390: ${under.join(", ")}`);
+  await m.evaluate(() => window.scrollTo(0, 0));
   await m.screenshot({ path: `${OUT}/home-390.png`, fullPage: true });
   await m.context().close();
 }

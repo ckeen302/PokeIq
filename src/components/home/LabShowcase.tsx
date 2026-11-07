@@ -13,7 +13,7 @@ const MAX = 6;
 const LINES: Record<string, string> = {
   games: "Every Pokémon in track, pool and ring events, from its real stats",
   "pokemon-story": "How Pokémon really began, as a 3D film",
-  "world-history": "The Pokémon world's own history, as the games tell it",
+  "world-history": "The Pokémon world's history, told by the games",
   sizes: "Every Pokémon at its real size, side by side",
   race: "Who's fastest? A 3D sprint under the floodlights",
   "mass-battle": "How many Magikarp does it take to beat Arceus?",
@@ -61,7 +61,7 @@ export function LabShowcase() {
             <span className="text-screen">3D</span> Lab
           </>
         }
-        aside={<span className="text-sm text-muted-foreground">Pokémon in cinematic 3D, right in your browser</span>}
+        aside={<span className="text-sm text-muted-foreground">Pokémon in cinematic 3D<span className="max-sm:hidden">, right in your browser</span></span>}
         action={
           <Link href={LAB_PATH} prefetch={false} className="inline-flex min-h-[44px] shrink-0 items-center gap-1 text-sm font-semibold text-screen hover:underline" data-testid="home-lab-all">
             See all <ArrowRight className="h-4 w-4" aria-hidden />
@@ -110,7 +110,7 @@ function LabCard({ experience: e, feature }: { experience: LabExperience; featur
       )}
       <span className={cn("absolute inset-x-0 bottom-0 block p-3 sm:p-4", feature && "lg:p-7")}>
         <span className={cn("block font-display text-lg font-bold uppercase leading-tight tracking-wide text-white", feature && "lg:text-4xl lg:tracking-tight")}>{e.title}</span>
-        <span className={cn("mt-0.5 block text-[13px] leading-snug text-white/80 sm:text-sm", feature ? "lg:mt-2 lg:max-w-xl lg:text-lg" : "lg:truncate")}>{line}</span>
+        <span className={cn("mt-0.5 block text-[13px] leading-snug text-white/80 sm:text-sm", feature ? "lg:mt-2 lg:max-w-xl lg:text-lg" : "lg:line-clamp-2")}>{line}</span>
         {feature && (
           <span className="mt-4 inline-flex h-10 items-center gap-2 rounded-md bg-white px-4 font-display text-sm font-bold uppercase tracking-wider text-black transition-transform group-hover:translate-x-0.5 max-lg:hidden">
             Open <ArrowRight className="h-4 w-4" aria-hidden />

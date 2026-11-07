@@ -167,19 +167,28 @@ function DoneBody({ score, today }: { score: number; today: string }) {
           <span className="text-sm text-muted-foreground sm:text-base">/ {max.toLocaleString("en-US")} today</span>
         </p>
         <p className="flex items-center gap-1.5 text-sm text-muted-foreground sm:text-base" data-testid="home-hero-next">
-          <Clock className="h-4 w-4" aria-hidden /> Next places in <TimeToNextDaily className="font-semibold tabular-nums text-foreground" />
+          <Clock className="h-4 w-4" aria-hidden />
+          <span>
+            Next places in <TimeToNextDaily className="font-semibold tabular-nums text-foreground" />
+          </span>
         </p>
       </div>
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-1 pt-1">
-        <button type="button" onClick={() => void share()} className={PLAY_CLASS} data-testid="home-hero-share">
-          <Share2 className="h-5 w-5" aria-hidden /> {shared === "copied" ? "Copied" : shared === "failed" ? "Couldn't copy" : "Share my score"}
+      {/* Side by side on a phone too, so the finished hero is no taller than the new one. */}
+      <div className="grid grid-cols-2 items-center gap-3 pt-1 sm:flex sm:flex-wrap sm:gap-x-5 sm:gap-y-1">
+        <button type="button" onClick={() => void share()} className={cn(PLAY_CLASS, "max-sm:px-3 max-sm:text-sm")} data-testid="home-hero-share">
+          <Share2 className="h-5 w-5 shrink-0" aria-hidden />
+          {shared === "copied" ? "Copied" : shared === "failed" ? "Couldn't copy" : (
+            <>
+              Share<span className="max-sm:hidden"> my score</span>
+            </>
+          )}
         </button>
         <Link
           href="/guessr?play=game"
           data-testid="home-hero-free"
-          className="inline-flex min-h-[44px] items-center gap-1.5 font-display text-sm font-semibold uppercase tracking-wider text-foreground/85 underline-offset-4 hover:text-foreground hover:underline max-sm:mx-auto"
+          className="inline-flex min-h-[44px] items-center justify-center gap-1.5 font-display text-sm font-semibold uppercase tracking-wider text-foreground/85 underline-offset-4 hover:text-foreground hover:underline max-sm:h-12 max-sm:rounded-md max-sm:border max-sm:border-white/15 max-sm:bg-white/[0.04]"
         >
-          Play a free game <ArrowRight className="h-4 w-4" aria-hidden />
+          <span className="max-sm:hidden">Play a </span>free game <ArrowRight className="h-4 w-4" aria-hidden />
         </Link>
       </div>
       <span className="sr-only" aria-live="polite">
