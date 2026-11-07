@@ -28,6 +28,7 @@ import {
   GEO_FALLOFF,
   GEO_MAX_ROUND_SCORE,
   GEO_ROUNDS,
+  geoDailyRegion,
   geoRoundsOf,
   isGeoRounds,
   type GeoAnswer,
@@ -874,6 +875,55 @@ export function geoChallengeFirstShot(token: unknown): string | null {
   if (!isGeoSpec(spec)) return null;
   const first = dealRounds(spec, challenge.seed, challenge.plan).rounds[0];
   return first ? shotUrl(first.shot) : null;
+}
+
+/**
+ * The Daily's first screenshot on a date (the same for everyone), for the
+ * home page's picture: only its URL (a random id that says nothing about the
+ * place) and its blurred placeholder. The game deals the same picture first,
+ * so a player who starts from the home page already has round 1's picture.
+ */
+export function geoDailyFirstShot(date: string): { shot: string; blur?: string; sharpTo: number } | null {
+  const spec: GeoSpec = { region: geoDailyRegion(date, isGeoSpec({ region: WORLD_REGION, kind: "game" })), kind: "game", daily: date };
+  if (!isGeoSpec(spec)) return null;
+  const first = dealRounds(spec, `geo-daily:${date}`, undefined).rounds[0];
+  if (!first) return null;
+  const blur = shotBlur(first.shot);
+  return { shot: shotUrl(first.shot), ...(blur ? { blur } : {}), sharpTo: sharpTo(first.shot, lookup(spec, first).shot.family) };
+}
+
+/** A picture stays sharp drawn at most this many CSS pixels across per pixel of real detail: 1.5 detail pixels to each, on a 2x screen. */
+const GEO_SHARP_RATIO = 1.5;
+/** Below this (no picture of an old handheld game reaches it), a picture is never sharp enough to be drawn big. */
+const SHARP_MIN = 500;
+
+/**
+ * The handhelds' screen widths: a screenshot from one of these games was
+ * scaled up from this many pixels across, whatever size its file is, so it
+ * goes soft (or blocky) when it's drawn big. The Switch games' files are
+ * their real size.
+ */
+const SCREEN_WIDTH: Partial<Record<GeoFamilyId, number>> = { rby: 160, gsc: 160, rse: 240, frlg: 240, dppt: 256, hgss: 256, bw: 256, xy: 400, oras: 400, sm: 400 };
+
+/**
+ * How much real detail a screenshot has across, in pixels: its file's width,
+ * or for a handheld game the screen it was scaled up from.
+ */
+function shotDetail(id: string, family: GeoFamilyId | null | undefined): number {
+  const w = META[id]?.[0] ?? 0;
+  const screen = family ? SCREEN_WIDTH[family] : undefined;
+  return screen ? Math.min(w, screen) : w;
+}
+
+/**
+ * The widest a screenshot can be drawn (CSS pixels, in steps of 50) and
+ * stay sharp, or 0 when it's too small for a big picture. Coarse on purpose:
+ * it says how big the picture can go, not which game it's from (every old
+ * handheld game reads 0), so it gives nothing about the place away.
+ */
+function sharpTo(id: string, family: GeoFamilyId | null | undefined): number {
+  const fit = Math.floor(shotDetail(id, family) / GEO_SHARP_RATIO / 50) * 50;
+  return fit >= SHARP_MIN ? fit : 0;
 }
 
 /**
