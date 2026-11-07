@@ -2,7 +2,10 @@
  * Phone layout (390 × 844, touch): on the key routes, nothing scrolls sideways
  * and, at the bottom of each page, no button, link or line of text is left
  * under the bottom tab bar where it could never be scrolled into view. The
- * game pop-ups open over the tab bar, not under it.
+ * game pop-ups open over the tab bar, not under it. The phone design system
+ * holds (labels 12px and up, 16px fields so iOS doesn't zoom, 40px toggles),
+ * and a few in-game states stay fixed (sheet titles, the quiz's Next button,
+ * the encounter table).
  *
  *   node scripts/e2e-mobile.mjs [baseUrl]     # or from e2e-smoke.mjs
  */
@@ -59,6 +62,26 @@ function layoutProblems() {
   return out;
 }
 
+/** Runs in the page: the phone design system's floors (type 12px for labels, 16px fields, thumb-sized toggles). */
+function designProblems() {
+  const out = [];
+  const seen = new Set();
+  for (const el of document.querySelectorAll("main *, footer *")) {
+    if (el.closest(".mp-dense, svg, [aria-hidden='true'], [data-testid='tabbar']")) continue;
+    const s = getComputedStyle(el);
+    const r = el.getBoundingClientRect();
+    if (!r.width || !r.height || s.visibility === "hidden" || s.display === "none") continue;
+    const text = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
+    const size = parseFloat(s.fontSize);
+    const what = `<${el.tagName.toLowerCase()}> "${(el.textContent || el.getAttribute("aria-label") || el.getAttribute("placeholder") || "").trim().slice(0, 30)}"`;
+    const push = (msg) => !seen.has(msg) && (seen.add(msg), out.push(msg));
+    if (text && size < 11.5) push(`text too small to read (${size}px): ${what}`);
+    if (el.matches("input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]), select, textarea") && size < 16) push(`field under 16px (${size}px), iOS zooms in on it: ${what}`);
+    if (el.matches("main button[aria-pressed], main [role=tab], main [role=radio]") && r.height < 39.5) push(`toggle too small to tap (${Math.round(r.height)}px tall): ${what}`);
+  }
+  return out.slice(0, 5);
+}
+
 export async function runMobile({ browser, BASE, OUT, errors, step }) {
   step("phone layout: no sideways scroll and nothing under the tab bar on the key routes; pop-ups cover the tab bar");
   const width = Number(process.env.MOBILE_WIDTH || 390);
@@ -85,6 +108,7 @@ export async function runMobile({ browser, BASE, OUT, errors, step }) {
         await page.getByTestId("howto-never").click();
         await howto.waitFor({ state: "hidden" });
       }
+      for (const problem of await page.evaluate(designProblems)) errors.push(`phone ${path}: ${problem}`);
       // To the real bottom: lists that load more as they scroll (the Pokédex) only count once they stop growing.
       let settled = false;
       for (let i = 0; i < 6 && !settled; i++) {
@@ -100,10 +124,55 @@ export async function runMobile({ browser, BASE, OUT, errors, step }) {
       errors.push(`phone ${path}: ${e.message.split("\n")[0]}`);
     }
   }
+  await phoneStates(page, BASE, errors, step);
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.goto(`${BASE}/pokedex`, { waitUntil: "load" });
   await page.screenshot({ path: `${OUT}/phone-pokedex.png` });
   await context.close();
+}
+
+/** In-game states on a phone that once went wrong. */
+async function phoneStates(page, BASE, errors, step) {
+  step("phone states: sheet titles, the quiz's Next button, the encounter table");
+  const settle = async (path) => {
+    await page.goto(`${BASE}${path}`, { waitUntil: "load" });
+    await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => {});
+  };
+  try {
+    // A bottom sheet's pinned title must not cover its first line (Pikadoku's picker, the how-tos).
+    await settle("/pikadoku");
+    await page.locator("main button").filter({ hasText: "+" }).first().click();
+    await page.getByTestId("pdk-search").waitFor();
+    await page.waitForTimeout(600);
+    const cover = await page.evaluate(() => {
+      const d = document.querySelector("[role=dialog]");
+      return d.firstElementChild.getBoundingClientRect().bottom - d.querySelector("label").getBoundingClientRect().top;
+    });
+    if (cover > 1) errors.push(`phone /pikadoku: the picker's title covers the search field by ${Math.round(cover)}px`);
+  } catch (e) {
+    errors.push(`phone /pikadoku picker: ${e.message.split("\n")[0]}`);
+  }
+  try {
+    // After an answer, Next question is on screen above the tab bar without scrolling.
+    await settle("/quiz/whos-that-pokemon");
+    await page.getByRole("button", { name: /^Start/ }).click();
+    await page.locator("main [data-answer-tile]").first().click({ timeout: 15_000 });
+    const next = page.getByRole("button", { name: /Next question|See results/ });
+    await next.waitFor();
+    await page.waitForTimeout(800);
+    const gap = await next.evaluate((b) => document.querySelector('nav[aria-label="Primary"]').getBoundingClientRect().top - b.getBoundingClientRect().bottom);
+    if (gap < 0) errors.push("phone quiz: Next question sits under the tab bar after an answer");
+  } catch (e) {
+    errors.push(`phone quiz Next: ${e.message.split("\n")[0]}`);
+  }
+  try {
+    // Where to find it: rows stack on a phone instead of scrolling sideways.
+    await settle("/pokemon/pikachu");
+    const wide = await page.evaluate(() => [...document.querySelectorAll("[id^=enc-gen-]")].filter((t) => t.scrollWidth > t.clientWidth + 1).length);
+    if (wide) errors.push(`phone /pokemon/pikachu: ${wide} encounter table(s) scroll sideways`);
+  } catch (e) {
+    errors.push(`phone encounters: ${e.message.split("\n")[0]}`);
+  }
 }
 
 // Run on its own.

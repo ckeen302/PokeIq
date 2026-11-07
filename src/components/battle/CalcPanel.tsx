@@ -83,8 +83,11 @@ export function CalcPanel({
           <div className="flex flex-wrap items-center gap-1">
             {species?.types.map((t) => <BattleType key={t} type={t} />)}
             {!species && <span className="text-xs text-destructive">Not in Gen {gen.num}</span>}
-            <span className="hud-label ml-auto">Lv</span>
-            <NumberInput label={`${title} level`} value={side.level} min={1} max={100} onChange={(level) => update({ level })} className="h-7 w-14" />
+            {/* Phones: Lv and its field wrap together; wider screens lay them out as before (display: contents). */}
+            <span className="contents max-md:ml-auto max-md:flex max-md:items-center max-md:gap-1">
+              <span className="hud-label ml-auto">Lv</span>
+              <NumberInput label={`${title} level`} value={side.level} min={1} max={100} onChange={(level) => update({ level })} className="h-7 w-14" />
+            </span>
           </div>
         </div>
       </div>
@@ -126,7 +129,7 @@ export function CalcPanel({
         </Field>
         {gen.num >= 9 && (
           <Field label="Tera type">
-            <div className="flex gap-1.5">
+            <div className="flex gap-1.5 max-md:flex-col">
               <TypeSelect label={`${title} Tera type`} types={lists.types} value={side.teraType} onChange={(t) => update({ teraType: t })} />
               <Toggle pressed={side.terastallized} onChange={(terastallized) => update({ terastallized })} className="h-9 shrink-0">
                 Tera

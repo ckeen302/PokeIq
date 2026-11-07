@@ -142,7 +142,7 @@ function FitLabel({ text }: { text: string }) {
       {text.split(" ").map((w, i) => (
         <span key={i}>
           {i > 0 && " "}
-          <span className="whitespace-nowrap">{w}</span>
+          <span className="mp-dense whitespace-nowrap">{w}</span>
         </span>
       ))}
     </span>
@@ -334,7 +334,8 @@ export function PdkPicker({ dex: given, used, title, busy, initialQuery = "", on
   useEffect(() => {
     const el = input.current;
     if (!el) return;
-    el.focus();
+    // No scroll: the sheet is still sliding in, and scrolling it would tuck the field under its title.
+    el.focus({ preventScroll: true });
     // Typing started on the cell: keep going after what was typed.
     el.setSelectionRange(el.value.length, el.value.length);
   }, []);
