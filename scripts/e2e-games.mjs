@@ -53,13 +53,31 @@ export async function runGames({ browser, BASE, OUT, errors, step }) {
     if (!(await art.evaluate((img) => (img.complete ? img.naturalWidth > 0 : new Promise((r) => { img.onload = () => r(true); img.onerror = () => r(false); }))))) errors.push("games: the 3D Lab card's picture didn't load");
     await page.getByTestId("lab-open-games").click();
     await page.waitForURL(/\/lab\/games$/);
-    for (const id of ["100m", "long-jump", "high-jump", "shot-put", "javelin", "weightlifting", "50m-freestyle", "100m-freestyle", "wrestling", "all-around", "200m", "400m"]) {
-      if (!(await page.getByTestId(`hub-event-${id}`).count())) errors.push(`games: the hub has no ${id} card`);
-    }
-    if ((await page.getByTestId("hub-h2h").count()) < 4) errors.push("games: the hub has too few head-to-heads");
+    // The first screen: the stadium and one button; no event buttons until you are inside.
+    await page.evaluate(() => sessionStorage.removeItem("pokeiq-games-entered"));
+    await page.reload({ waitUntil: "load" });
+    if (!(await page.getByTestId("stadium-enter").count())) throw new Error("no Enter the stadium button");
+    if (await page.getByTestId("stadium-picker").count()) errors.push("games: the event board shows before entering");
     // (The pattern is written so a search of the code for the trademark finds no use of it.)
     if (await page.locator("body").innerText().then((t) => /[o]lympi[ac]/i.test(t))) errors.push("games: the hub uses a trademarked games name");
+    if ((await page.locator("h1").count()) < 1) errors.push("games: the hub has no h1");
+    await page.screenshot({ path: `${OUT}/games-entry.png` });
+    await press(page, "stadium-enter");
+    await page.getByTestId("stadium-picker").waitFor({ timeout: 30_000 });
+    for (const id of ["100m", "long-jump", "high-jump", "shot-put", "javelin", "weightlifting", "50m-freestyle", "100m-freestyle", "wrestling", "all-around", "200m", "400m"]) {
+      if (!(await page.getByTestId(`stadium-event-${id}`).count())) errors.push(`games: the event board has no ${id}`);
+    }
+    if (!(await page.getByTestId("stadium-play").count())) errors.push("games: the event board has no full Games");
+    await press(page, "stadium-tab-h2h");
+    if ((await page.locator('[data-testid="stadium-h2h"] a').count()) < 4) errors.push("games: the board has too few head-to-heads");
+    await press(page, "stadium-tab-records");
+    if ((await page.locator('[data-testid="stadium-records"] a').count()) < 12) errors.push("games: the board has too few records links");
+    await press(page, "stadium-tab-events");
     await page.screenshot({ path: `${OUT}/games-hub.png` });
+    // Choosing an event starts it, as its own page does.
+    await press(page, "stadium-event-100m");
+    await page.waitForURL(/\/lab\/games\/100m$/);
+    await page.getByTestId("games-stage").waitFor();
   });
 
   await part(errors, "event to the podium", async () => {
