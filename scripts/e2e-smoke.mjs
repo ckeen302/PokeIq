@@ -3843,6 +3843,8 @@ async function homeStep() {
   await hero.getByTestId("home-hero-play").click();
   await p.waitForURL(/\/guessr/, { timeout: 15_000 }).catch(() => errors.push(`home: Play went to ${p.url()}`));
   if (showsToday) await p.locator(`img[src="${heroShot}"]`).first().waitFor({ timeout: 20_000 }).catch(() => errors.push("home: Play didn't open the Daily on the hero's picture"));
+  // (When the hero kept its fixed view, nothing above waited for the game: give it the time the picture took.)
+  await p.waitForFunction(() => /Daily #\d+/i.test(document.body.innerText) && !/[?&]play=/.test(location.search), null, { timeout: 20_000 }).catch(() => {});
   if (!/Daily #\d+/i.test(await p.locator("body").innerText())) errors.push("home: Play didn't start the Daily");
   if (/[?&]play=/.test(p.url())) errors.push(`home: the Daily's URL kept ?play (${p.url()})`);
   await p.context().close();
