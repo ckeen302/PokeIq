@@ -5,7 +5,7 @@
  *   npm run build && npm start -- -p 3100      # in another terminal
  *   node scripts/load-test.mjs http://localhost:3100                     # ramp 50 → 400 players
  *   node scripts/load-test.mjs http://localhost:3100 --players 300 --duration 30
- *   node scripts/load-test.mjs https://pokeiq.vercel.app --live          # gentle: ≤5 rps, 30 s, cached GET pages only
+ *   node scripts/load-test.mjs https://playpokeiq.com --live          # gentle: ≤5 rps, 30 s, cached GET pages only
  *
  * Every simulated player loops: pick a request from the mix, send it, think
  * for --think ms (default 250–1250 ms, randomised), repeat. Each player sends

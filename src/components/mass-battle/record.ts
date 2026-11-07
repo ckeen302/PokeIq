@@ -39,7 +39,7 @@ import { SimClient } from "./workers";
 export const VIDEO_W = 1080;
 export const VIDEO_H = 1920;
 export const VIDEO_LENGTHS = [15, 30, 60] as const;
-export const LINK_TEXT = `${new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://pokeiq.vercel.app").host}/lab/mass-battle`;
+export const LINK_TEXT = `${new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://playpokeiq.com").host}/lab/mass-battle`;
 
 export interface RecordOptions {
   battle: BattleDesc;

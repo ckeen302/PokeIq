@@ -23,7 +23,7 @@ export const HOOK_SECONDS = 2.2;
 export const END_SECONDS = 2.6;
 
 /** The end card's link: the public site (never localhost, even in development). */
-export const LINK_TEXT = `${new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://pokeiq.vercel.app").host}${SIZES_PATH}`;
+export const LINK_TEXT = `${new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://playpokeiq.com").host}${SIZES_PATH}`;
 export const WATERMARK_TEXT = "PokéIQ";
 
 export interface VideoSettings {

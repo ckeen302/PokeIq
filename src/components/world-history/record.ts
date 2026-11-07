@@ -19,7 +19,7 @@ import { createHistoryScene, type Quality } from "./scene";
 export const VIDEO_W = 1080;
 export const VIDEO_H = 1920;
 const FPS = 30;
-const SITE = new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://pokeiq.vercel.app").host;
+const SITE = new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://playpokeiq.com").host;
 export const LINK_TEXT = `${SITE}${HISTORY_PATH}`;
 
 export interface RecordOptions {

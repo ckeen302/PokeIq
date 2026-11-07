@@ -12,7 +12,7 @@ import type { BattleShareResult, CognitiveShareResult, ConnectionsShareResult, G
  *
  *   PokéIQ <game and puzzle> <score> <badges>
  *   <a few lines of emoji: the board, rounds or answers>
- *   https://pokeiq.vercel.app/s/…
+ *   https://playpokeiq.com/s/…
  *
  * The link keeps its https:// so Discord, Reddit and X turn it into a link
  * with a preview card. Daily puzzles share colours and numbers only, never a

@@ -47,7 +47,7 @@ const GOOGLE_SITE_VERIFICATION = process.env.GOOGLE_SITE_VERIFICATION?.trim();
 
 /**
  * Site-wide defaults. `metadataBase` is SITE_URL (NEXT_PUBLIC_SITE_URL, else
- * pokeiq.vercel.app), so every Open Graph image URL is absolute. Pages set
+ * playpokeiq.com), so every Open Graph image URL is absolute. Pages set
  * their own title, description and preview through `pageMetadata`.
  */
 export const metadata: Metadata = {

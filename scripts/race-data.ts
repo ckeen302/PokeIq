@@ -30,7 +30,7 @@ import ART from "../src/data/sizes-art.json";
 
 const CACHE = process.env.SIZES_CACHE ?? join(tmpdir(), "pokeiq-sizes");
 mkdirSync(CACHE, { recursive: true });
-const UA = "PokeIQ-race-data/1.0 (https://pokeiq.vercel.app)";
+const UA = "PokeIQ-race-data/1.0 (https://playpokeiq.com)";
 const HOME = (id: number) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${id}.png`;
 
 type FormRow = [number, number, string, string, string];

@@ -39,7 +39,7 @@ const rangeFromUrl = () => {
 };
 
 /** The public site's host, never localhost. */
-const HOST = new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://pokeiq.vercel.app").host;
+const HOST = new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://playpokeiq.com").host;
 
 /**
  * "Make a video" for an event, a head to head or the whole Games: a

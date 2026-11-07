@@ -6,7 +6,7 @@
 //   npm run indexnow -- --site=https://example.com --all --submit
 //
 // Flags:
-//   --site=<url>      site to read sitemaps from (default NEXT_PUBLIC_SITE_URL, else https://pokeiq.vercel.app)
+//   --site=<url>      site to read sitemaps from (default NEXT_PUBLIC_SITE_URL, else https://playpokeiq.com)
 //   --submit          actually POST to api.indexnow.org (without it nothing is sent and nothing is saved)
 //   --all             submit every URL in the sitemaps, not just the diff
 //   --state=<file>    snapshot of the last submitted sitemaps (default .data/indexnow-state.json, git-ignored)
@@ -90,7 +90,7 @@ async function readSitemaps(site) {
 
 async function main() {
   const args = new Map(process.argv.slice(2).map((a) => { const [k, v] = a.replace(/^--/, "").split("="); return [k, v ?? true]; }));
-  const site = String(args.get("site") || process.env.NEXT_PUBLIC_SITE_URL || "https://pokeiq.vercel.app").replace(/\/+$/, "");
+  const site = String(args.get("site") || process.env.NEXT_PUBLIC_SITE_URL || "https://playpokeiq.com").replace(/\/+$/, "");
   const statePath = String(args.get("state") || join(ROOT, ".data/indexnow-state.json"));
   const submit = args.has("submit");
   const key = findKey();

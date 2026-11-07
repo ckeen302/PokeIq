@@ -29,7 +29,7 @@ const fpsFromUrl = () => { const n = Number(param("vfps")); return Number.isFini
 const qualityFromUrl = (): Quality | undefined => { const q = param("vq"); return q === "draft" || q === "low" || q === "medium" || q === "high" ? q : undefined; };
 
 /** The public site's host, never localhost. */
-const HOST = new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://pokeiq.vercel.app").host;
+const HOST = new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://playpokeiq.com").host;
 
 /**
  * "Make a video": the race as a vertical 1080 × 1920 MP4 for TikTok, Reels
