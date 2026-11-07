@@ -12,6 +12,7 @@ import { boardArtUrl } from "@/lib/pokemon/art";
 import { TypeBadge } from "./TypeBadge";
 import { cn } from "@/lib/utils";
 import { usePlaceholder } from "@/lib/phone";
+import { matchesDexQuery } from "@/lib/pokemon/dex-search";
 
 export interface DexListItem {
   id: number;
@@ -50,9 +51,6 @@ const PAGE = 60;
 /** Cards in the first rows (two across on a phone, up to eight on a wide screen) that load their picture straight away. */
 const EAGER_CARDS = 8;
 
-const normalize = (s: string) =>
-  s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
-
 function sortValue(p: DexListItem, key: SortKey): number | string {
   if (key === "id") return p.id;
   if (key === "name") return p.name;
@@ -86,10 +84,12 @@ export function PokedexExplorer({ items }: { items: DexListItem[] }) {
   const [animateCards, setAnimateCards] = useState(false);
   useEffect(() => setAnimateCards(true), []);
 
-  // Deep links from the coach / Pokédex pages (?type=fire&gen=3&sort=spe, &dir=asc for smallest first).
+  // Deep links from the coach / Pokédex pages (?type=fire&gen=3&sort=spe, &dir=asc for smallest first) and the home page's search (?q=pika).
   // Read after mount so the default grid stays in the static HTML for SEO.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const q = params.get("q");
+    if (q) setQuery(q.slice(0, 40));
     const type = params.get("type");
     if (type && (TYPES as readonly string[]).includes(type)) setTypes([type]);
     const gen = Number(params.get("gen"));
@@ -105,11 +105,8 @@ export function PokedexExplorer({ items }: { items: DexListItem[] }) {
   const searchRef = useRef<HTMLInputElement | null>(null);
 
   const filtered = useMemo(() => {
-    const q = normalize(query);
-    const num = /^\d+$/.test(query.trim()) ? Number(query.trim()) : null;
     const list = items.filter((p) => {
-      if (q && !(num !== null ? String(p.id).startsWith(String(num)) : normalize(p.name).includes(q) || normalize(p.genus).includes(q)))
-        return false;
+      if (!matchesDexQuery(p, query)) return false;
       if (types.length && !types.every((t) => p.types.includes(t))) return false;
       if (gens.length && !gens.includes(p.gen)) return false;
       if (legendsOnly && !(p.legendary || p.mythical)) return false;

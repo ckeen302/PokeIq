@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Coffee } from "lucide-react";
 import { COFFEE_URL } from "@/lib/support";
-import { DailyCards } from "@/components/home/DailyCards";
+import { DexSearch } from "@/components/home/DexSearch";
 import { Hero } from "@/components/home/Hero";
-import { SectionTiles } from "@/components/home/SectionTiles";
-import { HudHeading } from "@/components/game/HudHeading";
+import { LabShowcase } from "@/components/home/LabShowcase";
+import { MoreToPlay } from "@/components/home/MoreToPlay";
+import { TodaySection } from "@/components/home/TodaySection";
 import { SITE_NAME } from "@/lib/site";
 import { SITE_DESCRIPTION, SITE_TAGLINE, jsonLd, pageMetadata } from "@/lib/seo";
 import { websiteWithSearch } from "@/lib/structured-data";
@@ -22,22 +23,25 @@ export const metadata: Metadata = {
   title: { absolute: `${SITE_NAME}: ${SITE_TAGLINE}` },
 };
 
-/** The title screen, a tile per tab, today's puzzles. Everything else lives on its own tab. */
+/**
+ * The landing page, for a first visit (today's PokéGuessr, one press away),
+ * a return (today's five dailies and the streak) and showing off (the 3D Lab).
+ * Then a Pokédex search, the other tabs, and the coffee button.
+ */
 export default function HomePage() {
   return (
-    <div className="mx-auto -mt-4 max-w-6xl space-y-12 sm:mt-0 sm:space-y-14 max-sm:-mt-[4.5rem] max-sm:space-y-10">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(websiteWithSearch()) }} />
-      <div className="space-y-4 sm:space-y-5">
+    // A phone's title screen starts under the header's bottom edge; the structured data goes last so it takes no space.
+    <div className="mx-auto -mt-4 max-w-6xl space-y-12 sm:mt-0 sm:space-y-14 max-sm:-mt-8 max-sm:space-y-9">
+      <div className="space-y-8 max-sm:space-y-5">
         <Hero />
-        <SectionTiles />
+        <TodaySection />
       </div>
-
-      <section className="space-y-5 max-md:space-y-1" aria-labelledby="daily-heading">
-        <HudHeading id="daily-heading" index={1} title="Today's puzzles" aside="Resets at local midnight" className="max-md:hidden" />
-        {/* Phones: the plain heading, without the HUD index and note. */}
-        <h2 className="text-xl font-bold md:hidden">Today&apos;s puzzles</h2>
-        <DailyCards />
-      </section>
+      <LabShowcase />
+      {/* Side by side on a desktop. */}
+      <div className="space-y-12 sm:space-y-14 max-sm:space-y-9 lg:grid lg:grid-cols-2 lg:gap-10 lg:space-y-0">
+        <DexSearch />
+        <MoreToPlay />
+      </div>
 
       <div className="flex justify-center pb-2">
         <a
@@ -51,6 +55,7 @@ export default function HomePage() {
           Buy me a coffee
         </a>
       </div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(websiteWithSearch()) }} />
     </div>
   );
 }

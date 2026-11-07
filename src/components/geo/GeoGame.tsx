@@ -287,6 +287,21 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     // eslint-disable-next-line react-hooks/exhaustive-deps -- read the URL once
   }, []);
 
+  // /guessr?play=daily (the home page's Play) starts today's Daily straight away; ?play=game a game on the map.
+  // It waits for the local date, by which time the saved settings have been read too.
+  const autoPlay = useRef(false);
+  useEffect(() => {
+    if (autoPlay.current || !today || challenge || phase !== "setup") return;
+    autoPlay.current = true;
+    const url = new URL(window.location.href);
+    const play = url.searchParams.get("play");
+    if (play !== "daily" && play !== "game") return;
+    url.searchParams.delete("play");
+    window.history.replaceState(null, "", url);
+    void start(play === "daily" ? { kind: "game", daily: today } : { kind: "game" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, when the date is known
+  }, [today]);
+
   function chooseRegion(id: string) {
     setRegionId(id);
     const url = new URL(window.location.href);
