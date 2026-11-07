@@ -517,8 +517,9 @@ export function createGamesScene(host: HTMLElement, opts: SceneOptions): GamesSc
         v.setLeader(p.leader);
         trail.set(p.trail.map((q) => new THREE.Vector3(...q)), 0.2, camera);
       }
-      if (p.kind !== "throw") trail.set([], 0.1, camera);
     }
+    // No tracer but a throw's (in every venue: the arena and the pool have no infield).
+    if (f.props.kind !== "throw") trail.set([], 0.1, camera);
     arena?.setProps(f.props, f.t);
     pool?.setProps(f.props, f.t, camera);
     // Effects.

@@ -179,6 +179,8 @@ export function makeTrail(n: number, color: THREE.ColorRepresentation, o: { trac
   mesh.renderOrder = 6;
   const m = new THREE.Matrix4(), X = new THREE.Vector3(), Y = new THREE.Vector3(), Z = new THREE.Vector3(), P = new THREE.Vector3(), cp = new THREE.Vector3();
   const zero = new THREE.Matrix4().makeScale(0, 0, 0);
+  // Nothing drawn until it's set (an instance starts as a unit quad at the origin).
+  for (let i = 0; i < n; i++) mesh.setMatrixAt(i, zero);
   return {
     mesh,
     set(points, width, cam) {
