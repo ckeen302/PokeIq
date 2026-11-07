@@ -45,6 +45,11 @@ export interface GamesRecordOptions {
   logo: string;
   /** Force a length (tests): the start of the broadcast, then the end card. */
   seconds?: number;
+  /**
+   * Record only this stretch of the timeline (s) as a file of its own: a long render made in pieces that can be
+   * resumed one by one and joined end to end afterwards (each starts on a key frame, its sound cut to match).
+   */
+  range?: { from: number; to: number };
   quality?: Quality;
   fps?: number;
   onProgress(p: number, label: string): void;
@@ -240,6 +245,9 @@ export async function recordGames(o: GamesRecordOptions): Promise<GamesRecordRes
   const fps = o.fps ?? VIDEO_FPS;
   const { total, end, offsets } = gamesVideoPlan(o.parts, o.seconds);
   const N = Math.round(total * fps);
+  // The frames to render: all of them, or a piece of the timeline.
+  const i0 = o.range ? Math.max(0, Math.min(N, Math.round(o.range.from * fps))) : 0;
+  const i1 = o.range ? Math.max(i0, Math.min(N, Math.round(o.range.to * fps))) : N;
   const aspect = W / H;
   o.onProgress(0, "Setting the scene");
   const host = document.createElement("div");
@@ -267,7 +275,7 @@ export async function recordGames(o: GamesRecordOptions): Promise<GamesRecordRes
     loaded = i;
   };
   try {
-    await loadPart(0);
+    await loadPart(partAt(o.parts, offsets, Math.min(i0 / fps, end - 1e-6)).i);
     const compose = document.createElement("canvas");
     compose.width = W;
     compose.height = H;
@@ -329,28 +337,31 @@ export async function recordGames(o: GamesRecordOptions): Promise<GamesRecordRes
         aenc.configure(acodec.cfg);
         const block = 4800;
         const L = mix.getChannelData(0), R = mix.numberOfChannels > 1 ? mix.getChannelData(1) : L;
-        for (let at = 0; at < mix.length; at += block) {
-          const n = Math.min(block, mix.length - at);
+        // (The sound of the frames being made: all of it, or the piece's.)
+        const a0 = Math.min(mix.length, Math.round((i0 / fps) * rate)), a1 = Math.min(mix.length, Math.round((i1 / fps) * rate));
+        for (let at = a0; at < a1; at += block) {
+          const n = Math.min(block, a1 - at);
           const planar = new Float32Array(n * 2);
           planar.set(L.subarray(at, at + n), 0);
           planar.set(R.subarray(at, at + n), n);
-          const ad = new AudioData({ format: "f32-planar", sampleRate: rate, numberOfFrames: n, numberOfChannels: 2, timestamp: Math.round((at / rate) * 1e6), data: planar });
+          const ad = new AudioData({ format: "f32-planar", sampleRate: rate, numberOfFrames: n, numberOfChannels: 2, timestamp: Math.round(((at - a0) / rate) * 1e6), data: planar });
           aenc.encode(ad);
           ad.close();
         }
         await aenc.flush();
         aenc.close();
       }
-      for (let i = 0; i < N; i++) {
+      for (let i = i0; i < i1; i++) {
         if (o.signal.aborted) throw new DOMException("Cancelled", "AbortError");
         if (failure) throw failure;
         await drawAt(i);
-        const frame = new VideoFrame(compose, { timestamp: Math.round((i * 1e6) / fps), duration: Math.round(1e6 / fps) });
-        enc.encode(frame, { keyFrame: i % (fps * 2) === 0 });
+        const k = i - i0;
+        const frame = new VideoFrame(compose, { timestamp: Math.round((k * 1e6) / fps), duration: Math.round(1e6 / fps) });
+        enc.encode(frame, { keyFrame: k % (fps * 2) === 0 });
         frame.close();
         while (enc.encodeQueueSize > 3) await sleep(2);
         if (i % 2 === 0) await sleep(0);
-        o.onProgress(0.05 + 0.95 * ((i + 1) / N), "Rendering");
+        o.onProgress(0.05 + 0.95 * ((k + 1) / Math.max(1, i1 - i0)), "Rendering");
       }
       await enc.flush();
       enc.close();
@@ -361,7 +372,7 @@ export async function recordGames(o: GamesRecordOptions): Promise<GamesRecordRes
       for (const c of chunks) mux.addVideo(c.data, c.ts, c.dur, c.key);
       for (const c of audioChunks) mux.addAudio(c.data, c.ts, c.dur);
       const file = mux.finalize();
-      return { blob: new Blob([file as BlobPart], { type: "video/mp4" }), name: gamesVideoName(o.slug, o.format, "mp4"), type: "video/mp4", seconds: total, width: W, height: H };
+      return { blob: new Blob([file as BlobPart], { type: "video/mp4" }), name: gamesVideoName(o.slug, o.format, "mp4"), type: "video/mp4", seconds: (i1 - i0) / fps, width: W, height: H };
     }
 
     // Fallback: MediaRecorder in real time.

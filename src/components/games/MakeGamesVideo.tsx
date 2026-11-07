@@ -32,6 +32,11 @@ const lengthFromUrl = () => { const n = Number(param("len")); return Number.isFi
 const fpsFromUrl = () => { const n = Number(param("vfps")); return Number.isFinite(n) && n >= 10 && n <= 60 ? Math.round(n) : undefined; };
 const qualityFromUrl = (): Quality | undefined => { const q = param("vq"); return q === "draft" || q === "low" || q === "medium" || q === "high" ? q : undefined; };
 const formatFromUrl = (): VideoFormat | null => (param("vfmt") === "16:9" ? "16:9" : param("vfmt") === "9:16" ? "9:16" : null);
+/** A piece of the timeline (?vfrom=&vto=, seconds): a long render made in resumable pieces (scripts join them). */
+const rangeFromUrl = () => {
+  const a = Number(param("vfrom")), b = Number(param("vto"));
+  return param("vfrom") != null && param("vto") != null && Number.isFinite(a) && Number.isFinite(b) && a >= 0 && b > a ? { from: a, to: b } : undefined;
+};
 
 /** The public site's host, never localhost. */
 const HOST = new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://pokeiq.vercel.app").host;
@@ -107,6 +112,7 @@ export default function MakeGamesVideo(p: { kind: "event" | "games"; outcome: Ev
         seconds,
         quality: qualityFromUrl(),
         fps: fpsFromUrl(),
+        range: rangeFromUrl(),
         signal: ac.signal,
         onProgress(pr, label) {
           const now = performance.now();
