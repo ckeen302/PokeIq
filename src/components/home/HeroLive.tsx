@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image, { type StaticImageData } from "next/image";
 import NextLink from "next/link";
 import Link from "@/components/ui/Link";
-import { ArrowRight, Check, Clock, Compass, Share2 } from "lucide-react";
+import { ArrowRight, Camera, Check, Clock, Compass, MapPin, Share2 } from "lucide-react";
 import { TimeToNextDaily } from "@/components/NextDailyCountdown";
 import { dailyNumber } from "@/lib/daily";
 import { GEO_MAX_ROUND_SCORE, GEO_ROUNDS } from "@/lib/geo-types";
@@ -17,16 +17,29 @@ import { useAfterLoad } from "./AfterLoad";
 const SIZES = "(min-width: 1024px) 760px, 100vw";
 
 /**
- * The title screen's picture: today's first PokéGuessr place, the same
+ * A picture can be drawn this many CSS pixels across and stay sharp: the
+ * daily-shot API says, coarsely, for the day's first place (0: never big).
+ */
+type DailyShot = { shot?: string; sharpTo?: number };
+
+/** How wide a picture of this shape is drawn to cover the box (the hero crops it, object-cover). */
+const coverWidth = (box: HTMLElement, aspect: number) => Math.max(box.clientWidth, box.clientHeight * aspect);
+
+/**
+ * The title screen's picture. The page is sent with a fixed, hand-picked
+ * PokéGuessr view from a modern game (the page's LCP image, sized for the
+ * screen). Once the page has loaded, today's first PokéGuessr place, the
  * picture the Daily deals first (so Play opens on a picture that's already
- * here). The server can't know the player's date, so the page is sent with a
- * fixed PokéGuessr view (the page's LCP image, sized for the screen), and
- * today's place is fetched once the page has loaded and fades in over it.
- * Nothing about where it is: no map, no pin, no name.
+ * here), fades in over it, but only when it's big enough to stay sharp at
+ * the size it's drawn: an old handheld game's screenshot scaled up to a hero
+ * is soft and blocky, so on those days the fixed view stays. The chip says
+ * what's showing: "Where is this?" over today's place, never over the fixed
+ * view. Nothing about where it is: no map, no pin, no name.
  */
 export function HeroPicture({ fallback }: { fallback: StaticImageData }) {
   const today = useToday();
   const loaded = useAfterLoad();
+  const box = useRef<HTMLDivElement>(null);
   const [shot, setShot] = useState<string | null>(null);
   const [shown, setShown] = useState(false);
 
@@ -38,13 +51,17 @@ export function HeroPicture({ fallback }: { fallback: StaticImageData }) {
     (async () => {
       try {
         const res = await fetch(`/api/geo/daily-shot?date=${today}`);
-        const data = res.ok ? ((await res.json()) as { shot?: string }) : null;
+        const data = res.ok ? ((await res.json()) as DailyShot) : null;
         if (!live || typeof data?.shot !== "string" || !data.shot.startsWith("/api/geo/shot/")) return;
+        // Too small to be sharp here (judged on a 16:9 shot before it's fetched, then on its real shape): the fixed view stays.
+        const el = box.current;
+        const sharpTo = data.sharpTo ?? 0;
+        if (!el || coverWidth(el, 16 / 9) > sharpTo) return;
         // Decoded before it's put on the page, so it fades in whole.
         const img = new window.Image();
         img.src = data.shot;
         await img.decode();
-        if (live) setShot(data.shot);
+        if (live && img.naturalHeight && coverWidth(el, img.naturalWidth / img.naturalHeight) <= sharpTo) setShot(data.shot);
       } catch {
         // The fixed view stays.
       }
@@ -61,23 +78,44 @@ export function HeroPicture({ fallback }: { fallback: StaticImageData }) {
     return () => cancelAnimationFrame(id);
   }, [shot]);
 
+  const daily = !!shot && shown;
   return (
-    <div className="absolute inset-0" data-testid="home-hero-shot" data-shot={shot && shown ? shot : "fallback"}>
-      <Image src={fallback} alt="" priority placeholder="blur" fill sizes={SIZES} className="object-cover" />
-      {shot && (
-        // eslint-disable-next-line @next/next/no-img-element -- the game's own screenshot URL, so the Daily's round 1 is already cached
-        <img
-          src={shot}
-          alt=""
-          decoding="async"
-          className={cn(
-            "absolute inset-0 h-full w-full object-cover transition-[opacity,transform] ease-out motion-reduce:transition-none",
-            shown ? "scale-100 opacity-100" : "scale-[1.04] opacity-0"
-          )}
-          style={{ transitionDuration: "900ms, 6000ms" }}
-        />
-      )}
-    </div>
+    <>
+      <div ref={box} className="absolute inset-0" data-testid="home-hero-shot" data-shot={daily ? shot : "fallback"}>
+        <Image src={fallback} alt="" priority placeholder="blur" fill sizes={SIZES} className="object-cover" />
+        {shot && (
+          // eslint-disable-next-line @next/next/no-img-element -- the game's own screenshot URL, so the Daily's round 1 is already cached
+          <img
+            src={shot}
+            alt=""
+            decoding="async"
+            className={cn(
+              "absolute inset-0 h-full w-full object-cover transition-[opacity,transform] ease-out motion-reduce:transition-none",
+              shown ? "scale-100 opacity-100" : "scale-[1.04] opacity-0"
+            )}
+            style={{ transitionDuration: "900ms, 6000ms" }}
+          />
+        )}
+      </div>
+      {/* Fade the picture into the card behind the words. */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent from-55% to-background sm:from-35% sm:to-card lg:bg-gradient-to-r lg:from-card lg:from-0% lg:via-card/60 lg:via-30% lg:to-transparent lg:to-70%" />
+      {/* The question over today's place, never the answer; over the fixed view, what it is. */}
+      <p
+        className="absolute right-3 top-[3.75rem] z-[3] flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1.5 font-display text-[13px] font-bold uppercase tracking-wider text-white shadow-[0_6px_18px_rgb(0_0_0/0.4)] backdrop-blur-sm sm:right-4 sm:top-4 lg:bottom-6 lg:right-6 lg:top-auto lg:px-4 lg:py-2 lg:text-base"
+        data-testid="home-hero-question"
+        data-daily={daily ? "true" : undefined}
+      >
+        {daily ? (
+          <>
+            <MapPin className="h-4 w-4 text-primary lg:h-5 lg:w-5" aria-hidden /> Where is this?
+          </>
+        ) : (
+          <>
+            <Camera className="h-4 w-4 text-primary lg:h-5 lg:w-5" aria-hidden /> Real in-game views
+          </>
+        )}
+      </p>
+    </>
   );
 }
 

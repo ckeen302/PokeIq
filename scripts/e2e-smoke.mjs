@@ -3733,17 +3733,37 @@ async function homeStep() {
   // The server's picture is the LCP image: in the HTML, preloaded; then today's place fades in over it.
   const html = await (await p.request.get(BASE)).text();
   if (!/data-testid="home-hero-shot"[^>]*>\s*<img /.test(html) || !/<link rel="preload" as="image"/.test(html)) errors.push("home: the hero's picture isn't server-rendered and preloaded");
-  await p.waitForFunction(() => document.querySelector("[data-testid=home-hero-shot]")?.dataset.shot?.startsWith("/api/geo/shot/"), null, { timeout: 20_000 }).catch(() => errors.push("home: today's PokéGuessr place never replaced the hero's fixed picture"));
+  // Today's place replaces the fixed view only when it's sharp at the size it's drawn (the API says how wide it can go).
+  const localToday = await p.evaluate(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; });
+  const daily = await (await p.request.get(`${BASE}/api/geo/daily-shot?date=${localToday}`)).json();
+  // As the page judges it: drawn to cover the box, first as a 16:9 shot, then at its real shape.
+  const heroWide = await hero.getByTestId("home-hero-shot").evaluate(async (el, src) => {
+    const img = new Image();
+    img.src = src;
+    await img.decode().catch(() => {});
+    const aspect = img.naturalHeight ? img.naturalWidth / img.naturalHeight : 16 / 9;
+    return Math.max(el.clientWidth, (el.clientHeight * 16) / 9, el.clientHeight * aspect);
+  }, daily.shot);
+  const showsToday = typeof daily.sharpTo === "number" && daily.sharpTo >= heroWide;
+  if (showsToday) {
+    await p.waitForFunction(() => document.querySelector("[data-testid=home-hero-shot]")?.dataset.shot?.startsWith("/api/geo/shot/"), null, { timeout: 20_000 }).catch(() => errors.push("home: today's PokéGuessr place never replaced the hero's fixed picture"));
+  } else {
+    await p.waitForTimeout(2500);
+    if ((await hero.getByTestId("home-hero-shot").getAttribute("data-shot")) !== "fallback") errors.push(`home: today's place is too small to be sharp at ${Math.round(heroWide)} px (sharp to ${daily.sharpTo}), but the hero shows it`);
+  }
   const heroShot = await hero.getByTestId("home-hero-shot").getAttribute("data-shot");
   for (const img of await hero.getByTestId("home-hero-shot").locator("img").all()) if (!(await imgLoaded(img))) errors.push("home: a hero picture didn't load");
   // Never the answer: no map, no pin, no place or region name, and the API only gives the picture's random id.
   if (await hero.locator('img[src*="/geo/maps/"], svg path[d^="M12 0C5.4"], [data-testid=home-showcase]').count()) errors.push("home: the hero shows a map or a pin");
   if (REGIONS.test(await hero.innerText())) errors.push(`home: the hero names a place: ${(await hero.innerText()).match(REGIONS)[0]}`);
-  if (!/Where is this\?/i.test(await hero.getByTestId("home-hero-question").innerText())) errors.push("home: the hero doesn't ask Where is this?");
+  // "Where is this?" over today's place only; the fixed view says what it is.
+  const question = await hero.getByTestId("home-hero-question").innerText();
+  if (showsToday ? !/Where is this\?/i.test(question) : /Where is this/i.test(question) || !/in-game/i.test(question)) errors.push(`home: the hero's chip reads "${question}" over ${showsToday ? "today's place" : "the fixed view"}`);
   {
     const today = await p.evaluate(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; });
     const body = await (await p.request.get(`${BASE}/api/geo/daily-shot?date=${today}`)).json();
-    if (Object.keys(body).some((k) => k !== "shot" && k !== "blur") || body.shot !== heroShot) errors.push(`home: the daily-shot API sent ${JSON.stringify(Object.keys(body))} / ${body.shot} (hero shows ${heroShot})`);
+    if (Object.keys(body).some((k) => k !== "shot" && k !== "blur" && k !== "sharpTo") || (showsToday && body.shot !== heroShot)) errors.push(`home: the daily-shot API sent ${JSON.stringify(Object.keys(body))} / ${body.shot} (hero shows ${heroShot})`);
+    if (typeof body.sharpTo !== "number" || body.sharpTo % 100 !== 0) errors.push(`home: the daily-shot API's sharpTo isn't a coarse width: ${body.sharpTo}`);
     if ((await p.request.get(`${BASE}/api/geo/daily-shot?date=2001-01-01`)).status() !== 400) errors.push("home: the daily-shot API answered for a date that isn't today");
   }
   // The words: PokéGuessr, free, one line; one h1; no counts, no NEW badges, no puzzle numbers, consistent names.
@@ -3822,7 +3842,7 @@ async function homeStep() {
   if ((await hero.getByTestId("home-hero-play").getAttribute("href")) !== "/guessr?play=daily") errors.push("home: Play doesn't go to today's Daily");
   await hero.getByTestId("home-hero-play").click();
   await p.waitForURL(/\/guessr/, { timeout: 15_000 }).catch(() => errors.push(`home: Play went to ${p.url()}`));
-  await p.locator(`img[src="${heroShot}"]`).first().waitFor({ timeout: 20_000 }).catch(() => errors.push("home: Play didn't open the Daily on the hero's picture"));
+  if (showsToday) await p.locator(`img[src="${heroShot}"]`).first().waitFor({ timeout: 20_000 }).catch(() => errors.push("home: Play didn't open the Daily on the hero's picture"));
   if (!/Daily #\d+/i.test(await p.locator("body").innerText())) errors.push("home: Play didn't start the Daily");
   if (/[?&]play=/.test(p.url())) errors.push(`home: the Daily's URL kept ?play (${p.url()})`);
   await p.context().close();

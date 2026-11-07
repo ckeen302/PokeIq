@@ -49,6 +49,21 @@ describe("the Daily's first picture for the home page", () => {
     const started = startGeo({ region, kind: "game", daily: today });
     expect(first.shot).toBe(started.round.shot);
     expect(first.shot).toMatch(/^\/api\/geo\/shot\/[A-Za-z0-9_-]+$/);
-    expect(Object.keys(first).every((k) => k === "shot" || k === "blur")).toBe(true);
+    expect(Object.keys(first).every((k) => k === "shot" || k === "blur" || k === "sharpTo")).toBe(true);
+  });
+
+  it("says only coarsely how big the picture can be drawn and stay sharp", () => {
+    const day = Date.parse("2026-11-01T00:00:00Z");
+    const seen = new Set<number>();
+    for (let i = 0; i < 60; i++) {
+      const { sharpTo } = geoDailyFirstShot(new Date(day + i * 86_400_000).toISOString().slice(0, 10))!;
+      // Steps of 100 px, and nothing between 0 and 500: an old handheld game's picture never reads as big.
+      expect(sharpTo % 100).toBe(0);
+      expect(sharpTo === 0 || sharpTo >= 500).toBe(true);
+      seen.add(sharpTo);
+    }
+    // Both kinds of day come up: a sharp modern picture, and one that stays off the hero.
+    expect(seen.has(0)).toBe(true);
+    expect([...seen].some((w) => w >= 800)).toBe(true);
   });
 });
