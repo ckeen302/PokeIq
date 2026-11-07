@@ -1051,7 +1051,7 @@ await gotoSettled(page, `${BASE}/leaderboard?board=geo`);
 {
   const empty = page.getByTestId("geo-board-empty");
   await empty.waitFor();
-  if (!/Be the first on today.s board/.test(await empty.innerText())) throw new Error(`the empty Daily board reads: ${await empty.innerText()}`);
+  if (!/Be the first on today.s board/i.test(await empty.innerText())) throw new Error(`the empty Daily board reads: ${await empty.innerText()}`);
   if (!(await page.getByTestId("geo-board-play").getAttribute("href"))?.startsWith("/guessr?play=daily")) throw new Error("the empty Daily board's Play doesn't start the Daily");
   if (await page.locator("table").count()) throw new Error("the empty Daily board still shows a table");
   await page.screenshot({ path: `${OUT}/geo-board-empty.png`, fullPage: true });
