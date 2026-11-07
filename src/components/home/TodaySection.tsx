@@ -68,7 +68,7 @@ function subline(info: DailyInfo, status: DailyStatus): string {
 function PlayPill({ info, status, className }: { info: DailyInfo; status: DailyStatus; className?: string }) {
   if (status.state === "done") {
     return (
-      <span className={cn("inline-flex items-center gap-1 text-sm font-semibold text-success", className)}>
+      <span className={cn("inline-flex h-8 items-center gap-1 text-sm font-semibold text-success", className)}>
         <Check className="h-4 w-4" aria-hidden /> Done
       </span>
     );

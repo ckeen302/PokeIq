@@ -37,8 +37,11 @@ export default function HomePage() {
         <TodaySection />
       </div>
       <LabShowcase />
-      <DexSearch />
-      <MoreToPlay />
+      {/* Side by side on a desktop. */}
+      <div className="space-y-12 sm:space-y-14 max-sm:space-y-9 lg:grid lg:grid-cols-2 lg:gap-10 lg:space-y-0">
+        <DexSearch />
+        <MoreToPlay />
+      </div>
 
       <div className="flex justify-center pb-2">
         <a

@@ -63,29 +63,10 @@ export function DexSearch() {
 
   return (
     <section aria-labelledby="home-search" data-testid="home-search">
-      <HomeHeading
-        id="home-search"
-        title="Look up any Pokémon"
-        aside={
-          <span className="text-sm text-muted-foreground">
-            Or browse{" "}
-            <Link href="/pokedex/moves" prefetch={false} className="font-medium text-foreground underline-offset-4 hover:underline">
-              moves
-            </Link>
-            ,{" "}
-            <Link href="/pokedex/abilities" prefetch={false} className="font-medium text-foreground underline-offset-4 hover:underline">
-              abilities
-            </Link>{" "}
-            and{" "}
-            <Link href="/pokedex/types" prefetch={false} className="font-medium text-foreground underline-offset-4 hover:underline">
-              types
-            </Link>
-          </span>
-        }
-      />
+      <HomeHeading id="home-search" title="Look up any Pokémon" />
       <form
         role="search"
-        className="relative max-w-2xl scroll-mt-20"
+        className="relative max-w-2xl scroll-mt-20 lg:max-w-none"
         onSubmit={(e) => {
           e.preventDefault();
           if (q) go(results[active] ?? results[0]);
@@ -209,6 +190,21 @@ export function DexSearch() {
           {shown && entries ? (results.length ? `${results.length} result${results.length === 1 ? "" : "s"}` : "No results") : ""}
         </span>
       </form>
+      <p className="mt-3 text-sm text-muted-foreground">
+        By name, number or category. Or browse{" "}
+        <Link href="/pokedex/moves" prefetch={false} className="font-medium text-foreground underline-offset-4 hover:underline">
+          moves
+        </Link>
+        ,{" "}
+        <Link href="/pokedex/abilities" prefetch={false} className="font-medium text-foreground underline-offset-4 hover:underline">
+          abilities
+        </Link>{" "}
+        and{" "}
+        <Link href="/pokedex/types" prefetch={false} className="font-medium text-foreground underline-offset-4 hover:underline">
+          types
+        </Link>
+        .
+      </p>
     </section>
   );
 }

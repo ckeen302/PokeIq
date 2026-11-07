@@ -3,6 +3,7 @@ import Link from "@/components/ui/Link";
 import { ArrowRight } from "lucide-react";
 import { LAB_PATH, liveLabExperiences, type LabExperience } from "@/lib/lab";
 import { cn } from "@/lib/utils";
+import { AfterLoad } from "./AfterLoad";
 import { HomeHeading } from "./HomeHeading";
 
 /** The home page's order: the newest and most cinematic first. Anything not listed follows; at most six show. */
@@ -20,9 +21,6 @@ const LINES: Record<string, string> = {
   globe: "Spin the whole Pokémon world on a 3D globe",
   timeline: "Fly through Pokémon history in a time tunnel",
 };
-
-/** Phones take the screenshot file itself (as /lab does, so it's one download for both pages); wider screens a resized copy. */
-const PHONE = "(max-width: 639px)";
 
 /** The experiences for the home page, in its order: live ones with a picture only. */
 export function homeLabExperiences(all: LabExperience[] = liveLabExperiences()): LabExperience[] {
@@ -89,19 +87,20 @@ function LabCard({ experience: e, feature }: { experience: LabExperience; featur
       href={e.href}
       prefetch={false}
       className="group relative block aspect-video overflow-hidden rounded-xl border border-white/10 bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-screen lg:h-full"
-      style={{ "--lab-accent": e.accent } as React.CSSProperties}
+      // Its colour until the picture is in.
+      style={{ background: `radial-gradient(120% 90% at 70% 20%, hsl(${e.accent} / 0.35), #000 75%)` }}
       data-testid={`home-lab-${e.id}`}
     >
-      <picture>
-        <source media={PHONE} srcSet={e.image} />
+      {/* Fetched once the page has loaded: never in the way of the first screen. */}
+      <AfterLoad>
         <Image
           src={e.image!}
           alt=""
           fill
-          sizes={feature ? "(min-width: 1024px) 740px, 46vw" : "(min-width: 1024px) 360px, 46vw"}
+          sizes={feature ? "(min-width: 1024px) 740px, (min-width: 640px) 46vw, 82vw" : "(min-width: 1024px) 360px, (min-width: 640px) 46vw, 82vw"}
           className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04] motion-reduce:transition-none"
         />
-      </picture>
+      </AfterLoad>
       <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_35%,rgb(0_0_0/0.85))]" aria-hidden />
       {feature && (
         <span className="hud-label pointer-events-none absolute left-3 top-3 flex items-center gap-1.5 rounded-sm bg-black/55 px-2 py-1.5 text-white/90 backdrop-blur-sm max-lg:hidden">

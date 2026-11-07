@@ -5,13 +5,13 @@ import { HOME_SECTIONS } from "./sections";
 
 const MORE = ["battle", "quizzes", "pokedex"] as const;
 
-/** More to play: Battle, Quizzes and the Pokédex, three compact cards (one list on a phone). Each page is fetched on hover, not on load. */
+/** More to play: Battle, Quizzes and the Pokédex, three compact cards (a column beside the search on a desktop, one list on a phone). Each page is fetched on hover, not on load. */
 export function MoreToPlay() {
   const items = MORE.map((id) => HOME_SECTIONS.find((s) => s.id === id)!);
   return (
     <section aria-labelledby="home-more" data-testid="home-more">
       <HomeHeading id="home-more" title="More to play" />
-      <ul className="grid gap-3 sm:grid-cols-3 max-sm:gap-0 max-sm:divide-y max-sm:divide-foreground/[0.06]">
+      <ul className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1 max-sm:gap-0 max-sm:divide-y max-sm:divide-foreground/[0.06]">
         {items.map(({ id, href, name, line, icon: Icon, accent }) => (
           <li key={id}>
             <HoverPrefetchLink

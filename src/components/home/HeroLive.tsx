@@ -11,6 +11,7 @@ import { GEO_MAX_ROUND_SCORE, GEO_ROUNDS } from "@/lib/geo-types";
 import { useProgress } from "@/lib/progress";
 import { useToday } from "@/lib/use-today";
 import { cn } from "@/lib/utils";
+import { useAfterLoad } from "./AfterLoad";
 
 /** The hero's picture box: full width on a phone and a tablet, the right two thirds on a desktop. */
 const SIZES = "(min-width: 1024px) 760px, 100vw";
@@ -20,16 +21,18 @@ const SIZES = "(min-width: 1024px) 760px, 100vw";
  * picture the Daily deals first (so Play opens on a picture that's already
  * here). The server can't know the player's date, so the page is sent with a
  * fixed PokéGuessr view (the page's LCP image, sized for the screen), and
- * today's place fades in over it once it has loaded. Nothing about where it
+ * today's place is fetched once the page has loaded and fades in over it. Nothing about where it
  * is: no map, no pin, no name.
  */
 export function HeroPicture({ fallback }: { fallback: StaticImageData }) {
   const today = useToday();
+  const loaded = useAfterLoad();
   const [shot, setShot] = useState<string | null>(null);
   const [shown, setShown] = useState(false);
 
+  // Once the page has loaded, so it never slows the fixed view (the LCP) on a slow connection.
   useEffect(() => {
-    if (!today) return;
+    if (!today || !loaded) return;
     let live = true;
     setShown(false);
     (async () => {
@@ -49,7 +52,7 @@ export function HeroPicture({ fallback }: { fallback: StaticImageData }) {
     return () => {
       live = false;
     };
-  }, [today]);
+  }, [today, loaded]);
 
   // One frame at opacity 0, then the fade.
   useEffect(() => {
