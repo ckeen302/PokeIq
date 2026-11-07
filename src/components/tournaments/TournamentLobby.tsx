@@ -95,10 +95,10 @@ export function TournamentLobby() {
             <ul className="divide-y rounded-lg border bg-card text-sm" data-testid="tournament-history">
               {data.history.map((t) => (
                 <li key={t.id}>
-                  <Link href={`/battle/tournaments/${t.id}`} className="flex items-center gap-3 px-3 py-2 hover:bg-accent">
-                    <span className="min-w-0 flex-1 truncate">{t.title}</span>
-                    <span className="text-xs text-muted-foreground">{t.endedAt ? new Date(t.endedAt).toLocaleString([], { dateStyle: "short", timeStyle: "short" }) : ""}</span>
-                    <span className="w-36 truncate text-right">
+                  <Link href={`/battle/tournaments/${t.id}`} className="flex items-center gap-3 px-3 py-2 hover:bg-accent max-md:min-h-14 max-md:flex-wrap max-md:gap-x-3 max-md:gap-y-0.5 max-md:py-2.5">
+                    <span className="min-w-0 flex-1 truncate max-md:basis-full max-md:font-medium">{t.title}</span>
+                    <span className="text-xs text-muted-foreground max-md:flex-1">{t.endedAt ? new Date(t.endedAt).toLocaleString([], { dateStyle: "short", timeStyle: "short" }) : ""}</span>
+                    <span className="w-36 truncate text-right max-md:w-auto max-md:max-w-[50%] max-md:text-xs">
                       {t.status === "cancelled" ? <span className="text-muted-foreground">Cancelled</span> : <span className="font-semibold text-warning">🏆 {t.winner}</span>}
                     </span>
                   </Link>

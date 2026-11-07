@@ -64,7 +64,9 @@ export function IqTest() {
               <Button size="lg" className="h-14 w-full text-base" onClick={() => setPlaying(true)} data-testid="iq-start">
                 <Play className="h-5 w-5" aria-hidden /> Start the test
               </Button>
-              <p className="text-center text-xs text-muted-foreground">Keys 1–6 pick an option. Every retake draws fresh items.</p>
+              <p className="text-center text-xs text-muted-foreground">
+                <span className="max-md:hidden">Keys 1–6 pick an option. </span>Every retake draws fresh items.
+              </p>
             </CardContent>
           </Card>
         </motion.div>

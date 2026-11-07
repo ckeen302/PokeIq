@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 /** Chunky game-console buttons: hard bottom shadow that compresses on press. */
-const buttonVariants = cva(
+const baseButtonVariants = cva(
   "inline-flex select-none items-center justify-center gap-2 whitespace-nowrap rounded-md font-display text-sm font-semibold uppercase tracking-wider transition-[transform,box-shadow,filter,background-color,border-color] duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-[2px] disabled:pointer-events-none disabled:opacity-45",
   {
     variants: {
@@ -21,19 +21,26 @@ const buttonVariants = cva(
           "bg-success text-success-foreground shadow-[0_4px_0_hsl(154_60%_24%)] hover:brightness-110 active:shadow-[0_2px_0_hsl(154_60%_24%)]",
       },
       size: {
-        default: "h-10 px-4",
-        sm: "h-9 px-3 text-xs",
+        default: "h-10 px-4 max-md:h-11",
+        sm: "h-9 px-3 text-xs max-md:h-10",
         lg: "h-12 px-7 text-[15px]",
-        icon: "h-10 w-10",
+        icon: "h-10 w-10 max-md:h-11 max-md:w-11",
       },
     },
     defaultVariants: { variant: "default", size: "default" },
   }
 );
 
+/** Phones get thumb-sized buttons (44px, 40px small), unless the caller set its own height. */
+function phoneSize(classes: string, className?: string | null) {
+  return className && /(^|\s)(h|size)-/.test(className) ? classes.replace(/(^|\s)max-md:[hw]-1[01](?=\s|$)/g, "") : classes;
+}
+
+const buttonVariants = (props?: Parameters<typeof baseButtonVariants>[0]) => phoneSize(baseButtonVariants(props), props?.className as string | undefined);
+
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {}
+    VariantProps<typeof baseButtonVariants> {}
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, ...props }, ref) => (

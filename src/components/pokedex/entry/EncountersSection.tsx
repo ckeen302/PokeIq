@@ -64,8 +64,8 @@ function GenTable({ rows }: { rows: EncRow[] }) {
   const { levels: showLv, rate: showRate, timed } = genColumns(rows);
   const dataCols = 2 + (showLv ? 1 : 0) + (showRate ? (timed ? 3 : 1) : 0);
   return (
-    <table className="w-full min-w-[34rem] text-sm">
-      <thead>
+    <table className="w-full min-w-[34rem] text-sm max-md:block max-md:min-w-0">
+      <thead className="max-md:hidden">
         <tr className="border-b text-left text-[11px] uppercase tracking-wider text-muted-foreground">
           <th className="p-2" rowSpan={timed ? 2 : 1}>
             Games
@@ -97,19 +97,19 @@ function GenTable({ rows }: { rows: EncRow[] }) {
           </tr>
         )}
       </thead>
-      <tbody>
+      <tbody className="max-md:block">
         {rows.map((r, i) => (
-          <tr key={i} className="border-b border-foreground/5 align-top transition-colors hover:bg-foreground/[0.03]">
-            <td className="p-2">
+          <tr key={i} className="border-b border-foreground/5 align-top transition-colors hover:bg-foreground/[0.03] max-md:flex max-md:flex-wrap max-md:items-baseline max-md:pb-1.5">
+            <td className="p-2 max-md:w-[4.75rem] max-md:shrink-0">
               <Badges versions={r.v} />
             </td>
             {r.x ? (
-              <td colSpan={dataCols} className="p-2 text-xs italic text-muted-foreground">
+              <td colSpan={dataCols} className="p-2 text-xs italic text-muted-foreground max-md:min-w-0 max-md:flex-1">
                 {r.x}
               </td>
             ) : (
               <>
-                <td className="p-2 font-semibold">
+                <td className="p-2 font-semibold max-md:min-w-0 max-md:basis-[calc(100%-4.75rem)]">
                   {r.a && slugFromKey(r.a) ? (
                     <span className="inline-flex flex-wrap items-baseline gap-x-1.5">
                       <Link href={`/pokedex/places/${slugFromKey(r.a)}`} data-testid="enc-place-link" className="underline-offset-2 hover:text-primary hover:underline">
@@ -128,16 +128,16 @@ function GenTable({ rows }: { rows: EncRow[] }) {
                   )}
                   {r.n && <div className="text-[11px] font-normal text-muted-foreground">{r.n}</div>}
                 </td>
-                <td className="p-2">{r.m}</td>
-                {showLv && <td className="p-2 font-mono text-xs tabular-nums">{r.lv ?? "—"}</td>}
+                <td className="p-2 max-md:ml-[4.75rem] max-md:py-0 max-md:text-[13px] max-md:text-muted-foreground">{r.m}</td>
+                {showLv && <td className="p-2 font-mono text-xs tabular-nums max-md:py-0 max-md:before:mr-1 max-md:before:font-sans max-md:before:text-muted-foreground max-md:before:content-['Lv']">{r.lv ?? "—"}</td>}
                 {!showRate ? null : r.t ? (
                   r.t.map((v, k) => (
-                    <td key={k} className="p-2 text-right font-mono text-xs tabular-nums">
+                    <td key={k} data-label={TIMES[k]} className="p-2 text-right font-mono text-xs tabular-nums max-md:py-0 max-md:before:mr-1 max-md:before:font-sans max-md:before:text-muted-foreground max-md:before:content-[attr(data-label)]">
                       {v}
                     </td>
                   ))
                 ) : (
-                  <td colSpan={timed ? 3 : 1} className={cn("p-2 font-mono text-xs tabular-nums", timed ? "text-center" : "text-right")}>
+                  <td colSpan={timed ? 3 : 1} className={cn("p-2 font-mono text-xs tabular-nums max-md:py-0", timed ? "text-center" : "text-right")}>
                     {r.r ?? "—"}
                   </td>
                 )}
