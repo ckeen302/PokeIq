@@ -21,9 +21,23 @@ fs.mkdirSync(OUT, { recursive: true });
 const errors = [];
 const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
 
-async function newPage(viewport, extra = {}) {
+/**
+ * `noWebGL`: a browser without WebGL (its 3D trainers show their flat look).
+ * Party guests use it: this machine draws WebGL in software, and four pages of
+ * 3D trainers starting at once hold every page's main thread for longer than a
+ * party waits for a silent trainer (30 s), so the server rightly drops them.
+ */
+async function newPage(viewport, { noWebGL = false, ...extra } = {}) {
   const context = await browser.newContext({ viewport, hasTouch: viewport.width < 768, isMobile: viewport.width < 768, ...extra });
   await context.addInitScript(() => sessionStorage.setItem("pokeiq-splash", "1"));
+  if (noWebGL) {
+    await context.addInitScript(() => {
+      const get = HTMLCanvasElement.prototype.getContext;
+      HTMLCanvasElement.prototype.getContext = function (type, ...rest) {
+        return /webgl/i.test(type) ? null : get.call(this, type, ...rest);
+      };
+    });
+  }
   const page = await context.newPage();
   page.on("console", (msg) => {
     if (msg.type() === "error" && !/Failed to load resource/.test(msg.text())) errors.push(`[${page.url()}] ${msg.text()}`);
@@ -404,7 +418,7 @@ async function phaseOf(p) {
 async function royale(width, height) {
   const phone = width < 768;
   const tag = `${width}`;
-  const [red, blue, green] = await Promise.all([0, 1, 2].map((i) => newPage({ width, height }, i ? { reducedMotion: "reduce" } : {})));
+  const [red, blue, green] = await Promise.all([0, 1, 2].map((i) => newPage({ width, height }, i ? { reducedMotion: "reduce", noWebGL: true } : {})));
   step(`party: Battle Royale at ${tag}`);
   await red.goto(`${BASE}/guessr?region=kanto`, { waitUntil: "networkidle" });
   await closeHowTo(red);
@@ -505,8 +519,8 @@ async function royale(width, height) {
 async function teamDuel(width, height) {
   const phone = width < 768;
   const tag = `${width}`;
-  // Four pages of 3D trainers drawn in software are a lot for one test machine: they hold still (reduced motion).
-  const pages = await Promise.all([0, 1, 2, 3].map((i) => newPage({ width, height }, i ? { reducedMotion: "reduce" } : {})));
+  // Four pages of 3D trainers drawn in software are a lot for one test machine: the host's are 3D, the guests' flat (see newPage).
+  const pages = await Promise.all([0, 1, 2, 3].map((i) => newPage({ width, height }, i ? { reducedMotion: "reduce", noWebGL: true } : {})));
   const [red, blue, green, gold] = pages;
   step(`party: team duel 2v2 at ${tag}`);
   await red.goto(`${BASE}/guessr?region=kanto`, { waitUntil: "networkidle" });
@@ -525,6 +539,13 @@ async function teamDuel(width, height) {
   await joinParty(blue, url, "Blue");
   await joinParty(green, url, "Green");
   await joinParty(gold, url, "Gold");
+  // A browser without WebGL never leaves a trainer's spot empty: each gives way to its flat look.
+  await blue
+    .waitForFunction(() => {
+      const all = [...document.querySelectorAll("[data-testid=party-lobby] [data-testid=versus-character]")];
+      return all.length >= 3 && all.every((e) => e.dataset.kind !== "trainer");
+    }, null, { timeout: 15_000 })
+    .catch(() => errors.push("without WebGL a party trainer stays empty instead of showing their flat look"));
   // Seats alternate teams: Red and Green on red, Blue and Gold on blue.
   await red.locator("[data-testid=party-team-1] [data-testid=party-seat-3]").waitFor({ timeout: 15_000 });
   if ((await red.locator("[data-testid=party-team-0] [data-testid^=party-seat-]").count()) !== 2) errors.push("the red team doesn't have two trainers");
@@ -586,6 +607,7 @@ async function teamDuel(width, height) {
   await red.getByTestId("party-end").waitFor({ timeout: 30_000 });
   await red.getByTestId("party-result").filter({ hasText: /Victory!|Defeat|Draw/ }).waitFor();
   if ((await red.locator("[data-testid^=party-standing-]").count()) !== 4) errors.push("the team standings don't list all four trainers");
+  if (!(await red.getByTestId("party-share").isVisible().catch(() => false))) errors.push("the team duel's end has no way to share the result");
   await red.waitForTimeout(900);
   await red.screenshot({ path: `${OUT}/party-team-end-${tag}.png`, fullPage: true });
   for (const p of pages) await p.context().close();
