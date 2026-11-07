@@ -165,7 +165,7 @@ function FreshBody() {
       <div className="pt-1">
         {/* Next's own link, prefetched as it comes into view on every screen: it's the one thing most visitors press. */}
         <NextLink href="/guessr?play=daily" data-testid="home-hero-play" className={PLAY_CLASS}>
-          <Compass className="h-5 w-5" aria-hidden /> Play today&apos;s 5 places
+          <Compass className="h-5 w-5" aria-hidden /> Play today&apos;s places
           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1 motion-reduce:transition-none" aria-hidden />
         </NextLink>
       </div>
