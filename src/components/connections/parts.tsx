@@ -168,7 +168,7 @@ export const GridTile = forwardRef<
       <span
         style={fit}
         className={cn(
-          "block w-full overflow-hidden whitespace-nowrap font-display font-bold uppercase leading-tight",
+          "mp-dense block w-full overflow-hidden whitespace-nowrap font-display font-bold uppercase leading-tight",
           compact
             ? "text-[min(10px,calc(100cqw/(var(--conn-chars)*0.88)))] sm:text-[min(12px,calc(100cqw/(var(--conn-chars)*0.76)))]"
             : "text-[min(11px,calc(100cqw/(var(--conn-chars)*0.8)))] sm:text-[min(14px,calc(100cqw/(var(--conn-chars)*0.76)))] sm:tracking-wide"

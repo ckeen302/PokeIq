@@ -142,7 +142,7 @@ function FitLabel({ text }: { text: string }) {
       {text.split(" ").map((w, i) => (
         <span key={i}>
           {i > 0 && " "}
-          <span className="whitespace-nowrap">{w}</span>
+          <span className="mp-dense whitespace-nowrap">{w}</span>
         </span>
       ))}
     </span>
