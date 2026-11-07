@@ -16,7 +16,7 @@ import { MonTip, MoveTip, Tip, isRandomFormat, tipFromRequest, tipFromSnap } fro
 import type { FieldMon, FieldState } from "@/lib/battle/tooltip-calc";
 import { useBattleKeys, type BattleKeys } from "./hotkeys";
 import { benchOrder } from "./model";
-import { cycleExtra, emptiedSlots, fainted, fillPasses, slotCount, switchOptions, switchedIn, teamOrder } from "./choice";
+import { aimableSpots, cycleExtra, emptiedSlots, fainted, fillPasses, slotCount, switchOptions, switchedIn, teamOrder } from "./choice";
 
 /**
  * What the player can do now, built from their request: pick a lead (team
@@ -528,7 +528,9 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
     // Showdown's grid: the far half's spots above (in screen order, right to left by slot), yours below.
     const far = spots.filter((t) => t.loc > 0).sort((a, b) => b.loc - a.loc);
     const near = spots.filter((t) => t.loc < 0).sort((a, b) => b.loc - a.loc);
-    const usable = [...far, ...near].filter((t) => t.legal && !empty(t.loc));
+    // The spots in reach with a Pokémon in them; with nobody in reach, the empty ones (the move then fails).
+    const usable = aimableSpots([...far, ...near], empty);
+    const nobody = usable.length > 0 && usable.every((t) => empty(t.loc));
     keys.digit = (n) => {
       const t = usable[n - 1];
       if (t && !busy) add(`move ${aiming.index} ${t.loc}${suffix()}`);
@@ -536,7 +538,7 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
     keys.back = () => setAiming(null);
     const button = (t: TargetSpot) => {
       const mon = at(t.loc);
-      const off = busy || !t.legal || empty(t.loc);
+      const off = busy || !usable.includes(t);
       const key = usable.indexOf(t);
       const owner = four && mon ? (mon.owner === me ? "You" : (names?.[mon.owner] ?? mon.owner)) : null;
       return (
@@ -572,6 +574,11 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
             Back
           </button>
         </div>
+        {nobody && (
+          <p className="text-sm text-muted-foreground" data-testid="target-none-in-reach">
+            Nobody is in reach from here, so this move will fail.{shiftable ? " Go back to shift to the centre, where every foe is in reach." : ""}
+          </p>
+        )}
         <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${perHalf}, minmax(0, 1fr))` }}>
           {far.map(button)}
           {near.map(button)}
