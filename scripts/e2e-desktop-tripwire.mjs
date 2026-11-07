@@ -68,6 +68,8 @@ function collect() {
   const keyOf = (el) => {
     const parts = [];
     for (let n = el; n && n !== document.body; n = n.parentElement) {
+      // A display: contents wrapper draws no box: it doesn't count in the path.
+      if (n !== el && getComputedStyle(n).display === "contents") continue;
       const sibs = n.parentElement ? [...n.parentElement.children].filter((c) => c.tagName === n.tagName) : [];
       parts.unshift(`${n.tagName.toLowerCase()}${sibs.length > 1 ? `:${sibs.indexOf(n)}` : ""}`);
     }
