@@ -157,6 +157,14 @@ describe("variant pages", () => {
     for (const p of pages) expect(rankingTitle(p.metric, p.scope)).not.toMatch(/Olympics/i);
   });
 
+  it("keeps row ids and entry slugs to [a-z0-9-] (the table's attributes are unquoted)", () => {
+    for (const e of [...SPECIES_ENTRIES, ...FORM_ENTRIES]) {
+      expect(e.key).toMatch(/^[a-z0-9-]+$/);
+      expect(e.slug).toMatch(/^[a-z0-9-]+$/);
+    }
+    for (const p of allRankingPages()) expect(p.path).toMatch(/^[a-z0-9/-]+$/);
+  });
+
   it("round-trips URL segments", () => {
     expect(parseScope("fire")).toEqual({ kind: "type", type: "fire" });
     expect(parseScope("gen-9")).toEqual({ kind: "gen", gen: 9 });

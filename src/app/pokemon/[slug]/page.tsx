@@ -67,6 +67,7 @@ export default async function PokemonPage({ params }: PageProps) {
           <Link href={`/pokedex/sizes/${p.slug}`} className="underline-offset-2 hover:text-foreground hover:underline">How big is {p.name}?</Link>
           <Link href={`/pokedex/race/run?vs=${p.slug}`} className="underline-offset-2 hover:text-foreground hover:underline">How fast is {p.name}?</Link>
           <Link href="/pokedex" className="underline-offset-2 hover:text-foreground hover:underline">Full Pokédex</Link>
+          <Link href={RANKINGS_PATH} className="underline-offset-2 hover:text-foreground hover:underline">Pokémon rankings</Link>
         </p>
         <p className="flex flex-wrap gap-x-4 gap-y-1">
           {p.types.map((t) => (
@@ -75,16 +76,15 @@ export default async function PokemonPage({ params }: PageProps) {
             </Link>
           ))}
         </p>
-        <p className="flex flex-wrap gap-x-4 gap-y-1" data-testid="dex-ranking-facts">
-          {facts.map((f) => (
-            <Link key={f.href} href={f.href} className="underline-offset-2 hover:text-foreground hover:underline">
-              {f.text}
-            </Link>
-          ))}
-          <Link href={RANKINGS_PATH} className="underline-offset-2 hover:text-foreground hover:underline">
-            Pokémon rankings
-          </Link>
-        </p>
+        {facts.length > 0 && (
+          <p className="flex flex-wrap gap-x-4 gap-y-1" data-testid="dex-ranking-facts">
+            {facts.map((f) => (
+              <Link key={f.href} href={f.href} className="underline-offset-2 hover:text-foreground hover:underline">
+                {f.text}
+              </Link>
+            ))}
+          </p>
+        )}
         {cards.total > 0 && (
           <p className="flex flex-wrap gap-x-4 gap-y-1" data-testid="dex-card-links">
             <span className="text-foreground">{p.name} cards:</span>

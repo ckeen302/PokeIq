@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element -- thumbnails are pre-sized static files (public/art/160) or /api/art */
 import Link from "@/components/ui/Link";
 import { ArrowDownWideNarrow, ArrowUpNarrowWide, Table2 } from "lucide-react";
 import { jsonLd } from "@/lib/seo";
@@ -8,6 +7,7 @@ import { GENERATION_REGIONS, STAT_LABELS, type StatKey } from "@/lib/pokemon/con
 import { TYPES, capitalize } from "@/lib/pokemon/type-matrix";
 import { TypeBadge } from "@/components/pokedex/TypeBadge";
 import { cn } from "@/lib/utils";
+import { typeColor, typeTextColor } from "@/lib/pokemon/type-colors";
 import {
   ALL,
   METRICS,
@@ -25,7 +25,7 @@ import {
   rankingPath,
   runnersUpSentence,
   type Metric,
-  type RankEntry,
+  type Ranked,
   type Scope,
 } from "@/lib/dex/rankings";
 
@@ -93,40 +93,71 @@ function typeHref(m: Metric, type: string): string {
   return isBuiltPage(m.slug, s) ? rankingPath(m.slug, s) : `/pokedex/types/${type}`;
 }
 
-function Types({ m, types }: { m: Metric; types: string[] }) {
-  return (
-    <span className="flex flex-wrap gap-1">
-      {types.map((t) => (
-        <a key={t} href={typeHref(m, t)} className="rounded-[4px]">
-          <TypeBadge type={t} size="sm" />
-        </a>
-      ))}
-    </span>
-  );
+const esc = (x: string | number) => String(x).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+/**
+ * The table's look, once per page. A list can hold every Pokémon and form, so
+ * its rows are plain HTML with short class names (see rowsHtml): the same
+ * rows as React elements, with utility classes and inline badge styles,
+ * weighed several megabytes per page.
+ */
+const TABLE_CSS = `
+.rk td{padding:6px 8px;vertical-align:middle}
+.rk td:first-child{text-align:right;font-family:ui-monospace,monospace;font-variant-numeric:tabular-nums;color:hsl(var(--muted-foreground))}
+.rk tr:target{background:hsl(var(--screen)/.12)}
+.rk tr{scroll-margin-top:6rem}
+.rk .n{display:flex;align-items:center;gap:8px;min-width:0}
+.rk .n img{width:40px;height:40px;flex-shrink:0;object-fit:contain}
+.rk .n b{display:block;font-family:var(--font-display),var(--font-body),sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.025em}
+.rk .n:hover b{color:hsl(var(--screen))}
+.rk small{display:block;font-family:ui-monospace,monospace;font-size:11px;color:hsl(var(--muted-foreground));font-variant-numeric:tabular-nums}
+.rk .v,.rk .vm,.rk .vc,.rk .vl{text-align:right;font-family:ui-monospace,monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rk .v b,.rk .vm b{font-weight:700}
+.rk .vc,.rk .vl{color:hsl(var(--muted-foreground))}
+.rk .ty{display:flex;flex-wrap:wrap;gap:4px}
+.rk [class^=t-]{display:inline-flex;align-items:center;justify-content:center;border-radius:4px;padding:3px 6px;font-family:var(--font-display),var(--font-body),sans-serif;font-weight:700;font-size:10px;line-height:1;text-transform:uppercase;letter-spacing:.08em;box-shadow:inset 0 1px 0 rgb(255 255 255/.35),inset 0 -2px 0 rgb(0 0 0/.25)}
+${TYPES.map((t) => `.rk .t-${t}{background:${typeColor(t)};color:${typeTextColor(t)}}`).join("\n")}
+@media (min-width:640px){.rk td{padding:6px 12px}}
+.rk .tm{display:none}
+.rk .tm i{font-style:normal;font-size:9px;padding:2px 4px;margin:3px 3px 0 0}
+@media (max-width:639px){.rk td{padding:6px 4px}.rk .n{gap:6px}.rk .n img{width:32px;height:32px}.rk .n b{font-size:13px;letter-spacing:0}.rk .tc{display:none}.rk .tm{display:flex;flex-wrap:wrap}}
+@media (max-width:767px){.rk .vm,.rk .vc{display:none}}
+@media (max-width:1023px){.rk .vl{display:none}}
+`;
+
+function valueHtml(key: Metric["key"], v: number): string {
+  const f = formatValue(key, v);
+  return `<b>${esc(f.main)}</b>${f.alt ? `<small>${esc(f.alt)}</small>` : ""}`;
 }
 
-function ValueCell({ m, v }: { m: Metric; v: number }) {
-  const f = formatValue(m.key, v);
-  return (
-    <>
-      <span className="block font-mono font-bold tabular-nums">{f.main}</span>
-      {f.alt && <span className="block font-mono text-[11px] tabular-nums text-muted-foreground">{f.alt}</span>}
-    </>
-  );
-}
-
-function Picture({ e, eager }: { e: RankEntry; eager: boolean }) {
-  return (
-    <img
-      src={e.form ? artUrl(e.art, 96) : boardArtUrl(e.art)}
-      alt={e.name}
-      width={40}
-      height={40}
-      loading={eager ? "eager" : "lazy"}
-      decoding="async"
-      className="h-10 w-10 shrink-0 object-contain"
-    />
-  );
+/**
+ * Every row of the table as HTML: rank, Pokémon, types, the value, and the
+ * context columns. Ids, slugs and paths are [a-z0-9-/] only (asserted in
+ * tests), so their attributes go unquoted: the markup is also carried,
+ * escaped, in the page's RSC payload, and every quote counts twice there.
+ */
+function rowsHtml(m: Metric, rows: Ranked[]): string {
+  const size = m.key === "weight" || m.key === "height";
+  const typeLinks = new Map(TYPES.map((t) => [t as string, `<a class=t-${t} href=${typeHref(m, t)}>${esc(capitalize(t))}</a>`]));
+  // Phones: the types sit under the name instead of in a column of their own.
+  const typeTags = new Map(TYPES.map((t) => [t as string, `<i class=t-${t}>${esc(capitalize(t))}</i>`]));
+  return rows
+    .map((r, i) => {
+      const e = r.entry;
+      const pic = e.form ? artUrl(e.art, 96) : boardArtUrl(e.art);
+      const sub = `#${String(e.species).padStart(4, "0")}${e.speciesName ? ` · ${esc(e.speciesName)}` : ""}`;
+      let extra = "";
+      if (size) extra += `<td class=vm>${valueHtml(m.key === "weight" ? "height" : "weight", m.key === "weight" ? e.height : e.weight)}</td>`;
+      else if (m.key === "bst") extra += STATS.map((k) => `<td class=vl>${e.stats[k]}</td>`).join("");
+      else extra += `<td class=vc>${e.bst}</td>`;
+      return (
+        `<tr id=${e.key}><td>${r.rank}${r.tied ? "<span class=sr-only> (tied)</span>" : ""}</td>` +
+        `<td><a class=n href=/pokemon/${e.slug}><img src="${pic}" alt="${esc(e.name)}" width=40 height=40${i < EAGER_ROWS ? "" : " loading=lazy"}><span><b>${esc(e.name)}</b><small>${sub}</small></span></a><span class=tm>${e.types.map((t) => typeTags.get(t) ?? "").join("")}</span></td>` +
+        `<td class=tc><span class=ty>${e.types.map((t) => typeLinks.get(t) ?? "").join("")}</span></td>` +
+        `<td class=v>${valueHtml(m.key, r.value)}</td>${extra}<td class=vc>${e.gen}</td></tr>`
+      );
+    })
+    .join("");
 }
 
 /** The full list as a real table: rank, Pokémon, types, the value, and a couple of context columns. */
@@ -137,9 +168,10 @@ function RankingTable({ m, s }: { m: Metric; s: Scope }) {
   const sortIcon = m.dir === "desc" ? <ArrowDownWideNarrow className="h-3.5 w-3.5" aria-hidden /> : <ArrowUpNarrowWide className="h-3.5 w-3.5" aria-hidden />;
   return (
     <div className="hud overflow-x-auto rounded-lg border bg-card">
-      <table className="w-full border-collapse text-sm [&_td]:px-2 [&_td]:py-1.5 [&_th]:px-2 [&_th]:py-2 sm:[&_td]:px-3 sm:[&_th]:px-3" data-testid="ranking-table">
+      <style dangerouslySetInnerHTML={{ __html: TABLE_CSS }} />
+      <table className="rk w-full border-collapse text-sm" data-testid="ranking-table">
         <caption className="sr-only">{rankingHeading(m, s)}</caption>
-        <thead className="border-b border-foreground/10 bg-shade/30 text-left font-pixel text-[9px] uppercase tracking-wider text-muted-foreground">
+        <thead className="border-b border-foreground/10 bg-shade/30 text-left font-pixel text-[9px] uppercase tracking-wider text-muted-foreground [&_th]:px-2 [&_th]:py-2 sm:[&_th]:px-3">
           <tr>
             <th scope="col" className="w-10 text-right">
               Rank
@@ -175,50 +207,7 @@ function RankingTable({ m, s }: { m: Metric; s: Scope }) {
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-foreground/10">
-          {rows.map((r, i) => (
-            <tr key={r.entry.key} id={r.entry.key} className="scroll-mt-24 target:bg-screen/10">
-              <td className="text-right font-mono tabular-nums text-muted-foreground">
-                {r.rank}
-                {r.tied && <span className="sr-only"> (tied)</span>}
-              </td>
-              <td>
-                <a href={`/pokemon/${r.entry.slug}`} className="group flex min-w-0 items-center gap-2">
-                  <Picture e={r.entry} eager={i < EAGER_ROWS} />
-                  <span className="min-w-0">
-                    <span className="block font-display font-bold uppercase tracking-wide group-hover:text-screen max-sm:text-[13px] max-sm:tracking-normal">{r.entry.name}</span>
-                    <span className="block font-mono text-[11px] text-muted-foreground">
-                      #{String(r.entry.species).padStart(4, "0")}
-                      {r.entry.speciesName && ` · ${r.entry.speciesName}`}
-                    </span>
-                  </span>
-                </a>
-                <span className="mt-1 block sm:hidden">
-                  <Types m={m} types={r.entry.types} />
-                </span>
-              </td>
-              <td className="max-sm:hidden">
-                <Types m={m} types={r.entry.types} />
-              </td>
-              <td className="text-right">
-                <ValueCell m={m} v={r.value} />
-              </td>
-              {size && (
-                <td className="text-right max-md:hidden">
-                  <ValueCell m={other} v={m.key === "weight" ? r.entry.height : r.entry.weight} />
-                </td>
-              )}
-              {m.key === "bst" &&
-                STATS.map((k) => (
-                  <td key={k} className="text-right font-mono tabular-nums text-muted-foreground max-lg:hidden">
-                    {r.entry.stats[k]}
-                  </td>
-                ))}
-              {!size && m.key !== "bst" && <td className="text-right font-mono tabular-nums text-muted-foreground max-md:hidden">{r.entry.bst}</td>}
-              <td className="text-right font-mono tabular-nums text-muted-foreground max-md:hidden">{r.entry.gen}</td>
-            </tr>
-          ))}
-        </tbody>
+        <tbody className="divide-y divide-foreground/10" dangerouslySetInnerHTML={{ __html: rowsHtml(m, rows) }} />
       </table>
     </div>
   );
@@ -319,7 +308,7 @@ export function RankingView({ m, s }: { m: Metric; s: Scope }) {
         </p>
         <p className="max-w-3xl text-sm text-muted-foreground">{countingNote(m, s)} Data from PokéAPI.</p>
         <div className="flex flex-wrap gap-2 pt-1">
-          <Link href={explorerHref(m, s)} className="hud-btn inline-flex h-9 items-center gap-1.5 rounded-md border border-foreground/15 bg-shade/30 px-3 font-display text-xs font-semibold uppercase tracking-wider hover:border-screen/60" data-testid="ranking-explorer-link">
+          <Link href={explorerHref(m, s)} className="inline-flex h-9 items-center gap-1.5 rounded-md border border-foreground/15 bg-shade/30 px-3 font-display text-xs font-semibold uppercase tracking-wider hover:border-screen/60" data-testid="ranking-explorer-link">
             <Table2 className="h-3.5 w-3.5" aria-hidden />
             Open in the Pokédex
           </Link>
