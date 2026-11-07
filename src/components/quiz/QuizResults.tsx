@@ -334,14 +334,14 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
 
           <div className="flex flex-col gap-2 sm:flex-row">
             {!isDaily && (
-              <Button className="flex-1" size="lg" variant="secondary" onClick={onRestart}>
+              <Button className="flex-1 max-sm:flex-none" size="lg" variant="secondary" onClick={onRestart}>
                 <RotateCcw className="h-4 w-4" aria-hidden /> Play again
               </Button>
             )}
             {ranked && (
               <Link
                 href={isDaily ? `/leaderboard?board=daily&date=${result.spec.daily}` : "/leaderboard?board=iq"}
-                className={cn(buttonVariants({ variant: "outline", size: "lg" }), "flex-1")}
+                className={cn(buttonVariants({ variant: "outline", size: "lg" }), "flex-1 max-sm:flex-none")}
               >
                 <Trophy className="h-4 w-4" aria-hidden /> Leaderboard
               </Link>
