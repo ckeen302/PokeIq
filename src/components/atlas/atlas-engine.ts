@@ -66,6 +66,12 @@ export interface AtlasOptions {
   /** Every frame drawn, for overlays that follow the map. */
   onView?: (view: AtlasView) => void;
   onZoom?: (label: string) => void;
+  /**
+   * Where the view starts (and stays until the viewer moves it): this box,
+   * filling the canvas (`cover`: the box's shorter side fits, the rest is a
+   * drag away) instead of the whole map. "Show the whole map" still shows it all.
+   */
+  home?: { box: Box; cover?: boolean };
 }
 
 export interface AtlasEngine {
@@ -83,6 +89,8 @@ const SEA = "#165c96";
 const MAX_SCALE = 9;
 /** Scale of the whole world on a desktop-sized atlas; labels and markers grow from here. */
 const REF_SCALE = 0.2;
+/** Side areas' names (DLC, Kitakami, the Sevii Islands) show from this zoom (a share of REF_SCALE); main regions' always do. */
+const TIER2_FROM = 0.7;
 
 let atlasData: Promise<AtlasData> | null = null;
 /** The atlas's places and labels, fetched once and shared by every map on the page. */
@@ -179,7 +187,19 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     return { s, tx: W / 2 - ((x0 + x1) / 2) * s, ty: H / 2 - ((y0 + y1) / 2) * s };
   };
   const fitWorld = () => fitTo([0, 0, atlas.W, atlas.H]);
-  const home = () => fitTo(bounds, locked ? 1.04 : 1);
+  const whole = () => fitTo(bounds, locked ? 1.04 : 1);
+  /** Region names in the order they claim room: the map's own first (a locked region's), then main regions, side areas, islands. */
+  const inBounds = (r: AtlasRegion) => r.x >= bounds[0] && r.x <= bounds[2] && r.y >= bounds[1] && r.y <= bounds[3];
+  const regionOrder = [...atlas.regions].sort((a, b) => Number(inBounds(b)) - Number(inBounds(a)) || a.tier - b.tier);
+  /** The view to frame until the viewer moves: the start box, or the whole map once they've asked for it. */
+  let framing: "start" | "whole" = opts.home ? "start" : "whole";
+  const home = (): AtlasView => {
+    if (framing === "whole" || !opts.home) return whole();
+    const [x0, y0, x1, y1] = opts.home.box;
+    if (!opts.home.cover) return fitTo(opts.home.box);
+    const s = Math.max(W / (x1 - x0), H / (y1 - y0));
+    return { s, tx: W / 2 - ((x0 + x1) / 2) * s, ty: H / 2 - ((y0 + y1) / 2) * s };
+  };
 
   /** Zoom within limits, and never pan off the world. */
   function clamp() {
@@ -306,7 +326,10 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
         }
         w = Math.max(w, lw);
       }
-      if (!fits(x - w / 2 - 3, y - size, w + 6, size + 6 + (lines.length - 1) * lineH)) return false;
+      // Room around each label, so two never run together into one ("JOHTO KANTO"): the later (lower-priority) one waits for more zoom.
+      const padX = Math.max(3, size * 0.4);
+      const padY = Math.max(1, size * 0.15);
+      if (!fits(x - w / 2 - padX, y - size - padY, w + 2 * padX, size + 6 + (lines.length - 1) * lineH + 2 * padY)) return false;
       ctx.lineWidth = Math.max(3, size / 4);
       ctx.strokeStyle = "rgba(8,18,32,.88)";
       ctx.lineJoin = "round";
@@ -326,10 +349,11 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
 
     if (selected) label(selected.name, selected.x, selected.y, `700 SIZE ${sans}, system-ui`, 15, -20, "#ffe08a");
     if (f < 4.5) {
-      for (const r of atlas.regions) {
+      for (const r of regionOrder) {
         const baseSize = r.tier === 1 ? 20 : r.tier === 2 ? 14 : 12;
         const size = Math.round(Math.max(baseSize * 0.7, Math.min(baseSize * 1.7, baseSize * Math.pow(f, 0.35))));
-        if (r.tier === 3 && f < 1.4) continue;
+        // Small maps keep to the main regions: DLC areas and islands come in as you zoom.
+        if ((r.tier === 3 && f < 1.4) || (r.tier === 2 && f < TIER2_FROM)) continue;
         label(
           r.tier === 1 ? r.name.toUpperCase() : r.name,
           r.x,
@@ -554,6 +578,7 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     fitBox,
     reset: () => {
       touched = false;
+      framing = "whole";
       const h = home();
       void glide((W / 2 - h.tx) / h.s, (H / 2 - h.ty) / h.s, h.s);
     },

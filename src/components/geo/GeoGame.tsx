@@ -1112,6 +1112,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
         hasPin={!!pick}
         map={({ fill }) => (
           <GeoMap
+            land={fill}
             region={game.region}
             pick={pick}
             pinImage={pinImage}
