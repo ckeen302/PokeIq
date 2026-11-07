@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Medal, Swords, Trophy, X } from "lucide-react";
-import type { EventId, GameEvent } from "@/lib/games/events";
+import type { EventId } from "@/lib/games/events";
 import { RACE_URLS } from "@/components/race/urls";
 import { RACE_CSS } from "@/components/race/race-css";
 import type { GamesScene, Quality } from "./scene";
@@ -21,11 +21,6 @@ export interface GamesStadiumProps {
   h2h: StadiumLink[];
   backHref: string;
   children: React.ReactNode;
-}
-
-/** The event's group on the picker: the track, the field, the pool and the arena. */
-export function groupOf(e: Pick<GameEvent, "kind">): "Track" | "Field" | "Pool" | "Arena" {
-  return e.kind === "sprint" ? "Track" : e.kind === "swim" ? "Pool" : e.kind === "lift" || e.kind === "wrestle" ? "Arena" : "Field";
 }
 
 const ENTERED = "pokeiq-games-entered";
@@ -192,9 +187,10 @@ export function GamesStadium({ events, groups, playHref, records, h2h, backHref,
           <AnimatePresence>
             {board && (
               <motion.div
+                key="board"
                 role="dialog"
                 aria-label="Choose your event"
-                className="absolute inset-x-0 bottom-0 z-20 flex max-h-[78%] flex-col rounded-t-2xl border border-white/15 bg-[#070c1c]/90 text-white shadow-2xl backdrop-blur-xl sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:max-h-[min(40rem,calc(100%-6rem))] sm:w-[min(52rem,calc(100%-3rem))] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl"
+                className="absolute inset-x-0 bottom-0 z-20 mx-auto flex max-h-[78%] flex-col rounded-t-2xl border border-white/15 bg-[#070c1c]/90 text-white shadow-2xl backdrop-blur-xl sm:bottom-auto sm:top-16 sm:max-h-[calc(100%-6rem)] sm:w-[min(52rem,calc(100%-3rem))] sm:rounded-2xl lg:top-[max(4rem,calc(50%-20rem))] lg:max-h-[min(40rem,calc(100%-6rem))]"
                 initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }} transition={{ duration: 0.35 }}
                 data-testid="stadium-picker" data-rc-scroll
               >
@@ -217,16 +213,16 @@ export function GamesStadium({ events, groups, playHref, records, h2h, backHref,
                         <span><span className="block font-display text-base font-bold uppercase tracking-wider">The full Games</span><span className="block text-xs opacity-80">Nations of three through every event, with a medal table</span></span>
                         <Trophy className="h-6 w-6 shrink-0" aria-hidden />
                       </Link>
-                      <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         {groups.map((g) => (
-                          <section key={g} aria-label={g}>
+                          <section key={g} aria-label={g} className="min-w-0">
                             <h3 className="mb-1.5 font-pixel text-[9px] uppercase tracking-[0.3em] text-white/55">{g}</h3>
                             <ul className="space-y-1.5">
                               {events.filter((e) => e.group === g).map((e) => (
                                 <li key={e.id}>
                                   <Link href={e.href} prefetch={false} className="flex min-h-12 items-center gap-3 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 transition-colors hover:border-[#ffd84a]/60 hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd84a]" data-testid={`stadium-event-${e.id}`}>
                                     <span className="text-xl" aria-hidden>{e.emoji}</span>
-                                    <span className="min-w-0"><span className="block font-display text-sm font-bold uppercase tracking-wide">{e.name}</span><span className="block truncate text-xs text-white/60">{e.question}</span></span>
+                                    <span className="min-w-0 flex-1"><span className="block font-display text-sm font-bold uppercase tracking-wide">{e.name}</span><span className="block truncate text-xs text-white/60">{e.question}</span></span>
                                   </Link>
                                 </li>
                               ))}

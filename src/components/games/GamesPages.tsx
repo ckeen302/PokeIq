@@ -15,7 +15,7 @@ import { BackButton } from "@/components/ui/BackButton";
 import { RACE_CSS } from "@/components/race/race-css";
 import { GamesExperience } from "./GamesExperience";
 import { GamesInfo } from "./GamesInfo";
-import { GamesStadium, groupOf } from "./GamesStadium";
+import { GamesStadium } from "./GamesStadium";
 import { cn } from "@/lib/utils";
 
 /**
@@ -154,6 +154,9 @@ export function GamesPlayPage({ nations = DEFAULT_NATIONS, seed = null, rain = f
   );
 }
 
+/** The event's group on the stadium's event board. */
+const groupOf = (kind: string) => (kind === "sprint" ? "Track" : kind === "swim" ? "Pool" : kind === "lift" || kind === "wrestle" ? "Arena" : "Field");
+
 /** /lab/games: the stadium entry and event board over the plain page (single events, the Games, the records and head to heads). */
 export function GamesHub() {
   const h2h: { event: EventId; a: string; b: string }[] = [
@@ -165,7 +168,7 @@ export function GamesHub() {
     { event: "shot-put", a: "machamp", b: "conkeldurr" },
   ];
   const groups = ["Track", "Field", "Pool", "Arena"];
-  const events = EVENTS.map((e) => ({ id: e.id, name: e.name, emoji: e.emoji, question: e.question, href: eventPath(e.id), group: groupOf(e) }));
+  const events = EVENTS.map((e) => ({ id: e.id, name: e.name, emoji: e.emoji, question: e.question, href: eventPath(e.id), group: groupOf(e.kind) }));
   const records = EVENTS.map((e) => ({ label: `${e.name} records`, href: recordsPath(e.id) }));
   const pairs = h2h.map((x) => ({ label: h2hQuestion(x.event, GAMES_BY_KEY.get(x.a)!.name, GAMES_BY_KEY.get(x.b)!.name), href: eventRunPath(x.event, { keys: [x.a, x.b] }) }));
   return (
