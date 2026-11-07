@@ -78,7 +78,7 @@ export function PdkHowToSheet({ onClose, onNever }: { onClose: () => void; onNev
               <b>Daily Puzzle</b>: one grid a day, the same for everyone. Under <b>More</b>: Easy and Expert dailies, the themed Weekly grid and the Archive of past dailies (these never move your streak).
             </li>
             <li>
-              <b>Unlimited</b>: a fresh grid on demand, with unlimited PP, a soft-lock guard, single-answer boxes, a timer and the category families you want.
+              <b>Unlimited</b>: a board you build yourself. Pick the rules (unlimited PP, guaranteed solvable, one-answer boxes, a timer), a difficulty and the categories you want, then generate as many as you like.
             </li>
             <li>
               <b>Tic Tac Toe</b>: two trainers share a grid and take turns claiming boxes. Three in a row wins; a wrong guess or a timeout passes the turn.

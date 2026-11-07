@@ -1,13 +1,16 @@
 import "server-only";
 import dailies from "@/data/pikadoku-dailies.json";
 import { allFacts, baseOf, categoryById, membersOf } from "@/lib/pikadoku/categories";
-import { generateGrid, gridFromIds, type PdkGrid, type PdkGridIds } from "@/lib/pikadoku/generator";
+import { generateGrid, generatePickedGrid, gridFromIds, noBoardMessage, type PdkGrid, type PdkGridIds } from "@/lib/pikadoku/generator";
+import { decodePick, PICK_RE } from "@/lib/pikadoku/catalog";
 import { softLockSafe } from "@/lib/pikadoku/solve";
 import {
   DEFAULT_PDK_SETTINGS,
+  PDK_BANDS,
   PDK_CELLS,
   PDK_FAMILIES,
   PDK_PP,
+  type PdkBand,
   type PdkDifficulty,
   type PdkFamily,
   type PdkGridView,
@@ -53,8 +56,29 @@ export function weeklyGrid(monday: string): PdkGrid {
   return remember(`w:${monday}`, () => gridFromIds(weeklyIds(monday)));
 }
 
-/** An Unlimited grid from its seed and settings (the same seed always deals the same grid). */
+/** An Unlimited board that can't be dealt: the player's choice of categories is too narrow. */
+export class PdkNoBoardError extends Error {}
+const noBoards = new Set<string>();
+
+/**
+ * An Unlimited grid from its seed and settings (the same seed always deals the same grid).
+ * With ticked categories (`pick`), throws PdkNoBoardError when they can't make a board.
+ */
 export function practiceGrid(seed: string, settings: PdkSettings): PdkGrid {
+  if (settings.pick) {
+    const band = settings.band ?? "normal";
+    const key = `q:${seed}:${settings.pick}:${band}:${settings.allowSingle}:${settings.softLockGuard}`;
+    if (noBoards.has(key)) throw new PdkNoBoardError(noBoardMessage("none", { allowSingle: settings.allowSingle, band }));
+    const allowed = decodePick(settings.pick);
+    if (!allowed) throw new PdkNoBoardError("Those settings are out of date. Change settings and generate a new board.");
+    return remember(key, () => {
+      const out = generatePickedGrid(seed, { allowed, allowSingle: settings.allowSingle, guard: settings.softLockGuard, band });
+      if (out.ok) return gridFromIds(out.ids);
+      if (noBoards.size > 300) noBoards.clear();
+      if (out.reason === "none") noBoards.add(key);
+      throw new PdkNoBoardError(noBoardMessage(out.reason, { allowSingle: settings.allowSingle, band }));
+    });
+  }
   const fams = PDK_FAMILIES.filter((f) => settings.families.includes(f)).join(",");
   return remember(`p:${seed}:${fams}:${settings.allowSingle}`, () => gridFromIds(generateGrid(seed, { difficulty: "normal", families: settings.families, allowSingle: settings.allowSingle })));
 }
@@ -63,12 +87,14 @@ export function practiceGrid(seed: string, settings: PdkSettings): PdkGrid {
 export function parseSettings(raw: Partial<Record<keyof PdkSettings, unknown>> | undefined): PdkSettings {
   const d = DEFAULT_PDK_SETTINGS;
   const fams = Array.isArray(raw?.families) ? PDK_FAMILIES.filter((f) => (raw!.families as unknown[]).includes(f)) : d.families;
+  const pick = typeof raw?.pick === "string" && PICK_RE.test(raw.pick) ? raw.pick : undefined;
   return {
     unlimitedPP: raw?.unlimitedPP === true,
     softLockGuard: raw?.softLockGuard !== false,
     allowSingle: raw?.allowSingle === true,
     timer: raw?.timer === true,
     families: (fams.length ? fams : d.families) as PdkFamily[],
+    ...(pick && { pick, band: PDK_BANDS.includes(raw?.band as PdkBand) ? (raw!.band as PdkBand) : "normal" }),
   };
 }
 

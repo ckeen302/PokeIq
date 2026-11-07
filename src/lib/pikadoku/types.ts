@@ -36,13 +36,25 @@ export interface PdkGuess {
   id: number;
 }
 
+/** Unlimited's difficulty, judged by how many valid answers the board's cells have. */
+export type PdkBand = "easy" | "normal" | "hard";
+export const PDK_BANDS: PdkBand[] = ["easy", "normal", "hard"];
+
 /** Unlimited-mode settings (also the shape of a practice seed's options). */
 export interface PdkSettings {
   unlimitedPP: boolean;
+  /** Every board can be finished, and a pick that would strand the other cells is refused. */
   softLockGuard: boolean;
   allowSingle: boolean;
   timer: boolean;
   families: PdkFamily[];
+  /**
+   * The categories the player ticked on the setup panel, packed (lib/pikadoku/catalog).
+   * Absent on older links and devices: those deal from `families` the way they always did.
+   */
+  pick?: string;
+  /** With `pick`: how many answers the cells may have. */
+  band?: PdkBand;
 }
 export const DEFAULT_PDK_SETTINGS: PdkSettings = { unlimitedPP: false, softLockGuard: true, allowSingle: false, timer: false, families: [...PDK_FAMILIES] };
 
