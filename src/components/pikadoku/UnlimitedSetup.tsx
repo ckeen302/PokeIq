@@ -194,8 +194,7 @@ export function UnlimitedSetup({
     <section className="mx-auto max-w-2xl space-y-5" aria-labelledby="pdk-setup-title" data-testid="pdk-setup">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="hud-label text-screen">Unlimited</p>
-          <h2 id="pdk-setup-title" className="mt-1 font-display text-2xl font-bold uppercase tracking-tight">
+          <h2 id="pdk-setup-title" className="font-display text-2xl font-bold uppercase tracking-tight">
             Build your board
           </h2>
           <p className="text-sm text-muted-foreground">Set the rules, choose what may appear, then generate. Never counted toward your streak.</p>
@@ -240,7 +239,7 @@ export function UnlimitedSetup({
       </div>
 
       <div className="space-y-2">
-        <div className="flex items-end justify-between gap-2">
+        <div className="flex items-center justify-between gap-2">
           <h3 className="hud-label">Categories</h3>
           <button
             type="button"
