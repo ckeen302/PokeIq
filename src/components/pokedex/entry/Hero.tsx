@@ -6,8 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import Link from "@/components/ui/Link";
 import { slugify } from "@/lib/dex/build";
-import { Flag, Ruler, Sparkles, Swords, Volume2 } from "lucide-react";
-import { MASS_BATTLE_LIVE } from "@/lib/lab";
+import { Flag, Medal, Ruler, Sparkles, Swords, Volume2 } from "lucide-react";
+import { GAMES_LIVE, MASS_BATTLE_LIVE } from "@/lib/lab";
 import type { DexAbility, DexEntryData, DexForm } from "@/lib/pokemon/dex-types";
 import { GENERATION_REGIONS, formatHeight, formatWeight, titleCase } from "@/lib/pokemon/constants";
 import { typeColor } from "@/lib/pokemon/type-colors";
@@ -223,6 +223,16 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
                 data-testid="dex-battle-it"
               >
                 <Swords className="h-4 w-4 text-screen" aria-hidden /> Battle it
+                <span className="transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
+              </Link>
+            )}
+            {GAMES_LIVE && (
+              <Link
+                href={`/lab/games/pokemon/${p.slug}`}
+                className="group inline-flex items-center gap-2 rounded-md border border-foreground/10 bg-shade/25 px-3 py-2 font-display text-[13px] font-bold uppercase tracking-wide transition-colors hover:border-screen/50 hover:text-screen"
+                data-testid="dex-games"
+              >
+                <Medal className="h-4 w-4 text-screen" aria-hidden /> Games
                 <span className="transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
               </Link>
             )}

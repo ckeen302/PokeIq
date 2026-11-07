@@ -31,8 +31,15 @@ export const WORLD_HISTORY_LIVE = true;
  */
 export const POKEMON_STORY_LIVE = true;
 
+/**
+ * The PokéIQ Games (/lab/games): its card on /lab, its pages in the sitemap
+ * and in search, and the Games links from Pokédex entries and the Race,
+ * only while this is true. Until then its pages work by URL.
+ */
+export const GAMES_LIVE = true;
+
 export interface LabExperience {
-  id: "timeline" | "pokemon-story" | "sizes" | "globe" | "race" | "mass-battle" | "world-history";
+  id: "timeline" | "pokemon-story" | "sizes" | "globe" | "race" | "mass-battle" | "world-history" | "games";
   href: string;
   title: string;
   /** Small HUD label above the title. */
@@ -119,6 +126,17 @@ export const LAB_EXPERIENCES: LabExperience[] = [
     image: "/lab/mass-battle.webp",
     accent: "28 100% 58%",
     live: MASS_BATTLE_LIVE,
+  },
+  {
+    id: "games",
+    href: "/lab/games",
+    title: "The PokéIQ Games",
+    kicker: "Every Pokémon, real sport",
+    pitch: "Track and field, weightlifting, swimming and wrestling for every Pokémon, scored from their real stats with real physics, then played out in 3D with replays, medals and a medal table.",
+    tags: ["12 events", "Records for all 1,025", "Make a video"],
+    image: "/lab/games.webp",
+    accent: "48 100% 60%",
+    live: GAMES_LIVE,
   },
   {
     id: "world-history",

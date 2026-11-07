@@ -17,6 +17,7 @@ import { runMobile } from "./e2e-mobile.mjs";
 import { runDesktopTripwire } from "./e2e-desktop-tripwire.mjs";
 import { runMassBattle } from "./e2e-mass-battle.mjs";
 import { runRace } from "./e2e-race.mjs";
+import { runGames } from "./e2e-games.mjs";
 import { runWorldHistory } from "./e2e-world-history.mjs";
 import { runPokemonStory } from "./e2e-pokemon-story.mjs";
 import { runGroupBattles } from "./e2e-battle-group.mjs";
@@ -2331,6 +2332,7 @@ await runSizes({ browser, BASE, OUT, errors, step });
 await runMobile({ browser, BASE, OUT, errors, step });
 await runMassBattle({ browser, BASE, OUT, errors, step });
 await runRace({ browser, BASE, OUT, errors, step });
+await runGames({ browser, BASE, OUT, errors, step });
 await runWorldHistory({ browser, BASE, OUT, errors, step });
 await runPokemonStory({ browser, BASE, OUT, errors, step });
 
