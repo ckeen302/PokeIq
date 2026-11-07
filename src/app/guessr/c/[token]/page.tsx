@@ -4,6 +4,7 @@ import { preload } from "react-dom";
 import { GeoGame } from "@/components/geo/GeoGame";
 import { geoChallengeFirstShot, geoRegions, readGeoChallenge } from "@/lib/server/geo";
 import { WORLD_REGION } from "@/lib/geo-types";
+import { inviteMetadata } from "@/lib/seo";
 
 interface PageProps {
   params: Promise<{ token: string }>;
@@ -23,13 +24,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const who = challenge.name || "A trainer";
   const map = geoRegions().find((r) => r.id === challenge.region);
   const where = !map || map.id === WORLD_REGION ? "the Pokémon world" : map.name;
+  const n = challenge.rounds.length;
   const title = `${who} scored ${challenge.score.toLocaleString("en-US")} in PokéGuessr. Can you beat it?`;
-  return {
-    title,
-    description: `Same five places in ${where}. Drop your pins and beat their score.`,
-    openGraph: { title, description: "GeoGuessr for Pokémon: same five places, beat their score." },
-    robots: { index: false },
-  };
+  // A challenge link is an invite: kept out of search, its card the segment's challenge picture.
+  return inviteMetadata(title, `The same ${n} place${n === 1 ? "" : "s"} in ${where}: drop your pins and beat their score. GeoGuessr for Pokémon, free.`);
 }
 
 export default async function GeoChallengePage({ params }: PageProps) {

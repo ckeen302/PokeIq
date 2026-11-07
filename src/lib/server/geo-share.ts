@@ -34,8 +34,10 @@ export interface GeoShareView {
   total: number;
   max: number;
   chips: string[];
-  /** A duel: both trainers with their HP at the end and their round scores. */
+  /** A duel: both trainers with their HP at the end (a points race: their points) and their round scores. */
   players?: { name: string; hp: number; scores: number[]; winner: boolean }[];
+  /** A duel's rules: HP (GeoGuessr Duels) or a points race. */
+  duelMode?: "hp" | "race";
   playHref: string;
   playLabel: string;
   /** For the page's <title>. */
@@ -130,9 +132,36 @@ async function duelShareView(code: string): Promise<GeoShareView | null> {
     max: view.maxRounds,
     chips: [map.name, race ? "Points race" : "HP duel", ...(view.turbo ? ["Turbo"] : []), ...(view.ranked ? ["Ranked"] : [])],
     players,
+    duelMode: race ? "race" : "hp",
     playHref: "/guessr",
     playLabel: "Start a duel",
     title: `${headline}: a PokéGuessr duel in ${map.name}`,
+  };
+}
+
+/**
+ * A friend's challenge link (/guessr/c/<token>), as a result card: their
+ * score and a square per round on the map played. Nothing names a place.
+ */
+export function challengeShareView(challenge: { region: string; name: string; score: number; rounds: number[] }): GeoShareView | null {
+  const map = mapOf(challenge.region);
+  if (!map) return null;
+  const who = challenge.name || "A trainer";
+  const n = challenge.rounds.length;
+  const max = n * GEO_MAX_ROUND_SCORE;
+  return {
+    kind: "game",
+    eyebrow: `PokéGuessr challenge · ${map.name}`,
+    headline: fmt(challenge.score),
+    detail: `${who} scored ${fmt(challenge.score)} of ${fmt(max)} on ${n} place${n === 1 ? "" : "s"}. You get the same ones.`,
+    map,
+    rounds: challenge.rounds,
+    total: challenge.score,
+    max,
+    chips: [map.name, `${n} rounds`],
+    playHref: "",
+    playLabel: "Take the challenge",
+    title: `${who} scored ${fmt(challenge.score)} in PokéGuessr`,
   };
 }
 

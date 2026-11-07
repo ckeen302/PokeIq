@@ -1018,7 +1018,9 @@ export function gradeGeo(state: GeoState, guess: { x: number; y: number; family?
       next: done ? undefined : publicRound(spec, index + 1, rounds[index + 1], state.timer ? undefined : rounds[index + 2]),
       done,
       result,
-      resultToken: result ? signToken("geo-result", result) : undefined,
+      // The token goes into share links (/guessr/r/…), and a signed token is only encoded, not hidden:
+      // it carries each round's points, never its place, so a Daily's link can't give the day's places away.
+      resultToken: result ? signToken("geo-result", { ...result, rounds: result.rounds.map(({ score }) => ({ score })) }) : undefined,
       challengeToken,
     },
   };
