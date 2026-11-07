@@ -4102,7 +4102,15 @@ async function desktopNavStep() {
     if (!(await button.evaluate((b) => b === document.activeElement))) errors.push(`desktop nav ${width}: Escape didn't return focus to the avatar`);
     await button.click();
     await menu.waitFor({ state: "visible" });
-    await d.mouse.click(width / 2, 500);
+    // Click outside on a blank spot, not on a link (the home hero is one big link at the page's centre).
+    const blank = await d.evaluate(() => {
+      for (let y = 300; y < window.innerHeight; y += 40) for (let x = 4; x < window.innerWidth; x += 40) {
+        const el = document.elementFromPoint(x, y);
+        if (el && !el.closest("a, button, input, select, textarea, label, [role=button], [data-testid=account-menu], canvas, video")) return { x, y };
+      }
+      return { x: 4, y: window.innerHeight - 4 };
+    });
+    await d.mouse.click(blank.x, blank.y);
     await menu.waitFor({ state: "detached" }).catch(() => errors.push(`desktop nav ${width}: a click outside didn't close the menu`));
     await button.click();
     await menu.getByTestId("account-menu-trainer").click();
