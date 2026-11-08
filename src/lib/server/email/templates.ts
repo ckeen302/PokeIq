@@ -17,7 +17,7 @@ export interface Message {
 export const DAILY_LINKS: { label: string; path: string }[] = [
   { label: "Pokédle", path: "/pokedle" },
   { label: "PokéGuessr daily", path: "/guessr" },
-  { label: "PokéConnections", path: "/connections" },
+  { label: "Connections", path: "/connections" },
   { label: "Pikadoku", path: "/pikadoku" },
   { label: "Daily Challenge", path: "/daily" },
 ];
@@ -26,7 +26,7 @@ export type StreakGame = "daily" | "dle" | "conn" | "pdk" | "geo";
 export const STREAK_GAME_LABEL: Record<StreakGame, string> = {
   daily: "Daily Challenge",
   dle: "Pokédle",
-  conn: "PokéConnections",
+  conn: "Connections",
   pdk: "Pikadoku",
   geo: "PokéGuessr daily",
 };
@@ -147,7 +147,7 @@ export function dailyEmail(i: DailyEmailInput): Message {
   return {
     to: i.to,
     subject,
-    html: shell({ preheader: streak ?? "Pokédle, PokéGuessr, PokéConnections, Pikadoku and the Daily Challenge are up.", body, footer }),
+    html: shell({ preheader: streak ?? "Pokédle, PokéGuessr, Connections, Pikadoku and the Daily Challenge are up.", body, footer }),
     text,
     headers: {
       "List-Unsubscribe": `<${i.unsubscribeUrl}>`,

@@ -43,8 +43,9 @@ export default function PrivacyPage() {
             sign in with Discord or Google, we don&apos;t have a password for you at all.
           </li>
           <li>
-            <strong className="text-foreground">Your email, only if you use Discord or Google</strong> — the verified address that
-            service gives us. It is private: never shown to other players.
+            <strong className="text-foreground">Your email, only if you give us one</strong> — the verified address Discord or
+            Google gives us when you sign in with them, or an address you add yourself for daily reminder emails. It is
+            private: never shown to other players.
           </li>
           <li>
             <strong className="text-foreground">Game results and progress</strong> — scores, badges, streaks, ratings and battle
@@ -77,8 +78,20 @@ export default function PrivacyPage() {
       <Section title="Who we share it with">
         <p>
           We do <strong className="text-foreground">not</strong> sell your data or share it for advertising. It is stored with the
-          services that run the site (Supabase for the database and sign-in, Vercel for hosting). Discord and Google only
+          services that run the site (Supabase for the database and sign-in, Vercel for hosting, Resend to send reminder emails). Discord and Google only
           tell us who you are when you choose to sign in with them.
+        </p>
+      </Section>
+
+      <Section title="Daily reminder emails">
+        <p>
+          Only if you turn them on. We send one email when the new dailies drop (or only when your streak is about to
+          end, if you pick that), after you confirm your address. Every email has a one-click unsubscribe link, and you
+          can turn them off any time on your{" "}
+          <Link href="/trainer#settings" className="text-foreground underline underline-offset-2">
+            trainer card
+          </Link>
+          . We never send anything else to that address, and never share it.
         </p>
       </Section>
 
