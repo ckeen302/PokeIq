@@ -356,17 +356,21 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
         const size = Math.round(Math.max(baseSize * 0.7, Math.min(baseSize * 1.7, baseSize * Math.pow(f, 0.35))));
         // Small maps keep to the main regions: DLC areas and islands come in as you zoom.
         if ((r.tier === 3 && f < 1.4) || (r.tier === 2 && f < TIER2_FROM)) continue;
-        label(
-          r.tier === 1 ? r.name.toUpperCase() : r.name,
-          r.x,
-          r.y,
-          `${r.tier === 1 ? 700 : 600} SIZE ${display}, ${sans}, sans-serif`,
-          size,
-          size / 3,
-          r.tier === 1 ? "#ffffff" : "#d7e6f7",
-          r.tier === 1 ? 2 : 0.5,
-          0,
-          true
+        // A main region's name never drops out: if its spot is taken (Johto beside Kanto), it tries just above, below, then to either side.
+        const spots: [number, number][] = r.tier === 1 ? [[0, 0], [0, -size * 1.25], [0, size * 1.35], [-size * 2.6, 0], [size * 2.6, 0]] : [[0, 0]];
+        spots.some(([dx, dy]) =>
+          label(
+            r.tier === 1 ? r.name.toUpperCase() : r.name,
+            r.x,
+            r.y,
+            `${r.tier === 1 ? 700 : 600} SIZE ${display}, ${sans}, sans-serif`,
+            size,
+            size / 3 + dy,
+            r.tier === 1 ? "#ffffff" : "#d7e6f7",
+            r.tier === 1 ? 2 : 0.5,
+            dx,
+            true
+          )
         );
       }
     }
