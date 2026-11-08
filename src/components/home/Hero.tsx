@@ -20,7 +20,7 @@ export function Hero() {
         <HeroPicture fallback={paldea} />
       </div>
 
-      <div className="relative -mt-10 space-y-3 px-4 pb-4 sm:mt-0 sm:space-y-4 sm:px-8 sm:pb-8 sm:pt-[42%] lg:flex lg:min-h-[440px] lg:max-w-[46%] lg:flex-col lg:justify-center lg:px-12 lg:py-14">
+      <div className="relative -mt-10 space-y-3 px-4 pb-4 sm:mt-0 sm:space-y-4 sm:px-8 sm:pb-8 sm:pt-[42%] lg:flex lg:min-h-[320px] lg:max-w-[46%] lg:flex-col lg:justify-center lg:px-12 lg:py-9">
         <HeroCopy />
       </div>
     </section>
