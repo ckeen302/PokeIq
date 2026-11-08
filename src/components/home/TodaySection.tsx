@@ -104,7 +104,7 @@ function DailyCard({ info, status }: { info: DailyInfo; status: DailyStatus }) {
     <Link
       href={done ? info.doneHref : info.href}
       className={cn(
-        "group relative flex h-full flex-col overflow-hidden rounded-lg border bg-card p-4 transition-[border-color,transform] hover:-translate-y-0.5 hover:border-[hsl(var(--accent-c)/0.6)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none",
+        "group relative flex h-full flex-col overflow-hidden min-h-[232px] rounded-lg border bg-card p-5 transition-[border-color,transform] hover:-translate-y-0.5 hover:border-[hsl(var(--accent-c)/0.6)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none",
         done && "border-success/30"
       )}
       style={{ "--accent-c": info.accent } as React.CSSProperties}

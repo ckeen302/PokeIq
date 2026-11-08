@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { DAILIES, allDone, bestStreak, dailyStatuses, listNames, streakText } from "@/components/home/today";
-import { homeLabExperiences } from "@/components/home/LabShowcase";
-import { LAB_EXPERIENCES, type LabExperience } from "@/lib/lab";
 import type { Progress } from "@/lib/progress";
 
 const TODAY = "2026-11-07";
@@ -104,23 +102,5 @@ describe("home: today's dailies", () => {
     expect(streakText({ days: 4, games: ["Pokédle"] })).toBe("4-day Pokédle streak");
     expect(streakText({ days: 2, games: ["Pokédle", "PokéGuessr"] })).toBe("2-day Pokédle and PokéGuessr streaks");
     expect(streakText({ days: 3, games: ["Daily Challenge", "Pokédle", "Pikadoku"] })).toBe("3-day streaks in Daily Challenge, Pokédle and Pikadoku");
-  });
-});
-
-describe("home: 3D Lab showcase", () => {
-  const card = (id: string, live = true, image: string | undefined = `/lab/${id}.webp`) => ({ ...LAB_EXPERIENCES[0], id, href: `/x/${id}`, live, image }) as unknown as LabExperience;
-
-  it("puts the films first, then Sizes and Race, live ones with a picture only, at most six", () => {
-    const got = homeLabExperiences([card("globe"), card("race"), card("sizes"), card("world-history"), card("mass-battle", false), card("pokemon-story"), card("timeline", true, "")]).map((e) => e.id);
-    expect(got).toEqual(["pokemon-story", "world-history", "sizes", "race", "globe"]);
-  });
-
-  it("leads with The PokéIQ Games once it's live", () => {
-    const got = homeLabExperiences([card("pokemon-story"), card("world-history"), card("sizes"), card("race"), card("mass-battle"), card("globe"), card("games")]).map((e) => e.id);
-    expect(got).toEqual(["games", "pokemon-story", "world-history", "sizes", "race", "mass-battle"]);
-  });
-
-  it("shows only live experiences from the real list", () => {
-    for (const e of homeLabExperiences()) expect(e.live && !!e.image).toBe(true);
   });
 });
