@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Coffee } from "lucide-react";
 import { COFFEE_URL } from "@/lib/support";
 import { Hero } from "@/components/home/Hero";
+import { SocialLinks } from "@/components/home/SocialLinks";
 import { TodaySection } from "@/components/home/TodaySection";
 import { SITE_NAME } from "@/lib/site";
 import { SITE_DESCRIPTION, SITE_TAGLINE, jsonLd, pageMetadata } from "@/lib/seo";
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
 
 /**
  * The landing page, kept to the point: today's PokéGuessr (one press away),
- * today's dailies with the streak, and the coffee button.
+ * today's dailies with the streak, the coffee button and the socials.
  */
 export default function HomePage() {
   return (
@@ -32,7 +33,7 @@ export default function HomePage() {
         <Hero />
         <TodaySection />
       </div>
-      <div className="flex justify-center pb-2">
+      <div className="flex flex-col items-center gap-4 pb-2">
         <a
           href={COFFEE_URL}
           target="_blank"
@@ -43,6 +44,7 @@ export default function HomePage() {
           <Coffee className="h-4 w-4 text-primary" aria-hidden />
           Buy me a coffee
         </a>
+        <SocialLinks />
       </div>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(websiteWithSearch()) }} />
     </div>
