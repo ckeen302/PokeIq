@@ -4,8 +4,9 @@ import { isPlayableConnDate } from "@/lib/connections/types";
 import { isLiveWeek, weekEnd, weekNumber } from "@/lib/pikadoku/weeks";
 import { themeFor } from "@/lib/pikadoku/weekly";
 import type { PdkSlot } from "@/lib/pikadoku/types";
-import { PDK_CELLS, PDK_DIFFICULTIES, PDK_FAMILIES } from "@/lib/pikadoku/types";
-import { dailyGrid, parseSettings, practiceGrid, weeklyGrid } from "./pikadoku";
+import { PDK_BANDS, PDK_CELLS, PDK_DIFFICULTIES, PDK_FAMILIES } from "@/lib/pikadoku/types";
+import { PICK_RE } from "@/lib/pikadoku/catalog";
+import { dailyGrid, parseSettings, PdkNoBoardError, practiceGrid, weeklyGrid } from "./pikadoku";
 import { masterFor } from "./pikadoku-master";
 
 /** The request fields shared by every Pikadoku endpoint: a daily or a practice seed. */
@@ -24,6 +25,9 @@ export const gridFields = {
       allowSingle: z.boolean().optional(),
       timer: z.boolean().optional(),
       families: z.array(z.enum(PDK_FAMILIES as [string, ...string[]])).max(6).optional(),
+      /** The ticked categories, packed (lib/pikadoku/catalog). */
+      pick: z.string().regex(PICK_RE).optional(),
+      band: z.enum(PDK_BANDS as [string, ...string[]]).optional(),
     })
     .optional(),
 };
@@ -53,6 +57,14 @@ export function resolveGrid(q: Named, now = Date.now()) {
     if (!isPlayableConnDate(q.date)) return { error: "That daily isn't available." } as const;
     return { grid: dailyGrid(q.date, difficulty), settings, daily: true as const, key: `${q.date}:${difficulty}`, slot: { date: q.date, difficulty: difficulty as PdkSlot }, master: difficulty === "normal" ? masterFor(q.date)?.by : undefined };
   }
-  if (q.practice && !q.date && !q.week) return { grid: practiceGrid(q.practice, settings), settings, daily: false as const, key: `p:${q.practice}` };
+  if (q.practice && !q.date && !q.week) {
+    try {
+      return { grid: practiceGrid(q.practice, settings), settings, daily: false as const, key: `p:${q.practice}` };
+    } catch (err) {
+      // The player's categories can't make a board: say so, so the setup panel can suggest widening them.
+      if (err instanceof PdkNoBoardError) return { error: err.message, noBoard: true } as const;
+      throw err;
+    }
+  }
   return { error: "Ask for a daily (date), the weekly (week) or an Unlimited grid (practice)." } as const;
 }

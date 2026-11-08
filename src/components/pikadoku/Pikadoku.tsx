@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PikadokuDuelCard } from "./PikadokuDuel";
 import dynamic from "next/dynamic";
 import { MotionConfig } from "framer-motion";
-import { Archive, BarChart3, ChevronDown, CircleHelp, Dices, Flag, Loader2, Settings, Swords, X } from "lucide-react";
+import { Archive, BarChart3, ChevronDown, CircleHelp, Dices, Flag, Loader2, Settings, SlidersHorizontal, Swords } from "lucide-react";
 import { getProgress, pdkBlock, recordPdkGame, savePdk, savePdkArchive, setTrainerName, useProgress, type BadgeDef } from "@/lib/progress";
 import { useToday } from "@/lib/use-today";
 import { dlePlayerId } from "@/lib/dle-player";
@@ -18,13 +18,12 @@ import { connNumber } from "@/lib/connections/types";
 import { EMPTY_PDK_PLAY } from "@/lib/pikadoku/play";
 import {
   DEFAULT_PDK_SETTINGS,
+  PDK_BANDS,
   PDK_DIFFICULTIES,
   PDK_FAMILIES,
-  PDK_FAMILY_LABELS,
   PDK_PP,
   type PdkBoardResponse,
   type PdkDifficulty,
-  type PdkFamily,
   type PdkGridView,
   type PdkPublicDays,
   type PdkGuess,
@@ -33,15 +32,23 @@ import {
 } from "@/lib/pikadoku/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Popover } from "@/components/ui/popover";
 import { ShareButton } from "@/components/share/ShareButton";
 import { NewBadges, StreakFlame, useCelebration } from "@/components/connections/results";
-import { PdkBoard, PdkPicker, SettingToggle, iconButton, useDex, type BoardCell, type DexName } from "./parts";
+import { PdkBoard, PdkPicker, iconButton, useDex, type BoardCell, type DexName } from "./parts";
 // The sheets (with the how-to's animated demo) load only when one opens.
 const loadSheets = () => import("./sheets");
 const PdkArchiveSheet = dynamic(() => loadSheets().then((m) => m.PdkArchiveSheet), { ssr: false });
 const PdkHowToSheet = dynamic(() => loadSheets().then((m) => m.PdkHowToSheet), { ssr: false });
 const PdkStatsSheet = dynamic(() => loadSheets().then((m) => m.PdkStatsSheet), { ssr: false });
+// Unlimited's setup panel (with the category list) loads only on the Unlimited tab.
+const UnlimitedSetup = dynamic(() => import("./UnlimitedSetup").then((m) => m.UnlimitedSetup), {
+  ssr: false,
+  loading: () => (
+    <p className="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
+      <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Loading
+    </p>
+  ),
+});
 import { GuessToast, NextPuzzleCountdown, PdkDailyStatsCard, PdkStatusBanners, PpPips, RarityPreview, RevealGrid, useOnline } from "./results";
 import { RARITY_EMOJI, rarityGrid, rarityLetter } from "@/lib/pikadoku/share";
 import { cn } from "@/lib/utils";
@@ -61,7 +68,12 @@ function loadPrefs(): Prefs {
     const raw = JSON.parse(window.localStorage.getItem(PREFS_KEY) ?? "null") as Partial<Prefs> | null;
     if (raw?.seenHowTo === true) base.seenHowTo = true;
     if (raw?.difficulty && PDK_DIFFICULTIES.includes(raw.difficulty)) base.difficulty = raw.difficulty;
-    if (raw?.settings) base.settings = { ...DEFAULT_PDK_SETTINGS, ...raw.settings, families: raw.settings.families?.filter((f) => PDK_FAMILIES.includes(f)) ?? PDK_FAMILIES };
+    if (raw?.settings) {
+      const { pick, band, ...rest } = raw.settings;
+      base.settings = { ...DEFAULT_PDK_SETTINGS, ...rest, families: raw.settings.families?.filter((f) => PDK_FAMILIES.includes(f)) ?? PDK_FAMILIES };
+      // The setup panel's ticked categories (the server checks the pack itself).
+      if (typeof pick === "string" && /^[A-Za-z0-9_-]{8,200}$/.test(pick)) base.settings = { ...base.settings, pick, band: band && PDK_BANDS.includes(band) ? band : "normal" };
+    }
   } catch {
     // Private mode or bad data: the defaults.
   }
@@ -106,8 +118,11 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
   }, []);
   const [prefs, setPrefs] = useState<Prefs | null>(null);
   const [seed, setSeed] = useState<string | null>(null);
-  /** Settings that came with a challenge link (they win over this device's until the next grid), and the result to beat. */
-  const [linkSettings, setLinkSettings] = useState<PdkSettings | null>(null);
+  /** The settings the Unlimited board in play was dealt with (a challenge link's, or this device's at Generate), and the result to beat. */
+  const [dealt, setDealt] = useState<PdkSettings | null>(null);
+  /** Unlimited's setup panel is showing (instead of the board), and why the last Generate couldn't deal one. */
+  const [setup, setSetup] = useState(false);
+  const [noBoard, setNoBoard] = useState<string | null>(null);
   const [challenge, setChallenge] = useState<{ solved: number; guesses: number } | null>(null);
   // The page's own grid paints with the HTML; the request below only adds the start token and this device's game.
   const [grid, setGrid] = useState<PdkGridView | null>(firstDay?.grid ?? null);
@@ -134,7 +149,6 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
   const [sheet, setSheet] = useState<"howto" | "stats" | "archive" | null>(null);
   /** The past daily being played from the archive. */
   const [archive, setArchive] = useState<{ date: string; difficulty: PdkDifficulty } | null>(null);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [showRank, setShowRank] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [elapsed, setElapsed] = useState(0);
@@ -162,7 +176,7 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
   useEffect(() => {
     const c = decodeChallenge(new URLSearchParams(window.location.search).get("c"));
     if (!c) return;
-    setLinkSettings(c.settings);
+    setDealt(c.settings);
     setChallenge(c.result);
     setSeed(c.seed);
     setMode("practice");
@@ -170,7 +184,6 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
   }, []);
   useEffect(() => () => window.clearTimeout(toastTimer.current), []);
   const patchPrefs = (patch: Partial<Prefs>) => {
-    if (patch.settings) setLinkSettings(null);
     setPrefs((p) => {
       const next = { ...(p ?? loadPrefs()), ...patch };
       savePrefs(next);
@@ -179,7 +192,10 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
   };
 
   const difficulty = prefs?.difficulty ?? "normal";
-  const settings = linkSettings ?? prefs?.settings ?? DEFAULT_PDK_SETTINGS;
+  /** This device's Unlimited settings (what the setup panel edits). */
+  const mySettings = prefs?.settings ?? DEFAULT_PDK_SETTINGS;
+  /** The board in play's: changing the setup never changes a board already dealt. */
+  const settings = dealt ?? mySettings;
   const week = today ? weekStart(today) : null;
   /** The daily being played: pinned when the page opens, so midnight never swaps the grid out from under a game. */
   const [dailyDate, setDailyDate] = useState<string | null>(null);
@@ -279,6 +295,10 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
           qs.set("guard", s.softLockGuard ? "1" : "0");
           qs.set("single", s.allowSingle ? "1" : "0");
           qs.set("fam", s.families.join(","));
+          if (s.pick) {
+            qs.set("pick", s.pick);
+            qs.set("band", s.band ?? "normal");
+          }
         } else if ("week" in target) {
           qs.set("week", target.week);
         } else {
@@ -290,8 +310,15 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
           ? (setGuesses(saved.guesses), setRestoring(true), fetch("/api/pikadoku", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...target, guesses: saved.guesses }) }).catch(() => null))
           : null;
         const res = await fetch(`/api/pikadoku?${qs}`, { cache: "no-store" });
-        const data = (await res.json().catch(() => ({}))) as { grid?: PdkGridView; pp?: number; start?: string; error?: string; master?: { by: string }; weekly?: { week: number; theme: string; blurb: string; monday: string; sunday: string } };
+        const data = (await res.json().catch(() => ({}))) as { grid?: PdkGridView; pp?: number; start?: string; error?: string; noBoard?: boolean; master?: { by: string }; weekly?: { week: number; theme: string; blurb: string; monday: string; sunday: string } };
         if (!live) return;
+        if (data.noBoard && "practice" in target) {
+          // Those categories can't make a board: back to the setup, which says what to widen.
+          setNoBoard(data.error ?? "No board fits those settings.");
+          setSeed(null);
+          setSetup(true);
+          return;
+        }
         if (!res.ok || !data.grid) {
           // A 4xx is a real answer (that daily isn't available); anything else can be retried.
           if (res.status >= 500 || res.status === 429 || !res.status) setLoadFailed(true);
@@ -407,12 +434,23 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
     setBusy(false);
   }
 
-  function newPractice() {
-    setLinkSettings(null);
+  /** A new Unlimited board with this device's settings (or the ones just generated from the setup). */
+  function newPractice(s: PdkSettings = mySettings) {
+    setDealt(s);
     setChallenge(null);
+    setNoBoard(null);
+    setSetup(false);
+    setTtt(false);
     setMode("practice");
     setSeed(newSeed());
   }
+  /** Unlimited's setup panel, over the board (which stays in play behind it). */
+  function openSetup() {
+    setTtt(false);
+    setMode("practice");
+    setSetup(true);
+  }
+  const showSetup = mode === "practice" && (setup || !seed);
 
   useCelebration(result ? (result.won ? "perfect" : null) : null);
 
@@ -464,7 +502,7 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
       el?.focus({ preventScroll: true });
     });
   };
-  const canType = !!grid && !over && !busy && !restoring && picking === null && sheet === null;
+  const canType = !!grid && !over && !busy && !restoring && picking === null && sheet === null && !showSetup;
   useEffect(() => {
     if (!canType) return;
     const onKey = (e: KeyboardEvent) => {
@@ -533,52 +571,13 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
               </div>
               <h1 className="font-display text-3xl font-bold uppercase tracking-tight sm:text-4xl">Pikadoku</h1>
               <div className="flex gap-0.5">
-                <button type="button" className={cn(iconButton, mode === "practice" && "text-screen")} onClick={newPractice} aria-pressed={mode === "practice"} aria-label="New Unlimited grid" title="New Unlimited grid">
+                <button type="button" className={cn(iconButton, mode === "practice" && !showSetup && "text-screen")} onClick={() => newPractice()} aria-label="New Unlimited grid" title="New Unlimited grid">
                   <Dices className="h-5 w-5" />
                 </button>
                 <div className="relative flex items-center">
-                  <button type="button" className={cn(iconButton, settingsOpen && "bg-screen/10 text-foreground")} onClick={() => setSettingsOpen((o) => !o)} aria-expanded={settingsOpen} aria-haspopup="dialog" aria-label="Settings" title="Settings">
+                  <button type="button" className={cn(iconButton, showSetup && "bg-screen/10 text-foreground")} onClick={openSetup} aria-pressed={showSetup} aria-label="Unlimited settings" title="Unlimited settings" data-testid="pdk-settings">
                     <Settings className="h-5 w-5" />
                   </button>
-              <Popover open={settingsOpen} onClose={() => setSettingsOpen(false)} label="Pikadoku settings" align="end" className="w-[24rem] max-w-[calc(100vw-2rem)] space-y-4">
-                <div className="flex items-start justify-between gap-3">
-                  <p className="hud-label pt-1">Unlimited settings</p>
-                  <button type="button" onClick={() => setSettingsOpen(false)} aria-label="Close settings" className="rounded-md p-1 text-muted-foreground hover:text-foreground">
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-                <SettingToggle label="Unlimited PP" description="No cap on guesses: keep going until the grid is full." checked={settings.unlimitedPP} onChange={() => patchPrefs({ settings: { ...settings, unlimitedPP: !settings.unlimitedPP } })} />
-                <SettingToggle label="Soft-lock guard" description="Refuses a pick that would leave the other cells impossible to finish." checked={settings.softLockGuard} onChange={() => patchPrefs({ settings: { ...settings, softLockGuard: !settings.softLockGuard } })} />
-                <SettingToggle label="Allow single-answer cells" description="Cells may have only one valid Pokémon." checked={settings.allowSingle} onChange={() => patchPrefs({ settings: { ...settings, allowSingle: !settings.allowSingle } })} />
-                <SettingToggle label="Timer" description="A running clock above the grid." checked={settings.timer} onChange={() => patchPrefs({ settings: { ...settings, timer: !settings.timer } })} />
-                <div>
-                  <p className="text-sm font-semibold">Categories</p>
-                  <div className="mt-1.5 flex flex-wrap gap-1.5" role="group" aria-label="Category families">
-                    {PDK_FAMILIES.map((f: PdkFamily) => {
-                      const on = settings.families.includes(f);
-                      return (
-                        <button
-                          key={f}
-                          type="button"
-                          aria-pressed={on}
-                          data-testid={`pdk-family-${f}`}
-                          onClick={() => {
-                            const families = on ? settings.families.filter((x) => x !== f) : [...settings.families, f];
-                            if (families.length) patchPrefs({ settings: { ...settings, families } });
-                          }}
-                          className={cn("rounded-full border px-2.5 py-1 text-xs font-semibold", on ? "border-primary bg-primary/15" : "border-foreground/15 text-muted-foreground")}
-                        >
-                          {PDK_FAMILY_LABELS[f]}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground">Changes apply to the next Unlimited grid.</p>
-                <Button type="button" size="sm" onClick={() => (setSettingsOpen(false), newPractice())}>
-                  New Unlimited grid
-                </Button>
-              </Popover>
                 </div>
               </div>
             </div>
@@ -589,7 +588,7 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
               {(
                 [
                   { id: "daily", label: "Daily Puzzle", title: "Today's grid, the same for everyone", on: () => (setTtt(false), setMode("daily")) },
-                  { id: "practice", label: "Unlimited", title: "A fresh grid every time", on: () => (setTtt(false), seed ? setMode("practice") : newPractice()) },
+                  { id: "practice", label: "Unlimited", title: "Build your own board", on: () => (setTtt(false), setMode("practice")) },
                 ] as const
               ).map((m) => (
                 <button
@@ -645,6 +644,11 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
             Archive: #{connNumber(archive.date)} ({archive.date}), {DIFF_LABEL[archive.difficulty]}. For fun: it never counts toward the daily board or your streak.
           </p>
         )}
+        {showSetup && prefs && (
+          <UnlimitedSetup settings={mySettings} onChange={(s) => patchPrefs({ settings: s })} onGenerate={(s) => (patchPrefs({ settings: s }), newPractice(s))} onBack={seed && grid ? () => setSetup(false) : undefined} problem={noBoard} />
+        )}
+        {!showSetup && (
+          <>
         {mode === "practice" && challenge && (
           <p className="mx-auto max-w-md rounded-md border border-warning/50 bg-warning/10 px-3 py-2 text-center text-sm font-semibold" data-testid="pdk-challenge">
             Challenge: beat {challengeLabel(challenge)}
@@ -652,7 +656,12 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
         )}
         {mode === "practice" && (
           <p className="mx-auto max-w-md rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2 text-center text-sm" data-testid="pdk-unlimited">
-            Unlimited: a fresh grid every time, never counted toward your streak.{settings.timer && <b className="ml-2 tabular-nums">{clockText(elapsed)}</b>}
+            Unlimited: your own board, never counted toward your streak.
+            {settings.timer && (
+              <b className="ml-2 inline-flex items-center rounded bg-foreground/10 px-1.5 font-display tabular-nums" data-testid="pdk-clock" aria-label="Time">
+                {clockText(elapsed)}
+              </b>
+            )}
           </p>
         )}
 
@@ -707,10 +716,18 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
           </p>
         )}
 
-        {!over && grid && mode === "practice" && (
-          <div className="flex flex-wrap justify-center gap-2">
-            <ShareButton getText={challengeText} kind="pikadoku-challenge" label="Share this grid" variant="outline" size="sm" />
+        {!over && mode === "practice" && (
+          <div className="flex flex-wrap justify-center gap-2" data-testid="pdk-unlimited-actions">
+            {grid && <ShareButton getText={challengeText} kind="pikadoku-challenge" label="Share this grid" variant="outline" size="sm" />}
+            <Button type="button" variant="outline" size="sm" onClick={() => newPractice(settings)} data-testid="pdk-new-board">
+              <Dices className="h-4 w-4" aria-hidden /> New board
+            </Button>
+            <Button type="button" variant="ghost" size="sm" onClick={openSetup} data-testid="pdk-change-settings">
+              <SlidersHorizontal className="h-4 w-4" aria-hidden /> Change settings
+            </Button>
           </div>
+        )}
+          </>
         )}
 
         <div className="space-y-2 text-center">
@@ -745,7 +762,7 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
           )}
         </div>
 
-        {result && (
+        {result && !showSetup && (
           <Card data-testid="pdk-result">
             <CardContent className="space-y-4 p-6 text-center">
               <p className="hud-label text-screen">{result.won ? "Grid complete · 9 of 9 cells" : `${result.solved} of 9 cells`}</p>
@@ -799,14 +816,19 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
                 <ShareButton getText={shareText} kind="pikadoku" label="Share result" size="lg" />
                 {mode === "practice" && <ShareButton getText={challengeText} kind="pikadoku-challenge" label="Share this grid" variant="outline" data-testid="pdk-share-grid" />}
                 {mode === "practice" && (
-                  <Button type="button" onClick={newPractice}>
-                    <Dices className="h-4 w-4" aria-hidden /> New grid
+                  <Button type="button" onClick={() => newPractice(settings)} data-testid="pdk-new-board">
+                    <Dices className="h-4 w-4" aria-hidden /> New board
+                  </Button>
+                )}
+                {mode === "practice" && (
+                  <Button type="button" variant="ghost" onClick={openSetup} data-testid="pdk-change-settings">
+                    <SlidersHorizontal className="h-4 w-4" aria-hidden /> Change settings
                   </Button>
                 )}
               </div>
               {mode === "daily" && <NextPuzzleCountdown />}
               {mode !== "practice" && (
-                <Button type="button" variant="ghost" size="sm" onClick={newPractice}>
+                <Button type="button" variant="ghost" size="sm" onClick={() => newPractice()}>
                   <Dices className="h-4 w-4" aria-hidden /> Can&apos;t wait? Play an Unlimited grid
                 </Button>
               )}
@@ -817,7 +839,7 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
         {/* Only once this device's progress is read (never in the HTML, so hydration matches). */}
         {mode === "daily" && progress && <PdkDailyStatsCard streak={block.streak} best={block.best} results={sameDifficulty} todayKey={storeKey} />}
 
-        {result && <RevealGrid reveal={result.reveal} grid={grid} locked={locked} />}
+        {result && !showSetup && <RevealGrid reveal={result.reveal} grid={grid} locked={locked} />}
 
         {(mode === "daily" || mode === "weekly") && (
           <section id="pdk-board" className="space-y-2" aria-label="Leaderboard" data-testid="pdk-board">

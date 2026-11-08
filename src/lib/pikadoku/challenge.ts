@@ -1,14 +1,17 @@
-import { DEFAULT_PDK_SETTINGS, PDK_FAMILIES, type PdkFamily, type PdkSettings } from "./types";
+import { DEFAULT_PDK_SETTINGS, PDK_FAMILIES, type PdkBand, type PdkFamily, type PdkSettings } from "./types";
 
 /**
  * Challenge links for Unlimited grids: "Share this grid" makes a link with the
  * grid's seed and settings plus the sharer's result. Whoever opens it plays the
  * exact same grid (the seed and settings deal it) and sees what to beat.
  *
- *   /pikadoku?c=<seed>.<flags>.<families>.<solved>.<guesses>
+ *   /pikadoku?c=<seed>.<flags>.<families>[.<band><pick>][.<solved>.<guesses>]
  *
  * flags: four 0/1 for unlimited PP, soft-lock guard, single-answer cells, timer.
- * families: one letter each (t r e m a o). The result is cells filled and the
+ * families: one letter each (t r e m a o). band and pick, for a board dealt
+ * from the setup panel's ticked categories: e, n or h, then the packed
+ * categories (lib/pikadoku/catalog; the server checks the pack). Older links
+ * have neither and deal from the families. The result is cells filled and the
  * guesses it took; there are no names and nothing about the answers.
  */
 export interface PdkChallenge {
@@ -19,7 +22,9 @@ export interface PdkChallenge {
 }
 
 const FAMILY_LETTER: Record<PdkFamily, string> = { types: "t", regions: "r", evolution: "e", moves: "m", abilities: "a", other: "o" };
-const CHALLENGE_RE = /^([a-z0-9]{4,24})\.([01]{4})\.([tremao]{1,6})(?:\.([0-9])\.(\d{1,3}))?$/;
+const BAND_LETTER: Record<PdkBand, string> = { easy: "e", normal: "n", hard: "h" };
+const LETTER_BAND: Record<string, PdkBand> = { e: "easy", n: "normal", h: "hard" };
+const CHALLENGE_RE = /^([a-z0-9]{4,24})\.([01]{4})\.([tremao]{1,6})(?:\.([enh])([A-Za-z0-9_-]{8,200}))?(?:\.([0-9])\.(\d{1,3}))?$/;
 
 /** The link's `c` value. */
 export function encodeChallenge(c: PdkChallenge): string {
@@ -28,16 +33,16 @@ export function encodeChallenge(c: PdkChallenge): string {
   const fams = PDK_FAMILIES.filter((f) => s.families.includes(f))
     .map((f) => FAMILY_LETTER[f])
     .join("");
-  const base = `${c.seed}.${flags}.${fams || "tremao"}`;
+  const base = `${c.seed}.${flags}.${fams || "tremao"}${s.pick ? `.${BAND_LETTER[s.band ?? "normal"]}${s.pick}` : ""}`;
   return c.result ? `${base}.${Math.min(9, Math.max(0, Math.round(c.result.solved)))}.${Math.min(999, Math.max(0, Math.round(c.result.guesses)))}` : base;
 }
 
 /** Reads a `c` value back, or null for anything that isn't one of ours. */
 export function decodeChallenge(raw: unknown): PdkChallenge | null {
-  if (typeof raw !== "string" || raw.length > 80) return null;
+  if (typeof raw !== "string" || raw.length > 260) return null;
   const m = CHALLENGE_RE.exec(raw);
   if (!m) return null;
-  const [, seed, flags, fams, solved, guesses] = m;
+  const [, seed, flags, fams, band, pick, solved, guesses] = m;
   const families = PDK_FAMILIES.filter((f) => fams.includes(FAMILY_LETTER[f]));
   if (!families.length) return null;
   return {
@@ -49,6 +54,7 @@ export function decodeChallenge(raw: unknown): PdkChallenge | null {
       allowSingle: flags[2] === "1",
       timer: flags[3] === "1",
       families,
+      ...(pick && { pick, band: LETTER_BAND[band] }),
     },
     result: solved !== undefined ? { solved: Number(solved), guesses: Number(guesses) } : null,
   };

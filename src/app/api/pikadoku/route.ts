@@ -10,9 +10,10 @@ import { PDK_PP } from "@/lib/pikadoku/types";
 /**
  * Pikadoku.
  *
- * GET /api/pikadoku?date=YYYY-MM-DD&difficulty=normal | ?practice=<seed>[&fam=..]
+ * GET /api/pikadoku?date=YYYY-MM-DD&difficulty=normal | ?practice=<seed>[&fam=..][&pick=..&band=..]
  *   The grid's six categories (never their answers) and, for a daily, a
- *   signed start token the server times the game from.
+ *   signed start token the server times the game from. An Unlimited choice
+ *   of categories that can't make a board answers 422 { error, noBoard }.
  *
  * POST /api/pikadoku { date | practice, difficulty, settings, guesses, next }
  *   Checks one new guess against the history so far: valid or not, a
@@ -38,9 +39,11 @@ export async function GET(request: NextRequest) {
       allowSingle: p.get("single") === "1",
       timer: p.get("timer") === "1",
       families: fam ? fam.split(",") : undefined,
+      pick: p.get("pick") ?? undefined,
+      band: p.get("band") ?? undefined,
     } as never,
   });
-  if ("error" in found) return NextResponse.json({ error: found.error }, { status: 400, headers: NO_STORE });
+  if ("error" in found) return NextResponse.json({ error: found.error, ...("noBoard" in found && { noBoard: true }) }, { status: "noBoard" in found ? 422 : 400, headers: NO_STORE });
   const body = { grid: gridView(found.grid), pp: ppFor(found.daily, found.settings) ?? 0, ...(found.daily && { start: pdkStartToken(found.key) }), ...(found.daily && "master" in found && found.master && { master: { by: found.master } }), ...("weekly" in found && { weekly: found.weekly }) };
   return NextResponse.json(body, { headers: NO_STORE });
 }

@@ -5,7 +5,7 @@ import { CONN_LAUNCH_DATE } from "@/lib/connections/types";
 import { isLiveWeek, weekStart } from "@/lib/pikadoku/weeks";
 import { PDK_CELLS, type PdkDifficulty, type PdkGuess, type PdkResultResponse, type PdkSettings } from "@/lib/pikadoku/types";
 import { ensureMaster } from "./pikadoku-master";
-import { dailyGrid, practiceGrid, ppFor, replayGuesses, revealFor, weeklyGrid } from "./pikadoku";
+import { dailyGrid, PdkNoBoardError, practiceGrid, ppFor, replayGuesses, revealFor, weeklyGrid } from "./pikadoku";
 import { pdkElapsed, pdkPlayerKey, pdkStore, pickPct, scoreAnswers, standingOf, type PdkCounts, type PdkStore } from "./pikadoku-board";
 
 export interface PdkFinishInput {
@@ -50,7 +50,13 @@ export async function finishGame(input: PdkFinishInput, store: PdkStore | null =
   if (weekly && !(/^\d{4}-\d{2}-\d{2}$/.test(input.week!) && weekStart(input.week!) === input.week && input.week! >= weekStart(CONN_LAUNCH_DATE))) return { ok: false, status: 400, error: "Bad week." };
   // Where this game is recorded: the day's board for a difficulty, or the week's.
   const slot = weekly ? { date: input.week!, difficulty: "weekly" as const } : daily ? { date: input.date!, difficulty: input.difficulty } : null;
-  const grid = weekly ? weeklyGrid(input.week!) : daily ? dailyGrid(input.date!, input.difficulty) : practiceGrid(input.practice ?? "x", input.settings);
+  let grid;
+  try {
+    grid = weekly ? weeklyGrid(input.week!) : daily ? dailyGrid(input.date!, input.difficulty) : practiceGrid(input.practice ?? "x", input.settings);
+  } catch (err) {
+    if (err instanceof PdkNoBoardError) return { ok: false, status: 400, error: err.message };
+    throw err;
+  }
   let replay;
   try {
     replay = replayGuesses(grid, input.guesses, { pp: ppFor(daily, input.settings), giveUp: input.giveUp });

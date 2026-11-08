@@ -70,7 +70,7 @@ export function useDex(): DexName[] {
   return dex;
 }
 
-const FAMILY_TINT: Record<PdkFamily, string> = {
+export const FAMILY_TINT: Record<PdkFamily, string> = {
   types: "border-sky-400/50 bg-sky-400/10",
   regions: "border-emerald-400/50 bg-emerald-400/10",
   evolution: "border-fuchsia-400/50 bg-fuchsia-400/10",
@@ -95,7 +95,7 @@ const ICONS: Record<string, LucideIcon> = {
   "other:ou": Trophy,
   "evo:branch": GitBranch,
 };
-const FAMILY_ICON: Record<PdkFamily, LucideIcon> = { types: Layers, regions: MapPin, evolution: Dna, moves: Swords, abilities: Sparkle, other: BarChart3 };
+export const FAMILY_ICON: Record<PdkFamily, LucideIcon> = { types: Layers, regions: MapPin, evolution: Dna, moves: Swords, abilities: Sparkle, other: BarChart3 };
 
 /** A category's icon: its own where it has one, else its family's. */
 function CategoryIcon({ cat }: { cat: PdkCategoryView }) {

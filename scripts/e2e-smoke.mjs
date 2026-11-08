@@ -3607,6 +3607,74 @@ step("mobile: Pikadoku's whole grid fits a 390px phone without sideways scrollin
   await phone.context().close();
 }
 
+step("pikadoku Unlimited: the setup panel, a board from the ticked categories only, new board, and an impossible choice (desktop and phone)");
+{
+  // The browser's catalog: PokeDoku's mix is ticked by default; unticking Types leaves the rest.
+  const catalog = JSON.parse(fs.readFileSync(new URL("../src/data/pikadoku-catalog.json", import.meta.url), "utf8"));
+  const allowed = new Set(catalog.filter(([, , fam, classic]) => classic === 1 && fam !== "t").map(([id]) => id));
+  for (const [tag, viewport] of [["desktop", { width: 1440, height: 900 }], ["phone", { width: 390, height: 844 }]]) {
+    const p = await newPage(viewport);
+    await gotoSettled(p, `${BASE}/pikadoku`);
+    await closeHowTo(p);
+    await p.getByTestId("pdk-mode-practice").click();
+    await p.getByTestId("pdk-setup").waitFor();
+    await p.getByTestId("pdk-setup-reset").click();
+    if ((await p.getByTestId("pdk-setup-toggle-types").getAttribute("aria-checked")) !== "true") errors.push(`Unlimited's setup doesn't tick Types by default (${tag})`);
+    await p.getByTestId("pdk-setup-toggle-types").click();
+    if ((await p.getByTestId("pdk-setup-toggle-types").getAttribute("aria-checked")) !== "false") errors.push(`unticking Types in Unlimited's setup didn't untick it (${tag})`);
+    await p.getByTestId("pdk-rule-timer").click();
+    await p.screenshot({ path: `${OUT}/pikadoku-unlimited-setup-${tag}.png`, fullPage: true });
+    const wideSetup = await p.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    if (wideSetup > 0) errors.push(`Unlimited's setup scrolls sideways by ${wideSetup}px (${tag})`);
+    const dealt = p.waitForResponse((r) => /\/api\/pikadoku\?practice=/.test(r.url()));
+    await p.getByTestId("pdk-setup-generate").click();
+    const res = await dealt;
+    const body = await res.json();
+    if (!/[?&]pick=/.test(res.url()) || !body.grid) errors.push(`Unlimited's Generate didn't deal a board from the ticked categories (${tag}): ${res.status()}`);
+    else {
+      const ids = [...body.grid.rows, ...body.grid.cols].map((c) => c.id);
+      const stray = ids.filter((id) => !allowed.has(id));
+      if (stray.length) errors.push(`Unlimited's board used categories that weren't ticked (${tag}): ${stray.join(", ")}`);
+      await p.getByTestId("pdk-row-0").filter({ hasNotText: "…" }).waitFor();
+      for (let i = 0; i < 3; i++) {
+        const shown = (await p.getByTestId(`pdk-row-${i}`).innerText()).trim().toLowerCase();
+        if (!shown.includes(body.grid.rows[i].label.toLowerCase())) errors.push(`Unlimited's row ${i} shows "${shown}", not "${body.grid.rows[i].label}" (${tag})`);
+      }
+    }
+    await p.getByTestId("pdk-clock").waitFor();
+    if (!(await p.getByTestId("pdk-cell-8").isVisible())) errors.push(`Unlimited's board isn't showing after Generate (${tag})`);
+    await p.screenshot({ path: `${OUT}/pikadoku-unlimited-board-${tag}.png`, fullPage: true });
+    // New board: the same settings, a new seed.
+    const again = p.waitForResponse((r) => /\/api\/pikadoku\?practice=/.test(r.url()));
+    await p.getByTestId("pdk-unlimited-actions").getByTestId("pdk-new-board").click();
+    const res2 = await again;
+    const pick = (u) => new URL(u).searchParams.get("pick");
+    if (pick(res2.url()) !== pick(res.url()) || new URL(res2.url()).searchParams.get("practice") === new URL(res.url()).searchParams.get("practice")) errors.push(`"New board" didn't keep the settings with a new seed (${tag})`);
+    // Change settings: a choice no board can satisfy says so and suggests widening it.
+    await p.getByTestId("pdk-change-settings").click();
+    await p.getByTestId("pdk-setup").waitFor();
+    for (const fam of ["types", "regions", "evolution", "moves", "abilities", "other"]) {
+      const t = p.getByTestId(`pdk-setup-toggle-${fam}`);
+      if ((await t.getAttribute("aria-checked")) === "mixed") await t.click();
+      if ((await t.getAttribute("aria-checked")) === "true") await t.click();
+    }
+    await p.getByTestId("pdk-setup-expand-other").click();
+    for (const id of ["other:paradox", "other:ultrabeast", "other:fossil", "other:baby", "other:mythical", "other:gmax"]) await p.getByTestId(`pdk-setup-cat-${id}`).click();
+    await p.getByTestId("pdk-setup-generate").click();
+    const problem = p.getByTestId("pdk-setup-problem");
+    await problem.waitFor({ timeout: 15_000 });
+    if (!/No board fits those settings.*tick more categories/i.test(await problem.innerText())) errors.push(`Unlimited's impossible-choice message is off (${tag}): ${await problem.innerText()}`);
+    await problem.scrollIntoViewIfNeeded();
+    await p.screenshot({ path: `${OUT}/pikadoku-unlimited-impossible-${tag}.png` });
+    // The settings stay on this device.
+    await gotoSettled(p, `${BASE}/pikadoku`);
+    await closeHowTo(p);
+    await p.getByTestId("pdk-mode-practice").click();
+    if ((await p.getByTestId("pdk-setup-toggle-types").getAttribute("aria-checked")) !== "false") errors.push(`Unlimited's setup wasn't remembered after a reload (${tag})`);
+    await p.context().close();
+  }
+}
+
 step("name 'em all: hub, a Gen 1 run (aliases, wrong category, pause, give up), share, a ranked clear, the daily, a race");
 {
   const np = await newPage({ width: 1280, height: 900 });
