@@ -28,8 +28,8 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     // A phone's title screen starts under the header's bottom edge; the structured data goes last so it takes no space.
-    <div className="mx-auto -mt-4 max-w-6xl space-y-12 sm:mt-0 sm:space-y-6 max-sm:-mt-8 max-sm:space-y-9">
-      <div className="space-y-8 max-sm:space-y-5">
+    <div className="mx-auto -mt-4 max-w-6xl space-y-12 sm:mt-0 sm:space-y-4 max-sm:-mt-8 max-sm:space-y-9">
+      <div className="space-y-6 max-sm:space-y-5">
         <Hero />
         <TodaySection />
       </div>
