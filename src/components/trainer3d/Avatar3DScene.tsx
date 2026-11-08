@@ -47,9 +47,13 @@ function shadowTexture(): THREE.Texture {
  * The one WebGL context trainers drawn with `shared` take turns on: each
  * renders its scene here and copies the frame onto its own 2D canvas (the
  * copy is made straight after the render, so the buffer needn't be kept).
- * It goes when the last of them does.
+ * It goes shortly after the last of them does, so a screen that swaps one
+ * set of trainers for another (a lobby for a line-up) keeps the context and
+ * its compiled shaders instead of building them all again.
  */
-let sharedGl: { renderer: THREE.WebGLRenderer; users: number; lost: Set<() => void> } | null = null;
+let sharedGl: { renderer: THREE.WebGLRenderer; users: number; lost: Set<() => void>; closing?: number } | null = null;
+/** How long the shared context outlives its last trainer. */
+const SHARED_LINGER_MS = 3_000;
 
 function acquireShared(onLost: () => void): THREE.WebGLRenderer {
   if (!sharedGl) {
@@ -62,6 +66,7 @@ function acquireShared(onLost: () => void): THREE.WebGLRenderer {
     });
     sharedGl = gl;
   }
+  window.clearTimeout(sharedGl.closing);
   sharedGl.users++;
   sharedGl.lost.add(onLost);
   return sharedGl.renderer;
@@ -72,10 +77,14 @@ function releaseShared(renderer: THREE.WebGLRenderer, onLost: () => void) {
   if (!gl || gl.renderer !== renderer) return;
   gl.lost.delete(onLost);
   if (--gl.users > 0) return;
-  sharedGl = null;
-  gl.lost.clear();
-  renderer.dispose();
-  renderer.forceContextLoss();
+  window.clearTimeout(gl.closing);
+  gl.closing = window.setTimeout(() => {
+    if (gl.users > 0) return;
+    if (sharedGl === gl) sharedGl = null;
+    gl.lost.clear();
+    renderer.dispose();
+    renderer.forceContextLoss();
+  }, SHARED_LINGER_MS);
 }
 
 /** Whether a frame has the trainer in it: a few solid pixels in a small copy (the soft shadows are faint, the trainer opaque). */

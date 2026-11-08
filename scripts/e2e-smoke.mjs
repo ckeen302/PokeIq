@@ -1049,6 +1049,17 @@ await gotoSettled(page, `${BASE}/leaderboard?board=geo&format=theme-towns`);
 await page.getByText("Towns and Cities 5 rounds").waitFor();
 await page.getByText("Towns and Cities Streak").waitFor();
 
+step("pokéguessr: an empty board invites you to play, never a made-up score");
+await gotoSettled(page, `${BASE}/leaderboard?board=geo`);
+{
+  const empty = page.getByTestId("geo-board-empty");
+  await empty.waitFor();
+  if (!/Be the first on today.s board/i.test(await empty.innerText())) throw new Error(`the empty Daily board reads: ${await empty.innerText()}`);
+  if (!(await page.getByTestId("geo-board-play").getAttribute("href"))?.startsWith("/guessr?play=daily")) throw new Error("the empty Daily board's Play doesn't start the Daily");
+  if (await page.locator("table").count()) throw new Error("the empty Daily board still shows a table");
+  await page.screenshot({ path: `${OUT}/geo-board-empty.png`, fullPage: true });
+}
+
 step("pokéguessr: Classic 2D, report a screenshot");
 await gotoSettled(page, `${BASE}/guessr?region=kalos`);
 // Kalos has no sprite games: Classic 2D is off there, and says why.

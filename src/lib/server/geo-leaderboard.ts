@@ -12,10 +12,15 @@ export interface GeoBoardRow {
   created_at: string;
 }
 
-/** Top PokéGuessr games for a daily date or a free-play mode; null without Supabase. */
+/**
+ * Top PokéGuessr games for a daily date or a free-play mode; null without
+ * Supabase. With local accounts (development and the browser tests) a board
+ * is empty rather than missing, so its page shows as it does before anyone
+ * has played.
+ */
 export async function fetchGeoBoard(filter: { daily: string } | { mode: string }, limit = 25): Promise<GeoBoardRow[] | null> {
   const supabase = getServiceSupabase();
-  if (!supabase) return null;
+  if (!supabase) return process.env.POKEIQ_LOCAL_ACCOUNTS === "1" ? [] : null;
   let query = supabase
     .from("geo_runs")
     .select("id, player_name, mode, daily_date, score, duration_ms, created_at")
