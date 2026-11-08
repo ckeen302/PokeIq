@@ -139,7 +139,7 @@ function EmailSettingsPanel() {
 
       {view?.email && !editing && (
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-shade/10 px-3 py-2 text-sm" data-testid="email-address">
-          <span className="min-w-0 break-all">
+          <span className="min-w-0 [overflow-wrap:anywhere]">
             {view.verified ? (
               <>
                 <span className="text-muted-foreground">Sending to </span>
