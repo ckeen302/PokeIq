@@ -29,3 +29,20 @@ export function NextDailyCountdown({ label = "Next puzzle in" }: { label?: strin
     </div>
   );
 }
+
+/** The same countdown in words, to sit in a sentence: "7h 12m" (just "12m" in the last hour). */
+export function TimeToNextDaily({ className }: { className?: string }) {
+  const [left, setLeft] = useState<string | null>(null);
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+      const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      const m = Math.max(1, Math.ceil((midnight.getTime() - now.getTime()) / 60_000));
+      setLeft(m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`);
+    };
+    tick();
+    const id = setInterval(tick, 15_000);
+    return () => clearInterval(id);
+  }, []);
+  return <span className={className}>{left ?? "…"}</span>;
+}

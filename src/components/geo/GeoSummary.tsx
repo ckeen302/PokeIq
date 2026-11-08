@@ -63,7 +63,10 @@ export function GeoSummary({
     region: region.id,
     ...(isStreak ? { streak } : { rounds: played.map((p) => p.graded.score) }),
   };
-  const challengeUrl = challengeToken ? `${origin}/guessr/c/${encodeURIComponent(challengeToken)}` : null;
+  // The Daily and the Weekly are the same places for everyone: a friend plays their own (ranked) game from the result's link,
+  // never a challenge replay of them (unranked, and it would use up their places). Other games challenge with the same places.
+  const sharedPlaces = !!(game.daily || game.weekly);
+  const challengeUrl = challengeToken && !sharedPlaces ? `${origin}/guessr/c/${encodeURIComponent(challengeToken)}` : null;
   const canRank = !game.practice && !!resultToken;
   const modeName = game.difficulty ? GEO_DIFFICULTY_NAMES[game.difficulty] : undefined;
   const shareTextFull = guessrShareText(shareResult, region.name, shareUrl(shareResult), { mode: modeName });
@@ -72,8 +75,14 @@ export function GeoSummary({
   const shareLink = challengeUrl ?? shareUrl(shareResult);
 
   async function shareChallenge() {
-    if (!challengeUrl) return;
-    const outcome = await shareOrCopy(`I scored ${fmt(total)} in PokéGuessr. Same ${played.length || 5} places, can you beat me?`, challengeUrl);
+    const link = challengeUrl ?? (sharedPlaces ? shareUrl(shareResult) : null);
+    if (!link) return;
+    const text = game.daily
+      ? `I scored ${fmt(total)} in today's PokéGuessr (Daily #${dailyNumber(game.daily)}). Same ${played.length || 5} places for everyone today: can you beat me?`
+      : game.weekly
+        ? `I scored ${fmt(total)} in this week's PokéGuessr Weekly Challenge. Same ${played.length || 5} places for everyone: can you beat me?`
+        : `I scored ${fmt(total)} in PokéGuessr. Same ${played.length || 5} places, can you beat me?`;
+    const outcome = await shareOrCopy(text, link);
     if (outcome === "failed") setShared("failed");
     else if (outcome !== "cancelled") setShared("done");
   }
@@ -196,10 +205,10 @@ export function GeoSummary({
             ))}
           </ol>
 
-          <ShareCard body={shareBody} link={shareLink} challenge={!!challengeUrl} />
+          <ShareCard body={shareBody} link={shareLink} challenge={!!challengeUrl} today={game.daily ? "daily" : game.weekly ? "weekly" : undefined} />
 
           <div className="grid gap-2 sm:grid-cols-2">
-            {challengeUrl && (
+            {(challengeUrl || (sharedPlaces && !isStreak)) && (
               <Button className="sm:col-span-2" size="lg" variant="success" onClick={() => void shareChallenge()}>
                 <Link2 className="h-4 w-4" aria-hidden />
                 {shared === "done" ? "Challenge link copied!" : "Challenge a friend"}
@@ -213,7 +222,7 @@ export function GeoSummary({
               </Button>
             )}
           </div>
-          {shared === "failed" && challengeUrl && <CopyFallback text={challengeUrl} />}
+          {shared === "failed" && <CopyFallback text={challengeUrl ?? shareLink} />}
 
           {canRank ? (
             <form className="space-y-2" onSubmit={submit}>
@@ -280,7 +289,7 @@ export function GeoSummary({
  * Copy button. The link copied under it is the challenge link when there is
  * one (the same places for a friend), else the result page.
  */
-function ShareCard({ body, link, challenge }: { body: string; link: string; challenge: boolean }) {
+function ShareCard({ body, link, challenge, today }: { body: string; link: string; challenge: boolean; today?: "daily" | "weekly" }) {
   const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
   const timer = useRef<number | undefined>(undefined);
   useEffect(() => () => window.clearTimeout(timer.current), []);
@@ -304,7 +313,11 @@ function ShareCard({ body, link, challenge }: { body: string; link: string; chal
         {body}
       </pre>
       <p className="truncate text-xs text-muted-foreground">
-        {challenge ? "+ your challenge link: friends play the same places" : "+ a link to your result"}
+        {challenge
+          ? "+ your challenge link: friends play the same places"
+          : today
+            ? `+ a link to your result: friends play ${today === "daily" ? "today's" : "this week's"} places too`
+            : "+ a link to your result"}
       </p>
       {state === "failed" && <CopyFallback text={full} />}
     </div>

@@ -1,7 +1,9 @@
 /* eslint-disable jsx-a11y/alt-text, @next/next/no-img-element -- Satori draws plain <img> */
 import "server-only";
-import { C, localImage, ogCard } from "./card";
+import { C, ScreenshotVisual, localImage, ogCard } from "./card";
 import type { GeoShareView } from "@/lib/server/geo-share";
+import { DUEL_HP } from "@/lib/duel-types";
+import { GEO_MAX_ROUND_SCORE } from "@/lib/geo-types";
 
 /**
  * The preview card of a shared PokéGuessr result (/guessr/r/<token>): the
@@ -39,21 +41,24 @@ async function MapVisual({ view }: { view: GeoShareView }) {
   );
 }
 
-/** A duel: both trainers, their HP bars and round scores. */
+/** A duel: both trainers, their HP bars (a points race: their points against the most there were) and round scores. */
 function DuelVisual({ view }: { view: GeoShareView }) {
   const players = view.players ?? [];
+  const race = view.duelMode === "race";
+  const most = Math.max(1, view.max * GEO_MAX_ROUND_SCORE);
   return (
     <div style={{ display: "flex", flexDirection: "column", width: 470, padding: 24, gap: 18, borderRadius: 18, border: `3px solid ${C.edge}`, background: "linear-gradient(180deg, #2c1a5c 0%, #1a1238 55%, #0e0b22 100%)" }}>
       {players.map((p, seat) => {
-        const hp = Math.max(0, Math.min(1, p.hp / 6000));
+        const points = p.scores.reduce((a, b) => a + b, 0);
+        const hp = Math.max(0, Math.min(1, race ? points / most : p.hp / DUEL_HP));
         return (
           <div key={seat} style={{ display: "flex", flexDirection: "column", padding: "12px 16px", borderRadius: 12, background: "rgba(0,0,0,0.45)", border: `2px solid ${p.winner ? C.green : "rgba(255,255,255,0.2)"}` }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontFamily: "Chakra Petch", fontSize: 30, color: p.winner ? C.green : "#fff", textTransform: "uppercase" }}>{p.name}</span>
-              <span style={{ fontFamily: "Silkscreen", fontSize: 18, color: "rgba(255,255,255,0.75)" }}>{fmt(p.hp)} HP</span>
+              <span style={{ fontFamily: "Silkscreen", fontSize: 18, color: "rgba(255,255,255,0.75)" }}>{race ? `${fmt(points)} pts` : `${fmt(p.hp)} HP`}</span>
             </div>
             <div style={{ display: "flex", height: 12, marginTop: 8, borderRadius: 4, background: "rgba(0,0,0,0.6)", overflow: "hidden" }}>
-              <div style={{ display: "flex", width: `${hp * 100}%`, height: "100%", background: hp > 0.5 ? C.green : hp > 0.22 ? C.yellow : C.red }} />
+              <div style={{ display: "flex", width: `${hp * 100}%`, height: "100%", background: race ? (p.winner ? C.green : C.violet) : hp > 0.5 ? C.green : hp > 0.22 ? C.yellow : C.red }} />
             </div>
             <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
               {p.scores.slice(0, 12).map((s, i) => (
@@ -77,5 +82,21 @@ export async function guessrResultCard(view: GeoShareView) {
     accent,
     visual: view.kind === "duel" ? <DuelVisual view={view} /> : await MapVisual({ view }),
     footer: `Can you beat it? ${view.playLabel} →`,
+  });
+}
+
+/**
+ * A party invite's card: the same for every room (it never reads the room, so
+ * it gives nothing away and needs no database while an app waits on it).
+ */
+export async function partyInviteCard() {
+  const [shot, map] = await Promise.all([localImage("src/assets/guessr/galar.webp", 940), localImage("public/geo/maps/world-thumb.webp", 336)]);
+  return ogCard({
+    eyebrow: "PokéGuessr party",
+    title: ["You're invited", ["to a party", C.green]],
+    subtitle: "Friends on the same places, everyone at once. No sign-up: open it, pick a name and join.",
+    accent: C.green,
+    visual: <ScreenshotVisual src={shot} map={map} pin={null} />,
+    footer: "Battle Royale or team duels · tap to join →",
   });
 }

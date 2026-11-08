@@ -463,7 +463,8 @@ export function EmoteButton({ onEmote, className }: { onEmote: (e: DuelEmote) =>
     return () => window.removeEventListener("pointerdown", close);
   }, [open]);
   return (
-    <div className={cn("absolute left-3 top-1/2 z-30 -translate-y-1/2", className)} data-emotes>
+    // Hidden while the phone's map card is up: it would sit over the map, where a tap means a pin.
+    <div className={cn("absolute left-3 top-1/2 z-30 -translate-y-1/2 [.geo-frame:has([data-phone][data-open=true])_&]:invisible", className)} data-emotes>
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}

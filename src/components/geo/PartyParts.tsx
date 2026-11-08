@@ -99,6 +99,15 @@ export function Roster({ view, guessed, className }: { view: PartyView; guessed?
   );
 }
 
+/**
+ * A party's 3D trainers share one WebGL context (up to eight a screen, and a
+ * lobby hands over to the line-up: one context each would pass the browser's
+ * limit and lose the oldest). One that isn't on screen this soon (no WebGL, a
+ * weak GPU) gives way to the trainer's flat look for good, so a slow device
+ * stops spending its frames on it and no spot is ever left empty.
+ */
+const PARTY_PAINT_MS = 2_500;
+
 /** One trainer standing on a party screen: their 3D trainer (or art), name and colour. */
 export function PartyTrainer({
   view,
@@ -126,7 +135,7 @@ export function PartyTrainer({
         <div aria-hidden className="absolute inset-x-[18%] bottom-[3%] h-[10%] rounded-[50%] bg-black/40 blur-md" />
         <div aria-hidden className="absolute inset-[22%] rounded-full opacity-50 blur-2xl" style={{ background: seatColor(view, seat) }} />
         {three ? (
-          <VersusCharacter avatar={p.avatar} fallback={fallback} facing="right" pose={pose} taunt={taunt} className="relative mx-auto w-full" />
+          <VersusCharacter avatar={p.avatar} fallback={fallback} facing="right" pose={pose} taunt={taunt} shared paintWithin={PARTY_PAINT_MS} className="relative mx-auto w-full" />
         ) : (
           <div className="relative flex aspect-square w-full items-center justify-center">
             <span className="rounded-full p-1" style={{ background: seatColor(view, seat) }}>

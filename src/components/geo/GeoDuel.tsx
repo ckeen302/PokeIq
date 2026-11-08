@@ -366,6 +366,7 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
                   hasPin={!!pick && !locked}
                   map={({ fill }) => (
                     <GeoMap
+                      land={fill}
                       region={map}
                       pick={locked ?? pick}
                       pinImage={seatImage(view, me)}

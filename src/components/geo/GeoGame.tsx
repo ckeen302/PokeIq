@@ -287,6 +287,21 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     // eslint-disable-next-line react-hooks/exhaustive-deps -- read the URL once
   }, []);
 
+  // /guessr?play=daily (the home page's Play) starts today's Daily straight away; ?play=game a game on the map.
+  // It waits for the local date, by which time the saved settings have been read too.
+  const autoPlay = useRef(false);
+  useEffect(() => {
+    if (autoPlay.current || !today || challenge || phase !== "setup") return;
+    autoPlay.current = true;
+    const url = new URL(window.location.href);
+    const play = url.searchParams.get("play");
+    if (play !== "daily" && play !== "game") return;
+    url.searchParams.delete("play");
+    window.history.replaceState(null, "", url);
+    void start(play === "daily" ? { kind: "game", daily: today } : { kind: "game" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, when the date is known
+  }, [today]);
+
   function chooseRegion(id: string) {
     setRegionId(id);
     const url = new URL(window.location.href);
@@ -796,7 +811,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
                   </div>
                   {theme && (
                     <p className="text-sm text-muted-foreground" data-testid="geo-theme-blurb">
-                      {theme.blurb} {fmt(region.locations)} places across the world, with leaderboards of their own.
+                      {theme.blurb} Places from across the world, with leaderboards of their own.
                     </p>
                   )}
                 </div>
@@ -1112,6 +1127,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
         hasPin={!!pick}
         map={({ fill }) => (
           <GeoMap
+            land={fill}
             region={game.region}
             pick={pick}
             pinImage={pinImage}
@@ -1203,7 +1219,6 @@ function MapTile({ map, selected, onPick }: { map: GeoRegionInfo; selected: bool
             {map.id === WORLD_REGION ? <Globe2 className="h-4 w-4 shrink-0" aria-hidden /> : map.theme ? <Shapes className="h-4 w-4 shrink-0" aria-hidden /> : null}
             <span className="min-w-0 break-words">{map.name}</span>
           </span>
-          <span className="block font-pixel text-[9px] uppercase tracking-wider text-white/75">{fmt(map.locations)} places</span>
         </span>
         {/* The tile's name is its visible text, then what picking it does. */}
         <span className="sr-only">, set up a solo game on this map</span>

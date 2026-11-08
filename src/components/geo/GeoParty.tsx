@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
-import { Crown, Eye, Heart, Link2, Loader2, LogOut, Play, RotateCcw, Swords, UserMinus, Users, X } from "lucide-react";
+import { Check, Crown, Eye, Heart, Link2, Loader2, LogOut, Play, RotateCcw, Share2, Swords, UserMinus, Users, X } from "lucide-react";
 import type { DuelEmote } from "@/lib/pvp-types";
 import type { TauntId } from "@/lib/trainer/taunts";
 import { DUEL_COUNTDOWN_FLASH_MS } from "@/lib/geo-duel-rules";
@@ -291,6 +291,7 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
                     hasPin={!!pick && !locked}
                     map={({ fill }) => (
                       <GeoMap
+                        land={fill}
                         region={map}
                         pick={locked ?? pick}
                         pinImage={seatPin(view, me)}
@@ -938,6 +939,19 @@ function PartyEnd({ view, map, busy, onAgain, onTaunt }: { view: PartyView; map:
       : end.reason === "rounds"
         ? `After ${view.revealed.length} rounds: most lives, then most points.`
         : "Everyone else left.";
+  // Sharing the result: words that read on their own (a bio link doesn't unfurl), then the room's link for a rematch.
+  const [shared, setShared] = useState<"done" | "failed" | null>(null);
+  const where = map.id === WORLD_REGION ? "the Pokémon world" : map.name;
+  const winners = end.winners.map((s) => view.players[s].name);
+  const shareText = team
+    ? draw
+      ? `Our PokéGuessr team duel in ${where} ended in a draw after ${view.revealed.length} rounds.`
+      : `${TEAM_NAMES[end.team ?? 0]} won our PokéGuessr team duel in ${where}${view.hp ? `: ${fmt(Math.max(0, view.hp[end.team ?? 0]))} HP left to ${fmt(Math.max(0, view.hp[end.team === 0 ? 1 : 0]))}` : ""}. ${won ? "We won!" : "We'll get them next time."}`
+    : `I came ${ordinal(place)} of ${view.players.length} in our PokéGuessr Battle Royale in ${where}${winners.length && place !== 1 ? ` (${winners.join(" and ")} won)` : ""}.`;
+  async function shareResult() {
+    const outcome = await shareOrCopy(`${shareText} Play the next one with us:`, `${window.location.origin}${partyPath(view.code)}`);
+    setShared(outcome === "failed" ? "failed" : outcome === "cancelled" ? null : "done");
+  }
   const allRounds: RevealedRound[] = view.revealed.flatMap((r) => {
     const g = r.guesses[me];
     return [{ guess: g && { x: g.x, y: g.y }, answer: r.answer, label: String(r.index + 1), color: seatColor(view, me), image: seatPin(view, me) }];
@@ -995,10 +1009,14 @@ function PartyEnd({ view, map, busy, onAgain, onTaunt }: { view: PartyView; map:
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Waiting for the host to play again
             </p>
           )}
-          <Link href="/guessr" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white")}>
+          <Button size="lg" variant="outline" onClick={() => void shareResult()} className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white" data-testid="party-share">
+            {shared === "done" ? <Check className="h-4 w-4" aria-hidden /> : <Share2 className="h-4 w-4" aria-hidden />} {shared === "done" ? "Copied!" : "Share the result"}
+          </Button>
+          <Link href="/guessr" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white sm:col-span-2")}>
             <X className="h-4 w-4" aria-hidden /> Back to PokéGuessr
           </Link>
         </div>
+        {shared === "failed" && <CopyFallback text={`${shareText} Play the next one with us: ${typeof window !== "undefined" ? window.location.origin : ""}${partyPath(view.code)}`} />}
 
         <ol className="divide-y divide-white/10 overflow-hidden rounded-md bg-white/5" data-testid="party-standings">
           {order.map((s) => {
