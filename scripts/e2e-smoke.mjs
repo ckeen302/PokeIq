@@ -1049,6 +1049,17 @@ await gotoSettled(page, `${BASE}/leaderboard?board=geo&format=theme-towns`);
 await page.getByText("Towns and Cities 5 rounds").waitFor();
 await page.getByText("Towns and Cities Streak").waitFor();
 
+step("pokéguessr: an empty board invites you to play, never a made-up score");
+await gotoSettled(page, `${BASE}/leaderboard?board=geo`);
+{
+  const empty = page.getByTestId("geo-board-empty");
+  await empty.waitFor();
+  if (!/Be the first on today.s board/i.test(await empty.innerText())) throw new Error(`the empty Daily board reads: ${await empty.innerText()}`);
+  if (!(await page.getByTestId("geo-board-play").getAttribute("href"))?.startsWith("/guessr?play=daily")) throw new Error("the empty Daily board's Play doesn't start the Daily");
+  if (await page.locator("table").count()) throw new Error("the empty Daily board still shows a table");
+  await page.screenshot({ path: `${OUT}/geo-board-empty.png`, fullPage: true });
+}
+
 step("pokéguessr: Classic 2D, report a screenshot");
 await gotoSettled(page, `${BASE}/guessr?region=kalos`);
 // Kalos has no sprite games: Classic 2D is off there, and says why.
@@ -3797,7 +3808,6 @@ async function homeStep() {
     localStorage.setItem("pokeiq:progress:v1", JSON.stringify(p));
   };
   const REGIONS = /\b(Kanto|Johto|Hoenn|Sinnoh|Unova|Kalos|Alola|Galar|Paldea|Hisui|Kitakami|Orre|Fiore|Almia|Oblivia|Sevii|Lumiose)\b/;
-  const LAB_HREFS = { games: "/lab/games", "pokemon-story": "/lab/pokemon-story", "world-history": "/lab/world-history", sizes: "/pokedex/sizes", race: "/pokedex/race", "mass-battle": "/lab/mass-battle", globe: "/guessr/globe", timeline: "/pokedex/timeline" };
 
   // ---- 1440, a new visitor ----
   const p = await newPage({ width: 1440, height: 900 });
@@ -3849,7 +3859,6 @@ async function homeStep() {
   for (const [re, what] of [[/\d[\d,]* Pokémon/, "a Pokémon count"], [/No\.\s?0\d\d/, "a puzzle number"], [/PokéConnections/, "PokéConnections"], [/1,025/, "1,025"]]) {
     if (re.test(text)) errors.push(`home: the page shows ${what}`);
   }
-  if ((await p.getByTestId("home-search-input").getAttribute("placeholder")) !== "Search any Pokémon…") errors.push("home: the search box's placeholder changed");
   // Still pictures only: no 3D, no video.
   if (await p.locator("main canvas, main video").count()) errors.push("home: the page has a canvas or a video");
   await p.screenshot({ path: `${OUT}/home.png`, fullPage: true });
@@ -3868,46 +3877,8 @@ async function homeStep() {
   }
   if (await p.getByTestId("home-today-streak").count()) errors.push("home: a streak shows for a new visitor");
 
-  // The 3D Lab: live experiences only, the films first, each card to its page (and the page is there).
-  const lab = await p.locator("[data-testid^=home-lab-]:not([data-testid=home-lab-row]):not([data-testid=home-lab-all])").evaluateAll((els) => els.filter((e) => e.tagName === "A").map((e) => [e.dataset.testid.replace("home-lab-", ""), e.getAttribute("href")]));
-  if (lab.length < 4 || lab.length > 6) errors.push(`home: the 3D Lab shows ${lab.length} cards`);
-  if (lab[0] && !["games", "pokemon-story"].includes(lab[0][0])) errors.push(`home: the 3D Lab leads with ${lab[0][0]}`);
-  for (const [id, href] of lab) {
-    if (LAB_HREFS[id] !== href) errors.push(`home: the 3D Lab's ${id} card goes to ${href}`);
-    else if ((await p.request.get(`${BASE}${href}`)).status() !== 200) errors.push(`home: the 3D Lab's ${id} page doesn't load`);
-  }
-  if ((await p.getByTestId("home-lab-all").getAttribute("href")) !== "/lab") errors.push("home: See all doesn't go to /lab");
-  {
-    const [feature, second] = await p.locator("[data-testid=home-lab-row] > li").evaluateAll((els) => els.slice(0, 2).map((e) => e.getBoundingClientRect().width));
-    if (!(feature > second * 1.6)) errors.push(`home: the 3D Lab's first card isn't the big one at 1440 (${feature} vs ${second})`);
-  }
-  // More to play: Battle, Quizzes, Pokédex.
-  for (const [id, href] of [["battle", "/battle"], ["quizzes", "/play"], ["pokedex", "/pokedex"]]) {
-    if ((await p.getByTestId(`home-more-${id}`).getAttribute("href")) !== href) errors.push(`home: More to play's ${id} doesn't go to ${href}`);
-  }
   if (!(await p.getByTestId("coffee-button").isVisible())) errors.push("home: the Buy me a coffee button is missing");
-  for (const gone of ["home-showcase", "home-hero-pokedle", "daily-rows"]) if (await p.getByTestId(gone).count()) errors.push(`home: ${gone} is still on the page`);
-
-  // Search: the keyboard picks a Pokémon and opens its entry; See all opens the Pokédex on the search.
-  const search = p.getByTestId("home-search-input");
-  await search.click();
-  await search.fill("pikach");
-  await p.getByTestId("home-search-option").first().waitFor({ timeout: 15_000 }).catch(() => errors.push("home: the search showed nothing for pikach"));
-  if (!/Pikachu/.test(await p.getByTestId("home-search-option").first().innerText().catch(() => ""))) errors.push("home: Pikachu isn't the first result for pikach");
-  await search.press("Enter");
-  await p.waitForURL(/\/pokemon\/pikachu$/, { timeout: 15_000 }).catch(() => errors.push(`home: Enter in the search went to ${p.url()}`));
-  await gotoSettled(p, BASE);
-  await search.click();
-  await search.fill("chrmander");
-  await p.getByTestId("home-search-option").first().waitFor({ timeout: 15_000 }).catch(() => {});
-  if (!/Charmander/.test(await p.getByTestId("home-search-option").first().innerText().catch(() => ""))) errors.push("home: the search didn't forgive a typo (chrmander)");
-  await search.press("ArrowDown");
-  await search.press("ArrowUp");
-  if (!(await p.locator("[data-testid=home-search-option][aria-selected=true]").first().innerText()).includes("Charmander")) errors.push("home: the arrow keys don't move the search's highlight");
-  await search.fill("mouse");
-  await p.getByTestId("home-search-all").click();
-  await p.waitForURL(/\/pokedex\?q=mouse$/, { timeout: 15_000 }).catch(() => errors.push(`home: See all went to ${p.url()}`));
-  await p.waitForFunction(() => document.querySelector('input[aria-label="Search Pokémon"]')?.value === "mouse", null, { timeout: 15_000 }).catch(() => errors.push("home: the Pokédex didn't open on the search"));
+  for (const gone of ["home-showcase", "home-hero-pokedle", "daily-rows", "home-lab", "home-search", "home-more"]) if (await p.getByTestId(gone).count()) errors.push(`home: ${gone} is still on the page`);
 
   // Play: straight into today's Daily, on the picture the hero showed (already fetched).
   await gotoSettled(p, BASE);
@@ -3989,21 +3960,6 @@ async function homeStep() {
     if (shift > 0.01) errors.push(`home: layout shift ${shift} at 390`);
     const rows = await m.locator("[data-testid=home-today-rows] > li").evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
     if (rows.length !== 5 || new Set(rows).size !== 5) errors.push(`home: Today isn't one row per game at 390 (${rows.join()})`);
-    const fieldSize = await m.getByTestId("home-search-input").evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
-    if (fieldSize < 16) errors.push(`home: the search box is ${fieldSize}px at 390 (iOS zooms under 16px)`);
-  }
-  // The 3D Lab swipes sideways, a card at a time, inside the page.
-  {
-    const row = m.getByTestId("home-lab-row");
-    await row.scrollIntoViewIfNeeded();
-    const info = await row.evaluate((el) => ({ snap: getComputedStyle(el).scrollSnapType, over: el.scrollWidth - el.clientWidth }));
-    if (!/x/.test(info.snap) || info.over < 100) errors.push(`home: the 3D Lab row isn't a snapping swipe row at 390 (${JSON.stringify(info)})`);
-    await row.evaluate((el) => el.scrollBy({ left: el.clientWidth * 0.8, behavior: "instant" }));
-    await m.waitForTimeout(600);
-    const left = await row.evaluate((el) => el.scrollLeft);
-    if (left < 100) errors.push(`home: the 3D Lab row didn't scroll at 390 (${left})`);
-    const second = await m.locator("[data-testid=home-lab-row] > li").nth(1).boundingBox();
-    if (!second || second.x < 0 || second.x > 40) errors.push(`home: the 3D Lab row didn't snap to the next card at 390 (x ${second?.x})`);
   }
   const overflow = await m.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   if (overflow > 0) errors.push(`home: the page scrolls sideways by ${overflow}px at 390`);

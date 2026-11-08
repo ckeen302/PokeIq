@@ -49,6 +49,12 @@ interface Props {
   fill?: boolean;
   /** Other trainers' pins shown live (a team duel's teammates): their colour, avatar and name. */
   others?: (MapPin & { color?: string; image?: string; label?: string })[];
+  /**
+   * The phone's map card: open on the land rather than the whole map. A
+   * map of the whole world (the world, a themed map) starts with its regions
+   * filling the card, the rest a drag away; a region's map is that region.
+   */
+  land?: boolean;
 }
 
 export const WORLD_MAP = "/geo/maps/world.webp";
@@ -68,6 +74,21 @@ export const LINE_DRAW_MS = 600;
 /** Where a revealed round's flag stands: the exact spot when the shot has one, else the place's pin. */
 const flagAt = (answer: RevealedRound["answer"]): [number, number] => answer.spot ?? answer.pin;
 
+/** World pixels of sea kept around the land when a phone's map card opens on it. */
+const LAND_MARGIN = 90;
+
+/** The box around every place on the atlas (the land), with a little sea around it. */
+function landBox(atlas: AtlasData): Box {
+  let [x0, y0, x1, y1] = [Infinity, Infinity, -Infinity, -Infinity];
+  for (const p of atlas.places) {
+    x0 = Math.min(x0, p.x);
+    y0 = Math.min(y0, p.y);
+    x1 = Math.max(x1, p.x);
+    y1 = Math.max(y1, p.y);
+  }
+  return [Math.max(0, x0 - LAND_MARGIN), Math.max(0, y0 - LAND_MARGIN), Math.min(atlas.W, x1 + LAND_MARGIN), Math.min(atlas.H, y1 + LAND_MARGIN)];
+}
+
 /** A map's width over its height as drawn (very tall or wide maps sit in a box of sensible proportions). */
 export function mapAspect(region: Pick<GeoRegionInfo, "map">): number {
   const [x0, y0, x1, y1] = region.map.box;
@@ -81,7 +102,7 @@ export function mapAspect(region: Pick<GeoRegionInfo, "map">): number {
  * round draws a dashed line from the guess to the answer, then zooms to fit
  * them both.
  */
-export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, controls = true, className, fill, others = [] }: Props) {
+export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, controls = true, className, fill, others = [], land = false }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engine = useRef<AtlasEngine | null>(null);
@@ -134,8 +155,11 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
     const stage = stageRef.current;
     if (!atlas || !canvas || !stage || !cropPainted) return;
     const box: Box = [x0, y0, x1, y1];
+    // A map of the whole world (the world itself, a themed map) opens on its land, filling the card.
+    const wholeWorld = x0 <= 0 && y0 <= 0 && x1 >= atlas.W && y1 >= atlas.H;
     const e = createAtlas(canvas, stage, atlas, WORLD_MAP, {
       bounds: region.id === WORLD_REGION ? undefined : box,
+      home: land && wholeWorld ? { box: landBox(atlas), cover: true } : undefined,
       onTap: (wx, wy) => {
         const x = (wx - x0) / (x1 - x0);
         const y = (wy - y0) / (y1 - y0);
@@ -165,7 +189,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
       e.destroy();
       engine.current = null;
     };
-  }, [atlas, cropPainted, region.id, x0, y0, x1, y1]);
+  }, [atlas, cropPainted, region.id, x0, y0, x1, y1, land]);
 
   // A revealed round zooms to show the guess and the answer together, once the line has drawn.
   const revealKey = revealed.map((r) => `${r.guess?.x},${r.guess?.y},${flagAt(r.answer)}`).join("|");

@@ -134,7 +134,8 @@ export interface GeoResult {
   score: number;
   /** "Guess the game too": the bonus points on top (never part of the ranked score). */
   bonus?: number;
-  rounds: { score: number; name: string }[];
+  /** Each round's points; the place's name only in the game's own response (a signed result token never carries it). */
+  rounds: { score: number; name?: string }[];
   durationMs: number;
   finishedAt: number;
 }

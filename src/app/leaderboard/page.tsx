@@ -1,7 +1,8 @@
 import Link from "@/components/ui/Link";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
-import { Medal } from "lucide-react";
+import { CalendarRange, Compass, Medal, Trophy } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
 import { connRankedStore } from "@/lib/server/connections-ranked";
 import { connSeasonLabel, connSeasonOf } from "@/lib/connections/ranked";
 import { fetchBoard } from "@/lib/server/leaderboard";
@@ -11,7 +12,7 @@ import { GEO_WEEKLY_BOARD_RE, geoPreviousWeek, geoWeeklyBoard, geoWeeklyMap, geo
 import { GEO_ROUND_OPTIONS, WORLD_REGION, geoBoardKey, geoMapRank } from "@/lib/geo-types";
 import { GEO_REGION_STREAK_BOARD } from "@/lib/geo-streak-types";
 import { GEO_ERA_NAMES, type GeoEra } from "@/lib/geo-families";
-import { dailyNumber, isValidDailyDate } from "@/lib/daily";
+import { dailyNumber, isValidDailyDate, previousDate } from "@/lib/daily";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -349,6 +350,13 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
     const map = week ? undefined : maps.find((r) => r.boards.some((b) => b.id === params.format));
     const mode = week ? geoWeeklyBoard(week) : map ? params.format! : null;
     const geoEntries = mode ? await fetchGeoBoard({ mode }) : await fetchGeoBoard({ daily: date });
+    // What the board invites to when it's empty or nearly: today's Daily, this week's Weekly, or a game on the map.
+    const invite: GeoInvite = week
+      ? { kind: "weekly", current: week === thisWeek?.week, label: `Weekly #${geoWeeklyNumber(week)} · ${weekMapName(week)}` }
+      : map
+        ? { kind: "map", current: true, label: map.name, href: `/guessr?region=${map.id}` }
+        : // Your local date can be a day either side of the server's.
+          { kind: "daily", current: date >= previousDate(today), label: `Daily #${dailyNumber(date)}` };
     const avatars = await avatarsByNames((geoEntries ?? []).map((r) => r.player_name));
     return (
       <div className="mx-auto max-w-3xl space-y-6">
@@ -421,11 +429,7 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
             <CardContent className="py-10 text-center text-muted-foreground">Leaderboards aren&apos;t enabled here.</CardContent>
           </Card>
         ) : geoEntries.length === 0 ? (
-          <Card>
-            <CardContent className="py-10 text-center text-muted-foreground">
-              No scores yet. <Link href="/guessr" className="text-primary underline-offset-2 hover:underline">Play PokéGuessr</Link> and be the first!
-            </CardContent>
-          </Card>
+          <GeoBoardInvite {...invite} empty />
         ) : (
           <Card>
             <CardContent className="p-0">
@@ -459,6 +463,8 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
             </CardContent>
           </Card>
         )}
+        {/* A board that's only getting started: the scores it has (never made-up ones), and the way onto it. */}
+        {geoEntries && geoEntries.length > 0 && geoEntries.length < GEO_BOARD_FEW && invite.current && <GeoBoardInvite {...invite} count={geoEntries.length} />}
       </div>
     );
   }
@@ -587,4 +593,68 @@ async function rankedLadder(connSeason: string | null = null): Promise<RankedLea
     if (!(err instanceof RankedUnavailable)) console.error("[ranked] ladder failed:", err);
     return null;
   }
+}
+
+/** Fewer scores than this on a current Daily or Weekly board: an invitation to play shows under them. */
+const GEO_BOARD_FEW = 5;
+
+interface GeoInvite {
+  kind: "daily" | "weekly" | "map";
+  /** Still open: today's Daily (or the day either side), this week's Weekly. */
+  current: boolean;
+  label: string;
+  href?: string;
+}
+
+/**
+ * A PokéGuessr board with nobody (or only a few) on it: no made-up scores,
+ * just the way onto it. Empty: a card that fills the table's spot. A few
+ * scores: a line under them.
+ */
+function GeoBoardInvite({ kind, current, label, href, empty, count = 0 }: GeoInvite & { empty?: boolean; count?: number }) {
+  const daily = kind === "daily";
+  const weekly = kind === "weekly";
+  const Icon = daily ? Compass : weekly ? CalendarRange : Trophy;
+  // The Daily's Play starts today's game straight away; the Weekly's tile is in the hub's Play section.
+  const playHref = daily ? "/guessr?play=daily#play" : weekly ? "/guessr#play" : (href ?? "/guessr");
+  const playLabel = daily ? (current ? "Play today's Daily" : "Play today's Daily instead") : weekly ? (current ? "Play this week's" : "Play this week's Weekly") : "Play this map";
+  const title = !current
+    ? `Nobody saved a score on ${label}`
+    : daily
+      ? "Be the first on today's board"
+      : weekly
+        ? "Be the first on this week's board"
+        : `Be the first on the ${label} board`;
+  const blurb = daily
+    ? "5 places, the same for everyone today. Your first game goes on the board."
+    : weekly
+      ? "5 places on this week's map, the same for everyone until Monday. Your first try goes on the board."
+      : "Finish a game on this map and save your score to put your name here.";
+  if (!empty) {
+    return (
+      <div className="flex flex-col items-center justify-between gap-3 rounded-lg border border-dashed px-4 py-3 text-center sm:flex-row sm:text-left" data-testid="geo-board-few">
+        <p className="text-sm text-muted-foreground">
+          {count === 1 ? "Just one trainer" : `Just ${count} trainers`} on {daily ? "today's board" : weekly ? "this week's board" : "this board"} so far. Room at the top.
+        </p>
+        <Link href={playHref} className={cn(buttonVariants({ size: "sm", variant: weekly ? "success" : "default" }), "shrink-0")}>
+          <Icon className="h-4 w-4" aria-hidden /> {playLabel}
+        </Link>
+      </div>
+    );
+  }
+  return (
+    <Card data-testid="geo-board-empty">
+      <CardContent className="flex flex-col items-center gap-3 px-6 py-10 text-center sm:py-12">
+        <span className={cn("flex h-14 w-14 items-center justify-center rounded-full", weekly ? "bg-success/15 text-success" : daily ? "bg-warning/15 text-warning" : "bg-primary/15 text-primary")} aria-hidden>
+          <Icon className="h-7 w-7" />
+        </span>
+        <p className="hud-label">{label}</p>
+        <h2 className="text-balance font-display text-2xl font-bold uppercase leading-tight sm:text-3xl">{title}</h2>
+        <p className="max-w-md text-balance text-sm text-muted-foreground">{current ? blurb : daily ? "That day's board stayed empty. Today's is open." : "That week's board stayed empty. This week's is open."}</p>
+        <Link href={playHref} className={cn(buttonVariants({ size: "lg", variant: weekly ? "success" : "default" }), "mt-1 w-full sm:w-auto")} data-testid="geo-board-play">
+          <Icon className="h-4 w-4" aria-hidden /> {playLabel}
+        </Link>
+      </CardContent>
+    </Card>
+  );
 }
