@@ -1,4 +1,5 @@
 import "server-only";
+import { geoShotUrl } from "@/lib/geo-storage";
 import { randomInt } from "node:crypto";
 import { randomId, signToken, verifyToken } from "./crypto";
 import { emoteBlocked } from "./duel-core";
@@ -159,7 +160,7 @@ export function readPartyToken(token: unknown, code: string): { id: string; name
 const spec = (region: string) => ({ region, kind: "game" as const });
 export const isPartyMap = (region: string) => isGeoSpec(spec(region));
 const plan = (p: Pick<GeoParty, "settings" | "seed">, count: number) => planRounds({ region: p.settings.region, kind: "streak" }, p.seed, count);
-const shotUrl = (round: PlannedRound) => `/api/geo/shot/${round.shot}`;
+const shotUrl = (round: PlannedRound) => geoShotUrl(round.shot);
 
 // ---------------------------------------------------------------------------
 // Creating and joining

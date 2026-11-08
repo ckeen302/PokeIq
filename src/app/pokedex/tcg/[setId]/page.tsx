@@ -10,7 +10,15 @@ import { getSet, getSetCards, getSets } from "@/lib/tcg/api";
 import { pagerFor, tcgSetOrder } from "@/lib/dex/neighbours";
 import { formatApiDate, formatPrice, headlinePrice, tilePriceNote, toTile } from "@/lib/tcg/prices";
 
-export const dynamic = "force-dynamic";
+/**
+ * Rendered on a set's first visit and then served from the cache (refreshed
+ * every 6 hours: prices move about daily), so crawlers going through the
+ * TCG sitemaps don't render every page again on each visit.
+ */
+export const revalidate = 21600;
+export function generateStaticParams() {
+  return [];
+}
 
 interface PageProps {
   params: Promise<{ setId: string }>;

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPokemon } from "@/lib/pokemon/pokedex";
 import { officialArtworkUrl, transcodeArt } from "@/lib/server/art-transcode";
+import { BOARD_ART_SIZE, boardArtUrl, hasBoardArt } from "@/lib/pokemon/art";
 
 /**
  * GET /api/art/:id?s=160&shiny=1 — resized WebP official artwork for the
@@ -9,7 +10,8 @@ import { officialArtworkUrl, transcodeArt } from "@/lib/server/art-transcode";
  * a 1,025-card grid ships ~8 KB thumbnails instead of 100+ KB PNGs.
  *
  * Every species' 160px picture is also a static file (public/art/160, see
- * scripts/board-art.ts), which the CDN serves without waking this route.
+ * scripts/board-art.ts), which the CDN serves without waking this route:
+ * pages ask for it directly at 96 and 160 px, and this redirects old links there.
  */
 
 export const runtime = "nodejs";
@@ -28,6 +30,13 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
   const shiny = request.nextUrl.searchParams.get("shiny") === "1";
   if (!Number.isInteger(id) || !isKnownId(id) || !SIZES.has(size)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  // A species' small sizes are the static 160 px file (artUrl sends pages straight there; this is for old links).
+  if (!shiny && size <= BOARD_ART_SIZE && hasBoardArt(id)) {
+    const res = NextResponse.redirect(new URL(boardArtUrl(id), request.url), 308);
+    res.headers.set("Cache-Control", "public, max-age=31536000, s-maxage=31536000, immutable");
+    return res;
   }
 
   const key = `${id}:${size}:${shiny ? 1 : 0}`;

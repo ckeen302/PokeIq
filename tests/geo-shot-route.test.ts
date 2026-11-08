@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import data from "@/data/geo.json";
 import blur from "@/data/geo-shot-blur.json";
-import { GEO_SHOT_ROUTE_ID_RE, GEO_STORAGE_BASE } from "@/lib/geo-storage";
+import { GEO_SHOTS_DIRECT, GEO_SHOT_ROUTE_ID_RE, GEO_STORAGE_BASE, geoShotIdOf, geoShotUrl, geoStorageUrl } from "@/lib/geo-storage";
 import { shotBlur } from "@/lib/server/geo-blur";
 
 describe("PokéGuessr screenshot serving", () => {
@@ -21,5 +21,15 @@ describe("PokéGuessr screenshot serving", () => {
     expect(uri.startsWith("data:image/webp;base64,")).toBe(true);
     expect(uri.length).toBeLessThan(400);
     expect(shotBlur("not-a-shot")).toBeUndefined();
+  });
+
+  it("rounds load their pictures through the route by default (the store's headers carry upload times), by a random id either way", () => {
+    expect(GEO_SHOTS_DIRECT).toBe(false);
+    expect(geoShotUrl("abcdEFGH1234")).toBe("/api/geo/shot/abcdEFGH1234");
+    expect(geoStorageUrl("abcdEFGH1234")).toBe(`${GEO_STORAGE_BASE}/abcdEFGH1234.webp`);
+    expect(geoShotIdOf("/api/geo/shot/abcdEFGH1234")).toBe("abcdEFGH1234");
+    expect(geoShotIdOf(`${GEO_STORAGE_BASE}/abcdEFGH1234.webp`)).toBe("abcdEFGH1234");
+    expect(geoShotIdOf("/api/geo/preview/abcdEFGH1234")).toBeNull();
+    expect(geoShotIdOf(`${GEO_STORAGE_BASE}/kanto/abcdEFGH1234.webp`)).toBeNull();
   });
 });

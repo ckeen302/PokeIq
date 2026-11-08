@@ -193,6 +193,9 @@ describe("whose team: nothing leaks before the guess", () => {
     }
   });
 
+  // A card's picture, by either address (a species' static file, or the art route).
+  const artUrls = (id: number) => [`/api/art/${id}?`, `/art/160/${id}.webp`];
+
   it("Hard: only the first Pokémon is sent; the rest come one per reveal", () => {
     for (let n = 0; n < 25; n++) {
       const s = spec("hard", `leak-hard-${n}`);
@@ -205,7 +208,7 @@ describe("whose team: nothing leaks before the guess", () => {
       // A team can have two of a species (Lance's Dragonair): only check the ones not on show.
       const unseen = (k: number) => q.cards!.slice(k).filter((c) => !q.cards!.slice(0, k).some((x) => x.pokemonId === c.pokemonId));
       for (const hidden of unseen(1)) {
-        expect(json).not.toContain(`/api/art/${hidden.pokemonId}?`);
+        for (const url of artUrls(hidden.pokemonId)) expect(json).not.toContain(url);
         expect(json).not.toContain(`"${hidden.label}"`);
       }
       // Each reveal hands over exactly the next card.
@@ -217,7 +220,7 @@ describe("whose team: nothing leaks before the guess", () => {
         expect(out.response.card.label).toBe(q.cards![k].label);
         expect(out.response.reveal).toEqual({ shown: k + 1, total });
         const later = JSON.stringify(out.response);
-        for (const hidden of unseen(k + 1)) expect(later).not.toContain(`/api/art/${hidden.pokemonId}?`);
+        for (const hidden of unseen(k + 1)) for (const url of artUrls(hidden.pokemonId)) expect(later).not.toContain(url);
         token = out.response.token;
       }
       const done = revealCard(readSession(token)!);
