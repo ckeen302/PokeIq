@@ -19,6 +19,7 @@ import { GeoMap } from "./GeoMap";
 import { cn } from "@/lib/utils";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { type Game, type Played, type Reward, emoji, fmt, maxTotal, placeName, post, useCountUp } from "./GeoGame";
+import { DailyEmailNudge } from "@/components/email/DailyEmailNudge";
 
 /** The end-of-game summary; `compact` leaves the headline, map and round list to the results map it sits under. */
 export function GeoSummary({
@@ -140,6 +141,7 @@ export function GeoSummary({
       </div>
 
       {game.daily && !isStreak && <DailyCompare date={game.daily} score={total} />}
+      {game.daily && !isStreak && <DailyEmailNudge className="mx-auto max-w-md" />}
 
       {outcome && challenge && (
         <Card className={cn(outcome === "win" ? "border-success/50" : outcome === "lose" ? "border-destructive/40" : "")}>

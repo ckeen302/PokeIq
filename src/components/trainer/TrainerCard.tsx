@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CoachPanel } from "./CoachPanel";
 import { AccountPanel } from "@/components/account/AccountPanel";
 import { SettingsCard } from "@/components/settings/SiteSettings";
+import { EmailSettings } from "@/components/email/EmailSettings";
 import { MyBattleRecord } from "@/components/battle/MyBattleRecord";
 import { BadgeMedal } from "@/components/game/BadgeMedal";
 import { ModeIcon } from "@/components/game/ModeIcon";
@@ -137,7 +138,9 @@ export function TrainerCard() {
 
       <AccountPanel />
 
-      <SettingsCard />
+      <SettingsCard>
+        <EmailSettings />
+      </SettingsCard>
 
       <AvatarPanel />
 

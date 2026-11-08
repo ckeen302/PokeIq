@@ -24,6 +24,7 @@ import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { cn } from "@/lib/utils";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { useAccount } from "@/lib/account";
+import { DailyEmailNudge } from "@/components/email/DailyEmailNudge";
 
 interface QuizResultsProps {
   result: RunResult;
@@ -285,6 +286,7 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
           {copyFallback && <CopyFallback text={copyFallback} />}
 
           {isDaily && <NextDailyCountdown label="Next Daily Challenge in" />}
+          {isDaily && !result.spec.zoomDaily && <DailyEmailNudge />}
 
           {!ranked ? (
             result.spec.zoomDaily ? (

@@ -38,6 +38,7 @@ import { AssistPicker } from "./AssistPicker";
 import { dexClues } from "@/lib/dle-dex";
 import { DLE_ASSIST_INFO, dleAssistOf, multiplierText, type DleAssist } from "@/lib/dle-assist";
 import { cn } from "@/lib/utils";
+import { DailyEmailNudge } from "@/components/email/DailyEmailNudge";
 
 // Loaded when first needed, not with the page: the Pokédex (off by default),
 // the settings (behind the gear), and the pop-up sheets.
@@ -706,6 +707,7 @@ export function Pokedle({
                   </Button>
                 )}
                 {mode === "daily" && <NextDailyCountdown label="Next Pokédle in" />}
+                {mode === "daily" && <DailyEmailNudge />}
                 {mode === "daily" && stats && stats.playStreak > 0 && (
                   <p className="text-sm font-semibold text-orange-400">
                     🔥 {stats.playStreak}-day {format === "squirdle" ? "Stats " : ""}play streak{stats.freezes > 0 && ` · 🧊 ${stats.freezes}`}

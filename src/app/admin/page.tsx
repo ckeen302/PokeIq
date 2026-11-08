@@ -3,6 +3,8 @@ import Link from "@/components/ui/Link";
 import { notFound } from "next/navigation";
 import { adminFromCookies } from "@/lib/server/moderation";
 import { AdminPanel } from "@/components/admin/AdminPanel";
+import { AdminEmailTest } from "@/components/admin/AdminEmailTest";
+import { emailEnabled } from "@/lib/server/email/config";
 
 export const metadata: Metadata = { title: "Moderation", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -24,6 +26,7 @@ export default async function AdminPage() {
           </Link>
         </p>
       </div>
+      {emailEnabled() && <AdminEmailTest />}
       <AdminPanel />
     </div>
   );

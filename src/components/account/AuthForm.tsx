@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { recoverAccount, register, signIn, useAccount } from "@/lib/account";
+import { recoverAccount, register, signIn, useAccount, type SignupEmail } from "@/lib/account";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { RecoveryCodeCard } from "./RecoveryCodeCard";
 import { cn } from "@/lib/utils";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
+import { DailyEmailOptIn, optInError } from "@/components/email/DailyEmailOptIn";
 
 type Mode = "login" | "register" | "recover";
 
@@ -31,6 +32,12 @@ export function AuthForm({ next = "/trainer" }: { next?: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [newCode, setNewCode] = useState<{ code: string; recovered: boolean } | null>(null);
+  const [optIn, setOptIn] = useState<SignupEmail>({ email: "", dailyEmail: false });
+
+  // "/login?signup=1" (the dailies' "get the daily in your inbox" nudge) opens on Create account.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("signup") === "1") setMode("register");
+  }, []);
 
   if (newCode) {
     return (
@@ -67,6 +74,8 @@ export function AuthForm({ next = "/trainer" }: { next?: string }) {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (mode === "register" && !isCleanName(username)) return setError(NAME_REJECTED);
+    const emailProblem = mode === "register" && account.emailEnabled ? optInError(optIn) : null;
+    if (emailProblem) return setError(emailProblem);
     setBusy(true);
     setError(null);
     try {
@@ -74,7 +83,7 @@ export function AuthForm({ next = "/trainer" }: { next?: string }) {
         await signIn(username, password);
         router.push(next);
       } else if (mode === "register") {
-        setNewCode({ code: await register(username, password), recovered: false });
+        setNewCode({ code: await register(username, password, account.emailEnabled ? optIn : undefined), recovered: false });
       } else {
         setNewCode({ code: await recoverAccount(username, code, password), recovered: true });
       }
@@ -150,6 +159,7 @@ export function AuthForm({ next = "/trainer" }: { next?: string }) {
               required
             />
           </label>
+          {mode === "register" && <DailyEmailOptIn enabled={account.emailEnabled} value={optIn} onChange={setOptIn} />}
           {mode === "register" && (
             <p className="text-xs text-muted-foreground">
               3–20 letters, numbers, _ or -. No email needed — you&apos;ll get a recovery code instead.

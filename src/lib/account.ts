@@ -25,10 +25,14 @@ export interface AccountState {
   status: "loading" | "ready";
   enabled: boolean;
   user: AccountUser | null;
+  /** Daily reminder emails are switched on for this site (docs/email.md). */
+  emailEnabled: boolean;
+  /** The signed-in trainer gets them. */
+  dailyEmail: boolean;
 }
 
 /** What the server renders: hydration starts from this, never from an account already loaded in the browser. */
-const INITIAL: AccountState = { status: "loading", enabled: true, user: null };
+const INITIAL: AccountState = { status: "loading", enabled: true, user: null, emailEnabled: false, dailyEmail: false };
 let state: AccountState = INITIAL;
 const listeners = new Set<() => void>();
 let started = false;
@@ -90,8 +94,8 @@ export async function initAccount(): Promise<void> {
   if (started) return;
   started = true;
   try {
-    const me = await api<{ enabled: boolean; user: AccountUser | null; progress: unknown }>("/api/auth/me");
-    set({ status: "ready", enabled: me.enabled, user: me.user });
+    const me = await api<{ enabled: boolean; user: AccountUser | null; progress: unknown; emailEnabled?: boolean; dailyEmail?: boolean }>("/api/auth/me");
+    set({ status: "ready", enabled: me.enabled, user: me.user, emailEnabled: !!me.emailEnabled, dailyEmail: !!me.dailyEmail });
     if (me.user) await startSync(me.user, me.progress);
   } catch {
     set({ status: "ready", user: null });
@@ -100,15 +104,21 @@ export async function initAccount(): Promise<void> {
 
 async function signedIn(user: AccountUser) {
   set({ user });
-  const me = await api<{ user: AccountUser | null; progress: unknown }>("/api/auth/me").catch(() => ({ user: null, progress: null }));
-  if (me.user) set({ user: me.user });
+  const me = await api<{ user: AccountUser | null; progress: unknown; dailyEmail?: boolean }>("/api/auth/me").catch(() => ({ user: null, progress: null, dailyEmail: false }));
+  if (me.user) set({ user: me.user, dailyEmail: !!me.dailyEmail });
   await startSync(user, me.progress);
 }
 
-export async function register(username: string, password: string): Promise<string> {
+/** The sign-up forms' optional address and "Email me when new dailies drop" box. */
+export interface SignupEmail {
+  email: string;
+  dailyEmail: boolean;
+}
+
+export async function register(username: string, password: string, optIn?: SignupEmail): Promise<string> {
   const res = await api<{ user: AccountUser; recoveryCode: string }>("/api/auth/register", {
     method: "POST",
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ username, password, ...(optIn && optIn.email.trim() ? optIn : {}) }),
   });
   await signedIn(res.user);
   return res.recoveryCode;
@@ -132,10 +142,10 @@ export async function recoverAccount(username: string, recoveryCode: string, new
 }
 
 /** Finishes a first Discord / Google sign-in: makes the trainer with the chosen name. */
-export async function completeOAuthSignup(username: string, ageConfirmed: boolean): Promise<void> {
+export async function completeOAuthSignup(username: string, ageConfirmed: boolean, optIn?: SignupEmail): Promise<void> {
   const res = await api<{ user: AccountUser }>("/api/auth/oauth/signup", {
     method: "POST",
-    body: JSON.stringify({ username, ageConfirmed }),
+    body: JSON.stringify({ username, ageConfirmed, ...(optIn && optIn.email.trim() ? optIn : {}) }),
   });
   await signedIn(res.user);
 }
@@ -156,6 +166,11 @@ export async function newRecoveryCode(password: string): Promise<string> {
   return res.recoveryCode;
 }
 
+/** After the daily email setting changes: hides the "get the daily in your inbox" nudges. */
+export function setAccountDailyEmail(dailyEmail: boolean) {
+  set({ dailyEmail });
+}
+
 /** After picking a new avatar: shows it at once (the header, menus). */
 export function setAccountAvatar(avatar: PublicAvatar) {
   if (state.user) set({ user: { ...state.user, avatar } });
@@ -172,6 +187,6 @@ export async function signOut(): Promise<void> {
   }
   await api("/api/auth/logout", { method: "POST" }).catch(() => undefined);
   resetProgress();
-  set({ user: null });
+  set({ user: null, dailyEmail: false });
 }
 

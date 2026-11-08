@@ -45,7 +45,7 @@ export function useSoundSetting(): [boolean, (muted: boolean) => void] {
 }
 
 /** Two-way segmented switch: a labelled group of two pressed / unpressed buttons. */
-function Segmented<T extends string>({
+export function Segmented<T extends string>({
   label,
   value,
   options,
@@ -92,7 +92,7 @@ function Segmented<T extends string>({
   );
 }
 
-function Row({ title, hint, children, size }: { title: string; hint?: ReactNode; children: ReactNode; size: "sm" | "md" }) {
+export function Row({ title, hint, children, size }: { title: string; hint?: ReactNode; children: ReactNode; size: "sm" | "md" }) {
   return (
     <div className={cn("flex items-center justify-between gap-4", size === "md" && "flex-wrap gap-y-2")}>
       <div className="min-w-0">
@@ -141,14 +141,15 @@ export function SettingsControls({ size = "sm", testIdPrefix }: { size?: "sm" | 
   );
 }
 
-/** The trainer page's Settings section (also reachable as /trainer#settings). */
-export function SettingsCard() {
+/** The trainer page's Settings section (also reachable as /trainer#settings); `children` go under Theme and Sound (the daily emails). */
+export function SettingsCard({ children }: { children?: ReactNode }) {
   return (
     <section id="settings" aria-labelledby="settings-title" className="hud relative scroll-mt-20 rounded-lg border bg-card p-5 text-card-foreground shadow-[0_8px_30px_-12px_hsl(var(--shade)/0.6)]" data-testid="trainer-settings">
       <h2 id="settings-title" className="mb-4 font-display text-lg font-bold leading-none tracking-tight">
         Settings
       </h2>
       <SettingsControls size="md" testIdPrefix="trainer-settings" />
+      {children}
     </section>
   );
 }
