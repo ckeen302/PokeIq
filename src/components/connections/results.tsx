@@ -128,6 +128,7 @@ const UNRANKED: Record<Exclude<ConnBoardStanding, { position: number }>["unranke
   unsolved: "Solve it to get on the leaderboard.",
   untimed: "This game started before the leaderboard could time it, so it isn't ranked.",
   "name-taken": "Another trainer has that name on today's board.",
+  limited: "Your network already has a few entries on today's board.",
   off: "",
 };
 

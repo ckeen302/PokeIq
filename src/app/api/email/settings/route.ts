@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { userFromRequest } from "@/lib/server/auth";
 import { guardAuthRequest, serverError } from "@/lib/server/auth-route";
+import { rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { NO_STORE, emailOff, providerEmail } from "@/lib/server/email/route";
 import { saveSettings, viewOf } from "@/lib/server/email/service";
 import { EmailUnavailable, emailStore } from "@/lib/server/email/store";
@@ -47,6 +48,10 @@ export async function PUT(request: NextRequest) {
   try {
     const user = await userFromRequest(request);
     if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401, headers: NO_STORE });
+    // A new address (or "send it again") mails a confirmation: a few an hour per trainer, so an account can't mail strangers on repeat.
+    if ((parsed.data.email || parsed.data.resend) && !rateLimit(`email-confirm-send:${user.id}`, 5, 5 / 3600)) {
+      return tooManyRequests("You've changed your email a lot. Try again in a while.", 600);
+    }
     const out = await saveSettings(user, parsed.data);
     if (!out.ok) return NextResponse.json({ error: out.error }, { status: out.status, headers: NO_STORE });
     return NextResponse.json({ ...viewOf(out.sub, null), confirm: out.confirm }, { headers: NO_STORE });

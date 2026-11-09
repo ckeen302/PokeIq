@@ -4,6 +4,7 @@ import { getServiceSupabase } from "@/lib/supabase";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { secretIsSecure, verifyToken } from "@/lib/server/crypto";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
+import { BOARD_FULL, claimBoardSlot, utcDayOf } from "@/lib/server/board-guard";
 import { geoBoardKey, type GeoResult } from "@/lib/geo-types";
 import { geoWeeklyBoard } from "@/lib/geo-weekly";
 
@@ -59,6 +60,11 @@ export async function POST(request: NextRequest) {
   if (result.spec.weekly) {
     const { data: taken } = await supabase.from("geo_runs").select("id").eq("mode", mode).ilike("player_name", parsed.data.playerName.replace(/[%_\\]/g, "\\$&")).limit(1);
     if (taken?.length) return NextResponse.json({ error: "Already on the board (one entry per name per week)." }, { status: 409 });
+  }
+  // Repeat dailies are caught by a cookie a script can drop: an address also gets only a few entries a period.
+  const timed = result.spec.weekly ?? result.spec.daily;
+  if (!(await claimBoardSlot(clientIp(request), `geo-${mode}`, timed ?? utcDayOf(), timed ? undefined : 10))) {
+    return NextResponse.json({ error: BOARD_FULL }, { status: 429 });
   }
   const { error } = await supabase.from("geo_runs").insert({
     session_id: result.sid,

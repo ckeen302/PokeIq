@@ -1,4 +1,5 @@
 import "server-only";
+import { PDK_MIN_MS_PER_CELL, claimBoardSlot, plausibleMs } from "./board-guard";
 import { isCurrentConnDate } from "@/lib/connections/types";
 import { betterResult } from "@/lib/pikadoku/score";
 import { CONN_LAUNCH_DATE } from "@/lib/connections/types";
@@ -24,6 +25,8 @@ export interface PdkFinishInput {
   identity: string;
   name?: string | null;
   start?: string;
+  /** The player's address: a few new board entries per address a day (board-guard). */
+  ip?: string | null;
 }
 
 export type PdkFinishOutcome = { ok: true; result: PdkResultResponse } | { ok: false; status: number; error: string };
@@ -82,9 +85,14 @@ export async function finishGame(input: PdkFinishInput, store: PdkStore | null =
       if (counted) {
         const ms = pdkElapsed(input.start, `${slot.date}:${slot.difficulty}`, now) ?? 0;
         const mine = { player, name: input.name ?? "", solved: answers.size, score, ms };
+        let rows = (await store.board(slot.date, slot.difficulty)) ?? [];
         // A name sent later (a reload, or typed on the results screen) joins the board; the first entry per trainer is kept.
-        if (input.name && ms > 0) await store.saveBoard(slot.date, slot.difficulty, mine);
-        const rows = (await store.board(slot.date, slot.difficulty)) ?? [];
+        // A time nobody could fill the grid in isn't ranked, and an address gets a few new entries a day (board-guard).
+        const fresh = !rows.some((r) => r.player === player);
+        if (fresh && input.name && plausibleMs(ms, Math.max(1, answers.size * PDK_MIN_MS_PER_CELL)) && (await claimBoardSlot(input.ip, `pdk-${slot.difficulty}`, slot.date))) {
+          await store.saveBoard(slot.date, slot.difficulty, mine);
+          rows = (await store.board(slot.date, slot.difficulty)) ?? [];
+        }
         const others = rows.filter((r) => r.player !== player);
         const merged = rows.some((r) => r.player === player) ? rows : [...others, mine].sort(betterResult);
         rank = standingOf(merged, player);
