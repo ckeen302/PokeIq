@@ -1,12 +1,13 @@
 import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { FeedbackPage } from "@/components/layout/FeedbackPage";
 
 export const metadata: Metadata = pageMetadata({
   title: "Feedback",
   description: "Send PokéIQ an idea, report a bug, or tell us anything else. We read every message.",
   path: "/feedback",
+  image: SHARE_IMAGES.site,
 });
 
 export default function Feedback() {

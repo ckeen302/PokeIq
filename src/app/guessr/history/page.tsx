@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { BackButton } from "@/components/ui/BackButton";
 import { DuelHistoryList } from "@/components/geo/DuelHistory";
 import { geoRegions } from "@/lib/server/geo";
@@ -9,6 +9,7 @@ export const metadata: Metadata = pageMetadata({
   title: "PokéGuessr duel history",
   description: "Your PokéGuessr duels, casual and ranked, with a round-by-round replay of every one.",
   path: "/guessr/history",
+  image: SHARE_IMAGES.guessr,
   noindex: true,
 });
 

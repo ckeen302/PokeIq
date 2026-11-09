@@ -1,12 +1,13 @@
 import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { UserSearch } from "@/components/community/UserSearch";
 
 export const metadata: Metadata = pageMetadata({
   title: "Find a trainer",
   description: "Look up a PokéIQ trainer by name: their level, Pokédle and battle ratings, records and recent replays.",
   path: "/users",
+  image: SHARE_IMAGES.site,
 });
 
 export default async function UsersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {

@@ -446,7 +446,7 @@ export function Pokedle({
         ? `Pokédle #${dailyNumber(date)}${mode === "daily" && format === "squirdle" ? " · Stats" : ""}${mode === "archive" ? ` · Archive (${date})` : ""}`
         : "Pokédle";
   const iconButton =
-    "relative rounded-md p-2 text-muted-foreground transition-colors hover:bg-screen/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40";
+    "relative rounded-md p-2 max-sm:p-2.5 text-muted-foreground transition-colors hover:bg-screen/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40";
   const locked = guesses.length > 0;
   const bonus = bonusText(rules);
   const timeUp = Boolean(timerMs) && clockStart !== null && clockLeft <= 0;

@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { BackButton } from "@/components/ui/BackButton";
 import { TrainerCreator } from "@/components/trainer3d/TrainerCreator";
-import { pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
   title: "Trainer creator",
   description: "Make your 3D PokéIQ trainer: hair, hats, outfits, bags and your Poké Ball.",
   path: "/trainer/avatar",
+  image: SHARE_IMAGES.site,
 });
 
 export default function TrainerAvatarPage() {

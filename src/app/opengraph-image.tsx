@@ -1,5 +1,4 @@
 import { C, OG_CONTENT_TYPE, OG_SIZE, ScreenshotVisual, localImage, ogCard } from "@/lib/og/card";
-import { geoWorldPin } from "@/lib/server/geo";
 
 /** The site's share card: what PokéIQ is, over a real PokéGuessr view. */
 
@@ -15,7 +14,7 @@ export default async function Image() {
     titleSize: 56,
     subtitle: "No sign-up. Play in your browser.",
     accent: C.green,
-    visual: <ScreenshotVisual src={shot} map={map} pin={geoWorldPin("Paldea", "Cabo Poco")} />,
+    visual: <ScreenshotVisual src={shot} map={map} pin={null} />,
     chips: ["PokéGuessr", "Pokédle", "Battles", "Battle Lab", "Quizzes"],
   });
 }

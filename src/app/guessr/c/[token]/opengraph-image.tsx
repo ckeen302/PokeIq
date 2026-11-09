@@ -1,7 +1,7 @@
 import { C, OG_CONTENT_TYPE, OG_SIZE, ScreenshotVisual, localImage, ogCard } from "@/lib/og/card";
 import { guessrResultCard } from "@/lib/og/guessr";
 import { challengeShareView } from "@/lib/server/geo-share";
-import { geoWorldPin, readGeoChallenge } from "@/lib/server/geo";
+import { readGeoChallenge } from "@/lib/server/geo";
 
 /**
  * Preview card for a PokéGuessr challenge link (Discord, X, iMessage…): the
@@ -30,7 +30,7 @@ export default async function Image({ params }: { params: Promise<{ token: strin
     title: ["Where in the", ["world is this?", C.green]],
     subtitle: "GeoGuessr for Pokémon: real in-game screenshots, Kanto to Paldea.",
     accent: C.green,
-    visual: <ScreenshotVisual src={shot} map={map} pin={geoWorldPin("Galar", "Postwick")} />,
+    visual: <ScreenshotVisual src={shot} map={map} pin={null} />,
     footer: "Same places · can you beat it? →",
   });
 }

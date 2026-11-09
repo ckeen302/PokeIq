@@ -14,6 +14,7 @@ export const SITE_DESCRIPTION =
 export const SHARE_IMAGES = {
   site: { url: "/opengraph-image", alt: "PokéIQ: PokéGuessr, Pokédle, Pokémon battles and quizzes" },
   battle: { url: "/battle/opengraph-image", alt: "Pokémon battles on Pokémon Showdown's engine" },
+  guessr: { url: "/guessr/opengraph-image", alt: "PokéGuessr: GeoGuessr for Pokémon, with real in-game screenshots" },
   pokedex: { url: "/pokedex/opengraph-image", alt: "The PokéIQ Pokédex: every Pokémon, Kanto to Paldea" },
 };
 

@@ -1,20 +1,20 @@
 /* eslint-disable @next/next/no-img-element -- thumbnails are pre-sized static files (public/art/160) */
 import type { Metadata } from "next";
 import Link from "@/components/ui/Link";
-import { SHARE_IMAGES, jsonLd, pageMetadata } from "@/lib/seo";
+import { jsonLd, pageMetadata } from "@/lib/seo";
 import { breadcrumbList, itemList } from "@/lib/structured-data";
 import { boardArtUrl } from "@/lib/pokemon/art";
 import { GENERATION_REGIONS } from "@/lib/pokemon/constants";
 import { TYPES, capitalize } from "@/lib/pokemon/type-matrix";
 import { TypeBadge } from "@/components/pokedex/TypeBadge";
 import { Breadcrumbs, rankingCrumbs } from "@/components/pokedex/rankings/RankingView";
-import { METRICS, RANKINGS_PATH, formatValue, isBuiltPage, metricShortLabel, ranking, rankingHeading, rankingPath, type Scope } from "@/lib/dex/rankings";
+import { METRICS, RANKINGS_PATH, formatValue, isBuiltPage, metricShortLabel, ranking, rankingHeading, rankingImagePath, rankingPath, type Scope } from "@/lib/dex/rankings";
 
 const TITLE = "Pokémon Rankings: Heaviest, Tallest, Fastest & Strongest Pokémon";
 const DESCRIPTION =
   "Every Pokémon ranked by weight, height, Speed, base stat total and each base stat, with lists for every type and generation and versions including Mega Evolutions and forms.";
 
-export const metadata: Metadata = pageMetadata({ title: TITLE, description: DESCRIPTION, path: RANKINGS_PATH, socialTitle: "Pokémon rankings · PokéIQ Pokédex", image: SHARE_IMAGES.pokedex });
+export const metadata: Metadata = pageMetadata({ title: TITLE, description: DESCRIPTION, path: RANKINGS_PATH, socialTitle: "Pokémon rankings · PokéIQ Pokédex", image: { url: rankingImagePath(), alt: "Pokémon rankings: the heaviest, tallest, fastest and strongest Pokémon" } });
 
 const linkCls = "underline-offset-2 hover:text-foreground hover:underline";
 

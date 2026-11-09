@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { BackButton } from "@/components/ui/BackButton";
 import { GameInfo } from "@/components/seo/GameInfo";
 import { NameEmAll } from "@/components/name-em-all/NameEmAll";
-import { SHARE_IMAGES, pageMetadata, jsonLd } from "@/lib/seo";
+import { pageMetadata, jsonLd } from "@/lib/seo";
 import { NEA_CATEGORIES, NEA_PATH, NEA_TITLE, neaCategory, neaHref, standardMinutes } from "@/lib/name-em-all/categories";
 import { neaOutsiders, neaTargets } from "@/lib/name-em-all/targets";
 
@@ -26,7 +26,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const cat = neaCategory((await params).category);
   if (!cat) return {};
-  return pageMetadata({ title: cat.title, description: cat.description, path: neaHref(cat.id), image: SHARE_IMAGES.site });
+  return pageMetadata({ title: cat.title, description: cat.description, path: neaHref(cat.id), image: { url: `${NEA_PATH}/opengraph-image`, alt: "Name 'em All: how many Pokémon can you name from memory?" } });
 }
 
 export default async function NameEmAllCategoryPage({ params }: PageProps) {

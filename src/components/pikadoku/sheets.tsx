@@ -41,7 +41,7 @@ export function PdkHowToSheet({ onClose, onNever }: { onClose: () => void; onNev
           ]}
         />
         <details className="rounded-md border bg-shade/30 p-3">
-          <summary className="cursor-pointer font-semibold">Full rules</summary>
+          <summary className="cursor-pointer font-semibold max-sm:py-2.5">Full rules</summary>
         <div className="mt-3 space-y-4">
         <div className="grid grid-cols-3 gap-2">
           {tile("9", "boxes to fill")}

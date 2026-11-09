@@ -12,7 +12,7 @@ export function DexPager({ prev, next, center = { href: "/pokedex", label: "Pok√
   return (
     <nav aria-label="Previous and next" data-testid="dex-pager" className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 text-sm text-muted-foreground">
       {prev ? (
-        <Link href={prev.href} rel="prev" data-testid="dex-prev" className="flex min-w-0 items-center gap-1 justify-self-start hover:text-foreground">
+        <Link href={prev.href} rel="prev" data-testid="dex-prev" className="flex min-w-0 items-center gap-1 justify-self-start hover:text-foreground max-sm:min-h-10">
           <ChevronLeft className="h-4 w-4 shrink-0" aria-hidden />
           <span className="sr-only">Previous: </span>
           <span className="line-clamp-2 break-words">{prev.label}</span>
@@ -20,11 +20,11 @@ export function DexPager({ prev, next, center = { href: "/pokedex", label: "Pok√
       ) : (
         <span />
       )}
-      <Link href={center.href} className="text-center hover:text-foreground">
+      <Link href={center.href} className="text-center hover:text-foreground max-sm:flex max-sm:min-h-10 max-sm:items-center">
         {center.label}
       </Link>
       {next ? (
-        <Link href={next.href} rel="next" data-testid="dex-next" className="flex min-w-0 items-center gap-1 justify-self-end text-right hover:text-foreground">
+        <Link href={next.href} rel="next" data-testid="dex-next" className="flex min-w-0 items-center gap-1 justify-self-end text-right hover:text-foreground max-sm:min-h-10">
           <span className="sr-only">Next: </span>
           <span className="line-clamp-2 break-words">{next.label}</span>
           <ChevronRight className="h-4 w-4 shrink-0" aria-hidden />
