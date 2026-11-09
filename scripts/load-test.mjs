@@ -6,6 +6,7 @@
  *   node scripts/load-test.mjs http://localhost:3100                     # ramp 50 → 400 players
  *   node scripts/load-test.mjs http://localhost:3100 --players 300 --duration 30
  *   node scripts/load-test.mjs https://pokeiq.vercel.app --live          # gentle: ≤5 rps, 30 s, cached GET pages only
+ *   node scripts/load-test.mjs http://localhost:3100 --spike             # launch day: the dailies played start to finish
  *
  * Every simulated player loops: pick a request from the mix, send it, think
  * for --think ms (default 250–1250 ms, randomised), repeat. Each player sends
@@ -13,6 +14,12 @@
  * trainer, as they would in production. --live never does: on a real
  * deployment the edge sets that header, and live runs stay on CDN-cached
  * pages so they don't spend database or function quota.
+ *
+ * --spike is a launch-day mix: the home page and the daily pages, with
+ * players finishing each daily (Pokédle's result, Pikadoku's and
+ * Connections' result after the start token, PokéGuessr's daily started and
+ * all five rounds guessed) and reading the boards and stats after. Local
+ * servers only: it writes results.
  *
  * Prints p50/p95/p99 latency, throughput and the error rate (non-2xx/3xx/4xx
  * that isn't an expected 4xx, plus timeouts) per endpoint and overall, per
@@ -26,6 +33,8 @@ const flag = (name, fallback) => {
   return i >= 0 && args[i + 1] && !args[i + 1].startsWith("--") ? args[i + 1] : fallback;
 };
 const LIVE = args.includes("--live");
+const SPIKE = args.includes("--spike");
+if (LIVE && SPIKE) throw new Error("--spike writes results: local servers only.");
 const DURATION_S = Number(flag("duration", LIVE ? 30 : 20));
 const MAX_RPS = Number(flag("rps", LIVE ? 5 : 0));
 const STEPS = (flag("players", LIVE ? "5" : "50,100,200,400") + "").split(",").map(Number);
@@ -65,7 +74,63 @@ const APIS = [
   ["api battle ladder", 1, "/api/battle/ladder?top=1"],
   ["api battle replays", 1, "/api/battle/replays"],
 ];
-const MIX = LIVE ? PAGES : [...PAGES, ...DYNAMIC_PAGES, ...APIS];
+/** A browser's random id, as the dailies keep one (16–64 of [A-Za-z0-9_-]). */
+const playerId = () => `load${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`.slice(0, 24).padEnd(16, "x");
+/**
+ * Flows: a player playing a daily start to finish. `send(name, path, init)`
+ * times and records one request and returns its parsed JSON (null when it
+ * failed); `think()` waits as a player would between steps.
+ */
+const FLOWS = [
+  ["flow pokedle result", 4, async (send, think) => {
+    const guesses = Array.from({ length: 1 + Math.floor(Math.random() * 6) }, () => 1 + Math.floor(Math.random() * 1000));
+    await send("api pokedle guess", "/api/pokedle", json({ date: today, guesses }));
+    await think();
+    await send("api pokedle result", "/api/pokedle/result", json({ date: today, player: playerId(), guesses }));
+    await send("api pokedle stats", `/api/pokedle/stats?date=${today}`);
+  }],
+  ["flow pikadoku result", 3, async (send, think) => {
+    const grid = await send("api pikadoku daily", `/api/pikadoku?date=${today}`);
+    await think();
+    await send("api pikadoku result", "/api/pikadoku/result", json({ date: today, difficulty: "normal", guesses: [], giveUp: true, player: playerId(), start: grid?.start }));
+    await send("api pikadoku board", `/api/pikadoku/leaderboard?date=${today}`);
+  }],
+  ["flow connections result", 3, async (send, think) => {
+    const puzzle = await send("api connections daily", `/api/connections?date=${today}`);
+    const ids = (puzzle?.tiles ?? []).map((t) => t.id);
+    if (ids.length < 4) return;
+    // Four random guesses: almost always four mistakes, which ends the game.
+    const guesses = Array.from({ length: 4 }, () => [...ids].sort(() => Math.random() - 0.5).slice(0, 4));
+    await think();
+    await send("api connections guess", "/api/connections", json({ date: today, guesses }));
+    await send("api connections result", "/api/connections/result", json({ date: today, player: playerId(), guesses, start: puzzle?.start, name: "Load Tester" }));
+    await send("api connections board", `/api/connections/leaderboard?date=${today}`);
+  }],
+  ["flow guessr daily", 4, async (send, think) => {
+    await send("api geo daily-shot", `/api/geo/daily-shot?date=${today}`);
+    const start = await send("api geo daily start", "/api/geo", json({ daily: today }));
+    let token = start?.token;
+    let total = 0;
+    for (let round = 0; token && round < 5; round++) {
+      await think();
+      const graded = await send("api geo guess", "/api/geo/guess", json({ token, x: Math.random(), y: Math.random() }));
+      token = graded?.token;
+      total = graded?.total ?? total;
+      if (graded?.done) break;
+    }
+    await send("api geo daily-stats", `/api/geo/daily-stats?date=${today}&score=${total}`);
+  }],
+];
+const SPIKE_PAGES = [
+  ["page /", 8, "/"],
+  ["page /daily", 4, "/daily"],
+  ["page /pokedle", 4, "/pokedle"],
+  ["page /guessr", 4, "/guessr"],
+  ["page /connections", 3, "/connections"],
+  ["page /pikadoku", 3, "/pikadoku"],
+  ["api leaderboard (daily)", 2, `/api/leaderboard?daily=${today}`],
+];
+const MIX = LIVE ? PAGES : SPIKE ? [...SPIKE_PAGES, ...FLOWS] : [...PAGES, ...DYNAMIC_PAGES, ...APIS];
 const TOTAL_WEIGHT = MIX.reduce((n, m) => n + m[1], 0);
 function pick() {
   let r = Math.random() * TOTAL_WEIGHT;
@@ -107,19 +172,22 @@ async function runStep(players) {
     const ip = `10.${(id >> 16) & 255}.${(id >> 8) & 255}.${id & 255}`;
     // Spread the starts over the first second.
     await sleep(Math.random() * 1000);
-    while (Date.now() < stopAt) {
-      const [name, , path, init] = pick();
+    const think = () => sleep(THINK_MIN + Math.random() * (THINK_MAX - THINK_MIN));
+    /** One timed request; its JSON body when it answered 2xx with JSON, else null. */
+    async function send(name, path, init) {
       await takeToken();
-      if (Date.now() >= stopAt) break;
+      if (Date.now() >= stopAt) return null;
       const url = BASE + (typeof path === "function" ? path() : path);
       const req = typeof init === "function" ? init() : (init ?? {});
       const headers = { ...(req.headers ?? {}), ...(LIVE ? {} : { "x-forwarded-for": ip }), "user-agent": "pokeiq-load-test" };
       const t0 = performance.now();
       let status = 0;
+      let body = null;
       try {
         const res = await fetch(url, { ...req, headers, redirect: "manual", signal: AbortSignal.timeout(TIMEOUT_MS) });
-        await res.arrayBuffer();
+        const text = await res.text();
         status = res.status;
+        if (res.ok && (res.headers.get("content-type") ?? "").includes("json")) body = JSON.parse(text);
       } catch (err) {
         status = err?.name === "TimeoutError" ? "timeout" : "neterr";
       }
@@ -127,7 +195,13 @@ async function runStep(players) {
       // 429 is the server protecting itself under load: counted as an error. Other 4xx are the game saying no (an invalid guess): fine.
       const ok = typeof status === "number" && status < 500 && status !== 429;
       record(name, ms, ok, status);
-      await sleep(THINK_MIN + Math.random() * (THINK_MAX - THINK_MIN));
+      return body;
+    }
+    while (Date.now() < stopAt) {
+      const [name, , path, init] = pick();
+      if (typeof path === "function" && path.length >= 1) await path(send, think);
+      else await send(name, path, init);
+      await think();
     }
   }
   const t0 = Date.now();

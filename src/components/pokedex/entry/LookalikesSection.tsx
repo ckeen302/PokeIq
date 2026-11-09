@@ -29,7 +29,7 @@ export function LookalikesSection({ self, lookalikes }: { self: { id: number; na
       <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-7">
         <div className="flex flex-col items-center gap-1.5">
           <div className="spotlight flex aspect-square w-full items-center justify-center rounded-md ring-2 ring-primary">
-            <img src={artUrl(self.id, 160)} alt={`${self.name} silhouette`} className="h-[85%] w-[85%] object-contain [filter:brightness(0)]" />
+            <img src={artUrl(self.id, 160)} alt={`${self.name} silhouette`} loading="lazy" decoding="async" className="h-[85%] w-[85%] object-contain [filter:brightness(0)]" />
           </div>
           <span className="text-xs font-bold text-primary">{self.name}</span>
         </div>
@@ -56,6 +56,8 @@ export function LookalikesSection({ self, lookalikes }: { self: { id: number; na
                 <img
                   src={artUrl(l.id, 160)}
                   alt={shown ? l.name : "Lookalike silhouette"}
+                  loading="lazy"
+                  decoding="async"
                   className={cn("relative h-[85%] w-[85%] object-contain transition-all duration-500", shown ? "scale-105" : "[filter:brightness(0)]")}
                 />
               </button>
