@@ -649,8 +649,9 @@ async function crowd(width, height) {
   const early = await page.request.get(`${BASE}/api/geo/crowd?date=${date}`);
   if (early.status() !== 403) errors.push(`crowd map: today's map answered without a finished Daily (${early.status()})`);
   for (const [cx, cy] of [[0.42, 0.45], [0.44, 0.47], [0.6, 0.4]]) await seedDaily(date, cx, cy);
-  await page.goto(`${BASE}/guessr?play=daily`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
   await closeHowTo(page);
+  await page.getByTestId("geo-daily-card").getByRole("button").first().click();
   for (let i = 0; i < 5; i++) {
     await shotLoaded(page);
     await pinAndGuess(page, phone, 0.4 + i * 0.05);

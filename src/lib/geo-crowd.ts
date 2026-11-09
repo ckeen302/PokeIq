@@ -9,7 +9,7 @@ import { LAUNCH_DATE } from "@/lib/daily";
  */
 
 /** Cells across the map's longer side: coarse enough that a cell is a neighbourhood, not a pin. */
-export const CROWD_GRID = 40;
+export const CROWD_GRID = 64;
 /** A round's map shows once at least this many trainers pinned it (fewer says little and points at someone). */
 export const CROWD_MIN_PINS = 3;
 

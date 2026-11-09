@@ -202,6 +202,16 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
     const e = engine.current;
     if (!e || !revealed.length) return;
     const pts = revealed.flatMap((r) => [toWorld(...flagAt(r.answer)),...(r.guess ? [toWorld(r.guess.x, r.guess.y)] : [])]);
+    // A crowd map frames the busiest cells too (those holding most of the pins).
+    if (density) {
+      const total = density.cells.reduce((s, c) => s + c[2], 0);
+      let held = 0;
+      for (const [x, y, n] of density.cells) {
+        if (held >= total * 0.7) break;
+        pts.push(toWorld(x, y));
+        held += n;
+      }
+    }
     const xs = pts.map((p) => p[0]);
     const ys = pts.map((p) => p[1]);
     const box: Box = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
@@ -337,7 +347,7 @@ function Density({ density, toScreen, cell, id }: { density: NonNullable<Props["
         {[...density.cells].reverse().map(([x, y, n], i) => {
           const share = n / Math.max(1, density.max);
           const [cx, cy] = toScreen(x, y);
-          return <circle key={i} cx={cx} cy={cy} r={Math.max(4, cell * (0.55 + 0.75 * Math.sqrt(share)))} fill={crowdColor(share)} opacity={0.45 + 0.5 * share} />;
+          return <circle key={i} cx={cx} cy={cy} r={Math.max(4, cell * (0.55 + 0.75 * Math.sqrt(share)))} fill={crowdColor(share)} opacity={0.35 + 0.55 * share} />;
         })}
       </g>
     </g>
