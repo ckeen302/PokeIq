@@ -39,6 +39,7 @@ export function scopeLabel(s: Scope): string {
   if (s.kind === "type") return `${capitalize(s.type)} type`;
   if (s.kind === "gen") return `Gen ${s.gen} · ${GENERATION_REGIONS[s.gen]}`;
   if (s.kind === "forms") return "With forms";
+  if (s.kind === "core") return "No legendaries";
   return "All Pokémon";
 }
 
@@ -237,6 +238,11 @@ function Switchers({ m, s }: { m: Metric; s: Scope }) {
           <Chip href={rankingPath(m.slug, { kind: "forms" })} active={s.kind === "forms"}>
             With Megas &amp; forms
           </Chip>
+          {m.byCore && (
+            <Chip href={rankingPath(m.slug, { kind: "core" })} active={s.kind === "core"}>
+              No legendaries
+            </Chip>
+          )}
           {m.byGen &&
             Object.keys(GENERATION_REGIONS).map((g) => {
               const gen = Number(g);
@@ -285,13 +291,14 @@ export function RankingView({ m, s }: { m: Metric; s: Scope }) {
   const heading = rankingHeading(m, s);
   const crumbs = rankingCrumbs(m, s);
   const faq = rankingFaq(m, s);
+  const explorer = explorerHref(m, s);
   const opposite = m.opposite ? getMetric(m.opposite) : undefined;
   const oppositeScope = opposite && isBuiltPage(opposite.slug, s) ? s : ALL;
   const list = itemList(
     heading,
     rows.slice(0, LD_ITEMS).map((r) => ({ name: r.entry.name, path: `/pokemon/${r.entry.slug}` }))
   );
-  const more = s.kind === "type" || s.kind === "gen" ? METRICS.filter((x) => x.slug !== m.slug && isBuiltPage(x.slug, s)) : [];
+  const more = s.kind === "type" || s.kind === "gen" || s.kind === "core" ? METRICS.filter((x) => x.slug !== m.slug && isBuiltPage(x.slug, s)) : [];
 
   return (
     <article className="mx-auto max-w-6xl space-y-6" data-testid="ranking-page">
@@ -308,10 +315,12 @@ export function RankingView({ m, s }: { m: Metric; s: Scope }) {
         </p>
         <p className="max-w-3xl text-sm text-muted-foreground">{countingNote(m, s)} Data from PokéAPI.</p>
         <div className="flex flex-wrap gap-2 pt-1">
-          <Link href={explorerHref(m, s)} className="inline-flex h-9 items-center gap-1.5 rounded-md border border-foreground/15 bg-shade/30 px-3 font-display text-xs font-semibold uppercase tracking-wider hover:border-screen/60" data-testid="ranking-explorer-link">
-            <Table2 className="h-3.5 w-3.5" aria-hidden />
-            Open in the Pokédex
-          </Link>
+          {explorer && (
+            <Link href={explorer} className="inline-flex h-9 items-center gap-1.5 rounded-md border border-foreground/15 bg-shade/30 px-3 font-display text-xs font-semibold uppercase tracking-wider hover:border-screen/60" data-testid="ranking-explorer-link">
+              <Table2 className="h-3.5 w-3.5" aria-hidden />
+              Open in the Pokédex
+            </Link>
+          )}
           {opposite && (
             <Link href={rankingPath(opposite.slug, oppositeScope)} className="inline-flex h-9 items-center rounded-md border border-foreground/15 px-3 font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:border-screen/60 hover:text-foreground">
               {rankingHeading(opposite, oppositeScope)}

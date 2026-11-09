@@ -120,6 +120,13 @@ export default function RankingsHub() {
         </h2>
         <LinkRow scope={{ kind: "forms" }} />
       </section>
+
+      <section aria-labelledby="hub-core" className="hud space-y-2 rounded-lg border bg-card p-3">
+        <h2 id="hub-core" className="font-pixel text-[10px] uppercase tracking-wider text-screen">
+          Without legendary and mythical Pokémon
+        </h2>
+        <LinkRow scope={{ kind: "core" }} />
+      </section>
     </article>
   );
 }

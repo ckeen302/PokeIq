@@ -12,6 +12,7 @@ import { SPLASH_INIT_SCRIPT, THEME_INIT_SCRIPT } from "@/lib/theme";
 import { BootLoader } from "@/components/layout/BootLoader";
 import { ErrorReporter, ReportProblem } from "@/components/layout/ReportProblem";
 import { SHINY_ORIGIN } from "@/lib/shiny";
+import SPLASH_SCREENS from "@/lib/splash-screens.json";
 import "./globals.css";
 
 // The site's fonts are committed in src/fonts (the same latin files Google Fonts serves, all under the SIL Open Font License),
@@ -61,7 +62,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   openGraph: { siteName: SITE_NAME, type: "website", locale: "en_US", title: `${SITE_NAME}: ${SITE_TAGLINE}`, description: SITE_DESCRIPTION },
   twitter: { card: "summary_large_image", title: `${SITE_NAME}: ${SITE_TAGLINE}`, description: SITE_DESCRIPTION },
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: SITE_NAME },
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: SITE_NAME, startupImage: SPLASH_SCREENS.map((x) => ({ url: x.href, media: x.media })) },
   // Google Search Console's HTML-tag check (docs/search-console.md). Read at build time.
   ...(GOOGLE_SITE_VERIFICATION && { verification: { google: GOOGLE_SITE_VERIFICATION } }),
 };
