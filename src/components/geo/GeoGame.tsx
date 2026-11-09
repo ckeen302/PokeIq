@@ -57,6 +57,8 @@ const preloadAfterRound = () =>
     .catch(() => undefined);
 /** A game got ready on hover is used for a click this soon after. */
 const PREFETCH_TTL_MS = 60_000;
+/** The likeliest game is started ahead this long after the page has loaded, clear of its first paints. */
+const WARM_AFTER_LOAD_MS = 2000;
 import { ShotCarousel, shotFit } from "./ShotCarousel";
 import { BAR_BTN, CountdownPill, ExitButton, FullscreenButton, GameShell, GuessButton, HudDials, MapDock, Notch, RoundBadge, TimerDial, ValueDial, usePhone } from "./GameShell";
 import { roundViewsOf } from "@/lib/geo-look";
@@ -389,10 +391,10 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
    * click asks for exactly the same game, within a minute.
    */
   const ahead = useRef<{ key: string; at: number; res: Promise<GeoStartResponse> } | null>(null);
-  function prefetch(opts: StartOpts) {
+  function prefetch(opts: StartOpts, withMap = true) {
     if (phase !== "setup") return;
     preloadAfterRound();
-    void preloadImage(WORLD_MAP_SRC);
+    if (withMap) void preloadImage(WORLD_MAP_SRC);
     if (opts.daily || opts.weekly || settings.timer) return;
     const { body } = startBody(opts);
     const key = JSON.stringify(body);
@@ -404,36 +406,43 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   const warmProps = (opts: StartOpts) => ({ onPointerEnter: () => prefetch(opts), onFocus: () => prefetch(opts) });
 
   /**
-   * And once per page view, when the page goes idle: the game the player is
-   * most likely to start (a friend's challenge, else the solo game on the map,
-   * filter and length the page opened with, after the saved settings are read),
-   * so a click within the minute shows round 1 with its picture already in.
-   * Starting a free game or a challenge records nothing (only a guess does),
-   * so a game that's never played costs nothing but the request.
+   * And once per page view, a couple of seconds after the page has loaded and
+   * gone idle: the game the player is most likely to start (a friend's
+   * challenge, else the solo game on the map, filter and length the page opened
+   * with, after the saved settings are read), so a click within the minute
+   * shows round 1 with its picture already in. Starting a free game or a
+   * challenge records nothing (only a guess does), so a game that's never
+   * played costs nothing but the request. The big world map waits for a Play
+   * button to be pointed at: on a phone's first load it would only hold up
+   * the page's own pictures.
    */
   const warmOnLoad = useRef<() => void>(() => undefined);
   warmOnLoad.current = () => {
-    if (challenge) prefetch({ kind: "game", challenge: challenge.token });
-    else if (filterOk) prefetch({ kind: "game" });
+    if (challenge) prefetch({ kind: "game", challenge: challenge.token }, false);
+    else if (filterOk) prefetch({ kind: "game" }, false);
   };
   useEffect(() => {
     let done = false;
+    let timer = 0;
+    let idle = 0;
     const run = () => {
       if (done) return;
       done = true;
       warmOnLoad.current();
     };
-    if (typeof window.requestIdleCallback === "function") {
-      const id = window.requestIdleCallback(run, { timeout: 600 });
-      return () => {
-        done = true;
-        window.cancelIdleCallback(id);
-      };
-    }
-    const id = window.setTimeout(run, 200);
+    const afterLoad = () => {
+      timer = window.setTimeout(() => {
+        if (typeof window.requestIdleCallback === "function") idle = window.requestIdleCallback(run, { timeout: 1000 });
+        else run();
+      }, WARM_AFTER_LOAD_MS);
+    };
+    if (document.readyState === "complete") afterLoad();
+    else window.addEventListener("load", afterLoad, { once: true });
     return () => {
       done = true;
-      window.clearTimeout(id);
+      window.removeEventListener("load", afterLoad);
+      window.clearTimeout(timer);
+      if (idle && typeof window.cancelIdleCallback === "function") window.cancelIdleCallback(idle);
     };
   }, []);
 
@@ -698,6 +707,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
             <HubTile
               testId="geo-daily-card"
               className="max-sm:order-first"
+              priority
               tone="warning"
               image={tileImage(dailyMap?.map.src ?? WORLD_MAP_SRC)}
               icon={<Compass className="h-5 w-5" />}

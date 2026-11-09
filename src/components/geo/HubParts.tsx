@@ -59,6 +59,7 @@ export function HubTile({
   className,
   testId,
   badge,
+  priority,
 }: {
   tone?: TileTone;
   /** A picture for the banner (a CDN-cached preview; null: a tinted banner while it's worked out); no banner at all when left out. */
@@ -74,6 +75,8 @@ export function HubTile({
   testId?: string;
   /** A corner flag on the banner ("Coming soon", "Done"). */
   badge?: React.ReactNode;
+  /** The banner is the first screen's biggest picture: fetched ahead of the page's other pictures. */
+  priority?: boolean;
 }) {
   const t = TONE[tone];
   return (
@@ -91,7 +94,7 @@ export function HubTile({
         <div className={cn("relative aspect-[16/6] overflow-hidden bg-gradient-to-br to-transparent sm:aspect-[16/7]", t.wash)}>
           {image && (
             // eslint-disable-next-line @next/next/no-img-element -- CDN-cached preview
-            <img src={image} alt="" decoding="async" className="absolute inset-0 h-full w-full object-cover opacity-80 transition-[opacity,transform] duration-300 group-hover:scale-[1.03] group-hover:opacity-100" />
+            <img src={image} alt="" decoding="async" fetchPriority={priority ? "high" : undefined} className="absolute inset-0 h-full w-full object-cover opacity-80 transition-[opacity,transform] duration-300 group-hover:scale-[1.03] group-hover:opacity-100" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" aria-hidden />
           <span className={cn("absolute bottom-2 left-3 flex h-9 w-9 items-center justify-center rounded-md border bg-card/90 backdrop-blur", t.label)} aria-hidden>
@@ -132,7 +135,7 @@ export function TileFlag({ children, tone = "muted" }: { children: React.ReactNo
     <span
       className={cn(
         "rounded-sm border px-1.5 py-1 font-pixel text-[9px] uppercase leading-none tracking-wider backdrop-blur",
-        tone === "success" ? "border-success/60 bg-success/20 text-success" : tone === "warning" ? "border-warning/60 bg-warning/20 text-warning" : "border-border bg-card/85 text-muted-foreground"
+        tone === "success" ? "border-success/60 bg-success/10 text-success" : tone === "warning" ? "border-warning/60 bg-warning/10 text-warning" : "border-border bg-card/85 text-muted-foreground"
       )}
     >
       {children}

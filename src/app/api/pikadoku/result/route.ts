@@ -47,6 +47,7 @@ export async function POST(request: NextRequest) {
       identity: user ? `u:${user.id}` : `d:${d.player}`,
       name: user ? user.username : (d.name ?? null),
       start: d.start,
+      ip: clientIp(request),
     });
     if (!out.ok) return NextResponse.json({ error: out.error }, { status: out.status, headers: NO_STORE });
     return NextResponse.json(out.result, { headers: NO_STORE });

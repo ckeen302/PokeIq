@@ -1,4 +1,5 @@
 import "server-only";
+import { CONN_MIN_MS, claimBoardSlot, plausibleMs } from "./board-guard";
 import { getServiceSupabase } from "@/lib/supabase";
 import { isCurrentConnDate, type ConnBoardStanding, type ConnDaySummary } from "@/lib/connections/types";
 import { playGuesses } from "@/lib/connections/generator";
@@ -111,6 +112,8 @@ export interface ConnResultInput {
   start?: string;
   /** The name to rank under: a signed-in trainer's username, or a checked trainer name. None: not ranked. */
   name?: string | null;
+  /** The player's address: a few new board entries per address a day (board-guard). */
+  ip?: string | null;
 }
 
 /**
@@ -158,7 +161,9 @@ async function rankOnBoard(board: ConnBoardStore | null, input: ConnResultInput,
   if (!solved) return { unranked: "unsolved" };
   if (!input.name) return { unranked: "no-name" };
   const durationMs = timeFromStart(input.start, input.date, now);
-  if (durationMs === null) return { unranked: "untimed" };
+  // No start token, a forged one, or a time nobody could solve it in.
+  if (!plausibleMs(durationMs, CONN_MIN_MS)) return { unranked: "untimed" };
+  if (!(await claimBoardSlot(input.ip, "conn", input.date))) return { unranked: "limited" };
   const out = await board.record({ date: input.date, player, name: input.name, mistakes, durationMs, hinted });
   if (out === null) return { unranked: "off" };
   if (out === "name-taken") return { unranked: "name-taken" };

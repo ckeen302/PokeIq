@@ -87,7 +87,7 @@ export function TimelineList({ entries, eraStarts }: { entries: TimelineEntry[];
                       <p className="mt-2 flex flex-wrap gap-x-3 text-[11px] text-muted-foreground/80">
                         Sources:
                         {e.sources.map((u) => (
-                          <a key={u} href={u} target="_blank" rel="noopener noreferrer" className="underline-offset-2 hover:text-foreground hover:underline">
+                          <a key={u} href={u} target="_blank" rel="noopener noreferrer" className="underline-offset-2 hover:text-foreground hover:underline max-sm:inline-flex max-sm:min-h-10 max-sm:items-center">
                             {new URL(u).hostname.replace(/^www\./, "")}
                           </a>
                         ))}
@@ -125,7 +125,7 @@ function CompactItem({ entry: e }: { entry: TimelineEntry }) {
         <span className="ml-auto flex flex-wrap items-baseline gap-x-3 text-[11px] text-muted-foreground/80">
           {e.setHref && <Link href={e.setHref} className="text-sm text-muted-foreground hover:text-primary">Cards →</Link>}
           {e.sources.map((u) => (
-            <a key={u} href={u} target="_blank" rel="noopener noreferrer" className="underline-offset-2 hover:text-foreground hover:underline">
+            <a key={u} href={u} target="_blank" rel="noopener noreferrer" className="underline-offset-2 hover:text-foreground hover:underline max-sm:inline-flex max-sm:min-h-10 max-sm:items-center">
               {host(u)}
             </a>
           ))}

@@ -4,6 +4,7 @@ import { getServiceSupabase } from "@/lib/supabase";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { secretIsSecure } from "@/lib/server/crypto";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
+import { BOARD_FULL, claimBoardSlot, utcDayOf } from "@/lib/server/board-guard";
 import { readStreakResult } from "@/lib/server/geo-streak";
 import { GEO_REGION_STREAK_BOARD } from "@/lib/geo-streak-types";
 
@@ -40,6 +41,7 @@ export async function POST(request: NextRequest) {
   if (Date.now() - result.finishedAt > RESULT_MAX_AGE_MS) return NextResponse.json({ error: "This result is too old to submit." }, { status: 410 });
   if (result.streak < 1) return NextResponse.json({ error: "Name at least one region to get on the board." }, { status: 400 });
 
+  if (!(await claimBoardSlot(clientIp(request), "geo-streak", utcDayOf(), 40))) return NextResponse.json({ error: BOARD_FULL }, { status: 429 });
   const { error } = await supabase.from("geo_runs").insert({
     session_id: result.sid,
     player_name: parsed.data.playerName,

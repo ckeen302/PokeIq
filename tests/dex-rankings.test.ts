@@ -202,7 +202,26 @@ describe("copy and links", () => {
 
   it("gives every metric a slug and a sort the Pokédex understands", () => {
     const sorts = ["bst", "hp", "atk", "def", "spa", "spd", "spe", "height", "weight"];
-    for (const x of METRICS) expect(sorts).toContain(x.key);
+    for (const x of METRICS.filter((x) => x.key !== "bulk")) expect(sorts).toContain(x.key);
+    expect(explorerHref(m("bulkiest"), ALL)).toBeNull();
+  });
+});
+
+describe("bulk and non-legendary lists", () => {
+  it("ranks HP + Defense + Special Defense", () => {
+    const top = ranking(m("bulkiest"))[0];
+    expect(top.value).toBe(top.entry.stats.hp + top.entry.stats.def + top.entry.stats.spd);
+  });
+
+  it("leaves legendaries and mythicals out of the core scope", () => {
+    const core = { kind: "core" } as const;
+    expect(isBuiltPage("strongest", core)).toBe(true);
+    expect(isBuiltPage("heaviest", core)).toBe(false);
+    const names = new Set(POKEDEX.filter((p) => p.legendary || p.mythical).map((p) => p.slug));
+    expect(names.size).toBeGreaterThan(0);
+    for (const r of ranking(m("strongest"), core)) expect(names.has(r.entry.slug)).toBe(false);
+    expect(parseScope(scopeSegment(core)!)).toEqual(core);
+    expect(rankingHeading(m("strongest"), core)).toBe("Strongest non-legendary Pokémon");
   });
 });
 
@@ -226,5 +245,29 @@ describe("rankingFacts", () => {
   it("speciesEntry copies the snapshot", () => {
     const p = POKEDEX[0];
     expect(speciesEntry(p)).toMatchObject({ species: p.id, bst: p.bst, weight: p.weight, form: null });
+  });
+});
+
+describe("long lists: the top in the page, the rest from /rows", () => {
+  it("splits a list into its first rows and the rest, with nothing lost or repeated", async () => {
+    const { FIRST_ROWS, rowsHtml, restRowsResponse } = await import("@/components/pokedex/rankings/rows-html");
+    const m = getMetric("heaviest")!;
+    const rows = ranking(m, ALL);
+    expect(rows.length).toBeGreaterThan(FIRST_ROWS);
+    const head = rowsHtml(m, rows.slice(0, FIRST_ROWS));
+    const res = restRowsResponse(m, ALL);
+    expect(res.headers.get("X-Robots-Tag")).toBe("noindex");
+    const tail = await res.text();
+    const ids = (html: string) => [...html.matchAll(/<tr id=([a-z0-9-]+)>/g)].map((x) => x[1]);
+    expect(ids(head)).toHaveLength(FIRST_ROWS);
+    expect([...ids(head), ...ids(tail)]).toEqual(rows.map((r) => r.entry.key));
+    // Only the first screen's pictures load eagerly.
+    expect(tail).not.toMatch(/height=40>/);
+  });
+
+  it("puts every ranking fact's row in the page itself", () => {
+    return import("@/components/pokedex/rankings/rows-html").then(({ FIRST_ROWS }) => {
+      for (const p of POKEDEX.slice(0, 200)) for (const f of rankingFacts(p.slug)) expect(f.rank).toBeLessThanOrEqual(FIRST_ROWS);
+    });
   });
 });

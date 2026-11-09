@@ -48,7 +48,7 @@ export function LearnCard({ answer, shot, map, className }: { answer: GeoAnswer;
         <img src={shot} alt="" className="mt-0.5 h-12 w-16 shrink-0 rounded border border-white/20 object-cover" />
       )}
       <div className="min-w-0">
-        <p className="truncate font-display text-base font-bold uppercase leading-tight" data-testid="geo-answer-place">
+        <p className="truncate font-display text-base font-bold uppercase leading-tight max-md:whitespace-normal max-md:text-sm max-md:[overflow-wrap:anywhere]" data-testid="geo-answer-place">
           {placeLabel(answer, map)}
         </p>
         <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-white/70">

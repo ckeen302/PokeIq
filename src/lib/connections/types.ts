@@ -130,7 +130,7 @@ export interface ConnDaySummary {
 }
 
 /** Where a finished daily stands on the leaderboard: its place, or why it isn't on it. */
-export type ConnBoardStanding = { position: number; total: number; name: string } | { unranked: "no-name" | "unsolved" | "untimed" | "name-taken" | "off" };
+export type ConnBoardStanding = { position: number; total: number; name: string } | { unranked: "no-name" | "unsolved" | "untimed" | "name-taken" | "limited" | "off" };
 
 export type ConnResultResponse = ({ available: false } | { available: true; summary: ConnDaySummary }) & {
   board?: ConnBoardStanding;
