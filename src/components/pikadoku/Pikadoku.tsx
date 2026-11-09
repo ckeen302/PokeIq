@@ -864,7 +864,11 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
             ) : !board.rows ? (
               <p className="py-3 text-center text-sm text-muted-foreground">The leaderboard is off right now.</p>
             ) : board.rows.length === 0 ? (
-              <p className="py-3 text-center text-sm text-muted-foreground">Nobody is on the board yet. Finish a grid with a trainer name to rank.</p>
+              <div className="py-3 text-center text-sm text-muted-foreground">
+                {/* Two short lines rather than one paragraph: each is smaller than the title, so this late-arriving empty state never becomes the page's largest paint. */}
+                <p>Nobody is on the board yet.</p>
+                <p>Finish a grid with a trainer name to rank.</p>
+              </div>
             ) : (
               <ol className="divide-y divide-foreground/10 rounded-md border border-foreground/10 text-sm">
                 {board.rows.map((r, i) => (
