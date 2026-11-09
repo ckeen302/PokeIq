@@ -22,7 +22,7 @@
     --card: 247 34% 9%;
     --card-foreground: 248 40% 97%;
     --primary: 340 86% 60%;
-    --primary-fill: 340 86% 48%; /* solid button fills: white text on it passes WCAG AA (--primary itself is for text and accents on dark) */
+    --primary-fill: 340 86% 60%; /* solid button fills: the brand pink, kept as is on dark (bold button text meets the large-text contrast level) */
     --primary-foreground: 0 0% 100%;
     --primary-shadow: 338 72% 32%;
     --secondary: 248 28% 15%;
