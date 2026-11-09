@@ -11,7 +11,7 @@
  *
  * Set CHROMIUM_PATH to use a preinstalled Chromium.
  */
-import { chromium } from "playwright";
+import { chromium, request } from "playwright";
 import fs from "fs";
 
 const BASE = process.argv[2] ?? "http://localhost:3000";
@@ -614,8 +614,73 @@ async function teamDuel(width, height) {
   for (const p of pages) await p.context().close();
 }
 
-/** E2E_ONLY=solo1440,weekly1440,duel1440,solo390,weekly390,duel390,royale1440,team1440,royale390,team390 runs a subset. */
-const only = (process.env.E2E_ONLY ?? "solo1440,weekly1440,duel1440,solo390,weekly390,duel390,royale1440,team1440,royale390,team390").split(",");
+// ---------------------------------------------------------------------------
+// The Daily's crowd map: a few other trainers' runs seeded through the API,
+// then today's Daily played to the end, where the map shows where they pinned
+// ---------------------------------------------------------------------------
+
+/** One trainer's whole Daily through the API (their own cookies, so their own device key), pins near (cx, cy). */
+async function seedDaily(date, cx, cy) {
+  const api = await request.newContext({ baseURL: BASE });
+  const started = await api.post("/api/geo", { data: { daily: date } });
+  if (!started.ok()) throw new Error(`seeding: the Daily didn't start (${started.status()})`);
+  let { token } = await started.json();
+  for (let i = 0; i < 5 && token; i++) {
+    const x = Math.min(1, Math.max(0, cx + (Math.random() - 0.5) * 0.04));
+    const y = Math.min(1, Math.max(0, cy + (Math.random() - 0.5) * 0.04));
+    const res = await api.post("/api/geo/guess", { data: { token, x, y } });
+    if (!res.ok()) throw new Error(`seeding: a guess failed (${res.status()})`);
+    const body = await res.json();
+    token = body.done ? null : body.token;
+  }
+  await api.dispose();
+}
+
+async function crowd(width, height) {
+  const phone = width < 768;
+  const tag = `${width}`;
+  const page = await newPage({ width, height });
+  step(`daily crowd map at ${tag}`);
+  // Nobody may read today's map without a finished Daily.
+  const date = await page.evaluate(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  });
+  const early = await page.request.get(`${BASE}/api/geo/crowd?date=${date}`);
+  if (early.status() !== 403) errors.push(`crowd map: today's map answered without a finished Daily (${early.status()})`);
+  for (const [cx, cy] of [[0.42, 0.45], [0.44, 0.47], [0.6, 0.4]]) await seedDaily(date, cx, cy);
+  await page.goto(`${BASE}/guessr?play=daily`, { waitUntil: "networkidle" });
+  await closeHowTo(page);
+  for (let i = 0; i < 5; i++) {
+    await shotLoaded(page);
+    await pinAndGuess(page, phone, 0.4 + i * 0.05);
+    const next = page.getByTestId("geo-next");
+    await next.waitFor();
+    const text = await next.innerText();
+    await next.click();
+    if (/summary|results/i.test(text)) break;
+  }
+  const card = page.getByTestId("geo-crowd");
+  await card.waitFor({ timeout: 15_000 });
+  await card.getByTestId("geo-crowd-layer").waitFor({ timeout: 15_000 });
+  if (!/\d+ trainers pinned round 1/.test(await page.getByTestId("geo-crowd-count").innerText())) errors.push("crowd map: no pin count for round 1");
+  const tabs = await page.locator("[data-testid^=geo-crowd-round-]").count();
+  if (tabs !== 5) errors.push(`crowd map: ${tabs} round tabs, expected 5`);
+  await page.getByTestId("geo-crowd-round-3").click();
+  if (!/round 3/.test(await page.getByTestId("geo-crowd-count").innerText())) errors.push("crowd map: picking round 3 didn't switch the map");
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  if (overflow > 0) errors.push(`crowd map: the page scrolls sideways by ${overflow}px`);
+  const png = await page.request.get(`${BASE}/api/geo/crowd/card?date=${date}&round=3`);
+  if (png.status() !== 403) errors.push(`crowd map: the share card answered without a finished Daily (${png.status()})`);
+  await card.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(1500);
+  await card.screenshot({ path: `${OUT}/guessr-crowd-${tag}.png` });
+  await page.screenshot({ path: `${OUT}/guessr-crowd-summary-${tag}.png`, fullPage: true });
+  await page.context().close();
+}
+
+/** E2E_ONLY=solo1440,weekly1440,duel1440,solo390,weekly390,duel390,royale1440,team1440,royale390,team390,crowd390,crowd1440 runs a subset. */
+const only = (process.env.E2E_ONLY ?? "solo1440,weekly1440,duel1440,solo390,weekly390,duel390,royale1440,team1440,royale390,team390,crowd390").split(",");
 try {
   if (only.includes("solo1440")) await solo(1440, 900);
   if (only.includes("weekly1440")) await weekly(1440, 900);
@@ -627,6 +692,8 @@ try {
   if (only.includes("team1440")) await teamDuel(1440, 900);
   if (only.includes("royale390")) await royale(390, 844);
   if (only.includes("team390")) await teamDuel(390, 844);
+  if (only.includes("crowd390")) await crowd(390, 844);
+  if (only.includes("crowd1440")) await crowd(1440, 900);
 } catch (err) {
   errors.push(`FAILED: ${err?.stack ?? err}`);
 } finally {

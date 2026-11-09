@@ -6,6 +6,7 @@ import { WORLD_REGION, type GeoRegionInfo } from "@/lib/geo-types";
 import { createAtlas, loadAtlas, type AtlasData, type AtlasEngine, type AtlasView, type Box } from "@/components/atlas/atlas-engine";
 import { preloadImage } from "@/lib/preload";
 import { cn } from "@/lib/utils";
+import { crowdColor, type GeoCrowdRound } from "@/lib/geo-crowd";
 
 export interface MapPin {
   x: number;
@@ -55,6 +56,8 @@ interface Props {
    * filling the card, the rest a drag away; a region's map is that region.
    */
   land?: boolean;
+  /** The Daily's crowd map: where everyone pinned this round, as a heat cloud under the pins. */
+  density?: Pick<GeoCrowdRound, "cells" | "cw" | "ch" | "max"> | null;
 }
 
 export const WORLD_MAP = "/geo/maps/world.webp";
@@ -102,7 +105,7 @@ export function mapAspect(region: Pick<GeoRegionInfo, "map">): number {
  * round draws a dashed line from the guess to the answer, then zooms to fit
  * them both.
  */
-export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, controls = true, className, fill, others = [], land = false }: Props) {
+export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, controls = true, className, fill, others = [], land = false, density }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engine = useRef<AtlasEngine | null>(null);
@@ -250,6 +253,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
       )}
       {view && (
         <svg className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden>
+          {density && density.cells.length > 0 && <Density density={density} toScreen={toScreen} cell={Math.max(density.cw * bw, density.ch * bh) * view.s} id={maskId} />}
           {revealed.map((r, i) => {
             const [ax, ay] = toScreen(...flagAt(r.answer));
             const g = r.guess ? toScreen(r.guess.x, r.guess.y) : null;
@@ -314,6 +318,29 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * The crowd's heat cloud: each grid cell a soft glow, bigger and hotter the
+ * more trainers pinned there, blurred together into one cloud at any zoom.
+ */
+function Density({ density, toScreen, cell, id }: { density: NonNullable<Props["density"]>; toScreen: (x: number, y: number) => [number, number]; cell: number; id: string }) {
+  const blur = Math.max(2, Math.min(18, cell * 0.45));
+  return (
+    <g data-testid="geo-crowd-layer">
+      <filter id={`${id}-heat`} x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation={blur} />
+      </filter>
+      <g filter={`url(#${id}-heat)`} opacity={0.92}>
+        {/* Quietest first, so the busiest cells glow on top. */}
+        {[...density.cells].reverse().map(([x, y, n], i) => {
+          const share = n / Math.max(1, density.max);
+          const [cx, cy] = toScreen(x, y);
+          return <circle key={i} cx={cx} cy={cy} r={Math.max(4, cell * (0.55 + 0.75 * Math.sqrt(share)))} fill={crowdColor(share)} opacity={0.45 + 0.5 * share} />;
+        })}
+      </g>
+    </g>
   );
 }
 

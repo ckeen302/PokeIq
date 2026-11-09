@@ -116,7 +116,17 @@ export interface RoundScoreStore {
   flagged(): Promise<FlaggedPlayer[]>;
   /** A trainer's logged rounds, newest first (at most `limit`). */
   ofPlayer(key: string, limit?: number): Promise<PlayerRoundRow[]>;
+  /** Daily rounds' pins (world map 0–1) on these screenshots logged in [since, until) ms, oldest first, for the crowd map. */
+  dailyPins?(shots: readonly string[], since: number, until: number): Promise<DailyPinRow[]>;
 }
+/** A daily round's pin, as the crowd map reads it: the trainer's key only to keep one pin each, never sent on. */
+export interface DailyPinRow {
+  shot: string;
+  pin: [number, number];
+  player: string | null;
+}
+/** How many pins a day's crowd map reads at most. */
+const CROWD_ROWS = 20_000;
 
 export class RoundScoresUnavailable extends Error {}
 class Unavailable extends RoundScoresUnavailable {}
@@ -179,6 +189,16 @@ export function memoryRoundScoreStore(): RoundScoreStore {
         .reverse()
         .slice(0, limit)
         .map((r) => ({ region: r.region ?? null, family: r.family ?? null, kind: r.kind ?? null, score: r.score, hit: r.hit ?? null, run: r.run ?? null, shot: r.shot, at: r.at }));
+    },
+    async dailyPins(shots, since, until) {
+      const want = new Set(shots);
+      return mem()
+        .filter((r) => r.mode === "daily" && want.has(r.shot) && r.at >= since && r.at < until)
+        .flatMap((r) => {
+          const pin = validPin(r.pin);
+          return pin ? [{ shot: r.shot, pin, player: playerKeyOf(r.player) }] : [];
+        })
+        .slice(0, CROWD_ROWS);
     },
   };
 }
@@ -290,6 +310,25 @@ export function supabaseRoundScoreStore(sb: Sb): RoundScoreStore {
         hit: r.hit,
         run: r.run_id,
       }));
+    },
+    async dailyPins(shots, since, until) {
+      if (!shots.length) return [];
+      const { data, error } = await sb
+        .from("geo_round_scores")
+        .select("shot_id, pin_x, pin_y, player_key")
+        .eq("mode", "daily")
+        .in("shot_id", [...shots])
+        .not("pin_x", "is", null)
+        .gte("created_at", new Date(since).toISOString())
+        .lt("created_at", new Date(until).toISOString())
+        .order("created_at", { ascending: true })
+        .limit(CROWD_ROWS);
+      check(error);
+      type Row = { shot_id: string; pin_x: number | null; pin_y: number | null; player_key: string | null };
+      return ((data ?? []) as Row[]).flatMap((r) => {
+        const pin = validPin([Number(r.pin_x), Number(r.pin_y)]);
+        return pin ? [{ shot: r.shot_id, pin, player: r.player_key }] : [];
+      });
     },
   };
 }
