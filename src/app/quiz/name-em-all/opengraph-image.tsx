@@ -11,10 +11,10 @@ export const alt = "Name 'em All: how many Pokémon can you name from memory?";
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 
-const NAMED = new Set([1, 2, 4, 5, 7, 9, 10, 12, 16, 19, 20]);
+const NAMED = new Set([1, 2, 4, 5, 7, 9, 10, 12, 16]);
 
 export default function Image() {
-  const slots = POKEDEX.slice(0, 20);
+  const slots = POKEDEX.slice(0, 16);
   return ogCard({
     eyebrow: "Name 'em All · recall quiz",
     title: ["Can you name", ["every Pokémon?", C.green]],
@@ -27,7 +27,7 @@ export default function Image() {
           <span>{NAMED.size} / 151</span>
           <span style={{ color: C.green }}>11:42</span>
         </div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, width: 432 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, width: 452 }}>
           {slots.map((p) => {
             const named = NAMED.has(p.id);
             return (
@@ -37,16 +37,16 @@ export default function Image() {
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "center",
-                  width: 80,
-                  height: 52,
+                  width: 107,
+                  height: 58,
                   padding: "0 8px",
                   borderRadius: 8,
                   background: named ? `${C.green}26` : C.bg,
                   border: `2px solid ${named ? C.green : C.edge}`,
                 }}
               >
-                <span style={{ display: "flex", fontFamily: "Silkscreen", fontSize: 12, color: C.muted }}>{String(p.id).padStart(4, "0")}</span>
-                <span style={{ display: "flex", fontSize: 14, color: named ? C.text : C.muted }}>{named ? (p.name.length > 9 ? `${p.name.slice(0, 8)}…` : p.name) : "?"}</span>
+                <span style={{ display: "flex", fontFamily: "Silkscreen", fontSize: 13, color: C.muted }}>{String(p.id).padStart(4, "0")}</span>
+                <span style={{ display: "flex", fontSize: 16, color: named ? C.text : C.muted }}>{named ? p.name : "?"}</span>
               </div>
             );
           })}

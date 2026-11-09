@@ -12,7 +12,7 @@ import { ALL, formatValue, getMetric, leaderSentence, parseScope, ranking, ranki
  * leaders of three lists instead.
  */
 
-const HEIGHTS = [150, 112, 84];
+const HEIGHTS = [164, 136, 116];
 const ORDER = [1, 0, 2];
 
 function Podium({ m, top, accent }: { m: Metric; top: Ranked[]; accent: string }) {
@@ -32,15 +32,15 @@ function Podium({ m, top, accent }: { m: Metric; top: Ranked[]; accent: string }
                 width: 148,
                 height: HEIGHTS[i],
                 marginTop: 6,
-                paddingTop: 10,
+                paddingTop: 8,
                 borderRadius: "12px 12px 0 0",
                 background: C.panel,
                 border: `3px solid ${i === 0 ? accent : C.edge}`,
               }}
             >
               <div style={{ display: "flex", fontFamily: "Chakra Petch", fontSize: i === 0 ? 44 : 34, color: i === 0 ? accent : C.text }}>{r.rank}</div>
-              <div style={{ display: "flex", fontSize: 18, color: C.text, maxWidth: 136, textAlign: "center" }}>{r.entry.name.length > 14 ? `${r.entry.name.slice(0, 13)}…` : r.entry.name}</div>
-              <div style={{ display: "flex", fontFamily: "Silkscreen", fontSize: 15, color: C.muted, marginTop: 2 }}>{formatValue(m.key, r.value).main}</div>
+              <div style={{ display: "flex", fontSize: 20, color: C.text, maxWidth: 136, textAlign: "center" }}>{r.entry.name.length > 14 ? `${r.entry.name.slice(0, 13)}…` : r.entry.name}</div>
+              <div style={{ display: "flex", fontFamily: "Silkscreen", fontSize: 16, color: C.muted, marginTop: 4 }}>{formatValue(m.key, r.value).main}</div>
             </div>
           </div>
         );
