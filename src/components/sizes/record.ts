@@ -46,6 +46,8 @@ export interface RecordResult {
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+/** How far down the frame (a share of its height) the opening figure stands while the hook card shows. */
+const HOOK_LIFT = 0.17;
 
 async function pickVideoCodec(v: VideoSettings): Promise<VideoEncoderConfig | null> {
   if (typeof VideoEncoder === "undefined") return null;
@@ -259,7 +261,9 @@ export async function recordVideo(o: RecordOptions): Promise<RecordResult> {
     const drawFrame = async (i: number) => {
       const t = i / fps;
       const pf = playAt(plan, t, scene.heightAt);
-      scene.setView(pf.view);
+      // The hook card covers the frame's upper middle: while it shows, the first (smallest) figure stands lower, clear of it.
+      const hook = cardAlpha(t, -1, tl.hook, 0.4);
+      scene.setView(hook > 0 ? { ...pf.view, lift: HOOK_LIFT * hook * 2 * pf.view.d * Math.tan((lens.vfov * Math.PI) / 360) } : pf.view);
       await scene.settle(20000);
       scene.render(t, 1 / fps);
       g.drawImage(scene.canvas, 0, 0, W, H);

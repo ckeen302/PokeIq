@@ -150,7 +150,7 @@ export function TimelineDetail({ entry }: { entry: TimelineEntry }) {
         <ul className="space-y-1 text-xs">
           {entry.sources.map((s) => (
             <li key={s}>
-              <a href={s} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground">
+              <a href={s} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground max-sm:min-h-10">
                 <ExternalLink className="h-3 w-3" aria-hidden /> {host(s)}
               </a>
             </li>

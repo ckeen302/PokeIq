@@ -41,14 +41,23 @@ export async function runRankings({ browser, BASE, errors, step }) {
     for (const t of ["BreadcrumbList", "ItemList"]) if (!ld.includes(t)) errors.push(`rankings: heaviest has no ${t} JSON-LD`);
     const h1 = (await page.locator("h1").innerText()).toLowerCase();
     if (!h1.includes("heaviest")) errors.push(`rankings: heaviest h1 reads "${h1}"`);
+    // The page carries the top of the list; the rest comes in as the reader nears its end.
+    const first = await page.locator('[data-testid="ranking-table"] tbody tr').count();
+    if (first < 50 || first > 200) errors.push(`rankings: heaviest's page carries ${first} rows, expected the top of the list`);
+    await page.getByTestId("ranking-more").scrollIntoViewIfNeeded();
+    await page.waitForFunction(() => document.querySelectorAll('[data-testid="ranking-table"] tbody tr').length >= 1000, null, { timeout: 15_000 }).catch(() => {});
     const rows = await page.locator('[data-testid="ranking-table"] tbody tr').count();
-    if (rows < 1000) errors.push(`rankings: heaviest lists ${rows} rows, expected every Pokémon`);
+    if (rows < 1000) errors.push(`rankings: heaviest lists ${rows} rows once scrolled, expected every Pokémon`);
+    if (await page.getByTestId("ranking-more").count()) errors.push(`rankings: the "Show the full list" button stays after the rest is in`);
+    const rest = await page.request.get(`${BASE}/pokedex/rankings/heaviest/rows`);
+    if (rest.status() !== 200 || !/noindex/i.test(rest.headers()["x-robots-tag"] ?? "")) errors.push(`rankings: heaviest/rows answers ${rest.status()} with X-Robots-Tag "${rest.headers()["x-robots-tag"]}"`);
     const explorer = await page.getByTestId("ranking-explorer-link").getAttribute("href");
     if (explorer !== "/pokedex?sort=weight") errors.push(`rankings: "Open in the Pokédex" goes to ${explorer}`);
 
-    const first = page.locator('[data-testid="ranking-table"] tbody tr').first().locator('a[href^="/pokemon/"]');
-    const href = await first.getAttribute("href");
-    await first.click();
+    const top = page.locator('[data-testid="ranking-table"] tbody tr').first().locator('a[href^="/pokemon/"]');
+    const href = await top.getAttribute("href");
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await top.click();
     await page.waitForURL(new RegExp(`${href}$`));
     await page.locator("h1").first().waitFor();
     // The entry links back to its placing.

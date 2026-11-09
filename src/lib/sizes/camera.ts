@@ -35,6 +35,8 @@ export interface View {
   pitch: number;
   /** 0..1: the finale's rise over the rooftops. */
   rise: number;
+  /** Metres to aim above the figure's middle, so it sits lower in the frame (a video's opening, under its title card). */
+  lift?: number;
 }
 
 export interface Pose {
@@ -48,7 +50,7 @@ export const FACING = BASE_YAW + Math.PI;
 /** The side-on pose: looking across the boulevard (and a little down it) at the framed point. */
 function sidePose(v: View): Pose {
   const yaw = BASE_YAW + Math.max(-ORBIT_LIMIT, Math.min(ORBIT_LIMIT, v.orbit));
-  const target: [number, number, number] = [v.x, v.h * 0.5, 0];
+  const target: [number, number, number] = [v.x, v.h * 0.5 + (v.lift ?? 0), 0];
   const cp = Math.cos(v.pitch), sp = Math.sin(v.pitch);
   const dx = Math.sin(yaw) * cp, dy = -sp, dz = Math.cos(yaw) * cp;
   let y = target[1] - dy * v.d;
