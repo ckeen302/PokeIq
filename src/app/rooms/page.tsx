@@ -1,12 +1,13 @@
 import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { RoomList } from "@/components/rooms/RoomList";
 
 export const metadata: Metadata = pageMetadata({
   title: "Chat rooms",
   description: "Chat with other trainers on PokéIQ: the Main Lobby, Pokédle, Connections, Pikadoku, PokéGuessr, Battle and Quizzes rooms.",
   path: "/rooms",
+  image: SHARE_IMAGES.site,
 });
 
 export default function RoomsPage() {

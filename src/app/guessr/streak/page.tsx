@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { StreakGame } from "@/components/geo/StreakGame";
 import { geoRegions } from "@/lib/server/geo";
 import { WORLD_REGION } from "@/lib/geo-types";
@@ -10,6 +10,7 @@ export const metadata: Metadata = pageMetadata({
   description:
     "Region Streak is PokéGuessr's country streak: one in-game screenshot, pick the region from Kanto to Paldea. Right deals the next one, wrong ends the run. How long can you go?",
   path: "/guessr/streak",
+  image: SHARE_IMAGES.guessr,
 });
 
 export default function StreakPage() {

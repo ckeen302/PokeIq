@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
-import { METRICS, getMetric, isBuiltPage, parseScope, rankingDescription, rankingPath, rankingTitle, scopeSegment, variantScopes } from "@/lib/dex/rankings";
+import { pageMetadata } from "@/lib/seo";
+import { METRICS, getMetric, isBuiltPage, parseScope, rankingDescription, rankingImagePath, rankingPath, rankingTitle, scopeSegment, variantScopes } from "@/lib/dex/rankings";
 import { RankingView } from "@/components/pokedex/rankings/RankingView";
 
 /**
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: rankingTitle(r.m, r.s),
     description: rankingDescription(r.m, r.s),
     path: rankingPath(r.m.slug, r.s),
-    image: SHARE_IMAGES.pokedex,
+    image: { url: rankingImagePath(r.m.slug, r.s), alt: rankingTitle(r.m, r.s) },
   });
 }
 

@@ -14,6 +14,7 @@ export const metadata: Metadata = pageMetadata({
   title: "Compare: Which Pokémon Are You?",
   description: "Two trainers' Pokémon personality results side by side, with a compatibility score. Take the quiz and compare with a friend.",
   socialTitle: "Which Pokémon are you? Compare with me",
+  image: { url: "/quiz/which-pokemon/opengraph-image", alt: "Which Pokémon are you? A personality quiz" },
   noindex: true,
 });
 

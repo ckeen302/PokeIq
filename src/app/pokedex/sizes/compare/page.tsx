@@ -25,7 +25,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   const items = chosen(q0.vs);
   const order = parseOrder(q0.by, q0.dir);
   if (!compareOk(items.length)) {
-    return pageMetadata({ title: "Compare Pokémon sizes in 3D", description: "Put 2 to 6 Pokémon side by side at their real sizes in 3D, and share the comparison or make it a video.", path: COMPARE_PATH });
+    return pageMetadata({ title: "Compare Pokémon sizes in 3D", description: "Put 2 to 6 Pokémon side by side at their real sizes in 3D, and share the comparison or make it a video.", path: COMPARE_PATH, image: { url: "/pokedex/sizes/opengraph-image", alt: "Every Pokémon to scale, in 3D" } });
   }
   const names = items.map((i) => i.name).join(" vs ");
   const q = compareQuery(items.map((i) => i.key));

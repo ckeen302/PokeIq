@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
-import { ALL, METRICS, getMetric, rankingDescription, rankingPath, rankingTitle } from "@/lib/dex/rankings";
+import { pageMetadata } from "@/lib/seo";
+import { ALL, METRICS, getMetric, rankingDescription, rankingImagePath, rankingPath, rankingTitle } from "@/lib/dex/rankings";
 import { RankingView } from "@/components/pokedex/rankings/RankingView";
 
 /** /pokedex/rankings/<list>: every Pokémon (default forms) in one static, crawlable table. */
@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: rankingTitle(m, ALL),
     description: rankingDescription(m, ALL),
     path: rankingPath(m.slug),
-    image: SHARE_IMAGES.pokedex,
+    image: { url: rankingImagePath(m.slug), alt: rankingTitle(m, ALL) },
   });
 }
 

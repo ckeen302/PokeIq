@@ -4,7 +4,7 @@ import { ChevronRight } from "lucide-react";
 import { BackButton } from "@/components/ui/BackButton";
 import { GameInfo } from "@/components/seo/GameInfo";
 import { NeaDailyCard, NeaRaceCard } from "@/components/name-em-all/HubCards";
-import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
+import { pageMetadata } from "@/lib/seo";
 import { NEA_CATEGORIES, NEA_GROUPS, NEA_PATH, NEA_TITLE, neaHref } from "@/lib/name-em-all/categories";
 import { neaCounts } from "@/lib/name-em-all/targets";
 
@@ -12,7 +12,7 @@ export const metadata: Metadata = pageMetadata({
   title: "Name 'em All: Can You Name Every Pokémon? Recall Quiz",
   description: "Type every Pokémon you can remember: all of them, a generation, a type, Legendaries, Megas, regional forms or a regional Pokédex. Daily quiz, races with friends and personal bests.",
   path: NEA_PATH,
-  image: SHARE_IMAGES.site,
+  image: { url: `${NEA_PATH}/opengraph-image`, alt: "Name 'em All: how many Pokémon can you name from memory?" },
 });
 
 export default function NameEmAllHub() {

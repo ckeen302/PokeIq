@@ -1,11 +1,11 @@
 import "server-only";
 import { C, VersusVisual, ogCard } from "./card";
 
-export type ChallengeGame = "pokedle" | "quiz" | "geo" | "battle" | "connections";
+export type ChallengeGame = "pokedle" | "quiz" | "geo" | "battle" | "connections" | "connections-party" | "pikadoku" | "name-em-all";
 
 /**
- * The link-preview card for every invite (Pokédle, quiz and PokéGuessr
- * duels, live battles). It is the same for every code on purpose: it never
+ * The link-preview card for every invite (Pokédle, quiz, PokéGuessr,
+ * PokéConnections and Pikadoku duels, parties and races, live battles). It is the same for every code on purpose: it never
  * reads the game, so it can't give away a mystery Pokémon, a place or a team,
  * it needs no database round trip while Discord or Reddit is waiting on it,
  * and a code that has expired still gets a proper card.
@@ -17,6 +17,9 @@ const GAMES: Record<ChallengeGame, { eyebrow: string; accent: string; footer: st
   geo: { eyebrow: "PokéGuessr duel", accent: C.green, footer: "Same places · closer pin wins · tap to play →" },
   battle: { eyebrow: "Live battle", accent: C.pink, footer: "Pokémon Showdown rules · live · tap to battle →" },
   connections: { eyebrow: "PokéConnections duel", accent: C.cyan, footer: "Same 16 Pokémon · find the 4 groups first · tap to race →" },
+  "connections-party": { eyebrow: "PokéConnections party", accent: C.cyan, footer: "Same 16 Pokémon for everyone · best time wins · tap to join →" },
+  pikadoku: { eyebrow: "Pikadoku Tic Tac Toe", accent: C.violet, footer: "Claim a cell with a Pokémon that fits · three in a row wins →" },
+  "name-em-all": { eyebrow: "Name 'em All race", accent: C.green, footer: "Same Pokémon for everyone · first to name them all wins →" },
 };
 
 export const CHALLENGE_ALT = "A PokéIQ challenge: open the link to play";

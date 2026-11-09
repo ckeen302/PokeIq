@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { BattleHeader } from "@/components/battle/BattleHeader";
 import { TournamentLobby } from "@/components/tournaments/TournamentLobby";
 
@@ -7,6 +7,7 @@ export const metadata: Metadata = pageMetadata({
   title: "Tournaments",
   description: "Pokémon battle tournaments on PokéIQ: single elimination or round robin in any format, plus an official Random Battle tournament every hour.",
   path: "/battle/tournaments",
+  image: SHARE_IMAGES.battle,
 });
 
 export default function TournamentsPage() {

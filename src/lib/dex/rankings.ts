@@ -171,6 +171,13 @@ export function parseScope(segment: string): Scope | null {
   return null;
 }
 
+/** A list's preview card (lib/og/rankings), drawn on request: `/pokedex/rankings/og?m=heaviest&s=fire`. */
+export function rankingImagePath(metric?: string, s: Scope = ALL): string {
+  if (!metric) return `${RANKINGS_PATH}/og`;
+  const seg = scopeSegment(s);
+  return `${RANKINGS_PATH}/og?m=${metric}${seg ? `&s=${seg}` : ""}`;
+}
+
 export function rankingPath(metric: string, s: Scope = ALL): string {
   const seg = scopeSegment(s);
   return `${RANKINGS_PATH}/${metric}${seg ? `/${seg}` : ""}`;

@@ -1,7 +1,6 @@
 import { C, OG_CONTENT_TYPE, OG_SIZE, ScreenshotVisual, localImage, ogCard } from "@/lib/og/card";
 import { guessrResultCard } from "@/lib/og/guessr";
 import { readGeoShare } from "@/lib/server/geo-share";
-import { geoWorldPin } from "@/lib/server/geo";
 
 /** Preview card for a shared PokéGuessr result (/guessr/r/<token>): the map played, a square per round, the total. */
 
@@ -26,7 +25,7 @@ export default async function Image({ params }: { params: Promise<{ token: strin
     title: ["Where in the", ["world is this?", C.green]],
     subtitle: "GeoGuessr for Pokémon: real in-game screenshots, Kanto to Paldea.",
     accent: C.green,
-    visual: <ScreenshotVisual src={shot} map={map} pin={geoWorldPin("Galar", "Postwick")} />,
+    visual: <ScreenshotVisual src={shot} map={map} pin={null} />,
     footer: "Drop a pin · up to 25,000 points →",
   });
 }
