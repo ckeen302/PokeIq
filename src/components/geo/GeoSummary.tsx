@@ -16,6 +16,7 @@ import { BadgeMedal } from "@/components/game/BadgeMedal";
 import { CopyFallback } from "@/components/quiz/CopyFallback";
 import { ShareButton } from "@/components/share/ShareButton";
 import { GeoMap } from "./GeoMap";
+import { GeoCrowdMap } from "./GeoCrowdMap";
 import { cn } from "@/lib/utils";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { type Game, type Played, type Reward, emoji, fmt, maxTotal, placeName, post, useCountUp } from "./GeoGame";
@@ -141,6 +142,7 @@ export function GeoSummary({
       </div>
 
       {game.daily && !isStreak && <DailyCompare date={game.daily} score={total} />}
+      {game.daily && !isStreak && <GeoCrowdMap date={game.daily} region={region} played={played} resultToken={resultToken} />}
       {game.daily && !isStreak && <DailyEmailNudge className="mx-auto max-w-md" />}
 
       {outcome && challenge && (

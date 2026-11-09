@@ -891,6 +891,29 @@ export function geoDailyFirstShot(date: string): { shot: string; blur?: string; 
   return { shot: shotUrl(first.shot), ...(blur ? { blur } : {}), sharpTo: sharpTo(first.shot, lookup(spec, first).shot.family) };
 }
 
+/**
+ * The Daily's rounds on a date, with their answers, for its crowd map
+ * (geo-crowd.ts): the map it's played on and each round's screenshot and
+ * place. Only for a server that has already decided the answers may be shown.
+ */
+export function geoDailyAnswers(date: string): { region: string; rounds: { shot: string; answer: GeoAnswer }[] } | null {
+  const spec: GeoSpec = { region: geoDailyRegion(date, isGeoSpec({ region: WORLD_REGION, kind: "game" })), kind: "game", daily: date };
+  if (!isGeoSpec(spec)) return null;
+  const rounds = dealRounds(spec, `geo-daily:${date}`, undefined).rounds.filter((r) => findLocation(spec, r));
+  return { region: spec.region, rounds: rounds.map((r) => ({ shot: r.shot, answer: answerFor(spec, r) })) };
+}
+
+/** A point on the world map (0–1) on a map's own 0–1 coordinates (worldPointOf's inverse), or null off that map. */
+export function mapPointOf(regionId: string, wx: number, wy: number): [number, number] | null {
+  const region = regionOf(regionId);
+  if (!region || !Number.isFinite(wx) || !Number.isFinite(wy)) return null;
+  const [x0, y0, x1, y1] = region.map.box;
+  const { width: W, height: H } = DATA.world.map;
+  const x = (wx * W - x0) / (x1 - x0);
+  const y = (wy * H - y0) / (y1 - y0);
+  return x >= 0 && x <= 1 && y >= 0 && y <= 1 ? [x, y] : null;
+}
+
 /** A picture stays sharp drawn at most this many CSS pixels across per pixel of real detail: 1.5 detail pixels to each, on a 2x screen. */
 const GEO_SHARP_RATIO = 1.5;
 /** Below this (no picture of an old handheld game reaches it), a picture is never sharp enough to be drawn big. */
