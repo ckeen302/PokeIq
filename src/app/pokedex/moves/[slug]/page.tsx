@@ -65,7 +65,7 @@ export default async function MovePage({ params }: PageProps) {
         </div>
       </Section>
 
-      <Section id="learners" index={2} title="Learned by" subtitle={`${learners.length} Pokémon`}>
+      <Section id="learners" index={2} title="Learned by">
         {learners.length ? (
           <>
             <SpeciesGrid list={learners} />

@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: { params: Promise<{ key: stri
   const wl = recordMark("weightlifting", RECORDS_ALL.mark(key, "weightlifting"));
   return pageMetadata({
     title: `${a.name} at the PokéIQ Games: every event, every rank`,
-    description: `How good an athlete is ${a.name}? 100 m in ${m100}, a ${lj} long jump, ${wl} in the clean & jerk, and its rank in every event out of all 1,025 Pokémon, from its real stats with real physics.`,
+    description: `How good an athlete is ${a.name}? 100 m in ${m100}, a ${lj} long jump, ${wl} in the clean & jerk, and its rank in every event against every Pokémon, from its real stats with real physics.`,
     path: pokemonPath(key),
     image: { url: "/lab/games/opengraph-image", alt: `${a.name} at the PokéIQ Games` },
     noindex: !GAMES_LIVE,

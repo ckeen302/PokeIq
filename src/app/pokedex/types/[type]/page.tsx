@@ -108,7 +108,7 @@ export default async function TypePage({ params }: PageProps) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(crumbs) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(list) }} />
       <DetailNav tab="types" label="Type chart" pager={pager} />
-      <DetailHero kicker={`Type · ${pure.length + dual.length} Pokémon`} title={`${name} type`}>
+      <DetailHero kicker="Type" title={`${name} type`}>
         <TypeBadge type={t} size="lg" />
         <p className="max-w-2xl text-foreground/90">{typeDescription(t)}</p>
       </DetailHero>
@@ -136,7 +136,7 @@ export default async function TypePage({ params }: PageProps) {
         </p>
       </Section>
 
-      <Section id="moves" index={3} title={`${name} moves`} subtitle={`${moves.total} moves`}>
+      <Section id="moves" index={3} title={`${name} moves`}>
         <div className="mb-4 grid grid-cols-3 gap-3 sm:max-w-md">
           <StatBox label="Physical" value={moves.physical} />
           <StatBox label="Special" value={moves.special} />

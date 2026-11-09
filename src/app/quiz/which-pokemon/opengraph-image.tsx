@@ -12,7 +12,7 @@ export default function Image() {
   return ogCard({
     eyebrow: "Personality quiz",
     title: ["Which Pokémon", ["are you?", C.violet]],
-    subtitle: "18 questions. 200 possible Pokémon, every profile grounded in the Pokédex.",
+    subtitle: "Answer honestly and meet your match, every profile grounded in the Pokédex.",
     accent: C.violet,
     visual: (
       <div style={{ display: "flex", alignItems: "flex-end" }}>

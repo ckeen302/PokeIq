@@ -49,12 +49,12 @@ export default async function AbilityPage({ params }: PageProps) {
       </DetailHero>
 
       {normal.length > 0 && (
-        <Section id="normal" index={1} title="Pokémon with this ability" subtitle={`${normal.length} Pokémon`}>
+        <Section id="normal" index={1} title="Pokémon with this ability">
           <SpeciesGrid list={normal} />
         </Section>
       )}
       {hidden.length > 0 && (
-        <Section id="hidden" index={normal.length > 0 ? 2 : 1} title="Hidden ability of" subtitle={`${hidden.length} Pokémon`}>
+        <Section id="hidden" index={normal.length > 0 ? 2 : 1} title="Hidden ability of">
           <SpeciesGrid list={hidden} />
         </Section>
       )}

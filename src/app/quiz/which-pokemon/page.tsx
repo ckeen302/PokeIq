@@ -21,7 +21,7 @@ export const metadata: Metadata = pageMetadata({
     "Find your Pokémon from 200 possible results: 18 quick questions score the Big Five plus competitiveness and independence, matched against profiles built from Pokédex entries, Mystery Dungeon and the anime. Share card and compare-with-a-friend link included.",
   path: QUIZ_PATH,
   socialTitle: "Which Pokémon Are You?",
-  socialDescription: "18 questions, 200 possible Pokémon, every profile grounded in the Pokédex. Free, no sign-up.",
+  socialDescription: "Answer honestly and meet your match, every profile grounded in the Pokédex. Free, no sign-up.",
 });
 
 /** Sample results on the page, left to right. */

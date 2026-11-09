@@ -225,9 +225,6 @@ export function DexListExplorer({ kind, items }: { kind: DexListKind; items: Ite
               Reset
             </button>
           ) : null}
-          <span className="hud-label ml-auto tabular-nums text-screen">
-            {filtered.length.toLocaleString("en-US")} {label}
-          </span>
         </div>
       </div>
 
