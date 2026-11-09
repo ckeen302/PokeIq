@@ -16,6 +16,7 @@ import { runSizes } from "./e2e-sizes.mjs";
 import { runRankings } from "./e2e-rankings.mjs";
 import { runMobile } from "./e2e-mobile.mjs";
 import { runDesktopTripwire } from "./e2e-desktop-tripwire.mjs";
+import { runA11y } from "./e2e-a11y.mjs";
 import { runMassBattle } from "./e2e-mass-battle.mjs";
 import { runRace } from "./e2e-race.mjs";
 import { runGames } from "./e2e-games.mjs";
@@ -119,6 +120,7 @@ async function chatTo(from, to, text, shown = text) {
 
 // First, while nothing has been played yet: phone-only work must leave the desktop layout as it was.
 await runDesktopTripwire({ browser, BASE, errors, step });
+await runA11y({ browser, BASE, errors, step });
 
 const page = await newPage({ width: 1280, height: 900 });
 // Battle music this tab fetched (a later battle plays the cached track without a new request).
@@ -508,13 +510,16 @@ await page.getByRole("radiogroup", { name: "Pokédex assist", exact: true }).get
 const practiceChip = await page.getByTestId("rules-chip").innerText();
 if (!/Custom · 5 clues · Gen 1 · 6 guesses · 60 s blitz · No dex/.test(practiceChip)) errors.push(`practice settings chip: ${practiceChip}`);
 await page.keyboard.press("Escape");
+// The blitz clock is on the page before the first guess (it starts with it); check it here, as a slow runner can run the 60 s out afterwards.
+await page.getByRole("timer").waitFor();
 await page.getByLabel("Guess a Pokémon").fill("Bulbasaur");
 await page.locator("[role=option]").first().click();
 await page.waitForFunction(() => document.querySelector("input[aria-label^='Guess a Pokémon']")?.placeholder.startsWith("Guess 2 of 6") || document.body.innerText.includes("Got it in"));
 // The board's header row draws after the first answer comes back.
 await page.getByRole("columnheader", { name: "Weight" }).first().waitFor({ timeout: 15_000 });
 { const got = await headersSettle(SQUIRDLE_HEADERS); if (got !== SQUIRDLE_HEADERS) errors.push(`the custom practice game shows the wrong columns: ${got}`); }
-if (!(await page.getByText(/Got it in/).count())) await page.getByRole("timer").waitFor();
+// After the guess the game is running (clock showing) or over: a win, or the clock ran out on a slow runner.
+await Promise.any([page.getByRole("timer").waitFor(), page.getByText(/Got it in|Time's up!|So close!/).first().waitFor()]);
 await page.screenshot({ path: `${OUT}/pokedle-practice-settings.png`, fullPage: true });
 // Back to the defaults for whoever plays next in this browser.
 await page.evaluate(() => localStorage.removeItem("pokeiq:pokedle-prefs:v1"));
@@ -2287,7 +2292,14 @@ step("pokédex Timeline: an entry's own link opens its panel, share copies it, t
     for (const y of [2003, 2008, 2012]) {
       const bar = await tp.getByTestId("timeline-scrubber").boundingBox();
       await tp.mouse.click(bar.x + ((y - 1996) / 30.7) * bar.width, bar.y + bar.height / 2);
-      await tp.waitForTimeout(1200);
+      // Wait for the camera to arrive and settle (not a fixed sleep: a loaded runner animates slower), and for any title card to finish.
+      await tp.waitForFunction((target) => {
+        const yr = Number(document.querySelector('[data-testid="timeline-year"]')?.textContent);
+        const w = window;
+        const now = performance.now();
+        if (w.__tlSeen?.yr !== yr) w.__tlSeen = { yr, at: now };
+        return Math.abs(yr - target) <= 1.5 && now - w.__tlSeen.at > 800 && !document.querySelector('[data-testid="timeline-era-flash"]');
+      }, y, { timeout: 30_000, polling: 100 }).catch(() => {});
       for (let k = 0; k < 4; k++) {
         // Both read in the same instant: a title fading out just before an era change and the card that follows aren't an overlap.
         const { shown, flashOn } = await tp.evaluate(() => ({
@@ -2896,9 +2908,15 @@ if (!/lose the battle/.test(await liveRed.getByTestId("timer-warning").innerText
 await liveRed.screenshot({ path: `${OUT}/battle-p1-timer-warning.png` });
 // Cancel (Showdown's undo): Red picks a move, takes it back while Blue is still choosing, and gets the menu again.
 step("live battle: cancel a choice before the opponent chooses");
-await liveRed.locator("[data-testid=move-button]").first().click();
-await liveRed.getByTestId("cancel-choice").click({ timeout: 15_000 });
-await liveRed.locator("[data-testid=move-button]").first().waitFor({ timeout: 15_000 });
+// Under load the first click can land while the menu is still re-rendering, so pick again until the Cancel button shows.
+for (let attempt = 0; attempt < 4; attempt++) {
+  const move = liveRed.locator("[data-testid=move-button]:not([disabled])").first();
+  await move.waitFor({ timeout: 30_000 });
+  await move.click();
+  if (await liveRed.getByTestId("cancel-choice").waitFor({ timeout: 15_000 }).then(() => true, () => false)) break;
+}
+await liveRed.getByTestId("cancel-choice").click({ timeout: 30_000 });
+await liveRed.locator("[data-testid=move-button]").first().waitFor({ timeout: 30_000 });
 await liveRed.screenshot({ path: `${OUT}/battle-p1-cancelled.png` });
 // Chat beside the battle log: both ways; a link is refused.
 await chatTo(liveRed, liveBlue, "good luck!");
