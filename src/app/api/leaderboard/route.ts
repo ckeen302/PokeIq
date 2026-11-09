@@ -5,6 +5,7 @@ import { getServiceSupabase } from "@/lib/supabase";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { secretIsSecure, verifyToken } from "@/lib/server/crypto";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
+import { BOARD_FULL, claimBoardSlot, utcDayOf } from "@/lib/server/board-guard";
 import { LEADERBOARD_TAG, UNRANKED_QUIZ_MESSAGE, fetchBoard, practiceMessage } from "@/lib/server/leaderboard";
 import type { RunResult } from "@/lib/session-types";
 
@@ -71,6 +72,10 @@ export async function POST(request: NextRequest) {
   }
   const practice = practiceMessage(result);
   if (practice) return NextResponse.json({ error: practice }, { status: 403 });
+  // Repeat dailies are caught by a cookie a script can drop: an address also gets only a few entries a day.
+  if (!(await claimBoardSlot(clientIp(request), result.spec.daily ? "daily" : `quiz-${result.spec.module}`, result.spec.daily ?? utcDayOf()))) {
+    return NextResponse.json({ error: BOARD_FULL }, { status: 429 });
+  }
   const { error } = await supabase.from("runs").insert({
     session_id: result.sid,
     player_name: parsed.data.playerName,
