@@ -465,6 +465,8 @@ if (!(await page.getByText(/Got it in/).count())) {
 }
 await page.screenshot({ path: `${OUT}/pokedle-dex.png` });
 for (const name of ["Charizard", "Gengar"]) {
+  // A row reveals cell by cell and the box stays locked until it's done; on a day the answer is the first guess, the reveal ends in a win.
+  await page.waitForFunction(() => document.body.innerText.includes("Got it in") || document.querySelector("input[aria-label^='Guess a Pokémon']")?.disabled === false, null, { timeout: 15_000 }).catch(() => {});
   if (await page.getByText(/Got it in/).count()) break;
   await page.getByLabel("Guess a Pokémon").fill(name);
   await page.getByRole("option").first().click();
