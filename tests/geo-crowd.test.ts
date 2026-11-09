@@ -100,7 +100,10 @@ describe("crowd map spoiler guard", () => {
     expect(finishedDaily(resultToken("2026-11-09", 3))).toBeNull();
     expect(finishedDaily(resultToken(undefined))).toBeNull();
     expect(finishedDaily(resultToken("2026-11-09", 5, "streak"))).toBeNull();
-    const forged = resultToken("2026-11-08").replace(/.$/, (c) => (c === "A" ? "B" : "A"));
+    // Tamper mid-signature: the last base64url character can carry only padding bits, so changing it may decode to the same bytes.
+    const real = resultToken("2026-11-08");
+    const at = real.length - 8;
+    const forged = real.slice(0, at) + (real[at] === "A" ? "B" : "A") + real.slice(at + 1);
     expect(finishedDaily(forged)).toBeNull();
     expect(crowdAccess("2026-11-09", resultToken("2026-11-09"), now)).toBe(true);
     expect(crowdAccess("2026-11-09", resultToken("2026-11-08"), now)).toBe(false);

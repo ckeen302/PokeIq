@@ -58,10 +58,11 @@ export function crowdFrame(crowd: GeoCrowdRound, flag: [number, number], map: { 
   return [x0, y0, x1, y1];
 }
 
-async function CrowdVisual({ crowd, flag, region }: { crowd: GeoCrowdRound; flag: [number, number]; region: GeoRegionInfo }) {
+async function CrowdVisual({ crowd, flag, region }: { crowd: GeoCrowdRound; flag: [number, number] | null; region: GeoRegionInfo }) {
   const [bx0, by0, bx1, by1] = region.map.box;
   const size = { width: bx1 - bx0, height: by1 - by0 };
-  const [fx0, fy0, fx1, fy1] = crowdFrame(crowd, flag, size);
+  // Without the flag (today's Daily, still in play) the card shows the whole map, so it can't point at the answer.
+  const [fx0, fy0, fx1, fy1] = flag ? crowdFrame(crowd, flag, size) : [0, 0, 1, 1];
   const left = Math.round(bx0 + fx0 * size.width);
   const top = Math.round(by0 + fy0 * size.height);
   const width = Math.max(1, Math.round((fx1 - fx0) * size.width));
@@ -73,7 +74,7 @@ async function CrowdVisual({ crowd, flag, region }: { crowd: GeoCrowdRound; flag
   const at = (x: number, y: number): [number, number] => [(x - fx0) * sx, (y - fy0) * sy];
   // A cell's glow: a few cells across, bigger and hotter the busier it is.
   const cellPx = Math.max(crowd.cw * sx, crowd.ch * sy);
-  const [ax, ay] = at(...flag);
+  const [ax, ay] = flag ? at(...flag) : [0, 0];
   return (
     <div style={{ display: "flex", position: "relative", width: VIS_W + 6, height: VIS_H + 6, borderRadius: 18, border: `3px solid ${C.edge}`, overflow: "hidden", boxShadow: "0 30px 60px rgba(0,0,0,0.55)", background: "#165c96" }}>
       <img src={src} width={VIS_W} height={VIS_H} />
@@ -94,7 +95,7 @@ async function CrowdVisual({ crowd, flag, region }: { crowd: GeoCrowdRound; flag
           />
         );
       })}
-      <img src={FLAG} width={34} height={34} style={{ position: "absolute", left: ax - 17, top: ay - 17 }} />
+      {flag && <img src={FLAG} width={34} height={34} style={{ position: "absolute", left: ax - 17, top: ay - 17 }} />}
       <div style={{ display: "flex", position: "absolute", left: 12, top: 12, padding: "6px 12px", borderRadius: 8, background: "rgba(0,0,0,0.65)", fontFamily: "Silkscreen", fontSize: 18, color: "#fff" }}>
         Crowd map
       </div>
@@ -102,13 +103,14 @@ async function CrowdVisual({ crowd, flag, region }: { crowd: GeoCrowdRound; flag
   );
 }
 
-export async function guessrCrowdCard({ date, crowd, flag, region, headers }: { date: string; crowd: GeoCrowdRound; flag: [number, number]; region: GeoRegionInfo; headers: Record<string, string> }) {
+/** `flag` null: today's Daily is still in play, so the card shows the whole map with no answer (a shared picture is seen by people who haven't played yet). */
+export async function guessrCrowdCard({ date, crowd, flag, region, headers }: { date: string; crowd: GeoCrowdRound; flag: [number, number] | null; region: GeoRegionInfo; headers: Record<string, string> }) {
   return ogCard(
     {
       eyebrow: `PokéGuessr · Daily #${dailyNumber(date)}`,
       title: ["Where everyone", [`pinned round ${crowd.round}`, C.green]],
       titleSize: 60,
-      subtitle: `${fmt(crowd.pins)} trainers dropped a pin. The flag is where it really was.`,
+      subtitle: flag ? `${fmt(crowd.pins)} trainers dropped a pin. The flag is where it really was.` : `${fmt(crowd.pins)} trainers dropped a pin. Can you get closer than the crowd?`,
       accent: C.green,
       visual: await CrowdVisual({ crowd, flag, region }),
       footer: "Play today's Daily →",

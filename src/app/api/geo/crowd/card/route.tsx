@@ -7,8 +7,8 @@ import { guessrCrowdCard } from "@/lib/og/guessr-crowd";
 
 /**
  * GET /api/geo/crowd/card?date=YYYY-MM-DD&round=N&t=<result token> — a share
- * picture (1200 × 630 PNG) of one Daily round's crowd map with the answer's
- * flag. The same spoiler guard as /api/geo/crowd: a day that's over, or the
+ * picture (1200 × 630 PNG) of one Daily round's crowd map: with the answer's
+ * flag once the day is over, the whole map without it while the Daily is in play. The same spoiler guard as /api/geo/crowd: a day that's over, or the
  * sharer's own finished Daily. 404 while the round has too few pins.
  */
 export const runtime = "nodejs";
@@ -24,5 +24,6 @@ export async function GET(request: NextRequest) {
   const region = answer && geoRegions().find((r) => r.id === answer.region);
   if (!crowd || !answer || !region) return NextResponse.json({ error: "No crowd map for that round yet." }, { status: 404 });
   const headers = crowdDayOver(date) ? { "cache-control": "public, max-age=3600, s-maxage=3600" } : { "cache-control": "private, max-age=300" };
-  return guessrCrowdCard({ date, crowd, flag: answer.answer.spot ?? answer.answer.pin, region, headers });
+  // A shared picture travels to people who haven't played today: the answer's flag only once the day is over.
+  return guessrCrowdCard({ date, crowd, flag: crowdDayOver(date) ? (answer.answer.spot ?? answer.answer.pin) : null, region, headers });
 }
