@@ -22,6 +22,7 @@
     --card: 247 34% 9%;
     --card-foreground: 248 40% 97%;
     --primary: 340 86% 60%;
+    --primary-fill: 340 86% 48%; /* solid button fills: white text on it passes WCAG AA (--primary itself is for text and accents on dark) */
     --primary-foreground: 0 0% 100%;
     --primary-shadow: 338 72% 32%;
     --secondary: 248 28% 15%;
@@ -62,21 +63,22 @@
     --foreground: 248 42% 11%;
     --card: 0 0% 100%;
     --card-foreground: 248 42% 11%;
-    --primary: 340 80% 52%;
+    --primary: 340 80% 48%;
+    --primary-fill: 340 80% 48%;
     --primary-foreground: 0 0% 100%;
     --primary-shadow: 338 70% 36%;
     --secondary: 248 32% 91%;
     --secondary-foreground: 248 42% 11%;
     --secondary-shadow: 248 24% 76%;
     --muted: 248 32% 93%;
-    --muted-foreground: 248 14% 40%;
+    --muted-foreground: 248 14% 36%;
     --accent: 248 32% 91%;
     --accent-foreground: 248 42% 11%;
     --destructive: 0 74% 50%;
     --destructive-foreground: 0 0% 100%;
-    --success: 154 70% 38%;
+    --success: 154 70% 28%;
     --success-foreground: 0 0% 100%;
-    --warning: 34 94% 44%;
+    --warning: 34 94% 34%;
     --screen: 262 72% 54%;
     --border: 248 26% 86%;
     --input: 248 26% 80%;
@@ -763,3 +765,6 @@ html[data-dle-cb] .dle-close { background: rgb(133 192 249 / 0.4); border-color:
   html:has([data-testid="battle-message"]):not(:has([data-testid="battle-result"])) { --tabbar-h: 0px; }
   html:has([data-testid="battle-message"]):not(:has([data-testid="battle-result"])) [data-testid="tabbar"] { display: none; }
 }
+
+/* Solid primary fills carry white text: use the AA-safe fill shade (the plain --primary stays for text and accents). */
+.bg-primary { background-color: hsl(var(--primary-fill)); }

@@ -132,7 +132,7 @@ export function TileFlag({ children, tone = "muted" }: { children: React.ReactNo
     <span
       className={cn(
         "rounded-sm border px-1.5 py-1 font-pixel text-[9px] uppercase leading-none tracking-wider backdrop-blur",
-        tone === "success" ? "border-success/60 bg-success/20 text-success" : tone === "warning" ? "border-warning/60 bg-warning/20 text-warning" : "border-border bg-card/85 text-muted-foreground"
+        tone === "success" ? "border-success/60 bg-success/10 text-success" : tone === "warning" ? "border-warning/60 bg-warning/10 text-warning" : "border-border bg-card/85 text-muted-foreground"
       )}
     >
       {children}
