@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
   }
   // Repeat dailies are caught by a cookie a script can drop: an address also gets only a few entries a period.
   const timed = result.spec.weekly ?? result.spec.daily;
-  if (!(await claimBoardSlot(clientIp(request), `geo-${mode}`, timed ?? utcDayOf(), timed ? undefined : 10))) {
+  if (!(await claimBoardSlot(clientIp(request), `geo-${mode}`, timed ?? utcDayOf(), timed ? undefined : 40))) {
     return NextResponse.json({ error: BOARD_FULL }, { status: 429 });
   }
   const { error } = await supabase.from("geo_runs").insert({

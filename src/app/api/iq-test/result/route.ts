@@ -17,6 +17,6 @@ export async function POST(request: NextRequest) {
   const row = cognitiveRowOf(await request.json().catch(() => null));
   if (!row) return NextResponse.json({ error: "That doesn't look like a test result." }, { status: 400 });
   // The scores are the browser's word: a few per address a day keeps a script from skewing the norms.
-  const stored = (await claimBoardSlot(clientIp(request), "iq-norms", utcDayOf(), 3)) && (await logCognitiveResult(row));
+  const stored = (await claimBoardSlot(clientIp(request), "iq-norms", utcDayOf(), 10)) && (await logCognitiveResult(row));
   return NextResponse.json({ stored });
 }

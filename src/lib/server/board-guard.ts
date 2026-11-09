@@ -15,7 +15,8 @@ import { claimOnce } from "./replay-guard";
  */
 
 /** New entries per address, per board, per day (or week). */
-export const BOARD_SLOTS_PER_ADDRESS = 5;
+// Generous: phone carriers put many players behind one shared address (CGNAT), and a launch brings exactly that crowd.
+export const BOARD_SLOTS_PER_ADDRESS = 25;
 
 export async function claimBoardSlot(ip: string | null | undefined, board: string, period: string, slots = BOARD_SLOTS_PER_ADDRESS): Promise<boolean> {
   if (!ip) return true;

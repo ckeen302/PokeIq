@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
   if (Date.now() - result.finishedAt > RESULT_MAX_AGE_MS) return NextResponse.json({ error: "This result is too old to submit." }, { status: 410 });
   if (result.streak < 1) return NextResponse.json({ error: "Name at least one region to get on the board." }, { status: 400 });
 
-  if (!(await claimBoardSlot(clientIp(request), "geo-streak", utcDayOf(), 10))) return NextResponse.json({ error: BOARD_FULL }, { status: 429 });
+  if (!(await claimBoardSlot(clientIp(request), "geo-streak", utcDayOf(), 40))) return NextResponse.json({ error: BOARD_FULL }, { status: 429 });
   const { error } = await supabase.from("geo_runs").insert({
     session_id: result.sid,
     player_name: parsed.data.playerName,
