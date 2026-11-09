@@ -143,7 +143,7 @@ export function DexEntry({ data }: { data: DexEntryData }) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
       >
-        <img src={artUrl(p.id, 256)} alt="" aria-hidden className="pointer-events-none absolute -bottom-8 -right-6 h-48 w-48 opacity-20 [filter:brightness(0)_invert(1)] [.light_&]:opacity-10 [.light_&]:[filter:brightness(0)]" />
+        <img src={artUrl(p.id, 256)} alt="" aria-hidden loading="lazy" decoding="async" className="pointer-events-none absolute -bottom-8 -right-6 h-48 w-48 opacity-20 [filter:brightness(0)_invert(1)] [.light_&]:opacity-10 [.light_&]:[filter:brightness(0)]" />
         <h2 className="font-display text-2xl font-bold uppercase">Think you&apos;ve got {p.name} down?</h2>
         <p className="mt-1 max-w-lg text-muted-foreground">Lock it in with flashcards, then prove it in a quiz.</p>
         <div className="mt-5 flex flex-wrap gap-2">

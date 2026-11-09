@@ -49,7 +49,11 @@ export function DailyChallenge() {
     return (
       <div className="space-y-8">
         {header}
-        <Skeleton className="mx-auto h-64 max-w-2xl" />
+        <Skeleton className="mx-auto max-w-2xl" aria-hidden>
+          <div className="invisible">
+            <FreshCard number={null} onStart={() => undefined} />
+          </div>
+        </Skeleton>
       </div>
     );
   }
@@ -113,31 +117,38 @@ export function DailyChallenge() {
   return (
     <div className="space-y-8">
       {header}
-      <Card className="mx-auto max-w-2xl">
-        <CardContent className="space-y-6 p-6">
-          <ul className="grid gap-3 text-sm sm:grid-cols-2">
-            {(
-              [
-                ["whos-that", "Silhouettes"],
-                ["dex", "Pokédex entries"],
-                ["types", "Type matchups"],
-                ["higher-lower", "Stat battles"],
-              ] as const
-            ).map(([mod, label]) => (
-              <li key={label} className="flex items-center gap-3 rounded-md border bg-shade/20 p-3 font-display font-semibold uppercase tracking-wide">
-                <span className="screen flex h-9 w-9 items-center justify-center rounded-sm text-screen">
-                  <ModeIcon module={mod} className="relative z-[3] h-4 w-4" />
-                </span>
-                {label}
-              </li>
-            ))}
-          </ul>
-          <p className="text-center text-sm text-muted-foreground">15 seconds per question · speed and streak bonuses</p>
-          <Button size="lg" className="w-full text-base" onClick={() => setPlayDate(date)}>
-            <Play className="h-5 w-5" /> Start Daily #{number}
-          </Button>
-        </CardContent>
-      </Card>
+      <FreshCard number={number} onStart={() => setPlayDate(date)} />
     </div>
+  );
+}
+
+/** Today's challenge, ready to start. While the date and progress load, an invisible copy sizes the placeholder, so nothing below it moves. */
+function FreshCard({ number, onStart }: { number: number | null; onStart: () => void }) {
+  return (
+    <Card className="mx-auto max-w-2xl">
+      <CardContent className="space-y-6 p-6">
+        <ul className="grid gap-3 text-sm sm:grid-cols-2">
+          {(
+            [
+              ["whos-that", "Silhouettes"],
+              ["dex", "Pokédex entries"],
+              ["types", "Type matchups"],
+              ["higher-lower", "Stat battles"],
+            ] as const
+          ).map(([mod, label]) => (
+            <li key={label} className="flex items-center gap-3 rounded-md border bg-shade/20 p-3 font-display font-semibold uppercase tracking-wide">
+              <span className="screen flex h-9 w-9 items-center justify-center rounded-sm text-screen">
+                <ModeIcon module={mod} className="relative z-[3] h-4 w-4" />
+              </span>
+              {label}
+            </li>
+          ))}
+        </ul>
+        <p className="text-center text-sm text-muted-foreground">15 seconds per question · speed and streak bonuses</p>
+        <Button size="lg" className="w-full text-base" onClick={onStart}>
+          <Play className="h-5 w-5" /> Start Daily #{number ?? ""}
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
