@@ -75,9 +75,6 @@ export default function TrainersPage() {
                         <span className="mt-1 block text-xs text-muted-foreground">
                           Gen {ROMAN[g.gen]} · {g.regions.join(" & ")}
                         </span>
-                        <span className="mt-2 block font-mono text-xs tabular-nums text-foreground/80">
-                          {g.teams.toLocaleString("en-US")} teams · {g.areas} places
-                        </span>
                       </span>
                       <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" aria-hidden />
                     </span>

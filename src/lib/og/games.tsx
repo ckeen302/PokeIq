@@ -98,7 +98,7 @@ export function gamesRecordsCard(event: EventId) {
     eyebrow: `The PokéIQ Games · ${e.name} records`,
     title: [e.question],
     titleSize: e.question.length > 40 ? 40 : 50,
-    subtitle: rows[0] ? `${rows[0].a.name} holds the record with ${rows[0].mark}, out of all 1,025 Pokémon.` : undefined,
+    subtitle: rows[0] ? `${rows[0].a.name} holds the record with ${rows[0].mark}, out of every Pokémon.` : undefined,
     accent: ACCENT,
     visual: <Podium rows={rows} />,
     footer: "See the top ten →",

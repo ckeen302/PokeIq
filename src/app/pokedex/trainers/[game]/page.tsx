@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!g) return {};
   return pageMetadata({
     title: `Every Trainer in Pokémon ${g.name} — Teams by Location`,
-    description: `All ${gameFile(g.key)!.teams.length} trainer teams in Pokémon ${g.name}, route by route: Gym Leaders, the Elite Four, rivals and every generic trainer with their Pokémon, levels, moves and held items.`,
+    description: `Every trainer team in Pokémon ${g.name}, route by route: Gym Leaders, the Elite Four, rivals and every generic trainer with their Pokémon, levels, moves and held items.`,
     path: `/pokedex/trainers/${g.key}`,
     image: SHARE_IMAGES.pokedex,
     socialTitle: `${g.name} trainers · PokéIQ Pokédex`,
@@ -40,7 +40,6 @@ export default async function TrainerGamePage({ params }: PageProps) {
   const notables = [...new Set(f.teams.map((t) => t.n).filter(Boolean) as string[])]
     .map((s) => notable(s)!)
     .sort((a, b) => ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role) || NOTABLE.indexOf(a) - NOTABLE.indexOf(b));
-  const places = regions.reduce((n, r) => n + r.groups.reduce((m, gr) => m + gr.areas.length, 0), 0);
   const pager = pagerFor(TRAINER_GAMES, (x) => x.key === g.key, (x) => ({ href: `/pokedex/trainers/${x.key}`, label: x.name }));
   let idx = 0;
 
@@ -49,7 +48,7 @@ export default async function TrainerGamePage({ params }: PageProps) {
       <DetailNav href="/pokedex/trainers" label="All trainers" pager={pager} />
       <DetailHero kicker={`Trainers · Gen ${ROMAN[g.gen]} ·${g.regions.join(" & ")}`} title={`Pokémon ${g.name}`}>
         <p className="max-w-2xl text-foreground/90">
-          {f.teams.length.toLocaleString("en-US")} trainer teams across {places} places. Pick a route, town or dungeon to see everyone you can battle there and the exact Pokémon they use.
+          Every trainer team, place by place. Pick a route, town or dungeon to see everyone you can battle there and the exact Pokémon they use.
         </p>
       </DetailHero>
 
@@ -70,7 +69,7 @@ export default async function TrainerGamePage({ params }: PageProps) {
       )}
 
       {regions.map((r) => (
-        <Section key={r.region} id={`region-${r.region.toLowerCase().replace(/[^a-z]+/g, "-")}`} index={++idx} title={r.region} subtitle={`${r.groups.reduce((n, gr) => n + gr.areas.length, 0)} places`}>
+        <Section key={r.region} id={`region-${r.region.toLowerCase().replace(/[^a-z]+/g, "-")}`} index={++idx} title={r.region}>
           <div className="space-y-6">
             {r.groups.map((gr) => (
               <div key={gr.kind} className="space-y-2">

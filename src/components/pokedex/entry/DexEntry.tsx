@@ -116,7 +116,7 @@ export function DexEntry({ data }: { data: DexEntryData }) {
       )}
 
       {data.learnset && (
-        <Section id="moves" index={sectionIndex("moves")} title="Moves" subtitle={`${data.learnset.moves.length} moves`}>
+        <Section id="moves" index={sectionIndex("moves")} title="Moves">
           <MovesSection moves={data.learnset.moves} game={data.learnset.game} />
         </Section>
       )}

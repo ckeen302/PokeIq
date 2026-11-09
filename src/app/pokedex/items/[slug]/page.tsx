@@ -123,7 +123,7 @@ export default async function ItemPage({ params }: PageProps) {
       )}
 
       {held.length > 0 && (
-        <Section id="held" index={++idx} title="Held by wild Pokémon" subtitle={`${held.length} Pokémon`}>
+        <Section id="held" index={++idx} title="Held by wild Pokémon">
           <div className="hud overflow-x-auto rounded-lg border bg-card p-2" data-hscroll>
             <table className="w-full text-sm">
               <thead>

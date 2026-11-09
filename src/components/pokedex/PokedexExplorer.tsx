@@ -289,9 +289,6 @@ export function PokedexExplorer({ items }: { items: DexListItem[] }) {
                 Reset
               </button>
             ) : null}
-            <span className="hud-label ml-auto tabular-nums text-screen">
-              {filtered.length.toLocaleString("en-US")} Pokémon
-            </span>
           </div>
         </div>
       </div>
