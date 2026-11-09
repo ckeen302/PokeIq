@@ -786,7 +786,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
     if (!next) audioRef.current?.gesture();
   };
 
-  const chip = "rc-chip pointer-events-auto inline-flex h-9 items-center gap-1.5 max-sm:h-10 max-sm:min-w-10 max-sm:justify-center rounded-md border border-white/15 bg-[#0b1226]/75 px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] text-white/85 backdrop-blur-md transition-colors hover:border-white/35 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd84a] disabled:opacity-50";
+  const chip = "rc-chip pointer-events-auto inline-flex h-9 items-center gap-1.5 max-sm:min-h-10 max-sm:min-w-10 max-sm:justify-center rounded-md border border-white/15 bg-[#0b1226]/75 px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] text-white/85 backdrop-blur-md transition-colors hover:border-white/35 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd84a] disabled:opacity-50";
   const pre = phase === "crane" || phase === "intro";
   const after = phase === "results";
 

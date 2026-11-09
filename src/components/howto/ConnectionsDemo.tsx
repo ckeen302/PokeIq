@@ -51,11 +51,12 @@ export function ConnectionsDemo() {
             </motion.span>
           )}
         </div>
+        {/* On phones the found bar is a row of tiles' height, so the demo never changes size (and never repaints the how-to under it). */}
         {frame.found && (
           <motion.div
             initial={{ opacity: 0, scale: 0.92 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex h-16 flex-col items-center justify-center rounded-lg px-2 text-center shadow-[0_3px_0_rgb(0_0_0/0.25)]"
+            className="flex h-16 flex-col items-center justify-center rounded-lg px-2 max-md:h-[4.25rem] text-center shadow-[0_3px_0_rgb(0_0_0/0.25)]"
             style={levelStyle(3)}
           >
             <p className="flex items-center gap-1.5 font-display text-sm font-bold uppercase tracking-wide">
