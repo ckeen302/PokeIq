@@ -202,7 +202,26 @@ describe("copy and links", () => {
 
   it("gives every metric a slug and a sort the Pokédex understands", () => {
     const sorts = ["bst", "hp", "atk", "def", "spa", "spd", "spe", "height", "weight"];
-    for (const x of METRICS) expect(sorts).toContain(x.key);
+    for (const x of METRICS.filter((x) => x.key !== "bulk")) expect(sorts).toContain(x.key);
+    expect(explorerHref(m("bulkiest"), ALL)).toBeNull();
+  });
+});
+
+describe("bulk and non-legendary lists", () => {
+  it("ranks HP + Defense + Special Defense", () => {
+    const top = ranking(m("bulkiest"))[0];
+    expect(top.value).toBe(top.entry.stats.hp + top.entry.stats.def + top.entry.stats.spd);
+  });
+
+  it("leaves legendaries and mythicals out of the core scope", () => {
+    const core = { kind: "core" } as const;
+    expect(isBuiltPage("strongest", core)).toBe(true);
+    expect(isBuiltPage("heaviest", core)).toBe(false);
+    const names = new Set(POKEDEX.filter((p) => p.legendary || p.mythical).map((p) => p.slug));
+    expect(names.size).toBeGreaterThan(0);
+    for (const r of ranking(m("strongest"), core)) expect(names.has(r.entry.slug)).toBe(false);
+    expect(parseScope(scopeSegment(core)!)).toEqual(core);
+    expect(rankingHeading(m("strongest"), core)).toBe("Strongest non-legendary Pokémon");
   });
 });
 

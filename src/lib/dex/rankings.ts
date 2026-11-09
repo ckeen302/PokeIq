@@ -12,7 +12,7 @@ import { TYPES, capitalize, type PokemonType } from "@/lib/pokemon/type-matrix";
 
 export const RANKINGS_PATH = "/pokedex/rankings";
 
-export type RankKey = StatKey | "bst" | "height" | "weight";
+export type RankKey = StatKey | "bst" | "bulk" | "height" | "weight";
 
 export interface Metric {
   slug: string;
@@ -29,6 +29,8 @@ export interface Metric {
   /** Per-type and per-generation pages. */
   byType: boolean;
   byGen: boolean;
+  /** Also a page without legendary and mythical Pokémon. */
+  byCore?: boolean;
 }
 
 const stat = (slug: string, key: StatKey, byGen = false): Metric => ({
@@ -43,8 +45,9 @@ const stat = (slug: string, key: StatKey, byGen = false): Metric => ({
 });
 
 export const METRICS: Metric[] = [
-  { slug: "strongest", key: "bst", dir: "desc", adjective: "Strongest", measure: "Base Stat Total", column: "Total", byType: true, byGen: true },
-  { slug: "fastest", key: "spe", dir: "desc", adjective: "Fastest", measure: "Base Speed", column: "Speed", opposite: "slowest", byType: true, byGen: true },
+  { slug: "strongest", key: "bst", dir: "desc", adjective: "Strongest", measure: "Base Stat Total", column: "Total", byType: true, byGen: true, byCore: true },
+  { slug: "bulkiest", key: "bulk", dir: "desc", adjective: "Bulkiest", measure: "Bulk (HP + Defense + Special Defense)", column: "Bulk", byType: true, byGen: true, byCore: true },
+  { slug: "fastest", key: "spe", dir: "desc", adjective: "Fastest", measure: "Base Speed", column: "Speed", opposite: "slowest", byType: true, byGen: true, byCore: true },
   { slug: "slowest", key: "spe", dir: "asc", adjective: "Slowest", measure: "Base Speed", column: "Speed", opposite: "fastest", byType: false, byGen: false },
   { slug: "heaviest", key: "weight", dir: "desc", adjective: "Heaviest", measure: "Weight", column: "Weight", opposite: "lightest", byType: true, byGen: true },
   { slug: "lightest", key: "weight", dir: "asc", adjective: "Lightest", measure: "Weight", column: "Weight", opposite: "heaviest", byType: false, byGen: false },
@@ -89,6 +92,8 @@ export interface RankEntry {
   height: number;
   /** Hectograms. */
   weight: number;
+  /** A legendary or mythical species (its forms included). */
+  legendary?: boolean;
 }
 
 interface FormRow {
@@ -118,6 +123,7 @@ export function speciesEntry(p: Pokemon): RankEntry {
     bst: p.bst,
     height: p.height,
     weight: p.weight,
+    legendary: p.legendary || p.mythical,
   };
 }
 
@@ -137,6 +143,7 @@ export function formEntry(f: FormRow, species: Pokemon): RankEntry {
     bst: hp + atk + def + spa + spd + spe,
     height: f.height,
     weight: f.weight,
+    legendary: species.legendary || species.mythical,
   };
 }
 
@@ -149,10 +156,12 @@ export const FORM_ENTRIES: RankEntry[] = (RACE_FORMS as { forms: FormRow[] }).fo
 
 // ---------- scopes (the variant pages) ----------
 
-export type Scope = { kind: "all" } | { kind: "type"; type: PokemonType } | { kind: "gen"; gen: number } | { kind: "forms" };
+export type Scope = { kind: "all" } | { kind: "type"; type: PokemonType } | { kind: "gen"; gen: number } | { kind: "forms" } | { kind: "core" };
 
 export const ALL: Scope = { kind: "all" };
 export const FORMS_SEGMENT = "all-forms";
+/** Legendary and mythical Pokémon left out. */
+export const CORE_SEGMENT = "non-legendary";
 /** A variant page needs at least this many Pokémon to be worth a page of its own. */
 export const MIN_VARIANT_ROWS = 20;
 
@@ -160,11 +169,13 @@ export function scopeSegment(s: Scope): string | null {
   if (s.kind === "type") return s.type;
   if (s.kind === "gen") return `gen-${s.gen}`;
   if (s.kind === "forms") return FORMS_SEGMENT;
+  if (s.kind === "core") return CORE_SEGMENT;
   return null;
 }
 
 export function parseScope(segment: string): Scope | null {
   if (segment === FORMS_SEGMENT) return { kind: "forms" };
+  if (segment === CORE_SEGMENT) return { kind: "core" };
   if ((TYPES as readonly string[]).includes(segment)) return { kind: "type", type: segment as PokemonType };
   const g = /^gen-([1-9])$/.exec(segment);
   if (g) return { kind: "gen", gen: Number(g[1]) };
@@ -188,18 +199,21 @@ export function entriesFor(s: Scope, species: RankEntry[] = SPECIES_ENTRIES, for
   if (s.kind === "forms") return [...species, ...forms];
   if (s.kind === "type") return species.filter((e) => e.types.includes(s.type));
   if (s.kind === "gen") return species.filter((e) => e.gen === s.gen);
+  if (s.kind === "core") return species.filter((e) => !e.legendary);
   return species;
 }
 
 export function metricAllowsScope(m: Metric, s: Scope): boolean {
   if (s.kind === "all" || s.kind === "forms") return true;
   if (s.kind === "type") return m.byType;
+  if (s.kind === "core") return !!m.byCore;
   return m.byGen;
 }
 
 /** Every variant page that gets built: allowed for the metric and with enough Pokémon. */
 export function variantScopes(m: Metric): Scope[] {
   const out: Scope[] = [{ kind: "forms" }];
+  if (m.byCore) out.push({ kind: "core" });
   if (m.byType) for (const type of TYPES) out.push({ kind: "type", type });
   if (m.byGen) for (const gen of Object.keys(GENERATION_REGIONS).map(Number)) out.push({ kind: "gen", gen });
   return out.filter((s) => entriesFor(s).length >= MIN_VARIANT_ROWS);
@@ -217,6 +231,7 @@ export function isBuiltPage(metric: string, s: Scope): boolean {
 
 export function valueOf(e: RankEntry, key: RankKey): number {
   if (key === "bst") return e.bst;
+  if (key === "bulk") return e.stats.hp + e.stats.def + e.stats.spd;
   if (key === "height") return e.height;
   if (key === "weight") return e.weight;
   return e.stats[key];
@@ -303,6 +318,7 @@ export function valueText(key: RankKey, v: number): string {
 /** "Fire-type", "Gen 1" (or "Gen 1 (Kanto)"), "" — the words a scope adds before "Pokémon". */
 function scopeWords(s: Scope, region = false): string {
   if (s.kind === "type") return `${capitalize(s.type)}-type`;
+  if (s.kind === "core") return "non-legendary";
   if (s.kind === "gen") return region ? `Gen ${s.gen} (${GENERATION_REGIONS[s.gen]})` : `Gen ${s.gen}`;
   return "";
 }
@@ -311,6 +327,7 @@ function scopeWords(s: Scope, region = false): string {
 function measureProse(m: Metric): string {
   if (m.key === "weight" || m.key === "height") return m.measure.toLowerCase();
   if (m.key === "bst") return "base stat total";
+  if (m.key === "bulk") return "bulk (HP, Defense and Special Defense combined)";
   return `base ${statName(m)}`;
 }
 
@@ -349,6 +366,7 @@ function names(list: string[]): string {
 function valuePhrase(m: Metric, v: number): string {
   if (m.key === "weight" || m.key === "height") return `at ${valueText(m.key, v)}`;
   if (m.key === "bst") return `with a base stat total of ${v}`;
+  if (m.key === "bulk") return `with HP, Defense and Special Defense adding up to ${v}`;
   return `with a base ${statName(m)} of ${v}`;
 }
 
@@ -382,11 +400,13 @@ export function runnersUpSentence(m: Metric, r: Ranked[]): string {
 
 /** What the list counts, stated on the page. */
 export function countingNote(m: Metric, s: Scope): string {
-  const source = m.key === "weight" || m.key === "height" ? `Heights and weights are the Pokédex figures for each Pokémon` : `Base stats are each species' fixed values, before IVs, EVs, natures and level`;
+  const source = m.key === "bulk" ? `Bulk is a species' base HP, Defense and Special Defense added together, before IVs, EVs, natures and level` : m.key === "weight" || m.key === "height" ? `Heights and weights are the Pokédex figures for each Pokémon` : `Base stats are each species' fixed values, before IVs, EVs, natures and level`;
   if (s.kind === "forms")
     return `This list includes Mega Evolutions, Primal Reversions, regional forms and other forms with their own stats, types or size, alongside each species' default form. Gigantamax and Eternamax forms are left out. ${source}.`;
   const scope =
-    s.kind === "type"
+    s.kind === "core"
+      ? `It ranks one entry per species in its default form and leaves out every legendary and mythical Pokémon`
+      : s.kind === "type"
       ? `It ranks every Pokémon with the ${capitalize(s.type)} type, single- or dual-typed, in its default form`
       : s.kind === "gen"
         ? `It ranks the Pokémon introduced in Generation ${s.gen} (${GENERATION_REGIONS[s.gen]}) in their default forms; regional forms from later games are not counted`
@@ -435,7 +455,8 @@ export function rankingFaq(m: Metric, s: Scope): Faq[] {
 }
 
 /** The sorted Pokédex explorer for the same list (?sort=…&type=…&gen=…&dir=asc). */
-export function explorerHref(m: Metric, s: Scope): string {
+export function explorerHref(m: Metric, s: Scope): string | null {
+  if (m.key === "bulk" || s.kind === "core") return null;
   const q = new URLSearchParams({ sort: m.key });
   if (s.kind === "type") q.set("type", s.type);
   if (s.kind === "gen") q.set("gen", String(s.gen));

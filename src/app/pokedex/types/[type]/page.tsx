@@ -9,6 +9,7 @@ import type { MoveRecord } from "@/lib/dex/build";
 import { Section } from "@/components/pokedex/entry/Reveal";
 import { TypeBadge } from "@/components/pokedex/TypeBadge";
 import { DetailHero, DetailNav, SpeciesGrid, StatBox } from "@/components/pokedex/detail/DetailParts";
+import { METRICS, isBuiltPage, rankingHeading, rankingPath } from "@/lib/dex/rankings";
 import { pagerFor } from "@/lib/dex/neighbours";
 
 export const dynamicParams = false;
@@ -174,6 +175,17 @@ export default async function TypePage({ params }: PageProps) {
           )}
         </div>
       </Section>
+
+      <nav aria-label={`${name}-type rankings`} className="space-y-2">
+        <h2 className="font-pixel text-[10px] uppercase tracking-wider text-muted-foreground">{name}-type rankings</h2>
+        <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+          {METRICS.filter((x) => isBuiltPage(x.slug, { kind: "type", type: t })).map((x) => (
+            <Link key={x.slug} href={rankingPath(x.slug, { kind: "type", type: t })} className="underline-offset-2 hover:text-foreground hover:underline">
+              {rankingHeading(x, { kind: "type", type: t })}
+            </Link>
+          ))}
+        </p>
+      </nav>
 
       <nav aria-label="Other types" className="space-y-2">
         <h2 className="font-pixel text-[10px] uppercase tracking-wider text-muted-foreground">Other types</h2>
