@@ -786,7 +786,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
     if (!next) audioRef.current?.gesture();
   };
 
-  const chip = "rc-chip pointer-events-auto inline-flex h-9 items-center gap-1.5 rounded-md border border-white/15 bg-[#0b1226]/75 px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] text-white/85 backdrop-blur-md transition-colors hover:border-white/35 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd84a] disabled:opacity-50";
+  const chip = "rc-chip pointer-events-auto inline-flex h-9 items-center gap-1.5 max-sm:min-h-10 max-sm:min-w-10 max-sm:justify-center rounded-md border border-white/15 bg-[#0b1226]/75 px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] text-white/85 backdrop-blur-md transition-colors hover:border-white/35 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd84a] disabled:opacity-50";
   const pre = phase === "crane" || phase === "intro";
   const after = phase === "results";
 
@@ -866,8 +866,8 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
               ))}
             </div>
             <div className="pointer-events-auto flex flex-col overflow-hidden rounded-md border border-white/15 bg-[#0b1226]/75 backdrop-blur-md">
-              <button type="button" onClick={() => zoom(1.25)} className="p-2 text-white/80 hover:text-white" aria-label="Zoom in" data-testid="race-zoom-in"><Plus className="h-4 w-4" /></button>
-              <button type="button" onClick={() => zoom(0.8)} className="border-t border-white/10 p-2 text-white/80 hover:text-white" aria-label="Zoom out" data-testid="race-zoom-out"><Minus className="h-4 w-4" /></button>
+              <button type="button" onClick={() => zoom(1.25)} className="p-2 text-white/80 hover:text-white max-sm:p-3" aria-label="Zoom in" data-testid="race-zoom-in"><Plus className="h-4 w-4" /></button>
+              <button type="button" onClick={() => zoom(0.8)} className="border-t border-white/10 p-2 text-white/80 hover:text-white max-sm:p-3" aria-label="Zoom out" data-testid="race-zoom-out"><Minus className="h-4 w-4" /></button>
             </div>
           </div>
 

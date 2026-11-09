@@ -247,3 +247,27 @@ describe("rankingFacts", () => {
     expect(speciesEntry(p)).toMatchObject({ species: p.id, bst: p.bst, weight: p.weight, form: null });
   });
 });
+
+describe("long lists: the top in the page, the rest from /rows", () => {
+  it("splits a list into its first rows and the rest, with nothing lost or repeated", async () => {
+    const { FIRST_ROWS, rowsHtml, restRowsResponse } = await import("@/components/pokedex/rankings/rows-html");
+    const m = getMetric("heaviest")!;
+    const rows = ranking(m, ALL);
+    expect(rows.length).toBeGreaterThan(FIRST_ROWS);
+    const head = rowsHtml(m, rows.slice(0, FIRST_ROWS));
+    const res = restRowsResponse(m, ALL);
+    expect(res.headers.get("X-Robots-Tag")).toBe("noindex");
+    const tail = await res.text();
+    const ids = (html: string) => [...html.matchAll(/<tr id=([a-z0-9-]+)>/g)].map((x) => x[1]);
+    expect(ids(head)).toHaveLength(FIRST_ROWS);
+    expect([...ids(head), ...ids(tail)]).toEqual(rows.map((r) => r.entry.key));
+    // Only the first screen's pictures load eagerly.
+    expect(tail).not.toMatch(/height=40>/);
+  });
+
+  it("puts every ranking fact's row in the page itself", () => {
+    return import("@/components/pokedex/rankings/rows-html").then(({ FIRST_ROWS }) => {
+      for (const p of POKEDEX.slice(0, 200)) for (const f of rankingFacts(p.slug)) expect(f.rank).toBeLessThanOrEqual(FIRST_ROWS);
+    });
+  });
+});

@@ -103,7 +103,8 @@ export function TrainerCard() {
                     </button>
                   )}
                   <p className="text-sm text-muted-foreground">
-                    {progress.answered.toLocaleString()} questions answered · {dailyDays} daily {dailyDays === 1 ? "day" : "days"} played
+                    {progress.answered.toLocaleString()} questions answered
+                    {dailyDays > 0 && ` · ${dailyDays} ${dailyDays === 1 ? "daily" : "dailies"} played`}
                   </p>
                 </div>
               </div>

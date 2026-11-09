@@ -2,8 +2,7 @@ import Link from "@/components/ui/Link";
 import { ArrowDownWideNarrow, ArrowUpNarrowWide, Table2 } from "lucide-react";
 import { jsonLd } from "@/lib/seo";
 import { breadcrumbList, itemList } from "@/lib/structured-data";
-import { artUrl, boardArtUrl } from "@/lib/pokemon/art";
-import { GENERATION_REGIONS, STAT_LABELS, type StatKey } from "@/lib/pokemon/constants";
+import { GENERATION_REGIONS, STAT_LABELS } from "@/lib/pokemon/constants";
 import { TYPES, capitalize } from "@/lib/pokemon/type-matrix";
 import { TypeBadge } from "@/components/pokedex/TypeBadge";
 import { cn } from "@/lib/utils";
@@ -14,7 +13,6 @@ import {
   RANKINGS_PATH,
   countingNote,
   explorerHref,
-  formatValue,
   getMetric,
   isBuiltPage,
   leaderSentence,
@@ -25,15 +23,13 @@ import {
   rankingPath,
   runnersUpSentence,
   type Metric,
-  type Ranked,
   type Scope,
 } from "@/lib/dex/rankings";
+import { FIRST_ROWS, STATS, columnCount, restRowsPath, rowsHtml } from "./rows-html";
+import { RankingRest } from "./RankingRest";
 
-/** Rows whose picture loads straight away (the first screen); the rest load as they scroll in. */
-const EAGER_ROWS = 8;
 /** ItemList JSON-LD carries the top of the list, as the ranking sites do. */
 const LD_ITEMS = 50;
-const STATS: StatKey[] = ["hp", "atk", "def", "spa", "spd", "spe"];
 
 export function scopeLabel(s: Scope): string {
   if (s.kind === "type") return `${capitalize(s.type)} type`;
@@ -88,14 +84,6 @@ function Chip({ href, active, children }: { href: string; active: boolean; child
   );
 }
 
-/** Where a type badge in the table goes: this list for that type, if it has a page, else the type's page. */
-function typeHref(m: Metric, type: string): string {
-  const s: Scope = { kind: "type", type: type as (typeof TYPES)[number] };
-  return isBuiltPage(m.slug, s) ? rankingPath(m.slug, s) : `/pokedex/types/${type}`;
-}
-
-const esc = (x: string | number) => String(x).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-
 /**
  * The table's look, once per page. A list can hold every Pokémon and form, so
  * its rows are plain HTML with short class names (see rowsHtml): the same
@@ -125,41 +113,6 @@ ${TYPES.map((t) => `.rk .t-${t}{background:${typeColor(t)};color:${typeTextColor
 @media (max-width:767px){.rk .vm,.rk .vc{display:none}}
 @media (max-width:1023px){.rk .vl{display:none}}
 `;
-
-function valueHtml(key: Metric["key"], v: number): string {
-  const f = formatValue(key, v);
-  return `<b>${esc(f.main)}</b>${f.alt ? `<small>${esc(f.alt)}</small>` : ""}`;
-}
-
-/**
- * Every row of the table as HTML: rank, Pokémon, types, the value, and the
- * context columns. Ids, slugs and paths are [a-z0-9-/] only (asserted in
- * tests), so their attributes go unquoted: the markup is also carried,
- * escaped, in the page's RSC payload, and every quote counts twice there.
- */
-function rowsHtml(m: Metric, rows: Ranked[]): string {
-  const size = m.key === "weight" || m.key === "height";
-  const typeLinks = new Map(TYPES.map((t) => [t as string, `<a class=t-${t} href=${typeHref(m, t)}>${esc(capitalize(t))}</a>`]));
-  // Phones: the types sit under the name instead of in a column of their own.
-  const typeTags = new Map(TYPES.map((t) => [t as string, `<i class=t-${t}>${esc(capitalize(t))}</i>`]));
-  return rows
-    .map((r, i) => {
-      const e = r.entry;
-      const pic = e.form ? artUrl(e.art, 96) : boardArtUrl(e.art);
-      const sub = `#${String(e.species).padStart(4, "0")}${e.speciesName ? ` · ${esc(e.speciesName)}` : ""}`;
-      let extra = "";
-      if (size) extra += `<td class=vm>${valueHtml(m.key === "weight" ? "height" : "weight", m.key === "weight" ? e.height : e.weight)}</td>`;
-      else if (m.key === "bst") extra += STATS.map((k) => `<td class=vl>${e.stats[k]}</td>`).join("");
-      else extra += `<td class=vc>${e.bst}</td>`;
-      return (
-        `<tr id=${e.key}><td>${r.rank}${r.tied ? "<span class=sr-only> (tied)</span>" : ""}</td>` +
-        `<td><a class=n href=/pokemon/${e.slug}><img src="${pic}" alt="${esc(e.name)}" width=40 height=40${i < EAGER_ROWS ? "" : " loading=lazy"}><span><b>${esc(e.name)}</b><small>${sub}</small></span></a><span class=tm>${e.types.map((t) => typeTags.get(t) ?? "").join("")}</span></td>` +
-        `<td class=tc><span class=ty>${e.types.map((t) => typeLinks.get(t) ?? "").join("")}</span></td>` +
-        `<td class=v>${valueHtml(m.key, r.value)}</td>${extra}<td class=vc>${e.gen}</td></tr>`
-      );
-    })
-    .join("");
-}
 
 /** The full list as a real table: rank, Pokémon, types, the value, and a couple of context columns. */
 function RankingTable({ m, s }: { m: Metric; s: Scope }) {
@@ -208,7 +161,8 @@ function RankingTable({ m, s }: { m: Metric; s: Scope }) {
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-foreground/10" dangerouslySetInnerHTML={{ __html: rowsHtml(m, rows) }} />
+        <tbody className="divide-y divide-foreground/10" dangerouslySetInnerHTML={{ __html: rowsHtml(m, rows.slice(0, FIRST_ROWS)) }} />
+        {rows.length > FIRST_ROWS && <RankingRest src={restRowsPath(m, s)} columns={columnCount(m)} />}
       </table>
     </div>
   );
