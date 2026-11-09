@@ -465,6 +465,8 @@ if (!(await page.getByText(/Got it in/).count())) {
 }
 await page.screenshot({ path: `${OUT}/pokedle-dex.png` });
 for (const name of ["Charizard", "Gengar"]) {
+  // A row reveals cell by cell and the box stays locked until it's done; on a day the answer is the first guess, the reveal ends in a win.
+  await page.waitForFunction(() => document.body.innerText.includes("Got it in") || document.querySelector("input[aria-label^='Guess a Pokémon']")?.disabled === false, null, { timeout: 15_000 }).catch(() => {});
   if (await page.getByText(/Got it in/).count()) break;
   await page.getByLabel("Guess a Pokémon").fill(name);
   await page.getByRole("option").first().click();
@@ -3829,7 +3831,7 @@ async function homeStep() {
   }, daily.shot);
   const showsToday = typeof daily.sharpTo === "number" && daily.sharpTo >= heroWide;
   if (showsToday) {
-    await p.waitForFunction(() => document.querySelector("[data-testid=home-hero-shot]")?.dataset.shot?.startsWith("/api/geo/shot/"), null, { timeout: 20_000 }).catch(() => errors.push("home: today's PokéGuessr place never replaced the hero's fixed picture"));
+    await p.waitForFunction(() => /^\/api\/geo\/shot\/[\w-]+$|\/geo\/[\w-]+\.webp$/.test(document.querySelector("[data-testid=home-hero-shot]")?.dataset.shot ?? ""), null, { timeout: 20_000 }).catch(() => errors.push("home: today's PokéGuessr place never replaced the hero's fixed picture"));
   } else {
     await p.waitForTimeout(2500);
     if ((await hero.getByTestId("home-hero-shot").getAttribute("data-shot")) !== "fallback") errors.push(`home: today's place is too small to be sharp at ${Math.round(heroWide)} px (sharp to ${daily.sharpTo}), but the hero shows it`);
@@ -3882,7 +3884,7 @@ async function homeStep() {
 
   // Play: straight into today's Daily, on the picture the hero showed (already fetched).
   await gotoSettled(p, BASE);
-  await p.waitForFunction(() => document.querySelector("[data-testid=home-hero-shot]")?.dataset.shot?.startsWith("/api/geo/shot/"), null, { timeout: 20_000 }).catch(() => {});
+  await p.waitForFunction(() => /^\/api\/geo\/shot\/[\w-]+$|\/geo\/[\w-]+\.webp$/.test(document.querySelector("[data-testid=home-hero-shot]")?.dataset.shot ?? ""), null, { timeout: 20_000 }).catch(() => {});
   if ((await hero.getByTestId("home-hero-play").getAttribute("href")) !== "/guessr?play=daily") errors.push("home: Play doesn't go to today's Daily");
   await hero.getByTestId("home-hero-play").click();
   await p.waitForURL(/\/guessr/, { timeout: 15_000 }).catch(() => errors.push(`home: Play went to ${p.url()}`));
@@ -3931,7 +3933,7 @@ async function homeStep() {
   {
     const still = await newPage({ width: 1440, height: 900 }, { reducedMotion: "reduce" });
     await gotoSettled(still, BASE);
-    await still.waitForFunction(() => document.querySelector("[data-testid=home-hero-shot]")?.dataset.shot?.startsWith("/api/geo/shot/"), null, { timeout: 20_000 }).catch(() => {});
+    await still.waitForFunction(() => /^\/api\/geo\/shot\/[\w-]+$|\/geo\/[\w-]+\.webp$/.test(document.querySelector("[data-testid=home-hero-shot]")?.dataset.shot ?? ""), null, { timeout: 20_000 }).catch(() => {});
     const motion = await still.locator("[data-testid=home-hero-shot] img").last().evaluate((el) => getComputedStyle(el).transitionProperty);
     if (motion !== "none" && motion !== "all") errors.push(`home: under reduced motion the hero's picture still transitions (${motion})`);
     await still.context().close();

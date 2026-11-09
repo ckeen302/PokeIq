@@ -6,6 +6,8 @@ import { GEO_PREVIEW_RE, previewShot, shotSource } from "@/lib/server/geo";
  * (the Atlas, the map picker, the how-to demo). The name is an HMAC of the
  * screenshot's id, resolved here, so a round's image URL (/api/geo/shot/:id)
  * can't be matched to a place through any public page. Cached for a year.
+ * Always streamed through, never redirected to the store: a redirect would
+ * name the file, and so the round id behind the preview.
  */
 export async function GET(_request: NextRequest, context: { params: Promise<{ token: string }> }) {
   const { token } = await context.params;

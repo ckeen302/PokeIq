@@ -1,3 +1,4 @@
+import { artUrl } from "@/lib/pokemon/art";
 import type { Rng } from "@/lib/rng";
 import type { BallKind, Cell, Rot, TypeName } from "./types";
 
@@ -100,9 +101,9 @@ export function monName(id: number): string {
   return MONS.find((m) => m.id === id)?.name ?? `#${id}`;
 }
 
-/** Art for a roster Pokémon, from the site's own Pokédex art route. */
+/** Art for a roster Pokémon: the Pokédex's own artwork (a static file for a species). */
 export function monArt(id: number, size: 96 | 160 = 96): string {
-  return `/api/art/${id}?s=${size}`;
+  return artUrl(id, size);
 }
 
 /** Shorthand builders. */

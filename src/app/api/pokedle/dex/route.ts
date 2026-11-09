@@ -16,7 +16,8 @@ import { dleStage } from "@/lib/server/pokedle";
  * answer.
  */
 
-const CACHE = { "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800" };
+/** The CDN keeps it too (s-maxage): without it each visit would build the list in a function again. */
+const CACHE = { "Cache-Control": "public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800" };
 
 /** The rows for a level (null for Off). */
 function rowsFor(assist: DleAssist): DleDexRow[] | null {

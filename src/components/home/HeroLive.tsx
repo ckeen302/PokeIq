@@ -7,6 +7,8 @@ import Link from "@/components/ui/Link";
 import { ArrowRight, Camera, Check, Clock, Compass, MapPin, Share2 } from "lucide-react";
 import { TimeToNextDaily } from "@/components/NextDailyCountdown";
 import { dailyNumber } from "@/lib/daily";
+import { geoShotIdOf } from "@/lib/geo-storage";
+import { heroLoader } from "@/lib/hero-image";
 import { GEO_MAX_ROUND_SCORE, GEO_ROUNDS } from "@/lib/geo-types";
 import { useProgress } from "@/lib/progress";
 import { useToday } from "@/lib/use-today";
@@ -52,7 +54,7 @@ export function HeroPicture({ fallback }: { fallback: StaticImageData }) {
       try {
         const res = await fetch(`/api/geo/daily-shot?date=${today}`);
         const data = res.ok ? ((await res.json()) as DailyShot) : null;
-        if (!live || typeof data?.shot !== "string" || !data.shot.startsWith("/api/geo/shot/")) return;
+        if (!live || typeof data?.shot !== "string" || !geoShotIdOf(data.shot)) return;
         // Too small to be sharp here (judged on a 16:9 shot before it's fetched, then on its real shape): the fixed view stays.
         const el = box.current;
         const sharpTo = data.sharpTo ?? 0;
@@ -82,7 +84,8 @@ export function HeroPicture({ fallback }: { fallback: StaticImageData }) {
   return (
     <>
       <div ref={box} className="absolute inset-0" data-testid="home-hero-shot" data-shot={daily ? shot : "fallback"}>
-        <Image src={fallback} alt="" priority placeholder="blur" fill sizes={SIZES} className="object-cover" />
+        {/* Pre-sized static files (src/lib/hero-image), the same pictures the image optimizer would make. */}
+        <Image src={fallback} loader={heroLoader} alt="" priority placeholder="blur" fill sizes={SIZES} className="object-cover" />
         {shot && (
           // eslint-disable-next-line @next/next/no-img-element -- the game's own screenshot URL, so the Daily's round 1 is already cached
           <img

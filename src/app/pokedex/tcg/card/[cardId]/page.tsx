@@ -13,7 +13,15 @@ import { NO_PAGER, pagerFor, tcgCardLabel, tcgCardOrder } from "@/lib/dex/neighb
 import { cardmarketRows, formatApiDate, formatPrice, headlinePrice, PRICE_SOURCES, priceSourceLine, tcgplayerRows } from "@/lib/tcg/prices";
 import { getPokemon } from "@/lib/pokemon/pokedex";
 
-export const dynamic = "force-dynamic";
+/**
+ * Rendered on a card's first visit and then served from the cache (refreshed
+ * every 6 hours: prices move about daily), so crawlers going through the
+ * TCG sitemaps don't render every page again on each visit.
+ */
+export const revalidate = 21600;
+export function generateStaticParams() {
+  return [];
+}
 
 interface PageProps {
   params: Promise<{ cardId: string }>;

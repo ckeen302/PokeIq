@@ -101,7 +101,7 @@ describe("content", () => {
       for (const b of c.beats) for (const a of b.figures ?? []) expect(arts.has(a), `${c.id}/${b.id}: figure ${a}`).toBe(true);
     }
     expect(FIGURE_ARTS.length).toBeGreaterThan(30);
-    expect(artUrl(493)).toBe("/api/world-history/art/493?s=512");
+    expect(artUrl(493)).toBe("/race/art/512/493.webp");
   });
 
   it("never invents a date: every number in a chapter's 'when' is in its own quoted text", () => {

@@ -1,3 +1,4 @@
+import { figureArtUrl } from "@/lib/figure-art";
 import SIZES_ART from "@/data/sizes-art.json";
 import RACE_FORMS from "@/data/race-forms.json";
 
@@ -35,7 +36,7 @@ export function figureAsset(art: number): FigureAsset | null {
   return null;
 }
 
-/** The HOME render for a figure, same-origin for WebGL (see /api/world-history/art). */
+/** The HOME render for a figure: a static file, same-origin for WebGL (src/lib/figure-art). */
 export function artUrl(art: number, size: 256 | 512 = 512): string {
-  return `/api/world-history/art/${art}?s=${size}`;
+  return figureArtUrl(art, size);
 }
