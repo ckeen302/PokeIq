@@ -1,4 +1,5 @@
 import "server-only";
+import { geoShotUrl } from "@/lib/geo-storage";
 import { getServiceSupabase } from "@/lib/supabase";
 import { WORLD_REGION, type GeoAnswer, type GeoSpec } from "@/lib/geo-types";
 import { GEO_STREAK_REGIONS, type GeoStreakGuessResponse, type GeoStreakRegion, type GeoStreakResult, type GeoStreakStartResponse } from "@/lib/geo-streak-types";
@@ -40,7 +41,7 @@ export interface StreakState {
   name?: string;
 }
 
-const shotUrl = (id: string) => `/api/geo/shot/${id}`;
+const shotUrl = geoShotUrl;
 export const isStreakRegion = (x: unknown): x is GeoStreakRegion => typeof x === "string" && (GEO_STREAK_REGIONS as readonly string[]).includes(x);
 
 /** Areas the world data files under their own name that are part of a region's games (on top of geo.ts's groups). */

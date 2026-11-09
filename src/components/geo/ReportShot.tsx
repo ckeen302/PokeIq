@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { Check, Flag, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { geoShotIdOf } from "@/lib/geo-storage";
 import { GEO_REPORT_NOTE_MAX, GEO_REPORT_REASONS, type GeoReportMode, type GeoReportReason } from "@/lib/geo-reports";
 import { cn } from "@/lib/utils";
 
-/** The screenshot id in its URL (/api/geo/shot/<id>). */
-const shotId = (src: string) => src.split("/").pop() ?? "";
+/** The screenshot id in its URL (src/lib/geo-storage's geoShotUrl). */
+const shotId = (src: string) => geoShotIdOf(src) ?? "";
 
 /**
  * "Report this screenshot" on a round's result: a reason (wrong place, wrong

@@ -1,6 +1,13 @@
 /** Client-safe asset URL helpers for the Pokédex. */
 
+/**
+ * A Pokémon's official artwork as WebP. Small sizes of a species (the 96 and
+ * 160 px a list or a card draws) are the static 160 px file the CDN serves
+ * (public/art/160, boardArtUrl), drawn down by the browser; the rest are
+ * transcoded by /api/art and cached by the CDN.
+ */
 export function artUrl(id: number, size: 96 | 160 | 256 | 400 = 256, shiny = false): string {
+  if (!shiny && size <= BOARD_ART_SIZE && hasBoardArt(id)) return boardArtUrl(id);
   return `/api/art/${id}?s=${size}${shiny ? "&shiny=1" : ""}`;
 }
 
@@ -32,5 +39,10 @@ export const BOARD_ART_LAST_ID = 1025;
  * a number past the Pokédex) goes through /api/art.
  */
 export function boardArtUrl(id: number): string {
-  return Number.isInteger(id) && id >= 1 && id <= BOARD_ART_LAST_ID ? `/art/${BOARD_ART_SIZE}/${id}.webp` : artUrl(id, BOARD_ART_SIZE);
+  return hasBoardArt(id) ? `/art/${BOARD_ART_SIZE}/${id}.webp` : `/api/art/${id}?s=${BOARD_ART_SIZE}`;
+}
+
+/** Whether a species has a static board picture (public/art/160). */
+export function hasBoardArt(id: number): boolean {
+  return Number.isInteger(id) && id >= 1 && id <= BOARD_ART_LAST_ID;
 }

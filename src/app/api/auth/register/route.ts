@@ -15,8 +15,14 @@ import {
 } from "@/lib/server/auth";
 import { guardAuthRequest, serverError } from "@/lib/server/auth-route";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
+import { optInAtSignup } from "@/lib/server/email/service";
 
-/** POST /api/auth/register — { username, password } -> signed in + one-time recovery code. */
+/**
+ * POST /api/auth/register — { username, password, email?, dailyEmail? } ->
+ * signed in + one-time recovery code. The optional address (while daily
+ * emails are switched on) gets a "Confirm your email" message; it never
+ * holds up the sign-up.
+ */
 
 const bodySchema = z.object({
   username: z.string().regex(USERNAME_RE, "Trainer names are 3–20 letters, numbers, _ or -.").refine(isCleanName, NAME_REJECTED),
@@ -24,6 +30,8 @@ const bodySchema = z.object({
     .string()
     .min(PASSWORD_MIN, `Passwords need at least ${PASSWORD_MIN} characters.`)
     .max(PASSWORD_MAX, "That password is too long."),
+  email: z.string().max(320).nullish(),
+  dailyEmail: z.boolean().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -47,7 +55,8 @@ export async function POST(request: NextRequest) {
 
     const { token, tokenHash } = newSessionToken();
     await createSession(tokenHash, user.id, new Date(Date.now() + SESSION_TTL_MS));
-    const response = NextResponse.json({ user: toPublicUser(user), recoveryCode }, { status: 201 });
+    const email = await optInAtSignup(user, parsed.data);
+    const response = NextResponse.json({ user: toPublicUser(user), recoveryCode, ...(email !== "skipped" && { email }) }, { status: 201 });
     setSessionCookie(response, token);
     return response;
   } catch (err) {

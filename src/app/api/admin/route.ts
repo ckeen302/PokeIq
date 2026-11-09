@@ -1,3 +1,4 @@
+import { geoShotUrl } from "@/lib/geo-storage";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { sameOrigin } from "@/lib/server/auth";
@@ -137,7 +138,7 @@ export async function GET(request: NextRequest) {
         const queue = await shotReviewQueue(status === "kept" || status === "removed" || status === "all" ? status : "open");
         const shots: GeoShotReview[] = (queue ?? []).map((s) => {
           const info = shotInfo(s.shot);
-          return { ...s, src: `/api/geo/shot/${s.shot}`, place: info?.place ?? null, game: info?.game ?? null };
+          return { ...s, src: geoShotUrl(s.shot), place: info?.place ?? null, game: info?.game ?? null };
         });
         return NextResponse.json({ shots, stored: queue !== null }, { headers: NO_STORE });
       }

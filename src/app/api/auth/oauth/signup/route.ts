@@ -3,11 +3,15 @@ import { createSession, toPublicUser } from "@/lib/server/accounts";
 import { SESSION_TTL_MS, newSessionToken, setSessionCookie } from "@/lib/server/auth";
 import { guardAuthRequest, serverError } from "@/lib/server/auth-route";
 import { SIGNUP_COOKIE, clearOAuthCookie, completeSignup, openSignup, signupSchema } from "@/lib/server/oauth";
+import { emailEnabled } from "@/lib/server/email/config";
+import { optInAtSignup } from "@/lib/server/email/service";
 
 /**
  * The "Pick your trainer name" step after a first Discord / Google sign-in.
- * GET  -> { provider, suggestion } for the waiting signup.
- * POST { username, ageConfirmed: true } -> creates the trainer and signs in.
+ * GET  -> { provider, suggestion, email? } for the waiting signup (`email`, the
+ *   provider's verified address, only while daily emails are switched on, to
+ *   prefill the unticked "Email me when new dailies drop").
+ * POST { username, ageConfirmed: true, email?, dailyEmail? } -> creates the trainer and signs in.
  */
 
 const headers = { "Cache-Control": "no-store" };
@@ -16,7 +20,7 @@ const EXPIRED = "That sign-in has expired — start again from the sign-in page.
 export async function GET(request: NextRequest) {
   const pending = openSignup(request.cookies.get(SIGNUP_COOKIE)?.value);
   if (!pending) return NextResponse.json({ error: EXPIRED }, { status: 404, headers });
-  return NextResponse.json({ provider: pending.p, suggestion: pending.n }, { headers });
+  return NextResponse.json({ provider: pending.p, suggestion: pending.n, ...(emailEnabled() && { email: pending.e ?? "" }) }, { headers });
 }
 
 export async function POST(request: NextRequest) {
@@ -24,7 +28,8 @@ export async function POST(request: NextRequest) {
   if (blocked) return blocked;
   const pending = openSignup(request.cookies.get(SIGNUP_COOKIE)?.value);
   if (!pending) return NextResponse.json({ error: EXPIRED }, { status: 410, headers });
-  const parsed = signupSchema.safeParse(await request.json().catch(() => ({})));
+  const raw = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+  const parsed = signupSchema.safeParse(raw);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400, headers });
 
   try {
@@ -37,6 +42,7 @@ export async function POST(request: NextRequest) {
     }
     const { token, tokenHash } = newSessionToken();
     await createSession(tokenHash, user.id, new Date(Date.now() + SESSION_TTL_MS));
+    await optInAtSignup(user, { email: raw.email, dailyEmail: raw.dailyEmail });
     const response = NextResponse.json({ user: toPublicUser(user) }, { status: 201, headers });
     setSessionCookie(response, token);
     clearOAuthCookie(response, SIGNUP_COOKIE);

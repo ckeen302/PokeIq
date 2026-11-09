@@ -1,4 +1,5 @@
 import { GEO_SHOT_ID_RE } from "./geo-reports";
+import { geoShotIdOf } from "./geo-storage";
 
 /**
  * No-repeat: the PokéGuessr screenshots this player has been dealt, most
@@ -12,10 +13,10 @@ export const GEO_SEEN_KEY = "pokeiq:geo-seen";
 /** Ids kept (and sent with a game): roughly a hundred games' worth. */
 export const GEO_SEEN_MAX = 600;
 
-/** The screenshot id in a round's picture URL (/api/geo/shot/<id>), or null for any other URL. */
+/** The screenshot id in a round's picture URL (src/lib/geo-storage's geoShotUrl), or null for any other URL. */
 export function shotIdOf(url: string): string | null {
-  const m = /^\/api\/geo\/shot\/([A-Za-z0-9_-]+)$/.exec(url);
-  return m && GEO_SHOT_ID_RE.test(m[1]) ? m[1] : null;
+  const id = geoShotIdOf(url);
+  return id && GEO_SHOT_ID_RE.test(id) ? id : null;
 }
 
 export function readSeenShots(): string[] {

@@ -1,4 +1,5 @@
 import "server-only";
+import { geoShotUrl, geoStorageUrl } from "@/lib/geo-storage";
 import data from "@/data/geo.json";
 import themeTags from "@/data/geo-themes.json";
 import shotMeta from "@/data/geo-shot-meta.json";
@@ -101,8 +102,6 @@ interface WorldData {
 }
 
 const DATA = data as unknown as { storageBase?: string; world: WorldData };
-const STORAGE_BASE =
-  DATA.storageBase ?? `${process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/geo`;
 const STATE_TTL_MS = 3 * 60 * 60 * 1000;
 /**
  * The Timer setting is kept on the server too: a guess this long after the
@@ -197,7 +196,7 @@ const REGIONS: Region[] = (() => {
   return [world, ...Object.entries(DATA.world.crops).map(([id, crop]) => cropRegion(world, id, crop)), ...themes];
 })();
 
-const shotUrl = (id: string) => `/api/geo/shot/${id}`;
+const shotUrl = geoShotUrl;
 
 // ---------------------------------------------------------------------------
 // Previews outside a game (the Atlas, the map picker, the how-to demo)
@@ -457,7 +456,7 @@ export function geoFilter(era: unknown, families: unknown): { era?: GeoEra; fami
 
 /** Any screenshot in storage: a game started before an update keeps showing its own. */
 export function shotSource(id: string): string {
-  return `${STORAGE_BASE}/${id}.webp`;
+  return geoStorageUrl(id);
 }
 
 /** A screenshot's place and game as the data has them (the moderators' review queue). */

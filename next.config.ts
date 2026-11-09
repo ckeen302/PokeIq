@@ -90,13 +90,13 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
-      ...["/geo/maps/:path*", "/battle/fx/:path*", "/atlas/:path*", "/icon-192.png", "/icon-512.png", "/logo.svg"].map((source) => ({
+      ...["/geo/maps/:path*", "/home/:path*", "/battle/fx/:path*", "/atlas/:path*", "/icon-192.png", "/icon-512.png", "/logo.svg"].map((source) => ({
         source,
         headers: staticAssetCache,
       })),
       { source: "/art/:path*", headers: artCache },
-      // The size comparison's figures, relief maps and far atlas never change for a Pokémon either (the atlas's names are hashed).
-      ...["/sizes/art/:path*", "/sizes/depth/:path*", "/sizes/far/:path*", "/sizes/tex/:path*", "/sizes/env/:path*"].map((source) => ({ source, headers: artCache })),
+      // The size comparison's and the race's figures, relief maps and far atlas never change for a Pokémon either (the atlas's names are hashed).
+      ...["/race/art/:path*", "/sizes/art/:path*", "/sizes/depth/:path*", "/sizes/far/:path*", "/sizes/tex/:path*", "/sizes/env/:path*"].map((source) => ({ source, headers: artCache })),
     ];
   },
   images: {

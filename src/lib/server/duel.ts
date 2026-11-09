@@ -1,4 +1,5 @@
 import "server-only";
+import { geoShotUrl } from "@/lib/geo-storage";
 import { randomId } from "./crypto";
 import { chatClosed, duelNameSchema, emoteBlocked, readSeatToken, seatToken } from "./duel-core";
 import { postChat, systemLine } from "./chat";
@@ -150,7 +151,7 @@ export function parseDuelSettings(mode: unknown, rounds: unknown, turbo?: unknow
 export const isDuelMap = (region: string, era?: GeoEra) => isGeoSpec({ ...geoSpec(region), ...(era ? { era } : {}) });
 
 /** Same route as the single-player game; screenshot ids are random, so the URL gives nothing away. */
-const shotUrl = (round: PlannedRound) => `/api/geo/shot/${round.shot}`;
+const shotUrl = (round: PlannedRound) => geoShotUrl(round.shot);
 /** Each seat's own multiplier for a round (a points race has none). */
 const multipliersOf = (d: Pick<Duel, "mode" | "players">, index: number) => (d.mode === "race" ? d.players.map(() => 1) : seatMultipliers(index, d.players.length));
 const seatOf = (duel: Duel, playerId: string | null) => (playerId ? duel.players.findIndex((p) => p.id === playerId) : -1);

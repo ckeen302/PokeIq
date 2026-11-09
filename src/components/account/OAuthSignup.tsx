@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { completeOAuthSignup } from "@/lib/account";
+import { completeOAuthSignup, type SignupEmail } from "@/lib/account";
+import { DailyEmailOptIn, optInError } from "@/components/email/DailyEmailOptIn";
 import { PROVIDER_LABEL, isOAuthProvider, type OAuthProvider } from "@/lib/oauth";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -22,6 +23,8 @@ export function OAuthSignup() {
   const [load, setLoad] = useState<Load>({ status: "loading" });
   const [username, setUsername] = useState("");
   const [adult, setAdult] = useState(false);
+  // Shown only while daily emails are switched on (the server sends `email` then): the provider's address, box unticked.
+  const [optIn, setOptIn] = useState<SignupEmail | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,13 +32,14 @@ export function OAuthSignup() {
     let live = true;
     fetch("/api/auth/oauth/signup", { cache: "no-store" })
       .then(async (res) => {
-        const body = (await res.json().catch(() => ({}))) as { provider?: string; suggestion?: string; error?: string };
+        const body = (await res.json().catch(() => ({}))) as { provider?: string; suggestion?: string; email?: string; error?: string };
         if (!live) return;
         if (!res.ok || !isOAuthProvider(body.provider)) {
           setLoad({ status: "missing", error: body.error ?? "That sign-in has expired — start again." });
           return;
         }
         setUsername(body.suggestion ?? "");
+        if (typeof body.email === "string") setOptIn({ email: body.email, dailyEmail: false });
         setLoad({ status: "ready", provider: body.provider });
       })
       .catch(() => live && setLoad({ status: "missing", error: "Couldn't reach the server — try again." }));
@@ -48,10 +52,12 @@ export function OAuthSignup() {
     e.preventDefault();
     if (!isCleanName(username)) return setError(NAME_REJECTED);
     if (!adult) return setError("You need to be 13 or older to make an account.");
+    const emailProblem = optIn ? optInError(optIn) : null;
+    if (emailProblem) return setError(emailProblem);
     setBusy(true);
     setError(null);
     try {
-      await completeOAuthSignup(username, adult);
+      await completeOAuthSignup(username, adult, optIn ?? undefined);
       router.push("/trainer");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -92,6 +98,7 @@ export function OAuthSignup() {
               />
               <span className="block text-xs text-muted-foreground">3–20 letters, numbers, _ or -.</span>
             </label>
+            {optIn && <DailyEmailOptIn enabled value={optIn} onChange={setOptIn} />}
             <label className="flex items-start gap-2 text-sm">
               <input type="checkbox" className="mt-0.5 h-4 w-4" checked={adult} onChange={(e) => setAdult(e.target.checked)} required />
               <span>I am 13 years old or older.</span>

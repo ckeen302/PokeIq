@@ -48,6 +48,7 @@ import { ChallengeBanner, ChallengeResult, FeedbackPanel, GroupStats } from "./s
 import { ComeBackTomorrow, DailyLeaderboard, KeyHints, NewBadges, PerfectBanner, StreakFlame, useCelebration } from "./results";
 import { cn } from "@/lib/utils";
 import { CUSTOM_SEED_RE, customSeed } from "@/lib/connections/custom";
+import { DailyEmailNudge } from "@/components/email/DailyEmailNudge";
 
 /** Today's daily, a past daily from the archive (never counted), or a practice puzzle. */
 type Target = { kind: "daily"; date: string } | { kind: "archive"; date: string } | { kind: "practice"; seed: string };
@@ -1018,6 +1019,7 @@ export function Connections({ customId, initial }: { customId?: string; initial?
                   </div>
                 )}
                 {mode === "daily" && daily && <ComeBackTomorrow next={connNumber(daily.date) + 1} />}
+                {mode === "daily" && daily && <DailyEmailNudge />}
                 {mode === "daily" && stats && <StreakFlame streak={streak} best={Math.max(stats.bestPlayStreak, streak)} />}
                 <NewBadges badges={fresh} />
                 {usedHint && mode === "daily" && (
