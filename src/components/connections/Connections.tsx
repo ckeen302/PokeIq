@@ -660,7 +660,7 @@ export function Connections({ customId, initial }: { customId?: string; initial?
   const isCustom = target?.kind === "practice" && CUSTOM_SEED_RE.test(target.seed);
   const title = isCustom ? "PokéConnections · Community puzzle" : mode === "practice" ? "PokéConnections · Practice" : daily ? `PokéConnections #${connNumber(daily.date)}${mode === "archive" ? ` · Archive (${daily.date})` : ""}` : "PokéConnections";
   const iconButton =
-    "relative rounded-md p-2 text-muted-foreground transition-colors hover:bg-screen/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40";
+    "relative rounded-md p-2 max-sm:p-2.5 text-muted-foreground transition-colors hover:bg-screen/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40";
   const motionFor = (id: number): TileMotion => (tileMotion?.ids.includes(id) ? tileMotion.kind : null);
   const todayRecord = today && progress ? connBlock(progress).results[today] : undefined;
   const todayMistakes = todayRecord?.over ? (todayRecord.solved ? todayRecord.mistakes : CONN_MAX_MISTAKES) : null;

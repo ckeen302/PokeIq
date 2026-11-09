@@ -64,7 +64,7 @@ export function Breadcrumbs({ crumbs }: { crumbs: { name: string; path: string }
                 {c.name}
               </span>
             ) : (
-              <Link href={c.path} className="underline-offset-2 hover:text-foreground hover:underline">
+              <Link href={c.path} className="underline-offset-2 hover:text-foreground hover:underline max-sm:-my-3 max-sm:py-3">
                 {c.name}
               </Link>
             )}

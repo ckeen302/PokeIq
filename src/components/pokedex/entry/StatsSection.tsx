@@ -46,7 +46,7 @@ export function StatsSection({ stats, percentiles, accent, isShedinja, showPerce
                   key={l}
                   type="button"
                   onClick={() => setLevel(l)}
-                  className={cn("rounded-sm px-2 py-1 font-pixel text-[9px] leading-none", level === l ? "bg-primary text-primary-foreground" : "text-muted-foreground")}
+                  className={cn("rounded-sm px-2 py-1 font-pixel text-[9px] leading-none max-sm:min-h-10", level === l ? "bg-primary text-primary-foreground" : "text-muted-foreground")}
                 >
                   Lv{l}
                 </button>

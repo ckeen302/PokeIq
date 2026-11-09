@@ -76,7 +76,7 @@ export function HowToSheet({ onClose, onNever }: { onClose: () => void; onNever?
           ]}
         />
         <details className="rounded-md border bg-shade/30 p-3">
-          <summary className="cursor-pointer font-semibold">Full rules</summary>
+          <summary className="cursor-pointer font-semibold max-sm:py-2.5">Full rules</summary>
         <div className="mt-3 space-y-4">
         <p>
           Guess the mystery Pokémon in {DLE_MAX_GUESSES} tries (in Classic). Every guess shows how it compares with the answer. Say you guess Pikachu and the answer is Raichu:

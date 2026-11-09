@@ -61,6 +61,9 @@ const MORE_LINKS: { href: string; label: string; icon: LucideIcon; testId: strin
 function tabActive(pathname: string, href: string) {
   if (isLabPath(pathname)) return href === LAB_PATH;
   if (href === LAB_PATH) return false;
+  // A quiz and the PokéIQ Test sit under Quizzes; a Pokémon's entry under the Pokédex.
+  if (pathname.startsWith("/quiz/") || pathname === "/iq-test") return href === "/play";
+  if (pathname.startsWith("/pokemon/")) return href === "/pokedex";
   return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 }
 
