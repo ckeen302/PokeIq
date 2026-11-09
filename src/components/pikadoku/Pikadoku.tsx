@@ -52,6 +52,7 @@ const UnlimitedSetup = dynamic(() => import("./UnlimitedSetup").then((m) => m.Un
 import { GuessToast, NextPuzzleCountdown, PdkDailyStatsCard, PdkStatusBanners, PpPips, RarityPreview, RevealGrid, useOnline } from "./results";
 import { RARITY_EMOJI, rarityGrid, rarityLetter } from "@/lib/pikadoku/share";
 import { cn } from "@/lib/utils";
+import { DailyEmailNudge } from "@/components/email/DailyEmailNudge";
 
 type Mode = "daily" | "weekly" | "practice" | "archive";
 type Target = { date: string; difficulty: PdkDifficulty; archive?: true } | { week: string; difficulty: "normal" } | { practice: string; difficulty: "normal"; settings: PdkSettings };
@@ -827,6 +828,7 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
                 )}
               </div>
               {mode === "daily" && <NextPuzzleCountdown />}
+              {mode === "daily" && <DailyEmailNudge />}
               {mode !== "practice" && (
                 <Button type="button" variant="ghost" size="sm" onClick={() => newPractice()}>
                   <Dices className="h-4 w-4" aria-hidden /> Can&apos;t wait? Play an Unlimited grid

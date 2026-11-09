@@ -23,6 +23,7 @@ import { runWorldHistory } from "./e2e-world-history.mjs";
 import { runPokemonStory } from "./e2e-pokemon-story.mjs";
 import { runGroupBattles } from "./e2e-battle-group.mjs";
 import { runEmptyQueue } from "./e2e-battle-queue.mjs";
+import { runEmail } from "./e2e-email.mjs";
 
 const BASE = process.argv[2] ?? "http://localhost:3000";
 // Each game opens its how-to pop-up (with a live demo) on a first visit. "Don't show again" dismisses it for good on this device.
@@ -4232,6 +4233,9 @@ await mobile.screenshot({ path: `${OUT}/mobile-pokedle.png` });
 step("discord: unsigned interaction is rejected");
 const unsigned = await fetch(`${BASE}/api/discord`, { method: "POST", body: JSON.stringify({ type: 1 }) });
 if (unsigned.status !== 401) errors.push(`POST /api/discord without signature returned ${unsigned.status}, expected 401`);
+
+step("daily reminder emails");
+await runEmail({ browser, BASE, OUT, errors, step });
 
 await finish();
 

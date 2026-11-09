@@ -17,6 +17,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { DailyEmailNudge } from "@/components/email/DailyEmailNudge";
 
 export function DailyChallenge() {
   const progress = useProgress();
@@ -98,6 +99,7 @@ export function DailyChallenge() {
                 </Link>
               </div>
               <NextDailyCountdown label="Next Daily Challenge in" />
+              <DailyEmailNudge />
               <p className="text-sm text-muted-foreground">
                 Still hungry? Try the{" "}
                 <Link href="/pokedle" className="text-primary hover:underline">Pokédle</Link> or a{" "}
