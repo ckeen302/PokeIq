@@ -30,8 +30,9 @@ export function PdkHowToSheet({ onClose, onNever }: { onClose: () => void; onNev
     </div>
   );
   return (
-    <Sheet title="Fill the grid. Keep your score low." onClose={onClose} wide>
+    <Sheet title="How to play" onClose={onClose} wide>
       <div className="space-y-4 text-sm" data-testid="pdk-howto">
+        <p className="hud-label">Fill the grid. Keep your score low.</p>
         <PikadokuDemo />
         <HowToCards
           cards={[

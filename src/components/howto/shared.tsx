@@ -48,7 +48,7 @@ export interface HowToCard {
   body: React.ReactNode;
 }
 
-export function HowToCards({ cards }: { cards: HowToCard[] }) {
+function HowToCardGrid({ cards }: { cards: HowToCard[] }) {
   return (
     <div className="grid gap-2 sm:grid-cols-2">
       {cards.map((c) => (
@@ -58,6 +58,26 @@ export function HowToCards({ cards }: { cards: HowToCard[] }) {
         </div>
       ))}
     </div>
+  );
+}
+
+/**
+ * The rule cards. On a phone they start folded under the demo, so the demo and
+ * the two buttons fit on the first screen (the buttons were pushed below the
+ * fold) and the pop-up doesn't open with a big block of text that would be the
+ * page's largest paint. From 640px up they're open, as before. The pop-up only
+ * renders on the client, so the width check can run in the initial state.
+ */
+export function HowToCards({ cards }: { cards: HowToCard[] }) {
+  const [wide] = useState(() => typeof window === "undefined" || window.matchMedia("(min-width: 640px)").matches);
+  if (wide) return <HowToCardGrid cards={cards} />;
+  return (
+    <details className="rounded-md border bg-shade/30 p-3" data-testid="howto-cards">
+      <summary className="cursor-pointer font-semibold py-1.5">The rules</summary>
+      <div className="mt-3">
+        <HowToCardGrid cards={cards} />
+      </div>
+    </details>
   );
 }
 
