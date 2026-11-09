@@ -465,6 +465,8 @@ if (!(await page.getByText(/Got it in/).count())) {
 }
 await page.screenshot({ path: `${OUT}/pokedle-dex.png` });
 for (const name of ["Charizard", "Gengar"]) {
+  // A guess that solves it (the daily can be Pikachu) locks the box while the win animates in.
+  await page.waitForFunction(() => document.body.innerText.includes("Got it in") || !document.querySelector("input[aria-label^='Guess a Pokémon']")?.disabled);
   if (await page.getByText(/Got it in/).count()) break;
   await page.getByLabel("Guess a Pokémon").fill(name);
   await page.getByRole("option").first().click();
