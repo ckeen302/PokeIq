@@ -94,6 +94,9 @@ export interface LiftScene {
   bend: number;
   whip: number;
   tilt: number;
+  /** How firmly the lifter has the bar (0 on the platform or falling … 1 racked or overhead) and how far it is from the rack to overhead (0..1): the scene seats the bar on the figure with them. */
+  grip: number;
+  over: number;
   /** The referees' lights (null: not yet). */
   lights: ("white" | "red" | null)[];
   /** The chalk clap (τ of it) and the bar's landing, for effects. */
@@ -123,6 +126,7 @@ export function liftAt(pl: LiftPlan, tau: number, time: number): LiftScene {
   if (pl.armed) pose.arms = { a: 0.5 * bump(chalkAt - 0.4, chalkAt + 0.25, tau), b: 1.2 * bump(chalkAt - 0.4, chalkAt + 0.25, tau), k: bump(chalkAt - 0.5, chalkAt + 0.3, tau) };
   let bar: Vec3 = [0, pl.rest, 0];
   let bend = 0, whip = 0, tilt = 0;
+  let grip = 0, lifted = 0;
   let landed: number | null = null;
   const S = (k: number) => 1 + k; // the figure's vertical scale for a squash k
   const rack = pl.armed ? 0.8 : 0.97;
@@ -150,6 +154,7 @@ export function liftAt(pl: LiftPlan, tau: number, time: number): LiftScene {
       bar = [0, Math.max(pl.rest, y), 0];
       if (pl.armed) pose.arms = { a: 0.9 * under, b: 1.6 * under, k: 1 };
       bend = u < 0.15 ? u / 0.15 : 1;
+      grip = smooth(0.62, 1, u);
     } else if (tau < pl.standT || pl.fail === "clean") {
       // The stand: out of the squat, slow and shaking near the limit; a stall when it's too heavy.
       const rise = pl.fail === "clean" ? (pl.standT - 1.3 - c) / 0.5 : pl.standT - c;
@@ -163,6 +168,7 @@ export function liftAt(pl: LiftPlan, tau: number, time: number): LiftScene {
       if (pl.armed) pose.arms = { a: 0.9, b: 1.6, k: 1 };
       bar = [0, rack * H * S(sq), 0];
       bend = 1;
+      grip = 1;
       whip = 0.25 * wobble(tau, c, 2.6, 3.5);
       if (pl.fail === "clean" && tau >= pl.dropT) {
         // Dumped forward: the bar rolls off the shoulders and drops; the lifter pops up out of the squat.
@@ -174,6 +180,7 @@ export function liftAt(pl: LiftPlan, tau: number, time: number): LiftScene {
         if (pl.armed) pose.arms = { a: 0.9 * (1 - k2), b: 1.6 * (1 - k2), k: 1 };
         bar = fallBar(pl, rack * H * S(-0.4 + 0.4 * 0.45), t2, 0.5);
         bend = 0;
+        grip = 1 - smooth(0, 0.14, t2);
         tilt = 0.05 * Math.sin(t2 * 6) * Math.exp(-t2 * 2);
         if (tau >= pl.landT) landed = tau - pl.landT;
         whip = landed != null ? 0.5 * wobble(tau, pl.landT, 3.2, 4) : 0;
@@ -199,6 +206,8 @@ export function liftAt(pl: LiftPlan, tau: number, time: number): LiftScene {
         pose.arms = { a: 0.9 * (1 - pose.raise), b: 1.6 * (1 - pose.raise), k: 1 };
       }
       bend = 1;
+      grip = 1;
+      lifted = smooth(j + 0.3, j + 0.62, tau);
       whip = 0.3 * wobble(tau, j + 0.62, 2.8, 3);
       if (tau >= pl.dropT) {
         // Dropped from overhead (a good lift, after the "down"), or the jerk lost behind.
@@ -206,6 +215,7 @@ export function liftAt(pl: LiftPlan, tau: number, time: number): LiftScene {
         const from = pl.fail === "jerk" ? 0.95 * H : yOver;
         bar = fallBar(pl, from, t2, pl.fail === "jerk" ? -0.6 : 0.15);
         bend = 0;
+        grip = 1 - smooth(0, 0.14, t2);
         tilt = pl.fail === "jerk" ? 0.12 * Math.sin(Math.min(1, t2 * 2) * Math.PI) : 0;
         if (tau >= pl.landT) landed = tau - pl.landT;
         whip = landed != null ? 0.6 * wobble(tau, pl.landT, 3.2, 4) : 0;
@@ -227,7 +237,7 @@ export function liftAt(pl: LiftPlan, tau: number, time: number): LiftScene {
     }
   }
   const lights: LiftScene["lights"] = tau >= pl.downT ? pl.lights : [null, null, null];
-  return { pose, bar, bend, whip, tilt, lights, chalkAt, landed, com: [0, H * 0.55, z] };
+  return { pose, bar, bend, whip, tilt, grip, over: lifted, lights, chalkAt, landed, com: [0, H * 0.55, z] };
 }
 
 /** A bar falling from `from` to the platform (in front of the lifter by `dz`), with a small bounce. */

@@ -149,7 +149,7 @@ export function liftShow(result: LiftResult, o: ShowOptions): Show {
       beat,
       k,
       actors: [{ key: it.pick.a.key, pose: s.pose }],
-      props: { kind: "lift", bar: s.bar, weight: it.plan.weight, bend: s.bend, whip: s.whip, lights: s.lights, tilt: s.tilt },
+      props: { kind: "lift", bar: s.bar, weight: it.plan.weight, bend: s.bend, whip: s.whip, lights: s.lights, tilt: s.tilt, grip: s.grip, over: s.over, armed: it.plan.armed },
       bursts,
       decals: [],
       excitement,

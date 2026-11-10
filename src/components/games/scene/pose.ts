@@ -38,6 +38,8 @@ export interface ActorPose {
   squash: number;
   /** Extra turn about the vertical (rad): π turns its back on its direction of travel. */
   turn?: number;
+  /** How far past the camera its plane turns towards its direction of travel (default 0.32; 1 is three quarters on: two wrestlers face each other instead of both facing the lens). */
+  headOn?: number;
   /** Locked facing: the figure's plane faces this direction (unit) instead of the camera. */
   faceDir?: [number, number] | null;
   /** The gait that swings its limbs, if any. */
