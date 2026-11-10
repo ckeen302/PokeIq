@@ -64,6 +64,7 @@ export function poseActor(act: Actor, p: ActorPose, cam: THREE.Camera, time: num
   camRight.setFromMatrixColumn(cam.matrixWorld, 0);
   const shake = p.shake ? p.shake * Math.sin(time * 47) : 0;
   f.root.position.set(p.x + shake * 0.6, p.y, p.z + shake * 0.4);
+  f.root.scale.setScalar(p.scale ?? 1);
   // Lean about the lateral axis, sway about the direction of travel.
   axis.set(p.dx, 0, p.dz).cross(up);
   if (axis.lengthSq() < 1e-8) axis.set(0, 0, 1);

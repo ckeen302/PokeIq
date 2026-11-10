@@ -32,6 +32,8 @@ export interface ActorPose {
   pivot?: number;
   /** Side-to-side sway about the direction of travel (rad). */
   sway?: number;
+  /** Drawn at this share of its real size (the medal ceremony, where a giant would hide the others). Default 1. */
+  scale?: number;
   /** − squash, + stretch. */
   squash: number;
   /** Extra turn about the vertical (rad): π turns its back on its direction of travel. */

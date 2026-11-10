@@ -492,7 +492,7 @@ export function createGamesScene(host: HTMLElement, opts: SceneOptions): GamesSc
       if (p.visible && (p.shadow ?? 1) > 0 && sh < 24) {
         const lift = Math.max(0, p.y - (p.ground ?? 0));
         const k = (p.shadow ?? 1) * Math.max(0, 1 - lift / (act.h * 0.9 + 0.6));
-        shadows.set(sh++, p.x, p.ground ?? 0, p.z, Math.max(0.25, act.w * 0.55), Math.max(0.25, act.w * 0.4), k);
+        shadows.set(sh++, p.x, p.ground ?? 0, p.z, Math.max(0.25, act.w * 0.55 * (p.scale ?? 1)), Math.max(0.25, act.w * 0.4 * (p.scale ?? 1)), k);
       }
     }
     shadows.commit(sh);
@@ -593,7 +593,7 @@ export function createGamesScene(host: HTMLElement, opts: SceneOptions): GamesSc
         if (lane) add(lane.entrant.key, h.pos.x, h.pos.y - h.h * 1.02, h.pos.z, h.h);
       }
     }
-    for (const [key, a] of actors) if (a.fig.root.visible) add(key, a.fig.root.position.x, a.fig.root.position.y, a.fig.root.position.z, a.h);
+    for (const [key, a] of actors) if (a.fig.root.visible) add(key, a.fig.root.position.x, a.fig.root.position.y, a.fig.root.position.z, a.h * a.fig.root.scale.y);
     return out;
   }
 

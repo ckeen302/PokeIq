@@ -113,7 +113,119 @@ const FIELD_SHOTS = new Set<Camera>(["rail", "bend", "wide", "headon", "line", "
 
 export function cameraFor(cam: Camera, k: number, spots: Spot[], ctx: DirectorContext): CamPose {
   const pose = shotFor(cam, k, spots, ctx);
+  if (ctx.aspect < 0.9 && cam !== "crane") return tallShot(cam, pose, spots, ctx);
   return FIELD_SHOTS.has(cam) ? keepInFrame(pose, spots, ctx.aspect) : pose;
+}
+
+/** How much of a tall frame's width and height the subjects may fill, and where their middle sits (share of the height from the top). */
+const TALL_W = 0.8, TALL_H = 0.46, TALL_MID = 0.56;
+
+/**
+ * Re-aims a camera and sets its lens so the subjects fill a tall frame:
+ * their box (as the camera sees it) spans up to most of the width or about
+ * half the height, whichever comes first, and sits a little below the
+ * middle, clear of the clock. `weights` (0..1 per subject) fade a subject
+ * out of the framing smoothly (a runner dropping off the pack) by
+ * shrinking it towards the first subject.
+ */
+export function fillTall(pos: Vec3, subjects: Pick<Spot, "x" | "y" | "z" | "w" | "h" | "top">[], aspect: number, o: { weights?: number[]; minFov?: number; maxFov?: number; fillH?: number } = {}): CamPose {
+  const lead = subjects[0];
+  const mid = (s: (typeof subjects)[number]): Vec3 => [s.x, s.y + (s.top ?? s.h) * 0.5, s.z];
+  const anchor = mid(lead);
+  const pts: Vec3[] = [];
+  subjects.forEach((s, i) => {
+    const w = clamp(o.weights?.[i] ?? 1, 0, 1);
+    if (w <= 0) return;
+    const top = s.top ?? s.h;
+    const half = Math.max(s.w, top * 0.5) * 0.5;
+    for (const y of [s.y, s.y + top]) for (const [ox, oz] of [[-half, 0], [half, 0], [0, -half], [0, half], [-half * 0.7, -half * 0.7], [half * 0.7, -half * 0.7], [-half * 0.7, half * 0.7], [half * 0.7, half * 0.7]]) pts.push(lerp3(anchor, [s.x + ox, y, s.z + oz], w));
+  });
+  let target = anchor;
+  let tanV = Math.tan(((o.maxFov ?? 58) * DEG) / 2);
+  const lo = Math.tan(((o.minFov ?? 5) * DEG) / 2), hi = tanV;
+  for (let pass = 0; pass < 3; pass++) {
+    const f: Vec3 = [target[0] - pos[0], target[1] - pos[1], target[2] - pos[2]];
+    const fl = Math.hypot(f[0], f[1], f[2]) || 1;
+    const F: Vec3 = [f[0] / fl, f[1] / fl, f[2] / fl];
+    const rl = Math.hypot(F[0], F[2]) || 1;
+    const R: Vec3 = [-F[2] / rl, 0, F[0] / rl];
+    const U: Vec3 = [R[1] * F[2] - R[2] * F[1], R[2] * F[0] - R[0] * F[2], R[0] * F[1] - R[1] * F[0]];
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    for (const p of pts) {
+      const d: Vec3 = [p[0] - pos[0], p[1] - pos[1], p[2] - pos[2]];
+      const zc = Math.max(0.3, d[0] * F[0] + d[1] * F[1] + d[2] * F[2]);
+      const xc = (d[0] * R[0] + d[2] * R[2]) / zc, yc = (d[0] * U[0] + d[1] * U[1] + d[2] * U[2]) / zc;
+      x0 = Math.min(x0, xc); x1 = Math.max(x1, xc); y0 = Math.min(y0, yc); y1 = Math.max(y1, yc);
+    }
+    tanV = clamp(Math.max((x1 - x0) / 2 / (TALL_W * aspect), (y1 - y0) / 2 / (o.fillH ?? TALL_H)), lo, hi);
+    // Aim at the box's middle, raised so the box sits a little below the frame's middle.
+    const ax = (x0 + x1) / 2, ay = (y0 + y1) / 2 + (TALL_MID - 0.5) * 2 * tanV;
+    target = [pos[0] + (F[0] + R[0] * ax + U[0] * ay) * fl, pos[1] + (F[1] + R[1] * ax + U[1] * ay) * fl, pos[2] + (F[2] + R[2] * ax + U[2] * ay) * fl];
+  }
+  return { pos, target, fov: (2 * Math.atan(tanV)) / DEG };
+}
+
+/**
+ * A tall frame (a phone held upright, a 9:16 video): the cameras come in
+ * closer and lower, three quarters from the front, and frame the leader
+ * and the runners with it so they fill the frame, instead of fitting every
+ * lane across a narrow picture and leaving it half empty track.
+ */
+function tallShot(cam: Camera, pose: CamPose, spots: Spot[], ctx: DirectorContext): CamPose {
+  const H = fieldHeight(spots);
+  const l = leader(spots);
+  // The leader first, then the others: each counts fully within `gap` metres of the leader, fading out over the next few.
+  const group = (gap: number, fade = 4) => {
+    const ss = [l, ...spots.filter((s) => s !== l)];
+    return { ss, weights: ss.map((s) => 1 - ease((l.s - s.s - gap) / fade)) };
+  };
+  const [nx, nz] = outward(l.dx, l.dz);
+  const from = (ahead: number, out: number, y: number): Vec3 => [l.x + l.dx * ahead + nx * out, y, l.z + l.dz * ahead + nz * out];
+  switch (cam) {
+    case "intro":
+    case "winner":
+    case "chase": {
+      const r = spots.find((s) => s.lane === ctx.lane) ?? l;
+      return fillTall(pose.pos, [r], ctx.aspect, { fillH: cam === "intro" ? 0.42 : 0.4, maxFov: 60 });
+    }
+    case "marks": {
+      const c = centroid(ctx.starts);
+      const d = ctx.starts[0] ?? l;
+      const [mx, mz] = outward(d.dx, d.dz);
+      // Well round to the side and up a little: the lanes stack up the frame instead of across it.
+      const D = 7 + 2.2 * H + fieldSpan(ctx.starts) * 0.5;
+      const pos: Vec3 = [c[0] + (d.dx * 0.5 + mx * 0.87) * D, 1.1 + 0.8 * H + D * 0.3, c[2] + (d.dz * 0.5 + mz * 0.87) * D];
+      return fillTall(pos, spots, ctx.aspect);
+    }
+    case "rail": {
+      const g = group(4);
+      const D = 6 + 2.4 * H;
+      return fillTall(from(D * 0.8, D * 0.75, 0.9 + 0.7 * H + D * 0.1), g.ss, ctx.aspect, { weights: g.weights });
+    }
+    case "headon": {
+      // Nearly head-on and low, just outside the leader's lane.
+      const g = group(2.5, 3);
+      const D = 9 + 3 * H;
+      return fillTall(from(D, D * 0.22, 0.7 + 0.5 * H), g.ss, ctx.aspect, { weights: g.weights });
+    }
+    case "bend":
+    case "wide": {
+      const g = group(5);
+      return fillTall(pose.pos, g.ss, ctx.aspect, { weights: g.weights });
+    }
+    case "line":
+    case "replay": {
+      // The finish cameras stay where they stand; whoever is coming in (or just through) fills the frame.
+      const near = spots.filter((s) => Math.abs(s.x - X0) < 14 || s === l);
+      const first = near.reduce((a, b) => (Math.abs(b.x - X0) < Math.abs(a.x - X0) ? b : a), near[0]);
+      const ss = [first, ...near.filter((s) => s !== first)];
+      return fillTall(pose.pos, ss, ctx.aspect, { weights: ss.map((s) => 1 - ease((Math.abs(s.x - first.x) - 4) / 5)), maxFov: 50 });
+    }
+    case "results":
+      return fillTall(pose.pos, [l, ...spots.filter((s) => s !== l)], ctx.aspect, { weights: spots.map((_, i) => (i === 0 ? 1 : 0.85)), maxFov: 62 });
+    default:
+      return pose;
+  }
 }
 
 /**

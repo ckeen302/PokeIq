@@ -273,7 +273,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
     scene.setRace(race, ac.signal, setLoaded).then(() => {
       if (ac.signal.aborted) return;
       s.race = race;
-      s.plan = planShow(race, { quick: quickRef.current });
+      s.plan = planShow(race, { quick: quickRef.current, lineup: new URLSearchParams(window.location.search).get("intro") === "full" });
       quickRef.current = false;
       s.t = 0;
       s.gun = s.roar = s.beep = false;
@@ -709,13 +709,13 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
     if (marks && s.t < marks.t0) s.t = marks.t0;
   }, []);
 
-  const replay = useCallback((quick: boolean) => {
+  const replay = useCallback((quick: boolean, lineup = false) => {
     const s = show.current;
     if (!s.plan || !s.race) return;
     if (quick) {
       s.plan = planShow(s.race, { quick: true });
     } else {
-      s.plan = planShow(s.race);
+      s.plan = planShow(s.race, { lineup });
     }
     s.t = 0;
     s.gun = s.roar = s.beep = false;
@@ -913,6 +913,9 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
                   ))}
                 </tbody>
               </table>
+              <button type="button" onClick={() => replay(false, true)} className="mt-2 inline-flex min-h-10 items-center gap-1.5 rounded-md px-1 font-display text-xs font-semibold uppercase tracking-wider text-white/70 hover:text-white" data-testid="race-lineup">
+                <Play className="h-3.5 w-3.5 fill-current" aria-hidden /> Watch with the full line-up
+              </button>
             </div>
           )}
 

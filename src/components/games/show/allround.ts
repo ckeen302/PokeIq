@@ -33,7 +33,7 @@ export function allAroundShow(result: AllAroundResult, athletes: Athlete[], o: S
   const tallest = Math.max(1, ...lineup.map((r) => ds.get(r.key)!.h));
   const events = MARK_EVENTS.filter((id) => rows.some((r) => (r.points[id] ?? 0) > 0));
   const tl = new Timeline();
-  if (!o.quick) tl.add({ kind: "establish", cam: "crane" }, o.video ? 2.6 : 4);
+  if (!o.quick) tl.add({ kind: "establish", cam: "crane" }, o.lineup ? (o.video ? 2.6 : 4) : o.video ? 1.3 : 1.8);
   const per = Math.max(1.1, Math.min(2.4, (Math.max(12, o.budget - 12)) / Math.max(1, events.length)));
   events.forEach((id, i) => {
     const b = tl.add({ kind: "board", cam: "line", act: i, title: eventOf(id).name }, per);

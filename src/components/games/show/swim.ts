@@ -3,7 +3,7 @@ import { swimAt, swimMark, type SwimRace } from "@/lib/games/swim";
 import { POOL, poolX } from "@/lib/games/venues";
 import { planSwim, swimPose } from "../scene/motions/swim";
 import { smooth } from "../scene/motions/common";
-import { crane, drift, framed, tall, type CamPose, type Vec3 } from "./cams";
+import { crane, drift, fillFrame, framed, keepOut, tall, type CamPose, type Subject, type Vec3 } from "./cams";
 import type { ShowOptions } from "./longjump";
 import { Timeline, beatAt, beatClock, beatK, type Burst, type Overlay, type Show, type ShowFrame } from "./types";
 
@@ -34,10 +34,10 @@ export function swimShow(race: SwimRace, o: ShowOptions): Show {
   const raceEnd = Math.min(Math.max(winT + 2.2, third + 1.2), winT + 9);
   const tl = new Timeline();
   if (!o.quick) {
-    tl.add({ kind: "establish", cam: "crane", clock0: -8, rate: 0 }, o.video ? 2.6 : 4);
-    tl.add({ kind: "startlist", cam: "blocks", clock0: -6, rate: 0.2 }, o.video ? 2.4 : 3.6);
+    tl.add({ kind: "establish", cam: "crane", clock0: -8, rate: 0 }, o.lineup ? (o.video ? 2.6 : 4) : o.video ? 1.3 : 1.8);
+    tl.add({ kind: "startlist", cam: "blocks", clock0: -6, rate: 0.2 }, o.lineup ? (o.video ? 2.4 : 3.6) : o.video ? 1.2 : 1.7);
   }
-  tl.add({ kind: "intro", cam: "marks", clock0: -3, rate: 1, title: "Take your marks" }, 3);
+  tl.add({ kind: "intro", cam: "marks", clock0: o.lineup ? -3 : -1.8, rate: 1, title: "Take your marks" }, o.lineup ? 3 : 1.8);
   tl.cue(tl.t, "beep", 0.8);
   // The race: at full speed, but a long middle (a slow field over 100 m) goes by fast.
   const budget = Math.max(14, o.budget - (o.quick ? 6 : 16));
@@ -182,7 +182,8 @@ export function swimShow(race: SwimRace, o: ShowOptions): Show {
         }
       }
       case "result":
-        return drift(framed([wallX - finDir * 2, 3, 15.2 * S], [wallX - finDir * 2.5, 0.2, 0], 24 * wide, 10, aspect, 10, 70), show, 0.02);
+        // (Above the tallest swimmer: a giant in the near lane reaches over the deck.)
+        return drift(framed([wallX - finDir * 2, 3 + Math.max(...plans.map((p) => p.above)) * 0.9, 15.2 * S], [wallX - finDir * 2.5, 0.2, 0], 24 * wide, 10, aspect, 10, 70), show, 0.02);
       case "replay": {
         // From the next lane over, a little above the water, alongside the winner into the wall: the touch in slow motion.
         const w = Math.max(5, winPlan.len * 3.2);
@@ -229,7 +230,19 @@ export function swimShow(race: SwimRace, o: ShowOptions): Show {
     const wakes = scenes.map((s) => s.wake).filter((w): w is NonNullable<typeof w> => !!w);
     const L = leaderAt(rt);
     const excitement = beat.kind === "action" ? 0.45 + 0.4 * smooth(D - 15, D, L.x) : beat.kind === "result" ? 0.9 : 0.35;
-    const cam = camera(beat, k, rt, t, aspect);
+    let cam = camera(beat, k, rt, t, aspect);
+    // A tall frame: the camera closes in on the leader and whoever swims with it (the winner alone in the replay).
+    if (tall(aspect) && (beat.cam === "race" || beat.cam === "replay") && rt > wtr.entry) {
+      const far = plans.map((p) => swimAt(p.run.trace, Math.max(0, rt)).x);
+      const front = beat.cam === "replay" ? far[plans.indexOf(winPlan)] : Math.max(...far);
+      const order = plans.map((_, i) => i).sort((a, b) => Math.abs(far[a] - front) - Math.abs(far[b] - front));
+      const subjects: Subject[] = order.map((i) => {
+        const gap = Math.abs(far[i] - front);
+        const k2 = Math.max(0, Math.min(1, (gap - (beat.cam === "replay" ? 0.2 : 2)) / 4));
+        return { x: scenes[i].pose.x, y: -0.4, z: plans[i].z, w: Math.max(1.2, plans[i].len), h: Math.max(1, plans[i].above + 0.8), weight: 1 - k2 * k2 * (3 - 2 * k2) };
+      });
+      cam = fillFrame(keepOut(cam, "pool"), subjects, aspect, 0.3);
+    }
     // A swimmer's relief faces the camera across the pool; from above it would show its edge, so it tilts back
     // (away from the lens) about its line of travel by the camera's elevation, pivoting where it breaks the
     // surface: seen from the spidercam it lies in the water, its back and head out and its body under the

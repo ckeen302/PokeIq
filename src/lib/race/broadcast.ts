@@ -58,6 +58,8 @@ export interface ShowOptions {
   video?: boolean;
   /** Skip the crane and lane intros (a replayed race, or the viewer skipped them). */
   quick?: boolean;
+  /** The long opening: the full crane and every lane's introduction. Otherwise a short crane and the favourites only, so the gun goes within a few seconds. */
+  lineup?: boolean;
 }
 
 /** When the leader first reaches `d` metres (s after the gun). */
@@ -97,13 +99,21 @@ export function planShow(race: Race, opts: ShowOptions = {}): ShowPlan {
     shots.push({ phase, camera, t0: t, t1: t + dur, race0: 0, rate: 0, ...(lane != null ? { lane } : {}) });
     t += dur;
   };
+  const long = !!opts.lineup;
   if (!opts.quick) {
-    hold("crane", "crane", v ? 3.0 : 5.4);
-    const each = v ? (n > 4 ? 0.62 : 1.0) : n > 4 ? 1.15 : 2.0;
-    for (const r of race.lanes) hold("intro", "intro", each, r.lane);
+    if (long) {
+      hold("crane", "crane", v ? 3.0 : 5.4);
+      const each = v ? (n > 4 ? 0.62 : 1.0) : n > 4 ? 1.15 : 2.0;
+      for (const r of race.lanes) hold("intro", "intro", each, r.lane);
+    } else {
+      // The short opening: a quick crane, then the favourites (the highest base Speed; no result given away), in lane order.
+      hold("crane", "crane", v ? 1.0 : 1.4);
+      const favourites = [...race.lanes].sort((a, b) => b.entrant.stats.spe - a.entrant.stats.spe || a.lane - b.lane).slice(0, v ? 2 : 3).sort((a, b) => a.lane - b.lane);
+      for (const r of favourites) hold("intro", "intro", v ? 0.55 : 0.65, r.lane);
+    }
   }
-  hold("marks", "marks", v ? 1.1 : 1.9);
-  hold("set", "marks", v ? 0.8 : 1.2);
+  hold("marks", "marks", long ? (v ? 1.1 : 1.9) : v ? 0.7 : 0.9);
+  hold("set", "marks", long ? (v ? 0.8 : 1.2) : v ? 0.6 : 0.7);
   const gun = t;
   const T1 = race.first, Tn = race.last;
   // Live race: cut by the leader's progress; a long race is fast-forwarded in the middle.

@@ -23,6 +23,8 @@ export interface ShowOptions {
   video?: boolean;
   /** Skip the crane and the start list. */
   quick?: boolean;
+  /** The long opening (the full establishing shot, the start list held, every lane introduced). */
+  lineup?: boolean;
 }
 
 interface Item { pick: Pick; plan: LongJumpPlan; leaderBefore: number | null; standing: { key: string; best: number | null }[] }
@@ -65,8 +67,8 @@ export function longJumpShow(result: LongJumpResult, o: ShowOptions): Show {
   const tl = new Timeline();
   const first = items.find((x) => x.pick.cut !== "skip") ?? items[0];
   if (!o.quick) {
-    tl.add({ kind: "establish", cam: "crane", title: "Long jump", sub: `Final · ${athletes.length} jumpers`, act: items.indexOf(first), clock0: first.plan.start, rate: 0 }, o.video ? 2.6 : 4.2);
-    tl.add({ kind: "startlist", cam: "startlist", act: items.indexOf(first), clock0: first.plan.start, rate: 0 }, o.video ? 2.2 : 3.4);
+    tl.add({ kind: "establish", cam: "crane", title: "Long jump", sub: `Final · ${athletes.length} jumpers`, act: items.indexOf(first), clock0: first.plan.start, rate: 0 }, o.lineup ? (o.video ? 2.6 : 4.2) : o.video ? 1.3 : 1.8);
+    tl.add({ kind: "startlist", cam: "startlist", act: items.indexOf(first), clock0: first.plan.start, rate: 0 }, o.lineup ? (o.video ? 2.2 : 3.4) : o.video ? 1.2 : 1.7);
   }
   let round = 0;
   items.forEach((it, idx) => {

@@ -60,6 +60,8 @@ function initialQuality(): Quality {
   if ((coarse && short < 820) || (nav.deviceMemory ?? 8) <= 2) return "low";
   return "medium";
 }
+const fullIntro = () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("intro") === "full";
+
 function qualityParam(): Quality | null {
   try {
     const q = new URLSearchParams(window.location.search).get("q");
@@ -138,7 +140,8 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
   const budget = typeof window !== "undefined" && window.matchMedia("(max-width: 640px)").matches ? 60 : 72;
   /** The playlist: one sequence for an event; the Games' events one by one. */
   const playlist = useMemo<Sequence[]>(() => {
-    if (outcome) return [eventShow(outcome, byKey, { budget })];
+    // The long opening (every lane introduced) stays behind ?intro=full.
+    if (outcome) return [eventShow(outcome, byKey, { budget, lineup: fullIntro() })];
     if (games) return gamesShow(games, byKey, { budget: 34 }).parts;
     return [];
   }, [outcome, games, byKey, budget]);

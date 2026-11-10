@@ -372,7 +372,11 @@ describe("the broadcast", () => {
   const plan = planShow(race);
   it("runs crane, lane intros, marks and set, then the gun", () => {
     expect(plan.shots[0].camera).toBe("crane");
-    expect(plan.shots.filter((s) => s.phase === "intro")).toHaveLength(8);
+    // The short opening: the favourites only, and the gun within a few seconds; the long one introduces every lane.
+    expect(plan.shots.filter((s) => s.phase === "intro")).toHaveLength(3);
+    expect(plan.gun).toBeLessThan(5.5);
+    expect(planShow(race, { video: true }).gun).toBeLessThan(4);
+    expect(planShow(race, { lineup: true }).shots.filter((s) => s.phase === "intro")).toHaveLength(8);
     expect(plan.shots.find((s) => s.phase === "set")!.t1).toBeCloseTo(plan.gun, 9);
     expect(raceTimeAt(plan, plan.gun - 0.5)).toBe(0);
     for (let i = 1; i < plan.shots.length; i++) expect(plan.shots[i].t0).toBeCloseTo(plan.shots[i - 1].t1, 9);

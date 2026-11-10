@@ -67,8 +67,8 @@ export function wrestleShow(result: Bracket, o: ShowOptions): Show {
   const first = shown[0] ?? final;
   const fi = items.indexOf(first);
   if (!o.quick) {
-    tl.add({ kind: "establish", cam: "crane", act: fi, clock0: -6.5, rate: 0 }, o.video ? 2.6 : 4.2);
-    tl.add({ kind: "startlist", cam: "startlist", act: fi, clock0: -6.5, rate: 0 }, o.video ? 2.2 : 3.6);
+    tl.add({ kind: "establish", cam: "crane", act: fi, clock0: -6.5, rate: 0 }, o.lineup ? (o.video ? 2.6 : 4.2) : o.video ? 1.3 : 1.8);
+    tl.add({ kind: "startlist", cam: "startlist", act: fi, clock0: -6.5, rate: 0 }, o.lineup ? (o.video ? 2.2 : 3.4) : o.video ? 1.2 : 1.7);
   }
   let round = "";
   items.forEach((it, idx) => {
