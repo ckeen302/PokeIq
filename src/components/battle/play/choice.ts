@@ -88,3 +88,26 @@ export function teamOrder(picked: readonly number[], size: number, bringAll: boo
   const rest = bringAll ? Array.from({ length: size }, (_, i) => i + 1).filter((i) => !picked.includes(i)) : [];
   return `team ${[...picked, ...rest].join("")}`;
 }
+
+/**
+ * What a choice just sent will do, for the text box while the turn is on its
+ * way ("Garchomp will use Earthquake."): only what the trainer chose, never
+ * a guess at how the turn goes. Nothing for team preview.
+ */
+export function choiceLine(request: BattleRequest, choice: string): string {
+  if (request.teamPreview) return "";
+  const nameOf = (i: number) => request.side.pokemon[i]?.ident.split(": ")[1] ?? "";
+  const lines: string[] = [];
+  choice.split(",").forEach((part, slot) => {
+    const [kind, n] = part.trim().split(" ");
+    const who = nameOf(slot);
+    if (kind === "move") {
+      const move = request.active?.[slot]?.moves[Number(n) - 1]?.move;
+      if (who && move) lines.push(`${who} will use ${move}.`);
+    } else if (kind === "switch") {
+      const next = nameOf(Number(n) - 1);
+      if (next) lines.push(request.forceSwitch ? `${next} is on the way.` : `${who} will switch out for ${next}.`);
+    }
+  });
+  return lines.join(" ");
+}

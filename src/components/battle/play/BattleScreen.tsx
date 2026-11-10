@@ -13,6 +13,7 @@ import { preloadSprite } from "./sprites";
 import { loadAnims, playStep, type PopupTone, type StageHandle } from "./player";
 import { Stage, type Popup } from "./Stage";
 import { Controls } from "./Controls";
+import { choiceLine } from "./choice";
 import { HotkeyHelp, useHotkeyHelp } from "./hotkeys";
 import { TIMER_WARNINGS, timerWarning } from "@/lib/battle/timer-warning";
 import type { Ball } from "./Hud";
@@ -834,6 +835,9 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
                   const rqid = view.request!.rqid;
                   // Showdown: a switch sent while maybe trapped can't be cancelled (the cancel would tell whether it was).
                   if (/\bswitch\b/.test(choice) && view.request!.data.active?.some((a) => a?.maybeTrapped)) setNoCancel(rqid);
+                  // The text box answers the tap at once, before the server does.
+                  const line = choiceLine(view.request!.data, choice);
+                  if (line) setMessage(line);
                   onChoose(rqid, choice);
                 }}
                 onHelp={help.toggle}

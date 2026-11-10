@@ -89,6 +89,9 @@ describe("polling pace", () => {
 
     it("only checks on a battle against the computer now and then", () => {
       expect(battlePollDelay(battle({ kind: "cpu" }), 0, NOW)).toBe(5000);
+      // Your move against the computer: nothing can change until you choose, so the safety net is slow.
+      expect(battlePollDelay(battle({ kind: "cpu", request }), 0, NOW)).toBe(30_000);
+      expect(battlePollDelay(battle({ kind: "cpu", request, waiting: true }), 0, NOW)).toBe(5000);
       expect(battlePollDelay(battle({ kind: "cpu", status: "finished" }), 0, NOW)).toBeNull();
       expect(battleHiddenDelay(battle({ kind: "cpu" }))).toBeNull();
     });
