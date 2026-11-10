@@ -33,7 +33,7 @@ export default async function LadderPage({ searchParams }: { searchParams: Promi
     </>
   );
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6 max-md:space-y-4">
       <BattleHeader crumb="Ladder" title="Battle" accent="ladder">
         <span className="max-md:hidden">{RULES}</span>
         {/* Phones: one line here, so the ladder itself is on the first screen; the rest is under the table. */}
@@ -59,7 +59,7 @@ export default async function LadderPage({ searchParams }: { searchParams: Promi
       ) : (
         <>
           <YourBattleStanding format={format} />
-          <h2 className="font-display text-xl font-bold uppercase tracking-wide">{PLAY_FORMAT_INFO[format].name}: top 100</h2>
+          <h2 className="font-display text-xl font-bold uppercase tracking-wide max-md:text-base">{PLAY_FORMAT_INFO[format].name}: top 100</h2>
           <LadderTable rows={rows} format={format} avatars={avatars} />
           <details className="rounded-lg border bg-card px-4 py-3 text-sm text-muted-foreground md:hidden" data-testid="ladder-rules">
             <summary className="cursor-pointer font-display font-bold uppercase tracking-wide text-foreground">How the ratings work</summary>

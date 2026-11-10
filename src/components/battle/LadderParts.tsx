@@ -139,7 +139,9 @@ export function YourBattleStanding({ format }: { format: StandardFormatId }) {
           </>
         ) : (
           <p className="text-sm text-muted-foreground">
-            No ranked battles in this format yet. Everyone starts at 1000 Elo (and 1500 ± 350 Glicko-2); your first wins pay the most, and a new rating moves a lot.{" "}
+            No ranked battles in this format yet.{" "}
+            {/* Phones: the starting numbers are in the page's first line and under the table. */}
+            <span className="max-md:hidden">Everyone starts at 1000 Elo (and 1500 ± 350 Glicko-2); your first wins pay the most, and a new rating moves a lot. </span>
             <Link href="/battle/play?vs=anyone" className="font-semibold text-foreground underline-offset-2 hover:underline">
               Find a ranked battle
             </Link>
