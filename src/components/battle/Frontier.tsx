@@ -61,6 +61,7 @@ function useBests(): Partial<Record<FrontierKey, number>> {
   return bests;
 }
 
+/** One Pokémon of a run's team. Its lines are cut short rather than wrapped, so every grid it sits in keeps a column that can shrink (minmax(0, 1fr)): otherwise a long move list widens the whole page on a phone. */
 function MonCard({ mon, sprite, picked, onPick, testid }: { mon: FrontierMon; sprite: ReturnType<typeof useSpriteLookup>; picked?: boolean; onPick?: () => void; testid?: string }) {
   const body = (
     <>
@@ -183,7 +184,7 @@ export function FrontierHub({ mode, startPanel }: { mode: FrontierMode; startPan
   const info = FRONTIER_INFO[key];
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_320px]" data-testid={`frontier-${mode}`}>
+    <div className="grid gap-6 max-lg:grid-cols-[minmax(0,1fr)] lg:grid-cols-[1fr_320px]" data-testid={`frontier-${mode}`}>
       <div className="space-y-5">
         {mode === "factory" && (
           <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Factory">
@@ -216,7 +217,7 @@ export function FrontierHub({ mode, startPanel }: { mode: FrontierMode; startPan
                 <div className="space-y-3" data-testid="factory-swap">
                   <p className="font-display text-lg font-bold uppercase">Trade with the trainer you beat?</p>
                   <p className="text-sm text-muted-foreground">Pick one of yours to give up and one of theirs to take, or keep your team.</p>
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-4 max-md:grid-cols-[minmax(0,1fr)] md:grid-cols-2">
                     <div className="space-y-1.5">
                       <span className="hud-label">Your team: give</span>
                       {run.team.map((m, i) => (
@@ -242,7 +243,7 @@ export function FrontierHub({ mode, startPanel }: { mode: FrontierMode; startPan
               ) : (
                 <div className="space-y-1.5">
                   <span className="hud-label">{mode === "factory" ? "Your rental team" : "Your team"}</span>
-                  <div className="grid gap-1.5 md:grid-cols-2">
+                  <div className="grid gap-1.5 max-md:grid-cols-[minmax(0,1fr)] md:grid-cols-2">
                     {run.team.map((m, i) => (
                       <MonCard key={i} mon={m} sprite={sprite} testid="frontier-mon" />
                     ))}
