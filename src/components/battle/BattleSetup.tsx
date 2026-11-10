@@ -245,6 +245,18 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
   }
 
   const problem = error ?? finder.error;
+  const blocked = busy || (!name.trim() && opponent !== "cpu") || (needsTeam && !team) || rulesBroken;
+  const startLabel = opponent === "cpu" ? "Start battle" : opponent === "match" ? "Find an opponent" : challenge ? `Challenge ${challenge}` : "Create battle";
+
+  // Phones: the page is long (every format, then the levels), so while the Start button is off screen a bar along the bottom carries it.
+  const [submitEl, setSubmitEl] = useState<HTMLButtonElement | null>(null);
+  const [submitSeen, setSubmitSeen] = useState(true);
+  useEffect(() => {
+    if (!submitEl || typeof IntersectionObserver === "undefined") return;
+    const seen = new IntersectionObserver(([entry]) => setSubmitSeen(entry.isIntersecting));
+    seen.observe(submitEl);
+    return () => seen.disconnect();
+  }, [submitEl]);
 
   return (
     <form onSubmit={start} className="grid gap-6 lg:grid-cols-[1fr_320px]">
@@ -406,7 +418,7 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={24}
-              required
+              required={opponent !== "cpu"}
               disabled={searching}
               placeholder="Trainer name"
               className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -469,7 +481,7 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
               </Button>
             </div>
           ) : (
-            <Button type="submit" size="lg" className="w-full" disabled={busy || (!name.trim() && opponent !== "cpu") || (needsTeam && !team) || rulesBroken}>
+            <Button ref={setSubmitEl} type="submit" size="lg" className="w-full" disabled={blocked}>
               {busy ? (
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
               ) : opponent === "match" ? (
@@ -477,7 +489,7 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
               ) : (
                 <Swords className="h-4 w-4" aria-hidden />
               )}
-              {opponent === "cpu" ? "Start battle" : opponent === "match" ? "Find an opponent" : challenge ? `Challenge ${challenge}` : "Create battle"}
+              {startLabel}
             </Button>
           )}
           {!searching && !busy && ((!name.trim() && opponent !== "cpu") || (needsTeam && !team)) && (
@@ -488,6 +500,13 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
           {opponent === "match" && !searching && <p className="text-center text-xs text-muted-foreground">Leaving this page or closing the tab ends the search.</p>}
         </CardContent>
       </Card>
+      {!submitSeen && !blocked && !searching && (
+        <div className="sticky bottom-[calc(var(--tabbar-h)+0.5rem)] z-10 -mt-6 md:hidden" data-testid="setup-quick-start">
+          <Button type="submit" size="lg" className="w-full shadow-[0_10px_30px_-8px_rgb(0_0_0/0.8)]">
+            <Swords className="h-4 w-4" aria-hidden /> {startLabel} · {custom ? "Custom" : info.short}
+          </Button>
+        </div>
+      )}
     </form>
   );
 }
