@@ -9,7 +9,7 @@ import { battleSeenDigest } from "@/lib/battle/live";
 import { useBattleLive } from "./use-battle-live";
 import { unlockAudio } from "@/lib/sound";
 import { ensureBattleId } from "@/lib/battle/replay-client";
-import { sendRetryingBusy } from "@/lib/battle/busy-retry";
+import { sendFailureText, sendRetryingBusy } from "@/lib/battle/busy-retry";
 
 /**
  * A battle as this player may see it, kept fresh: polls the server with the
@@ -200,7 +200,7 @@ export function useBattle(code: string) {
         if (out.status === 409) kick.current();
         return false;
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Something went wrong.");
+        setError(sendFailureText(err));
         return false;
       } finally {
         setBusy(false);
@@ -246,7 +246,7 @@ export function useBattle(code: string) {
       if (!progress?.name) setTrainerName(name);
       receive(out.data.view, sentAt);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't join the battle.");
+      setError(sendFailureText(err, "Couldn't join the battle."));
     } finally {
       setBusy(false);
     }
@@ -263,7 +263,7 @@ export function useBattle(code: string) {
       saveBattleSeat(out.data.code, out.data.token);
       return out.data.code;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't start a rematch.");
+      setError(sendFailureText(err, "Couldn't start a rematch."));
       setBusy(false);
       return null;
     }

@@ -146,3 +146,28 @@ describe("the computer's thinking time", () => {
     expect(rushed).toMatch(/^(move [1-4]|switch [1-6])/);
   });
 });
+
+describe("a request that never reached the server", () => {
+  it("is explained in plain words, whatever the browser calls it", async () => {
+    const { sendFailureText } = await import("@/lib/battle/busy-retry");
+    for (const raw of [new TypeError("Failed to fetch"), new TypeError("Load failed"), new Error("NetworkError when attempting to fetch resource.")]) {
+      const text = sendFailureText(raw);
+      expect(text).toMatch(/Check your connection/);
+      expect(text).not.toMatch(/fetch|Load failed|NetworkError/);
+    }
+  });
+
+  it("keeps the server's own message, and falls back when there is none", async () => {
+    const { sendFailureText } = await import("@/lib/battle/busy-retry");
+    expect(sendFailureText(new Error("This battle is full."))).toBe("This battle is full.");
+    expect(sendFailureText("?", "Couldn't join the battle.")).toBe("Couldn't join the battle.");
+  });
+});
+
+describe("battle speed before the trainer picks one", () => {
+  it("is 1x on a desktop and 2x on a phone", async () => {
+    const { defaultBattleSpeed } = await import("@/lib/battle/busy-retry");
+    expect(defaultBattleSpeed(false)).toBe(1);
+    expect(defaultBattleSpeed(true)).toBe(2);
+  });
+});
