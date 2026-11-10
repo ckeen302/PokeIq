@@ -51,7 +51,7 @@ export function MassBattlePage({ preset, battle, question, playback }: { preset?
             <span className="led h-1.5 w-1.5 text-success" aria-hidden /> <Link href={LAB_PATH} className="hover:text-foreground">3D Lab</Link> {"//"} Mass Battle
           </p>
         </div>
-        <h1 className="font-display text-3xl font-bold uppercase leading-[0.95] tracking-tight sm:text-5xl">{preset ? preset.title : <>Pokémon <span className="text-primary">Mass Battle</span></>}</h1>
+        <h1 className="font-display text-3xl font-bold uppercase leading-[0.95] tracking-tight max-sm:sr-only sm:text-5xl">{preset ? preset.title : <>Pokémon <span className="text-primary">Mass Battle</span></>}</h1>
       </div>
       <MassBattleExperience list={list} presets={presets} initial={initial} playback={playback ?? { ...DEFAULT_PLAYBACK, ...preset?.playback }} />
       <p className="max-w-3xl text-muted-foreground sm:text-lg">
