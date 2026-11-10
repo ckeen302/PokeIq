@@ -499,6 +499,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
       if (!alive) return;
       shownRef.current = true;
       setShown(true);
+      scene.loadRest();
     });
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1032,8 +1033,12 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
   };
 
   /** Order by: the same figures (those with a value in it), at their real sizes, in another order. The camera stays on the figure it frames when that one is in the new line. */
+  // (Stable: the table under the 3D view reads it from the context, and must not render again each time the camera's focus moves on.)
+  const orderDeps = useRef({ focusKey, items });
+  orderDeps.current = { focusKey, items };
   const setOrder = useCallback((next: Order) => {
     if (sameOrder(next, orderRef.current)) return;
+    const { focusKey, items } = orderDeps.current;
     const here = focusKey && items ? items.find((i) => i.key === focusKey) : undefined;
     pendingRef.current = here && inOrder(here, next) ? { focus: here.key } : null;
     orderRef.current = next;
@@ -1045,7 +1050,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
       u.searchParams.delete("dir");
       history.replaceState(history.state, "", withOrder(`${u.pathname}${u.search}`, next));
     } catch { /* ignore */ }
-  }, [focusKey, items]);
+  }, []);
   const orderCtx = useMemo(() => ({ order, setOrder }), [order, setOrder]);
 
   const choosePreset = (id: string) => {

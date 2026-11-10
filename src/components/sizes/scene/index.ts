@@ -144,8 +144,10 @@ export interface SizesScene {
   /** Adaptive quality: pixel ratio, post effects and figure detail (the city and shadow maps keep what they were built with). */
   setQuality(q: Quality): void;
   readonly quality: Quality;
-  /** Ready to draw (environment and the far atlas loaded). */
+  /** Ready to draw (environment and the far atlas loaded; on a phone, as soon as the scene is built). */
   ready: Promise<void>;
+  /** The first view is up: fetch what was held back for it (a phone's sky map and far atlas). */
+  loadRest(): void;
   stats(): { figures: number; relief: number; crowd: number; loading: number; calls: number; tris: number };
   /** The three.js objects behind the scene, for profiling and debugging tools. */
   internals(): { scene: THREE.Scene; renderer: THREE.WebGLRenderer; camera: THREE.PerspectiveCamera; world: THREE.Group; figures: THREE.Group; sky: THREE.Object3D };
@@ -288,7 +290,14 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   // ---- Environment (sky light and reflections from a CC0 HDRI), aligned to our sun.
   const pmrem = new THREE.PMREMGenerator(renderer);
   let envTex: THREE.Texture | null = null;
-  const envReady = new RGBELoader().loadAsync(opts.urls.hdr).then((hdr) => {
+  // On a phone (low quality) the first figures come first: the sky map and the far figures' atlas (two thirds of
+  // the bytes) are fetched once the first view is up (loadRest), or after a few seconds, and ease in.
+  const staged = quality === "low";
+  let releaseRest: () => void = () => undefined;
+  const rest = staged ? new Promise<void>((r) => { releaseRest = r; setTimeout(r, 7000); }) : Promise.resolve();
+  let envEase = 0;
+  let gone = false;
+  const envReady = rest.then(() => (gone ? Promise.reject(new Error("disposed")) : new RGBELoader().loadAsync(opts.urls.hdr))).then((hdr) => {
     // Find the HDRI's sun (brightest texel) to turn the map so it agrees with ours.
     const img = hdr.image as unknown as { data: Uint16Array | Float32Array; width: number; height: number };
     let best = 0, bi = 0;
@@ -305,7 +314,16 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     envTex = pmrem.fromEquirectangular(hdr).texture;
     hdr.dispose();
     scene.environment = envTex;
-    scene.environmentIntensity = 0.62;
+    scene.environmentIntensity = staged ? 0 : 0.62;
+    if (staged) {
+      const t0 = performance.now();
+      const step = () => {
+        const k = Math.min(1, (performance.now() - t0) / 900);
+        scene.environmentIntensity = 0.62 * k * k * (3 - 2 * k);
+        if (k < 1) envEase = requestAnimationFrame(step);
+      };
+      step();
+    }
     scene.environmentRotation.set(0, ourAz - hdrAz, 0);
   }).catch(() => {
     // No HDRI: the sky and hemisphere light still light the scene.
@@ -381,7 +399,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   shadowMat.polygonOffsetFactor = -2;
   const shadowGeo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
   // Far figures: the crowd of low-detail reliefs (one instanced draw).
-  const crowd = new Crowd(renderer, opts.far ?? (FAR_MANIFEST as FarManifest));
+  const crowd = new Crowd(renderer, opts.far ?? (FAR_MANIFEST as FarManifest), undefined, rest);
   crowd.setCoverage(Q.msaa > 0);
   figureGroup.add(crowd.mesh);
   // Contact shadows under every figure drawn, whatever its detail (one instanced draw).
@@ -392,7 +410,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   blobs.frustumCulled = false;
   blobs.renderOrder = 1;
   figureGroup.add(blobs);
-  const ready = Promise.all([envReady, Promise.race([crowd.ready, new Promise((r) => setTimeout(r, 12000))])]).then(() => undefined);
+  const ready = staged ? Promise.resolve() : Promise.all([envReady, Promise.race([crowd.ready, new Promise((r) => setTimeout(r, 12000))])]).then(() => undefined);
   // Built figures wait here for their turn on the GPU: a few per frame, each compiled before it's shown.
   const toUpload: { s: Slot; lod: 0 | 1; h: FigureHandle }[] = [];
   let compiling = 0;
@@ -1020,10 +1038,13 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     setQuality,
     get quality() { return quality; },
     ready,
+    loadRest: () => releaseRest(),
     warm,
     stats: () => ({ figures: slots.filter((s) => s.draw).length, relief: slots.filter((s) => s.draw >= 2).length, crowd: crowd.mesh.count, loading: loadingCount, calls: renderer.info.render.calls, tris: renderer.info.render.triangles }),
     internals: () => ({ scene, renderer, camera, world: worldGroup, figures: figureGroup, sky: sky.mesh }),
     dispose() {
+      gone = true;
+      cancelAnimationFrame(envEase);
       ctxWatch.dispose();
       for (const s of slots) dropSlot(s);
       if (companion) dropSlot(companion);
