@@ -216,11 +216,11 @@ export function DexPanel({
     });
   const fill = tool === "fill" && onPick ? onPick : undefined;
   const filtered = JSON.stringify(filters) !== JSON.stringify(NO_FILTERS);
-  const input = "h-8 rounded-md border border-input bg-background px-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  const input = "h-8 max-sm:h-10 rounded-md border border-input bg-background px-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
   const iconAction = (on = false) =>
     cn(
-      "rounded p-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-35",
+      "rounded p-1.5 transition-colors max-sm:p-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-35",
       on ? "bg-screen/15 text-foreground" : "text-muted-foreground hover:text-foreground"
     );
 
@@ -228,8 +228,8 @@ export function DexPanel({
     <Card className={className} data-assist={assist}>
       <CardContent className="space-y-3 p-4">
         {/* One header row: the title, then how a tap works and the secondary actions, grouped. */}
-        <div className="flex items-center justify-between gap-2">
-          <p className="hud-label flex items-center gap-1.5 text-screen">
+        <div className="flex items-center justify-between gap-2 max-sm:flex-wrap">
+          <p className="hud-label flex items-center gap-1.5 text-screen max-sm:whitespace-nowrap">
             <BookOpen className="h-3.5 w-3.5" aria-hidden /> Pokédex
             <span className="font-sans normal-case tracking-normal text-muted-foreground">· {DLE_ASSIST_INFO[assist].label}</span>
           </p>
@@ -252,12 +252,12 @@ export function DexPanel({
           </div>
         </div>
 
-        <div className="flex gap-2">
-          <div className="relative min-w-0 flex-1">
+        <div className="flex gap-2 max-sm:flex-wrap">
+          <div className="relative min-w-0 flex-1 max-sm:basis-full">
             <Search className="pointer-events-none absolute left-2 top-2 h-4 w-4 text-muted-foreground" aria-hidden />
             <input value={filters.q} onChange={(e) => set("q", e.target.value)} placeholder="Search by name" aria-label="Search the Pokédex" className={cn(input, "w-full pl-8")} />
           </div>
-          <select value={filters.types[0] ?? ""} onChange={(e) => setType(0, e.target.value)} aria-label="Has type" className={cn(input, "w-28")}>
+          <select value={filters.types[0] ?? ""} onChange={(e) => setType(0, e.target.value)} aria-label="Has type" className={cn(input, "w-28 max-sm:min-w-0 max-sm:flex-1")}>
             <option value="">Any type</option>
             {types.map((t) => (
               <option key={t} value={t}>
@@ -265,7 +265,7 @@ export function DexPanel({
               </option>
             ))}
           </select>
-          <select value={filters.types[1] ?? ""} onChange={(e) => setType(1, e.target.value)} aria-label="And type" className={cn(input, "w-28")} disabled={!filters.types[0]}>
+          <select value={filters.types[1] ?? ""} onChange={(e) => setType(1, e.target.value)} aria-label="And type" className={cn(input, "w-28 max-sm:min-w-0 max-sm:flex-1")} disabled={!filters.types[0]}>
             <option value="">And any</option>
             {types.map((t) => (
               <option key={t} value={t}>
@@ -408,7 +408,7 @@ function ToolButton({ active, onClick, icon, label, disabled }: { active: boolea
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "flex items-center gap-1 rounded px-2 py-1 text-xs font-semibold transition-colors disabled:opacity-40",
+        "flex items-center gap-1 rounded px-2 py-1 text-xs font-semibold transition-colors disabled:opacity-40 max-sm:min-h-10 max-sm:whitespace-nowrap",
         active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
       )}
     >

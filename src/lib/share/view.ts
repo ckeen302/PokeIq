@@ -206,7 +206,7 @@ export function describeShare(r: ShareResult): ShareView {
         game: "Pikadoku",
         label,
         headline: `${solved}/9`,
-        detail: r.score !== undefined ? `${detail} · uniqueness score ${r.score}` : detail,
+        detail: r.score !== undefined ? `${detail} · rarity score ${r.score}` : detail,
         chips: [r.score !== undefined && `Score ${r.score}`, rare > 0 && `${rare} rare pick${rare === 1 ? "" : "s"}`, r.streak && `${r.streak}-day streak`].filter((c): c is string => Boolean(c)),
         tiles: [0, 1, 2].map((row) => [...r.grid.slice(row * 3, row * 3 + 3)].map((c) => PDK_TILE[c] ?? "pdk-empty")),
         accent: "yellow",

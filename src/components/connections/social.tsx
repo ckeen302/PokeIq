@@ -37,15 +37,21 @@ const post = (url: string, body: unknown) =>
 
 // Feedback ---------------------------------------------------------------------
 
+/** The rating question: only the live daily is "today's". */
+export const feedbackQuestion = (today: boolean) => (today ? "How was today's puzzle?" : "How was this puzzle?");
+
 /** A thumbs up or down on the puzzle and a "Report this group" per group, after a finished daily. One of each per player: the server keeps the first. */
 export function FeedbackPanel({
   date,
   guesses,
   groups,
+  today = true,
 }: {
   date: string;
   guesses: number[][];
   groups: ConnGroupExplained[];
+  /** False for a past daily from the archive: the question then says "this puzzle". */
+  today?: boolean;
 }) {
   const [rated, setRated] = useState<1 | -1 | null>(null);
   const [reporting, setReporting] = useState<ConnLevel | null>(null);
@@ -85,7 +91,7 @@ export function FeedbackPanel({
       data-testid="conn-feedback"
     >
       <div className="flex items-center justify-between gap-2">
-        <p className="text-sm font-semibold">How was today&apos;s puzzle?</p>
+        <p className="text-sm font-semibold">{feedbackQuestion(today)}</p>
         <div className="flex gap-1.5">
           {([1, -1] as const).map((v) => (
             <Button
@@ -127,7 +133,7 @@ export function FeedbackPanel({
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-7 px-2 text-xs"
+                  className="h-7 px-2 text-xs max-sm:h-9"
                   aria-expanded={reporting === g.level}
                   onClick={() =>
                     setReporting(reporting === g.level ? null : g.level)

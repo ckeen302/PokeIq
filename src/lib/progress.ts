@@ -141,7 +141,7 @@ export const BADGES: BadgeDef[] = [
   { id: "conn-featured", name: "Featured creator", description: "A PokéConnections puzzle you made was featured or became the Puzzle of the Day", emoji: "🌟" },
   { id: "pdk-first", name: "Grid Starter", description: "Solve your first Pikadoku", emoji: "🔢" },
   { id: "pdk-perfect", name: "Nine for Nine", description: "Fill all 9 cells of a Pikadoku", emoji: "💯" },
-  { id: "pdk-rare", name: "Rare Finder", description: "A Pikadoku uniqueness score under 50", emoji: "🦄" },
+  { id: "pdk-rare", name: "Rare Finder", description: "A Pikadoku rarity score under 50", emoji: "🦄" },
   { id: "pdk-streak-7", name: "Grid Regular", description: "7-day Pikadoku streak", emoji: "🔥" },
   { id: "pdk-duel-10", name: "Three in a Row", description: "Win 10 Pikadoku Tic Tac Toe duels", emoji: "❌" },
   { id: "conn-hard", name: "Hard Wired", description: "Solve an Unlimited PokéConnections on Hard", emoji: "🧠" },
