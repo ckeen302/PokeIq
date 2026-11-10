@@ -59,6 +59,8 @@ export interface SceneApi {
   setAuto(v: boolean): void;
   setEra(gen: number): void;
   flyToRegion(name: string): void;
+  /** Turns to face a region (its towns and peaks in reach) without opening its card. */
+  faceRegion(name: string): void;
   /** The label keys that have pictures. */
   setShots(keys: ReadonlySet<string>): void;
   /** Moves the globe on screen (px; negative x = left, negative y = up) to make room for a card. */
@@ -491,7 +493,8 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
     tokenColor("--card", U.sea.value); U.land.value.copy(screen); tokenColor("--foreground", U.coast.value); tokenColor("--border", U.grid.value);
     if (darkTheme) U.rim.value.copy(screen); else U.rim.value.set("#ffffff");
     U.spec.value.copy(darkTheme ? new THREE.Color(0.85, 0.82, 1) : new THREE.Color(1, 1, 1));
-    U.nightLevel.value = darkTheme ? 0.36 : 0.74;
+    // The night side stays readable: an era's new region may lie on it.
+    U.nightLevel.value = darkTheme ? 0.6 : 0.74;
     U.nightTint.value.set(darkTheme ? 0x7f8cff : 0xd2d0ff).multiplyScalar(darkTheme ? 1.25 : 1.05);
     haloU.color.value.copy(darkTheme ? screen : primary.lerp(screen, 0.6)); haloU.strength.value = darkTheme ? 1.2 : 0.32;
     ringMat.color.copy(screen); ringMat.opacity = darkTheme ? 0.3 : 0.22;
@@ -933,6 +936,10 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
       if (reduce) { era = gen; U.era.value = gen; }
     },
     flyToRegion,
+    faceRegion(name) {
+      const r = regionList.find((x) => x[0] === name);
+      if (r) flyTo(r[1], r[2], 2.2);
+    },
     setShots(keys) {
       shotKeys = keys;
       for (const it of kept) if (it.el) { if (keys.has(it.key)) it.el.dataset.shot = "1"; else delete it.el.dataset.shot; }
