@@ -57,3 +57,14 @@ describe("PokéConnections on a phone", () => {
     }
   });
 });
+
+describe("PokéConnections' how-to", () => {
+  it("opens by itself for a new player only", async () => {
+    const { connFirstVisit } = await import("@/lib/connections/local");
+    expect(connFirstVisit({}, {})).toBe(true);
+    expect(connFirstVisit({ seenHowToDemo: true }, {})).toBe(false);
+    // A returning player signing in on a new device: their results come with them, the pop-up stays shut.
+    expect(connFirstVisit({}, { "2026-11-10": { solved: true } })).toBe(false);
+    expect(source("connections/Connections.tsx")).toContain("connFirstVisit(prefs, connBlock(getProgress()).results)");
+  });
+});

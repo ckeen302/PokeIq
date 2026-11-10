@@ -117,3 +117,6 @@ export function rememberStart(date: string, token: string | undefined): void {
 export function startFor(date: string): string | undefined {
   return load<Record<string, string>>(STARTS_KEY, {})[date];
 }
+
+/** The how-to opens by itself for a new player only: not after "Don't show again", and not for someone with a daily on record (a returning player signing in on a new device). */
+export const connFirstVisit = (prefs: { seenHowToDemo?: boolean }, results: Record<string, unknown>): boolean => !prefs.seenHowToDemo && Object.keys(results).length === 0;

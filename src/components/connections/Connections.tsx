@@ -11,7 +11,7 @@ import { useToday } from "@/lib/use-today";
 import { play } from "@/lib/sound";
 import { dlePlayerId } from "@/lib/dle-player";
 import { clock, connectionsShareText, shareUrl, type ConnectionsShareResult } from "@/lib/share";
-import { connArchive, connStats, getConnPrefs, rememberStart, saveConnArchive, setConnPrefs, startFor, useConnPrefs, type ConnPrefs } from "@/lib/connections/local";
+import { connArchive, connFirstVisit, connStats, getConnPrefs, rememberStart, saveConnArchive, setConnPrefs, startFor, useConnPrefs, type ConnPrefs } from "@/lib/connections/local";
 import {
   CONN_MAX_MISTAKES,
   CONN_SIZES,
@@ -369,7 +369,7 @@ export function Connections({ customId, initial }: { customId?: string; initial?
   useEffect(() => {
     if (!prefs || howToShown.current) return;
     howToShown.current = true;
-    if (!prefs.seenHowToDemo) setSheet("howto");
+    if (connFirstVisit(prefs, connBlock(getProgress()).results)) setSheet("howto");
   }, [prefs]);
 
   // The clock: runs while a started game is open and visible.
