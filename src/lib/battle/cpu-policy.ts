@@ -4,7 +4,7 @@ import randsets from "@/data/battle/randsets.json";
 import type { BattleRequest, CpuLevel } from "@/lib/battle/play";
 import { forcedSwitchSlots, moveSlotOptions, randomChoice, teamChoice } from "./choices";
 import { chooseCpuDoubles } from "./cpu-policy-doubles";
-import { alive, calcGen, calcName, chooseCpuLegacy, field, hit, seededRandom, toCalc } from "./cpu-policy-legacy";
+import { alive, calcGen, calcName, chooseCpuLegacy, cpuRequest, field, hit, seededRandom, toCalc } from "./cpu-policy-legacy";
 
 export { alive, calcGen, field, hit, seededRandom, toCalc };
 
@@ -1087,7 +1087,7 @@ export function chooseCpu(
   onError: (err: unknown) => void = (err) => console.error("[battle] cpu fell back to a random choice:", err),
   thinking: CpuThinking = {}
 ): string {
-  const request = side.activeRequest as unknown as BattleRequest | null;
+  const request = cpuRequest(side);
   if (!request || request.wait) throw new Error("The computer has nothing to choose.");
   if (level !== "easy" && battle.gameType === "doubles") return chooseCpuDoubles(battle, side, level, rand, onError);
   // Triples and the four-player game types: the doubles policy at every level (Easy plays it with more noise).
