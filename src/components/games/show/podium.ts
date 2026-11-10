@@ -160,7 +160,7 @@ export function podiumShow(event: EventId, venue: Venue, medallists: Medallist[]
       const m = medallists.find((x) => `m${x.medal}` === beat.cam)!;
       return { lower: { key: m.athlete.key, name: m.athlete.name, line: `${m.mark}${m.nation ? ` · ${m.nation.name}` : ""}`, tag: m.medal === 1 ? "Gold" : m.medal === 2 ? "Silver" : "Bronze", k } };
     }
-    if (beat.cam === "wide") return { title: { text: "MEDAL CEREMONY", sub: o.title ?? eventOf(event).name, k } };
+    if (beat.cam === "wide") return { title: { text: "MEDAL CEREMONY", sub: o.title ?? eventOf(event).name, k, signed: venue !== "stadium" } };
     return { tags: medallists.map((m) => m.athlete.key) };
   };
 

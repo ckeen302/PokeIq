@@ -203,13 +203,30 @@ export function drawMark(g: CanvasRenderingContext2D, W: number, H: number, text
 
 /** The live results board (right on a wide screen, under the action on a phone). */
 export function drawBoard(g: CanvasRenderingContext2D, W: number, H: number, title: string, rows: NonNullable<Overlay["board"]>["rows"], k: number, o: Gfx, full = false) {
+  let s = Math.min(W * (o.phone ? 0.045 : 0.022), 22) * o.scale;
+  if (o.phone) {
+    // A phone's (and a vertical video's) board keeps out of the picture: docked low, above the controls.
+    // Beside the action it is short (the podium places and the row being talked about); alone it shrinks to fit the screen.
+    if (!full) {
+      const top = rows.filter((r, i) => i < 3 || r.hi);
+      rows = top.length < rows.length ? top.slice(0, 4) : rows;
+      s *= 0.86;
+    } else {
+      const room = H - o.top - o.bottom - 12;
+      s = Math.max(9.5, Math.min(s, room / (rows.length * 1.5 + 2.6)));
+      const fits = Math.max(3, Math.floor((room - s * 2.6) / (s * 1.5)));
+      if (rows.length > fits) {
+        const hi = rows.findIndex((r) => r.hi);
+        rows = hi >= fits ? [...rows.slice(0, fits - 1), rows[hi]] : rows.slice(0, fits);
+      }
+    }
+  }
   const rowsN = rows.length;
-  const s = Math.min(W * (o.phone ? 0.045 : 0.022), 22) * o.scale;
   const rowH = s * 1.5;
   const w = full ? Math.min(W - 24, 640 * o.scale) : o.phone ? W - 24 : Math.min(W * 0.36, 420 * o.scale);
   const h = rowH * rowsN + s * 2.6;
   const x = full ? (W - w) / 2 : o.phone ? 12 : W - w - Math.max(14, W * 0.02);
-  const y = full ? Math.max(o.top + 8, (H - h) / 2 - s) : o.phone ? H - o.bottom - h - s * 4.5 : Math.max(o.top + 70, H * 0.22);
+  const y = o.phone ? Math.max(o.top + 6, H - o.bottom - h - 6) : full ? Math.max(o.top + 8, (H - h) / 2 - s) : Math.max(o.top + 70, H * 0.22);
   g.save();
   const a = Math.min(1, k * 4);
   g.globalAlpha = a;
@@ -322,7 +339,8 @@ export function drawOverlay(g: CanvasRenderingContext2D, W: number, H: number, o
   const avoid: Rect[] = [...(o.avoid ?? [])];
   if (ov.bug) avoid.push(drawBug(g, W, ov.bug.title, ov.bug.sub, o));
   if (ov.replay) drawReplayBug(g, W, H, { font: o.font, scale: o.scale, top: o.top + (ov.bug ? 0 : 0) });
-  if (ov.title) drawTitle(g, W, H, ov.title.text, ov.title.sub, ov.title.k, o);
+  // (On a phone the venue's own sign already says it: only the line under it stays.)
+  if (ov.title) drawTitle(g, W, H, o.phone && ov.title.signed ? ov.title.sub : ov.title.text, o.phone && ov.title.signed ? "" : ov.title.sub, ov.title.k, o);
   if (ov.tags?.length) {
     const tags = heads.filter((h) => ov.tags!.includes(h.key) && h.visible && h.by - h.y > 18).map((h) => ({ name: ov.tagText?.[h.key] ?? byKey.get(h.key)?.name ?? h.key, x: h.x, y: h.y }));
     if (tags.length) drawTags(g, tags, { ...o, avoid });

@@ -111,7 +111,7 @@ export interface Overlay {
   /** The event's corner bug: its name, the round or the bar. */
   bug?: { title: string; sub: string };
   /** The opening title card. */
-  title?: { text: string; sub: string; k: number };
+  title?: { text: string; sub: string; k: number; /** The venue's sign in the shot says the same. */ signed?: boolean };
   /** A lower third: the athlete, a line of stats, a tag (its attempt). */
   lower?: { key: string; name: string; line: string; tag?: string; k: number };
   /** A big mark: "8.21 m", "FOUL", "NEW LEAD". */
