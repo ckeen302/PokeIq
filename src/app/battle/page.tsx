@@ -35,7 +35,7 @@ const LIVE: { href: string; icon: LucideIcon; title: string; blurb: string; poin
     icon: Users,
     title: "Team Builder",
     blurb: "Six slots, every format's learnsets and Pokémon Showdown's own legality check, live as you build.",
-    points: ["8 formats from Gen 9 OU to Gen 3 OU", "EVs, IVs, natures and live stats", "Showdown import / export, random teams"],
+    points: ["Formats from Gen 9 OU back to Gen 3 OU", "EVs, IVs, natures and live stats", "Showdown import / export, random teams"],
   },
   {
     href: "/battle/calc",

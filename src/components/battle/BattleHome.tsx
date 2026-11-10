@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react"
 import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
 import { Bot, Castle, ChevronDown, Clapperboard, Eye, Hammer, Link2, Loader2, Megaphone, MessagesSquare, Search, Shuffle, Swords, Trophy, Users, X, type LucideIcon } from "lucide-react";
-import { PAST_GENS, PLAY_FORMAT_INFO, type PlayFormatId, type StandardFormatId } from "@/lib/battle/play";
+import { GUEST_TRAINER, PAST_GENS, PLAY_FORMAT_INFO, type PlayFormatId, type StandardFormatId } from "@/lib/battle/play";
 import { BATTLE_FORMATS } from "@/lib/battle/formats";
 import { saveBattleSeat } from "@/lib/battle/seat";
 import { ensureBattleId } from "@/lib/battle/replay-client";
@@ -251,11 +251,12 @@ export function BattleHome({ news }: { news: NewsItem[] }) {
   const onTeam = useCallback((t: string) => setTeam(t), []);
 
   const trainer = name.trim();
-  const ready = !!trainer && (!needsTeam || !!team) && !rulesBroken;
+  const teamReady = (!needsTeam || !!team) && !rulesBroken;
+  const ready = !!trainer && teamReady;
 
-  function check(): boolean {
+  function check(who = trainer): boolean {
     setError(null);
-    if (!isCleanName(trainer)) {
+    if (!isCleanName(who)) {
       setError(NAME_REJECTED);
       setEditName(true);
       return false;
@@ -275,13 +276,15 @@ export function BattleHome({ news }: { news: NewsItem[] }) {
    * too (the lobby shows it as well, so a refused clipboard costs nothing).
    */
   async function open(mode: "cpu" | "pvp", { copyLink = false }: { copyLink?: boolean } = {}) {
-    if (!check()) return;
+    // Against the computer a name is optional: a first battle is one tap.
+    const who = mode === "cpu" ? trainer || GUEST_TRAINER : trainer;
+    if (!check(who)) return;
     unlockAudio();
     setBusy(mode === "cpu" ? "cpu" : "invite");
     try {
       const href = await startBattle({
         mode,
-        name: trainer,
+        name: who,
         format,
         team: needsTeam ? team : custom ? "random" : undefined,
         rules: custom ? rules : undefined,
@@ -455,7 +458,7 @@ export function BattleHome({ news }: { news: NewsItem[] }) {
               )}
               {!searching && !ready && (
                 <p className="text-center text-xs text-muted-foreground" data-testid="battle-why-disabled">
-                  {!trainer ? "Enter a trainer name to battle." : needsTeam && !team ? "Pick a team, or a quick one, to battle." : "Fix the rules above to battle."}
+                  {!trainer ? (format === "factory" || !teamReady ? "Enter a trainer name to battle." : "Enter a trainer name to battle online, or play the computer right now.") : needsTeam && !team ? "Pick a team, or a quick one, to battle." : "Fix the rules above to battle."}
                 </p>
               )}
               {!searching && (
@@ -465,7 +468,7 @@ export function BattleHome({ news }: { news: NewsItem[] }) {
                       <Bot className="h-3.5 w-3.5" aria-hidden /> vs Computer
                     </Link>
                   ) : (
-                    <button type="button" disabled={!ready || !!busy} onClick={() => void open("cpu")} className="flex items-center justify-center gap-1.5 rounded-md border bg-background px-2 py-2 text-xs font-semibold hover:border-screen/60 disabled:opacity-50" data-testid="home-vs-cpu">
+                    <button type="button" disabled={!teamReady || !!busy} onClick={() => void open("cpu")} className="flex items-center justify-center gap-1.5 rounded-md border bg-background px-2 py-2 text-xs font-semibold hover:border-screen/60 disabled:opacity-50 max-md:min-h-11" data-testid="home-vs-cpu">
                       {busy === "cpu" ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <Bot className="h-3.5 w-3.5" aria-hidden />} vs Computer
                     </button>
                   )}
@@ -474,7 +477,7 @@ export function BattleHome({ news }: { news: NewsItem[] }) {
                       <Swords className="h-3.5 w-3.5" aria-hidden /> More options
                     </Link>
                   ) : (
-                    <button type="button" disabled={!ready || !!busy} onClick={() => void open("pvp")} className="flex items-center justify-center gap-1.5 rounded-md border bg-background px-2 py-2 text-xs font-semibold hover:border-screen/60 disabled:opacity-50" data-testid="home-invite">
+                    <button type="button" disabled={!ready || !!busy} onClick={() => void open("pvp")} className="flex items-center justify-center gap-1.5 rounded-md border bg-background px-2 py-2 text-xs font-semibold hover:border-screen/60 disabled:opacity-50 max-md:min-h-11" data-testid="home-invite">
                       {busy === "invite" ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <Link2 className="h-3.5 w-3.5" aria-hidden />} Invite a friend
                     </button>
                   )}

@@ -92,12 +92,13 @@ export function quickTeam(format: PlayFormatId, seed: string = newSeed()): TeamS
 
 /**
  * The computer's team for `format`: a random team in random formats,
- * Battle Factory sets in OU, and in the other team formats six random-battle
+ * Battle Factory sets where Showdown has them (OU, Ubers, UU), and in the other team formats six random-battle
  * sets that pass the format's validator (the team builder's random teams).
  */
 export function cpuTeam(format: PlayFormatId, seed: string = newSeed()): string {
   if (PLAY_FORMAT_INFO[format].random) return randomTeam(format, seed);
-  if (format === "gen9ou") return Teams.pack(legalFactoryTeam(format, seed));
+  // The same sets the trainer's "Quick team" is dealt from, so neither side starts with the better team.
+  if (FACTORY_TIER[format]) return Teams.pack(legalFactoryTeam(format, seed));
   return Teams.pack(formatRandomTeam(format));
 }
 

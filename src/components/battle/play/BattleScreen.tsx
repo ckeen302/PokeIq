@@ -13,6 +13,7 @@ import { preloadSprite } from "./sprites";
 import { loadAnims, playStep, type PopupTone, type StageHandle } from "./player";
 import { Stage, type Popup } from "./Stage";
 import { Controls } from "./Controls";
+import { choiceLine } from "./choice";
 import { HotkeyHelp, useHotkeyHelp } from "./hotkeys";
 import { TIMER_WARNINGS, timerWarning } from "@/lib/battle/timer-warning";
 import type { Ball } from "./Hud";
@@ -396,6 +397,15 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
   const names = useMemo(() => Object.fromEntries(view.players.map((p, i) => [SIDE_IDS[i], p.name])) as Partial<Record<SideId, string>>, [namesKey]);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [message, setMessage] = useState("");
+  /** The text box's line from before a choice put "… will use …" there: back it goes if the choice is cancelled or refused. */
+  const beforeChoice = useRef<string | null>(null);
+  const takeBackLine = () => {
+    if (beforeChoice.current !== null) setMessage(beforeChoice.current);
+    beforeChoice.current = null;
+  };
+  useEffect(() => {
+    if (error) takeBackLine();
+  }, [error]);
   const [popups, setPopups] = useState<Popup[]>([]);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState<number>(1);
@@ -489,7 +499,10 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
         if (g === generation.current) setSnap(s);
       };
       addEntry(step);
-      if (step.text.trim() && !LOG_ONLY.has(step.cmd)) setMessage(step.text);
+      if (step.text.trim() && !LOG_ONLY.has(step.cmd)) {
+        beforeChoice.current = null;
+        setMessage(step.text);
+      }
       if (skipping.current || !stage.current || !animations.current) {
         if (!queue.current.length && step.snap) commit(step.snap);
         continue;
@@ -628,8 +641,15 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
     const field = stageBox.current?.getBoundingClientRect();
     const moves = el.querySelectorAll("[data-testid=move-button]");
     const end = moves.length ? moves[moves.length - 1].getBoundingClientRect().bottom : box.bottom;
-    if (isPhone() && field && end - field.top < window.innerHeight - 130) {
+    // (The tab bar is away during a battle, so only the header's 68 px is taken.)
+    if (isPhone() && field && end - field.top < window.innerHeight - 76) {
       if (Math.abs(field.top - 68) > 24) stageBox.current!.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    // A shorter phone: the last move sits at the bottom edge, so as much of the field as fits stays in view above the moves.
+    if (isPhone() && field) {
+      const by = end - (window.innerHeight - 12);
+      if (Math.abs(by) > 24) window.scrollTo({ top: window.scrollY + by, behavior: "smooth" });
       return;
     }
     // The latest line of text stays in view just above the buttons.
@@ -788,7 +808,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
         </div>
 
         {/* The text box: the latest line of the battle. */}
-        <div className="dialog-box min-h-[4.25rem] text-sm leading-relaxed text-muted-foreground" data-done={showControls} aria-live="polite" data-testid="battle-message">
+        <div className="dialog-box min-h-[4.25rem] max-sm:min-h-[3.25rem] max-sm:px-3.5 max-sm:py-2.5 text-sm leading-relaxed text-muted-foreground" data-done={showControls} aria-live="polite" data-testid="battle-message">
           {message ? <RichText text={message} /> : <span>The battle is about to begin…</span>}
         </div>
 
@@ -827,6 +847,12 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
                   const rqid = view.request!.rqid;
                   // Showdown: a switch sent while maybe trapped can't be cancelled (the cancel would tell whether it was).
                   if (/\bswitch\b/.test(choice) && view.request!.data.active?.some((a) => a?.maybeTrapped)) setNoCancel(rqid);
+                  // The text box answers the tap at once, before the server does.
+                  const line = choiceLine(view.request!.data, choice);
+                  if (line) {
+                    beforeChoice.current = message;
+                    setMessage(line);
+                  }
                   onChoose(rqid, choice);
                 }}
                 onHelp={help.toggle}
@@ -862,7 +888,10 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
                     {view.cancel && onUndo && !busy && view.cancel.rqid !== noCancel && (
                       <button
                         type="button"
-                        onClick={() => onUndo(view.cancel!.rqid)}
+                        onClick={() => {
+                          takeBackLine();
+                          onUndo(view.cancel!.rqid);
+                        }}
                         className="ml-2 flex items-center gap-1 rounded-sm border border-border px-2 py-0.5 font-pixel text-[10px] uppercase text-foreground hover:bg-muted"
                         title="Take back your choice before your opponent makes theirs"
                         data-testid="cancel-choice"

@@ -67,11 +67,11 @@ function speciesKey(name: string) {
   return { id: s.id, num: s.num };
 }
 
-const EFFECT_LABEL: Record<Effect, { text: string; className: string; mark: string }> = {
-  super: { text: "Super effective", className: "bg-emerald-400 text-black shadow-[0_0_10px_rgb(52_211_153/0.7)]", mark: "▲" },
-  neutral: { text: "Effective", className: "bg-black/30 text-white", mark: "●" },
-  resisted: { text: "Not very effective", className: "bg-amber-300 text-black", mark: "▼" },
-  immune: { text: "No effect", className: "bg-slate-700 text-white", mark: "✕" },
+const EFFECT_LABEL: Record<Effect, { text: string; short: string; className: string; mark: string }> = {
+  super: { short: "Super effective", text: "Super effective", className: "bg-emerald-400 text-black shadow-[0_0_10px_rgb(52_211_153/0.7)]", mark: "▲" },
+  neutral: { short: "Effective", text: "Effective", className: "bg-black/30 text-white", mark: "●" },
+  resisted: { short: "Resisted", text: "Not very effective", className: "bg-amber-300 text-black", mark: "▼" },
+  immune: { short: "No effect", text: "No effect", className: "bg-slate-700 text-white", mark: "✕" },
 };
 
 /** What the Pokémon tooltips need: the generation, the format and your Pokémon as the field shows them. */
@@ -138,7 +138,7 @@ function MoveButton({
       data-testid="move-button"
       aria-keyshortcuts={String(index)}
       className={cn(
-        "battle-move group relative flex min-h-[5.25rem] max-sm:min-h-[3.75rem] max-sm:px-2.5 max-sm:pb-2 max-sm:pt-1.5 flex-col justify-between overflow-hidden rounded-lg border-2 px-3 pb-2.5 pt-2 text-left transition-[transform,filter,box-shadow] duration-100 hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0 active:brightness-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 sm:min-h-[4.5rem]",
+        "battle-move group relative flex min-h-[5.25rem] max-sm:min-h-[3.5rem] max-sm:px-1.5 max-sm:pb-2 max-sm:pt-1.5 flex-col justify-between overflow-hidden rounded-lg border-2 px-3 pb-2.5 pt-2 text-left transition-[transform,filter,box-shadow] duration-100 hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0 active:brightness-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 sm:min-h-[4.5rem]",
         tera && "ring-2 ring-offset-2 ring-offset-background"
       )}
       style={{
@@ -150,7 +150,7 @@ function MoveButton({
       }}
     >
       <span className="flex items-start justify-between gap-2">
-        <span className="font-display text-base font-bold uppercase leading-tight tracking-wide max-sm:text-sm">
+        <span className="min-w-0 font-display text-base font-bold uppercase leading-tight tracking-wide max-sm:break-words max-sm:text-[13px] max-sm:tracking-normal">
           <kbd className="mr-1.5 hidden rounded-sm bg-black/25 px-1 align-middle font-pixel text-[9px] font-normal sm:inline">{index}</kbd>
           {info.name}
         </span>
@@ -158,21 +158,26 @@ function MoveButton({
           {move.pp ?? "–"}/{move.maxpp ?? "–"}
         </span>
       </span>
-      <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-pixel text-[9px] uppercase opacity-90">
+      <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-pixel text-[9px] uppercase opacity-90 max-sm:flex-nowrap max-sm:gap-x-1 max-sm:overflow-hidden max-sm:whitespace-nowrap max-sm:tracking-tighter">
         <span className="rounded-sm bg-black/25 px-1 py-0.5">{type}</span>
-        <span>{CATEGORY_MARK[info.category]}</span>
+        <span className="max-sm:hidden">{CATEGORY_MARK[info.category]}</span>
+        {/* Phones: the category as its mark alone, and how well the move hits as a short chip on the same line. */}
+        <span className="sm:hidden" title={info.category}>{CATEGORY_MARK[info.category]?.split(" ")[0]}</span>
         {info.power > 0 && <span>Pow {info.power}</span>}
         <span className="max-sm:hidden">Acc {info.accuracy === true ? "—" : `${info.accuracy}%`}</span>
         {info.priority !== 0 && <span>Pri {info.priority > 0 ? `+${info.priority}` : info.priority}</span>}
       </span>
       {shown.length > 0 && (
-        <span className="mt-1 flex flex-wrap gap-1">
+        <span className="mt-1 flex flex-wrap gap-1 max-sm:flex-nowrap max-sm:overflow-hidden">
           {hints.map((h, i) =>
             h ? (
-              <span key={i} className={cn("inline-flex items-center gap-1 rounded-sm px-1 py-0.5 font-pixel text-[8px] uppercase", EFFECT_LABEL[h].className)}>
+              <span key={i} className={cn("inline-flex items-center gap-1 rounded-sm px-1 py-0.5 font-pixel text-[8px] uppercase max-sm:min-w-0 max-sm:whitespace-nowrap max-sm:tracking-tighter", EFFECT_LABEL[h].className, h === "neutral" && foes.length === 1 && "max-sm:hidden")}>
                 <span aria-hidden>{EFFECT_LABEL[h].mark}</span>
-                {foes.length > 1 ? `${foes[i]?.name ?? "?"}: ` : ""}
-                {EFFECT_LABEL[h].text}
+                <span className="max-sm:hidden">
+                  {foes.length > 1 ? `${foes[i]?.name ?? "?"}: ` : ""}
+                  {EFFECT_LABEL[h].text}
+                </span>
+                <span className="truncate sm:hidden">{foes.length > 1 ? (foes[i]?.name ?? "?") : EFFECT_LABEL[h].short}</span>
               </span>
             ) : null
           )}
@@ -404,7 +409,59 @@ function TeamPreview({
   );
 }
 
+const FIRST_BATTLE_KEY = "pokeiq:battle:first-battle-note";
+/** The note shows for a trainer's first turns ever, then never again. */
+const FIRST_BATTLE_TURNS = 3;
+
+/**
+ * A new trainer's first few turns: what the buttons mean, in plain words,
+ * under the moves. Gone for good once dismissed or once they've played
+ * past those turns (kept on this device).
+ */
+function FirstBattleNote() {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    try {
+      setShow(!window.localStorage.getItem(FIRST_BATTLE_KEY));
+    } catch {
+      // No storage: no note.
+    }
+  }, []);
+  if (!show) return null;
+  const done = () => {
+    setShow(false);
+    try {
+      window.localStorage.setItem(FIRST_BATTLE_KEY, "1");
+    } catch {
+      // Private mode: it shows again next time.
+    }
+  };
+  return (
+    <p className="flex items-start gap-2 rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2 text-xs leading-relaxed text-muted-foreground" role="note" data-testid="first-battle-note">
+      <span className="min-w-0 flex-1">
+        <b className="text-foreground">New to battling?</b> Pick a move to use it. A green tag means it hits this foe hard; yellow means the foe resists it. Switch swaps in another Pokémon instead of attacking.
+      </span>
+      <button type="button" onClick={done} className="shrink-0 rounded-sm border border-border px-2 py-1 font-display text-[11px] font-bold uppercase text-foreground hover:bg-muted">
+        Got it
+      </button>
+    </p>
+  );
+}
+
+/** Marks the first-battle note as read (a trainer who has played past the first turns doesn't need it). */
+function retireFirstBattleNote() {
+  try {
+    if (!window.localStorage.getItem(FIRST_BATTLE_KEY)) window.localStorage.setItem(FIRST_BATTLE_KEY, "1");
+  } catch {
+    // Nothing to keep it in.
+  }
+}
+
 export function Controls({ request, snap, me, gameType, names, busy, onChoose, format, onHelp }: Props) {
+  const pastFirstTurns = snap.turn > FIRST_BATTLE_TURNS;
+  useEffect(() => {
+    if (pastFirstTurns) retireFirstBattleNote();
+  }, [pastFirstTurns]);
   const doubles = gameType === "doubles";
   const perHalf = activesPerHalf(gameType);
   const four = playerCount(gameType) === 4;
@@ -466,8 +523,9 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
   const actorName = actor?.ident.split(": ")[1] ?? "your Pokémon";
   const back =
     parts.length > 0 ? (
-      <button type="button" className="hud-label flex items-center gap-1 hover:text-foreground" onClick={() => setParts([])}>
-        <Undo2 className="h-3 w-3" aria-hidden /> Start over
+      <button type="button" className="hud-label flex items-center gap-1 hover:text-foreground max-sm:min-h-8 max-sm:px-1" onClick={() => setParts([])} aria-label="Start over">
+        <Undo2 className="h-3 w-3" aria-hidden /> <span className="max-sm:hidden">Start over</span>
+        <span className="sm:hidden">Redo</span>
       </button>
     ) : null;
 
@@ -664,10 +722,14 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
   if (extras.length) keys.extra = () => setExtra((x) => cycleExtra(x, extras));
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="font-display text-lg font-bold uppercase max-sm:text-base">What will {actorName} do?</p>
-        <div className="flex items-center gap-3">
+    <div className="space-y-3 max-sm:space-y-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 max-sm:flex-nowrap">
+        <p className="font-display text-lg font-bold uppercase max-sm:min-w-0 max-sm:truncate max-sm:text-sm">
+          <span className="max-sm:hidden">What will {actorName} do?</span>
+          {/* Phones: the name alone keeps the row to one line beside Tera. */}
+          <span className="sm:hidden">{actorName}&apos;s move</span>
+        </p>
+        <div className="flex items-center gap-3 max-sm:shrink-0 max-sm:gap-1.5">
           {back}
           {teraType && (
             <button
@@ -678,7 +740,7 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
               aria-keyshortcuts="T"
               title="T"
               className={cn(
-                "flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-display text-xs font-bold uppercase tracking-wider transition",
+                "flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-display text-xs font-bold uppercase tracking-wider transition max-sm:px-2 max-sm:tracking-normal",
                 tera ? "text-black" : "bg-card text-foreground hover:border-screen/60"
               )}
               style={tera ? { background: teraColor(teraType), borderColor: teraColor(teraType), boxShadow: `0 0 14px ${teraColor(teraType)}` } : { borderColor: `${teraColor(teraType)}88` }}
@@ -706,7 +768,7 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
           ))}
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2.5 sm:gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:gap-2">
         {shown.map((move, i) => (
           <MoveButton
             key={`${move.id}-${i}`}
@@ -722,6 +784,7 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
           />
         ))}
       </div>
+      {snap.turn <= FIRST_BATTLE_TURNS && <FirstBattleNote />}
       {shiftable && (
         <button
           type="button"

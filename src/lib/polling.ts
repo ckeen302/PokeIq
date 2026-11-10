@@ -207,9 +207,13 @@ export const BATTLE_WAITING_POLL_MS = 500;
 /** Live battles: the safety-net poll while the Realtime channel is up (it says when to fetch). */
 export const BATTLE_LIVE_POLL_MS = 3000;
 
+/** Against the computer, while it's your move: the safety-net poll (only a lost response or another tab could have changed anything). */
+export const BATTLE_CPU_IDLE_POLL_MS = 30_000;
+
 /**
  * Battles, while the tab is visible. Against the computer every choice comes
- * back with its result, so polling is only a safety net. Live: every 500 ms
+ * back with its result, so polling is only a safety net (5 s while an answer
+ * is owed, 30 s while it's your move). Live: every 500 ms
  * while waiting on the opponent, every 2 s while it's your move (nothing
  * happens until you choose), with a poll right after either clock runs out;
  * the lobby and the end as for duels. With the battle's Realtime channel up
@@ -217,7 +221,11 @@ export const BATTLE_LIVE_POLL_MS = 3000;
  */
 export function battlePollDelay(view: BattleView | null, quietPolls: number, serverNow: number, live = false): number | null {
   if (!view) return 1000;
-  if (view.kind === "cpu") return view.status === "finished" ? null : 5000;
+  if (view.kind === "cpu") {
+    if (view.status === "finished") return null;
+    // Your move: nothing happens until you choose, and the answer comes back with the choice.
+    return view.request !== null && !view.waiting ? BATTLE_CPU_IDLE_POLL_MS : 5000;
+  }
   if (view.status !== "playing" && chatBusy(view.chat, serverNow)) return CHAT_POLL_MS;
   if (view.status === "finished") {
     if (view.end && serverNow - view.end.at > FINISHED_POLL_MS) return null;
