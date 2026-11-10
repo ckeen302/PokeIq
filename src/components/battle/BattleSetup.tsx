@@ -500,10 +500,11 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
           {opponent === "match" && !searching && <p className="text-center text-xs text-muted-foreground">Leaving this page or closing the tab ends the search.</p>}
         </CardContent>
       </Card>
-      {!submitSeen && !blocked && !searching && (
+      {/* Against the computer only: the other two need a name typed at the foot of the page anyway. */}
+      {opponent === "cpu" && !submitSeen && !blocked && !searching && (
         <div className="sticky bottom-[calc(var(--tabbar-h)+0.5rem)] z-10 -mt-6 md:hidden" data-testid="setup-quick-start">
           <Button type="submit" size="lg" className="w-full shadow-[0_10px_30px_-8px_rgb(0_0_0/0.8)]">
-            <Swords className="h-4 w-4" aria-hidden /> {startLabel} · {custom ? "Custom" : info.short}
+            <Swords className="h-4 w-4" aria-hidden /> Play now · {custom ? "Custom" : info.short}
           </Button>
         </div>
       )}

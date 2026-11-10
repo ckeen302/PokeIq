@@ -409,7 +409,59 @@ function TeamPreview({
   );
 }
 
+const FIRST_BATTLE_KEY = "pokeiq:battle:first-battle-note";
+/** The note shows for a trainer's first turns ever, then never again. */
+const FIRST_BATTLE_TURNS = 3;
+
+/**
+ * A new trainer's first few turns: what the buttons mean, in plain words,
+ * under the moves. Gone for good once dismissed or once they've played
+ * past those turns (kept on this device).
+ */
+function FirstBattleNote() {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    try {
+      setShow(!window.localStorage.getItem(FIRST_BATTLE_KEY));
+    } catch {
+      // No storage: no note.
+    }
+  }, []);
+  if (!show) return null;
+  const done = () => {
+    setShow(false);
+    try {
+      window.localStorage.setItem(FIRST_BATTLE_KEY, "1");
+    } catch {
+      // Private mode: it shows again next time.
+    }
+  };
+  return (
+    <p className="flex items-start gap-2 rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2 text-xs leading-relaxed text-muted-foreground" role="note" data-testid="first-battle-note">
+      <span className="min-w-0 flex-1">
+        <b className="text-foreground">New to battling?</b> Pick a move to use it. A green tag means it hits this foe hard; yellow means the foe resists it. Switch swaps in another Pokémon instead of attacking.
+      </span>
+      <button type="button" onClick={done} className="shrink-0 rounded-sm border border-border px-2 py-1 font-display text-[11px] font-bold uppercase text-foreground hover:bg-muted">
+        Got it
+      </button>
+    </p>
+  );
+}
+
+/** Marks the first-battle note as read (a trainer who has played past the first turns doesn't need it). */
+function retireFirstBattleNote() {
+  try {
+    if (!window.localStorage.getItem(FIRST_BATTLE_KEY)) window.localStorage.setItem(FIRST_BATTLE_KEY, "1");
+  } catch {
+    // Nothing to keep it in.
+  }
+}
+
 export function Controls({ request, snap, me, gameType, names, busy, onChoose, format, onHelp }: Props) {
+  const pastFirstTurns = snap.turn > FIRST_BATTLE_TURNS;
+  useEffect(() => {
+    if (pastFirstTurns) retireFirstBattleNote();
+  }, [pastFirstTurns]);
   const doubles = gameType === "doubles";
   const perHalf = activesPerHalf(gameType);
   const four = playerCount(gameType) === 4;
@@ -732,6 +784,7 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
           />
         ))}
       </div>
+      {snap.turn <= FIRST_BATTLE_TURNS && <FirstBattleNote />}
       {shiftable && (
         <button
           type="button"
