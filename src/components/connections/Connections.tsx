@@ -34,7 +34,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Popover } from "@/components/ui/popover";
 import { ShareButton } from "@/components/share/ShareButton";
-import { GridTile, GroupBar, GuessHistory, LevelLegend, MistakeDots, TILE_H4, TILE_H5, WhyPanel, preloadTileArt, type TileMotion } from "./parts";
+import { CONTROLS_DOCK, CONTROLS_WRAP, GridTile, GroupBar, GuessHistory, LevelLegend, MistakeDots, TILE_H4, TILE_H5, WhyPanel, preloadTileArt, type TileMotion } from "./parts";
 // The pop-ups (how to play with its demo, stats, the archive) load when first opened, not with the board.
 const loadSheets = () => import("./sheets");
 // A first visit opens How to play at once: its code downloads while the page hydrates, not after.
@@ -927,9 +927,9 @@ export function Connections({ customId, initial }: { customId?: string; initial?
 
         {/* The controls show (disabled) while the tiles load too, so nothing below the board jumps when they arrive. */}
         {!over && (puzzle || !error) && (
-          <div className="space-y-3 sm:space-y-4">
+          <div className={cn("space-y-3 sm:space-y-4", CONTROLS_WRAP)}>
             <MistakeDots left={mistakesLeft} max={connMaxMistakes(size)} />
-            <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2.5">
+            <div className={cn("flex flex-wrap items-center justify-center gap-1.5 sm:gap-2.5", CONTROLS_DOCK)} data-testid="conn-controls">
               <Button variant="outline" onClick={shuffle} disabled={busy || !puzzle} className="rounded-full px-3 sm:min-w-28 sm:px-4" data-testid="conn-shuffle">
                 <Shuffle className="hidden h-4 w-4 min-[400px]:inline sm:inline" aria-hidden /> Shuffle
               </Button>
@@ -1043,7 +1043,7 @@ export function Connections({ customId, initial }: { customId?: string; initial?
                   </Button>
                 )}
                 {mode === "daily" && daily && <DailyLeaderboard date={daily.date} standing={board} rows={boardRows} you={rankName} onName={rankAs} />}
-                {daily && <FeedbackPanel date={daily.date} guesses={guesses} groups={state.reveal} />}
+                {daily && <FeedbackPanel date={daily.date} guesses={guesses} groups={state.reveal} today={mode === "daily"} />}
                 {mode !== "daily" && <p className="text-xs text-muted-foreground">{mode === "archive" ? "Archive" : "Practice"} games don&apos;t count toward streaks or stats.</p>}
               </CardContent>
             </Card>

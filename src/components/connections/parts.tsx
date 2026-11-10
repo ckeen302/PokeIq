@@ -88,6 +88,14 @@ export const tileKindLabel = (tile: ConnTile) => (tile.kind === "move" ? "Move" 
 export type TileMotion = "jump" | "shake" | null;
 
 /** A tile's (and a found group's bar's) height: the whole 4×4 board and its buttons fit a 390×844 phone and a 1440×900 laptop without scrolling. */
+/**
+ * Phones: Shuffle, Deselect and Submit dock above the tab bar while the board is taller than the screen,
+ * so Submit is always under the thumb. The wrapper around the mistakes and the buttons dissolves there
+ * (the dock then sticks within the whole game column, not just that wrapper).
+ */
+export const CONTROLS_WRAP = "max-sm:contents max-sm:[&>*:first-child]:mt-4";
+export const CONTROLS_DOCK =
+  "max-sm:sticky max-sm:bottom-[var(--tabbar-h)] max-sm:z-10 max-sm:-mx-4 max-sm:flex-nowrap max-sm:gap-1.5 max-sm:bg-background/95 max-sm:px-4 max-sm:py-2 max-sm:backdrop-blur";
 export const TILE_H4 = "h-[5.75rem] sm:h-[7rem]";
 export const TILE_H5 = "h-[4.75rem] sm:h-[6rem]";
 
