@@ -173,9 +173,18 @@ describe("battle engine", () => {
           for (const side of ["p1", "p2"] as SideID[]) {
             if (!session.pending(side)) continue;
             const level = levels[(game + (side === "p1" ? 0 : 1)) % 3];
-            const choice = chooseCpu(session.battle, session.battle[side], level, seededRandom(`${game}:${i}:${side}`));
-            const out = session.choose(side, choice);
-            expect(out, `${formatid} ${side} ${level}: "${choice}"`).toEqual({ ok: true });
+            // Switching a Pokémon the request lists as maybeTrapped (a foe may hold Shadow Tag, Arena
+            // Trap or Magnet Pull) is a legal attempt that the simulator may refuse; the request is
+            // then re-issued with that Pokémon trapped and the player chooses again, as a client does.
+            // Anything else refused is a real failure.
+            for (let attempt = 0; ; attempt++) {
+              const request = session.battle[side].activeRequest as unknown as { active?: { maybeTrapped?: boolean }[] } | null;
+              const choice = chooseCpu(session.battle, session.battle[side], level, seededRandom(`${game}:${i}:${side}:${attempt}`));
+              const out = session.choose(side, choice);
+              if (!out.ok && attempt < 3 && /trapped/.test(out.error) && request?.active?.some((a) => a?.maybeTrapped)) continue;
+              expect(out, `${formatid} ${side} ${level}: "${choice}"`).toEqual({ ok: true });
+              break;
+            }
             decisions++;
             moved = true;
           }
