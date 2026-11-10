@@ -397,6 +397,15 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
   const names = useMemo(() => Object.fromEntries(view.players.map((p, i) => [SIDE_IDS[i], p.name])) as Partial<Record<SideId, string>>, [namesKey]);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [message, setMessage] = useState("");
+  /** The text box's line from before a choice put "… will use …" there: back it goes if the choice is cancelled or refused. */
+  const beforeChoice = useRef<string | null>(null);
+  const takeBackLine = () => {
+    if (beforeChoice.current !== null) setMessage(beforeChoice.current);
+    beforeChoice.current = null;
+  };
+  useEffect(() => {
+    if (error) takeBackLine();
+  }, [error]);
   const [popups, setPopups] = useState<Popup[]>([]);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState<number>(1);
@@ -490,7 +499,10 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
         if (g === generation.current) setSnap(s);
       };
       addEntry(step);
-      if (step.text.trim() && !LOG_ONLY.has(step.cmd)) setMessage(step.text);
+      if (step.text.trim() && !LOG_ONLY.has(step.cmd)) {
+        beforeChoice.current = null;
+        setMessage(step.text);
+      }
       if (skipping.current || !stage.current || !animations.current) {
         if (!queue.current.length && step.snap) commit(step.snap);
         continue;
@@ -837,7 +849,10 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
                   if (/\bswitch\b/.test(choice) && view.request!.data.active?.some((a) => a?.maybeTrapped)) setNoCancel(rqid);
                   // The text box answers the tap at once, before the server does.
                   const line = choiceLine(view.request!.data, choice);
-                  if (line) setMessage(line);
+                  if (line) {
+                    beforeChoice.current = message;
+                    setMessage(line);
+                  }
                   onChoose(rqid, choice);
                 }}
                 onHelp={help.toggle}
@@ -873,7 +888,10 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
                     {view.cancel && onUndo && !busy && view.cancel.rqid !== noCancel && (
                       <button
                         type="button"
-                        onClick={() => onUndo(view.cancel!.rqid)}
+                        onClick={() => {
+                          takeBackLine();
+                          onUndo(view.cancel!.rqid);
+                        }}
                         className="ml-2 flex items-center gap-1 rounded-sm border border-border px-2 py-0.5 font-pixel text-[10px] uppercase text-foreground hover:bg-muted"
                         title="Take back your choice before your opponent makes theirs"
                         data-testid="cancel-choice"
