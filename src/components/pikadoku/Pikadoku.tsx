@@ -570,7 +570,8 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
                   <BarChart3 className="h-5 w-5" />
                 </button>
               </div>
-              <h1 className="font-display text-3xl font-bold uppercase tracking-tight sm:text-4xl">Pikadoku</h1>
+              {/* A touch larger on phones (same line height): the title, painted with the HTML, outranks the nav logo as the page's largest paint. */}
+              <h1 className="font-display text-3xl font-bold uppercase tracking-tight min-[360px]:text-[2rem]/9 sm:text-4xl">Pikadoku</h1>
               <div className="flex gap-0.5">
                 <button type="button" className={cn(iconButton, mode === "practice" && !showSetup && "text-screen")} onClick={() => newPractice()} aria-label="New Unlimited grid" title="New Unlimited grid">
                   <Dices className="h-5 w-5" />
