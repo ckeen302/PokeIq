@@ -198,6 +198,9 @@ export const BATTLE_TEAM_MAX = 12_000;
 // The computer opponent
 // ---------------------------------------------------------------------------
 
+/** The name a trainer battles the computer under when they haven't picked one (so a first battle is one tap). */
+export const GUEST_TRAINER = "Trainer";
+
 export const CPU_LEVELS = ["easy", "normal", "hard"] as const;
 export type CpuLevel = (typeof CPU_LEVELS)[number];
 
