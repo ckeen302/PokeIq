@@ -28,3 +28,18 @@ export async function sendRetryingBusy<T extends Sent>(
   }
   return out;
 }
+
+/**
+ * What to tell the trainer when a battle request never reached the server.
+ * A browser's own words for that ("Failed to fetch", "Load failed",
+ * "NetworkError when attempting to fetch resource.") say nothing useful, so
+ * they are replaced; anything else (the server's own message) is kept.
+ */
+export function sendFailureText(err: unknown, fallback = "Something went wrong."): string {
+  const text = err instanceof Error ? err.message : "";
+  if (err instanceof TypeError || /failed to fetch|load failed|networkerror|network request failed/i.test(text)) return "Couldn't reach the battle. Check your connection: your choice wasn't sent, so pick it again.";
+  return text || fallback;
+}
+
+/** The speed a battle plays at before the trainer picks one: 1x, and 2x on a phone, where a turn at 1x is a long wait with a thumb hovering. */
+export const defaultBattleSpeed = (phone: boolean): 1 | 2 => (phone ? 2 : 1);

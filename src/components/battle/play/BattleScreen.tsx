@@ -14,6 +14,7 @@ import { loadAnims, playStep, type PopupTone, type StageHandle } from "./player"
 import { Stage, type Popup } from "./Stage";
 import { Controls } from "./Controls";
 import { choiceLine } from "./choice";
+import { defaultBattleSpeed } from "@/lib/battle/busy-retry";
 import { HotkeyHelp, useHotkeyHelp } from "./hotkeys";
 import { TIMER_WARNINGS, timerWarning } from "@/lib/battle/timer-warning";
 import type { Ball } from "./Hud";
@@ -438,12 +439,16 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
   /** Scrolled back while new lines came in: offer a jump to the latest. */
   const [logBehind, setLogBehind] = useState(false);
 
+  /** Whether this screen began as a replay (read once, when the saved speed is). */
+  const startedAsReplay = useRef(!!replay);
   useEffect(() => {
     try {
       const saved = Number(window.localStorage.getItem(SPEED_KEY));
-      if (SPEEDS.includes(saved as (typeof SPEEDS)[number])) {
-        setSpeed(saved);
-        speedRef.current = saved;
+      // The trainer's own pick wins; with none, a phone plays a battle (not a replay) at 2x.
+      const start = SPEEDS.includes(saved as (typeof SPEEDS)[number]) ? saved : startedAsReplay.current ? 1 : defaultBattleSpeed(isPhone());
+      if (start !== 1) {
+        setSpeed(start);
+        speedRef.current = start;
       }
     } catch {
       // keep 1x

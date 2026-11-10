@@ -92,7 +92,7 @@ export function StatEditor({
                 aria-label={`${STAT_LABELS[s]}${plus ? " (boosted by nature)" : minus ? " (lowered by nature)" : ""}: change nature`}
                 data-nature={plus ? "plus" : minus ? "minus" : undefined}
                 className={cn(
-                  "-mx-1 rounded px-1 text-left font-semibold transition-colors hover:bg-foreground/10",
+                  "-mx-1 rounded px-1 text-left font-semibold transition-colors hover:bg-foreground/10 max-md:py-2",
                   plus && "bg-success/15 text-success",
                   minus && "bg-destructive/15 text-destructive"
                 )}
