@@ -153,6 +153,38 @@ async function phoneStates(page, BASE, errors, step) {
     errors.push(`phone /pikadoku picker: ${e.message.split("\n")[0]}`);
   }
   try {
+    // Pokédle with the Pokédex notebook on: its header and filters wrap, so the page stays the phone's width
+    // (a too-wide row makes a phone lay the whole page out wider and zoom it out), and the hint chips are thumb-sized.
+    await settle("/pokedle");
+    const phoneWidth = page.viewportSize().width;
+    await page.getByRole("button", { name: "Settings", exact: true }).click();
+    for (const level of [/^Notebook/, /^Full Pokédex/]) {
+      await page.getByRole("radiogroup", { name: "Pokédex assist", exact: true }).getByRole("radio", { name: level }).click();
+      await page.getByLabel("Search the Pokédex").waitFor();
+      await page.waitForTimeout(400);
+      const wide = await page.evaluate(() => Math.max(window.innerWidth, document.documentElement.scrollWidth));
+      if (wide > phoneWidth + 1) errors.push(`phone /pokedle: the page is ${wide}px wide with the ${level.source.slice(1)} Pokédex on`);
+    }
+    await page.keyboard.press("Escape");
+    const chips = await page.getByTestId("hints").locator("button").evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().height)).filter((h) => h > 0));
+    if (!chips.length || chips.some((h) => h < 40)) errors.push(`phone /pokedle: the hint chips are too small to tap (${chips.join(", ")}px tall)`);
+    await page.evaluate(() => localStorage.removeItem("pokeiq:pokedle-prefs:v1"));
+    // PokéConnections: Submit is docked above the tab bar from the first screen, before any scrolling.
+    await settle("/connections");
+    await page.getByTestId("conn-tile").first().waitFor();
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.waitForTimeout(400);
+    const gap = await page.getByTestId("conn-submit").evaluate((b) => document.querySelector('nav[aria-label="Primary"]').getBoundingClientRect().top - b.getBoundingClientRect().bottom);
+    if (gap < 0) errors.push(`phone /connections: Submit starts ${Math.round(-gap)}px under the tab bar`);
+    // Pikadoku's More row (difficulty, Weekly, Archive) is thumb-sized too.
+    await settle("/pikadoku");
+    await page.getByTestId("pdk-more").click();
+    const more = await page.locator('[data-testid="pdk-more"], [data-testid="pdk-mode-weekly"], [data-testid="pdk-archive-btn"]').evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().height)));
+    if (more.length !== 3 || more.some((h) => h < 40)) errors.push(`phone /pikadoku: the More controls are too small to tap (${more.join(", ")}px tall)`);
+  } catch (e) {
+    errors.push(`phone dailies: ${e.message.split("\n")[0]}`);
+  }
+  try {
     // After an answer, Next question is on screen above the tab bar without scrolling.
     await settle("/quiz/whos-that-pokemon");
     await page.getByRole("button", { name: /^Start/ }).click();

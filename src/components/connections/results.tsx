@@ -63,6 +63,12 @@ export function PerfectBanner() {
   );
 }
 
+/** The line under the streak: a record only once there is a run to speak of. */
+export function streakNote(streak: number, best: number): string {
+  if (streak <= 1 && best <= 1) return "Play tomorrow to keep it going";
+  return streak >= best ? "Your best streak yet!" : `Best: ${best} day${best === 1 ? "" : "s"}`;
+}
+
 /** The streak, with a flickering flame that grows with it. */
 export function StreakFlame({ streak, best }: { streak: number; best: number }) {
   const size = streak >= 30 ? "text-5xl" : streak >= 7 ? "text-4xl" : "text-3xl";
@@ -80,7 +86,7 @@ export function StreakFlame({ streak, best }: { streak: number; best: number }) 
         <p className="font-display text-2xl font-bold tabular-nums leading-none text-orange-400">
           {streak} day{streak === 1 ? "" : "s"}
         </p>
-        <p className="text-xs text-muted-foreground">{streak > 0 && streak >= best ? "Your best streak yet!" : `Best: ${best} day${best === 1 ? "" : "s"}`}</p>
+        <p className="text-xs text-muted-foreground">{streakNote(streak, best)}</p>
       </div>
     </div>
   );
