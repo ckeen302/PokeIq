@@ -628,8 +628,15 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
     const field = stageBox.current?.getBoundingClientRect();
     const moves = el.querySelectorAll("[data-testid=move-button]");
     const end = moves.length ? moves[moves.length - 1].getBoundingClientRect().bottom : box.bottom;
-    if (isPhone() && field && end - field.top < window.innerHeight - 130) {
+    // (The tab bar is away during a battle, so only the header's 68 px is taken.)
+    if (isPhone() && field && end - field.top < window.innerHeight - 76) {
       if (Math.abs(field.top - 68) > 24) stageBox.current!.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    // A shorter phone: the last move sits at the bottom edge, so as much of the field as fits stays in view above the moves.
+    if (isPhone() && field) {
+      const by = end - (window.innerHeight - 12);
+      if (Math.abs(by) > 24) window.scrollTo({ top: window.scrollY + by, behavior: "smooth" });
       return;
     }
     // The latest line of text stays in view just above the buttons.
@@ -788,7 +795,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
         </div>
 
         {/* The text box: the latest line of the battle. */}
-        <div className="dialog-box min-h-[4.25rem] text-sm leading-relaxed text-muted-foreground" data-done={showControls} aria-live="polite" data-testid="battle-message">
+        <div className="dialog-box min-h-[4.25rem] max-sm:min-h-[3.25rem] max-sm:px-3.5 max-sm:py-2.5 text-sm leading-relaxed text-muted-foreground" data-done={showControls} aria-live="polite" data-testid="battle-message">
           {message ? <RichText text={message} /> : <span>The battle is about to begin…</span>}
         </div>
 
