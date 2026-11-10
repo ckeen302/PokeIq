@@ -14,8 +14,15 @@ async function ldTypes(page) {
   return page.$$eval('script[type="application/ld+json"]', (els) => els.map((e) => JSON.parse(e.textContent ?? "{}")["@type"]));
 }
 
+/** The page's canonical path. After a client-side navigation the head updates a moment later, so this waits for a link whose path matches where the page now is. */
 async function canonical(page) {
-  return page.$eval('link[rel="canonical"]', (l) => new URL(l.href).pathname).catch(() => null);
+  const read = () => page.$eval('link[rel="canonical"]', (l) => new URL(l.href).pathname).catch(() => null);
+  for (let i = 0; i < 25; i++) {
+    const got = await read();
+    if (got && got === new URL(page.url()).pathname) return got;
+    await page.waitForTimeout(200);
+  }
+  return read();
 }
 
 export async function runRankings({ browser, BASE, errors, step }) {

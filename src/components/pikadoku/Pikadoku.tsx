@@ -570,7 +570,8 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
                   <BarChart3 className="h-5 w-5" />
                 </button>
               </div>
-              <h1 className="font-display text-3xl font-bold uppercase tracking-tight sm:text-4xl">Pikadoku</h1>
+              {/* A touch larger on phones (same line height): the title, painted with the HTML, outranks the nav logo as the page's largest paint. */}
+              <h1 className="font-display text-3xl font-bold uppercase tracking-tight min-[360px]:text-[2rem]/9 sm:text-4xl">Pikadoku</h1>
               <div className="flex gap-0.5">
                 <button type="button" className={cn(iconButton, mode === "practice" && !showSetup && "text-screen")} onClick={() => newPractice()} aria-label="New Unlimited grid" title="New Unlimited grid">
                   <Dices className="h-5 w-5" />
@@ -864,7 +865,11 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
             ) : !board.rows ? (
               <p className="py-3 text-center text-sm text-muted-foreground">The leaderboard is off right now.</p>
             ) : board.rows.length === 0 ? (
-              <p className="py-3 text-center text-sm text-muted-foreground">Nobody is on the board yet. Finish a grid with a trainer name to rank.</p>
+              <div className="py-3 text-center text-sm text-muted-foreground">
+                {/* Two short lines rather than one paragraph: each is smaller than the title, so this late-arriving empty state never becomes the page's largest paint. */}
+                <p>Nobody is on the board yet.</p>
+                <p>Finish a grid with a trainer name to rank.</p>
+              </div>
             ) : (
               <ol className="divide-y divide-foreground/10 rounded-md border border-foreground/10 text-sm">
                 {board.rows.map((r, i) => (
