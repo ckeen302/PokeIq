@@ -300,14 +300,15 @@ function shotFor(cam: Camera, k: number, spots: Spot[], ctx: DirectorContext): C
   const portrait = ctx.aspect < 0.9;
   switch (cam) {
     case "crane": {
-      // The establishing shot: from high over the roof at the west end, across the whole bowl, sweeping down to the start.
+      // The establishing shot: from high at the west end, across the whole bowl, sweeping down to the start.
       const c = centroid(ctx.starts);
       // Hold the wide view, then swoop in.
       const e = ease((k - 0.32) / 0.68);
       const e2 = e * e * (3 - 2 * e);
       // On a phone (or a 9:16 video) the frame is tall: start higher and look down the bowl's length, so it fills the frame instead of the dark ground outside.
-      const from: Vec3 = portrait ? [-150 + 14 * k, 122 - 8 * k, 52] : [-158 + 14 * k, 86 - 6 * k, 74];
-      const fromT: Vec3 = portrait ? [10, 0, -4] : [24, 12, -6];
+      // It starts inside the bowl, under the roof's edge: the lit field and the far stand fill the frame (from over the roof, half of it was the dark roof).
+      const from: Vec3 = portrait ? [-92 + 10 * k, 44 - 5 * k, 20] : [-90 + 10 * k, 30 - 3 * k, 30];
+      const fromT: Vec3 = portrait ? [0, 0, -2] : [24, 6, -6];
       const to: Vec3 = ctx.distance === 100 ? [c[0] + 15, 3.2 + H, c[2] + 11] : [c[0] * 0.8, 10 + H, c[2] * 0.62];
       const toT: Vec3 = [c[0], 0.5 * H, c[2]];
       const pos = lerp3(from, to, e2);
@@ -424,6 +425,19 @@ function shotFor(cam: Camera, k: number, spots: Spot[], ctx: DirectorContext): C
       return { pos, target, fov: portrait ? 60 : 44 };
     }
   }
+}
+
+/**
+ * A crane's start, brought inside the stadium's bowl and under its roof: a
+ * point out over the roof looks down on a dark roof and the night outside,
+ * so it moves in along its bearing to where the lit field fills the frame.
+ * (A point already inside, or in one of the halls, is returned as it is.)
+ */
+export function insideBowl(p: Vec3): Vec3 {
+  const lim = 0.8;
+  const k = Math.pow(Math.pow(Math.abs(p[0]) / BOWL.A, BOWL.N) + Math.pow(Math.abs(p[2]) / BOWL.B, BOWL.N), 1 / BOWL.N);
+  const f = k > lim ? lim / k : 1;
+  return [p[0] * f, Math.min(p[1], 34), p[2] * f];
 }
 
 /** A smooth blend between two poses (for cuts that dissolve and for the free camera taking over). */

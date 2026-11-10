@@ -1,4 +1,4 @@
-import { blendPose, fillTall, fovToFit, type CamPose, type Vec3 } from "@/lib/race/director";
+import { blendPose, fillTall, fovToFit, insideBowl, type CamPose, type Vec3 } from "@/lib/race/director";
 import { BOWL, barrierZ } from "@/lib/race/track";
 
 /**
@@ -30,6 +30,8 @@ export const mixPose = (a: CamPose, b: CamPose, k: number): CamPose => blendPose
 /** An establishing crane: from high and wide down onto a point. */
 export function crane(target: Vec3, k: number, aspect: number, o: { from: Vec3; to: Vec3; fov0?: number; fov1?: number }): CamPose {
   const e = k * k * (3 - 2 * k);
+  // (From inside the bowl, never from out over its dark roof.)
+  o = { ...o, from: insideBowl(o.from), to: insideBowl(o.to) };
   const pos: Vec3 = [o.from[0] + (o.to[0] - o.from[0]) * e, o.from[1] + (o.to[1] - o.from[1]) * e, o.from[2] + (o.to[2] - o.from[2]) * e];
   const fov0 = (o.fov0 ?? 50) * (tall(aspect) ? 1.3 : 1), fov1 = (o.fov1 ?? 34) * (tall(aspect) ? 1.35 : 1);
   return { pos, target, fov: Math.min(75, fov0 + (fov1 - fov0) * e) };
