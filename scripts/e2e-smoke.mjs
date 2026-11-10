@@ -2874,6 +2874,23 @@ await page.screenshot({ path: `${OUT}/battle-tower-preview.png` });
 for (let k = 0; k < 3; k++) await page.locator("[data-testid=lead-button]").nth(k).click();
 await page.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 });
 await page.screenshot({ path: `${OUT}/battle-tower.png` });
+// A run's page lists the team with its moves on one line each: on a phone that must never widen the page.
+{
+  const towerPhone = await newPage({ width: 390, height: 844 });
+  for (const path of ["/battle/tower", "/battle/factory"]) {
+    await gotoSettled(towerPhone, `${BASE}${path}`);
+    if (await towerPhone.getByRole("button", { name: /Give up this run/ }).count()) await towerPhone.getByRole("button", { name: /Give up this run/ }).click();
+    if (path === "/battle/tower") {
+      await towerPhone.getByRole("button", { name: /Quick team/ }).click();
+      await towerPhone.getByTestId("quick-team").locator("img").first().waitFor({ timeout: 30_000 });
+      await towerPhone.getByTestId("tower-enter").click();
+    } else await towerPhone.getByTestId("frontier-start").click();
+    await towerPhone.getByTestId("frontier-mon").first().waitFor({ timeout: 30_000 });
+    const wide = await towerPhone.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    if (wide > 1) errors.push(`${path}: a run's page is ${wide}px wider than a 390px phone`);
+  }
+  await towerPhone.context().close();
+}
 
 // A live battle in two browsers: Red opens it, Blue joins from the link.
 // Triples, a Free-For-All, a Multi Battle with a computer partner, and a live four-player room with a spectator.

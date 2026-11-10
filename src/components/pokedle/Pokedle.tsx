@@ -631,7 +631,7 @@ export function Pokedle({
                       onClick={() => takeHint(h)}
                       disabled={loading || guesses.length === 0 || over}
                       title={guesses.length === 0 ? "Hints unlock after your first guess" : undefined}
-                      className="rounded-full border border-foreground/15 bg-card px-3 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:border-screen/50 hover:text-foreground disabled:opacity-50"
+                      className="rounded-full border border-foreground/15 bg-card px-3 py-1 text-xs font-semibold text-muted-foreground transition-colors max-sm:min-h-10 max-sm:px-4 hover:border-screen/50 hover:text-foreground disabled:opacity-50"
                     >
                       {DLE_HINT_EMOJI[h]} {DLE_HINT_LABEL[h]} <span className="tabular-nums text-destructive">−{DLE_HINT_COST[h]}</span>
                     </button>

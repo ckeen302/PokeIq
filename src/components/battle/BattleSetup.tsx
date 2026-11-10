@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
 import { Bot, Loader2, Radio, Swords, UserSearch, X } from "lucide-react";
-import { CPU_LEVEL_INFO, CPU_LEVELS, GROUP_FORMATS, PLAY_FORMAT_INFO, PLAY_FORMATS, battleHref, playerCount, type BattleSeatResponse, type CpuLevel, type GameType, type PlayFormatId, type StandardFormatId } from "@/lib/battle/play";
+import { CPU_LEVEL_INFO, CPU_LEVELS, GROUP_FORMATS, GUEST_TRAINER, PLAY_FORMAT_INFO, PLAY_FORMATS, battleHref, playerCount, type BattleSeatResponse, type CpuLevel, type GameType, type PlayFormatId, type StandardFormatId } from "@/lib/battle/play";
 import { saveBattleSeat, saveBattleSeed } from "@/lib/battle/seat";
 import { ensureBattleId } from "@/lib/battle/replay-client";
 import { isLadderFormat } from "@/lib/battle/ladder";
@@ -214,7 +214,9 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
   async function start(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!isCleanName(name)) return setError(NAME_REJECTED);
+    // Against the computer a name is optional: a first battle is one tap.
+    const who = name.trim() || (opponent === "cpu" ? GUEST_TRAINER : "");
+    if (!isCleanName(who)) return setError(NAME_REJECTED);
     if (opponent === "match") {
       // Searches until paired; the battle has started by the time it's found.
       const rankedId = (await ensureBattleId()) ?? undefined;
@@ -226,14 +228,14 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
     try {
       const href = await startBattle({
         mode: opponent,
-        name: name.trim(),
+        name: who,
         format,
         level: opponent === "cpu" ? level : undefined,
         team: needsTeam ? team : custom ? "random" : undefined,
         rules: custom ? rules : undefined,
         ...(opponent === "pvp" ? { public: watchable, timer: timerOn, timeoutLoses } : {}),
       });
-      if (!progress?.name) setTrainerName(name.trim());
+      if (!progress?.name && name.trim()) setTrainerName(name.trim());
       if (challenge && opponent === "pvp") await challengeToBattle(challenge, href.split("/").pop()!).catch(() => undefined);
       router.push(href);
     } catch (err) {
@@ -243,6 +245,18 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
   }
 
   const problem = error ?? finder.error;
+  const blocked = busy || (!name.trim() && opponent !== "cpu") || (needsTeam && !team) || rulesBroken;
+  const startLabel = opponent === "cpu" ? "Start battle" : opponent === "match" ? "Find an opponent" : challenge ? `Challenge ${challenge}` : "Create battle";
+
+  // Phones: the page is long (every format, then the levels), so while the Start button is off screen a bar along the bottom carries it.
+  const [submitEl, setSubmitEl] = useState<HTMLButtonElement | null>(null);
+  const [submitSeen, setSubmitSeen] = useState(true);
+  useEffect(() => {
+    if (!submitEl || typeof IntersectionObserver === "undefined") return;
+    const seen = new IntersectionObserver(([entry]) => setSubmitSeen(entry.isIntersecting));
+    seen.observe(submitEl);
+    return () => seen.disconnect();
+  }, [submitEl]);
 
   return (
     <form onSubmit={start} className="grid gap-6 lg:grid-cols-[1fr_320px]">
@@ -404,7 +418,7 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={24}
-              required
+              required={opponent !== "cpu"}
               disabled={searching}
               placeholder="Trainer name"
               className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -467,7 +481,7 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
               </Button>
             </div>
           ) : (
-            <Button type="submit" size="lg" className="w-full" disabled={busy || !name.trim() || (needsTeam && !team) || rulesBroken}>
+            <Button ref={setSubmitEl} type="submit" size="lg" className="w-full" disabled={blocked}>
               {busy ? (
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
               ) : opponent === "match" ? (
@@ -475,17 +489,25 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
               ) : (
                 <Swords className="h-4 w-4" aria-hidden />
               )}
-              {opponent === "cpu" ? "Start battle" : opponent === "match" ? "Find an opponent" : challenge ? `Challenge ${challenge}` : "Create battle"}
+              {startLabel}
             </Button>
           )}
-          {!searching && !busy && (!name.trim() || (needsTeam && !team)) && (
+          {!searching && !busy && ((!name.trim() && opponent !== "cpu") || (needsTeam && !team)) && (
             <p className="text-center text-xs text-muted-foreground" data-testid="setup-why-disabled">
-              {!name.trim() ? "Enter a trainer name to start." : "Pick a team, or a quick one, to start."}
+              {!name.trim() && opponent !== "cpu" ? "Enter a trainer name to start." : "Pick a team, or a quick one, to start."}
             </p>
           )}
           {opponent === "match" && !searching && <p className="text-center text-xs text-muted-foreground">Leaving this page or closing the tab ends the search.</p>}
         </CardContent>
       </Card>
+      {/* Against the computer only: the other two need a name typed at the foot of the page anyway. */}
+      {opponent === "cpu" && !submitSeen && !blocked && !searching && (
+        <div className="sticky bottom-[calc(var(--tabbar-h)+0.5rem)] z-10 -mt-6 md:hidden" data-testid="setup-quick-start">
+          <Button type="submit" size="lg" className="w-full shadow-[0_10px_30px_-8px_rgb(0_0_0/0.8)]">
+            <Swords className="h-4 w-4" aria-hidden /> Play now · {custom ? "Custom" : info.short}
+          </Button>
+        </div>
+      )}
     </form>
   );
 }

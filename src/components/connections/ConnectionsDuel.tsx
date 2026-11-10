@@ -22,7 +22,7 @@ import { SeriesScore, seriesTag } from "@/components/duel/DuelSeries";
 import { AddFriendAfterGame } from "@/components/community/AddFriend";
 import { Avatar } from "@/components/avatar/Avatar";
 import { ShareButton } from "@/components/share/ShareButton";
-import { GridTile, GroupBar, GuessHistory, LevelMark, MistakeDots, WhyPanel, levelStyle, type TileMotion } from "./parts";
+import { CONTROLS_DOCK, CONTROLS_WRAP, GridTile, GroupBar, GuessHistory, LevelMark, MistakeDots, WhyPanel, levelStyle, type TileMotion } from "./parts";
 import { cn } from "@/lib/utils";
 
 /**
@@ -403,16 +403,16 @@ export function ConnectionsDuel({ code }: { code: string }) {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
+          <div className={cn("space-y-4", CONTROLS_WRAP)}>
             <MistakeDots left={size - (myBoard?.mistakes ?? 0)} max={size} />
-            <div className="flex flex-wrap items-center justify-center gap-2.5">
-              <Button variant="outline" onClick={shuffle} className="rounded-full sm:min-w-28">
+            <div className={cn("flex flex-wrap items-center justify-center gap-2.5", CONTROLS_DOCK)} data-testid="conn-controls">
+              <Button variant="outline" onClick={shuffle} className="rounded-full max-sm:px-3 sm:min-w-28">
                 <Shuffle className="h-4 w-4" aria-hidden /> Shuffle
               </Button>
-              <Button variant="outline" onClick={() => (setSelected([]), setError(null))} disabled={selected.length === 0} className="rounded-full sm:min-w-28">
-                Deselect all
+              <Button variant="outline" onClick={() => (setSelected([]), setError(null))} disabled={selected.length === 0} className="rounded-full max-sm:px-3 sm:min-w-28">
+                Deselect<span className="max-sm:hidden">&nbsp;all</span>
               </Button>
-              <Button onClick={() => void submit()} disabled={busy || selected.length !== size} className="rounded-full sm:min-w-28" data-testid="conn-submit">
+              <Button onClick={() => void submit()} disabled={busy || selected.length !== size} className="rounded-full max-sm:min-w-[5.25rem] sm:min-w-28" data-testid="conn-submit">
                 Submit
               </Button>
             </div>

@@ -39,7 +39,10 @@ const NOISE: Record<CpuLevel, number> = { easy: 0.8, normal: 0.15, hard: 0 };
 
 /** @smogon/calc lacks cosmetic formes (Gastrodon-East, Vivillon-*, Maushold-Four...): they share the base stats. */
 export function calcName(gen: CalcGen, p: Pokemon): string {
-  return gen.species.get(p.species.id as never) ? p.species.name : p.species.baseSpecies;
+  if (gen.species.get(p.species.id as never)) return p.species.name;
+  // The calculator has no plain "Aegislash": its Shield Forme is the one that stands in battle until it attacks.
+  if (p.species.id === "aegislash") return "Aegislash-Shield";
+  return p.species.baseSpecies;
 }
 
 const NEUTRAL_EVS = { hp: 84, atk: 84, def: 84, spa: 84, spd: 84, spe: 84 };
@@ -367,6 +370,124 @@ function scoreMoves(battle: Battle, side: Side, slot: number, options: SlotOptio
   return out;
 }
 
+/**
+ * The request as the computer may read it. A player's request hides what
+ * the opponent hasn't shown ("maybe trapped": Shadow Tag or Arena Trap
+ * behind an unrevealed ability; "maybe disabled": Imprison), and a player
+ * finds out by trying. The computer never tries a choice the simulator
+ * would refuse, so here those are settled from the battle itself: a slot
+ * that is in fact trapped is marked trapped, and a move that is in fact
+ * disabled is marked disabled.
+ */
+export function cpuRequest(side: Side): BattleRequest | null {
+  return withoutPointlessMoves(side, settledRequest(side));
+}
+
+const TYPE_CHANGERS = ["normalize", "aerilate", "pixilate", "refrigerate", "galvanize", "liquidvoice"];
+const HAZARD_LAYERS: Record<string, number> = { spikes: 3, toxicspikes: 2, stealthrock: 1, stickyweb: 1 };
+
+/**
+ * Whether `id`, used now by `me` on `foe`, plainly does nothing, going only
+ * by what a player watching the battle can see (types, status, boosts,
+ * what's already on the field): never by an ability or item the foe hasn't
+ * shown. A status move on a Pokémon that already has a status, an attack
+ * into a type immunity, Stealth Rock when it's already up, a boost at +6,
+ * recovery at full HP, and the like.
+ */
+export function pointlessMove(battle: Battle, me: Pokemon, foe: Pokemon, id: string): boolean {
+  const move = battle.dex.moves.get(id);
+  if (!move.exists || me.volatiles.dynamax) return false;
+  const mySide = me.side;
+  const onFoe = move.target === "normal" || move.target === "any" || move.target === "adjacentFoe" || move.target === "allAdjacentFoes" || move.target === "allAdjacent" || move.target === "randomNormal";
+  if (move.category !== "Status") {
+    if (move.id === "fakeout" || move.id === "firstimpression") return me.activeMoveActions > 0;
+    if (!onFoe || move.ignoreImmunity || move.onModifyType || move.id === "terablast" || move.id === "thousandarrows" || move.id === "struggle") return false;
+    if (TYPE_CHANGERS.includes(me.ability)) return false;
+    if (battle.dex.getImmunity(move.type, foe.getTypes())) return false;
+    if (move.type === "Ground") return !(battle.field.getPseudoWeather("gravity") || foe.volatiles.smackdown || foe.volatiles.ingrain || foe.volatiles.roost);
+    if (move.type === "Normal" || move.type === "Fighting") return !(foe.volatiles.foresight || me.ability === "scrappy" || me.ability === "mindseye");
+    if (move.type === "Psychic") return !foe.volatiles.miracleeye;
+    return true;
+  }
+  if (onFoe) {
+    // Behind a Substitute nothing lands (sound moves and the few that go through it aside).
+    if (foe.volatiles.substitute && !move.flags.bypasssub && !(move.flags.sound && battle.gen >= 6) && me.ability !== "infiltrator" && (move.status || move.volatileStatus || move.boosts)) return true;
+    if (move.status) {
+      if (foe.status) return true;
+      if (move.ignoreImmunity === false && !battle.dex.getImmunity(move.type, foe.getTypes())) return true;
+      if (!battle.dex.getImmunity(move.status, foe.getTypes())) return true;
+    }
+    if (move.volatileStatus && foe.volatiles[move.volatileStatus]) return true;
+    if (move.id === "leechseed" && foe.hasType("Grass")) return true;
+    if (move.id === "yawn" && foe.status) return true;
+    if (move.boosts && Object.entries(move.boosts).every(([stat, by]) => by! < 0 && foe.boosts[stat as keyof typeof foe.boosts] <= -6)) return true;
+    return false;
+  }
+  if (move.target === "self") {
+    if (move.boosts && !move.volatileStatus && Object.entries(move.boosts).every(([stat, by]) => by! > 0 && me.boosts[stat as keyof typeof me.boosts] >= 6)) return true;
+    if (move.id === "rest") return me.hp >= me.maxhp || me.status === "slp";
+    if (move.heal || move.id === "synthesis" || move.id === "morningsun" || move.id === "moonlight" || move.id === "shoreup") return me.hp >= me.maxhp;
+    if (move.id === "wish") return !!mySide.slotConditions[me.position]?.wish;
+    if (move.id === "substitute") return !!me.volatiles.substitute || me.hp <= Math.floor(me.maxhp / 4);
+    if (move.id === "sleeptalk" || move.id === "snore") return me.status !== "slp" && me.ability !== "comatose";
+    if (move.volatileStatus && move.id !== "protect" && move.id !== "detect" && move.id !== "endure" && move.id !== "stockpile" && me.volatiles[move.volatileStatus]) return true;
+  }
+  if (move.id === "healbell" || move.id === "aromatherapy") return !mySide.pokemon.some((p) => !p.fainted && p.status);
+  if (move.weather) return battle.field.isWeather(move.weather.toLowerCase());
+  if (move.terrain) return battle.field.isTerrain(move.terrain);
+  if (move.pseudoWeather && move.id !== "trickroom" && move.id !== "magicroom" && move.id !== "wonderroom") return !!battle.field.getPseudoWeather(move.pseudoWeather);
+  if (move.sideCondition) {
+    const on = move.target === "foeSide" ? foe.side : mySide;
+    const there = on.sideConditions[move.sideCondition];
+    if (!there) return false;
+    const layers = HAZARD_LAYERS[move.sideCondition];
+    return layers === undefined || battle.gen <= 2 || (there.layers ?? 1) >= layers;
+  }
+  return false;
+}
+
+/**
+ * Singles: the request with every move that plainly does nothing right now
+ * (pointlessMove) marked unusable, so no policy at any level picks one.
+ * Left alone when that would leave no move at all.
+ */
+function withoutPointlessMoves(side: Side, request: BattleRequest | null): BattleRequest | null {
+  const battle = side.battle;
+  const active = request?.active?.[0];
+  const me = side.active[0];
+  const foe = side.foe.active[0];
+  if (!request || !active || request.forceSwitch || battle.gameType !== "singles" || !me || !foe || me.fainted || foe.fainted) return request;
+  const usable = active.moves.filter((m) => !m.disabled);
+  if (usable.length < 2) return request;
+  let pointless: Set<string>;
+  try {
+    pointless = new Set(usable.filter((m) => pointlessMove(battle, me, foe, m.id)).map((m) => m.id));
+  } catch {
+    return request;
+  }
+  if (!pointless.size || pointless.size === usable.length) return request;
+  return { ...request, active: [{ ...active, moves: active.moves.map((m) => (pointless.has(m.id) ? { ...m, disabled: true } : m)) }, ...request.active!.slice(1)] };
+}
+
+function settledRequest(side: Side): BattleRequest | null {
+  const request = side.activeRequest as unknown as BattleRequest | null;
+  if (!request?.active?.some((a) => a?.maybeTrapped || a?.maybeDisabled)) return request;
+  return {
+    ...request,
+    active: request.active.map((a, i) => {
+      const mon = side.active[i];
+      if (!a || !mon || (!a.maybeTrapped && !a.maybeDisabled)) return a;
+      const next = { ...a };
+      if (a.maybeTrapped) {
+        delete next.maybeTrapped;
+        if (mon.trapped) next.trapped = true;
+      }
+      if (a.maybeDisabled) next.moves = a.moves.map((m) => (!m.disabled && mon.moveSlots.find((slot) => slot.id === m.id)?.disabled ? { ...m, disabled: true } : m));
+      return next;
+    }),
+  };
+}
+
 /** The computer's choice for `side`. `rand` drives the noise; `onError` hears about a fallback to a random move. */
 export function chooseCpuLegacy(
   battle: Battle,
@@ -375,7 +496,7 @@ export function chooseCpuLegacy(
   rand: () => number,
   onError: (err: unknown) => void = (err) => console.error("[battle] cpu fell back to a random choice:", err)
 ): string {
-  const request = side.activeRequest as unknown as BattleRequest | null;
+  const request = cpuRequest(side);
   if (!request || request.wait) throw new Error("The computer has nothing to choose.");
   const doubles = battle.gameType === "doubles";
   memo = { mons: new Map(), hits: new Map(), ids: new WeakMap(), next: 0 };

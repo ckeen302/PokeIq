@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { Battle, Dex, Teams } from "pokemon-showdown";
 import { Controls } from "@/components/battle/play/Controls";
 import { emptySide, type Snap } from "@/components/battle/play/model";
-import { cycleExtra, teamOrder } from "@/components/battle/play/choice";
+import { choiceLine, cycleExtra, teamOrder } from "@/components/battle/play/choice";
 import { gimmicksOf, isDynamaxed, moveAsUsed, type BattleRequest, type GameType } from "@/lib/battle/play";
 import { moveSlotOptions, randomChoice } from "@/lib/battle/choices";
 import { seededRandom } from "@/lib/battle/cpu-policy";
@@ -206,5 +206,25 @@ describe("the timer's random choice can use gimmicks, as Showdown's random playe
       expect(choice.split(", ").filter((c) => c.endsWith(" dynamax")).length).toBeLessThanOrEqual(1);
       expect(battleOf("gen8doublescustomgame", `${CORVIKNIGHT}\n\n${CORVIKNIGHT}`, `${SNORLAX}\n\n${SNORLAX}`).choose("p1", choice), choice).toBe(true);
     }
+  });
+});
+
+describe("the text box answers a choice at once", () => {
+  const request = {
+    side: { name: "Ash", id: "p1", pokemon: [{ ident: "p1: Garchomp" }, { ident: "p1: Rotom" }, { ident: "p1: Blissey" }] },
+    active: [{ moves: [{ move: "Earthquake", id: "earthquake" }, { move: "Dragon Claw", id: "dragonclaw" }] }, { moves: [{ move: "Volt Switch", id: "voltswitch" }] }],
+  } as unknown as BattleRequest;
+
+  it("says what was chosen, never how the turn goes", () => {
+    expect(choiceLine(request, "move 2")).toBe("Garchomp will use Dragon Claw.");
+    expect(choiceLine(request, "move 1 terastallize")).toBe("Garchomp will use Earthquake.");
+    expect(choiceLine(request, "switch 3")).toBe("Garchomp will switch out for Blissey.");
+    expect(choiceLine(request, "move 1 1, move 1 -1")).toBe("Garchomp will use Earthquake. Rotom will use Volt Switch.");
+  });
+
+  it("a forced switch names who's coming in; team preview says nothing", () => {
+    expect(choiceLine({ ...request, forceSwitch: [true], active: undefined } as BattleRequest, "switch 2")).toBe("Rotom is on the way.");
+    expect(choiceLine({ ...request, teamPreview: true } as BattleRequest, "team 213")).toBe("");
+    expect(choiceLine(request, "pass")).toBe("");
   });
 });

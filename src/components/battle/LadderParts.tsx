@@ -17,7 +17,7 @@ const fmt = (n: number) => n.toLocaleString("en-US");
 /** Tabs across the ladder formats, as links (`hrefBase` + the format id). */
 export function LadderTabs({ format, hrefBase }: { format: StandardFormatId; hrefBase: string }) {
   return (
-    <div className="flex flex-wrap gap-2" role="tablist" aria-label="Ladder format">
+    <div className="flex flex-wrap gap-2 max-md:-mx-4 max-md:flex-nowrap max-md:overflow-x-auto max-md:px-4 max-md:pb-1 max-md:[scrollbar-width:none]" role="tablist" aria-label="Ladder format">
       {LADDER_FORMATS.map((f) => (
         <Link
           key={f}
@@ -25,7 +25,7 @@ export function LadderTabs({ format, hrefBase }: { format: StandardFormatId; hre
           role="tab"
           aria-selected={f === format}
           className={cn(
-            "rounded-md border px-3 py-1.5 font-display text-xs font-bold uppercase tracking-wider transition-colors",
+            "rounded-md border px-3 py-1.5 font-display text-xs font-bold uppercase tracking-wider transition-colors max-md:shrink-0 max-md:whitespace-nowrap max-md:py-2.5",
             f === format ? "border-primary bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:border-screen/60 hover:text-foreground"
           )}
           scroll={false}
@@ -139,7 +139,9 @@ export function YourBattleStanding({ format }: { format: StandardFormatId }) {
           </>
         ) : (
           <p className="text-sm text-muted-foreground">
-            No ranked battles in this format yet. Everyone starts at 1000 Elo (and 1500 ± 350 Glicko-2); your first wins pay the most, and a new rating moves a lot.{" "}
+            No ranked battles in this format yet.{" "}
+            {/* Phones: the starting numbers are in the page's first line and under the table. */}
+            <span className="max-md:hidden">Everyone starts at 1000 Elo (and 1500 ± 350 Glicko-2); your first wins pay the most, and a new rating moves a lot. </span>
             <Link href="/battle/play?vs=anyone" className="font-semibold text-foreground underline-offset-2 hover:underline">
               Find a ranked battle
             </Link>

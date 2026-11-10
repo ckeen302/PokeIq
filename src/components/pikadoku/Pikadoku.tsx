@@ -733,7 +733,7 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
         )}
 
         <div className="space-y-2 text-center">
-          <button type="button" onClick={() => setMoreOpen((o) => !o)} aria-expanded={moreOpen} data-testid="pdk-more" className="inline-flex items-center gap-1 rounded-md px-3 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground">
+          <button type="button" onClick={() => setMoreOpen((o) => !o)} aria-expanded={moreOpen} data-testid="pdk-more" className="inline-flex items-center gap-1 rounded-md px-3 py-1 max-sm:min-h-10 max-sm:px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground">
             More <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", moreOpen && "rotate-180")} aria-hidden />
           </button>
           {moreOpen && (
@@ -754,10 +754,10 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
                   </button>
                 ))}
               </div>
-              <button type="button" data-testid="pdk-mode-weekly" title="A themed grid that is live Monday to Sunday, with its own board" onClick={() => setMode("weekly")} className={cn("rounded border px-3 py-1 text-xs font-semibold uppercase tracking-wider", mode === "weekly" ? "border-primary bg-primary/15 text-foreground" : "border-foreground/15 text-muted-foreground hover:text-foreground")}>
+              <button type="button" data-testid="pdk-mode-weekly" title="A themed grid that is live Monday to Sunday, with its own board" onClick={() => setMode("weekly")} className={cn("rounded border px-3 py-1 max-sm:min-h-10 text-xs font-semibold uppercase tracking-wider", mode === "weekly" ? "border-primary bg-primary/15 text-foreground" : "border-foreground/15 text-muted-foreground hover:text-foreground")}>
                 Weekly
               </button>
-              <button type="button" onClick={() => setSheet("archive")} disabled={!today} data-testid="pdk-archive-btn" className={cn("inline-flex items-center gap-1 rounded border px-3 py-1 text-xs font-semibold uppercase tracking-wider", mode === "archive" ? "border-primary bg-primary/15 text-foreground" : "border-foreground/15 text-muted-foreground hover:text-foreground disabled:opacity-40")}>
+              <button type="button" onClick={() => setSheet("archive")} disabled={!today} data-testid="pdk-archive-btn" className={cn("inline-flex items-center gap-1 rounded border px-3 py-1 max-sm:min-h-10 text-xs font-semibold uppercase tracking-wider", mode === "archive" ? "border-primary bg-primary/15 text-foreground" : "border-foreground/15 text-muted-foreground hover:text-foreground disabled:opacity-40")}>
                 <Archive className="h-3.5 w-3.5" aria-hidden /> Archive
               </button>
             </div>

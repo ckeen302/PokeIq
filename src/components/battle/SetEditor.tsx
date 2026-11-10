@@ -168,7 +168,7 @@ export function SetEditor({
             <button
               type="button"
               onClick={copySet}
-              className="flex items-center justify-center gap-1.5 rounded-md border border-foreground/10 py-1.5 text-xs text-muted-foreground transition-colors hover:border-screen/50 hover:text-foreground"
+              className="flex items-center justify-center gap-1.5 rounded-md border border-foreground/10 py-1.5 text-xs text-muted-foreground transition-colors hover:border-screen/50 hover:text-foreground max-md:min-h-11"
             >
               {copied ? <Check className="h-3.5 w-3.5 text-success" aria-hidden /> : <ClipboardCopy className="h-3.5 w-3.5" aria-hidden />}
               {copied ? "Copied" : "Copy set"}
@@ -176,7 +176,7 @@ export function SetEditor({
             <button
               type="button"
               onClick={() => onChange(null)}
-              className="flex items-center justify-center gap-1.5 rounded-md border border-foreground/10 py-1.5 text-xs text-muted-foreground transition-colors hover:border-destructive/50 hover:text-destructive"
+              className="flex items-center justify-center gap-1.5 rounded-md border border-foreground/10 py-1.5 text-xs text-muted-foreground transition-colors hover:border-destructive/50 hover:text-destructive max-md:min-h-11"
             >
               <Trash2 className="h-3.5 w-3.5" aria-hidden /> Remove
             </button>

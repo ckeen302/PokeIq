@@ -3,7 +3,7 @@ import type { Battle, Pokemon, Side } from "@pkmn/sim";
 import randsets from "@/data/battle/randsets.json";
 import type { BattleRequest, CpuLevel, GameType } from "@/lib/battle/play";
 import { benchIndices, forcedSwitchSlots, moveSlotOptions, randomChoice, type SlotOption } from "./choices";
-import { alive, calcGen, calcName, field, STAB_GUESS, toCalc, withCalcMemo } from "./cpu-policy-legacy";
+import { alive, calcGen, calcName, cpuRequest, field, STAB_GUESS, toCalc, withCalcMemo } from "./cpu-policy-legacy";
 
 /**
  * The computer opponent in double battles (Normal and Hard, and the Battle
@@ -801,7 +801,7 @@ export function chooseCpuDoubles(
   rand: () => number,
   onError: (err: unknown) => void = (err) => console.error("[battle] doubles cpu fell back to a random choice:", err)
 ): string {
-  const request = side.activeRequest as unknown as BattleRequest | null;
+  const request = cpuRequest(side);
   if (!request || request.wait) throw new Error("The computer has nothing to choose.");
   try {
     return withCalcMemo(() => decide(makeCtx(battle, side, level), request, rand));
