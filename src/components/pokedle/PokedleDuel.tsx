@@ -372,7 +372,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
                     names={names}
                     exclude={guessed}
                     disabled={timeUp}
-                    placeholder={timeUp ? "Time's up" : `Guess ${live.rows.length + 1} of ${view.rules.maxGuesses} — type a Pokémon…`}
+                    placeholder={timeUp ? "Time's up" : `Guess ${live.rows.length + 1} of ${view.rules.maxGuesses}: type a Pokémon…`}
                     onGuess={(entry) => {
                       if (busy || timeUp) return false;
                       unlockAudio();
@@ -396,7 +396,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
                             const Icon = HINT_INFO[hint].icon;
                             return (
                               <Button key={hint} size="sm" variant="outline" disabled={busy || live.rows.length === 0 || timeUp} onClick={() => buy(hint)}>
-                                <Icon className="h-3.5 w-3.5" aria-hidden /> {HINT_INFO[hint].label} −{DLE_DUEL_HINT_COST[hint]}
+                                <Icon className="h-3.5 w-3.5 max-sm:hidden" aria-hidden /> {HINT_INFO[hint].label} −{DLE_DUEL_HINT_COST[hint]}
                               </Button>
                             );
                           })}
