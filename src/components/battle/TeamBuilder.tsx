@@ -172,7 +172,7 @@ function TeamList({ teams, activeId, onOpen }: { teams: BattleTeam[] | null; act
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-2">
         <p className="hud-label">My teams · {teams.length}</p>
-        <button type="button" onClick={copyAll} className="hud-label flex items-center gap-1 hover:text-foreground" title="Copy every team as a Showdown backup">
+        <button type="button" onClick={copyAll} className="hud-label flex items-center gap-1 hover:text-foreground max-md:min-h-10 max-md:px-1" title="Copy every team as a Showdown backup">
           {copied ? <Check className="h-3 w-3 text-success" aria-hidden /> : <ClipboardCopy className="h-3 w-3" aria-hidden />}
           {copied ? "Copied" : "Backup all"}
         </button>
@@ -206,7 +206,7 @@ function TeamList({ teams, activeId, onOpen }: { teams: BattleTeam[] | null; act
                     return next;
                   })
                 }
-                className="flex w-full items-center gap-1.5 rounded px-1 py-1 text-left hover:bg-foreground/5"
+                className="flex w-full items-center gap-1.5 rounded px-1 py-1 text-left hover:bg-foreground/5 max-md:min-h-10"
               >
                 <ChevronRight className={cn("h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform", isOpen && "rotate-90")} aria-hidden />
                 <Folder className="h-3.5 w-3.5 shrink-0 text-screen" aria-hidden />
