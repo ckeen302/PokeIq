@@ -68,6 +68,16 @@ export default function MakeHistoryVideo({ film, chapter, onRecording, onClose }
   const c = CHAPTERS[pick];
   const busy = phase.kind === "recording";
 
+  /** Cancel: the dialog answers at once; the export stops at its next step. */
+  function cancel() {
+    const ac = abortRef.current;
+    if (!ac) return;
+    abortRef.current = null;
+    ac.abort();
+    setPhase({ kind: "idle" });
+    onRecording(false);
+  }
+
   async function record() {
     const ac = new AbortController();
     abortRef.current = ac;
@@ -94,20 +104,25 @@ export default function MakeHistoryVideo({ film, chapter, onRecording, onClose }
         scale: scaleFromUrl(),
         signal: ac.signal,
         onProgress(p, label) {
+          if (ac.signal.aborted) return;
           const now = performance.now();
           if (now - lastProgress.current < 120 && p < 1) return;
           lastProgress.current = now;
           setPhase({ kind: "recording", p, label });
         },
       });
+      if (ac.signal.aborted) return;
       setPhase({ kind: "done", url: URL.createObjectURL(res.blob), blob: res.blob, name: res.name, type: res.type, seconds: plan.seconds });
       track("history_video", { kind, chapter: kind === "chapter" ? c.id : "story", format: res.type });
     } catch (e) {
-      if ((e as Error)?.name === "AbortError") setPhase({ kind: "idle" });
-      else setPhase({ kind: "error", message: e instanceof Error ? e.message : "Something went wrong" });
+      // (Cancelled: the dialog went back to the start the moment Cancel was pressed.)
+      if (ac.signal.aborted || (e as Error)?.name === "AbortError") return;
+      setPhase({ kind: "error", message: e instanceof Error ? e.message : "Something went wrong" });
     } finally {
-      abortRef.current = null;
-      onRecording(false);
+      if (abortRef.current === ac) {
+        abortRef.current = null;
+        onRecording(false);
+      }
     }
   }
 
@@ -132,7 +147,7 @@ export default function MakeHistoryVideo({ film, chapter, onRecording, onClose }
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
       >
-        <button type="button" onClick={() => { abortRef.current?.abort(); onClose(); }} className="absolute right-3 top-3 rounded-md p-1.5 text-white/60 hover:text-white" aria-label="Close" data-testid="wh-video-close">
+        <button type="button" onClick={() => { cancel(); onClose(); }} className="absolute right-3 top-3 rounded-md p-1.5 text-white/60 hover:text-white" aria-label="Close" data-testid="wh-video-close">
           <X className="h-5 w-5" />
         </button>
         <div className="flex items-center gap-2">
@@ -185,7 +200,7 @@ export default function MakeHistoryVideo({ film, chapter, onRecording, onClose }
                   <span className="tabular-nums">{Math.round(phase.p * 100)}%</span>
                 </div>
                 <div className="wh-bar"><i style={{ transform: `scaleX(${phase.p})` }} /></div>
-                <button type="button" onClick={() => abortRef.current?.abort()} className="w-full text-center font-display text-xs font-semibold uppercase tracking-wider text-white/60 hover:text-white" data-testid="wh-video-cancel">Cancel</button>
+                <button type="button" onClick={cancel} className="w-full text-center font-display text-xs font-semibold uppercase tracking-wider text-white/60 hover:text-white" data-testid="wh-video-cancel">Cancel</button>
               </div>
             ) : (
               <button type="button" onClick={record} disabled={support === "none"} className="wh-play h-12 w-full justify-center" data-testid="wh-video-make">

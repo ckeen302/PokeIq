@@ -286,12 +286,13 @@ function drawFrame(g: CanvasRenderingContext2D, W: number, H: number, t: number,
     g.textBaseline = "middle";
     gameText(g, "PokéIQ", W / 2, H * 0.34 + s * 0.72, W * 0.11, font, "#ffffff", "#0d1626", W * 0.022);
     gameText(g, "Race any Pokémon", W / 2, H * 0.52, W * 0.05, font, "#ffd21f", "#0d1626", W * 0.01);
-    // The link on one line, shrunk to fit (a URL has no spaces to wrap at).
-    let lpx = W * 0.042;
+    // The link a viewer can read and type: the page, without the query string.
+    const link = o.link.split(/[?#]/)[0].replace(/\/run$/, "");
+    let lpx = W * 0.054;
     g.font = `800 ${lpx}px ${font}`;
-    const lw = g.measureText(o.link).width;
+    const lw = g.measureText(link).width;
     if (lw > W * 0.9) lpx *= (W * 0.9) / lw;
-    gameText(g, o.link, W / 2, H * 0.58, lpx, font, "#9fd8ff", "#0d1626", lpx * 0.2);
+    gameText(g, link, W / 2, H * 0.585, lpx, font, "#9fd8ff", "#0d1626", lpx * 0.2);
     g.restore();
   }
 }
@@ -305,13 +306,17 @@ export async function recordRace(o: RaceRecordOptions): Promise<RaceRecordResult
   host.style.cssText = `position:fixed;left:-20000px;top:0;width:${W}px;height:${H}px;pointer-events:none;`;
   document.body.appendChild(host);
   const scene = createRaceScene(host, { quality: o.quality ?? "export", size: { w: W, h: H }, urls: o.urls, font: o.font });
+  // Cancel stops the export at the next step, whatever it is doing (loading, developing the photo finish, mixing, rendering).
+  const stop = () => { if (o.signal.aborted) throw new DOMException("Cancelled", "AbortError"); };
   try {
     await scene.ready;
+    stop();
     await scene.setRace(o.race, o.signal, (k) => o.onProgress(0.02 * k, "Runners warming up"));
+    stop();
     // The photo finish, developed up front.
     const win = photoWindow(o.race);
     const pf = scene.photoFinish(win);
-    for (let i = 0; i < 2000 && !pf.step(); i++) await sleep(0);
+    for (let i = 0; i < 2000 && !pf.step(); i++) { await sleep(0); stop(); }
     const photo = pf.result();
     const starts = spotsAt(o.race, 0);
     const times = displayTimes(o.race);
@@ -364,6 +369,7 @@ export async function recordRace(o: RaceRecordOptions): Promise<RaceRecordResult
       const rate = 48000;
       const acodec = await pickAudioCodec(rate);
       const mix = acodec ? await mixAudio(o.race, plan, total, rate, o.signal) : null;
+      stop();
       const audioChunks: { data: Uint8Array; ts: number; dur: number }[] = [];
       let audioDesc: Uint8Array | undefined;
       if (acodec && mix) {
@@ -421,6 +427,7 @@ export async function recordRace(o: RaceRecordOptions): Promise<RaceRecordResult
     const stream = compose.captureStream(fps);
     let actx: AudioContext | null = null;
     const mix = await mixAudio(o.race, plan, total, 48000, o.signal);
+    stop();
     if (mix) {
       actx = new AudioContext({ sampleRate: 48000 });
       const dest = actx.createMediaStreamDestination();
