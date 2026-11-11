@@ -211,6 +211,9 @@ export interface Pose {
   spin: number;
   /** Width pulse for wingbeats (1 = rest). */
   flap: number;
+  /** The body's rock from side to side over each foot (rad, about its direction of travel) and the turn of its shoulders against its hips (rad, about the vertical): both swing once a stride, with the legs. */
+  roll: number;
+  twist: number;
 }
 
 const smoothstep = (a: number, b: number, x: number) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
@@ -221,24 +224,29 @@ export function poseFor(motion: Motion, o: { phase: number; v: number; a: number
   const effort = Math.min(1, fr / 6);
   const cyc = phase - Math.floor(phase);
   const lean = Math.atan2(Math.max(-3, Math.min(12, a)), G) * 0.8 + (v > 0 ? 0.06 * effort : 0);
-  const out: Pose = { lift: 0, lean, pitch: 0, squash: 0, wave: 0, spin: 0, flap: 1 };
+  const out: Pose = { lift: 0, lean, pitch: 0, squash: 0, wave: 0, spin: 0, flap: 1, roll: 0, twist: 0 };
+  // Which foot the stride is on: +1, then −1 (a step is one cycle of the phase).
+  const side = Math.sin(Math.PI * phase);
   switch (motion) {
     case "run": {
       // Each step: stance (the foot down: the body sinks, then pushes off and stretches) and flight (both feet up, a short arc), landing compressed.
       const duty = contactShare(effort);
       const amp = Math.min(1, v / 1.5);
+      // The body rocks over the foot on the ground and the shoulders swing against the hips, harder the faster it runs.
+      out.roll = amp * (0.03 + 0.04 * effort) * side;
+      out.twist = amp * (0.05 + 0.07 * effort) * Math.sin(Math.PI * phase + 0.6);
       if (cyc < duty) {
         const u = cyc / duty;
         // Compression peaks mid-stance; the push-off stretches the body over the last third.
         out.squash = amp * (-(0.03 + 0.05 * effort) * Math.sin(Math.PI * Math.min(1, u * 1.25)) + (0.02 + 0.045 * effort) * smoothstep(0.62, 1, u));
         out.lift = 0;
-        out.pitch = 0.03 * effort * (u - 0.5);
+        out.pitch = 0.07 * effort * (u - 0.5);
       } else {
         const u = (cyc - duty) / (1 - duty);
         out.lift = amp * hip * (0.02 + 0.075 * effort) * 4 * u * (1 - u);
         // Stretched off the ground, relaxing through the air, bracing for the landing.
         out.squash = amp * ((0.02 + 0.045 * effort) * (1 - smoothstep(0, 0.55, u)) - 0.015 * effort * smoothstep(0.75, 1, u));
-        out.pitch = -0.02 * effort * Math.sin(Math.PI * u);
+        out.pitch = -0.045 * effort * Math.sin(Math.PI * u);
       }
       break;
     }
@@ -246,6 +254,7 @@ export function poseFor(motion: Motion, o: { phase: number; v: number; a: number
       const s = Math.abs(Math.sin(Math.PI * cyc));
       out.lift = hip * 0.035 * s * Math.min(1, effort * 2 + 0.2);
       out.squash = 0.025 * Math.min(1, effort * 2) * (Math.pow(1 - s, 4) - 0.2);
+      out.roll = 0.035 * Math.min(1, effort * 2 + (v > 0 ? 0.2 : 0)) * side;
       out.lean *= 0.4;
       break;
     }
@@ -253,14 +262,16 @@ export function poseFor(motion: Motion, o: { phase: number; v: number; a: number
       // A bound per stride: the body arcs, nose down on landing and up at take-off.
       const s = Math.sin(Math.PI * cyc);
       out.lift = hip * (0.03 + 0.12 * effort) * s;
-      out.pitch = 0.16 * effort * Math.sin(2 * Math.PI * cyc);
-      out.squash = 0.06 * effort * (Math.pow(1 - s, 5) - 0.12);
+      out.pitch = 0.2 * effort * Math.sin(2 * Math.PI * cyc);
+      out.squash = 0.075 * effort * (Math.pow(1 - s, 5) - 0.12);
+      out.roll = 0.03 * effort * Math.sin(2 * Math.PI * cyc + 1.1);
       break;
     }
     case "bounce": {
       const s = Math.sin(Math.PI * cyc);
       out.lift = (v > 0 ? hip * (0.12 + 0.3 * effort) : hip * 0.02) * s;
       out.squash = (v > 0 ? 0.12 : 0.03) * (Math.pow(1 - s, 8) * 1.4 - 0.25 * s);
+      out.twist = v > 0 ? 0.06 * side : 0;
       out.lean *= 0.3;
       break;
     }
@@ -290,6 +301,8 @@ export function poseFor(motion: Motion, o: { phase: number; v: number; a: number
       const beat = Math.sin(2 * Math.PI * cyc);
       out.lift = cruiseHeight("fly", h) * Math.min(1, o.time > 0 ? o.distance / 4 + 0.15 : 0) + 0.035 * h * beat;
       out.flap = 1 + 0.07 * beat;
+      // A slow bank from side to side as it flies.
+      out.roll = 0.05 * Math.min(1, v / 4) * Math.sin(Math.PI * phase * 0.5);
       out.lean = Math.atan2(Math.max(-3, Math.min(12, a)), G) * 0.5 + 0.12 * Math.min(1, v / 8);
       break;
     }

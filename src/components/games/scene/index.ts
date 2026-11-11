@@ -14,7 +14,9 @@ import { createPost, type Post } from "@/components/world-history/scene/post";
 import { BASE_LOOK, type Look, type Spec } from "@/components/world-history/scene/types";
 import type { ShowFrame } from "../show/types";
 import { keepOut } from "../show/cams";
-import { blobShadows, loadActor, poseActor, type Actor } from "./actors";
+import { blobShadows, carryPoint, loadActor, poseActor, type Actor } from "./actors";
+
+const carryAt = new THREE.Vector3();
 import { makeConfetti, makeDecals, makeParticles, makeTrail, markTexture, type Particles } from "./fx";
 import { buildInfield, type Infield } from "./venues/infield";
 import { buildArena, type ArenaWorld } from "./venues/arena";
@@ -492,12 +494,21 @@ export function createGamesScene(host: HTMLElement, opts: SceneOptions): GamesSc
       if (p.visible && (p.shadow ?? 1) > 0 && sh < 24) {
         const lift = Math.max(0, p.y - (p.ground ?? 0));
         const k = (p.shadow ?? 1) * Math.max(0, 1 - lift / (act.h * 0.9 + 0.6));
-        shadows.set(sh++, p.x, p.ground ?? 0, p.z, Math.max(0.25, act.w * 0.55), Math.max(0.25, act.w * 0.4), k);
+        shadows.set(sh++, p.x, p.ground ?? 0, p.z, Math.max(0.25, act.w * 0.55 * (p.scale ?? 1)), Math.max(0.25, act.w * 0.4 * (p.scale ?? 1)), k);
       }
     }
     shadows.commit(sh);
     for (const [key, act] of actors) if (!shown.has(key)) act.fig.root.visible = false;
-    // Props.
+    // Props. A barbell the lifter has hold of sits on its figure (its shoulders, its hands overhead, its back), not at a height worked out without it.
+    if (f.props.kind === "lift" && f.props.bar && (f.props.grip ?? 0) > 0 && f.actors[0]) {
+      const act = actors.get(f.actors[0].key);
+      if (act && act.fig.root.visible) {
+        const g = f.props.grip ?? 0;
+        const at = carryPoint(act, f.props.over ?? 0, !!f.props.armed, carryAt);
+        const b = f.props.bar;
+        f = { ...f, props: { ...f.props, bar: [b[0], b[1] + (at.y - b[1]) * g, b[2] + (at.z - b[2]) * g] } };
+      }
+    }
     props.update(f, camera);
     if (infield) {
       const p = f.props;
@@ -593,7 +604,7 @@ export function createGamesScene(host: HTMLElement, opts: SceneOptions): GamesSc
         if (lane) add(lane.entrant.key, h.pos.x, h.pos.y - h.h * 1.02, h.pos.z, h.h);
       }
     }
-    for (const [key, a] of actors) if (a.fig.root.visible) add(key, a.fig.root.position.x, a.fig.root.position.y, a.fig.root.position.z, a.h);
+    for (const [key, a] of actors) if (a.fig.root.visible) add(key, a.fig.root.position.x, a.fig.root.position.y, a.fig.root.position.z, a.h * a.fig.root.scale.y);
     return out;
   }
 

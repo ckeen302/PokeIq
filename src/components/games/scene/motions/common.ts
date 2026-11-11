@@ -73,6 +73,8 @@ export function gaitActor(a: Athlete, d: Dims, x: number, z: number, dx: number,
     lean: g.lean + g.pitch,
     roll: a.entrant.motion === "roll" ? -g.spin : 0,
     squash: g.squash,
+    sway: g.roll,
+    turn: g.twist,
     gait: { motion: a.entrant.motion, phase: st.phase, v: st.v, a: st.a },
     shadow: 1,
   };

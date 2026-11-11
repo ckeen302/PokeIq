@@ -242,8 +242,11 @@ export async function recordHistoryVideo(o: RecordOptions): Promise<RecordResult
   host.style.cssText = `position:fixed;left:-20000px;top:0;width:${SW}px;height:${SH}px;pointer-events:none;`;
   document.body.appendChild(host);
   const scene = createHistoryScene(host, { quality: o.quality ?? "export", film: o.film, chapters: CHAPTERS, font: o.serif, size: { w: SW, h: SH } });
+  // Cancel stops the export at the next step, whatever it is doing (building a chapter, mixing, rendering).
+  const stop = () => { if (o.signal.aborted) throw new DOMException("Cancelled", "AbortError"); };
   try {
     await scene.ready;
+    stop();
     const compose = document.createElement("canvas");
     compose.width = W;
     compose.height = H;
@@ -256,7 +259,7 @@ export async function recordHistoryVideo(o: RecordOptions): Promise<RecordResult
       const i = segs.indexOf(seg);
       const need = [seg.chapter, ...(segs[i + 1] ? [segs[i + 1].chapter] : [])];
       scene.retain(need);
-      for (const c of need) await scene.prepare(c);
+      for (const c of need) { await scene.prepare(c); stop(); }
     };
     const drawFrame = async (i: number) => {
       const t = i / fps;
@@ -303,6 +306,7 @@ export async function recordHistoryVideo(o: RecordOptions): Promise<RecordResult
       const rate = 48000;
       const acodec = await pickAudioCodec(rate);
       const mix = acodec ? await renderVideoAudio(o.film, plan, rate, o.signal) : null;
+      stop();
       const audioChunks: { data: Uint8Array; ts: number; dur: number }[] = [];
       let audioDesc: Uint8Array | undefined;
       if (acodec && mix) {
@@ -364,6 +368,7 @@ export async function recordHistoryVideo(o: RecordOptions): Promise<RecordResult
     const stream = compose.captureStream(fps);
     let actx: AudioContext | null = null;
     const mix = await renderVideoAudio(o.film, plan, 48000, o.signal);
+    stop();
     if (mix) {
       actx = new AudioContext({ sampleRate: 48000 });
       const dest = actx.createMediaStreamDestination();

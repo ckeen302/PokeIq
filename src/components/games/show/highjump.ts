@@ -62,8 +62,8 @@ export function highJumpShow(result: HighJumpResult, o: ShowOptions): Show {
   const tl = new Timeline();
   const first = items[0];
   if (!o.quick) {
-    tl.add({ kind: "establish", cam: "crane", act: 0, clock0: first.plan.start, rate: 0 }, o.video ? 2.6 : 4.2);
-    tl.add({ kind: "startlist", cam: "startlist", act: 0, clock0: first.plan.start, rate: 0 }, o.video ? 2.2 : 3.4);
+    tl.add({ kind: "establish", cam: "crane", act: 0, clock0: first.plan.start, rate: 0 }, o.lineup ? (o.video ? 2.6 : 4.2) : o.video ? 1.3 : 1.8);
+    tl.add({ kind: "startlist", cam: "startlist", act: 0, clock0: first.plan.start, rate: 0 }, o.lineup ? (o.video ? 2.2 : 3.4) : o.video ? 1.2 : 1.7);
   }
   let lastH = -1;
   items.forEach((it, idx) => {

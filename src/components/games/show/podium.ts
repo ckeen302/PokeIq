@@ -25,17 +25,40 @@ const SPOT: Record<Venue, { at: Vec3; face: [number, number] }> = {
   // In the stadium: on the infield in front of the main stand; indoors on the floor; at the pool, on the deck at the start end.
   stadium: { at: [0, 0, 16], face: [0, 1] },
   arena: { at: [0, 0, -1.5], face: [0, 1] },
-  pool: { at: [POOL.startX - 4.5, POOL.deck, 5], face: [0, 1] },
+  pool: { at: [POOL.startX - 4.5, POOL.deck, -3], face: [0, 1] },
 };
+
+/** The tallest and widest a medallist is drawn in each venue (m), and how far back a camera can stand from the podium (m). */
+const ROOM: Record<Venue, { h: number; w: number; back: number }> = {
+  stadium: { h: 6, w: 7.5, back: 26 },
+  arena: { h: 3.4, w: 4.4, back: 14.5 },
+  pool: { h: 3.4, w: 4.4, back: 18 },
+};
+
+/** How many times the smallest medallist's size another may be drawn on the podium before it is scaled down. */
+const PODIUM_RATIO = 2.5;
 
 const STEP = { 1: { h: 0.6, x: 0 }, 2: { h: 0.42, x: -1.25 }, 3: { h: 0.3, x: 1.25 } } as const;
 
 export function podiumShow(event: EventId, venue: Venue, medallists: Medallist[], o: { video?: boolean; title?: string } = {}): Show {
   const ath = medallists.map((m) => m.athlete);
-  const ds = ath.map(dims);
+  const real = ath.map(dims);
+  // On the podium a giant is drawn smaller, so it doesn't hide the others: up to 2.5 times the smallest
+  // medallist everyone stands at full size; beyond that a medallist shrinks (still the biggest, in the same order).
+  const sizeOf = (d: { w: number; h: number }) => Math.max(d.h, d.w * 0.8);
+  const least = Math.max(0.3, Math.min(...real.map(sizeOf)));
+  const shrink = real.map((d) => {
+    const r = sizeOf(d) / least;
+    return r <= PODIUM_RATIO ? 1 : (PODIUM_RATIO + 0.35 * Math.log(r / PODIUM_RATIO)) / r;
+  });
+  // And all three fit the place: a hall's deck or floor has room for a ceremony a few metres tall, the infield for a bigger one.
+  const room = ROOM[venue];
+  const fit = Math.min(1, room.h / Math.max(...real.map((d, i) => d.h * shrink[i])), room.w / Math.max(...real.map((d, i) => d.w * shrink[i])));
+  for (let i = 0; i < shrink.length; i++) shrink[i] *= fit;
+  const ds = real.map((d, i) => ({ ...d, w: d.w * shrink[i], h: d.h * shrink[i], hip: d.hip * shrink[i], len: d.len * shrink[i] }));
   const hs = ds.map((d) => d.h).sort((a, b) => a - b);
-  // A podium as big as its typical medallist (a giant on a human-sized podium wouldn't fit on its step).
-  const scale = Math.max(0.6, Math.min(5, (hs[Math.floor(hs.length / 2)] ?? 1.6) / 1.6));
+  // A podium as big as its typical medallist, and wide enough that each stands on its own step.
+  const scale = Math.max(0.6, Math.min(5, (hs[Math.floor(hs.length / 2)] ?? 1.6) / 1.6), Math.min(5, (Math.max(...ds.map((d) => d.w)) * 0.86) / 1.25));
   const spot = SPOT[venue];
   const at = spot.at;
   const tl = new Timeline();
@@ -58,29 +81,37 @@ export function podiumShow(event: EventId, venue: Venue, medallists: Medallist[]
     const same = medallists.filter((x) => x.medal === m.medal);
     const j = same.indexOf(m);
     const s = STEP[m.medal];
-    const spread = (j - (same.length - 1) / 2) * 0.55 * scale;
-    return { m, d: ds[i], x: at[0] + s.x * scale + spread, y: at[1] + s.h * scale, z: at[2] };
+    const spread = (j - (same.length - 1) / 2) * Math.min(1.1 * scale / Math.max(1, same.length - 1), Math.max(0.55 * scale, ds[i].w * 0.8));
+    return { m, d: ds[i], k: shrink[i], x: at[0] + s.x * scale + spread, y: at[1] + s.h * scale, z: at[2] };
   });
   const tallest = Math.max(...ds.map((d) => d.h)) + 0.6 * scale;
   const span = Math.max(4.2 * scale, ...place.map((p) => Math.abs(p.x - at[0]) * 2 + p.d.w));
 
   const camera = (cam: string, k: number, aspect: number, t: number): CamPose => {
-    const back = tall(aspect) ? 1.5 : 1;
     const c: Vec3 = [at[0], at[1] + tallest * 0.5, at[2]];
     const fz = spot.face[1];
+    // How far back a lens of `fov` degrees (upright) must stand to hold w × h metres, within the venue's room.
+    const stand = (w: number, h: number, fov: number) => {
+      const tv = Math.tan((fov * Math.PI) / 360);
+      return Math.min(room.back, Math.max(h / 2 / tv, w / 2 / (tv * aspect)));
+    };
     if (cam.startsWith("m")) {
       const p = place.find((x) => `m${x.m.medal}` === cam) ?? place[0];
       const H = p.d.h + 0.4;
+      const w = Math.max(1.4, p.d.w * 1.6), h = H * (tall(aspect) ? 2 : 1.5);
+      const D = stand(w, h, 26);
       const target: Vec3 = [p.x, p.y + H * 0.55, p.z];
-      return framed([p.x + 0.6 * H, p.y + H * 0.7, p.z + fz * (2.6 + 2.2 * H) * back], target, Math.max(1.4, p.d.w * 1.6), H * 1.5, aspect, 8, 55);
+      return framed([p.x + 0.22 * D, p.y + H * 0.7, p.z + fz * D], target, w, h, aspect, 8, 58);
     }
     if (cam === "push") {
-      const dist = (span * 0.9 + tallest * 0.8 + 3) * back * (1 - 0.12 * k);
+      const w = span * 1.15, h = tallest * (tall(aspect) ? 2.1 : 1.35);
+      const dist = stand(w, h, 30) * (1 - 0.12 * k);
       const ang = 0.22 * Math.sin(t * 0.25);
-      return framed([c[0] + Math.sin(ang) * dist, c[1] + tallest * 0.15, c[2] + fz * Math.cos(ang) * dist], c, span * 1.15, tallest * 1.35, aspect, 10, 58);
+      return framed([c[0] + Math.sin(ang) * dist, c[1] + tallest * 0.15, c[2] + fz * Math.cos(ang) * dist], c, w, h, aspect, 10, 60);
     }
-    const dist = (span * 1.3 + tallest + 5) * back;
-    return framed([c[0] + dist * 0.35 * (1 - k), c[1] + tallest * 0.5 + 2 * (1 - k), c[2] + fz * dist], c, span * 1.4, tallest * 1.6, aspect, 10, 60);
+    const w = span * 1.4, h = tallest * (tall(aspect) ? 2.4 : 1.6);
+    const dist = stand(w, h, 34);
+    return framed([c[0] + dist * 0.3 * (1 - k), c[1] + tallest * 0.5 + 2 * (1 - k), c[2] + fz * dist], c, w, h, aspect, 10, 62);
   };
 
   const frame = (t: number, aspect: number): ShowFrame => {
@@ -88,7 +119,7 @@ export function podiumShow(event: EventId, venue: Venue, medallists: Medallist[]
     const k = beatK(beat, t);
     const actors = place.map((p, i) => {
       const pose: ActorPose = {
-        visible: true, x: p.x, y: p.y, z: p.z, dx: 0, dz: 1, lean: 0.02 * Math.sin(t * 0.9 + i), roll: 0, squash: 0.012 * Math.sin(t * 2.1 + i * 1.7),
+        visible: true, scale: p.k, x: p.x, y: p.y, z: p.z, dx: 0, dz: 1, lean: 0.02 * Math.sin(t * 0.9 + i), roll: 0, squash: 0.012 * Math.sin(t * 2.1 + i * 1.7),
         gait: { motion: p.m.athlete.entrant.motion, phase: 0, v: 0 }, shadow: 1, ground: p.y,
         // Arms up when its medal is on.
         raise: (medalAt.get(p.m.medal) ?? 1e9) <= t ? Math.min(1, (t - medalAt.get(p.m.medal)!) / 0.6) * (p.m.medal === 1 ? 1 : 0.6) : 0,
@@ -129,7 +160,7 @@ export function podiumShow(event: EventId, venue: Venue, medallists: Medallist[]
       const m = medallists.find((x) => `m${x.medal}` === beat.cam)!;
       return { lower: { key: m.athlete.key, name: m.athlete.name, line: `${m.mark}${m.nation ? ` · ${m.nation.name}` : ""}`, tag: m.medal === 1 ? "Gold" : m.medal === 2 ? "Silver" : "Bronze", k } };
     }
-    if (beat.cam === "wide") return { title: { text: "MEDAL CEREMONY", sub: o.title ?? eventOf(event).name, k } };
+    if (beat.cam === "wide") return { title: { text: "MEDAL CEREMONY", sub: o.title ?? eventOf(event).name, k, signed: venue !== "stadium" } };
     return { tags: medallists.map((m) => m.athlete.key) };
   };
 

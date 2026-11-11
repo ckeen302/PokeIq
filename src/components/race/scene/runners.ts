@@ -581,11 +581,16 @@ export function makeRunners(race: Race, figures: Figure[], masts: THREE.Vector3[
       f.root.visible = !hidden.has(r.lane);
       axis.set(p.dx, 0, p.dz).cross(up).normalize();
       qLean.setFromAxisAngle(axis, -(lean + pose.pitch));
-      // On stubby feet the body rocks over each foot as it steps.
-      if (f.stubby && raceT > 0) {
-        qRoll.setFromAxisAngle(tmp.set(p.dx, 0, p.dz), swayAt({ motion: e.motion, phase: st.phase, v: st.v, hip: r.hip, time: showT }));
-        qLean.multiply(qRoll);
+      // The body rocks over each foot as it steps (more on stubby feet).
+      if (raceT > 0 && !swim) {
+        const rock = pose.roll + (f.stubby ? swayAt({ motion: e.motion, phase: st.phase, v: st.v, hip: r.hip, time: showT }) : 0);
+        if (rock) {
+          qRoll.setFromAxisAngle(tmp.set(p.dx, 0, p.dz), rock);
+          qLean.multiply(qRoll);
+        }
       }
+      // (And its shoulders swing against its hips.)
+      if (raceT > 0 && !swim) turn += pose.twist;
       f.lean.quaternion.copy(qLean);
       // Face the camera, turned a little towards the running direction; mirror so the head leads.
       const cx = camPos.x - p.x, cz = camPos.z - p.z;

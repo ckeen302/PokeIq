@@ -19,7 +19,7 @@ import type { ShowOptions } from "./longjump";
 export function sprintShow(result: SprintEventResult, o: ShowOptions): Show {
   const fin = result.final;
   const race = fin.race;
-  const plan = planShow(race, { video: o.video, quick: o.quick || o.budget < 40 });
+  const plan = planShow(race, { video: o.video, quick: o.quick || o.budget < 40, lineup: o.lineup });
   const falseRace = fin.falseStart?.race ?? null;
   const pre = falseRace ? (o.video ? 3.4 : 4.6) : 0;
   const cues: Cue[] = [];

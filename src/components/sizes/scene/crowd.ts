@@ -135,7 +135,7 @@ export class Crowd {
   private ok = false;
   private aborter = new AbortController();
 
-  constructor(private renderer: THREE.WebGLRenderer, private manifest: FarManifest, readonly capacity = 1200) {
+  constructor(private renderer: THREE.WebGLRenderer, private manifest: FarManifest, readonly capacity = 1200, /** When to fetch the sheets (at once by default). */ start: Promise<void> = Promise.resolve()) {
     manifest.ids.forEach((id, k) => this.cell.set(id, k));
     this.placeholder = new THREE.DataTexture(new Uint8Array([128, 128, 0, 255]), 1, 1);
     this.placeholder.needsUpdate = true;
@@ -167,7 +167,7 @@ export class Crowd {
     this.mesh.receiveShadow = true;
     this.mesh.customDepthMaterial = this.depthMaterial;
     this.mesh.name = "crowd";
-    this.ready = this.load();
+    this.ready = start.then(() => this.load());
   }
 
   private async load() {

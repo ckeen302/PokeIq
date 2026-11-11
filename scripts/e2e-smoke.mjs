@@ -773,6 +773,16 @@ step("pikadoku: a full daily (9 PP, one wrong guess), the score and the answers 
 step("the PokéIQ Test: five sections end to end, desktop and phone");
 await runIqTest({ newPage, BASE, OUT, errors });
 
+/** Drop a pin and press Guess. The map takes taps only once it has loaded (a spinner shows until then), so a tap that lands early is tried again. */
+async function pinAndGuess(p, map, position) {
+  const guess = p.getByRole("button", { name: /^Guess$/ });
+  for (let i = 0; i < 8; i++) {
+    await map.click({ position });
+    if (await guess.waitFor({ state: "visible", timeout: 2500 }).then(() => true, () => false)) break;
+  }
+  await guess.click();
+}
+
 async function playGeoRounds(rounds) {
   for (let i = 0; i < rounds; i++) {
     await page.waitForFunction(() => {
@@ -784,8 +794,7 @@ async function playGeoRounds(rounds) {
     // Zoom in on the first round, like a player hunting for a spot.
     if (i === 0) await page.mouse.wheel(0, -240);
     const box = await map.boundingBox();
-    await map.click({ position: { x: box.width * 0.5, y: box.height * 0.5 } });
-    await page.getByRole("button", { name: /^Guess$/ }).click();
+    await pinAndGuess(page, map, { x: box.width * 0.5, y: box.height * 0.5 });
     const next = page.getByRole("button", { name: /Next round|View summary|See results/ });
     await next.waitFor();
     if (i === 0) {
@@ -854,8 +863,7 @@ for (let i = 0; i < 5; i++) {
   const map = page.locator("[role=application]");
   await map.hover();
   const box = await map.boundingBox();
-  await map.click({ position: { x: box.width * 0.5, y: box.height * 0.5 } });
-  await page.getByRole("button", { name: /^Guess$/ }).click();
+  await pinAndGuess(page, map, { x: box.width * 0.5, y: box.height * 0.5 });
   const next = page.getByRole("button", { name: /Next round|View summary|See results/ });
   await next.waitFor();
   await next.click();
@@ -1083,8 +1091,7 @@ for (let i = 0; i < 5; i++) {
   const map = page.locator("[role=application]");
   await map.hover();
   const box = await map.boundingBox();
-  await map.click({ position: { x: box.width * 0.4, y: box.height * 0.6 } });
-  await page.getByRole("button", { name: /^Guess$/ }).click();
+  await pinAndGuess(page, map, { x: box.width * 0.4, y: box.height * 0.6 });
   await page.getByRole("button", { name: /Next round|View summary/ }).waitFor();
   if (i === 0) {
     await page.getByTestId("geo-report").click();
@@ -1152,8 +1159,7 @@ async function playDuel(p, at, shoot) {
     const map = p.locator("[role=application]");
     await map.hover();
     const box = await map.boundingBox();
-    await map.click({ position: { x: box.width * at, y: box.height * at } });
-    await p.getByRole("button", { name: /^Guess$/ }).click();
+    await pinAndGuess(p, map, { x: box.width * at, y: box.height * at });
     const next = p.getByRole("button", { name: /Next round|See results/ });
     await next.waitFor({ timeout: 30_000 });
     if (shoot && i === 0) {

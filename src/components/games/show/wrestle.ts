@@ -67,8 +67,8 @@ export function wrestleShow(result: Bracket, o: ShowOptions): Show {
   const first = shown[0] ?? final;
   const fi = items.indexOf(first);
   if (!o.quick) {
-    tl.add({ kind: "establish", cam: "crane", act: fi, clock0: -6.5, rate: 0 }, o.video ? 2.6 : 4.2);
-    tl.add({ kind: "startlist", cam: "startlist", act: fi, clock0: -6.5, rate: 0 }, o.video ? 2.2 : 3.6);
+    tl.add({ kind: "establish", cam: "crane", act: fi, clock0: -6.5, rate: 0 }, o.lineup ? (o.video ? 2.6 : 4.2) : o.video ? 1.3 : 1.8);
+    tl.add({ kind: "startlist", cam: "startlist", act: fi, clock0: -6.5, rate: 0 }, o.lineup ? (o.video ? 2.2 : 3.4) : o.video ? 1.2 : 1.7);
   }
   let round = "";
   items.forEach((it, idx) => {
@@ -168,6 +168,12 @@ export function wrestleShow(result: Bracket, o: ShowOptions): Show {
           : { id: `w${beat.act}-${beat.kind}-${r.t}`, t0: born(r.t), kind: "chalk", x: p.x + (r.who === "a" ? 1 : -1) * d.w * 0.4, y: pl.top + d.h * 0.8, z: 0.2, size: Math.max(0.8, d.w * 0.6), power: 0.8, rate });
       }
       if (tau >= 0.28) bursts.push({ id: `w${beat.act}-${beat.kind}-clash`, t0: born(0.28), kind: "dust", x: s.contact[0], y: pl.top + 0.1, z: 0, size: Math.max(0.6, (pl.da.w + pl.db.w) * 0.25), power: 0.7, rate });
+      // Each surge lands: clay kicked up between them, under the one who takes it.
+      it.bout.trace.surges.forEach((sg, i) => {
+        if (tau < sg.t + 0.06 || tau - sg.t > 2 || sg.t >= it.bout.trace.end) return;
+        const hitD = sg.who === "a" ? pl.db : pl.da;
+        bursts.push({ id: `w${beat.act}-${beat.kind}-surge${i}`, t0: born(sg.t + 0.06), kind: "dust", x: s.contact[0] + (sg.who === "a" ? 1 : -1) * hitD.w * 0.12, y: pl.top + 0.05, z: 0.1, size: Math.max(0.4, hitD.w * 0.3), power: 0.5, dx: sg.who === "a" ? 1 : -1, dz: 0, rate });
+      });
       if (s.out != null) {
         const loser = it.bout.trace.winner === "a" ? s.b : s.a;
         if (s.out > 0.8) bursts.push({ id: `w${beat.act}-${beat.kind}-fall`, t0: born(it.bout.trace.end + 0.8), kind: "clay", x: loser.x, y: 0.02, z: 0, size: 1, power: 0.9, rate });

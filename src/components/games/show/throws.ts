@@ -60,8 +60,8 @@ export function throwShow(result: ThrowResult, o: ShowOptions): Show {
   const first = shown[0] ?? items[0];
   const fi = items.indexOf(first);
   if (!o.quick) {
-    tl.add({ kind: "establish", cam: "crane", act: fi, clock0: first.plan.start, rate: 0 }, o.video ? 2.6 : 4.2);
-    tl.add({ kind: "startlist", cam: "startlist", act: fi, clock0: first.plan.start, rate: 0 }, o.video ? 2.2 : 3.4);
+    tl.add({ kind: "establish", cam: "crane", act: fi, clock0: first.plan.start, rate: 0 }, o.lineup ? (o.video ? 2.6 : 4.2) : o.video ? 1.3 : 1.8);
+    tl.add({ kind: "startlist", cam: "startlist", act: fi, clock0: first.plan.start, rate: 0 }, o.lineup ? (o.video ? 2.2 : 3.4) : o.video ? 1.2 : 1.7);
   }
   let round = 0;
   items.forEach((it, idx) => {
@@ -100,8 +100,8 @@ export function throwShow(result: ThrowResult, o: ShowOptions): Show {
     const peak = Math.max(1, it.plan.attempt.physics.peak);
     // The flight, as a director covers it: the athlete and the implement together as it leaves the hand
     // (from beside and above, so the field is behind them, not the stands); then the implement in the air
-    // (the shot from beside and above, its tracer arcing over the sector; the javelin, high and long, from
-    // behind and above it, looking down the sector with its arc traced back towards the lens), followed all
+    // (the shot from beside and above, its tracer arcing over the sector; the javelin from just ahead of it and
+    // a little above, flying with it, so it fills the frame with the stadium behind it), followed all
     // the way into the ground; then a cut to the spot, low beside it.
     const flight = (): CamPose => {
       const p = s.pos ?? [lineX, 1, cz];
@@ -115,7 +115,7 @@ export function throwShow(result: ThrowResult, o: ShowOptions): Show {
       const w = Math.max(10, H * 1.6, Math.min(20, range * 0.22));
       const air = shot
         ? framed([p[0] + w * 0.4, Math.max(2.5, p[1] + 2.5 + w * 0.32), cz + w * 0.95 * back], [p[0] - w * 0.08, Math.max(0.3, p[1] * 0.85), cz], w, w * 0.56, aspect, 10, 60)
-        : framed([p[0] + 8, p[1] + 6, cz + 3 * back], [p[0] - 0.6, p[1] - 0.45, cz], 9, 5.5, aspect, 12, 62);
+        : framed([p[0] - 7, p[1] + 1.5, cz + 4.5 * back], [p[0] - 0.2, p[1], cz], 5, 2.8, aspect, 8, 62);
       // Cuts: off the hand for most of a second, then with it all the way down; a moment after it lands, in
       // close beside the spot.
       const cut1 = Math.min(0.3, Math.max(0.12, 0.9 / F));

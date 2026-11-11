@@ -64,6 +64,16 @@ export default function MakeRaceVideo({ race, hook, title, slug, link, onRecordi
     return () => URL.revokeObjectURL(phase.url);
   }, [phase]);
 
+  /** Cancel: the dialog answers at once; the export stops at its next step. */
+  function cancel() {
+    const ac = abortRef.current;
+    if (!ac) return;
+    abortRef.current = null;
+    ac.abort();
+    setPhase({ kind: "idle" });
+    onRecording(false);
+  }
+
   async function record() {
     const ac = new AbortController();
     abortRef.current = ac;
@@ -88,20 +98,25 @@ export default function MakeRaceVideo({ race, hook, title, slug, link, onRecordi
         fps: fpsFromUrl(),
         signal: ac.signal,
         onProgress(p, label) {
+          if (ac.signal.aborted) return;
           const now = performance.now();
           if (now - lastProgress.current < 120 && p < 1) return;
           lastProgress.current = now;
           setPhase({ kind: "recording", p, label });
         },
       });
+      if (ac.signal.aborted) return;
       setPhase({ kind: "done", url: URL.createObjectURL(res.blob), blob: res.blob, name: res.name, type: res.type, seconds: res.seconds });
       track("race_video", { race: slug, distance: race.distance, format: res.type });
     } catch (e) {
-      if ((e as Error)?.name === "AbortError") setPhase({ kind: "idle" });
-      else setPhase({ kind: "error", message: e instanceof Error ? e.message : "Something went wrong" });
+      // (Cancelled: the dialog went back to the start the moment Cancel was pressed.)
+      if (ac.signal.aborted || (e as Error)?.name === "AbortError") return;
+      setPhase({ kind: "error", message: e instanceof Error ? e.message : "Something went wrong" });
     } finally {
-      abortRef.current = null;
-      onRecording(false);
+      if (abortRef.current === ac) {
+        abortRef.current = null;
+        onRecording(false);
+      }
     }
   }
 
@@ -118,7 +133,7 @@ export default function MakeRaceVideo({ race, hook, title, slug, link, onRecordi
   return (
     <div className="pointer-events-auto absolute inset-0 z-40 flex items-end justify-center bg-black/55 p-0 backdrop-blur-sm sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-labelledby="rc-video-title" data-testid="race-video-dialog">
       <motion.div className="dark-scope relative max-h-full w-full overflow-y-auto rounded-t-2xl border border-white/15 bg-[#0b1226] p-5 text-white shadow-2xl sm:max-w-md sm:rounded-2xl" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }}>
-        <button type="button" onClick={() => { abortRef.current?.abort(); onClose(); }} className="absolute right-3 top-3 rounded-md p-1.5 text-white/60 hover:text-white" aria-label="Close" data-testid="race-video-close">
+        <button type="button" onClick={() => { cancel(); onClose(); }} className="absolute right-3 top-3 rounded-md p-1.5 text-white/60 hover:text-white" aria-label="Close" data-testid="race-video-close">
           <X className="h-5 w-5" />
         </button>
         <div className="flex items-center gap-2">
@@ -155,7 +170,7 @@ export default function MakeRaceVideo({ race, hook, title, slug, link, onRecordi
                 <div className="h-2 overflow-hidden rounded-full bg-white/10" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(phase.p * 100)} aria-label="Rendering the video">
                   <div className="h-full origin-left rounded-full bg-gradient-to-r from-[#ffd84a] to-[#ff9d00]" style={{ transform: `scaleX(${phase.p})` }} />
                 </div>
-                <button type="button" onClick={() => abortRef.current?.abort()} className="w-full rounded-lg border border-white/20 py-2.5 font-display text-sm font-bold uppercase tracking-wider text-white/85 hover:text-white" data-testid="race-video-cancel">Cancel</button>
+                <button type="button" onClick={cancel} className="w-full rounded-lg border border-white/20 py-2.5 font-display text-sm font-bold uppercase tracking-wider text-white/85 hover:text-white" data-testid="race-video-cancel">Cancel</button>
               </div>
             ) : (
               <button type="button" onClick={record} disabled={support === "none"} className="rc-go inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg font-display text-sm font-bold uppercase tracking-wider disabled:opacity-50" data-testid="race-video-record">

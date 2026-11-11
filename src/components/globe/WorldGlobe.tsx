@@ -260,6 +260,9 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
   const chooseEra = useCallback((gen: number, sound = true) => {
     setEraState(gen);
     api.current?.setEra(gen);
+    // Turn to what this generation adds (else the globe may face empty ocean).
+    const added = eras.find((e) => e.gen === gen)?.regions[0];
+    if (added) api.current?.faceRegion(added);
     if (sound) audio.current?.era(gen);
     setCard((c) => {
       const r = regions.find((x) => x.name === c);
@@ -268,7 +271,7 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
     const url = new URL(window.location.href);
     if (gen === LAST_GEN) url.searchParams.delete("era"); else url.searchParams.set("era", String(gen));
     window.history.replaceState(null, "", url);
-  }, [regions]);
+  }, [regions, eras]);
   useEffect(() => {
     if (!playing) return;
     let gen = era >= LAST_GEN ? 0 : era;
@@ -469,7 +472,7 @@ function EraControl({ eras, era, playing, onEra, onPlay, caption }: { eras: Glob
         {caption?.regions.length ? ` · ${era === eras.at(-1)?.gen ? "the whole world" : `adds ${caption.regions.join(", ")}`}` : ""}
       </p>
       <div role="group" aria-label="Show the world as it was at a generation" className="flex items-center gap-1 rounded-md border bg-card/80 p-1 backdrop-blur">
-        <button type="button" onClick={onPlay} aria-pressed={playing} data-testid="globe-era-play" aria-label={playing ? "Stop" : "Watch the world grow, generation by generation"} title="Watch the world grow" className="flex h-7 w-7 shrink-0 items-center justify-center rounded-sm text-primary hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <button type="button" onClick={onPlay} aria-pressed={playing} data-testid="globe-era-play" aria-label={playing ? "Stop" : "Watch the world grow, generation by generation"} title="Watch the world grow" className="flex h-7 w-7 shrink-0 items-center justify-center rounded-sm text-primary max-sm:h-10 max-sm:w-8 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           {playing ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
         </button>
         {eras.map((e) => {
@@ -483,7 +486,7 @@ function EraControl({ eras, era, playing, onEra, onPlay, caption }: { eras: Glob
               aria-label={`Generation ${e.gen}${e.year ? `, ${e.year}` : ""}${e.regions.length ? `: ${e.regions.join(", ")}` : ""}`}
               onClick={() => onEra(e.gen)}
               className={
-                "h-7 min-w-0 flex-1 rounded-sm px-1 font-pixel text-[9px] tabular-nums transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-8 sm:flex-none " +
+                "h-7 min-w-0 flex-1 rounded-sm px-1 font-pixel text-[9px] tabular-nums max-sm:h-10 max-sm:px-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-8 sm:flex-none " +
                 (cur ? "bg-primary text-primary-foreground" : on ? "bg-screen/15 text-foreground hover:bg-screen/25" : "text-muted-foreground hover:bg-accent")
               }
             >

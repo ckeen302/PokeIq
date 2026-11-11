@@ -101,8 +101,8 @@ export function GamesStadium({ events, groups, playHref, records, h2h, backHref,
           const a = now / 1000;
           const aspect = host.clientWidth / Math.max(1, host.clientHeight);
           const narrow = aspect < 0.8;
-          // Outside: a slow high orbit of the bowl. Inside: low on the infield, drifting.
-          const out = { r: narrow ? 330 : 270, y: narrow ? 150 : 115, ang: a * 0.04, fov: narrow ? 58 : 40 };
+          // Outside: a slow high orbit of the bowl, close and steep enough that the lit bowl (not its dark roof and the night) fills the frame. Inside: low on the infield, drifting.
+          const out = { r: narrow ? 170 : 180, y: narrow ? 230 : 125, ang: a * 0.04, fov: narrow ? 58 : 40 };
           const inn = { r: 46, y: 9, ang: a * 0.03 + 0.6, fov: narrow ? 66 : 48 };
           const f = flyRef.current;
           let k = f.inside ? 1 : 0;

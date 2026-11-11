@@ -1053,7 +1053,7 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
       <style>{MB_CSS}</style>
       <div
         ref={stageRef}
-        className="mb-stage dark-scope relative -mx-4 h-[68svh] min-h-[420px] overflow-hidden border-y border-white/10 text-white sm:mx-0 sm:h-[min(74vh,760px)] sm:min-h-[520px] sm:rounded-2xl sm:border"
+        className="mb-stage dark-scope relative -mx-4 h-[68svh] min-h-[420px] max-sm:h-[calc(100svh-var(--mb-top,10.75rem)-var(--tabbar-h,3.5rem)-env(safe-area-inset-bottom))] max-sm:min-h-[340px] overflow-hidden border-y border-white/10 text-white sm:mx-0 sm:h-[min(74vh,760px)] sm:min-h-[520px] sm:rounded-2xl sm:border"
         data-testid="mb-stage"
         data-phase={phase}
         data-cam={cam}

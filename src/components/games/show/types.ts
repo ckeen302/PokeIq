@@ -57,7 +57,7 @@ export type Props =
   | { kind: "lj"; pitFar: number; flag: number; foul: boolean; tape: number | null; leader: number | null }
   | { kind: "hj"; bar: number; bounce: number; spin: number; fall: number; side: number; dent: [number, number, number, number] }
   | { kind: "throw"; implement: "shot" | "javelin"; tape: number | null; leader: number | null; pos: Vec3 | null; dir: Vec3; trail: Vec3[]; stuck: number }
-  | { kind: "lift"; bar: Vec3 | null; weight: number; bend: number; whip: number; lights: ("white" | "red" | null)[]; tilt: number }
+  | { kind: "lift"; bar: Vec3 | null; weight: number; bend: number; whip: number; lights: ("white" | "red" | null)[]; tilt: number; /** Seating the bar on the lifter's figure: how firmly it holds it, how far from the rack to overhead, and whether it lifts with arms. */ grip?: number; over?: number; armed?: boolean }
   | { kind: "swim"; rain: boolean; wakes: { x: number; z: number; v: number; len: number; dir: number }[]; board: boolean }
   | { kind: "wrestle"; ring: number }
   | { kind: "podium"; at: Vec3; scale: number; medals: { medal: 1 | 2 | 3; t0: number; pos: Vec3; size: number }[] };
@@ -111,7 +111,7 @@ export interface Overlay {
   /** The event's corner bug: its name, the round or the bar. */
   bug?: { title: string; sub: string };
   /** The opening title card. */
-  title?: { text: string; sub: string; k: number };
+  title?: { text: string; sub: string; k: number; /** The venue's sign in the shot says the same. */ signed?: boolean };
   /** A lower third: the athlete, a line of stats, a tag (its attempt). */
   lower?: { key: string; name: string; line: string; tag?: string; k: number };
   /** A big mark: "8.21 m", "FOUL", "NEW LEAD". */

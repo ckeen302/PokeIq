@@ -56,8 +56,8 @@ export function liftShow(result: LiftResult, o: ShowOptions): Show {
   const first = shown[0] ?? items[0];
   const fi = items.indexOf(first);
   if (!o.quick) {
-    tl.add({ kind: "establish", cam: "crane", act: fi, clock0: first.plan.start, rate: 0 }, o.video ? 2.6 : 4.2);
-    tl.add({ kind: "startlist", cam: "startlist", act: fi, clock0: first.plan.start, rate: 0 }, o.video ? 2.2 : 3.4);
+    tl.add({ kind: "establish", cam: "crane", act: fi, clock0: first.plan.start, rate: 0 }, o.lineup ? (o.video ? 2.6 : 4.2) : o.video ? 1.3 : 1.8);
+    tl.add({ kind: "startlist", cam: "startlist", act: fi, clock0: first.plan.start, rate: 0 }, o.lineup ? (o.video ? 2.2 : 3.4) : o.video ? 1.2 : 1.7);
   }
   items.forEach((it, idx) => {
     const p = it.pick;
@@ -149,7 +149,7 @@ export function liftShow(result: LiftResult, o: ShowOptions): Show {
       beat,
       k,
       actors: [{ key: it.pick.a.key, pose: s.pose }],
-      props: { kind: "lift", bar: s.bar, weight: it.plan.weight, bend: s.bend, whip: s.whip, lights: s.lights, tilt: s.tilt },
+      props: { kind: "lift", bar: s.bar, weight: it.plan.weight, bend: s.bend, whip: s.whip, lights: s.lights, tilt: s.tilt, grip: s.grip, over: s.over, armed: it.plan.armed },
       bursts,
       decals: [],
       excitement,

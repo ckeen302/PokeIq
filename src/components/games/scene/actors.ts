@@ -64,6 +64,7 @@ export function poseActor(act: Actor, p: ActorPose, cam: THREE.Camera, time: num
   camRight.setFromMatrixColumn(cam.matrixWorld, 0);
   const shake = p.shake ? p.shake * Math.sin(time * 47) : 0;
   f.root.position.set(p.x + shake * 0.6, p.y, p.z + shake * 0.4);
+  f.root.scale.setScalar(p.scale ?? 1);
   // Lean about the lateral axis, sway about the direction of travel.
   axis.set(p.dx, 0, p.dz).cross(up);
   if (axis.lengthSq() < 1e-8) axis.set(0, 0, 1);
@@ -77,8 +78,9 @@ export function poseActor(act: Actor, p: ActorPose, cam: THREE.Camera, time: num
   else {
     const cx = camPos.x - p.x, cz = camPos.z - p.z;
     const cl = Math.hypot(cx, cz) || 1;
-    nx = cx / cl + p.dx * 0.32;
-    nz = cz / cl + p.dz * 0.32;
+    const on = p.headOn ?? 0.32;
+    nx = cx / cl + p.dx * on;
+    nz = cz / cl + p.dz * on;
     const nl = Math.hypot(nx, nz) || 1;
     nx /= nl; nz /= nl;
   }
@@ -225,4 +227,54 @@ export function blobShadows(n: number): { mesh: THREE.InstancedMesh; set(i: numb
     },
     dispose() { geo.dispose(); mat.dispose(); },
   };
+}
+
+/** Where a figure carries a bar, in its mesh's own units: the top of its silhouette over its middle, and its shoulders and arm's length if it has arms. */
+interface Carry {
+  top: [number, number];
+  shoulder: [number, number] | null;
+  front: number;
+  reach: number;
+}
+const carries = new WeakMap<Figure, Carry>();
+
+function carryOf(f: Figure): Carry {
+  const known = carries.get(f);
+  if (known) return known;
+  const pos = f.body.geometry.getAttribute("position");
+  const band = f.meshW * 0.16;
+  let top = 0, topZ = 0, n = 0;
+  for (let i = 0; i < pos.count; i++) if (Math.abs(pos.getX(i)) <= band && pos.getY(i) > top) top = pos.getY(i);
+  // (Its middle front to back, just under the top.)
+  for (let i = 0; i < pos.count; i++) if (Math.abs(pos.getX(i)) <= band && pos.getY(i) > top - f.meshH * 0.08) { topZ += pos.getZ(i); n++; }
+  const arms = f.joints.filter((j) => j.kind === "arm" && !j.stub);
+  let shoulder: Carry["shoulder"] = null, reach = 0, front = 0;
+  if (arms.length) {
+    const sy = arms.reduce((a, j) => a + j.pivot[1], 0) / arms.length;
+    shoulder = [sy, arms.reduce((a, j) => a + j.pivot[2], 0) / arms.length];
+    reach = arms.reduce((a, j) => a + Math.hypot(j.tip[0] - j.pivot[0], j.tip[1] - j.pivot[1]), 0) / arms.length;
+    front = -Infinity;
+    for (let i = 0; i < pos.count; i++) if (Math.abs(pos.getX(i)) <= band && Math.abs(pos.getY(i) - sy) < f.meshH * 0.08 && pos.getZ(i) > front) front = pos.getZ(i);
+    if (!Number.isFinite(front)) front = shoulder[1];
+  }
+  const c: Carry = { top: [top, n ? topZ / n : 0], shoulder, front, reach };
+  carries.set(f, c);
+  return c;
+}
+
+/**
+ * Where a posed actor holds a barbell (world): racked across its shoulders
+ * and pressed to arm's length overhead (`over` 0..1) if it lifts with
+ * arms, else on the top of its back or head. Read off the figure itself,
+ * as posed (squatting, standing tall, leaning), so the bar sits on it.
+ */
+export function carryPoint(act: Actor, over: number, armed: boolean, out: THREE.Vector3): THREE.Vector3 {
+  const f = act.fig;
+  const c = carryOf(f);
+  if (armed && c.shoulder) {
+    // Racked: on the front of the shoulders. Overhead: at arm's length, over the middle of the body (never below its head).
+    const up = Math.max(c.shoulder[0] + c.reach, c.top[0] + f.meshH * 0.02);
+    out.set(0, mix(c.shoulder[0], up, over), mix(c.front + f.meshH * 0.015, c.shoulder[1], over));
+  } else out.set(0, c.top[0] + f.meshH * 0.012, c.top[1]);
+  return f.body.localToWorld(out);
 }

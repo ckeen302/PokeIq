@@ -35,7 +35,7 @@ export interface GamesRecordOptions {
   /** Under the hook: "100 M · BASED ON THEIR STATS". */
   sub: string;
   /** The end card: the medallists (or the Games' champions) and the link. */
-  podium: { place: string; name: string; mark: string }[];
+  podium: { place: string; name: string; mark: string; /** The medallist's key (its render goes on the end card). */ key?: string }[];
   endTitle: string;
   slug: string;
   link: string;
@@ -165,7 +165,7 @@ function wrap(g: CanvasRenderingContext2D, text: string, maxW: number): string[]
 }
 
 /** The hook card, the watermark and the end card over a frame (in video pixels). */
-function drawCards(g: CanvasRenderingContext2D, W: number, H: number, t: number, total: number, end: number, o: Pick<GamesRecordOptions, "hook" | "sub" | "podium" | "endTitle" | "link" | "font"> & { logo: HTMLImageElement | null }) {
+function drawCards(g: CanvasRenderingContext2D, W: number, H: number, t: number, total: number, end: number, o: Pick<GamesRecordOptions, "hook" | "sub" | "podium" | "endTitle" | "link" | "font"> & { logo: HTMLImageElement | null; arts?: (HTMLImageElement | null)[] }) {
   const font = o.font;
   const u = Math.min(W, H * 0.5625);
   // Watermark.
@@ -206,38 +206,86 @@ function drawCards(g: CanvasRenderingContext2D, W: number, H: number, t: number,
     gameText(g, o.sub.toUpperCase(), W / 2, y0 + lines.length * lh + u * 0.01, u * 0.034, font, "#9fd8ff", "#0d1626", u * 0.034 * 0.2);
     g.restore();
   }
-  // End card: the medallists and the link.
+  // End card: the medallists (their renders, gold in the middle), one call to action and a short link.
   if (t >= end) {
     const a = Math.min(1, (t - end) / 0.45);
+    const tallCard = H > W;
     g.save();
     g.globalAlpha = a;
-    g.fillStyle = "rgba(8,12,26,0.84)";
+    g.fillStyle = "rgba(8,12,26,0.88)";
     g.fillRect(0, 0, W, H);
-    const s = u * 0.2;
-    const cy = H > W ? H * 0.27 : H * 0.2;
-    if (o.logo) g.drawImage(o.logo, W / 2 - s / 2, cy - s / 2, s, s);
+    const at = tallCard ? { logo: 0.15, title: 0.225, sub: 0.262, row: 0.43, cta: 0.66, link: 0.705 } : { logo: 0.11, title: 0.225, sub: 0.295, row: 0.53, cta: 0.84, link: 0.915 };
+    const s = u * (tallCard ? 0.15 : 0.13);
+    if (o.logo) g.drawImage(o.logo, W / 2 - s / 2, H * at.logo - s / 2, s, s);
     g.textAlign = "center";
     g.textBaseline = "middle";
-    gameText(g, "The PokéIQ Games", W / 2, cy + s * 0.8, u * 0.075, font, "#ffffff", "#0d1626", u * 0.015);
-    gameText(g, o.endTitle, W / 2, cy + s * 0.8 + u * 0.09, u * 0.045, font, "#ffd21f", "#0d1626", u * 0.009);
+    gameText(g, "The PokéIQ Games", W / 2, H * at.title, u * 0.075, font, "#ffffff", "#0d1626", u * 0.015);
+    gameText(g, o.endTitle, W / 2, H * at.sub, u * 0.043, font, "#ffd21f", "#0d1626", u * 0.009);
     const colors = ["#ffd84a", "#d7dde5", "#d58a4a"];
-    o.podium.slice(0, 3).forEach((p, i) => {
-      const y = cy + s * 0.8 + u * (0.2 + i * 0.085);
-      g.textAlign = "center";
-      const line = `${p.place}  ${p.name}  ·  ${p.mark}`;
-      let lpx = u * 0.05;
-      g.font = `800 ${lpx}px ${font}`;
-      const lw = g.measureText(line).width;
-      if (lw > W * 0.88) lpx *= (W * 0.88) / lw;
-      gameText(g, line, W / 2, y, lpx, font, colors[i] ?? "#ffffff", "#0d1626", lpx * 0.18);
-    });
-    let lpx = u * 0.042;
+    const top = o.podium.slice(0, 3);
+    const arts = top.map((_, i) => o.arts?.[i] ?? null);
+    if (top.length && arts.every((x) => x)) {
+      // Silver, gold, bronze, left to right; the gold a size up.
+      const order = top.length === 3 ? [1, 0, 2] : top.map((_, i) => i);
+      const gap = Math.min(W * 0.31, u * 0.34);
+      order.forEach((i, col) => {
+        const p = top[i];
+        const big = p.place === "1";
+        const r = u * (big ? 0.15 : 0.118);
+        const cx = W / 2 + (col - (order.length - 1) / 2) * gap;
+        const cy = H * at.row + (big ? -u * 0.02 : u * 0.015);
+        const color = colors[Number(p.place) - 1] ?? "#ffffff";
+        g.beginPath();
+        g.arc(cx, cy, r, 0, Math.PI * 2);
+        g.fillStyle = "rgba(255,255,255,0.07)";
+        g.fill();
+        g.lineWidth = u * 0.008;
+        g.strokeStyle = color;
+        g.stroke();
+        const img = arts[i]!;
+        const k = (r * 1.72) / Math.max(img.width, img.height);
+        g.drawImage(img, cx - (img.width * k) / 2, cy - (img.height * k) / 2, img.width * k, img.height * k);
+        // The place on a medal at the ring's foot, the name and the mark under it.
+        g.beginPath();
+        g.arc(cx, cy + r, u * 0.03, 0, Math.PI * 2);
+        g.fillStyle = color;
+        g.fill();
+        g.fillStyle = "#0d1626";
+        g.font = `800 ${u * 0.036}px ${font}`;
+        g.fillText(p.place, cx, cy + r + u * 0.002);
+        let npx = u * (big ? 0.044 : 0.038);
+        g.font = `800 ${npx}px ${font}`;
+        const nw = g.measureText(p.name).width;
+        if (nw > gap * 0.94) npx *= (gap * 0.94) / nw;
+        const ny = H * at.row + u * 0.2;
+        gameText(g, p.name, cx, ny, npx, font, "#ffffff", "#0d1626", npx * 0.18);
+        gameText(g, p.mark, cx, ny + u * 0.052, u * 0.034, font, color, "#0d1626", u * 0.007);
+      });
+    } else {
+      top.forEach((p, i) => {
+        const y = H * at.row + u * ((i - (top.length - 1) / 2) * 0.09);
+        const line = `${p.place}  ${p.name}  ·  ${p.mark}`;
+        let lpx = u * 0.056;
+        g.font = `800 ${lpx}px ${font}`;
+        const lw = g.measureText(line).width;
+        if (lw > W * 0.88) lpx *= (W * 0.88) / lw;
+        gameText(g, line, W / 2, y, lpx, font, colors[i] ?? "#ffffff", "#0d1626", lpx * 0.18);
+      });
+    }
+    gameText(g, "Pick your own line-up", W / 2, H * at.cta, u * 0.05, font, "#ffd21f", "#0d1626", u * 0.01);
+    const link = shortLink(o.link);
+    let lpx = u * 0.054;
     g.font = `800 ${lpx}px ${font}`;
-    const lw = g.measureText(o.link).width;
+    const lw = g.measureText(link).width;
     if (lw > W * 0.9) lpx *= (W * 0.9) / lw;
-    gameText(g, o.link, W / 2, cy + s * 0.8 + u * 0.5, lpx, font, "#9fd8ff", "#0d1626", lpx * 0.2);
+    gameText(g, link, W / 2, H * at.link, lpx, font, "#9fd8ff", "#0d1626", lpx * 0.2);
     g.restore();
   }
+}
+
+/** The link as the end card shows it: the page without its query string (a line a viewer can read and type). */
+export function shortLink(link: string): string {
+  return link.split(/[?#]/)[0].replace(/\/run$/, "").replace(/\/$/, "");
 }
 
 export async function recordGames(o: GamesRecordOptions): Promise<GamesRecordResult> {
@@ -260,16 +308,19 @@ export async function recordGames(o: GamesRecordOptions): Promise<GamesRecordRes
   const gfx: Gfx = o.format === "9:16" ? { font: o.font, scale: 1, top: 96, bottom: 150, phone: true } : { font: o.font, scale: 1.1, top: 56, bottom: 80, phone: false };
   let loaded = -1;
   let photo: HTMLCanvasElement | null = null;
+  // Cancel stops the export at the next step, whatever it is doing (loading, developing the photo finish, mixing, rendering).
+  const stop = () => { if (o.signal.aborted) throw new DOMException("Cancelled", "AbortError"); };
   const loadPart = async (i: number) => {
     if (i === loaded) return;
     const p = o.parts[i];
     await scene.load({ athletes: p.athletes, race: p.race, falseRace: p.falseRace ?? null, venue: p.venue }, o.signal, (k) => o.onProgress(0.03 * ((i + k) / o.parts.length), "Athletes warming up"));
+    stop();
     photo = null;
     // A sprint's photo finish, developed up front.
     const sp = p.parts.map((x) => x.show).find((s) => (s as Show & Partial<SprintExtras>).racePlan) as (Show & SprintExtras) | undefined;
     if (sp?.photoFrame) {
       const pf = scene.photoFinish(sp.photoFrame);
-      for (let k = 0; k < 4000 && !pf.step(); k++) await sleep(0);
+      for (let k = 0; k < 4000 && !pf.step(); k++) { await sleep(0); stop(); }
       photo = pf.result();
     }
     loaded = i;
@@ -281,6 +332,9 @@ export async function recordGames(o: GamesRecordOptions): Promise<GamesRecordRes
     compose.height = H;
     const g = compose.getContext("2d")!;
     const logo = await loadImage(o.logo);
+    // The medallists' renders for the end card.
+    const arts = await Promise.all(o.podium.slice(0, 3).map((p) => { const a = p.key ? o.byKey.get(p.key) : undefined; return a ? loadImage(o.urls.art(a.entrant.art, 256)) : Promise.resolve(null); }));
+    stop();
     const drawAt = async (i: number) => {
       const t = i / fps;
       const p = partAt(o.parts, offsets, Math.min(t, end - 1e-6));
@@ -299,7 +353,7 @@ export async function recordGames(o: GamesRecordOptions): Promise<GamesRecordRes
         else drawOverlay(g, LW, LH, seq.overlay(p.t), heads, o.byKey, gfx);
         g.setTransform(1, 0, 0, 1, 0, 0);
       }
-      drawCards(g, W, H, t, total, end, { ...o, logo });
+      drawCards(g, W, H, t, total, end, { ...o, logo, arts });
     };
 
     const vcfg = await pickVideoCodec(W, H, fps);
@@ -322,6 +376,7 @@ export async function recordGames(o: GamesRecordOptions): Promise<GamesRecordRes
       const rate = 48000;
       const acodec = await pickAudioCodec(rate);
       const mix = acodec ? await mixAudio(o.parts, offsets, total, aspect, rate, o.signal) : null;
+      stop();
       const audioChunks: { data: Uint8Array; ts: number; dur: number }[] = [];
       let audioDesc: Uint8Array | undefined;
       if (acodec && mix) {
@@ -382,6 +437,7 @@ export async function recordGames(o: GamesRecordOptions): Promise<GamesRecordRes
     const stream = compose.captureStream(fps);
     let actx: AudioContext | null = null;
     const mix = await mixAudio(o.parts, offsets, total, aspect, 48000, o.signal);
+    stop();
     if (mix) {
       actx = new AudioContext({ sampleRate: 48000 });
       const dest = actx.createMediaStreamDestination();
