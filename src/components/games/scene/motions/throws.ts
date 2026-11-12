@@ -3,7 +3,7 @@ import type { ThrowAttempt } from "@/lib/games/throws";
 import { JT, SP, jtLine } from "@/lib/games/venues";
 import type { Vec3 } from "@/lib/race/director";
 import type { ActorPose } from "../pose";
-import { bump, clamp01, dims, ease, gaitActor, idleActor, isBiped, lerp, runAt, runUp, smooth, wobble, type Dims, type RunUp } from "./common";
+import { bump, clamp01, dims, ease, gaitActor, idleActor, isBiped, lerp, restless, runAt, runUp, smooth, wobble, type Dims, type RunUp } from "./common";
 
 /**
  * The throws, driven by each throw's physics (lib/games/throws), on a
@@ -108,6 +108,7 @@ export function throwAt(pl: ThrowPlan, tau: number, time: number): ThrowScene {
       pose = idleActor(a, d, cx + r * 0.7, z, -1, 0, time, 6);
       pose.turn = Math.PI;
       pose.lean = -0.1;
+      restless(pose, a, d, time, 6);
       pos = hand(cx + r * 0.7, H * 0.8, 0.12 * H, 0);
     } else if (tau < 0) {
       const glide = pl.biped && !pl.armless;
@@ -136,7 +137,9 @@ export function throwAt(pl: ThrowPlan, tau: number, time: number): ThrowScene {
       pose.y = 0.08 * H * bump(0.05, 0.4, s);
       pose.squash = -0.06 * bump(0.35, 0.6, s);
       pose.legs = { a: 0, b: -0.3, k: Math.exp(-s / 0.6), split: 0.4 * Math.exp(-s / 0.5) };
-      if (!pl.armless) { pose.arms = { a: 1.2 * Math.exp(-s / 0.7), b: 0, k: 1 }; pose.raise = 0.6 * Math.exp(-s / 0.5); }
+      // The putting arm stays out along the line of the put for a beat (the follow-through), then drops.
+      if (!pl.armless) { pose.arms = { a: 1.25 * (1 - smooth(0.25, 1.1, s)), b: 0, k: 1 }; pose.raise = 0.65 * (1 - smooth(0.2, 0.7, s)); }
+      else pose.squash += 0.08 * bump(0, 0.3, s);
     }
     com = [pose.x, H * 0.6, z];
   } else {
@@ -146,6 +149,7 @@ export function throwAt(pl: ThrowPlan, tau: number, time: number): ThrowScene {
     if (tau < -T) {
       pose = idleActor(a, d, startX, z, -1, 0, time, 7);
       pose.lean = 0.06 + 0.06 * Math.sin((tau - pl.start) * 3);
+      restless(pose, a, d, time, 7);
       pos = hand(startX, H * 0.9, 0.18 * H, 0.05 * H);
       dir = [-0.96, 0.28, 0];
     } else if (tau < 0) {
@@ -164,12 +168,16 @@ export function throwAt(pl: ThrowPlan, tau: number, time: number): ThrowScene {
       pos = [lerp(x + back, pl.releaseX, whip * whip), lerp(H * 0.92, ph.height, whip), z + 0.05];
       dir = [-Math.cos(0.35 + 0.25 * wd), Math.sin(0.35 + 0.25 * wd), 0];
     } else {
-      const x = pl.releaseX + 0.4 * Math.max(0.5, H * 0.3) + 0.8 * (1 - Math.exp(-tau / 0.5));
-      pose = idleActor(a, d, pl.releaseX + 0.3 - 0.9 * (1 - Math.exp(-tau / 0.4)), z, -1, 0, time, 7);
-      pose.lean = 0.5 * Math.exp(-tau / 0.5);
-      pose.legs = { a: -0.4 * Math.exp(-tau / 0.6), b: -0.3, k: Math.exp(-tau / 0.8) };
-      if (!pl.armless) pose.arms = { a: 1.2 * Math.exp(-tau / 0.6), b: 0, k: 1 };
-      void x;
+      // The follow-through, on from where the run-up ended (no jump at the release): the body carries on over the
+      // block leg and pulls up short of the line, the throwing arm sweeping on down across the body, the back leg
+      // coming through.
+      const x0 = jtLine() + 0.6;
+      pose = idleActor(a, d, x0 - 0.5 * (1 - Math.exp(-tau / 0.35)), z, -1, 0, time, 7);
+      const sweep = smooth(0, 0.42, tau), settle = smooth(0.5, 1.6, tau);
+      pose.lean = (0.55 + 0.15 * bump(0, 0.5, tau)) * Math.exp(-tau / 0.7);
+      pose.legs = { a: lerp(-0.4, 0.55, smooth(0.05, 0.35, tau)) * (1 - settle), b: -0.3, k: 1 - settle, split: 0.5 * (1 - settle) };
+      if (!pl.armless) { pose.arms = { a: lerp(1.3, -0.7, sweep) * (1 - settle), b: -0.15 * (1 - settle), k: 1 }; pose.raise = 0.55 * (1 - sweep); }
+      else pose.squash = 0.06 * bump(0, 0.3, tau);
     }
     com = [pose.x, H * 0.6, z];
   }

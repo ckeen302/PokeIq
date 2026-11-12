@@ -3,7 +3,7 @@ import type { Athlete } from "@/lib/games/athlete";
 import type { JumpAttempt } from "@/lib/games/longjump";
 import { LJ } from "@/lib/games/venues";
 import type { ActorPose } from "../pose";
-import { bump, clamp01, dims, gaitActor, idleActor, isBiped, lerp, runAt, runUp, smooth, walkPhase, type Dims, type RunUp } from "./common";
+import { bump, clamp01, coilSpring, dims, gaitActor, idleActor, isBiped, restless, lerp, runAt, runUp, smooth, walkPhase, type Dims, type RunUp } from "./common";
 
 /**
  * The long jump, driven by the attempt's physics (lib/games/longjump),
@@ -68,6 +68,7 @@ export function longJumpAt(pl: LongJumpPlan, tau: number, time: number): LongJum
     pose = idleActor(a, d, startX, z, 1, 0, time, 1);
     pose.lean = 0.08 + 0.1 * Math.sin(k * Math.PI * 3) * (1 - k * 0.5);
     pose.squash = -0.02 * Math.sin(k * Math.PI * 3);
+    restless(pose, a, d, time, 1);
     com = [startX, d.h * 0.55, z];
   } else if (tau < 0) {
     const t = tau + pl.run.T;
@@ -76,7 +77,7 @@ export function longJumpAt(pl: LongJumpPlan, tau: number, time: number): LongJum
     pose = gaitActor(a, d, x, z, 1, 0, st, time);
     // The penultimate step lowers the body; the last one plants it, leaning back.
     const pen = bump(-0.42, -0.12, tau), plant = smooth(-0.16, 0, tau);
-    pose.squash += -0.07 * pen;
+    pose.squash += -0.07 * pen + coilSpring(a, tau);
     pose.lean = lerp(pose.lean, -0.14, plant);
     com = [x, d.h * 0.55 + pose.y, z];
   } else if (tau < F) {
@@ -104,6 +105,7 @@ export function longJumpAt(pl: LongJumpPlan, tau: number, time: number): LongJum
       pose.lean = -angle * 0.55;
       pose.squash = 0.08 * bump(0, 0.8, k) - 0.05 * land;
     }
+    pose.squash += coilSpring(a, tau);
     // No gliding: wings stay in.
     pose.wings = { a: 0.15, b: 0.1, k: 0.9 };
     com = [xc, yc, z];
