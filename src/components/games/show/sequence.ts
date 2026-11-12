@@ -100,6 +100,12 @@ function placed(f: ShowFrame, aspect: number, size: (key: string) => { w: number
     subjects.push({ x: a.pose.x, y: a.pose.y, z: a.pose.z, w: d.w * k, h: d.h * k });
   }
   if (!subjects.length) return pose;
+  // A tiny one next to a giant gets a margin of its own (its box grown to a quarter of the giant's size), so it sits
+  // well inside the frame instead of on its edge.
+  if (subjects.length > 1) {
+    const big = Math.max(...subjects.map((x) => Math.max(x.w, x.h)));
+    for (const x of subjects) if (Math.max(x.w, x.h) < big * 0.25) { x.w = Math.max(x.w, big * 0.25); x.h = Math.max(x.h, big * 0.25); }
+  }
   const pr = f.props;
   if (pr.kind === "throw" && pr.pos) {
     // In flight the camera follows the implement; the thrower drops out of the frame as it flies away.
@@ -112,5 +118,14 @@ function placed(f: ShowFrame, aspect: number, size: (key: string) => { w: number
   } else if (pr.kind === "lift" && pr.bar) {
     subjects.push({ x: pr.bar[0], y: pr.bar[1] - 0.25, z: pr.bar[2], w: 2.2, h: 0.5 });
   }
-  return fillFrame(pose, subjects, aspect, f.beat.kind === "podium" ? 0.36 : 0.42);
+  const fill = f.beat.kind === "podium" ? 0.36 : 0.42;
+  let out = fillFrame(pose, subjects, aspect, fill);
+  // Two of very different sizes (a Pikachu against a Snorlax) can need more than the widest lens: step the camera back
+  // along its line until both fit, so the small one never drops out of the frame.
+  for (let i = 0; i < 4 && subjects.length > 1 && out.fov >= 61.5; i++) {
+    const k = 1.35 ** (i + 1);
+    const back: CamPose = { ...pose, pos: [pose.target[0] + (pose.pos[0] - pose.target[0]) * k, pose.target[1] + (pose.pos[1] - pose.target[1]) * k, pose.target[2] + (pose.pos[2] - pose.target[2]) * k] };
+    out = fillFrame(back, subjects, aspect, fill);
+  }
+  return out;
 }

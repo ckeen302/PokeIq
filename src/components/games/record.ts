@@ -187,10 +187,13 @@ function drawCards(g: CanvasRenderingContext2D, W: number, H: number, t: number,
     g.save();
     g.globalAlpha = a;
     const y0c = H > W ? H * 0.28 : H * 0.42;
+    // A head to head's first frame is its thumbnail: the scene dimmed, and a solid band so nothing reads behind the question.
+    const band = o.versus ? 0.93 : 0.74;
+    if (o.versus) { g.fillStyle = "rgba(8,12,26,0.45)"; g.fillRect(0, 0, W, H); }
     const grad = g.createLinearGradient(0, y0c - u * 0.32, 0, y0c + u * 0.32);
     grad.addColorStop(0, "rgba(8,14,32,0)");
-    grad.addColorStop(0.25, "rgba(8,14,32,0.74)");
-    grad.addColorStop(0.75, "rgba(8,14,32,0.74)");
+    grad.addColorStop(o.versus ? 0.14 : 0.25, `rgba(8,14,32,${band})`);
+    grad.addColorStop(o.versus ? 0.86 : 0.75, `rgba(8,14,32,${band})`);
     grad.addColorStop(1, "rgba(8,14,32,0)");
     g.fillStyle = grad;
     g.fillRect(0, y0c - u * 0.32, W, u * 0.64);
@@ -394,7 +397,8 @@ export async function recordGames(o: GamesRecordOptions): Promise<GamesRecordRes
       scene.frame(fr);
       g.setTransform(1, 0, 0, 1, 0, 0);
       g.drawImage(scene.canvas, 0, 0, W, H);
-      if (t < end) {
+      // (Under a head to head's hook card the broadcast's own graphics stay off: the question alone.)
+      if (t < end && !(o.versus && t < Math.min(HOOK_SECONDS, total * 0.35))) {
         g.setTransform(S, 0, 0, S, 0, 0);
         const heads = scene.heads().map((h) => ({ ...h, x: h.x / S, y: h.y / S, by: h.by / S }));
         const part = seq.partAt(p.t);
