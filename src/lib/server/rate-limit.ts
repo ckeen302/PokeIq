@@ -31,6 +31,15 @@ function prune(now: number) {
   if (buckets.size > MAX_BUCKETS) buckets.clear();
 }
 
+/**
+ * The per-address floor for gameplay writes (posting a score, starting a duel
+ * or party, asking for a hint): 25 at once, 25 a minute. Phone carriers and
+ * schools put many players behind one address (CGNAT), so per-address caps
+ * stay generous; boards and claims add their own per-address and per-day
+ * limits on top (board-guard.ts).
+ */
+export const GAMEPLAY_IP_LIMIT = [25, 25 / 60] as const;
+
 /** Returns true if the request is allowed. */
 export function rateLimit(key: string, capacity: number, refillPerSecond: number): boolean {
   const now = Date.now();

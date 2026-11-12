@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { beatPath } from "@/lib/connections/social";
 import { isCurrentConnDate } from "@/lib/connections/types";
-import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
+import { GAMEPLAY_IP_LIMIT, clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { NO_STORE, PLAYER, whoIs } from "@/lib/server/connections-custom-http";
 import { connPlayerKey } from "@/lib/server/connections-results";
 import { connBoardStore } from "@/lib/server/connections-board";
@@ -21,7 +21,7 @@ import { beatToken, readBeatToken } from "@/lib/server/connections-social";
  */
 
 export async function POST(request: NextRequest) {
-  if (!rateLimit(`conn-beat-make:${clientIp(request)}`, 10, 0.2)) return tooManyRequests();
+  if (!rateLimit(`conn-beat-make:${clientIp(request)}`, ...GAMEPLAY_IP_LIMIT)) return tooManyRequests();
   const parsed = z.object({ date: z.string().max(10), player: PLAYER.optional() }).safeParse(await request.json().catch(() => ({})));
   if (!parsed.success || !isCurrentConnDate(parsed.data.date)) return NextResponse.json({ error: "Only today's PokéConnections can be shared." }, { status: 400, headers: NO_STORE });
   const who = await whoIs(request, parsed.data.player);

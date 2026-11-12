@@ -2,6 +2,7 @@ import "server-only";
 import { randomInt } from "node:crypto";
 import { getServiceSupabase } from "@/lib/supabase";
 import { isCleanName, publicName } from "@/lib/name-filter";
+import { looksLikeLink } from "./chat";
 import { Rng } from "@/lib/rng";
 import { CATEGORIES } from "@/lib/connections/categories";
 import { FACTS, factsOf } from "@/lib/connections/facts";
@@ -64,6 +65,8 @@ function nameProblem(label: string, name: string, max: number): string | null {
   if (n.length > max) return `${label}'s name is over ${max} characters.`;
   if (!NAME_CHARS.test(n)) return `${label}'s name has a character that isn't allowed.`;
   if (!isCleanName(n)) return `${label}'s name isn't allowed. Pick a different one.`;
+  // Shared puzzles are public: no links or addresses in their names (the same check as chat).
+  if (looksLikeLink(n)) return `${label}'s name can't hold a link.`;
   return null;
 }
 

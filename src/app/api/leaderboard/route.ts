@@ -4,7 +4,7 @@ import { z } from "zod";
 import { getServiceSupabase } from "@/lib/supabase";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { secretIsSecure, verifyToken } from "@/lib/server/crypto";
-import { clientIp, rateLimit } from "@/lib/server/rate-limit";
+import { GAMEPLAY_IP_LIMIT, clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { BOARD_FULL, claimBoardSlot, utcDayOf } from "@/lib/server/board-guard";
 import { LEADERBOARD_TAG, UNRANKED_QUIZ_MESSAGE, fetchBoard, practiceMessage } from "@/lib/server/leaderboard";
 import type { RunResult } from "@/lib/session-types";
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!rateLimit(`lb:${clientIp(request)}`, 10, 0.1)) {
+  if (!rateLimit(`lb:${clientIp(request)}`, ...GAMEPLAY_IP_LIMIT)) {
     return NextResponse.json({ error: "Too many submissions — try again in a minute." }, { status: 429 });
   }
   const supabase = getServiceSupabase();

@@ -5,6 +5,8 @@ import { sendEmail, type SendResult } from "./send";
 import { emailStore, type EmailStore, type EmailSub } from "./store";
 import { confirmEmail, type Message } from "./templates";
 import { confirmToken, verifyConfirmToken, verifyUnsubscribeToken } from "./tokens";
+import { deriveSeed } from "../crypto";
+import { claimOnce } from "../replay-guard";
 import type { EmailSettingsView } from "@/lib/email-types";
 
 /**
@@ -25,13 +27,36 @@ export function normalizeEmail(raw: unknown): string | null {
 /** A confirmation email waits this long before another can be sent to the same trainer. */
 export const CONFIRM_RESEND_MS = 60_000;
 
+/**
+ * Confirmation emails one address gets a day, whichever accounts ask: the
+ * per-trainer limits don't stop a script with many accounts from mailing a
+ * stranger's inbox on repeat.
+ */
+export const CONFIRMS_PER_ADDRESS_PER_DAY = 5;
+
+/**
+ * Takes one of the address's confirmation slots for the UTC day: single-use
+ * claims (Postgres when Supabase is configured, so they hold across
+ * instances). The address is kept only as an HMAC.
+ */
+export async function claimConfirmSlot(email: string, now: number, slots = CONFIRMS_PER_ADDRESS_PER_DAY): Promise<boolean> {
+  const day = new Date(now).toISOString().slice(0, 10);
+  const who = deriveSeed("email-confirm-to", email);
+  for (let i = 0; i < slots; i++) {
+    if (await claimOnce(`email-confirm:${day}:${who}:${i}`)) return true;
+  }
+  return false;
+}
+
 export interface ServiceDeps {
   store: EmailStore;
   send(m: Message): Promise<SendResult>;
   now(): number;
+  /** One of the address's confirmation slots for the day (see claimConfirmSlot); left out, there's no per-address cap. */
+  claimRecipient?(email: string, now: number): Promise<boolean>;
 }
 
-export const defaultServiceDeps = (): ServiceDeps => ({ store: emailStore(), send: (m) => sendEmail(m), now: () => Date.now() });
+export const defaultServiceDeps = (): ServiceDeps => ({ store: emailStore(), send: (m) => sendEmail(m), now: () => Date.now(), claimRecipient: (email, now) => claimConfirmSlot(email, now) });
 
 export function viewOf(sub: EmailSub | null, suggestion: string | null): EmailSettingsView {
   return {
@@ -87,6 +112,7 @@ export async function saveSettings(user: { id: string; username: string }, input
   let confirm: "sent" | "throttled" | "failed" | null = null;
   if (!sub.verifiedAt && (changed || input.resend)) {
     if (sub.confirmSentAt && now - Date.parse(sub.confirmSentAt) < CONFIRM_RESEND_MS) confirm = "throttled";
+    else if (deps.claimRecipient && !(await deps.claimRecipient(email, now))) confirm = "throttled";
     else {
       const sent = await deps.send(confirmMessage(email, user.id, user.username, now));
       confirm = sent.ok ? "sent" : "failed";

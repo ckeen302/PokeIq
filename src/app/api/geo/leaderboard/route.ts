@@ -3,7 +3,7 @@ import { z } from "zod";
 import { getServiceSupabase } from "@/lib/supabase";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { secretIsSecure, verifyToken } from "@/lib/server/crypto";
-import { clientIp, rateLimit } from "@/lib/server/rate-limit";
+import { GAMEPLAY_IP_LIMIT, clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { BOARD_FULL, claimBoardSlot, utcDayOf } from "@/lib/server/board-guard";
 import { geoBoardKey, type GeoResult } from "@/lib/geo-types";
 import { geoWeeklyBoard } from "@/lib/geo-weekly";
@@ -24,7 +24,7 @@ const bodySchema = z.object({
 const RESULT_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 
 export async function POST(request: NextRequest) {
-  if (!rateLimit(`geo-lb:${clientIp(request)}`, 10, 0.1)) {
+  if (!rateLimit(`geo-lb:${clientIp(request)}`, ...GAMEPLAY_IP_LIMIT)) {
     return NextResponse.json({ error: "Too many submissions — try again in a minute." }, { status: 429 });
   }
   const supabase = getServiceSupabase();
