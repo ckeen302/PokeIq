@@ -154,21 +154,36 @@ export function swimPose(pl: SwimPlan, t: number, time: number): SwimScene {
     p.roll = -Math.PI / 2;
     p.pivot = 0.5;
     p.y = -0.5 * H - 0.18 * W - depth;
-    p.arms = { a: (ph * Math.PI * 2) % (Math.PI * 2), b: 0.2, k: up };
-    p.legs = { a: 0.25 * Math.sin(ph * Math.PI * 6), b: 0.1, k: 1 };
-    p.sway = 0.25 * Math.sin(ph * Math.PI * 2) * up;
+    // The arms half a stroke apart, each pulling slowly through the water (the first 60% of its cycle) and
+    // recovering quickly over it; the body rolls towards the pulling arm and the head rides a little higher
+    // as each arm catches; the legs flutter six beats to a stroke, one up as the other goes down.
+    const arm = (u: number) => { const f = u - Math.floor(u); return f < 0.6 ? Math.PI * (f / 0.6) : Math.PI * (1 + (f - 0.6) / 0.4); };
+    p.arms = { a: arm(ph), a2: arm(ph + 0.5), b: 0.25 + 0.35 * bump(0.55, 1, ph - Math.floor(ph)), k: up };
+    const kick = 0.32 * Math.sin(ph * Math.PI * 6);
+    p.legs = { a: 0, a2: 0, split: kick, b: 0.12 + 0.18 * Math.max(0, Math.sin(ph * Math.PI * 6)), k: 1 };
+    p.sway = 0.5 * Math.sin(ph * Math.PI * 2) * up;
+    p.y += 0.035 * Math.min(2, H) * Math.cos(ph * Math.PI * 4) * up;
   } else if (pl.stroke === "fish" || pl.stroke === "serpent") {
     // Its body wave carries it: low in the water, the back and fin showing.
     p = idleActor(a, d, front - dir * W * 0.5, z, dir, 0, time, pl.run.lane);
     p.y = -pl.sink * H - depth;
-    p.swim = { amp: pl.stroke === "fish" ? 0.06 : 0.09, waves: pl.stroke === "fish" ? 0.8 : 1.6, phase: ph * Math.PI * 2 * 1.6, style: pl.stroke === "fish" ? 1 : 2 };
+    // The wave grows with the effort (speed) and drives a gentle rise and dip of the back, nose leading.
+    const effort = 0.75 + 0.25 * smooth(0.3, 2.5, v);
+    const beat = ph * Math.PI * 2 * 1.6;
+    p.swim = { amp: (pl.stroke === "fish" ? 0.075 : 0.1) * effort, waves: pl.stroke === "fish" ? 0.8 : 1.6, phase: beat, style: pl.stroke === "fish" ? 1 : 2 };
+    p.y += 0.03 * Math.min(2, H) * Math.sin(beat) * up;
+    p.lean = 0.05 * Math.cos(beat) * up;
   } else {
     // A paddle: upright, head up, legs churning under the water.
     p = idleActor(a, d, front - dir * W * 0.5, z, dir, 0, time, pl.run.lane);
     p.y = -pl.sink * H - depth;
-    p.lean = 0.25;
-    p.gait = { motion: a.entrant.motion, phase: ph * 1.6, v: 2 };
-    p.sway = 0.06 * Math.sin(ph * Math.PI * 2);
+    // Each paddle a push: the head and shoulders surge forward and up with it, then settle.
+    const push = ph * 1.6;
+    p.lean = 0.25 + 0.07 * Math.sin(push * Math.PI * 4);
+    p.gait = { motion: a.entrant.motion, phase: push, v: 2 };
+    if (a.arms) p.arms = { a: 0.9 + 0.7 * Math.sin(push * Math.PI * 2), a2: 0.9 - 0.7 * Math.sin(push * Math.PI * 2), b: -0.5, k: up };
+    p.y += 0.04 * Math.min(2, H) * Math.abs(Math.sin(push * Math.PI * 2));
+    p.sway = 0.08 * Math.sin(push * Math.PI * 2);
   }
   if (turning) {
     // The flip turn: a somersault at the wall and back the other way.

@@ -130,7 +130,7 @@ export function poseActor(act: Actor, p: ActorPose, cam: THREE.Camera, time: num
         let a = base.a, b = base.b;
         if (o) {
           const sp = (o.split ?? 0) * (j.side ? 1 : -1) * (j.front ? 1 : 1);
-          a = mix(base.a, o.a + sp, o.k);
+          a = mix(base.a, (j.side ? o.a : o.a2 ?? o.a) + sp, o.k);
           b = mix(base.b, o.b, o.k);
         }
         JA.set(j.pivot[0], j.pivot[1], j.pivot[2], a);
@@ -141,7 +141,7 @@ export function poseActor(act: Actor, p: ActorPose, cam: THREE.Camera, time: num
       }
       case "arm": {
         const o = p.arms;
-        const a = o ? mix(base.a, o.a, o.k) : base.a;
+        const a = o ? mix(base.a, j.side ? o.a : o.a2 ?? o.a, o.k) : base.a;
         const b = o ? mix(base.b, o.b, o.k) : base.b;
         tmp.copy(S).multiplyScalar(1 - raise).addScaledVector(Zl, raise).normalize();
         JA.set(j.pivot[0], j.pivot[1], j.pivot[2], a * (1 - raise) + out * (1.35 + 0.05 * Math.sin(time * 9)) * raise);
