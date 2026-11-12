@@ -1,13 +1,12 @@
 import "server-only";
 import { PDK_MIN_MS_PER_CELL, claimBoardSlot, plausibleMs } from "./board-guard";
 import { isCurrentConnDate } from "@/lib/connections/types";
-import { betterResult } from "@/lib/pikadoku/score";
 import { CONN_LAUNCH_DATE } from "@/lib/connections/types";
 import { isLiveWeek, weekStart } from "@/lib/pikadoku/weeks";
 import { PDK_CELLS, type PdkDifficulty, type PdkGuess, type PdkResultResponse, type PdkSettings } from "@/lib/pikadoku/types";
 import { ensureMaster } from "./pikadoku-master";
 import { dailyGrid, PdkNoBoardError, practiceGrid, ppFor, replayGuesses, revealFor, weeklyGrid } from "./pikadoku";
-import { pdkElapsed, pdkPlayerKey, pdkStore, pickPct, scoreAnswers, standingOf, type PdkCounts, type PdkStore } from "./pikadoku-board";
+import { pdkElapsed, pdkPlayerKey, pdkStore, pickPct, scoreAnswers, type PdkCounts, type PdkStore } from "./pikadoku-board";
 
 export interface PdkFinishInput {
   /** A daily (date + difficulty) or a practice seed with its settings. */
@@ -74,29 +73,36 @@ export async function finishGame(input: PdkFinishInput, store: PdkStore | null =
   let rank = null;
   let score: number | null = null;
   let pcts: (number | null)[] | null = null;
+  // The rarity, score and rank need the database; if it's down the game still finishes, as it does with no database at all.
   if (store && slot) {
-    let saved: boolean | null = false;
-    if (counted) saved = await store.saveAnswers({ date: slot.date, difficulty: slot.difficulty, player, name: input.name ?? null, answers, ms: null });
-    const base = await store.counts(slot.date, slot.difficulty);
-    // A game that wasn't stored (an archive day) is counted in virtually; a stored one already is.
-    counts = base && (counted && saved !== null ? base : plus(base, answers));
-    if (counts) {
-      ({ score, pcts } = scoreAnswers(counts, answers));
-      if (counted) {
-        const ms = pdkElapsed(input.start, `${slot.date}:${slot.difficulty}`, now) ?? 0;
-        const mine = { player, name: input.name ?? "", solved: answers.size, score, ms };
-        let rows = (await store.board(slot.date, slot.difficulty)) ?? [];
-        // A name sent later (a reload, or typed on the results screen) joins the board; the first entry per trainer is kept.
-        // A time nobody could fill the grid in isn't ranked, and an address gets a few new entries a day (board-guard).
-        const fresh = !rows.some((r) => r.player === player);
-        if (fresh && input.name && plausibleMs(ms, Math.max(1, answers.size * PDK_MIN_MS_PER_CELL)) && (await claimBoardSlot(input.ip, `pdk-${slot.difficulty}`, slot.date))) {
-          await store.saveBoard(slot.date, slot.difficulty, mine);
-          rows = (await store.board(slot.date, slot.difficulty)) ?? [];
+    try {
+      let saved: boolean | null = false;
+      if (counted) saved = await store.saveAnswers({ date: slot.date, difficulty: slot.difficulty, player, name: input.name ?? null, answers, ms: null });
+      const base = await store.counts(slot.date, slot.difficulty);
+      // A game that wasn't stored (an archive day) is counted in virtually; a stored one already is.
+      counts = base && (counted && saved !== null ? base : plus(base, answers));
+      if (counts) {
+        ({ score, pcts } = scoreAnswers(counts, answers));
+        if (counted) {
+          const ms = pdkElapsed(input.start, `${slot.date}:${slot.difficulty}`, now) ?? 0;
+          const mine = { player, name: input.name ?? "", solved: answers.size, score, ms };
+          let stored = await store.entry(slot.date, slot.difficulty, player);
+          // A name sent later (a reload, or typed on the results screen) joins the board; the first entry per trainer is kept.
+          // A time nobody could fill the grid in isn't ranked, and an address gets a few new entries a day (board-guard).
+          if (!stored && input.name && plausibleMs(ms, Math.max(1, answers.size * PDK_MIN_MS_PER_CELL)) && (await claimBoardSlot(input.ip, `pdk-${slot.difficulty}`, slot.date))) {
+            await store.saveBoard(slot.date, slot.difficulty, mine);
+            stored = await store.entry(slot.date, slot.difficulty, player);
+          }
+          // With the board off, the game ranks alone (1 of 1), as it always has.
+          rank = (await store.standing(slot.date, slot.difficulty, stored ?? mine, !!stored)) ?? { position: 1, total: 1 };
         }
-        const others = rows.filter((r) => r.player !== player);
-        const merged = rows.some((r) => r.player === player) ? rows : [...others, mine].sort(betterResult);
-        rank = standingOf(merged, player);
       }
+    } catch (err) {
+      console.error("[pikadoku] rarity and rank unavailable:", err instanceof Error ? err.message : err);
+      counts = null;
+      score = null;
+      pcts = null;
+      rank = null;
     }
   }
   const c = counts;

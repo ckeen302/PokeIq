@@ -60,7 +60,12 @@ const quietly = <T,>(label: string, p: Promise<T> | undefined | null, fallback: 
 const findProfile = cache(async (raw: string) => {
   const name = decodeURIComponent(raw);
   if (!USERNAME_RE.test(name)) return null;
-  const user = await findUserByName(name).catch(() => null);
+  // The database being down isn't "no such trainer": the page says profiles are unavailable instead.
+  const user = await findUserByName(name).catch((err) => {
+    console.error("[profile] account lookup failed:", err instanceof Error ? err.message : err);
+    return "unavailable" as const;
+  });
+  if (user === "unavailable") return user;
   if (!user) return null;
   const key = battleKey(`u:${user.id}`);
   const replays = replayStore();
@@ -105,6 +110,7 @@ const findProfile = cache(async (raw: string) => {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const found = await findProfile((await params).name);
+  if (found === "unavailable") return pageMetadata({ title: "Trainer profile", description: "Trainer profiles on PokéIQ.", noindex: true });
   if (!found) return pageMetadata({ title: "Trainer not found", description: "No such trainer on PokéIQ.", noindex: true });
   return pageMetadata({
     title: `${found.username} · Trainer profile`,
@@ -116,6 +122,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function UserProfilePage({ params }: PageProps) {
   const found = await findProfile((await params).name);
   if (!found) notFound();
+  if (found === "unavailable") {
+    return (
+      <div className="mx-auto max-w-4xl space-y-6">
+        <BackButton href="/users" label="Back to trainers" />
+        <Card>
+          <CardContent className="py-10 text-center text-muted-foreground" data-testid="profile-unavailable">
+            Trainer profiles are unavailable right now. Try again in a minute.
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
   const now = Date.now();
   const rated = found.battles?.formats.filter((f) => f.rating !== undefined) ?? [];
   return (
