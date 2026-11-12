@@ -16,7 +16,8 @@ export function ResultGrid({ grid, className }: { grid: string; className?: stri
         <motion.span
           key={i}
           className={cn(
-            "h-6 w-6 rounded-[3px] shadow-[inset_0_-3px_0_rgb(0_0_0/0.3)]",
+            // Narrow phones (360) get a size smaller, so a ten-question run stays one row.
+            "h-6 w-6 rounded-[3px] shadow-[inset_0_-3px_0_rgb(0_0_0/0.3)] max-[389px]:h-5 max-[389px]:w-5",
             c === "1" ? "bg-success shadow-[0_0_8px_-2px_hsl(var(--success)),inset_0_-3px_0_rgb(0_0_0/0.3)]" : "bg-destructive/80"
           )}
           initial={{ scale: 0, opacity: 0 }}
