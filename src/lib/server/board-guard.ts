@@ -18,13 +18,27 @@ import { claimOnce } from "./replay-guard";
 // Generous: phone carriers put many players behind one shared address (CGNAT), and a launch brings exactly that crowd.
 export const BOARD_SLOTS_PER_ADDRESS = 25;
 
+/**
+ * The first slot not yet known to be taken, per address and board, on this
+ * instance. Slots are claimed in order and never handed back within their
+ * period, so a busy address's next entry starts there instead of re-trying
+ * every taken slot (each try is a database insert: 25 in a row for a full
+ * address, which under a slow database held the request for a minute).
+ */
+const firstOpen = new Map<string, number>();
+const FIRST_OPEN_MAX = 20_000;
+
 export async function claimBoardSlot(ip: string | null | undefined, board: string, period: string, slots = BOARD_SLOTS_PER_ADDRESS): Promise<boolean> {
   if (!ip) return true;
   const who = deriveSeed("board-ip", ip);
-  for (let i = 0; i < slots; i++) {
-    if (await claimOnce(`board:${board}:${period}:${who}:${i}`)) return true;
-  }
-  return false;
+  const key = `${board}:${period}:${who}`;
+  let i = firstOpen.get(key) ?? 0;
+  let claimed = false;
+  for (; i < slots && !claimed; i++) claimed = await claimOnce(`board:${key}:${i}`);
+  firstOpen.delete(key);
+  firstOpen.set(key, i);
+  if (firstOpen.size > FIRST_OPEN_MAX) firstOpen.delete(firstOpen.keys().next().value!);
+  return claimed;
 }
 
 export const BOARD_FULL = "Your network already has a few entries on this board today.";
