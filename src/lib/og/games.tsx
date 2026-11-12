@@ -8,6 +8,7 @@ import { eventOf, formatMark, type EventId } from "@/lib/games/events";
 import { buildNations, runEvent, runGames, type NationSpec } from "@/lib/games/games";
 import { DEFAULT_NATIONS, h2hQuestion } from "@/lib/games/deeplink";
 import { DEFAULT_GAMES_SEED } from "@/lib/games/seed";
+import { h2hSummary, type H2HSide } from "@/lib/games/h2h";
 import { DEFAULT_FIELDS, RECORDS_ALL, RECORDS_FILE } from "@/lib/games/records-data";
 
 /**
@@ -55,6 +56,27 @@ function Podium({ rows }: { rows: { a: Athlete; mark: string; medal: 1 | 2 | 3 }
   );
 }
 
+/** A head to head: the two side by side, the winner's frame gold, each one's result under it. */
+function Versus({ sides }: { sides: { a: Athlete; s: H2HSide }[] }) {
+  return (
+    <div style={{ display: "flex", position: "relative", width: W, height: H, borderRadius: 16, overflow: "hidden", background: "linear-gradient(180deg,#0b1a3a,#060b18)", border: "3px solid #2a2745", alignItems: "center", justifyContent: "space-around", padding: "0 14px" }}>
+      <div style={{ display: "flex", position: "absolute", left: W / 2 - 24, top: 168, fontFamily: "Chakra Petch", fontSize: 32, color: ACCENT }}>VS</div>
+      {sides.map(({ a, s }) => (
+        <div key={a.key} style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 190 }}>
+          <div style={{ display: "flex", height: 26, marginBottom: 6 }}>
+            {s.win && <div style={{ display: "flex", padding: "2px 14px", borderRadius: 13, background: ACCENT, color: "#0d1626", fontFamily: "Chakra Petch", fontSize: 18 }}>WINS</div>}
+          </div>
+          <div style={{ display: "flex", width: 176, height: 176, borderRadius: 88, alignItems: "center", justifyContent: "center", border: `5px solid ${s.win ? ACCENT : "#5b6478"}`, background: s.win ? "rgba(255,216,74,0.12)" : "rgba(255,255,255,0.05)", opacity: s.win ? 1 : 0.85 }}>
+            <Render a={a} size={140} />
+          </div>
+          <div style={{ display: "flex", marginTop: 12, fontFamily: "Chakra Petch", fontSize: 24, color: "#ffffff", textAlign: "center" }}>{a.name}</div>
+          <div style={{ display: "flex", marginTop: 2, fontFamily: "Chakra Petch", fontSize: 26, color: s.win ? ACCENT : "#aab3c5" }}>{s.mark}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function podiumOf(event: EventId, keys: string[], seed: number, rain: boolean) {
   const field = keys.map((k) => GAMES_BY_KEY.get(k)).filter((a): a is Athlete => !!a);
   const out = runEvent(event, field, seed, { rain });
@@ -71,9 +93,21 @@ function podiumOf(event: EventId, keys: string[], seed: number, rain: boolean) {
 /** A shared (or default) run of an event. */
 export function gamesEventCard(event: EventId, keys: string[] = [], seed: number | null = null, rain = false) {
   const e = eventOf(event);
-  const { field, rows } = podiumOf(event, keys.length ? keys : DEFAULT_FIELDS[event], seed ?? DEFAULT_GAMES_SEED, rain);
+  const { field, rows, out } = podiumOf(event, keys.length ? keys : DEFAULT_FIELDS[event], seed ?? DEFAULT_GAMES_SEED, rain);
   const gold = rows.find((r) => r.medal === 1);
   const title = field.length === 2 ? h2hQuestion(event, field[0].name, field[1].name) : e.question;
+  if (field.length === 2) {
+    const s = h2hSummary(out, field[0], field[1]);
+    return ogCard({
+      eyebrow: `The PokéIQ Games · ${e.name} · head to head`,
+      title: [title],
+      titleSize: title.length > 40 ? 40 : title.length > 26 ? 48 : 60,
+      subtitle: `${s.line}, from real stats and real physics.`,
+      accent: ACCENT,
+      visual: <Versus sides={[{ a: field[0], s: s.sides[0] }, { a: field[1], s: s.sides[1] }]} />,
+      footer: "Watch it in 3D →",
+    });
+  }
   return ogCard({
     eyebrow: `The PokéIQ Games · ${e.name}`,
     title: [title],

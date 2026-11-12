@@ -11,6 +11,8 @@ import type { EventOutcome, GamesResult } from "@/lib/games/games";
 import { RACE_URLS } from "@/components/race/urls";
 import type { Quality } from "./scene";
 import { eventShow } from "./show/build";
+import { h2hClip } from "./show/h2h";
+import { h2hSummary } from "@/lib/games/h2h";
 import { gamesSummary } from "./show/games";
 import type { Sequence } from "./show/sequence";
 import { gamesVideoPlan, videoSize, type VideoFormat } from "./record";
@@ -50,7 +52,7 @@ const HOST = new URL(SITE_URL).host;
  * and the end card with the medallists and the link. The Games make a
  * summary: every event's decisive moments, then the medal table.
  */
-export default function MakeGamesVideo(p: { kind: "event" | "games"; outcome: EventOutcome | null; games: GamesResult | null; byKey: ReadonlyMap<string, Athlete>; title: string; slug: string; link: string; h2h: boolean; onRecording(on: boolean): void; onClose(): void }) {
+export default function MakeGamesVideo(p: { kind: "event" | "games"; outcome: EventOutcome | null; games: GamesResult | null; byKey: ReadonlyMap<string, Athlete>; title: string; slug: string; link: string; h2h: boolean; /** A head to head's two keys in the question's order. */ fieldKeys?: string[]; onRecording(on: boolean): void; onClose(): void }) {
   const [phase, setPhase] = useState<Phase>({ kind: "idle" });
   const [support, setSupport] = useState<"mp4" | "webm" | "none">("mp4");
   const [format, setFormat] = useState<VideoFormat>("9:16");
@@ -61,7 +63,9 @@ export default function MakeGamesVideo(p: { kind: "event" | "games"; outcome: Ev
 
   const parts = useMemo<Sequence[]>(() => {
     if (p.kind === "games" && p.games) return gamesSummary(p.games, p.byKey);
-    if (p.outcome) return [eventShow(p.outcome, p.byKey, { budget: p.h2h ? 16 : 24, video: true, podium: false })];
+    // A head to head: a short cut (the hook, the deciding stretch, the slow-motion replay); the result card is the recorder's.
+    if (p.outcome && p.h2h) return [h2hClip(p.outcome, p.byKey)];
+    if (p.outcome) return [eventShow(p.outcome, p.byKey, { budget: 24, video: true, podium: false })];
     return [];
   }, [p.kind, p.games, p.outcome, p.byKey, p.h2h]);
   const length = useMemo(() => gamesVideoPlan(parts, seconds).total, [parts, seconds]);
@@ -76,6 +80,17 @@ export default function MakeGamesVideo(p: { kind: "event" | "games"; outcome: Ev
     ([["1", o.podium.gold], ["2", o.podium.silver], ["3", o.podium.bronze]] as const).forEach(([pl, keys]) => keys.forEach((k) => rows.push({ key: k, place: pl, name: p.byKey.get(k)?.name ?? k, mark: o.event === "wrestling" ? (pl === "1" ? "Gold" : pl === "2" ? "Silver" : "Bronze") : formatMark(o.event, o.marks.get(k)) })));
     return rows;
   }, [p.kind, p.games, p.outcome, p.byKey]);
+
+  /** A head to head's result card: both Pokémon, both results, the margin. */
+  const versus = useMemo(() => {
+    const o = p.outcome;
+    if (!p.h2h || !o) return undefined;
+    const keys = o.standings.length === 2 ? [...o.standings] : [];
+    const [a, b] = (p.fieldKeys ?? keys).map((k) => p.byKey.get(k));
+    if (!a || !b) return undefined;
+    const s = h2hSummary(o, a, b);
+    return { sides: s.sides, line: s.line };
+  }, [p.h2h, p.outcome, p.byKey, p.fieldKeys]);
 
   useEffect(() => setSupport(videoSupport()), []);
   useEffect(() => { const f = formatFromUrl(); if (f) setFormat(f); }, []);
@@ -113,6 +128,7 @@ export default function MakeGamesVideo(p: { kind: "event" | "games"; outcome: Ev
         hook,
         sub,
         podium,
+        versus,
         endTitle: p.kind === "games" ? "Final medal table" : `${ev?.name ?? ""} · results`,
         slug: p.slug,
         link: `${HOST}${p.link}`,
@@ -165,7 +181,7 @@ export default function MakeGamesVideo(p: { kind: "event" | "games"; outcome: Ev
           <Clapperboard className="h-5 w-5 text-[#ffd84a]" aria-hidden />
           <h2 id="gm-video-title" className="font-display text-lg font-bold uppercase tracking-wider">Make a video</h2>
         </div>
-        <p className="mt-1 text-sm text-white/65">{p.kind === "games" ? "A summary of the Games: every event's decisive moments, then the medal table, with the sound." : "This broadcast as a video, with the slow-motion replay and the sound."}</p>
+        <p className="mt-1 text-sm text-white/65">{p.kind === "games" ? "A summary of the Games: every event's decisive moments, then the medal table, with the sound." : p.h2h ? "The question, the deciding moment in slow motion, then both results and the link: made for TikTok, Reels and Shorts." : "This broadcast as a video, with the slow-motion replay and the sound."}</p>
         {phase.kind === "done" ? (
           <div className="mt-4 space-y-3">
             <video src={phase.url} controls playsInline loop autoPlay muted className={phase.format === "9:16" ? "mx-auto aspect-[9/16] max-h-[52vh] rounded-lg bg-black" : "mx-auto aspect-video w-full rounded-lg bg-black"} data-testid="games-video-preview" />

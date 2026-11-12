@@ -201,6 +201,63 @@ export async function runGames({ browser, BASE, OUT, errors, step }) {
   });
   await context.close();
 
+  step("the PokéIQ Games: a head to head on a phone (pick, watch, the result, a short 9:16 export, the share link replays it)");
+  await part(errors, "head to head", async () => {
+    const phone = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, acceptDownloads: true });
+    await phone.addInitScript(() => { sessionStorage.setItem("pokeiq-splash", "1"); localStorage.setItem("pokeiq-muted", "1"); });
+    const p = await phone.newPage();
+    p.setDefaultTimeout(120_000);
+    p.on("pageerror", (err) => errors.push(`[${p.url()}] PAGEERROR: ${err.message}`));
+    // Pick: from a Pokémon's page, a rival and an event in three taps.
+    await p.goto(`${BASE}/lab/games/pokemon/pikachu?view=list`, { waitUntil: "load" });
+    const sec = p.getByTestId("h2h-section");
+    await sec.scrollIntoViewIfNeeded();
+    if ((await sec.getByTestId("hub-h2h").count()) < 1) errors.push("games: Pikachu's page has no example head to heads");
+    if ((await sec.getByTestId("h2h-slot-a").getAttribute("data-key")) !== "pikachu") errors.push("games: the head-to-head picker doesn't start with the page's Pokémon");
+    await sec.getByTestId("h2h-rival").filter({ hasText: /snorlax/i }).first().tap();
+    await sec.getByTestId("h2h-event-weightlifting").tap();
+    const q = await sec.getByTestId("h2h-go").innerText();
+    if (!/pikachu out-lift snorlax/i.test(q)) errors.push(`games: the head-to-head button reads "${q}"`);
+    await sec.getByTestId("h2h-go").tap();
+    await p.waitForURL(/\/lab\/games\/run\?e=weightlifting&vs=pikachu,snorlax/);
+    const shared = p.url();
+    const over = await p.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    if (over > 1) errors.push(`games: the head to head scrolls sideways on a phone (${over} px)`);
+    // Watch, then the result (seeked to the end), with the video and the share link on it.
+    await p.goto(`${shared}&q=draft&len=5&vq=draft&vfps=10`, { waitUntil: "load" });
+    const ok = await p.waitForFunction(() => ["show", "end"].includes(document.querySelector('[data-testid="games-stage"]')?.dataset.phase ?? ""), null, { timeout: 300_000 }).then(() => true, () => false);
+    if (!ok) throw new Error("the head to head never started");
+    const end = await p.evaluate(() => window.__games.state().end);
+    await p.evaluate((t) => window.__games.seek(t, false), end + 1);
+    await p.getByTestId("games-h2h-result").waitFor();
+    const line = await p.getByTestId("games-h2h-result").locator("p").innerText();
+    if (!/wins|dead heat/i.test(line)) errors.push(`games: the head-to-head result reads "${line}"`);
+    await p.screenshot({ path: `${OUT}/games-h2h-phone.png` });
+    await p.getByTestId("games-h2h-video").dispatchEvent("click");
+    await p.getByTestId("games-video-dialog").waitFor();
+    await p.getByTestId("games-video-record").dispatchEvent("click");
+    const done = await p.getByTestId("games-video-download").waitFor({ timeout: 20 * 60_000 }).then(() => true, () => false);
+    if (!done) errors.push("games: the head-to-head video never finished");
+    else {
+      const [download] = await Promise.all([p.waitForEvent("download"), p.getByTestId("games-video-download").dispatchEvent("click")]);
+      const file = `${OUT}/games-h2h-video.mp4`;
+      await download.saveAs(file);
+      const mp4 = inspectMp4(fs.readFileSync(file));
+      const video = mp4.tracks.find((t) => t.kind === "vide");
+      if (!video || video.width !== 1080 || video.height !== 1920) errors.push(`games: the head-to-head video is ${video ? `${video.width}×${video.height}` : "missing"}`);
+      if (Math.abs(mp4.seconds - 5) > 0.3) errors.push(`games: the head-to-head video lasts ${mp4.seconds} s, not 5`);
+    }
+    // The share link replays the same result, with its own head-to-head preview card.
+    const replay = await phone.newPage();
+    await replay.goto(`${shared}&view=list`, { waitUntil: "load" });
+    const og = await replay.locator('meta[property="og:image"]').getAttribute("content");
+    if (!og || !/vs=pikachu,snorlax/.test(og)) errors.push(`games: the head to head's preview card is ${og}`);
+    const first = await replay.locator('[data-testid="games-list"] tbody tr').first().innerText();
+    const winner = line.split(/\s+(wins|pushes)/i)[0].trim().toLowerCase();
+    if (!first.toLowerCase().includes(winner)) errors.push(`games: the share link's result (${first}) isn't the one watched (${line})`);
+    await phone.close();
+  });
+
   await part(errors, "phone", async () => {
     const phone = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
     await phone.addInitScript(() => { sessionStorage.setItem("pokeiq-splash", "1"); localStorage.setItem("pokeiq-muted", "1"); });

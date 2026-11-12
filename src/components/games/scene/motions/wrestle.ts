@@ -3,7 +3,7 @@ import { boutAt, type BoutTrace } from "@/lib/games/wrestle";
 import { dohyoScale, dohyoTop } from "@/lib/games/venues";
 import type { Vec3 } from "@/lib/race/director";
 import type { ActorPose } from "../pose";
-import { bump, dims, idleActor, isBiped, lerp, smooth, walkPhase, type Dims } from "./common";
+import { bump, dims, idleActor, isBiped, legless, lerp, restless, smooth, walkPhase, type Dims } from "./common";
 
 /**
  * A wrestling bout on the dohyō, driven by the bout's trace (lib/games/
@@ -61,6 +61,12 @@ export const RITUALS: { t: number; who: "a" | "b"; kind: "stamp" | "salt" }[] = 
   { t: -3.25, who: "b", kind: "salt" },
 ];
 
+/** The start of this wrestler's next (or current) surge (τ), or −∞. */
+function sg0(tr: BoutTrace, who: "a" | "b", tau: number): number {
+  for (const sg of tr.surges) if (sg.who === who && sg.t + 0.32 > tau) return sg.t;
+  return -1e9;
+}
+
 export function boutPose(pl: WrestlePlan, tau: number, time: number): WrestleScene {
   const tr = pl.trace;
   const sc = pl.scale;
@@ -86,6 +92,7 @@ export function boutPose(pl: WrestlePlan, tau: number, time: number): WrestleSce
       x = lerp(edgeX, crouchX - sign * 0.6 * sc, k);
       p = idleActor(ath, d, x, 0, -sign, 0, time, who === "a" ? 1 : 2);
       if (tau < -6) p.gait = { motion: ath.entrant.motion, phase: walkPhase(d, 1, tau + 7), v: 1 };
+      else if (tau > -3) restless(p, ath, d, time, who === "a" ? 1 : 2);
       for (const r of RITUALS) {
         if (r.who !== who) continue;
         const u = tau - r.t;
@@ -106,7 +113,7 @@ export function boutPose(pl: WrestlePlan, tau: number, time: number): WrestleSce
       const k = smooth(-2.4, -1.2, tau);
       x = lerp(crouchX - sign * 0.6 * sc, crouchX, k);
       p = idleActor(ath, d, x, 0, -sign, 0, time, who === "a" ? 1 : 2);
-      p.squash = -0.22 * k;
+      p.squash = -0.22 * k - (legless(ath) ? 0.12 * bump(-0.6, 0.02, tau) : 0);
       p.lean = 0.5 * k;
       p.headOn = lerp(0.32, 0.8, k);
       p.legs = { a: 0.4 * k, b: -0.8 * k, k };
@@ -117,7 +124,8 @@ export function boutPose(pl: WrestlePlan, tau: number, time: number): WrestleSce
       // Drawn chest to chest, not one inside the other: a figure is wider on screen than it is deep along the push, so
       // each stands its drawn half-width back from the contact point. As it is driven to its own edge it closes up to
       // its real depth again, so its feet leave the ring exactly when the bout says they do.
-      const wide = Math.max(depth, 0.36 * d.w);
+      // (A little inside its drawn half-width: the two overlap where they grip, so it reads as contact, not two figures floating side by side.)
+      const wide = Math.max(depth, 0.27 * d.w);
       const edge = (sign * sNow + depth) / tr.ring;
       const stand = lerp(wide, depth, smooth(0.72, 1, edge));
       x = lerp(crouchX, sNow * k + sign * stand, k);
@@ -134,16 +142,23 @@ export function boutPose(pl: WrestlePlan, tau: number, time: number): WrestleSce
       const live = tau < end ? 1 : 0;
       // Driving forward it leans in low; driven back it is stood up, heels dug in.
       const drive = Math.max(-1, Math.min(1, fwd / 0.3));
-      p.lean = lerp(0.5, 0.26 + 0.08 * effort + 0.12 * surge + (0.1 * Math.max(0, drive) - 0.14 * Math.max(0, -drive) - 0.14 * hit) * live, k);
-      p.squash = -0.14 - 0.06 * surge + 0.05 * hit * live;
-      x += sign * depth * (0.07 * hit - 0.05 * surge) * live * k;
+      // Both lean into the other the whole time (that is the contact): the pusher low and driving, the pushed still
+      // leaning in but being straightened up as its heels slide.
+      p.lean = lerp(0.5, 0.34 + 0.08 * effort + 0.16 * surge + (0.12 * Math.max(0, drive) - 0.1 * Math.max(0, -drive) - 0.12 * hit) * live, k);
+      p.squash = -0.14 - 0.08 * surge + 0.06 * hit * live;
+      // The shove reads: the surging one lunges in, the other is knocked back a hand's width and rocks.
+      x += sign * depth * (0.12 * hit - 0.1 * surge) * live * k;
+      p.roll += 0.08 * hit * live;
       p.x = x;
       // Turned three quarters towards each other (not both flat to the lens): two bodies, meeting at the contact point.
       p.headOn = lerp(0.32, 1.05, k);
       // Legs: driving (short steps as it moves forward) or braced and sliding back.
       if (fwd > 0.05) p.gait = { motion: ath.entrant.motion, phase: (Math.abs(sNow) / Math.max(0.2, d.hip * 1.4)) * 2 + tau * 1.2, v: Math.min(2.2, 0.6 + fwd * 2) };
       else p.legs = { a: -0.35, b: -0.5, k: 1, split: 0.4 };
-      if (ath.arms) p.arms = { a: 1.1 + 0.2 * surge, b: 0.5, k: 1 };
+      // Hands on: arms out straight into the other's chest when driving, bent and gripping when giving ground.
+      if (ath.arms) p.arms = { a: 1.25 + 0.2 * surge, b: lerp(0.55, 0.1, Math.max(0, drive)) - 0.25 * surge, k: 1 };
+      // No legs: it coils and springs into each surge (its whole body is the push).
+      if (legless(ath)) { p.squash += -0.1 * bump(sg0(tr, who, tau) - 0.25, sg0(tr, who, tau), tau) + 0.12 * surge; }
       p.shake = 0.004 * H * (0.5 + surge) * (tau < end ? 1 : 0);
       p.sway = 0.04 * Math.sin(time * 2.3 + (who === "a" ? 0 : 1.7));
       if (tau >= end) {

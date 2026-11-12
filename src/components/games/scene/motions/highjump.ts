@@ -4,7 +4,7 @@ import { topSpeed } from "@/lib/race/model";
 import type { Athlete } from "@/lib/games/athlete";
 import { HJ } from "@/lib/games/venues";
 import type { ActorPose } from "../pose";
-import { bump, clamp01, dims, idleActor, isBiped, lerp, smooth, walkPhase, wobble, type Dims } from "./common";
+import { bump, clamp01, coilSpring, dims, idleActor, isBiped, lerp, restless, smooth, walkPhase, wobble, type Dims } from "./common";
 
 /**
  * The high jump, driven by the jump's physics (lib/games/highjump): a
@@ -148,6 +148,7 @@ export function highJumpAt(pl: HighJumpPlan, tau: number, time: number): HighJum
     // Rocking on the mark, counting the strides in its head.
     const k = clamp01((tau - pl.start) / 1.2);
     pose.lean = 0.1 * Math.sin(k * Math.PI * 2.5);
+    restless(pose, a, d, time, 3);
     com = [pl.S[0], d.h * 0.55, pl.S[1]];
   } else if (tau < 0) {
     const t = tau + pl.tApp;
@@ -161,11 +162,12 @@ export function highJumpAt(pl: HighJumpPlan, tau: number, time: number): HighJum
       roll: 0,
       // Leaning into the bend: tan θ = v²/(r g).
       sway: -Math.atan((v * v * p.curv) / G) * 0.8 * smooth(-1.4, -0.5, tau) * (1 - smooth(-0.1, 0, tau)),
-      squash: -0.07 * bump(-0.4, -0.08, tau) + 0.03 * Math.sin(t * strideHz * Math.PI * 2) * 0.5,
+      squash: -0.07 * bump(-0.4, -0.08, tau) + 0.03 * Math.sin(t * strideHz * Math.PI * 2) * 0.5 + (a.entrant.motion === "slither" ? 0 : coilSpring(a, tau, 1.2)),
       gait: { motion: a.entrant.motion, phase: t * strideHz, v },
       shadow: 1,
     };
-    // The penultimate step sinks the hips; at the plant the arms and the lead knee drive up (a serpent coils instead).
+    // The penultimate step sinks the hips; at the plant the arms and the lead knee drive up (a serpent coils instead;
+    // a hopper or a fish gathers into its coil above, and the flight's spring below carries it out).
     if (a.entrant.motion === "slither") pose.squash -= 0.14 * smooth(-0.3, -0.04, tau);
     else if (tau > -0.12) { pose.raise = smooth(-0.12, 0, tau) * 0.7; pose.legs = { a: 0.9, a2: -0.4, b: -0.6, k: smooth(-0.12, 0, tau) }; }
     com = [p.x, d.h * 0.55, p.z];

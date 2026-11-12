@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, Clapperboard, CloudRain, Dices, Info, List, Medal, Play, RotateCcw, Share2, SkipForward, Trophy, Users, Volume2, VolumeX, X } from "lucide-react";
+import { ArrowLeft, Clapperboard, CloudRain, Dices, Info, List, Medal, Play, RotateCcw, Share2, SkipForward, Swords, Trophy, Users, Volume2, VolumeX, X } from "lucide-react";
 import { isMuted, onMuteChange, setMuted } from "@/lib/sound";
 import { copyText } from "@/lib/share";
 import { fromAthleteRow, type Athlete, type AthleteRow } from "@/lib/games/athlete";
@@ -24,6 +24,9 @@ import type { SprintExtras } from "./show/sprint";
 import type { Show } from "./show/types";
 import { GamesInfo } from "./GamesInfo";
 import { GamesPicker } from "./GamesPicker";
+import { H2HPicker } from "./H2HPicker";
+import { h2hSummary } from "@/lib/games/h2h";
+import { FAVOURITES } from "@/lib/games/lineups";
 import { NationsPicker } from "./NationsPicker";
 import { cn } from "@/lib/utils";
 
@@ -103,6 +106,7 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
   const [partIdx, setPartIdx] = useState(0);
   const [muted, setMutedState] = useState(true);
   const [picker, setPicker] = useState(false);
+  const [vsOpen, setVsOpen] = useState(false);
   const [info, setInfo] = useState(false);
   const [videoOpen, setVideoOpen] = useState(false);
   const [recording, setRecording] = useState(false);
@@ -513,6 +517,7 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
   };
   const runField = (ev: EventId, keys: string[]) => {
     setPicker(false);
+    setVsOpen(false);
     const seed = spec.seed;
     setSpec({ mode: "event", event: ev, keys, defaults: spec.mode === "event" ? spec.defaults : [], seed, rain: spec.mode === "event" ? spec.rain : false });
     setPartIdx(0);
@@ -530,6 +535,7 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
   const ended = phase === "end";
   const isSwim = spec.mode === "event" && eventOf(spec.event).kind === "swim";
   const table = games ? medalTable(games.nations, games.outcomes.slice(0, Math.min(partIdx + (ended ? 1 : 0), games.outcomes.length))) : null;
+  const vs = outcome && isH2H ? h2hSummary(outcome, field[0], field[1]) : null;
   const rows = outcome ? outcome.standings.map((k, i) => ({ key: k, place: i + 1, mark: outcome.event === "wrestling" ? "" : formatMark(outcome.event, outcome.marks.get(k)) })) : [];
 
   return (
@@ -608,8 +614,20 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
             <div className="rc-ui rc-results pointer-events-auto absolute inset-x-3 bottom-[7.2rem] z-20 max-h-[min(26rem,calc(100%-14rem))] overflow-y-auto rounded-xl border border-white/15 p-3 text-white shadow-2xl backdrop-blur-xl sm:inset-x-auto sm:bottom-24 sm:right-4 sm:w-[27rem] sm:max-h-[min(31rem,calc(100%-12rem))]" data-testid="games-results" data-rc-scroll>
               <div className="mb-1 flex items-center justify-between gap-2">
                 <h2 className="font-display text-sm font-bold uppercase tracking-wider"><Trophy className="mr-1.5 inline h-4 w-4 text-[#ffd84a]" aria-hidden />{table ? "Medal table" : `Results · ${eventOf(event).name}`}</h2>
-                <button type="button" onClick={() => setPanel(false)} className="rounded p-1 text-white/60 hover:text-white" aria-label="Hide" data-testid="games-results-close"><X className="h-4 w-4" /></button>
+                <div className="flex shrink-0 items-center gap-1">
+                  {spec.mode === "event" && <button type="button" onClick={() => setVsOpen(true)} disabled={!all} className="inline-flex h-8 items-center gap-1 rounded-md border border-white/20 px-2 font-display text-[10px] font-bold uppercase tracking-wider text-white/85 hover:border-[#ffd84a]/60 hover:text-white" data-testid="games-h2h-open"><Swords className="h-3.5 w-3.5 text-[#ffd84a]" aria-hidden /> Head to head</button>}
+                  <button type="button" onClick={() => setPanel(false)} className="rounded p-1 text-white/60 hover:text-white" aria-label="Hide" data-testid="games-results-close"><X className="h-4 w-4" /></button>
+                </div>
               </div>
+              {vs && (
+                <div className="mb-2 rounded-lg border border-[#ffd84a]/30 bg-[#ffd84a]/[0.06] p-2.5" data-testid="games-h2h-result">
+                  <p className="font-display text-sm font-bold uppercase tracking-wide text-[#ffd84a]">{vs.line}</p>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <button type="button" onClick={() => setVideoOpen(true)} className="rc-go inline-flex h-10 items-center justify-center gap-1.5 rounded-lg font-display text-xs font-bold uppercase tracking-wider" data-testid="games-h2h-video"><Clapperboard className="h-4 w-4" aria-hidden /> 9:16 video</button>
+                    <button type="button" onClick={share} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-white/20 font-display text-xs font-bold uppercase tracking-wider text-white" data-testid="games-h2h-share"><Share2 className="h-4 w-4" aria-hidden /> Share link</button>
+                  </div>
+                </div>
+              )}
               {photo && !table && (
                 <figure className="mb-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -696,6 +714,9 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
           {picker && all && spec.mode === "event" && (
             <GamesPicker all={all} event={spec.event} keys={field.map((a) => a.key)} onRun={runField} onClose={() => setPicker(false)} />
           )}
+          {vsOpen && all && spec.mode === "event" && (
+            <H2HPicker variant="sheet" all={all} a={isH2H ? field[0].key : null} b={isH2H ? field[1].key : null} event={spec.event === "all-around" ? null : spec.event} rivals={FAVOURITES} onRun={runField} onClose={() => setVsOpen(false)} />
+          )}
           {picker && all && spec.mode === "games" && (
             <NationsPicker all={all} specs={spec.nations} onRun={runNations} onClose={() => setPicker(false)} />
           )}
@@ -710,6 +731,7 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
                 slug={spec.mode === "event" ? `${spec.event}-${field.map((a) => a.key).slice(0, 3).join("-")}` : "the-games"}
                 link={sharePath()}
                 h2h={isH2H}
+                fieldKeys={isH2H ? field.map((a) => a.key) : undefined}
                 onRecording={setRecording}
                 onClose={() => setVideoOpen(false)}
               />

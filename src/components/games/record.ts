@@ -36,6 +36,8 @@ export interface GamesRecordOptions {
   sub: string;
   /** The end card: the medallists (or the Games' champions) and the link. */
   podium: { place: string; name: string; mark: string; /** The medallist's key (its render goes on the end card). */ key?: string }[];
+  /** A head to head: the result card shows both Pokémon and both results (in the question's order) instead of a podium. */
+  versus?: { sides: { key: string; name: string; mark: string; win: boolean }[]; line: string };
   endTitle: string;
   slug: string;
   link: string;
@@ -165,7 +167,7 @@ function wrap(g: CanvasRenderingContext2D, text: string, maxW: number): string[]
 }
 
 /** The hook card, the watermark and the end card over a frame (in video pixels). */
-function drawCards(g: CanvasRenderingContext2D, W: number, H: number, t: number, total: number, end: number, o: Pick<GamesRecordOptions, "hook" | "sub" | "podium" | "endTitle" | "link" | "font"> & { logo: HTMLImageElement | null; arts?: (HTMLImageElement | null)[] }) {
+function drawCards(g: CanvasRenderingContext2D, W: number, H: number, t: number, total: number, end: number, o: Pick<GamesRecordOptions, "hook" | "sub" | "podium" | "versus" | "endTitle" | "link" | "font"> & { logo: HTMLImageElement | null; arts?: (HTMLImageElement | null)[] }) {
   const font = o.font;
   const u = Math.min(W, H * 0.5625);
   // Watermark.
@@ -185,10 +187,13 @@ function drawCards(g: CanvasRenderingContext2D, W: number, H: number, t: number,
     g.save();
     g.globalAlpha = a;
     const y0c = H > W ? H * 0.28 : H * 0.42;
+    // A head to head's first frame is its thumbnail: the scene dimmed, and a solid band so nothing reads behind the question.
+    const band = o.versus ? 0.93 : 0.74;
+    if (o.versus) { g.fillStyle = "rgba(8,12,26,0.45)"; g.fillRect(0, 0, W, H); }
     const grad = g.createLinearGradient(0, y0c - u * 0.32, 0, y0c + u * 0.32);
     grad.addColorStop(0, "rgba(8,14,32,0)");
-    grad.addColorStop(0.25, "rgba(8,14,32,0.74)");
-    grad.addColorStop(0.75, "rgba(8,14,32,0.74)");
+    grad.addColorStop(o.versus ? 0.14 : 0.25, `rgba(8,14,32,${band})`);
+    grad.addColorStop(o.versus ? 0.86 : 0.75, `rgba(8,14,32,${band})`);
     grad.addColorStop(1, "rgba(8,14,32,0)");
     g.fillStyle = grad;
     g.fillRect(0, y0c - u * 0.32, W, u * 0.64);
@@ -214,7 +219,7 @@ function drawCards(g: CanvasRenderingContext2D, W: number, H: number, t: number,
     g.globalAlpha = a;
     g.fillStyle = "rgba(8,12,26,0.88)";
     g.fillRect(0, 0, W, H);
-    const at = tallCard ? { logo: 0.15, title: 0.225, sub: 0.262, row: 0.43, cta: 0.66, link: 0.705 } : { logo: 0.11, title: 0.225, sub: 0.295, row: 0.53, cta: 0.84, link: 0.915 };
+    const at = tallCard ? { logo: 0.15, title: 0.225, sub: 0.262, row: o.versus ? 0.4 : 0.43, cta: 0.66, link: 0.705 } : { logo: 0.11, title: 0.225, sub: 0.295, row: 0.53, cta: 0.84, link: 0.915 };
     const s = u * (tallCard ? 0.15 : 0.13);
     if (o.logo) g.drawImage(o.logo, W / 2 - s / 2, H * at.logo - s / 2, s, s);
     g.textAlign = "center";
@@ -222,7 +227,8 @@ function drawCards(g: CanvasRenderingContext2D, W: number, H: number, t: number,
     gameText(g, "The PokéIQ Games", W / 2, H * at.title, u * 0.075, font, "#ffffff", "#0d1626", u * 0.015);
     gameText(g, o.endTitle, W / 2, H * at.sub, u * 0.043, font, "#ffd21f", "#0d1626", u * 0.009);
     const colors = ["#ffd84a", "#d7dde5", "#d58a4a"];
-    const top = o.podium.slice(0, 3);
+    const top = o.versus ? [] : o.podium.slice(0, 3);
+    if (o.versus) drawVersus(g, W, H, u, H * at.row, o.versus, o.arts ?? [], font);
     const arts = top.map((_, i) => o.arts?.[i] ?? null);
     if (top.length && arts.every((x) => x)) {
       // Silver, gold, bronze, left to right; the gold a size up.
@@ -261,7 +267,7 @@ function drawCards(g: CanvasRenderingContext2D, W: number, H: number, t: number,
         gameText(g, p.name, cx, ny, npx, font, "#ffffff", "#0d1626", npx * 0.18);
         gameText(g, p.mark, cx, ny + u * 0.052, u * 0.034, font, color, "#0d1626", u * 0.007);
       });
-    } else {
+    } else if (!o.versus) {
       top.forEach((p, i) => {
         const y = H * at.row + u * ((i - (top.length - 1) / 2) * 0.09);
         const line = `${p.place}  ${p.name}  ·  ${p.mark}`;
@@ -272,7 +278,7 @@ function drawCards(g: CanvasRenderingContext2D, W: number, H: number, t: number,
         gameText(g, line, W / 2, y, lpx, font, colors[i] ?? "#ffffff", "#0d1626", lpx * 0.18);
       });
     }
-    gameText(g, "Pick your own line-up", W / 2, H * at.cta, u * 0.05, font, "#ffd21f", "#0d1626", u * 0.01);
+    gameText(g, o.versus ? "Pick your own head to head" : "Pick your own line-up", W / 2, H * at.cta, u * 0.05, font, "#ffd21f", "#0d1626", u * 0.01);
     const link = shortLink(o.link);
     let lpx = u * 0.054;
     g.font = `800 ${lpx}px ${font}`;
@@ -281,6 +287,53 @@ function drawCards(g: CanvasRenderingContext2D, W: number, H: number, t: number,
     gameText(g, link, W / 2, H * at.link, lpx, font, "#9fd8ff", "#0d1626", lpx * 0.2);
     g.restore();
   }
+}
+
+/** A head to head's result: the two Pokémon side by side (the winner's ring gold), each one's result under it, the margin below. */
+function drawVersus(g: CanvasRenderingContext2D, W: number, H: number, u: number, y: number, v: NonNullable<GamesRecordOptions["versus"]>, arts: (HTMLImageElement | null)[], font: string) {
+  const gap = Math.min(W * 0.4, u * 0.46);
+  v.sides.slice(0, 2).forEach((p, i) => {
+    const cx = W / 2 + (i === 0 ? -gap / 2 : gap / 2);
+    const r = u * (p.win ? 0.16 : 0.135);
+    const color = p.win ? "#ffd84a" : "#8792a8";
+    g.beginPath();
+    g.arc(cx, y, r, 0, Math.PI * 2);
+    g.fillStyle = p.win ? "rgba(255,216,74,0.12)" : "rgba(255,255,255,0.05)";
+    g.fill();
+    g.lineWidth = u * (p.win ? 0.011 : 0.006);
+    g.strokeStyle = color;
+    g.stroke();
+    const img = arts[i];
+    if (img) {
+      const k = (r * 1.72) / Math.max(img.width, img.height);
+      g.save();
+      if (!p.win) g.globalAlpha *= 0.72;
+      g.drawImage(img, cx - (img.width * k) / 2, y - (img.height * k) / 2, img.width * k, img.height * k);
+      g.restore();
+    }
+    if (p.win) {
+      const bw = u * 0.2, bh = u * 0.06;
+      g.fillStyle = "#ffd84a";
+      g.beginPath();
+      g.roundRect(cx - bw / 2, y - r - bh * 0.55, bw, bh, bh / 2);
+      g.fill();
+      g.fillStyle = "#0d1626";
+      g.font = `800 ${u * 0.036}px ${font}`;
+      g.fillText("WINS", cx, y - r - bh * 0.05);
+    }
+    let npx = u * 0.05;
+    g.font = `800 ${npx}px ${font}`;
+    const nw = g.measureText(p.name).width;
+    if (nw > gap * 0.92) npx *= (gap * 0.92) / nw;
+    gameText(g, p.name, cx, y + u * 0.215, npx, font, "#ffffff", "#0d1626", npx * 0.18);
+    gameText(g, p.mark, cx, y + u * 0.275, u * 0.046, font, color, "#0d1626", u * 0.009);
+  });
+  gameText(g, "VS", W / 2, y, u * 0.06, font, "#ffd21f", "#0d1626", u * 0.012);
+  let lpx = u * 0.044;
+  g.font = `800 ${lpx}px ${font}`;
+  const lw = g.measureText(v.line).width;
+  if (lw > W * 0.88) lpx *= (W * 0.88) / lw;
+  gameText(g, v.line, W / 2, y + u * 0.37, lpx, font, "#9fd8ff", "#0d1626", lpx * 0.18);
 }
 
 /** The link as the end card shows it: the page without its query string (a line a viewer can read and type). */
@@ -333,7 +386,7 @@ export async function recordGames(o: GamesRecordOptions): Promise<GamesRecordRes
     const g = compose.getContext("2d")!;
     const logo = await loadImage(o.logo);
     // The medallists' renders for the end card.
-    const arts = await Promise.all(o.podium.slice(0, 3).map((p) => { const a = p.key ? o.byKey.get(p.key) : undefined; return a ? loadImage(o.urls.art(a.entrant.art, 256)) : Promise.resolve(null); }));
+    const arts = await Promise.all((o.versus ? o.versus.sides : o.podium.slice(0, 3)).map((p) => { const a = p.key ? o.byKey.get(p.key) : undefined; return a ? loadImage(o.urls.art(a.entrant.art, 256)) : Promise.resolve(null); }));
     stop();
     const drawAt = async (i: number) => {
       const t = i / fps;
@@ -344,7 +397,8 @@ export async function recordGames(o: GamesRecordOptions): Promise<GamesRecordRes
       scene.frame(fr);
       g.setTransform(1, 0, 0, 1, 0, 0);
       g.drawImage(scene.canvas, 0, 0, W, H);
-      if (t < end) {
+      // (Under a head to head's hook card the broadcast's own graphics stay off: the question alone.)
+      if (t < end && !(o.versus && t < Math.min(HOOK_SECONDS, total * 0.35))) {
         g.setTransform(S, 0, 0, S, 0, 0);
         const heads = scene.heads().map((h) => ({ ...h, x: h.x / S, y: h.y / S, by: h.by / S }));
         const part = seq.partAt(p.t);

@@ -94,3 +94,39 @@ export function walkPhase(d: Dims, v: number, t: number) {
 /** Moves that need legs, arms or a biped body read these. */
 export const hasLegs = (a: Athlete) => ["run", "gallop", "scuttle"].includes(a.entrant.motion);
 export const isBiped = (a: Athlete) => a.body === "biped" && a.entrant.motion === "run";
+
+/** No legs to stand on: hoppers, serpents and fish out of water (their own way of moving is all they have). */
+export const legless = (a: Athlete) => ["bounce", "slither", "flop"].includes(a.entrant.motion);
+
+/**
+ * A legless take-off at τ = 0: down into a coil (squashed, gathering)
+ * over the last half-second, then the spring out of it (stretched for a
+ * moment). The squash to add; 0 for everyone with legs.
+ */
+export function coilSpring(a: Athlete, tau: number, depth = 1): number {
+  if (!legless(a)) return 0;
+  return depth * (-0.2 * bump(-0.5, 0.01, tau) + 0.16 * bump(-0.01, 0.32, tau));
+}
+
+/**
+ * Waiting, without legs, still looks alive and deliberate: a hopper
+ * gathers and hops on the spot, a serpent's coils breathe and its body
+ * ripples, a fish flops now and then. Changes the pose in place.
+ */
+export function restless(p: ActorPose, a: Athlete, d: Dims, time: number, seed = 0) {
+  const m = a.entrant.motion;
+  if (m === "bounce") {
+    const u = (time * 0.62 + seed * 0.37) % 1;
+    p.squash += -0.09 * bump(0.38, 0.6, u) + 0.06 * bump(0.6, 0.72, u) - 0.06 * bump(0.86, 0.96, u);
+    p.y += 0.07 * d.h * bump(0.6, 0.86, u);
+  } else if (m === "slither") {
+    p.squash += 0.035 * Math.sin(time * 1.3 + seed);
+    p.swim = { amp: 0.035, waves: 1.3, phase: time * 1.6 + seed, style: 2 };
+    p.lean += 0.05 * Math.sin(time * 0.9 + seed);
+  } else if (m === "flop") {
+    const u = (time * 0.4 + seed * 0.29) % 1;
+    p.y += 0.06 * d.h * bump(0.7, 0.82, u);
+    p.roll += 0.25 * bump(0.68, 0.86, u);
+    p.squash += -0.05 * bump(0.82, 0.95, u);
+  }
+}

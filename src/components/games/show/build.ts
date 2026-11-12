@@ -58,8 +58,29 @@ export function eventShowOnly(outcome: EventOutcome, o: ShowOptions & { champion
   }
 }
 
+/**
+ * A close finish (gold and silver within half a percent, or a dead heat):
+ * the crowd roars as the result is called. True to the outcome; nothing
+ * is added when it isn't close.
+ */
+export function closeFinish(outcome: EventOutcome): boolean {
+  if (outcome.event === "wrestling" || outcome.event === "all-around") return false;
+  const g = outcome.podium.gold, s = outcome.podium.silver;
+  if (g.length > 1) return true;
+  const a = outcome.marks.get(g[0] ?? ""), b = outcome.marks.get(s[0] ?? "");
+  if (a == null || b == null) return false;
+  return Math.abs(a - b) / Math.max(1e-9, Math.abs(a)) < 0.005;
+}
+
+function withReactions(show: Show, outcome: EventOutcome): Show {
+  if (!closeFinish(outcome)) return show;
+  const call = show.beats.find((b) => b.kind === "photo") ?? show.beats.find((b) => b.kind === "result");
+  if (!call) return show;
+  return { ...show, cues: [...show.cues, { t: call.t0 + 0.2, kind: "roar" as const, gain: 1 }].sort((x, y) => x.t - y.t) };
+}
+
 export function eventShow(outcome: EventOutcome, byKey: ReadonlyMap<string, Athlete>, o: ShowOptions & { nations?: Nation[]; podium?: boolean; champion?: boolean }): Sequence {
-  const main = eventShowOnly(outcome, o, byKey);
+  const main = withReactions(eventShowOnly(outcome, o, byKey), outcome);
   const parts: Show[] = [main];
   const meds = medallists(outcome, byKey, o.nations);
   if (o.podium !== false && meds.length) parts.push(podiumShow(outcome.event, eventOf(outcome.event).venue, meds, { video: o.video }));
