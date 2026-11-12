@@ -23,6 +23,11 @@ then faded, loudness-matched to -16 LUFS and encoded with ffmpeg/libmp3lame
 ## Sound
 
 The crowd bed and the applause are the Race's recordings (CC0; credited in
-`public/audio/race/CREDITS.md`). Every other sound (the guns, the timing
-beep, thuds, the bar's clank, splashes, the buzzer, whooshes, cheers and
-groans) is synthesised in the browser by `src/components/games/audio.ts`.
+`public/audio/race/CREDITS.md`). Every other sound is synthesised in the browser by
+`src/components/games/audio.ts`, with no recordings and no extra download:
+the guns and their echo off the stands, the timing beep, thuds, a shot
+landing in the turf and a javelin sticking in it, sand, the bar's clank and
+its bouncing plates, splashes and dives (the plunge and the droplets), the
+buzzer, whooshes, and the crowd's reactions (a crowd of synthesised voices:
+cheers, a roar for a close finish, an "ooh", a groan for a foul, a missed
+lift or a knocked bar).
