@@ -293,7 +293,7 @@ describe("Make a video: export settings", () => {
     expect(v.watermark).toBe(WATERMARK_TEXT);
     expect(WATERMARK_TEXT).toBe("PokéIQ");
     expect(v.endLink).toBe(LINK_TEXT);
-    expect(LINK_TEXT).toBe("pokeiq.vercel.app/pokedex/sizes");
+    expect(LINK_TEXT).toBe("playpokeiq.com/pokedex/sizes");
   });
 
   it("clamps custom lengths and names the file", () => {

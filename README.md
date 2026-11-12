@@ -2,7 +2,7 @@
 
 **GeoGuessr, Wordle and Pokémon Showdown in one free Pokémon site.** Guess where an in-game screenshot was taken, solve the daily Pokédle or duel a stranger at it, battle on the official Showdown engine, and simulate thousands of battles to see who really wins.
 
-**Play it: [pokeiq.vercel.app](https://pokeiq.vercel.app)**. No sign-up, works on desktop and mobile.
+**Play it: [playpokeiq.com](https://playpokeiq.com)**. No sign-up, works on desktop and mobile.
 
 <p align="center">
   <img src="docs/screenshots/home.webp" alt="PokéIQ home page" width="900">
@@ -111,7 +111,7 @@ It works with no configuration: duels fall back to memory and accounts to a loca
 | `SUPABASE_URL` | Enables accounts, leaderboards, duels across instances and calibration |
 | `NEXT_PUBLIC_SUPABASE_URL` | Fallback for `SUPABASE_URL` when locating the screenshot store |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server-only Supabase key |
-| `NEXT_PUBLIC_SITE_URL` | Canonical URL for link previews and the sitemap (defaults to `https://pokeiq.vercel.app`) |
+| `NEXT_PUBLIC_SITE_URL` | Canonical URL for link previews and the sitemap (defaults to `https://playpokeiq.com`) |
 | `GOOGLE_SITE_VERIFICATION` | Optional. Google Search Console's HTML-tag token (the `content` value only); every page then carries the verification meta tag. See [docs/search-console.md](docs/search-console.md) |
 | `NEXT_PUBLIC_OAUTH_PROVIDERS` | "Continue with" buttons to show: `discord,google` (default), one of them, or empty to hide. Needs Supabase Auth with those providers on and `<site>/api/auth/oauth/callback` in its redirect URLs |
 | `POKEIQ_LOCAL_ACCOUNTS` | `1` to use the local account file and in-memory duels with `npm start` |

@@ -3,7 +3,7 @@
 `scripts/launch-check.mjs` checks a deployment the way a new visitor meets it, on a phone (390 × 844) and a desktop (1440 × 900). It is read-only, so it is safe to run against production: the browser sends only GET, HEAD and CORS preflight requests. Every other request (a score, a sign-in, an analytics beacon) is stopped before it leaves. The dailies' boards get one input (a few letters typed, or a tile tapped and untapped), and nothing is ever submitted.
 
 ```sh
-node scripts/launch-check.mjs https://pokeiq.vercel.app
+node scripts/launch-check.mjs https://playpokeiq.com
 ```
 
 What it checks, on every main route (home, the dailies, Guessr, Battle, the Pokédex, the Lab, the quizzes and the rest; the list is `ROUTES` at the top of the script):
@@ -27,7 +27,7 @@ The script prints one line per check (`ok` or `FAIL` with the reason) and a coun
 
 ## Options
 
-- `--canonical <origin>`: the host that canonical tags, share images and the sitemap must use. It defaults to the base URL's own origin. A local build points them at `NEXT_PUBLIC_SITE_URL` (else https://pokeiq.vercel.app), so pass that origin there. Share images on that host are then fetched from the base URL.
+- `--canonical <origin>`: the host that canonical tags, share images and the sitemap must use. It defaults to the base URL's own origin. A local build points them at `NEXT_PUBLIC_SITE_URL` (else https://playpokeiq.com), so pass that origin there. Share images on that host are then fetched from the base URL.
 - `--lcp <ms>`: the LCP limit (default 4000).
 - `--only phone|desktop`: one profile only.
 - `CHROMIUM_PATH=…`: use a preinstalled Chromium.
@@ -36,7 +36,7 @@ Against a local production build:
 
 ```sh
 npm run build && npm start -- -p 3000
-node scripts/launch-check.mjs http://localhost:3000 --canonical https://pokeiq.vercel.app
+node scripts/launch-check.mjs http://localhost:3000 --canonical https://playpokeiq.com
 ```
 
 The check isn't part of CI. Run it by hand before a launch, and again after the deploy goes live.

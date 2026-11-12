@@ -100,6 +100,9 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       { source: "/battle/player/:name", destination: "/u/:name", permanent: true },
+      // The old address forwards to playpokeiq.com, path and query kept. /api stays put so
+      // webhooks, crons and OAuth callbacks registered on the old host keep working.
+      { source: "/:path((?!api/).*)", has: [{ type: "host", value: "pokeiq.vercel.app" }], destination: "https://playpokeiq.com/:path", permanent: true },
       ...Object.entries(ROOM_MOVED).map(([from, to]) => ({ source: `/rooms/${from}`, destination: `/rooms/${to}`, permanent: true })),
     ];
   },

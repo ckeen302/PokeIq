@@ -1,5 +1,5 @@
 /** The public deployment, used when no explicit site URL is configured. */
-const PRODUCTION_URL = "https://pokeiq.vercel.app";
+const PRODUCTION_URL = "https://playpokeiq.com";
 
 /**
  * Absolute site URL for metadata (`metadataBase`), sitemaps and share links:

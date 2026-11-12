@@ -32,7 +32,7 @@ import { ANIME_TABLES } from "../src/engines/trivia/anime";
 import GAMES_HANDWRITTEN from "../src/data/quiz/games/handwritten.json";
 import ANIME_HANDWRITTEN from "../src/data/quiz/anime/handwritten.json";
 
-const UA = "PokeIQ-quiz-verify/1.0 (https://pokeiq.vercel.app; cadenkeen@gmail.com)";
+const UA = "PokeIQ-quiz-verify/1.0 (https://playpokeiq.com; cadenkeen@gmail.com)";
 const BULBAPEDIA = "https://bulbapedia.bulbagarden.net/w/api.php";
 const FANDOM = "https://pokemon.fandom.com/api.php";
 const CACHE = process.env.QUIZ_VERIFY_CACHE ?? join(tmpdir(), "pokeiq-quiz-verify");

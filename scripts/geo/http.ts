@@ -11,7 +11,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, rmdirSync, writeFileSync 
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-export const UA = "PokeIQ-ingest/1.0 (+https://pokeiq.vercel.app; contact via site)";
+export const UA = "PokeIQ-ingest/1.0 (+https://playpokeiq.com; contact via site)";
 /** At least this long between two requests to one host. */
 const GAP_MS = 1100;
 const RETRIES = 5;
