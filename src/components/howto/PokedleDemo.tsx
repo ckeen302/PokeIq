@@ -37,8 +37,8 @@ export function PokedleDemo() {
             <span className="text-muted-foreground">Guess a Pokémon…</span>
           )}
         </div>
-        <div className="min-h-[13.5rem]">{frame.rows > 0 && <Board rows={rows.slice(0, frame.rows)} columns={COLUMNS} />}</div>
-        <p className="min-h-5 text-center text-sm font-semibold">{solved ? "Solved in 3 guesses!" : frame.rows === 1 ? "Closer: ≈ is one generation or stage away" : ""}</p>
+        <div className="min-h-[13.5rem] max-md:min-h-[16.75rem]">{frame.rows > 0 && <Board rows={rows.slice(0, frame.rows)} columns={COLUMNS} />}</div>
+        <p className="min-h-5 text-center text-sm font-semibold max-md:min-h-10">{solved ? "Solved in 3 guesses!" : frame.rows === 1 ? "Closer: ≈ is one generation or stage away" : ""}</p>
       </div>
     </DemoFrame>
   );
