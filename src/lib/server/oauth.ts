@@ -238,7 +238,7 @@ export const AGE_REQUIRED = "You need to be 13 or older to make an account.";
 export const signupSchema = z.object({
   username: z.string().regex(USERNAME_RE, "Trainer names are 3–20 letters, numbers, _ or -.").refine(isCleanName, NAME_REJECTED),
   // US COPPA: no accounts for under-13s.
-  ageConfirmed: z.boolean({ required_error: AGE_REQUIRED, invalid_type_error: AGE_REQUIRED }).refine((v) => v === true, AGE_REQUIRED),
+  ageConfirmed: z.boolean({ error: AGE_REQUIRED }).refine((v) => v === true, AGE_REQUIRED),
 });
 
 // ---------------------------------------------------------------------------

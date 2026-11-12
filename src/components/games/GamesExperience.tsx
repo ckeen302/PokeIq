@@ -232,6 +232,9 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
     };
   }, [view]);
 
+  // The scene's code downloads alongside the athletes, not after them.
+  useEffect(() => { if (view === "3d") void import("./scene").catch(() => undefined); }, [view]);
+
   // ---- The scene.
   useEffect(() => {
     if (view !== "3d" || !all || !hostRef.current) return;

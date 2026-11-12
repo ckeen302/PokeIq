@@ -15,7 +15,7 @@ import FORMAT_RULES from "@/data/battle/format-rules.json";
 
 export const runtime = "nodejs";
 
-const bodySchema = z.object({ rules: z.record(z.unknown()), team: z.string().max(BATTLE_TEAM_MAX).optional() });
+const bodySchema = z.object({ rules: z.record(z.string(), z.unknown()), team: z.string().max(BATTLE_TEAM_MAX).optional() });
 
 export async function POST(request: NextRequest) {
   if (!rateLimit(`battle-rules:${clientIp(request)}`, 60, 2)) {

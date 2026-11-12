@@ -25,15 +25,25 @@ export interface CrowdOptions {
   rows?: { pts: { x: number; z: number; nx: number; nz: number }[]; y: number; tier: 0 | 1 }[];
   /** Where the lights shine in from (the stadium's floodlights by default). */
   light?: { y: number };
+  /**
+   * Sections farther than this from the camera (m) draw a lighter
+   * spectator (no side faces on the body and head, about 40% fewer
+   * triangles): a few pixels tall at that distance on a phone. Unset: the
+   * full spectator everywhere.
+   */
+  liteBeyond?: number;
 }
 
 export interface Crowd {
   group: THREE.Group;
   count: number;
-  /** 0 calm … 1 the finish. */
-  update(t: number, excitement: number): void;
+  /** 0 calm … 1 the finish. The camera picks each section's detail when `liteBeyond` is set. */
+  update(t: number, excitement: number, camera?: THREE.Camera): void;
   dispose(): void;
 }
+
+/** Phones: sections farther than this (m) draw the lite spectator. */
+export const CROWD_LITE_BEYOND = 45;
 
 const SEAT_W = 0.56;
 const ROW_D = 0.86;
@@ -49,7 +59,7 @@ type Face = "px" | "nx" | "py" | "ny" | "pz" | "nz";
  * where the seat row meets the slope. Boxes without the faces nobody sees;
  * arms carry their side (−1 / +1) so the shader can raise them.
  */
-function spectatorGeometry(): THREE.BufferGeometry {
+function spectatorGeometry(lite = false): THREE.BufferGeometry {
   const pos: number[] = [], nrm: number[] = [], part: number[] = [], arm: number[] = [], index: number[] = [];
   const box = (x0: number, x1: number, y0: number, y1: number, z0: number, z1: number, partOf: (f: Face) => number, side = 0, skip: Face[] = []) => {
     const faces: [Face, number[], [number, number, number][]][] = [
@@ -74,17 +84,19 @@ function spectatorGeometry(): THREE.BufferGeometry {
     }
   };
   const all = (p: number) => () => p;
+  // The lite spectator (far stands on phones) drops the body's and head's side faces.
+  const sides: Face[] = lite ? ["px", "nx"] : [];
   // Lap (thighs on the seat, knees towards the field).
-  box(-0.18, 0.18, 0.3, 0.46, -0.12, 0.3, all(PART.legs), 0, ["ny", "nz"]);
+  box(-0.18, 0.18, 0.3, 0.46, -0.12, 0.3, all(PART.legs), 0, ["ny", "nz", ...sides]);
   // Torso.
-  box(-0.19, 0.19, 0.42, 0.94, -0.28, -0.06, all(PART.shirt), 0, ["ny", "nz"]);
+  box(-0.19, 0.19, 0.42, 0.94, -0.28, -0.06, all(PART.shirt), 0, ["ny", "nz", ...sides]);
   // Head: the face, then hair (or a cap) over the top, sides and fringe. The backs of heads and bodies face away from every camera.
-  box(-0.1, 0.1, 0.97, 1.14, -0.27, -0.07, all(PART.skin), 0, ["ny", "nz", "py"]);
-  box(-0.106, 0.106, 1.14, 1.23, -0.276, -0.064, all(PART.hair), 0, ["ny", "nz"]);
+  box(-0.1, 0.1, 0.97, 1.14, -0.27, -0.07, all(PART.skin), 0, ["ny", "nz", "py", ...sides]);
+  box(-0.106, 0.106, 1.14, 1.23, -0.276, -0.064, all(PART.hair), 0, ["ny", "nz", ...sides]);
   // Arms, hanging from the shoulders (the shader swings them about the shoulder): sleeves, hands at the end.
   for (const s of [-1, 1]) {
     const x = s * 0.245;
-    box(x - 0.05, x + 0.05, 0.38, 0.92, -0.22, -0.12, (f) => (f === "ny" ? PART.skin : PART.shirt), s, ["py"]);
+    box(x - 0.05, x + 0.05, 0.38, 0.92, -0.22, -0.12, (f) => (f === "ny" ? PART.skin : PART.shirt), s, lite ? ["py", s < 0 ? "px" : "nx"] : ["py"]);
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
@@ -149,6 +161,7 @@ export function buildCrowd(o: CrowdOptions): Crowd {
   }
 
   const base = spectatorGeometry();
+  const liteBase = o.liteBeyond !== undefined ? spectatorGeometry(true) : null;
   const uniforms = {
     uTime: { value: 0 },
     uExcite: { value: 0.2 },
@@ -218,6 +231,8 @@ export function buildCrowd(o: CrowdOptions): Crowd {
 
   const group = new THREE.Group();
   const geos: THREE.InstancedBufferGeometry[] = [];
+  /** With `liteBeyond`: each section's full and lite geometries (sharing the instance data) and its bounds. */
+  const lods: { mesh: THREE.Mesh; full: THREE.InstancedBufferGeometry; lite: THREE.InstancedBufferGeometry; sphere: THREE.Sphere }[] = [];
   for (const s of sections) {
     const k = s.pos.length / 3;
     if (!k) continue;
@@ -242,7 +257,18 @@ export function buildCrowd(o: CrowdOptions): Crowd {
     mesh.layers.set(LAYER.CROWD);
     group.add(mesh);
     geos.push(geo);
+    if (liteBase) {
+      const lite = new THREE.InstancedBufferGeometry();
+      lite.setIndex(liteBase.getIndex());
+      for (const name of ["position", "normal", "aPart", "aArm"]) lite.setAttribute(name, liteBase.getAttribute(name));
+      for (const name of ["iPos", "iDir", "iShirt", "iSkin", "iHair", "iPhase", "iScale"]) lite.setAttribute(name, geo.getAttribute(name));
+      lite.instanceCount = k;
+      lite.boundingSphere = sphere;
+      geos.push(lite);
+      lods.push({ mesh, full: geo, lite, sphere });
+    }
   }
+  const camAt = new THREE.Vector3();
 
   // Camera flashes.
   const fp: number[] = [], fa: number[] = [];
@@ -287,13 +313,22 @@ export function buildCrowd(o: CrowdOptions): Crowd {
   return {
     group,
     count,
-    update(t, excitement) {
+    update(t, excitement, camera) {
+      if (camera && lods.length) {
+        camera.getWorldPosition(camAt);
+        const far = o.liteBeyond!;
+        for (const l of lods) {
+          const want = l.sphere.distanceToPoint(camAt) > far ? l.lite : l.full;
+          if (l.mesh.geometry !== want) l.mesh.geometry = want;
+        }
+      }
       uniforms.uTime.value = t;
       uniforms.uExcite.value = excitement;
       fmat.uniforms.uScale.value = window.devicePixelRatio > 1.5 ? 1.4 : 1;
     },
     dispose() {
       base.dispose();
+      liteBase?.dispose();
       geos.forEach((g) => g.dispose());
       material.dispose();
       fgeo.dispose();

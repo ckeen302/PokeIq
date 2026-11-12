@@ -29,7 +29,7 @@ const NO_STORE = { "Cache-Control": "no-store" };
 const team = z.string().max(BATTLE_TEAM_MAX).optional();
 const format = z.enum(["custom", ...ALL_FORMATS] as [StandardFormatId | "custom", ...(StandardFormatId | "custom")[]]);
 /** Format "custom" takes `rules` (custom-rules.ts), checked by Showdown's format parser before the battle starts. */
-const rules = z.record(z.unknown()).optional();
+const rules = z.record(z.string(), z.unknown()).optional();
 /** The browser's signed id (see /api/battle/id), for the trainer's battle record and replays. */
 const rankedId = z.string().max(200).optional();
 
