@@ -14,7 +14,7 @@ export const runtime = "nodejs";
 
 const bodySchema = z.union([
   z.object({ format: z.enum(ALL_FORMATS as [StandardFormatId, ...StandardFormatId[]]).refine((f) => !PLAY_FORMAT_INFO[f].random) }),
-  z.object({ rules: z.record(z.unknown()) }),
+  z.object({ rules: z.record(z.string(), z.unknown()) }),
   z.object({ tower: z.literal(true) }),
 ]);
 
