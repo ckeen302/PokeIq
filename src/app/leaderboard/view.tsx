@@ -33,11 +33,14 @@ import { connBoardStore } from "@/lib/server/connections-board";
 import { connNumber, isPlayableConnDate, type ConnBoardRow } from "@/lib/connections/types";
 import { clock } from "@/lib/share/text";
 
-export const leaderboardMetadata: Metadata = pageMetadata({
+const LEADERBOARD_PAGE = {
   title: "Leaderboards",
   description: "The top PokéIQ trainers: today's Daily Challenge, PokéIQ ratings, PokéGuessr, Pokédle, PokéConnections and the battle ladder, updated live.",
   path: "/leaderboard",
-});
+};
+export const leaderboardMetadata: Metadata = pageMetadata(LEADERBOARD_PAGE);
+/** The cached per-board pages (what /leaderboard is rewritten to) sit in a segment without the image file, so they name it. */
+export const leaderboardBoardMetadata: Metadata = pageMetadata({ ...LEADERBOARD_PAGE, image: { url: "/leaderboard/opengraph-image", alt: "PokéIQ leaderboards" } });
 
 export interface LeaderboardParams {
   board?: string;
