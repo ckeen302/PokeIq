@@ -181,6 +181,8 @@ async function solo(width, height) {
   await pinAndGuess(page, phone, 0.5, `guessr-round-${tag}`);
   await page.getByTestId("geo-reveal").waitFor();
   await page.getByTestId("geo-next").waitFor();
+  // The result map draws once it has its size (a frame or two after it mounts).
+  await page.getByTestId("geo-reveal-line").first().waitFor({ state: "attached", timeout: 5_000 }).catch(() => {});
   if ((await page.getByTestId("geo-reveal-line").count()) !== 1) errors.push("the result map draws no line");
   // The line draws, the camera fits, the score counts up.
   await page.waitForTimeout(2700);
