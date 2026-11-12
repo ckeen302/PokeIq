@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 import { ROOM_MOVED } from "./src/lib/rooms";
 import { ORDERS } from "./src/lib/sizes/order";
+import { LEADERBOARD_BOARDS } from "./src/lib/leaderboard-boards";
 
 /**
  * Only PokéAPI's sprite CDN (GitHub raw) is allowed as a remote image source.
@@ -29,6 +30,12 @@ const securityHeaders = [
 const staticAssetCache = [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }];
 /** Pokémon artwork (public/art) never changes for a species: a month in the browser, and revalidated quietly after that. */
 const artCache = [{ key: "Cache-Control", value: "public, max-age=2592000, stale-while-revalidate=31536000" }];
+/**
+ * Share images rendered on request for one Pokémon, size page, timeline entry or quiz result: the same
+ * bytes for everyone until the next deploy, so Vercel's CDN keeps them (Next's own header for these is
+ * browser-only max-age). Vercel clears its CDN on every deploy.
+ */
+const ogCdnCache = [{ key: "CDN-Cache-Control", value: "max-age=86400, stale-while-revalidate=604800" }];
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
@@ -70,12 +77,19 @@ const nextConfig: NextConfig = {
       // A preset's or a Pokémon's page (a comparison reads the query itself).
       ["/pokedex/sizes/:slug((?!compare$|by$)[a-z0-9-]+)", "/pokedex/sizes/:slug/by"],
     ];
+    // A bare leaderboard link is a cached page per board; with a date or a format it renders per request.
+    const boardQuery = { type: "query" as const, key: "board", value: `(?<board>${LEADERBOARD_BOARDS.join("|")})` };
+    const bare = [{ type: "query" as const, key: "date" }, { type: "query" as const, key: "format" }];
     return {
-      beforeFiles: pages.flatMap(([source, to]) => [
-        { source, has: [by, desc], destination: `${to}/:by-desc` },
-        { source, has: [by], destination: `${to}/:by` },
-        { source, has: [desc], missing: [noBy], destination: `${to}/height-desc` },
-      ]),
+      beforeFiles: [
+        ...pages.flatMap(([source, to]) => [
+          { source, has: [by, desc], destination: `${to}/:by-desc` },
+          { source, has: [by], destination: `${to}/:by` },
+          { source, has: [desc], missing: [noBy], destination: `${to}/height-desc` },
+        ]),
+        { source: "/leaderboard", has: [boardQuery], missing: bare, destination: "/leaderboard/board/:board" },
+        { source: "/leaderboard", missing: [{ type: "query" as const, key: "board" }, ...bare], destination: "/leaderboard/board/daily" },
+      ],
       afterFiles: [],
       fallback: [],
     };
@@ -97,6 +111,10 @@ const nextConfig: NextConfig = {
       { source: "/art/:path*", headers: artCache },
       // The size comparison's and the race's figures, relief maps and far atlas never change for a Pokémon either (the atlas's names are hashed).
       ...["/race/art/:path*", "/sizes/art/:path*", "/sizes/depth/:path*", "/sizes/far/:path*", "/sizes/tex/:path*", "/sizes/env/:path*"].map((source) => ({ source, headers: artCache })),
+      ...["/pokemon/:slug/opengraph-image", "/pokedex/sizes/:slug/opengraph-image", "/pokedex/timeline/:event/opengraph-image", "/quiz/which-pokemon/:slug/opengraph-image"].map((source) => ({
+        source,
+        headers: ogCdnCache,
+      })),
     ];
   },
   images: {

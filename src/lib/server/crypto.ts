@@ -90,6 +90,27 @@ export function encryptJson(payload: unknown, purpose?: string): string {
   return b64url(Buffer.concat([iv, cipher.getAuthTag(), ct]));
 }
 
+/**
+ * Deterministic encryption of one 16-byte block (AES-256 as a keyed
+ * permutation). The same block always gives the same 22-character token, so
+ * a URL built from it can be cached by a CDN, and the token reveals nothing
+ * but equality with another token. Callers put a fixed check pattern in the
+ * block and verify it after `openBlock`, which is what rejects forgeries.
+ */
+export function sealBlock(block: Buffer, purpose: string): string {
+  if (block.length !== 16) throw new Error("sealBlock needs exactly 16 bytes");
+  const cipher = createCipheriv("aes-256-ecb", mediaKey(purpose), null).setAutoPadding(false);
+  return b64url(Buffer.concat([cipher.update(block), cipher.final()]));
+}
+
+export function openBlock(token: string, purpose: string): Buffer | null {
+  if (token.length !== 22) return null;
+  const raw = Buffer.from(token, "base64url");
+  if (raw.length !== 16) return null;
+  const decipher = createDecipheriv("aes-256-ecb", mediaKey(purpose), null).setAutoPadding(false);
+  return Buffer.concat([decipher.update(raw), decipher.final()]);
+}
+
 /** Authenticated decryption: a tampered token, or one sealed for another `purpose`, gives null. */
 export function decryptJson<T>(token: string, purpose?: string): T | null {
   try {
