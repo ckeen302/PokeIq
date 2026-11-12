@@ -63,7 +63,7 @@ export interface AtlasOptions {
   onPick?: (pick: { place: AtlasPlace } | { region: AtlasRegion } | null) => void;
   /** Games: a click (not a drag) at world pixels (x, y). */
   onTap?: (x: number, y: number) => void;
-  /** Every frame drawn, for overlays that follow the map. */
+  /** Every frame drawn once the map has its size, for overlays that follow the map. */
   onView?: (view: AtlasView) => void;
   onZoom?: (label: string) => void;
   /**
@@ -156,6 +156,8 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
   let levels: Levels = [];
   /** A fit asked for before the canvas had a size. */
   let pending: (() => void) | null = null;
+  /** The canvas has been sized (the ResizeObserver's first call): until then input has nowhere to land. */
+  const sized = () => W > 0 && H > 0;
   const view: AtlasView = { s: 0.3, tx: 0, ty: 0 };
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   // The site's fonts (next/font names them; the canvas needs the real family names).
@@ -294,7 +296,8 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
       ctx.fill("evenodd");
     }
     opts.onZoom?.(s < fitWorld().s * 2.2 ? "World" : s < 0.9 ? "Region" : s < 1.6 ? "Towns + routes" : "Close up");
-    opts.onView?.({ ...view });
+    // Before the first sizing the view is a placeholder: overlays wait for the real one.
+    if (sized()) opts.onView?.({ ...view });
   }
 
   const widths = new Map<string, number>();
@@ -391,6 +394,8 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
   /** Zoom by k about screen point (cx, cy): eased over a few frames, so wheel notches glide instead of jumping. */
   let zoomGoal: { s: number; cx: number; cy: number } | null = null;
   function zoomAt(k: number, cx: number, cy: number, instant = false) {
+    // Nothing to zoom about before the map has a size: a zoom then would leave the view framed on nothing once it does.
+    if (!sized()) return;
     touched = true;
     const s2 = Math.min(MAX_SCALE, Math.max(minS, (zoomGoal?.s ?? view.s) * k));
     if (instant || reduceMotion) {
@@ -512,6 +517,8 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
   let pinch: { d: number; s: number; tx: number; ty: number; cx: number; cy: number } | null = null;
 
   const onDown = (e: PointerEvent) => {
+    // A press before the map has a size can't be placed on it (and a drag from it would frame nothing).
+    if (!sized()) return;
     canvas.setPointerCapture(e.pointerId);
     pointers.set(e.pointerId, { x: e.offsetX, y: e.offsetY });
     cancelAnimationFrame(anim);

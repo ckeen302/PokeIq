@@ -228,6 +228,8 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
   // The answer's area: a dot of radius 6 world px on every area point (8 px apart), so they join into one patch at any zoom.
   const areaR = view ? Math.max(3, 6 * view.s) : 3;
   const maskId = useId();
+  /** Where a tap places a pin, in px from the map's top-left (left, top, right, bottom): the map's box as framed now (it can run past the edges). */
+  const pickArea = onPick && view ? [x0 * view.s + view.tx, y0 * view.s + view.ty, x1 * view.s + view.tx, y1 * view.s + view.ty].map(Math.round).join(",") : undefined;
 
   return (
     <div
@@ -242,6 +244,9 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
       role={onPick ? "application" : "img"}
       aria-label={onPick ? `Map of ${region.name}: click where you think this is. Scroll to zoom, drag to move.` : `Map of ${region.name}`}
       data-testid="geo-map"
+      // The map takes taps once it has loaded and been sized (until then a tap does nothing).
+      data-ready={view ? "true" : undefined}
+      data-pick-area={pickArea}
     >
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
       {cover !== "gone" && (
