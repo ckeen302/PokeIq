@@ -135,7 +135,8 @@ export function QuizSetup({ module, initialFormat, initialDifficulty, initialGen
     setGens((cur) => (cur.includes(g) ? cur.filter((x) => x !== g) : [...cur, g].sort((a, b) => a - b)));
 
   return (
-    <AnimatePresence mode="wait">
+    // initial={false}: the setup card paints with the page (not hidden until the scripts load); later switches still animate.
+    <AnimatePresence mode="wait" initial={false}>
       {request ? (
         <motion.div key={`run-${runKey}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="space-y-4">
           <QuizController request={request} begun={begun} onRestart={start} />

@@ -263,7 +263,7 @@ export function DexListExplorer({ kind, items }: { kind: DexListKind; items: Ite
           </table>
         </div>
       ) : kind === "abilities" ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {(filtered.slice(0, visible) as AbilityListItem[]).map((a) => (
             <Link key={a.slug} href={`/pokedex/abilities/${a.slug}`} className="group block space-y-1.5 rounded-lg border bg-card p-4 transition-colors hover:border-screen/60">
               <div className="flex items-baseline justify-between gap-2">

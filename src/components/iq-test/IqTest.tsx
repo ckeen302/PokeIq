@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,7 +35,8 @@ export function IqTest() {
       {playing ? (
         <CognitiveTest key={round} onRetake={() => setRound((r) => r + 1)} />
       ) : (
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+        // A CSS entrance, not a script one: the start card paints with the page, before the scripts load.
+        <div className="duration-300 animate-in fade-in-0 slide-in-from-bottom-3">
           <Card className="mx-auto max-w-2xl">
             <CardContent className="space-y-6 p-6">
               <ol className="grid gap-2 sm:grid-cols-5" aria-label="The five sections">
@@ -69,7 +69,7 @@ export function IqTest() {
               </p>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
       )}
     </div>
   );

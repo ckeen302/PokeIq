@@ -77,7 +77,8 @@ export function MovesSection({ moves, game }: { moves: DexMove[]; game: string }
         </div>
       </div>
 
-      <div className="overflow-x-auto" data-hscroll>
+      {/* relative: the header's screen-reader labels (absolutely placed) stay inside the scroller, not past a phone's edge. */}
+      <div className="relative overflow-x-auto" data-hscroll>
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b text-left text-[11px] uppercase tracking-wider text-muted-foreground">
