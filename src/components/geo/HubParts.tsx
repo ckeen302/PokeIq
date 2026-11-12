@@ -75,7 +75,7 @@ export function HubTile({
   testId?: string;
   /** A corner flag on the banner ("Coming soon", "Done"). */
   badge?: React.ReactNode;
-  /** The banner is the first screen's biggest picture: fetched ahead of the page's other pictures. */
+  /** The banner is the first screen's biggest picture: fetched ahead of the page's other pictures (the others wait until they're near the screen). */
   priority?: boolean;
 }) {
   const t = TONE[tone];
@@ -94,7 +94,7 @@ export function HubTile({
         <div className={cn("relative aspect-[16/6] overflow-hidden bg-gradient-to-br to-transparent sm:aspect-[16/7]", t.wash)}>
           {image && (
             // eslint-disable-next-line @next/next/no-img-element -- CDN-cached preview
-            <img src={image} alt="" decoding="async" fetchPriority={priority ? "high" : undefined} className="absolute inset-0 h-full w-full object-cover opacity-80 transition-[opacity,transform] duration-300 group-hover:scale-[1.03] group-hover:opacity-100" />
+            <img src={image} alt="" decoding="async" loading={priority ? undefined : "lazy"} fetchPriority={priority ? "high" : undefined} className="absolute inset-0 h-full w-full object-cover opacity-80 transition-[opacity,transform] duration-300 group-hover:scale-[1.03] group-hover:opacity-100" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" aria-hidden />
           <span className={cn("absolute bottom-2 left-3 flex h-9 w-9 items-center justify-center rounded-md border bg-card/90 backdrop-blur", t.label)} aria-hidden>

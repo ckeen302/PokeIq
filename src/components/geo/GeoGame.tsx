@@ -1274,6 +1274,8 @@ function ModeCard({
       <img
         src={preview}
         alt=""
+        loading="lazy"
+        decoding="async"
         className="aspect-[16/10] w-full rounded-sm bg-shade/30 object-cover opacity-85 transition-opacity group-hover:opacity-100 max-md:w-28 max-md:shrink-0"
       />
       {/* A phone lists the modes as rows (picture, then the words), so both fit on screen. */}

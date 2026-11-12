@@ -30,6 +30,34 @@ export interface DexListItem {
   fullyEvolved: boolean;
 }
 
+/**
+ * One Pokémon as the page sends it: a row of values rather than an object, so
+ * the 1,025 of them in the page's data don't each repeat every field name
+ * (about a third of the bytes). [id, slug, name, genus, types (space
+ * separated), gen, hp, atk, def, spa, spd, spe, height, weight, flags
+ * (1 legendary, 2 mythical, 4 fully evolved)]; the base stat total is the
+ * stats' sum.
+ */
+export type DexRow = [number, string, string, string, string, number, number, number, number, number, number, number, number, number, number];
+
+function fromRow([id, slug, name, genus, types, gen, hp, atk, def, spa, spd, spe, height, weight, flags]: DexRow): DexListItem {
+  return {
+    id,
+    slug,
+    name,
+    genus,
+    types: types.split(" "),
+    gen,
+    stats: { hp, atk, def, spa, spd, spe },
+    bst: hp + atk + def + spa + spd + spe,
+    height,
+    weight,
+    legendary: (flags & 1) !== 0,
+    mythical: (flags & 2) !== 0,
+    fullyEvolved: (flags & 4) !== 0,
+  };
+}
+
 type SortKey = "id" | "name" | "bst" | "hp" | "atk" | "def" | "spa" | "spd" | "spe" | "height" | "weight";
 
 const SORTS: { key: SortKey; label: string }[] = [
@@ -67,7 +95,8 @@ function sortLabel(p: DexListItem, key: SortKey): string | null {
   return String(sortValue(p, key));
 }
 
-export function PokedexExplorer({ items }: { items: DexListItem[] }) {
+export function PokedexExplorer({ rows }: { rows: DexRow[] }) {
+  const items = useMemo(() => rows.map(fromRow), [rows]);
   const searchHint = usePlaceholder("Search name, number or category…  ( / )", "Name, number, category…");
   const router = useRouter();
   const [query, setQuery] = useState("");
