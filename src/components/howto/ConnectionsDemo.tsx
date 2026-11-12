@@ -89,7 +89,8 @@ export function ConnectionsDemo() {
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <MistakeDots left={frame.oneAway ? CONN_MAX_MISTAKES - 1 : CONN_MAX_MISTAKES} max={CONN_MAX_MISTAKES} />
           </div>
-          <span className={cn("rounded-md border-2 px-3 py-1 text-xs font-bold uppercase", frame.press ? "border-screen bg-screen text-background" : frame.selected.length === 4 ? "border-foreground/40" : "border-foreground/10 text-muted-foreground")}>Submit</span>
+          {/* Joined without cn: tailwind-merge reads border-screen as a width and would drop border-2, so the pressed button (and with it the how-to) shrank by 4px. */}
+          <span className={`rounded-md border-2 px-3 py-1 text-xs font-bold uppercase ${frame.press ? "border-screen bg-screen text-background" : frame.selected.length === 4 ? "border-foreground/40" : "border-foreground/10 text-muted-foreground"}`}>Submit</span>
         </div>
       </div>
     </DemoFrame>
