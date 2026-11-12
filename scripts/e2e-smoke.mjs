@@ -25,6 +25,7 @@ import { runPokemonStory } from "./e2e-pokemon-story.mjs";
 import { runGroupBattles } from "./e2e-battle-group.mjs";
 import { runEmptyQueue } from "./e2e-battle-queue.mjs";
 import { runEmail } from "./e2e-email.mjs";
+import { guessMapReady, tapGuessMap } from "./e2e-geo-map.mjs";
 
 const BASE = process.argv[2] ?? "http://localhost:3000";
 // Each game opens its how-to pop-up (with a live demo) on a first visit. "Don't show again" dismisses it for good on this device.
@@ -773,12 +774,21 @@ step("pikadoku: a full daily (9 PP, one wrong guess), the score and the answers 
 step("the PokéIQ Test: five sections end to end, desktop and phone");
 await runIqTest({ newPage, BASE, OUT, errors });
 
-/** Drop a pin and press Guess. The map takes taps only once it has loaded (a spinner shows until then), so a tap that lands early is tried again. */
-async function pinAndGuess(p, map, position) {
+/**
+ * Hover the docked map (it grows a step, like a player reaching for it), then drop a pin `fx`, `fy` of the way
+ * across the map's own area and press Guess. The tap waits for the map to take taps and stop moving
+ * (e2e-geo-map.mjs), so one tap is enough; a second is only a safety net, and says so.
+ */
+async function pinAndGuess(p, fx, fy, { zoom = false } = {}) {
+  await guessMapReady(p);
+  await p.locator("[role=application]").hover();
+  if (zoom) await p.mouse.wheel(0, -240);
   const guess = p.getByRole("button", { name: /^Guess$/ });
-  for (let i = 0; i < 8; i++) {
-    await map.click({ position });
-    if (await guess.waitFor({ state: "visible", timeout: 2500 }).then(() => true, () => false)) break;
+  for (let i = 0; i < 2; i++) {
+    const { area, at } = await tapGuessMap(p, fx, fy);
+    if (await guess.waitFor({ state: "visible", timeout: 5_000 }).then(() => true, () => false)) break;
+    if (i) throw new Error(`two taps on a ready guess map placed no pin (at ${JSON.stringify(at)} in ${JSON.stringify(area)})`);
+    console.log(`  ! a tap on the ready guess map placed no pin (at ${JSON.stringify(at)} in ${JSON.stringify(area)}): tapping again`);
   }
   await guess.click();
 }
@@ -789,12 +799,8 @@ async function playGeoRounds(rounds) {
       const img = document.querySelector("img[alt='Where is this?']");
       return img?.complete && img.naturalWidth > 0;
     });
-    const map = page.locator("[role=application]");
-    await map.hover();
     // Zoom in on the first round, like a player hunting for a spot.
-    if (i === 0) await page.mouse.wheel(0, -240);
-    const box = await map.boundingBox();
-    await pinAndGuess(page, map, { x: box.width * 0.5, y: box.height * 0.5 });
+    await pinAndGuess(page, 0.5, 0.5, { zoom: i === 0 });
     const next = page.getByRole("button", { name: /Next round|View summary|See results/ });
     await next.waitFor();
     if (i === 0) {
@@ -860,10 +866,7 @@ for (let i = 0; i < 5; i++) {
   }
   if (await page.getByTestId("geo-view-count").count()) throw new Error("a round offers more than one screenshot");
   if (await page.getByRole("button", { name: "Next view" }).count()) throw new Error("a round has a next-view button");
-  const map = page.locator("[role=application]");
-  await map.hover();
-  const box = await map.boundingBox();
-  await pinAndGuess(page, map, { x: box.width * 0.5, y: box.height * 0.5 });
+  await pinAndGuess(page, 0.5, 0.5);
   const next = page.getByRole("button", { name: /Next round|View summary|See results/ });
   await next.waitFor();
   await next.click();
@@ -1088,10 +1091,7 @@ for (let i = 0; i < 5; i++) {
     const img = document.querySelector("img[alt='Where is this?']");
     return img?.complete && img.naturalWidth > 0;
   });
-  const map = page.locator("[role=application]");
-  await map.hover();
-  const box = await map.boundingBox();
-  await pinAndGuess(page, map, { x: box.width * 0.4, y: box.height * 0.6 });
+  await pinAndGuess(page, 0.4, 0.6);
   await page.getByRole("button", { name: /Next round|View summary/ }).waitFor();
   if (i === 0) {
     await page.getByTestId("geo-report").click();
@@ -1156,10 +1156,7 @@ async function playDuel(p, at, shoot) {
   for (let i = 0; i < 12; i++) {
     await shotLoaded(p);
     if (shoot && i === 0) await p.screenshot({ path: `${OUT}/duel-round.png` });
-    const map = p.locator("[role=application]");
-    await map.hover();
-    const box = await map.boundingBox();
-    await pinAndGuess(p, map, { x: box.width * at, y: box.height * at });
+    await pinAndGuess(p, at, at);
     const next = p.getByRole("button", { name: /Next round|See results/ });
     await next.waitFor({ timeout: 30_000 });
     if (shoot && i === 0) {

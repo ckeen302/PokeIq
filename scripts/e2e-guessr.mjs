@@ -13,6 +13,7 @@
  */
 import { chromium, request } from "playwright";
 import fs from "fs";
+import { tapGuessMap } from "./e2e-geo-map.mjs";
 
 const BASE = process.argv[2] ?? "http://localhost:3000";
 const OUT = process.argv[3] ?? "e2e-screenshots";
@@ -70,7 +71,7 @@ const shotLoaded = (p) =>
     { timeout: 30_000 }
   );
 
-/** Drops a pin at (at, at) across the map and presses Guess: through the dock, or the phone's sheet. */
+/** Drops a pin `at` of the way across the map's own area (along its middle) and presses Guess: through the dock, or the phone's sheet. */
 async function pinAndGuess(p, phone, at, shots) {
   if (phone) {
     // The big map button in the bottom bar opens the map card; its check stays dim until a pin is down.
@@ -102,17 +103,15 @@ async function pinAndGuess(p, phone, at, shots) {
     await p.waitForTimeout(350);
     if (shots) await p.screenshot({ path: `${OUT}/${shots}-hovered.png` });
   }
-  const map = p.locator("[role=application]");
-  const box = await map.boundingBox();
-  // Along the map's middle: on a phone the world sits in a band across the sheet.
-  await map.click({ position: { x: box.width * at, y: box.height * 0.5 } });
+  // Along the map's middle: on a phone the world sits in a band across the sheet. The tap waits for the map to take taps.
+  const { area, at: spot } = await tapGuessMap(p, at, 0.5);
   // The phone's pill also reads "Guess": the button under the map is the one.
   const guess = p.getByTestId("geo-guess");
   await guess.waitFor();
   const enabled = await p.locator("[data-testid=geo-guess]:not([disabled])").waitFor({ timeout: 5_000 }).then(() => true, () => false);
   if (!enabled) {
     await p.screenshot({ path: `${OUT}/fail-pin.png` });
-    throw new Error(`Guess stays disabled after a pin (${await p.getByTestId("geo-round").innerText().catch(() => "?")}, at ${at}, box ${JSON.stringify(box)})`);
+    throw new Error(`Guess stays disabled after a pin (${await p.getByTestId("geo-round").innerText().catch(() => "?")}, at ${JSON.stringify(spot)} in ${JSON.stringify(area)})`);
   }
   if (phone && shots) await phoneMapGuess(p);
   await guess.click();
@@ -585,9 +584,7 @@ async function teamDuel(width, height) {
         await green.mouse.move(dock.x + dock.width / 2, dock.y + dock.height / 2, { steps: 4 });
         await green.waitForTimeout(700);
       }
-      const map = green.locator("[role=application]");
-      const box = await map.boundingBox();
-      await map.click({ position: { x: box.width * 0.45, y: box.height * 0.5 } });
+      await tapGuessMap(green, 0.45, 0.5);
       await red.locator("[data-testid=geo-other-pin]").first().waitFor({ state: "attached", timeout: 10_000 }).catch(() => errors.push("Red never saw teammate Green's pin"));
       if ((await blue.locator("[data-testid=geo-other-pin]").count()) > 0) errors.push("Blue sees the other team's pin before the reveal");
       if (!phone) {
