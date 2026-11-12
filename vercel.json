@@ -14,18 +14,8 @@
   ],
   "git": {
     "deploymentEnabled": {
-      "feat/**": false,
-      "fix/**": false,
-      "feature/**": false,
-      "perf/**": false,
-      "seo/**": false,
-      "chore/**": false,
-      "wip/**": false,
-      "revert/**": false,
-      "claude/**": false,
-      "geo-*": false,
-      "films-*": false,
-      "agent-*": false
+      "main": true,
+      "**": false
     }
   }
 }

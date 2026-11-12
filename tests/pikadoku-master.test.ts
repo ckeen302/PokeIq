@@ -6,7 +6,7 @@ import { gridFromIds } from "@/lib/pikadoku/generator";
 import { isSolvable, solveGrid } from "@/lib/pikadoku/solve";
 import { baseOf } from "@/lib/pikadoku/categories";
 import { dailyGrid } from "@/lib/server/pikadoku";
-import { allMasters, clearMemoryMaster, ensureMaster, masterFor, scheduleMaster, unscheduleMaster } from "@/lib/server/pikadoku-master";
+import { allMasters, clearMemoryMaster, ensureMaster, masterFor, scheduleMaster, unscheduleMaster, type MasterStore } from "@/lib/server/pikadoku-master";
 
 const NOW = Date.parse("2026-10-23T12:00:00Z");
 
@@ -82,5 +82,53 @@ describe("scheduling", () => {
     expect((await scheduleMaster({ date: "2026-10-01", rows, cols, by: "Misty" }, NOW)).ok).toBe(false);
     expect((await scheduleMaster({ date: "2026-12-02", rows: ["a", "b", "c"], cols, by: "Misty" }, NOW)).ok).toBe(false);
     expect(await unscheduleMaster("2026-10-23", NOW)).toBe(false);
+  });
+});
+
+describe("a slow or dead database", () => {
+  const rows = ["type:fire", "type:water", "type:grass"];
+  const cols = ["type:flying", "type:fighting", "type:poison"];
+  /** A store whose list() answers only when told to (or fails). */
+  function slowStore() {
+    let calls = 0;
+    let answer: (g: MasterGrid[]) => void = () => {};
+    let fail: (e: Error) => void = () => {};
+    const store: MasterStore = {
+      list: () => {
+        calls += 1;
+        return new Promise((res, rej) => ((answer = res), (fail = rej)));
+      },
+      save: async () => true,
+      remove: async () => true,
+    };
+    return { store, calls: () => calls, answer: (g: MasterGrid[]) => answer(g), fail: (e: Error) => fail(e) };
+  }
+
+  it("doesn't hold a request past the wait, shares one load, and the late answer still lands", async () => {
+    const s = slowStore();
+    const t0 = Date.now();
+    await Promise.all([ensureMaster(NOW, { wait: 30, store: s.store }), ensureMaster(NOW, { wait: 30, store: s.store })]);
+    expect(Date.now() - t0).toBeLessThan(1000);
+    expect(s.calls()).toBe(1);
+    // It has outlasted a wait: the next request doesn't wait on it again.
+    const t1 = Date.now();
+    await ensureMaster(NOW, { wait: 5000, store: s.store });
+    expect(Date.now() - t1).toBeLessThan(100);
+    expect(masterFor("2026-12-03")).toBeNull();
+    s.answer([{ date: "2026-12-03", rows, cols, by: "Brock" }]);
+    await new Promise((r) => setTimeout(r, 0));
+    expect(masterFor("2026-12-03")?.by).toBe("Brock");
+  });
+
+  it("keeps the last good grids when a reload fails", async () => {
+    const s = slowStore();
+    const first = ensureMaster(NOW, { wait: Infinity, store: s.store });
+    s.answer([{ date: "2026-12-04", rows, cols, by: "Brock" }]);
+    await first;
+    const again = slowStore();
+    const second = ensureMaster(NOW + 120_000, { wait: Infinity, store: again.store });
+    again.fail(new Error("database unavailable"));
+    await second;
+    expect(masterFor("2026-12-04")?.by).toBe("Brock");
   });
 });

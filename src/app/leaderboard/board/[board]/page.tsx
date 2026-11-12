@@ -1,5 +1,5 @@
 import { LEADERBOARD_BOARDS } from "@/lib/leaderboard-boards";
-import { LeaderboardView, leaderboardMetadata } from "../../view";
+import { LeaderboardView, leaderboardBoardMetadata } from "../../view";
 
 /**
  * A board's current standings, rebuilt at most every few seconds: the nav
@@ -10,7 +10,7 @@ import { LeaderboardView, leaderboardMetadata } from "../../view";
  */
 export const revalidate = 15;
 export const dynamicParams = false;
-export const metadata = leaderboardMetadata;
+export const metadata = leaderboardBoardMetadata;
 
 export function generateStaticParams() {
   return LEADERBOARD_BOARDS.map((board) => ({ board }));

@@ -166,6 +166,10 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
     pfImg: null as HTMLCanvasElement | null,
     prof: { n: 0, sum: 0, max: 0 },
     phase: "loading" as UiPhase,
+    /** The waiting drift: when it was last drawn and how long that took (ms). */
+    driftAt: 0,
+    driftMs: 0,
+    drifted: false,
   });
 
   // ---- Which view.
@@ -334,10 +338,17 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
       const aspect = w / h;
       const seq = s.seq;
       if (!seq || s.phase === "loading") {
-        // Waiting: a slow drift over the venue.
+        // Waiting: a slow drift over the venue. It gets at most a fifth of the time: where a frame is slow to draw
+        // (a weak GPU, software rendering), drawing it every frame would starve the athletes loading behind it.
+        // (A frame's cost shows as the gap to the next tick, once the GPU has drawn it.)
+        if (s.drifted) s.driftMs = raw;
+        s.drifted = false;
+        if (now - s.driftAt < s.driftMs * 5) return;
         const a = now / 1000;
         scene.frame({ t: a, venue: idleVenue, pose: { pos: [Math.sin(a * 0.05) * 140, 70, Math.cos(a * 0.05) * 140], target: [0, 0, 0], fov: aspect < 0.8 ? 62 : 44 }, beat: { kind: "card", t0: 0, t1: 1, cam: "" }, k: 0, actors: [], props: { kind: "none" }, bursts: [], decals: [], excitement: 0.3, replay: 0, fade: 0, flash: 0, clock: "", screen: null });
         clear();
+        s.driftAt = now;
+        s.drifted = true;
         return;
       }
       const dt = Math.min(0.1, raw / 1000);

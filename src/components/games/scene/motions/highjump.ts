@@ -4,7 +4,7 @@ import { topSpeed } from "@/lib/race/model";
 import type { Athlete } from "@/lib/games/athlete";
 import { HJ } from "@/lib/games/venues";
 import type { ActorPose } from "../pose";
-import { bump, clamp01, coilSpring, dims, ease, idleActor, isBiped, restless, lerp, smooth, walkPhase, wobble, type Dims } from "./common";
+import { bump, clamp01, coilSpring, dims, idleActor, isBiped, lerp, restless, smooth, walkPhase, wobble, type Dims } from "./common";
 
 /**
  * The high jump, driven by the jump's physics (lib/games/highjump): a
@@ -162,12 +162,14 @@ export function highJumpAt(pl: HighJumpPlan, tau: number, time: number): HighJum
       roll: 0,
       // Leaning into the bend: tan θ = v²/(r g).
       sway: -Math.atan((v * v * p.curv) / G) * 0.8 * smooth(-1.4, -0.5, tau) * (1 - smooth(-0.1, 0, tau)),
-      squash: -0.07 * bump(-0.4, -0.08, tau) + 0.03 * Math.sin(t * strideHz * Math.PI * 2) * 0.5 + coilSpring(a, tau, 1.2),
+      squash: -0.07 * bump(-0.4, -0.08, tau) + 0.03 * Math.sin(t * strideHz * Math.PI * 2) * 0.5 + (a.entrant.motion === "slither" ? 0 : coilSpring(a, tau, 1.2)),
       gait: { motion: a.entrant.motion, phase: t * strideHz, v },
       shadow: 1,
     };
-    // Arms and the lead knee drive up at the plant.
-    if (tau > -0.12) { pose.raise = smooth(-0.12, 0, tau) * 0.7; pose.legs = { a: 0.9, b: -0.6, k: smooth(-0.12, 0, tau) }; }
+    // The penultimate step sinks the hips; at the plant the arms and the lead knee drive up (a serpent coils instead;
+    // a hopper or a fish gathers into its coil above, and the flight's spring below carries it out).
+    if (a.entrant.motion === "slither") pose.squash -= 0.14 * smooth(-0.3, -0.04, tau);
+    else if (tau > -0.12) { pose.raise = smooth(-0.12, 0, tau) * 0.7; pose.legs = { a: 0.9, a2: -0.4, b: -0.6, k: smooth(-0.12, 0, tau) }; }
     com = [p.x, d.h * 0.55, p.z];
   } else if (tau < pl.tLand) {
     const k = tau / pl.tLand;
@@ -177,26 +179,48 @@ export function highJumpAt(pl: HighJumpPlan, tau: number, time: number): HighJum
     const z = pl.T[1];
     const pv = 0.55;
     pose = { visible: true, x, y: yDraw - pv * d.h, z, dx: -1, dz: 0, lean: 0, roll: 0, pivot: pv, squash: 0.04 * bump(0, 0.5, k), gait: null, shadow: 1 };
+    // The body's pitch follows its flight: nose up off the ground, level over the bar, nose down to the mat.
+    const vy = pl.vv - G * tau;
+    const pitch = Math.atan2(vy, Math.max(0.5, pl.vh));
+    // A stretch out of the take-off, settling over the top.
+    const spring = 0.1 * Math.exp(-tau / 0.12);
     if (pl.fosbury) {
-      // Back to the bar, head first, the back arched over it, then the legs flick up and it lands on its shoulders.
-      pose.turn = Math.PI * smooth(0, Math.min(0.3, pl.tPeak * 0.6), tau);
-      pose.roll = lerp(0, Math.PI * 0.5, smooth(0.05, pl.tPeak * 1.05, tau)) + 0.55 * smooth(pl.tPeak * 1.05, pl.tLand, tau);
-      pose.bend = 0.13 * bump(pl.tPeak * 0.45, pl.tPeak * 1.5, tau) - 0.1 * smooth(pl.tPeak * 1.25, pl.tLand * 0.95, tau);
-      pose.legs = { a: lerp(0.3, -0.5, smooth(pl.tPeak, pl.tLand, tau)), b: lerp(-0.9, -0.1, smooth(pl.tPeak * 0.9, pl.tLand * 0.9, tau)), k: 1 };
-      pose.raise = 0.4 * (1 - smooth(0, pl.tPeak, tau));
-      pose.arms = { a: -0.6, b: -0.1, k: smooth(0, pl.tPeak, tau) };
+      // Back to the bar, head first: driving up off the plant (the lead knee and both arms high), turning its back to
+      // the bar as it rises; laid out flat over it, hips up and the back arched, head and heels hanging; once the
+      // hips are over, the chin tucks and the legs flick straight up, and it lands on its shoulders.
+      const over = tCross;
+      pose.turn = Math.PI * smooth(0, Math.min(0.3, pl.tPeak * 0.55), tau);
+      pose.roll = lerp(0, Math.PI * 0.5, smooth(0.04, pl.tPeak * 0.9, tau)) + 0.6 * smooth(over, pl.tLand, tau);
+      pose.bend = 0.22 * bump(pl.tPeak * 0.5, over + (pl.tLand - over) * 0.35, tau) - 0.14 * smooth(over + (pl.tLand - over) * 0.25, pl.tLand * 0.95, tau);
+      const flick = smooth(over, over + (pl.tLand - over) * 0.45, tau);
+      const drive = 1 - smooth(0.02, pl.tPeak * 0.5, tau);
+      pose.legs = {
+        a: lerp(lerp(-0.35, 0.95, drive), 0.95, flick),
+        a2: lerp(lerp(-0.35, -0.15, drive), 0.85, flick),
+        b: lerp(lerp(-1.25, -1.1, drive), -0.08, flick),
+        k: 1,
+      };
+      pose.raise = 0.75 * drive;
+      pose.arms = { a: lerp(-0.25, 0.5, flick), b: -0.15, k: smooth(0, pl.tPeak * 0.6, tau) };
+      pose.squash = spring - 0.03 * bump(pl.tPeak * 0.5, over, tau);
     } else if (a.entrant.motion === "gallop" || a.entrant.motion === "scuttle") {
-      pose.lean = lerp(-0.45, 0.45, ease(k));
-      pose.legs = { a: 0, b: -0.9, k: 0.95, split: 0.15 };
+      // A bound: hind legs extended off the ground, all four folded under over the bar, the front legs reaching for the mat.
+      pose.lean = -pitch * 0.85;
+      const tuck = bump(0, pl.tLand, tau);
+      const reach = smooth(tCross, pl.tLand, tau);
+      pose.legs = { a: lerp(-0.2, 0.55, reach), a2: lerp(-0.7 * (1 - smooth(0, 0.18, tau)), 0.1, tuck), b: -1.05 * tuck * (1 - reach * 0.6), k: 0.95, split: 0.25 * (1 - tuck) };
+      pose.tail = { a: -0.5 * pitch, b: 0.2, k: 0.7 };
+      pose.squash = spring - 0.05 * tuck;
     } else if (a.entrant.motion === "slither") {
-      // A serpent springs from a coil, straight up and over.
-      pose.lean = lerp(-0.6, 0.5, ease(k));
-      pose.squash = 0.12 * bump(0, 0.45, k) - 0.05;
+      // A serpent springs from a coil, its body following the arc and bowed over the bar.
+      pose.lean = -pitch * 0.9;
+      pose.squash = 0.16 * Math.exp(-tau / 0.18) - 0.04;
+      pose.bend = 0.16 * bump(pl.tPeak * 0.3, pl.tLand * 0.9, tau);
     } else {
-      pose.lean = lerp(-0.25, 0.3, ease(k));
-      pose.squash = 0.06 * bump(0, 0.6, k);
+      // A hop: the body pitches with the flight, tucked over the top.
+      pose.lean = -pitch * 0.7;
+      pose.squash = spring + 0.05 * bump(0, 0.6, k) - 0.06 * bump(pl.tPeak * 0.6, pl.tPeak * 1.4, tau);
     }
-    pose.squash += coilSpring(a, tau, 1.2);
     pose.wings = { a: 0.12, b: 0.05, k: 0.9 };
     com = [x, yDraw, z];
   } else {

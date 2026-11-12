@@ -56,7 +56,7 @@ export default function RankingsHub() {
         <h2 id="hub-lists" className="font-display text-lg font-bold uppercase tracking-wider">
           All Pokémon
         </h2>
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {METRICS.map((m) => {
             const rows = ranking(m);
             const top = rows[0];
@@ -85,7 +85,7 @@ export default function RankingsHub() {
         <h2 id="hub-types" className="font-display text-lg font-bold uppercase tracking-wider">
           By type
         </h2>
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {TYPES.map((t) => (
             <li key={t} className="hud space-y-2 rounded-lg border bg-card p-3">
               <h3 className="flex items-center gap-2">
@@ -102,7 +102,7 @@ export default function RankingsHub() {
         <h2 id="hub-gens" className="font-display text-lg font-bold uppercase tracking-wider">
           By generation
         </h2>
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {Object.entries(GENERATION_REGIONS).map(([g, region]) => (
             <li key={g} className="hud space-y-2 rounded-lg border bg-card p-3">
               <h3 className="font-pixel text-[10px] uppercase tracking-wider text-screen">

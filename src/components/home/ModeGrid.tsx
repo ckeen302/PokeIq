@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "@/components/ui/Link";
-import { motion } from "framer-motion";
 import { ChevronRight, ListChecks, Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 import { QUIZ_PATH } from "@/lib/which-pokemon/match";
@@ -9,11 +8,8 @@ import { MODULE_INFO, PLAY_MODULES, moduleHref } from "@/lib/modes";
 import { useProgress } from "@/lib/progress";
 import { ModeIcon } from "@/components/game/ModeIcon";
 
-const container = { hidden: {}, show: { transition: { staggerChildren: 0.05, delayChildren: 0.05 } } };
-const item = {
-  hidden: { opacity: 0, x: -12 },
-  show: { opacity: 1, x: 0, transition: { duration: 0.35, ease: [0.21, 0.47, 0.32, 0.98] as const } },
-};
+/** Each tile slides in a beat after the one before. In CSS, so the tiles paint with the page instead of waiting for the scripts. */
+const ENTER = "animate-in fade-in-0 slide-in-from-left-3 fill-mode-both duration-300 ease-out";
 
 interface Tile { key: string; href: string; title: string; description: string; accent: string; icon: ReactNode; best?: number; testId?: string }
 
@@ -43,7 +39,7 @@ const EXTRAS: Tile[] = [
 export function ModeGrid() {
   const progress = useProgress();
   return (
-    <motion.div className="grid grid-cols-1 gap-3 md:grid-cols-2" variants={container} initial="hidden" animate="show">
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
       {[
         ...PLAY_MODULES.map((id): Tile => {
           const info = MODULE_INFO[id];
@@ -59,7 +55,7 @@ export function ModeGrid() {
         }),
         ...EXTRAS,
       ].map((t, i) => (
-        <motion.div key={t.key} variants={item}>
+        <div key={t.key} className={ENTER} style={{ animationDelay: `${50 + i * 50}ms` }}>
           <Link
             href={t.href}
             className="menu-item group flex h-full items-center gap-4 overflow-hidden rounded-lg border bg-card p-4 hover:border-screen/50 hover:bg-accent/40 max-md:gap-3"
@@ -87,8 +83,8 @@ export function ModeGrid() {
               <ChevronRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-foreground" />
             </span>
           </Link>
-        </motion.div>
+        </div>
       ))}
-    </motion.div>
+    </div>
   );
 }

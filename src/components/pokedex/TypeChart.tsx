@@ -51,7 +51,7 @@ export function TypeChart() {
                 <th scope="row" className="p-0 pr-1" title={`Attacking: ${capitalize(a)}`}>
                   <Link
                     href={`/pokedex/types/${a}`}
-                    className="flex h-8 w-14 items-center justify-center rounded-[3px] text-[9px] font-bold uppercase"
+                    className="flex h-8 w-14 items-center justify-center whitespace-nowrap rounded-[3px] text-[9px] font-bold uppercase max-md:w-auto max-md:min-w-14 max-md:px-1.5"
                     style={{ background: typeColor(a), color: typeTextColor(a) }}
                   >
                     {capitalize(a)}

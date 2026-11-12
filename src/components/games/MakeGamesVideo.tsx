@@ -1,5 +1,6 @@
 "use client";
 
+import { SITE_URL } from "@/lib/site";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { track } from "@vercel/analytics";
@@ -12,7 +13,6 @@ import type { Quality } from "./scene";
 import { eventShow } from "./show/build";
 import { h2hClip } from "./show/h2h";
 import { h2hSummary } from "@/lib/games/h2h";
-import { SITE_URL } from "@/lib/site";
 import { gamesSummary } from "./show/games";
 import type { Sequence } from "./show/sequence";
 import { gamesVideoPlan, videoSize, type VideoFormat } from "./record";
@@ -41,8 +41,8 @@ const rangeFromUrl = () => {
   return param("vfrom") != null && param("vto") != null && Number.isFinite(a) && Number.isFinite(b) && a >= 0 && b > a ? { from: a, to: b } : undefined;
 };
 
-/** The public site's host (SITE_URL; a dev server's localhost reads as the live site). */
-const HOST = (() => { const h = new URL(SITE_URL).host; return /^(localhost|127\.)/.test(h) ? "pokeiq.vercel.app" : h; })();
+/** The public site's host, never localhost. */
+const HOST = new URL(SITE_URL).host;
 
 /**
  * "Make a video" for an event, a head to head or the whole Games: a
