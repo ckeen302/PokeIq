@@ -60,7 +60,7 @@ export default function TrainersPage() {
         <div className="space-y-10">
           <section className="space-y-4" aria-labelledby="by-game">
             <HudHeading id="by-game" index={1} title="Browse by game" aside="Route by route" />
-            <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="trainers-games">
+            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="trainers-games">
               {games.map((g) => (
                 <li key={g.key}>
                   <Link

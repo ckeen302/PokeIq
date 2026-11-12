@@ -148,7 +148,7 @@ export function WatchLobby() {
           <Loader2 className="h-6 w-6 animate-spin text-screen" aria-label="Loading live battles" />
         </div>
       ) : battles.length ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="watch-list">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="watch-list">
           {battles.map((b) => (
             <BattleCard key={b.code} b={b} now={data!.now} avatars={data!.avatars} />
           ))}
