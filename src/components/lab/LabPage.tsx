@@ -9,8 +9,11 @@ import { LAB_CSS } from "./lab-css";
 
 /** How wide an experience's screenshot is drawn on its card (the hero's floating panels reuse the same file). */
 const CARD_IMAGE_SIZES = "(min-width: 1024px) 680px, 100vw";
-/** Phones take each screenshot file itself, pre-sized, so the server resizes nothing for them. */
+/** Phones take a pre-sized copy of each screenshot (828 px wide, scripts/lab-phone-sizes.ts), so the server resizes nothing for them. */
 const PHONE = "(max-width: 639px)";
+const phoneImage = (src: string) => src.replace(/^\/lab\//, "/lab/phone/");
+/** A 1×1 transparent GIF: what the hero's floating panels (hidden on a phone) fetch on a phone, so they don't compete with the first card's picture. */
+const BLANK = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
 /**
  * /lab: a hero, then one big card per 3D experience. The previews are
@@ -86,9 +89,9 @@ function LabHero({ shots }: { shots: LabExperience[] }) {
                 style={{ transform: pose.transform, animationDelay: pose.delay, "--lab-accent": e.accent } as Vars}
               >
                 {/* The same sizes as the experience's card below, so the browser downloads each screenshot once. */}
-                {/* Hidden on a phone, where the card below shows the screenshot file itself (the same download). */}
+                {/* Hidden on a phone: nothing to download there (an eager, hidden picture would hold up the first card's). */}
                 <picture>
-                  <source media={PHONE} srcSet={e.image} />
+                  <source media={PHONE} srcSet={BLANK} />
                   <Image src={e.image!} alt="" width={1280} height={720} sizes={CARD_IMAGE_SIZES} loading="eager" fetchPriority="high" className="block aspect-video h-auto w-full object-cover" />
                 </picture>
               </div>
@@ -111,9 +114,9 @@ function LabCard({ experience: e, flip, priority }: { experience: LabExperience;
           className={cn("screen dark-scope relative block aspect-video overflow-hidden lg:aspect-auto lg:min-h-[360px] max-sm:rounded-2xl", flip && "lg:order-2")}
         >
           {e.image ? (
-            // Phones take the screenshot file itself (pre-sized, no resizing on the server); bigger screens a resized copy.
+            // Phones take the screenshot's phone-sized file (no resizing on the server); bigger screens a resized copy.
             <picture>
-              <source media={PHONE} srcSet={e.image} />
+              <source media={PHONE} srcSet={phoneImage(e.image)} />
               <Image
                 src={e.image}
                 alt=""

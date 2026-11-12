@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { POKEDEX } from "@/lib/pokemon/pokedex";
-import { PokedexExplorer, type DexListItem } from "@/components/pokedex/PokedexExplorer";
+import { PokedexExplorer, type DexRow } from "@/components/pokedex/PokedexExplorer";
 import { DexTabs } from "@/components/pokedex/DexTabs";
 import Link from "@/components/ui/Link";
 import { RANKINGS_PATH } from "@/lib/dex/rankings";
@@ -14,21 +14,23 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default function PokedexPage() {
-  const items: DexListItem[] = POKEDEX.map((p) => ({
-    id: p.id,
-    slug: p.slug,
-    name: p.name,
-    genus: p.genus,
-    types: p.types,
-    gen: p.gen,
-    stats: p.stats,
-    bst: p.bst,
-    height: p.height,
-    weight: p.weight,
-    legendary: p.legendary,
-    mythical: p.mythical,
-    fullyEvolved: p.fullyEvolved,
-  }));
+  const rows: DexRow[] = POKEDEX.map((p) => [
+    p.id,
+    p.slug,
+    p.name,
+    p.genus,
+    p.types.join(" "),
+    p.gen,
+    p.stats.hp,
+    p.stats.atk,
+    p.stats.def,
+    p.stats.spa,
+    p.stats.spd,
+    p.stats.spe,
+    p.height,
+    p.weight,
+    (p.legendary ? 1 : 0) | (p.mythical ? 2 : 0) | (p.fullyEvolved ? 4 : 0),
+  ]);
 
   return (
     <div className="mx-auto max-w-7xl space-y-4">
@@ -45,7 +47,7 @@ export default function PokedexPage() {
         </p>
       </div>
       <DexTabs active="pokemon" />
-      <PokedexExplorer items={items} />
+      <PokedexExplorer rows={rows} />
     </div>
   );
 }

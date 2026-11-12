@@ -4,8 +4,8 @@ import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
 import { Bot, Loader2, Radio, Swords, UserSearch, X } from "lucide-react";
-import { CPU_LEVEL_INFO, CPU_LEVELS, GROUP_FORMATS, GUEST_TRAINER, PLAY_FORMAT_INFO, PLAY_FORMATS, battleHref, playerCount, type BattleSeatResponse, type CpuLevel, type GameType, type PlayFormatId, type StandardFormatId } from "@/lib/battle/play";
-import { saveBattleSeat, saveBattleSeed } from "@/lib/battle/seat";
+import { CPU_LEVEL_INFO, CPU_LEVELS, GROUP_FORMATS, GUEST_TRAINER, PLAY_FORMAT_INFO, PLAY_FORMATS, playerCount, type CpuLevel, type GameType, type PlayFormatId, type StandardFormatId } from "@/lib/battle/play";
+import { saveBattleSeat } from "@/lib/battle/seat";
 import { ensureBattleId } from "@/lib/battle/replay-client";
 import { isLadderFormat } from "@/lib/battle/ladder";
 import { useLadderStanding } from "@/lib/battle/ladder-client";
@@ -21,9 +21,13 @@ import { useMatchmaking } from "@/components/duel/use-matchmaking";
 import { cn } from "@/lib/utils";
 import { preloadAvatar3D } from "@/components/trainer3d/Avatar3D";
 import { TeamPick, type TeamSource } from "./TeamPick";
+import { startBattle } from "./start-battle";
+
+// Starting a battle lives in its own module, so pages that only start one (the battle hub) don't load this setup screen.
+export { lastCpuSetup, rememberCpuSetup, startBattle, type CpuSetup } from "./start-battle";
 import { CustomRulesEditor, RulesVerdictNote, useRulesCheck } from "./CustomRulesEditor";
 import { challengeToBattle } from "@/lib/friends-client";
-import { DEFAULT_CUSTOM_RULES, builderFormatFor, customName, lastCustomRules, rememberCustomRules, type CustomRules } from "@/lib/battle/custom-rules";
+import { DEFAULT_CUSTOM_RULES, builderFormatFor, customName, lastCustomRules, type CustomRules } from "@/lib/battle/custom-rules";
 
 /**
  * Starting a battle: against the computer (pick a level), against whoever is
@@ -33,35 +37,6 @@ import { DEFAULT_CUSTOM_RULES, builderFormatFor, customName, lastCustomRules, re
 
 /** cpu: the computer. match: matchmaking. pvp: a friend, through an invite link. */
 export type Opponent = "cpu" | "match" | "pvp";
-
-/** The last battle against the computer, so "Play again" can start the same one. */
-const LAST_KEY = "pokeiq:battle:last-cpu";
-
-export interface CpuSetup {
-  name: string;
-  format: PlayFormatId;
-  level: CpuLevel;
-  team?: string;
-  /** Custom rules (format "custom"). */
-  rules?: CustomRules;
-}
-
-export function rememberCpuSetup(setup: CpuSetup) {
-  try {
-    window.sessionStorage.setItem(LAST_KEY, JSON.stringify(setup));
-  } catch {
-    // "Play again" then goes back to the setup page
-  }
-}
-
-export function lastCpuSetup(): CpuSetup | null {
-  try {
-    const raw = window.sessionStorage.getItem(LAST_KEY);
-    return raw ? (JSON.parse(raw) as CpuSetup) : null;
-  } catch {
-    return null;
-  }
-}
 
 /** Device time, ticking twice a second while `on`. */
 function useTicker(on: boolean): number {
@@ -73,22 +48,6 @@ function useTicker(on: boolean): number {
     return () => window.clearInterval(id);
   }, [on]);
   return now;
-}
-
-/** Starts a battle; returns its page, or throws with the server's reason. */
-export async function startBattle(
-  body: { mode: "cpu" | "pvp" } & Omit<CpuSetup, "level"> & { level?: CpuLevel; public?: boolean; hidden?: boolean; timer?: boolean; timeoutLoses?: boolean }
-): Promise<string> {
-  const rankedId = (await ensureBattleId()) ?? undefined;
-  const sentAt = Date.now();
-  const res = await fetch("/api/battle", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...body, rankedId }) });
-  const data = (await res.json().catch(() => ({}))) as Partial<BattleSeatResponse> & { error?: string };
-  if (!res.ok || !data.code || !data.token) throw new Error(data.error ?? `Request failed (${res.status})`);
-  saveBattleSeat(data.code, data.token);
-  if (data.view) saveBattleSeed(data.code, data.view, sentAt);
-  if (body.rules) rememberCustomRules(body.rules);
-  if (body.mode === "cpu") rememberCpuSetup({ name: body.name, format: body.format, level: body.level ?? "normal", team: body.team, rules: body.rules });
-  return battleHref(body.mode, data.code);
 }
 
 /** A labelled on/off switch with a line of help. */
