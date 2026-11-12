@@ -1,5 +1,6 @@
 "use client";
 
+import { SITE_URL } from "@/lib/site";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { track } from "@vercel/analytics";
@@ -29,7 +30,7 @@ const fpsFromUrl = () => { const n = Number(param("vfps")); return Number.isFini
 const qualityFromUrl = (): Quality | undefined => { const q = param("vq"); return q === "draft" || q === "low" || q === "medium" || q === "high" ? q : undefined; };
 
 /** The public site's host, never localhost. */
-const HOST = new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://pokeiq.vercel.app").host;
+const HOST = new URL(SITE_URL).host;
 
 /**
  * "Make a video": the race as a vertical 1080 × 1920 MP4 for TikTok, Reels

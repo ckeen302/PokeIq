@@ -62,6 +62,6 @@ html.wh-locked, html.wh-locked body { overflow: hidden; overscroll-behavior: non
 @keyframes wh-wipe{from{clip-path:inset(-20% 100% -20% 0)}to{clip-path:inset(-20% -2% -20% 0)}}
 .wh-lead-in{animation:wh-track-s .8s cubic-bezier(.2,.8,.2,1) both}
 @keyframes wh-track-s{from{letter-spacing:.42em;opacity:0}to{letter-spacing:.14em;opacity:1}}
-@media (max-width:639px){.wh-lower::before{left:-.55rem}}
+@media (max-width:639px){.wh-lower::before{left:-.55rem}[data-loading="1"] .wh-pro{display:none}}
 @media (prefers-reduced-motion: reduce){.wh-hint,.wh-load-ring,.wh-tk,.wh-rule,.wh-w > span,.wh-sweep,.wh-when,.wh-lower::before,.wh-wipe,.wh-lead-in{animation:none!important}.wh-sweep{display:none}}
 `;

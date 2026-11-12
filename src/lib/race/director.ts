@@ -195,6 +195,21 @@ function tallShot(cam: Camera, pose: CamPose, spots: Spot[], ctx: DirectorContex
       // Well round to the side and up a little: the lanes stack up the frame instead of across it.
       const D = 7 + 2.2 * H + fieldSpan(ctx.starts) * 0.5;
       const pos: Vec3 = [c[0] + (d.dx * 0.5 + mx * 0.87) * D, 1.1 + 0.8 * H + D * 0.3, c[2] + (d.dz * 0.5 + mz * 0.87) * D];
+      // A staggered start (the 400 m) spreads the field round the bend: all of it in a tall frame leaves every runner tiny.
+      // The camera stands ahead of the front of the stagger, a little outside it, looking back along the bend: the
+      // runner nearest it fills the frame and the next lanes stack up behind, the rest fading out.
+      const stagger = Math.max(...ctx.starts.map((s) => Math.hypot(s.x - c[0], s.z - c[2])));
+      if (stagger > 8 && spots.length > 1) {
+        // (The outermost lane starts furthest round: the front of the stagger, with everyone else behind it.)
+        const dist = (a: Spot, p: { x: number; z: number }) => Math.hypot(a.x - p.x, a.z - p.z);
+        const near = spots.reduce((a, b) => (b.lane > a.lane ? b : a), spots[0]);
+        const ss = [...spots].sort((a, b) => dist(a, near) - dist(b, near));
+        const weights = ss.map((s) => 1 - ease((dist(s, near) - 8) / 8));
+        const [gx, gz] = outward(near.dx, near.dz);
+        const D2 = 8 + 3 * H;
+        const p2: Vec3 = [near.x + (near.dx * 0.8 + gx * 0.6) * D2, 0.9 + 0.8 * H + D2 * 0.12, near.z + (near.dz * 0.8 + gz * 0.6) * D2];
+        return fillTall(p2, ss, ctx.aspect, { weights, maxFov: 60 });
+      }
       return fillTall(pos, spots, ctx.aspect);
     }
     case "rail": {
@@ -216,7 +231,8 @@ function tallShot(cam: Camera, pose: CamPose, spots: Spot[], ctx: DirectorContex
     case "line":
     case "replay": {
       // The finish cameras stay where they stand; whoever is coming in (or just through) fills the frame.
-      const near = spots.filter((s) => Math.abs(s.x - X0) < 14 || s === l);
+      // (On the home straight: in a 400 m the back straight runs past the same x, far across the infield.)
+      const near = spots.filter((s) => (Math.abs(s.x - X0) < 14 && s.s > ctx.distance - 30) || s === l);
       const first = near.reduce((a, b) => (Math.abs(b.x - X0) < Math.abs(a.x - X0) ? b : a), near[0]);
       const ss = [first, ...near.filter((s) => s !== first)];
       return fillTall(pose.pos, ss, ctx.aspect, { weights: ss.map((s) => 1 - ease((Math.abs(s.x - first.x) - 4) / 5)), maxFov: 50 });

@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/site";
 import { Director } from "@/lib/mass-battle/director";
 import { answerText, bossDownLine, critLine, fmt, multiKoLine, resultTitle, spreadText } from "@/lib/mass-battle/copy";
 import { TICK_HZ } from "@/lib/mass-battle/constants";
@@ -39,7 +40,7 @@ import { SimClient } from "./workers";
 export const VIDEO_W = 1080;
 export const VIDEO_H = 1920;
 export const VIDEO_LENGTHS = [15, 30, 60] as const;
-export const LINK_TEXT = `${new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://pokeiq.vercel.app").host}/lab/mass-battle`;
+export const LINK_TEXT = `${new URL(SITE_URL).host}/lab/mass-battle`;
 
 export interface RecordOptions {
   battle: BattleDesc;
@@ -370,7 +371,7 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
       const inBattle = battleOn && t < revealAt + 0.3 && hudOn;
       // The armies' counters along the top, clear of the apps' own bar.
       if (inBattle) {
-        const y = H * 0.135;
+        const y = H * 0.16;
         const pw = W * 0.38, ph = W * 0.12;
         for (const s of [0, 1] as const) {
           const x = s === 0 ? W * 0.06 : W - W * 0.06 - pw;
@@ -403,7 +404,7 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
           for (const k of bossIdx) hp += view.hp[k];
           const share = Math.max(0, Math.min(1, hp / bossMax));
           bossTrail = Math.max(share, bossTrail - dt * 0.6);
-          const by = H * 0.193, bw = W * 0.62, bx = (W - bw) / 2, bh = W * 0.018;
+          const by = H * 0.218, bw = W * 0.62, bx = (W - bw) / 2, bh = W * 0.018;
           outlined(g, `👑 ${bossName.toUpperCase()}`, W / 2, by - W * 0.028, W * 0.034, font, "#ffffff", 800, 0.16);
           roundRect(g, bx - 3, by - 3, bw + 6, bh + 6, bh);
           g.fillStyle = "rgba(10,16,36,0.75)";
@@ -433,14 +434,16 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
           g.restore();
         }
       }
-      // Watermark: low on the left, clear of the apps' tabs over the top and their captions along the bottom.
+      // Watermark: the Lab's own (as on the Games' and the Race's videos), top left under the apps' tabs and over
+      // the armies' counters, on the stands: clear of the battle in the middle and the apps' captions along the bottom.
       g.save();
-      g.globalAlpha = 0.68;
-      const wm = W * 0.036;
-      const wy = H * 0.735;
+      g.globalAlpha = 0.62;
+      const u = Math.min(W, H * 0.5625);
+      const wm = u * 0.034;
+      const wx = W * 0.06, wy = H > W ? H * 0.092 : H * 0.07;
+      if (logo) g.drawImage(logo, wx, wy - wm * 0.55, wm * 1.1, wm * 1.1);
       g.textAlign = "left";
-      if (logo) g.drawImage(logo, W * 0.06, wy - wm * 0.55, wm * 1.1, wm * 1.1);
-      outlined(g, "PokéIQ", W * 0.06 + wm * 1.35, wy, wm, font, "#ffffff", 800, 0.18);
+      outlined(g, "PokéIQ", wx + wm * 1.35, wy, wm, font, "#ffffff", 800, 0.2);
       g.restore();
       g.textAlign = "center";
       // Hook card: the question pops in over the establishing shot, the matchup under it, all of it above the middle

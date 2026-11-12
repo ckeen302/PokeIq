@@ -126,7 +126,7 @@ export function GamesPokemonPage({ athlete }: { athlete: Athlete }) {
     <div className="mx-auto max-w-4xl space-y-6" data-testid="games-pokemon">
       <style>{RACE_CSS}</style>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(ld) }} />
-      <ListHeader back={{ href: GAMES_PATH, label: "The PokéIQ Games" }} kicker="The PokéIQ Games · every event" title={`${a.name} `} accent="at the Games" blurb={`${a.name}'s mark and rank in every event of the PokéIQ Games, out of all 1,025 Pokémon and their forms, from its real stats: ${a.stats.spe} Speed, ${a.stats.atk} Attack, ${a.stats.def} Defence, ${a.stats.hp} HP, ${a.kg} kg, ${a.height} m.`} />
+      <ListHeader back={{ href: GAMES_PATH, label: "The PokéIQ Games" }} kicker="The PokéIQ Games · every event" title={`${a.name} `} accent="at the Games" blurb={`${a.name}'s mark and rank in every event of the PokéIQ Games, out of every Pokémon and form, from its real stats: ${a.stats.spe} Speed, ${a.stats.atk} Attack, ${a.stats.def} Defence, ${a.stats.hp} HP, ${a.kg} kg, ${a.height} m.`} />
       {best && (
         <section className="rounded-xl border bg-card/40 p-5">
           <p className="hud-label text-screen">Best event</p>

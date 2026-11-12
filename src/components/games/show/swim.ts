@@ -238,10 +238,26 @@ export function swimShow(race: SwimRace, o: ShowOptions): Show {
       const order = plans.map((_, i) => i).sort((a, b) => Math.abs(far[a] - front) - Math.abs(far[b] - front));
       const subjects: Subject[] = order.map((i) => {
         const gap = Math.abs(far[i] - front);
-        const k2 = Math.max(0, Math.min(1, (gap - (beat.cam === "replay" ? 0.2 : 2)) / 4));
+        const k2 = Math.max(0, Math.min(1, (gap - (beat.cam === "replay" ? 0.2 : 1.2)) / 3));
         return { x: scenes[i].pose.x, y: -0.4, z: plans[i].z, w: Math.max(1.2, plans[i].len), h: Math.max(1, plans[i].above + 0.8), weight: 1 - k2 * k2 * (3 - 2 * k2) };
       });
-      cam = fillFrame(keepOut(cam, "pool"), subjects, aspect, 0.3);
+      // Where the camera stands decides how the swimmers stack: side by side across the lanes they fit the narrow
+      // frame's width and leave it half empty, so the spidercam and the touch come round in front of the leaders,
+      // a little above the water and out to the side, and the lanes beside them stack up the frame behind.
+      const shot = beat.cam === "race" ? shotAt(rt) : null;
+      if (shot === "spider" || shot === "touch") {
+        const lead = plans[order[0]];
+        const lx = scenes[order[0]].pose.x;
+        const side = lead.z + S * (3.5 + lead.len * 0.9);
+        if (shot === "touch") {
+          // The touch from the side, just short of the wall and low: the finishers in the lanes beyond stack up behind the nearest.
+          cam = { ...cam, pos: [wallX - finDir * (1.5 + lead.len * 0.35), 1.1 + lead.above * 0.6 + lead.len * 0.1, side] };
+        } else {
+          const dir = poolX(swimAt(lead.run.trace, rt).x).dir;
+          cam = { ...cam, pos: [lx + dir * (5 + lead.len * 1.4), 2.2 + lead.above * 0.6 + lead.len * 0.25, side] };
+        }
+      }
+      cam = fillFrame(keepOut(cam, "pool"), subjects, aspect, 0.34);
     }
     // A swimmer's relief faces the camera across the pool; from above it would show its edge, so it tilts back
     // (away from the lens) about its line of travel by the camera's elevation, pivoting where it breaks the

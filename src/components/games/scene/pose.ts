@@ -14,6 +14,8 @@ export interface LimbSet {
   k: number;
   /** Legs only: how far apart the two legs split (rad, + front leg forward). */
   split?: number;
+  /** The other side's forward swing, when the two sides move apart (a crawl's arms, a kick): default `a`. */
+  a2?: number;
 }
 
 export interface ActorPose {
