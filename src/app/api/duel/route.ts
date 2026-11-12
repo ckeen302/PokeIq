@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { gate } from "@/lib/server/moderation";
-import { clientIp, rateLimit } from "@/lib/server/rate-limit";
+import { GAMEPLAY_IP_LIMIT, clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { duelNameSchema, pvpToken } from "@/lib/server/duel-core";
 import { duelsEnabled, newDuelCode, pvpStore } from "@/lib/server/duel-store";
 import { duelView, type PvpDuel } from "@/lib/server/duels";
@@ -37,7 +37,7 @@ const bodySchema = z.discriminatedUnion("kind", [
 ]);
 
 export async function POST(request: NextRequest) {
-  if (!rateLimit(`duel-new:${clientIp(request)}`, 10, 0.2)) {
+  if (!rateLimit(`duel-new:${clientIp(request)}`, ...GAMEPLAY_IP_LIMIT)) {
     return NextResponse.json({ error: "Too many duels started — take a breather." }, { status: 429 });
   }
   if (!duelsEnabled()) {

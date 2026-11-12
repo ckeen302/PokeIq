@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { emailEnabled } from "@/lib/server/email/config";
 import { runDailyEmail, todayUtc } from "@/lib/server/email/daily";
+import { cronAuthorized } from "@/lib/server/cron-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,7 +15,7 @@ export const maxDuration = 60;
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
   if (!secret || !emailEnabled()) return NextResponse.json({ skipped: true });
-  if (request.headers.get("authorization") !== `Bearer ${secret}`) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (!cronAuthorized(request.headers.get("authorization"), secret)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   try {
     const result = await runDailyEmail(todayUtc());
     return NextResponse.json(result, { status: result.error ? 502 : 200 });

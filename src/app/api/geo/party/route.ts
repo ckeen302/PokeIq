@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { gate } from "@/lib/server/moderation";
-import { clientIp, rateLimit } from "@/lib/server/rate-limit";
+import { GAMEPLAY_IP_LIMIT, clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { duelNameSchema } from "@/lib/server/duel";
 import { duelsEnabled } from "@/lib/server/duel-store";
 import { createParty, isPartyMap, newPartyCode, partyStore, partyToken, partyView } from "@/lib/server/geo-party";
@@ -24,7 +24,7 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  if (!rateLimit(`geo-party-new:${clientIp(request)}`, 10, 0.2)) {
+  if (!rateLimit(`geo-party-new:${clientIp(request)}`, ...GAMEPLAY_IP_LIMIT)) {
     return NextResponse.json({ error: "Too many parties opened. Take a breather." }, { status: 429 });
   }
   if (!duelsEnabled()) return NextResponse.json({ error: "Parties aren't enabled on this server yet." }, { status: 503 });

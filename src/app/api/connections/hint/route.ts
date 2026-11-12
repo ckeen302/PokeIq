@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { CONN_GROUP_SIZE, CONN_GROUPS, CONN_MAX_MISTAKES } from "@/lib/connections/types";
 import type { ConnHintResponse } from "@/lib/connections/social";
-import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
+import { GAMEPLAY_IP_LIMIT, clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { NO_STORE, PLAYER, whoIs } from "@/lib/server/connections-custom-http";
 import { connPlayerKey } from "@/lib/server/connections-results";
 import { requestHint } from "@/lib/server/connections-social";
@@ -27,7 +27,7 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  if (!rateLimit(`conn-hint:${clientIp(request)}`, 10, 0.2)) return tooManyRequests();
+  if (!rateLimit(`conn-hint:${clientIp(request)}`, ...GAMEPLAY_IP_LIMIT)) return tooManyRequests();
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400, headers: NO_STORE });
   const who = await whoIs(request, parsed.data.player);

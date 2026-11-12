@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { clientIp, rateLimit } from "@/lib/server/rate-limit";
+import { GAMEPLAY_IP_LIMIT, clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { claimBoardSlot, utcDayOf } from "@/lib/server/board-guard";
 import { cognitiveRowOf, logCognitiveResult } from "@/lib/server/cognitive-results";
 
@@ -11,7 +11,7 @@ import { cognitiveRowOf, logCognitiveResult } from "@/lib/server/cognitive-resul
  * well-formed: the result page never depends on this.
  */
 export async function POST(request: NextRequest) {
-  if (!rateLimit(`iq-test-result:${clientIp(request)}`, 5, 1 / 60)) {
+  if (!rateLimit(`iq-test-result:${clientIp(request)}`, ...GAMEPLAY_IP_LIMIT)) {
     return NextResponse.json({ error: "Slow down a little." }, { status: 429 });
   }
   const row = cognitiveRowOf(await request.json().catch(() => null));
