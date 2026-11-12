@@ -77,7 +77,7 @@ export function throwShow(result: ThrowResult, o: ShowOptions): Show {
     const act = tl.add({ kind: "action", cam: "throw", act: idx, clock0: t0, rate: 1, key: p.a.key }, t1 - t0);
     if (!pl.noMark) {
       tl.cue(act.t0 - t0, "whoosh", 0.35);
-      tl.cue(act.t0 + pl.flight - t0, "thud", shot ? 0.5 : 0.3);
+      tl.cue(act.t0 + pl.flight - t0, shot ? "thud" : "stick", shot ? 0.5 : 0.6);
     }
     tl.cue(act.t0 + Math.max(0, (pl.noMark ? 0 : pl.flight) - t0) + 0.25, p.a.mark != null ? (p.lead ? "cheer" : "applause") : "groan", p.lead ? 1 : 0.6);
     tl.add({ kind: "result", cam: "mark", act: idx, clock0: t1, rate: 0.6, key: p.a.key }, p.cut === "full" ? 1.9 : 1.2);

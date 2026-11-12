@@ -16,6 +16,9 @@ import { RACE_CSS } from "@/components/race/race-css";
 import { GamesExperience } from "./GamesExperience";
 import { GamesInfo } from "./GamesInfo";
 import { GamesStadium } from "./GamesStadium";
+import { H2HPicker } from "./H2HPicker";
+import { RIVALS, eventMatchups, hubMatchups } from "@/lib/games/h2h-ideas";
+import type { Matchup } from "@/lib/games/h2h";
 import { cn } from "@/lib/utils";
 
 /**
@@ -36,6 +39,40 @@ export function EventNav({ current }: { current?: EventId }) {
         </Link>
       ))}
     </nav>
+  );
+}
+
+const rivalNames = () => Object.fromEntries(RIVALS.map((k) => [k, GAMES_BY_KEY.get(k)?.name ?? k]));
+
+/** Example head to heads (each found by running the event: see lib/games/h2h), as links that play them. */
+export function H2HIdeas({ ideas }: { ideas: Matchup[] }) {
+  return (
+    <ul className="grid gap-2 sm:grid-cols-2" data-testid="h2h-ideas">
+      {ideas.map((x) => {
+        const a = GAMES_BY_KEY.get(x.a), b = GAMES_BY_KEY.get(x.b);
+        if (!a || !b) return null;
+        return (
+          <li key={`${x.event}-${x.a}-${x.b}`}>
+            <Link href={eventRunPath(x.event, { keys: [x.a, x.b] })} prefetch={false} className="flex min-h-11 items-center justify-between gap-3 rounded-md border bg-card/40 px-3 py-2 hover:border-primary/50" data-testid="hub-h2h">
+              <span className="min-w-0 font-display text-sm font-semibold uppercase tracking-wide">{h2hQuestion(x.event, a.name, b.name)}</span>
+              <span className="shrink-0 font-pixel text-[9px] uppercase tracking-[0.14em] text-muted-foreground">{x.why === "close" ? "Close finish" : "Against the odds"}</span>
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/** Pick two Pokémon and an event, with example match-ups under it. */
+export function H2HSection({ id, title, blurb, a, event, ideas }: { id: string; title: string; blurb: string; a?: string; event?: EventId; ideas: Matchup[] }) {
+  return (
+    <section aria-labelledby={id} className="space-y-3" data-testid="h2h-section">
+      <h2 id={id} className="font-display text-lg font-bold uppercase tracking-wider">{title}</h2>
+      <p className="text-sm text-muted-foreground">{blurb}</p>
+      <H2HPicker a={a ?? null} event={event ?? null} rivals={RIVALS} names={rivalNames()} />
+      {ideas.length > 0 && <H2HIdeas ideas={ideas} />}
+    </section>
   );
 }
 
@@ -100,6 +137,7 @@ export function GamesEventPage({ event, keys = [], seed = null, rain = false }: 
             </div>
             <p className="text-sm text-muted-foreground">Who is the best of all Pokémon? <Link href={recordsPath(event)} className="underline-offset-2 hover:text-foreground hover:underline">See the {e.name.toLowerCase()} records for all 1,025 Pokémon</Link>.</p>
           </section>
+          <H2HSection id="games-h2h" title="Head to head" blurb={`Two Pokémon, ${event === "all-around" ? "one event" : e.lower}: pick them, watch it in 3D, then share the link or a vertical video.`} event={event === "all-around" ? undefined : event} a={h2h ? field[0].key : undefined} ideas={custom ? [] : eventMatchups(event)} />
           <section aria-labelledby="games-how" className="rounded-lg border bg-card/40 p-4">
             <h2 id="games-how" className="mb-2 font-display text-lg font-bold uppercase tracking-wider">How it works</h2>
             <GamesInfo event={event} athletes={field} rain={rain} />
@@ -159,20 +197,13 @@ const groupOf = (kind: string) => (kind === "sprint" ? "Track" : kind === "swim"
 
 /** /lab/games: the stadium entry and event board over the plain page (single events, the Games, the records and head to heads). */
 export function GamesHub() {
-  const h2h: { event: EventId; a: string; b: string }[] = [
-    { event: "weightlifting", a: "snorlax", b: "machamp" },
-    { event: "100m", a: "regieleki", b: "shuckle" },
-    { event: "50m-freestyle", a: "magikarp", b: "pikachu" },
-    { event: "wrestling", a: "wailord", b: "groudon" },
-    { event: "high-jump", a: "pikachu", b: "eevee" },
-    { event: "shot-put", a: "machamp", b: "conkeldurr" },
-  ];
+  const h2h = hubMatchups();
   const groups = ["Track", "Field", "Pool", "Arena"];
   const events = EVENTS.map((e) => ({ id: e.id, name: e.name, emoji: e.emoji, question: e.question, href: eventPath(e.id), group: groupOf(e.kind) }));
   const records = EVENTS.map((e) => ({ label: `${e.name} records`, href: recordsPath(e.id) }));
   const pairs = h2h.map((x) => ({ label: h2hQuestion(x.event, GAMES_BY_KEY.get(x.a)!.name, GAMES_BY_KEY.get(x.b)!.name), href: eventRunPath(x.event, { keys: [x.a, x.b] }) }));
   return (
-    <GamesStadium events={events} groups={groups} playHref={PLAY_PATH} records={records} h2h={pairs} backHref={LAB_PATH}>
+    <GamesStadium events={events} groups={groups} playHref={PLAY_PATH} records={records} h2h={pairs} h2hPicker={<H2HPicker rivals={RIVALS} names={rivalNames()} />} backHref={LAB_PATH}>
     <div className="mx-auto max-w-5xl space-y-10" data-testid="games-hub">
       <ListHeader back={{ href: LAB_PATH, label: "3D Lab" }} kicker="3D Lab · real sport, real stats" title="The PokéIQ " accent="Games" blurb="Real track and field, weightlifting, swimming and wrestling for every Pokémon: scored from their base stats, height, weight and body shape with real physics and each sport's real rules, then played out in 3D in a stadium, an arena and an aquatics centre." />
       <section aria-labelledby="hub-events" className="space-y-3">
@@ -202,16 +233,7 @@ export function GamesHub() {
           ))}
         </ul>
       </section>
-      <section aria-labelledby="hub-h2h" className="space-y-3">
-        <h2 id="hub-h2h" className="font-display text-xl font-bold uppercase tracking-wider">Head to head</h2>
-        <p className="text-sm text-muted-foreground">Two Pokémon, one event, and a vertical video ready for TikTok.</p>
-        <ul className="grid gap-2 sm:grid-cols-2">
-          {h2h.map((x) => {
-            const a = GAMES_BY_KEY.get(x.a)!, b = GAMES_BY_KEY.get(x.b)!;
-            return <li key={`${x.event}-${x.a}`}><Link href={eventRunPath(x.event, { keys: [x.a, x.b] })} prefetch={false} className="block rounded-md border bg-card/40 px-3 py-2 font-display text-sm font-semibold uppercase tracking-wide hover:border-primary/50" data-testid="hub-h2h">{h2hQuestion(x.event, a.name, b.name)}</Link></li>;
-          })}
-        </ul>
-      </section>
+      <H2HSection id="hub-h2h" title="Head to head" blurb="Two Pokémon, one event, and a vertical video ready for TikTok. The match-ups below are real results, found by running every event between the best-known Pokémon." ideas={h2h} />
       <section className="rounded-lg border bg-card/40 p-4 text-sm text-muted-foreground">
         <h2 className="font-display text-base font-bold uppercase tracking-wider text-foreground">The rules of the Games</h2>
         <ul className="mt-2 list-disc space-y-1 pl-5">

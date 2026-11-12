@@ -6,9 +6,11 @@ import type { SoundKind } from "./show/types";
  * The sound of the Games: the Race's crowd and applause recordings (CC0,
  * credited in public/audio/race/CREDITS.md) under everything, rising with
  * the show's excitement; the Race's starter's gun, timing beep and heavy
- * thuds; and, synthesised here, the recall gun, sand thuds, the bar's
- * clank, splashes and dives, the judges' buzzer, whooshes, and crowd
- * reactions (cheers, an "ooh", a groan). The fanfare and the anthem are
+ * thuds; and, synthesised here, the recall gun and its echo off the
+ * stands, sand thuds, the bar's clank and its bouncing plates, splashes
+ * and dives (the plunge and the droplets), a shot's thump into the turf
+ * and a javelin sticking in it, the judges' buzzer, whooshes, and crowd
+ * reactions (a crowd of voices: cheers and a roar, an "ooh", a groan). The fanfare and the anthem are
  * original music rendered with the films' score pipeline
  * (scripts/film-score/games.py; public/audio/games/CREDITS.md). Every cue
  * is scheduled by one function, so the live page and the exported video
@@ -64,6 +66,71 @@ function tone(ctx: BaseAudioContext, dest: AudioNode, at: number, freq: number, 
   o.stop(at + decay + 0.05);
 }
 
+/**
+ * A crowd's voices: many detuned voices (sawtooths with their own vibrato)
+ * through two vowel formants, swelling and gliding together: "aah" rising
+ * for a cheer, "ooh" up and down, "ohh" falling for a groan.
+ */
+function voices(ctx: BaseAudioContext, dest: AudioNode, at: number, o: { n: number; glide: number; formants: [number, number][]; attack: number; hold: number; release: number; gain: number; seed?: number }) {
+  let r = (o.seed ?? Math.floor(at * 1000)) % 2147483647 || 7;
+  const rnd = () => (r = (r * 16807) % 2147483647) / 2147483647;
+  const sum = ctx.createGain();
+  sum.gain.value = 1 / Math.sqrt(o.n);
+  const out = ctx.createGain();
+  const end = at + o.attack + o.hold + o.release;
+  out.gain.setValueAtTime(0, at);
+  out.gain.linearRampToValueAtTime(o.gain, at + o.attack);
+  out.gain.setValueAtTime(o.gain, at + o.attack + o.hold);
+  out.gain.exponentialRampToValueAtTime(0.0008, end);
+  for (const [f, q] of o.formants) {
+    const bp = ctx.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.value = f;
+    bp.Q.value = q;
+    sum.connect(bp).connect(out);
+  }
+  out.connect(dest);
+  for (let i = 0; i < o.n; i++) {
+    const v = ctx.createOscillator();
+    v.type = "sawtooth";
+    // Men's and women's voices, each a little early or late.
+    const f0 = (rnd() < 0.5 ? 115 : 210) * (0.85 + rnd() * 0.3);
+    const d = rnd() * 0.12;
+    v.frequency.setValueAtTime(f0, at + d);
+    v.frequency.exponentialRampToValueAtTime(f0 * o.glide, at + o.attack + o.hold * 0.8 + d);
+    const vib = ctx.createOscillator();
+    vib.frequency.value = 4.5 + rnd() * 2;
+    const vg = ctx.createGain();
+    vg.gain.value = f0 * 0.025;
+    vib.connect(vg).connect(v.frequency);
+    v.connect(sum);
+    v.start(at + d); vib.start(at + d);
+    v.stop(end + 0.05); vib.stop(end + 0.05);
+  }
+}
+
+/** Water: the plunge (a low thump under a noise burst) and the droplets falling back (short rising chirps). */
+function water(ctx: BaseAudioContext, dest: AudioNode, wet: AudioNode, at: number, nz: AudioBuffer, gain: number, big: boolean) {
+  burst(ctx, dest, at, nz, { type: "bandpass", f0: 2200, f1: 800, q: 0.7, gain: 0.5 * gain, attack: 0.01, decay: big ? 0.75 : 0.45 });
+  burst(ctx, dest, at, nz, { type: "lowpass", f0: 500, f1: 160, gain: 0.45 * gain, attack: 0.008, decay: big ? 0.5 : 0.3 });
+  burst(ctx, wet, at, nz, { type: "highpass", f0: 3000, gain: 0.16 * gain, decay: 0.5 });
+  for (let i = 0; i < (big ? 9 : 5); i++) {
+    const t = at + 0.08 + i * 0.045 + ((i * 37) % 11) * 0.006;
+    const o = ctx.createOscillator();
+    o.type = "sine";
+    const f = 600 + ((i * 53) % 9) * 140;
+    o.frequency.setValueAtTime(f, t);
+    o.frequency.exponentialRampToValueAtTime(f * 2.2, t + 0.05);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.06 * gain, t + 0.004);
+    g.gain.exponentialRampToValueAtTime(0.0006, t + 0.06);
+    o.connect(g).connect(dest);
+    o.start(t);
+    o.stop(t + 0.08);
+  }
+}
+
 /** Schedules one cue at context time `at`. */
 export function scheduleCue(ctx: BaseAudioContext, bus: Bus, buf: Buffers, kind: SoundKind, at: number, gain = 1) {
   const { master, wet, crowd, music } = bus;
@@ -72,6 +139,8 @@ export function scheduleCue(ctx: BaseAudioContext, bus: Bus, buf: Buffers, kind:
     case "gun":
       scheduleGun(ctx, master, at, nz, 0.8 * gain);
       scheduleGun(ctx, wet, at, nz, 1.2 * gain);
+      // The crack off the stands, a beat later.
+      burst(ctx, wet, at + 0.11, nz, { type: "bandpass", f0: 1800, f1: 700, q: 0.9, gain: 0.35 * gain, decay: 0.5 });
       break;
     case "recall":
       for (const d of [0, 0.2]) { scheduleGun(ctx, master, at + d, nz, 0.6 * gain); scheduleGun(ctx, wet, at + d, nz, 0.9 * gain); }
@@ -83,11 +152,39 @@ export function scheduleCue(ctx: BaseAudioContext, bus: Bus, buf: Buffers, kind:
     case "impact":
     case "stomp":
       scheduleThud(ctx, master, at, nz, Math.min(0.9, 0.5 * gain), kind === "impact" ? 0.7 : 1);
+      // A shot landing: the turf gives (a dull scuff of earth after the thump).
+      if (kind === "thud") burst(ctx, master, at + 0.01, nz, { type: "lowpass", f0: 900, f1: 200, gain: 0.3 * gain, decay: 0.32 });
+      break;
+    case "stick":
+      // A javelin into the turf: a sharp thwack, then the shaft quivering.
+      burst(ctx, master, at, nz, { type: "bandpass", f0: 1400, q: 1.4, gain: 0.45 * gain, decay: 0.07 });
+      scheduleThud(ctx, master, at, nz, 0.25 * gain, 1.6);
+      {
+        const o = ctx.createOscillator();
+        o.type = "triangle";
+        o.frequency.value = 95;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0, at);
+        g.gain.linearRampToValueAtTime(0.09 * gain, at + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0006, at + 0.7);
+        const wob = ctx.createGain();
+        wob.gain.value = 0.5;
+        const lfo = ctx.createOscillator();
+        lfo.frequency.value = 17;
+        const lg = ctx.createGain();
+        lg.gain.value = 0.5;
+        lfo.connect(lg).connect(wob.gain);
+        o.connect(wob).connect(g).connect(master);
+        o.start(at); lfo.start(at);
+        o.stop(at + 0.75); lfo.stop(at + 0.75);
+      }
       break;
     case "sand":
-      scheduleThud(ctx, master, at, nz, 0.35 * gain, 0.8);
+      scheduleThud(ctx, master, at, nz, 0.45 * gain, 0.75);
       burst(ctx, master, at, nz, { type: "lowpass", f0: 1400, f1: 300, gain: 0.5 * gain, decay: 0.45 });
       burst(ctx, wet, at + 0.02, nz, { type: "bandpass", f0: 2400, q: 0.5, gain: 0.12 * gain, decay: 0.3 });
+      // The grains settling back.
+      burst(ctx, master, at + 0.12, nz, { type: "highpass", f0: 4200, gain: 0.07 * gain, attack: 0.08, decay: 0.5 });
       break;
     case "clank": {
       // Steel on steel: inharmonic partials ringing down, and a rattle.
@@ -96,13 +193,16 @@ export function scheduleCue(ctx: BaseAudioContext, bus: Bus, buf: Buffers, kind:
         tone(ctx, wet, at, f, gg * 0.5 * gain, d * 1.2, "sine");
       }
       scheduleThud(ctx, master, at, nz, 0.5 * gain, 0.6);
-      for (const d of [0.17, 0.29]) tone(ctx, master, at + d, 1130 * (0.98 + Math.random() * 0.04), 0.08 * gain, 0.3);
+      // The plates bouncing on the platform, each smaller.
+      for (const [d, k] of [[0.17, 1], [0.29, 0.6], [0.37, 0.35], [0.43, 0.2]] as const) {
+        tone(ctx, master, at + d, 1130 * (0.98 + Math.random() * 0.04), 0.08 * k * gain, 0.3);
+        scheduleThud(ctx, master, at + d, nz, 0.18 * k * gain, 0.8);
+      }
       break;
     }
     case "splash":
     case "dive":
-      burst(ctx, master, at, nz, { type: "bandpass", f0: 2200, f1: 900, q: 0.7, gain: 0.55 * gain, attack: 0.01, decay: kind === "dive" ? 0.7 : 0.45 });
-      burst(ctx, wet, at, nz, { type: "highpass", f0: 3000, gain: 0.18 * gain, decay: 0.5 });
+      water(ctx, master, wet, at, nz, gain, kind === "dive");
       if (kind === "dive") scheduleThud(ctx, master, at, nz, 0.25 * gain, 1.4);
       break;
     case "whoosh":
@@ -136,18 +236,22 @@ export function scheduleCue(ctx: BaseAudioContext, bus: Bus, buf: Buffers, kind:
       break;
     case "cheer":
     case "roar":
-      // The crowd swells: a voice-band roar up over a second, held, then down.
-      burst(ctx, crowd, at, nz, { type: "bandpass", f0: 900, f1: 1100, q: 0.6, gain: 0.55 * gain, attack: 0.35, decay: 2.6, dur: 1.5 });
+      // The crowd swells: a voice-band roar up over a second, held, then down, and the voices' "aah" rising (a roar is longer and louder).
+      burst(ctx, crowd, at, nz, { type: "bandpass", f0: 900, f1: 1100, q: 0.6, gain: (kind === "roar" ? 0.7 : 0.55) * gain, attack: 0.35, decay: kind === "roar" ? 3.4 : 2.6, dur: 1.5 });
+      voices(ctx, crowd, at, { n: kind === "roar" ? 28 : 18, glide: 1.25, formants: [[780, 4], [1250, 5]], attack: 0.3, hold: kind === "roar" ? 1.8 : 1, release: 1.2, gain: (kind === "roar" ? 0.5 : 0.32) * gain });
       if (buf.applause) { const s = ctx.createBufferSource(); s.buffer = buf.applause; const g = ctx.createGain(); g.gain.value = 0.5 * gain; s.connect(g); g.connect(master); g.connect(wet); s.start(at); }
       break;
     case "applause":
       if (buf.applause) { const s = ctx.createBufferSource(); s.buffer = buf.applause; const g = ctx.createGain(); g.gain.value = 0.42 * gain; s.connect(g); g.connect(master); g.connect(wet); s.start(at); }
       break;
     case "ooh":
-      burst(ctx, crowd, at, nz, { type: "bandpass", f0: 420, f1: 760, q: 3, gain: 0.5 * gain, attack: 0.18, decay: 1.1, dur: 0.6 });
+      burst(ctx, crowd, at, nz, { type: "bandpass", f0: 420, f1: 760, q: 3, gain: 0.35 * gain, attack: 0.18, decay: 1.1, dur: 0.6 });
+      voices(ctx, crowd, at, { n: 18, glide: 1.3, formants: [[350, 5], [800, 6]], attack: 0.2, hold: 0.4, release: 0.8, gain: 0.32 * gain });
       break;
     case "groan":
-      burst(ctx, crowd, at, nz, { type: "bandpass", f0: 700, f1: 260, q: 3.5, gain: 0.55 * gain, attack: 0.12, decay: 1.4, dur: 1.2 });
+      // "Ohh…": the voices falling away.
+      burst(ctx, crowd, at, nz, { type: "bandpass", f0: 700, f1: 260, q: 3.5, gain: 0.35 * gain, attack: 0.12, decay: 1.4, dur: 1.2 });
+      voices(ctx, crowd, at, { n: 20, glide: 0.62, formants: [[480, 5], [880, 6]], attack: 0.12, hold: 0.5, release: 1.1, gain: 0.36 * gain });
       break;
     case "fanfare":
     case "anthem": {

@@ -6,10 +6,12 @@ import type { Show } from "./types";
  * timed (beats, cues, bursts, decals, medals) is moved to the clip's clock.
  * Pure.
  */
-export function clip(show: Show, t0: number, t1: number): Show {
+export function clip(show: Show, t0: number, t1: number, o: { keepExtras?: boolean } = {}): Show {
   const a = Math.max(0, t0), b = Math.min(show.end, Math.max(a + 0.1, t1));
   const d = b - a;
+  // Asked for, a clip from the very start keeps the show's own extras (a sprint's race plan and photo finish run on the same clock).
   return {
+    ...(o.keepExtras && a === 0 ? show : {}),
     event: show.event,
     venue: show.venue,
     athletes: show.athletes,

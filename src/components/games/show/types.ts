@@ -13,7 +13,7 @@ import type { ActorPose } from "../scene/pose";
  * exact.
  */
 
-export type SoundKind = "gun" | "recall" | "beep" | "thud" | "sand" | "clank" | "splash" | "dive" | "cheer" | "groan" | "ooh" | "applause" | "buzzer" | "whoosh" | "impact" | "roar" | "fanfare" | "anthem" | "whistle" | "stomp" | "chalk";
+export type SoundKind = "gun" | "recall" | "beep" | "thud" | "sand" | "clank" | "splash" | "dive" | "cheer" | "groan" | "ooh" | "applause" | "buzzer" | "whoosh" | "impact" | "roar" | "fanfare" | "anthem" | "whistle" | "stomp" | "chalk" | "stick";
 
 export interface Cue {
   t: number;

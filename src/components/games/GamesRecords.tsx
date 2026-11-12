@@ -9,7 +9,8 @@ import { RECORDS_ALL } from "@/lib/games/records-data";
 import type { Athlete } from "@/lib/games/athlete";
 import { ListHeader } from "@/components/pokedex/detail/DetailParts";
 import { RACE_CSS } from "@/components/race/race-css";
-import { EventNav } from "./GamesPages";
+import { EventNav, H2HSection } from "./GamesPages";
+import { pokemonMatchups } from "@/lib/games/h2h-ideas";
 
 /**
  * The records of the Games (every event pre-run for all 1,025 Pokémon and
@@ -138,6 +139,7 @@ export function GamesPokemonPage({ athlete }: { athlete: Athlete }) {
           </div>
         </section>
       )}
+      <H2HSection id="pk-h2h" title="Head to head" blurb={`${a.name} against any Pokémon, in any event: pick a rival and an event, watch it in 3D, then share the link or a vertical video.`} a={a.key} ideas={pokemonMatchups(a)} />
       <section aria-labelledby="pk-events" className="space-y-3">
         <h2 id="pk-events" className="font-display text-lg font-bold uppercase tracking-wider">Every event</h2>
         <div className="overflow-x-clip rounded-lg border bg-card/40 px-3 sm:px-4">

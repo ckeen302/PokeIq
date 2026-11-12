@@ -19,6 +19,8 @@ export interface GamesStadiumProps {
   playHref: string;
   records: StadiumLink[];
   h2h: StadiumLink[];
+  /** The head-to-head picker, over the example match-ups. */
+  h2hPicker?: React.ReactNode;
   backHref: string;
   children: React.ReactNode;
 }
@@ -47,7 +49,7 @@ const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
  * link always has). Without WebGL, or with reduced motion, the plain page
  * underneath (the same links) is the page.
  */
-export function GamesStadium({ events, groups, playHref, records, h2h, backHref, children }: GamesStadiumProps) {
+export function GamesStadium({ events, groups, playHref, records, h2h, h2hPicker, backHref, children }: GamesStadiumProps) {
   const [view, setView] = useState<"boot" | "3d" | "list">("boot");
   const [ready, setReady] = useState(false);
   const [entered, setEntered] = useState(false);
@@ -237,6 +239,7 @@ export function GamesStadium({ events, groups, playHref, records, h2h, backHref,
                       {records.map((r) => <li key={r.href}><Link href={r.href} prefetch={false} className="flex min-h-11 items-center rounded-lg border border-white/10 bg-white/[0.04] px-3 font-display text-sm font-semibold uppercase tracking-wide hover:border-[#ffd84a]/60">{r.label}</Link></li>)}
                     </ul>
                   )}
+                  {tab === "h2h" && h2hPicker && <div className="mb-3">{h2hPicker}</div>}
                   {tab === "h2h" && (
                     <ul className="grid gap-1.5 sm:grid-cols-2" data-testid="stadium-h2h">
                       {h2h.map((r) => <li key={r.href}><Link href={r.href} prefetch={false} className="flex min-h-11 items-center rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 font-display text-sm font-semibold uppercase tracking-wide hover:border-[#ffd84a]/60">{r.label}</Link></li>)}
