@@ -1164,8 +1164,12 @@ async function playDuel(p, at, shoot) {
       await p.screenshot({ path: `${OUT}/duel-reveal.png` });
     }
     const label = await next.innerText();
-    await next.click();
-    if (/results/i.test(label)) return i + 1;
+    // A round also starts by itself when Next's countdown runs out: then there's no button left to press.
+    if (/results/i.test(label)) {
+      await next.click();
+      return i + 1;
+    }
+    await next.click({ timeout: 5_000 }).catch(() => {});
   }
   throw new Error("the duel didn't end");
 }

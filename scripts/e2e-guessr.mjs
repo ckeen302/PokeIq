@@ -351,8 +351,12 @@ async function duel(width, height, { turbo }) {
   for (let i = 0; i < 12; i++) {
     await Promise.all([next(red).waitFor({ timeout: 30_000 }), next(blue).waitFor({ timeout: 30_000 })]);
     const label = await next(red).innerText();
-    await Promise.all([next(red).click(), next(blue).click()]);
-    if (/results/i.test(label)) break;
+    if (/results/i.test(label)) {
+      await Promise.all([next(red).click(), next(blue).click()]);
+      break;
+    }
+    // A round also starts by itself when Next's countdown runs out (or once both have pressed): then there's no button left to press.
+    await Promise.all([next(red).click({ timeout: 5_000 }).catch(() => {}), next(blue).click({ timeout: 5_000 }).catch(() => {})]);
     await Promise.all([shotLoaded(red), shotLoaded(blue)]);
     await pinAndGuess(red, phone, 0.5);
     await pinAndGuess(blue, phone, 0.22);

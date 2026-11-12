@@ -34,9 +34,9 @@ export async function guessMapReady(p, { timeout = 30_000 } = {}) {
   return { map: p.locator("[role=application]"), area };
 }
 
-/** A spot `fx`, `fy` (0–1) of the way across the pin area, kept clear of its edges and the map's corner buttons. */
+/** A spot `fx`, `fy` (0–1) of the way across the pin area (kept a little off its edges). */
 export function spotIn(area, fx, fy) {
-  const f = (v) => 0.1 + Math.min(1, Math.max(0, v)) * 0.8;
+  const f = (v) => Math.min(0.95, Math.max(0.05, v));
   return { x: area.left + (area.right - area.left) * f(fx), y: area.top + (area.bottom - area.top) * f(fy) };
 }
 
