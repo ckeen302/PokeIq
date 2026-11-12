@@ -14,9 +14,18 @@ export type BoardFilter = { kind: "daily"; date: string } | { kind: "iq" };
  */
 const BOARD_TTL_S = 15;
 export const LEADERBOARD_TAG = "leaderboard";
-export function fetchBoard(filter: BoardFilter, limit = 25): Promise<LeaderboardRow[] | null> {
-  if (!getServiceSupabase()) return Promise.resolve(null);
-  return cachedBoard(JSON.stringify(filter), limit);
+export async function fetchBoard(filter: BoardFilter, limit = 25): Promise<LeaderboardRow[] | null> {
+  const rows = await fetchBoardOrUnavailable(filter, limit);
+  return rows === "unavailable" ? [] : rows;
+}
+
+/** As fetchBoard, but a failed read is "unavailable" (not an empty board), and isn't cached. */
+export async function fetchBoardOrUnavailable(filter: BoardFilter, limit = 25): Promise<LeaderboardRow[] | null | "unavailable"> {
+  if (!getServiceSupabase()) return null;
+  return cachedBoard(JSON.stringify(filter), limit).catch((err) => {
+    console.error("[leaderboard] read failed:", err instanceof Error ? err.message : err);
+    return "unavailable" as const;
+  });
 }
 
 const cachedBoard = unstable_cache(
@@ -43,10 +52,8 @@ async function readBoard(filter: BoardFilter, limit: number): Promise<Leaderboar
   }
 
   const { data, error } = await query;
-  if (error) {
-    console.error("[leaderboard] read failed:", error.message);
-    return [];
-  }
+  // Thrown, so a failed read isn't kept in the cache.
+  if (error) throw new Error(error.message);
   // Names stored before they were checked show as "Trainer".
   return (data as LeaderboardRow[]).map((row) => ({ ...row, player_name: publicName(row.player_name) }));
 }

@@ -1846,9 +1846,15 @@ async function checkHiddenElo(p, where) {
   await rRed.waitForTimeout(1600);
   await rRed.screenshot({ path: `${OUT}/guessr-ranked-result.png`, fullPage: true });
 
-  await gotoSettled(rRed, `${BASE}/leaderboard?board=geo-ranked`);
-  await rRed.getByTestId("leaderboard-geo-ranked").waitFor();
-  const ladderNames = await rRed.locator("table tbody td:nth-child(2)").allInnerTexts();
+  // The bare ladder is a cached page rebuilt every 15 s (a visit after that serves the old copy once and rebuilds it), so reload until the new result shows.
+  let ladderNames = [];
+  for (let i = 0; i < 8; i++) {
+    await gotoSettled(rRed, `${BASE}/leaderboard?board=geo-ranked`);
+    await rRed.getByTestId("leaderboard-geo-ranked").waitFor();
+    ladderNames = await rRed.locator("table tbody td:nth-child(2)").allInnerTexts();
+    if (["Red", "Blue"].every((who) => ladderNames.some((n) => n.trim() === who))) break;
+    await rRed.waitForTimeout(5000);
+  }
   for (const who of ["Red", "Blue"]) if (!ladderNames.some((n) => n.trim() === who)) errors.push(`ranked ladder doesn't list ${who}: ${JSON.stringify(ladderNames)}`);
   if (ladderNames.some((n) => /Gym Leader/.test(n))) errors.push("ranked ladder lists a Gym Leader");
   await checkHiddenElo(rRed, "ranked ladder");

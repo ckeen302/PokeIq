@@ -19,6 +19,12 @@ export interface GeoBoardRow {
  * has played.
  */
 export async function fetchGeoBoard(filter: { daily: string } | { mode: string }, limit = 25): Promise<GeoBoardRow[] | null> {
+  const rows = await fetchGeoBoardOrUnavailable(filter, limit);
+  return rows === "unavailable" ? [] : rows;
+}
+
+/** As fetchGeoBoard, but a failed read is "unavailable" rather than an empty board. */
+export async function fetchGeoBoardOrUnavailable(filter: { daily: string } | { mode: string }, limit = 25): Promise<GeoBoardRow[] | null | "unavailable"> {
   const supabase = getServiceSupabase();
   if (!supabase) return process.env.POKEIQ_LOCAL_ACCOUNTS === "1" ? [] : null;
   let query = supabase
@@ -31,7 +37,7 @@ export async function fetchGeoBoard(filter: { daily: string } | { mode: string }
   const { data, error } = await query;
   if (error) {
     console.error("[geo-leaderboard] read failed:", error.message);
-    return [];
+    return "unavailable";
   }
   // Names stored before they were checked show as "Trainer".
   return (data as GeoBoardRow[]).map((row) => ({ ...row, player_name: publicName(row.player_name) }));

@@ -45,6 +45,15 @@ export interface PdkStore {
   saveBoard(date: string, difficulty: PdkSlot, entry: PdkBoardEntry): Promise<void>;
   /** The day's board, best first. */
   board(date: string, difficulty: PdkSlot): Promise<PdkBoardEntry[] | null>;
+  /** One player's entry on the day's board (null when they have none, or the board is off). */
+  entry(date: string, difficulty: PdkSlot, player: string): Promise<PdkBoardEntry | null>;
+  /**
+   * Where an entry stands on the day's board, counted in the database rather
+   * than by reading every row (one submit would otherwise read the whole
+   * board). `stored`: the entry is on the board already; if not, it counts
+   * itself in the total. Null when the board is off.
+   */
+  standing(date: string, difficulty: PdkSlot, entry: PdkBoardEntry, stored: boolean): Promise<PdkStanding | null>;
 }
 
 export const pdkPlayerKey = (identity: string) => deriveSeed("pdk-player", identity);
@@ -105,6 +114,13 @@ export function memoryPdkStore(): PdkStore {
     async board(date, difficulty) {
       return [...day(date, difficulty).board.values()].sort(betterResult);
     },
+    async entry(date, difficulty, player) {
+      return day(date, difficulty).board.get(player) ?? null;
+    },
+    async standing(date, difficulty, entry, stored) {
+      const rows = [...day(date, difficulty).board.values()];
+      return { position: rows.filter((r) => r.player !== entry.player && betterResult(r, entry) < 0).length + 1, total: rows.length + (stored ? 0 : 1) };
+    },
   };
 }
 export function clearMemoryPdk() {
@@ -157,6 +173,16 @@ function missing(error: { code?: string; message?: string }) {
   return true;
 }
 
+const BOARD_COLUMNS = "player_key, player_name, solved, score, duration_ms";
+interface BoardRow {
+  player_key: string;
+  player_name: string;
+  solved: number;
+  score: number | string;
+  duration_ms: number;
+}
+const fromRow = (r: BoardRow): PdkBoardEntry => ({ player: r.player_key, name: publicName(r.player_name), solved: r.solved, score: Number(r.score), ms: r.duration_ms });
+
 export function supabasePdkStore(sb: NonNullable<ReturnType<typeof getServiceSupabase>>): PdkStore {
   return {
     async saveAnswers(i) {
@@ -193,14 +219,38 @@ export function supabasePdkStore(sb: NonNullable<ReturnType<typeof getServiceSup
     },
     async board(date, difficulty) {
       if (Date.now() < missingUntil) return null;
-      const { data, error } = await sb.from("pikadoku_board").select("player_key, player_name, solved, score, duration_ms").eq("puzzle_date", date).eq("difficulty", difficulty).limit(5000);
+      const { data, error } = await sb.from("pikadoku_board").select(BOARD_COLUMNS).eq("puzzle_date", date).eq("difficulty", difficulty).limit(5000);
       if (error) {
         if (missing(error)) return null;
         throw new Error(error.message);
       }
-      return (data as { player_key: string; player_name: string; solved: number; score: number; duration_ms: number }[])
-        .map((r) => ({ player: r.player_key, name: publicName(r.player_name), solved: r.solved, score: Number(r.score), ms: r.duration_ms }))
-        .sort(betterResult);
+      return (data as BoardRow[]).map(fromRow).sort(betterResult);
+    },
+    async entry(date, difficulty, player) {
+      if (Date.now() < missingUntil) return null;
+      const { data, error } = await sb.from("pikadoku_board").select(BOARD_COLUMNS).eq("puzzle_date", date).eq("difficulty", difficulty).eq("player_key", player).maybeSingle<BoardRow>();
+      if (error) {
+        if (missing(error)) return null;
+        throw new Error(error.message);
+      }
+      return data ? fromRow(data) : null;
+    },
+    async standing(date, difficulty, e, stored) {
+      if (Date.now() < missingUntil) return null;
+      const rows = () => sb.from("pikadoku_board").select("player_key", { count: "exact", head: true }).eq("puzzle_date", date).eq("difficulty", difficulty);
+      // The board keeps one decimal of the score; an entry that isn't stored is compared the same way.
+      const score = Math.round(e.score * 10) / 10;
+      const [ahead, all] = await Promise.all([
+        // betterResult: more cells solved, then the lower score, then the quicker time.
+        rows().or(`solved.gt.${e.solved},and(solved.eq.${e.solved},score.lt.${score}),and(solved.eq.${e.solved},score.eq.${score},duration_ms.lt.${e.ms})`),
+        rows(),
+      ]);
+      for (const { error } of [ahead, all]) {
+        if (!error) continue;
+        if (missing(error)) return null;
+        throw new Error(error.message);
+      }
+      return { position: (ahead.count ?? 0) + 1, total: (all.count ?? 0) + (stored ? 0 : 1) };
     },
   };
 }
