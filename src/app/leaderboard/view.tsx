@@ -5,8 +5,8 @@ import { CalendarRange, Compass, Medal, Trophy } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { connRankedStore } from "@/lib/server/connections-ranked";
 import { connSeasonLabel, connSeasonOf } from "@/lib/connections/ranked";
-import { fetchBoard } from "@/lib/server/leaderboard";
-import { fetchGeoBoard } from "@/lib/server/geo-leaderboard";
+import { fetchBoardOrUnavailable } from "@/lib/server/leaderboard";
+import { fetchGeoBoardOrUnavailable } from "@/lib/server/geo-leaderboard";
 import { currentGeoWeekly, geoRegions, isGeoSpec } from "@/lib/server/geo";
 import { GEO_WEEKLY_BOARD_RE, geoPreviousWeek, geoWeeklyBoard, geoWeeklyMap, geoWeeklyNumber, isGeoWeek } from "@/lib/geo-weekly";
 import { GEO_ROUND_OPTIONS, WORLD_REGION, geoBoardKey, geoMapRank } from "@/lib/geo-types";
@@ -350,7 +350,8 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
     const lastWeek = thisWeek && isGeoWeek(geoPreviousWeek(thisWeek.week)) ? geoPreviousWeek(thisWeek.week) : null;
     const map = week ? undefined : maps.find((r) => r.boards.some((b) => b.id === params.format));
     const mode = week ? geoWeeklyBoard(week) : map ? params.format! : null;
-    const geoEntries = mode ? await fetchGeoBoard({ mode }) : await fetchGeoBoard({ daily: date });
+    const geoRead = mode ? await fetchGeoBoardOrUnavailable({ mode }) : await fetchGeoBoardOrUnavailable({ daily: date });
+    const geoEntries = geoRead === "unavailable" ? [] : geoRead;
     // What the board invites to when it's empty or nearly: today's Daily, this week's Weekly, or a game on the map.
     const invite: GeoInvite = week
       ? { kind: "weekly", current: week === thisWeek?.week, label: `Weekly #${geoWeeklyNumber(week)} · ${weekMapName(week)}` }
@@ -425,7 +426,9 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
             </div>
           )}
         </div>
-        {geoEntries === null ? (
+        {geoRead === "unavailable" ? (
+          <BoardUnavailable />
+        ) : geoEntries === null ? (
           <Card>
             <CardContent className="py-10 text-center text-muted-foreground">Leaderboards aren&apos;t enabled here.</CardContent>
           </Card>
@@ -470,7 +473,8 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
     );
   }
 
-  const entries = board === "daily" ? await fetchBoard({ kind: "daily", date }) : await fetchBoard({ kind: "iq" });
+  const read = board === "daily" ? await fetchBoardOrUnavailable({ kind: "daily", date }) : await fetchBoardOrUnavailable({ kind: "iq" });
+  const entries = read === "unavailable" ? [] : read;
   const avatars = await avatarsByNames((entries ?? []).map((r) => r.player_name));
 
 
@@ -487,7 +491,9 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
         )}
       </div>
 
-      {entries === null ? (
+      {read === "unavailable" ? (
+        <BoardUnavailable />
+      ) : entries === null ? (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Leaderboards aren&apos;t enabled here</CardTitle>
@@ -571,6 +577,17 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
         Every score here was graded on the server — submissions carry a signed result, never a raw number.
       </p>
     </div>
+  );
+}
+
+/** A board whose read failed (the database is down): said plainly, never an empty board inviting a first score. */
+function BoardUnavailable() {
+  return (
+    <Card>
+      <CardContent className="py-10 text-center text-muted-foreground" data-testid="board-unavailable">
+        This leaderboard is unavailable right now. Try again in a minute.
+      </CardContent>
+    </Card>
   );
 }
 
