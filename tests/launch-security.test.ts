@@ -214,7 +214,8 @@ describe("static guards", () => {
     expect(sql).toContain("revoke all on all sequences in schema public from anon, authenticated;");
     expect(sql).toMatch(/revoke all on function %s from public, anon, authenticated/);
     expect(sql).toMatch(/alter default privileges in schema public revoke all on tables from anon, authenticated/);
-    expect(sql).toMatch(/key not like 'board:%' and key not like 'email-confirm:%'/);
+    expect(sql).toMatch(/when key like 'board:%' or key like 'email-confirm:%' then interval '8 days'/);
+    expect(sql).toMatch(/when key like 'frontier:%' then interval '90 days'/);
   });
 
   it("no later migration grants the public roles anything again", () => {

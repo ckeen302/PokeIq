@@ -19,7 +19,9 @@
 --    published to Realtime (postgres_changes); live updates are Broadcast.
 -- 5. prune_token_claims keeps the per-day/per-week claims (board slots and
 --    confirmation-email slots) for 8 days instead of 6 hours, so an
---    address's daily allowance really lasts the day.
+--    address's daily allowance really lasts the day, and Battle Frontier's
+--    once-per-streak-step claims for 90 days, so a run's token can't restart
+--    a lost battle once the claim is pruned.
 
 -- 1. RLS everywhere ----------------------------------------------------------
 do $$
@@ -94,10 +96,12 @@ as $$
   with deleted as (
     delete from public.token_claims
     where created_at < now() - interval '6 hours'
-      and (
-        (key not like 'board:%' and key not like 'email-confirm:%')
-        or created_at < now() - interval '8 days'
-      )
+      and created_at < now() - case
+        -- A Battle Frontier run's token doesn't expire: its "this streak step's battle has started" claims stay long.
+        when key like 'frontier:%' then interval '90 days'
+        when key like 'board:%' or key like 'email-confirm:%' then interval '8 days'
+        else interval '6 hours'
+      end
     returning 1
   )
   select count(*)::int from deleted;
