@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
-import { decryptJson } from "@/lib/server/crypto";
+import { MEDIA_WINDOW_MS, readMediaToken } from "@/lib/server/media-url";
 import { artworkUrl, cryUrl, getPokemon } from "@/lib/pokemon/pokedex";
 import { hashString } from "@/lib/rng";
 import { ZOOM_PADDING, pickZoomWindow } from "@/lib/server/zoom";
@@ -10,22 +10,17 @@ import type { MediaKind } from "@/engines/types";
 /**
  * GET /api/media/:token — opaque question media.
  *
- * The token is AES-GCM encrypted {kind, id, expiry}, so the URL reveals
- * nothing. Silhouettes are rendered here with sharp (alpha channel kept,
+ * The token is an encrypted {window, kind, id} (see media-url.ts), so the URL
+ * reveals nothing, and it is the same for every player within a window, so
+ * the CDN serves repeat views without running this function. Silhouettes are rendered here with sharp (alpha channel kept,
  * colour discarded), meaning the full artwork never reaches the browser
  * before the answer is graded — no "open image in new tab" cheating.
  */
 
 export const runtime = "nodejs";
 
-interface MediaToken {
-  k: MediaKind;
-  id: number;
-  x: number;
-  /** Zoom Reveal: step and start crop. */
-  s?: number;
-  c?: number;
-}
+/** CDN lifetime: a token is valid for two windows, so it is never requested after that. */
+const CACHE_CONTROL = `public, max-age=${(2 * MEDIA_WINDOW_MS) / 1000}, s-maxage=${(2 * MEDIA_WINDOW_MS) / 1000}, immutable`;
 
 interface Rendered {
   body: Buffer;
@@ -131,29 +126,29 @@ async function render(kind: MediaKind, id: number, step = 1, crop = 0): Promise<
 
 export async function GET(_request: NextRequest, context: { params: Promise<{ token: string }> }) {
   const { token } = await context.params;
-  const media = decryptJson<MediaToken>(token);
-  if (!media || !getPokemon(media.id)) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  if (media.x < Date.now()) return NextResponse.json({ error: "Expired" }, { status: 410 });
+  const media = readMediaToken(token);
+  if (media === "expired") return NextResponse.json({ error: "Expired" }, { status: 410, headers: { "Cache-Control": "no-store" } });
+  if (!media || !getPokemon(media.id)) return NextResponse.json({ error: "Not found" }, { status: 404, headers: { "Cache-Control": "no-store" } });
 
-  const step = Math.min(6, Math.max(1, Math.round(media.s ?? 1)));
-  const crop = Math.max(0, Math.round(media.c ?? 0));
-  const key = media.k === "zoom-reveal" ? `${media.k}:${media.id}:${crop}:${step}` : `${media.k}:${media.id}`;
+  const step = Math.min(6, Math.max(1, Math.round(media.step)));
+  const crop = Math.max(0, Math.round(media.crop));
+  const key = media.kind === "zoom-reveal" ? `${media.kind}:${media.id}:${crop}:${step}` : `${media.kind}:${media.id}`;
   try {
     let rendered = cache.get(key);
     if (!rendered) {
-      rendered = await render(media.k, media.id, step, crop);
+      rendered = await render(media.kind, media.id, step, crop);
       if (cache.size >= CACHE_LIMIT) cache.delete(cache.keys().next().value!);
       cache.set(key, rendered);
     }
     return new NextResponse(new Uint8Array(rendered.body), {
       headers: {
         "Content-Type": rendered.type,
-        "Cache-Control": "private, max-age=1800, immutable",
+        "Cache-Control": CACHE_CONTROL,
         "Content-Length": String(rendered.body.length),
       },
     });
   } catch (err) {
     console.error("[api/media]", err);
-    return NextResponse.json({ error: "Upstream media unavailable" }, { status: 502 });
+    return NextResponse.json({ error: "Upstream media unavailable" }, { status: 502, headers: { "Cache-Control": "no-store" } });
   }
 }

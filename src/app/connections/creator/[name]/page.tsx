@@ -5,6 +5,7 @@ import { ThumbsDown, ThumbsUp } from "lucide-react";
 import { customPath } from "@/lib/connections/custom";
 import { CREATOR_NAME_RE } from "@/lib/connections/social";
 import { creatorPage } from "@/lib/server/connections-creators";
+import { Card, CardContent } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
 
@@ -19,8 +20,23 @@ export const metadata: Metadata = {
 export default async function CreatorPage({ params }: { params: Promise<{ name: string }> }) {
   const name = decodeURIComponent((await params).name);
   if (!CREATOR_NAME_RE.test(name)) notFound();
-  const page = await creatorPage(name);
+  const page = await creatorPage(name).catch((err) => {
+    console.error("[connections] creator page unavailable:", err instanceof Error ? err.message : err);
+    return "unavailable" as const;
+  });
   if (!page) notFound();
+  if (page === "unavailable") {
+    return (
+      <div className="mx-auto max-w-3xl space-y-6">
+        <BackButton href="/connections/community" label="Back to community" />
+        <Card>
+          <CardContent className="py-10 text-center text-muted-foreground" data-testid="creator-unavailable">
+            Creator pages are unavailable right now. Try again in a minute.
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
   return (
     <div className="mx-auto max-w-3xl space-y-6">
     <BackButton href="/connections/community" label="Back to community" />

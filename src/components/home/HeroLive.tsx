@@ -85,7 +85,8 @@ export function HeroPicture({ fallback }: { fallback: StaticImageData }) {
     <>
       <div ref={box} className="absolute inset-0" data-testid="home-hero-shot" data-shot={daily ? shot : "fallback"}>
         {/* Pre-sized static files (src/lib/hero-image), the same pictures the image optimizer would make. */}
-        <Image src={fallback} loader={heroLoader} alt="" priority placeholder="blur" fill sizes={SIZES} className="object-cover" />
+        {/* fetchPriority: `priority` alone preloads it at an image's default (low) priority, behind the fonts and scripts on a slow phone. */}
+        <Image src={fallback} loader={heroLoader} alt="" priority fetchPriority="high" placeholder="blur" fill sizes={SIZES} className="object-cover" />
         {shot && (
           // eslint-disable-next-line @next/next/no-img-element -- the game's own screenshot URL, so the Daily's round 1 is already cached
           <img

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { Bot, Castle, ChevronDown, Clapperboard, Eye, Hammer, Link2, Loader2, Megaphone, MessagesSquare, Search, Shuffle, Swords, Trophy, Users, X, type LucideIcon } from "lucide-react";
 import { GUEST_TRAINER, PAST_GENS, PLAY_FORMAT_INFO, type PlayFormatId, type StandardFormatId } from "@/lib/battle/play";
 import { BATTLE_FORMATS } from "@/lib/battle/formats";
@@ -22,9 +23,13 @@ import { Button } from "@/components/ui/button";
 import { clock } from "@/components/duel/DuelParts";
 import { useMatchmaking } from "@/components/duel/use-matchmaking";
 import { cn } from "@/lib/utils";
-import { startBattle } from "./BattleSetup";
-import { TeamPick, type TeamSource } from "./TeamPick";
-import { CustomRulesEditor, RulesVerdictNote, useRulesCheck } from "./CustomRulesEditor";
+import { startBattle } from "./start-battle";
+import type { TeamSource } from "./TeamPick";
+import { RulesVerdictNote, useRulesCheck } from "./RulesCheck";
+
+// A random battle (the default) needs neither: the team picker (with its editor) and Showdown's format catalogue load when a format asks for them.
+const TeamPick = dynamic(() => import("./TeamPick").then((m) => m.TeamPick), { loading: () => <div className="h-24" aria-hidden /> });
+const CustomRulesEditor = dynamic(() => import("./CustomRulesEditor").then((m) => m.CustomRulesEditor), { loading: () => <div className="h-24" aria-hidden /> });
 
 /**
  * The battle home, after Pokémon Showdown's: pick a format and a team, then
