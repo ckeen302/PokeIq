@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import { z } from "zod";
-import { clientIp, rateLimit } from "@/lib/server/rate-limit";
+import { playerRateLimit } from "@/lib/server/rate-limit";
 import { claimOnce, recallResponse, rememberResponse, requestFingerprint } from "@/lib/server/replay-guard";
 import { calibrationSettled, recordAttempt } from "@/lib/server/calibration";
 import { answerClaimKey, gradeAnswer, readSession, type AnswerOutcome } from "@/lib/server/session";
@@ -18,17 +18,17 @@ const bodySchema = z.object({
 const NO_STORE = { "Cache-Control": "no-store" };
 
 export async function POST(request: NextRequest) {
-  if (!rateLimit(`answer:${clientIp(request)}`, 60, 4)) {
+  const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
+  // Per run (its id is signed into the token): players sharing one address each have their own allowance.
+  const state = parsed.success ? readSession(parsed.data.token) : null;
+  if (!playerRateLimit(request, "answer", 60, 4, state?.sid)) {
     return NextResponse.json({ error: "Slow down, speedrunner." }, { status: 429 });
   }
-
-  const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
   const { token, choice, loadMs } = parsed.data;
 
-  const state = readSession(token);
   if (!state) {
     return NextResponse.json({ error: "Session expired or invalid — start a new run." }, { status: 401 });
   }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isPlayableConnDate, type ConnBoardResponse } from "@/lib/connections/types";
-import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
+import { crowdRateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { connBoardStore } from "@/lib/server/connections-board";
 import { friendStore } from "@/lib/server/friends-store";
 import { sessionTokenHash, userFromRequest } from "@/lib/server/auth";
@@ -21,7 +21,7 @@ import type { ConnFriendsBoardResponse } from "@/lib/connections/social";
  */
 
 export async function GET(request: NextRequest) {
-  if (!rateLimit(`conn-board:${clientIp(request)}`, 60, 2)) return tooManyRequests();
+  if (!crowdRateLimit(request, "conn-board", 60, 2)) return tooManyRequests();
   const params = request.nextUrl.searchParams;
   const date = params.get("date");
   if (!isPlayableConnDate(date)) return NextResponse.json({ error: "No PokéConnections that day." }, { status: 400, headers: { "Cache-Control": "no-store" } });

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { CONN_GROUP_SIZE, CONN_GROUPS, CONN_MAX_MISTAKES, type ConnResultResponse } from "@/lib/connections/types";
-import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
+import { CROWD_WRITE_FACTOR, clientIp, crowdRateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { sameOrigin, sessionTokenHash, userFromRequest } from "@/lib/server/auth";
 import { duelNameSchema } from "@/lib/server/duel-core";
 import { recordConnResult } from "@/lib/server/connections-results";
@@ -49,7 +49,7 @@ async function account(request: NextRequest) {
 export async function POST(request: NextRequest) {
   // Saves to the signed-in trainer's account: only from this site's own pages.
   if (!sameOrigin(request)) return NextResponse.json({ error: "Cross-site request blocked." }, { status: 403, headers: { "Cache-Control": "no-store" } });
-  if (!rateLimit(`conn-result:${clientIp(request)}`, 20, 0.5)) return tooManyRequests();
+  if (!crowdRateLimit(request, "conn-result", 20, 0.5, CROWD_WRITE_FACTOR)) return tooManyRequests();
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400, headers: NO_STORE });
   const { date, player, guesses, start, name } = parsed.data;

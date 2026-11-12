@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { clientIp, rateLimit } from "@/lib/server/rate-limit";
+import { playerRateLimit } from "@/lib/server/rate-limit";
 import { claimOnce, recallResponse, rememberResponse, requestFingerprint } from "@/lib/server/replay-guard";
 import { gradeGeo, readGeo, regionGroupOf } from "@/lib/server/geo";
 import { syncHiddenShots } from "@/lib/server/geo-reports";
@@ -43,13 +43,14 @@ async function playerOf(request: NextRequest, device: string): Promise<{ key: st
 }
 
 export async function POST(request: NextRequest) {
-  if (!rateLimit(`geo-guess:${clientIp(request)}`, 30, 1)) {
+  const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
+  // Per game (its id is signed into the token): players sharing one address each have their own allowance.
+  const state = parsed.success ? readGeo(parsed.data.token) : null;
+  if (!playerRateLimit(request, "geo-guess", 30, 1, state?.sid)) {
     return NextResponse.json({ error: "Slow down, explorer." }, { status: 429 });
   }
-  const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
 
-  const state = readGeo(parsed.data.token);
   if (!state) return NextResponse.json({ error: "Game expired or invalid — start a new one." }, { status: 401 });
 
   await syncHiddenShots();
