@@ -39,11 +39,13 @@ export const MOBILE_ROUTES = [
 ];
 
 /** Runs in the page: what's wrong with the layout at the bottom of the page. */
-function layoutProblems() {
+function layoutProblems(phoneWidth) {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const out = [];
-  if (document.documentElement.scrollWidth > vw + 1) out.push(`scrolls sideways (${document.documentElement.scrollWidth}px wide)`);
+  // A page wider than the phone is zoomed out to fit, and innerWidth grows with it: compare with the phone's own width.
+  const wide = Math.max(vw, document.documentElement.scrollWidth);
+  if (wide > (phoneWidth ?? vw) + 1) out.push(`scrolls sideways (${wide}px wide)`);
   const bar = document.querySelector('nav[aria-label="Primary"]');
   if (!bar || getComputedStyle(bar).display === "none") return out;
   const top = bar.getBoundingClientRect().top;
@@ -117,7 +119,7 @@ export async function runMobile({ browser, BASE, OUT, errors, step }) {
         await page.waitForTimeout(700);
         settled = before === (await page.evaluate(() => document.documentElement.scrollHeight));
       }
-      for (const problem of await page.evaluate(layoutProblems)) {
+      for (const problem of await page.evaluate(layoutProblems, width)) {
         if (settled || problem.startsWith("scrolls sideways")) errors.push(`phone ${path}: ${problem}`);
       }
     } catch (e) {
@@ -126,6 +128,7 @@ export async function runMobile({ browser, BASE, OUT, errors, step }) {
   }
   await phoneStates(page, BASE, errors, step);
   await paintsBeforeScripts(browser, BASE, errors, step, width);
+  await narrowPhone(browser, BASE, errors, step);
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.goto(`${BASE}/pokedex`, { waitUntil: "load" });
   await page.screenshot({ path: `${OUT}/phone-pokedex.png` });
@@ -252,6 +255,29 @@ async function paintsBeforeScripts(browser, BASE, errors, step, width) {
       if (opacity < 0.99) errors.push(`phone ${path}: "${text}" stays hidden until the scripts load (opacity ${opacity})`);
     } catch (e) {
       errors.push(`phone ${path} without scripts: ${e.message.split("\n")[0]}`);
+    }
+  }
+  await context.close();
+}
+
+/**
+ * A 360 px Android: nothing may be wider than the screen, or the phone lays the
+ * page out wider and zooms it all out (innerWidth grows with it, so the check
+ * is against the phone's width, not innerWidth).
+ */
+async function narrowPhone(browser, BASE, errors, step) {
+  step("phone at 360 px: the Pokédex entry and the rankings fit the screen");
+  const context = await browser.newContext({ viewport: { width: 360, height: 740 }, isMobile: true, hasTouch: true });
+  await context.addInitScript(() => sessionStorage.setItem("pokeiq-splash", "1"));
+  const page = await context.newPage();
+  for (const path of ["/pokemon/charizard", "/pokedex/rankings"]) {
+    try {
+      await page.goto(`${BASE}${path}`, { waitUntil: "load" });
+      await page.waitForTimeout(1000);
+      const wide = await page.evaluate(() => Math.max(window.innerWidth, document.documentElement.scrollWidth));
+      if (wide > 361) errors.push(`phone 360 ${path}: laid out ${wide}px wide, so the phone zooms the page out`);
+    } catch (e) {
+      errors.push(`phone 360 ${path}: ${e.message.split("\n")[0]}`);
     }
   }
   await context.close();
