@@ -4,7 +4,7 @@ import { topSpeed } from "@/lib/race/model";
 import type { Athlete } from "@/lib/games/athlete";
 import { HJ } from "@/lib/games/venues";
 import type { ActorPose } from "../pose";
-import { bump, clamp01, dims, ease, idleActor, isBiped, lerp, smooth, walkPhase, wobble, type Dims } from "./common";
+import { bump, clamp01, dims, idleActor, isBiped, lerp, smooth, walkPhase, wobble, type Dims } from "./common";
 
 /**
  * The high jump, driven by the jump's physics (lib/games/highjump): a
