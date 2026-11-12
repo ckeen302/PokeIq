@@ -12,6 +12,11 @@ import type { CustomGroupInput } from "@/lib/connections/custom";
 import { GAMEPLAY_IP_LIMIT } from "@/lib/server/rate-limit";
 import { POST as postLeaderboard } from "@/app/api/leaderboard/route";
 import { POST as postGeoLeaderboard } from "@/app/api/geo/leaderboard/route";
+import { POST as postDleResult } from "@/app/api/pokedle/result/route";
+import { POST as postPdkResult } from "@/app/api/pikadoku/result/route";
+import { POST as postConnResult } from "@/app/api/connections/result/route";
+import { POST as postNeaResult } from "@/app/api/name-em-all/result/route";
+import { POST as postFrontier } from "@/app/api/battle/frontier/route";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 
@@ -146,6 +151,51 @@ function sources(dir: string): string[] {
     return statSync(p).isDirectory() ? sources(p) : /\.(ts|tsx)$/.test(name) ? [p] : [];
   });
 }
+
+describe("results saved to a signed-in account come only from the site's own pages", () => {
+  const routes: [string, (r: NextRequest) => Promise<Response>][] = [
+    ["/api/pokedle/result", postDleResult],
+    ["/api/pikadoku/result", postPdkResult],
+    ["/api/connections/result", postConnResult],
+    ["/api/name-em-all/result", postNeaResult],
+    ["/api/battle/frontier", postFrontier],
+  ];
+  let n = 0;
+  const call = (handler: (r: NextRequest) => Promise<Response>, url: string, origin: string | null) =>
+    handler(
+      new NextRequest(`http://localhost:3000${url}`, {
+        method: "POST",
+        headers: { "content-type": "application/json", host: "localhost:3000", "x-forwarded-for": `10.77.0.${++n}`, ...(origin && { origin }) },
+        body: "{}",
+      })
+    );
+
+  it.each(routes)("%s turns away another site", async (url, handler) => {
+    const res = await call(handler, url, "https://evil.example");
+    expect(res.status).toBe(403);
+  });
+
+  it.each(routes)("%s still answers the site itself (and clients that send no Origin)", async (url, handler) => {
+    expect((await call(handler, url, "http://localhost:3000")).status).not.toBe(403);
+    expect((await call(handler, url, null)).status).not.toBe(403);
+  });
+});
+
+describe("security headers", () => {
+  it("every page refuses framing, a planted <base> and plugin content, and keeps the other headers", async () => {
+    const { default: config } = await import("../next.config");
+    const rules = await config.headers!();
+    const all = rules.find((r) => r.source === "/:path*")!;
+    const get = (key: string) => all.headers.find((h) => h.key === key)?.value;
+    const csp = get("Content-Security-Policy") ?? "";
+    for (const d of ["frame-ancestors 'none'", "base-uri 'self'", "object-src 'none'"]) expect(csp).toContain(d);
+    // No script policy: Next's inline bootstrap would need nonces.
+    expect(csp).not.toMatch(/script-src|default-src/);
+    expect(get("X-Frame-Options")).toBe("DENY");
+    expect(get("X-Content-Type-Options")).toBe("nosniff");
+    expect(get("Strict-Transport-Security")).toMatch(/max-age=\d+/);
+  });
+});
 
 describe("static guards", () => {
   it("the service-role client can't be bundled for the browser", () => {

@@ -10,12 +10,14 @@ import { ORDERS } from "./src/lib/sizes/order";
  *
  * Security headers stay clear of a script Content-Security-Policy: Next's
  * inline bootstrap scripts and Vercel Analytics would need nonces. The CSP
- * only says who may frame the site (nobody, as X-Frame-Options says).
+ * says who may frame the site (nobody, as X-Frame-Options says), and shuts
+ * the two doors that need no nonce: a planted <base> tag re-pointing every
+ * relative URL, and plugin content (<object>/<embed>, which the site never uses).
  */
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
-  { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+  { key: "Content-Security-Policy", value: "frame-ancestors 'none'; base-uri 'self'; object-src 'none'" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()" },
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },

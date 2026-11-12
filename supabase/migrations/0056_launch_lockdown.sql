@@ -13,9 +13,10 @@
 --    unbounded scrapes and expensive filters against the database.
 -- 3. Functions: no EXECUTE for PUBLIC/anon/authenticated on any function of
 --    ours (two in 0041 were never revoked); the service role keeps it.
--- 4. Default privileges: tables, sequences and functions created from now on
---    start out without grants to the public roles, so a future migration
---    that forgets its revoke doesn't open a table.
+-- 4. Default privileges: tables and sequences created from now on start out
+--    without grants to the public roles, so a future migration that forgets
+--    its revoke doesn't open a table. No public table is
+--    published to Realtime (postgres_changes); live updates are Broadcast.
 -- 5. prune_token_claims keeps the per-day/per-week claims (board slots and
 --    confirmation-email slots) for 8 days instead of 6 hours, so an
 --    address's daily allowance really lasts the day.
@@ -61,8 +62,27 @@ $$;
 -- 4. Future objects start closed ---------------------------------------------
 alter default privileges in schema public revoke all on tables from anon, authenticated;
 alter default privileges in schema public revoke all on sequences from anon, authenticated;
-alter default privileges in schema public revoke execute on functions from public, anon, authenticated;
+-- (Postgres's own EXECUTE-to-PUBLIC default for new functions is global and
+-- can't be taken back for one schema, so new functions still need their own
+-- `revoke all on function ... from public, anon, authenticated`, as every
+-- migration here does; with no table grants left, a function that isn't
+-- security definer can't read anything for anon anyway.)
+alter default privileges in schema public revoke execute on functions from anon, authenticated;
 alter default privileges in schema public grant execute on functions to service_role;
+
+-- 4b. No table changes over Realtime ------------------------------------------
+-- The site's live updates are signed Broadcast messages (src/lib/server/
+-- realtime.ts) that carry no table rows. If a public table was ever switched on
+-- for Realtime in the dashboard, take it off the publication again.
+do $$
+declare
+  t record;
+begin
+  for t in select schemaname, tablename from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' loop
+    execute format('alter publication supabase_realtime drop table %I.%I', t.schemaname, t.tablename);
+  end loop;
+end
+$$;
 
 -- 5. Claims that span a day or a week outlive the 6-hour prune ----------------
 create or replace function public.prune_token_claims()

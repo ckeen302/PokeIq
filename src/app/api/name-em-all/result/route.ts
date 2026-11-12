@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
-import { sessionTokenHash, userFromRequest } from "@/lib/server/auth";
+import { sameOrigin, sessionTokenHash, userFromRequest } from "@/lib/server/auth";
 import { secretIsSecure } from "@/lib/server/crypto";
 import { checkRun, neaElapsed, neaPlayerKey, neaStore, type NeaClaim } from "@/lib/server/name-em-all-board";
 import { parseScope } from "@/lib/server/name-em-all";
@@ -51,6 +51,8 @@ async function save(claim: NeaClaim, name: string): Promise<NeaResultResponse> {
 }
 
 export async function POST(request: NextRequest) {
+  // Saves to the signed-in trainer's account: only from this site's own pages.
+  if (!sameOrigin(request)) return NextResponse.json({ error: "Cross-site request blocked." }, { status: 403, headers: { "Cache-Control": "no-store" } });
   if (!rateLimit(`nea-result:${clientIp(request)}`, 20, 0.5)) return tooManyRequests();
   const body = await request.json().catch(() => ({}));
   const user = sessionTokenHash(request) ? await userFromRequest(request).catch(() => null) : null;

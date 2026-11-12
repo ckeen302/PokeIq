@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { duelNameSchema } from "@/lib/server/duel-core";
-import { userFromRequest } from "@/lib/server/auth";
+import { sameOrigin, userFromRequest } from "@/lib/server/auth";
 import { battlesEnabled } from "@/lib/server/battle-engine/store";
 import { nextRunBattle, runResult, startFactoryRun, startTowerRun, swapRun } from "@/lib/server/battle-engine/frontier";
 import { BATTLE_TEAM_MAX } from "@/lib/battle/play";
@@ -42,6 +42,8 @@ const bodySchema = z.discriminatedUnion("action", [
 ]);
 
 export async function POST(request: NextRequest) {
+  // Saves to the signed-in trainer's account: only from this site's own pages.
+  if (!sameOrigin(request)) return NextResponse.json({ error: "Cross-site request blocked." }, { status: 403, headers: { "Cache-Control": "no-store" } });
   if (!rateLimit(`battle-frontier:${clientIp(request)}`, 30, 0.5)) {
     return NextResponse.json({ error: "Slow down, trainer." }, { status: 429, headers: NO_STORE });
   }
