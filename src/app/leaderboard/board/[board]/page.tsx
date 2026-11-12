@@ -17,5 +17,5 @@ export function generateStaticParams() {
 }
 
 export default async function LeaderboardBoardPage({ params }: { params: Promise<{ board: string }> }) {
-  return <LeaderboardView params={{ board: (await params).board }} />;
+  return LeaderboardView({ params: { board: (await params).board } });
 }

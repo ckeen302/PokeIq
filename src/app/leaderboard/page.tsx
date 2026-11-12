@@ -6,5 +6,6 @@ export const metadata = leaderboardMetadata;
 export const dynamic = "force-dynamic";
 
 export default async function LeaderboardPage({ searchParams }: { searchParams: Promise<LeaderboardParams> }) {
-  return <LeaderboardView params={await searchParams} />;
+  // Called, not rendered as an element: the page stays one plain async server component.
+  return LeaderboardView({ params: await searchParams });
 }
