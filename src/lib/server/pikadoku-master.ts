@@ -41,6 +41,8 @@ export function memoryMasterStore(): MasterStore {
 export function clearMemoryMaster() {
   g.__pokeiqMaster = undefined;
   loaded = { at: 0, byDate: new Map() };
+  inflight = null;
+  generation += 1;
 }
 
 const MISSING = new Set(["42P01", "PGRST205"]);
@@ -77,24 +79,62 @@ export function masterStore(): MasterStore | null {
 }
 
 const TTL_MS = 60_000;
+/**
+ * How long a request waits on the scheduled grids before going on with what it
+ * has (the seeds and the last good load). A healthy database answers well
+ * inside it; a dead one would otherwise hold the board's requests for the
+ * whole query timeout. The load itself carries on and lands for later requests.
+ */
+export const MASTER_WAIT_MS = 1000;
 let loaded: { at: number; byDate: Map<string, MasterGrid> } = { at: 0, byDate: new Map() };
+/** The load in flight, shared so concurrent requests make one database call. */
+let inflight: Promise<void> | null = null;
+/** The in-flight load once a request has given up waiting on it. */
+let stalled: Promise<void> | null = null;
+/** Bumped by a change (refreshMaster): a load begun before it can't overwrite a newer one. */
+let generation = 0;
 
-/** Loads the scheduled grids (at most once a minute). Call before reading a day's grid; never throws. */
-export async function ensureMaster(now = Date.now()): Promise<void> {
-  if (now - loaded.at < TTL_MS) return;
-  const store = masterStore();
-  let rows: MasterGrid[] | null = null;
+async function loadMasters(now: number, store: MasterStore | null): Promise<void> {
+  const gen = generation;
   try {
-    rows = (await store?.list()) ?? null;
+    const rows = (await store?.list()) ?? null;
+    if (gen !== generation) return;
+    loaded = { at: now, byDate: new Map((rows ?? []).filter((r) => checkMaster(r.rows, r.cols).ok).map((r) => [r.date, r])) };
   } catch (err) {
     console.error("[pikadoku] curated grids unavailable:", err);
+    if (gen !== generation) return;
+    // Keep the last good grids; try again after the TTL rather than on every request.
+    loaded = { at: now, byDate: loaded.byDate };
   }
-  loaded = { at: now, byDate: new Map((rows ?? []).filter((r) => checkMaster(r.rows, r.cols).ok).map((r) => [r.date, r])) };
+}
+
+/**
+ * Loads the scheduled grids (at most once a minute). Call before reading a
+ * day's grid; never throws. Waits at most `wait` ms (Infinity: until loaded).
+ */
+export async function ensureMaster(now = Date.now(), { wait = MASTER_WAIT_MS, store }: { wait?: number; store?: MasterStore | null } = {}): Promise<void> {
+  if (now - loaded.at < TTL_MS) return;
+  if (!inflight) {
+    const p: Promise<void> = loadMasters(now, store === undefined ? masterStore() : store).finally(() => {
+      if (inflight === p) inflight = null;
+    });
+    inflight = p;
+  }
+  const load = inflight;
+  if (wait === Infinity) return load;
+  // A load that has already outlasted one request's wait is slow: later requests don't wait on it again.
+  if (load === stalled) return;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const late = await Promise.race([load.then(() => false), new Promise<boolean>((resolve) => (timer = setTimeout(() => resolve(true), wait)))]);
+  clearTimeout(timer);
+  if (late) stalled = load;
 }
 
 /** Forces the next read to reload the scheduled grids. */
 export function refreshMaster() {
   loaded.at = 0;
+  inflight = null;
+  generation += 1;
 }
 
 /** The curated grid for a date (an admin's, else a seed), or null. */
@@ -118,13 +158,13 @@ export async function scheduleMaster(grid: MasterGrid, now = Date.now()): Promis
   if (!check.ok) return { ok: false, error: check.errors[0], status: 400 };
   const store = masterStore();
   if (!store || !(await store.save(grid))) return { ok: false, error: "Curated grids need migration 0033: run it in Supabase first.", status: 503 };
-  loaded.at = 0;
+  refreshMaster();
   return { ok: true };
 }
 
 export async function unscheduleMaster(date: string, now = Date.now()): Promise<boolean> {
   if (date <= new Date(now).toISOString().slice(0, 10)) return false;
   const ok = (await masterStore()?.remove(date)) ?? false;
-  loaded.at = 0;
+  refreshMaster();
   return ok;
 }

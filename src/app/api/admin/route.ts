@@ -121,7 +121,7 @@ export async function GET(request: NextRequest) {
       }
       case "pikadoku": {
         refreshMaster();
-        await ensureMaster();
+        await ensureMaster(Date.now(), { wait: Infinity });
         return NextResponse.json(
           {
             today: new Date().toISOString().slice(0, 10),
