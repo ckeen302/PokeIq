@@ -253,7 +253,7 @@ export async function runGames({ browser, BASE, OUT, errors, step }) {
     const og = await replay.locator('meta[property="og:image"]').getAttribute("content");
     if (!og || !/vs=pikachu,snorlax/.test(og)) errors.push(`games: the head to head's preview card is ${og}`);
     const first = await replay.locator('[data-testid="games-list"] tbody tr').first().innerText();
-    const winner = line.split(" wins")[0].trim().toLowerCase();
+    const winner = line.split(/\s+(wins|pushes)/i)[0].trim().toLowerCase();
     if (!first.toLowerCase().includes(winner)) errors.push(`games: the share link's result (${first}) isn't the one watched (${line})`);
     await phone.close();
   });
