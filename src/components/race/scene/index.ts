@@ -3,7 +3,7 @@ import { watchContext } from "@/lib/gl/context-loss";
 import { PF_CAM, type PhotoFrame } from "@/lib/race/broadcast";
 import type { CamPose } from "@/lib/race/director";
 import type { Race } from "@/lib/race/race";
-import { buildCrowd, type Crowd } from "./crowd";
+import { buildCrowd, CROWD_LITE_BEYOND, type Crowd } from "./crowd";
 import { createPost, stadiumEnvironment, type Post } from "./post";
 import { deepTint, poolDepth, poolModes } from "@/lib/race/pool";
 import { buildPool, setPoolModes, type Pool } from "./pool";
@@ -158,7 +158,8 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
   scene.environment = stadiumEnvironment(renderer);
   scene.environmentIntensity = 0.9;
 
-  const crowd: Crowd = buildCrowd({ occupancy: Q0.crowd, flashes: Q0.flashes });
+  // Phones (and the test quality): the far stands draw a lighter spectator.
+  const crowd: Crowd = buildCrowd({ occupancy: Q0.crowd, flashes: Q0.flashes, liteBeyond: quality === "low" || quality === "draft" ? CROWD_LITE_BEYOND : undefined });
   scene.add(crowd.group);
 
   // ---- Big screens: the live race from their own camera, or a still card.
@@ -275,7 +276,7 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
       camera.rotateY(shake * 0.6 * Math.sin(f.showT * 71 + 1.3));
       camera.updateMatrixWorld();
     }
-    crowd.update(f.showT, f.excitement);
+    crowd.update(f.showT, f.excitement, camera);
     stadium.update(f.showT, camera);
     stadium.clock.draw(f.clock, "");
     // Feed the big screens.
