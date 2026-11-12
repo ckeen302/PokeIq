@@ -1,14 +1,15 @@
 # Google Search Console
 
-PokéIQ runs on `pokeiq.vercel.app`, a subdomain you can't add DNS records to, so
-use a **URL-prefix** property and the **HTML tag** method. (On a custom domain
-you can use a Domain property and a DNS TXT record instead; nothing in the code
-is needed for that.)
+PokéIQ runs on `playpokeiq.com`, a domain bought through Vercel, so its DNS is
+managed in Vercel. The simplest route is a **Domain** property verified with a
+DNS TXT record (Search Console gives the record; add it under Vercel → Domains →
+playpokeiq.com → DNS Records). The **URL-prefix** property with the **HTML tag**
+method below also works and needs no DNS change.
 
 ## Verify the site
 
 1. Open <https://search.google.com/search-console>, choose **Add property**,
-   then **URL prefix**, and enter `https://pokeiq.vercel.app/` (or the
+   then **URL prefix**, and enter `https://playpokeiq.com/` (or the
    `NEXT_PUBLIC_SITE_URL` you use).
 2. Under **Other verification methods**, pick **HTML tag**. Google shows
    `<meta name="google-site-verification" content="abc123…" />`. Copy only the
@@ -17,7 +18,7 @@ is needed for that.)
    `GOOGLE_SITE_VERIFICATION` = that value, for **Production**.
 4. Redeploy production (Deployments → latest → Redeploy). The tag goes into
    the pages when they're built, so a redeploy is needed.
-5. Check it's live: `curl -s https://pokeiq.vercel.app/ | grep google-site-verification`.
+5. Check it's live: `curl -s https://playpokeiq.com/ | grep google-site-verification`.
 6. Back in Search Console, press **Verify**. Keep the variable set: Google
    checks again from time to time.
 

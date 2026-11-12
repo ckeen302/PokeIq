@@ -180,14 +180,14 @@ Don't continue unless it says **Verified.**
 
 ## 7. Check the screenshots load
 
-1. Open https://pokeiq.vercel.app/guessr and start a game. The screenshot
+1. Open https://playpokeiq.com/guessr and start a game. The screenshot
    should appear as usual.
 2. Right-click it → **Open image in new tab** (or DevTools → Network → Img).
    The URL should start with your public base and end `/geo/<id>.webp`.
 3. `curl -sI <that URL>` should show `200`, `content-type: image/webp`,
    `cache-control: public, max-age=31536000, immutable` and, with 2(c), no
    `last-modified`.
-4. Old links keep working: `https://pokeiq.vercel.app/api/geo/shot/<id>` now
+4. Old links keep working: `https://playpokeiq.com/api/geo/shot/<id>` now
    redirects (308) to the R2 file.
 5. Also try a Daily, a party room, and a duel round, since they all use the
    same URLs.

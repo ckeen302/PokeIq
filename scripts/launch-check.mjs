@@ -20,7 +20,7 @@
  *
  * --canonical: the origin canonical tags and share images must use. Defaults
  * to the base URL's own origin; a local production build points them at
- * NEXT_PUBLIC_SITE_URL (else https://pokeiq.vercel.app), so pass that there.
+ * NEXT_PUBLIC_SITE_URL (else https://playpokeiq.com), so pass that there.
  * Share images on the canonical host are fetched from the base URL instead.
  *
  * Set CHROMIUM_PATH to use a preinstalled Chromium.

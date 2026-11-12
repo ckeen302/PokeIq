@@ -18,7 +18,7 @@ import priceSets from "./price-sets.json";
  */
 
 const BASE = "https://tcgcsv.com/tcgplayer/3"; // category 3 = Pokémon
-export const USER_AGENT = "PokeIQ/1.0 (+https://pokeiq.vercel.app; TCG card prices)";
+export const USER_AGENT = "PokeIQ/1.0 (+https://playpokeiq.com; TCG card prices)";
 const HOUR = 60 * 60;
 export const PRICES_REVALIDATE = 12 * HOUR;
 const PRODUCTS_REVALIDATE = 24 * HOUR;
