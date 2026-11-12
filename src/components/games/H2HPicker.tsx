@@ -157,7 +157,7 @@ export function H2HPicker({ all: given, a: a0 = null, b: b0 = null, event: e0 = 
         <p className="mb-1.5 font-pixel text-[9px] uppercase tracking-[0.16em] text-white/50">The event</p>
         <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4" role="radiogroup" aria-label="Event">
           {EVENT_CHOICES.map((e) => (
-            <button key={e.id} type="button" role="radio" aria-checked={ev === e.id} onClick={() => setEv(e.id)} className={cn("min-h-10 rounded-md border px-1.5 py-1.5 font-display text-[11px] font-semibold uppercase leading-tight tracking-wide transition-colors", ev === e.id ? "border-[#ffd84a] bg-[#ffd84a]/10 text-[#ffd84a]" : "border-white/15 text-white/75 hover:text-white")} data-testid={`h2h-event-${e.id}`}>
+            <button key={e.id} type="button" role="radio" aria-checked={ev === e.id} onClick={() => setEv(e.id)} className={cn("min-h-10 rounded-md border px-1 py-1.5 font-display text-[11px] font-semibold uppercase leading-tight tracking-normal transition-colors sm:px-1.5 sm:tracking-wide", ev === e.id ? "border-[#ffd84a] bg-[#ffd84a]/10 text-[#ffd84a]" : "border-white/15 text-white/75 hover:text-white")} data-testid={`h2h-event-${e.id}`}>
               {e.name}
             </button>
           ))}
@@ -182,5 +182,5 @@ export function H2HPicker({ all: given, a: a0 = null, b: b0 = null, event: e0 = 
       </div>
     );
   }
-  return <div className="dark-scope rounded-xl border border-white/15 bg-[#0b1226] p-3 text-white sm:p-4" data-testid="h2h-picker">{body}</div>;
+  return <div className="dark-scope max-w-2xl rounded-xl border border-white/15 bg-[#0b1226] p-3 text-white sm:p-4" data-testid="h2h-picker">{body}</div>;
 }
