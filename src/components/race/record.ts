@@ -273,26 +273,39 @@ function drawFrame(g: CanvasRenderingContext2D, W: number, H: number, t: number,
     gameText(g, `${race.distance} M · BASED ON THEIR STATS`, W / 2, y0 + lines.length * lh + W * 0.01, W * 0.034, font, "#9fd8ff", "#0d1626", W * 0.034 * 0.2);
     g.restore();
   }
-  // End card.
+  // End card: laid out as the Games' end card (logo, title, the top three, one call to action and the link).
   if (t >= end) {
     const a = Math.min(1, (t - end) / 0.45);
+    const u = Math.min(W, H * 0.5625);
     g.save();
     g.globalAlpha = a;
-    g.fillStyle = "rgba(8,12,26,0.8)";
+    g.fillStyle = "rgba(8,12,26,0.88)";
     g.fillRect(0, 0, W, H);
-    const s = W * 0.26;
-    if (o.logo) g.drawImage(o.logo, W / 2 - s / 2, H * 0.34 - s / 2, s, s);
+    const s = u * 0.15;
+    if (o.logo) g.drawImage(o.logo, W / 2 - s / 2, H * 0.15 - s / 2, s, s);
     g.textAlign = "center";
     g.textBaseline = "middle";
-    gameText(g, "PokéIQ", W / 2, H * 0.34 + s * 0.72, W * 0.11, font, "#ffffff", "#0d1626", W * 0.022);
-    gameText(g, "Race any Pokémon", W / 2, H * 0.52, W * 0.05, font, "#ffd21f", "#0d1626", W * 0.01);
+    gameText(g, "PokéIQ Race", W / 2, H * 0.225, u * 0.075, font, "#ffffff", "#0d1626", u * 0.015);
+    gameText(g, `${race.distance} m · results`, W / 2, H * 0.262, u * 0.043, font, "#ffd21f", "#0d1626", u * 0.009);
+    const colors = ["#ffd84a", "#d7dde5", "#d58a4a"];
+    const top3 = race.order.slice(0, 3);
+    top3.forEach((r, i) => {
+      const y = H * 0.43 + u * ((i - (top3.length - 1) / 2) * 0.09);
+      const line = `${i + 1}  ${r.entrant.name}  ·  ${o.times.get(r) ?? ""} s`;
+      let lpx = u * 0.056;
+      g.font = `800 ${lpx}px ${font}`;
+      const lw = g.measureText(line).width;
+      if (lw > W * 0.88) lpx *= (W * 0.88) / lw;
+      gameText(g, line, W / 2, y, lpx, font, colors[i], "#0d1626", lpx * 0.18);
+    });
+    gameText(g, "Race any Pokémon", W / 2, H * 0.66, u * 0.05, font, "#ffd21f", "#0d1626", u * 0.01);
     // The link a viewer can read and type: the page, without the query string.
-    const link = o.link.split(/[?#]/)[0].replace(/\/run$/, "");
-    let lpx = W * 0.054;
+    const link = o.link.split(/[?#]/)[0].replace(/\/run$/, "").replace(/\/$/, "");
+    let lpx = u * 0.054;
     g.font = `800 ${lpx}px ${font}`;
     const lw = g.measureText(link).width;
     if (lw > W * 0.9) lpx *= (W * 0.9) / lw;
-    gameText(g, link, W / 2, H * 0.585, lpx, font, "#9fd8ff", "#0d1626", lpx * 0.2);
+    gameText(g, link, W / 2, H * 0.705, lpx, font, "#9fd8ff", "#0d1626", lpx * 0.2);
     g.restore();
   }
 }

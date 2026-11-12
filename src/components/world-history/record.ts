@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/site";
 import { Mp4Muxer, aacConfig } from "@/lib/sizes/mp4";
 import { HISTORY_PATH } from "@/lib/world-history/deeplink";
 import { CHAPTERS, filmBeats, filmLine, sourceOf } from "@/lib/world-history/data";
@@ -19,7 +20,7 @@ import { createHistoryScene, type Quality } from "./scene";
 export const VIDEO_W = 1080;
 export const VIDEO_H = 1920;
 const FPS = 30;
-const SITE = new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://pokeiq.vercel.app").host;
+const SITE = new URL(SITE_URL).host;
 export const LINK_TEXT = `${SITE}${HISTORY_PATH}`;
 
 export interface RecordOptions {

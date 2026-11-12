@@ -1,5 +1,6 @@
 "use client";
 
+import { SITE_URL } from "@/lib/site";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { track } from "@vercel/analytics";
@@ -39,7 +40,7 @@ const rangeFromUrl = () => {
 };
 
 /** The public site's host, never localhost. */
-const HOST = new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://pokeiq.vercel.app").host;
+const HOST = new URL(SITE_URL).host;
 
 /**
  * "Make a video" for an event, a head to head or the whole Games: a
