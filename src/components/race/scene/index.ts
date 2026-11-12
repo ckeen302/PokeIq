@@ -417,7 +417,8 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
     feedScreens(Q.screenEvery > 0);
   }
 
-  const ready = Promise.resolve();
+  // Without the post chain (phones), compile the stadium's shaders off the main thread where the browser can, before the first frame.
+  const ready: Promise<void> = post ? Promise.resolve() : renderer.compileAsync(scene, camera).then(() => undefined, () => undefined);
 
   return {
     canvas,

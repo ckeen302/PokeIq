@@ -231,6 +231,9 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
     };
   }, [mode]);
 
+  // The scene's code downloads alongside the entrants, not after them.
+  useEffect(() => { if (mode === "3d") void import("./scene").catch(() => undefined); }, [mode]);
+
   // ---- The scene (three.js loads only here).
   useEffect(() => {
     if (mode !== "3d" || !all || !hostRef.current) return;

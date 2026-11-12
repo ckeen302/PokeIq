@@ -195,12 +195,17 @@ export function createHistoryScene(host: HTMLElement, opts: SceneOptions): Histo
   let lastPose: Pose = { pos: [0, 2, 10], look: [0, 2, 0], fov: HALL_FOV };
   const film = opts.film;
 
-  // Doorway stills.
+  // Doorway stills: fetched once the first frames are up, so on a slow phone they don't hold up the scene (each door shows its drawn poster until then).
   if (opts.poster) {
-    const loader = new THREE.TextureLoader();
-    opts.chapters.forEach((c, i) => {
-      loader.load(opts.poster!(c.id), (tex) => { tex.colorSpace = THREE.SRGBColorSpace; hall.setPoster(i, tex); }, undefined, () => undefined);
-    });
+    const loadStills = () => {
+      if (disposed) return;
+      const loader = new THREE.TextureLoader();
+      opts.chapters.forEach((c, i) => {
+        loader.load(opts.poster!(c.id), (tex) => { if (disposed) { tex.dispose(); return; } tex.colorSpace = THREE.SRGBColorSpace; hall.setPoster(i, tex); }, undefined, () => undefined);
+      });
+    };
+    if (typeof window.requestIdleCallback === "function") window.requestIdleCallback(loadStills, { timeout: 2500 });
+    else setTimeout(loadStills, 800);
   }
 
   const effFov = (fov: number) => fovFor(fov, W / H);

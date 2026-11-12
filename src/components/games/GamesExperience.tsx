@@ -147,6 +147,8 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
   }, [outcome, games, byKey, budget]);
   const current = playlist[Math.min(partIdx, playlist.length - 1)] ?? null;
   const idleVenue = current?.venue ?? "stadium";
+  const idleVenueRef = useRef(idleVenue);
+  idleVenueRef.current = idleVenue;
   const title = spec.mode === "games" ? "The PokéIQ Games" : isH2H ? h2hQuestion(event, field[0].name, field[1].name) : `${eventOf(event).name}`;
 
   const show = useRef({
@@ -228,6 +230,9 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
     };
   }, [view]);
 
+  // The scene's code downloads alongside the athletes, not after them.
+  useEffect(() => { if (view === "3d") void import("./scene").catch(() => undefined); }, [view]);
+
   // ---- The scene.
   useEffect(() => {
     if (view !== "3d" || !all || !hostRef.current) return;
@@ -239,7 +244,10 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
       try {
         await document.fonts?.load(`700 40px ${font}`).catch(() => undefined);
         const q = qualityParam() ?? initialQuality();
-        sceneRef.current = createGamesScene(host, { quality: q, urls: RACE_URLS, font, onContextGone: () => alive && setSceneGen((g) => g + 1) });
+        const made = createGamesScene(host, { quality: q, urls: RACE_URLS, font, onContextGone: () => alive && setSceneGen((g) => g + 1) });
+        sceneRef.current = made;
+        await made.prepare(idleVenueRef.current);
+        if (!alive) return;
         setQualityState(q);
         if (alive) setReady(true);
       } catch { if (alive) setView("list"); }

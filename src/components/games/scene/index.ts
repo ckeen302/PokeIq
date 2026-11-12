@@ -93,6 +93,8 @@ export interface GamesScene {
   /** Loads every athlete a show draws (and, for a sprint, the Race's runners on its race), then compiles every shader. */
   load(o: { athletes: Athlete[]; race?: Race; falseRace?: Race | null; venue: Venue }, signal: AbortSignal, onProgress?: (k: number) => void): Promise<void>;
   /** Draws a frame of a show; returns the heavy footfalls (sprints) for the sound. */
+  /** Builds a venue and compiles its shaders (off the main thread where the browser can) before the first frame. */
+  prepare(v: Venue): Promise<void>;
   frame(f: ShowFrame): { kg: number; dist: number }[];
   heads(): HeadAnchor[];
   photoFinish(frame: PhotoFrame): { step(): boolean; result(): HTMLCanvasElement | null; progress(): number };
@@ -714,6 +716,7 @@ export function createGamesScene(host: HTMLElement, opts: SceneOptions): GamesSc
   return {
     canvas,
     load,
+    prepare: (v: Venue) => { setVenue(v); return compile().catch(() => undefined); },
     frame,
     heads,
     photoFinish,

@@ -40,11 +40,15 @@ export function bowlPoint(theta: number, d = 0): { x: number; z: number; nx: num
   return { x: x + nx * d, z: z + nz * d, nx, nz };
 }
 
+/** The barrier curve sampled densely (d = 0), computed once: an offset point is the base point plus its normal times d. */
+const DENSE_M = 4096;
+let denseBase: { x: number; z: number; nx: number; nz: number }[] | null = null;
+const denseCurve = () => (denseBase ??= Array.from({ length: DENSE_M }, (_, i) => bowlPoint((i / DENSE_M) * Math.PI * 2, 0)));
+
 /** The barrier curve sampled evenly by arc length (n points), offset by d. */
 export function bowlRing(n: number, d = 0): { x: number; z: number; nx: number; nz: number; u: number }[] {
-  const dense: { x: number; z: number; nx: number; nz: number }[] = [];
-  const M = 4096;
-  for (let i = 0; i < M; i++) dense.push(bowlPoint((i / M) * Math.PI * 2, d));
+  const M = DENSE_M;
+  const dense = denseCurve().map((p) => ({ x: p.x + p.nx * d, z: p.z + p.nz * d, nx: p.nx, nz: p.nz }));
   const cum = [0];
   for (let i = 1; i <= M; i++) {
     const a = dense[i - 1], b = dense[i % M];
@@ -65,11 +69,15 @@ export function bowlRing(n: number, d = 0): { x: number; z: number; nx: number; 
   return out;
 }
 
+const lengths = new Map<number, number>();
 /** Perimeter of the barrier curve offset by d (m). */
 export function bowlLength(d = 0): number {
+  const known = lengths.get(d);
+  if (known !== undefined) return known;
   const r = bowlRing(512, d);
   let L = 0;
   for (let i = 0; i < r.length; i++) { const a = r[i], b = r[(i + 1) % r.length]; L += Math.hypot(b.x - a.x, b.z - a.z); }
+  lengths.set(d, L);
   return L;
 }
 
