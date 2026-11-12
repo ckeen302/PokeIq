@@ -14,24 +14,41 @@ import { getServiceSupabase } from "@/lib/supabase";
  * otherwise (correct for single-instance / local deployments).
  */
 
+/**
+ * Claims seen on this instance, by expiry. Every claim lives MEMORY_TTL_MS, and
+ * a key is deleted before it's set again, so the map stays in expiry order:
+ * expired claims are dropped from the front as new ones arrive (a scan of the
+ * whole map on every claim, as before, slowed each guess once it was large).
+ */
 const memory = new Map<string, number>();
 const MEMORY_TTL_MS = 3 * 60 * 60 * 1000;
+/**
+ * With Postgres holding every claim, the local copy is only a shortcut, so it
+ * keeps the newest of them. Without a database it is the only record and
+ * keeps everything until it expires.
+ */
+export const MEMORY_CLAIMS_WITH_DATABASE = 200_000;
 
-function claimInMemory(key: string): boolean {
+function claimInMemory(key: string, keep: number): boolean {
   const now = Date.now();
-  if (memory.size > 50_000) {
-    for (const [k, exp] of memory) if (exp < now) memory.delete(k);
+  for (const [k, exp] of memory) {
+    if (exp > now && memory.size <= keep) break;
+    memory.delete(k);
   }
   const existing = memory.get(key);
   if (existing && existing > now) return false;
+  memory.delete(key);
   memory.set(key, now + MEMORY_TTL_MS);
   return true;
 }
 
+/** Tests: how many claims this instance holds. */
+export const memoryClaims = () => memory.size;
+
 export async function claimOnce(key: string): Promise<boolean> {
-  // Always check locally first: cheap, and catches same-instance replays.
-  if (!claimInMemory(key)) return false;
   const supabase = getServiceSupabase();
+  // Always check locally first: cheap, and catches same-instance replays.
+  if (!claimInMemory(key, supabase ? MEMORY_CLAIMS_WITH_DATABASE : Infinity)) return false;
   if (!supabase) return true;
   const { error } = await supabase.from("token_claims").insert({ key });
   if (!error) return true;

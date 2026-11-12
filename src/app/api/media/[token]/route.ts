@@ -29,6 +29,8 @@ interface Rendered {
 
 const cache = new Map<string, Rendered>();
 const CACHE_LIMIT = 400;
+/** Renders under way, by cache key. */
+const rendering = new Map<string, Promise<Rendered>>();
 
 async function fetchUpstream(url: string): Promise<Buffer> {
   // Data Cache: artwork and cries never change, so cold instances skip the upstream trip.
@@ -136,9 +138,17 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ to
   try {
     let rendered = cache.get(key);
     if (!rendered) {
-      rendered = await render(media.kind, media.id, step, crop);
-      if (cache.size >= CACHE_LIMIT) cache.delete(cache.keys().next().value!);
-      cache.set(key, rendered);
+      // Players on the same question at once (a daily, a popular quiz) share one render.
+      let pending = rendering.get(key);
+      if (!pending) {
+        pending = render(media.kind, media.id, step, crop).finally(() => rendering.delete(key));
+        rendering.set(key, pending);
+      }
+      rendered = await pending;
+      if (!cache.has(key)) {
+        if (cache.size >= CACHE_LIMIT) cache.delete(cache.keys().next().value!);
+        cache.set(key, rendered);
+      }
     }
     return new NextResponse(new Uint8Array(rendered.body), {
       headers: {
