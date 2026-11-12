@@ -6,7 +6,7 @@ import type { CamPose } from "@/lib/race/director";
 import type { Race } from "@/lib/race/race";
 import type { Athlete } from "@/lib/games/athlete";
 import type { Venue } from "@/lib/games/events";
-import { buildCrowd, type Crowd } from "@/components/race/scene/crowd";
+import { buildCrowd, CROWD_LITE_BEYOND, type Crowd } from "@/components/race/scene/crowd";
 import { stadiumEnvironment } from "@/components/race/scene/post";
 import { loadFigure, makeRunners, type Runners, type RunnerUrls } from "@/components/race/scene/runners";
 import { LAYER, buildStadium, type Stadium, type StadiumUrls } from "@/components/race/scene/stadium";
@@ -93,8 +93,6 @@ export interface GamesScene {
   /** Loads every athlete a show draws (and, for a sprint, the Race's runners on its race), then compiles every shader. */
   load(o: { athletes: Athlete[]; race?: Race; falseRace?: Race | null; venue: Venue }, signal: AbortSignal, onProgress?: (k: number) => void): Promise<void>;
   /** Draws a frame of a show; returns the heavy footfalls (sprints) for the sound. */
-  /** Builds a venue and compiles its shaders (off the main thread where the browser can) before the first frame. */
-  prepare(v: Venue): Promise<void>;
   frame(f: ShowFrame): { kg: number; dist: number }[];
   heads(): HeadAnchor[];
   photoFinish(frame: PhotoFrame): { step(): boolean; result(): HTMLCanvasElement | null; progress(): number };
@@ -212,7 +210,7 @@ export function createGamesScene(host: HTMLElement, opts: SceneOptions): GamesSc
     lightAt(stadium.masts[1], 0xffffff, 0.75);
     lightAt(stadium.masts[3], 0xffffff, 0.6);
     g.add(lights);
-    crowd = buildCrowd({ occupancy: Q0.crowd, flashes: Q0.flashes });
+    crowd = buildCrowd({ occupancy: Q0.crowd, flashes: Q0.flashes, liteBeyond: Q0 === QUALITY.low || Q0 === QUALITY.draft ? CROWD_LITE_BEYOND : undefined });
     g.add(crowd.group);
     infield = buildInfield({ urls: opts.urls, font: opts.font, aniso });
     g.add(infield.group);
@@ -223,7 +221,7 @@ export function createGamesScene(host: HTMLElement, opts: SceneOptions): GamesSc
       group: g,
       env,
       fog: new THREE.FogExp2(new THREE.Color(0.02, 0.025, 0.04), 0.0016),
-      update(t, cam, ex) { stadium!.update(t, cam); c.update(t, ex); },
+      update(t, cam, ex) { stadium!.update(t, cam); c.update(t, ex, cam); },
       dispose() { stadium?.dispose(); c.dispose(); infield?.dispose(); env.dispose(); },
     };
   }
@@ -716,7 +714,6 @@ export function createGamesScene(host: HTMLElement, opts: SceneOptions): GamesSc
   return {
     canvas,
     load,
-    prepare: (v: Venue) => { setVenue(v); return compile().catch(() => undefined); },
     frame,
     heads,
     photoFinish,
