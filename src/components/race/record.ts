@@ -291,7 +291,8 @@ function drawFrame(g: CanvasRenderingContext2D, W: number, H: number, t: number,
     const top3 = race.order.slice(0, 3);
     top3.forEach((r, i) => {
       const y = H * 0.43 + u * ((i - (top3.length - 1) / 2) * 0.09);
-      const line = `${i + 1}  ${r.entrant.name}  ·  ${o.times.get(r) ?? ""} s`;
+      const time = o.times.get(r) ?? "";
+      const line = `${i + 1}  ${r.entrant.name}  ·  ${time}${time.includes(":") ? "" : " s"}`;
       let lpx = u * 0.056;
       g.font = `800 ${lpx}px ${font}`;
       const lw = g.measureText(line).width;
