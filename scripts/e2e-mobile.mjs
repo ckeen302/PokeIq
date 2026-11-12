@@ -125,6 +125,7 @@ export async function runMobile({ browser, BASE, OUT, errors, step }) {
     }
   }
   await phoneStates(page, BASE, errors, step);
+  await paintsBeforeScripts(browser, BASE, errors, step, width);
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.goto(`${BASE}/pokedex`, { waitUntil: "load" });
   await page.screenshot({ path: `${OUT}/phone-pokedex.png` });
@@ -133,7 +134,7 @@ export async function runMobile({ browser, BASE, OUT, errors, step }) {
 
 /** In-game states on a phone that once went wrong. */
 async function phoneStates(page, BASE, errors, step) {
-  step("phone states: sheet titles, the quiz's Next button, the encounter table");
+  step("phone states: sheet titles, the quiz's Next button, the encounter table, the type chart, Pokédle's demo");
   const settle = async (path) => {
     await page.goto(`${BASE}${path}`, { waitUntil: "load" });
     await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => {});
@@ -205,6 +206,55 @@ async function phoneStates(page, BASE, errors, step) {
   } catch (e) {
     errors.push(`phone encounters: ${e.message.split("\n")[0]}`);
   }
+  try {
+    // Pokédle's how-to demo keeps one height as its guesses play out, so the sheet doesn't jump on a phone.
+    await page.evaluate(() => localStorage.removeItem("pokeiq:pokedle-prefs:v1"));
+    await settle("/pokedle");
+    const demo = page.getByTestId("howto-demo").first();
+    await demo.waitFor();
+    const heights = new Set();
+    for (let i = 0; i < 24; i++) {
+      heights.add(Math.round(await demo.evaluate((d) => d.getBoundingClientRect().height)));
+      await page.waitForTimeout(400);
+    }
+    if (heights.size > 1) errors.push(`phone /pokedle: the how-to demo changes height as it plays (${[...heights].join(", ")}px)`);
+    await page.getByTestId("howto-never").click();
+  } catch (e) {
+    errors.push(`phone Pokédle demo: ${e.message.split("\n")[0]}`);
+  }
+  try {
+    // The type chart's row names (ELECTRIC, FIGHTING) fit their label at the phone's 12px type.
+    await settle("/pokedex/types");
+    const cut = await page.evaluate(() => [...document.querySelectorAll('[data-testid="type-chart"] tbody th a')].filter((a) => a.scrollWidth > a.clientWidth + 1).map((a) => a.textContent));
+    if (cut.length) errors.push(`phone /pokedex/types: type names cut off in the chart (${cut.join(", ")})`);
+  } catch (e) {
+    errors.push(`phone type chart: ${e.message.split("\n")[0]}`);
+  }
+}
+
+/**
+ * On a slow phone the scripts arrive seconds after the page: what a visitor came for must
+ * show without them (no entrance animation that waits on the scripts to make it visible).
+ */
+async function paintsBeforeScripts(browser, BASE, errors, step, width) {
+  step("phone, before the scripts load: the game modes, a quiz's setup and the PokéIQ Test's start show");
+  const context = await browser.newContext({ viewport: { width, height: 844 }, isMobile: true, hasTouch: true, javaScriptEnabled: false });
+  const page = await context.newPage();
+  for (const [path, text] of [["/play", "Who's That Pokémon?"], ["/quiz/whos-that-pokemon", "Start Who's That"], ["/iq-test", "Start the test"]]) {
+    try {
+      await page.goto(`${BASE}${path}`, { waitUntil: "load" });
+      await page.waitForTimeout(1500);
+      const opacity = await page.locator("main").getByText(text, { exact: false }).first().evaluate((el) => {
+        let o = 1;
+        for (let e = el; e; e = e.parentElement) o *= Number(getComputedStyle(e).opacity);
+        return o;
+      });
+      if (opacity < 0.99) errors.push(`phone ${path}: "${text}" stays hidden until the scripts load (opacity ${opacity})`);
+    } catch (e) {
+      errors.push(`phone ${path} without scripts: ${e.message.split("\n")[0]}`);
+    }
+  }
+  await context.close();
 }
 
 // Run on its own.
