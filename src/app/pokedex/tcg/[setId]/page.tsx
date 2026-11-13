@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element -- set logos are hot-linked from the TCG API's image CDN */
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { SHARE_IMAGES, jsonLd, pageMetadata } from "@/lib/seo";
+import { jsonLd, pageMetadata } from "@/lib/seo";
 import { breadcrumbList, itemList } from "@/lib/structured-data";
 import { DetailHero, DetailNav, StatBox } from "@/components/pokedex/detail/DetailParts";
 import { SetGallery } from "@/components/tcg/SetGallery";
@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description: `Every card in the ${set.name} Pokémon TCG set (${set.series} series${date ? `, released ${date}` : ""}${set.total ? `, ${set.total} cards` : ""}), sortable by number, rarity and current market price.`,
     path: `/pokedex/tcg/${set.id}`,
     socialTitle: `${set.name} · PokéIQ TCG`,
-    image: set.images?.logo ? { url: set.images.logo, alt: `${set.name} logo` } : SHARE_IMAGES.pokedex,
+    // The preview picture is this segment's opengraph-image (the set's logo on the site's 1200 × 630 card).
   });
 }
 

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "@/components/ui/Link";
 import { ExternalLink } from "lucide-react";
-import { SHARE_IMAGES, jsonLd, pageMetadata } from "@/lib/seo";
+import { jsonLd, pageMetadata } from "@/lib/seo";
 import { breadcrumbList } from "@/lib/structured-data";
 import { DetailNav, StatBox } from "@/components/pokedex/detail/DetailParts";
 import { HudHeading } from "@/components/game/HudHeading";
@@ -37,9 +37,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description: `${card.name} from the ${card.set?.name ?? "Pokémon TCG"} set${card.rarity ? ` (${card.rarity})` : ""}${card.artist ? `, illustrated by ${card.artist}` : ""}.${price ? ` Market price ${formatPrice(price.value, price.currency)}${formatApiDate(price.asOf) ? ` as of ${formatApiDate(price.asOf)}` : ""}.` : ""} TCGplayer and Cardmarket prices.`,
     path: `/pokedex/tcg/card/${card.id}`,
     socialTitle: `${card.name} · PokéIQ TCG`,
-    image: card.images?.large
-      ? { url: card.images.large, alt: `${card.name} card${card.set ? ` from ${card.set.name}` : ""}`, width: 734, height: 1024 }
-      : SHARE_IMAGES.pokedex,
+    // The preview picture is this segment's opengraph-image (the card's scan on the site's 1200 × 630 card).
   });
 }
 
