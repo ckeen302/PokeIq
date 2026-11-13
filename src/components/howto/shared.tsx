@@ -83,7 +83,7 @@ export function HowToCards({ cards }: { cards: HowToCard[] }) {
   if (wide) return <HowToCardGrid cards={cards} />;
   return (
     <details className="rounded-md border bg-shade/30 p-3" data-testid="howto-cards">
-      <summary className="cursor-pointer font-semibold py-1.5">The rules</summary>
+      <summary className="tap cursor-pointer font-semibold py-1.5">The rules</summary>
       <div className="mt-3">
         <HowToCardGrid cards={cards} />
       </div>

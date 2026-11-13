@@ -766,6 +766,19 @@ html[data-dle-cb] .dle-close { background: rgb(133 192 249 / 0.4); border-color:
   main :is(button[aria-pressed], [role="tab"], [role="radio"]):not(.mp-dense, .mp-dense *) {
     min-height: 40px;
   }
+  /* .tap: a small control keeps its look and gets a 40px tap area (an invisible box centred on it).
+     Zero specificity, so a position utility on the element still wins. */
+  :where(.tap, .wh-chip) { position: relative; }
+  .tap::after,
+  .wh-chip::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100%, 40px);
+    height: max(100%, 40px);
+    transform: translate(-50%, -50%);
+  }
 }
 
 /* mobile-perfect: a battle in progress gets the whole phone screen, like a PokéGuessr round:

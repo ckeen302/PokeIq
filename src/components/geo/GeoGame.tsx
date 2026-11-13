@@ -758,7 +758,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
                     {weeklyDone !== undefined ? "Replay for practice" : "Play this week's"}
                   </Button>
                   {week && (
-                    <Link href={`/leaderboard?board=geo&format=${geoWeeklyBoard(week)}`} className="hud-label text-center hover:text-foreground" data-testid="geo-weekly-board">
+                    <Link href={`/leaderboard?board=geo&format=${geoWeeklyBoard(week)}`} className="tap hud-label text-center hover:text-foreground" data-testid="geo-weekly-board">
                       Weekly leaderboard →
                     </Link>
                   )}
@@ -772,7 +772,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
             <CardContent className="space-y-4 p-5 sm:p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h3 className="font-display text-xl font-bold uppercase">Solo game</h3>
-                <Link href="/atlas" className="flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground">
+                <Link href="/atlas" className="tap flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground">
                   <MapIcon className="h-4 w-4" aria-hidden /> World Atlas
                 </Link>
               </div>

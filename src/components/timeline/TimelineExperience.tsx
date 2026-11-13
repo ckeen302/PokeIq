@@ -379,7 +379,7 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
   const stopEntry = tourStop ? byId.get(tourStop) ?? null : null;
   const stepOpen = (dir: 1 | -1) => { const id = apiRef.current?.step(dir); if (id) open(id); };
 
-  const chip = "tl-ui pointer-events-auto inline-flex items-center gap-2 rounded-md border bg-card/75 px-3 py-1.5 font-display text-[11px] font-semibold uppercase tracking-[0.12em] backdrop-blur-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  const chip = "tap tl-ui pointer-events-auto inline-flex items-center gap-2 rounded-md border bg-card/75 px-3 py-1.5 font-display text-[11px] font-semibold uppercase tracking-[0.12em] backdrop-blur-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
   return (
     <>

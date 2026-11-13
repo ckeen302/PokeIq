@@ -26,7 +26,7 @@ export function GeoSettingsButton({ value, onChange }: { value: GeoPlaySettings;
         aria-haspopup="dialog"
         data-testid="geo-settings"
         className={cn(
-          "flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-colors",
+          "tap flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-colors",
           open || badge ? "border-screen bg-screen/15 text-foreground" : "bg-card text-muted-foreground hover:border-screen/50 hover:text-foreground"
         )}
       >
@@ -38,7 +38,7 @@ export function GeoSettingsButton({ value, onChange }: { value: GeoPlaySettings;
           {badge}
         </span>
       )}
-      <Popover open={open} onClose={close} label="PokéGuessr settings" align="start" className="w-[min(24rem,calc(100vw-2rem))] space-y-3">
+      <Popover open={open} onClose={close} label="PokéGuessr settings" align="start" className="w-[min(24rem,calc(100vw-4.75rem))] space-y-3">
         <div className="flex items-start justify-between gap-3">
           <p className="hud-label">Play settings</p>
           <button type="button" onClick={close} aria-label="Close settings" className="rounded-md p-1 text-muted-foreground hover:text-foreground">

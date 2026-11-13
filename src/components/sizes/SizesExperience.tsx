@@ -1473,8 +1473,9 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
                 <button type="button" onClick={share} className={cn(chip, "h-11 px-3")} aria-label="Share" data-testid="sizes-share">
                   <Share2 className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">Share</span>
                 </button>
-                <button type="button" onClick={() => { toExplore(); setVideoOpen(true); }} className={cn(chip, "h-11 border-[#ffd84a]/50 text-white")} disabled={!ready} data-testid="sizes-video">
-                  <Clapperboard className="h-4 w-4 text-[#ffd84a]" aria-hidden /> <span className="sm:hidden">Video</span><span className="hidden sm:inline">Make a video</span>
+                <button type="button" onClick={() => { toExplore(); setVideoOpen(true); }} className={cn(chip, "h-11 border-[#ffd84a]/50 text-white")} disabled={!ready} aria-label="Make a video" data-testid="sizes-video">
+                  {/* While it plays, the speed button joins the row: on a 360px phone the label gives way so the row fits. */}
+                  <Clapperboard className="h-4 w-4 text-[#ffd84a]" aria-hidden /> <span className={cn("sm:hidden", playing && "max-[389px]:hidden")}>Video</span><span className="hidden sm:inline">Make a video</span>
                 </button>
               </div>
             </div>

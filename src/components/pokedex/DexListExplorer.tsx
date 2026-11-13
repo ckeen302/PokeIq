@@ -293,7 +293,8 @@ export function DexListExplorer({ kind, items }: { kind: DexListKind; items: Ite
                 <img src={itemSpriteUrl(it.slug)} alt="" loading="lazy" decoding="async" width={32} height={32} className="relative z-[1] h-8 w-8 object-contain [image-rendering:pixelated]" />
               </span>
               <span className="min-w-0">
-                <span className="block truncate font-display text-sm font-bold uppercase tracking-wide group-hover:text-screen">{it.name}</span>
+                {/* Two to a row on a phone: a long name wraps onto a second line there, so "Fossilized Bird" and "Fossilized Dino" can be told apart. */}
+                <span className="block truncate font-display text-sm font-bold uppercase tracking-wide group-hover:text-screen max-sm:line-clamp-2 max-sm:whitespace-normal max-sm:leading-tight">{it.name}</span>
                 <span className="block truncate font-pixel text-[9px] uppercase tracking-wider text-muted-foreground">{it.category}</span>
               </span>
             </Link>

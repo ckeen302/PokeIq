@@ -146,7 +146,7 @@ export function GamesStadium({ events, groups, playHref, records, h2h, h2hPicker
     try { sessionStorage.removeItem(ENTERED); } catch { /* ignore */ }
   };
 
-  const chip = "pointer-events-auto inline-flex h-9 items-center gap-1.5 rounded-md border border-white/15 bg-[#0b1226]/75 px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] text-white/85 backdrop-blur-md transition-colors hover:border-white/35 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd84a]";
+  const chip = "tap pointer-events-auto inline-flex h-9 items-center gap-1.5 rounded-md border border-white/15 bg-[#0b1226]/75 px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] text-white/85 backdrop-blur-md transition-colors hover:border-white/35 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd84a]";
   const tabBtn = (id: typeof tab, label: string, Icon?: typeof Trophy) => (
     <button type="button" onClick={() => setTab(id)} aria-pressed={tab === id} className={cn("inline-flex h-9 items-center gap-1.5 rounded-md border px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors", tab === id ? "border-[#ffd84a]/70 bg-[#ffd84a]/15 text-[#ffd84a]" : "border-white/15 text-white/70 hover:text-white")} data-testid={`stadium-tab-${id}`}>
       {Icon && <Icon className="h-3.5 w-3.5" aria-hidden />}{label}

@@ -441,7 +441,7 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
                 </button>
               </span>
             ) : (
-              <span className="truncate text-muted-foreground">
+              <span className="truncate text-muted-foreground max-sm:whitespace-normal">
                 {settings.mode === "regular" ? "Any order. Names count as soon as they're spelled right." : settings.mode === "chaos" ? "Name the one we point at, or skip it." : "In Pokédex order. Skip one to come back to it."}
               </span>
             )}

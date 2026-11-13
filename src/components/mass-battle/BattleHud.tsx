@@ -198,7 +198,7 @@ export function BattleControls(p: ControlsProps) {
     window.addEventListener("pointerdown", close);
     return () => window.removeEventListener("pointerdown", close);
   }, [menu]);
-  const chip = "mb-chip pointer-events-auto inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 font-display text-[11px] font-semibold uppercase tracking-[0.12em] text-white/85 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd84a] disabled:opacity-40 sm:px-3";
+  const chip = "tap mb-chip pointer-events-auto inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 font-display text-[11px] font-semibold uppercase tracking-[0.12em] text-white/85 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd84a] disabled:opacity-40 sm:px-3";
   const on = "mb-chip-on";
   const nextSpeed = () => {
     const i = SPEEDS.indexOf(p.speed as (typeof SPEEDS)[number]);

@@ -32,7 +32,7 @@ export function HowToHelpButton({ className }: { className?: string }) {
       aria-label="How to play"
       title="How to play"
       data-testid="geo-howto-open"
-      className={cn(
+      className={cn("tap",
         "rounded-md p-2 text-muted-foreground transition-colors hover:bg-screen/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         className,
       )}
