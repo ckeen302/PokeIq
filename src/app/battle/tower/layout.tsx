@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { GameJsonLd } from "@/components/seo/GameJsonLd";
 import { BattleHeader } from "@/components/battle/BattleHeader";
+import { RouteSlot } from "@/components/layout/RouteSlot";
 
 const DESCRIPTION =
   "The Battle Tower on Pokémon Showdown's engine: bring your team under Flat Rules (level 50, bring six, pick three) and build a streak against computer trainers, with the Tower Tycoon every seventh battle.";
@@ -19,7 +20,7 @@ export default function BattleTowerLayout({ children }: { children: React.ReactN
       <BattleHeader crumb="Battle Tower" title="Battle" accent="Tower">
         Your team, Flat Rules, and a streak of computer trainers that get tougher as you climb. Every seventh battle is the Tower Tycoon, with its best team.
       </BattleHeader>
-      {children}
+      <RouteSlot>{children}</RouteSlot>
     </div>
   );
 }
