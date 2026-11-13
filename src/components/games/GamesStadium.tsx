@@ -1,5 +1,7 @@
 "use client";
 
+import { STAGE_POSTERS, StagePoster } from "@/components/lab/StagePoster";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -24,6 +26,9 @@ export interface GamesStadiumProps {
   backHref: string;
   children: React.ReactNode;
 }
+
+// The scene's chunks are preloaded from the page's HTML (see ScenePreload).
+const ScenePreload = dynamic(() => import("./ScenePreload"));
 
 const ENTERED = "pokeiq-games-entered";
 const FLY_S = 2.6;
@@ -161,6 +166,8 @@ export function GamesStadium({ events, groups, playHref, records, h2h, h2hPicker
       {view !== "list" && (
         <div className="rc-stage gm-entry fixed left-0 !mt-0 w-screen bottom-[calc(3.5rem+env(safe-area-inset-bottom))] top-14 z-40 overflow-hidden lg:bottom-0" data-testid="stadium" data-ready={ready ? "1" : "0"} data-entered={entered ? "1" : "0"}>
           <div ref={hostRef} className="rc-host absolute inset-0 select-none" aria-hidden />
+          <StagePoster src={STAGE_POSTERS.games} gone={ready} />
+          <ScenePreload />
           <div className="rc-shade-top" aria-hidden />
           <div className="rc-shade-bottom" aria-hidden />
           <h1 className="sr-only">The PokéIQ Games: real track and field, swimming, weightlifting and wrestling for every Pokémon</h1>

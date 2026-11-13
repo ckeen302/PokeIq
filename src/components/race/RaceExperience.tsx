@@ -1,5 +1,7 @@
 "use client";
 
+import dynamic from "next/dynamic";
+import { STAGE_POSTERS, StagePoster } from "@/components/lab/StagePoster";
 import Link from "next/link";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -27,6 +29,9 @@ import { RaceBracket } from "./RaceBracket";
 import { cn } from "@/lib/utils";
 
 const MakeRaceVideo = lazy(() => import("./MakeRaceVideo"));
+
+// The scene's chunks are preloaded from the page's HTML (see ScenePreload).
+const ScenePreload = dynamic(() => import("./ScenePreload"));
 
 type Mode = "boot" | "3d" | "list";
 export type CamMode = "broadcast" | "headon" | "overhead" | "free";
@@ -235,8 +240,9 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
   useEffect(() => { if (mode === "3d") void import("./scene").catch(() => undefined); }, [mode]);
 
   // ---- The scene (three.js loads only here).
+  // It doesn't wait for the runners' list: the empty stadium is on screen while that downloads.
   useEffect(() => {
-    if (mode !== "3d" || !all || !hostRef.current) return;
+    if (mode !== "3d" || !hostRef.current) return;
     let alive = true;
     const host = hostRef.current;
     const font = getComputedStyle(document.documentElement).getPropertyValue("--font-display").trim() || "sans-serif";
@@ -260,7 +266,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
       sceneRef.current = null;
       setReady(false);
     };
-  }, [mode, all, sceneGen]);
+  }, [mode, sceneGen]);
 
   // ---- A race: load its runners, then start the broadcast.
   useEffect(() => {
@@ -822,6 +828,8 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
           data-recording={recording ? "1" : "0"}
         >
           <div ref={hostRef} className="rc-host absolute inset-0 cursor-grab touch-none select-none active:cursor-grabbing" data-testid="race-scene" role="application" aria-label="A Pokémon race in 3D. Drag to orbit the camera, scroll or pinch to zoom." />
+          <StagePoster src={STAGE_POSTERS.race} gone={ready} />
+          <ScenePreload />
           <canvas ref={overlayRef} className="rc-overlay h-full w-full" aria-hidden />
           <div className="rc-shade-top" aria-hidden />
           <div className="rc-shade-bottom" aria-hidden />
