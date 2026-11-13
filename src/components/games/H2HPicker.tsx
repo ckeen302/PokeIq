@@ -147,7 +147,7 @@ export function H2HPicker({ all: given, a: a0 = null, b: b0 = null, event: e0 = 
             <p className="mb-1.5 font-pixel text-[9px] uppercase tracking-[0.16em] text-white/50">{slot === "a" ? "Or tap one" : "Or tap a rival"}</p>
             <div className="flex flex-wrap gap-1.5">
               {chips.map((k) => (
-                <button key={k} type="button" onClick={() => put(k)} className="inline-flex min-h-9 items-center rounded-md border border-white/15 px-2.5 font-display text-[11px] font-semibold uppercase tracking-wide text-white/80 hover:border-white/40 hover:text-white" data-testid="h2h-rival" data-key={k}>{badgeName(nameOf(k))}</button>
+                <button key={k} type="button" onClick={() => put(k)} className="tap inline-flex min-h-9 items-center rounded-md border border-white/15 px-2.5 font-display text-[11px] font-semibold uppercase tracking-wide text-white/80 hover:border-white/40 hover:text-white" data-testid="h2h-rival" data-key={k}>{badgeName(nameOf(k))}</button>
               ))}
             </div>
           </div>

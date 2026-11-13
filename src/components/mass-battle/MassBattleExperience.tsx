@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { track } from "@vercel/analytics";
 import { BarChart3, Camera, Clapperboard, Crosshair, Loader2, RotateCcw, Share2, Swords, X } from "lucide-react";
@@ -31,9 +32,13 @@ import { formFigures, speciesForms, type SpeciesForms } from "./scene/forms";
 import type { Choreographer } from "./scene/choreo";
 import { factsOfRow, SetupPanel } from "./SetupPanel";
 import type { PickerMon } from "./PokemonPicker";
+import { STAGE_POSTERS, StagePoster } from "@/components/lab/StagePoster";
 import { isMuted, onMuteChange, setMuted } from "@/lib/sound";
 
 const MakeBattleVideo = lazy(() => import("./MakeBattleVideo"));
+
+// The scene's chunks are preloaded from the page's HTML (see ScenePreload).
+const ScenePreload = dynamic(() => import("./ScenePreload"));
 
 type Phase = "idle" | "solving" | "deploying" | "ready" | "playing" | "done" | "error";
 
@@ -195,6 +200,9 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
   const [quality, setQuality] = useState<Quality>("medium");
   const [drawn, setDrawn] = useState<{ drawn: number; total: number } | null>(null);
   const [glOk, setGlOk] = useState(true);
+  // Phones: a still of the default battle's arena until the scene has drawn it (once; later battles pick their own arenas).
+  const posterFits = !initial || (initial.kind === "preset" && initial.id === presets[0]?.id);
+  const [posterGone, setPosterGone] = useState(false);
   /** How the battle is shown; the setup panel and the stage's controls both change it, and links carry it. */
   const [playback, setPlaybackState] = useState<PlaybackSpec>(initialPlayback);
   const playbackRef = useRef(initialPlayback);
@@ -765,6 +773,10 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
     void deploy(battleOf(spec), true);
   }, [battleOf, deploy, slugs]);
 
+  useEffect(() => {
+    if (!glOk || !(phase === "idle" || phase === "solving" || phase === "deploying")) setPosterGone(true);
+  }, [glOk, phase]);
+
   // First load: the page's battle (a preset, a shared battle) waits on the field; a shared question is solved at once.
   const booted = useRef(false);
   useEffect(() => {
@@ -1068,6 +1080,8 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
           role="application"
           aria-label="The battle in 3D. Drag to look around, right-drag or shift-drag to move, scroll or pinch to zoom (+ and − keys too); 0 hands the camera back to the director."
         />
+        {posterFits && <StagePoster src={STAGE_POSTERS.massBattle} gone={posterGone} />}
+        <ScenePreload />
         <div className="mb-shade-top" aria-hidden />
         <div className="mb-shade-bottom" aria-hidden />
 

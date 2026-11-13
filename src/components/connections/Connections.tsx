@@ -729,10 +729,10 @@ export function Connections({ customId, initial }: { customId?: string; initial?
               <button type="button" className={iconButton} onClick={() => setSheet("stats")} aria-label="Statistics" title="Statistics" disabled={!stats}>
                 <BarChart3 className="h-5 w-5" />
               </button>
-              <a href="#duel" title="Race a friend or a stranger to the four groups" className={cn(iconButton, "flex items-center gap-1.5 font-display text-xs font-semibold uppercase tracking-wider")}>
+              <a href="#duel" title="Race a friend or a stranger to the four groups" className={cn("tap", iconButton, "flex items-center gap-1.5 font-display text-xs font-semibold uppercase tracking-wider")}>
                 <Swords className="h-[1.125rem] w-[1.125rem]" aria-hidden /> Duel
               </a>
-              <a href="/connections/create" title="Build your own puzzle and share a link" data-testid="conn-create-link" className={cn(iconButton, "flex items-center gap-1.5 font-display text-xs font-semibold uppercase tracking-wider")}>
+              <a href="/connections/create" title="Build your own puzzle and share a link" data-testid="conn-create-link" className={cn("tap", iconButton, "flex items-center gap-1.5 font-display text-xs font-semibold uppercase tracking-wider")}>
                 <PencilLine className="h-[1.125rem] w-[1.125rem]" aria-hidden /> Create
               </a>
             <div className="relative flex items-center">
@@ -957,7 +957,7 @@ export function Connections({ customId, initial }: { customId?: string; initial?
                   variant="outline"
                   onClick={() => void takeHint()}
                   disabled={busy || hintBusy || usedHint || !puzzle}
-                  className="w-10 rounded-full px-0 sm:w-auto sm:min-w-28 sm:px-4"
+                  className="tap w-10 rounded-full px-0 sm:w-auto sm:min-w-28 sm:px-4"
                   title="Reveals one Pokémon from the easiest group left. Once per puzzle, and you rank below everyone who played without it."
                   aria-label={usedHint ? "Hint used" : "Hint"}
                   data-testid="conn-hint"

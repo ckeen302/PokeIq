@@ -36,7 +36,7 @@ export function QuizDuelCard({ module: initial = "whos-that", difficulty: initia
             value={module}
             onChange={(e) => setModule(e.target.value as ModuleId)}
             aria-label="Duel mode"
-            className="h-9 rounded-md border border-input bg-background px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="h-9 max-md:h-10 rounded-md border border-input bg-background px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {PLAY_MODULES.map((m) => (
               <option key={m} value={m}>

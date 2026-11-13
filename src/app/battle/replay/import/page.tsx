@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { BattleHeader } from "@/components/battle/BattleHeader";
 import { ReplayImport } from "@/components/battle/ReplayLists";
 
@@ -7,6 +7,7 @@ export const metadata: Metadata = pageMetadata({
   title: "Watch a Showdown Replay",
   description: "Paste a Pokémon Showdown battle log or open a saved replay file and watch it turn by turn.",
   path: "/battle/replay/import",
+  image: SHARE_IMAGES.battle,
 });
 
 export default function ReplayImportPage() {

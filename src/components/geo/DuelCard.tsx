@@ -149,7 +149,7 @@ export function DuelCard({
                 aria-checked={turbo}
                 onClick={() => setTurbo((t) => !t)}
                 data-testid="geo-duel-turbo"
-                className={cn(
+                className={cn("tap",
                   "flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-colors",
                   turbo ? "border-warning bg-warning/15 text-foreground" : "bg-card text-muted-foreground hover:border-warning/50 hover:text-foreground"
                 )}

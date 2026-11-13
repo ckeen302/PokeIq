@@ -18,7 +18,7 @@ import {
   sameHash,
   setSessionCookie,
 } from "@/lib/server/auth";
-import { guardAccount, guardAuthRequest, serverError } from "@/lib/server/auth-route";
+import { attemptSucceeded, guardAccount, guardAttempt, serverError } from "@/lib/server/auth-route";
 
 /**
  * POST /api/auth/recover — { username, recoveryCode, newPassword }.
@@ -36,7 +36,7 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  const blocked = guardAuthRequest(request, "recover", 5, 1);
+  const blocked = guardAttempt(request, "recover", 5);
   if (blocked) return blocked;
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
@@ -46,9 +46,12 @@ export async function POST(request: NextRequest) {
 
   try {
     const user = await findUserByName(parsed.data.username.trim());
-    if (!user?.recoveryCodeHash || !sameHash(hashRecoveryCode(parsed.data.recoveryCode), user.recoveryCodeHash)) {
+    // One answer for an unknown name, an account with no code and a wrong code, after the same work.
+    const given = hashRecoveryCode(parsed.data.recoveryCode);
+    if (!user?.recoveryCodeHash || !sameHash(given, user.recoveryCodeHash)) {
       return NextResponse.json({ error: "That trainer name and recovery code don't match." }, { status: 401 });
     }
+    attemptSucceeded(request, "recover", parsed.data.username, 5, 5);
     const recoveryCode = generateRecoveryCode();
     await updateCredentials(user.id, {
       passwordHash: await hashPassword(parsed.data.newPassword),

@@ -279,7 +279,7 @@ export function MapDock({
   // Open: one step up from the chosen size (XL is the top: it stays, so the button under it never flickers).
   const shown: MapSize = open ? MAP_SIZES[Math.min(MAP_SIZES.length - 1, MAP_SIZES.indexOf(size) + 1)] : size;
   const idx = MAP_SIZES.indexOf(size);
-  const control = "flex h-7 w-7 items-center justify-center rounded bg-black/55 text-white backdrop-blur transition-colors hover:bg-black/75 disabled:opacity-35 disabled:hover:bg-black/55";
+  const control = "tap flex h-7 w-7 items-center justify-center rounded bg-black/55 text-white backdrop-blur transition-colors hover:bg-black/75 disabled:opacity-35 disabled:hover:bg-black/55";
   return (
     <div
       data-testid={testId}

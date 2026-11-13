@@ -69,12 +69,12 @@ export function SizesPage({ preset = DEFAULT_PRESET, focus, vs, compare = false,
                 key={p.id}
                 href={withOrder(presetPath(p.id), order)}
                 prefetch={false}
-                className={cn("rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-colors", !focus && !comparing && p.id === preset.id ? "border-primary/60 text-foreground" : "text-muted-foreground hover:text-foreground")}
+                className={cn("tap rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-colors", !focus && !comparing && p.id === preset.id ? "border-primary/60 text-foreground" : "text-muted-foreground hover:text-foreground")}
               >
                 {p.label}
               </Link>
             ))}
-            <Link href={COMPARE_PATH} prefetch={false} className="rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground">
+            <Link href={COMPARE_PATH} prefetch={false} className="tap rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground">
               Compare
             </Link>
           </nav>

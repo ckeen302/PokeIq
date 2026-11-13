@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { Dex, Teams } from "pokemon-showdown";
 import { afterBattle, bestOf, frontierCpuLevel, frontierStage, isBoss, swapTeam } from "@/lib/battle/frontier";
-import { nextRunBattle, readRun, runResult, signRun, startFactoryRun, swapRun, type FrontierRun } from "@/lib/server/battle-engine/frontier";
+import { LEGACY_RUN_UNTIL, RUN_TTL_MS, nextRunBattle, readRun, runResult, signRun, startFactoryRun, swapRun, type FrontierRun } from "@/lib/server/battle-engine/frontier";
+import { signToken } from "@/lib/server/crypto";
 import { actOnBattle, battleToken, createMatchedBattle, pollBattle, readBattleToken, updateBattle } from "@/lib/server/battle-engine/service";
 import { factoryTeam } from "@/lib/server/battle-engine/teams";
 import { recordFrontierBest } from "@/lib/server/frontier-store";
@@ -239,6 +240,76 @@ describe("a Factory run", () => {
       expect(swapRun(won([greninja, ...others], foe, { offer: undefined }), 0, 0).ok).toBe(false);
       expect(swapRun(won([greninja, ...others], foe, { over: true }), 0, 0).ok).toBe(false);
     });
+  });
+});
+
+describe("run tokens expire", () => {
+  afterEach(() => vi.restoreAllMocks());
+  const at = (ms: number) => vi.spyOn(Date, "now").mockImplementation(() => ms);
+  const DAY = 24 * 60 * 60 * 1000;
+  const T = Date.UTC(2027, 0, 10, 12);
+  const run = (extra: Partial<FrontierRun> = {}): FrontierRun => ({ v: 1, id: `exp-${Math.random()}`, mode: "factory", style: "open", tier: "OU", name: "Red", team: Teams.pack(factoryTeam("open", "OU")), streak: 0, over: false, ...extra });
+
+  it("a token works until its expiry and is refused after it, by every step of a run", async () => {
+    at(T);
+    const started = startFactoryRun("Red", "open");
+    if (!started.ok) throw new Error(started.error);
+    const token = started.run.token;
+    expect(readRun(token)?.exp).toBe(T + RUN_TTL_MS);
+
+    at(T + RUN_TTL_MS - 1000);
+    expect(readRun(token)).not.toBeNull();
+
+    at(T + RUN_TTL_MS);
+    expect(readRun(token)).toBeNull();
+    const next = await nextRunBattle(token);
+    expect(next).toMatchObject({ ok: false, status: 400 });
+    const offered = signRun(run({ streak: 1, offer: Teams.pack(factoryTeam("open", "OU")) }), T);
+    expect(swapRun(offered, -1, 0)).toMatchObject({ ok: false, status: 400 });
+    // The same trade a second earlier goes through, and hands back a token with a fresh expiry.
+    at(T + RUN_TTL_MS - 1000);
+    const kept = swapRun(offered, -1, 0);
+    if (!kept.ok) throw new Error(kept.error);
+    expect(readRun(kept.run.token)?.exp).toBe(T + 2 * RUN_TTL_MS - 1000);
+  });
+
+  it("the expiry is signed: moving it later breaks the token", () => {
+    at(T);
+    const token = signRun(run());
+    const [body, sig] = token.split(".");
+    const forged = Buffer.from(JSON.stringify({ ...JSON.parse(Buffer.from(body, "base64url").toString("utf8")), exp: T + 365 * DAY })).toString("base64url");
+    at(T + RUN_TTL_MS + 1);
+    expect(readRun(token)).toBeNull();
+    expect(readRun(`${forged}.${sig}`)).toBeNull();
+  });
+
+  it("an expiry that isn't a number is refused", () => {
+    at(T);
+    expect(readRun(signToken("frontier", { ...run(), exp: "never" }))).toBeNull();
+    expect(readRun(signToken("frontier", { ...run(), exp: null }))).toBeNull();
+    expect(readRun(signToken("frontier", { ...run(), exp: Infinity }))).toBeNull();
+  });
+
+  it("a token signed before expiry existed works until the cut-off, never after", () => {
+    const old = signToken("frontier", run());
+    at(LEGACY_RUN_UNTIL - 1000);
+    expect(readRun(old)).not.toBeNull();
+    at(LEGACY_RUN_UNTIL);
+    expect(readRun(old)).toBeNull();
+  });
+
+  it("a finished battle of a lapsed run hands out no fresh token", async () => {
+    // The run's token has a minute left when its battle starts; the expiry travels with the battle.
+    at(T);
+    const battle = await nextRunBattle(signRun(run(), T - RUN_TTL_MS + 60_000));
+    if (!battle.ok) throw new Error(battle.error);
+    const me = readBattleToken(battle.token, battle.code)!;
+    expect((await actOnBattle(battle.code, me.playerId, { action: "forfeit" }, 0)).ok).toBe(true);
+    const lost = await runResult(battle.code, battle.token, null);
+    if (!lost.ok) throw new Error(lost.error);
+    expect(lost.run.over).toBe(true);
+    at(T + 61_000);
+    expect(await runResult(battle.code, battle.token, null)).toMatchObject({ ok: false, status: 400 });
   });
 });
 

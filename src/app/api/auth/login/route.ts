@@ -9,7 +9,7 @@ import {
   setSessionCookie,
   verifyPassword,
 } from "@/lib/server/auth";
-import { guardAccount, guardAuthRequest, serverError } from "@/lib/server/auth-route";
+import { attemptSucceeded, guardAccount, guardAttempt, serverError } from "@/lib/server/auth-route";
 
 /** POST /api/auth/login — { username, password } -> session cookie. */
 
@@ -19,7 +19,7 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  const blocked = guardAuthRequest(request, "login");
+  const blocked = guardAttempt(request, "login");
   if (blocked) return blocked;
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
     if (!user || !valid) {
       return NextResponse.json({ error: "Wrong trainer name or password." }, { status: 401 });
     }
+    attemptSucceeded(request, "login", parsed.data.username);
     const { token, tokenHash } = newSessionToken();
     await createSession(tokenHash, user.id, new Date(Date.now() + SESSION_TTL_MS));
     const response = NextResponse.json({ user: toPublicUser(user) });

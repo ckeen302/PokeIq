@@ -1,5 +1,7 @@
 "use client";
 
+import { STAGE_POSTERS, StagePoster } from "@/components/lab/StagePoster";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -24,6 +26,9 @@ export interface GamesStadiumProps {
   backHref: string;
   children: React.ReactNode;
 }
+
+// The scene's chunks are preloaded from the page's HTML (see ScenePreload).
+const ScenePreload = dynamic(() => import("./ScenePreload"));
 
 const ENTERED = "pokeiq-games-entered";
 const FLY_S = 2.6;
@@ -146,7 +151,7 @@ export function GamesStadium({ events, groups, playHref, records, h2h, h2hPicker
     try { sessionStorage.removeItem(ENTERED); } catch { /* ignore */ }
   };
 
-  const chip = "pointer-events-auto inline-flex h-9 items-center gap-1.5 rounded-md border border-white/15 bg-[#0b1226]/75 px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] text-white/85 backdrop-blur-md transition-colors hover:border-white/35 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd84a]";
+  const chip = "tap pointer-events-auto inline-flex h-9 items-center gap-1.5 rounded-md border border-white/15 bg-[#0b1226]/75 px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] text-white/85 backdrop-blur-md transition-colors hover:border-white/35 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd84a]";
   const tabBtn = (id: typeof tab, label: string, Icon?: typeof Trophy) => (
     <button type="button" onClick={() => setTab(id)} aria-pressed={tab === id} className={cn("inline-flex h-9 items-center gap-1.5 rounded-md border px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors", tab === id ? "border-[#ffd84a]/70 bg-[#ffd84a]/15 text-[#ffd84a]" : "border-white/15 text-white/70 hover:text-white")} data-testid={`stadium-tab-${id}`}>
       {Icon && <Icon className="h-3.5 w-3.5" aria-hidden />}{label}
@@ -161,6 +166,8 @@ export function GamesStadium({ events, groups, playHref, records, h2h, h2hPicker
       {view !== "list" && (
         <div className="rc-stage gm-entry fixed left-0 !mt-0 w-screen bottom-[calc(3.5rem+env(safe-area-inset-bottom))] top-14 z-40 overflow-hidden lg:bottom-0" data-testid="stadium" data-ready={ready ? "1" : "0"} data-entered={entered ? "1" : "0"}>
           <div ref={hostRef} className="rc-host absolute inset-0 select-none" aria-hidden />
+          <StagePoster src={STAGE_POSTERS.games} gone={ready} />
+          <ScenePreload />
           <div className="rc-shade-top" aria-hidden />
           <div className="rc-shade-bottom" aria-hidden />
           <h1 className="sr-only">The PokéIQ Games: real track and field, swimming, weightlifting and wrestling for every Pokémon</h1>

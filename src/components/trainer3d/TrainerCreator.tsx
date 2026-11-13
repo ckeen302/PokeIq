@@ -586,7 +586,7 @@ function TauntPreview({ u, onPlay }: { u: AvatarUnlocks; onPlay: (id: TauntId) =
                   type="button"
                   onClick={() => onPlay(t.id)}
                   title={lock ? `${t.name}: ${unlockHint(t)} to use it after duels` : `Preview ${t.name}`}
-                  className={cn("flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] font-semibold uppercase tracking-normal text-muted-foreground transition-colors hover:border-screen/50 hover:text-foreground", lock && "opacity-75")}
+                  className={cn("tap", "flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] font-semibold uppercase tracking-normal text-muted-foreground transition-colors hover:border-screen/50 hover:text-foreground", lock && "opacity-75")}
                   data-testid={`trainer-taunt-${t.id}`}
                   data-locked={lock || undefined}
                 >

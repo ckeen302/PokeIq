@@ -82,7 +82,7 @@ export function AchievementGrid({ achievements, limit, className }: { achievemen
         ))}
       </ul>
       {limit && sorted.length > limit && (
-        <button type="button" onClick={() => setAll((x) => !x)} className="hud-label hover:text-foreground" data-testid="geo-achievements-more" aria-expanded={all}>
+        <button type="button" onClick={() => setAll((x) => !x)} className="tap hud-label hover:text-foreground" data-testid="geo-achievements-more" aria-expanded={all}>
           {all ? "Show fewer" : `Show all ${sorted.length}`}
         </button>
       )}

@@ -79,7 +79,7 @@ export function GameInfo({ path, name, intro, steps, faqs, description, howToBut
         <h2 className="font-display text-base font-bold uppercase tracking-wider">FAQ</h2>
         {faqs.map((f) => (
           <details key={f.q} className="group rounded-lg border bg-card px-4 py-3 text-sm">
-            <summary className="cursor-pointer font-semibold">{f.q}</summary>
+            <summary className="tap cursor-pointer font-semibold">{f.q}</summary>
             <p className="mt-2 text-muted-foreground">{f.a}</p>
           </details>
         ))}

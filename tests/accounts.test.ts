@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  NO_PASSWORD,
   generateRecoveryCode,
   hashPassword,
   hashRecoveryCode,
@@ -110,5 +111,19 @@ describe("progress sync", () => {
     expect(m.daily.streak).toBe(4);
     expect(m.daily.best).toBe(7);
     expect(Object.keys(m.daily.results).sort()).toEqual(["2026-10-10", "2026-10-17"]);
+  });
+});
+
+describe("an account with no password", () => {
+  it("takes as long to refuse as a wrong password, so sign-in timing doesn't show which accounts use Discord or Google", async () => {
+    const stored = await hashPassword("pikachu-rocks");
+    const time = async (hash: string) => {
+      const t = performance.now();
+      for (let i = 0; i < 3; i++) expect(await verifyPassword("a-wrong-guess", hash)).toBe(false);
+      return performance.now() - t;
+    };
+    const real = await time(stored);
+    const none = await time(NO_PASSWORD);
+    expect(none).toBeGreaterThan(real * 0.4);
   });
 });

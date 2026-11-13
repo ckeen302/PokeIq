@@ -286,14 +286,15 @@ export function DexListExplorer({ kind, items }: { kind: DexListKind; items: Ite
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+        <div className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {(filtered.slice(0, visible) as ItemListItem[]).map((it) => (
             <Link key={it.slug} href={`/pokedex/items/${it.slug}`} className="group flex items-center gap-3 rounded-lg border bg-card p-3 transition-colors hover:border-screen/60">
               <span className="screen flex h-11 w-11 shrink-0 items-center justify-center rounded-md">
                 <img src={itemSpriteUrl(it.slug)} alt="" loading="lazy" decoding="async" width={32} height={32} className="relative z-[1] h-8 w-8 object-contain [image-rendering:pixelated]" />
               </span>
               <span className="min-w-0">
-                <span className="block truncate font-display text-sm font-bold uppercase tracking-wide group-hover:text-screen">{it.name}</span>
+                {/* Two to a row on a phone: a long name wraps onto a second line there, so "Fossilized Bird" and "Fossilized Dino" can be told apart. */}
+                <span className="block truncate font-display text-sm font-bold uppercase tracking-wide group-hover:text-screen max-sm:line-clamp-2 max-sm:whitespace-normal max-sm:leading-tight">{it.name}</span>
                 <span className="block truncate font-pixel text-[9px] uppercase tracking-wider text-muted-foreground">{it.category}</span>
               </span>
             </Link>

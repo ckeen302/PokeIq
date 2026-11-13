@@ -16,7 +16,7 @@ const guessrMap = (region: string) => GUESSR_MAP[region] ?? (MAIN.includes(regio
 
 const KIND_LABEL: Record<AtlasPlace["kind"], string> = { route: "Route", landmark: "Landmark", town: "Town / City" };
 
-export function WorldAtlas({ src }: { src: string }) {
+export function WorldAtlas({ src, regions }: { src: string; regions?: AtlasRegion[] }) {
   const searchHint = usePlaceholder("Search a region, town, route or landmark", "Region, town, route…");
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -100,7 +100,7 @@ export function WorldAtlas({ src }: { src: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- set up once the data is in
   }, [atlas, src]);
 
-  const chips = (atlas?.regions ?? []).filter((r) => r.chip !== false).sort((a, b) => a.tier - b.tier);
+  const chips = (atlas?.regions ?? regions ?? []).filter((r) => r.chip !== false).sort((a, b) => a.tier - b.tier);
 
   return (
     <div className="space-y-4">

@@ -44,7 +44,7 @@ export function ConnHowToSheet({ onClose, onNever }: { onClose: () => void; onNe
           ]}
         />
         <details className="rounded-md border bg-shade/30 p-3">
-          <summary className="cursor-pointer font-semibold max-sm:py-2.5">Full rules</summary>
+          <summary className="tap cursor-pointer font-semibold max-sm:py-2.5">Full rules</summary>
         <div className="mt-3 space-y-4">
         <p>
           Find the <b>four groups of four</b> Pokémon that share something. Pick four tiles and press <b>Submit</b>: a whole group locks in as a coloured bar.

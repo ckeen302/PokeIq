@@ -71,10 +71,17 @@ function useReplays(scope: "recent" | "mine", format: PlayFormatId | null) {
   return state;
 }
 
-function List({ state, empty }: { state: ReturnType<typeof useReplays>; empty: string }) {
+/** `hold`: while loading, keep the room a full list takes, so the page below doesn't jump when it arrives. */
+function List({ state, empty, hold }: { state: ReturnType<typeof useReplays>; empty: string; hold?: boolean }) {
   const [now, setNow] = useState(0);
   useEffect(() => setNow(Date.now()), [state.data]);
-  if (state.loading) return <Loader2 className="mx-auto my-8 h-5 w-5 animate-spin text-screen" aria-label="Loading replays" />;
+  if (state.loading) {
+    return (
+      <div className={cn(hold && "min-h-[30rem]")}>
+        <Loader2 className="mx-auto my-8 h-5 w-5 animate-spin text-screen" aria-label="Loading replays" />
+      </div>
+    );
+  }
   if (state.error) return <p className="text-sm text-destructive">{state.error}</p>;
   if (!state.data?.available) return <p className="text-sm text-muted-foreground">Replays aren&apos;t available on this server yet.</p>;
   if (!state.data.replays.length) return <p className="text-sm text-muted-foreground">{empty}</p>;
@@ -122,7 +129,7 @@ export function ReplayLists() {
         </div>
         <Card>
           <CardContent className="p-3">
-            <List state={recent} empty="No public replays in this format yet." />
+            <List state={recent} empty="No public replays in this format yet." hold />
           </CardContent>
         </Card>
       </section>

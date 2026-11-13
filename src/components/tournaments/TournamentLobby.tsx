@@ -51,7 +51,8 @@ export function TournamentLobby() {
 
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[1fr_20rem]">
-      <div className="space-y-6">
+      {/* Until the list is in, hold the room it usually takes, so what's below doesn't jump when it arrives. */}
+      <div className={cn("space-y-6", !data && "min-h-[36rem]")}>
         <section className="space-y-3">
           <h2 className="hud-label">Open and running</h2>
           {!data ? (

@@ -290,7 +290,7 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
   const shotList = popup ? shotIndex?.[popup.info.key] ?? [] : [];
   const shot = shotList.length ? shotList[popup!.i % shotList.length] : null;
   const eraInfo = eras.find((e) => e.gen === era);
-  const btn = "pointer-events-auto rounded-md border bg-card/80 px-3 py-2 font-display text-xs font-semibold uppercase tracking-[0.12em] backdrop-blur hover:border-screen focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  const btn = "tap pointer-events-auto rounded-md border bg-card/80 px-3 py-2 font-display text-xs font-semibold uppercase tracking-[0.12em] backdrop-blur hover:border-screen focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
   const ready = state === "ready";
   const hudOn = ready && intro === false;
 
@@ -472,7 +472,7 @@ function EraControl({ eras, era, playing, onEra, onPlay, caption }: { eras: Glob
         {caption?.regions.length ? ` · ${era === eras.at(-1)?.gen ? "the whole world" : `adds ${caption.regions.join(", ")}`}` : ""}
       </p>
       <div role="group" aria-label="Show the world as it was at a generation" className="flex items-center gap-1 rounded-md border bg-card/80 p-1 backdrop-blur">
-        <button type="button" onClick={onPlay} aria-pressed={playing} data-testid="globe-era-play" aria-label={playing ? "Stop" : "Watch the world grow, generation by generation"} title="Watch the world grow" className="flex h-7 w-7 shrink-0 items-center justify-center rounded-sm text-primary max-sm:h-10 max-sm:w-8 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <button type="button" onClick={onPlay} aria-pressed={playing} data-testid="globe-era-play" aria-label={playing ? "Stop" : "Watch the world grow, generation by generation"} title="Watch the world grow" className="tap flex h-7 w-7 shrink-0 items-center justify-center rounded-sm text-primary max-sm:h-10 max-sm:w-8 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           {playing ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
         </button>
         {eras.map((e) => {

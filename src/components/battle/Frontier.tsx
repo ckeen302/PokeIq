@@ -153,7 +153,13 @@ export function FrontierHub({ mode, startPanel }: { mode: FrontierMode; startPan
     try {
       then(await frontier<T>(body));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      const message = err instanceof Error ? err.message : "Something went wrong.";
+      setError(message);
+      // A run whose token has lapsed can't go on: put it away, so the start panel comes back under the message.
+      if (run && /isn't valid any more/.test(message)) {
+        saveRun(null, run.key);
+        setRun(null);
+      }
     } finally {
       setBusy(false);
     }

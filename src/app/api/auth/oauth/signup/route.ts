@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSession, toPublicUser } from "@/lib/server/accounts";
 import { SESSION_TTL_MS, newSessionToken, setSessionCookie } from "@/lib/server/auth";
-import { guardAuthRequest, serverError } from "@/lib/server/auth-route";
+import { guardSignup, serverError, signupNotMade } from "@/lib/server/auth-route";
 import { SIGNUP_COOKIE, clearOAuthCookie, completeSignup, openSignup, signupSchema } from "@/lib/server/oauth";
 import { emailEnabled } from "@/lib/server/email/config";
 import { optInAtSignup } from "@/lib/server/email/service";
@@ -24,22 +24,26 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const blocked = guardAuthRequest(request, "oauth-signup", 8, 1);
+  const blocked = guardSignup(request, "oauth-signup");
   if (blocked) return blocked;
+  // Only a try that makes an account counts as one (see guardSignup).
+  const notMade = (response: NextResponse) => (signupNotMade(request, "oauth-signup"), response);
   const pending = openSignup(request.cookies.get(SIGNUP_COOKIE)?.value);
-  if (!pending) return NextResponse.json({ error: EXPIRED }, { status: 410, headers });
+  if (!pending) return notMade(NextResponse.json({ error: EXPIRED }, { status: 410, headers }));
   const raw = (await request.json().catch(() => ({}))) as Record<string, unknown>;
   const parsed = signupSchema.safeParse(raw);
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400, headers });
+  if (!parsed.success) return notMade(NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400, headers }));
 
+  let made = false;
   try {
     const user = await completeSignup(pending, parsed.data.username);
-    if (user === "taken") return NextResponse.json({ error: "That trainer name is taken." }, { status: 409, headers });
+    if (user === "taken") return notMade(NextResponse.json({ error: "That trainer name is taken." }, { status: 409, headers }));
     if (user === "exists") {
       const response = NextResponse.json({ error: "That account already has a trainer — sign in again." }, { status: 409, headers });
       clearOAuthCookie(response, SIGNUP_COOKIE);
-      return response;
+      return notMade(response);
     }
+    made = true;
     const { token, tokenHash } = newSessionToken();
     await createSession(tokenHash, user.id, new Date(Date.now() + SESSION_TTL_MS));
     await optInAtSignup(user, { email: raw.email, dailyEmail: raw.dailyEmail });
@@ -48,6 +52,7 @@ export async function POST(request: NextRequest) {
     clearOAuthCookie(response, SIGNUP_COOKIE);
     return response;
   } catch (err) {
+    if (!made) signupNotMade(request, "oauth-signup");
     return serverError(err);
   }
 }
