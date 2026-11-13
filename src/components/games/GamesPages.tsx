@@ -34,7 +34,7 @@ export function EventNav({ current }: { current?: EventId }) {
   return (
     <nav aria-label="Events" className="flex flex-wrap justify-center gap-2">
       {EVENTS.map((e) => (
-        <Link key={e.id} href={eventPath(e.id)} prefetch={false} className={cn("rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-colors", e.id === current ? "border-primary/60 text-foreground" : "text-muted-foreground hover:text-foreground")}>
+        <Link key={e.id} href={eventPath(e.id)} prefetch={false} className={cn("tap rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-colors", e.id === current ? "border-primary/60 text-foreground" : "text-muted-foreground hover:text-foreground")}>
           {e.name}
         </Link>
       ))}

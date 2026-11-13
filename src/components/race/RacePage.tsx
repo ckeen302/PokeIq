@@ -70,7 +70,7 @@ export function RacePage({ preset = DEFAULT_PRESET, vs, distance, seed }: { pres
           )}
           <nav aria-label="Races" className="flex flex-wrap justify-center gap-2">
             {PRESETS.map((p) => (
-              <Link key={p.id} href={presetPath(p.id)} prefetch={false} className={cn("rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-colors", !custom && p.id === preset.id ? "border-primary/60 text-foreground" : "text-muted-foreground hover:text-foreground")}>
+              <Link key={p.id} href={presetPath(p.id)} prefetch={false} className={cn("tap rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-colors", !custom && p.id === preset.id ? "border-primary/60 text-foreground" : "text-muted-foreground hover:text-foreground")}>
                 {p.label}
               </Link>
             ))}

@@ -325,7 +325,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
               onClick={b.act}
               aria-label={b.label}
               title={b.label}
-              className="flex h-7 w-7 items-center justify-center rounded bg-black/55 text-white backdrop-blur transition-colors hover:bg-black/75"
+              className="tap flex h-7 w-7 items-center justify-center rounded bg-black/55 text-white backdrop-blur transition-colors hover:bg-black/75"
             >
               {b.icon}
             </button>

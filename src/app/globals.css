@@ -768,9 +768,11 @@ html[data-dle-cb] .dle-close { background: rgb(133 192 249 / 0.4); border-color:
   }
   /* .tap: a small control keeps its look and gets a 40px tap area (an invisible box centred on it).
      Zero specificity, so a position utility on the element still wins. */
-  :where(.tap, .wh-chip) { position: relative; }
+  :where(.tap, .wh-chip, .sz-chip, .hud-btn) { position: relative; }
   .tap::after,
-  .wh-chip::after {
+  .wh-chip::after,
+  .sz-chip::after,
+  .hud-btn::after {
     content: "";
     position: absolute;
     left: 50%;

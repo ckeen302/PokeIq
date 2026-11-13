@@ -286,7 +286,7 @@ export function DexListExplorer({ kind, items }: { kind: DexListKind; items: Ite
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+        <div className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {(filtered.slice(0, visible) as ItemListItem[]).map((it) => (
             <Link key={it.slug} href={`/pokedex/items/${it.slug}`} className="group flex items-center gap-3 rounded-lg border bg-card p-3 transition-colors hover:border-screen/60">
               <span className="screen flex h-11 w-11 shrink-0 items-center justify-center rounded-md">

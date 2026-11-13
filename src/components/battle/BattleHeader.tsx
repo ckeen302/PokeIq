@@ -8,7 +8,7 @@ export function BattleHeader({ crumb, title, accent, back = "/battle", children 
     <div className="space-y-2">
       <BackButton href={back} className="mb-1" />
       <nav aria-label="Breadcrumb" className="hud-label flex items-center gap-1.5">
-        <Link href="/battle" className="text-screen hover:text-foreground max-sm:-my-3 max-sm:py-3">
+        <Link href="/battle" className="tap text-screen hover:text-foreground max-sm:-my-3 max-sm:py-3">
           Battle
         </Link>
         <ChevronRight className="h-3 w-3" aria-hidden />

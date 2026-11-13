@@ -441,8 +441,18 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
                 </button>
               </span>
             ) : (
-              <span className="truncate text-muted-foreground max-sm:whitespace-normal">
-                {settings.mode === "regular" ? "Any order. Names count as soon as they're spelled right." : settings.mode === "chaos" ? "Name the one we point at, or skip it." : "In Pokédex order. Skip one to come back to it."}
+              <span className="truncate text-muted-foreground">
+                {/* One line of fixed height: a phone gets the shorter wording, so it isn't cut off. */}
+                {settings.mode === "regular" ? (
+                  <>
+                    <span className="max-sm:hidden">Any order. Names count as soon as they&apos;re spelled right.</span>
+                    <span className="sm:hidden">Any order. A name counts once it&apos;s spelled right.</span>
+                  </>
+                ) : settings.mode === "chaos" ? (
+                  "Name the one we point at, or skip it."
+                ) : (
+                  "In Pokédex order. Skip one to come back to it."
+                )}
               </span>
             )}
           </div>
