@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { gate } from "@/lib/server/moderation";
-import { GAMEPLAY_IP_LIMIT, clientIp, rateLimit } from "@/lib/server/rate-limit";
+import { GAMEPLAY_IP_LIMIT, crowdRateLimit } from "@/lib/server/rate-limit";
 import { duelNameSchema } from "@/lib/server/duel-core";
 import { battlesEnabled } from "@/lib/server/battle-engine/store";
 import { createCpuBattle, createLiveBattle } from "@/lib/server/battle-engine/service";
@@ -48,7 +48,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  if (!rateLimit(`battle-new:${clientIp(request)}`, ...GAMEPLAY_IP_LIMIT)) {
+  if (!crowdRateLimit(request, "battle-new", ...GAMEPLAY_IP_LIMIT)) {
     return NextResponse.json({ error: "Too many battles started. Take a breather." }, { status: 429, headers: NO_STORE });
   }
   if (!battlesEnabled()) {

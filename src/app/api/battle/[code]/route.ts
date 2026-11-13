@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { seatAvatars } from "@/lib/server/avatars";
 import { z } from "zod";
 import { gate } from "@/lib/server/moderation";
-import { chatRateLimit, clientIp, rateLimit } from "@/lib/server/rate-limit";
+import { chatRateLimit, clientIp, playerRateLimit } from "@/lib/server/rate-limit";
 import { CHAT_BODY_MAX } from "@/lib/server/chat";
 import { duelNameSchema, type PvpFailure } from "@/lib/server/duel-core";
 import { battlesEnabled } from "@/lib/server/battle-engine/store";
@@ -85,11 +85,12 @@ async function codeFrom(context: Context): Promise<string | null> {
 export async function GET(request: NextRequest, context: Context) {
   // The setup page's warm-up: no such battle, but this function is now awake for the one about to start.
   if ((await context.params).code === "warm-up") return NextResponse.json({ ok: true }, { headers: NO_STORE });
-  // Two players poll about once a second, often from one address.
-  if (!rateLimit(`battle:${clientIp(request)}`, 40, 6)) {
+  const code = await codeFrom(context);
+  // Two players poll about once a second, often from one address: per seat (signed into its token), visitors per address.
+  const polling = code ? readBattleToken(request.headers.get("x-battle-token"), code) : null;
+  if (!playerRateLimit(request, "battle", 40, 6, polling && `${code}:${polling.playerId}`)) {
     return NextResponse.json({ error: "Slow down, trainer." }, { status: 429, headers: NO_STORE });
   }
-  const code = await codeFrom(context);
   if (!code) return NextResponse.json({ error: "Not found" }, { status: 404, headers: NO_STORE });
   const raw = Number(request.nextUrl.searchParams.get("since") ?? 0);
   const from = Number.isInteger(raw) && raw >= 0 ? raw : 0;
@@ -120,15 +121,17 @@ export async function GET(request: NextRequest, context: Context) {
 }
 
 export async function POST(request: NextRequest, context: Context) {
-  if (!rateLimit(`battle-act:${clientIp(request)}`, 40, 3)) {
+  const code = await codeFrom(context);
+  const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
+  // Per seat (signed into its token); joining a battle, with no seat yet, per address.
+  const acting = code && parsed.success && "token" in parsed.data ? readBattleToken(parsed.data.token, code) : null;
+  if (!playerRateLimit(request, "battle-act", 40, 3, acting && `${code}:${acting.playerId}`)) {
     return NextResponse.json({ error: "Slow down, trainer." }, { status: 429, headers: NO_STORE });
   }
   if (!battlesEnabled()) {
     return NextResponse.json({ error: "Battles aren't enabled on this server yet." }, { status: 503, headers: NO_STORE });
   }
-  const code = await codeFrom(context);
   if (!code) return NextResponse.json({ error: "Not found" }, { status: 404, headers: NO_STORE });
-  const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400, headers: NO_STORE });
   const body = parsed.data;
   // Muted trainers can't chat; banned ones can't take a seat in a live battle either.

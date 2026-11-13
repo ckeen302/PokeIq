@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isPlayableConnDate } from "@/lib/connections/types";
 import { isLiveWeek } from "@/lib/pikadoku/weeks";
-import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
+import { crowdRateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { friendStore } from "@/lib/server/friends-store";
 import { sessionTokenHash, userFromRequest } from "@/lib/server/auth";
 import { pdkPlayerKey, pdkStore } from "@/lib/server/pikadoku-board";
@@ -16,7 +16,7 @@ import { PDK_DIFFICULTIES, type PdkBoardResponse, type PdkDifficulty, type PdkSl
  * you and your accepted friends, for the signed-in trainer only.
  */
 export async function GET(request: NextRequest) {
-  if (!rateLimit(`pdk-board:${clientIp(request)}`, 60, 2)) return tooManyRequests();
+  if (!crowdRateLimit(request, "pdk-board", 60, 2)) return tooManyRequests();
   const p = request.nextUrl.searchParams;
   const week = p.get("week");
   const date = week ?? p.get("date");

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { isPlayableConnDate, CONN_GROUP_SIZE, CONN_GROUPS, CONN_MAX_MISTAKES } from "@/lib/connections/types";
 import { PRACTICE_SEED_RE } from "@/lib/connections/pack-seed";
-import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
+import { crowdRateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { checkGuesses, practiceConnPuzzle, puzzleView } from "@/lib/server/connections";
 import { effectiveDaily } from "@/lib/server/connections-social";
 import { startToken } from "@/lib/server/connections-board";
@@ -42,7 +42,7 @@ async function puzzleFor(date: string | null | undefined, practice: string | nul
 }
 
 export async function GET(request: NextRequest) {
-  if (!rateLimit(`conn-get:${clientIp(request)}`, 60, 1)) return tooManyRequests();
+  if (!crowdRateLimit(request, "conn-get", 60, 1)) return tooManyRequests();
   const params = request.nextUrl.searchParams;
   // A community puzzle (/connections/c/<id>) plays as practice=custom-<id>: tiles only, from the creator's stored groups.
   const customId = CUSTOM_SEED_RE.exec(params.get("practice") ?? "")?.[1];
@@ -69,7 +69,7 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  if (!rateLimit(`conn-guess:${clientIp(request)}`, 40, 1)) return tooManyRequests("Too many guesses — slow down a little.");
+  if (!crowdRateLimit(request, "conn-guess", 40, 1)) return tooManyRequests("Too many guesses — slow down a little.");
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400, headers: NO_STORE });
   const customId = CUSTOM_SEED_RE.exec(parsed.data.practice ?? "")?.[1];

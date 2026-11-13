@@ -7,6 +7,9 @@
  *   node scripts/load-test.mjs http://localhost:3100 --players 300 --duration 30
  *   node scripts/load-test.mjs https://playpokeiq.com --live          # gentle: ≤5 rps, 30 s, cached GET pages only
  *   node scripts/load-test.mjs http://localhost:3100 --spike             # launch day: the dailies played start to finish
+ *   node scripts/load-test.mjs http://localhost:3100 --play --players 300 --duration 240 --pid <server pid>
+ *                                                                        # every hot path: pages, dailies, quiz runs, Guessr, battles vs the computer
+ *   node scripts/load-test.mjs http://localhost:3100 --play --one-ip      # every player behind one address (a carrier's NAT)
  *
  * Every simulated player loops: pick a request from the mix, send it, think
  * for --think ms (default 250–1250 ms, randomised), repeat. Each player sends
@@ -21,6 +24,17 @@
  * all five rounds guessed) and reading the boards and stats after. Local
  * servers only: it writes results.
  *
+ * --play is the full mix: the pages a player opens (home, the dailies,
+ * PokéGuessr, a quiz, the leaderboard, Battle) and the APIs they hit while
+ * playing: quiz runs (start, each question's picture, answers, the next
+ * question), PokéGuessr games (start, each shot's image, five guesses, the
+ * daily stats), the dailies' start tokens and results, and a few turns of a
+ * battle against the computer. Local servers only: it writes results.
+ *
+ * --one-ip sends every player from the same address, as a carrier's NAT or
+ * a school network would. --pid samples that process's resident memory every
+ * 5 s (Linux /proc) and prints its start, peak and end.
+ *
  * Prints p50/p95/p99 latency, throughput and the error rate (non-2xx/3xx/4xx
  * that isn't an expected 4xx, plus timeouts) per endpoint and overall, per
  * step. A step "breaks" when its error rate passes 1% or its p95 passes 2 s.
@@ -34,7 +48,10 @@ const flag = (name, fallback) => {
 };
 const LIVE = args.includes("--live");
 const SPIKE = args.includes("--spike");
-if (LIVE && SPIKE) throw new Error("--spike writes results: local servers only.");
+const PLAY = args.includes("--play");
+const ONE_IP = args.includes("--one-ip");
+if (LIVE && (SPIKE || PLAY)) throw new Error("--spike and --play write results: local servers only.");
+if (LIVE && ONE_IP) throw new Error("--one-ip is for local servers.");
 const DURATION_S = Number(flag("duration", LIVE ? 30 : 20));
 const MAX_RPS = Number(flag("rps", LIVE ? 5 : 0));
 const STEPS = (flag("players", LIVE ? "5" : "50,100,200,400") + "").split(",").map(Number);
@@ -42,6 +59,7 @@ const THINK_MIN = Number(flag("think-min", 250));
 const THINK_MAX = Number(flag("think-max", 1250));
 const TIMEOUT_MS = Number(flag("timeout", 10_000));
 const JSON_OUT = flag("json", "");
+const PID = Number(flag("pid", 0));
 
 if (LIVE && (MAX_RPS > 5 || MAX_RPS <= 0)) throw new Error("--live is capped at 5 requests a second.");
 if (LIVE && DURATION_S > 60) throw new Error("--live runs at most 60 seconds.");
@@ -121,6 +139,56 @@ const FLOWS = [
     await send("api geo daily-stats", `/api/geo/daily-stats?date=${today}&score=${total}`);
   }],
 ];
+/** The response's JSON (or null) after reading an image or other body to the end. */
+const PLAY_FLOWS = [
+  ["flow quiz run", 4, async (send, think) => {
+    const start = await send("api quiz start", "/api/session", json({ module: "whos-that", format: "classic" }));
+    let token = start?.token;
+    let question = start?.question;
+    for (let i = 0; token && question && i < 4; i++) {
+      const media = question.media?.url ?? question.images?.[0];
+      if (media && media.startsWith("/")) await send("api quiz image", media);
+      await think();
+      const graded = await send("api quiz answer", "/api/session/answer", json({ token, choice: question.options?.[Math.floor(Math.random() * (question.options?.length || 1))] ?? null }));
+      token = graded?.token;
+      question = graded?.next ?? null;
+      if (!question && token && !graded?.done && !graded?.result) {
+        const next = await send("api quiz next", "/api/session/next", json({ token }));
+        token = next?.token;
+        question = next?.question;
+      }
+    }
+  }],
+  ["flow guessr game", 3, async (send, think) => {
+    const start = await send("api geo start", "/api/geo", json({}));
+    let token = start?.token;
+    // Each round's screenshot is not fetched: /api/geo/shot streams it from the
+    // media store, which is the production bucket even on a local server.
+    for (let i = 0; token && i < 5; i++) {
+      await think();
+      const graded = await send("api geo guess", "/api/geo/guess", json({ token, x: Math.random(), y: Math.random() }));
+      token = graded?.token;
+      if (graded?.done) break;
+    }
+  }],
+  ["flow battle vs cpu", 2, async (send, think) => {
+    const seat = await send("api battle start", "/api/battle", json({ mode: "cpu", name: "Load Tester", format: "gen9randombattle", level: "normal" }));
+    if (!seat?.code) return;
+    let view = seat.view;
+    for (let turn = 0; view && turn < 4 && view.status !== "over"; turn++) {
+      await think();
+      const rq = view.request;
+      if (!rq) {
+        view = await send("api battle poll", `/api/battle/${seat.code}?since=0`, { headers: { "x-battle-token": seat.token } });
+        continue;
+      }
+      const choice = "default";
+      const out = await send("api battle turn", `/api/battle/${seat.code}`, json({ action: "choose", token: seat.token, rqid: rq.rqid, choice, since: 0 }));
+      view = out?.view ?? out;
+    }
+    await send("api battle forfeit", `/api/battle/${seat.code}`, json({ action: "forfeit", token: seat.token, since: 0 }));
+  }],
+];
 const SPIKE_PAGES = [
   ["page /", 8, "/"],
   ["page /daily", 4, "/daily"],
@@ -130,7 +198,23 @@ const SPIKE_PAGES = [
   ["page /pikadoku", 3, "/pikadoku"],
   ["api leaderboard (daily)", 2, `/api/leaderboard?daily=${today}`],
 ];
-const MIX = LIVE ? PAGES : SPIKE ? [...SPIKE_PAGES, ...FLOWS] : [...PAGES, ...DYNAMIC_PAGES, ...APIS];
+const PLAY_PAGES = [
+  ["page /", 6, "/"],
+  ["page /daily", 3, "/daily"],
+  ["page /pokedle", 3, "/pokedle"],
+  ["page /connections", 2, "/connections"],
+  ["page /pikadoku", 2, "/pikadoku"],
+  ["page /guessr", 3, "/guessr"],
+  ["page /quiz/whos-that-pokemon", 2, "/quiz/whos-that-pokemon"],
+  ["page /leaderboard", 2, "/leaderboard"],
+  ["page /battle", 2, "/battle"],
+  ["api geo daily-shot", 2, `/api/geo/daily-shot?date=${today}`],
+  ["api leaderboard (daily)", 2, `/api/leaderboard?daily=${today}`],
+];
+const MIX = (LIVE ? PAGES : SPIKE ? [...SPIKE_PAGES, ...FLOWS] : PLAY ? [...PLAY_PAGES, ...FLOWS, ...PLAY_FLOWS] : [...PAGES, ...DYNAMIC_PAGES, ...APIS]).slice();
+/** --skip a,b leaves out every mix entry whose name contains one of them (finding what slows a run). */
+const SKIP = flag("skip", "").split(",").filter(Boolean);
+if (SKIP.length) MIX.splice(0, MIX.length, ...MIX.filter((m) => !SKIP.some((s) => m[0].includes(s))));
 const TOTAL_WEIGHT = MIX.reduce((n, m) => n + m[1], 0);
 function pick() {
   let r = Math.random() * TOTAL_WEIGHT;
@@ -168,8 +252,9 @@ async function runStep(players) {
     stats.set(name, s);
   };
   const stopAt = Date.now() + DURATION_S * 1000;
+  const memory = PID ? sampleMemory(stopAt) : null;
   async function player(id) {
-    const ip = `10.${(id >> 16) & 255}.${(id >> 8) & 255}.${id & 255}`;
+    const ip = ONE_IP ? "100.64.0.1" : `10.${(id >> 16) & 255}.${(id >> 8) & 255}.${id & 255}`;
     // Spread the starts over the first second.
     await sleep(Math.random() * 1000);
     const think = () => sleep(THINK_MIN + Math.random() * (THINK_MAX - THINK_MIN));
@@ -178,6 +263,7 @@ async function runStep(players) {
       await takeToken();
       if (Date.now() >= stopAt) return null;
       const url = BASE + (typeof path === "function" ? path() : path);
+      if (url.includes("/api/geo/shot/")) throw new Error("Screenshots come from the production media store: never load-test them.");
       const req = typeof init === "function" ? init() : (init ?? {});
       const headers = { ...(req.headers ?? {}), ...(LIVE ? {} : { "x-forwarded-for": ip }), "user-agent": "pokeiq-load-test" };
       const t0 = performance.now();
@@ -219,7 +305,25 @@ async function runStep(players) {
   }
   all.lat.sort((a, b) => a - b);
   const total = { name: "ALL", n: all.lat.length, p50: pct(all.lat, 50), p95: pct(all.lat, 95), p99: pct(all.lat, 99), errPct: (100 * all.errors) / Math.max(1, all.lat.length), statuses: all.statuses, rps: all.lat.length / secs };
-  return { players, secs, rows, total };
+  return { players, secs, rows, total, memory: memory ? await memory : null };
+}
+
+/** The server's resident memory (MB) every 5 s until `stopAt`: { start, peak, end, samples }. */
+async function sampleMemory(stopAt) {
+  const { readFileSync } = await import("node:fs");
+  const rss = () => {
+    try {
+      return Number(/VmRSS:\s+(\d+)/.exec(readFileSync(`/proc/${PID}/status`, "utf8"))?.[1] ?? 0) / 1024;
+    } catch {
+      return NaN;
+    }
+  };
+  const samples = [rss()];
+  while (Date.now() < stopAt) {
+    await sleep(Math.min(5000, Math.max(0, stopAt - Date.now())));
+    samples.push(rss());
+  }
+  return { start: samples[0], peak: Math.max(...samples.filter(Number.isFinite)), end: samples.at(-1), samples: samples.map((m) => Math.round(m)) };
 }
 
 const fmt = (ms) => (Number.isFinite(ms) ? `${Math.round(ms)}`.padStart(6) : "     -");
@@ -229,6 +333,7 @@ function print(step) {
   for (const r of [...step.rows, step.total]) {
     console.log(`${r.name.padEnd(28)} ${String(r.n).padStart(6)}  ${fmt(r.p50)}  ${fmt(r.p95)}  ${fmt(r.p99)}  ${r.errPct.toFixed(1).padStart(5)}  ${Object.entries(r.statuses).map(([k, v]) => `${k}:${v}`).join(" ")}`);
   }
+  if (step.memory) console.log(`server memory (RSS, MB): start ${Math.round(step.memory.start)}, peak ${Math.round(step.memory.peak)}, end ${Math.round(step.memory.end)}  [${step.memory.samples.join(" ")}]`);
 }
 
 console.log(`Load test against ${BASE}${LIVE ? " (live, gentle)" : ""}: ${STEPS.join(" → ")} players, ${DURATION_S} s each, think ${THINK_MIN}–${THINK_MAX} ms.`);

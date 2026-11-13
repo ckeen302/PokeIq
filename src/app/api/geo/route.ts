@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { isValidDailyDate } from "@/lib/daily";
-import { clientIp, rateLimit } from "@/lib/server/rate-limit";
+import { crowdRateLimit } from "@/lib/server/rate-limit";
 import { optionalName } from "@/lib/name-filter";
 import { currentGeoWeekly, geoChallengeSpec, geoFilter, isGeoSpec, readGeoChallenge, startGeo } from "@/lib/server/geo";
 import { syncHiddenShots } from "@/lib/server/geo-reports";
@@ -53,7 +53,7 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  if (!rateLimit(`geo-start:${clientIp(request)}`, 30, 0.5)) {
+  if (!crowdRateLimit(request, "geo-start", 30, 0.5)) {
     return NextResponse.json({ error: "Too many games started — take a breather." }, { status: 429 });
   }
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));

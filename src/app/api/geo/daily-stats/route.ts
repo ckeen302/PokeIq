@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase";
-import { clientIp, rateLimit } from "@/lib/server/rate-limit";
+import { crowdRateLimit } from "@/lib/server/rate-limit";
 import { COMPARE_MAX, dailyStats } from "@/lib/geo-compare";
 
 /**
@@ -44,7 +44,7 @@ function dayScores(date: string): Promise<number[]> {
 }
 
 export async function GET(request: NextRequest) {
-  if (!rateLimit(`geo-stats:${clientIp(request)}`, 30, 0.5)) return NextResponse.json({ error: "Slow down." }, { status: 429 });
+  if (!crowdRateLimit(request, "geo-stats", 30, 0.5)) return NextResponse.json({ error: "Slow down." }, { status: 429 });
   const params = request.nextUrl.searchParams;
   const date = params.get("date") ?? "";
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date))) return NextResponse.json({ error: "Bad date." }, { status: 400 });

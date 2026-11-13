@@ -3,7 +3,7 @@ import { z } from "zod";
 import { getServiceSupabase } from "@/lib/supabase";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { secretIsSecure, verifyToken } from "@/lib/server/crypto";
-import { GAMEPLAY_IP_LIMIT, clientIp, rateLimit } from "@/lib/server/rate-limit";
+import { GAMEPLAY_IP_LIMIT, clientIp, playerRateLimit } from "@/lib/server/rate-limit";
 import { BOARD_FULL, claimBoardSlot, utcDayOf } from "@/lib/server/board-guard";
 import { geoBoardKey, type GeoResult } from "@/lib/geo-types";
 import { geoWeeklyBoard } from "@/lib/geo-weekly";
@@ -24,7 +24,10 @@ const bodySchema = z.object({
 const RESULT_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 
 export async function POST(request: NextRequest) {
-  if (!rateLimit(`geo-lb:${clientIp(request)}`, ...GAMEPLAY_IP_LIMIT)) {
+  const raw: unknown = await request.json().catch(() => ({}));
+  // Per game (a result token the server signed); a token that doesn't verify is limited per address.
+  const signed = verifyToken<GeoResult>("geo-result", (raw as { resultToken?: unknown })?.resultToken);
+  if (!playerRateLimit(request, "geo-lb", ...GAMEPLAY_IP_LIMIT, signed?.sid)) {
     return NextResponse.json({ error: "Too many submissions — try again in a minute." }, { status: 429 });
   }
   const supabase = getServiceSupabase();
@@ -33,7 +36,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Leaderboard disabled until the server secret is configured." }, { status: 503 });
   }
 
-  const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
+  const parsed = bodySchema.safeParse(raw);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
 
   const result = verifyToken<GeoResult>("geo-result", parsed.data.resultToken);

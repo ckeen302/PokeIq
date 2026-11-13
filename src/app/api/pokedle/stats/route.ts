@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
+import { crowdRateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { dleDaySummary, isStatsDate } from "@/lib/server/dle-results";
 import type { DleStatsResponse } from "@/lib/dle-community";
 import { isDailyFormat } from "@/lib/dle-format";
@@ -20,7 +20,7 @@ const OFF = { "Cache-Control": "public, s-maxage=60" };
 const NO_STORE = { "Cache-Control": "no-store" };
 
 export async function GET(request: NextRequest) {
-  if (!rateLimit(`dle-stats:${clientIp(request)}`, 60, 2)) {
+  if (!crowdRateLimit(request, "dle-stats", 60, 2)) {
     return tooManyRequests();
   }
   const date = request.nextUrl.searchParams.get("date");

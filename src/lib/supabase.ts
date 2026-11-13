@@ -25,6 +25,8 @@ const BACKOFF_MS = 10000;
 let failures = 0;
 let downUntil = 0;
 let warnedDown = 0;
+/** While the database is down, the one request finding out whether it's back (others keep failing fast meanwhile). */
+let probing = false;
 
 /**
  * Named AbortError on purpose: supabase-js retries a failed read three times
@@ -52,11 +54,28 @@ function failed(reason: string): never {
  * fetch for the Supabase client: every request has a timeout, a failure is
  * returned at once rather than retried, and after a few network failures in a
  * row calls fail immediately for a few seconds, so a dead database can't pile
- * up waiting requests on a busy day. A 503 / 520 (the database restarting or
- * paused) is passed on as a 502, which supabase-js doesn't retry either.
+ * up waiting requests on a busy day. When those seconds are up a single
+ * request tries the database again while the rest keep failing fast: without
+ * that, every request arriving then waited out the full timeout together
+ * against a database that doesn't answer, a stall every few seconds under
+ * load. A 503 / 520 (the database restarting or paused) is passed on as a
+ * 502, which supabase-js doesn't retry either.
  */
 export const resilientFetch: typeof fetch = async (input, init) => {
   if (Date.now() < downUntil) throw new DatabaseUnavailable("database unavailable (backing off)");
+  const probe = failures >= FAILURES_TO_BACK_OFF;
+  if (probe) {
+    if (probing) throw new DatabaseUnavailable("database unavailable (checking whether it's back)");
+    probing = true;
+  }
+  try {
+    return await attempt(input, init);
+  } finally {
+    if (probe) probing = false;
+  }
+};
+
+async function attempt(input: Parameters<typeof fetch>[0], init: Parameters<typeof fetch>[1]): Promise<Response> {
   const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
   const upload = init?.method !== undefined && init.method !== "GET" && init.method !== "HEAD" && url.includes("/storage/");
   const timeout = AbortSignal.timeout(upload ? UPLOAD_TIMEOUT_MS : QUERY_TIMEOUT_MS);
@@ -71,7 +90,14 @@ export const resilientFetch: typeof fetch = async (input, init) => {
   failures = 0;
   if (res.status === 503 || res.status === 520) return new Response(res.body, { status: 502, statusText: `Upstream ${res.status}`, headers: res.headers });
   return res;
-};
+}
+
+/** Tests: forget any outage, as on a fresh instance. */
+export function resetDatabaseBackoff(): void {
+  failures = 0;
+  downUntil = 0;
+  probing = false;
+}
 
 export function getServiceSupabase(): SupabaseClient | null {
   if (client !== undefined) return client;

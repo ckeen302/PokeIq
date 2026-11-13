@@ -26,6 +26,7 @@
  * Set CHROMIUM_PATH to use a preinstalled Chromium.
  */
 import { chromium } from "playwright";
+import { PROFILES as ALL_PROFILES, ROUTES, closeHowTo, readOnly } from "./read-only-browser.mjs";
 
 const args = process.argv.slice(2);
 const flag = (name, fallback) => {
@@ -37,79 +38,7 @@ const CANONICAL = (flag("canonical", new URL(BASE).origin) ?? "").replace(/\/+$/
 const LCP_MS = Number(flag("lcp", 4000));
 const ONLY = flag("only", null);
 
-/**
- * The main routes and what must show on each: `key` is a selector that must be
- * visible; `input` (the dailies) gives the board a first input and checks it
- * took, without submitting. `share` routes are checked for a share image.
- */
-const ROUTES = [
-  { path: "/", key: '[data-testid="home-hero"]' },
-  { path: "/daily", key: "main h1" },
-  { path: "/play", key: "main h1" },
-  { path: "/pokedle", key: 'input[aria-label^="Guess a Pokémon"]', input: pokedleInput },
-  { path: "/pikadoku", key: '[data-testid="pdk-cell-0"]', input: pikadokuInput },
-  { path: "/connections", key: '[data-testid="conn-grid"]', input: connectionsInput },
-  { path: "/guessr", key: '[data-testid="geo-daily-card"]', input: guessrInput },
-  { path: "/battle", key: "main h1" },
-  { path: "/pokedex", key: "main h1" },
-  { path: "/pokemon/pikachu", key: "main h1" },
-  { path: "/lab", key: '[data-testid="lab-page"]' },
-  { path: "/iq-test", key: "main h1" },
-  { path: "/quiz/which-pokemon", key: "main h1" },
-  { path: "/quiz/name-em-all", key: "main h1" },
-  { path: "/leaderboard", key: "main h1" },
-  { path: "/atlas", key: "main" },
-  { path: "/rooms", key: "main h1" },
-  { path: "/privacy", key: "main h1" },
-];
-
-const PROFILES = [
-  { name: "phone", viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true },
-  { name: "desktop", viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, isMobile: false, hasTouch: false },
-].filter((p) => !ONLY || p.name === ONLY);
-
-/** Closes a first-visit how-to with "Let's play!" (page state only; nothing is sent). */
-async function closeHowTo(page) {
-  const play = page.getByTestId("howto-play").first();
-  if (await play.isVisible().catch(() => false)) {
-    await play.click();
-    await page.getByTestId("howto-sheet").first().waitFor({ state: "hidden", timeout: 5000 }).catch(() => {});
-  }
-}
-
-/** Types a few letters: the Pokédex suggestions must open. Nothing is picked. */
-async function pokedleInput(page) {
-  const input = page.getByLabel("Guess a Pokémon").first();
-  await input.fill("pika");
-  await page.locator("[role=option]").first().waitFor({ timeout: 10_000 });
-  await input.fill("");
-}
-
-/** Opens the first square's search and types: suggestions must show. Nothing is picked. */
-async function pikadokuInput(page) {
-  await page.getByTestId("pdk-cell-0").click();
-  const search = page.getByTestId("pdk-search");
-  await search.fill("pika");
-  await page.locator('[data-testid^="pdk-option-"]').first().waitFor({ timeout: 10_000 });
-  await page.keyboard.press("Escape");
-}
-
-/** Selects a tile (it must show as pressed), then deselects it. Submit is never pressed. */
-async function connectionsInput(page) {
-  const tile = page.getByTestId("conn-tile").first();
-  await tile.click();
-  if ((await tile.getAttribute("aria-pressed")) !== "true") throw new Error("a tapped tile didn't select");
-  await tile.click();
-}
-
-/** The Daily's Play button is ready; "Set up a game" opens the solo setup (a view change only, no game is started). */
-async function guessrInput(page) {
-  const play = page.getByTestId("geo-daily-card").getByRole("button").first();
-  await play.waitFor();
-  if (!(await play.isEnabled())) throw new Error("the Daily's Play button is disabled");
-  await page.getByTestId("geo-solo-setup").click();
-  await page.getByRole("button", { name: /-round game/ }).first().waitFor({ timeout: 10_000 });
-}
+const PROFILES = ALL_PROFILES.filter((p) => !ONLY || p.name === ONLY);
 
 const results = [];
 /** One row of the table: check, where (route / profile), pass, detail. */
@@ -141,15 +70,7 @@ for (const profile of PROFILES) {
       }
     });
     const blocked = new Set();
-    // Read-only: GET, HEAD and CORS preflights go out; anything else is stopped here.
-    await context.route("**/*", (r) => {
-      const method = r.request().method();
-      if (method === "GET" || method === "HEAD" || method === "OPTIONS") return r.continue();
-      blocked.add(r.request().url());
-      const key = `${method} ${new URL(r.request().url()).pathname}`;
-      stopped.set(key, (stopped.get(key) ?? 0) + 1);
-      return r.abort("blockedbyclient");
-    });
+    await readOnly(context, blocked, stopped);
     const page = await context.newPage();
     const errors = [];
     page.on("console", (msg) => {

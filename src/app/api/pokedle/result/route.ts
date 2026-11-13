@@ -3,7 +3,7 @@ import { z } from "zod";
 import { DLE_HINT_KINDS } from "@/lib/dle-types";
 import { DLE_ASSISTS } from "@/lib/dle-assist";
 import { DLE_DAILY_FORMATS } from "@/lib/dle-format";
-import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
+import { CROWD_WRITE_FACTOR, crowdRateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { sameOrigin, sessionTokenHash, userFromRequest } from "@/lib/server/auth";
 import { DLE_PLAYER_RE, recordDleResult } from "@/lib/server/dle-results";
 import type { DleResultResponse } from "@/lib/dle-community";
@@ -52,7 +52,7 @@ async function accountId(request: NextRequest): Promise<string | null> {
 export async function POST(request: NextRequest) {
   // Saves to the signed-in trainer's account: only from this site's own pages.
   if (!sameOrigin(request)) return NextResponse.json({ error: "Cross-site request blocked." }, { status: 403, headers: { "Cache-Control": "no-store" } });
-  if (!rateLimit(`dle-result:${clientIp(request)}`, 30, 0.5)) {
+  if (!crowdRateLimit(request, "dle-result", 30, 0.5, CROWD_WRITE_FACTOR)) {
     return tooManyRequests();
   }
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
+import { crowdRateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { checkGuess, gridView, ppFor, replayGuesses } from "@/lib/server/pikadoku";
 import { gridFields, guessSchema, historySchema, resolveGrid } from "@/lib/server/pikadoku-http";
 import { cachedCounts, pdkStartToken, pdkStore, pickPct } from "@/lib/server/pikadoku-board";
@@ -24,7 +24,7 @@ import { PDK_PP } from "@/lib/pikadoku/types";
 const NO_STORE = { "Cache-Control": "no-store" };
 
 export async function GET(request: NextRequest) {
-  if (!rateLimit(`pdk-get:${clientIp(request)}`, 60, 1)) return tooManyRequests();
+  if (!crowdRateLimit(request, "pdk-get", 60, 1)) return tooManyRequests();
   await ensureMaster();
   const p = request.nextUrl.searchParams;
   const fam = p.get("fam");
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
 const bodySchema = z.object({ ...gridFields, guesses: historySchema, next: guessSchema.optional() });
 
 export async function POST(request: NextRequest) {
-  if (!rateLimit(`pdk-guess:${clientIp(request)}`, 60, 1)) return tooManyRequests("Too many guesses — slow down a little.");
+  if (!crowdRateLimit(request, "pdk-guess", 60, 1)) return tooManyRequests("Too many guesses — slow down a little.");
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400, headers: NO_STORE });
   await ensureMaster();

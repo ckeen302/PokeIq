@@ -3,7 +3,7 @@ import { z } from "zod";
 import { DIFFICULTIES, FORMATS, MODULES, SCOPES } from "@/engines/types";
 import { isValidDailyDate } from "@/lib/daily";
 import { randomId, verifyToken } from "@/lib/server/crypto";
-import { clientIp, rateLimit } from "@/lib/server/rate-limit";
+import { crowdRateLimit, playerRateLimit } from "@/lib/server/rate-limit";
 import { claimOnce, recallResponse, rememberResponse, requestFingerprint } from "@/lib/server/replay-guard";
 import { beginHeld, holdSession, readSession, startSession } from "@/lib/server/session";
 import { optionalName } from "@/lib/name-filter";
@@ -55,7 +55,8 @@ export async function POST(request: NextRequest) {
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   // Beginning a held run serves a question, like /api/session/next (and shares its limit).
   const begin = parsed.success ? parsed.data.begin : undefined;
-  const allowed = begin ? rateLimit(`answer:${clientIp(request)}`, 60, 4) : rateLimit(`session:${clientIp(request)}`, 30, 0.5);
+  // Beginning: per held run, as /api/session/next. Starting one: nothing signed yet, so per address, with room for a crowd behind it.
+  const allowed = begin ? playerRateLimit(request, "answer", 60, 4, readSession(begin)?.sid) : crowdRateLimit(request, "session", 30, 0.5);
   if (!allowed) {
     return NextResponse.json({ error: "Too many runs started — take a breather." }, { status: 429 });
   }

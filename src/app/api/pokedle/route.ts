@@ -4,7 +4,7 @@ import { isPlayableDailyDate } from "@/lib/daily";
 import { DLE_HINT_KINDS, DLE_SQUIRDLE_FROM } from "@/lib/dle-types";
 import { DLE_ASSISTS } from "@/lib/dle-assist";
 import { DLE_DAILY_FORMATS, dleRules, gensOfRange, rangeOfGens } from "@/lib/dle-format";
-import { clientIp, rateLimit } from "@/lib/server/rate-limit";
+import { crowdRateLimit } from "@/lib/server/rate-limit";
 import { dailyPuzzleOf, evaluate, hardModeError, practicePuzzle, puzzleRules } from "@/lib/server/pokedle";
 
 /**
@@ -39,7 +39,7 @@ const bodySchema = z
   .refine((b) => Boolean(b.date) !== Boolean(b.practiceSeed), "Provide either date or practiceSeed");
 
 export async function POST(request: NextRequest) {
-  if (!rateLimit(`dle:${clientIp(request)}`, 60, 2)) {
+  if (!crowdRateLimit(request, "dle", 60, 2)) {
     return NextResponse.json({ error: "Too many guesses — slow down." }, { status: 429 });
   }
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
