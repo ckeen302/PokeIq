@@ -46,13 +46,27 @@ export interface FrontierRun {
   over: boolean;
   /** After a Factory win: the beaten team, packed, to swap one in. */
   offer?: string;
+  /** When this token stops working (ms since the epoch). Set by signRun; every step of a run signs a fresh one. */
+  exp?: number;
 }
 
 const TOKEN_KIND = "frontier";
-export const signRun = (run: FrontierRun) => signToken(TOKEN_KIND, run);
-export function readRun(token: unknown): FrontierRun | null {
+/** A run can be picked up again for this long after its last step (a start, a battle's result, a trade). */
+export const RUN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+/**
+ * Run tokens signed before they carried an expiry are honoured until this
+ * moment (a week after expiry shipped, the same as RUN_TTL_MS), so a run in
+ * progress at the release isn't lost; after it, a token with no expiry is
+ * refused like an expired one.
+ */
+export const LEGACY_RUN_UNTIL = Date.UTC(2026, 10, 21);
+
+export const signRun = (run: FrontierRun, now = Date.now()) => signToken(TOKEN_KIND, { ...run, exp: now + RUN_TTL_MS });
+export function readRun(token: unknown, now = Date.now()): FrontierRun | null {
   const run = verifyToken<FrontierRun>(TOKEN_KIND, token);
-  return run && run.v === 1 && typeof run.team === "string" && Number.isInteger(run.streak) ? run : null;
+  if (!run || run.v !== 1 || typeof run.team !== "string" || !Number.isInteger(run.streak)) return null;
+  const until = run.exp === undefined ? LEGACY_RUN_UNTIL : run.exp;
+  return typeof until === "number" && Number.isFinite(until) && now < until ? run : null;
 }
 
 /** The battle format each kind of run plays (its Showdown id is in service.ts). */
@@ -104,6 +118,9 @@ export function battleInfo(run: FrontierRun): FrontierBattleInfo {
 
 type Out<T> = ({ ok: true } & T) | PvpFailure;
 
+/** A run token that's forged, malformed or past its expiry: one answer for all three. */
+const RUN_GONE = "That run isn't valid any more. Start a new one.";
+
 /** A new Factory run: a rental team for a tier drawn the way Showdown draws it. */
 export function startFactoryRun(name: string, style: FactoryStyle): Out<{ run: FrontierRunView }> {
   const tier = style === "bss" ? undefined : pickFactoryTier();
@@ -133,7 +150,7 @@ const foeMakers: Record<FrontierMode, FoeTeamMaker> = {
 /** Starts the run's next battle (once per streak step). */
 export async function nextRunBattle(token: unknown): Promise<Out<{ code: string; token: string; href: string }>> {
   const run = readRun(token);
-  if (!run) return fail(400, "That run isn't valid any more. Start a new one.");
+  if (!run) return fail(400, RUN_GONE);
   if (run.over) return fail(409, "This run is over. Start a new one.");
   const maker = foeMakers[run.mode];
   if (!(await claimOnce(`frontier:${run.id}:${run.streak}`))) return fail(409, "This battle of your run has already started. Open it from where you left off, or start a new run.");
@@ -165,6 +182,8 @@ export async function runResult(code: string, seatToken: unknown, userId: string
   if (!meta.frontier || meta.seats[0]?.id !== seat.playerId) return fail(403, "That isn't your run's battle.");
   if (meta.status !== "finished" || !meta.end) return fail(409, "The battle isn't over yet.");
   const before = meta.frontier.run;
+  // The run this battle belongs to has lapsed (its token's expiry travels with the battle): no fresh token for it.
+  if (Date.now() >= (before.exp ?? LEGACY_RUN_UNTIL)) return fail(400, RUN_GONE);
   const won = meta.end.winner === 0;
   const after = afterBattle(before.streak, won);
   const run: FrontierRun = { ...before, streak: after.streak, over: after.over };
@@ -176,7 +195,7 @@ export async function runResult(code: string, seatToken: unknown, userId: string
 /** The Factory's trade after a win: your `give`th Pokémon for the beaten team's `take`th (or keep your team: give -1). */
 export function swapRun(token: unknown, give: number, take: number): Out<{ run: FrontierRunView }> {
   const run = readRun(token);
-  if (!run) return fail(400, "That run isn't valid any more. Start a new one.");
+  if (!run) return fail(400, RUN_GONE);
   if (run.over || !run.offer) return fail(409, "There's nothing to swap right now.");
   if (give < 0) return { ok: true, run: runView({ ...run, offer: undefined }) };
   const swapped = swapTeam(unpack(run.team), unpack(run.offer), give, take, {

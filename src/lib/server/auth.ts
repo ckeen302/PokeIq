@@ -44,7 +44,11 @@ export async function hashPassword(password: string): Promise<string> {
 
 export async function verifyPassword(password: string, stored: string): Promise<boolean> {
   const [scheme, salt, hash] = stored.split("$");
-  if (scheme !== "s1" || !salt || !hash) return false;
+  if (scheme !== "s1" || !salt || !hash) {
+    // An account with no password (it signs in with Discord or Google) takes as long to refuse as a wrong password.
+    await burnPasswordCheck(password);
+    return false;
+  }
   const candidate = await scryptAsync(password, salt, KEYLEN);
   const expected = Buffer.from(hash, "hex");
   return candidate.length === expected.length && timingSafeEqual(candidate, expected);

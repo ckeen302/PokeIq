@@ -74,6 +74,17 @@ export function rateLimit(key: string, capacity: number, refillPerSecond: number
 }
 
 /**
+ * Gives back the token a request took, up to the bucket's capacity: for
+ * limits that count failures only (a sign-in that turned out right). The
+ * token is taken first and returned after, so a burst of parallel attempts
+ * can't all pass on the same token.
+ */
+export function refundRateLimit(key: string, capacity: number): void {
+  const bucket = buckets.get(key);
+  if (bucket) bucket.tokens = Math.min(capacity, bucket.tokens + 1);
+}
+
+/**
  * A gameplay limit for a request that carries a signed player: `player` is
  * an id the server itself signed (a run's id from its token, a battle seat),
  * never something the client chose. That player gets the route's own rate;
