@@ -34,12 +34,12 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Popover } from "@/components/ui/popover";
 import { ShareButton } from "@/components/share/ShareButton";
+import { howToShownEarly, releaseHowToFirst } from "@/lib/howto-first";
+import { ConnHowToSheet } from "./howto-sheet";
 import { CONTROLS_DOCK, CONTROLS_WRAP, GridTile, GroupBar, GuessHistory, LevelLegend, MistakeDots, TILE_H4, TILE_H5, WhyPanel, preloadTileArt, type TileMotion } from "./parts";
-// The pop-ups (how to play with its demo, stats, the archive) load when first opened, not with the board.
+// The pop-ups (stats, the archive) load when first opened, not with the board. How to play comes with the board:
+// a first visit's copy is in the page's HTML (lib/howto-first).
 const loadSheets = () => import("./sheets");
-// A first visit opens How to play at once: its code downloads while the page hydrates, not after.
-if (typeof window !== "undefined" && !getConnPrefs().seenHowToDemo) void loadSheets();
-const ConnHowToSheet = dynamic(() => loadSheets().then((m) => m.ConnHowToSheet), { ssr: false });
 const ConnStatsSheet = dynamic(() => loadSheets().then((m) => m.ConnStatsSheet), { ssr: false });
 const ConnArchiveSheet = dynamic(() => loadSheets().then((m) => m.ConnArchiveSheet), { ssr: false });
 // The stats card shows only on a finished daily.
@@ -150,6 +150,13 @@ export function Connections({ customId, initial }: { customId?: string; initial?
   const [toast, setToast] = useState<{ text: string; n: number } | null>(null);
   const [tileMotion, setTileMotion] = useState<{ kind: Exclude<TileMotion, null>; ids: number[]; n: number } | null>(null);
   const [sheet, setSheet] = useState<"howto" | "stats" | "archive" | null>(null);
+  /**
+   * The first-visit How to play that came in the page's HTML: rendered (hidden, unless the page's inline script
+   * showed it) until the first-visit check below has run. It then stays as the open pop-up or goes; a copy the
+   * script didn't show is mounted afresh (`howToMount`), so it opens as any later pop-up does.
+   */
+  const [howToPending, setHowToPending] = useState(true);
+  const [howToMount, setHowToMount] = useState(0);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [summary, setSummary] = useState<ConnDaySummary | null>(null);
   const [board, setBoard] = useState<ConnBoardStanding | null>(null);
@@ -370,7 +377,13 @@ export function Connections({ customId, initial }: { customId?: string; initial?
     if (!prefs || howToShown.current) return;
     howToShown.current = true;
     if (connFirstVisit(prefs, connBlock(getProgress()).results)) setSheet("howto");
+    if (!howToShownEarly()) setHowToMount(1);
+    setHowToPending(false);
   }, [prefs]);
+  // Only once the pop-up is the game's own (or gone) does the page's early copy let go of it, so it never blinks.
+  useEffect(() => {
+    if (!howToPending) releaseHowToFirst();
+  }, [howToPending]);
 
   // The clock: runs while a started game is open and visible.
   const started = guesses.length > 0 || selected.length > 0;
@@ -1053,7 +1066,11 @@ export function Connections({ customId, initial }: { customId?: string; initial?
         )}
       </div>
 
-      {sheet === "howto" && <ConnHowToSheet onClose={closeSheet} onNever={closeHowToForever} />}
+      {(sheet === "howto" || howToPending) && (
+        <div key={howToMount} className={sheet === "howto" ? "contents" : "howto-ssr"}>
+          <ConnHowToSheet onClose={closeSheet} onNever={closeHowToForever} />
+        </div>
+      )}
       {sheet === "stats" && stats && <ConnStatsSheet stats={stats} todayMistakes={todayMistakes} onClose={closeSheet} />}
       {sheet === "archive" && today && progress && (
         <ConnArchiveSheet

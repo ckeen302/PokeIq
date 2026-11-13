@@ -7,6 +7,7 @@ import { ConnectionsLazyCards } from "@/components/connections/LazyCards";
 import { connDailyViews } from "@/lib/server/connections-today";
 import { boardArtUrl } from "@/lib/pokemon/art";
 import type { ConnPuzzleResponse } from "@/lib/connections/types";
+import { howToFirstScript } from "@/lib/howto-first";
 
 export const metadata: Metadata = pageMetadata({
   title: "PokéConnections: the Daily Pokémon Connections Puzzle",
@@ -35,12 +36,15 @@ function localDayScript(initial: Record<string, ConnPuzzleResponse>): string {
   return `try{var d=new Date(),k=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");document.documentElement.dataset.connDay=k;(${JSON.stringify(art).replace(/</g, "\\u003c")}[k]||[]).forEach(function(u){var l=document.createElement("link");l.rel="preload";l.as="image";l.href=u;l.setAttribute("fetchpriority","high");document.head.appendChild(l)})}catch(e){}`;
 }
 
+/** A first visit's How to play shows with the board (lib/howto-first): the game's own check (connFirstVisit). */
+const HOWTO_FIRST = howToFirstScript("pokeiq:connections-prefs:v1", "!P.seenHowToDemo&&!Object.keys((G.conn&&G.conn.results)||{}).length");
+
 export default async function ConnectionsPage() {
   // Per-player state (saved guesses, streaks, results) stays on the device and in its own requests; guesses are checked by /api/connections.
   const initial = await connDailyViews();
   return (
     <>
-    <script dangerouslySetInnerHTML={{ __html: localDayScript(initial) }} />
+    <script dangerouslySetInnerHTML={{ __html: localDayScript(initial) + HOWTO_FIRST }} />
     <div className="space-y-10">
       <Connections initial={initial} />
       <PuzzleOfTheDay />
