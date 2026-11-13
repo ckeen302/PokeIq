@@ -79,7 +79,7 @@ export function ConnectionsDemo() {
                   on ? "border-screen bg-screen text-background shadow-[0_3px_0_hsl(var(--screen)/0.45)]" : "border-foreground/10 bg-card shadow-[0_3px_0_hsl(var(--border))]"
                 )}
               >
-                <img src={boardArtUrl(m.id)} alt="" width={36} height={36} className="h-9 w-9 object-contain" />
+                <img src={boardArtUrl(m.id)} alt="" width={36} height={36} loading="lazy" className="h-9 w-9 object-contain" />
                 <span className="w-full truncate font-display text-[9px] font-bold uppercase leading-tight">{m.name}</span>
               </motion.div>
             );

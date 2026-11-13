@@ -35,10 +35,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ShareButton } from "@/components/share/ShareButton";
 import { NewBadges, StreakFlame, useCelebration } from "@/components/connections/results";
 import { PdkBoard, PdkPicker, iconButton, useDex, type BoardCell, type DexName } from "./parts";
-// The sheets (with the how-to's animated demo) load only when one opens.
+import { PdkHowToSheet } from "./howto-sheet";
+import { howToShownEarly, releaseHowToFirst } from "@/lib/howto-first";
+// The sheets (stats, the archive) load only when one opens. How to play comes with the board: a first visit's copy
+// is in the page's HTML (lib/howto-first).
 const loadSheets = () => import("./sheets");
 const PdkArchiveSheet = dynamic(() => loadSheets().then((m) => m.PdkArchiveSheet), { ssr: false });
-const PdkHowToSheet = dynamic(() => loadSheets().then((m) => m.PdkHowToSheet), { ssr: false });
 const PdkStatsSheet = dynamic(() => loadSheets().then((m) => m.PdkStatsSheet), { ssr: false });
 // Unlimited's setup panel (with the category list) loads only on the Unlimited tab.
 const UnlimitedSetup = dynamic(() => import("./UnlimitedSetup").then((m) => m.UnlimitedSetup), {
@@ -80,8 +82,6 @@ function loadPrefs(): Prefs {
   }
   return base;
 }
-// A first visit opens How to play at once: its code downloads while the page hydrates, not after.
-if (typeof window !== "undefined" && !loadPrefs().seenHowTo) void loadSheets();
 function savePrefs(p: Prefs) {
   try {
     window.localStorage.setItem(PREFS_KEY, JSON.stringify(p));
@@ -148,6 +148,13 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
   const [result, setResult] = useState<PdkResultResponse | null>(null);
   const [badges, setBadges] = useState<BadgeDef[]>([]);
   const [sheet, setSheet] = useState<"howto" | "stats" | "archive" | null>(null);
+  /**
+   * The first-visit How to play that came in the page's HTML: rendered (hidden, unless the page's inline script
+   * showed it) until the first-visit check below has run. It then stays as the open pop-up or goes; a copy the
+   * script didn't show is mounted afresh (`howToMount`), so it opens as any later pop-up does.
+   */
+  const [howToPending, setHowToPending] = useState(true);
+  const [howToMount, setHowToMount] = useState(0);
   /** The past daily being played from the archive. */
   const [archive, setArchive] = useState<{ date: string; difficulty: PdkDifficulty } | null>(null);
   const [showRank, setShowRank] = useState(false);
@@ -164,7 +171,13 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
     const pr = getProgress();
     const played = (pr.pdkPlay?.games ?? 0) > 0 || Object.keys(pdkBlock(pr).results).length > 0;
     if (!p.seenHowTo && !played && !new URLSearchParams(window.location.search).get("c")) setSheet("howto");
+    if (!howToShownEarly()) setHowToMount(1);
+    setHowToPending(false);
   }, []);
+  // Only once the pop-up is the game's own (or gone) does the page's early copy let go of it, so it never blinks.
+  useEffect(() => {
+    if (!howToPending) releaseHowToFirst();
+  }, [howToPending]);
   useEffect(() => {
     const open = () => setSheet("howto");
     window.addEventListener("pokeiq:howto", open);
@@ -917,7 +930,11 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
           onClose={() => setSheet(null)}
         />
       )}
-      {sheet === "howto" && <PdkHowToSheet onClose={closeSheet} onNever={() => (patchPrefs({ seenHowTo: true }), closeSheet())} />}
+      {(sheet === "howto" || howToPending) && (
+        <div key={howToMount} className={sheet === "howto" ? "contents" : "howto-ssr"}>
+          <PdkHowToSheet onClose={closeSheet} onNever={() => (patchPrefs({ seenHowTo: true }), closeSheet())} />
+        </div>
+      )}
       {sheet === "stats" && <PdkStatsSheet streak={block.streak} best={block.best} play={{ ...EMPTY_PDK_PLAY, ...progress?.pdkPlay }} results={block.results} onClose={() => setSheet(null)} />}
     </MotionConfig>
   );

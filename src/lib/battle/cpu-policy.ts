@@ -160,10 +160,12 @@ interface MoveInfo {
   secondary?: { status: string; chance: number };
 }
 
-const moveInfos = new Map<string, MoveInfo>();
+/** Per generation, by move name (looked up many times a decision: no key string to build). */
+const moveInfos = new Map<number, Map<string, MoveInfo>>();
 function moveInfo(battle: Battle, name: string): MoveInfo {
-  const key = `${battle.gen}:${name}`;
-  let info = moveInfos.get(key);
+  let byName = moveInfos.get(battle.gen);
+  if (!byName) moveInfos.set(battle.gen, (byName = new Map()));
+  let info = byName.get(name);
   if (info) return info;
   const m = battle.dex.moves.get(name);
   const id = m.id || toId(name);
@@ -198,7 +200,7 @@ function moveInfo(battle: Battle, name: string): MoveInfo {
     powder: !!m.flags?.powder,
     secondary: secondary ? { status: secondary.status!, chance: (secondary.chance ?? 0) / 100 } : undefined,
   };
-  moveInfos.set(key, info);
+  byName.set(name, info);
   return info;
 }
 
@@ -268,6 +270,8 @@ interface Ctx {
   calcs: Map<string, CalcMon>;
   /** Best expected hit per (attacker, defender) key pair within this decision. */
   offense: Map<number, Offense>;
+  /** duel() per (attacker, defender) within this decision: a Mon is never changed once made, so the pair says it all. */
+  duels: WeakMap<Mon, Map<Mon, number>>;
   evals: number;
 }
 
@@ -529,13 +533,19 @@ const sigmoid = (x: number) => 1 / (1 + Math.exp(-x));
 /** The evaluation's weights (the benchmark tunes them; they're not meant to be changed at runtime). */
 export const TUNE = { kMargin: 1.6, monBase: 0.4, hpPow: 0.75, fitWeight: 0.9, hpWeight: 0.75, frontCost: 0.22, unanswered: 1.2, front: 0.45, tempo: 0.45, tera: 0.08, scaleEnd: 1.3, scale: 0.8, replyTemp: 0.3, switchCost: 0.015, discrete: 0, anyItem: 1, healAt: 0.5, recoverCost: 0.03, followups: 3 };
 
+/** recoveryOf by moves list (a Mon's copies share it). */
+const recoveries = new WeakMap<string[], number>();
+
 /** How much of a turn's damage a Pokémon's recovery undoes over time (Rest costs the turns asleep). */
 function recoveryOf(ctx: Ctx, m: Mon): number {
+  const known = recoveries.get(m.moves);
+  if (known !== undefined) return known;
   let best = 0;
   for (const n of m.moves) {
     const info = moveInfo(ctx.battle, n);
     if (info.recovery) best = Math.max(best, info.id === "rest" ? 0.3 : 0.5);
   }
+  recoveries.set(m.moves, best);
   return best;
 }
 
@@ -543,6 +553,14 @@ function recoveryOf(ctx: Ctx, m: Mon): number {
 function duel(ctx: Ctx, a: Mon, d: Mon): number {
   if (a.hp <= 0) return 0;
   if (d.hp <= 0) return 1;
+  let row = ctx.duels.get(a);
+  if (!row) ctx.duels.set(a, (row = new Map()));
+  let v = row.get(d);
+  if (v === undefined) row.set(d, (v = duelOf(ctx, a, d)));
+  return v;
+}
+
+function duelOf(ctx: Ctx, a: Mon, d: Mon): number {
   const oa = offense(ctx, a, d);
   const od = offense(ctx, d, a);
   const residual = (m: Mon) => (m.status === "psn" || m.status === "tox" ? 0.11 : m.status === "brn" ? 0.0625 : 0) + (m.seeded ? 0.125 : 0) - (m.item === "Leftovers" || m.item === "Black Sludge" ? 0.0625 : 0);
@@ -1056,6 +1074,7 @@ function makeCtx(battle: Battle, side: Side, level: CpuLevel): Ctx {
     trickRoom: !!battle.field.pseudoWeather.trickroom,
     calcs: new Map(),
     offense: new Map(),
+    duels: new WeakMap(),
     evals: 0,
   };
 }
@@ -1166,7 +1185,8 @@ function decide(ctx: Ctx, request: BattleRequest, rand: () => number, thinking: 
     if (o.kind === "move" && o.move) action = { kind: "move", move: o.move.move, tera: o.tera };
     else if (o.kind === "switch") action = { kind: "switch", to: o.index - 1 };
     else continue;
-    let score = expectedValue(ctx, s, action, replies);
+    const base = expectedValue(ctx, s, action, replies);
+    let score = base;
     // Terastallizing is once a battle: it has to buy something.
     if (o.tera) score -= 0.01;
     // Switching and Protect cost tempo the model only partly sees.
@@ -1176,7 +1196,7 @@ function decide(ctx: Ctx, request: BattleRequest, rand: () => number, thinking: 
     if (o.kind === "move" && o.move && moveInfo(ctx.battle, o.move.move).recovery) score -= TUNE.recoverCost;
     // A status move the model has no effect for (Sleep Talk awake, Taunt...) shouldn't beat an attack by nothing.
     if (o.kind === "move" && o.move && isNoop(moveInfo(ctx.battle, o.move.move))) score -= 0.01;
-    const cost = score - expectedValue(ctx, s, action, replies);
+    const cost = score - base;
     scored.push({ text: o.text, action, score: score + jitter(), cost });
   }
   scored.sort((a, b) => b.score - a.score);

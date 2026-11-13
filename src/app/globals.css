@@ -491,6 +491,15 @@ html.no-splash .boot-splash {
   display: none;
 }
 
+/* A first visit's How to play rides in the page's HTML, hidden until an inline script that runs before the first
+   paint shows it (lib/howto-first.ts); the game then keeps it open or removes it. */
+.howto-ssr {
+  display: none;
+}
+html.howto-first .howto-ssr {
+  display: contents;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .menu-item::before,
   .dialog-box[data-done="true"]::after {

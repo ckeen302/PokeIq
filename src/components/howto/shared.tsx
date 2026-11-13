@@ -1,17 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useReducedMotion } from "framer-motion";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/button";
 
 /** What every game's "How to play" pop-up shares: the looping demo's clock, its frame, the rule cards and the two buttons. */
+
+const noSubscribe = () => () => undefined;
+
+/**
+ * A media query, read as the component renders. While a pop-up that came in
+ * the page's HTML (lib/howto-first) hydrates, it reads as `server` (what the
+ * HTML was rendered with), then as the real answer straight after; a pop-up
+ * opened later reads the real answer from its first render, as before.
+ */
+function useMediaQuery(query: string, server: boolean): boolean {
+  return useSyncExternalStore(noSubscribe, () => window.matchMedia(query).matches, () => server);
+}
 
 /**
  * Steps through a demo's frames (each held for its `ms`), looping. Under
  * reduced motion it never moves: it stays on the last frame, a still picture of the result.
  */
 export function useDemoFrame(ms: readonly number[]): number {
-  const reduced = useReducedMotion();
+  const reduced = useMediaQuery("(prefers-reduced-motion: reduce)", false);
   const last = ms.length - 1;
   const [i, setI] = useState(0);
   useEffect(() => {
@@ -65,11 +76,10 @@ function HowToCardGrid({ cards }: { cards: HowToCard[] }) {
  * The rule cards. On a phone they start folded under the demo, so the demo and
  * the two buttons fit on the first screen (the buttons were pushed below the
  * fold) and the pop-up doesn't open with a big block of text that would be the
- * page's largest paint. From 640px up they're open, as before. The pop-up only
- * renders on the client, so the width check can run in the initial state.
+ * page's largest paint. From 640px up they're open, as before.
  */
 export function HowToCards({ cards }: { cards: HowToCard[] }) {
-  const [wide] = useState(() => typeof window === "undefined" || window.matchMedia("(min-width: 640px)").matches);
+  const wide = useMediaQuery("(min-width: 640px)", true);
   if (wide) return <HowToCardGrid cards={cards} />;
   return (
     <details className="rounded-md border bg-shade/30 p-3" data-testid="howto-cards">

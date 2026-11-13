@@ -4,6 +4,7 @@ import { Pikadoku } from "@/components/pikadoku/Pikadoku";
 import { GameInfo } from "@/components/seo/GameInfo";
 import { publicDailies } from "@/lib/server/pikadoku";
 import { ensureMaster } from "@/lib/server/pikadoku-master";
+import { howToFirstScript } from "@/lib/howto-first";
 
 /**
  * Regenerated hourly (ISR): the HTML carries the public daily grids for
@@ -20,10 +21,18 @@ export const metadata: Metadata = pageMetadata({
   path: "/pikadoku",
 });
 
+/** A first visit's How to play shows with the board (lib/howto-first): the game's own check (see Pikadoku's first effect). */
+const HOWTO_FIRST = howToFirstScript(
+  "pokeiq:pikadoku:prefs",
+  'P.seenHowTo!==true&&!((G.pdkPlay&&G.pdkPlay.games)>0)&&!Object.keys((G.pdk&&G.pdk.results)||{}).length&&!new URLSearchParams(location.search).get("c")'
+);
+
 export default async function PikadokuPage() {
   // Admin-scheduled Master grids too (the client still swaps to the API's grid if the page's ever differs).
   await ensureMaster();
   return (
+    <>
+    <script dangerouslySetInnerHTML={{ __html: HOWTO_FIRST }} />
     <div className="space-y-10">
       <Pikadoku initial={publicDailies()} />
       <GameInfo
@@ -47,5 +56,6 @@ export default async function PikadokuPage() {
         ]}
       />
     </div>
+    </>
   );
 }

@@ -10,6 +10,7 @@ import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { SITE_DESCRIPTION, SITE_TAGLINE, jsonLd } from "@/lib/seo";
 import { SPLASH_INIT_SCRIPT, THEME_INIT_SCRIPT } from "@/lib/theme";
 import { BootLoader } from "@/components/layout/BootLoader";
+import { RouteSlot } from "@/components/layout/RouteSlot";
 import { ErrorReporter, ReportProblem } from "@/components/layout/ReportProblem";
 import { SHINY_ORIGIN } from "@/lib/shiny";
 import SPLASH_SCREENS from "@/lib/splash-screens.json";
@@ -143,7 +144,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <DesktopNav />
           </div>
         </header>
-        <main className="container flex-1 pb-28 pt-8 max-md:pb-12 max-md:pt-6 lg:pb-12">{children}</main>
+        <main className="container flex-1 pb-28 pt-8 max-md:pb-12 max-md:pt-6 lg:pb-12">
+          <RouteSlot>{children}</RouteSlot>
+        </main>
         <footer className="mb-[calc(4rem+env(safe-area-inset-bottom))] border-t border-foreground/[0.06] py-8 text-center text-xs text-muted-foreground lg:mb-0">
           <div className="container space-y-2">
             <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2 font-pixel text-[10px] uppercase tracking-wider max-md:grid max-md:grid-cols-2 max-md:gap-x-2 max-md:gap-y-0 max-md:text-[11px] max-md:[&>a:not([href='/privacy'])]:hidden max-md:[&>:is(a,button)]:flex max-md:[&>:is(a,button)]:min-h-11 max-md:[&>:is(a,button)]:items-center max-md:[&>:is(a,button)]:justify-center max-md:[&>button]:text-[11px]">

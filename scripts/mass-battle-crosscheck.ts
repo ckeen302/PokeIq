@@ -116,7 +116,9 @@ export const MATCHUPS: Matchup[] = [
   // Moves that charge, recharge, faint the user, do fixed damage or knock out in one hit, and the situational ones.
   { id: "venusaur-solarbeam", label: "Venusaur (Solar Beam, two turns) vs Toedscruel", a: [["venusaur", 1, { moves: ["Solar Beam", "Sludge Bomb"] }]], b: [["toedscruel", 1]] },
   { id: "garchomp-dig-excadrill", label: "Garchomp (Dig) vs Excadrill (Earthquake)", a: [["garchomp", 1, { moves: ["Dig", "Dragon Claw", "Fire Fang"] }]], b: [["excadrill", 1]] },
-  { id: "porygonz-hyperbeam-banette", label: "Porygon-Z (Hyper Beam) vs Banette", a: [["porygon-z", 1, { moves: ["Hyper Beam", "Thunderbolt"] }]], b: [["banette", 1]] },
+  // Hyper Beam has to land for the recharge turn to count: against a Ghost (Banette, in an earlier version of this row) it
+  // does nothing and never recharges, so the row only measured Thunderbolt and Cursed Body (Porygon2 vs Gengar covers those).
+  { id: "porygonz-hyperbeam-snorlax", label: "Porygon-Z (Hyper Beam) vs Snorlax", a: [["porygon-z", 1, { moves: ["Hyper Beam", "Thunderbolt"] }]], b: [["snorlax", 1]] },
   { id: "electrode2-gliscor", label: "2 Electrode (Explosion) vs Gliscor", a: [["electrode", 2, { moves: ["Explosion", "Thunderbolt", "Foul Play"] }]], b: [["gliscor", 1]] },
   { id: "gengar-nightshade-cloyster", label: "Gengar (Night Shade, Hypnosis, Dream Eater) vs Cloyster", a: [["gengar", 1, { moves: ["Night Shade", "Hypnosis", "Dream Eater"] }]], b: [["cloyster", 1]] },
   { id: "lapras-sheercold-garchomp", label: "Lapras (Sheer Cold) vs Garchomp", a: [["lapras", 1, { moves: ["Sheer Cold", "Freeze-Dry", "Surf"] }]], b: [["garchomp", 1]] },

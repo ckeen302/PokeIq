@@ -77,7 +77,7 @@ export function PikadokuDemo() {
           <div className="h-10">
             {frame.pick && (
               <div className="absolute inset-x-0 z-10 mt-1 flex h-10 items-center gap-2 rounded-md border-2 border-primary/60 bg-card px-2 text-sm font-semibold shadow-lg">
-                <img src={spriteUrl(frame.pick.id)} alt="" width={32} height={32} className="h-8 w-8" style={{ imageRendering: "pixelated" }} />
+                <img src={spriteUrl(frame.pick.id)} alt="" width={32} height={32} loading="lazy" className="h-8 w-8" style={{ imageRendering: "pixelated" }} />
                 {frame.pick.name}
               </div>
             )}
