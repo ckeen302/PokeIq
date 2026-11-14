@@ -7,5 +7,5 @@ export const SOCIALS = [
   { id: "instagram", name: "Instagram", url: "https://www.instagram.com/pokeiq.official/" },
   { id: "x", name: "X", url: "https://x.com/pokeiq" },
   { id: "youtube", name: "YouTube", url: "https://www.youtube.com/@pokeiq" },
-  { id: "discord", name: "Discord", url: "https://discord.gg/fe8sRU2u" },
+  { id: "discord", name: "Discord", url: "https://discord.gg/Uhr4hz7zgZ" },
 ] as const;
