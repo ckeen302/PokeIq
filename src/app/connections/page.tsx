@@ -51,6 +51,7 @@ export default async function ConnectionsPage() {
       <ConnectionsLazyCards />
       <GameInfo
         howToButton
+        noFaq
         path="/connections"
         name={`PokéConnections`}
         description={`PokéConnections is a free Pokémon Connections puzzle: sort sixteen Pokémon into four hidden groups with four mistakes to spare.`}

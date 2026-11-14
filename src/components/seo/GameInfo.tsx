@@ -48,9 +48,11 @@ interface Props {
   howToButton?: boolean;
   /** Self-explanatory pages: keep the search data, show nothing. */
   hidden?: boolean;
+  /** Leave the FAQ out (the list and its structured data): the game explains itself. */
+  noFaq?: boolean;
 }
 
-export function GameInfo({ path, name, intro, steps, faqs, description, howToButton, hidden }: Props) {
+export function GameInfo({ path, name, intro, steps, faqs, description, howToButton, hidden, noFaq }: Props) {
   const app = webGame({ name, path, description });
   const faq = {
     "@context": "https://schema.org",
@@ -61,7 +63,7 @@ export function GameInfo({ path, name, intro, steps, faqs, description, howToBut
   return (
     <section className="mx-auto max-w-3xl space-y-6" aria-label={`About ${name}`}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(app) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(faq) }} />
+      {!noFaq && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(faq) }} />}
       <div className="space-y-3 text-sm text-muted-foreground">
         <h2 className="font-display text-base font-bold uppercase tracking-wider text-foreground">How to play {name}</h2>
         <p className="max-md:hidden">{intro}</p>
@@ -75,15 +77,17 @@ export function GameInfo({ path, name, intro, steps, faqs, description, howToBut
           </ol>
         )}
       </div>
-      <div className="space-y-2">
-        <h2 className="font-display text-base font-bold uppercase tracking-wider">FAQ</h2>
-        {faqs.map((f) => (
-          <details key={f.q} className="group rounded-lg border bg-card px-4 py-3 text-sm">
-            <summary className="tap cursor-pointer font-semibold">{f.q}</summary>
-            <p className="mt-2 text-muted-foreground">{f.a}</p>
-          </details>
-        ))}
-      </div>
+      {!noFaq && (
+        <div className="space-y-2">
+          <h2 className="font-display text-base font-bold uppercase tracking-wider">FAQ</h2>
+          {faqs.map((f) => (
+            <details key={f.q} className="group rounded-lg border bg-card px-4 py-3 text-sm">
+              <summary className="tap cursor-pointer font-semibold">{f.q}</summary>
+              <p className="mt-2 text-muted-foreground">{f.a}</p>
+            </details>
+          ))}
+        </div>
+      )}
       <MoreGames current={path} />
     </section>
   );
