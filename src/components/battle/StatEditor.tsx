@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils";
 import { NumberInput } from "./controls";
 
 const SHORT: Record<StatKey, string> = { hp: "HP", atk: "Atk", def: "Def", spa: "SpA", spd: "SpD", spe: "Spe" };
-const GRID = "grid grid-cols-[40px_30px_minmax(0,1fr)_52px_44px_44px] items-center gap-2";
+// Phones: the EV slider gets its own full-width line under the stat's row, so it is wide enough to drag.
+const GRID = "grid grid-cols-[40px_30px_minmax(0,1fr)_52px_44px_44px] items-center gap-2 max-sm:grid-cols-[40px_30px_minmax(0,1fr)_minmax(0,1fr)_44px]";
 
 /**
  * EV sliders and IV boxes per stat, with the stats they come to at this
@@ -62,7 +63,7 @@ export function StatEditor({
       <div className={cn(GRID, "hud-label")}>
         <span title={canNature ? "Click a stat to set the nature's + and −" : undefined}>Stat</span>
         <span className="text-right">Base</span>
-        <span>{dvs ? "Stat Exp" : "EVs"}</span>
+        <span className="max-sm:hidden">{dvs ? "Stat Exp" : "EVs"}</span>
         <span className="text-center">EV</span>
         <span className="text-center">{dvs ? "DV" : "IV"}</span>
         <span className="text-right">Total</span>
@@ -114,7 +115,7 @@ export function StatEditor({
               disabled={follows(s)}
               aria-label={`${STAT_LABELS[s]} EVs`}
               onChange={(e) => setEv(s, Number(e.target.value))}
-              className="h-2 w-full cursor-pointer accent-[hsl(var(--primary))] disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-2 w-full cursor-pointer accent-[hsl(var(--primary))] disabled:cursor-not-allowed disabled:opacity-50 max-sm:col-span-full max-sm:row-start-2 max-sm:h-6"
             />
             {follows(s) ? (
               <span className="text-center font-mono text-xs tabular-nums text-muted-foreground" title="Special stat experience">
@@ -159,14 +160,14 @@ export function StatEditor({
                 : `EVs ${total} / ${limit} · ${left} left`}
         </span>
         <span className="flex gap-1.5">
-          <button type="button" onClick={() => onEvs({ hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 })} className="hud-label hover:text-foreground">
+          <button type="button" onClick={() => onEvs({ hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 })} className="tap hud-label hover:text-foreground">
             Clear EVs
           </button>
           <span className="hud-label">·</span>
           <button
             type="button"
             onClick={() => onIvs({ hp: MAX_IV, atk: MAX_IV, def: MAX_IV, spa: MAX_IV, spd: MAX_IV, spe: MAX_IV })}
-            className="hud-label hover:text-foreground"
+            className="tap hud-label hover:text-foreground"
           >
             {dvs ? "Max DVs" : "Max IVs"}
           </button>

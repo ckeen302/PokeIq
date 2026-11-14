@@ -114,7 +114,7 @@ export function CalcPanel({
           <ItemSelect label={`${title} item`} items={lists.items} value={side.item} onSelect={(item) => update({ item: item?.name ?? "" })} />
         </Field>
         {gen.num >= 3 && (
-          <Field label="Nature">
+          <Field label="Nature" className="max-sm:col-span-2">
             <NatureSelect label={`${title} nature`} natures={lists.natures} value={side.nature} onChange={(n) => update({ nature: n })} />
           </Field>
         )}
@@ -128,7 +128,7 @@ export function CalcPanel({
           </select>
         </Field>
         {gen.num >= 9 && (
-          <Field label="Tera type">
+          <Field label="Tera type" className="max-sm:row-span-2">
             <div className="flex gap-1.5 max-md:flex-col">
               <TypeSelect label={`${title} Tera type`} types={lists.types} value={side.teraType} onChange={(t) => update({ teraType: t })} />
               <Toggle pressed={side.terastallized} onChange={(terastallized) => update({ terastallized })} className="h-9 shrink-0">
@@ -256,7 +256,7 @@ export function CalcPanel({
               {label}
             </Toggle>
           ))}
-          <label className="inline-flex h-8 items-center gap-1.5 rounded-md border border-foreground/10 bg-shade/30 px-2 text-xs font-semibold text-muted-foreground">
+          <label className="inline-flex h-8 items-center max-sm:h-10 gap-1.5 rounded-md border border-foreground/10 bg-shade/30 px-2 text-xs font-semibold text-muted-foreground">
             Spikes
             <select
               aria-label={`${title} Spikes layers`}
@@ -289,7 +289,7 @@ function LoadFromTeam({ title, onPick }: { title: string; onPick: (team: BattleT
         type="button"
         onClick={() => setOpen(!open)}
         aria-expanded={open}
-        className="inline-flex items-center gap-1.5 rounded-md border border-foreground/10 bg-shade/30 px-2.5 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-screen/50 hover:text-foreground"
+        className="inline-flex items-center gap-1.5 rounded-md border border-foreground/10 bg-shade/30 px-2.5 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-screen/50 hover:text-foreground max-sm:min-h-10"
       >
         <FolderOpen className="h-3.5 w-3.5" aria-hidden /> Load from my team
       </button>

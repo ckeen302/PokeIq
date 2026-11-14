@@ -86,7 +86,7 @@ function BannedTag({ reason }: { reason: string }) {
   );
 }
 
-const filterSelect = "h-7 min-w-0 rounded border border-foreground/15 bg-shade/40 px-1.5 text-xs focus-visible:border-screen/70 focus-visible:outline-none";
+const filterSelect = "h-7 min-w-0 max-sm:h-10 rounded border border-foreground/15 bg-shade/40 px-1.5 text-xs focus-visible:border-screen/70 focus-visible:outline-none";
 
 /** What the species search can filter on (the team builder passes it; the calculator doesn't). */
 export interface SpeciesFilterSource {
