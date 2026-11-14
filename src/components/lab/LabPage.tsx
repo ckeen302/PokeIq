@@ -61,6 +61,11 @@ function LabHero({ shots }: { shots: LabExperience[] }) {
         <div className="relative z-10 space-y-5 max-sm:space-y-3">
           <p className="hud-label flex items-center gap-2 text-screen max-sm:hidden">
             <span className="led h-1.5 w-1.5 text-success" aria-hidden /> PokéIQ // 3D Lab
+            <span className="rounded border border-primary/60 bg-primary/15 px-2 py-1 font-pixel text-[11px] uppercase leading-none tracking-wider text-primary" data-testid="lab-beta" title="The 3D Lab is in beta: it's still being improved.">Beta</span>
+          </p>
+          {/* Phones have no kicker line: the beta tag sits above the title. */}
+          <p className="sm:hidden">
+            <span className="rounded border border-primary/60 bg-primary/15 px-1.5 py-0.5 font-pixel text-[10px] uppercase leading-none tracking-wider text-primary" title="The 3D Lab is in beta: it's still being improved.">Beta</span>
           </p>
           <h1 className="lab-title font-display text-6xl font-bold uppercase leading-[0.9] tracking-tight sm:text-8xl">
             <b>3D</b> Lab
