@@ -202,7 +202,7 @@ export function SideCard({
           <div className="flex flex-wrap gap-1.5">
             {sideFieldFor(setup.gen).map(({ key, layers }) =>
               layers > 1 ? (
-                <label key={key} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-foreground/10 bg-shade/30 px-2 text-xs font-semibold text-muted-foreground">
+                <label key={key} className="inline-flex h-8 items-center max-sm:h-10 gap-1.5 rounded-md border border-foreground/10 bg-shade/30 px-2 text-xs font-semibold text-muted-foreground">
                   {SIDE_FIELD_NAMES[key]}
                   <select
                     aria-label={`${name}: ${SIDE_FIELD_NAMES[key]} layers`}

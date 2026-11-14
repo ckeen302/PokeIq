@@ -66,8 +66,15 @@ export function Hud({ mon, mine, compact, dense, tag }: { mon: MonSnap; mine: bo
       data-owner={tag ? mon.owner : undefined}
     >
       {tag && <span className="block truncate font-pixel text-[8px] uppercase leading-3 text-white/60" data-testid="hud-owner">{tag}</span>}
-      <div className="flex items-center gap-1.5">
-        <span className={cn("min-w-0 flex-1 truncate font-display font-bold uppercase tracking-wide drop-shadow-[0_1px_0_rgb(0_0_0/0.6)]", dense ? "text-[11px]" : compact ? "text-xs" : "text-sm")}>
+      {/* Phones: the whole name shows. It takes the row; the chips drop to a second line when they don't fit beside it. */}
+      <div className="flex items-center gap-1.5 max-sm:flex-wrap max-sm:gap-y-0.5">
+        <span
+          className={cn(
+            "min-w-0 flex-1 truncate font-display font-bold uppercase tracking-wide drop-shadow-[0_1px_0_rgb(0_0_0/0.6)] max-sm:basis-auto max-sm:whitespace-normal max-sm:leading-tight max-sm:tracking-normal max-sm:[overflow-wrap:anywhere]",
+            dense ? "text-[11px]" : compact ? "text-xs" : "text-sm max-sm:text-[13px]"
+          )}
+          data-testid="hud-name"
+        >
           {mon.name} {genderMark(mon.gender)}
         </span>
         {mon.terastallized && (
@@ -86,7 +93,7 @@ export function Hud({ mon, mine, compact, dense, tag }: { mon: MonSnap; mine: bo
         <span className="font-pixel text-[8px] text-warning">HP</span>
         {/* Keyed by the Pokémon: one switching in starts at its own HP, no damage ghost from the last one. */}
         <HpBar key={mon.key} hp={mon.fainted ? 0 : mon.hp} maxhp={mon.maxhp} className={cn("flex-1", dense ? "h-1.5" : compact ? "h-2" : "h-2.5")} />
-        <span className={cn("text-right font-pixel tabular-nums", dense ? "w-[3.6rem] text-[9px]" : "w-[4.5rem] text-[10px]", low ? "text-[#ff8a9a]" : "text-white/85")}>{mine ? `${mon.fainted ? 0 : mon.hp}/${mon.maxhp}` : `${mon.fainted ? 0 : percent}%`}</span>
+        <span className={cn("text-right font-pixel tabular-nums", dense ? "w-[3.6rem] text-[9px]" : cn("w-[4.5rem] text-[10px]", !mine && "max-sm:w-[2.75rem]"), low ? "text-[#ff8a9a]" : "text-white/85")}>{mine ? `${mon.fainted ? 0 : mon.hp}/${mon.maxhp}` : `${mon.fainted ? 0 : percent}%`}</span>
       </div>
       {(boosts.length > 0 || mon.volatiles.length > 0) && (
         <div className="mt-1 flex flex-wrap gap-1">

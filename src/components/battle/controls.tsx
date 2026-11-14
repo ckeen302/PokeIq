@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 /** Form controls shared by the team builder and the damage calculator. */
 
 export const inputClass =
-  "h-9 w-full min-w-0 rounded-md border-2 border-foreground/15 bg-shade/40 px-2.5 text-sm focus-visible:border-screen/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 disabled:opacity-50";
+  "h-9 w-full min-w-0 max-sm:h-10 rounded-md border-2 border-foreground/15 bg-shade/40 px-2.5 text-sm focus-visible:border-screen/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 disabled:opacity-50";
 
 export { normalize } from "@/lib/battle/search";
 
@@ -233,7 +233,7 @@ export function SearchSelect<T>({
         }
       }}
     >
-      {leading && <span className="pointer-events-none absolute left-1 top-0 flex h-9 items-center">{leading}</span>}
+      {leading && <span className="pointer-events-none absolute left-1 top-0 flex h-9 items-center max-sm:h-10">{leading}</span>}
       <input
         ref={inputRef}
         role="combobox"
@@ -285,7 +285,7 @@ export function SearchSelect<T>({
           type="button"
           onClick={onClear}
           aria-label={`Clear ${label.toLowerCase()}`}
-          className="absolute right-1 top-0 flex h-9 w-7 items-center justify-center text-muted-foreground hover:text-foreground"
+          className="absolute right-1 top-0 flex h-9 w-7 items-center max-sm:h-10 max-sm:w-9 justify-center text-muted-foreground hover:text-foreground"
         >
           <X className="h-3.5 w-3.5" aria-hidden />
         </button>

@@ -258,7 +258,7 @@ export function SetEditor({
                 const move = name ? gen.moves.get(name) : undefined;
                 return (
                   <div key={i} className="flex items-center gap-2">
-                    <span className="font-pixel text-[10px] text-muted-foreground">{i + 1}</span>
+                    <span className="font-pixel text-[10px] text-muted-foreground max-sm:w-3 max-sm:shrink-0">{i + 1}</span>
                     <MoveSelect
                       label={`Move ${i + 1}`}
                       moves={learnable}
@@ -270,7 +270,7 @@ export function SetEditor({
                       types={dex.types}
                       onSelect={(m) => pickMove(i, m)}
                     />
-                    <span className="w-14 shrink-0 text-right">{move && <BattleType type={move.type} />}</span>
+                    <span className="w-14 shrink-0 text-right max-sm:w-20">{move && <BattleType type={move.type} />}</span>
                   </div>
                 );
               })}
