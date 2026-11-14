@@ -5,7 +5,7 @@ import { Swords } from "lucide-react";
 import { ModeGrid } from "@/components/home/ModeGrid";
 import { QuizDuelCard } from "@/components/quiz/QuizDuelCard";
 import { GameInfo } from "@/components/seo/GameInfo";
-import { FORMAT_INFO, PLAYABLE_FORMATS, QUIZ_PRESETS } from "@/lib/modes";
+import { FORMAT_INFO, PLAYABLE_FORMATS } from "@/lib/modes";
 
 export const metadata: Metadata = pageMetadata({
   title: "Who's That Pokémon Quiz and More Pokémon Quiz Modes",
@@ -20,7 +20,6 @@ const MORE = [
 ];
 
 export default function PlayPage() {
-  const genPresets = QUIZ_PRESETS.filter((p) => p.gens);
   return (
     <div className="mx-auto max-w-5xl space-y-10">
       <div className="space-y-2 text-center">
@@ -50,16 +49,6 @@ export default function PlayPage() {
         <p className="text-sm text-muted-foreground">Send a friend a link and answer the same questions head to head, live.</p>
         <QuizDuelCard />
       </section>
-      <section className="space-y-3">
-        <h2 className="text-xl font-bold">Quiz by generation</h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          {genPresets.map((p) => (
-            <Link key={p.slug} href={`/quiz/${p.slug}`} className="rounded-lg border bg-card p-4 text-sm font-medium transition hover:border-primary/50">
-              {p.h1}
-            </Link>
-          ))}
-        </div>
-      </section>
       <GameInfo
         hidden
         path="/play"
@@ -74,7 +63,7 @@ export default function PlayPage() {
         ]}
         faqs={[
           { q: `What formats are there?`, a: `Classic is 10 questions with 15 seconds each, Survival is endless with 3 lives and Blitz gives you 60 seconds to answer as many as you can.` },
-          { q: `Can I choose which generations to play?`, a: `Yes, pick the generations to include, or jump straight to a quiz by generation.` },
+          { q: `Can I choose which generations to play?`, a: `Yes, pick a mode, then choose the generations to include.` },
         ]}
       />
     </div>
