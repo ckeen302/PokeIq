@@ -21,9 +21,9 @@ const GAMES = [
   { href: "/pokedex", label: "Pokédex" },
 ];
 
-export function MoreGames({ current }: { current?: string }) {
+export function MoreGames({ current, centered }: { current?: string; centered?: boolean }) {
   return (
-    <nav aria-label="More games" className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground max-md:hidden">
+    <nav aria-label="More games" className={`flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground max-md:hidden${centered ? " justify-center" : ""}`}>
       <span className="font-semibold text-foreground">More games:</span>
       {GAMES.filter((g) => g.href !== current).map((g) => (
         <Link key={g.href} href={g.href} className="underline-offset-2 hover:text-foreground hover:underline">
@@ -64,11 +64,14 @@ export function GameInfo({ path, name, intro, steps, faqs, description, howToBut
     <section className="mx-auto max-w-3xl space-y-6" aria-label={`About ${name}`}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(app) }} />
       {!noFaq && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(faq) }} />}
-      <div className="space-y-3 text-sm text-muted-foreground">
+      {/* With the button (the rules are in its pop-up) the short block is centred; a list of steps reads from the left. */}
+      <div className={howToButton ? "space-y-3 text-center text-sm text-muted-foreground" : "space-y-3 text-sm text-muted-foreground"}>
         <h2 className="font-display text-base font-bold uppercase tracking-wider text-foreground">How to play {name}</h2>
         <p className="max-md:hidden">{intro}</p>
         {howToButton ? (
-          <HowToButton name={name} />
+          <div className="flex justify-center">
+            <HowToButton name={name} />
+          </div>
         ) : (
           <ol className="list-decimal space-y-1 pl-5">
             {steps.map((s) => (
@@ -88,7 +91,7 @@ export function GameInfo({ path, name, intro, steps, faqs, description, howToBut
           ))}
         </div>
       )}
-      <MoreGames current={path} />
+      <MoreGames current={path} centered={howToButton} />
     </section>
   );
 }
