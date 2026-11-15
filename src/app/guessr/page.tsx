@@ -17,6 +17,7 @@ export default function GuessrPage() {
       <GeoGame regions={geoRegions()} />
       <GameInfo
         path="/guessr"
+        noFaq
         name={`PokéGuessr`}
         howToButton
         description={`PokéGuessr is a free Pokémon GeoGuessr: look at an in-game view, drop a pin on the map of the Pokémon world and score up to 25,000 points.`}

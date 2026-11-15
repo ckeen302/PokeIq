@@ -164,6 +164,7 @@ export default function BattlePage() {
       </section>
       <GameInfo
         path="/battle"
+        noFaq
         name="Pokémon battles"
         description="A free Pokémon battle simulator on Pokémon Showdown's engine: battle the computer, a friend or a stranger, with a team builder, damage calculator and Battle Lab."
         intro="This Pokémon battle simulator runs on Pokémon Showdown's own engine: battle the computer, a friend through a link, or an opponent found online."
