@@ -854,6 +854,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
                 />
                 <ModeCard
                   preview={tileImage(region.map.src)}
+                  whole
                   icon={<Flame className="h-5 w-5" aria-hidden />}
                   title="Streak"
                   blurb={
@@ -1183,6 +1184,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
 
 function ModeCard({
   preview,
+  whole,
   icon,
   title,
   blurb,
@@ -1192,6 +1194,8 @@ function ModeCard({
   warm,
 }: {
   preview: string;
+  /** The picture is a map: show all of it instead of cropping it to the frame. */
+  whole?: boolean;
   icon: React.ReactNode;
   title: string;
   blurb: string;
@@ -1209,14 +1213,22 @@ function ModeCard({
       {...warm}
       className="menu-item group flex flex-col gap-3 overflow-hidden rounded-lg border bg-card p-4 text-left transition-colors hover:border-screen/60 max-md:flex-row max-md:items-center max-md:p-3"
     >
-      {/* eslint-disable-next-line @next/next/no-img-element -- CDN-cached preview */}
-      <img
-        src={preview}
-        alt=""
-        loading="lazy"
-        decoding="async"
-        className="aspect-[16/10] w-full rounded-sm bg-shade/30 object-cover opacity-85 transition-opacity group-hover:opacity-100 max-md:w-28 max-md:shrink-0"
-      />
+      {whole ? (
+        // A map: all of it, whatever its shape; the frame around it is the maps' own sea colour.
+        <span className="relative block aspect-[16/10] w-full overflow-hidden rounded-sm bg-[#165c97] opacity-85 transition-opacity group-hover:opacity-100 max-md:w-28 max-md:shrink-0" data-testid="mode-card-map">
+          {/* eslint-disable-next-line @next/next/no-img-element -- CDN-cached preview */}
+          <img src={preview} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-contain" />
+        </span>
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element -- CDN-cached preview
+        <img
+          src={preview}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="aspect-[16/10] w-full rounded-sm bg-shade/30 object-cover opacity-85 transition-opacity group-hover:opacity-100 max-md:w-28 max-md:shrink-0"
+        />
+      )}
       {/* A phone lists the modes as rows (picture, then the words), so both fit on screen. */}
       <span className="flex min-w-0 flex-col gap-1 md:contents">
         <span className="flex items-center gap-2 text-screen">
