@@ -225,14 +225,15 @@ async function weekly(width, height) {
   await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
   await closeHowTo(page);
   for (const id of ["play", "multiplayer", "maps", "you"]) await page.getByTestId(`geo-hub-${id}`).waitFor();
-  for (const id of ["geo-solo-card", "geo-daily-card", "geo-weekly-card", "region-streak-card", "geo-duels-card", "geo-ranked-tile", "geo-party-card", "geo-map-gallery", "globe-card", "geo-history-link"]) {
+  for (const id of ["geo-solo-card", "geo-daily-card", "geo-weekly-card", "region-streak-card", "geo-duels-card", "geo-ranked-tile", "geo-party-card", "globe-card", "geo-history-link"]) {
     if ((await page.getByTestId(id).count()) !== 1) errors.push(`the hub has no ${id}`);
   }
   if ((await page.getByTestId("geo-history-link").getAttribute("href")) !== "/guessr/history") errors.push("the duel history link doesn't go to /guessr/history");
   await page.getByTestId("geo-achievements").waitFor({ timeout: 15_000 });
   await page.getByTestId("geo-mastery").waitFor();
-  // A map tile picks the map for a solo game.
-  await page.getByTestId("geo-map-tile-johto").click();
+  // The hub has no second map picker: maps are chosen in the solo setup.
+  if (await page.locator('[data-testid^="geo-map-tile-"]').count()) errors.push("the hub still shows a map grid");
+  await page.getByRole("radio", { name: "Johto" }).first().click();
   await page.getByRole("radio", { name: "Johto", checked: true }).waitFor();
   // The Ranked tile opens the duel panel on the ranked queue.
   await page.getByTestId("geo-open-ranked").click();

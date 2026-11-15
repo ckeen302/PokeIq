@@ -314,11 +314,6 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
   /** The hub's Solo tile: down to the solo game's setup. */
   const toSolo = () => scrollTo("solo");
-  /** A map tile: that map, then the solo setup. */
-  function pickMap(id: string) {
-    chooseRegion(id);
-    toSolo();
-  }
   /** The Party tile (or /guessr#party): opens the party form, so the hub's other forms are the only ones on the page until then. */
   const [partyOpen, setPartyOpen] = useState(false);
   useEffect(() => {
@@ -634,7 +629,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
             {[
               ["play", "Play"],
               ["multiplayer", "Multiplayer"],
-              ["maps", "Maps"],
+              ["maps", "Explore"],
               ["you", "You"],
             ].map(([id, name]) => (
               <a
@@ -938,24 +933,9 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
           )}
         </HubSection>
 
-        {/* ---- Maps ---- */}
-        <HubSection id="maps" eyebrow="Official maps" title="Maps" aside={<p className="text-sm text-muted-foreground">Pick a map to set up a solo game on it.</p>}>
-          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5" data-testid="geo-map-gallery">
-            {maps.map((r) => (
-              <MapTile key={r.id} map={r} selected={r.id === region.id} onPick={() => pickMap(r.id)} />
-            ))}
-          </ul>
-          {themed.length > 0 && (
-            <>
-              <p className="hud-label pt-2">Themed maps · the whole world, one kind of place</p>
-              <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-                {themed.map((r) => (
-                  <MapTile key={r.id} map={r} selected={r.id === region.id} onPick={() => pickMap(r.id)} />
-                ))}
-              </ul>
-            </>
-          )}
-          <div className="grid gap-4 pt-2 lg:grid-cols-2">
+        {/* ---- Explore: the globe and the atlas (maps are picked in the solo setup) ---- */}
+        <HubSection id="maps" eyebrow="The Pokémon world" title="Explore">
+          <div className="grid gap-4 lg:grid-cols-2">
             <Card className="overflow-hidden border-primary/40" data-testid="globe-card">
               <CardContent className="flex flex-col items-center gap-4 p-5 sm:flex-row">
                 <GlobePreview />
@@ -1198,47 +1178,6 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     </div>
       )}
     </GameShell>
-  );
-}
-
-/** A map in the hub's Maps section: its preview, name and places; picking it sets up a solo game there. */
-function MapTile({ map, selected, onPick }: { map: GeoRegionInfo; selected: boolean; onPick: () => void }) {
-  return (
-    <li className="min-w-0">
-      <button
-        type="button"
-        onClick={onPick}
-        aria-pressed={selected}
-        data-testid={`geo-map-tile-${map.id}`}
-        className={cn(
-          "group relative block aspect-[4/3] w-full overflow-hidden rounded-lg border bg-shade/30 text-left transition-colors",
-          selected ? "border-screen ring-2 ring-screen/40" : "hover:border-screen/60"
-        )}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element -- CDN-cached preview */}
-        <img
-          src={map.preview ?? tileImage(map.map.src)}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          className="absolute inset-0 h-full w-full object-cover opacity-75 transition-[opacity,transform] duration-300 group-hover:scale-[1.04] group-hover:opacity-100"
-        />
-        <span className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" aria-hidden />
-        <span className="absolute inset-x-0 bottom-0 space-y-0.5 p-2.5">
-          <span className="flex items-center gap-1.5 font-display text-base font-bold uppercase leading-tight text-white sm:text-lg">
-            {map.id === WORLD_REGION ? <Globe2 className="h-4 w-4 shrink-0" aria-hidden /> : map.theme ? <Shapes className="h-4 w-4 shrink-0" aria-hidden /> : null}
-            <span className="min-w-0 break-words">{map.name}</span>
-          </span>
-        </span>
-        {/* The tile's name is its visible text, then what picking it does. */}
-        <span className="sr-only">, set up a solo game on this map</span>
-        {selected && (
-          <span className="absolute right-2 top-2 rounded-sm bg-screen px-1.5 py-1 font-pixel text-[9px] uppercase leading-none text-background" aria-hidden>
-            Selected
-          </span>
-        )}
-      </button>
-    </li>
   );
 }
 
