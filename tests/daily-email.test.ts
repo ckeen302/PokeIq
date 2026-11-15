@@ -195,7 +195,8 @@ describe("double opt-in and unsubscribe", () => {
     expect(sent).toHaveLength(1);
 
     const token = new URL(sent[0].text.match(/http\S+/)![0]).searchParams.get("token");
-    expect(await confirmByToken(token, { store, now: () => Date.now() })).toBe("confirmed");
+    // Opened an hour after it was sent (not the real clock: the link expires a week after the fixed send time above).
+    expect(await confirmByToken(token, { store, now: () => Date.parse("2026-11-08T11:00:00Z") })).toBe("confirmed");
     expect(await store.candidates(TODAY)).toHaveLength(1);
   });
 
