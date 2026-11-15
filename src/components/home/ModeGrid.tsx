@@ -35,6 +35,31 @@ const EXTRAS: Tile[] = [
   },
 ];
 
+/**
+ * The order on the page: the quizzes most visitors are likely to pick first,
+ * the more specialist ones last. A tile that isn't listed goes to the end.
+ */
+const ORDER = [
+  "whos-that",
+  "which-pokemon",
+  "higher-lower",
+  "name-em-all",
+  "shiny",
+  "zoom-reveal",
+  "types",
+  "cry",
+  "mixed",
+  "whose-team",
+  "anime",
+  "games",
+  "dex",
+  "competitive",
+];
+const rank = (key: string) => {
+  const i = ORDER.indexOf(key);
+  return i < 0 ? ORDER.length : i;
+};
+
 /** Game-menu list of modes: ▶ cursor on hover, accent stripe per mode. */
 export function ModeGrid() {
   const progress = useProgress();
@@ -54,7 +79,9 @@ export function ModeGrid() {
           };
         }),
         ...EXTRAS,
-      ].map((t, i) => (
+      ]
+        .sort((a, b) => rank(a.key) - rank(b.key))
+        .map((t, i) => (
         <div key={t.key} className={ENTER} style={{ animationDelay: `${50 + i * 50}ms` }}>
           <Link
             href={t.href}
