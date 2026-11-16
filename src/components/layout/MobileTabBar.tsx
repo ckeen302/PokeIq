@@ -39,7 +39,7 @@ import { cn } from "@/lib/utils";
 const TABS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/", label: "Home", icon: Home },
   { href: "/guessr", label: "Guessr", icon: Compass },
-  { href: "/pokedle", label: "Pokédle", icon: Search },
+  { href: "/pokedle", label: "Wordle", icon: Search },
   { href: "/battle", label: "Battle", icon: Swords },
 ];
 
@@ -47,7 +47,7 @@ const TABS: { href: string; label: string; icon: LucideIcon }[] = [
 const MORE_TILES: { href: string; label: string; icon: LucideIcon; accent: string }[] = [
   { href: "/daily", label: "Daily", icon: CalendarDays, accent: "340 86% 60%" },
   { href: "/connections", label: "Connections", icon: LayoutGrid, accent: "42 98% 60%" },
-  { href: "/pikadoku", label: "Pikadoku", icon: Grid3x3, accent: "190 90% 55%" },
+  { href: "/pikadoku", label: "Sudoku", icon: Grid3x3, accent: "190 90% 55%" },
   { href: "/play", label: "Quizzes", icon: Gamepad2, accent: "24 95% 58%" },
   { href: "/pokedex", label: "Pokédex", icon: BookOpen, accent: "214 90% 64%" },
   { href: LAB_PATH, label: "3D Lab", icon: Box, accent: "300 75% 68%" },

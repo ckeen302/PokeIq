@@ -4038,7 +4038,7 @@ async function homeStep() {
 }
 
 /**
- * The phone's navigation: a five-tab bar (Home, Guessr, Pokédle, Battle, More) and a More sheet with every
+ * The phone's navigation: a five-tab bar (Home, Guessr, Wordle, Battle, More) and a More sheet with every
  * other destination, a header with only the logo and the avatar, nothing under the bar, nothing sideways at
  * 360, 390 and 430, and the 3D stages full screen without the bars.
  */
@@ -4048,7 +4048,7 @@ async function phoneNavStep() {
   await gotoSettled(m, BASE);
   const bar = m.getByTestId("tabbar");
   const labels = (await bar.locator("a, button").allInnerTexts()).map((t) => t.trim());
-  if (labels.join() !== "Home,Guessr,Pokédle,Battle,More") errors.push(`phone nav: the tabs read ${labels.join()}`);
+  if (labels.join() !== "Home,Guessr,Wordle,Battle,More") errors.push(`phone nav: the tabs read ${labels.join()}`);
   if ((await bar.getByRole("link", { name: "Home" }).getAttribute("aria-current")) !== "page") errors.push("phone nav: Home isn't the current tab on /");
   for (const b of await bar.locator("a, button").evaluateAll((els) => els.map((e) => e.getBoundingClientRect()))) {
     if (b.width < 44 || b.height < 44) errors.push(`phone nav: a tab is ${Math.round(b.width)}×${Math.round(b.height)}, under 44px`);
