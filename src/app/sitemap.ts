@@ -105,6 +105,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/users`, changeFrequency: "monthly", priority: 0.3 },
     { url: `${SITE_URL}/feedback`, changeFrequency: "yearly", priority: 0.2 },
     { url: `${SITE_URL}/privacy`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${SITE_URL}/credits`, changeFrequency: "yearly", priority: 0.1 },
     ...QUIZ_PRESETS.map((p) => ({ url: `${SITE_URL}/quiz/${p.slug}`, changeFrequency: "weekly" as const, priority: 0.8 })),
     { url: `${SITE_URL}${WHICH_POKEMON_PATH}`, changeFrequency: "monthly", priority: 0.8 },
     ...WHICH_POKEMON_POOL.map((p) => ({ url: `${SITE_URL}${WHICH_POKEMON_PATH}/${p.slug}`, changeFrequency: "monthly" as const, priority: 0.5 })),
