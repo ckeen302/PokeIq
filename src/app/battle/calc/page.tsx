@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
-import { MoreGames } from "@/components/seo/GameInfo";
 import { BattleHeader } from "@/components/battle/BattleHeader";
 import { DamageCalc } from "@/components/battle/DamageCalc";
 
@@ -19,7 +18,6 @@ export default function CalcPage() {
         A Pokémon damage calculator: every move&apos;s damage range, KO chance and Showdown description, both ways. Powered by the Smogon damage calculator.
       </BattleHeader>
       <DamageCalc />
-      <MoreGames />
     </div>
   );
 }

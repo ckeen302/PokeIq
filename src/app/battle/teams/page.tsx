@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
-import { MoreGames } from "@/components/seo/GameInfo";
 import { BattleHeader } from "@/components/battle/BattleHeader";
 import { TeamBuilder } from "@/components/battle/TeamBuilder";
 
@@ -20,7 +19,6 @@ export default function TeamsPage() {
         for battle.
       </BattleHeader>
       <TeamBuilder />
-      <MoreGames />
     </div>
   );
 }
