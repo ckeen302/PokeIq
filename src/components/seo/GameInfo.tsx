@@ -1,37 +1,12 @@
-import Link from "@/components/ui/Link";
 import { HowToButton } from "./HowToButton";
 import { webGame } from "@/lib/structured-data";
 import { jsonLd } from "@/lib/seo";
 
-/** Static SEO copy under a game: intro, how to play, FAQ (collapsed), more-games links and JSON-LD. Phones keep just the how-to and the FAQ: the tab bar already links the games. */
+/** Static SEO copy under a game: intro, how to play, FAQ (collapsed) and JSON-LD. */
 
 export interface Faq {
   q: string;
   a: string;
-}
-
-const GAMES = [
-  { href: "/pokedle", label: "Pokédle" },
-  { href: "/guessr", label: "PokéGuessr" },
-  { href: "/connections", label: "Connections" },
-  { href: "/pikadoku", label: "Pikadoku" },
-  { href: "/play", label: "Pokémon quizzes" },
-  { href: "/battle", label: "Battles" },
-  { href: "/daily", label: "Daily Challenge" },
-  { href: "/pokedex", label: "Pokédex" },
-];
-
-export function MoreGames({ current, centered }: { current?: string; centered?: boolean }) {
-  return (
-    <nav aria-label="More games" className={`flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground max-md:hidden${centered ? " justify-center" : ""}`}>
-      <span className="font-semibold text-foreground">More games:</span>
-      {GAMES.filter((g) => g.href !== current).map((g) => (
-        <Link key={g.href} href={g.href} className="underline-offset-2 hover:text-foreground hover:underline">
-          {g.label}
-        </Link>
-      ))}
-    </nav>
-  );
 }
 
 interface Props {
@@ -91,7 +66,6 @@ export function GameInfo({ path, name, intro, steps, faqs, description, howToBut
           ))}
         </div>
       )}
-      <MoreGames current={path} centered={howToButton} />
     </section>
   );
 }
