@@ -672,7 +672,7 @@ export function Connections({ customId, initial }: { customId?: string; initial?
 
   /** A community puzzle: plays like practice, with its own byline and votes above the grid (see the page). */
   const isCustom = target?.kind === "practice" && CUSTOM_SEED_RE.test(target.seed);
-  const title = isCustom ? "PokéConnections · Community puzzle" : mode === "practice" ? "PokéConnections · Practice" : daily ? `PokéConnections #${connNumber(daily.date)}${mode === "archive" ? ` · Archive (${daily.date})` : ""}` : "PokéConnections";
+  const title = isCustom ? "Community puzzle" : mode === "practice" ? "Practice" : daily ? `Daily #${connNumber(daily.date)}${mode === "archive" ? ` · Archive (${daily.date})` : ""}` : "Daily";
   const iconButton =
     "relative rounded-md p-2 max-sm:p-2.5 text-muted-foreground transition-colors hover:bg-screen/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40";
   const motionFor = (id: number): TileMotion => (tileMotion?.ids.includes(id) ? tileMotion.kind : null);
@@ -689,7 +689,7 @@ export function Connections({ customId, initial }: { customId?: string; initial?
             <p className="hud-label text-screen" data-testid="conn-title">
               {title}
             </p>
-            <h1 className="font-display text-2xl font-bold uppercase tracking-tight sm:text-4xl">Find the {SIZE_WORDS[size]} groups</h1>
+            <h1 className="font-display text-2xl font-bold uppercase tracking-tight sm:text-4xl">PokéConnections</h1>
             <p className="hidden text-sm text-muted-foreground sm:block">
               {SIZE_SQUARES[size]} Pokémon, {SIZE_WORDS[size]} hidden links. Every Pokémon fits exactly one.
             </p>

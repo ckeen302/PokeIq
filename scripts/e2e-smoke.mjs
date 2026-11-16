@@ -490,7 +490,7 @@ const headersSettle = async (want) => {
 };
 const SQUIRDLE_HEADERS = "Pokémon,Gen,Type 1,Type 2,Height,Weight";
 await page.getByRole("radio", { name: "Stats daily" }).click();
-await page.getByText(/Pokédle #\d+ · Stats/).waitFor();
+await page.getByText(/Daily #\d+ · Stats/).waitFor();
 await page.getByRole("button", { name: "Settings", exact: true }).click();
 if (!/Stats · 9 guesses/.test(await page.getByTestId("rules-chip").innerText())) errors.push("the Stats daily's chip doesn't say Stats, 9 guesses");
 await page.keyboard.press("Escape");
