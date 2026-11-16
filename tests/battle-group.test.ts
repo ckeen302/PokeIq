@@ -301,13 +301,19 @@ describe("four trainers against the computer", () => {
   });
 
   it("a Multi Battle: a computer partner (p3) beside you, two computer foes; the winning team is both partners", { timeout: 180_000 }, async () => {
-    const made = await createCpuBattle({ name: "Red", format: "gen9multirandombattle", level: "hard" });
-    if (!made.ok) throw new Error(made.error);
-    expect(made.view.gameType).toBe("multi");
-    let view = made.view;
-    for (let i = 0; i < 300 && view.status === "playing"; i++) view = await act(made.code, made.token, (v) => firstChoice(v.request!.data, geometryOf(v)));
-    view = await poll(made.code, made.token);
-    expect(view.status).toBe("finished");
+    // The teams are random, so now and then a battle ends in a tie (the last Pokémon of both sides faint together): no winners to check, so play another.
+    let view!: Awaited<ReturnType<typeof poll>>;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const made = await createCpuBattle({ name: "Red", format: "gen9multirandombattle", level: "hard" });
+      if (!made.ok) throw new Error(made.error);
+      expect(made.view.gameType).toBe("multi");
+      view = made.view;
+      for (let i = 0; i < 300 && view.status === "playing"; i++) view = await act(made.code, made.token, (v) => firstChoice(v.request!.data, geometryOf(v)));
+      view = await poll(made.code, made.token);
+      expect(view.status).toBe("finished");
+      if (view.end!.winners!.length) break;
+      expect(view.end!.winner).toBeNull();
+    }
     const winners = view.end!.winners!;
     expect(winners).toHaveLength(2);
     expect(winners[1] - winners[0]).toBe(2);
