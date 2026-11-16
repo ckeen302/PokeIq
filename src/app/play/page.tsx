@@ -23,7 +23,7 @@ export default function PlayPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-10">
       <div className="space-y-2 text-center">
-        <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Game modes</h1>
+        <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Quizzes</h1>
         <p className="text-muted-foreground">Pick a mode, then choose a format and the generations to play.</p>
       </div>
       <ModeGrid />
