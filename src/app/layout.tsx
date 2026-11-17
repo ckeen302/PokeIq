@@ -85,35 +85,8 @@ const websiteJsonLd = {
   description: SITE_DESCRIPTION,
 };
 
-/** The credits line, in full on wider screens and folded away on phones (mobile-polish). Phones also keep only Privacy and Report a problem of the footer links: the tab bar is their site map. */
-const CREDITS = (
-  <>
-              PokéIQ is a free, non-commercial fan project and is not affiliated with, endorsed or sponsored by
-              Nintendo, Game Freak, Creatures or The Pokémon Company. Pokémon and all related names are trademarks
-              of their respective owners. Data from PokéAPI. Battles run on Pokémon Showdown&apos;s simulator, and its battle timer and replay format are adapted from Pokémon Showdown (MIT licence, © Guangcong Luo and contributors). Battle music: original chiptune by Ted Kerr, celestialghost8 and
-              congusbongus via OpenGameArt.org, under CC0 (
-              <a href="/audio/battle/CREDITS.md" className="underline-offset-2 hover:underline">
-                credits
-              </a>
-              ). Sizes music by cynicmusic and city textures from Poly Haven, both CC0 (
-              <a href="/sizes/CREDITS.md" className="underline-offset-2 hover:underline">
-                credits
-              </a>
-              ). Race stadium textures from Poly Haven and crowd sounds from OpenGameArt.org, all CC0 (
-              <a href="/race/CREDITS.md" className="underline-offset-2 hover:underline">
-                credits
-              </a>
-              ). The two films&apos; scores are original, written for PokéIQ and played with the MuseScore General sound font (MIT; strings from VSCO 2 CE, CC0) (credits:{" "}
-              <a href="/audio/world-history/CREDITS.md" className="underline-offset-2 hover:underline">
-                History of the Pokémon World
-              </a>
-              ,{" "}
-              <a href="/audio/pokemon-story/CREDITS.md" className="underline-offset-2 hover:underline">
-                Story of Pokémon
-              </a>
-              ).
-  </>
-);
+const DISCLAIMER =
+  "PokéIQ is a free, non-commercial fan project and is not affiliated with, endorsed or sponsored by Nintendo, Game Freak, Creatures or The Pokémon Company. Pokémon and all related names are trademarks of their respective owners.";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -149,17 +122,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </main>
         <footer className="mb-[calc(4rem+env(safe-area-inset-bottom))] border-t border-foreground/[0.06] py-8 text-center text-xs text-muted-foreground lg:mb-0">
           <div className="container space-y-2">
-            <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2 font-pixel text-[10px] uppercase tracking-wider max-md:grid max-md:grid-cols-2 max-md:gap-x-2 max-md:gap-y-0 max-md:text-[11px] max-md:[&>a:not([href='/privacy'])]:hidden max-md:[&>:is(a,button)]:flex max-md:[&>:is(a,button)]:min-h-11 max-md:[&>:is(a,button)]:items-center max-md:[&>:is(a,button)]:justify-center max-md:[&>button]:text-[11px]">
+            <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2 font-pixel text-[10px] uppercase tracking-wider max-md:grid max-md:grid-cols-2 max-md:gap-x-2 max-md:gap-y-0 max-md:text-[11px] max-md:[&>a:not([href='/privacy']):not([href='/credits'])]:hidden max-md:[&>:is(a,button)]:flex max-md:[&>:is(a,button)]:min-h-11 max-md:[&>:is(a,button)]:items-center max-md:[&>:is(a,button)]:justify-center max-md:[&>button]:col-span-2 max-md:[&>button]:text-[11px]">
               <Link href="/privacy" prefetch={false} className="hover:text-foreground">Privacy</Link>
+              <Link href="/credits" prefetch={false} className="hover:text-foreground">Credits</Link>
               <ReportProblem />
             </nav>
-            <p className="mx-auto max-w-3xl pt-2 text-[11px] leading-relaxed text-muted-foreground/70 max-md:hidden">{CREDITS}</p>
-            <details className="group mx-auto max-w-3xl pt-2 text-[11px] leading-relaxed text-muted-foreground/70 md:hidden">
-              <summary className="mx-auto flex h-10 w-fit cursor-pointer list-none items-center gap-1.5 px-3 font-pixel text-[10px] uppercase tracking-wider text-muted-foreground [&::-webkit-details-marker]:hidden">
-                Credits &amp; legal <span aria-hidden className="transition-transform group-open:rotate-180">▾</span>
-              </summary>
-              <p className="pt-1">{CREDITS}</p>
-            </details>
+            <p className="mx-auto max-w-3xl pt-2 text-[11px] leading-relaxed text-muted-foreground/70">{DISCLAIMER}</p>
           </div>
         </footer>
         <MobileTabBar />
