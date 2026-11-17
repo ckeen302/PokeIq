@@ -27,7 +27,7 @@ export default function PrivacyPage() {
         <p className="hud-label max-md:hidden text-screen">The short version</p>
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight">Privacy policy</h1>
         <p className="text-sm text-muted-foreground">
-          PokéIQ is a free, unofficial fan project. We collect as little as we can, use it only to run the game,
+          PokéIQ is a free, unofficial fan project. We collect as little as we can, use it to run the game,
           and never sell it.
         </p>
       </header>
@@ -64,7 +64,8 @@ export default function PrivacyPage() {
         </ul>
         <p>
           You can play without an account: your progress then stays on your device. We count visits with Vercel&apos;s
-          cookie-free analytics, which doesn&apos;t identify you. No advertising, no tracking cookies.
+          cookie-free analytics, which doesn&apos;t identify you. There is no advertising on PokéIQ today and we set no tracking cookies. If that ever
+          changes, we will update this page first and say what is collected and how to opt out.
         </p>
       </Section>
 
@@ -77,7 +78,8 @@ export default function PrivacyPage() {
 
       <Section title="Who we share it with">
         <p>
-          We do <strong className="text-foreground">not</strong> sell your data or share it for advertising. It is stored with the
+          We do <strong className="text-foreground">not</strong> sell your data, and today we do not share it with advertisers. If we ever add
+          advertising, this page will change first and say exactly what is shared and how to opt out. It is stored with the
           services that run the site (Supabase for the database and sign-in, Vercel for hosting, Resend to send reminder emails). Discord and Google only
           tell us who you are when you choose to sign in with them.
         </p>
