@@ -439,12 +439,13 @@ export function Pokedle({
     over && state && date && mode === "daily"
       ? { date, format, number: dailyNumber(date), solved: state.solved, guesses: state.rows.length, hard, hints, assist, score, guessIds: state.rows.map((r) => r.id) }
       : null;
+  /** The small line over the heading: which puzzle this is (the heading names the game). */
   const title =
     mode === "practice"
-      ? "Pokédle · Practice"
+      ? "Practice"
       : date
-        ? `Pokédle #${dailyNumber(date)}${mode === "daily" && format === "squirdle" ? " · Stats" : ""}${mode === "archive" ? ` · Archive (${date})` : ""}`
-        : "Pokédle";
+        ? `Daily #${dailyNumber(date)}${mode === "daily" && format === "squirdle" ? " · Stats" : ""}${mode === "archive" ? ` · Archive (${date})` : ""}`
+        : "Daily";
   const iconButton =
     "relative rounded-md p-2 max-sm:p-2.5 text-muted-foreground transition-colors hover:bg-screen/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40";
   const locked = guesses.length > 0;
@@ -460,7 +461,7 @@ export function Pokedle({
         <div className="space-y-4 text-center">
           <div className="space-y-2">
             <p className="hud-label text-screen">{title}</p>
-            <h1 className="font-display text-3xl font-bold uppercase tracking-tight sm:text-4xl">Guess the mystery Pokémon</h1>
+            <h1 className="font-display text-3xl font-bold uppercase tracking-tight sm:text-4xl">Pokédle</h1>
           </div>
           <div className="flex justify-center">
             <div className="flex rounded-md border border-foreground/15 bg-card p-0.5" role="radiogroup" aria-label="Daily format">
