@@ -26,7 +26,7 @@ export default function CreditsPage() {
       <header className="space-y-2">
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight">Credits</h1>
         <p className="text-sm text-muted-foreground">
-          PokéIQ is a free, non-commercial fan project and is not affiliated with, endorsed or sponsored by Nintendo, Game Freak, Creatures or The Pokémon Company. Pokémon and all related names are trademarks of their respective owners.
+          PokéIQ is a free, unofficial fan project and is not affiliated with, endorsed or sponsored by Nintendo, Game Freak, Creatures or The Pokémon Company. Pokémon and all related names are trademarks of their respective owners.
         </p>
       </header>
       <Section title="Pokémon data">
