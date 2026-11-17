@@ -27,7 +27,7 @@ export default function PrivacyPage() {
         <p className="hud-label max-md:hidden text-screen">The short version</p>
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight">Privacy policy</h1>
         <p className="text-sm text-muted-foreground">
-          PokéIQ is a free, non-commercial fan project. We collect as little as we can, use it only to run the game,
+          PokéIQ is a free, unofficial fan project. We collect as little as we can, use it only to run the game,
           and never sell it.
         </p>
       </header>

@@ -86,7 +86,7 @@ const websiteJsonLd = {
 };
 
 const DISCLAIMER =
-  "PokéIQ is a free, non-commercial fan project and is not affiliated with, endorsed or sponsored by Nintendo, Game Freak, Creatures or The Pokémon Company. Pokémon and all related names are trademarks of their respective owners.";
+  "PokéIQ is a free, unofficial fan project and is not affiliated with, endorsed or sponsored by Nintendo, Game Freak, Creatures or The Pokémon Company. Pokémon and all related names are trademarks of their respective owners.";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
