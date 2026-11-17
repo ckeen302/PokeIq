@@ -121,7 +121,7 @@ export default function PrivacyPage() {
 
       <Section title="About PokéIQ">
         <p>
-          PokéIQ is a free fan project made for fun. It earns no money and is not affiliated with Nintendo, Game Freak,
+          PokéIQ is a free fan project made for fun. It is not affiliated with Nintendo, Game Freak,
           Creatures or The Pokémon Company. If this policy changes, we&apos;ll update this page.
         </p>
       </Section>
