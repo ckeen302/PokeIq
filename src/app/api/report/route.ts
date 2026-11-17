@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { z } from "zod";
 import { sameOrigin, sessionTokenHash, userFromRequest } from "@/lib/server/auth";
 import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { maskChat } from "@/lib/server/chat";
 import { cleanFeedback, saveReport } from "@/lib/server/reports";
+import { notifyReport } from "@/lib/server/email/report-mail";
 import { REPORT_BODY_MAX, REPORT_CONTACT_MAX, REPORT_EXTRA_MAX, REPORT_MESSAGE_MAX, REPORT_PAGE_MAX } from "@/lib/report";
 import { FEEDBACK_CATEGORIES, FEEDBACK_MODES, type FeedbackMode } from "@/lib/moderation";
 
@@ -16,7 +17,8 @@ import { FEEDBACK_CATEGORIES, FEEDBACK_MODES, type FeedbackMode } from "@/lib/mo
  * 0020), read on the admin page. Feedback is checked like chat: swears
  * masked, a message that's mostly swearing refused. A report is never worth
  * a 500: without Supabase, or before the table exists, it's logged and the
- * player still hears "thanks".
+ * player still hears "thanks". Feedback and chat reports also email the owner
+ * (email/report-mail.ts) when the email service is set up.
  */
 
 const NO_STORE = { "Cache-Control": "no-store" };
@@ -80,5 +82,14 @@ export async function POST(request: NextRequest) {
     extra: report.extra ?? null,
     reporter,
   });
+  // The email nudge goes after the response, so a slow mail service never slows the player down.
+  if (report.kind !== "error") {
+    const mail = { kind: report.kind, category: report.kind === "feedback" ? (report.category ?? "other") : null, mode: report.mode ?? null, message, page: report.page || null, contact, reporter, userAgent: request.headers.get("user-agent")?.slice(0, 400) ?? null };
+    try {
+      after(() => notifyReport(mail));
+    } catch {
+      void notifyReport(mail);
+    }
+  }
   return NextResponse.json({ ok: true }, { headers: NO_STORE });
 }
