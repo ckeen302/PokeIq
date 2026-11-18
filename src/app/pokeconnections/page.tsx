@@ -10,7 +10,7 @@ import type { ConnPuzzleResponse } from "@/lib/connections/types";
 import { howToFirstScript } from "@/lib/howto-first";
 
 export const metadata: Metadata = pageMetadata({
-  title: "PokéConnections: the Daily Pokémon Connections Puzzle",
+  title: "PokéConnections: Daily Pokémon Connections",
   description:
     "Pokémon Connections: sixteen Pokémon, four hidden groups: types, abilities, evolutions, stats and more. Find what links them with four mistakes to spare. A new puzzle every day, an archive and unlimited practice.",
   path: "/pokeconnections",
