@@ -252,7 +252,7 @@ describe("the share payload", () => {
     const text = connectionsShareText(solved, "https://pokeiq.vercel.app/s/" + raw);
     expect(text).toBe(["PokéIQ PokéConnections #12 1 mistake 🔥5 ⏱2:14", "🟨🟨🟨🟨", "🟩🟩🟦🟩", "🟩🟩🟩🟩", "🟦🟦🟦🟦", "🟪🟪🟪🟪", `https://pokeiq.vercel.app/s/${raw}`].join("\n"));
     const view = describeShare(decodeShare(raw)!);
-    expect(view).toMatchObject({ game: "PokéConnections", headline: "Solved", playHref: "/connections" });
+    expect(view).toMatchObject({ game: "PokéConnections", headline: "Solved", playHref: "/pokeconnections" });
     expect(view.tiles[1]).toEqual(["conn-green", "conn-green", "conn-blue", "conn-green"]);
   });
 

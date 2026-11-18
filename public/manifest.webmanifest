@@ -42,7 +42,7 @@
   "shortcuts": [
     {
       "name": "PokéGuessr",
-      "url": "/guessr"
+      "url": "/pokeguessr"
     },
     {
       "name": "Pokédle",

@@ -26,7 +26,7 @@ import { CONTROLS_DOCK, CONTROLS_WRAP, GridTile, GroupBar, GuessHistory, LevelMa
 import { cn } from "@/lib/utils";
 
 /**
- * A PokéConnections duel at /connections/duel/<code>: the lobby, the race
+ * A PokéConnections duel at /pokeconnections/duel/<code>: the lobby, the race
  * and the result. The server runs the race and checks every guess; this
  * polls it (every second while racing) and sends the trainer's groups. You
  * see your opponent's progress as colours and counts only; the groups'
@@ -36,7 +36,7 @@ import { cn } from "@/lib/utils";
 
 const PENALTY_S = CONN_DUEL_PENALTY_MS / 1000;
 const TOAST_MS = 1600;
-const HOME = "/connections";
+const HOME = "/pokeconnections";
 
 /** "1:23", or "1:23 + 0:30" with penalties. */
 function timeText(b: ConnDuelBoard): string {

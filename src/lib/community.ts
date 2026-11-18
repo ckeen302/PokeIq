@@ -53,8 +53,8 @@ export function activityFromPath(pathname: string): { kind: ActivityKind; code?:
   if (pathname.startsWith("/battle/watch") || pathname.startsWith("/battle/replay")) return { kind: "watching" };
   if (pathname.startsWith("/battle/teams")) return { kind: "teams" };
   if (pathname.startsWith("/pokedle")) return { kind: "pokedle" };
-  if (pathname.startsWith("/guessr") || pathname.startsWith("/atlas")) return { kind: "guessr" };
-  if (pathname.startsWith("/quiz") || pathname.startsWith("/play")) return { kind: "quiz" };
+  if (pathname.startsWith("/pokeguessr") || pathname.startsWith("/atlas")) return { kind: "guessr" };
+  if (pathname.startsWith("/quiz")) return { kind: "quiz" };
   if (pathname.startsWith("/daily")) return { kind: "daily" };
   if (pathname.startsWith("/iq-test")) return { kind: "iqtest" };
   if (pathname.startsWith("/pokedex") || pathname.startsWith("/pokemon")) return { kind: "pokedex" };
@@ -112,9 +112,9 @@ export type ChallengeKind = (typeof CHALLENGE_KINDS)[number];
 
 /** Where a challenge is played: the existing invite page of each game. */
 export function challengeHref(kind: ChallengeKind, code: string): string {
-  if (kind === "connections") return `/connections/duel/${code}`;
+  if (kind === "connections") return `/pokeconnections/duel/${code}`;
   if (kind === "pikadoku") return `/pikadoku/duel/${code}`;
-  return kind === "battle" ? `/battle/live/${code}` : kind === "pokedle" ? `/pokedle/duel/${code}` : kind === "quiz" ? `/quiz/duel/${code}` : `/guessr/duel/${code}`;
+  return kind === "battle" ? `/battle/live/${code}` : kind === "pokedle" ? `/pokedle/duel/${code}` : kind === "quiz" ? `/quiz/duel/${code}` : `/pokeguessr/duel/${code}`;
 }
 
 /** A challenge waiting for this trainer's answer. */

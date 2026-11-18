@@ -19,7 +19,7 @@ const BLURB: Record<PartyMode, string> = {
 };
 
 /**
- * Party on /guessr: open a private room (the host picks the game in its
+ * Party on /pokeguessr: open a private room (the host picks the game in its
  * lobby) or join one with its six-letter code.
  */
 export function PartyCard({ region }: { region: GeoRegionInfo }) {

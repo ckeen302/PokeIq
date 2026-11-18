@@ -115,7 +115,7 @@ describe("Region Streak", () => {
     const view = await readGeoShare(miss.body.resultToken!);
     expect(view?.kind).toBe("region-streak");
     expect(view?.headline).toBe("0 in a row");
-    expect(view?.playHref).toBe("/guessr/streak");
+    expect(view?.playHref).toBe("/pokeguessr/streak");
     expect(await readGeoShare("duel:nope")).toBeNull();
     expect(await readGeoShare("garbage")).toBeNull();
   });

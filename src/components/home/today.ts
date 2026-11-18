@@ -30,8 +30,8 @@ export interface DailyInfo {
 export const DAILIES: readonly DailyInfo[] = [
   { id: "daily", name: "Daily Challenge", line: "Today's Pokémon trivia quiz", href: "/daily", doneHref: "/daily", icon: CalendarDays, accent: "340 86% 60%" },
   { id: "pokedle", name: "Pokédle", line: "Name the mystery Pokémon", href: "/pokedle", doneHref: "/pokedle", icon: Search, accent: "258 94% 74%" },
-  { id: "guessr", name: "PokéGuessr", line: "Drop a pin on today's places", href: "/guessr?play=daily", doneHref: "/guessr", icon: Compass, accent: "154 68% 46%" },
-  { id: "connections", name: "Connections", line: "Find the hidden groups", href: "/connections", doneHref: "/connections", icon: LayoutGrid, accent: "42 98% 60%" },
+  { id: "guessr", name: "PokéGuessr", line: "Drop a pin on today's places", href: "/pokeguessr?play=daily", doneHref: "/pokeguessr", icon: Compass, accent: "154 68% 46%" },
+  { id: "connections", name: "Connections", line: "Find the hidden groups", href: "/pokeconnections", doneHref: "/pokeconnections", icon: LayoutGrid, accent: "42 98% 60%" },
   { id: "pikadoku", name: "Pikadoku", line: "Pokémon Sudoku", href: "/pikadoku", doneHref: "/pikadoku", icon: Grid3x3, accent: "190 90% 55%" },
 ];
 

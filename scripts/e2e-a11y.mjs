@@ -12,7 +12,7 @@ import { fileURLToPath } from "url";
 
 const AXE = fs.readFileSync(createRequire(import.meta.url).resolve("axe-core/axe.min.js"), "utf8");
 
-export const A11Y_ROUTES = ["/pokedle", "/connections", "/pikadoku", "/guessr", "/daily", "/quiz/pokemon-trivia-quiz", "/quiz/which-pokemon", "/quiz/name-em-all", "/iq-test"];
+export const A11Y_ROUTES = ["/pokedle", "/pokeconnections", "/pikadoku", "/pokeguessr", "/daily", "/quiz/pokemon-trivia-quiz", "/quiz/which-pokemon", "/quiz/name-em-all", "/iq-test"];
 
 export async function runA11y({ browser, BASE, errors, step }) {
   step("accessibility: axe-core finds no critical issues on the daily games and quizzes (dark and light)");

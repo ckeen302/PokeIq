@@ -206,7 +206,7 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
           <Link href={`/leaderboard?board=geo&format=${GEO_REGION_STREAK_BOARD}`} className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full")}>
             <Trophy className="h-4 w-4" aria-hidden /> Streak leaderboard
           </Link>
-          <Link href="/guessr" className={cn(buttonVariants({ variant: "secondary", size: "lg" }), "w-full")}>
+          <Link href="/pokeguessr" className={cn(buttonVariants({ variant: "secondary", size: "lg" }), "w-full")}>
             Back to PokéGuessr
           </Link>
         </div>

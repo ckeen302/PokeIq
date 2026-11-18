@@ -297,7 +297,7 @@ describe("friends board and Beat my time", () => {
     expect(readBeatToken(`${forged}.${sig}`)).toBeNull();
     expect(readBeatToken(`${body}x.${sig}`)).toBeNull();
     expect(readBeatToken(undefined)).toBeNull();
-    expect(beatPath(token!)).toBe(`/connections?beat=${encodeURIComponent(token!)}`);
+    expect(beatPath(token!)).toBe(`/pokeconnections?beat=${encodeURIComponent(token!)}`);
   });
 
   it("the route reads a valid token and refuses a bad one", async () => {
@@ -370,7 +370,7 @@ describe("creator boosts", () => {
     expect(JSON.stringify(page)).not.toContain("Snorlax");
     expect(await creatorPage("Nobody", custom)).toBeNull();
     expect(await creatorPage("<script>", custom)).toBeNull();
-    expect(creatorPath("Ash Ketchum")).toBe("/connections/creator/Ash%20Ketchum");
+    expect(creatorPath("Ash Ketchum")).toBe("/pokeconnections/creator/Ash%20Ketchum");
   });
 });
 

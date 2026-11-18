@@ -539,7 +539,7 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   const groups = dailies.puzzles[day].g.map(([, ...members]) => members);
   const tilesRes = await (await page.request.get(`${BASE}/api/connections?date=${today}`)).text();
   if (/label|members|category|reveal/.test(tilesRes)) errors.push("PokéConnections' tiles came with the groups");
-  await gotoSettled(page, `${BASE}/connections`);
+  await gotoSettled(page, `${BASE}/pokeconnections`);
   // PokéConnections' how-to opens by itself once: closing it any way ("Let's play!" too) keeps it closed on the next visit.
   {
     const sheet = page.locator(HOWTO).first();
@@ -620,7 +620,7 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   // The board takes no time from the client: the entry's time is the server's.
   const forged = await page.request.post(`${BASE}/api/connections/result`, { data: { date: today, player: "e2e-forged-player-0001", guesses: groups, start: "eyJkIjoiMjAyNi0wMS0wMSIsInQiOjB9.bad", name: "Forger" } });
   if ((await forged.json()).board?.unranked !== "untimed") errors.push("a forged start token got onto the board");
-  await page.screenshot({ path: `${OUT}/connections.png`, fullPage: true });
+  await page.screenshot({ path: `${OUT}/pokeconnections.png`, fullPage: true });
   await board.screenshot({ path: `${OUT}/conn-board.png` });
   // A reload restores the finished game.
   await page.reload({ waitUntil: "load" });
@@ -633,7 +633,7 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   await page.getByTestId("conn-play-unlimited").click();
   await page.getByTestId("conn-unlimited").waitFor();
   await page.getByRole("radio", { name: "Unlimited", checked: true }).waitFor();
-  const hardTiles = page.waitForResponse((r) => /\/api\/connections\?practice=hard-/.test(r.url()));
+  const hardTiles = page.waitForResponse((r) => /\/api\/pokeconnections\?practice=hard-/.test(r.url()));
   await page.getByRole("radio", { name: "Hard" }).click();
   const hard = await (await hardTiles).json();
   await page.locator(`[data-testid=conn-tile][data-id="${hard.tiles[0].id}"]`).waitFor();
@@ -661,7 +661,7 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
 
   // Unlimited 5×5: the size toggle, twenty-five tiles, five groups of five and five mistakes, solved from the data alone.
   step("pokéconnections: an Unlimited 5×5 game, solved to the end");
-  const size5 = page.waitForResponse((r) => /\/api\/connections\?practice=s5-/.test(r.url()));
+  const size5 = page.waitForResponse((r) => /\/api\/pokeconnections\?practice=s5-/.test(r.url()));
   await page.getByTestId("conn-size-5").click();
   const big = await (await size5).json();
   if (big.size !== 5 || big.tiles.length !== 25) errors.push(`the 5×5 puzzle came as size ${big.size} with ${big.tiles.length} tiles`);
@@ -705,12 +705,12 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   await page.screenshot({ path: `${OUT}/conn-5x5-result.png`, fullPage: true });
   // The size is remembered: Unlimited opens 5×5 after a reload.
   await page.reload({ waitUntil: "domcontentloaded" });
-  const again5 = page.waitForResponse((r) => /\/api\/connections\?practice=s5-/.test(r.url()));
+  const again5 = page.waitForResponse((r) => /\/api\/pokeconnections\?practice=s5-/.test(r.url()));
   await page.getByRole("radio", { name: "Unlimited" }).click();
   await again5;
   await page.getByRole("radio", { name: "5×5", checked: true }).waitFor();
   // Back to 4×4 for the rest of the run.
-  const back4 = page.waitForResponse((r) => /\/api\/connections\?practice=(hard|easy|normal)-/.test(r.url()));
+  const back4 = page.waitForResponse((r) => /\/api\/pokeconnections\?practice=(hard|easy|normal)-/.test(r.url()));
   await page.getByTestId("conn-size-4").click();
   await back4;
 
@@ -826,7 +826,7 @@ page.on("response", async (res) => {
     if (body?.challengeToken) geoChallenge = body.challengeToken;
   }
 });
-await gotoSettled(page, `${BASE}/guessr`);
+await gotoSettled(page, `${BASE}/pokeguessr`);
 await checkFirstVisitHowTo(page, "PokéGuessr");
 await closeHowTo(page);
 await page.screenshot({ path: `${OUT}/guessr-setup.png`, fullPage: true });
@@ -838,7 +838,7 @@ await page.screenshot({ path: `${OUT}/guessr-summary.png`, fullPage: true });
 if (!geoChallenge) throw new Error("no PokéGuessr challenge token");
 
 step("pokéguessr: one screenshot per round (no flipping between views)");
-await gotoSettled(page, `${BASE}/guessr`);
+await gotoSettled(page, `${BASE}/pokeguessr`);
 await page.getByRole("button", { name: /5-round game/ }).click();
 for (let i = 0; i < 5; i++) {
   await page.waitForFunction(() => {
@@ -875,7 +875,7 @@ for (let i = 0; i < 5; i++) {
 }
 
 step("pokéguessr: zoomed, 30s timer (time runs out with no pin)");
-await gotoSettled(page, `${BASE}/guessr`);
+await gotoSettled(page, `${BASE}/pokeguessr`);
 await page.getByTestId("geo-settings").click();
 await page.getByTestId("geo-zoomed").click();
 await page.getByTestId("geo-timer-30").click();
@@ -897,7 +897,7 @@ await page.screenshot({ path: `${OUT}/geo-mode-zoom-timer.png` });
 await page.getByTestId("geo-distance").filter({ hasText: "Time's up" }).waitFor({ timeout: 40_000 });
 await page.screenshot({ path: `${OUT}/geo-mode-timer-up.png` });
 // Back to the defaults, so the steps after this play the usual way.
-await gotoSettled(page, `${BASE}/guessr`);
+await gotoSettled(page, `${BASE}/pokeguessr`);
 await page.getByTestId("geo-settings").click();
 await page.getByTestId("geo-zoomed").click();
 await page.getByTestId("geo-timer-0").click();
@@ -905,14 +905,14 @@ if (await page.getByTestId("geo-settings-badge").count()) throw new Error("setti
 await page.keyboard.press("Escape");
 
 step("pokéguessr: friend accepts the challenge");
-await gotoSettled(page, `${BASE}/guessr/c/${encodeURIComponent(geoChallenge)}`);
+await gotoSettled(page, `${BASE}/pokeguessr/c/${encodeURIComponent(geoChallenge)}`);
 await page.getByRole("button", { name: /Accept challenge/ }).click();
 await playGeoRounds(5);
 await page.getByText(/You beat|wins this one|Dead heat/).waitFor();
 await page.screenshot({ path: `${OUT}/guessr-challenge-result.png`, fullPage: true });
 
 step("pokéguessr: 3-round game (picked rounds)");
-await gotoSettled(page, `${BASE}/guessr`);
+await gotoSettled(page, `${BASE}/pokeguessr`);
 if ((await page.getByTestId("geo-rounds-5").getAttribute("aria-checked")) !== "true") throw new Error("5 rounds should be the default");
 await page.getByTestId("geo-rounds-3").click();
 await page.getByRole("button", { name: /3-round game/ }).click();
@@ -929,7 +929,7 @@ await page.getByText(/out of 15,000/).waitFor();
 await page.screenshot({ path: `${OUT}/guessr-3-round-summary.png`, fullPage: true });
 
 step("pokéguessr: Hard game is practice, with a Wordle-style result card to copy");
-await gotoSettled(page, `${BASE}/guessr`);
+await gotoSettled(page, `${BASE}/pokeguessr`);
 if ((await page.getByTestId("geo-difficulty-normal").getAttribute("aria-checked")) !== "true") throw new Error("Normal should be the default difficulty");
 await page.getByTestId("geo-difficulty-hard").click();
 await page.getByTestId("geo-difficulty-blurb").filter({ hasText: "Practice" }).waitFor();
@@ -952,9 +952,9 @@ await page.getByTestId("geo-share-card").filter({ hasText: /Copied!|Couldn.t cop
 await page.screenshot({ path: `${OUT}/guessr-hard-summary.png`, fullPage: true });
 
 step("pokéguessr: world globe card opens the 3D globe (canvas, or the no-WebGL fallback)");
-await gotoSettled(page, `${BASE}/guessr`);
+await gotoSettled(page, `${BASE}/pokeguessr`);
 await page.getByTestId("globe-card").getByRole("link", { name: "Open the globe" }).click();
-await page.waitForURL(/\/guessr\/globe$/);
+await page.waitForURL(/\/pokeguessr\/globe$/);
 await page.getByTestId("world-globe").waitFor();
 await page.locator('[data-testid="world-globe"] canvas, [data-testid="globe-fallback"]').first().waitFor({ state: "attached", timeout: 15000 });
 await page.waitForTimeout(1500);
@@ -973,7 +973,7 @@ step("world globe: skip the intro, the era filter, a region's card, a town's scr
   });
   const gp = await context.newPage();
   gp.on("pageerror", (err) => errors.push(`[${gp.url()}] PAGEERROR: ${err.message}`));
-  await gp.goto(`${BASE}/guessr/globe`, { waitUntil: "domcontentloaded" });
+  await gp.goto(`${BASE}/pokeguessr/globe`, { waitUntil: "domcontentloaded" });
   await gp.locator('[data-testid="world-globe"][data-state="ready"], [data-testid="globe-fallback"]').first().waitFor({ timeout: 60_000 });
   if (!(await gp.getByTestId("globe-fallback").count())) {
     const ok = (p) => p.then(() => true, () => false);
@@ -997,7 +997,7 @@ step("world globe: skip the intro, the era filter, a region's card, a town's scr
     const card = gp.getByTestId("globe-region-card");
     if (!(await ok(card.waitFor({ timeout: 15_000 })))) errors.push("globe: flying to a region didn't open its card");
     else {
-      if (!/^\/guessr\?region=[a-z]+$/.test((await gp.getByTestId("globe-region-play").getAttribute("href")) ?? "")) errors.push("globe: the card's Play link isn't a region's PokéGuessr map");
+      if (!/^\/pokeguessr\?region=[a-z]+$/.test((await gp.getByTestId("globe-region-play").getAttribute("href")) ?? "")) errors.push("globe: the card's Play link isn't a region's PokéGuessr map");
       if (!/^\/pokedex\/places\?region=/.test((await gp.getByTestId("globe-region-dex").getAttribute("href")) ?? "")) errors.push("globe: the card's Pokédex link isn't the region's places");
       if (!(await gp.getByTestId("globe-region-starters").locator("li").count())) errors.push("globe: the card has no starters");
     }
@@ -1044,20 +1044,20 @@ step("world globe: skip the intro, the era filter, a region's card, a town's scr
 }
 
 step("pokéguessr: streak");
-await gotoSettled(page, `${BASE}/guessr`);
+await gotoSettled(page, `${BASE}/pokeguessr`);
 await page.getByRole("button", { name: /Streak/ }).click();
 await playGeoRounds(60);
 await page.getByText("Streak over").first().waitFor();
 
 step("pokéguessr: a region's own map");
-await gotoSettled(page, `${BASE}/guessr?region=johto`);
+await gotoSettled(page, `${BASE}/pokeguessr?region=johto`);
 await page.getByRole("radio", { name: "Johto", checked: true }).waitFor();
 await page.getByRole("button", { name: /5-round game/ }).click();
 await playGeoRounds(5);
 await page.getByText("Survey complete").waitFor();
 
 step("pokéguessr: a themed map (Towns and Cities), its own leaderboard");
-await gotoSettled(page, `${BASE}/guessr`);
+await gotoSettled(page, `${BASE}/pokeguessr`);
 await page.getByRole("radiogroup", { name: "Themed map" }).getByRole("radio", { name: "Towns and Cities" }).click();
 await page.getByTestId("geo-theme-blurb").filter({ hasText: "Every town and city" }).waitFor();
 if (!page.url().includes("region=theme-towns")) throw new Error(`themed map not in the URL: ${page.url()}`);
@@ -1076,16 +1076,16 @@ await gotoSettled(page, `${BASE}/leaderboard?board=geo`);
   const empty = page.getByTestId("geo-board-empty");
   await empty.waitFor();
   if (!/Be the first on today.s board/i.test(await empty.innerText())) throw new Error(`the empty Daily board reads: ${await empty.innerText()}`);
-  if (!(await page.getByTestId("geo-board-play").getAttribute("href"))?.startsWith("/guessr?play=daily")) throw new Error("the empty Daily board's Play doesn't start the Daily");
+  if (!(await page.getByTestId("geo-board-play").getAttribute("href"))?.startsWith("/pokeguessr?play=daily")) throw new Error("the empty Daily board's Play doesn't start the Daily");
   if (await page.locator("table").count()) throw new Error("the empty Daily board still shows a table");
   await page.screenshot({ path: `${OUT}/geo-board-empty.png`, fullPage: true });
 }
 
 step("pokéguessr: Classic 2D, report a screenshot");
-await gotoSettled(page, `${BASE}/guessr?region=kalos`);
+await gotoSettled(page, `${BASE}/pokeguessr?region=kalos`);
 // Kalos has no sprite games: Classic 2D is off there, and says why.
 if (!(await page.getByTestId("geo-era-2d").isDisabled())) throw new Error("Classic 2D should be off on the Kalos map");
-await gotoSettled(page, `${BASE}/guessr?region=kanto`);
+await gotoSettled(page, `${BASE}/pokeguessr?region=kanto`);
 await page.getByTestId("geo-era-2d").click();
 await page.getByRole("button", { name: /5-round game/ }).click();
 for (let i = 0; i < 5; i++) {
@@ -1134,10 +1134,10 @@ const shotLoaded = (p) =>
     null,
     { timeout: 30_000 }
   );
-await gotoSettled(red, `${BASE}/guessr?region=kanto`);
+await gotoSettled(red, `${BASE}/pokeguessr?region=kanto`);
 await closeHowTo(red);
 await red.getByLabel("Your trainer name").fill("Red");
-await clickUntilUrl(red, red.getByRole("button", { name: /Create duel/ }), /\/guessr\/duel\/[a-z2-9]{8}$/);
+await clickUntilUrl(red, red.getByRole("button", { name: /Create duel/ }), /\/pokeguessr\/duel\/[a-z2-9]{8}$/);
 const duelUrl = red.url();
 await red.getByText("Waiting for a challenger").waitFor();
 await red.screenshot({ path: `${OUT}/duel-lobby.png` });
@@ -1184,25 +1184,25 @@ await red.screenshot({ path: `${OUT}/duel-summary.png`, fullPage: true });
 
 step("pokéguessr duel: rematch, then a forfeit");
 await red.getByRole("button", { name: /^Rematch$/ }).click();
-await red.waitForURL((url) => url.href !== duelUrl && url.pathname.startsWith("/guessr/duel/"));
+await red.waitForURL((url) => url.href !== duelUrl && url.pathname.startsWith("/pokeguessr/duel/"));
 await blue.getByRole("button", { name: /Accept rematch/ }).click();
 await blue.waitForURL(red.url());
 // Pressing Rematch is being ready: the new duel starts straight away.
 await Promise.all([shotLoaded(red), shotLoaded(blue)]);
 await red.getByRole("button", { name: /Leave duel/ }).click();
 await red.getByRole("button", { name: /^Forfeit$/ }).click();
-await red.waitForURL(/\/guessr$/);
+await red.waitForURL(/\/pokeguessr$/);
 await blue.getByText("Red left the duel.").waitFor();
 await blue.getByText("Victory!").waitFor();
 await blue.screenshot({ path: `${OUT}/duel-forfeit.png` });
 
 step("pokéguessr duel: 3-round points race to the end, rematch keeps the settings");
-await gotoSettled(red, `${BASE}/guessr?region=kanto`);
+await gotoSettled(red, `${BASE}/pokeguessr?region=kanto`);
 await closeHowTo(red);
 await red.getByTestId("geo-duel-mode-race").click();
 await red.getByTestId("geo-duel-rounds-3").click();
 await red.getByLabel("Your trainer name").fill("Red");
-await clickUntilUrl(red, red.getByRole("button", { name: /Create duel/ }), /\/guessr\/duel\/[a-z2-9]{8}$/);
+await clickUntilUrl(red, red.getByRole("button", { name: /Create duel/ }), /\/pokeguessr\/duel\/[a-z2-9]{8}$/);
 const raceUrl = red.url();
 await red.getByText("Waiting for a challenger").waitFor();
 await gotoSettled(blue, raceUrl);
@@ -1219,7 +1219,7 @@ await blue.getByText(/Victory!|Defeat|Draw/).first().waitFor();
 await red.getByText(/points/).first().waitFor();
 await red.screenshot({ path: `${OUT}/duel-race-summary.png`, fullPage: true });
 await red.getByRole("button", { name: /^Rematch$/ }).click();
-await red.waitForURL((url) => url.href !== raceUrl && url.pathname.startsWith("/guessr/duel/"));
+await red.waitForURL((url) => url.href !== raceUrl && url.pathname.startsWith("/pokeguessr/duel/"));
 await blue.getByRole("button", { name: /Accept rematch/ }).click();
 await blue.waitForURL(red.url());
 await Promise.all([shotLoaded(red), shotLoaded(blue)]);
@@ -1421,11 +1421,11 @@ step("pokéconnections duel: create, join, race to the end");
     race.push(p);
   }
   const [red, blue] = race;
-  await gotoSettled(red, `${BASE}/connections`);
+  await gotoSettled(red, `${BASE}/pokeconnections`);
   await closeHowTo(red);
   await red.getByText("Head to head · PokéConnections").waitFor();
   await red.locator("#duel").getByLabel("Your trainer name").fill("Red");
-  await clickUntilUrl(red, red.getByRole("button", { name: /Create duel/ }), /\/connections\/duel\/[a-z2-9]{8}$/);
+  await clickUntilUrl(red, red.getByRole("button", { name: /Create duel/ }), /\/pokeconnections\/duel\/[a-z2-9]{8}$/);
   const raceUrl = red.url();
   await red.getByText("Waiting for a challenger").waitFor();
   await red.screenshot({ path: `${OUT}/conn-duel-lobby.png` });
@@ -1491,14 +1491,14 @@ step("pokéconnections duel: create, join, race to the end");
 
   step("pokéconnections duel: rematch, then a forfeit");
   await red.getByRole("button", { name: /^Rematch$/ }).click();
-  await red.waitForURL((url) => url.href !== raceUrl && url.pathname.startsWith("/connections/duel/"));
+  await red.waitForURL((url) => url.href !== raceUrl && url.pathname.startsWith("/pokeconnections/duel/"));
   await blue.getByRole("button", { name: /Accept rematch/ }).click();
   await blue.waitForURL(red.url());
   await Promise.all(race.map((p) => p.getByTestId("conn-tile").first().waitFor({ timeout: 15_000 })));
   if (JSON.stringify(await tileIds(red)) === JSON.stringify(ids)) errors.push("the rematch kept the same Pokémon");
   await red.getByRole("button", { name: /Leave duel/ }).click();
   await red.getByRole("button", { name: /^Forfeit$/ }).click();
-  await red.waitForURL(/\/connections$/);
+  await red.waitForURL(/\/pokeconnections$/);
   await blue.getByText("Red left the duel.").waitFor();
   await blue.getByText("Victory!").waitFor();
   for (const p of race) await p.context().close();
@@ -1510,7 +1510,7 @@ step("pokéconnections 5×5 duel: create, join, race, rematch");
   const race = [];
   for (const name of ["Red", "Blue"]) race.push(await newPage({ width: 1280, height: 900 }));
   const [red, blue] = race;
-  await gotoSettled(red, `${BASE}/connections`);
+  await gotoSettled(red, `${BASE}/pokeconnections`);
   await closeHowTo(red);
   await red.getByText("Head to head · PokéConnections").waitFor();
   await red.getByTestId("conn-duel-size-5").click();
@@ -1519,7 +1519,7 @@ step("pokéconnections 5×5 duel: create, join, race, rematch");
   await red.getByRole("button", { name: /Create duel/ }).click();
   const made = await (await created).json();
   if (made.view?.size !== 5) errors.push(`the 5×5 duel was created as size ${made.view?.size}`);
-  await red.waitForURL(/\/connections\/duel\/[a-z2-9]{8}$/);
+  await red.waitForURL(/\/pokeconnections\/duel\/[a-z2-9]{8}$/);
   const raceUrl = red.url();
   await red.getByText("Waiting for a challenger").waitFor();
   await gotoSettled(blue, raceUrl);
@@ -1548,7 +1548,7 @@ step("pokéconnections 5×5 duel: create, join, race, rematch");
   await red.getByText("Victory!").waitFor();
   await blue.getByText("Red found all five groups first.").waitFor();
   await red.getByRole("button", { name: /^Rematch$/ }).click();
-  await red.waitForURL((url) => url.href !== raceUrl && url.pathname.startsWith("/connections/duel/"));
+  await red.waitForURL((url) => url.href !== raceUrl && url.pathname.startsWith("/pokeconnections/duel/"));
   await blue.getByRole("button", { name: /Accept rematch/ }).click();
   await blue.waitForURL(red.url());
   await Promise.all(race.map((p) => p.getByTestId("conn-tile").nth(24).waitFor({ timeout: 20_000 })));
@@ -1792,24 +1792,24 @@ async function findOpponent(path, ready) {
 step("matchmaking: pokédle");
 await findOpponent("/pokedle", (p) => p.getByLabel("Guess a Pokémon").waitFor());
 step("matchmaking: pokéconnections");
-await findOpponent("/connections", (p) => p.getByTestId("conn-tile").first().waitFor({ timeout: 15_000 }));
+await findOpponent("/pokeconnections", (p) => p.getByTestId("conn-tile").first().waitFor({ timeout: 15_000 }));
 step("matchmaking: pokéguessr world");
-await findOpponent("/guessr", shotLoaded);
+await findOpponent("/pokeguessr", shotLoaded);
 
 // Ranked PokéGuessr: two new trainers (1,000 Elo each) queue ranked and are paired at once into one rated duel on the
 // world map, with division badges in the HUD. Blue forfeits: the duel is counted and Red's result shows the division
 // (Poké Ball hides the number). The ladder tab lists both.
 step("ranked pokéguessr: two trainers matched by Elo, counted after a forfeit");
-/** Opens /guessr on the ranked queue as `name`, ready to queue. */
+/** Opens /pokeguessr on the ranked queue as `name`, ready to queue. */
 async function rankedPanel(p, name) {
-  await gotoSettled(p, `${BASE}/guessr`);
+  await gotoSettled(p, `${BASE}/pokeguessr`);
   await closeHowTo(p);
   await p.getByTestId("geo-duel-queue-ranked").click();
   await p.getByTestId("geo-ranked-card").waitFor();
   await p.getByTestId("geo-ranked-queue").waitFor({ timeout: 15_000 });
   await p.getByTestId("geo-ranked-name").fill(name);
 }
-const rankedDuelPath = /\/guessr\/duel\/[a-z2-9]{8}\?matched=1$/;
+const rankedDuelPath = /\/pokeguessr\/duel\/[a-z2-9]{8}\?matched=1$/;
 /** Division badges never show a number in Poké or Great Ball. */
 async function checkHiddenElo(p, where) {
   for (const text of await p.getByTestId("geo-division-badge").allInnerTexts()) {
@@ -1906,7 +1906,7 @@ await page.getByRole("heading", { name: "Saffron City" }).waitFor();
 await page.waitForTimeout(700);
 await page.screenshot({ path: `${OUT}/atlas.png` });
 await page.getByRole("link", { name: /Play PokéGuessr Kanto/ }).click();
-await page.waitForURL(/\/guessr\?region=kanto/);
+await page.waitForURL(/\/pokeguessr\?region=kanto/);
 await page.getByText("Field survey · Kanto").waitFor();
 
 step("pokédex explorer");
@@ -3731,7 +3731,7 @@ step("pikadoku Unlimited: the setup panel, a board from the ticked categories on
 step("name 'em all: hub, a Gen 1 run (aliases, wrong category, pause, give up), share, a ranked clear, the daily, a race");
 {
   const np = await newPage({ width: 1280, height: 900 });
-  await gotoSettled(np, `${BASE}/play`);
+  await gotoSettled(np, `${BASE}/quiz`);
   await np.getByTestId("play-name-em-all").click();
   await np.waitForURL(/\/quiz\/name-em-all$/);
   await np.getByTestId("nea-categories").waitFor();
@@ -3920,7 +3920,7 @@ async function homeStep() {
   const cards = p.locator("[data-testid^=home-today-card-]");
   const boxes = await cards.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.top), Math.round(r.width), Math.round(r.height)]; }));
   if (boxes.length !== 5 || new Set(boxes.map((b) => b.join())).size !== 1) errors.push(`home: Today isn't one even row of five at 1440 (${boxes.map((b) => b.join("/")).join(" ")})`);
-  const DAILY_HREFS = [["daily", "/daily"], ["pokedle", "/pokedle"], ["guessr", "/guessr?play=daily"], ["connections", "/connections"], ["pikadoku", "/pikadoku"]];
+  const DAILY_HREFS = [["daily", "/daily"], ["pokedle", "/pokedle"], ["guessr", "/pokeguessr?play=daily"], ["connections", "/pokeconnections"], ["pikadoku", "/pikadoku"]];
   for (const [id, href] of DAILY_HREFS) {
     const card = p.getByTestId(`home-today-card-${id}`);
     if ((await card.getAttribute("href")) !== href) errors.push(`home: the ${id} card goes to ${await card.getAttribute("href")}, not ${href}`);
@@ -3936,9 +3936,9 @@ async function homeStep() {
   // Play: straight into today's Daily, on the picture the hero showed (already fetched).
   await gotoSettled(p, BASE);
   await p.waitForFunction(() => /^\/api\/geo\/shot\/[\w-]+$|\/geo\/[\w-]+\.webp$/.test(document.querySelector("[data-testid=home-hero-shot]")?.dataset.shot ?? ""), null, { timeout: 20_000 }).catch(() => {});
-  if ((await hero.getByTestId("home-hero-play").getAttribute("href")) !== "/guessr?play=daily") errors.push("home: Play doesn't go to today's Daily");
+  if ((await hero.getByTestId("home-hero-play").getAttribute("href")) !== "/pokeguessr?play=daily") errors.push("home: Play doesn't go to today's Daily");
   await hero.getByTestId("home-hero-play").click();
-  await p.waitForURL(/\/guessr/, { timeout: 15_000 }).catch(() => errors.push(`home: Play went to ${p.url()}`));
+  await p.waitForURL(/\/pokeguessr/, { timeout: 15_000 }).catch(() => errors.push(`home: Play went to ${p.url()}`));
   if (showsToday) await p.locator(`img[src="${heroShot}"]`).first().waitFor({ timeout: 20_000 }).catch(() => errors.push("home: Play didn't open the Daily on the hero's picture"));
   // (When the hero kept its fixed view, nothing above waited for the game: give it the time the picture took.)
   await p.waitForFunction(() => /Daily #\d+/i.test(document.body.innerText) && !/[?&]play=/.test(location.search), null, { timeout: 20_000 }).catch(() => {});
@@ -3955,14 +3955,14 @@ async function homeStep() {
     await rh.getByTestId("home-hero-done").waitFor({ timeout: 10_000 }).catch(() => errors.push(`home ${w}: the hero didn't show today's PokéGuessr as done`));
     if ((await rh.getByTestId("home-hero-score").innerText().catch(() => "")) !== "18,240") errors.push(`home ${w}: the hero's score isn't the stored 18,240`);
     if (!/Next places in \d+h \d+m|Next places in \d+m/.test(await rh.getByTestId("home-hero-next").innerText().catch(() => ""))) errors.push(`home ${w}: the hero doesn't say when the next places come`);
-    if ((await rh.getByTestId("home-hero-free").getAttribute("href").catch(() => null)) !== "/guessr?play=game") errors.push(`home ${w}: Play a free game doesn't start a free game`);
+    if ((await rh.getByTestId("home-hero-free").getAttribute("href").catch(() => null)) !== "/pokeguessr?play=game") errors.push(`home ${w}: Play a free game doesn't start a free game`);
     if (await rh.getByTestId("home-hero-play").count()) errors.push(`home ${w}: the hero still offers today's places after they're done`);
     const prefix = w < 500 ? "home-today-" : "home-today-card-";
     const states = {};
     for (const [id] of DAILY_HREFS) states[id] = await r.getByTestId(`${prefix}${id}`).getAttribute("data-state");
     if (states.guessr !== "done" || states.pokedle !== "done" || ["daily", "connections", "pikadoku"].some((id) => states[id] !== "new")) errors.push(`home ${w}: Today's states read ${JSON.stringify(states)}`);
     if (!/18,240/.test(await r.getByTestId(`${prefix}guessr`).innerText()) || !/Solved in 3/.test(await r.getByTestId(`${prefix}pokedle`).innerText())) errors.push(`home ${w}: Today doesn't show today's results`);
-    if ((await r.getByTestId(`${prefix}guessr`).getAttribute("href")) !== "/guessr") errors.push(`home ${w}: a finished PokéGuessr still restarts the Daily`);
+    if ((await r.getByTestId(`${prefix}guessr`).getAttribute("href")) !== "/pokeguessr") errors.push(`home ${w}: a finished PokéGuessr still restarts the Daily`);
     if (!/4-day Pokédle streak/.test(await r.getByTestId("home-today-streak").innerText().catch(() => ""))) errors.push(`home ${w}: the streak line doesn't read 4-day Pokédle streak`);
     if (await r.getByTestId("home-today-alldone").count()) errors.push(`home ${w}: all done shows with two of five done`);
     await r.screenshot({ path: `${OUT}/home-returning-${w}.png` });
@@ -4084,7 +4084,7 @@ async function phoneNavStep() {
   await sheet.waitFor({ state: "visible" });
   if ((await more.getAttribute("aria-expanded")) !== "true") errors.push("phone nav: More isn't marked expanded with its sheet open");
   const hrefs = await sheet.locator("a").evaluateAll((els) => els.map((e) => e.getAttribute("href")));
-  for (const want of ["/daily", "/connections", "/pikadoku", "/play", "/pokedex", "/lab", "/leaderboard", "/rooms"]) {
+  for (const want of ["/daily", "/pokeconnections", "/pikadoku", "/quiz", "/pokedex", "/lab", "/leaderboard", "/rooms"]) {
     if (!hrefs.includes(want)) errors.push(`phone nav: the More sheet has no link to ${want}`);
   }
   if (!hrefs.includes("/trainer") && !hrefs.includes("/login")) errors.push("phone nav: the More sheet has no trainer card or sign-in");

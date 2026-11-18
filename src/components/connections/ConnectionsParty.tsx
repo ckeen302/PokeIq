@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils";
  * the race is over.
  */
 
-const HOME = "/connections";
+const HOME = "/pokeconnections";
 const TOAST_MS = 1600;
 
 const ordinal = (n: number) => `${n}${["th", "st", "nd", "rd"][n % 100 > 10 && n % 100 < 14 ? 0 : Math.min(n % 10, 4) % 4] ?? "th"}`;
@@ -36,7 +36,7 @@ const ordinal = (n: number) => `${n}${["th", "st", "nd", "rd"][n % 100 > 10 && n
 // Starting one
 // ---------------------------------------------------------------------------
 
-/** "Start a party" on /connections: opens a party and goes to its lobby, where the share link is. */
+/** "Start a party" on /pokeconnections: opens a party and goes to its lobby, where the share link is. */
 export function ConnectionsPartyCard() {
   const router = useRouter();
   const progress = useProgress();

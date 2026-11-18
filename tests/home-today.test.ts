@@ -37,7 +37,7 @@ describe("home: today's dailies", () => {
     expect(DAILIES.map((d) => d.name)).toEqual(["Daily Challenge", "Pokédle", "PokéGuessr", "Connections", "Pikadoku"]);
     for (const d of DAILIES) expect(d.line).not.toMatch(/\d/);
     // PokéGuessr's Play starts today's game straight away.
-    expect(DAILIES.find((d) => d.id === "guessr")!.href).toBe("/guessr?play=daily");
+    expect(DAILIES.find((d) => d.id === "guessr")!.href).toBe("/pokeguessr?play=daily");
   });
 
   it("shows everything as new on the server and for a new visitor", () => {

@@ -81,7 +81,7 @@ describe("matchmaking", () => {
     const red = newTicket();
     waiting(await searchMatch(KANTO, "Red", red));
     const blue = matched(await searchMatch(KANTO, "Blue", newTicket()));
-    expect(blue.href).toBe(`/guessr/duel/${blue.code}`);
+    expect(blue.href).toBe(`/pokeguessr/duel/${blue.code}`);
     const { duel } = (await loadDuel(blue.code))!;
     expect(duel).toMatchObject({ region: "kanto", status: "playing" });
     expect(duel.rounds[0].startsAt).toBe(T0 + DUEL_LEAD_MS);

@@ -7,7 +7,7 @@ import { CopyFallback } from "@/components/quiz/CopyFallback";
 import { copyText, shareOrCopy } from "@/lib/share";
 
 /** The result page's path for a signed PokéGuessr result (game, daily or streak) or a finished duel. */
-export const resultPath = (token: string) => `/guessr/r/${encodeURIComponent(token)}`;
+export const resultPath = (token: string) => `/pokeguessr/r/${encodeURIComponent(token)}`;
 
 /**
  * Copies the link to a result's own page (with its preview card) to the

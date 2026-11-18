@@ -141,7 +141,7 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
               <Card>
                 <CardContent className="py-10 text-center text-muted-foreground">
                   Nobody is ranked yet.{" "}
-                  <Link href="/guessr#ranked" className="text-primary underline-offset-2 hover:underline">
+                  <Link href="/pokeguessr#ranked" className="text-primary underline-offset-2 hover:underline">
                     Queue a ranked duel
                   </Link>{" "}
                   and be the first!
@@ -213,7 +213,7 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
               <Card>
                 <CardContent className="py-10 text-center text-muted-foreground">
                   Nobody is ranked yet.{" "}
-                  <Link href={isConn ? "/connections#ranked" : "/pokedle#ranked"} className="text-primary underline-offset-2 hover:underline">
+                  <Link href={isConn ? "/pokeconnections#ranked" : "/pokedle#ranked"} className="text-primary underline-offset-2 hover:underline">
                     Queue a ranked {isConn ? "race" : "duel"}
                   </Link>{" "}
                   and be the first!
@@ -282,7 +282,7 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
           <Card>
             <CardContent className="py-10 text-center text-muted-foreground">
               No solves yet.{" "}
-              <Link href="/connections" className="text-primary underline-offset-2 hover:underline">
+              <Link href="/pokeconnections" className="text-primary underline-offset-2 hover:underline">
                 Play today&apos;s PokéConnections
               </Link>{" "}
               and be the first!
@@ -359,7 +359,7 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
     const invite: GeoInvite = week
       ? { kind: "weekly", current: week === thisWeek?.week, label: `Weekly #${geoWeeklyNumber(week)} · ${weekMapName(week)}` }
       : map
-        ? { kind: "map", current: true, label: map.name, href: `/guessr?region=${map.id}` }
+        ? { kind: "map", current: true, label: map.name, href: `/pokeguessr?region=${map.id}` }
         : // Your local date can be a day either side of the server's.
           { kind: "daily", current: date >= previousDate(today), label: `Daily #${dailyNumber(date)}` };
     const avatars = await avatarsByNames((geoEntries ?? []).map((r) => r.player_name));
@@ -637,7 +637,7 @@ function GeoBoardInvite({ kind, current, label, href, empty, count = 0 }: GeoInv
   const weekly = kind === "weekly";
   const Icon = daily ? Compass : weekly ? CalendarRange : Trophy;
   // The Daily's Play starts today's game straight away; the Weekly's tile is in the hub's Play section.
-  const playHref = daily ? "/guessr?play=daily#play" : weekly ? "/guessr#play" : (href ?? "/guessr");
+  const playHref = daily ? "/pokeguessr?play=daily#play" : weekly ? "/pokeguessr#play" : (href ?? "/pokeguessr");
   const playLabel = daily ? (current ? "Play today's Daily" : "Play today's Daily instead") : weekly ? (current ? "Play this week's" : "Play this week's Weekly") : "Play this map";
   const title = !current
     ? `Nobody saved a score on ${label}`

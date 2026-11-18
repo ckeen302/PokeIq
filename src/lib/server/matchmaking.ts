@@ -113,7 +113,7 @@ async function openDuel(settings: MatchSettings, names: [string, string], now: n
 
 function seat(settings: MatchSettings, code: string, playerId: string): SearchResult {
   return settings.game === "geo"
-    ? { ok: true, status: "matched", code, token: duelToken(code, playerId), href: `/guessr/duel/${code}` }
+    ? { ok: true, status: "matched", code, token: duelToken(code, playerId), href: `/pokeguessr/duel/${code}` }
     : { ok: true, status: "matched", code, token: pvpToken(code, playerId), href: pvpHref(settings.game, code) };
 }
 

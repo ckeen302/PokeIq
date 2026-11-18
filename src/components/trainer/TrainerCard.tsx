@@ -153,7 +153,7 @@ export function TrainerCard() {
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <CardTitle className="text-lg">PokéGuessr</CardTitle>
-            <Link href="/guessr" className="text-sm text-primary hover:underline">
+            <Link href="/pokeguessr" className="text-sm text-primary hover:underline">
               Play →
             </Link>
           </CardHeader>
@@ -228,7 +228,7 @@ export function TrainerCard() {
       </Card>
 
       <p className="text-center text-xs text-muted-foreground">
-        Progress is saved in this browser. <Link href="/play" className="text-primary hover:underline">Play more modes →</Link>
+        Progress is saved in this browser. <Link href="/quiz" className="text-primary hover:underline">Play more modes →</Link>
       </p>
     </div>
   );
@@ -249,7 +249,7 @@ function ConnectionsCard({ progress, today }: { progress: Progress; today: strin
     <Card data-testid="trainer-connections">
       <CardHeader className="flex-row items-center justify-between space-y-0">
         <CardTitle className="text-lg">PokéConnections</CardTitle>
-        <Link href="/connections" className="text-sm text-primary hover:underline">
+        <Link href="/pokeconnections" className="text-sm text-primary hover:underline">
           Play →
         </Link>
       </CardHeader>

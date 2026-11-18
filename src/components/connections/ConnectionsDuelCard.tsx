@@ -9,7 +9,7 @@ import { NewDuelCard } from "@/components/duel/NewDuelCard";
 const MATCH = { game: "connections" };
 
 /**
- * "Duel a friend" on /connections: opens a PokéConnections race and goes to
+ * "Duel a friend" on /pokeconnections: opens a PokéConnections race and goes to
  * its lobby, or finds an opponent searching right now.
  */
 export function ConnectionsDuelCard() {

@@ -18,7 +18,7 @@ export function QuizBests({ username, quiz, nea }: { username: string; quiz: Qui
         {quiz.length === 0 && nea.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             {username} hasn&apos;t set a quiz best yet.{" "}
-            <Link href="/play" className="text-primary underline-offset-2 hover:underline">
+            <Link href="/quiz" className="text-primary underline-offset-2 hover:underline">
               Play a quiz
             </Link>
           </p>

@@ -196,7 +196,7 @@ describe("matchmaking bracket", () => {
     // At 30 s, ±300: paired, by whichever of them polls first (Red here: Blue was the one waiting, so Blue takes seat 0).
     at(T0 + 60 * SECOND);
     const redSeat = matched(await searchGeoRanked("Red", red, "key-red", async () => ({ rating: 1000, games: 3 }), config()));
-    expect(redSeat.href).toBe(`/guessr/duel/${redSeat.code}`);
+    expect(redSeat.href).toBe(`/pokeguessr/duel/${redSeat.code}`);
     const out = matched(await searchGeoRanked("Blue", blue, "key-blue", async () => ({ rating: 1200, games: 3 }), config()));
     expect(out.code).toBe(redSeat.code);
     const stored = await loadDuel(out.code);

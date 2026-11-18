@@ -44,7 +44,7 @@ async function puzzleFor(date: string | null | undefined, practice: string | nul
 export async function GET(request: NextRequest) {
   if (!crowdRateLimit(request, "conn-get", 60, 1)) return tooManyRequests();
   const params = request.nextUrl.searchParams;
-  // A community puzzle (/connections/c/<id>) plays as practice=custom-<id>: tiles only, from the creator's stored groups.
+  // A community puzzle (/pokeconnections/c/<id>) plays as practice=custom-<id>: tiles only, from the creator's stored groups.
   const customId = CUSTOM_SEED_RE.exec(params.get("practice") ?? "")?.[1];
   if (customId && !params.get("date")) {
     const custom = await getCustom(customId);

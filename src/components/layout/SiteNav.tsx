@@ -17,12 +17,12 @@ import { FriendsButton } from "@/components/community/FriendsButton";
 
 const DESKTOP_LINKS: { href: string; label: string; wideOnly?: boolean }[] = [
   { href: "/pokedle", label: "Wordle" },
-  { href: "/connections", label: "Connections" },
+  { href: "/pokeconnections", label: "Connections" },
   // Only on wide screens, like the 3D Lab: the row is full at 1024px (the home page and footer link it too).
   { href: "/pikadoku", label: "Sudoku", wideOnly: true },
-  { href: "/guessr", label: "Guessr" },
+  { href: "/pokeguessr", label: "Guessr" },
   { href: "/battle", label: "Battle" },
-  { href: "/play", label: "Quizzes" },
+  { href: "/quiz", label: "Quizzes" },
   { href: "/pokedex", label: "Pokédex" },
   // Only on wide screens, where the leaderboard link was: the row is full at 1024px (the footer links it too).
   // The leaderboard is the trophy among the header's icons.

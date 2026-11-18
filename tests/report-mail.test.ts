@@ -34,12 +34,12 @@ const nextWindow = () => (clock += 7 * 60 * 60 * 1000);
 
 describe("report emails", () => {
   it("a bug report is emailed to the owner with the page, the reporter and the message", async () => {
-    const ok = await notifyReport({ kind: "feedback", category: "bug", message: "the map is cut off", page: "/guessr", reporter: "Ash", contact: "ash@example.com" }, nextWindow());
+    const ok = await notifyReport({ kind: "feedback", category: "bug", message: "the map is cut off", page: "/pokeguessr", reporter: "Ash", contact: "ash@example.com" }, nextWindow());
     expect(ok).toBe(true);
     const [m] = sent();
     expect(m.to).toEqual(["pokeiq.official@gmail.com"]);
     expect(m.subject).toBe("[PokéIQ] Bug report: the map is cut off");
-    expect(m.text).toContain("Page: /guessr");
+    expect(m.text).toContain("Page: /pokeguessr");
     expect(m.text).toContain("From: Ash, contact: ash@example.com");
     expect(m.text).toContain("the map is cut off");
   });

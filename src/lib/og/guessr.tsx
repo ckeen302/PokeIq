@@ -6,7 +6,7 @@ import { DUEL_HP } from "@/lib/duel-types";
 import { GEO_MAX_ROUND_SCORE } from "@/lib/geo-types";
 
 /**
- * The preview card of a shared PokéGuessr result (/guessr/r/<token>): the
+ * The preview card of a shared PokéGuessr result (/pokeguessr/r/<token>): the
  * map that was played with a square per round (or per place named in a
  * streak) in GeoGuessr's colours, the total, and for a duel both trainers
  * with their HP. Never a place's name.

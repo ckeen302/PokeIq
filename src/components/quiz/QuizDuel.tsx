@@ -67,7 +67,7 @@ export function QuizDuel({ code }: { code: string }) {
   const [summary, setSummary] = useState(false);
   const heard = useRef({ revealed: -1, theirs: false, end: false });
 
-  const home = view ? moduleHref(view.module) : "/play";
+  const home = view ? moduleHref(view.module) : "/quiz";
   const last = view?.revealed[view.revealed.length - 1];
   const live = view?.question?.question ? view.question : undefined;
   // One picture or cry per question, from its start through its reveal.
@@ -187,7 +187,7 @@ export function QuizDuel({ code }: { code: string }) {
     if (next) router.push(pvpHref("quiz", next));
   }
 
-  if (gone) return <DuelGone message={gone} href="/play" label="Back to the game modes" />;
+  if (gone) return <DuelGone message={gone} href="/quiz" label="Back to the game modes" />;
   if (!view) return <DuelLoading />;
 
   const info = MODULE_INFO[view.module];

@@ -24,7 +24,7 @@ function report(body: unknown, opts: { ip?: string; origin?: string; raw?: strin
 describe("POST /api/report", () => {
   it("takes a problem report (and logs it when there's no database)", async () => {
     const log = vi.spyOn(console, "info").mockImplementation(() => {});
-    const res = await report({ kind: "feedback", message: "The map didn't load", page: "/guessr", contact: "ash@example.com" });
+    const res = await report({ kind: "feedback", message: "The map didn't load", page: "/pokeguessr", contact: "ash@example.com" });
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
     expect(log).toHaveBeenCalledWith(expect.stringContaining("The map didn't load"));

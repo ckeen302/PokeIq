@@ -13,7 +13,7 @@ const THEME_COLORS: Record<Theme, string> = { dark: "#08071a", light: "#f6f5fc" 
 export const THEME_INIT_SCRIPT = `try{if(localStorage.getItem("${THEME_KEY}")==="light"){document.documentElement.classList.add("light");document.querySelector('meta[name="theme-color"]')?.setAttribute("content","${THEME_COLORS.light}")}}catch(e){}`;
 
 /** Game pages paint their board with the HTML, so they never show the splash. */
-export const SPLASH_SKIP_PATHS = ["/pokedle", "/connections", "/pikadoku", "/guessr", "/battle", "/quiz"] as const;
+export const SPLASH_SKIP_PATHS = ["/pokedle", "/pokeconnections", "/pikadoku", "/pokeguessr", "/battle", "/quiz"] as const;
 
 /**
  * Inline <head> script: show the boot splash only on the first page load of a

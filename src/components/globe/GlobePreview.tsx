@@ -1,4 +1,4 @@
-/** A still, CSS-only globe for the /guessr card (no three.js there). */
+/** A still, CSS-only globe for the /pokeguessr card (no three.js there). */
 export function GlobePreview() {
   return (
     <div aria-hidden className="relative mx-auto my-3 h-28 w-28 shrink-0">

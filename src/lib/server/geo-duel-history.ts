@@ -6,8 +6,8 @@ import { duelView, type Duel } from "./duel";
 
 /**
  * PokéGuessr duel history and replays: every finished duel (casual and
- * ranked) is kept for the trainers who played it, so /guessr/history can
- * list them and /guessr/history/<code> can replay them round by round.
+ * ranked) is kept for the trainers who played it, so /pokeguessr/history can
+ * list them and /pokeguessr/history/<code> can replay them round by round.
  *
  * A seat is known by its history key: for a ranked duel, the seat's ranked
  * key (geoRankedKey of their account, or of the signed anonymous id their

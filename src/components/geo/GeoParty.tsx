@@ -47,7 +47,7 @@ import { Lives, MAX_3D, PartyEmoteFeed, PartyLineup, PartyTrainer, Roster, Taunt
 import { cn } from "@/lib/utils";
 
 /**
- * A PokéGuessr party at /guessr/party/<code>: the lobby (the host sets the
+ * A PokéGuessr party at /pokeguessr/party/<code>: the lobby (the host sets the
  * game up and starts it), the line-up, the rounds, the reveals and the
  * standings. The server runs the party (server/geo-party.ts); useDuel polls
  * its state and sends actions with this trainer's seat token (kept per code,
@@ -139,7 +139,7 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
   }
 
   async function leave() {
-    if (await act({ action: "leave" })) router.push("/guessr");
+    if (await act({ action: "leave" })) router.push("/pokeguessr");
   }
 
   function showResults() {
@@ -165,7 +165,7 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
   });
 
   const map = view ? regions.find((r) => r.id === view.settings.region) : undefined;
-  if (gone || (view && !map)) return <DuelGone message={gone ?? "This party's map isn't available any more."} href="/guessr" label="Back to PokéGuessr" />;
+  if (gone || (view && !map)) return <DuelGone message={gone ?? "This party's map isn't available any more."} href="/pokeguessr" label="Back to PokéGuessr" />;
   if (!view || !map) return <DuelLoading />;
 
   const notice = <DuelNotice error={error} offline={offline} />;
@@ -204,7 +204,7 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
 
   if (view.status === "finished" && (summary || !sawPlay || !last || view.end?.reason === "left")) {
     return (
-      <GameShell onExit={() => router.push("/guessr")}>
+      <GameShell onExit={() => router.push("/pokeguessr")}>
         {() => (
           <div className="h-full overflow-y-auto">
             {notice}
@@ -602,7 +602,7 @@ function PartyWatch({ view, mapName }: { view: PartyView; mapName: string }) {
             </li>
           ))}
         </ul>
-        <Link href="/guessr#party" className={buttonVariants({ variant: "outline" })}>
+        <Link href="/pokeguessr#party" className={buttonVariants({ variant: "outline" })}>
           <Users className="h-4 w-4" aria-hidden /> Start your own party
         </Link>
       </CardContent>
@@ -770,7 +770,7 @@ function PartyLobby({
             ) : full ? (
               <p className="text-center text-sm text-muted-foreground">
                 This party is full.{" "}
-                <Link href="/guessr#party" className="underline underline-offset-2">
+                <Link href="/pokeguessr#party" className="underline underline-offset-2">
                   Start your own
                 </Link>
                 .
@@ -1012,7 +1012,7 @@ function PartyEnd({ view, map, busy, onAgain, onTaunt }: { view: PartyView; map:
           <Button size="lg" variant="outline" onClick={() => void shareResult()} className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white" data-testid="party-share">
             {shared === "done" ? <Check className="h-4 w-4" aria-hidden /> : <Share2 className="h-4 w-4" aria-hidden />} {shared === "done" ? "Copied!" : "Share the result"}
           </Button>
-          <Link href="/guessr" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white sm:col-span-2")}>
+          <Link href="/pokeguessr" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white sm:col-span-2")}>
             <X className="h-4 w-4" aria-hidden /> Back to PokéGuessr
           </Link>
         </div>

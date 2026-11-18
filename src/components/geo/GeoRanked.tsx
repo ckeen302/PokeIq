@@ -30,7 +30,7 @@ import { DuelHistoryLink, GeoSeasonStrip } from "./GeoSeason";
 
 /**
  * Ranked PokéGuessr in the browser: the division badge (Poké Ball to Beast
- * Ball, the Elo shown from Ultra Ball up), the ranked panel on /guessr with
+ * Ball, the Elo shown from Ultra Ball up), the ranked panel on /pokeguessr with
  * the queue and the Gym Leader offer, the honest bot's tag and avatar, and
  * the outcome after a ranked duel. Mirrors Pokédle's ranked UI (Ranked.tsx).
  */
@@ -206,7 +206,7 @@ function Searching({ since, onCancel, botAfterMs, onBot, takingBot }: { since: n
 }
 
 /**
- * Ranked on /guessr: your division, Elo (from Ultra Ball up), record and
+ * Ranked on /pokeguessr: your division, Elo (from Ultra Ball up), record and
  * place on the ladder, and the button that queues you for a head-to-head
  * HP duel on the world map against someone near your Elo.
  */
@@ -462,7 +462,7 @@ export function YourGeoLadderSpot() {
         ) : (
           <p className="text-sm text-muted-foreground">
             You&apos;re not on the ladder yet.{" "}
-            <Link href="/guessr#ranked" className="text-primary underline-offset-2 hover:underline">
+            <Link href="/pokeguessr#ranked" className="text-primary underline-offset-2 hover:underline">
               Play a ranked duel
             </Link>{" "}
             to get your division.

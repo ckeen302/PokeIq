@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 /**
- * /connections/create: pick sixteen Pokémon, split them into four named,
+ * /pokeconnections/create: pick sixteen Pokémon, split them into four named,
  * coloured groups, and publish a short link that plays like a practice
  * puzzle. Counts and duplicates are blocked here and again on the server;
  * the server also warns, from the same categories the dailies use, when a

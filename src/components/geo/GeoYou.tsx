@@ -57,7 +57,7 @@ export function GeoYou({ progress }: { progress: MyGeoProgress | null }) {
           title="Duel history"
           blurb="Your past duels and ranked matches, round by round."
           action={
-            <Link href="/guessr/history" className={cn(buttonVariants({ variant: "outline" }), "w-full")} data-testid="geo-history-link">
+            <Link href="/pokeguessr/history" className={cn(buttonVariants({ variant: "outline" }), "w-full")} data-testid="geo-history-link">
               Duel history
             </Link>
           }

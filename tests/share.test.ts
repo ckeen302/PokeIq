@@ -185,7 +185,7 @@ describe("share text", () => {
     };
     expect(quizShareResult(run, 2)).toEqual({ game: "quiz", module: "cry", format: "classic", daily: 12, correct: 7, total: 10, pokeiq: 112, score: 5000, seconds: 61, grid: "1110111010", streak: 2 });
     const card: ShareCard = { m: "types", f: "survival", d: "hard", s: "x", sc: 900, c: 12, t: 15, q: 140, gr: "111111111111000" };
-    expect(describeShare(shareCardResult(card))).toMatchObject({ headline: "12/15", playHref: "/play" });
+    expect(describeShare(shareCardResult(card))).toMatchObject({ headline: "12/15", playHref: "/quiz" });
   });
 
   it("gives battles the outcome, format, opponent and length", () => {
@@ -202,7 +202,7 @@ describe("share landing", () => {
   it("describes each game with a big way in to today's", () => {
     expect(describeShare(pokedle)).toMatchObject({ headline: "3/8", playHref: "/pokedle", playLabel: "Play today's Pokédle", accent: "violet" });
     expect(describeShare(pokedle).tiles[0]).toEqual(["hit", "near", "miss", "miss", "near", "miss", "near"]);
-    expect(describeShare(guessr)).toMatchObject({ headline: "13,327", numbers: ["4,812", "2,310", "5,000", "0", "1,205"], playHref: "/guessr" });
+    expect(describeShare(guessr)).toMatchObject({ headline: "13,327", numbers: ["4,812", "2,310", "5,000", "0", "1,205"], playHref: "/pokeguessr" });
     expect(describeShare({ ...quiz, daily: 3 })).toMatchObject({ playHref: "/daily", label: "Daily Challenge #3" });
     expect(describeShare({ ...quiz, format: "adaptive" })).toMatchObject({ playHref: "/iq-test", headline: "PokéIQ 124" });
     expect(describeShare(battle)).toMatchObject({ headline: "Victory", playHref: "/battle/play", tiles: [] });

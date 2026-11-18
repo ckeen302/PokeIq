@@ -68,7 +68,7 @@ export function GeoSummary({
   // The Daily and the Weekly are the same places for everyone: a friend plays their own (ranked) game from the result's link,
   // never a challenge replay of them (unranked, and it would use up their places). Other games challenge with the same places.
   const sharedPlaces = !!(game.daily || game.weekly);
-  const challengeUrl = challengeToken && !sharedPlaces ? `${origin}/guessr/c/${encodeURIComponent(challengeToken)}` : null;
+  const challengeUrl = challengeToken && !sharedPlaces ? `${origin}/pokeguessr/c/${encodeURIComponent(challengeToken)}` : null;
   const canRank = !game.practice && !!resultToken;
   const modeName = game.difficulty ? GEO_DIFFICULTY_NAMES[game.difficulty] : undefined;
   const shareTextFull = guessrShareText(shareResult, region.name, shareUrl(shareResult), { mode: modeName });

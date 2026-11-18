@@ -163,13 +163,13 @@ export async function challengeToLiveBattle(to: string, name: string, format = "
 export async function challengeToDuel(to: string, name: string, choice: Exclude<ChallengeChoice, { kind: "battle" }>): Promise<string> {
   const { endpoint, body, href } =
     choice.kind === "guessr"
-      ? { endpoint: "/api/geo/duel", body: { name, region: choice.region ?? "world" }, href: (c: string) => `/guessr/duel/${c}` }
+      ? { endpoint: "/api/geo/duel", body: { name, region: choice.region ?? "world" }, href: (c: string) => `/pokeguessr/duel/${c}` }
       : choice.kind === "pokedle"
         ? { endpoint: "/api/duel", body: { kind: "pokedle", name }, href: (c: string) => `/pokedle/duel/${c}` }
         : choice.kind === "pikadoku"
           ? { endpoint: "/api/duel", body: { kind: "pikadoku", name }, href: (c: string) => `/pikadoku/duel/${c}` }
           : choice.kind === "connections"
-          ? { endpoint: "/api/duel", body: { kind: "connections", name }, href: (c: string) => `/connections/duel/${c}` }
+          ? { endpoint: "/api/duel", body: { kind: "connections", name }, href: (c: string) => `/pokeconnections/duel/${c}` }
           : { endpoint: "/api/duel", body: { kind: "quiz", name, module: choice.module, difficulty: "medium" }, href: (c: string) => `/quiz/duel/${c}` };
   const seat = await api<{ code: string; token: string }>(endpoint, body);
   saveSeat(seat.code, seat.token);

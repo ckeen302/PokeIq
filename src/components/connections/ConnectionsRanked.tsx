@@ -25,7 +25,7 @@ function daysLeft(endsAt: number): string {
 }
 
 /**
- * Ranked on /connections: your tier, rating and place this season, and the
+ * Ranked on /pokeconnections: your tier, rating and place this season, and the
  * button that queues you for a ranked race against someone near your rating.
  */
 export function ConnectionsRankedCard() {

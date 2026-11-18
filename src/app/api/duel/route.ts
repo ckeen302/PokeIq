@@ -19,7 +19,7 @@ import type { PvpSeatResponse } from "@/lib/pvp-types";
  * token and the lobby:
  *   { kind: "pokedle", name, assist?, settings? }    a Pokédle duel, at /pokedle/duel/<code> (assist: the Pokédex level; settings: the format and settings; both changeable in the lobby)
  *   { kind: "quiz", name, module, difficulty? }      a quiz duel, at /quiz/duel/<code> (difficulty: Whose Team and Real Shiny only; other modes play their fixed tuning)
- *   { kind: "connections", name, size? }             a PokéConnections race (size 4 or 5: a 5×5 board), at /connections/duel/<code>
+ *   { kind: "connections", name, size? }             a PokéConnections race (size 4 or 5: a 5×5 board), at /pokeconnections/duel/<code>
  *   { kind: "pikadoku", name, turnSecs?, families? } a Pikadoku Tic Tac Toe duel, at /pikadoku/duel/<code>
  */
 

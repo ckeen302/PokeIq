@@ -14,10 +14,10 @@ import { chromium } from "playwright";
 export const MOBILE_ROUTES = [
   "/daily",
   "/pokedle",
-  "/guessr",
+  "/pokeguessr",
   "/pikadoku",
-  "/connections",
-  "/play",
+  "/pokeconnections",
+  "/quiz",
   "/quiz/whos-that-pokemon",
   "/iq-test",
   "/battle",
@@ -174,12 +174,12 @@ async function phoneStates(page, BASE, errors, step) {
     if (!chips.length || chips.some((h) => h < 40)) errors.push(`phone /pokedle: the hint chips are too small to tap (${chips.join(", ")}px tall)`);
     await page.evaluate(() => localStorage.removeItem("pokeiq:pokedle-prefs:v1"));
     // PokéConnections: Submit is docked above the tab bar from the first screen, before any scrolling.
-    await settle("/connections");
+    await settle("/pokeconnections");
     await page.getByTestId("conn-tile").first().waitFor();
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.waitForTimeout(400);
     const gap = await page.getByTestId("conn-submit").evaluate((b) => document.querySelector('nav[aria-label="Primary"]').getBoundingClientRect().top - b.getBoundingClientRect().bottom);
-    if (gap < 0) errors.push(`phone /connections: Submit starts ${Math.round(-gap)}px under the tab bar`);
+    if (gap < 0) errors.push(`phone /pokeconnections: Submit starts ${Math.round(-gap)}px under the tab bar`);
     // Pikadoku's More row (difficulty, Weekly, Archive) is thumb-sized too.
     await settle("/pikadoku");
     await page.getByTestId("pdk-more").click();
@@ -243,7 +243,7 @@ async function paintsBeforeScripts(browser, BASE, errors, step, width) {
   step("phone, before the scripts load: the game modes, a quiz's setup and the PokéIQ Test's start show");
   const context = await browser.newContext({ viewport: { width, height: 844 }, isMobile: true, hasTouch: true, javaScriptEnabled: false });
   const page = await context.newPage();
-  for (const [path, text] of [["/play", "Who's That Pokémon?"], ["/quiz/whos-that-pokemon", "Start Who's That"], ["/iq-test", "Start the test"]]) {
+  for (const [path, text] of [["/quiz", "Who's That Pokémon?"], ["/quiz/whos-that-pokemon", "Start Who's That"], ["/iq-test", "Start the test"]]) {
     try {
       await page.goto(`${BASE}${path}`, { waitUntil: "load" });
       await page.waitForTimeout(1500);
