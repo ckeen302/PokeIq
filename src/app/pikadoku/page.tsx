@@ -15,7 +15,7 @@ import { howToFirstScript } from "@/lib/howto-first";
 export const revalidate = 3600;
 
 export const metadata: Metadata = pageMetadata({
-  title: "Pikadoku: the Daily Pokémon Sudoku and Pokémon Grid Game",
+  title: "Pikadoku: Daily Pokémon Sudoku",
   description:
     "Pikadoku is Pokémon Sudoku, a free Pokémon grid game: fill a 3×3 grid with a Pokémon that fits each row and column. Easy, Normal and Expert dailies, a rarity score, unlimited grids and Tic Tac Toe duels.",
   path: "/pikadoku",

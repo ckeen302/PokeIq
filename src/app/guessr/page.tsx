@@ -5,7 +5,7 @@ import { GameInfo } from "@/components/seo/GameInfo";
 import { geoRegions } from "@/lib/server/geo";
 
 export const metadata: Metadata = pageMetadata({
-  title: "PokéGuessr: the Pokémon GeoGuessr",
+  title: "PokéGuessr: Pokémon GeoGuessr",
   description:
     "PokéGuessr is the Pokémon GeoGuessr. You're dropped somewhere from Kanto to Paldea: look at the in-game view, drop a pin on the map and score up to 25,000 points. New daily game every day.",
   path: "/guessr",
