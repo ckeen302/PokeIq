@@ -633,7 +633,7 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   await page.getByTestId("conn-play-unlimited").click();
   await page.getByTestId("conn-unlimited").waitFor();
   await page.getByRole("radio", { name: "Unlimited", checked: true }).waitFor();
-  const hardTiles = page.waitForResponse((r) => /\/api\/pokeconnections\?practice=hard-/.test(r.url()));
+  const hardTiles = page.waitForResponse((r) => /\/api\/connections\?practice=hard-/.test(r.url()));
   await page.getByRole("radio", { name: "Hard" }).click();
   const hard = await (await hardTiles).json();
   await page.locator(`[data-testid=conn-tile][data-id="${hard.tiles[0].id}"]`).waitFor();
@@ -661,7 +661,7 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
 
   // Unlimited 5×5: the size toggle, twenty-five tiles, five groups of five and five mistakes, solved from the data alone.
   step("pokéconnections: an Unlimited 5×5 game, solved to the end");
-  const size5 = page.waitForResponse((r) => /\/api\/pokeconnections\?practice=s5-/.test(r.url()));
+  const size5 = page.waitForResponse((r) => /\/api\/connections\?practice=s5-/.test(r.url()));
   await page.getByTestId("conn-size-5").click();
   const big = await (await size5).json();
   if (big.size !== 5 || big.tiles.length !== 25) errors.push(`the 5×5 puzzle came as size ${big.size} with ${big.tiles.length} tiles`);
@@ -705,12 +705,12 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   await page.screenshot({ path: `${OUT}/conn-5x5-result.png`, fullPage: true });
   // The size is remembered: Unlimited opens 5×5 after a reload.
   await page.reload({ waitUntil: "domcontentloaded" });
-  const again5 = page.waitForResponse((r) => /\/api\/pokeconnections\?practice=s5-/.test(r.url()));
+  const again5 = page.waitForResponse((r) => /\/api\/connections\?practice=s5-/.test(r.url()));
   await page.getByRole("radio", { name: "Unlimited" }).click();
   await again5;
   await page.getByRole("radio", { name: "5×5", checked: true }).waitFor();
   // Back to 4×4 for the rest of the run.
-  const back4 = page.waitForResponse((r) => /\/api\/pokeconnections\?practice=(hard|easy|normal)-/.test(r.url()));
+  const back4 = page.waitForResponse((r) => /\/api\/connections\?practice=(hard|easy|normal)-/.test(r.url()));
   await page.getByTestId("conn-size-4").click();
   await back4;
 
