@@ -13,7 +13,7 @@ export const CUSTOM_TITLE_MAX = 40;
 /** A community puzzle plays as a practice puzzle whose seed is "custom-<id>". */
 export const CUSTOM_SEED_RE = /^custom-([a-z0-9]{8})$/;
 export const customSeed = (id: string) => `custom-${id}`;
-export const customPath = (id: string) => `/connections/c/${id}`;
+export const customPath = (id: string) => `/pokeconnections/c/${id}`;
 
 /** One group as the creator builds it. */
 export interface CustomGroupInput {

@@ -33,7 +33,7 @@ export const ROOMS: RoomInfo[] = [
     description: "Say hi! The main room for everything PokéIQ. Stuck or new? Ask here and other trainers will help.",
     rules: ["Keep it friendly and on topic: Pokémon and PokéIQ.", "Beginners welcome: answer questions patiently, never make fun of one."],
     links: [
-      { label: "All game modes", href: "/play" },
+      { label: "All game modes", href: "/quiz" },
       { label: "Daily Challenge", href: "/daily" },
       { label: "Send feedback", href: "/feedback" },
     ],
@@ -50,7 +50,7 @@ export const ROOMS: RoomInfo[] = [
     name: "Connections",
     description: "Four hidden groups, sixteen Pokémon: share your grid and talk about the tricky ones.",
     rules: ["No spoilers: never post today's groups."],
-    links: [{ label: "Play Connections", href: "/connections" }],
+    links: [{ label: "Play Connections", href: "/pokeconnections" }],
   },
   {
     id: "pikadoku",
@@ -65,7 +65,7 @@ export const ROOMS: RoomInfo[] = [
     description: "Where in the Pokémon world was that? Share streaks and great guesses.",
     rules: ["No spoilers for today's rounds."],
     links: [
-      { label: "Play PokéGuessr", href: "/guessr" },
+      { label: "Play PokéGuessr", href: "/pokeguessr" },
       { label: "World atlas", href: "/atlas" },
     ],
   },
@@ -87,7 +87,7 @@ export const ROOMS: RoomInfo[] = [
     description: "Who's That Pokémon, Name 'em All and every quiz: share scores and challenge each other.",
     rules: ["No posting answers to a quiz someone is playing."],
     links: [
-      { label: "All quizzes", href: "/play" },
+      { label: "All quizzes", href: "/quiz" },
       { label: "Name 'em All", href: "/quiz/name-em-all" },
     ],
   },

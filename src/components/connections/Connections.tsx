@@ -127,7 +127,7 @@ function reducedMotion(): boolean {
 }
 
 /**
- * `customId`: a community puzzle (/connections/c/<id>) to open first instead of the daily.
+ * `customId`: a community puzzle (/pokeconnections/c/<id>) to open first instead of the daily.
  * `initial`: the dailies the page was rendered with (tiles only, by date), so today's board paints with the HTML.
  */
 export function Connections({ customId, initial }: { customId?: string; initial?: Readonly<Record<string, ConnPuzzleResponse>> } = {}) {
@@ -465,7 +465,7 @@ export function Connections({ customId, initial }: { customId?: string; initial?
 
   // ---- Playing ---------------------------------------------------------------
 
-  // A friend's "Beat my time" link (/connections?beat=<token>): the server says whose result it is.
+  // A friend's "Beat my time" link (/pokeconnections?beat=<token>): the server says whose result it is.
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get("beat");
     if (!token) return;
@@ -732,7 +732,7 @@ export function Connections({ customId, initial }: { customId?: string; initial?
               <a href="#duel" title="Race a friend or a stranger to the four groups" className={cn("tap", iconButton, "flex items-center gap-1.5 font-display text-xs font-semibold uppercase tracking-wider")}>
                 <Swords className="h-[1.125rem] w-[1.125rem]" aria-hidden /> Duel
               </a>
-              <a href="/connections/create" title="Build your own puzzle and share a link" data-testid="conn-create-link" className={cn("tap", iconButton, "flex items-center gap-1.5 font-display text-xs font-semibold uppercase tracking-wider")}>
+              <a href="/pokeconnections/create" title="Build your own puzzle and share a link" data-testid="conn-create-link" className={cn("tap", iconButton, "flex items-center gap-1.5 font-display text-xs font-semibold uppercase tracking-wider")}>
                 <PencilLine className="h-[1.125rem] w-[1.125rem]" aria-hidden /> Create
               </a>
             <div className="relative flex items-center">
@@ -778,7 +778,7 @@ export function Connections({ customId, initial }: { customId?: string; initial?
         {isCustom && (
           <p className="mx-auto max-w-md rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2 text-center text-sm" data-testid="conn-community">
             A puzzle made by another trainer. It doesn&apos;t count toward your streak.{" "}
-            <a href="/connections/community" className="font-semibold text-primary hover:underline">
+            <a href="/pokeconnections/community" className="font-semibold text-primary hover:underline">
               More community puzzles
             </a>
           </p>

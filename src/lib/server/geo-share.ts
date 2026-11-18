@@ -13,7 +13,7 @@ import { geoRegions } from "./geo";
 import { readStreakResult } from "./geo-streak";
 
 /**
- * A shared PokéGuessr result (/guessr/r/<token>): a finished game, daily or
+ * A shared PokéGuessr result (/pokeguessr/r/<token>): a finished game, daily or
  * streak carried in its signed result token, a region streak in its own, or
  * a finished duel by its code. Everything shown comes from the signed token
  * or the stored duel, never from the link's own text, so a card can't be
@@ -67,7 +67,7 @@ function gameView(result: GeoResult): GeoShareView | null {
       total: streak,
       max: streak,
       chips: [map.name, "Streak", ...(spec.era ? [GEO_ERA_NAMES[spec.era]] : [])],
-      playHref: `/guessr?region=${map.id}`,
+      playHref: `/pokeguessr?region=${map.id}`,
       playLabel: "Play PokéGuessr",
       title: `${streak} in a row in PokéGuessr ${map.name} streak`,
     };
@@ -94,7 +94,7 @@ function gameView(result: GeoResult): GeoShareView | null {
     total,
     max,
     chips,
-    playHref: daily !== undefined || weekly !== undefined ? "/guessr" : `/guessr?region=${map.id}`,
+    playHref: daily !== undefined || weekly !== undefined ? "/pokeguessr" : `/pokeguessr?region=${map.id}`,
     playLabel: daily !== undefined ? "Play today's daily" : weekly !== undefined ? "Play this week's challenge" : "Play PokéGuessr",
     title: `${fmt(total)} points in ${eyebrow.replace("PokéGuessr · ", "PokéGuessr ")}`,
   };
@@ -133,14 +133,14 @@ async function duelShareView(code: string): Promise<GeoShareView | null> {
     chips: [map.name, race ? "Points race" : "HP duel", ...(view.turbo ? ["Turbo"] : []), ...(view.ranked ? ["Ranked"] : [])],
     players,
     duelMode: race ? "race" : "hp",
-    playHref: "/guessr",
+    playHref: "/pokeguessr",
     playLabel: "Start a duel",
     title: `${headline}: a PokéGuessr duel in ${map.name}`,
   };
 }
 
 /**
- * A friend's challenge link (/guessr/c/<token>), as a result card: their
+ * A friend's challenge link (/pokeguessr/c/<token>), as a result card: their
  * score and a square per round on the map played. Nothing names a place.
  */
 export function challengeShareView(challenge: { region: string; name: string; score: number; rounds: number[] }): GeoShareView | null {
@@ -187,7 +187,7 @@ export async function readGeoShare(token: string): Promise<GeoShareView | null> 
     total: streak.streak,
     max: streak.streak,
     chips: ["Region Streak", "World"],
-    playHref: "/guessr/streak",
+    playHref: "/pokeguessr/streak",
     playLabel: "Play Region Streak",
     title: `${streak.streak} in a row in PokéGuessr Region Streak`,
   };

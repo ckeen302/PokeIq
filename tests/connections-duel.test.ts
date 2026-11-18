@@ -290,7 +290,7 @@ describe("rematches, matchmaking and challenges", () => {
   it("matchmaking has one PokéConnections queue, and challenges link to the race", () => {
     const s = matchSettingsSchema.parse({ game: "connections" });
     expect(queueKey(s)).toBe("connections");
-    expect(pvpHref("connections", "abcdefgh")).toBe("/connections/duel/abcdefgh");
-    expect(challengeHref("connections", "abcdefgh")).toBe("/connections/duel/abcdefgh");
+    expect(pvpHref("connections", "abcdefgh")).toBe("/pokeconnections/duel/abcdefgh");
+    expect(challengeHref("connections", "abcdefgh")).toBe("/pokeconnections/duel/abcdefgh");
   });
 });

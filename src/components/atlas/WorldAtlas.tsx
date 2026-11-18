@@ -110,7 +110,7 @@ export function WorldAtlas({ src, regions }: { src: string; regions?: AtlasRegio
           <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">
             World <span className="text-primary">Atlas</span>
           </h1>
-          <Link href="/guessr/globe" className="inline-block font-display text-xs font-bold uppercase tracking-wider text-screen hover:underline">
+          <Link href="/pokeguessr/globe" className="inline-block font-display text-xs font-bold uppercase tracking-wider text-screen hover:underline">
             View it as a 3D globe →
           </Link>
         </div>
@@ -315,7 +315,7 @@ function GuessrLink({ region }: { region: string }) {
   const map = guessrMap(region);
   return (
     <Link
-      href={`/guessr?region=${map}`}
+      href={`/pokeguessr?region=${map}`}
       className="mt-3 flex items-center gap-1.5 font-display text-xs font-bold uppercase tracking-wider text-success hover:underline"
     >
       <Compass className="h-3.5 w-3.5" aria-hidden />

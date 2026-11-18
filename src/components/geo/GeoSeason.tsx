@@ -117,10 +117,10 @@ export function GeoSeasonStrip({ season, elo }: { season: GeoSeasonView; elo: nu
   );
 }
 
-/** The link to /guessr/history. */
+/** The link to /pokeguessr/history. */
 export function DuelHistoryLink({ className }: { className?: string }) {
   return (
-    <Link href="/guessr/history" className={cn("inline-flex items-center gap-1 font-semibold text-muted-foreground underline-offset-2 hover:text-foreground hover:underline", className)} data-testid="geo-history-link">
+    <Link href="/pokeguessr/history" className={cn("inline-flex items-center gap-1 font-semibold text-muted-foreground underline-offset-2 hover:text-foreground hover:underline", className)} data-testid="geo-history-link">
       <History className="h-3.5 w-3.5" aria-hidden /> Duel history
     </Link>
   );

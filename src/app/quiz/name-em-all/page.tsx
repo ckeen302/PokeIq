@@ -20,7 +20,7 @@ export default function NameEmAllHub() {
   const options = NEA_CATEGORIES.map((c) => ({ id: c.id, label: c.label, total: counts[c.id] }));
   return (
     <div className="mx-auto max-w-5xl space-y-8">
-      <BackButton href="/play" />
+      <BackButton href="/quiz" />
       <header className="mx-auto max-w-2xl space-y-2 text-center">
         <p className="hud-label max-md:hidden text-screen">Recall quiz</p>
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">{NEA_TITLE}</h1>

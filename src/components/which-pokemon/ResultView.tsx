@@ -119,7 +119,7 @@ export function ResultView({ pokemon, name }: { pokemon: PooledPokemon; name: st
         <Link href={QUIZ_PATH} className={buttonVariants({ variant: "outline" })} data-testid="wp-retake">
           Take it again
         </Link>
-        <Link href="/play" className={buttonVariants({ variant: "ghost" })}>
+        <Link href="/quiz" className={buttonVariants({ variant: "ghost" })}>
           More quizzes
         </Link>
       </div>

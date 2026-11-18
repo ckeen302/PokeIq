@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { GymLeaderTag } from "./GeoRanked";
 
 /**
- * /guessr/history: your PokéGuessr duels, newest first (casual and ranked),
+ * /pokeguessr/history: your PokéGuessr duels, newest first (casual and ranked),
  * each opening its replay. Asked for with the browser's signed ranked id
  * (or the account, when signed in), a page at a time.
  */
@@ -57,7 +57,7 @@ function Row({ duel, mapName }: { duel: GeoDuelHistoryItem; mapName: string }) {
   return (
     <li>
       <Link
-        href={`/guessr/history/${duel.code}`}
+        href={`/pokeguessr/history/${duel.code}`}
         className="group flex items-center gap-3 rounded-lg border bg-card p-3 transition-colors hover:border-primary/50 hover:bg-foreground/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:gap-4 sm:p-4"
         data-testid="geo-history-row"
       >
@@ -168,7 +168,7 @@ export function DuelHistoryList({ mapNames }: { mapNames: Record<string, string>
         <CardContent className="space-y-4 p-6 text-center">
           <Swords className="mx-auto h-8 w-8 text-muted-foreground" aria-hidden />
           <p className="text-sm text-muted-foreground">No duels yet. Finish a duel and it shows up here with a round-by-round replay.</p>
-          <Link href="/guessr#ranked" className={buttonVariants({ variant: "default" })}>
+          <Link href="/pokeguessr#ranked" className={buttonVariants({ variant: "default" })}>
             <Swords className="h-4 w-4" aria-hidden /> Find a duel
           </Link>
         </CardContent>

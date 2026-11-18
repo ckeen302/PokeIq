@@ -72,7 +72,7 @@ export interface ConnChallenge {
   hinted: boolean;
 }
 
-export const beatPath = (token: string) => `/connections?beat=${encodeURIComponent(token)}`;
+export const beatPath = (token: string) => `/pokeconnections?beat=${encodeURIComponent(token)}`;
 
 export interface ConnScore {
   mistakes: number;
@@ -92,7 +92,7 @@ export function beatVerdict(mine: ConnScore, theirs: ConnScore): "beat" | "lost"
 // Creators and the Puzzle of the Day ------------------------------------------
 
 export const CREATOR_NAME_RE = /^[\p{L}\p{N} _.'’-]{1,24}$/u;
-export const creatorPath = (name: string) => `/connections/creator/${encodeURIComponent(name)}`;
+export const creatorPath = (name: string) => `/pokeconnections/creator/${encodeURIComponent(name)}`;
 export const FEATURED_BADGE_ID = "conn-featured";
 
 export interface ConnPotdResponse {

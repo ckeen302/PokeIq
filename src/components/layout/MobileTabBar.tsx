@@ -38,7 +38,7 @@ import { cn } from "@/lib/utils";
 /** The four tabs before More: the home page and the games most people come for. */
 const TABS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/guessr", label: "Guessr", icon: Compass },
+  { href: "/pokeguessr", label: "Guessr", icon: Compass },
   { href: "/pokedle", label: "Wordle", icon: Search },
   { href: "/battle", label: "Battle", icon: Swords },
 ];
@@ -46,9 +46,9 @@ const TABS: { href: string; label: string; icon: LucideIcon }[] = [
 /** Everything else, in the More sheet: the other games and sections as tiles, then the community pages. */
 const MORE_TILES: { href: string; label: string; icon: LucideIcon; accent: string }[] = [
   { href: "/daily", label: "Daily", icon: CalendarDays, accent: "340 86% 60%" },
-  { href: "/connections", label: "Connections", icon: LayoutGrid, accent: "42 98% 60%" },
+  { href: "/pokeconnections", label: "Connections", icon: LayoutGrid, accent: "42 98% 60%" },
   { href: "/pikadoku", label: "Sudoku", icon: Grid3x3, accent: "190 90% 55%" },
-  { href: "/play", label: "Quizzes", icon: Gamepad2, accent: "24 95% 58%" },
+  { href: "/quiz", label: "Quizzes", icon: Gamepad2, accent: "24 95% 58%" },
   { href: "/pokedex", label: "Pokédex", icon: BookOpen, accent: "214 90% 64%" },
   { href: LAB_PATH, label: "3D Lab", icon: Box, accent: "300 75% 68%" },
 ];
@@ -62,7 +62,7 @@ function tabActive(pathname: string, href: string) {
   if (isLabPath(pathname)) return href === LAB_PATH;
   if (href === LAB_PATH) return false;
   // A quiz and the PokéIQ Test sit under Quizzes; a Pokémon's entry under the Pokédex.
-  if (pathname.startsWith("/quiz/") || pathname === "/iq-test") return href === "/play";
+  if (pathname === "/iq-test") return href === "/quiz";
   if (pathname.startsWith("/pokemon/")) return href === "/pokedex";
   return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 }

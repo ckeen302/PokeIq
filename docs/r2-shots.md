@@ -180,7 +180,7 @@ Don't continue unless it says **Verified.**
 
 ## 7. Check the screenshots load
 
-1. Open https://playpokeiq.com/guessr and start a game. The screenshot
+1. Open https://playpokeiq.com/pokeguessr and start a game. The screenshot
    should appear as usual.
 2. Right-click it → **Open image in new tab** (or DevTools → Network → Img).
    The URL should start with your public base and end `/geo/<id>.webp`.

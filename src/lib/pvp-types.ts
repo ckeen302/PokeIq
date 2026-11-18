@@ -416,4 +416,4 @@ export interface PvpSeatResponse {
 }
 
 /** Where each kind of duel is played. */
-export const pvpHref = (kind: PvpKind, code: string) => `/${kind}/duel/${code}`;
+export const pvpHref = (kind: PvpKind, code: string) => `/${kind === "connections" ? "pokeconnections" : kind}/duel/${code}`;

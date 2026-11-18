@@ -34,7 +34,7 @@ interface SeatLike<V> {
 }
 
 async function post<T>(url: string, body: unknown): Promise<T> {
-  // The browser's signed ranked id, when it has one: PokéGuessr keeps the duel in this trainer's history (/guessr/history).
+  // The browser's signed ranked id, when it has one: PokéGuessr keeps the duel in this trainer's history (/pokeguessr/history).
   const id = rankedId();
   const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json", ...(id ? { "x-ranked-id": id } : {}) }, body: JSON.stringify(body) });
   const data = await res.json().catch(() => ({}));

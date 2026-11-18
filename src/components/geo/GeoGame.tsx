@@ -216,7 +216,7 @@ export function useCountUp(value: number, ms = 700, delay = 0, tally = false): n
 export interface GeoGameProps {
   /** Every map: the world and each region. */
   regions: GeoRegionInfo[];
-  /** Set on /guessr/c/<token>: a friend's game to replay. */
+  /** Set on /pokeguessr/c/<token>: a friend's game to replay. */
   challenge?: GeoChallenge & { token: string; region: string; era?: GeoEra; families?: GeoFamilyId[]; difficulty?: "easy" | "hard" };
 }
 
@@ -279,7 +279,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     rememberGeoSettings(next);
   }
 
-  // /guessr?region=johto opens on that map (the atlas links here).
+  // /pokeguessr?region=johto opens on that map (the atlas links here).
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const id = params.get("region");
@@ -289,7 +289,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     // eslint-disable-next-line react-hooks/exhaustive-deps -- read the URL once
   }, []);
 
-  // /guessr?play=daily (the home page's Play) starts today's Daily straight away; ?play=game a game on the map.
+  // /pokeguessr?play=daily (the home page's Play) starts today's Daily straight away; ?play=game a game on the map.
   // It waits for the local date, by which time the saved settings have been read too.
   const autoPlay = useRef(false);
   useEffect(() => {
@@ -314,7 +314,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
   /** The hub's Solo tile: down to the solo game's setup. */
   const toSolo = () => scrollTo("solo");
-  /** The Party tile (or /guessr#party): opens the party form, so the hub's other forms are the only ones on the page until then. */
+  /** The Party tile (or /pokeguessr#party): opens the party form, so the hub's other forms are the only ones on the page until then. */
   const [partyOpen, setPartyOpen] = useState(false);
   useEffect(() => {
     if (window.location.hash !== "#party") return;
@@ -944,7 +944,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
                   <p className="hud-label text-primary">3D · Explore</p>
                   <p className="font-display text-2xl font-bold uppercase">World Globe</p>
                   <p className="text-sm text-muted-foreground">Spin the whole Pokémon world in 3D and zoom from regions down to every route.</p>
-                  <Link href="/guessr/globe" className={cn(buttonVariants(), "w-full sm:w-auto")}>
+                  <Link href="/pokeguessr/globe" className={cn(buttonVariants(), "w-full sm:w-auto")}>
                     Open the globe
                   </Link>
                 </div>

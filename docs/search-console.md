@@ -27,7 +27,7 @@ method below also works and needs no DNS change.
 1. **Sitemaps → Add a new sitemap:** submit `sitemap.xml`. The TCG card
    sitemaps (`/pokedex/tcg/sitemap/<n>.xml`) are listed in `robots.txt`, which
    Google reads too; you can also submit them one by one.
-2. **URL inspection:** inspect `/`, `/pokedle`, `/guessr` and one Pokémon
+2. **URL inspection:** inspect `/`, `/pokedle`, `/pokeguessr` and one Pokémon
    page (for example `/pokemon/pikachu`), then press **Request indexing** for
    each.
 3. **Settings → Crawl stats** and **Pages** (indexing report): look again

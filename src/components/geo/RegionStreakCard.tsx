@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import art from "@/assets/guessr/hoenn.webp";
 import { HubTile } from "./HubParts";
 
-/** The PokéGuessr hub's way into Region Streak (/guessr/streak): one screenshot, name the region, no pin. */
+/** The PokéGuessr hub's way into Region Streak (/pokeguessr/streak): one screenshot, name the region, no pin. */
 export function RegionStreakCard() {
   const progress = useProgress();
   const best = progress?.best[`geo:${GEO_REGION_STREAK_KEY}`] ?? 0;
@@ -24,7 +24,7 @@ export function RegionStreakCard() {
       blurb={`No pin: one screenshot, pick the region from ${GEO_STREAK_REGIONS[0]} to ${GEO_STREAK_REGIONS[GEO_STREAK_REGIONS.length - 1]}. Right deals the next one, wrong ends the run.`}
       stat={best > 0 ? `Your best: ${best} in a row` : null}
       action={
-        <Link href="/guessr/streak" className={cn(buttonVariants({ variant: "secondary" }), "w-full")} data-testid="region-streak-link">
+        <Link href="/pokeguessr/streak" className={cn(buttonVariants({ variant: "secondary" }), "w-full")} data-testid="region-streak-link">
           Play Region Streak <ArrowRight className="h-4 w-4" aria-hidden />
         </Link>
       }

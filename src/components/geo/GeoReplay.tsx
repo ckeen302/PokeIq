@@ -19,7 +19,7 @@ import { GymLeaderTag } from "./GeoRanked";
 import { EloChange, formatDuelDate, historyHeaders } from "./DuelHistory";
 
 /**
- * A kept PokéGuessr duel, replayed (/guessr/history/<code>): round by round,
+ * A kept PokéGuessr duel, replayed (/pokeguessr/history/<code>): round by round,
  * the screenshot, then both pins and the true place on the map with the
  * distances and scores, then the damage landing and the HP after. Step
  * through with the buttons (or ← →), or press Play. Only the two trainers
@@ -69,7 +69,7 @@ export function GeoReplay({ code, regions }: { code: string; regions: GeoRegionI
   if (state.status === "loading") {
     return (
       <div className="mx-auto max-w-6xl space-y-6">
-        <BackButton href="/guessr/history" label="Duel history" />
+        <BackButton href="/pokeguessr/history" label="Duel history" />
         <p className="flex items-center gap-2 text-sm text-muted-foreground" role="status">
           <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Loading the replay…
         </p>
@@ -79,13 +79,13 @@ export function GeoReplay({ code, regions }: { code: string; regions: GeoRegionI
   if (state.status !== "ready") {
     return (
       <div className="mx-auto max-w-3xl space-y-6" data-testid="geo-replay-missing">
-        <BackButton href="/guessr/history" label="Duel history" />
+        <BackButton href="/pokeguessr/history" label="Duel history" />
         <div className="space-y-3 rounded-lg border bg-card p-6 text-center">
           <p className="font-display text-xl font-bold">{state.status === "missing" ? "No replay here" : "Something went wrong"}</p>
           <p className="text-sm text-muted-foreground">
             {state.status === "missing" ? "This duel's replay doesn't exist, or it's private to the two trainers who played it." : state.message}
           </p>
-          <Link href="/guessr" className={buttonVariants({ variant: "outline" })}>
+          <Link href="/pokeguessr" className={buttonVariants({ variant: "outline" })}>
             <Swords className="h-4 w-4" aria-hidden /> Play PokéGuessr
           </Link>
         </div>
@@ -155,7 +155,7 @@ function ReplayView({ replay, map, onShared }: { replay: GeoDuelReplay; map: Geo
 
   return (
     <div className="mx-auto max-w-6xl space-y-5" data-testid="geo-replay">
-      <BackButton href="/guessr/history" label="Duel history" />
+      <BackButton href="/pokeguessr/history" label="Duel history" />
 
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0 space-y-1">
@@ -419,7 +419,7 @@ function ShareReplay({ code, shared, onShared }: { code: string; shared: boolean
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const url = typeof window === "undefined" ? "" : `${window.location.origin}/guessr/history/${code}`;
+  const url = typeof window === "undefined" ? "" : `${window.location.origin}/pokeguessr/history/${code}`;
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(url);

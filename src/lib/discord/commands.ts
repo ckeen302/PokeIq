@@ -25,9 +25,9 @@ export function dailyEmbed(now = new Date()): Embed {
     title: `PokéIQ Daily #${n}`,
     description: [
       link(`Pokédle #${n}`, "/pokedle"),
-      link("PokéConnections", "/connections"),
+      link("PokéConnections", "/pokeconnections"),
       link("Pikadoku", "/pikadoku"),
-      link("PokéGuessr daily", "/guessr"),
+      link("PokéGuessr daily", "/pokeguessr"),
       link("Daily Challenge quiz", "/daily"),
     ].join("\n"),
     url: SITE_URL,
@@ -92,9 +92,9 @@ export function dexEmbed(p: Pokemon): Embed {
 export type DuelGame = "pokedle" | "connections" | "pikadoku" | "guessr" | "quiz";
 export const DUEL_PATHS: Record<DuelGame, string> = {
   pokedle: "/pokedle/duel",
-  connections: "/connections/duel",
+  connections: "/pokeconnections/duel",
   pikadoku: "/pikadoku/duel",
-  guessr: "/guessr/duel",
+  guessr: "/pokeguessr/duel",
   quiz: "/quiz/duel",
 };
 export const GAME_LABELS: Record<DuelGame, string> = { pokedle: "Pokédle", connections: "PokéConnections", pikadoku: "Pikadoku", guessr: "PokéGuessr", quiz: "Quiz" };

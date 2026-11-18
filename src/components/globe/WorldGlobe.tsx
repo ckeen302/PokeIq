@@ -79,7 +79,7 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
 
   const ensureShots = useCallback(() => {
     if (shots.current) return Promise.resolve(shots.current);
-    shotsLoad.current ??= fetch("/guessr/globe/shots.json")
+    shotsLoad.current ??= fetch("/pokeguessr/globe/shots.json")
       .then((r) => (r.ok ? (r.json() as Promise<GlobeShotIndex>) : null))
       .then((idx) => {
         if (idx) {
@@ -316,7 +316,7 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
           <div className="min-w-0">
             <nav aria-label="Breadcrumb" className="mb-3 flex flex-wrap gap-2">
               <Link href={LAB_PATH} className={btn} data-testid="globe-lab">← 3D Lab</Link>
-              <Link href="/guessr" className={btn}>PokéGuessr</Link>
+              <Link href="/pokeguessr" className={btn}>PokéGuessr</Link>
             </nav>
             <h1 className="font-display text-xl font-bold uppercase tracking-[0.14em] sm:text-3xl">Poké<span className="text-primary">IQ</span> World</h1>
             <p className="mt-1.5 font-pixel text-[10px] uppercase tracking-[0.14em] text-screen">

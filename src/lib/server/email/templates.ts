@@ -16,8 +16,8 @@ export interface Message {
 /** Each daily's button, in the order the home page lists them. */
 export const DAILY_LINKS: { label: string; path: string }[] = [
   { label: "Pokédle", path: "/pokedle" },
-  { label: "PokéGuessr daily", path: "/guessr" },
-  { label: "Connections", path: "/connections" },
+  { label: "PokéGuessr daily", path: "/pokeguessr" },
+  { label: "Connections", path: "/pokeconnections" },
   { label: "Pikadoku", path: "/pikadoku" },
   { label: "Daily Challenge", path: "/daily" },
 ];
@@ -116,7 +116,7 @@ export function dailyEmail(i: DailyEmailInput): Message {
   const body = [
     `<p style="margin:0 0 6px 0;font-family:${FONT};font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:${C.violet};">Daily #${i.dailyNumber}</p>`,
     `<h1 style="margin:0 0 16px 0;font-family:${FONT};font-size:24px;line-height:30px;font-weight:800;color:${C.text};">Today's dailies are live</h1>`,
-    `<a href="${escapeHtml(link("/guessr"))}" style="display:block;text-decoration:none;"><img src="${escapeHtml(i.imageUrl)}" width="478" alt="Today's PokéGuessr picture, blurred" style="display:block;width:100%;max-width:478px;height:auto;border:0;border-radius:10px;background:${C.border};"></a>`,
+    `<a href="${escapeHtml(link("/pokeguessr"))}" style="display:block;text-decoration:none;"><img src="${escapeHtml(i.imageUrl)}" width="478" alt="Today's PokéGuessr picture, blurred" style="display:block;width:100%;max-width:478px;height:auto;border:0;border-radius:10px;background:${C.border};"></a>`,
     `<p style="margin:10px 0 18px 0;font-family:${FONT};font-size:14px;line-height:20px;color:${C.muted};">Where in the Pokémon world is this? Today's PokéGuessr starts here.</p>`,
     streak
       ? `<p style="margin:0 0 18px 0;padding:12px 14px;border:1px solid ${C.orange};border-radius:10px;font-family:${FONT};font-size:15px;line-height:20px;font-weight:700;color:${C.orange};">🔥 ${escapeHtml(streak)}</p>`

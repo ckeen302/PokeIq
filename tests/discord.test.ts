@@ -58,7 +58,7 @@ describe("interactions", () => {
     expect(j.type).toBe(4);
     const e = j.data.embeds[0];
     expect(e.color).toBe(0xf1417c);
-    for (const p of ["/pokedle", "/connections", "/pikadoku", "/guessr", "/daily"]) expect(e.description).toContain(p);
+    for (const p of ["/pokedle", "/pokeconnections", "/pikadoku", "/pokeguessr", "/daily"]) expect(e.description).toContain(p);
     expect(e.title).toMatch(/#\d+/);
   });
   it("/help", async () => {

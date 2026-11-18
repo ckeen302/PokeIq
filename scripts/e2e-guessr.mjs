@@ -159,7 +159,7 @@ async function solo(width, height) {
   const tag = `${width}`;
   const page = await newPage({ width, height });
   step(`solo at ${tag}`);
-  await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/pokeguessr`, { waitUntil: "networkidle" });
   await closeHowTo(page);
   await page.getByRole("button", { name: /5-round game/ }).click();
   await shotLoaded(page);
@@ -222,13 +222,13 @@ async function weekly(width, height) {
     const body = await res.json().catch(() => null);
     if (body && /"(name|pin|mask|location)"/.test(JSON.stringify(body.round ?? {}))) errors.push(`weekly round leaked its place: ${JSON.stringify(body.round)}`);
   });
-  await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/pokeguessr`, { waitUntil: "networkidle" });
   await closeHowTo(page);
   for (const id of ["play", "multiplayer", "maps", "you"]) await page.getByTestId(`geo-hub-${id}`).waitFor();
   for (const id of ["geo-solo-card", "geo-daily-card", "geo-weekly-card", "region-streak-card", "geo-duels-card", "geo-ranked-tile", "geo-party-card", "globe-card", "geo-history-link"]) {
     if ((await page.getByTestId(id).count()) !== 1) errors.push(`the hub has no ${id}`);
   }
-  if ((await page.getByTestId("geo-history-link").getAttribute("href")) !== "/guessr/history") errors.push("the duel history link doesn't go to /guessr/history");
+  if ((await page.getByTestId("geo-history-link").getAttribute("href")) !== "/pokeguessr/history") errors.push("the duel history link doesn't go to /pokeguessr/history");
   await page.getByTestId("geo-achievements").waitFor({ timeout: 15_000 });
   await page.getByTestId("geo-mastery").waitFor();
   // The hub has no second map picker: maps are chosen in the solo setup.
@@ -277,7 +277,7 @@ async function duel(width, height, { turbo }) {
   const red = await newPage({ width, height });
   const blue = await newPage({ width, height });
   step(`duel at ${tag}${turbo ? " (Turbo)" : ""}`);
-  await red.goto(`${BASE}/guessr?region=kanto`, { waitUntil: "networkidle" });
+  await red.goto(`${BASE}/pokeguessr?region=kanto`, { waitUntil: "networkidle" });
   await closeHowTo(red);
   if (turbo) {
     await red.getByTestId("geo-duel-turbo").click();
@@ -288,7 +288,7 @@ async function duel(width, height, { turbo }) {
     const name = red.getByLabel("Your trainer name").first();
     if (!(await name.inputValue())) await name.fill("Red");
     await red.getByRole("button", { name: /Create duel/ }).click({ timeout: 10_000 }).catch(() => {});
-    if (await red.waitForURL(/\/guessr\/duel\/[a-z2-9]{8}$/, { timeout: 10_000 }).then(() => true, () => false)) break;
+    if (await red.waitForURL(/\/pokeguessr\/duel\/[a-z2-9]{8}$/, { timeout: 10_000 }).then(() => true, () => false)) break;
   }
   const url = red.url();
   await red.getByText("Waiting for a challenger").waitFor();
@@ -427,7 +427,7 @@ async function royale(width, height) {
   const tag = `${width}`;
   const [red, blue, green] = await Promise.all([0, 1, 2].map((i) => newPage({ width, height }, i ? { reducedMotion: "reduce", noWebGL: true } : {})));
   step(`party: Battle Royale at ${tag}`);
-  await red.goto(`${BASE}/guessr?region=kanto`, { waitUntil: "networkidle" });
+  await red.goto(`${BASE}/pokeguessr?region=kanto`, { waitUntil: "networkidle" });
   await closeHowTo(red);
   const card = red.getByTestId("geo-party-card");
   await card.waitFor();
@@ -438,7 +438,7 @@ async function royale(width, height) {
   await red.screenshot({ path: `${OUT}/party-hub-${tag}.png` });
   await red.getByTestId("geo-party-name").fill("Red");
   await red.getByTestId("geo-party-create").click();
-  await red.waitForURL(/\/guessr\/party\/[a-z2-9]{6}$/, { timeout: 20_000 });
+  await red.waitForURL(/\/pokeguessr\/party\/[a-z2-9]{6}$/, { timeout: 20_000 });
   const url = red.url();
   await red.getByTestId("party-lobby").waitFor();
   // The host sets up a quick game: one life, a 30 s round, 10 s after the first pin.
@@ -530,13 +530,13 @@ async function teamDuel(width, height) {
   const pages = await Promise.all([0, 1, 2, 3].map((i) => newPage({ width, height }, i ? { reducedMotion: "reduce", noWebGL: true } : {})));
   const [red, blue, green, gold] = pages;
   step(`party: team duel 2v2 at ${tag}`);
-  await red.goto(`${BASE}/guessr?region=kanto`, { waitUntil: "networkidle" });
+  await red.goto(`${BASE}/pokeguessr?region=kanto`, { waitUntil: "networkidle" });
   await closeHowTo(red);
   await red.getByTestId("geo-open-duels").click();
   await red.getByTestId("geo-duel-mode-team").click();
   await red.getByLabel("Your trainer name").first().fill("Red");
   await red.getByRole("button", { name: /Create duel/ }).click();
-  await red.waitForURL(/\/guessr\/party\/[a-z2-9]{6}$/, { timeout: 20_000 });
+  await red.waitForURL(/\/pokeguessr\/party\/[a-z2-9]{6}$/, { timeout: 20_000 });
   const url = red.url();
   await red.locator("[data-testid=party-set-mode-team][aria-checked=true]").waitFor();
   for (const id of ["party-set-rounds-5", "party-set-timer-30", "party-set-countdown-10"]) {
@@ -653,7 +653,7 @@ async function crowd(width, height) {
   const early = await page.request.get(`${BASE}/api/geo/crowd?date=${date}`);
   if (early.status() !== 403) errors.push(`crowd map: today's map answered without a finished Daily (${early.status()})`);
   for (const [cx, cy] of [[0.42, 0.45], [0.44, 0.47], [0.6, 0.4]]) await seedDaily(date, cx, cy);
-  await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/pokeguessr`, { waitUntil: "networkidle" });
   await closeHowTo(page);
   await page.getByTestId("geo-daily-card").getByRole("button").first().click();
   for (let i = 0; i < 5; i++) {

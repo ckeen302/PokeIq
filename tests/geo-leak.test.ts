@@ -41,7 +41,7 @@ describe("PokéGuessr answer leak", () => {
     expect(previewUrl(IDS[0])).toMatch(/^\/api\/geo\/preview\/[A-Za-z0-9_-]{16}$/);
   });
 
-  it("the map picker's previews (the /guessr page payload) carry preview names, never shot ids", () => {
+  it("the map picker's previews (the /pokeguessr page payload) carry preview names, never shot ids", () => {
     const regions = geoRegions();
     const payload = JSON.stringify(regions);
     expect(idsIn(payload)).toEqual([]);

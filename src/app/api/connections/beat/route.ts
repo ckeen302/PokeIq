@@ -14,7 +14,7 @@ import { beatToken, readBeatToken } from "@/lib/server/connections-social";
  * POST /api/connections/beat { date, player }
  *   A link to today's daily carrying your own ranked result, read from the
  *   leaderboard (never from numbers you send) and signed by the server.
- *   { path } is /connections?beat=<token>; 404 when you aren't on the board.
+ *   { path } is /pokeconnections?beat=<token>; 404 when you aren't on the board.
  * GET /api/connections/beat?token=...
  *   What a link's token says ({ date, name, mistakes, ms, hinted }), or 404
  *   if the server didn't sign it. The friend then plays the normal daily.

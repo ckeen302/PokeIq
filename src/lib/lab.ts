@@ -96,7 +96,7 @@ export const LAB_EXPERIENCES: LabExperience[] = [
   },
   {
     id: "globe",
-    href: "/guessr/globe",
+    href: "/pokeguessr/globe",
     title: "World Globe",
     kicker: "The Pokémon world",
     pitch: "Spin a holographic globe of the whole Pokémon world and zoom from its regions down to every town, route and landmark.",

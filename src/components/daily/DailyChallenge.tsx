@@ -107,7 +107,7 @@ export function DailyChallenge() {
               <p className="text-sm text-muted-foreground">
                 Still hungry? Try the{" "}
                 <Link href="/pokedle" className="text-primary hover:underline">Pokédle</Link> or a{" "}
-                <Link href="/play" className="text-primary hover:underline">Survival run</Link>.
+                <Link href="/quiz" className="text-primary hover:underline">Survival run</Link>.
               </p>
             </CardContent>
           </Card>

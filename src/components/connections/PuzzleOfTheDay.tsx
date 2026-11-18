@@ -9,7 +9,7 @@ import { awardFeaturedCreator, type BadgeDef } from "@/lib/progress";
 import { dlePlayerId } from "@/lib/dle-player";
 import { NewBadges } from "./results";
 
-/** The Puzzle of the Day card on /connections; also awards the "Featured creator" badge when one of yours was picked. */
+/** The Puzzle of the Day card on /pokeconnections; also awards the "Featured creator" badge when one of yours was picked. */
 export function PuzzleOfTheDay() {
   const [potd, setPotd] = useState<ConnPotdResponse | null>(null);
   const [badges, setBadges] = useState<BadgeDef[]>([]);

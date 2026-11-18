@@ -168,7 +168,7 @@ function FreshBody() {
       </p>
       <div className="pt-1">
         {/* Next's own link, prefetched as it comes into view on every screen: it's the one thing most visitors press. */}
-        <NextLink href="/guessr?play=daily" data-testid="home-hero-play" className={PLAY_CLASS}>
+        <NextLink href="/pokeguessr?play=daily" data-testid="home-hero-play" className={PLAY_CLASS}>
           <Compass className="h-5 w-5" aria-hidden /> Play today&apos;s places
           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1 motion-reduce:transition-none" aria-hidden />
         </NextLink>
@@ -183,7 +183,7 @@ function DoneBody({ score, today }: { score: number; today: string }) {
 
   async function share() {
     const text = `PokéGuessr Daily #${dailyNumber(today)}: ${score.toLocaleString("en-US")}/${max.toLocaleString("en-US")}\nToday's places, the same for everyone. Can you beat it?`;
-    const url = `${window.location.origin}/guessr?play=daily`;
+    const url = `${window.location.origin}/pokeguessr?play=daily`;
     const touch = window.matchMedia("(pointer: coarse)").matches;
     if (touch && typeof navigator.share === "function") {
       try {
@@ -229,7 +229,7 @@ function DoneBody({ score, today }: { score: number; today: string }) {
           )}
         </button>
         <Link
-          href="/guessr?play=game"
+          href="/pokeguessr?play=game"
           data-testid="home-hero-free"
           className="inline-flex min-h-[44px] items-center justify-center gap-1.5 font-display text-sm font-semibold uppercase tracking-wider text-foreground/85 underline-offset-4 hover:text-foreground hover:underline max-sm:h-12 max-sm:rounded-md max-sm:border max-sm:border-white/15 max-sm:bg-white/[0.04]"
         >

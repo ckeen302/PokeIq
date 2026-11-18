@@ -23,7 +23,7 @@ export const HOME_SECTIONS: HomeSection[] = [
   },
   {
     id: "quizzes",
-    href: "/play",
+    href: "/quiz",
     name: "Quizzes",
     line: "Silhouettes, cries, types and more",
     icon: Gamepad2,

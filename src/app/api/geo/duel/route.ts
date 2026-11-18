@@ -13,7 +13,7 @@ import type { DuelSeatResponse } from "@/lib/duel-types";
 /**
  * POST /api/geo/duel — { region, era?, name, mode?, rounds?, turbo? }: open a PokéGuessr duel on a map
  * (the world or a region), on every game's screenshots or an era's. Returns its code, the creator's player token and
- * the lobby; the friend joins at /guessr/duel/<code>.
+ * the lobby; the friend joins at /pokeguessr/duel/<code>.
  */
 
 const bodySchema = z.object({

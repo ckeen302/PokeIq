@@ -131,7 +131,7 @@ describe("globe hover pictures", () => {
   });
 
   it("the served index never carries a round's id or a round's placeholder", async () => {
-    const { GET } = await import("@/app/guessr/globe/shots.json/route");
+    const { GET } = await import("@/app/pokeguessr/globe/shots.json/route");
     const text = await (await GET()).text();
     const index = JSON.parse(text) as Record<string, { src: string; b?: string }[]>;
     expect(Object.keys(index).length).toBeGreaterThan(400);
@@ -203,7 +203,7 @@ describe("globe region cards", () => {
   it("has every main region with its generation, first game's starters and links", () => {
     expect(cards.map((c) => c.name)).toEqual([...GLOBE_MAIN_REGIONS]);
     const kanto = cards.find((c) => c.name === "Kanto")!;
-    expect(kanto).toMatchObject({ gen: 1, year: 1996, guessr: "/guessr?region=kanto", places: "/pokedex/places?region=Kanto" });
+    expect(kanto).toMatchObject({ gen: 1, year: 1996, guessr: "/pokeguessr?region=kanto", places: "/pokedex/places?region=Kanto" });
     expect(kanto.starters.map((s) => s.name)).toEqual(["Bulbasaur", "Charmander", "Squirtle"]);
     expect(kanto.starters.map((s) => s.slug)).toEqual(["bulbasaur", "charmander", "squirtle"]);
     expect(kanto.games[0].title).toBe("Red and Green");
@@ -211,7 +211,7 @@ describe("globe region cards", () => {
     expect(paldea.starters.map((s) => s.name)).toEqual(["Sprigatito", "Fuecoco", "Quaxly"]);
     for (const c of cards) {
       expect(c.games.length).toBeGreaterThan(0);
-      expect(c.guessr).toMatch(/^\/guessr\?region=[a-z]+$/);
+      expect(c.guessr).toMatch(/^\/pokeguessr\?region=[a-z]+$/);
     }
   });
 

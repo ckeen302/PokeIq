@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       creatorName: who.username ?? parsed.data.name ?? null,
     });
     if (!out.ok) return NextResponse.json({ error: out.error }, { status: out.status, headers: NO_STORE });
-    return NextResponse.json({ id: out.id, path: `/connections/c/${out.id}` }, { headers: NO_STORE });
+    return NextResponse.json({ id: out.id, path: `/pokeconnections/c/${out.id}` }, { headers: NO_STORE });
   } catch (err) {
     console.error("[connections] publish failed:", err);
     return NextResponse.json({ error: "Couldn't publish. Try again." }, { status: 500, headers: NO_STORE });

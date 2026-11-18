@@ -16,7 +16,7 @@ export const PARTY_MS = 10 * 60_000;
 /** A mistake adds this to a solve's time (as in a duel). */
 export const PARTY_PENALTY_MS = CONN_DUEL_PENALTY_MS;
 
-export const partyHref = (code: string) => `/connections/party/${code}`;
+export const partyHref = (code: string) => `/pokeconnections/party/${code}`;
 
 export interface PartyPlayerView {
   name: string;

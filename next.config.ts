@@ -64,7 +64,7 @@ const nextConfig: NextConfig = {
     "/pokedex/sizes/compare/og": ["./src/assets/fonts/*.ttf"],
     "/lab/mass-battle/og": ["./src/assets/fonts/*.ttf"],
     // A shared PokéGuessr result's card draws the map that was played, by a computed path.
-    "/guessr/r/**": ["./public/geo/maps/*.webp"],
+    "/pokeguessr/r/**": ["./public/geo/maps/*.webp"],
     // The learn card's facts come from the Pokédex's places, which read the encounter tables from disk.
     "/api/geo/learn": ["./src/data/encounters/*.json"],
   },
@@ -100,6 +100,13 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       { source: "/battle/player/:name", destination: "/u/:name", permanent: true },
+      // The two games that were called by their plain names now live at their Pokémon-style addresses, like /pokedle and /pikadoku:
+      // old links (shared duels and challenges, search results, bookmarks) keep working, with the rest of the path and the query.
+      { source: "/play", destination: "/quiz", permanent: true },
+      { source: "/guessr", destination: "/pokeguessr", permanent: true },
+      { source: "/guessr/:path*", destination: "/pokeguessr/:path*", permanent: true },
+      { source: "/connections", destination: "/pokeconnections", permanent: true },
+      { source: "/connections/:path*", destination: "/pokeconnections/:path*", permanent: true },
       // The old address forwards to playpokeiq.com, path and query kept. /api stays put so
       // webhooks, crons and OAuth callbacks registered on the old host keep working.
       { source: "/:path((?!api/).*)", has: [{ type: "host", value: "pokeiq.vercel.app" }], destination: "https://playpokeiq.com/:path", permanent: true },

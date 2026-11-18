@@ -11,7 +11,7 @@ import { RoundsPicker } from "./GeoSettings";
 import { PARTY_TEAM_HP, partyPath } from "@/lib/geo-party";
 import { GeoRankedCard } from "./GeoRanked";
 
-/** A team duel (2v2) is a party room in team mode: it opens at /guessr/party/<code>. */
+/** A team duel (2v2) is a party room in team mode: it opens at /pokeguessr/party/<code>. */
 type CardMode = DuelMode | "team";
 const MODES: { id: CardMode; name: string }[] = [
   { id: "hp", name: "HP battle" },
@@ -27,7 +27,7 @@ export type DuelQueue = (typeof QUEUES)[number]["id"];
 type Queue = DuelQueue;
 
 /**
- * Duels on /guessr: Casual opens a duel on the chosen map (and era) for a
+ * Duels on /pokeguessr: Casual opens a duel on the chosen map (and era) for a
  * friend, or finds an opponent for the same; Ranked queues a rated
  * head-to-head on the world map (see GeoRanked.tsx).
  */
@@ -53,7 +53,7 @@ export function DuelCard({
     setOwnQueue(q);
     onQueue?.(q);
   };
-  // /guessr#ranked (the ladder's link) opens on the ranked queue.
+  // /pokeguessr#ranked (the ladder's link) opens on the ranked queue.
   useEffect(() => {
     const read = () => {
       if (window.location.hash === "#ranked") {
@@ -108,7 +108,7 @@ export function DuelCard({
           body={team ? { region: region.id, mode: "team" } : { region: region.id, ...(era ? { era } : {}), mode, ...(race ? { rounds: raceRounds } : {}), ...(turbo ? { turbo: true } : {}) }}
           // Quick matching pairs HP battles only.
           match={race || team ? undefined : { game: "geo", region: region.id, ...(era ? { era } : {}) }}
-          href={(code) => (team ? partyPath(code) : `/guessr/duel/${code}`)}
+          href={(code) => (team ? partyPath(code) : `/pokeguessr/duel/${code}`)}
           heading={team ? `Team duel · ${region.name}` : `Head to head · ${region.name}${games}`}
           blurb={
             team

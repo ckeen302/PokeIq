@@ -10,7 +10,7 @@ import type { PartySeatResponse } from "@/lib/connections/party";
 /**
  * POST /api/connections/party { name } — opens a party (2 to 8 trainers
  * racing one puzzle) and returns its code, the host's player token and the
- * lobby (PartySeatResponse). It plays at /connections/party/<code>.
+ * lobby (PartySeatResponse). It plays at /pokeconnections/party/<code>.
  */
 
 const bodySchema = z.object({ name: duelNameSchema });

@@ -23,7 +23,7 @@ export interface GlobeRegionCard {
   games: { title: string; year: number }[];
   /** The first game's starters (or partner), with Pokédex names. */
   starters: { id: number; slug: string; name: string }[];
-  /** /guessr?region=… when PokéGuessr has a map of the region. */
+  /** /pokeguessr?region=… when PokéGuessr has a map of the region. */
   guessr: string | null;
   /** /pokedex/places?region=… when the Places tab lists it. */
   places: string | null;
@@ -63,7 +63,7 @@ export function globeRegionCards(): GlobeRegionCard[] {
           const p = getPokemon(id);
           return p ? [{ id, slug: p.slug, name: p.name }] : [];
         }),
-        guessr: crop ? `/guessr?region=${encodeURIComponent(crop[0])}` : null,
+        guessr: crop ? `/pokeguessr?region=${encodeURIComponent(crop[0])}` : null,
         places: PLACE_REGIONS.has(name) ? `/pokedex/places?region=${encodeURIComponent(name)}` : null,
         origin: REGION_ORIGINS[name] ?? null,
       },

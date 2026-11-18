@@ -9,7 +9,7 @@ import { NewDuelCard } from "@/components/duel/NewDuelCard";
 import { cn } from "@/lib/utils";
 
 /**
- * "Duel a friend" on a quiz's setup screen (and the /play hub): pick the mode
+ * "Duel a friend" on a quiz's setup screen (and the /quiz hub): pick the mode
  * (and the difficulty, for the two modes that have one), open a quiz duel.
  */
 export function QuizDuelCard({ module: initial = "whos-that", difficulty: initialDifficulty }: { module?: ModuleId; difficulty?: Difficulty }) {

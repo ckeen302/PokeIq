@@ -14,7 +14,7 @@ import type { PartySeatResponse } from "@/lib/geo-party";
  * POST /api/geo/party — { name, region?, mode? }: open a PokéGuessr party
  * room (Battle Royale by default, or a team duel) with its host in it.
  * Returns its six-letter code, the host's seat token and the lobby; friends
- * join at /guessr/party/<code>, where the host sets the game up and starts it.
+ * join at /pokeguessr/party/<code>, where the host sets the game up and starts it.
  */
 
 const bodySchema = z.object({

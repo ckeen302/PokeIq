@@ -47,7 +47,7 @@ export function GeoProfileStats({ stats, streak, progress }: { stats: GeoPlayerS
       <CardContent className="space-y-4 p-5">
         <div className="flex items-center justify-between gap-2">
           <p className="hud-label text-screen">PokéGuessr record</p>
-          <Link href="/guessr" className="hud-label hover:text-foreground">
+          <Link href="/pokeguessr" className="hud-label hover:text-foreground">
             Play →
           </Link>
         </div>

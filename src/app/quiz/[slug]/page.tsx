@@ -48,7 +48,7 @@ export default async function QuizPage({ params }: PageProps) {
 
   return (
     <div className="space-y-8">
-      <BackButton href="/play" />
+      <BackButton href="/quiz" />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(jsonLd) }} />
       <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 text-center">
         <span className="screen flex h-14 w-14 items-center justify-center rounded-md" style={{ color: `hsl(${info.accent})` }}>

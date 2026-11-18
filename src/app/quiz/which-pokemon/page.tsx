@@ -39,7 +39,7 @@ export default function WhichPokemonPage() {
   };
   return (
     <div className="space-y-8">
-      <BackButton href="/play" />
+      <BackButton href="/quiz" />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(ld) }} />
       <header className="mx-auto max-w-2xl space-y-2 text-center">
         <p className="hud-label max-md:hidden text-screen">Personality quiz</p>

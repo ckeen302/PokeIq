@@ -287,7 +287,7 @@ describe("creating over the API", () => {
     const ok = await post({ groups: GROUPS(), player: "q1q1q1q1q1q1q1q1q1q1", name: "Misty" }, "10.9.2.1");
     const made = await ok.json();
     expect(ok.status).toBe(200);
-    expect(made.path).toBe(`/connections/c/${made.id}`);
+    expect(made.path).toBe(`/pokeconnections/c/${made.id}`);
     expect((await getCustom(made.id))!.creatorName).toBe("Misty");
 
     const dirty = GROUPS();

@@ -283,4 +283,4 @@ export interface PartySeatResponse {
   view: PartyView;
 }
 
-export const partyPath = (code: string) => `/guessr/party/${code}`;
+export const partyPath = (code: string) => `/pokeguessr/party/${code}`;

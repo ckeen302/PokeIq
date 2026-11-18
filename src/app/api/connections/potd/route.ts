@@ -7,7 +7,7 @@ import { puzzleOfTheDay } from "@/lib/server/connections-creators";
  *
  * The Puzzle of the Day ({ available, puzzle }): the top-voted community
  * puzzle of the last week, picked once a day. Title, creator and votes
- * only; the puzzle itself plays at /connections/c/<id>.
+ * only; the puzzle itself plays at /pokeconnections/c/<id>.
  */
 
 export async function GET(request: NextRequest) {

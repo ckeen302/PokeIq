@@ -33,7 +33,7 @@ import { TauntStage } from "@/components/duel/TauntStage";
 import type { TauntId } from "@/lib/trainer/taunts";
 
 /**
- * A PokéGuessr duel at /guessr/duel/<code>: the lobby, the versus intro, the
+ * A PokéGuessr duel at /pokeguessr/duel/<code>: the lobby, the versus intro, the
  * rounds, the reveals and the end screen. The server runs the duel; useDuel
  * polls its state and sends the trainer's actions, and where Supabase
  * Realtime is set up (use-duel-live.ts) the server's pushes fetch the state
@@ -97,11 +97,11 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
 
   async function rematch() {
     const next = await takeRematch();
-    if (next) router.push(`/guessr/duel/${next}`);
+    if (next) router.push(`/pokeguessr/duel/${next}`);
   }
 
   async function leave() {
-    if (await act({ action: "leave" })) router.push("/guessr");
+    if (await act({ action: "leave" })) router.push("/pokeguessr");
   }
 
   const live = view?.round && now >= view.round.startsAt ? view.round : undefined;
@@ -161,7 +161,7 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
   const map = view ? regions.find((r) => r.id === view.region) : undefined;
   const race = view?.mode === "race";
   if (gone || (view && !map)) {
-    return <DuelGone message={gone ?? "This duel's map isn't available any more."} href="/guessr" label="Back to PokéGuessr" />;
+    return <DuelGone message={gone ?? "This duel's map isn't available any more."} href="/pokeguessr" label="Back to PokéGuessr" />;
   }
   if (!view || !map) return <DuelLoading />;
 
@@ -188,7 +188,7 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
         <EmoteFeed view={view} />
         <DuelLobby
           view={view}
-          path={`/guessr/duel/${view.code}`}
+          path={`/pokeguessr/duel/${view.code}`}
           tag={`${race ? `Points race · ${view.maxRounds} rounds` : "HP battle"}${view.turbo ? " · Turbo" : ""} · ${map.name}${view.era ? ` · ${GEO_ERA_NAMES[view.era]}` : ""}`}
           title={
             <>
@@ -220,7 +220,7 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
                 : `First to 0 HP loses. After ${view.maxRounds} rounds, more HP wins. Leave (or go quiet) and you forfeit.`,
             },
           ]}
-          home="/guessr"
+          home="/pokeguessr"
           chat={chat}
           busy={busy}
           onJoin={join}
@@ -245,7 +245,7 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
               ? `Under way: round ${view.revealed.length + 1} of ${view.maxRounds}. ${fmt(view.totals?.[0] ?? 0)} points to ${fmt(view.totals?.[1] ?? 0)}.`
               : `Under way: round ${view.revealed.length + 1}. ${fmt(view.hp[0])} HP to ${fmt(view.hp[1])}.`
         }
-        home="/guessr"
+        home="/pokeguessr"
         label="Start your own duel"
       />
     );
@@ -255,7 +255,7 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
 
   if (view.status === "finished" && (summary || !sawPlay || view.end?.reason === "left" || !last)) {
     return (
-      <GameShell onExit={() => router.push("/guessr")}>
+      <GameShell onExit={() => router.push("/pokeguessr")}>
         {() => (
           <div className="h-full overflow-y-auto">
             {notice}
@@ -641,7 +641,7 @@ function DuelEnd({ view, map, busy, onRematch, onTaunt }: { view: DuelView; map:
               {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RotateCcw className="h-4 w-4" aria-hidden />}
               {view.rematch ? "Accept rematch" : ranked ? "Casual rematch" : "Rematch"}
             </Button>
-            <Link href="/guessr" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white")}>
+            <Link href="/pokeguessr" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white")}>
               <Swords className="h-4 w-4" aria-hidden /> Back to PokéGuessr
             </Link>
           </div>
@@ -653,7 +653,7 @@ function DuelEnd({ view, map, busy, onRematch, onTaunt }: { view: DuelView; map:
         )}
         {/* The duel's result page and preview card (both trainers, HP and rounds), by its code. */}
         <ShareResultLink token={`duel:${view.code}`} text="Our PokéGuessr duel" className="[&_button]:border-white/30 [&_button]:bg-transparent [&_button]:text-white [&_button:hover]:bg-white/10 [&_button:hover]:text-white" />
-        <Link href="/guessr/history" className="block text-center text-xs font-semibold text-white/70 underline-offset-2 hover:text-white hover:underline" data-testid="geo-duel-history-link">
+        <Link href="/pokeguessr/history" className="block text-center text-xs font-semibold text-white/70 underline-offset-2 hover:text-white hover:underline" data-testid="geo-duel-history-link">
           Duel history and replays
         </Link>
 

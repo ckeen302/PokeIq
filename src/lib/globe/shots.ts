@@ -1,6 +1,6 @@
 /**
  * Which PokéGuessr screenshots the globe shows when a town or route label is
- * hovered. Pure (the route at /guessr/globe/shots.json feeds it the data),
+ * hovered. Pure (the route at /pokeguessr/globe/shots.json feeds it the data),
  * so the rules below are unit-tested:
  *
  * - Only pictures the Pokédex's place pages already show: each place's
