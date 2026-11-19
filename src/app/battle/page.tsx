@@ -11,7 +11,7 @@ import NEWS from "@/data/news.json";
 export const metadata: Metadata = pageMetadata({
   title: "Pokémon Battle Simulator: PvP, vs Computer & Team Builder",
   description:
-    "A Pokémon battle simulator on Pokémon Showdown's own engine: find an opponent for a live PvP battle in seconds, battle a friend through a link, or battle the computer. Plus a team builder checked against Showdown's rules, the Smogon damage calculator and the Battle Lab.",
+    "Free Pokémon battle simulator on Pokémon Showdown's engine: live PvP online, battle a friend or the computer, plus a team builder and damage calculator.",
   path: "/battle",
 });
 

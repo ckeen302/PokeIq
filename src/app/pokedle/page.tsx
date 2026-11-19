@@ -9,7 +9,7 @@ import { RankedCard } from "@/components/pokedle/Ranked";
 export const metadata: Metadata = pageMetadata({
   title: "Pokédle: Daily Pokémon Wordle",
   description:
-    "Pokédle is the Pokémon Wordle: guess the mystery Pokémon in 8 tries. Each guess reveals clues about generation, type, height, weight, color and evolution stage. A new Pokémon every day, plus live duels against a friend or a stranger.",
+    "Pokédle is the daily Pokémon Wordle: guess the mystery Pokémon in 8 tries from clues on type, generation, height and more, plus live duels with a friend.",
   path: "/pokedle",
 });
 
