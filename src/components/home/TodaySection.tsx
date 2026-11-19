@@ -41,15 +41,15 @@ export function TodaySection() {
     <section aria-labelledby="home-today" data-testid="home-today" className="scroll-mt-20">
       <HomeHeading id="home-today" title="Today" aside={<span className="text-sm text-muted-foreground">{line}</span>} />
       <ul className="grid grid-cols-5 gap-3 max-lg:hidden" data-testid="home-today-cards">
-        {DAILIES.map((d) => (
-          <li key={d.id}>
+        {DAILIES.map((d, i) => (
+          <li key={d.id} className="motion-safe:animate-rise" style={{ animationDelay: `${120 + i * 70}ms` }}>
             <DailyCard info={d} status={statuses[d.id]} />
           </li>
         ))}
       </ul>
       <ul className="divide-y divide-foreground/[0.06] lg:hidden" data-testid="home-today-rows">
-        {DAILIES.map((d) => (
-          <li key={d.id}>
+        {DAILIES.map((d, i) => (
+          <li key={d.id} className="motion-safe:animate-rise" style={{ animationDelay: `${80 + i * 60}ms` }}>
             <DailyRow info={d} status={statuses[d.id]} />
           </li>
         ))}
@@ -74,7 +74,10 @@ function PlayPill({ info, status, className }: { info: DailyInfo; status: DailyS
     );
   }
   return (
-    <span className={cn("inline-flex h-9 items-center rounded-full px-4 text-sm font-semibold text-black", className)} style={{ background: `hsl(${info.accent})` }}>
+    <span
+      className={cn("inline-flex h-9 items-center rounded-full px-4 text-sm font-semibold text-black", className)}
+      style={{ background: `hsl(${info.accent})`, boxShadow: `inset 0 1px 0 rgb(255 255 255 / 0.35), 0 4px 14px -4px hsl(${info.accent} / 0.6)` }}
+    >
       {status.state === "progress" ? "Continue" : "Play"}
     </span>
   );
@@ -85,7 +88,7 @@ function DailyRow({ info, status }: { info: DailyInfo; status: DailyStatus }) {
   const done = status.state === "done";
   return (
     <Link href={done ? info.doneHref : info.href} className="flex min-h-[68px] items-center gap-3.5 py-3 active:opacity-70" data-testid={`home-today-${info.id}`} data-state={status.state}>
-      <span className="screen flex h-11 w-11 shrink-0 items-center justify-center rounded-xl" style={{ color: `hsl(${info.accent})` }}>
+      <span className="screen flex h-11 w-11 shrink-0 items-center justify-center rounded-xl" style={{ color: `hsl(${info.accent})`, boxShadow: `0 0 22px -6px hsl(${info.accent} / 0.65)` }}>
         <Icon className="relative z-[3] h-5 w-5" aria-hidden />
       </span>
       <span className="min-w-0 flex-1">
@@ -104,13 +107,21 @@ function DailyCard({ info, status }: { info: DailyInfo; status: DailyStatus }) {
     <Link
       href={done ? info.doneHref : info.href}
       className={cn(
-        "group relative flex h-full flex-col overflow-hidden min-h-[220px] rounded-lg border bg-card p-5 transition-[border-color,transform] hover:-translate-y-0.5 hover:border-[hsl(var(--accent-c)/0.6)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none",
+        "group relative isolate flex h-full flex-col overflow-hidden min-h-[220px] rounded-lg border bg-card p-5 transition-[border-color,transform,box-shadow] duration-300 hover:-translate-y-1 hover:border-[hsl(var(--accent-c)/0.6)] hover:shadow-[0_22px_44px_-20px_hsl(var(--accent-c)/0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none",
         done && "border-success/30"
       )}
       style={{ "--accent-c": info.accent } as React.CSSProperties}
       data-testid={`home-today-card-${info.id}`}
       data-state={status.state}
     >
+      {/* The game's colour: a glow from the top edge and its icon, big and faint, in the corner; both wake up on hover. */}
+      <span className="absolute inset-x-0 top-0 -z-10 h-28 bg-[radial-gradient(75%_100%_at_50%_0%,hsl(var(--accent-c)/0.16),transparent)] opacity-70 transition-opacity duration-300 group-hover:opacity-100" aria-hidden />
+      <Icon
+        className="absolute -bottom-3 -right-3 -z-10 h-28 w-28 -rotate-12 opacity-[0.1] transition-[transform,opacity] duration-500 group-hover:-rotate-3 group-hover:scale-110 group-hover:opacity-[0.16] motion-reduce:transition-none"
+        strokeWidth={1.25}
+        style={{ color: `hsl(${info.accent})` }}
+        aria-hidden
+      />
       <span className="absolute inset-x-0 top-0 h-[3px]" style={{ background: `hsl(${info.accent})`, boxShadow: `0 0 12px hsl(${info.accent} / 0.8)` }} aria-hidden />
       <span className="screen flex h-10 w-10 items-center justify-center rounded-md" style={{ color: `hsl(${info.accent})` }}>
         <Icon className="relative z-[3] h-5 w-5" aria-hidden />
