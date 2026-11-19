@@ -3918,6 +3918,8 @@ async function homeStep() {
 
   // Today: one even row of the five dailies, each to its game, all to play.
   const cards = p.locator("[data-testid^=home-today-card-]");
+  // The cards rise in one after another as the page opens: measure them where they come to rest.
+  await p.locator("[data-testid=home-today-cards]").evaluate((ul) => Promise.all(ul.getAnimations({ subtree: true }).map((a) => a.finished)));
   const boxes = await cards.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.top), Math.round(r.width), Math.round(r.height)]; }));
   if (boxes.length !== 5 || new Set(boxes.map((b) => b.join())).size !== 1) errors.push(`home: Today isn't one even row of five at 1440 (${boxes.map((b) => b.join("/")).join(" ")})`);
   const DAILY_HREFS = [["daily", "/daily"], ["pokedle", "/pokedle"], ["guessr", "/pokeguessr?play=daily"], ["connections", "/pokeconnections"], ["pikadoku", "/pikadoku"]];
