@@ -1,6 +1,13 @@
 /* eslint-disable @next/next/no-img-element -- pre-sized art */
 import Link from "@/components/ui/Link";
 import { buttonVariants } from "@/components/ui/button";
+import type { Metadata } from "next";
+
+// The layout's template makes this "Page not found · PokéIQ". Next.js adds the noindex itself.
+export const metadata: Metadata = {
+  title: "Page not found",
+  description: "This page doesn't exist. Head back to PokéIQ's Pokémon games or open the Pokédex.",
+};
 
 export default function NotFound() {
   return (
