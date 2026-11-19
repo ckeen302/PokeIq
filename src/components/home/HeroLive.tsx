@@ -83,7 +83,7 @@ export function HeroPicture({ fallback }: { fallback: StaticImageData }) {
   const daily = !!shot && shown;
   return (
     <>
-      <div ref={box} className="absolute inset-0" data-testid="home-hero-shot" data-shot={daily ? shot : "fallback"}>
+      <div ref={box} className="absolute inset-0 origin-[60%_40%] motion-safe:animate-hero-drift motion-safe:will-change-transform" data-testid="home-hero-shot" data-shot={daily ? shot : "fallback"}>
         {/* Pre-sized static files (src/lib/hero-image), the same pictures the image optimizer would make. */}
         {/* fetchPriority: `priority` alone preloads it at an image's default (low) priority, behind the fonts and scripts on a slow phone. */}
         <Image src={fallback} loader={heroLoader} alt="" priority fetchPriority="high" placeholder="blur" fill sizes={SIZES} className="object-cover" />
@@ -168,7 +168,12 @@ function FreshBody() {
       </p>
       <div className="pt-1">
         {/* Next's own link, prefetched as it comes into view on every screen: it's the one thing most visitors press. */}
-        <NextLink href="/pokeguessr?play=daily" data-testid="home-hero-play" className={PLAY_CLASS}>
+        <NextLink href="/pokeguessr?play=daily" data-testid="home-hero-play" className={cn(PLAY_CLASS, "relative overflow-hidden")}>
+          {/* Now and then a sweep of light across the one thing to press. */}
+          <span
+            className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-white/30 to-transparent [transform:translateX(-120%)_skewX(-20deg)] motion-safe:animate-shine motion-reduce:hidden"
+            aria-hidden
+          />
           <Compass className="h-5 w-5" aria-hidden /> Play today&apos;s places
           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1 motion-reduce:transition-none" aria-hidden />
         </NextLink>

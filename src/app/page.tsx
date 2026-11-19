@@ -30,6 +30,12 @@ export default function HomePage() {
     // A phone's title screen starts under the header's bottom edge; the structured data goes last so it takes no space.
     // On a desktop the first screen is filled: the hero grows with the window so the coffee button and socials sit just above its bottom edge.
     <div className="mx-auto -mt-4 max-w-6xl space-y-12 sm:mt-0 sm:space-y-4 max-sm:-mt-8 max-sm:space-y-9 lg:flex lg:min-h-[calc(100svh-7rem)] lg:flex-col lg:space-y-8">
+      {/* Soft colour drifting behind the page: the brand's pink, violet and green, very faint. Still for reduced motion. */}
+      <span className="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden>
+        <span className="absolute -left-[25vw] -top-[20vh] block h-[80vh] w-[80vw] rounded-full bg-[radial-gradient(closest-side,hsl(var(--primary)/0.13),transparent)] motion-safe:animate-glow-a" />
+        <span className="absolute -right-[25vw] top-[20vh] block h-[85vh] w-[75vw] rounded-full bg-[radial-gradient(closest-side,hsl(var(--screen)/0.14),transparent)] motion-safe:animate-glow-b" />
+        <span className="absolute -bottom-[30vh] left-[5vw] block h-[75vh] w-[70vw] rounded-full bg-[radial-gradient(closest-side,hsl(var(--success)/0.08),transparent)] motion-safe:animate-glow-c" />
+      </span>
       <div className="space-y-6 max-sm:space-y-5 lg:flex lg:flex-1 lg:flex-col">
         <Hero />
         <TodaySection />

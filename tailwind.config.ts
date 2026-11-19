@@ -66,6 +66,13 @@ const config: Config = {
         flicker: { "0%, 100%": { opacity: "1" }, "92%": { opacity: "1" }, "93%": { opacity: "0.7" }, "94%": { opacity: "1" } },
         // A phone's bottom sheet: up and in from transparent (a plain 0, so a pop-up never counts as the page's largest paint).
         "sheet-in": { from: { opacity: "0", transform: "translateY(2.5rem)" }, to: { opacity: "1", transform: "none" } },
+        // The home page: the hero's picture drifts like a slow camera, light sweeps across Play now and then, colour drifts behind the page, the dailies rise in.
+        "hero-drift": { "0%": { transform: "scale(1.02) translate3d(0, 0, 0)" }, "100%": { transform: "scale(1.1) translate3d(-2.5%, -1.5%, 0)" } },
+        shine: { "0%, 72%": { transform: "translateX(-120%) skewX(-20deg)" }, "88%, 100%": { transform: "translateX(320%) skewX(-20deg)" } },
+        "glow-a": { "0%, 100%": { transform: "translate3d(0, 0, 0) scale(1)" }, "50%": { transform: "translate3d(14vw, 10vh, 0) scale(1.15)" } },
+        "glow-b": { "0%, 100%": { transform: "translate3d(0, 0, 0) scale(1.1)" }, "50%": { transform: "translate3d(-16vw, -8vh, 0) scale(0.95)" } },
+        "glow-c": { "0%, 100%": { transform: "translate3d(0, 0, 0) scale(1)" }, "50%": { transform: "translate3d(10vw, -12vh, 0) scale(1.2)" } },
+        rise: { from: { opacity: "0", transform: "translateY(14px)" }, to: { opacity: "1", transform: "none" } },
       },
       animation: {
         blink: "blink 1s steps(1) infinite",
@@ -73,6 +80,12 @@ const config: Config = {
         scan: "scan 6s linear infinite",
         flicker: "flicker 6s linear infinite",
         "sheet-in": "sheet-in 0.2s ease-out",
+        "hero-drift": "hero-drift 26s ease-in-out infinite alternate",
+        shine: "shine 5.5s ease-in-out 1.5s infinite",
+        "glow-a": "glow-a 34s ease-in-out infinite",
+        "glow-b": "glow-b 41s ease-in-out infinite",
+        "glow-c": "glow-c 47s ease-in-out infinite",
+        rise: "rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both",
       },
     },
   },
