@@ -22,8 +22,9 @@ export const metadata: Metadata = {
 };
 
 /**
- * The landing page, kept to the point: today's PokéGuessr (one press away),
- * today's dailies with the streak, the coffee button and the socials.
+ * The landing page, kept to the point: the banner (the site's name, what's
+ * here and a way down to Today), today's dailies with the streak, the coffee
+ * button and the socials.
  */
 export default function HomePage() {
   return (
