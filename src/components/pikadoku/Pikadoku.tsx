@@ -573,36 +573,15 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
             <p className="hud-label text-screen" data-testid="pdk-title">
               {ttt ? "Tic Tac Toe" : heading}
             </p>
-            {/* The title between the tools, as in Wordle: it keeps the grid above the fold on a phone. */}
-            <div className="flex items-center justify-between gap-1 sm:justify-center sm:gap-4" role="toolbar" aria-label="Pikadoku options">
-              <div className="flex gap-0.5">
-                <button type="button" className={iconButton} onClick={() => setSheet("howto")} aria-label="How to play" title="How to play">
-                  <CircleHelp className="h-5 w-5" />
-                </button>
-                <button type="button" className={iconButton} onClick={() => setSheet("stats")} aria-label="Statistics" title="Statistics">
-                  <BarChart3 className="h-5 w-5" />
-                </button>
-              </div>
-              {/* A touch larger on phones (same line height): the title, painted with the HTML, outranks the nav logo as the page's largest paint. */}
-              <h1 className="font-display text-3xl font-bold uppercase tracking-tight min-[360px]:text-[2rem]/9 sm:text-4xl">Pikadoku</h1>
-              <div className="flex gap-0.5">
-                <button type="button" className={cn(iconButton, mode === "practice" && !showSetup && "text-screen")} onClick={() => newPractice()} aria-label="New Unlimited grid" title="New Unlimited grid">
-                  <Dices className="h-5 w-5" />
-                </button>
-                <div className="relative flex items-center">
-                  <button type="button" className={cn(iconButton, showSetup && "bg-screen/10 text-foreground")} onClick={openSetup} aria-pressed={showSetup} aria-label="Unlimited settings" title="Unlimited settings" data-testid="pdk-settings">
-                    <Settings className="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
-            </div>
+            {/* A touch larger on phones (same line height): the title, painted with the HTML, outranks the nav logo as the page's largest paint. */}
+            <h1 className="font-display text-3xl font-bold uppercase tracking-tight min-[360px]:text-[2rem]/9 sm:text-4xl">Pikadoku</h1>
             <p className="hidden text-sm text-muted-foreground sm:block">Pokémon Sudoku: one Pokémon for each cell, matching its row and its column.</p>
           </div>
           <div className="flex justify-center">
             <div className="flex justify-center rounded-md border border-foreground/15 bg-card p-0.5" role="radiogroup" aria-label="Pikadoku mode">
               {(
                 [
-                  { id: "daily", label: "Daily Puzzle", title: "Today's grid, the same for everyone", on: () => (setTtt(false), setMode("daily")) },
+                  { id: "daily", label: "Daily", title: "Today's grid, the same for everyone", on: () => (setTtt(false), setMode("daily")) },
                   { id: "practice", label: "Unlimited", title: "Build your own board", on: () => (setTtt(false), setMode("practice")) },
                 ] as const
               ).map((m) => (
@@ -638,6 +617,23 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
                 )}
               >
                 <Swords className="h-3.5 w-3.5" aria-hidden /> Tic Tac Toe
+              </button>
+            </div>
+          </div>
+          {/* The tools under the modes, as in Pokédle and PokéConnections. */}
+          <div className="flex items-center justify-center gap-1" role="toolbar" aria-label="Pikadoku options">
+            <button type="button" className={iconButton} onClick={() => setSheet("howto")} aria-label="How to play" title="How to play">
+              <CircleHelp className="h-5 w-5" />
+            </button>
+            <button type="button" className={iconButton} onClick={() => setSheet("stats")} aria-label="Statistics" title="Statistics">
+              <BarChart3 className="h-5 w-5" />
+            </button>
+            <button type="button" className={cn(iconButton, mode === "practice" && !showSetup && "text-screen")} onClick={() => newPractice()} aria-label="New Unlimited grid" title="New Unlimited grid">
+              <Dices className="h-5 w-5" />
+            </button>
+            <div className="relative flex items-center">
+              <button type="button" className={cn(iconButton, showSetup && "bg-screen/10 text-foreground")} onClick={openSetup} aria-pressed={showSetup} aria-label="Unlimited settings" title="Unlimited settings" data-testid="pdk-settings">
+                <Settings className="h-5 w-5" />
               </button>
             </div>
           </div>
