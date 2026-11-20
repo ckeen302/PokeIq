@@ -78,10 +78,7 @@ export function ConnectionsRankedCard() {
               </p>
             </>
           ) : (
-            <>
-              <TierBadge rating={1000} games={0} size="lg" />
-              <p className="text-sm text-muted-foreground">Race trainers near your rating and climb from Poké Ball to Master Ball.</p>
-            </>
+            <TierBadge rating={1000} games={0} size="lg" />
           )}
           <HowItWorks
             extra={
@@ -90,6 +87,7 @@ export function ConnectionsRankedCard() {
               </Link>
             }
           >
+            <p>Race trainers near your rating and climb from Poké Ball to Master Ball.</p>
             <p>
               The same race as a casual duel, rated like ranked Pokédle: everyone starts each season at 1,000, your first {RANKED_PROVISIONAL_GAMES} games move your rating faster,
               and the ladder starts over every month.

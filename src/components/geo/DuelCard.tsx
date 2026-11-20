@@ -117,6 +117,7 @@ export function DuelCard({
               ? `The same ${raceRounds} places for both of you, on the map${era ? " and games" : ""} picked above. Whoever scores the most points over ${raceRounds} rounds wins. Send your friend the link and press Ready.`
               : `The same places for both of you, on the map${era ? " and games" : ""} picked above. ${DUEL_HP.toLocaleString("en-US")} HP each: every round, the lower score loses the difference. Send your friend the link and press Ready.`
           }
+          info={team ? undefined : <p>Turbo: once one of you guesses, the other has {DUEL_TURBO_CAP_MS / 1000} seconds instead of 15.</p>}
         >
           <div className="space-y-2 pt-1">
             <div className="space-y-1.5">
@@ -157,7 +158,6 @@ export function DuelCard({
                 <Zap className="h-3.5 w-3.5" aria-hidden />
                 Turbo {turbo ? "on" : "off"}
               </button>
-              <p className="text-xs text-muted-foreground">Turbo: once one of you guesses, the other has {DUEL_TURBO_CAP_MS / 1000} seconds instead of 15.</p>
             </div>}
           </div>
         </NewDuelCard>

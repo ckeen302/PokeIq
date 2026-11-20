@@ -5,8 +5,7 @@ import { ArrowRight, Bot, Calculator, Castle, Factory, FlaskConical, UserSearch,
 import { GameInfo } from "@/components/seo/GameInfo";
 import { HudHeading } from "@/components/game/HudHeading";
 import { BATTLE_FORMATS, BATTLE_FORMAT_IDS } from "@/lib/battle/formats";
-import { BattleHome, type NewsItem } from "@/components/battle/BattleHome";
-import NEWS from "@/data/news.json";
+import { BattleHome } from "@/components/battle/BattleHome";
 
 export const metadata: Metadata = pageMetadata({
   title: "Pokémon Battle Simulator: PvP, vs Computer & Team Builder",
@@ -20,35 +19,35 @@ const LIVE: { href: string; icon: LucideIcon; title: string; blurb: string; poin
     href: "/battle/play",
     icon: Bot,
     title: "Battle vs Computer",
-    blurb: "Real battles on Pokémon Showdown's engine against a computer opponent that plays to win.",
+    blurb: "Battle a computer that plays to win.",
     points: ["Random Battle, Random Doubles or your saved team", "Easy, Normal and Hard opponents", "Showdown's move animations, Tera and all"],
   },
   {
     href: "/battle/play?vs=anyone",
     icon: UserSearch,
     title: "Battle Online",
-    blurb: "Find an opponent searching for the same format and battle live, or send a friend an invite link. Anyone with the link can watch.",
+    blurb: "Find an opponent, or invite a friend.",
     points: ["Matchmaking in every format, random teams or your own", "Showdown's turn timer; each side sees only what it should", "Rematch with one press"],
   },
   {
     href: "/battle/teams",
     icon: Users,
     title: "Team Builder",
-    blurb: "Six slots, every format's learnsets and Pokémon Showdown's own legality check, live as you build.",
+    blurb: "Build teams, checked as you go.",
     points: ["Formats from Gen 9 OU back to Gen 3 OU", "EVs, IVs, natures and live stats", "Showdown import / export, random teams"],
   },
   {
     href: "/battle/calc",
     icon: Calculator,
     title: "Damage Calc",
-    blurb: "The Smogon damage calculator: every move's damage range, KO chance and the full description line.",
+    blurb: "Damage ranges and KO chances.",
     points: ["Boosts, status, Tera and current HP", "Weather, terrain, screens, spread moves", "Load sets straight from your teams"],
   },
   {
     href: "/battle/lab",
     icon: FlaskConical,
     title: "Battle Lab",
-    blurb: "Who wins, and how often? Set up any matchup and let Showdown's engine play it thousands of times in your browser.",
+    blurb: "Run any matchup thousands of times.",
     points: ["Any Pokémon, level, item and move, Gen 1 to 9", "Smart, Greedy, Random or Scripted play per side", "Win % with a 95% confidence interval, KOs, crits, replays"],
     wide: true,
   },
@@ -60,14 +59,14 @@ const FRONTIER: { href: string | null; icon: LucideIcon; title: string; blurb: s
     href: "/battle/factory",
     icon: Factory,
     title: "Battle Factory",
-    blurb: "No team needed: rent six Pokémon from Showdown's Battle Factory sets and see how long a streak you can build.",
+    blurb: "Rent a team and build a streak.",
     points: ["Level 100 Factory or level 50 BSS Factory", "Trade for your opponent's Pokémon after each win", "Or battle live: both trainers rent a team"],
   },
   {
     href: "/battle/tower",
     icon: Castle,
     title: "Battle Tower",
-    blurb: "Your team against a climbing streak of computer trainers under Flat Rules. How far can you go?",
+    blurb: "Your team vs a streak of trainers.",
     points: ["Level 50, bring six, pick three", "Saved, built or quick teams, checked by Showdown", "The Tower Tycoon every seventh battle"],
   },
 ];
@@ -75,7 +74,7 @@ const FRONTIER: { href: string | null; icon: LucideIcon; title: string; blurb: s
 export default function BattlePage() {
   return (
     <div className="mx-auto max-w-6xl space-y-12">
-      <BattleHome news={NEWS as NewsItem[]} />
+      <BattleHome />
 
       <section className="space-y-5">
         <HudHeading index={1} title="Battles and tools" aside={<span className="max-md:hidden">Live</span>} />

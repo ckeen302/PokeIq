@@ -241,10 +241,7 @@ export function GeoRankedCard() {
               <Record you={you} />
             </>
           ) : (
-            <>
-              <GeoDivisionBadge elo={GEO_ELO_START} size="lg" />
-              <p className="text-sm text-muted-foreground">Head to head on the world map. Climb from Poké Ball to Beast Ball against trainers near your Elo.</p>
-            </>
+            <GeoDivisionBadge elo={GEO_ELO_START} size="lg" />
           )}
           {state.status === "ready" && state.season && <GeoSeasonStrip season={state.season} elo={you && you.games > 0 ? you.elo : null} />}
           {state.status !== "off" && (
@@ -258,6 +255,7 @@ export function GeoRankedCard() {
                 </>
               }
             >
+              <p>Head to head on the world map. Climb from Poké Ball to Beast Ball against trainers near your Elo.</p>
               <p>
                 The same places for you both, {fmt(DUEL_HP)} HP each: every round, the lower score loses the difference. Always the world map, every game. Leaving counts as a loss.
               </p>

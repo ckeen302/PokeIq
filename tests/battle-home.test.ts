@@ -9,7 +9,6 @@ import { battleKey } from "@/lib/server/battle-engine/identity";
 import { liveCounts, tallyCounts } from "@/lib/server/live-counts";
 import { clearMemoryFriends, memoryFriendStore } from "@/lib/server/friends-store";
 import { GET as liveRoute } from "@/app/api/live/route";
-import NEWS from "@/data/news.json";
 
 // The memory stores, whatever the environment says.
 process.env.POKEIQ_LOCAL_ACCOUNTS = "1";
@@ -97,17 +96,5 @@ describe("don't allow spectators", () => {
     const live = await createLiveBattle({ name: "Red", format: "gen9randombattle", hidden: true, public: true });
     if (!live.ok) throw new Error(live.error);
     expect(await pollBattle(live.code, null, 0, "viewer-2")).toMatchObject({ ok: false, status: 403 });
-  });
-});
-
-describe("news", () => {
-  it("has well-formed posts, newest first", () => {
-    expect(NEWS.length).toBeGreaterThan(0);
-    for (const n of NEWS) {
-      expect(n.id).toMatch(/^[a-z0-9-]+$/);
-      expect(n.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-      expect(n.title.length).toBeGreaterThan(0);
-    }
-    expect([...NEWS].sort((a, b) => b.date.localeCompare(a.date)).map((n) => n.id)).toEqual(NEWS.map((n) => n.id));
   });
 });
