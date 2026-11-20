@@ -9,7 +9,7 @@ import { BASES, basisTag, sourceLine } from "@/lib/pokemon-story/types";
 import { STORY_PATH, chapterFromPath, chapterPath } from "@/lib/pokemon-story/deeplink";
 import { buildFilm, storyVideoPlan } from "@/lib/pokemon-story/timing";
 import { figureAsset } from "@/lib/world-history/assets";
-import { buildFilm as buildHistoryFilm } from "@/lib/world-history/timing";
+import { beatStops, buildFilm as buildHistoryFilm, chapterStart, cueAt, stepStop } from "@/lib/world-history/timing";
 import { CHAPTERS as HISTORY_CHAPTERS } from "@/lib/world-history/data";
 
 type TimelineEntry = { id: string; date_jp: string | null; date_na: string | null; date_eu: string | null };
@@ -183,6 +183,24 @@ function mp3Seconds(file: string): number {
   }
   return (frames * 1152) / rate;
 }
+
+describe("The Story of Pokémon: the words follow every jump", () => {
+  it("lands every jump to a caption or a chapter on its own words", () => {
+    for (const stop of beatStops(film)) {
+      expect(cueAt(film, stop.t), `${CHAPTER_IDS[stop.chapter]}/${stop.beat}`).toMatchObject({ kind: "chapter", chapter: stop.chapter, beat: stop.beat, title: stop.beat < 0 ? "chapter" : "none" });
+    }
+    CHAPTERS.forEach((c, i) => expect(cueAt(film, chapterStart(film, i)), c.id).toMatchObject({ kind: "chapter", chapter: i, beat: -1, title: "chapter" }));
+  });
+
+  it("steps through every caption with the arrow keys, in order, never stuck on the one before", () => {
+    const stops = beatStops(film);
+    let t = 0;
+    for (const want of stops) {
+      t = stepStop(film, t, 1);
+      expect(cueAt(film, t)).toMatchObject({ chapter: want.chapter, beat: want.beat });
+    }
+  });
+});
 
 describe("The Story of Pokémon: sound", () => {
   it("every music cue names a real beat, with every level in range, and every stem is credited", async () => {

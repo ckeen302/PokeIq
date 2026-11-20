@@ -162,10 +162,18 @@ export function rateAt(ct: ChapterTime, a: number): number {
   return s ? s.rate : 1;
 }
 
+/**
+ * How close (seconds) a time may fall short of a boundary and still count as
+ * on it. A caption's own stop (its film time, mapped back to anim time) can
+ * come out a hair before its start in floating point; without this a jump
+ * to it would leave the previous caption up.
+ */
+export const EDGE = 1e-6;
+
 /** The caption up at an anim time (−1 during the title card). */
 export function beatIndexAt(ct: ChapterTime, a: number): number {
   let i = -1;
-  for (let k = 0; k < ct.beats.length; k++) if (a >= ct.beats[k].anim) i = k;
+  for (let k = 0; k < ct.beats.length; k++) if (a >= ct.beats[k].anim - EDGE) i = k;
   return i;
 }
 
@@ -207,17 +215,47 @@ export type FilmState =
 /** Where the film is at film time t. */
 export function filmAt(f: Film, t: number): FilmState {
   const time = clamp(t, 0, f.duration);
+  // Chapters first, each from a hair before its start (see EDGE), so a jump to a chapter's start always lands in it.
+  for (const c of f.chapters) if (time >= c.start - EDGE && time < c.start + c.film) return { kind: "chapter", index: c.index, anim: Math.max(0, filmToAnim(c, time - c.start)), film: time };
   for (const h of f.halls) if (time >= h.start && time < h.end) return { kind: "hall", hall: h, k: (time - h.start) / (h.end - h.start), film: time };
-  for (const c of f.chapters) if (time >= c.start && time < c.start + c.film) return { kind: "chapter", index: c.index, anim: filmToAnim(c, time - c.start), film: time };
   const last = f.halls[f.halls.length - 1];
   return { kind: "hall", hall: last, k: 1, film: f.duration };
 }
 
 /** The chapter a film time belongs to for the rail and the URL: a hall counts as the chapter it leads into (the epilogue as the last). */
-export function chapterAtFilm(f: Film, t: number): number {
-  const s = filmAt(f, t);
+export function chapterAtFilm(f: Film, t: number, s: FilmState = filmAt(f, t)): number {
   if (s.kind === "chapter") return s.index;
   return clamp(s.k < 0.5 && s.hall.from >= 0 ? s.hall.from : s.hall.to, 0, f.chapters.length - 1);
+}
+
+/** Which title card is up: the film's own over the prologue, a chapter's over its opening, the end card over the epilogue. */
+export type TitleCard = "none" | "prologue" | "chapter" | "end";
+
+/** Where the film is, in the words on screen: the chapter (rail, address, title card), its caption, and which card is up. */
+export interface Cue {
+  kind: "chapter" | "hall";
+  chapter: number;
+  /** The caption up (−1: none, during a title card or in the hall). */
+  beat: number;
+  title: TitleCard;
+}
+
+/**
+ * The words for a moment of the film, from the playhead alone. Everything
+ * the page writes over the picture (caption, title cards, the chapter in the
+ * rail and the address) comes from this, on every frame and after every
+ * jump, so the words can't stay behind on an old part of the film.
+ */
+export function cueAt(f: Film, t: number, s: FilmState = filmAt(f, t)): Cue {
+  const chapter = chapterAtFilm(f, t, s);
+  if (s.kind === "chapter") return { kind: "chapter", chapter, beat: beatIndexAt(f.chapters[s.index], s.anim), title: s.anim < TITLE_HOLD - 0.15 ? "chapter" : "none" };
+  const h = s.hall;
+  return { kind: "hall", chapter, beat: -1, title: h.from < 0 && s.k < 0.62 ? "prologue" : h.to >= f.chapters.length && s.k > 0.4 ? "end" : "none" };
+}
+
+/** Two cues show the same words. */
+export function sameCue(a: Cue, b: Cue): boolean {
+  return a.kind === b.kind && a.chapter === b.chapter && a.beat === b.beat && a.title === b.title;
 }
 
 /** Film time a chapter's title card starts. */
@@ -264,6 +302,19 @@ export function scrollToFilm(f: Film, scrolled: number, viewH: number): number {
 
 export function filmToScroll(f: Film, t: number, viewH: number): number {
   return clamp(t, 0, f.duration) * pxPerSecond(viewH);
+}
+
+/**
+ * The furthest the playhead glides to catch up with the scroll (film
+ * seconds). A bigger gap is a cut: the film goes straight there instead of
+ * fast-forwarding through other captions, chapters and sounds on the way.
+ */
+export const GLIDE_MAX = 6;
+
+/** One frame of the playhead following the scroll: a glide over a short gap, a cut over a long one. */
+export function followScroll(current: number, target: number, dt: number): { t: number; cut: boolean } {
+  if (Math.abs(target - current) > GLIDE_MAX) return { t: target, cut: true };
+  return { t: easePlayhead(current, target, dt), cut: false };
 }
 
 /** Eases the playhead toward where the scroll is: small gaps glide, a big jump lands in about half a second. */
