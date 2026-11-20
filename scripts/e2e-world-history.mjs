@@ -20,6 +20,7 @@
  */
 import fs from "fs";
 import { inspectMp4 } from "./e2e-sizes.mjs";
+import { checkFilmWords, frames, wordsNow } from "./e2e-film-words.mjs";
 
 const CHAPTERS = JSON.parse(fs.readFileSync(new URL("../src/data/world-history.json", import.meta.url), "utf8")).chapters;
 
@@ -128,6 +129,30 @@ export async function runWorldHistory({ browser, BASE, OUT, errors, step }) {
     await page.evaluate(() => localStorage.setItem("pokeiq-muted", "1"));
   });
 
+  await part(errors, "words follow every jump", async () => {
+    // The caption and title card are the ones for the moment on screen by the next frame, however you jump (and nothing is logged as an error meanwhile).
+    const before = errors.length;
+    await checkFilmWords({ page, prefix: "wh", api: "__wh", chapters: CHAPTERS, errors, name: "world-history" });
+    if (errors.length === before) await page.screenshot({ path: `${OUT}/world-history-words.png` });
+  });
+
+  await part(errors, "the address leads the film", async () => {
+    // A link to another chapter's page (navigating in the app) opens the film there, with its words; back returns to where the film was.
+    await page.goto(`${BASE}/lab/world-history/creation?q=draft`, { waitUntil: "load" });
+    if (!(await ready())) throw new Error("the film never became ready");
+    const want = CHAPTERS.findIndex((c) => c.id === "giants");
+    await page.locator('[data-testid="wh-toc"] a[href="/lab/world-history/giants"]').first().evaluate((a) => a.click());
+    await page.waitForURL(/\/lab\/world-history\/giants/, { timeout: 60_000 });
+    await page.waitForFunction((i) => window.__wh?.state().chapter === i, want, { timeout: 240_000 }).catch(() => errors.push("world-history: a link to giants didn't take the film there"));
+    await stageIs("loading", "0", 240_000).catch(() => undefined);
+    await frames(page);
+    const r = await wordsNow(page, "wh", "__wh", CHAPTERS);
+    if (!r.ok) errors.push(`world-history: after a link to giants, ${r.why}`);
+    await page.goBack();
+    await page.waitForURL(/\/lab\/world-history\/creation/, { timeout: 60_000 }).catch(() => undefined);
+    await page.waitForFunction(() => window.__wh?.state().chapter === 0, null, { timeout: 240_000 }).catch(() => errors.push("world-history: back didn't return the film to creation"));
+  });
+
   await part(errors, "links", async () => {
     // Every chapter: its own page, title and preview card.
     for (const c of CHAPTERS) {
@@ -191,6 +216,19 @@ export async function runWorldHistory({ browser, BASE, OUT, errors, step }) {
       if (!box || box.x < 0 || box.x + box.width > 391) errors.push(`world-history: ${id} is off a 390 px screen`);
     }
     await page.screenshot({ path: `${OUT}/world-history-390.png` });
+    await stageIs("loading", "0", 240_000).catch(() => undefined);
+    await checkFilmWords({ page, prefix: "wh", api: "__wh", chapters: CHAPTERS, errors, name: "world-history (phone)", phone: true });
+    // The toolbar sliding away (a taller screen) and a rotation keep the film where it is.
+    const t0 = (await film())?.t ?? 0;
+    await page.setViewportSize({ width: 390, height: 904 });
+    await page.waitForTimeout(1500);
+    const t1 = (await film())?.t ?? 0;
+    if (Math.abs(t1 - t0) > 0.3) errors.push(`world-history: the phone's toolbar going moved the film from ${t0.toFixed(1)} s to ${t1.toFixed(1)} s`);
+    await page.setViewportSize({ width: 844, height: 390 });
+    await page.waitForTimeout(1500);
+    const t2 = (await film())?.t ?? 0;
+    if (Math.abs(t2 - t0) > 0.3) errors.push(`world-history: rotating the phone moved the film from ${t0.toFixed(1)} s to ${t2.toFixed(1)} s`);
+    await page.setViewportSize({ width: 390, height: 844 });
   });
   await context.close();
 }

@@ -9,6 +9,8 @@ html.wh-locked, html.wh-locked body { overflow: hidden; overscroll-behavior: non
 .wh-stage{background:#030207;touch-action:pan-y;contain:strict}
 .wh-stage[data-free="1"]{touch-action:none}
 .wh-stage canvas{display:block}
+/* A cut's dip through black: over the picture, under the words and controls (animated from the film with the Web Animations API). */
+.wh-dip{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;will-change:opacity}
 .wh-shade-top{position:absolute;inset:0 0 auto 0;height:9rem;pointer-events:none;background:linear-gradient(180deg,rgb(3 2 7 / .78),transparent)}
 .wh-shade-bottom{position:absolute;inset:auto 0 0 0;height:15rem;pointer-events:none;background:linear-gradient(0deg,rgb(3 2 7 / .86),rgb(3 2 7 / .45) 55%,transparent)}
 :where(.wh-chip){display:inline-flex}
@@ -38,6 +40,9 @@ html.wh-locked, html.wh-locked body { overflow: hidden; overscroll-behavior: non
 .wh-tick{position:absolute;top:4px;width:2px;height:9px;border-radius:2px;background:rgb(255 255 255 / .35)}
 .wh-hint{animation:wh-hint 2.4s ease-in-out infinite}
 @keyframes wh-hint{0%,100%{transform:translateY(0);opacity:.75}50%{transform:translateY(5px);opacity:1}}
+/* The loading ring and its line come up after a moment, so a chapter that builds quickly never flashes them. */
+.wh-loading{animation:wh-fadein .35s .2s cubic-bezier(.2,.8,.2,1) both}
+@keyframes wh-fadein{from{opacity:0}to{opacity:1}}
 .wh-load-ring{width:46px;height:46px;border-radius:999px;border:2px solid rgb(242 201 107 / .2);border-top-color:#f2c96b;animation:wh-spin 1s linear infinite}
 @keyframes wh-spin{to{transform:rotate(360deg)}}
 .wh-sheet{background:rgb(10 8 22 / .94);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
@@ -63,5 +68,5 @@ html.wh-locked, html.wh-locked body { overflow: hidden; overscroll-behavior: non
 .wh-lead-in{animation:wh-track-s .8s cubic-bezier(.2,.8,.2,1) both}
 @keyframes wh-track-s{from{letter-spacing:.42em;opacity:0}to{letter-spacing:.14em;opacity:1}}
 @media (max-width:639px){.wh-lower::before{left:-.55rem}[data-loading="1"] .wh-pro{display:none}}
-@media (prefers-reduced-motion: reduce){.wh-hint,.wh-load-ring,.wh-tk,.wh-rule,.wh-w > span,.wh-sweep,.wh-when,.wh-lower::before,.wh-wipe,.wh-lead-in{animation:none!important}.wh-sweep{display:none}}
+@media (prefers-reduced-motion: reduce){.wh-hint,.wh-loading,.wh-load-ring,.wh-tk,.wh-rule,.wh-w > span,.wh-sweep,.wh-when,.wh-lower::before,.wh-wipe,.wh-lead-in{animation:none!important}.wh-sweep{display:none}}
 `;

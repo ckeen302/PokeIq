@@ -10,7 +10,9 @@ import { HISTORY_PATH, chapterFromPath, chapterPath } from "@/lib/world-history/
 import { artUrl, figureAsset } from "@/lib/world-history/assets";
 import { bleedEdges } from "@/lib/world-history/bleed";
 import {
+  EDGE,
   EPILOGUE,
+  GLIDE_MAX,
   MAX_BEAT,
   MIN_BEAT,
   PROLOGUE,
@@ -25,17 +27,21 @@ import {
   chapterStart,
   chapterTiming,
   chapterVideoPlan,
+  cueAt,
   easePlayhead,
   filmAt,
   filmToAnim,
   filmToScroll,
+  followScroll,
   rateAt,
+  sameCue,
   scrollToFilm,
   stepStop,
   storyVideoPlan,
   trackHeight,
   videoAt,
 } from "@/lib/world-history/timing";
+import { WORD_MOTION } from "@/components/world-history/FilmWords";
 import { DEFAULT_LIMITS, arcKeys, blendPose, clampOrbit, fovFor, handheld, orbitBy, orbitFrom, orbitPose, poseOnPath, shots, wheelFactor, wrapAngle, zoomBy, type Key, type Pose } from "@/lib/world-history/camera";
 
 const film = buildFilm();
@@ -286,6 +292,90 @@ describe("timing", () => {
     expect(beatIndexAt(ct, ct.beats[0].anim)).toBe(0);
     expect(beatIndexAt(ct, ct.beats[2].anim + 0.01)).toBe(2);
     expect(beatIndexAt(ct, ct.anim)).toBe(ct.beats.length - 1);
+  });
+
+  it("lands every jump to a caption on that caption's words (float error never leaves the one before up)", () => {
+    for (const stop of beatStops(film)) {
+      const cue = cueAt(film, stop.t);
+      expect(cue.kind, `${stop.chapter}/${stop.beat}`).toBe("chapter");
+      expect(cue.chapter, `${stop.chapter}/${stop.beat}`).toBe(stop.chapter);
+      expect(cue.beat, `${stop.chapter}/${stop.beat}`).toBe(stop.beat);
+      expect(cue.title, `${stop.chapter}/${stop.beat}`).toBe(stop.beat < 0 ? "chapter" : "none");
+    }
+  });
+
+  it("gives the words for any moment from the playhead alone, matching the film's own layout", () => {
+    // An independent reading of the layout: the chapter whose span holds t, the last caption whose start t has reached.
+    const expected = (t: number) => {
+      const c = film.chapters.find((x) => t >= x.start && t < x.start + x.film);
+      if (!c) return null;
+      let beat = -1;
+      c.beats.forEach((b, i) => { if (t - c.start >= animToFilm(c, b.anim) - 1e-9) beat = i; });
+      return { chapter: c.index, beat };
+    };
+    for (let t = 0; t <= film.duration; t += 0.173) {
+      const cue = cueAt(film, t);
+      const want = expected(t);
+      if (!want) {
+        expect(cue.kind, `t=${t}`).toBe("hall");
+        expect(cue.beat).toBe(-1);
+        continue;
+      }
+      expect(cue, `t=${t}`).toMatchObject({ kind: "chapter", chapter: want.chapter, beat: want.beat });
+    }
+    // The prologue's title over the start; the end card over the epilogue; each chapter's title over its opening.
+    expect(cueAt(film, 0)).toMatchObject({ kind: "hall", chapter: 0, title: "prologue" });
+    expect(cueAt(film, film.duration)).toMatchObject({ kind: "hall", chapter: film.chapters.length - 1, title: "end" });
+    for (const c of film.chapters) expect(cueAt(film, chapterStart(film, c.index))).toMatchObject({ kind: "chapter", chapter: c.index, beat: -1, title: "chapter" });
+    // A hair before a boundary is still on it.
+    const c3 = film.chapters[3];
+    expect(cueAt(film, c3.start - EDGE / 2)).toMatchObject({ kind: "chapter", chapter: 3 });
+    expect(filmAt(film, c3.start - EDGE / 2)).toMatchObject({ kind: "chapter", anim: 0 });
+  });
+
+  it("steps forward through every caption in order, and back again, without sticking", () => {
+    const stops = beatStops(film);
+    let t = 0;
+    const seen: string[] = [];
+    for (let i = 0; i < stops.length; i++) {
+      t = stepStop(film, t, 1);
+      const cue = cueAt(film, t);
+      seen.push(`${cue.chapter}:${cue.beat}`);
+    }
+    expect(seen).toEqual(stops.map((s) => `${s.chapter}:${s.beat}`));
+    for (let i = stops.length - 2; i >= 0; i--) {
+      t = stepStop(film, t, -1);
+      expect(cueAt(film, t), `back to ${i}`).toMatchObject({ chapter: stops[i].chapter, beat: stops[i].beat });
+    }
+  });
+
+  it("follows the scroll: a short way glides without overshooting, a long way is a cut", () => {
+    expect(followScroll(10, 10 + GLIDE_MAX + 0.01, 1 / 60)).toEqual({ t: 10 + GLIDE_MAX + 0.01, cut: true });
+    expect(followScroll(100, 3, 1 / 60)).toEqual({ t: 3, cut: true });
+    let p = 10;
+    for (let i = 0; i < 240; i++) {
+      const f = followScroll(p, 14, 1 / 60);
+      expect(f.cut).toBe(false);
+      expect(f.t).toBeGreaterThanOrEqual(p);
+      expect(f.t).toBeLessThanOrEqual(14);
+      p = f.t;
+    }
+    expect(p).toBe(14);
+    expect(sameCue(cueAt(film, 50), cueAt(film, 50))).toBe(true);
+    expect(sameCue(cueAt(film, film.chapters[2].start), cueAt(film, film.chapters[3].start))).toBe(false);
+  });
+
+  it("takes the words of the part left behind off at once after a jump, and crossfades them on the film's own run", () => {
+    type V = { opacity?: number; filter?: string; transition?: { duration?: number; delay?: number } };
+    const gone = (k: keyof typeof WORD_MOTION, jumped: boolean) => (WORD_MOTION[k].gone as (j: boolean) => V)(jumped);
+    for (const k of Object.keys(WORD_MOTION) as (keyof typeof WORD_MOTION)[]) {
+      expect(gone(k, true), k).toMatchObject({ opacity: 0, transition: { duration: 0 } });
+      expect(gone(k, false).transition?.duration ?? 0, k).toBeGreaterThan(0);
+    }
+    // A jump's caption comes straight up with its picture; captions animate no filters (blur repaints are costly on phones).
+    const shown = WORD_MOTION.caption.shown as (j: boolean) => V;
+    expect(shown(true).transition?.delay).toBe(0);
+    for (const v of [WORD_MOTION.caption.hidden as V, shown(true), shown(false), gone("caption", false)]) expect(v.filter).toBeUndefined();
   });
 
   it("scrolls through the film at a screen per few seconds", () => {
