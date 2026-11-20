@@ -48,11 +48,12 @@ export function NewDuelCard({
   /** The new duel's page. */
   href: (code: string) => string;
   heading: string;
+  /** What the duel is: the first line behind "How it works" (the card itself shows only its heading, controls and button). */
   blurb: React.ReactNode;
   /** Matchmaking settings, e.g. { game: "geo", region }. */
   match?: Record<string, unknown>;
   children?: React.ReactNode;
-  /** The longer explanation, behind a "How it works" toggle. */
+  /** More of the explanation, behind the same "How it works" toggle. */
   info?: React.ReactNode;
 }) {
   const router = useRouter();
@@ -99,9 +100,12 @@ export function NewDuelCard({
             <Swords className="h-3.5 w-3.5" aria-hidden /> Duel a friend
           </p>
           <p className="font-display text-2xl font-bold uppercase max-md:text-xl max-md:leading-tight">{heading}</p>
-          <p className="text-sm text-muted-foreground">{blurb}</p>
           {children}
-          {info && <HowItWorks>{info}</HowItWorks>}
+          <HowItWorks>
+            <p>{blurb}</p>
+            {info}
+            {match && <p>Create a duel and send the link, or get paired with anyone searching for the same game right now.</p>}
+          </HowItWorks>
           {(error ?? finder.error) && (
             <p role="alert" className="text-sm text-destructive">
               {error ?? finder.error}
@@ -147,9 +151,6 @@ export function NewDuelCard({
                 </Button>
               )}
             </>
-          )}
-          {match && !finder.searching && (
-            <p className="text-center text-xs text-muted-foreground max-md:hidden">Create a duel and send the link, or get paired with anyone searching for the same game right now.</p>
           )}
         </div>
       </form>

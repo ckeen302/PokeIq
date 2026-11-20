@@ -189,10 +189,7 @@ export function RankedCard() {
               <Record you={you} />
             </>
           ) : (
-            <>
-              <TierBadge rating={1000} games={0} size="lg" />
-              <p className="text-sm text-muted-foreground">Climb from Poké Ball to Master Ball against trainers near your rating.</p>
-            </>
+            <TierBadge rating={1000} games={0} size="lg" />
           )}
           {state.status !== "off" && (
             <HowItWorks

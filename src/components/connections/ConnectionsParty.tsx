@@ -15,6 +15,7 @@ import { play, unlockAudio, vibrate } from "@/lib/sound";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDuel } from "@/components/duel/use-duel";
+import { HowItWorks } from "@/components/duel/HowItWorks";
 import { DuelGone, DuelLoading, DuelNotice, clock, seconds } from "@/components/duel/DuelParts";
 import { CONTROLS_DOCK, CONTROLS_WRAP, GridTile, GroupBar, MistakeDots, WhyPanel, type TileMotion } from "./parts";
 import { cn } from "@/lib/utils";
@@ -74,9 +75,11 @@ export function ConnectionsPartyCard() {
             <Users className="h-3.5 w-3.5" aria-hidden /> Party · PokéConnections
           </p>
           <h2 className="font-display text-2xl font-bold uppercase">Race up to {PARTY_MAX} friends</h2>
-          <p className="text-sm text-muted-foreground">
-            Everyone gets the same sixteen Pokémon from a share link. You all see each other&apos;s placings as you go (groups found and mistakes, never which Pokémon), and the best time wins.
-          </p>
+          <HowItWorks>
+            <p>
+              Everyone gets the same sixteen Pokémon from a share link. You all see each other&apos;s placings as you go (groups found and mistakes, never which Pokémon), and the best time wins.
+            </p>
+          </HowItWorks>
         </div>
         <div className="flex flex-col justify-center gap-2">
           <label htmlFor={id} className="hud-label">
