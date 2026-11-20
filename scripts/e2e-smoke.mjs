@@ -3827,12 +3827,13 @@ step("name 'em all: hub, a Gen 1 run (aliases, wrong category, pause, give up), 
 }
 
 /**
- * The home page at 1440 and 390: the hero (today's first PokéGuessr place, never its answer; Play straight into
- * the Daily), Today (the five dailies, done and streak from this device's progress, all done), the 3D Lab band,
- * the Pokédex search, More to play; the phone's first screen, its swipe row, nothing sideways or under the tab bar.
+ * The home page at 1440 and 390, dark and light: the banner (the classroom picture for the theme, server-rendered and
+ * fetched at once at high priority, never the other theme's; PokéIQ; Play down to Today), Today (the five dailies,
+ * done and streak from this device's progress, all done); the phone's first screen, its swipe row, nothing sideways
+ * or under the tab bar.
  */
 async function homeStep() {
-  step("home: today's PokéGuessr place (no pin, no name) and Play into the Daily, Today's five dailies (done, streak, all done), the 3D Lab, search, More to play, phone layout");
+  step("home: the banner (its theme's picture only, preloaded; PokéIQ; Play down to Today), Today's five dailies (done, streak, all done), light theme, phone layout");
   const imgLoaded = (img) =>
     img
       .evaluate((el) => (el.complete ? Promise.resolve(el.naturalWidth > 0) : new Promise((r) => el.addEventListener("load", () => r(el.naturalWidth > 0), { once: true }))), null, { timeout: 15_000 })
@@ -3860,52 +3861,77 @@ async function homeStep() {
     }
     localStorage.setItem("pokeiq:progress:v1", JSON.stringify(p));
   };
-  const REGIONS = /\b(Kanto|Johto|Hoenn|Sinnoh|Unova|Kalos|Alola|Galar|Paldea|Hisui|Kitakami|Orre|Fiore|Almia|Oblivia|Sevii|Lumiose)\b/;
+  /** The banner's picture files the page requests from now on (dark theme: classroom-…, light: classroom-day-…). */
+  const logHeroFiles = (pg) => {
+    const files = [];
+    pg.on("request", (r) => {
+      const path = new URL(r.url()).pathname;
+      if (path.startsWith("/home/")) files.push(path);
+    });
+    return files;
+  };
+  /** The banner's picture on show (one per theme is in the page; the other theme's is hidden): its theme, how it loads and what it drew. */
+  const shownPicture = (h) =>
+    h.evaluate(async (el) => {
+      const img = [...el.querySelectorAll("picture img")].find((i) => i.getClientRects().length > 0);
+      if (!img) return null;
+      if (!img.complete) await new Promise((r) => { img.addEventListener("load", r, { once: true }); img.addEventListener("error", r, { once: true }); });
+      return { theme: img.closest("picture").dataset.heroTheme, pictures: el.querySelectorAll("picture img").length, loading: img.loading, priority: img.fetchPriority, src: new URL(img.currentSrc).pathname, loaded: img.naturalWidth > 0 };
+    }, null, { timeout: 15_000 });
+  /** The camera drift, stepped through its whole run: the picture covers its box all the way (no edge shows). "" when it does. */
+  const driftCovers = (pg) =>
+    pg.getByTestId("home-hero-shot").evaluate((el) => {
+      const anim = el.getAnimations()[0];
+      if (!anim) return "no drift";
+      const view = el.parentElement.getBoundingClientRect();
+      const dur = anim.effect.getComputedTiming().duration;
+      anim.pause();
+      const bad = [];
+      for (let k = 0; k <= 20; k++) {
+        anim.currentTime = (dur * k) / 20;
+        const r = el.getBoundingClientRect();
+        if (r.left > view.left + 0.5 || r.top > view.top + 0.5 || r.right < view.right - 0.5 || r.bottom < view.bottom - 0.5) bad.push(`${k * 5}%`);
+      }
+      anim.play();
+      return bad.length ? `edges show at ${bad.join(", ")} of the drift` : "";
+    });
+  const PITCH = "Daily Pokémon puzzles, a Pokémon GeoGuessr with real in-game views, Showdown battles and Pokémon in 3D.";
 
   // ---- 1440, a new visitor ----
   const p = await newPage({ width: 1440, height: 900 });
+  const files1440 = logHeroFiles(p);
   await gotoSettled(p, BASE);
   const hero = p.getByTestId("home-hero");
-  // The server's picture is the LCP image: in the HTML, preloaded; then today's place fades in over it.
+  // The picture is the LCP image. Both themes' pictures are in the server's HTML, lazy (so the preload scanner fetches
+  // neither), and the script straight after them makes the one on show eager at high priority as it's parsed.
   const html = await (await p.request.get(BASE)).text();
-  if (!/data-testid="home-hero-shot"[^>]*>\s*<img /.test(html) || !/<link rel="preload" as="image"/.test(html)) errors.push("home: the hero's picture isn't server-rendered and preloaded");
-  // Today's place replaces the fixed view only when it's sharp at the size it's drawn (the API says how wide it can go).
-  const localToday = await p.evaluate(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; });
-  const daily = await (await p.request.get(`${BASE}/api/geo/daily-shot?date=${localToday}`)).json();
-  // As the page judges it: drawn to cover the box, first as a 16:9 shot, then at its real shape.
-  const heroWide = await hero.getByTestId("home-hero-shot").evaluate(async (el, src) => {
-    const img = new Image();
-    img.src = src;
-    await img.decode().catch(() => {});
-    const aspect = img.naturalHeight ? img.naturalWidth / img.naturalHeight : 16 / 9;
-    return Math.max(el.clientWidth, (el.clientHeight * 16) / 9, el.clientHeight * aspect);
-  }, daily.shot);
-  const showsToday = typeof daily.sharpTo === "number" && daily.sharpTo >= heroWide;
-  if (showsToday) {
-    await p.waitForFunction(() => /^\/api\/geo\/shot\/[\w-]+$|\/geo\/[\w-]+\.webp$/.test(document.querySelector("[data-testid=home-hero-shot]")?.dataset.shot ?? ""), null, { timeout: 20_000 }).catch(() => errors.push("home: today's PokéGuessr place never replaced the hero's fixed picture"));
-  } else {
-    await p.waitForTimeout(2500);
-    if ((await hero.getByTestId("home-hero-shot").getAttribute("data-shot")) !== "fallback") errors.push(`home: today's place is too small to be sharp at ${Math.round(heroWide)} px (sharp to ${daily.sharpTo}), but the hero shows it`);
-  }
-  const heroShot = await hero.getByTestId("home-hero-shot").getAttribute("data-shot");
-  for (const img of await hero.getByTestId("home-hero-shot").locator("img").all()) if (!(await imgLoaded(img))) errors.push("home: a hero picture didn't load");
-  // Never the answer: no map, no pin, no place or region name, and the API only gives the picture's random id.
-  if (await hero.locator('img[src*="/geo/maps/"], svg path[d^="M12 0C5.4"], [data-testid=home-showcase]').count()) errors.push("home: the hero shows a map or a pin");
-  if (REGIONS.test(await hero.innerText())) errors.push(`home: the hero names a place: ${(await hero.innerText()).match(REGIONS)[0]}`);
-  // "Where is this?" over today's place only; the fixed view says what it is.
-  const question = await hero.getByTestId("home-hero-question").innerText();
-  if (showsToday ? !/Where is this\?/i.test(question) : /Where is this/i.test(question) || !/in-game/i.test(question)) errors.push(`home: the hero's chip reads "${question}" over ${showsToday ? "today's place" : "the fixed view"}`);
-  {
-    const today = await p.evaluate(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; });
-    const body = await (await p.request.get(`${BASE}/api/geo/daily-shot?date=${today}`)).json();
-    if (Object.keys(body).some((k) => k !== "shot" && k !== "blur" && k !== "sharpTo") || (showsToday && body.shot !== heroShot)) errors.push(`home: the daily-shot API sent ${JSON.stringify(Object.keys(body))} / ${body.shot} (hero shows ${heroShot})`);
-    if (typeof body.sharpTo !== "number" || body.sharpTo % 50 !== 0) errors.push(`home: the daily-shot API's sharpTo isn't a coarse width: ${body.sharpTo}`);
-    if ((await p.request.get(`${BASE}/api/geo/daily-shot?date=2001-01-01`)).status() !== 400) errors.push("home: the daily-shot API answered for a date that isn't today");
-  }
-  // The words: PokéGuessr, free, one line; one h1; no counts, no NEW badges, no puzzle numbers, consistent names.
-  if (!/PokéGuessr/i.test(await hero.locator("h2").innerText())) errors.push("home: the hero isn't titled PokéGuessr");
-  if (!/Free · no sign-up/i.test(await hero.innerText())) errors.push("home: the hero lost Free · no sign-up");
-  if (!/Plus a daily Pokédle, battles and Pokémon in 3D/.test(await hero.getByTestId("home-hero-more").innerText())) errors.push("home: the line under Play is missing");
+  const heroHtml = html.slice(html.indexOf('data-testid="home-hero-shot"'), html.indexOf("</picture><script>", html.indexOf('data-hero-theme="light"')) + 18);
+  if (
+    !/^data-testid="home-hero-shot"[^>]*>\s*<picture[^>]*data-hero-theme="dark"/.test(heroHtml) ||
+    !/<source media="\(max-width: 639px\)" srcSet="\/home\/classroom-tall-828\.webp 828w/i.test(heroHtml) ||
+    !/<img [^>]*srcSet="\/home\/classroom-wide-1024\.webp 1024w/i.test(heroHtml) ||
+    !/data-hero-theme="light"[\s\S]*classroom-day-tall-828[\s\S]*classroom-day-wide-1024/.test(heroHtml) ||
+    !heroHtml.endsWith("</picture><script>")
+  )
+    errors.push("home: the banner's pictures (both themes, tall on a phone) and the script that picks one aren't in the server's HTML");
+  const shown = await shownPicture(hero).catch(() => null);
+  if (!shown?.loaded) errors.push("home: the banner's picture didn't load at 1440");
+  else if (shown.theme !== "dark" || shown.pictures !== 2 || shown.loading !== "eager" || shown.priority !== "high" || !/^\/home\/classroom-wide-\d+\.webp$/.test(shown.src))
+    errors.push(`home: at 1440 the banner shows ${JSON.stringify(shown)}, not the dark wide picture, eager at high priority`);
+  // One file, the dark theme's: never the daytime pair, never two sizes.
+  if (files1440.length !== 1 || !/^\/home\/classroom-wide-/.test(files1440[0])) errors.push(`home: at 1440 (dark) the page fetched ${JSON.stringify(files1440)}, not one dark wide picture`);
+  // The camera drift runs and never shows the picture's edges.
+  if ((await p.getByTestId("home-hero-shot").evaluate((el) => getComputedStyle(el).animationName)) !== "hero-drift") errors.push("home: the banner's picture doesn't drift");
+  const drift1440 = await driftCovers(p);
+  if (drift1440) errors.push(`home: at 1440 ${drift1440}`);
+  // About 470 px tall on a 1440 × 900 screen.
+  const heroBox = await hero.boundingBox();
+  if (!heroBox || Math.abs(heroBox.height - 470) > 2) errors.push(`home: the banner is ${heroBox?.height} px tall at 1440 × 900, not 470`);
+  // The words: PokéIQ, free, the pitch, light on the night picture; one h1; no counts, no puzzle numbers, consistent names.
+  if ((await hero.locator("h2").textContent())?.trim() !== "PokéIQ") errors.push(`home: the banner's title reads "${await hero.locator("h2").textContent()}"`);
+  if (!/Free · no sign-up/i.test(await hero.innerText())) errors.push("home: the banner lost Free · no sign-up");
+  if (!(await hero.getByText(PITCH, { exact: true }).isVisible())) errors.push("home: the banner's line about the site is missing");
+  if ((await hero.locator("h2").evaluate((el) => getComputedStyle(el).color)) !== "rgb(255, 255, 255)") errors.push("home: the banner's title isn't white on the night picture");
   if ((await p.locator("h1").count()) !== 1) errors.push(`home: ${await p.locator("h1").count()} h1s on the page, not one`);
   else if (!/PokéIQ/.test(await p.locator("h1").textContent())) errors.push(`home: the h1 reads "${await p.locator("h1").textContent()}"`);
   const text = await p.locator("main").innerText();
@@ -3914,6 +3940,14 @@ async function homeStep() {
   }
   // Still pictures only: no 3D, no video.
   if (await p.locator("main canvas, main video").count()) errors.push("home: the page has a canvas or a video");
+  // The daily-shot API (the load test still calls it): only the picture's random id and size, today's dates only.
+  {
+    const today = await p.evaluate(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; });
+    const body = await (await p.request.get(`${BASE}/api/geo/daily-shot?date=${today}`)).json();
+    if (Object.keys(body).some((k) => k !== "shot" && k !== "blur" && k !== "sharpTo")) errors.push(`home: the daily-shot API sent ${JSON.stringify(Object.keys(body))}`);
+    if (typeof body.sharpTo !== "number" || body.sharpTo % 50 !== 0) errors.push(`home: the daily-shot API's sharpTo isn't a coarse width: ${body.sharpTo}`);
+    if ((await p.request.get(`${BASE}/api/geo/daily-shot?date=2001-01-01`)).status() !== 400) errors.push("home: the daily-shot API answered for a date that isn't today");
+  }
   await p.screenshot({ path: `${OUT}/home.png`, fullPage: true });
 
   // Today: one even row of the five dailies, each to its game, all to play.
@@ -3935,17 +3969,17 @@ async function homeStep() {
   if (!(await p.getByTestId("coffee-button").isVisible())) errors.push("home: the Buy me a coffee button is missing");
   for (const gone of ["home-showcase", "home-hero-pokedle", "daily-rows", "home-lab", "home-search", "home-more"]) if (await p.getByTestId(gone).count()) errors.push(`home: ${gone} is still on the page`);
 
-  // Play: straight into today's Daily, on the picture the hero showed (already fetched).
+  // Play: down to Today on this page (a link to #home-today), gliding there, Today's heading under the header and focused.
   await gotoSettled(p, BASE);
-  await p.waitForFunction(() => /^\/api\/geo\/shot\/[\w-]+$|\/geo\/[\w-]+\.webp$/.test(document.querySelector("[data-testid=home-hero-shot]")?.dataset.shot ?? ""), null, { timeout: 20_000 }).catch(() => {});
-  if ((await hero.getByTestId("home-hero-play").getAttribute("href")) !== "/pokeguessr?play=daily") errors.push("home: Play doesn't go to today's Daily");
+  if ((await hero.getByTestId("home-hero-play").getAttribute("href")) !== "#home-today") errors.push(`home: Play goes to ${await hero.getByTestId("home-hero-play").getAttribute("href")}, not #home-today`);
   await hero.getByTestId("home-hero-play").click();
-  await p.waitForURL(/\/pokeguessr/, { timeout: 15_000 }).catch(() => errors.push(`home: Play went to ${p.url()}`));
-  if (showsToday) await p.locator(`img[src="${heroShot}"]`).first().waitFor({ timeout: 20_000 }).catch(() => errors.push("home: Play didn't open the Daily on the hero's picture"));
-  // (When the hero kept its fixed view, nothing above waited for the game: give it the time the picture took.)
-  await p.waitForFunction(() => /Daily #\d+/i.test(document.body.innerText) && !/[?&]play=/.test(location.search), null, { timeout: 20_000 }).catch(() => {});
-  if (!/Daily #\d+/i.test(await p.locator("body").innerText())) errors.push("home: Play didn't start the Daily");
-  if (/[?&]play=/.test(p.url())) errors.push(`home: the Daily's URL kept ?play (${p.url()})`);
+  const landedAt = () => p.evaluate(() => ({ y: Math.round(scrollY), max: document.documentElement.scrollHeight - innerHeight, top: Math.round(document.getElementById("home-today").getBoundingClientRect().top), bottom: Math.round(document.getElementById("home-today").getBoundingClientRect().bottom), header: Math.round(document.querySelector("body > header").getBoundingClientRect().bottom), focused: document.activeElement?.id ?? "" }));
+  const glide = await landedAt();
+  await p.waitForTimeout(1500);
+  const landed = await landedAt();
+  if (landed.y === 0 || landed.top < landed.header || landed.bottom > 900 || (Math.abs(landed.top - 80) > 4 && Math.abs(landed.y - landed.max) > 2)) errors.push(`home: Play didn't bring Today into view under the header (${JSON.stringify(landed)})`);
+  if (glide.y === landed.y) errors.push("home: Play jumped to Today instead of gliding");
+  if (landed.focused !== "home-today") errors.push(`home: Play left the focus on "${landed.focused}", not Today`);
   await p.context().close();
 
   // ---- A returning player: PokéGuessr and Pokédle done, a Pokédle streak ----
@@ -3953,12 +3987,6 @@ async function homeStep() {
     const r = await newPage({ width: w, height: h }, w < 500 ? { isMobile: true, hasTouch: true } : {});
     await r.addInitScript(seedProgress, "returning");
     await gotoSettled(r, BASE);
-    const rh = r.getByTestId("home-hero");
-    await rh.getByTestId("home-hero-done").waitFor({ timeout: 10_000 }).catch(() => errors.push(`home ${w}: the hero didn't show today's PokéGuessr as done`));
-    if ((await rh.getByTestId("home-hero-score").innerText().catch(() => "")) !== "18,240") errors.push(`home ${w}: the hero's score isn't the stored 18,240`);
-    if (!/Next places in \d+h \d+m|Next places in \d+m/.test(await rh.getByTestId("home-hero-next").innerText().catch(() => ""))) errors.push(`home ${w}: the hero doesn't say when the next places come`);
-    if ((await rh.getByTestId("home-hero-free").getAttribute("href").catch(() => null)) !== "/pokeguessr?play=game") errors.push(`home ${w}: Play a free game doesn't start a free game`);
-    if (await rh.getByTestId("home-hero-play").count()) errors.push(`home ${w}: the hero still offers today's places after they're done`);
     const prefix = w < 500 ? "home-today-" : "home-today-card-";
     const states = {};
     for (const [id] of DAILY_HREFS) states[id] = await r.getByTestId(`${prefix}${id}`).getAttribute("data-state");
@@ -3982,28 +4010,39 @@ async function homeStep() {
     await a.context().close();
   }
 
-  // ---- Reduced motion: today's place appears without the fade ----
+  // ---- Reduced motion: the picture holds still and Play goes straight to Today ----
   {
     const still = await newPage({ width: 1440, height: 900 }, { reducedMotion: "reduce" });
     await gotoSettled(still, BASE);
-    await still.waitForFunction(() => /^\/api\/geo\/shot\/[\w-]+$|\/geo\/[\w-]+\.webp$/.test(document.querySelector("[data-testid=home-hero-shot]")?.dataset.shot ?? ""), null, { timeout: 20_000 }).catch(() => {});
-    const motion = await still.locator("[data-testid=home-hero-shot] img").last().evaluate((el) => getComputedStyle(el).transitionProperty);
-    if (motion !== "none" && motion !== "all") errors.push(`home: under reduced motion the hero's picture still transitions (${motion})`);
+    const drift = await still.getByTestId("home-hero-shot").evaluate((el) => getComputedStyle(el).animationName);
+    if (drift !== "none") errors.push(`home: under reduced motion the banner's picture still drifts (${drift})`);
+    await still.getByTestId("home-hero-play").click();
+    const y = await still.evaluate(() => scrollY);
+    await still.waitForTimeout(800);
+    if (y === 0 || Math.abs(y - (await still.evaluate(() => scrollY))) > 1) errors.push("home: under reduced motion Play doesn't go straight to Today");
     await still.context().close();
   }
 
-  // ---- 390: the first screen, the swipe row, nothing sideways or under the tab bar ----
-  const m = await newPage({ width: 390, height: 844 }, { isMobile: true, hasTouch: true });
+  // ---- 390 × 664 (an iPhone's screen under the browser's bars): the first screen, the swipe row, nothing sideways or under the tab bar ----
+  const m = await newPage({ width: 390, height: 664 }, { isMobile: true, hasTouch: true });
+  const files390 = logHeroFiles(m);
   await gotoSettled(m, BASE);
   const mhero = m.getByTestId("home-hero");
-  if (!(await imgLoaded(mhero.getByTestId("home-hero-shot").locator("img").first()))) errors.push("home: the hero's picture didn't load at 390");
+  const mshown = await shownPicture(mhero).catch(() => null);
+  if (!mshown?.loaded) errors.push("home: the banner's picture didn't load at 390");
+  else if (mshown.theme !== "dark" || mshown.loading !== "eager" || !/^\/home\/classroom-tall-\d+\.webp$/.test(mshown.src)) errors.push(`home: at 390 the banner shows ${JSON.stringify(mshown)}, not the dark tall picture`);
+  if (files390.length !== 1 || !/^\/home\/classroom-tall-/.test(files390[0])) errors.push(`home: at 390 (dark) the page fetched ${JSON.stringify(files390)}, not one dark tall picture`);
+  const drift390 = await driftCovers(m);
+  if (drift390) errors.push(`home: at 390 ${drift390}`);
   {
     const box = await mhero.boundingBox();
     const pageW = await m.evaluate(() => Math.round(document.body.getBoundingClientRect().width));
-    if (!box || box.x !== 0 || Math.round(box.width) !== pageW) errors.push(`home: the hero isn't edge to edge at 390 (${box && `${box.x}+${box.width}`})`);
+    if (!box || box.x !== 0 || Math.round(box.width) !== pageW) errors.push(`home: the banner isn't edge to edge at 390 (${box && `${box.x}+${box.width}`})`);
+    if (!box || Math.abs(box.height - 466) > 2) errors.push(`home: the banner is ${box?.height} px tall at 390, not 466`);
+    // The picture on top, 400 px tall, the title over its faded lower part.
     const view = await mhero.getByTestId("home-hero-view").boundingBox();
     const title = await mhero.locator("h2").boundingBox();
-    if (!view || !title || view.height < 280 || title.y < view.y + view.height / 2) errors.push(`home: at 390 the picture isn't a tall band above the title (view ${view && `${view.y}+${view.height}`}, title at ${title?.y})`);
+    if (!view || !title || Math.abs(view.height - 400) > 1 || title.y < view.y + view.height / 2) errors.push(`home: at 390 the picture isn't a 400 px band above the title (view ${view && `${view.y}+${view.height}`}, title at ${title?.y})`);
     const play = await mhero.getByTestId("home-hero-play").boundingBox();
     if (!play || Math.abs(play.width - (pageW - 32)) > 2) errors.push(`home: the Play button isn't full width at 390 (${play?.width})`);
     const barTop = await m.evaluate(() => document.querySelector("[data-testid=tabbar]")?.getBoundingClientRect().top ?? window.innerHeight);
@@ -4037,6 +4076,33 @@ async function homeStep() {
   await m.evaluate(() => window.scrollTo(0, 0));
   await m.screenshot({ path: `${OUT}/home-390.png`, fullPage: true });
   await m.context().close();
+
+  // ---- Light theme: the daytime classroom (only its files fetched), dark words, the same boxes as the dark theme ----
+  for (const [w, h, phone] of [[1440, 900, false], [390, 664, true]]) {
+    const l = await newPage({ width: w, height: h }, phone ? { isMobile: true, hasTouch: true } : {});
+    await l.addInitScript(() => localStorage.setItem("pokeiq-theme", "light"));
+    const files = logHeroFiles(l);
+    await gotoSettled(l, BASE);
+    const lh = l.getByTestId("home-hero");
+    const ls = await shownPicture(lh).catch(() => null);
+    const shape = phone ? "tall" : "wide";
+    if (!ls?.loaded || ls.theme !== "light" || ls.loading !== "eager" || ls.priority !== "high" || !new RegExp(`^/home/classroom-day-${shape}-\\d+\\.webp$`).test(ls.src)) errors.push(`home ${w} light: the banner shows ${JSON.stringify(ls)}, not the daytime ${shape} picture, eager at high priority`);
+    if (files.length !== 1 || !files[0].startsWith(`/home/classroom-day-${shape}-`)) errors.push(`home ${w} light: the page fetched ${JSON.stringify(files)}, not one daytime ${shape} picture`);
+    const box = await lh.boundingBox();
+    const dark = phone ? { x: 0, width: await l.evaluate(() => Math.round(document.body.getBoundingClientRect().width)), height: 466 } : heroBox;
+    if (!box || !dark || Math.abs(box.x - dark.x) > 1 || Math.abs(box.width - dark.width) > 1 || Math.abs(box.height - dark.height) > 1) errors.push(`home ${w} light: the banner's box ${JSON.stringify(box)} isn't the dark theme's ${JSON.stringify(dark)}`);
+    // Dark words on the daytime picture: the title near-black, the green label dark enough to read (4.5:1 on the banner's colour).
+    const ink = await lh.evaluate((el) => {
+      const rgb = (c) => c.match(/[\d.]+/g).slice(0, 3).map(Number);
+      const lum = ([r, g, b]) => [r, g, b].map((v) => (v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4).reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0);
+      const bg = lum(rgb(getComputedStyle(el).backgroundColor));
+      const contrast = (c) => { const a = lum(rgb(c)); return (Math.max(a, bg) + 0.05) / (Math.min(a, bg) + 0.05); };
+      return { title: contrast(getComputedStyle(el.querySelector("h2")).color), label: contrast(getComputedStyle(el.querySelector("p")).color) };
+    });
+    if (ink.title < 12 || ink.label < 4.5) errors.push(`home ${w} light: the banner's words are too faint (title ${ink.title.toFixed(1)}:1, label ${ink.label.toFixed(1)}:1)`);
+    await l.screenshot({ path: `${OUT}/home-light-${w}.png` });
+    await l.context().close();
+  }
 }
 
 /**
