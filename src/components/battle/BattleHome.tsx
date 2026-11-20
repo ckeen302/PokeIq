@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react"
 import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { Bot, Castle, ChevronDown, Clapperboard, Eye, Hammer, Link2, Loader2, Megaphone, MessagesSquare, Search, Shuffle, Swords, Trophy, Users, X, type LucideIcon } from "lucide-react";
+import { Bot, Castle, ChevronDown, Clapperboard, Eye, Hammer, Link2, Loader2, MessagesSquare, Search, Shuffle, Swords, Trophy, Users, X, type LucideIcon } from "lucide-react";
 import { GUEST_TRAINER, PAST_GENS, PLAY_FORMAT_INFO, type PlayFormatId, type StandardFormatId } from "@/lib/battle/play";
 import { BATTLE_FORMATS } from "@/lib/battle/formats";
 import { saveBattleSeat } from "@/lib/battle/seat";
@@ -34,18 +34,9 @@ const CustomRulesEditor = dynamic(() => import("./CustomRulesEditor").then((m) =
 /**
  * The battle home, after Pokémon Showdown's: pick a format and a team, then
  * one big Battle! button finds an opponent (casual or ranked). Custom rules
- * go by invite, as on Showdown. Around it: the live counters, the other ways
- * in, and the news.
+ * go by invite, as on Showdown. Around it: the live counters and the other
+ * ways in.
  */
-
-export interface NewsItem {
-  id: string;
-  date: string;
-  title: string;
-  body: string;
-  href?: string;
-  cta?: string;
-}
 
 type Pick = { id: PlayFormatId; label: string; note?: string } | { href: string; label: string; note: string };
 
@@ -200,7 +191,7 @@ const SECONDARY: { href?: string; onClick?: () => void; icon: LucideIcon; label:
   { onClick: () => openFriends("friends"), icon: Users, label: "Friends", testId: "home-friends" },
 ];
 
-export function BattleHome({ news }: { news: NewsItem[] }) {
+export function BattleHome() {
   const router = useRouter();
   const progress = useProgress();
   const account = useAccount();
@@ -338,7 +329,6 @@ export function BattleHome({ news }: { news: NewsItem[] }) {
               <div className="space-y-1.5">
                 <p className="hud-label">Format</p>
                 <FormatMenu value={format} rules={rules} onChange={(f) => (setFormat(f), setTeam(""))} disabled={searching} />
-                <p className="text-xs text-muted-foreground">{custom ? "Your own ruleset, battled by invite link (as on Showdown)." : info.blurb}</p>
               </div>
               {custom && (
                 <div className="space-y-3 rounded-lg border bg-background/60 p-3">
@@ -361,9 +351,7 @@ export function BattleHome({ news }: { news: NewsItem[] }) {
                 ) : (
                   <div className="flex items-center gap-3 rounded-lg border border-dashed bg-background/60 px-4 py-3 text-sm" data-testid="random-team">
                     <Shuffle className="h-5 w-5 text-screen" aria-hidden />
-                    <span>
-                      <b>Random team.</b> <span className="text-muted-foreground">{format === "factory" ? "Both trainers rent a Battle Factory team." : "Six Pokémon dealt for you when the battle starts."}</span>
-                    </span>
+                    <b>{format === "factory" ? "Rental team" : "Random team"}</b>
                   </div>
                 )}
               </div>
@@ -463,7 +451,7 @@ export function BattleHome({ news }: { news: NewsItem[] }) {
               )}
               {!searching && !ready && (
                 <p className="text-center text-xs text-muted-foreground" data-testid="battle-why-disabled">
-                  {!trainer ? (format === "factory" || !teamReady ? "Enter a trainer name to battle." : "Enter a trainer name to battle online, or play the computer right now.") : needsTeam && !team ? "Pick a team, or a quick one, to battle." : "Fix the rules above to battle."}
+                  {!trainer ? "Enter a trainer name to battle." : needsTeam && !team ? "Pick a team to battle." : "Fix the rules above to battle."}
                 </p>
               )}
               {!searching && (
@@ -513,25 +501,6 @@ export function BattleHome({ news }: { news: NewsItem[] }) {
               );
             })}
           </nav>
-          <div className="rounded-xl border bg-card" data-testid="news">
-            <p className="hud-label flex items-center gap-1.5 border-b px-4 py-2.5 text-screen">
-              <Megaphone className="h-3.5 w-3.5" aria-hidden /> News
-            </p>
-            <ul className="divide-y">
-              {news.slice(0, 3).map((n) => (
-                <li key={n.id} className="space-y-1 px-4 py-3">
-                  <p className="font-pixel text-[9px] uppercase text-muted-foreground">{new Date(`${n.date}T12:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
-                  <p className="font-display font-bold">{n.title}</p>
-                  <p className="text-sm text-muted-foreground">{n.body}</p>
-                  {n.href && (
-                    <Link href={n.href} className="inline-block pt-0.5 text-xs font-semibold text-primary hover:underline">
-                      {n.cta ?? "Read more"} →
-                    </Link>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
           <Link href="/battle/replays" className="flex items-center gap-2 px-1 text-xs text-muted-foreground hover:text-foreground">
             <Clapperboard className="h-3.5 w-3.5" aria-hidden /> Recent replays
           </Link>
