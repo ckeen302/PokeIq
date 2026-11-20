@@ -61,6 +61,8 @@ const HEADER_PX = 56;
 const TOOLBAR_PX = 160;
 /** How long a path the film wrote to the address counts as its own (ms): a change to it then is the film's, not a link or back/forward. */
 const OWN_PATH_MS = 1500;
+/** A timeline drag that stops moving this long (ms) builds the chapter it's on. */
+const DRAG_SETTLE_MS = 250;
 
 function reducedMotion() {
   try {
@@ -138,8 +140,8 @@ export function WorldHistoryExperience({ initialChapter, children }: { initialCh
     playing: false,
     /** Play's speed (0..1): it eases in when Play starts or a held chapter is ready, and out into a hold, so the camera never lurches. */
     rate: 0,
-    /** Dragging along the timeline: no chapters are built or dropped until it's let go. */
-    dragging: false,
+    /** When the timeline was last dragged (ms): while a drag is moving, no chapters are built or dropped. */
+    dragAt: -1e9,
     free: null as Orbit | null,
     limits: null as OrbitLimits | null,
     blend: null as { from: Pose; t0: number } | null,
@@ -217,7 +219,10 @@ export function WorldHistoryExperience({ initialChapter, children }: { initialCh
       const r = el.getBoundingClientRect();
       const h = stage.clientHeight;
       const into = HEADER_PX - r.top;
-      if (!show.current.syncing && !show.current.free) show.current.target = scrollToFilm(film, into, mapH());
+      const s = show.current;
+      // Scroll positions are whole pixels: one that is already where the film is (a jump landed on a caption's
+      // or a chapter's exact start) keeps that exact moment, instead of rounding back into the one before.
+      if (!s.syncing && !s.free && Math.abs(filmToScroll(film, s.target, mapH()) - into) > 1.5) s.target = scrollToFilm(film, into, mapH());
       const over = into - (r.height - h);
       show.current.onStage = over <= 0;
       stage.style.transform = over > 0 ? `translate3d(0,${-over}px,0)` : "";
@@ -451,7 +456,8 @@ export function WorldHistoryExperience({ initialChapter, children }: { initialCh
         const lookahead = scene.quality === "low" || scene.quality === "draft" ? 1 : 2;
         const order = solo ? [cur] : state.kind === "hall" ? [state.hall.to, state.hall.from, ...Array.from({ length: lookahead }, (_, j) => next + 1 + j)] : [cur, ...Array.from({ length: lookahead }, (_, j) => next + j), cur - 1];
         const want = [...new Set(order.filter((i) => i >= 0 && i < film.chapters.length))];
-        if (!s.dragging) {
+        // Dragging along the timeline: build nothing for the moments it only passes through (a pause in the drag counts as a stop).
+        if (now - s.dragAt > DRAG_SETTLE_MS) {
           for (const i of want) {
             void scene.prepare(i);
             if (!scene.isReady(i)) break;
@@ -875,18 +881,20 @@ export function WorldHistoryExperience({ initialChapter, children }: { initialCh
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-3 pb-3 sm:px-5 sm:pb-4">
             <div className="wh-scrub pointer-events-auto mb-2" role="slider" aria-label="Film position" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(ui.progress * 100)} tabIndex={-1}
               onPointerDown={(e) => {
-                try { e.currentTarget.setPointerCapture(e.pointerId); show.current.dragging = true; } catch { /* a synthetic pointer */ }
+                try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* a synthetic pointer */ }
                 pause();
                 seek(scrubAt(e));
               }}
-              onPointerUp={() => { show.current.dragging = false; }}
-              onPointerCancel={() => { show.current.dragging = false; }}
-              onLostPointerCapture={() => { show.current.dragging = false; }}
+              onPointerUp={() => { show.current.dragAt = -1e9; }}
+              onPointerCancel={() => { show.current.dragAt = -1e9; }}
+              onLostPointerCapture={() => { show.current.dragAt = -1e9; }}
               onPointerMove={(e) => {
                 // Dragging along the timeline: the picture and its words follow the finger, cut by cut, without dips.
                 let held = false;
                 try { held = e.currentTarget.hasPointerCapture(e.pointerId); } catch { /* a synthetic pointer */ }
-                if (held) seek(scrubAt(e), false);
+                if (!held) return;
+                show.current.dragAt = performance.now();
+                seek(scrubAt(e), false);
               }}
               data-testid="wh-scrub">
               <div className="wh-bar"><i ref={barRef as React.RefObject<HTMLElement>} style={{ transform: "scaleX(0)" }} /></div>
