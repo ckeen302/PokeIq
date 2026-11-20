@@ -3966,7 +3966,11 @@ async function homeStep() {
     if (typeof body.sharpTo !== "number" || body.sharpTo % 50 !== 0) errors.push(`home: the daily-shot API's sharpTo isn't a coarse width: ${body.sharpTo}`);
     if ((await p.request.get(`${BASE}/api/geo/daily-shot?date=2001-01-01`)).status() !== 400) errors.push("home: the daily-shot API answered for a date that isn't today");
   }
-  await p.screenshot({ path: `${OUT}/home.png`, fullPage: true });
+  // A record for review, not a check. Chromium sometimes can't capture the whole page while the banner's picture
+  // is still settling ("Unable to capture screenshot"): try once more, then keep the first screen.
+  await p.screenshot({ path: `${OUT}/home.png`, fullPage: true })
+    .catch(() => p.waitForTimeout(1000).then(() => p.screenshot({ path: `${OUT}/home.png`, fullPage: true })))
+    .catch(() => p.screenshot({ path: `${OUT}/home.png` }));
 
   // Today: one even row of the five dailies, each to its game, all to play.
   const cards = p.locator("[data-testid^=home-today-card-]");
