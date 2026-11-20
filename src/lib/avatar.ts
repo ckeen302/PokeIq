@@ -85,7 +85,7 @@ export function frameUnlocked(frame: AvatarFrame, u: AvatarUnlocks): boolean {
 export function frameHint(frame: AvatarFrame): string {
   const f = AVATAR_FRAMES.find((x) => x.id === frame)!;
   if ("badges" in f) return `Earn ${f.badges} badges for the ${f.name} frame`;
-  if ("tier" in f) return `Reach ${f.name} in ranked Pokédle or the battle ladder`;
+  if ("tier" in f) return `Reach ${f.name} on the battle ladder`;
   return "";
 }
 

@@ -5,14 +5,15 @@ import { rankedQueueStore } from "./duel-store";
 import { MATCH_FRESH_MS, seatNames, type OpenedGame } from "./match-queue";
 
 /**
- * The ranked queue: trainers are paired by rating. Unlike the casual queue
- * (one waiting trainer per row), the ranked row keeps everyone waiting, each
- * with the rating they queued at, so a search can pick the closest match.
+ * The ranked queues (ranked PokéGuessr, one per battle ladder format):
+ * trainers are paired by rating. Unlike the casual queue (one waiting trainer
+ * per row), a ranked row keeps everyone waiting, each with the rating they
+ * queued at, so a search can pick the closest match.
  *
- * Two trainers may be paired when their ratings are within a gap that
- * widens the longer either has waited: close games at first, then anyone
- * rather than nobody. Every change is a compare-and-swap on the row, as in
- * match-queue.ts, so nobody is paired twice.
+ * Each queue says when a rating gap allows a pair (`Pairable`), from how
+ * long the two have waited: close games at first, then wider. Every change
+ * is a compare-and-swap on the row, as in match-queue.ts, so nobody is
+ * paired twice.
  *
  * Battle ladders ask for Showdown's stricter rules (`strict`, see
  * server/ladders.ts matchmakingOK): two trainers on one connection (the same
@@ -21,11 +22,6 @@ import { MATCH_FRESH_MS, seatNames, type OpenedGame } from "./match-queue";
  * must outlive the waiter.
  */
 
-export const RANKED_QUEUE_KEY = "pokedle:ranked";
-/** The rating gap allowed at once, how much it widens each second of waiting, and the most it ever is. */
-export const RANKED_GAP_BASE = 100;
-export const RANKED_GAP_PER_SECOND = 15;
-export const RANKED_GAP_MAX = 1000;
 /** Polls refresh a waiting trainer at most this often, to spare writes. */
 const SEEN_STEP_MS = 2_000;
 const MATCH_KEEP_MS = 60_000;
@@ -35,9 +31,6 @@ const POOL_MAX = 64;
 const LAST_KEEP_MS = 24 * 60 * 60_000;
 const LAST_MAX = 256;
 const MAX_TRIES = 6;
-
-/** The rating gap allowed after waiting `ms`. */
-export const allowedGap = (ms: number) => Math.min(RANKED_GAP_MAX, RANKED_GAP_BASE + RANKED_GAP_PER_SECOND * Math.floor(Math.max(0, ms) / 1000));
 
 export interface RankedWaiter {
   ticket: string;
@@ -65,7 +58,7 @@ export interface RankedQueueRow {
   last?: Record<string, { opponent: string; at: number }>;
 }
 
-export const emptyRankedQueue = (key = RANKED_QUEUE_KEY): RankedQueueRow => ({ key, pool: [], matched: {} });
+export const emptyRankedQueue = (key: string): RankedQueueRow => ({ key, pool: [], matched: {} });
 
 export interface RankedSearcher {
   ticket: string;
@@ -94,14 +87,10 @@ export type RankedPlan =
 /** Whether a rating gap allows a pair, given how long the searcher and the waiter have each waited (ms). */
 export type Pairable = (gap: number, waits: [number, number]) => boolean;
 
-/** Pokédle's rule: the gap must be within what the longer wait of the two allows. */
-export const longestWaitPairable: Pairable = (gap, waits) => gap <= allowedGap(Math.max(waits[0], waits[1]));
-
 /**
  * What a search should do. `rating` is the searcher's rating (what they
  * queued at, if they're already waiting). A pair is allowed when `pairable`
- * says so (by default, when the gap is within what the longer wait of the
- * two allows); of those, the closest rating wins, then whoever has waited
+ * says so; of those, the closest rating wins, then whoever has waited
  * longest.
  */
 export function planRanked(
@@ -109,7 +98,7 @@ export function planRanked(
   me: RankedSearcher,
   rating: number,
   now: number,
-  pairable: Pairable = longestWaitPairable,
+  pairable: Pairable,
   opts: RankedQueueOptions & { elo?: number } = {}
 ): RankedPlan {
   // `rating` (and `opts.elo`) are ignored once the searcher is in the pool: they keep the rating they queued at.
@@ -223,8 +212,8 @@ export async function searchRankedQueue(
   me: RankedSearcher,
   rating: () => Promise<RatingState>,
   open: (players: [RankedSeat, RankedSeat], now: number) => Promise<OpenedGame | null>,
-  key = RANKED_QUEUE_KEY,
-  pairable: Pairable = longestWaitPairable,
+  key: string,
+  pairable: Pairable,
   opts: RankedQueueOptions = {}
 ): Promise<RankedQueueResult | PvpFailure> {
   let mine: RatingState | null = null;
@@ -285,7 +274,7 @@ export async function claimRankedWaiter(ticket: string, key: string, minWaitMs: 
   return null;
 }
 
-export async function cancelRankedQueue(ticket: string, key = RANKED_QUEUE_KEY): Promise<void> {
+export async function cancelRankedQueue(ticket: string, key: string): Promise<void> {
   for (let attempt = 0; attempt < MAX_TRIES; attempt++) {
     const stored = await rankedQueueStore.load(key);
     if (!stored || !stored.duel.pool.some((w) => w.ticket === ticket)) return;

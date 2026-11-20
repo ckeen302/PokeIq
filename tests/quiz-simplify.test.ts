@@ -174,7 +174,9 @@ describe("quiz scores are off the leaderboard", () => {
       expect(html).not.toContain("All-generation runs only");
       expect(html).toContain("Daily Challenge #");
       // The other games keep their boards.
-      for (const b of ["daily", "iq", "geo", "pokedle", "connections", "battle"]) expect(tabs).toContain(`board=${b}"`);
+      for (const b of ["daily", "iq", "geo", "geo-ranked", "connections", "battle"]) expect(tabs).toContain(`board=${b}"`);
+      // Pokédle and PokéConnections have no ranked ladder.
+      for (const b of ["pokedle", "connections-ranked"]) expect(tabs).not.toContain(`board=${b}"`);
     }
   });
 

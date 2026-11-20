@@ -13,7 +13,6 @@ import type { DleAssist } from "./dle-assist";
 import type { DleRules } from "./dle-format";
 import type { ChatLine } from "./chat";
 import type { PdkGridView } from "./pikadoku/types";
-import type { ConnDuelRanked } from "./connections/ranked";
 import type { TauntId } from "./trainer/taunts";
 import type { ConnGroupExplained, ConnGroupReveal, ConnGuessKind, ConnLevel, ConnTile } from "./connections/types";
 
@@ -217,9 +216,9 @@ export interface DleDuelView extends PvpViewBase {
   kind: "pokedle";
   /** The generations secrets come from (none: all of them). The creator picks in the lobby. */
   gens?: number[];
-  /** The Pokédex assist level both trainers play with. The creator picks in the lobby; ranked is always the Notebook. */
+  /** The Pokédex assist level both trainers play with. The creator picks in the lobby. */
   assist: DleAssist;
-  /** The format and settings both play by (Classic for ranked): the columns shown, guesses, close states, hints, the round clock. The creator picks them in the lobby. */
+  /** The format and settings both play by: the columns shown, guesses, close states, hints, the round clock. The creator picks them in the lobby. */
   rules: DleRules;
   /** How many Pokémon could be the secret before any guess (the generations' whole Pokédex). */
   pool: number;
@@ -231,17 +230,8 @@ export interface DleDuelView extends PvpViewBase {
   revealed: DleDuelRoundResult[];
   /** During a reveal: when the next round starts, and who has pressed Next. */
   next?: { at: number; pressed: boolean[] };
-  /** How the trainers met: the casual or the ranked queue (absent: a friend's invite, or a rematch). */
-  queue?: "casual" | "ranked";
-  /** A ranked duel: each seat's rating going in, and once it's been counted, before and after. */
-  ranked?: DleDuelRanked;
-}
-
-export interface DleDuelRanked {
-  ratings: number[];
-  provisional: boolean[];
-  /** Set once the duel has been counted. */
-  result?: { before: number[]; after: number[] };
+  /** How the trainers met: "casual", the matchmaking queue (absent: a friend's invite, or a rematch). */
+  queue?: "casual";
 }
 
 // ---------------------------------------------------------------------------
@@ -367,10 +357,8 @@ export interface ConnDuelView extends PvpViewBase {
   kind: "connections";
   /** 5 for a 5×5 board (absent: 4×4). */
   size?: 4 | 5;
-  /** How the trainers met: the casual or the ranked queue (absent: a friend's invite, or a rematch). */
-  queue?: "casual" | "ranked";
-  /** A ranked duel: the season, each seat's rating going in, and once it's been counted, before and after. */
-  ranked?: ConnDuelRanked;
+  /** How the trainers met: "casual", the matchmaking queue (absent: a friend's invite, or a rematch). */
+  queue?: "casual";
   /** While the race is on: when it starts, and when it ends at the latest. */
   round?: { startsAt: number; endsAt: number };
   /** The sixteen Pokémon, once the race has started. */

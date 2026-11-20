@@ -67,6 +67,3 @@ export const DEX_EXTRA_COLUMNS = {
   field: ["stage", "color"],
   full: ["stage", "color", "height", "weight"],
 } as const satisfies Record<DleAssist, readonly string[] | null>;
-
-/** Which levels a ranked duel allows: one, so everyone on the ladder plays alike. */
-export const DLE_RANKED_ASSIST: DleAssist = "notebook";

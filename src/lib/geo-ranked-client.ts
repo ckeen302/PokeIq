@@ -7,8 +7,9 @@ import type { GeoSeasonView } from "./geo-seasons";
 
 /**
  * The browser's side of ranked PokéGuessr: the trainer's standing from
- * /api/geo/ranked, sent with the same signed ranked id Pokédle's ranked play
- * keeps in localStorage (a signed-in trainer is their account instead).
+ * /api/geo/ranked, sent with the signed ranked id this browser keeps in
+ * localStorage (lib/ranked-client; a signed-in trainer is their account
+ * instead).
  */
 
 export type GeoRankedState =

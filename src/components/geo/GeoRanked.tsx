@@ -24,7 +24,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useMatchmaking } from "@/components/duel/use-matchmaking";
 import { clock } from "@/components/duel/DuelParts";
 import { HowItWorks } from "@/components/duel/HowItWorks";
-import { BallIcon, rankedExtra } from "@/components/pokedle/Ranked";
+import { BallIcon } from "@/components/duel/TierBadge";
+import { rankedExtra } from "@/lib/ranked-client";
 import { cn } from "@/lib/utils";
 import { DuelHistoryLink, GeoSeasonStrip } from "./GeoSeason";
 
@@ -32,7 +33,7 @@ import { DuelHistoryLink, GeoSeasonStrip } from "./GeoSeason";
  * Ranked PokéGuessr in the browser: the division badge (Poké Ball to Beast
  * Ball, the Elo shown from Ultra Ball up), the ranked panel on /pokeguessr with
  * the queue and the Gym Leader offer, the honest bot's tag and avatar, and
- * the outcome after a ranked duel. Mirrors Pokédle's ranked UI (Ranked.tsx).
+ * the outcome after a ranked duel.
  */
 
 const fmt = (n: number) => n.toLocaleString("en-US");
