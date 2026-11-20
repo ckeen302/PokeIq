@@ -44,16 +44,21 @@ export function heroFigure(f: Figure | undefined, o: { pos: Vec3; height: number
   conv.points.rotation.y = o.rotY ?? 0;
   o.scene.add(conv.points);
   let base: Vec3 = [...o.pos];
-  /** The ambient time it finished forming (it settles with a little follow-through then). */
+  /** The ambient time it finished forming (it settles with a little follow-through then); −∞ once it is simply there. */
   let formedAt = -1;
+  /** The last frame's form and clock: the follow-through is for a figure seen forming, not one a jump lands on already formed. */
+  let lastD = 0, lastAt = -Infinity;
   return {
     fig: f,
     /** k: 0 hidden … 1 formed; glow: extra light while it forms. */
     set(k: number, ambient: number, viewH: number, cam: THREE.PerspectiveCamera, bob = 0.06, glow = 0) {
       const d = Math.max(0, Math.min(1, k));
-      if (d >= 0.995 && formedAt < 0) formedAt = ambient;
+      const seen = ambient - lastAt < 0.25 && lastD > 0.5;
+      if (d >= 0.995 && formedAt === -1) formedAt = seen ? ambient : -Infinity;
       if (d < 0.5) formedAt = -1;
-      figureStyle(f, { dissolve: d, glowK: glow + (1 - d) * 0.6 * (d > 0 ? 1 : 0), act: formedAt >= 0 ? actionCurve(ambient, formedAt, { pre: 0, post: 0.8 }) * 0.8 : 0 });
+      lastD = d;
+      lastAt = ambient;
+      figureStyle(f, { dissolve: d, glowK: glow + (1 - d) * 0.6 * (d > 0 ? 1 : 0), act: Number.isFinite(formedAt) && formedAt >= 0 ? actionCurve(ambient, formedAt, { pre: 0, post: 0.8 }) * 0.8 : 0 });
       floatFigure(f, base, ambient, bob * (o.height / 3), o.pos[0], o.rotY ?? 0, 0.04);
       conv.u.uForm.value = Math.min(1, d * 1.15);
       conv.u.uTime.value = ambient;

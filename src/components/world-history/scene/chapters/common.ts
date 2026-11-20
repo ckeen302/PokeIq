@@ -9,9 +9,18 @@ import { withDetail, type DetailOpts } from "../materials";
 /** Shared pieces for the chapters: figures by art id, keyed looks, shakes and billboards. */
 
 export async function loadFigures(ctx: ChapterCtx, arts: number[]): Promise<Map<number, Figure>> {
+  // Every load settles before this returns, so a chapter dropped mid-load (a jump away) can give back the
+  // figures that did arrive: each holds a texture already on the GPU, which would otherwise leak with every jump.
+  const got = await Promise.allSettled(arts.map((a) => ctx.figures.load(a, ctx.signal)));
+  if (ctx.signal.aborted) {
+    for (const g of got) if (g.status === "fulfilled") g.value.dispose();
+    throw new DOMException("aborted", "AbortError");
+  }
   const out = new Map<number, Figure>();
-  const figs = await Promise.all(arts.map((a) => ctx.figures.load(a, ctx.signal).catch((e) => { if (ctx.signal.aborted) throw e; console.warn("[world-history] figure", a, e); return null; })));
-  figs.forEach((f, i) => { if (f) out.set(arts[i], f); });
+  got.forEach((g, i) => {
+    if (g.status === "fulfilled") out.set(arts[i], g.value);
+    else console.warn("[world-history] figure", arts[i], g.reason);
+  });
   return out;
 }
 
