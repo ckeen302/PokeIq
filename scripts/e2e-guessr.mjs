@@ -61,6 +61,16 @@ async function closeHowTo(p) {
   }
 }
 
+/** The solo setup (maps, games, rounds, difficulty) is folded under "Set up a game": opens it, trying again if a click lands before hydration. */
+async function openGeoSetup(p) {
+  for (let i = 0; i < 5; i++) {
+    if (await p.getByTestId("geo-solo").isVisible().catch(() => false)) return;
+    await p.getByTestId("geo-solo-setup").click();
+    if (await p.getByTestId("geo-solo").waitFor({ timeout: 3_000 }).then(() => true, () => false)) return;
+  }
+  throw new Error("Set up a game didn't open the solo setup");
+}
+
 const shotLoaded = (p) =>
   p.waitForFunction(
     () => {
@@ -161,6 +171,7 @@ async function solo(width, height) {
   step(`solo at ${tag}`);
   await page.goto(`${BASE}/pokeguessr`, { waitUntil: "networkidle" });
   await closeHowTo(page);
+  await openGeoSetup(page);
   await page.getByRole("button", { name: /5-round game/ }).click();
   await shotLoaded(page);
   await page.locator("[data-testid=geo-shell]").waitFor();
@@ -233,6 +244,11 @@ async function weekly(width, height) {
   await page.getByTestId("geo-mastery").waitFor();
   // The hub has no second map picker: maps are chosen in the solo setup.
   if (await page.locator('[data-testid^="geo-map-tile-"]').count()) errors.push("the hub still shows a map grid");
+  // The solo setup is folded away under "Set up a game" until asked for.
+  if (await page.getByTestId("geo-solo").count()) errors.push("the solo setup shows before Set up a game is pressed");
+  if ((await page.getByTestId("geo-solo-setup").getAttribute("aria-expanded")) !== "false") errors.push("Set up a game doesn't say it's folded");
+  await openGeoSetup(page);
+  if ((await page.getByTestId("geo-solo-setup").getAttribute("aria-expanded")) !== "true") errors.push("Set up a game doesn't say it's open");
   await page.getByRole("radio", { name: "Johto" }).first().click();
   await page.getByRole("radio", { name: "Johto", checked: true }).waitFor();
   // The Ranked tile opens the duel panel on the ranked queue.

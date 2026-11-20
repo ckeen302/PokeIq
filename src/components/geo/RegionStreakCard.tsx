@@ -3,7 +3,7 @@
 import Link from "@/components/ui/Link";
 import { ArrowRight, Flame } from "lucide-react";
 import { useProgress } from "@/lib/progress";
-import { GEO_REGION_STREAK_KEY, GEO_STREAK_REGIONS } from "@/lib/geo-streak-types";
+import { GEO_REGION_STREAK_KEY } from "@/lib/geo-streak-types";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import art from "@/assets/guessr/hoenn.webp";
@@ -21,7 +21,7 @@ export function RegionStreakCard() {
       icon={<Flame className="h-5 w-5" />}
       label="Region Streak"
       title="Which region is this?"
-      blurb={`No pin: one screenshot, pick the region from ${GEO_STREAK_REGIONS[0]} to ${GEO_STREAK_REGIONS[GEO_STREAK_REGIONS.length - 1]}. Right deals the next one, wrong ends the run.`}
+      blurb="Name the region from a screenshot."
       stat={best > 0 ? `Your best: ${best} in a row` : null}
       action={
         <Link href="/pokeguessr/streak" className={cn(buttonVariants({ variant: "secondary" }), "w-full")} data-testid="region-streak-link">

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "@/components/ui/Link";
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { CalendarRange, Check, Compass, Flame, Globe2, Loader2, Shapes, SlidersHorizontal, MapPin as MapPinIcon, Swords, Trophy, Users, X, Map as MapIcon } from "lucide-react";
+import { CalendarRange, Check, ChevronDown, Compass, Flame, Globe2, Loader2, Shapes, SlidersHorizontal, MapPin as MapPinIcon, Swords, Trophy, Users, X, Map as MapIcon } from "lucide-react";
 import { GEO_FILTER_MIN_PLACES, GEO_MAX_ROUND_SCORE, GEO_ROUNDS, WORLD_REGION, isGeoRounds, type GeoRounds, geoBoardKey, geoDailyRegion, geoMapRank, type GeoChallenge, type GeoGuessResponse, type GeoKind, type GeoRegionInfo, type GeoRoundPublic, type GeoStartResponse } from "@/lib/geo-types";
 import { dailyNumber } from "@/lib/daily";
 import { useToday } from "@/lib/use-today";
@@ -264,6 +264,8 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   const [rounds, setRounds] = useState<GeoRounds>(5);
   const [difficulty, setDifficulty] = useState<GeoDifficulty>("normal");
   const [duelQueue, setDuelQueue] = useState<DuelQueue>("casual");
+  /** The solo game's setup (maps, games, rounds, difficulty): folded away under "Set up a game" until asked for. */
+  const [soloOpen, setSoloOpen] = useState(false);
   const chosenMode = difficulty === "normal" ? undefined : difficulty;
 
   const region = byId(regionId) ?? regions[0];
@@ -286,6 +288,8 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     if (id && !challenge && regions.some((r) => r.id === id)) setRegionId(id);
     const era = params.get("era");
     if (era === "2d" || era === "3d") setFilter({ era, families: [] });
+    // A link to a map, a set of games or the setup itself opens the setup, so the pick shows.
+    if ((id && !challenge && regions.some((r) => r.id === id)) || era === "2d" || era === "3d" || window.location.hash === "#solo") setSoloOpen(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- read the URL once
   }, []);
 
@@ -312,8 +316,12 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   }
 
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-  /** The hub's Solo tile: down to the solo game's setup. */
-  const toSolo = () => scrollTo("solo");
+  /** The hub's Solo tile: opens the solo game's setup in place (and goes down to it), or folds it away again. */
+  function toSolo() {
+    if (soloOpen) return setSoloOpen(false);
+    setSoloOpen(true);
+    window.setTimeout(() => scrollTo("solo"), 50);
+  }
   /** The Party tile (or /pokeguessr#party): opens the party form, so the hub's other forms are the only ones on the page until then. */
   const [partyOpen, setPartyOpen] = useState(false);
   useEffect(() => {
@@ -619,12 +627,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
           <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-6xl">
             Poké<span className="text-primary">Guessr</span>
           </h1>
-          <p className="mx-auto max-w-xl text-muted-foreground">
-            GeoGuessr for Pokémon. You&apos;re dropped somewhere in {where(region)}: look around, then drop a pin on the map.
-            <span className="max-md:hidden">
-              {" "}Scored like GeoGuessr: up to {fmt(GEO_MAX_ROUND_SCORE)} points a round, falling off the further your pin lands.
-            </span>
-          </p>
+          <p className="mx-auto max-w-xl text-muted-foreground">GeoGuessr, but for the Pokémon world.</p>
           <nav aria-label="PokéGuessr sections" className="flex flex-wrap justify-center gap-1.5 pt-1 max-md:hidden">
             {[
               ["play", "Play"],
@@ -691,11 +694,12 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
               icon={<MapPinIcon className="h-5 w-5" />}
               label={`Solo · ${region.name}`}
               title="Classic game"
-              blurb="Your map, 3 to 10 rounds, any difficulty, a timer if you like. Then challenge a friend to beat you."
+              blurb="Pick your map, rounds and difficulty."
               stat={bestGame ? `Best ${fmt(bestGame)}` : null}
               action={
-                <Button variant="outline" className="w-full" onClick={toSolo} data-testid="geo-solo-setup">
+                <Button variant="outline" className="w-full" onClick={toSolo} aria-expanded={soloOpen} aria-controls="solo" data-testid="geo-solo-setup">
                   <SlidersHorizontal className="h-4 w-4" aria-hidden /> Set up a game
+                  <ChevronDown className={cn("h-4 w-4 transition-transform", soloOpen && "rotate-180")} aria-hidden />
                 </Button>
               }
             />
@@ -709,11 +713,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
               label={`Daily ${today ? `#${dailyNumber(today)}` : ""}${dailyMap ? ` · ${dailyMap.name}` : ""}`}
               title="Daily game"
               badge={dailyDone !== undefined ? <TileFlag tone="success">Played</TileFlag> : undefined}
-              blurb={
-                dailyDone !== undefined
-                  ? `You scored ${fmt(dailyDone)} today. Replays don't count for the leaderboard.`
-                  : `5 places in ${dailyMap ? where(dailyMap) : "the Pokémon world"}, the same for everyone. Your first game today goes on the daily leaderboard.`
-              }
+              blurb={dailyDone !== undefined ? `You scored ${fmt(dailyDone)} today.` : "Today's places, the same for everyone."}
               action={
                 <Button
                   className="w-full"
@@ -734,11 +734,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
               label={week ? `Weekly #${geoWeeklyNumber(week)}${weeklyMap ? ` · ${weeklyMap.name}` : ""}` : "Weekly"}
               title="Weekly Challenge"
               badge={weeklyDone !== undefined ? <TileFlag tone="success">Played</TileFlag> : week ? <TileFlag>Ends in {geoWeeklyLeft(week, Date.now())}</TileFlag> : undefined}
-              blurb={
-                weeklyDone !== undefined
-                  ? `You scored ${fmt(weeklyDone)} this week. Replays are practice; a new map on Monday.`
-                  : `5 places on ${weeklyMap ? where(weeklyMap) : "this week's map"}, the same for everyone all week. Your first try goes on the weekly board.`
-              }
+              blurb={weeklyDone !== undefined ? `You scored ${fmt(weeklyDone)} this week.` : "This week's map, the same for everyone."}
               action={
                 <div className="flex flex-col gap-2">
                   <Button
@@ -763,41 +759,19 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
             <RegionStreakCard />
           </div>
 
-          <Card id="solo" className="scroll-mt-24" data-testid="geo-solo">
-            <CardContent className="space-y-4 p-5 sm:p-6">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <h3 className="font-display text-xl font-bold uppercase">Solo game</h3>
-                <Link href="/atlas" className="tap flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground">
-                  <MapIcon className="h-4 w-4" aria-hidden /> World Atlas
-                </Link>
-              </div>
-
-              {maps.length > 1 && (
-                <div className="flex flex-wrap gap-1.5 max-md:-mx-5 max-md:flex-nowrap max-md:overflow-x-auto max-md:px-5 max-md:pb-1 max-md:[scrollbar-width:none] max-md:[&>*]:shrink-0" role="radiogroup" aria-label="Map">
-                  {maps.map((r) => (
-                    <button
-                      key={r.id}
-                      type="button"
-                      role="radio"
-                      aria-checked={r.id === region.id}
-                      onClick={() => chooseRegion(r.id)}
-                      className={cn(
-                        "flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-colors",
-                        r.id === region.id ? "border-screen bg-screen/15 text-foreground" : "bg-card text-muted-foreground hover:border-screen/50 hover:text-foreground"
-                      )}
-                    >
-                      {r.id === WORLD_REGION && <Globe2 className="h-3.5 w-3.5" aria-hidden />}
-                      {r.name}
-                    </button>
-                  ))}
+          {soloOpen && (
+            <Card id="solo" className="scroll-mt-24" data-testid="geo-solo">
+              <CardContent className="space-y-4 p-5 sm:p-6">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h3 className="font-display text-xl font-bold uppercase">Solo game</h3>
+                  <Link href="/atlas" className="tap flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground">
+                    <MapIcon className="h-4 w-4" aria-hidden /> World Atlas
+                  </Link>
                 </div>
-              )}
 
-              {themed.length > 0 && (
-                <div className="space-y-1.5">
-                  <p className="hud-label">Themed maps</p>
-                  <div className="flex flex-wrap gap-1.5 max-md:-mx-5 max-md:flex-nowrap max-md:overflow-x-auto max-md:px-5 max-md:pb-1 max-md:[scrollbar-width:none] max-md:[&>*]:shrink-0" role="radiogroup" aria-label="Themed map">
-                    {themed.map((r) => (
+                {maps.length > 1 && (
+                  <div className="flex flex-wrap gap-1.5 max-md:-mx-5 max-md:flex-nowrap max-md:overflow-x-auto max-md:px-5 max-md:pb-1 max-md:[scrollbar-width:none] max-md:[&>*]:shrink-0" role="radiogroup" aria-label="Map">
+                    {maps.map((r) => (
                       <button
                         key={r.id}
                         type="button"
@@ -809,67 +783,91 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
                           r.id === region.id ? "border-screen bg-screen/15 text-foreground" : "bg-card text-muted-foreground hover:border-screen/50 hover:text-foreground"
                         )}
                       >
-                        <Shapes className="h-3.5 w-3.5" aria-hidden />
+                        {r.id === WORLD_REGION && <Globe2 className="h-3.5 w-3.5" aria-hidden />}
                         {r.name}
                       </button>
                     ))}
                   </div>
-                  {theme && (
-                    <p className="text-sm text-muted-foreground" data-testid="geo-theme-blurb">
-                      {theme.blurb} Places from across the world, with leaderboards of their own.
-                    </p>
-                  )}
+                )}
+
+                {themed.length > 0 && (
+                  <div className="space-y-1.5">
+                    <p className="hud-label">Themed maps</p>
+                    <div className="flex flex-wrap gap-1.5 max-md:-mx-5 max-md:flex-nowrap max-md:overflow-x-auto max-md:px-5 max-md:pb-1 max-md:[scrollbar-width:none] max-md:[&>*]:shrink-0" role="radiogroup" aria-label="Themed map">
+                      {themed.map((r) => (
+                        <button
+                          key={r.id}
+                          type="button"
+                          role="radio"
+                          aria-checked={r.id === region.id}
+                          onClick={() => chooseRegion(r.id)}
+                          className={cn(
+                            "flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-colors",
+                            r.id === region.id ? "border-screen bg-screen/15 text-foreground" : "bg-card text-muted-foreground hover:border-screen/50 hover:text-foreground"
+                          )}
+                        >
+                          <Shapes className="h-3.5 w-3.5" aria-hidden />
+                          {r.name}
+                        </button>
+                      ))}
+                    </div>
+                    {theme && (
+                      <p className="text-sm text-muted-foreground" data-testid="geo-theme-blurb">
+                        {theme.blurb} Places from across the world, with leaderboards of their own.
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                <GameFilter region={region} filter={filter} onChange={chooseFilter} />
+
+                <GeoSettingsButton value={settings} onChange={chooseSettings} />
+
+                {(filter.families.length > 0 || filter.era) && (
+                  <p className="text-sm text-muted-foreground">
+                    {filter.families.length ? "Hand-picked games are practice: no leaderboard." : `${GEO_ERA_NAMES[filter.era!]} has leaderboards of its own.`}
+                  </p>
+                )}
+
+                <div className="grid gap-4 sm:grid-cols-[auto_1fr] sm:gap-8">
+                  <RoundsPicker value={playRounds} onChange={setRounds} max={places} label="Rounds in a game" />
+                  <DifficultyPicker value={difficulty} onChange={setDifficulty} />
                 </div>
-              )}
 
-              <GameFilter region={region} filter={filter} onChange={chooseFilter} />
-
-              <GeoSettingsButton value={settings} onChange={chooseSettings} />
-
-              {(filter.families.length > 0 || filter.era) && (
-                <p className="text-sm text-muted-foreground">
-                  {filter.families.length ? "Hand-picked games are practice: no leaderboard." : `${GEO_ERA_NAMES[filter.era!]} has leaderboards of its own.`}
-                </p>
-              )}
-
-              <div className="grid gap-4 sm:grid-cols-[auto_1fr] sm:gap-8">
-                <RoundsPicker value={playRounds} onChange={setRounds} max={places} label="Rounds in a game" />
-                <DifficultyPicker value={difficulty} onChange={setDifficulty} />
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <ModeCard
-                  preview={region.preview ?? tileImage(region.map.src)}
-                  icon={<MapPinIcon className="h-5 w-5" aria-hidden />}
-                  title={`${playRounds}-round game`}
-                  blurb={
-                    isWorld
-                      ? `${playRounds} places in ${playRounds} different regions, up to ${fmt(maxTotal(playRounds))} points. Then challenge a friend to beat you.`
-                      : `${playRounds} places, up to ${fmt(maxTotal(playRounds))} points. Then challenge a friend to beat you.`
-                  }
-                  stat={bestGame ? `Best ${fmt(bestGame)}` : null}
-                  disabled={loading || !filterOk}
-                  onClick={() => void start({ kind: "game" })}
-                  warm={warmProps({ kind: "game" })}
-                />
-                <ModeCard
-                  preview={tileImage(region.map.src)}
-                  whole
-                  icon={<Flame className="h-5 w-5" aria-hidden />}
-                  title="Streak"
-                  blurb={
-                    isWorld
-                      ? "Pin the right region, again and again. One miss and it's over."
-                      : "Pin the exact place, again and again. One miss and it's over."
-                  }
-                  stat={bestStreak ? `Best ${bestStreak} in a row` : null}
-                  disabled={loading || !filterOk}
-                  onClick={() => void start({ kind: "streak" })}
-                  warm={warmProps({ kind: "streak" })}
-                />
-              </div>
-            </CardContent>
-          </Card>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <ModeCard
+                    preview={region.preview ?? tileImage(region.map.src)}
+                    icon={<MapPinIcon className="h-5 w-5" aria-hidden />}
+                    title={`${playRounds}-round game`}
+                    blurb={
+                      isWorld
+                        ? `${playRounds} places in ${playRounds} different regions, up to ${fmt(maxTotal(playRounds))} points. Then challenge a friend to beat you.`
+                        : `${playRounds} places, up to ${fmt(maxTotal(playRounds))} points. Then challenge a friend to beat you.`
+                    }
+                    stat={bestGame ? `Best ${fmt(bestGame)}` : null}
+                    disabled={loading || !filterOk}
+                    onClick={() => void start({ kind: "game" })}
+                    warm={warmProps({ kind: "game" })}
+                  />
+                  <ModeCard
+                    preview={tileImage(region.map.src)}
+                    whole
+                    icon={<Flame className="h-5 w-5" aria-hidden />}
+                    title="Streak"
+                    blurb={
+                      isWorld
+                        ? "Pin the right region, again and again. One miss and it's over."
+                        : "Pin the exact place, again and again. One miss and it's over."
+                    }
+                    stat={bestStreak ? `Best ${bestStreak} in a row` : null}
+                    disabled={loading || !filterOk}
+                    onClick={() => void start({ kind: "streak" })}
+                    warm={warmProps({ kind: "streak" })}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </HubSection>
 
         {/* ---- Multiplayer ---- */}
@@ -881,7 +879,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
               icon={<Swords className="h-5 w-5" />}
               label={`Casual · ${region.name}`}
               title="Duels"
-              blurb="HP battle or points race on any map: send a friend the link, or find an opponent."
+              blurb="HP battle or points race, on any map."
               action={
                 <Button variant="outline" className="w-full" onClick={() => openDuels("casual")} data-testid="geo-open-duels">
                   <Swords className="h-4 w-4" aria-hidden /> Open duels
@@ -894,7 +892,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
               icon={<Trophy className="h-5 w-5" />}
               label="Rated · World map"
               title="Ranked"
-              blurb="Rated duels on the world map: climb from Poké Ball to Beast Ball."
+              blurb="Climb from Poké Ball to Beast Ball."
               action={
                 <Button variant="outline" className="w-full" onClick={() => openDuels("ranked")} data-testid="geo-open-ranked">
                   <Trophy className="h-4 w-4" aria-hidden /> Open ranked
@@ -908,7 +906,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
               label="Friends · up to 16"
               title="Party"
               badge={<TileFlag tone="success">New</TileFlag>}
-              blurb="A private room for your group: Battle Royale on lives, or 2v2 team duels."
+              blurb="A private room for your whole group."
               action={
                 <Button variant="outline" className="w-full" onClick={openParty} data-testid="geo-open-party">
                   <Users className="h-4 w-4" aria-hidden /> Open party

@@ -60,6 +60,15 @@ async function closeHowTo(p) {
     await sheet.waitFor({ state: "hidden" });
   }
 }
+/** PokéGuessr's solo setup (maps, games, rounds, difficulty) is folded under "Set up a game": opens it (nothing to do when it's open). A click that lands before hydration does nothing, so it tries again. */
+async function openGeoSetup(p) {
+  for (let i = 0; i < 5; i++) {
+    if (await p.getByTestId("geo-solo").isVisible().catch(() => false)) return;
+    await p.getByTestId("geo-solo-setup").click();
+    if (await p.getByTestId("geo-solo").waitFor({ timeout: 3_000 }).then(() => true, () => false)) return;
+  }
+  throw new Error("PokéGuessr's Set up a game didn't open the solo setup");
+}
 /** First visit: the pop-up opens by itself with its demo; "Let's play!" closes it, and it opens again on the next first-visit load until "Don't show again". */
 async function checkFirstVisitHowTo(p, game) {
   const sheet = p.locator(HOWTO).first();
@@ -830,6 +839,8 @@ await gotoSettled(page, `${BASE}/pokeguessr`);
 await checkFirstVisitHowTo(page, "PokéGuessr");
 await closeHowTo(page);
 await page.screenshot({ path: `${OUT}/guessr-setup.png`, fullPage: true });
+if (await page.getByTestId("geo-solo").count()) errors.push("PokéGuessr's solo setup should be folded away until Set up a game");
+await openGeoSetup(page);
 await page.getByRole("button", { name: /5-round game/ }).click();
 await playGeoRounds(5);
 await page.getByText("Survey complete").waitFor();
@@ -839,6 +850,7 @@ if (!geoChallenge) throw new Error("no PokéGuessr challenge token");
 
 step("pokéguessr: one screenshot per round (no flipping between views)");
 await gotoSettled(page, `${BASE}/pokeguessr`);
+await openGeoSetup(page);
 await page.getByRole("button", { name: /5-round game/ }).click();
 for (let i = 0; i < 5; i++) {
   await page.waitForFunction(() => {
@@ -876,6 +888,7 @@ for (let i = 0; i < 5; i++) {
 
 step("pokéguessr: zoomed, 30s timer (time runs out with no pin)");
 await gotoSettled(page, `${BASE}/pokeguessr`);
+await openGeoSetup(page);
 await page.getByTestId("geo-settings").click();
 await page.getByTestId("geo-zoomed").click();
 await page.getByTestId("geo-timer-30").click();
@@ -898,6 +911,7 @@ await page.getByTestId("geo-distance").filter({ hasText: "Time's up" }).waitFor(
 await page.screenshot({ path: `${OUT}/geo-mode-timer-up.png` });
 // Back to the defaults, so the steps after this play the usual way.
 await gotoSettled(page, `${BASE}/pokeguessr`);
+await openGeoSetup(page);
 await page.getByTestId("geo-settings").click();
 await page.getByTestId("geo-zoomed").click();
 await page.getByTestId("geo-timer-0").click();
@@ -913,6 +927,7 @@ await page.screenshot({ path: `${OUT}/guessr-challenge-result.png`, fullPage: tr
 
 step("pokéguessr: 3-round game (picked rounds)");
 await gotoSettled(page, `${BASE}/pokeguessr`);
+await openGeoSetup(page);
 if ((await page.getByTestId("geo-rounds-5").getAttribute("aria-checked")) !== "true") throw new Error("5 rounds should be the default");
 await page.getByTestId("geo-rounds-3").click();
 await page.getByRole("button", { name: /3-round game/ }).click();
@@ -930,6 +945,7 @@ await page.screenshot({ path: `${OUT}/guessr-3-round-summary.png`, fullPage: tru
 
 step("pokéguessr: Hard game is practice, with a Wordle-style result card to copy");
 await gotoSettled(page, `${BASE}/pokeguessr`);
+await openGeoSetup(page);
 if ((await page.getByTestId("geo-difficulty-normal").getAttribute("aria-checked")) !== "true") throw new Error("Normal should be the default difficulty");
 await page.getByTestId("geo-difficulty-hard").click();
 await page.getByTestId("geo-difficulty-blurb").filter({ hasText: "Practice" }).waitFor();
@@ -1045,6 +1061,7 @@ step("world globe: skip the intro, the era filter, a region's card, a town's scr
 
 step("pokéguessr: streak");
 await gotoSettled(page, `${BASE}/pokeguessr`);
+await openGeoSetup(page);
 await page.getByRole("button", { name: /Streak/ }).click();
 await playGeoRounds(60);
 await page.getByText("Streak over").first().waitFor();
@@ -1058,6 +1075,7 @@ await page.getByText("Survey complete").waitFor();
 
 step("pokéguessr: a themed map (Towns and Cities), its own leaderboard");
 await gotoSettled(page, `${BASE}/pokeguessr`);
+await openGeoSetup(page);
 await page.getByRole("radiogroup", { name: "Themed map" }).getByRole("radio", { name: "Towns and Cities" }).click();
 await page.getByTestId("geo-theme-blurb").filter({ hasText: "Every town and city" }).waitFor();
 if (!page.url().includes("region=theme-towns")) throw new Error(`themed map not in the URL: ${page.url()}`);
