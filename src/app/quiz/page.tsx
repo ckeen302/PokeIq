@@ -24,7 +24,6 @@ export default function PlayPage() {
     <div className="mx-auto max-w-5xl space-y-10">
       <div className="space-y-2 text-center">
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Quizzes</h1>
-        <p className="text-muted-foreground">Pick a mode, then choose a format and the generations to play.</p>
       </div>
       <ModeGrid />
       <nav aria-label="More to play" className="flex flex-wrap justify-center gap-3">
@@ -46,7 +45,7 @@ export default function PlayPage() {
         <h2 id="duels" className="flex items-center gap-2 text-xl font-bold">
           <Swords className="h-5 w-5 text-primary" aria-hidden /> Quiz duel
         </h2>
-        <p className="text-sm text-muted-foreground">Send a friend a link and answer the same questions head to head, live.</p>
+        <p className="text-sm text-muted-foreground">Answer the same questions as a friend, live.</p>
         <QuizDuelCard />
       </section>
       <GameInfo
