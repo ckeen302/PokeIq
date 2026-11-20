@@ -89,10 +89,13 @@ export interface HistoryScene {
   readonly lost: boolean;
   retain(indices: number[]): void;
   frame(f: FrameInput): FrameInfo;
+  /** The film's own camera at a moment in a built chapter (null in the hall or before it's built), without drawing. */
+  poseAt(state: FilmState): Pose | null;
   resize(w: number, h: number): void;
   setQuality(q: Quality): void;
   readonly quality: Quality;
-  stats(): { calls: number; tris: number; loaded: number[] };
+  /** Checks: the last frame's draw calls and triangles, the chapters built, and what the GPU holds (a leak shows as growth across jumps). */
+  stats(): { calls: number; tris: number; loaded: number[]; geometries: number; textures: number; programs: number };
   /** Checks (automated runs): how many pixels of the last frame's HDR picture are NaN or infinite, before any scrub. */
   probe(): { bad: number; total: number };
   dispose(): void;
@@ -564,10 +567,11 @@ export function createHistoryScene(host: HTMLElement, opts: SceneOptions): Histo
     get lost() { return lost; },
     retain,
     frame,
+    poseAt: (st) => (st.kind === "chapter" ? rigOf(st.index)?.camera(st.anim) ?? null : null),
     resize,
     setQuality,
     get quality() { return quality; },
-    stats: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, loaded: [...slots.entries()].filter(([, s]) => s.rig).map(([i]) => i) }),
+    stats: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, loaded: [...slots.entries()].filter(([, s]) => s.rig).map(([i]) => i), geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, programs: renderer.info.programs?.length ?? 0 }),
     dispose() {
       disposed = true;
       canvas.removeEventListener("webglcontextlost", onLost);
