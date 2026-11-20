@@ -1,24 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
+import { usePathname } from "next/navigation";
+import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { ArrowDown, ArrowLeft, BookOpen, Clapperboard, Eye, Film, Landmark, List, Minus, Pause, Play, Plus, RotateCcw, Share2, Volume2, VolumeX, X } from "lucide-react";
 import { isMuted, onMuteChange, setMuted } from "@/lib/sound";
 import { LAB_PATH } from "@/lib/lab";
 import { copyText } from "@/lib/share";
 import { filmBeats, filmLine } from "@/lib/world-history/data";
 import { CHAPTERS, STORY, sourceOf } from "@/lib/pokemon-story/data";
-import { STORY_PATH as HISTORY_PATH, chapterPath } from "@/lib/pokemon-story/deeplink";
+import { STORY_PATH as HISTORY_PATH, chapterFromPath, chapterPath } from "@/lib/pokemon-story/deeplink";
 import { basisTag } from "@/lib/pokemon-story/types";
 import { buildFilm } from "@/lib/pokemon-story/timing";
 import { HISTORY_PATH as WORLD_HISTORY_PATH } from "@/lib/world-history/deeplink";
 import { blendPose, clampOrbit, orbitBy, orbitFrom, orbitPose, wheelFactor, zoomBy, type Orbit, type OrbitLimits, type Pose } from "@/lib/world-history/camera";
-import { animToFilm, chapterAtFilm, chapterStart, easePlayhead, filmAt, filmToScroll, scrollToFilm, stepStop, trackHeight, PROLOGUE, TITLE_HOLD } from "@/lib/world-history/timing";
+import { animToFilm, chapterAtFilm, chapterStart, cueAt, filmAt, filmToScroll, followScroll, sameCue, scrollToFilm, stepStop, trackHeight, PROLOGUE, type Cue } from "@/lib/world-history/timing";
 import type { HistoryScene, Quality } from "@/components/world-history/scene";
 import type { StoryAudio as HistoryAudio } from "./audio";
 import { WH_STAGE_CSS } from "@/components/world-history/stage-css";
 import { PS_STAGE_CSS } from "./stage-css";
+import { FilmWords } from "@/components/world-history/FilmWords";
 import { cn } from "@/lib/utils";
 
 const MakeHistoryVideo = lazy(() => import("./MakeStoryVideo"));
@@ -58,6 +61,18 @@ const FRAME_BUDGET_MS = 1000 / 50;
 /** A lost WebGL context that isn't restored within this long gets a new scene (ms). */
 const LOST_REBUILD_MS = 2500;
 const HEADER_PX = 56;
+/** A phone's toolbars coming and going change the stage's height by less than this (px): the scroll mapping keeps its height through them. */
+const TOOLBAR_PX = 160;
+/** How long a path the film wrote to the address counts as its own (ms): a change to it then is the film's, not a link or back/forward. */
+const OWN_PATH_MS = 1500;
+
+function reducedMotion() {
+  try {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  } catch {
+    return false;
+  }
+}
 /** Stills of each chapter for the hall's doorways (public/lab/pokemon-story/<id>.webp). */
 const HAS_STILLS = false;
 
@@ -80,12 +95,10 @@ function soloParam(): boolean {
   }
 }
 
-interface Ui {
-  kind: "chapter" | "hall";
-  chapter: number;
-  beat: number;
-  /** The title card: the chapter's start, or the prologue's title. */
-  title: "none" | "prologue" | "chapter" | "end";
+/** What the page writes over the picture: the cue (chapter, caption, title card) for the frame on screen, and its state. */
+interface Ui extends Cue {
+  /** This cue came by a jump: the words before it go at once instead of fading. */
+  jumped: boolean;
   loading: boolean;
   /** The WebGL context is lost (restoring). */
   lost: boolean;
@@ -111,7 +124,7 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
   const [canLook, setCanLook] = useState(false);
   const [muted, setMutedState] = useState(true);
   const [quality, setQualityState] = useState<Quality>("medium");
-  const [ui, setUi] = useState<Ui>({ kind: "hall", chapter: 0, beat: -1, title: "prologue", loading: true, lost: false, progress: 0 });
+  const [ui, setUi] = useState<Ui>({ kind: "hall", chapter: 0, beat: -1, title: "prologue", jumped: false, loading: true, lost: false, progress: 0 });
   const [railOpen, setRailOpen] = useState(false);
   const [videoOpen, setVideoOpen] = useState(false);
   const [recording, setRecording] = useState(false);
@@ -122,6 +135,7 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
   const stageRef = useRef<HTMLDivElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLElement>(null);
+  const dipRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<HistoryScene | null>(null);
   const audioRef = useRef<HistoryAudio | null>(null);
   const sizeRef = useRef({ w: 1, h: 1 });
@@ -133,6 +147,10 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
     playhead: 0,
     target: 0,
     playing: false,
+    /** Play's speed (0..1): it eases in when Play starts or a held chapter is ready, and out into a hold, so the camera never lurches. */
+    rate: 0,
+    /** Dragging along the timeline: no chapters are built or dropped until it's let go. */
+    dragging: false,
     free: null as Orbit | null,
     limits: null as OrbitLimits | null,
     blend: null as { from: Pose; t0: number } | null,
@@ -142,8 +160,19 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
     frozen: false,
     /** Frames drawn since a frozen moment's chapter was ready (a frozen film stops drawing once it has settled). */
     frozenFrames: 0,
-    jumped: false,
+    /** A jump the next frame shows: 1 a plain cut (dragging the timeline), 2 a cut that dips through black. */
+    cut: 0,
+    /** Where the playhead was before that jump. */
+    cutFrom: 0,
+    /** The stage height the scroll ↔ film mapping uses (kept through a phone's toolbars). */
+    mapH: 0,
+    /** The film has opened on its first moment (its deep link, or ?t=). */
+    opened: false,
+    /** The stage is on screen (not scrolled away into the text below). */
+    onStage: true,
     lastPath: "",
+    /** Paths the film itself wrote to the address, and when. */
+    wrote: [] as { path: string; at: number }[],
     prof: { n: 0, sum: 0, max: 0 },
   });
 
@@ -162,11 +191,20 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
   const stageH = useCallback(() => stageRef.current?.clientHeight ?? Math.max(300, window.innerHeight - HEADER_PX), []);
   useEffect(() => {
     if (mode !== "3d") return;
-    const fit = () => setTrackH(trackHeight(film, stageH()));
+    let w0 = -1;
+    const fit = () => {
+      const s = show.current, h = stageH(), w = window.innerWidth;
+      // A phone's toolbars sliding in and out as you scroll: keep the mapping, so the film doesn't move under your finger.
+      if (s.mapH && w === w0 && Math.abs(h - s.mapH) < TOOLBAR_PX) return;
+      w0 = w;
+      s.mapH = h;
+      setTrackH(trackHeight(film, h));
+    };
     fit();
     window.addEventListener("resize", fit);
     return () => window.removeEventListener("resize", fit);
   }, [mode, film, stageH]);
+  const mapH = useCallback(() => show.current.mapH || stageH(), [stageH]);
 
   /** Where the track starts in the document (px), and how far the page is into it. */
   const trackTop = useCallback(() => {
@@ -175,11 +213,11 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
     return el.getBoundingClientRect().top + window.scrollY - HEADER_PX;
   }, []);
   const scrollFilm = useCallback((t: number) => {
-    const y = trackTop() + filmToScroll(film, t, stageH());
+    const y = trackTop() + filmToScroll(film, t, mapH());
     show.current.syncing++;
     window.scrollTo({ top: y, behavior: "instant" as ScrollBehavior });
     requestAnimationFrame(() => { show.current.syncing = Math.max(0, show.current.syncing - 1); });
-  }, [film, trackTop, stageH]);
+  }, [film, trackTop, mapH]);
 
   // ---- Scrolling drives the film (and slides the stage away past its end).
   useEffect(() => {
@@ -190,24 +228,31 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
       const r = el.getBoundingClientRect();
       const h = stage.clientHeight;
       const into = HEADER_PX - r.top;
-      if (!show.current.syncing && !show.current.free) show.current.target = scrollToFilm(film, into, h);
+      if (!show.current.syncing && !show.current.free) show.current.target = scrollToFilm(film, into, mapH());
       const over = into - (r.height - h);
+      show.current.onStage = over <= 0;
       stage.style.transform = over > 0 ? `translate3d(0,${-over}px,0)` : "";
       stage.style.visibility = over > h + 10 ? "hidden" : "visible";
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
-  }, [mode, film, trackH]);
+  }, [mode, film, trackH, mapH]);
 
-  // ---- A deep link opens on its chapter.
-  useEffect(() => {
+  // ---- A deep link opens on its chapter (once); a new track height (a rotated phone, a resized window) keeps the moment on screen.
+  useLayoutEffect(() => {
     if (mode !== "3d" || !trackH) return;
-    const i = initialChapter ? CHAPTERS.findIndex((c) => c.id === initialChapter) : -1;
-    const t = Math.min(film.duration, timeParam() ?? (i >= 0 ? chapterStart(film, i) : 0));
-    show.current.playhead = show.current.target = t;
-    show.current.lastPath = i >= 0 ? chapterPath(initialChapter) : HISTORY_PATH;
-    scrollFilm(t);
+    const s = show.current;
+    if (!s.opened) {
+      s.opened = true;
+      // The address first: back and forward return to the chapter the film had reached (it keeps the address on it), not the page's first one.
+      const id = chapterFromPath(window.location.pathname) ?? initialChapter;
+      const i = id ? CHAPTERS.findIndex((c) => c.id === id) : -1;
+      s.playhead = s.target = Math.min(film.duration, timeParam() ?? (i >= 0 ? chapterStart(film, i) : 0));
+      s.cut = Math.max(s.cut, 1);
+      s.lastPath = i >= 0 ? chapterPath(id) : HISTORY_PATH;
+    } else if (!s.onStage) return;
+    scrollFilm(s.target);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, trackH]);
 
@@ -307,21 +352,54 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
   useEffect(() => () => document.documentElement.classList.remove("wh-locked"), []);
 
   // ---- Play and seek.
+  /**
+   * Goes straight to a moment: a cut, never a fast-forward through the parts
+   * between. The playhead lands exactly there, so the next frame draws it
+   * and writes its words together (dip: through black, for a deliberate jump).
+   */
+  const seek = useCallback((t: number, dip = true) => {
+    const s = show.current;
+    if (s.free) exitFree();
+    // Free look's glide home belongs to the old moment's camera.
+    s.blend = null;
+    if (!s.cut) s.cutFrom = s.playhead;
+    s.playhead = s.target = Math.max(0, Math.min(film.duration, t));
+    s.cut = Math.max(s.cut, dip ? 2 : 1);
+    scrollFilm(s.playhead);
+  }, [exitFree, film, scrollFilm]);
   const togglePlay = useCallback(() => {
     const s = show.current;
     if (s.free) exitFree();
-    if (s.playhead >= film.duration - 0.05) { s.playhead = s.target = 0; scrollFilm(0); }
+    if (s.playhead >= film.duration - 0.05) seek(0);
     s.playing = !s.playing;
+    s.rate = 0;
     setPlaying(s.playing);
     audioRef.current?.gesture();
-  }, [exitFree, film, scrollFilm]);
-  const seek = useCallback((t: number) => {
+  }, [exitFree, film, seek]);
+
+  // ---- The address leads too: a link to another chapter, back and forward (the film's own address changes are skipped).
+  const pathname = usePathname();
+  useEffect(() => {
     const s = show.current;
-    if (s.free) exitFree();
-    s.target = t;
-    if (Math.abs(t - s.playhead) > 20) { s.playhead = t - 0.4; s.jumped = true; }
-    scrollFilm(t);
-  }, [exitFree, scrollFilm]);
+    if (mode !== "3d" || !s.opened || !pathname || pathname === s.lastPath) return;
+    const now = performance.now();
+    if (s.wrote.some((w) => w.path === pathname && now - w.at < OWN_PATH_MS)) return;
+    const id = chapterFromPath(pathname);
+    if (!id && pathname !== HISTORY_PATH) return;
+    s.lastPath = pathname;
+    seek(id ? chapterStart(film, CHAPTERS.findIndex((c) => c.id === id)) : 0);
+  }, [pathname, mode, film, seek]);
+
+  /** A dip through black over the picture (the words stay on top): a cut that reads as one, or a chapter appearing once built. */
+  const dip = useCallback((from: number, ms: number) => {
+    const el = dipRef.current;
+    if (!el || reducedMotion() || typeof el.animate !== "function") return;
+    // A dip already running goes on from where it is (darker if this one starts darker): rapid jumps never flash back to light.
+    const running = el.getAnimations();
+    const cur = running.length ? Number(getComputedStyle(el).opacity) || 0 : 0;
+    for (const a of running) a.cancel();
+    el.animate([{ opacity: Math.max(from, cur) }, { opacity: 0 }], { duration: ms, easing: "cubic-bezier(.25,.6,.3,1)" });
+  }, []);
   const pause = useCallback(() => {
     if (!show.current.playing) return;
     show.current.playing = false;
@@ -336,7 +414,7 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
     let ftEma = FRAME_BUDGET_MS, slowFor = 0, fastFor = 0, warm = 0;
     const pinned = qualityParam() !== null;
     const solo = soloParam();
-    let prev: Ui = { kind: "hall", chapter: -1, beat: -2, title: "none", loading: true, lost: false, progress: -1 };
+    let prev: Ui = { kind: "hall", chapter: -1, beat: -2, title: "none", jumped: false, loading: true, lost: false, progress: -1 };
     let lostSince = 0;
     let lastSync = 0;
     const tick = () => {
@@ -362,52 +440,67 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
         const waiting = scene.lost || (ahead >= 0 && !scene.isReady(ahead));
         if (!s.frozen) {
           if (s.playing && !s.free) {
-            if (!waiting) s.playhead = Math.min(film.duration, s.playhead + dt);
+            // A held chapter: the clock can't run into a chapter that isn't built, but slows into a hold in the hall.
+            s.rate = waiting ? (state0.kind === "chapter" ? 0 : s.rate * Math.exp(-dt * 9)) : Math.min(1, s.rate + dt * 2.2);
+            if (s.rate > 0.002) s.playhead = Math.min(film.duration, s.playhead + dt * (s.rate < 1 ? s.rate * s.rate * (3 - 2 * s.rate) : 1));
             s.target = s.playhead;
             if (now - lastSync > 120) { lastSync = now; scrollFilm(s.playhead); }
             if (s.playhead >= film.duration) { s.playing = false; setPlaying(false); }
           } else if (!s.free) {
-            s.playhead = easePlayhead(s.playhead, s.target, dt);
+            // Scrolling: a short way glides, a long way (the scrollbar, a fling, End) is a cut.
+            const f = followScroll(s.playhead, s.target, dt);
+            if (f.cut && !s.cut) s.cutFrom = s.playhead;
+            if (f.cut) s.cut = 2;
+            s.playhead = f.t;
           }
         }
         const state = filmAt(film, s.playhead);
         // Chapters: built in order of need (the one on screen, the next two, the previous one), one
         // after another so the nearest is never slowed by the rest; only these stay built.
-        const cur = chapterAtFilm(film, s.playhead);
+        const cur = chapterAtFilm(film, s.playhead, state);
         const next = state.kind === "hall" ? state.hall.to : cur + 1;
         const lookahead = scene.quality === "low" || scene.quality === "draft" ? 1 : 2;
         const order = solo ? [cur] : state.kind === "hall" ? [state.hall.to, state.hall.from, ...Array.from({ length: lookahead }, (_, j) => next + 1 + j)] : [cur, ...Array.from({ length: lookahead }, (_, j) => next + j), cur - 1];
         const want = [...new Set(order.filter((i) => i >= 0 && i < film.chapters.length))];
-        for (const i of want) {
-          void scene.prepare(i);
-          if (!scene.isReady(i)) break;
+        if (!s.dragging) {
+          for (const i of want) {
+            void scene.prepare(i);
+            if (!scene.isReady(i)) break;
+          }
+          scene.retain(want);
         }
-        scene.retain(want);
-        // The camera: free look, or blending back to the film from it.
+        // The camera: free look, or gliding back to the film from it (one draw a frame: the blend is worked out first).
         let lookPose: Pose | null = null;
         if (s.free && state.kind === "chapter") lookPose = orbitPose(s.free);
-        const info = scene.frame({ state, ambient: now / 1000, look: lookPose });
-        let pose = info.pose;
-        if (!s.free && s.blend && state.kind === "chapter") {
+        else if (s.blend) {
           const k = (now / 1000 - s.blend.t0) / 0.8;
-          if (k >= 1) s.blend = null;
-          else pose = blendPose(s.blend.from, pose, k);
-          if (s.blend) scene.frame({ state, ambient: now / 1000, look: pose });
+          const filmPose = scene.poseAt(state);
+          if (k >= 1 || !filmPose) s.blend = null;
+          else lookPose = blendPose(s.blend.from, filmPose, k);
         }
+        const info = scene.frame({ state, ambient: now / 1000, look: lookPose });
+        const pose = info.pose;
         s.last = pose;
         s.limits = info.orbit?.limits ?? null;
         if (s.free && s.limits) s.free = clampOrbit(s.free, s.limits);
         if (s.free && state.kind !== "chapter") { s.free = null; setFree(false); document.documentElement.classList.remove("wh-locked"); }
         audioRef.current?.update({ state, playing: s.playing, dt });
-        // The UI: only when something changed.
-        const ct = state.kind === "chapter" ? film.chapters[state.index] : null;
-        const beat = ct && state.kind === "chapter" ? beatAt(ct.beats, state.anim) : -1;
-        const title: Ui["title"] = state.kind === "hall" ? (state.hall.from < 0 && state.k < 0.62 ? "prologue" : state.hall.to >= film.chapters.length && state.k > 0.4 ? "end" : "none") : state.anim < TITLE_HOLD - 0.15 ? "chapter" : "none";
-        const nextUi: Ui = { kind: state.kind, chapter: cur, beat, title, loading: !info.complete || (s.playing && waiting), lost: !!info.lost, progress: Math.round((s.playhead / film.duration) * 400) / 400 };
-        if (nextUi.kind !== prev.kind || nextUi.chapter !== prev.chapter || nextUi.beat !== prev.beat || nextUi.title !== prev.title || nextUi.loading !== prev.loading || nextUi.lost !== prev.lost) {
-          setUi(nextUi);
-          setCanLook(!!info.orbit);
+        // The words: from the playhead this frame drew (the one source of truth), written before the
+        // browser paints it, so a jump changes the picture and its words in the same frame.
+        const cut = s.cut;
+        s.cut = 0;
+        const nextUi: Ui = { ...cueAt(film, s.playhead, state), jumped: cut > 0, loading: !info.complete || (s.playing && waiting), lost: !!info.lost, progress: Math.round((s.playhead / film.duration) * 400) / 400 };
+        const moved = !sameCue(nextUi, prev);
+        if (moved || nextUi.loading !== prev.loading || nextUi.lost !== prev.lost) {
+          if (!moved) nextUi.jumped = prev.jumped;
+          flushSync(() => {
+            setUi(nextUi);
+            setCanLook(!!info.orbit);
+          });
         }
+        // A jump dips through black (deeper into another chapter); a chapter that was still building fades up.
+        if (cut === 2 && Math.abs(s.playhead - s.cutFrom) > 0.25) dip(nextUi.chapter !== prev.chapter || nextUi.kind !== prev.kind ? 0.95 : 0.55, nextUi.chapter !== prev.chapter ? 520 : 320);
+        else if (prev.loading && !nextUi.loading && !nextUi.lost) dip(1, 520);
         // A lost context the browser doesn't give back: start the scene again on a new canvas.
         if (info.lost) {
           if (!lostSince) lostSince = now;
@@ -419,6 +512,7 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
         const path = s.playhead < PROLOGUE * 0.6 ? HISTORY_PATH : chapterPath(CHAPTERS[cur].id);
         if (path !== s.lastPath) {
           s.lastPath = path;
+          s.wrote = [...s.wrote.filter((w) => now - w.at < OWN_PATH_MS), { path, at: now }];
           try { history.replaceState(history.state, "", path); } catch { /* ignore */ }
         }
       } finally {
@@ -451,9 +545,9 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
     };
     raf = requestAnimationFrame(tick);
     // For automated checks and screenshots: move the film clock, read where it is.
-    (window as unknown as { __ps?: unknown }).__ps = {
+    const checks = {
       setQuality(q: Quality) { sceneRef.current?.setQuality(q); setQualityState(q); },
-      seek(t: number, freeze = false) { show.current.playhead = show.current.target = t; show.current.frozen = freeze; show.current.frozenFrames = 0; },
+      seek(t: number, freeze = false) { show.current.playhead = show.current.target = t; show.current.cut = Math.max(show.current.cut, 1); show.current.blend = null; show.current.frozen = freeze; show.current.frozenFrames = 0; },
       chapterStart: (i: number) => chapterStart(film, i),
       beatTime: (i: number, beat: number) => { const c = film.chapters[i]; return c.start + (c.beats[beat] ? animToFilm(c, c.beats[beat].anim) : 0); },
       state() {
@@ -462,8 +556,14 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
         return { t: s.playhead, anim: st.kind === "chapter" ? st.anim : null, duration: film.duration, kind: st.kind, chapter: chapterAtFilm(film, s.playhead), playing: s.playing, free: !!s.free, dist: s.free?.dist ?? null, quality: sceneRef.current?.quality ?? null, stats: sceneRef.current?.stats() ?? null, prof: { ...s.prof } };
       },
     };
-    return () => cancelAnimationFrame(raf);
-  }, [ready, film, scrollFilm]);
+    const w = window as unknown as { __ps?: unknown };
+    w.__ps = checks;
+    return () => {
+      cancelAnimationFrame(raf);
+      // A film that's gone (a page change, a rebuilt scene) leaves nothing for checks to read.
+      if (w.__ps === checks) delete w.__ps;
+    };
+  }, [ready, film, scrollFilm, dip]);
 
   useEffect(() => { if (stageRef.current) stageRef.current.dataset.q = quality; }, [quality]);
   useEffect(() => {
@@ -634,9 +734,15 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
   const source = beat && chapter ? sourceOf(chapter, beat) : null;
   const tag = beat ? basisTag(beat.basis) : null;
   const ticks = film.chapters.map((c) => c.start / film.duration);
+  /** Words go up only over the picture they belong to: not while a chapter is still being built (the stage says which). */
+  const words = ready && !ui.loading;
+  const scrubAt = (e: React.PointerEvent<HTMLElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    return Math.max(0, Math.min(1, (e.clientX - r.left) / Math.max(1, r.width))) * film.duration;
+  };
 
   return (
-    <>
+    <MotionConfig reducedMotion="user">
       <style>{WH_STAGE_CSS}</style>
       <style>{PS_STAGE_CSS}</style>
       <noscript><style>{`.wh-stage,.wh-track{display:none!important}`}</style></noscript>
@@ -663,14 +769,16 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
           data-playing={playing ? "1" : "0"}
           data-free={free ? "1" : "0"}
           data-loading={ui.loading ? "1" : "0"}
+          data-title={ui.title}
           data-recording={recording ? "1" : "0"}
         >
           <div ref={hostRef} className="absolute inset-0 cursor-grab select-none active:cursor-grabbing" data-testid="ps-scene" role="application" aria-label="The Story of Pokémon in 3D. Scroll to move through the film; drag to look around; pinch or scroll with ctrl to zoom." />
+          <div ref={dipRef} className="wh-dip" aria-hidden />
           <div className="wh-shade-top" aria-hidden />
           <div className="wh-shade-bottom" aria-hidden />
 
           {(!ready || ui.loading) && (
-            <div className="pointer-events-none absolute inset-0 z-[5] flex flex-col items-center justify-center gap-4 text-white" aria-live="polite">
+            <div className="wh-loading pointer-events-none absolute inset-0 z-[5] flex flex-col items-center justify-center gap-4 text-white" aria-live="polite">
               <div className="wh-load-ring" aria-hidden />
               <p className="wh-title-k text-[10px] uppercase text-white/80" data-testid="ps-loading">{!ready ? "Opening the archive…" : ui.lost ? "Restoring the picture…" : `Opening ${chapter?.title ?? "the exhibit"}…`}</p>
             </div>
@@ -715,32 +823,35 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
           </nav>
 
           {/* The prologue's title. */}
-          <AnimatePresence>
+          <AnimatePresence custom={ui.jumped}>
             {ready && ui.title === "prologue" && (
-              <motion.div key="pro" className="wh-pro pointer-events-none absolute inset-x-0 top-[18%] z-[6] flex flex-col items-center px-6 text-center text-white" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} transition={{ duration: 0.9 }} data-testid="ps-prologue">
+              <FilmWords key="pro" kind="prologue" jumped={ui.jumped} className="wh-pro pointer-events-none absolute inset-x-0 top-[18%] z-[6] flex flex-col items-center px-6 text-center text-white" testId="ps-prologue">
                 <p className="wh-title-k text-[10px] uppercase text-[#e8c15a] sm:text-xs">PokéIQ 3D Lab · The real history</p>
                 <h1 className="wh-serif wh-title mt-3 max-w-4xl text-5xl font-semibold leading-[0.95] sm:text-7xl lg:text-8xl">{STORY.prologue.title}</h1>
                 <p className="wh-serif wh-cap-lead mt-4 max-w-xl text-lg italic text-white/85 sm:text-2xl">{STORY.prologue.line}</p>
                 <p className="wh-hint mt-6 inline-flex items-center gap-2 font-display text-[11px] font-semibold uppercase tracking-[0.2em] text-white/75">Scroll, or press play <ArrowDown className="h-3.5 w-3.5" aria-hidden /></p>
-              </motion.div>
+              </FilmWords>
             )}
           </AnimatePresence>
 
           {/* A chapter's title card. */}
-          <AnimatePresence>
-            {ui.title === "chapter" && chapter && (
-              <motion.div key={`t-${chapter.id}`} className="pointer-events-none absolute inset-x-0 top-[20%] z-[6] flex flex-col items-center px-6 text-center text-white" initial={{ opacity: 0, scale: 1.08, filter: "blur(10px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, y: -14, filter: "blur(6px)" }} transition={{ duration: 0.8, ease: [0.2, 0.8, 0.2, 1] }} data-testid="ps-title-card">
-                <p className="wh-title-k text-[10px] uppercase sm:text-xs" style={{ color: chapter.accent }}>{chapter.numeral} · {chapter.tag}</p>
-                <h2 className="wh-serif wh-title mt-2 text-5xl font-semibold leading-none sm:text-7xl">{chapter.title}</h2>
-                <p className="wh-serif wh-cap-lead mt-3 text-lg italic text-white/85 sm:text-2xl">{chapter.when} · {chapter.place}</p>
-              </motion.div>
+          <AnimatePresence custom={ui.jumped}>
+            {words && ui.title === "chapter" && chapter && (
+              <FilmWords key={`t-${chapter.id}`} kind="title" jumped={ui.jumped} className="pointer-events-none absolute inset-x-0 top-[20%] z-[6] flex flex-col items-center px-6 text-center text-white" testId="ps-title-card">
+                <p className="wh-title-k wh-tk text-[10px] uppercase sm:text-xs" style={{ color: chapter.accent }}>{chapter.numeral} · {chapter.tag}</p>
+                <i className="wh-rule" style={{ ["--wh-accent" as string]: chapter.accent }} aria-hidden />
+                <h2 className="wh-serif wh-title mt-2 text-5xl font-semibold leading-none sm:text-7xl" aria-label={chapter.title}>
+                  <TitleWords text={chapter.title} />
+                </h2>
+                <p className="wh-serif wh-cap-lead wh-when mt-3 text-lg italic text-white/85 sm:text-2xl">{chapter.when} · {chapter.place}</p>
+              </FilmWords>
             )}
           </AnimatePresence>
 
           {/* The end. */}
-          <AnimatePresence>
+          <AnimatePresence custom={ui.jumped}>
             {ui.title === "end" && (
-              <motion.div key="end" className="absolute inset-x-0 top-[16%] z-[7] flex flex-col items-center px-6 text-center text-white" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 1 }} data-testid="ps-end">
+              <FilmWords key="end" kind="end" jumped={ui.jumped} className="absolute inset-x-0 top-[16%] z-[7] flex flex-col items-center px-6 text-center text-white" testId="ps-end">
                 <p className="wh-title-k text-[10px] uppercase text-[#e8c15a] sm:text-xs">The story so far</p>
                 <h2 className="wh-serif wh-title mt-3 max-w-3xl text-4xl font-semibold leading-none sm:text-6xl">{STORY.title}</h2>
                 <div className="mt-6 flex flex-wrap justify-center gap-2">
@@ -753,35 +864,46 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
                   <button type="button" onClick={toText} className="wh-chip h-11"><BookOpen className="h-4 w-4" aria-hidden /> Sources and music credits</button>
                 </div>
                 <p className="wh-cap-src mt-5 max-w-md text-[11px] text-white/60">Pokémon © Nintendo / Creatures / GAME FREAK. A fan project, not affiliated.</p>
-              </motion.div>
+              </FilmWords>
             )}
           </AnimatePresence>
 
           {/* Caption. */}
           <div className="pointer-events-none absolute inset-x-0 bottom-[4.9rem] z-[6] px-4 sm:bottom-[5.6rem] sm:px-8 lg:right-48" aria-live="polite" data-testid="ps-caption-area">
-            <AnimatePresence mode="wait">
-              {beat && chapter && source && (
-                <motion.figure key={`${chapter.id}-${beat.id}`} className="max-w-[46rem] text-white" initial={{ opacity: 0, y: 14, filter: "blur(4px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} exit={{ opacity: 0, y: -8, filter: "blur(4px)" }} transition={{ duration: 0.55, ease: [0.2, 0.8, 0.2, 1] }} data-testid="ps-caption">
-                  {beat.lead && <p className="wh-serif wh-cap-lead mb-1.5 text-base leading-snug text-white/85 sm:text-xl">{beat.lead}</p>}
-                  <blockquote className={cn("wh-cap-q whitespace-pre-line text-[1.45rem] sm:text-3xl lg:text-[2.15rem]", !beat.quote && "not-italic")}>
-                    {beat.quote ? `“${filmLine(beat)}”` : filmLine(beat)}
-                  </blockquote>
-                  <figcaption className="wh-cap-src mt-2.5 flex flex-wrap items-center gap-2 text-[11px] text-white/70 sm:text-xs">
-                    {tag && <span className="wh-tag" style={{ color: chapter.accent }}>{tag}</span>}
-                    <cite className="not-italic" data-testid="ps-source">{source.publisher} · {source.year}</cite>
-                  </figcaption>
-                </motion.figure>
-              )}
-            </AnimatePresence>
+            <div className="relative">
+              <AnimatePresence custom={ui.jumped}>
+                {words && beat && chapter && source && (
+                  <FilmWords key={`${chapter.id}-${beat.id}`} kind="caption" jumped={ui.jumped} as="figure" className="wh-lower absolute bottom-0 left-0 w-full max-w-[46rem] text-white" style={{ ["--wh-accent" as string]: chapter.accent }} testId="ps-caption">
+                    {beat.lead && <p className="wh-serif wh-cap-lead mb-1.5 text-base leading-snug text-white/85 sm:text-xl">{beat.lead}</p>}
+                    <blockquote className={cn("wh-cap-q wh-wipe whitespace-pre-line text-[1.45rem] sm:text-3xl lg:text-[2.15rem]", !beat.quote && "not-italic")}>
+                      {beat.quote ? `“${filmLine(beat)}”` : filmLine(beat)}
+                    </blockquote>
+                    <figcaption className="wh-cap-src mt-2.5 flex flex-wrap items-center gap-2 text-[11px] text-white/70 sm:text-xs">
+                      {tag && <span className="wh-tag" style={{ color: chapter.accent }}>{tag}</span>}
+                      <cite className="not-italic" data-testid="ps-source">{source.publisher} · {source.year}</cite>
+                    </figcaption>
+                  </FilmWords>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
 
           {/* Bottom bar: play, the scrubber, look around and zoom, video, share. */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-3 pb-3 sm:px-5 sm:pb-4">
             <div className="wh-scrub pointer-events-auto mb-2" role="slider" aria-label="Film position" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(ui.progress * 100)} tabIndex={-1}
               onPointerDown={(e) => {
-                const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                try { e.currentTarget.setPointerCapture(e.pointerId); show.current.dragging = true; } catch { /* a synthetic pointer */ }
                 pause();
-                seek(((e.clientX - r.left) / r.width) * film.duration);
+                seek(scrubAt(e));
+              }}
+              onPointerUp={() => { show.current.dragging = false; }}
+              onPointerCancel={() => { show.current.dragging = false; }}
+              onLostPointerCapture={() => { show.current.dragging = false; }}
+              onPointerMove={(e) => {
+                // Dragging along the timeline: the picture and its words follow the finger, cut by cut, without dips.
+                let held = false;
+                try { held = e.currentTarget.hasPointerCapture(e.pointerId); } catch { /* a synthetic pointer */ }
+                if (held) seek(scrubAt(e), false);
               }}
               data-testid="ps-scrub">
               <div className="wh-bar"><i ref={barRef as React.RefObject<HTMLElement>} style={{ transform: "scaleX(0)" }} /></div>
@@ -856,13 +978,22 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
           )}
         </div>
       )}
-    </>
+    </MotionConfig>
   );
 }
 
-/** The caption up at an anim time (−1 during the title card). */
-function beatAt(beats: { anim: number }[], anim: number): number {
-  let i = -1;
-  for (let k = 0; k < beats.length; k++) if (anim >= beats[k].anim) i = k;
-  return i;
+/** A title whose words rise out of a mask one after another, then a light sweeps across them (motion in World History's stage-css). */
+function TitleWords({ text }: { text: string }) {
+  const words = text.split(" ");
+  return (
+    <span className="wh-words">
+      {words.map((w, i) => (
+        <span key={i}>
+          <span className="wh-w" aria-hidden><span style={{ ["--i" as string]: i }}>{w}</span></span>
+          {i < words.length - 1 ? " " : ""}
+        </span>
+      ))}
+      <span className="wh-sweep" aria-hidden>{text}</span>
+    </span>
+  );
 }

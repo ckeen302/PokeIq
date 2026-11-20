@@ -41,6 +41,7 @@ import {
   trackHeight,
   videoAt,
 } from "@/lib/world-history/timing";
+import { WORD_MOTION } from "@/components/world-history/FilmWords";
 import { DEFAULT_LIMITS, arcKeys, blendPose, clampOrbit, fovFor, handheld, orbitBy, orbitFrom, orbitPose, poseOnPath, shots, wheelFactor, wrapAngle, zoomBy, type Key, type Pose } from "@/lib/world-history/camera";
 
 const film = buildFilm();
@@ -362,6 +363,19 @@ describe("timing", () => {
     expect(p).toBe(14);
     expect(sameCue(cueAt(film, 50), cueAt(film, 50))).toBe(true);
     expect(sameCue(cueAt(film, film.chapters[2].start), cueAt(film, film.chapters[3].start))).toBe(false);
+  });
+
+  it("takes the words of the part left behind off at once after a jump, and crossfades them on the film's own run", () => {
+    type V = { opacity?: number; filter?: string; transition?: { duration?: number; delay?: number } };
+    const gone = (k: keyof typeof WORD_MOTION, jumped: boolean) => (WORD_MOTION[k].gone as (j: boolean) => V)(jumped);
+    for (const k of Object.keys(WORD_MOTION) as (keyof typeof WORD_MOTION)[]) {
+      expect(gone(k, true), k).toMatchObject({ opacity: 0, transition: { duration: 0 } });
+      expect(gone(k, false).transition?.duration ?? 0, k).toBeGreaterThan(0);
+    }
+    // A jump's caption comes straight up with its picture; captions animate no filters (blur repaints are costly on phones).
+    const shown = WORD_MOTION.caption.shown as (j: boolean) => V;
+    expect(shown(true).transition?.delay).toBe(0);
+    for (const v of [WORD_MOTION.caption.hidden as V, shown(true), shown(false), gone("caption", false)]) expect(v.filter).toBeUndefined();
   });
 
   it("scrolls through the film at a screen per few seconds", () => {
