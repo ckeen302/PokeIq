@@ -35,6 +35,8 @@ import { localNoBoard } from "@/lib/pikadoku/no-board";
 import { themeIdFor } from "@/lib/pikadoku/weeks";
 import { useT } from "@/i18n/client";
 import pikadokuNs from "@/messages/pikadoku";
+import shareNs from "@/messages/share";
+import { localeHref } from "@/i18n/href";
 import boardNs from "@/messages/pikadoku-board";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -126,6 +128,7 @@ function Game({ initial }: { initial?: PdkPublicDays }) {
   const firstDay = initial ? initial.days[initial.serverDate]?.normal : undefined;
   const t = useT(pikadokuNs);
   const tb = useT(boardNs);
+  const ts = useT(shareNs);
   const local = usePdkLocal();
   const labelOf = useCatLabel();
   const diffLabel = (d: PdkDifficulty) => t(`diff.${d}`);
@@ -573,13 +576,14 @@ function Game({ initial }: { initial?: PdkPublicDays }) {
   });
   const shareText = () => {
     const r = shareResult();
-    return pikadokuShareText(r, shareUrl(r));
+    return pikadokuShareText(r, shareUrl(r, ts.locale), ts);
   };
   /** "Share this grid": a link that deals the same Unlimited grid, with this game's result to beat once it's over. */
   const challengeText = () => {
     if (!seed) return "";
     const mine = result ? { solved: result.solved, guesses: guesses.length } : null;
-    const url = `${window.location.origin}/pikadoku?c=${encodeChallenge({ seed, settings, result: mine })}`;
+    // The link opens the page in this page's language.
+    const url = `${window.location.origin}${localeHref("/pikadoku", t.locale).href}?c=${encodeChallenge({ seed, settings, result: mine })}`;
     return composeShare({ title: t("challenge.title"), score: mine ? challengeLabel(mine, t) : undefined, lines: [mine ? t("challenge.beatMe") : t("challenge.playMe")], url });
   };
   const verdict = result && challenge && mode === "practice" ? judgeChallenge({ solved: result.solved, guesses: guesses.length }, challenge) : null;
