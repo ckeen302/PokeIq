@@ -16,6 +16,8 @@ import page from "@/messages/guessr-duel-page";
 import duelNs from "@/messages/guessr-duel";
 import hud from "@/messages/guessr-hud";
 import ranked from "@/messages/guessr-ranked";
+import duelShared from "@/messages/duel";
+import tier from "@/messages/tier";
 
 interface PageProps {
   params: Promise<{ code: string }>;
@@ -47,7 +49,7 @@ export default async function GeoDuelPage({ params }: PageProps) {
   const regions = geoRegions();
   const names = guessrDuelNames(regions);
   return (
-    <ClientMessages namespaces={[duelNs, hud, ranked]}>
+    <ClientMessages namespaces={[duelNs, hud, ranked, duelShared, tier]}>
       <GeoDuel key={code} code={code} regions={regions} {...(names ? { names } : {})} />
     </ClientMessages>
   );

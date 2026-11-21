@@ -13,6 +13,8 @@ import { mapName } from "@/components/geo/duel-names";
 import page from "@/messages/guessr-duel-page";
 import party from "@/messages/guessr-party";
 import hud from "@/messages/guessr-hud";
+import duelShared from "@/messages/duel";
+import tier from "@/messages/tier";
 
 interface PageProps {
   params: Promise<{ code: string }>;
@@ -37,7 +39,7 @@ export default async function GeoPartyPage({ params }: PageProps) {
   const regions = geoRegions();
   const names = guessrDuelNames(regions);
   return (
-    <ClientMessages namespaces={[party, hud]}>
+    <ClientMessages namespaces={[party, hud, duelShared, tier]}>
       <GeoParty key={code} code={code} regions={regions} {...(names ? { names } : {})} />
     </ClientMessages>
   );
