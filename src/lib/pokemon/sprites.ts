@@ -45,6 +45,14 @@ export const SPRITE_SOURCES: readonly SpriteSource[] = [
   { gen: 9, game: "Pokémon HOME", normal: "other/home", shiny: "other/home/shiny", ext: "png", look: { kind: "home" } },
 ];
 
+/**
+ * A remote picture through Next's image optimizer, as WebP at one of its sizes (next.config allows PokéAPI's
+ * sprite host). Built by hand rather than with next/image, whose import would add its client script to the page.
+ */
+export function optimizedImageUrl(src: string, width: 96 | 256): string {
+  return `/_next/image?url=${encodeURIComponent(src)}&w=${width}&q=75`;
+}
+
 export const LAST_SPRITE_GEN = SPRITE_SOURCES[SPRITE_SOURCES.length - 1].gen;
 
 export function spritePath(src: SpriteSource, id: number, shiny: boolean): string | null {

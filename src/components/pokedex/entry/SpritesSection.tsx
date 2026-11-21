@@ -1,6 +1,5 @@
-/* eslint-disable @next/next/no-img-element -- pixel sprites and GIFs are drawn as they are; the HOME render goes through getImageProps */
-import { getImageProps } from "next/image";
-import { SPRITE_CELL, type SpriteColumn } from "@/lib/pokemon/sprites";
+/* eslint-disable @next/next/no-img-element -- pixel sprites and GIFs are drawn as they are; the HOME render goes through the image optimizer by URL */
+import { SPRITE_CELL, optimizedImageUrl, type SpriteColumn } from "@/lib/pokemon/sprites";
 import { cn } from "@/lib/utils";
 
 /**
@@ -77,8 +76,18 @@ export function SpritesSection({ name, columns }: { name: string; columns: Sprit
 function Sprite({ col, src, alt }: { col: SpriteColumn; src: string; alt: string }) {
   const look = col.look;
   if (look.kind === "home") {
-    const { props } = getImageProps({ src, alt, width: SPRITE_CELL, height: SPRITE_CELL, loading: "lazy" });
-    return <img {...props} alt={alt} decoding="async" className="h-24 w-24 object-contain" />;
+    return (
+      <img
+        src={optimizedImageUrl(src, 96)}
+        srcSet={`${optimizedImageUrl(src, 96)} 1x, ${optimizedImageUrl(src, 256)} 2x`}
+        alt={alt}
+        width={SPRITE_CELL}
+        height={SPRITE_CELL}
+        loading="lazy"
+        decoding="async"
+        className="h-24 w-24 object-contain"
+      />
+    );
   }
   if (look.kind === "render") {
     // Cut to the model's own size: shown as is, or shrunk to fit the cell.
