@@ -331,7 +331,7 @@ export function Toolbar({ view, set, all, seq, onJump, onShowAnyway, searchRef }
         )}
       </div>
       <div className={cn(chip, "flex items-center gap-1.5 py-0 pl-2.5 pr-0")}>
-        <span className="font-pixel text-[9px] uppercase tracking-[0.14em] text-white/45">{S.sortBy}</span>
+        <span className="whitespace-nowrap font-pixel text-[9px] uppercase tracking-[0.14em] text-white/45">{S.sortBy}</span>
         <SortPicker view={view} set={set} />
       </div>
       {dirty && (

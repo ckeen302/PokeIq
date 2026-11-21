@@ -478,7 +478,17 @@ export function LabDexApp({ rows }: { rows: LabRow[] }) {
 
   return (
     <>
-      <style>{`html.lx-locked, html.lx-locked body { overflow: hidden; overscroll-behavior: none; } .lx-stage { background: radial-gradient(120% 90% at 50% 40%, #0b1426 0%, #03050b 70%); } @media (max-width: 1023px) { html:has(.lx-stage) { --tabbar-h: 0px; } html:has(.lx-stage) [data-testid="tabbar"] { display: none; } } .lab-scroll { scrollbar-width: thin; scrollbar-color: rgba(126,232,255,0.25) transparent; }`}</style>
+      <style>{`html.lx-locked, html.lx-locked body { overflow: hidden; overscroll-behavior: none; } .lx-stage { background: radial-gradient(120% 90% at 50% 40%, #0b1426 0%, #03050b 70%); } @media (max-width: 1023px) { html:has(.lx-stage) { --tabbar-h: 0px; } html:has(.lx-stage) [data-testid="tabbar"] { display: none; } } .lab-scroll { scrollbar-width: thin; scrollbar-color: rgba(126,232,255,0.25) transparent; }
+        .lx-in { animation: lx-in 520ms cubic-bezier(.2,.8,.2,1) both; }
+        @keyframes lx-in { 0% { opacity: 0; transform: translateX(-10px); clip-path: inset(0 100% 0 0); filter: brightness(2.2); } 60% { filter: brightness(1.3); } 100% { opacity: 1; transform: none; clip-path: inset(0 0 0 0); filter: none; } }
+        .lx-rule { background: linear-gradient(90deg, rgba(126,232,255,0.45), rgba(126,232,255,0.08) 70%, transparent), repeating-linear-gradient(90deg, rgba(126,232,255,0.5) 0 1px, transparent 1px 12px); background-size: 100% 1px, 100% 1px; }
+        .lx-spine { background: linear-gradient(180deg, transparent, rgba(126,232,255,0.5) 6%, var(--lx-col, #7ee8ff) 50%, rgba(126,232,255,0.35) 92%, transparent); box-shadow: 0 0 8px rgba(126,232,255,0.4); }
+        .lx-flow { background: repeating-linear-gradient(90deg, rgba(126,232,255,0.75) 0 4px, transparent 4px 8px); background-size: 16px 1px; animation: lx-flow 1.2s linear infinite; }
+        @keyframes lx-flow { to { background-position: 16px 0; } }
+        .lx-shimmer { background: linear-gradient(90deg, rgba(126,232,255,0.06), rgba(126,232,255,0.18), rgba(126,232,255,0.06)); background-size: 200% 100%; animation: lx-shim 1.4s linear infinite; }
+        @keyframes lx-shim { to { background-position: -200% 0; } }
+        .lx-falloff { background: linear-gradient(90deg, rgba(2,5,12,0.92) 0%, rgba(2,5,12,0.78) 55%, rgba(2,5,12,0.35) 80%, transparent 100%); }
+        @media (prefers-reduced-motion: reduce) { .lx-in { animation-duration: 1ms; } .lx-flow, .lx-shimmer { animation: none; } }`}</style>
       <div className="lx-stage fixed inset-x-0 bottom-0 top-14 z-40 overflow-hidden text-white" data-testid="lab-stage" data-ready={ready ? "1" : "0"} data-mode={mode}>
         <div
           ref={stage}
@@ -516,14 +526,16 @@ export function LabDexApp({ rows }: { rows: LabRow[] }) {
         {/* ---- Desktop. */}
         {!phone && booted && (
           <div className="pointer-events-none absolute inset-0">
-            <div className="pointer-events-auto absolute left-6 right-6 top-4 xl:left-8 xl:right-8">
+            <div className="pointer-events-auto absolute left-6 right-6 top-4 z-10 xl:left-8 xl:right-8">
               <Toolbar view={view} set={changeView} all={all} seq={seq} onJump={(pos) => { interacted.current = true; jump(pos, true); }} onShowAnyway={showAnyway} searchRef={searchRef} />
             </div>
             {mon && (
               <>
-                <div className="pointer-events-auto absolute bottom-24 left-6 top-[76px] flex w-[380px] flex-col gap-4 xl:left-8 xl:w-[410px]">
+                {/* A soft falloff behind the readout (light leaves the lab there), not a panel. */}
+                <div className="lx-falloff pointer-events-none absolute inset-y-0 left-0 w-[560px] xl:w-[600px]" aria-hidden />
+                <div className="pointer-events-auto absolute bottom-24 left-6 top-[76px] flex w-[380px] flex-col gap-5 xl:left-8 xl:w-[410px]">
                   <Heading mon={mon} scanning={scanning} sort={view.sort} />
-                  <div className="lab-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-xl">
+                  <div className="lab-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain pr-2 [mask-image:linear-gradient(180deg,#000_92%,transparent)]">
                     <InfoCard mon={mon} details={det} inView={inView} onPick={pickId} />
                   </div>
                 </div>

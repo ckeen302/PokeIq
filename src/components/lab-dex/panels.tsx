@@ -82,78 +82,112 @@ export function Heading({ mon, scanning, sort, phone = false }: { mon: LabMon; s
   );
 }
 
-function Section({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
+/** A readout channel: an index, a label, a hairline rule with ticks; it scans in after the one above it. */
+function Channel({ n, label, children, delay }: { n: number; label: string; children: React.ReactNode; delay: number }) {
   return (
-    <section className={cn("border-t border-cyan-200/10 px-4 py-3", className)}>
-      <h2 className="hud-label !text-[9px] !text-cyan-200/70">{label}</h2>
-      <div className="mt-2">{children}</div>
+    <section className="lx-in relative pl-5" style={{ animationDelay: `${delay}ms` }}>
+      {/* The spine's node for this channel. */}
+      <span className="absolute left-[3px] top-[7px] h-[7px] w-[7px] rotate-45 border border-cyan-200/70 bg-[#02050c]" aria-hidden />
+      <h2 className="flex items-center gap-2">
+        <span className="font-pixel text-[9px] tracking-[0.14em] text-cyan-300">{String(n).padStart(2, "0")}</span>
+        <span className="font-pixel text-[9px] uppercase tracking-[0.2em] text-cyan-100/80">{label}</span>
+        <span className="lx-rule h-px flex-1" aria-hidden />
+      </h2>
+      <div className="mt-2.5">{children}</div>
     </section>
   );
 }
 
-/** Height, weight, region; the Pokédex entry; abilities; the evolution line; matchups. */
-export function InfoCard({ mon, details, inView, onPick }: { mon: LabMon; details: LabDetails | null | undefined; inView: (id: number) => boolean; onPick: (id: number) => void }) {
-  const col = typeColor(mon.types[0]);
+function Reading({ label, value, unit }: { label: string; value: string; unit?: string }) {
   return (
-    <div className={cn(glass, "overflow-hidden")} data-testid="lab-info">
-      <div className="grid grid-cols-3 divide-x divide-cyan-200/10 py-3">
-        {[
-          [S.height, `${mon.heightM.toFixed(1)} m`],
-          [S.weight, mon.weightKg == null ? S.unknown : `${mon.weightKg.toFixed(1)} kg`],
-          [S.region, `${regionOf(mon)} · Gen ${GEN_NUMERALS[mon.gen - 1]}`],
-        ].map(([k, v]) => (
-          <div key={k} className="min-w-0 px-4">
-            <p className="hud-label !text-[9px]">{k}</p>
-            <p className="mt-1.5 truncate font-display text-[15px] font-semibold text-white" title={v}>{v}</p>
-          </div>
-        ))}
-      </div>
-      <Section label={S.entry}>
-        {details === undefined ? (
-          <div className="space-y-1.5" aria-hidden>
-            <div className="h-3 w-full animate-pulse rounded bg-white/10" />
-            <div className="h-3 w-4/5 animate-pulse rounded bg-white/10" />
-          </div>
-        ) : details?.entry ? (
-          <blockquote className="border-l-2 pl-3 text-[13.5px] leading-relaxed text-white/85" style={{ borderColor: col }} data-testid="lab-entry">
-            {details.entry.text}
-            {details.entry.games.length > 0 && <footer className="mt-1 font-pixel text-[8px] uppercase tracking-[0.14em] text-white/40">{details.entry.games.join(" · ")}</footer>}
-          </blockquote>
-        ) : (
-          <p className="text-[13px] text-white/50">—</p>
-        )}
-      </Section>
-      {details?.abilities && details.abilities.length > 0 && (
-        <Section label={S.abilities}>
-          <ul className="space-y-1.5">
-            {details.abilities.map((a) => (
-              <li key={a.name} className="text-[12.5px] leading-snug text-white/70">
-                <span className="font-semibold text-white">{a.name}</span>
-                {a.hidden && <span className="ml-1.5 rounded-sm border border-white/15 px-1 py-px font-pixel text-[7.5px] uppercase tracking-[0.14em] text-white/55">{S.hidden}</span>}
-                {a.effect && <span className="text-white/60"> · {a.effect}</span>}
-              </li>
-            ))}
-          </ul>
-        </Section>
-      )}
-      <Section label={S.evolution}>
-        {details === undefined ? (
-          <div className="h-14 animate-pulse rounded bg-white/5" aria-hidden />
-        ) : details?.evolution ? (
-          <EvolutionStrip root={details.evolution} current={mon.isForm ? mon.species : mon.id} inView={inView} onPick={onPick} />
-        ) : (
-          <p className="text-[12.5px] text-white/55">{S.noEvolution}</p>
-        )}
-      </Section>
-      <Section label={S.matchups}>
-        <Matchups types={mon.types} />
-      </Section>
+    <div className="min-w-0">
+      <p className="font-display text-[24px] font-semibold leading-none tabular-nums text-white [text-shadow:0_0_18px_rgba(126,232,255,0.35)]">
+        {value}
+        {unit && <span className="ml-1 font-pixel text-[9px] uppercase tracking-[0.14em] text-cyan-200/70">{unit}</span>}
+      </p>
+      <p className="mt-1.5 font-pixel text-[8px] uppercase tracking-[0.2em] text-white/45">{label}</p>
     </div>
   );
 }
 
-/** The evolution line as columns of stages (branches stack), each a button that takes the wheel there. */
-export function EvolutionStrip({ root, current, inView, onPick }: { root: LabEvoNode; current: number; inView: (id: number) => boolean; onPick: (id: number) => void }) {
+/**
+ * Who's on the table, as the lab's own readout projected beside it (not a
+ * card): numbered channels down a lit spine (biometrics, the Pokédex log,
+ * abilities, lineage, type analysis), scanning in one after another each
+ * time a new Pokémon settles.
+ */
+export function InfoCard({ mon, details, inView, onPick }: { mon: LabMon; details: LabDetails | null | undefined; inView: (id: number) => boolean; onPick: (id: number) => void }) {
+  const col = typeColor(mon.types[0]);
+  let n = 0;
+  const d = () => 60 + n * 70;
+  return (
+    <div key={mon.id} className="relative space-y-5 pb-2" data-testid="lab-info" style={{ "--lx-col": col } as React.CSSProperties}>
+      {/* The spine. */}
+      <span className="lx-spine absolute bottom-1 left-[6px] top-2 w-px" aria-hidden />
+      <Channel n={++n} label={S.biometrics} delay={d()}>
+        <div className="grid grid-cols-[auto_auto_1fr] gap-x-6">
+          <Reading label={S.height} value={mon.heightM.toFixed(1)} unit="m" />
+          <Reading label={S.weight} value={mon.weightKg == null ? "—" : mon.weightKg.toFixed(1)} unit={mon.weightKg == null ? undefined : "kg"} />
+          <div className="min-w-0">
+            <p className="truncate font-display text-[15px] font-semibold uppercase leading-[24px] tracking-wide text-white">{regionOf(mon)}</p>
+            <p className="mt-1.5 font-pixel text-[8px] uppercase tracking-[0.2em] text-white/45">{S.region} · Gen {GEN_NUMERALS[mon.gen - 1]}</p>
+          </div>
+        </div>
+      </Channel>
+      <Channel n={++n} label={S.entry} delay={d()}>
+        {details === undefined ? (
+          <div className="space-y-2" aria-hidden>
+            <div className="lx-shimmer h-2.5 w-full rounded-sm" />
+            <div className="lx-shimmer h-2.5 w-3/4 rounded-sm" />
+          </div>
+        ) : details?.entry ? (
+          <figure data-testid="lab-entry">
+            <blockquote className="relative text-[13.5px] leading-[1.65] text-white/[0.88] [text-shadow:0_1px_10px_rgba(0,0,0,0.9)]">
+              <span className="mr-1 font-display text-cyan-300/80" aria-hidden>“</span>
+              {details.entry.text}
+            </blockquote>
+            {details.entry.games.length > 0 && (
+              <figcaption className="mt-1.5 font-pixel text-[8px] uppercase tracking-[0.18em] text-cyan-200/45">{"// "}{details.entry.games.join(" · ")}</figcaption>
+            )}
+          </figure>
+        ) : (
+          <p className="text-[13px] text-white/45">—</p>
+        )}
+      </Channel>
+      {details?.abilities && details.abilities.length > 0 && (
+        <Channel n={++n} label={S.abilities} delay={d()}>
+          <ul className="space-y-2">
+            {details.abilities.map((a) => (
+              <li key={a.name} className="text-[12.5px] leading-snug">
+                <span className="flex items-center gap-2">
+                  <span className="h-1 w-1 bg-cyan-300 shadow-[0_0_6px_rgba(126,232,255,0.9)]" aria-hidden />
+                  <span className="font-display text-[13px] font-semibold uppercase tracking-wide text-white">{a.name}</span>
+                  {a.hidden && <span className="border border-cyan-200/30 px-1 py-px font-pixel text-[7px] uppercase tracking-[0.16em] text-cyan-200/70">{S.hidden}</span>}
+                </span>
+                {a.effect && <span className="mt-0.5 block pl-3 text-white/55">{a.effect}</span>}
+              </li>
+            ))}
+          </ul>
+        </Channel>
+      )}
+      <Channel n={++n} label={S.evolution} delay={d()}>
+        {details === undefined ? (
+          <div className="lx-shimmer h-14 rounded-sm" aria-hidden />
+        ) : details?.evolution ? (
+          <EvolutionStrip root={details.evolution} current={mon.isForm ? mon.species : mon.id} inView={inView} onPick={onPick} color={col} />
+        ) : (
+          <p className="font-pixel text-[9px] uppercase tracking-[0.16em] text-white/45">{S.noEvolution}</p>
+        )}
+      </Channel>
+      <Channel n={++n} label={S.matchups} delay={d()}>
+        <Matchups types={mon.types} />
+      </Channel>
+    </div>
+  );
+}
+
+/** The lineage as specimen capsules joined by flow lines (branches stack), each one a jump on the wheel. */
+export function EvolutionStrip({ root, current, inView, onPick, color = "#7ee8ff" }: { root: LabEvoNode; current: number; inView: (id: number) => boolean; onPick: (id: number) => void; color?: string }) {
   const stages: LabEvoNode[][] = [];
   const walk = (n: LabEvoNode, d: number) => {
     (stages[d] ??= []).push(n);
@@ -161,11 +195,11 @@ export function EvolutionStrip({ root, current, inView, onPick }: { root: LabEvo
   };
   walk(root, 0);
   return (
-    <div className="flex items-center gap-1 overflow-x-auto pb-1" data-testid="lab-evolution">
+    <div className="flex items-start gap-0 overflow-x-auto pb-1" data-testid="lab-evolution">
       {stages.map((stage, d) => (
-        <div key={d} className="flex items-center gap-1">
-          {d > 0 && <ChevronRight className="h-4 w-4 shrink-0 text-cyan-200/40" aria-hidden />}
-          <div className="flex flex-col gap-1">
+        <div key={d} className="flex items-start">
+          {d > 0 && <span className="lx-flow mt-[26px] h-px w-5 shrink-0" aria-hidden />}
+          <div className="flex flex-col gap-2">
             {stage.map((n) => {
               const here = n.id === current;
               const ok = inView(n.id);
@@ -178,18 +212,18 @@ export function EvolutionStrip({ root, current, inView, onPick }: { root: LabEvo
                   title={!ok ? S.notInView : n.conditions.join(", ") || n.name}
                   aria-label={S.evoJump(n.name)}
                   aria-current={here ? "true" : undefined}
-                  className={cn(
-                    "group flex items-center gap-1.5 rounded-md border px-1 py-0.5 pr-2 text-left transition-colors",
-                    here ? "border-cyan-200/50 bg-cyan-200/10" : "border-white/10 bg-white/[0.03] hover:border-cyan-200/40 hover:bg-white/[0.07]",
-                    !ok && !here && "opacity-45"
-                  )}
+                  className={cn("group flex w-[78px] flex-col items-center text-center", !ok && !here && "opacity-40")}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={`/sizes/art/256/${n.id}.webp`} alt="" width={32} height={32} loading="lazy" className="h-8 w-8 object-contain" />
-                  <span className="min-w-0">
-                    <span className="block max-w-[92px] font-display text-[11px] font-semibold uppercase leading-tight tracking-wide text-white">{n.name}</span>
-                    {n.conditions[0] && <span className="block max-w-[110px] truncate text-[10px] leading-tight text-white/50">{n.conditions[0]}</span>}
+                  <span
+                    className={cn("relative grid h-[52px] w-[52px] place-items-center rounded-full border transition-[box-shadow,border-color]", here ? "" : "border-cyan-200/25 group-hover:border-cyan-200/60 group-enabled:group-hover:shadow-[0_0_16px_-2px_rgba(126,232,255,0.6)]")}
+                    style={here ? { borderColor: color, boxShadow: `0 0 18px -2px ${color}, inset 0 0 14px -4px ${color}` } : undefined}
+                  >
+                    <span className="absolute inset-[3px] rounded-full bg-[radial-gradient(circle_at_50%_70%,rgba(126,232,255,0.16),transparent_70%)]" aria-hidden />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={`/sizes/art/256/${n.id}.webp`} alt="" width={40} height={40} loading="lazy" className="relative h-10 w-10 object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]" />
                   </span>
+                  <span className={cn("mt-1.5 font-display text-[10.5px] font-semibold uppercase leading-tight tracking-wide", here ? "text-white" : "text-white/75")}>{n.name}</span>
+                  {n.conditions[0] && <span className="mt-0.5 line-clamp-2 font-pixel text-[7.5px] uppercase leading-[1.35] tracking-[0.08em] text-cyan-200/50">{n.conditions[0]}</span>}
                 </button>
               );
             })}
@@ -202,6 +236,7 @@ export function EvolutionStrip({ root, current, inView, onPick }: { root: LabEvo
 
 const MULT: Record<number, string> = { 4: "×4", 2: "×2", 0.5: "×½", 0.25: "×¼", 0: "×0" };
 
+/** Type analysis: what hits it hard, what it shrugs off, as a lab readout (each type a lit cell with its multiplier). */
 export function Matchups({ types }: { types: string[] }) {
   const prof = defensiveProfile(types as PokemonType[]);
   const rows: [string, [string, number][]][] = [
@@ -213,13 +248,17 @@ export function Matchups({ types }: { types: string[] }) {
     <div className="space-y-2" data-testid="lab-matchups">
       {rows.map(([label, list]) =>
         list.length ? (
-          <div key={label} className="grid grid-cols-[64px_1fr] items-start gap-2">
-            <span className="pt-1 font-pixel text-[8.5px] uppercase tracking-[0.14em] text-white/50">{label}</span>
+          <div key={label} className="grid grid-cols-[58px_1fr] items-start gap-2">
+            <span className="pt-[5px] font-pixel text-[8px] uppercase tracking-[0.18em] text-white/45">{label}</span>
             <div className="flex flex-wrap gap-1">
               {list.map(([t, v]) => (
-                <span key={t} className="inline-flex items-center gap-1">
-                  <TypeBadge type={t} size="sm" />
-                  {v !== 2 && v !== 0.5 && <span className="font-display text-[10px] font-bold text-white/80">{MULT[v]}</span>}
+                <span
+                  key={t}
+                  className="inline-flex h-[22px] items-center gap-1.5 border-l-2 bg-white/[0.04] pl-1.5 pr-2 font-display text-[10px] font-semibold uppercase tracking-[0.08em] text-white/85"
+                  style={{ borderColor: typeColor(t), background: `linear-gradient(90deg, ${typeColor(t)}33, ${typeColor(t)}08)` }}
+                >
+                  {t}
+                  <span className={cn("font-pixel text-[8px]", v > 1 ? "text-[#ff9b8a]" : "text-cyan-200/70")}>{MULT[v]}</span>
                 </span>
               ))}
             </div>
