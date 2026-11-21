@@ -187,7 +187,7 @@ export function EvolutionStrip({ root, current, inView, onPick }: { root: LabEvo
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={`/sizes/art/256/${n.id}.webp`} alt="" width={32} height={32} loading="lazy" className="h-8 w-8 object-contain" />
                   <span className="min-w-0">
-                    <span className="block truncate font-display text-[11.5px] font-semibold uppercase tracking-wide text-white">{n.name}</span>
+                    <span className="block max-w-[92px] font-display text-[11px] font-semibold uppercase leading-tight tracking-wide text-white">{n.name}</span>
                     {n.conditions[0] && <span className="block max-w-[110px] truncate text-[10px] leading-tight text-white/50">{n.conditions[0]}</span>}
                   </span>
                 </button>

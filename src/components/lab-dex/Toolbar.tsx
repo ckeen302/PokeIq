@@ -189,6 +189,7 @@ export function SearchBox({ all, seq, onJump, onShowAnyway, className, inputRef 
             if (e.key === "ArrowDown") { e.preventDefault(); setHi((h) => Math.min(h + 1, Math.max(0, hits.length - 1))); }
             else if (e.key === "ArrowUp") { e.preventDefault(); setHi((h) => Math.max(0, h - 1)); }
             else if (e.key === "Enter" && hits.length) { e.preventDefault(); go(hits[hi] ?? hits[0]); }
+            else if (e.key === "Enter" && everyone.length) { e.preventDefault(); onShowAnyway(all[everyone[0]].id); setOpen(false); setQ(""); }
             else if (e.key === "Escape") { setOpen(false); (e.target as HTMLInputElement).blur(); }
           }}
           placeholder={S.searchPlaceholder}

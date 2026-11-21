@@ -16,7 +16,7 @@ import { BaseStats, Corners, Heading, InfoCard, OpenInDex, Roles, StatsTabs, dex
 import { GenPicker, SearchBox, SortPicker, Toolbar, TogglesList, TypePicker, activeCount } from "./Toolbar";
 import { S } from "./strings";
 import type { LabScene } from "./scene";
-import type { Tier } from "./scene/quality";
+import { Governor, startTier, type Tier } from "./scene/quality";
 
 /**
  * The Professor's Lab (/lab/pokedex): every Pokémon on an endless wheel of
@@ -161,19 +161,18 @@ export function LabDexApp({ rows }: { rows: LabRow[] }) {
     const t0 = last;
     let lastShown: number | null = null;
     let lastSettled: number | null = null;
-    let governor: import("./scene/quality").Governor | null = null;
-    let forced = false;
-    void import("./scene/quality").then(({ Governor, startTier }) => {
-      const q = new URLSearchParams(location.search).get("q");
-      const nav = navigator as Navigator & { deviceMemory?: number };
-      const start = q !== null && /^[0-3]$/.test(q) ? (Number(q) as Tier) : startTier({ phone: window.matchMedia("(max-width: 1023px)").matches, cores: nav.hardwareConcurrency || 8, memoryGb: nav.deviceMemory });
-      forced = q !== null;
-      tierRef.current = start;
-      governor = new Governor(start, start);
-    });
+    let clock = 0;
+    const q = new URLSearchParams(location.search).get("q");
+    const nav = navigator as Navigator & { deviceMemory?: number };
+    const forced = q !== null && /^[0-3]$/.test(q);
+    const first = forced ? (Number(q) as Tier) : startTier({ phone: window.matchMedia("(max-width: 1023px)").matches, cores: nav.hardwareConcurrency || 8, memoryGb: nav.deviceMemory });
+    tierRef.current = first;
+    const governor = new Governor(first, first);
+    // Test aid (?rec=1): a fixed step a frame, so a slow software renderer can be filmed frame by frame at the real pace.
+    const fixedStep = new URLSearchParams(location.search).get("rec") === "1" ? 1 / 30 : 0;
     const tick = (now: number) => {
       raf = requestAnimationFrame(tick);
-      const dt = Math.min(0.1, Math.max(0, (now - last) / 1000));
+      const dt = fixedStep || Math.min(0.1, Math.max(0, (now - last) / 1000));
       last = now;
       frames.current++;
       wheel.update(dt);
@@ -184,8 +183,9 @@ export function LabDexApp({ rows }: { rows: LabRow[] }) {
       if (st !== lastSettled) { lastSettled = st; setSettled(st); }
       const scene = sceneRef.current;
       if (scene) {
-        scene.frame(wheel, dt, (now - t0) / 1000);
-        if (governor && !forced) {
+        clock += dt;
+        scene.frame(wheel, dt, fixedStep ? clock : (now - t0) / 1000);
+        if (!forced) {
           const t = governor.frame(dt);
           if (t !== null) { scene.setTier(t); tierRef.current = t; }
         }
@@ -215,8 +215,6 @@ export function LabDexApp({ rows }: { rows: LabRow[] }) {
       const fonts = { display: cssFont("--font-display", "sans-serif"), pixel: cssFont("--font-pixel", "monospace"), body: cssFont("--font-body", "sans-serif") };
       await Promise.all([document.fonts.load(`700 40px ${fonts.display}`), document.fonts.load(`600 20px ${fonts.display}`), document.fonts.load(`400 20px ${fonts.pixel}`)]).catch(() => undefined);
       const { createLabScene } = await import("./scene");
-      // The tier the frame loop chose (it loads first; a beat at most).
-      for (let i = 0; i < 50 && tierRef.current === null; i++) await new Promise((r) => setTimeout(r, 20));
       if (!alive) return;
       try {
         scene = createLabScene(el, {
@@ -480,7 +478,7 @@ export function LabDexApp({ rows }: { rows: LabRow[] }) {
 
   return (
     <>
-      <style>{`html.lx-locked, html.lx-locked body { overflow: hidden; overscroll-behavior: none; } .lx-stage { background: radial-gradient(120% 90% at 50% 40%, #0b1426 0%, #03050b 70%); }`}</style>
+      <style>{`html.lx-locked, html.lx-locked body { overflow: hidden; overscroll-behavior: none; } .lx-stage { background: radial-gradient(120% 90% at 50% 40%, #0b1426 0%, #03050b 70%); } @media (max-width: 1023px) { html:has(.lx-stage) { --tabbar-h: 0px; } html:has(.lx-stage) [data-testid="tabbar"] { display: none; } } .lab-scroll { scrollbar-width: thin; scrollbar-color: rgba(126,232,255,0.25) transparent; }`}</style>
       <div className="lx-stage fixed inset-x-0 bottom-0 top-14 z-40 overflow-hidden text-white" data-testid="lab-stage" data-ready={ready ? "1" : "0"} data-mode={mode}>
         <div
           ref={stage}

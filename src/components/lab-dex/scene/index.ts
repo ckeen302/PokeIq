@@ -96,7 +96,7 @@ interface Shot {
 }
 
 const HERO: Shot = { dist: 11.2, y: 1.25, ty: 2.0, fov: 29, aperture: 8 };
-const SPIN: Shot = { dist: 14.6, y: 4.9, ty: 0.85, fov: 44, aperture: 2.5 };
+const SPIN: Shot = { dist: 15.4, y: 6.3, ty: 0.8, fov: 47, aperture: 2.5 };
 
 /** The lab as seen in reflections: a dark drum, its ring lamps, the screens' cyan, a warm lamp or two. */
 function labEnvironment(renderer: THREE.WebGLRenderer): THREE.Texture {
