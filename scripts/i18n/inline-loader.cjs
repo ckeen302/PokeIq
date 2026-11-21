@@ -219,7 +219,8 @@ module.exports = function inlineLoader(source) {
         const batch = aliases.splice(0);
         for (const [param, tr] of batch) {
           if (translators.has(param)) {
-            if (translators.get(param).ns !== tr.ns) tr.escapes = true;
+            // Two namespaces through one parameter: its calls can't carry one English, so neither namespace goes.
+            if (translators.get(param).ns !== tr.ns) translators.get(param).escapes = tr.escapes = true;
             continue;
           }
           const alias = { ns: tr.ns, nsArg: null, escapes: false, edits: [], parent: tr };
