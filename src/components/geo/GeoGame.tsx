@@ -24,7 +24,7 @@ import { HubSection, HubTile, TileFlag } from "./HubParts";
 import { GeoYou } from "./GeoYou";
 import { AchievementToasts, useGeoProgress, type MyGeoProgress } from "./GeoAchievements";
 import type { DuelQueue } from "./DuelCard";
-import { geoWeekOf, geoWeeklyBoard, geoWeeklyLeft, geoWeeklyMap, geoWeeklyNumber } from "@/lib/geo-weekly";
+import { geoWeekOf, geoWeeklyLeft, geoWeeklyMap, geoWeeklyNumber } from "@/lib/geo-weekly";
 
 /**
  * What a solo round doesn't need is split off the first load: the duel card,
@@ -720,24 +720,17 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
               badge={weeklyDone !== undefined ? <TileFlag tone="success">Played</TileFlag> : week ? <TileFlag>Ends in {geoWeeklyLeft(week, Date.now())}</TileFlag> : undefined}
               blurb={weeklyDone !== undefined ? `You scored ${fmt(weeklyDone)} this week.` : "This week's map, the same for everyone."}
               action={
-                <div className="flex flex-col gap-2">
-                  <Button
-                    variant="success"
-                    className="w-full"
-                    disabled={!week || !weeklyMap || loading}
-                    onClick={() => void start({ kind: "game", weekly: true })}
-                    onPointerEnter={() => prefetch({ kind: "game", weekly: true })}
-                    data-testid="geo-weekly-play"
-                  >
-                    {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <CalendarRange className="h-4 w-4" aria-hidden />}
-                    {weeklyDone !== undefined ? "Replay for practice" : "Play this week's"}
-                  </Button>
-                  {week && (
-                    <Link href={`/leaderboard?board=geo&format=${geoWeeklyBoard(week)}`} className="tap hud-label text-center hover:text-foreground" data-testid="geo-weekly-board">
-                      Weekly leaderboard →
-                    </Link>
-                  )}
-                </div>
+                <Button
+                  variant="success"
+                  className="w-full"
+                  disabled={!week || !weeklyMap || loading}
+                  onClick={() => void start({ kind: "game", weekly: true })}
+                  onPointerEnter={() => prefetch({ kind: "game", weekly: true })}
+                  data-testid="geo-weekly-play"
+                >
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <CalendarRange className="h-4 w-4" aria-hidden />}
+                  {weeklyDone !== undefined ? "Replay for practice" : "Play this week's"}
+                </Button>
               }
             />
             <RegionStreakCard />
@@ -947,30 +940,6 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
 
         {/* ---- You ---- */}
         <GeoYou progress={mine} />
-
-        <p className="text-center text-xs text-muted-foreground">
-          Screenshots from{" "}
-          <a href="https://bulbapedia.bulbagarden.net" className="underline underline-offset-2" target="_blank" rel="noreferrer">
-            Bulbapedia
-          </a>
-          , the{" "}
-          <a href="https://pokemon.fandom.com" className="underline underline-offset-2" target="_blank" rel="noreferrer">
-            Pokémon Wiki
-          </a>
-          ,{" "}
-          <a href="https://www.pokepedia.fr" className="underline underline-offset-2" target="_blank" rel="noreferrer">
-            Poképédia
-          </a>{" "}
-          and{" "}
-          <a href="https://www.pokewiki.de" className="underline underline-offset-2" target="_blank" rel="noreferrer">
-            PokéWiki
-          </a>
-          . Pokémon game imagery © Nintendo / Game Freak / The Pokémon Company.{" "}
-          <Link href="/atlas" className="underline underline-offset-2">
-            Explore the world atlas
-          </Link>
-          .
-        </p>
       </div>
     );
   }
