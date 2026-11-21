@@ -11,7 +11,7 @@ import { localizePath } from "./paths";
  * "/pokemon/*" one segment under /pokemon.
  */
 /** Pages finished in every language: the site's own pages and, once done, each game. */
-const ALL_LANGUAGES = ["/", "/privacy", "/credits", "/feedback", "/s/*", "/pokedle", "/pokedle/**", "/pokeguessr", "/pokeguessr/streak", "/pokeguessr/history/**", "/pokeguessr/r/*", "/pokeguessr/c/*", "/pokeguessr/duel/*", "/pokeguessr/party/*"];
+const ALL_LANGUAGES = ["/", "/privacy", "/credits", "/feedback", "/s/*", "/pokedle", "/pokedle/**", "/pokeguessr", "/pokeguessr/streak", "/pokeguessr/history/**", "/pokeguessr/r/*", "/pokeguessr/c/*", "/pokeguessr/duel/*", "/pokeguessr/party/*", "/pikadoku", "/pikadoku/**"];
 
 export const TRANSLATED: Record<OtherLocale, readonly string[]> = {
   ja: ALL_LANGUAGES,
