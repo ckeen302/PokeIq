@@ -91,6 +91,7 @@ export function wordplayCategories(existingIds: ReadonlySet<string>): Category[]
   out.push({
     id: "wordplay:colour",
     family: "wordplay",
+    englishOnly: true,
     label: "Hides a colour in its name",
     rule: `Every name has a colour tucked inside it: ${COLOUR_WORDS.join(", ")}.`,
     difficulty: 2.95,
@@ -101,6 +102,7 @@ export function wordplayCategories(existingIds: ReadonlySet<string>): Category[]
   out.push({
     id: "wordplay:body",
     family: "wordplay",
+    englishOnly: true,
     label: "Hides a body part in its name",
     rule: "Every name has a body part tucked inside it: an arm, a toe, an ear, a fin...",
     difficulty: 3.3,
@@ -111,6 +113,7 @@ export function wordplayCategories(existingIds: ReadonlySet<string>): Category[]
   out.push({
     id: "wordplay:word",
     family: "wordplay",
+    englishOnly: true,
     label: "Starts with an everyday word",
     rule: "Every name is, or starts with, a plain English word: slow, star, bell, bear...",
     difficulty: 3.25,
@@ -126,6 +129,7 @@ export function wordplayCategories(existingIds: ReadonlySet<string>): Category[]
     out.push({
       id: `wordplay:rhyme:${ending}`,
       family: "wordplay",
+      englishOnly: true,
       label: `Rhyming names: -${ending}`,
       rule: `Every name ends in the same letters: -${ending}.`,
       difficulty: 3.0,

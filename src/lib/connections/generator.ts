@@ -155,8 +155,9 @@ const lowestBit = (mask: number) => 31 - Math.clz32(mask & -mask);
  * Red herrings with MORE tiles than a group (five Fire types: which four?)
  * are fair and wanted; only exact lookalikes count. Moves, abilities and
  * types (mixed groups) are left to validatePuzzle.
+ * `skip`: categories that don't count (the English-only ones, on a board in another language).
  */
-export function secondAnswers(puzzle: { groups: readonly PuzzleGroup[] }, firstOnly = false): string[] {
+export function secondAnswers(puzzle: { groups: readonly PuzzleGroup[] }, firstOnly = false, skip?: (c: Category) => boolean): string[] {
   const { groups } = puzzle;
   const size = groups.length;
   const tiles = groups.flatMap((g) => g.members).filter(isPokemonTile);
@@ -175,6 +176,8 @@ export function secondAnswers(puzzle: { groups: readonly PuzzleGroup[] }, firstO
   for (const [ci, bits] of byCategory) {
     if (bits.length < size) continue;
     const c = ALL_CATEGORIES[ci];
+    // A link that means nothing to these players (the English names' letters, on a board in another language: ./localize).
+    if (skip?.(c)) continue;
     const mask = bits.reduce((m, b) => m | b, 0);
     if (bits.length === size && !own.has(c.id) && !groupMasks.has(mask) && (SALIENT.has(c.family) || families.has(c.family))) {
       out.push(`${nameList(mask).join(", ")} are all ${c.label}`);
@@ -364,7 +367,8 @@ const familiesIn = (list: readonly Facts[] | undefined) => new Set((list ?? []).
 const FAMILY_SIZE = new Map<string, number>();
 for (const c of CATEGORIES) FAMILY_SIZE.set(`${c.family}|${bandOf(c)}`, (FAMILY_SIZE.get(`${c.family}|${bandOf(c)}`) ?? 0) + 1);
 
-function bandOf(c: Category): number {
+/** Which of BANDS a category's difficulty falls in (0 easiest, 3 trickiest). */
+export function bandOf(c: Category): number {
   return BANDS.findIndex(([lo, hi]) => c.difficulty >= lo && c.difficulty < hi);
 }
 

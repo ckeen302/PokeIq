@@ -238,11 +238,11 @@ export function signatureMoveIds(): Map<number, string> {
   return out;
 }
 
-function listCategory(id: string, label: string, rule: string, difficulty: number, list: readonly CuratedEntry[], guard?: readonly string[] | ((f: Facts) => boolean)): Category {
+function listCategory(id: string, label: string, rule: string, difficulty: number, list: readonly CuratedEntry[], guard?: readonly string[] | ((f: Facts) => boolean), englishOnly?: boolean): Category {
   const entries = resolveEntries(list);
   const near = Array.isArray(guard) ? resolveEntries(guard.map((n) => [n, ""] as const)) : null;
   const guardFn = typeof guard === "function" ? guard : near ? (f: Facts) => near.has(f.id) : undefined;
-  return { id, family: "lore", label, rule, difficulty, test: (f) => entries.has(f.id), why: (f) => entries.get(f.id)!, ...(guardFn && { guard: guardFn }) };
+  return { id, family: "lore", label, rule, difficulty, ...(englishOnly && { englishOnly }), test: (f) => entries.has(f.id), why: (f) => entries.get(f.id)!, ...(guardFn && { guard: guardFn }) };
 }
 
 export function curatedCategories(): Category[] {
@@ -252,7 +252,7 @@ export function curatedCategories(): Category[] {
     listCategory("lore:ace", "Gym Leaders' aces", "Each is the final, strongest Pokémon of a Gym Leader in the main games.", 3.0, GYM_ACES, GYM_ACE_GUARD),
     // Any Legendary or Mythical (or a cover star like Pikachu, Eevee or a Kanto starter) could be argued onto some box.
     listCategory("lore:box", "Box-art legendaries", "Each is the legendary Pokémon on the cover of a main-series game.", 2.95, BOX_LEGENDARIES, (f) => f.legendary || f.mythical || [3, 6, 9, 25, 133].includes(f.id)),
-    listCategory("lore:food", "Named after food", "Each name is built from a food: apple, cherry, vanilla, pumpkin, chestnut, dough, olive, tea, egg, peach...", 3.05, FOOD_NAMES, FOOD_GUARD),
+    listCategory("lore:food", "Named after food", "Each name is built from a food: apple, cherry, vanilla, pumpkin, chestnut, dough, olive, tea, egg, peach...", 3.05, FOOD_NAMES, FOOD_GUARD, true),
     {
       id: "lore:move",
       family: "lore",

@@ -44,6 +44,11 @@ export interface Category {
   needsSV?: boolean;
   /** A mixed group (./mixed): its tiles can also be moves, abilities and types. */
   mixed?: boolean;
+  /**
+   * The group is about the English names' letters or spelling (first letters, endings, hidden words, rhymes, what a
+   * name was borrowed from): it only works with the English names, so other languages swap it out (./localize).
+   */
+  englishOnly?: boolean;
   /** Whether a move, ability or type tile belongs (mixed groups only; every other category rejects them). */
   testTile?(ref: TileRef): boolean;
   /** Why such a tile belongs. */
@@ -515,6 +520,7 @@ function build(): Category[] {
     out.push({
       id: `letter:${letter.toLowerCase()}`,
       family: "name",
+      englishOnly: true,
       label: `Starts with ${letter}`,
       rule: `Every name begins with the letter ${letter}.`,
       difficulty: 3.3,
@@ -528,6 +534,7 @@ function build(): Category[] {
     out.push({
       id: `ends:${ending}`,
       family: "name",
+      englishOnly: true,
       label: `Name ends in “-${ending}”`,
       rule: `Every name ends in -${ending}.`,
       difficulty: 3.2,
@@ -539,6 +546,7 @@ function build(): Category[] {
   out.push({
     id: "name:short",
     family: "name",
+    englishOnly: true,
     label: "Four letters or fewer",
     rule: "Every name is four letters long or shorter.",
     difficulty: 2.6,
@@ -550,6 +558,7 @@ function build(): Category[] {
   out.push({
     id: "name:symbol",
     family: "name",
+    englishOnly: true,
     label: "Not just letters",
     rule: "Every name has something besides letters: a space, a dot, a hyphen, an apostrophe, a colon, an accent, a digit or a symbol.",
     difficulty: 2.9,
