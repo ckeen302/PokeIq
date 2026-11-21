@@ -1,0 +1,100 @@
+{
+  "hub": {
+    "title": "PokéGuessr: el GeoGuessr de Pokémon",
+    "description": "PokéGuessr es el GeoGuessr de Pokémon. Apareces en algún lugar entre Kanto y Paldea: mira la imagen del juego, pon una chincheta en el mapa y consigue hasta 25.000 puntos. Una partida diaria nueva cada día.",
+    "info": {
+      "description": "PokéGuessr es un GeoGuessr de Pokémon gratis: mira una imagen del juego, pon una chincheta en el mapa del mundo Pokémon y consigue hasta 25.000 puntos.",
+      "intro": "PokéGuessr es el GeoGuessr de Pokémon: apareces en algún lugar del mundo Pokémon, de Kanto a Paldea, y tienes que averiguar dónde.",
+      "steps": {
+        "look": "Mira la imagen del juego que te toca.",
+        "pin": "Pon una chincheta en el mapa donde creas que está.",
+        "submit": "Envía tu respuesta: cuanto más cerca tu chincheta, más puntos, hasta 25.000.",
+        "daily": "Cada día hay una partida diaria nueva."
+      },
+      "faq": {
+        "q": "¿Cómo se puntúa?",
+        "a": "Cuanto más cerca esté tu chincheta del lugar real, más puntos, hasta 25.000."
+      }
+    }
+  },
+  "streak": {
+    "title": "Racha de regiones de PokéGuessr: adivina la región con una captura",
+    "description": "Racha de regiones es la racha de países de PokéGuessr: una captura del juego y eliges la región, de Kanto a Paldea. Si aciertas, sigue la siguiente; si fallas, se acaba. ¿Hasta dónde llegarás?"
+  },
+  "globe": {
+    "title": "Globo del mundo Pokémon: gira todo el mundo Pokémon en 3D",
+    "description": "Un globo holográfico en 3D del mundo Pokémon. Gíralo, acércate desde las regiones hasta cada pueblo, ruta y lugar emblemático, mira cómo crece el mundo generación a generación y ve cada pueblo en una captura real."
+  },
+  "history": {
+    "title": "Historial de duelos de PokéGuessr",
+    "description": "Tus duelos de PokéGuessr, amistosos y clasificatorios, con la repetición ronda a ronda de cada uno.",
+    "back": "Volver a PokéGuessr",
+    "h1": "Historial de duelos",
+    "intro": "Todos los duelos que terminas en este dispositivo, o en tu cuenta si has iniciado sesión. Abre uno para verlo ronda a ronda.",
+    "worldMap": "Mapa del mundo"
+  },
+  "replay": {
+    "title": "Repetición de un duelo de PokéGuessr",
+    "description": "Un duelo de PokéGuessr ronda a ronda: la captura, las dos chinchetas y el lugar real, las puntuaciones, el daño y los PS."
+  },
+  "challenge": {
+    "fallback": "Desafío de PokéGuessr",
+    "aTrainer": "Un Entrenador",
+    "title": "{who} ha hecho {score} en PokéGuessr. ¿Puedes superarlo?",
+    "world": "{n, plural, one {El mismo lugar del mundo Pokémon: pon tu chincheta y supera su puntuación. GeoGuessr de Pokémon, gratis.} other {Los mismos {n} lugares del mundo Pokémon: pon tus chinchetas y supera su puntuación. GeoGuessr de Pokémon, gratis.}}",
+    "region": "{n, plural, one {El mismo lugar de {map}: pon tu chincheta y supera su puntuación. GeoGuessr de Pokémon, gratis.} other {Los mismos {n} lugares de {map}: pon tus chinchetas y supera su puntuación. GeoGuessr de Pokémon, gratis.}}"
+  },
+  "result": {
+    "fallback": "Resultado de PokéGuessr",
+    "mapAlt": "Mapa de {map}",
+    "shared": "Un Entrenador ha compartido su resultado",
+    "hp": "{hp} PS",
+    "inARow": "{n} seguidos",
+    "rounds": "{n} rondas",
+    "beat": "¿Crees que puedes superarlo? Gratis, sin registro y en tu navegador.",
+    "allModes": "Todos los modos de PokéGuessr",
+    "socialTitle": "{title} · PokéIQ",
+    "streak": {
+      "eyebrow": "Racha en {map}",
+      "detail": "{n, plural, one {{n} lugar acertado seguido a partir de capturas del juego, y luego un fallo.} other {{n} lugares acertados seguidos a partir de capturas del juego, y luego un fallo.}}",
+      "title": "{n} seguidos en la racha de {map} de PokéGuessr"
+    },
+    "game": {
+      "detailWorld": "{total} de {max} puntos en {n} lugares del mundo Pokémon.",
+      "detail": "{total} de {max} puntos en {n} lugares de {map}.",
+      "title": "{total} puntos en PokéGuessr {what}"
+    },
+    "regionStreak": {
+      "detail": "{n, plural, one {{n} región acertada seguida con una captura cada vez, y luego un fallo.} other {{n} regiones acertadas seguidas con una captura cada vez, y luego un fallo.}}",
+      "title": "{n} seguidos en Racha de regiones de PokéGuessr"
+    },
+    "duel": {
+      "race": "Carrera de puntos",
+      "duel": "Duelo",
+      "draw": "Empate",
+      "wins": "Gana {name}",
+      "drew": "{a} y {b} empataron tras {n} rondas.",
+      "beatRace": "{winner} ganó a {loser} por {mine} a {theirs} en {n} rondas.",
+      "beatHp": "{winner} ganó a {loser} con {hp} de {max} PS tras {n} rondas.",
+      "title": "{headline}: un duelo de PokéGuessr en {map}"
+    },
+    "daily": "Diaria #{n}",
+    "weekly": "Semanal #{n}",
+    "bonus": "+{bonus} de bonificación",
+    "chips": {
+      "streak": "Racha",
+      "race": "Carrera de puntos",
+      "hpDuel": "Duelo de PS",
+      "turbo": "Turbo",
+      "ranked": "Clasificatorio",
+      "regionStreak": "Racha de regiones"
+    },
+    "play": {
+      "game": "Jugar a PokéGuessr",
+      "daily": "Jugar la diaria de hoy",
+      "weekly": "Jugar el reto de esta semana",
+      "duel": "Empezar un duelo",
+      "regionStreak": "Jugar a Racha de regiones"
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "errors": {
+    "start": "Impossibile avviare la partita.",
+    "grade": "Impossibile valutare la scelta.",
+    "title": "Qualcosa è andato storto"
+  },
+  "setup": {
+    "eyebrow": "Esplorazione · Il mondo Pokémon",
+    "title": "Serie di <b>regioni</b>",
+    "intro": "Uno screenshot, una domanda: che regione è? Niente puntine. Ogni risposta giusta porta lo screenshot successivo; una regione sbagliata chiude la partita.",
+    "mode": "Modalità serie",
+    "headline": "Da {from} a {to}, finché non sbagli",
+    "best": "Il tuo record: {n} di fila.",
+    "first": "La tua prima partita fissa il tuo record.",
+    "board": "Le partite finite vanno nella classifica di Serie di regioni.",
+    "start": "Inizia",
+    "regions": "Le nove regioni"
+  },
+  "board": "Classifica delle serie",
+  "back": "Torna a Serie di regioni",
+  "hud": {
+    "streak": "Serie {n}",
+    "mode": "Serie di regioni · {world}"
+  },
+  "which": "Che regione è?",
+  "gen": "Gen. {n}",
+  "pick": "Scegli una regione",
+  "reveal": {
+    "right": "Regione giusta!",
+    "wrong": "Regione sbagliata. Serie finita",
+    "inARow": "{n} di fila",
+    "final": "Serie finale: {n}",
+    "its": "È {region}.",
+    "picked": "Hai scelto {picked}: è {region}.",
+    "nothing": "niente",
+    "results": "Vedi i risultati",
+    "next": "Prossimo screenshot",
+    "space": "Spazio"
+  },
+  "summary": {
+    "saveFailed": "Impossibile salvare.",
+    "shareTitle": "PokéGuessr Serie di regioni",
+    "shareCount": "{n, plural, one {{n} regione di fila} other {{n} regioni di fila}}",
+    "newBest": "Nuovo record",
+    "best": "Record: {n} di fila",
+    "share": "Condividi…",
+    "save": "Salva nella classifica delle serie",
+    "name": "Nome Allenatore",
+    "saved": "Salvato",
+    "submit": "Invia",
+    "needOne": "Indovina almeno una regione per entrare in classifica."
+  }
+}

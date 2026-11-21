@@ -1,0 +1,25 @@
+{
+  "open": "Come si gioca",
+  "goal": {
+    "title": "L'obiettivo",
+    "body": "Ti ritrovi da qualche parte nel mondo Pokémon e vedi solo uno screenshot. Capisci dov'è, metti una puntina sulla mappa e premi Indovina."
+  },
+  "scoring": {
+    "title": "Punteggio",
+    "body": "Fino a {max} punti per round: più la puntina è vicina, più punti fai. Una partita dura {lengths} round; la Giornaliera sempre {daily}."
+  },
+  "modes": {
+    "title": "Modalità",
+    "body": "Giornaliera: gli stessi {daily} luoghi per tutti. Serie: continua a indovinare luoghi finché una puntina non sbaglia. Gioca sul mondo, su una regione o su una mappa a tema, con giochi in 2D classico o 3D moderno."
+  },
+  "duels": {
+    "title": "Duelli",
+    "body": "Sfida un amico in diretta. Lotta a PS: partite entrambi con {hp} PS e la puntina più vicina infligge danni all'altra. Gara a punti: vince il totale migliore su tutti i round."
+  },
+  "demo": {
+    "label": "Demo: appare uno screenshot Pokémon, un cursore va sulla mappa, ingrandisce e mette una puntina, preme Indovina, una linea mostra il luogo vero e il round vale {score} su {max}",
+    "where": "Dove si trova?",
+    "guess": "Indovina",
+    "squares": "a {d} caselle della mappa"
+  }
+}

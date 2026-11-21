@@ -1,0 +1,25 @@
+{
+  "open": "Cómo se juega",
+  "goal": {
+    "title": "El objetivo",
+    "body": "Apareces en algún lugar del mundo Pokémon y solo ves una captura. Averigua dónde es, pon una chincheta en el mapa y pulsa Adivinar."
+  },
+  "scoring": {
+    "title": "Puntuación",
+    "body": "Hasta {max} puntos por ronda: cuanto más cerca tu chincheta, más puntos. Una partida tiene {lengths} rondas; la Diaria siempre tiene {daily}."
+  },
+  "modes": {
+    "title": "Modos",
+    "body": "Diaria: los mismos {daily} lugares para todos. Racha: sigue acertando lugares hasta que falles una chincheta. Juega en el mundo, en una región o en un mapa temático, con juegos 2D clásicos o 3D modernos."
+  },
+  "duels": {
+    "title": "Duelos",
+    "body": "Enfréntate a un amigo en directo. Batalla de PS: los dos empezáis con {hp} PS y la chincheta más cercana daña a la otra. Carrera de puntos: gana el mejor total de todas las rondas."
+  },
+  "demo": {
+    "label": "Demo: aparece una captura de Pokémon, un cursor va al mapa, hace zoom y pone una chincheta, pulsa Adivinar, una línea muestra el lugar real y la ronda suma {score} de {max}",
+    "where": "¿Dónde está esto?",
+    "guess": "Adivinar",
+    "squares": "a {d} casillas del mapa"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "open": "Comment jouer",
+  "goal": {
+    "title": "Le but",
+    "body": "Tu atterris quelque part dans le monde Pokémon et tu ne vois qu'une capture. Trouve où c'est, place un repère sur la carte et appuie sur Valider."
+  },
+  "scoring": {
+    "title": "Score",
+    "body": "Jusqu'à {max} points par manche : plus ton repère est proche, plus tu marques. Une partie dure {lengths} manches ; le Quotidien en compte toujours {daily}."
+  },
+  "modes": {
+    "title": "Modes",
+    "body": "Quotidien : les mêmes {daily} lieux pour tout le monde. Série : trouve des lieux jusqu'à ce qu'un repère tombe à côté. Joue sur le monde, une région ou une carte thématique, avec des jeux en 2D classique ou en 3D moderne."
+  },
+  "duels": {
+    "title": "Duels",
+    "body": "Affronte un ami en direct. Combat de PV : vous commencez tous les deux avec {hp} PV et le repère le plus proche inflige des dégâts à l'autre. Course aux points : le meilleur total sur l'ensemble des manches l'emporte."
+  },
+  "demo": {
+    "label": "Démo : une capture Pokémon apparaît, un curseur va sur la carte, zoome et place un repère, appuie sur Valider, une ligne montre le vrai lieu et la manche rapporte {score} sur {max}",
+    "where": "Où est-ce ?",
+    "guess": "Valider",
+    "squares": "à {d} cases de la carte"
+  }
+}
