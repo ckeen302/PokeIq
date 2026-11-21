@@ -23,7 +23,6 @@ type ReplayT = Translator<typeof geoReplay.en>;
  * (or the account, when signed in), a page at a time.
  */
 
-const fmt = (n: number) => n.toLocaleString("en-US");
 
 export const historyHeaders = (): Record<string, string> => {
   const id = rankedId();

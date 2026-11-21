@@ -4,7 +4,6 @@ import { GEO_FILTER_MIN_PLACES, type GeoRegionInfo } from "@/lib/geo-types";
 import {
   GEO_GAME_BONUS,
   allowedFamilies,
-  geoFamily,
   placesFor,
   type GeoEra,
   type GeoFamilyId,

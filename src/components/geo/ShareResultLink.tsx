@@ -7,6 +7,7 @@ import { CopyFallback } from "@/components/quiz/CopyFallback";
 import { copyText, shareOrCopy } from "@/lib/share";
 import { useT } from "@/i18n/client";
 import geoNs from "@/messages/geo";
+import { localeHref } from "@/i18n/href";
 
 /** The result page's path for a signed PokéGuessr result (game, daily or streak) or a finished duel. */
 export const resultPath = (token: string) => `/pokeguessr/r/${encodeURIComponent(token)}`;
@@ -21,7 +22,8 @@ export function ShareResultLink({ token, text: given, className }: { token: stri
   const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
   const timer = useRef<number | undefined>(undefined);
   useEffect(() => () => window.clearTimeout(timer.current), []);
-  const url = typeof window !== "undefined" ? `${window.location.origin}${resultPath(token)}` : resultPath(token);
+  const path = localeHref(resultPath(token), t.locale).href;
+  const url = typeof window !== "undefined" ? `${window.location.origin}${path}` : path;
 
   async function share() {
     const outcome = window.matchMedia("(pointer: coarse)").matches ? await shareOrCopy(text, url) : (await copyText(url)) ? "copied" : "failed";

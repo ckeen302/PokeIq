@@ -27,6 +27,7 @@ import { useT } from "@/i18n/client";
 import type { Translator } from "@/i18n/catalog";
 import geoNs from "@/messages/geo";
 import geoStreak from "@/messages/geo-streak";
+import { localeHref } from "@/i18n/href";
 import { useGeoNames, type GeoLocal } from "@/lib/geo-i18n-client";
 
 type StreakT = Translator<typeof geoStreak.en>;
@@ -430,7 +431,7 @@ function StreakSummary({ streak, best, newBest, resultToken, t }: { streak: numb
   }
 
   const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const shareText = `${t("summary.shareTitle")}\n🔥${t("summary.shareCount", { n: streak })}\n${"✅".repeat(Math.min(streak, 20))}${streak > 20 ? "…" : ""}❌${resultToken ? `\n${origin}${resultPath(resultToken)}` : ""}`;
+  const shareText = `${t("summary.shareTitle")}\n🔥${t("summary.shareCount", { n: streak })}\n${"✅".repeat(Math.min(streak, 20))}${streak > 20 ? "…" : ""}❌${resultToken ? `\n${origin}${localeHref(resultPath(resultToken), t.locale).href}` : ""}`;
   return (
     <div className="space-y-4" data-testid="streak-summary">
       <div className="flex flex-wrap items-center justify-center gap-2">

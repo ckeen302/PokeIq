@@ -8,7 +8,6 @@ import { dailyNumber } from "@/lib/daily";
 import { geoWeeklyBoard, geoWeeklyNumber } from "@/lib/geo-weekly";
 import { useProgress } from "@/lib/progress";
 import { copyText, guessrShareText, shareOrCopy, shareUrl, type GuessrShareResult } from "@/lib/share";
-import { GEO_DIFFICULTY_NAMES } from "@/lib/geo-difficulty";
 import { COMPARE_MAX, COMPARE_MIN_PLAYERS, bucketOf, percentBeaten, type GeoDailyStats } from "@/lib/geo-compare";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,6 +24,8 @@ import { useT } from "@/i18n/client";
 import { formatNumber, type Translator } from "@/i18n/catalog";
 import geoNs from "@/messages/geo";
 import geoSolo from "@/messages/geo-solo";
+import share from "@/messages/share";
+import { localeHref } from "@/i18n/href";
 import { useGeoNames } from "@/lib/geo-i18n-client";
 
 type SoloT = Translator<typeof geoSolo.en>;
@@ -52,6 +53,7 @@ export function GeoSummary({
   const t = useT(geoSolo);
   const g = useT(geoNs);
   const names = useGeoNames();
+  const shareT = useT(share);
   const fmt = (n: number) => formatNumber(n, t.locale);
   const progress = useProgress();
   const { region } = game;
@@ -79,16 +81,16 @@ export function GeoSummary({
   // The Daily and the Weekly are the same places for everyone: a friend plays their own (ranked) game from the result's link,
   // never a challenge replay of them (unranked, and it would use up their places). Other games challenge with the same places.
   const sharedPlaces = !!(game.daily || game.weekly);
-  const challengeUrl = challengeToken && !sharedPlaces ? `${origin}/pokeguessr/c/${encodeURIComponent(challengeToken)}` : null;
+  const challengeUrl = challengeToken && !sharedPlaces ? `${origin}${localeHref(`/pokeguessr/c/${encodeURIComponent(challengeToken)}`, t.locale).href}` : null;
   const canRank = !game.practice && !!resultToken;
-  const modeName = game.difficulty ? GEO_DIFFICULTY_NAMES[game.difficulty] : undefined;
-  const shareTextFull = guessrShareText(shareResult, region.name, shareUrl(shareResult), { mode: modeName });
+  const modeName = game.difficulty ? names.difficulty(game.difficulty) : undefined;
+  const shareTextFull = guessrShareText(shareResult, names.map(region), shareUrl(shareResult, t.locale), { mode: modeName, t: shareT });
   // The card to copy: the result, then the challenge link (same places) when there is one, else the result page.
-  const shareBody = guessrShareText(shareResult, region.name, undefined, { mode: modeName });
-  const shareLink = challengeUrl ?? shareUrl(shareResult);
+  const shareBody = guessrShareText(shareResult, names.map(region), undefined, { mode: modeName, t: shareT });
+  const shareLink = challengeUrl ?? shareUrl(shareResult, t.locale);
 
   async function shareChallenge() {
-    const link = challengeUrl ?? (sharedPlaces ? shareUrl(shareResult) : null);
+    const link = challengeUrl ?? (sharedPlaces ? shareUrl(shareResult, t.locale) : null);
     if (!link) return;
     const text = game.daily
       ? t("summary.shareDaily", { score: fmt(total), n: dailyNumber(game.daily), places: played.length || 5 })

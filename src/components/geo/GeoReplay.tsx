@@ -7,7 +7,6 @@ import { Check, ChevronLeft, ChevronRight, Copy, Crown, Link2, Loader2, Pause, P
 import { DUEL_HP, type DuelRoundResult } from "@/lib/duel-types";
 import { REPLAY_PHASES, replayHp, replayStep, replaySteps, type GeoDuelReplay, type ReplayPhase } from "@/lib/geo-duel-history";
 import { WORLD_REGION, type GeoAnswer, type GeoRegionInfo } from "@/lib/geo-types";
-import { GEO_ERA_NAMES } from "@/lib/geo-families";
 import { keepRankedId } from "@/lib/ranked-client";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { BackButtonClient as BackButton } from "@/components/ui/BackButtonClient";
@@ -20,6 +19,7 @@ import { EloChange, formatDuelDate, historyHeaders } from "./DuelHistory";
 import { useT } from "@/i18n/client";
 import { formatNumber, type Translator } from "@/i18n/catalog";
 import geoReplay from "@/messages/geo-replay";
+import { localeHref } from "@/i18n/href";
 import { useGeoNames, type GeoLocal } from "@/lib/geo-i18n-client";
 
 type ReplayT = Translator<typeof geoReplay.en>;
@@ -434,7 +434,7 @@ function ShareReplay({ code, shared, onShared, t }: { code: string; shared: bool
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const url = typeof window === "undefined" ? "" : `${window.location.origin}/pokeguessr/history/${code}`;
+  const url = typeof window === "undefined" ? "" : `${window.location.origin}${localeHref(`/pokeguessr/history/${code}`, t.locale).href}`;
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(url);
