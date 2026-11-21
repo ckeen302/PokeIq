@@ -9,7 +9,7 @@ import type { GeoDuelHistoryItem, GeoDuelHistoryResponse } from "@/lib/geo-duel-
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { GymLeaderTag } from "./GeoRanked";
+import { GymLeaderTag, useShownName } from "./GeoRanked";
 import { useT } from "@/i18n/client";
 import { INTL_LOCALE, formatNumber, type Translator } from "@/i18n/catalog";
 import type { Locale } from "@/i18n/config";
@@ -62,6 +62,7 @@ export function EloChange({ before, after, className }: { before: number; after:
 
 function Row({ duel, mapName, t }: { duel: GeoDuelHistoryItem; mapName: string; t: ReplayT }) {
   const r = RESULT[duel.result];
+  const shownName = useShownName();
   const fmt = (n: number) => formatNumber(n, t.locale);
   return (
     <li>
@@ -77,7 +78,7 @@ function Row({ duel, mapName, t }: { duel: GeoDuelHistoryItem; mapName: string; 
           <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
             <span className="truncate font-semibold">
               <span className="text-muted-foreground">{t("vs")} </span>
-              {duel.opponent.name}
+              {shownName(duel.opponent)}
             </span>
             {duel.opponent.bot && <GymLeaderTag />}
           </span>

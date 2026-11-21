@@ -633,6 +633,8 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     const weeklyMap = week ? byId(geoWeeklyMap(week, (id) => playable(byId(id))) ?? "") : undefined;
     const weeklyDone = week ? progress?.best[`geo-weekly:${week}`] : undefined;
     const weeklyLeft = week ? geoWeeklyLeftParts(week, Date.now()) : null;
+    // The duel and party cards name the map as it stands: in the page's language.
+    const shownRegion = t.locale === "en" ? region : { ...region, name: names.map(region) };
     return (
       <div className="mx-auto max-w-6xl space-y-12">
         <div className="relative space-y-3 text-center">
@@ -908,7 +910,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
           <div id="duels" className="scroll-mt-24">
             {/* Duels play an era when the map has enough of it (hand-picked games are practice), else every game. */}
             <DuelCard
-              region={region}
+              region={shownRegion}
               places={places}
               era={filter.era && filterPlaces(region, { era: filter.era, families: [] }) >= GEO_FILTER_MIN_PLACES ? filter.era : undefined}
               queue={duelQueue}
@@ -918,7 +920,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
           {partyOpen && (
             <div id="party" className="scroll-mt-24 space-y-3">
               <h3 className="font-display text-xl font-bold uppercase">{t("hub.multi.party")}</h3>
-              <PartyCard region={region} />
+              <PartyCard region={shownRegion} />
             </div>
           )}
         </HubSection>

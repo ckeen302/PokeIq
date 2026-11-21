@@ -14,11 +14,12 @@ import { SEAT_COLORS } from "@/components/duel/DuelParts";
 import { cn } from "@/lib/utils";
 import { GeoMap, type RevealedRound } from "./GeoMap";
 import { THEM_COLOR, YOU_COLOR, distanceText } from "./DuelHud";
-import { GymLeaderTag } from "./GeoRanked";
+import { GymLeaderTag, useShownName } from "./GeoRanked";
 import { EloChange, formatDuelDate, historyHeaders } from "./DuelHistory";
 import { useT } from "@/i18n/client";
 import { formatNumber, type Translator } from "@/i18n/catalog";
 import geoReplay from "@/messages/geo-replay";
+import guessrHud from "@/messages/guessr-hud";
 import { localeHref } from "@/i18n/href";
 import { useGeoNames, type GeoLocal } from "@/lib/geo-i18n-client";
 
@@ -115,7 +116,8 @@ function ReplayView({ replay, map, t, names, onShared }: { replay: GeoDuelReplay
   // Viewer first: you on the left in green. A shared replay keeps the seats' own colours.
   const order = me === 1 ? [1, 0] : [0, 1];
   const colorOf = (seat: number) => (me === null ? SEAT_COLORS[seat] : seat === me ? YOU_COLOR : THEM_COLOR);
-  const nameOf = (seat: number) => replay.players[seat]?.name ?? t("trainer");
+  const shownName = useShownName();
+  const nameOf = (seat: number) => shownName(replay.players[seat]) ?? t("trainer");
 
   const go = useCallback((s: number) => setStep(Math.max(0, Math.min(total - 1, s))), [total]);
 
@@ -314,6 +316,7 @@ function Controls({ step, total, playing, label, onStep, onPlay, t }: { step: nu
 
 function SeatPanel({ name, color, bot, round, seat, phase, hp, race, t }: { name: string; color: string; bot: boolean; round: DuelRoundResult; seat: number; phase: ReplayPhase; hp: number; race: boolean; t: ReplayT }) {
   const fmt = (n: number) => formatNumber(n, t.locale);
+  const hudT = useT(guessrHud);
   const g = round.guesses[seat];
   const open = phase !== "shot";
   const dealt = phase === "damage" && round.winner === seat ? round.damage : 0;
@@ -331,7 +334,7 @@ function SeatPanel({ name, color, bot, round, seat, phase, hp, race, t }: { name
       <dl className="grid grid-cols-3 gap-2 text-center">
         <div className="rounded-md bg-foreground/[0.04] p-2">
           <dt className="hud-label">{t("seat.distance")}</dt>
-          <dd className="mt-0.5 truncate text-sm font-semibold tabular-nums">{!open ? "—" : g ? distanceText(g.squares) : t("seat.noGuess")}</dd>
+          <dd className="mt-0.5 truncate text-sm font-semibold tabular-nums">{!open ? "—" : g ? distanceText(g.squares, hudT) : t("seat.noGuess")}</dd>
         </div>
         <div className="rounded-md bg-foreground/[0.04] p-2">
           <dt className="hud-label">{t("seat.score")}</dt>

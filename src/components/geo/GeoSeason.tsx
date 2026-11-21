@@ -6,7 +6,7 @@ import { CalendarClock, Check, Gift, History, Lock } from "lucide-react";
 import { GEO_DIVISIONS, geoDivisionOf, type GeoDivisionId } from "@/lib/geo-ranked";
 import { GEO_SEASON_TRACK, geoRewardLabel, geoSeasonTimeLeft, type GeoSeasonRecord, type GeoSeasonView } from "@/lib/geo-seasons";
 import { cn } from "@/lib/utils";
-import { GeoBallIcon, GeoDivisionBadge } from "./GeoRanked";
+import { GeoBallIcon, GeoDivisionBadge, useDivisionName } from "./GeoRanked";
 import { useT } from "@/i18n/client";
 import { formatNumber, type Keys, type Translator } from "@/i18n/catalog";
 import geoRecord from "@/messages/geo-record";
@@ -17,8 +17,6 @@ type RecordT = Translator<typeof geoRecord.en>;
 type RecordKey = Keys<typeof geoRecord.en>;
 const SEASON_REGIONS = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola", "Galar", "Paldea"];
 
-/** A division's name ("Great Ball") in the page's language. */
-const divisionName = (t: RecordT, id: GeoDivisionId) => (t.locale === "en" ? GEO_DIVISIONS.find((d) => d.id === id)!.name : t(`balls.${id}`));
 /** A season's name ("Kanto Season"): English as the server named it. */
 function seasonName(t: RecordT, n: GeoNamesT, season: { number: number; name: string }): string {
   if (t.locale === "en") return season.name;
@@ -71,6 +69,7 @@ function useMinute(): number | null {
 export function GeoRewardTrack({ peak, className }: { peak: GeoDivisionId | null; className?: string }) {
   const t = useT(geoRecord);
   const n = useT(geoNamesNs);
+  const divisionName = useDivisionName();
   const top = peak ? GEO_DIVISIONS.findIndex((d) => d.id === peak) : -1;
   const next = GEO_SEASON_TRACK[top + 1];
   return (
@@ -86,7 +85,7 @@ export function GeoRewardTrack({ peak, className }: { peak: GeoDivisionId | null
                 "relative flex min-w-0 flex-col items-center gap-1 rounded-md border px-1 py-2 text-center",
                 reached ? "border-success/50 bg-success/10" : "border-border bg-foreground/[0.03]"
               )}
-              title={`${divisionName(t, GEO_DIVISIONS[i].id)}: ${labels}`}
+              title={`${divisionName(GEO_DIVISIONS[i].id)}: ${labels}`}
               data-reached={reached || undefined}
             >
               <GeoBallIcon division={tier.division} className={cn("h-6 w-6", !reached && "opacity-45 grayscale")} />
@@ -105,7 +104,7 @@ export function GeoRewardTrack({ peak, className }: { peak: GeoDivisionId | null
           {next ? (
             <>
               {t.rich(top >= 0 ? "season.next" : "season.reach", {
-                ball: divisionName(t, GEO_DIVISIONS[top + 1].id),
+                ball: divisionName(GEO_DIVISIONS[top + 1].id),
                 rewards: next.rewards.map((r) => rewardName(t, n, r.id)).join(", "),
                 b: (c) => <b className="text-foreground">{c}</b>,
               })}
