@@ -28,6 +28,8 @@ import { EVENT_IDS as GAMES_EVENT_IDS } from "@/lib/games/events";
 import { GAMES_PATH, PLAY_PATH as GAMES_PLAY_PATH, eventPath as gamesEventPath, pokemonPath as gamesPokemonPath, recordsPath as gamesRecordsPath } from "@/lib/games/deeplink";
 import { GAMES_ATHLETES } from "@/lib/games/data";
 import { RANKINGS_PATH, allRankingPages } from "@/lib/dex/rankings";
+import { CASES as THEORY_CASES } from "@/lib/theories/data";
+import { THEORIES_PATH, casePath as theoryCasePath } from "@/lib/theories/types";
 
 // Card pages are in /pokedex/tcg/sitemap/<n>.xml (see src/app/pokedex/tcg/sitemap.ts).
 // TCG sets come from the Pokémon TCG API: refresh daily; without the API the sitemap simply omits them.
@@ -89,6 +91,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/pokedex/natures`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${SITE_URL}/pokedex/tcg`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${SITE_URL}/pokedex/trainers`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${SITE_URL}${THEORIES_PATH}`, changeFrequency: "weekly", priority: 0.7 },
+    ...THEORY_CASES.map((c) => ({ url: `${SITE_URL}${theoryCasePath(c.slug)}`, changeFrequency: "monthly" as const, priority: 0.5 })),
     { url: `${SITE_URL}/leaderboard`, changeFrequency: "hourly", priority: 0.5 },
     { url: `${SITE_URL}/battle`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${SITE_URL}/battle/play`, changeFrequency: "monthly", priority: 0.8 },

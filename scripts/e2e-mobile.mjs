@@ -266,11 +266,11 @@ async function paintsBeforeScripts(browser, BASE, errors, step, width) {
  * is against the phone's width, not innerWidth).
  */
 async function narrowPhone(browser, BASE, errors, step) {
-  step("phone at 360 px: the Pokédex entry and the rankings fit the screen");
+  step("phone at 360 px: the Pokédex entry, the rankings and the Theories tab fit the screen");
   const context = await browser.newContext({ viewport: { width: 360, height: 740 }, isMobile: true, hasTouch: true });
   await context.addInitScript(() => sessionStorage.setItem("pokeiq-splash", "1"));
   const page = await context.newPage();
-  for (const path of ["/pokemon/charizard", "/pokedex/rankings"]) {
+  for (const path of ["/pokemon/charizard", "/pokedex/rankings", "/pokedex/theories", "/pokedex/theories/gengar-is-clefables-shadow"]) {
     try {
       await page.goto(`${BASE}${path}`, { waitUntil: "load" });
       await page.waitForTimeout(1000);
