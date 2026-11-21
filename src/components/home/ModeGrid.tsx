@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "@/components/ui/Link";
-import { ChevronRight, ListChecks, Sparkles } from "lucide-react";
+import { ChevronRight, Fingerprint, ListChecks } from "lucide-react";
 import type { ReactNode } from "react";
 import { QUIZ_PATH } from "@/lib/which-pokemon/match";
 import { MODULE_INFO, PLAY_MODULES, moduleHref } from "@/lib/modes";
@@ -30,7 +30,7 @@ const EXTRAS: Tile[] = [
     title: "Which Pokémon Are You?",
     description: "Find the Pokémon most like you.",
     accent: "290 80% 66%",
-    icon: <Sparkles className="relative z-[3] h-6 w-6" aria-hidden />,
+    icon: <Fingerprint className="relative z-[3] h-6 w-6" aria-hidden />,
     testId: "play-which-pokemon-tile",
   },
 ];
