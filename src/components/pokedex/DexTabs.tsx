@@ -16,7 +16,21 @@ const TABS = [
   { id: "tcg", label: "TCG", href: "/pokedex/tcg" },
 ] as const;
 
-export type DexTabId = typeof MAIN.id | (typeof TABS)[number]["id"];
+/** The second row: the franchise and its lore, beyond the Pokédex itself. */
+const MORE_TABS = [
+  { id: "games", label: "Games", href: "/pokedex/games" },
+  { id: "movies", label: "Movies", href: "/pokedex/movies" },
+  { id: "theories", label: "Theories", href: "/pokedex/theories" },
+] as const;
+
+export type DexTabId = typeof MAIN.id | (typeof TABS)[number]["id"] | (typeof MORE_TABS)[number]["id"];
+
+const ROW = "flex flex-wrap justify-center rounded-md border border-foreground/10 bg-shade/30 p-1 max-md:grid max-md:w-full max-md:grid-cols-3 max-md:gap-1";
+const tabClass = (on: boolean) =>
+  cn(
+    "rounded-sm px-3.5 py-2 font-pixel text-[10px] uppercase tracking-wider transition-colors max-md:flex max-md:h-10 max-md:items-center max-md:justify-center max-md:px-1 max-md:text-[11px]",
+    on ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+  );
 
 /** Top-level Pokédex sections. Each is its own static page so no section ships another's data. */
 export function DexTabs({ active }: { active: DexTabId }) {
@@ -35,7 +49,7 @@ export function DexTabs({ active }: { active: DexTabId }) {
         {MAIN.label}
       </Link>
       {/* Phones: all nine sections as one even 3 × 3 grid, Pokémon first. */}
-      <div className="flex flex-wrap justify-center rounded-md border border-foreground/10 bg-shade/30 p-1 max-md:grid max-md:w-full max-md:grid-cols-3 max-md:gap-1">
+      <div className={ROW}>
         <Link
           href={MAIN.href}
           aria-current={main ? "page" : undefined}
@@ -52,11 +66,15 @@ export function DexTabs({ active }: { active: DexTabId }) {
             href={t.href}
             aria-current={active === t.id ? "page" : undefined}
             data-testid={`dex-tab-${t.id}`}
-            className={cn(
-              "rounded-sm px-3.5 py-2 font-pixel text-[10px] uppercase tracking-wider transition-colors max-md:flex max-md:h-10 max-md:items-center max-md:justify-center max-md:px-1 max-md:text-[11px]",
-              active === t.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-            )}
+            className={tabClass(active === t.id)}
           >
+            {t.label}
+          </Link>
+        ))}
+      </div>
+      <div className={ROW}>
+        {MORE_TABS.map((t) => (
+          <Link key={t.id} href={t.href} aria-current={active === t.id ? "page" : undefined} data-testid={`dex-tab-${t.id}`} className={tabClass(active === t.id)}>
             {t.label}
           </Link>
         ))}

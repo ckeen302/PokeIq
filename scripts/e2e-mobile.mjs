@@ -34,6 +34,10 @@ export const MOBILE_ROUTES = [
   "/pokedex/types",
   "/pokedex/trainers",
   "/pokedex/tcg",
+  "/pokedex/games",
+  "/pokedex/games/scarlet-violet",
+  "/pokedex/movies",
+  "/pokedex/movies/the-rise-of-darkrai",
   "/atlas",
   "/privacy",
 ];
@@ -266,11 +270,11 @@ async function paintsBeforeScripts(browser, BASE, errors, step, width) {
  * is against the phone's width, not innerWidth).
  */
 async function narrowPhone(browser, BASE, errors, step) {
-  step("phone at 360 px: the Pokédex entry fits the screen");
+  step("phone at 360 px: the Pokédex entry and the Games, Movies and Theories tabs fit the screen");
   const context = await browser.newContext({ viewport: { width: 360, height: 740 }, isMobile: true, hasTouch: true });
   await context.addInitScript(() => sessionStorage.setItem("pokeiq-splash", "1"));
   const page = await context.newPage();
-  for (const path of ["/pokemon/charizard"]) {
+  for (const path of ["/pokemon/charizard", "/pokedex/games", "/pokedex/games/ultra-sun-ultra-moon", "/pokedex/movies", "/pokedex/movies/black-victini-and-reshiram-white-victini-and-zekrom", "/pokedex/theories", "/pokedex/theories/gengar-is-clefables-shadow"]) {
     try {
       await page.goto(`${BASE}${path}`, { waitUntil: "load" });
       await page.waitForTimeout(1000);
