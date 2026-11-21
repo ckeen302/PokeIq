@@ -40,7 +40,7 @@ function declaredHere(node) {
   const out = new Map();
   const addBinding = (name, decl) => {
     if (ts.isIdentifier(name)) out.set(name.text, decl);
-    else if (ts.isObjectBindingPattern(name) || ts.isArrayBindingPattern(name)) for (const el of name.elements) if (!ts.isOmittedExpression(el)) addBinding(el.name, decl);
+    else if (ts.isObjectBindingPattern(name) || ts.isArrayBindingPattern(name)) for (const el of name.elements) if (!ts.isOmittedExpression(el)) addBinding(el.name, ts.isIdentifier(el.name) ? el : decl);
   };
   if (ts.isFunctionLike(node)) for (const p of node.parameters) addBinding(p.name, p);
   const statements = ts.isSourceFile(node) || ts.isBlock(node) || ts.isModuleBlock(node) ? node.statements : ts.isCaseClause(node) || ts.isDefaultClause(node) ? node.statements : null;
@@ -99,7 +99,7 @@ module.exports = function inlineLoader(source) {
           let init = n.initializer;
           if (ts.isAwaitExpression(init)) init = init.expression;
           if (ts.isCallExpression(init) && ts.isIdentifier(init.expression) && MAKERS.has(init.expression.text) && init.arguments[0] && ts.isIdentifier(init.arguments[0]) && namespaces.has(init.arguments[0].text)) {
-            translators.set(n, { ns: namespaces.get(init.arguments[0].text), nsArg: init.arguments[0], escapes: false, edits: [] });
+            translators.set(n, { ns: namespaces.get(init.arguments[0].text), nsArg: init.arguments[0], escapes: false, edits: [], parent: null });
           }
         }
         ts.forEachChild(n, visitDecls);
@@ -112,40 +112,51 @@ module.exports = function inlineLoader(source) {
         const text = leaf(ns.tree, key);
         return text === undefined ? undefined : englishMessage(text, compile, `${ns.name}.${key}`, used, H);
       };
-      // The English for a call's key: a string key's message, or a template key's matching messages as an object.
-      const englishFor = (ns, keyNode) => {
-        if (ts.isStringLiteral(keyNode) || ts.isNoSubstitutionTemplateLiteral(keyNode)) return en(ns, keyNode.text);
-        if (ts.isTemplateExpression(keyNode) && keyNode.templateSpans.length === 1) {
-          const prefix = keyNode.head.text;
-          const span = keyNode.templateSpans[0];
-          const suffix = span.literal.text;
-          const expr = span.expression;
-          // Only a plain name or property read: it is read again for the lookup.
-          const simple = (e) => ts.isIdentifier(e) || (ts.isPropertyAccessExpression(e) && simple(e.expression));
-          if (!simple(expr)) return undefined;
-          const entries = [];
-          for (const [key] of leaves(ns.tree)) {
-            if (!key.startsWith(prefix) || !key.endsWith(suffix) || key.length < prefix.length + suffix.length + 1) continue;
-            const mid = key.slice(prefix.length, key.length - suffix.length);
-            if (mid.includes(".")) continue;
-            entries.push(`${JSON.stringify(mid)}:${en(ns, key)}`);
-          }
-          if (!entries.length) return undefined;
-          return `({${entries.join(",")}})[${expr.getText(sf)}]`;
+      // The English for a call's key: a string key's message; a conditional of keys, each branch's; a template key, the
+      // messages its pattern matches, as an object read with the key itself (the call then takes the key once, in an IIFE).
+      const unwrap = (e) => (ts.isParenthesizedExpression(e) || ts.isAsExpression(e) || ts.isSatisfiesExpression?.(e) || ts.isNonNullExpression(e) ? unwrap(e.expression) : e);
+      const englishFor = (ns, keyNode0) => {
+        const keyNode = unwrap(keyNode0);
+        if (ts.isStringLiteral(keyNode) || ts.isNoSubstitutionTemplateLiteral(keyNode)) {
+          const m = en(ns, keyNode.text);
+          return m === undefined ? undefined : { direct: m };
         }
-        return undefined;
+        // Every key the expression can produce, as a pattern.
+        const patterns = [];
+        const collect = (e0) => {
+          const e = unwrap(e0);
+          if (ts.isStringLiteral(e) || ts.isNoSubstitutionTemplateLiteral(e)) return patterns.push(new RegExp(`^${e.text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`)), true;
+          if (ts.isConditionalExpression(e)) return collect(e.whenTrue) && collect(e.whenFalse);
+          if (ts.isTemplateExpression(e)) {
+            const esc = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            let re = esc(e.head.text);
+            for (const span of e.templateSpans) re += `[^.]+${esc(span.literal.text)}`;
+            return patterns.push(new RegExp(`^${re}$`)), true;
+          }
+          return false;
+        };
+        if (!collect(keyNode)) return undefined;
+        if (/\bt[A-Za-z]*\(/.test(keyNode.getText(sf))) return undefined;
+        const entries = [];
+        for (const [key] of leaves(ns.tree)) if (patterns.some((re) => re.test(key))) entries.push(`${JSON.stringify(key)}:${en(ns, key)}`);
+        if (!entries.length) return undefined;
+        return { map: `({${entries.join(",")}})` };
       };
 
       const edits = [];
-      const visitUses = (n) => {
-        if (ts.isIdentifier(n) && !(n.parent && ts.isVariableDeclaration(n.parent) && n.parent.name === n)) {
-          // A reference to a translator?
-          const isPropName = n.parent && ts.isPropertyAccessExpression(n.parent) && n.parent.name === n;
-          const isKey = n.parent && (ts.isPropertyAssignment(n.parent) || ts.isPropertySignature(n.parent)) && n.parent.name === n;
-          if (!isPropName && !isKey) {
-            const decl = resolve(n);
-            const tr = decl && translators.get(decl);
-            if (tr) {
+      const aliases = []; // [parameter declaration, translator it receives]
+      // The parameter of a function declared in this file that a call's argument lands in, if any.
+      const localParam = (call, index) => {
+        const callee = unwrap(call.expression);
+        if (!ts.isIdentifier(callee)) return null;
+        const d = resolve(callee);
+        let fn = null;
+        if (d && ts.isFunctionDeclaration(d)) fn = d;
+        else if (d && ts.isVariableDeclaration(d) && d.initializer && (ts.isArrowFunction(d.initializer) || ts.isFunctionExpression(d.initializer))) fn = d.initializer;
+        const param = fn?.parameters[index];
+        return param && ts.isIdentifier(param.name) && !param.dotDotDotToken ? param : null;
+      };
+      const visitOne = (n, tr) => {
               const p = n.parent;
               let call = null;
               let rich = false;
@@ -153,25 +164,90 @@ module.exports = function inlineLoader(source) {
               else if (ts.isPropertyAccessExpression(p) && p.expression === n && p.name.text === "rich" && ts.isCallExpression(p.parent) && p.parent.expression === p) (call = p.parent), (rich = true);
               const english = call && call.arguments.length >= 1 && call.arguments.length <= 2 && !call.arguments.some(ts.isSpreadElement) ? englishFor(tr.ns, call.arguments[0]) : undefined;
               const readsLocale = ts.isPropertyAccessExpression(p) && p.expression === n && p.name.text === "locale";
-              if (readsLocale) {
-                // t.locale needs no English.
-              } else if (english === undefined) tr.escapes = true;
-              else {
-                const at = call.arguments[call.arguments.length - 1].getEnd();
-                const extra = call.arguments.length === 1 ? (rich ? `, {}, ${english}` : `, undefined, ${english}`) : `, ${english}`;
-                edits.push([at, at, extra]);
+              // In a hook's dependency list it is only compared, never called.
+              const inDeps = ts.isArrayLiteralExpression(p) && ts.isCallExpression(p.parent) && ts.isIdentifier(p.parent.expression) && /^use(Effect|LayoutEffect|Memo|Callback)$/.test(p.parent.expression.text);
+              // Handed to a function of this file: that parameter is the same translator (followed below).
+              const localArg = ts.isCallExpression(p) && p.expression !== n && p.arguments.includes(n) ? localParam(p, p.arguments.indexOf(n)) : ts.isJsxExpression(p) && ts.isJsxAttribute(p.parent) ? localProp(p.parent) : null;
+              if (readsLocale || inDeps) {
+                // Needs no English.
+              } else if (localArg) {
+                aliases.push([localArg, tr]);
+              } else if (english === undefined) {
+                tr.escapes = true;
+                if (process.env.I18N_INLINE_DEBUG) console.log(`[i18n-inline] ${path.relative(process.cwd(), file)}:${sf.getLineAndCharacterOfPosition(n.getStart(sf)).line + 1} keeps ${tr.ns.name}: ${(call ?? p).getText(sf).slice(0, 90)}`);
               }
-            }
+              else if (english.direct !== undefined) {
+                const at = call.arguments[call.arguments.length - 1].getEnd();
+                const extra = call.arguments.length === 1 ? (rich ? `, {}, ${english.direct}` : `, undefined, ${english.direct}`) : `, ${english.direct}`;
+                tr.edits.push([at, at, extra]);
+              } else {
+                // MAP[key]: the key expression read a second time (keys are conditions and template reads, no effects).
+                const at = call.arguments[call.arguments.length - 1].getEnd();
+                const pick = `${english.map}[${call.arguments[0].getText(sf)}]`;
+                tr.edits.push([at, at, call.arguments.length === 1 ? (rich ? `, {}, ${pick}` : `, undefined, ${pick}`) : `, ${pick}`]);
+              }
+      };
+      // The destructured prop of a component of this file that a JSX attribute lands in: <Row t={t} /> → ({ t }) => …
+      const localProp = (attr) => {
+        const el = attr.parent?.parent;
+        if (!el || !(ts.isJsxOpeningElement(el) || ts.isJsxSelfClosingElement(el)) || !ts.isIdentifier(el.tagName)) return null;
+        const d = resolve(el.tagName);
+        let fn = null;
+        if (d && ts.isFunctionDeclaration(d)) fn = d;
+        else if (d && ts.isVariableDeclaration(d) && d.initializer && (ts.isArrowFunction(d.initializer) || ts.isFunctionExpression(d.initializer))) fn = d.initializer;
+        const first = fn?.parameters[0];
+        if (!first || !ts.isObjectBindingPattern(first.name)) return null;
+        const want = attr.name.getText(sf);
+        return first.name.elements.find((b) => ts.isIdentifier(b.name) && (b.propertyName ? b.propertyName.getText(sf) : b.name.text) === want && !b.dotDotDotToken) ?? null;
+      };
+      const visitUses = (n) => {
+        if (ts.isIdentifier(n) && !(n.parent && ts.isVariableDeclaration(n.parent) && n.parent.name === n)) {
+          const isPropName = n.parent && ts.isPropertyAccessExpression(n.parent) && n.parent.name === n;
+          const isKey = n.parent && (ts.isPropertyAssignment(n.parent) || ts.isPropertySignature(n.parent)) && n.parent.name === n;
+          if (!isPropName && !isKey) {
+            const decl = resolve(n);
+            const tr = decl && translators.get(decl);
+            if (tr) visitOne(n, tr);
           }
         }
         ts.forEachChild(n, visitUses);
       };
       visitUses(sf);
+      // A local helper's translator parameter: its uses are rewritten like the translator's own, and anything it can't
+      // inline keeps the namespace (the parameter is followed until nothing new is learned).
+      for (let round = 0; round < 4 && aliases.length; round++) {
+        const batch = aliases.splice(0);
+        for (const [param, tr] of batch) {
+          if (translators.has(param)) {
+            if (translators.get(param).ns !== tr.ns) tr.escapes = true;
+            continue;
+          }
+          const alias = { ns: tr.ns, nsArg: null, escapes: false, edits: [], parent: tr };
+          translators.set(param, alias);
+        }
+        // Re-run the uses scan for the new parameters only.
+        const fresh = new Set(batch.map(([param]) => param));
+        const scan = (n) => {
+          if (ts.isIdentifier(n)) {
+            const d = resolve(n);
+            if (d && fresh.has(d) && n !== d.name) visitOne(n, translators.get(d));
+          }
+          ts.forEachChild(n, scan);
+        };
+        scan(sf);
+      }
+      // A translator escapes if any alias of it does; inlined English is only worth it when the namespace goes.
+      for (const tr of translators.values()) if (tr.parent && tr.escapes) for (let p = tr.parent; p; p = p.parent) p.escapes = true;
+      for (const tr of translators.values()) {
+        let root = tr;
+        while (root.parent) root = root.parent;
+        if (!root.escapes) edits.push(...tr.edits);
+      }
 
       // Translators used only through inlined calls get a stub namespace (name only): its English isn't needed.
       const stubs = new Map();
       for (const tr of translators.values()) {
-        if (tr.escapes) continue;
+        if (tr.escapes || !tr.nsArg) continue;
         const id = `__i18nNs_${tr.ns.name.replace(/[^a-z0-9]/g, "_")}`;
         stubs.set(id, tr.ns.name);
         edits.push([tr.nsArg.getStart(sf), tr.nsArg.getEnd(), id]);
