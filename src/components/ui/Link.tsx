@@ -32,7 +32,7 @@ const Link = forwardRef<HTMLAnchorElement, ComponentProps<typeof NextLink>>(func
   const props = useLocaleProps(rest);
   const href = typeof props.href === "string" ? props.href : null;
   // A link that leaves the page's language (to a page not translated into it) is an ordinary link: a full page load.
-  if (props["data-locale-exit"]) return <a ref={ref} onTouchStart={onTouchStart} {...anchorProps(props)} />;
+  if (process.env.LIVE_LOCALES && props["data-locale-exit"]) return <a ref={ref} onTouchStart={onTouchStart} {...anchorProps(props)} />;
   if (!PHONE && prefetch === undefined && href && PER_REQUEST.test(stripLocale(href))) {
     const warm = () => router.prefetch(href);
     return (

@@ -10,7 +10,7 @@ import { anchorProps, useLocaleProps } from "./Link";
  */
 const PlainLink = forwardRef<HTMLAnchorElement, ComponentProps<typeof NextLink>>(function PlainLink(rest, ref) {
   const props = useLocaleProps(rest);
-  if (props["data-locale-exit"]) return <a ref={ref} {...anchorProps(props)} />;
+  if (process.env.LIVE_LOCALES && props["data-locale-exit"]) return <a ref={ref} {...anchorProps(props)} />;
   return <NextLink ref={ref} {...props} />;
 });
 

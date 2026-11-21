@@ -22,7 +22,11 @@ const files = (dir) => {
 };
 export function normalize(html) {
   return html
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, "")
+    .replace(/<!--[A-Za-z0-9_-]{15,30}-->/, "<!--build-->")
+    // React useId values depend on the component tree's depth, not on what is painted.
+    .replace(/_R_[0-9a-zA-Z]+_/g, "_R_id_")
+    // Scripts go, except structured data (JSON-LD is content and is compared).
+    .replace(/<script\b(?![^>]*application\/ld\+json)[^>]*>[\s\S]*?<\/script>/g, "")
     .replace(/<link\b[^>]*\bas="script"[^>]*>/g, "")
     .replace(/\/_next\/static\/[^"']+/g, "/_next/static/*")
     .replace(/<!--\$!?-->|<!--\/\$-->|<!-- -->/g, "")
