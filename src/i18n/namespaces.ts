@@ -5,6 +5,7 @@
  */
 export const NAMESPACES = [
   "common",
+  "api-errors",
   "credits",
   "error",
   "feedback",

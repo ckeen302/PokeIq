@@ -10,6 +10,7 @@ import { ClientMessages } from "@/i18n/ClientMessages";
 import site from "@/messages/site";
 import { SITE_NAME } from "@/lib/site";
 import { JA_CSS } from "@/i18n/ja-style";
+import { ApiErrors } from "@/components/i18n/ApiErrors";
 import { metadata as rootMetadata } from "@/app/layout";
 
 /**
@@ -60,6 +61,7 @@ export default async function LocaleLayout({ children, params }: Props) {
         <RouteSlot>{children}</RouteSlot>
       </main>
       <ChromeAfter locale={locale} />
+      <ApiErrors />
       </ClientMessages>
     </LocaleProvider>
   );
