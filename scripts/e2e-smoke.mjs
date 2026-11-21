@@ -15,6 +15,7 @@ import { runIqTest } from "./e2e-iq-test.mjs";
 import { runSizes } from "./e2e-sizes.mjs";
 import { runRankings } from "./e2e-rankings.mjs";
 import { runVideoGames } from "./e2e-video-games.mjs";
+import { runMovies } from "./e2e-movies.mjs";
 import { runMobile } from "./e2e-mobile.mjs";
 import { runDesktopTripwire } from "./e2e-desktop-tripwire.mjs";
 import { runA11y } from "./e2e-a11y.mjs";
@@ -2393,6 +2394,7 @@ await runSizes({ browser, BASE, OUT, errors, step });
 
 await runRankings({ browser, BASE, errors, step });
 await runVideoGames({ browser, BASE, errors, step });
+await runMovies({ browser, BASE, errors, step });
 await runMobile({ browser, BASE, OUT, errors, step });
 await runMassBattle({ browser, BASE, OUT, errors, step });
 await runRace({ browser, BASE, OUT, errors, step });

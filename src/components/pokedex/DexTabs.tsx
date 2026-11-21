@@ -19,6 +19,7 @@ const TABS = [
 /** The second row: the franchise beyond the Pokédex itself. */
 const MORE = [
   { id: "games", label: "Games", href: "/pokedex/games" },
+  { id: "movies", label: "Movies", href: "/pokedex/movies" },
 ] as const;
 
 export type DexTabId = typeof MAIN.id | (typeof TABS)[number]["id"] | (typeof MORE)[number]["id"];
