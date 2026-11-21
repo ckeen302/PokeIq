@@ -62,3 +62,34 @@ export function itemList(name: string, items: Crumb[]) {
     itemListElement: items.map((it, i) => ({ "@type": "ListItem", position: i + 1, name: it.name, url: abs(it.path) })),
   };
 }
+
+/** A video game (the Pokédex's Games pages). */
+export function videoGame({
+  name,
+  path,
+  description,
+  image,
+  datePublished,
+  platforms,
+  developer,
+}: {
+  name: string;
+  path: string;
+  description: string;
+  image?: string;
+  datePublished?: string;
+  platforms: string[];
+  developer?: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    name,
+    url: abs(path),
+    description,
+    ...(image && { image: abs(image) }),
+    ...(datePublished && { datePublished }),
+    gamePlatform: platforms,
+    ...(developer && { author: developer.split(", ").map((n) => ({ "@type": "Organization", name: n })) }),
+  };
+}

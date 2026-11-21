@@ -16,7 +16,12 @@ const TABS = [
   { id: "tcg", label: "TCG", href: "/pokedex/tcg" },
 ] as const;
 
-export type DexTabId = typeof MAIN.id | (typeof TABS)[number]["id"];
+/** The second row: the franchise beyond the Pokédex itself. */
+const MORE = [
+  { id: "games", label: "Games", href: "/pokedex/games" },
+] as const;
+
+export type DexTabId = typeof MAIN.id | (typeof TABS)[number]["id"] | (typeof MORE)[number]["id"];
 
 /** Top-level Pokédex sections. Each is its own static page so no section ships another's data. */
 export function DexTabs({ active }: { active: DexTabId }) {
@@ -47,6 +52,22 @@ export function DexTabs({ active }: { active: DexTabId }) {
           {MAIN.label}
         </Link>
         {TABS.map((t) => (
+          <Link
+            key={t.id}
+            href={t.href}
+            aria-current={active === t.id ? "page" : undefined}
+            data-testid={`dex-tab-${t.id}`}
+            className={cn(
+              "rounded-sm px-3.5 py-2 font-pixel text-[10px] uppercase tracking-wider transition-colors max-md:flex max-md:h-10 max-md:items-center max-md:justify-center max-md:px-1 max-md:text-[11px]",
+              active === t.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            {t.label}
+          </Link>
+        ))}
+      </div>
+      <div className="flex flex-wrap justify-center rounded-md border border-foreground/10 bg-shade/30 p-1 max-md:grid max-md:w-full max-md:grid-cols-3 max-md:gap-1">
+        {MORE.map((t) => (
           <Link
             key={t.id}
             href={t.href}
