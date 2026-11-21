@@ -13,6 +13,12 @@ import { BadgeMedal } from "@/components/game/BadgeMedal";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { BeatMyTime, FriendsBoard } from "./social";
+import { useT } from "@/i18n/client";
+import { formatNumber, translator, type Translator } from "@/i18n/catalog";
+import conn from "@/messages/connections";
+
+type ConnT = Translator<typeof conn.en>;
+const english = () => translator(conn, "en", undefined);
 
 /** PokéConnections' results-screen extras: the celebration, the streak flame, tomorrow, badges and the daily leaderboard. */
 
@@ -44,9 +50,10 @@ export function useCelebration(kind: "perfect" | "solved" | null) {
 
 /** "PERFECT!": each letter pops in, in the four group colours. */
 export function PerfectBanner() {
-  const letters = "PERFECT!".split("");
+  const t = useT(conn);
+  const letters = [...t("perfect.word")];
   return (
-    <div className="flex justify-center gap-0.5 font-display text-5xl font-bold uppercase tracking-tight sm:text-6xl" role="status" aria-label="Perfect! No mistakes." data-testid="conn-perfect">
+    <div className="flex justify-center gap-0.5 font-display text-5xl font-bold uppercase tracking-tight sm:text-6xl" role="status" aria-label={t("perfect.aria")} data-testid="conn-perfect">
       {letters.map((ch, i) => (
         <motion.span
           key={i}
@@ -64,13 +71,14 @@ export function PerfectBanner() {
 }
 
 /** The line under the streak: a record only once there is a run to speak of. */
-export function streakNote(streak: number, best: number): string {
-  if (streak <= 1 && best <= 1) return "Play tomorrow to keep it going";
-  return streak >= best ? "Your best streak yet!" : `Best: ${best} day${best === 1 ? "" : "s"}`;
+export function streakNote(streak: number, best: number, t: ConnT = english()): string {
+  if (streak <= 1 && best <= 1) return t("streak.keepGoing");
+  return streak >= best ? t("streak.best") : t("streak.bestDays", { n: best });
 }
 
 /** The streak, with a flickering flame that grows with it. */
 export function StreakFlame({ streak, best }: { streak: number; best: number }) {
+  const t = useT(conn);
   const size = streak >= 30 ? "text-5xl" : streak >= 7 ? "text-4xl" : "text-3xl";
   return (
     <div className="flex items-center justify-center gap-3 rounded-lg border border-orange-400/40 bg-orange-400/[0.08] px-4 py-3" data-testid="conn-streak">
@@ -84,9 +92,9 @@ export function StreakFlame({ streak, best }: { streak: number; best: number }) 
       </motion.span>
       <div className="text-left">
         <p className="font-display text-2xl font-bold tabular-nums leading-none text-orange-400">
-          {streak} day{streak === 1 ? "" : "s"}
+          {t("streak.days", { n: streak })}
         </p>
-        <p className="text-xs text-muted-foreground">{streakNote(streak, best)}</p>
+        <p className="text-xs text-muted-foreground">{streakNote(streak, best, t)}</p>
       </div>
     </div>
   );
@@ -94,20 +102,22 @@ export function StreakFlame({ streak, best }: { streak: number; best: number }) 
 
 /** "Come back tomorrow" with the countdown to the next daily. */
 export function ComeBackTomorrow({ next }: { next: number }) {
+  const t = useT(conn);
   return (
     <div className="space-y-1 rounded-lg border border-screen/40 bg-screen/[0.06] px-4 py-3 text-center" data-testid="conn-tomorrow">
-      <p className="font-display text-base font-bold uppercase tracking-wide">Come back tomorrow for #{next}</p>
-      <NextDailyCountdown label="New puzzle in" />
+      <p className="font-display text-base font-bold uppercase tracking-wide">{t("tomorrow", { n: next })}</p>
+      <NextDailyCountdown label={t("newPuzzleIn")} />
     </div>
   );
 }
 
 /** Badges this game just earned. */
 export function NewBadges({ badges }: { badges: BadgeDef[] }) {
+  const t = useT(conn);
   if (!badges.length) return null;
   return (
     <div className="space-y-2" data-testid="conn-badges">
-      <p className="hud-label text-warning">New badge{badges.length > 1 ? "s" : ""}!</p>
+      <p className="hud-label text-warning">{t("newBadges", { n: badges.length })}</p>
       <div className="flex flex-wrap justify-center gap-2">
         {badges.map((b, i) => (
           <motion.div
@@ -129,14 +139,9 @@ export function NewBadges({ badges }: { badges: BadgeDef[] }) {
   );
 }
 
-const UNRANKED: Record<Exclude<ConnBoardStanding, { position: number }>["unranked"], string> = {
-  "no-name": "",
-  unsolved: "Solve it to get on the leaderboard.",
-  untimed: "This game started before the leaderboard could time it, so it isn't ranked.",
-  "name-taken": "Another trainer has that name on today's board.",
-  limited: "Your network already has a few entries on today's board.",
-  off: "",
-};
+/** Why a finished daily isn't on the board, in words. */
+const unranked = (t: ConnT, why: Exclude<ConnBoardStanding, { position: number }>["unranked"]): string =>
+  why === "unsolved" ? t("board.unsolved") : why === "untimed" ? t("board.untimed") : why === "name-taken" ? t("board.nameTaken") : why === "limited" ? t("board.limited") : "";
 
 /**
  * Today's leaderboard on the results screen: the top ten (fewest mistakes,
@@ -157,6 +162,7 @@ export function DailyLeaderboard({
   you: string | null;
   onName: (name: string) => Promise<void>;
 }) {
+  const t = useT(conn);
   const id = useId();
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
@@ -179,16 +185,16 @@ export function DailyLeaderboard({
     <section className="space-y-3 rounded-lg border bg-card p-4 text-left" aria-labelledby={`${id}-h`} data-testid="conn-board">
       <div className="flex items-baseline justify-between gap-2">
         <h3 id={`${id}-h`} className="flex items-center gap-1.5 font-display text-base font-bold uppercase tracking-wide">
-          <Trophy className="h-4 w-4 text-warning" aria-hidden /> Today&apos;s leaderboard
+          <Trophy className="h-4 w-4 text-warning" aria-hidden /> {t("board.title")}
         </h3>
         <Link href={`/leaderboard?board=connections&date=${date}`} className="text-xs text-primary hover:underline">
-          Full board →
+          {t("board.full")}
         </Link>
       </div>
-      <div role="tablist" className="flex gap-1.5" aria-label="Leaderboard">
-        {(["all", "friends"] as const).map((t) => (
-          <Button key={t} role="tab" size="sm" variant={tab === t ? "default" : "outline"} aria-selected={tab === t} className="h-7 px-3 text-xs" onClick={() => setTab(t)} data-testid={`conn-board-tab-${t}`}>
-            {t === "all" ? "Everyone" : "Friends"}
+      <div role="tablist" className="flex gap-1.5" aria-label={t("board.tabs")}>
+        {(["all", "friends"] as const).map((k) => (
+          <Button key={k} role="tab" size="sm" variant={tab === k ? "default" : "outline"} aria-selected={tab === k} className="h-7 px-3 text-xs" onClick={() => setTab(k)} data-testid={`conn-board-tab-${k}`}>
+            {k === "all" ? t("board.everyone") : t("board.friends")}
           </Button>
         ))}
       </div>
@@ -198,12 +204,12 @@ export function DailyLeaderboard({
         <>
       {"position" in standing ? (
         <p className="text-sm" data-testid="conn-board-place">
-          You&apos;re <b>#{standing.position}</b> of {standing.total.toLocaleString("en-US")} today.
+          {t.rich("board.place", { position: standing.position, total: formatNumber(standing.total, t.locale), b: (c) => <b>{c}</b> })}
         </p>
       ) : needsName ? (
         <form onSubmit={submit} className="space-y-2">
           <label htmlFor={`${id}-n`} className="block text-sm">
-            {standing.unranked === "name-taken" ? UNRANKED["name-taken"] + " Pick another to rank:" : "Add your trainer name to get on today's board:"}
+            {standing.unranked === "name-taken" ? t("board.nameTakenPick") : t("board.addName")}
           </label>
           <div className="flex gap-2">
             <input
@@ -211,11 +217,11 @@ export function DailyLeaderboard({
               value={name}
               onChange={(e) => (setName(e.target.value), setError(null))}
               maxLength={24}
-              placeholder="Trainer name"
+              placeholder={t("board.placeholder")}
               className="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
             <Button type="submit" size="sm" disabled={busy || !name.trim()}>
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : "Rank me"}
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : t("board.rankMe")}
             </Button>
           </div>
           {error && (
@@ -225,10 +231,10 @@ export function DailyLeaderboard({
           )}
         </form>
       ) : (
-        <p className="text-sm text-muted-foreground">{UNRANKED[standing.unranked]}</p>
+        <p className="text-sm text-muted-foreground">{unranked(t, standing.unranked)}</p>
       )}
       {rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Nobody on the board yet. Solve it and be the first!</p>
+        <p className="text-sm text-muted-foreground">{t("board.empty")}</p>
       ) : (
         <ol className="divide-y text-sm">
           {rows.map((r, i) => {
@@ -236,19 +242,19 @@ export function DailyLeaderboard({
             return (
               <li key={`${r.name}-${i}`} className={cn("flex items-center gap-3 py-1.5", mine && "-mx-2 rounded-md bg-primary/10 px-2 font-semibold")}>
                 <span className="w-6 text-right font-mono tabular-nums text-muted-foreground">
-                  {i < 3 ? <Medal className={cn("ml-auto h-4 w-4", ["text-yellow-400", "text-slate-300", "text-amber-600"][i])} aria-label={`#${i + 1}`} /> : i + 1}
+                  {i < 3 ? <Medal className={cn("ml-auto h-4 w-4", ["text-yellow-400", "text-slate-300", "text-amber-600"][i])} aria-label={t("board.medal", { n: i + 1 })} /> : i + 1}
                 </span>
                 <span className="min-w-0 flex-1 truncate">
                   {r.name}
                   {r.hinted && (
-                    <span title="Used the hint" aria-label="used the hint">
+                    <span title={t("board.usedHint")} aria-label={t("board.usedHintAria")}>
                       {" "}
                       💡
                     </span>
                   )}
                 </span>
-                <span className="tabular-nums text-muted-foreground" title={`${r.mistakes} of ${CONN_MAX_MISTAKES} mistakes`}>
-                  {r.mistakes === 0 ? "Perfect" : `${r.mistakes} ✗`}
+                <span className="tabular-nums text-muted-foreground" title={t("board.mistakesTitle", { n: r.mistakes, max: CONN_MAX_MISTAKES })}>
+                  {r.mistakes === 0 ? t("board.perfect") : t("board.mistakes", { n: r.mistakes })}
                 </span>
                 <span className="w-12 text-right font-mono tabular-nums">{clock(r.ms / 1000)}</span>
               </li>
@@ -265,23 +271,25 @@ export function DailyLeaderboard({
 
 /** The keyboard shortcuts, small, for keyboards only. */
 export function KeyHints() {
+  const t = useT(conn);
   const k = "rounded border border-foreground/20 bg-shade/30 px-1.5 py-0.5 font-mono text-[10px] text-foreground/80";
+  const kbd = (c: React.ReactNode[]) => <kbd className={k}>{c}</kbd>;
   return (
     <p className="hidden flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground [@media(hover:hover)]:flex" data-testid="conn-keys">
       <span>
-        <kbd className={k}>Space</kbd> pick
+        {t.rich("keys.pick", { k: kbd })}
       </span>
       <span>
-        <kbd className={k}>Enter</kbd> submit
+        {t.rich("keys.submit", { k: kbd })}
       </span>
       <span>
-        <kbd className={k}>S</kbd> shuffle
+        {t.rich("keys.shuffle", { k: kbd })}
       </span>
       <span>
-        <kbd className={k}>Esc</kbd> deselect
+        {t.rich("keys.deselect", { k: kbd })}
       </span>
       <span>
-        <kbd className={k}>←↑→↓</kbd> move
+        {t.rich("keys.move", { k: kbd })}
       </span>
     </p>
   );

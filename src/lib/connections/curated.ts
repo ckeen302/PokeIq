@@ -1,5 +1,6 @@
 import { FACTS, MOVES, type Facts } from "./facts";
 import type { Category } from "./categories";
+import { ENGLISH_KIT, type Kit } from "./text";
 
 /**
  * PokéConnections' hand-checked lists: the facts a Pokémon's data can't
@@ -65,6 +66,32 @@ export const GYM_ACES: CuratedEntry[] = [
 // (https://pokemondb.net/game). Gold, Silver, Crystal, Ruby, Sapphire, Emerald,
 // Diamond, Pearl, Platinum, Black, White, Black 2, White 2, X, Y, Sun, Moon,
 // Ultra Sun, Ultra Moon, Sword, Shield, Scarlet, Violet and Legends: Arceus.
+/** Each box legendary's games (src/data/i18n/<locale>/versions.json keys), for the other languages. */
+export const BOX_GAMES: Record<string, readonly string[]> = {
+  "Ho-Oh": ["gold", "heartgold"],
+  Lugia: ["silver", "soulsilver"],
+  Suicune: ["crystal"],
+  Groudon: ["ruby", "omegaruby"],
+  Kyogre: ["sapphire", "alphasapphire"],
+  Rayquaza: ["emerald"],
+  Dialga: ["diamond"],
+  Palkia: ["pearl"],
+  Giratina: ["platinum"],
+  Reshiram: ["black"],
+  Zekrom: ["white"],
+  Kyurem: ["black2", "white2"],
+  Xerneas: ["x"],
+  Yveltal: ["y"],
+  Solgaleo: ["sun"],
+  Lunala: ["moon"],
+  Necrozma: ["ultrasun", "ultramoon"],
+  Zacian: ["sword"],
+  Zamazenta: ["shield"],
+  Koraidon: ["scarlet"],
+  Miraidon: ["violet"],
+  Arceus: ["legendsarceus"],
+};
+
 export const BOX_LEGENDARIES: CuratedEntry[] = [
   ["Ho-Oh", "Gold and HeartGold"],
   ["Lugia", "Silver and SoulSilver"],
@@ -238,29 +265,36 @@ export function signatureMoveIds(): Map<number, string> {
   return out;
 }
 
-function listCategory(id: string, label: string, rule: string, difficulty: number, list: readonly CuratedEntry[], guard?: readonly string[] | ((f: Facts) => boolean)): Category {
+/**
+ * A hand-checked list as a category. `why`: the line for a member in another language (English reads the list's own
+ * line, which names the leader and the town, the game, or the food).
+ */
+function listCategory(id: string, label: string, rule: string, difficulty: number, list: readonly CuratedEntry[], guard?: readonly string[] | ((f: Facts) => boolean), englishOnly?: boolean, why?: (f: Facts) => string): Category {
   const entries = resolveEntries(list);
   const near = Array.isArray(guard) ? resolveEntries(guard.map((n) => [n, ""] as const)) : null;
   const guardFn = typeof guard === "function" ? guard : near ? (f: Facts) => near.has(f.id) : undefined;
-  return { id, family: "lore", label, rule, difficulty, test: (f) => entries.has(f.id), why: (f) => entries.get(f.id)!, ...(guardFn && { guard: guardFn }) };
+  return { id, family: "lore", label, rule, difficulty, ...(englishOnly && { englishOnly }), test: (f) => entries.has(f.id), why: why ?? ((f) => entries.get(f.id)!), ...(guardFn && { guard: guardFn }) };
 }
 
-export function curatedCategories(): Category[] {
+/** The hand-checked categories, in the kit's words. */
+export function curatedCategories(k: Kit = ENGLISH_KIT): Category[] {
+  const { t } = k;
+  const en = k.locale === "en";
   const moves = signatureMoveIds();
   const signature = (f: Facts) => [...moves].filter(([id]) => f.learnable.has(id)).map(([, name]) => name);
   return [
-    listCategory("lore:ace", "Gym Leaders' aces", "Each is the final, strongest Pokémon of a Gym Leader in the main games.", 3.0, GYM_ACES, GYM_ACE_GUARD),
+    listCategory("lore:ace", t("lore.aceLabel"), t("lore.aceRule"), 3.0, GYM_ACES, GYM_ACE_GUARD, undefined, en ? undefined : () => t("lore.aceWhy")),
     // Any Legendary or Mythical (or a cover star like Pikachu, Eevee or a Kanto starter) could be argued onto some box.
-    listCategory("lore:box", "Box-art legendaries", "Each is the legendary Pokémon on the cover of a main-series game.", 2.95, BOX_LEGENDARIES, (f) => f.legendary || f.mythical || [3, 6, 9, 25, 133].includes(f.id)),
-    listCategory("lore:food", "Named after food", "Each name is built from a food: apple, cherry, vanilla, pumpkin, chestnut, dough, olive, tea, egg, peach...", 3.05, FOOD_NAMES, FOOD_GUARD),
+    listCategory("lore:box", t("lore.boxLabel"), t("lore.boxRule"), 2.95, BOX_LEGENDARIES, (f) => f.legendary || f.mythical || [3, 6, 9, 25, 133].includes(f.id), undefined, en ? undefined : (f) => t("lore.boxWhy", { games: k.games(BOX_GAMES[f.name] ?? []) })),
+    listCategory("lore:food", t("lore.foodLabel"), t("lore.foodRule"), 3.05, FOOD_NAMES, FOOD_GUARD, true, en ? undefined : () => t("lore.foodWhy")),
     {
       id: "lore:move",
       family: "lore",
-      label: "Signature move",
-      rule: "Each learns a move that no other evolution family can learn.",
+      label: t("lore.moveLabel"),
+      rule: t("lore.moveRule"),
       difficulty: 3.35,
       test: (f) => signature(f).length > 0,
-      why: (f) => `the only one to learn ${signature(f).join(" and ")}`,
+      why: (f) => t("lore.moveWhy", { moves: k.and(signature(f).map(k.move)) }),
     },
   ];
 }

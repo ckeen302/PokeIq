@@ -6,16 +6,20 @@ import { DLE_FREEZE_EVERY, DLE_MAX_FREEZES, type DleStats } from "@/lib/dle-stat
 import { CONN_LAUNCH_DATE, CONN_MAX_MISTAKES, connNumber } from "@/lib/connections/types";
 import type { ConnRecord } from "@/lib/progress";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import { INTL_LOCALE } from "@/i18n/catalog";
+import cs from "@/messages/connections-stats";
 
 /** PokéConnections' stats (the sheet and the results-screen card) and the archive calendar. */
 
 /** Played, win %, streaks and the mistakes distribution, from the daily results (lib/connections/local connStats). */
 export function ConnStatsBody({ stats, todayMistakes, compact }: { stats: DleStats; todayMistakes: number | null; compact?: boolean }) {
+  const tr = useT(cs);
   const tiles = [
-    { label: "Played", value: stats.played },
-    { label: "Win %", value: stats.winPct },
-    { label: "Current streak", value: `🔥${stats.playStreak}` },
-    { label: "Max streak", value: stats.bestPlayStreak },
+    { label: tr("played"), value: stats.played },
+    { label: tr("winPct"), value: stats.winPct },
+    { label: tr("current"), value: `🔥${stats.playStreak}` },
+    { label: tr("max"), value: stats.bestPlayStreak },
   ];
   const bars = [...stats.distribution.map((n, i) => ({ label: String(i), n, today: todayMistakes === i })), { label: "X", n: stats.losses, today: todayMistakes === CONN_MAX_MISTAKES }];
   const peak = Math.max(1, ...bars.map((b) => b.n));
@@ -31,15 +35,14 @@ export function ConnStatsBody({ stats, todayMistakes, compact }: { stats: DleSta
       </div>
       {!compact && (
         <p className="rounded-md border bg-shade/30 px-3 py-2">
-          🧊 Streak freezes: <b>{stats.freezes}</b> of {DLE_MAX_FREEZES}. You earn one every {DLE_FREEZE_EVERY} days in a row; a missed day uses one by itself. Win streak: <b>{stats.winStreak}</b> (best{" "}
-          {stats.bestWinStreak}).
+          {tr.rich("freezes", { freezes: stats.freezes, max: DLE_MAX_FREEZES, every: DLE_FREEZE_EVERY, win: stats.winStreak, best: stats.bestWinStreak, b: (c) => <b>{c}</b> })}
         </p>
       )}
       <div>
-        <p className="hud-label mb-2">Mistakes distribution</p>
-        <div className="space-y-1" role="list" aria-label="Wins by number of mistakes">
+        <p className="hud-label mb-2">{tr("distribution")}</p>
+        <div className="space-y-1" role="list" aria-label={tr("distributionAria")}>
           {bars.map((b) => (
-            <div key={b.label} className="flex items-center gap-2" role="listitem" aria-label={`${b.label === "X" ? "Not solved" : `${b.label} mistake${b.label === "1" ? "" : "s"}`}: ${b.n}`}>
+            <div key={b.label} className="flex items-center gap-2" role="listitem" aria-label={b.label === "X" ? tr("barLost", { count: b.n }) : tr("barAria", { n: Number(b.label), count: b.n })}>
               <span className="w-3 text-right font-semibold tabular-nums">{b.label}</span>
               <div
                 className={cn("flex h-5 min-w-[1.5rem] items-center justify-end rounded-sm px-1.5 text-[11px] font-semibold", b.today ? "bg-screen text-background" : "bg-secondary")}
@@ -57,31 +60,33 @@ export function ConnStatsBody({ stats, todayMistakes, compact }: { stats: DleSta
 
 /** The stats on the results screen. */
 export function ConnStatsCard({ stats, todayMistakes }: { stats: DleStats; todayMistakes: number | null }) {
+  const tr = useT(cs);
   return (
     <section aria-labelledby="conn-stats-title" className="mx-auto max-w-md space-y-3 rounded-lg border bg-card p-5" data-testid="conn-stats-card">
       <h2 id="conn-stats-title" className="hud-label">
-        Your PokéConnections stats
+        {tr("cardTitle")}
       </h2>
       <ConnStatsBody stats={stats} todayMistakes={todayMistakes} compact />
-      <p className="text-[11px] text-muted-foreground">Only dailies count. Practice and archive games never change your stats or streaks.</p>
+      <p className="text-[11px] text-muted-foreground">{tr("onlyDailies")}</p>
     </section>
   );
 }
 
 type DayStatus = "perfect" | "solved" | "missed" | "progress" | "none";
 
-const STATUS: Record<DayStatus, { label: string; cell: string }> = {
-  perfect: { label: "Perfect", cell: "border-success bg-success text-background" },
-  solved: { label: "Solved", cell: "border-success/60 bg-success/25" },
-  missed: { label: "Missed", cell: "border-destructive/60 bg-destructive/20" },
-  progress: { label: "In progress", cell: "border-warning/60 bg-warning/15" },
-  none: { label: "Not played", cell: "border-foreground/10 bg-shade/20" },
+const STATUS: Record<DayStatus, { cell: string }> = {
+  perfect: { cell: "border-success bg-success text-background" },
+  solved: { cell: "border-success/60 bg-success/25" },
+  missed: { cell: "border-destructive/60 bg-destructive/20" },
+  progress: { cell: "border-warning/60 bg-warning/15" },
+  none: { cell: "border-foreground/10 bg-shade/20" },
 };
 
 const statusOf = (r: ConnRecord | undefined): DayStatus => (!r ? "none" : r.over ? (r.solved ? (r.mistakes ? "solved" : "perfect") : "missed") : r.guesses.length ? "progress" : "none");
 
-const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-const WEEKDAYS = ["M", "T", "W", "T", "F", "S", "S"];
+/** "January 2026" and the weekdays' initials, Monday first, as the page's language writes them (en-US: as before). */
+const monthTitle = (locale: string, y: number, m: number) => new Intl.DateTimeFormat(locale, { month: "long", year: "numeric", timeZone: "UTC" }).format(Date.UTC(y, m, 1));
+const weekdays = (locale: string) => Array.from({ length: 7 }, (_, i) => new Intl.DateTimeFormat(locale, { weekday: "narrow", timeZone: "UTC" }).format(Date.UTC(2024, 0, 1 + i)));
 const iso = (y: number, m: number, d: number) => `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 
 /**
@@ -102,6 +107,8 @@ export function ConnArchiveCalendar({
   onPlay: (date: string) => void;
   onToday: () => void;
 }) {
+  const tr = useT(cs);
+  const intl = INTL_LOCALE[tr.locale];
   const [ty, tm] = today.split("-").map(Number);
   const [ly, lm] = CONN_LAUNCH_DATE.split("-").map(Number);
   const [month, setMonth] = useState({ y: ty, m: tm - 1 });
@@ -123,18 +130,18 @@ export function ConnArchiveCalendar({
   return (
     <div className="space-y-3" data-testid="conn-calendar">
       <div className="flex items-center justify-between">
-        <button type="button" onClick={() => step(-1)} disabled={first} aria-label="Previous month" className="rounded-md p-1.5 text-muted-foreground hover:bg-screen/10 hover:text-foreground disabled:opacity-30">
+        <button type="button" onClick={() => step(-1)} disabled={first} aria-label={tr("prev")} className="rounded-md p-1.5 text-muted-foreground hover:bg-screen/10 hover:text-foreground disabled:opacity-30">
           <ChevronLeft className="h-5 w-5" />
         </button>
         <p className="font-display text-base font-bold uppercase tracking-wide" aria-live="polite">
-          {MONTHS[month.m]} {month.y}
+          {monthTitle(intl, month.y, month.m)}
         </p>
-        <button type="button" onClick={() => step(1)} disabled={last} aria-label="Next month" className="rounded-md p-1.5 text-muted-foreground hover:bg-screen/10 hover:text-foreground disabled:opacity-30">
+        <button type="button" onClick={() => step(1)} disabled={last} aria-label={tr("next")} className="rounded-md p-1.5 text-muted-foreground hover:bg-screen/10 hover:text-foreground disabled:opacity-30">
           <ChevronRight className="h-5 w-5" />
         </button>
       </div>
-      <div className="grid grid-cols-7 gap-1 text-center sm:gap-1.5" role="grid" aria-label={`${MONTHS[month.m]} ${month.y}`}>
-        {WEEKDAYS.map((w, i) => (
+      <div className="grid grid-cols-7 gap-1 text-center sm:gap-1.5" role="grid" aria-label={monthTitle(intl, month.y, month.m)}>
+        {weekdays(intl).map((w, i) => (
           <span key={i} className="hud-label pb-0.5" aria-hidden>
             {w}
           </span>
@@ -148,7 +155,7 @@ export function ConnArchiveCalendar({
               key={c.date}
               type="button"
               onClick={() => (c.date === today ? onToday() : onPlay(c.date))}
-              aria-label={`#${connNumber(c.date)}, ${c.date}: ${STATUS[c.status].label}${c.fromArchive ? " (archive)" : ""}${c.date === today ? ", today" : ""}`}
+              aria-label={`${tr("day", { n: connNumber(c.date), date: c.date, status: tr(`status.${c.status}`) })}${c.fromArchive ? tr("fromArchive") : ""}${c.date === today ? tr("today") : ""}`}
               data-date={c.date}
               data-status={c.status}
               className={cn(
@@ -167,11 +174,11 @@ export function ConnArchiveCalendar({
           )
         )}
       </div>
-      <ul className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground" aria-label="Key">
+      <ul className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground" aria-label={tr("key")}>
         {(Object.keys(STATUS) as DayStatus[]).map((s) => (
           <li key={s} className="flex items-center gap-1.5">
             <span className={cn("inline-block h-3 w-3 rounded-sm border", STATUS[s].cell)} aria-hidden />
-            {STATUS[s].label}
+            {tr(`status.${s}`)}
             {s !== "none" && counts[s] > 0 && <b className="text-foreground">{counts[s]}</b>}
           </li>
         ))}

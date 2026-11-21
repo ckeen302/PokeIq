@@ -1,0 +1,22 @@
+{
+  "duel": {
+    "heading": "Head to head · PokéConnections",
+    "blurb4": "The same sixteen Pokémon for both of you. The first to find all four groups wins.",
+    "blurb5": "The same twenty-five Pokémon for both of you. The first to find all five groups wins.",
+    "rules": "Each mistake adds {seconds} seconds to your time, and {mistakes} mistakes put you out. If you're both out, more groups found wins. You see your opponent's groups as colours as they find them, never which Pokémon.",
+    "fresh": "Send a friend the link, or find an opponent (4×4 only). Duels use fresh puzzles, never the daily, and never count toward your streak.",
+    "board": "Board",
+    "boardAria": "Duel board size",
+    "size4": "Sixteen Pokémon, four groups of four",
+    "size5": "Twenty-five Pokémon, five groups of five"
+  },
+  "potd": {
+    "aria": "Puzzle of the Day",
+    "title": "Puzzle of the Day",
+    "untitled": "Untitled puzzle",
+    "by": "by <c></c>",
+    "aTrainer": "a trainer",
+    "upVotes": "up votes",
+    "play": "Play it"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "meta": {
+    "title": "PokéConnections: Daily Pokémon Connections",
+    "description": "Pokémon Connections: sixteen Pokémon, four hidden groups: types, abilities, evolutions, stats and more. Find what links them with four mistakes to spare. A new puzzle every day, an archive and unlimited practice.",
+    "communityTitle": "Community PokéConnections Puzzles",
+    "communityDescription": "Puzzles made by other trainers: this week's featured pick, the top rated and the newest.",
+    "createTitle": "Make a PokéConnections Puzzle",
+    "createDescription": "Pick sixteen Pokémon, split them into four groups, name each one and share a link. Anyone can play it, and the answers stay with the server.",
+    "puzzleTitle": "Community PokéConnections Puzzle",
+    "puzzleDescription": "A PokéConnections puzzle made by another trainer. Find the four groups.",
+    "creatorTitle": "PokéConnections Creator",
+    "creatorDescription": "Community PokéConnections puzzles by one trainer.",
+    "duelAbout": "A PokéConnections race: the same sixteen Pokémon for both of you, and the first to find the four groups wins.",
+    "duel": "A PokéConnections duel",
+    "duelVs": "{host} vs {guest}: a PokéConnections duel",
+    "duelChallenge": "{host} challenges you to a PokéConnections duel",
+    "aTrainer": "A trainer",
+    "partyAbout": "A PokéConnections party: the same sixteen Pokémon for everyone, and the best time wins.",
+    "party": "A PokéConnections party",
+    "partyInvite": "{host} invites you to a PokéConnections party"
+  },
+  "info": {
+    "description": "PokéConnections is a free Pokémon Connections puzzle: sort sixteen Pokémon into four hidden groups with four mistakes to spare.",
+    "intro": "PokéConnections is Pokémon Connections: sixteen Pokémon, four hidden groups, and a new puzzle every day.",
+    "step1": "Look at the sixteen Pokémon and find the ones that share something: a type, an ability, an evolution, stats and more.",
+    "step2": "Select four and submit them as a group.",
+    "step3": "You can make four mistakes before the puzzle ends.",
+    "step4": "Play the daily puzzle, browse the archive or practice without limit.",
+    "faq1": "What kinds of groups are there?",
+    "faq1a": "Types, abilities, evolutions, stats and more.",
+    "faq2": "How many mistakes can I make?",
+    "faq2a": "Four."
+  },
+  "back": "Back to PokéConnections",
+  "backCommunity": "Back to community",
+  "creator": {
+    "unavailable": "Creator pages are unavailable right now. Try again in a minute.",
+    "eyebrow": "PokéConnections creator",
+    "totals": "{n, plural, one {{n} puzzle} other {{n} puzzles}} · {votes} {v, plural, one {vote} other {votes}} (score {score})",
+    "untitled": "Untitled puzzle"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "duel": {
+    "heading": "Cara a cara · PokéConnections",
+    "blurb4": "Los mismos dieciséis Pokémon para los dos. Gana el primero que encuentre los cuatro grupos.",
+    "blurb5": "Los mismos veinticinco Pokémon para los dos. Gana el primero que encuentre los cinco grupos.",
+    "rules": "Cada fallo suma {seconds} segundos a tu tiempo, y con {mistakes} fallos quedas fuera. Si los dos quedáis fuera, gana quien haya encontrado más grupos. Ves los grupos de tu rival como colores a medida que los encuentra, nunca qué Pokémon son.",
+    "fresh": "Envía el enlace a un amigo o busca un rival (solo 4×4). Los duelos usan puzles nuevos, nunca el diario, y nunca cuentan para tu racha.",
+    "board": "Tablero",
+    "boardAria": "Tamaño del tablero del duelo",
+    "size4": "Dieciséis Pokémon, cuatro grupos de cuatro",
+    "size5": "Veinticinco Pokémon, cinco grupos de cinco"
+  },
+  "potd": {
+    "aria": "Puzle del día",
+    "title": "Puzle del día",
+    "untitled": "Puzle sin título",
+    "by": "por <c></c>",
+    "aTrainer": "un Entrenador",
+    "upVotes": "votos positivos",
+    "play": "Jugar"
+  }
+}

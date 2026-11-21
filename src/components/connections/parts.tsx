@@ -8,6 +8,15 @@ import { typeColor, typeTextColor } from "@/lib/pokemon/type-colors";
 import { boardArtUrl } from "@/lib/pokemon/art";
 import { CONN_LEVELS, connLevels, type ConnGroupExplained, type ConnGroupReveal, type ConnLevel, type ConnSize, type ConnTile } from "@/lib/connections/types";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import type { Translator } from "@/i18n/catalog";
+import board from "@/messages/connections-board";
+import { useTileName } from "./names";
+
+export type BoardT = Translator<typeof board.en>;
+
+/** A level's colour name ("Yellow"), in the page's language. */
+export const levelName = (t: BoardT, level: ConnLevel) => t(`level.${level}`);
 
 /** The group colour as a CSS colour, and dark text that reads on it in either theme. */
 export const levelStyle = (level: ConnLevel) => ({ background: CONN_LEVELS[level].hex, color: "#17142b" });
@@ -31,6 +40,7 @@ export function LevelMark({ level, className }: { level: ConnLevel; className?: 
  * sixteen, fetched ahead of the page's scripts.
  */
 export function TileArt({ tile, size, className, lazy, priority }: { tile: ConnTile; size: number; className?: string; lazy?: boolean; priority?: boolean }) {
+  const t = useT(board);
   // width/height reserve the box before the sprite arrives (no layout shift); 160px art stays crisp on a 3x phone at the grid's size.
   if (!tile.kind)
     return (
@@ -62,7 +72,7 @@ export function TileArt({ tile, size, className, lazy, priority }: { tile: ConnT
       className={cn("flex items-center justify-center font-display font-bold uppercase leading-none", tile.kind === "move" ? "rounded-md" : "rounded-full", small ? "text-[8px]" : "text-[11px]", className)}
       style={{ background: typeColor(type), color: typeTextColor(type) }}
     >
-      {tile.kind === "move" ? "Move" : type}
+      {tile.kind === "move" ? t("moveChip") : type}
     </span>
   );
 }
@@ -83,7 +93,7 @@ export function preloadTileArt(tiles: readonly ConnTile[]): HTMLImageElement[] {
 }
 
 /** What a tile is, in words, for screen readers and the "Why?" panel. */
-export const tileKindLabel = (tile: ConnTile) => (tile.kind === "move" ? "Move" : tile.kind === "ability" ? "Ability" : tile.kind === "type" ? "Type" : "Pokémon");
+export const tileKindLabel = (tile: ConnTile, t: BoardT) => t(`kind.${tile.kind ?? "pokemon"}`);
 
 export type TileMotion = "jump" | "shake" | null;
 
@@ -124,8 +134,10 @@ export const GridTile = forwardRef<
     pre?: boolean;
   }
 >(function GridTile({ tile, index, selected, disabled, motionKind, order, onToggle, onKeyDown, hinted, compact, pre }, ref) {
+  const t = useT(board);
+  const name = useTileName()(tile);
   // The name always fits on one line: its size shrinks with its length against the tile's width (a container query).
-  const fit = { "--conn-chars": Math.max(tile.name.length, 6) } as React.CSSProperties;
+  const fit = { "--conn-chars": Math.max(name.length, 6) } as React.CSSProperties;
   return (
     <motion.button
       ref={ref}
@@ -137,7 +149,7 @@ export const GridTile = forwardRef<
       data-id={tile.id}
       data-hinted={hinted ? "true" : undefined}
       aria-pressed={selected}
-      aria-label={`${tile.kind ? `${tileKindLabel(tile)} ` : ""}${tile.name}${hinted ? ", hint: in the easiest group left" : ""}${selected ? ", selected" : ""}`}
+      aria-label={`${tile.kind ? `${tileKindLabel(tile, t)} ` : ""}${name}${hinted ? t("tile.hinted") : ""}${selected ? t("tile.selected") : ""}`}
       disabled={disabled}
       onClick={onToggle}
       onKeyDown={onKeyDown}
@@ -182,7 +194,7 @@ export const GridTile = forwardRef<
             : "text-[min(11px,calc(100cqw/(var(--conn-chars)*0.8)))] sm:text-[min(14px,calc(100cqw/(var(--conn-chars)*0.76)))] sm:tracking-wide"
         )}
       >
-        {tile.name}
+        {name}
       </span>
     </motion.button>
   );
@@ -190,6 +202,8 @@ export const GridTile = forwardRef<
 
 /** A found group: a coloured bar with its name and its four Pokémon. */
 export function GroupBar({ group, symbols, revealed, compact }: { group: ConnGroupReveal; symbols: boolean; revealed?: boolean; compact?: boolean }) {
+  const t = useT(board);
+  const nameOf = useTileName();
   return (
     <motion.div
       layout
@@ -204,7 +218,7 @@ export function GroupBar({ group, symbols, revealed, compact }: { group: ConnGro
       data-testid="conn-group"
       data-level={group.level}
       role="group"
-      aria-label={`${CONN_LEVELS[group.level].name} group${revealed ? " (revealed)" : ""}: ${group.label}: ${group.members.map((m) => m.name).join(", ")}`}
+      aria-label={t(revealed ? "group.ariaRevealed" : "group.aria", { level: levelName(t, group.level), label: group.label, members: group.members.map(nameOf).join(t("sep")) })}
     >
       {!revealed && (
         <motion.span
@@ -224,7 +238,7 @@ export function GroupBar({ group, symbols, revealed, compact }: { group: ConnGro
         {group.members.map((m) => (
           <span key={m.id} className="flex items-center gap-0.5 text-xs font-semibold sm:gap-1 sm:text-sm">
             <TileArt tile={m} size={32} className="h-6 w-6 shrink-0 object-contain sm:h-8 sm:w-8" />
-            {m.name}
+            {nameOf(m)}
           </span>
         ))}
       </div>
@@ -234,25 +248,26 @@ export function GroupBar({ group, symbols, revealed, compact }: { group: ConnGro
 
 /** The group colours, easiest to trickiest: the board's difficulty key. */
 export function LevelLegend({ size, symbols, className }: { size: ConnSize; symbols: boolean; className?: string }) {
+  const t = useT(board);
   const levels = connLevels(size);
   return (
     <div
       className={cn("mp-dense flex flex-wrap items-center justify-center gap-1 text-[10px] sm:gap-1.5 sm:text-[11px] max-md:text-[length:11px]", className)}
       role="img"
-      aria-label={`Group colours, easiest to trickiest: ${levels.map((l) => CONN_LEVELS[l].name).join(", ")}`}
+      aria-label={t("legend.aria", { levels: levels.map((l) => levelName(t, l)).join(t("sep")) })}
       data-testid="conn-legend"
     >
       <span className="mr-0.5 text-muted-foreground" aria-hidden>
-        Easiest
+        {t("legend.easiest")}
       </span>
       {levels.map((l) => (
         <span key={l} aria-hidden className="flex items-center gap-1 rounded px-1.5 py-0.5 font-bold uppercase tracking-wide sm:px-2" style={levelStyle(l)}>
           {symbols && <LevelMark level={l} className="opacity-70" />}
-          {CONN_LEVELS[l].name}
+          {levelName(t, l)}
         </span>
       ))}
       <span className="ml-0.5 text-muted-foreground" aria-hidden>
-        Trickiest
+        {t("legend.trickiest")}
       </span>
     </div>
   );
@@ -260,10 +275,11 @@ export function LevelLegend({ size, symbols, className }: { size: ConnSize; symb
 
 /** Mistakes left, as dots: a lost one pops and turns into an empty ring; the last one left turns red. */
 export function MistakeDots({ left, max }: { left: number; max: number }) {
+  const t = useT(board);
   const last = left === 1;
   return (
-    <div className={cn("flex items-center justify-center gap-3 text-sm transition-colors", last ? "font-semibold text-destructive" : "text-muted-foreground")} data-testid="conn-mistakes" data-left={left} aria-label={`${left} of ${max} mistakes left`}>
-      {last ? "Last chance:" : "Mistakes remaining:"}
+    <div className={cn("flex items-center justify-center gap-3 text-sm transition-colors", last ? "font-semibold text-destructive" : "text-muted-foreground")} data-testid="conn-mistakes" data-left={left} aria-label={t("mistakes.aria", { left, max })}>
+      {last ? t("mistakes.last") : t("mistakes.remaining")}
       <span className="flex gap-1.5" aria-hidden>
         {Array.from({ length: max }, (_, i) => (
           <motion.span
@@ -281,8 +297,9 @@ export function MistakeDots({ left, max }: { left: number; max: number }) {
 
 /** The guesses as rows of coloured squares, with each group's symbol (the share's grid). */
 export function GuessHistory({ rows, symbols }: { rows: ConnLevel[][]; symbols: boolean }) {
+  const t = useT(board);
   return (
-    <div className="inline-flex flex-col gap-1" role="img" aria-label={rows.map((r, i) => `Guess ${i + 1}: ${r.map((l) => CONN_LEVELS[l].name).join(", ")}`).join(". ")}>
+    <div className="inline-flex flex-col gap-1" role="img" aria-label={rows.map((r, i) => t("history.guess", { n: i + 1, levels: r.map((l) => levelName(t, l)).join(t("sep")) })).join(t("history.sep"))}>
       {rows.map((row, i) => (
         <div key={i} className="flex gap-1">
           {row.map((level, j) => (
@@ -298,13 +315,15 @@ export function GuessHistory({ rows, symbols }: { rows: ConnLevel[][]; symbols: 
 
 /** The "Why?" panel: each group's rule, a line per Pokémon, and the red herrings that pointed at it. */
 export function WhyPanel({ groups, symbols }: { groups: ConnGroupExplained[]; symbols: boolean }) {
+  const t = useT(board);
+  const nameOf = useTileName();
   return (
     <section aria-labelledby="conn-why" className="space-y-3" data-testid="conn-why">
       <div className="flex items-baseline justify-between gap-3">
         <h2 id="conn-why" className="font-display text-2xl font-bold uppercase tracking-tight">
-          Why?
+          {t("why.title")}
         </h2>
-        <p className="hud-label">Every fact is from the Pokédex data</p>
+        <p className="hud-label">{t("why.source")}</p>
       </div>
       <LevelLegend size={groups.length === 5 ? 5 : 4} symbols={symbols} className="justify-start" />
       <div className="grid gap-3 md:grid-cols-2">
@@ -313,7 +332,7 @@ export function WhyPanel({ groups, symbols }: { groups: ConnGroupExplained[]; sy
             <header className="flex items-center gap-2 px-4 py-2.5" style={levelStyle(g.level)}>
               {symbols && <LevelMark level={g.level} className="text-xs opacity-70" />}
               <h3 className="font-display text-sm font-bold uppercase tracking-wide">{g.label}</h3>
-              <span className="ml-auto shrink-0 text-[10px] font-semibold uppercase tracking-wider opacity-70">{CONN_LEVELS[g.level].name}</span>
+              <span className="ml-auto shrink-0 text-[10px] font-semibold uppercase tracking-wider opacity-70">{levelName(t, g.level)}</span>
             </header>
             <div className="space-y-2.5 p-4">
               <p className="text-sm text-muted-foreground">{g.rule}</p>
@@ -322,20 +341,20 @@ export function WhyPanel({ groups, symbols }: { groups: ConnGroupExplained[]; sy
                   <li key={l.id} className="flex items-center gap-2.5 text-sm">
                     <TileArt tile={l} size={32} className="h-8 w-8 shrink-0 object-contain" />
                     <span className="min-w-0">
-                      <b className="font-semibold">{l.name}</b>
-                      {l.kind && <span className="ml-1 rounded bg-muted px-1 py-px align-middle text-[10px] font-semibold uppercase text-muted-foreground">{tileKindLabel(l)}</span>}
-                      <span className="text-muted-foreground">: {l.why}</span>
+                      <b className="font-semibold">{nameOf(l)}</b>
+                      {l.kind && <span className="ml-1 rounded bg-muted px-1 py-px align-middle text-[10px] font-semibold uppercase text-muted-foreground">{tileKindLabel(l, t)}</span>}
+                      <span className="text-muted-foreground">{t("why.line", { why: l.why })}</span>
                     </span>
                   </li>
                 ))}
               </ul>
               {g.herrings.length > 0 && (
                 <div className="space-y-1 border-t border-dashed pt-2.5">
-                  <p className="hud-label">Red herrings</p>
+                  <p className="hud-label">{t("why.herrings")}</p>
                   <ul className="space-y-1">
                     {g.herrings.map((h) => (
                       <li key={h.id} className="text-xs text-muted-foreground">
-                        <b className="font-semibold text-foreground">{h.name}</b>: {h.reason}.
+                        {t.rich("why.herring", { name: nameOf(h), reason: h.reason, b: (c) => <b className="font-semibold text-foreground">{c}</b> })}
                       </li>
                     ))}
                   </ul>

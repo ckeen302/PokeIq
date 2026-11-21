@@ -1,0 +1,29 @@
+{
+  "played": "プレイ数",
+  "winPct": "勝率",
+  "current": "現在の連続記録",
+  "max": "最高連続記録",
+  "freezes": "🧊 記録フリーズ：<b>{freezes}</b>/{max}。{every}日連続で遊ぶごとに1つもらえます。遊ばなかった日は自動で1つ使います。連勝：<b>{win}</b>（最高{best}）。",
+  "distribution": "ミスの分布",
+  "distributionAria": "ミス回数ごとの勝利数",
+  "barAria": "ミス{n}回：{count}",
+  "barLost": "クリアならず：{count}",
+  "cardTitle": "PokéConnectionsの成績",
+  "onlyDailies": "数えるのはデイリーだけです。練習とアーカイブは成績や連続記録に影響しません。",
+  "status": {
+    "perfect": "ノーミス",
+    "solved": "クリア",
+    "missed": "失敗",
+    "progress": "プレイ中",
+    "none": "未プレイ"
+  },
+  "prev": "前の月",
+  "next": "次の月",
+  "day": "#{n}、{date}：{status}",
+  "fromArchive": "（アーカイブ）",
+  "today": "、今日",
+  "key": "凡例",
+  "statsTitle": "成績",
+  "archiveTitle": "アーカイブ",
+  "archiveIntro": "過去のデイリーをどれでも遊べます。アーカイブのゲームはお楽しみ用で、連続記録や成績には数えません。"
+}

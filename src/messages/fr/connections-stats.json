@@ -1,0 +1,29 @@
+{
+  "played": "Parties",
+  "winPct": "% de victoires",
+  "current": "Série actuelle",
+  "max": "Meilleure série",
+  "freezes": "🧊 Gels de série : <b>{freezes}</b> sur {max}. Tu en gagnes un tous les {every} jours d'affilée ; un jour manqué en utilise un tout seul. Série de victoires : <b>{win}</b> (record {best}).",
+  "distribution": "Répartition des erreurs",
+  "distributionAria": "Victoires selon le nombre d'erreurs",
+  "barAria": "{n, plural, one {{n} erreur} other {{n} erreurs}} : {count}",
+  "barLost": "Non résolu : {count}",
+  "cardTitle": "Tes stats PokéConnections",
+  "onlyDailies": "Seuls les quotidiens comptent. L'entraînement et les archives ne changent jamais tes stats ni tes séries.",
+  "status": {
+    "perfect": "Parfait",
+    "solved": "Résolu",
+    "missed": "Raté",
+    "progress": "En cours",
+    "none": "Pas joué"
+  },
+  "prev": "Mois précédent",
+  "next": "Mois suivant",
+  "day": "n° {n}, {date} : {status}",
+  "fromArchive": " (archives)",
+  "today": ", aujourd'hui",
+  "key": "Légende",
+  "statsTitle": "Statistiques",
+  "archiveTitle": "Archives",
+  "archiveIntro": "Joue n'importe quel quotidien passé. Les parties des archives sont juste pour le plaisir : elles ne comptent jamais pour tes séries ni tes stats."
+}
