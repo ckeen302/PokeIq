@@ -7,6 +7,9 @@ import type { GeoAnswer } from "@/lib/geo-types";
 import type { GeoLearn } from "@/lib/geo-learn-types";
 import { atlasSearchHref, placeLabel } from "@/lib/geo-names";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import geoNs from "@/messages/geo";
+import { useGeoNames } from "@/lib/geo-i18n-client";
 
 const cache = new Map<string, Promise<GeoLearn | null>>();
 /** The fact about a place, asked once per place (after the guess: the card never exists before it). */
@@ -32,6 +35,9 @@ function learnOf(answer: Pick<GeoAnswer, "name" | "region" | "parent">): Promise
  * graded, so nothing here can leak an answer.
  */
 export function LearnCard({ answer, shot, map, className }: { answer: GeoAnswer; shot?: string; map?: { name: string }; className?: string }) {
+  const t = useT(geoNs);
+  const names = useGeoNames();
+  const en = t.locale === "en";
   const [learn, setLearn] = useState<GeoLearn | null>(null);
   useEffect(() => {
     let off = false;
@@ -49,24 +55,27 @@ export function LearnCard({ answer, shot, map, className }: { answer: GeoAnswer;
       )}
       <div className="min-w-0">
         <p className="truncate font-display text-base font-bold uppercase leading-tight max-md:whitespace-normal max-md:text-sm max-md:[overflow-wrap:anywhere]" data-testid="geo-answer-place">
-          {placeLabel(answer, map)}
+          {en ? placeLabel(answer, map) : names.placeLabel(answer, map)}
         </p>
         <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-white/70">
-          {answer.region && <span>{answer.region}</span>}
-          {learn?.type && learn.type !== "Other" && learn.type !== "Building" && <span className="text-white/50">· {learn.type}</span>}
+          {answer.region && <span>{names.region(answer.region)}</span>}
+          {learn?.type && learn.type !== "Other" && learn.type !== "Building" && (
+            <span className="text-white/50">· {names.t.has(`types.${learn.type}`) ? names.t(`types.${learn.type}` as "types.City") : learn.type}</span>
+          )}
           <span className="rounded-sm border border-white/30 px-1.5 py-0.5 text-[11px] text-white" data-testid="geo-answer-game">
-            Pokémon {answer.game}
+            {en ? <>Pokémon {answer.game}</> : names.t("game", { game: names.game(answer.game) })}
           </span>
           <Link href={atlasSearchHref(answer)} target="_blank" className="inline-flex items-center gap-1 underline underline-offset-2 hover:text-white" data-testid="geo-atlas-link">
-            <MapIcon className="h-3 w-3" aria-hidden /> Atlas
+            <MapIcon className="h-3 w-3" aria-hidden />{` ${t("learn.atlas")}`}
           </Link>
           {learn?.href && (
             <Link href={learn.href} target="_blank" className="inline-flex items-center gap-1 underline underline-offset-2 hover:text-white" data-testid="geo-learn-link">
-              <BookOpen className="h-3 w-3" aria-hidden /> Pokédex
+              <BookOpen className="h-3 w-3" aria-hidden />{` ${t("learn.dex")}`}
             </Link>
           )}
         </p>
-        {learn?.fact && (
+        {/* The fact is written in English (the place data's): other languages show the name and game alone. */}
+        {learn?.fact && en && (
           <p className="mt-1 line-clamp-2 max-w-md text-xs leading-snug text-[#c8bfff] md:line-clamp-none" data-testid="geo-learn-fact">
             {learn.fact}
           </p>

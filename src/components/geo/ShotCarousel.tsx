@@ -2,10 +2,12 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Expand } from "lucide-react";
-import { stepView, viewKeyStep, viewLabel } from "@/lib/geo-look";
+import { stepView, viewKeyStep } from "@/lib/geo-look";
 import { preloadedImage } from "@/lib/preload";
 import { cn } from "@/lib/utils";
 import { FullscreenButton } from "./GameShell";
+import { useT } from "@/i18n/client";
+import geoNs from "@/messages/geo";
 
 /**
  * How a screenshot fills the frame: edge to edge (cover, centred, never
@@ -54,6 +56,7 @@ export function ShotCarousel({
   /** The guess map is docked over the picture (on a phone, the corner minimap): the strip keeps beside it. */
   dock?: boolean;
 }) {
+  const t = useT(geoNs);
   const [fits, setFits] = useState<Record<string, Fit>>({});
   const count = views.length;
   const src = views[Math.min(index, count - 1)];
@@ -120,7 +123,7 @@ export function ShotCarousel({
         <img
           key={src}
           src={src}
-          alt="Where is this?"
+          alt={t("shot.where")}
           ref={imgRef}
           fetchPriority={priority && src === views[0] ? "high" : undefined}
           decoding={priority && src === views[0] ? "sync" : undefined}
@@ -134,10 +137,10 @@ export function ShotCarousel({
         {onFullscreen && <FullscreenButton fs={fs} onClick={onFullscreen} />}
         {many && (
           <>
-            <button type="button" className={cn(arrow, "left-3")} onClick={() => onIndex(stepView(index, -1, count))} aria-label="Previous view" title="Previous view (←)">
+            <button type="button" className={cn(arrow, "left-3")} onClick={() => onIndex(stepView(index, -1, count))} aria-label={t("shot.prev")} title={t("shot.prevKey")}>
               <ChevronLeft className="h-6 w-6" />
             </button>
-            <button type="button" className={cn(arrow, "right-3")} onClick={() => onIndex(stepView(index, 1, count))} aria-label="Next view" title="Next view (→)">
+            <button type="button" className={cn(arrow, "right-3")} onClick={() => onIndex(stepView(index, 1, count))} aria-label={t("shot.next")} title={t("shot.nextKey")}>
               <ChevronRight className="h-6 w-6" />
             </button>
           </>
@@ -156,8 +159,8 @@ export function ShotCarousel({
             type="button"
             onClick={onZoom}
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-black/55 text-white backdrop-blur transition-colors hover:bg-black/75"
-            aria-label="View the whole screenshot"
-            title="Whole screenshot"
+            aria-label={t("shot.whole")}
+            title={t("shot.wholeShort")}
           >
             <Expand className="h-4 w-4" />
           </button>
@@ -167,14 +170,14 @@ export function ShotCarousel({
             </div>
           )}
           {many && (
-          <div className="flex min-w-0 gap-1.5 overflow-x-auto rounded-md bg-black/40 p-1 backdrop-blur" role="tablist" aria-label="Views of this place">
+          <div className="flex min-w-0 gap-1.5 overflow-x-auto rounded-md bg-black/40 p-1 backdrop-blur" role="tablist" aria-label={t("shot.views")}>
             {views.map((v, i) => (
               <button
                 key={v}
                 type="button"
                 role="tab"
                 aria-selected={i === index}
-                aria-label={viewLabel(i, count)}
+                aria-label={t("shot.view", { n: i + 1, count })}
                 onClick={() => onIndex(i)}
                 className={cn(
                   "relative h-9 w-14 shrink-0 overflow-hidden rounded border-2 bg-shade/30 transition-[border-color,opacity] sm:h-12 sm:w-20",

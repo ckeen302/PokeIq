@@ -10,10 +10,19 @@ export const cleanPlaceName = (s: string) => s.replace(/^(Kanto|Johto|Hoenn|Sinn
 export const shownPlaceName = (s: string) =>
   cleanPlaceName(s).replace(/ \((Kanto|Johto|Hoenn|Sinnoh|Unova|Kalos|Alola|Galar|Paldea|Generation [IVX]+|BW|B2W2|Jagged Pass)\)$/, "");
 
-/** "Silph Co. · Saffron City", plus the region when the map doesn't make it obvious. */
-export function placeLabel(answer: Named, map?: Pick<GeoRegionInfo, "name">): string {
-  const name = answer.parent ? `${shownPlaceName(answer.name)} · ${shownPlaceName(answer.parent)}` : shownPlaceName(answer.name);
-  return answer.region && map && answer.region !== map.name ? `${name}, ${answer.region}` : name;
+/** How a page in another language writes the parts (src/lib/geo-i18n.ts): each place's and region's own name, and "place, region". */
+export interface PlaceLocal {
+  place: (name: string) => string;
+  region: (name: string) => string;
+  join: (place: string, region: string) => string;
+}
+
+/** "Silph Co. · Saffron City", plus the region when the map doesn't make it obvious. `local`: in the page's language. */
+export function placeLabel(answer: Named, map?: Pick<GeoRegionInfo, "name">, local?: PlaceLocal): string {
+  const place = (s: string) => (local ? local.place(shownPlaceName(s)) : shownPlaceName(s));
+  const name = answer.parent ? `${place(answer.name)} · ${place(answer.parent)}` : place(answer.name);
+  if (!(answer.region && map && answer.region !== map.name)) return name;
+  return local ? local.join(name, local.region(answer.region)) : `${name}, ${answer.region}`;
 }
 
 /** The place on the world atlas (Kanto's own map predates the world data, so its places carry no region). */

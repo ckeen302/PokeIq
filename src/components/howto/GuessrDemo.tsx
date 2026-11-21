@@ -5,6 +5,9 @@ import { Flag, MousePointer2 } from "lucide-react";
 import { animate, motion, useReducedMotion } from "framer-motion";
 import { GEO_FALLOFF, GEO_MAX_ROUND_SCORE } from "@/lib/geo-types";
 import { DemoFrame, useDemoFrame } from "./shared";
+import { useT } from "@/i18n/client";
+import { formatNumber } from "@/i18n/catalog";
+import geoHowto from "@/messages/geo-howto";
 
 /** A real Scarlet / Violet screenshot (Levincia) and the Paldea map crop, scored with the game's own curve. */
 const SHOT = "/api/geo/preview/demo";
@@ -16,14 +19,13 @@ const ZOOM = 1.7;
 const px = Math.hypot(GUESS.x - ANSWER.x, GUESS.y - ANSWER.y);
 const SCORE = Math.round(GEO_MAX_ROUND_SCORE * Math.exp((-GEO_FALLOFF * px) / Math.hypot(MAP.w, MAP.h)));
 const SQUARES = (Math.round((px / MAP.squarePx) * 10) / 10).toFixed(1);
-const fmt = (n: number) => n.toLocaleString("en-US");
 const at = (p: { x: number; y: number }) => ({ x: (p.x / MAP.w) * 100, y: (p.y / MAP.h) * 100 });
 const pct = (p: { x: number; y: number }) => ({ left: `${at(p).x}%`, top: `${at(p).y}%` });
 
 /** 0 cursor on the screenshot, 1 glides to the map, 2 map zooms, 3 click: pin drops, 4 cursor to Guess, 5 pressed, 6 line + flag, 7 score counts up (held). */
 const MS = [1300, 1000, 1000, 900, 900, 500, 1100, 3200];
 
-function Count({ to, run }: { to: number; run: boolean }) {
+function Count({ to, run, fmt }: { to: number; run: boolean; fmt: (n: number) => string }) {
   const [n, setN] = useState(run ? 0 : to);
   useEffect(() => {
     if (!run) {
@@ -37,6 +39,8 @@ function Count({ to, run }: { to: number; run: boolean }) {
 }
 
 export function GuessrDemo() {
+  const t = useT(geoHowto);
+  const fmt = (n: number) => formatNumber(n, t.locale);
   const reduced = !!useReducedMotion();
   const f = useDemoFrame(MS);
   const [shotOk, setShotOk] = useState(true);
@@ -73,14 +77,14 @@ export function GuessrDemo() {
   }, [f]);
   const pressed = f === 5;
   return (
-    <DemoFrame label={`Demo: a Pokémon screenshot appears, a cursor moves to the map, zooms in and drops a pin, presses Guess, a line shows the real spot and the round scores ${fmt(SCORE)} of ${fmt(GEO_MAX_ROUND_SCORE)}`}>
+    <DemoFrame label={t("demo.label", { score: fmt(SCORE), max: fmt(GEO_MAX_ROUND_SCORE) })}>
       <div ref={root} className="relative mx-auto grid max-w-xl grid-cols-2 gap-3">
         <div ref={shotEl} className="relative aspect-[4/3] overflow-hidden rounded-md border-2 border-foreground/15 bg-shade/60">
           {shotOk && (
             // eslint-disable-next-line @next/next/no-img-element -- the game's own cached screenshot
             <img src={SHOT} alt="" onError={() => setShotOk(false)} className="h-full w-full object-cover" />
           )}
-          <span className="hud-label absolute left-1.5 top-1.5 rounded bg-black/60 px-1.5 py-0.5 text-white">Where is this?</span>
+          <span className="hud-label absolute left-1.5 top-1.5 rounded bg-black/60 px-1.5 py-0.5 text-white">{t("demo.where")}</span>
         </div>
         <div className="space-y-2">
           <div ref={mapEl} className="relative aspect-[614/564] overflow-hidden rounded-md border-2 border-foreground/15 bg-shade/60">
@@ -135,16 +139,16 @@ export function GuessrDemo() {
               ref={guessEl}
               className={`rounded-md border-2 px-3 py-1 text-xs font-bold uppercase transition-transform ${f >= 3 ? "border-primary bg-primary text-primary-foreground" : "border-foreground/15 bg-card text-muted-foreground"} ${pressed ? "scale-90" : ""}`}
             >
-              Guess
+              {t("demo.guess")}
             </span>
             {f >= 7 && (
               <span className="text-right text-xs max-md:text-left max-md:leading-tight">
                 <b className="text-base">
-                  <Count to={SCORE} run={!reduced} />
+                  <Count to={SCORE} run={!reduced} fmt={fmt} />
                 </b>{" "}
                 / {fmt(GEO_MAX_ROUND_SCORE)}
                 <br />
-                <span className="text-muted-foreground">{SQUARES} map squares away</span>
+                <span className="text-muted-foreground">{t("demo.squares", { d: t.locale === "en" ? SQUARES : formatNumber(Number(SQUARES), t.locale, { minimumFractionDigits: 1 }) })}</span>
               </span>
             )}
           </div>

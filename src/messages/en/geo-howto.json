@@ -1,0 +1,25 @@
+{
+  "open": "How to play",
+  "goal": {
+    "title": "The goal",
+    "body": "You are dropped somewhere in the Pokémon world and shown only a screenshot. Work out where it is, drop a pin on the map and press Guess."
+  },
+  "scoring": {
+    "title": "Scoring",
+    "body": "Up to {max} points a round: the closer your pin, the more you score. A game is {lengths} rounds; the Daily is always {daily}."
+  },
+  "modes": {
+    "title": "Modes",
+    "body": "Daily: the same {daily} places for everyone. Streak: keep naming places until a pin misses. Play the world, a region or a themed map, with Classic 2D or Modern 3D games."
+  },
+  "duels": {
+    "title": "Duels",
+    "body": "Face a friend live. HP battle: you both start with {hp} HP and the closer pin damages the other. Points race: the best total over the rounds wins."
+  },
+  "demo": {
+    "label": "Demo: a Pokémon screenshot appears, a cursor moves to the map, zooms in and drops a pin, presses Guess, a line shows the real spot and the round scores {score} of {max}",
+    "where": "Where is this?",
+    "guess": "Guess",
+    "squares": "{d} map squares away"
+  }
+}

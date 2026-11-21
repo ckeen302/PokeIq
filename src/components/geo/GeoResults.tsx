@@ -12,6 +12,10 @@ import { Button } from "@/components/ui/button";
 import { GeoMap, type MapPin, type RevealedRound } from "./GeoMap";
 import { ExitButton, GameShell, Notch } from "./GameShell";
 import { ShareResultLink } from "./ShareResultLink";
+import { useT } from "@/i18n/client";
+import { formatNumber } from "@/i18n/catalog";
+import geoNs from "@/messages/geo";
+import { useGeoNames } from "@/lib/geo-i18n-client";
 
 /** What the results map needs of a finished game: the map and the rounds as graded. */
 export interface ResultsGame {
@@ -24,8 +28,6 @@ export interface ResultsRound {
   guess: MapPin | null;
   graded: GeoGuessResponse;
 }
-
-const fmt = (n: number) => n.toLocaleString("en-US");
 
 /** Counts up to `value` once, eased; instant under reduced motion. */
 function useCountUp(value: number, ms = 1100): number {
@@ -74,6 +76,9 @@ export function GeoResults({
   onRestart: () => void;
   children?: React.ReactNode;
 }) {
+  const t = useT(geoNs);
+  const names = useGeoNames();
+  const fmt = (n: number) => formatNumber(n, t.locale);
   const isStreak = game.kind === "streak";
   const isWorld = isWorldwide(game.region.id);
   const scores = played.map((p) => p.graded.score);
@@ -103,6 +108,8 @@ export function GeoResults({
   }, [more]);
 
   const max = game.rounds * GEO_MAX_ROUND_SCORE;
+  /** "2.4 squares away", or spot on, in the page's language. */
+  const squares = (n: number) => (n === 0 ? t("results.spotOn") : t("results.squares", { n, d: formatNumber(n, t.locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) }));
   return (
     <GameShell onExit={onRestart}>
       {() => (
@@ -115,17 +122,17 @@ export function GeoResults({
             </div>
             <Notch>
               <div className="text-center">
-                <div className="font-display text-xl font-bold uppercase italic leading-none tracking-wide sm:text-2xl">{isStreak ? "Streak over" : "Survey complete"}</div>
-                <div className="mt-0.5 font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c8bfff]">{game.region.name}</div>
+                <div className="font-display text-xl font-bold uppercase italic leading-none tracking-wide sm:text-2xl">{isStreak ? t("results.streakOver") : t("results.complete")}</div>
+                <div className="mt-0.5 font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c8bfff]">{names.map(game.region)}</div>
               </div>
             </Notch>
             {!isStreak && best !== null && (
               <div className="pointer-events-none absolute bottom-3 left-3 z-10 flex gap-2 font-display text-[11px] font-semibold uppercase tracking-wider text-white" aria-hidden>
                 <span className="flex items-center gap-1.5 rounded bg-black/55 px-2 py-1 backdrop-blur">
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ background: BEST_COLOR }} /> Best round
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ background: BEST_COLOR }} />{` ${t("results.bestRound")}`}
                 </span>
                 <span className="flex items-center gap-1.5 rounded bg-black/55 px-2 py-1 backdrop-blur">
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ background: WORST_COLOR }} /> Worst round
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ background: WORST_COLOR }} />{` ${t("results.worstRound")}`}
                 </span>
               </div>
             )}
@@ -139,13 +146,13 @@ export function GeoResults({
           >
             <div className="space-y-4 p-4 sm:p-5">
               <div className="text-center">
-                <p className="hud-label text-screen">{isStreak ? "Final streak" : `Total score · ${game.rounds} rounds`}</p>
+                <p className="hud-label text-screen">{isStreak ? t("results.finalStreak") : t("results.total", { rounds: game.rounds })}</p>
                 <div className="geo-glow mt-1 font-display text-5xl font-bold italic tabular-nums text-white sm:text-6xl" data-testid="geo-results-total">
-                  {isStreak ? `${headline} in a row` : fmt(headline)}
+                  {isStreak ? t("inARow", { n: headline }) : fmt(headline)}
                 </div>
                 {!isStreak && (
                   <>
-                    <div className="text-sm text-muted-foreground">out of {fmt(max)}</div>
+                    <div className="text-sm text-muted-foreground">{t.locale === "en" ? <>out of {fmt(max)}</> : t("results.outOf", { max: fmt(max) })}</div>
                     <div className="meter mx-auto mt-2 max-w-xs !bg-black/40">
                       <motion.div className="h-full bg-[#9be15d]" initial={{ width: 0 }} animate={{ width: `${(total / max) * 100}%` }} transition={{ duration: 1.1 }} />
                     </div>
@@ -153,9 +160,9 @@ export function GeoResults({
                 )}
               </div>
 
-              <ol className="space-y-1.5" aria-label="Rounds">
+              <ol className="space-y-1.5" aria-label={t("results.rounds")}>
                 {played.map((p, i) => {
-                  const tag = i === best ? "Best" : i === worst ? "Worst" : null;
+                  const tag = i === best ? t("results.best") : i === worst ? t("results.worst") : null;
                   const miss = isStreak && !p.graded.hit;
                   return (
                     <li key={i}>
@@ -181,14 +188,16 @@ export function GeoResults({
                           {i + 1}
                         </span>
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-sm font-semibold">{placeLabel(p.graded.answer, game.region)}</span>
+                          <span className="block truncate text-sm font-semibold">{t.locale === "en" ? placeLabel(p.graded.answer, game.region) : names.placeLabel(p.graded.answer, game.region)}</span>
                           <span className="block truncate text-xs text-muted-foreground">
-                            {p.graded.answer.game}
-                            {p.graded.timedOut ? " · Time's up" : ` · ${isStreak && isWorld ? (p.graded.hit ? "Right region" : "Wrong region") : squaresText(p.graded.answer.squares)}`}
+                            {names.game(p.graded.answer.game)}
+                            {p.graded.timedOut
+                              ? ` · ${t("results.timeUp")}`
+                              : ` · ${isStreak && isWorld ? (p.graded.hit ? t("results.rightRegion") : t("results.wrongRegion")) : t.locale === "en" ? squaresText(p.graded.answer.squares) : squares(p.graded.answer.squares)}`}
                           </span>
                         </span>
                         {isStreak ? (
-                          p.graded.hit ? <Check className="h-5 w-5 text-[#9be15d]" aria-label="Correct" /> : <X className="h-5 w-5 text-[#ff5a5a]" aria-label="Missed" />
+                          p.graded.hit ? <Check className="h-5 w-5 text-[#9be15d]" aria-label={t("results.correct")} /> : <X className="h-5 w-5 text-[#ff5a5a]" aria-label={t("results.missed")} />
                         ) : (
                           <span className="flex flex-col items-end">
                             <span className="font-display text-base font-bold tabular-nums">{fmt(p.graded.score)}</span>
@@ -208,13 +217,13 @@ export function GeoResults({
 
               <div className="grid gap-2 sm:grid-cols-2">
                 <Button size="lg" variant="success" onClick={onRestart} data-testid="geo-results-again">
-                  <RotateCcw className="h-4 w-4" aria-hidden /> Play again
+                  <RotateCcw className="h-4 w-4" aria-hidden />{` ${t("results.again")}`}
                 </Button>
                 {shareToken ? (
                   <ShareResultLink token={shareToken} />
                 ) : (
                   <Button size="lg" variant="outline" onClick={() => setMore(true)}>
-                    <ChevronDown className="h-4 w-4" aria-hidden /> Share &amp; leaderboard
+                    <ChevronDown className="h-4 w-4" aria-hidden />{` ${t("results.shareAndBoard")}`}
                   </Button>
                 )}
               </div>

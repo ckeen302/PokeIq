@@ -1,0 +1,53 @@
+{
+  "errors": {
+    "start": "Couldn't start a run.",
+    "grade": "Couldn't grade that pick.",
+    "title": "Something went wrong"
+  },
+  "setup": {
+    "eyebrow": "Field survey · the Pokémon world",
+    "title": "Region <b>Streak</b>",
+    "intro": "One screenshot, one question: which region is this? No pin to place. Every right answer deals the next screenshot; one wrong region ends the run.",
+    "mode": "Streak mode",
+    "headline": "{from} to {to}, until you miss",
+    "best": "Your best: {n} in a row.",
+    "first": "Your first run sets your best.",
+    "board": "Finished runs go on the Region Streak leaderboard.",
+    "start": "Start a run",
+    "regions": "The nine regions"
+  },
+  "board": "Streak leaderboard",
+  "back": "Back to Region Streak",
+  "hud": {
+    "streak": "Streak {n}",
+    "mode": "Region Streak · {world}"
+  },
+  "which": "Which region is this?",
+  "gen": "Gen {n}",
+  "pick": "Pick a region",
+  "reveal": {
+    "right": "Right region!",
+    "wrong": "Wrong region. Streak over",
+    "inARow": "{n} in a row",
+    "final": "Final streak: {n}",
+    "its": "It's {region}.",
+    "picked": "You picked {picked}: it's {region}.",
+    "nothing": "nothing",
+    "results": "See results",
+    "next": "Next shot",
+    "space": "Space"
+  },
+  "summary": {
+    "saveFailed": "Couldn't save.",
+    "shareTitle": "PokéGuessr Region Streak",
+    "shareCount": "{n, plural, one {{n} region in a row} other {{n} regions in a row}}",
+    "newBest": "New best",
+    "best": "Best {n} in a row",
+    "share": "Share…",
+    "save": "Save to the streak leaderboard",
+    "name": "Trainer name",
+    "saved": "Saved",
+    "submit": "Submit",
+    "needOne": "Name at least one region to get on the leaderboard."
+  }
+}

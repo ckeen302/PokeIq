@@ -23,6 +23,13 @@ import { LearnCard } from "./LearnCard";
 import { ReportShot } from "./ReportShot";
 import { GeoResults, type ResultsRound } from "./GeoResults";
 import { resultPath } from "./ShareResultLink";
+import { useT } from "@/i18n/client";
+import type { Translator } from "@/i18n/catalog";
+import geoNs from "@/messages/geo";
+import geoStreak from "@/messages/geo-streak";
+import { useGeoNames, type GeoLocal } from "@/lib/geo-i18n-client";
+
+type StreakT = Translator<typeof geoStreak.en>;
 
 type Phase = "setup" | "loading" | "guessing" | "submitting" | "revealed" | "results" | "error";
 
@@ -53,6 +60,9 @@ async function post<T>(url: string, body: unknown): Promise<T> {
  * the results map. The answer only ever arrives with the grade.
  */
 export function StreakGame({ world }: { world: GeoRegionInfo }) {
+  const t = useT(geoStreak);
+  const g = useT(geoNs);
+  const names = useGeoNames();
   const progress = useProgress();
   const account = useAccount();
   const pinImage = account.user?.avatar ? avatarSrc(account.user.avatar) : undefined;
@@ -83,7 +93,7 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
       setPhase("guessing");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't start a run.");
+      setError(err instanceof Error ? err.message : t("errors.start"));
       setPhase("error");
     }
   }
@@ -107,7 +117,7 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
       setPhase("revealed");
       window.scrollTo({ top: 0 });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't grade that pick.");
+      setError(err instanceof Error ? err.message : t("errors.grade"));
       setPhase("error");
     }
   }
@@ -159,13 +169,11 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
     return (
       <div className="mx-auto max-w-3xl space-y-8" data-testid="streak-setup">
         <div className="space-y-3 text-center">
-          <p className="hud-label max-md:hidden text-screen">Field survey · the Pokémon world</p>
+          <p className="hud-label max-md:hidden text-screen">{t("setup.eyebrow")}</p>
           <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-6xl">
-            Region <span className="text-primary">Streak</span>
+            {t.rich("setup.title", { b: (c) => <span className="text-primary">{c}</span> })}
           </h1>
-          <p className="mx-auto max-w-xl text-muted-foreground">
-            One screenshot, one question: which region is this? No pin to place. Every right answer deals the next screenshot; one wrong region ends the run.
-          </p>
+          <p className="mx-auto max-w-xl text-muted-foreground">{t("setup.intro")}</p>
         </div>
 
         {error && (
@@ -178,36 +186,36 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
           <div className="grid md:grid-cols-[1fr_auto]">
             <CardContent className="space-y-2 p-6">
               <p className="hud-label flex items-center gap-1.5 text-warning">
-                <Flame className="h-3.5 w-3.5" aria-hidden /> Streak mode
+                <Flame className="h-3.5 w-3.5" aria-hidden />{` ${t("setup.mode")}`}
               </p>
-              <p className="font-display text-2xl font-bold uppercase">Kanto to Paldea, until you miss</p>
+              <p className="font-display text-2xl font-bold uppercase">{t("setup.headline", { from: names.region("Kanto"), to: names.region("Paldea") })}</p>
               <p className="text-sm text-muted-foreground">
-                {localBest > 0 ? `Your best: ${localBest} in a row.` : "Your first run sets your best."} Finished runs go on the Region Streak leaderboard.
+                {localBest > 0 ? t("setup.best", { n: localBest }) : t("setup.first")} {t("setup.board")}
               </p>
             </CardContent>
             <div className="flex items-center p-6 pt-0 md:pt-6">
               <Button size="lg" className="w-full md:w-auto" disabled={loading} onClick={() => void start()} data-testid="streak-start">
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Play className="h-4 w-4" aria-hidden />}
-                Start a run
+                {t("setup.start")}
               </Button>
             </div>
           </div>
         </Card>
 
-        <div className="flex flex-wrap items-center justify-center gap-1.5" aria-label="The nine regions">
+        <div className="flex flex-wrap items-center justify-center gap-1.5" aria-label={t("setup.regions")}>
           {GEO_STREAK_REGIONS.map((r) => (
             <span key={r} className="rounded-md border bg-card px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {r}
+              {names.region(r)}
             </span>
           ))}
         </div>
 
         <div className="grid gap-2 sm:grid-cols-2">
           <Link href={`/leaderboard?board=geo&format=${GEO_REGION_STREAK_BOARD}`} className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full")}>
-            <Trophy className="h-4 w-4" aria-hidden /> Streak leaderboard
+            <Trophy className="h-4 w-4" aria-hidden />{` ${t("board")}`}
           </Link>
           <Link href="/pokeguessr" className={cn(buttonVariants({ variant: "secondary", size: "lg" }), "w-full")}>
-            Back to PokéGuessr
+            {g("shell.back")}
           </Link>
         </div>
       </div>
@@ -218,9 +226,9 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
     return (
       <Card className="mx-auto max-w-md">
         <CardContent className="space-y-4 p-6 text-center">
-          <p className="font-display text-xl font-bold uppercase">Something went wrong</p>
+          <p className="font-display text-xl font-bold uppercase">{t("errors.title")}</p>
           <p className="text-sm text-muted-foreground">{error}</p>
-          <Button onClick={() => setPhase("setup")}>Back to Region Streak</Button>
+          <Button onClick={() => setPhase("setup")}>{t("back")}</Button>
         </CardContent>
       </Card>
     );
@@ -235,7 +243,7 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
     }));
     return (
       <GeoResults game={{ region: world, kind: "streak", rounds: played.length }} played={rounds} pinImage={pinImage} shareToken={last?.resultToken} onRestart={() => setPhase("setup")}>
-        <StreakSummary streak={streak} best={Math.max(best ?? 0, localBest)} newBest={newBest} resultToken={last?.resultToken} />
+        <StreakSummary streak={streak} best={Math.max(best ?? 0, localBest)} newBest={newBest} resultToken={last?.resultToken} t={t} />
       </GeoResults>
     );
   }
@@ -245,10 +253,10 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
       <div className="min-w-0 text-center">
         <div className="font-display text-xl font-bold uppercase italic leading-none tracking-wide sm:text-2xl" data-testid="streak-count">
           <span className="inline-flex items-center gap-1.5">
-            <Flame className="h-5 w-5 text-warning" aria-hidden /> Streak {streak}
+            <Flame className="h-5 w-5 text-warning" aria-hidden />{` ${t("hud.streak", { n: streak })}`}
           </span>
         </div>
-        <div className="mt-0.5 truncate font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c8bfff]">Region Streak · World</div>
+        <div className="mt-0.5 truncate font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c8bfff]">{t("hud.mode", { world: names.map(world) })}</div>
       </div>
     </Notch>
   );
@@ -257,7 +265,7 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
   if (phase === "revealed" && current) {
     return (
       <GameShell onExit={() => setPhase("setup")}>
-        {() => <StreakReveal world={world} current={current} streak={streak} onNext={next} onExit={() => setPhase("setup")} notch={notch} />}
+        {() => <StreakReveal world={world} current={current} streak={streak} onNext={next} onExit={() => setPhase("setup")} notch={notch} t={t} names={names} />}
       </GameShell>
     );
   }
@@ -271,14 +279,14 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
             <ShotCarousel views={[run.shot]} index={0} onIndex={() => undefined} onZoom={() => setZoomed(true)} fs />
           </div>
           <div className="geo-safe-tl absolute left-3 top-3 z-20 flex items-center gap-2">
-            <ExitButton onClick={() => setPhase("setup")} label="Back to Region Streak" />
+            <ExitButton onClick={() => setPhase("setup")} label={t("back")} />
             <FullscreenButton fs={fs} onClick={toggle} />
           </div>
           {notch}
 
           {/* The region picker: nine tiles, 1–9 on the keyboard, then Guess. */}
           <div className="absolute inset-x-3 bottom-3 z-10 flex flex-col gap-2 md:inset-x-auto md:bottom-4 md:right-4 md:w-[26rem]" data-testid="streak-picker">
-            <div className="grid grid-cols-3 gap-1.5 rounded-md bg-black/55 p-1.5 backdrop-blur" role="radiogroup" aria-label="Which region is this?">
+            <div className="grid grid-cols-3 gap-1.5 rounded-md bg-black/55 p-1.5 backdrop-blur" role="radiogroup" aria-label={t("which")}>
               {run.regions.map((r, i) => {
                 const on = pick === r;
                 return (
@@ -297,8 +305,8 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
                       on ? "border-[#9be15d] bg-[#4cbb17] text-white shadow-lg" : "border-white/15 bg-[#1e1a3f]/90 text-white hover:border-[#a99cff] hover:bg-[#27224f]"
                     )}
                   >
-                    {r}
-                    <span className={cn("text-[9px] font-semibold tracking-[0.12em]", on ? "text-white/80" : "text-white/45")}>Gen {GEN_OF[r]}</span>
+                    {names.region(r)}
+                    <span className={cn("text-[9px] font-semibold tracking-[0.12em]", on ? "text-white/80" : "text-white/45")}>{t("gen", { n: GEN_OF[r] })}</span>
                     <kbd aria-hidden className="absolute right-1 top-1 hidden rounded border border-white/25 px-1 text-[9px] font-normal normal-case text-white/60 sm:inline">
                       {i + 1}
                     </kbd>
@@ -306,7 +314,7 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
                 );
               })}
             </div>
-            <GuessButton hasPin={!!pick} busy={phase === "submitting"} disabled={phase === "submitting"} onClick={() => void guess()} label={pick ? undefined : "Pick a region"} />
+            <GuessButton hasPin={!!pick} busy={phase === "submitting"} disabled={phase === "submitting"} onClick={() => void guess()} label={pick ? undefined : t("pick")} />
           </div>
 
           <AnimatePresence>
@@ -318,17 +326,17 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
                 exit={{ opacity: 0 }}
                 onClick={() => setZoomed(false)}
                 role="dialog"
-                aria-label="Screenshot, full screen"
+                aria-label={g("shot.fullscreen")}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element -- same cached screenshot, full size */}
                 <img
                   src={run.shot}
-                  alt="Which region is this?"
+                  alt={t("which")}
                   onLoad={(e) => setZoomPixelated(shotFit(e.currentTarget).pixelated)}
                   className="max-h-[calc(100vh-2rem)] max-w-full rounded-md object-contain"
                   style={{ imageRendering: zoomPixelated ? "pixelated" : "auto" }}
                 />
-                <button type="button" className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20" aria-label="Close">
+                <button type="button" className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20" aria-label={g("shot.close")}>
                   <X className="h-5 w-5" />
                 </button>
               </motion.div>
@@ -341,7 +349,7 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
 }
 
 /** The pick's result: the place flagged on the world map, right or wrong in the bottom bar, the learn card, and Next. */
-function StreakReveal({ world, current, streak, notch, onNext, onExit }: { world: GeoRegionInfo; current: Played; streak: number; notch: React.ReactNode; onNext: () => void; onExit: () => void }) {
+function StreakReveal({ world, current, streak, notch, onNext, onExit, t, names }: { world: GeoRegionInfo; current: Played; streak: number; notch: React.ReactNode; onNext: () => void; onExit: () => void; t: StreakT; names: GeoLocal }) {
   const { graded } = current;
   const reduced = useReducedMotion();
   const rise = (delay: number) => ({ initial: reduced ? false : { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.35, delay: reduced ? 0 : delay, ease: [0.2, 0.8, 0.2, 1] as const } });
@@ -351,21 +359,23 @@ function StreakReveal({ world, current, streak, notch, onNext, onExit }: { world
         <GeoMap region={world} revealed={[{ guess: null, answer: graded.answer }]} fit={{ delay: LINE_DRAW_MS / 2, duration: FIT_MS }} fill controls={false} />
       </div>
       <div className="geo-safe-tl absolute left-3 top-3 z-20">
-        <ExitButton onClick={onExit} label="Back to Region Streak" />
+        <ExitButton onClick={onExit} label={t("back")} />
       </div>
       {notch}
       <motion.div {...rise(0.15)} className="absolute inset-x-0 bottom-0 z-20 border-t-4 border-[#a99cff] bg-[#1e1a3f]/95 text-white shadow-[0_-12px_40px_rgba(0,0,0,0.5)] backdrop-blur">
         <div className="mx-auto grid max-w-6xl items-center gap-3 px-4 py-3 sm:gap-6 sm:px-6 md:grid-cols-[1fr_auto_1fr]">
           <div className="min-w-0 text-center md:text-left">
             <p className={cn("hud-label", graded.correct ? "!text-[#9be15d]" : "!text-[#ff5a5a]")} data-testid="streak-verdict">
-              {graded.correct ? "Right region!" : "Wrong region. Streak over"}
+              {graded.correct ? t("reveal.right") : t("reveal.wrong")}
             </p>
             <p className="flex items-center justify-center gap-2 font-display text-4xl font-bold italic md:justify-start">
               {graded.correct ? <Check className="h-8 w-8 text-[#9be15d]" aria-hidden /> : <X className="h-8 w-8 text-[#ff5a5a]" aria-hidden />}
-              {graded.correct ? `${streak} in a row` : `Final streak: ${streak}`}
+              {graded.correct ? t("reveal.inARow", { n: streak }) : t("reveal.final", { n: streak })}
             </p>
             <p className="text-sm text-white/70">
-              {graded.correct ? `It's ${graded.region}.` : `You picked ${graded.picked ?? "nothing"}: it's ${graded.region ?? graded.answer.region}.`}
+              {graded.correct
+                ? t("reveal.its", { region: names.region(String(graded.region)) })
+                : t("reveal.picked", { picked: graded.picked ? names.region(graded.picked) : t("reveal.nothing"), region: names.region(String(graded.region ?? graded.answer.region)) })}
             </p>
           </div>
           <motion.div {...rise(reduced ? 0 : 0.5)} className="flex min-w-0 justify-center">
@@ -378,8 +388,8 @@ function StreakReveal({ world, current, streak, notch, onNext, onExit }: { world
               data-testid="streak-next"
               className="flex h-12 w-full max-w-xs items-center justify-center gap-2 rounded-md bg-[#4cbb17] px-6 font-display text-base font-bold uppercase tracking-wider text-white shadow-lg transition-[background-color,transform] hover:bg-[#58d01c] active:scale-[0.98]"
             >
-              {graded.done ? "See results" : "Next shot"} ▶
-              <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline [@media(pointer:coarse)]:!hidden">Space</kbd>
+              {graded.done ? t("reveal.results") : t("reveal.next")} ▶
+              <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline [@media(pointer:coarse)]:!hidden">{t("reveal.space")}</kbd>
             </button>
             <div className="text-white/60 [&_button]:text-white/60 [&_button:hover]:text-white">
               <ReportShot key={current.shot} shot={current.shot} mode="solo" />
@@ -392,7 +402,7 @@ function StreakReveal({ world, current, streak, notch, onNext, onExit }: { world
 }
 
 /** Under the results map: the best streak, the leaderboard form and sharing. */
-function StreakSummary({ streak, best, newBest, resultToken }: { streak: number; best: number; newBest: boolean; resultToken?: string }) {
+function StreakSummary({ streak, best, newBest, resultToken, t }: { streak: number; best: number; newBest: boolean; resultToken?: string; t: StreakT }) {
   const progress = useProgress();
   const [name, setName] = useState("");
   const [save, setSave] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -414,24 +424,24 @@ function StreakSummary({ streak, best, newBest, resultToken }: { streak: number;
       await post("/api/geo/streak/leaderboard", { resultToken, playerName: name });
       setSave("saved");
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : "Couldn't save.");
+      setSaveError(err instanceof Error ? err.message : t("summary.saveFailed"));
       setSave("error");
     }
   }
 
   const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const shareText = `PokéGuessr Region Streak\n🔥${streak} region${streak === 1 ? "" : "s"} in a row\n${"✅".repeat(Math.min(streak, 20))}${streak > 20 ? "…" : ""}❌${resultToken ? `\n${origin}${resultPath(resultToken)}` : ""}`;
+  const shareText = `${t("summary.shareTitle")}\n🔥${t("summary.shareCount", { n: streak })}\n${"✅".repeat(Math.min(streak, 20))}${streak > 20 ? "…" : ""}❌${resultToken ? `\n${origin}${resultPath(resultToken)}` : ""}`;
   return (
     <div className="space-y-4" data-testid="streak-summary">
       <div className="flex flex-wrap items-center justify-center gap-2">
-        {newBest && <span className="rounded-sm border border-warning/50 px-2 py-1 font-pixel text-[10px] text-warning">New best</span>}
-        {best > 0 && <span className="rounded-sm border px-2 py-1 font-pixel text-[10px] text-muted-foreground">Best {best} in a row</span>}
+        {newBest && <span className="rounded-sm border border-warning/50 px-2 py-1 font-pixel text-[10px] text-warning">{t("summary.newBest")}</span>}
+        {best > 0 && <span className="rounded-sm border px-2 py-1 font-pixel text-[10px] text-muted-foreground">{t("summary.best", { n: best })}</span>}
       </div>
-      <ShareButton size="lg" variant="outline" kind="guessr" label="Share…" getText={() => shareText} className="w-full" />
+      <ShareButton size="lg" variant="outline" kind="guessr" label={t("summary.share")} getText={() => shareText} className="w-full" />
       {resultToken && streak > 0 ? (
         <form className="space-y-2" onSubmit={submit}>
           <label htmlFor="streak-name" className="hud-label">
-            Save to the streak leaderboard
+            {t("summary.save")}
           </label>
           <div className="flex gap-2">
             <input
@@ -443,12 +453,12 @@ function StreakSummary({ streak, best, newBest, resultToken }: { streak: number;
               }}
               maxLength={24}
               required
-              placeholder="Trainer name"
+              placeholder={t("summary.name")}
               disabled={save === "saved"}
               className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
             />
             <Button type="submit" disabled={save === "saving" || save === "saved" || !name.trim()}>
-              {save === "saved" ? "Saved" : "Submit"}
+              {save === "saved" ? t("summary.saved") : t("summary.submit")}
             </Button>
           </div>
           {saveError && (
@@ -458,10 +468,10 @@ function StreakSummary({ streak, best, newBest, resultToken }: { streak: number;
           )}
         </form>
       ) : (
-        <p className="text-xs text-muted-foreground">Name at least one region to get on the leaderboard.</p>
+        <p className="text-xs text-muted-foreground">{t("summary.needOne")}</p>
       )}
       <Link href={`/leaderboard?board=geo&format=${GEO_REGION_STREAK_BOARD}`} className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full")}>
-        <Trophy className="h-4 w-4" aria-hidden /> Streak leaderboard
+        <Trophy className="h-4 w-4" aria-hidden />{` ${t("board")}`}
       </Link>
     </div>
   );

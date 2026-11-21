@@ -8,8 +8,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { GeoMap } from "./GeoMap";
 import type { Played } from "./GeoGame";
 import { cn } from "@/lib/utils";
-
-const fmt = (n: number) => n.toLocaleString("en-US");
+import { useT } from "@/i18n/client";
+import { formatNumber } from "@/i18n/catalog";
+import geoSolo from "@/messages/geo-solo";
 
 /**
  * The Daily's crowd map, after the last round: for each round, where everyone
@@ -18,6 +19,8 @@ const fmt = (n: number) => n.toLocaleString("en-US");
  * who hasn't finished the day's Daily). Hidden until a round has enough pins.
  */
 export function GeoCrowdMap({ date, region, played, resultToken }: { date: string; region: GeoRegionInfo; played: Played[]; resultToken?: string }) {
+  const t = useT(geoSolo);
+  const fmt = (n: number) => formatNumber(n, t.locale);
   const [crowd, setCrowd] = useState<GeoCrowd | null>(null);
   const [pick, setPick] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
@@ -47,7 +50,7 @@ export function GeoCrowdMap({ date, region, played, resultToken }: { date: strin
       const blob = await fetch(cardUrl).then((r) => (r.ok ? r.blob() : Promise.reject(new Error(String(r.status)))));
       const file = new File([blob], `pokeguessr-crowd-round-${current.round}.png`, { type: "image/png" });
       if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], text: "Where everyone pinned in today's PokéGuessr Daily" }).catch(() => undefined);
+        await navigator.share({ files: [file], text: t("crowd.shareText") }).catch(() => undefined);
       } else {
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
@@ -67,14 +70,14 @@ export function GeoCrowdMap({ date, region, played, resultToken }: { date: strin
       <CardContent className="space-y-3 p-4 sm:p-5">
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
           <p className="hud-label flex items-center gap-1.5 text-screen">
-            <Users className="h-3.5 w-3.5" aria-hidden /> Crowd map
+            <Users className="h-3.5 w-3.5" aria-hidden />{` ${t("crowd.title")}`}
           </p>
           <p className="text-sm text-muted-foreground" data-testid="geo-crowd-count">
-            {fmt(current.pins)} trainers pinned round {current.round}
+            {t("crowd.count", { n: fmt(current.pins), round: current.round })}
           </p>
         </div>
         {rounds.length > 1 && (
-          <div className="grid grid-cols-5 gap-1.5" role="tablist" aria-label="Round">
+          <div className="grid grid-cols-5 gap-1.5" role="tablist" aria-label={t("crowd.round")}>
             {rounds.map((r) => (
               <button
                 key={r.round}
@@ -88,7 +91,7 @@ export function GeoCrowdMap({ date, region, played, resultToken }: { date: strin
                   r.round === current.round ? "border-primary bg-primary text-primary-foreground" : "border-border bg-shade/20 text-muted-foreground hover:text-foreground"
                 )}
               >
-                R{r.round}
+                {t("summary.r", { n: r.round })}
               </button>
             ))}
           </div>
@@ -98,23 +101,23 @@ export function GeoCrowdMap({ date, region, played, resultToken }: { date: strin
           region={region}
           land
           density={current}
-          revealed={[{ guess: mine.guess, answer: mine.graded.answer, label: "You" }]}
+          revealed={[{ guess: mine.guess, answer: mine.graded.answer, label: t("summary.you") }]}
           className="max-h-[60vh] sm:max-h-none"
         />
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
-              <span className="h-3 w-3 rounded-full bg-[radial-gradient(circle,#ff4f6d,#ffb23c_60%,#ffe46b00)]" aria-hidden /> Everyone&apos;s pins
+              <span className="h-3 w-3 rounded-full bg-[radial-gradient(circle,#ff4f6d,#ffb23c_60%,#ffe46b00)]" aria-hidden />{` ${t("crowd.everyone")}`}
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="h-3 w-3 rounded-full border-2 border-white bg-[#120f24]" aria-hidden /> The answer
+              <span className="h-3 w-3 rounded-full border-2 border-white bg-[#120f24]" aria-hidden />{` ${t("crowd.answer")}`}
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="h-3 w-3 rounded-full border-2 border-[#120f24] bg-[#3a8dde]" aria-hidden /> You
+              <span className="h-3 w-3 rounded-full border-2 border-[#120f24] bg-[#3a8dde]" aria-hidden />{` ${t("summary.you")}`}
             </span>
           </div>
           <Button size="sm" variant="secondary" onClick={() => void shareImage()} disabled={saving} data-testid="geo-crowd-share">
-            <ImageDown className="h-4 w-4" aria-hidden /> {saving ? "Making the picture…" : "Share this map"}
+            <ImageDown className="h-4 w-4" aria-hidden /> {saving ? t("crowd.making") : t("crowd.share")}
           </Button>
         </div>
       </CardContent>
