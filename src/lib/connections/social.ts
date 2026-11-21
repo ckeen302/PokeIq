@@ -1,4 +1,4 @@
-import { CONN_LEVELS, type ConnLevel } from "./types";
+import type { ConnLevel } from "./types";
 import type { CustomSummary } from "./custom";
 import { translator, type Translator } from "@/i18n/catalog";
 import conn from "@/messages/connections";

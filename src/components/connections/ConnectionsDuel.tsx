@@ -6,7 +6,8 @@ import { useRouter } from "@/i18n/navigation";
 import { AnimatePresence, LayoutGroup, MotionConfig, motion } from "framer-motion";
 import { CheckCircle2, Crown, Loader2, RotateCcw, Shuffle, Swords, Timer, WifiOff, XCircle } from "lucide-react";
 import { CONN_DUEL_MS, CONN_DUEL_PENALTY_MS, pvpHref, type ConnDuelBoard, type ConnDuelView } from "@/lib/pvp-types";
-import { CONN_LEVELS, guessKey, type ConnSize, type ConnTile } from "@/lib/connections/types";
+import { guessKey, type ConnSize, type ConnTile } from "@/lib/connections/types";
+import { localizePath } from "@/i18n/paths";
 import { CONN_SQUARES } from "@/lib/share";
 import { useConnPrefs } from "@/lib/connections/local";
 import { recordConnDuel, type BadgeDef } from "@/lib/progress";
@@ -23,6 +24,14 @@ import { Avatar } from "@/components/avatar/Avatar";
 import { ShareButton } from "@/components/share/ShareButton";
 import { CONTROLS_DOCK, CONTROLS_WRAP, GridTile, GroupBar, GuessHistory, LevelMark, MistakeDots, WhyPanel, levelStyle, type TileMotion } from "./parts";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import type { Translator } from "@/i18n/catalog";
+import duelNs from "@/messages/connections-duel";
+import board from "@/messages/connections-board";
+import share from "@/messages/share";
+import { levelName } from "./parts";
+
+type DuelT = Translator<typeof duelNs.en>;
 
 /**
  * A PokéConnections duel at /pokeconnections/duel/<code>: the lobby, the race
@@ -45,21 +54,20 @@ function timeText(b: ConnDuelBoard): string {
 }
 
 const sizeOf = (view: Pick<ConnDuelView, "size"> | undefined): ConnSize => (view?.size === 5 ? 5 : 4);
-const WORDS = { 4: "four", 5: "five" } as const;
-const SQUARES = { 4: "sixteen", 5: "twenty-five" } as const;
 
 /** "Solved in 1:53", "Out · 2/4 groups", "1/4 groups". */
-function boardStatus(b: ConnDuelBoard | undefined, size: ConnSize): string {
+function boardStatus(b: ConnDuelBoard | undefined, size: ConnSize, t: DuelT): string {
   if (!b) return "";
-  if (b.solved) return `Solved · ${clock(b.score ?? 0)}`;
-  return `${b.out ? "Out · " : ""}${b.found.length}/${size} groups`;
+  if (b.solved) return t("status.solved", { time: clock(b.score ?? 0) });
+  return t(b.out ? "status.out" : "status.groups", { found: b.found.length, size });
 }
 
 export function ConnectionsDuel({ code }: { code: string }) {
+  const t = useT(duelNs);
   const router = useRouter();
   const prefs = useConnPrefs();
   const symbols = prefs?.symbols ?? true;
-  const { view, now, gone, offline, error, setError, busy, sawPlay, act, send, join, rematch } = useDuel<ConnDuelView>(`/api/duel/${code}`, code);
+  const { view, now, gone, offline, error, setError, busy, sawPlay, act, send, join, rematch } = useDuel<ConnDuelView>(`/api/duel/${code}${t.locale === "en" ? "" : `?lang=${t.locale}`}`, code);
   const [order, setOrder] = useState<number[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
   const [toast, setToast] = useState<{ text: string; n: number } | null>(null);
@@ -111,16 +119,16 @@ export function ConnectionsDuel({ code }: { code: string }) {
         const group = mine!.found[mine!.found.length - 1];
         play("correct");
         setTileMotion({ kind: "jump", ids: last });
-        setAnnounce(`Correct: ${group.label}.`);
+        setAnnounce(t("announce.correct", { label: group.label }));
         setSelected([]);
         window.setTimeout(() => setTileMotion(null), 650);
       } else {
         play("wrong");
         vibrate(60);
         setTileMotion({ kind: "shake", ids: last });
-        if (kind === "one-away") showToast("One away…");
+        if (kind === "one-away") showToast(t("toast.oneAway"));
         const left = size - (view.boards[me]?.mistakes ?? 0);
-        setAnnounce(`${kind === "one-away" ? "One away. " : "Not a group. "}${left} mistake${left === 1 ? "" : "s"} left.`);
+        setAnnounce(`${kind === "one-away" ? t("announce.oneAway") : t("announce.notGroup")}${t("announce.left", { left })}`);
         window.setTimeout(() => setTileMotion(null), 450);
       }
     }
@@ -129,14 +137,14 @@ export function ConnectionsDuel({ code }: { code: string }) {
     if (theirs) {
       if (h.theirs >= 0 && theirs.found.length > h.theirs) {
         play("ping");
-        setAnnounce(`${view.players[1 - me]?.name ?? "Your opponent"} found a group (${theirs.found.length} of ${size}).`);
+        setAnnounce(t("announce.theirs", { name: view.players[1 - me]?.name ?? t("Opponent"), found: theirs.found.length, size }));
       }
       h.theirs = theirs.found.length;
       h.theirMistakes = theirs.mistakes;
     }
     if (view.end && !h.end && sawPlay) play(view.end.winner === me ? "fanfare" : view.end.winner === null ? "streak" : "wrong");
     h.end = !!view.end;
-  }, [view, me, mine, sawPlay, showToast, size]);
+  }, [view, me, mine, sawPlay, showToast, size, t]);
 
   const found = useMemo(() => new Set((mine?.found ?? []).flatMap((g) => g.members.map((m) => m.id))), [mine]);
   const tilesById = useMemo(() => new Map((view?.tiles ?? []).map((t) => [t.id, t])), [view?.tiles]);
@@ -166,8 +174,8 @@ export function ConnectionsDuel({ code }: { code: string }) {
     if (!canGuess || busy || selected.length !== size) return;
     unlockAudio();
     if (mine?.guesses.some((g) => guessKey(g) === guessKey(selected))) {
-      showToast("Already guessed!");
-      setAnnounce("Already guessed. That doesn't cost a mistake.");
+      showToast(t("toast.repeat"));
+      setAnnounce(t("announce.repeat"));
       return;
     }
     await act({ action: "group", pokemon: selected });
@@ -202,10 +210,10 @@ export function ConnectionsDuel({ code }: { code: string }) {
     if (next) router.push(pvpHref("connections", next));
   }
 
-  if (gone) return <DuelGone message={gone} href={HOME} label="Back to PokéConnections" />;
+  if (gone) return <DuelGone message={gone} href={HOME} label={t("back")} />;
   if (!view) return <DuelLoading />;
 
-  const tag = `PokéConnections duel${seriesTag(view.series) ? ` · ${seriesTag(view.series)}` : ""}`;
+  const tag = seriesTag(view.series) ? t("tagSeries", { series: seriesTag(view.series) ?? "" }) : t("tag");
   const notice = (
     <>
       <MatchedNote view={view} />
@@ -221,7 +229,7 @@ export function ConnectionsDuel({ code }: { code: string }) {
       }}
     />
   );
-  const chat = <DuelChat view={view} game="PokéConnections duel" onSend={(text) => send({ action: "chat", text })} />;
+  const chat = <DuelChat view={view} game={t("tag")} onSend={(text) => send({ action: "chat", text })} />;
 
   if (view.status === "lobby") {
     return (
@@ -231,23 +239,19 @@ export function ConnectionsDuel({ code }: { code: string }) {
           view={view}
           path={pvpHref("connections", view.code)}
           tag={tag}
-          title={
-            <>
-              PokéConnections <span className="text-primary">Race</span>
-            </>
-          }
-          invite={(host) => `${host} challenges you${size === 5 ? " to a 5×5 board" : ""}! The same ${SQUARES[size]} Pokémon for both of you: the first to find all ${WORDS[size]} groups wins.`}
-          about={`The same ${SQUARES[size]} Pokémon for both of you${size === 5 ? " (a 5×5 board)" : ""}. Find the ${WORDS[size]} groups of ${WORDS[size]} before your opponent does.`}
-          shareText={`Race me at PokéConnections! Same ${size * size} Pokémon, first to find the ${size} groups wins.`}
+          title={<>{t.rich("race", { r: (c) => <span className="text-primary">{c}</span> })}</>}
+          invite={(host) => t(size === 5 ? "invite5" : "invite4", { host })}
+          about={t(size === 5 ? "about5" : "about4")}
+          shareText={t("inviteShare", { n: size * size, size })}
           rules={[
-            { label: "The race", text: `The same ${SQUARES[size]} Pokémon and ${WORDS[size]} hidden groups for both of you${size === 5 ? " (a 5×5 board)" : ""}. The first to find all ${WORDS[size]} wins.` },
+            { label: t("rules.race"), text: t(size === 5 ? "rules.race5" : "rules.race4") },
             {
-              label: "Mistakes",
-              text: `Each mistake adds ${PENALTY_S} seconds to your time, so a quick but sloppy solve can still lose. ${size} mistakes and you're out.`,
+              label: t("rules.mistakes"),
+              text: t("rules.mistakesText", { s: PENALTY_S, size }),
             },
             {
-              label: "Winning",
-              text: `The lower time (penalties included) wins. If you're both out, or ${CONN_DUEL_MS / 60_000} minutes pass, more groups found wins, then fewer mistakes. You see your opponent's groups as colours only.`,
+              label: t("rules.winning"),
+              text: t("rules.winningText", { min: CONN_DUEL_MS / 60_000 }),
             },
           ]}
           home={HOME}
@@ -270,17 +274,17 @@ export function ConnectionsDuel({ code }: { code: string }) {
         status={
           view.status === "finished"
             ? winner === null || winner === undefined
-              ? "It ended in a draw."
-              : `${view.players[winner]?.name} won.`
-            : `Under way: ${view.players.map((p, k) => `${p.name} ${boardStatus(view.boards[k], size)}`).join(", ")}.`
+              ? t("visitor.draw")
+              : t("visitor.won", { name: `${view.players[winner]?.name}` })
+            : t("visitor.underway", { list: view.players.map((p, k) => t("visitor.player", { name: p.name, status: boardStatus(view.boards[k], size, t) })).join(", ") })
         }
         home={HOME}
-        label="Start your own race"
+        label={t("visitor.startOwn")}
       />
     );
   }
 
-  const them = view.players[1 - me]?.name ?? "your opponent";
+  const them = view.players[1 - me]?.name ?? t("opponent");
 
   if (view.status === "finished") {
     return (
@@ -315,12 +319,12 @@ export function ConnectionsDuel({ code }: { code: string }) {
         <RaceHud view={view} now={now} symbols={symbols} />
         <Card>
           <CardContent className="space-y-3 p-10 text-center">
-            <p className="hud-label text-screen">Get ready</p>
+            <p className="hud-label text-screen">{t("ready")}</p>
             <motion.p key={seconds(startsAt - now)} initial={{ scale: 1.4, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="font-display text-7xl font-bold tabular-nums">
               {Math.max(1, seconds(startsAt - now))}
             </motion.p>
             <p className="text-sm text-muted-foreground">
-              {SQUARES[size][0].toUpperCase() + SQUARES[size].slice(1)} Pokémon, {WORDS[size]} groups. Each mistake costs {PENALTY_S} seconds.
+              {t(size === 5 ? "lead5" : "lead4", { s: PENALTY_S })}
             </p>
           </CardContent>
         </Card>
@@ -360,7 +364,7 @@ export function ConnectionsDuel({ code }: { code: string }) {
                 <GroupBar key={g.level} group={g} symbols={symbols} compact={size === 5} />
               ))}
               {remaining.length > 0 && (
-                <div className={cn("grid gap-2 sm:gap-2.5", size === 5 ? "grid-cols-5" : "grid-cols-4")} data-testid="conn-grid" data-size={size} aria-label="Pokémon to group">
+                <div className={cn("grid gap-2 sm:gap-2.5", size === 5 ? "grid-cols-5" : "grid-cols-4")} data-testid="conn-grid" data-size={size} aria-label={t("grid")}>
                   {remaining.map((t, i) => (
                     <GridTile
                       key={t.id}
@@ -390,13 +394,15 @@ export function ConnectionsDuel({ code }: { code: string }) {
         {done ? (
           <Card className={cn(myBoard?.solved ? "border-success/50" : "border-destructive/40")} data-testid="conn-duel-waiting">
             <CardContent className="space-y-1 p-5 text-center">
-              <p className="font-display text-2xl font-bold uppercase">{myBoard?.solved ? `All ${WORDS[size]} found!` : "Out of mistakes"}</p>
+              <p className="font-display text-2xl font-bold uppercase">{myBoard?.solved ? t(size === 5 ? "allFound5" : "allFound4") : t("outOfMistakes")}</p>
               <p className="text-sm text-muted-foreground">
                 {myBoard?.solved
-                  ? `Your time: ${timeText(myBoard)}${myBoard.mistakes ? ` = ${clock(myBoard.score ?? 0)}` : ""}.`
-                  : `You found ${myBoard?.found.length ?? 0} of ${size} groups.`}{" "}
+                  ? myBoard.mistakes
+                    ? t("yourTimeScore", { time: timeText(myBoard), score: clock(myBoard.score ?? 0) })
+                    : t("yourTime", { time: timeText(myBoard) })
+                  : t("youFound", { found: myBoard?.found.length ?? 0, size })}{" "}
                 <span className="inline-flex items-center gap-1.5">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> Waiting for {them}…
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> {t("waiting", { name: them })}
                 </span>
               </p>
             </CardContent>
@@ -406,13 +412,13 @@ export function ConnectionsDuel({ code }: { code: string }) {
             <MistakeDots left={size - (myBoard?.mistakes ?? 0)} max={size} />
             <div className={cn("flex flex-wrap items-center justify-center gap-2.5", CONTROLS_DOCK)} data-testid="conn-controls">
               <Button variant="outline" onClick={shuffle} className="rounded-full max-sm:px-3 sm:min-w-28">
-                <Shuffle className="h-4 w-4" aria-hidden /> Shuffle
+                <Shuffle className="h-4 w-4" aria-hidden /> {t("shuffle")}
               </Button>
               <Button variant="outline" onClick={() => (setSelected([]), setError(null))} disabled={selected.length === 0} className="rounded-full max-sm:px-3 sm:min-w-28">
-                Deselect<span className="max-sm:hidden">&nbsp;all</span>
+                {t.rich("deselect", { s: (c) => <span className="max-sm:hidden">{c}</span> })}
               </Button>
               <Button onClick={() => void submit()} disabled={busy || selected.length !== size} className="rounded-full max-sm:min-w-[5.25rem] sm:min-w-28" data-testid="conn-submit">
-                Submit
+                {t("submit")}
               </Button>
             </div>
           </div>
@@ -430,19 +436,20 @@ export function ConnectionsDuel({ code }: { code: string }) {
 
 /** Both trainers facing each other, with the race clock in the middle. */
 function RaceHud({ view, now, symbols }: { view: ConnDuelView; now: number; symbols: boolean }) {
+  const t = useT(duelNs);
   const elapsed = view.round ? Math.max(0, now - view.round.startsAt) : 0;
   return (
     <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-md border bg-card/90 px-3 py-2.5 backdrop-blur sm:gap-4 sm:px-4" data-testid="conn-race-hud">
       <Racer view={view} seat={0} symbols={symbols} />
       <div className="space-y-0.5 text-center">
         {view.status === "finished" ? (
-          <div className="hud-label">Final</div>
+          <div className="hud-label">{t("final")}</div>
         ) : (
           <>
-            <div className="flex items-center justify-center gap-1 font-pixel text-sm tabular-nums" role="timer" aria-label="Race time">
+            <div className="flex items-center justify-center gap-1 font-pixel text-sm tabular-nums" role="timer" aria-label={t("raceTime")}>
               <Timer className="h-3.5 w-3.5" aria-hidden /> {clock(elapsed)}
             </div>
-            <div className="hud-label hidden sm:block">+{PENALTY_S}s a mistake</div>
+            <div className="hud-label hidden sm:block">{t("penalty", { s: PENALTY_S })}</div>
           </>
         )}
       </div>
@@ -453,22 +460,34 @@ function RaceHud({ view, now, symbols }: { view: ConnDuelView; now: number; symb
 
 /** One trainer: name, the colours of the groups they've found, and their mistakes. Never which Pokémon. */
 function Racer({ view, seat, symbols, right }: { view: ConnDuelView; seat: number; symbols: boolean; right?: boolean }) {
+  const t = useT(duelNs);
+  const tb = useT(board);
   const player = view.players[seat];
-  const board = view.boards[seat];
+  const b = view.boards[seat];
   const size = sizeOf(view);
-  const label = `${player?.name ?? "—"}: ${board ? `${board.found.length} of ${size} groups found${board.found.length ? ` (${board.found.map((l) => CONN_LEVELS[l].name).join(", ")})` : ""}, ${board.mistakes} of ${size} mistakes${board.solved ? ", solved" : board.out ? ", out" : ""}` : "ready"}`;
+  const name = player?.name ?? "—";
+  const label = b
+    ? t("racer.board", {
+        name,
+        found: b.found.length,
+        size,
+        levels: b.found.length ? t("racer.levels", { list: b.found.map((l) => levelName(tb, l)).join(tb("sep")) }) : "",
+        mistakes: b.mistakes,
+        state: b.solved ? t("racer.solved") : b.out ? t("racer.out") : "",
+      })
+    : t("racer.ready", { name });
   return (
     <div className={cn("min-w-0 space-y-1", right && "text-right")} aria-label={label} data-testid={`conn-racer-${seat}`}>
       <div className={cn("flex items-center gap-1.5", right && "flex-row-reverse")}>
         <SeatDot seat={seat} />
         {player && <Avatar avatar={player.avatar} size={22} />}
         <span className="truncate font-display text-sm font-bold uppercase sm:text-base">{player?.name ?? "—"}</span>
-        {view.you === seat && <span className="hud-label">You</span>}
-        {player?.quiet && view.status === "playing" && <WifiOff className="h-3.5 w-3.5 shrink-0 text-warning" aria-label="Connection lost" />}
+        {view.you === seat && <span className="hud-label">{t("you")}</span>}
+        {player?.quiet && view.status === "playing" && <WifiOff className="h-3.5 w-3.5 shrink-0 text-warning" aria-label={t("connectionLost")} />}
       </div>
       <div className={cn("flex items-center gap-1", right && "flex-row-reverse")} aria-hidden>
         {Array.from({ length: size }, (_, i) => {
-          const level = board?.found[i];
+          const level = b?.found[i];
           return level === undefined ? (
             <span key={i} className="h-5 w-5 rounded-[4px] border border-dashed border-foreground/25 sm:h-6 sm:w-6" />
           ) : (
@@ -487,11 +506,11 @@ function Racer({ view, seat, symbols, right }: { view: ConnDuelView; seat: numbe
       <div className={cn("flex items-center gap-1.5 text-xs text-muted-foreground", right && "flex-row-reverse")}>
         <span className="flex gap-0.5" aria-hidden>
           {Array.from({ length: size }, (_, i) => (
-            <span key={i} className={cn("h-2 w-2 rounded-full", i < (board?.mistakes ?? 0) ? "bg-destructive" : "bg-foreground/20")} />
+            <span key={i} className={cn("h-2 w-2 rounded-full", i < (b?.mistakes ?? 0) ? "bg-destructive" : "bg-foreground/20")} />
           ))}
         </span>
-        <span className={cn(board?.solved && "font-semibold text-success", board?.out && "font-semibold text-destructive")}>
-          {board?.solved ? `Solved ${clock(board.score ?? 0)}` : board?.out ? "Out" : `${board?.mistakes ?? 0} mistake${board?.mistakes === 1 ? "" : "s"}`}
+        <span className={cn(b?.solved && "font-semibold text-success", b?.out && "font-semibold text-destructive")}>
+          {b?.solved ? t("solvedTime", { time: clock(b.score ?? 0) }) : b?.out ? t("out") : t("mistakes", { n: b?.mistakes ?? 0 })}
         </span>
       </div>
     </div>
@@ -499,50 +518,52 @@ function Racer({ view, seat, symbols, right }: { view: ConnDuelView; seat: numbe
 }
 
 /** Why the duel ended the way it did, in a sentence. */
-function reasonText(view: ConnDuelView, me: number): string {
+function reasonText(view: ConnDuelView, me: number, t: DuelT): string {
   const end = view.end!;
-  const them = view.players[1 - me]?.name ?? "Your opponent";
+  const them = view.players[1 - me]?.name ?? t("Opponent");
   const won = end.winner === me;
-  if (end.reason === "left") return won ? `${them} left the duel.` : "You left the duel.";
+  if (end.reason === "left") return won ? t("reason.theyLeft", { name: them }) : t("reason.youLeft");
   const [mine, theirs] = [view.boards[me], view.boards[1 - me]];
   if (!mine || !theirs) return "";
-  if (end.winner === null) return mine.solved ? `Dead heat: ${clock(mine.score ?? 0)} each.` : `Level: ${mine.found.length} groups and ${mine.mistakes} mistakes each.`;
+  if (end.winner === null) return mine.solved ? t("reason.deadHeat", { time: clock(mine.score ?? 0) }) : t("reason.level", { found: mine.found.length, mistakes: mine.mistakes });
   const [w, l] = won ? [mine, theirs] : [theirs, mine];
-  const who = won ? "You" : them;
-  if (w.solved && l.solved) return `${who} solved it in ${clock(w.score ?? 0)} to ${clock(l.score ?? 0)}, penalties included.`;
-  if (w.solved) return `${who} found all ${WORDS[sizeOf(view)]} groups first${l.out ? `; ${won ? them : "you"} ran out of mistakes` : ""}.`;
-  if (w.found.length !== l.found.length) return `Nobody solved it: ${who} found more groups, ${w.found.length} to ${l.found.length}.`;
-  return `Nobody solved it, and ${who.toLowerCase() === "you" ? "you" : who} made fewer mistakes.`;
+  const size = String(sizeOf(view));
+  if (w.solved && l.solved) return won ? t("reason.bothYou", { a: clock(w.score ?? 0), b: clock(l.score ?? 0) }) : t("reason.bothThem", { name: them, a: clock(w.score ?? 0), b: clock(l.score ?? 0) });
+  if (w.solved) return won ? t(l.out ? "reason.firstYouOut" : "reason.firstYou", { size, name: them }) : t(l.out ? "reason.firstThemOut" : "reason.firstThem", { size, name: them });
+  if (w.found.length !== l.found.length) return won ? t("reason.moreYou", { a: w.found.length, b: l.found.length }) : t("reason.moreThem", { name: them, a: w.found.length, b: l.found.length });
+  return won || them.toLowerCase() === "you" ? t("reason.fewerYou") : t("reason.fewerThem", { name: them });
 }
 
 /** The result, both races, and what's next. */
 function DuelSummary({ view, busy, symbols, onRematch }: { view: ConnDuelView; busy: boolean; symbols: boolean; onRematch: () => void }) {
+  const t = useT(duelNs);
+  const ts = useT(share);
   const me = view.you!;
   const end = view.end!;
   const won = end.winner === me;
   const draw = end.winner === null;
-  const them = view.players[1 - me]?.name ?? "your opponent";
+  const them = view.players[1 - me]?.name ?? t("opponent");
 
   function shareText(): string {
     const rows = view.rows?.[me] ?? [];
     const board = view.boards[me];
-    const headline = draw ? `drew with ${them}` : won ? `beat ${them}` : `lost to ${them}`;
+    const score = board?.solved ? `⏱${clock(board.score ?? 0)}` : `${board?.found.length ?? 0}/${sizeOf(view)}`;
     return [
-      `PokéIQ PokéConnections duel: I ${headline}! ${board?.solved ? `⏱${clock(board.score ?? 0)}` : `${board?.found.length ?? 0}/${sizeOf(view)}`}`,
+      t(draw ? "share.drew" : won ? "share.beat" : "share.lost", { name: them, score }),
       ...rows.map((r) => r.map((l) => CONN_SQUARES[l]).join("")),
-      `${window.location.origin}${HOME}`,
+      `${window.location.origin}${localizePath(HOME, ts.locale)}`,
     ].join("\n");
   }
 
   return (
     <div className="mx-auto max-w-3xl space-y-6" data-testid="conn-duel-result">
       <div className="space-y-2 text-center">
-        <p className="hud-label text-screen">Duel over · PokéConnections</p>
+        <p className="hud-label text-screen">{t("over")}</p>
         <div className={cn("flex items-center justify-center gap-3 font-display text-6xl font-bold uppercase", won ? "text-success" : draw ? "text-screen" : "text-destructive")}>
           {won && <Crown className="h-12 w-12" aria-hidden />}
-          {draw ? "Draw" : won ? "Victory!" : "Defeat"}
+          {draw ? t("draw") : won ? t("victory") : t("defeat")}
         </div>
-        <p className="text-muted-foreground">{reasonText(view, me)}</p>
+        <p className="text-muted-foreground">{reasonText(view, me, t)}</p>
       </div>
 
       <RaceHud view={view} now={view.now} symbols={symbols} />
@@ -556,17 +577,19 @@ function DuelSummary({ view, busy, symbols, onRematch }: { view: ConnDuelView; b
                 <div key={seat} className={cn("space-y-3 rounded-md border bg-shade/20 p-4 text-center", end.winner === seat && "border-success/60")}>
                   <p className="hud-label flex items-center justify-center gap-1.5">
                     <SeatDot seat={seat} /> {p.name}
-                    {seat === me && " · You"}
+                    {seat === me && t("youSuffix")}
                   </p>
                   <p className={cn("flex items-center justify-center gap-1.5 font-display text-2xl font-bold tabular-nums", b?.solved ? "text-success" : "text-muted-foreground")}>
                     {b?.solved ? <CheckCircle2 className="h-5 w-5" aria-hidden /> : <XCircle className="h-5 w-5" aria-hidden />}
                     {b?.solved ? clock(b.score ?? 0) : `${b?.found.length ?? 0}/${sizeOf(view)}`}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {b?.solved ? (b.mistakes ? `Time ${timeText(b)} penalty (${b.mistakes} × ${PENALTY_S}s)` : `Clean solve in ${timeText(b)}`) : b?.out ? "Out of mistakes" : "Didn't finish"} ·{" "}
-                    {b?.mistakes ?? 0} mistake{b?.mistakes === 1 ? "" : "s"}
+                    {t("line", {
+                      how: b?.solved ? (b.mistakes ? t("timePenalty", { time: timeText(b), n: b.mistakes, s: PENALTY_S }) : t("clean", { time: timeText(b) })) : b?.out ? t("outOfMistakes") : t("didntFinish"),
+                      mistakes: t("mistakes", { n: b?.mistakes ?? 0 }),
+                    })}
                   </p>
-                  {view.rows?.[seat]?.length ? <GuessHistory rows={view.rows[seat]} symbols={symbols} /> : <p className="text-xs text-muted-foreground">No guesses</p>}
+                  {view.rows?.[seat]?.length ? <GuessHistory rows={view.rows[seat]} symbols={symbols} /> : <p className="text-xs text-muted-foreground">{t("noGuesses")}</p>}
                 </div>
               );
             })}
@@ -574,20 +597,20 @@ function DuelSummary({ view, busy, symbols, onRematch }: { view: ConnDuelView; b
           {view.series && <SeriesScore series={view.series} players={view.players} you={me} />}
           {view.rematch && (
             <p role="status" className="text-center font-display text-sm font-semibold uppercase tracking-wider text-warning">
-              Rematch requested!
+              {t("rematchRequested")}
             </p>
           )}
           <div className="grid gap-2 sm:grid-cols-3">
             <Button size="lg" variant="success" disabled={busy} onClick={onRematch}>
               {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RotateCcw className="h-4 w-4" aria-hidden />}
-              {view.rematch ? "Accept rematch" : "Rematch"}
+              {view.rematch ? t("acceptRematch") : t("rematch")}
             </Button>
-            <ShareButton getText={shareText} label="Share" kind="connections" size="lg" />
+            <ShareButton getText={shareText} label={t("shareButton")} kind="connections" size="lg" />
             <Link href={HOME} className={cn(buttonVariants({ variant: "outline", size: "lg" }))}>
               <Swords className="h-4 w-4" aria-hidden /> PokéConnections
             </Link>
           </div>
-          <p className="text-center text-xs text-muted-foreground">A rematch keeps the trainers, with {SQUARES[sizeOf(view)]} new Pokémon{view.size === 5 ? " (still 5×5)" : ""}. It starts when you both press it.</p>
+          <p className="text-center text-xs text-muted-foreground">{t(view.size === 5 ? "rematchNote5" : "rematchNote4")}</p>
         </CardContent>
       </Card>
     </div>

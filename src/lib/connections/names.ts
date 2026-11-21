@@ -1,4 +1,6 @@
 import type { Locale } from "@/i18n/config";
+import { speciesAliases, speciesName } from "@/lib/names/species";
+import type { NameEntry } from "@/components/pokedle/search";
 import { FACTS } from "./facts";
 import { LOCAL_NAMES } from "./text-data";
 
@@ -19,4 +21,12 @@ export function connTileNames(locale: Locale): Record<number, string> | null {
     cache.set(locale, out);
   }
   return out;
+}
+
+/**
+ * Every Pokémon for the Create page's search box in another language: its name there, its generation, and the
+ * other names it answers to (English; for Japanese, rōmaji). English pages search on the server instead.
+ */
+export function connSearchNames(locale: Locale): NameEntry[] {
+  return FACTS.map((f): NameEntry => [f.id, speciesName(f.id, f.name, locale), f.gen, speciesAliases(f.id, f.name, locale)]);
 }

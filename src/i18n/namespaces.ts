@@ -5,7 +5,16 @@
  */
 export const NAMESPACES = [
   "common",
+  "connections",
+  "connections-board",
+  "connections-cards",
+  "connections-community",
+  "connections-create",
+  "connections-duel",
   "connections-groups",
+  "connections-pages",
+  "connections-party",
+  "connections-stats",
   "countdown",
   "credits",
   "duel",

@@ -145,3 +145,9 @@ export function localizedPuzzle(puzzle: Puzzle, key: string, locale: Locale, opt
   cache.set(memo, out);
   return out;
 }
+
+/** A daily as players in `locale` get it: what the page, GET/POST /api/connections, the hint and the result all use. */
+export const localizedDaily = (puzzle: Puzzle, date: string, locale: Locale): Puzzle => localizedPuzzle(puzzle, `daily:${date}`, locale);
+
+/** A practice (Unlimited) puzzle as players in `locale` get it, keyed by its seed. */
+export const localizedPractice = (puzzle: Puzzle, seed: string, locale: Locale): Puzzle => localizedPuzzle(puzzle, `practice:${seed}`, locale);
