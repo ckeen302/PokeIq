@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { setRequestLocale } from "next-intl/server";
+import { setLocale } from "@/i18n/server";
 import { LIVE_OTHER_LOCALES, OG_LOCALES, type OtherLocale } from "@/i18n/config";
 import { LocaleProvider } from "@/i18n/locale-context";
 import { RouteSlot } from "@/components/layout/RouteSlot";
 import { MAIN_CLASS } from "@/components/layout/RootChrome";
 import { ChromeAfter, ChromeBefore } from "@/components/layout/SiteChrome";
+import { metadata as rootMetadata } from "@/app/layout";
 
 /**
  * Every page in another language (/es/..., /ja/...): the root layout's <html> and <head> with this language's
@@ -28,13 +29,14 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = liveLocale((await params).locale);
   if (!locale) return {};
-  return { openGraph: { locale: OG_LOCALES[locale] } };
+  // A segment's openGraph replaces its parent's whole object: the site's defaults, in this language.
+  return { openGraph: { ...rootMetadata.openGraph, locale: OG_LOCALES[locale] } };
 }
 
 export default async function LocaleLayout({ children, params }: Props) {
   const locale = liveLocale((await params).locale);
   if (!locale) notFound();
-  setRequestLocale(locale);
+  setLocale(locale);
   return (
     <LocaleProvider locale={locale}>
       {/* Bing reads the page's language from this; Google from <html lang> and hreflang. */}

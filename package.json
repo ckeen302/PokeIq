@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint .",
+    "lint": "eslint . && npm run i18n:check",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -21,7 +21,9 @@
     "icons": "tsx scripts/generate-icons.ts",
     "battle:sprites": "tsx scripts/battle-sprites.ts",
     "verify:showdown": "tsx scripts/showdown-parity.ts",
-    "verify:quiz": "NODE_USE_ENV_PROXY=1 tsx scripts/quiz-verify.ts"
+    "verify:quiz": "NODE_USE_ENV_PROXY=1 tsx scripts/quiz-verify.ts",
+    "i18n:mirror": "node scripts/i18n/mirror.mjs",
+    "i18n:check": "node scripts/i18n/mirror.mjs --check && node scripts/i18n/check-messages.mjs"
   },
   "dependencies": {
     "@pkmn/client": "0.7.3",
@@ -38,9 +40,9 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.42.2",
+    "icu-minify": "^4.15.2",
     "lucide-react": "^0.454.0",
     "next": "^15.5.29",
-    "next-intl": "^4.15.3",
     "pokemon-showdown": "0.11.11",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -53,6 +55,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.7",
+    "@formatjs/icu-messageformat-parser": "^3.5.23",
     "@huggingface/transformers": "^3.8.1",
     "@next/bundle-analyzer": "^15.5.29",
     "@pkmn/randoms": "0.10.11",

@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import createNextIntlPlugin from "next-intl/plugin";
+import path from "node:path";
 import { LIVE_OTHER_LOCALES } from "./src/i18n/config";
 import { ROOM_MOVED } from "./src/lib/rooms";
 import { ORDERS } from "./src/lib/sizes/order";
@@ -53,6 +53,11 @@ const withLocales = <T extends { source: string; destination?: string }>(rule: T
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Translations (src/messages/**/*.json) are compiled from ICU text to compact arrays at build time (src/i18n/catalog.ts).
+  webpack(config) {
+    config.module.rules.push({ test: /[\\/]src[\\/]messages[\\/].+\.json$/, use: [path.resolve("scripts/i18n/icu-loader.cjs")] });
+    return config;
+  },
   // The live languages (src/i18n/config.ts), inlined into server and browser code at build time.
   env: { LIVE_LOCALES: LIVE_OTHER_LOCALES.join(",") },
   // Pages that render on request stream their <title>, description and
@@ -117,21 +122,26 @@ const nextConfig: NextConfig = {
       // English has no prefix: /en and /en/... go to the page's one English address (308).
       { source: "/en", destination: "/", permanent: true },
       { source: "/en/:path*", destination: "/:path*", permanent: true },
-      { source: "/battle/player/:name", destination: "/u/:name", permanent: true },
-      // The two games that were called by their plain names now live at their Pokémon-style addresses, like /pokedle and /pikadoku:
-      // old links (shared duels and challenges, search results, bookmarks) keep working, with the rest of the path and the query.
-      { source: "/play", destination: "/quiz", permanent: true },
-      { source: "/guessr", destination: "/pokeguessr", permanent: true },
-      { source: "/guessr/:path*", destination: "/pokeguessr/:path*", permanent: true },
-      { source: "/connections", destination: "/pokeconnections", permanent: true },
-      { source: "/connections/:path*", destination: "/pokeconnections/:path*", permanent: true },
-      // The Pokédex rankings pages are gone (the Pokédex's own filters and sort do the same job): old links land on the Pokédex.
-      { source: "/pokedex/rankings", destination: "/pokedex", permanent: true },
-      { source: "/pokedex/rankings/:path*", destination: "/pokedex", permanent: true },
+      // Every rule below also applies inside each live language (/es/guessr → /es/pokeguessr).
+      ...[
+        { source: "/battle/player/:name", destination: "/u/:name", permanent: true },
+        // The two games that were called by their plain names now live at their Pokémon-style addresses, like /pokedle and /pikadoku:
+        // old links (shared duels and challenges, search results, bookmarks) keep working, with the rest of the path and the query.
+        { source: "/play", destination: "/quiz", permanent: true },
+        { source: "/guessr", destination: "/pokeguessr", permanent: true },
+        { source: "/guessr/:path*", destination: "/pokeguessr/:path*", permanent: true },
+        { source: "/connections", destination: "/pokeconnections", permanent: true },
+        { source: "/connections/:path*", destination: "/pokeconnections/:path*", permanent: true },
+        // The Pokédex rankings pages are gone (the Pokédex's own filters and sort do the same job): old links land on the Pokédex.
+        { source: "/pokedex/rankings", destination: "/pokedex", permanent: true },
+        { source: "/pokedex/rankings/:path*", destination: "/pokedex", permanent: true },
+      ].flatMap(withLocales),
       // The old address forwards to playpokeiq.com, path and query kept. /api stays put so
       // webhooks, crons and OAuth callbacks registered on the old host keep working.
       { source: "/:path((?!api/).*)", has: [{ type: "host", value: "pokeiq.vercel.app" }], destination: "https://playpokeiq.com/:path", permanent: true },
-      ...Object.entries(ROOM_MOVED).map(([from, to]) => ({ source: `/rooms/${from}`, destination: `/rooms/${to}`, permanent: true })),
+      ...Object.entries(ROOM_MOVED)
+        .map(([from, to]) => ({ source: `/rooms/${from}`, destination: `/rooms/${to}`, permanent: true }))
+        .flatMap(withLocales),
     ];
   },
   async headers() {
@@ -144,10 +154,9 @@ const nextConfig: NextConfig = {
       { source: "/art/:path*", headers: artCache },
       // The size comparison's and the race's figures, relief maps and far atlas never change for a Pokémon either (the atlas's names are hashed).
       ...["/race/art/:path*", "/sizes/art/:path*", "/sizes/depth/:path*", "/sizes/far/:path*", "/sizes/tex/:path*", "/sizes/env/:path*"].map((source) => ({ source, headers: artCache })),
-      ...["/pokemon/:slug/opengraph-image", "/pokedex/sizes/:slug/opengraph-image", "/pokedex/timeline/:event/opengraph-image", "/quiz/which-pokemon/:slug/opengraph-image"].map((source) => ({
-        source,
-        headers: ogCdnCache,
-      })),
+      ...["/pokemon/:slug/opengraph-image", "/pokedex/sizes/:slug/opengraph-image", "/pokedex/timeline/:event/opengraph-image", "/quiz/which-pokemon/:slug/opengraph-image"]
+        .map((source) => ({ source, headers: ogCdnCache }))
+        .flatMap(withLocales),
     ];
   },
   images: {
@@ -157,5 +166,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-// next-intl: src/i18n/request.ts is its per-request setup. No middleware: languages are routed by app/[locale].
-export default createNextIntlPlugin("./src/i18n/request.ts")(nextConfig);
+export default nextConfig;

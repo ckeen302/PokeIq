@@ -1,7 +1,7 @@
 import type { Metadata, ResolvingMetadata } from "next";
 import { notFound } from "next/navigation";
-import type { ComponentType } from "react";
-import { setRequestLocale } from "next-intl/server";
+import type { ComponentType, ReactNode } from "react";
+import { setLocale } from "./server";
 import { isLiveLocale, type Locale } from "./config";
 import { localizeMetadata } from "./metadata";
 import { isPageLive } from "./routes";
@@ -45,7 +45,7 @@ export function mirrorPage(route: string, source: Source, { openParams = false }
     const path = fill(route, params);
     if (!isLiveLocale(locale) || !isPageLive(path, locale)) notFound();
     if (!openParams && source.generateStaticParams && route.includes("[") && !(await validPaths()).has(path)) notFound();
-    setRequestLocale(locale);
+    setLocale(locale);
     return { locale, path };
   }
 
@@ -72,7 +72,22 @@ export function mirrorMetadata(source: Pick<Source, "metadata" | "generateMetada
   return async function generateMetadata(props: Props, parent: ResolvingMetadata): Promise<Metadata> {
     const { locale } = await props.params;
     if (!isLiveLocale(locale)) return {};
+    setLocale(locale);
     const meta = source.generateMetadata ? await source.generateMetadata(props as never, parent) : (source.metadata ?? {});
     return localizeMetadata(meta, locale);
+  };
+}
+
+/**
+ * A mirrored layout: the English layout's component, rendered in the language (a layout renders apart from its page,
+ * so it sets the render's language itself before its server components read it).
+ */
+export function mirrorLayout(source: { default: ComponentType<never> }) {
+  return async function LocaleLayout(props: { params: Promise<{ locale: string }>; children: ReactNode }) {
+    const { locale } = await props.params;
+    if (!isLiveLocale(locale)) notFound();
+    setLocale(locale);
+    const Component = source.default as ComponentType<typeof props>;
+    return <Component {...props} />;
   };
 }

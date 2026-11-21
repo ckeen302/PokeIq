@@ -4,7 +4,7 @@ import Link from "@/components/ui/PlainLink";
 import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { usePathname } from "@/i18n/navigation";
-import { stripLocale } from "@/i18n/paths";
+import { localUrl, stripLocale } from "@/i18n/paths";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { ArrowDown, ArrowLeft, BookOpen, Clapperboard, Eye, Film, Landmark, List, Minus, Pause, Play, Plus, RotateCcw, Share2, Volume2, VolumeX, X } from "lucide-react";
 import { isMuted, onMuteChange, setMuted } from "@/lib/sound";
@@ -520,7 +520,7 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
         if (path !== s.lastPath) {
           s.lastPath = path;
           s.wrote = [...s.wrote.filter((w) => now - w.at < OWN_PATH_MS), { path, at: now }];
-          try { history.replaceState(history.state, "", path); } catch { /* ignore */ }
+          try { history.replaceState(history.state, "", localUrl(path)); } catch { /* ignore */ }
         }
       } finally {
         const ms = performance.now() - now;

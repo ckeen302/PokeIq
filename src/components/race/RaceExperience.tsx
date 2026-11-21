@@ -1,5 +1,6 @@
 "use client";
 
+import { localUrl } from "@/i18n/paths";
 import dynamic from "next/dynamic";
 import { STAGE_POSTERS, StagePoster } from "@/components/lab/StagePoster";
 import Link from "@/components/ui/PlainLink";
@@ -756,7 +757,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
 
   // ---- Races and links.
   const replaceUrl = (path: string) => {
-    try { history.replaceState(history.state, "", path); } catch { /* ignore */ }
+    try { history.replaceState(history.state, "", localUrl(path)); } catch { /* ignore */ }
   };
   const sharePath = () => (custom ? vsPath(spec.vs, spec.distance) : spec.distance !== presetInfo.distance || (presetInfo.tournament && spec.seed !== 2026) ? presetRunPath(spec.preset, spec.distance, presetInfo.tournament ? spec.seed : undefined) : presetPath(spec.preset));
 

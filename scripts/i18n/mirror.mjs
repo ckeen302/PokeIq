@@ -4,7 +4,7 @@
 //   node scripts/i18n/mirror.mjs           write the files
 //   node scripts/i18n/mirror.mjs --check   fail if they are out of date (CI)
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
-import { dirname, join, relative } from "node:path";
+import { dirname, join } from "node:path";
 
 const APP = "src/app";
 const OUT = join(APP, "[locale]");
@@ -41,6 +41,8 @@ function exportsOf(src) {
   };
 }
 
+const base = (rel) => rel.split("/").pop();
+
 function routeOf(relDir) {
   return "/" + relDir.split("/").filter(Boolean).join("/");
 }
@@ -73,14 +75,17 @@ function pageFile(rel, src) {
 
 function reexportFile(rel, src) {
   const imp = `@/app/${rel.replace(/\.tsx?$/, "")}`;
-  const { consts } = exportsOf(src);
+  const { consts, client } = exportsOf(src);
   const lines = [HEADER, `// Source: src/app/${rel}`];
-  if (/^["']use client["']/.test(src)) lines.push('"use client";', "");
-  if (/^export (const metadata\b|(async )?function generateMetadata\b)/m.test(src)) {
-    // A layout's own title and description, pointed at the language's URL like a page's.
-    lines.push(`import * as Source from "${imp}";`, `import { mirrorMetadata } from "@/i18n/mirror";`, "", "export const generateMetadata = mirrorMetadata(Source);");
-  }
-  lines.push(`export { default } from "${imp}";`);
+  if (client) lines.push('"use client";', "");
+  const meta = /^export (const metadata\b|(async )?function generateMetadata\b)/m.test(src);
+  // A server layout renders apart from its page, so it sets the render's language itself (mirrorLayout).
+  const layout = base(rel) === "layout.tsx" && !client;
+  const helpers = [...(meta ? ["mirrorMetadata"] : []), ...(layout ? ["mirrorLayout"] : [])];
+  if (helpers.length) lines.push(`import * as Source from "${imp}";`, `import { ${helpers.join(", ")} } from "@/i18n/mirror";`, "");
+  // A layout's own title and description, pointed at the language's URL like a page's.
+  if (meta) lines.push("export const generateMetadata = mirrorMetadata(Source);");
+  lines.push(layout ? "export default mirrorLayout(Source);" : `export { default } from "${imp}";`);
   for (const key of COPIED) if (consts[key] !== undefined) lines.push(`export const ${key} = ${consts[key]};`);
   lines.push("");
   return lines.join("\n");
@@ -118,4 +123,3 @@ if (problems.length) {
   process.exit(1);
 }
 if (!check) console.log(`src/app/[locale]: ${wanted.size} files`);
-void relative;

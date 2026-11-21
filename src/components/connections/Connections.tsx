@@ -1,5 +1,6 @@
 "use client";
 
+import Anchor from "@/components/ui/Anchor";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { AnimatePresence, LayoutGroup, MotionConfig, motion } from "framer-motion";
@@ -732,9 +733,9 @@ export function Connections({ customId, initial }: { customId?: string; initial?
               <a href="#duel" title="Race a friend or a stranger to the four groups" className={cn("tap", iconButton, "flex items-center gap-1.5 font-display text-xs font-semibold uppercase tracking-wider")}>
                 <Swords className="h-[1.125rem] w-[1.125rem]" aria-hidden /> Duel
               </a>
-              <a href="/pokeconnections/create" title="Build your own puzzle and share a link" data-testid="conn-create-link" className={cn("tap", iconButton, "flex items-center gap-1.5 font-display text-xs font-semibold uppercase tracking-wider")}>
+              <Anchor href="/pokeconnections/create" title="Build your own puzzle and share a link" data-testid="conn-create-link" className={cn("tap", iconButton, "flex items-center gap-1.5 font-display text-xs font-semibold uppercase tracking-wider")}>
                 <PencilLine className="h-[1.125rem] w-[1.125rem]" aria-hidden /> Create
-              </a>
+              </Anchor>
             <div className="relative flex items-center">
               <button
                 type="button"
@@ -778,9 +779,9 @@ export function Connections({ customId, initial }: { customId?: string; initial?
         {isCustom && (
           <p className="mx-auto max-w-md rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2 text-center text-sm" data-testid="conn-community">
             A puzzle made by another trainer. It doesn&apos;t count toward your streak.{" "}
-            <a href="/pokeconnections/community" className="font-semibold text-primary hover:underline">
+            <Anchor href="/pokeconnections/community" className="font-semibold text-primary hover:underline">
               More community puzzles
-            </a>
+            </Anchor>
           </p>
         )}
         {mode === "practice" && !isCustom && (
