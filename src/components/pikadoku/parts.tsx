@@ -412,11 +412,6 @@ export function PdkPicker({ dex: given, used, title, busy, initialQuery = "", on
               </li>
             );
           })}
-          {!q.trim() && (
-            <li className="px-2 py-3 text-sm text-muted-foreground" data-testid="pdk-search-tip">
-              Start typing: spelling doesn&apos;t have to be perfect. Forms like Alolan Raichu or Mega Charizard X are their own picks. Enter picks the highlighted one.
-            </li>
-          )}
           {q.trim() && !matches.length && <li className="px-2 py-3 text-sm text-muted-foreground">{loading ? "Loading Pokémon…" : "No Pokémon match that."}</li>}
         </ul>
       </form>
