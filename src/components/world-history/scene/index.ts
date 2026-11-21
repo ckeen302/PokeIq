@@ -286,9 +286,26 @@ export function createHistoryScene(host: HTMLElement, opts: SceneOptions): Histo
     if (lost) return;
     const prev = renderer.getRenderTarget();
     renderer.setRenderTarget(target);
-    const done = renderer.compileAsync(scene, cam).catch(() => undefined);
-    renderer.setRenderTarget(prev);
-    await done;
+    let pending: Set<THREE.Material>;
+    try {
+      pending = renderer.compile(scene, cam);
+    } finally {
+      renderer.setRenderTarget(prev);
+    }
+    // three.js's compileAsync, except that a material disposed while it compiles (retain() drops a chapter's rig)
+    // leaves the wait instead of throwing "reading 'isReady'" from a timer.
+    await new Promise<void>((resolve) => {
+      const check = () => {
+        for (const m of pending) {
+          const program = (renderer.properties.get(m) as { currentProgram?: { isReady(): boolean } }).currentProgram;
+          if (lost || !program || program.isReady()) pending.delete(m);
+        }
+        if (pending.size === 0) resolve();
+        else setTimeout(check, 10);
+      };
+      if (renderer.extensions.has("KHR_parallel_shader_compile")) check();
+      else setTimeout(check, 10);
+    });
   }
 
   function retain(indices: number[]) {
