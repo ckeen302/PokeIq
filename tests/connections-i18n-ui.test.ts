@@ -4,7 +4,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 /** PokéConnections' screens: English reads exactly as before; another language reads its own words and Pokémon names. */
 
-const strip = (html: string) => html.replace(/<!-- -->/g, "");
+/** A provider around one child (the providers' props type their children as required). */
+const el = (type: unknown, props: object, child: ReactNode) => createElement(type as never, props as never, child);
+
+const strip =(html: string) => html.replace(/<!-- -->/g, "");
 
 describe("English", () => {
   it("board pieces and results read as they always did", async () => {
@@ -43,7 +46,7 @@ describe("another language", () => {
       connections: (await import("@/messages/fr/connections.json")).default,
     };
     const wrap = (node: ReactNode) =>
-      createElement(LocaleProvider, { locale: "fr", children: createElement(MessagesProvider, { messages: fr as never, children: createElement(ConnNamesProvider, { names: { 4: "Salamèche" }, children: node }) }) });
+      el(LocaleProvider, { locale: "fr" }, el(MessagesProvider, { messages: fr }, el(ConnNamesProvider, { names: { 4: "Salamèche" } }, node)));
     const bar = strip(renderToStaticMarkup(wrap(createElement(GroupBar, { group: { level: 3, label: "Starters Feu", members: [{ id: 4, name: "Charmander" }] }, symbols: false }))));
     expect(bar).toContain('aria-label="Groupe Violet : Starters Feu : Salamèche"');
     expect(bar).toContain("Salamèche</span>");
