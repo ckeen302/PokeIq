@@ -1,0 +1,120 @@
+{
+  "meta": {
+    "title": "Pikadoku: sudoku Pokémon diario",
+    "description": "Pikadoku es el sudoku de Pokémon, un juego de cuadrícula Pokémon gratis: rellena una cuadrícula de 3×3 con un Pokémon que encaje en cada fila y columna. Retos diarios Fácil, Normal y Experto, puntuación de rareza, cuadrículas ilimitadas y duelos de tres en raya."
+  },
+  "info": {
+    "description": "Pikadoku es un sudoku de Pokémon y juego de cuadrícula Pokémon gratis: rellena una cuadrícula de 3×3 con un Pokémon distinto en cada casilla, que encaje con su fila y con su columna.",
+    "intro": "Pikadoku es el sudoku de Pokémon: un juego de cuadrícula Pokémon de 3×3 con un reto nuevo cada día, en Fácil, Normal y Experto.",
+    "steps": {
+      "read": "Lee las tres categorías de las filas y las tres de las columnas: tipos, regiones, evolución, movimientos, habilidades, estadísticas y más.",
+      "tap": "Toca una casilla y busca un Pokémon que encaje con su fila y con su columna. Si aciertas, se queda fijado.",
+      "pp": "En un reto diario tienes 9 intentos (PP), y un fallo también gasta uno. Cada Pokémon solo se puede usar una vez.",
+      "score": "Tu puntuación de rareza es la suma del porcentaje de jugadores que eligieron tus mismas respuestas: cuanto más baja, más rara y mejor.",
+      "end": "Al terminar, verás todas las respuestas válidas de cada casilla y por qué no encajaban tus fallos."
+    },
+    "faq": {
+      "scoreQ": "¿Cómo se calcula la puntuación?",
+      "scoreA": "Es la suma del porcentaje de jugadores que eligieron cada una de tus respuestas en esa casilla, calculada por el servidor a partir de las respuestas registradas. Cuanto más baja, más raras tus elecciones y mejor tu puntuación.",
+      "formsQ": "¿Cómo cuentan las formas y las regiones?",
+      "formsA": "Las formas regionales, las megaevoluciones, las formas Gigamax y algunas formas especiales (como Pikachu compañero) son elecciones propias, con sus propios tipos, estadísticas y habilidades. La región de una especie es donde debutó; una forma regional cuenta para la región en la que debutó (Raichu de Alola es de Alola), y las megaevoluciones y formas Gigamax cuentan para la región de su especie. Una forma y su especie son el mismo Pokémon, así que solo puedes usar una de las dos en cada cuadrícula.",
+      "solvableQ": "¿Se pueden resolver todas las cuadrículas?",
+      "solvableA": "Sí. Cada reto diario se comprueba para que todas las casillas tengan suficientes respuestas válidas y nueve Pokémon distintos puedan completar la cuadrícula.",
+      "levelsQ": "¿Qué son Fácil, Normal y Experto?",
+      "levelsA": "Fácil usa categorías amplias con muchas respuestas, Normal es la cuadrícula principal de la clasificación y Experto usa categorías más difíciles, como movimientos, habilidades y mínimos de estadísticas."
+    }
+  },
+  "duel": {
+    "about": "Un duelo de tres en raya de Pikadoku: haceos por turnos con casillas usando un Pokémon que encaje y consigue tres en raya.",
+    "invite": "Un duelo de Pikadoku",
+    "vs": "{host} contra {guest}: tres en raya de Pikadoku",
+    "challenges": "{host} te reta al tres en raya de Pikadoku",
+    "trainer": "Un Entrenador"
+  },
+  "cat": {
+    "types_dual": "Doble tipo",
+    "types_single": "Monotipo",
+    "region_1": "Kanto",
+    "region_2": "Johto",
+    "region_3": "Hoenn",
+    "region_4": "Sinnoh",
+    "region_5": "Teselia",
+    "region_6": "Kalos",
+    "region_7": "Alola",
+    "region_8": "Galar",
+    "region_9": "Paldea",
+    "region_hisui": "Hisui",
+    "form_alola": "Forma de Alola",
+    "form_galar": "Forma de Galar",
+    "form_hisui": "Forma de Hisui",
+    "form_paldea": "Forma de Paldea",
+    "evo_basic": "Básico",
+    "evo_stage2": "Segunda fase",
+    "evo_stage3": "Tercera fase",
+    "evo_notfull": "Puede evolucionar",
+    "evo_full": "Evolución final",
+    "evo_none": "Sin línea evolutiva",
+    "evo_item": "Evoluciona con objeto",
+    "evo_stone": "Evoluciona con piedra",
+    "evo_trade": "Evoluciona por intercambio",
+    "evo_friend": "Evoluciona por amistad",
+    "evo_level": "Evoluciona por nivel",
+    "evo_branch": "Evolución ramificada",
+    "evo_three": "Línea de tres fases",
+    "other_legendary": "Legendario",
+    "other_mythical": "Singular",
+    "other_lm": "Legendario o singular",
+    "other_fossil": "Fósil",
+    "other_baby": "Bebé",
+    "other_mega": "Mega",
+    "other_gmax": "Gigamax",
+    "other_paradox": "Paradoja",
+    "other_ultrabeast": "Ultraente",
+    "other_partner": "Inicial",
+    "other_ou": "OU 9.ª gen.",
+    "ability_hidden": "Habilidad oculta",
+    "stat_hp_100": "PS base 100+",
+    "stat_atk_120": "Ataque base 120+",
+    "stat_def_100": "Defensa base 100+",
+    "stat_spa_120": "At. Esp. base 120+",
+    "stat_spd_100": "Def. Esp. base 100+",
+    "stat_spe_100": "Velocidad base 100+",
+    "stat_slow": "Velocidad base 40 o menos",
+    "stat_bst600": "Total base 600+",
+    "stat_bst500": "Total base 500+",
+    "stat_bst300": "Total base menor de 300"
+  },
+  "form": {
+    "alola": "{name} de Alola",
+    "galar": "{name} de Galar",
+    "hisui": "{name} de Hisui",
+    "paldea": "{name} de Paldea",
+    "breed": "{name} de Paldea ({breed})",
+    "breeds": {
+      "combat": "raza Combatiente",
+      "blaze": "raza Ardiente",
+      "aqua": "raza Acuática"
+    },
+    "darmanitan": {
+      "standard": "{name} de Galar (modo Normal)",
+      "zen": "{name} de Galar (modo Daruma)"
+    },
+    "mega": "Mega-{name}",
+    "megaVariant": "Mega-{name} {variant}",
+    "gmax": "{name} Gigamax",
+    "gmaxStyle": {
+      "single": "{name} Gigamax (estilo Brusco)",
+      "rapid": "{name} Gigamax (estilo Fluido)",
+      "amped": "{name} Gigamax (forma Aguda)",
+      "lowkey": "{name} Gigamax (forma Grave)"
+    },
+    "starter": "{name} compañero",
+    "primal": "{name} primigenio",
+    "origin": "{name} (forma Origen)",
+    "crowned": {
+      "zacian": "{name} (Espada Suprema)",
+      "zamazenta": "{name} (Escudo Supremo)"
+    },
+    "eternal": "{name} (Flor Eterna)"
+  }
+}

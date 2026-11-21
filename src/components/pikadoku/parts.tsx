@@ -7,7 +7,7 @@ import { TypeBadge } from "@/components/pokedex/TypeBadge";
 import { Sheet } from "@/components/pokedle/sheets";
 import { spriteUrl } from "@/lib/pokemon/art";
 import { typeColor, typeTextColor } from "@/lib/pokemon/type-colors";
-import { indexEntries, searchEntries } from "@/lib/pikadoku/search";
+import { indexEntries, localizeEntries, searchEntries } from "@/lib/pikadoku/search";
 import { categoryHint } from "@/lib/pikadoku/hints";
 import type { PdkCategoryView, PdkFamily, PdkGridView, PdkLocal } from "@/lib/pikadoku/types";
 import { useT } from "@/i18n/client";
@@ -48,13 +48,7 @@ export function useCatLabel(): (cat: PdkCategoryView) => string {
 
 /** The picker's names in the page's language, each answering to its English name (and rōmaji) too. */
 export function localizeDex(dex: DexName[], local: PdkLocal | null): DexName[] {
-  if (!local) return dex;
-  return dex.map((p) => {
-    const own = local.names[p.id];
-    if (!own) return p;
-    const [name, ...rest] = own;
-    return { ...p, name, aliases: [p.name, ...rest] };
-  });
+  return localizeEntries(dex, local?.names);
 }
 
 let dexPromise: Promise<DexName[]> | null = null;

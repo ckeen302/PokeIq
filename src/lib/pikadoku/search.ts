@@ -38,6 +38,20 @@ export function normalizeName(s: string): string {
     .trim();
 }
 
+/**
+ * The entries as a page in another language names them (lib/pikadoku/local's `names`: id → its name there, then
+ * other spellings), each also answering to its English name. Without names (English pages) they are returned as is.
+ */
+export function localizeEntries<T extends SearchEntry>(entries: T[], names: Readonly<Record<number, readonly string[]>> | undefined): T[] {
+  if (!names) return entries;
+  return entries.map((e) => {
+    const own = names[e.id];
+    if (!own) return e;
+    const [name, ...rest] = own;
+    return { ...e, name, aliases: [e.name, ...rest] };
+  });
+}
+
 function spell(name: string): Spelling {
   const n = normalizeName(name);
   return { words: n.split(" "), compact: n.replace(/ /g, "") };

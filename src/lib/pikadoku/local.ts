@@ -1,8 +1,7 @@
 import "server-only";
 import { toRomaji } from "wanakana";
 import type { Locale } from "@/i18n/config";
-import type { Translator } from "@/i18n/catalog";
-import { getT } from "@/i18n/server";
+import { translator, type Translator, type Tree } from "@/i18n/catalog";
 import page from "@/messages/pikadoku-page";
 import { speciesAliases, speciesName } from "@/lib/names/species";
 import { POKEDEX } from "@/lib/pokemon/pokedex";
@@ -86,7 +85,8 @@ export function pikadokuLocal(locale: Locale): Promise<PdkLocal> | undefined {
 
 async function build(locale: Exclude<Locale, "en">): Promise<PdkLocal> {
   const [t, types, moves, abilities] = await Promise.all([
-    getT(page, locale),
+    // The language's file of the namespace, read directly (one import per language: the same file getT would load).
+    import(`@/messages/${locale}/pikadoku-page.json`).then((m) => translator(page, locale, m.default as Tree)),
     import(`@/data/i18n/${locale}/types.json`).then((m) => m.default as Names),
     import(`@/data/i18n/${locale}/moves.json`).then((m) => m.default as Names),
     import(`@/data/i18n/${locale}/abilities.json`).then((m) => m.default as Names),

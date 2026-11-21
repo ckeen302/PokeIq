@@ -1,0 +1,53 @@
+{
+  "family": {
+    "types": "Tipi",
+    "regions": "Regioni",
+    "evolution": "Evoluzione",
+    "moves": "Mosse",
+    "abilities": "Abilità",
+    "other": "Altro"
+  },
+  "board": {
+    "grid": "Griglia di Pikadoku",
+    "info": "Cosa conta per {label}",
+    "empty": "Vuota",
+    "cell": "Riga {row}, colonna {col}: {label}",
+    "cross": "{row} × {col}"
+  },
+  "picker": {
+    "loading": "Caricamento dei Pokémon…",
+    "placeholder": "Scrivi il nome di un Pokémon",
+    "search": "Cerca un Pokémon",
+    "matching": "Pokémon corrispondenti",
+    "used": "Usato",
+    "form": "Forma",
+    "none": "Nessun Pokémon corrisponde."
+  },
+  "hint": {
+    "type": "Conta un Pokémon che ha {type} tra i suoi tipi. Le forme sono scelte a sé, con tipi, statistiche e abilità proprie. MegaCharizard X è Fuoco e Drago, Raichu di Alola è Elettro e Psico.",
+    "types": "Contano i tipi propri del Pokémon, quindi una forma può differire dalla sua specie: Charizard ha due tipi, e anche MegaCharizard X. Le forme sono scelte a sé, con tipi, statistiche e abilità proprie.",
+    "hisui": "Ha debuttato in Leggende Pokémon: Arceus: le forme di Hisui (Growlithe di Hisui) e le sette nuove specie (Wyrdeer, Kleavor, Ursaluna, Basculegion, Sneasler, Overqwil, Enamorus).",
+    "region": "La generazione in cui la specie ha debuttato (l’8ª è Galar, novità di Leggende: Arceus come Kleavor incluse). Una forma regionale conta per la regione in cui ha debuttato (Raichu di Alola è di Alola, Raichu di Kanto). Le megaevoluzioni e le forme Gigamax contano per la regione della loro specie.",
+    "form": "La specie ha una forma regionale di quella regione, quindi contano la specie e ognuna delle sue forme (Raichu e Raichu di Alola rientrano entrambi in «Forma di Alola»).",
+    "stage": "Il suo posto nella linea evolutiva. I baby sono facoltativi: Pikachu conta come Base e come secondo stadio (dopo Pichu), Raichu come secondo o terzo stadio. Qui una forma segue la sua specie.",
+    "item": "Partecipa a un’evoluzione che usa uno strumento o richiede di tenerlo, da entrambi i lati: pietre, mele, strumenti tenuti (Onix e Steelix con il Metalcoperta). Usare una mossa 20 volte non è uno strumento. Qui una forma segue la sua specie.",
+    "stone": "Partecipa a un’evoluzione con una delle dieci pietre evolutive, da entrambi i lati: Pikachu e Raichu, Eevee e Vaporeon. La Pietraovale, che va tenuta, non conta. Qui una forma segue la sua specie.",
+    "kind": "Partecipa a un’evoluzione di questo tipo, da entrambi i lati: il Pokémon che si evolve e quello in cui si trasforma. Qui una forma segue la sua specie.",
+    "level": "Partecipa a un’evoluzione di questo tipo, da entrambi i lati: il Pokémon che si evolve e quello in cui si trasforma. Per livello vuol dire raggiungere un certo livello (Charmander al 16). Qui una forma segue la sua specie.",
+    "branch": "La sua famiglia si dirama da qualche parte: Eevee e tutte le sue evoluzioni, la linea di Oddish (Vileplume o Bellossom), Scyther (Scizor o Kleavor). Qui una forma segue la sua specie.",
+    "three": "La sua famiglia arriva a un terzo stadio (quella di Charmander, o quella di Pichu contando il baby). La famiglia di Eevee ha nove specie ma solo due stadi. Qui una forma segue la sua specie.",
+    "none": "Non si evolve e non deriva dall’evoluzione di nessun Pokémon (Tauros, Ditto). Qui una forma segue la sua specie.",
+    "evo": "Si giudica dalla linea evolutiva. Qui una forma segue la sua specie. Raichu di Alola è all’ultimo stadio, come Raichu; MegaCharizard X è un membro all’ultimo stadio della linea di Charmander.",
+    "move": "Serve la mossa nel repertorio della specie nell’ultimo gioco principale in cui compare (Scarlatto e Violetto per la maggior parte), per livello, MT, uova o insegnante di mosse. Le forme usano le mosse della loro specie.",
+    "hidden": "Ha un’abilità nascosta. Le abilità sono quelle della forma scelta: MegaCharizard X ha solo Unghiedure, quindi non ha un’abilità nascosta.",
+    "ability": "Ha questa abilità, normale o nascosta. Le abilità sono quelle della forma scelta: MegaCharizard X ha Unghiedure, non Aiutofuoco.",
+    "stat": "Usa le statistiche base della forma scelta: quelle di una megaevoluzione sono sue, più alte di quelle della sua specie.",
+    "mega": "La specie ha una megaevoluzione, quindi contano la specie e ognuna delle sue forme (Charizard e MegaCharizard X). Include le nuove megaevoluzioni di Leggende Pokémon: Z-A, come quelle di Dragonite e Greninja.",
+    "gmax": "La specie ha una forma Gigamax, quindi contano la specie e ognuna delle sue forme (Pikachu e Pikachu Gigamax).",
+    "paradox": "Elenco curato a mano dei Pokémon paradosso ufficiali (da Grandizanne a Capoferreo). Le forme seguono la loro specie.",
+    "ultrabeast": "Elenco curato a mano delle undici Ultracreature (da Nihilego a Blacephalon). Necrozma non è una di loro. Le forme seguono la loro specie.",
+    "partner": "Qualsiasi Pokémon della linea evolutiva di uno starter della serie principale, da Kanto a Paldea. Qui una forma segue la sua specie.",
+    "ou": "Compare nei dati d’uso OU della 9ª generazione (Smogon). Una forma regionale conta solo se è quella usata: Slowking di Galar è OU, Slowking no. Le altre forme seguono la loro specie.",
+    "status": "Lo status di leggendario, misterioso, fossile o baby dipende dalla specie. Qui una forma segue la sua specie."
+  }
+}

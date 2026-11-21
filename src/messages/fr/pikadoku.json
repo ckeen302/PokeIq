@@ -1,0 +1,301 @@
+{
+  "loading": "Chargement",
+  "diff": {
+    "easy": "Facile",
+    "normal": "Normal",
+    "expert": "Expert"
+  },
+  "diffHint": {
+    "easy": "Catégories larges, plein de réponses",
+    "normal": "La grille principale : classement et score",
+    "expert": "Catégories plus dures, parfois deux réponses seulement par case"
+  },
+  "error": {
+    "generic": "Un problème est survenu.",
+    "noBoard": "Aucune grille ne correspond à ces réglages.",
+    "grid": "Impossible de charger la grille.",
+    "game": "Impossible de charger ta partie. Vérifie ta connexion.",
+    "offline": "Tu es hors ligne. La grille se chargera quand tu seras de nouveau en ligne.",
+    "gridConnection": "Impossible de charger la grille. Vérifie ta connexion."
+  },
+  "noBoard": {
+    "few": "Ces catégories ne suffisent pas à remplir une grille. Coche plus de catégories, dans plus de groupes.",
+    "none": "Aucune grille ne correspond à ces réglages. Pour les élargir, {tips}.",
+    "or": "{list} ou {last}",
+    "more": "coche plus de catégories",
+    "normal": "essaie la difficulté Normal",
+    "single": "autorise les cases à une seule réponse"
+  },
+  "toast": {
+    "softlock": "La grille deviendrait impossible à finir. Essaie un autre Pokémon.",
+    "fits": "{name} convient !",
+    "picked": " {emoji} {pct} % des joueurs l’ont choisi.",
+    "ppLeft": " Encore {n} PP.",
+    "miss": "{name} ne convient pas ici."
+  },
+  "giveUpConfirm": "Abandonner et voir les réponses ?",
+  "challenge": {
+    "title": "Défi Pikadoku (Illimité)",
+    "beatMe": "Tu peux me battre sur la même grille ?",
+    "playMe": "Joue la même grille que moi :",
+    "label": "{solved}/9 en {guesses, plural, one {{guesses} essai} other {{guesses} essais}}",
+    "banner": "Défi : bats {label}",
+    "beat": "Tu as battu {label} !",
+    "tied": "Égalité avec {label}.",
+    "lost": "Raté de peu : il fallait battre {label}."
+  },
+  "heading": {
+    "weekly": "Hebdo n° {n}",
+    "weeklyTheme": "Hebdo n° {n} · {theme}",
+    "archive": "Archive n° {n} · {diff}",
+    "daily": "Quotidien n° {n} · {diff}",
+    "unlimited": "Illimité"
+  },
+  "ttt": "Morpion",
+  "subtitle": "Sudoku Pokémon : un Pokémon par case, qui correspond à sa ligne et à sa colonne.",
+  "modes": {
+    "label": "Mode de Pikadoku",
+    "daily": "Quotidien",
+    "dailyTitle": "La grille du jour, la même pour tout le monde",
+    "unlimited": "Illimité",
+    "unlimitedTitle": "Crée ta propre grille",
+    "tttTitle": "Morpion : prenez des cases à tour de rôle, contre un ami ou un inconnu"
+  },
+  "tools": {
+    "label": "Options de Pikadoku",
+    "howTo": "Comment jouer",
+    "stats": "Statistiques",
+    "newGrid": "Nouvelle grille illimitée",
+    "settings": "Réglages du mode Illimité"
+  },
+  "weeklyNote": "<b>{theme}</b> : {blurb} Disponible jusqu’au dimanche {sunday}. Ne compte pas pour ta série quotidienne.",
+  "archiveNote": "Archive : n° {n} ({date}), {diff}. Pour le plaisir : ne compte jamais pour le classement du jour ni pour ta série.",
+  "unlimitedNote": "Illimité : ta propre grille, qui ne compte jamais pour ta série.",
+  "time": "Temps",
+  "master": "Grille de maître par {name}",
+  "bar": {
+    "rarityLabel": "Score de rareté (plus bas = plus rare), touche pour le classement",
+    "rarityTitle": "Score de rareté : la somme des parts de joueurs qui ont choisi tes réponses (une case vide compte 100). Plus bas = plus rare.",
+    "rarity": "Rareté",
+    "filled": "Remplies",
+    "ppUnlimited": "Essais illimités",
+    "ppLeft": "{left} essais sur {pp} restants",
+    "ppTitle": "PP : tes essais. Une erreur en coûte un aussi.",
+    "pp": "PP",
+    "giveUp": "Abandonner"
+  },
+  "shareGrid": "Partager la grille",
+  "newBoard": "Nouvelle grille",
+  "changeSettings": "Modifier les réglages",
+  "more": "Plus",
+  "dailyDifficulty": "Difficulté du quotidien",
+  "weekly": "Hebdo",
+  "weeklyTitle": "Une grille à thème, disponible du lundi au dimanche, avec son propre classement",
+  "archive": "Archives",
+  "result": {
+    "complete": "Grille complète · 9 cases sur 9",
+    "cells": "{n} cases sur 9",
+    "score": "Score de rareté {score}",
+    "off": "La rareté est désactivée pour le moment, cette partie n’a donc pas de score de rareté.",
+    "explain": "Chaque case ajoute la part de joueurs qui y ont choisi le même Pokémon (une case vide ajoute 100). Plus c’est bas, plus tes choix sont rares : 900 est le résultat le plus courant, sous 100 c’est légendaire.",
+    "tapRank": "Voir mon rang",
+    "rankWeek": "Tu es {position}e sur {total} au classement de la semaine.",
+    "rankToday": "Tu es {position}e sur {total} au classement {diff} du jour.",
+    "boardOff": "Le classement est désactivé pour le moment.",
+    "trainerName": "Nom de Dresseur pour le classement",
+    "rankMe": "Me classer",
+    "share": "Partager le résultat",
+    "cantWait": "Pas envie d’attendre ? Joue une grille illimitée"
+  },
+  "leaderboard": {
+    "label": "Classement",
+    "week": "Classement de la semaine · {theme}",
+    "today": "Classement du jour · {diff}",
+    "scope": "Portée du classement",
+    "all": "Tout le monde",
+    "friends": "Amis",
+    "signIn": "Connecte-toi pour voir les résultats de tes amis.",
+    "off": "Le classement est désactivé pour le moment.",
+    "empty": "Personne n’est encore classé.",
+    "emptyHow": "Termine une grille avec un nom de Dresseur pour être classé."
+  },
+  "weeklyTheme": {
+    "kanto": { "name": "Semaine Kanto", "blurb": "Tout Kanto : les 151 d’origine et ce qu’ils sont devenus." },
+    "starters": { "name": "Semaine des starters", "blurb": "Les Pokémon de départ de toutes les régions, de Bulbizarre à Coiffeton." },
+    "legendary": { "name": "Semaine légendaire", "blurb": "Les légendaires et les fabuleux, et les catégories qui les distinguent." },
+    "gen9": { "name": "Semaine 9e génération", "blurb": "Les Pokémon de Paldea et les formes arrivées avec eux." },
+    "competitive": { "name": "Semaine compétitive", "blurb": "Les incontournables de l’OU : stats, types et outils du métagame." }
+  },
+  "countdown": "Prochain Pikadoku dans <b>{time}</b>",
+  "rarity": {
+    "p": "moins de 1 % l’ont choisi",
+    "b": "moins de 10 % l’ont choisi",
+    "g": "moins de 25 % l’ont choisi",
+    "y": "25 % ou plus l’ont choisi",
+    "x": "erreur ou vide"
+  },
+  "rarest": {
+    "yours": "Tu as trouvé le choix le plus rare.",
+    "possible": "Le plus rare possible : <b>{name}</b>",
+    "nobody": "(personne ne l’a choisi)",
+    "nobodyMore": "{n, plural, one {(personne ne l’a choisi, ni {n} autre)} other {(personne ne l’a choisi, ni {n} autres)}}",
+    "pct": "({pct} %)"
+  },
+  "reveal": {
+    "label": "Réponses",
+    "title": "Toutes les réponses",
+    "intro": "Tous les Pokémon qui conviennent à chaque case.",
+    "introRare": "Tous les Pokémon qui conviennent à chaque case, les plus rares d’abord, avec la part de joueurs qui les ont choisis.",
+    "miss": "{name} ne correspond pas à {cats}.",
+    "missCat": "« {label} »",
+    "missOr": "{a} ni à {b}",
+    "valid": "{total} valides",
+    "notFilled": "Non remplie",
+    "showAll": "Voir les {total}"
+  },
+  "banner": {
+    "offline": "Tu es hors ligne. Tes réponses seront vérifiées à ton retour.",
+    "newPuzzle": "Une nouvelle grille du jour est sortie.",
+    "playIt": "Jouer",
+    "retry": "Réessayer"
+  },
+  "card": {
+    "label": "Tes stats quotidiennes",
+    "title": "Tes grilles du jour",
+    "streak": "Série",
+    "best": "Record : {best}",
+    "bestRarity": "Meilleure rareté",
+    "lower": "Plus bas = plus rare",
+    "today": "Aujourd’hui",
+    "noAverage": "Pas encore de moyenne",
+    "average": "Ta moyenne : {avg}",
+    "level": "Égal à ta moyenne de {avg}",
+    "rarer": "{diff} de plus rare que ta moyenne de {avg}",
+    "commoner": "{diff} de plus courant que ta moyenne de {avg}"
+  },
+  "stats": {
+    "title": "Statistiques",
+    "played": "Parties",
+    "perfect": "% parfaites",
+    "rarest": "Meilleure rareté",
+    "streak": "Série actuelle",
+    "best": "Meilleure série",
+    "duels": "Duels gagnés",
+    "filled": "Cases remplies dans tes grilles du jour",
+    "none": "Termine une grille du jour pour voir à quel point tu remplis tes grilles."
+  },
+  "archiveSheet": {
+    "title": "Archives",
+    "intro": "Joue n’importe quelle grille passée, dans n’importe quelle difficulté. Les parties d’archives sont juste pour le plaisir : elles ne comptent jamais pour le classement du jour ni pour ta série.",
+    "prev": "Mois précédent",
+    "next": "Mois suivant",
+    "month": "Grilles de {month}",
+    "weekdays": {
+      "mon": "Lun",
+      "tue": "Mar",
+      "wed": "Mer",
+      "thu": "Jeu",
+      "fri": "Ven",
+      "sat": "Sam",
+      "sun": "Dim"
+    },
+    "today": "{date} (aujourd’hui)",
+    "inProgress": "{day} : en cours",
+    "cells": "{day} : {cells} cases",
+    "todaysDaily": " · grille du jour",
+    "playing": "En cours",
+    "play": "Jouer"
+  },
+  "howTo": {
+    "subtitle": "Remplis la grille. Garde un score bas.",
+    "goal": "Le but",
+    "goalBody": "Remplis les 9 cases de la grille, chacune avec un Pokémon qui correspond à sa ligne et à sa colonne.",
+    "core": "Règles de base",
+    "coreBody": "Tu as {pp} essais (PP), et une erreur en coûte un aussi. Chaque Pokémon ne peut servir qu’une fois.",
+    "scoring": "Score",
+    "scoringBody": "Remplis autant de cases que possible. Ton score de rareté additionne la part de joueurs qui ont choisi chacune de tes réponses : plus tes choix sont rares, plus ton score est bas.",
+    "full": "Toutes les règles",
+    "boxes": "cases à remplir",
+    "guesses": "essais seulement",
+    "reused": "Pokémon réutilisé",
+    "rules": {
+      "both": "Chaque case demande un Pokémon qui correspond <b>à la fois</b> à sa ligne et à sa colonne. Chaque Pokémon ne peut servir qu’une fois.",
+      "pp": "Tu as <b>{pp} essais (PP)</b>, et une erreur en coûte un aussi. Les bonnes réponses se verrouillent.",
+      "score": "Ton <b>score de rareté</b> part de 900 (100 par case vide). Chaque choix compte la part de joueurs qui l’ont fait dans cette case : les choix rares le font baisser. <b>Plus c’est bas, mieux c’est.</b> Ta carte de partage colore chaque case : 🟪 moins de 1 %, 🟦 moins de 10 %, 🟩 moins de 25 %, 🟨 25 % ou plus.",
+      "filled": "<b>Remplies</b> compte tes cases. Touche <b>Rareté</b> pour voir le classement du jour.",
+      "info": "Touche le <b>i</b> d’une catégorie pour voir exactement ce qui compte. À la fin de la partie, tu vois <b>toutes les réponses valides</b> de chaque case, et pourquoi chaque erreur ne convenait pas.",
+      "master": "Chaque grille est vérifiée pour avoir une solution. Certains jours, une <b>grille de maître</b> faite à la main remplace la grille du jour."
+    },
+    "modes": "Modes",
+    "modeList": {
+      "daily": "<b>Grille du jour</b> : une grille par jour, la même pour tout le monde. Dans <b>Plus</b> : les grilles du jour Facile et Expert, la grille Hebdo à thème et les Archives des grilles passées (qui ne touchent jamais à ta série).",
+      "unlimited": "<b>Illimité</b> : une grille que tu construis toi-même. Choisis les règles (PP illimités, solution garantie, cases à une seule réponse, chrono), une difficulté et les catégories voulues, puis génères-en autant que tu veux.",
+      "ttt": "<b>Morpion</b> : deux Dresseurs partagent une grille et prennent des cases à tour de rôle. Trois alignées, c’est gagné ; une erreur ou un temps écoulé passe le tour."
+    },
+    "regions": "Régions et formes",
+    "kinds": "Les catégories possibles",
+    "kind": "{family} : ",
+    "kindList": {
+      "types": "Combat, Double type, Monotype (un seul type en commun suffit)",
+      "regions": "De Kanto à Paldea, selon l’apparition du Pokémon (une forme régionale compte pour la région où elle est apparue)",
+      "evolution": "Sans évolution, Évolue avec une pierre ou un objet, Peut évoluer (une évolution compte des deux côtés : Pikachu et Raichu évoluent tous deux avec une pierre)",
+      "moves": "Quelques capacités célèbres, comme Surf ou Séisme (Expert ajoute des répertoires plus poussés)",
+      "abilities": "Expert uniquement : talents connus et obscurs",
+      "other": "Légendaire, Fabuleux, Paradoxe, Ultra-Chimère, Pokémon de départ, Fossile, Bébé, Méga, Gigamax (Expert ajoute des seuils de stats)"
+    }
+  },
+  "rules": {
+    "forms": "Les formes sont des choix à part : formes régionales (Raichu d’Alola), Méga-Évolutions (Méga-Dracaufeu X et Y), formes Gigamax et quelques formes notables (Pikachu partenaire, Primo-Kyogre, formes Originelles, Zacian Épée Suprême).",
+    "own": "Les types, stats et talents d’une forme lui sont propres. Sa lignée d’évolution, son statut légendaire et ses capacités sont ceux de son espèce.",
+    "region": "Une forme régionale compte pour la région où elle est apparue : Raichu d’Alola est d’Alola, Miaouss de Galar de Galar, Axoloto de Paldea de Paldea, Caninos de Hisui de Hisui. Une Méga-Évolution ou une forme Gigamax compte pour la région de son espèce.",
+    "reuse": "Pas de réutilisation : une forme et son espèce sont le même Pokémon. Si tu utilises Dracaufeu, Méga-Dracaufeu X est pris aussi, et inversement. (Plus strict que PokeDoku, où les formes peuvent se répéter.)",
+    "species": "Une espèce compte pour « Forme d’Alola » (et pour ses formes d’autres régions) ; pour une catégorie de type, il suffit qu’un des types du Pokémon corresponde.",
+    "moves": "Les catégories de capacités utilisent le répertoire de l’espèce dans le dernier jeu principal où elle figure (Écarlate et Violet pour la plupart) ; les catégories de stats utilisent les stats de base.",
+    "evolution": "Les méthodes d’évolution comptent des deux côtés de l’étape : Pikachu (évolue avec une Pierre Foudre) et Raichu (a évolué avec) correspondent tous deux à « Évolue avec une pierre »."
+  },
+  "demo": {
+    "label": "Démo : on cherche {first} et on le place dans la case {fire} et {johto}, puis {second} dans {water} et {hoenn}",
+    "search": "Cherche un Pokémon…"
+  },
+  "setup": {
+    "band": {
+      "easy": "Facile",
+      "normal": "Normal",
+      "hard": "Difficile"
+    },
+    "bandHint": {
+      "easy": "Chaque case a plein de réponses.",
+      "normal": "Tout mélange que les catégories permettent.",
+      "hard": "Quelques cases n’ont qu’une poignée de réponses."
+    },
+    "untickAll": "{label} : tout décocher",
+    "tickAll": "{label} : tout cocher",
+    "all": "Tout",
+    "none": "Aucun",
+    "find": {
+      "moves": "Chercher des capacités",
+      "abilities": "Chercher des talents"
+    },
+    "findOne": {
+      "moves": "Chercher une capacité",
+      "abilities": "Chercher un talent"
+    },
+    "nothing": "Aucun résultat.",
+    "title": "Construis ta grille",
+    "intro": "Fixe les règles, choisis ce qui peut apparaître, puis génère. Ne compte jamais pour ta série.",
+    "back": "Grille",
+    "rules": "Règles",
+    "pp": "PP illimités",
+    "ppHint": "Pas de limite d’essais : continue jusqu’à remplir la grille.",
+    "guard": "Solution garantie",
+    "guardHint": "Chaque grille peut être terminée, et un choix qui bloquerait les autres cases est refusé.",
+    "single": "Cases à une seule réponse",
+    "singleHint": "Une case peut n’avoir qu’un seul Pokémon qui convient.",
+    "timer": "Chrono",
+    "timerHint": "Un chrono qui tourne au-dessus de la grille.",
+    "difficulty": "Difficulté",
+    "categories": "Catégories",
+    "classic": "Mélange classique",
+    "generate": "Générer la grille"
+  }
+}
