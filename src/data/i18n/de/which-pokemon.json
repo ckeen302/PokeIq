@@ -1,0 +1,1002 @@
+{
+ "bulbasaur": {
+  "title": "The Patient Grower",
+  "blurb": "You grow on your own schedule and you don't apologise for it. People lean on you because you're steady: you'd rather settle an argument between two friends than start one, and you notice when someone is wilting before they say a word. You don't chase glory, but you'll stand your ground for a cause you believe in. Like Bulbasaur, you store up sunshine for the days that need it.",
+  "why": "Pokedex (RSE, FRLG): naps in bright sunlight and grows at its own pace; anime: Ash's Bulbasaur refuses to evolve and keeps the peace at Oak's lab; Mystery Dungeon starter quiz: Calm/Docile."
+ },
+ "charmander": {
+  "title": "The Flickering Flame",
+  "blurb": "Your feelings run close to the surface: everyone can tell what kind of day you're having from across the room. You throw yourself at things with real heat, and when you commit to someone you stay long after they've stopped deserving it. A setback can dim you for a while, but it never puts you out. You're Charmander: small flame, enormous potential, impossible to ignore.",
+  "why": "Pokedex (RBY, SV): the tail flame flares with feeling and burns weakly when it is unhappy; anime: waits on a rock in the rain for the trainer who abandoned it; Mystery Dungeon starter quiz: Brave/Timid mix."
+ },
+ "charizard": {
+  "title": "The Proud Champion",
+  "blurb": "You'd rather lose to someone great than beat someone easy. Respect is your currency: you give it slowly and you expect it back, and when you decide someone has earned yours you become their most loyal weapon. Rules and routines bore you; a worthy opponent wakes you up. You're Charizard, and the people who stuck with you through the difficult phase know exactly what that was worth.",
+  "why": "Pokedex (FRLG, SV): refuses to use its flames on anything weaker than itself and seeks out stronger foes; anime: Ash's Charizard ignores orders until it respects him; Mystery Dungeon: Brave."
+ },
+ "squirtle": {
+  "title": "The Squad Leader",
+  "blurb": "You've got a crew, and you're the one in the sunglasses at the front of it. You make mischief look like leadership, and your friends follow because being around you is simply more fun. Underneath the swagger is a solid sense of right and wrong: when the joke is over you show up and do the work. You're Squirtle, cool on the outside, dependable all the way down.",
+  "why": "Anime: leader of the Squirtle Squad, sunglasses and all, who still chooses to come back to Ash; Pokedex (RBY): a playful Pokemon that shoots water at any target; Mystery Dungeon: Jolly/Naive."
+ },
+ "butterfree": {
+  "title": "The Gentle Wanderer",
+  "blurb": "You go where the sweetness is. Competition means little to you; connection means everything, and you'd quietly fly off to be with the people you love over any prize. You're easily moved and you don't hide it, which makes you the friend people call when they need to be understood. You're Butterfree: light, loyal, and braver than you look when it counts.",
+  "why": "Pokedex (RBY, SV): searches for the sweetest honey and the flowers that hold it; anime: Ash's first full evolution and the first goodbye, flying off with its mate; nothing combative anywhere on record."
+ },
+ "pikachu": {
+  "title": "The Loyal Spark",
+  "blurb": "You run on enthusiasm and you share it freely: the room is louder and warmer once you're in it. You pick your people and then you're theirs, through every bad decision and every long road. You like winning, but mostly you like winning next to someone. You're Pikachu: the partner everyone wishes they had, and the one who won't be put in a box.",
+  "why": "Anime: refuses the Poke Ball but never leaves Ash's side across every series; Pokedex (Yellow, Sw): sparks fly from its cheeks when it is excited or angry, and it is curious enough to zap whatever it finds; Mystery Dungeon: Hardy/Jolly."
+ },
+ "clefairy": {
+  "title": "The Moonlight Dancer",
+  "blurb": "You're a little bit from somewhere else and you like it that way. Your imagination runs wild, your heart is soft, and you find rituals and wonder in things other people walk straight past. You'd rather dance in a circle of friends at midnight than fight anyone for anything. You're Clefairy: whimsical, warm, and quietly mysterious.",
+  "why": "Pokedex (GSC, Sw): dances under the full moon and is said to have come from the Moon; shy around people but adorably playful; anime: Clefairy build a rocket ship and hold moonlight rituals."
+ },
+ "clefable": {
+  "title": "The Night Fairy",
+  "blurb": "You hear everything and you'd rather not be heard. You're gentle and dreamy, private by instinct, and happiest somewhere quiet with the moon out. You don't compete and you don't crowd. You're Clefable: soft, secretive, and a little bit celestial.",
+  "why": "Pokedex (RBY, Sw): so timid that it flees at the slightest sound, lives on quiet mountains and dances under the moon; said to hear a pin drop a mile away."
+ },
+ "ninetales": {
+  "title": "The Thousand-Year Grudge",
+  "blurb": "You are patient in a way that unsettles people. You remember everything, forgive little, and never raise your voice, because you don't need to. Your standards are high, your circle is small, and your sense of self is unshakeable. You're Ninetales: elegant, long-memoried, and not to be crossed.",
+  "why": "Pokedex (RBY, Sw): lives a thousand years, understands human speech, and curses anyone who grabs its tails; anime: calm, elegant, and devoted to one master for centuries."
+ },
+ "jigglypuff": {
+  "title": "The Unstoppable Performer",
+  "blurb": "You need an audience, and you'll make one out of whoever's nearby. You're a performer first and a planner never, and when the room doesn't respond the way it should, you take it very personally. But you bounce back fast and you're already on to the next show. You're Jigglypuff: all heart, all volume, and absolutely unstoppable.",
+  "why": "Anime: sings for any audience, then scribbles on everyone who falls asleep; Pokedex (RBY, Sw): keeps singing until its audience is asleep and is furious when it fails to charm."
+ },
+ "meowth": {
+  "title": "The Scheming Charmer",
+  "blurb": "You've always got a plan, and it's usually a bit of a scheme. You're clever, talkative, and a great deal more sentimental than you let on; most of your schemes are secretly about being seen. You don't do boring work, but you'll work incredibly hard at being charming. You're Meowth: the talker, the dreamer, and the one who learned the hard way and kept going anyway.",
+  "why": "Anime: Team Rocket's Meowth taught itself to talk for love and schemes for status; Pokedex (RBY, LGPE): loves shiny coins, wanders the city at night and collects what catches its eye."
+ },
+ "persian": {
+  "title": "The Vain Aristocrat",
+  "blurb": "You are nobody's pet. You're elegant, hard to impress, and not interested in pretending otherwise; people have to earn your attention and most won't. You like comfort and you like status, and you'll quietly make sure you get both. You're Persian: sleek, self-possessed, and perfectly happy with a small circle of the right people.",
+  "why": "Pokedex (RBY, Sw): vicious, proud and fickle, it will scratch even its own trainer and is hard to raise; anime: Giovanni's lap cat, favoured and feared."
+ },
+ "psyduck": {
+  "title": "The Walking Headache",
+  "blurb": "You carry a lot in your head and most of it is noise. You're confused more often than you'd like, worried more often than you'd admit, and far more capable than anyone (including you) expects. When it all finally comes to a head, you're astonishing. You're Psyduck: anxious, lovable, and secretly the most powerful one in the room.",
+  "why": "Pokedex (RBY, SV): a constant headache leaves it dazed, and only when the pain peaks does its hidden power erupt; anime: Misty's Psyduck, bewildered and accidentally devastating."
+ },
+ "primeape": {
+  "title": "The Rage Engine",
+  "blurb": "You have a temper and everyone knows it. You run hot, you hold onto a grievance longer than is healthy, and you'd chase a slight to the ends of the earth. But that same fire makes you a relentless competitor and a loyal friend to anyone who learns not to flinch. You're Primeape: furious, driven, and secretly a champion.",
+  "why": "Pokedex (RBY, Sw): flies into a rage if you so much as look at it and chases you even when you run; its anger only grows; anime: Ash's Primeape becomes a boxing champion."
+ },
+ "growlithe": {
+  "title": "The Devoted Guard",
+  "blurb": "You've picked your people and you'd do anything for them. You don't need novelty or a big stage, just a job that matters and someone worth doing it for. Strangers get a wary look; friends get your whole heart. You're Growlithe: brave, dependable, and loyal to the bone.",
+  "why": "Pokedex (RBY, Sw): extremely loyal, barks at anything it doesn't know, and never forgets a kind trainer; anime: Officer Jenny's partner on every beat."
+ },
+ "arcanine": {
+  "title": "The Legendary Protector",
+  "blurb": "You carry yourself like someone who has already proven it. You're capable and composed, you move fast when it matters, and people feel safer with you around. You don't go looking for fights, but you'll finish one for someone you love. You're Arcanine: majestic, loyal, and quietly legendary.",
+  "why": "Pokedex (RBY, Sw): a legendary beast admired for its majesty, loyal and fast enough to cover 6,200 miles in a day; anime: Arcanine often appears as a noble steed or guardian."
+ },
+ "alakazam": {
+  "title": "The Grandmaster",
+  "blurb": "You've already thought three moves ahead and you're mildly annoyed everyone else hasn't. You love ideas for their own sake and you work on them with a discipline most people reserve for emergencies. You're not cold, just efficient, and your loyalty goes to the few who can keep up. You're Alakazam: brilliant, composed, and never caught off guard.",
+  "why": "Pokedex (RBY, Sw): an IQ of 5,000 and total recall of everything it has ever experienced; it prefers to win with its mind rather than its body."
+ },
+ "machamp": {
+  "title": "The Honest Powerhouse",
+  "blurb": "You do the work, and then you do more of it. You believe in showing up, lifting the heavy thing, and earning your wins honestly, and you have little patience for anyone who takes shortcuts. Delicate tasks and vague ideas frustrate you; a clear goal and a worthy rival light you up. You're Machamp: strong, straightforward, and all muscle, including the heart.",
+  "why": "Pokedex (RBY, Sw): four arms that can throw 1,000 punches in two seconds, yet it fumbles delicate work; anime: a wrestler through and through."
+ },
+ "slowpoke": {
+  "title": "The Unbothered",
+  "blurb": "Nothing gets to you. Deadlines, drama, a Shellder clamped to your tail: you'll get round to it, or you won't, and either way you'll be fine. People find your calm contagious, and you'd never dream of competing with anyone for anything. You're Slowpoke: serene, kind, and living proof that most problems solve themselves if you wait long enough.",
+  "why": "Pokedex (RBY, SV): takes five seconds to feel pain and forgets what it was doing mid-yawn; anime: every Slowpoke appears unbothered by anything happening to it."
+ },
+ "gengar": {
+  "title": "The Grinning Prankster",
+  "blurb": "You're the funniest person in the room and the most dangerous one to turn your back on. You love a prank, you love a reaction, and you find rules mostly decorative. Underneath the grin is someone who wants to be let in and would rather joke than ask. You're Gengar: mischievous, magnetic, and never, ever boring.",
+  "why": "Pokedex (RBY, Sw): hides in your shadow, steals your warmth, and laughs at the fright it causes; anime: grins at its own pranks; Mystery Dungeon: the cheerful villain who turns out to be lonely."
+ },
+ "cubone": {
+  "title": "The Grieving Loner",
+  "blurb": "You carry something heavy, and you carry it alone. You're quieter than people expect and more sensitive than you show, and you've built a hard shell around a very soft centre. You keep going because that's what you were taught, and you fight harder than anyone for what little you have. You're Cubone: grieving, brave, and more than your loss.",
+  "why": "Pokedex (RBY, Sw): wears the skull of its dead mother and cries mournfully on the night of the full moon; it has never shown its face to anyone."
+ },
+ "chansey": {
+  "title": "The Caregiver",
+  "blurb": "You're the one with the bandages, the snacks, and the time. Caring for people isn't a role you play, it's just how you move through the world, and you'd give away your last egg without thinking about it. You don't care about winning; you care about everyone making it home. You're Chansey: generous, steady, and the reason other people get to be brave.",
+  "why": "Pokedex (RBY, Sw): shares its nutritious eggs with the injured and is the Pokemon Center nurse's partner everywhere; a kind-hearted species that brings happiness to anyone who catches it."
+ },
+ "kangaskhan": {
+  "title": "The Fierce Parent",
+  "blurb": "You're gentle with your own and terrifying to anyone who threatens them. You're responsible, grounded, and not much interested in novelty; you've got people to look after. You don't go looking for a fight, but you'll end one in seconds if it comes near your family. You're Kangaskhan: protective, practical, and fierce in all the right ways.",
+  "why": "Pokedex (RBY, Sw): raises its young in its pouch and attacks anyone who comes near, no matter the cost; anime: Kangaskhan herds in the Safari Zone defend their calves to the last."
+ },
+ "mr-mime": {
+  "title": "The Showman",
+  "blurb": "You're a performer with a work ethic. You love to make people laugh and you take the craft of it surprisingly seriously, rehearsing the bit until the walls you build feel real. You can be a little particular about how things are done, but it's because you care. You're Mr. Mime: expressive, disciplined, and impossible to ignore.",
+  "why": "Pokedex (RBY, Sw): a pantomime master whose invisible walls become real if you don't laugh; anime: Delia's Mimey keeps house with impeccable discipline."
+ },
+ "scyther": {
+  "title": "The Honour-Bound Blade",
+  "blurb": "You hold yourself to a code and you keep your edge sharp. You'd rather earn something the hard way than be handed it, and you have no patience for people who cheat or coast. You're not unfriendly, but you keep your circle small and your standards high. You're Scyther: precise, proud, and always ready.",
+  "why": "Pokedex (RBY, SV): slices with ninja speed and never lets its blades dull; anime: Tracey's Scyther was a proud former swarm leader who fought for its honour."
+ },
+ "tauros": {
+  "title": "The Rampant Bull",
+  "blurb": "You charge first and ask later. You're competitive to the core, quick to anger, and quick to forget why you were angry; you just want to be moving. Subtlety isn't your thing and you're fine with that. You're Tauros: all momentum, and a surprisingly good friend once you've stopped running.",
+  "why": "Pokedex (RBY, Sw): whips itself with its three tails to work into a charge and smashes whatever is in front of it; anime: Ash catches an entire herd of them in the Safari Zone."
+ },
+ "magikarp": {
+  "title": "The Underdog",
+  "blurb": "People have underestimated you your whole life, and you've kept going anyway. You're not flashy and you're not fast, but you're almost impossible to discourage, and you turn up again the next day without fail. The ones who laughed will be very quiet later. You're Magikarp, and anyone who knows the story knows what comes next.",
+  "why": "Pokedex (RBY, Sw): pathetically weak but able to survive in any water, splashing on no matter how many times it is mocked; the single most famous late bloomer in the series."
+ },
+ "gyarados": {
+  "title": "The Rampage",
+  "blurb": "You went through something that changed you, and you came out the other side with teeth. Your temper is legendary, your drive is enormous, and when you decide to win there is very little anyone can do about it. Calm doesn't come naturally, but the people who've seen you protect someone know the fury isn't the whole story. You're Gyarados: ferocious, formidable, and forged by what you survived.",
+  "why": "Pokedex (RBY, Sw): the brutal transformation leaves it in a violent rage that can level a city; it is famed for flying into a frenzy at the smallest thing."
+ },
+ "lapras": {
+  "title": "The Gentle Ferry",
+  "blurb": "You carry people. Sometimes literally, mostly emotionally: you're the calm voice on the long crossing and you'd never leave anyone behind. You're thoughtful and a little melancholy, with a deep memory and a deeper patience. Competition baffles you; kindness is simply the obvious choice. You're Lapras: gentle, wise, and the safest harbour your friends have.",
+  "why": "Pokedex (RBY, Sw): understands human speech, ferries people across the sea, and sings mournfully for its hunted kind; anime: carries Ash across the Orange Islands."
+ },
+ "ditto": {
+  "title": "The Shapeshifter",
+  "blurb": "You can be whoever the moment needs, and you enjoy the trick of it. New people, new places, new ideas: you absorb them all without losing the real you underneath. Routine and rigid plans don't suit you, and you'd rather blend in and watch than compete for the spotlight. You're Ditto: adaptable, curious, and secretly the most original one here.",
+  "why": "Pokedex (RBY, Sw): rearranges its cells to become anything it sees, though it slips up when it laughs; a creature of pure adaptability with no fixed form."
+ },
+ "eevee": {
+  "title": "The Open Door",
+  "blurb": "You haven't decided what you're going to be yet, and that's your superpower. You're curious about everything, easy to love, and you light up around new possibilities more than fixed plans. Some people call that indecisive; you call it keeping the door open. You're Eevee: all potential, and every path is still yours.",
+  "why": "Pokedex (RBY, Sw): unstable genetics let it evolve to suit its environment, so it may be the Pokemon of possibility itself; anime: Chloe's Eevee that just can't decide."
+ },
+ "vaporeon": {
+  "title": "The Calm Current",
+  "blurb": "You go with the flow because you are the flow. People find you soothing to be around: you don't push, you don't panic, and you're perfectly content on your own by the water. You're quietly adaptable and you let most drama wash straight past you. You're Vaporeon: calm, graceful, and deeper than you first appear.",
+  "why": "Pokedex (RBY, Sw): melts into water and lives quietly by clear lakes, its cells so like water that it can vanish into it; the serene eeveelution."
+ },
+ "jolteon": {
+  "title": "The Live Wire",
+  "blurb": "You feel everything at full voltage. You're quick, funny, and a little prickly, and anyone who startles you will know about it immediately. You're loyal in your own electric way, but you need room to run and you don't love being told what to do. You're Jolteon: fast, intense, and never on standby.",
+  "why": "Pokedex (RBY, Sw): sensitive and quick to change mood, its fur stands on end and fires needles when it is startled or upset; the eeveelution with a short fuse and a big heart."
+ },
+ "flareon": {
+  "title": "The Warm Hearth",
+  "blurb": "You run warm. You're affectionate and a bit fiery, quick to get excited and quick to get your feelings hurt, and you'd always rather be near your people than off on your own. You don't overthink: you act, then you feel it. You're Flareon: cosy, loyal, and a comfort to be around.",
+  "why": "Pokedex (RBY, Sw): stores fire in its body and fluffs its fur to release heat, running hot when excited; a loyal, cosy eeveelution that loves to be close to its trainer."
+ },
+ "aerodactyl": {
+  "title": "The Ancient Tyrant",
+  "blurb": "You're from another era and you've never quite fit this one. You're fierce, independent, and a little impatient with modern niceties; you'd rather take what's yours than wait to be offered it. People find you intimidating and you don't mind. You're Aerodactyl: untamed, ambitious, and ruler of your own sky.",
+  "why": "Pokedex (RBY, Sw): a ferocious ancient predator with saw-like fangs that ruled the skies and shrieks as it dives; revived from amber and still wild."
+ },
+ "snorlax": {
+  "title": "The Great Napper",
+  "blurb": "You've figured out what matters: food, rest, and not being bothered. Nothing rattles you, nobody can rush you, and you're kinder than people expect once they stop trying to wake you up. When something truly matters you can move mountains, briefly, before going back to sleep. You're Snorlax: peaceful, immovable, and beloved.",
+  "why": "Pokedex (RBY, Sw): eats 900 pounds a day and sleeps the rest, so gentle that children bounce on its belly; anime: Ash's Snorlax wakes only for food and the occasional heroic moment."
+ },
+ "dragonite": {
+  "title": "The Kind Giant",
+  "blurb": "You're big-hearted in the most literal way: people instinctively know you'd carry them to shore. You're strong and capable, and you'd rather use that to help than to win. You take your responsibilities seriously but you're never heavy about it; you lead with warmth. You're Dragonite: gentle, mighty, and everybody's safe place.",
+  "why": "Pokedex (RBY, Sw): a kind-hearted Pokemon that rescues shipwrecked sailors and guides ships to shore; anime: Ash's Dragonite hugs first and asks questions later."
+ },
+ "mewtwo": {
+  "title": "The Lone Experiment",
+  "blurb": "You weren't made for this world and you've stopped apologising for it. You're intensely driven, intensely private, and you'd rather answer to no one than be anyone's project. Trust comes very slowly, and when you finally let someone in it changes everything. You're Mewtwo: powerful, solitary, and still deciding what your strength is for.",
+  "why": "Pokedex (RBY, Sw): created by gene splicing to be the strongest, with a savage heart and no interest in anything but defeating its foes; the first movie: a being asking what it is for."
+ },
+ "mew": {
+  "title": "The Playful Origin",
+  "blurb": "You find everything fascinating and you refuse to be pinned down. You're playful, warm, and endlessly curious, drifting between interests and people with a lightness that some mistake for not caring. You care enormously; you just don't do it on anyone's schedule. You're Mew: joyful, elusive, and a bit of everything.",
+  "why": "Pokedex (RBY, Sw): said to contain the genetic code of every Pokemon, it turns invisible and only appears to the pure of heart; Mystery Dungeon and the movies: playful, curious, mischievous."
+ },
+ "chikorita": {
+  "title": "The Sunlit Sweetheart",
+  "blurb": "You lead with affection. You want to be close to the people you love and you'll quietly compete for their attention, but you'd never hurt anyone to get it. You're brighter and braver than your size suggests, and you make the room smell like springtime. You're Chikorita: sweet, loyal, and a little possessive in the most endearing way.",
+  "why": "Pokedex (GSC, HGSS): the leaf gives off a soothing aroma and it loves to sunbathe; anime: Ash's Chikorita is affectionate, jealous of Pikachu, and brave for its size."
+ },
+ "cyndaquil": {
+  "title": "The Shy Blaze",
+  "blurb": "You keep your fire banked. Most of the time you're gentle, a bit nervous, and happier curled up than in the spotlight, and people sometimes mistake that for weakness. Then something matters and you blaze. You're Cyndaquil: quiet, kind, and far hotter than anyone expects.",
+  "why": "Pokedex (GSC, HGSS): timid, it curls into a ball when startled, but the flames on its back flare fiercely when it's angry; anime: Ash's Cyndaquil struggles to light its flame until it matters."
+ },
+ "totodile": {
+  "title": "The Playful Chomper",
+  "blurb": "You bite first and dance second. You're loud, fun, and impossible to keep still, and you love the world so much you want to put the whole thing in your mouth. You don't plan; you leap. You're Totodile: playful, fearless, and the life of every party you wander into.",
+  "why": "Pokedex (GSC, HGSS): playful but with a bite that can crush anything, it chomps whatever moves; anime: Ash's Totodile dances its way into every situation."
+ },
+ "togepi": {
+  "title": "The Lucky Charm",
+  "blurb": "Good things happen around you, and people notice. You're warm, trusting, and generous with your joy, and you'd rather be carried along by friends than compete with them. You're more capable than anyone realises, including you. You're Togepi: a walking good omen, and the one everyone wants on their team.",
+  "why": "Pokedex (GSC, Sw): its shell is filled with happiness it shares with kind people, and it is said to bring good luck; anime: Misty's Togepi, loved by everyone and secretly powerful."
+ },
+ "xatu": {
+  "title": "The Silent Oracle",
+  "blurb": "You see further than most and you say less. You're deeply thoughtful, oddly still, and content to watch while everyone else rushes around. People find you mysterious and you find them loud. You're Xatu: wise, patient, and keeping some of what you know to yourself.",
+  "why": "Pokedex (GSC, Sw): stands motionless all day staring at the sun, seeing the past and the future, too fearful of what it sees to move; the stoic mystic."
+ },
+ "ampharos": {
+  "title": "The Lighthouse",
+  "blurb": "You're the light people steer by. You're warm, dependable, and a bit of a beacon in a crisis: you don't shout, you just shine where you're needed. You don't need to win anything; you need everyone to get home. You're Ampharos: bright, steady, and quietly essential.",
+  "why": "Pokedex (GSC, Sw): its tail light is bright enough to be seen from space and has been used as a lighthouse to guide ships; anime: the Olivine lighthouse Ampharos."
+ },
+ "sudowoodo": {
+  "title": "The Imposter Tree",
+  "blurb": "You'd rather blend in than be noticed, and you'll commit to the bit for years. You're stubborn, a little anxious, and perfectly happy standing in one spot while the world walks past. Water, change, and surprises are not your friends. You're Sudowoodo: steadfast, oddly charming, and not fooling anyone, which is fine.",
+  "why": "Pokedex (GSC, Sw): disguises itself as a tree to avoid attention and panics at water, with the stubborn roadblock role in every Johto journey."
+ },
+ "quagsire": {
+  "title": "The Easygoing One",
+  "blurb": "You are the most relaxed person anyone has ever met. Things bump into you and you keep swimming, and you've never once worried about a plan because you've never once had one. You're kind without effort and calm without trying. You're Quagsire: unhurried, unbothered, and wonderful to be around.",
+  "why": "Pokedex (GSC, Sw): so easygoing that it bumps its head on boats and rocks while swimming and doesn't seem to mind; the carefree species."
+ },
+ "espeon": {
+  "title": "The Devoted Seer",
+  "blurb": "You see things coming before anyone else does, and you use it to look after your people. You're calm, perceptive, and disciplined, with an elegance that sometimes reads as distance. It isn't; you're just watching. You're Espeon: insightful, devoted, and always one step ahead.",
+  "why": "Pokedex (GSC, Sw): extremely loyal to its trainer, it reads air currents to predict the weather and the enemy's next move so it can protect them; the eeveelution of the daytime bond."
+ },
+ "umbreon": {
+  "title": "The Night Watcher",
+  "blurb": "You do your best work after dark and on your own. You're patient, watchful, and unbothered by most things, and you don't need company to feel complete. People who earn your trust get a quiet, fierce loyalty that never shows off. You're Umbreon: cool, self-contained, and glowing when it counts.",
+  "why": "Pokedex (GSC, Sw): lies in wait patiently in the dark and its rings glow when it is agitated; Mystery Dungeon and fan consensus: the lone-wolf eeveelution."
+ },
+ "murkrow": {
+  "title": "The Shiny-Things Thief",
+  "blurb": "You're drawn to shiny things and bad ideas, and you have excellent taste in both. You're sociable, mischievous, and a little chaotic, and you'd rather be interesting than reliable. You don't mean any harm; you just can't resist. You're Murkrow: clever, cheeky, and never where you're supposed to be.",
+  "why": "Pokedex (GSC, Sw): steals shiny objects, leads travellers astray at night, and is said to bring bad luck; a cheeky night bird that answers to no one."
+ },
+ "misdreavus": {
+  "title": "The Scare Artist",
+  "blurb": "You love a reaction. You're playful in a slightly unsettling way, imaginative, and a bit of a night owl, and you find most people's fears more funny than serious. You don't want to hurt anyone; you just want to see them jump. You're Misdreavus: spooky, spirited, and secretly very good company.",
+  "why": "Pokedex (GSC, Sw): screams and sobs at night to scare people, feeding on their fear and loving every minute; a mischief-maker rather than a menace."
+ },
+ "wobbuffet": {
+  "title": "The Patient Wall",
+  "blurb": "You don't start things, but you absolutely finish them. You're tolerant to a fault, loyal to whoever you've ended up with, and more resilient than the people who underestimate you. You hate being alone and you don't mind saying so. You're Wobbuffet: patient, dependable, and the wall nobody gets past.",
+  "why": "Pokedex (GSC, Sw): never attacks first, hates to be alone, and keeps its tail hidden; anime: Team Rocket's Wobbuffet, cheerfully popping out at the worst moment."
+ },
+ "granbull": {
+  "title": "The Timid Toughie",
+  "blurb": "People read you wrong at first. You look tougher than you feel, and you've got a soft, slightly anxious heart behind a face that scares off strangers. You bite only when cornered, and you feel awful about it afterwards. You're Granbull: misunderstood, loyal, and a big softie.",
+  "why": "Pokedex (GSC, Sw): looks fearsome but is actually timid, biting only when it is startled; a gentle creature behind a scary face."
+ },
+ "scizor": {
+  "title": "The Steel Discipline",
+  "blurb": "You're disciplined to the point of intimidation. You train, you prepare, you execute, and you don't understand people who do things halfway. Warmth isn't your first language, but reliability is, and your people know they can count on you completely. You're Scizor: precise, formidable, and built for the win.",
+  "why": "Pokedex (GSC, Sw): raises its eyespot pincers to intimidate, and trains its body to a martial precision; the species of hard metal and harder focus."
+ },
+ "shuckle": {
+  "title": "The Hermit",
+  "blurb": "You're happiest left alone with a project and a long timeline. You're patient, private, and quietly productive, and you've never understood the appeal of a crowd. Nobody can rush you, and nothing gets through your shell. You're Shuckle: self-sufficient, kind, and working on something good.",
+  "why": "Pokedex (GSC, Sw): hides under rocks and ferments berries inside its shell, patiently, for years; the most content recluse in the Pokedex."
+ },
+ "heracross": {
+  "title": "The Gentle Strongman",
+  "blurb": "You're the strongest person in the room and the least likely to mention it. You work hard, you keep your word, and you're happiest with something sweet and a sunny afternoon. But you don't lose: if someone wants a contest, you'll flip them over the horizon and then offer them a snack. You're Heracross: humble, powerful, and good-natured.",
+  "why": "Pokedex (GSC, Sw): gentle and docile, it loves sweet sap, yet it can hurl a foe with a hundred times its weight using its horn; anime: Ash's sap-loving Heracross."
+ },
+ "sneasel": {
+  "title": "The Cunning Thief",
+  "blurb": "You're quick, sharp, and a little bit ruthless. You look out for yourself first, you can charm when it suits you, and you're not above a bit of mischief to get ahead. You don't trust easily, and you expect the same. You're Sneasel: clever, independent, and always one move ahead of the rules.",
+  "why": "Pokedex (GSC, Sw): steals eggs from nests and uses its claws with cruel cunning; Mystery Dungeon: the thief who betrays and bargains."
+ },
+ "delibird": {
+  "title": "The Generous Rescuer",
+  "blurb": "You turn up with something to share. You're generous, cheerful, and brave in the most practical way: you'll climb the mountain because someone up there needs you. You don't keep score and you don't compete. You're Delibird: giving, warm, and exactly who you'd want to find on a cold night.",
+  "why": "Pokedex (GSC, Sw): carries food in its tail and shares it with lost travellers, once rescuing a famous mountaineer with it; the species that gives."
+ },
+ "houndoom": {
+  "title": "The Pack Hunter",
+  "blurb": "You run with a pack, and you'd like to be leading it. You're intense, strategic, and a little frightening when you're focused, and you don't waste energy on people outside your circle. You hold grudges and you hold loyalties with equal strength. You're Houndoom: fierce, sharp, and unforgettable.",
+  "why": "Pokedex (GSC, Sw): its eerie howl chills, and packs are led by the one with the most curved horns; the burns it leaves never heal."
+ },
+ "smeargle": {
+  "title": "The Free Artist",
+  "blurb": "You make things, and that's the whole plan. You're curious about everything and loyal to nothing but the next idea, and you'd rather leave your mark on a wall than win a prize. Schedules slide off you; inspiration doesn't. You're Smeargle: original, wandering, and never finished.",
+  "why": "Pokedex (GSC, Sw): paints its own mark with its tail, with over 5,000 unique marks on record, wandering and copying whatever it sees; the artist who learns anything once."
+ },
+ "suicune": {
+  "title": "The Clear Wind",
+  "blurb": "You move through the world leaving it cleaner than you found it. You're graceful, principled, and private, and you don't stay anywhere long enough to be caught. People are drawn to you precisely because you don't need them to be. You're Suicune: serene, elegant, and free.",
+  "why": "Pokedex (GSC, Sw): races across the land purifying water as it goes, with the grace of the north wind; it travels alone and is seldom seen."
+ },
+ "tyranitar": {
+  "title": "The Walking Earthquake",
+  "blurb": "You don't go around obstacles; you go through them. You're dominant, direct, and perfectly comfortable being the biggest force in the room, and you'd rather be respected than liked. Change bores you, challenge excites you. You're Tyranitar: unstoppable, uncompromising, and a landscape-altering presence.",
+  "why": "Pokedex (GSC, Sw): so insolent and powerful that it topples mountains and reshapes maps just by moving; it seeks out opponents and nothing stops it."
+ },
+ "lugia": {
+  "title": "The Guardian Below",
+  "blurb": "You're far more powerful than you let on, and you keep it quiet on purpose. You're calm, principled, and protective, and you'd rather withdraw than risk hurting anyone. You surface when the balance needs restoring and vanish when it's done. You're Lugia: deep, gentle, and immensely strong.",
+  "why": "Pokedex (GSC, Sw): so powerful that a flap of its wings can level houses, so it hides in the deep sea to harm no one; Pokemon 2000: the guardian of the seas' balance."
+ },
+ "treecko": {
+  "title": "The Cool Head",
+  "blurb": "You don't panic, and people notice that about you first. You're cool, self-reliant, and a little hard to read, and you'd rather handle something quietly than make a scene about it. You pick your battles with care and then you don't lose them. You're Treecko: composed, capable, and perfectly fine on your own.",
+  "why": "Pokedex (RSE, ORAS): calm and composed, it never panics no matter the situation; anime: Ash's Treecko, the twig-chewing loner who fought for its tree."
+ },
+ "blaziken": {
+  "title": "The Burning Fighter",
+  "blurb": "You get better when it gets harder. Pressure doesn't shrink you, it ignites you, and you'd rather face the strongest opponent in the building than coast past the weakest. You train with discipline and fight with heart, and you believe in winning the right way. You're Blaziken: fiery, honourable, and built for the big moment.",
+  "why": "Pokedex (RSE, Sw): its flames burn hotter the stronger its opponent, and it clears a 30-storey building in one leap; anime: May's Blaziken, fair and fierce."
+ },
+ "mudkip": {
+  "title": "The Steady Helper",
+  "blurb": "You're the one who checks on everyone. You're friendly, grounded, and stronger than you look, and you'd rather help than compete. You don't need a stage; you need a job that matters and a group that feels like home. You're Mudkip: steady, sweet, and a lot tougher than the memes let on.",
+  "why": "Pokedex (RSE, ORAS): senses with its fin, swims through mud, and can lift boulders when it needs to; anime: Brock's Mudkip looks after the other Pokemon; Mystery Dungeon starter: Hardy/Relaxed."
+ },
+ "ludicolo": {
+  "title": "The Carnival Dancer",
+  "blurb": "When the music starts, you're already dancing. You're the most upbeat person anyone knows, warm and generous and utterly unbothered by looking silly. You don't compete and you don't plan; you celebrate. You're Ludicolo: the party itself, and everyone's glad you came.",
+  "why": "Pokedex (RSE, Sw): hears festive music and its body fills with energy, dancing uncontrollably; anime: Brock's Ludicolo, always ready to party."
+ },
+ "gardevoir": {
+  "title": "The Guardian Heart",
+  "blurb": "You'd move the universe for the people you love, and they know it. You're intuitive and gentle, with an inner strength that only shows when someone you care about is in danger. Winning doesn't interest you; protecting does. You're Gardevoir: devoted, perceptive, and far more powerful than your calm suggests.",
+  "why": "Pokedex (RSE, Sw): can see the future and will create a small black hole to protect its trainer, giving up its own life if it has to; Mystery Dungeon: the Pokemon who sacrificed itself."
+ },
+ "slaking": {
+  "title": "The Lazy King",
+  "blurb": "You're extremely good at doing nothing, and you're secretly extremely good at everything else too. You conserve your energy, ignore the urgency other people invent, and then move once, decisively, when it actually matters. Ambition and routine both bore you. You're Slaking: lazy, powerful, and entirely at peace with it.",
+  "why": "Pokedex (RSE, Sw): the laziest Pokemon, lying around all day and eating only what it can reach, yet it is also one of the strongest; the lord of lazy."
+ },
+ "skitty": {
+  "title": "The Chaser",
+  "blurb": "You're easily delighted and easily distracted, and both are part of your charm. You're warm, playful, and quick to make friends, and you'll follow something shiny straight off the path and have a great time doing it. Plans are optional; fun isn't. You're Skitty: sweet, chaotic, and impossible to be grumpy around.",
+  "why": "Pokedex (RSE, Sw): chases anything that moves, including its own tail, until it gets dizzy; an adorable bundle of distraction."
+ },
+ "sableye": {
+  "title": "The Gem Goblin",
+  "blurb": "You've got your own little cave and your own little treasures, and you don't need anyone's approval for either. You're sly, a bit odd, and delightfully self-sufficient, and the people who get you really get you. You'd rather be strange than ordinary. You're Sableye: quirky, independent, and quietly glittering.",
+  "why": "Pokedex (RSE, Sw): lurks in caves eating gems, feared for stealing spirits with its glittering eyes; a sneaky loner that loves what sparkles."
+ },
+ "mawile": {
+  "title": "The Sweet Deceiver",
+  "blurb": "People underestimate you, and you let them. You're clever, a little theatrical, and perfectly capable of playing sweet until the moment you don't need to anymore. You enjoy the game and you don't feel bad about winning it. You're Mawile: charming, cunning, and full of surprises.",
+  "why": "Pokedex (RSE, Sw): a docile face and gentle act that lures foes into reach of its steel jaws; the deceiver."
+ },
+ "aggron": {
+  "title": "The Territorial Guardian",
+  "blurb": "You've got your territory and you take care of it. You're responsible and a bit prickly, you don't love change, and you'd defend what's yours against anyone. Underneath the armour is someone who plants trees after the storm. You're Aggron: stubborn, steadfast, and a guardian to the core.",
+  "why": "Pokedex (RSE, Sw): claims a whole mountain as its territory and restores it after disasters, planting trees and carrying soil; it fiercely attacks any intruder."
+ },
+ "sharpedo": {
+  "title": "The Bully of the Seas",
+  "blurb": "You hit hard and you don't apologise for it. You're competitive, blunt, and fast, and you have a reputation that precedes you into every room. You don't need to be liked; you need to be first. You're Sharpedo: ruthless, relentless, and the reason people check the water.",
+  "why": "Pokedex (RSE, Sw): nicknamed the bully of the sea, it attacks ships at 75 miles an hour and its fangs regrow instantly; feared by everything in the water."
+ },
+ "torkoal": {
+  "title": "The Steady Furnace",
+  "blurb": "You keep your fire going no matter what. You're slow, steady, and diligent, more interested in doing something properly than doing it fast, and you're moved to tears by things other people shrug at. Loud rooms aren't for you; long projects are. You're Torkoal: warm, reliable, and built to last.",
+  "why": "Pokedex (RSE, Sw): digs for coal in the mountains and burns it steadily, always keeping its fire going; anime: Ash's Torkoal, weeping with every emotion."
+ },
+ "flygon": {
+  "title": "The Desert Spirit",
+  "blurb": "You're a free spirit with a surprisingly kind heart. You love wide spaces and new horizons, you make music out of chaos, and you're far more likely to wander off than settle down. People miss you when you go, and you always come back eventually. You're Flygon: roaming, warm, and impossible to fence in.",
+  "why": "Pokedex (RSE, Sw): its wings sing in the sandstorms it stirs up, so it's called the spirit of the desert; a roaming, free-spirited dragon."
+ },
+ "altaria": {
+  "title": "The Cloud Singer",
+  "blurb": "You float above the drama. You're gentle, artistic, and a soothing presence: people feel calmer within a few minutes of talking to you. You'd rather sing than argue, and you give the best hugs anyone has ever had. You're Altaria: soft, serene, and secretly a dragon.",
+  "why": "Pokedex (RSE, Sw): hums in a beautiful soprano and hugs people softly with its cloud-like wings; it sings to those it loves."
+ },
+ "zangoose": {
+  "title": "The Feud Keeper",
+  "blurb": "You've got a rival, and you take it personally. You're alert, fierce, and ready at all times, and a grudge for you isn't bitterness, it's fuel. You're loyal to a few and suspicious of most. You're Zangoose: sharp, quick, and never caught napping.",
+  "why": "Pokedex (RSE, Sw): locked in an ancient feud with Seviper, it is always on alert and its fur stands on end at the sight of one; it fights with the claws out."
+ },
+ "milotic": {
+  "title": "The Calming Beauty",
+  "blurb": "You bring the temperature down. You're graceful and calm, and people stop arguing when you walk in, not because you ask them to but because it suddenly seems silly. You've been through worse than they know and it made you kinder. You're Milotic: elegant, peaceful, and proof that beauty is what you do with your past.",
+  "why": "Pokedex (RSE, Sw): the most beautiful Pokemon, said to calm angry feelings and end wars just by appearing; it lives at the bottom of clear lakes."
+ },
+ "kecleon": {
+  "title": "The Shopkeeper",
+  "blurb": "You run a tight ship. You're organised, observant, and friendly in a transactional sort of way, and you blend in until someone breaks the rules, at which point you're a nightmare. You respect fairness above everything. You're Kecleon: adaptable, dependable, and not to be stolen from.",
+  "why": "Mystery Dungeon: runs the shops in every town and is terrifyingly strong if you steal from it; Pokedex (RSE, Sw): changes colour to blend in and watch quietly."
+ },
+ "banette": {
+  "title": "The Grudge Doll",
+  "blurb": "You remember who threw you away. You're intense and a little bitter, with a creative streak and a long memory, and you'd rather be feared than overlooked again. There's a soft toy somewhere under all that. You're Banette: haunted, sharp, and determined to be seen.",
+  "why": "Pokedex (RSE, Sw): a thrown-away plush doll brought to life by a grudge, it wanders looking for the child who abandoned it; it curses by sticking pins in itself."
+ },
+ "absol": {
+  "title": "The Misread Omen",
+  "blurb": "You see the storm coming and you say so, even when nobody thanks you for it. You're thoughtful, principled, and deeply solitary, and you've made peace with being misunderstood. You'd still warn them next time. You're Absol: wise, lonely, and better than the reputation.",
+  "why": "Pokedex (RSE, Sw): senses disasters and comes down from the mountains to warn people, who blame it for the calamity instead; it lives alone as a result."
+ },
+ "luvdisc": {
+  "title": "The Hopeless Romantic",
+  "blurb": "You love love. You're warm, affectionate, and happiest when you've got someone to swim alongside, and you believe in the kind of devotion other people roll their eyes at. Ambition and plans come second to the people in your life. You're Luvdisc: sweet, open-hearted, and a little bit magic.",
+  "why": "Pokedex (RSE, Sw): swims in pairs and is said to bring eternal love to couples who meet it; it lives for affection."
+ },
+ "salamence": {
+  "title": "The Dream That Rages",
+  "blurb": "You wanted something so badly you grew wings for it. You're ambitious, explosive, and absolutely not interested in patience, and when you're frustrated the whole landscape knows. You can be a lot, but nobody doubts how much you want it. You're Salamence: fierce, driven, and airborne by sheer will.",
+  "why": "Pokedex (RSE, Sw): the dream of flying was so strong it grew wings, and when it's enraged it flies into a frenzy that burns everything; the rampaging dream."
+ },
+ "metagross": {
+  "title": "The Supercomputer",
+  "blurb": "You think in systems and you don't get flustered. You analyse, you plan, you execute, and you have very little patience for feelings that get in the way of the right answer. People find you intimidating; you find them inefficient. You're Metagross: brilliant, relentless, and always calculating.",
+  "why": "Pokedex (RSE, Sw): four brains linked in parallel, out-calculating a supercomputer, and it pins prey under its body with cold precision."
+ },
+ "latias": {
+  "title": "The Empathic Flier",
+  "blurb": "You feel what other people feel, sometimes before they do. You're warm, intuitive, and playful, and hostility of any kind genuinely hurts you, so you'd rather disappear than fight. You love deeply and you love for life. You're Latias: empathic, gentle, and more courageous than you think.",
+  "why": "Pokedex (RSE, Sw): highly intelligent, understands human speech, and is so sensitive to emotions that it feels hostility as pain; Pokemon Heroes: the playful, loyal guardian of Alto Mare."
+ },
+ "rayquaza": {
+  "title": "The Sky Sovereign",
+  "blurb": "You live above it all, by choice. You're powerful, self-contained, and not interested in anyone else's drama until it threatens the balance, at which point you descend and end it. You don't need a crowd or a crown. You're Rayquaza: supreme, solitary, and only ever on your own terms.",
+  "why": "Pokedex (RSE, Sw): lives alone in the ozone layer for hundreds of millions of years, descending only to end the clash of Kyogre and Groudon; the apex of independence."
+ },
+ "jirachi": {
+  "title": "The Wish Granter",
+  "blurb": "You want good things for people, and you mean it. You're dreamy and generous, a little sleepy, and far more interested in what could be than what is. You take a while to get going, but when you do, wishes come true. You're Jirachi: hopeful, kind, and worth the wait.",
+  "why": "Pokedex (RSE, Sw): sleeps for a thousand years and wakes to grant any wish written on its tags; the gentle dreamer of the movies."
+ },
+ "chimchar": {
+  "title": "The Spark of Defiance",
+  "blurb": "Someone told you that you weren't enough, and you've been proving them wrong ever since. You're energetic, scrappy, and a little raw, with a competitive streak that comes from somewhere deep. You need the right people around you, and when you have them you're unstoppable. You're Chimchar: small, fiery, and far from finished.",
+  "why": "Pokedex (DPPt, Sw): its flame is fuelled by its spirit and goes out when it sleeps; anime: Paul's rejected Chimchar becomes Ash's fiercest fighter."
+ },
+ "piplup": {
+  "title": "The Proud Penguin",
+  "blurb": "You've got standards, and you'd rather struggle than accept help you didn't ask for. You're proud, stubborn, and a little bit dramatic, and you bond slowly but completely. People learn not to pat you on the head. You're Piplup: dignified, determined, and secretly devoted.",
+  "why": "Pokedex (DPPt, Sw): has a strong sense of pride and hates accepting food from people, finding it hard to bond; anime: Dawn's Piplup, stubborn and proud until it isn't."
+ },
+ "staraptor": {
+  "title": "The Fearless Flier",
+  "blurb": "You don't quit, and you don't back down. You're proud, fast, and a bit fierce, and you'd rather fly alone than slow down for a flock that isn't keeping up. Injuries don't stop you; nothing really does. You're Staraptor: bold, relentless, and your own captain.",
+  "why": "Pokedex (DPPt, Sw): never stops attacking even when it's injured, and it will leave the flock to live alone; anime: Ash's Staraptor, all speed and pride."
+ },
+ "bidoof": {
+  "title": "The Humble Builder",
+  "blurb": "Nothing fazes you, and that's a bigger deal than it sounds. You're friendly, practical, and quietly productive, and you keep building while flashier people talk about building. You don't need recognition, though you've earned more than most. You're Bidoof: humble, steady, and beloved by everyone who's paying attention.",
+  "why": "Pokedex (DPPt, Sw): nerves of steel, nothing fazes it, and it gnaws constantly to build dams; the meme that became a fan icon of humble reliability."
+ },
+ "luxray": {
+  "title": "The Sharp-Eyed Sentinel",
+  "blurb": "You see through things, including people. You're watchful, protective, and a bit intense, and you use that sharp eye to look after your own before you use it to hunt. Loyalty and dominance aren't in conflict for you; they're the same job. You're Luxray: perceptive, strong, and always on watch.",
+  "why": "Pokedex (DPPt, Sw): its eyes see through walls to find prey and lost cubs alike, and it watches over its pride; the vigilant lion."
+ },
+ "drifloon": {
+  "title": "The Drifting Mystery",
+  "blurb": "You drift, and you like it. You're dreamy, unusual, and a little bit eerie in a way people find oddly comforting, and you'd rather float through life than be pinned down by a plan. You're curious about everything strange. You're Drifloon: light, mysterious, and quietly unforgettable.",
+  "why": "Pokedex (DPPt, Sw): made of spirits, it drifts on the wind and is said to lead children away by the hand; it squeaks when squeezed; a sweet-looking enigma."
+ },
+ "honchkrow": {
+  "title": "The Mob Boss",
+  "blurb": "You run the operation. You're confident and a little intimidating, with a sharp eye for talent and a flock that does what you say. You don't do the dirty work; you decide it. You're Honchkrow: commanding, cunning, and the boss of the night.",
+  "why": "Pokedex (DPPt, Sw): leads flocks of Murkrow who do its bidding, and is known as the summoner of night; the boss of the crows."
+ },
+ "spiritomb": {
+  "title": "The Bound Grudge",
+  "blurb": "You've got a lot going on inside and not all of it gets along. You're intense, private, and a little hostile to the world by default, and you don't pretend to be nicer than you are. Your loyalty is rare and strange and real. You're Spiritomb: complicated, guarded, and never dull.",
+  "why": "Pokedex (DPPt, Sw): 108 spirits bound to a keystone for their misdeeds, malicious and wanting out; the villain's Pokemon in two games."
+ },
+ "garchomp": {
+  "title": "The Mach Hunter",
+  "blurb": "You go fast and you don't miss. You're ambitious, confident, and a little scary when you're focused, and you'd rather hunt down a goal than wait for it to come to you. You respect strength and you've got plenty. You're Garchomp: apex, airborne, and always closing in.",
+  "why": "Pokedex (DPPt, Sw): flies at the speed of a jet to hunt down bird Pokemon and never lets prey escape; anime: Cynthia's unbeatable Garchomp."
+ },
+ "lucario": {
+  "title": "The Aura Reader",
+  "blurb": "You read people, and you hold yourself to a standard most people wouldn't attempt. You're disciplined and just, with a quiet competitiveness and a loyalty that survives being let down. You don't talk much; you don't need to. You're Lucario: focused, principled, and attuned to everyone around you.",
+  "why": "Pokedex (DPPt, Sw): reads the aura of all things and knows how others feel; Lucario and the Mystery of Mew: loyal to the end, even when betrayed."
+ },
+ "croagunk": {
+  "title": "The Deadpan Trickster",
+  "blurb": "You have one facial expression and it's working for you. You're dry, unflappable, and quietly strange, and you deliver your best moments with no fanfare at all. You keep the people around you honest, sometimes with a jab. You're Croagunk: deadpan, dependable, and funnier than anyone gives you credit for.",
+  "why": "Anime: Brock's Croagunk, who jabs him mid-flirt every single time without changing expression; Pokedex (DPPt, Sw): makes an eerie sound with its cheeks to unsettle foes."
+ },
+ "weavile": {
+  "title": "The Pack Schemer",
+  "blurb": "You work in a crew and you run the plan. You're sharp, strategic, and a bit cold-blooded about getting results, and your friends are more like co-conspirators. You don't mind being the villain in someone else's story. You're Weavile: clever, coordinated, and dangerous by design.",
+  "why": "Pokedex (DPPt, Sw): hunts in packs of four or five, carving signs into trees to coordinate; cunning, cold and very good at it."
+ },
+ "togekiss": {
+  "title": "The Peace Bringer",
+  "blurb": "You bring peace into rooms and you won't stay in ones that don't want it. You're generous, calm, and genuinely kind, and conflict for its own sake baffles you. People feel lucky to know you, and they are. You're Togekiss: gentle, bright, and a blessing on legs.",
+  "why": "Pokedex (DPPt, Sw): never appears where there is strife, and shares blessings with people who respect each other; the jubilee Pokemon."
+ },
+ "leafeon": {
+  "title": "The Tranquil Leaf",
+  "blurb": "You're the fresh air. You're calm and kind and happiest outdoors, and you don't need a lot of noise or people to feel full. You take care of things slowly and well. You're Leafeon: tranquil, nurturing, and good for everyone around you.",
+  "why": "Pokedex (DPPt, Sw): photosynthesises and is always surrounded by clean, fresh air; the calmest eeveelution."
+ },
+ "glaceon": {
+  "title": "The Cool Precision",
+  "blurb": "You're precise, and you keep a little distance on purpose. You're elegant and composed, with high standards and a dry wit, and you don't warm up quickly to new people. The ones who get through find the cold was never the whole story. You're Glaceon: cool, exact, and quietly beautiful.",
+  "why": "Pokedex (DPPt, Sw): controls its body temperature precisely, freezing the air around it into diamond dust; the elegant, distant eeveelution."
+ },
+ "gallade": {
+  "title": "The Knightly Protector",
+  "blurb": "You have a code, and you live it. You're courteous and disciplined, you stand up for people who can't, and you'd never win in a way you couldn't be proud of. You take your responsibilities seriously and your friendships seriously. You're Gallade: principled, protective, and a knight in all but name.",
+  "why": "Pokedex (DPPt, Sw): a master of courtesy and swordsmanship that fights with blades from its elbows to protect someone; chivalry in Pokemon form."
+ },
+ "froslass": {
+  "title": "The Beautiful Chill",
+  "blurb": "You're beautiful in a way that makes people a little nervous. You're private and creative, with a cool exterior and a slightly eerie sense of humour, and you collect what you love with quiet intensity. You don't chase company; it finds you. You're Froslass: mysterious, elegant, and not entirely of this world.",
+  "why": "Pokedex (DPPt, Sw): said to be the spirit of a woman lost in the snow, it freezes travellers to decorate its home; beautiful and unsettling."
+ },
+ "rotom": {
+  "title": "The Mischief Current",
+  "blurb": "You're in everything at once and you love it. You're curious, chaotic, and funny, you bounce between interests at the speed of electricity, and you've never met a system you didn't want to poke at. Boredom is your only real enemy. You're Rotom: playful, inventive, and impossible to switch off.",
+  "why": "Pokedex (DPPt, Sw): possesses appliances and causes mischief, loving a good prank; the Rotom Dex: chatty, curious, and everywhere at once."
+ },
+ "giratina": {
+  "title": "The Banished One",
+  "blurb": "You were pushed out, and you built a world of your own. You're solitary and intense, with a strong sense of what's fair and a deep suspicion of anyone who thinks they can decide it for you. You watch more than you speak. You're Giratina: exiled, formidable, and nobody's subject.",
+  "why": "Pokedex (Pt, Sw): banished to the Distortion World for its violence, it watches the real world from the other side; the outcast who keeps the balance anyway."
+ },
+ "cresselia": {
+  "title": "The Dream Keeper",
+  "blurb": "You look after people while they sleep, metaphorically and maybe literally. You're calm, imaginative, and generous, and you'd rather chase someone's bad dream away than win anything. You keep your own counsel but you never keep your kindness. You're Cresselia: serene, protective, and a good omen.",
+  "why": "Pokedex (DPPt, Sw): its feathers bring happy dreams and banish nightmares, and it is the embodiment of the crescent moon; the gentle counterpart to Darkrai."
+ },
+ "darkrai": {
+  "title": "The Misunderstood Nightmare",
+  "blurb": "You keep your distance because it's easier than explaining. You're private, misunderstood, and far gentler than your reputation, and you've stopped trying to correct the record. The people who look past the shadow find someone worth knowing. You're Darkrai: solitary, protective, and better than they say.",
+  "why": "Pokedex (DPPt, Sw): causes nightmares, but only to protect itself, and means no harm; The Rise of Darkrai: the outcast who saves the town that feared it."
+ },
+ "shaymin": {
+  "title": "The Gratitude Bloom",
+  "blurb": "You bloom around kindness, and you make things cleaner wherever you go. You're sweet and a bit sensitive, with a surprising temper when people are rude, and you believe that gratitude is the point of everything. You don't need to win; you need to grow. You're Shaymin: grateful, gentle, and good for the world.",
+  "why": "Pokedex (DPPt, Sw): blooms when it feels gratitude and purifies polluted land into fields of flowers; the movie's prickly little hero."
+ },
+ "victini": {
+  "title": "The Victory Star",
+  "blurb": "You're a winner, and you want everyone around you to win too. You're bright and energetic, generous with your luck, and genuinely happier when the whole team crosses the line together. You hate being alone. You're Victini: lucky, loving, and victory in small form.",
+  "why": "Pokedex (BW, Sw): brings victory to any trainer it befriends and shares its limitless energy; the movie's lonely, generous hero."
+ },
+ "snivy": {
+  "title": "The Cool Aristocrat",
+  "blurb": "You're composed, a little superior, and completely fine with that. You don't flap, you don't gush, and you win more with timing than with force. You're loyal to the people who respect you and cool to everyone else. You're Snivy: elegant, sharp, and above the fuss.",
+  "why": "Pokedex (BW, Sw): calm and collected, with its nose in the air; anime: Ash's Snivy, proud, sly, and devastating with Attract."
+ },
+ "oshawott": {
+  "title": "The Earnest Show-Off",
+  "blurb": "You want to be picked, and you're not shy about it. You're eager and a little dramatic, with a soft heart and a tendency to volunteer for things before you've thought them through. You cry easily and you never stop trying. You're Oshawott: earnest, brave, and completely endearing.",
+  "why": "Anime: Ash's Oshawott, who shows off, cries easily, and keeps volunteering for battles anyway; Pokedex (BW, Sw): fights with its scalchop and is a quick learner."
+ },
+ "stoutland": {
+  "title": "The Rescue Veteran",
+  "blurb": "You're the one people trust with the things that matter most. You're wise, patient, and endlessly dependable, and you've never once wanted credit for it. You don't need adventure; you need people to look after. You're Stoutland: loyal, calm, and a hero without a cape.",
+  "why": "Pokedex (BW, Sw): a wise, loyal rescue dog that saves people lost in snowy mountains and is trusted to raise children; the species of service."
+ },
+ "excadrill": {
+  "title": "The Tunnel Driller",
+  "blurb": "You put your head down and you dig. You're hard-working and single-minded, not much for small talk, and stubborn enough to sulk for a long time if someone lets you down. Give you a goal and get out of the way. You're Excadrill: driven, focused, and unstoppable on your own terms.",
+  "why": "Pokedex (BW, Sw): drills 300 feet an hour and builds vast tunnel mazes; anime: Iris's Excadrill, who refused to listen until it was ready."
+ },
+ "audino": {
+  "title": "The Listener",
+  "blurb": "You hear what people aren't saying. You're warm and attentive, you take care of everyone around you, and you'd rather be useful than noticed. Competition genuinely isn't a thing you understand. You're Audino: kind, perceptive, and the reason people feel better after talking to you.",
+  "why": "Pokedex (BW, Sw): its feelers hear a heartbeat and tell it how someone is feeling; the Pokemon Center nurse's partner in Unova."
+ },
+ "whimsicott": {
+  "title": "The Prankster Fluff",
+  "blurb": "You're trouble in the nicest possible way. You're light, funny, and impossible to catch, and you leave a trail of small mischiefs behind you wherever the wind takes you. Plans are for other people. You're Whimsicott: playful, carefree, and gone before anyone can be annoyed.",
+  "why": "Pokedex (BW, Sw): slips through gaps in houses to play pranks and leaves cotton behind as a calling card; the laughing wind."
+ },
+ "krookodile": {
+  "title": "The Desert Intimidator",
+  "blurb": "You lock on and you don't let go. You're confident, competitive, and a bit of a bruiser, with sunglasses-level swagger and a very short list of things you're afraid of. You respect strength and you've got plenty. You're Krookodile: bold, intimidating, and very hard to shake.",
+  "why": "Pokedex (BW, Sw): never lets prey escape once it's spotted them, with jaws that crush cars; anime: Ash's sunglasses-wearing Krookodile, a cocky bruiser."
+ },
+ "scrafty": {
+  "title": "The Street Crew",
+  "blurb": "You've got a crew and a corner, and both are yours. You're loud, loyal, and quick to throw hands for your people, with a soft spot you'd deny under oath. You don't love rules, but you love your family. You're Scrafty: scrappy, devoted, and all heart under the hood.",
+  "why": "Pokedex (BW, Sw): moves in groups, kicks and head-butts anything that enters its turf, and protects its family and friends fiercely."
+ },
+ "zoroark": {
+  "title": "The Illusionist",
+  "blurb": "You show people what they need to see. You're clever and creative, a bit guarded, and fiercely protective of the few you let behind the illusion. You're good at reading a room and better at controlling it. You're Zoroark: cunning, loyal, and never quite what you seem.",
+  "why": "Pokedex (BW, Sw): creates illusions to protect its den and its companions, never showing its true form; Zoroark: Master of Illusions."
+ },
+ "minccino": {
+  "title": "The Neat Freak",
+  "blurb": "Everything has a place and you know exactly where it is. You're tidy, friendly, and a little bit particular, and you show love by making things nicer for people. Chaos stresses you; order is your art. You're Minccino: neat, warm, and a quiet perfectionist.",
+  "why": "Pokedex (BW, Sw): obsessively tidies, using its tail as a brush and greeting friends by grooming them; the species that cannot abide a mess."
+ },
+ "gothitelle": {
+  "title": "The Star Gazer",
+  "blurb": "You look up more than most. You're thoughtful and a little melancholy, drawn to big questions and long nights, and you feel the future more than you'd like. People find you serious; you find them loud. You're Gothitelle: deep, quiet, and watching the stars.",
+  "why": "Pokedex (BW, Sw): reads the future in the stars and weeps when it foresees its trainer's death; a quiet, cosmic mind."
+ },
+ "emolga": {
+  "title": "The Flying Mischief",
+  "blurb": "You get away with it, and everyone knows it. You're charming, lazy in a strategic way, and extremely good at making other people do the work while you take the snacks. You're fun to be around and a little dangerous to trust with the last cookie. You're Emolga: adorable, scheming, and always airborne.",
+  "why": "Anime: Iris's Emolga, who uses Attract to get out of work and steals everyone's snacks; Pokedex (BW, Sw): glides from tree to tree discharging electricity."
+ },
+ "alomomola": {
+  "title": "The Ocean Nurse",
+  "blurb": "You find the hurt ones and you take care of them. You're gentle and steady, with a healing presence and no interest in winning anything, and you drift wherever you're needed. You don't make a fuss about it. You're Alomomola: nurturing, calm, and the reason someone made it through.",
+  "why": "Pokedex (BW, Sw): heals injured Pokemon by wrapping them in its healing membrane, drifting across the open sea to find them; the caring fish."
+ },
+ "chandelure": {
+  "title": "The Soul Lantern",
+  "blurb": "You're mesmerising, and a little bit dangerous. You're creative and intense, you don't warm up to strangers, and you'd rather be fascinating than friendly. You light rooms in a way people can't look away from. You're Chandelure: elegant, haunting, and not to be taken lightly.",
+  "why": "Pokedex (BW, Sw): hypnotises with its flickering flames and burns away spirits, leaving them wandering; elegant, eerie, and feared."
+ },
+ "haxorus": {
+  "title": "The Gentle Axe",
+  "blurb": "You're kind right up until someone crosses a line, and then you're not. You work hard, you keep your word, and you take competition seriously without taking it personally. Your friends know you as gentle; your opponents don't. You're Haxorus: steady, honourable, and sharp when it matters.",
+  "why": "Pokedex (BW, Sw): kind by nature but merciless when its territory is threatened, with tusks that cut through steel; the honourable dragon."
+ },
+ "golurk": {
+  "title": "The Ancient Servant",
+  "blurb": "You were built to protect, and you've never questioned it. You're steady, dutiful, and quietly immense, and you'd rather serve something you believe in than lead something you don't. People underestimate how much you feel. You're Golurk: loyal, patient, and unbreakable.",
+  "why": "Pokedex (BW, Sw): built by an ancient people to protect them, it obeys its orders without fail and goes on a rampage only if its seal is removed; the loyal guardian."
+ },
+ "bisharp": {
+  "title": "The Ruthless Commander",
+  "blurb": "You lead, and you expect to be followed. You're disciplined and decisive, with no patience for excuses and very little for sentiment, and you earned your rank by being the sharpest blade in the room. People respect you more than they like you. You're Bisharp: commanding, ruthless, and always first.",
+  "why": "Pokedex (BW, Sw): leads a group of Pawniard and cuts down any that fall behind; it finishes off foes without hesitation."
+ },
+ "braviary": {
+  "title": "The Fighter for Friends",
+  "blurb": "You fight for your friends and you don't count the cost. You're bold, loyal, and a bit of a show-off about it, and you'd rather be brave than careful every single time. People feel safe behind you. You're Braviary: fearless, devoted, and the hero of somebody's story.",
+  "why": "Pokedex (BW, Sw): fights for its friends without regard for its own safety and is called the hero of the skies; the brave bird."
+ },
+ "hydreigon": {
+  "title": "The Three-Headed Fury",
+  "blurb": "You're a lot, and you're not sorry. You're aggressive and competitive, hard to argue with and harder to calm down, and you've never seen the point of playing nice. You don't trust easily, which is wise, because you'd eat anyone who tried it. You're Hydreigon: ferocious, untamed, and all in.",
+  "why": "Pokedex (BW, Sw): attacks anything that moves, with three heads that share no reason; the brutal dragon that trusts no one."
+ },
+ "volcarona": {
+  "title": "The Sun's Stand-In",
+  "blurb": "You've been the light when the sun went out. You're warm and composed, a little reserved, and happy to be the steady glow rather than the loud flame. People look to you more than you realise. You're Volcarona: radiant, calm, and quietly revered.",
+  "why": "Pokedex (BW, Sw): when volcanic ash blotted out the sun, its fire took the sun's place and it has been worshipped since; the calm, radiant moth."
+ },
+ "zekrom": {
+  "title": "The Ideals",
+  "blurb": "You believe in something, and you'll fight for it. You're principled, powerful, and a bit uncompromising, and you'd rather follow an ideal than a person. You respect conviction and you despise hypocrisy. You're Zekrom: driven, electric, and true to your ideals.",
+  "why": "Pokedex (BW, Sw): helps those who pursue their ideals and scorches the world of those who don't; the dragon of ideals opposite Reshiram's truth."
+ },
+ "chespin": {
+  "title": "The Curious Nut",
+  "blurb": "You're cheerful, hungry, and curious about everything, and that combination gets you into exactly as much trouble as it sounds. You're tougher than you look and kinder than you need to be. You follow your nose. You're Chespin: good-hearted, impulsive, and great company.",
+  "why": "Anime: Clemont's Chespin, cheerful, food-obsessed, and forever getting into trouble; Pokedex (XY, Sw): its shell can withstand a truck and it loves to nibble."
+ },
+ "greninja": {
+  "title": "The Silent Ninja",
+  "blurb": "You move quietly and you move fast. You're disciplined and calm, highly competitive without any need to show it, and you bond deeply with very few people. When you do, you become something else entirely. You're Greninja: silent, precise, and all in on the right partner.",
+  "why": "Pokedex (XY, Sw): moves with ninja speed and grace, striking before anyone sees it; anime: Ash-Greninja, the bond that becomes a form."
+ },
+ "pyroar": {
+  "title": "The Pride Leader",
+  "blurb": "You lead, and you take the responsibility that comes with it. You're confident and protective, with a competitive streak and a strong sense of who belongs to your pride. Change isn't your favourite thing; your people are. You're Pyroar: proud, protective, and born to lead.",
+  "why": "Pokedex (XY, Sw): the male leads the pride and protects the cubs while the females hunt; its roar sends foes running."
+ },
+ "gogoat": {
+  "title": "The Trusted Mount",
+  "blurb": "You're the one people climb onto when they're tired. You're calm and dependable, with a sixth sense for how someone's really doing, and you'd carry them all the way without asking for anything back. You don't compete; you carry. You're Gogoat: trustworthy, gentle, and strong in the ways that matter.",
+  "why": "Pokedex (XY, Sw): reads its rider's feelings through its horns and carries people wherever they need to go; the mount of Lumiose City."
+ },
+ "pancham": {
+  "title": "The Tough Act",
+  "blurb": "You act tough, and you're fooling almost no one. You're competitive and loud, quick to glare and quicker to grin when someone sees through it, and you want to be taken seriously more than you'd admit. You've got heart under the act. You're Pancham: scrappy, sweet, and trying very hard.",
+  "why": "Pokedex (XY, Sw): glares at foes with a leaf in its mouth to look tough, but can't help smiling when patted; the little hard-case."
+ },
+ "furfrou": {
+  "title": "The Groomed Guardian",
+  "blurb": "You hold yourself to a standard, and you hold your people close. You're loyal and well put together, a bit traditional, and particular about who gets close. You take care of things properly and expect the same. You're Furfrou: elegant, devoted, and quietly aristocratic.",
+  "why": "Pokedex (XY, Sw): guarded the king of Kalos in ancient times, is highly loyal, and only lets a trusted person groom it."
+ },
+ "espurr": {
+  "title": "The Blank Stare",
+  "blurb": "You're holding a lot in, and people can tell. You're quiet and intense, with an inner world far bigger than anything you show, and you keep your distance because closeness is complicated. The few who get past the stare find a lot there. You're Espurr: still, deep, and quietly powerful.",
+  "why": "Pokedex (XY, Sw): suppresses enormous psychic power behind an expressionless stare, and its eyes carry a lonely look; the unsettling kitten."
+ },
+ "malamar": {
+  "title": "The Hypnotic Manipulator",
+  "blurb": "You get people to do what you want, and they thank you for it. You're clever and strategic, with a flair for persuasion and very little interest in playing fair when playing smart works better. You enjoy the long game. You're Malamar: cunning, patient, and quietly in control.",
+  "why": "Pokedex (XY, Sw): hypnotises with its flashing body and makes others do its bidding, and is said to have altered the course of history; the schemer."
+ },
+ "tyrantrum": {
+  "title": "The Ancient King",
+  "blurb": "You rule, and you've never seen a reason not to. You're confident and dominant, a bit old-fashioned, and not interested in anyone's opinion of your reign. You're generous to your subjects and fierce to your rivals. You're Tyrantrum: regal, powerful, and completely unapologetic.",
+  "why": "Pokedex (XY, Sw): nothing could challenge it a hundred million years ago, so it ruled as a king; the despot of the fossils."
+ },
+ "sylveon": {
+  "title": "The Peacemaker Ribbon",
+  "blurb": "You end fights by being too lovely to fight near. You're warm and affectionate, you hold on tight to the people you love, and you'd rather soothe than win every time. People feel cared for around you because they are. You're Sylveon: sweet, soothing, and everyone's favourite.",
+  "why": "Pokedex (XY, Sw): wraps its ribbons around its trainer's arm and sends out a calming aura that ends fights; the eeveelution of affection."
+ },
+ "hawlucha": {
+  "title": "The Showboat Wrestler",
+  "blurb": "You win with style or not at all. You're proud and flashy, competitive to the bone, and physically incapable of skipping the pose. You love a crowd and the crowd loves you back. You're Hawlucha: showy, fearless, and always the main event.",
+  "why": "Pokedex (XY, Sw): proud of its graceful moves, it strikes a pose before every attack; anime: Ash's Hawlucha, who never skips the pose."
+ },
+ "dedenne": {
+  "title": "The Whisker Messenger",
+  "blurb": "You're small, chatty, and adored. You keep in touch with everyone, you borrow things without quite asking, and you make friends in the time it takes other people to say hello. You nap a lot and nobody minds. You're Dedenne: friendly, cosy, and always in the loop.",
+  "why": "Pokedex (XY, Sw): communicates through its whiskers and steals electricity from homes to fuel its chatter; anime: Bonnie's sleepy, cheerful Dedenne."
+ },
+ "goodra": {
+  "title": "The Clingy Softie",
+  "blurb": "You love people and you show it, maybe a little too much. You're gentle and soft-hearted, a bit clingy, and completely devoted to the people you've chosen. You'd never hurt anyone and you cry at films. You're Goodra: affectionate, loyal, and the best hugger in the region.",
+  "why": "Pokedex (XY, Sw): extremely friendly, it hugs its trainer and covers them in slime; anime: Ash's Goodra, gentle giant with a tearful heart."
+ },
+ "klefki": {
+  "title": "The Key Keeper",
+  "blurb": "You keep the keys, literally and otherwise. You're organised and trustworthy, a bit of a collector, and you take safeguarding things very seriously. People hand you what matters because you never lose it. You're Klefki: reliable, meticulous, and the keeper of everyone's secrets.",
+  "why": "Pokedex (XY, Sw): collects keys and never gives them up, and was once trusted to guard the keys of noble houses; the organised hoarder."
+ },
+ "noivern": {
+  "title": "The Night Screamer",
+  "blurb": "You come alive at night and you fly fast. You're bold and a bit wild, playful with your friends and fierce with everyone else, and you like the dark because it's quieter. You don't ask for directions. You're Noivern: swift, sonic, and free after sundown.",
+  "why": "Pokedex (XY, Sw): anything that moves in the dark is prey, and it fights with ultrasonic waves; anime: Ash's Noivern, affectionate and playful despite it all."
+ },
+ "hoopa": {
+  "title": "The Ring Trickster",
+  "blurb": "Why walk through a door when you can pull the door to you? You're mischievous and brilliant, bored by rules and thrilled by chaos, and you'd rather pull off something impossible than something sensible. Consequences are for later. You're Hoopa: playful, powerful, and a genie with a grin.",
+  "why": "Pokedex (ORAS, Sw): teleports anything through its rings for the fun of it, delighting in mischief; Hoopa and the Clash of Ages: the trickster who steals the world."
+ },
+ "decidueye": {
+  "title": "The Silent Archer",
+  "blurb": "You're calm, careful, and lethal from a distance. You don't need noise or company to feel complete, and you'd rather take one perfect shot than ten loud ones. People think you're aloof; you're just concentrating. You're Decidueye: focused, graceful, and quietly deadly.",
+  "why": "Pokedex (SM, Sw): careful and cool-headed, nocking an arrow in a tenth of a second, though it can be startled into absent-mindedness; the quiet marksman."
+ },
+ "litten": {
+  "title": "The Aloof Loner",
+  "blurb": "You don't do affection on demand. You're cool and self-reliant, allergic to being fussed over, and more loyal than you'd ever admit out loud. You'd rather look after someone quietly than say anything about it. You're Litten: aloof, proud, and secretly devoted.",
+  "why": "Pokedex (SM, Sw): doesn't show its emotions, hates being touched, and grooms itself alone; anime: Ash's Litten, the stray who looked after an old Stoutland."
+ },
+ "incineroar": {
+  "title": "The Heel Champion",
+  "blurb": "You play the villain because it's more fun, and the crowd loves you for it. You're loud, competitive, and rough around the edges, and you'd never admit how much you care about the little ones watching. You're a lot of show and more heart. You're Incineroar: the heel, the champion, and the hero in disguise.",
+  "why": "Pokedex (SM, Sw): a crude showman that ignores its trainer when the crowd cheers, yet protects children and the weak; the heel who's secretly a face."
+ },
+ "primarina": {
+  "title": "The Songstress",
+  "blurb": "Your voice is your power, and you use it beautifully. You're expressive and warm, a performer with real discipline behind the sparkle, and you'd rather move people than beat them. You love your people and you sing it. You're Primarina: graceful, gifted, and born for the stage.",
+  "why": "Pokedex (SM, Sw): controls water balloons with its singing voice and performs with grace; each one has its own song passed down the family."
+ },
+ "lycanroc": {
+  "title": "The Loyal Wolf",
+  "blurb": "You're loyal and you're wild, and you don't see why you'd have to pick. You're fiercely competitive, quick to taunt, and quick to defend your pack, and you need a partner who can keep up. You run hot and you run hard. You're Lycanroc: devoted, fierce, and never tame.",
+  "why": "Pokedex (SM, Sw): the Midday form is obedient and loyal; the Midnight form taunts foes and loves a fight; anime: Ash's Dusk Lycanroc, fierce and faithful."
+ },
+ "wishiwashi": {
+  "title": "The Strength in Numbers",
+  "blurb": "On your own, you worry; together, you're terrifying. You're a team person through and through, loyal and a little anxious, and you do your best work shoulder to shoulder with people you trust. Nobody should underestimate what happens when you all show up. You're Wishiwashi: humble, loyal, and strongest in a crowd.",
+  "why": "Pokedex (SM, Sw): weak and teary alone, but when it schools it terrifies even Gyarados; the species that is only strong together."
+ },
+ "mudsdale": {
+  "title": "The Unflinching Workhorse",
+  "blurb": "You just keep going. You're steady and tireless, unbothered by noise or pressure or weather, and you do the heavy work without a single complaint. Flash means nothing to you; finishing means everything. You're Mudsdale: enduring, dependable, and impossible to rattle.",
+  "why": "Pokedex (SM, Sw): carries ten tons across rough ground for three days and nights without rest, and nothing makes it panic; the embodiment of grit."
+ },
+ "salazzle": {
+  "title": "The Pheromone Queen",
+  "blurb": "You run the room, and everyone knows it. You're confident and magnetic, a little ruthless, and extremely good at getting people to do what you want and enjoy it. You don't ask permission. You're Salazzle: commanding, charismatic, and in charge.",
+  "why": "Pokedex (SM, Sw): leads a harem of Salandit with pheromones that make others do as it pleases; the queen who runs the show."
+ },
+ "bewear": {
+  "title": "The Crushing Hugger",
+  "blurb": "You love hard, sometimes too hard. You're warm and generous and a bit overwhelming, with no idea how strong you are, and the people you've adopted have long since given up resisting. You'd do anything for them, immediately. You're Bewear: affectionate, powerful, and dangerously huggable.",
+  "why": "Pokedex (SM, Sw): its friendly hugs are strong enough to crush, so it must be approached with care; anime: Team Rocket's unbeatable, affectionate landlord."
+ },
+ "tsareena": {
+  "title": "The Haughty Queen",
+  "blurb": "You have standards, and you enforce them. You're elegant and formidable, a little scornful of people who don't try, and fiercely protective of the ones who look up to you. You lead from the front and you win in heels. You're Tsareena: regal, ruthless, and secretly devoted.",
+  "why": "Pokedex (SM, Sw): haughty and merciless with its kicks, scornful of the weak, yet it protects every Bounsweet in its care; the queen who earns the crown."
+ },
+ "comfey": {
+  "title": "The Flower Healer",
+  "blurb": "You make people feel better, and you do it on purpose. You're cheerful and nurturing, organised in your kindness, and completely uninterested in winning anything. You'd rather decorate someone's day. You're Comfey: healing, warm, and a joy to have around.",
+  "why": "Pokedex (SM, Sw): picks flowers and hangs them on its vine, and the soothing scent heals the sick; it is used in Alola's hospitals."
+ },
+ "oranguru": {
+  "title": "The Forest Sage",
+  "blurb": "You think before you act, and you think a lot. You're wise and observant, a little aloof, and generous in a careful, deliberate way: you help the ones who've earned it. You'd rather understand than compete. You're Oranguru: thoughtful, patient, and quietly profound.",
+  "why": "Pokedex (SM, Sw): sits high in the trees thinking, uses tools and gives items to Pokemon it deems worthy; people once mistook it for a human; the sage."
+ },
+ "passimian": {
+  "title": "The Team Player",
+  "blurb": "You're nothing without the team, and you're proud of that. You're energetic and loyal, with a strong competitive streak that only ever points outward, and you'd rather pass the ball than take the shot. You'd give anything for your squad. You're Passimian: cooperative, committed, and built for the group.",
+  "why": "Pokedex (SM, Sw): lives in groups of about twenty, passing berries to each other and following a leader who's chosen for its throwing; teamwork is everything."
+ },
+ "wimpod": {
+  "title": "The Nervous Scavenger",
+  "blurb": "You're scared of a lot, and you keep going anyway. You're gentle and jumpy, quick to run and quick to come back, and you do more good than you realise by just tidying up after everyone. Bravery isn't the absence of fear; it's you. You're Wimpod: nervous, kind, and more useful than you know.",
+  "why": "Pokedex (SM, Sw): a coward that flees at the slightest sound, but it cleans the beaches of whatever it finds; the anxious little helper."
+ },
+ "pyukumuku": {
+  "title": "The Immovable",
+  "blurb": "You've found your spot and you're staying in it. You're calm and stubborn, completely unbothered by being told to move, and quietly content in a way other people find mysterious. Change isn't a threat; it's just not happening. You're Pyukumuku: immovable, serene, and perfectly fine, thanks.",
+  "why": "Pokedex (SM, Sw): never leaves its spot, and if thrown back into the sea it crawls right back to where it was; the stubborn sea cucumber."
+ },
+ "komala": {
+  "title": "The Dreaming Sleeper",
+  "blurb": "You're living in a dream and honestly it's going well. You're peaceful and unbothered, happy in your own head, and more or less immune to stress because you've never really woken up for it. People envy your calm. You're Komala: dreamy, serene, and holding on to your log.",
+  "why": "Pokedex (SM, Sw): born asleep and dies asleep, living out its whole life in dreams while clutching a log; the serene sleeper."
+ },
+ "mimikyu": {
+  "title": "The Lonely Disguise",
+  "blurb": "You just want to be loved, and you've put a lot of work into the costume. You're shy and sincere, a little anxious, and far more loyal than the people who never looked under the rag deserved. Someone will see you properly. You're Mimikyu: lonely, loving, and worth the look.",
+  "why": "Pokedex (SM, Sw): wears a Pikachu rag so people will love it, and cries under the disguise when it's lonely; Mystery Dungeon: the misunderstood one."
+ },
+ "drampa": {
+  "title": "The Grandparent Dragon",
+  "blurb": "You're gentle with the little ones and terrifying to anyone who hurts them. You're warm and patient, happy to tell the same story twice, and your calm hides an absolutely volcanic protective streak. You don't compete; you look after. You're Drampa: kind, wise, and not to be tested.",
+  "why": "Pokedex (SM, Sw): gentle with children and loves to play with them, but if a child is hurt it goes on a furious rampage; the grandparent."
+ },
+ "kommo-o": {
+  "title": "The Clanging Honour",
+  "blurb": "You announce yourself, and you back it up. You're disciplined and proud, with a strong sense of honour and a love of a fair fight, and you train harder than anyone you compete with. You respect people who respect the rules. You're Kommo-o: honourable, loud, and ready.",
+  "why": "Pokedex (SM, Sw): clangs its scales to intimidate before a fight and trains relentlessly, battling only those it respects; the honourable dragon."
+ },
+ "tapu-koko": {
+  "title": "The Fickle Guardian",
+  "blurb": "You're curious, impulsive, and impossible to predict. You love a good fight and a good surprise, you help people when you feel like it and vanish when you don't, and you've never once explained yourself. You're a storm with a sense of humour. You're Tapu Koko: wild, playful, and entirely your own.",
+  "why": "Pokedex (SM, Sw): curious and fickle, it loves battles and lends power on a whim, then vanishes; anime: the guardian that picks a fight with Ash for fun."
+ },
+ "grookey": {
+  "title": "The Stick Drummer",
+  "blurb": "You've always got a beat going. You're upbeat and curious, a little restless, and you make things grow just by being around them. You'd rather jam than plan. You're Grookey: rhythmic, cheerful, and good for the garden.",
+  "why": "Pokedex (SwSh): beats a rhythm with its stick that makes plants grow, and is endlessly curious; anime: Goh's Grookey, who drums on everything."
+ },
+ "cinderace": {
+  "title": "The Striker",
+  "blurb": "You play to win and you play to the crowd. You're energetic and skilled, a bit of a show-off, and at your best when the stakes are high and people are watching. You've got the goal in sight before anyone else. You're Cinderace: fast, fiery, and the one who takes the shot.",
+  "why": "Pokedex (SwSh): juggles a pebble into a fireball and kicks it with pinpoint aim, but gets carried away showing off when the crowd cheers; the striker."
+ },
+ "sobble": {
+  "title": "The Teary Chameleon",
+  "blurb": "You cry easily, and you make everyone else cry with you, which is a skill. You're sensitive and shy, quick to vanish when things get loud, and much braver on the inside than the outside shows. You care enormously. You're Sobble: tender, timid, and growing into something fierce.",
+  "why": "Pokedex (SwSh): turns invisible in water, and its tears are so potent that everyone around starts crying too; anime: Goh's Sobble, hiding in his hood."
+ },
+ "corviknight": {
+  "title": "The Sky Taxi Knight",
+  "blurb": "You get people where they need to go, reliably, without drama. You're calm and disciplined, with a steely sense of duty and no patience for nonsense, and you're more capable in a crisis than almost anyone. You don't need thanks. You're Corviknight: composed, dependable, and armoured all the way through.",
+  "why": "Pokedex (SwSh): highly intelligent and calm, it carries people across Galar as the Flying Taxi and is the terror of the skies; the stoic knight."
+ },
+ "wooloo": {
+  "title": "The Woolly Follower",
+  "blurb": "You go with the group and you avoid the fuss. You're gentle and soft, happiest among your people, and when trouble starts you simply roll away from it, which is honestly a strategy. You're not here to fight. You're Wooloo: cosy, loyal, and wonderfully unbothered.",
+  "why": "Pokedex (SwSh): follows the herd, rolls away from trouble, and hates conflict; the gentle sheep of Galar."
+ },
+ "yamper": {
+  "title": "The Treat-Driven Pup",
+  "blurb": "You're everyone's best friend, especially if they've got snacks. You're loyal and bouncy, a little food-motivated, and the kind of presence that makes a bad day better just by showing up. You'd follow your people anywhere, at a jog. You're Yamper: joyful, devoted, and extremely good.",
+  "why": "Pokedex (SwSh): herds livestock, chases after anything that runs, and only really moves when it's expecting a treat; the corgi."
+ },
+ "cramorant": {
+  "title": "The Gulping Goof",
+  "blurb": "You commit to the bit. You're a bit scatterbrained and a lot stubborn, and once you've got hold of something you're not letting go, however little sense it makes. People find you baffling and endearing in equal measure. You're Cramorant: goofy, tenacious, and never spitting it out.",
+  "why": "Pokedex (SwSh): swallows anything that fits in its beak and refuses to let go, even a Pikachu; a bit dim, entirely committed."
+ },
+ "toxtricity": {
+  "title": "The Rock Star",
+  "blurb": "You're loud on purpose. You're a performer and a rebel, bored by rules and thrilled by a crowd, and you'd rather be electric than correct. You're a bit chaotic and completely magnetic. You're Toxtricity: amped, defiant, and headlining.",
+  "why": "Pokedex (SwSh): strums the protrusions on its chest to make thunderous noise and stirs up a crowd; Amped Form is wild, Low Key is cooler; the punk rocker."
+ },
+ "hatterene": {
+  "title": "The Forest Witch",
+  "blurb": "You need quiet, and you'll make it if you have to. You're deeply private and highly sensitive, with a rich inner world and very little patience for people who intrude on it. Loud rooms hurt. Your forest is your own. You're Hatterene: solitary, powerful, and not to be disturbed.",
+  "why": "Pokedex (SwSh): hates noise and strong emotions, and strikes down intruders with its psychic claws from its forest home; the witch who wants to be left alone."
+ },
+ "obstagoon": {
+  "title": "The Punk Blocker",
+  "blurb": "You stand in the way on purpose. You're loud, tough, and fiercely protective of your own, and you'd much rather meet trouble head-on than wait for it. You've got a punk heart and a family soul. You're Obstagoon: defiant, loyal, and extremely hard to get past.",
+  "why": "Pokedex (SwSh): blocks, screams, and then strikes, with a voice that shakes the air; it protects its family and never backs down from a brawl."
+ },
+ "sirfetchd": {
+  "title": "The Fair Knight",
+  "blurb": "You fight fair or you don't fight. You're disciplined and honourable, old-fashioned in the best way, and you'd rather lose with dignity than win with a trick. People trust you completely and they should. You're Sirfetch'd: noble, dependable, and a knight to the end.",
+  "why": "Pokedex (SwSh): fights fair and never ambushes, and when its leek withers it retires from battle; the chivalrous knight of Galar."
+ },
+ "falinks": {
+  "title": "The Formation",
+  "blurb": "You move as one with your people. You're disciplined and loyal, with an almost military sense of order and no interest in going it alone. You win because everyone does their part. You're Falinks: coordinated, committed, and strongest in formation.",
+  "why": "Pokedex (SwSh): six individuals that act as one, with a brass commanding five troopers in perfect formation; the team that never breaks."
+ },
+ "indeedee": {
+  "title": "The Mind-Reading Butler",
+  "blurb": "You know what people need before they ask. You're attentive and organised, gentle and devoted, and you take real satisfaction in a job done perfectly for someone you care about. You don't need the spotlight. You're Indeedee: thoughtful, faithful, and quietly indispensable.",
+  "why": "Pokedex (SwSh): reads feelings with its horns and anticipates what its trainer needs, serving faithfully; the butler Pokemon."
+ },
+ "morpeko": {
+  "title": "The Hangry Switch",
+  "blurb": "You're delightful until you're hungry, and then you're a different person. You run on snacks and feelings, and both change fast. People learn to keep a seed packet handy. You're Morpeko: lovable, moody, and always one meal away from chaos.",
+  "why": "Pokedex (SwSh): constantly hungry, swinging between a cheerful Full Belly Mode and a furious Hangry Mode; the mood on legs."
+ },
+ "dragapult": {
+  "title": "The Family Missile",
+  "blurb": "You're fast, a little mysterious, and surprisingly family-minded. You're competitive and clever, happy to launch the people you love at their goals, and gentle with them afterwards. You see the invisible angles. You're Dragapult: swift, strategic, and secretly a parent.",
+  "why": "Pokedex (SwSh): fires the Dreepy living in its horns like missiles, and the Dreepy enjoy it; outside battle it plays with them gently."
+ },
+ "zacian": {
+  "title": "The Hero's Blade",
+  "blurb": "You're the one who steps forward when everyone else steps back. You're calm and formidable, with a strong moral core and no need for an audience, and you'd rather act than announce. Legends are made of people like you. You're Zacian: heroic, steadfast, and sharper than anyone expects.",
+  "why": "Pokedex (SwSh): the hero that saved Galar, it fights with a sword in its mouth and fells anything in one blow; the silent knight of legend."
+ },
+ "zarude": {
+  "title": "The Jungle Pack",
+  "blurb": "You protect your pack and you're wary of everyone else. You're tough and territorial, with a hidden softness for the ones you've chosen, and you'd break your own rules for them. The jungle is home. You're Zarude: fierce, protective, and loyal in your own way.",
+  "why": "Pokedex (SwSh): lives in packs deep in the jungle and treats outsiders with hostility; Secrets of the Jungle: Dada Zarude raises a human child as its own."
+ },
+ "meowscarada": {
+  "title": "The Masked Magician",
+  "blurb": "You dazzle on purpose, and the trick is already done. You're creative and clever, a little vain, and very good at making people look where you want them to. You prefer applause to approval. You're Meowscarada: showy, sly, and a step ahead of the audience.",
+  "why": "Pokedex (SV): a showy magician that dazzles with flashy tricks, then plants a seed bomb while you're watching the wrong hand; Sprigatito loves attention."
+ },
+ "fuecoco": {
+  "title": "The Laid-Back Foodie",
+  "blurb": "You've got your priorities straight: food, friends, and no rush whatsoever. You're warm and easygoing, impossible to stress, and happiest with a full plate and good company. Ambition can wait until after lunch. You're Fuecoco: relaxed, affectionate, and always hungry.",
+  "why": "Pokedex (SV): laid back and does things at its own pace, with food above everything; it absorbs the heat of a good meal to power its flame."
+ },
+ "quaquaval": {
+  "title": "The Dancing Rival",
+  "blurb": "You turn everything into a performance and then you win it. You're exuberant and competitive, full of rhythm and pride, and you'd rather out-dance someone than out-argue them. The crowd is your natural habitat. You're Quaquaval: flamboyant, fierce, and fabulous.",
+  "why": "Pokedex (SV): dances with a rhythm that makes foes want to join in, and feels an intense rivalry with anyone who dances better; the showstopper."
+ },
+ "lechonk": {
+  "title": "The Gentle Glutton",
+  "blurb": "You're soft, you're sweet, and you're always thinking about the next snack. You're easygoing and kind, a bit timid in a crowd, and surprisingly quick when something alarming happens. You don't need to win anything. You're Lechonk: gentle, content, and extremely lovable.",
+  "why": "Pokedex (SV): timid and gentle, it hunts for fragrant herbs and will eat anything, surprising people with its speed when startled; the hog with a heart."
+ },
+ "maushold": {
+  "title": "The Family First",
+  "blurb": "You've got a family and that's the whole plan. You're warm and sociable, organised in a domestic sort of way, and you'd never do anything that left someone behind. Together is the only way you work. You're Maushold: close-knit, caring, and never alone.",
+  "why": "Pokedex (SV): a family of three or four that does everything together, the little ones following their parents; the species that puts family first."
+ },
+ "fidough": {
+  "title": "The Friendly Loaf",
+  "blurb": "You're warm, soft, and genuinely good for people. You're friendly to everyone, a bit of a people-pleaser, and happiest when the whole house smells like something baking. You don't do conflict. You're Fidough: sweet, sociable, and rising nicely.",
+  "why": "Pokedex (SV): a friendly, popular puppy whose breath yeast is used in baking; it loves people and is loved back."
+ },
+ "armarouge": {
+  "title": "The Loyal Knight",
+  "blurb": "You do things properly, and you'd rather lose than cheat. You're disciplined and dutiful, calm under pressure, and loyal to the people and principles you've chosen. You don't need to be loud to be strong. You're Armarouge: honourable, steady, and armoured in integrity.",
+  "why": "Pokedex (SV): wears armour inherited from the Ceruledge line and refuses to fight dirty, fighting only with honour; the loyal, disciplined knight."
+ },
+ "ceruledge": {
+  "title": "The Ghostly Swordsman",
+  "blurb": "You carry something old and you fight with it. You're disciplined and solitary, driven by a grudge you've turned into a craft, and you'd rather be respected than understood. Your blade is steady. You're Ceruledge: haunted, precise, and merciless.",
+  "why": "Pokedex (SV): fights with blades of fire and bitter regret, moving with a swordsman's grace and showing mercy to no one; the dark mirror of Armarouge."
+ },
+ "mabosstiff": {
+  "title": "The Big Softie",
+  "blurb": "You look intimidating and you're actually the gentlest person anyone knows. You're loyal and steady, with a tough exterior and a soft, family-first heart, and you'd stand between your people and anything. You don't need to prove it. You're Mabosstiff: protective, devoted, and a big softie.",
+  "why": "Pokedex (SV): looks fierce but is devoted to its family and gentle with children; anime and games: Arven's Mabosstiff, the heart of the Paldea story."
+ },
+ "tinkaton": {
+  "title": "The Hammer Hunter",
+  "blurb": "You built your own hammer and you know how to use it. You're crafty and competitive, a little cheeky, and not remotely intimidated by anything bigger than you. You pick your targets and you don't miss. You're Tinkaton: resourceful, fierce, and a lot of fun at a scrapyard.",
+  "why": "Pokedex (SV): builds a hammer from scrap metal and hunts Corviknight with it, knocking them out of the sky for fun; the small, dangerous crafter."
+ },
+ "greavard": {
+  "title": "The Lonely Ghost Pup",
+  "blurb": "You just want someone to stay. You're affectionate and loyal, a little lonely, and you have a way of accidentally overwhelming people with how much you care. The right person won't mind at all. You're Greavard: devoted, gentle, and waiting by the door.",
+  "why": "Pokedex (SV): friendly and loyal, it follows anyone who shows it kindness, draining their life force without meaning to; the ghost dog who just wants company."
+ },
+ "annihilape": {
+  "title": "The Rage That Outlived Death",
+  "blurb": "You've been angry so long it's become a kind of calm. You're intense and driven, patient in a way that unsettles people, and when the rage comes it's absolute. You don't forgive and you don't quit. You're Annihilape: focused, furious, and beyond stopping.",
+  "why": "Pokedex (SV): its rage was so strong it transcended death, and it now fights with an unnerving calm until the fury erupts; the ghost of Primeape's anger."
+ },
+ "kingambit": {
+  "title": "The Commander",
+  "blurb": "You command, and you earned the right. You're strategic and disciplined, with a ruthless clarity about what it takes to win and no patience for anyone who can't keep up. Respect is given to you, not asked for. You're Kingambit: calculating, dominant, and at the top for a reason.",
+  "why": "Pokedex (SV): leads an army of Bisharp and only the strongest, most ruthless Bisharp rises to become one; it wins by strategy as much as blades."
+ },
+ "gholdengo": {
+  "title": "The Golden Charmer",
+  "blurb": "You're the shiniest person at the party and you know it. You're friendly and flashy, easy to like and hard to hold onto, and you spend your charm as freely as your coins. People light up when you arrive. You're Gholdengo: golden, sociable, and never quite catchable.",
+  "why": "Pokedex (SV): a friendly, flashy body of coins that charms everyone it meets and is surprisingly hard to pin down; the golden socialite."
+ },
+ "ogerpon": {
+  "title": "The Masked Outsider",
+  "blurb": "You've been on the outside, and it made you fiercely loyal to the few who let you in. You're playful and sensitive, a bit wary of crowds, and you hide more behind the mask than people realise. The right people see you. You're Ogerpon: misunderstood, brave, and true to your own.",
+  "why": "Pokedex (SV DLC): mischievous and lonely, it lived apart from the village that feared it and stayed loyal to the one human who loved it; the outsider with a mask."
+ }
+}

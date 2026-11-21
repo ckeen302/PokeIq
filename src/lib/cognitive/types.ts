@@ -104,7 +104,10 @@ export interface SpanItem extends BaseItem {
 export interface ArithItem extends BaseItem {
   kind: "arith";
   monId: number;
+  /** The question in English (a page words it from `values` in its language). */
   prompt: string;
+  /** The numbers in the question, by name (max, dmg, heal, dmg2, hit, extra). */
+  values: Record<string, number>;
   options: number[];
 }
 
@@ -144,4 +147,14 @@ export interface SpeedRow {
   row: Glyph[];
   /** Indices in `row` that match the target. */
   matches: number[];
+}
+
+/** A page in another language's names for the test's material, sent by the server (src/lib/cognitive/local.ts). */
+export interface CogLocal {
+  /** Pokémon names by id. */
+  mons: Record<number, string>;
+  /** Type names by key. */
+  types: Record<string, string>;
+  /** The short label on each type icon. */
+  abbr: Record<string, string>;
 }

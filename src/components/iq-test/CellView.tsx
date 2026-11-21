@@ -1,9 +1,12 @@
 "use client";
 
-import { monArt, monName } from "@/lib/cognitive/materials";
+import { monArt } from "@/lib/cognitive/materials";
 import type { BallKind, Cell, Glyph, TypeName } from "@/lib/cognitive/types";
 import { typeColor, typeTextColor } from "@/lib/pokemon/type-colors";
 import { cn } from "@/lib/utils";
+import { useCogLocal } from "./local";
+import { useT } from "@/i18n/client";
+import play from "@/messages/iq-test-play";
 
 /**
  * Draws the test's material: a Pokémon (turned, sized, repeated), type
@@ -37,23 +40,26 @@ export function PokeBall({ kind = "poke", size = 32, rot = 0, className, x, y }:
 }
 
 export function TypeIcon({ type, size = 36, className }: { type: TypeName; size?: number; className?: string }) {
+  const t = useT(play);
+  const local = useCogLocal();
   return (
     <span
       className={cn("inline-flex shrink-0 items-center justify-center rounded-full font-pixel text-[9px] uppercase ring-2 ring-black/30", className)}
       style={{ width: size, height: size, background: typeColor(type), color: typeTextColor(type), fontSize: Math.max(8, size * 0.26) }}
-      aria-label={`${type} type`}
+      aria-label={t("typeLabel", { type: local.type(type) })}
     >
-      {type.slice(0, 3)}
+      {local.abbr(type)}
     </span>
   );
 }
 
 export function MonSprite({ id, size = 56, rot = 0, flip = false, className }: { id: number; size?: number; rot?: number; flip?: boolean; className?: string }) {
+  const local = useCogLocal();
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={monArt(id)}
-      alt={monName(id)}
+      alt={local.mon(id)}
       width={size}
       height={size}
       draggable={false}
@@ -77,15 +83,21 @@ function Dots({ bits, size }: { bits: number; size: number }) {
   );
 }
 
+/** The missing cell of a matrix. */
+function Missing() {
+  const t = useT(play);
+  return (
+    <span className="font-display text-3xl font-bold text-muted-foreground" aria-label={t("missing")}>
+      ?
+    </span>
+  );
+}
+
 /** One cell, drawn to fit a box of `box` px. */
 export function CellView({ cell, box = 88 }: { cell: Cell; box?: number }) {
   switch (cell.k) {
     case "blank":
-      return (
-        <span className="font-display text-3xl font-bold text-muted-foreground" aria-label="missing">
-          ?
-        </span>
-      );
+      return <Missing />;
     case "num":
       return <span className="font-display text-2xl font-bold tabular-nums">{cell.v}</span>;
     case "dots":

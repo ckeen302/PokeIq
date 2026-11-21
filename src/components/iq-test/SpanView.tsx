@@ -1,13 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Undo2 } from "lucide-react";
-import { monName } from "@/lib/cognitive/materials";
 import type { SpanItem } from "@/lib/cognitive/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MonSprite } from "./CellView";
+import { useCogLocal } from "./local";
+import { useT } from "@/i18n/client";
+import play from "@/messages/iq-test-play";
+
+const muted = (c: ReactNode[]) => <span className="text-muted-foreground">{c}</span>;
+const primary = (c: ReactNode[]) => <span className="text-primary">{c}</span>;
 
 /**
  * A sprite span: the sequence plays one Pokémon at a time, then the grid
@@ -17,6 +22,8 @@ import { MonSprite } from "./CellView";
 export function SpanView({ item, showMs, onAnswer, onRecallStart }: { item: SpanItem; showMs: number; onAnswer: (taps: number[]) => void; onRecallStart: () => void }) {
   const [shown, setShown] = useState(0); // 1-based index of the sprite on screen; 0 before, > length when done
   const [taps, setTaps] = useState<number[]>([]);
+  const t = useT(play);
+  const local = useCogLocal();
   const recalling = shown > item.sequence.length;
 
   useEffect(() => {
@@ -65,7 +72,7 @@ export function SpanView({ item, showMs, onAnswer, onRecallStart }: { item: Span
   if (!recalling) {
     return (
       <div className="flex flex-col items-center gap-3" data-testid="cog-span-show">
-        <p className="hud-label text-muted-foreground">Watch · {item.sequence.length} Pokémon</p>
+        <p className="hud-label text-muted-foreground">{t("watch", { n: item.sequence.length })}</p>
         <div className="screen flex h-44 w-44 items-center justify-center rounded-md">
           <AnimatePresence mode="wait">
             {current !== null && (
@@ -87,9 +94,11 @@ export function SpanView({ item, showMs, onAnswer, onRecallStart }: { item: Span
   return (
     <div className="space-y-4" data-testid="cog-span-recall">
       <p className="text-center font-display text-lg font-semibold uppercase tracking-wide">
-        Tap them {item.reverse ? <span className="text-primary">in reverse order</span> : "in order"} <span className="text-muted-foreground">({taps.length}/{item.sequence.length})</span>
+        {item.reverse
+          ? t.rich("tapReverse", { k: taps.length, n: item.sequence.length, r: primary, c: muted })
+          : t.rich("tapForward", { k: taps.length, n: item.sequence.length, c: muted })}
       </p>
-      <div className="mx-auto grid max-w-[330px] grid-cols-3 gap-2" role="group" aria-label="The Pokémon to tap">
+      <div className="mx-auto grid max-w-[330px] grid-cols-3 gap-2" role="group" aria-label={t("grid")}>
         {item.grid.map((id, i) => {
           const at = taps.indexOf(i);
           return (
@@ -99,7 +108,7 @@ export function SpanView({ item, showMs, onAnswer, onRecallStart }: { item: Span
               data-testid="cog-span-cell"
               onClick={() => tap(i)}
               disabled={at >= 0}
-              aria-label={monName(id)}
+              aria-label={local.mon(id)}
               className={cn(
                 "menu-item relative flex aspect-square items-center justify-center rounded-md border-2 border-foreground/10 bg-shade/30 p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 at >= 0 ? "border-screen bg-screen/15" : "hover:border-screen/60 active:scale-[0.97]"
@@ -116,7 +125,7 @@ export function SpanView({ item, showMs, onAnswer, onRecallStart }: { item: Span
       </div>
       <div className="flex justify-center">
         <Button variant="ghost" size="sm" onClick={() => setTaps((t) => t.slice(0, -1))} disabled={taps.length === 0}>
-          <Undo2 className="h-4 w-4" aria-hidden /> Undo
+          <Undo2 className="h-4 w-4" aria-hidden /> {t("undo")}
         </Button>
       </div>
     </div>

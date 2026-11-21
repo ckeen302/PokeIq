@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element -- artwork comes pre-sized from /api/art */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "@/components/ui/Link";
 import { Sparkles, Users } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
@@ -9,11 +9,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ShareButton } from "@/components/share/ShareButton";
 import { artUrl } from "@/lib/pokemon/art";
 import { typeColor } from "@/lib/pokemon/type-colors";
-import { AXIS_INFO, type Profile } from "@/lib/which-pokemon/types";
-import { QUIZ_PATH, compatibility, comparePath, matchProfile, nameOf, parseFragment, typesOf, type MatchResult } from "@/lib/which-pokemon/match";
+import type { Profile } from "@/lib/which-pokemon/types";
+import { QUIZ_PATH, compatibility, comparePath, matchProfile, parseFragment, typesOf, type MatchResult } from "@/lib/which-pokemon/match";
 import { lastResult, savePendingCompare } from "@/lib/which-pokemon/local";
-import { TraitBars, TypeChips } from "./parts";
+import { TraitBars, TypeChips, useWpLocal } from "./parts";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import { localizePath } from "@/i18n/paths";
+import resultNs from "@/messages/which-pokemon-result";
+
+const bold = (c: ReactNode[]) => <b className="text-foreground">{c}</b>;
 
 /**
  * Two results side by side with a compatibility score. Both results are in
@@ -25,6 +30,8 @@ export function CompareView() {
   const [b, setB] = useState<MatchResult | null>(null);
   const [mine, setMine] = useState<Profile | null>(null);
   const [ready, setReady] = useState(false);
+  const t = useT(resultNs);
+  const local = useWpLocal();
 
   useEffect(() => {
     const read = () => {
@@ -49,9 +56,9 @@ export function CompareView() {
     return (
       <Card className="mx-auto max-w-xl">
         <CardContent className="space-y-4 p-6 text-center">
-          <p className="text-muted-foreground">Open a compare link from a friend&apos;s result to see your two Pokémon side by side.</p>
+          <p className="text-muted-foreground">{t("noLink")}</p>
           <Link href={QUIZ_PATH} className={cn(buttonVariants({ size: "lg" }), "h-14 w-full")}>
-            <Sparkles className="h-5 w-5" aria-hidden /> Take the quiz
+            <Sparkles className="h-5 w-5" aria-hidden /> {t("takeQuiz")}
           </Link>
         </CardContent>
       </Card>
@@ -62,14 +69,14 @@ export function CompareView() {
     return (
       <Card className="mx-auto max-w-xl" data-testid="wp-compare-invite">
         <CardContent className="space-y-5 p-6 text-center">
-          <Portrait result={a} label="Your friend is" />
-          <p className="text-muted-foreground">Take the quiz and you&apos;ll see how the two of you match, with a compatibility score.</p>
+          <Portrait result={a} label={t("friendIs")} />
+          <p className="text-muted-foreground">{t("invite")}</p>
           <Link href={QUIZ_PATH} className={cn(buttonVariants({ size: "lg" }), "h-14 w-full")} data-testid="wp-compare-take">
-            <Sparkles className="h-5 w-5" aria-hidden /> Find my Pokémon
+            <Sparkles className="h-5 w-5" aria-hidden /> {t("findMine")}
           </Link>
           {mine && (
             <Link href={comparePath(a.scores, mine)} className="block text-sm text-muted-foreground underline-offset-2 hover:text-foreground hover:underline" data-testid="wp-compare-mine">
-              Compare with your last result ({nameOf(matchProfile(mine).top.pokemon)})
+              {t("compareLast", { name: local.name(matchProfile(mine).top.pokemon) })}
             </Link>
           )}
         </CardContent>
@@ -78,8 +85,8 @@ export function CompareView() {
   }
 
   const compat = compatibility(a.scores, b.scores);
-  const nameA = nameOf(a.top.pokemon);
-  const nameB = nameOf(b.top.pokemon);
+  const nameA = local.name(a.top.pokemon);
+  const nameB = local.name(b.top.pokemon);
   return (
     <div className="mx-auto max-w-3xl space-y-8" data-testid="wp-compare-result">
       <Card className="overflow-hidden">
@@ -89,28 +96,27 @@ export function CompareView() {
             <p className="font-display text-5xl font-bold tabular-nums tracking-tight sm:text-6xl" data-testid="wp-compat">
               {compat.percent}%
             </p>
-            <p className="hud-label mt-1 text-screen">compatible</p>
+            <p className="hud-label mt-1 text-screen">{t("compatible")}</p>
           </div>
           <Portrait result={b} />
         </div>
         <CardContent className="space-y-2 p-5 text-center sm:p-6">
-          <p className="font-display text-lg font-bold uppercase tracking-wide">{compat.label}</p>
+          <p className="font-display text-lg font-bold uppercase tracking-wide">{t(`compat.${compat.tier}`)}</p>
           <p className="text-sm text-muted-foreground">
-            {nameA} and {nameB} agree most on <b className="text-foreground">{AXIS_INFO[compat.closest].label.toLowerCase()}</b> and differ most on{" "}
-            <b className="text-foreground">{AXIS_INFO[compat.farthest].label.toLowerCase()}</b>.
+            {t.rich("agree", { first: nameA, second: nameB, x: t(`axes.${compat.closest}.inline`), y: t(`axes.${compat.farthest}.inline`), b: bold })}
           </p>
         </CardContent>
       </Card>
 
       <section className="space-y-3">
-        <h2 className="font-display text-lg font-bold uppercase tracking-wide">Trait by trait</h2>
+        <h2 className="font-display text-lg font-bold uppercase tracking-wide">{t("byTrait")}</h2>
         <TraitBars a={a.scores} b={b.scores} aLabel={nameA} bLabel={nameB} accent={typeColor(typesOf(b.top.pokemon)[0] ?? "normal")} testId="wp-compare-traits" />
       </section>
 
       <div className="grid gap-2 sm:grid-cols-2">
-        <ShareButton size="lg" className="h-14" kind="which-pokemon-compare" label="Share this match" getText={() => `${nameA} + ${nameB}: ${compat.percent}% compatible. Which Pokémon are you?\n${window.location.origin}${comparePath(a.scores, b.scores)}`} />
+        <ShareButton size="lg" className="h-14" kind="which-pokemon-compare" label={t("shareMatch")} getText={() => t("matchText", { a: nameA, b: nameB, pct: compat.percent, url: `${window.location.origin}${localizePath(comparePath(a.scores, b.scores), t.locale)}` })} />
         <Link href={QUIZ_PATH} className={cn(buttonVariants({ variant: "outline", size: "lg" }), "h-14")}>
-          <Users className="h-4 w-4" aria-hidden /> Take the quiz yourself
+          <Users className="h-4 w-4" aria-hidden /> {t("yourself")}
         </Link>
       </div>
     </div>
@@ -119,12 +125,13 @@ export function CompareView() {
 
 function Portrait({ result, label }: { result: MatchResult; label?: string }) {
   const p = result.top.pokemon;
+  const local = useWpLocal();
   return (
     <Link href={`${QUIZ_PATH}/${p.slug}`} className="flex flex-col items-center gap-1 text-center">
       {label && <span className="hud-label">{label}</span>}
       <img src={artUrl(p.id, 256)} alt="" width={128} height={128} className="h-24 w-24 object-contain sm:h-32 sm:w-32" />
-      <span className="font-display text-lg font-bold uppercase tracking-wide">{nameOf(p)}</span>
-      <span className="text-xs text-muted-foreground">{p.title}</span>
+      <span className="font-display text-lg font-bold uppercase tracking-wide">{local.name(p)}</span>
+      <span className="text-xs text-muted-foreground">{local.title(p)}</span>
       <TypeChips types={typesOf(p)} className="justify-center" />
     </Link>
   );

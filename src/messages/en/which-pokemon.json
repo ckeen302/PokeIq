@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "title": "Which Pokémon Are You? Personality Quiz",
+    "description": "Find your Pokémon from 200 possible results: 18 quick questions score the Big Five plus competitiveness and independence, matched against profiles built from Pokédex entries, Mystery Dungeon and the anime. Share card and compare-with-a-friend link included.",
+    "socialTitle": "Which Pokémon Are You?",
+    "socialDescription": "Answer honestly and meet your match, every profile grounded in the Pokédex. Free, no sign-up.",
+    "ldName": "Which Pokémon Are You?",
+    "ldDescription": "A Pokémon personality quiz with a seven-trait model and 200 researched results."
+  },
+  "page": {
+    "kicker": "Personality quiz",
+    "title": "Which Pokémon Are You?",
+    "lead": "Seven traits, 200 Pokémon with a personality on record, one match that's actually you.",
+    "samples": "Sample results",
+    "sample": "I got {name}"
+  },
+  "result": {
+    "metaTitle": "I Got {name}! Which Pokémon Are You?",
+    "metaDescription": "{name}, {title}: {first} Take the Pokémon personality quiz and find your own match.",
+    "socialTitle": "I'm {name}! Which Pokémon are you?",
+    "socialDescription": "{title}. {first}",
+    "ldName": "I got {name}: Which Pokémon Are You?",
+    "back": "Which Pokémon Are You?",
+    "kicker": "Which Pokémon are you?",
+    "youAre": "You're <c>{name}</c>",
+    "dexLine": "#{num} · Gen {gen} · <link>Pokédex entry</link>",
+    "why": "<b>Why {name}:</b> {why}",
+    "profile": "{name}'s profile",
+    "partner": "{name}'s natural partner",
+    "rival": "{name}'s rival"
+  },
+  "compare": {
+    "title": "Compare: Which Pokémon Are You?",
+    "description": "Two trainers' Pokémon personality results side by side, with a compatibility score. Take the quiz and compare with a friend.",
+    "socialTitle": "Which Pokémon are you? Compare with me",
+    "imageAlt": "Which Pokémon are you? A personality quiz",
+    "kicker": "Compare with a friend",
+    "title2": "Two trainers, two Pokémon"
+  }
+}

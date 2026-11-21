@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { track } from "@vercel/analytics";
 import { ArrowRight } from "lucide-react";
@@ -12,7 +12,7 @@ import { PLAN, sectionItem } from "@/lib/cognitive/plan";
 import { cognitiveRecord, type CognitiveRecord } from "@/lib/cognitive/result";
 import { scoreTest } from "@/lib/cognitive/scoring";
 import { speedRaw } from "@/lib/cognitive/speed";
-import { DOMAIN_INFO, type CogItem, type CogSection, type Domain, type Level } from "@/lib/cognitive/types";
+import type { CogItem, CogSection, Domain, Level } from "@/lib/cognitive/types";
 import { recordRun } from "@/lib/progress";
 import { play, vibrate } from "@/lib/sound";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,10 @@ import { CognitiveResults } from "./CognitiveResults";
 import { ArithView, MatrixView, NumberView, PathView, PileView, RotationView } from "./ItemViews";
 import { SpanView } from "./SpanView";
 import { SpeedSection } from "./SpeedSection";
+import { useT } from "@/i18n/client";
+import playNs from "@/messages/iq-test-play";
+
+const strong = (c: ReactNode[]) => <span className="text-foreground">{c}</span>;
 
 /**
  * The test runner: five sections in order, one item at a time, a one-line
@@ -52,6 +56,7 @@ const FEEDBACK_MS = 550;
 const newSeed = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
 export function CognitiveTest({ onRetake }: { onRetake: () => void }) {
+  const t = useT(playNs);
   const [seed] = useState(newSeed);
   const [stage, setStage] = useState<Stage>({ s: "intro", domain: "fluid" });
   const [picked, setPicked] = useState<number | null>(null);
@@ -202,11 +207,11 @@ export function CognitiveTest({ onRetake }: { onRetake: () => void }) {
       <div className="space-y-1.5 px-1" data-testid="cog-progress">
         <div className="flex items-center justify-between font-pixel text-[11px] text-muted-foreground">
           <span>
-            Section {sectionNo(domain)}/5 · <span className="text-foreground">{DOMAIN_INFO[domain].title}</span>
+            {t.rich("section", { n: sectionNo(domain), title: t(`domains.${domain}.title`), v: strong })}
           </span>
           {stage.s === "item" && (
             <span>
-              Item {stage.index + 1}/{PLAN[stage.section].items}
+              {t("item", { n: stage.index + 1, total: PLAN[stage.section].items })}
             </span>
           )}
         </div>
@@ -218,11 +223,11 @@ export function CognitiveTest({ onRetake }: { onRetake: () => void }) {
           <motion.div key={`intro-${stage.domain}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
             <Card data-testid="cog-intro">
               <CardContent className="space-y-5 p-6 text-center">
-                <p className="hud-label text-screen">Section {sectionNo(stage.domain)} of 5</p>
-                <h2 className="font-display text-3xl font-bold uppercase tracking-tight">{DOMAIN_INFO[stage.domain].title}</h2>
-                <p className="text-muted-foreground">{DOMAIN_INFO[stage.domain].intro}</p>
+                <p className="hud-label text-screen">{t("sectionOf", { n: sectionNo(stage.domain) })}</p>
+                <h2 className="font-display text-3xl font-bold uppercase tracking-tight">{t(`domains.${stage.domain}.title`)}</h2>
+                <p className="text-muted-foreground">{t(`domains.${stage.domain}.intro`)}</p>
                 <Button size="lg" className="h-14 w-full text-base" onClick={() => begin(stage.domain)} data-testid="cog-begin">
-                  Begin <ArrowRight className="h-5 w-5" aria-hidden />
+                  {t("begin")} <ArrowRight className="h-5 w-5" aria-hidden />
                 </Button>
               </CardContent>
             </Card>
@@ -234,7 +239,7 @@ export function CognitiveTest({ onRetake }: { onRetake: () => void }) {
             <Card className="overflow-hidden" data-testid="cog-item" data-kind={stage.item.kind}>
               {msLeft !== null && (
                 <div className="flex items-center gap-3 px-4 pt-4 sm:px-6">
-                  <HpBar value={msLeft / itemMs} label="TIME" className="flex-1" />
+                  <HpBar value={msLeft / itemMs} label={t("time")} className="flex-1" />
                   <span className={cn("w-8 text-right font-pixel text-xs tabular-nums", msLeft < itemMs * 0.25 && "animate-blink text-destructive")}>{Math.ceil(msLeft / 1000)}</span>
                 </div>
               )}

@@ -51,6 +51,9 @@ export const NAMESPACES = [
   "guessr-ranked",
   "home",
   "howto",
+  "iq-test",
+  "iq-test-play",
+  "iq-test-results",
   "nav",
   "nea-api",
   "nea-cats",
@@ -89,4 +92,7 @@ export const NAMESPACES = [
   "trainer-creator",
   "trainer-pages",
   "user-search",
+  "which-pokemon",
+  "which-pokemon-quiz",
+  "which-pokemon-result",
 ] as const;
