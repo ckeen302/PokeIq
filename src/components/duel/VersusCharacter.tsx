@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 import { Avatar3D } from "@/components/trainer3d/Avatar3D";
 import type { TrainerConfig, TrainerPose } from "@/lib/trainer/config";
 import type { TauntId } from "@/lib/trainer/taunts";
+import { useT } from "@/i18n/client";
+import duel from "@/messages/duel";
 
 /**
  * A trainer's character on the versus screen, facing their opponent.
@@ -46,6 +48,7 @@ export interface VersusCharacterProps {
 
 export function VersusCharacter({ avatar, facing, figure, className, pose = "fight", taunt, fallback, paintWithin, flat, shared }: VersusCharacterProps) {
   // Official art mostly faces the viewer's left: mirrored for the trainer who faces right.
+  const t = useT(duel);
   const flip = facing === "right" ? "-scale-x-100" : "";
   const box = cn("relative flex aspect-square items-end justify-center", className);
   // undefined: waiting on the first frame; true: on screen; false: gave way to the flat version.
@@ -86,7 +89,7 @@ export function VersusCharacter({ avatar, facing, figure, className, pose = "fig
           taunt={taunt}
           facing={facing}
           shared={shared}
-          label={pose === "fight" ? "Trainer, ready to battle" : "Trainer"}
+          label={pose === "fight" ? t("trainer.ready") : t("trainer.still")}
           onPaint={watching ? () => setDrawn((d) => d ?? true) : undefined}
           onFail={watching ? () => setDrawn(false) : undefined}
         />
