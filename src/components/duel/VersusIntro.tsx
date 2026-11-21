@@ -8,6 +8,9 @@ import type { VersusResult, VersusStats, VersusStatsResponse } from "@/lib/duel-
 import { cn } from "@/lib/utils";
 import { VersusCharacter } from "./VersusCharacter";
 import type { TrainerConfig } from "@/lib/trainer/config";
+import { formatNumber } from "@/i18n/catalog";
+import { useT } from "@/i18n/client";
+import duel from "@/messages/duel";
 
 /**
  * The versus screen before a duel's first round, GeoGuessr's: the two
@@ -66,6 +69,7 @@ export interface VersusIntroProps {
 const EASE = [0.2, 0.8, 0.2, 1] as const;
 
 export function VersusIntro({ left, right, title, subtitle, detail, icon, countdown, testId = "versus-intro", onSkip, paintWithin, sharedGl }: VersusIntroProps) {
+  const t = useT(duel);
   const reduced = useReducedMotion();
   const [skipped, setSkipped] = useState(false);
   useEffect(() => {
@@ -113,7 +117,7 @@ export function VersusIntro({ left, right, title, subtitle, detail, icon, countd
               animate={{ scale: 1, opacity: 1, rotate: -6 }}
               transition={{ type: "spring", stiffness: 260, damping: 12, delay: 0.3 }}
               className="geo-glow mt-[calc(min(18vw,4.75rem)-1.5rem)] font-display text-4xl font-extrabold italic sm:mt-[calc(min(15vw,7.5rem)-2.5rem)] sm:text-6xl lg:mt-0 lg:text-8xl"
-              aria-label="versus"
+              aria-label={t("intro.versus")}
             >
               VS
             </motion.span>
@@ -135,7 +139,7 @@ export function VersusIntro({ left, right, title, subtitle, detail, icon, countd
             className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 rounded-full bg-black/35 px-3 py-1.5 font-display text-xs font-bold uppercase tracking-wide text-white/85 ring-1 ring-white/20 backdrop-blur transition hover:bg-black/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23c] sm:bottom-6 sm:right-6"
             data-testid="versus-skip"
           >
-            Skip <FastForward className="h-3.5 w-3.5" aria-hidden />
+            {t("intro.skip")} <FastForward className="h-3.5 w-3.5" aria-hidden />
           </button>
         )}
       </footer>
@@ -171,9 +175,10 @@ function Side({ side, gl, align, motionProps, cardMotion }: { side: VersusSide; 
 }
 
 function StatCard({ side }: { side: VersusSide }) {
+  const t = useT(duel);
   const { stats } = side;
   const loading = stats === undefined;
-  const dash = loading ? <span className="inline-block h-3 w-8 animate-pulse rounded bg-white/15 align-middle" aria-label="Loading" /> : "—";
+  const dash = loading ? <span className="inline-block h-3 w-8 animate-pulse rounded bg-white/15 align-middle" aria-label={t("intro.loading")} /> : "—";
   return (
     <div className="overflow-hidden rounded-xl border border-white/15 bg-[#1e1a3f]/90 shadow-2xl backdrop-blur-sm" style={{ borderTopColor: side.accent, borderTopWidth: 4 }} data-testid="versus-card">
       <div className="space-y-1 px-3 pb-2 pt-2.5 sm:px-4 sm:pt-3">
@@ -181,19 +186,19 @@ function StatCard({ side }: { side: VersusSide }) {
           <p className="min-w-0 truncate font-display text-sm font-extrabold uppercase italic sm:text-xl" title={side.name}>
             {side.name}
           </p>
-          {side.you && <span className="shrink-0 rounded-sm bg-white/15 px-1.5 font-pixel text-[9px] uppercase">You</span>}
+          {side.you && <span className="shrink-0 rounded-sm bg-white/15 px-1.5 font-pixel text-[9px] uppercase">{t("intro.you")}</span>}
         </div>
         {(side.tag || side.badge) && <div className="flex min-w-0 flex-wrap items-center gap-1.5">{side.tag}{side.badge}</div>}
       </div>
       {side.record ?? (
         <>
           <dl className="grid grid-cols-2 border-y border-white/10 text-center">
-            <Figure label="Duels" value={stats ? stats.duels.toLocaleString("en-US") : dash} />
-            <Figure label="Guessed first" value={stats && stats.guessedFirst !== null ? `${stats.guessedFirst}%` : dash} className="border-l border-white/10" />
+            <Figure label={t("intro.duels")} value={stats ? formatNumber(stats.duels, t.locale) : dash} />
+            <Figure label={t("intro.guessedFirst")} value={stats && stats.guessedFirst !== null ? t("intro.percent", { n: stats.guessedFirst }) : dash} className="border-l border-white/10" />
           </dl>
           <div className="space-y-2 px-3 py-2.5 sm:px-4 sm:py-3">
-            <Regions label="Strongest" regions={stats?.strongest} dash={dash} tone="text-[#8ee26b]" />
-            <Regions label="Toughest" regions={stats?.toughest} dash={dash} tone="text-[#ff8a8a]" />
+            <Regions label={t("intro.strongest")} regions={stats?.strongest} dash={dash} tone="text-[#8ee26b]" />
+            <Regions label={t("intro.toughest")} regions={stats?.toughest} dash={dash} tone="text-[#ff8a8a]" />
             <History recent={stats?.recent} loading={loading} />
           </div>
         </>
@@ -214,7 +219,7 @@ export function Figure({ label, value, className }: { label: string; value: Reac
 function Regions({ label, regions, dash, tone }: { label: string; regions: string[] | undefined; dash: React.ReactNode; tone: string }) {
   return (
     <div className="min-w-0">
-      <p className="font-pixel text-[8px] uppercase text-white/55 sm:text-[9px]">{label} regions</p>
+      <p className="font-pixel text-[8px] uppercase text-white/55 sm:text-[9px]">{label}</p>
       <p className={cn("font-display text-xs font-bold leading-snug sm:text-sm", regions?.length ? tone : "text-white/60")}>
         {regions?.length ? regions.join(" · ") : dash}
       </p>
@@ -222,18 +227,21 @@ function Regions({ label, regions, dash, tone }: { label: string; regions: strin
   );
 }
 
-const RESULT_STYLE: Record<VersusResult, { cls: string; label: string; Icon: typeof Check }> = {
-  win: { cls: "bg-[#4cbb17] text-white", label: "Won", Icon: Check },
-  loss: { cls: "bg-[#e5484d] text-white", label: "Lost", Icon: X },
-  draw: { cls: "bg-white/30 text-white", label: "Draw", Icon: Minus },
+const RESULT_STYLE: Record<VersusResult, { cls: string; label: "won" | "lost" | "draw"; Icon: typeof Check }> = {
+  win: { cls: "bg-[#4cbb17] text-white", label: "won", Icon: Check },
+  loss: { cls: "bg-[#e5484d] text-white", label: "lost", Icon: X },
+  draw: { cls: "bg-white/30 text-white", label: "draw", Icon: Minus },
 };
 
-export function History({ recent, loading, label = "Last 5 duels", none = "No duels yet" }: { recent: VersusResult[] | undefined; loading: boolean; label?: string; none?: string }) {
+export function History({ recent, loading, label: labelProp, none: noneProp }: { recent: VersusResult[] | undefined; loading: boolean; label?: string; none?: string }) {
+  const t = useT(duel);
+  const label = labelProp ?? t("intro.last5");
+  const none = noneProp ?? t("intro.none");
   const slots = Array.from({ length: 5 }, (_, i) => recent?.[i] ?? null);
   return (
     <div>
       <p className="font-pixel text-[8px] uppercase text-white/55 sm:text-[9px]">{label}</p>
-      <ol className="mt-1 flex gap-1" aria-label={recent?.length ? `Latest first: ${recent.map((r) => RESULT_STYLE[r].label).join(", ")}` : none} data-testid="versus-history">
+      <ol className="mt-1 flex gap-1" aria-label={recent?.length ? t("intro.latest", { results: recent.map((r) => t(`intro.${RESULT_STYLE[r].label}`)).join(", ") }) : none} data-testid="versus-history">
         {slots.map((r, i) => {
           if (!r) return <li key={i} className={cn("h-5 w-5 rounded-full border border-dashed border-white/25 sm:h-6 sm:w-6", loading && "animate-pulse")} aria-hidden />;
           const { cls, Icon } = RESULT_STYLE[r];

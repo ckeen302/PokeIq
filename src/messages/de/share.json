@@ -1,0 +1,100 @@
+{
+  "pokedle": {
+    "daily": "Pokédle #{n}",
+    "archive": "Pokédle #{n} (Archiv)",
+    "practice": "Pokédle Training",
+    "top": "Top {top} % von {players} Trainern"
+  },
+  "guessr": {
+    "world": "Welt",
+    "daily": "PokéGuessr Tagesspiel #{n} · {map}",
+    "weekly": "PokéGuessr Wochenspiel #{n} · {map}",
+    "free": "PokéGuessr {map}",
+    "streak": "PokéGuessr {map} · Serie",
+    "inARow": "🔥{n} in Folge"
+  },
+  "quiz": {
+    "daily": "Tagesquiz #{n}",
+    "test": "Test",
+    "points": "{points} Pkt.",
+    "iqPoints": "🧠 PokéIQ {iq} · {points} Pkt.",
+    "modules": {
+      "whos-that": "Wer ist das Pokémon?",
+      "cry": "Ruf-Quiz",
+      "dex": "Pokédex-Detektiv",
+      "types": "Typen-Meister",
+      "higher-lower": "Höher oder tiefer",
+      "games": "Hauptspiele",
+      "anime": "Pokémon-Anime",
+      "competitive": "Fähigkeiten, Attacken & Items",
+      "shiny": "Echt schillernd?",
+      "zoom-reveal": "Zoom",
+      "whose-team": "Wessen Team ist das?",
+      "mixed": "Bunt gemischt"
+    },
+    "formats": {
+      "classic": "Klassisch",
+      "survival": "Überleben",
+      "blitz": "Blitz",
+      "adaptive": "PokéIQ-Test"
+    },
+    "levels": {
+      "easy": "Leicht",
+      "medium": "Normal",
+      "hard": "Schwer"
+    }
+  },
+  "connections": {
+    "daily": "PokéConnections #{n}",
+    "archive": "PokéConnections #{n} (Archiv)",
+    "practice": "PokéConnections Training",
+    "practice5": "PokéConnections Training 5×5",
+    "notSolved": "Nicht gelöst",
+    "perfect": "Perfekt!",
+    "mistakes": "{n, plural, one {{n} Fehler} other {{n} Fehler}}",
+    "hint": "💡Tipp"
+  },
+  "pikadoku": {
+    "weekly": "Pikadoku Wochenrätsel #{n}",
+    "daily": "Pikadoku #{n}",
+    "archive": "Pikadoku #{n} (Archiv)",
+    "level": "{title} ({level})",
+    "unlimited": "Pikadoku (Unbegrenzt)",
+    "rarity": "Seltenheit: {score}",
+    "levels": {
+      "easy": "Leicht",
+      "normal": "Normal",
+      "expert": "Experte"
+    }
+  },
+  "battle": {
+    "title": "Kampf",
+    "win": "🏆 Sieg",
+    "loss": "Niederlage",
+    "tie": "Unentschieden",
+    "cpu": "vs CPU ({level})",
+    "ranked": "Ranglistenkampf vs Trainer",
+    "trainer": "vs Trainer",
+    "turns": "{n, plural, one {{n} Runde} other {{n} Runden}}",
+    "levels": {
+      "easy": "Leicht",
+      "normal": "Normal",
+      "hard": "Schwer"
+    },
+    "replay": "Kampfwiederholung",
+    "watch": "▶️ Hier ansehen:"
+  },
+  "cognitive": {
+    "title": "Kognitiver Test",
+    "percentile": "({p}. Perzentil)",
+    "line1": "🧩 Logik {fluid} · 🧠 Gedächtnis {memory}",
+    "line2": "⚡ Tempo {speed} · 🧭 Räumlich {spatial}",
+    "knowledge": " · 📖 Wissen {knowledge}"
+  },
+  "button": {
+    "share": "Ergebnis teilen",
+    "copied": "Kopiert!",
+    "shared": "Geteilt!",
+    "toast": "Kopiert! Füg es einfach irgendwo ein."
+  }
+}
