@@ -27,7 +27,9 @@ const OG = { en: "en_US", ja: "ja_JP", es: "es_ES", fr: "fr_FR", de: "de_DE", it
 /** English pages every check samples (hubs, the daily games, the Pokédex's kinds of page). */
 export const SAMPLE = ["/", "/daily", "/pokedle", "/pokeconnections", "/pikadoku", "/pokeguessr", "/quiz", "/pokedex", "/pokemon/pikachu", "/pokedex/moves/thunderbolt", "/battle", "/privacy", "/credits", "/trainer", "/leaderboard"];
 
-const live = (process.env.LIVE_LOCALES ?? "").split(",").map((s) => s.trim()).filter((l) => ALL.includes(l));
+// In the site's own order (src/i18n/config.ts LOCALES), whatever order LIVE_LOCALES lists them in.
+const wanted = new Set((process.env.LIVE_LOCALES ?? "").split(",").map((s) => s.trim().toLowerCase()));
+const live = ALL.filter((l) => wanted.has(l));
 
 function attrs(tag) {
   const out = {};
@@ -191,7 +193,10 @@ async function controls({ browser, BASE, errors, step }) {
     const hrefs = await footer.locator("a").evaluateAll((as) => as.map((a) => [a.getAttribute("hreflang"), a.getAttribute("href")]));
     const want = ["en", ...live].map((l) => [l, prefixed(l, "/pokedle")]);
     if (JSON.stringify(hrefs.sort()) !== JSON.stringify(want.sort())) errors.push(`i18n: footer language links ${JSON.stringify(hrefs)} (expected ${JSON.stringify(want)})`);
-    await page.getByTestId("account-menu-trigger").click().catch(() => {});
+    // The game's how-to opens by itself on a first visit: close it first.
+    await page.keyboard.press("Escape");
+    await page.getByRole("dialog").waitFor({ state: "hidden", timeout: 3000 }).catch(() => {});
+    await page.getByTestId("account-menu-button").click({ timeout: 10000 }).catch(() => {});
     const select = page.locator('[data-testid$="-language"]').first();
     if (!(await select.waitFor({ timeout: 5000 }).then(() => true, () => false))) errors.push("i18n: no Language row in the header menu");
     else {
