@@ -1,0 +1,130 @@
+{
+  "meta": {
+    "fallbackTitle": "シェアされた結果",
+    "socialTitle": "{title}・PokéIQ"
+  },
+  "page": {
+    "eyebrow": "トレーナーが結果をシェアしました",
+    "beatIt": "この記録を超えられますか？無料・登録不要、ブラウザですぐ遊べます。",
+    "more": "PokéIQのほかのゲーム"
+  },
+  "titled": "{label}：{score}",
+  "streak": "{n}日連続",
+  "time": "タイム {time}",
+  "pokedle": {
+    "hard": "ハードモード",
+    "assist": "図鑑：{level}",
+    "assists": {
+      "off": "なし",
+      "notebook": "メモ帳",
+      "field": "フィールドガイド",
+      "full": "フル図鑑"
+    },
+    "formats": {
+      "classic": "クラシック",
+      "squirdle": "ステータス",
+      "custom": "カスタム"
+    },
+    "hints": "ヒント{n}回",
+    "top": "上位{top}%（{players}人中）",
+    "solved": "{max}回中{n}回で正解",
+    "notSolved": "{max}回で正解できず",
+    "play": "今日のPokédleをプレイ",
+    "description": "{detail}。ヒントを頼りに正体不明のポケモンを当てよう。PokéIQで毎日新しい1匹が登場します。あなたはもっと上手くできますか？"
+  },
+  "guessr": {
+    "inARow": "{n}連続",
+    "named": "ゲーム内のスクリーンショットから{n}か所連続で正解",
+    "streakChip": "連続正解",
+    "play": "PokéGuessrをプレイ",
+    "playDaily": "今日のPokéGuessrをプレイ",
+    "streakDescription": "ポケモン世界のGeoGuessr：ゲーム内の景色を見て、地図にピンを落とそう。この連続記録を超えられますか？",
+    "outOf": "{n}か所で{max}点中",
+    "dailyChip": "デイリー",
+    "rounds": "{n}ラウンド",
+    "description": "ポケモン世界のGeoGuessr：ゲーム内の景色を見て、地図にピンを落とし、最高{max}点を目指そう。この記録を超えられますか？"
+  },
+  "quiz": {
+    "dailyGame": "デイリーチャレンジ",
+    "testGame": "PokéIQテスト",
+    "dailyLabel": "デイリーチャレンジ #{n}",
+    "testLabel": "PokéIQテスト",
+    "iq": "PokéIQ {iq}",
+    "right": "{total}問中{correct}問正解・{points}pt",
+    "iqPoints": "PokéIQ {iq}・{points}pt",
+    "playDaily": "今日のデイリーチャレンジに挑戦",
+    "playTest": "PokéIQテストに挑戦",
+    "play": "クイズをプレイ",
+    "dailyDescription": "すべてのトレーナーに同じポケモンの問題が毎日出題されます。PokéIQで連続記録を伸ばそう。",
+    "description": "ポケモンにどれだけ詳しい？無料・登録不要のポケモンクイズ。このスコアを超えられますか？"
+  },
+  "cognitive": {
+    "game": "認知PokéIQ",
+    "label": "PokéIQテスト・認知",
+    "headline": "認知PokéIQ {score}",
+    "detail": "トレーナー中{p}パーセンタイル",
+    "reasoning": "推論 {n}",
+    "memory": "記憶 {n}",
+    "speed": "スピード {n}",
+    "spatial": "空間 {n}",
+    "knowledge": "知識 {n}",
+    "title": "{headline}（{detail}）",
+    "description": "推論・記憶・スピード・空間認識をポケモンで測り、ほかのトレーナーと比べて採点します。医学的なIQテストではありません。あなたはどのあたり？"
+  },
+  "connections": {
+    "solved": "{size, select, five {5つ} other {4つ}}のグループをすべて発見（{mistakes, plural, =0 {ミスなし} other {ミス{mistakes}回}}）",
+    "solvedIn": "{size, select, five {5つ} other {4つ}}のグループをすべて発見（{mistakes, plural, =0 {ミスなし} other {ミス{mistakes}回}}・{time}）",
+    "notSolved": "ミスの上限までに{size}グループ中{found}グループを発見",
+    "perfect": "パーフェクト",
+    "solvedHeadline": "クリア",
+    "hint": "ヒント使用",
+    "play": "PokéConnectionsをプレイ",
+    "playDaily": "今日のPokéConnectionsをプレイ",
+    "description": "{size, select, five {ポケモンを隠れたグループに分けよう。} other {ポケモンを隠れたグループに分けよう。}}PokéIQで毎日新しいパズルが登場。共通点を見つけられますか？"
+  },
+  "pikadoku": {
+    "full": "マスをすべて埋めた",
+    "filled": "9マス中{n}マスを埋めた",
+    "withScore": "{detail}・レア度スコア {score}",
+    "score": "スコア {score}",
+    "rare": "レアな選択{n}回",
+    "playWeekly": "今週のPikadokuをプレイ",
+    "play": "今日のPikadokuをプレイ",
+    "titleScore": "{label}：{solved}/9・スコア {score}",
+    "description": "ポケモン版数独：行と列の条件に合うポケモンを各マスに1匹ずつ。選んだポケモンが珍しいほどスコアは低くなります。あなたはもっと上手くできますか？"
+  },
+  "battle": {
+    "game": "バトル",
+    "label": "バトル・{format}",
+    "win": "勝利",
+    "loss": "敗北",
+    "tie": "引き分け",
+    "detail": "{turns}で{outcome, select, win {勝利} loss {敗北} other {引き分け}}・{opponent}",
+    "play": "バトルを始める",
+    "title": "{format}で{headline}",
+    "description": "Pokémon Showdownのエンジンで動くポケモンバトル。CPUやフレンドと対戦できます。無料、ブラウザで遊べます。"
+  },
+  "board": {
+    "row": "{n}行目：{tiles}",
+    "tiles": {
+      "hit": "正解",
+      "near": "惜しい",
+      "far": "遠い",
+      "wrong": "不正解",
+      "miss": "不正解",
+      "up": "もっと上",
+      "down": "もっと下",
+      "mask": "非表示",
+      "conn-yellow": "黄",
+      "conn-green": "緑",
+      "conn-blue": "青",
+      "conn-purple": "紫",
+      "conn-red": "赤",
+      "pdk-purple": "1%未満",
+      "pdk-blue": "10%未満",
+      "pdk-green": "25%未満",
+      "pdk-yellow": "25%以上",
+      "pdk-empty": "不正解または空欄"
+    }
+  }
+}

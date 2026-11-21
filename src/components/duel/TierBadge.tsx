@@ -1,9 +1,13 @@
 import { RANKED_PROVISIONAL_GAMES, isProvisional, tierOf, type RankedTierId } from "@/lib/ranked";
 import { cn } from "@/lib/utils";
+import { formatNumber, translator, type Translator } from "@/i18n/catalog";
+import tierNs from "@/messages/tier";
 
 /** The ranked tiers' look: a ball in each tier's colours (ranked PokéGuessr's divisions use them too) and the tier badge a battle ladder rating shows on a profile. */
 
-const fmt = (n: number) => n.toLocaleString("en-US");
+export type TierT = Translator<typeof tierNs.en>;
+let english: TierT | undefined;
+const englishT = (): TierT => (english ??= translator(tierNs, "en", undefined));
 
 const BALL: Record<RankedTierId, { top: string; band?: string; text: string }> = {
   poke: { top: "#e3350d", text: "text-[#e3350d]" },
@@ -40,17 +44,23 @@ export function BallIcon({ tier, className }: { tier: RankedTierId; className?: 
   );
 }
 
-/** "Great Ball II · 1,312": the tier badge, with the rating. */
-export function TierBadge({ rating, games, className, size = "md" }: { rating: number; games?: number; className?: string; size?: "sm" | "md" | "lg" }) {
+/**
+ * "Great Ball II · 1,312": the tier badge, with the rating. A server component (a profile): `tr` is the page's
+ * translator for the "tier" namespace (serverT(tier)); without it, English.
+ */
+export function TierBadge({ rating, games, className, size = "md", tr = englishT() }: { rating: number; games?: number; className?: string; size?: "sm" | "md" | "lg"; tr?: TierT }) {
   const t = tierOf(rating);
+  const fmt = (n: number) => formatNumber(n, tr.locale);
+  const name = tr.locale === "en" ? t.name : tr(`tiers.${t.tier}`);
+  const label = tr.locale === "en" ? t.label : t.division === null ? name : tr("division", { tier: name, division: t.division });
   return (
-    <span className={cn("inline-flex min-w-0 items-center gap-1.5", className)} title={`${t.label} · ${fmt(rating)} rating`}>
+    <span className={cn("inline-flex min-w-0 items-center gap-1.5", className)} title={tr("rating", { label, rating: fmt(rating) })}>
       <BallIcon tier={t.tier} className={size === "lg" ? "h-10 w-10" : size === "sm" ? "h-4 w-4" : "h-6 w-6"} />
-      <span className={cn("truncate font-display font-bold uppercase", BALL[t.tier].text, size === "lg" ? "text-2xl" : size === "sm" ? "text-[11px]" : "text-sm")}>{t.label}</span>
+      <span className={cn("truncate font-display font-bold uppercase", BALL[t.tier].text, size === "lg" ? "text-2xl" : size === "sm" ? "text-[11px]" : "text-sm")}>{label}</span>
       <span className={cn("font-pixel tabular-nums text-muted-foreground", size === "sm" ? "text-[9px]" : "text-xs")}>{fmt(rating)}</span>
       {games !== undefined && isProvisional(games) && (
-        <span className="rounded-sm border border-foreground/15 px-1 font-pixel text-[8px] uppercase text-muted-foreground" title={`Provisional: ratings move faster for the first ${RANKED_PROVISIONAL_GAMES} games`}>
-          Prov.
+        <span className="rounded-sm border border-foreground/15 px-1 font-pixel text-[8px] uppercase text-muted-foreground" title={tr("provisionalTitle", { n: RANKED_PROVISIONAL_GAMES })}>
+          {tr("provisional")}
         </span>
       )}
     </span>

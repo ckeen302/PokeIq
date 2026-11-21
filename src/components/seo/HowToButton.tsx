@@ -2,8 +2,8 @@
 
 import { Play } from "lucide-react";
 
-/** Opens the game's how-to pop-up (with its live demo); the game listens for this event. */
-export function HowToButton({ name }: { name: string }) {
+/** Opens the game's how-to pop-up (with its live demo); the game listens for this event. `label`: its text in the page's language (GameInfo's "How to play {name}"). */
+export function HowToButton({ name, label }: { name: string; label?: string }) {
   return (
     <button
       type="button"
@@ -12,7 +12,7 @@ export function HowToButton({ name }: { name: string }) {
       data-testid="howto-button"
     >
       <Play className="h-4 w-4 text-primary" aria-hidden />
-      How to play {name}
+      {label ?? <>How to play {name}</>}
     </button>
   );
 }

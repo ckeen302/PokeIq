@@ -4,14 +4,21 @@
  * scripts/i18n/check-messages.mjs (npm run lint) keeps this list complete.
  */
 export const NAMESPACES = [
-  "common",
   "api-errors",
+  "common",
+  "countdown",
   "credits",
+  "duel",
   "error",
   "feedback",
+  "game-info",
   "home",
+  "howto",
   "nav",
   "privacy",
   "report",
+  "share",
+  "share-page",
   "site",
+  "tier",
 ] as const;

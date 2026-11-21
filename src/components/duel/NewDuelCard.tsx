@@ -12,6 +12,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { clock } from "./DuelParts";
 import { useMatchmaking } from "./use-matchmaking";
 import { HowItWorks } from "./HowItWorks";
+import { useT } from "@/i18n/client";
+import duel from "@/messages/duel";
 
 /** Device time, ticking twice a second while `on`. */
 function useTicker(on: boolean): number {
@@ -56,6 +58,7 @@ export function NewDuelCard({
   /** More of the explanation, behind the same "How it works" toggle. */
   info?: React.ReactNode;
 }) {
+  const t = useT(duel);
   const router = useRouter();
   const progress = useProgress();
   const id = useId();
@@ -82,12 +85,12 @@ export function NewDuelCard({
         body: JSON.stringify({ ...body, name }),
       });
       const data = (await res.json().catch(() => ({}))) as { code?: string; token?: string; error?: string };
-      if (!res.ok || !data.code || !data.token) throw new Error(data.error ?? `Request failed (${res.status})`);
+      if (!res.ok || !data.code || !data.token) throw new Error(data.error ?? t("errors.request", { status: res.status }));
       saveSeat(data.code, data.token);
       if (!progress?.name) setTrainerName(name);
       router.push(href(data.code));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't open a duel.");
+      setError(err instanceof Error ? err.message : t("card.failed"));
       setBusy(false);
     }
   }
@@ -97,14 +100,14 @@ export function NewDuelCard({
       <form className="grid md:grid-cols-[1fr_auto]" onSubmit={create}>
         <CardContent className="space-y-2 p-6 max-md:p-5">
           <p className="hud-label flex items-center gap-1.5 text-primary">
-            <Swords className="h-3.5 w-3.5" aria-hidden /> Duel a friend
+            <Swords className="h-3.5 w-3.5" aria-hidden /> {t("card.eyebrow")}
           </p>
           <p className="font-display text-2xl font-bold uppercase max-md:text-xl max-md:leading-tight">{heading}</p>
           {children}
           <HowItWorks>
             <p>{blurb}</p>
             {info}
-            {match && <p>Create a duel and send the link, or get paired with anyone searching for the same game right now.</p>}
+            {match && <p>{t("card.match")}</p>}
           </HowItWorks>
           {(error ?? finder.error) && (
             <p role="alert" className="text-sm text-destructive">
@@ -114,7 +117,7 @@ export function NewDuelCard({
         </CardContent>
         <div className="flex flex-col justify-center gap-2 p-6 pt-0 max-md:px-5 max-md:pb-5 md:w-72 md:pt-6">
           <label htmlFor={id} className="hud-label">
-            Your trainer name
+            {t("card.nameLabel")}
           </label>
           <input
             id={id}
@@ -126,28 +129,28 @@ export function NewDuelCard({
             maxLength={24}
             required
             disabled={finder.searching}
-            placeholder="Trainer name"
+            placeholder={t("card.namePlaceholder")}
             className="h-10 min-w-0 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
           {finder.searching ? (
             <div className="space-y-2 rounded-md border border-screen/40 bg-screen/[0.06] p-3 text-center" role="status">
               <p className="flex items-center justify-center gap-2 font-display text-sm font-semibold uppercase tracking-wider text-screen">
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Searching for an opponent…
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> {t("card.searching")}
               </p>
               <p className="font-pixel text-xs tabular-nums text-muted-foreground">{clock(now - (finder.since ?? now))}</p>
               <Button type="button" size="sm" variant="ghost" onClick={finder.cancel}>
-                <X className="h-3.5 w-3.5" aria-hidden /> Cancel
+                <X className="h-3.5 w-3.5" aria-hidden /> {t("card.cancel")}
               </Button>
             </div>
           ) : (
             <>
               <Button type="submit" size="lg" disabled={busy || !name.trim()}>
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Swords className="h-4 w-4" aria-hidden />}
-                Create duel
+                {t("card.create")}
               </Button>
               {match && (
                 <Button type="button" size="lg" variant="outline" disabled={busy || !name.trim()} onClick={() => (isCleanName(name) ? void finder.search(name.trim()) : setError(NAME_REJECTED))}>
-                  <UserSearch className="h-4 w-4" aria-hidden /> Find an opponent
+                  <UserSearch className="h-4 w-4" aria-hidden /> {t("card.find")}
                 </Button>
               )}
             </>

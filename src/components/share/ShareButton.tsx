@@ -9,6 +9,8 @@ import { shareOrCopy, type ShareOutcome } from "@/lib/share";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { CopyFallback } from "@/components/quiz/CopyFallback";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import shareNs from "@/messages/share";
 
 const TOAST_MS = 2200;
 
@@ -20,7 +22,7 @@ const TOAST_MS = 2200;
  */
 export function ShareButton({
   getText,
-  label = "Share result",
+  label,
   kind,
   onShared,
   className,
@@ -36,6 +38,7 @@ export function ShareButton({
   /** Classes for the manual-copy box (e.g. a grid's full width). */
   fallbackClassName?: string;
 }) {
+  const t = useT(shareNs);
   const [done, setDone] = useState<"copied" | "shared" | null>(null);
   const [fallback, setFallback] = useState<string | null>(null);
   const timer = useRef<number | undefined>(undefined);
@@ -58,7 +61,7 @@ export function ShareButton({
     <>
       <Button type="button" onClick={() => void share()} className={className} data-testid="share-result" {...props}>
         {done ? <Check className="h-4 w-4" aria-hidden /> : <Share2 className="h-4 w-4" aria-hidden />}
-        {done === "copied" ? "Copied!" : done === "shared" ? "Shared!" : label}
+        {done === "copied" ? t("button.copied") : done === "shared" ? t("button.shared") : (label ?? t("button.share"))}
       </Button>
       {fallback && (
         <div className={cn("col-span-full basis-full", fallbackClassName)}>
@@ -72,6 +75,7 @@ export function ShareButton({
 
 /** "Copied!" at the bottom of the screen (in a portal: a transformed parent would trap a fixed element). */
 function CopiedToast({ show }: { show: boolean }) {
+  const t = useT(shareNs);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   if (!mounted) return null;
@@ -86,7 +90,7 @@ function CopiedToast({ show }: { show: boolean }) {
             className="hud flex items-center gap-2 rounded-lg border border-success/60 bg-card px-4 py-2.5 text-sm font-semibold shadow-xl"
             data-testid="share-toast"
           >
-            <Check className="h-4 w-4 text-success" aria-hidden /> Copied! Paste it anywhere.
+            <Check className="h-4 w-4 text-success" aria-hidden /> {t("button.toast")}
           </motion.div>
         )}
       </AnimatePresence>

@@ -5,12 +5,16 @@ import { Eye, EyeOff, Lock } from "lucide-react";
 import type { AvatarUnlocks } from "@/lib/avatar";
 import type { DuelPlayerView } from "@/lib/duel-types";
 import type { PvpEmoteView } from "@/lib/pvp-types";
-import { lowerFirst, seededTrainer, unlockHint } from "@/lib/trainer/config";
-import { TAUNTS, TAUNT_GAP_MS, isTaunt, tauntBlocked, tauntOf, type TauntId } from "@/lib/trainer/taunts";
+import { lowerFirst, seededTrainer, unlockHint, type Unlock } from "@/lib/trainer/config";
+import { TAUNTS, TAUNT_GAP_MS, isTaunt, tauntBlocked, tauntOf, type Taunt, type TauntId } from "@/lib/trainer/taunts";
 import type { TrainerSettings } from "@/lib/trainer/client";
 import { useAccount } from "@/lib/account";
 import { cn } from "@/lib/utils";
 import { VersusCharacter } from "./VersusCharacter";
+import { INTL_LOCALE, type Translator } from "@/i18n/catalog";
+import { useT } from "@/i18n/client";
+import duel from "@/messages/duel";
+import tierNs from "@/messages/tier";
 
 /**
  * Post-game taunts on a duel's result screen: both trainers in 3D, and a bar
@@ -44,7 +48,29 @@ function readMute(): boolean {
   }
 }
 
+type DuelT = Translator<typeof duel.en>;
+
+/** A move's name in the page's language. */
+const moveName = (t: DuelT, m: Taunt) => (t.locale === "en" ? m.name : t(`taunts.names.${m.id as keyof typeof duel.en.taunts.names}`));
+
+/**
+ * How to unlock a move ("Win 3 ranked games"): English as lib/trainer/config writes it everywhere; other languages
+ * from the namespace, the parts joined the language's way.
+ */
+function hintOf(t: DuelT, tier: Translator<typeof tierNs.en>, m: Taunt & Unlock): string {
+  if (t.locale === "en") return unlockHint(m);
+  const parts: string[] = [];
+  if (m.badges !== undefined) parts.push(t("taunts.unlock.badges", { n: m.badges }));
+  if (m.tier !== undefined) parts.push(t("taunts.unlock.tier", { tier: tier(`tiers.${m.tier}`) }));
+  if (m.wins !== undefined) parts.push(t("taunts.unlock.wins", { n: m.wins }));
+  if (m.streak !== undefined) parts.push(t("taunts.unlock.streak", { n: m.streak }));
+  const text = new Intl.ListFormat(INTL_LOCALE[t.locale], { type: "conjunction" }).format(parts);
+  return text && text[0].toUpperCase() + text.slice(1);
+}
+
 export function TauntStage({ view, onTaunt }: { view: TauntView; onTaunt: (id: TauntId) => Promise<string | null> }) {
+  const t = useT(duel);
+  const tt = useT(tierNs);
   const me = view.you ?? 0;
   const them = 1 - me;
   const [playing, setPlaying] = useState<[Playing, Playing]>([null, null]);
@@ -117,7 +143,7 @@ export function TauntStage({ view, onTaunt }: { view: TauntView; onTaunt: (id: T
   const sides = [me, them];
 
   return (
-    <section className="mx-auto w-full max-w-4xl px-4" aria-label="Dances and emotes" data-testid="taunt-stage">
+    <section className="mx-auto w-full max-w-4xl px-4" aria-label={t("taunts.stage")} data-testid="taunt-stage">
       <div className="grid grid-cols-2 gap-3 sm:gap-6">
         {sides.map((seat, i) => {
           const p = view.players[seat];
@@ -134,7 +160,7 @@ export function TauntStage({ view, onTaunt }: { view: TauntView; onTaunt: (id: T
                 className="mx-auto h-56 w-full max-w-[19rem] sm:h-72 lg:h-80"
               />
               <p className="mt-1 truncate text-center font-display text-xs font-bold uppercase tracking-wide text-white/80 sm:text-sm">
-                {seat === me ? "You" : p?.name}
+                {seat === me ? t("taunts.you") : p?.name}
               </p>
               {now && (
                 <span
@@ -142,7 +168,10 @@ export function TauntStage({ view, onTaunt }: { view: TauntView; onTaunt: (id: T
                   role="status"
                   data-testid={`taunt-label-${seat === me ? "you" : "them"}`}
                 >
-                  {tauntOf(now.id)?.name}
+                  {(() => {
+                    const m = tauntOf(now.id);
+                    return m && moveName(t, m);
+                  })()}
                 </span>
               )}
             </div>
@@ -154,26 +183,27 @@ export function TauntStage({ view, onTaunt }: { view: TauntView; onTaunt: (id: T
         <div className="mt-3 space-y-2 rounded-xl border border-white/15 bg-[#1e1a3f]/80 p-2.5 backdrop-blur sm:p-3" data-testid="taunt-bar">
           {(["dance", "emote"] as const).map((kind) => (
             <div key={kind} className="flex items-start gap-2">
-              <p className="w-14 shrink-0 pt-2 font-pixel text-[9px] uppercase text-white/60">{kind === "dance" ? "Dances" : "Emotes"}</p>
+              <p className="w-14 shrink-0 pt-2 font-pixel text-[9px] uppercase text-white/60">{kind === "dance" ? t("taunts.dances") : t("taunts.emotes")}</p>
               <div className="flex min-w-0 flex-1 flex-wrap gap-1.5">
-                {TAUNTS.filter((t) => t.kind === kind).map((t) => {
-                  const locked = !!tauntBlocked(t.id, unlocks);
+                {TAUNTS.filter((m) => m.kind === kind).map((m) => {
+                  const locked = !!tauntBlocked(m.id, unlocks);
+                  const name = moveName(t, m);
                   return (
                     <button
-                      key={t.id}
+                      key={m.id}
                       type="button"
                       disabled={locked || cooling}
-                      onClick={() => void send(t.id)}
-                      title={locked ? `${t.name}: ${unlockHint(t)}` : t.name}
-                      aria-label={locked ? `${t.name} (locked: ${lowerFirst(unlockHint(t))})` : `Play ${t.name}`}
+                      onClick={() => void send(m.id)}
+                      title={locked ? t("taunts.lockedTitle", { name, hint: hintOf(t, tt, m) }) : name}
+                      aria-label={locked ? t("taunts.locked", { name, hint: t.locale === "ja" ? hintOf(t, tt, m) : lowerFirst(hintOf(t, tt, m)) }) : t("taunts.play", { name })}
                       className={cn(
                         "flex h-8 items-center gap-1 rounded-full border px-3 font-display text-[11px] font-bold uppercase tracking-wide transition-[background-color,transform,opacity] sm:text-xs",
                         locked ? "cursor-not-allowed border-white/10 text-white/40" : "border-white/25 text-white hover:scale-105 hover:bg-white/10 disabled:opacity-50 disabled:hover:scale-100",
                       )}
-                      data-testid={`taunt-${t.id}`}
+                      data-testid={`taunt-${m.id}`}
                       data-locked={locked || undefined}
                     >
-                      {t.name}
+                      {name}
                       {locked && <Lock className="h-3 w-3" aria-hidden />}
                     </button>
                   );
@@ -183,7 +213,7 @@ export function TauntStage({ view, onTaunt }: { view: TauntView; onTaunt: (id: T
           ))}
           <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-2">
             <p className="text-[11px] text-white/60" role="status">
-              {note ?? (unlocks === GUEST ? "Sign in and win ranked games to earn more moves." : "Earn more with badges, ranked wins and streaks.")}
+              {note ?? (unlocks === GUEST ? t("taunts.guest") : t("taunts.more"))}
             </p>
             <button
               type="button"
@@ -193,7 +223,7 @@ export function TauntStage({ view, onTaunt }: { view: TauntView; onTaunt: (id: T
               data-testid="taunt-mute"
             >
               {muted ? <EyeOff className="h-3.5 w-3.5" aria-hidden /> : <Eye className="h-3.5 w-3.5" aria-hidden />}
-              {muted ? `${view.players[them]?.name ?? "Opponent"} muted` : "Mute opponent"}
+              {muted ? t("taunts.muted", { name: view.players[them]?.name ?? t("taunts.opponent") }) : t("taunts.mute")}
             </button>
           </div>
         </div>
