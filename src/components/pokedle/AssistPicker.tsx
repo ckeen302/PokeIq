@@ -1,7 +1,10 @@
 "use client";
 
 import { BookOpen } from "lucide-react";
-import { DLE_ASSISTS, DLE_ASSIST_INFO, multiplierText, type DleAssist } from "@/lib/dle-assist";
+import { DLE_ASSISTS, type DleAssist } from "@/lib/dle-assist";
+import { localMultiplier } from "@/lib/dle-i18n";
+import { useT } from "@/i18n/client";
+import board from "@/messages/pokedle-board";
 import { cn } from "@/lib/utils";
 
 /**
@@ -15,7 +18,7 @@ export function AssistPicker({
   disabled,
   note,
   points = true,
-  label = "Pokédex assist",
+  label,
   blurb = true,
   className,
 }: {
@@ -32,14 +35,14 @@ export function AssistPicker({
   blurb?: boolean;
   className?: string;
 }) {
-  const info = DLE_ASSIST_INFO[value];
+  const t = useT(board);
   return (
     <div className={cn("space-y-1", className)}>
       <div className="flex flex-wrap items-center justify-center gap-1.5">
         <span className="flex items-center gap-1 text-xs font-semibold text-muted-foreground">
-          <BookOpen className="h-3.5 w-3.5" aria-hidden /> Pokédex
+          <BookOpen className="h-3.5 w-3.5" aria-hidden /> {t("picker.pokedex")}
         </span>
-        <div className="flex flex-wrap justify-center rounded-md border border-foreground/15 p-0.5" role="radiogroup" aria-label={label}>
+        <div className="flex flex-wrap justify-center rounded-md border border-foreground/15 p-0.5" role="radiogroup" aria-label={label ?? t("picker.label")}>
           {DLE_ASSISTS.map((a) => (
             <button
               key={a}
@@ -48,21 +51,21 @@ export function AssistPicker({
               aria-checked={a === value}
               disabled={disabled || !onChange}
               onClick={() => onChange?.(a)}
-              title={`${DLE_ASSIST_INFO[a].label}: ${DLE_ASSIST_INFO[a].blurb}${points ? ` Points ${multiplierText(a)}.` : ""}`}
+              title={t(points ? "picker.titlePoints" : "picker.title", { label: t(`assist.${a}.label`), blurb: t(`assist.${a}.blurb`), m: localMultiplier(a, t) })}
               className={cn(
                 "rounded px-2 py-1 text-xs font-semibold transition-colors disabled:cursor-not-allowed",
                 a === value ? "bg-primary text-primary-foreground" : "text-muted-foreground enabled:hover:text-foreground disabled:opacity-50"
               )}
             >
-              {DLE_ASSIST_INFO[a].label}
-              {points && <span className="ml-1 font-normal tabular-nums opacity-80">{multiplierText(a)}</span>}
+              {t(`assist.${a}.label`)}
+              {points && <span className="ml-1 font-normal tabular-nums opacity-80">{localMultiplier(a, t)}</span>}
             </button>
           ))}
         </div>
       </div>
       {blurb && (
         <p className="text-center text-xs text-muted-foreground" data-testid="assist-blurb">
-          {note ?? info.blurb}
+          {note ?? t(`assist.${value}.blurb`)}
         </p>
       )}
     </div>

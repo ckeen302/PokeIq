@@ -1,0 +1,201 @@
+{
+  "column": {
+    "gen": "Gen.",
+    "type1": "Tipo 1",
+    "type2": "Tipo 2",
+    "height": "Altura",
+    "weight": "Peso",
+    "color": "Color",
+    "stage": "Fase"
+  },
+  "help": {
+    "gen": "Generación. Cerca: a una generación.",
+    "type1": "Tipo principal. Amarillo: la respuesta tiene este tipo como segundo tipo.",
+    "type2": "Tipo secundario (Ninguno si no tiene). Amarillo: la respuesta tiene este tipo como primer tipo.",
+    "height": "Altura. Cerca: a menos de un 25 % (o 0,1 m).",
+    "weight": "Peso. Cerca: a menos de un 25 % (o 0,1 kg).",
+    "color": "El color de la Pokédex. Coincide o no coincide.",
+    "stage": "Fase evolutiva: Bebé, y luego de 1 a 3. Cerca: a una fase (un Bebé nunca está cerca)."
+  },
+  "helpStrict": {
+    "gen": "Generación. Solo ▲ / ▼, sin «cerca».",
+    "type1": "Tipo principal. Amarillo: la respuesta tiene este tipo como segundo tipo.",
+    "type2": "Tipo secundario (Ninguno si no tiene). Amarillo: la respuesta tiene este tipo como primer tipo.",
+    "height": "Altura. Solo ▲ / ▼, sin «cerca».",
+    "weight": "Peso. Solo ▲ / ▼, sin «cerca».",
+    "color": "El color de la Pokédex. Coincide o no coincide.",
+    "stage": "Fase evolutiva: Bebé, y luego de 1 a 3. Solo ▲ / ▼, sin «cerca»."
+  },
+  "status": {
+    "match": "coincide",
+    "partial": "tipo correcto, otra posición",
+    "close-higher": "cerca, la respuesta es mayor",
+    "close-lower": "cerca, la respuesta es menor",
+    "higher": "la respuesta es mayor",
+    "lower": "la respuesta es menor",
+    "miss": "no coincide"
+  },
+  "value": {
+    "none": "Ninguno",
+    "baby": "Bebé",
+    "babyShort": "B"
+  },
+  "input": {
+    "aria": "Adivina un Pokémon (pulsa / para venir aquí, Esc para borrar)",
+    "list": "Pokémon que coinciden con lo que escribes",
+    "gen": "Gen. {n}",
+    "already": "Ya has probado con {name}.",
+    "none": "No hay ningún Pokémon con ese nombre."
+  },
+  "legend": {
+    "label": "Qué significan las pistas",
+    "match": "Coincide",
+    "partial": "Tipo en la otra posición",
+    "close": "Cerca",
+    "higherLower": "La respuesta es mayor / menor",
+    "miss": "No coincide"
+  },
+  "board": {
+    "label": "Tus intentos, del más reciente al más antiguo",
+    "pokemon": "Pokémon",
+    "checking": "{label}: comprobando…",
+    "empty": "Intento {n}",
+    "clue": "{label} {value}: {status}",
+    "filterAria": "{clue}. Filtrar la Pokédex con esta pista",
+    "filterTitle": "{clue}. Haz clic para filtrar la Pokédex con esta pista."
+  },
+  "format": {
+    "classic": "Clásico",
+    "squirdle": "Datos",
+    "custom": "A medida"
+  },
+  "formatBlurb": {
+    "classic": "Siete pistas, con avisos de «cerca» (amarillo) cuando te quedas a poco.",
+    "squirdle": "Generación, tipos, altura y peso, solo con ▲ / ▼. Los intentos dependen del rango de generaciones.",
+    "custom": "Elige las columnas de pistas que quieras (3 o más)."
+  },
+  "timer": {
+    "none": "Sin tiempo",
+    "3m": "3 min",
+    "60s": "Relámpago de 60 s"
+  },
+  "tags": {
+    "clues": "{n} pistas",
+    "guesses": "{n} intentos",
+    "strict": "Estricto",
+    "noHints": "Sin ayudas",
+    "legendaries": "Legendarios",
+    "hard": "Difícil",
+    "noDex": "Sin Pokédex"
+  },
+  "gens": {
+    "all": "Todas las gen.",
+    "one": "Gen. {n}",
+    "range": "Gen. {lo}–{hi}",
+    "list": "Gen. {list}"
+  },
+  "bonus": "+{pct} %",
+  "hint": {
+    "genus": "Categoría",
+    "silhouette": "Silueta"
+  },
+  "assist": {
+    "off": { "label": "Ninguna", "blurb": "Sin Pokédex: todas las pistas te tocan a ti." },
+    "notebook": { "label": "Libreta", "blurb": "Atenúa lo que descartan las pistas de generación y tipo; el resto lo tachas tú." },
+    "field": { "label": "Guía de campo", "blurb": "Además muestra la fase y el color de cada Pokémon, y permite filtrar por ellos." },
+    "full": { "label": "Pokédex completa", "blurb": "Además filtra por altura y peso; haz clic en una pista para añadirla como filtro." }
+  },
+  "picker": {
+    "pokedex": "Pokédex",
+    "label": "Ayuda de la Pokédex",
+    "title": "{label}: {blurb}",
+    "titlePoints": "{label}: {blurb} Puntos {m}."
+  },
+  "settings": {
+    "label": "Ajustes de la partida",
+    "format": "Formato",
+    "clues": "Pistas",
+    "clueColumns": "Columnas de pistas",
+    "minClues": "Al menos {n} pistas",
+    "generations": "Generaciones",
+    "presetAll": "Todas",
+    "presetGen1": "Solo gen. 1",
+    "presetGen12": "Gen. 1–2",
+    "presetGen14": "Gen. 1–4",
+    "gen": "Gen.",
+    "firstGen": "Primera generación",
+    "lastGen": "Última generación",
+    "to": "a",
+    "guesses": "Intentos",
+    "autoTitle": "Intentos de Datos: 5 para una generación, hasta 9 para todas",
+    "auto": "Auto ({n})",
+    "hints": "Ayudas",
+    "on": "Sí",
+    "off": "No",
+    "close": "Aviso «cerca»",
+    "closeNever": "Datos nunca tiene avisos de «cerca»",
+    "closeTitle": "▲ / ▼ amarillos cuando te quedas a poco",
+    "strictTitle": "Estricto: solo ▲ / ▼",
+    "strict": "Estricto (solo ▲ / ▼)",
+    "roundClock": "Tiempo por ronda",
+    "timer": "Tiempo",
+    "pool": "Pokémon",
+    "every": "Todos",
+    "legendary": "Solo legendarios",
+    "bonusPts": "{bonus} pts"
+  },
+  "dex": {
+    "title": "Pokédex",
+    "tapping": "Al tocar un Pokémon",
+    "cross": "Tachar",
+    "fill": "Escribir",
+    "view": "Vista de la Pokédex",
+    "hide": "Ocultar descartados",
+    "uncross": "Destachar todo",
+    "showAllAria": "Mostrar todo (quitar los filtros)",
+    "showAllTitle": "Mostrar todo: quitar los filtros",
+    "search": "Buscar por nombre",
+    "searchAria": "Buscar en la Pokédex",
+    "hasType": "Tiene el tipo",
+    "anyType": "Cualquier tipo",
+    "has": "Tipo {type}",
+    "andType": "Y el tipo",
+    "andAny": "Y cualquiera",
+    "and": "Y {type}",
+    "stage": "Fase",
+    "stageAny": "Fase: cualquiera",
+    "stageN": "Fase {stage}",
+    "color": "Color",
+    "colorAny": "Color: cualquiera",
+    "height": "Altura (m)",
+    "weight": "Peso (kg)",
+    "min": "mín.",
+    "max": "máx.",
+    "atLeast": "{label}, como mínimo",
+    "atMost": "{label}, como máximo",
+    "gen": "Gen.",
+    "generations": "Generaciones",
+    "genN": "Gen. {n}",
+    "genRegion": "Gen. {n} · {region}",
+    "mono": "Sin segundo tipo",
+    "clueFilters": "Filtros de pistas",
+    "removeFilter": "Quitar el filtro {clue}",
+    "list": "Pokédex",
+    "failed": "No se ha podido cargar la Pokédex.",
+    "loading": "Cargando la Pokédex",
+    "empty": "Aquí no hay ningún Pokémon. Prueba con «Mostrar todo».",
+    "generation": "Generación {n}",
+    "left": "Quedan {n} en juego",
+    "how": "Cómo funciona la Pokédex",
+    "howNotebook": "Atenuados: descartados por tus pistas de generación y tipo. La altura, el peso, el color y la fase te tocan a ti: tacha lo que descarten.",
+    "howField": "Atenuados: descartados por tus pistas de generación y tipo. Filtra por fase y color; la altura y el peso te tocan a ti.",
+    "howFull": "Atenuados: descartados por tus pistas de generación y tipo. Filtra por cualquier dato o haz clic en una pista del tablero para añadirla como filtro.",
+    "guessed": "ya probado",
+    "crossed": "tachado",
+    "out": "descartado por las pistas",
+    "fillName": "Escribir {name}",
+    "back": "Recuperar a {name}",
+    "crossName": "Tachar a {name}",
+    "withState": "{action} ({state})"
+  }
+}

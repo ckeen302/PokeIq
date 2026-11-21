@@ -1,0 +1,201 @@
+{
+  "column": {
+    "gen": "Gen.",
+    "type1": "Tipo 1",
+    "type2": "Tipo 2",
+    "height": "Altezza",
+    "weight": "Peso",
+    "color": "Colore",
+    "stage": "Stadio"
+  },
+  "help": {
+    "gen": "Generazione. Vicino: a una generazione di distanza.",
+    "type1": "Tipo principale. Giallo: la risposta ha questo tipo come secondo tipo.",
+    "type2": "Tipo secondario (Nessuno se non ne ha). Giallo: la risposta ha questo tipo come primo tipo.",
+    "height": "Altezza. Vicino: entro il 25% (o 0,1 m).",
+    "weight": "Peso. Vicino: entro il 25% (o 0,1 kg).",
+    "color": "Il colore del Pokédex. Uguale o diverso.",
+    "stage": "Stadio evolutivo: Baby, poi da 1 a 3. Vicino: a uno stadio di distanza (un Baby non è mai vicino)."
+  },
+  "helpStrict": {
+    "gen": "Generazione. Solo ▲ / ▼, senza «vicino».",
+    "type1": "Tipo principale. Giallo: la risposta ha questo tipo come secondo tipo.",
+    "type2": "Tipo secondario (Nessuno se non ne ha). Giallo: la risposta ha questo tipo come primo tipo.",
+    "height": "Altezza. Solo ▲ / ▼, senza «vicino».",
+    "weight": "Peso. Solo ▲ / ▼, senza «vicino».",
+    "color": "Il colore del Pokédex. Uguale o diverso.",
+    "stage": "Stadio evolutivo: Baby, poi da 1 a 3. Solo ▲ / ▼, senza «vicino»."
+  },
+  "status": {
+    "match": "uguale",
+    "partial": "tipo giusto, altra posizione",
+    "close-higher": "vicino, la risposta è più in alto",
+    "close-lower": "vicino, la risposta è più in basso",
+    "higher": "la risposta è più in alto",
+    "lower": "la risposta è più in basso",
+    "miss": "diverso"
+  },
+  "value": {
+    "none": "Nessuno",
+    "baby": "Baby",
+    "babyShort": "B"
+  },
+  "input": {
+    "aria": "Indovina un Pokémon (premi / per venire qui, Esc per cancellare)",
+    "list": "Pokémon che corrispondono a ciò che scrivi",
+    "gen": "Gen. {n}",
+    "already": "Hai già provato {name}.",
+    "none": "Nessun Pokémon con questo nome."
+  },
+  "legend": {
+    "label": "Cosa significano gli indizi",
+    "match": "Uguale",
+    "partial": "Tipo nell'altra posizione",
+    "close": "Vicino",
+    "higherLower": "Risposta più in alto / in basso",
+    "miss": "Diverso"
+  },
+  "board": {
+    "label": "I tuoi tentativi, dal più recente",
+    "pokemon": "Pokémon",
+    "checking": "{label}: verifica…",
+    "empty": "Tentativo {n}",
+    "clue": "{label} {value}: {status}",
+    "filterAria": "{clue}. Filtra il Pokédex con questo indizio",
+    "filterTitle": "{clue}. Clicca per filtrare il Pokédex con questo indizio."
+  },
+  "format": {
+    "classic": "Classico",
+    "squirdle": "Dati",
+    "custom": "Libero"
+  },
+  "formatBlurb": {
+    "classic": "Sette indizi, con gli stati «vicino» (giallo) quando ci vai vicino.",
+    "squirdle": "Generazione, tipi, altezza e peso solo con ▲ / ▼. I tentativi dipendono dalle generazioni scelte.",
+    "custom": "Scegli le colonne di indizi che vuoi (3 o più)."
+  },
+  "timer": {
+    "none": "Senza tempo",
+    "3m": "3 min",
+    "60s": "Blitz da 60 s"
+  },
+  "tags": {
+    "clues": "{n} indizi",
+    "guesses": "{n} tentativi",
+    "strict": "Rigoroso",
+    "noHints": "Senza aiuti",
+    "legendaries": "Leggendari",
+    "hard": "Difficile",
+    "noDex": "Senza Pokédex"
+  },
+  "gens": {
+    "all": "Tutte le gen.",
+    "one": "Gen. {n}",
+    "range": "Gen. {lo}–{hi}",
+    "list": "Gen. {list}"
+  },
+  "bonus": "+{pct}%",
+  "hint": {
+    "genus": "Categoria",
+    "silhouette": "Sagoma"
+  },
+  "assist": {
+    "off": { "label": "Nessuno", "blurb": "Niente Pokédex: ogni indizio lo interpreti tu." },
+    "notebook": { "label": "Taccuino", "blurb": "Ingrigisce ciò che gli indizi di generazione e tipo escludono; il resto lo cancelli tu." },
+    "field": { "label": "Guida", "blurb": "Mostra anche lo stadio e il colore di ogni Pokémon e filtra in base a questi." },
+    "full": { "label": "Pokédex completo", "blurb": "Filtra anche per altezza e peso; clicca un indizio per aggiungerlo come filtro." }
+  },
+  "picker": {
+    "pokedex": "Pokédex",
+    "label": "Aiuto del Pokédex",
+    "title": "{label}: {blurb}",
+    "titlePoints": "{label}: {blurb} Punti {m}."
+  },
+  "settings": {
+    "label": "Impostazioni della partita",
+    "format": "Formato",
+    "clues": "Indizi",
+    "clueColumns": "Colonne di indizi",
+    "minClues": "Almeno {n} indizi",
+    "generations": "Generazioni",
+    "presetAll": "Tutte",
+    "presetGen1": "Solo gen. 1",
+    "presetGen12": "Gen. 1–2",
+    "presetGen14": "Gen. 1–4",
+    "gen": "Gen.",
+    "firstGen": "Prima generazione",
+    "lastGen": "Ultima generazione",
+    "to": "a",
+    "guesses": "Tentativi",
+    "autoTitle": "Tentativi di Dati: 5 per una generazione, fino a 9 per tutte",
+    "auto": "Auto ({n})",
+    "hints": "Aiuti",
+    "on": "Sì",
+    "off": "No",
+    "close": "Stato «vicino»",
+    "closeNever": "Dati non ha mai lo stato «vicino»",
+    "closeTitle": "▲ / ▼ gialli quando ci vai vicino",
+    "strictTitle": "Rigoroso: solo ▲ / ▼",
+    "strict": "Rigoroso (solo ▲ / ▼)",
+    "roundClock": "Tempo per round",
+    "timer": "Timer",
+    "pool": "Pokémon",
+    "every": "Tutti",
+    "legendary": "Solo leggendari",
+    "bonusPts": "{bonus} pt"
+  },
+  "dex": {
+    "title": "Pokédex",
+    "tapping": "Toccando un Pokémon",
+    "cross": "Cancella",
+    "fill": "Inserisci",
+    "view": "Vista del Pokédex",
+    "hide": "Nascondi gli esclusi",
+    "uncross": "Ripristina tutti",
+    "showAllAria": "Mostra tutti (togli i filtri)",
+    "showAllTitle": "Mostra tutti: togli i filtri",
+    "search": "Cerca per nome",
+    "searchAria": "Cerca nel Pokédex",
+    "hasType": "Ha il tipo",
+    "anyType": "Qualsiasi tipo",
+    "has": "Tipo {type}",
+    "andType": "E il tipo",
+    "andAny": "E qualsiasi",
+    "and": "E {type}",
+    "stage": "Stadio",
+    "stageAny": "Stadio: tutti",
+    "stageN": "Stadio {stage}",
+    "color": "Colore",
+    "colorAny": "Colore: tutti",
+    "height": "Altezza (m)",
+    "weight": "Peso (kg)",
+    "min": "min",
+    "max": "max",
+    "atLeast": "{label}, almeno",
+    "atMost": "{label}, al massimo",
+    "gen": "Gen.",
+    "generations": "Generazioni",
+    "genN": "Gen. {n}",
+    "genRegion": "Gen. {n} · {region}",
+    "mono": "Senza secondo tipo",
+    "clueFilters": "Filtri degli indizi",
+    "removeFilter": "Togli il filtro {clue}",
+    "list": "Pokédex",
+    "failed": "Impossibile caricare il Pokédex.",
+    "loading": "Caricamento del Pokédex",
+    "empty": "Nessun Pokémon qui. Prova «Mostra tutti».",
+    "generation": "Generazione {n}",
+    "left": "Ancora {n} in gioco",
+    "how": "Come funziona il Pokédex",
+    "howNotebook": "In grigio: esclusi dai tuoi indizi di generazione e tipo. Altezza, peso, colore e stadio li interpreti tu: cancella ciò che escludono.",
+    "howField": "In grigio: esclusi dai tuoi indizi di generazione e tipo. Filtra per stadio e colore; altezza e peso li interpreti tu.",
+    "howFull": "In grigio: esclusi dai tuoi indizi di generazione e tipo. Filtra per qualsiasi caratteristica, o clicca un indizio sul tabellone per aggiungerlo come filtro.",
+    "guessed": "già provato",
+    "crossed": "cancellato",
+    "out": "escluso dagli indizi",
+    "fillName": "Inserisci {name}",
+    "back": "Ripristina {name}",
+    "crossName": "Cancella {name}",
+    "withState": "{action} ({state})"
+  }
+}

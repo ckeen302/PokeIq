@@ -1,0 +1,27 @@
+{
+  "meta": {
+    "title": "Pokédle: el Wordle diario de Pokémon",
+    "description": "Pokédle es el Wordle diario de Pokémon: adivina el Pokémon misterioso en 8 intentos con pistas de tipo, generación, altura y más, y juega duelos en directo con amigos."
+  },
+  "info": {
+    "name": "Pokédle",
+    "description": "Pokédle es un Wordle de Pokémon diario y gratuito: adivina el Pokémon misterioso en 8 intentos con pistas de generación, tipo, altura, peso, color y fase evolutiva.",
+    "intro": "Pokédle es nuestro Wordle de Pokémon: un Pokémon misterioso, ocho intentos y un Pokémon nuevo cada día.",
+    "step1": "Escribe el nombre de un Pokémon y envíalo como respuesta.",
+    "step2": "Cada intento muestra cómo se compara con el Pokémon misterioso: generación, tipo, altura, peso, color y fase evolutiva.",
+    "step3": "Usa las pistas para acotar y encuentra la respuesta en 8 intentos como máximo.",
+    "step4": "Vuelve mañana para un Pokémon nuevo o reta a un amigo o a un desconocido a un duelo en directo.",
+    "faqGuessesQ": "¿Cuántos intentos tengo?",
+    "faqGuessesA": "Tienes 8 intentos para encontrar el Pokémon misterioso.",
+    "faqCluesQ": "¿Qué pistas da cada intento?",
+    "faqCluesA": "Generación, tipo, altura, peso, color y fase evolutiva, comparados con el Pokémon misterioso."
+  },
+  "duel": {
+    "title": "Un duelo de Pokédle",
+    "description": "Pokédle cara a cara: el mismo Pokémon misterioso para los dos, tres rondas.",
+    "versus": "{host} contra {guest}: un duelo de Pokédle",
+    "challenge": "{host} te reta a un duelo de Pokédle",
+    "aTrainer": "Un Entrenador",
+    "inviteDescription": "Pokédle cara a cara: el mismo Pokémon misterioso para los dos, tres rondas; con menos intentos y más rapidez se puntúa más."
+  }
+}

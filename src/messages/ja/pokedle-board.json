@@ -1,0 +1,201 @@
+{
+  "column": {
+    "gen": "世代",
+    "type1": "タイプ1",
+    "type2": "タイプ2",
+    "height": "高さ",
+    "weight": "重さ",
+    "color": "色",
+    "stage": "進化"
+  },
+  "help": {
+    "gen": "世代。近い：1世代ちがい。",
+    "type1": "1つ目のタイプ。黄色：正解はこのタイプを2つ目に持っています。",
+    "type2": "2つ目のタイプ（なければ「なし」）。黄色：正解はこのタイプを1つ目に持っています。",
+    "height": "高さ。近い：25%以内（または0.1 m差）。",
+    "weight": "重さ。近い：25%以内（または0.1 kg差）。",
+    "color": "図鑑の色。一致か不一致のみ。",
+    "stage": "進化段階：ベイビィ、そして1〜3。近い：1段階ちがい（ベイビィは近いになりません）。"
+  },
+  "helpStrict": {
+    "gen": "世代。▲ / ▼ のみで、「近い」はありません。",
+    "type1": "1つ目のタイプ。黄色：正解はこのタイプを2つ目に持っています。",
+    "type2": "2つ目のタイプ（なければ「なし」）。黄色：正解はこのタイプを1つ目に持っています。",
+    "height": "高さ。▲ / ▼ のみで、「近い」はありません。",
+    "weight": "重さ。▲ / ▼ のみで、「近い」はありません。",
+    "color": "図鑑の色。一致か不一致のみ。",
+    "stage": "進化段階：ベイビィ、そして1〜3。▲ / ▼ のみで、「近い」はありません。"
+  },
+  "status": {
+    "match": "一致",
+    "partial": "タイプは合っていて、枠がちがう",
+    "close-higher": "近い、正解はもっと上",
+    "close-lower": "近い、正解はもっと下",
+    "higher": "正解はもっと上",
+    "lower": "正解はもっと下",
+    "miss": "不一致"
+  },
+  "value": {
+    "none": "なし",
+    "baby": "ベイビィ",
+    "babyShort": "ベ"
+  },
+  "input": {
+    "aria": "ポケモンを入力（/ でここへ移動、Esc で消去）",
+    "list": "入力に合うポケモン",
+    "gen": "第{n}世代",
+    "already": "{name}はもう答えました。",
+    "none": "その名前のポケモンはいません。"
+  },
+  "legend": {
+    "label": "手がかりの見かた",
+    "match": "一致",
+    "partial": "タイプの枠がちがう",
+    "close": "近い",
+    "higherLower": "正解はもっと上 / 下",
+    "miss": "不一致"
+  },
+  "board": {
+    "label": "これまでの回答（新しい順）",
+    "pokemon": "ポケモン",
+    "checking": "{label}：確認中…",
+    "empty": "{n}回目",
+    "clue": "{label} {value}：{status}",
+    "filterAria": "{clue}。この手がかりで図鑑をしぼりこむ",
+    "filterTitle": "{clue}。クリックすると、この手がかりで図鑑をしぼりこみます。"
+  },
+  "format": {
+    "classic": "クラシック",
+    "squirdle": "データ",
+    "custom": "カスタム"
+  },
+  "formatBlurb": {
+    "classic": "7つの手がかり。惜しいときは「近い」（黄色）が出ます。",
+    "squirdle": "世代・タイプ・高さ・重さを ▲ / ▼ だけで。回答回数は世代の範囲で変わります。",
+    "custom": "使う手がかりの列を選べます（3つ以上）。"
+  },
+  "timer": {
+    "none": "時間制限なし",
+    "3m": "3分",
+    "60s": "60秒ブリッツ"
+  },
+  "tags": {
+    "clues": "手がかり{n}つ",
+    "guesses": "{n}回",
+    "strict": "ストリクト",
+    "noHints": "ヒントなし",
+    "legendaries": "伝説のみ",
+    "hard": "ハード",
+    "noDex": "図鑑なし"
+  },
+  "gens": {
+    "all": "全世代",
+    "one": "第{n}世代",
+    "range": "第{lo}〜{hi}世代",
+    "list": "第{list}世代"
+  },
+  "bonus": "+{pct}%",
+  "hint": {
+    "genus": "分類",
+    "silhouette": "シルエット"
+  },
+  "assist": {
+    "off": { "label": "なし", "blurb": "図鑑なし：手がかりはすべて自分で読み解きます。" },
+    "notebook": { "label": "ノート", "blurb": "世代とタイプの手がかりで外れたポケモンを灰色にします。残りは自分で消しましょう。" },
+    "field": { "label": "ガイド", "blurb": "各ポケモンの進化段階と色も表示し、それでしぼりこめます。" },
+    "full": { "label": "完全図鑑", "blurb": "高さと重さでもしぼりこめます。手がかりをクリックするとフィルターになります。" }
+  },
+  "picker": {
+    "pokedex": "図鑑",
+    "label": "図鑑アシスト",
+    "title": "{label}：{blurb}",
+    "titlePoints": "{label}：{blurb} 得点{m}。"
+  },
+  "settings": {
+    "label": "ゲーム設定",
+    "format": "形式",
+    "clues": "手がかり",
+    "clueColumns": "手がかりの列",
+    "minClues": "手がかりは{n}つ以上",
+    "generations": "世代",
+    "presetAll": "全世代",
+    "presetGen1": "第1世代のみ",
+    "presetGen12": "第1〜2世代",
+    "presetGen14": "第1〜4世代",
+    "gen": "世代",
+    "firstGen": "最初の世代",
+    "lastGen": "最後の世代",
+    "to": "〜",
+    "guesses": "回答回数",
+    "autoTitle": "データ形式の回数：1世代なら5回、全世代なら最大9回",
+    "auto": "自動（{n}）",
+    "hints": "ヒント",
+    "on": "オン",
+    "off": "オフ",
+    "close": "「近い」表示",
+    "closeNever": "データ形式に「近い」はありません",
+    "closeTitle": "惜しいときは黄色の ▲ / ▼",
+    "strictTitle": "ストリクト：▲ / ▼ のみ",
+    "strict": "ストリクト（▲ / ▼ のみ）",
+    "roundClock": "ラウンドの時間",
+    "timer": "タイマー",
+    "pool": "出題範囲",
+    "every": "すべてのポケモン",
+    "legendary": "伝説・幻のみ",
+    "bonusPts": "得点{bonus}"
+  },
+  "dex": {
+    "title": "図鑑",
+    "tapping": "ポケモンをタップしたとき",
+    "cross": "消す",
+    "fill": "入力",
+    "view": "図鑑の表示",
+    "hide": "外れを隠す",
+    "uncross": "すべて戻す",
+    "showAllAria": "すべて表示（フィルターを解除）",
+    "showAllTitle": "すべて表示：フィルターを解除",
+    "search": "名前で検索",
+    "searchAria": "図鑑を検索",
+    "hasType": "タイプ",
+    "anyType": "すべてのタイプ",
+    "has": "{type}を持つ",
+    "andType": "2つ目のタイプ",
+    "andAny": "指定なし",
+    "and": "＋{type}",
+    "stage": "進化段階",
+    "stageAny": "進化：すべて",
+    "stageN": "進化 {stage}",
+    "color": "色",
+    "colorAny": "色：すべて",
+    "height": "高さ（m）",
+    "weight": "重さ（kg）",
+    "min": "最小",
+    "max": "最大",
+    "atLeast": "{label}、最小",
+    "atMost": "{label}、最大",
+    "gen": "世代",
+    "generations": "世代",
+    "genN": "第{n}世代",
+    "genRegion": "第{n}世代・{region}",
+    "mono": "単タイプのみ",
+    "clueFilters": "手がかりのフィルター",
+    "removeFilter": "フィルター「{clue}」を外す",
+    "list": "図鑑",
+    "failed": "図鑑を読みこめませんでした。",
+    "loading": "図鑑を読みこみ中",
+    "empty": "該当するポケモンがいません。「すべて表示」を試してください。",
+    "generation": "第{n}世代",
+    "left": "残り{n}匹",
+    "how": "図鑑の使いかた",
+    "howNotebook": "灰色：世代とタイプの手がかりで外れたポケモン。高さ・重さ・色・進化段階は自分で考えて、外れたものを消しましょう。",
+    "howField": "灰色：世代とタイプの手がかりで外れたポケモン。進化段階と色でしぼりこめます。高さと重さは自分で考えましょう。",
+    "howFull": "灰色：世代とタイプの手がかりで外れたポケモン。すべての項目でしぼりこめるほか、ボードの手がかりをクリックするとフィルターになります。",
+    "guessed": "回答済み",
+    "crossed": "消した",
+    "out": "手がかりで外れた",
+    "fillName": "{name}を入力",
+    "back": "{name}を戻す",
+    "crossName": "{name}を消す",
+    "withState": "{action}（{state}）"
+  }
+}
