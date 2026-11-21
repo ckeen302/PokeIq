@@ -281,3 +281,35 @@ export function holoTop(m: THREE.MeshStandardMaterial, color: THREE.Color, centr
 export function withWorldPos(s: THREE.WebGLProgramParametersWithUniforms) {
   withWorld(s);
 }
+
+/**
+ * What a pod shows until its figure arrives: a hologram of a specimen being
+ * scanned in (a soft capsule of light, scanlines climbing it, a bright ring
+ * at its feet), so a pod is never empty and a figure never pops in.
+ */
+export function holoPlaceholder(color: THREE.Color, time: LabTime, strength: { value: number }) {
+  return additive(
+    "LabHoloPlaceholder",
+    { uColor: { value: color }, uTime: time, uStrength: strength },
+    /* glsl */ `
+    uniform vec3 uColor; uniform float uTime; uniform float uStrength;
+    varying vec2 vUv; varying vec3 vW;
+    ${NOISE}
+    void main() {
+      vec2 q = vUv - vec2(0.5, 0.0);
+      // A capsule: rounded top, the base on the pod's floor.
+      float body = length(vec2(q.x / 0.3, max(0.0, vUv.y - 0.62) / 0.36));
+      float inside = 1.0 - smoothstep(0.86, 1.0, body);
+      float edge = smoothstep(0.7, 0.95, body) * inside;
+      float lines = smoothstep(0.35, 0.85, 0.5 + 0.5 * sin((vW.y * 30.0 - uTime * 1.6) * 6.2831853));
+      float sweep = exp(-pow((fract(uTime * 0.45) * 1.2 - vUv.y) / 0.05, 2.0));
+      float flick = 0.85 + 0.15 * labHash(floor(uTime * 14.0));
+      float a = inside * (0.06 + 0.18 * lines) + edge * 0.5 + sweep * inside * 0.9;
+      // Feet ring.
+      float ring = exp(-pow(vUv.y / 0.025, 2.0)) * (1.0 - smoothstep(0.25, 0.32, abs(q.x)));
+      a += ring * 0.8;
+      a *= smoothstep(1.0, 0.85, vUv.y) * flick;
+      gl_FragColor = vec4(uColor * a * uStrength, 1.0);
+    }`
+  );
+}

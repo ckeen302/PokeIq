@@ -4,7 +4,7 @@ import { QUIZ_PRESETS } from "@/lib/modes";
 import { NEA_CATEGORIES, NEA_PATH } from "@/lib/name-em-all/categories";
 import { ABILITIES, ITEMS, MOVES } from "@/lib/dex/data";
 import { SITE_URL } from "@/lib/site";
-import { GAMES_LIVE, LAB_PATH, MASS_BATTLE_LIVE, POKEMON_STORY_LIVE, WORLD_HISTORY_LIVE } from "@/lib/lab";
+import { GAMES_LIVE, LAB_DEX_LIVE, LAB_PATH, MASS_BATTLE_LIVE, POKEMON_STORY_LIVE, WORLD_HISTORY_LIVE } from "@/lib/lab";
 import { CHAPTER_IDS as STORY_CHAPTER_IDS } from "@/lib/pokemon-story/data";
 import { STORY_PATH, chapterPath as storyChapterPath } from "@/lib/pokemon-story/deeplink";
 import { PRESETS as MASS_BATTLE_PRESETS } from "@/lib/mass-battle/presets";
@@ -61,6 +61,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/pokedex/items`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/pokedex/places`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}${LAB_PATH}`, changeFrequency: "monthly", priority: 0.8 },
+    ...(LAB_DEX_LIVE ? [{ url: `${SITE_URL}/lab/pokedex`, changeFrequency: "monthly" as const, priority: 0.8 }] : []),
     ...(MASS_BATTLE_LIVE
       ? [
           { url: `${SITE_URL}${MASS_BATTLE_PATH}`, changeFrequency: "monthly" as const, priority: 0.8 },

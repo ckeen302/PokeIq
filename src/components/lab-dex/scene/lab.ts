@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { typeColor } from "@/lib/pokemon/type-colors";
 import type { LabMon } from "@/lib/lab-dex/types";
-import { capsuleGlass, glowDisc, holoColumn, holoRing, holoTop, lightShaft, type LabTime } from "./holo";
+import { capsuleGlass, glowDisc, holoColumn, holoPlaceholder, holoRing, holoTop, lightShaft, type LabTime } from "./holo";
 import { captionBand, nameplate, type LabFonts } from "./screens";
 import { ROOM } from "./room";
 
@@ -32,6 +32,8 @@ export interface Table {
   tint(c: THREE.Color): void;
   /** The caption turning round the rim. */
   caption(m: LabMon | null): void;
+  /** The column of light's strength (brighter while a figure is scanned in). */
+  column(k: number): void;
   dispose(): void;
 }
 
@@ -85,7 +87,8 @@ export function buildTable(time: LabTime, fonts: LabFonts): Table {
   const glow = add(new THREE.PlaneGeometry(4.6, 4.6).rotateX(-Math.PI / 2).translate(0, TABLE_TOP + 0.004, 0), glowDisc(glowCol, 0.22, 2.6), false);
   glow.renderOrder = 2;
   const colCol = color.clone();
-  const col = add(new THREE.CylinderGeometry(1.5, 1.58, 3.6, 128, 1, true).translate(0, TABLE_TOP + 1.8, 0), holoColumn(colCol, time, 0.12), false);
+  const colStrength = { value: 0.12 };
+  const col = add(new THREE.CylinderGeometry(1.5, 1.58, 3.6, 128, 1, true).translate(0, TABLE_TOP + 1.8, 0), holoColumn(colCol, time, colStrength), false);
   col.renderOrder = 3;
   const rings: [number, number, number, Parameters<typeof holoRing>[2]][] = [
     [1.86, 1.95, TABLE_TOP + 0.05, { dashes: 7, duty: 0.7, speed: 0.02, strength: 1.4 }],
@@ -119,6 +122,9 @@ export function buildTable(time: LabTime, fonts: LabFonts): Table {
     caption(m) {
       captionBand(capCanvas, m, fonts, cap);
     },
+    column(k) {
+      colStrength.value = k;
+    },
     dispose() {
       geos.forEach((g) => g.dispose());
       mats.forEach((m) => m.dispose());
@@ -138,6 +144,8 @@ export interface Pod {
   show(m: LabMon | null): void;
   /** How much it's the selected pod (0–1): its figure is on the table, the pod glows in the tint. */
   select(k: number, tint: THREE.Color): void;
+  /** The hologram shown until the figure arrives (0 off, 1 full). */
+  holo(k: number): void;
   /** Meshes a click can land on. */
   hit: THREE.Object3D[];
   /** Its world position (kept up to date by the scene as the ring turns; the plate's pattern is drawn round it). */
@@ -209,6 +217,10 @@ export function buildPod(slot: number, time: LabTime, fonts: LabFonts): Pod {
   group.add(turn);
   const stand = new THREE.Group();
   turn.add(stand);
+  const holoStrength = { value: 0 };
+  const holoMesh = add(new THREE.PlaneGeometry(1.0, 1.55).translate(0, 0.775, 0), own(holoPlaceholder(c, time, holoStrength)), turn, false);
+  holoMesh.renderOrder = 4;
+  holoMesh.visible = false;
   const plateCanvas = document.createElement("canvas");
   const plateTex = nameplate(plateCanvas, null, fonts, false);
   const plateMat = own(new THREE.MeshBasicMaterial({ map: plateTex, color: new THREE.Color(1.25, 1.25, 1.25), transparent: true }));
@@ -232,6 +244,10 @@ export function buildPod(slot: number, time: LabTime, fonts: LabFonts): Pod {
       nameplate(plateCanvas, m, fonts, false, plateTex);
       np.visible = !!m;
       lastSel = -1;
+    },
+    holo(k) {
+      holoStrength.value = k * 1.3;
+      holoMesh.visible = k > 0.005;
     },
     select(k, tint) {
       // Only redo the colours while something moves.
