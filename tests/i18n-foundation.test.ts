@@ -96,7 +96,7 @@ describe("messages", () => {
     const en = translator(ns, "en", undefined) as unknown as (k: string, v?: object) => string;
     expect(en("wins", { n: 1 })).toBe("1 win");
     expect(en("wins", { n: 1234 })).toBe("1,234 wins");
-    const de = translator(ns, "de", { wins: compile("{n, plural, one {# Sieg} other {# Siege}}") }) as unknown as (k: string, v?: object) => string;
+    const de = translator(ns, "de", { wins: compile("{n, plural, one {# Sieg} other {# Siege}}") } as never) as unknown as (k: string, v?: object) => string;
     expect(de("wins", { n: 1234 })).toBe("1.234 Siege");
     expect(de("hi")).toBe("Hi"); // missing in German: English
   });

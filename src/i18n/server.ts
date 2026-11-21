@@ -1,6 +1,6 @@
 import "server-only";
 import { cache } from "react";
-import { redirect as nextRedirect, type RedirectType } from "next/navigation";
+import { permanentRedirect as nextPermanentRedirect, redirect as nextRedirect, type RedirectType } from "next/navigation";
 import { DEFAULT_LOCALE, isLiveLocale, type Locale } from "./config";
 import { translator, type Namespace, type Translator, type Tree } from "./catalog";
 import { localeHref } from "./href";
@@ -38,4 +38,9 @@ export async function getT<T extends Tree>(ns: Namespace<T>, locale: Locale = ge
 /** next/navigation's redirect, to the page's version in the render's language when it has one. */
 export function redirect(href: string, type?: RedirectType): never {
   return nextRedirect(localeHref(href, getLocale()).href, type);
+}
+
+/** next/navigation's permanentRedirect, likewise kept in the render's language. */
+export function permanentRedirect(href: string, type?: RedirectType): never {
+  return nextPermanentRedirect(localeHref(href, getLocale()).href, type);
 }

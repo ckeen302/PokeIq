@@ -31,3 +31,6 @@ e2e-screenshots/
 
 # TCG price-map build cache
 .tcg-cache/
+
+# PokéAPI / dex build caches (scripts/dex, scripts/i18n)
+/.cache/

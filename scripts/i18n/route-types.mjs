@@ -1,7 +1,10 @@
 // How every app route renders in a finished `next build`: "static", "isr:<seconds>", "ssg" (prerendered from
 // generateStaticParams, with :fallback when unknown params render on request) or "dynamic".
 // `node scripts/i18n/route-types.mjs [.next]` prints JSON. English routes are everything outside /[locale].
-import { readFileSync } from "node:fs";
+//   --check   fail if an English route renders differently from scripts/i18n/route-types.json (CI, after next build)
+//   --write   record the current table there (after a deliberate change to how a page renders)
+// Languages must never change how an English page renders (static stays static, ISR keeps its interval).
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 export function routeTypes(dir = ".next") {
@@ -24,4 +27,22 @@ export function routeTypes(dir = ".next") {
   return Object.fromEntries(Object.entries(out).sort(([a], [b]) => a.localeCompare(b)));
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) console.log(JSON.stringify(routeTypes(process.argv[2]), null, 1));
+const TABLE = new URL("./route-types.json", import.meta.url);
+const english = (table) => Object.fromEntries(Object.entries(table).filter(([route]) => !route.startsWith("/[locale]")));
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const args = process.argv.slice(2);
+  const dir = args.find((a) => !a.startsWith("--")) ?? ".next";
+  const now = routeTypes(dir);
+  if (args.includes("--write")) writeFileSync(TABLE, `${JSON.stringify(english(now), null, 1)}\n`);
+  else if (args.includes("--check")) {
+    const was = JSON.parse(readFileSync(TABLE, "utf8"));
+    const cur = english(now);
+    const changed = Object.keys({ ...was, ...cur }).filter((r) => was[r] !== cur[r]).map((r) => `${r}: ${was[r] ?? "(new)"} → ${cur[r] ?? "(gone)"}`);
+    if (changed.length) {
+      console.error(`English routes render differently from scripts/i18n/route-types.json:\n  ${changed.join("\n  ")}\nIf that is intended, record it: node scripts/i18n/route-types.mjs --write`);
+      process.exit(1);
+    }
+    console.log(`route types ok: ${Object.keys(cur).length} English routes render as recorded`);
+  } else console.log(JSON.stringify(now, null, 1));
+}

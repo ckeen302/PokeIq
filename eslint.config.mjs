@@ -38,6 +38,7 @@ const eslintConfig = [
           paths: [
             { name: "next/link", message: "Use @/components/ui/Link (or ui/PlainLink): it keeps the page's language." },
             { name: "next/navigation", importNames: ["useRouter", "usePathname"], message: "Use @/i18n/navigation: it keeps the page's language." },
+            { name: "next/navigation", importNames: ["redirect", "permanentRedirect"], message: "Use redirect from @/i18n/server: it keeps the page's language." },
           ],
         },
       ],

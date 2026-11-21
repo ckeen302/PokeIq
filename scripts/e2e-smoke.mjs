@@ -20,6 +20,7 @@ import { runDesktopTripwire } from "./e2e-desktop-tripwire.mjs";
 import { runA11y } from "./e2e-a11y.mjs";
 import { runHowTo } from "./e2e-howto.mjs";
 import { runHydration } from "./e2e-hydration.mjs";
+import { runI18n } from "./e2e-i18n.mjs";
 import { runMassBattle } from "./e2e-mass-battle.mjs";
 import { runRace } from "./e2e-race.mjs";
 import { runGames } from "./e2e-games.mjs";
@@ -136,6 +137,10 @@ async function chatTo(from, to, text, shown = text) {
 await runDesktopTripwire({ browser, BASE, errors, step });
 await runA11y({ browser, BASE, errors, step });
 await runHydration({ browser, BASE, errors, step });
+// Languages: English only has no hreflang and no other language's pages; live languages are checked page by page.
+await runI18n({ browser, BASE, errors, step });
+// E2E_ONLY=i18n runs just the checks above, then exits.
+if (process.env.E2E_ONLY === "i18n") await finish();
 // Every game's how-to pop-up is one size (each on a fresh device, so it opens by itself).
 await runHowTo({ browser, BASE, OUT, errors, step });
 // E2E_ONLY=howto runs just the checks above (desktop tripwire, accessibility, hydration, the how-to pop-ups), then exits.
