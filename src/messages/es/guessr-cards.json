@@ -1,0 +1,54 @@
+{
+  "duel": {
+    "heading": "Duelos",
+    "modes": {
+      "hp": "Combate de PS",
+      "race": "Carrera de puntos",
+      "team": "Equipos 2v2"
+    },
+    "queues": {
+      "casual": "Amistoso",
+      "ranked": "Clasificatoria"
+    },
+    "queueLabel": "Tipo de duelo",
+    "eras": {
+      "2d": "2D clásico",
+      "3d": "3D moderno"
+    },
+    "headingTeam": "Duelo por equipos · {map}",
+    "headingHp": "Cara a cara · {map}",
+    "teamBlurb": "Dos equipos de dos (hasta cuatro por bando) con los mismos lugares, {hp} PS por equipo. En cada ronda tu equipo puntúa con su mejor marca, y los compañeros ven las marcas de los demás sobre la marcha. Envía el código de la sala a tres amigos.",
+    "raceBlurb": "Los mismos {n} lugares para los dos, en el mapa elegido arriba. Gana quien sume más puntos en {n} rondas. Envía el enlace a tu amigo y pulsa Listo.",
+    "raceBlurbEra": "Los mismos {n} lugares para los dos, en el mapa y los juegos elegidos arriba. Gana quien sume más puntos en {n} rondas. Envía el enlace a tu amigo y pulsa Listo.",
+    "hpBlurb": "Los mismos lugares para los dos, en el mapa elegido arriba. {hp} PS cada uno: en cada ronda, la puntuación más baja pierde la diferencia. Envía el enlace a tu amigo y pulsa Listo.",
+    "hpBlurbEra": "Los mismos lugares para los dos, en el mapa y los juegos elegidos arriba. {hp} PS cada uno: en cada ronda, la puntuación más baja pierde la diferencia. Envía el enlace a tu amigo y pulsa Listo.",
+    "turboInfo": "Turbo: en cuanto uno responde, el otro tiene {s} segundos en vez de 15.",
+    "mode": "Modo",
+    "modeLabel": "Modo de duelo",
+    "raceRounds": "Rondas de la carrera",
+    "partySettings": "Ajustes de la partida",
+    "turboOn": "Turbo activado",
+    "turboOff": "Turbo desactivado"
+  },
+  "party": {
+    "royaleBlurb": "Hasta {max} Entrenadores con los mismos lugares. La puntuación más baja de cada ronda pierde una vida ({lives} cada uno); gana el último Entrenador en pie.",
+    "teamBlurb": "Equipo rojo contra azul, 2v2 (hasta 4v4), {hp} PS por equipo. Tu equipo puntúa con su mejor marca, y ves las marcas de tus compañeros en directo.",
+    "label": "En grupo · hasta {max} Entrenadores",
+    "room": "Sala privada · {map}",
+    "gameLabel": "Juego del grupo",
+    "modes": {
+      "royale": "Batalla Real",
+      "team": "Duelo por equipos"
+    },
+    "host": "Tú eres el anfitrión: cambia el mapa, las vidas, el tiempo y las rondas en la sala, y empieza cuando estén todos.",
+    "nameLabel": "Tu nombre de Entrenador",
+    "namePlaceholder": "Nombre de Entrenador",
+    "nameRejected": "Elige otro nombre.",
+    "create": "Crear partida",
+    "code": "Código de sala",
+    "join": "Unirse",
+    "badCode": "Los códigos de sala tienen seis letras y números.",
+    "failed": "No se ha podido abrir la partida.",
+    "requestFailed": "Error en la solicitud ({status})"
+  }
+}
