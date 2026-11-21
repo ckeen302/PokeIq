@@ -6,6 +6,8 @@ import { setTrainerName, useProgress } from "@/lib/progress";
 import { duelHiddenDelay, duelPollDelay, fingerprint, startPoller, type DuelPace } from "@/lib/polling";
 import { unlockAudio } from "@/lib/sound";
 import { rankedId } from "@/lib/ranked-client";
+import { useT } from "@/i18n/client";
+import duel from "@/messages/duel";
 
 /**
  * A duel's state as this trainer may see it, kept fresh: polls the server,
@@ -33,12 +35,12 @@ interface SeatLike<V> {
   view: V;
 }
 
-async function post<T>(url: string, body: unknown): Promise<T> {
+async function post<T>(url: string, body: unknown, failed: (status: number) => string): Promise<T> {
   // The browser's signed ranked id, when it has one: PokéGuessr keeps the duel in this trainer's history (/pokeguessr/history).
   const id = rankedId();
   const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json", ...(id ? { "x-ranked-id": id } : {}) }, body: JSON.stringify(body) });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error((data as { error?: string }).error ?? `Request failed (${res.status})`);
+  if (!res.ok) throw new Error((data as { error?: string }).error ?? failed(res.status));
   return data as T;
 }
 
@@ -58,6 +60,11 @@ export function useClock(): number {
  * rounds' own start, end and next-round times.
  */
 export function useDuel<V extends DuelPace>(api: string, code: string, wakeAt?: (view: V) => number | undefined) {
+  const t = useT(duel);
+  // The poll reads the latest (a page doesn't change language, but the effect shouldn't depend on it).
+  const tRef = useRef(t);
+  tRef.current = t;
+  const failed = (status: number) => tRef.current("errors.request", { status });
   const progress = useProgress();
   const [view, setView] = useState<V | null>(null);
   const [offset, setOffset] = useState(0);
@@ -110,11 +117,11 @@ export function useDuel<V extends DuelPace>(api: string, code: string, wakeAt?: 
           const data = await res.json().catch(() => ({}));
           if (stopped) return;
           if (res.status === 404) {
-            setGone((data as { error?: string }).error ?? "This duel has ended or never existed.");
+            setGone((data as { error?: string }).error ?? tRef.current("errors.gone"));
             stopped = true;
           } else if (res.status === 429) {
             throttledUntil.current = Date.now() + 30_000;
-          } else if (!res.ok) throw new Error(`Request failed (${res.status})`);
+          } else if (!res.ok) throw new Error(tRef.current("errors.request", { status: res.status }));
           else {
             receive(data as V, sentAt);
             setOffline(false);
@@ -168,10 +175,10 @@ export function useDuel<V extends DuelPace>(api: string, code: string, wakeAt?: 
     setError(null);
     const sentAt = Date.now();
     try {
-      settle(await post<V>(api, { ...body, token: token.current }), sentAt);
+      settle(await post<V>(api, { ...body, token: token.current }, failed), sentAt);
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      setError(err instanceof Error ? err.message : t("errors.generic"));
       return false;
     } finally {
       setBusy(false);
@@ -182,10 +189,10 @@ export function useDuel<V extends DuelPace>(api: string, code: string, wakeAt?: 
   async function send(body: Record<string, unknown>): Promise<string | null> {
     const sentAt = Date.now();
     try {
-      settle(await post<V>(api, { ...body, token: token.current }), sentAt);
+      settle(await post<V>(api, { ...body, token: token.current }, failed), sentAt);
       return null;
     } catch (err) {
-      return err instanceof Error ? err.message : "Something went wrong.";
+      return err instanceof Error ? err.message : t("errors.generic");
     }
   }
 
@@ -195,13 +202,13 @@ export function useDuel<V extends DuelPace>(api: string, code: string, wakeAt?: 
     setError(null);
     const sentAt = Date.now();
     try {
-      const seat = await post<SeatLike<V>>(api, { action: "join", name });
+      const seat = await post<SeatLike<V>>(api, { action: "join", name }, failed);
       saveSeat(code, seat.token);
       token.current = seat.token;
       if (!progress?.name) setTrainerName(name);
       settle(seat.view, sentAt);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't join the duel.");
+      setError(err instanceof Error ? err.message : t("errors.join"));
     } finally {
       setBusy(false);
     }
@@ -213,11 +220,11 @@ export function useDuel<V extends DuelPace>(api: string, code: string, wakeAt?: 
     setBusy(true);
     setError(null);
     try {
-      const seat = await post<SeatLike<V>>(api, { action: "rematch", token: token.current });
+      const seat = await post<SeatLike<V>>(api, { action: "rematch", token: token.current }, failed);
       saveSeat(seat.code, seat.token);
       return seat.code;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't start a rematch.");
+      setError(err instanceof Error ? err.message : t("errors.rematch"));
       setBusy(false);
       return null;
     }
