@@ -1,3 +1,4 @@
+import type { Locale } from "@/i18n/config";
 import { Rng } from "@/lib/rng";
 import { ALL_CATEGORIES, CATEGORIES, categoryOf, type Category, type CategoryFamily } from "./categories";
 import { FACTS, SV, factsOf, type Facts } from "./facts";
@@ -270,9 +271,9 @@ export interface Herring {
   reason: string;
 }
 
-/** The Pokémon from other groups that look like they belong in group `gi`. */
-export function herringsOf(puzzle: { groups: readonly PuzzleGroup[] }, gi: number): Herring[] {
-  const cat = categoryOf(puzzle.groups[gi].category);
+/** The Pokémon from other groups that look like they belong in group `gi` (`locale`: the reasons in that language). */
+export function herringsOf(puzzle: { groups: readonly PuzzleGroup[] }, gi: number, locale: Locale = "en"): Herring[] {
+  const cat = categoryOf(puzzle.groups[gi].category, locale);
   if (!cat.lure) return [];
   const out: Herring[] = [];
   puzzle.groups.forEach((g, i) => {

@@ -1,0 +1,239 @@
+{
+  "list": {
+    "abilitiesOne": "its only Ability is {list}",
+    "abilitiesMany": "its Abilities are {list}",
+    "hiddenMark": "{name} (Hidden)"
+  },
+  "lureTypeLike": "{type} type like most of the group, but {instead}",
+  "type": {
+    "label": "{type} type",
+    "rule": "Every one is {type} type (alone or with another type).",
+    "lureColour": "its Pokédex colour is {colour}, but it's {types}, not {type}",
+    "lureKin": "its relative {kin} is {type} type, but {name} is {types}"
+  },
+  "pure": {
+    "label": "Pure {type} type",
+    "rule": "{type} is their one and only type.",
+    "why": "pure {type}",
+    "lure": "{type} type, but also {other}"
+  },
+  "dual": {
+    "label": "{a}/{b} type",
+    "rule": "They're all exactly {a} and {b}.",
+    "lure": "{types}: half of it"
+  },
+  "gen": {
+    "label": "Debuted in Gen {gen} ({region})",
+    "rule": "All first appeared in Generation {gen}, the {region} games.",
+    "why": "Gen {gen} ({region})",
+    "lure": "its relative {kin} is from Gen {gen}, but {name} came in Gen {own}"
+  },
+  "legendary": {
+    "label": "Legendary Pokémon",
+    "rule": "All are Legendary Pokémon (not Mythical).",
+    "why": "Legendary",
+    "lureMythical": "Mythical, which isn't the same as Legendary",
+    "lureBst": "a base stat total of {bst}, but not Legendary"
+  },
+  "mythical": {
+    "label": "Mythical Pokémon",
+    "rule": "All are Mythical Pokémon, the event-only kind.",
+    "why": "Mythical",
+    "lure": "Legendary, but not Mythical"
+  },
+  "baby": {
+    "label": "Baby Pokémon",
+    "rule": "All are baby Pokémon, the pre-evolutions that hatch from Eggs.",
+    "why": "baby form of {names}",
+    "whyLine": "baby form of its line",
+    "lure": "{baby} is the baby; {name} is what it grows into"
+  },
+  "noEvo": {
+    "label": "Doesn't evolve",
+    "rule": "None of them evolves or evolves from anything.",
+    "why": "no evolutions"
+  },
+  "stone": {
+    "label": "Evolved with a stone",
+    "rule": "Each one is reached by using an evolution stone on its pre-evolution.",
+    "oneLabel": "Evolved with {stone}",
+    "oneRule": "Each one evolves from its pre-evolution with {stone}.",
+    "why": "evolves from {from} with {stone}",
+    "lureInto": "it uses {stone} to evolve into {into}, but wasn't evolved by one",
+    "lureOther": "a stone evolution, but with {stone}"
+  },
+  "trade": {
+    "label": "Trade evolutions",
+    "rule": "Each one is reached by trading its pre-evolution.",
+    "why": "evolves from {from} by trade",
+    "whyHolding": "evolves from {from} by trade holding {item}",
+    "whyFor": "evolves from {from} by trade for a {pokemon}",
+    "lureInto": "it evolves into {into} by trade, but isn't a trade evolution itself",
+    "lureHeld": "it evolves while holding an item ({item}), but by levelling up, not trading",
+    "lureHeldTime": "it evolves while holding an item ({item}, {time}), but by levelling up, not trading"
+  },
+  "time": {
+    "day": "during the day",
+    "night": "at night"
+  },
+  "friendship": {
+    "label": "Friendship evolutions",
+    "rule": "Each one evolves from its pre-evolution by levelling up with high friendship.",
+    "why": "evolves from {from} with high friendship",
+    "whyTime": "evolves from {from} with high friendship ({time})",
+    "lure": "it evolves into {into} by friendship, but isn't a friendship evolution itself"
+  },
+  "ability": {
+    "label": "Can have {ability}",
+    "rule": "Every one can have the Ability {ability} (Hidden Abilities count).",
+    "why": "Ability {ability}",
+    "whyHidden": "Hidden Ability {ability}"
+  },
+  "hidden": {
+    "label": "Hidden Ability {ability}",
+    "rule": "{ability} is every one's Hidden Ability."
+  },
+  "move": {
+    "label": "Learns {move} by level-up",
+    "rule": "Every one learns {move} by levelling up in Scarlet & Violet.",
+    "whyEvolving": "learns {move} on evolving (SV)",
+    "whyStart": "learns {move} from level 1 (SV)",
+    "whyLevel": "learns {move} at level {level} (SV)",
+    "lure": "a {type} type, but it doesn't learn {move}"
+  },
+  "top": {
+    "label": "Highest stat: {stat}",
+    "rule": "{stat} is every one's single highest base stat.",
+    "why": "{stat} {value} is its highest stat",
+    "lure": "{stat} {value}, but its {top} ({topValue}) is higher"
+  },
+  "bst": {
+    "highLabel": "Base stat total 600+",
+    "highRule": "Their base stats add up to 600 or more.",
+    "lowLabel": "Base stat total under 260",
+    "lowRule": "Their base stats add up to less than 260.",
+    "why": "base stat total {bst}",
+    "lureHigh": "a base stat total of {bst}, just short of 600",
+    "lureLow": "a base stat total of {bst}, just over 260"
+  },
+  "body": {
+    "heavyLabel": "Weighs 300 kg or more",
+    "heavyRule": "Each one weighs at least 300 kg.",
+    "lightLabel": "Weighs 1 kg or less",
+    "lightRule": "Each one weighs 1 kg or less.",
+    "tallLabel": "3 m tall or more",
+    "tallRule": "Each one is at least 3 m tall.",
+    "shortLabel": "0.3 m tall or less",
+    "shortRule": "None of them is taller than 0.3 m.",
+    "weighs": "weighs {kg} kg",
+    "height": "{m} m tall",
+    "lure": "{why}: close, but not quite"
+  },
+  "colour": {
+    "label": "Pokédex colour: {Colour}",
+    "rule": "The Pokédex files every one of them under the colour {colour}.",
+    "why": "Pokédex colour {colour}",
+    "lure": "its Pokédex colour is {colour}"
+  },
+  "form": {
+    "label": "Has {region} form",
+    "rule": "Each one has {region} regional form.",
+    "why": "{region} {name} exists",
+    "lureOther": "it has {other} form, not {region} one",
+    "lureKin": "its relative {kin} has {region} form, but {name} doesn't"
+  },
+  "mega": {
+    "label": "Can Mega Evolve",
+    "rule": "Each one has a Mega Evolution (Legends: Z-A's new Megas included).",
+    "why": "Mega {name} exists",
+    "lure": "it has a Gigantamax form, not a Mega Evolution"
+  },
+  "gmax": {
+    "label": "Has a Gigantamax form",
+    "rule": "Each one can Gigantamax (Sword & Shield).",
+    "why": "Gigantamax {name} exists",
+    "lure": "it can Mega Evolve, but has no Gigantamax form"
+  },
+  "egg": {
+    "label": "{group} Egg Group",
+    "rule": "Every one is in the {group} Egg Group.",
+    "why": "{n, plural, one {Egg Group} other {Egg Groups}} {groups}",
+    "lure": "{n, plural, one {its Egg Group is} other {its Egg Groups are}} {groups}"
+  },
+  "gender": {
+    "maleLabel": "Always male",
+    "maleRule": "Every one of them is always male.",
+    "maleWhy": "100% male",
+    "maleLureFemale": "always female, not male",
+    "maleLureMostly": "male 87.5% of the time, but not always",
+    "femaleLabel": "Always female",
+    "femaleRule": "Every one of them is always female.",
+    "femaleWhy": "100% female",
+    "femaleLureMale": "always male, not female",
+    "femaleLureMostly": "mostly female, but not always",
+    "noneLabel": "Genderless",
+    "noneRule": "None of them has a gender.",
+    "noneWhy": "genderless"
+  },
+  "letter": {
+    "label": "Starts with {letter}",
+    "rule": "Every name begins with the letter {letter}."
+  },
+  "ends": {
+    "label": "Name ends in “-{ending}”",
+    "rule": "Every name ends in -{ending}."
+  },
+  "short": {
+    "label": "Four letters or fewer",
+    "rule": "Every name is four letters long or shorter.",
+    "why": "{n} letters",
+    "lure": "five letters: one too many"
+  },
+  "symbol": {
+    "label": "Not just letters",
+    "rule": "Every name has something besides letters: a space, a dot, a hyphen, an apostrophe, a colon, an accent, a digit or a symbol.",
+    "gender": "a ♀/♂ symbol",
+    "digit": "a digit",
+    "colon": "a colon",
+    "stop": "a full stop",
+    "hyphen": "a hyphen",
+    "apostrophe": "an apostrophe",
+    "space": "a space",
+    "accent": "an accent"
+  },
+  "wordplay": {
+    "hiddenIn": "“{word}” in {name}",
+    "colourLabel": "Hides a colour in its name",
+    "colourRule": "Every name has a colour tucked inside it: {words}.",
+    "bodyLabel": "Hides a body part in its name",
+    "bodyRule": "Every name has a body part tucked inside it: an arm, a toe, an ear, a fin...",
+    "wordLabel": "Starts with an everyday word",
+    "wordRule": "Every name is, or starts with, a plain English word: slow, star, bell, bear...",
+    "wordPlus": "“{word}” + “{rest}”",
+    "wordAlone": "“{word}” on its own",
+    "rhymeLabel": "Rhyming names: -{ending}",
+    "rhymeRule": "Every name ends in the same letters: -{ending}."
+  },
+  "lore": {
+    "aceLabel": "Gym Leaders' aces",
+    "aceRule": "Each is the final, strongest Pokémon of a Gym Leader in the main games.",
+    "aceWhy": "a Gym Leader's ace",
+    "boxLabel": "Box-art legendaries",
+    "boxRule": "Each is the legendary Pokémon on the cover of a main-series game.",
+    "boxWhy": "on the cover of {games}",
+    "foodLabel": "Named after food",
+    "foodRule": "Each name is built from a food: apple, cherry, vanilla, pumpkin, chestnut, dough, olive, tea, egg, peach...",
+    "foodWhy": "its English name comes from a food",
+    "moveLabel": "Signature move",
+    "moveRule": "Each learns a move that no other evolution family can learn.",
+    "moveWhy": "the only one to learn {moves}"
+  },
+  "mixed": {
+    "label": "{type}-related",
+    "rule": "Each tile goes with the {type} type: a {type}-type Pokémon, a {type}-type move, an ability found mostly on {type}-type Pokémon, or the {type} type itself.",
+    "why": "{types} type",
+    "move": "a {type}-type move",
+    "ability": "an ability that mostly belongs to {type}-type Pokémon",
+    "type": "the {type} type itself"
+  }
+}

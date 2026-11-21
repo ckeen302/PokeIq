@@ -1,5 +1,6 @@
 import { FACTS, type Facts } from "./facts";
 import type { Category } from "./categories";
+import { ENGLISH_KIT, type Kit } from "./text";
 
 /**
  * PokéConnections' name-wordplay categories: purple and blue groups that
@@ -26,8 +27,8 @@ function findHidden(name: string, words: readonly string[]): { word: string; at:
 }
 
 /** "Ch[arm]ander": the name with the hidden word marked. */
-function marked(name: string, hit: { word: string; at: number }): string {
-  if (lettersOf(name).length !== name.length) return `“${hit.word}” in ${name}`;
+function marked(k: Kit, name: string, hit: { word: string; at: number }): string {
+  if (lettersOf(name).length !== name.length) return k.t("wordplay.hiddenIn", { word: hit.word, name });
   return `${name.slice(0, hit.at)}[${name.slice(hit.at, hit.at + hit.word.length)}]${name.slice(hit.at + hit.word.length)}`;
 }
 
@@ -86,43 +87,45 @@ const rhymesWith = (f: Facts, ending: string) => {
   return l.length > ending.length && l.endsWith(ending);
 };
 
-export function wordplayCategories(existingIds: ReadonlySet<string>): Category[] {
+/** The wordplay categories, in the kit's words (the names are always the English ones: that's the wordplay). */
+export function wordplayCategories(existingIds: ReadonlySet<string>, k: Kit = ENGLISH_KIT): Category[] {
+  const { t } = k;
   const out: Category[] = [];
   out.push({
     id: "wordplay:colour",
     family: "wordplay",
     englishOnly: true,
-    label: "Hides a colour in its name",
-    rule: `Every name has a colour tucked inside it: ${COLOUR_WORDS.join(", ")}.`,
+    label: t("wordplay.colourLabel"),
+    rule: t("wordplay.colourRule", { words: COLOUR_WORDS.join(", ") }),
     difficulty: 2.95,
     test: (f) => findHidden(f.name, COLOUR_WORDS) !== null,
     guard: (f) => findHidden(f.name, COLOUR_GUARD) !== null,
-    why: (f) => marked(f.name, findHidden(f.name, COLOUR_WORDS)!),
+    why: (f) => marked(k, f.name, findHidden(f.name, COLOUR_WORDS)!),
   });
   out.push({
     id: "wordplay:body",
     family: "wordplay",
     englishOnly: true,
-    label: "Hides a body part in its name",
-    rule: "Every name has a body part tucked inside it: an arm, a toe, an ear, a fin...",
+    label: t("wordplay.bodyLabel"),
+    rule: t("wordplay.bodyRule"),
     difficulty: 3.3,
     test: (f) => findHidden(f.name, BODY_WORDS) !== null,
     guard: (f) => findHidden(f.name, BODY_GUARD) !== null,
-    why: (f) => marked(f.name, findHidden(f.name, BODY_WORDS)!),
+    why: (f) => marked(k, f.name, findHidden(f.name, BODY_WORDS)!),
   });
   out.push({
     id: "wordplay:word",
     family: "wordplay",
     englishOnly: true,
-    label: "Starts with an everyday word",
-    rule: "Every name is, or starts with, a plain English word: slow, star, bell, bear...",
+    label: t("wordplay.wordLabel"),
+    rule: t("wordplay.wordRule"),
     difficulty: 3.25,
     test: (f) => startsWithWord(f.name, WORDS) !== null,
     guard: (f) => startsWithWord(f.name, WORD_GUARD) !== null,
     why: (f) => {
       const w = startsWithWord(f.name, WORDS)!;
       const rest = lettersOf(f.name).slice(w.length);
-      return rest ? `“${w}” + “${rest}”` : `“${w}” on its own`;
+      return rest ? t("wordplay.wordPlus", { word: w, rest }) : t("wordplay.wordAlone", { word: w });
     },
   });
   for (const ending of rhymeEndings(existingIds)) {
@@ -130,8 +133,8 @@ export function wordplayCategories(existingIds: ReadonlySet<string>): Category[]
       id: `wordplay:rhyme:${ending}`,
       family: "wordplay",
       englishOnly: true,
-      label: `Rhyming names: -${ending}`,
-      rule: `Every name ends in the same letters: -${ending}.`,
+      label: t("wordplay.rhymeLabel", { ending }),
+      rule: t("wordplay.rhymeRule", { ending }),
       difficulty: 3.0,
       test: (f) => rhymesWith(f, ending),
       why: (f) => {

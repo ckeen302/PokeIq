@@ -5,6 +5,7 @@
  */
 export const NAMESPACES = [
   "common",
+  "connections-groups",
   "credits",
   "error",
   "feedback",
