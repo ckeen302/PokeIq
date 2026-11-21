@@ -90,25 +90,27 @@ function lookup(tree: Tree | undefined, key: string): Message | undefined {
 export function translator<T extends Tree>(ns: Namespace<T>, locale: Locale, messages: Tree | undefined): Translator<T> {
   const own = locale === DEFAULT_LOCALE ? undefined : messages;
   const intl = INTL_LOCALE[locale];
-  const find = (key: string): { message: Message; locale: string } => {
+  // `english`: the key's English, inlined at the call by the build (scripts/i18n/inline-loader.cjs) so a page needn't
+  // carry its whole namespace; the namespace's own English otherwise.
+  const find = (key: string, english?: Message): { message: Message; locale: string } => {
     const m = own && lookup(own, key);
     if (m !== undefined) return { message: m, locale: intl };
-    const e = lookup(ns.en, key);
+    const e = english ?? lookup(ns.en, key);
     if (e === undefined) throw new Error(`Missing message ${ns.name}.${key}`);
     return { message: e, locale: INTL_LOCALE.en };
   };
-  const t = ((key: string, values?: Values) => {
-    const { message, locale: l } = find(key);
+  const t = ((key: string, values?: Values, english?: Message) => {
+    const { message, locale: l } = find(key, english);
     if (typeof message === "string") return message;
     return String(typeof message === "function" ? message(values ?? {}) : format(message, l, values, OPTIONS));
   }) as unknown as Translator<T>;
-  t.rich = (key, values) => {
-    const { message, locale: l } = find(key);
+  t.rich = ((key: string, values: RichValues, english?: Message) => {
+    const { message, locale: l } = find(key, english);
     if (typeof message === "string") return message;
     const out = (typeof message === "function" ? message(values) : format<ReactNode>(message, l, values, OPTIONS)) as ReactNode;
     // Several parts render as one fragment's children (no keys needed).
     return Array.isArray(out) ? createElement(Fragment, null, ...out) : out;
-  };
+  }) as Translator<T>["rich"];
   t.has = (key) => (own !== undefined && lookup(own, key) !== undefined) || lookup(ns.en, key) !== undefined;
   Object.defineProperty(t, "locale", { value: locale });
   return t;

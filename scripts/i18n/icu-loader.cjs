@@ -31,7 +31,7 @@ const POUND = 0, SELECT = 1, PLURAL = 2, ORDINAL = 3, NUMBER = 4, DATE = 5, TIME
  * exactly as icu-minify's formatter would. Helpers in scope: N (a number as en-US writes it), O (the en-US ordinal
  * category), F (the date format), M and A (merged parts).
  */
-function codegen(nodes, path) {
+function codegen(nodes, path, used = new Set(), H = HELPERS) {
   const parts = findTags(nodes);
   const value = (name) => `v[${JSON.stringify(name)}]`;
   // Several nodes: joined with + (string mode) or as array elements (parts mode).
@@ -50,12 +50,16 @@ function codegen(nodes, path) {
     if (typeof n === "string") return JSON.stringify(n);
     if (n === POUND) {
       if (!pound) throw new Error(`# outside a plural at ${path}`);
-      return `N(${pound})`;
+      used.add("N");
+      return `${H.N}(${pound})`;
     }
     const [name, type, ...rest] = n;
     if (type === undefined) return `String(${value(name)})`;
     // A tag: its children are the rest of the node.
-    if (typeof type !== "number" || type === POUND) return `${value(name)}(A(M([${[type, ...rest].map((c) => node(c, pound)).join(",")}])))`;
+    if (typeof type !== "number" || type === POUND) {
+      used.add("M");
+      return `${value(name)}(${H.A}(${H.M}([${[type, ...rest].map((c) => node(c, pound)).join(",")}])))`;
+    }
     const v = value(name);
     if (type === SELECT) {
       const opts = rest[0];
@@ -67,16 +71,17 @@ function codegen(nodes, path) {
       const exact = Object.keys(opts).filter((k) => k.startsWith("=")).map((k) => [`${v}===${Number(k.slice(1))}`, opts[k]]);
       const cats = Object.keys(opts).filter((k) => !k.startsWith("=") && k !== "other");
       // English cardinals: "one" is exactly 1 and every other number is "other"; ordinals ask Intl.
-      const named = type === PLURAL ? (cats.includes("one") ? [[`${v}===1`, opts.one]] : []) : cats.map((k) => [`O(${v})===${JSON.stringify(k)}`, opts[k]]);
+      const named = type === PLURAL ? (cats.includes("one") ? [[`${v}===1`, opts.one]] : []) : cats.map((k) => (used.add("O"), [`${H.O}(${v})===${JSON.stringify(k)}`, opts[k]]));
       return choice([...exact, ...named], opts.other, v);
     }
     // Named styles need formats the site doesn't define (src/i18n/catalog.ts), as icu-minify itself would refuse.
     if (rest[0] !== undefined) throw new Error(`Unsupported style "${rest[0]}" at ${path}: format the value before passing it`);
-    if (type === NUMBER) return `N(${v})`;
-    if (type === DATE || type === TIME) return `F({timeZone:"UTC"}).format(${v})`;
+    if (type === NUMBER) return used.add("N"), `${H.N}(${v})`;
+    if (type === DATE || type === TIME) return used.add("F"), `${H.F}({timeZone:"UTC"}).format(${v})`;
     throw new Error(`Unknown compiled node at ${path}: ${JSON.stringify(n)}`);
   }
-  return parts ? `(v)=>M([${join(nodes, undefined)}])` : `(v)=>${join(nodes, undefined)}`;
+  if (parts) used.add("M");
+  return parts ? `(v)=>${H.M}([${join(nodes, undefined)}])` : `(v)=>${join(nodes, undefined)}`;
 }
 
 /** Whether a compiled message has a <tag> anywhere (then it formats to parts, not a string). */
@@ -91,29 +96,37 @@ function findTags(nodes) {
   return false;
 }
 
+/** The names the generated code calls its helpers by (the inline loader gives them its own). */
+const HELPERS = { N: "N", O: "O", F: "F", M: "M", A: "A" };
+
+/** The helpers' definitions, for the ones a module's messages use. */
+function helperCode(used, H = HELPERS) {
+  const head = [];
+  if (used.has("N")) head.push(`const ${H.N}=(n)=>n.toLocaleString("en-US");`);
+  if (used.has("O")) head.push(`let ${H.O}_;const ${H.O}=(n)=>(${H.O}_??=new Intl.PluralRules("en-US",{type:"ordinal"})).select(n);`);
+  if (used.has("F")) head.push(`let ${H.F}_;const ${H.F}=(x)=>(${H.F}_??=new Intl.DateTimeFormat("en-US",x));`);
+  // Parts, merged exactly as icu-minify's formatter does: adjacent strings joined, empty strings dropped, a lone part
+  // on its own (M); a tag's children always as an array (A).
+  if (used.has("M")) head.push(`const ${H.M}=(a)=>{if(!a.length)return"";const r=[];let s="";for(const x of a)typeof x==="string"?(s+=x):(s&&(r.push(s),(s="")),r.push(x));if(s)r.push(s);return r.length===1?r[0]:r};const ${H.A}=(x)=>(Array.isArray(x)?x:[x]);`);
+  return head.join("");
+}
+
+/** One English message as JavaScript: a string literal, or a function of the values. */
+function englishMessage(text, compile, path, used, H) {
+  const c = compile(text);
+  return typeof c === "string" ? JSON.stringify(c) : codegen(c, path, used, H);
+}
+
 /** An English messages file as a JavaScript module: plain text as strings, every other message as a function. */
 function englishModule(tree, compile) {
-  const helpers = new Set();
+  const used = new Set();
   const emit = (t, path) => {
-    if (typeof t === "string") {
-      const c = compile(t);
-      if (typeof c === "string") return JSON.stringify(c);
-      const code = codegen(c, path.join("."));
-      for (const h of ["N", "O", "F", "M"]) if (new RegExp(`\\b${h}\\(`).test(code)) helpers.add(h);
-      return code;
-    }
+    if (typeof t === "string") return englishMessage(t, compile, path.join("."), used);
     if (t === null || typeof t !== "object" || Array.isArray(t)) throw new Error(`Messages must be strings or objects (at ${path.join(".")})`);
     return `{${Object.entries(t).map(([k, v]) => `${JSON.stringify(k)}:${emit(v, [...path, k])}`).join(",")}}`;
   };
   const body = emit(tree, []);
-  const head = [];
-  if (helpers.has("N")) head.push(`const N=(n)=>n.toLocaleString("en-US");`);
-  if (helpers.has("O")) head.push(`let o;const O=(n)=>(o??=new Intl.PluralRules("en-US",{type:"ordinal"})).select(n);`);
-  if (helpers.has("F")) head.push(`let d;const F=(x)=>(d??=new Intl.DateTimeFormat("en-US",x));`);
-  // Parts, merged exactly as icu-minify's formatter does: adjacent strings joined, empty strings dropped, a lone part
-  // on its own (M); a tag's children always as an array (A).
-  if (helpers.has("M")) head.push(`const M=(a)=>{if(!a.length)return"";const r=[];let s="";for(const x of a)typeof x==="string"?(s+=x):(s&&(r.push(s),(s="")),r.push(x));if(s)r.push(s);return r.length===1?r[0]:r};const A=(x)=>(Array.isArray(x)?x:[x]);`);
-  return `${head.join("")}export default ${body};`;
+  return `${helperCode(used)}export default ${body};`;
 }
 
 const ENGLISH = /[\\/]src[\\/]messages[\\/]en[\\/][^\\/]+\.json$/;
@@ -131,3 +144,5 @@ module.exports.compileTree = compileTree;
 module.exports.getCompile = getCompile;
 module.exports.englishModule = englishModule;
 module.exports.codegen = codegen;
+module.exports.englishMessage = englishMessage;
+module.exports.helperCode = helperCode;

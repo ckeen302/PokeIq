@@ -77,8 +77,14 @@ const nextConfig: NextConfig = {
     config.module.rules.push({ test: /[\\/]src[\\/]messages[\\/].+\.json$/, use: [path.resolve("scripts/i18n/icu-loader.cjs")] });
     // English messages become a JavaScript module of strings and small functions (no formatter needed in the browser).
     config.module.rules.push({ test: /[\\/]src[\\/]messages[\\/]en[\\/][^\\/]+\.json$/, type: "javascript/auto" });
-    // The language modules have no side effects: whatever an English-only build doesn't use of them is left out.
-    config.module.rules.push({ test: /[\\/]src[\\/]i18n[\\/][^\\/]+\.tsx?$/, sideEffects: false });
+    // The language modules and message namespaces have no side effects: whatever a page doesn't use is left out.
+    config.module.rules.push({ test: /[\\/]src[\\/](?:i18n|messages)[\\/][^\\/]+\.tsx?$/, sideEffects: false });
+    // Each t("key") carries the English it shows (scripts/i18n/inline-loader.cjs), so a page doesn't carry whole namespaces.
+    config.module.rules.push({
+      test: /[\\/]src[\\/](?!i18n[\\/]|messages[\\/]).+\.tsx?$/,
+      enforce: "pre",
+      use: [path.resolve("scripts/i18n/inline-loader.cjs")],
+    });
     return config;
   },
   // The live languages (src/i18n/config.ts), inlined into server and browser code at build time.

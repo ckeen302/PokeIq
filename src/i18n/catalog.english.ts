@@ -23,17 +23,18 @@ function lookup(tree: Tree, key: string): Message | undefined {
 }
 
 export function translator<T extends Tree>(ns: Namespace<T>, _locale?: Locale, _messages?: Tree): Translator<T> {
-  const find = (key: string): Message => {
-    const m = lookup(ns.en, key);
+  // `english`: the key's English, inlined at the call by the build (scripts/i18n/inline-loader.cjs).
+  const find = (key: string, english?: Message): Message => {
+    const m = english ?? lookup(ns.en, key);
     if (m === undefined) throw new Error(`Missing message ${ns.name}.${key}`);
     return m;
   };
-  const t = ((key: string, values?: Values) => {
-    const m = find(key);
+  const t = ((key: string, values?: Values, english?: Message) => {
+    const m = find(key, english);
     return typeof m === "string" ? m : String(m(values ?? {}));
   }) as unknown as Translator<T>;
-  t.rich = (key: string, values: RichValues) => {
-    const m = find(key);
+  t.rich = (key: string, values: RichValues, english?: Message) => {
+    const m = find(key, english);
     const out = (typeof m === "string" ? m : m(values)) as ReactNode;
     return Array.isArray(out) ? createElement(Fragment, null, ...out) : out;
   };
