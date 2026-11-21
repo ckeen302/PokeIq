@@ -19,6 +19,7 @@ import { dexTag, localBonusText, localMultiplier, localRulesTags, type DleLabels
 import { formatNumber } from "@/i18n/catalog";
 import { useT } from "@/i18n/client";
 import game from "@/messages/pokedle-game";
+import shareNs from "@/messages/share";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Popover } from "@/components/ui/popover";
@@ -88,6 +89,7 @@ export function Pokedle({ names, labels, community }: { names: NameEntry[]; labe
 
 function PokedleGame({ names, community }: { names: NameEntry[]; community?: CommunitySlot }) {
   const t = useT(game);
+  const st = useT(shareNs);
   const words = useDleWords();
   const bt = words.t;
   const progress = useProgress();
@@ -425,7 +427,7 @@ function PokedleGame({ names, community }: { names: NameEntry[]; community?: Com
       archive: mode === "archive",
       community: mode === "daily" && shareStanding?.key === finishedKey ? shareStanding.community : undefined,
     };
-    return buildPokedleShare({ ...input, url: shareUrl(pokedleShareResult(input)) });
+    return buildPokedleShare({ ...input, url: shareUrl(pokedleShareResult(input), st.locale), t: st });
   }
 
   const closeSheet = useCallback(() => {

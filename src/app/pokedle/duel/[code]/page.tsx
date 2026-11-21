@@ -11,6 +11,9 @@ import { pvpHref } from "@/lib/pvp-types";
 import pokedle from "@/messages/pokedle";
 import board from "@/messages/pokedle-board";
 import duelNs from "@/messages/pokedle-duel";
+import duelShared from "@/messages/duel";
+import share from "@/messages/share";
+import tier from "@/messages/tier";
 
 interface PageProps {
   params: Promise<{ code: string }>;
@@ -40,7 +43,7 @@ export default async function PokedleDuelPage({ params }: PageProps) {
   // Only id + name + gen go to the client (with the other names it answers to, in another language): enough for the guess box, no answers.
   const names = dleNames(locale);
   return (
-    <ClientMessages namespaces={[board, duelNs]}>
+    <ClientMessages namespaces={[board, duelNs, duelShared, tier, share]}>
       <PokedleDuel key={code} code={code} names={names} labels={dleLabels(locale)} />
     </ClientMessages>
   );

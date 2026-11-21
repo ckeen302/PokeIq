@@ -9,6 +9,10 @@ import { getLocale, serverT } from "@/i18n/server";
 import pokedle from "@/messages/pokedle";
 import board from "@/messages/pokedle-board";
 import game from "@/messages/pokedle-game";
+import countdown from "@/messages/countdown";
+import duelShared from "@/messages/duel";
+import howto from "@/messages/howto";
+import share from "@/messages/share";
 
 export function generateMetadata(): Metadata {
   const t = serverT(pokedle);
@@ -22,7 +26,7 @@ export default function PokedlePage() {
   const names = dleNames(locale);
   return (
     <div className="space-y-10">
-      <ClientMessages namespaces={[board, game]}>
+      <ClientMessages namespaces={[board, game, duelShared, share, howto, countdown]}>
         <PokedleWithCommunity names={names} labels={dleLabels(locale)} />
         <div id="duel" className="scroll-mt-24 space-y-4">
           <PokedleDuelCard />
