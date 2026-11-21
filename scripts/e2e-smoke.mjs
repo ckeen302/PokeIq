@@ -29,6 +29,7 @@ import { runGroupBattles } from "./e2e-battle-group.mjs";
 import { runEmptyQueue } from "./e2e-battle-queue.mjs";
 import { runEmail } from "./e2e-email.mjs";
 import { guessMapReady, tapGuessMap } from "./e2e-geo-map.mjs";
+import { openDexSection } from "./e2e-dex-menu.mjs";
 
 const BASE = process.argv[2] ?? "http://localhost:3000";
 // Each game opens its how-to pop-up (with a live demo) on a first visit. "Don't show again" dismisses it for good on this device.
@@ -144,6 +145,13 @@ page.on("request", (r) => /\/audio\/battle\/.+\.(ogg|mp3)$/.test(r.url()) && mus
 // E2E_ONLY=which-pokemon runs just that step (no Supabase, no second browser), then exits.
 if (process.env.E2E_ONLY === "which-pokemon") {
   await whichPokemonStep();
+  await finish();
+}
+// E2E_ONLY=pokedex runs just the Pokédex's section menu, toolbar and table, its sections and the Theories tab, then exits.
+if (process.env.E2E_ONLY === "pokedex") {
+  await dexMenuStep();
+  await dexSectionSteps();
+  await theoriesStep();
   await finish();
 }
 // E2E_ONLY=theories runs just the Theories tab's checks, then exits.
@@ -1959,267 +1967,422 @@ for (let i = 0; i < 3; i++) {
 }
 await page.screenshot({ path: `${OUT}/study.png` });
 
-step("pokédex tabs: moves, abilities, items, places");
-{
-  const SHOTS = process.env.DEX_SHOTS ?? OUT;
-  fs.mkdirSync(SHOTS, { recursive: true });
-  await gotoSettled(page, `${BASE}/pokedex`);
-  for (const tab of ["moves", "abilities", "items", "places", "pokemon"]) {
-    await page.getByTestId(`dex-tab-${tab}`).click();
-    await page.waitForURL(tab === "pokemon" ? /\/pokedex$/ : new RegExp(`/pokedex/${tab}$`));
-    await page.getByLabel(`Search ${tab === "pokemon" ? "Pokémon" : tab}`).waitFor();
-  }
-  // Moves: search, then open the move page.
-  await page.getByTestId("dex-tab-moves").click();
-  await page.waitForURL(/\/pokedex\/moves$/);
-  await page.getByLabel("Search moves").fill("flamethrower");
-  await page.getByRole("link", { name: "Flamethrower" }).first().click();
-  await page.waitForURL(/\/pokedex\/moves\/flamethrower$/);
-  await page.getByRole("link", { name: /Charizard/ }).first().waitFor();
-  // Abilities: search, open Blaze and see Charizard.
-  await gotoSettled(page, `${BASE}/pokedex/abilities`);
-  await page.getByLabel("Search abilities").fill("blaze");
-  await page.getByRole("link", { name: /^Blaze/ }).first().click();
-  await page.waitForURL(/\/pokedex\/abilities\/blaze$/);
-  await page.getByRole("link", { name: /Charizard/ }).first().waitFor();
-  // Items: category filter + search, screenshot the list.
-  await gotoSettled(page, `${BASE}/pokedex/items`);
-  await page.getByLabel("Search items").fill("left");
-  await page.getByRole("link", { name: /Leftovers/ }).first().waitFor();
-  await page.screenshot({ path: `${SHOTS}/dex-items.png` });
-  await page.getByRole("link", { name: /Leftovers/ }).first().click();
-  await page.waitForURL(/\/pokedex\/items\/leftovers$/);
-  const holders = await page.getByTestId("item-holder").count();
-  if (holders < 1) throw new Error("Leftovers page lists no wild holder");
-  await page.getByTestId("item-sprite").waitFor();
-  const spriteOk = await page
-    .getByTestId("item-sprite")
-    .evaluate((img) => img.complete && img.naturalWidth > 0 || new Promise((r) => { img.onload = () => r(true); img.onerror = () => r(false); setTimeout(() => r(false), 8000); }));
-  if (!spriteOk) throw new Error("Leftovers sprite did not load");
-  await page.screenshot({ path: `${SHOTS}/dex-leftovers.png`, fullPage: true });
-  // A TM shows the move it teaches.
-  await gotoSettled(page, `${BASE}/pokedex/items/tm01`);
-  await page.getByRole("link", { name: "Focus Punch" }).first().waitFor();
-  // Move page links back from the Pokémon entry's Moves section.
-  await gotoSettled(page, `${BASE}/pokemon/charizard`);
-  await page.locator('a[href^="/pokedex/moves/"]').first().waitFor({ state: "attached" });
-  await page.locator('a[href="/pokedex/abilities/blaze"]').first().waitFor();
-  // Places: search + region filter, open Route 1 (Kanto), then a Gym.
-  const revealAll = async () => {
-    for (let y = 0; y < (await page.evaluate(() => document.body.scrollHeight)); y += 500) {
-      await page.evaluate((top) => window.scrollTo(0, top), y);
-      await page.waitForTimeout(80);
-    }
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await page.waitForTimeout(400);
-  };
-  await gotoSettled(page, `${BASE}/pokedex/places`);
-  await page.getByLabel("Search places").fill("route 1");
-  await page.getByLabel("Region").selectOption("Kanto");
-  await page.locator('a[href="/pokedex/places/route-1-kanto"]').waitFor();
-  await page.screenshot({ path: `${SHOTS}/dex-places.png` });
-  await page.locator('a[href="/pokedex/places/route-1-kanto"]').click();
-  await page.waitForURL(/\/pokedex\/places\/route-1-kanto$/);
-  for (const mon of ["Pidgey", "Rattata"]) await page.getByTestId("place-wild-row").filter({ hasText: mon }).first().waitFor({ state: "attached" });
-  await page.getByTestId("place-shot").scrollIntoViewIfNeeded();
-  const shotOk = await page
-    .getByTestId("place-shot")
-    .evaluate((img) => img.complete && img.naturalWidth > 0 || new Promise((r) => { img.onload = () => r(true); img.onerror = () => r(false); setTimeout(() => r(false), 15000); }));
-  if (!shotOk) throw new Error("Route 1 screenshot did not load");
-  await revealAll();
-  await page.screenshot({ path: `${SHOTS}/dex-route1.png`, fullPage: true });
-  await gotoSettled(page, `${BASE}/pokedex/places/pewter-gym-kanto`);
-  await page.getByTestId("place-gyms").filter({ hasText: "Brock" }).waitFor({ state: "attached" });
-  // Places beyond the atlas: Hisui (Legends: Arceus) and Hoenn's Route 134.
-  for (const [q, slug, mon] of [["Jubilife Village", "jubilife-village-hisui", null], ["Route 134", "route-134-hoenn", "Tentacool"]]) {
-    await gotoSettled(page, `${BASE}/pokedex/places`);
-    await page.getByLabel("Search places").fill(q);
-    await page.locator(`a[href="/pokedex/places/${slug}"]`).click();
-    await page.waitForURL(new RegExp(`/pokedex/places/${slug}$`));
-    await page.getByRole("heading", { name: q }).first().waitFor();
-    if (mon) await page.getByTestId("place-wild-row").filter({ hasText: mon }).first().waitFor({ state: "attached" });
-  }
-  // Pokémon entry links its places to the Places tab.
-  await gotoSettled(page, `${BASE}/pokemon/wooper`);
-  await page.locator('a[href="/pokedex/places/glaseado-mountain-paldea"]').first().waitFor({ state: "attached" });
-  // ...including places beyond the atlas.
-  await gotoSettled(page, `${BASE}/pokemon/magikarp`);
-  await page.locator('a[href="/pokedex/places/south-paldean-sea-paldea"]').first().waitFor({ state: "attached" });
-}
+await dexMenuStep();
+await dexSectionSteps();
 
-step("pokédex: types, natures, names, form switcher");
-{
-  const SHOTS = process.env.DEX_SHOTS ?? OUT;
-  fs.mkdirSync(SHOTS, { recursive: true });
-  await gotoSettled(page, `${BASE}/pokedex`);
-  await page.getByTestId("dex-tab-types").click();
-  await page.waitForURL(/\/pokedex\/types$/);
-  await page.getByTestId("type-chart").waitFor();
-  if ((await page.locator('[data-testid^="tc-"]').count()) !== 324) errors.push("type chart isn't 18x18");
-  if (!(await page.getByTestId("tc-fairy-dragon").innerText()).includes("2")) errors.push("type chart: Fairy should be super effective on Dragon");
-  if (!(await page.getByTestId("tc-ground-flying").innerText()).includes("0")) errors.push("type chart: Ground should have no effect on Flying");
-  await page.screenshot({ path: `${SHOTS}/dex-types.png` });
-  await page.getByTestId("dex-tab-natures").click();
-  await page.waitForURL(/\/pokedex\/natures$/);
-  if ((await page.locator('[data-testid^="nature-"]:not([data-testid="nature-table"])').count()) !== 25) errors.push("natures page doesn't list 25 natures");
-  const adamant = await page.getByTestId("nature-adamant").innerText();
-  if (!/Attack/.test(adamant) || !/Sp\. Atk/.test(adamant)) errors.push(`Adamant row wrong: ${adamant}`);
-  await page.screenshot({ path: `${SHOTS}/dex-natures.png` });
-  await gotoSettled(page, `${BASE}/pokemon/charizard`);
-  const names = await page.getByTestId("dex-names").innerText();
-  if (!names.includes("リザードン") || !names.includes("Dracaufeu")) errors.push("charizard names section missing Japanese/French names");
-  await page.getByTestId("dex-names").scrollIntoViewIfNeeded();
-  await page.screenshot({ path: `${SHOTS}/dex-names.png` });
-  await page.getByRole("button", { name: "Mega Charizard X" }).click();
-  if (!(await page.locator("#stats").innerText()).includes("130")) errors.push("Mega Charizard X stats didn't switch (Attack 130)");
-}
-
-step("pokédex TCG tab: sets, a set gallery (sort + filter), a card page, search, a Pokémon's cards");
-{
-  // CI serves a captured slice of real API data (POKEIQ_TCG_FIXTURE=1); against the live API, an outage shows a notice instead.
-  await gotoSettled(page, `${BASE}/pokedex`);
-  await page.getByTestId("dex-tab-tcg").click();
-  await page.waitForURL(/\/pokedex\/tcg$/);
-  const firstSet = page.getByTestId("tcg-set").first();
-  if (!(await firstSet.waitFor({ timeout: 30_000 }).then(() => true, () => false))) {
-    if (!(await page.getByTestId("tcg-unavailable").count())) errors.push("tcg: no sets and no unavailable notice");
-    console.log("  TCG API unavailable: rest of the TCG step skipped");
-  } else {
-    await page.screenshot({ path: `${OUT}/tcg-sets.png` });
-    // Base Set is in every snapshot (fixture and live).
-    await gotoSettled(page, `${BASE}/pokedex/tcg/base1`);
-    await page.getByTestId("tcg-card").first().waitFor();
-    const total = await page.getByTestId("tcg-card").count();
-    await page.getByTestId("tcg-sort").selectOption("price-desc");
-    await page.getByTestId("tcg-type").selectOption("Fire");
-    const fire = await page.getByTestId("tcg-card").count();
-    if (!(fire > 0 && fire < total)) errors.push(`tcg: the Fire filter showed ${fire} of ${total} cards`);
-    const setNote = await page.getByTestId("tcg-price-note").innerText();
-    if (process.env.POKEIQ_TCG_FIXTURE === "1" && !/^Prices: TCGplayer market \(USD\).* as of /.test(setNote)) errors.push(`tcg: the set's price note has no source/date: "${setNote}"`);
-    await page.screenshot({ path: `${OUT}/tcg-set.png` });
-    // The gallery re-renders after the filter: click again if the first click landed on a card that was replaced.
-    await clickUntilUrl(page, page.getByTestId("tcg-card").first(), /\/pokedex\/tcg\/card\//);
-    await page.getByTestId("tcg-card-image").waitFor();
-    await page.getByTestId("tcg-prices").waitFor();
-    // Fire Pokémon cards link to their Pokédex entry.
-    await page.getByTestId("tcg-dex-link").first().waitFor();
-    // Every price block names its source and date.
-    for (const s of await page.getByTestId("tcg-price-source").allInnerTexts()) if (!/ as of /i.test(s)) errors.push(`tcg: a price block without a date: "${s}"`);
-    await page.screenshot({ path: `${OUT}/tcg-card.png`, fullPage: true });
-    // A card the Pokémon TCG API has no prices for: TCGplayer via TCGCSV (fixture: captured TCGCSV data).
-    await gotoSettled(page, `${BASE}/pokedex/tcg/card/me55-150`);
-    await page.getByTestId("tcg-prices").waitFor();
-    const sources = await page.getByTestId("tcg-price-source").allInnerTexts();
-    if (process.env.POKEIQ_TCG_FIXTURE === "1" && !sources.some((s) => /^TCGplayer via TCGCSV · as of \w{3} \d{1,2}, \d{4}/i.test(s))) errors.push(`tcg: me55-150 has no TCGCSV price (${sources.join(" | ") || "none"})`);
-    if (!sources.length && !(await page.getByTestId("tcg-price-note").count())) errors.push("tcg: me55-150 shows neither prices nor an 'unavailable' note");
-    await gotoSettled(page, `${BASE}/pokedex/tcg`);
-    await page.getByTestId("tcg-search").getByRole("searchbox").fill("Pikachu");
-    await page.getByTestId("tcg-search").getByRole("button", { name: "Search" }).click();
-    await page.waitForURL(/[?&]q=Pikachu/);
-    await page.getByTestId("tcg-results").getByTestId("tcg-card").first().waitFor();
-    await gotoSettled(page, `${BASE}/pokemon/pikachu`);
-    await page.evaluate(() => document.getElementById("cards")?.scrollIntoView());
-    await page.getByTestId("pokemon-cards").getByTestId("tcg-card").first().waitFor({ timeout: 30_000 });
-    await page.getByTestId("pokemon-cards-all").click();
-    await page.waitForURL(/\/pokedex\/tcg\?dex=25$/);
-    await page.getByTestId("tcg-results").getByTestId("tcg-card").first().waitFor();
-  }
-}
-
-step("pokédex: previous / next on a place, a move and a TCG card (link and → key)");
-{
-  // [page, next page, next's label, previous page or null at the start of the list]
-  const pagers = [
-    ["/pokedex/places/pewter-gym-kanto", "/pokedex/places/pewter-museum-of-science-kanto", "Pewter Museum of Science", "/pokedex/places/pewter-city-kanto"],
-    ["/pokedex/moves/thunderbolt", "/pokedex/moves/thunderclap", "Thunderclap", "/pokedex/moves/thunder-wave"],
-    ["/pokedex/tcg/card/base1-1", "/pokedex/tcg/card/base1-2", "#2 Blastoise", null],
-  ];
-  const at = (path) => new RegExp(`${path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`);
-  for (const [from, next, label, prev] of pagers) {
-    await gotoSettled(page, `${BASE}${from}`);
-    const nextLink = page.getByTestId("dex-next");
-    if (!(await nextLink.waitFor({ timeout: 30_000 }).then(() => true, () => false))) {
-      if (from.includes("/tcg/") && (await page.getByTestId("tcg-unavailable").count())) continue;
-      errors.push(`pager: ${from} has no Next link`);
-      continue;
+/** The Pokédex's sections: moves, abilities, items, places, types, natures, the TCG and trainers, each opened from the section menu. */
+async function dexSectionSteps() {
+  step("pokédex tabs: moves, abilities, items, places");
+  {
+    const SHOTS = process.env.DEX_SHOTS ?? OUT;
+    fs.mkdirSync(SHOTS, { recursive: true });
+    await gotoSettled(page, `${BASE}/pokedex`);
+    for (const tab of ["moves", "abilities", "items", "places", "pokemon"]) {
+      await openDexSection(page, tab);
+      await page.waitForURL(tab === "pokemon" ? /\/pokedex$/ : new RegExp(`/pokedex/${tab}$`));
+      await page.getByLabel(`Search ${tab === "pokemon" ? "Pokémon" : tab}`).waitFor();
     }
-    if ((await nextLink.getAttribute("href")) !== next) errors.push(`pager: ${from} Next goes to ${await nextLink.getAttribute("href")}, not ${next}`);
-    if (!(await nextLink.innerText()).includes(label)) errors.push(`pager: ${from} Next doesn't name ${label}`);
-    const prevHref = (await page.getByTestId("dex-prev").count()) ? await page.getByTestId("dex-prev").getAttribute("href") : null;
-    if (prevHref !== prev) errors.push(`pager: ${from} Previous goes to ${prevHref}, not ${prev}`);
-    await nextLink.click();
-    await page.waitForURL(at(next));
-    // → from the keyboard (retried: a key pressed before hydration does nothing).
-    await gotoSettled(page, `${BASE}${from}`);
-    let moved = false;
-    for (let i = 0; i < 4 && !moved; i++) {
-      await page.keyboard.press("ArrowRight");
-      moved = await page.waitForURL(at(next), { timeout: 5_000 }).then(() => true, () => false);
-    }
-    if (!moved) errors.push(`pager: → on ${from} didn't open ${next}`);
-    else {
-      // ← from there comes back (once the new page, and so its own shortcuts, is in).
-      await page.locator(`[data-testid="dex-prev"][href="${from}"]`).waitFor({ state: "attached" });
-      let back = false;
-      for (let i = 0; i < 4 && !back; i++) {
-        await page.keyboard.press("ArrowLeft");
-        back = await page.waitForURL(at(from), { timeout: 5_000 }).then(() => true, () => false);
+    // Moves: search, then open the move page.
+    await openDexSection(page, "moves");
+    await page.waitForURL(/\/pokedex\/moves$/);
+    await page.getByLabel("Search moves").fill("flamethrower");
+    await page.getByRole("link", { name: "Flamethrower" }).first().click();
+    await page.waitForURL(/\/pokedex\/moves\/flamethrower$/);
+    await page.getByRole("link", { name: /Charizard/ }).first().waitFor();
+    // Abilities: search, open Blaze and see Charizard.
+    await gotoSettled(page, `${BASE}/pokedex/abilities`);
+    await page.getByLabel("Search abilities").fill("blaze");
+    await page.getByRole("link", { name: /^Blaze/ }).first().click();
+    await page.waitForURL(/\/pokedex\/abilities\/blaze$/);
+    await page.getByRole("link", { name: /Charizard/ }).first().waitFor();
+    // Items: category filter + search, screenshot the list.
+    await gotoSettled(page, `${BASE}/pokedex/items`);
+    await page.getByLabel("Search items").fill("left");
+    await page.getByRole("link", { name: /Leftovers/ }).first().waitFor();
+    await page.screenshot({ path: `${SHOTS}/dex-items.png` });
+    await page.getByRole("link", { name: /Leftovers/ }).first().click();
+    await page.waitForURL(/\/pokedex\/items\/leftovers$/);
+    const holders = await page.getByTestId("item-holder").count();
+    if (holders < 1) throw new Error("Leftovers page lists no wild holder");
+    await page.getByTestId("item-sprite").waitFor();
+    const spriteOk = await page
+      .getByTestId("item-sprite")
+      .evaluate((img) => img.complete && img.naturalWidth > 0 || new Promise((r) => { img.onload = () => r(true); img.onerror = () => r(false); setTimeout(() => r(false), 8000); }));
+    if (!spriteOk) throw new Error("Leftovers sprite did not load");
+    await page.screenshot({ path: `${SHOTS}/dex-leftovers.png`, fullPage: true });
+    // A TM shows the move it teaches.
+    await gotoSettled(page, `${BASE}/pokedex/items/tm01`);
+    await page.getByRole("link", { name: "Focus Punch" }).first().waitFor();
+    // Move page links back from the Pokémon entry's Moves section.
+    await gotoSettled(page, `${BASE}/pokemon/charizard`);
+    await page.locator('a[href^="/pokedex/moves/"]').first().waitFor({ state: "attached" });
+    await page.locator('a[href="/pokedex/abilities/blaze"]').first().waitFor();
+    // Places: search + region filter, open Route 1 (Kanto), then a Gym.
+    const revealAll = async () => {
+      for (let y = 0; y < (await page.evaluate(() => document.body.scrollHeight)); y += 500) {
+        await page.evaluate((top) => window.scrollTo(0, top), y);
+        await page.waitForTimeout(80);
       }
-      if (!back) errors.push(`pager: ← on ${next} didn't open ${from}`);
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.waitForTimeout(400);
+    };
+    await gotoSettled(page, `${BASE}/pokedex/places`);
+    await page.getByLabel("Search places").fill("route 1");
+    await page.getByLabel("Region").selectOption("Kanto");
+    await page.locator('a[href="/pokedex/places/route-1-kanto"]').waitFor();
+    await page.screenshot({ path: `${SHOTS}/dex-places.png` });
+    await page.locator('a[href="/pokedex/places/route-1-kanto"]').click();
+    await page.waitForURL(/\/pokedex\/places\/route-1-kanto$/);
+    for (const mon of ["Pidgey", "Rattata"]) await page.getByTestId("place-wild-row").filter({ hasText: mon }).first().waitFor({ state: "attached" });
+    await page.getByTestId("place-shot").scrollIntoViewIfNeeded();
+    const shotOk = await page
+      .getByTestId("place-shot")
+      .evaluate((img) => img.complete && img.naturalWidth > 0 || new Promise((r) => { img.onload = () => r(true); img.onerror = () => r(false); setTimeout(() => r(false), 15000); }));
+    if (!shotOk) throw new Error("Route 1 screenshot did not load");
+    await revealAll();
+    await page.screenshot({ path: `${SHOTS}/dex-route1.png`, fullPage: true });
+    await gotoSettled(page, `${BASE}/pokedex/places/pewter-gym-kanto`);
+    await page.getByTestId("place-gyms").filter({ hasText: "Brock" }).waitFor({ state: "attached" });
+    // Places beyond the atlas: Hisui (Legends: Arceus) and Hoenn's Route 134.
+    for (const [q, slug, mon] of [["Jubilife Village", "jubilife-village-hisui", null], ["Route 134", "route-134-hoenn", "Tentacool"]]) {
+      await gotoSettled(page, `${BASE}/pokedex/places`);
+      await page.getByLabel("Search places").fill(q);
+      await page.locator(`a[href="/pokedex/places/${slug}"]`).click();
+      await page.waitForURL(new RegExp(`/pokedex/places/${slug}$`));
+      await page.getByRole("heading", { name: q }).first().waitFor();
+      if (mon) await page.getByTestId("place-wild-row").filter({ hasText: mon }).first().waitFor({ state: "attached" });
     }
+    // Pokémon entry links its places to the Places tab.
+    await gotoSettled(page, `${BASE}/pokemon/wooper`);
+    await page.locator('a[href="/pokedex/places/glaseado-mountain-paldea"]').first().waitFor({ state: "attached" });
+    // ...including places beyond the atlas.
+    await gotoSettled(page, `${BASE}/pokemon/magikarp`);
+    await page.locator('a[href="/pokedex/places/south-paldean-sea-paldea"]').first().waitFor({ state: "attached" });
+  }
+
+  step("pokédex: types, natures, names, form switcher");
+  {
+    const SHOTS = process.env.DEX_SHOTS ?? OUT;
+    fs.mkdirSync(SHOTS, { recursive: true });
+    await gotoSettled(page, `${BASE}/pokedex`);
+    await openDexSection(page, "types");
+    await page.waitForURL(/\/pokedex\/types$/);
+    await page.getByTestId("type-chart").waitFor();
+    if ((await page.locator('[data-testid^="tc-"]').count()) !== 324) errors.push("type chart isn't 18x18");
+    if (!(await page.getByTestId("tc-fairy-dragon").innerText()).includes("2")) errors.push("type chart: Fairy should be super effective on Dragon");
+    if (!(await page.getByTestId("tc-ground-flying").innerText()).includes("0")) errors.push("type chart: Ground should have no effect on Flying");
+    await page.screenshot({ path: `${SHOTS}/dex-types.png` });
+    await openDexSection(page, "natures");
+    await page.waitForURL(/\/pokedex\/natures$/);
+    if ((await page.locator('[data-testid^="nature-"]:not([data-testid="nature-table"])').count()) !== 25) errors.push("natures page doesn't list 25 natures");
+    const adamant = await page.getByTestId("nature-adamant").innerText();
+    if (!/Attack/.test(adamant) || !/Sp\. Atk/.test(adamant)) errors.push(`Adamant row wrong: ${adamant}`);
+    await page.screenshot({ path: `${SHOTS}/dex-natures.png` });
+    await gotoSettled(page, `${BASE}/pokemon/charizard`);
+    const names = await page.getByTestId("dex-names").innerText();
+    if (!names.includes("リザードン") || !names.includes("Dracaufeu")) errors.push("charizard names section missing Japanese/French names");
+    await page.getByTestId("dex-names").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: `${SHOTS}/dex-names.png` });
+    await page.getByRole("button", { name: "Mega Charizard X" }).click();
+    if (!(await page.locator("#stats").innerText()).includes("130")) errors.push("Mega Charizard X stats didn't switch (Attack 130)");
+  }
+
+  step("pokédex TCG tab: sets, a set gallery (sort + filter), a card page, search, a Pokémon's cards");
+  {
+    // CI serves a captured slice of real API data (POKEIQ_TCG_FIXTURE=1); against the live API, an outage shows a notice instead.
+    await gotoSettled(page, `${BASE}/pokedex`);
+    await openDexSection(page, "tcg");
+    await page.waitForURL(/\/pokedex\/tcg$/);
+    const firstSet = page.getByTestId("tcg-set").first();
+    if (!(await firstSet.waitFor({ timeout: 30_000 }).then(() => true, () => false))) {
+      if (!(await page.getByTestId("tcg-unavailable").count())) errors.push("tcg: no sets and no unavailable notice");
+      console.log("  TCG API unavailable: rest of the TCG step skipped");
+    } else {
+      await page.screenshot({ path: `${OUT}/tcg-sets.png` });
+      // Base Set is in every snapshot (fixture and live).
+      await gotoSettled(page, `${BASE}/pokedex/tcg/base1`);
+      await page.getByTestId("tcg-card").first().waitFor();
+      const total = await page.getByTestId("tcg-card").count();
+      await page.getByTestId("tcg-sort").selectOption("price-desc");
+      await page.getByTestId("tcg-type").selectOption("Fire");
+      const fire = await page.getByTestId("tcg-card").count();
+      if (!(fire > 0 && fire < total)) errors.push(`tcg: the Fire filter showed ${fire} of ${total} cards`);
+      const setNote = await page.getByTestId("tcg-price-note").innerText();
+      if (process.env.POKEIQ_TCG_FIXTURE === "1" && !/^Prices: TCGplayer market \(USD\).* as of /.test(setNote)) errors.push(`tcg: the set's price note has no source/date: "${setNote}"`);
+      await page.screenshot({ path: `${OUT}/tcg-set.png` });
+      // The gallery re-renders after the filter: click again if the first click landed on a card that was replaced.
+      await clickUntilUrl(page, page.getByTestId("tcg-card").first(), /\/pokedex\/tcg\/card\//);
+      await page.getByTestId("tcg-card-image").waitFor();
+      await page.getByTestId("tcg-prices").waitFor();
+      // Fire Pokémon cards link to their Pokédex entry.
+      await page.getByTestId("tcg-dex-link").first().waitFor();
+      // Every price block names its source and date.
+      for (const s of await page.getByTestId("tcg-price-source").allInnerTexts()) if (!/ as of /i.test(s)) errors.push(`tcg: a price block without a date: "${s}"`);
+      await page.screenshot({ path: `${OUT}/tcg-card.png`, fullPage: true });
+      // A card the Pokémon TCG API has no prices for: TCGplayer via TCGCSV (fixture: captured TCGCSV data).
+      await gotoSettled(page, `${BASE}/pokedex/tcg/card/me55-150`);
+      await page.getByTestId("tcg-prices").waitFor();
+      const sources = await page.getByTestId("tcg-price-source").allInnerTexts();
+      if (process.env.POKEIQ_TCG_FIXTURE === "1" && !sources.some((s) => /^TCGplayer via TCGCSV · as of \w{3} \d{1,2}, \d{4}/i.test(s))) errors.push(`tcg: me55-150 has no TCGCSV price (${sources.join(" | ") || "none"})`);
+      if (!sources.length && !(await page.getByTestId("tcg-price-note").count())) errors.push("tcg: me55-150 shows neither prices nor an 'unavailable' note");
+      await gotoSettled(page, `${BASE}/pokedex/tcg`);
+      await page.getByTestId("tcg-search").getByRole("searchbox").fill("Pikachu");
+      await page.getByTestId("tcg-search").getByRole("button", { name: "Search" }).click();
+      await page.waitForURL(/[?&]q=Pikachu/);
+      await page.getByTestId("tcg-results").getByTestId("tcg-card").first().waitFor();
+      await gotoSettled(page, `${BASE}/pokemon/pikachu`);
+      await page.evaluate(() => document.getElementById("cards")?.scrollIntoView());
+      await page.getByTestId("pokemon-cards").getByTestId("tcg-card").first().waitFor({ timeout: 30_000 });
+      await page.getByTestId("pokemon-cards-all").click();
+      await page.waitForURL(/\/pokedex\/tcg\?dex=25$/);
+      await page.getByTestId("tcg-results").getByTestId("tcg-card").first().waitFor();
+    }
+  }
+
+  step("pokédex: previous / next on a place, a move and a TCG card (link and → key)");
+  {
+    // [page, next page, next's label, previous page or null at the start of the list]
+    const pagers = [
+      ["/pokedex/places/pewter-gym-kanto", "/pokedex/places/pewter-museum-of-science-kanto", "Pewter Museum of Science", "/pokedex/places/pewter-city-kanto"],
+      ["/pokedex/moves/thunderbolt", "/pokedex/moves/thunderclap", "Thunderclap", "/pokedex/moves/thunder-wave"],
+      ["/pokedex/tcg/card/base1-1", "/pokedex/tcg/card/base1-2", "#2 Blastoise", null],
+    ];
+    const at = (path) => new RegExp(`${path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`);
+    for (const [from, next, label, prev] of pagers) {
+      await gotoSettled(page, `${BASE}${from}`);
+      const nextLink = page.getByTestId("dex-next");
+      if (!(await nextLink.waitFor({ timeout: 30_000 }).then(() => true, () => false))) {
+        if (from.includes("/tcg/") && (await page.getByTestId("tcg-unavailable").count())) continue;
+        errors.push(`pager: ${from} has no Next link`);
+        continue;
+      }
+      if ((await nextLink.getAttribute("href")) !== next) errors.push(`pager: ${from} Next goes to ${await nextLink.getAttribute("href")}, not ${next}`);
+      if (!(await nextLink.innerText()).includes(label)) errors.push(`pager: ${from} Next doesn't name ${label}`);
+      const prevHref = (await page.getByTestId("dex-prev").count()) ? await page.getByTestId("dex-prev").getAttribute("href") : null;
+      if (prevHref !== prev) errors.push(`pager: ${from} Previous goes to ${prevHref}, not ${prev}`);
+      await nextLink.click();
+      await page.waitForURL(at(next));
+      // → from the keyboard (retried: a key pressed before hydration does nothing).
+      await gotoSettled(page, `${BASE}${from}`);
+      let moved = false;
+      for (let i = 0; i < 4 && !moved; i++) {
+        await page.keyboard.press("ArrowRight");
+        moved = await page.waitForURL(at(next), { timeout: 5_000 }).then(() => true, () => false);
+      }
+      if (!moved) errors.push(`pager: → on ${from} didn't open ${next}`);
+      else {
+        // ← from there comes back (once the new page, and so its own shortcuts, is in).
+        await page.locator(`[data-testid="dex-prev"][href="${from}"]`).waitFor({ state: "attached" });
+        let back = false;
+        for (let i = 0; i < 4 && !back; i++) {
+          await page.keyboard.press("ArrowLeft");
+          back = await page.waitForURL(at(from), { timeout: 5_000 }).then(() => true, () => false);
+        }
+        if (!back) errors.push(`pager: ← on ${next} didn't open ${from}`);
+      }
+    }
+  }
+
+  step("pokédex Trainers tab: search, notable filter, a game by route, an area's teams, a notable trainer");
+  {
+    await gotoSettled(page, `${BASE}/pokedex`);
+    await openDexSection(page, "trainers");
+    await page.waitForURL(/\/pokedex\/trainers$/);
+    await page.getByTestId("trainers-game-card").first().waitFor();
+    if ((await page.getByTestId("trainers-game-card").count()) !== 20) errors.push("trainers: expected 20 game cards (Gen I–IX)");
+    // Search loads the full index on demand; Joey is on Route 30 in the Johto games.
+    await page.getByTestId("trainers-search").fill("joey");
+    await page.getByTestId("trainers-result").first().waitFor({ timeout: 30_000 });
+    if (!(await page.getByTestId("trainers-results").getByText("Route 30").count())) errors.push("trainers: searching Joey didn't find Route 30");
+    await page.screenshot({ path: `${OUT}/trainers-search.png` });
+    await page.getByTestId("trainers-search").fill("");
+    await page.getByTestId("trainers-notable-toggle").click();
+    await page.getByTestId("trainers-notable-hit").first().waitFor();
+    await gotoSettled(page, `${BASE}/pokedex/trainers/crystal`);
+    await page.getByTestId("trainers-area-link").filter({ hasText: "Route 30" }).click();
+    await page.waitForURL(/\/pokedex\/trainers\/crystal\/route-30$/);
+    const joey = page.getByTestId("trainer-card").filter({ hasText: "Joey" });
+    await joey.waitFor();
+    // Joey's rematches are tabs on one card.
+    const tabs = joey.getByTestId("trainer-team-tab");
+    if ((await tabs.count()) !== 5) errors.push(`trainers: Joey has ${await tabs.count()} battle tabs, expected 5`);
+    await tabs.nth(4).click();
+    await joey.getByRole("tabpanel").filter({ hasText: "Raticate" }).waitFor();
+    await page.screenshot({ path: `${OUT}/trainers-area.png`, fullPage: true });
+    await gotoSettled(page, `${BASE}/pokedex/trainers/notable/brock`);
+    await page.getByTestId("notable-blurb").waitFor();
+    if ((await page.getByTestId("notable-game").count()) < 6) errors.push("trainers: Brock should have teams in 6 games");
+    await page.getByTestId("trainer-mon").filter({ hasText: "Onix" }).first().getByRole("link", { name: "Bide" }).click();
+    await page.waitForURL(/\/pokedex\/moves\/bide$/);
+    // Gen IX (Bulbapedia import): a Gym with Tera Types, then Katy's notable page.
+    await gotoSettled(page, `${BASE}/pokedex/trainers/scarlet-violet`);
+    await page.getByTestId("trainers-area-link").filter({ hasText: "Cortondo Gym" }).click();
+    await page.waitForURL(/\/pokedex\/trainers\/scarlet-violet\/cortondo-gym$/);
+    const katy = page.getByTestId("trainer-card").filter({ hasText: "Katy" }).first();
+    await katy.waitFor();
+    if (!(await katy.getByTestId("trainer-mon-tera").count())) errors.push("trainers: Katy's Teddiursa should show its Tera Type");
+    await gotoSettled(page, `${BASE}/pokedex/trainers/notable/katy`);
+    await page.getByTestId("notable-blurb").waitFor();
   }
 }
 
-step("pokédex Trainers tab: search, notable filter, a game by route, an area's teams, a notable trainer");
-{
-  await gotoSettled(page, `${BASE}/pokedex`);
-  await page.getByTestId("dex-tab-trainers").click();
-  await page.waitForURL(/\/pokedex\/trainers$/);
-  await page.getByTestId("trainers-game-card").first().waitFor();
-  if ((await page.getByTestId("trainers-game-card").count()) !== 20) errors.push("trainers: expected 20 game cards (Gen I–IX)");
-  // Search loads the full index on demand; Joey is on Route 30 in the Johto games.
-  await page.getByTestId("trainers-search").fill("joey");
-  await page.getByTestId("trainers-result").first().waitFor({ timeout: 30_000 });
-  if (!(await page.getByTestId("trainers-results").getByText("Route 30").count())) errors.push("trainers: searching Joey didn't find Route 30");
-  await page.screenshot({ path: `${OUT}/trainers-search.png` });
-  await page.getByTestId("trainers-search").fill("");
-  await page.getByTestId("trainers-notable-toggle").click();
-  await page.getByTestId("trainers-notable-hit").first().waitFor();
-  await gotoSettled(page, `${BASE}/pokedex/trainers/crystal`);
-  await page.getByTestId("trainers-area-link").filter({ hasText: "Route 30" }).click();
-  await page.waitForURL(/\/pokedex\/trainers\/crystal\/route-30$/);
-  const joey = page.getByTestId("trainer-card").filter({ hasText: "Joey" });
-  await joey.waitFor();
-  // Joey's rematches are tabs on one card.
-  const tabs = joey.getByTestId("trainer-team-tab");
-  if ((await tabs.count()) !== 5) errors.push(`trainers: Joey has ${await tabs.count()} battle tabs, expected 5`);
-  await tabs.nth(4).click();
-  await joey.getByRole("tabpanel").filter({ hasText: "Raticate" }).waitFor();
-  await page.screenshot({ path: `${OUT}/trainers-area.png`, fullPage: true });
-  await gotoSettled(page, `${BASE}/pokedex/trainers/notable/brock`);
-  await page.getByTestId("notable-blurb").waitFor();
-  if ((await page.getByTestId("notable-game").count()) < 6) errors.push("trainers: Brock should have teams in 6 games");
-  await page.getByTestId("trainer-mon").filter({ hasText: "Onix" }).first().getByRole("link", { name: "Bide" }).click();
-  await page.waitForURL(/\/pokedex\/moves\/bide$/);
-  // Gen IX (Bulbapedia import): a Gym with Tera Types, then Katy's notable page.
-  await gotoSettled(page, `${BASE}/pokedex/trainers/scarlet-violet`);
-  await page.getByTestId("trainers-area-link").filter({ hasText: "Cortondo Gym" }).click();
-  await page.waitForURL(/\/pokedex\/trainers\/scarlet-violet\/cortondo-gym$/);
-  const katy = page.getByTestId("trainer-card").filter({ hasText: "Katy" }).first();
-  await katy.waitFor();
-  if (!(await katy.getByTestId("trainer-mon-tera").count())) errors.push("trainers: Katy's Teddiursa should show its Tera Type");
-  await gotoSettled(page, `${BASE}/pokedex/trainers/notable/katy`);
-  await page.getByTestId("notable-blurb").waitFor();
+/** The Pokédex's section menu, and on the Pokémon list: the centred search, every type chip in one row, cards or a table (sorted from its headers, remembered). */
+async function dexMenuStep() {
+  step("pokédex: the section menu (one column, current marked, Escape, outside click), the centred search, every type chip in one row, cards or table (header sort, remembered)");
+  const SECTIONS = ["pokemon", "moves", "abilities", "items", "places", "types", "natures", "trainers", "tcg", "games", "movies", "theories"];
+  const dp = await newPage({ width: 1440, height: 900 });
+  await gotoSettled(dp, `${BASE}/pokedex`);
+  const button = dp.getByTestId("dex-section-button");
+  const menu = dp.getByTestId("dex-section-menu");
+  if (!/^Section\s*Pokémon$/.test((await button.textContent()).trim())) errors.push(`pokédex: the section button reads "${await button.textContent()}", not Pokémon`);
+  if (await menu.isVisible()) errors.push("pokédex: the section menu is open before it's clicked");
+  if (!(await dp.locator('nav[aria-label="Pokédex sections"] a[href="/pokedex/theories"]').count())) errors.push("pokédex: the section links aren't in the page while the menu is closed");
+  /** Opens the menu (again if a click landed before hydration). */
+  const openMenu = async () => {
+    for (let i = 0; i < 5 && !(await menu.isVisible()); i++) {
+      await button.click();
+      await menu.waitFor({ state: "visible", timeout: 3_000 }).catch(() => {});
+    }
+  };
+  await openMenu();
+  if ((await button.getAttribute("aria-expanded")) !== "true") errors.push("pokédex: the open section button isn't aria-expanded");
+  const items = await menu.locator('[role="menuitem"]').evaluateAll((els) =>
+    els.map((el) => {
+      const r = el.getBoundingClientRect();
+      return { id: el.dataset.testid.replace("dex-tab-", ""), x: r.left, y: r.top, w: r.width, current: el.getAttribute("aria-current") };
+    })
+  );
+  if (items.map((i) => i.id).join() !== SECTIONS.join()) errors.push(`pokédex: the section menu lists ${items.map((i) => i.id).join(", ")}`);
+  if (items.some((i) => Math.abs(i.x - items[0].x) > 0.5 || Math.abs(i.w - items[0].w) > 0.5) || items.some((i, k) => k && i.y <= items[k - 1].y)) errors.push("pokédex: the section menu isn't one straight column");
+  if (items.filter((i) => i.current === "page").map((i) => i.id).join() !== "pokemon") errors.push("pokédex: Pokémon isn't the one current section in the menu");
+  const bb = await button.boundingBox();
+  const mb = await menu.boundingBox();
+  if (Math.abs(mb.width - bb.width) > 1 || Math.abs(mb.x - bb.x) > 1 || mb.y < bb.y + bb.height) errors.push("pokédex: the section menu isn't directly under the button at its width");
+  // It covers the sticky toolbar and the cards under it.
+  const onTop = await menu.evaluate((m) => {
+    const last = m.querySelector('[data-testid="dex-tab-theories"]').getBoundingClientRect();
+    return m.contains(document.elementFromPoint(last.left + last.width / 2, last.top + last.height / 2));
+  });
+  if (!onTop) errors.push("pokédex: something covers the bottom of the section menu");
+  await dp.screenshot({ path: `${OUT}/dex-menu.png` });
+  // Escape closes it and gives the keyboard back to the button.
+  await dp.keyboard.press("Escape");
+  if (!(await menu.waitFor({ state: "hidden", timeout: 3_000 }).then(() => true, () => false))) errors.push("pokédex: Escape didn't close the section menu");
+  if ((await dp.evaluate(() => document.activeElement?.dataset.testid)) !== "dex-section-button") errors.push("pokédex: after Escape the focus isn't on the section button");
+  // So does a click anywhere else.
+  await openMenu();
+  await dp.locator("main h1").click();
+  if (!(await menu.waitFor({ state: "hidden", timeout: 3_000 }).then(() => true, () => false))) errors.push("pokédex: a click outside didn't close the section menu");
+  // Keyboard: ↓ opens it on the current section, ↓ again moves on.
+  await button.focus();
+  await dp.keyboard.press("ArrowDown");
+  await menu.waitFor({ state: "visible", timeout: 3_000 }).catch(() => {});
+  // The focus lands on the current section a frame after the menu opens: wait for it before the next key.
+  await dp.waitForFunction(() => document.activeElement?.dataset.testid === "dex-tab-pokemon", null, { timeout: 3_000 }).catch(() => {});
+  await dp.keyboard.press("ArrowDown");
+  await dp.waitForFunction(() => document.activeElement?.dataset.testid === "dex-tab-moves", null, { timeout: 3_000 }).catch(() => {});
+  if ((await dp.evaluate(() => document.activeElement?.dataset.testid)) !== "dex-tab-moves") errors.push("pokédex: the arrow keys don't move through the section menu");
+  await dp.keyboard.press("Escape");
+  // Picking Moves goes there, and the button says so.
+  await openDexSection(dp, "moves");
+  await dp.waitForURL(/\/pokedex\/moves$/);
+  await dp.getByLabel("Search moves").waitFor();
+  if (!/^Section\s*Moves$/.test((await button.textContent()).trim())) errors.push(`pokédex: on Moves the section button reads "${await button.textContent()}"`);
+  if (await menu.isVisible()) errors.push("pokédex: the section menu stayed open on the new page");
+  if ((await dp.getByTestId("dex-tab-moves").getAttribute("aria-current")) !== "page") errors.push("pokédex: Moves isn't marked current on its page");
+  await dp.screenshot({ path: `${OUT}/dex-moves.png` });
+
+  await gotoSettled(dp, `${BASE}/pokedex`);
+  if (await dp.getByText(/surprise me/i).count()) errors.push("pokédex: Surprise me is still there");
+  for (const [w, h] of [[1440, 900], [1024, 768]]) {
+    await dp.setViewportSize({ width: w, height: h });
+    await dp.waitForTimeout(300);
+    // The search box sits right under the section button, centred on it.
+    const sb = await button.boundingBox();
+    const qb = await dp.getByLabel("Search Pokémon").boundingBox();
+    const off = qb.x + qb.width / 2 - (sb.x + sb.width / 2);
+    if (Math.abs(off) > 2) errors.push(`pokédex ${w}: the search box is ${off.toFixed(1)}px off centre under the section button`);
+    if (w === 1440 && Math.abs(qb.width - sb.width) > 2) errors.push(`pokédex ${w}: the search box is ${qb.width}px wide, the section button ${sb.width}px`);
+    // All 18 type chips in one row, none cut off.
+    const chips = await dp.getByTestId("dex-type-chips").evaluate((row) => {
+      const r = row.getBoundingClientRect();
+      return {
+        scrolls: row.scrollWidth > row.clientWidth + 1,
+        chips: [...row.querySelectorAll("button")].map((b) => {
+          const c = b.getBoundingClientRect();
+          return { name: b.textContent, inside: c.left >= r.left - 0.5 && c.right <= r.right + 0.5, top: Math.round(c.top), clipped: b.scrollWidth > b.clientWidth + 1 };
+        }),
+      };
+    });
+    const out = chips.chips.filter((c) => !c.inside || c.clipped).map((c) => c.name);
+    if (chips.chips.length !== 18 || chips.scrolls || out.length || new Set(chips.chips.map((c) => c.top)).size !== 1) errors.push(`pokédex ${w}: the type chips don't all fit in one row (${chips.chips.length} chips${out.length ? `, cut off: ${out.join(", ")}` : ""}${chips.scrolls ? ", the row scrolls" : ""})`);
+  }
+  await dp.setViewportSize({ width: 1440, height: 900 });
+
+  // Cards or table, from the View dropdown.
+  const viewButton = dp.getByTestId("dex-view-button");
+  const viewList = dp.getByTestId("dex-view-list");
+  const pickView = async (id) => {
+    for (let i = 0; i < 5 && !(await viewList.isVisible()); i++) {
+      await viewButton.click();
+      await viewList.waitFor({ state: "visible", timeout: 3_000 }).catch(() => {});
+    }
+    await dp.getByTestId(`dex-view-${id}`).click();
+    await viewList.waitFor({ state: "hidden" });
+  };
+  if (!/Cards/.test(await viewButton.textContent())) errors.push("pokédex: the view doesn't start as Cards");
+  for (let i = 0; i < 5 && !(await viewList.isVisible()); i++) {
+    await viewButton.click();
+    await viewList.waitFor({ state: "visible", timeout: 3_000 }).catch(() => {});
+  }
+  if ((await dp.getByTestId("dex-view-cards").getAttribute("aria-selected")) !== "true") errors.push("pokédex: Cards isn't the selected view");
+  await dp.keyboard.press("Escape");
+  if (!(await viewList.waitFor({ state: "hidden", timeout: 3_000 }).then(() => true, () => false))) errors.push("pokédex: Escape didn't close the view list");
+  await pickView("table");
+  const table = dp.getByTestId("dex-table");
+  await table.waitFor();
+  if (!/Table/.test(await viewButton.textContent())) errors.push("pokédex: the view button doesn't say Table");
+  const rows = table.getByTestId("dex-table-row");
+  if ((await rows.first().getAttribute("href")) !== "/pokemon/bulbasaur") errors.push("pokédex table: the first row isn't Bulbasaur");
+  if (!/^No\.0001\s*Bulbasaur\s*Grass\s*Poison\s*45\s*49\s*49\s*65\s*65\s*45\s*318$/i.test((await rows.first().innerText()).replace(/\s+/g, " ").trim())) errors.push(`pokédex table: Bulbasaur's row reads "${(await rows.first().innerText()).replace(/\s+/g, " ")}"`);
+  await dp.screenshot({ path: `${OUT}/dex-table.png` });
+  /** The table's column (0 No., 3 HP … 8 Speed, 9 Total) in the first rows. */
+  const column = (i) => rows.evaluateAll((els, i) => els.slice(0, 30).map((el) => el.children[i].textContent.trim()), i);
+  const sorted = (list, cmp) => list.every((v, k) => !k || cmp(list[k - 1], v) <= 0);
+  // A stat header sorts biggest first; again, smallest first; the toolbar's sort follows.
+  await dp.getByTestId("dex-th-spe").click();
+  if (!sorted((await column(8)).map(Number), (a, b) => b - a)) errors.push("pokédex table: Speed didn't sort fastest first");
+  if ((await dp.locator('select[aria-label="Sort by"]').inputValue()) !== "spe") errors.push("pokédex table: the toolbar's sort didn't follow the Speed header");
+  if ((await dp.getByTestId("dex-th-spe").getAttribute("data-active")) !== "true") errors.push("pokédex table: the Speed header isn't marked as the sort");
+  await dp.getByTestId("dex-th-spe").click();
+  if (!sorted((await column(8)).map(Number), (a, b) => a - b)) errors.push("pokédex table: Speed again didn't sort slowest first");
+  await dp.getByTestId("dex-th-name").click();
+  if (!sorted(await column(1), (a, b) => a.localeCompare(b))) errors.push("pokédex table: Pokémon didn't sort A to Z");
+  // ...and the toolbar's sort drives the headers.
+  await dp.locator('select[aria-label="Sort by"]').selectOption("bst");
+  if ((await dp.getByTestId("dex-th-bst").getAttribute("data-active")) !== "true") errors.push("pokédex table: the Total header didn't follow the toolbar's sort");
+  await dp.getByTestId("dex-th-id").click();
+  if ((await rows.first().getAttribute("href")) !== "/pokemon/bulbasaur") errors.push("pokédex table: No. didn't sort back to Bulbasaur first");
+  // More rows load on scrolling, as the cards do.
+  const before = await rows.count();
+  await dp.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await dp.waitForFunction((n) => document.querySelectorAll('[data-testid="dex-table-row"]').length > n, before, { timeout: 10_000 }).catch(() => errors.push(`pokédex table: scrolling didn't load more than ${before} rows`));
+  // The choice lasts: a reload opens the table again, then Cards goes back.
+  await dp.reload({ waitUntil: "load" });
+  if (!(await table.waitFor({ timeout: 10_000 }).then(() => true, () => false))) errors.push("pokédex: the table view wasn't remembered after a reload");
+  await pickView("cards");
+  await table.waitFor({ state: "detached" });
+  await dp.reload({ waitUntil: "load" });
+  await dp.waitForTimeout(1500);
+  if (await table.count()) errors.push("pokédex: Cards wasn't remembered after a reload");
+  await dp.context().close();
 }
 
 step("Pokémon timeline (a 3D Lab page): intro (once, skippable), 3D scene, scroll + drag, open an entry, track filters, scrubber, list view");
 {
-  // The Pokédex's sections lead with the big Pokémon button; the 3D pages (Timeline, Sizes, Race) live in the 3D Lab.
+  // The Pokédex's sections are in the section menu; the 3D pages (Timeline, Sizes, Race) live in the 3D Lab.
   await gotoSettled(page, `${BASE}/pokedex`);
   for (const id of ["timeline", "sizes", "race"]) if (await page.getByTestId(`dex-tab-${id}`).count()) errors.push(`pokédex: still has a ${id} tab`);
-  const mainBox = await page.getByTestId("dex-tab-pokemon").boundingBox();
-  const movesBox = await page.getByTestId("dex-tab-moves").boundingBox();
-  if (!mainBox || !movesBox || mainBox.y + mainBox.height > movesBox.y + 1 || mainBox.width <= movesBox.width) errors.push("pokédex: the Pokémon button isn't the big one above the other sections");
   await gotoSettled(page, `${BASE}/pokedex/timeline`);
   // First visit: the intro plays; a click skips it straight away.
   const intro = page.getByTestId("timeline-intro");
@@ -2306,7 +2469,7 @@ await theoriesStep();
 async function theoriesStep() {
   step("pokédex Theories tab: the case of the week board, a verdict filter in the URL, a case's evidence and sources");
   await gotoSettled(page, `${BASE}/pokedex`);
-  await page.getByTestId("dex-tab-theories").click();
+  await openDexSection(page, "theories");
   await page.waitForURL(/\/pokedex\/theories$/);
   // The board: dossier, suspect photos, the magnifying glass and exhibits B and C (the wide or the stacked one, whichever shows).
   const board = page.locator('[data-testid="case-board"], [data-testid="case-board-stacked"]').filter({ visible: true });

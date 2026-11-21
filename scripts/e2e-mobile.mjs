@@ -133,6 +133,7 @@ export async function runMobile({ browser, BASE, OUT, errors, step }) {
   await phoneStates(page, BASE, errors, step);
   await paintsBeforeScripts(browser, BASE, errors, step, width);
   await narrowPhone(browser, BASE, errors, step);
+  await phoneDexMenu(browser, BASE, OUT, errors, step);
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.goto(`${BASE}/pokedex`, { waitUntil: "load" });
   await page.screenshot({ path: `${OUT}/phone-pokedex.png` });
@@ -283,6 +284,65 @@ async function narrowPhone(browser, BASE, errors, step) {
     } catch (e) {
       errors.push(`phone 360 ${path}: ${e.message.split("\n")[0]}`);
     }
+  }
+  await context.close();
+}
+
+/** A 360 px phone: the Pokédex's section menu at full width, and the table view scrolling sideways inside itself with No. and Pokémon pinned. */
+async function phoneDexMenu(browser, BASE, OUT, errors, step) {
+  step("phone at 360 px: the Pokédex's section menu fills the width and lists every section; the table scrolls sideways with No. and Pokémon pinned");
+  const context = await browser.newContext({ viewport: { width: 360, height: 740 }, isMobile: true, hasTouch: true });
+  await context.addInitScript(() => sessionStorage.setItem("pokeiq-splash", "1"));
+  const page = await context.newPage();
+  page.on("pageerror", (err) => errors.push(`[phone 360 ${page.url()}] PAGEERROR: ${err.message}`));
+  try {
+    await page.goto(`${BASE}/pokedex`, { waitUntil: "load" });
+    const button = page.getByTestId("dex-section-button");
+    const menu = page.getByTestId("dex-section-menu");
+    const bb = await button.boundingBox();
+    if (Math.abs(bb.x - 16) > 2 || Math.abs(bb.width - 328) > 2) errors.push(`phone 360 /pokedex: the section button is at ${bb.x}px, ${bb.width}px wide (want the full width inside the 16px gutters)`);
+    for (let i = 0; i < 5 && !(await menu.isVisible()); i++) {
+      await button.tap();
+      await menu.waitFor({ state: "visible", timeout: 3_000 }).catch(() => {});
+    }
+    const items = await menu.locator('[role="menuitem"]').evaluateAll((els) => els.map((el) => { const r = el.getBoundingClientRect(); return { left: r.left, right: r.right }; }));
+    if (items.length !== 12 || items.some((r) => r.left < 0 || r.right > 360 || Math.abs(r.left - items[0].left) > 0.5)) errors.push(`phone 360 /pokedex: the section menu's ${items.length} items aren't one column inside the screen`);
+    await page.screenshot({ path: `${OUT}/phone-dex-menu.png` });
+    await page.getByTestId("dex-tab-moves").tap();
+    await page.waitForURL(/\/pokedex\/moves$/);
+    if (!/Moves$/.test((await button.textContent()).trim())) errors.push("phone 360: on Moves the section button doesn't say Moves");
+    const wide = await page.evaluate(() => Math.max(window.innerWidth, document.documentElement.scrollWidth));
+    if (wide > 361) errors.push(`phone 360 /pokedex/moves: laid out ${wide}px wide`);
+
+    // The table: in the filters, under the sort.
+    await page.goto(`${BASE}/pokedex`, { waitUntil: "load" });
+    const list = page.getByTestId("dex-view-list");
+    for (let i = 0; i < 5 && !(await page.getByTestId("dex-view-button").isVisible()); i++) {
+      await page.getByLabel("Show filters").tap().catch(() => {});
+      await page.getByTestId("dex-view-button").waitFor({ state: "visible", timeout: 3_000 }).catch(() => {});
+    }
+    for (let i = 0; i < 5 && !(await list.isVisible()); i++) {
+      await page.getByTestId("dex-view-button").tap();
+      await list.waitFor({ state: "visible", timeout: 3_000 }).catch(() => {});
+    }
+    await page.getByTestId("dex-view-table").tap();
+    const table = page.getByTestId("dex-table");
+    await table.waitFor();
+    const pinned = await table.evaluate(async (t) => {
+      t.scrollLeft = 400;
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      const row = t.querySelector('[data-testid="dex-table-row"]');
+      const tl = t.getBoundingClientRect().left;
+      const no = row.children[0].getBoundingClientRect();
+      return { scrolls: t.scrollWidth > t.clientWidth + 1, moved: t.scrollLeft, no: no.left - tl, name: row.children[1].getBoundingClientRect().left - no.right };
+    });
+    if (!pinned.scrolls || !pinned.moved) errors.push("phone 360 /pokedex: the table doesn't scroll sideways");
+    if (Math.abs(pinned.no - 1) > 2 || Math.abs(pinned.name) > 2) errors.push(`phone 360 /pokedex: No. and Pokémon aren't pinned while the table scrolls (at ${pinned.no}px and ${pinned.name}px)`);
+    await page.screenshot({ path: `${OUT}/phone-dex-table.png` });
+    const wideTable = await page.evaluate(() => Math.max(window.innerWidth, document.documentElement.scrollWidth));
+    if (wideTable > 361) errors.push(`phone 360 /pokedex: with the table on, the page is ${wideTable}px wide`);
+  } catch (e) {
+    errors.push(`phone 360 /pokedex menu and table: ${e.message.split("\n")[0]}`);
   }
   await context.close();
 }

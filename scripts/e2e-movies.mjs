@@ -9,6 +9,7 @@
  */
 import { chromium } from "playwright";
 import { fileURLToPath } from "url";
+import { openDexSection } from "./e2e-dex-menu.mjs";
 
 async function ldTypes(page) {
   return page.$$eval('script[type="application/ld+json"]', (els) => els.map((e) => JSON.parse(e.textContent ?? "{}")["@type"]));
@@ -30,7 +31,7 @@ export async function runMovies({ browser, BASE, errors, step }) {
   page.on("pageerror", (err) => errors.push(`[${page.url()}] PAGEERROR: ${err.message}`));
   try {
     await page.goto(`${BASE}/pokedex`, { waitUntil: "load" });
-    await page.getByTestId("dex-tab-movies").click();
+    await openDexSection(page, "movies");
     await page.waitForURL(/\/pokedex\/movies$/);
     await page.getByTestId("movie-grid").waitFor();
     if ((await page.getByTestId("dex-tab-movies").getAttribute("aria-current")) !== "page") errors.push("movies: the Movies tab isn't marked current on its page");
