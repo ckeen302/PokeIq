@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { STAGE_POSTERS, StagePoster } from "@/components/lab/StagePoster";
-import Link from "next/link";
+import Link from "@/components/ui/PlainLink";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Clapperboard, Flag, Info, List, Minus, Play, Plus, RotateCcw, Share2, SkipForward, Trophy, Volume2, VolumeX, X } from "lucide-react";

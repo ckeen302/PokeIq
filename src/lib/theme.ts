@@ -3,6 +3,8 @@
  * applied as `html.light` before first paint by THEME_INIT_SCRIPT.
  */
 
+import { LIVE_OTHER_LOCALES } from "@/i18n/config";
+
 export type Theme = "dark" | "light";
 
 const THEME_KEY = "pokeiq-theme";
@@ -20,7 +22,7 @@ export const SPLASH_SKIP_PATHS = ["/pokedle", "/pokeconnections", "/pikadoku", "
  * session, and never on a game page. Where it shows, it's a brief fade (see
  * `.boot-splash` in globals.css), cut short once the page has content.
  */
-export const SPLASH_INIT_SCRIPT = `try{var p=location.pathname;if(${JSON.stringify(SPLASH_SKIP_PATHS)}.some(function(g){return p===g||p.indexOf(g+"/")===0})||sessionStorage.getItem("pokeiq-splash")){document.documentElement.classList.add("no-splash")}sessionStorage.setItem("pokeiq-splash","1")}catch(e){document.documentElement.classList.add("no-splash")}`;
+export const SPLASH_INIT_SCRIPT = `try{var p=location.pathname${LIVE_OTHER_LOCALES.length ? `.replace(/^\\/(?:${LIVE_OTHER_LOCALES.join("|")})(?=\\/|$)/,"")||"/"` : ""};if(${JSON.stringify(SPLASH_SKIP_PATHS)}.some(function(g){return p===g||p.indexOf(g+"/")===0})||sessionStorage.getItem("pokeiq-splash")){document.documentElement.classList.add("no-splash")}sessionStorage.setItem("pokeiq-splash","1")}catch(e){document.documentElement.classList.add("no-splash")}`;
 
 export function getTheme(): Theme {
   if (typeof document === "undefined") return "dark";

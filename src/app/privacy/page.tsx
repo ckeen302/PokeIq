@@ -1,11 +1,12 @@
 import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
+import { languageAlternates } from "@/i18n/metadata";
 import Link from "@/components/ui/Link";
 
 export const metadata: Metadata = {
   title: "Privacy policy",
   description: "What PokéIQ collects, why, and how to have it deleted. In plain English.",
-  alternates: { canonical: "/privacy" },
+  alternates: { canonical: "/privacy", languages: languageAlternates("/privacy") },
 };
 
 const CONTACT = "pokeiq.official@gmail.com";

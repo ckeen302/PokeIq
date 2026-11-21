@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "@/components/ui/Link";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Loader2 } from "lucide-react";
 import { completeOAuthSignup, type SignupEmail } from "@/lib/account";
 import { DailyEmailOptIn, optInError } from "@/components/email/DailyEmailOptIn";

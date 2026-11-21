@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "@/components/ui/Link";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { ArrowLeftRight, Crown, Flag, Loader2, Repeat, Swords, Trophy } from "lucide-react";
 import {
   FRONTIER_INFO,

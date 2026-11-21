@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
 import { cardSitemapIds } from "@/lib/tcg/card-index";
+import { LIVE_OTHER_LOCALES } from "@/i18n/config";
 
 /**
  * Kept out of crawlers' way: the API, account and admin pages, and every page
@@ -86,14 +87,18 @@ const AI_TRAINING_BOTS = [
   "Timpibot",
 ];
 
+/** A rule's paths in every live language too (/es/trainer...); exactly the English list while English is the only one. */
+const everyLanguage = (paths: string[]) => [...paths, ...LIVE_OTHER_LOCALES.flatMap((l) => paths.filter((p) => p.startsWith("/") && !p.startsWith("/api/") && !p.startsWith("/*")).map((p) => `/${l}${p}`))];
+
 export default async function robots(): Promise<MetadataRoute.Robots> {
   const cards = await cardSitemapIds();
   return {
     rules: [
-      { userAgent: "*", allow: "/", disallow: DISALLOW },
-      { userAgent: PREVIEW_BOTS, allow: "/", disallow: PREVIEW_DISALLOW },
+      { userAgent: "*", allow: "/", disallow: everyLanguage(DISALLOW) },
+      { userAgent: PREVIEW_BOTS, allow: "/", disallow: everyLanguage(PREVIEW_DISALLOW) },
       { userAgent: AI_TRAINING_BOTS, disallow: "/" },
     ],
-    sitemap: [`${SITE_URL}/sitemap.xml`, ...cards.map(({ id }) => `${SITE_URL}/pokedex/tcg/sitemap/${id}.xml`)],
+    // Each live language's own sitemap follows English's (src/app/[locale]/sitemap.xml; the index is /sitemap-index.xml).
+    sitemap: [`${SITE_URL}/sitemap.xml`, ...LIVE_OTHER_LOCALES.map((l) => `${SITE_URL}/${l}/sitemap.xml`), ...cards.map(({ id }) => `${SITE_URL}/pokedex/tcg/sitemap/${id}.xml`)],
   };
 }

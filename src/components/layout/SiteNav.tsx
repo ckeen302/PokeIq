@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "@/components/ui/Link";
-import { usePathname } from "next/navigation";
+import { usePathname } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import {
   MessagesSquare,

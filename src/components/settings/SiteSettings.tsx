@@ -5,6 +5,9 @@ import { Moon, Sun, Volume2, VolumeX, type LucideIcon } from "lucide-react";
 import { getTheme, onThemeChange, setTheme, type Theme } from "@/lib/theme";
 import { isMuted, onMuteChange, play, setMuted } from "@/lib/sound";
 import { cn } from "@/lib/utils";
+import { HAS_OTHER_LOCALES } from "@/i18n/config";
+import { useLocale } from "@/i18n/locale-context";
+import { LANGUAGE_LABEL, LanguageSelect } from "@/components/i18n/LanguageControls";
 
 /**
  * The site's own settings: light / dark theme and sound on / off. They live in
@@ -104,6 +107,16 @@ export function Row({ title, hint, children, size }: { title: string; hint?: Rea
   );
 }
 
+/** The Language row: only once a language besides English is live (until then the block is exactly Theme and Sound). */
+function LanguageRow({ size, testIdPrefix }: { size: "sm" | "md"; testIdPrefix: string }) {
+  const locale = useLocale();
+  return (
+    <Row title={LANGUAGE_LABEL[locale]} size={size}>
+      <LanguageSelect size={size} testId={`${testIdPrefix}-language`} />
+    </Row>
+  );
+}
+
 /** The Theme and Sound rows, compact in the header menu ("sm") or roomier on the trainer page ("md"). */
 export function SettingsControls({ size = "sm", testIdPrefix }: { size?: "sm" | "md"; testIdPrefix: string }) {
   const [theme, chooseTheme] = useThemeSetting();
@@ -137,6 +150,7 @@ export function SettingsControls({ size = "sm", testIdPrefix }: { size?: "sm" | 
           ]}
         />
       </Row>
+      {HAS_OTHER_LOCALES && <LanguageRow size={size} testIdPrefix={testIdPrefix} />}
     </div>
   );
 }

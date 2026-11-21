@@ -1,4 +1,6 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
+import { LIVE_OTHER_LOCALES } from "./src/i18n/config";
 import { ROOM_MOVED } from "./src/lib/rooms";
 import { ORDERS } from "./src/lib/sizes/order";
 import { LEADERBOARD_BOARDS } from "./src/lib/leaderboard-boards";
@@ -39,8 +41,20 @@ const artCache = [{ key: "Cache-Control", value: "public, max-age=2592000, stale
  */
 const ogCdnCache = [{ key: "CDN-Cache-Control", value: "max-age=86400, stale-while-revalidate=604800" }];
 
+/** A path rule for every live language's copy of a page as well (/es/..., /ja/...): nothing while English is the only one. */
+const withLocales = <T extends { source: string; destination?: string }>(rule: T): T[] => [
+  rule,
+  ...LIVE_OTHER_LOCALES.map((l) => ({
+    ...rule,
+    source: `/${l}${rule.source}`,
+    ...(rule.destination !== undefined && { destination: rule.destination.startsWith("/") ? `/${l}${rule.destination}` : rule.destination }),
+  })),
+];
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // The live languages (src/i18n/config.ts), inlined into server and browser code at build time.
+  env: { LIVE_LOCALES: LIVE_OTHER_LOCALES.join(",") },
   // Pages that render on request stream their <title>, description and
   // canonical tag after the first bytes, except to the crawlers named here,
   // which get them in <head>. Next's own list leaves Googlebot out (it runs
@@ -57,7 +71,7 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     ...Object.fromEntries(
       // Friends name battles (challenges, "now playing") and profiles read battle records: the same engine.
-      ["/api/battle/**", "/battle/**", "/api/friends/**", "/api/presence", "/api/live", "/u/**"].map((route) => [route, ["./node_modules/pokemon-showdown/dist/{config,data,lib,sim}/**/*.{js,json}"]])
+      ["/api/battle/**", "/battle/**", "/api/friends/**", "/api/presence", "/api/live", "/u/**", "/[locale]/battle/**", "/[locale]/u/**"].map((route) => [route, ["./node_modules/pokemon-showdown/dist/{config,data,lib,sim}/**/*.{js,json}"]])
     ),
     "/**/opengraph-image*": ["./src/assets/fonts/*.ttf"],
     // A size comparison's card is a route of its own (it reads ?vs=).
@@ -65,6 +79,7 @@ const nextConfig: NextConfig = {
     "/lab/mass-battle/og": ["./src/assets/fonts/*.ttf"],
     // A shared PokéGuessr result's card draws the map that was played, by a computed path.
     "/pokeguessr/r/**": ["./public/geo/maps/*.webp"],
+    "/[locale]/pokeguessr/r/**": ["./public/geo/maps/*.webp"],
     // The learn card's facts come from the Pokédex's places, which read the encounter tables from disk.
     "/api/geo/learn": ["./src/data/encounters/*.json"],
   },
@@ -91,7 +106,7 @@ const nextConfig: NextConfig = {
         ]),
         { source: "/leaderboard", has: [boardQuery], missing: bare, destination: "/leaderboard/board/:board" },
         { source: "/leaderboard", missing: [{ type: "query" as const, key: "board" }, ...bare], destination: "/leaderboard/board/daily" },
-      ],
+      ].flatMap(withLocales),
       afterFiles: [],
       fallback: [],
     };
@@ -99,6 +114,9 @@ const nextConfig: NextConfig = {
   // Battle profiles became the trainer's profile; merged chat rooms point to their new room.
   async redirects() {
     return [
+      // English has no prefix: /en and /en/... go to the page's one English address (308).
+      { source: "/en", destination: "/", permanent: true },
+      { source: "/en/:path*", destination: "/:path*", permanent: true },
       { source: "/battle/player/:name", destination: "/u/:name", permanent: true },
       // The two games that were called by their plain names now live at their Pokémon-style addresses, like /pokedle and /pikadoku:
       // old links (shared duels and challenges, search results, bookmarks) keep working, with the rest of the path and the query.
@@ -139,4 +157,5 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// next-intl: src/i18n/request.ts is its per-request setup. No middleware: languages are routed by app/[locale].
+export default createNextIntlPlugin("./src/i18n/request.ts")(nextConfig);

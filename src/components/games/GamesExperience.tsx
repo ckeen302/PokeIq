@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/PlainLink";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Clapperboard, CloudRain, Dices, Info, List, Medal, Play, RotateCcw, Share2, SkipForward, Swords, Trophy, Users, Volume2, VolumeX, X } from "lucide-react";
