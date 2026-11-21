@@ -111,11 +111,6 @@ export default async function WhichPokemonResultPage({ params }: PageProps) {
         </Link>
       </section>
 
-      <p className="text-xs text-muted-foreground">
-        How it works: 18 in-world statements rated from &ldquo;Not me at all&rdquo; to &ldquo;Totally me&rdquo; score seven traits (the Big Five plus competitiveness and
-        independence). Your scores are matched to 200 Pokémon profiles built from Pokédex entries across the games, Mystery Dungeon, Pokémon Sleep and Legends behaviour
-        and the anime, weighting the traits you&apos;re most extreme on. Everything runs in your browser; your result lives in the link.
-      </p>
     </div>
   );
 }
