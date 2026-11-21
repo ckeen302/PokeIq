@@ -3968,7 +3968,8 @@ async function homeStep() {
   // is still settling ("Unable to capture screenshot"): try once more, then keep the first screen.
   await p.screenshot({ path: `${OUT}/home.png`, fullPage: true })
     .catch(() => p.waitForTimeout(1000).then(() => p.screenshot({ path: `${OUT}/home.png`, fullPage: true })))
-    .catch(() => p.screenshot({ path: `${OUT}/home.png` }));
+    .catch(() => p.screenshot({ path: `${OUT}/home.png` }))
+    .catch((e) => console.log(`  note: home screenshot skipped (${String(e.message).split("\n")[0]})`));
 
   // Today: one even row of the five dailies, each to its game, all to play.
   const cards = p.locator("[data-testid^=home-today-card-]");
