@@ -63,6 +63,37 @@ export function itemList(name: string, items: Crumb[]) {
   };
 }
 
+/** A video game (the Pokédex's Games pages). */
+export function videoGame({
+  name,
+  path,
+  description,
+  image,
+  datePublished,
+  platforms,
+  developer,
+}: {
+  name: string;
+  path: string;
+  description: string;
+  image?: string;
+  datePublished?: string;
+  platforms: string[];
+  developer?: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    name,
+    url: abs(path),
+    description,
+    ...(image && { image: abs(image) }),
+    ...(datePublished && { datePublished }),
+    gamePlatform: platforms,
+    ...(developer && { author: developer.split(", ").map((n) => ({ "@type": "Organization", name: n })) }),
+  };
+}
+
 /** A film (a Pokémon movie's page). `image` is a site path or an absolute URL; `datePublished` is YYYY-MM-DD, left out when it hasn't been released. */
 export function movie({ name, path, description, image, datePublished }: { name: string; path: string; description: string; image: string; datePublished?: string | null }) {
   return {

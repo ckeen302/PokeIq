@@ -14,6 +14,7 @@ import { execFileSync } from "child_process";
 import { runIqTest } from "./e2e-iq-test.mjs";
 import { runSizes } from "./e2e-sizes.mjs";
 import { runRankings } from "./e2e-rankings.mjs";
+import { runVideoGames } from "./e2e-video-games.mjs";
 import { runMovies } from "./e2e-movies.mjs";
 import { runMobile } from "./e2e-mobile.mjs";
 import { runDesktopTripwire } from "./e2e-desktop-tripwire.mjs";
@@ -143,6 +144,11 @@ page.on("request", (r) => /\/audio\/battle\/.+\.(ogg|mp3)$/.test(r.url()) && mus
 // E2E_ONLY=which-pokemon runs just that step (no Supabase, no second browser), then exits.
 if (process.env.E2E_ONLY === "which-pokemon") {
   await whichPokemonStep();
+  await finish();
+}
+// E2E_ONLY=theories runs just the Theories tab's checks, then exits.
+if (process.env.E2E_ONLY === "theories") {
+  await theoriesStep();
   await finish();
 }
 // E2E_ONLY=home runs just the home page's checks (and the phone's navigation), then exits.
@@ -2294,6 +2300,54 @@ step("Pokémon timeline (a 3D Lab page): intro (once, skippable), 3D scene, scro
   }
 }
 
+await theoriesStep();
+
+/** The Theories tab: the case files' board, a verdict filter in the URL, and one case's evidence and sources. */
+async function theoriesStep() {
+  step("pokédex Theories tab: the case of the week board, a verdict filter in the URL, a case's evidence and sources");
+  await gotoSettled(page, `${BASE}/pokedex`);
+  await page.getByTestId("dex-tab-theories").click();
+  await page.waitForURL(/\/pokedex\/theories$/);
+  // The board: dossier, suspect photos, the magnifying glass and exhibits B and C (the wide or the stacked one, whichever shows).
+  const board = page.locator('[data-testid="case-board"], [data-testid="case-board-stacked"]').filter({ visible: true });
+  await board.waitFor();
+  for (const id of ["case-dossier", "case-lens", "case-exhibit-b", "case-exhibit-c"]) {
+    if (!(await board.getByTestId(id).first().isVisible())) errors.push(`theories: the board has no visible ${id}`);
+  }
+  if ((await board.getByTestId("case-suspect").count()) < 1) errors.push("theories: the board pins up no suspect photo");
+  if ((await board.locator("svg path").count()) < 4) errors.push("theories: the board has no strings");
+  await page.screenshot({ path: `${OUT}/theories-board.png` });
+  const folders = page.getByTestId("case-folder");
+  const all = await folders.count();
+  if (all < 3) errors.push(`theories: only ${all} case folders`);
+  // A verdict filter goes into the URL and survives a reload.
+  await page.getByTestId("case-verdict-debunked").click();
+  await page.waitForURL(/\?v=debunked$/);
+  const debunked = await folders.count();
+  if (!debunked || debunked >= all || (await page.locator('[data-testid="case-folder"]:not([data-verdict="debunked"])').count())) errors.push(`theories: the Debunked filter shows ${debunked} of ${all} folders`);
+  await page.reload({ waitUntil: "load" });
+  await page.waitForFunction(() => !document.querySelector('[data-testid="case-folder"]:not([data-verdict="debunked"])'), null, { timeout: 10_000 }).catch(() => errors.push("theories: ?v=debunked didn't filter the folders after a reload"));
+  if ((await page.getByTestId("case-verdict-debunked").getAttribute("aria-pressed")) !== "true") errors.push("theories: ?v=debunked didn't select the Debunked button");
+  // Search, then open a case.
+  await page.getByTestId("case-verdict-all").click();
+  await page.getByTestId("case-search").fill("clefable");
+  await page.locator('[data-testid="case-folder"][href$="/gengar-is-clefables-shadow"]').click();
+  await page.waitForURL(/\/pokedex\/theories\/gengar-is-clefables-shadow$/);
+  await page.getByRole("heading", { level: 1, name: /Gengar is Clefable's shadow/i }).waitFor();
+  for (const id of ["case-claim", "case-origin", "case-evidence-for", "case-evidence-against", "case-confirmed", "case-verdict", "case-sources", "case-silhouettes"]) {
+    if (!(await page.getByTestId(id).first().isVisible())) errors.push(`theories case: no ${id}`);
+  }
+  if ((await page.getByTestId("case-evidence-item").count()) < 2) errors.push("theories case: fewer than two pieces of evidence");
+  if (!(await page.getByTestId("case-evidence-for").locator("blockquote").filter({ hasText: "Under a full moon" }).count())) errors.push("theories case: Gengar's Red & Blue Pokédex entry isn't quoted");
+  const links = await page.getByTestId("case-source-link").evaluateAll((els) => els.map((a) => a.getAttribute("href")));
+  if (!links.length || links.some((h) => !/^https:\/\//.test(h ?? ""))) errors.push(`theories case: bad source links (${links.join(", ")})`);
+  if ((await page.getByTestId("case-related").count()) < 1) errors.push("theories case: no related cases");
+  await page.screenshot({ path: `${OUT}/theories-case.png`, fullPage: true });
+  // A glitch case draws its glitch block instead of artwork.
+  await gotoSettled(page, `${BASE}/pokedex/theories/missingno-is-real`);
+  await page.getByTestId("glitch-block").first().waitFor();
+}
+
 step("pokédex Timeline: an entry's own link opens its panel, share copies it, tour starts and stops, sound stays off when muted");
 {
   // Site sound off; count every AudioContext the page creates.
@@ -2392,6 +2446,7 @@ step("pokédex Timeline: an entry's own link opens its panel, share copies it, t
 await runSizes({ browser, BASE, OUT, errors, step });
 
 await runRankings({ browser, BASE, errors, step });
+await runVideoGames({ browser, BASE, errors, step });
 await runMovies({ browser, BASE, errors, step });
 await runMobile({ browser, BASE, OUT, errors, step });
 await runMassBattle({ browser, BASE, OUT, errors, step });
