@@ -69,7 +69,7 @@ export function mirrorPage(route: string, source: Source, { openParams = false }
 
 /** A mirrored layout's metadata: the English layout's, pointed at the language's URL. */
 export function mirrorMetadata(source: Pick<Source, "metadata" | "generateMetadata">) {
-  return async function generateMetadata(props: Props, parent: ResolvingMetadata): Promise<Metadata> {
+  return async function generateMetadata(props: { params: Promise<{ locale: string }> }, parent: ResolvingMetadata): Promise<Metadata> {
     const { locale } = await props.params;
     if (!isLiveLocale(locale)) return {};
     setLocale(locale);

@@ -34,6 +34,8 @@ import { Avatar } from "@/components/avatar/Avatar";
 // Links that fetch their page on touch on a phone, not whenever they are on screen: the bar is on every page.
 import Link from "@/components/ui/Link";
 import { cn } from "@/lib/utils";
+import { HAS_OTHER_LOCALES } from "@/i18n/config";
+import { LanguageSquare } from "@/components/i18n/Lazy";
 
 /** The four tabs before More: the home page and the games most people come for. */
 const TABS: { href: string; label: string; icon: LucideIcon }[] = [
@@ -310,6 +312,7 @@ function MoreSheet({ open, onClose, pathname, waiting }: { open: boolean; onClos
           >
             {muted ? <VolumeX className="h-5 w-5" aria-hidden /> : <Volume2 className="h-5 w-5" aria-hidden />}
           </button>
+          {HAS_OTHER_LOCALES && <LanguageSquare />}
         </div>
       </div>
     </div>

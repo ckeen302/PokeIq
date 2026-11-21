@@ -1,12 +1,14 @@
 import { DEFAULT_LOCALE, LIVE_OTHER_LOCALES, OTHER_LOCALES, type Locale, type OtherLocale } from "./config";
 
-const PREFIX = new RegExp(`^/(${OTHER_LOCALES.join("|")})(?=/|$|\\?|#)`);
+const PREFIX = /*#__PURE__*/ new RegExp(`^/(${OTHER_LOCALES.join("|")})(?=/|$|\\?|#)`);
 
 /**
  * A pathname's language and its English path: "/es/pokedle" → es, "/pokedle"; "/pokedle" → en, "/pokedle".
  * Only live languages count as a prefix (a page under a language that isn't live doesn't exist).
  */
 export function splitLocale(pathname: string): { locale: Locale; path: string } {
+  // English-only builds: nothing is a prefix (and this whole module drops out of the browser's code).
+  if (!process.env.LIVE_LOCALES) return { locale: DEFAULT_LOCALE, path: pathname };
   const m = PREFIX.exec(pathname);
   if (!m || !(LIVE_OTHER_LOCALES as readonly string[]).includes(m[1])) return { locale: DEFAULT_LOCALE, path: pathname };
   const rest = pathname.slice(m[0].length);

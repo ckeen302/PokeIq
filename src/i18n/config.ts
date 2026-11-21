@@ -10,7 +10,7 @@ export const LOCALES = ["en", "ja", "es", "fr", "de", "it"] as const;
 export type Locale = (typeof LOCALES)[number];
 export type OtherLocale = Exclude<Locale, "en">;
 export const DEFAULT_LOCALE = "en" satisfies Locale;
-export const OTHER_LOCALES = LOCALES.filter((l): l is OtherLocale => l !== DEFAULT_LOCALE);
+export const OTHER_LOCALES = /*#__PURE__*/ LOCALES.filter((l): l is OtherLocale => l !== DEFAULT_LOCALE);
 
 /** Each language in its own name, as the language picker lists it. */
 export const LOCALE_NAMES: Record<Locale, string> = {
@@ -52,7 +52,7 @@ export function parseLiveLocales(value: string | undefined): OtherLocale[] {
  * The live languages other than English. next.config inlines LIVE_LOCALES at build time (server and browser alike),
  * so a change takes a redeploy, like every static page that depends on it.
  */
-export const LIVE_OTHER_LOCALES: readonly OtherLocale[] = parseLiveLocales(process.env.LIVE_LOCALES);
+export const LIVE_OTHER_LOCALES: readonly OtherLocale[] = /*#__PURE__*/ parseLiveLocales(process.env.LIVE_LOCALES);
 
 /** Every live language, English first. */
 export const LIVE_LOCALES: readonly Locale[] = [DEFAULT_LOCALE, ...LIVE_OTHER_LOCALES];

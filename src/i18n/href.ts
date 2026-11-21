@@ -7,7 +7,7 @@ import { isPageLive } from "./routes";
  * else the English page. `external` is true when that leaves the language (it then needs a full page load).
  */
 export function localeHref(href: string, locale: Locale): { href: string; external: boolean } {
-  if (locale === DEFAULT_LOCALE || !href.startsWith("/") || href.startsWith("//")) return { href, external: false };
+  if (!process.env.LIVE_LOCALES || locale === DEFAULT_LOCALE || !href.startsWith("/") || href.startsWith("//")) return { href, external: false };
   if (isPageLive(href, locale)) return { href: localizePath(href, locale), external: false };
   return { href, external: true };
 }

@@ -21,7 +21,7 @@ export function useRouter(): ReturnType<typeof useNextRouter> {
   const router = useNextRouter();
   const locale = useLocale();
   return useMemo(() => {
-    if (locale === DEFAULT_LOCALE) return router;
+    if (!process.env.LIVE_LOCALES || locale === DEFAULT_LOCALE) return router;
     const go = (method: "push" | "replace") => (href: string, options?: Parameters<typeof router.push>[1]) => {
       const to = localeHref(href, locale);
       if (to.external) window.location.assign(to.href);

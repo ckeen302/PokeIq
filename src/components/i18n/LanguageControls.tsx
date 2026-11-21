@@ -7,6 +7,7 @@ import { useLocale, usePathname } from "@/i18n/navigation";
 import { localizePath } from "@/i18n/paths";
 import { isPageLive } from "@/i18n/routes";
 import { cn } from "@/lib/utils";
+import { Row } from "@/components/settings/SiteSettings";
 
 /** The visitor's own choice of language, kept on this device only (never a cookie: pages never vary by it). */
 const CHOICE_KEY = "pokeiq-locale";
@@ -45,6 +46,16 @@ function remember(locale: Locale) {
   }
 }
 
+/** The Settings block's Language row, under Sound, in the Theme and Sound rows' style. */
+export function LanguageRow({ size, testIdPrefix }: { size: "sm" | "md"; testIdPrefix: string }) {
+  const locale = useLocale();
+  return (
+    <Row title={LANGUAGE_LABEL[locale]} size={size}>
+      <LanguageSelect size={size} testId={`${testIdPrefix}-language`} />
+    </Row>
+  );
+}
+
 /** The Settings block's Language row control: a compact dropdown of the live languages, each in its own name. */
 export function LanguageSelect({ size, testId }: { size: "sm" | "md"; testId: string }) {
   const locale = useLocale();
@@ -79,6 +90,38 @@ export function LanguageSelect({ size, testId }: { size: "sm" | "md"; testId: st
         ))}
       </select>
       <ChevronDown className={cn("pointer-events-none absolute", size === "sm" ? "right-2.5 h-3.5 w-3.5" : "right-3.5 h-4 w-4")} aria-hidden />
+    </label>
+  );
+}
+
+/**
+ * The phone's More sheet's language switch: a square like its theme and sound buttons, with the live languages in
+ * a native picker over it (the phone's own list, each language in its own name).
+ */
+export function LanguageSquare({ className }: { className?: string }) {
+  const locale = useLocale();
+  const path = usePathname();
+  return (
+    <label className={cn("relative flex h-[56px] w-[56px] shrink-0 items-center justify-center rounded-2xl bg-foreground/[0.04] text-foreground transition-colors active:bg-foreground/[0.09]", className)}>
+      <Languages className="h-5 w-5" aria-hidden />
+      <span className="sr-only">{LANGUAGE_LABEL[locale]}</span>
+      <select
+        value={locale}
+        data-testid="more-language"
+        onChange={(e) => {
+          const next = e.target.value;
+          if (!isLiveLocale(next) || next === locale) return;
+          remember(next);
+          window.location.assign(pageIn(path, next));
+        }}
+        className="absolute inset-0 h-full w-full cursor-pointer appearance-none rounded-2xl opacity-0"
+      >
+        {LIVE_LOCALES.map((l) => (
+          <option key={l} value={l} lang={l}>
+            {LOCALE_NAMES[l]}
+          </option>
+        ))}
+      </select>
     </label>
   );
 }

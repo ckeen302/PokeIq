@@ -7,7 +7,7 @@ import { ReportProblem } from "@/components/layout/ReportProblem";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { SITE_DESCRIPTION, jsonLd } from "@/lib/seo";
 import { HAS_OTHER_LOCALES, type Locale } from "@/i18n/config";
-import { LanguageLinks, LanguageSuggestion } from "@/components/i18n/LanguageControls";
+import { LanguageLinks, LanguageSuggestion } from "@/components/i18n/Lazy";
 
 // The same @id as the home page's fuller WebSite node (with its SearchAction), so the two read as one site.
 const websiteJsonLd = {

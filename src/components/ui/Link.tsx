@@ -71,7 +71,7 @@ type LinkProps = ComponentProps<typeof NextLink>;
 /** The props with a site path sent to the page's language (English pages: unchanged, the same object). */
 export function useLocaleProps<P extends { href: ComponentProps<typeof NextLink>["href"] }>(props: P): P & { "data-locale-exit"?: true } {
   const locale = useLocale();
-  if (locale === "en" || typeof props.href !== "string") return props;
+  if (!process.env.LIVE_LOCALES || locale === "en" || typeof props.href !== "string") return props;
   const to = localeHref(props.href, locale);
   return to.external ? { ...props, href: to.href, "data-locale-exit": true } : { ...props, href: to.href };
 }

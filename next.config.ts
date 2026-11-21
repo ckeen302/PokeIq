@@ -53,13 +53,20 @@ const withLocales = <T extends { source: string; destination?: string }>(rule: T
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Pages in other languages (src/app/[locale]/**/*.locale.tsx, src/app/sitemap-index.xml) exist only in a build with a
+  // language besides English live: an English-only build is exactly the site without languages.
+  pageExtensions: LIVE_OTHER_LOCALES.length ? ["locale.tsx", "locale.ts", "tsx", "ts", "jsx", "js"] : ["tsx", "ts", "jsx", "js"],
   // Translations (src/messages/**/*.json) are compiled from ICU text to compact arrays at build time (src/i18n/catalog.ts).
   webpack(config) {
     config.module.rules.push({ test: /[\\/]src[\\/]messages[\\/].+\.json$/, use: [path.resolve("scripts/i18n/icu-loader.cjs")] });
     return config;
   },
   // The live languages (src/i18n/config.ts), inlined into server and browser code at build time.
-  env: { LIVE_LOCALES: LIVE_OTHER_LOCALES.join(",") },
+  // I18N_PREVIEW=1 (local review only, never on Vercel's production) serves every page in every live language.
+  env: {
+    LIVE_LOCALES: LIVE_OTHER_LOCALES.join(","),
+    I18N_PREVIEW: process.env.I18N_PREVIEW === "1" && process.env.VERCEL_ENV !== "production" ? "1" : "",
+  },
   // Pages that render on request stream their <title>, description and
   // canonical tag after the first bytes, except to the crawlers named here,
   // which get them in <head>. Next's own list leaves Googlebot out (it runs
