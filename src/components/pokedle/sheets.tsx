@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
+import { useDialogFocus } from "@/components/ui/use-dialog-focus";
 import { dailyNumber, LAUNCH_DATE, previousDate } from "@/lib/daily";
 import { DLE_FREEZE_EVERY, DLE_MAX_FREEZES, type DleResultLike, type DleStats } from "@/lib/dle-stats";
 import { DLE_COLUMNS, DLE_GUESS_COST, DLE_HINT_COST, DLE_HINT_EMOJI, DLE_HINT_KINDS, DLE_HINT_LABEL, DLE_MAX_GUESSES, DLE_MIN_SOLVE_POINTS, dleBasePoints } from "@/lib/dle-types";
@@ -10,25 +10,13 @@ import { Board } from "./parts";
 import { DLE_EXAMPLE_MONS, exampleRow } from "./examples";
 import { DLE_ASSISTS, DLE_ASSIST_INFO, multiplierText } from "@/lib/dle-assist";
 import { cn } from "@/lib/utils";
-import { HowToActions, HowToCards } from "@/components/howto/shared";
+import { FitWidth, HowToActions, HowToCards, HowToDialog } from "@/components/howto/shared";
 import { PokedleDemo } from "@/components/howto/PokedleDemo";
 
 /** Pokédle's pop-up sheets: how to play, stats and the archive. */
 
 export function Sheet({ title, onClose, children, wide }: { title: string; onClose: () => void; children: React.ReactNode; wide?: boolean }) {
-  const closeRef = useRef<HTMLButtonElement | null>(null);
-  useEffect(() => {
-    const before = document.activeElement as HTMLElement | null;
-    closeRef.current?.focus();
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      before?.focus?.();
-    };
-  }, [onClose]);
+  const closeRef = useDialogFocus(onClose);
   return (
     // Phones: a bottom sheet over the tab bar, scrolling inside itself, its title and close button pinned on top
     // (the sheet has no top padding there: a sticky title would otherwise stop that far down and cover the first line).
@@ -58,112 +46,111 @@ const EXAMPLE = exampleRow(DLE_EXAMPLE_MONS.pikachu, DLE_EXAMPLE_MONS.raichu, DL
 
 export function HowToSheet({ onClose, onNever }: { onClose: () => void; onNever?: () => void }) {
   return (
-    <Sheet title="How to play" onClose={onClose} wide>
-      <div className="space-y-4 text-sm" data-testid="howto-sheet">
-        <PokedleDemo />
-        <HowToCards
-          cards={[
-            { title: "The goal", body: <p>Guess the mystery Pokémon in {DLE_MAX_GUESSES} tries (in Classic). Every guess shows how it compares with the answer.</p> },
-            { title: "Core rules", body: <p>🟩 ✓ the answer has the same. 🟨 ≈ near or close. ▲▼ the answer is higher or lower. ⬛ ✕ no match.</p> },
-            {
-              title: "Scoring",
-              body: (
-                <p>
-                  A solve scores {dleBasePoints(1).toLocaleString("en-US")} on the first guess, less {DLE_GUESS_COST} for each guess after it, never below {DLE_MIN_SOLVE_POINTS}. A miss scores 0.
-                </p>
-              ),
-            },
-            { title: "Hints", body: <p>After your first guess you can tap to use a hint, at a cost in points.</p> },
-          ]}
-        />
-        <details className="rounded-md border bg-shade/30 p-3">
-          <summary className="tap cursor-pointer font-semibold max-sm:py-2.5">Full rules</summary>
-        <div className="mt-3 space-y-4">
-        <p>
-          Guess the mystery Pokémon in {DLE_MAX_GUESSES} tries (in Classic). Every guess shows how it compares with the answer. Say you guess Pikachu and the answer is Raichu:
-        </p>
+    <HowToDialog onClose={onClose} testId="howto-sheet" footer={<HowToActions onClose={onClose} onNever={onNever} />}>
+      <PokedleDemo />
+      <HowToCards
+        cards={[
+          { title: "The goal", body: <p>Guess the mystery Pokémon in {DLE_MAX_GUESSES} tries (in Classic). Every guess shows how it compares with the answer.</p> },
+          { title: "Core rules", body: <p>🟩 ✓ the answer has the same. 🟨 ≈ near or close. ▲▼ the answer is higher or lower. ⬛ ✕ no match.</p> },
+          {
+            title: "Scoring",
+            body: (
+              <p>
+                A solve scores {dleBasePoints(1).toLocaleString("en-US")} on the first guess, less {DLE_GUESS_COST} for each guess after it, never below {DLE_MIN_SOLVE_POINTS}. A miss scores 0.
+              </p>
+            ),
+          },
+          { title: "Hints", body: <p>After your first guess you can tap to use a hint, at a cost in points.</p> },
+        ]}
+      />
+      <details className="rounded-md border bg-shade/30 p-3">
+        <summary className="tap cursor-pointer font-semibold max-sm:py-2.5">Full rules</summary>
+      <div className="mt-3 space-y-4">
+      <p>
+        Guess the mystery Pokémon in {DLE_MAX_GUESSES} tries (in Classic). Every guess shows how it compares with the answer. Say you guess Pikachu and the answer is Raichu:
+      </p>
+      <FitWidth>
         <Board rows={[EXAMPLE]} flipNewest={false} />
-        <ul className="space-y-1.5">
+      </FitWidth>
+      <ul className="space-y-1.5">
+        <li>
+          <b>🟩 ✓ Match:</b> the answer has the same.
+        </li>
+        <li>
+          <b>🟨 ≈ Near:</b> the right type in the other slot, or <b>close</b> (dashed border, with an arrow): one generation or stage away, or a height or weight within 25%.
+        </li>
+        <li>
+          <b>▲▼ Higher or lower:</b> the way to go, and not close.
+        </li>
+        <li>
+          <b>⬛ ✕ No match.</b> Stage runs Baby, 1, 2, 3, and a Baby is never close.
+        </li>
+      </ul>
+      <div className="space-y-1.5 rounded-md border bg-shade/30 p-3">
+        <p className="font-semibold">Formats</p>
+        <ul className="space-y-1">
           <li>
-            <b>🟩 ✓ Match:</b> the answer has the same.
+            <b>Classic:</b> the seven clues above, 8 guesses.
           </li>
           <li>
-            <b>🟨 ≈ Near:</b> the right type in the other slot, or <b>close</b> (dashed border, with an arrow): one generation or stage away, or a height or weight within 25%.
+            <b>Stats:</b> Gen, Type 1, Type 2, Height and Weight; ✓ right, ▲▼ higher or lower (no close states), 🟨 the type in the other slot. Guesses scale with the
+            generations: 5 for Gen 1 only, up to 9 for all nine (the daily).
           </li>
           <li>
-            <b>▲▼ Higher or lower:</b> the way to go, and not close.
-          </li>
-          <li>
-            <b>⬛ ✕ No match.</b> Stage runs Baby, 1, 2, 3, and a Baby is never close.
-          </li>
-        </ul>
-        <div className="space-y-1.5 rounded-md border bg-shade/30 p-3">
-          <p className="font-semibold">Formats</p>
-          <ul className="space-y-1">
-            <li>
-              <b>Classic:</b> the seven clues above, 8 guesses.
-            </li>
-            <li>
-              <b>Stats:</b> Gen, Type 1, Type 2, Height and Weight; ✓ right, ▲▼ higher or lower (no close states), 🟨 the type in the other slot. Guesses scale with the
-              generations: 5 for Gen 1 only, up to 9 for all nine (the daily).
-            </li>
-            <li>
-              <b>Custom</b> (practice and duels): pick 3 or more clue columns.
-            </li>
-          </ul>
-          <p>
-            The daily comes in Classic and Stats: one puzzle each for everyone, each with its own streaks and stats. Practice games and duels add advanced settings: generations, 6, 8 or 10
-            guesses, hints on or off, strict (▲▼ only, no close states), a 3-minute or 60-second timer, and a legendaries-only pool.
-          </p>
-        </div>
-        <div className="space-y-1.5 rounded-md border bg-shade/30 p-3">
-          <p className="font-semibold">Points and hints</p>
-          <p>
-            A solve scores {dleBasePoints(1).toLocaleString("en-US")} on the first guess, less {DLE_GUESS_COST} for each guess after it, never below {DLE_MIN_SOLVE_POINTS} ({dleBasePoints(DLE_MAX_GUESSES)}{" "}
-            on Classic&apos;s last), the same as a duel without its speed bonus. A miss scores 0.
-          </p>
-          <p data-testid="bonus-rule">
-            A harder board pays more: +{Math.round(DLE_COLUMN_BONUS * 100)}% for each clue column hidden and +{Math.round(DLE_STRICT_BONUS * 100)}% without close states, up to +
-            {Math.round(DLE_MAX_BONUS * 100)}% (Stats: +{Math.round(rulesBonus(dailyRules("squirdle")) * 100)}%). It multiplies with the Pokédex level below.
-          </p>
-          <p>
-            Hints are never automatic. After your first guess you can tap to use one:{" "}
-            {DLE_HINT_KINDS.map((h) => `${DLE_HINT_EMOJI[h]} ${DLE_HINT_LABEL[h].toLowerCase()} −${DLE_HINT_COST[h]}`).join(", ")}. Each one used is marked on your result and your share.
-          </p>
-        </div>
-        <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
-          <li>
-            <b className="text-foreground">The Pokédex</b> beside the board is your notebook. Like Wordle&apos;s keyboard, it greys out every Pokémon your generation and type clues rule out. Tap a Pokémon to cross it off, or switch to <i>Fill in</i> to put it in the guess box.
-          </li>
-          <li>
-            <b className="text-foreground">The Pokédex</b> setting (Off, Notebook, Field Guide or Full; set it before your first guess; it stays for the game) is how much the Pokédex helps. Less help, more points:
-            <ul className="mt-1 space-y-0.5 pl-1">
-              {DLE_ASSISTS.map((a) => (
-                <li key={a}>
-                  {DLE_ASSIST_INFO[a].emoji} <b className="text-foreground">{DLE_ASSIST_INFO[a].label}</b> {multiplierText(a)}: {DLE_ASSIST_INFO[a].blurb}
-                </li>
-              ))}
-            </ul>
-            Your result and share show the level. Duels give both trainers the same one.
-          </li>
-          <li>
-            <b className="text-foreground">Hard mode</b> (set it before your first guess): every guess must fit the generation and type clues so far, so no greyed-out Pokémon. Your share gets a *.
-          </li>
-          <li>
-            <b className="text-foreground">Streaks:</b> finish the daily, won or lost, to keep your 🔥 play streak. Every {DLE_FREEZE_EVERY} days in a row earn a 🧊 freeze (up to {DLE_MAX_FREEZES}) that covers a missed day by itself.
-          </li>
-          <li>
-            <b className="text-foreground">The archive</b> has every past Classic daily. Archive and practice games never count toward streaks or stats.
-          </li>
-          <li>
-            Keys: <kbd className="rounded border px-1">/</kbd> jumps to the guess box, <kbd className="rounded border px-1">↑</kbd> <kbd className="rounded border px-1">↓</kbd> and <kbd className="rounded border px-1">Enter</kbd> pick, <kbd className="rounded border px-1">Esc</kbd> clears.
+            <b>Custom</b> (practice and duels): pick 3 or more clue columns.
           </li>
         </ul>
-        </div>
-        </details>
-        <HowToActions onClose={onClose} onNever={onNever} />
+        <p>
+          The daily comes in Classic and Stats: one puzzle each for everyone, each with its own streaks and stats. Practice games and duels add advanced settings: generations, 6, 8 or 10
+          guesses, hints on or off, strict (▲▼ only, no close states), a 3-minute or 60-second timer, and a legendaries-only pool.
+        </p>
       </div>
-    </Sheet>
+      <div className="space-y-1.5 rounded-md border bg-shade/30 p-3">
+        <p className="font-semibold">Points and hints</p>
+        <p>
+          A solve scores {dleBasePoints(1).toLocaleString("en-US")} on the first guess, less {DLE_GUESS_COST} for each guess after it, never below {DLE_MIN_SOLVE_POINTS} ({dleBasePoints(DLE_MAX_GUESSES)}{" "}
+          on Classic&apos;s last), the same as a duel without its speed bonus. A miss scores 0.
+        </p>
+        <p data-testid="bonus-rule">
+          A harder board pays more: +{Math.round(DLE_COLUMN_BONUS * 100)}% for each clue column hidden and +{Math.round(DLE_STRICT_BONUS * 100)}% without close states, up to +
+          {Math.round(DLE_MAX_BONUS * 100)}% (Stats: +{Math.round(rulesBonus(dailyRules("squirdle")) * 100)}%). It multiplies with the Pokédex level below.
+        </p>
+        <p>
+          Hints are never automatic. After your first guess you can tap to use one:{" "}
+          {DLE_HINT_KINDS.map((h) => `${DLE_HINT_EMOJI[h]} ${DLE_HINT_LABEL[h].toLowerCase()} −${DLE_HINT_COST[h]}`).join(", ")}. Each one used is marked on your result and your share.
+        </p>
+      </div>
+      <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
+        <li>
+          <b className="text-foreground">The Pokédex</b> beside the board is your notebook. Like Wordle&apos;s keyboard, it greys out every Pokémon your generation and type clues rule out. Tap a Pokémon to cross it off, or switch to <i>Fill in</i> to put it in the guess box.
+        </li>
+        <li>
+          <b className="text-foreground">The Pokédex</b> setting (Off, Notebook, Field Guide or Full; set it before your first guess; it stays for the game) is how much the Pokédex helps. Less help, more points:
+          <ul className="mt-1 space-y-0.5 pl-1">
+            {DLE_ASSISTS.map((a) => (
+              <li key={a}>
+                {DLE_ASSIST_INFO[a].emoji} <b className="text-foreground">{DLE_ASSIST_INFO[a].label}</b> {multiplierText(a)}: {DLE_ASSIST_INFO[a].blurb}
+              </li>
+            ))}
+          </ul>
+          Your result and share show the level. Duels give both trainers the same one.
+        </li>
+        <li>
+          <b className="text-foreground">Hard mode</b> (set it before your first guess): every guess must fit the generation and type clues so far, so no greyed-out Pokémon. Your share gets a *.
+        </li>
+        <li>
+          <b className="text-foreground">Streaks:</b> finish the daily, won or lost, to keep your 🔥 play streak. Every {DLE_FREEZE_EVERY} days in a row earn a 🧊 freeze (up to {DLE_MAX_FREEZES}) that covers a missed day by itself.
+        </li>
+        <li>
+          <b className="text-foreground">The archive</b> has every past Classic daily. Archive and practice games never count toward streaks or stats.
+        </li>
+        <li>
+          Keys: <kbd className="rounded border px-1">/</kbd> jumps to the guess box, <kbd className="rounded border px-1">↑</kbd> <kbd className="rounded border px-1">↓</kbd> and <kbd className="rounded border px-1">Enter</kbd> pick, <kbd className="rounded border px-1">Esc</kbd> clears.
+        </li>
+      </ul>
+      </div>
+      </details>
+    </HowToDialog>
   );
 }
 

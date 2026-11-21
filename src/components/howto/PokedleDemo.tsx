@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { Board } from "@/components/pokedle/parts";
 import { DLE_EXAMPLE_MONS, exampleRow } from "@/components/pokedle/examples";
-import { DemoFrame, useDemoFrame } from "./shared";
+import { DemoFrame, FitWidth, useDemoFrame } from "./shared";
 
 /** Mareep, then Pikachu, then Raichu (the answer), through the game's own clue code. */
 const MON = [DLE_EXAMPLE_MONS.mareep, DLE_EXAMPLE_MONS.pikachu, DLE_EXAMPLE_MONS.raichu];
@@ -37,7 +37,10 @@ export function PokedleDemo() {
             <span className="text-muted-foreground">Guess a Pokémon…</span>
           )}
         </div>
-        <div className="min-h-[13.5rem] max-md:min-h-[16.75rem]">{frame.rows > 0 && <Board rows={rows.slice(0, frame.rows)} columns={COLUMNS} />}</div>
+        {/* From 640px up the board has fixed tracks, 34.75rem in all: its room is kept at that width from the start and scaled to fit the pop-up, so the demo never changes size. */}
+        <FitWidth>
+          <div className="min-h-[13.5rem] max-md:min-h-[16.75rem] sm:w-[34.75rem]">{frame.rows > 0 && <Board rows={rows.slice(0, frame.rows)} columns={COLUMNS} />}</div>
+        </FitWidth>
         <p className="min-h-5 text-center text-sm font-semibold max-md:min-h-10">{solved ? "Solved in 3 guesses!" : frame.rows === 1 ? "Closer: ≈ is one generation or stage away" : ""}</p>
       </div>
     </DemoFrame>

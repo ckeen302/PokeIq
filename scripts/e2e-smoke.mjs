@@ -18,6 +18,7 @@ import { runMovies } from "./e2e-movies.mjs";
 import { runMobile } from "./e2e-mobile.mjs";
 import { runDesktopTripwire } from "./e2e-desktop-tripwire.mjs";
 import { runA11y } from "./e2e-a11y.mjs";
+import { runHowTo } from "./e2e-howto.mjs";
 import { runHydration } from "./e2e-hydration.mjs";
 import { runMassBattle } from "./e2e-mass-battle.mjs";
 import { runRace } from "./e2e-race.mjs";
@@ -134,6 +135,10 @@ async function chatTo(from, to, text, shown = text) {
 await runDesktopTripwire({ browser, BASE, errors, step });
 await runA11y({ browser, BASE, errors, step });
 await runHydration({ browser, BASE, errors, step });
+// Every game's how-to pop-up is one size (each on a fresh device, so it opens by itself).
+await runHowTo({ browser, BASE, OUT, errors, step });
+// E2E_ONLY=howto runs just the checks above (desktop tripwire, accessibility, hydration, the how-to pop-ups), then exits.
+if (process.env.E2E_ONLY === "howto") await finish();
 
 const page = await newPage({ width: 1280, height: 900 });
 // Battle music this tab fetched (a later battle plays the cached track without a new request).
