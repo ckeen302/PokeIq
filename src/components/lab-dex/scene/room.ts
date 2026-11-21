@@ -1,7 +1,6 @@
 import * as THREE from "three";
-import { chainShader, withWorldPos, type LabTime } from "./holo";
+import { chainShader, glowDisc, withWorldPos, type LabTime } from "./holo";
 import { liquidGradient, miniScreen, wallPanel, wallScreens, type LabFonts } from "./screens";
-import type { LabEntry } from "../roster";
 
 /**
  * The research lab round the wheel: a polished floor (its reflection drawn
@@ -32,7 +31,8 @@ export interface Room {
   group: THREE.Group;
   floor: THREE.Mesh;
   floorUniforms: FloorUniforms;
-  /** Things that glow on the walls (lit for the mirror too). */
+  /** The live specimen index on the wall: redraw its canvas, then flag the texture. */
+  index: { canvas: HTMLCanvasElement; texture: THREE.Texture };
   dispose(): void;
 }
 
@@ -143,7 +143,7 @@ function floorMaterial(u: FloorUniforms, time: LabTime) {
   return m;
 }
 
-export function buildRoom(scene: THREE.Scene, roster: LabEntry[], fonts: LabFonts, time: LabTime, floorUniforms: FloorUniforms, back: number): Room {
+export function buildRoom(scene: THREE.Scene, fonts: LabFonts, time: LabTime, floorUniforms: FloorUniforms, back: number): Room {
   const group = new THREE.Group();
   scene.add(group);
   const geos: THREE.BufferGeometry[] = [];
@@ -198,7 +198,7 @@ export function buildRoom(scene: THREE.Scene, roster: LabEntry[], fonts: LabFont
   add(new THREE.CircleGeometry(1.2, 48).rotateX(Math.PI / 2).translate(0, ROOM.height - 1.46, 0), mat(new THREE.MeshBasicMaterial({ color: new THREE.Color(0.9, 0.85, 0.8) })));
 
   // ---- Research screens on the wall, consoles before them, specimen tubes between.
-  const screens = wallScreens(roster, fonts);
+  const { textures: screens, index } = wallScreens(fonts);
   texs.push(...screens);
   const bezel = mat(std({ color: "#121822", roughness: 0.35, metalness: 0.8 }));
   const screenAngles = [back - 0.48, back + 0.48, back - 1.62, back + 1.62, back - 2.75, back + 2.75];
@@ -266,10 +266,11 @@ export function buildRoom(scene: THREE.Scene, roster: LabEntry[], fonts: LabFont
     tg(new THREE.CylinderGeometry(0.66, 0.6, 0.45, 40).translate(0, 3.95, 0), dark);
     tg(new THREE.CylinderGeometry(0.08, 0.08, ROOM.height - 4.1, 8).translate(0.25, 4.1 + (ROOM.height - 4.1) / 2, 0), darker, false);
     tg(new THREE.CylinderGeometry(0.06, 0.06, ROOM.height - 4.1, 8).translate(-0.22, 4.1 + (ROOM.height - 4.1) / 2, 0.1), darker, false);
-    // Its light on the wall and floor.
-    const pl = new THREE.PointLight(col, 2.2, 6, 2);
-    pl.position.set(x * 0.94, 2.2, z * 0.94);
-    group.add(pl);
+    // Its glow on the floor round it (painted light: no lamp to slow every other surface down).
+    const gl = new THREE.Mesh(new THREE.PlaneGeometry(4, 4).rotateX(-Math.PI / 2).translate(0, 0.012, 0), mat(glowDisc(col.clone(), 0.32, 2.2)));
+    geos.push(gl.geometry);
+    gl.renderOrder = 2;
+    tube.add(gl);
     for (let k = 0; k < 22; k++) {
       const rr = Math.sqrt(Math.random()) * 0.34, aa = Math.random() * Math.PI * 2, y = 0.7 + Math.random() * 2.8, s = 0.012 + Math.random() * 0.03;
       bm.makeScale(s, s, s).setPosition(x + Math.cos(aa) * rr, y, z + Math.sin(aa) * rr);
@@ -321,6 +322,7 @@ export function buildRoom(scene: THREE.Scene, roster: LabEntry[], fonts: LabFont
     group,
     floor,
     floorUniforms,
+    index,
     dispose() {
       geos.forEach((g) => g.dispose());
       mats.forEach((m) => m.dispose());
@@ -330,11 +332,10 @@ export function buildRoom(scene: THREE.Scene, roster: LabEntry[], fonts: LabFont
   };
 }
 
-/** Cables across the floor from the table to each pod (and on to the wall), dark rubber catching the light. */
-export function buildCables(group: THREE.Group, podAngles: number[]): THREE.BufferGeometry[] {
+/** Cables across the floor from the table to each pod (on the turning ring, so they go round with it), dark rubber catching the light. */
+export function buildCables(group: THREE.Group, podAngles: number[]): { dispose(): void } {
   const geos: THREE.BufferGeometry[] = [];
   const rubber = new THREE.MeshStandardMaterial({ color: "#0a0c10", roughness: 0.38, metalness: 0.1 });
-  const sheath = new THREE.MeshStandardMaterial({ color: "#1b2433", roughness: 0.3, metalness: 0.6 });
   podAngles.forEach((a, i) => {
     for (const side of [-1, 1]) {
       const pts: THREE.Vector3[] = [];
@@ -353,21 +354,6 @@ export function buildCables(group: THREE.Group, podAngles: number[]): THREE.Buff
       m.receiveShadow = true;
       group.add(m);
     }
-    if (i % 2 === 0) {
-      // A heavier bundle from the pod to the wall.
-      const pts: THREE.Vector3[] = [];
-      for (let k = 0; k <= 8; k++) {
-        const t = k / 8;
-        const r = ROOM.ringR + 0.75 + (ROOM.wallR - 0.4 - ROOM.ringR - 0.75) * t;
-        const aa = a + 0.05 + Math.sin(t * 3 + i) * 0.03;
-        pts.push(new THREE.Vector3(Math.sin(aa) * r, 0.06 + (t > 0.9 ? (t - 0.9) * 6 : 0), Math.cos(aa) * r));
-      }
-      const g = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 64, 0.07, 10, false);
-      geos.push(g);
-      const m = new THREE.Mesh(g, sheath);
-      m.receiveShadow = true;
-      group.add(m);
-    }
   });
-  return geos;
+  return { dispose() { geos.forEach((g) => g.dispose()); rubber.dispose(); } };
 }

@@ -1,0 +1,101 @@
+/**
+ * Every piece of UI copy in the Professor's Lab, in one place, so it can move
+ * to the site's message files when they land (English only for now).
+ */
+
+import type { RoleKey } from "@/lib/lab-dex/roles";
+import type { SortKey } from "@/lib/lab-dex/sequence";
+
+export const S = {
+  brand: "Professor's Lab",
+  loading: "Calibrating the lab…",
+  recovering: "Restarting the lab's display…",
+  noWebgl: "3D isn't available in this browser, so the lab shows its specimen cards instead.",
+  searchLabel: "Search Pokémon",
+  searchPlaceholder: "Search Pokémon",
+  searchHint: "Name or number",
+  clearSearch: "Clear search",
+  notInView: "Not in these filters",
+  showAll: "Show it",
+  noMatch: "No Pokémon match those filters.",
+  reset: "Reset",
+  filters: "Filters",
+  hideFilters: "Hide filters",
+  allTypes: "All types",
+  types: "Types",
+  gen: "Gen",
+  legends: "Legendary + Mythical",
+  final: "Fully evolved",
+  forms: "Forms",
+  formsHint: "Mega, regional and Gigantamax forms after each Pokémon",
+  sortBy: "Sort by",
+  sortAsc: "Sort ascending",
+  sortDesc: "Sort descending",
+  specimen: "Specimen",
+  scanComplete: "Scan complete",
+  materialising: "Materialising…",
+  height: "Height",
+  weight: "Weight",
+  region: "Region",
+  unknown: "Unknown",
+  entry: "Pokédex entry",
+  abilities: "Abilities",
+  hidden: "Hidden",
+  evolution: "Evolution",
+  noEvolution: "Doesn't evolve",
+  weakTo: "Weak to",
+  resists: "Resists",
+  immune: "Immune",
+  baseStats: "Base stats",
+  roles: "Roles",
+  total: "Total",
+  bestRole: "Best role",
+  rolesNote: "Each score is ranked against every Pokémon",
+  rolesNoteForms: "Each score is ranked against every Pokémon and form",
+  top: (n: number) => `Top ${n}%`,
+  bottom: (n: number) => `Bottom ${n}%`,
+  rank: (n: number) => `#${n.toLocaleString("en")}`,
+  openInDex: "Open in Pokédex",
+  prev: "Previous",
+  next: "Next",
+  hint: "Drag or ← → to choose",
+  hintTouch: "Swipe to choose",
+  stage: "The Professor's Lab: a wheel of Pokémon. Use the left and right arrow keys to turn it.",
+  stageRole: "carousel",
+  announce: (name: string, no: string, types: string) => `${name}, number ${no}, ${types}`,
+  showDetails: "Details",
+  sheetHandle: "Show details",
+  formOf: (name: string) => `A form of ${name}`,
+  pick: (name: string) => `Show ${name}`,
+  evoJump: (name: string) => `Show ${name}`,
+} as const;
+
+export const STAT_LABELS = ["HP", "Attack", "Defense", "Sp. Atk", "Sp. Def", "Speed"] as const;
+export const STAT_SHORT = ["HP", "ATK", "DEF", "SPA", "SPD", "SPE"] as const;
+export const GEN_NUMERALS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"] as const;
+export const REGIONS = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola", "Galar", "Paldea"] as const;
+
+export const ROLE_TEXT: Record<RoleKey, { name: string; formula: string }> = {
+  physicalSweeper: { name: "Physical Sweeper", formula: "Attack + Speed" },
+  specialSweeper: { name: "Special Sweeper", formula: "Sp. Atk + Speed" },
+  wall: { name: "Wall", formula: "HP + Defense + Sp. Def" },
+  physicalTank: { name: "Physical Tank", formula: "Attack + Defense" },
+  specialTank: { name: "Special Tank", formula: "Sp. Atk + Sp. Def" },
+};
+
+export const SORT_TEXT: Record<SortKey, string> = {
+  id: "Number",
+  name: "Name",
+  bst: "Total",
+  hp: "HP",
+  atk: "Attack",
+  def: "Defense",
+  spa: "Sp. Atk",
+  spd: "Sp. Def",
+  spe: "Speed",
+  physicalSweeper: ROLE_TEXT.physicalSweeper.name,
+  specialSweeper: ROLE_TEXT.specialSweeper.name,
+  wall: ROLE_TEXT.wall.name,
+  physicalTank: ROLE_TEXT.physicalTank.name,
+  specialTank: ROLE_TEXT.specialTank.name,
+};

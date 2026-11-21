@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { TYPE_COLORS } from "@/lib/pokemon/type-colors";
-import type { LabEntry } from "../roster";
+import type { LabMon } from "@/lib/lab-dex/types";
 
 /**
  * What the lab's walls show: research screens drawn into canvases (the
@@ -72,33 +72,36 @@ function frame(g: CanvasRenderingContext2D, w: number, h: number, title: string,
   }
 }
 
-/** The specimen index: the wheel's Pokémon in rows, types and base stat totals. */
-function indexScreen(roster: LabEntry[], fonts: LabFonts) {
+/** The specimen index: the Pokémon round the one on the table, in the wheel's order, types and base stat totals. */
+export function drawIndex(c: HTMLCanvasElement, rows: (LabMon | null)[], selected: number, fonts: LabFonts) {
   const W = 1024, H = 576;
-  const { c, g } = canvas(W, H);
-  frame(g, W, H, "SPECIMEN INDEX · KANTO", fonts, "DEX-01 / 151");
-  const rows = roster.slice(0, 12);
-  rows.forEach((e, i) => {
+  c.width = W;
+  c.height = H;
+  const g = c.getContext("2d")!;
+  frame(g, W, H, "SPECIMEN INDEX", fonts, "LIVE FEED");
+  rows.slice(0, 12).forEach((e, i) => {
     const y = 92 + i * 38;
-    if (i % 2 === 0) { g.fillStyle = "rgba(126,232,255,0.05)"; g.fillRect(24, y, W - 48, 36); }
+    if (i === selected) { g.fillStyle = "rgba(126,232,255,0.16)"; g.fillRect(24, y, W - 48, 36); g.fillStyle = CYAN; g.fillRect(24, y, 6, 36); }
+    else if (i % 2 === 0) { g.fillStyle = "rgba(126,232,255,0.05)"; g.fillRect(24, y, W - 48, 36); }
+    if (!e) return;
+    g.textBaseline = "middle";
     g.font = `400 15px ${fonts.pixel}`;
     g.fillStyle = CYAN_DIM;
-    g.fillText(`No.${String(e.id).padStart(4, "0")}`, 40, y + 19);
+    g.fillText(`No.${String(e.species).padStart(4, "0")}`, 40, y + 19);
     g.font = `600 21px ${fonts.display}`;
     g.fillStyle = "#e8fbff";
-    g.fillText(e.name.toUpperCase(), 160, y + 19);
-    e.types.forEach((t, k) => { g.fillStyle = TYPE_COLORS[t] ?? "#888"; g.fillRect(420 + k * 74, y + 9, 66, 18); });
+    g.fillText(e.name.toUpperCase().slice(0, 22), 160, y + 19);
+    e.types.forEach((t, k) => { g.fillStyle = TYPE_COLORS[t] ?? "#888"; g.fillRect(480 + k * 74, y + 9, 66, 18); });
     g.fillStyle = "rgba(126,232,255,0.16)";
-    g.fillRect(600, y + 13, 300, 10);
+    g.fillRect(650, y + 13, 250, 10);
     g.fillStyle = CYAN;
-    g.fillRect(600, y + 13, (300 * e.bst) / 700, 10);
+    g.fillRect(650, y + 13, Math.min(250, (250 * e.bst) / 780), 10);
     g.font = `600 18px ${fonts.display}`;
     g.fillStyle = "#e8fbff";
     g.textAlign = "right";
     g.fillText(String(e.bst), W - 40, y + 19);
     g.textAlign = "left";
   });
-  return tex(c);
 }
 
 /** A biometric scan: waveforms, a radar sweep, readouts. */
@@ -224,7 +227,7 @@ function matrixScreen(fonts: LabFonts) {
 function mapScreen(fonts: LabFonts) {
   const W = 1024, H = 576;
   const { c, g } = canvas(W, H);
-  frame(g, W, H, "HABITAT SURVEY · KANTO", fonts, "GRID 7-C");
+  frame(g, W, H, "HABITAT SURVEY", fonts, "GRID 7-C");
   const blobs = [[300, 300, 160], [620, 250, 120], [760, 400, 90], [470, 430, 70]];
   for (const [bx, by, br] of blobs) {
     for (let k = 1; k <= 6; k++) {
@@ -254,8 +257,12 @@ function mapScreen(fonts: LabFonts) {
   return tex(c);
 }
 
-export function wallScreens(roster: LabEntry[], fonts: LabFonts): THREE.Texture[] {
-  return [indexScreen(roster, fonts), scanScreen(fonts, 3), genomeScreen(fonts), matrixScreen(fonts), mapScreen(fonts), scanScreen(fonts, 8)];
+/** The wall's screens: the live specimen index first (its canvas is redrawn as the wheel turns), then the rest. */
+export function wallScreens(fonts: LabFonts): { textures: THREE.Texture[]; index: { canvas: HTMLCanvasElement; texture: THREE.Texture } } {
+  const c = document.createElement("canvas");
+  drawIndex(c, [], -1, fonts);
+  const index = { canvas: c, texture: tex(c) };
+  return { textures: [index.texture, scanScreen(fonts, 3), genomeScreen(fonts), matrixScreen(fonts), mapScreen(fonts), scanScreen(fonts, 8)], index };
 }
 
 /** A console's small monitor: bars and a line graph. */
@@ -317,45 +324,63 @@ export function wallPanel(): { map: THREE.Texture; emissive: THREE.Texture } {
   return { map, emissive };
 }
 
-/** A pod's nameplate: dex number, name, a stripe in each type's colour. */
-export function nameplate(e: LabEntry, fonts: LabFonts, on: boolean): THREE.Texture {
+/** A pod's nameplate: dex number, name, a stripe in each type's colour (drawn into `c`; `t` is its texture when redrawing). */
+export function nameplate(c: HTMLCanvasElement, e: LabMon | null, fonts: LabFonts, on: boolean, t?: THREE.Texture): THREE.Texture {
   const W = 512, H = 128;
-  const { c, g } = canvas(W, H);
-  g.fillStyle = on ? "rgba(14,30,48,0.96)" : "rgba(8,16,28,0.92)";
-  g.fillRect(0, 0, W, H);
-  g.strokeStyle = on ? "#ffffff" : CYAN_DIM;
-  g.lineWidth = 3;
-  g.strokeRect(2, 2, W - 4, H - 4);
-  e.types.forEach((t, i) => { g.fillStyle = TYPE_COLORS[t] ?? "#888"; g.fillRect(0, (i * H) / e.types.length, 14, H / e.types.length); });
-  g.font = `400 20px ${fonts.pixel}`;
-  g.fillStyle = CYAN;
-  g.textBaseline = "middle";
-  g.fillText(`No.${String(e.id).padStart(4, "0")}`, 36, 38);
-  g.font = `700 46px ${fonts.display}`;
-  g.fillStyle = "#f2fbff";
-  g.fillText(e.name.toUpperCase(), 36, 88);
+  c.width = W;
+  c.height = H;
+  const g = c.getContext("2d")!;
+  g.clearRect(0, 0, W, H);
+  if (e) {
+    g.fillStyle = on ? "rgba(14,30,48,0.96)" : "rgba(8,16,28,0.92)";
+    g.fillRect(0, 0, W, H);
+    g.strokeStyle = on ? "#ffffff" : CYAN_DIM;
+    g.lineWidth = 3;
+    g.strokeRect(2, 2, W - 4, H - 4);
+    e.types.forEach((ty, i) => { g.fillStyle = TYPE_COLORS[ty] ?? "#888"; g.fillRect(0, (i * H) / e.types.length, 14, H / e.types.length); });
+    g.font = `400 20px ${fonts.pixel}`;
+    g.fillStyle = CYAN;
+    g.textBaseline = "middle";
+    g.fillText(`No.${String(e.species).padStart(4, "0")}`, 36, 38);
+    let size = 46;
+    const name = e.name.toUpperCase();
+    g.font = `700 ${size}px ${fonts.display}`;
+    while (size > 22 && g.measureText(name).width > W - 56) { size -= 2; g.font = `700 ${size}px ${fonts.display}`; }
+    g.fillStyle = "#f2fbff";
+    g.fillText(name, 36, 88);
+  }
+  if (t) { t.needsUpdate = true; return t; }
   return tex(c);
 }
 
-/** The caption that turns round the holo-table's rim. */
-export function captionBand(e: LabEntry, fonts: LabFonts): THREE.Texture {
+/** The caption that turns round the holo-table's rim (drawn into `c`; `t` is its texture when redrawing). */
+export function captionBand(c: HTMLCanvasElement, e: LabMon | null, fonts: LabFonts, t?: THREE.Texture): THREE.Texture {
   const H = 96;
-  const probe = canvas(8, 8).g;
+  const g0 = c.getContext("2d")!;
   const font = `400 34px ${fonts.pixel}`;
-  probe.font = font;
-  const text = `No.${String(e.id).padStart(4, "0")}  ·  ${e.name.toUpperCase()}  ·  ${e.types.map((t) => t.toUpperCase()).join(" / ")}  ·  ${e.genus.toUpperCase()}  ·  BST ${e.bst}  ·  `;
-  const w = probe.measureText(text).width;
-  // A whole number of repeats round the ring, so the seam doesn't show.
-  const n = Math.max(1, Math.round(4096 / w));
-  const W = Math.ceil(w * n);
-  const { c, g } = canvas(W, H);
+  g0.font = font;
+  const text = e
+    ? `No.${String(e.species).padStart(4, "0")}  ·  ${e.name.toUpperCase()}  ·  ${e.types.map((ty) => ty.toUpperCase()).join(" / ")}  ·  ${e.genus.toUpperCase()}  ·  BST ${e.bst}  ·  `
+    : "PROFESSOR'S LAB  ·  SPECIMEN PROJECTOR  ·  ";
+  const w = g0.measureText(text).width;
+  // A whole number of repeats round the ring, so the seam doesn't show (a fixed width, so the texture's size never changes).
+  const W = 4096;
+  const n = Math.max(1, Math.round(W / w));
+  c.width = W;
+  c.height = H;
+  const g = c.getContext("2d")!;
+  g.clearRect(0, 0, W, H);
   g.font = font;
   g.textBaseline = "middle";
   g.fillStyle = "#ffffff";
+  g.save();
+  g.scale(W / (w * n), 1);
   for (let k = 0; k < n; k++) g.fillText(text, k * w, H / 2);
-  const t = tex(c);
-  t.wrapS = THREE.RepeatWrapping;
-  return t;
+  g.restore();
+  if (t) { t.needsUpdate = true; return t; }
+  const nt = tex(c);
+  nt.wrapS = THREE.RepeatWrapping;
+  return nt;
 }
 
 /** A radial stripe texture (liquid in the specimen tubes: bright at the bottom). */

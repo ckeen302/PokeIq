@@ -6,8 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import Link from "@/components/ui/Link";
 import { slugify } from "@/lib/dex/build";
-import { Flag, Medal, Ruler, Sparkles, Swords, Volume2 } from "lucide-react";
-import { GAMES_LIVE, MASS_BATTLE_LIVE } from "@/lib/lab";
+import { Box, Sparkles, Volume2 } from "lucide-react";
+import { SIZE_FORM_IDS } from "@/lib/lab-dex/form-ids";
 import type { DexAbility, DexEntryData, DexForm } from "@/lib/pokemon/dex-types";
 import { GENERATION_REGIONS, formatHeight, formatWeight, titleCase } from "@/lib/pokemon/constants";
 import { typeColor } from "@/lib/pokemon/type-colors";
@@ -201,41 +201,13 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
           </div>
           <div className="flex flex-wrap gap-2">
             <Link
-              href={`/pokedex/sizes/${p.slug}`}
+              href={`/lab/pokedex?pick=${form && SIZE_FORM_IDS.has(form.id) ? `${form.id}&forms=1` : p.id}`}
               className="group inline-flex items-center gap-2 rounded-md border border-foreground/10 bg-shade/25 px-3 py-2 font-display text-[13px] font-bold uppercase tracking-wide transition-colors hover:border-screen/50 hover:text-screen"
-              data-testid="dex-see-size"
+              data-testid="dex-lab"
             >
-              <Ruler className="h-4 w-4 text-screen" aria-hidden /> See its size in 3D
+              <Box className="h-4 w-4 text-screen" aria-hidden /> View in the 3D Lab
               <span className="transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
             </Link>
-            <Link
-              href={`/pokedex/race/run?vs=${p.slug}`}
-              className="group inline-flex items-center gap-2 rounded-md border border-foreground/10 bg-shade/25 px-3 py-2 font-display text-[13px] font-bold uppercase tracking-wide transition-colors hover:border-screen/50 hover:text-screen"
-              data-testid="dex-race-it"
-            >
-              <Flag className="h-4 w-4 text-screen" aria-hidden /> Race it
-              <span className="transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
-            </Link>
-            {MASS_BATTLE_LIVE && (
-              <Link
-                href={`/lab/mass-battle?ask=${p.slug === "arceus" ? "magikarp" : p.slug}.arceus.100.colosseum`}
-                className="group inline-flex items-center gap-2 rounded-md border border-foreground/10 bg-shade/25 px-3 py-2 font-display text-[13px] font-bold uppercase tracking-wide transition-colors hover:border-screen/50 hover:text-screen"
-                data-testid="dex-battle-it"
-              >
-                <Swords className="h-4 w-4 text-screen" aria-hidden /> Battle it
-                <span className="transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
-              </Link>
-            )}
-            {GAMES_LIVE && (
-              <Link
-                href={`/lab/games/pokemon/${p.slug}`}
-                className="group inline-flex items-center gap-2 rounded-md border border-foreground/10 bg-shade/25 px-3 py-2 font-display text-[13px] font-bold uppercase tracking-wide transition-colors hover:border-screen/50 hover:text-screen"
-                data-testid="dex-games"
-              >
-                <Medal className="h-4 w-4 text-screen" aria-hidden /> Games
-                <span className="transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
-              </Link>
-            )}
           </div>
 
           <div className="space-y-2">

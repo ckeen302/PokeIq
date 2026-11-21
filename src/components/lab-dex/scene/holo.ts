@@ -11,6 +11,10 @@ export interface LabTime {
   value: number;
 }
 
+/** A strength that can be a fixed number or a shared, live value. */
+export type Live = number | { value: number };
+const live = (v: Live) => (typeof v === "number" ? { value: v } : v);
+
 const VS_VIEW = /* glsl */ `
   varying vec2 vUv;
   varying vec3 vN;
@@ -47,10 +51,10 @@ function additive(name: string, uniforms: Record<string, THREE.IUniform>, fragme
 }
 
 /** The column of light over the holo-table: brightest at its foot, scanlines climbing, a bright edge where it turns away. */
-export function holoColumn(color: THREE.Color, time: LabTime, strength = 1) {
+export function holoColumn(color: THREE.Color, time: LabTime, strength: Live = 1) {
   return additive(
     "LabHoloColumn",
-    { uColor: { value: color }, uTime: time, uStrength: { value: strength } },
+    { uColor: { value: color }, uTime: time, uStrength: live(strength) },
     /* glsl */ `
     uniform vec3 uColor; uniform float uTime; uniform float uStrength;
     varying vec2 vUv; varying vec3 vN; varying vec3 vV; varying vec3 vW;
@@ -71,10 +75,10 @@ export function holoColumn(color: THREE.Color, time: LabTime, strength = 1) {
 }
 
 /** A soft round glow lying flat (under the figure, round a pod's lamp). */
-export function glowDisc(color: THREE.Color, strength: number, falloff = 2.2) {
+export function glowDisc(color: THREE.Color, strength: Live, falloff = 2.2) {
   return additive(
     "LabGlowDisc",
-    { uColor: { value: color }, uStrength: { value: strength }, uFall: { value: falloff } },
+    { uColor: { value: color }, uStrength: live(strength), uFall: { value: falloff } },
     /* glsl */ `
     uniform vec3 uColor; uniform float uStrength; uniform float uFall;
     varying vec2 vUv;
@@ -87,10 +91,10 @@ export function glowDisc(color: THREE.Color, strength: number, falloff = 2.2) {
 }
 
 /** A shaft of light through the haze (an open cone): visible face-on, gone at its silhouette, fading towards the floor. */
-export function lightShaft(color: THREE.Color, strength: number) {
+export function lightShaft(color: THREE.Color, strength: Live) {
   return additive(
     "LabShaft",
-    { uColor: { value: color }, uStrength: { value: strength } },
+    { uColor: { value: color }, uStrength: live(strength) },
     /* glsl */ `
     uniform vec3 uColor; uniform float uStrength;
     varying vec2 vUv; varying vec3 vN; varying vec3 vV; varying vec3 vW;
@@ -137,10 +141,10 @@ export function holoRing(color: THREE.Color, time: LabTime, o: { dashes: number;
 }
 
 /** Capsule glass: almost clear face-on, bright at its edges, two highlight streaks from the lamps above. */
-export function capsuleGlass(tint: THREE.Color, strength = 1) {
+export function capsuleGlass(tint: THREE.Color, strength: Live = 1) {
   return new THREE.ShaderMaterial({
     name: "LabGlass",
-    uniforms: { uTint: { value: tint }, uStrength: { value: strength } },
+    uniforms: { uTint: { value: tint }, uStrength: live(strength) },
     vertexShader: VS_VIEW,
     fragmentShader: /* glsl */ `
       uniform vec3 uTint; uniform float uStrength;
@@ -232,13 +236,13 @@ export function holoScan(m: THREE.Material, scan: HoloScan, time: LabTime) {
  * light (fine rings, a bright ring the figure stands in, ticks round the
  * edge, turning dashes, a hex lattice, a sweep).
  */
-export function holoTop(m: THREE.MeshStandardMaterial, color: THREE.Color, centre: THREE.Vector3, radius: number, time: LabTime, strength = 1) {
+export function holoTop(m: THREE.MeshStandardMaterial, color: THREE.Color, centre: THREE.Vector3, radius: number, time: LabTime, strength: Live = 1) {
   chainShader(m, `labtop`, (s) => {
     withWorld(s);
     s.uniforms.uTopCol = { value: color };
     s.uniforms.uTopC = { value: centre };
     s.uniforms.uTopR = { value: radius };
-    s.uniforms.uTopS = { value: strength };
+    s.uniforms.uTopS = live(strength);
     s.uniforms.uLabTime = time;
     s.fragmentShader = s.fragmentShader
       .replace("#include <common>", `#include <common>\nuniform vec3 uTopCol; uniform vec3 uTopC; uniform float uTopR, uTopS, uLabTime;\n${NOISE}`)
