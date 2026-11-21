@@ -713,7 +713,9 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
             <HubTile
               testId="geo-weekly-card"
               tone="success"
-              image={weeklyMap ? (weeklyMap.preview ?? tileImage(weeklyMap.map.src)) : null}
+              // A region's week shows that region's map (Classic shows a screenshot, Daily the world map);
+              // a themed week (Gyms, Towns, Routes) is played on the world map, so it keeps its own screenshot.
+              image={weeklyMap ? (weeklyMap.theme ? (weeklyMap.preview ?? tileImage(weeklyMap.map.src)) : tileImage(weeklyMap.map.src)) : null}
               icon={<CalendarRange className="h-5 w-5" />}
               label={week ? `Weekly #${geoWeeklyNumber(week)}${weeklyMap ? ` · ${weeklyMap.name}` : ""}` : "Weekly"}
               title="Weekly Challenge"
