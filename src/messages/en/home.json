@@ -1,0 +1,41 @@
+{
+  "socialTitle": "PokéIQ: GeoGuessr, Wordle and Showdown for Pokémon",
+  "socialDescription": "PokéGuessr with real in-game screenshots of every region, a daily Pokédle with live duels, Showdown-accurate battles and a Battle Lab that simulates thousands of them. Free, no sign-up.",
+  "h1": "PokéIQ: Pokémon games, quizzes and battles",
+  "free": "Free · no sign-up",
+  "pitch": "Daily Pokémon puzzles, a Pokémon GeoGuessr with real in-game views, Showdown battles and Pokémon in 3D.",
+  "play": "Play today's games",
+  "coffee": "Buy me a coffee",
+  "socials": "PokéIQ on social media",
+  "socialOn": "PokéIQ on {name}",
+  "today": {
+    "title": "Today",
+    "allDone": "All done for today",
+    "newIn": " · new puzzles in ",
+    "keep": " · play today's to keep it",
+    "midnight": "New puzzles every day at midnight",
+    "done": "Done",
+    "inProgress": "In progress",
+    "continue": "Continue",
+    "play": "Play",
+    "streakOne": "{days}-day {games} streak",
+    "streakTwo": "{days}-day {games} streaks",
+    "streakMany": "{days}-day streaks in {games}"
+  },
+  "games": {
+    "daily": { "name": "Daily Challenge", "line": "Today's Pokémon trivia quiz" },
+    "pokedle": { "name": "Pokédle", "line": "Name the mystery Pokémon" },
+    "guessr": { "name": "PokéGuessr", "line": "Drop a pin on today's places" },
+    "connections": { "name": "Connections", "line": "Find the hidden groups" },
+    "pikadoku": { "name": "Pikadoku", "line": "Pokémon Sudoku" }
+  },
+  "results": {
+    "right": "{correct}/{total} right",
+    "solvedIn": "Solved in {n}",
+    "missed": "Missed today",
+    "points": "{points} pts",
+    "solvedMistakes": "Solved · {n, plural, one {# mistake} other {# mistakes}}",
+    "perfect": "Perfect",
+    "filled": "{n}/9 filled"
+  }
+}

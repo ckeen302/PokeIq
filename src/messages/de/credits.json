@@ -1,0 +1,16 @@
+{
+  "title": "Credits",
+  "description": "Die Daten, die Engine, die Musik und die Texturen, auf denen PokéIQ aufbaut, und ihre Lizenzen.",
+  "data": "Pokémon-Daten",
+  "dataBody": "Daten von PokéAPI.",
+  "battles": "Kämpfe",
+  "battlesBody": "Die Kämpfe laufen auf dem Simulator von Pokémon Showdown; Kampftimer und Wiederholungsformat sind von Pokémon Showdown übernommen (MIT-Lizenz, © Guangcong Luo und Mitwirkende).",
+  "music": "Kampfmusik",
+  "musicBody": "Originaler Chiptune von Ted Kerr, celestialghost8 und congusbongus über OpenGameArt.org, unter CC0 (<a>Credits</a>).",
+  "sizes": "Größen",
+  "sizesBody": "Musik von cynicmusic und Stadttexturen von Poly Haven, beide CC0 (<a>Credits</a>).",
+  "race": "Rennen",
+  "raceBody": "Stadiontexturen von Poly Haven und Publikumsgeräusche von OpenGameArt.org, alles CC0 (<a>Credits</a>).",
+  "films": "Die zwei Filme",
+  "filmsBody": "Die Musik ist original, für PokéIQ geschrieben und mit der Soundfont MuseScore General gespielt (MIT; Streicher aus VSCO 2 CE, CC0). Credits: <world>Geschichte der Pokémon-Welt</world>, <story>Die Geschichte von Pokémon</story>."
+}

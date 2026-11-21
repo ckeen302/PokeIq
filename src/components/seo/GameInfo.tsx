@@ -1,6 +1,7 @@
 import { HowToButton } from "./HowToButton";
 import { webGame } from "@/lib/structured-data";
 import { jsonLd } from "@/lib/seo";
+import { getLocale } from "@/i18n/server";
 
 /** Static SEO copy under a game: intro, how to play, FAQ (collapsed) and JSON-LD. */
 
@@ -28,7 +29,7 @@ interface Props {
 }
 
 export function GameInfo({ path, name, intro, steps, faqs, description, howToButton, hidden, noFaq }: Props) {
-  const app = webGame({ name, path, description });
+  const app = webGame({ name, path, description, locale: getLocale() });
   const faq = {
     "@context": "https://schema.org",
     "@type": "FAQPage",

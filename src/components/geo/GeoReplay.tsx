@@ -10,7 +10,7 @@ import { WORLD_REGION, type GeoAnswer, type GeoRegionInfo } from "@/lib/geo-type
 import { GEO_ERA_NAMES } from "@/lib/geo-families";
 import { keepRankedId } from "@/lib/ranked-client";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { BackButton } from "@/components/ui/BackButton";
+import { BackButtonClient as BackButton } from "@/components/ui/BackButtonClient";
 import { SEAT_COLORS } from "@/components/duel/DuelParts";
 import { cn } from "@/lib/utils";
 import { GeoMap, type RevealedRound } from "./GeoMap";

@@ -1,0 +1,39 @@
+{
+  "close": "Schließen",
+  "about": "Es geht um",
+  "categories": {
+    "idea": "Idee",
+    "bug": "Fehler",
+    "other": "Anderes"
+  },
+  "prompts": {
+    "idea": "Was würde PokéIQ besser machen?",
+    "bug": "Was du gemacht hast, was du erwartet hast und was stattdessen passiert ist.",
+    "other": "Erzähl uns, was du willst."
+  },
+  "part": "Welcher Teil",
+  "partLabel": "Welcher Teil von PokéIQ",
+  "modes": {
+    "general": "Die ganze Seite",
+    "daily": "Tägliche Herausforderung",
+    "quiz": "Quiz",
+    "iqtest": "PokéIQ-Test",
+    "pokedle": "Pokédle",
+    "guessr": "PokéGuessr",
+    "pokedex": "Pokédex",
+    "battle": "Kämpfe",
+    "tournaments": "Turniere",
+    "rooms": "Chaträume",
+    "friends": "Freunde",
+    "accounts": "Konten"
+  },
+  "message": "Nachricht",
+  "contact": "Kontakt (optional)",
+  "contactLabel": "Kontakt",
+  "contactHint": "Nur wenn du eine Antwort möchtest. Frag vorher einen Erwachsenen!",
+  "sentWith": "Gesendet mit der Seite, auf der du bist (<page></page>){bug, select, true {, deiner Browserversion und den Fehlern, die die Seite zuletzt hatte.} other { und deiner Browserversion.}}",
+  "send": "Senden",
+  "empty": "Schreib zuerst eine Nachricht.",
+  "thanks": "Danke! Wir lesen jede Nachricht.",
+  "another": "Noch eine senden"
+}

@@ -103,6 +103,13 @@ for (const ns of namespaces) {
 for (const f of readdirSync(DIR).filter((f) => f.endsWith(".ts"))) {
   if (!namespaces.includes(f.slice(0, -3))) problems.push(`${join(DIR, f)}: no English file en/${f.slice(0, -3)}.json`);
 }
+// The list a page in another language preloads its messages from (src/i18n/namespaces.ts) names every namespace.
+{
+  const listed = [...readFileSync("src/i18n/namespaces.ts", "utf8").matchAll(/^\s*"([a-z0-9-]+)",?$/gm)].map((m) => m[1]).sort();
+  const missing = namespaces.filter((n) => !listed.includes(n));
+  const extra = listed.filter((n) => !namespaces.includes(n));
+  if (missing.length || extra.length) problems.push(`src/i18n/namespaces.ts: ${missing.length ? `add ${missing.join(", ")}` : ""}${missing.length && extra.length ? "; " : ""}${extra.length ? `remove ${extra.join(", ")}` : ""}`);
+}
 for (const locale of LOCALES) {
   if (!existsSync(join(DIR, locale))) continue;
   for (const f of readdirSync(join(DIR, locale))) if (!namespaces.includes(f.replace(/\.json$/, ""))) problems.push(`${join(DIR, locale, f)}: no English namespace of that name`);

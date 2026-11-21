@@ -1,0 +1,41 @@
+{
+  "title": "Privacy policy",
+  "description": "What PokéIQ collects, why, and how to have it deleted. In plain English.",
+  "short": "The short version",
+  "intro": "PokéIQ is a free, unofficial fan project. We collect as little as we can, use it to run the game, and never sell it.",
+  "collect": {
+    "title": "What we collect",
+    "name": "<b>Your trainer name</b> — shown publicly on leaderboards, friends lists and in matches.",
+    "password": "<b>Your password</b> — stored only as a salted hash, never in readable form. If you sign in with Discord or Google, we don't have a password for you at all.",
+    "email": "<b>Your email, only if you give us one</b> — the verified address Discord or Google gives us when you sign in with them, or an address you add yourself for daily reminder emails. It is private: never shown to other players.",
+    "results": "<b>Game results and progress</b> — scores, badges, streaks, ratings and battle records.",
+    "chat": "<b>Chat messages</b> — match chat disappears after the match ends.",
+    "avatars": "<b>Avatars you upload</b> — shown on your profile.",
+    "reports": "<b>Reports</b> — when you report a player or a problem, we keep the report so a moderator can look at it.",
+    "noAccount": "You can play without an account: your progress then stays on your device. We count visits with Vercel's cookie-free analytics, which doesn't identify you. There is no advertising on PokéIQ today and we set no tracking cookies. If that ever changes, we will update this page first and say what is collected and how to opt out."
+  },
+  "why": {
+    "title": "Why",
+    "body": "To run your account and keep your progress on every device, to show leaderboards, friends and matches, to keep the game fair and safe (moderation, bans, stopping cheating), and to fix problems."
+  },
+  "share": {
+    "title": "Who we share it with",
+    "body": "We do <b>not</b> sell your data, and today we do not share it with advertisers. If we ever add advertising, this page will change first and say exactly what is shared and how to opt out. It is stored with the services that run the site (Supabase for the database and sign-in, Vercel for hosting, Resend to send reminder emails). Discord and Google only tell us who you are when you choose to sign in with them."
+  },
+  "emails": {
+    "title": "Daily reminder emails",
+    "body": "Only if you turn them on. We send one email when the new dailies drop (or only when your streak is about to end, if you pick that), after you confirm your address. Every email has a one-click unsubscribe link, and you can turn them off any time on your <card>trainer card</card>. We never send anything else to that address, and never share it."
+  },
+  "age": {
+    "title": "Age",
+    "body": "You must be <b>13 or older</b> to make an account. If you believe a child under 13 has made one, contact us and we'll delete it."
+  },
+  "delete": {
+    "title": "Deleting your data",
+    "body": "Email <mail></mail> from any address, with your trainer name, and ask for your account to be deleted. We'll remove your account and everything tied to it. You can also unlink Discord or Google at any time from your <card>trainer card</card>."
+  },
+  "about": {
+    "title": "About PokéIQ",
+    "body": "PokéIQ is a free fan project made for fun. It is not affiliated with Nintendo, Game Freak, Creatures or The Pokémon Company. If this policy changes, we'll update this page."
+  }
+}

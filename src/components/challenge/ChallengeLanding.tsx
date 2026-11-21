@@ -1,6 +1,6 @@
 "use client";
 
-import { BackButton } from "@/components/ui/BackButton";
+import { BackButtonClient as BackButton } from "@/components/ui/BackButtonClient";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "@/components/ui/Link";

@@ -1,0 +1,41 @@
+{
+  "socialTitle": "PokéIQ: GeoGuessr, Wordle y Showdown de Pokémon",
+  "socialDescription": "PokéGuessr con capturas reales de todas las regiones, un Pokédle diario con duelos en directo, combates fieles a Showdown y un Laboratorio de combates que simula miles de ellos. Gratis y sin registro.",
+  "h1": "PokéIQ: juegos, quiz y combates de Pokémon",
+  "free": "Gratis · sin registro",
+  "pitch": "Puzles diarios de Pokémon, un GeoGuessr de Pokémon con vistas reales de los juegos, combates de Showdown y Pokémon en 3D.",
+  "play": "Jugar a los de hoy",
+  "coffee": "Invítame a un café",
+  "socials": "PokéIQ en redes sociales",
+  "socialOn": "PokéIQ en {name}",
+  "today": {
+    "title": "Hoy",
+    "allDone": "Todo hecho por hoy",
+    "newIn": " · nuevos puzles en ",
+    "keep": " · juega hoy para mantenerla",
+    "midnight": "Nuevos puzles cada día a medianoche",
+    "done": "Hecho",
+    "inProgress": "En curso",
+    "continue": "Seguir",
+    "play": "Jugar",
+    "streakOne": "{days, plural, one {Racha de # día en {games}} other {Racha de # días en {games}}}",
+    "streakTwo": "{days, plural, one {Rachas de # día en {games}} other {Rachas de # días en {games}}}",
+    "streakMany": "{days, plural, one {Rachas de # día en {games}} other {Rachas de # días en {games}}}"
+  },
+  "games": {
+    "daily": { "name": "Reto diario", "line": "El quiz de Pokémon de hoy" },
+    "pokedle": { "name": "Pokédle", "line": "Adivina el Pokémon misterioso" },
+    "guessr": { "name": "PokéGuessr", "line": "Marca en el mapa los lugares de hoy" },
+    "connections": { "name": "Connections", "line": "Encuentra los grupos ocultos" },
+    "pikadoku": { "name": "Pikadoku", "line": "Sudoku de Pokémon" }
+  },
+  "results": {
+    "right": "{correct}/{total} aciertos",
+    "solvedIn": "Resuelto en {n}",
+    "missed": "Fallado hoy",
+    "points": "{points} pts",
+    "solvedMistakes": "Resuelto · {n, plural, one {# fallo} other {# fallos}}",
+    "perfect": "Perfecto",
+    "filled": "{n}/9 casillas"
+  }
+}

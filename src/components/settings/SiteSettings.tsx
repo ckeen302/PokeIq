@@ -6,6 +6,8 @@ import { getTheme, onThemeChange, setTheme, type Theme } from "@/lib/theme";
 import { isMuted, onMuteChange, play, setMuted } from "@/lib/sound";
 import { cn } from "@/lib/utils";
 import { LanguageRow } from "@/components/i18n/Lazy";
+import { useT } from "@/i18n/client";
+import nav from "@/messages/nav";
 
 /**
  * The site's own settings: light / dark theme and sound on / off. They live in
@@ -109,32 +111,33 @@ export function Row({ title, hint, children, size }: { title: string; hint?: Rea
 export function SettingsControls({ size = "sm", testIdPrefix }: { size?: "sm" | "md"; testIdPrefix: string }) {
   const [theme, chooseTheme] = useThemeSetting();
   const [muted, chooseMuted] = useSoundSetting();
+  const t = useT(nav);
   const md = size === "md";
   return (
     <div className={cn("space-y-3", md && "space-y-4")}>
-      <Row title="Theme" hint={md ? "Dark or light, kept on this device." : undefined} size={size}>
+      <Row title={t("settings.theme")} hint={md ? t("settings.themeHint") : undefined} size={size}>
         <Segmented<Theme>
-          label="Theme"
+          label={t("settings.theme")}
           value={theme}
           onChange={chooseTheme}
           testId={`${testIdPrefix}-theme`}
           size={size}
           options={[
-            { value: "dark", label: "Dark", icon: Moon },
-            { value: "light", label: "Light", icon: Sun },
+            { value: "dark", label: t("settings.dark"), icon: Moon },
+            { value: "light", label: t("settings.light"), icon: Sun },
           ]}
         />
       </Row>
-      <Row title="Sound" hint={md ? <>Sound effects and music.<span className="max-md:hidden"> Press M anywhere to toggle it.</span></> : undefined} size={size}>
+      <Row title={t("settings.sound")} hint={md ? <>{t("settings.soundHint")}<span className="max-md:hidden">{t("settings.soundKeyHint")}</span></> : undefined} size={size}>
         <Segmented<"on" | "off">
-          label="Sound"
+          label={t("settings.sound")}
           value={muted ? "off" : "on"}
           onChange={(v) => chooseMuted(v === "off")}
           testId={`${testIdPrefix}-sound`}
           size={size}
           options={[
-            { value: "on", label: "On", icon: Volume2 },
-            { value: "off", label: "Off", icon: VolumeX },
+            { value: "on", label: t("settings.on"), icon: Volume2 },
+            { value: "off", label: t("settings.off"), icon: VolumeX },
           ]}
         />
       </Row>
@@ -145,10 +148,11 @@ export function SettingsControls({ size = "sm", testIdPrefix }: { size?: "sm" | 
 
 /** The trainer page's Settings section (also reachable as /trainer#settings); `children` go under Theme and Sound (the daily emails). */
 export function SettingsCard({ children }: { children?: ReactNode }) {
+  const t = useT(nav);
   return (
     <section id="settings" aria-labelledby="settings-title" className="hud relative scroll-mt-20 rounded-lg border bg-card p-5 text-card-foreground shadow-[0_8px_30px_-12px_hsl(var(--shade)/0.6)]" data-testid="trainer-settings">
       <h2 id="settings-title" className="mb-4 font-display text-lg font-bold leading-none tracking-tight">
-        Settings
+        {t("settings.title")}
       </h2>
       <SettingsControls size="md" testIdPrefix="trainer-settings" />
       {children}

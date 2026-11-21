@@ -2,12 +2,17 @@ import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
 import { languageAlternates } from "@/i18n/metadata";
 import Link from "@/components/ui/Link";
+import { serverT } from "@/i18n/server";
+import privacy from "@/messages/privacy";
 
-export const metadata: Metadata = {
-  title: "Privacy policy",
-  description: "What PokéIQ collects, why, and how to have it deleted. In plain English.",
-  alternates: { canonical: "/privacy", languages: languageAlternates("/privacy") },
-};
+export function generateMetadata(): Metadata {
+  const t = serverT(privacy);
+  return {
+    title: t("title"),
+    description: t("description"),
+    alternates: { canonical: "/privacy", languages: languageAlternates("/privacy") },
+  };
+}
 
 const CONTACT = "pokeiq.official@gmail.com";
 
@@ -20,110 +25,81 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
+const b = (c: React.ReactNode) => <strong className="text-foreground">{c}</strong>;
+
+const card = (href: string) =>
+  function TrainerCardLink(c: React.ReactNode) {
+    return (
+      <Link href={href} className="text-foreground underline underline-offset-2">
+        {c}
+      </Link>
+    );
+  };
+
 export default function PrivacyPage() {
+  const t = serverT(privacy);
   return (
     <article className="mx-auto max-w-2xl space-y-8">
     <BackButton href="/" />
       <header className="space-y-2">
-        <p className="hud-label max-md:hidden text-screen">The short version</p>
-        <h1 className="font-display text-4xl font-bold uppercase tracking-tight">Privacy policy</h1>
+        <p className="hud-label max-md:hidden text-screen">{t("short")}</p>
+        <h1 className="font-display text-4xl font-bold uppercase tracking-tight">{t("title")}</h1>
         <p className="text-sm text-muted-foreground">
-          PokéIQ is a free, unofficial fan project. We collect as little as we can, use it to run the game,
-          and never sell it.
+          {t("intro")}
         </p>
       </header>
 
-      <Section title="What we collect">
+      <Section title={t("collect.title")}>
         <ul className="list-disc space-y-1 pl-5">
-          <li>
-            <strong className="text-foreground">Your trainer name</strong> — shown publicly on leaderboards, friends lists and in
-            matches.
-          </li>
-          <li>
-            <strong className="text-foreground">Your password</strong> — stored only as a salted hash, never in readable form. If you
-            sign in with Discord or Google, we don&apos;t have a password for you at all.
-          </li>
-          <li>
-            <strong className="text-foreground">Your email, only if you give us one</strong> — the verified address Discord or
-            Google gives us when you sign in with them, or an address you add yourself for daily reminder emails. It is
-            private: never shown to other players.
-          </li>
-          <li>
-            <strong className="text-foreground">Game results and progress</strong> — scores, badges, streaks, ratings and battle
-            records.
-          </li>
-          <li>
-            <strong className="text-foreground">Chat messages</strong> — match chat disappears after the match ends.
-          </li>
-          <li>
-            <strong className="text-foreground">Avatars you upload</strong> — shown on your profile.
-          </li>
-          <li>
-            <strong className="text-foreground">Reports</strong> — when you report a player or a problem, we keep the report so a
-            moderator can look at it.
-          </li>
+          {(["name", "password", "email", "results", "chat", "avatars", "reports"] as const).map((k) => (
+            <li key={k}>{t.rich(`collect.${k}`, { b })}</li>
+          ))}
         </ul>
         <p>
-          You can play without an account: your progress then stays on your device. We count visits with Vercel&apos;s
-          cookie-free analytics, which doesn&apos;t identify you. There is no advertising on PokéIQ today and we set no tracking cookies. If that ever
-          changes, we will update this page first and say what is collected and how to opt out.
+          {t("collect.noAccount")}
         </p>
       </Section>
 
-      <Section title="Why">
+      <Section title={t("why.title")}>
         <p>
-          To run your account and keep your progress on every device, to show leaderboards, friends and matches, to keep
-          the game fair and safe (moderation, bans, stopping cheating), and to fix problems.
+          {t("why.body")}
         </p>
       </Section>
 
-      <Section title="Who we share it with">
+      <Section title={t("share.title")}>
         <p>
-          We do <strong className="text-foreground">not</strong> sell your data, and today we do not share it with advertisers. If we ever add
-          advertising, this page will change first and say exactly what is shared and how to opt out. It is stored with the
-          services that run the site (Supabase for the database and sign-in, Vercel for hosting, Resend to send reminder emails). Discord and Google only
-          tell us who you are when you choose to sign in with them.
+          {t.rich("share.body", { b })}
         </p>
       </Section>
 
-      <Section title="Daily reminder emails">
+      <Section title={t("emails.title")}>
         <p>
-          Only if you turn them on. We send one email when the new dailies drop (or only when your streak is about to
-          end, if you pick that), after you confirm your address. Every email has a one-click unsubscribe link, and you
-          can turn them off any time on your{" "}
-          <Link href="/trainer#settings" className="text-foreground underline underline-offset-2">
-            trainer card
-          </Link>
-          . We never send anything else to that address, and never share it.
+          {t.rich("emails.body", { card: card("/trainer#settings") })}
         </p>
       </Section>
 
-      <Section title="Age">
+      <Section title={t("age.title")}>
         <p>
-          You must be <strong className="text-foreground">13 or older</strong> to make an account. If you believe a child under 13
-          has made one, contact us and we&apos;ll delete it.
+          {t.rich("age.body", { b })}
         </p>
       </Section>
 
-      <Section title="Deleting your data">
+      <Section title={t("delete.title")}>
         <p>
-          Email{" "}
-          <a href={`mailto:${CONTACT}`} className="text-foreground underline underline-offset-2">
-            {CONTACT}
-          </a>{" "}
-          from any address, with your trainer name, and ask for your account to be deleted. We&apos;ll remove your account and
-          everything tied to it. You can also unlink Discord or Google at any time from your{" "}
-          <Link href="/trainer" className="text-foreground underline underline-offset-2">
-            trainer card
-          </Link>
-          .
+          {t.rich("delete.body", {
+            mail: () => (
+              <a href={`mailto:${CONTACT}`} className="text-foreground underline underline-offset-2">
+                {CONTACT}
+              </a>
+            ),
+            card: card("/trainer"),
+          })}
         </p>
       </Section>
 
-      <Section title="About PokéIQ">
+      <Section title={t("about.title")}>
         <p>
-          PokéIQ is a free fan project made for fun. It is not affiliated with Nintendo, Game Freak,
-          Creatures or The Pokémon Company. If this policy changes, we&apos;ll update this page.
+          {t("about.body")}
         </p>
       </Section>
     </article>

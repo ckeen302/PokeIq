@@ -52,7 +52,7 @@ const withLocales = <T extends { source: string; destination?: string }>(rule: T
 ];
 
 /** The modules an English-only build swaps for their `.english` twins (see `webpack` below). */
-const ENGLISH_TWINS = /[\\/]src[\\/](?:components[\\/]layout[\\/]RootChrome|components[\\/]ui[\\/]Anchor|components[\\/]i18n[\\/]Lazy|i18n[\\/](?:navigation|paths))\.tsx?$/;
+const ENGLISH_TWINS = /[\\/]src[\\/](?:components[\\/]layout[\\/]RootChrome|components[\\/]ui[\\/]Anchor|components[\\/]i18n[\\/]Lazy|i18n[\\/](?:navigation|paths|catalog|client))\.tsx?$/;
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
@@ -75,6 +75,8 @@ const nextConfig: NextConfig = {
       );
     }
     config.module.rules.push({ test: /[\\/]src[\\/]messages[\\/].+\.json$/, use: [path.resolve("scripts/i18n/icu-loader.cjs")] });
+    // English messages become a JavaScript module of strings and small functions (no formatter needed in the browser).
+    config.module.rules.push({ test: /[\\/]src[\\/]messages[\\/]en[\\/][^\\/]+\.json$/, type: "javascript/auto" });
     // The language modules have no side effects: whatever an English-only build doesn't use of them is left out.
     config.module.rules.push({ test: /[\\/]src[\\/]i18n[\\/][^\\/]+\.tsx?$/, sideEffects: false });
     return config;

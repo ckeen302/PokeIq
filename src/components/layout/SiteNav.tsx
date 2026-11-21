@@ -14,19 +14,21 @@ import { LAB_PATH, isLabPath } from "@/lib/lab";
 import { AccountMenu } from "./AccountMenu";
 import { MuteToggle } from "./MuteToggle";
 import { FriendsButton } from "@/components/community/FriendsButton";
+import { useT } from "@/i18n/client";
+import nav from "@/messages/nav";
 
-const DESKTOP_LINKS: { href: string; label: string; wideOnly?: boolean }[] = [
-  { href: "/pokedle", label: "Wordle" },
-  { href: "/pokeconnections", label: "Connections" },
+const DESKTOP_LINKS: { href: string; label: keyof typeof nav.en.links; wideOnly?: boolean }[] = [
+  { href: "/pokedle", label: "wordle" },
+  { href: "/pokeconnections", label: "connections" },
   // Only on wide screens, like the 3D Lab: the row is full at 1024px (the home page and footer link it too).
-  { href: "/pikadoku", label: "Sudoku", wideOnly: true },
-  { href: "/pokeguessr", label: "Guessr" },
-  { href: "/battle", label: "Battle" },
-  { href: "/quiz", label: "Quizzes" },
-  { href: "/pokedex", label: "Pokédex" },
+  { href: "/pikadoku", label: "sudoku", wideOnly: true },
+  { href: "/pokeguessr", label: "guessr" },
+  { href: "/battle", label: "battle" },
+  { href: "/quiz", label: "quizzes" },
+  { href: "/pokedex", label: "pokedex" },
   // Only on wide screens, where the leaderboard link was: the row is full at 1024px (the footer links it too).
   // The leaderboard is the trophy among the header's icons.
-  { href: LAB_PATH, label: "3D Lab", wideOnly: true },
+  { href: LAB_PATH, label: "lab", wideOnly: true },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -38,6 +40,7 @@ function isActive(pathname: string, href: string) {
 export function DesktopNav() {
   const pathname = usePathname();
   const account = useAccount();
+  const t = useT(nav);
   return (
     // `contents`: the links and the actions sit in the header's grid, so the links are centred on the page itself.
     <nav className="contents">
@@ -57,7 +60,7 @@ export function DesktopNav() {
                 )}
                 aria-current={active ? "page" : undefined}
               >
-                {label}
+                {t(`links.${label}`)}
                 {active && (
                   <motion.span
                     layoutId="nav-active"
@@ -74,8 +77,8 @@ export function DesktopNav() {
       <div className="flex items-center gap-1 justify-self-end max-[399px]:gap-0">
         <Link
           href="/rooms"
-          aria-label="Chat rooms"
-          title="Chat rooms"
+          aria-label={t("links.rooms")}
+          title={t("links.rooms")}
           className={cn(
             "flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground max-md:hidden",
             isActive(pathname, "/rooms") && "text-foreground",
@@ -86,8 +89,8 @@ export function DesktopNav() {
         <FriendsButton className="max-md:hidden" />
         <Link
           href="/leaderboard"
-          aria-label="Leaderboard"
-          title="Leaderboard"
+          aria-label={t("links.leaderboard")}
+          title={t("links.leaderboard")}
           className={cn(
             "flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground max-md:hidden",
             isActive(pathname, "/leaderboard") && "text-foreground",
@@ -103,13 +106,13 @@ export function DesktopNav() {
             href="/login"
             className="hidden whitespace-nowrap px-2 font-display text-[13px] font-semibold uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground sm:block lg:hidden"
           >
-            Sign in
+            {t("signIn")}
           </Link>
         )}
         {/* Phones: the avatar leads straight to the trainer card (the More sheet holds the settings). */}
         <Link
           href="/trainer"
-          aria-label="Your trainer profile"
+          aria-label={t("yourProfile")}
           className="-mr-1 flex items-center rounded-full border border-transparent p-1.5 text-muted-foreground transition-colors hover:text-foreground md:hidden"
           aria-current={isActive(pathname, "/trainer") ? "page" : undefined}
         >
