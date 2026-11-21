@@ -39,22 +39,22 @@ export function GameInfo({ path, name, intro, steps, faqs, description, howToBut
     <section className="mx-auto max-w-3xl space-y-6" aria-label={`About ${name}`}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(app) }} />
       {!noFaq && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(faq) }} />}
-      {/* With the button (the rules are in its pop-up) the short block is centred; a list of steps reads from the left. */}
-      <div className={howToButton ? "space-y-3 text-center text-sm text-muted-foreground" : "space-y-3 text-sm text-muted-foreground"}>
-        <h2 className="font-display text-base font-bold uppercase tracking-wider text-foreground">How to play {name}</h2>
-        <p className="max-md:hidden">{intro}</p>
-        {howToButton ? (
-          <div className="flex justify-center">
-            <HowToButton name={name} />
-          </div>
-        ) : (
+      {/* With the button (the rules are in its pop-up) it's the button alone; otherwise a heading, the intro and the steps. */}
+      {howToButton ? (
+        <div className="flex justify-center">
+          <HowToButton name={name} />
+        </div>
+      ) : (
+        <div className="space-y-3 text-sm text-muted-foreground">
+          <h2 className="font-display text-base font-bold uppercase tracking-wider text-foreground">How to play {name}</h2>
+          <p className="max-md:hidden">{intro}</p>
           <ol className="list-decimal space-y-1 pl-5">
             {steps.map((s) => (
               <li key={s}>{s}</li>
             ))}
           </ol>
-        )}
-      </div>
+        </div>
+      )}
       {!noFaq && (
         <div className="space-y-2">
           <h2 className="font-display text-base font-bold uppercase tracking-wider">FAQ</h2>
