@@ -10,6 +10,7 @@
  */
 import { chromium } from "playwright";
 import { fileURLToPath } from "url";
+import { openDexSection } from "./e2e-dex-menu.mjs";
 
 async function ldTypes(page) {
   return page.$$eval('script[type="application/ld+json"]', (els) => els.flatMap((e) => [JSON.parse(e.textContent ?? "{}")].flat().map((x) => x["@type"])));
@@ -75,7 +76,7 @@ export async function runVideoGames({ browser, BASE, errors, step }) {
   page.on("pageerror", (err) => errors.push(`[${page.url()}] PAGEERROR: ${err.message}`));
   try {
     await page.goto(`${BASE}/pokedex`, { waitUntil: "load" });
-    await page.getByTestId("dex-tab-games").click();
+    await openDexSection(page, "games");
     await page.waitForURL(/\/pokedex\/games$/);
     await page.getByTestId("games-grid").waitFor();
     if ((await page.getByTestId("dex-tab-games").getAttribute("aria-current")) !== "page") errors.push("games: the Games tab isn't marked current on its page");

@@ -1,11 +1,10 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element -- thumbnails are pre-sized static files (public/art/160) */
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import Link from "@/components/ui/Link";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowDownWideNarrow, ArrowUpNarrowWide, BookOpenCheck, Search, Shuffle, SlidersHorizontal, X } from "lucide-react";
+import { ArrowDown, ArrowDownWideNarrow, ArrowUp, ArrowUpDown, ArrowUpNarrowWide, BookOpenCheck, Check, ChevronDown, LayoutGrid, Rows3, Search, SlidersHorizontal, X } from "lucide-react";
 import { TYPES, capitalize } from "@/lib/pokemon/type-matrix";
 import { typeColor } from "@/lib/pokemon/type-colors";
 import { boardArtUrl } from "@/lib/pokemon/art";
@@ -58,11 +57,12 @@ function fromRow([id, slug, name, genus, types, gen, hp, atk, def, spa, spd, spe
   };
 }
 
-type SortKey = "id" | "name" | "bst" | "hp" | "atk" | "def" | "spa" | "spd" | "spe" | "height" | "weight";
+type SortKey = "id" | "name" | "type" | "bst" | "hp" | "atk" | "def" | "spa" | "spd" | "spe" | "height" | "weight";
 
 const SORTS: { key: SortKey; label: string }[] = [
   { key: "id", label: "Dex number" },
   { key: "name", label: "Name" },
+  { key: "type", label: "Type" },
   { key: "bst", label: "Base stat total" },
   { key: "hp", label: "HP" },
   { key: "atk", label: "Attack" },
@@ -74,14 +74,22 @@ const SORTS: { key: SortKey; label: string }[] = [
   { key: "weight", label: "Weight" },
 ];
 
+type DexView = "cards" | "table";
+/** This device's last choice of cards or table. */
+const VIEW_KEY = "pokeiq-dex-view";
+
 const REGIONS = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola", "Galar", "Paldea"];
 const PAGE = 60;
 /** Cards in the first rows (two across on a phone, up to eight on a wide screen) that load their picture straight away. */
 const EAGER_CARDS = 8;
 
+/** Sorts that read best smallest (or A) first; the rest start with the biggest. */
+const ASCENDING_FIRST: SortKey[] = ["id", "name", "type"];
+
 function sortValue(p: DexListItem, key: SortKey): number | string {
   if (key === "id") return p.id;
   if (key === "name") return p.name;
+  if (key === "type") return p.types.join(" ");
   if (key === "bst") return p.bst;
   if (key === "height") return p.height;
   if (key === "weight") return p.weight;
@@ -89,7 +97,7 @@ function sortValue(p: DexListItem, key: SortKey): number | string {
 }
 
 function sortLabel(p: DexListItem, key: SortKey): string | null {
-  if (key === "id" || key === "name") return null;
+  if (key === "id" || key === "name" || key === "type") return null;
   if (key === "height") return `${(p.height / 10).toFixed(1)} m`;
   if (key === "weight") return `${(p.weight / 10).toFixed(1)} kg`;
   return String(sortValue(p, key));
@@ -98,7 +106,6 @@ function sortLabel(p: DexListItem, key: SortKey): string | null {
 export function PokedexExplorer({ rows }: { rows: DexRow[] }) {
   const items = useMemo(() => rows.map(fromRow), [rows]);
   const searchHint = usePlaceholder("Search name, number or category…  ( / )", "Name, number, category…");
-  const router = useRouter();
   const [query, setQuery] = useState("");
   const [types, setTypes] = useState<string[]>([]);
   const [gens, setGens] = useState<number[]>([]);
@@ -106,6 +113,24 @@ export function PokedexExplorer({ rows }: { rows: DexRow[] }) {
   const [finalOnly, setFinalOnly] = useState(false);
   const [sort, setSort] = useState<SortKey>("id");
   const [desc, setDesc] = useState(false);
+  // The server always renders cards; a saved table view is applied after mount.
+  const [view, setView] = useState<DexView>("cards");
+  const chooseView = (v: DexView) => {
+    setView(v);
+    try {
+      localStorage.setItem(VIEW_KEY, v);
+    } catch {
+      // Storage blocked: the choice lasts for this visit.
+    }
+  };
+  /** A table header: the active column flips direction, another column starts from its natural end. */
+  const sortBy = (key: SortKey) => {
+    if (key === sort) setDesc((d) => !d);
+    else {
+      setSort(key);
+      setDesc(!ASCENDING_FIRST.includes(key));
+    }
+  };
   // Phones show the filter rows on demand so the sticky bar stays one row tall.
   const [filtersOpen, setFiltersOpen] = useState(false);
   // Cards in the prerendered HTML must be visible before hydration; only
@@ -126,8 +151,18 @@ export function PokedexExplorer({ rows }: { rows: DexRow[] }) {
     const sortKey = SORTS.find((s) => s.key === params.get("sort"))?.key;
     if (sortKey) {
       setSort(sortKey);
-      setDesc(params.get("dir") === "asc" ? false : params.get("dir") === "desc" || (sortKey !== "id" && sortKey !== "name"));
+      setDesc(params.get("dir") === "asc" ? false : params.get("dir") === "desc" || !ASCENDING_FIRST.includes(sortKey));
     }
+    // Cards or table: ?view= first, then the last choice on this device.
+    const urlView = params.get("view");
+    let saved: string | null = null;
+    try {
+      saved = localStorage.getItem(VIEW_KEY);
+    } catch {
+      // Storage blocked: cards.
+    }
+    const wanted = urlView === "table" || urlView === "cards" ? urlView : saved;
+    if (wanted === "table") setView("table");
   }, []);
   const [visible, setVisible] = useState(PAGE);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -188,8 +223,29 @@ export function PokedexExplorer({ rows }: { rows: DexRow[] }) {
     <div className="space-y-6">
       {/* Controls */}
       <div className="sticky top-14 z-30 -mx-4 space-y-3 border-b border-foreground/5 bg-background/80 px-4 py-3 backdrop-blur-xl sm:-mx-8 sm:px-8">
-        <div className="flex flex-wrap gap-2">
-          <div className="relative min-w-[180px] flex-1 max-md:min-w-0">
+        {/* Desktop: sort | search (centred, under the section button and as wide) | view. */}
+        <div className="flex flex-wrap gap-2 lg:grid lg:grid-cols-[minmax(max-content,1fr)_minmax(0,576px)_minmax(max-content,1fr)] lg:items-center">
+          <div className={cn("order-last gap-2 max-md:w-full md:order-none lg:justify-end", filtersOpen ? "flex" : "hidden md:flex")}>
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as SortKey)}
+              aria-label="Sort by"
+              className="h-11 rounded-md border border-input bg-shade/40 px-3 font-display text-sm max-md:min-w-0 max-md:flex-1 lg:w-[150px]"
+            >
+              {SORTS.map((s) => (
+                <option key={s.key} value={s.key}>{s.label}</option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={() => setDesc((d) => !d)}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-input bg-shade/40 hover:border-screen/60"
+              aria-label={desc ? "Sort ascending" : "Sort descending"}
+            >
+              {desc ? <ArrowDownWideNarrow className="h-4 w-4" /> : <ArrowUpNarrowWide className="h-4 w-4" />}
+            </button>
+          </div>
+          <div className="relative order-first min-w-[180px] flex-1 max-md:min-w-0 max-md:basis-[calc(100%-6.5rem)] lg:order-none lg:min-w-0" data-testid="dex-search">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               ref={searchRef}
@@ -223,34 +279,9 @@ export function PokedexExplorer({ rows }: { rows: DexRow[] }) {
               </span>
             )}
           </button>
-          <div className={cn("order-last gap-2 md:order-none", filtersOpen ? "flex" : "hidden md:flex")}>
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value as SortKey)}
-              aria-label="Sort by"
-              className="h-11 rounded-md border border-input bg-shade/40 px-3 font-display text-sm"
-            >
-              {SORTS.map((s) => (
-                <option key={s.key} value={s.key}>{s.label}</option>
-              ))}
-            </select>
-            <button
-              type="button"
-              onClick={() => setDesc((d) => !d)}
-              className="flex h-11 w-11 items-center justify-center rounded-md border border-input bg-shade/40 hover:border-screen/60"
-              aria-label={desc ? "Sort ascending" : "Sort descending"}
-            >
-              {desc ? <ArrowDownWideNarrow className="h-4 w-4" /> : <ArrowUpNarrowWide className="h-4 w-4" />}
-            </button>
+          <div className={cn("order-last max-md:w-full md:order-none lg:justify-start", filtersOpen ? "flex" : "hidden md:flex")}>
+            <ViewPicker view={view} onChange={chooseView} />
           </div>
-          <button
-            type="button"
-            onClick={() => router.push(`/pokemon/${items[Math.floor(Math.random() * items.length)].slug}`)}
-            className="flex h-11 items-center gap-2 rounded-md border border-input bg-shade/40 px-3 font-display text-sm font-semibold uppercase tracking-wider hover:border-screen/60"
-            aria-label="Surprise me: open a random Pokémon"
-          >
-            <Shuffle className="h-4 w-4" /> <span className="hidden sm:inline">Surprise me</span>
-          </button>
           {/* Phones: Study mode sits in the toolbar instead of floating over the cards. */}
           <Link
             href="/pokedex/study"
@@ -263,7 +294,8 @@ export function PokedexExplorer({ rows }: { rows: DexRow[] }) {
         </div>
 
         <div id="dex-filters" className={cn("space-y-3", !filtersOpen && "hidden md:block")}>
-          <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none]">
+          {/* One row: on a laptop or desktop all 18 fit edge to edge (tighter from lg, so Fairy isn't cut off at 1024); narrower, it scrolls. */}
+          <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] lg:gap-1 xl:gap-1.5" data-testid="dex-type-chips">
             {TYPES.map((t) => {
               const active = types.includes(t);
               return (
@@ -273,7 +305,7 @@ export function PokedexExplorer({ rows }: { rows: DexRow[] }) {
                   onClick={() => setTypes((cur) => toggle(cur, t, 2))}
                   aria-pressed={active}
                   className={cn(
-                    "shrink-0 rounded-[4px] border px-2.5 py-1 font-display text-[11px] font-bold uppercase tracking-wider transition-all",
+                    "flex-1 whitespace-nowrap rounded-[4px] border px-2.5 py-1 font-display text-[11px] font-bold uppercase tracking-wider transition-all lg:px-1 lg:tracking-wide xl:px-1.5 xl:tracking-wider",
                     active ? "border-transparent text-white" : "border-foreground/10 bg-shade/20 text-muted-foreground hover:text-foreground"
                   )}
                   style={active ? { background: typeColor(t), boxShadow: "inset 0 1px 0 rgb(255 255 255 / 0.35), inset 0 -2px 0 rgb(0 0 0 / 0.25)" } : { borderColor: `${typeColor(t)}66` }}
@@ -284,7 +316,7 @@ export function PokedexExplorer({ rows }: { rows: DexRow[] }) {
             })}
           </div>
 
-          <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex flex-wrap items-center justify-center gap-1.5">
             {REGIONS.map((region, i) => (
               <button
                 key={region}
@@ -325,6 +357,8 @@ export function PokedexExplorer({ rows }: { rows: DexRow[] }) {
       {/* Grid */}
       {filtered.length === 0 ? (
         <div className="py-20 text-center text-muted-foreground">No Pokémon match those filters.</div>
+      ) : view === "table" ? (
+        <DexTable list={filtered.slice(0, visible)} sort={sort} desc={desc} onSort={sortBy} />
       ) : (
         // No layout animations here: measuring up to 1,025 cards on every
         // keystroke is far too slow. Cards are memoised and fade in on mount.
@@ -345,6 +379,253 @@ export function PokedexExplorer({ rows }: { rows: DexRow[] }) {
     </div>
   );
 }
+
+const VIEWS: { id: DexView; label: string; Icon: typeof LayoutGrid }[] = [
+  { id: "cards", label: "Cards", Icon: LayoutGrid },
+  { id: "table", label: "Table", Icon: Rows3 },
+];
+
+/** Cards or table: a small dropdown (a list to pick from, not an on/off switch). */
+function ViewPicker({ view, onChange }: { view: DexView; onChange: (v: DexView) => void }) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const current = VIEWS.find((v) => v.id === view) ?? VIEWS[0];
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointer = (e: PointerEvent) => {
+      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: globalThis.KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setOpen(false);
+      buttonRef.current?.focus();
+    };
+    document.addEventListener("pointerdown", onPointer);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  const options = () => [...(listRef.current?.querySelectorAll<HTMLButtonElement>('[role="option"]') ?? [])];
+  const openList = () => {
+    setOpen(true);
+    requestAnimationFrame(() => options().find((o) => o.getAttribute("aria-selected") === "true")?.focus());
+  };
+  const pick = (v: DexView) => {
+    onChange(v);
+    setOpen(false);
+    buttonRef.current?.focus();
+  };
+  const onListKey = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    const list = options();
+    const at = list.indexOf(document.activeElement as HTMLButtonElement);
+    const go = (i: number) => {
+      e.preventDefault();
+      list[(i + list.length) % list.length]?.focus();
+    };
+    if (e.key === "ArrowDown") go(at + 1);
+    else if (e.key === "ArrowUp") go(at - 1);
+    else if (e.key === "Home") go(0);
+    else if (e.key === "End") go(list.length - 1);
+    else if (e.key === "Tab") setOpen(false);
+  };
+
+  return (
+    <div ref={wrapRef} className="relative z-10 max-md:w-full" onBlur={(e) => !e.currentTarget.contains(e.relatedTarget as Node | null) && setOpen(false)}>
+      <button
+        ref={buttonRef}
+        type="button"
+        data-testid="dex-view-button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls="dex-view-list"
+        onClick={() => (open ? setOpen(false) : setOpen(true))}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+            e.preventDefault();
+            openList();
+          }
+        }}
+        className={cn(
+          "flex h-11 w-[202px] items-center justify-between max-md:w-full rounded-md border border-input bg-shade/40 px-3 font-display text-sm font-semibold uppercase tracking-[0.08em] hover:border-screen/60",
+          open && "border-screen/60"
+        )}
+      >
+        <span className="flex items-center gap-2.5">
+          <span className="font-pixel text-[9px] font-normal tracking-[0.12em] text-muted-foreground">View</span>
+          <current.Icon className="h-[15px] w-[15px]" strokeWidth={2.2} aria-hidden />
+          {current.label}
+        </span>
+        <ChevronDown className={cn("h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 motion-reduce:transition-none", open && "rotate-180")} strokeWidth={2.6} aria-hidden />
+      </button>
+      <div
+        ref={listRef}
+        id="dex-view-list"
+        role="listbox"
+        aria-label="View"
+        data-testid="dex-view-list"
+        onKeyDown={onListKey}
+        className={cn(
+          "absolute right-0 top-full mt-1.5 w-[202px] flex-col max-md:left-0 max-md:w-auto gap-0.5 rounded-lg border border-border bg-card p-1.5 shadow-[0_18px_44px_hsl(var(--shade)/0.6)] motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-top-1 motion-safe:duration-150",
+          open ? "flex" : "hidden"
+        )}
+      >
+        {VIEWS.map(({ id, label, Icon }) => {
+          const on = id === view;
+          return (
+            <button
+              key={id}
+              type="button"
+              role="option"
+              aria-selected={on}
+              tabIndex={-1}
+              data-testid={`dex-view-${id}`}
+              onClick={() => pick(id)}
+              className={cn(
+                "flex h-10 items-center justify-between rounded-[5px] border px-3 font-display text-[13px] font-semibold uppercase tracking-[0.08em] outline-none transition-colors motion-reduce:transition-none",
+                on
+                  ? "border-primary/45 bg-primary/[0.14] text-foreground"
+                  : "border-transparent text-foreground/80 hover:border-border hover:bg-accent/60 hover:text-foreground focus-visible:border-border focus-visible:bg-accent/60 focus-visible:text-foreground"
+              )}
+            >
+              <span className="flex items-center gap-2.5">
+                <Icon className="h-[15px] w-[15px]" strokeWidth={2.2} aria-hidden />
+                {label}
+              </span>
+              <Check className={cn("h-3.5 w-3.5 text-primary", !on && "opacity-0")} strokeWidth={3} aria-hidden />
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/** Base stats, in the table's column order, with each one's bar colour. */
+const STAT_COLUMNS: { key: Exclude<SortKey, "id" | "name" | "type" | "bst" | "height" | "weight">; label: string; color: string }[] = [
+  { key: "hp", label: "HP", color: "#ff6b6b" },
+  { key: "atk", label: "Attack", color: "#f5a65b" },
+  { key: "def", label: "Defense", color: "#f7d65a" },
+  { key: "spa", label: "Sp. Atk", color: "#7fa8ff" },
+  { key: "spd", label: "Sp. Def", color: "#7fd49b" },
+  { key: "spe", label: "Speed", color: "#f78fb3" },
+];
+const TABLE_COLUMNS: { key: SortKey; label: string }[] = [
+  { key: "id", label: "No." },
+  { key: "name", label: "Pokémon" },
+  { key: "type", label: "Type" },
+  ...STAT_COLUMNS,
+  { key: "bst", label: "Total" },
+];
+/**
+ * The table's columns. It scrolls sideways (No. and Pokémon pinned) when the
+ * screen is narrower than its minimum; phones get tighter fixed columns so the
+ * pinned two leave room for the stats.
+ */
+const TABLE_GRID =
+  "grid min-w-[788px] grid-cols-[72px_136px_124px_repeat(6,64px)_72px] items-center md:min-w-[1160px] md:grid-cols-[86px_minmax(0,1.6fr)_150px_repeat(6,minmax(0,1fr))_minmax(0,1.15fr)]";
+/** Rows in the first screen that load their picture straight away. */
+const EAGER_ROWS = 10;
+
+/** The same filtered and sorted list as the cards, as rows of base stats. The headers sort it (the toolbar's sort, shared). */
+function DexTable({ list, sort, desc, onSort }: { list: DexListItem[]; sort: SortKey; desc: boolean; onSort: (key: SortKey) => void }) {
+  return (
+    <div className="overflow-x-auto rounded-lg border bg-background [scrollbar-width:thin]" data-testid="dex-table">
+      <div className={cn(TABLE_GRID, "border-b bg-card")}>
+        {TABLE_COLUMNS.map(({ key, label }, i) => {
+          const on = key === sort;
+          const Arrow = on ? (desc ? ArrowDown : ArrowUp) : ArrowUpDown;
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => onSort(key)}
+              data-testid={`dex-th-${key}`}
+              data-active={on ? "true" : undefined}
+              aria-label={on ? `${label}, sorted ${desc ? "high to low" : "low to high"} (reverse)` : `${label} (sort the table)`}
+              className={cn(
+                "flex h-11 items-center gap-1.5 px-3 font-display text-[11px] font-bold uppercase tracking-[0.12em] transition-colors motion-reduce:transition-none",
+                i === 0 && "sticky left-0 z-[1] md:pl-4",
+                i === 1 && "sticky left-[72px] z-[1] md:left-[86px]",
+                on ? "bg-accent text-foreground shadow-[inset_0_-2px_0_hsl(var(--primary))]" : "bg-inherit text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {label}
+              <Arrow className={cn("h-3 w-3 shrink-0", !on && "opacity-35")} aria-hidden />
+            </button>
+          );
+        })}
+      </div>
+      {list.map((p, i) => (
+        <DexRowLink key={p.id} p={p} eager={i < EAGER_ROWS} />
+      ))}
+    </div>
+  );
+}
+
+const statTone = (v: number) => (v >= 100 ? "text-foreground" : v < 50 ? "text-muted-foreground" : "text-foreground/85");
+
+const DexRowLink = memo(function DexRowLink({ p, eager }: { p: DexListItem; eager: boolean }) {
+  const c1 = typeColor(p.types[0]);
+  const c2 = typeColor(p.types[1] ?? p.types[0]);
+  return (
+    <Link
+      href={`/pokemon/${p.slug}`}
+      data-testid="dex-table-row"
+      className={cn(TABLE_GRID, "group relative h-[72px] border-b border-foreground/5 bg-background transition-colors last:border-b-0 hover:bg-card motion-reduce:transition-none")}
+    >
+      <span className="sticky left-0 z-[1] flex h-full items-center self-stretch bg-inherit pl-3 font-pixel md:pl-4 text-[10px] tracking-[0.06em] text-muted-foreground">
+        <span className="absolute inset-y-0 left-0 flex w-[3px] flex-col" aria-hidden>
+          <i className="flex-1" style={{ background: c1 }} />
+          <i className="flex-1" style={{ background: c2 }} />
+        </span>
+        No.{String(p.id).padStart(4, "0")}
+      </span>
+      <span className="sticky left-[72px] z-[1] flex h-full min-w-0 items-center gap-2 self-stretch bg-inherit pr-0.5 md:left-[86px]">
+        <span className="screen h-10 w-10 shrink-0 rounded-md md:h-[52px] md:w-[52px]">
+          <span className="absolute inset-0 opacity-30 transition-opacity duration-300 group-hover:opacity-60" style={{ background: `radial-gradient(circle at 50% 60%, ${c1}, transparent 70%)` }} aria-hidden />
+          <img
+            src={boardArtUrl(p.id)}
+            alt=""
+            loading={eager ? "eager" : "lazy"}
+            decoding="async"
+            width={46}
+            height={46}
+            className="relative z-[1] m-[3px] h-[34px] w-[34px] object-contain drop-shadow-[0_4px_6px_rgba(0,0,0,0.5)] md:h-[46px] md:w-[46px]"
+          />
+        </span>
+        <span className="truncate font-display text-[13px] font-bold uppercase tracking-wide transition-colors group-hover:text-screen md:text-[15px]" title={p.name}>{p.name}</span>
+      </span>
+      <span className="flex gap-1 px-3">
+        {p.types.map((t) => (
+          <TypeBadge key={t} type={t} size="sm" />
+        ))}
+      </span>
+      {STAT_COLUMNS.map(({ key, color }) => {
+        const v = p.stats[key];
+        return (
+          <span key={key} className="flex flex-col gap-1.5 px-3 tabular-nums">
+            <span className={cn("font-display text-[15px] font-semibold leading-none", statTone(v))}>{v}</span>
+            <span className="h-1 overflow-hidden rounded-sm bg-foreground/[0.08]">
+              <span className="block h-full rounded-sm" style={{ width: `${Math.min(100, Math.round((v / 150) * 100))}%`, background: color }} />
+            </span>
+          </span>
+        );
+      })}
+      <span className="flex flex-col gap-1.5 px-3 tabular-nums">
+        <span className={cn("font-display text-base font-bold leading-none", p.bst >= 500 ? "text-foreground" : "text-foreground/85")}>{p.bst}</span>
+        <span className="h-1 overflow-hidden rounded-sm bg-foreground/[0.08]">
+          <span className="block h-full rounded-sm bg-gradient-to-r from-screen to-primary" style={{ width: `${Math.min(100, Math.round((p.bst / 680) * 100))}%` }} />
+        </span>
+      </span>
+    </Link>
+  );
+});
 
 function Toggle({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
