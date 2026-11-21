@@ -1,7 +1,7 @@
 {
   "list": {
-    "abilitiesOne": "とくせいは{list}だけ",
-    "abilitiesMany": "とくせいは{list}",
+    "abilitiesOne": "とくせいは「{list}」だけ",
+    "abilitiesMany": "とくせいは「{list}」",
     "hiddenMark": "{name}（隠れ特性）"
   },
   "lureTypeLike": "グループの多くと同じ{type}タイプだが、{instead}",
@@ -84,22 +84,22 @@
     "lure": "なつき度で{into}に進化するが、自身はなつき度で進化していない"
   },
   "ability": {
-    "label": "とくせい{ability}を持てる",
-    "rule": "全員がとくせい{ability}を持てる（隠れ特性も含む）。",
-    "why": "とくせい{ability}",
-    "whyHidden": "隠れ特性{ability}"
+    "label": "とくせい「{ability}」を持てる",
+    "rule": "全員がとくせい「{ability}」を持てる（隠れ特性も含む）。",
+    "why": "とくせい「{ability}」",
+    "whyHidden": "隠れ特性「{ability}」"
   },
   "hidden": {
-    "label": "隠れ特性{ability}",
-    "rule": "全員の隠れ特性が{ability}。"
+    "label": "隠れ特性「{ability}」",
+    "rule": "全員の隠れ特性が「{ability}」。"
   },
   "move": {
-    "label": "レベルアップで{move}を覚える",
-    "rule": "全員が『スカーレット・バイオレット』でレベルアップで{move}を覚える。",
-    "whyEvolving": "進化時に{move}を覚える（SV）",
-    "whyStart": "レベル1から{move}を覚える（SV）",
-    "whyLevel": "レベル{level}で{move}を覚える（SV）",
-    "lure": "{type}タイプだが、{move}を覚えない"
+    "label": "レベルアップで「{move}」を覚える",
+    "rule": "全員が『スカーレット・バイオレット』でレベルアップで「{move}」を覚える。",
+    "whyEvolving": "進化時に「{move}」を覚える（SV）",
+    "whyStart": "レベル1から「{move}」を覚える（SV）",
+    "whyLevel": "レベル{level}で「{move}」を覚える（SV）",
+    "lure": "{type}タイプだが、「{move}」を覚えない"
   },
   "top": {
     "label": "いちばん高い種族値：{stat}",
@@ -226,7 +226,7 @@
     "foodWhy": "英語名が食べ物から来ている",
     "moveLabel": "専用わざ",
     "moveRule": "全員がほかの進化系では覚えられないわざを覚える。",
-    "moveWhy": "{moves}を覚える唯一のポケモン"
+    "moveWhy": "「{moves}」を覚える唯一のポケモン"
   },
   "mixed": {
     "label": "{type}タイプつながり",
