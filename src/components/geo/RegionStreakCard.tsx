@@ -6,7 +6,8 @@ import { useProgress } from "@/lib/progress";
 import { GEO_REGION_STREAK_KEY } from "@/lib/geo-streak-types";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import art from "@/assets/guessr/hoenn.webp";
+// Four regions across the eras (Kanto, Johto, Alola, Paldea), so it never matches a one-region tile beside it.
+import art from "@/assets/guessr/region-streak.webp";
 import { HubTile } from "./HubParts";
 
 /** The PokéGuessr hub's way into Region Streak (/pokeguessr/streak): one screenshot, name the region, no pin. */
