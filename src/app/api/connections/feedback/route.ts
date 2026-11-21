@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { isLiveLocale } from "@/i18n/config";
 import { CONN_GROUP_SIZE, CONN_GROUPS, CONN_MAX_MISTAKES, type ConnLevel } from "@/lib/connections/types";
 import { REPORT_REASONS, type ConnFeedbackResponse } from "@/lib/connections/social";
 import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
@@ -30,6 +31,7 @@ const bodySchema = z
       .max(CONN_GROUPS + CONN_MAX_MISTAKES + 4),
     rating: z.union([z.literal(1), z.literal(-1)]).optional(),
     report: z.object({ level: z.number().int().min(0).max(3), reason: z.enum(REPORT_REASONS) }).optional(),
+    lang: z.string().max(5).optional(),
   })
   .refine((b) => b.rating !== undefined || b.report !== undefined, "Send a rating or a report.");
 
@@ -40,8 +42,8 @@ export async function POST(request: NextRequest) {
   const who = await whoIs(request, parsed.data.player);
   if (!who) return NextResponse.json({ error: "Missing player id." }, { status: 400, headers: NO_STORE });
   try {
-    const { date, guesses, rating, report } = parsed.data;
-    const out = await submitFeedback({ date, guesses, rating, player: connPlayerKey(who.identity), ...(report && { report: { level: report.level as ConnLevel, reason: report.reason } }) });
+    const { date, guesses, rating, report, lang } = parsed.data;
+    const out = await submitFeedback({ date, locale: isLiveLocale(lang) ? lang : "en", guesses, rating, player: connPlayerKey(who.identity), ...(report && { report: { level: report.level as ConnLevel, reason: report.reason } }) });
     if (!out.ok) return NextResponse.json({ error: out.error }, { status: out.status, headers: NO_STORE });
     return NextResponse.json({ available: out.available, rated: out.rated, reported: out.reported } satisfies ConnFeedbackResponse, { headers: NO_STORE });
   } catch (err) {

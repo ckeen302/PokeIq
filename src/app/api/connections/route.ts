@@ -9,6 +9,7 @@ import { startToken } from "@/lib/server/connections-board";
 import { checkCustom, customView, getCustom } from "@/lib/server/connections-custom";
 import { TILE_ID_MAX } from "@/lib/connections/tiles";
 import { CUSTOM_SEED_RE } from "@/lib/connections/custom";
+import { isLiveLocale, type Locale } from "@/i18n/config";
 
 /**
  * PokéConnections.
@@ -31,13 +32,16 @@ const NO_STORE = { "Cache-Control": "no-store" };
 /** A practice seed, with Unlimited's difficulty in front when it isn't normal: "hard-x7k2abcd". */
 const SEED = z.string().regex(PRACTICE_SEED_RE);
 
-/** The puzzle a request names, or an error. */
-async function puzzleFor(date: string | null | undefined, practice: string | null | undefined) {
+/** The player's language, from `lang` (absent or unknown: English). */
+const langOf = (lang: unknown): Locale => (isLiveLocale(lang) ? lang : "en");
+
+/** The puzzle a request names (as players in `locale` get it), or an error. */
+async function puzzleFor(date: string | null | undefined, practice: string | null | undefined, locale: Locale) {
   if (date && !practice) {
     if (!isPlayableConnDate(date)) return { error: "That daily puzzle isn't available." } as const;
-    return { puzzle: await effectiveDaily(date), key: `daily:${date}`, date } as const;
+    return { puzzle: await effectiveDaily(date, undefined, locale), key: `daily:${date}`, date } as const;
   }
-  if (practice && !date && SEED.safeParse(practice).success) return { puzzle: practiceConnPuzzle(practice), key: `practice:${practice}` } as const;
+  if (practice && !date && SEED.safeParse(practice).success) return { puzzle: practiceConnPuzzle(practice, locale), key: `practice:${practice}` } as const;
   return { error: "Ask for a daily (date) or a practice puzzle (practice)." } as const;
 }
 
@@ -51,7 +55,7 @@ export async function GET(request: NextRequest) {
     if (!custom) return NextResponse.json({ error: "That puzzle doesn't exist." }, { status: 404, headers: NO_STORE });
     return NextResponse.json(customView(custom), { headers: NO_STORE });
   }
-  const found = await puzzleFor(params.get("date"), params.get("practice"));
+  const found = await puzzleFor(params.get("date"), params.get("practice"), langOf(params.get("lang")));
   if ("error" in found) return NextResponse.json({ error: found.error }, { status: 400, headers: NO_STORE });
   const view = puzzleView(found.puzzle, found.key, found.date);
   // A daily is timed from here, by the server's clock (see connections-board.ts).
@@ -61,6 +65,7 @@ export async function GET(request: NextRequest) {
 const bodySchema = z.object({
   date: z.string().max(10).optional(),
   practice: z.string().max(32).optional(),
+  lang: z.string().max(5).optional(),
   // At most every group plus every mistake, and a few repeats.
   guesses: z
     // Four tiles to a guess (five on a 5×5 board: the puzzle says which, and playGuesses checks).
@@ -82,10 +87,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: (err as Error).message }, { status: 400, headers: NO_STORE });
     }
   }
-  const found = await puzzleFor(parsed.data.date, parsed.data.practice);
+  const locale = langOf(parsed.data.lang);
+  const found = await puzzleFor(parsed.data.date, parsed.data.practice, locale);
   if ("error" in found) return NextResponse.json({ error: found.error }, { status: 400, headers: NO_STORE });
   try {
-    return NextResponse.json(checkGuesses(found.puzzle, parsed.data.guesses), { headers: NO_STORE });
+    return NextResponse.json(checkGuesses(found.puzzle, parsed.data.guesses, locale), { headers: NO_STORE });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 400, headers: NO_STORE });
   }

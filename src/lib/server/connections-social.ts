@@ -1,6 +1,8 @@
 import "server-only";
 import { getServiceSupabase } from "@/lib/supabase";
 import { Rng } from "@/lib/rng";
+import type { Locale } from "@/i18n/config";
+import { localizedDaily } from "@/lib/connections/localize";
 import { CATEGORIES } from "@/lib/connections/categories";
 import { generatePuzzle, playGuesses, type PlayState, type Puzzle } from "@/lib/connections/generator";
 import { isCurrentConnDate, isPlayableConnDate, type ConnLevel } from "@/lib/connections/types";
@@ -313,8 +315,8 @@ export function clearDisabledCache() {
 }
 
 /** The daily as it is dealt: without the categories switched off for that date. */
-export async function effectiveDaily(date: string, store: SocialStore | null = socialStore()): Promise<Puzzle> {
-  return dailyConnPuzzle(date, await loadDisabled(store));
+export async function effectiveDaily(date: string, store: SocialStore | null = socialStore(), locale: Locale = "en"): Promise<Puzzle> {
+  return localizedDaily(dailyConnPuzzle(date, await loadDisabled(store)), date, locale);
 }
 
 const DAY_MS = 86_400_000;
@@ -352,6 +354,8 @@ export async function disableCategory(category: string, adminName: string, store
 
 export interface FeedbackInput {
   date: string;
+  /** The page's language: its puzzle may have swapped an English-only group, and a report is about the group it showed. */
+  locale?: Locale;
   /** The player key (connPlayerKey of their identity). */
   player: string;
   guesses: number[][];
@@ -360,9 +364,9 @@ export interface FeedbackInput {
 }
 
 /** Replays a finished daily; the state or the reason it can't be used. */
-async function finished(date: string, guesses: number[][], store: SocialStore | null, current = false): Promise<{ puzzle: Puzzle; state: PlayState } | { error: string; status: number }> {
+async function finished(date: string, guesses: number[][], store: SocialStore | null, current = false, locale: Locale = "en"): Promise<{ puzzle: Puzzle; state: PlayState } | { error: string; status: number }> {
   if (!(current ? isCurrentConnDate(date) : isPlayableConnDate(date))) return { error: "No PokéConnections that day.", status: 400 };
-  const puzzle = await effectiveDaily(date, store);
+  const puzzle = await effectiveDaily(date, store, locale);
   let state: PlayState;
   try {
     state = playGuesses(puzzle, guesses);
@@ -380,7 +384,7 @@ async function finished(date: string, guesses: number[][], store: SocialStore | 
  */
 export async function submitFeedback(input: FeedbackInput, store: SocialStore | null = socialStore()): Promise<SocialOutcome<{ available: boolean; rated: boolean; reported: boolean }>> {
   if (input.report && !(REPORT_REASONS as readonly string[]).includes(input.report.reason)) return { ok: false, status: 400, error: "Pick a reason." };
-  const game = await finished(input.date, input.guesses, store);
+  const game = await finished(input.date, input.guesses, store, false, input.locale);
   if ("error" in game) return { ok: false, ...game };
   if (!game.state.over) return { ok: false, status: 409, error: "Finish the puzzle first." };
   const out = await orOff(
@@ -433,10 +437,10 @@ export async function recordGroupStats(date: string, player: string, state: Play
  * the Pokémon and its group's colour only.
  */
 export async function requestHint(
-  input: { date: string; player: string; guesses: number[][] },
+  input: { date: string; player: string; guesses: number[][]; locale?: Locale },
   store: SocialStore | null = socialStore()
 ): Promise<SocialOutcome<{ hint: ConnHintResponse }>> {
-  const game = await finished(input.date, input.guesses, store, true);
+  const game = await finished(input.date, input.guesses, store, true, input.locale);
   if ("error" in game) return { ok: false, ...game };
   if (game.state.over) return { ok: false, status: 409, error: "The game is over." };
   const level = ([0, 1, 2, 3] as ConnLevel[]).find((lv) => !game.state.found.includes(lv))!;
