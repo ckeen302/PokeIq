@@ -4,7 +4,7 @@ import { rankedId } from "@/lib/ranked-client";
 
 /**
  * The browser's side of battle identity and replays: the signed id battles
- * know this trainer by (shared with ranked Pokédle; a signed-in trainer is
+ * know this trainer by (shared with ranked PokéGuessr; a signed-in trainer is
  * their account), and the replays this device remembers.
  */
 

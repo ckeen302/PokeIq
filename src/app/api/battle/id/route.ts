@@ -6,7 +6,7 @@ import { newAnonId, readAnonId } from "@/lib/server/ranked";
  * GET /api/battle/id (header x-ranked-id: the id this browser has, if any):
  * { id } — a new signed anonymous id when the browser has none (or a bad
  * one), else {}. Battles, the ladder and "My replays" know a trainer who
- * isn't signed in by it (it's the same id ranked Pokédle uses).
+ * isn't signed in by it (it's the same id ranked PokéGuessr uses).
  */
 
 const NO_STORE = { "Cache-Control": "no-store" };

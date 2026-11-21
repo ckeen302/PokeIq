@@ -4,7 +4,6 @@ import { POKEDEX } from "@/lib/pokemon/pokedex";
 import { PokedleWithCommunity } from "@/components/pokedle/PokedleCommunity";
 import { PokedleDuelCard } from "@/components/pokedle/PokedleDuelCard";
 import { GameInfo } from "@/components/seo/GameInfo";
-import { RankedCard } from "@/components/pokedle/Ranked";
 
 export const metadata: Metadata = pageMetadata({
   title: "Pokédle: Daily Pokémon Wordle",
@@ -20,9 +19,6 @@ export default function PokedlePage() {
     <div className="space-y-10">
       <PokedleWithCommunity names={names} />
       <div id="duel" className="scroll-mt-24 space-y-4">
-        <div id="ranked" className="scroll-mt-24">
-          <RankedCard />
-        </div>
         <PokedleDuelCard />
       </div>
       <GameInfo

@@ -5,7 +5,6 @@ import { gate } from "@/lib/server/moderation";
 import { chatRateLimit, clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { duelNameSchema, pvpToken, readPvpToken, type PvpFailure } from "@/lib/server/duel-core";
 import { duelsEnabled, newDuelCode, pvpStore } from "@/lib/server/duel-store";
-import { settleRankedDuel } from "@/lib/server/ranked-duels";
 import { CHAT_BODY_MAX } from "@/lib/server/chat";
 import { asKind, chatDuel, duelView, emoteDuel, joinDuel, leaveDuel, linkRematch, readyDuel, rematchOf, skipReveal, takeRematchSeat, touchDuel } from "@/lib/server/duels";
 import { buyPokedleHint, guessPokedle, setPokedleAssist, setPokedleGens, setPokedleSettings } from "@/lib/server/pokedle-duel";
@@ -94,9 +93,7 @@ export async function GET(request: NextRequest, context: Context) {
   try {
     const out = await pvpStore.update(code, (duel, now) => ({ ok: true as const, duel: touchDuel(duel, playerId, now) }));
     if (!out.ok) return failure(out);
-    // A ranked duel that just ended is counted here, on the next request.
-    const { duel, rev } = await settleRankedDuel(out.duel, out.rev);
-    return NextResponse.json(await seatAvatars(duelView(duel, playerId, out.now, rev)), { headers: NO_STORE });
+    return NextResponse.json(await seatAvatars(duelView(out.duel, playerId, out.now, out.rev)), { headers: NO_STORE });
   } catch (err) {
     return storeError(err);
   }
@@ -177,8 +174,7 @@ export async function POST(request: NextRequest, context: Context) {
       }
     });
     if (!out.ok) return failure(out);
-    const { duel, rev } = await settleRankedDuel(out.duel, out.rev);
-    return NextResponse.json(await seatAvatars(duelView(duel, playerId, out.now, rev)), { headers: NO_STORE });
+    return NextResponse.json(await seatAvatars(duelView(out.duel, playerId, out.now, out.rev)), { headers: NO_STORE });
   } catch (err) {
     return storeError(err);
   }

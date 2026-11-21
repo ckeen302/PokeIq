@@ -194,13 +194,11 @@ describe("5×5 duels", () => {
     expect(must(guessConnections(d, red, g0, start + 2000)).boards[0].guesses).toHaveLength(1);
   });
 
-  it("a rematch keeps the size; ranked duels are always 4×4", () => {
+  it("a rematch keeps the size", () => {
     const { d } = started(5);
     expect((rematchOf(d, "zzzzzzzz", T0 + 999_000) as ConnectionsDuel).size).toBe(5);
     const four = started().d;
     expect((rematchOf(four, "zzzzzzzz", T0 + 999_000) as ConnectionsDuel).size).toBeUndefined();
-    const ranked = createConnectionsDuel("Red", "abcdefgh", T0, "r", { size: 5, queue: "ranked", ranked: { season: "s", ratings: [1000, 1000], games: [0, 0], keys: ["a", "b"] } });
-    expect(ranked.duel.size).toBeUndefined();
   });
 });
 

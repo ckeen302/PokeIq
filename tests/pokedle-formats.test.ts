@@ -311,16 +311,6 @@ describe("duels and matchmaking with settings", () => {
     expect(buyPokedleHint(d, red, 0, "genus", start + 2000).ok).toBe(false);
   });
 
-  it("keeps ranked duels Classic whatever is asked", () => {
-    const { duel } = createPokedleDuel("Red", "fmtduel2", T0, "seed-r", {
-      settings: { format: "squirdle" },
-      queue: "ranked",
-      ranked: { keys: ["a".repeat(20), "b".repeat(20)], ratings: [1200, 1200], games: [0, 0] },
-    });
-    expect(duel.settings).toBeUndefined();
-    expect(duelRules(duel)).toMatchObject({ format: "classic", maxGuesses: 8, columns: DLE_ALL_COLUMNS, timer: "3m" });
-  });
-
   it("has a few casual queues: one per format and Pokédex level, Classic + Notebook the one there was", async () => {
     const k = (s: MatchSettings) => queueKey(s);
     expect(k({ game: "pokedle" })).toBe("pokedle:all");

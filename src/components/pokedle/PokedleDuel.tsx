@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Crown, Eye, Filter, Flame, Lightbulb, Loader2, RotateCcw, Swords, Tag, Timer, Trophy, UserSearch, WifiOff } from "lucide-react";
+import { Crown, Eye, Filter, Flame, Lightbulb, Loader2, RotateCcw, Swords, Tag, Timer, UserSearch, WifiOff, X } from "lucide-react";
 import { DLE_COLUMNS, type CellStatus, type DleRow } from "@/lib/dle-types";
 import { rulesTags, settingsOf, type DleRules } from "@/lib/dle-format";
 import { RulesChip, SettingsPanel } from "./SettingsPanel";
@@ -27,8 +27,6 @@ import {
 import { unlockAudio } from "@/lib/sound";
 import { sfx } from "@/lib/duel-sfx";
 import { DuelChat, DuelTools, EmoteFeed } from "@/components/duel/DuelReactions";
-import { useRanked } from "@/lib/ranked-client";
-import { RANKED_MATCH, RatingChange, Searching, TierBadge, rankedExtra } from "./Ranked";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDuel } from "@/components/duel/use-duel";
@@ -197,7 +195,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
               <div className="flex justify-center">
                 <RulesChip rules={view.rules} dex={view.assist === "off" ? "No dex" : DLE_ASSIST_INFO[view.assist].label} />
               </div>
-              {view.you === 0 && !view.ranked ? (
+              {view.you === 0 ? (
                 <SettingsPanel duel value={settingsOf(view.rules)} disabled={busy} onChange={(settings) => void act({ action: "settings", settings })} />
               ) : (
                 <p className="text-center text-xs text-muted-foreground">The trainer who made the duel picks the format and settings; you both play by the same.</p>
@@ -210,7 +208,6 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
                 onChange={view.you === 0 ? (assist) => void act({ action: "assist", assist }) : undefined}
                 note={view.you === 0 ? undefined : `${DLE_ASSIST_INFO[view.assist].label}: ${DLE_ASSIST_INFO[view.assist].blurb} The trainer who made the duel picks it; you both get the same.`}
               />
-              <LobbyRank />
             </div>
           }
           rules={[
@@ -560,11 +557,6 @@ function Fighter({ view, seat, right }: { view: DleDuelView; seat: number; right
         {player?.quiet && view.status === "playing" && <WifiOff className="h-3.5 w-3.5 shrink-0 text-warning" aria-label="Connection lost" />}
       </div>
       <div className={cn("font-pixel text-base tabular-nums", ahead ? "text-success" : "text-screen")}>{fmt(view.totals[seat])} pts</div>
-      {view.ranked && (
-        <div className={cn("flex", right && "justify-end")}>
-          <TierBadge rating={view.ranked.ratings[seat]} games={view.ranked.provisional[seat] ? 0 : undefined} size="sm" />
-        </div>
-      )}
     </div>
   );
 }
@@ -801,10 +793,9 @@ function DuelSummary({ view, busy, onRematch }: { view: DleDuelView; busy: boole
   const won = end.winner === me;
   const draw = end.winner === null;
   const [mine, theirs] = [view.totals[me], view.totals[1 - me]];
-  // "Find new opponent" / "Play again": the queue this duel came from (casual for a friend's duel), under the same name.
-  const ranked = view.queue === "ranked";
+  // "Find new opponent" / "Play again": the casual queue for this duel's Pokédex level and format, under the same name.
   const casual = useMemo(() => matchFor(view.assist, view.rules), [view.assist, view.rules]);
-  const finder = useMatchmaking(ranked ? RANKED_MATCH : casual);
+  const finder = useMatchmaking(casual);
   const myName = view.players[me]?.name ?? "";
   const guesses = (seat: number) => view.revealed.reduce((sum, r) => sum + r.scores[seat].guesses, 0);
   const played = draw
@@ -837,9 +828,7 @@ function DuelSummary({ view, busy, onRematch }: { view: DleDuelView; busy: boole
 
       <DuelHud view={view} center={<div className="hud-label">Final</div>} />
 
-      {view.ranked && <RankedOutcome view={view} />}
-
-      {view.series && !ranked && <SeriesScore series={view.series} players={view.players} you={me} />}
+      {view.series && <SeriesScore series={view.series} players={view.players} you={me} />}
 
       <Card>
         <CardContent className="space-y-5 p-5">
@@ -878,17 +867,17 @@ function DuelSummary({ view, busy, onRematch }: { view: DleDuelView; busy: boole
             </p>
           )}
           {finder.searching ? (
-            <Searching since={finder.since} onCancel={finder.cancel} ranked={ranked} />
+            <Searching since={finder.since} onCancel={finder.cancel} />
           ) : view.queue ? (
-            // From the queue: going again is the main thing; a rematch with this trainer is there too (always casual).
+            // From the queue: going again is the main thing; a rematch with this trainer is there too.
             <div className="grid gap-2 sm:grid-cols-[2fr_1fr]">
-              <Button size="lg" variant="success" disabled={busy || !myName} onClick={() => void finder.search(myName, ranked ? rankedExtra() : {})} autoFocus>
-                {ranked ? <Trophy className="h-4 w-4" aria-hidden /> : <UserSearch className="h-4 w-4" aria-hidden />}
-                {ranked ? "Queue ranked" : "Play again"}
+              <Button size="lg" variant="success" disabled={busy || !myName} onClick={() => void finder.search(myName)} autoFocus>
+                <UserSearch className="h-4 w-4" aria-hidden />
+                Play again
               </Button>
               <Button size="lg" variant="outline" disabled={busy} onClick={onRematch}>
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RotateCcw className="h-4 w-4" aria-hidden />}
-                {view.rematch ? "Accept rematch" : ranked ? "Casual rematch" : "Rematch"}
+                {view.rematch ? "Accept rematch" : "Rematch"}
               </Button>
             </div>
           ) : (
@@ -972,63 +961,31 @@ function Momentum({ them, mine, theirs, pool }: { them: string; mine: DleDuelBoa
   );
 }
 
-/** In a friend's duel lobby: your ranked tier and streak, if you have one. */
-function LobbyRank() {
-  const { state } = useRanked();
-  if (state.status !== "ready" || !state.you || state.you.games === 0) return null;
-  const you = state.you;
-  return (
-    <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-muted-foreground">
-      <span className="hud-label">Your rank</span>
-      <TierBadge rating={you.rating} games={you.games} size="sm" />
-      {you.position !== null && <span>#{fmt(you.position)}</span>}
-      {you.streak > 0 && (
-        <span className="flex items-center gap-1 font-semibold text-warning">
-          <Flame className="h-3.5 w-3.5" aria-hidden /> {you.streak} win streak
-        </span>
-      )}
-    </div>
-  );
+/** Device time, ticking while `on`. */
+function useTicker(on: boolean): number {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!on) return;
+    setNow(Date.now());
+    const id = window.setInterval(() => setNow(Date.now()), 500);
+    return () => window.clearInterval(id);
+  }, [on]);
+  return now;
 }
 
-/** After a ranked duel: the rating change and, once counted, your streak and place. */
-function RankedOutcome({ view }: { view: DleDuelView }) {
-  const me = view.you!;
-  const result = view.ranked?.result;
-  const { state, reload } = useRanked({ enabled: !!result });
-  useEffect(() => {
-    if (result) reload();
-  }, [result, reload]);
-  if (!result) {
-    return (
-      <p className="flex items-center justify-center gap-2 text-sm text-muted-foreground" role="status">
-        <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Counting your rating…
-      </p>
-    );
-  }
-  const you = state.status === "ready" ? state.you : null;
+/** "Searching…" with the time so far, and a cancel button. */
+function Searching({ since, onCancel }: { since: number | null; onCancel: () => void }) {
+  const now = useTicker(true);
+  const waited = now - (since ?? now);
   return (
-    <div className="space-y-2">
-      <RatingChange before={result.before[me]} after={result.after[me]} provisional={view.ranked?.provisional[me]} />
-      {you && (
-        <p className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-          {you.position !== null && (
-            <span>
-              Ladder <b className="text-foreground">#{fmt(you.position)}</b> of {fmt(you.players)}
-            </span>
-          )}
-          {you.streak > 1 ? (
-            <span className="flex items-center gap-1 font-semibold text-warning">
-              <Flame className="h-4 w-4" aria-hidden /> {you.streak} wins in a row!
-            </span>
-          ) : you.streak === 1 ? (
-            <span>Win the next one to start a streak.</span>
-          ) : null}
-          <Link href="/leaderboard?board=pokedle" className="underline underline-offset-2 hover:text-foreground">
-            Ranked ladder
-          </Link>
-        </p>
-      )}
+    <div className="space-y-2 rounded-md border border-screen/40 bg-screen/[0.06] p-3 text-center" role="status">
+      <p className="flex items-center justify-center gap-2 font-display text-sm font-semibold uppercase tracking-wider text-screen">
+        <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Searching for an opponent…
+      </p>
+      <p className="font-pixel text-xs tabular-nums text-muted-foreground">{clock(waited)}</p>
+      <Button type="button" size="sm" variant="ghost" onClick={onCancel}>
+        <X className="h-3.5 w-3.5" aria-hidden /> Cancel
+      </Button>
     </div>
   );
 }

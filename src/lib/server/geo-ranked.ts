@@ -36,9 +36,9 @@ import { RankedUnavailable } from "./ranked";
  * Ranked PokéGuessr on the server: one Elo per trainer (lib/geo-ranked.ts
  * has the rules), changed once per finished ranked duel.
  *
- * A trainer is who ranked Pokédle says they are (ranked.ts: their account,
- * or the signed anonymous id their browser holds), hashed again under this
- * ladder's own purpose so the two never share a key.
+ * A trainer is who ranked.ts says they are (their account, or the signed
+ * anonymous id their browser holds), hashed under this ladder's own purpose
+ * so no two ladders share a key.
  *
  * Decay is lazy: a rating is read as it stands today (every day since its
  * last game decayed), a standing read writes that back, and counting a

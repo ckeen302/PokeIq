@@ -1,24 +1,13 @@
 /**
- * Ranked Pokédle duels: the rating maths and the tiers, shared by the server
- * (which applies every rating change) and the client (which draws the badge
- * and the progress bar).
- *
- * Ratings are Elo. Everyone starts at 1,000. A trainer's first ten ranked
- * games are provisional and move their rating faster (a larger K), so they
- * find their level quickly; after that the K settles down. A win scores 1, a
- * draw ½, a loss 0. Leaving (or sitting out) is a loss; when both trainers
- * walk away from a duel that has no winner, both take the loss.
+ * Ranked tiers and the shapes ladders share: the Poké Ball to Master Ball
+ * tiers (the badge on the battle ladder, avatar frames and trainer items),
+ * how a finished game scores, and a trainer's standing on a ladder.
  */
 
 import type { PvpEndReason } from "./pvp-types";
 
-export const RANKED_START = 1000;
 /** Games before a rating stops being provisional. */
 export const RANKED_PROVISIONAL_GAMES = 10;
-export const RANKED_K_PROVISIONAL = 48;
-export const RANKED_K = 24;
-/** Nobody drops below this. */
-export const RANKED_FLOOR = 100;
 
 export interface RatingState {
   rating: number;
@@ -28,20 +17,10 @@ export interface RatingState {
   elo?: number;
 }
 
-export interface RatingChange {
-  before: number;
-  after: number;
-  delta: number;
-}
-
 export const isProvisional = (games: number) => games < RANKED_PROVISIONAL_GAMES;
-export const kFactor = (games: number) => (isProvisional(games) ? RANKED_K_PROVISIONAL : RANKED_K);
-
-/** The chance (0 to 1) Elo gives `a` of beating `b`. */
-export const expectedScore = (a: number, b: number) => 1 / (1 + 10 ** ((b - a) / 400));
 
 /**
- * Each seat's score (1 win, ½ draw, 0 loss) from how a duel ended. A duel
+ * Each seat's score (1 win, ½ draw, 0 loss) from how a game ended. A game
  * played out to a draw is ½ each; one that ended because both trainers left
  * or sat out, with no winner, is a loss for both.
  */
@@ -49,16 +28,6 @@ export function matchScores(reason: PvpEndReason, winner: number | null): [numbe
   if (winner === 0) return [1, 0];
   if (winner === 1) return [0, 1];
   return reason === "played" ? [0.5, 0.5] : [0, 0];
-}
-
-/** Both trainers' new ratings after a game. Each moves by its own K (provisional or not). */
-export function rateMatch(players: readonly [RatingState, RatingState], scores: readonly [number, number]): [RatingChange, RatingChange] {
-  const [a, b] = players;
-  const change = (me: RatingState, them: RatingState, score: number): RatingChange => {
-    const after = Math.max(RANKED_FLOOR, Math.round(me.rating + kFactor(me.games) * (score - expectedScore(me.rating, them.rating))));
-    return { before: me.rating, after, delta: after - me.rating };
-  };
-  return [change(a, b, scores[0]), change(b, a, scores[1])];
 }
 
 // ---------------------------------------------------------------------------
@@ -111,7 +80,7 @@ export function tierOf(rating: number): RankedTier {
   return { tier: t.id, name: t.name, division, label: `${t.name} ${division}`, step: index * 3 + (2 - fromTop), progress, next: { label: nextLabel, at: end } };
 }
 
-/** A ranked player's standing, as /api/pokedle/ranked returns it. */
+/** A ranked player's standing on a ladder. */
 export interface RankedStanding {
   rating: number;
   games: number;
@@ -145,8 +114,3 @@ export interface RankedLeaderRow {
   /** Battle ladders: the trainer's Elo, the headline rating and the ladder's order. */
   elo?: number;
 }
-
-export type RankedResponse =
-  | { available: false; id?: string }
-  | { available: true; id?: string; you: RankedStanding | null; top?: RankedLeaderRow[] };
-

@@ -144,7 +144,7 @@ export function HowToSheet({ onClose, onNever }: { onClose: () => void; onNever?
                 </li>
               ))}
             </ul>
-            Your result and share show the level. Duels give both trainers the same one; ranked always uses the Notebook.
+            Your result and share show the level. Duels give both trainers the same one.
           </li>
           <li>
             <b className="text-foreground">Hard mode</b> (set it before your first guess): every guess must fit the generation and type clues so far, so no greyed-out Pokémon. Your share gets a *.

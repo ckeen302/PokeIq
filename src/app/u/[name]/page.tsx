@@ -12,7 +12,6 @@ import { battleKey } from "@/lib/server/battle-engine/identity";
 import { battleProfile } from "@/lib/server/battle-engine/records";
 import { replayStore } from "@/lib/server/battle-engine/replays";
 import { insightsAvailable } from "@/lib/server/battle-engine/insights";
-import { rankedKey, rankedStore } from "@/lib/server/ranked";
 import { geoRankedKey, geoRankedStandingOf, geoSeasonHistoryOf } from "@/lib/server/geo-ranked";
 import { GeoSeasonHistory } from "@/components/geo/GeoSeason";
 import { geoStatsKey, playerGeoStats } from "@/lib/server/geo-round-scores";
@@ -30,13 +29,12 @@ import { Avatar3D } from "@/components/trainer3d/Avatar3D";
 import { BattleProfileView } from "@/components/battle/BattleProfileView";
 import { GlickoBadge } from "@/components/battle/GlickoBadge";
 import { ReplayRow } from "@/components/battle/ReplayLists";
-import { TierBadge } from "@/components/pokedle/Ranked";
+import { TierBadge } from "@/components/duel/TierBadge";
 import { ProfileActions } from "@/components/community/ProfileActions";
 import { Card, CardContent } from "@/components/ui/card";
 import { QuizBests } from "@/components/community/QuizBests";
 import { neaBests, quizBests } from "@/lib/quiz-bests";
 import { neaPlayerKey, neaStore } from "@/lib/server/name-em-all-board";
-import type { RankedStanding } from "@/lib/ranked";
 import type { ReplaySummary } from "@/lib/battle/replay";
 
 interface PageProps {
@@ -69,11 +67,9 @@ const findProfile = cache(async (raw: string) => {
   if (!user) return null;
   const key = battleKey(`u:${user.id}`);
   const replays = replayStore();
-  const ranked = rankedStore();
-  const [digest, battles, pokedle, guessr, mine, avatars, about, insights, geoStats, geoStreak, geoSeasons, geoProgress, nea] = await Promise.all([
+  const [digest, battles, guessr, mine, avatars, about, insights, geoStats, geoStreak, geoSeasons, geoProgress, nea] = await Promise.all([
     quietly("progress", progressDigests([user.id], { bests: true }).then((m) => m.get(user.id) ?? null), null),
     quietly("battles", battleProfile(key), null),
-    quietly<RankedStanding | null>("pokedle", ranked?.standing(rankedKey(`u:${user.id}`)), null),
     quietly<GeoRankedStanding | null>("guessr", geoRankedStandingOf(geoRankedKey(`u:${user.id}`), utcDay(Date.now())), null),
     quietly<ReplaySummary[]>("replays", replays?.mine(key, [], 30), []),
     avatarsByIds([user.id]),
@@ -91,7 +87,6 @@ const findProfile = cache(async (raw: string) => {
     joined: user.createdAt,
     avatar: avatars.get(user.id) ?? null,
     battles,
-    pokedle,
     guessr,
     geoStats,
     geoStreak,
@@ -171,23 +166,6 @@ export default async function UserProfilePage({ params }: PageProps) {
       <AboutMe username={found.username} initial={found.about} names={found.aboutNames} />
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardContent className="space-y-3 p-5">
-            <p className="hud-label text-screen">Ranked Pokédle</p>
-            {found.pokedle && found.pokedle.games > 0 ? (
-              <div className="space-y-2">
-                <TierBadge rating={found.pokedle.rating} games={found.pokedle.games} />
-                <p className="text-sm text-muted-foreground">
-                  {found.pokedle.wins}–{found.pokedle.losses}
-                  {found.pokedle.draws ? `–${found.pokedle.draws}` : ""} in {found.pokedle.games} ranked duels
-                  {found.pokedle.position ? ` · #${found.pokedle.position} of ${found.pokedle.players}` : ""}
-                </p>
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No ranked Pokédle duels yet.</p>
-            )}
-          </CardContent>
-        </Card>
         <Card data-testid="profile-guessr">
           <CardContent className="space-y-3 p-5">
             <p className="hud-label text-screen">Ranked PokéGuessr</p>
@@ -221,7 +199,7 @@ export default async function UserProfilePage({ params }: PageProps) {
                   <li key={f.format} className="flex items-center justify-between gap-3" data-testid="profile-ladder-format">
                     <span className="truncate text-sm font-semibold">{f.formatName}</span>
                     <span className="flex flex-col items-end gap-0.5">
-                      {/* Elo leads (the ladder's rating, on the same scale as ranked Pokédle's tiers); GXE and Glicko-2 follow. */}
+                      {/* Elo leads (the ladder's rating, shown as its Poké Ball to Master Ball tier); GXE and Glicko-2 follow. */}
                       <TierBadge rating={f.elo ?? f.rating!} games={f.elo === undefined ? f.ratedGames : undefined} size="sm" />
                       <GlickoBadge rating={f.rating!} rd={f.rd} gxe={f.gxe} elo={f.elo} headline={false} size="sm" />
                     </span>
