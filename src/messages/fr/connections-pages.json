@@ -1,0 +1,42 @@
+{
+  "meta": {
+    "title": "PokéConnections : le Connections Pokémon du jour",
+    "description": "Pokémon Connections : seize Pokémon, quatre groupes cachés (types, talents, évolutions, stats et plus). Trouve ce qui les relie, avec quatre erreurs permises. Un nouveau puzzle chaque jour, des archives et un entraînement illimité.",
+    "communityTitle": "Puzzles PokéConnections de la communauté",
+    "communityDescription": "Des puzzles créés par d'autres Dresseurs : la sélection de la semaine, les mieux notés et les plus récents.",
+    "createTitle": "Créer un puzzle PokéConnections",
+    "createDescription": "Choisis seize Pokémon, répartis-les en quatre groupes, nomme chacun d'eux et partage un lien. Tout le monde peut y jouer, et les réponses restent sur le serveur.",
+    "puzzleTitle": "Puzzle PokéConnections de la communauté",
+    "puzzleDescription": "Un puzzle PokéConnections créé par un autre Dresseur. Trouve les quatre groupes.",
+    "creatorTitle": "Créateur PokéConnections",
+    "creatorDescription": "Les puzzles PokéConnections d'un Dresseur.",
+    "duelAbout": "Une course PokéConnections : les mêmes seize Pokémon pour vous deux, et le premier à trouver les quatre groupes gagne.",
+    "duel": "Un duel PokéConnections",
+    "duelVs": "{host} contre {guest} : un duel PokéConnections",
+    "duelChallenge": "{host} te défie en duel PokéConnections",
+    "aTrainer": "Un Dresseur",
+    "partyAbout": "Une partie PokéConnections : les mêmes seize Pokémon pour tout le monde, et le meilleur temps gagne.",
+    "party": "Une partie PokéConnections",
+    "partyInvite": "{host} t'invite à une partie PokéConnections"
+  },
+  "info": {
+    "description": "PokéConnections est un puzzle Pokémon Connections gratuit : répartis seize Pokémon en quatre groupes cachés, avec quatre erreurs permises.",
+    "intro": "PokéConnections, c'est Pokémon Connections : seize Pokémon, quatre groupes cachés et un nouveau puzzle chaque jour.",
+    "step1": "Observe les seize Pokémon et trouve ceux qui ont un point commun : un type, un talent, une évolution, des stats et plus encore.",
+    "step2": "Sélectionne-en quatre et valide-les comme un groupe.",
+    "step3": "Tu peux faire quatre erreurs avant la fin du puzzle.",
+    "step4": "Joue au puzzle du jour, parcours les archives ou entraîne-toi sans limite.",
+    "faq1": "Quels genres de groupes y a-t-il ?",
+    "faq1a": "Types, talents, évolutions, stats et plus encore.",
+    "faq2": "Combien d'erreurs puis-je faire ?",
+    "faq2a": "Quatre."
+  },
+  "back": "Retour à PokéConnections",
+  "backCommunity": "Retour à la communauté",
+  "creator": {
+    "unavailable": "Les pages des créateurs sont indisponibles pour le moment. Réessaie dans une minute.",
+    "eyebrow": "Créateur PokéConnections",
+    "totals": "{n, plural, one {{n} puzzle} other {{n} puzzles}} · {votes} {v, plural, one {vote} other {votes}} (score {score})",
+    "untitled": "Puzzle sans titre"
+  }
+}
