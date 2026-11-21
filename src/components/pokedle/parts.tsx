@@ -6,7 +6,11 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { DLE_COLUMNS, isNear, statusArrow, type CellStatus, type DleCell, type DleColumn, type DleRow } from "@/lib/dle-types";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import board from "@/messages/pokedle-board";
+import type { BoardT } from "@/lib/dle-i18n";
 import { suggest, type NameEntry } from "./search";
+import { useDleWords } from "./lexicon";
 
 /** Pokédle's guess box and board, shared by the daily puzzle and duels. */
 
@@ -27,26 +31,7 @@ export const CELL_STYLES: Record<CellStatus, string> = {
 };
 
 /** What each clue means, in words (screen readers, tooltips). */
-export const STATUS_TEXT: Record<CellStatus, string> = {
-  match: "match",
-  partial: "right type, other slot",
-  "close-higher": "close, the answer is higher",
-  "close-lower": "close, the answer is lower",
-  higher: "the answer is higher",
-  lower: "the answer is lower",
-  miss: "no match",
-};
-
-/** What each column's clue compares, for the column headers' tooltips. */
-export const COLUMN_HELP: Record<DleColumn, string> = {
-  gen: "Generation. Close: one generation away.",
-  type1: "Primary type. Yellow: the answer has this type as its second type.",
-  type2: "Secondary type (None if it has one). Yellow: the answer has this type as its first type.",
-  height: "Height. Close: within 25% (or 0.1 m).",
-  weight: "Weight. Close: within 25% (or 0.1 kg).",
-  color: "The Pokédex colour. Match or no match.",
-  stage: "Evolution stage: Baby, then 1 to 3. Close: one stage away (a Baby is never close).",
-};
+export const statusText = (t: BoardT, status: CellStatus) => t(`status.${status}`);
 
 /** The glyph on every clue, so none relies on colour alone: ✓ match, ≈ near (with the arrow when close), ▲▼ the way to go, ✕ wrong. */
 export function CellGlyph({ status, size = "h-3.5 w-3.5" }: { status: CellStatus; size?: string }) {
@@ -102,6 +87,7 @@ export function GuessInput({
   /** A name to put in the box (from the Pokédex beside the board); `n` changes with every fill. */
   fill?: { name: string; n: number } | null;
 }) {
+  const t = useT(board);
   const [query, setQuery] = useState("");
   const [highlight, setHighlight] = useState(0);
   const [open, setOpen] = useState(false);
@@ -183,7 +169,7 @@ export function GuessInput({
         enterKeyHint="go"
         spellCheck={false}
         disabled={disabled}
-        aria-label="Guess a Pokémon (press / to jump here, Esc to clear)"
+        aria-label={t("input.aria")}
         role="combobox"
         aria-expanded={suggestions.length > 0}
         aria-controls={listId}
@@ -201,7 +187,7 @@ export function GuessInput({
             className="absolute inset-x-0 top-14 z-30 overflow-hidden rounded-md border-2 border-foreground/15 bg-card shadow-2xl"
             role="listbox"
             id={listId}
-            aria-label="Pokémon matching your guess"
+            aria-label={t("input.list")}
           >
             {suggestions.map((entry, i) => (
               <li key={entry[0]} id={`${listId}-${entry[0]}`} role="option" aria-selected={i === highlight}>
@@ -217,7 +203,7 @@ export function GuessInput({
                   <span className="flex-1 truncate font-medium text-foreground/85">
                     <Highlighted name={entry[1]} query={query} />
                   </span>
-                  <span className="shrink-0 text-xs text-muted-foreground">Gen {entry[2]}</span>
+                  <span className="shrink-0 text-xs text-muted-foreground">{t("input.gen", { n: entry[2] })}</span>
                 </button>
               </li>
             ))}
@@ -226,7 +212,7 @@ export function GuessInput({
       </AnimatePresence>
       {nothing && (
         <p className="absolute inset-x-0 top-14 z-30 rounded-md border-2 border-foreground/15 bg-card px-3 py-2.5 text-sm text-muted-foreground shadow-2xl" role="status">
-          {result.alreadyGuessed ? `You've already guessed ${result.alreadyGuessed[1]}.` : "No Pokémon by that name."}
+          {result.alreadyGuessed ? t("input.already", { name: result.alreadyGuessed[1] }) : t("input.none")}
         </p>
       )}
     </div>
@@ -235,13 +221,14 @@ export function GuessInput({
 
 /** What each clue's colour and mark means: under every board, so no clue relies on remembering the how-to. */
 export function ClueLegend({ close = true, className }: { close?: boolean; className?: string }) {
+  const t = useT(board);
   const items: { status: CellStatus; label: string; glyph?: React.ReactNode }[] = [
-    { status: "match", label: "Match" },
-    { status: "partial", label: "Type in the other slot" },
-    ...(close ? [{ status: "close-higher" as const, label: "Close" }] : []),
+    { status: "match", label: t("legend.match") },
+    { status: "partial", label: t("legend.partial") },
+    ...(close ? [{ status: "close-higher" as const, label: t("legend.close") }] : []),
     {
       status: "higher",
-      label: "Answer is higher / lower",
+      label: t("legend.higherLower"),
       glyph: (
         <span className="flex items-center leading-none" aria-hidden>
           <ArrowUp className="h-3 w-3 text-primary" />
@@ -249,10 +236,10 @@ export function ClueLegend({ close = true, className }: { close?: boolean; class
         </span>
       ),
     },
-    { status: "miss", label: "No match" },
+    { status: "miss", label: t("legend.miss") },
   ];
   return (
-    <ul className={cn("flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-[11px] text-muted-foreground", className)} aria-label="What the clues mean" data-testid="clue-legend">
+    <ul className={cn("flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-[11px] text-muted-foreground", className)} aria-label={t("legend.label")} data-testid="clue-legend">
       {items.map((it) => (
         <li key={it.status} className="flex items-center gap-1.5">
           <span className={cn("flex h-5 w-7 items-center justify-center rounded border text-[10px] font-semibold", CELL_STYLES[it.status])}>
@@ -299,6 +286,8 @@ export function Board({
   pending?: { id: number; name: string } | null;
 }) {
   const reduced = useReducedMotion();
+  const words = useDleWords();
+  const { t } = words;
   const shown = DLE_COLUMNS.filter((c) => (columns ? columns.includes(c.key) : rows.some((r) => r.cells[c.key])));
   const pendingRow = pending && !rows.some((r) => r.id === pending.id) ? pending : null;
   const empty = Math.max(0, (slots ?? 0) - rows.length - (pendingRow ? 1 : 0));
@@ -308,19 +297,19 @@ export function Board({
 
   return (
     <div className="pb-2 sm:-mx-4 sm:overflow-x-auto sm:px-4">
-      <div className="w-full space-y-1.5 sm:mx-auto sm:w-max" role="table" aria-label="Your guesses, newest first" style={{ "--dle-n": shown.length } as React.CSSProperties}>
+      <div className="w-full space-y-1.5 sm:mx-auto sm:w-max" role="table" aria-label={t("board.label")} style={{ "--dle-n": shown.length } as React.CSSProperties}>
         <div className={cn(grid, "hud-label text-center")} role="row">
           <div className="sr-only sm:not-sr-only sm:text-left" role="columnheader">
-            Pokémon
+            {t("board.pokemon")}
           </div>
           {shown.map((c) => (
             <div
               key={c.key}
               role="columnheader"
-              title={close ? COLUMN_HELP[c.key] : COLUMN_HELP[c.key].replace(/ Close:.*$/, " ▲ / ▼ only, no close state.")}
+              title={t(`${close ? "help" : "helpStrict"}.${c.key}`)}
               className="mp-dense cursor-help truncate text-[8px] tracking-normal underline decoration-dotted decoration-foreground/30 underline-offset-2 sm:text-[10px] sm:tracking-[0.12em] max-md:font-display max-md:text-[length:10.5px] max-md:font-semibold"
             >
-              {c.label}
+              {t(`column.${c.key}`)}
             </div>
           ))}
         </div>
@@ -328,11 +317,12 @@ export function Board({
           <div key={`row-${pendingRow.id}`} className={grid} role="row" aria-busy="true">
             <RowName id={pendingRow.id} name={pendingRow.name} />
             {shown.map((c) => (
-              <div key={c.key} role="cell" className="h-11 rounded-lg border border-foreground/15 bg-card/60 motion-safe:animate-pulse sm:h-12" aria-label={`${c.label}: checking…`} />
+              <div key={c.key} role="cell" className="h-11 rounded-lg border border-foreground/15 bg-card/60 motion-safe:animate-pulse sm:h-12" aria-label={t("board.checking", { label: t(`column.${c.key}`) })} />
             ))}
           </div>
         )}
-        {[...rows].reverse().map((row, r) => {
+        {[...rows].reverse().map((sent, r) => {
+          const row = words.row(sent);
           // Rows are keyed by Pokémon, so only a new row mounts (and flips); the rest stay put.
           const flip = flipNewest && !reduced && r === 0 && !pendingRow;
           return (
@@ -348,7 +338,7 @@ export function Board({
               {shown.map((c, i) => {
                 const cell = row.cells[c.key];
                 return cell ? (
-                  <Cell key={c.key} label={c.label} cell={cell} delay={flip ? i * 0.12 : null} onClick={onClue ? () => onClue(c.key, row.id, cell) : undefined} />
+                  <Cell key={c.key} label={t(`column.${c.key}`)} cell={cell} delay={flip ? i * 0.12 : null} onClick={onClue ? () => onClue(c.key, row.id, sent.cells[c.key]!) : undefined} />
                 ) : (
                   <div key={c.key} role="cell" />
                 );
@@ -359,7 +349,7 @@ export function Board({
         {Array.from({ length: empty }, (_, i) => (
           <div key={`empty-${i}`} className={grid} aria-hidden data-testid="dle-empty-row">
             <div className="col-span-full flex h-7 items-center pl-1 font-pixel text-[9px] uppercase tracking-[0.12em] text-muted-foreground/40 sm:col-span-1 sm:h-12 sm:rounded-lg sm:border sm:border-dashed sm:border-foreground/10 sm:pl-3">
-              Guess {rows.length + (pendingRow ? 1 : 0) + i + 1}
+              {t("board.empty", { n: rows.length + (pendingRow ? 1 : 0) + i + 1 })}
             </div>
             {shown.map((c) => (
               <div key={c.key} className="h-11 rounded-lg border border-dashed border-foreground/10 sm:h-12" />
@@ -385,11 +375,12 @@ function RowName({ id, name }: { id: number; name: string }) {
   );
 }
 
-/** A clue as words: "Height 1.2 m: close, the answer is higher". */
-export const clueText = (label: string, cell: DleCell) => `${label} ${cell.value}: ${STATUS_TEXT[cell.status]}`;
+/** A clue as words: "Height 1.2 m: close, the answer is higher" (`cell.value` as it reads in the page's language). */
+export const clueText = (t: BoardT, label: string, cell: DleCell) => t("board.clue", { label, value: cell.value, status: statusText(t, cell.status) });
 
 function Cell({ cell, label, delay, onClick }: { cell: DleCell; label: string; delay: number | null; onClick?: () => void }) {
-  const text = clueText(label, cell);
+  const t = useT(board);
+  const text = clueText(t, label, cell);
   const className = cn(
     "mp-dense flex h-11 w-full flex-col items-center justify-center gap-0.5 rounded-lg border px-0.5 text-center text-[10px] font-semibold leading-tight sm:h-12 sm:px-1 sm:text-[11px]",
     CELL_STYLES[cell.status],
@@ -412,7 +403,7 @@ function Cell({ cell, label, delay, onClick }: { cell: DleCell; label: string; d
       transition={{ delay: delay ?? 0, duration: 0.4, ease: [0.2, 0.7, 0.3, 1] }}
     >
       {onClick ? (
-        <button type="button" onClick={onClick} className={className} aria-label={`${text}. Filter the Pokédex by this clue`} title={`${text}. Click to filter the Pokédex by this clue.`}>
+        <button type="button" onClick={onClick} className={className} aria-label={t("board.filterAria", { clue: text })} title={t("board.filterTitle", { clue: text })}>
           {body}
         </button>
       ) : (

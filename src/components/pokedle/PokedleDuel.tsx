@@ -8,7 +8,12 @@ import { useRouter } from "@/i18n/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Crown, Eye, Filter, Flame, Lightbulb, Loader2, RotateCcw, Swords, Tag, Timer, UserSearch, WifiOff, X } from "lucide-react";
 import { DLE_COLUMNS, type CellStatus, type DleRow } from "@/lib/dle-types";
-import { rulesTags, settingsOf, type DleRules } from "@/lib/dle-format";
+import { settingsOf, type DleRules } from "@/lib/dle-format";
+import { dexTag, localRulesTags, type DleLabels } from "@/lib/dle-i18n";
+import { formatNumber, type Translator } from "@/i18n/catalog";
+import { useT } from "@/i18n/client";
+import board from "@/messages/pokedle-board";
+import duelNs from "@/messages/pokedle-duel";
 import { RulesChip, SettingsPanel } from "./SettingsPanel";
 import {
   DLE_DUEL_HINT_COST,
@@ -33,10 +38,13 @@ import { useDuel } from "@/components/duel/use-duel";
 import { useMatchmaking } from "@/components/duel/use-matchmaking";
 import { SeriesScore, seriesTag } from "@/components/duel/DuelSeries";
 import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, LeaveButton, MatchedNote, SeatDot, clock, seconds } from "@/components/duel/DuelParts";
-import { Board, CELL_STYLES, CellGlyph, ClueLegend, GuessInput, STATUS_TEXT, spriteUrl, type NameEntry } from "./parts";
+import { Board, CELL_STYLES, CellGlyph, ClueLegend, GuessInput, spriteUrl, statusText, type NameEntry } from "./parts";
+import { DleLexiconProvider, useDleWords, useGenus } from "./lexicon";
 import type { DexPick } from "./DexPanel";
 import { AssistPicker } from "./AssistPicker";
 import { DLE_ASSIST_INFO, type DleAssist } from "@/lib/dle-assist";
+
+type DuelT = Translator<typeof duelNs.en>;
 import { dexClues } from "@/lib/dle-dex";
 import { useApplyDlePrefs } from "@/lib/dle-local";
 import { cn } from "@/lib/utils";
@@ -62,13 +70,11 @@ const matchFor = (assist: DleAssist, rules: Pick<DleRules, "format">) => ({ game
 const FINAL_MS = 10_000;
 /** A guess that leaves this few Pokémon possible is close. */
 const CLOSE_LEFT = 5;
-const HINT_INFO: Record<DleDuelHint, { label: string; icon: typeof Tag }> = {
-  genus: { label: "Category", icon: Tag },
-  silhouette: { label: "Silhouette", icon: Eye },
-};
+const HINT_ICON: Record<DleDuelHint, typeof Tag> = { genus: Tag, silhouette: Eye };
 
-const fmt = (n: number) => n.toLocaleString("en-US");
-const gensText = (gens?: number[]) => (gens?.length ? gens.map((g) => `Gen ${g}`).join(", ") : "All generations");
+/** Points and counts as the page's language writes them ("1,234"; "1.234" in German). */
+const fmtIn = (t: { locale: DuelT["locale"] }) => (n: number) => formatNumber(n, t.locale);
+const gensText = (t: DuelT, gens?: number[]) => (gens?.length ? gens.map((g) => t("gen", { n: g })).join(", ") : t("allGens"));
 
 /** The first value seen for `key`. Media URLs are re-signed on every poll, and the image shouldn't reload each time. */
 function useFirst<T>(key: number | undefined, value: T | undefined): T | undefined {
@@ -82,12 +88,24 @@ function useFirst<T>(key: number | undefined, value: T | undefined): T | undefin
 
 /** How many Pokémon still fit a board's clues: after its last guess, or the whole pool before one. */
 const leftOf = (board: Pick<DleDuelBoard, "possible">, pool: number) => board.possible.at(-1) ?? pool;
-const possibleText = (n: number) => `${fmt(n)} Pokémon still possible`;
+const possibleText = (t: DuelT, n: number) => t("possible", { n: formatNumber(n, t.locale) });
 
-const progressText = (board: DleDuelBoard, max: number) =>
-  board.solved ? `Solved in ${board.colours.length}` : board.done ? "Out of guesses" : `${board.colours.length}/${max} guesses`;
+const progressText = (t: DuelT, board: DleDuelBoard, max: number) =>
+  board.solved ? t("progress.solved", { n: board.colours.length }) : board.done ? t("progress.out") : t("progress.guesses", { n: board.colours.length, max });
 
-export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] }) {
+/** `labels`: a page in another language's type, colour and region names (`names` are then in that language too). */
+export function PokedleDuel({ code, names, labels }: { code: string; names: NameEntry[]; labels?: DleLabels }) {
+  return (
+    <DleLexiconProvider names={names} labels={labels}>
+      <Duel code={code} names={names} />
+    </DleLexiconProvider>
+  );
+}
+
+function Duel({ code, names }: { code: string; names: NameEntry[] }) {
+  const t = useT(duelNs);
+  const bt = useT(board);
+  const fmt = fmtIn(t);
   const router = useRouter();
   const { view, now, gone, offline, error, busy, sawPlay, act, send, join, rematch } = useDuel<DleDuelView>(`/api/duel/${code}`, code);
   const [summary, setSummary] = useState(false);
@@ -148,6 +166,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
   };
 
   const silhouette = useFirst(view?.round?.index, view?.round?.hints.silhouetteUrl);
+  const genus = useGenus(view?.round?.hints.genus);
   const mine = view?.round?.rows;
   const guessed = useMemo(() => new Set((mine ?? []).map((r) => r.id)), [mine]);
   const panelClues = useMemo(() => dexClues(mine ?? []), [mine]);
@@ -161,7 +180,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
     if (next) router.push(pvpHref("pokedle", next));
   }
 
-  if (gone) return <DuelGone message={gone} href={HOME} label="Back to Pokédle" />;
+  if (gone) return <DuelGone message={gone} href={HOME} label={t("back")} />;
   if (!view) return <DuelLoading />;
 
   const notice = (
@@ -172,7 +191,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
     </>
   );
   const tools = view.you !== null && <DuelTools onEmote={emote} />;
-  const chat = <DuelChat view={view} game="Pokédle duel" onSend={(text) => send({ action: "chat", text })} />;
+  const chat = <DuelChat view={view} game={t("tag")} onSend={(text) => send({ action: "chat", text })} />;
 
   if (view.status === "lobby") {
     return (
@@ -181,24 +200,20 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
         <DuelLobby
           view={view}
           path={pvpHref("pokedle", view.code)}
-          tag="Pokédle duel"
-          title={
-            <>
-              Poké<span className="text-primary">dle</span> Duel
-            </>
-          }
-          invite={(host) => `${host} challenges you! The same mystery Pokémon for both of you, three rounds, the most points wins.`}
-          about="Head to head: the same mystery Pokémon for both of you, three rounds. Solve in fewer guesses, and faster, for more points."
-          shareText="Duel me in Pokédle! Same mystery Pokémon, fewer guesses wins."
+          tag={t("tag")}
+          title={<>{t.rich("title", { p: (c) => <span className="text-primary">{c}</span> })}</>}
+          invite={(host) => t("invite", { host })}
+          about={t("about")}
+          shareText={t("shareText")}
           settings={
             <div className="space-y-3">
               <div className="flex justify-center">
-                <RulesChip rules={view.rules} dex={view.assist === "off" ? "No dex" : DLE_ASSIST_INFO[view.assist].label} />
+                <RulesChip rules={view.rules} dex={dexTag(view.assist, bt)} />
               </div>
               {view.you === 0 ? (
                 <SettingsPanel duel value={settingsOf(view.rules)} disabled={busy} onChange={(settings) => void act({ action: "settings", settings })} />
               ) : (
-                <p className="text-center text-xs text-muted-foreground">The trainer who made the duel picks the format and settings; you both play by the same.</p>
+                <p className="text-center text-xs text-muted-foreground">{t("hostPicks")}</p>
               )}
               <GenPicker view={view} busy={busy} onPick={(gens) => void act({ action: "gens", gens })} />
               <AssistPicker
@@ -206,22 +221,33 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
                 points={false}
                 disabled={busy || view.you !== 0}
                 onChange={view.you === 0 ? (assist) => void act({ action: "assist", assist }) : undefined}
-                note={view.you === 0 ? undefined : `${DLE_ASSIST_INFO[view.assist].label}: ${DLE_ASSIST_INFO[view.assist].blurb} The trainer who made the duel picks it; you both get the same.`}
+                note={view.you === 0 ? undefined : t("assistNote", { label: bt(`assist.${view.assist}.label`), blurb: bt(`assist.${view.assist}.blurb`) })}
               />
             </div>
           }
           rules={[
             {
-              label: "Rounds",
-              text: `Three rounds, the same mystery Pokémon for both of you, with ${view.rules.maxGuesses} guesses and ${view.rules.columns.length} clues (${rulesTags(view.rules)[0]}), and ${view.rules.timer === "60s" ? "60 seconds" : `${DLE_DUEL_ROUND_MS / 60_000} minutes`} a round. You see your opponent's colours as they guess, never their Pokémon.`,
+              label: t("rules.rounds"),
+              text: t("rules.roundsText", {
+                guesses: view.rules.maxGuesses,
+                clues: view.rules.columns.length,
+                format: localRulesTags(view.rules, bt)[0],
+                time: view.rules.timer === "60s" ? t("rules.seconds60") : t("rules.minutes", { n: DLE_DUEL_ROUND_MS / 60_000 }),
+              }),
             },
             {
-              label: "Points",
-              text: `A solve scores ${fmt(dleDuelBase(1))} on the first guess down to ${dleDuelBase(view.rules.maxGuesses)} on the last, plus up to ${DLE_DUEL_SPEED_BONUS} for speed. Hints cost points: category −${DLE_DUEL_HINT_COST.genus}, silhouette −${DLE_DUEL_HINT_COST.silhouette}.`,
+              label: t("rules.points"),
+              text: t("rules.pointsText", {
+                first: fmt(dleDuelBase(1)),
+                last: dleDuelBase(view.rules.maxGuesses),
+                speed: DLE_DUEL_SPEED_BONUS,
+                genus: DLE_DUEL_HINT_COST.genus,
+                silhouette: DLE_DUEL_HINT_COST.silhouette,
+              }),
             },
             {
-              label: "Winning",
-              text: "The most points after three rounds wins; level on points, fewer guesses, then less time. Leave, or go quiet, and you forfeit.",
+              label: t("rules.winning"),
+              text: t("rules.winningText"),
             },
           ]}
           home={HOME}
@@ -239,23 +265,23 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
     const winner = view.end?.winner;
     return (
       <DuelVisitor
-        tag="Pokédle duel"
+        tag={t("tag")}
         players={view.players}
         status={
           view.status === "finished"
             ? winner === null || winner === undefined
-              ? "It ended in a draw."
-              : `${view.players[winner]?.name} won.`
-            : `Under way: round ${view.revealed.length + 1} of ${view.rounds}. ${fmt(view.totals[0])} points to ${fmt(view.totals[1])}.`
+              ? t("visitor.draw")
+              : t("visitor.won", { name: String(view.players[winner]?.name) })
+            : t("visitor.underWay", { n: view.revealed.length + 1, total: view.rounds, a: fmt(view.totals[0]), b: fmt(view.totals[1]) })
         }
         home={HOME}
-        label="Start your own duel"
+        label={t("visitor.start")}
       />
     );
   }
 
   const me = view.you;
-  const them = view.players[1 - me]?.name ?? "your opponent";
+  const them = view.players[1 - me]?.name ?? t("yourOpponent");
   const last = view.revealed[view.revealed.length - 1];
 
   if (view.status === "finished" && (summary || !sawPlay || view.end?.reason === "left" || !last)) {
@@ -280,12 +306,10 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
     return (
       <div className="mx-auto max-w-4xl space-y-4">
         {notice}
-        <DuelHud view={view} center={<div className="hud-label">Get ready</div>} />
+        <DuelHud view={view} center={<div className="hud-label">{t("getReady")}</div>} />
         <Card>
           <CardContent className="space-y-3 p-10 text-center">
-            <p className="hud-label text-screen">
-              Round {view.round.index + 1} of {view.rounds}
-            </p>
+            <p className="hud-label text-screen">{t("roundOf", { n: view.round.index + 1, total: view.rounds })}</p>
             <motion.p
               key={seconds(view.round.startsAt - now)}
               initial={{ scale: 1.4, opacity: 0 }}
@@ -294,7 +318,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
             >
               {Math.max(1, seconds(view.round.startsAt - now))}
             </motion.p>
-            <p className="text-sm text-muted-foreground">A new mystery Pokémon. Fewer guesses, and faster, scores more.</p>
+            <p className="text-sm text-muted-foreground">{t("leadIn")}</p>
           </CardContent>
         </Card>
         {leaveButton}
@@ -311,12 +335,12 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
     const final = left > 0 && left <= FINAL_MS;
     const banner = myBoard.done
       ? myBoard.solved
-        ? `Solved in ${myBoard.colours.length}! Waiting for ${them}…`
-        : `Out of guesses. Waiting for ${them}…`
+        ? t("banner.solved", { n: myBoard.colours.length, them })
+        : t("banner.out", { them })
       : theirs.solved
-        ? `${them} solved it in ${theirs.colours.length}!`
+        ? t("banner.theySolved", { them, n: theirs.colours.length })
         : theirs.done
-          ? `${them} is out of guesses.`
+          ? t("banner.theyOut", { them })
           : null;
     const buy = (hint: DleDuelHint) => {
       unlockAudio();
@@ -329,9 +353,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
           view={view}
           center={
             <>
-              <div className="hud-label">
-                Round {live.index + 1}/{view.rounds}
-              </div>
+              <div className="hud-label">{t("round", { n: live.index + 1, total: view.rounds })}</div>
               <RoundClock left={left} final={final && !myBoard.done} />
             </>
           }
@@ -369,7 +391,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
                     names={names}
                     exclude={guessed}
                     disabled={timeUp}
-                    placeholder={timeUp ? "Time's up" : `Guess ${live.rows.length + 1} of ${view.rules.maxGuesses}: type a Pokémon…`}
+                    placeholder={timeUp ? t("timeUp") : t("placeholder", { n: live.rows.length + 1, max: view.rules.maxGuesses })}
                     onGuess={(entry) => {
                       if (busy || timeUp) return false;
                       unlockAudio();
@@ -379,27 +401,27 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
                     fill={fill}
                   />
                 )}
-                <PossibleMeter left={leftOf(myBoard, view.pool)} pool={view.pool} label="Still possible for you" />
+                <PossibleMeter left={leftOf(myBoard, view.pool)} pool={view.pool} label={t("stillPossibleYou")} />
                 {view.rules.hints && (!myBoard.done || myBoard.hints.length > 0) && (
                   <div className="mx-auto flex max-w-md flex-wrap items-center gap-3 rounded-md border bg-card p-3 text-sm">
                     <Lightbulb className="h-5 w-5 shrink-0 text-primary" aria-hidden />
-                    {silhouette && <img src={silhouette} alt="Silhouette hint" className="spotlight h-20 w-20 rounded-lg object-contain p-1" />}
-                    {live.hints.genus && <span className="font-medium text-foreground">{live.hints.genus}</span>}
+                    {silhouette && <img src={silhouette} alt={t("silhouette")} className="spotlight h-20 w-20 rounded-lg object-contain p-1" />}
+                    {live.hints.genus && <span className="font-medium text-foreground">{genus}</span>}
                     {!myBoard.done && (
                       <div className="flex flex-1 flex-wrap justify-end gap-2">
                         {(["genus", "silhouette"] as const)
                           .filter((hint) => !myBoard.hints.includes(hint))
                           .map((hint) => {
-                            const Icon = HINT_INFO[hint].icon;
+                            const Icon = HINT_ICON[hint];
                             return (
                               <Button key={hint} size="sm" variant="outline" disabled={busy || live.rows.length === 0 || timeUp} onClick={() => buy(hint)}>
-                                <Icon className="h-3.5 w-3.5 max-sm:hidden" aria-hidden /> {HINT_INFO[hint].label} −{DLE_DUEL_HINT_COST[hint]}
+                                <Icon className="h-3.5 w-3.5 max-sm:hidden" aria-hidden /> {bt(`hint.${hint}`)} −{DLE_DUEL_HINT_COST[hint]}
                               </Button>
                             );
                           })}
                       </div>
                     )}
-                    {live.rows.length === 0 && <p className="w-full text-xs text-muted-foreground">Hints open after your first guess. They cost points if you solve.</p>}
+                    {live.rows.length === 0 && <p className="w-full text-xs text-muted-foreground">{t("hintsOpen")}</p>}
                   </div>
                 )}
               </div>
@@ -426,7 +448,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
           {/* Each round starts with every filter cleared. */}
           {view.assist === "off" ? (
             <p className="rounded-md border bg-card p-3 text-center text-sm text-muted-foreground md:col-span-2 xl:col-span-1 xl:col-start-2 xl:row-start-1">
-              {DLE_ASSIST_INFO.off.emoji} Pokédex assist off: no Pokédex in this duel, for either of you.
+              {t("noDex", { emoji: DLE_ASSIST_INFO.off.emoji })}
             </p>
           ) : (
             <DexPanel
@@ -456,7 +478,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
     return (
       <div className="mx-auto max-w-4xl space-y-4">
         {notice}
-        <DuelHud view={view} center={<div className="hud-label">Round {last.index + 1}/{view.rounds}</div>} />
+        <DuelHud view={view} center={<div className="hud-label">{t("round", { n: last.index + 1, total: view.rounds })}</div>} />
         <RoundReveal view={view} result={last}>
           <Button
             size="lg"
@@ -469,7 +491,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
               } else void act({ action: "next", round: last.index });
             }}
           >
-            {final ? "See results ▶" : pressed ? `Waiting for ${them}… (${nextIn})` : `Next round (${nextIn}) ▶`}
+            {final ? t("seeResults") : pressed ? t("waiting", { them, n: nextIn }) : t("nextRound", { n: nextIn })}
           </Button>
         </RoundReveal>
         {tools}
@@ -487,25 +509,26 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
 
 /** In the lobby: the creator picks the generations; the friend sees them. */
 function GenPicker({ view, busy, onPick }: { view: DleDuelView; busy: boolean; onPick: (gens: number[]) => void }) {
+  const t = useT(duelNs);
   const gens = view.gens ?? [];
   if (view.you !== 0) {
     return (
       <p className="text-center text-sm text-muted-foreground">
-        Mystery Pokémon from: <b className="text-foreground">{gensText(view.gens)}</b>
+        {t.rich("from", { gens: gensText(t, view.gens), b: (c) => <b className="text-foreground">{c}</b> })}
       </p>
     );
   }
   const toggle = (g: number) => onPick(gens.includes(g) ? gens.filter((x) => x !== g) : [...gens, g]);
   return (
     <div className="space-y-2">
-      <div className="hud-label">Mystery Pokémon from</div>
+      <div className="hud-label">{t("fromLabel")}</div>
       <div className="flex flex-wrap gap-2">
         <Chip active={gens.length === 0} disabled={busy} onClick={() => onPick([])}>
-          All
+          {t("all")}
         </Chip>
         {GENS.map((g) => (
           <Chip key={g} active={gens.includes(g)} disabled={busy} onClick={() => toggle(g)}>
-            Gen {g}
+            {t("gen", { n: g })}
           </Chip>
         ))}
       </div>
@@ -545,6 +568,7 @@ function DuelHud({ view, center }: { view: DleDuelView; center: React.ReactNode 
 }
 
 function Fighter({ view, seat, right }: { view: DleDuelView; seat: number; right?: boolean }) {
+  const t = useT(duelNs);
   const player = view.players[seat];
   const ahead = view.totals[seat] > view.totals[1 - seat];
   return (
@@ -553,18 +577,19 @@ function Fighter({ view, seat, right }: { view: DleDuelView; seat: number; right
         <SeatDot seat={seat} />
         {player && <Avatar avatar={player.avatar} size={24} />}
         <span className="truncate font-display font-bold uppercase">{player?.name ?? "—"}</span>
-        {view.you === seat && <span className="hud-label">You</span>}
-        {player?.quiet && view.status === "playing" && <WifiOff className="h-3.5 w-3.5 shrink-0 text-warning" aria-label="Connection lost" />}
+        {view.you === seat && <span className="hud-label">{t("you")}</span>}
+        {player?.quiet && view.status === "playing" && <WifiOff className="h-3.5 w-3.5 shrink-0 text-warning" aria-label={t("connectionLost")} />}
       </div>
-      <div className={cn("font-pixel text-base tabular-nums", ahead ? "text-success" : "text-screen")}>{fmt(view.totals[seat])} pts</div>
+      <div className={cn("font-pixel text-base tabular-nums", ahead ? "text-success" : "text-screen")}>{t("pts", { n: fmtIn(t)(view.totals[seat]) })}</div>
     </div>
   );
 }
 
 /** One clue as a coloured square (the opponent's view: no names, no values). With `delay`, it flips in like a board cell. */
 function Square({ status, delay }: { status: CellStatus; delay?: number }) {
+  const bt = useT(board);
   const square = (
-    <span className={cn("flex aspect-square items-center justify-center rounded-[3px] border text-[8px]", CELL_STYLES[status])} title={STATUS_TEXT[status]}>
+    <span className={cn("flex aspect-square items-center justify-center rounded-[3px] border text-[8px]", CELL_STYLES[status])} title={statusText(bt, status)}>
       <CellGlyph status={status} size="h-2.5 w-2.5" />
     </span>
   );
@@ -577,14 +602,15 @@ function Square({ status, delay }: { status: CellStatus; delay?: number }) {
 }
 
 function HintBadges({ hints }: { hints: DleDuelHint[] }) {
+  const bt = useT(board);
   if (hints.length === 0) return null;
   return (
     <span className="flex flex-wrap gap-1">
       {hints.map((hint) => {
-        const Icon = HINT_INFO[hint].icon;
+        const Icon = HINT_ICON[hint];
         return (
           <span key={hint} className="flex items-center gap-1 rounded-sm border border-warning/40 bg-warning/10 px-1.5 py-0.5 font-pixel text-[9px] uppercase text-warning">
-            <Icon className="h-2.5 w-2.5" aria-hidden /> {HINT_INFO[hint].label}
+            <Icon className="h-2.5 w-2.5" aria-hidden /> {bt(`hint.${hint}`)}
           </span>
         );
       })}
@@ -614,6 +640,7 @@ function OpponentBoard({
   round: number;
   rules: Pick<DleRules, "maxGuesses" | "columns">;
 }) {
+  const t = useT(duelNs);
   const cols = { gridTemplateColumns: `repeat(${rules.columns.length},minmax(0,1fr))` };
   const reduced = useReducedMotion();
   const count = board.colours.length;
@@ -650,16 +677,16 @@ function OpponentBoard({
             animate={reduced ? { opacity: 0 } : { opacity: [1, 1, 0], y: 0, scale: 1 }}
             transition={{ duration: 1.8, times: [0, 0.7, 1] }}
           >
-            {board.solved ? "Rival solved it!" : "Rival guessed!"}
+            {board.solved ? t("rivalSolved") : t("rivalGuessed")}
           </motion.span>
         )}
       </AnimatePresence>
       <CardContent className="space-y-3 p-4">
         <p className="hud-label flex items-center gap-1.5">
           <SeatDot seat={seat} /> <span className="truncate">{name}</span>
-          {quiet && <WifiOff className="h-3.5 w-3.5 shrink-0 text-warning" aria-label="Connection lost" />}
+          {quiet && <WifiOff className="h-3.5 w-3.5 shrink-0 text-warning" aria-label={t("connectionLost")} />}
         </p>
-        <div className="space-y-1" style={{ perspective: 400 }} aria-label={`${name}: ${progressText(board, rules.maxGuesses)}`}>
+        <div className="space-y-1" style={{ perspective: 400 }} aria-label={t("boardLabel", { name, progress: progressText(t, board, rules.maxGuesses) })}>
           {Array.from({ length: rules.maxGuesses }).map((_, r) => {
             const row = board.colours[r];
             return (
@@ -672,7 +699,7 @@ function OpponentBoard({
           })}
         </div>
         <HintBadges hints={board.hints} />
-        <p className={cn("text-center font-display text-sm font-semibold uppercase tracking-wider", board.solved ? "text-success" : "text-muted-foreground")}>{progressText(board, rules.maxGuesses)}</p>
+        <p className={cn("text-center font-display text-sm font-semibold uppercase tracking-wider", board.solved ? "text-success" : "text-muted-foreground")}>{progressText(t, board, rules.maxGuesses)}</p>
         {!board.solved && <PossibleMeter left={leftOf(board, pool)} pool={pool} compact />}
       </CardContent>
     </Card>
@@ -685,15 +712,16 @@ function OpponentBoard({
  * only this count). The bar shrinks from the whole pool towards one.
  */
 function PossibleMeter({ left, pool, label, compact }: { left: number; pool: number; label?: string; compact?: boolean }) {
+  const t = useT(duelNs);
   // A log scale: the drop from 1,000 to 100 reads as much as 10 to 1.
   const share = pool > 1 ? Math.log(Math.max(1, left)) / Math.log(pool) : 0;
   return (
-    <div className={cn("space-y-1", !compact && "mx-auto max-w-md")} role="status" aria-label={`${label ? `${label}: ` : ""}${possibleText(left)}`}>
+    <div className={cn("space-y-1", !compact && "mx-auto max-w-md")} role="status" aria-label={`${label ? `${label}: ` : ""}${possibleText(t, left)}`}>
       <p className={cn("flex items-center justify-between gap-2 text-muted-foreground", compact ? "text-[11px]" : "text-xs")}>
         <span className="flex items-center gap-1">
-          <Filter className="h-3 w-3" aria-hidden /> {label ?? "Still possible"}
+          <Filter className="h-3 w-3" aria-hidden /> {label ?? t("stillPossible")}
         </span>
-        <span className="font-pixel tabular-nums text-foreground">{fmt(left)}</span>
+        <span className="font-pixel tabular-nums text-foreground">{fmtIn(t)(left)}</span>
       </p>
       <span className="block h-1.5 overflow-hidden rounded-full bg-foreground/10" aria-hidden>
         <span className="block h-full rounded-full bg-screen transition-[width] duration-500" style={{ width: `${Math.max(2, share * 100)}%` }} />
@@ -704,13 +732,15 @@ function PossibleMeter({ left, pool, label, compact }: { left: number; pool: num
 
 /** A finished round's guesses: sprite, name and colours. */
 function Guesses({ rows }: { rows: DleRow[] }) {
-  if (rows.length === 0) return <p className="py-2 text-center text-sm text-muted-foreground">No guesses</p>;
+  const t = useT(duelNs);
+  const words = useDleWords();
+  if (rows.length === 0) return <p className="py-2 text-center text-sm text-muted-foreground">{t("noGuesses")}</p>;
   return (
     <ol className="space-y-1">
       {rows.map((row) => (
         <li key={row.id} className="grid items-center gap-1 text-xs" style={{ gridTemplateColumns: `2rem minmax(0,1fr) repeat(${DLE_COLUMNS.filter((c) => row.cells[c.key]).length},1.1rem)` }}>
           <img src={spriteUrl(row.id)} alt="" width={32} height={32} className="h-8 w-8" />
-          <span className="truncate font-semibold">{row.name}</span>
+          <span className="truncate font-semibold">{words.name(row.id, row.name)}</span>
           {DLE_COLUMNS.map((c) => (
             row.cells[c.key] && <Square key={c.key} status={row.cells[c.key]!.status} />
           ))}
@@ -722,6 +752,8 @@ function Guesses({ rows }: { rows: DleRow[] }) {
 
 /** How a round's points add up: the solve, speed, hints. */
 function Breakdown({ score }: { score: DleDuelScore }) {
+  const t = useT(duelNs);
+  const fmt = fmtIn(t);
   const line = (label: string, value: string, tone?: string) => (
     <div className="flex justify-between gap-3">
       <span className="text-muted-foreground">{label}</span>
@@ -730,35 +762,44 @@ function Breakdown({ score }: { score: DleDuelScore }) {
   );
   return (
     <div className="space-y-0.5 text-xs">
-      {line("Guesses", score.solved ? `Solved in ${score.guesses}` : `${score.guesses}, not solved`)}
-      {line("Time", score.ms !== undefined ? clock(score.ms) : "—")}
-      {line("Solve", fmt(score.base))}
-      {line("Speed bonus", `+${score.speed}`, score.speed > 0 ? "text-success" : undefined)}
-      {line("Hints", score.cost ? `−${score.cost}` : "0", score.cost ? "text-warning" : undefined)}
+      {line(t("breakdown.guesses"), score.solved ? t("breakdown.solved", { n: score.guesses }) : t("breakdown.notSolved", { n: score.guesses }))}
+      {line(t("breakdown.time"), score.ms !== undefined ? clock(score.ms) : "—")}
+      {line(t("breakdown.solve"), fmt(score.base))}
+      {line(t("breakdown.speed"), `+${score.speed}`, score.speed > 0 ? "text-success" : undefined)}
+      {line(t("breakdown.hints"), score.cost ? `−${score.cost}` : "0", score.cost ? "text-warning" : undefined)}
       <div className="flex justify-between gap-3 border-t border-foreground/10 pt-1 font-display text-sm font-bold uppercase">
-        <span>Round</span>
-        <span className="tabular-nums">{fmt(score.points)} pts</span>
+        <span>{t("breakdown.round")}</span>
+        <span className="tabular-nums">{t("pts", { n: fmt(score.points) })}</span>
       </div>
     </div>
   );
 }
 
 function RoundReveal({ view, result, children }: { view: DleDuelView; result: DleDuelRoundResult; children: React.ReactNode }) {
+  const t = useT(duelNs);
+  const words = useDleWords();
+  const genus = useGenus(result.answer.genus);
   const me = view.you;
   const [a, b] = result.scores.map((s) => s.points);
   const best = a === b ? null : a > b ? 0 : 1;
-  const name = (seat: number) => (seat === me ? "You" : (view.players[seat]?.name ?? "They"));
-  const headline = best === null ? "An even round" : `${name(best)} ${best === me ? "take" : "takes"} round ${result.index + 1}`;
+  const headline =
+    best === null
+      ? t("even")
+      : best === me
+        ? t("youTake", { n: result.index + 1 })
+        : t("takes", { name: view.players[best]?.name ?? t("they"), n: result.index + 1 });
+  const answer = words.name(result.answer.id, result.answer.name);
   return (
     <>
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
         <Card className={cn(best === me ? "border-success/50" : best === null ? "" : "border-destructive/40")}>
           <CardContent className="grid items-center gap-4 p-6 sm:grid-cols-[9rem_1fr]">
-            <img src={result.answer.imageUrl} alt={result.answer.name} className="mx-auto h-36 w-36 object-contain" />
+            <img src={result.answer.imageUrl} alt={answer} className="mx-auto h-36 w-36 object-contain" />
             <div className="space-y-3 text-center sm:text-left">
               <p className="font-display text-2xl font-bold uppercase leading-tight">{headline}</p>
               <p className="text-muted-foreground">
-                It was <b className="text-foreground">{result.answer.name}</b>, the {result.answer.genus}.{result.timedOut && " The clock ran out."}
+                {t.rich("itWas", { name: answer, genus: genus ?? "", b: (c) => <b className="text-foreground">{c}</b> })}
+                {result.timedOut && t("clockRanOut")}
               </p>
               {children}
             </div>
@@ -773,7 +814,7 @@ function RoundReveal({ view, result, children }: { view: DleDuelView; result: Dl
                 <span className="flex items-center gap-1.5">
                   <SeatDot seat={seat} /> {view.players[seat]?.name}
                 </span>
-                <span>{fmt(result.totals[seat])} pts in all</span>
+                <span>{t("inAll", { n: fmtIn(t)(result.totals[seat]) })}</span>
               </p>
               <Guesses rows={board.rows} />
               <HintBadges hints={board.hints} />
@@ -787,9 +828,13 @@ function RoundReveal({ view, result, children }: { view: DleDuelView; result: Dl
 }
 
 function DuelSummary({ view, busy, onRematch }: { view: DleDuelView; busy: boolean; onRematch: () => void }) {
+  const t = useT(duelNs);
+  const bt = useT(board);
+  const words = useDleWords();
+  const fmt = fmtIn(t);
   const me = view.you!;
   const end = view.end!;
-  const them = view.players[1 - me]?.name ?? "Your opponent";
+  const them = view.players[1 - me]?.name ?? t("yourOpponentStart");
   const won = end.winner === me;
   const draw = end.winner === null;
   const [mine, theirs] = [view.totals[me], view.totals[1 - me]];
@@ -799,34 +844,38 @@ function DuelSummary({ view, busy, onRematch }: { view: DleDuelView; busy: boole
   const myName = view.players[me]?.name ?? "";
   const guesses = (seat: number) => view.revealed.reduce((sum, r) => sum + r.scores[seat].guesses, 0);
   const played = draw
-    ? "Level on points, guesses and time."
+    ? t("summary.draw")
     : mine !== theirs
       ? won
-        ? `You scored ${fmt(mine)} to ${fmt(theirs)}.`
-        : `${them} scored ${fmt(theirs)} to ${fmt(mine)}.`
+        ? t("summary.youScored", { a: fmt(mine), b: fmt(theirs) })
+        : t("summary.theyScored", { them, a: fmt(theirs), b: fmt(mine) })
       : guesses(0) !== guesses(1)
-        ? `Level on ${fmt(mine)} points: ${won ? "you" : them} needed fewer guesses.`
-        : `Level on ${fmt(mine)} points and guesses: ${won ? "you were" : `${them} was`} quicker.`;
+        ? won
+          ? t("summary.youFewer", { n: fmt(mine) })
+          : t("summary.theyFewer", { n: fmt(mine), them })
+        : won
+          ? t("summary.youQuicker", { n: fmt(mine) })
+          : t("summary.theyQuicker", { n: fmt(mine), them });
   const reason = {
     played,
-    left: won ? `${them} left the duel.` : "You left the duel.",
-    idle: draw ? `Neither of you guessed for ${DLE_DUEL_IDLE_ROUNDS} rounds.` : won ? `${them} stopped guessing.` : `You didn't guess for ${DLE_DUEL_IDLE_ROUNDS} rounds.`,
+    left: won ? t("summary.theyLeft", { them }) : t("summary.youLeft"),
+    idle: draw ? t("summary.neitherIdle", { n: DLE_DUEL_IDLE_ROUNDS }) : won ? t("summary.theyIdle", { them }) : t("summary.youIdle", { n: DLE_DUEL_IDLE_ROUNDS }),
   }[end.reason];
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="space-y-2 text-center">
         <p className="hud-label text-screen">
-          Pokédle duel over · {rulesTags(view.rules).join(" · ")} · {DLE_ASSIST_INFO[view.assist].label}
+          {t("summary.over", { tags: localRulesTags(view.rules, bt).join(" · "), assist: bt(`assist.${view.assist}.label`) })}
         </p>
         <div className={cn("flex items-center justify-center gap-3 font-display text-6xl font-bold uppercase", won ? "text-success" : draw ? "text-screen" : "text-destructive")}>
           {won && <Crown className="h-12 w-12" aria-hidden />}
-          {draw ? "Draw" : won ? "Victory!" : "Defeat"}
+          {draw ? t("summary.drawTitle") : won ? t("summary.victory") : t("summary.defeat")}
         </div>
         <p className="text-muted-foreground">{reason}</p>
       </div>
 
-      <DuelHud view={view} center={<div className="hud-label">Final</div>} />
+      <DuelHud view={view} center={<div className="hud-label">{t("summary.final")}</div>} />
 
       {view.series && <SeriesScore series={view.series} players={view.players} you={me} />}
 
@@ -835,11 +884,11 @@ function DuelSummary({ view, busy, onRematch }: { view: DleDuelView; busy: boole
           {view.revealed.length > 0 && (
             <div className="space-y-3">
               {view.revealed.map((r) => (
-                <section key={r.index} className="space-y-3 rounded-md border bg-shade/20 p-3" aria-label={`Round ${r.index + 1}`}>
+                <section key={r.index} className="space-y-3 rounded-md border bg-shade/20 p-3" aria-label={t("summary.roundLabel", { n: r.index + 1 })}>
                   <p className="flex min-w-0 items-center gap-2">
-                    <span className="font-pixel text-xs text-muted-foreground">R{r.index + 1}</span>
+                    <span className="font-pixel text-xs text-muted-foreground">{t("summary.r", { n: r.index + 1 })}</span>
                     <img src={spriteUrl(r.answer.id)} alt="" width={32} height={32} className="h-8 w-8 shrink-0" />
-                    <span className="truncate font-semibold">{r.answer.name}</span>
+                    <span className="truncate font-semibold">{words.name(r.answer.id, r.answer.name)}</span>
                   </p>
                   <div className="grid gap-4 sm:grid-cols-2">
                     {r.scores.map((score, seat) => (
@@ -848,7 +897,7 @@ function DuelSummary({ view, busy, onRematch }: { view: DleDuelView; busy: boole
                           <span className="flex min-w-0 items-center gap-1.5">
                             <SeatDot seat={seat} /> <span className="truncate">{view.players[seat]?.name}</span>
                           </span>
-                          <span className="tabular-nums">{fmt(score.points)} pts</span>
+                          <span className="tabular-nums">{t("pts", { n: fmt(score.points) })}</span>
                         </p>
                         <Guesses rows={r.boards[seat].rows} />
                         <HintBadges hints={r.boards[seat].hints} />
@@ -863,7 +912,7 @@ function DuelSummary({ view, busy, onRematch }: { view: DleDuelView; busy: boole
 
           {view.rematch && (
             <p role="status" className="text-center font-display text-sm font-semibold uppercase tracking-wider text-warning">
-              Rematch requested!
+              {t("summary.rematchRequested")}
             </p>
           )}
           {finder.searching ? (
@@ -873,21 +922,21 @@ function DuelSummary({ view, busy, onRematch }: { view: DleDuelView; busy: boole
             <div className="grid gap-2 sm:grid-cols-[2fr_1fr]">
               <Button size="lg" variant="success" disabled={busy || !myName} onClick={() => void finder.search(myName)} autoFocus>
                 <UserSearch className="h-4 w-4" aria-hidden />
-                Play again
+                {t("summary.playAgain")}
               </Button>
               <Button size="lg" variant="outline" disabled={busy} onClick={onRematch}>
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RotateCcw className="h-4 w-4" aria-hidden />}
-                {view.rematch ? "Accept rematch" : "Rematch"}
+                {view.rematch ? t("summary.acceptRematch") : t("summary.rematch")}
               </Button>
             </div>
           ) : (
             <div className="grid gap-2 sm:grid-cols-2">
               <Button size="lg" variant="success" disabled={busy} onClick={onRematch}>
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RotateCcw className="h-4 w-4" aria-hidden />}
-                {view.rematch ? "Accept rematch" : "Rematch"}
+                {view.rematch ? t("summary.acceptRematch") : t("summary.rematch")}
               </Button>
               <Button size="lg" variant="outline" disabled={busy || !myName} onClick={() => void finder.search(myName)}>
-                <UserSearch className="h-4 w-4" aria-hidden /> Find new opponent
+                <UserSearch className="h-4 w-4" aria-hidden /> {t("summary.findNew")}
               </Button>
             </div>
           )}
@@ -898,11 +947,11 @@ function DuelSummary({ view, busy, onRematch }: { view: DleDuelView; busy: boole
           )}
           <p className="text-center text-xs text-muted-foreground">
             {view.series && view.series.winner === null
-              ? `A rematch is game ${view.series.game + 1} of the series, with new mystery Pokémon. It starts when you both press it.`
-              : "A rematch keeps the trainers and generations, with new mystery Pokémon. It starts when you both press it."}{" "}
+              ? t("summary.seriesNote", { n: view.series.game + 1 })
+              : t("summary.rematchNote")}{" "}
             <Link href={HOME} className="underline underline-offset-2 hover:text-foreground">
               <Swords className="mr-1 inline h-3 w-3" aria-hidden />
-              Back to Pokédle
+              {t("back")}
             </Link>
           </p>
         </CardContent>
@@ -917,6 +966,7 @@ function DuelSummary({ view, busy, onRematch }: { view: DleDuelView; busy: boole
 
 /** The round's clock: calm, then red under 30 s, then big and pulsing for the last ten. */
 function RoundClock({ left, final }: { left: number; final: boolean }) {
+  const t = useT(duelNs);
   const reduced = useReducedMotion();
   const secondsLeft = Math.max(0, Math.ceil(left / 1000));
   if (!final) {
@@ -935,7 +985,7 @@ function RoundClock({ left, final }: { left: number; final: boolean }) {
       transition={{ duration: 0.3 }}
       className="flex items-center justify-center gap-1 font-pixel text-3xl tabular-nums text-destructive drop-shadow-[0_0_8px_hsl(0_80%_55%/0.6)]"
       role="timer"
-      aria-label={`${secondsLeft} seconds left`}
+      aria-label={t("secondsLeft", { n: secondsLeft })}
     >
       {secondsLeft}
     </motion.div>
@@ -944,12 +994,16 @@ function RoundClock({ left, final }: { left: number; final: boolean }) {
 
 /** "Rival is down to 3 possible": how the race stands, by Pokémon still possible. */
 function Momentum({ them, mine, theirs, pool }: { them: string; mine: DleDuelBoard; theirs: DleDuelBoard; pool: number }) {
+  const t = useT(duelNs);
+  const fmt = fmtIn(t);
   if (theirs.done || theirs.colours.length === 0) return null;
   const theirLeft = leftOf(theirs, pool);
   const myLeft = leftOf(mine, pool);
   const ahead = !mine.done && theirLeft < myLeft;
   const text =
-    theirLeft === 1 ? `${them} has it down to 1. One guess from solving!` : `${them} is down to ${fmt(theirLeft)} possible${mine.done ? "" : ` · you: ${fmt(myLeft)}`}`;
+    theirLeft === 1
+      ? t("momentumOne", { them })
+      : `${t("momentum", { them, n: fmt(theirLeft) })}${mine.done ? "" : t("momentumYou", { n: fmt(myLeft) })}`;
   return (
     <p
       role="status"
@@ -975,16 +1029,17 @@ function useTicker(on: boolean): number {
 
 /** "Searching…" with the time so far, and a cancel button. */
 function Searching({ since, onCancel }: { since: number | null; onCancel: () => void }) {
+  const t = useT(duelNs);
   const now = useTicker(true);
   const waited = now - (since ?? now);
   return (
     <div className="space-y-2 rounded-md border border-screen/40 bg-screen/[0.06] p-3 text-center" role="status">
       <p className="flex items-center justify-center gap-2 font-display text-sm font-semibold uppercase tracking-wider text-screen">
-        <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Searching for an opponent…
+        <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> {t("searching")}
       </p>
       <p className="font-pixel text-xs tabular-nums text-muted-foreground">{clock(waited)}</p>
       <Button type="button" size="sm" variant="ghost" onClick={onCancel}>
-        <X className="h-3.5 w-3.5" aria-hidden /> Cancel
+        <X className="h-3.5 w-3.5" aria-hidden /> {t("cancel")}
       </Button>
     </div>
   );
