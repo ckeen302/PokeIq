@@ -1,0 +1,201 @@
+{
+  "column": {
+    "gen": "Gen.",
+    "type1": "Typ 1",
+    "type2": "Typ 2",
+    "height": "Größe",
+    "weight": "Gewicht",
+    "color": "Farbe",
+    "stage": "Stufe"
+  },
+  "help": {
+    "gen": "Generation. Nah: eine Generation daneben.",
+    "type1": "Primärtyp. Gelb: Die Lösung hat diesen Typ als zweiten Typ.",
+    "type2": "Sekundärtyp (Keiner, wenn es keinen hat). Gelb: Die Lösung hat diesen Typ als ersten Typ.",
+    "height": "Größe. Nah: innerhalb von 25 % (oder 0,1 m).",
+    "weight": "Gewicht. Nah: innerhalb von 25 % (oder 0,1 kg).",
+    "color": "Die Pokédex-Farbe. Treffer oder kein Treffer.",
+    "stage": "Entwicklungsstufe: Baby, dann 1 bis 3. Nah: eine Stufe daneben (ein Baby ist nie nah)."
+  },
+  "helpStrict": {
+    "gen": "Generation. Nur ▲ / ▼, kein „nah“.",
+    "type1": "Primärtyp. Gelb: Die Lösung hat diesen Typ als zweiten Typ.",
+    "type2": "Sekundärtyp (Keiner, wenn es keinen hat). Gelb: Die Lösung hat diesen Typ als ersten Typ.",
+    "height": "Größe. Nur ▲ / ▼, kein „nah“.",
+    "weight": "Gewicht. Nur ▲ / ▼, kein „nah“.",
+    "color": "Die Pokédex-Farbe. Treffer oder kein Treffer.",
+    "stage": "Entwicklungsstufe: Baby, dann 1 bis 3. Nur ▲ / ▼, kein „nah“."
+  },
+  "status": {
+    "match": "Treffer",
+    "partial": "richtiger Typ, anderer Platz",
+    "close-higher": "nah, die Lösung liegt höher",
+    "close-lower": "nah, die Lösung liegt niedriger",
+    "higher": "die Lösung liegt höher",
+    "lower": "die Lösung liegt niedriger",
+    "miss": "kein Treffer"
+  },
+  "value": {
+    "none": "Keiner",
+    "baby": "Baby",
+    "babyShort": "B"
+  },
+  "input": {
+    "aria": "Rate ein Pokémon (/ springt hierher, Esc löscht)",
+    "list": "Pokémon, die zu deiner Eingabe passen",
+    "gen": "Gen. {n}",
+    "already": "{name} hast du schon getippt.",
+    "none": "Kein Pokémon mit diesem Namen."
+  },
+  "legend": {
+    "label": "Was die Hinweise bedeuten",
+    "match": "Treffer",
+    "partial": "Typ auf dem anderen Platz",
+    "close": "Nah",
+    "higherLower": "Lösung höher / niedriger",
+    "miss": "Kein Treffer"
+  },
+  "board": {
+    "label": "Deine Tipps, neueste zuerst",
+    "pokemon": "Pokémon",
+    "checking": "{label}: wird geprüft …",
+    "empty": "Tipp {n}",
+    "clue": "{label} {value}: {status}",
+    "filterAria": "{clue}. Pokédex nach diesem Hinweis filtern",
+    "filterTitle": "{clue}. Klicke, um den Pokédex nach diesem Hinweis zu filtern."
+  },
+  "format": {
+    "classic": "Klassisch",
+    "squirdle": "Werte",
+    "custom": "Eigenes"
+  },
+  "formatBlurb": {
+    "classic": "Sieben Hinweise, mit „nah“ (gelb) für knappe Fehlschläge.",
+    "squirdle": "Generation, Typen, Größe und Gewicht, nur mit ▲ / ▼. Die Zahl der Versuche hängt von den Generationen ab.",
+    "custom": "Wähle die Hinweisspalten, die du willst (mindestens 3)."
+  },
+  "timer": {
+    "none": "Ohne Zeit",
+    "3m": "3 Min.",
+    "60s": "60-s-Blitz"
+  },
+  "tags": {
+    "clues": "{n} Hinweise",
+    "guesses": "{n} Versuche",
+    "strict": "Streng",
+    "noHints": "Ohne Hilfen",
+    "legendaries": "Legendäre",
+    "hard": "Schwer",
+    "noDex": "Ohne Pokédex"
+  },
+  "gens": {
+    "all": "Alle Gen.",
+    "one": "Gen. {n}",
+    "range": "Gen. {lo}–{hi}",
+    "list": "Gen. {list}"
+  },
+  "bonus": "+{pct} %",
+  "hint": {
+    "genus": "Kategorie",
+    "silhouette": "Silhouette"
+  },
+  "assist": {
+    "off": { "label": "Aus", "blurb": "Kein Pokédex: Jeden Hinweis musst du selbst auswerten." },
+    "notebook": { "label": "Notizbuch", "blurb": "Graut aus, was die Generations- und Typ-Hinweise ausschließen; den Rest streichst du." },
+    "field": { "label": "Feldführer", "blurb": "Zeigt zusätzlich Stufe und Farbe jedes Pokémon und filtert danach." },
+    "full": { "label": "Voller Pokédex", "blurb": "Filtert auch nach Größe und Gewicht; klicke auf einen Hinweis, um ihn als Filter zu setzen." }
+  },
+  "picker": {
+    "pokedex": "Pokédex",
+    "label": "Pokédex-Hilfe",
+    "title": "{label}: {blurb}",
+    "titlePoints": "{label}: {blurb} Punkte {m}."
+  },
+  "settings": {
+    "label": "Spieleinstellungen",
+    "format": "Format",
+    "clues": "Hinweise",
+    "clueColumns": "Hinweisspalten",
+    "minClues": "Mindestens {n} Hinweise",
+    "generations": "Generationen",
+    "presetAll": "Alle",
+    "presetGen1": "Nur Gen. 1",
+    "presetGen12": "Gen. 1–2",
+    "presetGen14": "Gen. 1–4",
+    "gen": "Gen.",
+    "firstGen": "Erste Generation",
+    "lastGen": "Letzte Generation",
+    "to": "bis",
+    "guesses": "Versuche",
+    "autoTitle": "Versuche bei Werte: 5 für eine Generation, bis zu 9 für alle",
+    "auto": "Auto ({n})",
+    "hints": "Hilfen",
+    "on": "An",
+    "off": "Aus",
+    "close": "„Nah“-Felder",
+    "closeNever": "Werte hat nie „nah“-Felder",
+    "closeTitle": "Gelbe ▲ / ▼ bei knappen Fehlschlägen",
+    "strictTitle": "Streng: nur ▲ / ▼",
+    "strict": "Streng (nur ▲ / ▼)",
+    "roundClock": "Rundenzeit",
+    "timer": "Timer",
+    "pool": "Pokémon",
+    "every": "Alle Pokémon",
+    "legendary": "Nur Legendäre",
+    "bonusPts": "{bonus} Pkt."
+  },
+  "dex": {
+    "title": "Pokédex",
+    "tapping": "Pokémon antippen",
+    "cross": "Streichen",
+    "fill": "Eintragen",
+    "view": "Pokédex-Ansicht",
+    "hide": "Ausgeschiedene ausblenden",
+    "uncross": "Alle zurückholen",
+    "showAllAria": "Alle zeigen (Filter zurücksetzen)",
+    "showAllTitle": "Alle zeigen: Filter zurücksetzen",
+    "search": "Nach Namen suchen",
+    "searchAria": "Im Pokédex suchen",
+    "hasType": "Hat Typ",
+    "anyType": "Jeder Typ",
+    "has": "Typ {type}",
+    "andType": "Und Typ",
+    "andAny": "Und beliebig",
+    "and": "Und {type}",
+    "stage": "Stufe",
+    "stageAny": "Stufe: alle",
+    "stageN": "Stufe {stage}",
+    "color": "Farbe",
+    "colorAny": "Farbe: alle",
+    "height": "Größe (m)",
+    "weight": "Gewicht (kg)",
+    "min": "min.",
+    "max": "max.",
+    "atLeast": "{label}, mindestens",
+    "atMost": "{label}, höchstens",
+    "gen": "Gen.",
+    "generations": "Generationen",
+    "genN": "Gen. {n}",
+    "genRegion": "Gen. {n} · {region}",
+    "mono": "Kein zweiter Typ",
+    "clueFilters": "Hinweisfilter",
+    "removeFilter": "Filter {clue} entfernen",
+    "list": "Pokédex",
+    "failed": "Der Pokédex konnte nicht geladen werden.",
+    "loading": "Pokédex wird geladen",
+    "empty": "Hier ist kein Pokémon. Versuch es mit „Alle zeigen“.",
+    "generation": "Generation {n}",
+    "left": "Noch {n} im Spiel",
+    "how": "So funktioniert der Pokédex",
+    "howNotebook": "Ausgegraut: durch deine Generations- und Typ-Hinweise ausgeschlossen. Größe, Gewicht, Farbe und Stufe wertest du selbst aus: Streiche, was sie ausschließen.",
+    "howField": "Ausgegraut: durch deine Generations- und Typ-Hinweise ausgeschlossen. Filtere nach Stufe und Farbe; Größe und Gewicht wertest du selbst aus.",
+    "howFull": "Ausgegraut: durch deine Generations- und Typ-Hinweise ausgeschlossen. Filtere nach jedem Merkmal oder klicke auf einen Hinweis auf dem Spielfeld, um ihn als Filter zu setzen.",
+    "guessed": "schon getippt",
+    "crossed": "gestrichen",
+    "out": "durch die Hinweise ausgeschlossen",
+    "fillName": "{name} eintragen",
+    "back": "{name} zurückholen",
+    "crossName": "{name} streichen",
+    "withState": "{action} ({state})"
+  }
+}

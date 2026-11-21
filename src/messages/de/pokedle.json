@@ -1,0 +1,27 @@
+{
+  "meta": {
+    "title": "Pokédle: das tägliche Pokémon-Wordle",
+    "description": "Pokédle ist das tägliche Pokémon-Wordle: Errate das geheime Pokémon in 8 Versuchen anhand von Hinweisen zu Typ, Generation, Größe und mehr – dazu Live-Duelle mit Freunden."
+  },
+  "info": {
+    "name": "Pokédle",
+    "description": "Pokédle ist ein kostenloses tägliches Pokémon-Wordle: Errate das geheime Pokémon in 8 Versuchen anhand von Hinweisen zu Generation, Typ, Größe, Gewicht, Farbe und Entwicklungsstufe.",
+    "intro": "Pokédle ist unser Pokémon-Wordle: ein geheimes Pokémon, acht Versuche und jeden Tag ein neues Pokémon.",
+    "step1": "Gib den Namen eines Pokémon ein und schick ihn als Tipp ab.",
+    "step2": "Jeder Tipp zeigt, wie er im Vergleich zum geheimen Pokémon abschneidet: Generation, Typ, Größe, Gewicht, Farbe und Entwicklungsstufe.",
+    "step3": "Grenze das Pokémon mit den Hinweisen ein und finde die Lösung in höchstens 8 Versuchen.",
+    "step4": "Komm morgen für ein neues Pokémon wieder oder fordere Freunde oder Fremde zu einem Live-Duell heraus.",
+    "faqGuessesQ": "Wie viele Versuche habe ich?",
+    "faqGuessesA": "Du hast 8 Versuche, um das geheime Pokémon zu finden.",
+    "faqCluesQ": "Welche Hinweise zeigt jeder Tipp?",
+    "faqCluesA": "Generation, Typ, Größe, Gewicht, Farbe und Entwicklungsstufe, verglichen mit dem geheimen Pokémon."
+  },
+  "duel": {
+    "title": "Ein Pokédle-Duell",
+    "description": "Pokédle im direkten Duell: dasselbe geheime Pokémon für euch beide, drei Runden.",
+    "versus": "{host} gegen {guest}: ein Pokédle-Duell",
+    "challenge": "{host} fordert dich zu einem Pokédle-Duell heraus",
+    "aTrainer": "Ein Trainer",
+    "inviteDescription": "Pokédle im direkten Duell: dasselbe geheime Pokémon für euch beide, drei Runden – weniger Versuche und schnellere Lösungen bringen mehr Punkte."
+  }
+}
