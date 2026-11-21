@@ -1,0 +1,54 @@
+{
+  "duel": {
+    "heading": "Duels",
+    "modes": {
+      "hp": "Combat de PV",
+      "race": "Course aux points",
+      "team": "Équipes 2v2"
+    },
+    "queues": {
+      "casual": "Amical",
+      "ranked": "Classé"
+    },
+    "queueLabel": "Type de duel",
+    "eras": {
+      "2d": "2D classique",
+      "3d": "3D moderne"
+    },
+    "headingTeam": "Duel en équipe · {map}",
+    "headingHp": "Face à face · {map}",
+    "teamBlurb": "Deux équipes de deux (jusqu'à quatre par camp) sur les mêmes lieux, {hp} PV par équipe. À chaque manche, ton équipe marque sa meilleure épingle, et les coéquipiers voient leurs épingles au fur et à mesure. Envoie le code du salon à trois amis.",
+    "raceBlurb": "Les mêmes {n} lieux pour vous deux, sur la carte choisie plus haut. Celui qui marque le plus de points en {n} manches gagne. Envoie le lien à ton ami et appuie sur Prêt.",
+    "raceBlurbEra": "Les mêmes {n} lieux pour vous deux, sur la carte et les jeux choisis plus haut. Celui qui marque le plus de points en {n} manches gagne. Envoie le lien à ton ami et appuie sur Prêt.",
+    "hpBlurb": "Les mêmes lieux pour vous deux, sur la carte choisie plus haut. {hp} PV chacun : à chaque manche, le score le plus bas perd la différence. Envoie le lien à ton ami et appuie sur Prêt.",
+    "hpBlurbEra": "Les mêmes lieux pour vous deux, sur la carte et les jeux choisis plus haut. {hp} PV chacun : à chaque manche, le score le plus bas perd la différence. Envoie le lien à ton ami et appuie sur Prêt.",
+    "turboInfo": "Turbo : dès que l'un de vous répond, l'autre a {s} secondes au lieu de 15.",
+    "mode": "Mode",
+    "modeLabel": "Mode du duel",
+    "raceRounds": "Manches de la course",
+    "partySettings": "Options de la partie",
+    "turboOn": "Turbo activé",
+    "turboOff": "Turbo désactivé"
+  },
+  "party": {
+    "royaleBlurb": "Jusqu'à {max} Dresseurs sur les mêmes lieux. Le score le plus bas de chaque manche perd une vie ({lives} chacun) ; le dernier Dresseur en lice gagne.",
+    "teamBlurb": "Équipe rouge contre bleue, 2v2 (jusqu'à 4v4), {hp} PV par équipe. Ton équipe marque sa meilleure épingle, et tu vois les épingles de tes coéquipiers en direct.",
+    "label": "Entre amis · jusqu'à {max} Dresseurs",
+    "room": "Salon privé · {map}",
+    "gameLabel": "Jeu de la partie",
+    "modes": {
+      "royale": "Combat Royal",
+      "team": "Duel en équipe"
+    },
+    "host": "Tu es l'hôte : change la carte, les vies, le chrono et les manches dans le salon, puis lance quand tout le monde est là.",
+    "nameLabel": "Ton nom de Dresseur",
+    "namePlaceholder": "Nom de Dresseur",
+    "nameRejected": "Choisis un autre nom.",
+    "create": "Créer la partie",
+    "code": "Code du salon",
+    "join": "Rejoindre",
+    "badCode": "Les codes de salon font six lettres et chiffres.",
+    "failed": "Impossible d'ouvrir la partie.",
+    "requestFailed": "Échec de la requête ({status})"
+  }
+}

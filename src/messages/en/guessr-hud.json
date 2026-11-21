@@ -1,0 +1,60 @@
+{
+  "distance": {
+    "exact": "Right on it!",
+    "squares": "{n} sq"
+  },
+  "band": {
+    "round": "Round {round}",
+    "damage": "{m}× Damage",
+    "race": "Points race",
+    "noPin": "No pin",
+    "super": "It's super effective!",
+    "points": "{points} pts",
+    "you": "You",
+    "connectionLost": "Connection lost",
+    "multiplierTitle": "This trainer's damage multiplier"
+  },
+  "guessed": {
+    "waiting": "Locked in. Waiting for {name}…",
+    "guessed": "{name} guessed",
+    "left": "{s} s to guess"
+  },
+  "live": {
+    "downTitle": "Lost the live connection: updates come every second until it's back",
+    "upTitle": "Live: your opponent's moves show at once",
+    "down": "Reconnecting…",
+    "up": "Live"
+  },
+  "leave": {
+    "sure": "Leaving forfeits the duel.",
+    "forfeit": "Forfeit",
+    "stay": "Stay",
+    "leave": "Leave duel"
+  },
+  "emotes": {
+    "send": "Send a reaction",
+    "menu": "Reactions",
+    "sendOne": "Send {label}",
+    "pika": "Pika!",
+    "huh": "Huh?",
+    "zzz": "Zzz…",
+    "splash": "Splash!",
+    "heh": "Heh heh",
+    "cute": "Aww",
+    "flame": "Fired up",
+    "counter": "Counter!"
+  },
+  "versus": {
+    "round": "Round {round}",
+    "race": "Points race",
+    "damage": "{m}× damage",
+    "hp": "HP battle",
+    "turbo": " · Turbo",
+    "ranked": "Ranked · ",
+    "vs": "VS",
+    "versus": "versus",
+    "you": "You",
+    "hpUnit": "HP"
+  },
+  "timeline": "HP after each round"
+}
