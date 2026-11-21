@@ -67,7 +67,12 @@ export async function runHowTo({ browser, BASE, OUT, errors, step }) {
         if (Math.abs(m.w - wantW) > 1) errors.push(`how-to ${where}: ${m.w}px wide, not ${wantW}px`);
         if (m.h > Math.min(680, height - 64) + 1) errors.push(`how-to ${where}: ${m.h}px tall, more than ${Math.min(680, height - 64)}px`);
         for (const p of m.problems) errors.push(`how-to ${where}: ${p}`);
-        if (OUT && width === 1440) await page.screenshot({ path: `${OUT}/howto${path.replace("/", "-")}.png` });
+        // A record for review, not a check: CI's browser sometimes can't capture one.
+        if (OUT && width === 1440) {
+          await page
+            .screenshot({ path: `${OUT}/howto${path.replace("/", "-")}.png` })
+            .catch((e) => console.log(`  note: how-to screenshot skipped (${String(e.message).split("\n")[0]})`));
+        }
       } catch (e) {
         errors.push(`how-to ${where}: ${e.message.split("\n")[0]}`);
       }
