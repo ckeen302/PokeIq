@@ -74,7 +74,7 @@ async function englishOnly({ BASE, errors, step }) {
     if (h.ogLocale && h.ogLocale !== "en_US") errors.push(`i18n: ${path} has og:locale ${h.ogLocale}`);
     if (/hreflang=|\/(es|fr|de|it|ja)\/sitemap\.xml/.test(r.body)) errors.push(`i18n: ${path} mentions another language`);
   }
-  for (const path of ["/es", "/es/pokedle", "/ja/pokemon/pikachu", "/fr/", "/de/quiz", "/it/pokedex"]) {
+  for (const path of ["/es", "/es/pokedle", "/ja/pokemon/pikachu", "/fr", "/de/quiz", "/it/pokedex"]) {
     const r = await get(BASE, path);
     if (r.status !== 404) errors.push(`i18n: ${path} answered ${r.status} (a language that isn't live must be a 404)`);
     else {
