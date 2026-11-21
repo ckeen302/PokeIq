@@ -43,7 +43,7 @@ describe("another language", () => {
       connections: (await import("@/messages/fr/connections.json")).default,
     };
     const wrap = (node: ReactNode) =>
-      createElement(LocaleProvider, { locale: "fr" }, createElement(MessagesProvider, { messages: fr as never }, createElement(ConnNamesProvider, { names: { 4: "Salamèche" } }, node)));
+      createElement(LocaleProvider, { locale: "fr", children: createElement(MessagesProvider, { messages: fr as never, children: createElement(ConnNamesProvider, { names: { 4: "Salamèche" }, children: node }) }) });
     const bar = strip(renderToStaticMarkup(wrap(createElement(GroupBar, { group: { level: 3, label: "Starters Feu", members: [{ id: 4, name: "Charmander" }] }, symbols: false }))));
     expect(bar).toContain('aria-label="Groupe Violet : Starters Feu : Salamèche"');
     expect(bar).toContain("Salamèche</span>");

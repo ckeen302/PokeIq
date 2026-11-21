@@ -74,6 +74,7 @@ export function FeedbackPanel({
         date,
         player: dlePlayerId(),
         guesses,
+        ...(t.locale !== "en" && { lang: t.locale }),
         ...body,
       });
       const data = (await r.json()) as ConnFeedbackResponse & {
