@@ -5,7 +5,6 @@ import { Swords } from "lucide-react";
 import { ModeGrid } from "@/components/home/ModeGrid";
 import { QuizDuelCard } from "@/components/quiz/QuizDuelCard";
 import { GameInfo } from "@/components/seo/GameInfo";
-import { FORMAT_INFO, PLAYABLE_FORMATS } from "@/lib/modes";
 
 export const metadata: Metadata = pageMetadata({
   title: "Who's That Pokémon Quiz and More Pokémon Quiz Modes",
@@ -33,14 +32,6 @@ export default function PlayPage() {
           </Link>
         ))}
       </nav>
-      <section className="grid gap-4 max-md:hidden sm:grid-cols-3">
-        {PLAYABLE_FORMATS.map((f) => (
-          <div key={f} className="rounded-md border bg-card p-5">
-            <h2 className="font-semibold">{FORMAT_INFO[f].title}</h2>
-            <p className="text-sm text-muted-foreground">{FORMAT_INFO[f].description}</p>
-          </div>
-        ))}
-      </section>
       <section className="space-y-3" aria-labelledby="duels">
         <h2 id="duels" className="flex items-center gap-2 text-xl font-bold">
           <Swords className="h-5 w-5 text-primary" aria-hidden /> Quiz duel
