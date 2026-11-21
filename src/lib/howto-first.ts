@@ -14,12 +14,12 @@
  * as the page is parsed), so the focus ring doesn't appear later on.
  *
  * Desktop widths only, and not under reduced motion: on a phone the pop-up
- * is a bottom sheet that slides in once the game has decided, as before.
+ * slides in once the game has decided, as before (HowToDialog).
  */
 
 export const HOWTO_FIRST_CLASS = "howto-first";
 
-/** The width from which the pop-up is a centred dialog (Tailwind's md, as in Sheet). */
+/** The width from which the pop-up no longer slides in (Tailwind's md, as in HowToDialog). */
 const DESKTOP = "(min-width: 768px)";
 
 /**
