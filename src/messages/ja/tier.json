@@ -1,0 +1,12 @@
+{
+  "tiers": {
+    "poke": "モンスターボール",
+    "great": "スーパーボール",
+    "ultra": "ハイパーボール",
+    "master": "マスターボール"
+  },
+  "division": "{tier} {division}",
+  "rating": "{label}・レート {rating}",
+  "provisional": "暫定",
+  "provisionalTitle": "暫定：最初の{n}戦はレートが大きく動きます"
+}
