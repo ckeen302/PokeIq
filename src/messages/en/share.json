@@ -1,0 +1,100 @@
+{
+  "pokedle": {
+    "daily": "Pokédle #{n}",
+    "archive": "Pokédle #{n} (archive)",
+    "practice": "Pokédle Practice",
+    "top": "Top {top}% of {players} trainers"
+  },
+  "guessr": {
+    "world": "World",
+    "daily": "PokéGuessr Daily #{n} · {map}",
+    "weekly": "PokéGuessr Weekly #{n} · {map}",
+    "free": "PokéGuessr {map}",
+    "streak": "PokéGuessr {map} Streak",
+    "inARow": "🔥{n} in a row"
+  },
+  "quiz": {
+    "daily": "Daily #{n}",
+    "test": "Test",
+    "points": "{points} pts",
+    "iqPoints": "🧠 PokéIQ {iq} · {points} pts",
+    "modules": {
+      "whos-that": "Who's That Pokémon?",
+      "cry": "Cry Quiz",
+      "dex": "Dex Detective",
+      "types": "Type Master",
+      "higher-lower": "Higher or Lower",
+      "games": "Mainline Games",
+      "anime": "Pokémon Anime",
+      "competitive": "Abilities, Moves & Items",
+      "shiny": "Real Shiny?",
+      "zoom-reveal": "Zoom Reveal",
+      "whose-team": "Whose Team Is This?",
+      "mixed": "Mixed Bag"
+    },
+    "formats": {
+      "classic": "Classic",
+      "survival": "Survival",
+      "blitz": "Blitz",
+      "adaptive": "PokéIQ Test"
+    },
+    "levels": {
+      "easy": "Easy",
+      "medium": "Normal",
+      "hard": "Hard"
+    }
+  },
+  "connections": {
+    "daily": "PokéConnections #{n}",
+    "archive": "PokéConnections #{n} (archive)",
+    "practice": "PokéConnections Practice",
+    "practice5": "PokéConnections Practice 5×5",
+    "notSolved": "Not solved",
+    "perfect": "Perfect!",
+    "mistakes": "{n, plural, one {{n} mistake} other {{n} mistakes}}",
+    "hint": "💡hint"
+  },
+  "pikadoku": {
+    "weekly": "Pikadoku Weekly #{n}",
+    "daily": "Pikadoku #{n}",
+    "archive": "Pikadoku #{n} (archive)",
+    "level": "{title} ({level})",
+    "unlimited": "Pikadoku (Unlimited)",
+    "rarity": "Rarity: {score}",
+    "levels": {
+      "easy": "Easy",
+      "normal": "Normal",
+      "expert": "Expert"
+    }
+  },
+  "battle": {
+    "title": "Battle",
+    "win": "🏆 Victory",
+    "loss": "Defeat",
+    "tie": "Draw",
+    "cpu": "vs CPU ({level})",
+    "ranked": "ranked vs a trainer",
+    "trainer": "vs a trainer",
+    "turns": "{n, plural, one {{n} turn} other {{n} turns}}",
+    "levels": {
+      "easy": "Easy",
+      "normal": "Normal",
+      "hard": "Hard"
+    },
+    "replay": "Battle replay",
+    "watch": "▶️ Watch it play out:"
+  },
+  "cognitive": {
+    "title": "Cognitive test",
+    "percentile": "({p, selectordinal, one {{p}st} two {{p}nd} few {{p}rd} other {{p}th}} percentile)",
+    "line1": "🧩 Reasoning {fluid} · 🧠 Memory {memory}",
+    "line2": "⚡ Speed {speed} · 🧭 Spatial {spatial}",
+    "knowledge": " · 📖 Knowledge {knowledge}"
+  },
+  "button": {
+    "share": "Share result",
+    "copied": "Copied!",
+    "shared": "Shared!",
+    "toast": "Copied! Paste it anywhere."
+  }
+}
