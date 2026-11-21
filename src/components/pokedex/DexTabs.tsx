@@ -16,8 +16,12 @@ const TABS = [
   { id: "tcg", label: "TCG", href: "/pokedex/tcg" },
 ] as const;
 
-/** The second row: Pokémon lore and history, beyond the reference data. */
-const MORE_TABS = [{ id: "theories", label: "Theories", href: "/pokedex/theories" }] as const;
+/** The second row: the franchise and its lore, beyond the Pokédex itself. */
+const MORE_TABS = [
+  { id: "games", label: "Games", href: "/pokedex/games" },
+  { id: "movies", label: "Movies", href: "/pokedex/movies" },
+  { id: "theories", label: "Theories", href: "/pokedex/theories" },
+] as const;
 
 export type DexTabId = typeof MAIN.id | (typeof TABS)[number]["id"] | (typeof MORE_TABS)[number]["id"];
 

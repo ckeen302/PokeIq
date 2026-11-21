@@ -14,6 +14,8 @@ import { execFileSync } from "child_process";
 import { runIqTest } from "./e2e-iq-test.mjs";
 import { runSizes } from "./e2e-sizes.mjs";
 import { runRankings } from "./e2e-rankings.mjs";
+import { runVideoGames } from "./e2e-video-games.mjs";
+import { runMovies } from "./e2e-movies.mjs";
 import { runMobile } from "./e2e-mobile.mjs";
 import { runDesktopTripwire } from "./e2e-desktop-tripwire.mjs";
 import { runA11y } from "./e2e-a11y.mjs";
@@ -2444,6 +2446,8 @@ step("pokédex Timeline: an entry's own link opens its panel, share copies it, t
 await runSizes({ browser, BASE, OUT, errors, step });
 
 await runRankings({ browser, BASE, errors, step });
+await runVideoGames({ browser, BASE, errors, step });
+await runMovies({ browser, BASE, errors, step });
 await runMobile({ browser, BASE, OUT, errors, step });
 await runMassBattle({ browser, BASE, OUT, errors, step });
 await runRace({ browser, BASE, OUT, errors, step });
@@ -4023,7 +4027,8 @@ async function homeStep() {
   // is still settling ("Unable to capture screenshot"): try once more, then keep the first screen.
   await p.screenshot({ path: `${OUT}/home.png`, fullPage: true })
     .catch(() => p.waitForTimeout(1000).then(() => p.screenshot({ path: `${OUT}/home.png`, fullPage: true })))
-    .catch(() => p.screenshot({ path: `${OUT}/home.png` }));
+    .catch(() => p.screenshot({ path: `${OUT}/home.png` }))
+    .catch((e) => console.log(`  note: home screenshot skipped (${String(e.message).split("\n")[0]})`));
 
   // Today: one even row of the five dailies, each to its game, all to play.
   const cards = p.locator("[data-testid^=home-today-card-]");

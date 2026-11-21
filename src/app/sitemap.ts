@@ -28,6 +28,9 @@ import { EVENT_IDS as GAMES_EVENT_IDS } from "@/lib/games/events";
 import { GAMES_PATH, PLAY_PATH as GAMES_PLAY_PATH, eventPath as gamesEventPath, pokemonPath as gamesPokemonPath, recordsPath as gamesRecordsPath } from "@/lib/games/deeplink";
 import { GAMES_ATHLETES } from "@/lib/games/data";
 import { RANKINGS_PATH, allRankingPages } from "@/lib/dex/rankings";
+import { VIDEO_GAMES } from "@/lib/dex/video-games";
+import { MOVIES } from "@/lib/movies/data";
+import { MOVIES_PATH, moviePath } from "@/lib/movies/eras";
 import { CASES as THEORY_CASES } from "@/lib/theories/data";
 import { THEORIES_PATH, casePath as theoryCasePath } from "@/lib/theories/types";
 
@@ -91,6 +94,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/pokedex/natures`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${SITE_URL}/pokedex/tcg`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${SITE_URL}/pokedex/trainers`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${SITE_URL}/pokedex/games`, changeFrequency: "monthly", priority: 0.7 },
+    ...VIDEO_GAMES.map((g) => ({ url: `${SITE_URL}/pokedex/games/${g.slug}`, changeFrequency: "monthly" as const, priority: 0.5 })),
+    { url: `${SITE_URL}${MOVIES_PATH}`, changeFrequency: "monthly", priority: 0.7 },
+    ...MOVIES.map((m) => ({ url: `${SITE_URL}${moviePath(m.slug)}`, changeFrequency: "monthly" as const, priority: 0.5 })),
     { url: `${SITE_URL}${THEORIES_PATH}`, changeFrequency: "weekly", priority: 0.7 },
     ...THEORY_CASES.map((c) => ({ url: `${SITE_URL}${theoryCasePath(c.slug)}`, changeFrequency: "monthly" as const, priority: 0.5 })),
     { url: `${SITE_URL}/leaderboard`, changeFrequency: "hourly", priority: 0.5 },
