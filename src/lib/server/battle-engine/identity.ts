@@ -8,7 +8,7 @@ import { AccountsUnavailable, rankedIdentity } from "../ranked";
 /**
  * Who a battler is, for the ladder, their battle record and "My replays":
  * their account when signed in, else the signed anonymous id the server gave
- * their browser (the same one ranked Pokédle uses). Only an HMAC of it, the
+ * their browser (the same one ranked PokéGuessr uses). Only an HMAC of it, the
  * ladder key, is ever stored; it never leaves the server.
  */
 

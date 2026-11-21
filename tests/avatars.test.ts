@@ -33,7 +33,8 @@ vi.mock("@/lib/server/accounts", async (orig) => {
 });
 
 const { clearMemoryAvatars, avatarsByNames } = await import("@/lib/server/avatars");
-const { clearMemoryRanked, memoryRankedStore, rankedKey } = await import("@/lib/server/ranked");
+const { NEW_BATTLE_RATING, clearMemoryLadder, memoryLadderStore } = await import("@/lib/server/battle-engine/ladder");
+const { battleKey } = await import("@/lib/server/battle-engine/identity");
 const route = await import("@/app/api/avatar/route");
 
 let ip = 0;
@@ -46,7 +47,7 @@ const put = (as: string, body: unknown) => route.PUT(req(as, body));
 
 beforeEach(() => {
   clearMemoryAvatars();
-  clearMemoryRanked();
+  clearMemoryLadder();
   xp.clear();
   badges.clear();
 });
@@ -134,22 +135,22 @@ describe("saving an avatar", () => {
     expect((await route.PUT(req(null, { pokemonId: 25, shiny: false, frame: "none" }))).status).toBe(401);
   });
 
-  it("unlocks shiny with play, badge frames with badges, and tier frames with a ranked rating", async () => {
+  it("unlocks shiny with play, badge frames with badges, and tier frames with a battle ladder rating", async () => {
     xp.set(ash.id, 50 * 14 ** 2); // activity level 15
     expect((await put("ash", { pokemonId: 6, shiny: true, frame: "lv15" })).status).toBe(403);
     badges.set(ash.id, 8);
     expect((await put("ash", { pokemonId: 6, shiny: true, frame: "lv15" })).status).toBe(200);
     expect((await put("ash", { pokemonId: 6, shiny: true, frame: "lv30" })).status).toBe(403);
     expect((await put("ash", { pokemonId: 6, shiny: true, frame: "great" })).status).toBe(403);
-    await memoryRankedStore().apply({
+    await memoryLadderStore().apply("gen9randombattle", {
       code: "T1",
-      keys: [rankedKey(`u:${ash.id}`), rankedKey(`u:${misty.id}`)],
+      keys: [battleKey(`u:${ash.id}`), battleKey(`u:${misty.id}`)],
       names: ["Ash", "Misty"],
-      expect: [
-        { rating: 1000, games: 0 },
-        { rating: 1000, games: 0 },
+      expect: [NEW_BATTLE_RATING, NEW_BATTLE_RATING],
+      after: [
+        { ...NEW_BATTLE_RATING, rating: 1250, elo: 1040 },
+        { ...NEW_BATTLE_RATING, rating: 950, elo: 960 },
       ],
-      after: [1250, 950],
       scores: [1, 0],
     });
     expect((await put("ash", { pokemonId: 6, shiny: true, frame: "great" })).status).toBe(200);

@@ -2,9 +2,7 @@ import "server-only";
 import { CONN_DUEL_MS, CONN_DUEL_PENALTY_MS, type ConnDuelBoard, type ConnDuelView } from "@/lib/pvp-types";
 import { connLevels, guessKey, type ConnLevel, type ConnSize } from "@/lib/connections/types";
 import { generatePuzzle, playGuesses, type PlayState, type Puzzle } from "@/lib/connections/generator";
-import { isProvisional } from "@/lib/ranked";
 import { connTile, explainGroup, groupReveal } from "./connections";
-import type { ConnRankedInfo } from "./connections-ranked";
 import { baseView, fail, finish, newSeat, notPlaying, pvpBase, seatOf, seated, type PvpBase, type PvpOutcome, type PvpRules } from "./duel-core";
 
 /**
@@ -33,15 +31,14 @@ interface ConnDuelGuess {
 
 export interface ConnectionsDuel extends PvpBase {
   kind: "connections";
-  /** 5 for a 5×5 board (the creator's pick; a rematch keeps it); absent: 4×4. Never set on a ranked duel. */
+  /** 5 for a 5×5 board (the creator's pick; a rematch keeps it); absent: 4×4. */
   size?: ConnSize;
   /** When the race starts (set once both trainers are ready). */
   startsAt?: number;
   /** One per seat: every guess, oldest first (repeats are never stored). */
   boards: { guesses: ConnDuelGuess[] }[];
-  /** How the trainers met: the casual or the ranked queue (absent: a friend's invite, or a rematch, which is always casual). */
-  queue?: "casual" | "ranked";
-  ranked?: ConnRankedInfo;
+  /** How the trainers met: "casual", the matchmaking queue (absent: a friend's invite, or a rematch). */
+  queue?: "casual";
 }
 
 // ---------------------------------------------------------------------------
@@ -158,12 +155,11 @@ export function createConnectionsDuel(
   code: string,
   now: number,
   seed?: string,
-  extra: Pick<ConnectionsDuel, "queue" | "ranked" | "size"> = {}
+  extra: Pick<ConnectionsDuel, "queue" | "size"> = {}
 ): { duel: ConnectionsDuel; playerId: string } {
   const seat = newSeat(name, now);
-  // Ranked duels are always 4×4.
   const { size, ...rest } = extra;
-  return { duel: { ...blankDuel(pvpBase("connections", code, [seat], now, seed), rest.ranked ? undefined : size), ...rest }, playerId: seat.id };
+  return { duel: { ...blankDuel(pvpBase("connections", code, [seat], now, seed), size), ...rest }, playerId: seat.id };
 }
 
 // ---------------------------------------------------------------------------
@@ -227,8 +223,6 @@ export function connectionsView(duel: ConnectionsDuel, playerId: string | null, 
     ...baseView(duel, playerId, now, rev),
     ...(duel.size === 5 && { size: duel.size }),
     ...(duel.queue && { queue: duel.queue }),
-    // Ratings, never the keys behind them.
-    ...(duel.ranked && { ranked: { season: duel.ranked.season, ratings: duel.ranked.ratings, provisional: duel.ranked.games.map(isProvisional), result: duel.ranked.result } }),
     ...(duel.status === "playing" && start !== undefined && { round: { startsAt: start, endsAt: start + CONN_DUEL_MS } }),
     ...(puzzle && { tiles: puzzle.tiles.map(connTile) }),
     boards: races.map((r) => boardView(r, start!)),

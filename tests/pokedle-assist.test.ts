@@ -14,7 +14,6 @@ import { clearMemoryResults, dailyPuzzle, memoryResultStore, recordDleResult, su
 import { createPokedleDuel, pokedleRules, pokedleView, setPokedleAssist, type PokedleDuel } from "@/lib/server/pokedle-duel";
 import { joinDuel, readyDuel, rematchOf } from "@/lib/server/duels";
 import { matchSettingsSchema, newTicket, queueKey, searchMatch, type MatchSettings, type SearchResult } from "@/lib/server/matchmaking";
-import { RANKED_QUEUE_KEY } from "@/lib/server/ranked-queue";
 import { pvpStore, queueStore } from "@/lib/server/duel-store";
 import { readPvpToken, type PvpFailure, type PvpOutcome } from "@/lib/server/duel-core";
 import { getPokemon, POKEDEX } from "@/lib/pokemon/pokedex";
@@ -213,21 +212,12 @@ describe("duels and matchmaking share one level", () => {
     expect((rematchOf({ ...d, status: "finished" }, "asst0003", T0) as PokedleDuel).assist).toBe("field");
   });
 
-  it("ranked is always the Notebook", () => {
-    const ranked = { keys: ["a", "b"] as [string, string], ratings: [1000, 1000] as [number, number], games: [0, 0] as [number, number] };
-    const { duel, playerId } = createPokedleDuel("Red", "asst0004", T0, undefined, { queue: "ranked", ranked, assist: "full" });
-    expect(duel.assist).toBeUndefined();
-    expect(pokedleView(duel, playerId, T0, 0).assist).toBe("notebook");
-    expect(setPokedleAssist(duel, playerId, "off", T0).ok).toBe(false);
-  });
-
-  it("each level has its own casual queue; ranked has one", () => {
+  it("each level has its own casual queue", () => {
     const keys = DLE_ASSISTS.map((assist) => queueKey({ game: "pokedle", assist }));
     expect(new Set(keys).size).toBe(DLE_ASSISTS.length);
     // The Notebook keeps the queue there was before levels.
     expect(queueKey({ game: "pokedle" })).toBe("pokedle:all");
     expect(queueKey({ game: "pokedle", assist: "notebook" })).toBe("pokedle:all");
-    for (const assist of DLE_ASSISTS) expect(queueKey({ game: "pokedle", ranked: true, assist })).toBe(RANKED_QUEUE_KEY);
     for (const k of keys) expect(k).toMatch(/^[a-z0-9:-]{3,64}$/);
     expect(matchSettingsSchema.safeParse({ game: "pokedle", assist: "max" }).success).toBe(false);
   });

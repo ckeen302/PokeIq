@@ -628,22 +628,6 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
             Poké<span className="text-primary">Guessr</span>
           </h1>
           <p className="mx-auto max-w-xl text-muted-foreground">GeoGuessr, but for the Pokémon world.</p>
-          <nav aria-label="PokéGuessr sections" className="flex flex-wrap justify-center gap-1.5 pt-1 max-md:hidden">
-            {[
-              ["play", "Play"],
-              ["multiplayer", "Multiplayer"],
-              ["maps", "Explore"],
-              ["you", "You"],
-            ].map(([id, name]) => (
-              <a
-                key={id}
-                href={`#${id}`}
-                className="rounded-md border bg-card px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:border-screen/50 hover:text-foreground"
-              >
-                {name}
-              </a>
-            ))}
-          </nav>
         </div>
 
         {error && (

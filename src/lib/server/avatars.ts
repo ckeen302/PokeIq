@@ -2,7 +2,6 @@ import "server-only";
 import { getServiceSupabase } from "@/lib/supabase";
 import { PICTURE_ID_RE, bestTier, checkAvatar, defaultAvatar, levelFromXp, parseAvatar, type Avatar, type AvatarMap, type AvatarUnlocks, type PublicAvatar } from "@/lib/avatar";
 import { progressDigests, usersByIds, usersByNames } from "./accounts";
-import { rankedKey, rankedStore } from "./ranked";
 import { battleKey } from "./battle-engine/identity";
 import { ladderStore } from "./battle-engine/ladder";
 import { geoRankedKey, geoRankedStandingOf } from "./geo-ranked";
@@ -250,15 +249,14 @@ export function forget(userId: string, username: string) {
 
 const quietly = <T>(p: Promise<T> | undefined, fallback: T): Promise<T> => (p ?? Promise.resolve(fallback)).catch(() => fallback);
 
-/** What an account has unlocked: its level (synced XP, for shiny), its badges and best rating in ranked Pokédle or any ladder. */
+/** What an account has unlocked: its level (synced XP, for shiny), its badges and best rating on any battle ladder. */
 export async function avatarUnlocks(userId: string): Promise<AvatarUnlocks> {
-  const [digests, pokedle, ladder, guessr] = await Promise.all([
+  const [digests, ladder, guessr] = await Promise.all([
     quietly(progressDigests([userId]), new Map()),
-    quietly(rankedStore()?.standing(rankedKey(`u:${userId}`)), null),
     quietly(ladderStore()?.standings(battleKey(`u:${userId}`)), []),
     quietly(geoRankedStandingOf(geoRankedKey(`u:${userId}`), utcDay(Date.now())), null),
   ]);
-  const standings = [...(pokedle && pokedle.games > 0 ? [pokedle] : []), ...ladder.filter((l) => l.standing.games > 0).map((l) => l.standing)];
+  const standings = ladder.filter((l) => l.standing.games > 0).map((l) => l.standing);
   const ratings = standings.map((s) => s.rating);
   const digest = digests.get(userId);
   // Ranked wins in every mode (PokéGuessr's ladder counts games, not a streak).

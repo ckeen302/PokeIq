@@ -3,8 +3,6 @@ import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { CalendarRange, Compass, Medal, Trophy } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-import { connRankedStore } from "@/lib/server/connections-ranked";
-import { connSeasonLabel, connSeasonOf } from "@/lib/connections/ranked";
 import { fetchBoardOrUnavailable } from "@/lib/server/leaderboard";
 import { fetchGeoBoardOrUnavailable } from "@/lib/server/geo-leaderboard";
 import { currentGeoWeekly, geoRegions, isGeoSpec } from "@/lib/server/geo";
@@ -17,9 +15,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { LocalDateRedirect } from "./local-date-redirect";
-import { RankedUnavailable, rankedStore } from "@/lib/server/ranked";
-import type { RankedLeaderRow } from "@/lib/ranked";
-import { TierBadge, YourLadderSpot } from "@/components/pokedle/Ranked";
 import { GeoDivisionBadge, YourGeoLadderSpot } from "@/components/geo/GeoRanked";
 import { geoRankedTop } from "@/lib/server/geo-ranked";
 import { utcDay } from "@/lib/geo-ranked";
@@ -35,7 +30,7 @@ import { clock } from "@/lib/share/text";
 
 const LEADERBOARD_PAGE = {
   title: "Leaderboards",
-  description: "The top PokéIQ trainers: today's Daily Challenge, PokéIQ ratings, PokéGuessr, Pokédle, PokéConnections and the battle ladder, updated live.",
+  description: "The top PokéIQ trainers: today's Daily Challenge, PokéIQ ratings, PokéGuessr, PokéConnections and the battle ladder, updated live.",
   path: "/leaderboard",
 };
 export const leaderboardMetadata: Metadata = pageMetadata(LEADERBOARD_PAGE);
@@ -55,8 +50,6 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
     params.board === "iq" ||
     params.board === "geo" ||
     params.board === "geo-ranked" ||
-    params.board === "pokedle" ||
-    params.board === "connections-ranked" ||
     params.board === "connections" ||
     params.board === "battle"
       ? params.board
@@ -70,9 +63,7 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
     { id: "iq", label: "PokéIQ Test" },
     { id: "geo", label: "PokéGuessr" },
     { id: "geo-ranked", label: "PokéGuessr Ranked" },
-    { id: "pokedle", label: "Pokédle Ranked" },
     { id: "connections", label: "PokéConnections" },
-    { id: "connections-ranked", label: "Connections Ranked" },
     { id: "battle", label: "Battle Ladder" },
   ];
   const tabRow = (
@@ -171,78 +162,6 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
                           </td>
                           <td className="p-3">
                             <GeoDivisionBadge elo={row.elo} division={row.division} size="sm" />
-                          </td>
-                          <td className="hidden p-3 text-right tabular-nums sm:table-cell">
-                            {row.wins}–{row.losses}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </CardContent>
-              </Card>
-            )}
-          </>
-        )}
-      </div>
-    );
-  }
-
-  if (board === "pokedle" || board === "connections-ranked") {
-    const isConn = board === "connections-ranked";
-    const season = connSeasonOf(Date.now());
-    const ladder = await rankedLadder(isConn ? season : null);
-    const avatars = await avatarsByNames((ladder ?? []).map((r) => r.name));
-    return (
-      <div className="mx-auto max-w-3xl space-y-6">
-        <div className="space-y-4 text-center">
-          <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Leaderboard</h1>
-          {tabRow}
-          <p className="text-sm text-muted-foreground">
-            {isConn ? `Ranked PokéConnections races, ${connSeasonLabel(season)} season: the top 100 by rating. The ladder starts over every month.` : "Ranked Pokédle duels: the top 100 by rating."}
-          </p>
-        </div>
-        {ladder === null ? (
-          <Card>
-            <CardContent className="py-10 text-center text-muted-foreground">Ranked play opens soon.</CardContent>
-          </Card>
-        ) : (
-          <>
-            {!isConn && <YourLadderSpot />}
-            {ladder.length === 0 ? (
-              <Card>
-                <CardContent className="py-10 text-center text-muted-foreground">
-                  Nobody is ranked yet.{" "}
-                  <Link href={isConn ? "/pokeconnections#ranked" : "/pokedle#ranked"} className="text-primary underline-offset-2 hover:underline">
-                    Queue a ranked {isConn ? "race" : "duel"}
-                  </Link>{" "}
-                  and be the first!
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <CardContent className="p-0">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b text-left text-xs uppercase text-muted-foreground">
-                        <th className="p-3">#</th>
-                        <th className="p-3">Trainer</th>
-                        <th className="p-3">Rank</th>
-                        <th className="hidden p-3 text-right sm:table-cell">W–L</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {ladder.map((row) => (
-                        <tr key={row.position} className="border-b last:border-0">
-                          <td className="p-3 font-mono tabular-nums text-muted-foreground">{row.position}</td>
-                          <td className="max-w-[10rem] truncate p-3 font-semibold">
-                            <span className="flex items-center gap-2">
-                              <NameAvatar name={row.name} avatars={avatars} />
-                              <span className="truncate">{row.name}</span>
-                            </span>
-                          </td>
-                          <td className="p-3">
-                            <TierBadge rating={row.rating} games={row.games} size="sm" />
                           </td>
                           <td className="hidden p-3 text-right tabular-nums sm:table-cell">
                             {row.wins}–{row.losses}
@@ -600,18 +519,6 @@ async function connBoardTop(date: string): Promise<ConnBoardRow[] | null> {
     return (await connBoardStore()?.top(date, 100)) ?? null;
   } catch (err) {
     console.error("[connections] leaderboard failed:", err);
-    return null;
-  }
-}
-
-/** The ranked ladder's top 100, or null while ranked play is off. */
-async function rankedLadder(connSeason: string | null = null): Promise<RankedLeaderRow[] | null> {
-  const store = connSeason ? connRankedStore(connSeason) : rankedStore();
-  if (!store) return null;
-  try {
-    return await store.top(100);
-  } catch (err) {
-    if (!(err instanceof RankedUnavailable)) console.error("[ranked] ladder failed:", err);
     return null;
   }
 }

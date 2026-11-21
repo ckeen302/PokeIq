@@ -694,7 +694,7 @@ export function Connections({ customId, initial }: { customId?: string; initial?
               {SIZE_SQUARES[size]} Pokémon, {SIZE_WORDS[size]} hidden links. Every Pokémon fits exactly one.
             </p>
           </div>
-          <div className="flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-3">
+          <div className="flex flex-col items-center justify-center gap-2 sm:gap-4">
             <div className="flex justify-center rounded-md border border-foreground/15 bg-card p-0.5" role="radiogroup" aria-label="PokéConnections mode">
               {(
                 [

@@ -24,7 +24,7 @@ import { GEO_ERA_NAMES } from "@/lib/geo-families";
 import { cn } from "@/lib/utils";
 import { AddFriendAfterGame } from "@/components/community/AddFriend";
 import { useMatchmaking } from "@/components/duel/use-matchmaking";
-import { rankedExtra } from "@/components/pokedle/Ranked";
+import { rankedExtra } from "@/lib/ranked-client";
 import { GEO_RANKED_MATCH } from "@/lib/geo-ranked";
 import { GeoRankedOutcome } from "./GeoRanked";
 import { GeoVersus } from "./GeoVersus";
