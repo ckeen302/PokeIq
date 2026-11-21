@@ -1,3 +1,4 @@
+import { NOT_LETTERS, foldLetters } from "@/lib/names/fold";
 /**
  * The picker's search: forgiving about accents, punctuation, spacing and a
  * typo or two, so "sirfetchd", "mr mime", "flabebe", "nidoran f", "charzard"
@@ -19,15 +20,10 @@ export interface Indexed<T extends SearchEntry> {
   compact: string;
 }
 
-/** Lower-case, no accents or punctuation, ♀/♂ as f/m, single spaces. */
+/** Lower-case, no accents or punctuation, ♀/♂ as f/m, single spaces; any script (katakana as hiragana). */
 export function normalizeName(s: string): string {
-  return s
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/♀/g, " f")
-    .replace(/♂/g, " m")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
+  return foldLetters(s.replace(/♀/g, " f").replace(/♂/g, " m"))
+    .replace(NOT_LETTERS, " ")
     .trim();
 }
 
