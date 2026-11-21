@@ -80,6 +80,13 @@ export function DexTabs({ active }: { active: DexTabId }) {
   const onButtonKey = (e: KeyboardEvent<HTMLButtonElement>) => {
     if (e.key === "ArrowDown" || e.key === "ArrowUp") {
       e.preventDefault();
+      // Already open (a quick second press before the focus moved): step from the current section.
+      if (open) {
+        const list = items();
+        const at = list.findIndex((a) => a.getAttribute("aria-current") === "page");
+        list[(at + (e.key === "ArrowDown" ? 1 : -1) + list.length) % list.length]?.focus();
+        return;
+      }
       openAt(e.key === "ArrowDown" ? "current" : "last");
     }
   };

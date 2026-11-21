@@ -2277,7 +2277,10 @@ async function dexMenuStep() {
   await button.focus();
   await dp.keyboard.press("ArrowDown");
   await menu.waitFor({ state: "visible", timeout: 3_000 }).catch(() => {});
+  // The focus lands on the current section a frame after the menu opens: wait for it before the next key.
+  await dp.waitForFunction(() => document.activeElement?.dataset.testid === "dex-tab-pokemon", null, { timeout: 3_000 }).catch(() => {});
   await dp.keyboard.press("ArrowDown");
+  await dp.waitForFunction(() => document.activeElement?.dataset.testid === "dex-tab-moves", null, { timeout: 3_000 }).catch(() => {});
   if ((await dp.evaluate(() => document.activeElement?.dataset.testid)) !== "dex-tab-moves") errors.push("pokédex: the arrow keys don't move through the section menu");
   await dp.keyboard.press("Escape");
   // Picking Moves goes there, and the button says so.
