@@ -1,0 +1,53 @@
+{
+  "family": {
+    "types": "Typen",
+    "regions": "Regionen",
+    "evolution": "Entwicklung",
+    "moves": "Attacken",
+    "abilities": "Fähigkeiten",
+    "other": "Sonstiges"
+  },
+  "board": {
+    "grid": "Pikadoku-Raster",
+    "info": "Was für {label} zählt",
+    "empty": "Leer",
+    "cell": "Zeile {row}, Spalte {col}: {label}",
+    "cross": "{row} × {col}"
+  },
+  "picker": {
+    "loading": "Pokémon werden geladen …",
+    "placeholder": "Pokémon-Namen eingeben",
+    "search": "Nach einem Pokémon suchen",
+    "matching": "Passende Pokémon",
+    "used": "Benutzt",
+    "form": "Form",
+    "none": "Kein Pokémon passt dazu."
+  },
+  "hint": {
+    "type": "Zählt ein Pokémon, das {type} als einen seiner Typen hat. Formen sind eigene Picks mit eigenen Typen, Werten und Fähigkeiten. Mega-Glurak X ist Feuer und Drache, Alola-Raichu ist Elektro und Psycho.",
+    "types": "Zählt die eigenen Typen des Pokémon, eine Form kann also von ihrer Art abweichen: Glurak hat zwei Typen, Mega-Glurak X ebenfalls. Formen sind eigene Picks mit eigenen Typen, Werten und Fähigkeiten.",
+    "hisui": "Debüt in Pokémon-Legenden: Arceus: die Hisui-Formen (Hisui-Fukano) und die sieben neuen Arten (Damythir, Axantor, Ursaluna, Salmagnis, Snieboss, Myriador, Cupidos).",
+    "region": "Die Generation, in der die Art debütiert hat (Gen 8 ist Galar, Neulinge aus Legenden: Arceus wie Axantor inklusive). Eine Regionalform zählt für die Region ihres Debüts (Alola-Raichu ist Alola, Raichu ist Kanto). Mega-Entwicklungen und Gigadynamax-Formen zählen für die Region ihrer Art.",
+    "form": "Die Art hat eine Regionalform aus dieser Region, also zählen die Art und jede ihrer Formen (Raichu und Alola-Raichu passen beide zu „Alola-Form“).",
+    "stage": "Ihr Platz in der Entwicklungsreihe. Baby-Pokémon sind optional: Pikachu zählt als Basis und als zweite Stufe (nach Pichu), Raichu als zweite oder dritte Stufe. Eine Form folgt hier ihrer Art.",
+    "item": "Ist an einer Entwicklung mit einem benutzten oder getragenen Item beteiligt, egal auf welcher Seite: Steine, Äpfel, getragene Items (Onix und Stahlos mit Metallmantel). Eine Attacke 20-mal einzusetzen ist kein Item. Eine Form folgt hier ihrer Art.",
+    "stone": "Ist an einer Entwicklung mit einem der zehn Entwicklungssteine beteiligt, egal auf welcher Seite: Pikachu und Raichu, Evoli und Aquana. Der getragene Ovale Stein zählt nicht. Eine Form folgt hier ihrer Art.",
+    "kind": "Ist an einer Entwicklung dieser Art beteiligt, egal auf welcher Seite: das Pokémon, das sich entwickelt, und das, zu dem es wird. Eine Form folgt hier ihrer Art.",
+    "level": "Ist an einer Entwicklung dieser Art beteiligt, egal auf welcher Seite: das Pokémon, das sich entwickelt, und das, zu dem es wird. Per Level heißt: ein bestimmtes Level erreichen (Glumanda auf Level 16). Eine Form folgt hier ihrer Art.",
+    "branch": "Die Familie verzweigt sich irgendwo: Evoli und alle Evolis, die Myrapla-Reihe (Giflor oder Blubella), Sichlor (Scherox oder Axantor). Eine Form folgt hier ihrer Art.",
+    "three": "Die Familie erreicht eine dritte Stufe (die von Glumanda oder, mit Baby, die von Pichu). Evolis Familie hat neun Arten, aber nur zwei Stufen. Eine Form folgt hier ihrer Art.",
+    "none": "Entwickelt sich weder weiter noch aus einem anderen Pokémon (Tauros, Ditto). Eine Form folgt hier ihrer Art.",
+    "evo": "Nach der Entwicklungsreihe bewertet. Eine Form folgt hier ihrer Art. Alola-Raichu ist voll entwickelt, wie Raichu; Mega-Glurak X ist ein voll entwickeltes Mitglied der Glumanda-Reihe.",
+    "move": "Die Art muss die Attacke im neuesten Hauptspiel, in dem sie vorkommt, erlernen können (meist Karmesin und Purpur), per Level, TM, Zucht oder Attacken-Lehrer. Formen nutzen die Attacken ihrer Art.",
+    "hidden": "Hat eine versteckte Fähigkeit. Fähigkeiten gehören zur gewählten Form: Mega-Glurak X hat nur Krallenwucht und damit keine versteckte Fähigkeit.",
+    "ability": "Hat diese Fähigkeit, normal oder versteckt. Fähigkeiten gehören zur gewählten Form: Mega-Glurak X hat Krallenwucht, nicht Großbrand.",
+    "stat": "Nutzt die Basiswerte der gewählten Form: Die Werte einer Mega-Entwicklung sind ihre eigenen, höher als die ihrer Art.",
+    "mega": "Die Art hat eine Mega-Entwicklung, also zählen die Art und jede ihrer Formen (Glurak und Mega-Glurak X). Inklusive der neuen Mega-Entwicklungen aus Pokémon-Legenden: Z-A, etwa von Dragoran und Quajutsu.",
+    "gmax": "Die Art hat eine Gigadynamax-Form, also zählen die Art und jede ihrer Formen (Pikachu und Gigadynamax-Pikachu).",
+    "paradox": "Von Hand gepflegte Liste der offiziellen Paradox-Pokémon (Riesenzahn bis Eisenhaupt). Formen folgen ihrer Art.",
+    "ultrabeast": "Von Hand gepflegte Liste der elf Ultrabestien (Anego bis Kopplosio). Necrozma gehört nicht dazu. Formen folgen ihrer Art.",
+    "partner": "Jedes Pokémon aus der Entwicklungsreihe eines Starters der Hauptreihe, von Kanto bis Paldea. Eine Form folgt hier ihrer Art.",
+    "ou": "Kommt in den Nutzungsdaten für Gen 9 OU (Smogon) vor. Eine Regionalform zählt nur, wenn sie selbst gespielt wird: Galar-Laschoking ist OU, Laschoking nicht. Andere Formen folgen ihrer Art.",
+    "status": "Ob legendär, mysteriös, Fossil oder Baby, bestimmt die Art. Eine Form folgt hier ihrer Art."
+  }
+}

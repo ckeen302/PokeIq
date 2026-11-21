@@ -10,11 +10,15 @@ import type { PdkPlay, PdkRecord } from "@/lib/pikadoku/play";
 import { archiveDates, archiveKey, archiveMonths, monthGrid } from "@/lib/pikadoku/archive";
 import { CONN_LAUNCH_DATE, connNumber } from "@/lib/connections/types";
 import { NextPuzzleCountdown } from "./results";
+import { INTL_LOCALE } from "@/i18n/catalog";
+import { useT } from "@/i18n/client";
+import pikadoku from "@/messages/pikadoku";
 
 /** Pikadoku's pop-up sheets: stats and the archive. How to play is in howto-sheet.tsx. */
 
 /** Streak, totals, how full your daily grids get, your rarest daily and when the next one lands. */
 export function PdkStatsSheet({ streak, best, play, results, onClose }: { streak: number; best: number; play: PdkPlay; results: Readonly<Record<string, PdkRecord>>; onClose: () => void }) {
+  const t = useT(pikadoku);
   const cell = (label: string, value: number | string) => (
     <div className="rounded-md border border-foreground/10 p-3 text-center">
       <p className="font-display text-2xl font-bold tabular-nums">{value}</p>
@@ -28,20 +32,20 @@ export function PdkStatsSheet({ streak, best, play, results, onClose }: { streak
   const scores = done.map((r) => r.score).filter((x): x is number => x !== null && x !== undefined);
   const rarest = scores.length ? Math.min(...scores) : null;
   return (
-    <Sheet title="Statistics" onClose={onClose}>
+    <Sheet title={t("stats.title")} onClose={onClose}>
       <div className="space-y-4" data-testid="pdk-stats">
         <div className="grid grid-cols-3 gap-2">
-          {cell("Played", play.games)}
-          {cell("Perfect %", play.games ? Math.round((play.wins / play.games) * 100) : 0)}
-          {cell("Rarest daily", rarest ?? "–")}
-          {cell("Current streak", streak)}
-          {cell("Best streak", best)}
-          {cell("Duels won", `${play.duelWins}–${play.duelLosses}`)}
+          {cell(t("stats.played"), play.games)}
+          {cell(t("stats.perfect"), play.games ? Math.round((play.wins / play.games) * 100) : 0)}
+          {cell(t("stats.rarest"), rarest ?? "–")}
+          {cell(t("stats.streak"), streak)}
+          {cell(t("stats.best"), best)}
+          {cell(t("stats.duels"), `${play.duelWins}–${play.duelLosses}`)}
         </div>
         <div>
-          <p className="hud-label mb-1.5">Cells filled in your dailies</p>
+          <p className="hud-label mb-1.5">{t("stats.filled")}</p>
           {done.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Finish a daily to see how full your grids get.</p>
+            <p className="text-sm text-muted-foreground">{t("stats.none")}</p>
           ) : (
             <ol className="space-y-1" data-testid="pdk-distribution">
               {dist
@@ -65,13 +69,10 @@ export function PdkStatsSheet({ streak, best, play, results, onClose }: { streak
   );
 }
 
-const ARCHIVE_DIFFS: { id: PdkDifficulty; label: string }[] = [
-  { id: "easy", label: "Easy" },
-  { id: "normal", label: "Normal" },
-  { id: "expert", label: "Expert" },
-];
-const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const monthName = (month: string) => new Date(`${month}-01T12:00:00Z`).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
+const ARCHIVE_DIFFS: PdkDifficulty[] = ["easy", "normal", "expert"];
+const WEEKDAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
+/** "October 2026", as the page's language writes it. */
+const monthName = (month: string, intl: string) => new Date(`${month}-01T12:00:00Z`).toLocaleDateString(intl, { month: "long", year: "numeric", timeZone: "UTC" });
 const status = (r: PdkRecord | undefined) => (!r ? "" : r.over ? `${r.solved}/9` : r.guesses.length ? "…" : "");
 
 /**
@@ -95,6 +96,8 @@ export function PdkArchiveSheet({
   onToday: (difficulty: PdkDifficulty) => void;
   onClose: () => void;
 }) {
+  const t = useT(pikadoku);
+  const intl = INTL_LOCALE[t.locale];
   const months = archiveMonths(today);
   const [month, setMonth] = useState(months[months.length - 1]);
   const past = archiveDates(today);
@@ -102,25 +105,30 @@ export function PdkArchiveSheet({
   const recordFor = (date: string, d: PdkDifficulty) => results[d === "normal" ? date : `${date}:${d}`] ?? archive[archiveKey(date, d)];
   const mi = months.indexOf(month);
   const playable = (d: string) => d >= CONN_LAUNCH_DATE && d <= today;
+  /** "2026-10-29 (today): 7/9 cells". */
+  const dayLabel = (d: string, s: string) => {
+    const day = d === today ? t("archiveSheet.today", { date: d }) : d;
+    return !s ? day : s === "…" ? t("archiveSheet.inProgress", { day }) : t("archiveSheet.cells", { day, cells: s });
+  };
   return (
-    <Sheet title="Archive" onClose={onClose}>
-      <p className="mb-3 text-sm text-muted-foreground">Play any past daily at any difficulty. Archive games are just for fun: they never count toward the daily board or your streak.</p>
+    <Sheet title={t("archiveSheet.title")} onClose={onClose}>
+      <p className="mb-3 text-sm text-muted-foreground">{t("archiveSheet.intro")}</p>
       <div className="space-y-3" data-testid="pdk-archive-calendar">
         <div className="flex items-center justify-between">
-          <button type="button" className={iconButton} onClick={() => setMonth(months[mi - 1])} disabled={mi <= 0} aria-label="Previous month">
+          <button type="button" className={iconButton} onClick={() => setMonth(months[mi - 1])} disabled={mi <= 0} aria-label={t("archiveSheet.prev")}>
             <ChevronLeft className="h-5 w-5" />
           </button>
           <p className="font-display text-lg font-bold uppercase" aria-live="polite">
-            {monthName(month)}
+            {monthName(month, intl)}
           </p>
-          <button type="button" className={iconButton} onClick={() => setMonth(months[mi + 1])} disabled={mi >= months.length - 1} aria-label="Next month">
+          <button type="button" className={iconButton} onClick={() => setMonth(months[mi + 1])} disabled={mi >= months.length - 1} aria-label={t("archiveSheet.next")}>
             <ChevronRight className="h-5 w-5" />
           </button>
         </div>
-        <div className="grid grid-cols-7 gap-1 text-center" role="grid" aria-label={`Dailies in ${monthName(month)}`}>
+        <div className="grid grid-cols-7 gap-1 text-center" role="grid" aria-label={t("archiveSheet.month", { month: monthName(month, intl) })}>
           {WEEKDAYS.map((w) => (
             <span key={w} className="hud-label py-1" aria-hidden>
-              {w}
+              {t(`archiveSheet.weekdays.${w}`)}
             </span>
           ))}
           {monthGrid(month).map((d, i) => {
@@ -135,7 +143,7 @@ export function PdkArchiveSheet({
                 role="gridcell"
                 disabled={!open}
                 aria-selected={picked === d}
-                aria-label={`${d}${d === today ? " (today)" : ""}${s ? `: ${s === "…" ? "in progress" : `${s} cells`}` : ""}`}
+                aria-label={dayLabel(d, s)}
                 onClick={() => setPicked(d)}
                 data-testid={`pdk-cal-${d}`}
                 className={cn(
@@ -153,10 +161,10 @@ export function PdkArchiveSheet({
         </div>
         <div className="rounded-md border border-foreground/15 p-3" data-testid="pdk-archive-day">
           <p className="mb-2 text-sm font-semibold">
-            #{connNumber(picked)} <span className="font-normal text-muted-foreground">· {picked}{picked === today ? " · today's daily" : ""}</span>
+            #{connNumber(picked)} <span className="font-normal text-muted-foreground">· {picked}{picked === today ? t("archiveSheet.todaysDaily") : ""}</span>
           </p>
           <div className="grid grid-cols-3 gap-1.5">
-            {ARCHIVE_DIFFS.map(({ id, label }) => {
+            {ARCHIVE_DIFFS.map((id) => {
               const r = recordFor(picked, id);
               return (
                 <button
@@ -166,8 +174,8 @@ export function PdkArchiveSheet({
                   data-testid={`pdk-archive-${picked}-${id}`}
                   className="rounded border border-foreground/15 px-2 py-1.5 text-xs font-semibold hover:border-primary hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  {label}
-                  <span className="block tabular-nums font-normal text-muted-foreground">{r?.over ? `${r.solved}/9${typeof r.score === "number" ? ` · ${r.score}` : ""}` : r?.guesses.length ? "In progress" : "Play"}</span>
+                  {t(`diff.${id}`)}
+                  <span className="block tabular-nums font-normal text-muted-foreground">{r?.over ? `${r.solved}/9${typeof r.score === "number" ? ` · ${r.score}` : ""}` : r?.guesses.length ? t("archiveSheet.playing") : t("archiveSheet.play")}</span>
                 </button>
               );
             })}

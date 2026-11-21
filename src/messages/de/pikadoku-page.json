@@ -1,0 +1,120 @@
+{
+  "meta": {
+    "title": "Pikadoku: tägliches Pokémon-Sudoku",
+    "description": "Pikadoku ist Pokémon-Sudoku, ein kostenloses Pokémon-Rätselgitter: Füll ein 3×3-Raster mit Pokémon, die zu jeder Zeile und Spalte passen. Tägliche Rätsel in Leicht, Normal und Experte, ein Seltenheitswert, unbegrenzte Raster und Tic-Tac-Toe-Duelle."
+  },
+  "info": {
+    "description": "Pikadoku ist ein kostenloses Pokémon-Sudoku und Pokémon-Rätselgitter: Füll ein 3×3-Raster mit einem anderen Pokémon in jedem Feld, das zu seiner Zeile und seiner Spalte passt.",
+    "intro": "Pikadoku ist Pokémon-Sudoku: ein 3×3-Pokémon-Raster mit einem neuen Rätsel jeden Tag, in Leicht, Normal und Experte.",
+    "steps": {
+      "read": "Lies die drei Kategorien der Zeilen und die drei der Spalten: Typen, Regionen, Entwicklung, Attacken, Fähigkeiten, Werte und mehr.",
+      "tap": "Tippe auf ein Feld und such ein Pokémon, das zu seiner Zeile und Spalte passt. Stimmt es, wird es eingetragen.",
+      "pp": "In einem Tagesrätsel hast du 9 Versuche (AP), und auch ein Fehlversuch kostet einen. Jedes Pokémon darf nur einmal vorkommen.",
+      "score": "Dein Seltenheitswert ist die Summe der Anteile der Spieler, die dieselben Antworten gewählt haben: Je niedriger, desto seltener und besser.",
+      "end": "Am Ende siehst du alle gültigen Antworten für jedes Feld und warum deine Fehlversuche nicht gepasst haben."
+    },
+    "faq": {
+      "scoreQ": "Wie wird der Wert berechnet?",
+      "scoreA": "Er ist die Summe der Prozentsätze der Spieler, die deine Antworten im jeweiligen Feld gewählt haben, vom Server aus den gespeicherten Antworten berechnet. Je niedriger, desto seltener deine Picks und desto besser dein Wert.",
+      "formsQ": "Wie zählen Formen und Regionen?",
+      "formsA": "Regionalformen, Mega-Entwicklungen, Gigadynamax-Formen und einige besondere Formen (etwa Partner-Pikachu) sind eigene Picks mit eigenen Typen, Werten und Fähigkeiten. Die Region einer Art ist die ihres Debüts; eine Regionalform zählt für die Region ihres Debüts (Alola-Raichu ist Alola), Mega-Entwicklungen und Gigadynamax-Formen für die Region ihrer Art. Eine Form und ihre Art sind dasselbe Pokémon, also darf nur eines von beiden im Raster vorkommen.",
+      "solvableQ": "Ist jedes Raster lösbar?",
+      "solvableA": "Ja. Jedes Tagesrätsel wird geprüft: Jedes Feld hat genug gültige Antworten, und neun verschiedene Pokémon können das Raster füllen.",
+      "levelsQ": "Was bedeuten Leicht, Normal und Experte?",
+      "levelsA": "Leicht nutzt breite Kategorien mit vielen Antworten, Normal ist das Hauptraster für die Rangliste, und Experte nutzt schwerere Kategorien wie Attacken, Fähigkeiten und Wertgrenzen."
+    }
+  },
+  "duel": {
+    "about": "Ein Pikadoku-Tic-Tac-Toe-Duell: Holt euch abwechselnd Felder mit einem passenden Pokémon – drei in einer Reihe gewinnen.",
+    "invite": "Ein Pikadoku-Duell",
+    "vs": "{host} gegen {guest}: Pikadoku-Tic-Tac-Toe",
+    "challenges": "{host} fordert dich zu Pikadoku-Tic-Tac-Toe heraus",
+    "trainer": "Ein Trainer"
+  },
+  "cat": {
+    "types_dual": "Zwei Typen",
+    "types_single": "Ein Typ",
+    "region_1": "Kanto",
+    "region_2": "Johto",
+    "region_3": "Hoenn",
+    "region_4": "Sinnoh",
+    "region_5": "Einall",
+    "region_6": "Kalos",
+    "region_7": "Alola",
+    "region_8": "Galar",
+    "region_9": "Paldea",
+    "region_hisui": "Hisui",
+    "form_alola": "Alola-Form",
+    "form_galar": "Galar-Form",
+    "form_hisui": "Hisui-Form",
+    "form_paldea": "Paldea-Form",
+    "evo_basic": "Basis",
+    "evo_stage2": "Zweite Stufe",
+    "evo_stage3": "Dritte Stufe",
+    "evo_notfull": "Nicht voll entwickelt",
+    "evo_full": "Voll entwickelt",
+    "evo_none": "Ohne Entwicklung",
+    "evo_item": "Entwicklung per Item",
+    "evo_stone": "Entwicklung per Stein",
+    "evo_trade": "Entwicklung per Tausch",
+    "evo_friend": "Entwicklung per Freundschaft",
+    "evo_level": "Entwicklung per Level",
+    "evo_branch": "Verzweigte Entwicklung",
+    "evo_three": "Dreistufige Reihe",
+    "other_legendary": "Legendär",
+    "other_mythical": "Mysteriös",
+    "other_lm": "Legendär oder mysteriös",
+    "other_fossil": "Fossil",
+    "other_baby": "Baby",
+    "other_mega": "Mega",
+    "other_gmax": "Gigadynamax",
+    "other_paradox": "Paradox",
+    "other_ultrabeast": "Ultrabestie",
+    "other_partner": "Starter",
+    "other_ou": "Gen 9 OU",
+    "ability_hidden": "Versteckte Fähigkeit",
+    "stat_hp_100": "Basis-KP 100+",
+    "stat_atk_120": "Basis-Angriff 120+",
+    "stat_def_100": "Basis-Verteidigung 100+",
+    "stat_spa_120": "Basis-Sp.-Angriff 120+",
+    "stat_spd_100": "Basis-Sp.-Verteidigung 100+",
+    "stat_spe_100": "Basis-Initiative 100+",
+    "stat_slow": "Basis-Initiative 40 oder weniger",
+    "stat_bst600": "Basiswertsumme 600+",
+    "stat_bst500": "Basiswertsumme 500+",
+    "stat_bst300": "Basiswertsumme unter 300"
+  },
+  "form": {
+    "alola": "Alola-{name}",
+    "galar": "Galar-{name}",
+    "hisui": "Hisui-{name}",
+    "paldea": "Paldea-{name}",
+    "breed": "Paldea-{name} ({breed})",
+    "breeds": {
+      "combat": "Gefechtsrasse",
+      "blaze": "Flammenrasse",
+      "aqua": "Flutenrasse"
+    },
+    "darmanitan": {
+      "standard": "Galar-{name} (Normalmodus)",
+      "zen": "Galar-{name} (Trance-Modus)"
+    },
+    "mega": "Mega-{name}",
+    "megaVariant": "Mega-{name} {variant}",
+    "gmax": "Gigadynamax-{name}",
+    "gmaxStyle": {
+      "single": "Gigadynamax-{name} (Fokussierter Stil)",
+      "rapid": "Gigadynamax-{name} (Fließender Stil)",
+      "amped": "Gigadynamax-{name} (Hoch-Form)",
+      "lowkey": "Gigadynamax-{name} (Tief-Form)"
+    },
+    "starter": "Partner-{name}",
+    "primal": "Proto-{name}",
+    "origin": "{name} (Urform)",
+    "crowned": {
+      "zacian": "{name} (König des Schwertes)",
+      "zamazenta": "{name} (König des Schildes)"
+    },
+    "eternal": "{name} (Ewige Blume)"
+  }
+}

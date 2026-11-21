@@ -1,13 +1,17 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
 import Image from "next/image";
 import { Baby, BarChart3, Bone, Circle, Crown, Dna, GitBranch, Handshake, Info, Layers, Loader2, type LucideIcon, Maximize2, MapPin, Orbit, Rocket, Search, Sparkle, Sparkles, Swords, Trophy, Zap } from "lucide-react";
 import { TypeBadge } from "@/components/pokedex/TypeBadge";
 import { Sheet } from "@/components/pokedle/sheets";
 import { spriteUrl } from "@/lib/pokemon/art";
-import { indexEntries, searchEntries } from "@/lib/pikadoku/search";
-import { PDK_FAMILY_LABELS, categoryHint, type PdkCategoryView, type PdkFamily, type PdkGridView } from "@/lib/pikadoku/types";
+import { typeColor, typeTextColor } from "@/lib/pokemon/type-colors";
+import { indexEntries, localizeEntries, searchEntries } from "@/lib/pikadoku/search";
+import { categoryHint } from "@/lib/pikadoku/hints";
+import type { PdkCategoryView, PdkFamily, PdkGridView, PdkLocal } from "@/lib/pikadoku/types";
+import { useT } from "@/i18n/client";
+import board from "@/messages/pikadoku-board";
 import { cn } from "@/lib/utils";
 
 /** The pieces Pikadoku's solo page and its Tic Tac Toe duel share: the dex names, the board and the picker. */
@@ -17,6 +21,34 @@ export interface DexName {
   name: string;
   /** The species (a form's own species id; equal to `id` for a species). */
   base: number;
+  /** In another language: the other names it answers to (the English one, rōmaji). */
+  aliases?: readonly string[];
+}
+
+/**
+ * A page in another language's Pikadoku words (category labels, Pokémon names), sent by the server. English pages
+ * have none: everything shows as the API sends it.
+ */
+const LocalContext = createContext<PdkLocal | null>(null);
+
+export function PdkLocalProvider({ local, children }: { local?: PdkLocal; children: ReactNode }) {
+  return local ? <LocalContext.Provider value={local}>{children}</LocalContext.Provider> : children;
+}
+
+/** The page's words, or null on an English page. */
+export function usePdkLocal(): PdkLocal | null {
+  return useContext(LocalContext);
+}
+
+/** A category's label as the page shows it. */
+export function useCatLabel(): (cat: PdkCategoryView) => string {
+  const local = useContext(LocalContext);
+  return useCallback((cat: PdkCategoryView) => local?.labels[cat.id] ?? cat.label, [local]);
+}
+
+/** The picker's names in the page's language, each answering to its English name (and rōmaji) too. */
+export function localizeDex(dex: DexName[], local: PdkLocal | null): DexName[] {
+  return localizeEntries(dex, local?.names);
 }
 
 let dexPromise: Promise<DexName[]> | null = null;
@@ -41,7 +73,9 @@ export function loadDex(): Promise<DexName[]> {
  * (opening the picker starts it at once if it hasn't begun).
  */
 export function useDex(): DexName[] {
-  const [dex, setDex] = useState<DexName[]>([]);
+  const local = useContext(LocalContext);
+  const [raw, setDex] = useState<DexName[]>([]);
+  const dex = useMemo(() => localizeDex(raw, local), [raw, local]);
   useEffect(() => {
     let live = true;
     const go = () => void loadDex().then((d) => live && setDex(d));
@@ -136,6 +170,13 @@ function FitLabel({ text }: { text: string }) {
     ro.observe(el);
     return () => ro.disconnect();
   }, [text]);
+  // Japanese has no spaces between words: its labels wrap anywhere, as Japanese text does.
+  if (/[぀-ヿ一-鿿]/.test(text))
+    return (
+      <span ref={ref} data-fit-label className="block w-full">
+        <span className="mp-dense">{text}</span>
+      </span>
+    );
   return (
     <span ref={ref} data-fit-label className="block w-full [hyphens:none] [overflow-wrap:normal] [word-break:normal]">
       {/* Each word (hyphenated ones too: SELF-DESTRUCT) stays on one line; lines break only at spaces. */}
@@ -149,30 +190,49 @@ function FitLabel({ text }: { text: string }) {
   );
 }
 
+/**
+ * TypeBadge's plate with the type's name in the page's language (TypeBadge itself shows the English name, which
+ * English pages keep).
+ */
+function LocalTypeBadge({ type, label }: { type: string; label: string }) {
+  return (
+    <span
+      className="inline-flex items-center justify-center rounded-[4px] font-display font-bold uppercase tracking-[0.08em] px-2.5 py-1 text-[11px] leading-none max-w-full"
+      style={{ background: typeColor(type), color: typeTextColor(type), boxShadow: "inset 0 1px 0 rgb(255 255 255 / 0.35), inset 0 -2px 0 rgb(0 0 0 / 0.25)" }}
+    >
+      {label}
+    </span>
+  );
+}
+
 function Header({ cat, testId, role }: { cat: PdkCategoryView | undefined; testId: string; role: "columnheader" | "rowheader" }) {
   const [open, setOpen] = useState(false);
+  const t = useT(board);
+  const local = usePdkLocal();
+  const labelOf = useCatLabel();
+  const label = cat ? labelOf(cat) : "";
   const tipId = `${testId}-tip`;
   return (
     <div
       role={role}
       data-testid={testId}
-      title={cat ? PDK_FAMILY_LABELS[cat.family] : undefined}
+      title={cat ? t(`family.${cat.family}`) : undefined}
       className={cn("relative flex min-h-14 items-center justify-center rounded-md border px-1 py-1 sm:px-1.5 text-center text-[11px] font-bold leading-tight sm:text-sm", cat ? FAMILY_TINT[cat.family] : "border-foreground/10")}
       onMouseLeave={() => setOpen(false)}
     >
       {cat?.id.startsWith("type:") ? (
-        <TypeBadge type={cat.id.slice(5)} size="md" className="max-w-full" />
+        local ? <LocalTypeBadge type={cat.id.slice(5)} label={label} /> : <TypeBadge type={cat.id.slice(5)} size="md" className="max-w-full" />
       ) : (
         <span className="flex w-full min-w-0 flex-col items-center gap-0.5 font-display font-bold uppercase tracking-wide">
           {cat && <CategoryIcon cat={cat} />}
-          {cat ? <FitLabel text={cat.label} /> : <span>…</span>}
+          {cat ? <FitLabel text={label} /> : <span>…</span>}
         </span>
       )}
       {cat && (
         <>
           <button
             type="button"
-            aria-label={`What counts for ${cat.label}`}
+            aria-label={t("board.info", { label })}
             aria-expanded={open}
             aria-describedby={open ? tipId : undefined}
             data-testid={`${testId}-info`}
@@ -187,7 +247,7 @@ function Header({ cat, testId, role }: { cat: PdkCategoryView | undefined; testI
           </button>
           {open && (
             <span id={tipId} role="tooltip" data-testid={tipId} className={cn("absolute top-full z-30 mt-1 w-56 max-w-[70vw] rounded-md border border-foreground/20 bg-card p-2 text-left text-xs font-normal leading-snug text-foreground shadow-lg", testId.endsWith("-row-0") || testId.endsWith("-row-1") || testId.endsWith("-row-2") ? "left-0" : testId.endsWith("-col-2") ? "right-0" : "left-1/2 -translate-x-1/2")}>
-              {categoryHint(cat.id)}
+              {categoryHint(cat.id, t, label)}
             </span>
           )}
         </>
@@ -231,6 +291,7 @@ export function PdkBoard({
   testPrefix?: string;
 }) {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
+  const t = useT(board);
   // Arrow keys move between the playable cells (skipping filled ones); typing on a cell searches for it.
   const onKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
     const from = refs.current.indexOf(e.target as HTMLButtonElement);
@@ -254,7 +315,7 @@ export function PdkBoard({
   };
   return (
     // Each row is a `display: contents` role="row", so the CSS grid still lays the headers and cells out directly.
-    <div className="mx-auto grid max-w-xl grid-cols-[minmax(4.5rem,0.8fr)_repeat(3,minmax(0,1fr))] gap-1.5" role="grid" aria-label="Pikadoku grid" onKeyDown={onKeyDown}>
+    <div className="mx-auto grid max-w-xl grid-cols-[minmax(4.5rem,0.8fr)_repeat(3,minmax(0,1fr))] gap-1.5" role="grid" aria-label={t("board.grid")} onKeyDown={onKeyDown}>
       <div role="row" className="contents">
         <div aria-hidden />
         {[0, 1, 2].map((c) => (
@@ -268,7 +329,7 @@ export function PdkBoard({
             const i = r * 3 + c;
             const cell = cells[i] ?? { id: null };
             const filled = cell.id !== null;
-            const label = filled ? names.get(cell.id!) ?? `#${cell.id}` : "Empty";
+            const label = filled ? names.get(cell.id!) ?? `#${cell.id}` : t("board.empty");
             return (
               <button
                 key={i}
@@ -280,7 +341,7 @@ export function PdkBoard({
                 data-testid={`${testPrefix}-cell-${i}`}
                 disabled={disabled || (filled && !stealable?.(i)) || !onCell || !grid}
                 onClick={() => onCell?.(i)}
-                aria-label={`Row ${r + 1}, column ${c + 1}: ${label}`}
+                aria-label={t("board.cell", { row: r + 1, col: c + 1, label })}
                 className={cn(
                   "relative flex aspect-square min-w-0 flex-col items-center justify-center rounded-md border-2 p-0.5 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   filled
@@ -323,10 +384,12 @@ export function PdkBoard({
 /** The searchable Pokémon picker for one cell: forgiving search (accents, punctuation, typos, dex numbers), arrow keys and Enter. */
 export function PdkPicker({ dex: given, used, title, busy, initialQuery = "", onPick, onClose }: { dex: DexName[]; used: ReadonlySet<number>; title: string; busy?: boolean; /** What was typed on the cell to open it. */ initialQuery?: string; onPick: (p: DexName) => void; onClose: () => void }) {
   // If the names failed to load with the page, try again now.
+  const t = useT(board);
+  const local = usePdkLocal();
   const [retried, setRetried] = useState<DexName[]>([]);
   useEffect(() => {
-    if (!given.length) void loadDex().then(setRetried);
-  }, [given.length]);
+    if (!given.length) void loadDex().then((d) => setRetried(localizeDex(d, local)));
+  }, [given.length, local]);
   const dex = given.length ? given : retried;
   const [q, setQ] = useState(initialQuery);
   const [active, setActive] = useState(0);
@@ -373,8 +436,8 @@ export function PdkPicker({ dex: given, used, title, busy, initialQuery = "", on
                 if (n) setActive((a) => (Math.min(a, n - 1) + (e.key === "ArrowDown" ? 1 : n - 1)) % n);
               }
             }}
-            placeholder={loading ? "Loading Pokémon…" : "Type a Pokémon's name"}
-            aria-label="Search for a Pokémon"
+            placeholder={loading ? t("picker.loading") : t("picker.placeholder")}
+            aria-label={t("picker.search")}
             aria-controls="pdk-options"
             aria-activedescendant={activeId ? `pdk-opt-${activeId}` : undefined}
             data-testid="pdk-search"
@@ -387,7 +450,7 @@ export function PdkPicker({ dex: given, used, title, busy, initialQuery = "", on
           />
         </label>
         {/* A fixed height for eight rows, so the sheet doesn't jump while typing. */}
-        <ul id="pdk-options" role="listbox" className="min-h-[22rem] space-y-1" aria-label="Matching Pokémon">
+        <ul id="pdk-options" role="listbox" className="min-h-[22rem] space-y-1" aria-label={t("picker.matching")}>
           {matches.map((p) => {
             const taken = isUsed(p);
             const on = p.id === activeId;
@@ -407,12 +470,12 @@ export function PdkPicker({ dex: given, used, title, busy, initialQuery = "", on
                 >
                   <Image src={spriteUrl(p.id)} alt="" width={40} height={40} unoptimized className="h-10 w-10 shrink-0" style={{ imageRendering: "pixelated" }} />
                   <span className="min-w-0 truncate font-semibold">{p.name}</span>
-                  <span className="ml-auto shrink-0 text-xs text-muted-foreground">{taken ? "Used" : p.base === p.id ? `#${p.id}` : "Form"}</span>
+                  <span className="ml-auto shrink-0 text-xs text-muted-foreground">{taken ? t("picker.used") : p.base === p.id ? `#${p.id}` : t("picker.form")}</span>
                 </button>
               </li>
             );
           })}
-          {q.trim() && !matches.length && <li className="px-2 py-3 text-sm text-muted-foreground">{loading ? "Loading Pokémon…" : "No Pokémon match that."}</li>}
+          {q.trim() && !matches.length && <li className="px-2 py-3 text-sm text-muted-foreground">{loading ? t("picker.loading") : t("picker.none")}</li>}
         </ul>
       </form>
     </Sheet>

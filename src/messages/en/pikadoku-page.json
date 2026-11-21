@@ -1,0 +1,120 @@
+{
+  "meta": {
+    "title": "Pikadoku: Daily Pokémon Sudoku",
+    "description": "Pikadoku is Pokémon Sudoku, a free Pokémon grid game: fill a 3×3 grid with a Pokémon that fits each row and column. Easy, Normal and Expert dailies, a rarity score, unlimited grids and Tic Tac Toe duels."
+  },
+  "info": {
+    "description": "Pikadoku is a free Pokémon Sudoku and Pokémon grid game: fill a 3×3 grid with a different Pokémon in each cell, matching both its row and its column.",
+    "intro": "Pikadoku is Pokémon Sudoku: a 3×3 Pokémon grid game with a new puzzle every day, in Easy, Normal and Expert.",
+    "steps": {
+      "read": "Read the three row and three column categories: types, regions, evolution, moves, abilities, stats and more.",
+      "tap": "Tap a cell and search for a Pokémon that fits both its row and its column. It locks in if it is right.",
+      "pp": "You have 9 guesses (PP) in a daily, and a wrong guess still uses one. Each Pokémon can be used once.",
+      "score": "Your rarity score is the sum of the share of players who picked the same answers: lower is rarer, and better.",
+      "end": "When the game ends, see every valid answer for every cell and why your misses did not fit."
+    },
+    "faq": {
+      "scoreQ": "How is the score worked out?",
+      "scoreA": "It is the sum of the percentage of players who picked each of your answers in that cell, worked out by the server from recorded answers. Lower means rarer picks and a better score.",
+      "formsQ": "How do forms and regions count?",
+      "formsA": "Regional forms, Megas, Gigantamax forms and a few notable forms (like Partner Pikachu) are their own picks, with their own types, stats and abilities. A species' region is where it debuted; a regional form counts for the region it debuted in (Alolan Raichu is Alola), and Mega and Gigantamax forms count for their species' region. A form and its species are the same Pokémon, so only one of them can be used in a grid.",
+      "solvableQ": "Is every grid solvable?",
+      "solvableA": "Yes. Every daily is checked so each cell has enough valid answers and nine different Pokémon can fill the grid.",
+      "levelsQ": "What are Easy, Normal and Expert?",
+      "levelsA": "Easy uses broad categories with many answers, Normal is the main grid for the leaderboard, and Expert uses harder categories like moves, abilities and stat thresholds."
+    }
+  },
+  "duel": {
+    "about": "A Pikadoku Tic Tac Toe duel: take turns claiming cells with a Pokémon that fits, and get three in a row.",
+    "invite": "A Pikadoku duel",
+    "vs": "{host} vs {guest}: Pikadoku Tic Tac Toe",
+    "challenges": "{host} challenges you to Pikadoku Tic Tac Toe",
+    "trainer": "A trainer"
+  },
+  "cat": {
+    "types_dual": "Dual-type",
+    "types_single": "Monotype",
+    "region_1": "Kanto",
+    "region_2": "Johto",
+    "region_3": "Hoenn",
+    "region_4": "Sinnoh",
+    "region_5": "Unova",
+    "region_6": "Kalos",
+    "region_7": "Alola",
+    "region_8": "Galar",
+    "region_9": "Paldea",
+    "region_hisui": "Hisui",
+    "form_alola": "Alola form",
+    "form_galar": "Galar form",
+    "form_hisui": "Hisui form",
+    "form_paldea": "Paldea form",
+    "evo_basic": "Basic",
+    "evo_stage2": "Second stage",
+    "evo_stage3": "Third stage",
+    "evo_notfull": "Not fully evolved",
+    "evo_full": "Fully evolved",
+    "evo_none": "No evolution line",
+    "evo_item": "Item evolution",
+    "evo_stone": "Stone evolution",
+    "evo_trade": "Trade evolution",
+    "evo_friend": "Friendship evolution",
+    "evo_level": "Level-up evolution",
+    "evo_branch": "Branching evolution",
+    "evo_three": "Three-stage line",
+    "other_legendary": "Legendary",
+    "other_mythical": "Mythical",
+    "other_lm": "Legendary or Mythical",
+    "other_fossil": "Fossil",
+    "other_baby": "Baby",
+    "other_mega": "Mega",
+    "other_gmax": "GMax",
+    "other_paradox": "Paradox",
+    "other_ultrabeast": "Ultra-Beast",
+    "other_partner": "First Partner",
+    "other_ou": "Gen 9 OU",
+    "ability_hidden": "Hidden ability",
+    "stat_hp_100": "Base HP 100+",
+    "stat_atk_120": "Base Attack 120+",
+    "stat_def_100": "Base Defense 100+",
+    "stat_spa_120": "Base Sp. Atk 120+",
+    "stat_spd_100": "Base Sp. Def 100+",
+    "stat_spe_100": "Base Speed 100+",
+    "stat_slow": "Base Speed 40 or less",
+    "stat_bst600": "Base stat total 600+",
+    "stat_bst500": "Base stat total 500+",
+    "stat_bst300": "Base stat total under 300"
+  },
+  "form": {
+    "alola": "Alolan {name}",
+    "galar": "Galarian {name}",
+    "hisui": "Hisuian {name}",
+    "paldea": "Paldean {name}",
+    "breed": "Paldean {name} ({breed})",
+    "breeds": {
+      "combat": "Combat Breed",
+      "blaze": "Blaze Breed",
+      "aqua": "Aqua Breed"
+    },
+    "darmanitan": {
+      "standard": "Standard Galarian {name}",
+      "zen": "Zen Galarian {name}"
+    },
+    "mega": "Mega {name}",
+    "megaVariant": "Mega {name} {variant}",
+    "gmax": "Gigantamax {name}",
+    "gmaxStyle": {
+      "single": "Gigantamax Single Strike {name}",
+      "rapid": "Gigantamax Rapid Strike {name}",
+      "amped": "Gigantamax Amped {name}",
+      "lowkey": "Gigantamax Low Key {name}"
+    },
+    "starter": "Partner {name}",
+    "primal": "Primal {name}",
+    "origin": "Origin {name}",
+    "crowned": {
+      "zacian": "Crowned {name}",
+      "zamazenta": "Crowned {name}"
+    },
+    "eternal": "Eternal {name}"
+  }
+}
