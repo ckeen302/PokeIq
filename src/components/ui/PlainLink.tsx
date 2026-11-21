@@ -2,7 +2,7 @@
 
 import NextLink from "next/link";
 import { forwardRef, type ComponentProps } from "react";
-import { anchorProps, useLocaleProps } from "./Link";
+import { anchorProps, useLocaleProps } from "@/i18n/link-props";
 
 /**
  * next/link exactly (Next's own prefetching on every screen), with a site path sent to the page's language.

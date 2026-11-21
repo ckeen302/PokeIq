@@ -20,9 +20,12 @@ export const SPLASH_SKIP_PATHS = ["/pokedle", "/pokeconnections", "/pikadoku", "
  * session, and never on a game page. Where it shows, it's a brief fade (see
  * `.boot-splash` in globals.css), cut short once the page has content.
  */
-// A page in another language (/es/pokedle) is the same page: its path is read without the language
-// (process.env.LIVE_LOCALES is inlined at build time, so an English-only build's script is exactly as before).
-export const SPLASH_INIT_SCRIPT = `try{var p=location.pathname${process.env.LIVE_LOCALES ? `.replace(/^\\/(?:${process.env.LIVE_LOCALES.split(",").join("|")})(?=\\/|$)/,"")||"/"` : ""};if(${JSON.stringify(SPLASH_SKIP_PATHS)}.some(function(g){return p===g||p.indexOf(g+"/")===0})||sessionStorage.getItem("pokeiq-splash")){document.documentElement.classList.add("no-splash")}sessionStorage.setItem("pokeiq-splash","1")}catch(e){document.documentElement.classList.add("no-splash")}`;
+const SPLASH_SCRIPT = `try{var p=location.pathname;if(${JSON.stringify(SPLASH_SKIP_PATHS)}.some(function(g){return p===g||p.indexOf(g+"/")===0})||sessionStorage.getItem("pokeiq-splash")){document.documentElement.classList.add("no-splash")}sessionStorage.setItem("pokeiq-splash","1")}catch(e){document.documentElement.classList.add("no-splash")}`;
+// A page in another language (/es/pokedle) is the same page: its path is read without the language.
+// process.env.LIVE_LOCALES is inlined at build time ("es,ja", already checked), so an English-only build's script is exactly as before.
+export const SPLASH_INIT_SCRIPT = process.env.LIVE_LOCALES
+  ? SPLASH_SCRIPT.replace("var p=location.pathname;", `var p=location.pathname.replace(/^\\/(?:${process.env.LIVE_LOCALES.split(",").join("|")})(?=\\/|$)/,"")||"/";`)
+  : SPLASH_SCRIPT;
 
 export function getTheme(): Theme {
   if (typeof document === "undefined") return "dark";

@@ -10,7 +10,7 @@ import { localeHref } from "@/i18n/href";
  */
 const Anchor = forwardRef<HTMLAnchorElement, ComponentProps<"a">>(function Anchor({ href, ...props }, ref) {
   const locale = useLocale();
-  return <a ref={ref} href={href === undefined ? href : localeHref(href, locale).href} {...props} />;
+  return <a ref={ref} href={href === undefined || !process.env.LIVE_LOCALES ? href : localeHref(href, locale).href} {...props} />;
 });
 
 export default Anchor;

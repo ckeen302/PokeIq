@@ -12,12 +12,12 @@ export { localeHref } from "./href";
 export { useLocale } from "./locale-context";
 
 /** The current page's English path, whatever language it is shown in ("/es/pokedle" → "/pokedle"). */
-export function usePathname(): string {
+function useEnglishPath(): string {
   return stripLocale(useNextPathname());
 }
 
 /** next/navigation's router, with English paths sent to the current language's version of the page. */
-export function useRouter(): ReturnType<typeof useNextRouter> {
+function useLocaleRouter(): ReturnType<typeof useNextRouter> {
   const router = useNextRouter();
   const locale = useLocale();
   return useMemo(() => {
@@ -30,3 +30,7 @@ export function useRouter(): ReturnType<typeof useNextRouter> {
     return { ...router, push: go("push"), replace: go("replace"), prefetch: (href: string, options?: Parameters<typeof router.prefetch>[1]) => router.prefetch(localeHref(href, locale).href, options) };
   }, [router, locale]);
 }
+
+// English-only builds (LIVE_LOCALES inlined as ""): exactly next/navigation's hooks, nothing else in the browser's code.
+export const usePathname: () => string = process.env.LIVE_LOCALES ? useEnglishPath : useNextPathname;
+export const useRouter: typeof useNextRouter = process.env.LIVE_LOCALES ? useLocaleRouter : useNextRouter;

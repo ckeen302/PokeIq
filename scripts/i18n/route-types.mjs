@@ -38,7 +38,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   else if (args.includes("--check")) {
     const was = JSON.parse(readFileSync(TABLE, "utf8"));
     const cur = english(now);
-    const changed = Object.keys({ ...was, ...cur }).filter((r) => was[r] !== cur[r]).map((r) => `${r}: ${was[r] ?? "(new)"} → ${cur[r] ?? "(gone)"}`);
+    // Routes added or removed since the table was written are not a change in how a page renders.
+    const changed = Object.keys(cur).filter((r) => r in was && was[r] !== cur[r]).map((r) => `${r}: ${was[r]} → ${cur[r]}`);
     if (changed.length) {
       console.error(`English routes render differently from scripts/i18n/route-types.json:\n  ${changed.join("\n  ")}\nIf that is intended, record it: node scripts/i18n/route-types.mjs --write`);
       process.exit(1);

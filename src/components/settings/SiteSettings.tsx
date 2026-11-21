@@ -5,7 +5,6 @@ import { Moon, Sun, Volume2, VolumeX, type LucideIcon } from "lucide-react";
 import { getTheme, onThemeChange, setTheme, type Theme } from "@/lib/theme";
 import { isMuted, onMuteChange, play, setMuted } from "@/lib/sound";
 import { cn } from "@/lib/utils";
-import { HAS_OTHER_LOCALES } from "@/i18n/config";
 import { LanguageRow } from "@/components/i18n/Lazy";
 
 /**
@@ -139,7 +138,7 @@ export function SettingsControls({ size = "sm", testIdPrefix }: { size?: "sm" | 
           ]}
         />
       </Row>
-      {HAS_OTHER_LOCALES && <LanguageRow size={size} testIdPrefix={testIdPrefix} />}
+      {!!process.env.LIVE_LOCALES && <LanguageRow size={size} testIdPrefix={testIdPrefix} />}
     </div>
   );
 }

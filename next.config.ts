@@ -51,14 +51,32 @@ const withLocales = <T extends { source: string; destination?: string }>(rule: T
   })),
 ];
 
+/** The modules an English-only build swaps for their `.english` twins (see `webpack` below). */
+const ENGLISH_TWINS = /[\\/]src[\\/](?:components[\\/]layout[\\/]RootChrome|components[\\/]ui[\\/]Anchor|components[\\/]i18n[\\/]Lazy|i18n[\\/](?:navigation|paths))\.tsx?$/;
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Pages in other languages (src/app/[locale]/**/*.locale.tsx, src/app/sitemap-index.xml) exist only in a build with a
   // language besides English live: an English-only build is exactly the site without languages.
   pageExtensions: LIVE_OTHER_LOCALES.length ? ["locale.tsx", "locale.ts", "tsx", "ts", "jsx", "js"] : ["tsx", "ts", "jsx", "js"],
   // Translations (src/messages/**/*.json) are compiled from ICU text to compact arrays at build time (src/i18n/catalog.ts).
-  webpack(config) {
+  webpack(config, { webpack }) {
+    // English-only builds: each module with an `.english` twin (the language plumbing of the root layout, the links,
+    // the navigation hooks, the language controls) is that twin, so the browser gets exactly the code it had before
+    // languages existed. tests/i18n-foundation.test.ts keeps every twin's exports equal to its module's.
+    if (!LIVE_OTHER_LOCALES.length) {
+      config.plugins.push(
+        // ui/PlainLink is next/link itself (the request is rewritten before Next resolves it, so its own aliases apply).
+        new webpack.NormalModuleReplacementPlugin(/^@\/components\/ui\/PlainLink$/, "next/link"),
+        new webpack.NormalModuleReplacementPlugin(ENGLISH_TWINS, (resource: { createData?: { resource?: string } }) => {
+          const file = resource.createData?.resource;
+          if (file && ENGLISH_TWINS.test(file)) resource.createData!.resource = file.replace(/\.(tsx?)$/, ".english.$1");
+        })
+      );
+    }
     config.module.rules.push({ test: /[\\/]src[\\/]messages[\\/].+\.json$/, use: [path.resolve("scripts/i18n/icu-loader.cjs")] });
+    // The language modules have no side effects: whatever an English-only build doesn't use of them is left out.
+    config.module.rules.push({ test: /[\\/]src[\\/]i18n[\\/][^\\/]+\.tsx?$/, sideEffects: false });
     return config;
   },
   // The live languages (src/i18n/config.ts), inlined into server and browser code at build time.

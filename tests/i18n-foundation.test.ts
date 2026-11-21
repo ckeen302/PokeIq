@@ -107,3 +107,30 @@ describe("messages", () => {
     expect(common.en.settings.language).toBe("Language");
   });
 });
+
+describe("English-only twins (next.config swaps them in while no other language is live)", () => {
+  const twins = [
+    ["@/components/layout/RootChrome", () => import("@/components/layout/RootChrome"), () => import("@/components/layout/RootChrome.english")],
+    ["@/components/ui/Anchor", () => import("@/components/ui/Anchor"), () => import("@/components/ui/Anchor.english")],
+    ["@/components/i18n/Lazy", () => import("@/components/i18n/Lazy"), () => import("@/components/i18n/Lazy.english")],
+    ["@/i18n/navigation", () => import("@/i18n/navigation"), () => import("@/i18n/navigation.english")],
+    ["@/i18n/paths", () => import("@/i18n/paths"), () => import("@/i18n/paths.english")],
+  ] as const;
+  for (const [name, real, twin] of twins) {
+    it(`${name}.english exports what ${name} does`, async () => {
+      expect(Object.keys(await twin()).sort()).toEqual(Object.keys(await real()).sort());
+    });
+  }
+
+  it("paths.english answers as paths does in an English-only build", async () => {
+    vi.resetModules();
+    vi.stubEnv("LIVE_LOCALES", "");
+    const [real, twin] = await Promise.all([import("@/i18n/paths"), import("@/i18n/paths.english")]);
+    for (const p of ["/", "/pokedle", "/es/pokedle", "/es", "/?q=1", "/#a", "//x", "https://a.b/c", "/pokemon/pikachu?x=1#y"]) {
+      expect(twin.splitLocale(p)).toEqual(real.splitLocale(p));
+      expect(twin.stripLocale(p)).toBe(real.stripLocale(p));
+      expect(twin.localUrl(p)).toBe(real.localUrl(p));
+      for (const l of ["en", "es", "ja"] as const) expect(twin.localizePath(p, l)).toBe(real.localizePath(p, l));
+    }
+  });
+});

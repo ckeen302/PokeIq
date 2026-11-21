@@ -55,7 +55,7 @@ export function parseLiveLocales(value: string | undefined): OtherLocale[] {
 export const LIVE_OTHER_LOCALES: readonly OtherLocale[] = /*#__PURE__*/ parseLiveLocales(process.env.LIVE_LOCALES);
 
 /** Every live language, English first. */
-export const LIVE_LOCALES: readonly Locale[] = [DEFAULT_LOCALE, ...LIVE_OTHER_LOCALES];
+export const LIVE_LOCALES: readonly Locale[] = /*#__PURE__*/ (() => [DEFAULT_LOCALE, ...LIVE_OTHER_LOCALES])();
 
 export function isLiveLocale(value: unknown): value is Locale {
   return value === DEFAULT_LOCALE || (LIVE_OTHER_LOCALES as readonly unknown[]).includes(value);

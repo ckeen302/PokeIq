@@ -1,6 +1,6 @@
 import { DEFAULT_LOCALE, LIVE_OTHER_LOCALES, OTHER_LOCALES, type Locale, type OtherLocale } from "./config";
 
-const PREFIX = /*#__PURE__*/ new RegExp(`^/(${OTHER_LOCALES.join("|")})(?=/|$|\\?|#)`);
+let prefix: RegExp | null = null;
 
 /**
  * A pathname's language and its English path: "/es/pokedle" → es, "/pokedle"; "/pokedle" → en, "/pokedle".
@@ -9,7 +9,7 @@ const PREFIX = /*#__PURE__*/ new RegExp(`^/(${OTHER_LOCALES.join("|")})(?=/|$|\\
 export function splitLocale(pathname: string): { locale: Locale; path: string } {
   // English-only builds: nothing is a prefix (and this whole module drops out of the browser's code).
   if (!process.env.LIVE_LOCALES) return { locale: DEFAULT_LOCALE, path: pathname };
-  const m = PREFIX.exec(pathname);
+  const m = (prefix ??= new RegExp(`^/(${OTHER_LOCALES.join("|")})(?=/|$|\\?|#)`)).exec(pathname);
   if (!m || !(LIVE_OTHER_LOCALES as readonly string[]).includes(m[1])) return { locale: DEFAULT_LOCALE, path: pathname };
   const rest = pathname.slice(m[0].length);
   return { locale: m[1] as OtherLocale, path: rest === "" ? "/" : rest.startsWith("/") ? rest : `/${rest}` };
@@ -37,7 +37,7 @@ export function localizePath(path: string, locale: Locale): string {
  * already in a language, are left as they are; on an English page every path is.
  */
 export function localUrl(path: string): string {
-  if (typeof window === "undefined" || !path.startsWith("/") || path.startsWith("//")) return path;
+  if (!process.env.LIVE_LOCALES || typeof window === "undefined" || !path.startsWith("/") || path.startsWith("//")) return path;
   const { locale } = splitLocale(window.location.pathname);
   if (locale === DEFAULT_LOCALE || splitLocale(path).locale !== DEFAULT_LOCALE) return path;
   return localizePath(path, locale);
