@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GEO_GAME_NAMESPACES } from "@/lib/geo-namespaces";
 import { inviteMetadata } from "@/lib/seo";
 import { cache } from "react";
 import { notFound } from "next/navigation";
@@ -49,7 +50,7 @@ export default async function GeoDuelPage({ params }: PageProps) {
   const regions = geoRegions();
   const names = guessrDuelNames(regions);
   return (
-    <ClientMessages namespaces={[duelNs, hud, ranked, duelShared, tier]}>
+    <ClientMessages namespaces={[duelNs, hud, ranked, duelShared, tier, ...GEO_GAME_NAMESPACES]}>
       <GeoDuel key={code} code={code} regions={regions} {...(names ? { names } : {})} />
     </ClientMessages>
   );

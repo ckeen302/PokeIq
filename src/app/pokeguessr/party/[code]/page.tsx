@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GEO_GAME_NAMESPACES } from "@/lib/geo-namespaces";
 import { cache } from "react";
 import { notFound } from "next/navigation";
 import { inviteMetadata } from "@/lib/seo";
@@ -39,7 +40,7 @@ export default async function GeoPartyPage({ params }: PageProps) {
   const regions = geoRegions();
   const names = guessrDuelNames(regions);
   return (
-    <ClientMessages namespaces={[party, hud, duelShared, tier]}>
+    <ClientMessages namespaces={[party, hud, duelShared, tier, ...GEO_GAME_NAMESPACES]}>
       <GeoParty key={code} code={code} regions={regions} {...(names ? { names } : {})} />
     </ClientMessages>
   );
