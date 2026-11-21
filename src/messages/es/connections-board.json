@@ -1,0 +1,46 @@
+{
+  "level": {
+    "0": "Amarillo",
+    "1": "Verde",
+    "2": "Azul",
+    "3": "Morado",
+    "4": "Rojo"
+  },
+  "kind": {
+    "move": "Movimiento",
+    "ability": "Habilidad",
+    "type": "Tipo",
+    "pokemon": "Pokémon"
+  },
+  "moveChip": "Mov.",
+  "tile": {
+    "hinted": ", pista: en el grupo más fácil que queda",
+    "selected": ", seleccionado"
+  },
+  "group": {
+    "aria": "Grupo {level}: {label}: {members}",
+    "ariaRevealed": "Grupo {level} (revelado): {label}: {members}"
+  },
+  "legend": {
+    "aria": "Colores de los grupos, del más fácil al más difícil: {levels}",
+    "easiest": "Más fácil",
+    "trickiest": "Más difícil"
+  },
+  "mistakes": {
+    "aria": "Te quedan {left} de {max} fallos",
+    "last": "Última oportunidad:",
+    "remaining": "Fallos restantes:"
+  },
+  "history": {
+    "guess": "Intento {n}: {levels}",
+    "sep": ". "
+  },
+  "why": {
+    "title": "¿Por qué?",
+    "source": "Cada dato sale de la Pokédex",
+    "line": ": {why}",
+    "herrings": "Pistas falsas",
+    "herring": "<b>{name}</b>: {reason}."
+  },
+  "sep": ", "
+}

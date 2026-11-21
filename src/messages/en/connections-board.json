@@ -1,0 +1,46 @@
+{
+  "level": {
+    "0": "Yellow",
+    "1": "Green",
+    "2": "Blue",
+    "3": "Purple",
+    "4": "Red"
+  },
+  "kind": {
+    "move": "Move",
+    "ability": "Ability",
+    "type": "Type",
+    "pokemon": "Pokémon"
+  },
+  "moveChip": "Move",
+  "tile": {
+    "hinted": ", hint: in the easiest group left",
+    "selected": ", selected"
+  },
+  "group": {
+    "aria": "{level} group: {label}: {members}",
+    "ariaRevealed": "{level} group (revealed): {label}: {members}"
+  },
+  "legend": {
+    "aria": "Group colours, easiest to trickiest: {levels}",
+    "easiest": "Easiest",
+    "trickiest": "Trickiest"
+  },
+  "mistakes": {
+    "aria": "{left} of {max} mistakes left",
+    "last": "Last chance:",
+    "remaining": "Mistakes remaining:"
+  },
+  "history": {
+    "guess": "Guess {n}: {levels}",
+    "sep": ". "
+  },
+  "why": {
+    "title": "Why?",
+    "source": "Every fact is from the Pokédex data",
+    "line": ": {why}",
+    "herrings": "Red herrings",
+    "herring": "<b>{name}</b>: {reason}."
+  },
+  "sep": ", "
+}
