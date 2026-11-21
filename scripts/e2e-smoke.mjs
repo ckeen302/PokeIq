@@ -13,7 +13,6 @@ import fs from "fs";
 import { execFileSync } from "child_process";
 import { runIqTest } from "./e2e-iq-test.mjs";
 import { runSizes } from "./e2e-sizes.mjs";
-import { runRankings } from "./e2e-rankings.mjs";
 import { runVideoGames } from "./e2e-video-games.mjs";
 import { runMovies } from "./e2e-movies.mjs";
 import { runMobile } from "./e2e-mobile.mjs";
@@ -2608,7 +2607,6 @@ step("pokédex Timeline: an entry's own link opens its panel, share copies it, t
 
 await runSizes({ browser, BASE, OUT, errors, step });
 
-await runRankings({ browser, BASE, errors, step });
 await runVideoGames({ browser, BASE, errors, step });
 await runMovies({ browser, BASE, errors, step });
 await runMobile({ browser, BASE, OUT, errors, step });

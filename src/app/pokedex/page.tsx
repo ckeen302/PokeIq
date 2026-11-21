@@ -3,8 +3,6 @@ import { pageMetadata } from "@/lib/seo";
 import { POKEDEX } from "@/lib/pokemon/pokedex";
 import { PokedexExplorer, type DexRow } from "@/components/pokedex/PokedexExplorer";
 import { DexTabs } from "@/components/pokedex/DexTabs";
-import Link from "@/components/ui/Link";
-import { RANKINGS_PATH } from "@/lib/dex/rankings";
 
 export const metadata: Metadata = pageMetadata({
   title: "Pokédex: Every Pokémon from Kanto to Paldea",
@@ -40,10 +38,7 @@ export default function PokedexPage() {
           Poké<span className="text-primary">dex</span>
         </h1>
         <p className="mx-auto max-w-2xl text-muted-foreground">
-          Stats, evolutions, moves, abilities, matchups and every Pokédex entry. Study up, then test yourself.{" "}
-          <Link href={RANKINGS_PATH} className="text-foreground underline underline-offset-2 hover:text-screen" data-testid="dex-rankings-link">
-            Rankings
-          </Link>
+          Stats, evolutions, moves, abilities, matchups and every Pokédex entry. Study up, then test yourself.
         </p>
       </div>
       <DexTabs active="pokemon" />

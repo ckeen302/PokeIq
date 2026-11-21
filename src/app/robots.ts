@@ -42,7 +42,6 @@ const DISALLOW = [
   "/*/about-image",
   "/*/about-grid",
   "/quiz/which-pokemon/card/",
-  "/pokedex/rankings/*/rows",
   "/pokedex/timeline/species/",
   "/*.json$",
 ];
