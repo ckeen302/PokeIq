@@ -14,6 +14,7 @@ import { execFileSync } from "child_process";
 import { runIqTest } from "./e2e-iq-test.mjs";
 import { runSizes } from "./e2e-sizes.mjs";
 import { runRankings } from "./e2e-rankings.mjs";
+import { runMovies } from "./e2e-movies.mjs";
 import { runMobile } from "./e2e-mobile.mjs";
 import { runDesktopTripwire } from "./e2e-desktop-tripwire.mjs";
 import { runA11y } from "./e2e-a11y.mjs";
@@ -2391,6 +2392,7 @@ step("pokédex Timeline: an entry's own link opens its panel, share copies it, t
 await runSizes({ browser, BASE, OUT, errors, step });
 
 await runRankings({ browser, BASE, errors, step });
+await runMovies({ browser, BASE, errors, step });
 await runMobile({ browser, BASE, OUT, errors, step });
 await runMassBattle({ browser, BASE, OUT, errors, step });
 await runRace({ browser, BASE, OUT, errors, step });

@@ -1,0 +1,1315 @@
+{
+  "films": [
+    {
+      "slug": "mewtwo-strikes-back",
+      "number": 1,
+      "title": "Mewtwo Strikes Back",
+      "era": "original",
+      "premiere": "1998-07-18",
+      "year": 1998,
+      "years": {
+        "japan": 1998,
+        "us": 1999
+      },
+      "setting": "New Island, Kanto",
+      "summary": "Mewtwo, a Pokémon cloned from Mew by scientists, breaks free of Team Rocket and comes to resent the people who made it. It invites Pokémon Trainers to its island for the ultimate test, and Ash, Misty and Brock answer the call.",
+      "featured": [
+        150,
+        151
+      ],
+      "characters": [
+        {
+          "name": "Ash",
+          "role": "hero",
+          "partner": 25
+        },
+        {
+          "name": "Misty",
+          "role": "hero",
+          "partner": 175
+        },
+        {
+          "name": "Brock",
+          "role": "hero",
+          "partner": 37
+        },
+        {
+          "name": "Neesha",
+          "role": "guest",
+          "partner": 9
+        },
+        {
+          "name": "Corey",
+          "role": "guest",
+          "partner": 3
+        },
+        {
+          "name": "Fergus",
+          "role": "guest",
+          "partner": 130
+        },
+        {
+          "name": "Giovanni",
+          "role": "villain",
+          "partner": 53
+        }
+      ],
+      "related": [
+        "the-movie-2000",
+        "spell-of-the-unown",
+        "pokemon-4ever",
+        "pokemon-heroes",
+        "mewtwo-strikes-back-evolution"
+      ],
+      "poster": "/movies/mewtwo-strikes-back.webp"
+    },
+    {
+      "slug": "the-movie-2000",
+      "number": 2,
+      "title": "The Movie 2000",
+      "era": "original",
+      "premiere": "1999-07-17",
+      "year": 1999,
+      "years": {
+        "japan": 1999,
+        "us": 2000
+      },
+      "setting": "Shamouti Island, Orange Islands",
+      "summary": "A collector named Lawrence III sets out to capture Moltres, Zapdos and Articuno, and the world's weather goes haywire. On Shamouti Island, the locals ask Ash to gather three treasures from the neighboring islands, as an old prophecy says the Chosen One must.",
+      "featured": [
+        249,
+        146,
+        145,
+        144
+      ],
+      "characters": [
+        {
+          "name": "Ash",
+          "role": "hero",
+          "partner": 25
+        },
+        {
+          "name": "Misty",
+          "role": "hero",
+          "partner": 175
+        },
+        {
+          "name": "Tracey",
+          "role": "hero",
+          "partner": 48
+        },
+        {
+          "name": "Melody",
+          "role": "guest"
+        },
+        {
+          "name": "Lawrence III",
+          "role": "villain"
+        }
+      ],
+      "related": [
+        "mewtwo-strikes-back",
+        "spell-of-the-unown",
+        "pokemon-4ever",
+        "pokemon-heroes"
+      ],
+      "poster": "/movies/the-movie-2000.webp"
+    },
+    {
+      "slug": "spell-of-the-unown",
+      "number": 3,
+      "title": "Spell of the Unown",
+      "era": "original",
+      "premiere": "2000-07-08",
+      "year": 2000,
+      "years": {
+        "japan": 2000,
+        "us": 2001
+      },
+      "setting": "Greenfield, Johto",
+      "summary": "After her father vanishes, young Molly Hale's wishes are granted by the mysterious Unown, which cover her Greenfield home in crystal and conjure an Entei to be her dad. When Molly wants a mother too, Entei takes Ash's mom, Delia, and Ash sets out to bring her home.",
+      "featured": [
+        244,
+        201
+      ],
+      "characters": [
+        {
+          "name": "Ash",
+          "role": "hero",
+          "partner": 25
+        },
+        {
+          "name": "Misty",
+          "role": "hero",
+          "partner": 175
+        },
+        {
+          "name": "Brock",
+          "role": "hero",
+          "partner": 95
+        },
+        {
+          "name": "Molly Hale",
+          "role": "guest"
+        },
+        {
+          "name": "Spencer Hale",
+          "role": "guest"
+        },
+        {
+          "name": "Lisa",
+          "role": "guest",
+          "partner": 190
+        },
+        {
+          "name": "Delia Ketchum",
+          "role": "guest",
+          "partner": 122
+        }
+      ],
+      "related": [
+        "mewtwo-strikes-back",
+        "the-movie-2000",
+        "pokemon-4ever",
+        "pokemon-heroes"
+      ],
+      "poster": "/movies/spell-of-the-unown.webp"
+    },
+    {
+      "slug": "pokemon-4ever",
+      "number": 4,
+      "title": "Pokémon 4Ever",
+      "era": "original",
+      "premiere": "2001-07-07",
+      "year": 2001,
+      "years": {
+        "japan": 2001,
+        "us": 2002
+      },
+      "setting": "Arborville, Johto",
+      "summary": "Forty years ago, a young Trainer named Sam saved Celebi from a hunter, and the two vanished from the forest. In the present day, Ash and his friends meet them, just as the Iron-Masked Marauder arrives to catch Celebi with his Dark Balls.",
+      "featured": [
+        251,
+        245
+      ],
+      "characters": [
+        {
+          "name": "Ash",
+          "role": "hero",
+          "partner": 25
+        },
+        {
+          "name": "Misty",
+          "role": "hero",
+          "partner": 175
+        },
+        {
+          "name": "Brock",
+          "role": "hero",
+          "partner": 95
+        },
+        {
+          "name": "Sam",
+          "role": "guest",
+          "partner": 5
+        },
+        {
+          "name": "Diana",
+          "role": "guest"
+        },
+        {
+          "name": "Towa",
+          "role": "guest"
+        },
+        {
+          "name": "Iron-Masked Marauder",
+          "role": "villain",
+          "partner": 248
+        }
+      ],
+      "related": [
+        "mewtwo-strikes-back",
+        "the-movie-2000",
+        "spell-of-the-unown",
+        "pokemon-heroes"
+      ],
+      "poster": "/movies/pokemon-4ever.webp"
+    },
+    {
+      "slug": "pokemon-heroes",
+      "number": 5,
+      "title": "Pokémon Heroes",
+      "era": "original",
+      "premiere": "2002-07-13",
+      "year": 2002,
+      "years": {
+        "japan": 2002,
+        "us": 2003
+      },
+      "setting": "Alto Mare, Johto",
+      "summary": "In the canal city of Alto Mare, Ash rescues a mysterious girl from two thieves, Annie and Oakley, and she turns out to be Latias in disguise. The thieves are after Latias, Latios and the Soul Dew, a jewel that powers the city's ancient defense machine.",
+      "featured": [
+        380,
+        381
+      ],
+      "characters": [
+        {
+          "name": "Ash",
+          "role": "hero",
+          "partner": 25
+        },
+        {
+          "name": "Misty",
+          "role": "hero",
+          "partner": 175
+        },
+        {
+          "name": "Brock",
+          "role": "hero",
+          "partner": 169
+        },
+        {
+          "name": "Bianca",
+          "role": "guest"
+        },
+        {
+          "name": "Lorenzo",
+          "role": "guest"
+        },
+        {
+          "name": "Annie",
+          "role": "villain",
+          "partner": 196
+        },
+        {
+          "name": "Oakley",
+          "role": "villain",
+          "partner": 168
+        }
+      ],
+      "related": [
+        "mewtwo-strikes-back",
+        "the-movie-2000",
+        "spell-of-the-unown",
+        "pokemon-4ever"
+      ],
+      "poster": "/movies/pokemon-heroes.webp"
+    },
+    {
+      "slug": "jirachi-wish-maker",
+      "number": 6,
+      "title": "Jirachi: Wish Maker",
+      "era": "advanced",
+      "premiere": "2003-07-19",
+      "year": 2003,
+      "years": {
+        "japan": 2003,
+        "us": 2004
+      },
+      "setting": "Forina, Hoenn",
+      "summary": "The Millennium Comet is back in the sky, and at its festival Max hears a voice calling from a strange cocoon kept by the magician Butler. Out comes Jirachi, which wakes only for the seven nights the comet is in the sky, and Butler wants its power to revive Groudon.",
+      "featured": [
+        385
+      ],
+      "characters": [
+        {
+          "name": "Ash",
+          "role": "hero",
+          "partner": 25
+        },
+        {
+          "name": "May",
+          "role": "hero",
+          "partner": 255
+        },
+        {
+          "name": "Max",
+          "role": "hero"
+        },
+        {
+          "name": "Brock",
+          "role": "hero",
+          "partner": 205
+        },
+        {
+          "name": "Butler",
+          "role": "villain",
+          "partner": 262
+        }
+      ],
+      "related": [
+        "destiny-deoxys",
+        "lucario-and-the-mystery-of-mew",
+        "pokemon-ranger-and-the-temple-of-the-sea"
+      ],
+      "poster": "/movies/jirachi-wish-maker.webp"
+    },
+    {
+      "slug": "destiny-deoxys",
+      "number": 7,
+      "title": "Destiny Deoxys",
+      "era": "advanced",
+      "premiere": "2004-07-17",
+      "year": 2004,
+      "years": {
+        "japan": 2004,
+        "us": 2005
+      },
+      "setting": "LaRousse City, Hoenn",
+      "summary": "In high-tech LaRousse City, Ash's Battle Tower partner is Tory, a boy who has been afraid of Pokémon since a frightening day in his childhood. Then Deoxys arrives and takes over the city, and Rayquaza comes after the invader.",
+      "featured": [
+        386,
+        384
+      ],
+      "characters": [
+        {
+          "name": "Ash",
+          "role": "hero",
+          "partner": 25
+        },
+        {
+          "name": "May",
+          "role": "hero",
+          "partner": 256
+        },
+        {
+          "name": "Max",
+          "role": "hero"
+        },
+        {
+          "name": "Brock",
+          "role": "hero",
+          "partner": 205
+        },
+        {
+          "name": "Tory Lund",
+          "role": "guest"
+        },
+        {
+          "name": "Professor Lund",
+          "role": "guest"
+        },
+        {
+          "name": "Rafe",
+          "role": "guest",
+          "partner": 257
+        },
+        {
+          "name": "Rebecca",
+          "role": "guest",
+          "partner": 376
+        },
+        {
+          "name": "Sid",
+          "role": "guest",
+          "partner": 9
+        }
+      ],
+      "related": [
+        "jirachi-wish-maker",
+        "lucario-and-the-mystery-of-mew",
+        "pokemon-ranger-and-the-temple-of-the-sea"
+      ],
+      "poster": "/movies/destiny-deoxys.webp"
+    },
+    {
+      "slug": "lucario-and-the-mystery-of-mew",
+      "number": 8,
+      "title": "Lucario and the Mystery of Mew",
+      "era": "advanced",
+      "premiere": "2005-07-16",
+      "year": 2005,
+      "years": {
+        "japan": 2005,
+        "us": 2006
+      },
+      "setting": "Rota, Kanto",
+      "summary": "Every year Rota honors Sir Aaron, the Aura Guardian who saved Cameran Palace long ago. When Ash wins the festival's tournament, Aaron's Lucario wakes from his staff, and after Mew whisks Pikachu away to the Tree of Life, Lucario is the only one who can lead the way.",
+      "featured": [
+        448,
+        151
+      ],
+      "characters": [
+        {
+          "name": "Ash",
+          "role": "hero",
+          "partner": 25
+        },
+        {
+          "name": "May",
+          "role": "hero",
+          "partner": 256
+        },
+        {
+          "name": "Max",
+          "role": "hero"
+        },
+        {
+          "name": "Brock",
+          "role": "hero",
+          "partner": 205
+        },
+        {
+          "name": "Sir Aaron",
+          "role": "guest",
+          "partner": 448
+        },
+        {
+          "name": "Queen Ilene",
+          "role": "guest",
+          "partner": 439
+        }
+      ],
+      "related": [
+        "jirachi-wish-maker",
+        "destiny-deoxys",
+        "pokemon-ranger-and-the-temple-of-the-sea"
+      ],
+      "poster": "/movies/lucario-and-the-mystery-of-mew.webp"
+    },
+    {
+      "slug": "pokemon-ranger-and-the-temple-of-the-sea",
+      "number": 9,
+      "title": "Pokémon Ranger and the Temple of the Sea",
+      "era": "advanced",
+      "premiere": "2006-07-15",
+      "year": 2006,
+      "years": {
+        "japan": 2006,
+        "us": 2007
+      },
+      "setting": "Samiya, the Sea Temple",
+      "summary": "Pokémon Ranger Jack Walker rescues a Manaphy Egg from the pirate Phantom, who needs Manaphy to find the Sea Crown hidden in the Sea Temple. Ash, May and their friends travel with the People of the Water to reach it first, and May forms a special bond with Manaphy.",
+      "featured": [
+        490
+      ],
+      "characters": [
+        {
+          "name": "Ash",
+          "role": "hero",
+          "partner": 25
+        },
+        {
+          "name": "May",
+          "role": "hero",
+          "partner": 256
+        },
+        {
+          "name": "Max",
+          "role": "hero"
+        },
+        {
+          "name": "Brock",
+          "role": "hero",
+          "partner": 205
+        },
+        {
+          "name": "Jack Walker",
+          "role": "guest"
+        },
+        {
+          "name": "Lizabeth",
+          "role": "guest",
+          "partner": 368
+        },
+        {
+          "name": "Phantom",
+          "role": "villain",
+          "partner": 441
+        }
+      ],
+      "related": [
+        "jirachi-wish-maker",
+        "destiny-deoxys",
+        "lucario-and-the-mystery-of-mew"
+      ],
+      "poster": "/movies/pokemon-ranger-and-the-temple-of-the-sea.webp"
+    },
+    {
+      "slug": "the-rise-of-darkrai",
+      "number": 10,
+      "title": "The Rise of Darkrai",
+      "era": "dp",
+      "premiere": "2007-07-14",
+      "year": 2007,
+      "years": {
+        "japan": 2007,
+        "us": 2008
+      },
+      "setting": "Alamos Town, Sinnoh",
+      "summary": "On their way to a Pokémon Contest, Ash and his friends reach Alamos Town, where Pokémon and people are suffering terrible nightmares. Baron Alberto blames Darkrai, and the sky above the town starts to tear as Dialga and Palkia battle across dimensions.",
+      "featured": [
+        491,
+        483,
+        484
+      ],
+      "characters": [
+        {
+          "name": "Ash",
+          "role": "hero",
+          "partner": 25
+        },
+        {
+          "name": "Dawn",
+          "role": "hero",
+          "partner": 393
+        },
+        {
+          "name": "Brock",
+          "role": "hero",
+          "partner": 185
+        },
+        {
+          "name": "Alice",
+          "role": "guest",
+          "partner": 390
+        },
+        {
+          "name": "Tonio",
+          "role": "guest",
+          "partner": 426
+        },
+        {
+          "name": "Baron Alberto",
+          "role": "guest",
+          "partner": 463
+        }
+      ],
+      "trilogy": "Darkrai, Giratina and Arceus",
+      "related": [
+        "giratina-and-the-sky-warrior",
+        "arceus-and-the-jewel-of-life"
+      ],
+      "poster": "/movies/the-rise-of-darkrai.webp"
+    },
+    {
+      "slug": "giratina-and-the-sky-warrior",
+      "number": 11,
+      "title": "Giratina & the Sky Warrior",
+      "era": "dp",
+      "premiere": "2008-07-19",
+      "year": 2008,
+      "years": {
+        "japan": 2008,
+        "us": 2009
+      },
+      "summary": "Giratina drags Dialga into the Reverse World for a battle, and a tiny Shaymin gets caught in the middle. Shaymin asks Ash and his friends to help it reach the other Shaymin at the Gracidea garden, while a man named Zero wants Giratina's power for himself.",
+      "featured": [
+        487,
+        492
+      ],
+      "characters": [
+        {
+          "name": "Ash",
+          "role": "hero",
+          "partner": 25
+        },
+        {
+          "name": "Dawn",
+          "role": "hero",
+          "partner": 393
+        },
+        {
+          "name": "Brock",
+          "role": "hero",
+          "partner": 185
+        },
+        {
+          "name": "Newton Graceland",
+          "role": "guest",
+          "partner": 410
+        },
+        {
+          "name": "Zero",
+          "role": "villain",
+          "partner": 81
+        }
+      ],
+      "trilogy": "Darkrai, Giratina and Arceus",
+      "related": [
+        "the-rise-of-darkrai",
+        "arceus-and-the-jewel-of-life"
+      ],
+      "poster": "/movies/giratina-and-the-sky-warrior.webp"
+    },
+    {
+      "slug": "arceus-and-the-jewel-of-life",
+      "number": 12,
+      "title": "Arceus and the Jewel of Life",
+      "era": "dp",
+      "premiere": "2009-07-18",
+      "year": 2009,
+      "years": {
+        "japan": 2009,
+        "us": 2009
+      },
+      "setting": "Michina Town, Sinnoh",
+      "summary": "Long ago, Arceus gave the people of Michina Town the Jewel of Life, and now it returns believing they betrayed it. With Sheena's help and Dialga's power over time, Ash and his friends travel into the past to set things right.",
+      "featured": [
+        493,
+        483,
+        484,
+        487
+      ],
+      "characters": [
+        {
+          "name": "Ash",
+          "role": "hero",
+          "partner": 25
+        },
+        {
+          "name": "Dawn",
+          "role": "hero",
+          "partner": 393
+        },
+        {
+          "name": "Brock",
+          "role": "hero",
+          "partner": 185
+        },
+        {
+          "name": "Sheena",
+          "role": "guest"
+        },
+        {
+          "name": "Kevin",
+          "role": "guest"
+        }
+      ],
+      "trilogy": "Darkrai, Giratina and Arceus",
+      "related": [
+        "the-rise-of-darkrai",
+        "giratina-and-the-sky-warrior"
+      ],
+      "poster": "/movies/arceus-and-the-jewel-of-life.webp"
+    },
+    {
+      "slug": "zoroark-master-of-illusions",
+      "number": 13,
+      "title": "Zoroark: Master of Illusions",
+      "era": "dp",
+      "premiere": "2010-07-10",
+      "year": 2010,
+      "years": {
+        "japan": 2010,
+        "us": 2011
+      },
+      "setting": "Crown City, Sinnoh",
+      "summary": "On their way to the Pokémon Baccer World Cup in Crown City, Ash and his friends meet Zorua, which has escaped from the businessman Grings Kodai. Soon Raikou, Entei and Suicune start rampaging through the city, and Zoroark is caught up in it.",
+      "featured": [
+        571,
+        570,
+        251
+      ],
+      "characters": [
+        {
+          "name": "Ash",
+          "role": "hero",
+          "partner": 25
+        },
+        {
+          "name": "Dawn",
+          "role": "hero",
+          "partner": 393
+        },
+        {
+          "name": "Brock",
+          "role": "hero",
+          "partner": 185
+        },
+        {
+          "name": "Karl",
+          "role": "guest",
+          "partner": 436
+        },
+        {
+          "name": "Grings Kodai",
+          "role": "villain",
+          "partner": 429
+        },
+        {
+          "name": "Goone",
+          "role": "villain",
+          "partner": 212
+        }
+      ],
+      "related": [
+        "the-rise-of-darkrai",
+        "giratina-and-the-sky-warrior",
+        "arceus-and-the-jewel-of-life"
+      ],
+      "poster": "/movies/zoroark-master-of-illusions.webp"
+    },
+    {
+      "slug": "black-victini-and-reshiram-white-victini-and-zekrom",
+      "number": 14,
+      "title": "Black—Victini and Reshiram / White—Victini and Zekrom",
+      "era": "bw",
+      "premiere": "2011-07-16",
+      "year": 2011,
+      "years": {
+        "japan": 2011,
+        "us": 2011
+      },
+      "setting": "Eindoak Town, Unova",
+      "summary": "Ash, Iris and Cilan arrive in Eindoak Town for its battle competition, where Victini lends Ash a hand. Damon, a descendant of the People of the Vale, wants to bring back their lost kingdom and plans to trap Victini to harness its power. One film, released in two versions.",
+      "featured": [
+        494,
+        643,
+        644
+      ],
+      "characters": [
+        {
+          "name": "Ash",
+          "role": "hero",
+          "partner": 25
+        },
+        {
+          "name": "Iris",
+          "role": "hero",
+          "partner": 610
+        },
+        {
+          "name": "Cilan",
+          "role": "hero",
+          "partner": 511
+        },
+        {
+          "name": "Carlita",
+          "role": "guest",
+          "partner": 635
+        },
+        {
+          "name": "Juanita",
+          "role": "guest",
+          "partner": 623
+        },
+        {
+          "name": "Damon",
+          "role": "villain"
+        }
+      ],
+      "related": [
+        "kyurem-vs-the-sword-of-justice",
+        "genesect-and-the-legend-awakened"
+      ],
+      "poster": "/movies/black-victini-and-reshiram-white-victini-and-zekrom.webp"
+    },
+    {
+      "slug": "kyurem-vs-the-sword-of-justice",
+      "number": 15,
+      "title": "Kyurem vs. the Sword of Justice",
+      "era": "bw",
+      "premiere": "2012-07-14",
+      "year": 2012,
+      "years": {
+        "japan": 2012,
+        "us": 2012
+      },
+      "summary": "From their train, Ash, Iris and Cilan spot an injured Pokémon just before Kyurem attacks. It is Keldeo, out to rescue its friends, the Swords of Justice, from Kyurem's icy grip.",
+      "featured": [
+        646,
+        647,
+        638,
+        639,
+        640
+      ],
+      "characters": [
+        {
+          "name": "Ash",
+          "role": "hero",
+          "partner": 25
+        },
+        {
+          "name": "Iris",
+          "role": "hero",
+          "partner": 610
+        },
+        {
+          "name": "Cilan",
+          "role": "hero",
+          "partner": 511
+        },
+        {
+          "name": "Malin",
+          "role": "guest",
+          "partner": 582
+        }
+      ],
+      "related": [
+        "black-victini-and-reshiram-white-victini-and-zekrom",
+        "genesect-and-the-legend-awakened"
+      ],
+      "poster": "/movies/kyurem-vs-the-sword-of-justice.webp"
+    },
+    {
+      "slug": "genesect-and-the-legend-awakened",
+      "number": 16,
+      "title": "Genesect and the Legend Awakened",
+      "era": "bw",
+      "premiere": "2013-07-13",
+      "year": 2013,
+      "years": {
+        "japan": 2013,
+        "us": 2013
+      },
+      "setting": "New Tork City, Unova",
+      "summary": "Five Genesect build their nest in a nature park in the middle of New Tork City, and it threatens the city's power. Their arrival draws Mewtwo, which knows what it is to be made by people, but the group's leader, Red Genesect, doesn't trust it.",
+      "featured": [
+        649,
+        150
+      ],
+      "characters": [
+        {
+          "name": "Ash",
+          "role": "hero",
+          "partner": 25
+        },
+        {
+          "name": "Iris",
+          "role": "hero",
+          "partner": 610
+        },
+        {
+          "name": "Cilan",
+          "role": "hero",
+          "partner": 511
+        },
+        {
+          "name": "Eric",
+          "role": "guest"
+        }
+      ],
+      "related": [
+        "black-victini-and-reshiram-white-victini-and-zekrom",
+        "kyurem-vs-the-sword-of-justice"
+      ],
+      "poster": "/movies/genesect-and-the-legend-awakened.webp"
+    },
+    {
+      "slug": "diancie-and-the-cocoon-of-destruction",
+      "number": 17,
+      "title": "Diancie and the Cocoon of Destruction",
+      "era": "xy",
+      "premiere": "2014-07-19",
+      "year": 2014,
+      "years": {
+        "japan": 2014,
+        "us": 2014
+      },
+      "setting": "Allearth Forest, Kalos",
+      "summary": "The Heart Diamond that keeps the Diamond Domain alive is failing, and its young ruler, Diancie, can't make a new one yet. Setting out to find Xerneas, Diancie meets Ash and his friends, and a band of thieves who want its diamond-making power.",
+      "featured": [
+        719,
+        716,
+        717
+      ],
+      "characters": [
+        {
+          "name": "Ash",
+          "role": "hero",
+          "partner": 25
+        },
+        {
+          "name": "Serena",
+          "role": "hero",
+          "partner": 653
+        },
+        {
+          "name": "Clemont",
+          "role": "hero",
+          "partner": 659
+        },
+        {
+          "name": "Bonnie",
+          "role": "hero"
+        },
+        {
+          "name": "Merilyn Flame",
+          "role": "villain",
+          "partner": 655
+        },
+        {
+          "name": "Ninja Riot",
+          "role": "villain",
+          "partner": 658
+        }
+      ],
+      "related": [
+        "hoopa-and-the-clash-of-ages",
+        "volcanion-and-the-mechanical-marvel"
+      ],
+      "poster": "/movies/diancie-and-the-cocoon-of-destruction.webp"
+    },
+    {
+      "slug": "hoopa-and-the-clash-of-ages",
+      "number": 18,
+      "title": "Hoopa and the Clash of Ages",
+      "era": "xy",
+      "premiere": "2015-07-18",
+      "year": 2015,
+      "years": {
+        "japan": 2015,
+        "us": 2015
+      },
+      "setting": "Dahara City, Kalos",
+      "summary": "In Dahara City, a desert city by the sea, Ash and his friends meet Hoopa, which can summon anything through its rings. They hear of a hero who stopped a terrifying Pokémon long ago, and that the danger could break loose again.",
+      "featured": [
+        720
+      ],
+      "characters": [
+        {
+          "name": "Ash",
+          "role": "hero",
+          "partner": 25
+        },
+        {
+          "name": "Serena",
+          "role": "hero",
+          "partner": 654
+        },
+        {
+          "name": "Clemont",
+          "role": "hero",
+          "partner": 650
+        },
+        {
+          "name": "Bonnie",
+          "role": "hero"
+        },
+        {
+          "name": "Meray",
+          "role": "guest"
+        }
+      ],
+      "related": [
+        "diancie-and-the-cocoon-of-destruction",
+        "volcanion-and-the-mechanical-marvel"
+      ],
+      "poster": "/movies/hoopa-and-the-clash-of-ages.webp"
+    },
+    {
+      "slug": "volcanion-and-the-mechanical-marvel",
+      "number": 19,
+      "title": "Volcanion and the Mechanical Marvel",
+      "era": "xy",
+      "premiere": "2016-07-16",
+      "year": 2016,
+      "years": {
+        "japan": 2016,
+        "us": 2016
+      },
+      "setting": "Azoth Kingdom, Kalos",
+      "summary": "Volcanion crashes down from the sky, and a mysterious force binds it to Ash, so it has to drag him along on its rescue mission. In the Azoth Kingdom, a corrupt minister has stolen the Artificial Pokémon Magearna to take control of the kingdom.",
+      "featured": [
+        721,
+        801
+      ],
+      "characters": [
+        {
+          "name": "Ash",
+          "role": "hero",
+          "partner": 25
+        },
+        {
+          "name": "Serena",
+          "role": "hero",
+          "partner": 654
+        },
+        {
+          "name": "Clemont",
+          "role": "hero",
+          "partner": 659
+        },
+        {
+          "name": "Bonnie",
+          "role": "hero"
+        },
+        {
+          "name": "Kimia",
+          "role": "guest",
+          "partner": 282
+        },
+        {
+          "name": "Raleigh",
+          "role": "guest",
+          "partner": 685
+        },
+        {
+          "name": "Alva",
+          "role": "villain",
+          "partner": 94
+        },
+        {
+          "name": "Levi",
+          "role": "villain",
+          "partner": 65
+        },
+        {
+          "name": "Cherie",
+          "role": "villain",
+          "partner": 310
+        }
+      ],
+      "related": [
+        "diancie-and-the-cocoon-of-destruction",
+        "hoopa-and-the-clash-of-ages"
+      ],
+      "poster": "/movies/volcanion-and-the-mechanical-marvel.webp"
+    },
+    {
+      "slug": "i-choose-you",
+      "number": 20,
+      "title": "I Choose You!",
+      "era": "modern",
+      "premiere": "2017-07-15",
+      "year": 2017,
+      "years": {
+        "japan": 2017,
+        "us": 2017
+      },
+      "setting": "Kanto",
+      "summary": "Ash oversleeps on his tenth birthday and ends up with a stubborn Pikachu as his first partner. After they glimpse Ho-Oh in flight, they set out together to find it, and Trainers Verity and Sorrel join them on the road.",
+      "featured": [
+        25,
+        250,
+        802
+      ],
+      "characters": [
+        {
+          "name": "Ash",
+          "role": "hero",
+          "partner": 25
+        },
+        {
+          "name": "Verity",
+          "role": "hero",
+          "partner": 393
+        },
+        {
+          "name": "Sorrel",
+          "role": "hero",
+          "partner": 448
+        },
+        {
+          "name": "Bonji",
+          "role": "guest"
+        },
+        {
+          "name": "Cross",
+          "role": "villain",
+          "partner": 745
+        }
+      ],
+      "trilogy": "I Choose You!",
+      "related": [
+        "the-power-of-us",
+        "secrets-of-the-jungle"
+      ],
+      "poster": "/movies/i-choose-you.webp"
+    },
+    {
+      "slug": "the-power-of-us",
+      "number": 21,
+      "title": "The Power of Us",
+      "era": "modern",
+      "premiere": "2018-07-13",
+      "year": 2018,
+      "years": {
+        "japan": 2018,
+        "us": 2018
+      },
+      "setting": "Fula City",
+      "summary": "Every year Fula City holds a Wind Festival for Lugia, which brings the wind that powers the city. Ash and Pikachu arrive for it and cross paths with locals who have nothing else in common, from a former track star to a shy researcher.",
+      "featured": [
+        807,
+        249
+      ],
+      "characters": [
+        {
+          "name": "Ash",
+          "role": "hero",
+          "partner": 25
+        },
+        {
+          "name": "Risa",
+          "role": "guest",
+          "partner": 133
+        },
+        {
+          "name": "Callahan",
+          "role": "guest"
+        },
+        {
+          "name": "Toren",
+          "role": "guest",
+          "partner": 113
+        },
+        {
+          "name": "Harriet",
+          "role": "guest"
+        },
+        {
+          "name": "Margo",
+          "role": "guest"
+        }
+      ],
+      "trilogy": "I Choose You!",
+      "related": [
+        "i-choose-you",
+        "secrets-of-the-jungle"
+      ],
+      "poster": "/movies/the-power-of-us.webp"
+    },
+    {
+      "slug": "detective-pikachu",
+      "number": null,
+      "title": "Detective Pikachu",
+      "era": "live-action",
+      "premiere": "2019-05-03",
+      "year": 2019,
+      "years": {
+        "japan": 2019,
+        "us": 2019
+      },
+      "setting": "Ryme City",
+      "summary": "When private eye Harry Goodman goes missing, his son Tim heads to Ryme City to find out what happened. There he meets Harry's Pokémon partner, a wisecracking Detective Pikachu, and finds that the two of them can understand each other.",
+      "featured": [
+        25,
+        150
+      ],
+      "characters": [
+        {
+          "name": "Tim Goodman",
+          "role": "hero",
+          "partner": 25
+        },
+        {
+          "name": "Lucy Stevens",
+          "role": "hero",
+          "partner": 54
+        },
+        {
+          "name": "Lieutenant Hide Yoshida",
+          "role": "guest",
+          "partner": 209
+        }
+      ],
+      "related": [],
+      "poster": "/movies/detective-pikachu.webp"
+    },
+    {
+      "slug": "mewtwo-strikes-back-evolution",
+      "number": 22,
+      "title": "Mewtwo Strikes Back—Evolution",
+      "era": "modern",
+      "kicker": "CGI remake",
+      "premiere": "2019-07-12",
+      "year": 2019,
+      "years": {
+        "japan": 2019,
+        "us": 2020
+      },
+      "setting": "New Island, Kanto",
+      "summary": "A CGI remake of the first film. Mewtwo, cloned from Mew by scientists, turns against the people who made it, and Ash, Pikachu and their friends are caught at the heart of its revenge.",
+      "featured": [
+        150,
+        151
+      ],
+      "characters": [
+        {
+          "name": "Ash",
+          "role": "hero",
+          "partner": 25
+        },
+        {
+          "name": "Misty",
+          "role": "hero",
+          "partner": 175
+        },
+        {
+          "name": "Brock",
+          "role": "hero",
+          "partner": 37
+        },
+        {
+          "name": "Neesha",
+          "role": "guest",
+          "partner": 9
+        },
+        {
+          "name": "Corey",
+          "role": "guest",
+          "partner": 3
+        },
+        {
+          "name": "Fergus",
+          "role": "guest",
+          "partner": 130
+        },
+        {
+          "name": "Giovanni",
+          "role": "villain",
+          "partner": 53
+        }
+      ],
+      "related": [
+        "mewtwo-strikes-back",
+        "i-choose-you",
+        "the-power-of-us",
+        "secrets-of-the-jungle"
+      ],
+      "poster": "/movies/mewtwo-strikes-back-evolution.webp"
+    },
+    {
+      "slug": "secrets-of-the-jungle",
+      "number": 23,
+      "title": "Secrets of the Jungle",
+      "era": "modern",
+      "premiere": "2020-12-25",
+      "year": 2020,
+      "years": {
+        "japan": 2020,
+        "us": 2021
+      },
+      "setting": "Forest of Okoya",
+      "summary": "Deep in the Forest of Okoya, a Zarude leaves its troop to raise a human baby, Koko, who grows up sure that he is a Zarude too. Years later, a chance meeting with Ash and Pikachu gives Koko his first human friend.",
+      "featured": [
+        893
+      ],
+      "characters": [
+        {
+          "name": "Ash",
+          "role": "hero",
+          "partner": 25
+        },
+        {
+          "name": "Koko",
+          "role": "guest"
+        }
+      ],
+      "trilogy": "I Choose You!",
+      "related": [
+        "i-choose-you",
+        "the-power-of-us"
+      ],
+      "poster": "/movies/secrets-of-the-jungle.webp"
+    },
+    {
+      "slug": "wild-card",
+      "number": null,
+      "title": "Pokémon: Wild Card",
+      "era": "coming-soon",
+      "premiere": null,
+      "year": 2027,
+      "years": {},
+      "summary": "An animated film based on the Pokémon Trading Card Game, about a Pokémon TCG player and his partner, Mimikyu.",
+      "featured": [
+        778
+      ],
+      "characters": [],
+      "related": [],
+      "poster": "/movies/wild-card.webp"
+    }
+  ]
+}

@@ -62,3 +62,16 @@ export function itemList(name: string, items: Crumb[]) {
     itemListElement: items.map((it, i) => ({ "@type": "ListItem", position: i + 1, name: it.name, url: abs(it.path) })),
   };
 }
+
+/** A film (a Pokémon movie's page). `image` is a site path or an absolute URL; `datePublished` is YYYY-MM-DD, left out when it hasn't been released. */
+export function movie({ name, path, description, image, datePublished }: { name: string; path: string; description: string; image: string; datePublished?: string | null }) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Movie",
+    name,
+    url: abs(path),
+    description,
+    image: abs(image),
+    ...(datePublished && { datePublished }),
+  };
+}
