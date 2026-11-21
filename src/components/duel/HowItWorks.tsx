@@ -3,9 +3,12 @@
 import { useId, useState } from "react";
 import { ChevronDown, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import duel from "@/messages/duel";
 
 /** "How it works": a card's longer explanation, folded away until asked for. */
 export function HowItWorks({ children, extra }: { children: React.ReactNode; /** Shown beside the toggle, e.g. a link. */ extra?: React.ReactNode }) {
+  const t = useT(duel);
   const [open, setOpen] = useState(false);
   const id = useId();
   return (
@@ -18,7 +21,7 @@ export function HowItWorks({ children, extra }: { children: React.ReactNode; /**
           onClick={() => setOpen(!open)}
           className="inline-flex items-center gap-1 font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <Info className="h-3.5 w-3.5" aria-hidden /> How it works
+          <Info className="h-3.5 w-3.5" aria-hidden /> {t("howItWorks")}
           <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-180")} aria-hidden />
         </button>
         {extra}

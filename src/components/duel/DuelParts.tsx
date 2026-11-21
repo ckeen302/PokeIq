@@ -13,6 +13,8 @@ import { CopyFallback } from "@/components/quiz/CopyFallback";
 import { cn } from "@/lib/utils";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { Avatar } from "@/components/avatar/Avatar";
+import { useT } from "@/i18n/client";
+import duel from "@/messages/duel";
 
 /** Pieces every duel screen shares: seats, the lobby, leaving, notices. */
 
@@ -39,6 +41,7 @@ const MATCHED_SHOW_MS = 8_000;
  * arrive as round 1 starts, so it's a banner over whatever screen is up.
  */
 export function MatchedNote({ view }: { view: { you: number | null; players: DuelPlayerView[] } }) {
+  const t = useT(duel);
   const [shown, setShown] = useState(false);
   useEffect(() => {
     if (!new URLSearchParams(window.location.search).has("matched")) return;
@@ -62,7 +65,7 @@ export function MatchedNote({ view }: { view: { you: number | null; players: Due
           role="status"
           className="mb-3 text-center font-display text-2xl font-bold uppercase text-success"
         >
-          Matched! You vs {them}
+          {t("matched", { name: them })}
         </motion.p>
       )}
     </AnimatePresence>
@@ -71,28 +74,31 @@ export function MatchedNote({ view }: { view: { you: number | null; players: Due
 
 /** A server error, or the connection dropping. */
 export function DuelNotice({ error, offline }: { error: string | null; offline: boolean }) {
+  const t = useT(duel);
   if (!error && !offline) return null;
   return (
     <p role="alert" className="mx-auto mb-3 flex max-w-xl items-center justify-center gap-1.5 text-center text-sm text-destructive">
       {!error && <WifiOff className="h-4 w-4" aria-hidden />}
-      {error ?? "Connection lost. Reconnecting…"}
+      {error ?? t("connectionLost")}
     </p>
   );
 }
 
 export function DuelLoading() {
+  const t = useT(duel);
   return (
     <div className="flex justify-center py-24">
-      <Loader2 className="h-6 w-6 animate-spin text-screen" aria-label="Loading the duel" />
+      <Loader2 className="h-6 w-6 animate-spin text-screen" aria-label={t("loading")} />
     </div>
   );
 }
 
 export function DuelGone({ message, href, label }: { message: string; href: string; label: string }) {
+  const t = useT(duel);
   return (
     <Card className="mx-auto max-w-md">
       <CardContent className="space-y-4 p-6 text-center">
-        <p className="font-display text-xl font-bold uppercase">Duel not found</p>
+        <p className="font-display text-xl font-bold uppercase">{t("notFound")}</p>
         <p className="text-sm text-muted-foreground">{message}</p>
         <Link href={href} className={buttonVariants()}>
           {label}
@@ -104,22 +110,23 @@ export function DuelGone({ message, href, label }: { message: string; href: stri
 
 /** Leave mid-duel, after a second press: it forfeits. */
 export function LeaveButton({ busy, onLeave }: { busy: boolean; onLeave: () => void }) {
+  const t = useT(duel);
   const [sure, setSure] = useState(false);
   return (
     <div className="flex items-center justify-center gap-2 pt-1">
       {sure ? (
         <>
-          <span className="text-sm text-muted-foreground">Leaving forfeits the duel.</span>
+          <span className="text-sm text-muted-foreground">{t("leave.warning")}</span>
           <Button size="sm" variant="destructive" disabled={busy} onClick={onLeave}>
-            Forfeit
+            {t("leave.forfeit")}
           </Button>
           <Button size="sm" variant="ghost" onClick={() => setSure(false)}>
-            Stay
+            {t("leave.stay")}
           </Button>
         </>
       ) : (
         <Button size="sm" variant="ghost" onClick={() => setSure(true)}>
-          <LogOut className="h-3.5 w-3.5" aria-hidden /> Leave duel
+          <LogOut className="h-3.5 w-3.5" aria-hidden /> {t("leave.button")}
         </Button>
       )}
     </div>
@@ -155,12 +162,13 @@ export interface DuelLobbyProps {
 
 /** The lobby: both seats, the share link, Ready, and the join form for the friend. */
 export function DuelLobby({ view, path, tag, title, invite, about, shareText, rules, settings, home, busy, onJoin, onReady, onLeave, noun = "duel", chat }: DuelLobbyProps) {
+  const t = useT(duel);
   const progress = useProgress();
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState<string | null>(null);
   const [shared, setShared] = useState<"done" | "failed" | null>(null);
   const me = view.you;
-  const host = view.players[0]?.name ?? "A trainer";
+  const host = view.players[0]?.name ?? t("lobby.host");
   const url = `${typeof window !== "undefined" ? window.location.origin : ""}${path}`;
   const ready = me !== null && view.players[me]?.ready;
 
@@ -184,7 +192,7 @@ export function DuelLobby({ view, path, tag, title, invite, about, shareText, ru
 
       <Card>
         <CardContent className="space-y-4 p-6">
-          <ol className="grid gap-3 sm:grid-cols-2" aria-label="Trainers">
+          <ol className="grid gap-3 sm:grid-cols-2" aria-label={t("lobby.trainers")}>
             {[0, 1].map((seat) => {
               const player = view.players[seat];
               return (
@@ -195,15 +203,15 @@ export function DuelLobby({ view, path, tag, title, invite, about, shareText, ru
                       <Avatar avatar={player.avatar} size={32} />
                       <span className="min-w-0 flex-1 truncate font-display text-lg font-bold uppercase">
                         {player.name}
-                        {me === seat && <span className="hud-label ml-2">You</span>}
+                        {me === seat && <span className="hud-label ml-2">{t("lobby.you")}</span>}
                       </span>
                       <span className={cn("hud-label", player.ready ? "text-success" : player.quiet ? "text-warning" : "")}>
-                        {player.ready ? "Ready" : player.quiet ? "Away" : "Not ready"}
+                        {player.ready ? t("lobby.ready") : player.quiet ? t("lobby.away") : t("lobby.notReady")}
                       </span>
                     </>
                   ) : (
                     <span className="flex flex-1 items-center gap-2 text-sm text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Waiting for a challenger…
+                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> {t("lobby.waiting")}
                     </span>
                   )}
                 </li>
@@ -219,22 +227,22 @@ export function DuelLobby({ view, path, tag, title, invite, about, shareText, ru
                 <input
                   readOnly
                   value={url}
-                  aria-label={`${noun[0].toUpperCase()}${noun.slice(1)} link`}
+                  aria-label={t("lobby.link", { noun: `${noun[0].toUpperCase()}${noun.slice(1)}` })}
                   onFocus={(e) => e.currentTarget.select()}
                   className="h-10 min-w-0 flex-1 rounded-md border border-input bg-shade/20 px-3 font-mono text-xs"
                 />
                 <Button variant="outline" onClick={() => void share()}>
-                  <Link2 className="h-4 w-4" aria-hidden /> {shared === "done" ? "Copied!" : "Copy link"}
+                  <Link2 className="h-4 w-4" aria-hidden /> {shared === "done" ? t("lobby.copied") : t("lobby.copy")}
                 </Button>
               </div>
               {shared === "failed" && <CopyFallback text={url} />}
               <Button size="lg" className="w-full" variant={ready ? "secondary" : "success"} disabled={busy} onClick={() => onReady(!ready)}>
-                {ready ? (view.players.length < 2 ? "Ready. Waiting for a challenger…" : "Cancel ready") : "Ready"}
+                {ready ? (view.players.length < 2 ? t("lobby.readyWaiting") : t("lobby.cancelReady")) : t("lobby.ready")}
               </Button>
               <p className="text-center text-xs text-muted-foreground">
-                The {noun} starts as soon as both of you are ready.{" "}
+                {t("lobby.starts", { noun })}{" "}
                 <button type="button" className="underline underline-offset-2 hover:text-foreground" onClick={onLeave}>
-                  Leave
+                  {t("lobby.leave")}
                 </button>
               </p>
             </div>
@@ -248,7 +256,7 @@ export function DuelLobby({ view, path, tag, title, invite, about, shareText, ru
               }}
             >
               <label htmlFor="duel-join-name" className="hud-label">
-                Your trainer name
+                {t("lobby.nameLabel")}
               </label>
               <div className="flex gap-2">
                 <input
@@ -260,12 +268,12 @@ export function DuelLobby({ view, path, tag, title, invite, about, shareText, ru
                   }}
                   maxLength={24}
                   required
-                  placeholder="Trainer name"
+                  placeholder={t("lobby.namePlaceholder")}
                   className="h-12 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
                 <Button type="submit" size="lg" disabled={busy || !name.trim()}>
                   {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Swords className="h-4 w-4" aria-hidden />}
-                  Join {noun}
+                  {t("lobby.join", { noun })}
                 </Button>
               </div>
               {nameError && (
@@ -276,11 +284,14 @@ export function DuelLobby({ view, path, tag, title, invite, about, shareText, ru
             </form>
           ) : (
             <p className="text-center text-sm text-muted-foreground">
-              This {noun} is full.{" "}
-              <Link href={home} className="underline underline-offset-2">
-                Start your own
-              </Link>
-              .
+              {t.rich("lobby.full", {
+                noun,
+                link: (c) => (
+                  <Link href={home} className="underline underline-offset-2">
+                    {c}
+                  </Link>
+                ),
+              })}
             </p>
           )}
         </CardContent>
@@ -304,13 +315,14 @@ export function DuelLobby({ view, path, tag, title, invite, about, shareText, ru
 
 /** Someone else's duel: who's playing and how it's going. */
 export function DuelVisitor({ tag, players, status, home, label }: { tag: string; players: DuelPlayerView[]; status: string; home: string; label: string }) {
+  const t = useT(duel);
   const [a, b] = players.map((p) => p.name);
   return (
     <Card className="mx-auto max-w-md">
       <CardContent className="space-y-4 p-6 text-center">
         <p className="hud-label text-screen">{tag}</p>
         <p className="font-display text-2xl font-bold uppercase">
-          {a ?? "?"} vs {b ?? "?"}
+          {t("versus", { a: a ?? "?", b: b ?? "?" })}
         </p>
         <p className="text-sm text-muted-foreground">{status}</p>
         <Link href={home} className={cn(buttonVariants({ size: "lg" }), "w-full")}>

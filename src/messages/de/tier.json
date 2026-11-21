@@ -1,0 +1,12 @@
+{
+  "tiers": {
+    "poke": "Pokéball",
+    "great": "Superball",
+    "ultra": "Hyperball",
+    "master": "Meisterball"
+  },
+  "division": "{tier} {division}",
+  "rating": "{label} · Wertung {rating}",
+  "provisional": "Vorl.",
+  "provisionalTitle": "Vorläufig: In den ersten {n} Spielen ändert sich die Wertung schneller"
+}

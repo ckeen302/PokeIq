@@ -6,6 +6,8 @@ import { saveSeat } from "@/lib/duel-seat";
 import { setTrainerName, useProgress } from "@/lib/progress";
 import { pageHidden } from "@/lib/polling";
 import { unlockAudio } from "@/lib/sound";
+import { useT } from "@/i18n/client";
+import duel from "@/messages/duel";
 
 /**
  * "Find an opponent": searches (POST to the matchmaking endpoint) every 1.5 s,
@@ -59,6 +61,7 @@ function whenVisible(): Promise<void> {
 }
 
 export function useMatchmaking(settings: Record<string, unknown> | undefined, { endpoint = "/api/duel/match", save = saveSeat }: MatchmakingOptions = {}) {
+  const tr = useT(duel);
   const router = useRouter();
   const progress = useProgress();
   /** When this search began (device time), while one is on. */
@@ -126,7 +129,7 @@ export function useMatchmaking(settings: Record<string, unknown> | undefined, { 
         else if (res.status === 429) wait = THROTTLED_MS;
         else if (res.status < 500) {
           // A request the server won't take (a bad name, a team that breaks the rules): stop and say why. Busy or offline: keep trying.
-          setError(data.error ?? `Request failed (${res.status})`);
+          setError(data.error ?? tr("errors.request", { status: res.status }));
           setSince(null);
           run.current++;
           return;

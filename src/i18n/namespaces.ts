@@ -5,10 +5,14 @@
  */
 export const NAMESPACES = [
   "common",
+  "countdown",
   "credits",
+  "duel",
   "error",
   "feedback",
+  "game-info",
   "home",
+  "howto",
   "nav",
   "pikadoku",
   "pikadoku-board",
@@ -16,5 +20,8 @@ export const NAMESPACES = [
   "pikadoku-page",
   "privacy",
   "report",
+  "share",
+  "share-page",
   "site",
+  "tier",
 ] as const;
