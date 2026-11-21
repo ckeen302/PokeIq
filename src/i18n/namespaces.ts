@@ -4,6 +4,7 @@
  * scripts/i18n/check-messages.mjs (npm run lint) keeps this list complete.
  */
 export const NAMESPACES = [
+  "api-errors",
   "common",
   "countdown",
   "credits",
@@ -18,9 +19,19 @@ export const NAMESPACES = [
   "geo-replay",
   "geo-solo",
   "geo-streak",
+  "guessr-cards",
+  "guessr-duel",
+  "guessr-duel-page",
+  "guessr-hud",
+  "guessr-party",
+  "guessr-ranked",
   "home",
   "howto",
   "nav",
+  "pokedle",
+  "pokedle-board",
+  "pokedle-duel",
+  "pokedle-game",
   "pokeguessr",
   "privacy",
   "report",

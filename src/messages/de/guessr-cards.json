@@ -1,0 +1,54 @@
+{
+  "duel": {
+    "heading": "Duelle",
+    "modes": {
+      "hp": "KP-Kampf",
+      "race": "Punkterennen",
+      "team": "Teams 2v2"
+    },
+    "queues": {
+      "casual": "Locker",
+      "ranked": "Rangliste"
+    },
+    "queueLabel": "Duell-Art",
+    "eras": {
+      "2d": "Klassisches 2D",
+      "3d": "Modernes 3D"
+    },
+    "headingTeam": "Team-Duell · {map}",
+    "headingHp": "Eins gegen eins · {map}",
+    "teamBlurb": "Zwei Zweierteams (bis zu vier pro Seite) auf denselben Orten, {hp} KP pro Team. In jeder Runde zählt die beste Markierung deines Teams, und Teamkameraden sehen ihre Markierungen sofort. Schick den Raumcode an drei Freunde.",
+    "raceBlurb": "Dieselben {n} Orte für euch beide, auf der oben gewählten Karte. Wer in {n} Runden die meisten Punkte holt, gewinnt. Schick deinem Freund den Link und drück auf Bereit.",
+    "raceBlurbEra": "Dieselben {n} Orte für euch beide, auf der oben gewählten Karte und den gewählten Spielen. Wer in {n} Runden die meisten Punkte holt, gewinnt. Schick deinem Freund den Link und drück auf Bereit.",
+    "hpBlurb": "Dieselben Orte für euch beide, auf der oben gewählten Karte. {hp} KP für jeden: In jeder Runde verliert die niedrigere Punktzahl die Differenz. Schick deinem Freund den Link und drück auf Bereit.",
+    "hpBlurbEra": "Dieselben Orte für euch beide, auf der oben gewählten Karte und den gewählten Spielen. {hp} KP für jeden: In jeder Runde verliert die niedrigere Punktzahl die Differenz. Schick deinem Freund den Link und drück auf Bereit.",
+    "turboInfo": "Turbo: Sobald einer tippt, hat der andere {s} statt 15 Sekunden.",
+    "mode": "Modus",
+    "modeLabel": "Duell-Modus",
+    "raceRounds": "Runden im Rennen",
+    "partySettings": "Party-Einstellungen",
+    "turboOn": "Turbo an",
+    "turboOff": "Turbo aus"
+  },
+  "party": {
+    "royaleBlurb": "Bis zu {max} Trainer auf denselben Orten. Die niedrigste Punktzahl jeder Runde kostet ein Leben ({lives} für jeden); wer als Letzter übrig bleibt, gewinnt.",
+    "teamBlurb": "Team Rot gegen Team Blau, 2v2 (bis zu 4v4), {hp} KP pro Team. Die beste Markierung deines Teams zählt, und du siehst die Markierungen deiner Teamkameraden live.",
+    "label": "Party · bis zu {max} Trainer",
+    "room": "Privater Raum · {map}",
+    "gameLabel": "Party-Spiel",
+    "modes": {
+      "royale": "Battle Royal",
+      "team": "Team-Duell"
+    },
+    "host": "Du bist der Host: Ändere Karte, Leben, Zeit und Runden in der Lobby und starte, wenn alle da sind.",
+    "nameLabel": "Dein Trainername",
+    "namePlaceholder": "Trainername",
+    "nameRejected": "Wähle einen anderen Namen.",
+    "create": "Party erstellen",
+    "code": "Raumcode",
+    "join": "Beitreten",
+    "badCode": "Raumcodes bestehen aus sechs Buchstaben und Ziffern.",
+    "failed": "Die Party konnte nicht geöffnet werden.",
+    "requestFailed": "Anfrage fehlgeschlagen ({status})"
+  }
+}

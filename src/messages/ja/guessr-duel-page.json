@@ -1,0 +1,39 @@
+{
+  "duel": {
+    "fallbackTitle": "PokéGuessrの対戦",
+    "fallbackDescription": "ポケモン版GeoGuessrの1対1対戦。2人とも同じ場所が出題され、ピンが近いほうの勝ち。",
+    "titleVs": "{host} vs {guest}：PokéGuessrの対戦",
+    "titleChallenge": "{host}がPokéGuessrの対戦を申し込んでいます",
+    "aTrainer": "トレーナー",
+    "raceDescription": "{where}でのポイントレース。2人とも同じ{rounds}か所が出題され、合計ポイントが多いほうの勝ち。",
+    "hpDescription": "{where}で1対1の勝負。2人とも同じ場所が出題され、HPはそれぞれ{hp}。GeoGuessrのデュエルと同じルールです。"
+  },
+  "party": {
+    "fallbackTitle": "PokéGuessrのパーティー",
+    "fallbackDescription": "友だちと遊ぶポケモン版GeoGuessr。バトルロイヤルやチーム対戦で、全員に同じ場所が出題されます。",
+    "title": "{host}がPokéGuessrのパーティーに招待しています",
+    "aTrainer": "トレーナー",
+    "description": "{where}で{mode}。全員に同じ場所が出題されます。ルームには{n}人のトレーナーがいます。",
+    "modes": {
+      "royale": "バトルロイヤル",
+      "team": "チーム対戦"
+    }
+  },
+  "where": "ポケモンの世界",
+  "maps": {
+    "world": "世界",
+    "kanto": "カントー",
+    "johto": "ジョウト",
+    "hoenn": "ホウエン",
+    "sinnoh": "シンオウ",
+    "unova": "イッシュ",
+    "kalos": "カロス",
+    "alola": "アローラ",
+    "galar": "ガラル",
+    "paldea": "パルデア",
+    "theme-gyms": "ジム",
+    "theme-towns": "タウン・シティ",
+    "theme-routes": "道路"
+  },
+  "gameSep": "・"
+}

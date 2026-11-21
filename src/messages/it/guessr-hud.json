@@ -1,0 +1,60 @@
+{
+  "distance": {
+    "exact": "Centro perfetto!",
+    "squares": "{n} caselle"
+  },
+  "band": {
+    "round": "Round {round}",
+    "damage": "Danni ×{m}",
+    "race": "Gara a punti",
+    "noPin": "Nessuna puntina",
+    "super": "È superefficace!",
+    "points": "{points} pt",
+    "you": "Tu",
+    "connectionLost": "Connessione persa",
+    "multiplierTitle": "Il moltiplicatore di danni di questo Allenatore"
+  },
+  "guessed": {
+    "waiting": "Risposta bloccata. In attesa di {name}…",
+    "guessed": "{name} ha risposto",
+    "left": "{s} s per rispondere"
+  },
+  "live": {
+    "downTitle": "Connessione in diretta persa: aggiornamenti ogni secondo finché non torna",
+    "upTitle": "In diretta: le mosse del tuo avversario si vedono subito",
+    "down": "Riconnessione…",
+    "up": "In diretta"
+  },
+  "leave": {
+    "sure": "Se esci, perdi la sfida.",
+    "forfeit": "Arrenditi",
+    "stay": "Resta",
+    "leave": "Esci dalla sfida"
+  },
+  "emotes": {
+    "send": "Invia una reazione",
+    "menu": "Reazioni",
+    "sendOne": "Invia «{label}»",
+    "pika": "Pika!",
+    "huh": "Eh?",
+    "zzz": "Zzz…",
+    "splash": "Splash!",
+    "heh": "Eh eh",
+    "cute": "Che tenero",
+    "flame": "Carichissimo",
+    "counter": "Contrattacco!"
+  },
+  "versus": {
+    "round": "Round {round}",
+    "race": "Gara a punti",
+    "damage": "Danni ×{m}",
+    "hp": "Sfida a PS",
+    "turbo": " · Turbo",
+    "ranked": "Classificata · ",
+    "vs": "VS",
+    "versus": "contro",
+    "you": "Tu",
+    "hpUnit": "PS"
+  },
+  "timeline": "PS dopo ogni round"
+}

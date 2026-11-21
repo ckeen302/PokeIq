@@ -1,0 +1,60 @@
+{
+  "distance": {
+    "exact": "En plein dans le mille !",
+    "squares": "{n} cases"
+  },
+  "band": {
+    "round": "Manche {round}",
+    "damage": "Dégâts ×{m}",
+    "race": "Course aux points",
+    "noPin": "Pas d'épingle",
+    "super": "C'est super efficace !",
+    "points": "{points} pts",
+    "you": "Toi",
+    "connectionLost": "Connexion perdue",
+    "multiplierTitle": "Le multiplicateur de dégâts de ce Dresseur"
+  },
+  "guessed": {
+    "waiting": "Réponse validée. En attente de {name}…",
+    "guessed": "{name} a répondu",
+    "left": "{s} s pour répondre"
+  },
+  "live": {
+    "downTitle": "Connexion en direct perdue : mises à jour chaque seconde en attendant son retour",
+    "upTitle": "En direct : les actions de ton adversaire s'affichent aussitôt",
+    "down": "Reconnexion…",
+    "up": "En direct"
+  },
+  "leave": {
+    "sure": "Partir, c'est abandonner le duel.",
+    "forfeit": "Abandonner",
+    "stay": "Rester",
+    "leave": "Quitter le duel"
+  },
+  "emotes": {
+    "send": "Envoyer une réaction",
+    "menu": "Réactions",
+    "sendOne": "Envoyer « {label} »",
+    "pika": "Pika !",
+    "huh": "Hein ?",
+    "zzz": "Zzz…",
+    "splash": "Trempette !",
+    "heh": "Hé hé",
+    "cute": "Trop mignon",
+    "flame": "À fond !",
+    "counter": "Riposte !"
+  },
+  "versus": {
+    "round": "Manche {round}",
+    "race": "Course aux points",
+    "damage": "Dégâts ×{m}",
+    "hp": "Combat de PV",
+    "turbo": " · Turbo",
+    "ranked": "Classé · ",
+    "vs": "VS",
+    "versus": "contre",
+    "you": "Toi",
+    "hpUnit": "PV"
+  },
+  "timeline": "PV après chaque manche"
+}

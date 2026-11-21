@@ -8,19 +8,17 @@ import { Check, Crown, Eye, Heart, Link2, Loader2, LogOut, Play, RotateCcw, Shar
 import type { DuelEmote } from "@/lib/pvp-types";
 import type { TauntId } from "@/lib/trainer/taunts";
 import { DUEL_COUNTDOWN_FLASH_MS } from "@/lib/geo-duel-rules";
-import type { GeoAnswer, GeoRegionInfo } from "@/lib/geo-types";
+import type { GeoRegionInfo } from "@/lib/geo-types";
 import { WORLD_REGION, geoMapRank } from "@/lib/geo-types";
 import {
   PARTY_COUNTDOWN_SECONDS,
   PARTY_LIVES,
   PARTY_MAX_PLAYERS,
-  PARTY_MODE_NAMES,
   PARTY_ROUND_CAPS,
   PARTY_ROUND_SECONDS,
   PARTY_TEAM_HP,
   PARTY_TEAM_MAX,
   TEAM_COLORS,
-  TEAM_NAMES,
   partyPath,
   type PartyMode,
   type PartyRoundResult,
@@ -39,12 +37,18 @@ import { DuelGone, DuelLoading, DuelNotice, seconds } from "@/components/duel/Du
 import { CopyFallback } from "@/components/quiz/CopyFallback";
 import { GeoMap, LINE_DRAW_MS, mapAspect, type MapPin, type RevealedRound } from "./GeoMap";
 import { CountdownPill, FullscreenButton, GameShell, GuessButton, MapDock } from "./GameShell";
-import { EmoteButton, LivePill } from "./DuelHud";
+import { EmoteButton, LivePill, fmtIn, multIn } from "./DuelHud";
 import { useDuelLive } from "./use-duel-live";
 import { shotFit } from "./ShotCarousel";
 import { ReportShot } from "./ReportShot";
-import { Lives, MAX_3D, PartyEmoteFeed, PartyLineup, PartyTrainer, Roster, TauntBar, TeamHp, fmt, seatColor, seatPin, usePartyTaunts } from "./PartyParts";
+import { Lives, MAX_3D, PartyEmoteFeed, PartyLineup, PartyTrainer, Roster, TauntBar, TeamHp, seatColor, seatPin, usePartyTaunts } from "./PartyParts";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import type { Translator } from "@/i18n/catalog";
+import partyNs from "@/messages/guessr-party";
+import { gameName, mapName, namedMap, placeName, type GuessrNames } from "./duel-names";
+
+type P = Translator<typeof partyNs.en>;
 
 /**
  * A PokéGuessr party at /pokeguessr/party/<code>: the lobby (the host sets the
@@ -55,17 +59,13 @@ import { cn } from "@/lib/utils";
  * anything changes, with polling as the fallback.
  */
 
-const clean = (s: string) => s.replace(/^(Kanto|Johto|Hoenn|Sinnoh|Unova|Kalos|Alola|Galar|Paldea) (?=Route)/, "");
-const shown = (s: string) => clean(s).replace(/ \((Kanto|Johto|Hoenn|Sinnoh|Unova|Kalos|Alola|Galar|Paldea|Generation [IVX]+|BW|B2W2|Jagged Pass)\)$/, "");
-function placeName(answer: GeoAnswer, map: GeoRegionInfo): string {
-  const name = answer.parent ? `${shown(answer.name)} · ${shown(answer.parent)}` : shown(answer.name);
-  return answer.region && answer.region !== map.name ? `${name}, ${answer.region}` : name;
-}
-const ordinal = (n: number) => `${n}${n % 10 === 1 && n % 100 !== 11 ? "st" : n % 10 === 2 && n % 100 !== 12 ? "nd" : n % 10 === 3 && n % 100 !== 13 ? "rd" : "th"}`;
 const FIT_MS = 800;
+/** Names joined as the language does: "Red and Blue", "Red and Blue and Green" (English, as before). */
+const joinNames = (t: P, names: string[]) => names.reduce((a, b) => t("and", { a, b }));
 
-export function GeoParty({ code, regions }: { code: string; regions: GeoRegionInfo[] }) {
+export function GeoParty({ code, regions, names }: { code: string; regions: GeoRegionInfo[]; names?: GuessrNames }) {
   const router = useRouter();
+  const t = useT(partyNs);
   const { view, now, gone, offline, error, setError, busy, sawPlay, act, send, join, refresh, setLive } = useDuel<PartyView>(`/api/geo/party/${code}`, code);
   const liveStatus = useDuelLive(view?.live, code, refresh);
   useEffect(() => setLive(liveStatus === "up"), [liveStatus, setLive]);
@@ -165,7 +165,7 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
   });
 
   const map = view ? regions.find((r) => r.id === view.settings.region) : undefined;
-  if (gone || (view && !map)) return <DuelGone message={gone ?? "This party's map isn't available any more."} href="/pokeguessr" label="Back to PokéGuessr" />;
+  if (gone || (view && !map)) return <DuelGone message={gone ?? t("gone")} href="/pokeguessr" label={t("back")} />;
   if (!view || !map) return <DuelLoading />;
 
   const notice = <DuelNotice error={error} offline={offline} />;
@@ -174,7 +174,7 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
     unlockAudio();
     return send({ action: "emote", emote: e });
   };
-  const mapName = map.name;
+  const shownMap = mapName(map, names);
 
   if (view.status === "lobby") {
     return (
@@ -183,6 +183,7 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
         <PartyLobby
           view={view}
           regions={regions}
+          names={names}
           busy={busy}
           onJoin={join}
           onSettings={(s) => void act({ action: "settings", ...s })}
@@ -199,7 +200,7 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
   }
 
   if (me === null) {
-    return <PartyWatch view={view} mapName={mapName} />;
+    return <PartyWatch view={view} mapName={shownMap} />;
   }
 
   if (view.status === "finished" && (summary || !sawPlay || !last || view.end?.reason === "left")) {
@@ -209,7 +210,7 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
           <div className="h-full overflow-y-auto">
             {notice}
             <PartyEmoteFeed view={view} />
-            <PartyEnd view={view} map={map} busy={busy} onAgain={() => void act({ action: "again" })} onTaunt={(id) => send({ action: "emote", emote: id })} />
+            <PartyEnd view={view} map={map} names={names} busy={busy} onAgain={() => void act({ action: "again" })} onTaunt={(id) => send({ action: "emote", emote: id })} />
           </div>
         )}
       </GameShell>
@@ -228,9 +229,9 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
         {() => (
           <>
             {index === 0 ? (
-              <PartyLineup view={view} mapName={mapName} secondsLeft={secondsLeft} />
+              <PartyLineup view={view} mapName={shownMap} secondsLeft={secondsLeft} />
             ) : (
-              <RoundIntro view={view} round={index + 1} secondsLeft={secondsLeft} mapName={mapName} />
+              <RoundIntro view={view} round={index + 1} secondsLeft={secondsLeft} mapName={shownMap} />
             )}
             <div className="absolute inset-x-0 top-12 z-20">{notice}</div>
             <PartyEmoteFeed view={view} />
@@ -266,7 +267,7 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
                     <img
                       key={live.shot}
                       src={live.shot}
-                      alt="Where is this?"
+                      alt={t("round.alt")}
                       data-testid="geo-shot"
                       onLoad={(e) => {
                         e.currentTarget.style.imageRendering = shotFit(e.currentTarget).pixelated ? "pixelated" : "auto";
@@ -292,7 +293,7 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
                     map={({ fill }) => (
                       <GeoMap
                         land={fill}
-                        region={map}
+                        region={namedMap(map, names)}
                         pick={locked ?? pick}
                         pinImage={seatPin(view, me)}
                         others={mates}
@@ -313,7 +314,7 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
                         hasPin={!!pick}
                         busy={busy}
                         disabled={!!locked || busy || timeUp}
-                        label={locked ? (waiting ? `Waiting for ${waiting} more…` : "Locked in") : timeUp ? "Time's up" : undefined}
+                        label={locked ? (waiting ? t("round.waitingMore", { n: waiting }) : t("round.locked")) : timeUp ? t("round.timeUp") : undefined}
                         onClick={() => void guess()}
                       />
                     }
@@ -321,7 +322,7 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
                 ) : (
                   <div className="absolute inset-x-0 bottom-4 z-20 flex justify-center px-4">
                     <p className="flex items-center gap-2 rounded-full bg-black/70 px-4 py-2 font-display text-sm font-bold uppercase tracking-wide text-white backdrop-blur" data-testid="party-spectating">
-                      <Eye className="h-4 w-4" aria-hidden /> {"You're out: watching"} · {live.guessed.filter(Boolean).length} of {live.playing.filter(Boolean).length} have guessed
+                      <Eye className="h-4 w-4" aria-hidden /> {t("round.watching", { guessed: live.guessed.filter(Boolean).length, playing: live.playing.filter(Boolean).length })}
                     </p>
                   </div>
                 )}
@@ -342,7 +343,7 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
     return (
       <GameShell>
         {() => (
-          <PartyReveal view={view} map={map} result={last} notice={notice} emoteButton={emoteButton} livePill={livePill}>
+          <PartyReveal view={view} map={map} names={names} result={last} notice={notice} emoteButton={emoteButton} livePill={livePill}>
             <button
               type="button"
               disabled={!final && (pressed || busy || !stillIn)}
@@ -353,7 +354,7 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
                 !final && (pressed || busy || !stillIn) ? "cursor-wait bg-black/60" : "bg-[#4cbb17] hover:bg-[#58d01c] active:scale-[0.98]"
               )}
             >
-              {final ? "See standings ▶" : !stillIn ? `Next round in ${nextIn}` : pressed ? `Waiting for the others… (${nextIn})` : `Next round (${nextIn}) ▶`}
+              {final ? t("reveal.standings") : !stillIn ? t("reveal.nextIn", { n: nextIn }) : pressed ? t("reveal.waiting", { n: nextIn }) : t("reveal.next", { n: nextIn })}
             </button>
             {!final && <div className="mt-2 flex justify-center">{leaveButton}</div>}
           </PartyReveal>
@@ -369,29 +370,31 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
 // ---------------------------------------------------------------------------
 
 function PartyLeave({ busy, out, onLeave }: { busy: boolean; out: boolean; onLeave: () => void }) {
+  const t = useT(partyNs);
   const [sure, setSure] = useState(false);
   if (sure && !out) {
     return (
       <div className="flex items-center gap-2 rounded-md bg-black/70 px-3 py-1.5 text-sm text-white backdrop-blur">
-        <span className="hidden sm:inline">Leaving takes you out of the game.</span>
+        <span className="hidden sm:inline">{t("leave.sure")}</span>
         <button type="button" disabled={busy} onClick={onLeave} className="rounded bg-[#ff5a5a] px-2.5 py-1 font-display text-xs font-bold uppercase tracking-wider disabled:opacity-50">
-          Leave
+          {t("leave.leave")}
         </button>
         <button type="button" onClick={() => setSure(false)} className="rounded px-2 py-1 font-display text-xs font-bold uppercase tracking-wider text-white/80 hover:text-white">
-          Stay
+          {t("leave.stay")}
         </button>
       </div>
     );
   }
   return (
-    <button type="button" onClick={() => (out ? onLeave() : setSure(true))} className="hud-btn !w-auto gap-1.5 px-2.5 text-xs font-semibold" aria-label="Leave party" title="Leave party">
-      <LogOut className="h-3.5 w-3.5" aria-hidden /> <span className="hidden sm:inline">Leave</span>
+    <button type="button" onClick={() => (out ? onLeave() : setSure(true))} className="hud-btn !w-auto gap-1.5 px-2.5 text-xs font-semibold" aria-label={t("leave.title")} title={t("leave.title")}>
+      <LogOut className="h-3.5 w-3.5" aria-hidden /> <span className="hidden sm:inline">{t("leave.leave")}</span>
     </button>
   );
 }
 
 /** The band over the round: the round, the clock, and lives or team HP. */
 function PartyBand({ view, round, below }: { view: PartyView; round: number; below?: React.ReactNode }) {
+  const t = useT(partyNs);
   const me = view.you!;
   const team = view.settings.mode === "team";
   const myTeam = view.players[me]?.team;
@@ -404,22 +407,22 @@ function PartyBand({ view, round, below }: { view: PartyView; round: number; bel
           <TeamHp team={0} hp={view.hp?.[0] ?? PARTY_TEAM_HP} you={myTeam === 0} />
         ) : (
           <div className="min-w-0">
-            <p className="hud-label !text-white/60">You</p>
-            {view.players[me]?.out ? <p className="font-display text-sm font-bold uppercase text-[#ff8a8a]">Out</p> : <Lives lives={view.players[me]?.lives ?? 0} max={view.settings.lives} className="[&_svg]:h-4 [&_svg]:w-4" />}
+            <p className="hud-label !text-white/60">{t("band.you")}</p>
+            {view.players[me]?.out ? <p className="font-display text-sm font-bold uppercase text-[#ff8a8a]">{t("band.out")}</p> : <Lives lives={view.players[me]?.lives ?? 0} max={view.settings.lives} className="[&_svg]:h-4 [&_svg]:w-4" />}
           </div>
         )}
         <div className="flex flex-col items-center">
           <p className="font-display text-lg font-extrabold uppercase italic leading-none sm:text-2xl" data-testid="party-round">
-            Round {round}
+            {t("band.round", { round })}
           </p>
-          <p className="font-pixel text-[9px] uppercase text-[#ffd23c]">{team ? `${mult}× damage` : `${alive} of ${view.players.length} left`}</p>
+          <p className="font-pixel text-[9px] uppercase text-[#ffd23c]">{team ? t("band.damage", { m: multIn(t.locale, mult) }) : t("band.left", { alive, total: view.players.length })}</p>
         </div>
         {team ? (
           <TeamHp team={1} hp={view.hp?.[1] ?? PARTY_TEAM_HP} you={myTeam === 1} className="text-right" />
         ) : (
           <div className="min-w-0 text-right">
-            <p className="hud-label !text-white/60">Battle Royale</p>
-            <p className="font-display text-sm font-bold uppercase">{alive} standing</p>
+            <p className="hud-label !text-white/60">{t("modes.royale")}</p>
+            <p className="font-display text-sm font-bold uppercase">{t("band.standing", { alive })}</p>
           </div>
         )}
       </div>
@@ -429,6 +432,7 @@ function PartyBand({ view, round, below }: { view: PartyView; round: number; bel
 }
 
 function RoundIntro({ view, round, secondsLeft, mapName }: { view: PartyView; round: number; secondsLeft: number; mapName: string }) {
+  const t = useT(partyNs);
   const team = view.settings.mode === "team";
   const alive = view.players.filter((p) => !p.out).length;
   return (
@@ -436,8 +440,8 @@ function RoundIntro({ view, round, secondsLeft, mapName }: { view: PartyView; ro
       <div aria-hidden className="geo-split absolute inset-0 opacity-80" />
       <div className="relative z-10 space-y-1">
         <p className="font-display text-xs uppercase tracking-[0.2em] text-white/70">{mapName}</p>
-        <h2 className="font-display text-5xl font-extrabold uppercase italic sm:text-7xl">Round {round}</h2>
-        <p className="font-display text-sm font-bold uppercase text-[#ffd23c] sm:text-lg">{team ? `${view.round?.multiplier ?? 1}× damage` : `${alive} trainers standing`}</p>
+        <h2 className="font-display text-5xl font-extrabold uppercase italic sm:text-7xl">{t("intro.round", { round })}</h2>
+        <p className="font-display text-sm font-bold uppercase text-[#ffd23c] sm:text-lg">{team ? t("intro.damage", { m: multIn(t.locale, view.round?.multiplier ?? 1) }) : t("intro.standing", { alive })}</p>
       </div>
       {team ? (
         <div className="relative z-10 grid w-full max-w-xl grid-cols-2 gap-6">
@@ -455,21 +459,28 @@ function RoundIntro({ view, round, secondsLeft, mapName }: { view: PartyView; ro
 }
 
 /** The verdict on a revealed round, from the server's stamps. */
-function verdict(view: PartyView, r: PartyRoundResult): string {
-  const name = (s: number) => (s === view.you ? "You" : view.players[s]?.name ?? "A trainer");
-  const list = (seats: number[]) => (seats.length <= 2 ? seats.map(name).join(" and ") : `${seats.slice(0, 2).map(name).join(", ")} and ${seats.length - 2} more`);
+function verdict(t: P, view: PartyView, r: PartyRoundResult): string {
+  const fmt = fmtIn(t.locale);
+  const name = (s: number) => (s === view.you ? t("you") : view.players[s]?.name ?? t("aTrainer"));
+  const list = (seats: number[]) =>
+    seats.length <= 2 ? (seats.length === 2 ? t("and", { a: name(seats[0]), b: name(seats[1]) }) : seats.map(name).join("")) : t("more", { a: name(seats[0]), b: name(seats[1]), n: seats.length - 2 });
+  /** One trainer (not you), you alone, or more than one. */
+  const who = (seats: number[]) => (seats.length === 1 ? (seats[0] === view.you ? "You" : "One") : "Many");
   if (r.team) {
-    if (r.team.hurt === null) return "Even round: no damage";
-    return `${TEAM_NAMES[r.team.hurt]} ${view.players[view.you ?? 0]?.team === r.team.hurt ? "(you) " : ""}takes ${fmt(r.team.damage)} damage`;
+    if (r.team.hurt === null) return t("reveal.evenNoDamage");
+    const team = t(`teams.${r.team.hurt}`);
+    const damage = fmt(r.team.damage);
+    return view.players[view.you ?? 0]?.team === r.team.hurt ? t("reveal.teamYouTake", { team, damage }) : t("reveal.teamTakes", { team, damage });
   }
-  if (r.out?.length) return `${list(r.out)} ${r.out.length === 1 && r.out[0] !== view.you ? "is" : "are"} out!`;
-  if (!r.losers?.length) return "Even round: no lives lost";
-  return `${list(r.losers)} ${r.losers.length === 1 && r.losers[0] !== view.you ? "loses" : "lose"} a life`;
+  if (r.out?.length) return t(`reveal.out${who(r.out)}`, { names: list(r.out) });
+  if (!r.losers?.length) return t("reveal.evenNoLives");
+  return t(`reveal.loses${who(r.losers)}`, { names: list(r.losers) });
 }
 
 function PartyReveal({
   view,
   map,
+  names,
   result,
   notice,
   emoteButton,
@@ -478,15 +489,18 @@ function PartyReveal({
 }: {
   view: PartyView;
   map: GeoRegionInfo;
+  names?: GuessrNames;
   result: PartyRoundResult;
   notice: React.ReactNode;
   emoteButton: React.ReactNode;
   livePill: React.ReactNode;
   children: React.ReactNode;
 }) {
+  const t = useT(partyNs);
+  const fmt = fmtIn(t.locale);
   const reduced = useReducedMotion();
   const revealed: RevealedRound[] = result.guesses.flatMap((g, seat) =>
-    g ? [{ guess: { x: g.x, y: g.y }, answer: result.answer, label: seat === view.you ? "You" : view.players[seat]?.name.slice(0, 12), color: seatColor(view, seat), image: seatPin(view, seat) }] : []
+    g ? [{ guess: { x: g.x, y: g.y }, answer: result.answer, label: seat === view.you ? t("you") : view.players[seat]?.name.slice(0, 12), color: seatColor(view, seat), image: seatPin(view, seat) }] : []
   );
   // Always draw the answer, even when nobody guessed.
   if (!revealed.length) revealed.push({ guess: null, answer: result.answer });
@@ -497,7 +511,7 @@ function PartyReveal({
       <PartyBand view={view} round={result.index + 1} />
       <div className="relative min-h-0 flex-1">
         <div className="absolute inset-x-0 top-0 bottom-[8.5rem] md:bottom-[5.75rem] md:right-[19rem]">
-          <GeoMap region={map} revealed={revealed} fit={{ delay: LINE_DRAW_MS, duration: FIT_MS }} fill controls={false} />
+          <GeoMap region={namedMap(map, names)} revealed={revealed} fit={{ delay: LINE_DRAW_MS, duration: FIT_MS }} fill controls={false} />
         </div>
         {notice && <div className="absolute inset-x-0 top-16 z-30 px-4">{notice}</div>}
         <div className="geo-safe-tl absolute left-3 top-3 z-20">{livePill}</div>
@@ -507,12 +521,12 @@ function PartyReveal({
         <ol className="absolute right-0 top-0 z-10 hidden max-h-[calc(100%-5.75rem)] w-[19rem] space-y-1 overflow-y-auto border-l border-white/10 bg-[#1e1a3f]/95 p-3 text-white md:block" data-testid="party-round-scores">
           {team && (
             <li className="mb-2 grid grid-cols-2 gap-2 text-center">
-              {([0, 1] as const).map((t) => (
-                <div key={t} className={cn("rounded-md bg-white/5 p-2", team.winner === t && "ring-1 ring-[#9be15d]")}>
-                  <p className="font-display text-[11px] font-bold uppercase" style={{ color: TEAM_COLORS[t] }}>
-                    {TEAM_NAMES[t]}
+              {([0, 1] as const).map((k) => (
+                <div key={k} className={cn("rounded-md bg-white/5 p-2", team.winner === k && "ring-1 ring-[#9be15d]")}>
+                  <p className="font-display text-[11px] font-bold uppercase" style={{ color: TEAM_COLORS[k] }}>
+                    {t(`teams.${k}`)}
                   </p>
-                  <p className="font-display text-lg font-extrabold tabular-nums">{fmt(team.scores[t])}</p>
+                  <p className="font-display text-lg font-extrabold tabular-nums">{fmt(team.scores[k])}</p>
                 </div>
               ))}
             </li>
@@ -526,10 +540,10 @@ function PartyReveal({
               <li key={s} className={cn("flex items-center gap-2 rounded-md px-2 py-1.5 text-sm", s === view.you ? "bg-white/15" : "bg-white/5")} data-testid={`party-score-${s}`}>
                 <span className="w-5 font-pixel text-[10px] text-white/60">{i + 1}</span>
                 <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: seatColor(view, s) }} aria-hidden />
-                <span className="min-w-0 flex-1 truncate font-semibold">{s === view.you ? "You" : view.players[s]?.name}</span>
-                {best && <Crown className="h-3.5 w-3.5 text-[#ffd23c]" aria-label="Counted for the team" />}
+                <span className="min-w-0 flex-1 truncate font-semibold">{s === view.you ? t("you") : view.players[s]?.name}</span>
+                {best && <Crown className="h-3.5 w-3.5 text-[#ffd23c]" aria-label={t("reveal.counted")} />}
                 {out ? (
-                  <span className="font-pixel text-[9px] uppercase text-[#ff5a5a]">Out</span>
+                  <span className="font-pixel text-[9px] uppercase text-[#ff5a5a]">{t("reveal.out")}</span>
                 ) : lost ? (
                   <span className="flex items-center gap-0.5 font-pixel text-[9px] text-[#ff8a8a]">
                     −1 <Heart className="h-3 w-3 fill-current" aria-hidden />
@@ -552,16 +566,20 @@ function PartyReveal({
               <img src={result.shot} alt="" className="hidden h-12 w-16 shrink-0 rounded border border-white/20 object-cover sm:block" />
               <div className="min-w-0">
                 <p className="font-display text-base font-extrabold uppercase italic leading-tight sm:text-lg" data-testid="party-headline">
-                  {verdict(view, result)}
-                  {team && team.hurt !== null && team.multiplier > 1 && <span className="text-[#ffd23c]"> (×{team.multiplier})</span>}
+                  {verdict(t, view, result)}
+                  {team && team.hurt !== null && team.multiplier > 1 && <span className="text-[#ffd23c]">{t("reveal.multiplier", { m: multIn(t.locale, team.multiplier) })}</span>}
                 </p>
                 <p className="truncate text-sm text-white/80">
-                  It was <span className="font-semibold text-white">{placeName(result.answer, map)}</span>
-                  <span className="text-white/60"> · Pokémon {result.answer.game}</span>
+                  {t.rich("reveal.itWas", {
+                    p: (c) => <span className="font-semibold text-white">{c}</span>,
+                    g: (c) => <span className="text-white/60">{c}</span>,
+                    place: placeName(result.answer, map, names),
+                    game: gameName(result.answer.game, names),
+                  })}
                 </p>
                 {view.you !== null && result.guesses[view.you] && (
                   <p className="text-xs text-white/70 md:hidden">
-                    You scored <span className="font-bold text-white">{fmt(result.guesses[view.you]!.score)}</span> · {ordinal(order.indexOf(view.you) + 1)} this round
+                    {t.rich("reveal.scored", { b: (c) => <span className="font-bold text-white">{c}</span>, score: fmt(result.guesses[view.you]!.score), place: order.indexOf(view.you) + 1 })}
                   </p>
                 )}
                 <div className="text-xs text-white/60 [&_button]:text-white/60 [&_button:hover]:text-white">
@@ -579,20 +597,21 @@ function PartyReveal({
 
 /** Someone without a seat while a game is on: who's playing and how it stands. */
 function PartyWatch({ view, mapName }: { view: PartyView; mapName: string }) {
+  const t = useT(partyNs);
   const removed = view.removed;
   return (
     <Card className="mx-auto max-w-lg" data-testid="party-watch">
       <CardContent className="space-y-4 p-6 text-center">
         <p className="hud-label text-screen">
-          PokéGuessr party · {PARTY_MODE_NAMES[view.settings.mode]} · {mapName}
+          {t("watch.tag", { mode: t(`modes.${view.settings.mode}`), map: mapName })}
         </p>
-        <p className="font-display text-2xl font-bold uppercase">{removed ? "The host removed you" : view.status === "finished" ? "Game over" : `Round ${view.revealed.length + 1} under way`}</p>
+        <p className="font-display text-2xl font-bold uppercase">{removed ? t("watch.removed") : view.status === "finished" ? t("watch.over") : t("watch.underWay", { round: view.revealed.length + 1 })}</p>
         <p className="text-sm text-muted-foreground">
           {removed
-            ? "You can't rejoin this room. Start your own party instead."
+            ? t("watch.removedText")
             : view.status === "finished"
-              ? "Join when the host opens the lobby for another game."
-              : `${view.players.filter((p) => !p.out).length} of ${view.players.length} trainers still in. You can join when the room is back in the lobby.`}
+              ? t("watch.overText")
+              : t("watch.underWayText", { still: view.players.filter((p) => !p.out).length, total: view.players.length })}
         </p>
         <ul className="flex flex-wrap justify-center gap-1.5">
           {view.players.map((p, s) => (
@@ -603,7 +622,7 @@ function PartyWatch({ view, mapName }: { view: PartyView; mapName: string }) {
           ))}
         </ul>
         <Link href="/pokeguessr#party" className={buttonVariants({ variant: "outline" })}>
-          <Users className="h-4 w-4" aria-hidden /> Start your own party
+          <Users className="h-4 w-4" aria-hidden /> {t("watch.start")}
         </Link>
       </CardContent>
     </Card>
@@ -619,6 +638,7 @@ type SettingsPatch = Partial<PartySettings>;
 function PartyLobby({
   view,
   regions,
+  names,
   busy,
   onJoin,
   onSettings,
@@ -629,6 +649,7 @@ function PartyLobby({
 }: {
   view: PartyView;
   regions: GeoRegionInfo[];
+  names?: GuessrNames;
   busy: boolean;
   onJoin: (name: string) => void;
   onSettings: (s: SettingsPatch) => void;
@@ -637,6 +658,8 @@ function PartyLobby({
   onStart: () => void;
   onLeave: () => void;
 }) {
+  const t = useT(partyNs);
+  const fmt = fmtIn(t.locale);
   const progress = useProgress();
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState<string | null>(null);
@@ -650,13 +673,13 @@ function PartyLobby({
   const three = view.players.length <= MAX_3D;
   const full = view.players.length >= PARTY_MAX_PLAYERS;
   const blocked = team
-    ? [0, 1].some((t) => !view.players.some((p) => p.team === t))
-      ? "Each team needs at least one trainer."
-      : [0, 1].some((t) => view.players.filter((p) => p.team === t).length > PARTY_TEAM_MAX)
-        ? `A team has at most ${PARTY_TEAM_MAX} trainers.`
+    ? [0, 1].some((k) => !view.players.some((p) => p.team === k))
+      ? t("lobby.needTeams")
+      : [0, 1].some((k) => view.players.filter((p) => p.team === k).length > PARTY_TEAM_MAX)
+        ? t("lobby.teamMax", { n: PARTY_TEAM_MAX })
         : null
     : view.players.length < 2
-      ? "Waiting for at least one more trainer…"
+      ? t("lobby.needMore")
       : null;
 
   useEffect(() => {
@@ -664,7 +687,7 @@ function PartyLobby({
   }, [progress?.name, name]);
 
   async function share() {
-    const outcome = await shareOrCopy(`Join my PokéGuessr party! Room ${view.code.toUpperCase()}`, url);
+    const outcome = await shareOrCopy(t("lobby.share", { code: view.code.toUpperCase() }), url);
     if (outcome === "failed") setShared("failed");
     else if (outcome !== "cancelled") setShared("done");
   }
@@ -674,15 +697,15 @@ function PartyLobby({
     return (
       <li key={seat} className={cn("group relative overflow-hidden rounded-lg border bg-[#1e1a3f] p-2 text-white", seat === me && "ring-2 ring-primary")} data-testid={`party-seat-${seat}`}>
         <div aria-hidden className="absolute inset-x-0 top-0 h-1" style={{ background: seatColor(view, seat) }} />
-        <PartyTrainer view={view} seat={seat} three={three} pose={p.quiet ? "idle" : "wave"} className={three ? "" : "[&>div:first-child]:max-w-[5rem] mx-auto"} label={p.quiet ? <span className="font-pixel text-[9px] uppercase text-warning">Away</span> : undefined} />
+        <PartyTrainer view={view} seat={seat} three={three} pose={p.quiet ? "idle" : "wave"} className={three ? "" : "[&>div:first-child]:max-w-[5rem] mx-auto"} label={p.quiet ? <span className="font-pixel text-[9px] uppercase text-warning">{t("lobby.away")}</span> : undefined} />
         {host && seat !== me && (
           <button
             type="button"
             onClick={() => onKick(seat)}
             disabled={busy}
             className="absolute right-1.5 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white/70 opacity-100 transition hover:bg-[#ff5a5a] hover:text-white sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
-            aria-label={`Remove ${p.name}`}
-            title={`Remove ${p.name}`}
+            aria-label={t("lobby.remove", { name: p.name })}
+            title={t("lobby.remove", { name: p.name })}
             data-testid={`party-kick-${seat}`}
           >
             <UserMinus className="h-3.5 w-3.5" aria-hidden />
@@ -696,7 +719,7 @@ function PartyLobby({
             className="mt-1 w-full rounded border border-white/20 py-1 font-display text-[10px] font-bold uppercase tracking-wide text-white/80 hover:bg-white/10"
             data-testid={`party-switch-${seat}`}
           >
-            Switch to {p.team === 0 ? "blue" : "red"}
+            {p.team === 0 ? t("lobby.toBlue") : t("lobby.toRed")}
           </button>
         )}
       </li>
@@ -709,17 +732,15 @@ function PartyLobby({
     <div className="mx-auto max-w-6xl space-y-6" data-testid="party-lobby">
       <div className="space-y-3 text-center">
         <p className="hud-label text-screen">
-          PokéGuessr party · {PARTY_MODE_NAMES[s.mode]} · {map?.name ?? s.region}
+          {t("lobby.tag", { mode: t(`modes.${s.mode}`), map: map ? mapName(map, names) : s.region })}
         </p>
-        <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-6xl">
-          Poké<span className="text-primary">Guessr</span> Party
-        </h1>
+        <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-6xl">{t.rich("lobby.title", { g: (c) => <span className="text-primary">{c}</span> })}</h1>
         <p className="mx-auto max-w-xl text-muted-foreground">
           {me === null
-            ? `${view.players[view.host]?.name ?? "A trainer"} invites you to a ${PARTY_MODE_NAMES[s.mode]}. Everyone gets the same places.`
+            ? t("lobby.invite", { host: view.players[view.host]?.name ?? t("aTrainer"), mode: t(`modes.${s.mode}`) })
             : host
-              ? "You're the host: set the game up, send the code, and start when everyone is in."
-              : `Waiting for ${view.players[view.host]?.name ?? "the host"} to start the game.`}
+              ? t("lobby.host")
+              : t("lobby.waitingFor", { host: view.players[view.host]?.name ?? t("lobby.theHost") })}
         </p>
       </div>
 
@@ -728,10 +749,10 @@ function PartyLobby({
           <CardContent className="space-y-4 p-4 sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="font-display text-lg font-bold uppercase">
-                Trainers <span className="text-muted-foreground">{view.players.length}/{team ? PARTY_TEAM_MAX * 2 : PARTY_MAX_PLAYERS}</span>
+                {t("lobby.trainers")} <span className="text-muted-foreground">{view.players.length}/{team ? PARTY_TEAM_MAX * 2 : PARTY_MAX_PLAYERS}</span>
               </p>
               <div className="flex items-center gap-2 rounded-md border bg-shade/20 px-3 py-1.5">
-                <span className="hud-label">Room</span>
+                <span className="hud-label">{t("lobby.room")}</span>
                 <span className="font-mono text-lg font-bold uppercase tracking-[0.25em]" data-testid="party-code">
                   {view.code}
                 </span>
@@ -739,17 +760,17 @@ function PartyLobby({
             </div>
             {team ? (
               <div className="grid gap-4 sm:grid-cols-2">
-                {([0, 1] as const).map((t) => (
-                  <div key={t} className="space-y-2" data-testid={`party-team-${t}`}>
-                    <p className="flex items-center justify-between font-display text-sm font-bold uppercase" style={{ color: TEAM_COLORS[t] }}>
-                      {TEAM_NAMES[t]}
-                      {me !== null && view.players[me]?.team !== t && (
-                        <button type="button" onClick={() => onTeam(t)} disabled={busy} className="rounded border px-2 py-0.5 text-[10px] text-foreground hover:bg-muted" data-testid={`party-join-team-${t}`}>
-                          Join
+                {([0, 1] as const).map((k) => (
+                  <div key={k} className="space-y-2" data-testid={`party-team-${k}`}>
+                    <p className="flex items-center justify-between font-display text-sm font-bold uppercase" style={{ color: TEAM_COLORS[k] }}>
+                      {t(`teams.${k}`)}
+                      {me !== null && view.players[me]?.team !== k && (
+                        <button type="button" onClick={() => onTeam(k)} disabled={busy} className="rounded border px-2 py-0.5 text-[10px] text-foreground hover:bg-muted" data-testid={`party-join-team-${k}`}>
+                          {t("lobby.join")}
                         </button>
                       )}
                     </p>
-                    <ul className="grid grid-cols-2 gap-2">{seats.filter((i) => view.players[i].team === t).map(card)}</ul>
+                    <ul className="grid grid-cols-2 gap-2">{seats.filter((i) => view.players[i].team === k).map(card)}</ul>
                   </div>
                 ))}
               </div>
@@ -760,34 +781,36 @@ function PartyLobby({
             {me !== null ? (
               <div className="space-y-2">
                 <div className="flex gap-2">
-                  <input readOnly value={url} aria-label="Party link" onFocus={(e) => e.currentTarget.select()} className="h-10 min-w-0 flex-1 rounded-md border border-input bg-shade/20 px-3 font-mono text-xs" />
+                  <input readOnly value={url} aria-label={t("lobby.link")} onFocus={(e) => e.currentTarget.select()} className="h-10 min-w-0 flex-1 rounded-md border border-input bg-shade/20 px-3 font-mono text-xs" />
                   <Button variant="outline" onClick={() => void share()}>
-                    <Link2 className="h-4 w-4" aria-hidden /> {shared === "done" ? "Copied!" : "Copy link"}
+                    <Link2 className="h-4 w-4" aria-hidden /> {shared === "done" ? t("lobby.copied") : t("lobby.copy")}
                   </Button>
                 </div>
                 {shared === "failed" && <CopyFallback text={url} />}
               </div>
             ) : full ? (
               <p className="text-center text-sm text-muted-foreground">
-                This party is full.{" "}
-                <Link href="/pokeguessr#party" className="underline underline-offset-2">
-                  Start your own
-                </Link>
-                .
+                {t.rich("lobby.full", {
+                  link: (c) => (
+                    <Link href="/pokeguessr#party" className="underline underline-offset-2">
+                      {c}
+                    </Link>
+                  ),
+                })}
               </p>
             ) : view.removed ? (
-              <p className="text-center text-sm text-muted-foreground">The host removed you from this party.</p>
+              <p className="text-center text-sm text-muted-foreground">{t("lobby.removed")}</p>
             ) : (
               <form
                 className="space-y-2"
                 onSubmit={(e) => {
                   e.preventDefault();
                   if (isCleanName(name)) onJoin(name);
-                  else setNameError(NAME_REJECTED);
+                  else setNameError(t.locale === "en" ? NAME_REJECTED : t("lobby.nameRejected"));
                 }}
               >
                 <label htmlFor="party-join-name" className="hud-label">
-                  Your trainer name
+                  {t("lobby.nameLabel")}
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -799,12 +822,12 @@ function PartyLobby({
                     }}
                     maxLength={24}
                     required
-                    placeholder="Trainer name"
+                    placeholder={t("lobby.namePlaceholder")}
                     className="h-12 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   />
                   <Button type="submit" size="lg" disabled={busy || !name.trim()} data-testid="party-join">
                     {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Swords className="h-4 w-4" aria-hidden />}
-                    Join party
+                    {t("lobby.joinParty")}
                   </Button>
                 </div>
                 {nameError && (
@@ -819,11 +842,11 @@ function PartyLobby({
 
         <Card className="h-fit">
           <CardContent className="space-y-4 p-4 sm:p-6" data-testid="party-settings">
-            <p className="font-display text-lg font-bold uppercase">Game</p>
-            <Choice label="Mode" value={s.mode} options={(["royale", "team"] as PartyMode[]).map((m) => ({ id: m, name: PARTY_MODE_NAMES[m] }))} host={host} onPick={(mode) => onSettings({ mode })} testId="party-set-mode" />
+            <p className="font-display text-lg font-bold uppercase">{t("lobby.game")}</p>
+            <Choice label={t("lobby.mode")} value={s.mode} options={(["royale", "team"] as PartyMode[]).map((m) => ({ id: m, name: t(`modes.${m}`) }))} host={host} onPick={(mode) => onSettings({ mode })} testId="party-set-mode" />
             <div className="space-y-1.5">
               <label htmlFor="party-map" className="hud-label">
-                Map
+                {t("lobby.map")}
               </label>
               {host ? (
                 <select
@@ -837,40 +860,38 @@ function PartyLobby({
                     .sort((a, b) => geoMapRank(a.id) - geoMapRank(b.id))
                     .map((r) => (
                       <option key={r.id} value={r.id}>
-                        {r.id === WORLD_REGION ? "The whole world" : r.theme ? `Themed · ${r.name}` : r.name}
+                        {r.id === WORLD_REGION ? t("lobby.world") : r.theme ? t("lobby.themed", { name: mapName(r, names) }) : mapName(r, names)}
                       </option>
                     ))}
                 </select>
               ) : (
-                <p className="text-sm font-semibold">{map?.name}</p>
+                <p className="text-sm font-semibold">{map && mapName(map, names)}</p>
               )}
             </div>
-            {!team && <Choice label="Lives" value={s.lives} options={PARTY_LIVES.map((n) => ({ id: n, name: String(n) }))} host={host} onPick={(lives) => onSettings({ lives })} testId="party-set-lives" />}
-            <Choice label="Round timer" value={s.roundSeconds} options={PARTY_ROUND_SECONDS.map((n) => ({ id: n, name: `${n}s` }))} host={host} onPick={(roundSeconds) => onSettings({ roundSeconds })} testId="party-set-timer" />
-            <Choice label="After the first pin" value={s.countdownSeconds} options={PARTY_COUNTDOWN_SECONDS.map((n) => ({ id: n, name: `${n}s` }))} host={host} onPick={(countdownSeconds) => onSettings({ countdownSeconds })} testId="party-set-countdown" />
-            <Choice label="Most rounds" value={s.rounds} options={PARTY_ROUND_CAPS.map((n) => ({ id: n, name: String(n) }))} host={host} onPick={(rounds) => onSettings({ rounds })} testId="party-set-rounds" />
+            {!team && <Choice label={t("lobby.lives")} value={s.lives} options={PARTY_LIVES.map((n) => ({ id: n, name: String(n) }))} host={host} onPick={(lives) => onSettings({ lives })} testId="party-set-lives" />}
+            <Choice label={t("lobby.timer")} value={s.roundSeconds} options={PARTY_ROUND_SECONDS.map((n) => ({ id: n, name: t("lobby.seconds", { n }) }))} host={host} onPick={(roundSeconds) => onSettings({ roundSeconds })} testId="party-set-timer" />
+            <Choice label={t("lobby.afterPin")} value={s.countdownSeconds} options={PARTY_COUNTDOWN_SECONDS.map((n) => ({ id: n, name: t("lobby.seconds", { n }) }))} host={host} onPick={(countdownSeconds) => onSettings({ countdownSeconds })} testId="party-set-countdown" />
+            <Choice label={t("lobby.rounds")} value={s.rounds} options={PARTY_ROUND_CAPS.map((n) => ({ id: n, name: String(n) }))} host={host} onPick={(rounds) => onSettings({ rounds })} testId="party-set-rounds" />
             <p className="text-xs text-muted-foreground">
-              {team
-                ? `${fmt(PARTY_TEAM_HP)} HP a team. Each round a team scores its best pin; the lower team loses the gap (×1 rounds 1–3, ×1.5 for 4–6, ×2 for 7–9…). Teammates see each other's pins live.`
-                : `Everyone guesses the same place. ${s.countdownSeconds}s after the first pin, the round closes and the lowest score loses a life (all of them on a tie, nobody if everyone ties). Out of lives: you watch. Last trainer standing wins.`}
+              {team ? t("lobby.teamHelp", { hp: fmt(PARTY_TEAM_HP) }) : t("lobby.royaleHelp", { s: s.countdownSeconds })}
             </p>
             {me !== null &&
               (host ? (
                 <div className="space-y-1.5">
                   <Button size="lg" variant="success" className="w-full" disabled={busy || !!blocked} onClick={onStart} data-testid="party-start">
-                    <Play className="h-4 w-4" aria-hidden /> Start game
+                    <Play className="h-4 w-4" aria-hidden /> {t("lobby.start")}
                   </Button>
                   {blocked && <p className="text-center text-xs text-muted-foreground">{blocked}</p>}
                 </div>
               ) : (
                 <p className="flex items-center justify-center gap-2 rounded-md border border-dashed py-3 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Waiting for the host to start
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> {t("lobby.waitHost")}
                 </p>
               ))}
             {me !== null && (
               <p className="text-center text-xs text-muted-foreground">
                 <button type="button" className="underline underline-offset-2 hover:text-foreground" onClick={onLeave} data-testid="party-leave">
-                  Leave the party
+                  {t("lobby.leaveParty")}
                 </button>
               </p>
             )}
@@ -912,7 +933,10 @@ function Choice<T extends string | number>({ label, value, options, host, onPick
 // The standings
 // ---------------------------------------------------------------------------
 
-function PartyEnd({ view, map, busy, onAgain, onTaunt }: { view: PartyView; map: GeoRegionInfo; busy: boolean; onAgain: () => void; onTaunt: (id: TauntId) => Promise<string | null> }) {
+function PartyEnd({ view, map, names, busy, onAgain, onTaunt }: { view: PartyView; map: GeoRegionInfo; names?: GuessrNames; busy: boolean; onAgain: () => void; onTaunt: (id: TauntId) => Promise<string | null> }) {
+  const t = useT(partyNs);
+  const fmt = fmtIn(t.locale);
+  const ordinal = (place: number) => t("end.ordinal", { place });
   const reduced = useReducedMotion();
   const me = view.you!;
   const end = view.end!;
@@ -928,28 +952,35 @@ function PartyEnd({ view, map, busy, onAgain, onTaunt }: { view: PartyView; map:
   if (!podium.includes(me)) podium.push(me);
   const reason = team
     ? end.reason === "left"
-      ? "The other team left."
+      ? t("end.otherLeft")
       : end.reason === "hp"
-        ? `${TEAM_NAMES[end.team === 0 ? 1 : 0]} ran out of HP.`
+        ? t("end.outOfHp", { team: t(`teams.${end.team === 0 ? 1 : 0}`) })
         : draw
-          ? "The rounds ran out with the teams level."
-          : `After ${view.revealed.length} rounds, ${TEAM_NAMES[end.team ?? 0]} has more HP.`
+          ? t("end.level")
+          : t("end.moreHp", { n: view.revealed.length, team: t(`teams.${end.team ?? 0}`) })
     : end.reason === "last"
-      ? `${end.winners.map((s) => (s === me ? "You" : view.players[s].name)).join(" and ")} outlasted everyone.`
+      ? end.winners.length === 1 && end.winners[0] === me
+        ? t("end.lastYou")
+        : t(end.winners.length === 1 ? "end.lastOne" : "end.lastMany", { names: joinNames(t, end.winners.map((s) => (s === me ? t("you") : view.players[s].name))) })
       : end.reason === "rounds"
-        ? `After ${view.revealed.length} rounds: most lives, then most points.`
-        : "Everyone else left.";
+        ? t("end.afterRounds", { n: view.revealed.length })
+        : t("end.allLeft");
   // Sharing the result: words that read on their own (a bio link doesn't unfurl), then the room's link for a rematch.
   const [shared, setShared] = useState<"done" | "failed" | null>(null);
-  const where = map.id === WORLD_REGION ? "the Pokémon world" : map.name;
+  const where = map.id === WORLD_REGION ? t("end.where") : mapName(map, names);
   const winners = end.winners.map((s) => view.players[s].name);
+  const after = won ? t("end.weWon") : t("end.nextTime");
   const shareText = team
     ? draw
-      ? `Our PokéGuessr team duel in ${where} ended in a draw after ${view.revealed.length} rounds.`
-      : `${TEAM_NAMES[end.team ?? 0]} won our PokéGuessr team duel in ${where}${view.hp ? `: ${fmt(Math.max(0, view.hp[end.team ?? 0]))} HP left to ${fmt(Math.max(0, view.hp[end.team === 0 ? 1 : 0]))}` : ""}. ${won ? "We won!" : "We'll get them next time."}`
-    : `I came ${ordinal(place)} of ${view.players.length} in our PokéGuessr Battle Royale in ${where}${winners.length && place !== 1 ? ` (${winners.join(" and ")} won)` : ""}.`;
+      ? t("end.shareDraw", { where, n: view.revealed.length })
+      : view.hp
+        ? t("end.shareTeamHp", { team: t(`teams.${end.team ?? 0}`), where, a: fmt(Math.max(0, view.hp[end.team ?? 0])), b: fmt(Math.max(0, view.hp[end.team === 0 ? 1 : 0])), after })
+        : t("end.shareTeam", { team: t(`teams.${end.team ?? 0}`), where, after })
+    : winners.length && place !== 1
+      ? t("end.shareRoyaleWon", { place, n: view.players.length, where, winners: joinNames(t, winners) })
+      : t("end.shareRoyale", { place, n: view.players.length, where });
   async function shareResult() {
-    const outcome = await shareOrCopy(`${shareText} Play the next one with us:`, `${window.location.origin}${partyPath(view.code)}`);
+    const outcome = await shareOrCopy(t("end.shareNext", { text: shareText }), `${window.location.origin}${partyPath(view.code)}`);
     setShared(outcome === "failed" ? "failed" : outcome === "cancelled" ? null : "done");
   }
   const allRounds: RevealedRound[] = view.revealed.flatMap((r) => {
@@ -961,7 +992,7 @@ function PartyEnd({ view, map, busy, onAgain, onTaunt }: { view: PartyView; map:
     <div className="text-white" data-testid="party-end">
       <div className="geo-split relative overflow-hidden px-4 pb-6 pt-8 text-center sm:pt-12">
         <p className="font-display text-xs font-bold uppercase tracking-[0.2em] text-white/70">
-          {PARTY_MODE_NAMES[view.settings.mode]} over · {map.name}
+          {t("end.over", { mode: t(`modes.${view.settings.mode}`), map: mapName(map, names) })}
         </p>
         <motion.div
           initial={reduced ? false : { scale: 0.6, opacity: 0, y: 20 }}
@@ -971,7 +1002,7 @@ function PartyEnd({ view, map, busy, onAgain, onTaunt }: { view: PartyView; map:
           data-testid="party-result"
         >
           {won && <Crown className="h-10 w-10 sm:h-16 sm:w-16" aria-hidden />}
-          {draw ? "Draw" : won ? "Victory!" : team ? "Defeat" : `${ordinal(place)} place`}
+          {draw ? t("end.draw") : won ? t("end.victory") : team ? t("end.defeat") : t("end.place", { place })}
         </motion.div>
         <p className="mt-1 text-white/80">{reason}</p>
         <div className="mx-auto mt-4 flex max-w-4xl flex-wrap items-end justify-center gap-x-2 gap-y-4 sm:mt-6 sm:gap-x-6" data-testid="party-podium">
@@ -1002,21 +1033,21 @@ function PartyEnd({ view, map, busy, onAgain, onTaunt }: { view: PartyView; map:
         <div className="grid gap-2 sm:grid-cols-2">
           {host ? (
             <Button size="lg" variant="success" disabled={busy} onClick={onAgain} data-testid="party-again">
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RotateCcw className="h-4 w-4" aria-hidden />} Play again
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RotateCcw className="h-4 w-4" aria-hidden />} {t("end.again")}
             </Button>
           ) : (
             <p className="flex items-center justify-center gap-2 rounded-md border border-white/20 py-2.5 text-sm text-white/80">
-              <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Waiting for the host to play again
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> {t("end.waitAgain")}
             </p>
           )}
           <Button size="lg" variant="outline" onClick={() => void shareResult()} className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white" data-testid="party-share">
-            {shared === "done" ? <Check className="h-4 w-4" aria-hidden /> : <Share2 className="h-4 w-4" aria-hidden />} {shared === "done" ? "Copied!" : "Share the result"}
+            {shared === "done" ? <Check className="h-4 w-4" aria-hidden /> : <Share2 className="h-4 w-4" aria-hidden />} {shared === "done" ? t("end.copied") : t("end.share")}
           </Button>
           <Link href="/pokeguessr" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white sm:col-span-2")}>
-            <X className="h-4 w-4" aria-hidden /> Back to PokéGuessr
+            <X className="h-4 w-4" aria-hidden /> {t("back")}
           </Link>
         </div>
-        {shared === "failed" && <CopyFallback text={`${shareText} Play the next one with us: ${typeof window !== "undefined" ? window.location.origin : ""}${partyPath(view.code)}`} />}
+        {shared === "failed" && <CopyFallback text={`${t("end.shareNext", { text: shareText })} ${typeof window !== "undefined" ? window.location.origin : ""}${partyPath(view.code)}`} />}
 
         <ol className="divide-y divide-white/10 overflow-hidden rounded-md bg-white/5" data-testid="party-standings">
           {order.map((s) => {
@@ -1029,10 +1060,10 @@ function PartyEnd({ view, map, busy, onAgain, onTaunt }: { view: PartyView; map:
                 <Avatar avatar={p.avatar} size={28} />
                 <span className="min-w-0 flex-1 truncate font-semibold">
                   {p.name}
-                  {s === me && <span className="ml-1.5 rounded-sm bg-white/15 px-1 font-pixel text-[8px]">You</span>}
+                  {s === me && <span className="ml-1.5 rounded-sm bg-white/15 px-1 font-pixel text-[8px]">{t("you")}</span>}
                 </span>
                 <span className="hidden text-xs text-white/60 sm:inline">
-                  {team ? TEAM_NAMES[p.team ?? 0] : p.left ? "Left" : outRound >= 0 ? `Out in round ${outRound + 1}` : <Lives lives={p.lives ?? 0} max={view.settings.lives} />}
+                  {team ? t(`teams.${p.team ?? 0}`) : p.left ? t("end.left") : outRound >= 0 ? t("end.outIn", { n: outRound + 1 }) : <Lives lives={p.lives ?? 0} max={view.settings.lives} />}
                 </span>
                 <span className="w-20 text-right font-display font-bold tabular-nums">{fmt(view.totals[s] ?? 0)}</span>
               </li>
@@ -1042,9 +1073,9 @@ function PartyEnd({ view, map, busy, onAgain, onTaunt }: { view: PartyView; map:
 
         {allRounds.length > 0 && (
           <div className="space-y-2">
-            <p className="hud-label !text-white/60">Your pins</p>
+            <p className="hud-label !text-white/60">{t("end.pins")}</p>
             <div className="overflow-hidden rounded-md">
-              <GeoMap region={map} revealed={allRounds} />
+              <GeoMap region={namedMap(map, names)} revealed={allRounds} />
             </div>
           </div>
         )}

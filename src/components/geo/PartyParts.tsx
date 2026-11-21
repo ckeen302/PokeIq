@@ -4,20 +4,22 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Check, Crown, Heart, Lock, Skull, Users } from "lucide-react";
 import { avatarSrc } from "@/lib/avatar";
-import { EMOTE_SHOW_MS, EMOTE_TEXT, isReaction, type DuelEmote } from "@/lib/pvp-types";
+import { EMOTE_SHOW_MS, EMOTE_TEXT, geoEmote, isReaction, type DuelEmote } from "@/lib/pvp-types";
 import { TAUNTS, TAUNT_GAP_MS, isTaunt, tauntBlocked, tauntOf, type TauntId } from "@/lib/trainer/taunts";
 import { lowerFirst, seededTrainer, unlockHint } from "@/lib/trainer/config";
-import { PARTY_MODE_NAMES, PARTY_TEAM_HP, TEAM_COLORS, TEAM_NAMES, partyColor, type PartyPlayerView, type PartyView } from "@/lib/geo-party";
+import { PARTY_TEAM_HP, TEAM_COLORS, partyColor, type PartyPlayerView, type PartyView } from "@/lib/geo-party";
 import { HP_COLOR_HEX, hpColor } from "@/lib/geo-duel-rules";
 import { sfx } from "@/lib/duel-sfx";
 import { Avatar } from "@/components/avatar/Avatar";
 import { VersusCharacter } from "@/components/duel/VersusCharacter";
 import { useUnlocks } from "@/components/duel/TauntStage";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import { formatNumber } from "@/i18n/catalog";
+import partyNs from "@/messages/guessr-party";
+import hud from "@/messages/guessr-hud";
 
 /** Pieces of a PokéGuessr party's screens (GeoParty.tsx): colours, the roster, HP, the line-up, reactions, the podium. */
-
-export const fmt = (n: number) => n.toLocaleString("en-US");
 
 /** A seat's colour: its team's in a team duel, its own in a Battle Royale. */
 export function seatColor(view: Pick<PartyView, "players" | "settings">, seat: number): string {
@@ -34,8 +36,9 @@ export const seatPin = (view: PartyView, seat: number) => {
 export const MAX_3D = 8;
 
 export function Lives({ lives, max, className }: { lives: number; max: number; className?: string }) {
+  const t = useT(partyNs);
   return (
-    <span className={cn("inline-flex items-center gap-0.5", className)} aria-label={`${lives} of ${max} lives`} data-testid="party-lives">
+    <span className={cn("inline-flex items-center gap-0.5", className)} aria-label={t("parts.lives", { lives, max })} data-testid="party-lives">
       {Array.from({ length: max }, (_, i) => (
         <Heart key={i} className={cn("h-3.5 w-3.5", i < lives ? "fill-[#ff5a5a] text-[#ff5a5a]" : "text-white/25")} aria-hidden />
       ))}
@@ -45,20 +48,18 @@ export function Lives({ lives, max, className }: { lives: number; max: number; c
 
 /** A team's HP bar (Pokémon's colours as it drains). */
 export function TeamHp({ team, hp, you, className }: { team: 0 | 1; hp: number; you?: boolean; className?: string }) {
+  const t = useT(partyNs);
   const f = Math.max(0, hp) / PARTY_TEAM_HP;
   const [a, b] = HP_COLOR_HEX[hpColor(f)];
   return (
     <div className={cn("min-w-0", className)} data-testid={`party-hp-${team}`}>
       <div className="flex items-baseline justify-between gap-2">
         <span className="flex min-w-0 items-center gap-1.5 font-display text-xs font-bold uppercase tracking-wide sm:text-sm" style={{ color: TEAM_COLORS[team] }}>
-          <span className="truncate">
-            {TEAM_NAMES[team].replace(" team", "")}
-            <span className="max-sm:hidden"> team</span>
-          </span>
-          {you && <span className="shrink-0 rounded-sm bg-white/15 px-1 font-pixel text-[8px] text-white">You</span>}
+          <span className="truncate">{t.rich(`teamHp.${team}`, { s: (c) => <span className="max-sm:hidden">{c}</span> })}</span>
+          {you && <span className="shrink-0 rounded-sm bg-white/15 px-1 font-pixel text-[8px] text-white">{t("you")}</span>}
         </span>
         <span className="font-pixel text-[11px] tabular-nums text-white" data-testid={`party-hp-value-${team}`}>
-          {fmt(Math.max(0, hp))}
+          {formatNumber(Math.max(0, hp), t.locale)}
         </span>
       </div>
       <div className="mt-1 h-2.5 overflow-hidden rounded-full bg-black/50 ring-1 ring-white/15">
@@ -70,10 +71,11 @@ export function TeamHp({ team, hp, you, className }: { team: 0 | 1; hp: number; 
 
 /** Who's in, at a glance: guessed or not, lives, out. A column on desktop, a strip on a phone. */
 export function Roster({ view, guessed, className }: { view: PartyView; guessed?: boolean[]; className?: string }) {
+  const t = useT(partyNs);
   const team = view.settings.mode === "team";
   const order = view.players.map((_, s) => s).sort((a, b) => Number(!!view.players[a].out) - Number(!!view.players[b].out) || (view.players[a].team ?? 0) - (view.players[b].team ?? 0));
   return (
-    <ul className={cn("flex gap-1.5", className)} aria-label="Trainers" data-testid="party-roster">
+    <ul className={cn("flex gap-1.5", className)} aria-label={t("parts.trainers")} data-testid="party-roster">
       {order.map((seat) => {
         const p = view.players[seat];
         const done = guessed?.[seat];
@@ -89,9 +91,9 @@ export function Roster({ view, guessed, className }: { view: PartyView; guessed?
             data-guessed={done ? "true" : undefined}
           >
             <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: seatColor(view, seat) }} aria-hidden />
-            <span className="max-w-[7.5rem] truncate text-xs font-semibold">{seat === view.you ? "You" : p.name}</span>
+            <span className="max-w-[7.5rem] truncate text-xs font-semibold">{seat === view.you ? t("you") : p.name}</span>
             {!team && !p.out && <Lives lives={p.lives ?? 0} max={view.settings.lives} className="[&_svg]:h-2.5 [&_svg]:w-2.5" />}
-            {p.out ? <Skull className="h-3 w-3 text-white/60" aria-label="Out" /> : done ? <Check className="h-3.5 w-3.5 text-[#9be15d]" aria-label="Guessed" /> : null}
+            {p.out ? <Skull className="h-3 w-3 text-white/60" aria-label={t("parts.out")} /> : done ? <Check className="h-3.5 w-3.5 text-[#9be15d]" aria-label={t("parts.guessed")} /> : null}
           </li>
         );
       })}
@@ -126,6 +128,7 @@ export function PartyTrainer({
   className?: string;
   label?: React.ReactNode;
 }) {
+  const t = useT(partyNs);
   const p = view.players[seat];
   const fallback = useMemo(() => seededTrainer(p?.name ?? "trainer", p?.avatar?.pokemonId ?? 25), [p?.name, p?.avatar?.pokemonId]);
   if (!p) return null;
@@ -150,8 +153,8 @@ export function PartyTrainer({
         )}
       </div>
       <p className="mt-1 flex max-w-full items-center gap-1 truncate font-display text-xs font-bold uppercase tracking-wide text-white sm:text-sm">
-        {view.host === seat && <Crown className="h-3.5 w-3.5 shrink-0 text-[#ffd23c]" aria-label="Host" />}
-        <span className="truncate">{seat === view.you ? "You" : p.name}</span>
+        {view.host === seat && <Crown className="h-3.5 w-3.5 shrink-0 text-[#ffd23c]" aria-label={t("parts.host")} />}
+        <span className="truncate">{seat === view.you ? t("you") : p.name}</span>
       </p>
       {label}
     </div>
@@ -160,6 +163,7 @@ export function PartyTrainer({
 
 /** The line-up before round 1: everyone's trainer, the game and the countdown. */
 export function PartyLineup({ view, mapName, secondsLeft }: { view: PartyView; mapName: string; secondsLeft: number }) {
+  const t = useT(partyNs);
   const reduced = useReducedMotion();
   const team = view.settings.mode === "team";
   const three = view.players.length <= MAX_3D;
@@ -181,24 +185,24 @@ export function PartyLineup({ view, mapName, secondsLeft }: { view: PartyView; m
       <div aria-hidden className="geo-split absolute inset-0 opacity-90" />
       <header className="relative z-10 px-4 pt-14 text-center sm:pt-10">
         <Users className="mx-auto h-8 w-8 sm:h-10 sm:w-10" aria-hidden />
-        <h2 className="font-display text-4xl font-extrabold uppercase italic leading-none drop-shadow-[0_3px_0_rgba(0,0,0,0.45)] sm:text-6xl">{PARTY_MODE_NAMES[view.settings.mode]}</h2>
+        <h2 className="font-display text-4xl font-extrabold uppercase italic leading-none drop-shadow-[0_3px_0_rgba(0,0,0,0.45)] sm:text-6xl">{t(`modes.${view.settings.mode}`)}</h2>
         <p className="mt-1 font-display text-sm font-bold uppercase text-[#ffd23c] sm:text-lg">
-          {team ? `${fmt(PARTY_TEAM_HP)} HP a team · best pin counts` : `${view.players.length} trainers · ${view.settings.lives} ${view.settings.lives === 1 ? "life" : "lives"} each`}
+          {team ? t("parts.lineupTeam", { hp: formatNumber(PARTY_TEAM_HP, t.locale) }) : t("parts.lineupRoyale", { n: view.players.length, lives: view.settings.lives })}
         </p>
         <p className="font-display text-xs uppercase tracking-wider text-white/70 sm:text-sm">{mapName}</p>
       </header>
       <div className="relative z-10 flex min-h-0 flex-1 items-center justify-center overflow-y-auto px-3 py-4">
         {team ? (
           <div className="grid w-full max-w-6xl grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-6">
-            {([0, 1] as const).map((t) => (
-              <div key={t} className={cn("flex flex-wrap justify-center gap-2 sm:gap-4", t === 1 && "order-3")}>
-                <p className="w-full text-center font-display text-sm font-extrabold uppercase italic sm:text-xl" style={{ color: TEAM_COLORS[t] }}>
-                  {TEAM_NAMES[t]}
+            {([0, 1] as const).map((k) => (
+              <div key={k} className={cn("flex flex-wrap justify-center gap-2 sm:gap-4", k === 1 && "order-3")}>
+                <p className="w-full text-center font-display text-sm font-extrabold uppercase italic sm:text-xl" style={{ color: TEAM_COLORS[k] }}>
+                  {t(`teams.${k}`)}
                 </p>
-                {side(t).map((s, i) => figure(s, i))}
+                {side(k).map((s, i) => figure(s, i))}
               </div>
             ))}
-            <span className="geo-glow order-2 font-display text-4xl font-extrabold italic sm:text-7xl">VS</span>
+            <span className="geo-glow order-2 font-display text-4xl font-extrabold italic sm:text-7xl">{t("parts.vs")}</span>
           </div>
         ) : (
           <div className="flex max-w-6xl flex-wrap justify-center gap-2 sm:gap-4">{seats.map((s, i) => figure(s, i))}</div>
@@ -215,6 +219,8 @@ export function PartyLineup({ view, mapName, secondsLeft }: { view: PartyView; m
 
 /** Reactions as they arrive, stacked by the top right: whose and which. */
 export function PartyEmoteFeed({ view }: { view: PartyView }) {
+  const t = useT(partyNs);
+  const h = useT(hud);
   const reduced = useReducedMotion();
   const [shown, setShown] = useState<{ n: number; seat: number; emote: DuelEmote }[]>([]);
   const seen = useRef(-1);
@@ -249,8 +255,8 @@ export function PartyEmoteFeed({ view }: { view: PartyView }) {
             data-testid={`party-emote-${e.seat}`}
           >
             <span className="h-2.5 w-2.5 rounded-full" style={{ background: seatColor(view, e.seat) }} aria-hidden />
-            <span className="max-w-[8rem] truncate font-display text-[11px] font-bold uppercase text-muted-foreground">{e.seat === view.you ? "You" : view.players[e.seat]?.name}</span>
-            {e.emote === "gg" ? <span className="font-display text-lg font-bold">GG</span> : EMOTE_TEXT[e.emote]}
+            <span className="max-w-[8rem] truncate font-display text-[11px] font-bold uppercase text-muted-foreground">{e.seat === view.you ? t("you") : view.players[e.seat]?.name}</span>
+            {e.emote === "gg" ? <span className="font-display text-lg font-bold">GG</span> : geoEmote(e.emote) ? h(`emotes.${geoEmote(e.emote)!.id}`) : EMOTE_TEXT[e.emote]}
           </motion.span>
         ))}
       </AnimatePresence>
@@ -298,6 +304,7 @@ export function usePartyTaunts(view: PartyView) {
 
 /** The dances and emotes bar on the standings screen. */
 export function TauntBar({ onTaunt }: { onTaunt: (id: TauntId) => Promise<string | null> }) {
+  const t = useT(partyNs);
   const unlocks = useUnlocks();
   const [coolUntil, setCoolUntil] = useState(0);
   const [note, setNote] = useState<string | null>(null);
@@ -319,25 +326,25 @@ export function TauntBar({ onTaunt }: { onTaunt: (id: TauntId) => Promise<string
     <div className="space-y-2 rounded-xl border border-white/15 bg-[#1e1a3f]/80 p-2.5 backdrop-blur sm:p-3" data-testid="party-taunt-bar">
       {(["dance", "emote"] as const).map((kind) => (
         <div key={kind} className="flex items-start gap-2">
-          <p className="w-14 shrink-0 pt-2 font-pixel text-[9px] uppercase text-white/60">{kind === "dance" ? "Dances" : "Emotes"}</p>
+          <p className="w-14 shrink-0 pt-2 font-pixel text-[9px] uppercase text-white/60">{kind === "dance" ? t("parts.dances") : t("parts.emotes")}</p>
           <div className="flex min-w-0 flex-1 flex-wrap gap-1.5">
-            {TAUNTS.filter((t) => t.kind === kind).map((t) => {
-              const locked = !!tauntBlocked(t.id, unlocks);
+            {TAUNTS.filter((x) => x.kind === kind).map((x) => {
+              const locked = !!tauntBlocked(x.id, unlocks);
               return (
                 <button
-                  key={t.id}
+                  key={x.id}
                   type="button"
                   disabled={locked || cooling}
-                  onClick={() => void send(t.id)}
-                  title={locked ? `${t.name}: ${unlockHint(t)}` : t.name}
-                  aria-label={locked ? `${t.name} (locked: ${lowerFirst(unlockHint(t))})` : `Play ${t.name}`}
+                  onClick={() => void send(x.id)}
+                  title={locked ? t("parts.lockedTitle", { name: x.name, hint: unlockHint(x) }) : x.name}
+                  aria-label={locked ? t("parts.lockedLabel", { name: x.name, hint: lowerFirst(unlockHint(x)) }) : t("parts.play", { name: x.name })}
                   className={cn(
                     "flex h-8 items-center gap-1 rounded-full border px-3 font-display text-[11px] font-bold uppercase tracking-wide transition-[background-color,transform,opacity] sm:text-xs",
                     locked ? "cursor-not-allowed border-white/10 text-white/40" : "border-white/25 text-white hover:scale-105 hover:bg-white/10 disabled:opacity-50 disabled:hover:scale-100"
                   )}
-                  data-testid={`party-taunt-${t.id}`}
+                  data-testid={`party-taunt-${x.id}`}
                 >
-                  {t.name}
+                  {x.name}
                   {locked && <Lock className="h-3 w-3" aria-hidden />}
                 </button>
               );
