@@ -4,7 +4,14 @@ import { Pikadoku } from "@/components/pikadoku/Pikadoku";
 import { GameInfo } from "@/components/seo/GameInfo";
 import { publicDailies } from "@/lib/server/pikadoku";
 import { ensureMaster } from "@/lib/server/pikadoku-master";
+import { pikadokuLocal } from "@/lib/pikadoku/local";
 import { howToFirstScript } from "@/lib/howto-first";
+import { ClientMessages } from "@/i18n/ClientMessages";
+import { getLocale, serverT } from "@/i18n/server";
+import page from "@/messages/pikadoku-page";
+import pikadoku from "@/messages/pikadoku";
+import pikadokuBoard from "@/messages/pikadoku-board";
+import pikadokuDuel from "@/messages/pikadoku-duel";
 
 /**
  * Regenerated hourly (ISR): the HTML carries the public daily grids for
@@ -14,12 +21,14 @@ import { howToFirstScript } from "@/lib/howto-first";
  */
 export const revalidate = 3600;
 
-export const metadata: Metadata = pageMetadata({
-  title: "Pikadoku: Daily Pokémon Sudoku",
-  description:
-    "Pikadoku is Pokémon Sudoku, a free Pokémon grid game: fill a 3×3 grid with a Pokémon that fits each row and column. Easy, Normal and Expert dailies, a rarity score, unlimited grids and Tic Tac Toe duels.",
-  path: "/pikadoku",
-});
+export function generateMetadata(): Metadata {
+  const t = serverT(page);
+  return pageMetadata({
+    title: t("meta.title"),
+    description: t("meta.description"),
+    path: "/pikadoku",
+  });
+}
 
 /** A first visit's How to play shows with the board (lib/howto-first): the game's own check (see Pikadoku's first effect). */
 const HOWTO_FIRST = howToFirstScript(
@@ -30,31 +39,25 @@ const HOWTO_FIRST = howToFirstScript(
 export default async function PikadokuPage() {
   // Admin-scheduled Master grids too (the client still swaps to the API's grid if the page's ever differs).
   await ensureMaster();
+  const t = serverT(page);
+  // Another language's category labels and Pokémon names (English pages send none).
+  const local = await pikadokuLocal(getLocale());
   return (
     <>
     <script dangerouslySetInnerHTML={{ __html: HOWTO_FIRST }} />
     <div className="space-y-10">
-      <Pikadoku initial={publicDailies()} />
+      <ClientMessages namespaces={[pikadoku, pikadokuBoard, pikadokuDuel]}>
+        <Pikadoku initial={publicDailies()} local={local} />
+      </ClientMessages>
       <GameInfo
         howToButton
         noFaq
         path="/pikadoku"
         name="Pikadoku"
-        description="Pikadoku is a free Pokémon Sudoku and Pokémon grid game: fill a 3×3 grid with a different Pokémon in each cell, matching both its row and its column."
-        intro="Pikadoku is Pokémon Sudoku: a 3×3 Pokémon grid game with a new puzzle every day, in Easy, Normal and Expert."
-        steps={[
-          "Read the three row and three column categories: types, regions, evolution, moves, abilities, stats and more.",
-          "Tap a cell and search for a Pokémon that fits both its row and its column. It locks in if it is right.",
-          "You have 9 guesses (PP) in a daily, and a wrong guess still uses one. Each Pokémon can be used once.",
-          "Your rarity score is the sum of the share of players who picked the same answers: lower is rarer, and better.",
-          "When the game ends, see every valid answer for every cell and why your misses did not fit.",
-        ]}
-        faqs={[
-          { q: "How is the score worked out?", a: "It is the sum of the percentage of players who picked each of your answers in that cell, worked out by the server from recorded answers. Lower means rarer picks and a better score." },
-          { q: "How do forms and regions count?", a: "Regional forms, Megas, Gigantamax forms and a few notable forms (like Partner Pikachu) are their own picks, with their own types, stats and abilities. A species' region is where it debuted; a regional form counts for the region it debuted in (Alolan Raichu is Alola), and Mega and Gigantamax forms count for their species' region. A form and its species are the same Pokémon, so only one of them can be used in a grid." },
-          { q: "Is every grid solvable?", a: "Yes. Every daily is checked so each cell has enough valid answers and nine different Pokémon can fill the grid." },
-          { q: "What are Easy, Normal and Expert?", a: "Easy uses broad categories with many answers, Normal is the main grid for the leaderboard, and Expert uses harder categories like moves, abilities and stat thresholds." },
-        ]}
+        description={t("info.description")}
+        intro={t("info.intro")}
+        steps={(["read", "tap", "pp", "score", "end"] as const).map((k) => t(`info.steps.${k}`))}
+        faqs={(["score", "forms", "solvable", "levels"] as const).map((k) => ({ q: t(`info.faq.${k}Q`), a: t(`info.faq.${k}A`) }))}
       />
     </div>
     </>

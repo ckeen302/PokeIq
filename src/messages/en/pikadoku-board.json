@@ -1,0 +1,53 @@
+{
+  "family": {
+    "types": "Types",
+    "regions": "Regions",
+    "evolution": "Evolution",
+    "moves": "Moves",
+    "abilities": "Abilities",
+    "other": "Other"
+  },
+  "board": {
+    "grid": "Pikadoku grid",
+    "info": "What counts for {label}",
+    "empty": "Empty",
+    "cell": "Row {row}, column {col}: {label}",
+    "cross": "{row} × {col}"
+  },
+  "picker": {
+    "loading": "Loading Pokémon…",
+    "placeholder": "Type a Pokémon's name",
+    "search": "Search for a Pokémon",
+    "matching": "Matching Pokémon",
+    "used": "Used",
+    "form": "Form",
+    "none": "No Pokémon match that."
+  },
+  "hint": {
+    "type": "Counts a Pokémon with {type} as one of its types. Forms are their own picks with their own types, stats and abilities. Mega Charizard X is Fire and Dragon, Alolan Raichu is Electric and Psychic.",
+    "types": "Counts the Pokémon's own types, so a form can differ from its species: Charizard is dual-typed, and so is Mega Charizard X. Forms are their own picks with their own types, stats and abilities.",
+    "hisui": "Debuted in Pokémon Legends: Arceus: the Hisuian forms (Hisuian Growlithe) and the seven new species (Wyrdeer, Kleavor, Ursaluna, Basculegion, Sneasler, Overqwil, Enamorus).",
+    "region": "The generation a species debuted in (Gen 8 is Galar, Legends: Arceus newcomers like Kleavor included). A regional form counts for the region it debuted in (Alolan Raichu is Alola, Raichu is Kanto). Megas and Gigantamax forms count for their species' region.",
+    "form": "The species has a regional form from that region, so the species and each of its forms count (Raichu and Alolan Raichu both match 'Has an Alolan form').",
+    "stage": "Its place in its evolution line. A baby is optional: Pikachu counts as Basic and as a second stage (after Pichu), Raichu as a second or third stage. A form follows its species here.",
+    "item": "Takes part in an evolution that uses or holds an item, from either side: stones, apples, held items (Onix and Steelix with a Metal Coat). Using a move 20 times is not an item. A form follows its species here.",
+    "stone": "Takes part in an evolution with one of the ten evolution stones, from either side: Pikachu and Raichu, Eevee and Vaporeon. The held Oval Stone doesn't count. A form follows its species here.",
+    "kind": "Takes part in an evolution of this kind, from either side: the Pokémon that evolves and the one it becomes. A form follows its species here.",
+    "level": "Takes part in an evolution of this kind, from either side: the Pokémon that evolves and the one it becomes. Level means reaching a set level (Charmander at 16). A form follows its species here.",
+    "branch": "Its family splits somewhere: Eevee and every Eeveelution, the Oddish line (Vileplume or Bellossom), Scyther (Scizor or Kleavor). A form follows its species here.",
+    "three": "Its family reaches a third stage (Charmander's, or Pichu's with the baby). Eevee's family has nine species but only two stages. A form follows its species here.",
+    "none": "Doesn't evolve and doesn't evolve from anything (Tauros, Ditto). A form follows its species here.",
+    "evo": "Judged by the evolution line. A form follows its species here. Alolan Raichu is fully evolved, like Raichu; Mega Charizard X is a fully evolved Charmander line member.",
+    "move": "Needs the move in the species' learnset from the latest main game it is in (Scarlet & Violet for most), by level, TM, egg or tutor. Forms use their species' moves.",
+    "hidden": "Has an ability marked hidden. Abilities belong to the form picked: Mega Charizard X has only Tough Claws, so it has no hidden ability.",
+    "ability": "Has this ability in any slot. Abilities belong to the form picked: Mega Charizard X has Tough Claws, not Blaze.",
+    "stat": "Uses base stats of the form picked: a Mega Evolution's stats are its own, higher than its species'.",
+    "mega": "The species has a Mega Evolution, so the species and each of its forms count (Charizard and Mega Charizard X). Includes the Megas new in Legends: Z-A, like Dragonite and Greninja.",
+    "gmax": "The species has a Gigantamax form, so the species and each of its forms count (Pikachu and Gigantamax Pikachu).",
+    "paradox": "Hand-kept list of the official Paradox Pokémon (Great Tusk to Iron Crown). Forms follow their species.",
+    "ultrabeast": "Hand-kept list of the eleven Ultra Beasts (Nihilego to Blacephalon). Necrozma is not one. Forms follow their species.",
+    "partner": "Any Pokémon in the evolution line of a main-series starter from Kanto to Paldea. A form follows its species here.",
+    "ou": "Appears in the Gen 9 OU usage data (Smogon). A regional form counts only when it is the one used: Galarian Slowking is OU, Slowking is not. Other forms follow their species.",
+    "status": "Legendary, Mythical, fossil and baby status belong to the species. A form follows its species here."
+  }
+}

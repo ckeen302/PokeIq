@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { allCategories } from "@/lib/pikadoku/categories";
-import { PDK_RULES, categoryHint } from "@/lib/pikadoku/types";
+import { categoryHint } from "@/lib/pikadoku/hints";
+import { PDK_RULES } from "@/lib/pikadoku/rules";
 
 describe("category tooltips", () => {
   it("explain every category, and say what forms do", () => {

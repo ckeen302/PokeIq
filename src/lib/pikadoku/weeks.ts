@@ -30,3 +30,10 @@ export function isLiveWeek(monday: unknown, now = Date.now()): monday is string 
   const today = iso(Math.floor(now / DAY_MS) * DAY_MS);
   return [iso(utc(today) - DAY_MS), today, iso(utc(today) + DAY_MS)].some((d) => weekStart(d) === monday);
 }
+
+/** The weekly themes' rotation, in order (lib/pikadoku/weekly): week 1 is Kanto, week 2 Starters, and so on, then round again. */
+export const WEEK_THEME_IDS = ["kanto", "starters", "legendary", "gen9", "competitive"] as const;
+export type WeekThemeId = (typeof WEEK_THEME_IDS)[number];
+
+/** The theme of a week (given by its Monday). */
+export const themeIdFor = (monday: string): WeekThemeId => WEEK_THEME_IDS[(((weekNumber(monday) - 1) % WEEK_THEME_IDS.length) + WEEK_THEME_IDS.length) % WEEK_THEME_IDS.length];

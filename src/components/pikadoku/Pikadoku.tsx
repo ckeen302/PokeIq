@@ -27,14 +27,20 @@ import {
   type PdkGridView,
   type PdkPublicDays,
   type PdkGuess,
+  type PdkLocal,
   type PdkResultResponse,
   type PdkSettings,
 } from "@/lib/pikadoku/types";
+import { localNoBoard } from "@/lib/pikadoku/no-board";
+import { themeIdFor } from "@/lib/pikadoku/weeks";
+import { useT } from "@/i18n/client";
+import pikadokuNs from "@/messages/pikadoku";
+import boardNs from "@/messages/pikadoku-board";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ShareButton } from "@/components/share/ShareButton";
 import { NewBadges, StreakFlame, useCelebration } from "@/components/connections/results";
-import { PdkBoard, PdkPicker, iconButton, useDex, type BoardCell, type DexName } from "./parts";
+import { PdkBoard, PdkLocalProvider, PdkPicker, iconButton, useCatLabel, useDex, usePdkLocal, type BoardCell, type DexName } from "./parts";
 import { PdkHowToSheet } from "./howto-sheet";
 import { howToShownEarly, releaseHowToFirst } from "@/lib/howto-first";
 // The sheets (stats, the archive) load only when one opens. How to play comes with the board: a first visit's copy
@@ -45,12 +51,16 @@ const PdkStatsSheet = dynamic(() => loadSheets().then((m) => m.PdkStatsSheet), {
 // Unlimited's setup panel (with the category list) loads only on the Unlimited tab.
 const UnlimitedSetup = dynamic(() => import("./UnlimitedSetup").then((m) => m.UnlimitedSetup), {
   ssr: false,
-  loading: () => (
-    <p className="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
-      <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Loading
-    </p>
-  ),
+  loading: () => <SetupLoading />,
 });
+function SetupLoading() {
+  const t = useT(pikadokuNs);
+  return (
+    <p className="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
+      <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> {t("loading")}
+    </p>
+  );
+}
 import { GuessToast, NextPuzzleCountdown, PdkDailyStatsCard, PdkStatusBanners, PpPips, RarityPreview, RevealGrid, useOnline } from "./results";
 import { RARITY_EMOJI, rarityGrid, rarityLetter } from "@/lib/pikadoku/share";
 import { cn } from "@/lib/utils";
@@ -91,8 +101,6 @@ function savePrefs(p: Prefs) {
 }
 
 const newSeed = () => Math.random().toString(36).slice(2, 10).padEnd(8, "0");
-const DIFF_LABEL: Record<PdkDifficulty, string> = { easy: "Easy", normal: "Normal", expert: "Expert" };
-const DIFF_HINT: Record<PdkDifficulty, string> = { easy: "Broad categories, plenty of answers", normal: "The main grid: the leaderboard and score", expert: "Harder categories, as few as two answers a cell" };
 const clockText = (ms: number) => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, "0")}`;
 
 interface Locked {
@@ -105,8 +113,22 @@ function embeddedFor(initial: PdkPublicDays | undefined, t: Target | null) {
   return initial && t && "date" in t ? (initial.days[t.date]?.[t.difficulty] ?? null) : null;
 }
 
-export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
+/** The daily page's game, with its language's Pikadoku words (category labels, Pokémon names) when it isn't English. */
+export function Pikadoku({ initial, local }: { initial?: PdkPublicDays; local?: PdkLocal }) {
+  return (
+    <PdkLocalProvider local={local}>
+      <Game initial={initial} />
+    </PdkLocalProvider>
+  );
+}
+
+function Game({ initial }: { initial?: PdkPublicDays }) {
   const firstDay = initial ? initial.days[initial.serverDate]?.normal : undefined;
+  const t = useT(pikadokuNs);
+  const tb = useT(boardNs);
+  const local = usePdkLocal();
+  const labelOf = useCatLabel();
+  const diffLabel = (d: PdkDifficulty) => t(`diff.${d}`);
   const today = useToday();
   const progress = useProgress();
   const dex = useDex();
@@ -239,10 +261,10 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
     async (path: string, body: Record<string, unknown>) => {
       const res = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...target, ...body }) });
       const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
-      if (!res.ok) throw new Error(typeof data.error === "string" ? data.error : "Something went wrong.");
+      if (!res.ok) throw new Error(typeof data.error === "string" ? data.error : t("error.generic"));
       return data;
     },
-    [target]
+    [target, t]
   );
 
   const finish = useCallback(
@@ -328,7 +350,7 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
         if (!live) return;
         if (data.noBoard && "practice" in target) {
           // Those categories can't make a board: back to the setup, which says what to widen.
-          setNoBoard(data.error ?? "No board fits those settings.");
+          setNoBoard(localNoBoard(data.error ?? t("error.noBoard"), { allowSingle: target.settings.allowSingle, band: target.settings.band ?? "normal" }, t));
           setSeed(null);
           setSetup(true);
           return;
@@ -337,7 +359,7 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
           // A 4xx is a real answer (that daily isn't available); anything else can be retried.
           if (res.status >= 500 || res.status === 429 || !res.status) setLoadFailed(true);
           setRestoring(false);
-          return setError(data.error ?? "Couldn't load the grid.");
+          return setError(data.error ?? t("error.grid"));
         }
         // Keep the page's own grid object when it matches, so nothing re-renders.
         setGrid((g) => (g && JSON.stringify(g) === JSON.stringify(data.grid) ? g : data.grid!));
@@ -352,7 +374,7 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
           setRestoring(false);
           if (!r) {
             setLoadFailed(true);
-            return setError("Couldn't load your game. Check your connection.");
+            return setError(t("error.game"));
           }
           if (!r.ok || !rep.locked) return;
           setLocked(Object.fromEntries(Object.entries(rep.locked).map(([c, id]) => [Number(c), { id, pct: null }])));
@@ -362,7 +384,7 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
         if (!live) return;
         setRestoring(false);
         setLoadFailed(true);
-        setError(navigator.onLine === false ? "You're offline. The grid will load when you're back online." : "Couldn't load the grid. Check your connection.");
+        setError(navigator.onLine === false ? t("error.offline") : t("error.gridConnection"));
       }
     })();
     return () => {
@@ -406,7 +428,7 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
       const out = (await post("/api/pikadoku", { guesses, next: { cell, id: p.id } })) as { valid: boolean; softlock?: boolean; pct: number | null };
       closePicker();
       if (out.softlock) {
-        showToast("That would leave the grid unsolvable. Try another Pokémon.", "info");
+        showToast(t("toast.softlock"), "info");
         return;
       }
       const list = [...guesses, { cell, id: p.id }];
@@ -415,19 +437,19 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
       const done = Object.keys(nextLocked).length === 9 || (pp > 0 && list.length >= pp);
       const ppLeft = pp > 0 ? Math.max(0, pp - list.length) : null;
       // The last guess ends the game: the results say the rest.
-      const ppNote = ppLeft === null || done ? "" : ` ${ppLeft} PP left.`;
+      const ppNote = ppLeft === null || done ? "" : t("toast.ppLeft", { n: ppLeft });
       if (out.valid) {
         setLocked(nextLocked);
         setHitCell(cell);
         window.setTimeout(() => setHitCell(null), 900);
         // The last guess hands over to the result card instead of a toast.
         // The pick's rarity right away (from recorded answers; nothing when rarity is off).
-        if (!done) showToast(`${p.name} fits!${out.pct !== null ? ` ${RARITY_EMOJI[rarityLetter(out.pct, true)]} ${out.pct}% of players picked it.` : ""}${ppNote}`, "hit");
+        if (!done) showToast(`${t("toast.fits", { name: p.name })}${out.pct !== null ? t("toast.picked", { emoji: RARITY_EMOJI[rarityLetter(out.pct, true)], pct: out.pct }) : ""}${ppNote}`, "hit");
         play("correct");
       } else {
         setMissCell(cell);
         window.setTimeout(() => setMissCell(null), 900);
-        if (!done) showToast(`${p.name} doesn't fit there.${ppNote}`, "miss");
+        if (!done) showToast(`${t("toast.miss", { name: p.name })}${ppNote}`, "miss");
         play("wrong");
       }
       if (mode === "daily" && storeKey) savePdk(storeKey, { guesses: list, won: false, over: false, solved: Object.keys(nextLocked).length, score: null });
@@ -442,7 +464,7 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
   }
 
   async function giveUp() {
-    if (!window.confirm("Give up and see the answers?")) return;
+    if (!window.confirm(t("giveUpConfirm"))) return;
     setBusy(true);
     await finish(guesses, true);
     setBusy(false);
@@ -511,7 +533,7 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
     if (!keyboarding.current) return;
     const c = lastCell.current;
     window.requestAnimationFrame(() => {
-      const cells = [...document.querySelectorAll<HTMLButtonElement>('[role="grid"][aria-label="Pikadoku grid"] [data-testid^="pdk-cell-"]')];
+      const cells = [...document.querySelectorAll<HTMLButtonElement>(`[role="grid"][aria-label="${tb("board.grid")}"] [data-testid^="pdk-cell-"]`)];
       const el = (c !== null && !cells[c]?.disabled ? cells[c] : null) ?? cells.find((b) => !b.disabled);
       el?.focus({ preventScroll: true });
     });
@@ -558,12 +580,24 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
     if (!seed) return "";
     const mine = result ? { solved: result.solved, guesses: guesses.length } : null;
     const url = `${window.location.origin}/pikadoku?c=${encodeChallenge({ seed, settings, result: mine })}`;
-    return composeShare({ title: "Pikadoku (Unlimited) challenge", score: mine ? challengeLabel(mine) : undefined, lines: [mine ? "Can you beat me on the same grid?" : "Play the same grid with me:"], url });
+    return composeShare({ title: t("challenge.title"), score: mine ? challengeLabel(mine, t) : undefined, lines: [mine ? t("challenge.beatMe") : t("challenge.playMe")], url });
   };
   const verdict = result && challenge && mode === "practice" ? judgeChallenge({ solved: result.solved, guesses: guesses.length }, challenge) : null;
 
   const rankName = progress?.name ?? "";
-  const heading = mode === "weekly" && week ? `Weekly #${weekNumber(week)}${weeklyInfo ? ` · ${weeklyInfo.theme}` : ""}` : mode === "archive" && archive ? `Archive #${connNumber(archive.date)} · ${DIFF_LABEL[archive.difficulty]}` : mode === "daily" && (dailyDate ?? initial?.serverDate) ? `Daily #${connNumber((dailyDate ?? initial?.serverDate)!)} · ${DIFF_LABEL[difficulty]}` : "Unlimited";
+  // The weekly theme as the page's language names it (the API sends English).
+  const weekly = weeklyInfo && local ? { ...weeklyInfo, theme: t(`weeklyTheme.${themeIdFor(weeklyInfo.monday)}.name`), blurb: t(`weeklyTheme.${themeIdFor(weeklyInfo.monday)}.blurb`) } : weeklyInfo;
+  const heading =
+    mode === "weekly" && week
+      ? weekly
+        ? t("heading.weeklyTheme", { n: weekNumber(week), theme: weekly.theme })
+        : t("heading.weekly", { n: weekNumber(week) })
+      : mode === "archive" && archive
+        ? t("heading.archive", { n: connNumber(archive.date), diff: diffLabel(archive.difficulty) })
+        : mode === "daily" && (dailyDate ?? initial?.serverDate)
+          ? t("heading.daily", { n: connNumber((dailyDate ?? initial?.serverDate)!), diff: diffLabel(difficulty) })
+          : t("heading.unlimited");
+  const beatLabel = challenge ? challengeLabel(challenge, t) : "";
 
   return (
     <MotionConfig reducedMotion="user">
@@ -571,18 +605,18 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
         <div className="space-y-3 text-center sm:space-y-4">
           <div className="space-y-1 sm:space-y-2">
             <p className="hud-label text-screen" data-testid="pdk-title">
-              {ttt ? "Tic Tac Toe" : heading}
+              {ttt ? t("ttt") : heading}
             </p>
             {/* A touch larger on phones (same line height): the title, painted with the HTML, outranks the nav logo as the page's largest paint. */}
             <h1 className="font-display text-3xl font-bold uppercase tracking-tight min-[360px]:text-[2rem]/9 sm:text-4xl">Pikadoku</h1>
-            <p className="hidden text-sm text-muted-foreground sm:block">Pokémon Sudoku: one Pokémon for each cell, matching its row and its column.</p>
+            <p className="hidden text-sm text-muted-foreground sm:block">{t("subtitle")}</p>
           </div>
           <div className="flex justify-center">
-            <div className="flex justify-center rounded-md border border-foreground/15 bg-card p-0.5" role="radiogroup" aria-label="Pikadoku mode">
+            <div className="flex justify-center rounded-md border border-foreground/15 bg-card p-0.5" role="radiogroup" aria-label={t("modes.label")}>
               {(
                 [
-                  { id: "daily", label: "Daily", title: "Today's grid, the same for everyone", on: () => (setTtt(false), setMode("daily")) },
-                  { id: "practice", label: "Unlimited", title: "Build your own board", on: () => (setTtt(false), setMode("practice")) },
+                  { id: "daily", label: t("modes.daily"), title: t("modes.dailyTitle"), on: () => (setTtt(false), setMode("daily")) },
+                  { id: "practice", label: t("modes.unlimited"), title: t("modes.unlimitedTitle"), on: () => (setTtt(false), setMode("practice")) },
                 ] as const
               ).map((m) => (
                 <button
@@ -610,29 +644,29 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
                   setTtt(true);
                   history.replaceState(null, "", "#tic-tac-toe");
                 }}
-                title="Tic Tac Toe: take turns claiming cells against a friend or a stranger"
+                title={t("modes.tttTitle")}
                 className={cn(
                   "flex items-center justify-center gap-1.5 rounded px-2.5 py-1.5 font-display text-xs sm:text-sm font-semibold uppercase tracking-wider transition-colors sm:min-w-24 sm:px-4",
                   ttt ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <Swords className="h-3.5 w-3.5" aria-hidden /> Tic Tac Toe
+                <Swords className="h-3.5 w-3.5" aria-hidden /> {t("ttt")}
               </button>
             </div>
           </div>
           {/* The tools under the modes, as in Pokédle and PokéConnections. */}
-          <div className="flex items-center justify-center gap-1" role="toolbar" aria-label="Pikadoku options">
-            <button type="button" className={iconButton} onClick={() => setSheet("howto")} aria-label="How to play" title="How to play">
+          <div className="flex items-center justify-center gap-1" role="toolbar" aria-label={t("tools.label")}>
+            <button type="button" className={iconButton} onClick={() => setSheet("howto")} aria-label={t("tools.howTo")} title={t("tools.howTo")}>
               <CircleHelp className="h-5 w-5" />
             </button>
-            <button type="button" className={iconButton} onClick={() => setSheet("stats")} aria-label="Statistics" title="Statistics">
+            <button type="button" className={iconButton} onClick={() => setSheet("stats")} aria-label={t("tools.stats")} title={t("tools.stats")}>
               <BarChart3 className="h-5 w-5" />
             </button>
-            <button type="button" className={cn(iconButton, mode === "practice" && !showSetup && "text-screen")} onClick={() => newPractice()} aria-label="New Unlimited grid" title="New Unlimited grid">
+            <button type="button" className={cn(iconButton, mode === "practice" && !showSetup && "text-screen")} onClick={() => newPractice()} aria-label={t("tools.newGrid")} title={t("tools.newGrid")}>
               <Dices className="h-5 w-5" />
             </button>
             <div className="relative flex items-center">
-              <button type="button" className={cn(iconButton, showSetup && "bg-screen/10 text-foreground")} onClick={openSetup} aria-pressed={showSetup} aria-label="Unlimited settings" title="Unlimited settings" data-testid="pdk-settings">
+              <button type="button" className={cn(iconButton, showSetup && "bg-screen/10 text-foreground")} onClick={openSetup} aria-pressed={showSetup} aria-label={t("tools.settings")} title={t("tools.settings")} data-testid="pdk-settings">
                 <Settings className="h-5 w-5" />
               </button>
             </div>
@@ -645,14 +679,14 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
           </div>
         ) : (
         <>
-        {mode === "weekly" && weeklyInfo && (
+        {mode === "weekly" && weekly && (
           <p className="mx-auto max-w-md rounded-md border border-warning/50 bg-warning/10 px-3 py-2 text-center text-sm" data-testid="pdk-weekly">
-            <b>{weeklyInfo.theme}</b>: {weeklyInfo.blurb} Live until Sunday {weeklyInfo.sunday}. Doesn&apos;t count toward your daily streak.
+            {t.rich("weeklyNote", { theme: weekly.theme, blurb: weekly.blurb, sunday: weekly.sunday, b: (c) => <b>{c}</b> })}
           </p>
         )}
         {mode === "archive" && archive && (
           <p className="mx-auto max-w-md rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2 text-center text-sm" data-testid="pdk-archive-note">
-            Archive: #{connNumber(archive.date)} ({archive.date}), {DIFF_LABEL[archive.difficulty]}. For fun: it never counts toward the daily board or your streak.
+            {t("archiveNote", { n: connNumber(archive.date), date: archive.date, diff: diffLabel(archive.difficulty) })}
           </p>
         )}
         {showSetup && prefs && (
@@ -662,14 +696,14 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
           <>
         {mode === "practice" && challenge && (
           <p className="mx-auto max-w-md rounded-md border border-warning/50 bg-warning/10 px-3 py-2 text-center text-sm font-semibold" data-testid="pdk-challenge">
-            Challenge: beat {challengeLabel(challenge)}
+            {t("challenge.banner", { label: beatLabel })}
           </p>
         )}
         {mode === "practice" && (
           <p className="mx-auto max-w-md rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2 text-center text-sm" data-testid="pdk-unlimited">
-            Unlimited: your own board, never counted toward your streak.
+            {t("unlimitedNote")}
             {settings.timer && (
-              <b className="ml-2 inline-flex items-center rounded bg-foreground/10 px-1.5 font-display tabular-nums" data-testid="pdk-clock" aria-label="Time">
+              <b className="ml-2 inline-flex items-center rounded bg-foreground/10 px-1.5 font-display tabular-nums" data-testid="pdk-clock" aria-label={t("time")}>
                 {clockText(elapsed)}
               </b>
             )}
@@ -678,24 +712,24 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
 
         {mode === "daily" && master && (
           <p className="mx-auto max-w-md rounded-md border border-warning/50 bg-warning/10 px-3 py-2 text-center text-sm font-semibold" data-testid="pdk-master">
-            Master Puzzle by {master}
+            {t("master", { name: master })}
           </p>
         )}
 
         <div className="mx-auto grid max-w-xl grid-cols-4 items-center gap-2 rounded-md border border-foreground/15 bg-card px-2 py-2 text-center" aria-live="polite" data-testid="pdk-stats-bar">
-          <button type="button" onClick={tapRank} disabled={mode !== "daily" && mode !== "weekly"} className="rounded px-1 hover:bg-primary/5 disabled:pointer-events-none" data-testid="pdk-uniq" aria-label="Rarity score (lower is rarer), tap for the board" title="Rarity score: the share of players who picked your answers, added up (an empty cell counts 100). Lower is rarer.">
-            <span className="hud-label block">Rarity</span>
+          <button type="button" onClick={tapRank} disabled={mode !== "daily" && mode !== "weekly"} className="rounded px-1 hover:bg-primary/5 disabled:pointer-events-none" data-testid="pdk-uniq" aria-label={t("bar.rarityLabel")} title={t("bar.rarityTitle")}>
+            <span className="hud-label block">{t("bar.rarity")}</span>
             <b className="block font-display text-xl tabular-nums leading-tight">{uniq ?? "–"}</b>
           </button>
           <span data-testid="pdk-filled">
-            <span className="hud-label block">Filled</span>
+            <span className="hud-label block">{t("bar.filled")}</span>
             <b className="block font-display text-xl tabular-nums leading-tight">
               {lockedCount}
               <span className="text-sm font-semibold text-muted-foreground">/9</span>
             </b>
           </span>
-          <span data-testid="pdk-pp" aria-label={left === null ? "Unlimited guesses" : `${left} of ${pp} guesses left`} title="PP: your guesses. A wrong guess uses one too.">
-            <span className="hud-label block">PP</span>
+          <span data-testid="pdk-pp" aria-label={left === null ? t("bar.ppUnlimited") : t("bar.ppLeft", { left, pp })} title={t("bar.ppTitle")}>
+            <span className="hud-label block">{t("bar.pp")}</span>
             <b className={cn("block font-display text-xl tabular-nums leading-tight", left !== null && left <= 2 && !over && "text-destructive")}>
               {left === null ? "∞" : left}
               {left !== null && <span className="text-sm font-semibold text-muted-foreground">/{pp}</span>}
@@ -703,7 +737,7 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
             {left !== null && pp <= 12 && <PpPips left={left} total={pp} />}
           </span>
           <Button type="button" variant="outline" size="sm" onClick={() => void giveUp()} disabled={busy || over || !grid} data-testid="pdk-giveup">
-            <Flag className="h-4 w-4" aria-hidden /> Give up
+            <Flag className="h-4 w-4" aria-hidden /> {t("bar.giveUp")}
           </Button>
         </div>
 
@@ -729,12 +763,12 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
 
         {!over && mode === "practice" && (
           <div className="flex flex-wrap justify-center gap-2" data-testid="pdk-unlimited-actions">
-            {grid && <ShareButton getText={challengeText} kind="pikadoku-challenge" label="Share this grid" variant="outline" size="sm" />}
+            {grid && <ShareButton getText={challengeText} kind="pikadoku-challenge" label={t("shareGrid")} variant="outline" size="sm" />}
             <Button type="button" variant="outline" size="sm" onClick={() => newPractice(settings)} data-testid="pdk-new-board">
-              <Dices className="h-4 w-4" aria-hidden /> New board
+              <Dices className="h-4 w-4" aria-hidden /> {t("newBoard")}
             </Button>
             <Button type="button" variant="ghost" size="sm" onClick={openSetup} data-testid="pdk-change-settings">
-              <SlidersHorizontal className="h-4 w-4" aria-hidden /> Change settings
+              <SlidersHorizontal className="h-4 w-4" aria-hidden /> {t("changeSettings")}
             </Button>
           </div>
         )}
@@ -743,31 +777,31 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
 
         <div className="space-y-2 text-center">
           <button type="button" onClick={() => setMoreOpen((o) => !o)} aria-expanded={moreOpen} data-testid="pdk-more" className="inline-flex items-center gap-1 rounded-md px-3 py-1 max-sm:min-h-10 max-sm:px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground">
-            More <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", moreOpen && "rotate-180")} aria-hidden />
+            {t("more")} <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", moreOpen && "rotate-180")} aria-hidden />
           </button>
           {moreOpen && (
             <div className="flex flex-wrap items-center justify-center gap-3" data-testid="pdk-more-panel">
-              <div className="flex gap-1" role="radiogroup" aria-label="Daily difficulty">
+              <div className="flex gap-1" role="radiogroup" aria-label={t("dailyDifficulty")}>
                 {PDK_DIFFICULTIES.map((d) => (
                   <button
                     key={d}
                     type="button"
                     role="radio"
                     aria-checked={mode === "daily" && difficulty === d}
-                    title={DIFF_HINT[d]}
+                    title={t(`diffHint.${d}`)}
                     data-testid={`pdk-diff-${d}`}
                     onClick={() => (patchPrefs({ difficulty: d }), setMode("daily"))}
                     className={cn("rounded border px-3 py-1 text-xs font-semibold uppercase tracking-wider", mode === "daily" && difficulty === d ? "border-primary bg-primary/15 text-foreground" : "border-foreground/15 text-muted-foreground hover:text-foreground")}
                   >
-                    {DIFF_LABEL[d]}
+                    {diffLabel(d)}
                   </button>
                 ))}
               </div>
-              <button type="button" data-testid="pdk-mode-weekly" title="A themed grid that is live Monday to Sunday, with its own board" onClick={() => setMode("weekly")} className={cn("rounded border px-3 py-1 max-sm:min-h-10 text-xs font-semibold uppercase tracking-wider", mode === "weekly" ? "border-primary bg-primary/15 text-foreground" : "border-foreground/15 text-muted-foreground hover:text-foreground")}>
-                Weekly
+              <button type="button" data-testid="pdk-mode-weekly" title={t("weeklyTitle")} onClick={() => setMode("weekly")} className={cn("rounded border px-3 py-1 max-sm:min-h-10 text-xs font-semibold uppercase tracking-wider", mode === "weekly" ? "border-primary bg-primary/15 text-foreground" : "border-foreground/15 text-muted-foreground hover:text-foreground")}>
+                {t("weekly")}
               </button>
               <button type="button" onClick={() => setSheet("archive")} disabled={!today} data-testid="pdk-archive-btn" className={cn("inline-flex items-center gap-1 rounded border px-3 py-1 max-sm:min-h-10 text-xs font-semibold uppercase tracking-wider", mode === "archive" ? "border-primary bg-primary/15 text-foreground" : "border-foreground/15 text-muted-foreground hover:text-foreground disabled:opacity-40")}>
-                <Archive className="h-3.5 w-3.5" aria-hidden /> Archive
+                <Archive className="h-3.5 w-3.5" aria-hidden /> {t("archive")}
               </button>
             </div>
           )}
@@ -776,24 +810,24 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
         {result && !showSetup && (
           <Card data-testid="pdk-result">
             <CardContent className="space-y-4 p-6 text-center">
-              <p className="hud-label text-screen">{result.won ? "Grid complete · 9 of 9 cells" : `${result.solved} of 9 cells`}</p>
+              <p className="hud-label text-screen">{result.won ? t("result.complete") : t("result.cells", { n: result.solved })}</p>
               <p className="font-display text-3xl font-bold" data-testid="pdk-score">
-                {result.score === null ? `${result.solved}/9` : `Rarity score ${result.score}`}
+                {result.score === null ? `${result.solved}/9` : t("result.score", { score: result.score })}
               </p>
               <p className="mx-auto max-w-sm text-xs text-muted-foreground">
                 {result.score === null
-                  ? "Rarity is off for now, so this game has no rarity score."
-                  : "Each cell adds the share of players who picked the same Pokémon there (an empty cell adds 100). Lower means rarer picks: 900 is the most common result, under 100 is legendary."}
+                  ? t("result.off")
+                  : t("result.explain")}
               </p>
               <RarityPreview grid={shareResult().grid} />
               {(mode === "daily" || mode === "weekly") && result.counted && (
                 <div>
                   <Button type="button" variant="outline" size="sm" onClick={() => setShowRank((s) => !s)} data-testid="pdk-rank-btn">
-                    Tap for rank
+                    {t("result.tapRank")}
                   </Button>
                   {showRank && (
                     <p className="mt-2 text-sm" data-testid="pdk-rank">
-                      {result.rank ? `You're #${result.rank.position} of ${result.rank.total} on ${mode === "weekly" ? "this week's" : `today's ${DIFF_LABEL[difficulty]}`} board.` : "The board is off right now."}
+                      {result.rank ? (mode === "weekly" ? t("result.rankWeek", { position: result.rank.position, total: result.rank.total }) : t("result.rankToday", { position: result.rank.position, total: result.rank.total, diff: diffLabel(difficulty) })) : t("result.boardOff")}
                     </p>
                   )}
                 </div>
@@ -812,28 +846,28 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
                     void finish(guesses, false, n);
                   }}
                 >
-                  <input value={nameDraft} onChange={(e) => setNameDraft(e.target.value)} maxLength={24} placeholder="Trainer name to rank" aria-label="Trainer name to rank" className="min-w-0 flex-1 rounded-md border border-foreground/20 bg-card px-3 py-1.5 text-sm" />
+                  <input value={nameDraft} onChange={(e) => setNameDraft(e.target.value)} maxLength={24} placeholder={t("result.trainerName")} aria-label={t("result.trainerName")} className="min-w-0 flex-1 rounded-md border border-foreground/20 bg-card px-3 py-1.5 text-sm" />
                   <Button type="submit" size="sm">
-                    Rank me
+                    {t("result.rankMe")}
                   </Button>
                 </form>
               )}
               {verdict && challenge && (
                 <p className="text-sm font-semibold" data-testid="pdk-challenge-result">
-                  {verdict === "beat" ? `You beat ${challengeLabel(challenge)}!` : verdict === "tied" ? `You tied ${challengeLabel(challenge)}.` : `Not quite: you needed to beat ${challengeLabel(challenge)}.`}
+                  {verdict === "beat" ? t("challenge.beat", { label: beatLabel }) : verdict === "tied" ? t("challenge.tied", { label: beatLabel }) : t("challenge.lost", { label: beatLabel })}
                 </p>
               )}
               <div className="flex flex-wrap justify-center gap-2">
-                <ShareButton getText={shareText} kind="pikadoku" label="Share result" size="lg" />
-                {mode === "practice" && <ShareButton getText={challengeText} kind="pikadoku-challenge" label="Share this grid" variant="outline" data-testid="pdk-share-grid" />}
+                <ShareButton getText={shareText} kind="pikadoku" label={t("result.share")} size="lg" />
+                {mode === "practice" && <ShareButton getText={challengeText} kind="pikadoku-challenge" label={t("shareGrid")} variant="outline" data-testid="pdk-share-grid" />}
                 {mode === "practice" && (
                   <Button type="button" onClick={() => newPractice(settings)} data-testid="pdk-new-board">
-                    <Dices className="h-4 w-4" aria-hidden /> New board
+                    <Dices className="h-4 w-4" aria-hidden /> {t("newBoard")}
                   </Button>
                 )}
                 {mode === "practice" && (
                   <Button type="button" variant="ghost" onClick={openSetup} data-testid="pdk-change-settings">
-                    <SlidersHorizontal className="h-4 w-4" aria-hidden /> Change settings
+                    <SlidersHorizontal className="h-4 w-4" aria-hidden /> {t("changeSettings")}
                   </Button>
                 )}
               </div>
@@ -841,7 +875,7 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
               {mode === "daily" && <DailyEmailNudge />}
               {mode !== "practice" && (
                 <Button type="button" variant="ghost" size="sm" onClick={() => newPractice()}>
-                  <Dices className="h-4 w-4" aria-hidden /> Can&apos;t wait? Play an Unlimited grid
+                  <Dices className="h-4 w-4" aria-hidden /> {t("result.cantWait")}
                 </Button>
               )}
             </CardContent>
@@ -854,30 +888,30 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
         {result && !showSetup && <RevealGrid reveal={result.reveal} grid={grid} locked={locked} />}
 
         {(mode === "daily" || mode === "weekly") && (
-          <section id="pdk-board" className="space-y-2" aria-label="Leaderboard" data-testid="pdk-board">
+          <section id="pdk-board" className="space-y-2" aria-label={t("leaderboard.label")} data-testid="pdk-board">
             <div className="flex items-center justify-between">
-              <h2 className="font-display text-lg font-bold uppercase sm:text-xl">{mode === "weekly" ? `This week's board · ${weeklyInfo?.theme ?? "Weekly"}` : `Today's board · ${DIFF_LABEL[difficulty]}`}</h2>
-              <div className="flex gap-1" role="tablist" aria-label="Leaderboard scope">
+              <h2 className="font-display text-lg font-bold uppercase sm:text-xl">{mode === "weekly" ? t("leaderboard.week", { theme: weekly?.theme ?? t("weekly") }) : t("leaderboard.today", { diff: diffLabel(difficulty) })}</h2>
+              <div className="flex gap-1" role="tablist" aria-label={t("leaderboard.scope")}>
                 {(["all", "friends"] as const).map((s) => (
                   <button key={s} type="button" role="tab" aria-selected={boardScope === s} onClick={() => setBoardScope(s)} className={cn("rounded border px-2.5 py-1 text-xs font-semibold uppercase", boardScope === s ? "border-primary bg-primary/15" : "border-foreground/15 text-muted-foreground")}>
-                    {s === "all" ? "Everyone" : "Friends"}
+                    {s === "all" ? t("leaderboard.all") : t("leaderboard.friends")}
                   </button>
                 ))}
               </div>
             </div>
             {!board ? (
               <p className="flex items-center justify-center gap-2 py-3 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Loading
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> {t("loading")}
               </p>
             ) : board.signedIn === false ? (
-              <p className="py-3 text-center text-sm text-muted-foreground">Sign in to see how your friends did.</p>
+              <p className="py-3 text-center text-sm text-muted-foreground">{t("leaderboard.signIn")}</p>
             ) : !board.rows ? (
-              <p className="py-3 text-center text-sm text-muted-foreground">The leaderboard is off right now.</p>
+              <p className="py-3 text-center text-sm text-muted-foreground">{t("leaderboard.off")}</p>
             ) : board.rows.length === 0 ? (
               <div className="py-3 text-center text-sm text-muted-foreground">
                 {/* Two short lines rather than one paragraph: each is smaller than the title, so this late-arriving empty state never becomes the page's largest paint. */}
-                <p>Nobody is on the board yet.</p>
-                <p>Finish a grid with a trainer name to rank.</p>
+                <p>{t("leaderboard.empty")}</p>
+                <p>{t("leaderboard.emptyHow")}</p>
               </div>
             ) : (
               <ol className="divide-y divide-foreground/10 rounded-md border border-foreground/10 text-sm">
@@ -902,7 +936,7 @@ export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
           dex={dex}
           used={used}
           busy={busy}
-          title={`${grid.rows[Math.floor(picking / 3)].label} × ${grid.cols[picking % 3].label}`}
+          title={tb("board.cross", { row: labelOf(grid.rows[Math.floor(picking / 3)]), col: labelOf(grid.cols[picking % 3]) })}
           initialQuery={pickQuery}
           onPick={(p) => void pick(p)}
           onClose={closePicker}

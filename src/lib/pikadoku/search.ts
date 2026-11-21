@@ -10,14 +10,25 @@ export interface SearchEntry {
   name: string;
   /** The species: equal to `id` for a species, else the form's species. */
   base: number;
+  /**
+   * In another language, the other names it also answers to: the English one, and for Japanese the rōmaji
+   * ("Raichu de Alola" also answers to "Alolan Raichu"). English pages send none.
+   */
+  aliases?: readonly string[];
 }
 
-export interface Indexed<T extends SearchEntry> {
-  entry: T;
+/** A name, normalized for matching. */
+interface Spelling {
   /** Normalized words ("alolan raichu"). */
   words: string[];
   /** Normalized, without spaces ("alolanraichu"). */
   compact: string;
+}
+
+export interface Indexed<T extends SearchEntry> extends Spelling {
+  entry: T;
+  /** The other names it answers to, normalized (none on English pages). */
+  alts: Spelling[];
 }
 
 /** Lower-case, no accents or punctuation, ♀/♂ as f/m, single spaces; any script (katakana as hiragana). */
@@ -27,11 +38,13 @@ export function normalizeName(s: string): string {
     .trim();
 }
 
+function spell(name: string): Spelling {
+  const n = normalizeName(name);
+  return { words: n.split(" "), compact: n.replace(/ /g, "") };
+}
+
 export function indexEntries<T extends SearchEntry>(entries: readonly T[]): Indexed<T>[] {
-  return entries.map((entry) => {
-    const n = normalizeName(entry.name);
-    return { entry, words: n.split(" "), compact: n.replace(/ /g, "") };
-  });
+  return entries.map((entry) => ({ entry, ...spell(entry.name), alts: (entry.aliases ?? []).map(spell).filter((a) => a.compact) }));
 }
 
 /** Optimal-string-alignment distance (a swap of two neighbours costs one), capped at `max + 1`. */
@@ -64,6 +77,17 @@ export function editDistance(a: string, b: string, max = 2): number {
 export function rankEntry(x: Indexed<SearchEntry>, q: string, qc: string): number | null {
   if (!qc) return null;
   if (/^\d+$/.test(qc)) return x.entry.id === Number(qc) && x.entry.base === x.entry.id ? 0 : null;
+  // In another language: the best of the name shown and the other names it answers to.
+  let best = rankSpelling(x, q, qc);
+  for (const a of x.alts) {
+    if (best === 0) break;
+    const r = rankSpelling(a, q, qc);
+    if (r !== null && (best === null || r < best)) best = r;
+  }
+  return best;
+}
+
+function rankSpelling(x: Spelling, q: string, qc: string): number | null {
   if (x.compact === qc) return 0;
   if (x.compact.startsWith(qc)) return 1;
   if (x.words.some((w, i) => i > 0 && w.startsWith(q.split(" ")[0]))) return 2;
