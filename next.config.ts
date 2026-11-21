@@ -107,6 +107,9 @@ const nextConfig: NextConfig = {
       { source: "/guessr/:path*", destination: "/pokeguessr/:path*", permanent: true },
       { source: "/connections", destination: "/pokeconnections", permanent: true },
       { source: "/connections/:path*", destination: "/pokeconnections/:path*", permanent: true },
+      // The Pokédex rankings pages are gone (the Pokédex's own filters and sort do the same job): old links land on the Pokédex.
+      { source: "/pokedex/rankings", destination: "/pokedex", permanent: true },
+      { source: "/pokedex/rankings/:path*", destination: "/pokedex", permanent: true },
       // The old address forwards to playpokeiq.com, path and query kept. /api stays put so
       // webhooks, crons and OAuth callbacks registered on the old host keep working.
       { source: "/:path((?!api/).*)", has: [{ type: "host", value: "pokeiq.vercel.app" }], destination: "https://playpokeiq.com/:path", permanent: true },
