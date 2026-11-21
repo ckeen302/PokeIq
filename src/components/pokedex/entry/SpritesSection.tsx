@@ -8,6 +8,9 @@ import { cn } from "@/lib/utils";
  * server component with no script of its own: the table scrolls sideways in
  * its card on a narrow screen, row labels pinned.
  */
+/** The pinned label column, with a short fade on its right edge for what scrolls under it (inside the cell's border, so row lines run unbroken). */
+const PINNED = "sticky left-0 z-[1] bg-card after:pointer-events-none after:absolute after:inset-y-0 after:-right-3 after:w-3 after:bg-gradient-to-r after:from-card after:to-transparent";
+
 export function SpritesSection({ name, columns }: { name: string; columns: SpriteColumn[] }) {
   const rows = [
     { key: "normal", label: "Normal", shiny: false },
@@ -19,7 +22,7 @@ export function SpritesSection({ name, columns }: { name: string; columns: Sprit
         <table className="border-separate border-spacing-0 text-sm">
           <thead>
             <tr>
-              <th className="sticky left-0 z-[1] border-b bg-card p-2 pl-0">
+              <th className={cn(PINNED, "border-b p-2 pl-0")}>
                 <span className="sr-only">Sprite</span>
               </th>
               {columns.map((c) => (
@@ -36,7 +39,8 @@ export function SpritesSection({ name, columns }: { name: string; columns: Sprit
                 <th
                   scope="row"
                   className={cn(
-                    "sticky left-0 z-[1] bg-card py-2 pl-0 pr-3 text-left align-middle font-normal",
+                    PINNED,
+                    "py-2 pl-0 pr-3 text-left align-middle font-normal",
                     r.key === "normal" && "border-b border-foreground/5"
                   )}
                 >
