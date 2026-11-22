@@ -75,7 +75,7 @@ export function ColourPicker({ value, onBegin, onChange, compact, label }: { val
             aria-label={t("colour.hex")}
             spellCheck={false}
             maxLength={7}
-            className="h-8 w-[84px] rounded-md bg-transparent px-1 font-mono uppercase tracking-wide text-muted-foreground outline-none transition-colors hover:bg-white/[0.05] focus:bg-white/[0.07] focus:text-foreground"
+            className="h-8 w-[84px] rounded-md bg-transparent px-1 font-mono max-lg:h-10 max-lg:w-[110px] max-lg:text-[16px] uppercase tracking-wide text-muted-foreground outline-none transition-colors hover:bg-white/[0.05] focus:bg-white/[0.07] focus:text-foreground"
             data-testid="pbm-hex"
           />
         </label>

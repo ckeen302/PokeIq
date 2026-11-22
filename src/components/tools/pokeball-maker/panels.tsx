@@ -498,7 +498,7 @@ export function InsidePanel({ design, name, onChoose, onShiny, onClear, onLink, 
       >
         <label className="block text-[12.5px] text-muted-foreground" htmlFor="pbm-shiny-link">{t("inside.link")}</label>
         <div className="flex gap-2">
-          <input id="pbm-shiny-link" value={link} onChange={(e) => setLink(e.target.value)} placeholder={t("inside.linkPlaceholder")} className="h-10 min-w-0 flex-1 rounded-full border border-white/[0.08] bg-white/[0.05] px-4 text-[13.5px] outline-none placeholder:text-muted-foreground/70 focus:border-white/25" data-testid="pbm-shiny-link" />
+          <input id="pbm-shiny-link" value={link} onChange={(e) => setLink(e.target.value)} placeholder={t("inside.linkPlaceholder")} className="h-10 min-w-0 flex-1 rounded-full border border-white/[0.08] bg-white/[0.05] px-4 text-[13.5px] outline-none placeholder:text-muted-foreground/70 focus:border-white/25 max-lg:text-[16px]" data-testid="pbm-shiny-link" />
           <button type="submit" className="h-10 rounded-full bg-white/[0.08] px-4 text-[13px] font-medium transition-colors hover:bg-white/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70">{t("inside.use")}</button>
         </div>
         {linkError && <p className="text-[12.5px] text-[hsl(0_80%_72%)]" role="alert">{t("inside.badShiny")}</p>}
@@ -535,14 +535,14 @@ export function CardPanel({ design, onName, onDesc, still, rejected, t }: { desi
         <span className="flex justify-between text-[12.5px] text-muted-foreground">
           {t("card.name")} <span>{t("card.count", { n: Array.from(name).length, max: NAME_MAX })}</span>
         </span>
-        <input value={name} maxLength={NAME_MAX * 2} onChange={(e) => setName(Array.from(e.target.value).slice(0, NAME_MAX).join(""))} onBlur={() => onName(name)} onKeyDown={(e) => e.key === "Enter" && onName(name)} placeholder={t("card.namePlaceholder")} className="h-11 w-full rounded-xl border border-white/[0.08] bg-white/[0.05] px-3.5 text-[15px] outline-none placeholder:text-muted-foreground/70 focus:border-white/25" data-testid="pbm-name" />
+        <input value={name} maxLength={NAME_MAX * 2} onChange={(e) => setName(Array.from(e.target.value).slice(0, NAME_MAX).join(""))} onBlur={() => onName(name)} onKeyDown={(e) => e.key === "Enter" && onName(name)} placeholder={t("card.namePlaceholder")} className="h-11 w-full rounded-xl border border-white/[0.08] bg-white/[0.05] px-3.5 text-[15px] outline-none placeholder:text-muted-foreground/70 focus:border-white/25 max-lg:text-[16px]" data-testid="pbm-name" />
         {rejected && <span className="block text-[12.5px] text-[hsl(0_80%_72%)]" role="alert">{t("card.rejected")}</span>}
       </label>
       <label className="block space-y-1.5">
         <span className="flex justify-between text-[12.5px] text-muted-foreground">
           {t("card.desc")} <span>{t("card.count", { n: Array.from(desc).length, max: DESC_MAX })}</span>
         </span>
-        <textarea value={desc} rows={3} onChange={(e) => setDesc(Array.from(e.target.value.replace(/\n/g, " ")).slice(0, DESC_MAX).join(""))} onBlur={() => onDesc(desc)} placeholder={t("card.descPlaceholder")} className="w-full resize-none rounded-xl border border-white/[0.08] bg-white/[0.05] px-3.5 py-2.5 text-[14px] leading-relaxed outline-none placeholder:text-muted-foreground/70 focus:border-white/25" data-testid="pbm-desc" />
+        <textarea value={desc} rows={3} onChange={(e) => setDesc(Array.from(e.target.value.replace(/\n/g, " ")).slice(0, DESC_MAX).join(""))} onBlur={() => onDesc(desc)} placeholder={t("card.descPlaceholder")} className="w-full resize-none rounded-xl border border-white/[0.08] bg-white/[0.05] px-3.5 py-2.5 text-[14px] leading-relaxed outline-none placeholder:text-muted-foreground/70 focus:border-white/25 max-lg:text-[16px]" data-testid="pbm-desc" />
       </label>
     </div>
   );

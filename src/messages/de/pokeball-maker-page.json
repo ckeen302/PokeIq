@@ -1,0 +1,23 @@
+{
+  "title": "Pokéball-Designer",
+  "metaTitle": "Pokéball-Designer: Gestalte deinen eigenen Pokéball",
+  "metaDescription": "Gestalte deinen eigenen Pokéball in 3D. Starte mit einem offiziellen Ball, einem Typ oder einem beliebigen Pokémon und wähle Farben, Muster, Oberflächen, Sticker und einen Öffnungseffekt. Teil ihn oder lad ihn als PNG, GIF, Video, 3D-Modell oder STL für den 3D-Druck herunter. Kostenlos.",
+  "metaDesignTitle": "{name}: ein eigener Pokéball",
+  "metaDesignDescription": "Ein eigener Pokéball, gestaltet mit dem Pokéball-Designer auf PokéIQ. Öffne ihn, um ihn in 3D zu drehen und aufgehen zu sehen, oder gestalte deinen eigenen.",
+  "ogAlt": "Ein eigener Pokéball, gestaltet auf PokéIQ",
+  "cardTitle": "Pokéball-Designer",
+  "cardSubtitle": "Gestalte deinen eigenen Pokéball in 3D.",
+  "howto": {
+    "title": "So funktioniert's",
+    "s1t": "Mit einem Ball starten",
+    "s1": "Wähl einen offiziellen Ball, ein Typ-Thema oder einen leeren Ball, würfle einen zufälligen aus oder nimm ein beliebiges Pokémon für einen Ball in seinen Farben und Typen.",
+    "s2t": "Mach ihn zu deinem",
+    "s2": "Färb jedes Teil ein, leg Muster auf eine der Hälften, wähl für jedes Teil eine Oberfläche (glänzend, Metall, Glas, Holz und mehr), ändere Form und Knopf und klick auf den Ball, um Sticker aufzukleben.",
+    "s3t": "Sieh ihn aufgehen",
+    "s3": "Wähl einen Effekt, der herausschießt, und ein Pokémon, das herauskommt, und drück auf Öffnen – oder auf Fangen, damit er dreimal wackelt und klickt.",
+    "s4t": "Teilen und herunterladen",
+    "s4": "Dein Design steckt in seinem Link, also kann es jeder öffnen. Lad ein transparentes PNG, ein GIF, ein Hochkant-Video, ein GLB-Modell oder eine STL für den 3D-Druck herunter.",
+    "printTitle": "Ihn drucken",
+    "print": "Die STL ist in Millimetern: ein 60-mm-Ball, dessen Hälften flach auf ihrem Rand ohne Stützen drucken, ein Ring, der sie mit 0,25 mm Spiel verbindet, und der Knopf in zwei kleinen Teilen. Bemal ihn in deinen Farben."
+  }
+}
