@@ -141,10 +141,7 @@ export function TeamPick({ format, onChange, idPrefix, source }: { format: PlayF
                   role="radio"
                   aria-checked={t.id === chosen?.id}
                   onClick={() => choose(t.id)}
-                  className={cn(
-                    "flex w-full flex-wrap items-center gap-x-3 gap-y-1 rounded-md border bg-card px-3 py-2 text-left hover:border-screen/50",
-                    t.id === chosen?.id && "border-screen/60 bg-screen/10"
-                  )}
+                  className="flex w-full flex-wrap items-center gap-x-3 gap-y-1 rounded-md border bg-card px-3 py-2 text-left hover:border-screen/50 aria-checked:border-screen/60 aria-checked:bg-screen/10"
                 >
                   <span className="min-w-[8rem] flex-1 truncate font-display text-sm font-bold uppercase tracking-wide">{t.name || "Untitled team"}</span>
                   <Sprites sets={t.sets} sprite={sprite} />

@@ -81,7 +81,7 @@ export function AccountMenu({ className }: { className?: string }) {
         data-testid="account-menu-button"
         className={cn(
           "ml-1 flex items-center gap-2 rounded-md border bg-card py-1.5 pl-2 pr-1.5 text-sm text-muted-foreground transition-colors hover:border-screen/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          (open || onTrainer) && "border-screen/60 text-foreground"
+          (open || onTrainer) && "border-[color:hsl(var(--screen)/0.6)] text-foreground"
         )}
       >
         <span className="relative flex">

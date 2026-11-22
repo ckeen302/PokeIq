@@ -12,6 +12,7 @@ import { ResultGrid } from "@/components/quiz/ResultGrid";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
+import { unlockCryAudio } from "@/lib/cry-audio";
 
 export function ChallengeLanding({ card, token, runLabel }: { card: ShareCard; token: string; runLabel: string }) {
   const [playing, setPlaying] = useState(false);
@@ -56,7 +57,14 @@ export function ChallengeLanding({ card, token, runLabel }: { card: ShareCard; t
             You&apos;ll get the exact same {MODULE_INFO[card.m].title.toLowerCase()} questions, in the same format.
             Think you know Pokémon better?
           </p>
-          <Button size="lg" className="w-full text-base" onClick={() => setPlaying(true)}>
+          <Button
+            size="lg"
+            className="w-full text-base"
+            onClick={() => {
+              if (card.m === "cry") unlockCryAudio(); // question 1's cry can then play by itself
+              setPlaying(true);
+            }}
+          >
             Accept challenge
           </Button>
           {card.day && (
