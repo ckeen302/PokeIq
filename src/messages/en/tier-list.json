@@ -8,6 +8,8 @@
   "sharedTitle": "{title}: a {mode}",
   "sharedDescription": "Made with the Pokémon Tier List Maker on PokéIQ. Open it to see it in full, or make your own.",
   "ogAlt": "{title}, made with the Pokémon Tier List Maker",
+  "ogName": "Pokémon",
+  "ogMaker": "Tier List Maker",
   "card": {
     "title": "Pokémon Tier List Maker",
     "subtitle": "Tier lists, brackets, top 10s and blind rankings."

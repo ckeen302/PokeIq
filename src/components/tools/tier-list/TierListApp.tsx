@@ -619,7 +619,7 @@ export default function TierListApp({ roster, template, shared }: AppProps) {
         </Modal>
       )}
       {dialog === "share" && <ShareDialog url={shareUrl(s)} onClose={() => setDialog(null)} copy={copy} title={title} />}
-      {dialog === "export" && <ExportDialog input={{ state: s, byKey, title, subtitle: subtitle || templateName(t, tpl), entrants, drawn }} onClose={() => setDialog(null)} />}
+      {dialog === "export" && <ExportDialog input={{ state: s, byKey, title, subtitle, entrants, drawn }} onClose={() => setDialog(null)} />}
       {dialog === "add" && (
         <AddDialog
           mons={mons}

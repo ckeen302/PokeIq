@@ -17,11 +17,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ temp
   const tpl = getTemplate((await params).template);
   const t = serverT(tierList);
   const roster = buildRoster();
-  if (!tpl) return templateCard("Pokémon", t("title"), [25, 6, 150, 448, 658, 1000]);
+  const chips = [t("modes.tier"), t("modes.bracket"), t("modes.top", { n: 10 }), t("modes.blind")];
+  if (!tpl) return templateCard(t("ogName"), t("ogMaker"), t("title"), chips, [25, 6, 150, 448, 658, 1000]);
   const state = decodeShare(req.nextUrl.searchParams.get("s"), makeCodec(roster.mons));
   if (!state || state.template !== tpl.slug) {
     const faces = [tpl.face, ...templateMons(tpl, roster.mons).filter((m) => !m.f && m.d !== tpl.face).sort((a, b) => b.b - a.b).map((m) => m.d)].slice(0, 6);
-    return templateCard(templateSeoName(t, tpl), t("title"), faces.length ? faces : [tpl.face]);
+    return templateCard(templateSeoName(t, tpl), t("ogMaker"), t("title"), chips, faces.length ? faces : [tpl.face]);
   }
   const byKey = new Map(roster.mons.map((m) => [m.k, m]));
   const pool = poolKeys(state, roster.mons);

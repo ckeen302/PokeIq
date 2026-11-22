@@ -36,7 +36,7 @@ export interface VideoOptions {
   sound: boolean;
   fonts: Fonts;
   labels(round: number, count: number): string;
-  text: { made: string; champion: string; runnerUp: string; you: string; friend: string; mode: string };
+  text: { made: string; champion: string; runnerUp: string; you: string; friend: string; mode: string; vs: string };
   signal: AbortSignal;
   onProgress(p: number): void;
 }
@@ -294,8 +294,8 @@ function bracketPlan(o: VideoOptions, pics: Pictures): Plan {
         if (!mon) return;
         const won = m.winner === mon.k;
         const enter = easeOutBack(clamp01(k / 0.25));
-        const y = side === 0 ? H * 0.33 : H * 0.69;
-        const size = W * 0.5;
+        const y = side === 0 ? H * 0.3 : H * 0.72;
+        const size = W * 0.46;
         g.save();
         g.globalAlpha = won ? 1 : 1 - 0.7 * decide;
         const sc = (0.6 + 0.4 * enter) * (won ? 1 + 0.12 * decide : 1 - 0.12 * decide);
@@ -310,12 +310,14 @@ function bracketPlan(o: VideoOptions, pics: Pictures): Plan {
         g.fillStyle = COLORS.text;
         g.textAlign = "center";
         g.font = `700 ${fitText(g, mon.n, W - 160, 64, 700, o.fonts.display, 28)}px ${o.fonts.display}`;
-        g.fillText(mon.n, 0, size / 2 + 50);
+        g.fillText(mon.n, 0, size / 2 + 40);
         g.restore();
       });
       g.fillStyle = COLORS.muted;
-      g.font = `700 64px ${o.fonts.display}`;
-      g.fillText("VS", W / 2, H * 0.52);
+      g.font = `700 60px ${o.fonts.display}`;
+      g.textBaseline = "middle";
+      g.fillText(o.text.vs.toUpperCase(), W / 2, H * 0.515);
+      g.textBaseline = "alphabetic";
     },
   };
 }

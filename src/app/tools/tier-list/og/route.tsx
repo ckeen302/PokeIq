@@ -8,5 +8,5 @@ export const dynamic = "force-static";
 
 export function GET() {
   const t = serverT(tierList);
-  return templateCard("Pokémon", t("title"), [4, 25, 150, 448, 658, 1000]);
+  return templateCard(t("ogName"), t("ogMaker"), t("title"), [t("modes.tier"), t("modes.bracket"), t("modes.top", { n: 10 }), t("modes.blind")], [4, 25, 150, 448, 658, 1000]);
 }

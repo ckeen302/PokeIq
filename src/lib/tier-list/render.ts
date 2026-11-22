@@ -217,8 +217,16 @@ export function drawTierList(g: CanvasRenderingContext2D, W: number, H: number, 
   const scale = Math.min(W, H) / 1080;
   const pad = Math.round(56 * scale);
   background(g, W, H);
-  const top = header(g, W, d.title, d.subtitle, f, pad, scale);
-  const L = layoutTiers(d.rows, W - pad * 2, H - top - pad, scale);
+  // Measure the header, lay the board out under it, then centre the two together (a short list on a tall picture).
+  const probe = document.createElement("canvas").getContext("2d") ?? g;
+  const top = header(probe, W, d.title, d.subtitle, f, pad, scale);
+  const avail = H - top - pad;
+  const L = layoutTiers(d.rows, W - pad * 2, avail, scale);
+  const last = L.rows[L.rows.length - 1];
+  const used = last ? last.y + last.h : 0;
+  g.save();
+  g.translate(0, Math.max(0, Math.round((avail - used) / 2)));
+  header(g, W, d.title, d.subtitle, f, pad, scale);
   const r0 = Math.round(16 * scale);
   d.rows.forEach((row, i) => {
     const lay = L.rows[i];
@@ -266,6 +274,7 @@ export function drawTierList(g: CanvasRenderingContext2D, W: number, H: number, 
       g.restore();
     });
   });
+  g.restore();
 }
 
 export function easeOutBack(t: number): number {

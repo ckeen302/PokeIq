@@ -193,6 +193,7 @@ function VideoPanel({ input }: { input: ExportInput }) {
           you: t("blind.you"),
           friend: t("blind.friend"),
           mode: modeName(t, input.state.mode, input.state.top.length),
+          vs: t("bracket.vs"),
         },
         signal: ctl.signal,
         onProgress: (p) => setBusy(p),

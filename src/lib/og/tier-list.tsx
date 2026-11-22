@@ -83,14 +83,14 @@ export interface CardText {
 }
 
 /** A template's card (or the maker's own, without one). */
-export async function templateCard(name: string, eyebrow: string, faces: number[]) {
+export async function templateCard(name: string, maker: string, eyebrow: string, chips: string[], faces: number[]) {
   const images = await Promise.all(faces.slice(0, 6).map((d) => picture(String(d), 180)));
   return ogCard({
     eyebrow,
-    title: [name, ["Tier List Maker", C.pink]],
+    title: [name, [maker, C.pink]],
     titleSize: name.length > 18 ? 60 : 70,
     accent: C.violet,
-    chips: ["Tier List", "Bracket", "Top 10", "Blind Ranking"],
+    chips,
     visual: (
       <div style={{ display: "flex", flexWrap: "wrap", width: 480, justifyContent: "center" }}>
         {images.map((src, i) => (src ? <img key={i} src={src} width={150} height={150} style={{ margin: 4 }} /> : null))}
