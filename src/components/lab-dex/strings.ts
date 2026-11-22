@@ -1,110 +1,65 @@
-/**
- * Every piece of UI copy in the Professor's Lab, in one place, so it can move
- * to the site's message files when they land (English only for now).
- */
+"use client";
 
+import { useMemo } from "react";
+import { useT } from "@/i18n/client";
+import type { Translator } from "@/i18n/catalog";
+import labDex from "@/messages/lab-dex";
 import type { RoleKey } from "@/lib/lab-dex/roles";
 import type { SortKey } from "@/lib/lab-dex/sequence";
 
-export const S = {
-  brand: "Professor's Lab",
-  loading: "Calibrating the lab…",
-  recovering: "Restarting the lab's display…",
-  noWebgl: "3D isn't available in this browser, so the lab shows its specimen cards instead.",
-  searchLabel: "Search Pokémon",
-  searchPlaceholder: "Search Pokémon",
-  searchHint: "Name or number",
-  clearSearch: "Clear search",
-  notInView: "Not in these filters",
-  showAll: "Show it",
-  noMatch: "No Pokémon match those filters.",
-  reset: "Reset",
-  filters: "Filters",
-  hideFilters: "Hide filters",
-  allTypes: "All types",
-  types: "Types",
-  gen: "Gen",
-  legends: "Legendary + Mythical",
-  final: "Fully evolved",
-  forms: "Forms",
-  formsHint: "Mega, regional and Gigantamax forms after each Pokémon",
-  sortBy: "Sort by",
-  sortAsc: "Sort ascending",
-  sortDesc: "Sort descending",
-  specimen: "Specimen",
-  scanComplete: "Scan complete",
-  materialising: "Materialising…",
-  height: "Height",
-  weight: "Weight",
-  region: "Region",
-  unknown: "Unknown",
-  entry: "Pokédex log",
-  abilities: "Abilities",
-  hidden: "Hidden",
-  evolution: "Lineage",
-  noEvolution: "Doesn't evolve",
-  matchups: "Type analysis",
-  biometrics: "Biometrics",
-  weakTo: "Weak to",
-  resists: "Resists",
-  immune: "Immune",
-  baseStats: "Base stats",
-  roles: "Roles",
-  total: "Total",
-  bestRole: "Best role",
-  rolesNote: "Each score is ranked against every Pokémon",
-  rolesNoteForms: "Each score is ranked against every Pokémon and form",
-  top: (n: number) => `Top ${n}%`,
-  bottom: (n: number) => `Bottom ${n}%`,
-  rank: (n: number) => `#${n.toLocaleString("en")}`,
-  openInDex: "Open in Pokédex",
-  prev: "Previous",
-  next: "Next",
-  hint: "Drag or ← → to choose",
-  hintTouch: "Swipe to choose",
-  stage: "The Professor's Lab: a wheel of Pokémon. Use the left and right arrow keys to turn it.",
-  stageRole: "carousel",
-  announce: (name: string, no: string, types: string) => `${name}, number ${no}, ${types}`,
-  showDetails: "Details",
-  sheetHandle: "Show details",
-  sheetClose: "Hide details",
-  close: "Close",
-  done: "Done",
-  noSearchMatch: "No Pokémon found",
-  typesHint: "Pick up to two",
-  wheel: "Wheel",
-  podsLabel: (name: string) => `Pod: ${name}`,
-  formOf: (name: string) => `A form of ${name}`,
-  pick: (name: string) => `Show ${name}`,
-  evoJump: (name: string) => `Show ${name}`,
-} as const;
+/**
+ * Every piece of the Professor's Lab's UI copy, from the site's messages
+ * (src/messages/en/lab-dex.json), shaped as one object the components read.
+ * (The 3D scene's own decorative labels, drawn into its screens, stay as they are.)
+ */
 
-export const STAT_LABELS = ["HP", "Attack", "Defense", "Sp. Atk", "Sp. Def", "Speed"] as const;
-export const STAT_SHORT = ["HP", "ATK", "DEF", "SPA", "SPD", "SPE"] as const;
 export const GEN_NUMERALS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"] as const;
-export const REGIONS = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola", "Galar", "Paldea"] as const;
+const STAT_KEYS = ["hp", "atk", "def", "spa", "spd", "spe"] as const;
+const REGION_KEYS = ["kanto", "johto", "hoenn", "sinnoh", "unova", "kalos", "alola", "galar", "paldea"] as const;
+const ROLE_KEYS: RoleKey[] = ["physicalSweeper", "specialSweeper", "wall", "physicalTank", "specialTank"];
 
-export const ROLE_TEXT: Record<RoleKey, { name: string; formula: string }> = {
-  physicalSweeper: { name: "Physical Sweeper", formula: "Attack + Speed" },
-  specialSweeper: { name: "Special Sweeper", formula: "Sp. Atk + Speed" },
-  wall: { name: "Wall", formula: "HP + Defense + Sp. Def" },
-  physicalTank: { name: "Physical Tank", formula: "Attack + Defense" },
-  specialTank: { name: "Special Tank", formula: "Sp. Atk + Sp. Def" },
-};
+type T = Translator<typeof labDex.en>;
 
-export const SORT_TEXT: Record<SortKey, string> = {
-  id: "Number",
-  name: "Name",
-  bst: "Total",
-  hp: "HP",
-  atk: "Attack",
-  def: "Defense",
-  spa: "Sp. Atk",
-  spd: "Sp. Def",
-  spe: "Speed",
-  physicalSweeper: ROLE_TEXT.physicalSweeper.name,
-  specialSweeper: ROLE_TEXT.specialSweeper.name,
-  wall: ROLE_TEXT.wall.name,
-  physicalTank: ROLE_TEXT.physicalTank.name,
-  specialTank: ROLE_TEXT.specialTank.name,
-};
+function build(t: T) {
+  const plain = Object.fromEntries(
+    (["brand", "loading", "noWebgl", "searchLabel", "searchPlaceholder", "clearSearch", "notInView", "showAll", "noMatch", "noSearchMatch", "reset", "filters", "allTypes", "types", "typesHint", "gen", "legends", "final", "forms", "formsHint", "sortBy", "sortAsc", "sortDesc", "specimen", "scanComplete", "materialising", "biometrics", "height", "weight", "region", "entry", "abilities", "hidden", "evolution", "noEvolution", "matchups", "weakTo", "resists", "immune", "baseStats", "roles", "total", "bestRole", "rolesNote", "rolesNoteForms", "openInDex", "prev", "next", "hint", "hintTouch", "stage", "stageRole", "sheetHandle", "sheetClose", "close", "done"] as const).map((k) => [k, t(k)])
+  ) as Record<"brand" | "loading" | "noWebgl" | "searchLabel" | "searchPlaceholder" | "clearSearch" | "notInView" | "showAll" | "noMatch" | "noSearchMatch" | "reset" | "filters" | "allTypes" | "types" | "typesHint" | "gen" | "legends" | "final" | "forms" | "formsHint" | "sortBy" | "sortAsc" | "sortDesc" | "specimen" | "scanComplete" | "materialising" | "biometrics" | "height" | "weight" | "region" | "entry" | "abilities" | "hidden" | "evolution" | "noEvolution" | "matchups" | "weakTo" | "resists" | "immune" | "baseStats" | "roles" | "total" | "bestRole" | "rolesNote" | "rolesNoteForms" | "openInDex" | "prev" | "next" | "hint" | "hintTouch" | "stage" | "stageRole" | "sheetHandle" | "sheetClose" | "close" | "done", string>;
+  const stats = STAT_KEYS.map((k) => t(`stats.${k}`));
+  const roles = Object.fromEntries(ROLE_KEYS.map((k) => [k, { name: t(`role.${k}.name`), formula: t(`role.${k}.formula`) }])) as Record<RoleKey, { name: string; formula: string }>;
+  const sorts: Record<SortKey, string> = {
+    id: t("sort.id"),
+    name: t("sort.name"),
+    bst: t("sort.bst"),
+    hp: stats[0],
+    atk: stats[1],
+    def: stats[2],
+    spa: stats[3],
+    spd: stats[4],
+    spe: stats[5],
+    ...(Object.fromEntries(ROLE_KEYS.map((k) => [k, roles[k].name])) as Record<RoleKey, string>),
+  };
+  return {
+    ...plain,
+    genN: (n: string) => t("genN", { n }),
+    top: (n: number) => t("top", { n }),
+    bottom: (n: number) => t("bottom", { n }),
+    prevNamed: (name: string) => t("prevNamed", { name }),
+    nextNamed: (name: string) => t("nextNamed", { name }),
+    announce: (name: string, no: string, types: string) => t("announce", { name, no, types }),
+    evoJump: (name: string) => t("evoJump", { name }),
+    statLabels: stats,
+    statShort: STAT_KEYS.map((k) => t(`statsShort.${k}`)),
+    regions: REGION_KEYS.map((k) => t(`regions.${k}`)),
+    regionByName: { Alolan: t("regions.alola"), Galarian: t("regions.galar"), Hisuian: t("regions.hisui"), Paldean: t("regions.paldea") } as Record<string, string>,
+    roleText: roles,
+    sorts,
+  };
+}
+
+export type LabStrings = ReturnType<typeof build>;
+
+/** The lab's copy in the page's language. */
+export function useLabStrings(): LabStrings {
+  const t = useT(labDex);
+  return useMemo(() => build(t), [t]);
+}

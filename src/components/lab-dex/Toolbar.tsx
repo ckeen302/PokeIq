@@ -8,7 +8,7 @@ import { ROLES } from "@/lib/lab-dex/roles";
 import { DEFAULT_VIEW, STAT_SORTS, searchSequence, type LabView, type SortKey } from "@/lib/lab-dex/sequence";
 import type { LabMon } from "@/lib/lab-dex/types";
 import { cn } from "@/lib/utils";
-import { GEN_NUMERALS, S, SORT_TEXT } from "./strings";
+import { GEN_NUMERALS, useLabStrings } from "./strings";
 import { dexNo } from "./panels";
 
 /**
@@ -36,6 +36,7 @@ function TypeDot({ t }: { t: string }) {
 }
 
 export function TypePicker({ types, onChange, inline = false }: { types: string[]; onChange: (t: string[]) => void; inline?: boolean }) {
+  const S = useLabStrings();
   const toggle = (t: string) => onChange(types.includes(t) ? types.filter((x) => x !== t) : [...types, t].slice(-2));
   return (
     <div className={cn("grid gap-1", inline ? "grid-cols-3" : "grid-cols-3 p-2")} role="group" aria-label={S.types}>
@@ -76,6 +77,7 @@ function Toggle({ on, onClick, children, testId }: { on: boolean; onClick: () =>
 }
 
 export function GenPicker({ gens, onChange, compact = false }: { gens: number[]; onChange: (g: number[]) => void; compact?: boolean }) {
+  const S = useLabStrings();
   return (
     <div className={cn("flex items-center gap-0.5", compact && "flex-wrap")} role="group" aria-label={S.gen}>
       {GEN_NUMERALS.map((g, i) => {
@@ -85,7 +87,7 @@ export function GenPicker({ gens, onChange, compact = false }: { gens: number[];
             key={g}
             type="button"
             aria-pressed={on}
-            aria-label={`Gen ${g}`}
+            aria-label={S.genN(g)}
             onClick={() => onChange(on ? gens.filter((x) => x !== i + 1) : [...gens, i + 1].sort((a, b) => a - b))}
             data-testid={`lab-gen-${i + 1}`}
             className={cn("min-w-[28px] rounded-md px-1.5 py-1 font-display text-[11px] font-bold tracking-wider transition-colors", on ? "bg-cyan-300/90 text-[#04121c]" : "text-white/60 hover:text-white")}
@@ -99,6 +101,7 @@ export function GenPicker({ gens, onChange, compact = false }: { gens: number[];
 }
 
 export function TogglesList({ view, set }: { view: LabView; set: (v: Partial<LabView>) => void }) {
+  const S = useLabStrings();
   return (
     <div className="space-y-0.5">
       <Toggle on={view.legends} onClick={() => set({ legends: !view.legends })} testId="lab-legends">{S.legends}</Toggle>
@@ -114,6 +117,7 @@ export function TogglesList({ view, set }: { view: LabView; set: (v: Partial<Lab
 }
 
 export function SortPicker({ view, set, wide = false }: { view: LabView; set: (v: Partial<LabView>) => void; wide?: boolean }) {
+  const S = useLabStrings();
   const id = useId();
   return (
     <div className={cn("flex items-center gap-1", wide && "w-full")}>
@@ -127,7 +131,7 @@ export function SortPicker({ view, set, wide = false }: { view: LabView; set: (v
           className="h-9 w-full appearance-none rounded-md border border-white/10 bg-[#050a17] pl-2.5 pr-7 font-display text-[12px] font-semibold uppercase tracking-wider text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
         >
           {SORTS.map((k) => (
-            <option key={k} value={k}>{SORT_TEXT[k]}</option>
+            <option key={k} value={k}>{S.sorts[k]}</option>
           ))}
         </select>
         <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/50" aria-hidden />
@@ -159,6 +163,7 @@ export function SearchBox({ all, seq, onJump, onShowAnyway, className, inputRef 
   className?: string;
   inputRef?: React.RefObject<HTMLInputElement | null>;
 }) {
+  const S = useLabStrings();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [hi, setHi] = useState(0);
@@ -267,6 +272,7 @@ export function Toolbar({ view, set, all, seq, onJump, onShowAnyway, searchRef }
   onShowAnyway: (id: number) => void;
   searchRef: React.RefObject<HTMLInputElement | null>;
 }) {
+  const S = useLabStrings();
   const [typesOpen, setTypesOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const tRef = useRef<HTMLDivElement>(null);

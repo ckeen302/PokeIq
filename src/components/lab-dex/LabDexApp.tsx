@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { Fallback2D, type Fallback2DHandle } from "./Fallback2D";
 import { BaseStats, Corners, Heading, InfoCard, OpenInDex, Roles, StatsTabs, dexNo, glass, type StatsTab } from "./panels";
 import { GenPicker, SearchBox, SortPicker, Toolbar, TogglesList, TypePicker, activeCount } from "./Toolbar";
-import { S } from "./strings";
+import { useLabStrings } from "./strings";
 import type { LabScene } from "./scene";
 import { Governor, startTier, type Tier } from "./scene/quality";
 
@@ -69,6 +69,7 @@ const isTyping = (el: EventTarget | null) => {
 };
 
 export function LabDexApp({ rows }: { rows: LabRow[] }) {
+  const S = useLabStrings();
   const all = useMemo(() => rows.map(fromRow), [rows]);
   const tables = useMemo(() => ({ species: roleTable(all.filter((m) => !m.isForm)), everyone: roleTable(all) }), [all]);
   const [booted, setBooted] = useState(false);
@@ -303,7 +304,7 @@ export function LabDexApp({ rows }: { rows: LabRow[] }) {
       else window.history.replaceState(window.history.state, "", url);
     }
     pushNext.current = false;
-    setAnnounce(S.announce(m.name, String(m.species), m.types.join(" and ")));
+    setAnnounce(S.announce(m.name, String(m.species), m.types.join(", ")));
     if (interacted.current && !isMuted()) {
       try {
         const a = new Audio();
@@ -551,7 +552,7 @@ export function LabDexApp({ rows }: { rows: LabRow[] }) {
                   <OpenInDex mon={mon} className="mt-4 shrink-0" />
                 </div>
                 <div className="pointer-events-auto absolute bottom-6 left-1/2 flex -translate-x-1/2 items-center gap-4">
-                  <button type="button" onClick={() => step(-1)} className="group flex items-center gap-3 rounded-full border border-white/12 bg-[#050a17]/70 py-1.5 pl-1.5 pr-4 backdrop-blur-md transition-colors hover:border-white/25" aria-label={prev ? `${S.prev}: ${prev.name}` : S.prev} data-testid="lab-prev">
+                  <button type="button" onClick={() => step(-1)} className="group flex items-center gap-3 rounded-full border border-white/12 bg-[#050a17]/70 py-1.5 pl-1.5 pr-4 backdrop-blur-md transition-colors hover:border-white/25" aria-label={prev ? S.prevNamed(prev.name) : S.prev} data-testid="lab-prev">
                     <span className="grid h-9 w-9 place-items-center rounded-full bg-white/10 group-hover:bg-white/15"><ChevronLeft className="h-5 w-5" aria-hidden /></span>
                     <span className="text-left">
                       <span className="block font-pixel text-[8px] uppercase tracking-[0.14em] text-white/45">{prev ? dexNo(prev.species) : ""}</span>
@@ -566,7 +567,7 @@ export function LabDexApp({ rows }: { rows: LabRow[] }) {
                     </div>
                     <p className="font-pixel text-[9px] uppercase tracking-[0.16em] text-white/55">{coarse ? S.hintTouch : S.hint}</p>
                   </div>
-                  <button type="button" onClick={() => step(1)} className="group flex items-center gap-3 rounded-full border border-white/12 bg-[#050a17]/70 py-1.5 pl-4 pr-1.5 backdrop-blur-md transition-colors hover:border-white/25" aria-label={next ? `${S.next}: ${next.name}` : S.next} data-testid="lab-next">
+                  <button type="button" onClick={() => step(1)} className="group flex items-center gap-3 rounded-full border border-white/12 bg-[#050a17]/70 py-1.5 pl-4 pr-1.5 backdrop-blur-md transition-colors hover:border-white/25" aria-label={next ? S.nextNamed(next.name) : S.next} data-testid="lab-next">
                     <span className="text-right">
                       <span className="block font-pixel text-[8px] uppercase tracking-[0.14em] text-white/45">{next ? dexNo(next.species) : ""}</span>
                       <span className="block max-w-[150px] truncate font-display text-[13px] font-semibold uppercase tracking-wide text-white/85">{next?.name}</span>
@@ -592,7 +593,7 @@ export function LabDexApp({ rows }: { rows: LabRow[] }) {
             </div>
             {mon && (
               <div className="pointer-events-none absolute inset-x-0 top-[calc(52%-52px)] z-10 flex items-center justify-between px-3">
-                <button type="button" onClick={() => step(-1)} className="pointer-events-auto grid h-10 w-10 place-items-center rounded-full border border-white/15 bg-[#050a17]/75 backdrop-blur-md" aria-label={prev ? `${S.prev}: ${prev.name}` : S.prev} data-testid="lab-prev">
+                <button type="button" onClick={() => step(-1)} className="pointer-events-auto grid h-10 w-10 place-items-center rounded-full border border-white/15 bg-[#050a17]/75 backdrop-blur-md" aria-label={prev ? S.prevNamed(prev.name) : S.prev} data-testid="lab-prev">
                   <ChevronLeft className="h-5 w-5" aria-hidden />
                 </button>
                 <div className="flex flex-col items-center gap-1.5" aria-hidden>
@@ -603,7 +604,7 @@ export function LabDexApp({ rows }: { rows: LabRow[] }) {
                   </div>
                   <p className="font-pixel text-[8px] uppercase tracking-[0.16em] text-white/55">{S.hintTouch}</p>
                 </div>
-                <button type="button" onClick={() => step(1)} className="pointer-events-auto grid h-10 w-10 place-items-center rounded-full border border-white/15 bg-[#050a17]/75 backdrop-blur-md" aria-label={next ? `${S.next}: ${next.name}` : S.next} data-testid="lab-next">
+                <button type="button" onClick={() => step(1)} className="pointer-events-auto grid h-10 w-10 place-items-center rounded-full border border-white/15 bg-[#050a17]/75 backdrop-blur-md" aria-label={next ? S.nextNamed(next.name) : S.next} data-testid="lab-next">
                   <ChevronRight className="h-5 w-5" aria-hidden />
                 </button>
               </div>
@@ -659,6 +660,7 @@ export function LabDexApp({ rows }: { rows: LabRow[] }) {
 
 /** The phone's sheet: under the lab, swiped (or tapped) up over it for everything, and back down. */
 function PhoneSheet({ open, onOpen, color, children }: { open: boolean; onOpen: (o: boolean) => void; color: string; children: React.ReactNode }) {
+  const S = useLabStrings();
   const start = useRef<{ y: number; t: number } | null>(null);
   const body = useRef<HTMLDivElement>(null);
   return (

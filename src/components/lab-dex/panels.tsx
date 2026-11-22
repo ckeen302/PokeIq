@@ -9,7 +9,7 @@ import { ROLES, percentileParts, standings, type RoleTable } from "@/lib/lab-dex
 import { sortBadge, type SortKey } from "@/lib/lab-dex/sequence";
 import type { LabDetails, LabEvoNode, LabMon } from "@/lib/lab-dex/types";
 import { cn } from "@/lib/utils";
-import { GEN_NUMERALS, REGIONS, ROLE_TEXT, S, SORT_TEXT, STAT_LABELS, STAT_SHORT } from "./strings";
+import { GEN_NUMERALS, useLabStrings, type LabStrings } from "./strings";
 
 /**
  * The Professor's Lab's panels, in the site's design language: who's on the
@@ -35,13 +35,12 @@ export function Corners({ className }: { className?: string }) {
 export const dexNo = (n: number) => `No.${String(n).padStart(4, "0")}`;
 
 /** Where a Pokémon is from: a regional form's region, else its species' debut region. */
-export function regionOf(m: LabMon): string {
+export function regionOf(m: LabMon, S: LabStrings): string {
   if (m.formKind === "regional") {
-    const prefix = m.name.split(" ")[0];
-    const r = { Alolan: "Alola", Galarian: "Galar", Hisuian: "Hisui", Paldean: "Paldea" }[prefix];
+    const r = S.regionByName[m.name.split(" ")[0]];
     if (r) return r;
   }
-  return REGIONS[m.gen - 1] ?? "";
+  return S.regions[m.gen - 1] ?? "";
 }
 
 /** Headline size for a name (long names step down so they stay on one or two lines). */
@@ -52,6 +51,7 @@ function nameSize(name: string, phone: boolean) {
 }
 
 export function Heading({ mon, scanning, sort, phone = false }: { mon: LabMon; scanning: boolean; sort: SortKey; phone?: boolean }) {
+  const S = useLabStrings();
   const badge = sortBadge(mon, sort);
   return (
     <div>
@@ -74,7 +74,7 @@ export function Heading({ mon, scanning, sort, phone = false }: { mon: LabMon; s
         {mon.types.map((t) => <TypeBadge key={t} type={t} size={phone ? "md" : "lg"} />)}
         {badge !== null && (
           <span className="ml-1 rounded-md border border-white/15 bg-black/40 px-2 py-1 font-display text-[12px] font-semibold uppercase tracking-wider text-white/85" data-testid="lab-sort-value">
-            {SORT_TEXT[sort]} <b className="ml-1 tabular-nums text-white">{badge}</b>
+            {S.sorts[sort]} <b className="ml-1 tabular-nums text-white">{badge}</b>
           </span>
         )}
       </div>
@@ -117,6 +117,7 @@ function Reading({ label, value, unit }: { label: string; value: string; unit?: 
  * time a new Pokémon settles.
  */
 export function InfoCard({ mon, details, inView, onPick }: { mon: LabMon; details: LabDetails | null | undefined; inView: (id: number) => boolean; onPick: (id: number) => void }) {
+  const S = useLabStrings();
   const col = typeColor(mon.types[0]);
   let n = 0;
   const d = () => 60 + n * 70;
@@ -129,7 +130,7 @@ export function InfoCard({ mon, details, inView, onPick }: { mon: LabMon; detail
           <Reading label={S.height} value={mon.heightM.toFixed(1)} unit="m" />
           <Reading label={S.weight} value={mon.weightKg == null ? "—" : mon.weightKg.toFixed(1)} unit={mon.weightKg == null ? undefined : "kg"} />
           <div className="min-w-0">
-            <p className="truncate font-display text-[15px] font-semibold uppercase leading-[24px] tracking-wide text-white">{regionOf(mon)}</p>
+            <p className="truncate font-display text-[15px] font-semibold uppercase leading-[24px] tracking-wide text-white">{regionOf(mon, S)}</p>
             <p className="mt-1.5 font-pixel text-[8px] uppercase tracking-[0.2em] text-white/45">{S.region} · Gen {GEN_NUMERALS[mon.gen - 1]}</p>
           </div>
         </div>
@@ -188,6 +189,7 @@ export function InfoCard({ mon, details, inView, onPick }: { mon: LabMon; detail
 
 /** The lineage as specimen capsules joined by flow lines (branches stack), each one a jump on the wheel. */
 export function EvolutionStrip({ root, current, inView, onPick, color = "#7ee8ff" }: { root: LabEvoNode; current: number; inView: (id: number) => boolean; onPick: (id: number) => void; color?: string }) {
+  const S = useLabStrings();
   const stages: LabEvoNode[][] = [];
   const walk = (n: LabEvoNode, d: number) => {
     (stages[d] ??= []).push(n);
@@ -238,6 +240,7 @@ const MULT: Record<number, string> = { 4: "×4", 2: "×2", 0.5: "×½", 0.25: "�
 
 /** Type analysis: what hits it hard, what it shrugs off, as a lab readout (each type a lit cell with its multiplier). */
 export function Matchups({ types }: { types: string[] }) {
+  const S = useLabStrings();
   const prof = defensiveProfile(types as PokemonType[]);
   const rows: [string, [string, number][]][] = [
     [S.weakTo, [...prof].filter(([, v]) => v > 1).sort((a, b) => b[1] - a[1])],
@@ -271,6 +274,7 @@ export function Matchups({ types }: { types: string[] }) {
 
 /** Six base stats on a hexagon: HP at the top, then clockwise Attack, Defense, Speed, Sp. Def, Sp. Atk. */
 export function Radar({ stats, color, size = 200 }: { stats: number[]; color: string; size?: number }) {
+  const S = useLabStrings();
   const order = [0, 1, 2, 5, 4, 3];
   const R = 92, C = 110, MAX = 160;
   const pt = (k: number, v: number) => {
@@ -281,7 +285,7 @@ export function Radar({ stats, color, size = 200 }: { stats: number[]; color: st
   const ring = (f: number) => order.map((_, k) => pt(k, MAX * f).join(",")).join(" ");
   const shape = order.map((i, k) => pt(k, stats[i]).join(",")).join(" ");
   return (
-    <svg viewBox="0 0 220 220" style={{ width: size, height: size }} className="overflow-visible" role="img" aria-label={stats.map((v, i) => `${STAT_LABELS[i]} ${v}`).join(", ")}>
+    <svg viewBox="0 0 220 220" style={{ width: size, height: size }} className="overflow-visible" role="img" aria-label={stats.map((v, i) => `${S.statLabels[i]} ${v}`).join(", ")}>
       <defs>
         <radialGradient id="lab-radar-fill" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor={color} stopOpacity="0.15" />
@@ -311,7 +315,7 @@ export function Radar({ stats, color, size = 200 }: { stats: number[]; color: st
         const [x, y] = pt(k, MAX * 1.2);
         return (
           <g key={`l${k}`}>
-            <text x={x} y={y - 5} textAnchor="middle" className="fill-cyan-100/60 font-pixel" fontSize="8.5" letterSpacing="1">{STAT_SHORT[i]}</text>
+            <text x={x} y={y - 5} textAnchor="middle" className="fill-cyan-100/60 font-pixel" fontSize="8.5" letterSpacing="1">{S.statShort[i]}</text>
             <text x={x} y={y + 8} textAnchor="middle" className="fill-white font-display" fontSize="12" fontWeight="700">{stats[i]}</text>
           </g>
         );
@@ -321,6 +325,7 @@ export function Radar({ stats, color, size = 200 }: { stats: number[]; color: st
 }
 
 export function BaseStats({ mon, radar = 200 }: { mon: LabMon; radar?: number }) {
+  const S = useLabStrings();
   const col = typeColor(mon.types[0]);
   return (
     <div data-testid="lab-stats">
@@ -330,7 +335,7 @@ export function BaseStats({ mon, radar = 200 }: { mon: LabMon; radar?: number })
       <div className="mt-2 space-y-[7px]">
         {mon.stats.map((v, i) => (
           <div key={i} className="grid grid-cols-[62px_34px_1fr] items-center gap-2">
-            <span className="font-pixel text-[9px] uppercase tracking-[0.12em] text-white/60">{STAT_LABELS[i]}</span>
+            <span className="font-pixel text-[9px] uppercase tracking-[0.12em] text-white/60">{S.statLabels[i]}</span>
             <span className="text-right font-display text-[14px] font-bold tabular-nums text-white">{v}</span>
             <span className="relative h-[7px] overflow-hidden rounded-full bg-white/[0.07]">
               <span className="absolute inset-y-0 left-0 rounded-full transition-[width] duration-500" style={{ width: `${Math.min(100, (v / 200) * 100)}%`, background: `linear-gradient(90deg, ${col}99, ${col})`, boxShadow: `0 0 10px ${col}88` }} />
@@ -348,6 +353,7 @@ export function BaseStats({ mon, radar = 200 }: { mon: LabMon; radar?: number })
 
 /** The five battle roles (the owner's formulas), each ranked against every Pokémon: the score, a bar, the real percentile; the best one lit. */
 export function Roles({ mon, table, withForms }: { mon: LabMon; table: RoleTable; withForms: boolean }) {
+  const S = useLabStrings();
   const col = typeColor(mon.types[0]);
   const { roles, best } = standings(mon, table);
   return (
@@ -368,10 +374,10 @@ export function Roles({ mon, table, withForms }: { mon: LabMon; table: RoleTable
               <div className="flex items-baseline justify-between gap-2">
                 <div className="min-w-0">
                   <p className="flex items-center gap-2 font-display text-[13.5px] font-bold uppercase tracking-wide text-white">
-                    {ROLE_TEXT[r.key].name}
+                    {S.roleText[r.key].name}
                     {isBest && <span className="rounded-sm px-1.5 py-px font-pixel text-[7.5px] uppercase tracking-[0.14em] text-[#04121c]" style={{ background: col }}>{S.bestRole}</span>}
                   </p>
-                  <p className="text-[10.5px] text-white/50">{ROLE_TEXT[r.key].formula}</p>
+                  <p className="text-[10.5px] text-white/50">{S.roleText[r.key].formula}</p>
                 </div>
                 <span className="font-display text-[20px] font-bold tabular-nums leading-none text-white">{s.score}</span>
               </div>
@@ -393,6 +399,7 @@ export function Roles({ mon, table, withForms }: { mon: LabMon; table: RoleTable
 }
 
 export function OpenInDex({ mon, className }: { mon: LabMon; className?: string }) {
+  const S = useLabStrings();
   return (
     <Link
       href={`/pokemon/${mon.slug}`}
@@ -407,6 +414,7 @@ export function OpenInDex({ mon, className }: { mon: LabMon; className?: string 
 export type StatsTab = "stats" | "roles";
 
 export function StatsTabs({ tab, onTab, idBase }: { tab: StatsTab; onTab: (t: StatsTab) => void; idBase: string }) {
+  const S = useLabStrings();
   const tabs: [StatsTab, string][] = [["stats", S.baseStats], ["roles", S.roles]];
   return (
     <div role="tablist" aria-label={S.baseStats} className="flex rounded-lg border border-white/10 bg-black/30 p-1">
