@@ -11,13 +11,13 @@ const mask = async (id: number) => {
   return { data, info };
 };
 
-describe("shiny maker: HD for every Pokémon", () => {
+describe("shiny maker: 3D (HD) for every Pokémon", () => {
   it("covers the whole roster", () => {
     expect(roster.length).toBe(1025);
     expect(new Set(roster.map((r) => r[0])).size).toBe(roster.length);
   });
 
-  it("gives every species HD references (one per part) and a mask", () => {
+  it("gives every species 3D references (one per part) and a mask, with no fallback list needed", () => {
     const missing: number[] = [];
     for (const [id] of roster) {
       const f = file(id);
@@ -38,22 +38,23 @@ describe("shiny maker: HD for every Pokémon", () => {
       let max = 0, labelled = 0;
       for (const v of data) { if (v > max) max = v; if (v) labelled++; }
       expect(max, `#${id}`).toBeLessThanOrEqual(f.parts.length);
-      // A mask that labels almost nothing would draw HD unrecoloured.
+      // A mask that labels almost nothing would draw 3D unrecoloured.
       expect(labelled / (512 * 512), `#${id}`).toBeGreaterThan(0.02);
     }
   }, 120_000);
 
-  it("draws the reviewed one-piece fallbacks as one part: the species' largest", async () => {
+  it("keeps the fallback review list to real species and the settings the builder knows", () => {
     expect(HD_ONE_PIECE.length).toBeGreaterThan(0);
-    for (const id of HD_ONE_PIECE) {
-      expect(HD_FIXES[id]).toBe("one-piece");
-      const { data } = await mask(id);
-      const labels = new Set([...data].filter((v) => v > 0));
-      expect(labels.size, `#${id}`).toBe(1);
+    for (const [k, v] of Object.entries(HD_FIXES)) {
+      expect(roster.some((r) => r[0] === Number(k))).toBe(true);
+      if (v !== "one-piece") {
+        expect([0.1, 0.25, 0.5, 1]).toContain(v.wl);
+        expect([0.3, 0.6, 1]).toContain(v.k);
+      }
     }
   });
 
-  it("keeps masks small, since each loads on its own when that Pokémon is picked in HD", () => {
+  it("keeps masks small, since each loads on its own when that Pokémon is picked in 3D", () => {
     let total = 0;
     for (const [id] of roster) {
       const s = statSync(`public/shiny-maker/hd/${id}.png`).size;

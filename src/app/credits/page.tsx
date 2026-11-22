@@ -35,7 +35,7 @@ export default function CreditsPage() {
       </Section>
       <Section title="Shiny Pokémon Maker">
         <p>
-          Black/White-style sprites from PokéAPI&apos;s sprite collection; from #650 on they are fan-made in the same style by the Smogon Sprite Project. HD pictures are Pokémon HOME renders, also from PokéAPI (
+          Black/White-style sprites from PokéAPI&apos;s sprite collection; from #650 on they are fan-made in the same style by the Smogon Sprite Project. The 3D style uses Pokémon HOME renders and the Artwork style the official artwork, both also from PokéAPI (
           <a href="/shiny-maker/CREDITS.md" className={LINK}>
             credits
           </a>

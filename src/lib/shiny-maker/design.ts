@@ -4,21 +4,26 @@
  * The design travels in the URL (?d=…): a versioned byte string, base64url. Every value is quantised to what the
  * bytes can hold as soon as it is set, so opening a link recreates exactly the same pixels.
  *
- *   v1:  [1] version · u16 species · u8 form · u8 flags · u8 finish · u8 part count
+ *   v2:  [2] version · u16 species · u8 form · u8 flags · u8 style · u8 finish · u8 part count
  *        per part: u8 (bit0 source shiny, bit1 custom) + if custom: u16 hue · u8 lightness · u8 chroma · u8 contrast
  *        if flags.shades: u8 count, then per shade u8 slot + r g b
  *        if flags.name:   u8 byte length + UTF-8
- *   flags: bit0 HD · bit1 sparkle · bit2 glow · bits3-4 background · bit5 animated · bit6 name · bit7 shades
+ *   style: 0 Pixel · 1 3D (HOME render) · 2 Artwork · 3 Animated (the B/W animated sprite)
+ *   v1 (still read): no style byte; flags bit0 meant 3D.
+ *   flags: bit0 reserved · bit1 sparkle · bit2 glow · bits3-4 background · bit5 reserved · bit6 name · bit7 shades
+ *   (v1: bit5 meant the animated sprite; it opens as the Animated style)
  */
 import type { RGB } from "./color";
 import { LAST_ID } from "./data";
 
-export const DESIGN_VERSION = 1;
+export const DESIGN_VERSION = 2;
 export const FINISHES = ["flat", "metallic", "pastel", "gradient", "holo", "galaxy"] as const;
 export type Finish = (typeof FINISHES)[number];
 export const BACKGROUNDS = ["glow", "plain", "none"] as const;
 export type Background = (typeof BACKGROUNDS)[number];
-export type Style = "px" | "hd";
+/** Pixel (B/W sprite), 3D (Pokémon HOME render), Artwork (official artwork), Animated (the B/W animated sprite). */
+export const STYLES = ["px", "hd", "art", "sd"] as const;
+export type Style = (typeof STYLES)[number];
 
 /** A part's chosen colour: the colour of its middle shade, plus how far apart its shades are (k = 1 as drawn). */
 export interface PartColour {
@@ -45,7 +50,6 @@ export interface Design {
   sparkle: boolean;
   glow: boolean;
   bg: Background;
-  anim: boolean;
   name: string;
 }
 
@@ -73,7 +77,6 @@ export function newDesign(id: number, partCount: number, src: 0 | 1 = 1): Design
     sparkle: false,
     glow: false,
     bg: "glow",
-    anim: false,
     name: "",
   };
 }
@@ -95,14 +98,12 @@ export function encodeDesign(d: Design): string {
   const name = cleanName(d.name);
   const shades = Object.entries(d.shades).filter(([k]) => Number(k) >= 0 && Number(k) < 256);
   const flags =
-    (d.style === "hd" ? 1 : 0) |
     (d.sparkle ? 2 : 0) |
     (d.glow ? 4 : 0) |
     (Math.max(0, BACKGROUNDS.indexOf(d.bg)) << 3) |
-    (d.anim ? 32 : 0) |
     (name ? 64 : 0) |
     (shades.length ? 128 : 0);
-  b.push(flags, Math.max(0, FINISHES.indexOf(d.finish)), d.parts.length);
+  b.push(flags, Math.max(0, STYLES.indexOf(d.style)), Math.max(0, FINISHES.indexOf(d.finish)), d.parts.length);
   for (const p of d.parts) {
     b.push((p.src ? 1 : 0) | (p.col ? 2 : 0));
     if (p.col) {
@@ -129,11 +130,20 @@ export function decodeDesign(s: string | null | undefined): Design | null {
   if (!b) return null;
   let i = 0;
   const need = (n: number) => i + n <= b.length;
-  if (!need(7) || b[0] !== DESIGN_VERSION) return null;
+  const v = b[0];
+  if (!need(7) || (v !== 1 && v !== DESIGN_VERSION)) return null;
   const id = (b[1] << 8) | b[2];
   if (id < 1 || id > LAST_ID) return null;
-  const form = b[3], flags = b[4], fin = b[5], n = b[6];
-  i = 7;
+  const form = b[3], flags = b[4];
+  i = 5;
+  let style: Style;
+  if (v === 1) style = flags & 1 ? "hd" : flags & 32 ? "sd" : "px";
+  else {
+    if (flags & 33 || b[i] >= STYLES.length) return null;
+    style = STYLES[b[i++]];
+  }
+  if (!need(2)) return null;
+  const fin = b[i++], n = b[i++];
   if (form !== 0 || fin >= FINISHES.length || n < 1 || n > MAX_PARTS) return null;
   const bgi = (flags >> 3) & 3;
   if (bgi >= BACKGROUNDS.length) return null;
@@ -177,14 +187,13 @@ export function decodeDesign(s: string | null | undefined): Design | null {
   return {
     id,
     form,
-    style: flags & 1 ? "hd" : "px",
+    style,
     parts,
     shades,
     finish: FINISHES[fin],
     sparkle: !!(flags & 2),
     glow: !!(flags & 4),
     bg: BACKGROUNDS[bgi],
-    anim: !!(flags & 32),
     name,
   };
 }

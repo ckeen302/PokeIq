@@ -141,7 +141,7 @@ describe("shiny maker: design links", () => {
   const sample = (): Design => {
     const sp = species(DEFAULT_ID);
     const d = firstDesign(sp);
-    return { ...d, style: "hd", finish: "holo", sparkle: true, glow: true, bg: "none", anim: true, name: "Ember Night ✨", shades: { 3: [12, 200, 255] } };
+    return { ...d, style: "hd", finish: "holo", sparkle: true, glow: true, bg: "none", name: "Ember Night ✨", shades: { 3: [12, 200, 255] } };
   };
 
   it("round-trips a design exactly", () => {
@@ -173,8 +173,8 @@ describe("shiny maker: design links", () => {
     for (const bad of ["", "!!!", "a", "AAAA", "x".repeat(700), "<script>", "AQAG", "AgAGAAAAAQ"]) expect(decodeDesign(bad)).toBeNull();
     const good = encodeDesign(sample());
     const bytes = fromB64Url(good)!;
-    const v2 = Uint8Array.from(bytes); v2[0] = 2;
-    expect(decodeDesign(toB64Url(v2))).toBeNull();
+    const v3 = Uint8Array.from(bytes); v3[0] = 3;
+    expect(decodeDesign(toB64Url(v3))).toBeNull();
     const id0 = Uint8Array.from(bytes); id0[1] = 0; id0[2] = 0;
     expect(decodeDesign(toB64Url(id0))).toBeNull();
     const big = Uint8Array.from(bytes); big[1] = 0x0f; big[2] = 0xff;
@@ -216,5 +216,50 @@ describe("shiny maker: GIF", () => {
       expect(f.delay).toBe(120);
       expect(Buffer.from(f.rgba).equals(Buffer.from(frames[i].rgba))).toBe(true);
     });
+  });
+});
+
+describe("shiny maker: styles", () => {
+  it("encodes every style and reads old v1 links (3D flag, animated flag)", async () => {
+    const { STYLES, toB64Url: b64 } = await import("@/lib/shiny-maker/design");
+    const sp = species(DEFAULT_ID);
+    for (const style of STYLES) {
+      const d = { ...firstDesign(sp), style };
+      expect(decodeDesign(encodeDesign(d))?.style).toBe(style);
+    }
+    // v1: [1] id form flags finish n, one untouched part.
+    const v1 = (flags: number) => b64(Uint8Array.from([1, 0, 6, 0, flags, 0, 1, 1]));
+    expect(decodeDesign(v1(0))?.style).toBe("px");
+    expect(decodeDesign(v1(1))?.style).toBe("hd");
+    expect(decodeDesign(v1(32))?.style).toBe("sd");
+    // v2 rejects reserved flag bits and unknown styles.
+    const good = fromB64Url(encodeDesign(firstDesign(sp)))!;
+    const bad1 = Uint8Array.from(good); bad1[4] |= 1;
+    expect(decodeDesign(toB64Url(bad1))).toBeNull();
+    const bad2 = Uint8Array.from(good); bad2[5] = 9;
+    expect(decodeDesign(toB64Url(bad2))).toBeNull();
+  });
+
+  it("matches a picture's colours to the parts (normal and shiny pairs, the outline left out)", async () => {
+    const { makeMatcher, matchParts } = await import("@/lib/shiny-maker/match");
+    const raw = JSON.parse(readFileSync("public/shiny-maker/px/6.json", "utf8")) as SpeciesFile;
+    const m = makeMatcher(matchParts(raw.slots, raw.parts));
+    const names = raw.parts.map((p) => p.n);
+    // Charizard's own shades land in their own parts: orange body (→ grey shiny), teal wings (→ red), cream belly.
+    expect(names[m(238, 131, 41, 131, 123, 148, true)[0]]).toBe("Body");
+    expect(names[m(32, 115, 148, 189, 32, 65, true)[0]]).toBe("Wings");
+    expect(names[m(238, 222, 123, 222, 222, 172, true)[0]]).toBe("Belly");
+    // Black never goes to the outline (only Pixel sprites draw one).
+    expect(raw.parts[m(0, 0, 0, 0, 0, 0, true)[0]].o).toBeUndefined();
+  });
+
+  it("ships 3D and Artwork masks only with matching reference colours", () => {
+    for (const f of readdirSync("public/shiny-maker/px")) {
+      const raw = JSON.parse(readFileSync(`public/shiny-maker/px/${f}`, "utf8")) as SpeciesFile;
+      for (const kind of ["hd", "art"] as const) {
+        const has = readdirSync(`public/shiny-maker/${kind}`).includes(`${raw.id}.png`);
+        expect(!!raw[kind]).toBe(has);
+      }
+    }
   });
 });

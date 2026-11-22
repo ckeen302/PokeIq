@@ -20,16 +20,18 @@ export const PixelFigure = forwardRef<FigureHandle, {
   sp: Species;
   design: Design;
   view: View;
+  /** Play the animated sprite (the Animated style). */
+  animate: boolean;
   scale: number;
   hover: number;
   selected: number;
   motion: boolean;
   frames: GifFrames | null;
   label: string;
-}>(function PixelFigure({ sp, design, view, scale, hover, selected, motion, frames, label }, ref) {
+}>(function PixelFigure({ sp, design, view, animate, scale, hover, selected, motion, frames, label }, ref) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const outline = useRef<HTMLCanvasElement>(null);
-  const anim = !!frames && design.anim && motion;
+  const anim = !!frames && animate && motion;
   const W = anim ? frames!.width : sp.w, H = anim ? frames!.height : sp.h;
 
   useImperativeHandle(ref, () => ({

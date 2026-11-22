@@ -1,9 +1,9 @@
 /**
- * The review of the automatic HD masks (scripts/shiny-maker/hd-sheet.ts contact sheets): per species, a build
+ * The review of the reviewed-fallback 3D masks (hd-auto.ts; contact sheets from hd-sheet.ts): per species, a build
  * setting that fixed what the automatic choice got wrong, or "one-piece" where no setting reached the bar. A
- * one-piece species still has HD, drawn safely: its whole figure is its largest part (pupils and other dark details
+ * one-piece species still has 3D, drawn safely: its whole figure is its largest part (pupils and other dark details
  * drawn as rendered), so recolouring that part recolours the Pokémon with its shading kept, while its other parts
- * change only the Pixel style.
+ * change only the Pixel style there.
  * Pure data: the tests read it.
  */
 export type HdFix = { wl: number; k: number } | "one-piece";

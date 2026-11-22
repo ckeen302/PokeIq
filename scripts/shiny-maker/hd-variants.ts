@@ -10,7 +10,7 @@ import { join } from "node:path";
 import sharp, { type OverlayOptions } from "sharp";
 import { rgbToLch } from "../../src/lib/shiny-maker/color";
 import { b64decode, rleDecode, type SpeciesFile } from "../../src/lib/shiny-maker/data";
-import { buildHd, maskShares, shareGap, spriteShares, VARIANTS } from "./hd";
+import { buildHd, maskShares, shareGap, spriteShares, VARIANTS } from "./hd-auto";
 
 export const FIX_EXTRA = [{ wl: 1, k: 0.6 }, { wl: 0.5, k: 0.3 }];
 const N = 512, T = 165, FALSE = ["#ff3b30", "#34c759", "#0a84ff", "#ffcc00", "#bf5af2", "#ff9f0a", "#64d2ff", "#ff2d92"];

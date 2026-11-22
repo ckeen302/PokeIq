@@ -95,20 +95,17 @@ const sw = ([l, c, h]: [number, number, number]) => hex(lchToRgb(l, c, h));
 
 export interface ExtrasProps {
   design: Design;
-  hdAvailable: boolean;
-  hdReason: string | null;
-  canAnimate: boolean;
+  style: Style;
   canGif: boolean;
   gifBusy: boolean;
   cb: ColourBlind;
   expert: boolean;
   canUndo: boolean;
   canRedo: boolean;
-  onStyle: (s: Style) => void;
   onPreset: (p: Preset | TypeName) => void;
   onBorrow: () => void;
   onFinish: (f: Finish) => void;
-  onToggle: (k: "sparkle" | "glow" | "anim", v: boolean) => void;
+  onToggle: (k: "sparkle" | "glow", v: boolean) => void;
   onBg: (b: Background) => void;
   onName: (n: string) => boolean;
   onCb: (c: ColourBlind) => void;
@@ -127,20 +124,6 @@ export function ExtrasPanel(p: ExtrasProps) {
   const commitName = () => setNameBad(!p.onName(name));
   return (
     <div className="space-y-6" data-testid="sm-extras">
-      <Section title={t("extras.style")}>
-        <Seg
-          label={t("extras.style")}
-          value={design.style}
-          onChange={p.onStyle}
-          testId="sm-style"
-          items={[
-            { v: "px", label: t("extras.pixel") },
-            { v: "hd", label: t("extras.hd"), disabled: !p.hdAvailable, title: p.hdReason ?? undefined },
-          ]}
-        />
-        {p.hdReason && <p className="text-[12.5px] text-muted-foreground">{p.hdReason}</p>}
-      </Section>
-
       <Section title={t("extras.start")}>
         <div className="flex flex-wrap gap-2">
           <Chip onClick={() => p.onPreset("normal")} testId="sm-preset-normal">{t("extras.startNormal")}</Chip>
@@ -186,7 +169,6 @@ export function ExtrasPanel(p: ExtrasProps) {
         <div className="flex flex-wrap gap-x-5 gap-y-1">
           <Toggle on={design.sparkle} onChange={(v) => p.onToggle("sparkle", v)} label={t("extras.sparkle")} testId="sm-sparkle" />
           <Toggle on={design.glow} onChange={(v) => p.onToggle("glow", v)} label={t("extras.glow")} testId="sm-glow" />
-          {p.canAnimate && <Toggle on={design.anim} onChange={(v) => p.onToggle("anim", v)} label={t("extras.animate")} testId="sm-anim" />}
         </div>
       </Section>
 
@@ -202,9 +184,9 @@ export function ExtrasPanel(p: ExtrasProps) {
 
       <Section title={t("extras.download")}>
         <div className="flex flex-wrap items-center gap-2">
-          {(design.style === "hd" ? [1] : [1, 4, 8]).map((n) => (
+          {(p.style === "hd" || p.style === "art" ? [1] : [1, 4, 8]).map((n) => (
             <Chip key={n} onClick={() => p.onPng(n)} testId={`sm-png-${n}`}>
-              <Download className="h-3.5 w-3.5" aria-hidden /> {t("extras.png")} {design.style === "hd" ? "" : t("extras.pngSize", { n })}
+              <Download className="h-3.5 w-3.5" aria-hidden /> {t("extras.png")} {p.style === "hd" || p.style === "art" ? "" : t("extras.pngSize", { n })}
             </Chip>
           ))}
           {p.canGif && (

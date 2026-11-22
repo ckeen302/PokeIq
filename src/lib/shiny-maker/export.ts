@@ -63,7 +63,7 @@ export function canvasBlob(c: HTMLCanvasElement): Promise<Blob> {
   return new Promise((res, rej) => c.toBlob((b) => (b ? res(b) : rej(new Error("toBlob"))), "image/png"));
 }
 
-/** The GIF's frames: the animated sprite's, or a two-second shimmer loop for holo and galaxy. Scaled 3×. */
+/** The GIF's frames: the animated sprite's (when given), or a shimmer loop for holo and galaxy. Scaled 3×. */
 export function gifFrames(sp: Species, d: Design, frames: GifFrames | null): { width: number; height: number; frames: { rgba: Uint8ClampedArray; delay: number }[] } {
   const S = 3;
   const scaleUp = (src: Uint8ClampedArray, w: number, h: number) => {
@@ -75,7 +75,7 @@ export function gifFrames(sp: Species, d: Design, frames: GifFrames | null): { w
       }
     return out;
   };
-  if (frames && d.anim) {
+  if (frames) {
     const paint = frameColours(sp, d, "yours");
     let t = 0;
     return {

@@ -23,6 +23,7 @@
     "normal": "Normal",
     "official": "Official",
     "yours": "Yours",
+    "compare": "Compare",
     "peek": "Hold to see the normal colours"
   },
   "dock": {
@@ -55,13 +56,17 @@
     "lock": "Lock for Randomise",
     "locked": "Locked for Randomise"
   },
+  "styles": {
+    "label": "Style",
+    "px": "Pixel",
+    "sd": "Animated",
+    "hd": "3D",
+    "art": "Artwork",
+    "unavailable": "Not ready for this Pokémon yet"
+  },
   "extras": {
     "title": "More options",
-    "style": "Style",
-    "pixel": "Pixel",
-    "hd": "HD",
-    "hdSoon": "HD couldn't load for this Pokémon, so it's showing in Pixel",
-    "hdNoGl": "HD needs WebGL 2, which this browser doesn't have",
+    "hdNoGl": "3D and Artwork need WebGL 2, which this browser doesn't have",
     "start": "Start from",
     "startNormal": "Normal",
     "startOfficial": "Official shiny",
@@ -85,7 +90,6 @@
     "effects": "Effects",
     "sparkle": "Sparkle",
     "glow": "Glow",
-    "animate": "Animate",
     "background": "Background",
     "bgGlow": "Type glow",
     "bgPlain": "Plain",
@@ -140,5 +144,5 @@
   "keys": {
     "hint": "Space: randomise · ⌘Z: undo"
   },
-  "credit": "Sprites from PokéAPI and, from #650, the Smogon Sprite Project; HD from Pokémon HOME renders via PokéAPI."
+  "credit": "Sprites from PokéAPI and, from #650, the Smogon Sprite Project; 3D renders from Pokémon HOME and the official artwork, both via PokéAPI."
 }

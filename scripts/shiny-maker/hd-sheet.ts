@@ -13,7 +13,7 @@ import sharp, { type OverlayOptions } from "sharp";
 import { lchToRgb, rgbToLch } from "../../src/lib/shiny-maker/color";
 import { b64decode, rleDecode, type SpeciesFile } from "../../src/lib/shiny-maker/data";
 import { transform } from "../../src/lib/shiny-maker/recolor";
-import { maskShares, spriteShares } from "./hd";
+import { maskShares, spriteShares } from "./hd-auto";
 
 const N = 512, T = Number(process.env.TILE ?? 200), TEXT_W = 250, CELL_W = 5 * T + TEXT_W, CELL_H = T + 6;
 const FALSE = ["#ff3b30", "#34c759", "#0a84ff", "#ffcc00", "#bf5af2", "#ff9f0a", "#64d2ff", "#ff2d92"];

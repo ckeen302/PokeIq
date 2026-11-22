@@ -1,362 +1,305 @@
 /**
- * Builds the Shiny Pokémon Maker's HD part masks: public/shiny-maker/hd/{id}.png (one grey level per part, 0 =
- * transparent, k = part k − 1, 512 × 512, aligned with public/sizes/art/512/{id}.webp) and each part's HD reference
- * colours (the "hd" field of public/shiny-maker/px/{id}.json).
+ * Builds the Shiny Pokémon Maker's part masks for its painted styles:
+ *   hd   3D: the Pokémon HOME render (public/sizes/art/512/{id}.webp), mask public/shiny-maker/hd/{id}.png (512 px)
+ *   art  Artwork: the official artwork (PokeAPI, 475 px), mask public/shiny-maker/art/{id}.png
+ * plus each part's reference colours (the "hd" and "art" fields of public/shiny-maker/px/{id}.json).
  *
- * Every pixel of the HOME render is given to the Pixel part whose (normal, official shiny) colour pair is nearest
- * in OKLab (both colours count: the shiny tells apart parts that look alike in the normal colours), then the labels
- * are cleaned: a majority filter, and connected components too small to be a part join their neighbours.
- * The hand-reviewed species (`hdAllowed`) keep exactly the masks they were reviewed with. Every other species is built
- * with `buildHdAuto` (dark unchanged colours kept as rendered, the palette refined to the render, region voting,
- * the best of a few settings), or with the setting or one-piece fallback its review chose (hd-review.ts).
- * Review sheets: hd-sheet.ts (as shipped) and hd-variants.ts (every setting side by side).
- * .cache/shiny-maker/hd-report/{shard}.json lists each species' fit and how it was built.
+ * Every pixel goes to the Pixel part whose (normal, official shiny) colour pair is nearest; masks are then cleaned
+ * (a majority filter, small islands join their neighbours). The 3D render is matched to the B/W sprite's palette; the
+ * artwork, painted in a lighter, richer palette, is matched to the palette the species' good 3D mask taught (a few
+ * colour clusters per part), and must split into parts of about the same sizes as the 3D render's. A style ships for a species only if it scores well on two
+ * checks: the fit (most pixels found a close colour pair) and self-consistency (moving each part's normal pixels to
+ * that part's shiny colour reproduces the real official shiny closely; a muddled mask does not). The scores are in
+ * .cache/shiny-maker/hd-report/.
+ * Every species has 3D: one these checks leave out (or REJECTED) takes its reviewed fallback mask instead
+ * (hd-auto.ts, with the review's choices in hd-review.ts; NO_FALLBACK=1 skips it).
  *
- *   npx tsx scripts/shiny-maker/hd.ts [ids…]          (--shard i/n to split the work across processes)
+ *   npx tsx scripts/shiny-maker/hd.ts [--kind hd|art] [--shard i/n] [ids…]      (hd first: art learns from it)
  */
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import sharp from "sharp";
-import { labDist, rgbToOklab } from "../../src/lib/shiny-maker/color";
-import { b64decode, rleDecode, type HdRef, type SpeciesFile } from "../../src/lib/shiny-maker/data";
-import { CURATED } from "./curated";
-import { HD_FIXES } from "./hd-review";
+import { labDist, rgbToLch, rgbToOklab } from "../../src/lib/shiny-maker/color";
+import type { HdRef, SpeciesFile } from "../../src/lib/shiny-maker/data";
+import { makeMatcher, matchParts, RefAccumulator } from "../../src/lib/shiny-maker/match";
+import { transform } from "../../src/lib/shiny-maker/recolor";
+import { buildHdFallback } from "./hd-auto";
 
 const CACHE = ".cache/shiny-maker";
 const OUT = "public/shiny-maker";
-const N = 512;
 
-type Lab = [number, number, number];
-const labOfHex = (h: string) => { const n = parseInt(h, 16); return rgbToOklab((n >> 16) & 255, (n >> 8) & 255, n & 255) as Lab; };
+export type Kind = "hd" | "art";
+const SIZE: Record<Kind, number> = { hd: 512, art: 475 };
 
-async function raw(file: string) {
-  const { data, info } = await sharp(file).ensureAlpha().resize(N, N, { fit: "fill" }).raw().toBuffer({ resolveWithObject: true });
-  if (info.width !== N) throw new Error("size");
+/**
+ * Masks that came out muddled on review of the contact sheets (they pass the automatic checks): kept off.
+ */
+export const REJECTED: Record<Kind, Set<number>> = {
+  hd: new Set([59, 76, 231, 235, 256, 309, 390, 518, 635, 652, 785, 911, 913, 914, 1007, 1008]),
+  art: new Set([1, 289, 306, 377, 652]),
+};
+
+async function raw(file: string, N: number) {
+  const { data } = await sharp(file).ensureAlpha().resize(N, N, { fit: "fill" }).raw().toBuffer({ resolveWithObject: true });
   return data;
 }
 
-function refOf(labs: Lab[]): [number, number, number] {
-  if (!labs.length) return [0.5, 0, 0];
-  let L = 0, A = 0, B = 0, C = 0;
-  for (const [l, a, b] of labs) { L += l; A += a; B += b; C += Math.hypot(a, b); }
-  const n = labs.length;
-  let h = (Math.atan2(B, A) * 180) / Math.PI;
-  if (h < 0) h += 360;
-  return [+(L / n).toFixed(4), +(C / n).toFixed(4), +h.toFixed(1)];
+interface Picture { w: number; h: number; frames: { n: Uint8ClampedArray | Buffer; s: Uint8ClampedArray | Buffer }[]; distinctShiny: boolean }
+
+async function picture(kind: Kind, id: number): Promise<Picture | null> {
+  const N = SIZE[kind];
+  const nf = kind === "hd" ? join("public/sizes/art/512", `${id}.webp`) : join(CACHE, "art", `${id}.png`);
+  const sf = kind === "hd" ? join(CACHE, "home-shiny", `${id}.png`) : join(CACHE, "art-shiny", `${id}.png`);
+  if (!existsSync(nf) || !existsSync(sf)) return null;
+  const [n, s] = await Promise.all([raw(nf, N), raw(sf, N)]);
+  return { w: N, h: N, frames: [{ n, s }], distinctShiny: !n.equals(s) };
 }
 
-/**
- * `keep`: also offer the outline's (dark, unchanged in the shiny) colours as candidates; pixels that match them best
- * (pupils, dark markings that the shiny leaves alone) get no part and are drawn as rendered. The reviewed species
- * were built without it and keep their masks.
- */
-function segmentVote(label: Int16Array, nd: Buffer, sd: Buffer, nLabels: number, k: number) {
-  const lab = new Float32Array(N * N * 6);
-  for (let i = 0; i < N * N; i++) {
-    if (label[i] < 0) continue;
-    const a = rgbToOklab(nd[i * 4], nd[i * 4 + 1], nd[i * 4 + 2]);
-    const b = sd[i * 4 + 3] >= 128 ? rgbToOklab(sd[i * 4], sd[i * 4 + 1], sd[i * 4 + 2]) : a;
-    lab.set([...a, ...b], i * 6);
-  }
-  const w = (i: number, j: number) => {
-    let dn = 0, ds = 0;
-    for (let t = 0; t < 3; t++) { dn += (lab[i * 6 + t] - lab[j * 6 + t]) ** 2; ds += (lab[i * 6 + 3 + t] - lab[j * 6 + 3 + t]) ** 2; }
-    return Math.sqrt(Math.max(dn, ds));
-  };
-  const ea: number[] = [], eb: number[] = [], ew: number[] = [];
-  for (let y = 0; y < N; y++)
-    for (let x = 0; x < N; x++) {
-      const i = y * N + x;
-      if (label[i] < 0) continue;
-      if (x + 1 < N && label[i + 1] >= 0) { ea.push(i); eb.push(i + 1); ew.push(w(i, i + 1)); }
-      if (y + 1 < N && label[i + N] >= 0) { ea.push(i); eb.push(i + N); ew.push(w(i, i + N)); }
-    }
-  const order = Array.from(ew.keys()).sort((p, q) => ew[p] - ew[q]);
-  const parent = new Int32Array(N * N).map((_, i) => i), size = new Int32Array(N * N).fill(1), inner = new Float32Array(N * N);
-  const find = (i: number): number => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; };
-  for (const e of order) {
-    const a = find(ea[e]), b = find(eb[e]);
-    if (a === b) continue;
-    if (ew[e] <= Math.min(inner[a] + k / size[a], inner[b] + k / size[b])) {
-      const [big, small] = size[a] >= size[b] ? [a, b] : [b, a];
-      parent[small] = big; size[big] += size[small]; inner[big] = ew[e];
-    }
-  }
-  const votes = new Map<number, Int32Array>();
-  for (let i = 0; i < N * N; i++) {
-    if (label[i] < 0) continue;
-    const r = find(i);
-    let v = votes.get(r);
-    if (!v) votes.set(r, (v = new Int32Array(nLabels)));
-    v[label[i]]++;
-  }
-  const win = new Map<number, number>();
-  for (const [r, v] of votes) { let b = 0; for (let t = 1; t < nLabels; t++) if (v[t] > v[b]) b = t; win.set(r, b); }
-  for (let i = 0; i < N * N; i++) if (label[i] >= 0) label[i] = win.get(find(i))!;
-}
-
-export async function buildHd(id: number, opts: { keep?: boolean; k?: number; wl?: number } = {}) {
-  const pxFile = join(OUT, "px", `${id}.json`);
-  const nf = join("public/sizes/art/512", `${id}.webp`), sf = join(CACHE, "home-shiny", `${id}.png`);
-  if (!existsSync(pxFile) || !existsSync(nf) || !existsSync(sf)) return null;
-  const f = JSON.parse(readFileSync(pxFile, "utf8")) as SpeciesFile;
-  const [nd, sd] = await Promise.all([raw(nf), raw(sf)]);
-  // Candidate slots (not the outline: HOME renders have no drawn outline).
-  const cand: { n: Lab; s: Lab; part: number }[] = [];
-  const P = f.parts.length, KEEP = P;
-  f.parts.forEach((p, pi) => { if (!p.o || opts.keep) for (const s of p.s) { const [a, b] = f.slots[s].split(":"); cand.push({ n: labOfHex(a), s: labOfHex(b), part: p.o ? KEEP : pi }); } });
-  if (!cand.some((c) => c.part !== KEEP)) return null;
-  const label = new Int16Array(N * N).fill(-1);
-  const dists: number[] = [];
-  // The render's distinct (normal, shiny) colour pairs, quantised, with their pixel counts.
-  const keyOf = new Int32Array(N * N).fill(-1);
-  const uniq = new Map<number, number>();
-  const un: Lab[] = [], us: Lab[] = [], uw: number[] = [];
-  for (let i = 0; i < N * N; i++) {
-    if (nd[i * 4 + 3] < 128) continue;
-    const key = ((nd[i * 4] >> 2) << 18 | (nd[i * 4 + 1] >> 2) << 12 | (nd[i * 4 + 2] >> 2) << 6) * 4096 + ((sd[i * 4] >> 3) << 10 | (sd[i * 4 + 1] >> 3) << 5 | (sd[i * 4 + 2] >> 3));
-    let u = uniq.get(key);
-    if (u === undefined) {
-      u = un.length;
-      uniq.set(key, u);
-      const n = rgbToOklab(nd[i * 4], nd[i * 4 + 1], nd[i * 4 + 2]) as Lab;
-      un.push(n);
-      us.push(sd[i * 4 + 3] >= 128 ? (rgbToOklab(sd[i * 4], sd[i * 4 + 1], sd[i * 4 + 2]) as Lab) : n);
-      uw.push(0);
-    }
-    uw[u]++;
-    keyOf[i] = u;
-  }
-  const wl = opts.wl ?? 0.5;
-  const assign = () => {
-    const ci = new Int32Array(un.length), cd = new Float64Array(un.length);
-    for (let u = 0; u < un.length; u++) {
-      let best = Infinity, bc = 0;
-      for (let c = 0; c < cand.length; c++) {
-        const d = Math.max(labDist(un[u], cand[c].n, wl), labDist(us[u], cand[c].s, wl));
-        if (d < best) { best = d; bc = c; }
-      }
-      ci[u] = bc; cd[u] = best;
-    }
-    return { ci, cd };
-  };
-  let a = assign();
-  const fit = a.cd;
-  // Refinement (built with `keep`): each candidate pair moves halfway to the mean of the render's colours it won,
-  // so the sprite's palette adapts to the render's lighting; the outline's colours stay put.
-  if (opts.keep)
-    for (let it = 0; it < 6; it++) {
-      const acc = cand.map(() => ({ n: [0, 0, 0], s: [0, 0, 0], w: 0 }));
-      for (let u = 0; u < un.length; u++) {
-        const t = acc[a.ci[u]], w = uw[u];
-        for (let k = 0; k < 3; k++) { t.n[k] += un[u][k] * w; t.s[k] += us[u][k] * w; }
-        t.w += w;
-      }
-      cand.forEach((c, k) => {
-        const t = acc[k];
-        if (c.part === KEEP || t.w < 20) return;
-        c.n = c.n.map((v, j) => (v + t.n[j] / t.w) / 2) as Lab;
-        c.s = c.s.map((v, j) => (v + t.s[j] / t.w) / 2) as Lab;
-      });
-      a = assign();
-    }
-  for (let i = 0; i < N * N; i++) {
-    const u = keyOf[i];
-    if (u < 0) continue;
-    label[i] = cand[a.ci[u]].part;
-    dists.push(fit[u]);
-  }
-  // Regions (built with `keep`): a render's shading changes gradually while parts meet at sharp edges, so the
-  // figure is cut into regions of smoothly changing colour (graph-based segmentation, Felzenszwalb & Huttenlocher
-  // 2004, on both renders) and each region takes the part most of its pixels matched.
-  if (opts.keep) segmentVote(label, nd, sd, P + 1, opts.k ?? 0.6);
-  // Majority filter (5 × 5), twice.
-  for (let pass = 0; pass < 2; pass++) {
+/** Majority filter (5 × 5) and small islands joining their neighbours, in place. */
+function clean(label: Int16Array, W: number, H: number, P: number, passes = 2) {
+  for (let pass = 0; pass < passes; pass++) {
     const next = label.slice();
-    const cnt = new Int32Array(P + 1);
-    for (let y = 0; y < N; y++)
-      for (let x = 0; x < N; x++) {
-        const i = y * N + x;
+    const cnt = new Int32Array(P);
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++) {
+        const i = y * W + x;
         if (label[i] < 0) continue;
         cnt.fill(0);
         for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
           const xx = x + dx, yy = y + dy;
-          if (xx < 0 || yy < 0 || xx >= N || yy >= N) continue;
-          const v = label[yy * N + xx];
+          if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue;
+          const v = label[yy * W + xx];
           if (v >= 0) cnt[v]++;
         }
         let bv = label[i];
-        for (let k = 0; k <= P; k++) if (cnt[k] > cnt[bv]) bv = k;
+        for (let k = 0; k < P; k++) if (cnt[k] > cnt[bv]) bv = k;
         next[i] = bv;
       }
     label.set(next);
   }
-  // Connected components below 0.15% of the figure join the neighbour they touch most.
   const total = label.reduce((a, v) => a + (v >= 0 ? 1 : 0), 0);
   const minSize = Math.max(24, total * 0.0015);
-  const comp = new Int32Array(N * N).fill(-1);
+  const comp = new Int32Array(W * H).fill(-1);
   const stack: number[] = [];
   let nc = 0;
-  for (let i = 0; i < N * N; i++) {
+  for (let i = 0; i < W * H; i++) {
     if (label[i] < 0 || comp[i] >= 0) continue;
     const members: number[] = [];
     const touch = new Map<number, number>();
-    comp[i] = nc; stack.push(i);
+    comp[i] = nc;
+    stack.push(i);
     while (stack.length) {
       const j = stack.pop()!;
       members.push(j);
-      const x = j % N, y = (j / N) | 0;
+      const x = j % W, y = (j / W) | 0;
       for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
         const xx = x + dx, yy = y + dy;
-        if (xx < 0 || yy < 0 || xx >= N || yy >= N) continue;
-        const k = yy * N + xx;
+        if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue;
+        const k = yy * W + xx;
         if (label[k] < 0) continue;
         if (label[k] === label[i]) { if (comp[k] < 0) { comp[k] = nc; stack.push(k); } }
         else touch.set(label[k], (touch.get(label[k]) ?? 0) + 1);
       }
     }
     nc++;
-    if (members.length < (label[i] === KEEP ? minSize / 4 : minSize) && touch.size) {
+    if (members.length < minSize && touch.size) {
       const to = [...touch.entries()].sort((a, b) => b[1] - a[1])[0][0];
       for (const j of members) label[j] = to;
     }
   }
-  // Soft edge pixels (alpha 1–127) take the nearest labelled neighbour.
-  for (let pass = 0; pass < 3; pass++)
-    for (let i = 0; i < N * N; i++) {
-      if (label[i] >= 0 || nd[i * 4 + 3] === 0) continue;
-      const x = i % N, y = (i / N) | 0;
-      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]) {
-        const xx = x + dx, yy = y + dy;
-        if (xx < 0 || yy < 0 || xx >= N || yy >= N) continue;
-        if (label[yy * N + xx] >= 0) { label[i] = label[yy * N + xx]; break; }
-      }
+}
+
+type L3 = [number, number, number];
+/** k-means over (normal, shiny) OKLab pairs: a few representative colour pairs per part. */
+function clusters(samples: { n: L3; s: L3 }[], k: number): { n: L3; s: L3; c: number }[] {
+  if (!samples.length) return [];
+  const sorted = [...samples].sort((a, b) => a.n[0] - b.n[0]);
+  let centers: { n: L3; s: L3; c?: number }[] = Array.from({ length: Math.min(k, sorted.length) }, (_, i) => ({ ...sorted[Math.floor(((i + 0.5) / Math.min(k, sorted.length)) * sorted.length)] }));
+  for (let it = 0; it < 8; it++) {
+    const acc = centers.map(() => ({ n: [0, 0, 0], s: [0, 0, 0], c: 0 }));
+    for (const q of samples) {
+      let best = 0, bd = Infinity;
+      centers.forEach((c, ci) => { const d = labDist(q.n, c.n, 0.5) + 0.5 * labDist(q.s, c.s, 0.5); if (d < bd) { bd = d; best = ci; } });
+      const a = acc[best];
+      for (let j = 0; j < 3; j++) { a.n[j] += q.n[j]; a.s[j] += q.s[j]; }
+      a.c++;
     }
-  // Reference colours per part, and the fit.
-  const nl: Lab[][] = f.parts.map(() => []), sl: Lab[][] = f.parts.map(() => []);
-  for (let i = 0; i < N * N; i++) {
-    if (label[i] < 0 || label[i] === KEEP || nd[i * 4 + 3] < 200) continue;
-    if ((i & 3) !== 0) continue; // a quarter of the pixels is plenty for the averages
-    nl[label[i]].push(rgbToOklab(nd[i * 4], nd[i * 4 + 1], nd[i * 4 + 2]) as Lab);
-    sl[label[i]].push(sd[i * 4 + 3] >= 128 ? (rgbToOklab(sd[i * 4], sd[i * 4 + 1], sd[i * 4 + 2]) as Lab) : nl[label[i]][nl[label[i]].length - 1]);
+    centers = acc.filter((a) => a.c > 0).map((a) => ({ n: a.n.map((v) => v / a.c) as L3, s: a.s.map((v) => v / a.c) as L3, c: a.c }));
   }
-  const hd: HdRef[] = f.parts.map((_, pi) => [...refOf(nl[pi]), ...refOf(sl[pi])] as HdRef);
+  return centers as { n: L3; s: L3; c: number }[];
+}
+
+const PAL_DIR = join(CACHE, "hdpal");
+/** The per-part palette learnt from a species' good 3D mask (written by the hd build), if any. */
+function hdPalette(id: number): { n: L3[]; s: L3[]; outline: boolean; w: number[] }[] | null {
+  const file = join(PAL_DIR, `${id}.json`);
+  return existsSync(file) ? JSON.parse(readFileSync(file, "utf8")) : null;
+}
+
+export async function build(kind: Kind, id: number) {
+  const pxFile = join(OUT, "px", `${id}.json`);
+  if (!existsSync(pxFile)) return null;
+  const f = JSON.parse(readFileSync(pxFile, "utf8")) as SpeciesFile;
+  const pic = await picture(kind, id);
+  if (!pic) return null;
+  // The artwork is matched against the palette the 3D render taught (its colours are much closer to it than to the
+  // B/W sprite's); without a good 3D mask, against the B/W palette.
+  const learnt = kind !== "hd" ? hdPalette(id) : null;
+  const parts = learnt && learnt.length === f.parts.length ? learnt : matchParts(f.slots, f.parts);
+  const match = makeMatcher(parts);
+  const P = f.parts.length;
+  const { w: W, h: H } = pic;
+  const dists: number[] = [];
+  const acc = new RefAccumulator(P);
+  const labels: Int16Array[] = [];
+  // The animated style samples a few frames (the browser labels every frame the same way).
+  const frames = pic.frames;
+  for (const fr of frames) {
+    const label = new Int16Array(W * H).fill(-1);
+    for (let i = 0; i < W * H; i++) {
+      const o = i * 4;
+      if (fr.n[o + 3] < 128) continue;
+      const [p, d] = match(fr.n[o], fr.n[o + 1], fr.n[o + 2], fr.s[o], fr.s[o + 1], fr.s[o + 2], pic.distinctShiny && fr.s[o + 3] >= 128);
+      label[i] = p;
+      dists.push(d);
+    }
+    {
+      clean(label, W, H, P);
+      // Soft edge pixels take the nearest labelled neighbour.
+      for (let pass = 0; pass < 3; pass++)
+        for (let i = 0; i < W * H; i++) {
+          if (label[i] >= 0 || fr.n[i * 4 + 3] === 0) continue;
+          const x = i % W, y = (i / W) | 0;
+          for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]) {
+            const xx = x + dx, yy = y + dy;
+            if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue;
+            if (label[yy * W + xx] >= 0) { label[i] = label[yy * W + xx]; break; }
+          }
+        }
+    }
+    for (let i = 0; i < W * H; i += 3) {
+      const o = i * 4;
+      if (label[i] < 0 || fr.n[o + 3] < 200) continue;
+      const shinyOk = fr.s[o + 3] >= 200;
+      acc.add(label[i], fr.n[o], fr.n[o + 1], fr.n[o + 2], shinyOk ? fr.s[o] : fr.n[o], shinyOk ? fr.s[o + 1] : fr.n[o + 1], shinyOk ? fr.s[o + 2] : fr.n[o + 2]);
+    }
+    labels.push(label);
+  }
+  const refs: HdRef[] = acc.refs();
+  let palette: { n: L3[]; s: L3[]; outline: boolean; w: number[] }[] | null = null;
+  if (kind === "hd") {
+    const per: { n: L3; s: L3 }[][] = f.parts.map(() => []);
+    const fr = frames[0], label = labels[0];
+    for (let i = 0; i < W * H; i += 7) {
+      const o = i * 4, p = label[i];
+      if (p < 0 || fr.n[o + 3] < 200) continue;
+      per[p].push({ n: rgbToOklab(fr.n[o], fr.n[o + 1], fr.n[o + 2]) as L3, s: rgbToOklab(fr.s[o], fr.s[o + 1], fr.s[o + 2]) as L3 });
+    }
+    const total = per.reduce((a, x) => a + x.length, 0) || 1;
+    palette = f.parts.map((pt, pi) => {
+      const c = clusters(per[pi], 4);
+      // A part with no pixels in the render (the outline, a hidden detail) keeps its B/W shades, as a tiny share.
+      if (!c.length || pt.o) { const bw = matchParts(f.slots, [pt])[0]; return { ...bw, outline: !!pt.o, w: bw.n.map(() => 0.001) }; }
+      return { n: c.map((x) => x.n.map((v) => +v.toFixed(4)) as L3), s: c.map((x) => x.s.map((v) => +v.toFixed(4)) as L3), outline: false, w: c.map((x) => +(x.c / total).toFixed(4)) };
+    });
+  }
+  // Self-consistency: each part's normal pixels moved to its shiny reference colour, against the real shiny.
+  let err = 0, cnt = 0;
+  if (pic.distinctShiny)
+    frames.forEach((fr, fi) => {
+      const label = labels[fi];
+      for (let i = 0; i < W * H; i += 5) {
+        const o = i * 4, p = label[i];
+        if (p < 0 || fr.n[o + 3] < 200 || fr.s[o + 3] < 200) continue;
+        const r = refs[p];
+        const out = transform(rgbToLch(fr.n[o], fr.n[o + 1], fr.n[o + 2]), { l: r[0], c: r[1], h: r[2] }, { l: r[3], c: r[4], h: r[5], k: 1 });
+        const rr = (out.h * Math.PI) / 180;
+        err += labDist([out.l, out.c * Math.cos(rr), out.c * Math.sin(rr)], rgbToOklab(fr.s[o], fr.s[o + 1], fr.s[o + 2]) as [number, number, number], 1);
+        cnt++;
+      }
+    });
+  // Part areas against the 3D render's (the same model, another view): far apart means the labels went wrong.
+  let shareGap: number | null = null;
+  if (learnt) {
+    const cnt = new Array(P).fill(0);
+    let tot = 0;
+    for (const l of labels) for (const v of l) if (v >= 0) { cnt[v]++; tot++; }
+    const want = learnt.map((p) => p.w.reduce((a, b) => a + b, 0));
+    const wt = want.reduce((a, b) => a + b, 0) || 1;
+    shareGap = +(cnt.reduce((a, c, i) => a + Math.abs(c / (tot || 1) - want[i] / wt), 0) / 2).toFixed(3);
+  }
   dists.sort((a, b) => a - b);
-  const quality = { median: +dists[dists.length >> 1].toFixed(3), p90: +dists[Math.floor(dists.length * 0.9)].toFixed(3), far: +(dists.filter((d) => d > 0.12).length / dists.length).toFixed(3) };
-  const png = Buffer.alloc(N * N);
-  for (let i = 0; i < N * N; i++) png[i] = label[i] < 0 || label[i] === KEEP ? 0 : label[i] + 1;
-  return { f, hd, png, quality };
+  const quality = {
+    median: +dists[dists.length >> 1].toFixed(3),
+    p90: +dists[Math.floor(dists.length * 0.9)].toFixed(3),
+    far: +(dists.filter((d) => d > 0.12).length / dists.length).toFixed(3),
+    cons: cnt ? +(err / cnt).toFixed(3) : null,
+    shareGap,
+  };
+  const png = Buffer.alloc(W * H);
+  for (let i = 0; i < W * H; i++) png[i] = labels[0][i] < 0 ? 0 : labels[0][i] + 1;
+  return { f, refs, png, quality, W, H, distinctShiny: pic.distinctShiny, palette, learnt: !!learnt };
 }
 
-/** Each Pixel part's share of the sprite's figure (outline left out): what the HD parts should roughly reproduce. */
-export function spriteShares(f: SpeciesFile): number[] {
-  const idx = rleDecode(b64decode(f.px), f.w * f.h);
-  const partOf = new Int16Array(f.slots.length).fill(-1);
-  f.parts.forEach((p, i) => { if (!p.o) p.s.forEach((s) => (partOf[s] = i)); });
-  const c = new Array(f.parts.length).fill(0);
-  let t = 0;
-  for (const v of idx) if (v >= 0 && partOf[v] >= 0) { c[partOf[v]]++; t++; }
-  return c.map((x) => x / Math.max(1, t));
-}
+/** Masks that miss the automatic fit (their palette strays from the B/W sprite's) but were reviewed as good. */
+export const ALLOWED: Record<Kind, Set<number>> = { hd: new Set(), art: new Set([6]) };
 
-/** Each part's share of an HD mask's labelled pixels. */
-export function maskShares(png: Uint8Array, parts: number): number[] {
-  const c = new Array(parts).fill(0);
-  let t = 0;
-  for (const v of png) if (v) { c[v - 1]++; t++; }
-  return c.map((x) => x / Math.max(1, t));
-}
+/** Good enough to ship: most pixels found a close colour pair, and the parts reproduce the official shiny. */
+export const passes = (q: { median: number; p90: number; far: number; cons: number | null; shareGap: number | null }, kind: Kind) =>
+  q.median < 0.06 && q.p90 < 0.12 && q.far < 0.1 && (q.cons === null || q.cons < CONS_MAX) && (q.shareGap === null || q.shareGap < SHARE_GAP_MAX);
 
-/** How far the HD parts' shares are from the sprite's (L1, 0 = the same, 2 = nothing in common). */
-export const shareGap = (a: number[], b: number[]) => +a.reduce((s, x, i) => s + Math.abs(x - b[i]), 0).toFixed(3);
+/** Largest total difference in part areas from the 3D render's that the artwork may show. */
+export const SHARE_GAP_MAX = Number(process.env.SHARE_GAP_MAX ?? 0.25);
 
-export const VARIANTS = [0.5, 0.25, 0.1].flatMap((wl) => [0.6, 1].map((k) => ({ wl, k })));
-
-/**
- * The automatic HD build for species without a reviewed mask: `keep`, refinement and regions at a few lightness
- * weights (how much a pixel's lightness counts against its colour; the render's lighting is not the sprite's) and
- * region sizes, keeping the one whose parts cover the figure most like the Pixel parts do, so a part is the same
- * part in both styles.
- */
-export async function buildHdAuto(id: number) {
-  let best: (NonNullable<Awaited<ReturnType<typeof buildHd>>> & { gap: number; variant: { wl: number; k: number } }) | null = null;
-  for (const v of VARIANTS) {
-    const r = await buildHd(id, { keep: true, ...v });
-    if (!r) return null;
-    const gap = shareGap(maskShares(r.png, r.f.parts.length), spriteShares(r.f));
-    if (!best || gap < best.gap) best = { ...r, gap, variant: v };
-  }
-  return best;
-}
-
-/**
- * The first HD release: hand-curated species whose masks were reviewed on contact sheets, less those whose parts came
- * out muddled with the original method (they now take the automatic build like every other species).
- */
-export const HD_REJECTED = new Set([9, 59, 155, 156, 256, 390, 635, 652, 785, 911, 913, 914, 1008]);
-export const hdAllowed = (id: number) => id in CURATED && !HD_REJECTED.has(id);
-
-/** Good enough to ship: most pixels found a close colour pair. */
-export const passes = (q: { median: number; p90: number; far: number }) => q.median < 0.06 && q.p90 < 0.12 && q.far < 0.1;
-
-/** One piece: every pixel of the figure is the species' largest part (the safe fallback, see hd-review.ts). */
-export async function buildHdOnePiece(id: number) {
-  const r = await buildHd(id, { keep: true });
-  if (!r) return null;
-  const shares = spriteShares(r.f);
-  const main = shares.indexOf(Math.max(...shares));
-  for (let i = 0; i < r.png.length; i++) if (r.png[i]) r.png[i] = main + 1;
-  // The pixels drawn as rendered stay so (pupils); everything else recolours with the main part.
-  const nd = await raw(join("public/sizes/art/512", `${id}.webp`));
-  const sd = await raw(join(CACHE, "home-shiny", `${id}.png`));
-  const labs: Lab[] = [], labsS: Lab[] = [];
-  for (let i = 0; i < N * N; i += 4) {
-    if (r.png[i] !== main + 1 || nd[i * 4 + 3] < 200) continue;
-    const n = rgbToOklab(nd[i * 4], nd[i * 4 + 1], nd[i * 4 + 2]) as Lab;
-    labs.push(n);
-    labsS.push(sd[i * 4 + 3] >= 128 ? (rgbToOklab(sd[i * 4], sd[i * 4 + 1], sd[i * 4 + 2]) as Lab) : n);
-  }
-  r.hd[main] = [...refOf(labs), ...refOf(labsS)] as HdRef;
-  return { ...r, gap: 0, variant: null };
-}
+/** Mean OKLab error of the predicted official shiny (set from the report: it keeps the reviewed bad masks out). */
+export const CONS_MAX = Number(process.env.CONS_MAX ?? 0.06);
 
 async function main() {
   const args = process.argv.slice(2);
-  const shardArg = args.indexOf("--shard");
-  const [si, sn] = shardArg >= 0 ? args[shardArg + 1].split("/").map(Number) : [0, 1];
-  const ids = args.filter((a, i) => /^\d+$/.test(a) && (shardArg < 0 || i !== shardArg + 1)).map(Number);
+  const opt = (name: string) => { const i = args.indexOf(name); return i >= 0 ? args.splice(i, 2)[1] : undefined; };
+  const kind = (opt("--kind") ?? "hd") as Kind;
+  const [si, sn] = (opt("--shard") ?? "0/1").split("/").map(Number);
+  const ids = args.filter((a) => /^\d+$/.test(a)).map(Number);
   const all = ids.length ? ids : Array.from({ length: 1025 }, (_, i) => i + 1);
-  mkdirSync(join(OUT, "hd"), { recursive: true });
+  mkdirSync(join(OUT, kind), { recursive: true });
   mkdirSync(join(CACHE, "hd-report"), { recursive: true });
   const report: Record<number, unknown> = {};
   for (const id of all.filter((_, i) => i % sn === si)) {
-    const file = join(OUT, "hd", `${id}.png`);
-    let r, ok: boolean, how: string;
-    const reviewed = hdAllowed(id) ? await buildHd(id) : null;
-    if (reviewed && passes(reviewed.quality)) {
-      // Reviewed with the original method: built exactly as they were.
-      r = reviewed;
-      ok = true;
-      how = "reviewed";
-    } else {
-      const fix = HD_FIXES[id];
-      r = fix === "one-piece" ? await buildHdOnePiece(id) : fix ? await buildHd(id, { keep: true, ...fix }) : await buildHdAuto(id);
-      if (!r) continue;
-      ok = true;
-      how = fix === "one-piece" ? "one-piece" : fix ? `fixed ${JSON.stringify(fix)}` : `auto ${JSON.stringify((r as unknown as { variant: unknown }).variant)}`;
+    let fb: Awaited<ReturnType<typeof buildHdFallback>> = null;
+    const r = await build(kind, id);
+    const pxFile = join(OUT, "px", `${id}.json`);
+    const file = join(OUT, kind, `${id}.png`);
+    if (!r) {
+      if (existsSync(pxFile)) {
+        const f = JSON.parse(readFileSync(pxFile, "utf8")) as SpeciesFile;
+        if (f[kind]) { delete f[kind]; writeFileSync(pxFile, JSON.stringify(f)); }
+      }
+      rmSync(file, { force: true });
+      continue;
     }
-    report[id] = { ...r.quality, ok, how, gap: shareGap(maskShares(r.png, r.f.parts.length), spriteShares(r.f)) };
+    const ok = (process.env.FORCE === "1" || passes(r.quality, kind) || ALLOWED[kind].has(id)) && (process.env.NO_REJECT === "1" || !REJECTED[kind].has(id));
+    report[id] = { ...r.quality, ok };
+    if (kind === "hd") {
+      mkdirSync(PAL_DIR, { recursive: true });
+      if (ok && r.palette) writeFileSync(join(PAL_DIR, `${id}.json`), JSON.stringify(r.palette));
+      else rmSync(join(PAL_DIR, `${id}.json`), { force: true });
+    }
     if (ok) {
-      await sharp(r.png, { raw: { width: N, height: N, channels: 1 } }).png({ compressionLevel: 9, palette: false }).toFile(file);
-      r.f.hd = r.hd;
+      await sharp(r.png, { raw: { width: r.W, height: r.H, channels: 1 } }).png({ compressionLevel: 9 }).toFile(file);
+      r.f[kind] = r.refs;
+    } else if (kind === "hd" && process.env.NO_FALLBACK !== "1" && (fb = await buildHdFallback(id))) {
+      // Every species has 3D: the ones these checks leave out take their reviewed mask (hd-auto.ts, hd-review.ts).
+      await sharp(fb.png, { raw: { width: 512, height: 512, channels: 1 } }).png({ compressionLevel: 9 }).toFile(file);
+      r.f.hd = fb.hd;
+      report[id] = { ...r.quality, ok: true, fallback: fb.how };
     } else {
-      delete r.f.hd;
+      delete r.f[kind];
       rmSync(file, { force: true });
     }
-    writeFileSync(join(OUT, "px", `${id}.json`), JSON.stringify(r.f));
-    if (id % 50 === 0) console.log(id);
+    writeFileSync(pxFile, JSON.stringify(r.f));
+    if (id % 100 === 0) console.log(kind, id);
   }
-  writeFileSync(join(CACHE, "hd-report", `${si}.json`), JSON.stringify(report));
+  writeFileSync(join(CACHE, "hd-report", `${kind}-${si}.json`), JSON.stringify(report));
 }
 
 if (process.argv[1]?.endsWith("hd.ts")) main();

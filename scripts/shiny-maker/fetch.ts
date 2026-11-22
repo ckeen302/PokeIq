@@ -2,8 +2,9 @@
  * Downloads the sprites the Shiny Pokémon Maker's data is built from into .cache/shiny-maker (git-ignored):
  *   bw/{id}.png, bw-shiny/{id}.png        Black/White-style 96 px sprites (PokeAPI; fan-made B/W style for #650+ by the Smogon Sprite Project)
  *   home-shiny/{id}.png                    Pokémon HOME shiny renders (PokeAPI), paired with public/sizes/art/512/{id}.webp for HD masks
+ *   art/{id}.png, art-shiny/{id}.png       official artwork, normal and shiny (PokeAPI)          (--art)
  *   anim.json                              which species have an animated B/W sprite
- *   npx tsx scripts/shiny-maker/fetch.ts [--home]
+ *   npx tsx scripts/shiny-maker/fetch.ts [--home] [--art]
  */
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -34,7 +35,8 @@ async function pool<T>(items: T[], n: number, fn: (t: T) => Promise<void>) {
 
 async function main() {
   const home = process.argv.includes("--home");
-  for (const d of ["bw", "bw-shiny", "home-shiny"]) mkdirSync(join(OUT, d), { recursive: true });
+  const art = process.argv.includes("--art");
+  for (const d of ["bw", "bw-shiny", "home-shiny", "art", "art-shiny"]) mkdirSync(join(OUT, d), { recursive: true });
   const ids = Array.from({ length: LAST }, (_, i) => i + 1);
   const anim: number[] = [];
   let done = 0;
@@ -44,6 +46,7 @@ async function main() {
       [`${BW}/shiny/${id}.png`, join(OUT, "bw-shiny", `${id}.png`)],
     ];
     if (home) jobs.push([`${RAW}/other/home/shiny/${id}.png`, join(OUT, "home-shiny", `${id}.png`)]);
+    if (art) jobs.push([`${RAW}/other/official-artwork/${id}.png`, join(OUT, "art", `${id}.png`)], [`${RAW}/other/official-artwork/shiny/${id}.png`, join(OUT, "art-shiny", `${id}.png`)]);
     for (const [url, file] of jobs) {
       if (existsSync(file)) continue;
       const buf = await get(url);
