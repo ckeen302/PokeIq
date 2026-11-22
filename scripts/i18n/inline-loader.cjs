@@ -15,7 +15,7 @@ const ts = require("typescript");
 const { englishMessage, helperCode, getCompile } = require("./icu-loader.cjs");
 
 const MAKERS = new Set(["useT", "serverT", "getT", "translator"]);
-const H = { N: "__i18nN", O: "__i18nO", F: "__i18nF", M: "__i18nM", A: "__i18nA", T: "__i18nT" };
+const H = { N: "__i18nN", O: "__i18nO", F: "__i18nF", M: "__i18nM", A: "__i18nA", T: "__i18nT", R: "__i18nR" };
 const debug = !!process.env.I18N_INLINE_DEBUG;
 
 function leaf(tree, key) {
@@ -232,7 +232,7 @@ function analyze(file, source, compile, registry, src, addDependency, opts = {})
   if (!translators.size) return result;
 
   const used = new Set();
-  const collapsed = { used: false }; // an English-only build's message helper (see visitOne)
+  const collapsed = new Set(); // an English-only build's message helpers in use (see visitOne)
   const tables = new Map(); // a key expression's messages ("({…})") -> the module-level const holding them
   const en = (ns, key) => {
     const text = leaf(ns.tree, key);
@@ -368,6 +368,7 @@ function analyze(file, source, compile, registry, src, addDependency, opts = {})
   };
 
   const visitOne = (n, tr) => {
+    tr.uses = (tr.uses ?? 0) + 1;
     const p = n.parent;
     let call = null;
     let rich = false;
@@ -391,15 +392,19 @@ function analyze(file, source, compile, registry, src, addDependency, opts = {})
       if (debug) console.log(`[i18n-inline] ${path.relative(process.cwd(), file)}:${sf.getLineAndCharacterOfPosition(n.getStart(sf)).line + 1} keeps ${tr.ns.name}: ${(call ?? p).getText(sf).slice(0, 90)}`);
       return;
     }
-    if (opts.englishOnly && !rich) {
+    if (opts.englishOnly) {
       // An English-only build: every translator is English (catalog.english.ts), so `t("key", values)` is its English
-      // and nothing else; the call becomes that English (no key, no lookup). Arguments stay where they are, so a
-      // translator call inside the values keeps its own edits.
+      // and nothing else; the call becomes that English (no key, no lookup), `t.rich` likewise through the same
+      // fragment the translator makes. Arguments stay where they are, so a translator call inside the values keeps
+      // its own edits.
       const keyArg = call.arguments[0];
       const start = n.getStart(sf);
-      if (english.direct !== undefined && call.arguments.length === 1 && english.direct.startsWith('"')) tr.edits.push([start, call.getEnd(), english.direct]);
-      else if (english.direct !== undefined) (collapsed.used = true), tr.edits.push([start, keyArg.getEnd(), `${H.T}(${english.direct}`]);
-      else (collapsed.used = true), tr.edits.push([start, keyArg.getStart(sf), `${H.T}(${english.map}[`], [keyArg.getEnd(), keyArg.getEnd(), "]"]);
+      const fn = rich ? H.R : H.T;
+      const noValues = rich && call.arguments.length === 1 ? ", {}" : "";
+      if (!rich && english.direct !== undefined && call.arguments.length === 1 && english.direct.startsWith('"')) tr.edits.push([start, call.getEnd(), english.direct]);
+      else if (english.direct !== undefined) collapsed.add(fn), tr.edits.push([start, keyArg.getEnd(), `${fn}(${english.direct}${noValues}`]);
+      else collapsed.add(fn), tr.edits.push([start, keyArg.getStart(sf), `${fn}(${english.map}[`], [keyArg.getEnd(), keyArg.getEnd(), `]${noValues}`]);
+      tr.collapsed = (tr.collapsed ?? 0) + 1;
       return;
     }
     const at = call.arguments[call.arguments.length - 1].getEnd();
@@ -451,9 +456,20 @@ function analyze(file, source, compile, registry, src, addDependency, opts = {})
   const edits = [];
   for (const tr of translators.values()) if (!rootOf(tr).escapes) edits.push(...tr.edits);
   for (const tr of translators.values()) if (tr.exportAs && !tr.escapes) result.safe.push([...tr.exportAs, tr.ns.name]);
+  // English-only: a `const t = useT(ns)` (or serverT) whose every use became its English is no longer needed at all.
+  if (opts.englishOnly) {
+    const parents = new Set([...translators.values()].map((tr) => tr.parent).filter(Boolean));
+    for (const [decl, tr] of translators) {
+      if (!tr.nsArg || tr.escapes || parents.has(tr) || !tr.uses || tr.uses !== tr.collapsed || !ts.isVariableDeclaration(decl)) continue;
+      const init = decl.initializer;
+      if (!ts.isCallExpression(init) || !/^(useT|serverT|translator)$/.test(init.expression.text)) continue;
+      tr.dropped = true;
+      edits.push([init.getStart(sf), init.getEnd(), "0"]);
+    }
+  }
   const stubs = new Map();
   for (const tr of translators.values()) {
-    if (tr.escapes || !tr.nsArg) continue;
+    if (tr.escapes || !tr.nsArg || tr.dropped) continue;
     const id = `__i18nNs_${tr.ns.name.replace(/[^a-z0-9]/g, "_")}`;
     stubs.set(id, tr.ns.name);
     edits.push([tr.nsArg.getStart(sf), tr.nsArg.getEnd(), id]);
@@ -463,7 +479,11 @@ function analyze(file, source, compile, registry, src, addDependency, opts = {})
   // Only the tables some kept edit names (a translator that escapes keeps its namespace and drops its edits).
   const kept = edits.map((e) => e[2]).join("\n");
   const tableCode = [...tables].filter(([, id]) => kept.includes(id)).map(([text, id]) => `const ${id}=${text};`).join("");
-  const collapse = collapsed.used && kept.includes(`${H.T}(`) ? `const ${H.T}=(m,v)=>typeof m==="string"?m:String(m(v??{}));` : "";
+  const collapse =
+    (collapsed.has(H.T) && kept.includes(`${H.T}(`) ? `const ${H.T}=(m,v)=>typeof m==="string"?m:String(m(v??{}));` : "") +
+    (collapsed.has(H.R) && kept.includes(`${H.R}(`)
+      ? `import { createElement as ${H.R}E, Fragment as ${H.R}F } from "react";const ${H.R}=(m,v)=>{const o=typeof m==="string"?m:m(v);return Array.isArray(o)?${H.R}E(${H.R}F,null,...o):o;};`
+      : "");
   const head = `\n${helperCode(used, H)}${collapse}${[...stubs].map(([id, name]) => `const ${id}={name:${JSON.stringify(name)},en:{}};`).join("")}${tableCode}\n`;
   const at = lastImport ? lastImport.getEnd() : 0;
   if (head.trim()) edits.push([at, at, head]);
