@@ -1,0 +1,27 @@
+{
+  "kindGroup": "Kind of game",
+  "filter": {
+    "all": "All",
+    "mainline": "Mainline",
+    "remake": "Remakes",
+    "spinoff": "Spin-offs",
+    "mobile": "Mobile"
+  },
+  "kind": {
+    "mainline": "Mainline",
+    "remake": "Remake",
+    "spinoff": "Spin-off",
+    "mobile": "Mobile"
+  },
+  "generation": "Generation",
+  "everyGeneration": "Every generation",
+  "gen": "Gen {gen}",
+  "sortLabel": "Sort",
+  "sort": {
+    "newest": "Newest first",
+    "oldest": "Oldest first"
+  },
+  "none": "No games match.",
+  "showAll": "Show every game",
+  "tileAlt": "{name}, on a tile in place of box art"
+}

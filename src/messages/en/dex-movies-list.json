@@ -1,0 +1,27 @@
+{
+  "nav": "Film eras",
+  "all": "All",
+  "era": {
+    "original": "Original series",
+    "advanced": "Advanced Generation",
+    "dp": "Diamond & Pearl",
+    "bw": "Best Wishes",
+    "xy": "XY",
+    "modern": "2017 and later",
+    "live-action": "Live-action",
+    "coming-soon": "Coming soon"
+  },
+  "showing": {
+    "all": "Showing every film",
+    "original": "Showing Original series films",
+    "advanced": "Showing Advanced Generation films",
+    "dp": "Showing Diamond & Pearl films",
+    "bw": "Showing Best Wishes films",
+    "xy": "Showing XY films",
+    "modern": "Showing 2017 and later films",
+    "live-action": "Showing Live-action films",
+    "coming-soon": "Showing Coming soon films"
+  },
+  "poster": "{title} poster",
+  "soon": "Coming soon"
+}

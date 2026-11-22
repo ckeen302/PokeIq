@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { MOVIE_ERAS, MOVIES_PATH, parseEra, type MovieEraId } from "@/lib/movies/eras";
 import { cn } from "@/lib/utils";
 import { MovieCard, type MovieCardData } from "./MovieCard";
+import { useT } from "@/i18n/client";
+import dexMoviesList from "@/messages/dex-movies-list";
 
 /**
  * Every film's poster, with era chips that narrow the grid. The page renders
@@ -12,6 +14,7 @@ import { MovieCard, type MovieCardData } from "./MovieCard";
  * plain `?era=` links, and the chosen era stays in the address bar to share.
  */
 export function MovieExplorer({ films }: { films: MovieCardData[] }) {
+  const t = useT(dexMoviesList);
   const [era, setEra] = useState<MovieEraId | null>(null);
 
   useEffect(() => {
@@ -28,38 +31,38 @@ export function MovieExplorer({ films }: { films: MovieCardData[] }) {
     window.history.replaceState(window.history.state, "", next ? `?era=${next}` : localUrl(MOVIES_PATH));
   };
 
-  const chips = [{ id: null, label: "All" }, ...MOVIE_ERAS];
+  const chips = [null, ...MOVIE_ERAS.map((e) => e.id)];
   const shown = era ? films.filter((f) => f.era === era).length : films.length;
 
   return (
     <div className="space-y-5">
-      <nav aria-label="Film eras" className="flex flex-wrap justify-center gap-1.5" data-testid="movie-eras">
-        {chips.map((c) => {
-          const on = era === c.id;
+      <nav aria-label={t("nav")} className="flex flex-wrap justify-center gap-1.5" data-testid="movie-eras">
+        {chips.map((id) => {
+          const on = era === id;
           return (
             <a
-              key={c.id ?? "all"}
-              href={c.id ? `${MOVIES_PATH}?era=${c.id}` : MOVIES_PATH}
-              onClick={choose(c.id)}
+              key={id ?? "all"}
+              href={id ? `${MOVIES_PATH}?era=${id}` : MOVIES_PATH}
+              onClick={choose(id)}
               aria-current={on ? "true" : undefined}
-              data-testid={`movie-era-${c.id ?? "all"}`}
+              data-testid={`movie-era-${id ?? "all"}`}
               className={cn(
                 "inline-flex h-8 items-center rounded-sm border px-3 font-pixel text-[10px] uppercase tracking-wider transition-colors max-md:h-10",
                 on ? "border-primary bg-primary text-primary-foreground" : "border-foreground/15 text-muted-foreground hover:border-screen/60 hover:text-foreground"
               )}
             >
-              {c.label}
+              {id ? t(`era.${id}`) : t("all")}
             </a>
           );
         })}
       </nav>
       <p className="sr-only" aria-live="polite">
-        {era ? `Showing ${MOVIE_ERAS.find((e) => e.id === era)?.label} films` : "Showing every film"}
+        {t(`showing.${era ?? "all"}`)}
       </p>
       <ul className="grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 min-[1200px]:grid-cols-9" data-testid="movie-grid" data-count={shown}>
         {films.map((f, i) => (
           <li key={f.slug} hidden={era !== null && f.era !== era}>
-            <MovieCard film={f} eager={i < 9} />
+            <MovieCard film={f} eager={i < 9} posterAlt={t("poster", { title: f.title })} soonLabel={t("soon")} />
           </li>
         ))}
       </ul>

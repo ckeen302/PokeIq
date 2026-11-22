@@ -2,16 +2,17 @@
 import { Fragment } from "react";
 import { cn } from "@/lib/utils";
 import { boardArtUrl } from "@/lib/pokemon/art";
-import { VERDICT_LABEL, type Verdict } from "@/lib/theories/types";
+import type { Verdict } from "@/lib/theories/types";
 import s from "./theories.module.css";
 
 /** The class that sets a verdict's colour (--v) on an element and its children. */
 export const verdictClass = (v: Verdict) => (v === "confirmed" ? s.ok : v === "fan" ? s.fan : s.no);
 
-export function Stamp({ verdict, size, className }: { verdict: Verdict; size?: "big" | "huge"; className?: string }) {
+/** `label`: the verdict's name in the page's language. */
+export function Stamp({ verdict, label, size, className }: { verdict: Verdict; label: string; size?: "big" | "huge"; className?: string }) {
   return (
     <span className={cn(s.stamp, verdictClass(verdict), size === "big" && s.stampBig, size === "huge" && s.stampHuge, className)} data-testid="case-stamp">
-      {VERDICT_LABEL[verdict]}
+      {label}
     </span>
   );
 }

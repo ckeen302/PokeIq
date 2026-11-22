@@ -1,0 +1,22 @@
+{
+  "label": "すべての事件ファイル",
+  "verdictGroup": "判定",
+  "allCases": "すべての事件",
+  "verdict": {
+    "confirmed": "確定",
+    "fan": "ファン説",
+    "debunked": "否定"
+  },
+  "sourceGroup": "出所",
+  "source": {
+    "games": "ゲーム",
+    "anime": "アニメ",
+    "pokedex": "図鑑",
+    "internet": "ネット",
+    "manga": "マンガ"
+  },
+  "search": "事件を検索",
+  "none": "該当する事件はありません。判定、出所、検索語を変えてみてください。",
+  "caseNumber": "事件 {n}",
+  "open": "開く →"
+}

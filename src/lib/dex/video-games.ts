@@ -1514,27 +1514,33 @@ const isCore = (g: VideoGame) => g.kind === "mainline" || g.kind === "remake";
 /** The console family a platform label belongs to, for "same console" matches. */
 const family = (p: string) => p.replace(/ \(.*\)$/, "");
 
+/** Why a related game is listed (the page words it in its language). */
+export type RelatedReason = { kind: "previous" | "next" | "series" } | { kind: "region"; region: string } | { kind: "platform"; platform: string };
+
 /**
  * Related games, up to four: the previous and next game in the same series
  * (the main series, Mystery Dungeon, Rumble…), then others in the region (a
  * main-series game) or the series, then games on the same console, nearest in time first.
  */
-export function relatedGames(g: VideoGame, limit = 4): { game: VideoGame; why: string }[] {
-  const out: { game: VideoGame; why: string }[] = [];
-  const add = (x: VideoGame | undefined, why: string) => {
-    if (x && x.slug !== g.slug && !out.some((o) => o.game.slug === x.slug) && out.length < limit) out.push({ game: x, why });
+export function relatedGames(g: VideoGame, limit = 4): { game: VideoGame; why: string; reason: RelatedReason }[] {
+  const out: { game: VideoGame; why: string; reason: RelatedReason }[] = [];
+  const add = (x: VideoGame | undefined, why: string, reason: RelatedReason) => {
+    if (x && x.slug !== g.slug && !out.some((o) => o.game.slug === x.slug) && out.length < limit) out.push({ game: x, why, reason });
   };
   const series = CHRONO.filter((x) => (isCore(g) ? isCore(x) : x.series === g.series && g.series !== "other"));
   const i = series.findIndex((x) => x.slug === g.slug);
   if (i >= 0) {
-    add(series[i - 1], "Previous");
-    add(series[i + 1], "Next");
+    add(series[i - 1], "Previous", { kind: "previous" });
+    add(series[i + 1], "Next", { kind: "next" });
   }
   const near = (list: VideoGame[]) => [...list].sort((a, b) => Math.abs(time(a) - time(g)) - Math.abs(time(b) - time(g)));
-  if (isCore(g) && g.region) for (const x of near(CHRONO.filter((x) => isCore(x) && x.region === g.region))) add(x, `Also in ${g.region}`);
-  for (const x of near(series)) add(x, "Same series");
+  if (isCore(g) && g.region) for (const x of near(CHRONO.filter((x) => isCore(x) && x.region === g.region))) add(x, `Also in ${g.region}`, { kind: "region", region: g.region });
+  for (const x of near(series)) add(x, "Same series", { kind: "series" });
   const fams = new Set(g.platforms.map(family));
-  for (const x of near(CHRONO.filter((x) => x.platforms.some((p) => fams.has(family(p)))))) add(x, `Also on ${x.platforms.map(family).find((p) => fams.has(p))}`);
+  for (const x of near(CHRONO.filter((x) => x.platforms.some((p) => fams.has(family(p)))))) {
+    const platform = x.platforms.map(family).find((p) => fams.has(p))!;
+    add(x, `Also on ${platform}`, { kind: "platform", platform });
+  }
   return out;
 }
 const time = (g: VideoGame) => Date.parse(g.released.length === 7 ? `${g.released}-01` : g.released);

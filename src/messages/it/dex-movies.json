@@ -1,0 +1,81 @@
+{
+  "meta": {
+    "title": "Film Pokémon: tutti i film in ordine di uscita",
+    "description": "Tutti i film Pokémon in ordine di uscita, da Pokémon: Il film a I segreti della giungla, il film live action Detective Pikachu e Pokémon: Wild Card: locandine, i Pokémon protagonisti, ambientazioni e personaggi."
+  },
+  "header": {
+    "kicker": "Archivio dei film",
+    "title": "Poké",
+    "accent": "dex",
+    "blurb": "Tutti i film Pokémon, da Pokémon: Il film al live action Detective Pikachu e a quello che arriverà: le locandine, i Pokémon protagonisti e chi è chi."
+  },
+  "credit": "Anni di uscita, ambientazioni e personaggi sono verificati su <bulba>Bulbapedia</bulba>. L’anno sotto ogni locandina è quello della prima uscita.",
+  "ld": {
+    "pokedex": "Pokédex",
+    "movies": "Film",
+    "list": "Film Pokémon"
+  },
+  "era": {
+    "original": "Serie originale",
+    "advanced": "Advanced Generation",
+    "dp": "Diamante e Perla",
+    "bw": "Best Wishes",
+    "xy": "XY",
+    "modern": "Dal 2017",
+    "live-action": "Live action",
+    "coming-soon": "Prossimamente"
+  },
+  "eraOf": {
+    "original": "Era della serie originale",
+    "advanced": "Era Advanced Generation",
+    "dp": "Era Diamante e Perla",
+    "bw": "Era Best Wishes",
+    "xy": "Era XY",
+    "modern": "Dal 2017",
+    "live-action": "Era live action",
+    "coming-soon": "Prossimamente"
+  },
+  "kicker": "Film {n} · {era}",
+  "years": {
+    "japan": "Giappone {year}",
+    "us": "USA {year}",
+    "join": "{a} · {b}",
+    "coming": "In arrivo nel {year}"
+  },
+  "related": {
+    "trilogy": "La trilogia di {trilogy}",
+    "other": "Film correlati",
+    "modern": "Altri film dal 2017",
+    "era": {
+      "original": "Altri film della serie originale",
+      "advanced": "Altri film dell’era Advanced Generation",
+      "dp": "Altri film dell’era Diamante e Perla",
+      "bw": "Altri film dell’era Best Wishes",
+      "xy": "Altri film dell’era XY",
+      "modern": "Altri film dal 2017",
+      "live-action": "Altri film dell’era live action",
+      "coming-soon": "Altri film in arrivo"
+    }
+  },
+  "film": {
+    "metaTitle": "{title} ({year}) — Film Pokémon",
+    "metaTitleSoon": "{title} (in arrivo nel {year}) — Film Pokémon",
+    "description": "{summary} I Pokémon protagonisti, i personaggi e i loro partner.",
+    "descriptionSetting": "{summary} I Pokémon protagonisti, i personaggi e i loro partner, e dove è ambientato.",
+    "socialTitle": "{title} · Pokédex di PokéIQ",
+    "allMovies": "Tutti i film",
+    "poster": "Locandina di {title}",
+    "soon": "Prossimamente",
+    "featured": "Pokémon protagonisti",
+    "featuredSub": "Tocca un Pokémon per la sua voce del Pokédex",
+    "characters": "Personaggi",
+    "charactersSub": "Eroi, ospiti e cattivi",
+    "role": {
+      "hero": "Eroe",
+      "guest": "Ospite",
+      "villain": "Cattivo"
+    },
+    "with": "con {name}",
+    "related": "Correlati"
+  }
+}

@@ -1,7 +1,9 @@
 import "server-only";
 import { z } from "zod";
 import raw from "@/data/movies.json";
-import { MOVIE_ERA_IDS, eraLabel, moviePath, type MovieEraId } from "./eras";
+import { translator, type Translator } from "@/i18n/catalog";
+import dexMovies from "@/messages/dex-movies";
+import { MOVIE_ERA_IDS, moviePath, type MovieEraId } from "./eras";
 
 /**
  * Every Pokémon film for the Pokédex's Movies tab (src/data/movies.json), in
@@ -46,31 +48,35 @@ export const MOVIES: Movie[] = z.object({ films: z.array(Film) }).parse(raw).fil
 const BY_SLUG = new Map(MOVIES.map((m) => [m.slug, m]));
 export const getMovie = (slug: string) => BY_SLUG.get(slug);
 
+/** The film pages' words (English unless a page passes its language's). */
+export type MoviesT = Translator<typeof dexMovies.en>;
+const ENGLISH: MoviesT = translator(dexMovies, "en", undefined);
+
 /** The label over a film's title: "Movie 10 · Diamond & Pearl era", "Live-action", "Coming soon". */
-export function movieKicker(m: Movie): string {
-  if (m.number === null) return eraLabel(m.era);
-  const era = m.kicker ?? (m.era === "modern" ? eraLabel(m.era) : `${eraLabel(m.era)} era`);
-  return `Movie ${m.number} · ${era}`;
+export function movieKicker(m: Movie, t: MoviesT = ENGLISH): string {
+  if (m.number === null) return t(`era.${m.era}`);
+  const era = m.kicker ?? t(`eraOf.${m.era}`);
+  return t("kicker", { n: m.number, era });
 }
 
 /** Release years as shown on the page: "Japan 2007 · US 2008", or just the year when there's no confirmed release yet. */
-export function movieYears(m: Movie): string {
-  const parts = [m.years.japan && `Japan ${m.years.japan}`, m.years.us && `US ${m.years.us}`].filter(Boolean);
-  if (!m.premiere) return `Coming ${m.year}`;
-  return parts.length ? parts.join(" · ") : String(m.year);
+export function movieYears(m: Movie, t: MoviesT = ENGLISH): string {
+  const parts = [m.years.japan && t("years.japan", { year: m.years.japan }), m.years.us && t("years.us", { year: m.years.us })].filter((x): x is string => Boolean(x));
+  if (!m.premiere) return t("years.coming", { year: m.year });
+  return parts.length ? parts.reduce((a, b) => t("years.join", { a, b })) : String(m.year);
 }
 
 /** Its trilogy, or the other films of its era (plus the remake or the original), with a heading for them. */
-export function relatedFor(m: Movie): { title: string; films: Movie[] } {
+export function relatedFor(m: Movie, t: MoviesT = ENGLISH): { title: string; films: Movie[] } {
   const films = m.related.map((s) => BY_SLUG.get(s)).filter((x): x is Movie => Boolean(x));
   const sameEra = films.every((f) => f.era === m.era);
   const title = m.trilogy
-    ? `The ${m.trilogy} trilogy`
+    ? t("related.trilogy", { trilogy: m.trilogy })
     : !sameEra
-      ? "Related films"
+      ? t("related.other")
       : m.era === "modern"
-        ? "More from 2017 and later"
-        : `More from the ${eraLabel(m.era)} era`;
+        ? t("related.modern")
+        : t(`related.era.${m.era}`);
   return { title, films };
 }
 

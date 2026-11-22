@@ -1,0 +1,22 @@
+{
+  "label": "All case files",
+  "verdictGroup": "Verdict",
+  "allCases": "All cases",
+  "verdict": {
+    "confirmed": "Confirmed",
+    "fan": "Fan theory",
+    "debunked": "Debunked"
+  },
+  "sourceGroup": "Where it comes from",
+  "source": {
+    "games": "Games",
+    "anime": "Anime",
+    "pokedex": "Pokédex",
+    "internet": "Internet",
+    "manga": "Manga"
+  },
+  "search": "Search cases",
+  "none": "No case matches that. Try another verdict, source or search.",
+  "caseNumber": "CASE {n}",
+  "open": "Open →"
+}
