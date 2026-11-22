@@ -5,7 +5,7 @@
  *
  * - Off until the player's first tap or key press on the page (browsers block
  *   autoplay before that), and silent while the site's sound is muted
- *   (MuteToggle).
+ *   (the Sound switches, or M).
  * - On / off and the volume are kept on this device.
  *
  * Browser-only; everything no-ops on the server.

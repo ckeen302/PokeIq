@@ -30,10 +30,6 @@
   "toDark": "Cambiar al modo oscuro",
   "soundOnAction": "Activar el sonido",
   "soundOffAction": "Desactivar el sonido",
-  "unmuteKey": "Activar los efectos de sonido (M)",
-  "muteKey": "Silenciar los efectos de sonido (M)",
-  "soundOffKey": "Sonido desactivado (M)",
-  "soundOnKey": "Sonido activado (M)",
   "settings": {
     "title": "Ajustes",
     "theme": "Tema",
@@ -45,5 +41,7 @@
     "soundKeyHint": " Pulsa M en cualquier momento para activarlo o desactivarlo.",
     "on": "Sí",
     "off": "No"
-  }
+  },
+  "accountOfWaiting": "Cuenta y ajustes ({name}), amigos: {n} pendientes",
+  "friendsWaiting": "Amigos ({n} pendientes)"
 }

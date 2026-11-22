@@ -27,8 +27,9 @@ import { DexPager } from "@/components/pokedex/detail/DexPager";
 /**
  * One Pokémon's full study page. Selecting a form (Mega, regional,
  * Gigantamax…) re-derives typing, stats, abilities and matchups live.
+ * `sprites` is the sprites table, rendered on the server by the page.
  */
-export function DexEntry({ data }: { data: DexEntryData }) {
+export function DexEntry({ data, sprites }: { data: DexEntryData; sprites?: React.ReactNode }) {
   const p = data.core;
   const [form, setForm] = useState<DexForm | null>(null);
 
@@ -56,6 +57,7 @@ export function DexEntry({ data }: { data: DexEntryData }) {
     data.encounters && { id: "encounters", label: "Where to find it" },
     data.learnset && { id: "moves", label: "Moves" },
     { id: "pokedex", label: "Pokédex" },
+    sprites && { id: "sprites", label: "Sprites" },
     data.names.length > 0 && { id: "names", label: "Names" },
     { id: "breeding", label: "Training + breeding" },
   ].filter(Boolean) as { id: string; label: string }[];
@@ -124,6 +126,12 @@ export function DexEntry({ data }: { data: DexEntryData }) {
       <Section id="pokedex" index={sectionIndex("pokedex")} title="Pokédex entries" subtitle={`${data.entries.length} unique entries`}>
         <EntriesSection entries={data.entries} />
       </Section>
+
+      {sprites && (
+        <Section id="sprites" index={sectionIndex("sprites")} title={`${p.name} sprites`} subtitle="By generation">
+          {sprites}
+        </Section>
+      )}
 
       {data.names.length > 0 && (
         <Section id="names" index={sectionIndex("names")} title="Names in other languages" subtitle={`${data.names.length} languages`}>

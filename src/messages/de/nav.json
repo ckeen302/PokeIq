@@ -30,10 +30,6 @@
   "toDark": "Zum dunklen Modus wechseln",
   "soundOnAction": "Ton einschalten",
   "soundOffAction": "Ton ausschalten",
-  "unmuteKey": "Soundeffekte einschalten (M)",
-  "muteKey": "Soundeffekte stummschalten (M)",
-  "soundOffKey": "Ton aus (M)",
-  "soundOnKey": "Ton an (M)",
   "settings": {
     "title": "Einstellungen",
     "theme": "Design",
@@ -45,5 +41,7 @@
     "soundKeyHint": " Drück überall M, um ihn ein- oder auszuschalten.",
     "on": "An",
     "off": "Aus"
-  }
+  },
+  "accountOfWaiting": "Konto und Einstellungen ({name}), Freunde: {n} offen",
+  "friendsWaiting": "Freunde ({n} offen)"
 }

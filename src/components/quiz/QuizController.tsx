@@ -11,6 +11,7 @@ import type { AnswerResponse, NextResponse, PublicQuestion, RevealResponse, RunR
 import type { Difficulty, ModuleId, QuizFormat, QuizScope } from "@/engines/types";
 import { getProgress, recordAnswer } from "@/lib/progress";
 import { play, unlockAudio, vibrate } from "@/lib/sound";
+import { unlockCryAudio } from "@/lib/cry-audio";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -379,6 +380,17 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
       void submit(null);
     }
   }, [phase, questionMsLeft, runMsLeft, submit]);
+
+  // On a cry question, every tap or key press (Play, an answer, Next) lets the next cry play by itself; a no-op once one has.
+  const cryQuestion = question?.media?.type === "audio";
+  useEffect(() => {
+    if (!cryQuestion) return;
+    const opts = { capture: true, passive: true } as const;
+    for (const type of ["click", "keydown", "touchend"]) window.addEventListener(type, unlockCryAudio, opts);
+    return () => {
+      for (const type of ["click", "keydown", "touchend"]) window.removeEventListener(type, unlockCryAudio, opts);
+    };
+  }, [cryQuestion]);
 
   // ---- keyboard -----------------------------------------------------------
   useEffect(() => {
@@ -764,7 +776,7 @@ function AnswerTile({ index, option, phase, selected, graded, onPick, card, chil
         card ? "py-3" : "min-h-[52px] py-2.5",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         !locked && "hover:border-screen/60 hover:bg-screen/[0.06]",
-        phase === "submitting" && isPicked && "border-screen/70 bg-screen/10",
+        phase === "submitting" && isPicked && "border-[color:hsl(var(--screen)/0.7)] bg-screen/10",
         graded && isAnswer && "border-success bg-success/15 shadow-[0_0_18px_-6px_hsl(var(--success))]",
         wrongPick && "border-destructive bg-destructive/15",
         graded && !isAnswer && !isPicked && "opacity-50"
