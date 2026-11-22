@@ -11,14 +11,22 @@ import { cn } from "@/lib/utils";
 import { ShareReplay } from "./BattleAfter";
 import { downloadReplay } from "./replay-download";
 import { koSteps } from "@/lib/battle/replay-file";
+import { useT } from "@/i18n/client";
+import battleReplays from "@/messages/battle-replays";
+import battleReplayWords from "@/messages/battle-replay-words";
+
+function ScreenLoading() {
+  const t = useT(battleReplays);
+  return (
+    <div className="flex aspect-[16/9] w-full items-center justify-center rounded-lg border bg-card">
+      <Loader2 className="h-6 w-6 animate-spin text-screen" aria-label={t("viewer.loading")} />
+    </div>
+  );
+}
 
 const BattleScreen = dynamic(() => import("./play/BattleScreen"), {
   ssr: false,
-  loading: () => (
-    <div className="flex aspect-[16/9] w-full items-center justify-center rounded-lg border bg-card">
-      <Loader2 className="h-6 w-6 animate-spin text-screen" aria-label="Loading the replay" />
-    </div>
-  ),
+  loading: () => <ScreenLoading />,
 });
 
 // The analysis brings the simulator's tracker and the damage calc: loaded with the page, not in its first bundle.
@@ -43,6 +51,8 @@ export function ReplayViewer({
   /** A log the viewer brought in themselves: nothing to share or analyse, and a way to load another. */
   imported?: { onReset: () => void };
 }) {
+  const t = useT(battleReplays);
+  const w = useT(battleReplayWords);
   const last = useMemo(() => lastTurn(replay.log), [replay.log]);
   const kos = useMemo(() => koSteps(replay.log), [replay.log]);
   /** The turn whose start is on screen (0: nothing yet; last + 1: the end). */
@@ -139,16 +149,16 @@ export function ReplayViewer({
   const button = "flex h-9 items-center gap-1.5 rounded-md border bg-card px-3 font-display text-xs font-bold uppercase tracking-wider hover:border-screen/60 disabled:opacity-40";
   const toolbar = (
     <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-card/60 p-2" data-testid="replay-controls">
-      <button type="button" className={button} onClick={() => jump(turn - 1)} disabled={turn <= 0} aria-label="Back a turn" data-testid="replay-back">
-        <ChevronLeft className="h-4 w-4" aria-hidden /> Turn
+      <button type="button" className={button} onClick={() => jump(turn - 1)} disabled={turn <= 0} aria-label={t("viewer.back")} data-testid="replay-back">
+        <ChevronLeft className="h-4 w-4" aria-hidden /> {t("viewer.turn")}
       </button>
       {playing ? (
         <button type="button" className={cn(button, "border-primary text-primary")} onClick={pause} data-testid="replay-pause">
-          <Pause className="h-4 w-4" aria-hidden /> Pause
+          <Pause className="h-4 w-4" aria-hidden /> {t("viewer.pause")}
         </button>
       ) : (
         <button type="button" className={cn(button, "border-primary bg-primary text-primary-foreground hover:brightness-110")} onClick={play} data-testid="replay-play">
-          {atEnd ? <RotateCcw className="h-4 w-4" aria-hidden /> : <Play className="h-4 w-4" aria-hidden />} {atEnd ? "Replay" : "Play"}
+          {atEnd ? <RotateCcw className="h-4 w-4" aria-hidden /> : <Play className="h-4 w-4" aria-hidden />} {atEnd ? t("viewer.replay") : t("viewer.play")}
         </button>
       )}
       <button
@@ -161,10 +171,10 @@ export function ReplayViewer({
           else forward();
         }}
         disabled={atEnd}
-        aria-label="Forward a turn"
+        aria-label={t("viewer.forward")}
         data-testid="replay-forward"
       >
-        Turn <ChevronRight className="h-4 w-4" aria-hidden />
+        {t("viewer.turn")} <ChevronRight className="h-4 w-4" aria-hidden />
       </button>
       <button
         type="button"
@@ -174,18 +184,18 @@ export function ReplayViewer({
           if (nextKo !== undefined) jump(nextKo);
         }}
         disabled={nextKo === undefined}
-        title="Jump to the next turn a Pokémon faints"
+        title={t("viewer.nextKoTitle")}
         data-testid="replay-next-ko"
       >
-        <Skull className="h-4 w-4" aria-hidden /> Next KO
+        <Skull className="h-4 w-4" aria-hidden /> {t("viewer.nextKo")}
       </button>
       <button type="button" className={button} onClick={() => jump(end)} disabled={atEnd} data-testid="replay-end">
-        End <ChevronsRight className="h-4 w-4" aria-hidden />
+        {t("viewer.end")} <ChevronsRight className="h-4 w-4" aria-hidden />
       </button>
       <label className="ml-auto flex min-w-[12rem] flex-1 items-center gap-2 sm:max-w-xs">
         <span className="hud-label shrink-0 tabular-nums" data-testid="replay-turn">
           {/* Step t shows the log up to turn t's start: turn t - 1 has played out. */}
-          {turn === 0 ? "Start" : atEnd ? "End" : turn === 1 ? "Leads" : `Turn ${turn - 1}`} / {last}
+          {turn === 0 ? t("viewer.start") : atEnd ? t("viewer.end") : turn === 1 ? t("viewer.leads") : t("viewer.turnN", { n: turn - 1 })} / {last}
         </span>
         <input
           type="range"
@@ -196,7 +206,7 @@ export function ReplayViewer({
             pause();
             jump(Number(e.target.value));
           }}
-          aria-label="Jump to a turn"
+          aria-label={t("viewer.seek")}
           className="w-full accent-[hsl(var(--primary))]"
           data-testid="replay-seek"
         />
@@ -208,11 +218,11 @@ export function ReplayViewer({
     void downloadReplay({ id: replay.id, format: replay.format, formatName: replay.formatName, players: replay.players, log: replay.log }, kind);
   const downloads = (
     <div className="flex flex-wrap items-center gap-2" data-testid="replay-downloads">
-      <button type="button" className={button} onClick={() => download("html")} title="Showdown's replay file: opens in any browser and plays in Showdown's replay player" data-testid="replay-download">
-        <Download className="h-4 w-4" aria-hidden /> Download replay
+      <button type="button" className={button} onClick={() => download("html")} title={t("viewer.downloadTitle")} data-testid="replay-download">
+        <Download className="h-4 w-4" aria-hidden /> {t("viewer.download")}
       </button>
-      <button type="button" className={button} onClick={() => download("log")} title="The raw battle log (Showdown's protocol), one line per event" data-testid="replay-download-log">
-        <Download className="h-4 w-4" aria-hidden /> Log
+      <button type="button" className={button} onClick={() => download("log")} title={t("viewer.logTitle")} data-testid="replay-download-log">
+        <Download className="h-4 w-4" aria-hidden /> {t("viewer.log")}
       </button>
     </div>
   );
@@ -221,11 +231,9 @@ export function ReplayViewer({
     return (
       <div className="space-y-3" data-testid="instant-replay">
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-warning/50 bg-warning/10 px-3 py-2 text-sm">
-          <span>
-            <strong>Instant replay</strong> of this battle so far. {instant.timed ? "The battle goes on meanwhile: your turn timer keeps running." : "The battle waits for you."}
-          </span>
+          <span>{t.rich("viewer.instant", { timed: instant.timed ? "yes" : "no", b: (c) => <strong>{c}</strong> })}</span>
           <button type="button" className={cn(button, "border-primary bg-primary text-primary-foreground")} onClick={instant.onClose} data-testid="instant-replay-close">
-            <X className="h-4 w-4" aria-hidden /> Back to the battle
+            <X className="h-4 w-4" aria-hidden /> {t("viewer.backToBattle")}
           </button>
         </div>
         <BattleScreen
@@ -240,7 +248,7 @@ export function ReplayViewer({
           toolbar={toolbar}
           endActions={
             <button type="button" className={cn(button, "mx-auto border-primary bg-primary text-primary-foreground")} onClick={instant.onClose}>
-              <X className="h-4 w-4" aria-hidden /> Back to the battle
+              <X className="h-4 w-4" aria-hidden /> {t("viewer.backToBattle")}
             </button>
           }
         />
@@ -265,10 +273,10 @@ export function ReplayViewer({
           endActions={
             <div className="flex flex-wrap justify-center gap-2">
               <button type="button" className={buttonVariants({ variant: "outline" })} onClick={imported.onReset}>
-                <Upload className="h-4 w-4" aria-hidden /> Watch another
+                <Upload className="h-4 w-4" aria-hidden /> {t("viewer.another")}
               </button>
               <Link href="/battle/play" className={buttonVariants()}>
-                <Swords className="h-4 w-4" aria-hidden /> Battle
+                <Swords className="h-4 w-4" aria-hidden /> {t("viewer.battle")}
               </Link>
             </div>
           }
@@ -291,19 +299,19 @@ export function ReplayViewer({
         toolbar={toolbar}
         endActions={
           <div className="flex flex-wrap justify-center gap-2">
-            <ShareReplay id={replay.id} result={replayResult(replay)} formatName={replay.formatName} size="default" />
+            <ShareReplay id={replay.id} result={replayResult(replay, w)} formatName={replay.formatName} size="default" />
             <Link href="/battle/replays" className={buttonVariants({ variant: "outline" })}>
-              More replays
+              {t("viewer.more")}
             </Link>
             <Link href="/battle/play" className={buttonVariants()}>
-              <Swords className="h-4 w-4" aria-hidden /> Battle
+              <Swords className="h-4 w-4" aria-hidden /> {t("viewer.battle")}
             </Link>
           </div>
         }
       />
       <div className="flex flex-wrap items-center justify-end gap-2">
         {downloads}
-        <ShareReplay id={replay.id} result={replayResult(replay)} formatName={replay.formatName} />
+        <ShareReplay id={replay.id} result={replayResult(replay, w)} formatName={replay.formatName} />
       </div>
       <ReplayAnalysis replay={replay} />
     </div>

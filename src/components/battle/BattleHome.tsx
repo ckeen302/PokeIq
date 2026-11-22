@@ -18,7 +18,8 @@ import { useAccount } from "@/lib/account";
 import { openFriends } from "@/lib/friends-client";
 import { unlockAudio } from "@/lib/sound";
 import type { LiveCounts } from "@/lib/community";
-import { GlickoBadge } from "./GlickoBadge";
+import { glickoBadge } from "./GlickoBadge";
+import battleGlicko from "@/messages/battle-glicko";
 import { Button } from "@/components/ui/button";
 import { clock } from "@/components/duel/DuelParts";
 import { useMatchmaking } from "@/components/duel/use-matchmaking";
@@ -190,6 +191,7 @@ const SECONDARY: { href?: string; onClick?: () => void; icon: LucideIcon; label:
 export function BattleHome() {
   const t = useT(home);
   const tf = useT(formats);
+  const tg = useT(battleGlicko);
   const router = useRouter();
   const progress = useProgress();
   const account = useAccount();
@@ -386,7 +388,7 @@ export function BattleHome() {
                 <label className={cn("flex cursor-pointer items-center gap-2 text-sm", (ladder.status === "off" || needsAccount) && "cursor-not-allowed opacity-50")}>
                   <input type="checkbox" checked={rankedOn} onChange={(e) => setRanked(e.target.checked)} disabled={searching || ladder.status === "off" || needsAccount} data-testid="ranked-toggle" />
                   {t("ranked")}
-                  {rankedOn && ladder.status === "ready" && (ladder.you && ladder.you.games > 0 ? <GlickoBadge rating={ladder.you.rating} rd={ladder.you.rd} gxe={ladder.you.gxe} elo={ladder.you.elo} size="sm" /> : <span className="text-xs text-muted-foreground">{t("startsAt")}</span>)}
+                  {rankedOn && ladder.status === "ready" && (ladder.you && ladder.you.games > 0 ? glickoBadge({ rating: ladder.you.rating, rd: ladder.you.rd, gxe: ladder.you.gxe, elo: ladder.you.elo, size: "sm" }, tg) : <span className="text-xs text-muted-foreground">{t("startsAt")}</span>)}
                 </label>
               )}
               {!custom && ladderable && needsAccount && ladder.status !== "off" && (

@@ -1,0 +1,45 @@
+{
+  "coverage": {
+    "label": "タイプ相性",
+    "heading": "弱点と攻撃範囲",
+    "tera": "テラスタイプで受ける",
+    "type": "タイプ",
+    "weakTitle": "弱点のメンバー",
+    "weak": "弱点",
+    "resistTitle": "半減以下のメンバー",
+    "resist": "半減",
+    "immuneTitle": "無効のメンバー",
+    "immune": "無効",
+    "seTitle": "効果ばつぐんの攻撃を持つメンバー",
+    "se": "抜群",
+    "nothingNeutral": "チームにこのタイプへ等倍以上で当たるわざがありません",
+    "nothingSe": "効果ばつぐんで当たるわざがありません",
+    "abilities": "考慮したとくせい：{notes}。",
+    "help": "列はあなたのポケモンです（各タイプから受けるダメージ倍率）。「抜群」は効果ばつぐんのわざを持つメンバーの数、✕はそのタイプに等倍でも当たるわざがないことを示します。"
+  },
+  "notes": {
+    "wonderGuard": "{ability}：効果ばつぐんの攻撃しか当たらない",
+    "immune": "{ability}：{types}を無効",
+    "scale": "{ability}：{scales}",
+    "member": "{member}：{note}",
+    "hitter": "{member}：{move}"
+  },
+  "threats": {
+    "label": "脅威",
+    "heading": "{format}の脅威",
+    "noUsage": "このルールには使用率データがないため、脅威リストはありません。",
+    "running": "ダメージ計算中…",
+    "none": "使用率上位{n}匹のどれにも、チームの誰かが対応できます。",
+    "help": "使用率上位{n}匹を、最も多いもちもの・努力値配分・わざで調べます（{source}{stats, select, none {} other {、{battles, number}戦、{fetched}取得}}）。最も強い攻撃の乱数すべてをHP満タンから耐えるか、相手より速く半分以上の確率で一撃で倒せれば、そのメンバーは対応できるとみなします。テラスタル、能力ランク、設置技は考慮しません。",
+    "struggles": "チームが<b>{species}</b>に苦戦します",
+    "share": "{set} · チームの{pct}%が採用"
+  },
+  "matchup": {
+    "line": "{member}：{took}。{back}、{speed, select, faster {相手より速い} other {相手より遅い}}",
+    "takes": "{move}で{lo}–{hi}%受ける",
+    "shrugs": "痛手になる攻撃は受けない",
+    "does": "{move}で{lo}–{hi}%返す",
+    "doesKo": "{move}で{lo}–{hi}%返す（一撃で倒す確率{ko}%）",
+    "noHurt": "有効な攻撃がない"
+  }
+}

@@ -27,7 +27,7 @@ import { AboutMe } from "@/components/community/AboutMe";
 import { Avatar } from "@/components/avatar/Avatar";
 import { Avatar3D } from "@/components/trainer3d/Avatar3D";
 import { BattleProfileView } from "@/components/battle/BattleProfileView";
-import { GlickoBadge } from "@/components/battle/GlickoBadge";
+import { glickoBadge } from "@/components/battle/GlickoBadge";
 import { ReplayRow } from "@/components/battle/ReplayLists";
 import { TierBadge } from "@/components/duel/TierBadge";
 import { ProfileActions } from "@/components/community/ProfileActions";
@@ -50,6 +50,8 @@ import geoRecord from "@/messages/geo-record";
 import geoNames from "@/messages/geo-names";
 import guessrRanked from "@/messages/guessr-ranked";
 import quizModes from "@/messages/quiz-modes";
+import battleGlicko from "@/messages/battle-glicko";
+import battleReplayWords from "@/messages/battle-replay-words";
 
 interface PageProps {
   params: Promise<{ name: string }>;
@@ -151,7 +153,7 @@ export default async function UserProfilePage({ params }: PageProps) {
   // A page in another language names the picked Pokémon in it (forms keep their English name) and the game choices.
   const aboutNames = en ? found.aboutNames : Object.fromEntries(Object.entries(found.about.pokemon).map(([slot, p]) => [slot, p.id <= 1025 ? speciesName(p.id, found.aboutNames[slot], t.locale) : found.aboutNames[slot]]));
   return (
-    <ClientMessages namespaces={[friends, addFriend, aboutMe, geoRecord, geoNames, guessrRanked, quizModes]}>
+    <ClientMessages namespaces={[friends, addFriend, aboutMe, geoRecord, geoNames, guessrRanked, quizModes, battleReplayWords]}>
     <div className="mx-auto max-w-4xl space-y-6">
       <BackButton href="/users" label={t("back")} />
       <nav aria-label="Breadcrumb" className="hud-label flex items-center gap-1.5">
@@ -220,7 +222,7 @@ export default async function UserProfilePage({ params }: PageProps) {
                     <span className="flex flex-col items-end gap-0.5">
                       {/* Elo leads (the ladder's rating, shown as its Poké Ball to Master Ball tier); GXE and Glicko-2 follow. */}
                       <TierBadge rating={f.elo ?? f.rating!} games={f.elo === undefined ? f.ratedGames : undefined} size="sm" tr={serverT(tier)} />
-                      <GlickoBadge rating={f.rating!} rd={f.rd} gxe={f.gxe} elo={f.elo} headline={false} size="sm" />
+                      {glickoBadge({ rating: f.rating!, rd: f.rd, gxe: f.gxe, elo: f.elo, headline: false, size: "sm" }, serverT(battleGlicko))}
                     </span>
                   </li>
                 ))}

@@ -1,0 +1,7 @@
+{
+  "title": "{elo, select, none {} other {Elo {elo}。}}GXE {gxe}%：このランキングで無作為に選んだトレーナーに勝つ確率です。Glicko-2レート {glicko}。",
+  "gxe": "GXE {gxe}%",
+  "deviation": "Glicko-2レート ± 偏差",
+  "provisional": "暫定",
+  "provisionalTitle": "レートの偏差が{rd}を下回るまでは暫定です"
+}

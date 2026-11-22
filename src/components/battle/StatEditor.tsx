@@ -1,12 +1,13 @@
 "use client";
 
 import type { Generation, Nature } from "@pkmn/data";
-import { STAT_LABELS, type StatKey } from "@/lib/pokemon/constants";
+import type { StatKey } from "@/lib/pokemon/constants";
 import { evLimit, fitStatsToGen, fromDV, hasDVs, MAX_DV, MAX_EVS, MAX_IV, natureFor, STATS, toDV, USEFUL_TOTAL_EVS, type StatsTable } from "@/lib/battle/sets";
 import { cn } from "@/lib/utils";
 import { NumberInput } from "./controls";
-
-const SHORT: Record<StatKey, string> = { hp: "HP", atk: "Atk", def: "Def", spa: "SpA", spd: "SpD", spe: "Spe" };
+import { useT } from "@/i18n/client";
+import battleTeams from "@/messages/battle-teams";
+import battleTerms from "@/messages/battle-terms";
 // Phones: the EV slider gets its own full-width line under the stat's row, so it is wide enough to drag.
 const GRID = "grid grid-cols-[40px_30px_minmax(0,1fr)_52px_44px_44px] items-center gap-2 max-sm:grid-cols-[40px_30px_minmax(0,1fr)_minmax(0,1fr)_44px]";
 
@@ -41,6 +42,8 @@ export function StatEditor({
   onIvs: (ivs: StatsTable) => void;
   onNature?: (nature: string) => void;
 }) {
+  const t = useT(battleTeams);
+  const st = useT(battleTerms);
   const dvs = hasDVs(gen.num);
   const limit = evLimit(gen.num) === null ? null : USEFUL_TOTAL_EVS;
   const hardLimit = evLimit(gen.num);
@@ -54,19 +57,19 @@ export function StatEditor({
   // Gen 1-2: one Special stat (SpD follows SpA) and a derived HP DV.
   const follows = (s: StatKey) => dvs && s === "spd";
   const rows = gen.num === 1 ? STATS.filter((s) => s !== "spd") : STATS;
-  const label = (s: StatKey) => (gen.num === 1 && s === "spa" ? "Spc" : SHORT[s]);
+  const label = (s: StatKey) => (gen.num === 1 && s === "spa" ? st("short.spc") : st(`short.${s}`));
   const canNature = gen.num >= 3 && !!natures && !!onNature;
   const over = hardLimit !== null && total > hardLimit;
 
   return (
     <div className="space-y-2">
       <div className={cn(GRID, "hud-label")}>
-        <span title={canNature ? "Click a stat to set the nature's + and −" : undefined}>Stat</span>
-        <span className="text-right">Base</span>
-        <span className="max-sm:hidden">{dvs ? "Stat Exp" : "EVs"}</span>
-        <span className="text-center">EV</span>
-        <span className="text-center">{dvs ? "DV" : "IV"}</span>
-        <span className="text-right">Total</span>
+        <span title={canNature ? t("stats.natureHint") : undefined}>{t("stats.stat")}</span>
+        <span className="text-right">{t("stats.base")}</span>
+        <span className="max-sm:hidden">{dvs ? t("stats.statExp") : t("stats.evs")}</span>
+        <span className="text-center">{t("stats.ev")}</span>
+        <span className="text-center">{dvs ? t("stats.dv") : t("stats.iv")}</span>
+        <span className="text-right">{t("stats.total")}</span>
       </div>
       {rows.map((s) => {
         const value = gen.stats.calc(s, base[s], ivs[s], evs[s], level, nature);
@@ -89,8 +92,8 @@ export function StatEditor({
                   const next = natureFor(natures!, nature, s);
                   if (next) onNature!(next.name);
                 }}
-                title={`${STAT_LABELS[s]}: click to set the nature's + / −`}
-                aria-label={`${STAT_LABELS[s]}${plus ? " (boosted by nature)" : minus ? " (lowered by nature)" : ""}: change nature`}
+                title={t("stats.natureTitle", { stat: st(`stat.${s}`) })}
+                aria-label={t("stats.natureLabel", { stat: st(`stat.${s}`), mark: plus ? "plus" : minus ? "minus" : "none" })}
                 data-nature={plus ? "plus" : minus ? "minus" : undefined}
                 className={cn(
                   "-mx-1 rounded px-1 text-left font-semibold transition-colors hover:bg-foreground/10 max-md:py-2",
@@ -101,7 +104,7 @@ export function StatEditor({
                 {name}
               </button>
             ) : (
-              <span className={cn("font-semibold", plus && "text-success", minus && "text-destructive")} title={STAT_LABELS[s]}>
+              <span className={cn("font-semibold", plus && "text-success", minus && "text-destructive")} title={st(`stat.${s}`)}>
                 {name}
               </span>
             )}
@@ -113,24 +116,24 @@ export function StatEditor({
               step={4}
               value={evs[s]}
               disabled={follows(s)}
-              aria-label={`${STAT_LABELS[s]} EVs`}
+              aria-label={t("stats.evsLabel", { stat: st(`stat.${s}`) })}
               onChange={(e) => setEv(s, Number(e.target.value))}
               className="h-2 w-full cursor-pointer accent-[hsl(var(--primary))] disabled:cursor-not-allowed disabled:opacity-50 max-sm:col-span-full max-sm:row-start-2 max-sm:h-6"
             />
             {follows(s) ? (
-              <span className="text-center font-mono text-xs tabular-nums text-muted-foreground" title="Special stat experience">
+              <span className="text-center font-mono text-xs tabular-nums text-muted-foreground" title={t("stats.specialExp")}>
                 {evs[s]}
               </span>
             ) : (
-              <NumberInput label={`${STAT_LABELS[s]} EVs`} value={evs[s]} min={0} max={cap(s)} onChange={(v) => setEv(s, v)} />
+              <NumberInput label={t("stats.evsLabel", { stat: st(`stat.${s}`) })} value={evs[s]} min={0} max={cap(s)} onChange={(v) => setEv(s, v)} />
             )}
             {dvs && (s === "hp" || s === "spd") ? (
-              <span className="text-center font-mono text-xs tabular-nums text-muted-foreground" title={s === "hp" ? "Follows from the other DVs" : "The Special DV"}>
+              <span className="text-center font-mono text-xs tabular-nums text-muted-foreground" title={s === "hp" ? t("stats.hpDv") : t("stats.specialDv")}>
                 {toDV(ivs[s])}
               </span>
             ) : (
               <NumberInput
-                label={`${STAT_LABELS[s]} ${dvs ? "DVs" : "IVs"}`}
+                label={t("stats.ivsLabel", { stat: st(`stat.${s}`), kind: dvs ? "dv" : "iv" })}
                 value={dvs ? toDV(ivs[s]) : ivs[s]}
                 min={0}
                 max={dvs ? MAX_DV : MAX_IV}
@@ -152,16 +155,16 @@ export function StatEditor({
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-foreground/[0.07] pt-2 text-xs">
         <span className={cn("font-mono tabular-nums", over ? "text-destructive" : left < 0 ? "text-warning" : "text-muted-foreground")} data-testid="ev-total">
           {limit === null
-            ? `Up to ${MAX_EVS} in every stat`
+            ? t("stats.upTo", { max: MAX_EVS })
             : over
-              ? `EVs ${total} / ${limit} · ${total - hardLimit!} over the ${hardLimit} limit`
+              ? t("stats.over", { total, limit, over: total - hardLimit!, hard: hardLimit! })
               : left < 0
-                ? `EVs ${total} / ${limit} · the last ${-left} do nothing`
-                : `EVs ${total} / ${limit} · ${left} left`}
+                ? t("stats.wasted", { total, limit, n: -left })
+                : t("stats.left", { total, limit, n: left })}
         </span>
         <span className="flex gap-1.5">
           <button type="button" onClick={() => onEvs({ hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 })} className="tap hud-label hover:text-foreground">
-            Clear EVs
+            {t("stats.clear")}
           </button>
           <span className="hud-label">·</span>
           <button
@@ -169,7 +172,7 @@ export function StatEditor({
             onClick={() => onIvs({ hp: MAX_IV, atk: MAX_IV, def: MAX_IV, spa: MAX_IV, spd: MAX_IV, spe: MAX_IV })}
             className="tap hud-label hover:text-foreground"
           >
-            {dvs ? "Max DVs" : "Max IVs"}
+            {dvs ? t("stats.maxDvs") : t("stats.maxIvs")}
           </button>
         </span>
       </div>

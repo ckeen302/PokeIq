@@ -1,0 +1,21 @@
+{
+  "joiner": {
+    "vs": "vs",
+    "and": "と"
+  },
+  "title": "{a} {joiner} {b}",
+  "result": {
+    "teamsDrew": "{a}と{b}は引き分け",
+    "beat": "{a}が{b}に勝利",
+    "noWinner": "{players}：勝者なし",
+    "wonFfa": "{name}がバトルロイヤルに勝利",
+    "drew": "{a}と{b}は引き分け"
+  },
+  "turns": "{n}ターン",
+  "ranked": "ランク",
+  "ago": {
+    "now": "たった今",
+    "min": "{min}分前",
+    "hours": "{h}時間{min}分前"
+  }
+}

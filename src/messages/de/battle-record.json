@@ -1,0 +1,22 @@
+{
+  "none": "Noch keine Live-Kämpfe.",
+  "wins": "{pct} % Siege",
+  "rankedOnly": "nur gewertet",
+  "recent": "Letzte Kämpfe",
+  "result": {
+    "win": "Sieg",
+    "loss": "Niederl.",
+    "draw": "Remis"
+  },
+  "vs": "gegen <b>{name}</b> <muted>· {format}</muted>",
+  "ranked": "Gewertet",
+  "today": "heute",
+  "yesterday": "gestern",
+  "daysAgo": "vor {n} Tagen",
+  "replay": "Replay",
+  "ladder": "Rangliste →",
+  "title": "Kampfbilanz",
+  "loading": "Deine Kampfbilanz wird geladen",
+  "find": "Gegner finden",
+  "profile": "Dein öffentliches Kampfprofil →"
+}

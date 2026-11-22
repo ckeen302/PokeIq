@@ -1,0 +1,21 @@
+{
+  "joiner": {
+    "vs": "gegen",
+    "and": "und"
+  },
+  "title": "{a} {joiner} {b}",
+  "result": {
+    "teamsDrew": "{a} und {b} spielten unentschieden",
+    "beat": "{a} besiegte {b}",
+    "noWinner": "{players}: kein Sieger",
+    "wonFfa": "{name} gewann ein Jeder gegen jeden",
+    "drew": "{a} und {b} spielten unentschieden"
+  },
+  "turns": "{n, plural, one {{n} Runde} other {{n} Runden}}",
+  "ranked": "Gewertet",
+  "ago": {
+    "now": "jetzt",
+    "min": "vor {min} Min.",
+    "hours": "vor {h} Std. {min} Min."
+  }
+}

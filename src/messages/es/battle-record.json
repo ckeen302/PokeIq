@@ -1,0 +1,22 @@
+{
+  "none": "Aún no hay combates en directo.",
+  "wins": "{pct} % de victorias",
+  "rankedOnly": "solo clasificatorios",
+  "recent": "Combates recientes",
+  "result": {
+    "win": "Victoria",
+    "loss": "Derrota",
+    "draw": "Empate"
+  },
+  "vs": "vs. <b>{name}</b> <muted>· {format}</muted>",
+  "ranked": "Clasificatorio",
+  "today": "hoy",
+  "yesterday": "ayer",
+  "daysAgo": "hace {n} días",
+  "replay": "Repetición",
+  "ladder": "Clasificación →",
+  "title": "Historial de combates",
+  "loading": "Cargando tu historial de combates",
+  "find": "Buscar un rival",
+  "profile": "Tu perfil público de combates →"
+}

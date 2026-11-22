@@ -6,13 +6,16 @@ import { Button } from "@/components/ui/button";
 import { AnalysisUnsupported, analyseReplay, BUDGET_MS, cachedAnalysis, sourceText, unsupportedReason, type AnalysisProgress, type AnalysisResult, type BoardMon } from "@/lib/battle/analysis/run";
 import { pct, type WinPoint } from "@/lib/battle/analysis/maths";
 import type { SideIndex } from "@/lib/battle/analysis/parse";
-import { turningPoints, type TurningPoint } from "@/lib/battle/analysis/stats-text";
+import { turningPoints, type AnalysisT, type TurningPoint } from "@/lib/battle/analysis/stats-text";
 import { LabPool } from "@/lib/battle/lab/pool";
 import type { ReplayData } from "@/lib/battle/replay";
 import { cn } from "@/lib/utils";
 import { BattleSprite } from "./BattleSprite";
 import { BattleStatsPanel, TurningPoints, useBattleStats } from "./BattleStats";
 import { CardSection, SIDE_COLOR, TableView, Tooltip, useWidth } from "./lab/charts";
+import { useT } from "@/i18n/client";
+import battleAnalysis from "@/messages/battle-analysis";
+import { useBattleNames, type BattleNames } from "./use-battle-names";
 
 /**
  * A finished battle's analysis, on its replay page: the win chance turn by
@@ -37,6 +40,9 @@ function sideFromUrl(): SideIndex | null {
 
 export function ReplayAnalysis({ replay }: { replay: ReplayData }) {
   const unsupported = unsupportedReason(replay);
+  const t = useT(battleAnalysis);
+  const names = useBattleNames();
+  const stopped = t("analysis.stopped");
   const [viewer, setViewer] = useState<SideIndex>(0);
   const [state, setState] = useState<State>({ status: "idle" });
   const pool = useRef<LabPool | null>(null);
@@ -65,10 +71,10 @@ export function ReplayAnalysis({ replay }: { replay: ReplayData }) {
         setState(result ? { status: "done", result } : { status: "idle" });
       } catch (err) {
         if (id !== runId.current) return;
-        setState({ status: "error", message: err instanceof AnalysisUnsupported || err instanceof Error ? err.message : "The analysis stopped." });
+        setState({ status: "error", message: err instanceof AnalysisUnsupported || err instanceof Error ? err.message : stopped });
       }
     },
-    [replay]
+    [replay, stopped]
   );
 
   // The side from the link (the after-battle button), a cached result, and ?analysis=1 starts it.
@@ -103,8 +109,8 @@ export function ReplayAnalysis({ replay }: { replay: ReplayData }) {
   return (
     <div ref={section} id="analysis" className="scroll-mt-20 space-y-4">
       <CardSection
-        title="Analysis"
-        aside={state.status === "done" ? `${state.result.rollouts.toLocaleString("en-US")} simulated battles · ${(state.result.ms / 1000).toFixed(1)} s` : "Win chance, turn by turn"}
+        title={t("analysis.title")}
+        aside={state.status === "done" ? t("analysis.done", { n: state.result.rollouts, s: (state.result.ms / 1000).toFixed(1) }) : t("analysis.aside")}
       >
         <div data-testid="replay-analysis" className="space-y-4">
           {unsupported ? (
@@ -114,7 +120,7 @@ export function ReplayAnalysis({ replay }: { replay: ReplayData }) {
           ) : (
             <>
               <div className="flex flex-wrap items-center gap-2">
-                <span className="hud-label">Analyse as</span>
+                <span className="hud-label">{t("analysis.as")}</span>
                 {replay.players.map((name, i) => (
                   <button
                     key={i}
@@ -133,34 +139,31 @@ export function ReplayAnalysis({ replay }: { replay: ReplayData }) {
                 <span className="ml-auto flex gap-2">
                   {state.status === "running" ? (
                     <Button size="sm" variant="outline" onClick={() => (runId.current++, setState({ status: "idle" }))}>
-                      <Square className="h-4 w-4" aria-hidden /> Stop
+                      <Square className="h-4 w-4" aria-hidden /> {t("analysis.stop")}
                     </Button>
                   ) : (
                     <Button size="sm" onClick={() => start(viewer)} data-testid="analysis-run">
                       {state.status === "done" ? <RotateCcw className="h-4 w-4" aria-hidden /> : <Activity className="h-4 w-4" aria-hidden />}
-                      {state.status === "done" ? "Run again" : "Analyse this battle"}
+                      {state.status === "done" ? t("analysis.again") : t("analysis.run")}
                     </Button>
                   )}
                 </span>
               </div>
 
               {state.status === "idle" && (
-                <p className="text-sm text-muted-foreground">
-                  Plays the battle out many times from the start of every turn on Pokémon Showdown&apos;s simulator, in your browser, to estimate {replay.players[viewer]}&apos;s chance to win
-                  at each point. About {Math.round(BUDGET_MS / 1000)} seconds for a typical battle.
-                </p>
+                <p className="text-sm text-muted-foreground">{t("analysis.intro", { name: replay.players[viewer], s: Math.round(BUDGET_MS / 1000) })}</p>
               )}
-              {state.status === "running" && <Progress progress={state.progress} />}
+              {state.status === "running" && <Progress progress={state.progress} t={t} />}
               {state.status === "error" && (
                 <p className="flex items-center gap-2 text-sm text-destructive" role="alert">
                   <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden /> {state.message}
                 </p>
               )}
               {(state.status === "running" || state.status === "done") && (
-                <WinChart points={state.status === "done" ? state.result.points : state.progress.points} last={replay.turns} name={replay.players[viewer]} keyTurns={state.status === "done" ? state.result.keyMoments.map((k) => k.turn) : []} />
+                <WinChart points={state.status === "done" ? state.result.points : state.progress.points} last={replay.turns} name={replay.players[viewer]} keyTurns={state.status === "done" ? state.result.keyMoments.map((k) => k.turn) : []} t={t} />
               )}
               {state.status === "done" && statsLoad.status === "done" && <TurningPoints points={turning} />}
-              {state.status === "done" && <Findings result={state.result} />}
+              {state.status === "done" && <Findings result={state.result} t={t} names={names} />}
             </>
           )}
         </div>
@@ -170,9 +173,9 @@ export function ReplayAnalysis({ replay }: { replay: ReplayData }) {
   );
 }
 
-function Progress({ progress }: { progress: AnalysisProgress }) {
+function Progress({ progress, t }: { progress: AnalysisProgress; t: AnalysisT }) {
   const share = progress.total ? progress.done / progress.total : 0;
-  const label = progress.stage === "sets" ? "Filling in unrevealed sets…" : progress.stage === "calc" ? "Running the damage calc…" : `Turn ${progress.done} of ${progress.total}`;
+  const label = progress.stage === "sets" ? t("analysis.sets") : progress.stage === "calc" ? t("analysis.calc") : t("analysis.turnOf", { done: progress.done, total: progress.total });
   return (
     <div className="space-y-1" data-testid="analysis-progress">
       <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -188,7 +191,7 @@ function Progress({ progress }: { progress: AnalysisProgress }) {
   );
 }
 
-function WinChart({ points, last, name, keyTurns }: { points: WinPoint[]; last: number; name: string; keyTurns: number[] }) {
+function WinChart({ points, last, name, keyTurns, t }: { points: WinPoint[]; last: number; name: string; keyTurns: number[]; t: AnalysisT }) {
   const [ref, width] = useWidth<HTMLDivElement>();
   const [hover, setHover] = useState<WinPoint | null>(null);
   const height = 220;
@@ -219,7 +222,7 @@ function WinChart({ points, last, name, keyTurns }: { points: WinPoint[]; last: 
     <div className="space-y-1" data-testid="analysis-chart">
       <div ref={ref} className="relative w-full">
         {width > 0 && (
-          <svg width={width} height={height} className="block overflow-visible" role="img" aria-label={`${name}'s win chance by turn`}>
+          <svg width={width} height={height} className="block overflow-visible" role="img" aria-label={t("analysis.chartLabel", { name })}>
             {[0, 0.25, 0.5, 0.75, 1].map((p) => (
               <g key={p}>
                 <line x1={m.l} x2={m.l + w} y1={ys(p)} y2={ys(p)} stroke="hsl(var(--border))" strokeWidth={1} strokeDasharray={p === 0.5 ? "4 3" : undefined} />
@@ -228,9 +231,9 @@ function WinChart({ points, last, name, keyTurns }: { points: WinPoint[]; last: 
                 </text>
               </g>
             ))}
-            {ticks.map((t) => (
-              <text key={t} x={xs(t)} y={height - 6} textAnchor="middle" className="fill-muted-foreground font-mono text-[10px] tabular-nums">
-                {t === end ? "End" : t}
+            {ticks.map((tick) => (
+              <text key={tick} x={xs(tick)} y={height - 6} textAnchor="middle" className="fill-muted-foreground font-mono text-[10px] tabular-nums">
+                {tick === end ? t("analysis.end") : tick}
               </text>
             ))}
             {band && <path d={band} fill={SIDE_COLOR[0]} opacity={0.14} />}
@@ -255,40 +258,40 @@ function WinChart({ points, last, name, keyTurns }: { points: WinPoint[]; last: 
             <p className="text-muted-foreground">
               {hover.n ? (
                 <>
-                  Start of turn {hover.turn}
+                  {t("analysis.startOf", { turn: hover.turn })}
                   <br />
-                  95% CI {pct(hover.lo)}–{pct(hover.hi)}
+                  {t("analysis.ci", { lo: pct(hover.lo), hi: pct(hover.hi) })}
                   <br />
-                  {hover.n} simulated battles
+                  {t("analysis.battles", { n: hover.n })}
                 </>
               ) : (
-                "The result"
+                t("analysis.result")
               )}
             </p>
           </Tooltip>
         )}
       </div>
       <TableView
-        caption={`${name}'s win chance by turn`}
-        head={["Turn", "Win chance", "95% CI", "Battles"]}
-        rows={points.map((p) => [p.n ? p.turn : "End", pct(p.p), p.n ? `${pct(p.lo)}–${pct(p.hi)}` : "—", p.n || "—"])}
+        caption={t("analysis.chartLabel", { name })}
+        head={[t("analysis.head.turn"), t("analysis.head.chance"), t("analysis.head.ci"), t("analysis.head.battles")]}
+        rows={points.map((p) => [p.n ? p.turn : t("analysis.end"), pct(p.p), p.n ? `${pct(p.lo)}–${pct(p.hi)}` : "—", p.n || "—"])}
       />
     </div>
   );
 }
 
 /** Who was in battle as a key turn started: the viewer's Pokémon, then the foe's, each with its HP. */
-function Board({ board, viewer, turn }: { board: [BoardMon[], BoardMon[]]; viewer: SideIndex; turn: number }) {
+function Board({ board, viewer, turn, t, names }: { board: [BoardMon[], BoardMon[]]; viewer: SideIndex; turn: number; t: AnalysisT; names: BattleNames }) {
   const side = (mons: BoardMon[], mine: boolean) => (
     <span className="flex min-w-0 flex-wrap items-center gap-1">
       {mons.map((m, i) => (
         <span
           key={i}
           className={cn("inline-flex min-w-0 items-center gap-1 rounded-full border bg-card/60 py-0.5 pl-0.5 pr-2", mine ? "border-primary/30" : "border-foreground/15")}
-          title={`${m.species}, ${m.hp}% HP${m.status ? `, ${m.status}` : ""}`}
+          title={m.status ? t("analysis.boardStatus", { species: names.species(m.species), hp: m.hp, status: m.status }) : t("analysis.boardTitle", { species: names.species(m.species), hp: m.hp })}
         >
           <BattleSprite species={m.sprite} size={24} animated={false} className="shrink-0" />
-          <span className="truncate font-semibold">{m.species}</span>
+          <span className="truncate font-semibold">{names.species(m.species)}</span>
           <span className="font-mono tabular-nums text-muted-foreground">{m.hp}%</span>
           {m.status && <span className="font-mono uppercase text-warning">{m.status}</span>}
         </span>
@@ -296,39 +299,39 @@ function Board({ board, viewer, turn }: { board: [BoardMon[], BoardMon[]]; viewe
     </span>
   );
   return (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs" data-testid="key-moment-board" aria-label={`In battle at the start of turn ${turn}`}>
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs" data-testid="key-moment-board" aria-label={t("analysis.boardLabel", { turn })}>
       {side(board[viewer], true)}
-      <span className="hud-label">vs</span>
+      <span className="hud-label">{t("analysis.vs")}</span>
       {side(board[viewer === 0 ? 1 : 0], false)}
     </div>
   );
 }
 
-function Findings({ result }: { result: AnalysisResult }) {
+function Findings({ result, t, names }: { result: AnalysisResult; t: AnalysisT; names: BattleNames }) {
   const viewerName = result.players[result.viewer];
   const foeName = result.players[result.viewer === 0 ? 1 : 0];
   const widest = Math.max(0, ...result.points.filter((p) => p.n).map((p) => (p.hi - p.lo) / 2));
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <div className="space-y-2">
-        <h4 className="hud-label">Key moments</h4>
+        <h4 className="hud-label">{t("analysis.keyMoments")}</h4>
         {result.keyMoments.length ? (
           <ol className="space-y-1.5 text-sm" data-testid="key-moments">
             {result.keyMoments.map((k) => (
               <li key={k.turn} className="space-y-1.5 rounded-md border border-foreground/10 bg-shade/20 px-3 py-2">
-                {k.board && <Board board={k.board} viewer={result.viewer} turn={k.turn} />}
+                {k.board && <Board board={k.board} viewer={result.viewer} turn={k.turn} t={t} names={names} />}
                 <p data-testid="key-moment-text">{k.text}</p>
               </li>
             ))}
           </ol>
         ) : (
           <p className="text-sm text-muted-foreground" data-testid="key-moments">
-            No turn moved the win chance by more than the simulations&apos; own margin of error.
+            {t("analysis.noKeyMoments")}
           </p>
         )}
       </div>
       <div className="space-y-2">
-        <h4 className="hud-label">Missed KOs and risky plays</h4>
+        <h4 className="hud-label">{t("analysis.missed")}</h4>
         {result.missedKos.length + result.riskySwitches.length ? (
           <ul className="space-y-1.5 text-sm" data-testid="missed-kos">
             {[...result.missedKos.map((l) => ({ ...l, kind: "ko" })), ...result.riskySwitches.map((l) => ({ ...l, kind: "risk" }))]
@@ -342,25 +345,26 @@ function Findings({ result }: { result: AnalysisResult }) {
           </ul>
         ) : (
           <p className="text-sm text-muted-foreground" data-testid="missed-kos">
-            No missed KOs (a move {viewerName} had shown with a 50%+ chance to KO, not used) and no switch-ins into a likely KO.
+            {t("analysis.noMissed", { name: viewerName })}
           </p>
         )}
       </div>
       <div className="space-y-1 rounded-md border border-foreground/10 p-3 text-xs text-muted-foreground lg:col-span-2" data-testid="analysis-assumptions">
         <p className="flex items-center gap-1.5 font-semibold text-foreground">
-          <Info className="h-3.5 w-3.5" aria-hidden /> How this was worked out
+          <Info className="h-3.5 w-3.5" aria-hidden /> {t("analysis.how")}
         </p>
         <p>
-          From {viewerName}&apos;s side, using only what the battle showed: each Pokémon&apos;s HP, status, stat stages, hazards, weather and Tera as they stood at the start of the
-          turn. Every turn was played out to the end {Math.round(result.rollouts / Math.max(1, result.points.length - 1))} times on average by the computer&apos;s Hard strategy for both
-          sides; the shaded band is the 95% confidence interval (up to ±{pct(widest)}).
-          {result.doubles &&
-            " Double battles play both Pokémon of each side together: targets picked on the damage calc, spread moves at their 75% (and the partner they hit), Protect, Fake Out and shared KOs."}
+          {t("analysis.howBody", { name: viewerName, n: Math.round(result.rollouts / Math.max(1, result.points.length - 1)), widest: pct(widest) })}
+          {result.doubles && t("analysis.howDoubles")}
         </p>
         <p>
-          What wasn&apos;t revealed is assumed. {viewerName}: {sourceText(result.sources[result.viewer]) || "nothing"}. {foeName}: {sourceText(result.sources[result.viewer === 0 ? 1 : 0]) || "nothing"}.{" "}
-          {result.assumedMoves} move{result.assumedMoves === 1 ? " was" : "s were"} assumed rather than seen. Pokémon that came out later in the battle are counted from the start.
-          Missed KOs use only moves {viewerName}&apos;s Pokémon actually used; KO chances are the damage calc&apos;s non-critical rolls times accuracy.
+          {t("analysis.assumed", {
+            viewer: viewerName,
+            viewerSources: sourceText(result.sources[result.viewer]) || t("analysis.nothing"),
+            foe: foeName,
+            foeSources: sourceText(result.sources[result.viewer === 0 ? 1 : 0]) || t("analysis.nothing"),
+          })}{" "}
+          {t("analysis.assumedMoves", { n: result.assumedMoves, name: viewerName })}
         </p>
       </div>
     </div>

@@ -21,6 +21,12 @@ import { cn } from "@/lib/utils";
 import { CalcPanel, type CalcLists } from "./CalcPanel";
 import { inputClass, Toggle } from "./controls";
 import { BattleType, CategoryTag } from "./pickers";
+import { useT } from "@/i18n/client";
+import type { Translator } from "@/i18n/catalog";
+import battleCalc from "@/messages/battle-calc";
+import { effectName, useBattleNames, type BattleNames } from "./use-battle-names";
+
+type CalcT = Translator<typeof battleCalc.en>;
 
 const GENS = [9, 8, 7, 6, 5, 4, 3];
 
@@ -52,6 +58,8 @@ export function DamageCalc() {
   const [genNum, setGenNum] = useState(9);
   const [sides, setSides] = useState<[CalcSide, CalcSide]>(DEFAULT_SIDES);
   const [field, setField] = useState<CalcField>(emptyField);
+  const t = useT(battleCalc);
+  const names = useBattleNames();
 
   // The calculator and its data load on this page only.
   useEffect(() => {
@@ -85,25 +93,25 @@ export function DamageCalc() {
     if (!lib || !lists) return null;
     const calc = { gen: lists.gen, lib: lib.calc };
     const run = (a: CalcSide, d: CalcSide): CalcLine[] | string => {
-      if (!lists.gen.species.get(a.species) || !lists.gen.species.get(d.species)) return `Both Pokémon need to exist in Gen ${genNum}.`;
+      if (!lists.gen.species.get(a.species) || !lists.gen.species.get(d.species)) return t("notInGen", { gen: genNum });
       try {
         return calcMoves(calc, a, d, field);
       } catch (err) {
-        return err instanceof Error ? err.message : "The calculator couldn't run this matchup.";
+        return err instanceof Error ? err.message : t("failed");
       }
     };
     return [run(sides[0], sides[1]), run(sides[1], sides[0])] as const;
-  }, [lib, lists, sides, field, genNum]);
+  }, [lib, lists, sides, field, genNum, t]);
 
   const setSide = (i: 0 | 1) => (side: CalcSide) => setSides((s) => (i === 0 ? [side, s[1]] : [s[0], side]));
 
   if (loadError) {
-    return <p className="py-16 text-center text-sm text-destructive">Couldn&apos;t load the damage calculator. Check your connection and reload.</p>;
+    return <p className="py-16 text-center text-sm text-destructive">{t("loadError")}</p>;
   }
   if (!lib || !lists || !results) {
     return (
       <p className="flex min-h-[75vh] items-center justify-center gap-2 py-24 text-sm text-muted-foreground">
-        <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> Loading the damage calculator…
+        <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> {t("loading")}
       </p>
     );
   }
@@ -112,21 +120,21 @@ export function DamageCalc() {
     <div className="space-y-6">
       {/* Generation */}
       <div className="flex flex-wrap items-center gap-2">
-        <span className="hud-label">Generation</span>
-        <div className="flex rounded-md border border-foreground/10 bg-shade/30 p-0.5 max-sm:w-full" role="group" aria-label="Generation">
+        <span className="hud-label">{t("generation")}</span>
+        <div className="flex rounded-md border border-foreground/10 bg-shade/30 p-0.5 max-sm:w-full" role="group" aria-label={t("generation")}>
           {GENS.map((g) => (
             <button
               key={g}
               type="button"
               aria-pressed={genNum === g}
               onClick={() => setGenNum(g)}
-              aria-label={`Gen ${g}`}
+              aria-label={t("genLabel", { gen: g })}
               className={cn(
                 "whitespace-nowrap rounded-sm px-2.5 py-1.5 font-pixel text-[10px] leading-none max-sm:h-10 max-sm:flex-1 max-sm:px-0 max-sm:text-xs",
                 genNum === g ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <span className="hidden sm:inline">Gen </span>
+              <span className="hidden sm:inline">{t("gen")}</span>
               {g}
             </button>
           ))}
@@ -134,21 +142,21 @@ export function DamageCalc() {
       </div>
 
       {/* Results */}
-      <section className="hud space-y-4 rounded-lg border bg-card p-4 sm:p-5" aria-label="Damage results">
-        <Results title={`${sides[0].species}'s moves`} lines={results[0]} />
-        <Results title={`${sides[1].species}'s moves`} lines={results[1]} />
+      <section className="hud space-y-4 rounded-lg border bg-card p-4 sm:p-5" aria-label={t("results")}>
+        <Results title={t("movesOf", { name: names.species(sides[0].species) })} lines={results[0]} t={t} names={names} />
+        <Results title={t("movesOf", { name: names.species(sides[1].species) })} lines={results[1]} t={t} names={names} />
       </section>
 
-      <FieldPanel field={field} onChange={setField} />
+      <FieldPanel field={field} onChange={setField} t={t} names={names} />
 
       <div className="relative grid gap-4 lg:grid-cols-2">
-        <CalcPanel title="Attacker" side={sides[0]} lists={lists} onChange={setSide(0)} onLoad={(t) => setGenNum(BATTLE_FORMATS[t.format].gen)} />
-        <CalcPanel title="Defender" side={sides[1]} lists={lists} onChange={setSide(1)} onLoad={(t) => setGenNum(BATTLE_FORMATS[t.format].gen)} />
+        <CalcPanel title={t("attacker")} side={sides[0]} lists={lists} onChange={setSide(0)} onLoad={(team) => setGenNum(BATTLE_FORMATS[team.format].gen)} />
+        <CalcPanel title={t("defender")} side={sides[1]} lists={lists} onChange={setSide(1)} onLoad={(team) => setGenNum(BATTLE_FORMATS[team.format].gen)} />
         <button
           type="button"
           onClick={() => setSides(([a, b]) => [b, a])}
-          aria-label="Swap sides"
-          title="Swap sides"
+          aria-label={t("swap")}
+          title={t("swap")}
           className="absolute left-1/2 top-3 z-10 hidden h-10 w-10 -translate-x-1/2 items-center justify-center rounded-full border-2 border-screen/50 bg-card text-screen shadow-[0_0_18px_-4px_hsl(var(--screen))] transition-transform hover:rotate-180 lg:flex"
         >
           <ArrowLeftRight className="h-4 w-4" aria-hidden />
@@ -159,24 +167,24 @@ export function DamageCalc() {
         onClick={() => setSides(([a, b]) => [b, a])}
         className="mx-auto flex items-center gap-2 rounded-md border border-screen/40 px-4 py-2 text-sm font-semibold text-screen lg:hidden"
       >
-        <ArrowLeftRight className="h-4 w-4" aria-hidden /> Swap sides
+        <ArrowLeftRight className="h-4 w-4" aria-hidden /> {t("swap")}
       </button>
     </div>
   );
 }
 
-function Results({ title, lines }: { title: string; lines: CalcLine[] | string }) {
+function Results({ title, lines, t, names }: { title: string; lines: CalcLine[] | string; t: CalcT; names: BattleNames }) {
   return (
     <div className="space-y-2">
       <h2 className="hud-label">{title}</h2>
       {typeof lines === "string" ? (
         <p className="text-sm text-destructive">{lines}</p>
       ) : lines.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No moves picked.</p>
+        <p className="text-sm text-muted-foreground">{t("noMoves")}</p>
       ) : (
         <ul className="space-y-2">
           {lines.map((line) => (
-            <ResultLine key={line.move} line={line} />
+            <ResultLine key={line.move} line={line} t={t} names={names} />
           ))}
         </ul>
       )}
@@ -184,7 +192,7 @@ function Results({ title, lines }: { title: string; lines: CalcLine[] | string }
   );
 }
 
-function ResultLine({ line }: { line: CalcLine }) {
+function ResultLine({ line, t, names }: { line: CalcLine; t: CalcT; names: BattleNames }) {
   const [copied, setCopied] = useState(false);
   const [lo, hi] = line.percent;
   const status = line.category === "Status";
@@ -193,20 +201,20 @@ function ResultLine({ line }: { line: CalcLine }) {
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <span className="flex min-w-[11rem] items-center gap-2">
           <BattleType type={line.type} />
-          <span className="font-display font-bold">{line.move}</span>
+          <span className="font-display font-bold">{names.move(line.move)}</span>
           <CategoryTag category={line.category} />
         </span>
         {status ? (
-          <span className="text-sm text-muted-foreground">Status move: no damage</span>
+          <span className="text-sm text-muted-foreground">{t("statusMove")}</span>
         ) : line.damage[1] === 0 ? (
-          <span className="text-sm text-muted-foreground">No damage</span>
+          <span className="text-sm text-muted-foreground">{t("noDamage")}</span>
         ) : (
           <>
             <span className="font-mono text-sm font-bold tabular-nums">
               {lo.toFixed(1)} – {hi.toFixed(1)}%
             </span>
             <span className="font-mono text-xs tabular-nums text-muted-foreground">
-              {line.damage[0]}–{line.damage[1]} HP
+              {t("hp", { lo: line.damage[0], hi: line.damage[1] })}
             </span>
             {line.ko && <span className={cn("text-sm font-semibold", /OHKO/.test(line.ko) ? "text-success" : "text-warning")}>{line.ko}</span>}
           </>
@@ -225,7 +233,7 @@ function ResultLine({ line }: { line: CalcLine }) {
           <p className="min-w-0 flex-1 select-all break-words font-mono text-[11px] leading-relaxed text-muted-foreground">{line.desc}</p>
           <button
             type="button"
-            aria-label={`Copy the ${line.move} description`}
+            aria-label={t("copyDesc", { move: names.move(line.move) })}
             onClick={() =>
               navigator.clipboard?.writeText(line.desc).then(
                 () => {
@@ -243,7 +251,7 @@ function ResultLine({ line }: { line: CalcLine }) {
       )}
       {line.rolls.length > 0 && line.damage[1] > 0 && (
         <details className="mt-1">
-          <summary className="hud-label cursor-pointer select-none hover:text-foreground">Damage rolls</summary>
+          <summary className="hud-label cursor-pointer select-none hover:text-foreground">{t("rolls")}</summary>
           <p className="mt-1 font-mono text-[11px] text-muted-foreground">{line.rolls.join(", ")}</p>
         </details>
       )}
@@ -251,55 +259,55 @@ function ResultLine({ line }: { line: CalcLine }) {
   );
 }
 
-function FieldPanel({ field, onChange }: { field: CalcField; onChange: (field: CalcField) => void }) {
+function FieldPanel({ field, onChange, t, names }: { field: CalcField; onChange: (field: CalcField) => void; t: CalcT; names: BattleNames }) {
   const update = (patch: Partial<CalcField>) => onChange({ ...field, ...patch });
   return (
-    <section className="space-y-3 rounded-lg border bg-card p-4" aria-label="Field">
+    <section className="space-y-3 rounded-lg border bg-card p-4" aria-label={t("field")}>
       <div className="flex flex-wrap items-end gap-3">
         <div className="space-y-1.5">
-          <span className="hud-label block">Battle</span>
+          <span className="hud-label block">{t("battle")}</span>
           <div className="flex gap-1.5">
             {(["Singles", "Doubles"] as const).map((g) => (
               <Toggle key={g} pressed={field.gameType === g} onChange={() => update({ gameType: g })} className="h-9">
-                {g}
+                {t(`gameType.${g}`)}
               </Toggle>
             ))}
           </div>
         </div>
         <label className="w-40 space-y-1.5">
-          <span className="hud-label block">Weather</span>
+          <span className="hud-label block">{t("weather")}</span>
           <select value={field.weather} onChange={(e) => update({ weather: e.target.value })} className={inputClass}>
-            <option value="">None</option>
+            <option value="">{t("none")}</option>
             {WEATHERS.map((w) => (
               <option key={w} value={w}>
-                {w}
+                {t(`weathers.${w}`)}
               </option>
             ))}
           </select>
         </label>
         <label className="w-40 space-y-1.5">
-          <span className="hud-label block">Terrain</span>
+          <span className="hud-label block">{t("terrain")}</span>
           <select value={field.terrain} onChange={(e) => update({ terrain: e.target.value })} className={inputClass}>
-            <option value="">None</option>
-            {TERRAINS.map((t) => (
-              <option key={t} value={t}>
-                {t} Terrain
+            <option value="">{t("none")}</option>
+            {TERRAINS.map((terrain) => (
+              <option key={terrain} value={terrain}>
+                {t.locale === "en" ? t("terrainName", { terrain }) : names.move(`${terrain} Terrain`)}
               </option>
             ))}
           </select>
         </label>
         <Toggle pressed={field.crit} onChange={(crit) => update({ crit })} className="h-9">
-          Critical hits
+          {t("crits")}
         </Toggle>
       </div>
       <div className="flex flex-wrap gap-1.5">
         {FIELD_FLAGS.map(([flag, label]) => (
           <Toggle key={flag} pressed={!!field.flags[flag]} onChange={(on) => update({ flags: { ...field.flags, [flag]: on } })}>
-            {label}
+            {effectName(names, label)}
           </Toggle>
         ))}
       </div>
-      {field.gameType === "Doubles" && <p className="text-xs text-muted-foreground">Doubles: spread moves deal 75% damage.</p>}
+      {field.gameType === "Doubles" && <p className="text-xs text-muted-foreground">{t("spread")}</p>}
     </section>
   );
 }

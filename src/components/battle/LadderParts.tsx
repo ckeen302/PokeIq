@@ -6,18 +6,20 @@ import type { RankedLeaderRow } from "@/lib/ranked";
 import { PLAY_FORMAT_INFO, type StandardFormatId } from "@/lib/battle/play";
 import { LADDER_FORMATS } from "@/lib/battle/ladder";
 import { useLadderStanding } from "@/lib/battle/ladder-client";
-import { GlickoBadge } from "./GlickoBadge";
+import { glickoBadge } from "./GlickoBadge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { NameAvatar } from "@/components/avatar/Avatar";
 import type { AvatarMap } from "@/lib/avatar";
-
-const fmt = (n: number) => n.toLocaleString("en-US");
+import { useT } from "@/i18n/client";
+import battleLadder from "@/messages/battle-ladder";
+import battleGlicko from "@/messages/battle-glicko";
 
 /** Tabs across the ladder formats, as links (`hrefBase` + the format id). */
 export function LadderTabs({ format, hrefBase }: { format: StandardFormatId; hrefBase: string }) {
+  const t = useT(battleLadder);
   return (
-    <div className="flex flex-wrap gap-2 max-md:-mx-4 max-md:flex-nowrap max-md:overflow-x-auto max-md:px-4 max-md:pb-1 max-md:[scrollbar-width:none]" role="tablist" aria-label="Ladder format">
+    <div className="flex flex-wrap gap-2 max-md:-mx-4 max-md:flex-nowrap max-md:overflow-x-auto max-md:px-4 max-md:pb-1 max-md:[scrollbar-width:none]" role="tablist" aria-label={t("tabs")}>
       {LADDER_FORMATS.map((f) => (
         <Link
           key={f}
@@ -39,15 +41,20 @@ export function LadderTabs({ format, hrefBase }: { format: StandardFormatId; hre
 
 /** The top of a format's ladder. */
 export function LadderTable({ rows, format, avatars }: { rows: RankedLeaderRow[]; format: StandardFormatId; avatars?: AvatarMap }) {
+  const t = useT(battleLadder);
+  const tg = useT(battleGlicko);
   if (!rows.length) {
     return (
       <Card>
         <CardContent className="py-10 text-center text-muted-foreground">
-          Nobody is ranked in {PLAY_FORMAT_INFO[format].short} yet.{" "}
-          <Link href="/battle/play?vs=anyone" className="text-primary underline-offset-2 hover:underline">
-            Queue a ranked battle
-          </Link>{" "}
-          and be the first!
+          {t.rich("nobody", {
+            format: PLAY_FORMAT_INFO[format].short,
+            link: (c) => (
+              <Link href="/battle/play?vs=anyone" className="text-primary underline-offset-2 hover:underline">
+                {c}
+              </Link>
+            ),
+          })}
         </CardContent>
       </Card>
     );
@@ -59,14 +66,14 @@ export function LadderTable({ rows, format, avatars }: { rows: RankedLeaderRow[]
           <thead>
             <tr className="border-b text-left text-xs uppercase text-muted-foreground">
               <th className="p-3">#</th>
-              <th className="p-3">Trainer</th>
-              <th className="p-3" title="Elo: the ladder's rating, as on Pokémon Showdown">
-                Elo
+              <th className="p-3">{t("trainer")}</th>
+              <th className="p-3" title={t("eloTitle")}>
+                {t("elo")}
               </th>
-              <th className="p-3" title="GXE (the chance of beating a random trainer here) and the Glicko-2 rating ± deviation">
-                GXE · Glicko
+              <th className="p-3" title={t("gxeTitle")}>
+                {t("gxe")}
               </th>
-              <th className="hidden p-3 text-right sm:table-cell">W–L</th>
+              <th className="hidden p-3 text-right sm:table-cell">{t("wl")}</th>
             </tr>
           </thead>
           <tbody>
@@ -85,7 +92,7 @@ export function LadderTable({ rows, format, avatars }: { rows: RankedLeaderRow[]
                   {row.elo !== undefined ? Math.round(row.elo) : "–"}
                 </td>
                 <td className="p-3">
-                  <GlickoBadge rating={row.rating} rd={row.rd} gxe={row.gxe} elo={row.elo} headline={false} size="sm" />
+                  {glickoBadge({ rating: row.rating, rd: row.rd, gxe: row.gxe, elo: row.elo, headline: false, size: "sm" }, tg)}
                 </td>
                 <td className="hidden p-3 text-right tabular-nums sm:table-cell">
                   {row.wins}–{row.losses}
@@ -102,36 +109,38 @@ export function LadderTable({ rows, format, avatars }: { rows: RankedLeaderRow[]
 /** Your own standing in a format: Elo, GXE and Glicko-2 rating, place and record. */
 export function YourBattleStanding({ format }: { format: StandardFormatId }) {
   const state = useLadderStanding(format);
-  if (state.status === "loading") return <Loader2 className="mx-auto h-5 w-5 animate-spin text-screen" aria-label="Loading your standing" />;
+  const t = useT(battleLadder);
+  const tg = useT(battleGlicko);
+  if (state.status === "loading") return <Loader2 className="mx-auto h-5 w-5 animate-spin text-screen" aria-label={t("loading")} />;
   if (state.status === "off") return null;
   const you = state.you;
   return (
     <Card className="border-primary/40">
       <CardContent className="space-y-3 p-5" data-testid="your-standing">
         <p className="hud-label flex items-center gap-1.5 text-primary">
-          <Trophy className="h-3.5 w-3.5" aria-hidden /> You · {PLAY_FORMAT_INFO[format].name}
+          <Trophy className="h-3.5 w-3.5" aria-hidden /> {t("you", { format: PLAY_FORMAT_INFO[format].name })}
         </p>
         {you && you.games > 0 ? (
           <>
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <GlickoBadge rating={you.rating} rd={you.rd} gxe={you.gxe} elo={you.elo} size="lg" />
+              {glickoBadge({ rating: you.rating, rd: you.rd, gxe: you.gxe, elo: you.elo, size: "lg" }, tg)}
               <div className="flex gap-5 text-right font-pixel text-xs tabular-nums">
                 <span>
                   <span className="block text-base text-foreground">#{you.position ?? "–"}</span>
-                  <span className="text-muted-foreground">of {fmt(you.players)}</span>
+                  <span className="text-muted-foreground">{t("of", { n: you.players })}</span>
                 </span>
                 <span>
                   <span className="block text-base text-foreground">
                     {you.wins}–{you.losses}
                   </span>
-                  <span className="text-muted-foreground">W–L</span>
+                  <span className="text-muted-foreground">{t("wl")}</span>
                 </span>
                 {you.streak > 1 && (
                   <span>
                     <span className="flex items-center justify-end gap-1 text-base text-warning">
                       <Flame className="h-4 w-4" aria-hidden /> {you.streak}
                     </span>
-                    <span className="text-muted-foreground">streak</span>
+                    <span className="text-muted-foreground">{t("streak")}</span>
                   </span>
                 )}
               </div>
@@ -139,11 +148,11 @@ export function YourBattleStanding({ format }: { format: StandardFormatId }) {
           </>
         ) : (
           <p className="text-sm text-muted-foreground">
-            No ranked battles in this format yet.{" "}
+            {t("none")}{" "}
             {/* Phones: the starting numbers are in the page's first line and under the table. */}
-            <span className="max-md:hidden">Everyone starts at 1000 Elo (and 1500 ± 350 Glicko-2); your first wins pay the most, and a new rating moves a lot. </span>
+            <span className="max-md:hidden">{t("start")}</span>
             <Link href="/battle/play?vs=anyone" className="font-semibold text-foreground underline-offset-2 hover:underline">
-              Find a ranked battle
+              {t("find")}
             </Link>
           </p>
         )}
