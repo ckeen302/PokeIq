@@ -479,6 +479,8 @@ export function createLabScene(host: HTMLElement, opts: LabSceneOptions): LabSce
 
   // ---- Streaming: what to fetch, nearest first (only recomputed when the wheel's slot, rest or sequence changes).
   let wantSig = "";
+  let wantClock = 0;
+  let dtNow = 0;
   const updateWants = (wheel: WheelState) => {
     if (!stream || len === 0) {
       if (wantSig !== "none") { wantSig = "none"; stream?.want([]); }
@@ -488,7 +490,11 @@ export function createLabScene(host: HTMLElement, opts: LabSceneOptions): LabSce
     const fast = wheel.dragging ? Math.abs(wheel.v) > 6 : Math.abs(wheel.v) > 8;
     const c = Math.round(wheel.p);
     const sig = `${version}|${rest}|${fast ? "f" : c}|${wheel.dragging ? 1 : 0}`;
-    if (sig === wantSig) return;
+    // Ask again now and then while something on show is still missing (a figure evicted, or a load that failed).
+    wantClock -= dtNow;
+    const missing = wantClock <= 0 && (pods.some((ps) => ps.mon && !ps.cur) || (!wheel.dragging && !heroes.some((h) => h.phase !== "out")));
+    if (missing) wantClock = 0.5;
+    if (sig === wantSig && !missing) return;
     wantSig = sig;
     const list: Want[] = [];
     if (!wheel.dragging) list.push({ mon: monAt(rest), lod: "hero", priority: 0 });
@@ -502,7 +508,7 @@ export function createLabScene(host: HTMLElement, opts: LabSceneOptions): LabSce
       if (!wheel.dragging && len > 1) {
         list.push({ mon: monAt(rest + 1), lod: "hero", priority: 3.2 });
         list.push({ mon: monAt(rest - 1), lod: "hero", priority: 3.4 });
-        if (!opts.phone && len > 3) {
+        if (!opts.phone && len > 3 && spec.caps.hero >= 5) {
           list.push({ mon: monAt(rest + 2), lod: "hero", priority: 6 });
           list.push({ mon: monAt(rest - 2), lod: "hero", priority: 6.2 });
         }
@@ -710,6 +716,7 @@ export function createLabScene(host: HTMLElement, opts: LabSceneOptions): LabSce
       time.value = t;
       if (ctxWatch.lost || !post) return;
       placeCamera(t, dt, w);
+      dtNow = dt;
       updateWants(w);
       updateTint(w, dt);
       updateHero(w, dt);

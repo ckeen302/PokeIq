@@ -82,12 +82,18 @@ export class FigureStream {
     if (this.disposed) return;
     const keys = new Set<string>();
     this.queue = [];
+    // The most wanted is stamped the most recently used, so eviction takes the least wanted first.
+    const base = this.clock + list.length + 1;
+    this.clock = base;
+    list.forEach((w, i) => {
+      const f = this.cache.get(figKey(w.mon.id, w.lod));
+      if (f) f.used = Math.max(f.used, base - i);
+    });
     for (const w of list) {
       const k = figKey(w.mon.id, w.lod);
       if (keys.has(k)) continue;
       keys.add(k);
-      const f = this.cache.get(k);
-      if (f) { f.used = ++this.clock; continue; }
+      if (this.cache.has(k)) continue;
       const p = this.pending.get(k);
       if (p) { p.priority = w.priority; continue; }
       this.queue.push(w);

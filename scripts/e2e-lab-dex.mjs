@@ -182,8 +182,15 @@ export async function runLabDex({ browser, BASE, OUT, errors, step }) {
     await page.goto(`${BASE}/lab/pokedex?pick=1&q=0`, { waitUntil: "domcontentloaded" });
     await settled(page);
     // Warm up first: the first pull-back reveals the whole room, and three.js counts a geometry once it's first drawn.
-    await page.evaluate(() => { for (let k = 0; k < 6; k++) window.dispatchEvent(new KeyboardEvent("keydown", { key: "PageDown", bubbles: true })); });
-    await settled(page);
+    {
+      const wb = await page.getByTestId("lab-wheel").boundingBox();
+      await page.mouse.move(wb.x + wb.width * 0.7, wb.y + wb.height * 0.5);
+      await page.mouse.down();
+      for (let k = 1; k <= 6; k++) await page.mouse.move(wb.x + wb.width * 0.7 - k * 80, wb.y + wb.height * 0.5);
+      await page.waitForTimeout(3000);
+      await page.mouse.up();
+      await settled(page);
+    }
     const heap0 = await page.evaluate(() => performance.memory?.usedJSHeapSize ?? 0);
     const r0 = (await state(page)).stats;
     // Rapid spins: key bursts, wheel bursts and flings, without waiting for anything to load.
