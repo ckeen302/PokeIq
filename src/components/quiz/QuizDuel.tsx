@@ -21,6 +21,7 @@ import {
 } from "@/lib/pvp-types";
 import { MODULE_INFO, difficultyLabel, moduleHref } from "@/lib/modes";
 import { play, unlockAudio, vibrate } from "@/lib/sound";
+import { unlockCryAudio } from "@/lib/cry-audio";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DialogBox } from "@/components/game/DialogBox";
@@ -114,6 +115,17 @@ export function QuizDuel({ code }: { code: string }) {
   useEffect(() => {
     if (screen) window.scrollTo({ top: 0, behavior: "smooth" });
   }, [screen]);
+
+  // A Cry Quiz duel: every tap or key press (ready, an answer, Next) lets the next cry play by itself; a no-op once one has.
+  const cryDuel = view?.module === "cry";
+  useEffect(() => {
+    if (!cryDuel) return;
+    const opts = { capture: true, passive: true } as const;
+    for (const type of ["click", "keydown", "touchend"]) window.addEventListener(type, unlockCryAudio, opts);
+    return () => {
+      for (const type of ["click", "keydown", "touchend"]) window.removeEventListener(type, unlockCryAudio, opts);
+    };
+  }, [cryDuel]);
 
   // Sounds: the opponent locking in, and each reveal (were you right?).
   useEffect(() => {
@@ -594,7 +606,7 @@ function QuestionBody({
         (answer ? (
           revealUrl && <ImageMedia src={revealUrl} silhouette={false} revealed={false} label={answer} />
         ) : (
-          <CryPlayer src={media.url} />
+          <CryPlayer key={media.url} src={media.url} />
         ))}
       {!media && answer && revealUrl && <ImageMedia src={revealUrl} silhouette={false} revealed={false} label={answer} />}
     </>
@@ -642,7 +654,7 @@ function Options({
               card || images ? "py-3" : "min-h-[52px] py-2.5",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               onPick && "hover:border-screen/60 hover:bg-screen/[0.06]",
-              mine === option && "border-screen/70 bg-screen/10",
+              mine === option && "border-[color:hsl(var(--screen)/0.7)] bg-screen/10",
               right && "border-success bg-success/15 shadow-[0_0_18px_-6px_hsl(var(--success))]",
               result && !right && pickedBy.length > 0 && "border-destructive bg-destructive/15",
               result && !right && pickedBy.length === 0 && "opacity-50"
