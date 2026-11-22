@@ -115,8 +115,8 @@
     "title": "Showdownのリプレイを見る",
     "description": "Pokémon Showdownのバトルログを貼り付けるか、保存したリプレイファイルを開いて、1ターンずつ見られます。",
     "crumb": "読み込み",
-    "heading": "見る：",
-    "accent": "Showdownのリプレイ",
+    "heading": "Showdownの",
+    "accent": "リプレイを見る",
     "intro": "バトルログを貼り付けるか、Showdownが保存したリプレイファイルを開くと、ここで再生できます。"
   },
   "tournaments": {

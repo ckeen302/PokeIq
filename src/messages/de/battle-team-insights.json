@@ -1,0 +1,45 @@
+{
+  "coverage": {
+    "label": "Typabdeckung",
+    "heading": "Schwächen und Abdeckung",
+    "tera": "Mit Tera-Typ verteidigen",
+    "type": "Typ",
+    "weakTitle": "Mitglieder mit Schwäche",
+    "weak": "Schwach",
+    "resistTitle": "Mitglieder mit Resistenz",
+    "resist": "Resist.",
+    "immuneTitle": "Immune Mitglieder",
+    "immune": "Immun",
+    "seTitle": "Mitglieder mit einer sehr effektiven Attacke dagegen",
+    "se": "Sehr eff.",
+    "nothingNeutral": "Nichts im Team trifft diesen Typ auch nur neutral",
+    "nothingSe": "Nichts trifft ihn sehr effektiv",
+    "abilities": "Berücksichtigte Fähigkeiten: {notes}.",
+    "help": "Die Spalten sind deine Pokémon (der Schaden, den sie von jedem Typ erleiden). „Sehr eff.“ zählt Mitglieder mit einer sehr effektiven Attacke; ✕ heißt, nichts trifft diesen Typ auch nur neutral."
+  },
+  "notes": {
+    "wonderGuard": "{ability}: nur sehr effektive Treffer wirken",
+    "immune": "{ability}: immun gegen {types}",
+    "scale": "{ability}: {scales}",
+    "member": "{member}: {note}",
+    "hitter": "{member}: {move}"
+  },
+  "threats": {
+    "label": "Bedrohungen",
+    "heading": "Bedrohungen in {format}",
+    "noUsage": "Keine Nutzungsstatistik für dieses Format, also keine Bedrohungsliste.",
+    "running": "Schadensrechner läuft …",
+    "none": "Etwas in deinem Team kontert jedes der {n} meistgenutzten Pokémon.",
+    "help": "Prüft die {n} meistgenutzten Pokémon mit ihrem häufigsten Item, ihrer häufigsten Verteilung und Attacken ({source}{stats, select, none {} other {, {battles, number} Kämpfe, geladen am {fetched}}}). Ein Mitglied kontert eine Bedrohung, wenn es jeden Wurf ihrer stärksten Attacke bei vollen KP übersteht oder schneller ist und sie mindestens in der Hälfte der Fälle mit einem Treffer besiegt. Kein Tera, keine Statuswerte-Stufen, keine Fallen.",
+    "struggles": "Dein Team tut sich schwer gegen <b>{species}</b>",
+    "share": "{set} · in {pct} % der Teams"
+  },
+  "matchup": {
+    "line": "{member}: {took}; {back}, {speed, select, faster {schneller} other {langsamer}}",
+    "takes": "erleidet {lo}–{hi} % durch {move}",
+    "shrugs": "erleidet nichts Bedrohliches",
+    "does": "macht {lo}–{hi} % zurück mit {move}",
+    "doesKo": "macht {lo}–{hi} % zurück mit {move} ({ko} % für einen K.O. mit einem Treffer)",
+    "noHurt": "hat keine Attacke, die ihm schadet"
+  }
+}
