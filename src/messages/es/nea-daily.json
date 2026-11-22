@@ -1,5 +1,5 @@
 {
-  "eyebrow": "Nómbralos a todos · Reto diario {date}",
+  "eyebrow": "Nómbralos a todos · Diario {date}",
   "fallback": "La categoría de hoy",
   "lead": "Una categoría al día, la misma para todos. Un intento cuenta para tu récord: modo Normal, tiempo estándar, sin pistas ni pausas.",
   "loading": "Cargando los Pokémon de hoy…",

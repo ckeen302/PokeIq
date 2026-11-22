@@ -1,7 +1,7 @@
 {
   "card": {
     "footer": "Gratis · sin registro →",
-    "whereIsThis": "¿Dónde es esto?",
+    "whereIsThis": "¿Dónde está esto?",
     "battle": {
       "whatWill": "¿Qué hará {name}?"
     },
@@ -51,14 +51,14 @@
     "footer": "Juega el de hoy o reta a alguien en directo →"
   },
   "pikadoku": {
-    "eyebrow": "Pikadoku · nueva cada día",
+    "eyebrow": "Pikadoku · una cuadrícula nueva cada día",
     "title1": "Sudoku",
     "title2": "Pokémon",
     "subtitle": "Llena la cuadrícula de 3×3: un Pokémon por casilla que encaje con su fila y su columna. Cuanto más raro, menos puntos.",
-    "footer": "Juega la Fácil, Normal o Experto de hoy →"
+    "footer": "Juega la cuadrícula Fácil, Normal o Experto de hoy →"
   },
   "connections": {
-    "eyebrow": "PokéConnections · cada día",
+    "eyebrow": "PokéConnections · un puzle nuevo cada día",
     "title1": "Encuentra",
     "title2": "los cuatro",
     "title3": "grupos",
@@ -66,12 +66,12 @@
     "footer": "Juega el de hoy, con un “¿Por qué?” en cada respuesta →"
   },
   "guessr": {
-    "eyebrow": "PokéGuessr · nueva cada día",
+    "eyebrow": "PokéGuessr · una partida nueva cada día",
     "title1": "¿Dónde está",
     "title2": "este lugar?",
     "subtitle": "El GeoGuessr de Pokémon: capturas reales de los juegos de todas las regiones, de Kanto a Paldea. Una partida diaria nueva cada día.",
     "fallbackSubtitle": "El GeoGuessr de Pokémon: capturas reales de los juegos, de Kanto a Paldea.",
-    "footer": "Coloca un pin · hasta 25.000 puntos →",
+    "footer": "Pon una chincheta · hasta 25.000 puntos →",
     "points": "{n} pts",
     "hp": "{n} PS",
     "challenge": {
@@ -186,7 +186,7 @@
     },
     "geo": {
       "eyebrow": "Duelo de PokéGuessr",
-      "footer": "Los mismos lugares · gana el pin más cercano · toca para jugar →"
+      "footer": "Los mismos lugares · gana la chincheta más cercana · toca para jugar →"
     },
     "battle": {
       "eyebrow": "Combate en directo",
@@ -299,7 +299,7 @@
     "title1": "Los mejores",
     "title2": "Entrenadores",
     "subtitle": "Reto diario, PokéIQ, PokéGuessr y todos los modos de quiz. ¿En qué puesto estás?",
-    "footer": "Juega una partida para entrar en la tabla →"
+    "footer": "Juega una partida para entrar en la clasificación →"
   },
   "lab": {
     "eyebrow": "PokéIQ · Lab 3D",

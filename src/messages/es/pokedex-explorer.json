@@ -12,7 +12,7 @@
     "id": "N.º de Pokédex",
     "name": "Nombre",
     "type": "Tipo",
-    "bst": "Total de stats",
+    "bst": "Total base",
     "hp": "PS",
     "atk": "Ataque",
     "def": "Defensa",

@@ -13,12 +13,12 @@
     "daily": "Diario n.º {n}",
     "dailyStats": "Diario n.º {n} · Datos",
     "archive": "Diario n.º {n} · Archivo ({date})",
-    "loading": "Reto diario"
+    "loading": "Diario"
   },
   "formats": {
     "label": "Formato del reto diario",
-    "classicAria": "Reto diario Clásico",
-    "squirdleAria": "Reto diario Datos",
+    "classicAria": "Diario Clásico",
+    "squirdleAria": "Diario Datos",
     "classicTitle": "El Clásico de hoy",
     "squirdleTitle": "El reto Datos de hoy"
   },

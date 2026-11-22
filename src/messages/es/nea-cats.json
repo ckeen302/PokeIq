@@ -36,7 +36,7 @@
       "label": "Semilegendarios",
       "h1": "Nombra todos los Pokémon semilegendarios",
       "title": "Quiz: nombra todos los Pokémon semilegendarios",
-      "description": "Los legendarios que no protagonizan la portada: tríos, Tapus y muchos más."
+      "description": "Los legendarios que no protagonizan la portada: tríos, Tapus, Tesoros Funestos, los Tres Leales y más."
     },
     "mythical": {
       "label": "Singulares",
@@ -51,10 +51,10 @@
       "description": "Los visitantes del Ultraespacio, de Nihilego a Blacephalon."
     },
     "paradox": {
-      "label": "Paradójicos",
-      "h1": "Nombra todos los Pokémon paradójicos",
-      "title": "Quiz: nombra todos los Pokémon paradójicos",
-      "description": "Los Pokémon paradójicos del pasado y del futuro de Escarlata y Púrpura y su DLC."
+      "label": "Paradoja",
+      "h1": "Nombra todos los Pokémon paradoja",
+      "title": "Quiz: nombra todos los Pokémon paradoja",
+      "description": "Los Pokémon paradoja del pasado y del futuro de Escarlata y Púrpura y su DLC."
     },
     "mega-evolutions": {
       "label": "Megaevoluciones",
