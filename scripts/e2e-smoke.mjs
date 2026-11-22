@@ -15,6 +15,7 @@ import { runIqTest } from "./e2e-iq-test.mjs";
 import { runSizes } from "./e2e-sizes.mjs";
 import { runShinyMaker } from "./e2e-shiny-maker.mjs";
 import { runTierList } from "./e2e-tier-list.mjs";
+import { runCalc } from "./e2e-calc.mjs";
 import { runVideoGames } from "./e2e-video-games.mjs";
 import { runMovies } from "./e2e-movies.mjs";
 import { runMobile } from "./e2e-mobile.mjs";
@@ -161,6 +162,11 @@ const page = await newPage({ width: 1280, height: 900 });
 const musicRequests = [];
 page.on("request", (r) => /\/audio\/battle\/.+\.(ogg|mp3)$/.test(r.url()) && musicRequests.push(r.url()));
 
+// E2E_ONLY=calc runs just the damage calculator's layout checks, then exits.
+if (process.env.E2E_ONLY === "calc") {
+  await runCalc({ browser, BASE, OUT, errors, step });
+  await finish();
+}
 // E2E_ONLY=shiny-maker runs just the Tools tab and the Shiny Pokémon Maker, then exits.
 if (process.env.E2E_ONLY === "shiny-maker") {
   await runShinyMaker({ browser, BASE, OUT, errors, step });
@@ -2655,6 +2661,7 @@ await runTierList({ browser, BASE, OUT, errors, step });
 
 await runVideoGames({ browser, BASE, errors, step });
 await runMovies({ browser, BASE, errors, step });
+await runCalc({ browser, BASE, OUT, errors, step });
 await runMobile({ browser, BASE, OUT, errors, step });
 await runMassBattle({ browser, BASE, OUT, errors, step });
 await runRace({ browser, BASE, OUT, errors, step });
