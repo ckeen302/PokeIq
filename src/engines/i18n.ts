@@ -102,8 +102,8 @@ interface BankTranslation {
 /** A bank's translation in a language (a language may have none yet: its questions are then swapped). */
 async function bankTranslation(bank: "games" | "anime", l: OtherLocale): Promise<BankTranslation> {
   try {
-    const file = bank === "games" ? await import(`@/data/quiz/games/i18n/${l}.json`) : await import(`@/data/quiz/anime/i18n/${l}.json`);
-    return file.default as BankTranslation;
+    if (bank === "games") return ((await import(`@/data/quiz/games/i18n/${l}.json`)) as { default: BankTranslation }).default;
+    return ((await import(`@/data/quiz/anime/i18n/${l}.json`)) as { default: BankTranslation }).default;
   } catch {
     return {};
   }

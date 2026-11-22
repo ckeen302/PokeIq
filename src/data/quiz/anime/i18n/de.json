@@ -1,0 +1,585 @@
+{
+ "leagues": {
+  "Indigo Plateau Conference": "Indigo-Liga",
+  "Orange League": "Orange-Liga",
+  "Silver Conference": "Silberkonferenz",
+  "Ever Grande Conference": "Hoenn-Meisterschaft",
+  "Lily of the Valley Conference": "Sinnoh-Liga",
+  "Vertress Conference": "Einall-Liga",
+  "Lumiose Conference": "Kalos-Liga",
+  "Manalo Conference": "Alola-Liga"
+ },
+ "questions": {
+  "ash-pikachu": {
+   "prompt": "Welches Pokémon gibt Professor Eich Ash zu Beginn seiner Reise?"
+  },
+  "ash-first-catch": {
+   "prompt": "Welches Pokémon fing Ash als allererstes?"
+  },
+  "ash-butterfree": {
+   "prompt": "Welches seiner Pokémon ließ Ash frei, damit es während der Wanderung seiner Art mit einer Partnerin fortziehen konnte?"
+  },
+  "ash-pidgeot": {
+   "prompt": "Ash ließ sein [[mon:Pidgeot]] zurück, um einen Schwarm welcher Pokémon zu beschützen?"
+  },
+  "ash-charmander-damian": {
+   "prompt": "Welcher Trainer hatte Ashs [[mon:Charmander]] ausgesetzt?",
+   "distractors": [
+    "Gary",
+    "Richie",
+    "A.J."
+   ]
+  },
+  "ash-charizard-valley": {
+   "prompt": "Wo ließ Ash sein [[mon:Charizard]] während seiner Reise durch [[region:Johto]] trainieren?"
+  },
+  "ash-tauros-count": {
+   "prompt": "Wie viele [[mon:Tauros]] fing Ash in der [[loc:Safari Zone]]?",
+   "answer": "30",
+   "distractors": [
+    "10",
+    "20",
+    "50"
+   ]
+  },
+  "ash-lapras": {
+   "prompt": "Welches Pokémon fing Ash auf den [[p:Orange Islands]] und ließ es später frei, damit es zu seiner Familie zurückkehren konnte?"
+  },
+  "ash-snorlax": {
+   "prompt": "Welchen großen Langschläfer fing Ash auf den [[p:Orange Islands]]?"
+  },
+  "ash-haunter": {
+   "prompt": "Welches von Ashs Pokémon blieb bei [[p:Sabrina]] in [[loc:Saffron City]]?"
+  },
+  "ash-primeape": {
+   "prompt": "Für welchen Wettbewerb verließ Ashs [[mon:Primeape]] das Team?",
+   "answer": "Der P1 Grand-Prix",
+   "distractors": [
+    "Die Pokémon-Liga",
+    "Die Kampfzone",
+    "Die Orange-Liga"
+   ]
+  },
+  "ash-muk": {
+   "prompt": "Welches von Ashs Pokémon ist dafür bekannt, Professor Eich mit Umarmungen zu erdrücken?"
+  },
+  "ash-bulbasaur-village": {
+   "prompt": "Die Pokémon welches Ortes beschützte Ashs [[mon:Bulbasaur]], bevor es sich ihm anschloss?",
+   "answer": "Das Versteckte Dorf",
+   "distractors": [
+    "Der [[loc:Viridian Forest]]",
+    "Der [[p:Charicific Valley]]",
+    "Der [[loc:Pokémon Tower]]"
+   ]
+  },
+  "ash-raichu-refuse": {
+   "prompt": "Nach der Niederlage gegen [[p:Lt. Surge]] weigerte sich Ashs [[mon:Pikachu]], sich zu welchem Pokémon zu entwickeln?"
+  },
+  "ash-noctowl": {
+   "prompt": "Welches von Ashs Pokémon aus [[region:Johto]] war ein schillerndes Pokémon?"
+  },
+  "ash-phanpy": {
+   "prompt": "Ashs [[mon:Phanpy]] schlüpfte aus einem Ei. Zu welchem Pokémon entwickelte es sich später?"
+  },
+  "ash-bayleef": {
+   "prompt": "Zu welchem Pokémon entwickelte sich Ashs [[mon:Chikorita]]?"
+  },
+  "ash-aipom-trade": {
+   "prompt": "Welches Pokémon tauschte Ash gegen Lucias [[mon:Buizel]]?"
+  },
+  "ash-chimchar-paul": {
+   "prompt": "Welchem Rivalen gehörte Ashs [[mon:Chimchar]], bevor es sich ihm anschloss?",
+   "distractors": [
+    "Gary",
+    "Barry",
+    "Diaz"
+   ]
+  },
+  "ash-gible": {
+   "prompt": "Welche Attacke versuchte Ashs [[mon:Gible]] immer wieder zu meistern?"
+  },
+  "ash-sceptile": {
+   "prompt": "Welches Pokémon war Ashs [[mon:Sceptile]] ursprünglich?"
+  },
+  "ash-glalie": {
+   "prompt": "Zu welchem Pokémon entwickelte sich Ashs [[mon:Snorunt]]?"
+  },
+  "ash-corphish": {
+   "prompt": "Welches Flusskrebs-Pokémon vom Typ [[type:Water]] fing Ash in [[region:Hoenn]]?"
+  },
+  "ash-torkoal": {
+   "prompt": "Welches weinerliche Pokémon vom Typ [[type:Fire]] fing Ash in [[region:Hoenn]]?"
+  },
+  "ash-staraptor": {
+   "prompt": "Welches Pokémon war Ashs [[mon:Staraptor]] ursprünglich?"
+  },
+  "ash-torterra": {
+   "prompt": "Zu welchem Pokémon entwickelte sich Ashs [[mon:Turtwig]] schließlich?"
+  },
+  "ash-gliscor": {
+   "prompt": "Zu welchem Pokémon entwickelte sich Ashs [[mon:Gligar]]?"
+  },
+  "ash-pidove": {
+   "prompt": "Welches Pokémon fing Ash in [[region:Unova]] als erstes?"
+  },
+  "ash-tepig-shamus": {
+   "prompt": "Welcher Trainer hatte Ashs [[mon:Tepig]] ausgesetzt?",
+   "distractors": [
+    "Diaz",
+    "Damien",
+    "Paul"
+   ]
+  },
+  "ash-leavanny": {
+   "prompt": "Zu welchem Pokémon entwickelte sich Ashs [[mon:Sewaddle]] schließlich?"
+  },
+  "ash-krookodile": {
+   "prompt": "Welches Pokémon war Ashs [[mon:Krookodile]] ursprünglich?"
+  },
+  "ash-greninja-form": {
+   "prompt": "Welche besondere Form konnte Ashs [[mon:Greninja]] annehmen?",
+   "answer": "Ash-Quajutsu",
+   "distractors": [
+    "Mega-Quajutsu",
+    "Gigadynamax-Quajutsu",
+    "Proto-Quajutsu"
+   ]
+  },
+  "ash-greninja-zygarde": {
+   "prompt": "Welchem legendären Pokémon half Ashs [[mon:Greninja]], als es in [[region:Kalos]] blieb?"
+  },
+  "ash-goodra": {
+   "prompt": "Welches Pokémon war Ashs [[mon:Goodra]] ursprünglich?"
+  },
+  "ash-noibat": {
+   "prompt": "Ashs [[mon:Noivern]] schlüpfte aus einem Ei. Welches Pokémon war es damals?"
+  },
+  "ash-hawlucha": {
+   "prompt": "Welches Wrestling-Pokémon vom Typ [[type:Fighting]] und [[type:Flying]] fing Ash in [[region:Kalos]]?"
+  },
+  "ash-talonflame": {
+   "prompt": "Welches Pokémon war Ashs [[mon:Talonflame]] ursprünglich?"
+  },
+  "ash-rowlet": {
+   "prompt": "Welches Eulen-Pokémon vom Typ [[type:Grass]] fing Ash in [[region:Alola]]?"
+  },
+  "ash-incineroar": {
+   "prompt": "Zu welchem Pokémon entwickelte sich Ashs [[mon:Litten]] schließlich?"
+  },
+  "ash-lycanroc": {
+   "prompt": "Zu welcher Form von [[mon:Lycanroc]] entwickelte sich Ashs [[mon:Rockruff]]?",
+   "answer": "Zwielichtform",
+   "distractors": [
+    "Tagform",
+    "Nachtform",
+    "Morgenform"
+   ]
+  },
+  "ash-melmetal": {
+   "prompt": "Zu welchem mysteriösen Pokémon entwickelte sich Ashs [[mon:Meltan]]?"
+  },
+  "ash-poipole": {
+   "prompt": "Welche Ultrabestie schloss sich in [[region:Alola]] Ashs Team an?"
+  },
+  "ash-lucario": {
+   "prompt": "Zu welchem Pokémon entwickelte sich Ashs [[mon:Riolu]]?"
+  },
+  "ash-sirfetchd": {
+   "prompt": "Zu welchem Pokémon entwickelte sich Ashs [[mon:Farfetch'd]]?"
+  },
+  "ash-gengar": {
+   "prompt": "Welches Pokémon vom Typ [[type:Ghost]], das zum Gigadynamax fähig ist, fing Ash auf seinen Reisen mit Goh?"
+  },
+  "ash-dragonite": {
+   "prompt": "Welches Pokémon vom Typ [[type:Dragon]] schloss sich Ash auf seinen Reisen mit Goh an?"
+  },
+  "ash-hometown": {
+   "prompt": "Woher stammt Ash?"
+  },
+  "ash-mimey": {
+   "prompt": "Wie heißt das [[mon:Mr. Mime]], das Ashs Mutter im Haushalt hilft?",
+   "answer": "Pantimi",
+   "distractors": [
+    "Mimi",
+    "Mister",
+    "[[mon:Mime Jr.]]"
+   ]
+  },
+  "comp-misty-bike": {
+   "prompt": "Was hatte [[mon:Pikachu]] Misty kaputtgemacht, sodass sie Ash zu folgen begann?",
+   "answer": "Ihr Fahrrad",
+   "distractors": [
+    "Ihre Angel",
+    "Ihren Pokéball",
+    "Ihren Rucksack"
+   ]
+  },
+  "comp-misty-togepi": {
+   "prompt": "Welches Pokémon schlüpfte aus dem Ei, das Ash gefunden hatte, und sah Misty als seine Mutter an?"
+  },
+  "comp-misty-psyduck": {
+   "prompt": "Welches von Mistys Pokémon ist für seine ständigen Kopfschmerzen bekannt?"
+  },
+  "comp-brock-gym": {
+   "prompt": "In welcher Stadt war Rocko Arenaleiter, bevor er mit Ash reiste?"
+  },
+  "comp-brock-steelix": {
+   "prompt": "Zu welchem Pokémon entwickelte sich Rockos [[mon:Onix]] schließlich?"
+  },
+  "comp-brock-doctor": {
+   "prompt": "Was beschließt Rocko am Ende der Reise durch [[region:Sinnoh]] zu werden?",
+   "answer": "Pokémon-Arzt",
+   "distractors": [
+    "Pokémon-Professor",
+    "Arenaleiter",
+    "Pokémon Ranger"
+   ]
+  },
+  "comp-brock-croagunk": {
+   "prompt": "Welches von Rockos Pokémon verpasst ihm jedes Mal einen Stoß, wenn er flirtet?"
+  },
+  "comp-tracey": {
+   "prompt": "Als was bezeichnet sich Tracey selbst?",
+   "answer": "Pokémon-Beobachter",
+   "distractors": [
+    "Pokémon-Züchter",
+    "Pokémon-Koordinator",
+    "Pokémon-Kenner"
+   ]
+  },
+  "comp-may-torchic": {
+   "prompt": "Was war Maikes erstes Pokémon?"
+  },
+  "comp-may-goal": {
+   "prompt": "Was für eine Trainerin wird Maike auf ihren Reisen mit Ash?",
+   "answer": "Pokémon-Koordinatorin",
+   "distractors": [
+    "Arenaleiterin",
+    "Pokémon-Performerin",
+    "Pokémon-Züchterin"
+   ]
+  },
+  "comp-max": {
+   "prompt": "Wie heißt Maikes jüngerer Bruder, der mit Ash reist?",
+   "answer": "Max",
+   "distractors": [
+    "Tommy",
+    "Heureka",
+    "Tracey"
+   ]
+  },
+  "comp-norman": {
+   "prompt": "In welcher Stadt ist Norman, Maikes Vater, Arenaleiter?"
+  },
+  "comp-dawn-piplup": {
+   "prompt": "Was war Lucias erstes Pokémon?"
+  },
+  "comp-iris-axew": {
+   "prompt": "Welches Pokémon vom Typ [[type:Dragon]] lebt in Lilias Haaren?"
+  },
+  "comp-cilan": {
+   "prompt": "Als was bezeichnet sich Benny selbst?",
+   "answer": "Pokémon-Kenner",
+   "distractors": [
+    "Pokémon-Beobachter",
+    "Pokémon-Züchter",
+    "Pokémon-Performer"
+   ]
+  },
+  "comp-cilan-gym": {
+   "prompt": "In welcher Stadt ist Benny einer der Arenaleiter?"
+  },
+  "comp-serena-fennekin": {
+   "prompt": "Was war Serenas erstes Pokémon?"
+  },
+  "comp-serena-goal": {
+   "prompt": "Was möchte Serena auf ihrer Reise durch [[region:Kalos]] werden?",
+   "answer": "Pokémon-Performerin",
+   "distractors": [
+    "Pokémon-Koordinatorin",
+    "Arenaleiterin",
+    "Pokémon-Ärztin"
+   ]
+  },
+  "comp-clemont-gym": {
+   "prompt": "In welcher Stadt ist Citro Arenaleiter?"
+  },
+  "comp-bonnie-dedenne": {
+   "prompt": "Welches Pokémon reist in Heurekas Tasche mit?"
+  },
+  "comp-lillie-snowy": {
+   "prompt": "Wie heißt Lillys Alola-[[mon:Vulpix]]?",
+   "distractors": [
+    "[[p:Nebby]]",
+    "Frosty",
+    "Kristall"
+   ]
+  },
+  "comp-kiawe": {
+   "prompt": "Welches Pokémon ist in [[region:Alola]] Kiawes Partner?"
+  },
+  "comp-sophocles": {
+   "prompt": "Welches Pokémon vom Typ [[type:Electric]] ist Chrys’ Partner?"
+  },
+  "comp-lana": {
+   "prompt": "Welches Pokémon ist in [[region:Alola]] Tracys Partner?"
+  },
+  "comp-goh-mew": {
+   "prompt": "Welches mysteriöse Pokémon möchte Goh unbedingt fangen?"
+  },
+  "comp-goh-cinderace": {
+   "prompt": "Zu welchem Pokémon entwickelte sich Gohs [[mon:Scorbunny]] schließlich?"
+  },
+  "comp-cerise-lab": {
+   "prompt": "In welchem Labor sind Ash und Goh Forschungsassistenten?",
+   "distractors": [
+    "Labor von Professor Eich",
+    "Labor von Professor Platan",
+    "Labor von Professor Kukui"
+   ]
+  },
+  "comp-cerise-city": {
+   "prompt": "In welcher Stadt liegt das [[p:Cerise Laboratory]]?"
+  },
+  "rival-gary": {
+   "prompt": "Wer ist Ashs erster Rivale, der ebenfalls aus [[loc:Pallet Town]] stammt?",
+   "distractors": [
+    "Richie",
+    "Paul",
+    "Diaz"
+   ]
+  },
+  "rival-gary-researcher": {
+   "prompt": "Was beschließt Gary nach der Johto-Liga zu werden?",
+   "answer": "Pokémon-Forscher",
+   "distractors": [
+    "Pokémon-Züchter",
+    "Arenaleiter",
+    "Pokémon Ranger"
+   ]
+  },
+  "rival-alain": {
+   "prompt": "Welcher Rivale aus [[region:Kalos]] kämpft mit einem Mega-Glurak X?",
+   "distractors": [
+    "Sawyer",
+    "Tierno",
+    "Trovato"
+   ]
+  },
+  "rival-leon-ace": {
+   "prompt": "Welches Pokémon ist im letzten Kampf gegen Ash Delions Ass?"
+  },
+  "tr-trio": {
+   "prompt": "Mit welchem sprechenden Pokémon reisen Jessie und James?"
+  },
+  "tr-wobbuffet": {
+   "prompt": "Welches von Jessies Pokémon springt oft ungerufen aus seinem Pokéball und ruft dabei seinen eigenen Namen?"
+  },
+  "tr-koffing": {
+   "prompt": "Welches Pokémon war James’ [[mon:Weezing]] ursprünglich?"
+  },
+  "tr-ekans": {
+   "prompt": "Welches Pokémon war Jessies [[mon:Arbok]] ursprünglich?"
+  },
+  "tr-carnivine": {
+   "prompt": "Welches von James’ Pokémon beißt ihm auf der Reise durch [[region:Sinnoh]] ständig in den Kopf?"
+  },
+  "tr-mimejr": {
+   "prompt": "Welches Baby-Pokémon trägt James auf der Reise durch [[region:Sinnoh]] mit sich herum?"
+  },
+  "tr-giovanni": {
+   "prompt": "Wer ist im Anime der Boss von Team Rocket?"
+  },
+  "tr-meowzie": {
+   "prompt": "Um welches Pokémon zu beeindrucken, brachte sich Mauzi das Sprechen bei?",
+   "distractors": [
+    "[[mon:Persian]]",
+    "[[mon:Purrloin]]",
+    "[[mon:Glameow]]"
+   ]
+  },
+  "tr-magikarp": {
+   "prompt": "Welches Pokémon kaufte James einem Händler ab, weil er glaubte, damit reich zu werden?"
+  },
+  "tr-mimikyu": {
+   "prompt": "Welches Verkleidungs-Pokémon fing Jessie in [[region:Alola]]?"
+  },
+  "tr-mareanie": {
+   "prompt": "Welches Pokémon hängt in [[region:Alola]] so sehr an James, dass es ihn schmerzhaft umarmt?"
+  },
+  "tr-bewear": {
+   "prompt": "Welches Pokémon trägt Team Rocket in [[region:Alola]] immer wieder zu seinem Bau zurück?"
+  },
+  "tr-inkay": {
+   "prompt": "Welches Pokémon fing James in [[region:Kalos]]?"
+  },
+  "tr-pumpkaboo": {
+   "prompt": "Welches Pokémon fing Jessie in [[region:Kalos]], das sich später zu [[mon:Gourgeist]] entwickelte?"
+  },
+  "series-frontier-region": {
+   "prompt": "In welcher Region stellt sich Ash der Kampfzone?"
+  },
+  "series-sm-school": {
+   "prompt": "Was macht Ash, während er in [[region:Alola]] lebt?",
+   "answer": "Er besucht die Pokémon-Schule",
+   "distractors": [
+    "Er leitet ein Pokémon-Center",
+    "Er arbeitet bei der Æther Foundation",
+    "Er fordert acht Arenen heraus"
+   ]
+  },
+  "ep-spearow": {
+   "prompt": "Welcher Pokémon-Schwarm greift in der allerersten Folge Ash und Pikachu an?"
+  },
+  "ep-hooh": {
+   "prompt": "Welches legendäre Pokémon sieht Ash am Ende der ersten Folge über einen Regenbogen fliegen?"
+  },
+  "ep-porygon": {
+   "prompt": "Welches Pokémon stand im Mittelpunkt der Folge, die nach Anfällen bei Zuschauern in Japan aus dem Fernsehen genommen wurde?"
+  },
+  "ep-pikachu-goodbye": {
+   "prompt": "Bei wem hätte Ash seinen Pikachu in einer Folge der ersten Staffel beinahe zurückgelassen?",
+   "answer": "Einer Kolonie wilder Pikachu",
+   "distractors": [
+    "Professor Eich",
+    "Richie",
+    "Major Bobs Raichu"
+   ]
+  },
+  "ep-tower-terror": {
+   "prompt": "In welche Stadt geht Ash auf Geisterjagd, um [[p:Sabrina]] zu besiegen?"
+  },
+  "ep-surge": {
+   "prompt": "Welchem Arenaleiter gehörte das Raichu, das Ashs Pikachu im ersten Kampf besiegte?"
+  },
+  "ep-ash-ten": {
+   "prompt": "Wie alt ist Ash, als er seine Reise beginnt?",
+   "answer": "10",
+   "distractors": [
+    "8",
+    "12",
+    "14"
+   ]
+  },
+  "movie-2000": {
+   "prompt": "Welches legendäre Pokémon ist im 2. Pokémon-Film (1999) der „Wächter des Meeres“?"
+  },
+  "movie-3": {
+   "prompt": "Welches legendäre Pokémon erschaffen die [[mon:Unown]] im 3. Pokémon-Film (2000) für Molly?"
+  },
+  "movie-4ever": {
+   "prompt": "Um welches mysteriöse Pokémon dreht sich der 4. Pokémon-Film (2001)?"
+  },
+  "movie-heroes": {
+   "prompt": "Der 5. Pokémon-Film (2002) spielt in [[loc:Alto Mare]]. Welches Pokémon-Paar steht im Mittelpunkt?"
+  },
+  "movie-manaphy": {
+   "prompt": "Welches mysteriöse Pokémon schlüpft im 9. Pokémon-Film (2006) aus einem Ei?"
+  },
+  "movie-darkrai": {
+   "prompt": "Welche zwei legendären Pokémon prallen im 10. Pokémon-Film (2007) aufeinander?"
+  },
+  "movie-shaymin": {
+   "prompt": "Welches mysteriöse Pokémon reist im 11. Pokémon-Film (2008) mit Ashs Gruppe?"
+  },
+  "movie-zoroark-celebi": {
+   "prompt": "Welches zeitreisende mysteriöse Pokémon erscheint im 13. Pokémon-Film (2010)?"
+  },
+  "movie-keldeo": {
+   "prompt": "Welches mysteriöse Pokémon will sich im 15. Pokémon-Film (2012) [[mon:Cobalion]], [[mon:Terrakion]] und [[mon:Virizion]] anschließen?"
+  },
+  "movie-genesect-mewtwo": {
+   "prompt": "Welches legendäre Pokémon stellt sich im 16. Pokémon-Film (2013) den [[mon:Genesect]] entgegen?"
+  },
+  "movie-diancie-yveltal": {
+   "prompt": "Welches legendäre Pokémon erwacht im 17. Pokémon-Film (2014) und bedroht alle?"
+  },
+  "movie-magearna": {
+   "prompt": "Welches mysteriöse Pokémon erscheint im 19. Pokémon-Film (2016)?"
+  },
+  "movie-marshadow": {
+   "prompt": "Welches mysteriöse Pokémon erscheint im 20. Pokémon-Film (2017)?"
+  },
+  "movie-zeraora": {
+   "prompt": "Welches mysteriöse Pokémon erscheint im 21. Pokémon-Film (2018)?"
+  },
+  "movie-zarude": {
+   "prompt": "Welches mysteriöse Pokémon zieht im 23. Pokémon-Film (2020) einen Menschenjungen groß?"
+  },
+  "movie-iChooseYou-hooh": {
+   "prompt": "Welches legendäre Pokémon will Ash im 20. Pokémon-Film (2017) treffen?"
+  },
+  "hz-liko": {
+   "prompt": "Welches Pokémon ist Likos Partner?"
+  },
+  "hz-roy": {
+   "prompt": "Welches Pokémon ist Roys Partner?",
+   "distractors": [
+    "[[mon:Sprigatito]]",
+    "[[mon:Quaxly]]",
+    "[[mon:Charcadet]]"
+   ]
+  },
+  "hz-dot": {
+   "prompt": "Welches Pokémon wird Dots Partner?"
+  },
+  "hz-pendant": {
+   "prompt": "Welches Pokémon steckt hinter Likos geheimnisvollem Anhänger?"
+  },
+  "hz-captain-pikachu": {
+   "prompt": "Wer ist der Partner von Flugkapitän Pikachu?",
+   "answer": "Friedel",
+   "distractors": [
+    "Roy",
+    "Murdock",
+    "Ash"
+   ]
+  },
+  "hz-rvt": {
+   "prompt": "Wie heißt die Abenteurergruppe, die Friedel und Flugkapitän Pikachu anführen?",
+   "answer": "Die Volttackle-Aeronauten",
+   "distractors": [
+    "Die Entdecker",
+    "Team Star",
+    "Die Pokémon Ranger"
+   ]
+  },
+  "hz-explorers": {
+   "prompt": "Welche geheimnisvolle Organisation ist hinter Likos Anhänger her?",
+   "answer": "Die Entdecker",
+   "distractors": [
+    "Team Rocket",
+    "Team Star",
+    "Team Flare"
+   ]
+  },
+  "hz-friede-charizard": {
+   "prompt": "Welches Pokémon ist neben Flugkapitän Pikachu Friedels Partner?"
+  },
+  "hz-gibeon": {
+   "prompt": "Wer führt die Entdecker an?",
+   "distractors": [
+    "Amethio",
+    "Spinel",
+    "Lucius"
+   ]
+  },
+  "hz-amethio": {
+   "prompt": "Welches Mitglied der Entdecker kämpft mit einem [[mon:Ceruledge]]?",
+   "distractors": [
+    "Spinel",
+    "Coral",
+    "Gibeon"
+   ]
+  },
+  "hz-no-ash": {
+   "prompt": "Welche Figur war nicht mehr die Hauptfigur des Anime, als die Serie mit Liko und Roy begann?",
+   "answer": "Ash Ketchum",
+   "distractors": [
+    "Professor Eich",
+    "Rocko",
+    "Team Rocket"
+   ]
+  }
+ }
+}

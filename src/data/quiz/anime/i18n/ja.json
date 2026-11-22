@@ -1,0 +1,642 @@
+{
+ "leagues": {
+  "Indigo Plateau Conference": "セキエイ大会",
+  "Orange League": "オレンジリーグ",
+  "Silver Conference": "シロガネ大会",
+  "Ever Grande Conference": "サイユウ大会",
+  "Lily of the Valley Conference": "スズラン大会",
+  "Vertress Conference": "ヒガキ大会",
+  "Lumiose Conference": "ミアレ大会",
+  "Manalo Conference": "マナーロ大会",
+  "Pokémon World Coronation Series": "ポケモンワールドチャンピオンシップス"
+ },
+ "questions": {
+  "ash-pikachu": {
+   "prompt": "旅のはじめに、オーキド博士がサトシにくれたポケモンは？"
+  },
+  "ash-first-catch": {
+   "prompt": "サトシが初めてゲットしたポケモンは？"
+  },
+  "ash-butterfree": {
+   "prompt": "仲間たちと旅立つ季節に、パートナーといっしょに行けるようサトシが逃がしたポケモンは？"
+  },
+  "ash-pidgeot": {
+   "prompt": "サトシが[[mon:Pidgeot]]を残していったのは、どのポケモンの群れを守るため？"
+  },
+  "ash-charizard-valley": {
+   "prompt": "[[region:Johto]]地方の旅の間、サトシが[[mon:Charizard]]を修行のために残した場所は？"
+  },
+  "ash-squirtle-squad": {
+   "prompt": "サトシの[[mon:Squirtle]]がチームを離れて戻っていったのは？",
+   "answer": "ゼニガメ消防団",
+   "distractors": [
+    "ロケット団",
+    "オーキド博士の研究所",
+    "オレンジクルー"
+   ]
+  },
+  "ash-tauros-count": {
+   "prompt": "サトシが[[loc:Safari Zone]]でゲットした[[mon:Tauros]]は何頭？",
+   "answer": "30",
+   "distractors": [
+    "10",
+    "20",
+    "50"
+   ]
+  },
+  "ash-lapras": {
+   "prompt": "サトシが[[p:Orange Islands]]でゲットし、のちに家族のもとへ帰すために逃がしたポケモンは？"
+  },
+  "ash-snorlax": {
+   "prompt": "サトシが[[p:Orange Islands]]でゲットした、よく眠るポケモンは？"
+  },
+  "ash-haunter": {
+   "prompt": "[[loc:Saffron City]]で[[p:Sabrina]]のもとに残ったサトシのポケモンは？"
+  },
+  "ash-primeape": {
+   "prompt": "サトシの[[mon:Primeape]]がチームを離れて目指した大会は？",
+   "answer": "P1グランプリ",
+   "distractors": [
+    "ポケモンリーグ",
+    "バトルフロンティア",
+    "オレンジリーグ"
+   ]
+  },
+  "ash-muk": {
+   "prompt": "オーキド博士にいつも抱きつくことで知られるサトシのポケモンは？"
+  },
+  "ash-bulbasaur-village": {
+   "prompt": "サトシの仲間になる前、[[mon:Bulbasaur]]が守っていたのはどこのポケモンたち？",
+   "answer": "かくれ里",
+   "distractors": [
+    "[[loc:Viridian Forest]]",
+    "[[p:Charicific Valley]]",
+    "[[loc:Pokémon Tower]]"
+   ]
+  },
+  "ash-raichu-refuse": {
+   "prompt": "[[p:Lt. Surge]]に負けたあと、サトシの[[mon:Pikachu]]が進化を断ったポケモンは？"
+  },
+  "ash-noctowl": {
+   "prompt": "サトシが[[region:Johto]]地方でゲットしたポケモンのうち、色違いだったのは？"
+  },
+  "ash-phanpy": {
+   "prompt": "タマゴからかえったサトシの[[mon:Phanpy]]は、のちに何に進化した？"
+  },
+  "ash-bayleef": {
+   "prompt": "サトシの[[mon:Chikorita]]は何に進化した？"
+  },
+  "ash-aipom-trade": {
+   "prompt": "サトシがヒカリの[[mon:Buizel]]と交換したポケモンは？"
+  },
+  "ash-chimchar-paul": {
+   "prompt": "サトシの仲間になる前、[[mon:Chimchar]]はどのライバルのポケモンだった？",
+   "distractors": [
+    "シゲル",
+    "ジュン",
+    "シューティー"
+   ]
+  },
+  "ash-gible": {
+   "prompt": "サトシの[[mon:Gible]]が覚えようとがんばり続けた技は？"
+  },
+  "ash-sceptile": {
+   "prompt": "サトシの[[mon:Sceptile]]は、もとは何だった？"
+  },
+  "ash-glalie": {
+   "prompt": "サトシの[[mon:Snorunt]]は何に進化した？"
+  },
+  "ash-corphish": {
+   "prompt": "サトシが[[region:Hoenn]]地方でゲットした、[[type:Water]]タイプのザリガニのポケモンは？"
+  },
+  "ash-torkoal": {
+   "prompt": "サトシが[[region:Hoenn]]地方でゲットした、泣き虫の[[type:Fire]]タイプのポケモンは？"
+  },
+  "ash-staraptor": {
+   "prompt": "サトシの[[mon:Staraptor]]は、もとは何だった？"
+  },
+  "ash-torterra": {
+   "prompt": "サトシの[[mon:Turtwig]]は最終的に何に進化した？"
+  },
+  "ash-gliscor": {
+   "prompt": "サトシの[[mon:Gligar]]は何に進化した？"
+  },
+  "ash-pidove": {
+   "prompt": "サトシが[[region:Unova]]地方で最初にゲットしたポケモンは？"
+  },
+  "ash-tepig-shamus": {
+   "prompt": "サトシの[[mon:Tepig]]を捨てたトレーナーはだれ？",
+   "distractors": [
+    "シューティー",
+    "ダイスケ",
+    "シンジ"
+   ]
+  },
+  "ash-leavanny": {
+   "prompt": "サトシの[[mon:Sewaddle]]は最終的に何に進化した？"
+  },
+  "ash-krookodile": {
+   "prompt": "サトシの[[mon:Krookodile]]は、もとは何だった？"
+  },
+  "ash-greninja-form": {
+   "prompt": "サトシの[[mon:Greninja]]がなれた特別な姿は？",
+   "answer": "サトシゲッコウガ",
+   "distractors": [
+    "メガゲッコウガ",
+    "キョダイマックスゲッコウガ",
+    "ゲンシゲッコウガ"
+   ]
+  },
+  "ash-greninja-zygarde": {
+   "prompt": "サトシの[[mon:Greninja]]が[[region:Kalos]]地方に残って手助けした伝説のポケモンは？"
+  },
+  "ash-goodra": {
+   "prompt": "サトシの[[mon:Goodra]]は、もとは何だった？"
+  },
+  "ash-noibat": {
+   "prompt": "サトシの[[mon:Noivern]]は、タマゴからかえったときは何だった？"
+  },
+  "ash-hawlucha": {
+   "prompt": "サトシが[[region:Kalos]]地方でゲットした、プロレスが得意な[[type:Fighting]]・[[type:Flying]]タイプのポケモンは？"
+  },
+  "ash-talonflame": {
+   "prompt": "サトシの[[mon:Talonflame]]は、もとは何だった？"
+  },
+  "ash-rowlet": {
+   "prompt": "サトシが[[region:Alola]]地方でゲットした、[[type:Grass]]タイプのフクロウのポケモンは？"
+  },
+  "ash-incineroar": {
+   "prompt": "サトシの[[mon:Litten]]は最終的に何に進化した？"
+  },
+  "ash-lycanroc": {
+   "prompt": "サトシの[[mon:Rockruff]]が進化した[[mon:Lycanroc]]の姿は？",
+   "answer": "たそがれのすがた",
+   "distractors": [
+    "まひるのすがた",
+    "まよなかのすがた",
+    "あかつきのすがた"
+   ]
+  },
+  "ash-melmetal": {
+   "prompt": "サトシの[[mon:Meltan]]が進化した幻のポケモンは？"
+  },
+  "ash-poipole": {
+   "prompt": "サトシが[[region:Alola]]地方にいたころ、仲間になったウルトラビーストは？"
+  },
+  "ash-lucario": {
+   "prompt": "サトシの[[mon:Riolu]]は何に進化した？"
+  },
+  "ash-sirfetchd": {
+   "prompt": "サトシの[[mon:Farfetch'd]]は何に進化した？"
+  },
+  "ash-gengar": {
+   "prompt": "ゴウとの旅でサトシがゲットした、キョダイマックスできる[[type:Ghost]]タイプのポケモンは？"
+  },
+  "ash-dragonite": {
+   "prompt": "ゴウとの旅でサトシの仲間になった[[type:Dragon]]タイプのポケモンは？"
+  },
+  "ash-hometown": {
+   "prompt": "サトシの故郷は？"
+  },
+  "ash-mother": {
+   "prompt": "サトシのママの名前は？",
+   "answer": "ハナコ",
+   "distractors": [
+    "アヤコ",
+    "ミツコ",
+    "サキ"
+   ]
+  },
+  "ash-mimey": {
+   "prompt": "サトシのママの家事を手伝っている[[mon:Mr. Mime]]の名前は？",
+   "answer": "バリちゃん",
+   "distractors": [
+    "ミミ",
+    "ミスター",
+    "[[mon:Mime Jr.]]"
+   ]
+  },
+  "comp-misty-bike": {
+   "prompt": "カスミがサトシについて行くようになったのは、[[mon:Pikachu]]に何を壊されたから？",
+   "answer": "自転車",
+   "distractors": [
+    "つりざお",
+    "モンスターボール",
+    "リュック"
+   ]
+  },
+  "comp-misty-togepi": {
+   "prompt": "サトシが見つけたタマゴからかえり、カスミを母親のように慕ったポケモンは？"
+  },
+  "comp-misty-psyduck": {
+   "prompt": "いつも頭痛に悩まされていることで知られるカスミのポケモンは？"
+  },
+  "comp-brock-gym": {
+   "prompt": "サトシと旅をする前、タケシはどの街のジムリーダーだった？"
+  },
+  "comp-brock-steelix": {
+   "prompt": "タケシの[[mon:Onix]]は最終的に何に進化した？"
+  },
+  "comp-brock-doctor": {
+   "prompt": "[[region:Sinnoh]]地方の旅の終わりに、タケシが目指すことに決めたのは？",
+   "answer": "ポケモンドクター",
+   "distractors": [
+    "ポケモン博士",
+    "ジムリーダー",
+    "ポケモンレンジャー"
+   ]
+  },
+  "comp-brock-croagunk": {
+   "prompt": "タケシが女の人を口説くたびに、どくづきでツッコミを入れるタケシのポケモンは？"
+  },
+  "comp-tracey": {
+   "prompt": "ケンジは自分のことを何と名乗っている？",
+   "answer": "ポケモンウォッチャー",
+   "distractors": [
+    "ポケモンブリーダー",
+    "ポケモンコーディネーター",
+    "ポケモンソムリエ"
+   ]
+  },
+  "comp-may-torchic": {
+   "prompt": "ハルカの最初のポケモンは？"
+  },
+  "comp-may-goal": {
+   "prompt": "サトシとの旅で、ハルカはどんなトレーナーになる？",
+   "answer": "ポケモンコーディネーター",
+   "distractors": [
+    "ジムリーダー",
+    "ポケモンパフォーマー",
+    "ポケモンブリーダー"
+   ]
+  },
+  "comp-max": {
+   "prompt": "サトシと旅をするハルカの弟の名前は？",
+   "answer": "マサト",
+   "distractors": [
+    "トミー",
+    "ユリーカ",
+    "ケンジ"
+   ]
+  },
+  "comp-norman": {
+   "prompt": "ハルカの父・センリはどの街のジムリーダー？"
+  },
+  "comp-dawn-piplup": {
+   "prompt": "ヒカリの最初のポケモンは？"
+  },
+  "comp-iris-axew": {
+   "prompt": "アイリスの髪の中にすんでいる[[type:Dragon]]タイプのポケモンは？"
+  },
+  "comp-cilan": {
+   "prompt": "デントは自分のことを何と名乗っている？",
+   "answer": "ポケモンソムリエ",
+   "distractors": [
+    "ポケモンウォッチャー",
+    "ポケモンブリーダー",
+    "ポケモンパフォーマー"
+   ]
+  },
+  "comp-cilan-gym": {
+   "prompt": "デントはどの街のジムリーダーのひとり？"
+  },
+  "comp-serena-fennekin": {
+   "prompt": "セレナの最初のポケモンは？"
+  },
+  "comp-serena-goal": {
+   "prompt": "セレナがカロス地方の旅で目指したものは？",
+   "answer": "ポケモンパフォーマー",
+   "distractors": [
+    "ポケモンコーディネーター",
+    "ジムリーダー",
+    "ポケモンドクター"
+   ]
+  },
+  "comp-serena-camp": {
+   "prompt": "幼いころ、セレナが初めてサトシに会った場所は？",
+   "answer": "オーキド博士のサマーキャンプ",
+   "distractors": [
+    "[[loc:Pallet Town]]の学校",
+    "[[loc:Vaniville Town]]",
+    "ポケモンショーケース"
+   ]
+  },
+  "comp-clemont-gym": {
+   "prompt": "シトロンはどの街のジムリーダー？"
+  },
+  "comp-bonnie-dedenne": {
+   "prompt": "ユリーカのバッグに入って移動しているポケモンは？"
+  },
+  "comp-lillie-snowy": {
+   "prompt": "リーリエの[[mon:Vulpix]]（アローラのすがた）の名前は？",
+   "distractors": [
+    "[[p:Nebby]]",
+    "フロスティ",
+    "クリスタル"
+   ]
+  },
+  "comp-kiawe": {
+   "prompt": "[[region:Alola]]地方でのカキのパートナーは？"
+  },
+  "comp-sophocles": {
+   "prompt": "マーマネのパートナーの[[type:Electric]]タイプのポケモンは？"
+  },
+  "comp-lana": {
+   "prompt": "[[region:Alola]]地方でのスイレンのパートナーは？"
+  },
+  "comp-kukui-school": {
+   "prompt": "[[region:Alola]]地方のポケモンスクールで、サトシのクラスを教えているのはだれ？",
+   "answer": "ククイ博士",
+   "distractors": [
+    "バーネット博士",
+    "オーキド校長",
+    "しまキングのハラ"
+   ]
+  },
+  "comp-goh-mew": {
+   "prompt": "ゴウがゲットすることを夢見ている幻のポケモンは？"
+  },
+  "comp-goh-cinderace": {
+   "prompt": "ゴウの[[mon:Scorbunny]]は最終的に何に進化した？"
+  },
+  "comp-cerise-lab": {
+   "prompt": "サトシとゴウがリサーチフェローを務める研究所は？",
+   "answer": "サクラギ研究所",
+   "distractors": [
+    "オーキド研究所",
+    "プラターヌ研究所",
+    "ククイ博士の研究所"
+   ]
+  },
+  "comp-cerise-city": {
+   "prompt": "サクラギ研究所がある街は？"
+  },
+  "rival-gary": {
+   "prompt": "[[loc:Pallet Town]]出身の、サトシの最初のライバルはだれ？",
+   "distractors": [
+    "ヒロシ",
+    "シンジ",
+    "シューティー"
+   ]
+  },
+  "rival-gary-researcher": {
+   "prompt": "ジョウトリーグのあと、シゲルが目指すことにしたのは？",
+   "answer": "ポケモン研究者",
+   "distractors": [
+    "ポケモンブリーダー",
+    "ジムリーダー",
+    "ポケモンレンジャー"
+   ]
+  },
+  "rival-trip": {
+   "prompt": "[[region:Unova]]地方でのサトシの最初のライバルで、[[mon:Snivy]]と旅を始めたカメラ好きのトレーナーは？",
+   "answer": "シューティー",
+   "distractors": [
+    "コテツ",
+    "ベル",
+    "ケニヤン"
+   ]
+  },
+  "rival-alain": {
+   "prompt": "メガリザードンXで戦う、[[region:Kalos]]地方のライバルはだれ？",
+   "distractors": [
+    "ショータ",
+    "ティエルノ",
+    "トロバ"
+   ]
+  },
+  "rival-leon-ace": {
+   "prompt": "サトシとの最後のバトルで、ダンデのエースポケモンは？"
+  },
+  "tr-trio": {
+   "prompt": "ムサシとコジロウといっしょに旅をする、人の言葉を話すポケモンは？"
+  },
+  "tr-wobbuffet": {
+   "prompt": "呼ばれてもいないのにボールから飛び出して自分の名前を叫ぶ、ムサシのポケモンは？"
+  },
+  "tr-koffing": {
+   "prompt": "コジロウの[[mon:Weezing]]は、もとは何だった？"
+  },
+  "tr-ekans": {
+   "prompt": "ムサシの[[mon:Arbok]]は、もとは何だった？"
+  },
+  "tr-carnivine": {
+   "prompt": "[[region:Sinnoh]]地方の旅で、コジロウの頭にかじりつくのが癖のポケモンは？"
+  },
+  "tr-mimejr": {
+   "prompt": "[[region:Sinnoh]]地方の旅で、コジロウが連れ歩いているベイビィポケモンは？"
+  },
+  "tr-giovanni": {
+   "prompt": "アニメのロケット団のボスはだれ？"
+  },
+  "tr-magikarp": {
+   "prompt": "お金持ちになれると信じて、コジロウが売り子から買ったポケモンは？"
+  },
+  "tr-mimikyu": {
+   "prompt": "[[region:Alola]]地方で、ムサシがゲットしたばけのかわポケモンは？"
+  },
+  "tr-mareanie": {
+   "prompt": "[[region:Alola]]地方で、コジロウになつきすぎて痛いほど抱きつくポケモンは？"
+  },
+  "tr-bewear": {
+   "prompt": "[[region:Alola]]地方で、ロケット団を何度も自分の巣へ連れ帰るポケモンは？"
+  },
+  "tr-inkay": {
+   "prompt": "[[region:Kalos]]地方でコジロウがゲットしたポケモンは？"
+  },
+  "tr-pumpkaboo": {
+   "prompt": "[[region:Kalos]]地方でムサシがゲットし、のちに[[mon:Gourgeist]]に進化したポケモンは？"
+  },
+  "series-frontier-region": {
+   "prompt": "サトシがバトルフロンティアに挑んだ地方は？"
+  },
+  "series-frontier-brandon": {
+   "prompt": "サトシがバトルフロンティア制覇のために最後に倒したフロンティアブレーンは？",
+   "distractors": [
+    "リラ",
+    "アザミ",
+    "ダツラ"
+   ]
+  },
+  "series-wcs": {
+   "prompt": "サトシが出場する世界規模のバトル大会の名前は？",
+   "answer": "ポケモンワールドチャンピオンシップス",
+   "distractors": [
+    "ポケモンワールドトーナメント",
+    "バトルフロンティア",
+    "ポケモンリーグ"
+   ]
+  },
+  "series-sm-school": {
+   "prompt": "[[region:Alola]]地方で暮らしている間、サトシは何をしている？",
+   "answer": "ポケモンスクールに通う",
+   "distractors": [
+    "ポケモンセンターを営む",
+    "エーテル財団で働く",
+    "8つのジムに挑戦する"
+   ]
+  },
+  "ep-spearow": {
+   "prompt": "第1話で、サトシとピカチュウを襲った群れのポケモンは？"
+  },
+  "ep-hooh": {
+   "prompt": "第1話の最後に、サトシが虹の向こうに飛ぶ姿を見た伝説のポケモンは？"
+  },
+  "ep-porygon": {
+   "prompt": "日本で視聴者の体調不良が起きたあと、テレビ放送されなくなったエピソードの中心だったポケモンは？"
+  },
+  "ep-pikachu-goodbye": {
+   "prompt": "サトシがもう少しでピカチュウを置いていくところだった相手は？",
+   "answer": "野生のピカチュウの群れ",
+   "distractors": [
+    "オーキド博士",
+    "ヒロシ",
+    "マチスのライチュウ"
+   ]
+  },
+  "ep-tower-terror": {
+   "prompt": "[[p:Sabrina]]に勝つため、サトシがゴーストポケモンを探しに行った町は？"
+  },
+  "ep-surge": {
+   "prompt": "初めてのバトルでサトシのピカチュウを負かしたライチュウは、どのジムリーダーのポケモン？"
+  },
+  "ep-ash-ten": {
+   "prompt": "旅立ったとき、サトシは何歳？",
+   "answer": "10",
+   "distractors": [
+    "8",
+    "12",
+    "14"
+   ]
+  },
+  "movie-2000": {
+   "prompt": "ポケモン映画第2作（1999年）で「海の神」と呼ばれる伝説のポケモンは？"
+  },
+  "movie-3": {
+   "prompt": "ポケモン映画第3作（2000年）で、アンノーンがミーのために生み出した伝説のポケモンは？"
+  },
+  "movie-4ever": {
+   "prompt": "ポケモン映画第4作（2001年）の中心となる幻のポケモンは？"
+  },
+  "movie-heroes": {
+   "prompt": "[[loc:Alto Mare]]が舞台のポケモン映画第5作（2002年）に登場する、ふたりで一組のポケモンは？"
+  },
+  "movie-first-island": {
+   "prompt": "ポケモン映画第1作（1998年）で、ミュウツーが世界の強いトレーナーたちを招いた場所は？",
+   "answer": "[[p:New Island]]",
+   "distractors": [
+    "アーシア島",
+    "[[loc:Cinnabar Island]]",
+    "マボロシ島"
+   ]
+  },
+  "movie-manaphy": {
+   "prompt": "ポケモン映画第9作（2006年）でタマゴからかえる幻のポケモンは？"
+  },
+  "movie-darkrai": {
+   "prompt": "ポケモン映画第10作（2007年）で激しくぶつかり合う、ふたりの伝説のポケモンは？"
+  },
+  "movie-shaymin": {
+   "prompt": "ポケモン映画第11作（2008年）で、サトシたちといっしょに旅をする幻のポケモンは？"
+  },
+  "movie-zoroark-celebi": {
+   "prompt": "ポケモン映画第13作（2010年）に登場する、時を越える幻のポケモンは？"
+  },
+  "movie-keldeo": {
+   "prompt": "ポケモン映画第15作（2012年）で、[[mon:Cobalion]]・[[mon:Terrakion]]・[[mon:Virizion]]の仲間になりたいと願う幻のポケモンは？"
+  },
+  "movie-genesect-mewtwo": {
+   "prompt": "ポケモン映画第16作（2013年）で[[mon:Genesect]]と対決する伝説のポケモンは？"
+  },
+  "movie-diancie-yveltal": {
+   "prompt": "ポケモン映画第17作（2014年）で目覚め、みんなをおびやかす伝説のポケモンは？"
+  },
+  "movie-magearna": {
+   "prompt": "ポケモン映画第19作（2016年）に登場する幻のポケモンは？"
+  },
+  "movie-marshadow": {
+   "prompt": "ポケモン映画第20作（2017年）に登場する幻のポケモンは？"
+  },
+  "movie-zeraora": {
+   "prompt": "ポケモン映画第21作（2018年）に登場する幻のポケモンは？"
+  },
+  "movie-zarude": {
+   "prompt": "ポケモン映画第23作（2020年）で、人間の男の子を育てる幻のポケモンは？"
+  },
+  "movie-iChooseYou-hooh": {
+   "prompt": "ポケモン映画第20作（2017年）で、サトシが会いに行こうとする伝説のポケモンは？"
+  },
+  "hz-liko": {
+   "prompt": "リコのパートナーのポケモンは？"
+  },
+  "hz-roy": {
+   "prompt": "ロイのパートナーのポケモンは？",
+   "distractors": [
+    "[[mon:Sprigatito]]",
+    "[[mon:Quaxly]]",
+    "[[mon:Charcadet]]"
+   ]
+  },
+  "hz-dot": {
+   "prompt": "ドットのパートナーになるポケモンは？"
+  },
+  "hz-pendant": {
+   "prompt": "リコの不思議なペンダントの正体は、どのポケモン？"
+  },
+  "hz-captain-pikachu": {
+   "prompt": "キャプテンピカチュウのパートナーはだれ？",
+   "answer": "フリード",
+   "distractors": [
+    "ロイ",
+    "マードック",
+    "サトシ"
+   ]
+  },
+  "hz-rvt": {
+   "prompt": "フリードとキャプテンピカチュウが率いる冒険者たちのグループの名前は？",
+   "answer": "ライジングボルテッカーズ",
+   "distractors": [
+    "エクスプローラーズ",
+    "スター団",
+    "ポケモンレンジャー"
+   ]
+  },
+  "hz-explorers": {
+   "prompt": "リコのペンダントをねらう謎の組織は？",
+   "answer": "エクスプローラーズ",
+   "distractors": [
+    "ロケット団",
+    "スター団",
+    "フレア団"
+   ]
+  },
+  "hz-friede-charizard": {
+   "prompt": "キャプテンピカチュウのほかに、フリードのパートナーになっているポケモンは？"
+  },
+  "hz-gibeon": {
+   "prompt": "エクスプローラーズを率いるのはだれ？",
+   "distractors": [
+    "アメジオ",
+    "スピネル",
+    "ルシアス"
+   ]
+  },
+  "hz-amethio": {
+   "prompt": "[[mon:Ceruledge]]で戦うエクスプローラーズのメンバーはだれ？",
+   "distractors": [
+    "スピネル",
+    "サンゴ",
+    "ギベオン"
+   ]
+  },
+  "hz-no-ash": {
+   "prompt": "リコとロイの物語が始まったとき、アニメの主人公ではなくなったのはだれ？",
+   "answer": "サトシ",
+   "distractors": [
+    "オーキド博士",
+    "タケシ",
+    "ロケット団"
+   ]
+  }
+ }
+}
