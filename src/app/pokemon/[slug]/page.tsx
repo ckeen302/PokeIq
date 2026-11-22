@@ -1,3 +1,4 @@
+import { RACE_LIVE } from "@/lib/lab";
 import { BackButton } from "@/components/ui/BackButton";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -86,7 +87,7 @@ export default async function PokemonPage({ params }: PageProps) {
           <Link href="/battle/teams" className="underline-offset-2 hover:text-foreground hover:underline">{t("teams")}</Link>
           <Link href="/battle/calc" className="underline-offset-2 hover:text-foreground hover:underline">{t("calc")}</Link>
           <Link href={`/pokedex/sizes/${p.slug}`} className="underline-offset-2 hover:text-foreground hover:underline">{t("big", { name })}</Link>
-          <Link href={`/pokedex/race/run?vs=${p.slug}`} className="underline-offset-2 hover:text-foreground hover:underline">{t("fast", { name })}</Link>
+          {RACE_LIVE && <Link href={`/pokedex/race/run?vs=${p.slug}`} className="underline-offset-2 hover:text-foreground hover:underline">{t("fast", { name })}</Link>}
           <Link href="/pokedex" className="underline-offset-2 hover:text-foreground hover:underline">{t("full")}</Link>
         </p>
         <p className="flex flex-wrap gap-x-4 gap-y-1">

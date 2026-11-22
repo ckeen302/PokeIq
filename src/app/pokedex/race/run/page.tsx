@@ -10,6 +10,7 @@ import { DEFAULT_PRESET, PRESET_BY_ID } from "@/lib/race/presets";
 import { RUN_PATH, parseDistance, parseSeed, parseVs, vsQuery } from "@/lib/race/deeplink";
 import { fieldFor, specFor } from "@/lib/race/lineup";
 import { formatTime, makeRace } from "@/lib/race/race";
+import { RACE_LIVE } from "@/lib/lab";
 import { RacePage } from "@/components/race/RacePage";
 
 /**
@@ -47,6 +48,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Search 
     title: t("meta.runTitle", { title: field.title, d: spec.distance }),
     description: t("meta.runDescription", { name: w.entrant.name, d: spec.distance, time: formatTime(w.time), list: race.order.map((r) => `${r.entrant.name} ${formatTime(r.time)}`).join(", ") }),
     path: `${RUN_PATH}?${qs}`,
+    noindex: !RACE_LIVE,
     image: { url: `${RUN_PATH}/og?${qs}`, alt: t("meta.runImage", { title: field.title, d: spec.distance }) },
   });
 }

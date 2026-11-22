@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { pageMetadata } from "@/lib/seo";
 import { PRESETS, PRESET_BY_ID } from "@/lib/race/presets";
 import { HUB_PRESET, presetPath } from "@/lib/race/deeplink";
+import { RACE_LIVE } from "@/lib/lab";
 import { RacePage } from "@/components/race/RacePage";
 import { serverT } from "@/i18n/server";
 import racePages from "@/messages/race-pages";
@@ -19,7 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!preset) return {};
   const t = serverT(racePages);
   const id = preset.id as keyof typeof racePages.en.titles;
-  return pageMetadata({ title: t("meta.presetTitle", { title: t(`titles.${id}`) }), description: t("meta.presetDescription", { blurb: t(`blurbs.${id}`) }), path: presetPath(preset.id) });
+  return pageMetadata({ title: t("meta.presetTitle", { title: t(`titles.${id}`) }), description: t("meta.presetDescription", { blurb: t(`blurbs.${id}`) }), path: presetPath(preset.id), noindex: !RACE_LIVE });
 }
 
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {

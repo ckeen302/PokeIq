@@ -5,7 +5,7 @@ import { ogT } from "@/lib/og/i18n";
 
 /** Share card for the 3D Lab: its experiences' screenshots, stacked. */
 
-export const alt = "PokéIQ 3D Lab: the Pokémon Timeline, Pokémon Sizes, Pokémon Race and the World Globe in 3D";
+export const alt = "PokéIQ 3D Lab: the Pokémon Timeline, Pokémon Sizes and the World Globe in 3D";
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 

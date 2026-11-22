@@ -55,15 +55,10 @@ export async function runRace({ browser, BASE, OUT, errors, step }) {
   const seek = (t) => page.evaluate((x) => window.__race.seek(x), t);
 
   await part(errors, "3d lab", async () => {
-    // The race lives in the 3D Lab: its card (a real screenshot) opens /pokedex/race, the nav's 3D Lab tab is lit there, and the stage leads back.
+    // The race is off the 3D Lab for now (RACE_LIVE in src/lib/lab.ts): no card on /lab; its page still works by URL, under the 3D Lab tab, and leads back.
     await page.goto(`${BASE}/lab`, { waitUntil: "load" });
-    const card = page.getByTestId("lab-card-race");
-    if (!(await card.count())) throw new Error("no Race card on /lab");
-    const art = card.locator("img").first();
-    await art.evaluate((img) => img.scrollIntoView({ block: "center" }));
-    if (!(await art.evaluate((img) => img.complete ? img.naturalWidth > 0 : new Promise((r) => { img.onload = () => r(true); img.onerror = () => r(false); })))) errors.push("race: the 3D Lab card's picture didn't load");
-    await page.getByTestId("lab-open-race").click();
-    await page.waitForURL(/\/pokedex\/race$/);
+    if (await page.getByTestId("lab-card-race").count()) errors.push("race: /lab still shows the Race card");
+    await page.goto(`${BASE}/pokedex/race`, { waitUntil: "load" });
     const header = page.locator("header");
     if ((await header.getByRole("link", { name: "3D Lab", exact: true }).getAttribute("aria-current")) !== "page") errors.push("race: the nav's 3D Lab tab isn't lit on /pokedex/race");
     if ((await header.getByRole("link", { name: "Pokédex", exact: true }).getAttribute("aria-current")) === "page") errors.push("race: Pokédex is lit on /pokedex/race too");

@@ -1,8 +1,8 @@
 {
   "meta": {
     "title": "3D Lab: Pokémon in cinematic 3D",
-    "descriptionStory": "3D Lab: watch the story of Pokémon as a 3D film, see every Pokémon at real size, race them in a 3D stadium and spin the World Globe. Free, in your browser.",
-    "descriptionTimeline": "3D Lab: fly through Pokémon history in 3D, see every Pokémon at real size, race them in a 3D stadium and spin the World Globe. Free, in your browser.",
+    "descriptionStory": "3D Lab: watch the story of Pokémon as a 3D film, see every Pokémon at real size and spin the World Globe. Free, in your browser.",
+    "descriptionTimeline": "3D Lab: fly through Pokémon history in 3D, see every Pokémon at real size and spin the World Globe. Free, in your browser.",
     "socialTitle": "3D Lab: Pokémon in cinematic 3D · PokéIQ"
   },
   "experiences": "Experiences",
@@ -12,7 +12,7 @@
   "betaTitle": "The 3D Lab is in beta: it's still being improved.",
   "title": "<b>3D</b> Lab",
   "linePhone": "Pokémon in cinematic 3D, live in your browser.",
-  "line": "The cinematic side of PokéIQ. Fly through Pokémon history, stand next to every Pokémon at its real size, race them under the floodlights and spin the whole Pokémon world, live in your browser.",
+  "line": "The cinematic side of PokéIQ. Fly through Pokémon history, stand next to every Pokémon at its real size and spin the whole Pokémon world, live in your browser.",
   "explore": "Explore",
   "sound": "Best with sound on",
   "live": "Live 3D",

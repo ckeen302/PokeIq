@@ -1,8 +1,8 @@
 {
   "meta": {
     "title": "Labo 3D : les Pokémon en 3D cinématique",
-    "descriptionStory": "Labo 3D : regarde l’histoire de Pokémon comme un film en 3D, vois chaque Pokémon à sa taille réelle, fais-les courir dans un stade 3D et fais tourner le globe. Gratuit, dans ton navigateur.",
-    "descriptionTimeline": "Labo 3D : traverse l’histoire de Pokémon en 3D, vois chaque Pokémon à sa taille réelle, fais-les courir dans un stade 3D et fais tourner le globe. Gratuit, dans ton navigateur.",
+    "descriptionStory": "Labo 3D : regarde l’histoire de Pokémon comme un film en 3D, vois chaque Pokémon à sa taille réelle et fais tourner le globe. Gratuit, dans ton navigateur.",
+    "descriptionTimeline": "Labo 3D : traverse l’histoire de Pokémon en 3D, vois chaque Pokémon à sa taille réelle et fais tourner le globe. Gratuit, dans ton navigateur.",
     "socialTitle": "Labo 3D : les Pokémon en 3D cinématique · PokéIQ"
   },
   "experiences": "Expériences",
@@ -12,7 +12,7 @@
   "betaTitle": "Le Labo 3D est en bêta : on l’améliore encore.",
   "title": "Labo <b>3D</b>",
   "linePhone": "Les Pokémon en 3D cinématique, en direct dans ton navigateur.",
-  "line": "Le côté cinéma de PokéIQ. Traverse l’histoire de Pokémon, tiens-toi à côté de chaque Pokémon à sa taille réelle, fais-les courir sous les projecteurs et fais tourner tout le monde Pokémon, en direct dans ton navigateur.",
+  "line": "Le côté cinéma de PokéIQ. Traverse l’histoire de Pokémon, tiens-toi à côté de chaque Pokémon à sa taille réelle et fais tourner tout le monde Pokémon, en direct dans ton navigateur.",
   "explore": "Explorer",
   "sound": "Mieux avec le son",
   "live": "3D en direct",
