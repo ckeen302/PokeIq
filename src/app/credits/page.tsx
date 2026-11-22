@@ -33,6 +33,15 @@ export default function CreditsPage() {
       <Section title="Pokémon data">
         <p>Data from PokéAPI.</p>
       </Section>
+      <Section title="Shiny Pokémon Maker">
+        <p>
+          Black/White-style sprites from PokéAPI&apos;s sprite collection; from #650 on they are fan-made in the same style by the Smogon Sprite Project. HD pictures are Pokémon HOME renders, also from PokéAPI (
+          <a href="/shiny-maker/CREDITS.md" className={LINK}>
+            credits
+          </a>
+          ).
+        </p>
+      </Section>
       <Section title="Battles">
         <p>
           Battles run on Pokémon Showdown&apos;s simulator, and its battle timer and replay format are adapted from Pokémon Showdown (MIT licence, © Guangcong Luo and contributors).
