@@ -277,9 +277,9 @@ export async function runSizes({ browser, BASE, OUT, errors, step }) {
     // The list fallback opens on a Pokémon's link too.
     await page.goto(`${BASE}/pokedex/sizes/snorlax?view=list`, { waitUntil: "domcontentloaded" });
     await page.locator('[data-testid="sizes-list"] #size-snorlax.sz-list-hit').waitFor({ timeout: 15_000 }).catch(() => errors.push("sizes: the list view didn't bring Snorlax into view"));
-    // The Pokédex entry links to its size.
+    // The Pokédex entry links into the 3D Lab.
     await page.goto(`${BASE}/pokemon/pikachu`, { waitUntil: "domcontentloaded" });
-    if ((await page.getByTestId("dex-see-size").getAttribute("href")) !== "/pokedex/sizes/pikachu") errors.push("sizes: Pikachu's Pokédex entry has no 'See its size' link");
+    if ((await page.getByTestId("dex-lab").getAttribute("href")) !== "/lab/pokedex?pick=25") errors.push("sizes: Pikachu's Pokédex entry has no 'View in the 3D Lab' link");
   });
 
   step("pokédex Sizes: make a 5 s video (a valid 1080 × 1920 MP4 with music), cancel a recording, phone layout");

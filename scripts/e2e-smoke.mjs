@@ -27,6 +27,7 @@ import { runCry } from "./e2e-cry.mjs";
 import { runGames } from "./e2e-games.mjs";
 import { runWorldHistory } from "./e2e-world-history.mjs";
 import { runPokemonStory } from "./e2e-pokemon-story.mjs";
+import { runLabDex } from "./e2e-lab-dex.mjs";
 import { runGroupBattles } from "./e2e-battle-group.mjs";
 import { runEmptyQueue } from "./e2e-battle-queue.mjs";
 import { runEmail } from "./e2e-email.mjs";
@@ -132,6 +133,12 @@ async function chatTo(from, to, text, shown = text) {
   await to.getByTestId("chat").last().getByTestId("chat-text").filter({ hasText: shown }).first().waitFor({ timeout: 15_000 });
   // One message a second per trainer.
   await from.waitForTimeout(1_100);
+}
+
+// E2E_ONLY=lab-dex runs just the Professor's Lab (/lab/pokedex) and its stress test, then exits.
+if (process.env.E2E_ONLY === "lab-dex") {
+  await runLabDex({ browser, BASE, OUT, errors, step });
+  await finish();
 }
 
 // First, while nothing has been played yet: phone-only work must leave the desktop layout as it was.
@@ -2640,6 +2647,7 @@ await runRace({ browser, BASE, OUT, errors, step });
 await runGames({ browser, BASE, OUT, errors, step });
 await runWorldHistory({ browser, BASE, OUT, errors, step });
 await runPokemonStory({ browser, BASE, OUT, errors, step });
+await runLabDex({ browser, BASE, OUT, errors, step });
 
 step("trainer, leaderboard, pokémon page");
 // Quiz modes are off the leaderboard: an old quiz board link lands on the Daily, with no quiz tabs.

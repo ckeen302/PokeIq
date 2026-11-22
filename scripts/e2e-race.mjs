@@ -6,7 +6,7 @@
  * camera presets and zoom (buttons, wheel, a trackpad pinch as ctrl +
  * wheel or Safari's gesture events, drag to orbit), a shared race link
  * with its own title and preview card, the preset cards, the list
- * fallback, the Pokédex entry's "Race it" link, the sound staying off when
+ * fallback, the sound staying off when
  * the site is muted, and "Make a video": a 5-second export (?len=5, at the
  * light test quality and 10 fps) that must be a valid 1080 × 1920 MP4 with
  * video and audio.
@@ -183,9 +183,6 @@ export async function runRace({ browser, BASE, OUT, errors, step }) {
     await page.getByTestId("race-list").waitFor({ timeout: 15_000 }).catch(() => errors.push("race: the list view has no results table"));
     // The server's page carries the stage until the page hydrates and reads ?view=list (slow on a busy CI runner).
     await stage.waitFor({ state: "detached", timeout: 60_000 }).catch(() => errors.push("race: the list view still shows the 3D stage"));
-    // The Pokédex entry races it.
-    await page.goto(`${BASE}/pokemon/pikachu`, { waitUntil: "domcontentloaded" });
-    if ((await page.getByTestId("dex-race-it").getAttribute("href")) !== "/pokedex/race/run?vs=pikachu") errors.push("race: Pikachu's Pokédex entry has no 'Race it' link");
   });
 
   step("pokédex Race: make a 5 s video (a valid 1080 × 1920 MP4 with sound), phone layout");
