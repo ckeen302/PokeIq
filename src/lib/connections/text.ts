@@ -1,6 +1,7 @@
 import compile from "icu-minify/compile";
 import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
-import { INTL_LOCALE, defineNamespace, translator, type Translator, type Tree } from "@/i18n/catalog";
+import { defineNamespace, translator, type Translator, type Tree } from "@/i18n/catalog";
+import { INTL_LOCALE } from "@/i18n/format";
 import type { StatKey } from "@/lib/pokemon/constants";
 import { GENERATION_REGIONS, STAT_LABELS } from "@/lib/pokemon/constants";
 import groups from "@/messages/connections-groups";

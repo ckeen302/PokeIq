@@ -11,7 +11,7 @@ import { RoundsPicker } from "./GeoSettings";
 import { PARTY_TEAM_HP, partyPath } from "@/lib/geo-party";
 import { GeoRankedCard } from "./GeoRanked";
 import { useT } from "@/i18n/client";
-import { formatNumber } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import cards from "@/messages/guessr-cards";
 
 /** A team duel (2v2) is a party room in team mode: it opens at /pokeguessr/party/<code>. */

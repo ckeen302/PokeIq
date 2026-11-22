@@ -3,7 +3,8 @@ import { CalendarDays, Compass, Grid3x3, LayoutGrid, Search } from "lucide-react
 import { currentStreak, geoDailyStreak, type Progress } from "@/lib/progress";
 import { dleStats } from "@/lib/dle-stats";
 import { connStats } from "@/lib/connections/local";
-import { INTL_LOCALE, formatNumber, translator, type Translator } from "@/i18n/catalog";
+import { translator, type Translator } from "@/i18n/catalog";
+import { INTL_LOCALE, formatNumber } from "@/i18n/format";
 import home from "@/messages/home";
 
 /**

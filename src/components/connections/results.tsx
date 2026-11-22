@@ -14,7 +14,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { BeatMyTime, FriendsBoard } from "./social";
 import { useT } from "@/i18n/client";
-import { formatNumber, translator, type Translator } from "@/i18n/catalog";
+import { translator, type Translator } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import conn from "@/messages/connections";
 
 type ConnT = Translator<typeof conn.en>;

@@ -5,7 +5,8 @@ import { FORMAT_INFO, MODULE_INFO, difficultyLabel } from "@/lib/modes";
 import { GEO_MAX_ROUND_SCORE, GEO_ROUNDS, WORLD_REGION } from "@/lib/geo-types";
 import { PLAY_FORMAT_INFO } from "@/lib/battle/play";
 import { rarityLines } from "@/lib/pikadoku/share";
-import { formatNumber, translator, type Translator } from "@/i18n/catalog";
+import { translator, type Translator } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import share from "@/messages/share";
 import type { BattleShareResult, CognitiveShareResult, ConnectionsShareResult, GuessrShareResult, PikadokuShareResult, PokedleShareResult, QuizShareResult } from "./payload";
 

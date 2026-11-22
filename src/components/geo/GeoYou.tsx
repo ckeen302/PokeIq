@@ -9,7 +9,7 @@ import { GEO_MASTERY_SCORE, masteryPercent } from "@/lib/geo-achievements";
 import { HubSection, HubTile } from "./HubParts";
 import { AchievementGrid, GEO_ACHIEVEMENT_TOTAL, MasteryList, type MyGeoProgress } from "./GeoAchievements";
 import { useT } from "@/i18n/client";
-import { formatNumber } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import geoSolo from "@/messages/geo-solo";
 import geoRecord from "@/messages/geo-record";
 import { useGeoNames } from "@/lib/geo-i18n-client";

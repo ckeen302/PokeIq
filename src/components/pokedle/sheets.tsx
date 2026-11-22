@@ -8,7 +8,7 @@ import { Board } from "./parts";
 import { DLE_EXAMPLE_MONS, exampleRow } from "./examples";
 import { DLE_ASSISTS, DLE_ASSIST_INFO } from "@/lib/dle-assist";
 import { localMultiplier } from "@/lib/dle-i18n";
-import { formatNumber } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import { useT } from "@/i18n/client";
 import board from "@/messages/pokedle-board";
 import game from "@/messages/pokedle-game";

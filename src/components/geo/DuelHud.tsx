@@ -17,7 +17,8 @@ import { geoDivisionOf } from "@/lib/geo-ranked";
 import { useShownName } from "./GeoRanked";
 import { useT } from "@/i18n/client";
 import { useLocale } from "@/i18n/locale-context";
-import { formatNumber, type Translator } from "@/i18n/catalog";
+import { type Translator } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import type { Locale } from "@/i18n/config";
 import hud from "@/messages/guessr-hud";
 

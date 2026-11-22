@@ -13,7 +13,7 @@ import { GeoMap, type MapPin, type RevealedRound } from "./GeoMap";
 import { ExitButton, GameShell, Notch } from "./GameShell";
 import { ShareResultLink } from "./ShareResultLink";
 import { useT } from "@/i18n/client";
-import { formatNumber } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import geoNs from "@/messages/geo";
 import { useGeoNames } from "@/lib/geo-i18n-client";
 

@@ -6,7 +6,7 @@ import { MotionConfig } from "framer-motion";
 import { Crown, RotateCcw, Timer } from "lucide-react";
 import { pvpHref, type PdkDuelView } from "@/lib/pvp-types";
 import { PDK_FAMILIES, type PdkFamily, type PdkLocal } from "@/lib/pikadoku/types";
-import { INTL_LOCALE } from "@/i18n/catalog";
+import { INTL_LOCALE } from "@/i18n/format";
 import { useT } from "@/i18n/client";
 import duelNs from "@/messages/pikadoku-duel";
 import boardNs from "@/messages/pikadoku-board";

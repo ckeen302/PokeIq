@@ -7,7 +7,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { customPath, type CustomListResponse, type CustomSummary } from "@/lib/connections/custom";
 import { useT } from "@/i18n/client";
-import { INTL_LOCALE } from "@/i18n/catalog";
+import { INTL_LOCALE } from "@/i18n/format";
 import { localizePath } from "@/i18n/paths";
 import community from "@/messages/connections-community";
 

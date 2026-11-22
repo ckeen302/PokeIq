@@ -11,7 +11,7 @@ import {
 } from "@/lib/geo-families";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
-import { formatNumber } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import geoSolo from "@/messages/geo-solo";
 import { useGeoNames } from "@/lib/geo-i18n-client";
 

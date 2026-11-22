@@ -1,4 +1,5 @@
-import { formatNumber, type Translator } from "@/i18n/catalog";
+import { type Translator } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import type board from "@/messages/pokedle-board";
 import { DLE_ASSIST_INFO, type DleAssist } from "./dle-assist";
 import { rangeOfGens, rulesBonus, type DleRules } from "./dle-format";

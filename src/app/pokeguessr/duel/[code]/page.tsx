@@ -10,7 +10,7 @@ import { DUEL_HP } from "@/lib/duel-types";
 import { WORLD_REGION } from "@/lib/geo-types";
 import { ClientMessages } from "@/i18n/ClientMessages";
 import { serverT } from "@/i18n/server";
-import { formatNumber } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import { guessrDuelNames } from "@/lib/server/guessr-duel-names";
 import { mapName } from "@/components/geo/duel-names";
 import page from "@/messages/guessr-duel-page";

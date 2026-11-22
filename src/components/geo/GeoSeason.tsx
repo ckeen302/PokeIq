@@ -8,7 +8,8 @@ import { GEO_SEASON_TRACK, geoRewardLabel, geoSeasonTimeLeft, type GeoSeasonReco
 import { cn } from "@/lib/utils";
 import { GeoBallIcon, GeoDivisionBadge, useDivisionName } from "./GeoRanked";
 import { useT } from "@/i18n/client";
-import { formatNumber, type Keys, type Translator } from "@/i18n/catalog";
+import { type Keys, type Translator } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import geoRecord from "@/messages/geo-record";
 import geoNamesNs from "@/messages/geo-names";
 import { localRegion, type GeoNamesT } from "@/lib/geo-i18n";

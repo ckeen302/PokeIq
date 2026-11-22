@@ -11,7 +11,7 @@ import { strictStatus } from "@/lib/dle-format";
 import type { DleAssist } from "@/lib/dle-assist";
 import { dexFullTraits, ruledOut, type DexClue } from "@/lib/dle-dex";
 import { localMeasure, localStage } from "@/lib/dle-i18n";
-import { formatNumber } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import { Card, CardContent } from "@/components/ui/card";
 import { InfoTip } from "@/components/ui/tooltip";
 import { clueText, spriteUrl } from "./parts";

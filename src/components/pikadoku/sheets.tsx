@@ -10,7 +10,7 @@ import type { PdkPlay, PdkRecord } from "@/lib/pikadoku/play";
 import { archiveDates, archiveKey, archiveMonths, monthGrid } from "@/lib/pikadoku/archive";
 import { CONN_LAUNCH_DATE, connNumber } from "@/lib/connections/types";
 import { NextPuzzleCountdown } from "./results";
-import { INTL_LOCALE } from "@/i18n/catalog";
+import { INTL_LOCALE } from "@/i18n/format";
 import { useT } from "@/i18n/client";
 import pikadoku from "@/messages/pikadoku";
 

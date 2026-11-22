@@ -8,7 +8,7 @@ import type { VersusResult, VersusStats, VersusStatsResponse } from "@/lib/duel-
 import { cn } from "@/lib/utils";
 import { VersusCharacter } from "./VersusCharacter";
 import type { TrainerConfig } from "@/lib/trainer/config";
-import { formatNumber } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import { useT } from "@/i18n/client";
 import duel from "@/messages/duel";
 

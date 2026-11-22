@@ -1,4 +1,5 @@
-import { formatNumber, type Keys, type Translator } from "@/i18n/catalog";
+import { type Keys, type Translator } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import type geoRecord from "@/messages/geo-record";
 import { GEO_EXPERT_AVG, GEO_EXPERT_ROUNDS, GEO_PERFECT_SCORE, type GeoAchievement } from "./geo-achievements";
 import { localRegion, type GeoNamesT } from "./geo-i18n";

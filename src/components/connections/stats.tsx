@@ -7,7 +7,7 @@ import { CONN_LAUNCH_DATE, CONN_MAX_MISTAKES, connNumber } from "@/lib/connectio
 import type { ConnRecord } from "@/lib/progress";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
-import { INTL_LOCALE } from "@/i18n/catalog";
+import { INTL_LOCALE } from "@/i18n/format";
 import cs from "@/messages/connections-stats";
 
 /** PokéConnections' stats (the sheet and the results-screen card) and the archive calendar. */

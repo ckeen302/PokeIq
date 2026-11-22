@@ -15,7 +15,7 @@ import { VersusCharacter } from "@/components/duel/VersusCharacter";
 import { useUnlocks } from "@/components/duel/TauntStage";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
-import { formatNumber } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import partyNs from "@/messages/guessr-party";
 import hud from "@/messages/guessr-hud";
 
