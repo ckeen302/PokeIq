@@ -381,12 +381,28 @@ function analyze(file, source, compile, registry, src, addDependency, opts = {})
     const localArg = argIndex >= 0 ? localParam(p, argIndex) : ts.isJsxExpression(p) && ts.isJsxAttribute(p.parent) ? localProp(p.parent) : null;
     // `!t` (is there a translator?) reads nothing from it.
     const tested = ts.isPrefixUnaryExpression(p) && p.operator === ts.SyntaxKind.ExclamationToken;
+    if (readsLocale && opts.englishOnly && !p.questionDotToken) {
+      // English-only: every translator's language is English, and a test of it is a constant (the minifier then
+      // drops what only another language runs).
+      const test = p.parent;
+      const op = ts.isBinaryExpression(test) && (test.left === p || test.right === p) && EN(unwrap(test.left === p ? test.right : test.left)) ? test.operatorToken.kind : null;
+      const K = ts.SyntaxKind;
+      if (op === K.EqualsEqualsEqualsToken || op === K.EqualsEqualsToken) tr.edits.push([test.getStart(sf), test.getEnd(), "true"]);
+      else if (op === K.ExclamationEqualsEqualsToken || op === K.ExclamationEqualsToken) tr.edits.push([test.getStart(sf), test.getEnd(), "false"]);
+      else tr.edits.push([p.getStart(sf), p.getEnd(), '"en"']);
+      tr.collapsed = (tr.collapsed ?? 0) + 1;
+      return;
+    }
     if (readsLocale || inDeps || tested) return;
     if (localArg) return void aliases.push([localArg, tr]);
     if (argIndex >= 0 && importedSafe(p, argIndex, tr.ns)) return;
     const has = ts.isPropertyAccessExpression(p) && p.expression === n && p.name.text === "has" && ts.isCallExpression(p.parent) && p.parent.expression === p;
     // Only another language's page gets here: its own messages answer, so no English rides along.
-    if ((has || call) && otherLanguageOnly(n)) return;
+    if ((has || call) && otherLanguageOnly(n)) {
+      // English-only, that code never runs: it needs nothing of the translator either.
+      if (opts.englishOnly) tr.collapsed = (tr.collapsed ?? 0) + 1;
+      return;
+    }
     if (english === undefined) {
       tr.escapes = true;
       if (debug) console.log(`[i18n-inline] ${path.relative(process.cwd(), file)}:${sf.getLineAndCharacterOfPosition(n.getStart(sf)).line + 1} keeps ${tr.ns.name}: ${(call ?? p).getText(sf).slice(0, 90)}`);

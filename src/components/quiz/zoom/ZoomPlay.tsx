@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import { FastForward, X } from "lucide-react";
-import { GuessInput, type NameEntry } from "@/components/pokedle/parts";
+import { GuessInput } from "@/components/pokedle/guess-input";
+import type { NameEntry } from "@/components/pokedle/search";
 import { ShareButton } from "@/components/share/ShareButton";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
