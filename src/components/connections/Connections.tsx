@@ -36,6 +36,7 @@ import { Popover } from "@/components/ui/popover";
 import { ShareButton } from "@/components/share/ShareButton";
 import { howToShownEarly, releaseHowToFirst } from "@/lib/howto-first";
 import { ConnHowToSheet } from "./howto-sheet";
+import { PanelSelect } from "./PanelSelect";
 import { CONTROLS_DOCK, CONTROLS_WRAP, GridTile, GroupBar, GuessHistory, LevelLegend, MistakeDots, TILE_H4, TILE_H5, WhyPanel, preloadTileArt, type TileMotion } from "./parts";
 // The pop-ups (stats, the archive) load when first opened, not with the board. How to play comes with the board:
 // a first visit's copy is in the page's HTML (lib/howto-first).
@@ -96,6 +97,11 @@ const LEVELS: { id: ConnPrefs["level"]; label: string; hint: string }[] = [
   { id: "normal", label: "Normal", hint: "One group of each colour, like the daily" },
   { id: "hard", label: "Hard", hint: "No easy group, two tricky ones" },
 ];
+const SIZE_OPTIONS: { id: ConnSize; label: string; hint: string }[] = CONN_SIZES.map((n) => ({
+  id: n,
+  label: `${n}×${n}`,
+  hint: n === 4 ? "Sixteen Pokémon, four groups of four, four mistakes" : "Twenty-five Pokémon, five groups of five, five mistakes",
+}));
 const TOAST_MS = 1600;
 /** How long a right guess's tiles bounce before they become a bar. */
 const JUMP_MS = 620;
@@ -786,60 +792,32 @@ export function Connections({ customId, initial }: { customId?: string; initial?
         {mode === "practice" && !isCustom && (
           <div className="mx-auto max-w-lg space-y-2 rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2 text-center text-sm" data-testid="conn-unlimited">
             <p className="text-xs sm:text-sm">Unlimited: a fresh puzzle every time, never counted toward your streak.</p>
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-            <div className="flex items-center justify-center gap-2">
-              <span className="hud-label">Difficulty</span>
-              <div className="flex gap-1" role="radiogroup" aria-label="Unlimited difficulty">
-                {LEVELS.map((l) => (
-                  <button
-                    key={l.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={level === l.id}
-                    title={l.hint}
-                    onClick={() => {
-                      if (level === l.id) return;
-                      setConnPrefs({ level: l.id });
-                      // A new puzzle at that level, unless this one is under way.
-                      if (guesses.length === 0 || over) newPractice(l.id);
-                    }}
-                    className={cn(
-                      "h-8 rounded-sm border px-2.5 font-pixel text-[10px] uppercase tracking-wider transition-colors",
-                      level === l.id ? "border-primary bg-primary text-primary-foreground" : "border-foreground/10 bg-shade/20 text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                    )}
-                  >
-                    {l.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="flex items-center justify-center gap-2">
-              <span className="hud-label">Board</span>
-              <div className="flex gap-1" role="radiogroup" aria-label="Unlimited board size" data-testid="conn-size">
-                {CONN_SIZES.map((n) => (
-                  <button
-                    key={n}
-                    type="button"
-                    role="radio"
-                    aria-checked={pickedSize === n}
-                    title={n === 4 ? "Sixteen Pokémon, four groups of four, four mistakes" : "Twenty-five Pokémon, five groups of five, five mistakes"}
-                    data-testid={`conn-size-${n}`}
-                    onClick={() => {
-                      if (pickedSize === n) return;
-                      setConnPrefs({ size: n });
-                      // A new puzzle at that size, unless this one is under way.
-                      if (guesses.length === 0 || over) newPractice(level, n);
-                    }}
-                    className={cn(
-                      "h-8 rounded-sm border px-2.5 font-pixel text-[10px] uppercase tracking-wider transition-colors",
-                      pickedSize === n ? "border-primary bg-primary text-primary-foreground" : "border-foreground/10 bg-shade/20 text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                    )}
-                  >
-                    {n}×{n}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <PanelSelect
+                label="Difficulty"
+                testId="conn-level"
+                value={level}
+                options={LEVELS}
+                onChange={(l) => {
+                  if (level === l) return;
+                  setConnPrefs({ level: l });
+                  // A new puzzle at that level, unless this one is under way.
+                  if (guesses.length === 0 || over) newPractice(l);
+                }}
+              />
+              <PanelSelect
+                label="Board"
+                testId="conn-size"
+                align="end"
+                value={pickedSize}
+                options={SIZE_OPTIONS}
+                onChange={(n) => {
+                  if (pickedSize === n) return;
+                  setConnPrefs({ size: n });
+                  // A new puzzle at that size, unless this one is under way.
+                  if (guesses.length === 0 || over) newPractice(level, n);
+                }}
+              />
             </div>
             {guesses.length > 0 && !over && <p className="text-xs text-muted-foreground">A new difficulty or board size starts with your next puzzle.</p>}
           </div>
