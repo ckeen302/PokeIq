@@ -200,7 +200,7 @@ export function DamageCalc() {
       </section>
 
       {/* Pokémon 1, the field, Pokémon 2 (phones: both Pokémon, then the field). */}
-      <div className="grid items-start gap-3 md:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_17rem_minmax(0,1fr)]">
+      <div className="grid items-start gap-3 md:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_16rem_minmax(0,1fr)] xl:grid-cols-[minmax(0,1fr)_18.5rem_minmax(0,1fr)]">
         {panel(0)}
         <FieldPanel
           field={field}
@@ -362,7 +362,7 @@ function Chip({ pressed, onClick, children, label, className }: { pressed: boole
       aria-label={label}
       onClick={onClick}
       className={cn(
-        "h-[26px] min-w-0 truncate rounded-[5px] border px-2 text-xs font-semibold leading-none transition-colors",
+        "h-[26px] min-w-0 truncate rounded-[5px] border px-1 text-[11.5px] font-semibold max-md:text-xs leading-none transition-colors",
         pressed ? "border-screen/60 bg-screen/15 text-foreground" : "border-foreground/10 bg-shade/25 text-muted-foreground hover:border-foreground/25 hover:text-foreground",
         className
       )}
@@ -393,7 +393,7 @@ function FieldPanel({
   return (
     <section className={cn("hud min-w-0 space-y-3 rounded-lg border bg-card p-2.5 md:p-3", className)} aria-label={t("field.label")} data-testid="calc-field">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="font-display text-sm font-bold uppercase tracking-wide">{t("field.label")}</h2>
+        <h2 className="min-w-0 flex-1 font-display text-sm font-bold uppercase tracking-wide">{t("field.label")}</h2>
         <button
           type="button"
           onClick={onSwap}
@@ -423,6 +423,7 @@ function FieldPanel({
       <FieldGroup label={t("field.terrain")}>
         <Segmented
           label={t("field.terrain")}
+          cols="grid-cols-3"
           value={field.terrain}
           onChange={(terrain) => update({ terrain })}
           options={[none, ...TERRAINS.map((v) => ({ value: v as string, label: t(`terrains.${v}`) }))]}
@@ -430,16 +431,27 @@ function FieldPanel({
       </FieldGroup>
 
       <FieldGroup label={t("field.weather")}>
-        <Segmented
-          label={t("field.weather")}
-          value={field.weather}
-          onChange={(weather) => update({ weather })}
-          options={[none, ...WEATHERS.map((v) => ({ value: v as string, label: t(`weathers.${v}`) }))]}
-        />
+        {/* None and the five weathers in a 3 × 2 grid; the three primal weathers (longer names) on their own row. */}
+        <div className="space-y-1">
+          <Segmented
+            label={t("field.weather")}
+            cols="grid-cols-3"
+            value={field.weather}
+            onChange={(weather) => update({ weather })}
+            options={[none, ...WEATHERS.slice(0, 5).map((v) => ({ value: v as string, label: t(`weathers.${v}`) }))]}
+          />
+          <Segmented
+            label={t("field.weather")}
+            cols="grid-cols-[1.3fr_1fr_1.15fr] lg:max-xl:grid-cols-2"
+            value={field.weather}
+            onChange={(weather) => update({ weather })}
+            options={WEATHERS.slice(5).map((v) => ({ value: v as string, label: t(`weathers.${v}`) }))}
+          />
+        </div>
       </FieldGroup>
 
       <FieldGroup label={t("field.effects")}>
-        <div className="flex flex-wrap gap-1">
+        <div className="grid grid-cols-2 gap-1">
           {FIELD_FLAGS.map(([flag]) => (
             <Chip key={flag} pressed={!!field.flags[flag]} onClick={() => update({ flags: { ...field.flags, [flag]: !field.flags[flag] } })}>
               {t(`fieldFlags.${flag}`)}

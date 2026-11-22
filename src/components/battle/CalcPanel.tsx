@@ -21,7 +21,7 @@ const BOOST_RANGE = [6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6];
 const SHORT: Record<string, string> = { hp: "HP", atk: "Atk", def: "Def", spa: "SpA", spd: "SpD", spe: "Spe" };
 const STAT_GRID = "grid grid-cols-[2.25rem_2rem_minmax(0,1fr)_minmax(0,1.25fr)_minmax(0,1fr)_2.75rem] items-center gap-1";
 /** Phones drop the power and category columns (the move list shows both when it opens). */
-const MOVE_GRID = "grid grid-cols-[minmax(0,1fr)_3.5rem_2.75rem] sm:grid-cols-[minmax(0,1fr)_1.75rem_3.5rem_2.75rem_2.25rem] items-center gap-1";
+const MOVE_GRID = "grid grid-cols-[minmax(0,1fr)_3.5rem_2.75rem] sm:grid-cols-[minmax(0,1fr)_1.5rem_3.25rem_2.5rem_2rem] items-center gap-1";
 /** A small toggle in a dense row (the phone design system still gives it a 40px target). */
 const SMALL_TOGGLE = "h-7 shrink-0 justify-center px-2";
 
@@ -96,7 +96,7 @@ export function CalcPanel({
   return (
     <section className="hud min-w-0 space-y-2.5 rounded-lg border bg-card p-2.5 md:p-3" aria-label={title} data-testid={`calc-side-${index + 1}`}>
       <div className="flex items-center justify-between gap-2">
-        <h2 className="flex min-w-0 items-baseline gap-2 font-display text-sm font-bold uppercase tracking-wide">
+        <h2 className="flex min-w-0 flex-1 items-baseline gap-2 font-display text-sm font-bold uppercase tracking-wide">
           <span className="shrink-0 text-screen">{title}</span>
         </h2>
         <LoadFromTeam
