@@ -99,7 +99,7 @@ export async function runLabDex({ browser, BASE, OUT, errors, step }) {
     await page.mouse.down();
     for (let i = 1; i <= 8; i++) await page.mouse.move(box.x + box.width * 0.6 - i * 45, y);
     await page.mouse.up();
-    if (!(await settled(page))) errors.push("lab-dex: didn't settle after a fling");
+    if (!(await settled(page))) errors.push(`lab-dex: didn't settle after a fling (${JSON.stringify(await state(page))})`);
     const after = await state(page);
     if (after.settled <= before) errors.push(`lab-dex: a leftward fling should move on to later Pokémon (${before} → ${after.settled})`);
     if (pickOf(page) !== after.settled) errors.push(`lab-dex: the URL (pick=${pickOf(page)}) doesn't match the table (${after.settled})`);
@@ -181,6 +181,9 @@ export async function runLabDex({ browser, BASE, OUT, errors, step }) {
   await part(errors, "stress", async () => {
     await page.goto(`${BASE}/lab/pokedex?pick=1&q=0`, { waitUntil: "domcontentloaded" });
     await settled(page);
+    // Warm up first: the first pull-back reveals the whole room, and three.js counts a geometry once it's first drawn.
+    await page.evaluate(() => { for (let k = 0; k < 6; k++) window.dispatchEvent(new KeyboardEvent("keydown", { key: "PageDown", bubbles: true })); });
+    await settled(page);
     const heap0 = await page.evaluate(() => performance.memory?.usedJSHeapSize ?? 0);
     const r0 = (await state(page)).stats;
     // Rapid spins: key bursts, wheel bursts and flings, without waiting for anything to load.
@@ -223,6 +226,7 @@ export async function runLabDex({ browser, BASE, OUT, errors, step }) {
     const mb = (n) => Math.round(n / 1048576);
     console.log(`  heap ${mb(heap0)} → ${mb(heap1)} MB; geometries ${r0.geometries} → ${r1.geometries}; textures ${r0.textures} → ${r1.textures}; figures ${JSON.stringify(r1.stream)}`);
     if (heap1 > 400 * 1048576) errors.push(`lab-dex: JS heap at ${mb(heap1)} MB after the stress test`);
+    if (r1.orphans) errors.push(`lab-dex: ${r1.orphans} figure(s) on show that the cache already disposed`);
     if (r1.geometries > r0.geometries + 120) errors.push(`lab-dex: geometries grew from ${r0.geometries} to ${r1.geometries}`);
     if (r1.textures > r0.textures + 60) errors.push(`lab-dex: textures grew from ${r0.textures} to ${r1.textures}`);
     if (r1.stream.pod > 40 || r1.stream.hero > 6) errors.push(`lab-dex: the figure cache is over its caps (${JSON.stringify(r1.stream)})`);

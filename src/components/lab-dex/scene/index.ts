@@ -53,6 +53,9 @@ export interface LabSceneOptions {
 
 export interface LabSceneStats {
   tier: Tier;
+  /** Figures on show, and how many of those the cache no longer holds (must be 0). */
+  placed: number;
+  orphans: number;
   /** Pods holding a Pokémon whose figure isn't on show (yet). */
   blankPods: number;
   /** The table has the chosen Pokémon's figure. */
@@ -757,7 +760,10 @@ export function createLabScene(host: HTMLElement, opts: LabSceneOptions): LabSce
         if (!onTable && (!ps.cur || ps.cur.a < 0.99)) blank++;
       }
       const hero = heroes.find((h) => h.phase === "show" || h.phase === "in");
+      const shown: Fig[] = [...heroes.map((h) => h.fig), ...pods.flatMap((ps) => [...(ps.cur ? [ps.cur.fig] : []), ...ps.old.map((o) => o.fig)])];
       return {
+        placed: shown.length,
+        orphans: shown.filter((f) => !stream!.holds(f)).length,
         tier,
         blankPods: blank,
         heroShown: !!hero,

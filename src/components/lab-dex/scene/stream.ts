@@ -173,10 +173,19 @@ export class FigureStream {
     this.evict();
   }
 
+  /** Whether the cache still holds this figure (a dropped one must never be on show). */
+  holds(f: Fig) {
+    return this.cache.get(f.key) === f;
+  }
+
   stats() {
-    let pod = 0, hero = 0;
-    for (const f of this.cache.values()) f.lod === "pod" ? pod++ : hero++;
-    return { pod, hero, pending: this.pending.size, queued: this.queue.length, built: this.built, aborted: this.aborted };
+    let pod = 0, hero = 0, inUse = 0;
+    for (const f of this.cache.values()) {
+      if (f.lod === "pod") pod++;
+      else hero++;
+      inUse += f.inUse;
+    }
+    return { pod, hero, inUse, pending: this.pending.size, queued: this.queue.length, built: this.built, aborted: this.aborted };
   }
 
   dispose() {
