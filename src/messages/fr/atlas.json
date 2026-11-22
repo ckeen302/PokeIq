@@ -1,0 +1,52 @@
+{
+  "search": "Cherche une région, une ville, une route ou un lieu",
+  "searchShort": "Région, ville, route…",
+  "kicker": "Toutes les régions principales · une carte",
+  "title": "Atlas <accent>mondial</accent>",
+  "globe": "Le voir en globe 3D →",
+  "searchLabel": "Chercher sur la carte",
+  "go": "OK",
+  "regions": "Régions",
+  "canvas": "Carte du monde Pokémon avec toutes les régions. Utilise la recherche ou les boutons de région pour aller à un lieu.",
+  "failed": "Impossible de charger l’atlas. Recharge la page.",
+  "loading": "Chargement de l’atlas",
+  "zoom": "Zoom <b>{level}</b>",
+  "zoomLevels": {
+    "world": "Monde",
+    "region": "Région",
+    "towns": "Villes et routes",
+    "close": "Gros plan"
+  },
+  "cities": "Villes",
+  "towns": "Bourgs",
+  "close": "Fermer",
+  "zoomIn": "Zoomer",
+  "zoomOut": "Dézoomer",
+  "whole": "Afficher le monde entier",
+  "help": "Fais défiler pour zoomer, glisse pour explorer, clique sur un lieu pour les détails. Chaque région est dessinée à la même échelle d’après les cartes des jeux et placée comme les lieux réels qui l’ont inspirée.",
+  "noMatch": "Aucun résultat",
+  "nothing": "Rien ne s’appelle « {q} ». Essaie une région, une ville, une route ou un lieu, comme Safrania, Route 24 ou Paldea.",
+  "main": "Région de la série principale",
+  "side": "DLC ou zone annexe",
+  "partOf": "Fait partie de {parent}",
+  "partOfRegion": "Fait partie d’une région",
+  "count": "{n} villes et lieux, placés comme sur la carte du jeu. Zoome pour voir tous les noms.",
+  "countRoutes": "{n} villes et lieux, plus {routes} routes, placés comme sur la carte du jeu. Zoome pour voir tous les noms.",
+  "kinds": {
+    "route": "Route",
+    "landmark": "Lieu notable",
+    "town": "Bourg / Ville"
+  },
+  "placesHere": "Lieux ici",
+  "exactFrom": "Exact · {source}",
+  "exact": "Exact · d’après la carte du jeu",
+  "approximate": "Approximatif · pas de repère officiel",
+  "sources": {
+    "emerald": "Données de la carte d’Émeraude",
+    "oras": "Carte de Rubis Oméga et Saphir Alpha",
+    "hgss": "Données de la carte du Pokégear d’Or HeartGold et Argent SoulSilver",
+    "platinum": "Données de la carte de Platine"
+  },
+  "play": "Jouer à PokéGuessr : {map} →",
+  "world": "Monde"
+}

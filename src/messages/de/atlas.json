@@ -1,0 +1,52 @@
+{
+  "search": "Region, Stadt, Route oder Sehenswürdigkeit suchen",
+  "searchShort": "Region, Stadt, Route …",
+  "kicker": "Alle Hauptregionen · eine Karte",
+  "title": "Welt<accent>atlas</accent>",
+  "globe": "Als 3D-Globus ansehen →",
+  "searchLabel": "Karte durchsuchen",
+  "go": "Los",
+  "regions": "Regionen",
+  "canvas": "Karte der Pokémon-Welt mit allen Regionen. Nutze die Suche oder die Regionsknöpfe, um zu einem Ort zu springen.",
+  "failed": "Der Atlas konnte nicht geladen werden. Lade die Seite neu.",
+  "loading": "Atlas wird geladen",
+  "zoom": "Zoom <b>{level}</b>",
+  "zoomLevels": {
+    "world": "Welt",
+    "region": "Region",
+    "towns": "Städte + Routen",
+    "close": "Nah"
+  },
+  "cities": "Städte",
+  "towns": "Orte",
+  "close": "Schließen",
+  "zoomIn": "Vergrößern",
+  "zoomOut": "Verkleinern",
+  "whole": "Ganze Welt zeigen",
+  "help": "Scrolle zum Zoomen, ziehe zum Erkunden, klicke auf einen Ort für Details. Jede Region ist im selben Maßstab nach den Karten der Spiele gezeichnet und so angeordnet wie die echten Orte, auf denen sie beruht.",
+  "noMatch": "Kein Treffer",
+  "nothing": "Nichts namens „{q}“. Versuch eine Region, eine Stadt, eine Route oder eine Sehenswürdigkeit, etwa Saffronia City, Route 24 oder Paldea.",
+  "main": "Region der Hauptreihe",
+  "side": "DLC oder Nebengebiet",
+  "partOf": "Teil von {parent}",
+  "partOfRegion": "Teil einer Region",
+  "count": "{n} Städte und Sehenswürdigkeiten, angeordnet wie auf der Karte des Spiels. Zoome hinein für alle Namen.",
+  "countRoutes": "{n} Städte und Sehenswürdigkeiten und {routes} Routen, angeordnet wie auf der Karte des Spiels. Zoome hinein für alle Namen.",
+  "kinds": {
+    "route": "Route",
+    "landmark": "Sehenswürdigkeit",
+    "town": "Ort / Stadt"
+  },
+  "placesHere": "Orte hier",
+  "exactFrom": "Genau · {source}",
+  "exact": "Genau · nach der Karte des Spiels",
+  "approximate": "Ungefähr · keine offizielle Markierung",
+  "sources": {
+    "emerald": "Kartendaten aus Smaragd",
+    "oras": "Karte aus Omega Rubin und Alpha Saphir",
+    "hgss": "Kartendaten des PokéCom aus HeartGold und SoulSilver",
+    "platinum": "Kartendaten aus Platin"
+  },
+  "play": "PokéGuessr spielen: {map} →",
+  "world": "Welt"
+}

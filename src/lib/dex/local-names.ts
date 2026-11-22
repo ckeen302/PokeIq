@@ -70,6 +70,8 @@ export interface DexNames {
   /** A game given by its version keys, joined like the English label ("Red & Blue"). */
   versions: (keys: string[], english: string, sep?: string) => string;
   move: (english: string) => string;
+  /** A move's official name, or undefined when the language's data has none. */
+  moveOf: (english: string) => string | undefined;
   item: (english: string) => string;
   ability: (english: string) => string;
   /** A type ("Rock"). */
@@ -87,6 +89,7 @@ const ENGLISH: DexNames = {
   gameList: (l) => l,
   versions: (_k, english) => english,
   move: (n) => n,
+  moveOf: (n) => n,
   item: (n) => n,
   ability: (n) => n,
   type: (n) => n,
@@ -147,6 +150,7 @@ export function dexNames(): DexNames {
       return names.every(Boolean) ? names.join(sep) : english;
     },
     move: (n) => d.moves[nameKey(n)] ?? n,
+    moveOf: (n) => d.moves[nameKey(n)],
     item: (n) => d.items[nameKey(n)] ?? n,
     ability: (n) => d.abilities[nameKey(n)] ?? n,
     type: (n) => d.types[nameKey(n)] ?? n,

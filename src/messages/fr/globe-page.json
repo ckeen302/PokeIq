@@ -1,0 +1,14 @@
+{
+  "origins": {
+    "Kanto": "Inspirée de la région du Kantō au Japon, autour de Tokyo. Safrania se trouve à peu près à la place de Tokyo.",
+    "Johto": "Inspirée du Kansai et d’une partie du Chūbu au Japon. Les tours de Rosalia rappellent l’ancienne Kyoto, et Doublonville s’inspire d’Osaka.",
+    "Hoenn": "Inspirée de Kyūshū, la grande île du sud du Japon, couchée sur le côté, avec beaucoup de mer et d’îles à rejoindre en Surf.",
+    "Sinnoh": "Inspirée de Hokkaidō, l’île du nord du Japon, avec ses montagnes enneigées et l’imposant Mont Couronné en son centre.",
+    "Unova": "Inspirée de New York et de ses environs. Volucité, c’est Manhattan, et c’est la première région hors du Japon.",
+    "Kalos": "Inspirée du nord de la France. Illumis et sa Tour Prismatique tiennent le rôle de Paris et de la tour Eiffel.",
+    "Alola": "Inspirée d’Hawaï : quatre îles principales plus une artificielle, avec des épreuves insulaires à la place des Arènes.",
+    "Galar": "Inspirée de la Grande-Bretagne, surtout de l’Angleterre, avec les Highlands écossais au nord enneigé et Winscor dans le rôle de Londres.",
+    "Paldea": "Inspirée de la péninsule Ibérique : l’Espagne et le Portugal. Mesaledo et son académie sont au centre, comme Madrid."
+  },
+  "japan": "{game} (Japon)"
+}

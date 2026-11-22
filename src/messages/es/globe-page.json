@@ -1,0 +1,14 @@
+{
+  "origins": {
+    "Kanto": "Basada en la región de Kantō de Japón, en torno a Tokio. Ciudad Azafrán está más o menos donde está Tokio.",
+    "Johto": "Basada en la región japonesa de Kansai y parte de Chūbu. Las torres de Ciudad Iris recuerdan a la antigua Kioto, y Ciudad Trigal se inspira en Osaka.",
+    "Hoenn": "Basada en Kyūshū, la isla principal del sur de Japón, girada de lado, con mucho mar e islas entre las que surfear.",
+    "Sinnoh": "Basada en Hokkaidō, la isla del norte de Japón, con montañas nevadas y el imponente Monte Corona en el centro.",
+    "Unova": "Basada en Nueva York y sus alrededores. Ciudad Porcelana es Manhattan, y fue la primera región fuera de Japón.",
+    "Kalos": "Basada en el norte de Francia. Ciudad Luminalia y su Torre Prisma representan París y la Torre Eiffel.",
+    "Alola": "Basada en Hawái: cuatro islas principales y una artificial, con pruebas insulares en lugar de gimnasios.",
+    "Galar": "Basada en Gran Bretaña, sobre todo Inglaterra, con las Tierras Altas de Escocia en el norte nevado y Ciudad Puntera en el papel de Londres.",
+    "Paldea": "Basada en la península ibérica: España y Portugal. Ciudad Meseta y su academia están en el centro, como Madrid."
+  },
+  "japan": "{game} (Japón)"
+}

@@ -61,9 +61,9 @@ export function tagName(t: TrainersT, names: DexNames, tag: string): string {
   if (requires) {
     const either = requires[1].includes(" or ");
     const parts = requires[1].split(either ? " or " : " and ");
-    const local = parts.map((p) => names.move(p));
-    if (local.some((p, i) => p === parts[i])) return tag;
-    return t("team.requires", { what: new Intl.ListFormat(t.locale, { type: either ? "disjunction" : "conjunction" }).format(local) });
+    const local = parts.map((p) => names.moveOf(p));
+    if (!local.every(Boolean)) return tag;
+    return t("team.requires", { what: new Intl.ListFormat(t.locale, { type: either ? "disjunction" : "conjunction" }).format(local as string[]) });
   }
   return tag;
 }
