@@ -1,0 +1,42 @@
+{
+  "stellar": "Stellar",
+  "category": {
+    "Physical": "Phys",
+    "Special": "Spec",
+    "Status": "Status"
+  },
+  "categoryName": {
+    "Physical": "Physical",
+    "Special": "Special",
+    "Status": "Status"
+  },
+  "banned": "Banned",
+  "species": "Species",
+  "searchPokemon": "Search Pokémon",
+  "filters": "Filters",
+  "filterType": "Filter by type",
+  "anyType": "Any type",
+  "filterAbility": "Filter by ability",
+  "ability": "Ability",
+  "filterMove": "Filter by move learned",
+  "learns": "Learns move",
+  "legalOnly": "Legal only",
+  "clear": "Clear",
+  "bst": "Base stat total",
+  "item": "Item",
+  "noItem": "No item",
+  "loadingMoves": "Loading moves…",
+  "addMove": "Add a move",
+  "filterMoveType": "Filter moves by type",
+  "head": {
+    "move": "Move",
+    "type": "Type",
+    "cat": "Cat",
+    "pow": "Pow",
+    "acc": "Acc",
+    "pp": "PP",
+    "use": "Use"
+  },
+  "isBanned": "{move} is {reason}.",
+  "nature": "Nature"
+}

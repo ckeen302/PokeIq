@@ -1,0 +1,53 @@
+{
+  "short": {
+    "gen9randombattle": "Lotta casuale",
+    "gen9randomdoublesbattle": "Doppio casuale",
+    "gen9triples": "Triplo",
+    "gen9freeforallrandombattle": "Tutti contro tutti casuale",
+    "gen9multirandombattle": "Multipla casuale",
+    "gen9freeforall": "Tutti contro tutti",
+    "gen9nationaldex": "Nat Dex",
+    "custom": "Personalizzate",
+    "factory": "Industria Lotta",
+    "bssfactory": "BSS Factory",
+    "tower": "Torre"
+  },
+  "pastRandom": "Gen {gen} casuale",
+  "pastTier": "Gen {gen} {tier}",
+  "name": {
+    "custom": "Regole personalizzate",
+    "tower": "Torre Lotta"
+  },
+  "bring": "Porta la tua squadra: una salvata, oppure incollane una nel formato di esportazione di Showdown.",
+  "pastRandomBlurb": "Sei Pokémon casuali a testa, con i set e le meccaniche della Gen {gen}. Non serve una squadra.",
+  "blurb": {
+    "gen9lc": "Little Cup: livello 5, solo primi stadi. Porta la tua squadra: una salvata, oppure incollane una nel formato di esportazione di Showdown.",
+    "gen9monotype": "Tutti i Pokémon hanno un tipo in comune; niente Teracristal. Porta la tua squadra: una salvata, oppure incollane una nel formato di esportazione di Showdown.",
+    "gen9nationaldex": "Tutti i Pokémon, le Megaevoluzioni e le mosse Z; niente Teracristal. Porta la tua squadra: una salvata, oppure incollane una nel formato di esportazione di Showdown.",
+    "gen9triples": "Tre Pokémon per lato; le mosse a bersaglio singolo raggiungono solo i Pokémon adiacenti, e un Pokémon sul lato può spostarsi al centro. Porta la tua squadra: una salvata, oppure incollane una nel formato di esportazione di Showdown.",
+    "gen9freeforallrandombattle": "Quattro Allenatori, ognuno per conto suo, un Pokémon in campo a testa. Vince l’ultimo che resta in piedi. Squadre casuali.",
+    "gen9multirandombattle": "Due contro due: condividi un lato con un compagno, tre Pokémon casuali a testa, uno in campo a testa.",
+    "gen9freeforall": "Quattro Allenatori, ognuno per conto suo, un Pokémon in campo a testa. Porta la tua squadra: una salvata, oppure incollane una nel formato di esportazione di Showdown.",
+    "custom": "Il tuo regolamento: le meccaniche di qualsiasi generazione, livello, meccaniche speciali, clausole e dimensione della squadra.",
+    "factory": "Squadre a noleggio dai set Battle Factory di Showdown: livello 100, sei contro sei, regole Standard. Non serve una squadra.",
+    "bssfactory": "Squadre a noleggio dai set Battle Stadium di Showdown: livello 50, porti sei, ne scegli tre.",
+    "tower": "Flat Rules: livello 50, porti sei, ne scegli tre; clausole specie, strumento e soprannome.",
+    "gen9randombattle": "Sei Pokémon casuali a testa, con set creati apposta per loro. Non serve una squadra.",
+    "gen9randomdoublesbattle": "Due Pokémon in campo alla volta, squadre casuali. Scegli un bersaglio per ogni mossa."
+  },
+  "cpu": {
+    "easy": { "name": "Facile", "blurb": "Attacca con quello che sembra forte, non cambia mai." },
+    "normal": { "name": "Normale", "blurb": "Sceglie buone mosse, cambia negli scontri sfavorevoli, usa il Teracristal." },
+    "hard": { "name": "Difficile", "blurb": "Gioca per vincere: KO, priorità, potenziamenti sicuri, cambi furbi e Teracristal." }
+  },
+  "gameType": {
+    "doubles": "Doppio",
+    "triples": "Triplo",
+    "freeforall": "Tutti contro tutti",
+    "multi": "Lotta multipla"
+  },
+  "custom": {
+    "name": "[Gen {gen}] Personalizzate · Liv. {level}",
+    "nameCap": "[Gen {gen}] Personalizzate · Liv. ≤{level}"
+  }
+}
