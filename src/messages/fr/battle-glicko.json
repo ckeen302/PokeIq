@@ -1,0 +1,7 @@
+{
+  "title": "{elo, select, none {} other {Elo {elo}. }}GXE {gxe} % : la probabilité de battre un Dresseur pris au hasard dans ce classement. Cote Glicko-2 {glicko}.",
+  "gxe": "GXE {gxe} %",
+  "deviation": "Cote Glicko-2 ± écart",
+  "provisional": "Prov.",
+  "provisionalTitle": "Provisoire tant que l'écart de la cote ne passe pas sous {rd}"
+}

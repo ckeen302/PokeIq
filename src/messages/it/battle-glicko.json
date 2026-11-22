@@ -1,0 +1,7 @@
+{
+  "title": "{elo, select, none {} other {Elo {elo}. }}GXE {gxe}%: la probabilità di battere un Allenatore a caso in questa classifica. Punteggio Glicko-2 {glicko}.",
+  "gxe": "GXE {gxe}%",
+  "deviation": "Punteggio Glicko-2 ± deviazione",
+  "provisional": "Provv.",
+  "provisionalTitle": "Provvisorio finché la deviazione non scende sotto {rd}"
+}

@@ -1,0 +1,136 @@
+{
+  "crumb": "Combate",
+  "calc": {
+    "title": "Calculadora de daño Pokémon: todas las generaciones, cada golpe",
+    "description": "Una calculadora de daño Pokémon, la de Smogon, para las generaciones 3 a 9: rangos de daño, probabilidad de KO y descripciones completas con cambios de características, problemas de estado, Teracristalización, clima, campos, pantallas y movimientos de área en dobles. Carga sets de tus equipos.",
+    "crumb": "Calculadora de daño",
+    "heading": "Calculadora",
+    "accent": "de daño",
+    "intro": "Una calculadora de daño Pokémon: el rango de daño, la probabilidad de KO y la descripción de Showdown de cada movimiento, en ambos sentidos. Funciona con la calculadora de daño de Smogon."
+  },
+  "teams": {
+    "title": "Creador de equipos Pokémon: formatos de Showdown y legalidad comprobada",
+    "description": "Un creador de equipos Pokémon para equipos competitivos en OU, Ubers, UU, Dobles OU, VGC y Dex Nacional de la 9.ª generación, OU de la 4.ª y OU de la 3.ª. Movimientos según los aprendizajes de cada formato, características al momento, importación y exportación de Showdown y la comprobación de legalidad del propio Pokémon Showdown.",
+    "crumb": "Creador de equipos",
+    "heading": "Creador",
+    "accent": "de equipos",
+    "intro": "Un creador de equipos Pokémon con seis huecos, los aprendizajes de cada formato y las reglas del propio Pokémon Showdown. Los equipos se guardan en este dispositivo mientras los creas, listos para combatir."
+  },
+  "lab": {
+    "title": "Laboratorio de combate: simulador de probabilidad de victoria Pokémon",
+    "description": "Prepara dos equipos Pokémon cualesquiera, de la 1.ª a la 9.ª generación, y juega el combate miles de veces con el motor del propio Pokémon Showdown. Mira la probabilidad de victoria de cada lado con un intervalo de confianza del 95 %, cuánto duran los combates, quién logra los KO y combates de muestra.",
+    "name": "Laboratorio de combate",
+    "crumb": "Laboratorio de combate",
+    "heading": "Laboratorio",
+    "accent": "de combate",
+    "intro": "Prepara dos bandos y deja que el motor del propio Pokémon Showdown juegue el combate miles de veces, aquí mismo en tu navegador. Mira cuántas veces gana cada bando, cuánto tarda y qué lo decide."
+  },
+  "ladder": {
+    "title": "Clasificación de combates Pokémon: puntuaciones por formato",
+    "description": "La clasificación de combates clasificatorios: puntuaciones Elo, GXE y Glicko-2, como en Pokémon Showdown, para Combate Aleatorio, Dobles Aleatorios, OU, Ubers, UU, RU, NU, PU, LC, Monotipo, Dex Nacional y Dobles OU.",
+    "crumb": "Clasificación",
+    "heading": "Clasificación",
+    "accent": "de combates",
+    "rules": "Puntuaciones por formato como en Pokémon Showdown: la clasificación se ordena por Elo (todo el mundo empieza con {elo}, nunca baja de ahí y un Elo de más de 1400 baja un poco cada día que no juegas), junto con el GXE (tu probabilidad de ganar a un entrenador al azar de la clasificación) y una puntuación Glicko-2. Todo el mundo empieza con {rating} ± {rd} de Glicko-2; una puntuación es provisional hasta que su desviación baja de {shown}. Rendirse, quedarse sin tiempo o salir cuenta como derrota.",
+    "short": "Ordenada por Elo, con GXE y Glicko-2, como en Pokémon Showdown. Todo el mundo empieza con {elo}.",
+    "insights": "Tus estadísticas",
+    "play": "Jugar clasificatoria",
+    "soon": "Los combates clasificatorios llegarán pronto.",
+    "top": "{format}: los 100 mejores",
+    "how": "Cómo funcionan las puntuaciones"
+  },
+  "insights": {
+    "title": "Estadísticas del equipo",
+    "description": "Las estadísticas de tus combates: Pokémon iniciales, Pokémon, rivales más duros y evolución de tu puntuación.",
+    "crumb": "Estadísticas del equipo",
+    "heading": "Estadísticas",
+    "accent": "del equipo",
+    "intro": "Tus Pokémon iniciales más habituales, el porcentaje de victorias de cada Pokémon, los rivales que más te ganan y la evolución de tu puntuación, a partir de tus combates guardados.",
+    "signIn": "Las estadísticas van con tu cuenta: inicia sesión para ver las tuyas.",
+    "signInButton": "Iniciar sesión"
+  },
+  "playerInsights": {
+    "title": "{name} · Estadísticas del equipo",
+    "description": "Las estadísticas de combate de {name} en PokéIQ: Pokémon iniciales más habituales, porcentaje de victorias por Pokémon, rivales más duros y evolución de la puntuación.",
+    "heading": "{name}:",
+    "accent": "estadísticas",
+    "intro": "Pokémon iniciales, Pokémon, rivales más duros y puntuación a lo largo de los combates guardados de {name}, sacados de sus repeticiones.",
+    "format": "Formato",
+    "allFormats": "Todos los formatos",
+    "noBattles": "Todavía no hay combates que analizar.",
+    "soon": "Las estadísticas del equipo llegarán pronto.",
+    "empty": "Aún no hay repeticiones guardadas de las que aprender: las estadísticas salen de los combates cuya repetición se guardó (cada combate clasificatorio guarda la suya).",
+    "reading": "Se están leyendo {n} combates más; vuelve en un momento.",
+    "battlesRead": "Combates leídos",
+    "winRate": "Victorias",
+    "monsUsed": "Pokémon usados",
+    "leadsCount": "Iniciales distintos",
+    "trend": "Puntuación en el tiempo",
+    "leads": "Iniciales más habituales",
+    "byMon": "Victorias por Pokémon",
+    "byMonAside": "Combates en los que salió cada uno",
+    "monRecord": "{wins}–{losses} en {games, plural, one {{games} combate} other {{games} combates}}",
+    "threats": "Rivales más duros",
+    "threatsAside": "Rivales con un KO o una victoria contra {name}: más KO primero, luego más victorias",
+    "threatRecord": "{games, plural, one {{games} combate} other {{games} combates}} · {wins, plural, one {{wins} victoria} other {{wins} victorias}} contra {name}",
+    "kos": "{n, plural, one {KO} other {KO}}",
+    "noThreats": "Nada ha debilitado todavía a los Pokémon de {name}.",
+    "pending": "{n, plural, one {Falta por leer {n} combate antiguo: contará} other {Faltan por leer {n} combates antiguos: contarán}} en una próxima visita.",
+    "noLeads": "Todavía no hay iniciales.",
+    "mostUsed": "El más usado",
+    "leadTimes": "{n}× inicial",
+    "leadWon": "{rate} ganados",
+    "trendMore": "Juega {count, select, one {otro combate clasificatorio} other {un par de combates clasificatorios}} en este formato para ver la evolución.",
+    "trendLabel": "Puntuación de {from} a {to} en {n} combates clasificatorios",
+    "trendDelta": "{delta} en {n, plural, one {{n} combate} other {{n} combates}}",
+    "lastGxe": "GXE tras el último combate: {gxe} %"
+  },
+  "replays": {
+    "title": "Repeticiones de combates Pokémon",
+    "description": "Mira repeticiones de combates Pokémon turno a turno, con el motor de Pokémon Showdown: tus propios combates y los últimos clasificatorios y públicos.",
+    "crumb": "Repeticiones",
+    "heading": "Repeticiones",
+    "accent": "de combates",
+    "intro": "Cada combate clasificatorio y público se guarda como repetición; tras cualquier otro, pulsa Guardar repetición. Las repeticiones muestran lo que vieron los espectadores, turno a turno.",
+    "import": "Ver una repetición de Showdown",
+    "live": "Combates en directo"
+  },
+  "replay": {
+    "fallbackTitle": "Repetición de combate",
+    "fallbackDescription": "Una repetición de un combate Pokémon en PokéIQ.",
+    "title": "{title}: repetición de {format}",
+    "description": "{result} en {turns} turnos. Mira la repetición, turno a turno, con el motor de Pokémon Showdown.",
+    "crumb": "Repetición",
+    "ranked": "Clasificatorio · ",
+    "summary": "{format} · {result} en {turns, plural, one {{turns} turno} other {{turns} turnos}}."
+  },
+  "notFound": {
+    "heading": "Repetición no encontrada",
+    "body": "Esta repetición no existe o no está disponible: puede que el enlace esté mal o que el combate nunca se guardara.",
+    "browse": "Ver repeticiones",
+    "live": "Combates en directo",
+    "import": "Importar un registro"
+  },
+  "import": {
+    "title": "Ver una repetición de Showdown",
+    "description": "Pega el registro de un combate de Pokémon Showdown o abre un archivo de repetición guardado y míralo turno a turno.",
+    "crumb": "Importar",
+    "heading": "Ver una",
+    "accent": "repetición de Showdown",
+    "intro": "Pega el registro de un combate o abre un archivo de repetición que guardó Showdown, y reprodúcelo aquí."
+  },
+  "tournaments": {
+    "title": "Torneos",
+    "description": "Torneos de combates Pokémon en PokéIQ: eliminación directa o liguilla en cualquier formato, y un torneo oficial de Combate Aleatorio cada hora.",
+    "crumb": "Torneos",
+    "heading": "Torneos",
+    "accent": "en directo",
+    "intro": "Únete a un cuadro o abre el tuyo en cualquier formato. Cada hora empieza un torneo oficial de Combate Aleatorio: las inscripciones están abiertas los primeros diez minutos."
+  },
+  "tournament": {
+    "title": "Torneo",
+    "description": "Un torneo de combates Pokémon en PokéIQ: el cuadro en directo, los enfrentamientos y los resultados.",
+    "back": "Volver a los torneos",
+    "crumb": "Torneos"
+  }
+}
