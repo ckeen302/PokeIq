@@ -1,0 +1,102 @@
+{
+  "meta": {
+    "hubTitle": "Pokémon race: which Pokémon is fastest? 3D sprint races",
+    "hubDescription": "Watch Pokémon race 100, 200 and 400 m in a 3D stadium at night, with speeds from their base stats and a sprint model from sports science: Regieleki against Shuckle, the fastest eight, a knockout of every Pokémon. Pick your own race, share it or make a video.",
+    "hubSocial": "Which Pokémon is fastest? Watch them race · PokéIQ",
+    "presetTitle": "{title} (3D Pokémon race)",
+    "presetDescription": "{blurb} Speeds from their base stats, in a 3D stadium at night. Watch it, pick your own race or make a video.",
+    "runTitle": "{title}: {d} m race",
+    "runDescription": "{name} wins the {d} m in {time} s. {list}. Speeds from their base stats, in 3D on PokéIQ.",
+    "runImage": "{title}: a {d} m Pokémon race"
+  },
+  "titles": {
+    "fastest-eight": "The fastest Pokémon: the 100 m final",
+    "slowest-eight": "The slowest Pokémon race 100 m",
+    "shuckle-vs-regieleki": "Shuckle vs Regieleki: the slowest Pokémon against the fastest",
+    "gen-1-final": "The fastest Gen 1 Pokémon: the 100 m final",
+    "starters": "The fastest starter Pokémon (final evolutions)",
+    "legendaries": "The fastest Legendary and Mythical Pokémon: 200 m",
+    "eeveelutions": "Every Eeveelution races 100 m",
+    "pseudo-legendaries": "Pseudo-legendary Pokémon race 400 m",
+    "heavyweights": "The heaviest Pokémon race 100 m",
+    "every-pokemon": "Every Pokémon in one knockout tournament"
+  },
+  "blurbs": {
+    "fastest-eight": "The fastest Pokémon by base Speed and acceleration, in a 100 m final.",
+    "slowest-eight": "Shuckle, Munchlax and the other slowest Pokémon over 100 m. Bring a snack.",
+    "shuckle-vs-regieleki": "Base Speed 5 against base Speed 200 over 100 m.",
+    "gen-1-final": "The fastest Pokémon of Generation I, Kanto's originals.",
+    "starters": "The fastest fully evolved starters, picked from every starter line from Bulbasaur's to Quaxly's.",
+    "legendaries": "The fastest Legendary and Mythical Pokémon over 200 m, round the bend.",
+    "eeveelutions": "Vaporeon, Jolteon, Flareon, Espeon, Umbreon, Leafeon, Glaceon and Sylveon.",
+    "pseudo-legendaries": "The fastest pseudo-legendaries over one lap, where stamina (HP) starts to count.",
+    "heavyweights": "The heaviest Pokémon, 800 kg and up. Mind the ground.",
+    "every-pokemon": "Every Pokémon drawn into heats of eight, through the rounds to one 100 m final."
+  },
+  "page": {
+    "back": "Pokémon Race",
+    "customKicker": "Pokémon race · {d} m",
+    "wins": "{name} wins in {time} s, based on their stats.",
+    "lab": "3D Lab",
+    "hubKicker": "Pokémon race · 3D",
+    "hubTitle": "Pokémon ",
+    "hubAccent": "Race",
+    "hubBlurb": "Who is the fastest Pokémon? Watch them race 100, 200 or 400 m under the floodlights of a 3D stadium, with speeds from their stats and a sprint model from sports science. Pick any of them, share the race or make a video.",
+    "presetKicker": "Pokémon race · {d} m",
+    "presetTitle": "{label} ",
+    "presetAccent": "race",
+    "races": "Races"
+  },
+  "ko": {
+    "title": "The knockout",
+    "body": "Every Pokémon is drawn into heats of eight. Each round keeps about a quarter: the first places of each heat (Q) and the fastest losers (q). Champion: <b>{name}</b>.",
+    "one": "one race",
+    "heats": "heats",
+    "through": "{who}{losers} go through",
+    "winner": "each heat's winner",
+    "first": "the first {n} of each heat",
+    "losers": " and the {n} fastest losers"
+  },
+  "results": {
+    "final": "The final · {d} m",
+    "title": "Results · {d} m",
+    "aria": "{title}: {d} m results",
+    "pokemon": "Pokémon",
+    "time": "Time",
+    "gap": "Gap",
+    "speed": "Speed",
+    "top": "Top speed",
+    "lane": "{motion} · lane {n}",
+    "kmh": "{v} km/h",
+    "crossedAria": "Where everyone was as the winner crossed the line",
+    "crossed": "As {name} crossed the line",
+    "won": "won",
+    "back": "{m} m back",
+    "item": "{name} ({time} s)"
+  },
+  "how": "How the race works",
+  "games": {
+    "title": "More than sprints: the PokéIQ Games",
+    "body": "The same runners in the 100, 200 and 400 m, plus the long jump, high jump, shot put, javelin, weightlifting, swimming and wrestling, with medals and a medal table.",
+    "open": "Open the Games",
+    "records": "100 m records"
+  },
+  "kind": {
+    "pokemon": "Pokémon",
+    "mega": "Mega Evolution",
+    "regional": "Regional form",
+    "form": "Alternate form"
+  },
+  "motion": {
+    "run": "Runs",
+    "gallop": "Gallops",
+    "scuttle": "Scuttles",
+    "fly": "Flies",
+    "hover": "Hovers",
+    "slither": "Slithers",
+    "flop": "Flops",
+    "roll": "Rolls",
+    "bounce": "Bounces",
+    "swim": "Swims"
+  }
+}

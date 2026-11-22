@@ -4,6 +4,22 @@ import { typePath } from "@/lib/sizes/type-icons";
 import { MOTION_LABEL } from "@/lib/race/gait";
 import { formatGap, formatTime, kmh, type Race, type RaceLane } from "@/lib/race/race";
 
+/** The broadcast's own words on a page in another language (set by the page; English pages never set it). */
+export interface RaceGfxWords {
+  lane: string;
+  replay: string;
+  speedNote: string;
+  baseSpeed: string;
+  /** A lane introduction's line under the name: how it moves and its top speed (km/h). */
+  introLine(motion: string, kmh: string): string;
+  /** Type names in the page's language, by the English type key ("fire"). */
+  types: Record<string, string>;
+}
+let gfxWords: RaceGfxWords | null = null;
+export function setRaceGfxWords(w: RaceGfxWords | null) {
+  gfxWords = w;
+}
+
 /**
  * The broadcast graphics, drawn on a 2D canvas so the live page and the
  * exported video share them exactly: the lane introductions (in the Sizes
@@ -119,7 +135,7 @@ export function drawLaneIntro(g: CanvasRenderingContext2D, W: number, H: number,
   g.font = `800 ${s * 0.95}px ${o.font}`;
   g.fillText(String(r.lane), x + laneW / 2, y + s * 0.62);
   g.font = `800 ${s * 0.2}px ${o.font}`;
-  g.fillText("LANE", x + laneW / 2, y + s * 1.18);
+  g.fillText(gfxWords?.lane ?? "LANE", x + laneW / 2, y + s * 1.18);
   x += laneW + s * 0.15;
   // Dex tag over the banner.
   const tagH = s * 0.48;
@@ -162,7 +178,7 @@ export function drawLaneIntro(g: CanvasRenderingContext2D, W: number, H: number,
   const px = fitPx(g, name, namePx, o.font, bw - s * 0.6);
   gameText(g, name, x + bw / 2, by + bh * 0.54, px, o.font, gradN, INK, px * 0.22);
   // Under the banner: how it moves and its top speed.
-  const sub = `${MOTION_LABEL[e.motion].toUpperCase()} · ${kmh(r.runner.vmax).toFixed(0)} KM/H TOP`;
+  const sub = gfxWords ? gfxWords.introLine(e.motion, kmh(r.runner.vmax).toFixed(0)).toUpperCase() : `${MOTION_LABEL[e.motion].toUpperCase()} · ${kmh(r.runner.vmax).toFixed(0)} KM/H TOP`;
   const spx = fitPx(g, sub, s * 0.3, o.font, bw);
   gameText(g, sub, x + bw / 2, by + bh + s * 0.32, spx, o.font, "#ffffff", INK, spx * 0.22);
   x += bw + s * 0.15;
@@ -182,14 +198,14 @@ export function drawLaneIntro(g: CanvasRenderingContext2D, W: number, H: number,
   const spe = String(e.stats.spe);
   const npx = fitPx(g, spe, s * 0.78, o.font, spdW * 0.84);
   gameText(g, spe, x + spdW / 2, y + hb * 0.4, npx, o.font, "#ffffff", INK, npx * 0.16);
-  const upx = fitPx(g, "BASE SPEED", s * 0.24, o.font, spdW * 0.9);
-  gameText(g, "BASE SPEED", x + spdW / 2, y + hb * 0.78, upx, o.font, "#ffd21f", INK, upx * 0.2);
+  const upx = fitPx(g, gfxWords?.baseSpeed ?? "BASE SPEED", s * 0.24, o.font, spdW * 0.9);
+  gameText(g, gfxWords?.baseSpeed ?? "BASE SPEED", x + spdW / 2, y + hb * 0.78, upx, o.font, "#ffd21f", INK, upx * 0.2);
   x += spdW + s * 0.2;
   // Types.
   e.types.forEach((t, i) => {
     const d = s * 0.9;
     typeBall(g, t, x + i * s * 1.05 + d / 2, y + d / 2 + s * 0.05, d, s);
-    const label = t.toUpperCase();
+    const label = (gfxWords?.types[t] ?? t).toUpperCase();
     const lpx = fitPx(g, label, s * 0.27, o.font, s * 1.0);
     gameText(g, label, x + i * s * 1.05 + d / 2, y + d + s * 0.3, lpx, o.font, shadeHex(TYPE_COLORS[t] ?? "#888888", 0.25), INK, lpx * 0.24);
   });
@@ -359,7 +375,7 @@ export function drawReplayBug(g: CanvasRenderingContext2D, W: number, H: number,
   noShadow(g);
   g.fillStyle = INK;
   g.font = `800 ${s * 0.72}px ${o.font}`;
-  g.fillText("REPLAY", x + s * 2.1, y + s * 0.72);
+  g.fillText(gfxWords?.replay ?? "REPLAY", x + s * 2.1, y + s * 0.72);
   g.restore();
 }
 
@@ -517,6 +533,6 @@ export function drawResults(g: CanvasRenderingContext2D, W: number, H: number, r
   g.textAlign = "right";
   g.fillStyle = "rgba(255,255,255,0.45)";
   g.font = `700 ${11 * o.scale}px ${o.font}`;
-  g.fillText("SPEED = BASE SPEED", x + w - 14 * o.scale, y0 + 34 * o.scale);
+  g.fillText(gfxWords?.speedNote ?? "SPEED = BASE SPEED", x + w - 14 * o.scale, y0 + 34 * o.scale);
   g.restore();
 }

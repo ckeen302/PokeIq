@@ -32,9 +32,43 @@ export interface RaceRecordOptions {
   seconds?: number;
   quality?: Quality;
   fps?: number;
-  onProgress(p: number, label: string): void;
+  /** What it is doing (the dialog words it). */
+  onProgress(p: number, stage: RaceRecordStage): void;
   signal: AbortSignal;
+  /** A page in another language: the video's own words in it (English otherwise). */
+  words?: RaceVideoWords;
 }
+
+/** The recorder's steps, for its progress line. */
+export type RaceRecordStage = "scene" | "warming" | "sound" | "rendering" | "packing" | "recording";
+
+/** The video's own words (the broadcast graphics' come from graphics.ts' setRaceGfxWords). */
+export interface RaceVideoWords {
+  marks: string;
+  set: string;
+  meanwhile(name: string): string;
+  leads(name: string): string;
+  results(d: number): string;
+  hookLine(d: number): string;
+  endTitle: string;
+  endSub(d: number): string;
+  endCta: string;
+  /** " s" after a time. */
+  sec: string;
+}
+
+const ENGLISH: RaceVideoWords = {
+  marks: "ON YOUR MARKS",
+  set: "SET",
+  meanwhile: (name) => `Meanwhile, ${name}…`,
+  leads: (name) => `${name} leads`,
+  results: (d) => `Results · ${d} m`,
+  hookLine: (d) => `${d} M · BASED ON THEIR STATS`,
+  endTitle: "PokéIQ Race",
+  endSub: (d) => `${d} m · results`,
+  endCta: "Race any Pokémon",
+  sec: " s",
+};
 
 export interface RaceRecordResult {
   blob: Blob;
@@ -200,8 +234,9 @@ function wrap(g: CanvasRenderingContext2D, text: string, maxW: number): string[]
 }
 
 /** Every graphic of one video frame over the scene. */
-function drawFrame(g: CanvasRenderingContext2D, W: number, H: number, t: number, race: Race, plan: ShowPlan, total: number, end: number, o: { font: string; hook: string; title: string; link: string; logo: HTMLImageElement | null; photo: HTMLCanvasElement | null; heads: { lane: number; x: number; y: number; by: number; visible: boolean }[]; times: Map<import("@/lib/race/race").RaceLane, string> }) {
+function drawFrame(g: CanvasRenderingContext2D, W: number, H: number, t: number, race: Race, plan: ShowPlan, total: number, end: number, o: { font: string; hook: string; title: string; link: string; logo: HTMLImageElement | null; photo: HTMLCanvasElement | null; heads: { lane: number; x: number; y: number; by: number; visible: boolean }[]; times: Map<import("@/lib/race/race").RaceLane, string>; words: RaceVideoWords }) {
   const font = o.font;
+  const w0 = o.words;
   const gfx = { font, scale: 1.75 };
   const top = H * 0.15, bottom = H * 0.2;
   const inShow = t < end;
@@ -214,14 +249,14 @@ function drawFrame(g: CanvasRenderingContext2D, W: number, H: number, t: number,
       const r = race.lanes.find((x) => x.lane === shot.lane);
       if (r) drawLaneIntro(g, W, H, r, k, { ...gfx, scale: 1.55, bottom: bottom + 40 });
     } else if (shot.phase === "marks" || shot.phase === "set") {
-      drawStartCall(g, W, H, shot.phase === "marks" ? "ON YOUR MARKS" : "SET", k, gfx);
+      drawStartCall(g, W, H, shot.phase === "marks" ? w0.marks : w0.set, k, gfx);
     } else if (shot.phase === "race" || shot.phase === "fast") {
       const lead = leaderAt(race, raceT);
       const v = spotsAt(race, raceT).find((x) => x.lane === lead.lane)?.v ?? 0;
       const bug = drawClockBug(g, W, H, { ...gfx, scale: 2.3, top, title: `${race.distance} m · ${o.title}`, time: formatTime(Math.min(raceT, race.first)), leader: raceT < race.first ? { name: lead.entrant.name, v } : null, live: raceT < race.first });
       if (shot.phase === "fast") {
         const r = race.lanes.find((x) => x.lane === shot.lane);
-        drawFastForward(g, W, H, shot.rate, r ? (raceT > race.first ? `Meanwhile, ${r.entrant.name}…` : `${r.entrant.name} leads`) : "", { ...gfx, scale: 1.9, top: top + 190 });
+        drawFastForward(g, W, H, shot.rate, r ? (raceT > race.first ? w0.meanwhile(r.entrant.name) : w0.leads(r.entrant.name)) : "", { ...gfx, scale: 1.9, top: top + 190 });
       }
       const heads = o.heads.filter((a) => a.visible && a.by - a.y > 30);
       drawNameTags(g, heads.map((a) => ({ lane: a.lane, name: race.lanes.find((x) => x.lane === a.lane)!.entrant.name, x: a.x, y: a.y, lead: a.lane === lead.lane })), { font, scale: 2.3, top: top * 0.6, avoid: [bug] });
@@ -234,7 +269,7 @@ function drawFrame(g: CanvasRenderingContext2D, W: number, H: number, t: number,
     } else if (shot.phase === "photo" && o.photo) {
       drawPhotoFinish(g, W, H, o.photo, race, winPhoto, k, { font, scale: 1.9, top: top + 40, bottom });
     } else if (shot.phase === "results") {
-      drawResults(g, W, H, race, o.times, `Results · ${race.distance} m`, k, { font, scale: 1.75, top: top + 30, bottom });
+      drawResults(g, W, H, race, o.times, w0.results(race.distance), k, { font, scale: 1.75, top: top + 30, bottom });
     }
   }
   // Watermark.
@@ -270,7 +305,7 @@ function drawFrame(g: CanvasRenderingContext2D, W: number, H: number, t: number,
     fill.addColorStop(0, "#fff27a");
     fill.addColorStop(1, "#ffb000");
     lines.forEach((l, i) => gameText(g, l, W / 2, y0 + i * lh, W * 0.085, font, fill, "#0d1626", W * 0.085 * 0.2));
-    gameText(g, `${race.distance} M · BASED ON THEIR STATS`, W / 2, y0 + lines.length * lh + W * 0.01, W * 0.034, font, "#9fd8ff", "#0d1626", W * 0.034 * 0.2);
+    gameText(g, w0.hookLine(race.distance), W / 2, y0 + lines.length * lh + W * 0.01, W * 0.034, font, "#9fd8ff", "#0d1626", W * 0.034 * 0.2);
     g.restore();
   }
   // End card: laid out as the Games' end card (logo, title, the top three, one call to action and the link).
@@ -285,21 +320,21 @@ function drawFrame(g: CanvasRenderingContext2D, W: number, H: number, t: number,
     if (o.logo) g.drawImage(o.logo, W / 2 - s / 2, H * 0.15 - s / 2, s, s);
     g.textAlign = "center";
     g.textBaseline = "middle";
-    gameText(g, "PokéIQ Race", W / 2, H * 0.225, u * 0.075, font, "#ffffff", "#0d1626", u * 0.015);
-    gameText(g, `${race.distance} m · results`, W / 2, H * 0.262, u * 0.043, font, "#ffd21f", "#0d1626", u * 0.009);
+    gameText(g, w0.endTitle, W / 2, H * 0.225, u * 0.075, font, "#ffffff", "#0d1626", u * 0.015);
+    gameText(g, w0.endSub(race.distance), W / 2, H * 0.262, u * 0.043, font, "#ffd21f", "#0d1626", u * 0.009);
     const colors = ["#ffd84a", "#d7dde5", "#d58a4a"];
     const top3 = race.order.slice(0, 3);
     top3.forEach((r, i) => {
       const y = H * 0.43 + u * ((i - (top3.length - 1) / 2) * 0.09);
       const time = o.times.get(r) ?? "";
-      const line = `${i + 1}  ${r.entrant.name}  ·  ${time}${time.includes(":") ? "" : " s"}`;
+      const line = `${i + 1}  ${r.entrant.name}  ·  ${time}${time.includes(":") ? "" : w0.sec}`;
       let lpx = u * 0.056;
       g.font = `800 ${lpx}px ${font}`;
       const lw = g.measureText(line).width;
       if (lw > W * 0.88) lpx *= (W * 0.88) / lw;
       gameText(g, line, W / 2, y, lpx, font, colors[i], "#0d1626", lpx * 0.18);
     });
-    gameText(g, "Race any Pokémon", W / 2, H * 0.66, u * 0.05, font, "#ffd21f", "#0d1626", u * 0.01);
+    gameText(g, w0.endCta, W / 2, H * 0.66, u * 0.05, font, "#ffd21f", "#0d1626", u * 0.01);
     // The link a viewer can read and type: the page, without the query string.
     const link = o.link.split(/[?#]/)[0].replace(/\/run$/, "").replace(/\/$/, "");
     let lpx = u * 0.054;
@@ -315,7 +350,7 @@ export async function recordRace(o: RaceRecordOptions): Promise<RaceRecordResult
   const W = VIDEO_W, H = VIDEO_H, fps = o.fps ?? VIDEO_FPS;
   const { plan, total, end } = videoPlan(o.race, o.seconds);
   const N = Math.round(total * fps);
-  o.onProgress(0, "Setting the scene");
+  o.onProgress(0, "scene");
   const host = document.createElement("div");
   host.style.cssText = `position:fixed;left:-20000px;top:0;width:${W}px;height:${H}px;pointer-events:none;`;
   document.body.appendChild(host);
@@ -325,7 +360,7 @@ export async function recordRace(o: RaceRecordOptions): Promise<RaceRecordResult
   try {
     await scene.ready;
     stop();
-    await scene.setRace(o.race, o.signal, (k) => o.onProgress(0.02 * k, "Runners warming up"));
+    await scene.setRace(o.race, o.signal, (k) => o.onProgress(0.02 * k, "warming"));
     stop();
     // The photo finish, developed up front.
     const win = photoWindow(o.race);
@@ -360,7 +395,7 @@ export async function recordRace(o: RaceRecordOptions): Promise<RaceRecordResult
         focus: shot.phase === "intro" && st < plan.end ? shot.lane : undefined,
       });
       g.drawImage(scene.canvas, 0, 0, W, H);
-      drawFrame(g, W, H, t, o.race, plan, total, end, { font: o.font, hook: o.hook, title: o.title, link: o.link, logo, photo, heads: scene.heads(), times });
+      drawFrame(g, W, H, t, o.race, plan, total, end, { font: o.font, hook: o.hook, title: o.title, link: o.link, logo, photo, heads: scene.heads(), times, words: o.words ?? ENGLISH });
     };
 
     const vcfg = await pickVideoCodec(W, H, fps);
@@ -379,7 +414,7 @@ export async function recordRace(o: RaceRecordOptions): Promise<RaceRecordResult
         error(e) { failure = e; },
       });
       enc.configure(vcfg);
-      o.onProgress(0.03, "Mixing the stadium sound");
+      o.onProgress(0.03, "sound");
       const rate = 48000;
       const acodec = await pickAudioCodec(rate);
       const mix = acodec ? await mixAudio(o.race, plan, total, rate, o.signal) : null;
@@ -420,13 +455,13 @@ export async function recordRace(o: RaceRecordOptions): Promise<RaceRecordResult
         frame.close();
         while (enc.encodeQueueSize > 3) await sleep(2);
         if (i % 2 === 0) await sleep(0);
-        o.onProgress(0.05 + 0.95 * ((i + 1) / N), "Rendering");
+        o.onProgress(0.05 + 0.95 * ((i + 1) / N), "rendering");
       }
       await enc.flush();
       enc.close();
       if (failure) throw failure;
       if (!description) throw new Error("The video encoder gave no decoder configuration");
-      o.onProgress(1, "Packing the MP4");
+      o.onProgress(1, "packing");
       const mux = new Mp4Muxer({ width: W, height: H, description }, acodec && audioChunks.length ? { codec: acodec.codec, sampleRate: rate, channels: 2, description: audioDesc ?? (acodec.codec === "aac" ? aacConfig(rate, 2) : undefined) } : undefined);
       for (const c of chunks) mux.addVideo(c.data, c.ts, c.dur, c.key);
       for (const c of audioChunks) mux.addAudio(c.data, c.ts, c.dur);
@@ -462,7 +497,7 @@ export async function recordRace(o: RaceRecordOptions): Promise<RaceRecordResult
       const t = (performance.now() - t0) / 1000;
       if (t >= total) break;
       drawAt(Math.floor(t * fps));
-      o.onProgress(t / total, "Recording");
+      o.onProgress(t / total, "recording");
       await new Promise((r) => requestAnimationFrame(r));
     }
     rec.stop();
