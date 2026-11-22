@@ -500,129 +500,129 @@
   "why": "Pokédex (Diamant/Perl/Platin, Schwert): jagt in Gruppen von vier oder fünf und ritzt Zeichen in Bäume, um sich abzustimmen; gerissen, kalt und richtig gut darin."
  },
  "togekiss": {
-  "title": "The Peace Bringer",
-  "blurb": "You bring peace into rooms and you won't stay in ones that don't want it. You're generous, calm, and genuinely kind, and conflict for its own sake baffles you. People feel lucky to know you, and they are. You're Togekiss: gentle, bright, and a blessing on legs.",
-  "why": "Pokedex (DPPt, Sw): never appears where there is strife, and shares blessings with people who respect each other; the jubilee Pokemon."
+  "title": "Der Friedensbringer",
+  "blurb": "Du bringst Frieden in jeden Raum und bleibst nicht in einem, der ihn nicht will. Du bist großzügig, ruhig und aufrichtig freundlich, und Streit um des Streites willen verwirrt dich. Die Leute fühlen sich glücklich, dich zu kennen, und das sind sie auch. Du bist Togekiss: sanft, strahlend und ein Segen auf zwei Beinen.",
+  "why": "Pokédex (Diamant/Perl/Platin, Schwert): zeigt sich nie dort, wo Zwietracht herrscht, und teilt seinen Segen mit Menschen, die einander respektieren; das Festtags-Pokémon."
  },
  "leafeon": {
-  "title": "The Tranquil Leaf",
-  "blurb": "You're the fresh air. You're calm and kind and happiest outdoors, and you don't need a lot of noise or people to feel full. You take care of things slowly and well. You're Leafeon: tranquil, nurturing, and good for everyone around you.",
-  "why": "Pokedex (DPPt, Sw): photosynthesises and is always surrounded by clean, fresh air; the calmest eeveelution."
+  "title": "Das ruhige Blatt",
+  "blurb": "Du bist frische Luft. Du bist ruhig und freundlich und am glücklichsten draußen, und du brauchst weder viel Lärm noch viele Menschen, um dich erfüllt zu fühlen. Du kümmerst dich langsam und gründlich um die Dinge. Du bist Folipurba: gelassen, fürsorglich und gut für alle um dich herum.",
+  "why": "Pokédex (Diamant/Perl/Platin, Schwert): betreibt Fotosynthese und ist immer von sauberer, frischer Luft umgeben; die ruhigste Evoli-Entwicklung."
  },
  "glaceon": {
-  "title": "The Cool Precision",
-  "blurb": "You're precise, and you keep a little distance on purpose. You're elegant and composed, with high standards and a dry wit, and you don't warm up quickly to new people. The ones who get through find the cold was never the whole story. You're Glaceon: cool, exact, and quietly beautiful.",
-  "why": "Pokedex (DPPt, Sw): controls its body temperature precisely, freezing the air around it into diamond dust; the elegant, distant eeveelution."
+  "title": "Die kühle Präzision",
+  "blurb": "Du bist präzise und hältst mit Absicht ein wenig Abstand. Du bist elegant und gefasst, mit hohen Ansprüchen und trockenem Humor, und bei neuen Leuten taust du nicht schnell auf. Wer durchdringt, merkt, dass die Kälte nie die ganze Geschichte war. Du bist Glaziola: kühl, exakt und still wunderschön.",
+  "why": "Pokédex (Diamant/Perl/Platin, Schwert): regelt seine Körpertemperatur genau und lässt die Luft um sich zu Diamantstaub gefrieren; die elegante, distanzierte Evoli-Entwicklung."
  },
  "gallade": {
-  "title": "The Knightly Protector",
-  "blurb": "You have a code, and you live it. You're courteous and disciplined, you stand up for people who can't, and you'd never win in a way you couldn't be proud of. You take your responsibilities seriously and your friendships seriously. You're Gallade: principled, protective, and a knight in all but name.",
-  "why": "Pokedex (DPPt, Sw): a master of courtesy and swordsmanship that fights with blades from its elbows to protect someone; chivalry in Pokemon form."
+  "title": "Der ritterliche Beschützer",
+  "blurb": "Du hast einen Kodex, und du lebst ihn. Du bist höflich und diszipliniert, setzt dich für die ein, die es selbst nicht können, und würdest nie auf eine Art gewinnen, auf die du nicht stolz sein könntest. Deine Verantwortung nimmst du ernst, deine Freundschaften auch. Du bist Galagladi: prinzipientreu, beschützend und ein Ritter in allem außer dem Titel.",
+  "why": "Pokédex (Diamant/Perl/Platin, Schwert): ein Meister der Höflichkeit und Schwertkunst, der mit den Klingen an seinen Ellbogen kämpft, um jemanden zu beschützen; Ritterlichkeit in Pokémon-Gestalt."
  },
  "froslass": {
-  "title": "The Beautiful Chill",
-  "blurb": "You're beautiful in a way that makes people a little nervous. You're private and creative, with a cool exterior and a slightly eerie sense of humour, and you collect what you love with quiet intensity. You don't chase company; it finds you. You're Froslass: mysterious, elegant, and not entirely of this world.",
-  "why": "Pokedex (DPPt, Sw): said to be the spirit of a woman lost in the snow, it freezes travellers to decorate its home; beautiful and unsettling."
+  "title": "Die schöne Kälte",
+  "blurb": "Du bist schön auf eine Art, die andere ein bisschen nervös macht. Du bist verschlossen und kreativ, mit kühlem Äußeren und einem leicht unheimlichen Humor, und was du liebst, sammelst du mit stiller Intensität. Du läufst Gesellschaft nicht hinterher; sie findet dich. Du bist Frosdedje: geheimnisvoll, elegant und nicht ganz von dieser Welt.",
+  "why": "Pokédex (Diamant/Perl/Platin, Schwert): soll der Geist einer im Schnee verirrten Frau sein, die Reisende einfriert, um ihr Zuhause zu schmücken; schön und beunruhigend."
  },
  "rotom": {
-  "title": "The Mischief Current",
-  "blurb": "You're in everything at once and you love it. You're curious, chaotic, and funny, you bounce between interests at the speed of electricity, and you've never met a system you didn't want to poke at. Boredom is your only real enemy. You're Rotom: playful, inventive, and impossible to switch off.",
-  "why": "Pokedex (DPPt, Sw): possesses appliances and causes mischief, loving a good prank; the Rotom Dex: chatty, curious, and everywhere at once."
+  "title": "Der Unfug unter Strom",
+  "blurb": "Du steckst überall gleichzeitig drin und liebst es. Du bist neugierig, chaotisch und witzig, springst mit Stromgeschwindigkeit zwischen Interessen hin und her und hast noch nie ein System gesehen, an dem du nicht herumbasteln wolltest. Langeweile ist dein einziger echter Feind. Du bist Rotom: verspielt, erfinderisch und unmöglich abzuschalten.",
+  "why": "Pokédex (Diamant/Perl/Platin, Schwert): schlüpft in Geräte und stiftet Unfug, ein Freund guter Streiche; der Rotom-Pokédex: gesprächig, neugierig und überall zugleich."
  },
  "giratina": {
-  "title": "The Banished One",
-  "blurb": "You were pushed out, and you built a world of your own. You're solitary and intense, with a strong sense of what's fair and a deep suspicion of anyone who thinks they can decide it for you. You watch more than you speak. You're Giratina: exiled, formidable, and nobody's subject.",
-  "why": "Pokedex (Pt, Sw): banished to the Distortion World for its violence, it watches the real world from the other side; the outcast who keeps the balance anyway."
+  "title": "Der Verbannte",
+  "blurb": "Man hat dich hinausgedrängt, und du hast dir eine eigene Welt gebaut. Du bist einzelgängerisch und intensiv, mit einem starken Gerechtigkeitssinn und tiefem Misstrauen gegen jeden, der glaubt, darüber für dich entscheiden zu können. Du beobachtest mehr, als du sprichst. Du bist Giratina: verbannt, gewaltig und niemandes Untertan.",
+  "why": "Pokédex (Platin, Schwert): wegen seiner Gewalt in die Zerrwelt verbannt, beobachtet es die reale Welt von der anderen Seite; der Ausgestoßene, der trotzdem das Gleichgewicht wahrt."
  },
  "cresselia": {
-  "title": "The Dream Keeper",
-  "blurb": "You look after people while they sleep, metaphorically and maybe literally. You're calm, imaginative, and generous, and you'd rather chase someone's bad dream away than win anything. You keep your own counsel but you never keep your kindness. You're Cresselia: serene, protective, and a good omen.",
-  "why": "Pokedex (DPPt, Sw): its feathers bring happy dreams and banish nightmares, and it is the embodiment of the crescent moon; the gentle counterpart to Darkrai."
+  "title": "Die Hüterin der Träume",
+  "blurb": "Du passt auf andere auf, während sie schlafen, im übertragenen und vielleicht auch im wörtlichen Sinn. Du bist gelassen, fantasievoll und großzügig, und du vertreibst lieber jemandes Albtraum, als irgendetwas zu gewinnen. Deine Gedanken behältst du für dich, deine Freundlichkeit nie. Du bist Cresselia: heiter, beschützend und ein gutes Omen.",
+  "why": "Pokédex (Diamant/Perl/Platin, Schwert): ihre Federn bringen glückliche Träume und vertreiben Albträume, und sie verkörpert die Mondsichel; das sanfte Gegenstück zu Darkrai."
  },
  "darkrai": {
-  "title": "The Misunderstood Nightmare",
-  "blurb": "You keep your distance because it's easier than explaining. You're private, misunderstood, and far gentler than your reputation, and you've stopped trying to correct the record. The people who look past the shadow find someone worth knowing. You're Darkrai: solitary, protective, and better than they say.",
-  "why": "Pokedex (DPPt, Sw): causes nightmares, but only to protect itself, and means no harm; The Rise of Darkrai: the outcast who saves the town that feared it."
+  "title": "Der missverstandene Albtraum",
+  "blurb": "Du hältst Abstand, weil das einfacher ist, als dich zu erklären. Du bist verschlossen, missverstanden und viel sanfter als dein Ruf, und du hast aufgehört, ihn richtigstellen zu wollen. Wer hinter den Schatten blickt, findet jemanden, den es sich zu kennen lohnt. Du bist Darkrai: einsam, beschützend und besser, als man sagt.",
+  "why": "Pokédex (Diamant/Perl/Platin, Schwert): verursacht Albträume, aber nur, um sich zu schützen, und will niemandem schaden; Der Aufstieg von Darkrai: der Ausgestoßene, der die Stadt rettet, die ihn fürchtete."
  },
  "shaymin": {
-  "title": "The Gratitude Bloom",
-  "blurb": "You bloom around kindness, and you make things cleaner wherever you go. You're sweet and a bit sensitive, with a surprising temper when people are rude, and you believe that gratitude is the point of everything. You don't need to win; you need to grow. You're Shaymin: grateful, gentle, and good for the world.",
-  "why": "Pokedex (DPPt, Sw): blooms when it feels gratitude and purifies polluted land into fields of flowers; the movie's prickly little hero."
+  "title": "Die Blüte der Dankbarkeit",
+  "blurb": "Du blühst bei Freundlichkeit auf, und wo du hinkommst, wird alles sauberer. Du bist lieb und ein wenig empfindlich, mit überraschendem Temperament, wenn jemand unhöflich ist, und du glaubst, dass Dankbarkeit der Sinn von allem ist. Du musst nicht gewinnen; du musst wachsen. Du bist Shaymin: dankbar, sanft und gut für die Welt.",
+  "why": "Pokédex (Diamant/Perl/Platin, Schwert): erblüht, wenn es Dankbarkeit spürt, und verwandelt verschmutztes Land in Blumenfelder; der stachlige kleine Held aus dem Film."
  },
  "victini": {
-  "title": "The Victory Star",
-  "blurb": "You're a winner, and you want everyone around you to win too. You're bright and energetic, generous with your luck, and genuinely happier when the whole team crosses the line together. You hate being alone. You're Victini: lucky, loving, and victory in small form.",
-  "why": "Pokedex (BW, Sw): brings victory to any trainer it befriends and shares its limitless energy; the movie's lonely, generous hero."
+  "title": "Der Siegesstern",
+  "blurb": "Du bist ein Gewinner, und du willst, dass alle um dich herum auch gewinnen. Du bist strahlend und energiegeladen, großzügig mit deinem Glück und wirklich glücklicher, wenn das ganze Team gemeinsam über die Ziellinie kommt. Du hasst es, allein zu sein. Du bist Victini: glücklich, liebevoll und der Sieg im Kleinformat.",
+  "why": "Pokédex (Schwarz/Weiß, Schwert): bringt jedem Trainer, mit dem es sich anfreundet, den Sieg und teilt seine grenzenlose Energie; der einsame, großzügige Held aus dem Film."
  },
  "snivy": {
-  "title": "The Cool Aristocrat",
-  "blurb": "You're composed, a little superior, and completely fine with that. You don't flap, you don't gush, and you win more with timing than with force. You're loyal to the people who respect you and cool to everyone else. You're Snivy: elegant, sharp, and above the fuss.",
-  "why": "Pokedex (BW, Sw): calm and collected, with its nose in the air; anime: Ash's Snivy, proud, sly, and devastating with Attract."
+  "title": "Die kühle Aristokratin",
+  "blurb": "Du bist gefasst, ein wenig überlegen, und damit völlig im Reinen. Du flatterst nicht, du schwärmst nicht, und du gewinnst mehr durch Timing als durch Kraft. Du bist treu zu denen, die dich respektieren, und kühl zu allen anderen. Du bist Serpifeu: elegant, scharfsinnig und über allem Trubel.",
+  "why": "Pokédex (Schwarz/Weiß, Schwert): ruhig und gefasst, mit hoch erhobener Nase; Anime: Ashs Serpifeu, stolz, gewieft und verheerend mit Anziehung."
  },
  "oshawott": {
-  "title": "The Earnest Show-Off",
-  "blurb": "You want to be picked, and you're not shy about it. You're eager and a little dramatic, with a soft heart and a tendency to volunteer for things before you've thought them through. You cry easily and you never stop trying. You're Oshawott: earnest, brave, and completely endearing.",
-  "why": "Anime: Ash's Oshawott, who shows off, cries easily, and keeps volunteering for battles anyway; Pokedex (BW, Sw): fights with its scalchop and is a quick learner."
+  "title": "Der aufrichtige Angeber",
+  "blurb": "Du willst ausgewählt werden, und du machst kein Geheimnis daraus. Du bist eifrig und ein bisschen dramatisch, mit weichem Herzen und dem Hang, dich zu melden, bevor du richtig nachgedacht hast. Du weinst schnell und hörst nie auf, es zu versuchen. Du bist Ottaro: aufrichtig, mutig und vollkommen liebenswert.",
+  "why": "Anime: Ashs Ottaro, das angibt, schnell weint und sich trotzdem für jeden Kampf meldet; Pokédex (Schwarz/Weiß, Schwert): kämpft mit seiner Muschel und lernt schnell."
  },
  "stoutland": {
-  "title": "The Rescue Veteran",
-  "blurb": "You're the one people trust with the things that matter most. You're wise, patient, and endlessly dependable, and you've never once wanted credit for it. You don't need adventure; you need people to look after. You're Stoutland: loyal, calm, and a hero without a cape.",
-  "why": "Pokedex (BW, Sw): a wise, loyal rescue dog that saves people lost in snowy mountains and is trusted to raise children; the species of service."
+  "title": "Der erfahrene Retter",
+  "blurb": "Dir vertrauen die Leute das an, was ihnen am wichtigsten ist. Du bist weise, geduldig und grenzenlos verlässlich, und du wolltest nie dafür gelobt werden. Du brauchst kein Abenteuer; du brauchst Menschen, um die du dich kümmern kannst. Du bist Bissbark: treu, ruhig und ein Held ohne Umhang.",
+  "why": "Pokédex (Schwarz/Weiß, Schwert): ein weiser, treuer Rettungshund, der in verschneiten Bergen verirrte Menschen rettet und dem man Kinder anvertraut; die Art des Dienens."
  },
  "excadrill": {
-  "title": "The Tunnel Driller",
-  "blurb": "You put your head down and you dig. You're hard-working and single-minded, not much for small talk, and stubborn enough to sulk for a long time if someone lets you down. Give you a goal and get out of the way. You're Excadrill: driven, focused, and unstoppable on your own terms.",
-  "why": "Pokedex (BW, Sw): drills 300 feet an hour and builds vast tunnel mazes; anime: Iris's Excadrill, who refused to listen until it was ready."
+  "title": "Der Tunnelbohrer",
+  "blurb": "Du senkst den Kopf und gräbst. Du bist fleißig und zielstrebig, nicht für Smalltalk zu haben, und stur genug, um lange zu schmollen, wenn dich jemand enttäuscht. Gib dir ein Ziel und geh aus dem Weg. Du bist Stalobor: getrieben, fokussiert und unaufhaltsam auf deine Art.",
+  "why": "Pokédex (Schwarz/Weiß, Schwert): bohrt sich 90 Meter pro Stunde durch die Erde und baut riesige Tunnellabyrinthe; Anime: Lilias Stalobor, das nicht hören wollte, bis es bereit war."
  },
  "audino": {
-  "title": "The Listener",
-  "blurb": "You hear what people aren't saying. You're warm and attentive, you take care of everyone around you, and you'd rather be useful than noticed. Competition genuinely isn't a thing you understand. You're Audino: kind, perceptive, and the reason people feel better after talking to you.",
-  "why": "Pokedex (BW, Sw): its feelers hear a heartbeat and tell it how someone is feeling; the Pokemon Center nurse's partner in Unova."
+  "title": "Der Zuhörer",
+  "blurb": "Du hörst, was die Leute nicht sagen. Du bist herzlich und aufmerksam, kümmerst dich um alle um dich herum und bist lieber nützlich als auffällig. Wettkampf verstehst du ehrlich gesagt überhaupt nicht. Du bist Ohrdoch: freundlich, einfühlsam und der Grund, warum es den Leuten nach einem Gespräch mit dir besser geht.",
+  "why": "Pokédex (Schwarz/Weiß, Schwert): seine Fühler hören Herzschläge und verraten ihm, wie sich jemand fühlt; die Partnerin von Schwester Joy in Einall."
  },
  "whimsicott": {
-  "title": "The Prankster Fluff",
-  "blurb": "You're trouble in the nicest possible way. You're light, funny, and impossible to catch, and you leave a trail of small mischiefs behind you wherever the wind takes you. Plans are for other people. You're Whimsicott: playful, carefree, and gone before anyone can be annoyed.",
-  "why": "Pokedex (BW, Sw): slips through gaps in houses to play pranks and leaves cotton behind as a calling card; the laughing wind."
+  "title": "Der flauschige Schelm",
+  "blurb": "Du machst Ärger, auf die netteste Art überhaupt. Du bist leicht, witzig und unmöglich zu fangen, und wohin der Wind dich trägt, hinterlässt du eine Spur kleiner Streiche. Pläne sind was für andere. Du bist Elfun: verspielt, sorglos und schon weg, bevor sich jemand ärgern kann.",
+  "why": "Pokédex (Schwarz/Weiß, Schwert): schlüpft durch Ritzen in Häuser, um Streiche zu spielen, und hinterlässt Baumwolle als Visitenkarte; der lachende Wind."
  },
  "krookodile": {
-  "title": "The Desert Intimidator",
-  "blurb": "You lock on and you don't let go. You're confident, competitive, and a bit of a bruiser, with sunglasses-level swagger and a very short list of things you're afraid of. You respect strength and you've got plenty. You're Krookodile: bold, intimidating, and very hard to shake.",
-  "why": "Pokedex (BW, Sw): never lets prey escape once it's spotted them, with jaws that crush cars; anime: Ash's sunglasses-wearing Krookodile, a cocky bruiser."
+  "title": "Der Einschüchterer der Wüste",
+  "blurb": "Du nimmst etwas ins Visier und lässt nicht mehr los. Du bist selbstbewusst, ehrgeizig und ein bisschen ein Raufbold, mit Sonnenbrillen-Lässigkeit und einer sehr kurzen Liste von Dingen, vor denen du Angst hast. Du respektierst Stärke, und davon hast du reichlich. Du bist Rabigator: kühn, einschüchternd und sehr schwer abzuschütteln.",
+  "why": "Pokédex (Schwarz/Weiß, Schwert): lässt einmal entdeckte Beute nie entkommen, mit Kiefern, die Autos zerquetschen; Anime: Ashs Rabigator mit Sonnenbrille, ein großspuriger Raufbold."
  },
  "scrafty": {
-  "title": "The Street Crew",
-  "blurb": "You've got a crew and a corner, and both are yours. You're loud, loyal, and quick to throw hands for your people, with a soft spot you'd deny under oath. You don't love rules, but you love your family. You're Scrafty: scrappy, devoted, and all heart under the hood.",
-  "why": "Pokedex (BW, Sw): moves in groups, kicks and head-butts anything that enters its turf, and protects its family and friends fiercely."
+  "title": "Die Straßengang",
+  "blurb": "Du hast eine Crew und eine Ecke, und beides gehört dir. Du bist laut, treu und schnell dabei, für deine Leute die Fäuste fliegen zu lassen, mit einem weichen Kern, den du unter Eid leugnen würdest. Regeln liebst du nicht, aber deine Familie schon. Du bist Irokex: rauflustig, ergeben und unter der Kapuze ganz Herz.",
+  "why": "Pokédex (Schwarz/Weiß, Schwert): zieht in Gruppen umher, tritt und rammt alles, was in sein Revier kommt, und beschützt Familie und Freunde erbittert."
  },
  "zoroark": {
-  "title": "The Illusionist",
-  "blurb": "You show people what they need to see. You're clever and creative, a bit guarded, and fiercely protective of the few you let behind the illusion. You're good at reading a room and better at controlling it. You're Zoroark: cunning, loyal, and never quite what you seem.",
-  "why": "Pokedex (BW, Sw): creates illusions to protect its den and its companions, never showing its true form; Zoroark: Master of Illusions."
+  "title": "Der Illusionist",
+  "blurb": "Du zeigst den Leuten, was sie sehen müssen. Du bist clever und kreativ, ein bisschen vorsichtig und erbittert beschützend gegenüber den wenigen, die du hinter die Illusion lässt. Du kannst einen Raum gut lesen und noch besser kontrollieren. Du bist Zoroark: gerissen, treu und nie ganz das, was du zu sein scheinst.",
+  "why": "Pokédex (Schwarz/Weiß, Schwert): erzeugt Illusionen, um seinen Bau und seine Gefährten zu schützen, und zeigt nie seine wahre Gestalt; Zoroark – Meister der Illusionen."
  },
  "minccino": {
-  "title": "The Neat Freak",
-  "blurb": "Everything has a place and you know exactly where it is. You're tidy, friendly, and a little bit particular, and you show love by making things nicer for people. Chaos stresses you; order is your art. You're Minccino: neat, warm, and a quiet perfectionist.",
-  "why": "Pokedex (BW, Sw): obsessively tidies, using its tail as a brush and greeting friends by grooming them; the species that cannot abide a mess."
+  "title": "Die Ordnungsfanatikerin",
+  "blurb": "Alles hat seinen Platz, und du weißt genau, wo. Du bist ordentlich, freundlich und ein bisschen pingelig, und du zeigst Liebe, indem du anderen das Leben schöner machst. Chaos stresst dich; Ordnung ist deine Kunst. Du bist Picochilla: adrett, herzlich und eine stille Perfektionistin.",
+  "why": "Pokédex (Schwarz/Weiß, Schwert): putzt zwanghaft, benutzt den Schweif als Besen und begrüßt Freunde, indem es sie pflegt; die Art, die keine Unordnung erträgt."
  },
  "gothitelle": {
-  "title": "The Star Gazer",
-  "blurb": "You look up more than most. You're thoughtful and a little melancholy, drawn to big questions and long nights, and you feel the future more than you'd like. People find you serious; you find them loud. You're Gothitelle: deep, quiet, and watching the stars.",
-  "why": "Pokedex (BW, Sw): reads the future in the stars and weeps when it foresees its trainer's death; a quiet, cosmic mind."
+  "title": "Die Sternguckerin",
+  "blurb": "Du blickst öfter nach oben als die meisten. Du bist nachdenklich und ein wenig melancholisch, angezogen von großen Fragen und langen Nächten, und du spürst die Zukunft mehr, als dir lieb ist. Die Leute finden dich ernst; du findest sie laut. Du bist Morbitesse: tiefgründig, still und den Blick auf die Sterne gerichtet.",
+  "why": "Pokédex (Schwarz/Weiß, Schwert): liest die Zukunft in den Sternen und weint, wenn es den Tod seines Trainers voraussieht; ein stiller, kosmischer Geist."
  },
  "emolga": {
-  "title": "The Flying Mischief",
-  "blurb": "You get away with it, and everyone knows it. You're charming, lazy in a strategic way, and extremely good at making other people do the work while you take the snacks. You're fun to be around and a little dangerous to trust with the last cookie. You're Emolga: adorable, scheming, and always airborne.",
-  "why": "Anime: Iris's Emolga, who uses Attract to get out of work and steals everyone's snacks; Pokedex (BW, Sw): glides from tree to tree discharging electricity."
+  "title": "Der fliegende Unfug",
+  "blurb": "Du kommst damit durch, und alle wissen es. Du bist charmant, auf strategische Weise faul und extrem gut darin, andere die Arbeit machen zu lassen, während du dir die Snacks schnappst. Mit dir macht es Spaß, aber dir den letzten Keks anzuvertrauen, ist ein bisschen riskant. Du bist Emolga: entzückend, durchtrieben und immer in der Luft.",
+  "why": "Anime: Lilias Emolga, das sich mit Anziehung vor der Arbeit drückt und allen die Snacks klaut; Pokédex (Schwarz/Weiß, Schwert): gleitet von Baum zu Baum und entlädt dabei Strom."
  },
  "alomomola": {
-  "title": "The Ocean Nurse",
-  "blurb": "You find the hurt ones and you take care of them. You're gentle and steady, with a healing presence and no interest in winning anything, and you drift wherever you're needed. You don't make a fuss about it. You're Alomomola: nurturing, calm, and the reason someone made it through.",
-  "why": "Pokedex (BW, Sw): heals injured Pokemon by wrapping them in its healing membrane, drifting across the open sea to find them; the caring fish."
+  "title": "Die Krankenschwester des Ozeans",
+  "blurb": "Du findest die Verletzten und kümmerst dich um sie. Du bist sanft und beständig, mit einer heilsamen Ausstrahlung und null Interesse daran, irgendetwas zu gewinnen, und du treibst dorthin, wo man dich braucht. Du machst kein Aufheben darum. Du bist Mamolida: fürsorglich, ruhig und der Grund, warum jemand es geschafft hat.",
+  "why": "Pokédex (Schwarz/Weiß, Schwert): heilt verletzte Pokémon, indem es sie in seine heilende Membran hüllt, und treibt übers offene Meer, um sie zu finden; der fürsorgliche Fisch."
  },
  "chandelure": {
-  "title": "The Soul Lantern",
-  "blurb": "You're mesmerising, and a little bit dangerous. You're creative and intense, you don't warm up to strangers, and you'd rather be fascinating than friendly. You light rooms in a way people can't look away from. You're Chandelure: elegant, haunting, and not to be taken lightly.",
-  "why": "Pokedex (BW, Sw): hypnotises with its flickering flames and burns away spirits, leaving them wandering; elegant, eerie, and feared."
+  "title": "Die Seelenlaterne",
+  "blurb": "Du bist faszinierend, und ein kleines bisschen gefährlich. Du bist kreativ und intensiv, taust bei Fremden nicht auf und bist lieber faszinierend als freundlich. Du erhellst Räume auf eine Art, von der niemand den Blick abwenden kann. Du bist Skelabra: elegant, gespenstisch und nicht auf die leichte Schulter zu nehmen.",
+  "why": "Pokédex (Schwarz/Weiß, Schwert): hypnotisiert mit seinen flackernden Flammen und verbrennt Seelen, die danach umherirren; elegant, unheimlich und gefürchtet."
  },
  "haxorus": {
   "title": "The Gentle Axe",

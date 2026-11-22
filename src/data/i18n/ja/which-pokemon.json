@@ -500,129 +500,129 @@
   "why": "図鑑（ダイヤモンド・パール・プラチナ、ソード）：4〜5匹のグループで狩りをし、木にサインを刻んで連携をとる。ずる賢く、冷たく、とても有能。"
  },
  "togekiss": {
-  "title": "The Peace Bringer",
-  "blurb": "You bring peace into rooms and you won't stay in ones that don't want it. You're generous, calm, and genuinely kind, and conflict for its own sake baffles you. People feel lucky to know you, and they are. You're Togekiss: gentle, bright, and a blessing on legs.",
-  "why": "Pokedex (DPPt, Sw): never appears where there is strife, and shares blessings with people who respect each other; the jubilee Pokemon."
+  "title": "平和を運ぶ者",
+  "blurb": "あなたは部屋に平和を運び、それを望まない場所には長居しません。気前がよく、落ち着いていて、心からやさしく、争いのための争いには首をかしげます。みんなあなたと知り合えて幸運だと感じていて、それは本当です。あなたはトゲキッス。やさしく、明るく、歩く祝福のような存在です。",
+  "why": "図鑑（ダイヤモンド・パール・プラチナ、ソード）：争いのある場所には決して姿を見せず、たがいを尊重しあう人々に恵みを分け与える。しゅくふくポケモン。"
  },
  "leafeon": {
-  "title": "The Tranquil Leaf",
-  "blurb": "You're the fresh air. You're calm and kind and happiest outdoors, and you don't need a lot of noise or people to feel full. You take care of things slowly and well. You're Leafeon: tranquil, nurturing, and good for everyone around you.",
-  "why": "Pokedex (DPPt, Sw): photosynthesises and is always surrounded by clean, fresh air; the calmest eeveelution."
+  "title": "おだやかな若葉",
+  "blurb": "あなたは新鮮な空気のような人です。落ち着いていてやさしく、外にいるときがいちばん幸せで、満たされるのに騒がしさや大勢の人は必要ありません。物事をゆっくり、ていねいに大切にします。あなたはリーフィア。おだやかで、育む力があり、まわりのみんなにとっていい存在です。",
+  "why": "図鑑（ダイヤモンド・パール・プラチナ、ソード）：光合成をしていて、まわりはいつもきれいで澄んだ空気に包まれている。イーブイの進化形でいちばんおだやか。"
  },
  "glaceon": {
-  "title": "The Cool Precision",
-  "blurb": "You're precise, and you keep a little distance on purpose. You're elegant and composed, with high standards and a dry wit, and you don't warm up quickly to new people. The ones who get through find the cold was never the whole story. You're Glaceon: cool, exact, and quietly beautiful.",
-  "why": "Pokedex (DPPt, Sw): controls its body temperature precisely, freezing the air around it into diamond dust; the elegant, distant eeveelution."
+  "title": "クールな正確さ",
+  "blurb": "あなたは正確で、わざと少し距離をとっています。優雅で落ち着いていて、基準が高く、ユーモアはドライで、初対面の人にはなかなか打ちとけません。でも心まで届いた人は、冷たさがすべてではなかったと知ります。あなたはグレイシア。クールで、ぴたりと正確で、静かに美しい存在です。",
+  "why": "図鑑（ダイヤモンド・パール・プラチナ、ソード）：体温を正確にコントロールし、まわりの空気を凍らせてダイヤモンドダストにする。優雅で少し近寄りがたいイーブイの進化形。"
  },
  "gallade": {
-  "title": "The Knightly Protector",
-  "blurb": "You have a code, and you live it. You're courteous and disciplined, you stand up for people who can't, and you'd never win in a way you couldn't be proud of. You take your responsibilities seriously and your friendships seriously. You're Gallade: principled, protective, and a knight in all but name.",
-  "why": "Pokedex (DPPt, Sw): a master of courtesy and swordsmanship that fights with blades from its elbows to protect someone; chivalry in Pokemon form."
+  "title": "騎士のような守り手",
+  "blurb": "あなたには自分のおきてがあり、それを生きています。礼儀正しく規律があり、自分を守れない人のために立ち上がり、誇れないやり方で勝つことは決してしません。責任も友情も、真剣に受け止めます。あなたはエルレイド。信念があり、守ることを大切にし、称号こそなくとも騎士そのものです。",
+  "why": "図鑑（ダイヤモンド・パール・プラチナ、ソード）：礼儀と剣の達人で、だれかを守るためにひじの刃で戦う。騎士道を体現したポケモン。"
  },
  "froslass": {
-  "title": "The Beautiful Chill",
-  "blurb": "You're beautiful in a way that makes people a little nervous. You're private and creative, with a cool exterior and a slightly eerie sense of humour, and you collect what you love with quiet intensity. You don't chase company; it finds you. You're Froslass: mysterious, elegant, and not entirely of this world.",
-  "why": "Pokedex (DPPt, Sw): said to be the spirit of a woman lost in the snow, it freezes travellers to decorate its home; beautiful and unsettling."
+  "title": "美しき冷気",
+  "blurb": "あなたは見る人を少しどきどきさせるような美しさを持っています。ひかえめで創造的、外見はクールで、ユーモアはどこか不思議。好きなものを静かな熱意で集めています。仲間を追いかけはしません。向こうからやってきます。あなたはユキメノコ。ミステリアスで、優雅で、この世のものとは少し思えない存在です。",
+  "why": "図鑑（ダイヤモンド・パール・プラチナ、ソード）：雪山で遭難した女性の生まれ変わりといわれ、旅人を凍らせてすみかに飾る。美しく、ぞっとさせる存在。"
  },
  "rotom": {
-  "title": "The Mischief Current",
-  "blurb": "You're in everything at once and you love it. You're curious, chaotic, and funny, you bounce between interests at the speed of electricity, and you've never met a system you didn't want to poke at. Boredom is your only real enemy. You're Rotom: playful, inventive, and impossible to switch off.",
-  "why": "Pokedex (DPPt, Sw): possesses appliances and causes mischief, loving a good prank; the Rotom Dex: chatty, curious, and everywhere at once."
+  "title": "いたずらな電流",
+  "blurb": "あなたは何にでも同時に首をつっこみ、それが大好きです。好奇心旺盛で、カオスで、おもしろく、電気の速さで興味から興味へ飛び移り、いじってみたくならないシステムに出会ったことがありません。たったひとつの本当の敵は退屈です。あなたはロトム。遊び好きで、発明家肌で、スイッチを切ることができない存在です。",
+  "why": "図鑑（ダイヤモンド・パール・プラチナ、ソード）：電化製品に入りこんでいたずらをする、いたずら好き。ロトム図鑑：おしゃべりで好奇心旺盛、どこにでもいる。"
  },
  "giratina": {
-  "title": "The Banished One",
-  "blurb": "You were pushed out, and you built a world of your own. You're solitary and intense, with a strong sense of what's fair and a deep suspicion of anyone who thinks they can decide it for you. You watch more than you speak. You're Giratina: exiled, formidable, and nobody's subject.",
-  "why": "Pokedex (Pt, Sw): banished to the Distortion World for its violence, it watches the real world from the other side; the outcast who keeps the balance anyway."
+  "title": "追放された者",
+  "blurb": "あなたは追い出され、自分だけの世界を作り上げました。孤独で激しく、何が公平かについて強い感覚を持ち、それを自分の代わりに決められると思う人を深く疑っています。話すより見ているほうが多い人です。あなたはギラティナ。追放され、手ごわく、だれの家来でもない存在です。",
+  "why": "図鑑（プラチナ、ソード）：その乱暴さゆえにやぶれたせかいに追放され、向こう側から元の世界を見つめている。それでもバランスを守り続けるはぐれ者。"
  },
  "cresselia": {
-  "title": "The Dream Keeper",
-  "blurb": "You look after people while they sleep, metaphorically and maybe literally. You're calm, imaginative, and generous, and you'd rather chase someone's bad dream away than win anything. You keep your own counsel but you never keep your kindness. You're Cresselia: serene, protective, and a good omen.",
-  "why": "Pokedex (DPPt, Sw): its feathers bring happy dreams and banish nightmares, and it is the embodiment of the crescent moon; the gentle counterpart to Darkrai."
+  "title": "夢の守り手",
+  "blurb": "あなたは人が眠っているあいだに見守る人です。たとえでも、もしかしたら本当にも。落ち着いていて想像力豊かで気前がよく、何かに勝つより、だれかの悪い夢を追い払うほうを選びます。自分の考えは胸にしまっても、やさしさは決してしまいません。あなたはクレセリア。おだやかで、守ることを大切にし、いい知らせを運ぶ存在です。",
+  "why": "図鑑（ダイヤモンド・パール・プラチナ、ソード）：その羽は幸せな夢を運び、悪夢を追い払う。三日月の化身といわれる。ダークライと対になるやさしい存在。"
  },
  "darkrai": {
-  "title": "The Misunderstood Nightmare",
-  "blurb": "You keep your distance because it's easier than explaining. You're private, misunderstood, and far gentler than your reputation, and you've stopped trying to correct the record. The people who look past the shadow find someone worth knowing. You're Darkrai: solitary, protective, and better than they say.",
-  "why": "Pokedex (DPPt, Sw): causes nightmares, but only to protect itself, and means no harm; The Rise of Darkrai: the outcast who saves the town that feared it."
+  "title": "誤解された悪夢",
+  "blurb": "あなたが距離を置くのは、説明するよりそのほうが楽だからです。ひかえめで、誤解されがちで、うわさよりずっとやさしく、誤解を解こうとするのはもうやめました。影の向こうを見ようとする人は、知る価値のある人に出会えます。あなたはダークライ。孤独で、守ることを大切にし、言われているよりずっといい存在です。",
+  "why": "図鑑（ダイヤモンド・パール・プラチナ、ソード）：悪夢を見せるのは身を守るためだけで、悪気はない。映画「ディアルガVSパルキアVSダークライ」：自分を恐れた町を救うはぐれ者。"
  },
  "shaymin": {
-  "title": "The Gratitude Bloom",
-  "blurb": "You bloom around kindness, and you make things cleaner wherever you go. You're sweet and a bit sensitive, with a surprising temper when people are rude, and you believe that gratitude is the point of everything. You don't need to win; you need to grow. You're Shaymin: grateful, gentle, and good for the world.",
-  "why": "Pokedex (DPPt, Sw): blooms when it feels gratitude and purifies polluted land into fields of flowers; the movie's prickly little hero."
+  "title": "感謝の花",
+  "blurb": "あなたはやさしさに触れると花開き、行く先々をきれいにしていきます。かわいくて少し繊細、失礼な人には意外なほど怒り、感謝こそがすべての意味だと信じています。勝つ必要はなく、育つことが大切です。あなたはシェイミ。感謝の心を持ち、やさしく、世界にとっていい存在です。",
+  "why": "図鑑（ダイヤモンド・パール・プラチナ、ソード）：感謝の気持ちを感じると花を咲かせ、汚れた土地を一面の花畑に変える。映画のちょっぴりトゲのある小さなヒーロー。"
  },
  "victini": {
-  "title": "The Victory Star",
-  "blurb": "You're a winner, and you want everyone around you to win too. You're bright and energetic, generous with your luck, and genuinely happier when the whole team crosses the line together. You hate being alone. You're Victini: lucky, loving, and victory in small form.",
-  "why": "Pokedex (BW, Sw): brings victory to any trainer it befriends and shares its limitless energy; the movie's lonely, generous hero."
+  "title": "勝利の星",
+  "blurb": "あなたは勝者で、まわりのみんなにも勝ってほしいと思っています。明るく元気いっぱいで、自分の幸運を惜しみなく分け、チーム全員でいっしょにゴールするときに心から幸せを感じます。ひとりきりは大きらいです。あなたはビクティニ。幸運で、愛情深く、小さな姿をした勝利そのものです。",
+  "why": "図鑑（ブラック・ホワイト、ソード）：仲良くなったトレーナーに勝利をもたらし、無限のエネルギーを分け与える。映画に登場する、さみしがりで気前のいいヒーロー。"
  },
  "snivy": {
-  "title": "The Cool Aristocrat",
-  "blurb": "You're composed, a little superior, and completely fine with that. You don't flap, you don't gush, and you win more with timing than with force. You're loyal to the people who respect you and cool to everyone else. You're Snivy: elegant, sharp, and above the fuss.",
-  "why": "Pokedex (BW, Sw): calm and collected, with its nose in the air; anime: Ash's Snivy, proud, sly, and devastating with Attract."
+  "title": "クールな貴族",
+  "blurb": "あなたは落ち着いていて、少しお高くとまっていて、それでまったく構わないと思っています。あわてず、はしゃがず、力より間合いで勝ちます。敬意を払ってくれる人には忠実で、ほかのみんなにはクール。あなたはツタージャ。優雅で、鋭く、騒ぎとは無縁です。",
+  "why": "図鑑（ブラック・ホワイト、ソード）：冷静沈着で、いつもすまし顔。アニメ：プライドが高く、ずる賢く、メロメロが強力なサトシのツタージャ。"
  },
  "oshawott": {
-  "title": "The Earnest Show-Off",
-  "blurb": "You want to be picked, and you're not shy about it. You're eager and a little dramatic, with a soft heart and a tendency to volunteer for things before you've thought them through. You cry easily and you never stop trying. You're Oshawott: earnest, brave, and completely endearing.",
-  "why": "Anime: Ash's Oshawott, who shows off, cries easily, and keeps volunteering for battles anyway; Pokedex (BW, Sw): fights with its scalchop and is a quick learner."
+  "title": "まっすぐな目立ちたがり屋",
+  "blurb": "あなたは選ばれたくて、それを隠しません。張り切り屋で少し大げさ、心はやわらかく、よく考える前に名乗りを上げてしまいます。すぐ泣くけれど、決してあきらめません。あなたはミジュマル。まっすぐで、勇敢で、とことん愛らしい存在です。",
+  "why": "アニメ：かっこつけたがりで、すぐ泣き、それでもバトルに名乗り出続けるサトシのミジュマル。図鑑（ブラック・ホワイト、ソード）：おなかのホタチで戦い、覚えが早い。"
  },
  "stoutland": {
-  "title": "The Rescue Veteran",
-  "blurb": "You're the one people trust with the things that matter most. You're wise, patient, and endlessly dependable, and you've never once wanted credit for it. You don't need adventure; you need people to look after. You're Stoutland: loyal, calm, and a hero without a cape.",
-  "why": "Pokedex (BW, Sw): a wise, loyal rescue dog that saves people lost in snowy mountains and is trusted to raise children; the species of service."
+  "title": "ベテラン救助犬",
+  "blurb": "あなたは、みんながいちばん大事なものを託す人です。賢く、辛抱強く、どこまでも頼りになり、手柄がほしいと思ったことは一度もありません。冒険はいりません。お世話をする人たちがいればいい。あなたはムーランド。忠実で、落ち着いていて、マントのないヒーローです。",
+  "why": "図鑑（ブラック・ホワイト、ソード）：雪山で遭難した人を救う賢く忠実な救助犬で、子どもの世話をまかされるほど信頼されている。人に尽くすポケモン。"
  },
  "excadrill": {
-  "title": "The Tunnel Driller",
-  "blurb": "You put your head down and you dig. You're hard-working and single-minded, not much for small talk, and stubborn enough to sulk for a long time if someone lets you down. Give you a goal and get out of the way. You're Excadrill: driven, focused, and unstoppable on your own terms.",
-  "why": "Pokedex (BW, Sw): drills 300 feet an hour and builds vast tunnel mazes; anime: Iris's Excadrill, who refused to listen until it was ready."
+  "title": "トンネル掘りの達人",
+  "blurb": "あなたは頭を下げて、ひたすら掘ります。働き者で一途で、世間話は苦手。だれかにがっかりさせられると長いあいだすねるほどがんこです。目標を与えたら、あとはどいていてください。あなたはドリュウズ。ひたむきで、集中していて、自分のやり方なら止められない存在です。",
+  "why": "図鑑（ブラック・ホワイト、ソード）：1時間に90メートル掘り進み、巨大なトンネルの迷路を作る。アニメ：準備ができるまで言うことを聞かなかったアイリスのドリュウズ。"
  },
  "audino": {
-  "title": "The Listener",
-  "blurb": "You hear what people aren't saying. You're warm and attentive, you take care of everyone around you, and you'd rather be useful than noticed. Competition genuinely isn't a thing you understand. You're Audino: kind, perceptive, and the reason people feel better after talking to you.",
-  "why": "Pokedex (BW, Sw): its feelers hear a heartbeat and tell it how someone is feeling; the Pokemon Center nurse's partner in Unova."
+  "title": "聞き上手",
+  "blurb": "あなたは人が口にしないことを聞きとります。あたたかく、よく気がつき、まわりのみんなの世話をして、目立つより役に立つほうを選びます。張り合うことは、正直さっぱりわかりません。あなたはタブンネ。やさしく、察しがよく、あなたと話したあとでみんなが元気になる理由です。",
+  "why": "図鑑（ブラック・ホワイト、ソード）：耳の触角で心臓の音を聞き、相手の気持ちを知る。イッシュ地方ではジョーイさんの相棒。"
  },
  "whimsicott": {
-  "title": "The Prankster Fluff",
-  "blurb": "You're trouble in the nicest possible way. You're light, funny, and impossible to catch, and you leave a trail of small mischiefs behind you wherever the wind takes you. Plans are for other people. You're Whimsicott: playful, carefree, and gone before anyone can be annoyed.",
-  "why": "Pokedex (BW, Sw): slips through gaps in houses to play pranks and leaves cotton behind as a calling card; the laughing wind."
+  "title": "いたずらな綿毛",
+  "blurb": "あなたはいちばんかわいいやり方で、ちょっとした騒ぎを起こす人です。軽やかで、おもしろく、つかまえるのは不可能で、風の向くまま、行く先々に小さないたずらを残していきます。計画はほかの人のもの。あなたはエルフーン。遊び好きで、気ままで、だれかが怒る前にもういません。",
+  "why": "図鑑（ブラック・ホワイト、ソード）：家のすきまから入りこんでいたずらをし、綿を残していく。笑う風。"
  },
  "krookodile": {
-  "title": "The Desert Intimidator",
-  "blurb": "You lock on and you don't let go. You're confident, competitive, and a bit of a bruiser, with sunglasses-level swagger and a very short list of things you're afraid of. You respect strength and you've got plenty. You're Krookodile: bold, intimidating, and very hard to shake.",
-  "why": "Pokedex (BW, Sw): never lets prey escape once it's spotted them, with jaws that crush cars; anime: Ash's sunglasses-wearing Krookodile, a cocky bruiser."
+  "title": "砂漠の威圧者",
+  "blurb": "あなたは狙いを定めたら離しません。自信があり、負けず嫌いで、ちょっと荒っぽく、サングラスが似合う強気さと、こわいものがほとんどないリストを持っています。強さを尊敬し、自分自身もたっぷり持っています。あなたはワルビアル。大胆で、威圧的で、ふりほどくのはとてもむずかしい相手です。",
+  "why": "図鑑（ブラック・ホワイト、ソード）：一度見つけた獲物は決して逃さず、車もかみくだくあごを持つ。アニメ：サングラスをかけた自信家の暴れん坊、サトシのワルビアル。"
  },
  "scrafty": {
-  "title": "The Street Crew",
-  "blurb": "You've got a crew and a corner, and both are yours. You're loud, loyal, and quick to throw hands for your people, with a soft spot you'd deny under oath. You don't love rules, but you love your family. You're Scrafty: scrappy, devoted, and all heart under the hood.",
-  "why": "Pokedex (BW, Sw): moves in groups, kicks and head-butts anything that enters its turf, and protects its family and friends fiercely."
+  "title": "ストリートの仲間たち",
+  "blurb": "あなたには仲間となわばりがあり、どちらもあなたのものです。にぎやかで一途で、仲間のためならすぐ手が出て、誓ってでも否定するようなやさしい一面があります。ルールは好きではないけれど、家族は大好き。あなたはズルズキン。ケンカっ早く、献身的で、フードの下は心のかたまりです。",
+  "why": "図鑑（ブラック・ホワイト、ソード）：群れで行動し、なわばりに入ってきたものにはキックや頭突きを浴びせ、家族や仲間を激しく守る。"
  },
  "zoroark": {
-  "title": "The Illusionist",
-  "blurb": "You show people what they need to see. You're clever and creative, a bit guarded, and fiercely protective of the few you let behind the illusion. You're good at reading a room and better at controlling it. You're Zoroark: cunning, loyal, and never quite what you seem.",
-  "why": "Pokedex (BW, Sw): creates illusions to protect its den and its companions, never showing its true form; Zoroark: Master of Illusions."
+  "title": "幻影使い",
+  "blurb": "あなたは人に、見る必要があるものを見せます。頭がよく創造的で、少し用心深く、幻影の向こうに入れてあげた数少ない人を激しく守ります。場の空気を読むのが得意で、操るのはもっと得意。あなたはゾロアーク。ずる賢く、忠実で、決して見たままではない存在です。",
+  "why": "図鑑（ブラック・ホワイト、ソード）：すみかと仲間を守るために幻影を作り出し、決して本当の姿を見せない。映画「幻影の覇者 ゾロアーク」。"
  },
  "minccino": {
-  "title": "The Neat Freak",
-  "blurb": "Everything has a place and you know exactly where it is. You're tidy, friendly, and a little bit particular, and you show love by making things nicer for people. Chaos stresses you; order is your art. You're Minccino: neat, warm, and a quiet perfectionist.",
-  "why": "Pokedex (BW, Sw): obsessively tidies, using its tail as a brush and greeting friends by grooming them; the species that cannot abide a mess."
+  "title": "きれい好き",
+  "blurb": "あなたはすべてのものに置き場所があり、それがどこかを正確に知っています。きちんとしていて、人なつっこく、少しこだわりが強く、まわりを心地よくすることで愛情を伝えます。散らかっているとストレスで、整頓はあなたの芸術。あなたはチラーミィ。きれい好きで、あたたかく、ひそかな完璧主義者です。",
+  "why": "図鑑（ブラック・ホワイト、ソード）：しっぽをほうきのように使って、とことんきれいにする。仲間には毛づくろいであいさつする。散らかっているのががまんできないポケモン。"
  },
  "gothitelle": {
-  "title": "The Star Gazer",
-  "blurb": "You look up more than most. You're thoughtful and a little melancholy, drawn to big questions and long nights, and you feel the future more than you'd like. People find you serious; you find them loud. You're Gothitelle: deep, quiet, and watching the stars.",
-  "why": "Pokedex (BW, Sw): reads the future in the stars and weeps when it foresees its trainer's death; a quiet, cosmic mind."
+  "title": "星を見る人",
+  "blurb": "あなたはほかの人よりよく空を見上げます。思慮深く少しさみしげで、大きな問いや長い夜に引かれ、望む以上に未来を感じとってしまいます。まわりはあなたをまじめだと思い、あなたはまわりをにぎやかだと思っています。あなたはゴチルゼル。深く、静かで、星を見つめています。",
+  "why": "図鑑（ブラック・ホワイト、ソード）：星の並びから未来を読み、トレーナーの寿命を知って涙を流す。静かで、宇宙のような心。"
  },
  "emolga": {
-  "title": "The Flying Mischief",
-  "blurb": "You get away with it, and everyone knows it. You're charming, lazy in a strategic way, and extremely good at making other people do the work while you take the snacks. You're fun to be around and a little dangerous to trust with the last cookie. You're Emolga: adorable, scheming, and always airborne.",
-  "why": "Anime: Iris's Emolga, who uses Attract to get out of work and steals everyone's snacks; Pokedex (BW, Sw): glides from tree to tree discharging electricity."
+  "title": "空飛ぶいたずらっ子",
+  "blurb": "あなたはうまく逃げきり、みんなそれを知っています。魅力的で、作戦としてなまけ者で、自分はおやつを手にしながら、ほかの人に仕事をさせるのがとても上手。いっしょにいると楽しいけれど、最後のクッキーをまかせるのは少し危険です。あなたはエモンガ。かわいくて、ちゃっかり者で、いつも空を飛んでいます。",
+  "why": "アニメ：メロメロを使って仕事をさぼり、みんなのおやつを横取りするアイリスのエモンガ。図鑑（ブラック・ホワイト、ソード）：電気を放ちながら木から木へと滑空する。"
  },
  "alomomola": {
-  "title": "The Ocean Nurse",
-  "blurb": "You find the hurt ones and you take care of them. You're gentle and steady, with a healing presence and no interest in winning anything, and you drift wherever you're needed. You don't make a fuss about it. You're Alomomola: nurturing, calm, and the reason someone made it through.",
-  "why": "Pokedex (BW, Sw): heals injured Pokemon by wrapping them in its healing membrane, drifting across the open sea to find them; the caring fish."
+  "title": "海の看護師",
+  "blurb": "あなたは傷ついた者を見つけ、手当てをします。やさしくぶれず、癒やしの雰囲気を持ち、何かに勝つことには興味がなく、必要とされる場所へと漂っていきます。大げさにはしません。あなたはママンボウ。育む力があり、落ち着いていて、だれかが乗りこえられた理由です。",
+  "why": "図鑑（ブラック・ホワイト、ソード）：傷ついたポケモンを特別な膜で包んで癒やし、彼らを探して大海原を漂う。思いやりの魚。"
  },
  "chandelure": {
-  "title": "The Soul Lantern",
-  "blurb": "You're mesmerising, and a little bit dangerous. You're creative and intense, you don't warm up to strangers, and you'd rather be fascinating than friendly. You light rooms in a way people can't look away from. You're Chandelure: elegant, haunting, and not to be taken lightly.",
-  "why": "Pokedex (BW, Sw): hypnotises with its flickering flames and burns away spirits, leaving them wandering; elegant, eerie, and feared."
+  "title": "魂のランタン",
+  "blurb": "あなたは人を夢中にさせ、少しだけ危険な人です。創造的で激しく、知らない人にはなかなか打ちとけず、親しみやすさより魅力で勝負します。だれも目をそらせないような光で部屋を照らします。あなたはシャンデラ。優雅で、心に取りつき、軽く見てはいけない存在です。",
+  "why": "図鑑（ブラック・ホワイト、ソード）：ゆらめく炎で相手を催眠状態にし、魂を燃やしてしまう。燃やされた魂は行き場を失ってさまよう。優雅で不気味で、恐れられている。"
  },
  "haxorus": {
   "title": "The Gentle Axe",
