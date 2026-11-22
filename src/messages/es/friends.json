@@ -60,7 +60,7 @@
   "send": "Enviar",
   "findUser": "¿No sabes el nombre? Busca un usuario",
   "options": {
-    "failed": "No se ha podido enviar el desafío.",
+    "failed": "No se ha podido enviar el reto.",
     "random": "Combate aleatorio",
     "custom": "Combate: cualquier formato o reglas propias…",
     "pokedle": "Duelo de Pokédle",

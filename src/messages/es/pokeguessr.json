@@ -38,7 +38,7 @@
     "description": "Un duelo de PokéGuessr ronda a ronda: la captura, las dos chinchetas y el lugar real, las puntuaciones, el daño y los PS."
   },
   "challenge": {
-    "fallback": "Desafío de PokéGuessr",
+    "fallback": "Reto de PokéGuessr",
     "aTrainer": "Un Entrenador",
     "title": "{who} ha hecho {score} en PokéGuessr. ¿Puedes superarlo?",
     "world": "{n, plural, one {El mismo lugar del mundo Pokémon: pon tu chincheta y supera su puntuación. GeoGuessr de Pokémon, gratis.} other {Los mismos {n} lugares del mundo Pokémon: pon tus chinchetas y supera su puntuación. GeoGuessr de Pokémon, gratis.}}",
