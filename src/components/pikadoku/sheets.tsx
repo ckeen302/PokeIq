@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Sheet } from "@/components/pokedle/sheets";
+import { Sheet } from "@/components/pokedle/sheet";
 import { cn } from "@/lib/utils";
 import { iconButton } from "./parts";
 import type { PdkDifficulty } from "@/lib/pikadoku/types";
