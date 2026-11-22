@@ -21,6 +21,8 @@ export const NAMESPACES = [
   "battle-group",
   "battle-home",
   "battle-inputs",
+  "battle-lab",
+  "battle-lab-charts",
   "battle-ladder",
   "battle-log",
   "battle-pages",

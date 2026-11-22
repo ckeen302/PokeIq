@@ -4,23 +4,33 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import { Check, Clapperboard, Copy, LoaderCircle, RotateCcw, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/i18n/client";
+import battleLab from "@/messages/battle-lab";
 import type { LabReplay } from "@/lib/battle/lab/pool";
-import { count, margin, meanTurns, medianTurns, pct, summaryLine, topMoves, wilson } from "@/lib/battle/lab/stats";
-import { STRATEGY_INFO, TURN_LIMIT } from "@/lib/battle/lab/types";
+import { margin, meanTurns, medianTurns, topMoves, wilson } from "@/lib/battle/lab/stats";
+import { TURN_LIMIT } from "@/lib/battle/lab/types";
+import { labMessage, labNumbers, labSummary } from "@/lib/battle/lab/words";
 import { cn } from "@/lib/utils";
 import type { SpriteSpecies } from "@/lib/battle/sprites";
 import { BattleSprite } from "../BattleSprite";
-import { CardSection, ConvergenceChart, DRAW_COLOR, Legend, OutcomeBar, SIDE_COLOR, StackedColumns, Swatch, turnBins } from "./charts";
+import { useBattleNames } from "../use-battle-names";
+import { CardSection, DRAW_COLOR, SIDE_COLOR, Swatch } from "./charts";
+import { ConvergenceChart, Legend, OutcomeBar, StackedColumns, turnBins } from "./lab-charts";
 import type { LabRun } from "./use-lab-run";
 
 const SampleReplay = dynamic(() => import("./SampleReplay"), {
   ssr: false,
-  loading: () => (
-    <p className="flex items-center gap-2 py-6 text-sm text-muted-foreground">
-      <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> Loading the replay…
-    </p>
-  ),
+  loading: () => <ReplayLoading />,
 });
+
+function ReplayLoading() {
+  const t = useT(battleLab);
+  return (
+    <p className="flex items-center gap-2 py-6 text-sm text-muted-foreground">
+      <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> {t("results.loadingReplay")}
+    </p>
+  );
+}
 
 function Tile({ label, value, ci, color, testId }: { label: string; value: string; ci?: string; color?: string; testId?: string }) {
   return (
@@ -57,6 +67,9 @@ export function LabResults({
   replayBattle: (index: number) => Promise<LabReplay>;
 }) {
   const { progress, labels, setup } = run;
+  const tr = useT(battleLab);
+  const names = useBattleNames();
+  const num = labNumbers(tr.locale);
   const t = progress.totals;
   const n = t.battles;
   const running = run.status === "running";
@@ -67,7 +80,7 @@ export function LabResults({
   const [copied, setCopied] = useState(false);
   const [replay, setReplay] = useState<{ state: "loading" } | { state: "ready"; data: LabReplay } | { state: "error"; message: string } | null>(null);
 
-  const ciText = (ci: ReturnType<typeof wilson>) => `± ${pct(margin(ci))} · 95% CI ${pct(ci.lo)}–${pct(ci.hi)}`;
+  const ciText = (ci: ReturnType<typeof wilson>) => tr("results.ci", { m: num.pct(margin(ci)), lo: num.pct(ci.lo), hi: num.pct(ci.hi) });
 
   async function watch(outcome: 1 | 2 | 3) {
     const indices: number[] = [];
@@ -78,12 +91,12 @@ export function LabResults({
     try {
       setReplay({ state: "ready", data: await replayBattle(index) });
     } catch (err) {
-      setReplay({ state: "error", message: err instanceof Error ? err.message : "Couldn't replay that battle." });
+      setReplay({ state: "error", message: labMessage(err instanceof Error ? err.message : "Couldn't replay that battle.", names, tr) });
     }
   }
 
-  const bins = turnBins(t);
-  const sideNames = [`${labels[0]} wins`, `${labels[1]} wins`];
+  const bins = turnBins(t, tr);
+  const sideNames = [tr("results.wins", { side: labels[0] }), tr("results.wins", { side: labels[1] })];
 
   return (
     <div className="space-y-4" aria-busy={running}>
@@ -91,36 +104,54 @@ export function LabResults({
       <div className="hud space-y-4 rounded-lg border bg-card p-4 sm:p-5">
         <div className="space-y-1">
           <p className="font-display text-xl font-bold leading-snug sm:text-2xl" data-testid="lab-summary" aria-live={running ? "off" : "polite"}>
-            {n ? summaryLine(t, labels) : "Starting the simulator…"}
+            {n ? labSummary(t, labels, num, tr) : tr("results.starting")}
           </p>
           <p className="hud-label normal-case tracking-wider">
-            Gen {setup.gen} {setup.doubles ? "doubles" : "singles"} · {STRATEGY_INFO[setup.sides[0].strategy].name} vs {STRATEGY_INFO[setup.sides[1].strategy].name} · seed{" "}
-            <span className="font-mono text-foreground">{run.seed}</span> ·{" "}
-            <span className="text-foreground" data-testid="lab-sample-size">
-              {count(n)} {n === 1 ? "battle" : "battles"}
-            </span>
-            {run.status === "cancelled" && " · cancelled"}
+            {tr.rich("results.meta", {
+              gen: setup.gen,
+              doubles: setup.doubles,
+              a: tr(`strategy.${setup.sides[0].strategy}.name`),
+              b: tr(`strategy.${setup.sides[1].strategy}.name`),
+              seed: run.seed,
+              n,
+              cancelled: run.status === "cancelled",
+              mono: (chunks) => <span className="font-mono text-foreground">{chunks}</span>,
+              size: (chunks) => (
+                <span className="text-foreground" data-testid="lab-sample-size">
+                  {chunks}
+                </span>
+              ),
+            })}
           </p>
         </div>
         <OutcomeBar totals={t} labels={labels} />
         <div className="grid gap-3 sm:grid-cols-3">
-          <Tile label={`${labels[0]} wins`} value={n ? pct(ciA.p) : "—"} ci={n ? ciText(ciA) : undefined} color={SIDE_COLOR[0]} testId="lab-win-a" />
-          <Tile label="Draws" value={n ? pct(ciD.p) : "—"} ci={n ? (t.draws ? `${ciText(ciD)}${t.capped ? ` · ${count(t.capped)} at the ${count(TURN_LIMIT)}-turn limit` : ""}` : "None") : undefined} color={DRAW_COLOR} />
-          <Tile label={`${labels[1]} wins`} value={n ? pct(ciB.p) : "—"} ci={n ? ciText(ciB) : undefined} color={SIDE_COLOR[1]} testId="lab-win-b" />
+          <Tile label={tr("results.wins", { side: labels[0] })} value={n ? num.pct(ciA.p) : "—"} ci={n ? ciText(ciA) : undefined} color={SIDE_COLOR[0]} testId="lab-win-a" />
+          <Tile
+            label={tr("results.draws")}
+            value={n ? num.pct(ciD.p) : "—"}
+            ci={n ? (t.draws ? `${ciText(ciD)}${t.capped ? tr("results.capped", { n: num.count(t.capped), limit: num.count(TURN_LIMIT) }) : ""}` : tr("results.noDraws")) : undefined}
+            color={DRAW_COLOR}
+          />
+          <Tile label={tr("results.wins", { side: labels[1] })} value={n ? num.pct(ciB.p) : "—"} ci={n ? ciText(ciB) : undefined} color={SIDE_COLOR[1]} testId="lab-win-b" />
         </div>
         <p className="text-sm text-muted-foreground">
-          Battles last <strong className="text-foreground">{n ? meanTurns(t).toFixed(1) : "—"}</strong> turns on average (median{" "}
-          <strong className="text-foreground">{n ? medianTurns(t) : "—"}</strong>). The 95% confidence interval is a Wilson score interval: with more battles it narrows.
+          {tr.rich("results.length", {
+            mean: n ? num.fixed(meanTurns(t), 1) : "—",
+            median: n ? (tr.locale === "en" ? medianTurns(t) : num.count(medianTurns(t))) : "—",
+            b: (chunks) => <strong className="text-foreground">{chunks}</strong>,
+          })}
         </p>
         {!running && n > 0 && margin(ciA) > 0.05 && (
           <p className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm" data-testid="lab-small-sample">
-            Only {count(n)} {n === 1 ? "battle" : "battles"}: these odds could be off by up to {pct(margin(ciA))}. Run more battles for a firmer answer.
+            {tr("results.small", { n, m: num.pct(margin(ciA)) })}
           </p>
         )}
         {!running && (
           <div className="flex flex-wrap gap-2">
             <Button size="sm" variant="outline" onClick={() => onRerun(run.seed)}>
-              <RotateCcw className="h-4 w-4" aria-hidden /> Run again with seed <span className="font-mono normal-case tracking-normal">{run.seed}</span>
+              <RotateCcw className="h-4 w-4" aria-hidden />{" "}
+              {tr.rich("results.again", { seed: run.seed, mono: (chunks) => <span className="font-mono normal-case tracking-normal">{chunks}</span> })}
             </Button>
             <Button
               size="sm"
@@ -132,13 +163,18 @@ export function LabResults({
                 }
               }}
             >
-              {copied ? <Check className="h-4 w-4 text-success" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />} {copied ? "Link copied" : "Copy link to this result"}
+              {copied ? <Check className="h-4 w-4 text-success" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />} {copied ? tr("results.linkCopied") : tr("results.copyLink")}
             </Button>
           </div>
         )}
         {(run.notes.length > 0 || run.misses.length > 0 || t.refused > 0 || t.broken > 0) && (
           <ul className="space-y-1 rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm">
-            {[...run.notes, ...run.misses, ...(t.refused ? [`The simulator refused ${count(t.refused)} choices (a legal one was played instead).`] : []), ...(t.broken ? [`${count(t.broken)} battles couldn't finish and count as draws.`] : [])].map((note) => (
+            {[
+              ...run.notes.map((note) => labMessage(note, names, tr)),
+              ...run.misses.map((miss) => labMessage(miss, names, tr)),
+              ...(t.refused ? [tr("results.refused", { num: t.refused, n: num.count(t.refused) })] : []),
+              ...(t.broken ? [tr("results.broken", { num: t.broken, n: num.count(t.broken) })] : []),
+            ].map((note) => (
               <li key={note} className="flex gap-2">
                 <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-warning" aria-hidden /> {note}
               </li>
@@ -148,15 +184,15 @@ export function LabResults({
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <CardSection title="Converging" aside={`${labels[0]}'s win rate as battles came in`}>
+        <CardSection title={tr("results.converging")} aside={tr("results.rateAside", { side: labels[0] })}>
           <ConvergenceChart history={run.history} total={run.status === "cancelled" ? Math.max(1, progress.done) : run.total} label={labels[0]} />
         </CardSection>
-        <CardSection title="Turns to finish" aside={n ? `median ${medianTurns(t)}` : undefined}>
+        <CardSection title={tr("results.turnsTitle")} aside={n ? tr("results.median", { m: tr.locale === "en" ? medianTurns(t) : num.count(medianTurns(t)) }) : undefined}>
           <Legend
             items={[
               { label: sideNames[0], color: SIDE_COLOR[0] },
               { label: sideNames[1], color: SIDE_COLOR[1] },
-              ...(t.draws ? [{ label: "Draws", color: DRAW_COLOR }] : []),
+              ...(t.draws ? [{ label: tr("results.draws"), color: DRAW_COLOR }] : []),
             ]}
           />
           <StackedColumns
@@ -164,15 +200,15 @@ export function LabResults({
             series={[
               { label: sideNames[0], color: SIDE_COLOR[0] },
               { label: sideNames[1], color: SIDE_COLOR[1] },
-              { label: "Draws", color: DRAW_COLOR },
+              { label: tr("results.draws"), color: DRAW_COLOR },
             ]}
-            caption="Battles by the turn they ended on"
+            caption={tr("results.byTurn")}
           />
         </CardSection>
       </div>
 
       {oneVsOne && (
-        <CardSection title="HP left when it wins" aside="the winner's HP at the end">
+        <CardSection title={tr("results.hpTitle")} aside={tr("results.hpAside")}>
           <div className="grid gap-4 sm:grid-cols-2">
             {([0, 1] as const).map((s) => {
               const wins = t.wins[s];
@@ -181,19 +217,19 @@ export function LabResults({
                 <div key={s} className="min-w-0 space-y-1">
                   <p className="flex items-center gap-1.5 text-sm font-semibold">
                     <Swatch color={SIDE_COLOR[s]} /> {labels[s]}
-                    <span className="font-normal text-muted-foreground">· {count(wins)} wins</span>
+                    <span className="font-normal text-muted-foreground">{tr("results.nWins", { num: wins, n: num.count(wins) })}</span>
                   </p>
                   {wins ? (
                     <StackedColumns
                       height={140}
-                      bins={buckets.map((v, i) => ({ label: `${i * 10}`, title: `${i * 10}–${i === 9 ? 100 : i * 10 + 9}% HP left`, values: [v / wins] }))}
-                      series={[{ label: "Share of its wins", color: SIDE_COLOR[s] }]}
-                      caption={`${labels[s]}'s HP left when it wins`}
-                      format={(v) => pct(v)}
-                      axisFormat={(v) => `${Math.round(v * 1000) / 10}%`}
+                      bins={buckets.map((v, i) => ({ label: `${i * 10}`, title: tr("results.hpBin", { lo: i * 10, hi: i === 9 ? 100 : i * 10 + 9 }), values: [v / wins] }))}
+                      series={[{ label: tr("results.hpShare"), color: SIDE_COLOR[s] }]}
+                      caption={tr("results.hpCaption", { side: labels[s] })}
+                      format={(v: number) => num.pct(v)}
+                      axisFormat={(v: number) => (tr.locale === "en" ? `${Math.round(v * 1000) / 10}%` : num.pct(Math.round(v * 1000) / 1000, Number.isInteger(Math.round(v * 1000) / 10) ? 0 : 1))}
                     />
                   ) : (
-                    <p className="py-8 text-center text-sm text-muted-foreground">No wins.</p>
+                    <p className="py-8 text-center text-sm text-muted-foreground">{tr("results.noWins")}</p>
                   )}
                 </div>
               );
@@ -203,15 +239,15 @@ export function LabResults({
       )}
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <CardSection title="Who scores the KOs" aside="KOs per battle">
+        <CardSection title={tr("results.kosTitle")} aside={tr("results.kosAside")}>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
             {([0, 1] as const).map((s) => {
               const mons = setup.sides[s].team;
               const kos = t.kos[s];
               const total = kos.reduce((a, b) => a + b, 0) + t.otherKos[s];
               const rows = [
-                ...mons.map((m, i) => ({ key: String(i), name: m.set.name || m.set.species, species: m.set.species, shiny: m.set.shiny, value: kos[i] ?? 0 })),
-                { key: "other", name: "Indirect", species: "", shiny: false, value: t.otherKos[s] },
+                ...mons.map((m, i) => ({ key: String(i), name: m.set.name || names.species(m.set.species), species: m.set.species, shiny: m.set.shiny, value: kos[i] ?? 0 })),
+                { key: "other", name: tr("results.indirect"), species: "", shiny: false, value: t.otherKos[s] },
               ];
               return (
                 <div key={s} className="min-w-0 space-y-1.5">
@@ -219,14 +255,14 @@ export function LabResults({
                     <Swatch color={SIDE_COLOR[s]} /> {labels[s]}
                   </p>
                   <table className="w-full text-sm">
-                    <caption className="sr-only">KOs scored by {labels[s]}&apos;s Pokémon</caption>
+                    <caption className="sr-only">{tr("results.kosCaption", { side: labels[s] })}</caption>
                     <tbody>
                       {rows.map((r) => (
                         <tr key={r.key} className="border-t border-foreground/[0.06]">
                           <td className="py-1 pr-2">
                             <span className="flex min-w-0 items-center gap-1.5">
                               {r.species ? <BattleSprite species={sprite?.(r.species)} shiny={r.shiny} animated={false} size={28} /> : <span className="w-7" />}
-                              <span className={cn("truncate", !r.species && "text-muted-foreground")} title={r.species ? undefined : "Status, weather, hazards, recoil and self-KOs"}>
+                              <span className={cn("truncate", !r.species && "text-muted-foreground")} title={r.species ? undefined : tr("results.indirectTitle")}>
                                 {r.name}
                               </span>
                             </span>
@@ -234,7 +270,7 @@ export function LabResults({
                           <td className="w-20 py-1">
                             <Share value={total ? r.value / total : 0} color={SIDE_COLOR[s]} />
                           </td>
-                          <td className="w-12 py-1 text-right font-mono tabular-nums">{n ? (r.value / n).toFixed(2) : "—"}</td>
+                          <td className="w-12 py-1 text-right font-mono tabular-nums">{n ? num.fixed(r.value / n, 2) : "—"}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -243,12 +279,12 @@ export function LabResults({
               );
             })}
           </div>
-          <p className="text-xs text-muted-foreground">Indirect: the foe fainted to status, weather, hazards, recoil or its own move (Explosion, Life Orb…).</p>
+          <p className="text-xs text-muted-foreground">{tr("results.indirectNote")}</p>
         </CardSection>
 
-        <CardSection title="Crits and misses" aside="how often luck was in it">
+        <CardSection title={tr("results.luckTitle")} aside={tr("results.luckAside")}>
           <table className="w-full text-sm">
-            <caption className="sr-only">How often a critical hit or a miss was part of the result</caption>
+            <caption className="sr-only">{tr("results.luckCaption")}</caption>
             <thead>
               <tr className="hud-label text-left">
                 <th scope="col" className="py-1 font-normal" />
@@ -264,36 +300,33 @@ export function LabResults({
             <tbody>
               <tr className="border-t border-foreground/[0.06]">
                 <th scope="row" className="py-1.5 pr-2 text-left font-normal text-muted-foreground">
-                  Wins with a KO from a critical hit
+                  {tr("results.critWins")}
                 </th>
                 {([0, 1] as const).map((s) => (
                   <td key={s} className="py-1.5 text-right font-mono tabular-nums">
-                    {t.wins[s] ? pct(t.critWins[s] / t.wins[s]) : "—"}
-                    <span className="block text-[10px] text-muted-foreground">of {count(t.wins[s])} wins</span>
+                    {t.wins[s] ? num.pct(t.critWins[s] / t.wins[s]) : "—"}
+                    <span className="block text-[10px] text-muted-foreground">{tr("results.ofWins", { num: t.wins[s], n: num.count(t.wins[s]) })}</span>
                   </td>
                 ))}
               </tr>
               <tr className="border-t border-foreground/[0.06]">
                 <th scope="row" className="py-1.5 pr-2 text-left font-normal text-muted-foreground">
-                  Losses after missing a move
+                  {tr("results.missLosses")}
                 </th>
                 {([0, 1] as const).map((s) => (
                   <td key={s} className="py-1.5 text-right font-mono tabular-nums">
-                    {t.wins[1 - s] ? pct(t.missLosses[s] / t.wins[1 - s]) : "—"}
-                    <span className="block text-[10px] text-muted-foreground">of {count(t.wins[1 - s])} losses</span>
+                    {t.wins[1 - s] ? num.pct(t.missLosses[s] / t.wins[1 - s]) : "—"}
+                    <span className="block text-[10px] text-muted-foreground">{tr("results.ofLosses", { num: t.wins[1 - s], n: num.count(t.wins[1 - s]) })}</span>
                   </td>
                 ))}
               </tr>
             </tbody>
           </table>
-          <p className="text-xs text-muted-foreground">
-            A win &quot;came down to a crit&quot; when a critical hit scored one of its KOs; a loss &quot;came down to a miss&quot; when the loser missed at least once.
-            Both are upper bounds on luck: the crit or the miss may not have changed the result.
-          </p>
+          <p className="text-xs text-muted-foreground">{tr("results.luckNote")}</p>
         </CardSection>
       </div>
 
-      <CardSection title="Most-used moves" aside="uses per battle">
+      <CardSection title={tr("results.movesTitle")} aside={tr("results.movesAside")}>
         <div className="grid gap-4 sm:grid-cols-2">
           {([0, 1] as const).map((s) => {
             const moves = topMoves(t, s, 8);
@@ -304,22 +337,22 @@ export function LabResults({
                 </p>
                 {moves.length ? (
                   <table className="w-full text-sm">
-                    <caption className="sr-only">{labels[s]}&apos;s most-used moves</caption>
+                    <caption className="sr-only">{tr("results.movesCaption", { side: labels[s] })}</caption>
                     <tbody>
                       {moves.map((m) => (
                         <tr key={m.move} className="border-t border-foreground/[0.06]">
-                          <td className="truncate py-1 pr-2">{m.move}</td>
+                          <td className="truncate py-1 pr-2">{names.move(m.move)}</td>
                           <td className="w-24 py-1">
                             <Share value={m.share} color={SIDE_COLOR[s]} />
                           </td>
-                          <td className="w-12 py-1 text-right font-mono tabular-nums">{m.perBattle.toFixed(2)}</td>
-                          <td className="w-12 py-1 text-right font-mono text-xs tabular-nums text-muted-foreground">{pct(m.share, 0)}</td>
+                          <td className="w-12 py-1 text-right font-mono tabular-nums">{num.fixed(m.perBattle, 2)}</td>
+                          <td className="w-12 py-1 text-right font-mono text-xs tabular-nums text-muted-foreground">{num.pct(m.share, 0)}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 ) : (
-                  <p className="text-sm text-muted-foreground">None yet.</p>
+                  <p className="text-sm text-muted-foreground">{tr("results.noneYet")}</p>
                 )}
               </div>
             );
@@ -328,23 +361,23 @@ export function LabResults({
       </CardSection>
 
       {!running && n > 0 && (
-        <CardSection title="Watch a sample battle" aside="any battle of the run, replayed exactly">
+        <CardSection title={tr("results.watchTitle")} aside={tr("results.watchAside")}>
           <div className="flex flex-wrap gap-2">
             <Button size="sm" variant="outline" onClick={() => watch(1)} disabled={!t.wins[0] || replay?.state === "loading"}>
-              <Clapperboard className="h-4 w-4" aria-hidden /> A {labels[0]} win
+              <Clapperboard className="h-4 w-4" aria-hidden /> {tr("results.aWin", { side: labels[0] })}
             </Button>
             <Button size="sm" variant="outline" onClick={() => watch(2)} disabled={!t.wins[1] || replay?.state === "loading"}>
-              <Clapperboard className="h-4 w-4" aria-hidden /> A {labels[1]} win
+              <Clapperboard className="h-4 w-4" aria-hidden /> {tr("results.aWin", { side: labels[1] })}
             </Button>
             {t.draws > 0 && (
               <Button size="sm" variant="outline" onClick={() => watch(3)} disabled={replay?.state === "loading"}>
-                <Clapperboard className="h-4 w-4" aria-hidden /> A draw
+                <Clapperboard className="h-4 w-4" aria-hidden /> {tr("results.aDraw")}
               </Button>
             )}
           </div>
           {replay?.state === "loading" && (
             <p className="flex items-center gap-2 text-sm text-muted-foreground">
-              <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> Playing it again…
+              <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> {tr("results.replaying")}
             </p>
           )}
           {replay?.state === "error" && (
