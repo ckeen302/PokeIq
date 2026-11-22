@@ -182,3 +182,18 @@ export function decodeShare(raw: string | null | undefined, codec: Codec): ToolS
   }
   return s;
 }
+
+/** What a link's preview needs without the roster: its template, mode, title and top length. */
+export function peekShare(raw: string | null | undefined): { template: string; mode: Mode; title: string; topLength: number; payload: Payload } | null {
+  if (!raw || raw.length > 20_000) return null;
+  try {
+    const json = LZString.decompressFromEncodedURIComponent(raw);
+    const p = json ? (JSON.parse(json) as Payload) : null;
+    if (!p || p.v !== SHARE_VERSION || !getTemplate(p.t)) return null;
+    return { template: p.t, mode: MODES[p.m] ?? "tier", title: str(p.n, 80), topLength: Array.isArray(p.o) && typeof p.o[0] === "number" ? p.o[0] : 10, payload: p };
+  } catch {
+    return null;
+  }
+}
+
+export type { Payload as SharePayload };

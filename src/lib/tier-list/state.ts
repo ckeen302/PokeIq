@@ -161,9 +161,11 @@ export function updateRow(state: ToolState, rowId: string, patch: Partial<Pick<T
   return { ...state, tier: { rows: state.tier.rows.map((r) => (r.id === rowId ? { ...r, ...patch } : r)) } };
 }
 
-export function addRow(state: ToolState, after?: string): ToolState {
+/** Adds an empty tier after a row (or before it), or at the end. */
+export function addRow(state: ToolState, next?: string, before = false): ToolState {
   const rows = state.tier.rows.slice();
-  const at = after ? rows.findIndex((r) => r.id === after) + 1 : rows.length;
+  const i = next ? rows.findIndex((r) => r.id === next) : -1;
+  const at = i < 0 ? rows.length : before ? i : i + 1;
   const used = new Set(rows.map((r) => r.color));
   const color = TIER_COLORS.find((c) => !used.has(c)) ?? TIER_COLORS[rows.length % TIER_COLORS.length];
   rows.splice(at, 0, { id: newRowId(), label: "", color, items: [] });

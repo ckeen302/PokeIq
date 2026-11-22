@@ -26,7 +26,10 @@ describe("seeded draws", () => {
     const first = [r(), r(), r()];
     const again = rng("k7m2qx");
     expect([again(), again(), again()]).toEqual(first);
-    for (const x of first) expect(x).toBeGreaterThanOrEqual(0), expect(x).toBeLessThan(1);
+    for (const x of first) {
+      expect(x).toBeGreaterThanOrEqual(0);
+      expect(x).toBeLessThan(1);
+    }
   });
 
   it("draw a blind run from a pool in roster order", () => {

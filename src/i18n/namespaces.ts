@@ -54,5 +54,6 @@ export const NAMESPACES = [
   "share-page",
   "site",
   "tier",
+  "tier-list",
   "tools",
 ] as const;
