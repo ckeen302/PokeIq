@@ -15,7 +15,7 @@ const ts = require("typescript");
 const { englishMessage, helperCode, getCompile } = require("./icu-loader.cjs");
 
 const MAKERS = new Set(["useT", "serverT", "getT", "translator"]);
-const H = { N: "__i18nN", O: "__i18nO", F: "__i18nF", M: "__i18nM", A: "__i18nA" };
+const H = { N: "__i18nN", O: "__i18nO", F: "__i18nF", M: "__i18nM", A: "__i18nA", T: "__i18nT" };
 const debug = !!process.env.I18N_INLINE_DEBUG;
 
 function leaf(tree, key) {
@@ -154,7 +154,7 @@ function safeExport(file, name, registry, src, depth = 0) {
  * One file: its translators, how each is used, the edits that inline English, and which of its exported helpers'
  * translator parameters are safe (every use inlined). `registry`: file → export → [param index → namespace] known safe.
  */
-function analyze(file, source, compile, registry, src, addDependency) {
+function analyze(file, source, compile, registry, src, addDependency, opts = {}) {
   const sf = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, file.endsWith("x") ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
   const namespaces = new Map(); // local name -> { name, tree }
   for (const st of sf.statements) {
@@ -232,6 +232,7 @@ function analyze(file, source, compile, registry, src, addDependency) {
   if (!translators.size) return result;
 
   const used = new Set();
+  const collapsed = { used: false }; // an English-only build's message helper (see visitOne)
   const tables = new Map(); // a key expression's messages ("({…})") -> the module-level const holding them
   const en = (ns, key) => {
     const text = leaf(ns.tree, key);
@@ -390,6 +391,17 @@ function analyze(file, source, compile, registry, src, addDependency) {
       if (debug) console.log(`[i18n-inline] ${path.relative(process.cwd(), file)}:${sf.getLineAndCharacterOfPosition(n.getStart(sf)).line + 1} keeps ${tr.ns.name}: ${(call ?? p).getText(sf).slice(0, 90)}`);
       return;
     }
+    if (opts.englishOnly && !rich) {
+      // An English-only build: every translator is English (catalog.english.ts), so `t("key", values)` is its English
+      // and nothing else; the call becomes that English (no key, no lookup). Arguments stay where they are, so a
+      // translator call inside the values keeps its own edits.
+      const keyArg = call.arguments[0];
+      const start = n.getStart(sf);
+      if (english.direct !== undefined && call.arguments.length === 1 && english.direct.startsWith('"')) tr.edits.push([start, call.getEnd(), english.direct]);
+      else if (english.direct !== undefined) (collapsed.used = true), tr.edits.push([start, keyArg.getEnd(), `${H.T}(${english.direct}`]);
+      else (collapsed.used = true), tr.edits.push([start, keyArg.getStart(sf), `${H.T}(${english.map}[`], [keyArg.getEnd(), keyArg.getEnd(), "]"]);
+      return;
+    }
     const at = call.arguments[call.arguments.length - 1].getEnd();
     const extra = english.direct !== undefined ? english.direct : `${english.map}[${call.arguments[0].getText(sf)}]`;
     tr.edits.push([at, at, call.arguments.length === 1 ? (rich ? `, {}, ${extra}` : `, undefined, ${extra}`) : `, ${extra}`]);
@@ -451,7 +463,8 @@ function analyze(file, source, compile, registry, src, addDependency) {
   // Only the tables some kept edit names (a translator that escapes keeps its namespace and drops its edits).
   const kept = edits.map((e) => e[2]).join("\n");
   const tableCode = [...tables].filter(([, id]) => kept.includes(id)).map(([text, id]) => `const ${id}=${text};`).join("");
-  const head = `\n${helperCode(used, H)}${[...stubs].map(([id, name]) => `const ${id}={name:${JSON.stringify(name)},en:{}};`).join("")}${tableCode}\n`;
+  const collapse = collapsed.used && kept.includes(`${H.T}(`) ? `const ${H.T}=(m,v)=>typeof m==="string"?m:String(m(v??{}));` : "";
+  const head = `\n${helperCode(used, H)}${collapse}${[...stubs].map(([id, name]) => `const ${id}={name:${JSON.stringify(name)},en:{}};`).join("")}${tableCode}\n`;
   const at = lastImport ? lastImport.getEnd() : 0;
   if (head.trim()) edits.push([at, at, head]);
   edits.sort((a, b) => b[0] - a[0] || b[1] - a[1]);
@@ -511,7 +524,8 @@ module.exports = function inlineLoader(source) {
       registryPromise ??= Promise.resolve().then(() => buildRegistry(src, compile));
       const registry = await registryPromise;
       if (!source.includes("@/messages/") && !source.includes("Translator<") && !(registry.typeRe && registry.typeRe.test(source))) return done(null, source);
-      done(null, analyze(this.resourcePath, source, compile, registry, src, (f) => this.addDependency(f)).out);
+      // LIVE_LOCALES empty: an English-only build (next.config swaps in catalog.english.ts), whose calls collapse to their English.
+      done(null, analyze(this.resourcePath, source, compile, registry, src, (f) => this.addDependency(f), { englishOnly: !process.env.LIVE_LOCALES }).out);
     })
     .catch((e) => done(new Error(`${this.resourcePath}: ${e.message}`)));
 };
