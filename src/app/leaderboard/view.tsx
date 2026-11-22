@@ -34,6 +34,8 @@ import leaderboard from "@/messages/leaderboard";
 import geoNames from "@/messages/geo-names";
 import guessrRanked from "@/messages/guessr-ranked";
 import { localEra, localMap } from "@/lib/geo-i18n";
+import battleGlicko from "@/messages/battle-glicko";
+import battleLadder from "@/messages/battle-ladder";
 
 type T = Translator<typeof leaderboard.en>;
 
@@ -112,7 +114,9 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
           </p>
         </div>
         <div className="flex justify-center">
-          <LadderTabs format={battleFormat} hrefBase="/leaderboard?board=battle&format=" />
+          <ClientMessages namespaces={[battleLadder, battleGlicko]}>
+            <LadderTabs format={battleFormat} hrefBase="/leaderboard?board=battle&format=" />
+          </ClientMessages>
         </div>
         {rows === null ? (
           <Card>
@@ -120,8 +124,10 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
           </Card>
         ) : (
           <>
-            <YourBattleStanding format={battleFormat} />
-            <LadderTable rows={rows} format={battleFormat} avatars={avatars} />
+            <ClientMessages namespaces={[battleLadder, battleGlicko]}>
+              <YourBattleStanding format={battleFormat} />
+              <LadderTable rows={rows} format={battleFormat} avatars={avatars} />
+            </ClientMessages>
           </>
         )}
       </div>

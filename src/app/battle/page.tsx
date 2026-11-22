@@ -14,6 +14,10 @@ import formatsNs from "@/messages/battle-formats";
 import teamPickNs from "@/messages/battle-team-pick";
 import rulesNs from "@/messages/battle-rules";
 import pickersNs from "@/messages/battle-pickers";
+import battleGlicko from "@/messages/battle-glicko";
+import battleTeams from "@/messages/battle-teams";
+import battleTeamInsights from "@/messages/battle-team-insights";
+import battleTerms from "@/messages/battle-terms";
 
 export function generateMetadata(): Metadata {
   const t = serverT(pagesNs);
@@ -50,7 +54,7 @@ export default function BattlePage() {
   return (
     <div className="mx-auto max-w-6xl space-y-12">
       {/* The team picker, custom rules and pickers load with a format that needs them: their words come along. */}
-      <ClientMessages namespaces={[homeNs, formatsNs, teamPickNs, rulesNs, pickersNs]}>
+      <ClientMessages namespaces={[homeNs, formatsNs, teamPickNs, rulesNs, pickersNs, battleGlicko, battleTeams, battleTeamInsights, battleTerms]}>
         <BattleHome />
       </ClientMessages>
 

@@ -9,7 +9,8 @@ import { saveBattleSeat } from "@/lib/battle/seat";
 import { ensureBattleId } from "@/lib/battle/replay-client";
 import { isLadderFormat } from "@/lib/battle/ladder";
 import { useLadderStanding } from "@/lib/battle/ladder-client";
-import { GlickoBadge } from "./GlickoBadge";
+import { glickoBadge } from "./GlickoBadge";
+import battleGlicko from "@/messages/battle-glicko";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { setTrainerName, useProgress } from "@/lib/progress";
 import { useAccount } from "@/lib/account";
@@ -92,6 +93,7 @@ const OPPONENTS = [
 export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent; challenge?: string }) {
   const t = useT(setupNs);
   const tf = useT(formats);
+  const tg = useT(battleGlicko);
   const router = useRouter();
   const progress = useProgress();
   const id = useId();
@@ -409,7 +411,7 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
               )}
               {rankedOn && ladder.status === "ready" && (
                 <p className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                  {ladder.you && ladder.you.games > 0 ? <GlickoBadge rating={ladder.you.rating} rd={ladder.you.rd} gxe={ladder.you.gxe} elo={ladder.you.elo} size="sm" /> : <span>{t("unrated")}</span>}
+                  {ladder.you && ladder.you.games > 0 ? glickoBadge({ rating: ladder.you.rating, rd: ladder.you.rd, gxe: ladder.you.gxe, elo: ladder.you.elo, size: "sm" }, tg) : <span>{t("unrated")}</span>}
                   <Link href={`/battle/ladder?format=${format}`} className="underline-offset-2 hover:text-foreground hover:underline">
                     {t("ladder")}
                   </Link>
