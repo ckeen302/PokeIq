@@ -3,6 +3,8 @@
   "description": "The data, engine, music and textures PokéIQ is built on, and their licences.",
   "data": "Pokémon data",
   "dataBody": "Data from PokéAPI.",
+  "shinyMaker": "Shiny Pokémon Maker",
+  "shinyMakerBody": "Black/White-style sprites from PokéAPI's sprite collection; from #650 on they are fan-made in the same style by the Smogon Sprite Project. The 3D style uses Pokémon HOME renders and the Artwork style the official artwork, both also from PokéAPI (<a>credits</a>).",
   "battles": "Battles",
   "battlesBody": "Battles run on Pokémon Showdown's simulator, and its battle timer and replay format are adapted from Pokémon Showdown (MIT licence, © Guangcong Luo and contributors).",
   "music": "Battle music",

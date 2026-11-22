@@ -52,6 +52,8 @@ export async function englishSitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/pokeconnections/community`, changeFrequency: "daily", priority: 0.6 },
     { url: `${SITE_URL}/pokeconnections/create`, changeFrequency: "monthly", priority: 0.5 },
     { url: `${SITE_URL}/atlas`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${SITE_URL}/tools`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${SITE_URL}/tools/shiny-maker`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${SITE_URL}/quiz`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${SITE_URL}/pokedex`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${SITE_URL}/pokedex/study`, changeFrequency: "monthly", priority: 0.7 },

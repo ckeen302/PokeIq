@@ -28,6 +28,8 @@ const DESKTOP_LINKS: { href: string; label: keyof typeof nav.en.links; wideOnly?
   // Only on wide screens, where the leaderboard link was: the row is full at 1024px (the footer links it too).
   // The leaderboard is the trophy among the header's icons.
   { href: LAB_PATH, label: "lab", wideOnly: true },
+  // The Tools tab (the Shiny Pokémon Maker): wide screens only, like the 3D Lab (the row is full at 1024px; the phone's More sheet has it).
+  { href: "/tools", label: "tools", wideOnly: true },
 ];
 
 function isActive(pathname: string, href: string) {

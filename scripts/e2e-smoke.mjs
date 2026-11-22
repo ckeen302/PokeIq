@@ -13,6 +13,7 @@ import fs from "fs";
 import { execFileSync } from "child_process";
 import { runIqTest } from "./e2e-iq-test.mjs";
 import { runSizes } from "./e2e-sizes.mjs";
+import { runShinyMaker } from "./e2e-shiny-maker.mjs";
 import { runVideoGames } from "./e2e-video-games.mjs";
 import { runMovies } from "./e2e-movies.mjs";
 import { runMobile } from "./e2e-mobile.mjs";
@@ -159,6 +160,11 @@ const page = await newPage({ width: 1280, height: 900 });
 const musicRequests = [];
 page.on("request", (r) => /\/audio\/battle\/.+\.(ogg|mp3)$/.test(r.url()) && musicRequests.push(r.url()));
 
+// E2E_ONLY=shiny-maker runs just the Tools tab and the Shiny Pokémon Maker, then exits.
+if (process.env.E2E_ONLY === "shiny-maker") {
+  await runShinyMaker({ browser, BASE, OUT, errors, step });
+  await finish();
+}
 // E2E_ONLY=which-pokemon runs just that step (no Supabase, no second browser), then exits.
 if (process.env.E2E_ONLY === "which-pokemon") {
   await whichPokemonStep();
@@ -2638,6 +2644,7 @@ step("pokédex Timeline: an entry's own link opens its panel, share copies it, t
 }
 
 await runSizes({ browser, BASE, OUT, errors, step });
+await runShinyMaker({ browser, BASE, OUT, errors, step });
 
 await runVideoGames({ browser, BASE, errors, step });
 await runMovies({ browser, BASE, errors, step });
@@ -4435,7 +4442,7 @@ async function phoneNavStep() {
   await sheet.waitFor({ state: "visible" });
   if ((await more.getAttribute("aria-expanded")) !== "true") errors.push("phone nav: More isn't marked expanded with its sheet open");
   const hrefs = await sheet.locator("a").evaluateAll((els) => els.map((e) => e.getAttribute("href")));
-  for (const want of ["/daily", "/pokeconnections", "/pikadoku", "/quiz", "/pokedex", "/lab", "/leaderboard", "/rooms"]) {
+  for (const want of ["/daily", "/pokeconnections", "/pikadoku", "/quiz", "/pokedex", "/lab", "/tools", "/leaderboard", "/rooms"]) {
     if (!hrefs.includes(want)) errors.push(`phone nav: the More sheet has no link to ${want}`);
   }
   if (!hrefs.includes("/trainer") && !hrefs.includes("/login")) errors.push("phone nav: the More sheet has no trainer card or sign-in");
