@@ -1,4 +1,5 @@
 import { C, OG_CONTENT_TYPE, OG_SIZE, WinOddsVisual, ogCard } from "@/lib/og/card";
+import { ogT } from "@/lib/og/i18n";
 
 /** Share card for the Battle Lab. */
 
@@ -6,13 +7,15 @@ export const alt = "Battle Lab: Pokémon win odds from thousands of simulated ba
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 
-export default function Image() {
+export default async function Image(props: { params?: unknown }) {
+  const t = await ogT(props);
   return ogCard({
-    eyebrow: "Battle Lab",
-    title: ["Who wins,", ["and how often?", C.cyan]],
-    subtitle: "Set up any matchup, Gen 1 to 9, and Showdown's engine plays it thousands of times in your browser.",
+    eyebrow: t("battleLab.eyebrow"),
+    title: [t("battleLab.title1"), [t("battleLab.title2"), C.cyan]],
+    subtitle: t("battleLab.subtitle"),
     accent: C.cyan,
-    visual: <WinOddsVisual />,
-    footer: "Win odds with a 95% confidence interval →",
+    visual: <WinOddsVisual t={t} />,
+    footer: t("battleLab.footer"),
+    t,
   });
 }

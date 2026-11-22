@@ -1,6 +1,13 @@
 /* eslint-disable jsx-a11y/alt-text, @next/next/no-img-element -- Satori draws plain <img> */
 import "server-only";
-import { C, ScreenshotVisual, localImage, ogCard } from "./card";
+import { C, ScreenshotVisual, localImage, ogCard, visualLength } from "./card";
+import { englishOgT, type OgT } from "./i18n";
+import { getT } from "@/i18n/server";
+import { formatNumber } from "@/i18n/format";
+import geoNamesNs from "@/messages/geo-names";
+import pokeguessr from "@/messages/pokeguessr";
+import { localMap } from "@/lib/geo-i18n";
+import { localView } from "@/lib/geo-share-local";
 import type { GeoShareView } from "@/lib/server/geo-share";
 import { DUEL_HP } from "@/lib/duel-types";
 import { GEO_MAX_ROUND_SCORE } from "@/lib/geo-types";
@@ -13,10 +20,9 @@ import { GEO_MAX_ROUND_SCORE } from "@/lib/geo-types";
  */
 
 const tile = (score: number) => (score >= 4000 ? C.green : score >= 2000 ? C.yellow : score > 0 ? "#fb8c3a" : C.red);
-const fmt = (n: number) => n.toLocaleString("en-US");
 
 /** The played map with the round squares along its foot. */
-async function MapVisual({ view }: { view: GeoShareView }) {
+async function MapVisual({ view, mapName }: { view: GeoShareView; mapName: string }) {
   const map = await localImage(`public${view.map.src}`, 470);
   const streak = view.kind === "streak" || view.kind === "region-streak";
   const squares = streak ? view.rounds.map((s) => (s > 0 ? C.green : C.red)).slice(-12) : view.rounds.map(tile);
@@ -26,7 +32,7 @@ async function MapVisual({ view }: { view: GeoShareView }) {
       <div style={{ display: "flex", position: "relative", width: 464, height: 290, overflow: "hidden" }}>
         <img src={map} width={464} height={290} style={{ objectFit: "cover" }} />
         <div style={{ display: "flex", position: "absolute", left: 12, top: 12, padding: "6px 12px", borderRadius: 8, background: "rgba(0,0,0,0.65)", fontFamily: "Silkscreen", fontSize: 18, color: "#fff" }}>
-          {view.map.name}
+          {mapName}
         </div>
       </div>
       <div style={{ display: "flex", gap: 8, padding: "14px 20px", alignItems: "center" }}>
@@ -42,7 +48,7 @@ async function MapVisual({ view }: { view: GeoShareView }) {
 }
 
 /** A duel: both trainers, their HP bars (a points race: their points against the most there were) and round scores. */
-function DuelVisual({ view }: { view: GeoShareView }) {
+function DuelVisual({ view, t }: { view: GeoShareView; t: OgT }) {
   const players = view.players ?? [];
   const race = view.duelMode === "race";
   const most = Math.max(1, view.max * GEO_MAX_ROUND_SCORE);
@@ -55,7 +61,7 @@ function DuelVisual({ view }: { view: GeoShareView }) {
           <div key={seat} style={{ display: "flex", flexDirection: "column", padding: "12px 16px", borderRadius: 12, background: "rgba(0,0,0,0.45)", border: `2px solid ${p.winner ? C.green : "rgba(255,255,255,0.2)"}` }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontFamily: "Chakra Petch", fontSize: 30, color: p.winner ? C.green : "#fff", textTransform: "uppercase" }}>{p.name}</span>
-              <span style={{ fontFamily: "Silkscreen", fontSize: 18, color: "rgba(255,255,255,0.75)" }}>{race ? `${fmt(points)} pts` : `${fmt(p.hp)} HP`}</span>
+              <span style={{ fontFamily: "Silkscreen", fontSize: 18, color: "rgba(255,255,255,0.75)" }}>{race ? t("guessr.points", { n: formatNumber(points, t.locale) }) : t("guessr.hp", { n: formatNumber(p.hp, t.locale) })}</span>
             </div>
             <div style={{ display: "flex", height: 12, marginTop: 8, borderRadius: 4, background: "rgba(0,0,0,0.6)", overflow: "hidden" }}>
               <div style={{ display: "flex", width: `${hp * 100}%`, height: "100%", background: race ? (p.winner ? C.green : C.violet) : hp > 0.5 ? C.green : hp > 0.22 ? C.yellow : C.red }} />
@@ -72,16 +78,41 @@ function DuelVisual({ view }: { view: GeoShareView }) {
   );
 }
 
-export async function guessrResultCard(view: GeoShareView) {
+/**
+ * A shared result's view (geo-share, in English) in the card's language: the words its page uses, and the map's name.
+ * `challenge`: a friend's challenge link (challengeShareView), whose lines are the card's own.
+ */
+async function localGeoView(view: GeoShareView, t: OgT, challenge?: { name: string; score: number }): Promise<{ view: GeoShareView; mapName: string }> {
+  if (t.locale === "en") return { view, mapName: view.map.name };
+  const names = await getT(geoNamesNs, t.locale);
+  const mapName = localMap(names, view.map);
+  if (!challenge) return { view: localView(view, await getT(pokeguessr, t.locale), names), mapName };
+  const fmt = (n: number) => formatNumber(n, t.locale);
+  return {
+    mapName,
+    view: {
+      ...view,
+      eyebrow: t("guessr.challenge.eyebrow", { map: mapName }),
+      detail: t("guessr.challenge.detail", { who: challenge.name || t("result.aTrainer"), score: fmt(challenge.score), max: fmt(view.max), n: view.rounds.length }),
+      headline: fmt(challenge.score),
+      playLabel: t("guessr.challenge.play"),
+    },
+  };
+}
+
+/** A shared result's card (or a challenge link's: `challenge` names who set it and their score). */
+export async function guessrResultCard(english: GeoShareView, t: OgT = englishOgT(), challenge?: { name: string; score: number }) {
+  const { view, mapName } = await localGeoView(english, t, challenge);
   const accent = view.kind === "duel" ? C.violet : C.green;
   return ogCard({
     eyebrow: view.eyebrow,
     title: [[view.headline, accent]],
-    titleSize: view.headline.length > 14 ? 56 : view.headline.length > 9 ? 72 : 96,
+    titleSize: visualLength(view.headline) > 14 ? 56 : visualLength(view.headline) > 9 ? 72 : 96,
     subtitle: view.detail,
     accent,
-    visual: view.kind === "duel" ? <DuelVisual view={view} /> : await MapVisual({ view }),
-    footer: `Can you beat it? ${view.playLabel} →`,
+    visual: view.kind === "duel" ? <DuelVisual view={view} t={t} /> : await MapVisual({ view, mapName }),
+    footer: t("result.footer", { play: view.playLabel }),
+    t,
   });
 }
 
@@ -89,14 +120,15 @@ export async function guessrResultCard(view: GeoShareView) {
  * A party invite's card: the same for every room (it never reads the room, so
  * it gives nothing away and needs no database while an app waits on it).
  */
-export async function partyInviteCard() {
+export async function partyInviteCard(t: OgT = englishOgT()) {
   const [shot, map] = await Promise.all([localImage("src/assets/guessr/galar.webp", 940), localImage("public/geo/maps/world-thumb.webp", 336)]);
   return ogCard({
-    eyebrow: "PokéGuessr party",
-    title: ["You're invited", ["to a party", C.green]],
-    subtitle: "Friends on the same places, everyone at once. No sign-up: open it, pick a name and join.",
+    eyebrow: t("guessr.party.eyebrow"),
+    title: [t("guessr.party.title1"), [t("guessr.party.title2"), C.green]],
+    subtitle: t("guessr.party.subtitle"),
     accent: C.green,
-    visual: <ScreenshotVisual src={shot} map={map} pin={null} />,
-    footer: "Battle Royale or team duels · tap to join →",
+    visual: <ScreenshotVisual src={shot} map={map} pin={null} t={t} />,
+    footer: t("guessr.party.footer"),
+    t,
   });
 }

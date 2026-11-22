@@ -1,5 +1,6 @@
 import "server-only";
 import { C, VersusVisual, ogCard } from "./card";
+import { englishOgT, type OgT } from "./i18n";
 
 export type ChallengeGame = "pokedle" | "quiz" | "geo" | "battle" | "connections" | "connections-party" | "pikadoku" | "name-em-all";
 
@@ -11,27 +12,29 @@ export type ChallengeGame = "pokedle" | "quiz" | "geo" | "battle" | "connections
  * and a code that has expired still gets a proper card.
  */
 
-const GAMES: Record<ChallengeGame, { eyebrow: string; accent: string; footer: string }> = {
-  pokedle: { eyebrow: "Pokédle duel", accent: C.violet, footer: "Same mystery Pokémon · three rounds · tap to play →" },
-  quiz: { eyebrow: "Quiz duel", accent: C.yellow, footer: "Same questions · right and fast wins · tap to play →" },
-  geo: { eyebrow: "PokéGuessr duel", accent: C.green, footer: "Same places · closer pin wins · tap to play →" },
-  battle: { eyebrow: "Live battle", accent: C.pink, footer: "Pokémon Showdown rules · live · tap to battle →" },
-  connections: { eyebrow: "PokéConnections duel", accent: C.cyan, footer: "Same 16 Pokémon · find the 4 groups first · tap to race →" },
-  "connections-party": { eyebrow: "PokéConnections party", accent: C.cyan, footer: "Same 16 Pokémon for everyone · best time wins · tap to join →" },
-  pikadoku: { eyebrow: "Pikadoku Tic Tac Toe", accent: C.violet, footer: "Claim a cell with a Pokémon that fits · three in a row wins →" },
-  "name-em-all": { eyebrow: "Name 'em All race", accent: C.green, footer: "Same Pokémon for everyone · first to name them all wins →" },
+/** Each game's accent; its eyebrow and footer are og's challenge.<game>.eyebrow / .footer. */
+const ACCENTS: Record<ChallengeGame, string> = {
+  pokedle: C.violet,
+  quiz: C.yellow,
+  geo: C.green,
+  battle: C.pink,
+  connections: C.cyan,
+  "connections-party": C.cyan,
+  pikadoku: C.violet,
+  "name-em-all": C.green,
 };
 
 export const CHALLENGE_ALT = "A PokéIQ challenge: open the link to play";
 
-export function challengeCard(game: ChallengeGame) {
-  const g = GAMES[game];
+export function challengeCard(game: ChallengeGame, t: OgT = englishOgT()) {
+  const accent = ACCENTS[game];
   return ogCard({
-    eyebrow: g.eyebrow,
-    title: ["You've been", ["challenged", g.accent]],
-    subtitle: "A trainer sent you an invite. No sign-up: open it, pick a name and play.",
-    accent: g.accent,
-    visual: <VersusVisual host="A trainer" />,
-    footer: g.footer,
+    eyebrow: t(`challenge.${game}.eyebrow`),
+    title: [t("challenge.title1"), [t("challenge.title2"), accent]],
+    subtitle: t("challenge.subtitle"),
+    accent,
+    visual: <VersusVisual host={t("challenge.host")} t={t} />,
+    footer: t(`challenge.${game}.footer`),
+    t,
   });
 }

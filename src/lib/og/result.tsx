@@ -1,6 +1,7 @@
 import "server-only";
 import type { ShareAccent, ShareTile, ShareView } from "@/lib/share";
-import { C, ogCard } from "./card";
+import { C, ogCard, visualLength } from "./card";
+import { englishOgT, type OgT } from "./i18n";
 
 /**
  * The preview card of a shared result (/s/<payload>, /c/<token>): the game,
@@ -94,16 +95,17 @@ function OutcomeVisual({ view, accent }: { view: ShareView; accent: string }) {
 }
 
 /** The whole card for a result. `who` names the player only where a signed link vouches for it. */
-export function resultCard(view: ShareView, who?: string) {
+export function resultCard(view: ShareView, who?: string, t: OgT = englishOgT()) {
   const accent = ACCENT_HEX[view.accent];
   const headline = view.headline;
   return ogCard({
     eyebrow: view.label,
     title: [[headline, accent]],
-    titleSize: headline.length > 12 ? 64 : headline.length > 7 ? 84 : 112,
+    titleSize: visualLength(headline) > 12 ? 64 : visualLength(headline) > 7 ? 84 : 112,
     subtitle: who ? `${who} · ${view.detail}` : view.detail,
     accent,
     visual: view.tiles.length ? <TilesVisual tiles={view.tiles} numbers={view.numbers} accent={accent} /> : <OutcomeVisual view={view} accent={accent} />,
-    footer: `Can you beat it? ${view.playLabel} →`,
+    footer: t("result.footer", { play: view.playLabel }),
+    t,
   });
 }

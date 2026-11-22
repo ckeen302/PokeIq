@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/alt-text -- Satori draws plain <img> */
 import { C, OG_CONTENT_TYPE, OG_SIZE, localImage, ogCard } from "@/lib/og/card";
 import { liveLabExperiences } from "@/lib/lab";
+import { ogT } from "@/lib/og/i18n";
 
 /** Share card for the 3D Lab: its experiences' screenshots, stacked. */
 
@@ -8,7 +9,8 @@ export const alt = "PokéIQ 3D Lab: the Pokémon Timeline, Pokémon Sizes, Poké
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 
-export default async function Image() {
+export default async function Image(props: { params?: unknown }) {
+  const t = await ogT(props);
   const shots = await Promise.all(
     liveLabExperiences()
       .filter((e) => e.image)
@@ -23,9 +25,9 @@ export default async function Image() {
     { left: 110, top: 0 },
   ];
   return ogCard({
-    eyebrow: "PokéIQ · 3D Lab",
-    title: [["3D", C.pink], "Lab"],
-    subtitle: "Pokémon history, Pokémon sizes, Pokémon races and the whole Pokémon world, in cinematic 3D.",
+    eyebrow: t("lab.eyebrow"),
+    title: [[t("lab.title1"), C.pink], t("lab.title2")],
+    subtitle: t("lab.subtitle"),
     accent: C.violet,
     visual: (
       <div style={{ display: "flex", position: "relative", width: 510, height: 380 }}>
@@ -50,6 +52,7 @@ export default async function Image() {
         ))}
       </div>
     ),
-    footer: "Step inside →",
+    footer: t("lab.footer"),
+    t,
   });
 }

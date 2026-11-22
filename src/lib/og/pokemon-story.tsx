@@ -3,6 +3,7 @@ import "server-only";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { C, localImage, ogCard } from "@/lib/og/card";
+import { englishOgT, type OgT } from "@/lib/og/i18n";
 import { homeRenderUrl } from "@/lib/pokemon/art";
 import { figureAsset } from "@/lib/world-history/assets";
 import { CHAPTERS } from "@/lib/pokemon-story/data";
@@ -55,29 +56,31 @@ function Figures({ chapter }: { chapter: Chapter }) {
   );
 }
 
-export async function storyChapterCard(chapter: Chapter) {
+export async function storyChapterCard(chapter: Chapter, t: OgT = englishOgT()) {
   const pic = await still(chapter.id);
   return ogCard({
-    eyebrow: `The Story of Pokémon · ${chapter.numeral}`,
+    eyebrow: t("story.chapterEyebrow", { numeral: chapter.numeral }),
     title: [chapter.title],
     titleSize: chapter.title.length > 14 ? 60 : 72,
     subtitle: `${chapter.when} · ${chapter.place}`,
     accent: chapter.accent,
     visual: <Frame accent={chapter.accent}>{pic ? <img src={pic} width={W} height={H} style={{ objectFit: "cover" }} /> : <Figures chapter={chapter} />}</Frame>,
-    footer: "Watch the chapter in 3D →",
+    footer: t("story.chapterFooter"),
+    t,
   });
 }
 
-export async function storyHubCard() {
+export async function storyHubCard(t: OgT = englishOgT()) {
   const pic = (await still("hall")) ?? (await still("cable"));
   const hero = CHAPTERS.find((c) => c.id === "red-green") ?? CHAPTERS[0];
   return ogCard({
-    eyebrow: "PokéIQ 3D Lab · The real history",
-    title: ["The Story of", ["Pokémon", C.yellow]],
+    eyebrow: t("story.eyebrow"),
+    title: [t("story.title1"), [t("story.title2"), C.yellow]],
     titleSize: 66,
-    subtitle: "From a boy's bug hunts to thirty years: a 3D film, every line sourced.",
+    subtitle: t("story.subtitle"),
     accent: "#e8c15a",
     visual: <Frame accent="#e8c15a">{pic ? <img src={pic} width={W} height={H} style={{ objectFit: "cover" }} /> : <Figures chapter={hero} />}</Frame>,
-    footer: "Press play →",
+    footer: t("story.footer"),
+    t,
   });
 }

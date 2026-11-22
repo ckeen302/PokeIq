@@ -6,6 +6,8 @@ import { ImageResponse } from "next/og";
 import sharp from "sharp";
 import { LOGO_SVG } from "@/lib/brand/logo-svg";
 import { SITE_URL } from "@/lib/site";
+import type { Locale } from "@/i18n/config";
+import { englishOgT, type OgT } from "./i18n";
 
 /**
  * Link-preview cards (Open Graph / X), 1200 × 630, in the site's own look:
@@ -51,14 +53,21 @@ export const HOST = new URL(SITE_URL).host;
 
 type Font = { name: string; data: Buffer; weight: 400 | 600 | 700; style: "normal" };
 let fonts: Promise<Font[]> | null = null;
-export function loadFonts(): Promise<Font[]> {
-  const file = (name: string) => readFile(join(process.cwd(), "src/assets/fonts", name));
-  fonts ??= Promise.all([file("ChakraPetch-Bold.ttf"), file("Inter-SemiBold.ttf"), file("Silkscreen-Regular.ttf")]).then(([display, body, pixel]) => [
+let japanese: Promise<Font[]> | null = null;
+const fontFile = (name: string) => readFile(join(process.cwd(), "src/assets/fonts", name));
+/**
+ * The cards' fonts. Japanese cards add Noto Sans JP Bold (a kana + kanji subset, src/assets/fonts/OFL.txt), which
+ * Satori falls back to for every glyph the Latin fonts lack; it is read only for a Japanese card.
+ */
+export function loadFonts(locale: Locale = "en"): Promise<Font[]> {
+  fonts ??= Promise.all([fontFile("ChakraPetch-Bold.ttf"), fontFile("Inter-SemiBold.ttf"), fontFile("Silkscreen-Regular.ttf")]).then(([display, body, pixel]) => [
     { name: "Chakra Petch", data: display, weight: 700, style: "normal" },
     { name: "Inter", data: body, weight: 600, style: "normal" },
     { name: "Silkscreen", data: pixel, weight: 400, style: "normal" },
   ]);
-  return fonts;
+  if (locale !== "ja") return fonts;
+  japanese ??= Promise.all([fonts, fontFile("NotoSansJP-Bold.ttf")]).then(([latin, jp]) => [...latin, { name: "Noto Sans JP", data: jp, weight: 700, style: "normal" }]);
+  return japanese;
 }
 
 const images = new Map<string, Promise<string>>();
@@ -73,6 +82,22 @@ export function localImage(path: string, width: number): Promise<string> {
     images.set(key, uri);
   }
   return uri;
+}
+
+const WIDE = /[\u1100-\u115f\u2e80-\ua4cf\uac00-\ud7a3\uf900-\ufaff\ufe30-\ufe4f\uff00-\uff60\uffe0-\uffe6]/;
+
+/** A text's width in Latin letters, for picking a title size: a Japanese (full-width) character counts as two. */
+export function visualLength(text: string): number {
+  let n = 0;
+  for (const ch of text) n += WIDE.test(ch) ? 2 : 1;
+  return n;
+}
+
+/** A title line's width in ems: an upper-case Chakra Petch letter is about 0.62 em, a Japanese character 1 em. */
+function titleEms(text: string): number {
+  let n = 0;
+  for (const ch of text) n += WIDE.test(ch) ? 1 : 0.62;
+  return n;
 }
 
 /** Any title line can be [text, colour]. */
@@ -92,14 +117,20 @@ export interface CardProps {
   /** Bottom row: a call to action, or chips. */
   footer?: string;
   chips?: string[];
+  /** The card's language (lib/og/i18n): English without. */
+  t?: OgT;
 }
 
 export async function ogCard(props: CardProps, headers?: Record<string, string>): Promise<ImageResponse> {
-  return new ImageResponse(<Card {...props} />, { ...OG_SIZE, fonts: await loadFonts(), headers });
+  return new ImageResponse(<Card {...props} />, { ...OG_SIZE, fonts: await loadFonts(props.t?.locale), headers });
 }
 
-function Card({ eyebrow, title, titleSize, subtitle, accent, visual, footer, chips }: CardProps) {
-  const size = titleSize ?? (visual ? 74 : 88);
+function Card({ eyebrow, title, titleSize, subtitle, accent, visual, footer, chips, t = englishOgT() }: CardProps) {
+  const base = titleSize ?? (visual ? 74 : 88);
+  // Another language's title can run longer than the English one the sizes were picked for: shrink it until its
+  // longest line fits the column.
+  const widest = Math.max(...title.map((line) => titleEms(typeof line === "string" ? line : line[0])));
+  const size = t.locale === "en" ? base : Math.min(base, Math.floor((visual ? 600 : 1080) / widest));
   return (
     <div style={{ width: "100%", height: "100%", display: "flex", position: "relative", background: C.bg, color: C.text, fontFamily: "Inter" }}>
       {/* Glow in the game's colour, a pink counter-glow and the faint grid of the site's background. */}
@@ -161,7 +192,7 @@ function Card({ eyebrow, title, titleSize, subtitle, accent, visual, footer, chi
             ))}
           </div>
         ) : (
-          <div style={{ display: "flex", fontFamily: "Chakra Petch", fontSize: 30, color: accent, letterSpacing: 1, textTransform: "uppercase" }}>{footer ?? "Free · no sign-up →"}</div>
+          <div style={{ display: "flex", fontFamily: "Chakra Petch", fontSize: 30, color: accent, letterSpacing: 1, textTransform: "uppercase" }}>{footer ?? t("card.footer")}</div>
         )}
       </div>
     </div>
@@ -173,7 +204,7 @@ function Card({ eyebrow, title, titleSize, subtitle, accent, visual, footer, chi
 // ---------------------------------------------------------------------------
 
 /** An in-game view in a device frame, with a pin on a little world map. */
-export function ScreenshotVisual({ src, map, pin, width = 470 }: { src: string; map?: string; pin?: [number, number] | null; width?: number }) {
+export function ScreenshotVisual({ src, map, pin, width = 470, t = englishOgT() }: { src: string; map?: string; pin?: [number, number] | null; width?: number; t?: OgT }) {
   const height = Math.round((width * 9) / 16);
   return (
     <div style={{ display: "flex", position: "relative", width, height, borderRadius: 18, border: `3px solid ${C.edge}`, overflow: "hidden", boxShadow: "0 30px 60px rgba(0,0,0,0.55)" }}>
@@ -187,7 +218,7 @@ export function ScreenshotVisual({ src, map, pin, width = 470 }: { src: string; 
         </div>
       )}
       <div style={{ display: "flex", position: "absolute", left: 12, top: 12, padding: "6px 12px", borderRadius: 8, background: "rgba(0,0,0,0.65)", fontFamily: "Silkscreen", fontSize: 18, color: "#fff" }}>
-        Where is this?
+        {t("card.whereIsThis")}
       </div>
     </div>
   );
@@ -216,7 +247,7 @@ export function ClueTilesVisual() {
 }
 
 /** Two battle HP boxes, the way the battle screen draws them. */
-export function BattleVisual({ foe = "HEATRAN", you = "GARCHOMP", foeHp = 0.18, youHp = 0.86, caption }: { foe?: string; you?: string; foeHp?: number; youHp?: number; caption?: string }) {
+export function BattleVisual({ foe = "HEATRAN", you = "GARCHOMP", foeHp = 0.18, youHp = 0.86, caption, t = englishOgT() }: { foe?: string; you?: string; foeHp?: number; youHp?: number; caption?: string; t?: OgT }) {
   const box = (name: string, hp: number) => (
     <div style={{ display: "flex", flexDirection: "column", width: 330, padding: "14px 18px", borderRadius: 12, background: "rgba(0,0,0,0.5)", border: "2px solid rgba(255,255,255,0.2)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", fontFamily: "Silkscreen", fontSize: 22, color: "#fff" }}>
@@ -236,17 +267,17 @@ export function BattleVisual({ foe = "HEATRAN", you = "GARCHOMP", foeHp = 0.18, 
       <div style={{ display: "flex" }}>{box(foe, foeHp)}</div>
       <div style={{ display: "flex", justifyContent: "flex-end" }}>{box(you, youHp)}</div>
       <div style={{ display: "flex", padding: "10px 16px", borderRadius: 10, border: "2px solid rgba(255,255,255,0.7)", background: "rgba(10,8,26,0.9)", fontFamily: "Silkscreen", fontSize: 18, color: "#fff" }}>
-        {caption ?? "What will GARCHOMP do?"}
+        {caption ?? t("card.battle.whatWill", { name: you })}
       </div>
     </div>
   );
 }
 
 /** Battle Lab's result bar. */
-export function WinOddsVisual() {
+export function WinOddsVisual({ t = englishOgT() }: { t?: OgT } = {}) {
   return (
     <div style={{ display: "flex", flexDirection: "column", width: 470, padding: 30, borderRadius: 18, background: C.panel, border: `3px solid ${C.edge}` }}>
-      <div style={{ display: "flex", fontFamily: "Silkscreen", fontSize: 20, color: C.muted }}>10,000 battles simulated</div>
+      <div style={{ display: "flex", fontFamily: "Silkscreen", fontSize: 20, color: C.muted }}>{t("card.odds.simulated")}</div>
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: 22, fontFamily: "Chakra Petch", fontSize: 56 }}>
         <span style={{ color: "#f1417c" }}>61.8%</span>
         <span style={{ color: "#9a74f8" }}>38.2%</span>
@@ -256,8 +287,8 @@ export function WinOddsVisual() {
         <div style={{ display: "flex", flex: 1, background: "#9a74f8" }} />
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: 14, fontSize: 22, color: C.muted }}>
-        <span>Side A wins</span>
-        <span>± 1.0% (95% CI)</span>
+        <span>{t("card.odds.sideA")}</span>
+        <span>{t("card.odds.ci")}</span>
       </div>
     </div>
   );
@@ -309,14 +340,14 @@ export function TypesVisual({ colors }: { colors: [string, string, string][] }) 
 }
 
 /** "Host vs guest" for duel and battle invites. */
-export function VersusVisual({ host, guest }: { host: string; guest?: string }) {
-  const longest = Math.max(host.length, guest?.length ?? 1);
+export function VersusVisual({ host, guest, t = englishOgT() }: { host: string; guest?: string; t?: OgT }) {
+  const longest = Math.max(visualLength(host), guest ? visualLength(guest) : 1);
   const size = longest > 16 ? 48 : longest > 10 ? 60 : 76;
   return (
     <div style={{ display: "flex", flexDirection: "column", width: 440, padding: "28px 30px", borderRadius: 18, background: C.panel, border: `3px solid ${C.edge}` }}>
       <div style={{ display: "flex", fontFamily: "Chakra Petch", fontSize: size, color: C.pink, lineHeight: 1.05 }}>{host}</div>
-      <div style={{ display: "flex", fontFamily: "Silkscreen", fontSize: 28, color: C.muted, margin: "14px 0" }}>vs</div>
-      <div style={{ display: "flex", fontFamily: "Chakra Petch", fontSize: size, color: guest ? C.cyan : C.muted, lineHeight: 1.05 }}>{guest ?? "You?"}</div>
+      <div style={{ display: "flex", fontFamily: "Silkscreen", fontSize: 28, color: C.muted, margin: "14px 0" }}>{t("card.vs")}</div>
+      <div style={{ display: "flex", fontFamily: "Chakra Petch", fontSize: size, color: guest ? C.cyan : C.muted, lineHeight: 1.05 }}>{guest ?? t("card.you")}</div>
     </div>
   );
 }
