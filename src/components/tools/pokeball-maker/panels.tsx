@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import type { Translator } from "@/i18n/catalog";
 import msgs from "@/messages/pokeball-maker";
 import { boardArtUrl } from "@/lib/pokemon/art";
-import { BUTTONS, DESC_MAX, EFFECTS, FINISHES, MAX_STICKERS, NAME_MAX, PARTS, SHAPES, hexOf, type Design, type Effect, type Finish, type Part, type PatternLayer, type RGB } from "@/lib/pokeball-maker/design";
+import { BUTTONS, DESC_MAX, EFFECTS, FINISHES, MAX_STICKERS, NAME_MAX, PARTS, SHAPES, hexOf, rgbOf, type Design, type Effect, type Finish, type Part, type PatternLayer, type RGB } from "@/lib/pokeball-maker/design";
 import { PATTERNS } from "@/lib/pokeball-maker/patterns";
 import { BALL_IDS, TYPES, ballPreset, typePreset, type BallId, type TypeName } from "@/lib/pokeball-maker/presets";
 import { ATLAS_GRID, GLYPH_COUNT, SYMBOL_GLYPHS, TYPE_GLYPHS, glyphInfo } from "@/lib/pokeball-maker/glyphs";
@@ -179,6 +179,9 @@ function Well({ value, label, open, onToggle, testId }: { value: RGB; label: str
   );
 }
 
+/** A pattern's own colours (as it's first chosen). */
+const defaults = (id: number) => PATTERNS[id].colours.map((h) => rgbOf(h)) as PatternLayer["colours"];
+
 export function PatternsPanel({ design, half, onHalf, onBegin, onLayer, onBoth, thumb, compact, t }: { design: Design; half: "top" | "bottom"; onHalf: (h: "top" | "bottom") => void; onBegin: () => void; onLayer: (h: "top" | "bottom", l: PatternLayer, commit?: boolean) => void; onBoth: () => void; thumb: Thumb; compact?: boolean; t: T }) {
   const layer = design.patterns[half];
   const [well, setWell] = useState(-1);
@@ -189,16 +192,17 @@ export function PatternsPanel({ design, half, onHalf, onBegin, onLayer, onBoth, 
       <Seg<"top" | "bottom"> label={t("patterns.half")} value={half} onChange={onHalf} testId="pbm-half" items={[{ v: "top", label: t("patterns.top") }, { v: "bottom", label: t("patterns.bottom") }]} />
       <div className="grid grid-cols-4 gap-1" role="radiogroup" aria-label={t("tabs.patterns")}>
         {PATTERNS.map((p, id) => {
-          const pic = thumb({ top: base, bottom: design.colours[half === "top" ? "bottom" : "top"], band: design.colours.band, pattern: id ? { ...layer, id, colours: layer.id ? layer.colours : (p.colours.map((h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]) as PatternLayer["colours"]) } : null, finish: design.finishes[half] });
+          const own = id === layer.id ? layer.colours : defaults(id);
+          const pic = thumb({ top: base, bottom: design.colours[half === "top" ? "bottom" : "top"], band: design.colours.band, pattern: id ? { id, colours: own, scale: id === layer.id ? layer.scale : p.scale ?? 102, rot: id === layer.id ? layer.rot : 0 } : null, finish: design.finishes[half] });
           return (
             <Tile
               key={p.key}
               small
               on={layer.id === id}
               onClick={() => {
+                if (id === layer.id) return;
                 onBegin();
-                const colours = layer.id ? layer.colours : (p.colours.map((h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]) as PatternLayer["colours"]);
-                onLayer(half, { id, colours, scale: layer.id ? layer.scale : p.scale ?? 102, rot: layer.id ? layer.rot : 0 }, true);
+                onLayer(half, { id, colours: defaults(id), scale: p.scale ?? 102, rot: 0 }, true);
               }}
               label={t(`patterns.names.${p.key}` as "patterns.names.none")}
               testId={`pbm-pattern-${p.key}`}

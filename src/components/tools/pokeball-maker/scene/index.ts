@@ -206,6 +206,10 @@ export function createBallScene(canvas: HTMLCanvasElement, o: { phone: boolean; 
   let tier: Tier = startTier({ phone: o.phone, cores: navigator.hardwareConcurrency || 4, memoryGb: (navigator as { deviceMemory?: number }).deviceMemory });
   const governor = new Governor(tier, tier);
   let spec = TIERS[tier];
+  // Below the lightest tier: half resolution, for devices that can't draw even that smoothly (and software GL).
+  let emergency = false;
+  let slowStreak = 0;
+  const EMERGENCY: TierSpec = { dpr: 0.5, msaa: 0, bloom: false, particles: 120, glass: false };
   let W = 1, H = 1, shift = 0, shiftNow = 0;
   let userYaw = 0, userPitch = 0;
   let driver: (now: number) => Pose = () => ({}) as Pose;
@@ -233,8 +237,8 @@ export function createBallScene(canvas: HTMLCanvasElement, o: { phone: boolean; 
   }
 
   function applyTier() {
-    spec = TIERS[tier];
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, spec.dpr));
+    spec = emergency ? EMERGENCY : TIERS[tier];
+    renderer.setPixelRatio(emergency ? spec.dpr : Math.min(window.devicePixelRatio || 1, spec.dpr));
     renderer.setSize(W, H, false);
     particles.setCount(o.reducedMotion ? Math.round(spec.particles * 0.35) : spec.particles);
     buildPost();
@@ -291,8 +295,8 @@ export function createBallScene(canvas: HTMLCanvasElement, o: { phone: boolean; 
     if (burst.visible) {
       burst.position.copy(world).add(new THREE.Vector3(0, 14, 8));
       burst.quaternion.copy(camera.quaternion);
-      burst.scale.setScalar(40 + 150 * pose.burst);
-      burstU.uA.value = pose.burstA;
+      burst.scale.setScalar(30 + 95 * pose.burst);
+      burstU.uA.value = pose.burstA * 0.7;
       burstU.uK.value = pose.burst;
     }
 
@@ -341,6 +345,16 @@ export function createBallScene(canvas: HTMLCanvasElement, o: { phone: boolean; 
       tier = next;
       applyTier();
     }
+    // The governor ignores long frames (a hitch isn't the frame rate); a run of them is, though.
+    slowStreak = dt > 0.2 ? slowStreak + 1 : 0;
+    if (slowStreak >= 5) {
+      slowStreak = 0;
+      if (tier > 0) {
+        tier = (tier - 1) as Tier;
+        governor.tier = tier;
+      } else emergency = true;
+      applyTier();
+    }
     const now = t / 1000;
     frame(driver(now), now, true);
     draw();
@@ -374,7 +388,7 @@ export function createBallScene(canvas: HTMLCanvasElement, o: { phone: boolean; 
   let tRt: THREE.WebGLRenderTarget | null = null, tOut: THREE.WebGLRenderTarget | null = null;
   const tPass = new OutputPass();
   function drawThumb(o: ThumbSpec): string {
-    tRt ??= new THREE.WebGLRenderTarget(T, T, { type: THREE.HalfFloatType, samples: 4 });
+    tRt ??= new THREE.WebGLRenderTarget(T, T, { type: THREE.HalfFloatType, samples: emergency ? 0 : 4 });
     tOut ??= new THREE.WebGLRenderTarget(T, T, { type: THREE.UnsignedByteType });
     const top = partMaterial(o.finish, shared, { glass: spec.glass, flat: false });
     const bot = partMaterial(o.pattern ? "gloss" : o.finish, shared, { glass: spec.glass, flat: false });
@@ -488,7 +502,7 @@ export function createBallScene(canvas: HTMLCanvasElement, o: { phone: boolean; 
     resize(w, h) {
       W = Math.max(2, Math.round(w));
       H = Math.max(2, Math.round(h));
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, spec.dpr));
+      renderer.setPixelRatio(emergency ? spec.dpr : Math.min(window.devicePixelRatio || 1, spec.dpr));
       renderer.setSize(W, H, false);
       composer?.setPixelRatio(renderer.getPixelRatio());
       composer?.setSize(W, H);
@@ -661,7 +675,7 @@ export function createBallScene(canvas: HTMLCanvasElement, o: { phone: boolean; 
     onThumb(f) {
       onThumb = f;
     },
-    tier: () => tier,
+    tier: () => (emergency ? 0 : tier),
     dispose() {
       cancelAnimationFrame(raf);
       document.removeEventListener("visibilitychange", onVis);

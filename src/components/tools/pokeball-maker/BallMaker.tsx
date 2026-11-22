@@ -16,7 +16,7 @@ import { pixelCanvas } from "@/lib/shiny-maker/export";
 import { fromB64Url, toB64Url } from "@/lib/share/link-bytes";
 import { blankDesign, cleanDesc, cleanName, cloneDesign, encodeDesign, MAX_STICKERS, PARTS, type Design, type Finish, type Part, type PatternLayer, type RGB } from "@/lib/pokeball-maker/design";
 import { ballPreset, pokemonPreset, randomDesign, typePreset, type BallId, type TypeName } from "@/lib/pokeball-maker/presets";
-import { catchPose, CATCH_SECONDS, frontOf, IDLE_SPEED, idlePose, OPEN_SECONDS, openPose, type Pose } from "@/lib/pokeball-maker/anim";
+import { catchPose, CATCH_SECONDS, frontOf, IDLE_SPEED, idlePose, OPEN_SECONDS, openPose, videoPose, type Pose } from "@/lib/pokeball-maker/anim";
 import { drawAtlas } from "@/lib/pokeball-maker/glyphs";
 import { stickerSize } from "@/lib/pokeball-maker/design";
 import { Picker } from "@/components/tools/shiny-maker/Picker";
@@ -60,6 +60,14 @@ function pokemonColours(sp: Awaited<ReturnType<typeof loadSpecies>>): RGB[] {
   return out;
 }
 
+/** Where a new visitor starts: a Poké Ball with stars bursting out and Pikachu inside, so the first Open shows it all. */
+function firstDesign(): Design {
+  const d = ballPreset("poke");
+  d.effect = { kind: "stars", colours: [[255, 214, 90], [255, 255, 255], [255, 140, 170]] };
+  d.inside = { id: 25, shiny: false, custom: null };
+  return d;
+}
+
 export default function BallMaker({ initial, linkBroken }: { initial: Design | null; linkBroken: boolean }) {
   const t = useT(msgs);
   const local = useContext(ShinyLocalContext);
@@ -67,7 +75,7 @@ export default function BallMaker({ initial, linkBroken }: { initial: Design | n
   const motion = !useMedia("(prefers-reduced-motion: reduce)");
   const touch = useMedia("(pointer: coarse)");
 
-  const [design, setDesign] = useState<Design>(() => initial ?? ballPreset("poke"));
+  const [design, setDesign] = useState<Design>(() => initial ?? firstDesign());
   const designRef = useRef(design);
   designRef.current = design;
   const [panel, setPanel] = useState<Panel | null>(null);
@@ -149,7 +157,9 @@ export default function BallMaker({ initial, linkBroken }: { initial: Design | n
   const motionRef = useRef(motion);
   motionRef.current = motion;
 
+  const pinned = useRef<Pose | null>(null);
   const driver = useCallback((now: number): Pose => {
+    if (pinned.current) return pinned.current;
     const c = clock.current;
     const dt = c.last ? Math.min(0.1, now - c.last) : 0;
     c.last = now;
@@ -168,8 +178,8 @@ export default function BallMaker({ initial, linkBroken }: { initial: Design | n
       const t = now - a.t0;
       if (!motionRef.current) {
         // Reduced motion: the moment that tells the story, held, then back.
-        if (t < 2.4) return a.kind === "open" ? openPose(1.7, frontOf(a.yaw0)) : catchPose(4.3, frontOf(a.yaw0), false, a.withMon);
-      } else if (t < (a.kind === "open" ? OPEN_SECONDS : CATCH_SECONDS)) return a.kind === "open" ? openPose(t, a.yaw0) : catchPose(t, a.yaw0, false, a.withMon);
+        if (t < 2.4) return a.kind === "open" ? openPose(1.7, frontOf(a.yaw0), a.withMon) : catchPose(4.3, frontOf(a.yaw0), false, a.withMon);
+      } else if (t < (a.kind === "open" ? OPEN_SECONDS : CATCH_SECONDS)) return a.kind === "open" ? openPose(t, a.yaw0, a.withMon) : catchPose(t, a.yaw0, false, a.withMon);
       c.yawBase = frontOf(a.yaw0) - c.idle * IDLE_SPEED;
       action.current = null;
     }
@@ -204,6 +214,23 @@ export default function BallMaker({ initial, linkBroken }: { initial: Design | n
     }
   }, []);
   useEffect(() => () => sfx.current.forEach(clearTimeout), []);
+
+  // For tests and screenshots: pin the stage to one moment of an animation (window.__pokeballMaker).
+  useEffect(() => {
+    const w = window as unknown as { __pokeballMaker?: unknown };
+    w.__pokeballMaker = {
+      pin(kind: "idle" | "open" | "catch" | "video", t: number) {
+        const mon = designRef.current.inside.id > 0;
+        pinned.current = kind === "open" ? openPose(t, 0, mon) : kind === "catch" ? catchPose(t, 0, false, mon) : kind === "video" ? videoPose(t, mon) : idlePose(t, -0.42);
+      },
+      unpin() {
+        pinned.current = null;
+      },
+      tier: () => sceneRef.current?.tier() ?? -1,
+      design: () => encodeDesign(designRef.current),
+    };
+    return () => void delete w.__pokeballMaker;
+  }, []);
 
   // ---- The scene.
   useEffect(() => {

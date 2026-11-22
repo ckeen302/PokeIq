@@ -142,7 +142,7 @@ vec3 pbmPattern(int id, vec3 q, float s, float rot) {
   float front = smoothstep(-0.05, 0.12, r.z);
   if (id == 1) {
     // Great Ball: a rounded panel on each side, rising from the band.
-    float d = length(vec2((abs(r.x) - 0.74) / (0.36 * s), (r.y - 0.4) / (0.5 * s))) - 1.0;
+    float d = length(vec2((abs(r.x) - 0.78) / (0.3 * s), (r.y - 0.3) / (0.4 * s))) - 1.0;
     w.x = pbmFill(d, px * 3.0);
   } else if (id == 2) {
     // Ultra Ball: the H's two uprights, over the top from front to back.

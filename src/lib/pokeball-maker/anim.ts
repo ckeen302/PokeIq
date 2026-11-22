@@ -61,7 +61,7 @@ const flash = (t: number, at: number, rise: number, fall: number) => (t < at - r
 const spring = (k: number) => (k <= 0 ? 0 : 1 - Math.exp(-6 * k) * Math.cos(9 * k));
 /** The nearest full turn to `yaw`, where the ball faces the camera. */
 export const frontOf = (yaw: number) => Math.round(yaw / (Math.PI * 2)) * Math.PI * 2;
-const MON_TOP = 54;
+const MON_TOP = 60;
 
 export function idlePose(t: number, yaw0 = 0): Pose {
   return {
@@ -85,8 +85,8 @@ export function idlePose(t: number, yaw0 = 0): Pose {
   };
 }
 
-/** The opening, from the ball turned to `yaw0`. */
-export function openPose(t: number, yaw0 = 0): Pose {
+/** The opening, from the ball turned to `yaw0` (`withMon`: a Pokémon comes out, so the camera makes room). */
+export function openPose(t: number, yaw0 = 0, withMon = true): Pose {
   const p = idlePose(0, yaw0);
   const face = frontOf(yaw0);
   p.yaw = yaw0 + (face - yaw0) * easeOut(t / 0.35);
@@ -107,7 +107,8 @@ export function openPose(t: number, yaw0 = 0): Pose {
   p.monY = (12 + (MON_TOP - 12) * easeOut((t - 0.55) / 0.5)) * (1 - back) + 4 * back;
   p.monFlash = t < 0.55 ? 0 : 1 - smooth(0.6, 1.05, t);
   p.monRed = smooth(2.95, 3.2, t);
-  p.zoom = smooth(0.5, 1.1, t) * (1 - smooth(3.3, 3.9, t));
+  p.zoom = smooth(0.5, 1.1, t) * (1 - smooth(3.3, 3.9, t)) * (withMon ? 1 : 0.3);
+  if (!withMon) Object.assign(p, { mon: 0, monFlash: 0 });
   p.y = 0;
   return p;
 }
@@ -149,7 +150,7 @@ export function catchPose(t: number, yaw0 = 0, fromOpen = false, withMon = true)
   p.click = flash(t, 4.12, 0.06, 0.55);
   p.button = Math.max(p.click, flash(t, 0.66, 0.06, 0.25) * 0.6);
   p.starsT = t >= 4.16 ? t - 4.16 : -1;
-  p.zoom = (fromOpen ? 1 : 0.6 * smooth(0, 0.12, t)) * (1 - smooth(0.4, 1.0, t));
+  p.zoom = (fromOpen ? 1 : 0.6 * smooth(0, 0.12, t)) * (1 - smooth(0.4, 1.0, t)) * (withMon ? 1 : 0.3);
   return p;
 }
 
@@ -164,9 +165,7 @@ export function videoPose(t: number, withMon: boolean): Pose {
   const yaw0 = yawStart + VIDEO.intro * IDLE_SPEED;
   const o = t - VIDEO.intro;
   if (o < VIDEO.open) {
-    const p = openPose(o, yaw0);
-    if (!withMon) Object.assign(p, { mon: 0, monFlash: 0 });
-    return p;
+    return openPose(o, yaw0, withMon);
   }
   const c = Math.min(o - VIDEO.open, CATCH_SECONDS);
   const p = catchPose(c, frontOf(yaw0), true, withMon);
