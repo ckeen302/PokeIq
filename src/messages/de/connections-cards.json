@@ -1,0 +1,22 @@
+{
+  "duel": {
+    "heading": "Kopf an Kopf · PokéConnections",
+    "blurb4": "Dieselben sechzehn Pokémon für euch beide. Wer zuerst alle vier Gruppen findet, gewinnt.",
+    "blurb5": "Dieselben fünfundzwanzig Pokémon für euch beide. Wer zuerst alle fünf Gruppen findet, gewinnt.",
+    "rules": "Jeder Fehler addiert {seconds} Sekunden zu deiner Zeit, und nach {mistakes} Fehlern bist du raus. Seid ihr beide raus, gewinnt, wer mehr Gruppen gefunden hat. Du siehst die Gruppen deines Gegners nur als Farben, nie die Pokémon.",
+    "fresh": "Schick einem Freund den Link oder such einen Gegner (nur 4×4). Duelle nutzen neue Rätsel, nie das Tagesrätsel, und zählen nie für deine Serie.",
+    "board": "Raster",
+    "boardAria": "Rastergröße im Duell",
+    "size4": "Sechzehn Pokémon, vier Vierergruppen",
+    "size5": "Fünfundzwanzig Pokémon, fünf Fünfergruppen"
+  },
+  "potd": {
+    "aria": "Rätsel des Tages",
+    "title": "Rätsel des Tages",
+    "untitled": "Rätsel ohne Titel",
+    "by": "von <c></c>",
+    "aTrainer": "einem Trainer",
+    "upVotes": "positive Stimmen",
+    "play": "Spielen"
+  }
+}

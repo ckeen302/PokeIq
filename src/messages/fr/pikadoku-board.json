@@ -1,0 +1,53 @@
+{
+  "family": {
+    "types": "Types",
+    "regions": "Régions",
+    "evolution": "Évolution",
+    "moves": "Capacités",
+    "abilities": "Talents",
+    "other": "Autres"
+  },
+  "board": {
+    "grid": "Grille de Pikadoku",
+    "info": "Ce qui compte pour {label}",
+    "empty": "Vide",
+    "cell": "Ligne {row}, colonne {col} : {label}",
+    "cross": "{row} × {col}"
+  },
+  "picker": {
+    "loading": "Chargement des Pokémon…",
+    "placeholder": "Tape le nom d’un Pokémon",
+    "search": "Chercher un Pokémon",
+    "matching": "Pokémon correspondants",
+    "used": "Utilisé",
+    "form": "Forme",
+    "none": "Aucun Pokémon ne correspond."
+  },
+  "hint": {
+    "type": "Compte un Pokémon dont l’un des types est {type}. Les formes sont des choix à part, avec leurs propres types, stats et talents. Méga-Dracaufeu X est Feu et Dragon, Raichu d’Alola est Électrik et Psy.",
+    "types": "Compte les types propres du Pokémon, donc une forme peut différer de son espèce : Dracaufeu a deux types, Méga-Dracaufeu X aussi. Les formes sont des choix à part, avec leurs propres types, stats et talents.",
+    "hisui": "Apparu dans Légendes Pokémon : Arceus : les formes de Hisui (Caninos de Hisui) et les sept nouvelles espèces (Cerbyllin, Hachécateur, Ursaking, Paragruel, Farfurex, Qwilpik, Amovénus).",
+    "region": "La génération où l’espèce est apparue (la 8e est Galar, nouveaux venus de Légendes : Arceus comme Hachécateur compris). Une forme régionale compte pour la région où elle est apparue (Raichu d’Alola est d’Alola, Raichu de Kanto). Les Méga-Évolutions et les formes Gigamax comptent pour la région de leur espèce.",
+    "form": "L’espèce a une forme régionale de cette région, donc l’espèce et chacune de ses formes comptent (Raichu et Raichu d’Alola correspondent tous deux à « Forme d’Alola »).",
+    "stage": "Sa place dans sa lignée d’évolution. Les bébés sont facultatifs : Pikachu compte comme Base et comme deuxième stade (après Pichu), Raichu comme deuxième ou troisième stade. Ici, une forme suit son espèce.",
+    "item": "Participe à une évolution qui utilise un objet ou le fait tenir, d’un côté ou de l’autre : pierres, pommes, objets tenus (Onix et Steelix avec une Peau Métal). Utiliser une capacité 20 fois n’est pas un objet. Ici, une forme suit son espèce.",
+    "stone": "Participe à une évolution avec l’une des dix pierres d’évolution, d’un côté ou de l’autre : Pikachu et Raichu, Évoli et Aquali. La Pierre Ovale, qui se tient, ne compte pas. Ici, une forme suit son espèce.",
+    "kind": "Participe à une évolution de ce genre, d’un côté ou de l’autre : le Pokémon qui évolue et celui qu’il devient. Ici, une forme suit son espèce.",
+    "level": "Participe à une évolution de ce genre, d’un côté ou de l’autre : le Pokémon qui évolue et celui qu’il devient. Par niveau veut dire atteindre un niveau donné (Salamèche au niveau 16). Ici, une forme suit son espèce.",
+    "branch": "Sa famille se divise quelque part : Évoli et toutes ses évolutions, la lignée de Mystherbe (Rafflesia ou Joliflor), Insécateur (Cizayox ou Hachécateur). Ici, une forme suit son espèce.",
+    "three": "Sa famille atteint un troisième stade (celle de Salamèche, ou celle de Pichu avec le bébé). La famille d’Évoli compte neuf espèces mais seulement deux stades. Ici, une forme suit son espèce.",
+    "none": "N’évolue pas et n’est l’évolution d’aucun Pokémon (Tauros, Métamorph). Ici, une forme suit son espèce.",
+    "evo": "Jugé sur la lignée d’évolution. Ici, une forme suit son espèce. Raichu d’Alola est à son stade final, comme Raichu ; Méga-Dracaufeu X est un membre de la lignée de Salamèche à son stade final.",
+    "move": "Il faut la capacité dans le répertoire de l’espèce dans le dernier jeu principal où elle figure (Écarlate et Violet pour la plupart), par niveau, CT, reproduction ou maître des capacités. Les formes utilisent les capacités de leur espèce.",
+    "hidden": "A un talent caché. Les talents sont ceux de la forme choisie : Méga-Dracaufeu X n’a que Griffe Dure, il n’a donc pas de talent caché.",
+    "ability": "A ce talent, normal ou caché. Les talents sont ceux de la forme choisie : Méga-Dracaufeu X a Griffe Dure, pas Brasier.",
+    "stat": "Utilise les stats de base de la forme choisie : celles d’une Méga-Évolution lui sont propres, plus élevées que celles de son espèce.",
+    "mega": "L’espèce a une Méga-Évolution, donc l’espèce et chacune de ses formes comptent (Dracaufeu et Méga-Dracaufeu X). Inclut les nouvelles Méga-Évolutions de Légendes Pokémon : Z-A, comme celles de Dracolosse et d’Amphinobi.",
+    "gmax": "L’espèce a une forme Gigamax, donc l’espèce et chacune de ses formes comptent (Pikachu et Pikachu Gigamax).",
+    "paradox": "Liste tenue à la main des Pokémon Paradoxe officiels (de Fort-Ivoire à Chef-de-Fer). Les formes suivent leur espèce.",
+    "ultrabeast": "Liste tenue à la main des onze Ultra-Chimères (de Zéroïd à Pierroteknik). Necrozma n’en fait pas partie. Les formes suivent leur espèce.",
+    "partner": "Tout Pokémon de la lignée d’évolution d’un Pokémon de départ de la série principale, de Kanto à Paldea. Ici, une forme suit son espèce.",
+    "ou": "Figure dans les statistiques d’utilisation OU de la 9e génération (Smogon). Une forme régionale ne compte que si c’est elle qui est jouée : Roigada de Galar est OU, Roigada non. Les autres formes suivent leur espèce.",
+    "status": "Le statut légendaire, fabuleux, fossile ou bébé dépend de l’espèce. Ici, une forme suit son espèce."
+  }
+}

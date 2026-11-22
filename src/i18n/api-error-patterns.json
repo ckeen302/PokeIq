@@ -1,0 +1,26 @@
+[
+ [
+  "keep-it-under-x-characters",
+  "^Keep it under (.+?) characters\\.$"
+ ],
+ [
+  "resend-said-x",
+  "^Resend said: (.+?)$"
+ ],
+ [
+  "that-map-has-too-few-places-for-a-x-round-race",
+  "^That map has too few places for a (.+?)-round race\\.$"
+ ],
+ [
+  "that-s-x-pictures-today-try-again-tomorrow",
+  "^That's (.+?) pictures today\\. Try again tomorrow\\.$"
+ ],
+ [
+  "x-couldn-t-find-that-card-try-again-in-a-moment",
+  "^(.+?): couldn't find that card\\. Try again in a moment\\.$"
+ ],
+ [
+  "you-ve-published-x-puzzles-today-come-back-tomorrow",
+  "^You've published (.+?) puzzles today\\. Come back tomorrow\\.$"
+ ]
+]

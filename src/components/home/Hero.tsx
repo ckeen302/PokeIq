@@ -1,5 +1,7 @@
 import { HERO_IMAGES, type HeroPair } from "@/lib/hero-image";
 import { PlayTodayLink } from "./PlayTodayLink";
+import { serverT } from "@/i18n/server";
+import home from "@/messages/home";
 
 /**
  * Which picture loads. The theme is applied as `html.light` before first paint
@@ -47,12 +49,13 @@ function HeroPicture({ theme, pair, className }: { theme: "dark" | "light"; pair
  * for search engines and screen readers.
  */
 export function Hero() {
+  const t = serverT(home);
   return (
     <section
       className="relative isolate overflow-hidden bg-[rgb(var(--hero-base))] [--hero-base:22_15_27] max-sm:-mx-4 max-sm:h-[466px] sm:flex sm:h-[420px] sm:items-center sm:rounded-2xl sm:shadow-[0_30px_70px_-30px_rgb(60_20_90/0.55),0_0_0_1px_rgb(255_255_255/0.06)] lg:h-auto lg:max-h-[580px] lg:min-h-[470px] lg:flex-1 [.light_&]:[--hero-base:242_237_251] [.light_&]:sm:shadow-[0_30px_70px_-30px_rgb(120_80_170/0.35),0_0_0_1px_rgb(80_50_120/0.08)]"
       data-testid="home-hero"
     >
-      <h1 className="sr-only">PokéIQ: Pokémon games, quizzes and battles</h1>
+      <h1 className="sr-only">{t("h1")}</h1>
       <div className="absolute inset-x-0 top-0 h-[400px] overflow-hidden sm:inset-0 sm:h-auto" data-testid="home-hero-view">
         {/* A slow camera drift (scaled past the box's edges the whole way, so they never show). Still for reduced motion. */}
         <div className="absolute inset-0 origin-[60%_40%] motion-safe:animate-hero-drift motion-safe:will-change-transform" data-testid="home-hero-shot">
@@ -68,13 +71,13 @@ export function Hero() {
 
       <div className="absolute inset-x-4 bottom-4 z-[1] flex flex-col gap-[11px] sm:relative sm:inset-auto sm:max-w-[470px] sm:gap-3.5 sm:px-[52px]">
         <p className="flex items-center gap-2 font-display text-[11px] uppercase leading-none tracking-[0.3em] text-success">
-          <span className="led h-1.5 w-1.5 animate-blink motion-reduce:animate-none" aria-hidden /> Free · no sign-up
+          <span className="led h-1.5 w-1.5 animate-blink motion-reduce:animate-none" aria-hidden /> {t("free")}
         </p>
         <h2 className="font-display text-[38px] font-bold uppercase leading-[0.95] tracking-[-0.01em] text-white [text-shadow:0_4px_24px_rgb(0_0_0/0.6)] sm:text-[56px] [.light_&]:text-[#1b1530] [.light_&]:[text-shadow:none]">
           Poké<span className="text-primary">IQ</span>
         </h2>
         <p className="text-[15px] leading-[1.4] text-white/80 [text-shadow:0_2px_12px_rgb(0_0_0/0.8)] sm:max-w-[24rem] sm:text-[19px] [.light_&]:text-[rgb(40_30_60/0.78)] [.light_&]:[text-shadow:none]">
-          Daily Pokémon puzzles, a Pokémon GeoGuessr with real in-game views, Showdown battles and Pokémon in 3D.
+          {t("pitch")}
         </p>
         <PlayTodayLink className="group relative inline-flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-lg bg-primary px-[26px] font-display text-[15px] font-bold uppercase tracking-[0.08em] text-primary-foreground shadow-[0_4px_0_hsl(var(--primary-shadow)),0_0_32px_hsl(var(--primary)/0.35)] transition-[transform,filter] hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-[2px] sm:w-fit">
           {/* Now and then a sweep of light across the one thing to press. */}
@@ -82,7 +85,7 @@ export function Hero() {
             className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-white/30 to-transparent [transform:translateX(-120%)_skewX(-20deg)] motion-safe:animate-shine motion-reduce:hidden"
             aria-hidden
           />
-          Play today&apos;s games
+          {t("play")}
         </PlayTodayLink>
       </div>
     </section>

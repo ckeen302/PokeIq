@@ -16,6 +16,7 @@ import { pdkPickRates } from "@/lib/server/pikadoku-rates";
 import { CONN_GROUP_SIZE } from "@/lib/connections/types";
 import { DUEL_CODE_RE } from "@/lib/duel-types";
 import { DLE_DUEL_HINTS, DUEL_EMOTES, QUIZ_DUEL_QUESTIONS, type PvpSeatResponse } from "@/lib/pvp-types";
+import { langOf } from "@/lib/server/request-lang";
 
 /**
  * GET  /api/duel/:code — the duel as you may see it (header x-duel-token:
@@ -93,7 +94,7 @@ export async function GET(request: NextRequest, context: Context) {
   try {
     const out = await pvpStore.update(code, (duel, now) => ({ ok: true as const, duel: touchDuel(duel, playerId, now) }));
     if (!out.ok) return failure(out);
-    return NextResponse.json(await seatAvatars(duelView(out.duel, playerId, out.now, out.rev)), { headers: NO_STORE });
+    return NextResponse.json(await seatAvatars(duelView(out.duel, playerId, out.now, out.rev, langOf(request))), { headers: NO_STORE });
   } catch (err) {
     return storeError(err);
   }
@@ -120,7 +121,7 @@ export async function POST(request: NextRequest, context: Context) {
     if (body.action === "join") {
       const out = await pvpStore.update(code, (duel, now) => joinDuel(duel, body.name, now));
       if (!out.ok) return failure(out);
-      const seat: PvpSeatResponse = { code, token: pvpToken(code, out.playerId), view: await seatAvatars(duelView(out.duel, out.playerId, out.now, out.rev)) };
+      const seat: PvpSeatResponse = { code, token: pvpToken(code, out.playerId), view: await seatAvatars(duelView(out.duel, out.playerId, out.now, out.rev, langOf(request))) };
       return NextResponse.json(seat, { headers: NO_STORE });
     }
 
@@ -174,7 +175,7 @@ export async function POST(request: NextRequest, context: Context) {
       }
     });
     if (!out.ok) return failure(out);
-    return NextResponse.json(await seatAvatars(duelView(out.duel, playerId, out.now, out.rev)), { headers: NO_STORE });
+    return NextResponse.json(await seatAvatars(duelView(out.duel, playerId, out.now, out.rev, langOf(request))), { headers: NO_STORE });
   } catch (err) {
     return storeError(err);
   }

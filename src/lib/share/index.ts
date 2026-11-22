@@ -1,7 +1,9 @@
 import { dailyNumber } from "@/lib/daily";
 import type { RunResult, ShareCard } from "@/lib/session-types";
 import { SHARE_QUIZ_GRID, sharePath, type QuizShareResult, type ShareResult } from "./payload";
-import { quizShareText } from "./text";
+import { quizShareText, type ShareT } from "./text";
+import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
+import { localeHref } from "@/i18n/href";
 
 /**
  * Sharing a finished game, the same way everywhere: the text (./text), the
@@ -13,14 +15,14 @@ export * from "./payload";
 export * from "./text";
 export * from "./view";
 
-/** The result's own link on this site. Browser only. */
-export function shareUrl(result: ShareResult): string {
-  return `${window.location.origin}${sharePath(result)}`;
+/** The result's own link on this site, in the page's language where that page is served in it. Browser only. */
+export function shareUrl(result: ShareResult, locale: Locale = DEFAULT_LOCALE): string {
+  return `${window.location.origin}${localeHref(sharePath(result), locale).href}`;
 }
 
-/** A quiz run's /c/ challenge link: the same questions for whoever opens it. Browser only. */
-export function challengeUrl(shareToken: string): string {
-  return `${window.location.origin}/c/${shareToken}`;
+/** A quiz run's /c/ challenge link: the same questions for whoever opens it (in the page's language, likewise). Browser only. */
+export function challengeUrl(shareToken: string, locale: Locale = DEFAULT_LOCALE): string {
+  return `${window.location.origin}${localeHref(`/c/${shareToken}`, locale).href}`;
 }
 
 /** A finished quiz, Daily Challenge or PokéIQ Test run, as a share result. */
@@ -59,8 +61,8 @@ export function shareCardResult(card: ShareCard): QuizShareResult {
 }
 
 /** A quiz run's share text, with its link. */
-export function resultShareText(result: RunResult, url?: string, streak?: number): string {
-  return quizShareText(quizShareResult(result, streak), url);
+export function resultShareText(result: RunResult, url?: string, streak?: number, t?: ShareT): string {
+  return quizShareText(quizShareResult(result, streak), url, t);
 }
 
 export type ShareOutcome = "shared" | "copied" | "cancelled" | "failed";

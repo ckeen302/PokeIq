@@ -1,0 +1,39 @@
+{
+  "open": "Comment jouer",
+  "goal": {
+    "title": "Le but",
+    "body": "Tu atterris quelque part dans le monde Pokémon et tu ne vois qu'une capture. Trouve où c'est, place un repère sur la carte et appuie sur Valider."
+  },
+  "scoring": {
+    "title": "Score",
+    "body": "Jusqu'à {max} points par manche : plus ton repère est proche, plus tu marques. Une partie dure {lengths} manches ; le Quotidien en compte toujours {daily}."
+  },
+  "modes": {
+    "title": "Modes",
+    "body": "Quotidien : les mêmes {daily} lieux pour tout le monde. Série : trouve des lieux jusqu'à ce qu'un repère tombe à côté. Joue sur le monde, une région ou une carte thématique, avec des jeux en 2D classique ou en 3D moderne."
+  },
+  "duels": {
+    "title": "Duels",
+    "body": "Affronte un ami en direct. Combat de PV : vous commencez tous les deux avec {hp} PV et le repère le plus proche inflige des dégâts à l'autre. Course aux points : le meilleur total sur l'ensemble des manches l'emporte."
+  },
+  "demo": {
+    "labelDesktop": "Démo d’une manche : une capture Pokémon remplit l’écran, la carte dans le coin s’agrandit, un repère est placé et on appuie sur Valider ; le résultat trace une ligne jusqu’au vrai lieu et rapporte {score} sur {max}",
+    "labelPhone": "Démo d’une manche : une capture Pokémon remplit l’écran, la carte s’ouvre, un repère est placé et on appuie sur Valider ; le résultat trace une ligne jusqu’au vrai lieu et rapporte {score} sur {max}",
+    "round": "Manche {n}",
+    "score": "Score",
+    "tapMove": "Touche à nouveau pour déplacer ton repère",
+    "tapPlace": "Touche la carte pour placer ton repère",
+    "spotOn": "En plein dans le mille !",
+    "close": "Tout près !",
+    "notBad": "Pas mal !",
+    "near": "Dans le coin.",
+    "wayOff": "Très loin…",
+    "pts": "pts",
+    "squares": "À {d} cases de la carte",
+    "game": "Pokémon {game}",
+    "atlas": "Atlas",
+    "next": "Manche suivante ▶",
+    "space": "Espace",
+    "report": "Signaler cette capture"
+  }
+}

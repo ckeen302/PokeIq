@@ -1,0 +1,53 @@
+{
+  "errors": {
+    "start": "Die Serie konnte nicht gestartet werden.",
+    "grade": "Die Wahl konnte nicht gewertet werden.",
+    "title": "Etwas ist schiefgelaufen"
+  },
+  "setup": {
+    "eyebrow": "Erkundung · Die Pokémon-Welt",
+    "title": "Regionen-<b>Serie</b>",
+    "intro": "Ein Screenshot, eine Frage: Welche Region ist das? Keine Nadel nötig. Jede richtige Antwort bringt den nächsten Screenshot; eine falsche Region beendet die Serie.",
+    "mode": "Serienmodus",
+    "headline": "Von {from} bis {to}, bis du danebenliegst",
+    "best": "Dein Rekord: {n} in Folge.",
+    "first": "Deine erste Serie setzt deinen Rekord.",
+    "board": "Beendete Serien kommen in die Bestenliste der Regionen-Serie.",
+    "start": "Serie starten",
+    "regions": "Die neun Regionen"
+  },
+  "board": "Serien-Bestenliste",
+  "back": "Zurück zur Regionen-Serie",
+  "hud": {
+    "streak": "Serie {n}",
+    "mode": "Regionen-Serie · {world}"
+  },
+  "which": "Welche Region ist das?",
+  "gen": "Gen. {n}",
+  "pick": "Wähle eine Region",
+  "reveal": {
+    "right": "Richtige Region!",
+    "wrong": "Falsche Region. Serie vorbei",
+    "inARow": "{n} in Folge",
+    "final": "Endstand: {n}",
+    "its": "Es ist {region}.",
+    "picked": "Du hast {picked} gewählt: Es ist {region}.",
+    "nothing": "nichts",
+    "results": "Ergebnisse ansehen",
+    "next": "Nächster Screenshot",
+    "space": "Leertaste"
+  },
+  "summary": {
+    "saveFailed": "Speichern fehlgeschlagen.",
+    "shareTitle": "PokéGuessr Regionen-Serie",
+    "shareCount": "{n, plural, one {{n} Region in Folge} other {{n} Regionen in Folge}}",
+    "newBest": "Neuer Rekord",
+    "best": "Rekord: {n} in Folge",
+    "share": "Teilen …",
+    "save": "In die Serien-Bestenliste eintragen",
+    "name": "Trainername",
+    "saved": "Gespeichert",
+    "submit": "Eintragen",
+    "needOne": "Erkenne mindestens eine Region, um in die Bestenliste zu kommen."
+  }
+}

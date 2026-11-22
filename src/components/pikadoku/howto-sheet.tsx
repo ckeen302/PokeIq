@@ -1,24 +1,24 @@
 "use client";
 
-import { PDK_FAMILY_LABELS, PDK_PP, PDK_RULES, type PdkFamily } from "@/lib/pikadoku/types";
+import type { ReactNode } from "react";
+import { PDK_FAMILIES, PDK_PP } from "@/lib/pikadoku/types";
+import { pdkRules } from "@/lib/pikadoku/rules";
 import { HowToActions, HowToCards, HowToDialog } from "@/components/howto/shared";
 import { PikadokuDemo } from "@/components/howto/PikadokuDemo";
+import { useT } from "@/i18n/client";
+import pikadoku from "@/messages/pikadoku";
+import board from "@/messages/pikadoku-board";
 
 /**
  * Pikadoku's how to play. It comes with the board, not with the other
  * pop-ups: a first visit's copy is in the page's HTML (see Pikadoku).
  */
 
-const KINDS: [PdkFamily, string][] = [
-  ["types", "Fighting, Dual-type, Monotype (one matching type is enough)"],
-  ["regions", "Kanto to Paldea, by where a Pokémon debuted (a regional form counts for the region it debuted in)"],
-  ["evolution", "No evolution line, Stone or Item evolution, Not fully evolved (an evolution counts from either side: Pikachu and Raichu are both a Stone evolution)"],
-  ["moves", "A few famous moves, such as Surf or Earthquake (Expert adds deeper learnsets)"],
-  ["abilities", "Expert only: well-known and obscure abilities"],
-  ["other", "Legendary, Mythical, Paradox, Ultra-Beast, First Partner, Fossil, Baby, Mega, GMax (Expert adds stat thresholds)"],
-];
+const b = (c: ReactNode[]) => <b>{c}</b>;
 
 export function PdkHowToSheet({ onClose, onNever }: { onClose: () => void; onNever?: () => void }) {
+  const t = useT(pikadoku);
+  const tb = useT(board);
   const tile = (big: string, small: string) => (
     <div className="rounded-md border border-foreground/10 p-3 text-center">
       <p className="font-display text-2xl font-bold tabular-nums">{big}</p>
@@ -26,75 +26,57 @@ export function PdkHowToSheet({ onClose, onNever }: { onClose: () => void; onNev
     </div>
   );
   return (
-    <HowToDialog onClose={onClose} subtitle="Fill the grid. Keep your score low." testId="pdk-howto" footer={<HowToActions onClose={onClose} onNever={onNever} />}>
+    <HowToDialog onClose={onClose} subtitle={t("howTo.subtitle")} testId="pdk-howto" footer={<HowToActions onClose={onClose} onNever={onNever} />}>
       <PikadokuDemo />
       <HowToCards
         cards={[
-          { title: "The goal", body: <p>Fill all 9 boxes of the grid, each with a Pokémon that fits both its row and its column.</p> },
-          { title: "Core rules", body: <p>You get {PDK_PP} guesses (PP), and a wrong guess uses one too. Each Pokémon can be used once.</p> },
-          { title: "Scoring", body: <p>Fill as many boxes as you can. Your rarity score adds up the share of players who picked each of your answers: rarer picks, lower score.</p> },
+          { title: t("howTo.goal"), body: <p>{t("howTo.goalBody")}</p> },
+          { title: t("howTo.core"), body: <p>{t("howTo.coreBody", { pp: PDK_PP })}</p> },
+          { title: t("howTo.scoring"), body: <p>{t("howTo.scoringBody")}</p> },
         ]}
       />
       <details className="rounded-md border bg-shade/30 p-3">
-        <summary className="tap cursor-pointer font-semibold max-sm:py-2.5">Full rules</summary>
+        <summary className="tap cursor-pointer font-semibold max-sm:py-2.5">{t("howTo.full")}</summary>
       <div className="mt-3 space-y-4">
       <div className="grid grid-cols-3 gap-2">
-        {tile("9", "boxes to fill")}
-        {tile(String(PDK_PP), "guesses only")}
-        {tile("0", "reused Pokémon")}
+        {tile("9", t("howTo.boxes"))}
+        {tile(String(PDK_PP), t("howTo.guesses"))}
+        {tile("0", t("howTo.reused"))}
       </div>
       <div>
-        <p className="hud-label mb-1.5">Core rules</p>
+        <p className="hud-label mb-1.5">{t("howTo.core")}</p>
         <ul className="list-disc space-y-1.5 pl-5">
-          <li>
-            Every box needs a Pokémon that fits <b>both</b> its row and its column. Each Pokémon can be used once.
-          </li>
-          <li>
-            You get <b>{PDK_PP} guesses (PP)</b>, and a wrong guess uses one too. Correct answers lock in.
-          </li>
-          <li>
-            Your <b>rarity score</b> starts at 900 (100 for every empty box). Each pick counts the share of players who chose it in that box, so rarer picks pull it down. <b>Lower is better.</b> Your share card colours each box: 🟪 under 1%, 🟦 under 10%, 🟩 under 25%, 🟨 25% or more.
-          </li>
-          <li>
-            <b>Filled</b> counts your boxes. Tap <b>Rarity</b> to see the day&apos;s board.
-          </li>
-          <li>
-            Tap the <b>i</b> on any category to see exactly what counts. When the game ends you see <b>every valid answer</b> for every box, and why each miss didn&apos;t fit.
-          </li>
-          <li>
-            Every grid is checked to be solvable. Some days a hand-made <b>Master Puzzle</b> replaces the Daily Puzzle.
-          </li>
+          <li>{t.rich("howTo.rules.both", { b })}</li>
+          <li>{t.rich("howTo.rules.pp", { b, pp: PDK_PP })}</li>
+          <li>{t.rich("howTo.rules.score", { b })}</li>
+          <li>{t.rich("howTo.rules.filled", { b })}</li>
+          <li>{t.rich("howTo.rules.info", { b })}</li>
+          <li>{t.rich("howTo.rules.master", { b })}</li>
         </ul>
       </div>
       <div>
-        <p className="hud-label mb-1.5">Modes</p>
+        <p className="hud-label mb-1.5">{t("howTo.modes")}</p>
         <ul className="list-disc space-y-1.5 pl-5">
-          <li>
-            <b>Daily Puzzle</b>: one grid a day, the same for everyone. Under <b>More</b>: Easy and Expert dailies, the themed Weekly grid and the Archive of past dailies (these never move your streak).
-          </li>
-          <li>
-            <b>Unlimited</b>: a board you build yourself. Pick the rules (unlimited PP, guaranteed solvable, one-answer boxes, a timer), a difficulty and the categories you want, then generate as many as you like.
-          </li>
-          <li>
-            <b>Tic Tac Toe</b>: two trainers share a grid and take turns claiming boxes. Three in a row wins; a wrong guess or a timeout passes the turn.
-          </li>
+          <li>{t.rich("howTo.modeList.daily", { b })}</li>
+          <li>{t.rich("howTo.modeList.unlimited", { b })}</li>
+          <li>{t.rich("howTo.modeList.ttt", { b })}</li>
         </ul>
       </div>
       <div>
-        <p className="hud-label mb-1.5">Regions and forms</p>
+        <p className="hud-label mb-1.5">{t("howTo.regions")}</p>
         <ul className="list-disc space-y-1 pl-5" data-testid="pdk-rules">
-          {PDK_RULES.map((r) => (
+          {pdkRules(t).map((r) => (
             <li key={r}>{r}</li>
           ))}
         </ul>
       </div>
       <div>
-        <p className="hud-label mb-1.5">What the categories can be</p>
+        <p className="hud-label mb-1.5">{t("howTo.kinds")}</p>
         <dl className="space-y-1">
-          {KINDS.map(([k, text]) => (
+          {PDK_FAMILIES.map((k) => (
             <div key={k}>
-              <dt className="inline font-semibold">{PDK_FAMILY_LABELS[k]}: </dt>
-              <dd className="inline text-muted-foreground">{text}</dd>
+              <dt className="inline font-semibold">{t("howTo.kind", { family: tb(`family.${k}`) })}</dt>
+              <dd className="inline text-muted-foreground">{t(`howTo.kindList.${k}`)}</dd>
             </div>
           ))}
         </dl>

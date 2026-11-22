@@ -1,0 +1,301 @@
+{
+  "loading": "Lädt",
+  "diff": {
+    "easy": "Leicht",
+    "normal": "Normal",
+    "expert": "Experte"
+  },
+  "diffHint": {
+    "easy": "Breite Kategorien, viele Antworten",
+    "normal": "Das Hauptraster: Rangliste und Wertung",
+    "expert": "Schwerere Kategorien, manchmal nur zwei Antworten pro Feld"
+  },
+  "error": {
+    "generic": "Etwas ist schiefgelaufen.",
+    "noBoard": "Zu diesen Einstellungen passt kein Raster.",
+    "grid": "Das Raster konnte nicht geladen werden.",
+    "game": "Dein Spiel konnte nicht geladen werden. Prüf deine Verbindung.",
+    "offline": "Du bist offline. Das Raster lädt, sobald du wieder online bist.",
+    "gridConnection": "Das Raster konnte nicht geladen werden. Prüf deine Verbindung."
+  },
+  "noBoard": {
+    "few": "Diese Kategorien allein füllen kein Raster. Wähl mehr Kategorien aus mehr Gruppen.",
+    "none": "Zu diesen Einstellungen passt kein Raster. Um sie zu erweitern: {tips}.",
+    "or": "{list} oder {last}",
+    "more": "mehr Kategorien wählen",
+    "normal": "Schwierigkeit Normal probieren",
+    "single": "Felder mit nur einer Antwort erlauben"
+  },
+  "toast": {
+    "softlock": "Damit wäre das Raster nicht mehr lösbar. Probier ein anderes Pokémon.",
+    "fits": "{name} passt!",
+    "picked": " {emoji} {pct} % der Spieler haben es gewählt.",
+    "ppLeft": " Noch {n} AP.",
+    "miss": "{name} passt hier nicht."
+  },
+  "giveUpConfirm": "Aufgeben und die Antworten sehen?",
+  "challenge": {
+    "title": "Pikadoku-Herausforderung (Unbegrenzt)",
+    "beatMe": "Schlägst du mich auf demselben Raster?",
+    "playMe": "Spiel dasselbe Raster wie ich:",
+    "label": "{solved}/9 mit {guesses, plural, one {{guesses} Versuch} other {{guesses} Versuchen}}",
+    "banner": "Herausforderung: Schlag {label}",
+    "beat": "Du hast {label} geschlagen!",
+    "tied": "Gleichstand mit {label}.",
+    "lost": "Knapp daneben: Du hättest {label} schlagen müssen."
+  },
+  "heading": {
+    "weekly": "Wochenrätsel Nr. {n}",
+    "weeklyTheme": "Wochenrätsel Nr. {n} · {theme}",
+    "archive": "Archiv Nr. {n} · {diff}",
+    "daily": "Tagesrätsel Nr. {n} · {diff}",
+    "unlimited": "Unbegrenzt"
+  },
+  "ttt": "Tic-Tac-Toe",
+  "subtitle": "Pokémon-Sudoku: ein Pokémon pro Feld, passend zu Zeile und Spalte.",
+  "modes": {
+    "label": "Pikadoku-Modus",
+    "daily": "Täglich",
+    "dailyTitle": "Das heutige Raster, für alle gleich",
+    "unlimited": "Unbegrenzt",
+    "unlimitedTitle": "Bau dein eigenes Raster",
+    "tttTitle": "Tic-Tac-Toe: abwechselnd Felder holen, gegen Freunde oder Fremde"
+  },
+  "tools": {
+    "label": "Pikadoku-Optionen",
+    "howTo": "Spielanleitung",
+    "stats": "Statistik",
+    "newGrid": "Neues unbegrenztes Raster",
+    "settings": "Einstellungen für Unbegrenzt"
+  },
+  "weeklyNote": "<b>{theme}</b>: {blurb} Läuft bis Sonntag, {sunday}. Zählt nicht für deine Tagesserie.",
+  "archiveNote": "Archiv: Nr. {n} ({date}), {diff}. Nur zum Spaß: zählt nie für die Tagesrangliste oder deine Serie.",
+  "unlimitedNote": "Unbegrenzt: dein eigenes Raster, zählt nie für deine Serie.",
+  "time": "Zeit",
+  "master": "Meisterrätsel von {name}",
+  "bar": {
+    "rarityLabel": "Seltenheitswert (niedriger ist seltener), tippen für die Rangliste",
+    "rarityTitle": "Seltenheitswert: die Anteile der Spieler, die deine Antworten gewählt haben, addiert (ein leeres Feld zählt 100). Niedriger ist seltener.",
+    "rarity": "Seltenheit",
+    "filled": "Gefüllt",
+    "ppUnlimited": "Unbegrenzte Versuche",
+    "ppLeft": "Noch {left} von {pp} Versuchen",
+    "ppTitle": "AP: deine Versuche. Auch ein Fehlversuch kostet einen.",
+    "pp": "AP",
+    "giveUp": "Aufgeben"
+  },
+  "shareGrid": "Raster teilen",
+  "newBoard": "Neues Raster",
+  "changeSettings": "Einstellungen ändern",
+  "more": "Mehr",
+  "dailyDifficulty": "Schwierigkeit des Tagesrätsels",
+  "weekly": "Wöchentlich",
+  "weeklyTitle": "Ein Raster mit Thema, von Montag bis Sonntag, mit eigener Rangliste",
+  "archive": "Archiv",
+  "result": {
+    "complete": "Raster komplett · 9 von 9 Feldern",
+    "cells": "{n} von 9 Feldern",
+    "score": "Seltenheitswert {score}",
+    "off": "Die Seltenheit ist gerade aus, daher hat dieses Spiel keinen Seltenheitswert.",
+    "explain": "Jedes Feld addiert den Anteil der Spieler, die dort dasselbe Pokémon gewählt haben (ein leeres Feld addiert 100). Niedriger heißt seltenere Picks: 900 ist das häufigste Ergebnis, unter 100 ist legendär.",
+    "tapRank": "Platzierung zeigen",
+    "rankWeek": "Du bist auf Platz {position} von {total} in der Wochenrangliste.",
+    "rankToday": "Du bist auf Platz {position} von {total} in der heutigen Rangliste ({diff}).",
+    "boardOff": "Die Rangliste ist gerade aus.",
+    "trainerName": "Trainername für die Rangliste",
+    "rankMe": "Eintragen",
+    "share": "Ergebnis teilen",
+    "cantWait": "Keine Lust zu warten? Spiel ein unbegrenztes Raster"
+  },
+  "leaderboard": {
+    "label": "Rangliste",
+    "week": "Wochenrangliste · {theme}",
+    "today": "Heutige Rangliste · {diff}",
+    "scope": "Ranglistenbereich",
+    "all": "Alle",
+    "friends": "Freunde",
+    "signIn": "Melde dich an, um die Ergebnisse deiner Freunde zu sehen.",
+    "off": "Die Rangliste ist gerade aus.",
+    "empty": "Noch niemand in der Rangliste.",
+    "emptyHow": "Löse ein Raster mit Trainername, um dabei zu sein."
+  },
+  "weeklyTheme": {
+    "kanto": { "name": "Kanto-Woche", "blurb": "Alles aus Kanto: die ursprünglichen 151 und was aus ihnen wurde." },
+    "starters": { "name": "Starter-Woche", "blurb": "Starter aus jeder Region, von Bisasam bis Kwaks." },
+    "legendary": { "name": "Legendäre Woche", "blurb": "Legendäre und mysteriöse Pokémon und die Kategorien, die sie unterscheiden." },
+    "gen9": { "name": "Gen-9-Woche", "blurb": "Paldeas Pokémon und die Formen, die mit ihnen kamen." },
+    "competitive": { "name": "Kompetitive Woche", "blurb": "OU-Klassiker: Werte, Typen und die Werkzeuge des Metagames." }
+  },
+  "countdown": "Nächstes Pikadoku in <b>{time}</b>",
+  "rarity": {
+    "p": "unter 1 % haben es gewählt",
+    "b": "unter 10 % haben es gewählt",
+    "g": "unter 25 % haben es gewählt",
+    "y": "25 % oder mehr haben es gewählt",
+    "x": "falsch oder leer"
+  },
+  "rarest": {
+    "yours": "Du hast den seltensten Pick gefunden.",
+    "possible": "Seltenster möglicher Pick: <b>{name}</b>",
+    "nobody": "(niemand hat es gewählt)",
+    "nobodyMore": "{n, plural, one {(niemand hat es gewählt, wie {n} weiteres)} other {(niemand hat es gewählt, wie {n} weitere)}}",
+    "pct": "({pct} %)"
+  },
+  "reveal": {
+    "label": "Antworten",
+    "title": "Alle Antworten",
+    "intro": "Jedes Pokémon, das in das jeweilige Feld passt.",
+    "introRare": "Jedes Pokémon, das in das jeweilige Feld passt, die seltensten Picks zuerst, mit dem Anteil der Spieler, die sie gewählt haben.",
+    "miss": "{name} passt nicht zu {cats}.",
+    "missCat": "„{label}“",
+    "missOr": "{a} oder {b}",
+    "valid": "{total} gültig",
+    "notFilled": "Nicht gefüllt",
+    "showAll": "Alle {total} zeigen"
+  },
+  "banner": {
+    "offline": "Du bist offline. Deine Antworten werden geprüft, sobald du zurück bist.",
+    "newPuzzle": "Ein neues Tagesrätsel ist da.",
+    "playIt": "Spielen",
+    "retry": "Erneut versuchen"
+  },
+  "card": {
+    "label": "Deine Tagesstatistik",
+    "title": "Deine Tagesrätsel",
+    "streak": "Serie",
+    "best": "Rekord {best}",
+    "bestRarity": "Bester Wert",
+    "lower": "Niedriger ist seltener",
+    "today": "Heute",
+    "noAverage": "Noch kein Schnitt",
+    "average": "Dein Schnitt: {avg}",
+    "level": "Gleich deinem Schnitt von {avg}",
+    "rarer": "{diff} seltener als dein Schnitt von {avg}",
+    "commoner": "{diff} häufiger als dein Schnitt von {avg}"
+  },
+  "stats": {
+    "title": "Statistik",
+    "played": "Gespielt",
+    "perfect": "Perfekt %",
+    "rarest": "Seltenstes Rätsel",
+    "streak": "Aktuelle Serie",
+    "best": "Beste Serie",
+    "duels": "Duelle gewonnen",
+    "filled": "Gefüllte Felder in deinen Tagesrätseln",
+    "none": "Löse ein Tagesrätsel, um zu sehen, wie voll deine Raster werden."
+  },
+  "archiveSheet": {
+    "title": "Archiv",
+    "intro": "Spiel jedes vergangene Tagesrätsel in jeder Schwierigkeit. Archivspiele sind nur zum Spaß: Sie zählen nie für die Tagesrangliste oder deine Serie.",
+    "prev": "Vorheriger Monat",
+    "next": "Nächster Monat",
+    "month": "Tagesrätsel im {month}",
+    "weekdays": {
+      "mon": "Mo",
+      "tue": "Di",
+      "wed": "Mi",
+      "thu": "Do",
+      "fri": "Fr",
+      "sat": "Sa",
+      "sun": "So"
+    },
+    "today": "{date} (heute)",
+    "inProgress": "{day}: läuft",
+    "cells": "{day}: {cells} Felder",
+    "todaysDaily": " · heutiges Tagesrätsel",
+    "playing": "Läuft",
+    "play": "Spielen"
+  },
+  "howTo": {
+    "subtitle": "Füll das Raster. Halte deinen Wert niedrig.",
+    "goal": "Das Ziel",
+    "goalBody": "Füll alle 9 Felder des Rasters, jedes mit einem Pokémon, das zu seiner Zeile und seiner Spalte passt.",
+    "core": "Grundregeln",
+    "coreBody": "Du hast {pp} Versuche (AP), und auch ein Fehlversuch kostet einen. Jedes Pokémon darf nur einmal vorkommen.",
+    "scoring": "Wertung",
+    "scoringBody": "Füll so viele Felder wie möglich. Dein Seltenheitswert addiert die Anteile der Spieler, die deine Antworten gewählt haben: seltenere Picks, niedrigerer Wert.",
+    "full": "Alle Regeln",
+    "boxes": "Felder zu füllen",
+    "guesses": "Versuche",
+    "reused": "Pokémon doppelt",
+    "rules": {
+      "both": "Jedes Feld braucht ein Pokémon, das <b>sowohl</b> zu seiner Zeile als auch zu seiner Spalte passt. Jedes Pokémon darf nur einmal vorkommen.",
+      "pp": "Du hast <b>{pp} Versuche (AP)</b>, und auch ein Fehlversuch kostet einen. Richtige Antworten werden eingetragen.",
+      "score": "Dein <b>Seltenheitswert</b> beginnt bei 900 (100 für jedes leere Feld). Jeder Pick zählt den Anteil der Spieler, die ihn in diesem Feld gewählt haben, seltene Picks drücken den Wert also. <b>Niedriger ist besser.</b> Deine Teilen-Karte färbt jedes Feld: 🟪 unter 1 %, 🟦 unter 10 %, 🟩 unter 25 %, 🟨 25 % oder mehr.",
+      "filled": "<b>Gefüllt</b> zählt deine Felder. Tippe auf <b>Seltenheit</b>, um die Tagesrangliste zu sehen.",
+      "info": "Tippe auf das <b>i</b> einer Kategorie, um genau zu sehen, was zählt. Am Ende siehst du <b>jede gültige Antwort</b> für jedes Feld und warum jeder Fehlversuch nicht gepasst hat.",
+      "master": "Jedes Raster ist garantiert lösbar. An manchen Tagen ersetzt ein handgemachtes <b>Meisterrätsel</b> das Tagesrätsel."
+    },
+    "modes": "Modi",
+    "modeList": {
+      "daily": "<b>Tagesrätsel</b>: ein Raster pro Tag, für alle gleich. Unter <b>Mehr</b>: Tagesrätsel in Leicht und Experte, das Wochenrätsel mit Thema und das Archiv vergangener Rätsel (sie ändern nie deine Serie).",
+      "unlimited": "<b>Unbegrenzt</b>: ein Raster, das du selbst baust. Wähl die Regeln (unbegrenzte AP, garantiert lösbar, Felder mit einer Antwort, Timer), eine Schwierigkeit und die gewünschten Kategorien und erstelle so viele, wie du willst.",
+      "ttt": "<b>Tic-Tac-Toe</b>: Zwei Trainer teilen sich ein Raster und holen sich abwechselnd Felder. Drei in einer Reihe gewinnen; ein Fehlversuch oder Zeitablauf gibt den Zug ab."
+    },
+    "regions": "Regionen und Formen",
+    "kinds": "Mögliche Kategorien",
+    "kind": "{family}: ",
+    "kindList": {
+      "types": "Kampf, Zwei Typen, Ein Typ (ein passender Typ reicht)",
+      "regions": "Kanto bis Paldea, nach dem Debüt eines Pokémon (eine Regionalform zählt für die Region ihres Debüts)",
+      "evolution": "Ohne Entwicklung, Entwicklung per Stein oder Item, Nicht voll entwickelt (eine Entwicklung zählt von beiden Seiten: Pikachu und Raichu passen beide zu Entwicklung per Stein)",
+      "moves": "Ein paar bekannte Attacken wie Surfer oder Erdbeben (Experte nimmt mehr Attacken dazu)",
+      "abilities": "Nur Experte: bekannte und obskure Fähigkeiten",
+      "other": "Legendär, Mysteriös, Paradox, Ultrabestie, Starter, Fossil, Baby, Mega, Gigadynamax (Experte nimmt Wertgrenzen dazu)"
+    }
+  },
+  "rules": {
+    "forms": "Formen sind eigene Picks: Regionalformen (Alola-Raichu), Mega-Entwicklungen (Mega-Glurak X und Y), Gigadynamax-Formen und ein paar besondere Formen (Partner-Pikachu, Proto-Kyogre, Urformen, Zacian König des Schwertes).",
+    "own": "Typen, Werte und Fähigkeiten einer Form sind ihre eigenen. Entwicklungsreihe, legendärer Status und Attacken sind die ihrer Art.",
+    "region": "Eine Regionalform zählt für die Region ihres Debüts: Alola-Raichu ist aus Alola, Galar-Mauzi aus Galar, Paldea-Felino aus Paldea, Hisui-Fukano aus Hisui. Eine Mega- oder Gigadynamax-Form zählt für die Region ihrer Art.",
+    "reuse": "Keine Wiederholung: Eine Form und ihre Art sind dasselbe Pokémon. Sobald du Glurak benutzt, ist auch Mega-Glurak X vergeben, und umgekehrt. (Strenger als PokeDoku, wo sich Formen wiederholen dürfen.)",
+    "species": "Eine Art zählt für „Alola-Form“ (und für ihre Formen anderer Regionen); bei einer Typ-Kategorie reicht es, wenn einer der Typen des Pokémon passt.",
+    "moves": "Attacken-Kategorien nutzen die Attacken der Art im neuesten Hauptspiel, in dem sie vorkommt (meist Karmesin und Purpur); Werte-Kategorien nutzen die Basiswerte.",
+    "evolution": "Entwicklungsmethoden zählen von beiden Seiten eines Schritts: Pikachu (entwickelt sich mit einem Donnerstein) und Raichu (hat sich damit entwickelt) passen beide zu „Entwicklung per Stein“."
+  },
+  "demo": {
+    "label": "Demo: Wir suchen {first} und setzen es ins Feld {fire} und {johto}, dann {second} in {water} und {hoenn}",
+    "search": "Pokémon suchen …"
+  },
+  "setup": {
+    "band": {
+      "easy": "Leicht",
+      "normal": "Normal",
+      "hard": "Schwer"
+    },
+    "bandHint": {
+      "easy": "Jedes Feld hat viele Antworten.",
+      "normal": "Jede Mischung, die die Kategorien erlauben.",
+      "hard": "Ein paar Felder haben nur eine Handvoll Antworten."
+    },
+    "untickAll": "{label}: alle abwählen",
+    "tickAll": "{label}: alle wählen",
+    "all": "Alle",
+    "none": "Keine",
+    "find": {
+      "moves": "Attacken suchen",
+      "abilities": "Fähigkeiten suchen"
+    },
+    "findOne": {
+      "moves": "Attacke suchen",
+      "abilities": "Fähigkeit suchen"
+    },
+    "nothing": "Keine Treffer.",
+    "title": "Bau dein Raster",
+    "intro": "Leg die Regeln fest, wähl aus, was vorkommen darf, und erstelle es. Zählt nie für deine Serie.",
+    "back": "Raster",
+    "rules": "Regeln",
+    "pp": "Unbegrenzte AP",
+    "ppHint": "Keine Versuchsgrenze: weiter, bis das Raster voll ist.",
+    "guard": "Garantiert lösbar",
+    "guardHint": "Jedes Raster lässt sich lösen, und ein Pick, der andere Felder unlösbar machen würde, wird abgelehnt.",
+    "single": "Felder mit einer Antwort",
+    "singleHint": "Ein Feld darf nur ein passendes Pokémon haben.",
+    "timer": "Timer",
+    "timerHint": "Eine laufende Uhr über dem Raster.",
+    "difficulty": "Schwierigkeit",
+    "categories": "Kategorien",
+    "classic": "Klassischer Mix",
+    "generate": "Raster erstellen"
+  }
+}

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { isLiveLocale } from "@/i18n/config";
 import { CONN_GROUP_SIZE, CONN_GROUPS, CONN_MAX_MISTAKES, type ConnResultResponse } from "@/lib/connections/types";
 import { CROWD_WRITE_FACTOR, clientIp, crowdRateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { sameOrigin, sessionTokenHash, userFromRequest } from "@/lib/server/auth";
@@ -34,6 +35,7 @@ const bodySchema = z.object({
     .min(1)
     .max(CONN_GROUPS + CONN_MAX_MISTAKES + 4),
   start: z.string().max(400).optional(),
+  lang: z.string().max(5).optional(),
   name: duelNameSchema.optional(),
 });
 
@@ -52,10 +54,10 @@ export async function POST(request: NextRequest) {
   if (!crowdRateLimit(request, "conn-result", 20, 0.5, CROWD_WRITE_FACTOR)) return tooManyRequests();
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400, headers: NO_STORE });
-  const { date, player, guesses, start, name } = parsed.data;
+  const { date, player, guesses, start, name, lang } = parsed.data;
   try {
     const user = await account(request);
-    const out = await recordConnResult({ date, identity: user ? `u:${user.id}` : `d:${player}`, guesses, start, name: user ? user.username : (name ?? null), ip: clientIp(request) });
+    const out = await recordConnResult({ date, locale: isLiveLocale(lang) ? lang : "en", identity: user ? `u:${user.id}` : `d:${player}`, guesses, start, name: user ? user.username : (name ?? null), ip: clientIp(request) });
     if (!out.ok) return NextResponse.json({ error: out.error }, { status: out.status, headers: NO_STORE });
     const extras = { board: out.board, hinted: out.hinted, ...(out.groups && { groups: out.groups }), ...(out.mine && { mine: out.mine }) };
     const body: ConnResultResponse = out.summary ? { available: true, summary: out.summary, ...extras } : { available: false, ...extras };

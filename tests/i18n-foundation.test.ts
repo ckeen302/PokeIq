@@ -115,6 +115,8 @@ describe("English-only twins (next.config swaps them in while no other language 
     ["@/components/i18n/Lazy", () => import("@/components/i18n/Lazy"), () => import("@/components/i18n/Lazy.english")],
     ["@/i18n/navigation", () => import("@/i18n/navigation"), () => import("@/i18n/navigation.english")],
     ["@/i18n/paths", () => import("@/i18n/paths"), () => import("@/i18n/paths.english")],
+    ["@/i18n/catalog", () => import("@/i18n/catalog"), () => import("@/i18n/catalog.english")],
+    ["@/i18n/client", () => import("@/i18n/client"), () => import("@/i18n/client.english")],
   ] as const;
   for (const [name, real, twin] of twins) {
     it(`${name}.english exports what ${name} does`, async () => {

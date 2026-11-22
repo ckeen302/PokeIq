@@ -1,0 +1,120 @@
+{
+  "meta": {
+    "title": "Pikadoku : sudoku Pokémon quotidien",
+    "description": "Pikadoku, c’est le sudoku Pokémon, un jeu de grille Pokémon gratuit : remplis une grille de 3×3 avec un Pokémon qui correspond à chaque ligne et colonne. Défis quotidiens Facile, Normal et Expert, score de rareté, grilles illimitées et duels de morpion."
+  },
+  "info": {
+    "description": "Pikadoku est un sudoku Pokémon et un jeu de grille Pokémon gratuit : remplis une grille de 3×3 avec un Pokémon différent dans chaque case, qui correspond à sa ligne et à sa colonne.",
+    "intro": "Pikadoku, c’est le sudoku Pokémon : un jeu de grille Pokémon de 3×3 avec une nouvelle grille chaque jour, en Facile, Normal et Expert.",
+    "steps": {
+      "read": "Lis les trois catégories des lignes et les trois des colonnes : types, régions, évolution, capacités, talents, stats et plus encore.",
+      "tap": "Touche une case et cherche un Pokémon qui correspond à sa ligne et à sa colonne. S’il est bon, il se verrouille.",
+      "pp": "Tu as 9 essais (PP) dans un défi quotidien, et une erreur en coûte un aussi. Chaque Pokémon ne peut servir qu’une fois.",
+      "score": "Ton score de rareté est la somme des parts de joueurs qui ont choisi les mêmes réponses : plus il est bas, plus c’est rare, et mieux c’est.",
+      "end": "À la fin de la partie, découvre toutes les réponses valides de chaque case et pourquoi tes erreurs ne correspondaient pas."
+    },
+    "faq": {
+      "scoreQ": "Comment le score est-il calculé ?",
+      "scoreA": "C’est la somme des pourcentages de joueurs qui ont choisi chacune de tes réponses dans sa case, calculée par le serveur à partir des réponses enregistrées. Plus il est bas, plus tes choix sont rares et meilleur est ton score.",
+      "formsQ": "Comment comptent les formes et les régions ?",
+      "formsA": "Les formes régionales, les Méga-Évolutions, les formes Gigamax et quelques formes notables (comme Pikachu partenaire) sont des choix à part, avec leurs propres types, stats et talents. La région d’une espèce est celle où elle est apparue ; une forme régionale compte pour la région où elle est apparue (Raichu d’Alola est d’Alola), et les Méga-Évolutions et formes Gigamax comptent pour la région de leur espèce. Une forme et son espèce sont le même Pokémon : une seule des deux peut servir dans une grille.",
+      "solvableQ": "Toutes les grilles ont-elles une solution ?",
+      "solvableA": "Oui. Chaque défi quotidien est vérifié pour que chaque case ait assez de réponses valides et que neuf Pokémon différents puissent remplir la grille.",
+      "levelsQ": "Que sont Facile, Normal et Expert ?",
+      "levelsA": "Facile utilise des catégories larges avec beaucoup de réponses, Normal est la grille principale du classement, et Expert utilise des catégories plus difficiles comme les capacités, les talents et les seuils de stats."
+    }
+  },
+  "duel": {
+    "about": "Un duel de morpion Pikadoku : prenez des cases à tour de rôle avec un Pokémon qui correspond, et alignez-en trois.",
+    "invite": "Un duel de Pikadoku",
+    "vs": "{host} contre {guest} : morpion Pikadoku",
+    "challenges": "{host} te défie au morpion Pikadoku",
+    "trainer": "Un Dresseur"
+  },
+  "cat": {
+    "types_dual": "Double type",
+    "types_single": "Monotype",
+    "region_1": "Kanto",
+    "region_2": "Johto",
+    "region_3": "Hoenn",
+    "region_4": "Sinnoh",
+    "region_5": "Unys",
+    "region_6": "Kalos",
+    "region_7": "Alola",
+    "region_8": "Galar",
+    "region_9": "Paldea",
+    "region_hisui": "Hisui",
+    "form_alola": "Forme d’Alola",
+    "form_galar": "Forme de Galar",
+    "form_hisui": "Forme de Hisui",
+    "form_paldea": "Forme de Paldea",
+    "evo_basic": "Base",
+    "evo_stage2": "Deuxième stade",
+    "evo_stage3": "Troisième stade",
+    "evo_notfull": "Peut évoluer",
+    "evo_full": "Stade final",
+    "evo_none": "Sans évolution",
+    "evo_item": "Évolue avec un objet",
+    "evo_stone": "Évolue avec une pierre",
+    "evo_trade": "Évolue par échange",
+    "evo_friend": "Évolue par amitié",
+    "evo_level": "Évolue par niveau",
+    "evo_branch": "Évolution ramifiée",
+    "evo_three": "Lignée à trois stades",
+    "other_legendary": "Légendaire",
+    "other_mythical": "Fabuleux",
+    "other_lm": "Légendaire ou fabuleux",
+    "other_fossil": "Fossile",
+    "other_baby": "Bébé",
+    "other_mega": "Méga",
+    "other_gmax": "Gigamax",
+    "other_paradox": "Paradoxe",
+    "other_ultrabeast": "Ultra-Chimère",
+    "other_partner": "Pokémon de départ",
+    "other_ou": "OU 9e gén.",
+    "ability_hidden": "Talent caché",
+    "stat_hp_100": "PV de base 100+",
+    "stat_atk_120": "Attaque de base 120+",
+    "stat_def_100": "Défense de base 100+",
+    "stat_spa_120": "Atq. Spé. de base 120+",
+    "stat_spd_100": "Déf. Spé. de base 100+",
+    "stat_spe_100": "Vitesse de base 100+",
+    "stat_slow": "Vitesse de base 40 ou moins",
+    "stat_bst600": "Total de base 600+",
+    "stat_bst500": "Total de base 500+",
+    "stat_bst300": "Total de base sous 300"
+  },
+  "form": {
+    "alola": "{name} d’Alola",
+    "galar": "{name} de Galar",
+    "hisui": "{name} de Hisui",
+    "paldea": "{name} de Paldea",
+    "breed": "{name} de Paldea ({breed})",
+    "breeds": {
+      "combat": "race Combative",
+      "blaze": "race Flamboyante",
+      "aqua": "race Aquatique"
+    },
+    "darmanitan": {
+      "standard": "{name} de Galar (mode Normal)",
+      "zen": "{name} de Galar (mode Transe)"
+    },
+    "mega": "Méga-{name}",
+    "megaVariant": "Méga-{name} {variant}",
+    "gmax": "{name} Gigamax",
+    "gmaxStyle": {
+      "single": "{name} Gigamax (style Poing Final)",
+      "rapid": "{name} Gigamax (style Mille Poings)",
+      "amped": "{name} Gigamax (forme Aigüe)",
+      "lowkey": "{name} Gigamax (forme Basse)"
+    },
+    "starter": "{name} partenaire",
+    "primal": "Primo-{name}",
+    "origin": "{name} (forme Originelle)",
+    "crowned": {
+      "zacian": "{name} (Épée Suprême)",
+      "zamazenta": "{name} (Bouclier Suprême)"
+    },
+    "eternal": "{name} (Fleur Éternelle)"
+  }
+}

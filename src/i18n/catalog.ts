@@ -1,3 +1,4 @@
+import { INTL_LOCALE } from "./format";
 import format, { type CompiledMessage, type FormatOptions } from "icu-minify/format";
 import { Fragment, createElement, type ReactNode } from "react";
 import { DEFAULT_LOCALE, type Locale } from "./config";
@@ -8,8 +9,9 @@ import { DEFAULT_LOCALE, type Locale } from "./config";
  * English file, so a component imports exactly the English text it shows (as it carried it inline before) and the
  * keys it may ask for are typed from that file: a key missing in English fails `tsc`.
  *
- * The JSON is compiled to icu-minify's arrays at build time (scripts/i18n/icu-loader.cjs), so the browser only ever
- * carries the ~1 KB formatter, never an ICU parser.
+ * The JSON is compiled at build time (scripts/i18n/icu-loader.cjs): English messages to small functions (English pages
+ * need no formatter), other languages to icu-minify's arrays (read by its ~1 KB formatter). The browser never carries
+ * an ICU parser. In an English-only build this module is catalog.english.ts (next.config), with no formatter at all.
  */
 
 /** A namespace's messages as written: nested objects of strings. */
@@ -66,16 +68,20 @@ const OPTIONS: FormatOptions = {
 };
 
 /** Intl's code for a language: "en-US" for English, as the site always formatted numbers. */
-export const INTL_LOCALE: Record<Locale, string> = { en: "en-US", ja: "ja-JP", es: "es-ES", fr: "fr-FR", de: "de-DE", it: "it-IT" };
+export { INTL_LOCALE, formatNumber } from "./format";
 
-function lookup(tree: Tree | undefined, key: string): CompiledMessage | undefined {
+/** A compiled English message (scripts/i18n/icu-loader.cjs): the values in, the text (or its parts with <tags>) out. */
+type EnglishMessage = (values: Record<string, unknown>) => unknown;
+type Message = CompiledMessage | EnglishMessage;
+
+function lookup(tree: Tree | undefined, key: string): Message | undefined {
   let node: unknown = tree;
   for (const part of key.split(".")) {
     if (node === null || typeof node !== "object" || Array.isArray(node)) return undefined;
     node = (node as Record<string, unknown>)[part];
   }
-  // A compiled message is a string or an array; an object is a group of messages, not one.
-  return typeof node === "string" || Array.isArray(node) ? (node as CompiledMessage) : undefined;
+  // A compiled message is a string, an array or (English) a function; an object is a group of messages, not one.
+  return typeof node === "string" || typeof node === "function" || Array.isArray(node) ? (node as Message) : undefined;
 }
 
 /**
@@ -85,30 +91,29 @@ function lookup(tree: Tree | undefined, key: string): CompiledMessage | undefine
 export function translator<T extends Tree>(ns: Namespace<T>, locale: Locale, messages: Tree | undefined): Translator<T> {
   const own = locale === DEFAULT_LOCALE ? undefined : messages;
   const intl = INTL_LOCALE[locale];
-  const find = (key: string): { message: CompiledMessage; locale: string } => {
+  // `english`: the key's English, inlined at the call by the build (scripts/i18n/inline-loader.cjs) so a page needn't
+  // carry its whole namespace; the namespace's own English otherwise.
+  const find = (key: string, english?: Message): { message: Message; locale: string } => {
     const m = own && lookup(own, key);
     if (m !== undefined) return { message: m, locale: intl };
-    const e = lookup(ns.en, key);
+    const e = english ?? lookup(ns.en, key);
     if (e === undefined) throw new Error(`Missing message ${ns.name}.${key}`);
     return { message: e, locale: INTL_LOCALE.en };
   };
-  const t = ((key: string, values?: Values) => {
-    const { message, locale: l } = find(key);
-    return typeof message === "string" ? message : String(format(message, l, values, OPTIONS));
-  }) as unknown as Translator<T>;
-  t.rich = (key, values) => {
-    const { message, locale: l } = find(key);
+  const t = ((key: string, values?: Values, english?: Message) => {
+    const { message, locale: l } = find(key, english);
     if (typeof message === "string") return message;
-    const out = format<ReactNode>(message, l, values, OPTIONS);
+    return String(typeof message === "function" ? message(values ?? {}) : format(message, l, values, OPTIONS));
+  }) as unknown as Translator<T>;
+  t.rich = ((key: string, values: RichValues, english?: Message) => {
+    const { message, locale: l } = find(key, english);
+    if (typeof message === "string") return message;
+    const out = (typeof message === "function" ? message(values) : format<ReactNode>(message, l, values, OPTIONS)) as ReactNode;
     // Several parts render as one fragment's children (no keys needed).
     return Array.isArray(out) ? createElement(Fragment, null, ...out) : out;
-  };
+  }) as Translator<T>["rich"];
   t.has = (key) => (own !== undefined && lookup(own, key) !== undefined) || lookup(ns.en, key) !== undefined;
   Object.defineProperty(t, "locale", { value: locale });
   return t;
 }
 
-/** A number as the language writes it ("1,234" / "1.234" / "1 234"). English keeps the site's en-US. */
-export function formatNumber(n: number, locale: Locale, opts?: Intl.NumberFormatOptions): string {
-  return OPTIONS.formatters.getNumberFormat(INTL_LOCALE[locale], opts).format(n);
-}

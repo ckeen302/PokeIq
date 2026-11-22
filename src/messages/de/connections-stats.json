@@ -1,0 +1,29 @@
+{
+  "played": "Gespielt",
+  "winPct": "Siege %",
+  "current": "Aktuelle Serie",
+  "max": "Beste Serie",
+  "freezes": "🧊 Serienschutz: <b>{freezes}</b> von {max}. Du bekommst einen alle {every} Tage am Stück; ein verpasster Tag verbraucht automatisch einen. Siegesserie: <b>{win}</b> (Rekord {best}).",
+  "distribution": "Fehlerverteilung",
+  "distributionAria": "Siege nach Anzahl der Fehler",
+  "barAria": "{n, plural, one {{n} Fehler} other {{n} Fehler}}: {count}",
+  "barLost": "Nicht gelöst: {count}",
+  "cardTitle": "Deine PokéConnections-Statistik",
+  "onlyDailies": "Nur Tagesrätsel zählen. Training und Archiv ändern nie deine Statistik oder Serien.",
+  "status": {
+    "perfect": "Perfekt",
+    "solved": "Gelöst",
+    "missed": "Verpasst",
+    "progress": "Läuft",
+    "none": "Nicht gespielt"
+  },
+  "prev": "Voriger Monat",
+  "next": "Nächster Monat",
+  "day": "Nr. {n}, {date}: {status}",
+  "fromArchive": " (Archiv)",
+  "today": ", heute",
+  "key": "Legende",
+  "statsTitle": "Statistik",
+  "archiveTitle": "Archiv",
+  "archiveIntro": "Spiel ein beliebiges vergangenes Tagesrätsel. Archivspiele sind nur zum Spaß: Sie zählen nie für deine Serien oder Statistik."
+}

@@ -1,0 +1,18 @@
+{
+  "title": "Credits",
+  "description": "The data, engine, music and textures PokéIQ is built on, and their licences.",
+  "data": "Pokémon data",
+  "dataBody": "Data from PokéAPI.",
+  "shinyMaker": "Shiny Pokémon Maker",
+  "shinyMakerBody": "Black/White-style sprites from PokéAPI's sprite collection; from #650 on they are fan-made in the same style by the Smogon Sprite Project. The 3D style uses Pokémon HOME renders and the Artwork style the official artwork, both also from PokéAPI (<a>credits</a>).",
+  "battles": "Battles",
+  "battlesBody": "Battles run on Pokémon Showdown's simulator, and its battle timer and replay format are adapted from Pokémon Showdown (MIT licence, © Guangcong Luo and contributors).",
+  "music": "Battle music",
+  "musicBody": "Original chiptune by Ted Kerr, celestialghost8 and congusbongus via OpenGameArt.org, under CC0 (<a>credits</a>).",
+  "sizes": "Sizes",
+  "sizesBody": "Music by cynicmusic and city textures from Poly Haven, both CC0 (<a>credits</a>).",
+  "race": "Race",
+  "raceBody": "Stadium textures from Poly Haven and crowd sounds from OpenGameArt.org, all CC0 (<a>credits</a>).",
+  "films": "The two films",
+  "filmsBody": "The scores are original, written for PokéIQ and played with the MuseScore General sound font (MIT; strings from VSCO 2 CE, CC0). Credits: <world>History of the Pokémon World</world>, <story>Story of Pokémon</story>."
+}

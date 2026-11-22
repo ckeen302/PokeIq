@@ -1,0 +1,86 @@
+{
+  "divisions": {
+    "poke": "Poké Ball",
+    "great": "Super Ball",
+    "ultra": "Hyper Ball",
+    "master": "Master Ball",
+    "beast": "Ultra Ball"
+  },
+  "badgeTitle": "{name} · {elo} Elo",
+  "progress": {
+    "to": "Progression vers {next}",
+    "toTop": "Progression vers le sommet",
+    "left": "{n} avant {next}",
+    "next": "Prochaine : {next}",
+    "top": "La division la plus haute"
+  },
+  "bot": {
+    "tag": "Champion d'Arène",
+    "tagTitle": "Un adversaire contrôlé par l'ordinateur : le Champion d'Arène joue en classé quand aucun Dresseur n'est disponible",
+    "leaders": {
+      "brock": { "name": "Pierre", "full": "Champion d'Arène Pierre" },
+      "misty": { "name": "Ondine", "full": "Championne d'Arène Ondine" },
+      "ltsurge": { "name": "Major Bob", "full": "Champion d'Arène Major Bob" },
+      "erika": { "name": "Érika", "full": "Championne d'Arène Érika" },
+      "koga": { "name": "Koga", "full": "Champion d'Arène Koga" },
+      "sabrina": { "name": "Morgane", "full": "Championne d'Arène Morgane" },
+      "blaine": { "name": "Auguste", "full": "Champion d'Arène Auguste" },
+      "falkner": { "name": "Albert", "full": "Champion d'Arène Albert" },
+      "bugsy": { "name": "Hector", "full": "Champion d'Arène Hector" },
+      "whitney": { "name": "Blanche", "full": "Championne d'Arène Blanche" },
+      "morty": { "name": "Mortimer", "full": "Champion d'Arène Mortimer" },
+      "chuck": { "name": "Chuck", "full": "Champion d'Arène Chuck" },
+      "jasmine": { "name": "Jasmine", "full": "Championne d'Arène Jasmine" },
+      "pryce": { "name": "Frédo", "full": "Champion d'Arène Frédo" },
+      "clair": { "name": "Sandra", "full": "Championne d'Arène Sandra" },
+      "roxanne": { "name": "Roxanne", "full": "Championne d'Arène Roxanne" }
+    }
+  },
+  "record": {
+    "place": "<b>#{position}</b> sur {players}",
+    "ladder": "Classement : <b>#{position}</b> sur {players}",
+    "wl": "{wins} V · {losses} D",
+    "draws": " · {draws} N",
+    "best": "Record : {points} pts"
+  },
+  "search": {
+    "searching": "Recherche d'un adversaire classé…",
+    "any": " · n'importe quel Dresseur",
+    "widening": " · recherche élargie",
+    "near": " · Dresseurs proches de ton Elo",
+    "noneYet": "Aucun Dresseur trouvé pour l'instant. Affronter un Champion d'Arène ?",
+    "botAbout": "Un adversaire contrôlé par l'ordinateur, au niveau de ta division. Classé, avec des gains et pertes réduits de moitié.",
+    "bot": "Affronter un Champion",
+    "cancel": "Annuler"
+  },
+  "card": {
+    "label": "Classé · Carte du monde",
+    "loading": "Chargement de ton rang…",
+    "off": "Le mode classé de PokéGuessr arrive bientôt. Les duels amicaux sont ouverts : passe en Amical pour trouver un adversaire ou défier un ami.",
+    "ladder": "Classement",
+    "how1": "Face à face sur la carte du monde. Grimpe de la Poké Ball à l'Ultra Ball contre des Dresseurs proches de ton Elo.",
+    "how2": "Les mêmes lieux pour vous deux, {hp} PV chacun : à chaque manche, le score le plus bas perd la différence. Toujours la carte du monde. Quitter compte comme une défaite.",
+    "how3": "Tout le monde commence à {start} Elo, calculé comme sur Pokémon Showdown : en Poké Ball et Super Ball, seule ta division s'affiche ; à partir de l'Hyper Ball, le nombre aussi. Au-dessus de {drift}, l'Elo baisse un peu les jours où tu ne joues pas.",
+    "how4": "Tu affrontes des Dresseurs proches de ton Elo, l'écart s'élargissant à mesure que tu attends. Si personne ne se présente après {wait}, tu peux affronter un Champion d'Arène : un adversaire contrôlé par l'ordinateur, clairement indiqué, au niveau de ta division, avec des gains et pertes réduits de moitié.",
+    "waitSeconds": "{n} secondes",
+    "waitWhile": "un moment",
+    "how5": "Le classé se joue en saisons de huit semaines. Ta meilleure division de la saison te rapporte ses récompenses (un badge de saison et des objets cosmétiques pour chaque division jusqu'à celle-ci) à la fin de la saison. Ensuite, chaque Elo revient à mi-chemin de {start}, en perdant une division au plus : la montée reprend près de là où tu t'es arrêté.",
+    "nameLabel": "Nom de Dresseur en classé",
+    "namePlaceholder": "Nom de Dresseur",
+    "nameRejected": "Choisis un autre nom.",
+    "queue": "Lancer le classé"
+  },
+  "outcome": {
+    "eloLabel": "Elo {delta}, maintenant {after}",
+    "climbing": "En hausse",
+    "slipping": "En baisse",
+    "holding": "Stable",
+    "botNote": "Duel contre un Champion d'Arène : gains et pertes réduits de moitié.",
+    "promoted": "Promotion en {name} !",
+    "demoted": "Retour en {name}. Gagne le prochain pour remonter.",
+    "counting": "Calcul de ton Elo…"
+  },
+  "spot": {
+    "none": "Tu n'es pas encore au classement. <link>Joue un duel classé</link> pour obtenir ta division."
+  }
+}

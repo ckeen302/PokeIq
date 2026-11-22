@@ -1,0 +1,101 @@
+{
+  "shell": {
+    "fullscreen": "Full screen",
+    "exitFullscreen": "Exit full screen",
+    "withEsc": "{label} (Esc)",
+    "back": "Back to PokéGuessr",
+    "secondsLeft": "{s} seconds left"
+  },
+  "dock": {
+    "size": "Map size",
+    "bigger": "Bigger map",
+    "smaller": "Smaller map",
+    "unpin": "Unpin the map",
+    "keepOpen": "Keep the map open",
+    "backToPicture": "Back to the picture",
+    "guessMap": "Guess map",
+    "moveHint": "Tap again to move your pin",
+    "placeHint": "Tap the map to place your guess",
+    "openMove": "Open the map to move your pin or guess",
+    "openPlace": "Open the map to place your pin"
+  },
+  "guess": {
+    "guess": "Guess",
+    "placeFirst": "Place your pin on the map first",
+    "place": "Place your pin on the map"
+  },
+  "key": { "space": "Space" },
+  "round": "Round",
+  "inARow": "{n} in a row",
+  "map": {
+    "pickLabel": "Map of {map}: click where you think this is. Scroll to zoom, drag to move.",
+    "label": "Map of {map}",
+    "failed": "Couldn't load the map. Try reloading.",
+    "loading": "Loading the map",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "whole": "Show the whole map"
+  },
+  "shot": {
+    "where": "Where is this?",
+    "prev": "Previous view",
+    "prevKey": "Previous view (←)",
+    "next": "Next view",
+    "nextKey": "Next view (→)",
+    "whole": "View the whole screenshot",
+    "wholeShort": "Whole screenshot",
+    "views": "Views of this place",
+    "view": "View {n} of {count}",
+    "fullscreen": "Screenshot, full screen",
+    "close": "Close"
+  },
+  "report": {
+    "open": "Report this screenshot",
+    "question": "What's wrong with this screenshot?",
+    "reason": "Reason",
+    "reasons": {
+      "wrong-place": "Wrong place",
+      "wrong-game": "Wrong game",
+      "gives-away": "Gives the answer away",
+      "too-generic": "Too generic to place",
+      "bad-image": "Bad image",
+      "other": "Something else"
+    },
+    "placeholder": "Optional: where is it really, or what gives it away?",
+    "note": "Note",
+    "send": "Send report",
+    "cancel": "Cancel",
+    "failed": "Couldn't send that report.",
+    "thanks": "Thanks: we'll take a look at this screenshot."
+  },
+  "share": {
+    "text": "My PokéGuessr result",
+    "copy": "Copy result link",
+    "copied": "Link copied!"
+  },
+  "learn": {
+    "atlas": "Atlas",
+    "dex": "Pokédex"
+  },
+  "results": {
+    "streakOver": "Streak over",
+    "complete": "Survey complete",
+    "bestRound": "Best round",
+    "worstRound": "Worst round",
+    "finalStreak": "Final streak",
+    "total": "Total score · {rounds} rounds",
+    "outOf": "out of {max}",
+    "rounds": "Rounds",
+    "best": "Best",
+    "worst": "Worst",
+    "timeUp": "Time's up",
+    "rightRegion": "Right region",
+    "wrongRegion": "Wrong region",
+    "spotOn": "Spot on",
+    "squares": "{n, plural, one {{d} square away} other {{d} squares away}}",
+    "correct": "Correct",
+    "missed": "Missed",
+    "again": "Play again",
+    "shareAndBoard": "Share & leaderboard"
+  }
+}

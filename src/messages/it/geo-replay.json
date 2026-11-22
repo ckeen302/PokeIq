@@ -1,0 +1,99 @@
+{
+  "result": {
+    "win": {
+      "letter": "V",
+      "label": "Vittoria"
+    },
+    "loss": {
+      "letter": "S",
+      "label": "Sconfitta"
+    },
+    "draw": {
+      "letter": "P",
+      "label": "Pareggio"
+    }
+  },
+  "elo": {
+    "title": "{before} → {after} Elo",
+    "climbing": "In salita",
+    "slipping": "In discesa",
+    "holding": "Stabile",
+    "word": "Elo"
+  },
+  "vs": "contro",
+  "ranked": "Classificata",
+  "casual": "Amichevole",
+  "race": "Gara a punti",
+  "hp": "Lotta a PS",
+  "turbo": "Turbo",
+  "finalHpTitle": "PS finali: tuoi – suoi",
+  "points": "punti",
+  "finalHp": "PS finali",
+  "list": {
+    "failed": "Impossibile caricare i tuoi duelli.",
+    "loading": "Caricamento dei tuoi duelli…",
+    "off": "La cronologia duelli non è ancora attiva qui. I tuoi duelli contano comunque nel tuo storico PokéGuessr.",
+    "empty": "Ancora nessun duello. Finiscine uno e comparirà qui con il replay round per round.",
+    "find": "Trova un duello",
+    "more": "Carica duelli precedenti"
+  },
+  "history": "Cronologia duelli",
+  "load": {
+    "failed": "Impossibile caricare il replay.",
+    "loading": "Caricamento del replay…",
+    "missing": "Nessun replay",
+    "error": "Qualcosa è andato storto",
+    "missingBlurb": "Il replay di questo duello non esiste, oppure possono vederlo solo i due Allenatori che l'hanno giocato.",
+    "play": "Gioca a PokéGuessr"
+  },
+  "trainer": "Allenatore",
+  "won": "Ha vinto {name}",
+  "rankedReplay": "Replay classificata",
+  "casualReplay": "Replay amichevole",
+  "worldMap": "Mappa del mondo",
+  "noRounds": "Questo duello è finito prima che si giocasse un round.",
+  "shotAlt": "Screenshot del round {n}",
+  "round": "Round {n}",
+  "multiplier": "Danni ×{n}",
+  "roundOf": "Round {n} di {total}",
+  "phase": {
+    "shot": "Lo screenshot",
+    "pins": "Le puntine",
+    "damage": "I danni"
+  },
+  "controls": {
+    "first": "Primo passo",
+    "prev": "Passo precedente",
+    "pause": "Pausa",
+    "play": "Riproduci",
+    "next": "Passo successivo",
+    "last": "Ultimo passo",
+    "position": "Posizione del replay"
+  },
+  "seat": {
+    "won": "Round vinto",
+    "distance": "Distanza",
+    "noGuess": "Nessuna risposta",
+    "score": "Punti",
+    "mult": "Molt.",
+    "damage": "Danni",
+    "hp": "PS",
+    "hpOf": "PS di {name}"
+  },
+  "table": {
+    "place": "Luogo",
+    "dmg": "Danni",
+    "goTo": "Vai al round {n}",
+    "r": "R{n}"
+  },
+  "share": {
+    "copyFallback": "Copia l'indirizzo dalla barra degli indirizzi.",
+    "failed": "Impossibile cambiare la condivisione. Riprova.",
+    "copied": "Copiato",
+    "copy": "Copia link",
+    "private": "Rendi privato",
+    "share": "Condividi il replay",
+    "public": "Chiunque abbia il link può guardarlo.",
+    "privateNote": "Visibile solo a te e al tuo avversario."
+  }
+}

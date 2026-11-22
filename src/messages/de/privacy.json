@@ -1,0 +1,41 @@
+{
+  "title": "Datenschutzerklärung",
+  "description": "Was PokéIQ erfasst, wozu und wie du es löschen lassen kannst. Verständlich erklärt.",
+  "short": "Die Kurzfassung",
+  "intro": "PokéIQ ist ein kostenloses, inoffizielles Fanprojekt. Wir erfassen so wenig wie möglich, nutzen es, um das Spiel zu betreiben, und verkaufen es nie.",
+  "collect": {
+    "title": "Was wir erfassen",
+    "name": "<b>Dein Trainername</b>: öffentlich sichtbar in Bestenlisten, Freundeslisten und Matches.",
+    "password": "<b>Dein Passwort</b>: nur als gesalzener Hash gespeichert, nie lesbar. Wenn du dich mit Discord oder Google anmeldest, haben wir gar kein Passwort von dir.",
+    "email": "<b>Deine E-Mail-Adresse, nur wenn du uns eine gibst</b>: die bestätigte Adresse, die uns Discord oder Google bei der Anmeldung übermittelt, oder eine Adresse, die du selbst für die täglichen Erinnerungs-E-Mails einträgst. Sie bleibt privat: Andere Spieler sehen sie nie.",
+    "results": "<b>Spielergebnisse und Fortschritt</b>: Punkte, Abzeichen, Serien, Wertungen und Kampfverläufe.",
+    "chat": "<b>Chatnachrichten</b>: Der Chat eines Matches verschwindet, wenn das Match endet.",
+    "avatars": "<b>Avatare, die du hochlädst</b>: auf deinem Profil zu sehen.",
+    "reports": "<b>Meldungen</b>: Wenn du einen Spieler oder ein Problem meldest, bewahren wir die Meldung auf, damit ein Moderator sie prüfen kann.",
+    "noAccount": "Du kannst ohne Konto spielen: Dein Fortschritt bleibt dann auf deinem Gerät. Wir zählen Besuche mit der cookiefreien Analyse von Vercel, die dich nicht identifiziert. Auf PokéIQ gibt es heute keine Werbung, und wir setzen keine Tracking-Cookies. Sollte sich das je ändern, aktualisieren wir zuerst diese Seite und sagen, was erfasst wird und wie du widersprechen kannst."
+  },
+  "why": {
+    "title": "Wozu",
+    "body": "Um dein Konto zu führen und deinen Fortschritt auf jedem Gerät zu behalten, um Bestenlisten, Freunde und Matches anzuzeigen, um das Spiel fair und sicher zu halten (Moderation, Sperren, Schutz vor Schummeln) und um Probleme zu beheben."
+  },
+  "share": {
+    "title": "Mit wem wir es teilen",
+    "body": "Wir verkaufen deine Daten <b>nicht</b>, und heute teilen wir sie auch nicht mit Werbetreibenden. Sollten wir je Werbung einführen, ändert sich zuerst diese Seite und sagt genau, was geteilt wird und wie du widersprechen kannst. Gespeichert werden sie bei den Diensten, mit denen die Seite läuft (Supabase für Datenbank und Anmeldung, Vercel für das Hosting, Resend für den Versand der Erinnerungs-E-Mails). Discord und Google sagen uns nur dann, wer du bist, wenn du dich mit ihnen anmeldest."
+  },
+  "emails": {
+    "title": "Tägliche Erinnerungs-E-Mails",
+    "body": "Nur wenn du sie einschaltest. Wir schicken eine E-Mail, wenn die neuen täglichen Rätsel erscheinen (oder nur, wenn deine Serie bald endet, falls du das wählst), nachdem du deine Adresse bestätigt hast. Jede E-Mail enthält einen Link zum Abmelden mit einem Klick, und du kannst sie jederzeit auf deinem <card>Trainerpass</card> ausschalten. Wir schicken nie etwas anderes an diese Adresse und geben sie nie weiter."
+  },
+  "age": {
+    "title": "Alter",
+    "body": "Du musst <b>mindestens 13 Jahre alt</b> sein, um ein Konto zu erstellen. Wenn du glaubst, dass ein Kind unter 13 eines erstellt hat, melde dich bei uns, und wir löschen es."
+  },
+  "delete": {
+    "title": "Deine Daten löschen",
+    "body": "Schreib von einer beliebigen Adresse an <mail></mail>, nenn deinen Trainernamen und bitte darum, dein Konto zu löschen. Wir entfernen dein Konto und alles, was damit verbunden ist. Du kannst Discord oder Google auch jederzeit auf deinem <card>Trainerpass</card> trennen."
+  },
+  "about": {
+    "title": "Über PokéIQ",
+    "body": "PokéIQ ist ein kostenloses Fanprojekt, aus Spaß gemacht. Es steht in keiner Verbindung zu Nintendo, Game Freak, Creatures oder The Pokémon Company. Wenn sich diese Erklärung ändert, aktualisieren wir diese Seite."
+  }
+}

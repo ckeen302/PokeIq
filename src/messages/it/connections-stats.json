@@ -1,0 +1,29 @@
+{
+  "played": "Giocate",
+  "winPct": "% vittorie",
+  "current": "Serie attuale",
+  "max": "Serie migliore",
+  "freezes": "🧊 Congelamenti: <b>{freezes}</b> su {max}. Ne guadagni uno ogni {every} giorni di fila; un giorno saltato ne usa uno da solo. Serie di vittorie: <b>{win}</b> (record {best}).",
+  "distribution": "Distribuzione degli errori",
+  "distributionAria": "Vittorie per numero di errori",
+  "barAria": "{n, plural, one {{n} errore} other {{n} errori}}: {count}",
+  "barLost": "Non risolto: {count}",
+  "cardTitle": "Le tue statistiche di PokéConnections",
+  "onlyDailies": "Contano solo i giornalieri. Allenamento e archivio non cambiano mai statistiche e serie.",
+  "status": {
+    "perfect": "Perfetto",
+    "solved": "Risolto",
+    "missed": "Mancato",
+    "progress": "In corso",
+    "none": "Non giocato"
+  },
+  "prev": "Mese precedente",
+  "next": "Mese successivo",
+  "day": "n. {n}, {date}: {status}",
+  "fromArchive": " (archivio)",
+  "today": ", oggi",
+  "key": "Legenda",
+  "statsTitle": "Statistiche",
+  "archiveTitle": "Archivio",
+  "archiveIntro": "Gioca un qualsiasi giornaliero passato. Le partite dell'archivio sono solo per divertimento: non contano mai per serie e statistiche."
+}

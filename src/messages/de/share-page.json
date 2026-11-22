@@ -1,0 +1,130 @@
+{
+  "meta": {
+    "fallbackTitle": "Geteiltes Ergebnis",
+    "socialTitle": "{title} · PokéIQ"
+  },
+  "page": {
+    "eyebrow": "Ein Trainer hat sein Ergebnis geteilt",
+    "beatIt": "Glaubst du, du schaffst mehr? Kostenlos, ohne Anmeldung, direkt im Browser.",
+    "more": "Weitere PokéIQ-Spiele"
+  },
+  "titled": "{label}: {score}",
+  "streak": "{n, plural, one {Serie: {n} Tag} other {Serie: {n} Tage}}",
+  "time": "Zeit {time}",
+  "pokedle": {
+    "hard": "Schwerer Modus",
+    "assist": "Pokédex: {level}",
+    "assists": {
+      "off": "Aus",
+      "notebook": "Notizbuch",
+      "field": "Feldführer",
+      "full": "Voller Pokédex"
+    },
+    "formats": {
+      "classic": "Klassisch",
+      "squirdle": "Werte",
+      "custom": "Eigene"
+    },
+    "hints": "{n, plural, one {{n} Hinweis} other {{n} Hinweise}}",
+    "top": "Top {top} % von {players}",
+    "solved": "Gelöst mit {n} von {max} Versuchen",
+    "notSolved": "In {max} Versuchen nicht gelöst",
+    "play": "Das heutige Pokédle spielen",
+    "description": "{detail}. Errate das geheime Pokémon anhand seiner Hinweise: jeden Tag ein neues auf PokéIQ. Schaffst du es besser?"
+  },
+  "guessr": {
+    "inARow": "{n} in Folge",
+    "named": "{n, plural, one {{n} Ort in Folge anhand von Screenshots aus den Spielen erkannt} other {{n} Orte in Folge anhand von Screenshots aus den Spielen erkannt}}",
+    "streakChip": "Serie",
+    "play": "PokéGuessr spielen",
+    "playDaily": "Das heutige PokéGuessr spielen",
+    "streakDescription": "GeoGuessr für die Pokémon-Welt: Sieh dir die Ansicht aus dem Spiel an und setz eine Markierung auf die Karte. Knackst du diese Serie?",
+    "outOf": "von {max} Punkten an {n} Orten",
+    "dailyChip": "Tagesspiel",
+    "rounds": "{n} Runden",
+    "description": "GeoGuessr für die Pokémon-Welt: Sieh dir die Ansicht aus dem Spiel an, setz eine Markierung auf die Karte und hol bis zu {max} Punkte. Schaffst du mehr?"
+  },
+  "quiz": {
+    "dailyGame": "Tägliche Herausforderung",
+    "testGame": "PokéIQ-Test",
+    "dailyLabel": "Tägliche Herausforderung #{n}",
+    "testLabel": "Der PokéIQ-Test",
+    "iq": "PokéIQ {iq}",
+    "right": "{correct}/{total} richtig · {points} Pkt.",
+    "iqPoints": "PokéIQ {iq} · {points} Pkt.",
+    "playDaily": "Zur heutigen Herausforderung",
+    "playTest": "Den PokéIQ-Test machen",
+    "play": "Quiz spielen",
+    "dailyDescription": "Jeden Tag dieselben Pokémon-Fragen für alle Trainer. Halte deine Serie auf PokéIQ.",
+    "description": "Wie gut kennst du Pokémon? Kostenlose Quiz zu allen Pokémon, ohne Anmeldung. Schaffst du mehr Punkte?"
+  },
+  "cognitive": {
+    "game": "Kognitiver PokéIQ",
+    "label": "Der PokéIQ-Test · kognitiv",
+    "headline": "Kognitiver PokéIQ {score}",
+    "detail": "{p}. Perzentil der Trainer",
+    "reasoning": "Logik {n}",
+    "memory": "Gedächtnis {n}",
+    "speed": "Tempo {n}",
+    "spatial": "Räumlich {n}",
+    "knowledge": "Wissen {n}",
+    "title": "{headline} ({detail})",
+    "description": "Logik, Gedächtnis, Tempo und räumliches Denken, getestet mit Pokémon und verglichen mit anderen Trainern. Kein klinischer IQ-Test. Wo landest du?"
+  },
+  "connections": {
+    "solved": "Alle {size, select, five {fünf} other {vier}} Gruppen gefunden, {mistakes, plural, =0 {ohne Fehler} one {mit {mistakes} Fehler} other {mit {mistakes} Fehlern}}",
+    "solvedIn": "Alle {size, select, five {fünf} other {vier}} Gruppen gefunden, {mistakes, plural, =0 {ohne Fehler} one {mit {mistakes} Fehler} other {mit {mistakes} Fehlern}}, in {time}",
+    "notSolved": "{found} von {size} Gruppen gefunden, bevor die Fehler aufgebraucht waren",
+    "perfect": "Perfekt",
+    "solvedHeadline": "Gelöst",
+    "hint": "Tipp genutzt",
+    "play": "PokéConnections spielen",
+    "playDaily": "Das heutige PokéConnections spielen",
+    "description": "{size, select, five {Pokémon in versteckten Gruppen.} other {Pokémon in versteckten Gruppen.}} Finde heraus, was sie verbindet – jeden Tag ein neues Rätsel auf PokéIQ. Schaffst du es besser?"
+  },
+  "pikadoku": {
+    "full": "Das ganze Raster gefüllt",
+    "filled": "{n} von 9 Feldern gefüllt",
+    "withScore": "{detail} · Seltenheitswert {score}",
+    "score": "Wert {score}",
+    "rare": "{n, plural, one {{n} seltene Wahl} other {{n} seltene Wahlen}}",
+    "playWeekly": "Das Pikadoku dieser Woche spielen",
+    "play": "Das heutige Pikadoku spielen",
+    "titleScore": "{label}: {solved}/9 · Wert {score}",
+    "description": "Pokémon-Sudoku: ein Pokémon pro Feld, passend zu Zeile und Spalte. Je seltener deine Wahl, desto niedriger dein Wert. Schaffst du es besser?"
+  },
+  "battle": {
+    "game": "Kampf",
+    "label": "Kampf · {format}",
+    "win": "Sieg",
+    "loss": "Niederlage",
+    "tie": "Unentschieden",
+    "detail": "{outcome, select, win {Gewonnen} loss {Verloren} other {Unentschieden}} nach {turns} · {opponent}",
+    "play": "Kampf starten",
+    "title": "{headline} in {format}",
+    "description": "Pokémon-Kämpfe mit der Engine von Pokémon Showdown, gegen den Computer oder einen Freund. Kostenlos, im Browser."
+  },
+  "board": {
+    "row": "Reihe {n}: {tiles}",
+    "tiles": {
+      "hit": "richtig",
+      "near": "nah dran",
+      "far": "weit weg",
+      "wrong": "falsch",
+      "miss": "falsch",
+      "up": "höher",
+      "down": "niedriger",
+      "mask": "verdeckt",
+      "conn-yellow": "gelb",
+      "conn-green": "grün",
+      "conn-blue": "blau",
+      "conn-purple": "lila",
+      "conn-red": "rot",
+      "pdk-purple": "unter 1 %",
+      "pdk-blue": "unter 10 %",
+      "pdk-green": "unter 25 %",
+      "pdk-yellow": "25 % oder mehr",
+      "pdk-empty": "falsch oder leer"
+    }
+  }
+}

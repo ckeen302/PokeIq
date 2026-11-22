@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { isLiveLocale } from "@/i18n/config";
 import { CONN_GROUP_SIZE, CONN_GROUPS, CONN_MAX_MISTAKES } from "@/lib/connections/types";
 import type { ConnHintResponse } from "@/lib/connections/social";
 import { GAMEPLAY_IP_LIMIT, clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
@@ -24,6 +25,7 @@ const bodySchema = z.object({
   date: z.string().max(10),
   player: PLAYER.optional(),
   guesses: z.array(z.array(z.number().int().positive().max(100_000)).length(CONN_GROUP_SIZE)).max(CONN_GROUPS + CONN_MAX_MISTAKES + 4),
+  lang: z.string().max(5).optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -33,7 +35,7 @@ export async function POST(request: NextRequest) {
   const who = await whoIs(request, parsed.data.player);
   if (!who) return NextResponse.json({ error: "Missing player id." }, { status: 400, headers: NO_STORE });
   try {
-    const out = await requestHint({ date: parsed.data.date, guesses: parsed.data.guesses, player: connPlayerKey(who.identity) });
+    const out = await requestHint({ date: parsed.data.date, guesses: parsed.data.guesses, player: connPlayerKey(who.identity), locale: isLiveLocale(parsed.data.lang) ? parsed.data.lang : "en" });
     if (!out.ok) return NextResponse.json({ error: out.error }, { status: out.status, headers: NO_STORE });
     return NextResponse.json(out.hint, { headers: NO_STORE });
   } catch (err) {

@@ -1,0 +1,99 @@
+{
+  "result": {
+    "win": {
+      "letter": "V",
+      "label": "Victoria"
+    },
+    "loss": {
+      "letter": "D",
+      "label": "Derrota"
+    },
+    "draw": {
+      "letter": "E",
+      "label": "Empate"
+    }
+  },
+  "elo": {
+    "title": "{before} → {after} Elo",
+    "climbing": "Subiendo",
+    "slipping": "Bajando",
+    "holding": "Estable",
+    "word": "Elo"
+  },
+  "vs": "vs.",
+  "ranked": "Clasificatorio",
+  "casual": "Amistoso",
+  "race": "Carrera de puntos",
+  "hp": "Batalla de PS",
+  "turbo": "Turbo",
+  "finalHpTitle": "PS finales: tuyos – suyos",
+  "points": "puntos",
+  "finalHp": "PS finales",
+  "list": {
+    "failed": "No se han podido cargar tus duelos.",
+    "loading": "Cargando tus duelos…",
+    "off": "El historial de duelos aún no está activado aquí. Tus duelos siguen contando en tu historial de PokéGuessr.",
+    "empty": "Aún no hay duelos. Termina uno y aparecerá aquí con su repetición ronda a ronda.",
+    "find": "Buscar un duelo",
+    "more": "Cargar duelos anteriores"
+  },
+  "history": "Historial de duelos",
+  "load": {
+    "failed": "No se ha podido cargar la repetición.",
+    "loading": "Cargando la repetición…",
+    "missing": "No hay repetición",
+    "error": "Algo ha salido mal",
+    "missingBlurb": "La repetición de este duelo no existe o solo pueden verla los dos Entrenadores que lo jugaron.",
+    "play": "Jugar a PokéGuessr"
+  },
+  "trainer": "Entrenador",
+  "won": "Ha ganado {name}",
+  "rankedReplay": "Repetición clasificatoria",
+  "casualReplay": "Repetición amistosa",
+  "worldMap": "Mapa del mundo",
+  "noRounds": "Este duelo terminó antes de jugarse ninguna ronda.",
+  "shotAlt": "Captura de la ronda {n}",
+  "round": "Ronda {n}",
+  "multiplier": "Daño ×{n}",
+  "roundOf": "Ronda {n} de {total}",
+  "phase": {
+    "shot": "La captura",
+    "pins": "Las chinchetas",
+    "damage": "El daño"
+  },
+  "controls": {
+    "first": "Primer paso",
+    "prev": "Paso anterior",
+    "pause": "Pausa",
+    "play": "Reproducir",
+    "next": "Paso siguiente",
+    "last": "Último paso",
+    "position": "Posición de la repetición"
+  },
+  "seat": {
+    "won": "Ronda ganada",
+    "distance": "Distancia",
+    "noGuess": "Sin respuesta",
+    "score": "Puntos",
+    "mult": "Mult.",
+    "damage": "Daño",
+    "hp": "PS",
+    "hpOf": "PS de {name}"
+  },
+  "table": {
+    "place": "Lugar",
+    "dmg": "Daño",
+    "goTo": "Ir a la ronda {n}",
+    "r": "R{n}"
+  },
+  "share": {
+    "copyFallback": "Copia la dirección de la barra del navegador.",
+    "failed": "No se ha podido cambiar el modo de compartir. Inténtalo de nuevo.",
+    "copied": "Copiado",
+    "copy": "Copiar enlace",
+    "private": "Hacer privada",
+    "share": "Compartir repetición",
+    "public": "Cualquiera con el enlace puede verla.",
+    "privateNote": "Solo la veis tu rival y tú."
+  }
+}

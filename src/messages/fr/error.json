@@ -1,0 +1,8 @@
+{
+  "label": "Erreur système",
+  "heading": "C’est super efficace… contre nous.",
+  "body": "Quelque chose a planté de notre côté. Réessaie.",
+  "ref": "Réf. : {digest}",
+  "retry": "Réessayer",
+  "home": "Accueil"
+}

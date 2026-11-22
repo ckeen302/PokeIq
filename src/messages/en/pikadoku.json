@@ -1,0 +1,301 @@
+{
+  "loading": "Loading",
+  "diff": {
+    "easy": "Easy",
+    "normal": "Normal",
+    "expert": "Expert"
+  },
+  "diffHint": {
+    "easy": "Broad categories, plenty of answers",
+    "normal": "The main grid: the leaderboard and score",
+    "expert": "Harder categories, as few as two answers a cell"
+  },
+  "error": {
+    "generic": "Something went wrong.",
+    "noBoard": "No board fits those settings.",
+    "grid": "Couldn't load the grid.",
+    "game": "Couldn't load your game. Check your connection.",
+    "offline": "You're offline. The grid will load when you're back online.",
+    "gridConnection": "Couldn't load the grid. Check your connection."
+  },
+  "noBoard": {
+    "few": "Those categories can't fill a board on their own. Tick more categories, in more groups.",
+    "none": "No board fits those settings. To widen them, {tips}.",
+    "or": "{list} or {last}",
+    "more": "tick more categories",
+    "normal": "try Normal difficulty",
+    "single": "allow one-answer cells"
+  },
+  "toast": {
+    "softlock": "That would leave the grid unsolvable. Try another Pokémon.",
+    "fits": "{name} fits!",
+    "picked": " {emoji} {pct}% of players picked it.",
+    "ppLeft": " {n} PP left.",
+    "miss": "{name} doesn't fit there."
+  },
+  "giveUpConfirm": "Give up and see the answers?",
+  "challenge": {
+    "title": "Pikadoku (Unlimited) challenge",
+    "beatMe": "Can you beat me on the same grid?",
+    "playMe": "Play the same grid with me:",
+    "label": "{solved}/9 in {guesses, plural, one {{guesses} guess} other {{guesses} guesses}}",
+    "banner": "Challenge: beat {label}",
+    "beat": "You beat {label}!",
+    "tied": "You tied {label}.",
+    "lost": "Not quite: you needed to beat {label}."
+  },
+  "heading": {
+    "weekly": "Weekly #{n}",
+    "weeklyTheme": "Weekly #{n} · {theme}",
+    "archive": "Archive #{n} · {diff}",
+    "daily": "Daily #{n} · {diff}",
+    "unlimited": "Unlimited"
+  },
+  "ttt": "Tic Tac Toe",
+  "subtitle": "Pokémon Sudoku: one Pokémon for each cell, matching its row and its column.",
+  "modes": {
+    "label": "Pikadoku mode",
+    "daily": "Daily",
+    "dailyTitle": "Today's grid, the same for everyone",
+    "unlimited": "Unlimited",
+    "unlimitedTitle": "Build your own board",
+    "tttTitle": "Tic Tac Toe: take turns claiming cells against a friend or a stranger"
+  },
+  "tools": {
+    "label": "Pikadoku options",
+    "howTo": "How to play",
+    "stats": "Statistics",
+    "newGrid": "New Unlimited grid",
+    "settings": "Unlimited settings"
+  },
+  "weeklyNote": "<b>{theme}</b>: {blurb} Live until Sunday {sunday}. Doesn't count toward your daily streak.",
+  "archiveNote": "Archive: #{n} ({date}), {diff}. For fun: it never counts toward the daily board or your streak.",
+  "unlimitedNote": "Unlimited: your own board, never counted toward your streak.",
+  "time": "Time",
+  "master": "Master Puzzle by {name}",
+  "bar": {
+    "rarityLabel": "Rarity score (lower is rarer), tap for the board",
+    "rarityTitle": "Rarity score: the share of players who picked your answers, added up (an empty cell counts 100). Lower is rarer.",
+    "rarity": "Rarity",
+    "filled": "Filled",
+    "ppUnlimited": "Unlimited guesses",
+    "ppLeft": "{left} of {pp} guesses left",
+    "ppTitle": "PP: your guesses. A wrong guess uses one too.",
+    "pp": "PP",
+    "giveUp": "Give up"
+  },
+  "shareGrid": "Share this grid",
+  "newBoard": "New board",
+  "changeSettings": "Change settings",
+  "more": "More",
+  "dailyDifficulty": "Daily difficulty",
+  "weekly": "Weekly",
+  "weeklyTitle": "A themed grid that is live Monday to Sunday, with its own board",
+  "archive": "Archive",
+  "result": {
+    "complete": "Grid complete · 9 of 9 cells",
+    "cells": "{n} of 9 cells",
+    "score": "Rarity score {score}",
+    "off": "Rarity is off for now, so this game has no rarity score.",
+    "explain": "Each cell adds the share of players who picked the same Pokémon there (an empty cell adds 100). Lower means rarer picks: 900 is the most common result, under 100 is legendary.",
+    "tapRank": "Tap for rank",
+    "rankWeek": "You're #{position} of {total} on this week's board.",
+    "rankToday": "You're #{position} of {total} on today's {diff} board.",
+    "boardOff": "The board is off right now.",
+    "trainerName": "Trainer name to rank",
+    "rankMe": "Rank me",
+    "share": "Share result",
+    "cantWait": "Can't wait? Play an Unlimited grid"
+  },
+  "leaderboard": {
+    "label": "Leaderboard",
+    "week": "This week's board · {theme}",
+    "today": "Today's board · {diff}",
+    "scope": "Leaderboard scope",
+    "all": "Everyone",
+    "friends": "Friends",
+    "signIn": "Sign in to see how your friends did.",
+    "off": "The leaderboard is off right now.",
+    "empty": "Nobody is on the board yet.",
+    "emptyHow": "Finish a grid with a trainer name to rank."
+  },
+  "weeklyTheme": {
+    "kanto": { "name": "Kanto week", "blurb": "Everything Kanto: the original 151 and what they grew into." },
+    "starters": { "name": "Starters week", "blurb": "First partners from every region, Bulbasaur to Quaxly." },
+    "legendary": { "name": "Legendary week", "blurb": "Legendaries and Mythicals, and the categories that tell them apart." },
+    "gen9": { "name": "Gen 9 week", "blurb": "Paldea's Pokémon and the forms that came with them." },
+    "competitive": { "name": "Competitive week", "blurb": "OU staples: stats, typing and the tools of the metagame." }
+  },
+  "countdown": "Next Pikadoku in <b>{time}</b>",
+  "rarity": {
+    "p": "under 1% picked it",
+    "b": "under 10% picked it",
+    "g": "under 25% picked it",
+    "y": "25% or more picked it",
+    "x": "wrong or empty"
+  },
+  "rarest": {
+    "yours": "You found the rarest pick.",
+    "possible": "Rarest possible: <b>{name}</b>",
+    "nobody": "(nobody picked it)",
+    "nobodyMore": "{n, plural, one {(nobody picked it, nor {n} other)} other {(nobody picked it, nor {n} others)}}",
+    "pct": "({pct}%)"
+  },
+  "reveal": {
+    "label": "Answers",
+    "title": "All the answers",
+    "intro": "Every Pokémon that fits each cell.",
+    "introRare": "Every Pokémon that fits each cell, rarest picks first, with the share of players who chose it.",
+    "miss": "{name} doesn't match {cats}.",
+    "missCat": "\"{label}\"",
+    "missOr": "{a} or {b}",
+    "valid": "{total} valid",
+    "notFilled": "Not filled",
+    "showAll": "Show all {total}"
+  },
+  "banner": {
+    "offline": "You're offline. Guesses are checked once you're back.",
+    "newPuzzle": "A new daily puzzle is out.",
+    "playIt": "Play it",
+    "retry": "Try again"
+  },
+  "card": {
+    "label": "Your daily stats",
+    "title": "Your dailies",
+    "streak": "Streak",
+    "best": "Best {best}",
+    "bestRarity": "Best rarity",
+    "lower": "Lower is rarer",
+    "today": "Today",
+    "noAverage": "No average yet",
+    "average": "Your average: {avg}",
+    "level": "Level with your {avg} average",
+    "rarer": "{diff} rarer than your {avg} average",
+    "commoner": "{diff} more common than your {avg} average"
+  },
+  "stats": {
+    "title": "Statistics",
+    "played": "Played",
+    "perfect": "Perfect %",
+    "rarest": "Rarest daily",
+    "streak": "Current streak",
+    "best": "Best streak",
+    "duels": "Duels won",
+    "filled": "Cells filled in your dailies",
+    "none": "Finish a daily to see how full your grids get."
+  },
+  "archiveSheet": {
+    "title": "Archive",
+    "intro": "Play any past daily at any difficulty. Archive games are just for fun: they never count toward the daily board or your streak.",
+    "prev": "Previous month",
+    "next": "Next month",
+    "month": "Dailies in {month}",
+    "weekdays": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    },
+    "today": "{date} (today)",
+    "inProgress": "{day}: in progress",
+    "cells": "{day}: {cells} cells",
+    "todaysDaily": " · today's daily",
+    "playing": "In progress",
+    "play": "Play"
+  },
+  "howTo": {
+    "subtitle": "Fill the grid. Keep your score low.",
+    "goal": "The goal",
+    "goalBody": "Fill all 9 boxes of the grid, each with a Pokémon that fits both its row and its column.",
+    "core": "Core rules",
+    "coreBody": "You get {pp} guesses (PP), and a wrong guess uses one too. Each Pokémon can be used once.",
+    "scoring": "Scoring",
+    "scoringBody": "Fill as many boxes as you can. Your rarity score adds up the share of players who picked each of your answers: rarer picks, lower score.",
+    "full": "Full rules",
+    "boxes": "boxes to fill",
+    "guesses": "guesses only",
+    "reused": "reused Pokémon",
+    "rules": {
+      "both": "Every box needs a Pokémon that fits <b>both</b> its row and its column. Each Pokémon can be used once.",
+      "pp": "You get <b>{pp} guesses (PP)</b>, and a wrong guess uses one too. Correct answers lock in.",
+      "score": "Your <b>rarity score</b> starts at 900 (100 for every empty box). Each pick counts the share of players who chose it in that box, so rarer picks pull it down. <b>Lower is better.</b> Your share card colours each box: 🟪 under 1%, 🟦 under 10%, 🟩 under 25%, 🟨 25% or more.",
+      "filled": "<b>Filled</b> counts your boxes. Tap <b>Rarity</b> to see the day's board.",
+      "info": "Tap the <b>i</b> on any category to see exactly what counts. When the game ends you see <b>every valid answer</b> for every box, and why each miss didn't fit.",
+      "master": "Every grid is checked to be solvable. Some days a hand-made <b>Master Puzzle</b> replaces the Daily Puzzle."
+    },
+    "modes": "Modes",
+    "modeList": {
+      "daily": "<b>Daily Puzzle</b>: one grid a day, the same for everyone. Under <b>More</b>: Easy and Expert dailies, the themed Weekly grid and the Archive of past dailies (these never move your streak).",
+      "unlimited": "<b>Unlimited</b>: a board you build yourself. Pick the rules (unlimited PP, guaranteed solvable, one-answer boxes, a timer), a difficulty and the categories you want, then generate as many as you like.",
+      "ttt": "<b>Tic Tac Toe</b>: two trainers share a grid and take turns claiming boxes. Three in a row wins; a wrong guess or a timeout passes the turn."
+    },
+    "regions": "Regions and forms",
+    "kinds": "What the categories can be",
+    "kind": "{family}: ",
+    "kindList": {
+      "types": "Fighting, Dual-type, Monotype (one matching type is enough)",
+      "regions": "Kanto to Paldea, by where a Pokémon debuted (a regional form counts for the region it debuted in)",
+      "evolution": "No evolution line, Stone or Item evolution, Not fully evolved (an evolution counts from either side: Pikachu and Raichu are both a Stone evolution)",
+      "moves": "A few famous moves, such as Surf or Earthquake (Expert adds deeper learnsets)",
+      "abilities": "Expert only: well-known and obscure abilities",
+      "other": "Legendary, Mythical, Paradox, Ultra-Beast, First Partner, Fossil, Baby, Mega, GMax (Expert adds stat thresholds)"
+    }
+  },
+  "rules": {
+    "forms": "Forms are their own picks: regional forms (Alolan Raichu), Megas (Mega Charizard X and Y), Gigantamax forms and a few notable forms (Partner Pikachu, Primal Kyogre, Origin formes, Crowned Zacian).",
+    "own": "A form's types, stats and abilities are its own. Its evolution line, legendary status and moves are its species'.",
+    "region": "A regional form counts for the region it debuted in: Alolan Raichu is from Alola, Galarian Meowth from Galar, Paldean Wooper from Paldea, Hisuian Growlithe from Hisui. A Mega or Gigantamax form counts for its species' region.",
+    "reuse": "No reuse: a form and its species are the same Pokémon. Once you use Charizard, Mega Charizard X is taken too, and the other way round. (Stricter than PokeDoku, where forms can repeat.)",
+    "species": "A species counts for 'Has an Alolan form' (and its forms of other regions); a type category needs just one of the Pokémon's types to match.",
+    "moves": "Move categories use the species' learnset from the latest main game it is in (Scarlet & Violet for most); stat categories use base stats.",
+    "evolution": "Evolution methods count from either side of the step: Pikachu (evolves with a Thunder Stone) and Raichu (evolved with one) both fit 'Stone evolution'."
+  },
+  "demo": {
+    "label": "Demo: searching for {first} and dropping it into the {fire} and {johto} box, then {second} into {water} and {hoenn}",
+    "search": "Search a Pokémon…"
+  },
+  "setup": {
+    "band": {
+      "easy": "Easy",
+      "normal": "Normal",
+      "hard": "Hard"
+    },
+    "bandHint": {
+      "easy": "Every cell has plenty of answers.",
+      "normal": "Any mix the categories allow.",
+      "hard": "A few cells have only a handful of answers."
+    },
+    "untickAll": "{label}: untick all",
+    "tickAll": "{label}: tick all",
+    "all": "All",
+    "none": "None",
+    "find": {
+      "moves": "Find moves",
+      "abilities": "Find abilities"
+    },
+    "findOne": {
+      "moves": "Find a move",
+      "abilities": "Find an ability"
+    },
+    "nothing": "Nothing matches.",
+    "title": "Build your board",
+    "intro": "Set the rules, choose what may appear, then generate. Never counted toward your streak.",
+    "back": "Board",
+    "rules": "Rules",
+    "pp": "Unlimited PP",
+    "ppHint": "No cap on guesses: keep going until the board is full.",
+    "guard": "Guaranteed solvable",
+    "guardHint": "Every board can be finished, and a pick that would strand the other cells is refused.",
+    "single": "Allow one-answer cells",
+    "singleHint": "A cell may have only one Pokémon that fits.",
+    "timer": "Timer",
+    "timerHint": "A running clock above the board.",
+    "difficulty": "Difficulty",
+    "categories": "Categories",
+    "classic": "Classic mix",
+    "generate": "Generate board"
+  }
+}

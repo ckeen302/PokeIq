@@ -1,0 +1,42 @@
+{
+  "meta": {
+    "title": "PokéConnections: Tägliches Pokémon-Connections",
+    "description": "Pokémon Connections: sechzehn Pokémon, vier versteckte Gruppen (Typen, Fähigkeiten, Entwicklungen, Werte und mehr). Finde heraus, was sie verbindet, mit vier Fehlern Spielraum. Jeden Tag ein neues Rätsel, ein Archiv und endloses Training.",
+    "communityTitle": "PokéConnections-Rätsel der Community",
+    "communityDescription": "Rätsel von anderen Trainern: der Tipp der Woche, die bestbewerteten und die neuesten.",
+    "createTitle": "PokéConnections-Rätsel erstellen",
+    "createDescription": "Wähle sechzehn Pokémon, teile sie in vier Gruppen, benenne jede und teile einen Link. Jeder kann es spielen, und die Lösungen bleiben auf dem Server.",
+    "puzzleTitle": "PokéConnections-Rätsel der Community",
+    "puzzleDescription": "Ein PokéConnections-Rätsel von einem anderen Trainer. Finde die vier Gruppen.",
+    "creatorTitle": "PokéConnections-Ersteller",
+    "creatorDescription": "PokéConnections-Rätsel von einem Trainer.",
+    "duelAbout": "Ein PokéConnections-Rennen: dieselben sechzehn Pokémon für euch beide, und wer zuerst die vier Gruppen findet, gewinnt.",
+    "duel": "Ein PokéConnections-Duell",
+    "duelVs": "{host} gegen {guest}: ein PokéConnections-Duell",
+    "duelChallenge": "{host} fordert dich zu einem PokéConnections-Duell heraus",
+    "aTrainer": "Ein Trainer",
+    "partyAbout": "Eine PokéConnections-Party: dieselben sechzehn Pokémon für alle, und die beste Zeit gewinnt.",
+    "party": "Eine PokéConnections-Party",
+    "partyInvite": "{host} lädt dich zu einer PokéConnections-Party ein"
+  },
+  "info": {
+    "description": "PokéConnections ist ein kostenloses Pokémon-Connections-Rätsel: Sortiere sechzehn Pokémon in vier versteckte Gruppen, mit vier Fehlern Spielraum.",
+    "intro": "PokéConnections ist Connections mit Pokémon: sechzehn Pokémon, vier versteckte Gruppen und jeden Tag ein neues Rätsel.",
+    "step1": "Schau dir die sechzehn Pokémon an und finde die, die etwas gemeinsam haben: einen Typ, eine Fähigkeit, eine Entwicklung, Werte und mehr.",
+    "step2": "Wähle vier aus und sende sie als Gruppe.",
+    "step3": "Du darfst vier Fehler machen, bevor das Rätsel endet.",
+    "step4": "Spiel das Tagesrätsel, stöbere im Archiv oder trainiere endlos.",
+    "faq1": "Welche Arten von Gruppen gibt es?",
+    "faq1a": "Typen, Fähigkeiten, Entwicklungen, Werte und mehr.",
+    "faq2": "Wie viele Fehler darf ich machen?",
+    "faq2a": "Vier."
+  },
+  "back": "Zurück zu PokéConnections",
+  "backCommunity": "Zurück zur Community",
+  "creator": {
+    "unavailable": "Ersteller-Seiten sind gerade nicht verfügbar. Versuch es in einer Minute noch mal.",
+    "eyebrow": "PokéConnections-Ersteller",
+    "totals": "{n, plural, one {{n} Rätsel} other {{n} Rätsel}} · {votes} {v, plural, one {Stimme} other {Stimmen}} (Wertung {score})",
+    "untitled": "Rätsel ohne Titel"
+  }
+}

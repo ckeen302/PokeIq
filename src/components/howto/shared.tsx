@@ -4,6 +4,8 @@ import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } fr
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDialogFocus } from "@/components/ui/use-dialog-focus";
+import { useT } from "@/i18n/client";
+import howto from "@/messages/howto";
 
 /** What every game's "How to play" pop-up shares: the pop-up itself, the looping demo's clock, its frame, the rule cards and the two buttons. */
 
@@ -55,7 +57,7 @@ export function useDemoFrame(ms: readonly number[]): number {
  * page's largest paint there: the board does.
  */
 export function HowToDialog({
-  title = "How to play",
+  title: titleProp,
   subtitle,
   onClose,
   footer,
@@ -72,6 +74,8 @@ export function HowToDialog({
   children: React.ReactNode;
 }) {
   const closeRef = useDialogFocus(onClose);
+  const t = useT(howto);
+  const title = titleProp ?? t("title");
   return (
     // !m-0: a parent's space-y would push the overlay down (PokéGuessr's put its card 20px lower than the others).
     <div className="fixed inset-0 z-50 !m-0 flex items-center justify-center bg-black/60 p-4 max-md:z-[65]" onClick={onClose}>
@@ -88,7 +92,7 @@ export function HowToDialog({
             <h2 className="font-display text-xl font-bold uppercase tracking-tight">{title}</h2>
             {subtitle && <p className="hud-label mt-1">{subtitle}</p>}
           </div>
-          <button ref={closeRef} type="button" onClick={onClose} aria-label="Close" className="rounded-md p-2 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          <button ref={closeRef} type="button" onClick={onClose} aria-label={t("close")} className="rounded-md p-2 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -145,10 +149,11 @@ export function FitWidth({ children }: { children: React.ReactNode }) {
 }
 
 export function DemoFrame({ label, children }: { label: string; children: React.ReactNode }) {
+  const t = useT(howto);
   return (
     <div data-testid="howto-demo" role="group" aria-label={label} className="overflow-hidden rounded-md border-2 border-foreground/15 bg-shade/40 p-3">
       <p className="hud-label mb-2 flex items-center gap-1.5">
-        <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-destructive" aria-hidden /> Demo
+        <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-destructive" aria-hidden /> {t("demo")}
       </p>
       <div aria-hidden>{children}</div>
     </div>
@@ -181,10 +186,11 @@ function HowToCardGrid({ cards }: { cards: HowToCard[] }) {
  */
 export function HowToCards({ cards }: { cards: HowToCard[] }) {
   const wide = useMediaQuery("(min-width: 640px)", true);
+  const t = useT(howto);
   if (wide) return <HowToCardGrid cards={cards} />;
   return (
     <details className="rounded-md border bg-shade/30 p-3" data-testid="howto-cards">
-      <summary className="tap cursor-pointer font-semibold py-1.5">The rules</summary>
+      <summary className="tap cursor-pointer font-semibold py-1.5">{t("rules")}</summary>
       <div className="mt-3">
         <HowToCardGrid cards={cards} />
       </div>
@@ -194,14 +200,15 @@ export function HowToCards({ cards }: { cards: HowToCard[] }) {
 
 /** "Let's play!" closes; "Don't show again" closes and stops the automatic first-visit pop-up on this device. In HowToDialog's footer. */
 export function HowToActions({ onClose, onNever }: { onClose: () => void; onNever?: () => void }) {
+  const t = useT(howto);
   return (
     <div className="flex flex-col gap-2 sm:flex-row-reverse">
       <Button className="w-full sm:flex-1" onClick={onClose} data-testid="howto-play">
-        Let&apos;s play!
+        {t("play")}
       </Button>
       {onNever && (
         <Button variant="outline" className="w-full sm:flex-1" onClick={onNever} data-testid="howto-never">
-          Don&apos;t show again
+          {t("never")}
         </Button>
       )}
     </div>

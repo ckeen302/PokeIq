@@ -6,16 +6,19 @@ import { GuessrDemo } from "@/components/howto/GuessrDemo";
 import { GEO_MAX_ROUND_SCORE, GEO_ROUND_OPTIONS, GEO_ROUNDS } from "@/lib/geo-types";
 import { DUEL_HP } from "@/lib/duel-types";
 import { PREFS_KEY, seenDemo } from "./GeoHowToButton";
+import { useT } from "@/i18n/client";
+import { formatNumber } from "@/i18n/format";
+import geoHowto from "@/messages/geo-howto";
 
 export { HowToHelpButton } from "./GeoHowToButton";
-
-const fmt = (n: number) => n.toLocaleString("en-US");
 
 /**
  * PokéGuessr's "How to play" pop-up: opens by itself once per visit until "Don't show again", and on the `pokeiq:howto` event.
  * Loaded on demand by GeoHowToLoader, which opens it at once (`defaultOpen`).
  */
 export function GeoHowTo({ defaultOpen = false }: { defaultOpen?: boolean } = {}) {
+  const t = useT(geoHowto);
+  const fmt = (n: number) => formatNumber(n, t.locale);
   const [open, setOpen] = useState(defaultOpen);
   useEffect(() => {
     const show = () => setOpen(true);
@@ -43,30 +46,18 @@ export function GeoHowTo({ defaultOpen = false }: { defaultOpen?: boolean } = {}
       <GuessrDemo />
       <HowToCards
         cards={[
-          { title: "The goal", body: <p>You are dropped somewhere in the Pokémon world and shown only a screenshot. Work out where it is, drop a pin on the map and press Guess.</p> },
+          { title: t("goal.title"), body: <p>{t("goal.body")}</p> },
           {
-            title: "Scoring",
-            body: (
-              <p>
-                Up to {fmt(GEO_MAX_ROUND_SCORE)} points a round: the closer your pin, the more you score. A game is {GEO_ROUND_OPTIONS.join(", ")} rounds; the Daily is always {GEO_ROUNDS}.
-              </p>
-            ),
+            title: t("scoring.title"),
+            body: <p>{t("scoring.body", { max: fmt(GEO_MAX_ROUND_SCORE), lengths: GEO_ROUND_OPTIONS.join(", "), daily: GEO_ROUNDS })}</p>,
           },
           {
-            title: "Modes",
-            body: (
-              <p>
-                Daily: the same {GEO_ROUNDS} places for everyone. Streak: keep naming places until a pin misses. Play the world, a region or a themed map, with Classic 2D or Modern 3D games.
-              </p>
-            ),
+            title: t("modes.title"),
+            body: <p>{t("modes.body", { daily: GEO_ROUNDS })}</p>,
           },
           {
-            title: "Duels",
-            body: (
-              <p>
-                Face a friend live. HP battle: you both start with {fmt(DUEL_HP)} HP and the closer pin damages the other. Points race: the best total over the rounds wins.
-              </p>
-            ),
+            title: t("duels.title"),
+            body: <p>{t("duels.body", { hp: fmt(DUEL_HP) })}</p>,
           },
         ]}
       />

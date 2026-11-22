@@ -4,6 +4,10 @@ import { pageMetadata } from "@/lib/seo";
 import { GeoReplay } from "@/components/geo/GeoReplay";
 import { geoRegions } from "@/lib/server/geo";
 import { DUEL_CODE_RE } from "@/lib/duel-types";
+import { ClientMessages } from "@/i18n/ClientMessages";
+import { serverT } from "@/i18n/server";
+import pokeguessr from "@/messages/pokeguessr";
+import { GEO_REPLAY_NAMESPACES } from "@/lib/geo-namespaces";
 
 interface PageProps {
   params: Promise<{ code: string }>;
@@ -11,9 +15,10 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { code } = await params;
+  const t = serverT(pokeguessr);
   return pageMetadata({
-    title: "PokéGuessr duel replay",
-    description: "A PokéGuessr duel, round by round: the screenshot, both pins and the true place, the scores, damage and HP.",
+    title: t("replay.title"),
+    description: t("replay.description"),
     path: `/pokeguessr/history/${code}`,
     noindex: true,
   });
@@ -23,5 +28,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function DuelReplayPage({ params }: PageProps) {
   const { code } = await params;
   if (!DUEL_CODE_RE.test(code)) notFound();
-  return <GeoReplay code={code} regions={geoRegions()} />;
+  return (
+    <ClientMessages namespaces={GEO_REPLAY_NAMESPACES}>
+      <GeoReplay code={code} regions={geoRegions()} />
+    </ClientMessages>
+  );
 }

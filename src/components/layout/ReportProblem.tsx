@@ -4,6 +4,8 @@ import { useEffect, useId, useRef, useState } from "react";
 import { MessageSquareWarning, X } from "lucide-react";
 import { currentPage, installErrorReporter } from "@/lib/report";
 import dynamic from "next/dynamic";
+import { useT } from "@/i18n/client";
+import report from "@/messages/report";
 
 // Every page's footer has this button: the form's code stays out of the first load and is
 // fetched when the pointer or focus reaches the button.
@@ -22,6 +24,7 @@ export function ReportProblem() {
   const dialog = useRef<HTMLDialogElement>(null);
   const [page, setPage] = useState("");
   const [opened, setOpened] = useState(0);
+  const t = useT(report);
 
   function open() {
     setPage(currentPage());
@@ -34,7 +37,7 @@ export function ReportProblem() {
   return (
     <>
       <button type="button" onClick={open} onPointerEnter={() => void loadForm()} onFocus={() => void loadForm()} className="font-pixel text-[10px] uppercase tracking-wider hover:text-foreground">
-        Report a problem
+        {t("button")}
       </button>
       <dialog
         ref={dialog}
@@ -48,16 +51,16 @@ export function ReportProblem() {
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-2">
               <p className="hud-label flex items-center gap-1.5 text-screen">
-                <MessageSquareWarning className="h-3.5 w-3.5" aria-hidden /> Feedback
+                <MessageSquareWarning className="h-3.5 w-3.5" aria-hidden /> {t("label")}
               </p>
               <h2 id={`${id}-title`} className="font-display text-2xl font-bold uppercase leading-tight">
-                Report a problem
+                {t("title")}
               </h2>
             </div>
             <button
               type="button"
               onClick={close}
-              aria-label="Close"
+              aria-label={t("close")}
               className="-mr-2 -mt-1 rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <X className="h-4 w-4" aria-hidden />

@@ -1,0 +1,60 @@
+{
+  "distance": {
+    "exact": "ピッタリ！",
+    "squares": "{n}マス"
+  },
+  "band": {
+    "round": "ラウンド{round}",
+    "damage": "ダメージ{m}倍",
+    "race": "ポイントレース",
+    "noPin": "ピンなし",
+    "super": "こうかは ばつぐんだ！",
+    "points": "{points}点",
+    "you": "あなた",
+    "connectionLost": "接続が切れました",
+    "multiplierTitle": "このトレーナーのダメージ倍率"
+  },
+  "guessed": {
+    "waiting": "決定済み。{name}を待っています…",
+    "guessed": "{name}が回答",
+    "left": "残り{s}秒"
+  },
+  "live": {
+    "downTitle": "ライブ接続が切れました。戻るまで1秒ごとに更新します",
+    "upTitle": "ライブ：相手の動きがすぐに表示されます",
+    "down": "再接続中…",
+    "up": "ライブ"
+  },
+  "leave": {
+    "sure": "退出すると対戦は負けになります。",
+    "forfeit": "降参する",
+    "stay": "残る",
+    "leave": "対戦から退出"
+  },
+  "emotes": {
+    "send": "リアクションを送る",
+    "menu": "リアクション",
+    "sendOne": "「{label}」を送る",
+    "pika": "ピカッ！",
+    "huh": "えっ？",
+    "zzz": "グーグー…",
+    "splash": "はねる！",
+    "heh": "ケケケ",
+    "cute": "かわいい",
+    "flame": "燃えてきた",
+    "counter": "カウンター！"
+  },
+  "versus": {
+    "round": "ラウンド{round}",
+    "race": "ポイントレース",
+    "damage": "ダメージ{m}倍",
+    "hp": "HPバトル",
+    "turbo": " · ターボ",
+    "ranked": "ランクマッチ · ",
+    "vs": "VS",
+    "versus": "対",
+    "you": "あなた",
+    "hpUnit": "HP"
+  },
+  "timeline": "各ラウンド後のHP"
+}

@@ -1,7 +1,7 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element -- pre-sized art */
-import { BackButton } from "@/components/ui/BackButton";
+import { BackButtonClient as BackButton } from "@/components/ui/BackButtonClient";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "@/components/ui/Link";
 import { AnimatePresence, motion, useMotionValue, useTransform, type PanInfo } from "framer-motion";

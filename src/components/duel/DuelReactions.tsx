@@ -9,6 +9,8 @@ import type { ChatLine } from "@/lib/chat";
 import { setDuelSfx, sfx, useDuelSfx } from "@/lib/duel-sfx";
 import { ChatBox } from "@/components/chat/ChatBox";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import duel from "@/messages/duel";
 
 /**
  * What duellists can say to each other: preset reactions during play (and
@@ -33,6 +35,7 @@ export function DuelChat({
   game: string;
   onSend: (text: string) => Promise<string | null>;
 }) {
+  const t = useT(duel);
   return (
     <ChatBox
       lines={view.chat}
@@ -41,7 +44,7 @@ export function DuelChat({
       code={view.code}
       game={game}
       onSend={onSend}
-      closed={view.rematch ? "A rematch is open: press Rematch to keep chatting there." : undefined}
+      closed={view.rematch ? t("reactions.rematchOpen") : undefined}
       className="mx-auto w-full max-w-3xl"
     />
   );
@@ -49,6 +52,7 @@ export function DuelChat({
 
 /** The reactions bar and the sound switch. */
 export function DuelTools({ onEmote }: { onEmote: (e: DuelEmote) => Promise<string | null> }) {
+  const t = useT(duel);
   const on = useDuelSfx();
   const [coolUntil, setCoolUntil] = useState(0);
   const [note, setNote] = useState<string | null>(null);
@@ -61,7 +65,7 @@ export function DuelTools({ onEmote }: { onEmote: (e: DuelEmote) => Promise<stri
   const cooling = coolUntil > Date.now();
   return (
     <div className="mx-auto flex max-w-md flex-wrap items-center justify-center gap-2">
-      <span className="hud-label">React</span>
+      <span className="hud-label">{t("reactions.react")}</span>
       {DUEL_EMOTES.map((e) => (
         <button
           key={e}
@@ -73,7 +77,7 @@ export function DuelTools({ onEmote }: { onEmote: (e: DuelEmote) => Promise<stri
             setNote(err);
           }}
           className="h-9 min-w-9 rounded-full border border-foreground/15 bg-card px-2.5 text-base font-bold transition-transform hover:scale-110 hover:border-primary/60 disabled:opacity-50 disabled:hover:scale-100"
-          aria-label={`Send ${e === "gg" ? "GG" : EMOTE_TEXT[e]}`}
+          aria-label={t("reactions.send", { emote: e === "gg" ? "GG" : EMOTE_TEXT[e] })}
         >
           {e === "gg" ? <span className="font-display text-xs">GG</span> : EMOTE_TEXT[e]}
         </button>
@@ -83,9 +87,9 @@ export function DuelTools({ onEmote }: { onEmote: (e: DuelEmote) => Promise<stri
         onClick={() => setDuelSfx(!on)}
         aria-pressed={on}
         className="ml-2 flex h-9 items-center gap-1 rounded-full border border-foreground/15 bg-card px-3 text-xs text-muted-foreground hover:text-foreground"
-        title={on ? "Sound effects on" : "Sound effects off"}
+        title={on ? t("reactions.sfxOn") : t("reactions.sfxOff")}
       >
-        {on ? <Volume2 className="h-3.5 w-3.5" aria-hidden /> : <VolumeX className="h-3.5 w-3.5" aria-hidden />} Sound {on ? "on" : "off"}
+        {on ? <Volume2 className="h-3.5 w-3.5" aria-hidden /> : <VolumeX className="h-3.5 w-3.5" aria-hidden />} {on ? t("reactions.soundOn") : t("reactions.soundOff")}
       </button>
       {note && (
         <p className="w-full text-center text-xs text-muted-foreground" role="status">
@@ -98,6 +102,7 @@ export function DuelTools({ onEmote }: { onEmote: (e: DuelEmote) => Promise<stri
 
 /** Reactions as they arrive: a bubble on the sender's side of the screen. */
 export function EmoteFeed({ view }: { view: ReactionsView }) {
+  const t = useT(duel);
   const reduced = useReducedMotion();
   const [shown, setShown] = useState<{ n: number; seat: number; emote: DuelEmote }[]>([]);
   const seen = useRef(0);
@@ -135,7 +140,7 @@ export function EmoteFeed({ view }: { view: ReactionsView }) {
                   className="flex items-center gap-1.5 rounded-full border bg-card/95 px-3 py-1.5 text-2xl shadow-lg backdrop-blur"
                 >
                   <span className="max-w-[8rem] truncate font-display text-[11px] font-bold uppercase text-muted-foreground">
-                    {seat === view.you ? "You" : view.players[seat]?.name}
+                    {seat === view.you ? t("reactions.you") : view.players[seat]?.name}
                   </span>
                   {e.emote === "gg" ? <span className="font-display text-lg font-bold">GG</span> : EMOTE_TEXT[e.emote]}
                 </motion.span>

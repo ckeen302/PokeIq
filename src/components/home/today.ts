@@ -3,6 +3,9 @@ import { CalendarDays, Compass, Grid3x3, LayoutGrid, Search } from "lucide-react
 import { currentStreak, geoDailyStreak, type Progress } from "@/lib/progress";
 import { dleStats } from "@/lib/dle-stats";
 import { connStats } from "@/lib/connections/local";
+import { translator, type Translator } from "@/i18n/catalog";
+import { INTL_LOCALE, formatNumber } from "@/i18n/format";
+import home from "@/messages/home";
 
 /**
  * The home page's Today section: the five dailies, each with how today's went
@@ -45,10 +48,8 @@ export interface DailyStatus {
   streak: number;
 }
 
-const fmt = (n: number) => n.toLocaleString("en-US");
-
-/** How each daily stands today. `progress` or `today` null (the server, or before the browser has read them): all new. */
-export function dailyStatuses(progress: Progress | null, today: string | null): Record<DailyId, DailyStatus> {
+/** How each daily stands today. `progress` or `today` null (the server, or before the browser has read them): all new. `t`: the results in the page's language. */
+export function dailyStatuses(progress: Progress | null, today: string | null, t: Translator<typeof home.en> = translator(home, "en", undefined)): Record<DailyId, DailyStatus> {
   const out = Object.fromEntries(DAILIES.map((d) => [d.id, { id: d.id, state: "new", result: null, streak: 0 }])) as Record<DailyId, DailyStatus>;
   if (!progress || !today) return out;
 
@@ -56,7 +57,7 @@ export function dailyStatuses(progress: Progress | null, today: string | null): 
   out.daily = {
     id: "daily",
     state: quiz ? "done" : "new",
-    result: quiz ? `${quiz.correct}/${quiz.total} right` : null,
+    result: quiz ? t("results.right", { correct: quiz.correct, total: quiz.total }) : null,
     streak: progress.daily ? currentStreak(progress.daily.last, progress.daily.streak, today) : 0,
   };
 
@@ -64,7 +65,7 @@ export function dailyStatuses(progress: Progress | null, today: string | null): 
   out.pokedle = {
     id: "pokedle",
     state: dle?.over ? "done" : dle?.guesses?.length ? "progress" : "new",
-    result: dle?.over ? (dle.solved ? `Solved in ${dle.guesses.length}` : "Missed today") : null,
+    result: dle?.over ? (dle.solved ? t("results.solvedIn", { n: dle.guesses.length }) : t("results.missed")) : null,
     streak: progress.dle ? dleStats(progress.dle.results ?? {}, today).playStreak : 0,
   };
 
@@ -72,7 +73,7 @@ export function dailyStatuses(progress: Progress | null, today: string | null): 
   out.guessr = {
     id: "guessr",
     state: geo !== undefined ? "done" : "new",
-    result: geo !== undefined ? `${fmt(geo)} pts` : null,
+    result: geo !== undefined ? t("results.points", { points: formatNumber(geo, t.locale) }) : null,
     streak: progress.best ? geoDailyStreak(progress, today) : 0,
   };
 
@@ -80,7 +81,7 @@ export function dailyStatuses(progress: Progress | null, today: string | null): 
   out.connections = {
     id: "connections",
     state: conn?.over ? "done" : conn?.guesses?.length ? "progress" : "new",
-    result: conn?.over ? (conn.solved ? (conn.mistakes ? `Solved · ${conn.mistakes} mistake${conn.mistakes === 1 ? "" : "s"}` : "Perfect") : "Missed today") : null,
+    result: conn?.over ? (conn.solved ? (conn.mistakes ? t("results.solvedMistakes", { n: conn.mistakes }) : t("results.perfect")) : t("results.missed")) : null,
     streak: progress.conn ? connStats(progress.conn.results ?? {}, today).playStreak : 0,
   };
 
@@ -88,7 +89,7 @@ export function dailyStatuses(progress: Progress | null, today: string | null): 
   out.pikadoku = {
     id: "pikadoku",
     state: pdk?.over ? "done" : pdk?.guesses?.length ? "progress" : "new",
-    result: pdk?.over ? `${pdk.solved}/9 filled` : null,
+    result: pdk?.over ? t("results.filled", { n: pdk.solved }) : null,
     streak: progress.pdk ? currentStreak(progress.pdk.last, progress.pdk.streak, today) : 0,
   };
   return out;
@@ -98,6 +99,8 @@ export interface StreakLine {
   days: number;
   /** The games on that streak, in the section's order. */
   games: string[];
+  /** The same games, by id. */
+  ids: DailyId[];
   /** One of them isn't played yet today: it's kept by playing today's. */
   atRisk: boolean;
 }
@@ -107,7 +110,7 @@ export function bestStreak(statuses: Record<DailyId, DailyStatus>): StreakLine |
   const days = Math.max(0, ...DAILIES.map((d) => statuses[d.id].streak));
   if (days < 1) return null;
   const on = DAILIES.filter((d) => statuses[d.id].streak === days);
-  return { days, games: on.map((d) => d.name), atRisk: on.some((d) => statuses[d.id].state !== "done") };
+  return { days, games: on.map((d) => d.name), ids: on.map((d) => d.id), atRisk: on.some((d) => statuses[d.id].state !== "done") };
 }
 
 /** "Pokédle", "Pokédle and PokéGuessr", "Pokédle, PokéGuessr and Connections". */
@@ -119,6 +122,14 @@ export function listNames(names: string[]): string {
 export function streakText({ days, games }: Pick<StreakLine, "days" | "games">): string {
   if (games.length > 2) return `${days}-day streaks in ${listNames(games)}`;
   return `${days}-day ${listNames(games)} streak${games.length > 1 ? "s" : ""}`;
+}
+
+/** streakText in the page's language: the games' names joined the language's way ("A, B y C"). */
+export function localStreakText(t: Translator<typeof home.en>, { days, ids }: Pick<StreakLine, "days" | "ids">): string {
+  if (t.locale === "en") return streakText({ days, games: ids.map((id) => DAILIES.find((d) => d.id === id)!.name) });
+  const names = ids.map((id) => t(`games.${id}.name`));
+  const games = new Intl.ListFormat(INTL_LOCALE[t.locale], { type: "conjunction" }).format(names);
+  return t(names.length > 2 ? "today.streakMany" : names.length > 1 ? "today.streakTwo" : "today.streakOne", { days, games });
 }
 
 /** Every daily finished today. */

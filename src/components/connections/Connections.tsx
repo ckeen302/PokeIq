@@ -51,6 +51,15 @@ import { ComeBackTomorrow, DailyLeaderboard, KeyHints, NewBadges, PerfectBanner,
 import { cn } from "@/lib/utils";
 import { CUSTOM_SEED_RE, customSeed } from "@/lib/connections/custom";
 import { DailyEmailNudge } from "@/components/email/DailyEmailNudge";
+import { useT } from "@/i18n/client";
+import { type Translator } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
+import { useLocale } from "@/i18n/locale-context";
+import conn from "@/messages/connections";
+import share from "@/messages/share";
+import { useTileName } from "./names";
+
+type ConnT = Translator<typeof conn.en>;
 
 /** Today's daily, a past daily from the archive (never counted), or a practice puzzle. */
 type Target = { kind: "daily"; date: string } | { kind: "archive"; date: string } | { kind: "practice"; seed: string };
@@ -91,38 +100,31 @@ function whenIdle(fn: () => void, delay = 1200): () => void {
 
 /** The player asked their browser to save data: nothing is fetched before they ask for it. */
 const saveData = () => typeof navigator !== "undefined" && !!(navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
-const SIZE_WORDS = { 4: "four", 5: "five" } as const;
-const SIZE_SQUARES = { 4: "Sixteen", 5: "Twenty-five" } as const;
-const LEVELS: { id: ConnPrefs["level"]; label: string; hint: string }[] = [
-  { id: "easy", label: "Easy", hint: "Two straightforward groups, no tricky one" },
-  { id: "normal", label: "Normal", hint: "One group of each colour, like the daily" },
-  { id: "hard", label: "Hard", hint: "No easy group, two tricky ones" },
-];
-const SIZE_OPTIONS: { id: ConnSize; label: string; hint: string }[] = CONN_SIZES.map((n) => ({
-  id: n,
-  label: `${n}×${n}`,
-  hint: n === 4 ? "Sixteen Pokémon, four groups of four, four mistakes" : "Twenty-five Pokémon, five groups of five, five mistakes",
-}));
+const LEVELS: ConnPrefs["level"][] = ["easy", "normal", "hard"];
 const TOAST_MS = 1600;
 /** How long a right guess's tiles bounce before they become a bar. */
 const JUMP_MS = 620;
 /** Between groups revealed after a loss. */
 const REVEAL_MS = 750;
 
-const query = (t: Target): Record<string, string> => (t.kind === "practice" ? { practice: t.seed } : { date: t.date });
+/**
+ * What the API is asked for. A page in another language says which (`lang`): on a day with a group about the English
+ * names, its puzzle swaps that group (src/lib/connections/localize.ts). English requests are as they always were.
+ */
+const query = (t: Target, lang = "en"): Record<string, string> => ({ ...(t.kind === "practice" ? { practice: t.seed } : { date: t.date }), ...(lang !== "en" && { lang }) });
 
 /** A puzzle's tiles from the server (a past daily, practice, a community puzzle, or a daily the page didn't carry). */
-async function fetchPuzzle(t: Target): Promise<ConnPuzzleResponse> {
-  const res = await fetch(`/api/connections?${new URLSearchParams(query(t))}`);
+async function fetchPuzzle(t: Target, tr: ConnT): Promise<ConnPuzzleResponse> {
+  const res = await fetch(`/api/connections?${new URLSearchParams(query(t, tr.locale))}`);
   const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(body.error ?? "Couldn't load the puzzle.");
+  if (!res.ok) throw new Error(body.error ?? tr("error.load"));
   return body as ConnPuzzleResponse;
 }
 
 /** An error's words for the player: a dropped connection says so. */
-function errorText(err: unknown, fallback: string): string {
-  if (typeof navigator !== "undefined" && !navigator.onLine) return "You're offline. Check your connection and try again.";
-  if (err instanceof TypeError) return "Couldn't reach the server. Check your connection and try again.";
+function errorText(err: unknown, fallback: string, t: ConnT): string {
+  if (typeof navigator !== "undefined" && !navigator.onLine) return t("error.offline");
+  if (err instanceof TypeError) return t("error.unreachable");
   return err instanceof Error ? err.message : fallback;
 }
 
@@ -138,6 +140,12 @@ function reducedMotion(): boolean {
  * `initial`: the dailies the page was rendered with (tiles only, by date), so today's board paints with the HTML.
  */
 export function Connections({ customId, initial }: { customId?: string; initial?: Readonly<Record<string, ConnPuzzleResponse>> } = {}) {
+  const t = useT(conn);
+  // A second handle on the same words, for code where `t` names a puzzle target.
+  const tr = useT(conn);
+  const ts = useT(share);
+  const locale = useLocale();
+  const nameOf = useTileName();
   const progress = useProgress();
   const prefs = useConnPrefs();
   const today = useToday();
@@ -270,13 +278,13 @@ export function Connections({ customId, initial }: { customId?: string; initial?
         setOrder(pre.tiles.map((x) => x.id));
         if (!list.length) setBusy(false);
         if (dailyDate && !startFor(dailyDate)) {
-          void fetch(`/api/connections?${new URLSearchParams(query(t))}`)
+          void fetch(`/api/connections?${new URLSearchParams(query(t, locale))}`)
             .then((r) => (r.ok ? (r.json() as Promise<ConnPuzzleResponse>) : null))
             .then((p) => p && rememberStart(dailyDate, p.start))
             .catch(() => undefined);
         }
       }
-      const p = pre ?? (await (dealt ?? fetchPuzzle(t)));
+      const p = pre ?? (await (dealt ?? fetchPuzzle(t, tr)));
       if (id !== reqRef.current) return;
       if (!pre) {
         // The first deal of the day times the game for the leaderboard (a reload doesn't restart the clock).
@@ -285,28 +293,28 @@ export function Connections({ customId, initial }: { customId?: string; initial?
         setOrder(p.tiles.map((x) => x.id));
       }
       if (list.length) {
-        const r = await fetch("/api/connections", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...query(t), guesses: list }) });
+        const r = await fetch("/api/connections", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...query(t, locale), guesses: list }) });
         const restored = await r.json();
-        if (!r.ok) throw new Error(restored.error ?? "Couldn't restore your game.");
+        if (!r.ok) throw new Error(restored.error ?? tr("error.restore"));
         if (id !== reqRef.current) return;
         setState(restored as ConnGuessResponse);
         setRevealed(5);
       }
       // A hint taken before a reload: the server hands back the same Pokémon.
       if (t.kind === "daily" && saved?.hinted && !saved.over) {
-        const h = await fetch("/api/connections/hint", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ date: t.date, player: dlePlayerId(), guesses: list }) });
+        const h = await fetch("/api/connections/hint", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ date: t.date, player: dlePlayerId(), guesses: list, ...(locale !== "en" && { lang: locale }) }) });
         const hb = h.ok ? ((await h.json()) as ConnHintResponse) : null;
         if (id === reqRef.current && hb?.available) setHint(hb.hint);
       }
     } catch (err) {
       if (id === reqRef.current) {
-        setError(errorText(err, "Couldn't load the puzzle."));
+        setError(errorText(err, tr("error.load"), tr));
         setFailed("load");
       }
     } finally {
       if (id === reqRef.current) setBusy(false);
     }
-  }, [initial]);
+  }, [initial, locale, tr]);
 
   // Today's daily once local storage is ready; roll over at midnight unless mid-game.
   useEffect(() => {
@@ -333,7 +341,7 @@ export function Connections({ customId, initial }: { customId?: string; initial?
     let next = aheadRef.current;
     if (!next || !next.seed.startsWith(seedPrefix(lv, "all", sz === 5 ? 5 : 4))) {
       const seed = newSeed(lv, "all", sz === 5 ? 5 : 4);
-      const dealt: DealtAhead = { seed, puzzle: fetchPuzzle({ kind: "practice", seed }) };
+      const dealt: DealtAhead = { seed, puzzle: fetchPuzzle({ kind: "practice", seed }, tr) };
       dealt.puzzle.then(
         (p) => {
           dealt.ready = p;
@@ -350,7 +358,7 @@ export function Connections({ customId, initial }: { customId?: string; initial?
       next.wantArt = true;
       if (next.ready) next.art = preloadTileArt(next.ready.tiles);
     }
-  }, []);
+  }, [tr]);
   /** The player is heading for Unlimited (a pointer over it, or focus): its pictures too. */
   const reachForUnlimited = useCallback(() => dealAhead(true), [dealAhead]);
   // Once a board is on screen and the page has settled: in Unlimited, and after a finished game (whose result offers another), the next board with its pictures; otherwise its tiles alone (a few hundred bytes), its pictures once the player reaches for Unlimited.
@@ -437,7 +445,7 @@ export function Connections({ customId, initial }: { customId?: string; initial?
         const r = await fetch("/api/connections/result", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ date, player: dlePlayerId(), guesses: list, start: startFor(date), ...((name || getProgress().name) && { name: name || getProgress().name }) }),
+          body: JSON.stringify({ date, player: dlePlayerId(), guesses: list, start: startFor(date), ...((name || getProgress().name) && { name: name || getProgress().name }), ...(locale !== "en" && { lang: locale }) }),
         });
         const body = r.ok ? ((await r.json()) as ConnResultResponse) : null;
         if (!body) return;
@@ -454,7 +462,7 @@ export function Connections({ customId, initial }: { customId?: string; initial?
         // No stats or board today: the game doesn't need them.
       }
     },
-    []
+    [locale]
   );
   useEffect(() => {
     if (!finishedDaily || !guesses.length) return;
@@ -488,16 +496,17 @@ export function Connections({ customId, initial }: { customId?: string; initial?
     setHintBusy(true);
     setError(null);
     try {
-      const r = await fetch("/api/connections/hint", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ date: target.date, player: dlePlayerId(), guesses }) });
+      const r = await fetch("/api/connections/hint", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ date: target.date, player: dlePlayerId(), guesses, ...(locale !== "en" && { lang: locale }) }) });
       const body = (await r.json()) as ConnHintResponse & { error?: string };
-      if (!r.ok) throw new Error(body.error ?? "Couldn't get a hint.");
-      if (!body.available) return showToast("Hints aren't available right now.");
+      if (!r.ok) throw new Error(body.error ?? t("error.hint"));
+      if (!body.available) return showToast(t("toast.noHints"));
       setHint(body.hint);
       setUsedHint(true);
       save(target, { guesses, solved: false, over: false, mistakes: state?.mistakes ?? 0, ms: Math.round(ms), hinted: true });
-      setAnnounce(`Hint: ${tilesById.get(body.hint.id)?.name ?? "one Pokémon"} belongs to the easiest group left. It is marked on the grid.`);
+      const hinted = tilesById.get(body.hint.id);
+      setAnnounce(t("announce.hint", { name: hinted ? nameOf(hinted) : t("announce.hintSomeone") }));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't get a hint.");
+      setError(err instanceof Error ? err.message : t("error.hint"));
     } finally {
       setHintBusy(false);
     }
@@ -530,8 +539,8 @@ export function Connections({ customId, initial }: { customId?: string; initial?
     if (!target || !puzzle || over || busy || selected.length !== size) return;
     const pick = [...selected];
     if (guesses.some((g) => guessKey(g) === guessKey(pick))) {
-      showToast("Already guessed!");
-      setAnnounce("Already guessed. That doesn't cost a mistake.");
+      showToast(t("toast.repeat"));
+      setAnnounce(t("announce.repeat"));
       return;
     }
     const next = [...guesses, pick];
@@ -540,9 +549,9 @@ export function Connections({ customId, initial }: { customId?: string; initial?
     setError(null);
     setFailed(null);
     try {
-      const res = await fetch("/api/connections", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...query(target), guesses: next }) });
+      const res = await fetch("/api/connections", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...query(target, locale), guesses: next }) });
       const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? "Couldn't check that guess.");
+      if (!res.ok) throw new Error(body.error ?? t("error.guess"));
       if (id !== reqRef.current) return;
       const result = body as ConnGuessResponse;
       const last = result.results.at(-1);
@@ -562,7 +571,7 @@ export function Connections({ customId, initial }: { customId?: string; initial?
         const group = result.found.at(-1)!;
         setTileMotion({ kind: "jump", ids: pick, n: Date.now() });
         play("correct");
-        setAnnounce(`Correct: ${group.label}. ${group.members.map((m) => m.name).join(", ")}.${result.won ? " Puzzle solved!" : ""}`);
+        setAnnounce(`${t("announce.correct", { label: group.label, members: group.members.map(nameOf).join(", ") })}${result.won ? t("announce.solved") : ""}`);
         await new Promise((r) => setTimeout(r, reduced ? 0 : JUMP_MS));
         if (id !== reqRef.current) return;
         setTileMotion(null);
@@ -579,16 +588,16 @@ export function Connections({ customId, initial }: { customId?: string; initial?
         setTileMotion({ kind: "shake", ids: pick, n: Date.now() });
         play("wrong");
         const oneAway = last?.kind === "one-away";
-        if (oneAway) showToast("One away…");
+        if (oneAway) showToast(t("toast.oneAway"));
         const left = connMaxMistakes(size) - result.mistakes;
-        setAnnounce(`${oneAway ? "One away. " : "Not a group. "}${result.over ? "No mistakes left: here are the groups." : `${left} mistake${left === 1 ? "" : "s"} left.`}`);
+        setAnnounce(`${oneAway ? t("announce.oneAway") : t("announce.notGroup")}${result.over ? t("announce.noneLeft") : t("announce.left", { left })}`);
         setState(result);
         if (result.over) setSelected([]);
         window.setTimeout(() => setTileMotion((m) => (m?.kind === "shake" ? null : m)), 450);
       }
     } catch (err) {
       if (id === reqRef.current) {
-        setError(errorText(err, "Couldn't check that guess."));
+        setError(errorText(err, t("error.guess"), t));
         setFailed("guess");
       }
     } finally {
@@ -674,12 +683,18 @@ export function Connections({ customId, initial }: { customId?: string; initial?
       ...(daily?.kind === "daily" && streak > 0 && { streak }),
       ...(usedHint && { hinted: true }),
     };
-    return connectionsShareText(result, shareUrl(result));
+    return connectionsShareText(result, shareUrl(result, ts.locale), ts);
   }
 
   /** A community puzzle: plays like practice, with its own byline and votes above the grid (see the page). */
   const isCustom = target?.kind === "practice" && CUSTOM_SEED_RE.test(target.seed);
-  const title = isCustom ? "Community puzzle" : mode === "practice" ? "Practice" : daily ? `Daily #${connNumber(daily.date)}${mode === "archive" ? ` · Archive (${daily.date})` : ""}` : "Daily";
+  const title = isCustom
+    ? t("title.community")
+    : mode === "practice"
+      ? t("title.practice")
+      : daily
+        ? t(mode === "archive" ? "title.archive" : "title.daily", { n: connNumber(daily.date), date: daily.date })
+        : t("title.dailyPlain");
   const iconButton =
     "relative rounded-md p-2 max-sm:p-2.5 text-muted-foreground transition-colors hover:bg-screen/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40";
   const motionFor = (id: number): TileMotion => (tileMotion?.ids.includes(id) ? tileMotion.kind : null);
@@ -698,16 +713,16 @@ export function Connections({ customId, initial }: { customId?: string; initial?
             </p>
             <h1 className="font-display text-2xl font-bold uppercase tracking-tight sm:text-4xl">PokéConnections</h1>
             <p className="hidden text-sm text-muted-foreground sm:block">
-              {SIZE_SQUARES[size]} Pokémon, {SIZE_WORDS[size]} hidden links. Every Pokémon fits exactly one.
+              {t(size === 5 ? "tagline5" : "tagline4")}
             </p>
           </div>
           <div className="flex flex-col items-center justify-center gap-2 sm:gap-4">
-            <div className="flex justify-center rounded-md border border-foreground/15 bg-card p-0.5" role="radiogroup" aria-label="PokéConnections mode">
+            <div className="flex justify-center rounded-md border border-foreground/15 bg-card p-0.5" role="radiogroup" aria-label={t("mode.aria")}>
               {(
                 [
-                  { id: "daily", label: "Daily", title: "Today's puzzle, the same for everyone", on: backToDaily, disabled: !today },
-                  { id: "practice", label: "Unlimited", title: "A fresh puzzle every time, as many as you like", on: () => newPractice() },
-                  { id: "archive", label: "Archive", title: "Every past daily", on: () => setSheet("archive"), disabled: !today },
+                  { id: "daily", label: t("mode.daily"), title: t("mode.dailyTitle"), on: backToDaily, disabled: !today },
+                  { id: "practice", label: t("mode.practice"), title: t("mode.practiceTitle"), on: () => newPractice() },
+                  { id: "archive", label: t("mode.archive"), title: t("mode.archiveTitle"), on: () => setSheet("archive"), disabled: !today },
                 ] as const
               ).map((m) => (
                 <button
@@ -729,18 +744,18 @@ export function Connections({ customId, initial }: { customId?: string; initial?
                 </button>
               ))}
             </div>
-            <div className="flex items-center justify-center gap-0.5" role="toolbar" aria-label="PokéConnections options">
-              <button type="button" className={iconButton} onClick={() => setSheet("howto")} aria-label="How to play" title="How to play">
+            <div className="flex items-center justify-center gap-0.5" role="toolbar" aria-label={t("tools.aria")}>
+              <button type="button" className={iconButton} onClick={() => setSheet("howto")} aria-label={t("tools.howTo")} title={t("tools.howTo")}>
                 <CircleHelp className="h-5 w-5" />
               </button>
-              <button type="button" className={iconButton} onClick={() => setSheet("stats")} aria-label="Statistics" title="Statistics" disabled={!stats}>
+              <button type="button" className={iconButton} onClick={() => setSheet("stats")} aria-label={t("tools.stats")} title={t("tools.stats")} disabled={!stats}>
                 <BarChart3 className="h-5 w-5" />
               </button>
-              <a href="#duel" title="Race a friend or a stranger to the four groups" className={cn("tap", iconButton, "flex items-center gap-1.5 font-display text-xs font-semibold uppercase tracking-wider")}>
-                <Swords className="h-[1.125rem] w-[1.125rem]" aria-hidden /> Duel
+              <a href="#duel" title={t("tools.duelTitle")} className={cn("tap", iconButton, "flex items-center gap-1.5 font-display text-xs font-semibold uppercase tracking-wider")}>
+                <Swords className="h-[1.125rem] w-[1.125rem]" aria-hidden /> {t("tools.duel")}
               </a>
-              <Anchor href="/pokeconnections/create" title="Build your own puzzle and share a link" data-testid="conn-create-link" className={cn("tap", iconButton, "flex items-center gap-1.5 font-display text-xs font-semibold uppercase tracking-wider")}>
-                <PencilLine className="h-[1.125rem] w-[1.125rem]" aria-hidden /> Create
+              <Anchor href="/pokeconnections/create" title={t("tools.createTitle")} data-testid="conn-create-link" className={cn("tap", iconButton, "flex items-center gap-1.5 font-display text-xs font-semibold uppercase tracking-wider")}>
+                <PencilLine className="h-[1.125rem] w-[1.125rem]" aria-hidden /> {t("tools.create")}
               </Anchor>
             <div className="relative flex items-center">
               <button
@@ -749,25 +764,25 @@ export function Connections({ customId, initial }: { customId?: string; initial?
                 onClick={() => setSettingsOpen((o) => !o)}
                 aria-expanded={settingsOpen}
                 aria-haspopup="dialog"
-                aria-label="Settings"
-                title="Settings"
+                aria-label={t("settings.title")}
+                title={t("settings.title")}
               >
                 <Settings className="h-5 w-5" />
               </button>
-              <Popover open={settingsOpen} onClose={closeSettings} label="PokéConnections settings" className="w-[24rem] max-w-[calc(100vw-2rem)] space-y-4">
+              <Popover open={settingsOpen} onClose={closeSettings} label={t("settings.aria")} className="w-[24rem] max-w-[calc(100vw-2rem)] space-y-4">
                 <div className="flex items-start justify-between gap-3">
-                  <p className="hud-label pt-1">Settings</p>
-                  <button type="button" onClick={closeSettings} aria-label="Close settings" className="rounded-md p-1 text-muted-foreground hover:text-foreground">
+                  <p className="hud-label pt-1">{t("settings.title")}</p>
+                  <button type="button" onClick={closeSettings} aria-label={t("settings.close")} className="rounded-md p-1 text-muted-foreground hover:text-foreground">
                     <X className="h-4 w-4" />
                   </button>
                 </div>
                 <SettingToggle
-                  label="Group symbols"
-                  description="● ▲ ■ ◆ on each group as well as its colour (easier with colour blindness)."
+                  label={t("settings.symbols")}
+                  description={t("settings.symbolsLine")}
                   checked={symbols}
                   onChange={() => setConnPrefs({ symbols: !getConnPrefs().symbols })}
                 />
-                <SettingToggle label="Show the clock" description="A running timer above the grid. Your time is on your result either way." checked={prefs?.showTimer ?? false} onChange={() => setConnPrefs({ showTimer: !getConnPrefs().showTimer })} />
+                <SettingToggle label={t("settings.clock")} description={t("settings.clockLine")} checked={prefs?.showTimer ?? false} onChange={() => setConnPrefs({ showTimer: !getConnPrefs().showTimer })} />
               </Popover>
             </div>
             </div>
@@ -776,29 +791,29 @@ export function Connections({ customId, initial }: { customId?: string; initial?
 
         {mode === "archive" && (
           <p className="mx-auto max-w-md rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2 text-center text-sm">
-            Archive: a past daily, just for fun. It doesn&apos;t count toward your streaks or stats.{" "}
+            {t("banner.archive")}{" "}
             <button type="button" onClick={backToDaily} className="font-semibold text-primary hover:underline">
-              Back to today&apos;s
+              {t("banner.backToday")}
             </button>
           </p>
         )}
         {isCustom && (
           <p className="mx-auto max-w-md rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2 text-center text-sm" data-testid="conn-community">
-            A puzzle made by another trainer. It doesn&apos;t count toward your streak.{" "}
+            {t("banner.community")}{" "}
             <Anchor href="/pokeconnections/community" className="font-semibold text-primary hover:underline">
-              More community puzzles
+              {t("banner.moreCommunity")}
             </Anchor>
           </p>
         )}
         {mode === "practice" && !isCustom && (
           <div className="mx-auto max-w-lg space-y-2 rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2 text-center text-sm" data-testid="conn-unlimited">
-            <p className="text-xs sm:text-sm">Unlimited: a fresh puzzle every time, never counted toward your streak.</p>
+            <p className="text-xs sm:text-sm">{t("banner.unlimited")}</p>
             <div className="flex flex-wrap items-center justify-center gap-2">
               <PanelSelect
-                label="Difficulty"
+                label={t("banner.difficulty")}
                 testId="conn-level"
                 value={level}
-                options={LEVELS}
+                options={LEVELS.map((l) => ({ id: l, label: t(`level.${l}`), hint: t(`level.${l}Hint`) }))}
                 onChange={(l) => {
                   if (level === l) return;
                   setConnPrefs({ level: l });
@@ -807,11 +822,11 @@ export function Connections({ customId, initial }: { customId?: string; initial?
                 }}
               />
               <PanelSelect
-                label="Board"
+                label={t("banner.board")}
                 testId="conn-size"
                 align="end"
                 value={pickedSize}
-                options={SIZE_OPTIONS}
+                options={CONN_SIZES.map((n) => ({ id: n, label: `${n}×${n}`, hint: t(n === 4 ? "banner.size4" : "banner.size5") }))}
                 onChange={(n) => {
                   if (pickedSize === n) return;
                   setConnPrefs({ size: n });
@@ -820,27 +835,25 @@ export function Connections({ customId, initial }: { customId?: string; initial?
                 }}
               />
             </div>
-            {guesses.length > 0 && !over && <p className="text-xs text-muted-foreground">A new difficulty or board size starts with your next puzzle.</p>}
+            {guesses.length > 0 && !over && <p className="text-xs text-muted-foreground">{t("banner.nextSettings")}</p>}
           </div>
         )}
         {mode === "daily" && stats?.atRisk && !over && (
           <p className="mx-auto max-w-md rounded-md border border-orange-400/50 bg-orange-400/10 px-3 py-2 text-center text-sm font-semibold text-orange-400" role="status">
-            🔥 Your {stats.playStreak}-day streak is at risk: finish today&apos;s puzzle to keep it.
+            {t("banner.atRisk", { n: stats.playStreak })}
           </p>
         )}
 
         {!online && (
           <p className="mx-auto flex max-w-md items-center justify-center gap-2 rounded-md border border-warning/50 bg-warning/[0.08] px-3 py-2 text-center text-sm" role="status" data-testid="conn-offline">
-            <WifiOff className="h-4 w-4 shrink-0 text-warning" aria-hidden /> You&apos;re offline. Your game is saved; guesses are checked once you&apos;re back.
+            <WifiOff className="h-4 w-4 shrink-0 text-warning" aria-hidden /> {t("banner.offline")}
           </p>
         )}
         {newDay && (
           <div className="mx-auto flex max-w-md flex-wrap items-center justify-center gap-x-3 gap-y-1.5 rounded-md border border-success/50 bg-success/[0.08] px-3 py-2 text-center text-sm" role="status" data-testid="conn-new-day">
-            <span>
-              <b>New puzzle available:</b> PokéConnections #{connNumber(today!)} is out.
-            </span>
+            <span>{t.rich("banner.newDay", { n: connNumber(today!), b: (c) => <b>{c}</b> })}</span>
             <Button size="sm" variant="success" className="h-7 rounded-full px-3" onClick={backToDaily}>
-              Play it
+              {t("banner.playIt")}
             </Button>
           </div>
         )}
@@ -865,7 +878,7 @@ export function Connections({ customId, initial }: { customId?: string; initial?
           </AnimatePresence>
 
           {!puzzle && failed === "load" ? (
-            <RetryCard size={size} message={error ?? "Couldn't load the puzzle."} onRetry={() => target && void load(target)} />
+            <RetryCard size={size} message={error ?? t("error.load")} onRetry={() => target && void load(target)} />
           ) : !puzzle && !target && initial ? (
             <PreBoard initial={initial} />
           ) : !puzzle ? (
@@ -877,7 +890,7 @@ export function Connections({ customId, initial }: { customId?: string; initial?
                   <GroupBar key={g.level} group={g} symbols={symbols} revealed={!foundLevels.has(g.level)} compact={size === 5} />
                 ))}
                 {remaining.length > 0 && (
-                  <div className={cn("grid gap-2 sm:gap-2.5", size === 5 ? "grid-cols-5" : "grid-cols-4")} data-testid="conn-grid" data-size={size} aria-label="Pokémon to group">
+                  <div className={cn("grid gap-2 sm:gap-2.5", size === 5 ? "grid-cols-5" : "grid-cols-4")} data-testid="conn-grid" data-size={size} aria-label={t("grid")}>
                     {remaining.map((t: ConnTile, i) => (
                       <GridTile
                         key={t.id}
@@ -908,7 +921,7 @@ export function Connections({ customId, initial }: { customId?: string; initial?
             <span>{error}</span>
             {failed && (
               <Button size="sm" variant="outline" className="h-7 rounded-full px-3" onClick={() => (failed === "guess" ? void submit() : target && void load(target))}>
-                <RefreshCw className="h-3.5 w-3.5" aria-hidden /> Try again
+                <RefreshCw className="h-3.5 w-3.5" aria-hidden /> {t("retry")}
               </Button>
             )}
           </div>
@@ -923,13 +936,13 @@ export function Connections({ customId, initial }: { customId?: string; initial?
             <MistakeDots left={mistakesLeft} max={connMaxMistakes(size)} />
             <div className={cn("flex flex-wrap items-center justify-center gap-1.5 sm:gap-2.5", CONTROLS_DOCK)} data-testid="conn-controls">
               <Button variant="outline" onClick={shuffle} disabled={busy || !puzzle} className="rounded-full px-3 sm:min-w-28 sm:px-4" data-testid="conn-shuffle">
-                <Shuffle className="hidden h-4 w-4 min-[400px]:inline sm:inline" aria-hidden /> Shuffle
+                <Shuffle className="hidden h-4 w-4 min-[400px]:inline sm:inline" aria-hidden /> {t("controls.shuffle")}
               </Button>
               <Button variant="outline" onClick={() => setSelected([])} disabled={busy || selected.length === 0} className="rounded-full px-3 sm:min-w-28 sm:px-4" data-testid="conn-deselect">
-                Deselect<span className="hidden sm:inline">&nbsp;all</span>
+                {t.rich("controls.deselect", { s: (c) => <span className="hidden sm:inline">{c}</span> })}
               </Button>
               <Button onClick={() => void submit()} disabled={busy || selected.length !== size} className="min-w-[5.25rem] rounded-full px-3.5 sm:min-w-28 sm:px-4" data-testid="conn-submit">
-                Submit
+                {t("controls.submit")}
               </Button>
               {mode === "daily" && (
                 <Button
@@ -937,11 +950,11 @@ export function Connections({ customId, initial }: { customId?: string; initial?
                   onClick={() => void takeHint()}
                   disabled={busy || hintBusy || usedHint || !puzzle}
                   className="tap w-10 rounded-full px-0 sm:w-auto sm:min-w-28 sm:px-4"
-                  title="Reveals one Pokémon from the easiest group left. Once per puzzle, and you rank below everyone who played without it."
-                  aria-label={usedHint ? "Hint used" : "Hint"}
+                  title={t("controls.hintTitle")}
+                  aria-label={usedHint ? t("controls.hintUsed") : t("controls.hint")}
                   data-testid="conn-hint"
                 >
-                  <Lightbulb className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">{usedHint ? "Hint used" : "Hint"}</span>
+                  <Lightbulb className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">{usedHint ? t("controls.hintUsed") : t("controls.hint")}</span>
                 </Button>
               )}
             </div>
@@ -949,7 +962,7 @@ export function Connections({ customId, initial }: { customId?: string; initial?
             <KeyHints />
             <LevelLegend size={size} symbols={symbols} />
             {prefs?.showTimer && (
-              <p className="flex items-center justify-center gap-1.5 font-mono text-sm tabular-nums text-muted-foreground" role="timer" aria-label="Time">
+              <p className="flex items-center justify-center gap-1.5 font-mono text-sm tabular-nums text-muted-foreground" role="timer" aria-label={t("controls.time")}>
                 <Timer className="h-4 w-4" aria-hidden /> {clock(ms / 1000)}
               </p>
             )}
@@ -958,33 +971,33 @@ export function Connections({ customId, initial }: { customId?: string; initial?
 
         {/* The finished game: result, history, sharing, what's next, and why. */}
         {revealDone && state?.reveal && (
-          <motion.section ref={resultRef} aria-label="Result" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="scroll-mt-20 space-y-6 pt-2" data-testid="conn-result">
+          <motion.section ref={resultRef} aria-label={t("result.aria")} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="scroll-mt-20 space-y-6 pt-2" data-testid="conn-result">
             <Card className={cn("mx-auto max-w-md", won ? "border-success/50" : "border-destructive/40")}>
               <CardContent className="space-y-5 p-6 text-center">
                 <div>
                   {won && state.mistakes === 0 ? (
                     <PerfectBanner />
                   ) : (
-                    <div className="font-display text-3xl font-bold uppercase tracking-tight">{won ? (state.mistakes === connMaxMistakes(size) - 1 ? "Phew!" : "Solved!") : "Next time!"}</div>
+                    <div className="font-display text-3xl font-bold uppercase tracking-tight">{won ? (state.mistakes === connMaxMistakes(size) - 1 ? t("result.phew") : t("result.solved")) : t("result.nextTime")}</div>
                   )}
                   <p className="text-sm text-muted-foreground">
-                    {won ? (state.mistakes === 0 ? `All ${SIZE_WORDS[size]} groups, not a single mistake.` : `You found all ${SIZE_WORDS[size]} groups.`) : `You found ${state.found.length} of ${size} groups.`}
+                    {won ? t(state.mistakes === 0 ? (size === 5 ? "result.perfect5" : "result.perfect4") : size === 5 ? "result.found5" : "result.found4") : t("result.partial", { found: state.found.length, size })}
                   </p>
                 </div>
                 <GuessHistory rows={historyRows} symbols={symbols} />
                 <dl className="grid grid-cols-3 gap-2 text-center">
                   <div>
-                    <dt className="text-[11px] text-muted-foreground">Mistakes</dt>
+                    <dt className="text-[11px] text-muted-foreground">{t("result.mistakes")}</dt>
                     <dd className="font-display text-2xl font-bold tabular-nums">
                       {state.mistakes}/{connMaxMistakes(size)}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-[11px] text-muted-foreground">Time</dt>
+                    <dt className="text-[11px] text-muted-foreground">{t("result.time")}</dt>
                     <dd className="font-display text-2xl font-bold tabular-nums">{ms >= 1000 ? clock(ms / 1000) : "–"}</dd>
                   </div>
                   <div>
-                    <dt className="text-[11px] text-muted-foreground">Groups</dt>
+                    <dt className="text-[11px] text-muted-foreground">{t("result.groups")}</dt>
                     <dd className="font-display text-2xl font-bold tabular-nums">
                       {state.found.length}/{size}
                     </dd>
@@ -993,19 +1006,19 @@ export function Connections({ customId, initial }: { customId?: string; initial?
                 {mode === "practice" ? (
                   <div className="space-y-2">
                     <Button size="lg" className="h-14 w-full text-base" onClick={() => newPractice()} data-testid="conn-next">
-                      <RefreshCw className="h-5 w-5" aria-hidden /> Next puzzle ▶
+                      <RefreshCw className="h-5 w-5" aria-hidden /> {t("result.next")}
                     </Button>
-                    <ShareButton getText={shareTextNow} label="Share" kind="connections" variant="outline" className="w-full" />
+                    <ShareButton getText={shareTextNow} label={t("result.share")} kind="connections" variant="outline" className="w-full" />
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <ShareButton getText={shareTextNow} label="Share" kind="connections" className="w-full" />
+                    <ShareButton getText={shareTextNow} label={t("result.share")} kind="connections" className="w-full" />
                     <div className="grid gap-2 sm:grid-cols-2">
                       <Button size="lg" variant="success" onClick={() => newPractice()} data-testid="conn-play-unlimited">
-                        <InfinityIcon className="h-5 w-5" aria-hidden /> Play unlimited
+                        <InfinityIcon className="h-5 w-5" aria-hidden /> {t("result.unlimited")}
                       </Button>
                       <a href="#duel" className={cn(buttonVariants({ size: "lg", variant: "outline" }))} data-testid="conn-duel-link">
-                        <Swords className="h-5 w-5" aria-hidden /> Duel a friend
+                        <Swords className="h-5 w-5" aria-hidden /> {t("result.duel")}
                       </a>
                     </div>
                   </div>
@@ -1016,7 +1029,7 @@ export function Connections({ customId, initial }: { customId?: string; initial?
                 <NewBadges badges={fresh} />
                 {usedHint && mode === "daily" && (
                   <p className="rounded-md border border-warning/40 bg-warning/[0.08] px-3 py-2 text-sm" data-testid="conn-hinted">
-                    <Lightbulb className="mr-1 inline h-4 w-4" aria-hidden /> You used the hint. Hinted games rank below every hint-free game on the leaderboard.
+                    <Lightbulb className="mr-1 inline h-4 w-4" aria-hidden /> {t("result.hinted")}
                   </p>
                 )}
                 {mode === "daily" && <GroupStats stats={groupStats} />}
@@ -1025,18 +1038,23 @@ export function Connections({ customId, initial }: { customId?: string; initial?
                 )}
                 {mode === "daily" && summary && summary.players > 0 && (
                   <p className="rounded-md border bg-shade/30 px-3 py-2 text-sm" data-testid="conn-community">
-                    <b>{Math.round((100 * summary.solved) / summary.players)}%</b> of {summary.players.toLocaleString("en-US")} trainer{summary.players === 1 ? "" : "s"} solved today&apos;s ·{" "}
-                    <b>{Math.round((100 * summary.perfect) / summary.players)}%</b> got it perfect
+                    {t.rich("result.summary", {
+                      solved: Math.round((100 * summary.solved) / summary.players),
+                      perfect: Math.round((100 * summary.perfect) / summary.players),
+                      players: formatNumber(summary.players, locale),
+                      n: summary.players,
+                      b: (c) => <b>{c}</b>,
+                    })}
                   </p>
                 )}
                 {mode !== "daily" && today && !todayRecord?.over && (
                   <Button className="w-full" onClick={backToDaily}>
-                    Play today&apos;s PokéConnections
+                    {t("result.playToday")}
                   </Button>
                 )}
                 {mode === "daily" && daily && <DailyLeaderboard date={daily.date} standing={board} rows={boardRows} you={rankName} onName={rankAs} />}
                 {daily && <FeedbackPanel date={daily.date} guesses={guesses} groups={state.reveal} today={mode === "daily"} />}
-                {mode !== "daily" && <p className="text-xs text-muted-foreground">{mode === "archive" ? "Archive" : "Practice"} games don&apos;t count toward streaks or stats.</p>}
+                {mode !== "daily" && <p className="text-xs text-muted-foreground">{t(mode === "archive" ? "result.archiveNote" : "result.practiceNote")}</p>}
               </CardContent>
             </Card>
             {mode === "daily" && stats && <ConnStatsCard stats={stats} todayMistakes={todayMistakes} />}
@@ -1075,8 +1093,9 @@ const gridCols = (size: ConnSize) => (size === 5 ? "grid-cols-5" : "grid-cols-4"
 
 /** The board's exact shape while the tiles load. */
 function BoardSkeleton({ size, className }: { size: ConnSize; className?: string }) {
+  const t = useT(conn);
   return (
-    <div className={cn("grid gap-2 sm:gap-2.5", gridCols(size), className)} aria-busy="true" aria-label="Loading the puzzle" data-testid="conn-skeleton">
+    <div className={cn("grid gap-2 sm:gap-2.5", gridCols(size), className)} aria-busy="true" aria-label={t("loading")} data-testid="conn-skeleton">
       {Array.from({ length: size * size }, (_, i) => (
         <div key={i} className={cn("animate-pulse rounded-lg border bg-card", size === 5 ? TILE_H5 : TILE_H4)} />
       ))}
@@ -1110,6 +1129,7 @@ function PreBoard({ initial }: { initial: Readonly<Record<string, ConnPuzzleResp
 
 /** The puzzle couldn't load: the board's space, with what went wrong and a retry. */
 function RetryCard({ size, message, onRetry }: { size: ConnSize; message: string; onRetry: () => void }) {
+  const t = useT(conn);
   return (
     <div className="relative" data-testid="conn-retry">
       <div className={cn("grid gap-2 opacity-40 sm:gap-2.5", gridCols(size))} aria-hidden>
@@ -1120,10 +1140,10 @@ function RetryCard({ size, message, onRetry }: { size: ConnSize; message: string
       <div className="absolute inset-0 flex items-center justify-center p-4">
         <Card className="w-full max-w-sm border-destructive/40 shadow-[0_10px_30px_rgb(0_0_0/0.35)]" role="alert">
           <CardContent className="space-y-3 p-5 text-center">
-            <p className="font-display text-xl font-bold uppercase tracking-tight">Puzzle didn&apos;t load</p>
+            <p className="font-display text-xl font-bold uppercase tracking-tight">{t("didntLoad")}</p>
             <p className="text-sm text-muted-foreground">{message}</p>
             <Button onClick={onRetry} className="rounded-full px-5" data-testid="conn-retry-button">
-              <RefreshCw className="h-4 w-4" aria-hidden /> Try again
+              <RefreshCw className="h-4 w-4" aria-hidden /> {t("retry")}
             </Button>
           </CardContent>
         </Card>

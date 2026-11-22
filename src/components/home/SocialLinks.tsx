@@ -1,5 +1,7 @@
 import { SOCIALS } from "@/lib/support";
 import { cn } from "@/lib/utils";
+import { serverT } from "@/i18n/server";
+import home from "@/messages/home";
 
 /** Brand marks from Simple Icons (CC0). */
 const PATHS: Record<(typeof SOCIALS)[number]["id"], string> = {
@@ -12,15 +14,16 @@ const PATHS: Record<(typeof SOCIALS)[number]["id"], string> = {
 
 /** A row of PokéIQ's social links. */
 export function SocialLinks({ className }: { className?: string }) {
+  const t = serverT(home);
   return (
-    <ul className={cn("flex items-center justify-center gap-2", className)} aria-label="PokéIQ on social media" data-testid="social-links">
+    <ul className={cn("flex items-center justify-center gap-2", className)} aria-label={t("socials")} data-testid="social-links">
       {SOCIALS.map((s) => (
         <li key={s.id}>
           <a
             href={s.url}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label={`PokéIQ on ${s.name}`}
+            aria-label={t("socialOn", { name: s.name })}
             title={s.name}
             data-testid={`social-${s.id}`}
             className="flex h-10 w-10 items-center justify-center rounded-md border bg-card text-muted-foreground transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

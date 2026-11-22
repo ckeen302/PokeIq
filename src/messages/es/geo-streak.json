@@ -1,0 +1,53 @@
+{
+  "errors": {
+    "start": "No se ha podido empezar la partida.",
+    "grade": "No se ha podido puntuar esa elección.",
+    "title": "Algo ha salido mal"
+  },
+  "setup": {
+    "eyebrow": "Exploración · El mundo Pokémon",
+    "title": "Racha de <b>regiones</b>",
+    "intro": "Una captura, una pregunta: ¿qué región es? Sin chinchetas. Cada acierto trae la siguiente captura; una región equivocada termina la partida.",
+    "mode": "Modo racha",
+    "headline": "De {from} a {to}, hasta que falles",
+    "best": "Tu récord: {n} seguidos.",
+    "first": "Tu primera partida marca tu récord.",
+    "board": "Las partidas terminadas entran en la clasificación de Racha de regiones.",
+    "start": "Empezar",
+    "regions": "Las nueve regiones"
+  },
+  "board": "Clasificación de rachas",
+  "back": "Volver a Racha de regiones",
+  "hud": {
+    "streak": "Racha {n}",
+    "mode": "Racha de regiones · {world}"
+  },
+  "which": "¿Qué región es esta?",
+  "gen": "Gen. {n}",
+  "pick": "Elige una región",
+  "reveal": {
+    "right": "¡Región correcta!",
+    "wrong": "Región incorrecta. Fin de la racha",
+    "inARow": "{n} seguidos",
+    "final": "Racha final: {n}",
+    "its": "Es {region}.",
+    "picked": "Has elegido {picked}: es {region}.",
+    "nothing": "nada",
+    "results": "Ver resultados",
+    "next": "Siguiente captura",
+    "space": "Espacio"
+  },
+  "summary": {
+    "saveFailed": "No se ha podido guardar.",
+    "shareTitle": "PokéGuessr Racha de regiones",
+    "shareCount": "{n, plural, one {{n} región seguida} other {{n} regiones seguidas}}",
+    "newBest": "Nuevo récord",
+    "best": "Récord: {n} seguidos",
+    "share": "Compartir…",
+    "save": "Guardar en la clasificación de rachas",
+    "name": "Nombre de Entrenador",
+    "saved": "Guardado",
+    "submit": "Enviar",
+    "needOne": "Acierta al menos una región para entrar en la clasificación."
+  }
+}
