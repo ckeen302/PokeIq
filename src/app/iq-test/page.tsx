@@ -9,6 +9,10 @@ import iq from "@/messages/iq-test";
 import play from "@/messages/iq-test-play";
 import results from "@/messages/iq-test-results";
 import share from "@/messages/share";
+import quizRun from "@/messages/quiz-run";
+import quizModes from "@/messages/quiz-modes";
+import badges from "@/messages/badges";
+import countdown from "@/messages/countdown";
 
 export function generateMetadata(): Metadata {
   const t = serverT(iq);
@@ -24,7 +28,7 @@ export default function IqTestPage() {
   return (
     <>
       <GameJsonLd name={t("name")} path="/iq-test" description={t("description")} />
-      <ClientMessages namespaces={[play, results, share]}>
+      <ClientMessages namespaces={[play, results, share, quizRun, quizModes, badges, countdown]}>
         <IqTest local={cognitiveLocal(getLocale())} />
       </ClientMessages>
     </>
