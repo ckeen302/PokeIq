@@ -1,0 +1,904 @@
+{
+ "entries": {
+  "red-green": {
+   "title": "ポケットモンスター 赤・緑",
+   "note": "海外では『ポケットモンスター 赤・青』として発売されました。"
+  },
+  "blue-jp": {
+   "title": "ポケットモンスター 青（日本）",
+   "note": "『赤・緑』の改訂版で、日本でのみ発売されました。"
+  },
+  "tcg-japan": {
+   "title": "ポケモンカードゲームが日本で発売",
+   "note": "日本ではメディアファクトリーが発売しました。"
+  },
+  "anime-s01": {
+   "title": "シーズン1：インディゴリーグ",
+   "series": "ポケットモンスター"
+  },
+  "porygon-incident": {
+   "title": "「でんのうせんしポリゴン」放送",
+   "note": "放送後に数百人の視聴者が病院に搬送され、アニメは1998年4月16日まで放送休止となりました。"
+  },
+  "company-founded": {
+   "title": "株式会社ポケモン設立",
+   "note": "任天堂・ゲームフリーク・クリーチャーズにより株式会社ポケモンセンターとして設立され、2000年10月に株式会社ポケモンへ改称しました。"
+  },
+  "pokemon-center-tokyo": {
+   "title": "初のポケモンセンターがオープン",
+   "note": "日本橋にポケモンセンタートウキョーがオープンしました。"
+  },
+  "movie-01": {
+   "title": "映画第1作：ミュウツーの逆襲"
+  },
+  "yellow": {
+   "title": "ポケットモンスター ピカチュウ"
+  },
+  "hey-you-pikachu": {
+   "title": "ピカチュウげんきでちゅう"
+  },
+  "tcg-game-boy": {
+   "title": "ポケモンカードGB"
+  },
+  "tcg-base": {
+   "title": "Base Set：カードゲームが海外へ",
+   "note": "英語版はウィザーズ・オブ・ザ・コーストが発売しました。"
+  },
+  "anime-s02": {
+   "title": "シーズン2：オレンジ諸島の冒険",
+   "series": "ポケットモンスター"
+  },
+  "snap": {
+   "title": "ポケモンスナップ"
+  },
+  "pinball": {
+   "title": "ポケモンピンボール"
+  },
+  "stadium": {
+   "title": "ポケモンスタジアム2"
+  },
+  "tcg-base2": {
+   "title": "Jungle"
+  },
+  "movie-02": {
+   "title": "映画第2作：幻のポケモン ルギア爆誕"
+  },
+  "tcg-base3": {
+   "title": "Fossil"
+  },
+  "anime-s03": {
+   "title": "シーズン3：ジョウトの旅",
+   "series": "ポケットモンスター"
+  },
+  "gold-silver": {
+   "title": "ポケットモンスター 金・銀"
+  },
+  "tcg-base4": {
+   "title": "Base Set 2"
+  },
+  "tcg-base5": {
+   "title": "Team Rocket"
+  },
+  "movie-03": {
+   "title": "映画第3作：結晶塔の帝王 ENTEI"
+  },
+  "anime-s04": {
+   "title": "シーズン4：ジョウトリーグ・チャンピオンズ",
+   "series": "ポケットモンスター"
+  },
+  "tcg-gym1": {
+   "title": "Gym Heroes"
+  },
+  "puzzle-challenge": {
+   "title": "ポケモンでパネポン"
+  },
+  "puzzle-league": {
+   "title": "Pokémon Puzzle League",
+   "note": "海外向けに作られ、日本では発売されませんでした。"
+  },
+  "tcg-gym2": {
+   "title": "Gym Challenge"
+  },
+  "crystal": {
+   "title": "ポケットモンスター クリスタルバージョン"
+  },
+  "stadium-2": {
+   "title": "ポケモンスタジアム金銀"
+  },
+  "tcg-neo": {
+   "title": "Neo Genesis"
+  },
+  "tcg-neo2": {
+   "title": "Neo Discovery"
+  },
+  "movie-04": {
+   "title": "映画第4作：セレビィ 時を越えた遭遇"
+  },
+  "anime-s05": {
+   "title": "シーズン5：マスタークエスト",
+   "series": "ポケットモンスター"
+  },
+  "tcg-neo3": {
+   "title": "Neo Revelation"
+  },
+  "pokemon-center-new-york": {
+   "title": "ポケモンセンター・ニューヨークがオープン",
+   "note": "ニューヨーク市のロックフェラー・プラザ10番地にオープンしました。"
+  },
+  "tcg-neo4": {
+   "title": "Neo Destiny"
+  },
+  "tcg-base6": {
+   "title": "Legendary Collection"
+  },
+  "movie-05": {
+   "title": "映画第5作：水の都の護神 ラティアスとラティオス"
+  },
+  "tcg-ecard1": {
+   "title": "Expedition Base Set"
+  },
+  "ruby-sapphire": {
+   "title": "ポケットモンスター ルビー・サファイア"
+  },
+  "anime-s06": {
+   "title": "シーズン6：アドバンス",
+   "series": "ポケットモンスター アドバンスジェネレーション"
+  },
+  "tcg-ecard2": {
+   "title": "Aquapolis"
+  },
+  "tcg-ecard3": {
+   "title": "Skyridge"
+  },
+  "tcg-ex1": {
+   "title": "EX Ruby & Sapphire"
+  },
+  "movie-06": {
+   "title": "映画第6作：七夜の願い星 ジラーチ"
+  },
+  "anime-s07": {
+   "title": "シーズン7：アドバンスチャレンジ",
+   "series": "ポケットモンスター アドバンスジェネレーション"
+  },
+  "tcg-ex2": {
+   "title": "EX Sandstorm"
+  },
+  "colosseum": {
+   "title": "ポケモンコロシアム"
+  },
+  "tcg-ex3": {
+   "title": "EX Dragon"
+  },
+  "firered-leafgreen": {
+   "title": "ポケットモンスター ファイアレッド・リーフグリーン",
+   "note": "『赤・緑』のリメイクです。"
+  },
+  "tcg-ex4": {
+   "title": "EX Team Magma vs Team Aqua"
+  },
+  "tcg-ex5": {
+   "title": "EX Hidden Legends"
+  },
+  "movie-07": {
+   "title": "映画第7作：裂空の訪問者 デオキシス"
+  },
+  "first-worlds": {
+   "title": "初のポケモンワールドチャンピオンシップス",
+   "note": "2004年8月20日〜22日にフロリダ州オーランドで、ポケモンカードゲームの大会として開催されました。"
+  },
+  "anime-s08": {
+   "title": "シーズン8：アドバンスバトル",
+   "series": "ポケットモンスター アドバンスジェネレーション"
+  },
+  "tcg-ex6": {
+   "title": "EX FireRed & LeafGreen"
+  },
+  "emerald": {
+   "title": "ポケットモンスター エメラルド"
+  },
+  "tcg-ex7": {
+   "title": "EX Team Rocket Returns"
+  },
+  "tcg-ex8": {
+   "title": "EX Deoxys"
+  },
+  "tcg-ex9": {
+   "title": "EX Emerald"
+  },
+  "movie-08": {
+   "title": "映画第8作：ミュウと波導の勇者 ルカリオ"
+  },
+  "xd": {
+   "title": "ポケモンXD 闇の旋風ダーク・ルギア"
+  },
+  "tcg-ex10": {
+   "title": "EX Unseen Forces"
+  },
+  "anime-s09": {
+   "title": "シーズン9：バトルフロンティア",
+   "series": "ポケットモンスター アドバンスジェネレーション"
+  },
+  "tcg-ex11": {
+   "title": "EX Delta Species"
+  },
+  "mystery-dungeon": {
+   "title": "ポケモン不思議のダンジョン 赤の救助隊・青の救助隊"
+  },
+  "tcg-ex12": {
+   "title": "EX Legend Maker"
+  },
+  "ranger": {
+   "title": "ポケモンレンジャー"
+  },
+  "tcg-ex13": {
+   "title": "EX Holon Phantoms"
+  },
+  "movie-09": {
+   "title": "映画第9作：ポケモンレンジャーと蒼海の王子 マナフィ"
+  },
+  "tcg-ex14": {
+   "title": "EX Crystal Guardians"
+  },
+  "diamond-pearl": {
+   "title": "ポケットモンスター ダイヤモンド・パール"
+  },
+  "anime-s10": {
+   "title": "シーズン10：ダイヤモンド&パール",
+   "series": "ポケットモンスター ダイヤモンド&パール"
+  },
+  "tcg-ex15": {
+   "title": "EX Dragon Frontiers"
+  },
+  "tcg-ex16": {
+   "title": "EX Power Keepers"
+  },
+  "tcg-dp1": {
+   "title": "Diamond & Pearl"
+  },
+  "movie-10": {
+   "title": "映画第10作：ディアルガVSパルキアVSダークライ"
+  },
+  "tcg-dp2": {
+   "title": "Mysterious Treasures"
+  },
+  "mystery-dungeon-explorers": {
+   "title": "ポケモン不思議のダンジョン 時の探検隊・闇の探検隊"
+  },
+  "anime-s11": {
+   "title": "シーズン11：DP バトルディメンション",
+   "series": "ポケットモンスター ダイヤモンド&パール"
+  },
+  "tcg-dp3": {
+   "title": "Secret Wonders"
+  },
+  "tcg-dp4": {
+   "title": "Great Encounters"
+  },
+  "tcg-dp5": {
+   "title": "Majestic Dawn"
+  },
+  "movie-11": {
+   "title": "映画第11作：ギラティナと氷空の花束 シェイミ"
+  },
+  "tcg-dp6": {
+   "title": "Legends Awakened"
+  },
+  "platinum": {
+   "title": "ポケットモンスター プラチナ"
+  },
+  "tcg-dp7": {
+   "title": "Stormfront"
+  },
+  "anime-s12": {
+   "title": "シーズン12：DP ギャラクティックバトル",
+   "series": "ポケットモンスター ダイヤモンド&パール"
+  },
+  "tcg-pl1": {
+   "title": "Platinum"
+  },
+  "tcg-pl2": {
+   "title": "Rising Rivals"
+  },
+  "rumble": {
+   "title": "乱戦！ポケモンスクランブル"
+  },
+  "movie-12": {
+   "title": "映画第12作：アルセウス 超克の時空へ"
+  },
+  "first-vgc-worlds": {
+   "title": "初のビデオゲーム部門ワールドチャンピオンシップス",
+   "note": "2009年8月14日〜15日にサンディエゴで、『ポケットモンスター プラチナ』を使って行われました。"
+  },
+  "tcg-pl3": {
+   "title": "Supreme Victors"
+  },
+  "heartgold-soulsilver": {
+   "title": "ポケットモンスター ハートゴールド・ソウルシルバー",
+   "note": "『金・銀』のリメイクです。"
+  },
+  "tcg-pl4": {
+   "title": "Arceus"
+  },
+  "pokepark": {
+   "title": "ポケパークWii ～ピカチュウの大冒険～"
+  },
+  "anime-s13": {
+   "title": "シーズン13：DP シンオウリーグの勝者たち",
+   "series": "ポケットモンスター ダイヤモンド&パール"
+  },
+  "tcg-hgss1": {
+   "title": "HeartGold & SoulSilver"
+  },
+  "tcg-hgss2": {
+   "title": "HS—Unleashed"
+  },
+  "movie-13": {
+   "title": "映画第13作：幻影の覇者 ゾロアーク"
+  },
+  "tcg-hgss3": {
+   "title": "HS—Undaunted"
+  },
+  "black-white": {
+   "title": "ポケットモンスター ブラック・ホワイト"
+  },
+  "anime-s14": {
+   "title": "シーズン14：ブラック&ホワイト",
+   "series": "ポケットモンスター ベストウイッシュ"
+  },
+  "tcg-hgss4": {
+   "title": "HS—Triumphant"
+  },
+  "tcg-col1": {
+   "title": "Call of Legends"
+  },
+  "tcg-bw": {
+   "title": "「Black & White」の時代"
+  },
+  "movie-14": {
+   "title": "映画第14作：ビクティニと黒き英雄 ゼクロム／白き英雄 レシラム"
+  },
+  "tcg-bw2": {
+   "title": "Emerging Powers"
+  },
+  "anime-s15": {
+   "title": "シーズン15：BW ライバルたちの運命",
+   "series": "ポケットモンスター ベストウイッシュ"
+  },
+  "tcg-bw3": {
+   "title": "Noble Victories"
+  },
+  "tcg-bw4": {
+   "title": "Next Destinies"
+  },
+  "conquest": {
+   "title": "ポケモン+ノブナガの野望"
+  },
+  "tcg-bw5": {
+   "title": "Dark Explorers"
+  },
+  "black2-white2": {
+   "title": "ポケットモンスター ブラック2・ホワイト2"
+  },
+  "movie-15": {
+   "title": "映画第15作：キュレムVS聖剣士 ケルディオ"
+  },
+  "tcg-bw6": {
+   "title": "Dragons Exalted"
+  },
+  "tcg-dv1": {
+   "title": "Dragon Vault"
+  },
+  "anime-s16": {
+   "title": "シーズン16：BW イッシュとその先への冒険",
+   "series": "ポケットモンスター ベストウイッシュ シーズン2"
+  },
+  "tcg-bw7": {
+   "title": "Boundaries Crossed"
+  },
+  "tcg-bw8": {
+   "title": "Plasma Storm"
+  },
+  "tcg-bw9": {
+   "title": "Plasma Freeze"
+  },
+  "movie-16": {
+   "title": "映画第16作：神速のゲノセクト ミュウツー覚醒"
+  },
+  "tcg-bw10": {
+   "title": "Plasma Blast"
+  },
+  "x-y": {
+   "title": "ポケットモンスター X・Y"
+  },
+  "anime-s17": {
+   "title": "シーズン17：XY",
+   "series": "ポケットモンスター XY"
+  },
+  "tcg-bw11": {
+   "title": "Legendary Treasures"
+  },
+  "tcg-xy": {
+   "title": "「XY」の時代",
+   "note": "フェアリータイプがカードゲームに加わりました。"
+  },
+  "tcg-xy2": {
+   "title": "Flashfire"
+  },
+  "movie-17": {
+   "title": "映画第17作：破壊の繭とディアンシー"
+  },
+  "pikachu-outbreak": {
+   "title": "「ピカチュウ大量発生チュウ！」が横浜をジャック",
+   "note": "2014年8月9日〜17日、みなとみらい地区がピカチュウのパレードで埋め尽くされました。"
+  },
+  "tcg-xy3": {
+   "title": "Furious Fists"
+  },
+  "tcg-xy4": {
+   "title": "Phantom Forces"
+  },
+  "anime-s18": {
+   "title": "シーズン18：XY カロスクエスト",
+   "series": "ポケットモンスター XY"
+  },
+  "omega-ruby-alpha-sapphire": {
+   "title": "ポケットモンスター オメガルビー・アルファサファイア",
+   "note": "『ルビー・サファイア』のリメイクです。"
+  },
+  "tcg-xy5": {
+   "title": "Primal Clash"
+  },
+  "shuffle": {
+   "title": "ポケとる"
+  },
+  "tcg-dc1": {
+   "title": "Double Crisis"
+  },
+  "tcg-xy6": {
+   "title": "Roaring Skies"
+  },
+  "pokken": {
+   "title": "ポッ拳 POKKÉN TOURNAMENT",
+   "note": "まず日本のゲームセンターで稼働し、Wii U版は2016年3月18日に発売されました。"
+  },
+  "movie-18": {
+   "title": "映画第18作：光輪の超魔神 フーパ"
+  },
+  "tcg-xy7": {
+   "title": "Ancient Origins"
+  },
+  "anime-s19": {
+   "title": "シーズン19：XYZ",
+   "series": "ポケットモンスター XY&Z"
+  },
+  "tcg-xy8": {
+   "title": "BREAKthrough"
+  },
+  "picross": {
+   "title": "ポケモンピクロス"
+  },
+  "detective-pikachu-game": {
+   "title": "名探偵ピカチュウ",
+   "note": "日本では2016年に序盤の章がダウンロード版で配信され、完全版は2018年3月23日に発売されました。"
+  },
+  "tcg-xy9": {
+   "title": "BREAKpoint"
+  },
+  "tcg-g1": {
+   "title": "Generations"
+  },
+  "anniversary-20": {
+   "title": "20周年：赤・青・ピカチュウが復活",
+   "note": "初代のゲームがニンテンドー3DSのバーチャルコンソールで世界同時に配信されました。『赤・緑』の発売からちょうど20年目の日です。"
+  },
+  "tcg-xy10": {
+   "title": "Fates Collide"
+  },
+  "pokemon-go": {
+   "title": "Pokémon GO",
+   "note": "最初にオーストラリアとアメリカで配信されました。"
+  },
+  "movie-19": {
+   "title": "映画第19作：ボルケニオンと機巧のマギアナ"
+  },
+  "tcg-xy11": {
+   "title": "Steam Siege"
+  },
+  "tcg-xy12": {
+   "title": "Evolutions"
+  },
+  "anime-s20": {
+   "title": "シーズン20：サン&ムーン",
+   "series": "ポケットモンスター サン&ムーン"
+  },
+  "sun-moon": {
+   "title": "ポケットモンスター サン・ムーン"
+  },
+  "tcg-sm": {
+   "title": "「Sun & Moon」の時代"
+  },
+  "tcg-sm2": {
+   "title": "Guardians Rising"
+  },
+  "movie-20": {
+   "title": "映画第20作：キミにきめた！"
+  },
+  "go-fest-2017": {
+   "title": "初のPokémon GO Fest",
+   "note": "シカゴのグラントパークで開催されました。"
+  },
+  "tcg-sm3": {
+   "title": "Burning Shadows"
+  },
+  "anime-s21": {
+   "title": "シーズン21：SM ウルトラアドベンチャー",
+   "series": "ポケットモンスター サン&ムーン"
+  },
+  "tcg-sm35": {
+   "title": "Shining Legends"
+  },
+  "tcg-sm4": {
+   "title": "Crimson Invasion"
+  },
+  "ultra-sun-ultra-moon": {
+   "title": "ポケットモンスター ウルトラサン・ウルトラムーン"
+  },
+  "tcg-sm5": {
+   "title": "Ultra Prism"
+  },
+  "tcg-sm6": {
+   "title": "Forbidden Light"
+  },
+  "quest": {
+   "title": "ポケモンクエスト"
+  },
+  "movie-21": {
+   "title": "映画第21作：みんなの物語"
+  },
+  "tcg-sm7": {
+   "title": "Celestial Storm"
+  },
+  "tcg-sm75": {
+   "title": "Dragon Majesty"
+  },
+  "anime-s22": {
+   "title": "シーズン22：SM ウルトラレジェンド",
+   "series": "ポケットモンスター サン&ムーン"
+  },
+  "tcg-sm8": {
+   "title": "Lost Thunder"
+  },
+  "lets-go": {
+   "title": "ポケットモンスター Let's Go! ピカチュウ・Let's Go! イーブイ",
+   "note": "舞台はカントー地方で、『ピカチュウ』がベースです。"
+  },
+  "tcg-sm9": {
+   "title": "Team Up"
+  },
+  "tcg-det1": {
+   "title": "Detective Pikachu"
+  },
+  "detective-pikachu": {
+   "title": "名探偵ピカチュウ",
+   "note": "初の実写版ポケモン映画です。"
+  },
+  "tcg-sm10": {
+   "title": "Unbroken Bonds"
+  },
+  "movie-22": {
+   "title": "映画第22作：ミュウツーの逆襲 EVOLUTION"
+  },
+  "tcg-sm11": {
+   "title": "Unified Minds"
+  },
+  "tcg-sm115": {
+   "title": "Hidden Fates"
+  },
+  "masters": {
+   "title": "ポケモンマスターズ",
+   "note": "現在の名称はポケモンマスターズ EXです。"
+  },
+  "tcg-sm12": {
+   "title": "Cosmic Eclipse"
+  },
+  "sword-shield": {
+   "title": "ポケットモンスター ソード・シールド"
+  },
+  "anime-s23": {
+   "title": "シーズン23：ジャーニーズ",
+   "series": "ポケットモンスター（2019）"
+  },
+  "tcg-swsh": {
+   "title": "「Sword & Shield」の時代"
+  },
+  "tcg-swsh2": {
+   "title": "Rebel Clash"
+  },
+  "cafe-mix": {
+   "title": "ポケモンカフェミックス"
+  },
+  "isle-of-armor": {
+   "title": "ソード・シールド 鎧の孤島",
+   "note": "『ソード・シールド エキスパンションパス』の第1弾です。"
+  },
+  "smile": {
+   "title": "ポケモンスマイル"
+  },
+  "tcg-swsh3": {
+   "title": "Darkness Ablaze"
+  },
+  "tcg-swsh35": {
+   "title": "Champion's Path"
+  },
+  "crown-tundra": {
+   "title": "ソード・シールド 冠の雪原",
+   "note": "『ソード・シールド エキスパンションパス』の第2弾で、世界同時に配信されました。"
+  },
+  "tcg-swsh4": {
+   "title": "Vivid Voltage"
+  },
+  "anime-s24": {
+   "title": "シーズン24：マスタージャーニーズ",
+   "series": "ポケットモンスター（2019）"
+  },
+  "movie-23": {
+   "title": "映画第23作：ココ",
+   "note": "公開は2020年7月から2020年12月に延期されました。"
+  },
+  "tcg-swsh45": {
+   "title": "Shining Fates"
+  },
+  "anniversary-25": {
+   "title": "25周年記念 Pokémon Presents",
+   "note": "『ブリリアントダイヤモンド・シャイニングパール』と『Pokémon LEGENDS アルセウス』が発表されました。"
+  },
+  "tcg-swsh5": {
+   "title": "Battle Styles"
+  },
+  "new-pokemon-snap": {
+   "title": "New ポケモンスナップ"
+  },
+  "target-card-pause": {
+   "title": "カードブーム：米Targetが店頭からカードを撤去",
+   "note": "Targetは安全のため、ポケモンカードとスポーツカードの店頭販売を休止しました。オンラインでは販売が続きました。"
+  },
+  "tcg-swsh6": {
+   "title": "Chilling Reign"
+  },
+  "unite": {
+   "title": "ポケモンユナイト",
+   "note": "モバイル版は2021年9月22日に世界同時配信されました。"
+  },
+  "tcg-swsh7": {
+   "title": "Evolving Skies"
+  },
+  "tcg-cel25": {
+   "title": "Celebrations"
+  },
+  "tcg-swsh8": {
+   "title": "Fusion Strike"
+  },
+  "brilliant-diamond-shining-pearl": {
+   "title": "ポケットモンスター ブリリアントダイヤモンド・シャイニングパール",
+   "note": "『ダイヤモンド・パール』のリメイクです。"
+  },
+  "anime-s25": {
+   "title": "シーズン25：アルティメットジャーニーズ",
+   "series": "ポケットモンスター（2019）"
+  },
+  "legends-arceus": {
+   "title": "Pokémon LEGENDS アルセウス"
+  },
+  "tcg-swsh9": {
+   "title": "Brilliant Stars"
+  },
+  "tcg-swsh10": {
+   "title": "Astral Radiance"
+  },
+  "tcg-pgo": {
+   "title": "Pokémon GO"
+  },
+  "tcg-swsh11": {
+   "title": "Lost Origin"
+  },
+  "tcg-swsh12": {
+   "title": "Silver Tempest"
+  },
+  "ash-world-champion": {
+   "title": "サトシが世界チャンピオンに",
+   "note": "サトシとピカチュウがマスターズエイトの決勝でダンデを破りました。"
+  },
+  "scarlet-violet": {
+   "title": "ポケットモンスター スカーレット・バイオレット"
+  },
+  "tcg-swsh12pt5": {
+   "title": "Crown Zenith"
+  },
+  "ash-farewell": {
+   "title": "サトシとピカチュウの旅が完結",
+   "note": "サトシが主人公を務めた最後のエピソードです。3週間後に新シリーズ『ポケットモンスター』（2023）が始まりました。"
+  },
+  "tcg-sv": {
+   "title": "「Scarlet & Violet」の時代"
+  },
+  "anime-s26": {
+   "title": "シーズン26：ホライズン",
+   "series": "ポケットモンスター（2023）"
+  },
+  "tcg-live": {
+   "title": "Pokémon Trading Card Game Live",
+   "note": "グローバルベータ版を終えて正式サービスとなり、Pokémon TCG Onlineに代わりました。"
+  },
+  "tcg-sv2": {
+   "title": "Paldea Evolved"
+  },
+  "sleep": {
+   "title": "ポケモンスリープ"
+  },
+  "tcg-sv3": {
+   "title": "Obsidian Flames"
+  },
+  "teal-mask": {
+   "title": "スカーレット・バイオレット 碧の仮面",
+   "note": "『ゼロの秘宝』の前編です。"
+  },
+  "tcg-sv3pt5": {
+   "title": "Scarlet & Violet—151"
+  },
+  "detective-pikachu-returns": {
+   "title": "帰ってきた 名探偵ピカチュウ"
+  },
+  "tcg-sv4": {
+   "title": "Paradox Rift"
+  },
+  "indigo-disk": {
+   "title": "スカーレット・バイオレット 藍の円盤",
+   "note": "『ゼロの秘宝』の後編です。"
+  },
+  "tcg-sv4pt5": {
+   "title": "Paldean Fates"
+  },
+  "tcg-sv5": {
+   "title": "Temporal Forces"
+  },
+  "anime-s27": {
+   "title": "シーズン27：ホライズン―ラクアを探して",
+   "series": "ポケットモンスター（2023）"
+  },
+  "tcg-sv6": {
+   "title": "Twilight Masquerade"
+  },
+  "tcg-sv6pt5": {
+   "title": "Shrouded Fable"
+  },
+  "tcg-sv7": {
+   "title": "Stellar Crown"
+  },
+  "tcg-pocket": {
+   "title": "Pokémon Trading Card Game Pocket"
+  },
+  "tcg-sv8": {
+   "title": "Surging Sparks"
+  },
+  "tcg-sv8pt5": {
+   "title": "Prismatic Evolutions"
+  },
+  "tcg-sv9": {
+   "title": "Journey Together"
+  },
+  "anime-s28": {
+   "title": "シーズン28：ホライズン―ライジングホープ",
+   "series": "ポケットモンスター（2023）"
+  },
+  "tcg-sv10": {
+   "title": "Destined Rivals"
+  },
+  "tcg-rsv10pt5": {
+   "title": "White Flare"
+  },
+  "tcg-zsv10pt5": {
+   "title": "Black Bolt"
+  },
+  "tcg-me": {
+   "title": "「Mega Evolution」の時代"
+  },
+  "legends-z-a": {
+   "title": "Pokémon LEGENDS Z-A",
+   "note": "舞台はミアレシティです。"
+  },
+  "tcg-me2": {
+   "title": "Phantasmal Flames"
+  },
+  "mega-dimension": {
+   "title": "Pokémon LEGENDS Z-A M次元ラッシュ"
+  },
+  "tcg-me2pt5": {
+   "title": "Ascended Heroes"
+  },
+  "firered-leafgreen-switch": {
+   "title": "Nintendo Switch版 ファイアレッド・リーフグリーン",
+   "note": "ゲームボーイアドバンスのソフトがNintendo Switchで再び発売されました。"
+  },
+  "gen-10-revealed": {
+   "title": "30周年：第10世代を発表",
+   "note": "Nintendo Switch 2向けの『ポケットモンスター ウインド・ウェーブ』が2027年に発売されると発表されました。"
+  },
+  "pokopia": {
+   "title": "ぽこ あ ポケモン"
+  },
+  "tcg-me3": {
+   "title": "Perfect Order"
+  },
+  "champions": {
+   "title": "Pokémon Champions",
+   "note": "Switch版が先に発売され、iOS版とAndroid版は後日配信予定と発表されました。"
+  },
+  "anime-s29": {
+   "title": "シーズン29：ホライズン―この先のワンダー",
+   "series": "ポケットモンスター（2023）"
+  },
+  "tcg-me4": {
+   "title": "Chaos Rising"
+  },
+  "tcg-me5": {
+   "title": "Pitch Black"
+  },
+  "tcg-me55": {
+   "title": "30th Celebration"
+  }
+ },
+ "platforms": {
+  "Game Boy": "ゲームボーイ",
+  "Trading Card Game": "ポケモンカードゲーム",
+  "TV series": "テレビアニメ",
+  "TV broadcast": "テレビ放送",
+  "Company": "企業",
+  "Retail": "店舗",
+  "Animated film": "アニメ映画",
+  "Nintendo 64": "NINTENDO64",
+  "Game Boy Color": "ゲームボーイカラー",
+  "Game Boy Advance": "ゲームボーイアドバンス",
+  "Nintendo GameCube": "ニンテンドーゲームキューブ",
+  "Esports": "eスポーツ",
+  "Game Boy Advance / Nintendo DS": "ゲームボーイアドバンス / ニンテンドーDS",
+  "Nintendo DS": "ニンテンドーDS",
+  "WiiWare": "Wiiウェア",
+  "Wii": "Wii",
+  "Nintendo 3DS": "ニンテンドー3DS",
+  "Event": "イベント",
+  "Nintendo 3DS, then iOS / Android": "ニンテンドー3DS、のちにiOS / Android",
+  "Arcade, then Wii U": "アーケード、のちにWii U",
+  "iOS / Android": "iOS / Android",
+  "Nintendo Switch, then iOS / Android": "Nintendo Switch、のちにiOS / Android",
+  "Nintendo Switch": "Nintendo Switch",
+  "Live-action film": "実写映画",
+  "Nintendo Switch, iOS / Android": "Nintendo Switch、iOS / Android",
+  "Broadcast": "配信",
+  "iOS / Android / Windows / macOS": "iOS / Android / Windows / macOS",
+  "Nintendo Switch / Switch 2": "Nintendo Switch / Switch 2",
+  "Nintendo Switch 2": "Nintendo Switch 2"
+ },
+ "tcg": {
+  "name": "ポケモンカードゲーム",
+  "series": {
+   "Base series": "Baseシリーズ",
+   "Gym series": "Gymシリーズ",
+   "Neo series": "neoシリーズ",
+   "Other series": "その他",
+   "E-Card series": "eシリーズ",
+   "EX series": "EXシリーズ",
+   "Diamond & Pearl series": "ダイヤモンド&パールシリーズ",
+   "Platinum series": "プラチナシリーズ",
+   "HeartGold & SoulSilver series": "ハートゴールド&ソウルシルバーシリーズ",
+   "Black & White series": "ブラック&ホワイトシリーズ",
+   "XY series": "XYシリーズ",
+   "Sun & Moon series": "サン&ムーンシリーズ",
+   "Sword & Shield series": "ソード&シールドシリーズ",
+   "Scarlet & Violet series": "スカーレット&バイオレットシリーズ",
+   "Mega Evolution series": "メガシンカシリーズ"
+  }
+ },
+ "regions": {
+  "Kitakami": "キタカミ"
+ }
+}
