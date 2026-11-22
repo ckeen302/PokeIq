@@ -375,129 +375,129 @@
   "why": "図鑑（ルビー・サファイア・エメラルド、ソード）：山で石炭を掘り、絶えず燃やして体の炎を保ち続ける。アニメ：感情が動くたびに涙を流すサトシのコータス。"
  },
  "flygon": {
-  "title": "The Desert Spirit",
-  "blurb": "You're a free spirit with a surprisingly kind heart. You love wide spaces and new horizons, you make music out of chaos, and you're far more likely to wander off than settle down. People miss you when you go, and you always come back eventually. You're Flygon: roaming, warm, and impossible to fence in.",
-  "why": "Pokedex (RSE, Sw): its wings sing in the sandstorms it stirs up, so it's called the spirit of the desert; a roaming, free-spirited dragon."
+  "title": "砂漠の精霊",
+  "blurb": "あなたは自由な心と、意外なほどやさしい心を持っています。広い場所と新しい地平線が好きで、混乱からさえ音楽を生み出し、落ち着くよりふらりと旅に出るほうがずっと多い人。いなくなるとみんなさみしがりますが、あなたはいつか必ず戻ってきます。あなたはフライゴン。さすらい、あたたかく、どんな柵にも囲いこめない存在です。",
+  "why": "図鑑（ルビー・サファイア・エメラルド、ソード）：巻き起こす砂嵐の中で羽が歌うように鳴ることから、砂漠の精霊と呼ばれる。自由を愛してさすらうドラゴン。"
  },
  "altaria": {
-  "title": "The Cloud Singer",
-  "blurb": "You float above the drama. You're gentle, artistic, and a soothing presence: people feel calmer within a few minutes of talking to you. You'd rather sing than argue, and you give the best hugs anyone has ever had. You're Altaria: soft, serene, and secretly a dragon.",
-  "why": "Pokedex (RSE, Sw): hums in a beautiful soprano and hugs people softly with its cloud-like wings; it sings to those it loves."
+  "title": "雲の歌い手",
+  "blurb": "あなたはもめごとの上をふわりと漂います。おだやかで芸術的で、そばにいるだけで心がやすらぐ人。数分話すだけで、まわりは落ち着きを取り戻します。言い争うより歌うほうが好きで、あなたのハグは世界一です。あなたはチルタリス。やわらかで、おだやかで、じつはドラゴンです。",
+  "why": "図鑑（ルビー・サファイア・エメラルド、ソード）：美しいソプラノでハミングし、綿雲のような翼で人をふんわり包みこむ。大好きな相手に歌を聞かせる。"
  },
  "zangoose": {
-  "title": "The Feud Keeper",
-  "blurb": "You've got a rival, and you take it personally. You're alert, fierce, and ready at all times, and a grudge for you isn't bitterness, it's fuel. You're loyal to a few and suspicious of most. You're Zangoose: sharp, quick, and never caught napping.",
-  "why": "Pokedex (RSE, Sw): locked in an ancient feud with Seviper, it is always on alert and its fur stands on end at the sight of one; it fights with the claws out."
+  "title": "宿敵を持つ者",
+  "blurb": "あなたにはライバルがいて、それを本気で受け止めています。いつも油断がなく、激しく、いつでも準備ができていて、あなたにとって恨みは苦しみではなく燃料です。少数には忠実で、大多数には用心深い。あなたはザングース。鋭く、すばやく、居眠り中をつかまれることなど決してありません。",
+  "why": "図鑑（ルビー・サファイア・エメラルド、ソード）：ハブネークとは大昔からの宿敵で、いつも警戒しており、姿を見るだけで毛が逆立つ。ツメをむき出しにして戦う。"
  },
  "milotic": {
-  "title": "The Calming Beauty",
-  "blurb": "You bring the temperature down. You're graceful and calm, and people stop arguing when you walk in, not because you ask them to but because it suddenly seems silly. You've been through worse than they know and it made you kinder. You're Milotic: elegant, peaceful, and proof that beauty is what you do with your past.",
-  "why": "Pokedex (RSE, Sw): the most beautiful Pokemon, said to calm angry feelings and end wars just by appearing; it lives at the bottom of clear lakes."
+  "title": "心をしずめる美しさ",
+  "blurb": "あなたはその場の熱をしずめます。優雅で落ち着いていて、あなたが入ってくると言い争いが止まります。頼んだからではなく、急にばかばかしく思えてくるからです。みんなが知る以上につらい経験をしてきて、それがあなたをやさしくしました。あなたはミロカロス。気品があり、おだやかで、美しさとは過去をどう生かすかだと証明する存在です。",
+  "why": "図鑑（ルビー・サファイア・エメラルド、ソード）：もっとも美しいポケモンといわれ、姿を見せるだけで怒りをしずめ、争いを終わらせるという。澄んだ湖の底に住む。"
  },
  "kecleon": {
-  "title": "The Shopkeeper",
-  "blurb": "You run a tight ship. You're organised, observant, and friendly in a transactional sort of way, and you blend in until someone breaks the rules, at which point you're a nightmare. You respect fairness above everything. You're Kecleon: adaptable, dependable, and not to be stolen from.",
-  "why": "Mystery Dungeon: runs the shops in every town and is terrifyingly strong if you steal from it; Pokedex (RSE, Sw): changes colour to blend in and watch quietly."
+  "title": "お店の主人",
+  "blurb": "あなたはきっちり店を切り盛りする人です。整理上手で観察力があり、商売らしい愛想のよさを持ち、だれかがルールを破るまでは目立ちません。でも破られたら最後、悪夢のようにこわくなります。何より公平さを大切にしています。あなたはカクレオン。柔軟で、頼りになり、決して万引きしてはいけない相手です。",
+  "why": "ポケモン不思議のダンジョン：どの町でもお店を営み、ドロボウするとおそろしく強くなる。図鑑（ルビー・サファイア・エメラルド、ソード）：体の色を変えてまわりにとけこみ、静かに様子をうかがう。"
  },
  "banette": {
-  "title": "The Grudge Doll",
-  "blurb": "You remember who threw you away. You're intense and a little bitter, with a creative streak and a long memory, and you'd rather be feared than overlooked again. There's a soft toy somewhere under all that. You're Banette: haunted, sharp, and determined to be seen.",
-  "why": "Pokedex (RSE, Sw): a thrown-away plush doll brought to life by a grudge, it wanders looking for the child who abandoned it; it curses by sticking pins in itself."
+  "title": "恨みの人形",
+  "blurb": "あなたは自分を捨てた相手を覚えています。激しく少しひねくれていて、創造力と長い記憶を持ち、また見過ごされるくらいなら、こわがられるほうがいい。それでも、そのすべての下にはぬいぐるみの心があります。あなたはジュペッタ。とりつかれていて、鋭く、見てもらうと心に決めた存在です。",
+  "why": "図鑑（ルビー・サファイア・エメラルド、ソード）：捨てられたぬいぐるみに恨みが宿って動き出し、自分を捨てた子どもを探してさまよう。自分の体に針を刺して呪いをかける。"
  },
  "absol": {
-  "title": "The Misread Omen",
-  "blurb": "You see the storm coming and you say so, even when nobody thanks you for it. You're thoughtful, principled, and deeply solitary, and you've made peace with being misunderstood. You'd still warn them next time. You're Absol: wise, lonely, and better than the reputation.",
-  "why": "Pokedex (RSE, Sw): senses disasters and comes down from the mountains to warn people, who blame it for the calamity instead; it lives alone as a result."
+  "title": "誤解された予兆",
+  "blurb": "あなたは嵐が来るのが見えていて、だれも感謝してくれなくてもそれを伝えます。思慮深く、信念があり、とても孤独で、誤解されることとはもう折り合いをつけました。それでも次もまた知らせるでしょう。あなたはアブソル。賢く、さみしく、うわさよりずっとすばらしい存在です。",
+  "why": "図鑑（ルビー・サファイア・エメラルド、ソード）：災害を感じとると山から下りてきて人々に知らせるが、逆に災いの元だと思われてしまう。そのため、ひとりで暮らしている。"
  },
  "luvdisc": {
-  "title": "The Hopeless Romantic",
-  "blurb": "You love love. You're warm, affectionate, and happiest when you've got someone to swim alongside, and you believe in the kind of devotion other people roll their eyes at. Ambition and plans come second to the people in your life. You're Luvdisc: sweet, open-hearted, and a little bit magic.",
-  "why": "Pokedex (RSE, Sw): swims in pairs and is said to bring eternal love to couples who meet it; it lives for affection."
+  "title": "永遠のロマンチスト",
+  "blurb": "あなたは恋が大好きです。あたたかく愛情深く、いっしょに泳ぐ相手がいるときがいちばん幸せで、ほかの人があきれるような一途な愛を信じています。野心や計画は、大切な人たちのあと。あなたはラブカス。かわいくて、心を開いていて、ちょっぴり魔法のような存在です。",
+  "why": "図鑑（ルビー・サファイア・エメラルド、ソード）：つがいで泳ぎ、出会ったカップルには永遠の愛が訪れるといわれる。愛情のために生きるポケモン。"
  },
  "salamence": {
-  "title": "The Dream That Rages",
-  "blurb": "You wanted something so badly you grew wings for it. You're ambitious, explosive, and absolutely not interested in patience, and when you're frustrated the whole landscape knows. You can be a lot, but nobody doubts how much you want it. You're Salamence: fierce, driven, and airborne by sheer will.",
-  "why": "Pokedex (RSE, Sw): the dream of flying was so strong it grew wings, and when it's enraged it flies into a frenzy that burns everything; the rampaging dream."
+  "title": "怒れる夢",
+  "blurb": "あなたは何かをあまりにも強く望んだので、そのために翼が生えました。野心にあふれ、爆発的で、がまんにはまったく興味がなく、いら立つとまわりの景色ごとそれを知ることになります。手に負えないこともありますが、どれだけ本気かはだれも疑いません。あなたはボーマンダ。激しく、ひたむきで、意志の力だけで空を飛ぶ存在です。",
+  "why": "図鑑（ルビー・サファイア・エメラルド、ソード）：空を飛びたいという夢があまりに強く、ついに翼が生えた。怒ると暴れ回り、すべてを焼きつくす。暴れる夢。"
  },
  "metagross": {
-  "title": "The Supercomputer",
-  "blurb": "You think in systems and you don't get flustered. You analyse, you plan, you execute, and you have very little patience for feelings that get in the way of the right answer. People find you intimidating; you find them inefficient. You're Metagross: brilliant, relentless, and always calculating.",
-  "why": "Pokedex (RSE, Sw): four brains linked in parallel, out-calculating a supercomputer, and it pins prey under its body with cold precision."
+  "title": "スーパーコンピューター",
+  "blurb": "あなたはシステムで考え、取り乱すことがありません。分析し、計画し、実行する。正しい答えのじゃまになる感情には、ほとんどがまんできません。まわりはあなたを近寄りがたいと思い、あなたはまわりを非効率だと思っています。あなたはメタグロス。聡明で、容赦なく、いつも計算しています。",
+  "why": "図鑑（ルビー・サファイア・エメラルド、ソード）：4つの脳が並列につながり、スーパーコンピューターをしのぐ計算力を持つ。獲物を冷たい正確さで体の下に押さえこむ。"
  },
  "latias": {
-  "title": "The Empathic Flier",
-  "blurb": "You feel what other people feel, sometimes before they do. You're warm, intuitive, and playful, and hostility of any kind genuinely hurts you, so you'd rather disappear than fight. You love deeply and you love for life. You're Latias: empathic, gentle, and more courageous than you think.",
-  "why": "Pokedex (RSE, Sw): highly intelligent, understands human speech, and is so sensitive to emotions that it feels hostility as pain; Pokemon Heroes: the playful, loyal guardian of Alto Mare."
+  "title": "心で感じる飛び手",
+  "blurb": "あなたはほかの人が感じていることを、ときには本人より先に感じとります。あたたかく、直感が鋭く、遊び好きで、どんな敵意にも本当に心が痛むので、戦うより姿を消すほうを選びます。深く、一生をかけて愛する人です。あなたはラティアス。共感力があり、やさしく、自分で思うより勇敢です。",
+  "why": "図鑑（ルビー・サファイア・エメラルド、ソード）：とても賢く人の言葉を理解し、感情に敏感なあまり敵意を痛みとして感じる。映画「水の都の護神 ラティアスとラティオス」：遊び好きで一途な、アルトマーレの守り神。"
  },
  "rayquaza": {
-  "title": "The Sky Sovereign",
-  "blurb": "You live above it all, by choice. You're powerful, self-contained, and not interested in anyone else's drama until it threatens the balance, at which point you descend and end it. You don't need a crowd or a crown. You're Rayquaza: supreme, solitary, and only ever on your own terms.",
-  "why": "Pokedex (RSE, Sw): lives alone in the ozone layer for hundreds of millions of years, descending only to end the clash of Kyogre and Groudon; the apex of independence."
+  "title": "天空の覇者",
+  "blurb": "あなたは自ら望んで、すべての上で暮らしています。強く、自分で完結していて、他人のもめごとには興味がありません。それがバランスをおびやかすまでは。そうなれば舞い降りて、終わらせます。観客も王冠もいりません。あなたはレックウザ。至高で、孤独で、いつも自分の流儀だけで生きる存在です。",
+  "why": "図鑑（ルビー・サファイア・エメラルド、ソード）：何億年もオゾン層でひとり暮らし、カイオーガとグラードンの争いを止めるときだけ地上に降りてくる。独立心の頂点。"
  },
  "jirachi": {
-  "title": "The Wish Granter",
-  "blurb": "You want good things for people, and you mean it. You're dreamy and generous, a little sleepy, and far more interested in what could be than what is. You take a while to get going, but when you do, wishes come true. You're Jirachi: hopeful, kind, and worth the wait.",
-  "why": "Pokedex (RSE, Sw): sleeps for a thousand years and wakes to grant any wish written on its tags; the gentle dreamer of the movies."
+  "title": "願いをかなえる者",
+  "blurb": "あなたは人にいいことが起きてほしいと心から思っています。夢見がちで気前がよく、少しねぼすけで、今あるものより、これからありうるものにずっと興味があります。動き出すまで時間はかかりますが、動き出せば願いはかないます。あなたはジラーチ。希望にあふれ、やさしく、待つだけの価値がある存在です。",
+  "why": "図鑑（ルビー・サファイア・エメラルド、ソード）：千年眠り、目覚めると短冊に書かれた願いをかなえる。映画に登場するやさしい夢見がち。"
  },
  "chimchar": {
-  "title": "The Spark of Defiance",
-  "blurb": "Someone told you that you weren't enough, and you've been proving them wrong ever since. You're energetic, scrappy, and a little raw, with a competitive streak that comes from somewhere deep. You need the right people around you, and when you have them you're unstoppable. You're Chimchar: small, fiery, and far from finished.",
-  "why": "Pokedex (DPPt, Sw): its flame is fuelled by its spirit and goes out when it sleeps; anime: Paul's rejected Chimchar becomes Ash's fiercest fighter."
+  "title": "反骨の火花",
+  "blurb": "あなたはだれかに「おまえじゃ足りない」と言われ、それ以来ずっと見返してきました。元気いっぱいで、負けん気が強く、まだ少し荒削り。その闘争心は心の奥深くから来ています。まわりに正しい仲間が必要で、仲間がいれば止められません。あなたはヒコザル。小さく、熱く、まだまだこれからの存在です。",
+  "why": "図鑑（ダイヤモンド・パール・プラチナ、ソード）：おしりの炎は元気の源で、眠ると消える。アニメ：シンジに手放されたヒコザルは、サトシのいちばん激しいファイターになる。"
  },
  "piplup": {
-  "title": "The Proud Penguin",
-  "blurb": "You've got standards, and you'd rather struggle than accept help you didn't ask for. You're proud, stubborn, and a little bit dramatic, and you bond slowly but completely. People learn not to pat you on the head. You're Piplup: dignified, determined, and secretly devoted.",
-  "why": "Pokedex (DPPt, Sw): has a strong sense of pride and hates accepting food from people, finding it hard to bond; anime: Dawn's Piplup, stubborn and proud until it isn't."
+  "title": "誇り高いペンギン",
+  "blurb": "あなたにはこだわりがあり、頼んでもいない助けを受けるくらいなら、苦労するほうを選びます。プライドが高く、がんこで、少し大げさで、心を開くのはゆっくりでも、開けば完全に開きます。みんな、あなたの頭をなでてはいけないと学びます。あなたはポッチャマ。気品があり、意志が強く、ひそかに一途です。",
+  "why": "図鑑（ダイヤモンド・パール・プラチナ、ソード）：プライドが高く、人からエサをもらうのをきらうので、なかなかなつかない。アニメ：がんこで誇り高い、でも最後には心を開くヒカリのポッチャマ。"
  },
  "staraptor": {
-  "title": "The Fearless Flier",
-  "blurb": "You don't quit, and you don't back down. You're proud, fast, and a bit fierce, and you'd rather fly alone than slow down for a flock that isn't keeping up. Injuries don't stop you; nothing really does. You're Staraptor: bold, relentless, and your own captain.",
-  "why": "Pokedex (DPPt, Sw): never stops attacking even when it's injured, and it will leave the flock to live alone; anime: Ash's Staraptor, all speed and pride."
+  "title": "恐れを知らない飛び手",
+  "blurb": "あなたはあきらめず、引き下がりません。誇り高く、速く、少し荒々しく、ついてこられない群れのためにスピードを落とすくらいなら、ひとりで飛ぶほうを選びます。ケガも、ほかの何も、あなたを止められません。あなたはムクホーク。大胆で、容赦なく、自分自身の船長です。",
+  "why": "図鑑（ダイヤモンド・パール・プラチナ、ソード）：傷ついても攻撃をやめず、群れを離れてひとりで生きるようになる。アニメ：スピードと誇りのかたまり、サトシのムクホーク。"
  },
  "bidoof": {
-  "title": "The Humble Builder",
-  "blurb": "Nothing fazes you, and that's a bigger deal than it sounds. You're friendly, practical, and quietly productive, and you keep building while flashier people talk about building. You don't need recognition, though you've earned more than most. You're Bidoof: humble, steady, and beloved by everyone who's paying attention.",
-  "why": "Pokedex (DPPt, Sw): nerves of steel, nothing fazes it, and it gnaws constantly to build dams; the meme that became a fan icon of humble reliability."
+  "title": "ひかえめな建築家",
+  "blurb": "あなたは何にも動じません。それは思っている以上にすごいことです。人なつっこく、現実的で、静かに成果を出し、派手な人たちが作る話をしているあいだも作り続けます。認められる必要はありませんが、だれよりもそれに値します。あなたはビッパ。謙虚で、ぶれず、ちゃんと見ている人たちみんなに愛されています。",
+  "why": "図鑑（ダイヤモンド・パール・プラチナ、ソード）：何にも動じない図太い神経の持ち主で、ダムを作るためにいつも何かをかじっている。ネタから生まれ、謙虚な頼もしさの象徴としてファンに愛されるようになった。"
  },
  "luxray": {
-  "title": "The Sharp-Eyed Sentinel",
-  "blurb": "You see through things, including people. You're watchful, protective, and a bit intense, and you use that sharp eye to look after your own before you use it to hunt. Loyalty and dominance aren't in conflict for you; they're the same job. You're Luxray: perceptive, strong, and always on watch.",
-  "why": "Pokedex (DPPt, Sw): its eyes see through walls to find prey and lost cubs alike, and it watches over its pride; the vigilant lion."
+  "title": "鋭い目の見張り番",
+  "blurb": "あなたは物事を見通します。人の心もです。注意深く、守ることを大切にし、少し激しく、その鋭い目は狩りより先に、まず仲間を見守るために使います。あなたにとって忠誠と強さは対立せず、同じ仕事です。あなたはレントラー。鋭く、強く、いつも見張りに立っている存在です。",
+  "why": "図鑑（ダイヤモンド・パール・プラチナ、ソード）：その目は壁の向こうまで見通し、獲物も迷子の子どもも見つけ出して、群れを見守る。用心深いライオン。"
  },
  "drifloon": {
-  "title": "The Drifting Mystery",
-  "blurb": "You drift, and you like it. You're dreamy, unusual, and a little bit eerie in a way people find oddly comforting, and you'd rather float through life than be pinned down by a plan. You're curious about everything strange. You're Drifloon: light, mysterious, and quietly unforgettable.",
-  "why": "Pokedex (DPPt, Sw): made of spirits, it drifts on the wind and is said to lead children away by the hand; it squeaks when squeezed; a sweet-looking enigma."
+  "title": "ただよう不思議",
+  "blurb": "あなたはただよっていて、それが気に入っています。夢見がちで、変わっていて、少し不気味なのに、なぜかまわりを安心させる人。計画に縛られるより、ふわふわと人生を漂っていたい。不思議なものには何でも興味があります。あなたはフワンテ。軽やかで、ミステリアスで、静かに忘れられない存在です。",
+  "why": "図鑑（ダイヤモンド・パール・プラチナ、ソード）：魂が集まってできた体で風にただよい、子どもの手を引いて連れていくといわれる。ぎゅっとつかむとキュッと鳴く。かわいい見た目のなぞの存在。"
  },
  "honchkrow": {
-  "title": "The Mob Boss",
-  "blurb": "You run the operation. You're confident and a little intimidating, with a sharp eye for talent and a flock that does what you say. You don't do the dirty work; you decide it. You're Honchkrow: commanding, cunning, and the boss of the night.",
-  "why": "Pokedex (DPPt, Sw): leads flocks of Murkrow who do its bidding, and is known as the summoner of night; the boss of the crows."
+  "title": "夜のボス",
+  "blurb": "あなたは組織を仕切る人です。自信があり、少し威圧的で、才能を見抜く目があり、言うことを聞く群れを率いています。汚れ仕事は自分ではしません。決めるだけです。あなたはドンカラス。命令する側で、ずる賢く、夜のボスです。",
+  "why": "図鑑（ダイヤモンド・パール・プラチナ、ソード）：命令を聞くヤミカラスの群れを従え、夜を呼ぶ者として知られる。カラスたちのボス。"
  },
  "spiritomb": {
-  "title": "The Bound Grudge",
-  "blurb": "You've got a lot going on inside and not all of it gets along. You're intense, private, and a little hostile to the world by default, and you don't pretend to be nicer than you are. Your loyalty is rare and strange and real. You're Spiritomb: complicated, guarded, and never dull.",
-  "why": "Pokedex (DPPt, Sw): 108 spirits bound to a keystone for their misdeeds, malicious and wanting out; the villain's Pokemon in two games."
+  "title": "しばられた怨念",
+  "blurb": "あなたの内側ではたくさんのことが起きていて、そのすべてが仲がいいわけではありません。激しく、秘密主義で、そもそも世界に少し敵意を持っていて、本当の自分よりいい人のふりはしません。あなたの忠誠はめずらしく、風変わりで、本物です。あなたはミカルゲ。複雑で、用心深く、決して退屈ではありません。",
+  "why": "図鑑（ダイヤモンド・パール・プラチナ、ソード）：悪事を働いた108の魂がかなめいしにしばりつけられ、悪意を持ち、外に出たがっている。ふたつのゲームで悪役の手持ちとなったポケモン。"
  },
  "garchomp": {
-  "title": "The Mach Hunter",
-  "blurb": "You go fast and you don't miss. You're ambitious, confident, and a little scary when you're focused, and you'd rather hunt down a goal than wait for it to come to you. You respect strength and you've got plenty. You're Garchomp: apex, airborne, and always closing in.",
-  "why": "Pokedex (DPPt, Sw): flies at the speed of a jet to hunt down bird Pokemon and never lets prey escape; anime: Cynthia's unbeatable Garchomp."
+  "title": "マッハの狩人",
+  "blurb": "あなたは速く、狙いをはずしません。野心にあふれ、自信があり、集中しているときは少しこわいほど。目標が来るのを待つより、自分から追いつめに行きます。強さを尊敬し、自分自身もたっぷり持っています。あなたはガブリアス。頂点の捕食者で、空を飛び、いつも距離を詰めている存在です。",
+  "why": "図鑑（ダイヤモンド・パール・プラチナ、ソード）：ジェット機のような速さで飛び、鳥ポケモンを追いつめ、獲物を決して逃さない。アニメ：だれにも負けないシロナのガブリアス。"
  },
  "lucario": {
-  "title": "The Aura Reader",
-  "blurb": "You read people, and you hold yourself to a standard most people wouldn't attempt. You're disciplined and just, with a quiet competitiveness and a loyalty that survives being let down. You don't talk much; you don't need to. You're Lucario: focused, principled, and attuned to everyone around you.",
-  "why": "Pokedex (DPPt, Sw): reads the aura of all things and knows how others feel; Lucario and the Mystery of Mew: loyal to the end, even when betrayed."
+  "title": "波導を読む者",
+  "blurb": "あなたは人の心を読み、多くの人が挑もうともしない基準を自分に課しています。規律正しく公正で、静かな闘争心と、裏切られても消えない忠誠心を持っています。多くは語りませんし、その必要もありません。あなたはルカリオ。集中していて、信念があり、まわりのすべての人と心が通じています。",
+  "why": "図鑑（ダイヤモンド・パール・プラチナ、ソード）：あらゆるものの波導を読みとり、相手の気持ちを知ることができる。映画「ミュウと波導の勇者 ルカリオ」：裏切られても最後まで忠実。"
  },
  "croagunk": {
-  "title": "The Deadpan Trickster",
-  "blurb": "You have one facial expression and it's working for you. You're dry, unflappable, and quietly strange, and you deliver your best moments with no fanfare at all. You keep the people around you honest, sometimes with a jab. You're Croagunk: deadpan, dependable, and funnier than anyone gives you credit for.",
-  "why": "Anime: Brock's Croagunk, who jabs him mid-flirt every single time without changing expression; Pokedex (DPPt, Sw): makes an eerie sound with its cheeks to unsettle foes."
+  "title": "無表情のいたずら者",
+  "blurb": "あなたには表情がひとつしかなく、それがうまくはまっています。そっけなく、動じず、静かに変わっていて、最高の場面もまったく前ぶれなくやってのけます。ときにはひと突きで、まわりの人を正直にさせます。あなたはグレッグル。無表情で、頼りになり、みんなが思うよりずっとおもしろい存在です。",
+  "why": "アニメ：タケシがナンパするたびに、表情ひとつ変えずにどくづきでツッコむグレッグル。図鑑（ダイヤモンド・パール・プラチナ、ソード）：ほおで不気味な音を鳴らし、相手をひるませる。"
  },
  "weavile": {
-  "title": "The Pack Schemer",
-  "blurb": "You work in a crew and you run the plan. You're sharp, strategic, and a bit cold-blooded about getting results, and your friends are more like co-conspirators. You don't mind being the villain in someone else's story. You're Weavile: clever, coordinated, and dangerous by design.",
-  "why": "Pokedex (DPPt, Sw): hunts in packs of four or five, carving signs into trees to coordinate; cunning, cold and very good at it."
+  "title": "群れの策士",
+  "blurb": "あなたはチームで動き、作戦を立てるのはあなたです。鋭く、戦略的で、結果を出すためなら少し冷徹にもなれ、友だちというより共犯者のような仲間がいます。だれかの物語で悪役になってもかまいません。あなたはマニューラ。頭がよく、連携上手で、計算ずくで危険な存在です。",
+  "why": "図鑑（ダイヤモンド・パール・プラチナ、ソード）：4〜5匹のグループで狩りをし、木にサインを刻んで連携をとる。ずる賢く、冷たく、とても有能。"
  },
  "togekiss": {
   "title": "The Peace Bringer",

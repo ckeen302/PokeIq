@@ -375,129 +375,129 @@
   "why": "Pokédex (Rubis/Saphir/Émeraude, Épée) : creuse les montagnes à la recherche de charbon et le brûle sans relâche, gardant toujours son feu allumé ; anime : le Chartor de Sacha, qui pleure à chaque émotion."
  },
  "flygon": {
-  "title": "The Desert Spirit",
-  "blurb": "You're a free spirit with a surprisingly kind heart. You love wide spaces and new horizons, you make music out of chaos, and you're far more likely to wander off than settle down. People miss you when you go, and you always come back eventually. You're Flygon: roaming, warm, and impossible to fence in.",
-  "why": "Pokedex (RSE, Sw): its wings sing in the sandstorms it stirs up, so it's called the spirit of the desert; a roaming, free-spirited dragon."
+  "title": "L'esprit du désert",
+  "blurb": "Tu es un esprit libre au cœur étonnamment tendre. Tu aimes les grands espaces et les nouveaux horizons, tu fais de la musique avec le chaos, et tu as bien plus de chances de partir à l'aventure que de te poser. Les gens te regrettent quand tu t'en vas, et tu finis toujours par revenir. Tu es Libégon : vagabond, chaleureux et impossible à enfermer.",
+  "why": "Pokédex (Rubis/Saphir/Émeraude, Épée) : ses ailes chantent dans les tempêtes de sable qu'il soulève, d'où son surnom d'esprit du désert ; un dragon vagabond et libre."
  },
  "altaria": {
-  "title": "The Cloud Singer",
-  "blurb": "You float above the drama. You're gentle, artistic, and a soothing presence: people feel calmer within a few minutes of talking to you. You'd rather sing than argue, and you give the best hugs anyone has ever had. You're Altaria: soft, serene, and secretly a dragon.",
-  "why": "Pokedex (RSE, Sw): hums in a beautiful soprano and hugs people softly with its cloud-like wings; it sings to those it loves."
+  "title": "Le chanteur des nuages",
+  "blurb": "Tu flottes au-dessus des drames. Tu es doux, artiste et apaisant : les gens se sentent plus calmes après quelques minutes à te parler. Tu préfères chanter que te disputer, et tu fais les meilleurs câlins qui soient. Tu es Altaria : tendre, serein et en secret un dragon.",
+  "why": "Pokédex (Rubis/Saphir/Émeraude, Épée) : fredonne d'une magnifique voix de soprano et enlace doucement les gens de ses ailes cotonneuses ; il chante pour ceux qu'il aime."
  },
  "zangoose": {
-  "title": "The Feud Keeper",
-  "blurb": "You've got a rival, and you take it personally. You're alert, fierce, and ready at all times, and a grudge for you isn't bitterness, it's fuel. You're loyal to a few and suspicious of most. You're Zangoose: sharp, quick, and never caught napping.",
-  "why": "Pokedex (RSE, Sw): locked in an ancient feud with Seviper, it is always on alert and its fur stands on end at the sight of one; it fights with the claws out."
+  "title": "Le gardien de la rivalité",
+  "blurb": "Tu as un rival, et tu le prends personnellement. Tu es alerte, féroce et toujours prêt, et chez toi la rancune n'est pas de l'amertume, c'est du carburant. Tu es fidèle à quelques-uns et méfiant envers la plupart. Tu es Mangriff : affûté, rapide et jamais pris en train de dormir.",
+  "why": "Pokédex (Rubis/Saphir/Émeraude, Épée) : engagé dans une rivalité ancestrale avec Séviper, il est toujours sur ses gardes et son pelage se hérisse dès qu'il en voit un ; il se bat toutes griffes dehors."
  },
  "milotic": {
-  "title": "The Calming Beauty",
-  "blurb": "You bring the temperature down. You're graceful and calm, and people stop arguing when you walk in, not because you ask them to but because it suddenly seems silly. You've been through worse than they know and it made you kinder. You're Milotic: elegant, peaceful, and proof that beauty is what you do with your past.",
-  "why": "Pokedex (RSE, Sw): the most beautiful Pokemon, said to calm angry feelings and end wars just by appearing; it lives at the bottom of clear lakes."
+  "title": "La beauté apaisante",
+  "blurb": "Tu fais baisser la température. Tu es gracieux et calme, et les gens arrêtent de se disputer quand tu entres, non pas parce que tu le demandes, mais parce que ça leur paraît soudain ridicule. Tu as traversé pire qu'ils ne le savent, et ça t'a rendu plus gentil. Tu es Milobellus : élégant, paisible et la preuve que la beauté, c'est ce qu'on fait de son passé.",
+  "why": "Pokédex (Rubis/Saphir/Émeraude, Épée) : le plus beau des Pokémon, qui apaiserait la colère et mettrait fin aux guerres rien qu'en apparaissant ; il vit au fond des lacs limpides."
  },
  "kecleon": {
-  "title": "The Shopkeeper",
-  "blurb": "You run a tight ship. You're organised, observant, and friendly in a transactional sort of way, and you blend in until someone breaks the rules, at which point you're a nightmare. You respect fairness above everything. You're Kecleon: adaptable, dependable, and not to be stolen from.",
-  "why": "Mystery Dungeon: runs the shops in every town and is terrifyingly strong if you steal from it; Pokedex (RSE, Sw): changes colour to blend in and watch quietly."
+  "title": "Le commerçant",
+  "blurb": "Tu tiens ta boutique d'une main de fer. Tu es organisé, observateur et aimable de façon très commerciale, et tu te fonds dans le décor jusqu'à ce que quelqu'un enfreigne les règles ; là, tu deviens un cauchemar. Tu respectes l'équité par-dessus tout. Tu es Kecleon : adaptable, fiable, et il ne vaut mieux pas te voler.",
+  "why": "Donjon Mystère : tient les boutiques de chaque ville et devient terriblement fort si on le vole ; Pokédex (Rubis/Saphir/Émeraude, Épée) : change de couleur pour se fondre dans le décor et observer en silence."
  },
  "banette": {
-  "title": "The Grudge Doll",
-  "blurb": "You remember who threw you away. You're intense and a little bitter, with a creative streak and a long memory, and you'd rather be feared than overlooked again. There's a soft toy somewhere under all that. You're Banette: haunted, sharp, and determined to be seen.",
-  "why": "Pokedex (RSE, Sw): a thrown-away plush doll brought to life by a grudge, it wanders looking for the child who abandoned it; it curses by sticking pins in itself."
+  "title": "La poupée rancunière",
+  "blurb": "Tu te souviens de qui t'a jeté. Tu es intense et un peu amer, avec une fibre créative et une longue mémoire, et tu préfères qu'on te craigne plutôt que d'être encore oublié. Il y a une peluche quelque part sous tout ça. Tu es Branette : hanté, acéré et bien décidé à être vu.",
+  "why": "Pokédex (Rubis/Saphir/Émeraude, Épée) : une peluche jetée, ramenée à la vie par la rancune, qui erre à la recherche de l'enfant qui l'a abandonnée ; elle jette des sorts en se plantant des aiguilles."
  },
  "absol": {
-  "title": "The Misread Omen",
-  "blurb": "You see the storm coming and you say so, even when nobody thanks you for it. You're thoughtful, principled, and deeply solitary, and you've made peace with being misunderstood. You'd still warn them next time. You're Absol: wise, lonely, and better than the reputation.",
-  "why": "Pokedex (RSE, Sw): senses disasters and comes down from the mountains to warn people, who blame it for the calamity instead; it lives alone as a result."
+  "title": "Le présage incompris",
+  "blurb": "Tu vois l'orage arriver et tu le dis, même quand personne ne te remercie. Tu es réfléchi, attaché à tes principes et profondément solitaire, et tu as accepté d'être incompris. Tu les préviendrais quand même la prochaine fois. Tu es Absol : sage, solitaire et meilleur que ta réputation.",
+  "why": "Pokédex (Rubis/Saphir/Émeraude, Épée) : sent venir les catastrophes et descend des montagnes pour prévenir les gens, qui l'accusent au contraire d'en être la cause ; il vit donc seul."
  },
  "luvdisc": {
-  "title": "The Hopeless Romantic",
-  "blurb": "You love love. You're warm, affectionate, and happiest when you've got someone to swim alongside, and you believe in the kind of devotion other people roll their eyes at. Ambition and plans come second to the people in your life. You're Luvdisc: sweet, open-hearted, and a little bit magic.",
-  "why": "Pokedex (RSE, Sw): swims in pairs and is said to bring eternal love to couples who meet it; it lives for affection."
+  "title": "La romantique incurable",
+  "blurb": "Tu aimes l'amour. Tu es chaleureux, affectueux et plus heureux quand tu as quelqu'un avec qui nager, et tu crois en un dévouement qui fait lever les yeux au ciel aux autres. L'ambition et les plans passent après les gens de ta vie. Tu es Lovdisc : doux, au cœur grand ouvert et un peu magique.",
+  "why": "Pokédex (Rubis/Saphir/Émeraude, Épée) : nage en couple et apporterait un amour éternel aux couples qui le croisent ; il vit pour l'affection."
  },
  "salamence": {
-  "title": "The Dream That Rages",
-  "blurb": "You wanted something so badly you grew wings for it. You're ambitious, explosive, and absolutely not interested in patience, and when you're frustrated the whole landscape knows. You can be a lot, but nobody doubts how much you want it. You're Salamence: fierce, driven, and airborne by sheer will.",
-  "why": "Pokedex (RSE, Sw): the dream of flying was so strong it grew wings, and when it's enraged it flies into a frenzy that burns everything; the rampaging dream."
+  "title": "Le rêve enragé",
+  "blurb": "Tu voulais quelque chose si fort qu'il t'a poussé des ailes. Tu es ambitieux, explosif et pas du tout intéressé par la patience, et quand tu es frustré, tout le paysage le sait. Tu peux être intense, mais personne ne doute de ta volonté. Tu es Drattak : féroce, déterminé et dans les airs par pure force de volonté.",
+  "why": "Pokédex (Rubis/Saphir/Émeraude, Épée) : son rêve de voler était si fort que des ailes lui ont poussé, et quand il est furieux il entre dans une frénésie qui brûle tout ; le rêve déchaîné."
  },
  "metagross": {
-  "title": "The Supercomputer",
-  "blurb": "You think in systems and you don't get flustered. You analyse, you plan, you execute, and you have very little patience for feelings that get in the way of the right answer. People find you intimidating; you find them inefficient. You're Metagross: brilliant, relentless, and always calculating.",
-  "why": "Pokedex (RSE, Sw): four brains linked in parallel, out-calculating a supercomputer, and it pins prey under its body with cold precision."
+  "title": "Le superordinateur",
+  "blurb": "Tu penses en systèmes et tu ne perds jamais tes moyens. Tu analyses, tu planifies, tu exécutes, et tu as très peu de patience pour les sentiments qui gênent la bonne réponse. Les gens te trouvent intimidant ; toi, tu les trouves inefficaces. Tu es Métalosse : brillant, implacable et toujours en train de calculer.",
+  "why": "Pokédex (Rubis/Saphir/Émeraude, Épée) : quatre cerveaux reliés en parallèle qui calculent plus vite qu'un superordinateur, et il immobilise ses proies sous son corps avec une froide précision."
  },
  "latias": {
-  "title": "The Empathic Flier",
-  "blurb": "You feel what other people feel, sometimes before they do. You're warm, intuitive, and playful, and hostility of any kind genuinely hurts you, so you'd rather disappear than fight. You love deeply and you love for life. You're Latias: empathic, gentle, and more courageous than you think.",
-  "why": "Pokedex (RSE, Sw): highly intelligent, understands human speech, and is so sensitive to emotions that it feels hostility as pain; Pokemon Heroes: the playful, loyal guardian of Alto Mare."
+  "title": "L'empathique volante",
+  "blurb": "Tu ressens ce que ressentent les autres, parfois avant eux. Tu es chaleureuse, intuitive et joueuse, et l'hostilité sous toutes ses formes te blesse vraiment, alors tu préfères disparaître plutôt que te battre. Tu aimes profondément, et pour la vie. Tu es Latias : empathique, douce et plus courageuse que tu ne le crois.",
+  "why": "Pokédex (Rubis/Saphir/Émeraude, Épée) : très intelligente, elle comprend le langage humain et est si sensible aux émotions qu'elle ressent l'hostilité comme une douleur ; Pokémon Heroes : la gardienne joueuse et fidèle d'Alto Mare."
  },
  "rayquaza": {
-  "title": "The Sky Sovereign",
-  "blurb": "You live above it all, by choice. You're powerful, self-contained, and not interested in anyone else's drama until it threatens the balance, at which point you descend and end it. You don't need a crowd or a crown. You're Rayquaza: supreme, solitary, and only ever on your own terms.",
-  "why": "Pokedex (RSE, Sw): lives alone in the ozone layer for hundreds of millions of years, descending only to end the clash of Kyogre and Groudon; the apex of independence."
+  "title": "Le souverain du ciel",
+  "blurb": "Tu vis au-dessus de tout, par choix. Tu es puissant, autonome et indifférent aux drames des autres jusqu'à ce qu'ils menacent l'équilibre ; alors tu descends et tu y mets fin. Tu n'as besoin ni de foule ni de couronne. Tu es Rayquaza : suprême, solitaire et toujours à tes propres conditions.",
+  "why": "Pokédex (Rubis/Saphir/Émeraude, Épée) : vit seul dans la couche d'ozone depuis des centaines de millions d'années et ne descend que pour mettre fin à l'affrontement entre Kyogre et Groudon ; le summum de l'indépendance."
  },
  "jirachi": {
-  "title": "The Wish Granter",
-  "blurb": "You want good things for people, and you mean it. You're dreamy and generous, a little sleepy, and far more interested in what could be than what is. You take a while to get going, but when you do, wishes come true. You're Jirachi: hopeful, kind, and worth the wait.",
-  "why": "Pokedex (RSE, Sw): sleeps for a thousand years and wakes to grant any wish written on its tags; the gentle dreamer of the movies."
+  "title": "Le faiseur de vœux",
+  "blurb": "Tu veux du bien aux gens, et tu le penses vraiment. Tu es rêveur et généreux, un peu endormi, et bien plus intéressé par ce qui pourrait être que par ce qui est. Tu mets du temps à démarrer, mais quand tu t'y mets, les vœux se réalisent. Tu es Jirachi : plein d'espoir, gentil, et ça vaut la peine de t'attendre.",
+  "why": "Pokédex (Rubis/Saphir/Émeraude, Épée) : dort mille ans et se réveille pour exaucer n'importe quel vœu écrit sur ses étiquettes ; le doux rêveur des films."
  },
  "chimchar": {
-  "title": "The Spark of Defiance",
-  "blurb": "Someone told you that you weren't enough, and you've been proving them wrong ever since. You're energetic, scrappy, and a little raw, with a competitive streak that comes from somewhere deep. You need the right people around you, and when you have them you're unstoppable. You're Chimchar: small, fiery, and far from finished.",
-  "why": "Pokedex (DPPt, Sw): its flame is fuelled by its spirit and goes out when it sleeps; anime: Paul's rejected Chimchar becomes Ash's fiercest fighter."
+  "title": "L'étincelle de défi",
+  "blurb": "Quelqu'un t'a dit que tu n'étais pas à la hauteur, et depuis tu lui prouves le contraire. Tu es énergique, bagarreur et encore un peu à vif, avec un esprit de compétition qui vient de très loin. Il te faut les bonnes personnes autour de toi, et quand tu les as, tu es inarrêtable. Tu es Ouisticram : petit, ardent et loin d'avoir dit ton dernier mot.",
+  "why": "Pokédex (Diamant/Perle/Platine, Épée) : sa flamme est alimentée par sa volonté et s'éteint quand il dort ; anime : rejeté par Paul, Ouisticram devient le combattant le plus féroce de Sacha."
  },
  "piplup": {
-  "title": "The Proud Penguin",
-  "blurb": "You've got standards, and you'd rather struggle than accept help you didn't ask for. You're proud, stubborn, and a little bit dramatic, and you bond slowly but completely. People learn not to pat you on the head. You're Piplup: dignified, determined, and secretly devoted.",
-  "why": "Pokedex (DPPt, Sw): has a strong sense of pride and hates accepting food from people, finding it hard to bond; anime: Dawn's Piplup, stubborn and proud until it isn't."
+  "title": "Le pingouin fier",
+  "blurb": "Tu as tes exigences, et tu préfères galérer plutôt qu'accepter une aide que tu n'as pas demandée. Tu es fier, têtu et un peu théâtral, et tu t'attaches lentement mais complètement. Les gens apprennent à ne pas te tapoter la tête. Tu es Tiplouf : digne, déterminé et dévoué en secret.",
+  "why": "Pokédex (Diamant/Perle/Platine, Épée) : très fier, il déteste accepter la nourriture des humains et a du mal à créer des liens ; anime : le Tiplouf d'Aurore, têtu et fier jusqu'à ce qu'il ne le soit plus."
  },
  "staraptor": {
-  "title": "The Fearless Flier",
-  "blurb": "You don't quit, and you don't back down. You're proud, fast, and a bit fierce, and you'd rather fly alone than slow down for a flock that isn't keeping up. Injuries don't stop you; nothing really does. You're Staraptor: bold, relentless, and your own captain.",
-  "why": "Pokedex (DPPt, Sw): never stops attacking even when it's injured, and it will leave the flock to live alone; anime: Ash's Staraptor, all speed and pride."
+  "title": "L'oiseau intrépide",
+  "blurb": "Tu n'abandonnes pas, et tu ne recules pas. Tu es fier, rapide et un peu féroce, et tu préfères voler seul plutôt que ralentir pour une nuée qui ne suit pas. Les blessures ne t'arrêtent pas ; rien ne t'arrête vraiment. Tu es Étouraptor : audacieux, implacable et seul maître à bord.",
+  "why": "Pokédex (Diamant/Perle/Platine, Épée) : n'arrête jamais d'attaquer même blessé, et quitte la nuée pour vivre seul ; anime : l'Étouraptor de Sacha, tout en vitesse et en fierté."
  },
  "bidoof": {
-  "title": "The Humble Builder",
-  "blurb": "Nothing fazes you, and that's a bigger deal than it sounds. You're friendly, practical, and quietly productive, and you keep building while flashier people talk about building. You don't need recognition, though you've earned more than most. You're Bidoof: humble, steady, and beloved by everyone who's paying attention.",
-  "why": "Pokedex (DPPt, Sw): nerves of steel, nothing fazes it, and it gnaws constantly to build dams; the meme that became a fan icon of humble reliability."
+  "title": "Le bâtisseur modeste",
+  "blurb": "Rien ne t'ébranle, et c'est plus important qu'il n'y paraît. Tu es sympathique, pragmatique et productif sans bruit, et tu continues de construire pendant que les plus tape-à-l'œil parlent de construire. Tu n'as pas besoin de reconnaissance, même si tu en as mérité plus que la plupart. Tu es Keunotor : humble, constant et adoré de tous ceux qui font attention.",
+  "why": "Pokédex (Diamant/Perle/Platine, Épée) : des nerfs d'acier, rien ne le perturbe, et il ronge sans cesse pour construire des barrages ; le mème devenu icône des fans pour sa fiabilité modeste."
  },
  "luxray": {
-  "title": "The Sharp-Eyed Sentinel",
-  "blurb": "You see through things, including people. You're watchful, protective, and a bit intense, and you use that sharp eye to look after your own before you use it to hunt. Loyalty and dominance aren't in conflict for you; they're the same job. You're Luxray: perceptive, strong, and always on watch.",
-  "why": "Pokedex (DPPt, Sw): its eyes see through walls to find prey and lost cubs alike, and it watches over its pride; the vigilant lion."
+  "title": "La sentinelle au regard perçant",
+  "blurb": "Tu vois à travers les choses, et à travers les gens. Tu es vigilant, protecteur et un peu intense, et tu te sers de ce regard perçant pour veiller sur les tiens avant de t'en servir pour chasser. Loyauté et domination ne s'opposent pas pour toi ; c'est le même travail. Tu es Luxray : perspicace, fort et toujours aux aguets.",
+  "why": "Pokédex (Diamant/Perle/Platine, Épée) : ses yeux voient à travers les murs pour trouver aussi bien ses proies que ses petits égarés, et il veille sur sa troupe ; le lion vigilant."
  },
  "drifloon": {
-  "title": "The Drifting Mystery",
-  "blurb": "You drift, and you like it. You're dreamy, unusual, and a little bit eerie in a way people find oddly comforting, and you'd rather float through life than be pinned down by a plan. You're curious about everything strange. You're Drifloon: light, mysterious, and quietly unforgettable.",
-  "why": "Pokedex (DPPt, Sw): made of spirits, it drifts on the wind and is said to lead children away by the hand; it squeaks when squeezed; a sweet-looking enigma."
+  "title": "Le mystère à la dérive",
+  "blurb": "Tu dérives, et ça te plaît. Tu es rêveur, original et un peu inquiétant d'une manière que les gens trouvent étrangement réconfortante, et tu préfères flotter dans la vie plutôt que d'être cloué à un plan. Tout ce qui est étrange t'intrigue. Tu es Baudrive : léger, mystérieux et discrètement inoubliable.",
+  "why": "Pokédex (Diamant/Perle/Platine, Épée) : fait d'esprits, il dérive au gré du vent et emmènerait les enfants par la main ; il couine quand on le serre ; une énigme à l'air adorable."
  },
  "honchkrow": {
-  "title": "The Mob Boss",
-  "blurb": "You run the operation. You're confident and a little intimidating, with a sharp eye for talent and a flock that does what you say. You don't do the dirty work; you decide it. You're Honchkrow: commanding, cunning, and the boss of the night.",
-  "why": "Pokedex (DPPt, Sw): leads flocks of Murkrow who do its bidding, and is known as the summoner of night; the boss of the crows."
+  "title": "Le parrain",
+  "blurb": "C'est toi qui diriges l'opération. Tu es sûr de toi et un peu intimidant, avec un œil affûté pour le talent et une nuée qui fait ce que tu dis. Tu ne fais pas le sale boulot ; tu le décides. Tu es Corboss : autoritaire, rusé et le patron de la nuit.",
+  "why": "Pokédex (Diamant/Perle/Platine, Épée) : mène des nuées de Cornèbre qui obéissent à ses ordres et est connu comme l'invocateur de la nuit ; le chef des corbeaux."
  },
  "spiritomb": {
-  "title": "The Bound Grudge",
-  "blurb": "You've got a lot going on inside and not all of it gets along. You're intense, private, and a little hostile to the world by default, and you don't pretend to be nicer than you are. Your loyalty is rare and strange and real. You're Spiritomb: complicated, guarded, and never dull.",
-  "why": "Pokedex (DPPt, Sw): 108 spirits bound to a keystone for their misdeeds, malicious and wanting out; the villain's Pokemon in two games."
+  "title": "La rancune enchaînée",
+  "blurb": "Il se passe beaucoup de choses en toi, et elles ne s'entendent pas toutes. Tu es intense, secret et un peu hostile au monde par défaut, et tu ne fais pas semblant d'être plus gentil que tu ne l'es. Ta loyauté est rare, étrange et sincère. Tu es Spiritomb : compliqué, sur tes gardes et jamais ennuyeux.",
+  "why": "Pokédex (Diamant/Perle/Platine, Épée) : 108 esprits enchaînés à une clé de voûte pour leurs méfaits, malveillants et avides de sortir ; le Pokémon de la méchante dans deux jeux."
  },
  "garchomp": {
-  "title": "The Mach Hunter",
-  "blurb": "You go fast and you don't miss. You're ambitious, confident, and a little scary when you're focused, and you'd rather hunt down a goal than wait for it to come to you. You respect strength and you've got plenty. You're Garchomp: apex, airborne, and always closing in.",
-  "why": "Pokedex (DPPt, Sw): flies at the speed of a jet to hunt down bird Pokemon and never lets prey escape; anime: Cynthia's unbeatable Garchomp."
+  "title": "Le chasseur supersonique",
+  "blurb": "Tu vas vite et tu ne rates pas ta cible. Tu es ambitieux, sûr de toi et un peu effrayant quand tu es concentré, et tu préfères traquer un objectif plutôt que d'attendre qu'il vienne à toi. Tu respectes la force, et tu n'en manques pas. Tu es Carchacrok : prédateur suprême, toujours en vol et toujours plus près.",
+  "why": "Pokédex (Diamant/Perle/Platine, Épée) : vole à la vitesse d'un avion à réaction pour chasser les Pokémon oiseaux et ne laisse jamais échapper sa proie ; anime : l'imbattable Carchacrok de Cynthia."
  },
  "lucario": {
-  "title": "The Aura Reader",
-  "blurb": "You read people, and you hold yourself to a standard most people wouldn't attempt. You're disciplined and just, with a quiet competitiveness and a loyalty that survives being let down. You don't talk much; you don't need to. You're Lucario: focused, principled, and attuned to everyone around you.",
-  "why": "Pokedex (DPPt, Sw): reads the aura of all things and knows how others feel; Lucario and the Mystery of Mew: loyal to the end, even when betrayed."
+  "title": "Le lecteur d'aura",
+  "blurb": "Tu lis dans les gens, et tu t'imposes des exigences que la plupart n'oseraient même pas viser. Tu es discipliné et juste, avec un esprit de compétition discret et une loyauté qui survit aux déceptions. Tu ne parles pas beaucoup ; tu n'en as pas besoin. Tu es Lucario : concentré, attaché à tes principes et à l'écoute de tous ceux qui t'entourent.",
+  "why": "Pokédex (Diamant/Perle/Platine, Épée) : lit l'aura de toute chose et sait ce que ressentent les autres ; Lucario et le Mystère de Mew : fidèle jusqu'au bout, même trahi."
  },
  "croagunk": {
-  "title": "The Deadpan Trickster",
-  "blurb": "You have one facial expression and it's working for you. You're dry, unflappable, and quietly strange, and you deliver your best moments with no fanfare at all. You keep the people around you honest, sometimes with a jab. You're Croagunk: deadpan, dependable, and funnier than anyone gives you credit for.",
-  "why": "Anime: Brock's Croagunk, who jabs him mid-flirt every single time without changing expression; Pokedex (DPPt, Sw): makes an eerie sound with its cheeks to unsettle foes."
+  "title": "Le farceur pince-sans-rire",
+  "blurb": "Tu n'as qu'une expression, et elle te réussit. Tu es pince-sans-rire, imperturbable et discrètement bizarre, et tu sors tes meilleurs moments sans la moindre fanfare. Tu gardes les gens autour de toi honnêtes, parfois d'un petit coup. Tu es Cradopaud : impassible, fiable et plus drôle qu'on ne le pense.",
+  "why": "Anime : le Cradopaud de Pierre, qui le frappe en pleine tentative de drague à chaque fois sans changer d'expression ; Pokédex (Diamant/Perle/Platine, Épée) : produit un son inquiétant avec ses joues pour déstabiliser ses ennemis."
  },
  "weavile": {
-  "title": "The Pack Schemer",
-  "blurb": "You work in a crew and you run the plan. You're sharp, strategic, and a bit cold-blooded about getting results, and your friends are more like co-conspirators. You don't mind being the villain in someone else's story. You're Weavile: clever, coordinated, and dangerous by design.",
-  "why": "Pokedex (DPPt, Sw): hunts in packs of four or five, carving signs into trees to coordinate; cunning, cold and very good at it."
+  "title": "Le cerveau de la bande",
+  "blurb": "Tu travailles en équipe et c'est toi qui fais le plan. Tu es vif, stratège et un peu froid quand il s'agit d'obtenir des résultats, et tes amis ressemblent plutôt à des complices. Être le méchant dans l'histoire de quelqu'un d'autre ne te dérange pas. Tu es Dimoret : malin, coordonné et dangereux par nature.",
+  "why": "Pokédex (Diamant/Perle/Platine, Épée) : chasse en groupes de quatre ou cinq et grave des signes sur les arbres pour se coordonner ; rusé, froid et redoutablement efficace."
  },
  "togekiss": {
   "title": "The Peace Bringer",
