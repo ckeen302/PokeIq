@@ -61,7 +61,7 @@ function Ball({ d, size }: { d: Design; size: number }) {
       <div style={{ position: "absolute", left: 0, top: half + bandH, width: size, height: size - half - bandH, display: "flex", background: hexOf(d.colours.bottom) }} />
       {botM && <div style={{ position: "absolute", left: 0, top: half + bandH, width: size, height: size - half - bandH, display: "flex", backgroundImage: botM }} />}
       {/* Shading and a highlight, so it reads as round. */}
-      <div style={{ position: "absolute", left: 0, top: 0, width: size, height: size, display: "flex", backgroundImage: "radial-gradient(circle at 34% 28%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 26%), radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 52%, rgba(0,0,0,0.32) 72%)" }} />
+      <div style={{ position: "absolute", left: 0, top: 0, width: size, height: size, display: "flex", backgroundImage: "radial-gradient(circle at 34% 28%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 26%), radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 58%, rgba(0,0,0,0.22) 74%)" }} />
       <div style={{ position: "absolute", left: (size - ring) / 2, top: (size - ring) / 2, width: ring, height: ring, borderRadius: ring / 2, display: "flex", background: hexOf(d.colours.ring), alignItems: "center", justifyContent: "center" }}>
         <div style={{ width: button, height: button, borderRadius: button / 2, display: "flex", background: hexOf(d.colours.button), border: "3px solid rgba(0,0,0,0.25)" }} />
       </div>

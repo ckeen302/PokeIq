@@ -515,7 +515,7 @@ export function ItemCard({ design, still, t }: { design: Design; still: string |
       </span>
       <div className="min-w-0">
         <p className="truncate font-display text-[17px] font-semibold" data-testid="pbm-item-name">{design.name || t("card.untitled")}</p>
-        <p className="mt-1 whitespace-pre-line break-words text-[13.5px] leading-relaxed text-foreground/80" data-testid="pbm-item-desc">{design.desc || t("card.descPlaceholder")}</p>
+        <p className={cn("mt-1 whitespace-pre-line break-words text-[13.5px] leading-relaxed", design.desc ? "text-foreground/80" : "italic text-muted-foreground/60")} data-testid="pbm-item-desc">{design.desc || t("card.descPlaceholder")}</p>
       </div>
     </div>
   );

@@ -388,7 +388,7 @@ export default function BallMaker({ initial, linkBroken }: { initial: Design | n
     const az = Math.round((((hit.az / (Math.PI * 2)) % 1) + 1) % 1 * 65536) % 65536;
     const pol = Math.round((hit.pol / Math.PI) * 65535);
     commit({ ...d, stickers: [...d.stickers, { glyph: brush.glyph, az, pol, size: brush.size, rot: brush.rot, colour: brush.colour }] });
-    setSelSticker(d.stickers.length);
+    setSelSticker(-1);
   };
 
   // ---- Dragging to turn the ball (a click without a drag places a sticker on the Stickers tab).

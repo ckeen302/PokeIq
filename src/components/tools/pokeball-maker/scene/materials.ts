@@ -107,7 +107,8 @@ vec3 pbmStickers(vec3 q, vec3 col) {
     if (abs(l.x) > 1.0 || abs(l.y) > 1.0) continue;
     vec2 uv = (uStickB[k].xy + (l * vec2(0.5, -0.5) + 0.5)) / ${ATLAS_GRID}.0;
     uv.y = 1.0 - uv.y;
-    float a = texture2D(uGlyphs, uv).a;
+    // The glyph never reaches its cell's edge; masking the edge hides the blurred mip the jump in uv picks there.
+    float a = texture2D(uGlyphs, uv).a * (1.0 - smoothstep(0.84, 0.9, max(abs(l.x), abs(l.y))));
     col = mix(col, uStickC[k], a);
   }
   return col;
