@@ -13,6 +13,9 @@ import type { ModuleId } from "@/engines/types";
 
 export interface Insight {
   tag: string;
+  /** What the tag is about ("gen", "type", "mod", "stat") and its value ("3", "fire"…), for text in another language. */
+  kind: string;
+  value: string;
   label: string;
   /** Smoothed accuracy estimate, 0–1. */
   accuracy: number;
@@ -24,22 +27,22 @@ export interface Insight {
 const PRIOR_STRENGTH = 6; // pseudo-answers
 const MIN_ANSWERS = 5;
 
-function describeTag(tag: string): { label: string; href: string; cta: string } | null {
+function describeTag(tag: string): { kind: string; value: string; label: string; href: string; cta: string } | null {
   const [kind, value] = tag.split(":");
   if (kind === "gen") {
-    return { label: `Gen ${value} (${GENERATION_REGIONS[Number(value)]})`, href: `/pokedex/study?gen=${value}`, cta: `Study Gen ${value} flashcards` };
+    return { kind, value, label: `Gen ${value} (${GENERATION_REGIONS[Number(value)]})`, href: `/pokedex/study?gen=${value}`, cta: `Study Gen ${value} flashcards` };
   }
   if (kind === "type") {
     const name = value.charAt(0).toUpperCase() + value.slice(1);
-    return { label: `${name}-type Pokémon`, href: `/pokedex?type=${value}`, cta: `Browse ${name} types` };
+    return { kind, value, label: `${name}-type Pokémon`, href: `/pokedex?type=${value}`, cta: `Browse ${name} types` };
   }
   if (kind === "mod" && value in MODULE_INFO) {
     const info = MODULE_INFO[value as ModuleId];
-    return { label: info.title, href: moduleHref(value as ModuleId), cta: `Practice ${info.title}` };
+    return { kind, value, label: info.title, href: moduleHref(value as ModuleId), cta: `Practice ${info.title}` };
   }
   if (kind === "stat") {
     const label = value === "bst" ? "Base stat totals" : value === "height" ? "Heights" : value === "weight" ? "Weights" : `${STAT_LABELS[value as StatKey]} stats`;
-    return { label, href: `/pokedex?sort=${value}`, cta: "See the rankings" };
+    return { kind, value, label, href: `/pokedex?sort=${value}`, cta: "See the rankings" };
   }
   return null;
 }

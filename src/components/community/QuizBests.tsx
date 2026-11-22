@@ -1,39 +1,44 @@
 import Link from "@/components/ui/Link";
 import { ListChecks, Trophy } from "lucide-react";
-import { FORMAT_INFO, MODULE_INFO, PLAYABLE_FORMATS, moduleHref } from "@/lib/modes";
+import { MODULE_INFO, PLAYABLE_FORMATS, moduleHref } from "@/lib/modes";
 import { neaClock } from "@/lib/name-em-all/share";
 import { neaHref } from "@/lib/name-em-all/categories";
 import type { NeaBestRow, QuizBestRow } from "@/lib/quiz-bests";
 import { ModeIcon } from "@/components/game/ModeIcon";
 import { Card, CardContent } from "@/components/ui/card";
+import { serverT } from "@/i18n/server";
+import { formatNumber } from "@/i18n/catalog";
+import profile from "@/messages/profile";
 
 /** A trainer's quiz personal bests on their profile: the best score per mode and format, and Name 'em All per category. */
 export function QuizBests({ username, quiz, nea }: { username: string; quiz: QuizBestRow[]; nea: NeaBestRow[] }) {
+  const t = serverT(profile);
+  const b = (c: React.ReactNode) => <b className="tabular-nums text-foreground">{c}</b>;
   return (
     <Card id="quiz-bests" className="scroll-mt-20" data-testid="profile-quiz-bests">
       <CardContent className="space-y-4 p-5">
         <p className="hud-label flex items-center gap-1.5 text-screen">
-          <Trophy className="h-3.5 w-3.5" aria-hidden /> Quiz personal bests
+          <Trophy className="h-3.5 w-3.5" aria-hidden /> {t("quiz.title")}
         </p>
         {quiz.length === 0 && nea.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            {username} hasn&apos;t set a quiz best yet.{" "}
+            {t("quiz.none", { name: username })}{" "}
             <Link href="/quiz" className="text-primary underline-offset-2 hover:underline">
-              Play a quiz
+              {t("quiz.play")}
             </Link>
           </p>
         ) : (
           <>
             {quiz.length > 0 && (
               // A grid, not a table: on a phone the mode's name gets its own line above the three scores.
-              <div className="text-sm" role="table" aria-label="Best score per mode and format">
+              <div className="text-sm" role="table" aria-label={t("quiz.table")}>
                 <div role="row" className="grid grid-cols-3 border-b pb-2 text-[11px] font-semibold uppercase text-muted-foreground sm:grid-cols-[minmax(0,1fr)_6rem_6rem_6rem]">
                   <span role="columnheader" className="hidden sm:block">
-                    Mode
+                    {t("quiz.mode")}
                   </span>
                   {PLAYABLE_FORMATS.map((f) => (
                     <span key={f} role="columnheader" className="text-right">
-                      {FORMAT_INFO[f].title}
+                      {t(`quiz.formats.${f}`)}
                     </span>
                   ))}
                 </div>
@@ -52,7 +57,7 @@ export function QuizBests({ username, quiz, nea }: { username: string; quiz: Qui
                     </span>
                     {PLAYABLE_FORMATS.map((f) => (
                       <span key={f} role="cell" className="text-right font-mono tabular-nums">
-                        {row.scores[f]?.toLocaleString("en-US") ?? <span className="text-muted-foreground/60">—</span>}
+                        {(row.scores[f] !== undefined ? formatNumber(row.scores[f], t.locale) : undefined) ?? <span className="text-muted-foreground/60">—</span>}
                       </span>
                     ))}
                   </div>
@@ -71,19 +76,8 @@ export function QuizBests({ username, quiz, nea }: { username: string; quiz: Qui
                         {row.label}
                       </Link>
                       <span className="flex shrink-0 flex-wrap justify-end gap-x-3 text-right text-xs text-muted-foreground">
-                        {row.count && (
-                          <span>
-                            <b className="tabular-nums text-foreground">
-                              {row.count.named}/{row.total}
-                            </b>{" "}
-                            named
-                          </span>
-                        )}
-                        {row.clearMs !== undefined && (
-                          <span>
-                            cleared in <b className="tabular-nums text-foreground">{neaClock(row.clearMs)}</b>
-                          </span>
-                        )}
+                        {row.count && <span>{t.rich("quiz.named", { named: row.count.named, total: row.total, b })}</span>}
+                        {row.clearMs !== undefined && <span>{t.rich("quiz.cleared", { time: neaClock(row.clearMs), b })}</span>}
                       </span>
                     </li>
                   ))}

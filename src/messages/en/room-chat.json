@@ -1,0 +1,23 @@
+{
+  "notSent": "That wasn't sent.",
+  "unreachable": "Couldn't reach the server. Try again.",
+  "soon": "Chat rooms open soon.",
+  "slow": "Slow mode: {s}s",
+  "live": "Live",
+  "polling": "Updates every few seconds",
+  "turnOn": "Turn on",
+  "chatOff": "Chat off",
+  "off": "Chat is off. You won't see messages, and can't send any.",
+  "empty": "No messages yet. Say hi!",
+  "mute": "Mute {name}",
+  "unmute": "Unmute {name}",
+  "reported": "Reported",
+  "reportTitle": "Report this message",
+  "reportLabel": "Report {name}'s message",
+  "signIn": "<link>Sign in</link> to chat. Anyone can read along.",
+  "placeholder": "Say something nice…",
+  "label": "Room message",
+  "send": "Send",
+  "here": "Here now ({n})",
+  "muted": "Muted: {names}"
+}

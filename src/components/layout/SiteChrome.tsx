@@ -15,6 +15,7 @@ import report from "@/messages/report";
 import errorNs from "@/messages/error";
 import feedback from "@/messages/feedback";
 import copyFallback from "@/messages/copy-fallback";
+import community from "@/messages/community";
 
 // The same @id as the home page's fuller WebSite node (with its SearchAction), so the two read as one site.
 const websiteJsonLd = (locale: Locale, description: string) => ({
@@ -28,7 +29,7 @@ const websiteJsonLd = (locale: Locale, description: string) => ({
 });
 
 /** The namespaces the header, footer and tab bar read in the browser (a page in another language sends them along). */
-export const CHROME_NAMESPACES = [nav, report, errorNs, feedback, copyFallback];
+export const CHROME_NAMESPACES = [nav, report, errorNs, feedback, copyFallback, community];
 
 /** What comes before the page's <main>: the site's JSON-LD and the header. */
 export function ChromeBefore({ locale }: { locale: Locale }) {

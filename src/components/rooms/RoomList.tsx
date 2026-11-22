@@ -6,9 +6,12 @@ import { MessagesSquare, Users } from "lucide-react";
 import { useVisiblePoll } from "@/lib/use-visible-poll";
 import { ROOMS } from "@/lib/rooms";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import roomsNs from "@/messages/rooms";
 
 /** The official rooms, with how many trainers are in each. */
 export function RoomList() {
+  const t = useT(roomsNs);
   const [counts, setCounts] = useState<Record<string, number>>({});
   useVisiblePoll(async () => {
     try {
@@ -35,12 +38,12 @@ export function RoomList() {
               <MessagesSquare className={cn("shrink-0 text-primary", main ? "h-8 w-8 sm:h-10 sm:w-10" : "h-5 w-5")} aria-hidden />
               <span className="min-w-0 flex-1">
                 <span className="flex items-center justify-between gap-2">
-                  <span className={cn("font-display font-bold uppercase", main ? "text-2xl sm:text-3xl" : "text-lg")}>{r.name}</span>
+                  <span className={cn("font-display font-bold uppercase", main ? "text-2xl sm:text-3xl" : "text-lg")}>{t(`names.${r.id}` as never)}</span>
                   <span className="flex items-center gap-1 text-xs tabular-nums text-muted-foreground">
                     <Users className="h-3 w-3" aria-hidden /> {counts[r.id] ?? 0}
                   </span>
                 </span>
-                <span className={cn("block text-muted-foreground", main ? "mt-1 text-base" : "text-sm")}>{r.description}</span>
+                <span className={cn("block text-muted-foreground", main ? "mt-1 text-base" : "text-sm")}>{t(`descriptions.${r.id}` as never)}</span>
               </span>
             </Link>
           </li>

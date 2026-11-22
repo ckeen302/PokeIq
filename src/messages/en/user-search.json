@@ -1,0 +1,7 @@
+{
+  "failed": "Search isn't working right now.",
+  "label": "Trainer name",
+  "placeholder": "Start typing a trainer name…",
+  "tooShort": "Type at least two letters, numbers, _ or -.",
+  "none": "No trainer names start with “{query}”."
+}

@@ -4,9 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "@/components/ui/Link";
 import { ArrowRight, Loader2, Search, User } from "lucide-react";
 import { USER_QUERY_RE, type UserHit } from "@/lib/community";
+import { useT } from "@/i18n/client";
+import userSearch from "@/messages/user-search";
 
 /** Find a user: account names starting with what's typed, each linking to their profile. */
 export function UserSearch({ initial = "" }: { initial?: string }) {
+  const t = useT(userSearch);
   const [q, setQ] = useState(initial);
   const [hits, setHits] = useState<UserHit[] | null>(null);
   const [busy, setBusy] = useState(false);
@@ -26,11 +29,11 @@ export function UserSearch({ initial = "" }: { initial?: string }) {
       try {
         const res = await fetch(`/api/users?q=${encodeURIComponent(query.toLowerCase())}`, { signal: ctrl.signal });
         const data = (await res.json().catch(() => ({}))) as { users?: UserHit[]; error?: string };
-        if (!res.ok) throw new Error(data.error ?? "Search isn't working right now.");
+        if (!res.ok) throw new Error(data.error ?? t("failed"));
         setHits(data.users ?? []);
         setError(null);
       } catch (err) {
-        if (!ctrl.signal.aborted) setError(err instanceof Error ? err.message : "Search isn't working right now.");
+        if (!ctrl.signal.aborted) setError(err instanceof Error ? err.message : t("failed"));
       } finally {
         if (!ctrl.signal.aborted) setBusy(false);
       }
@@ -39,7 +42,7 @@ export function UserSearch({ initial = "" }: { initial?: string }) {
       ctrl.abort();
       window.clearTimeout(id);
     };
-  }, [query, valid]);
+  }, [query, valid, t]);
 
   return (
     <div className="space-y-4">
@@ -52,19 +55,19 @@ export function UserSearch({ initial = "" }: { initial?: string }) {
           autoFocus
           autoComplete="off"
           spellCheck={false}
-          aria-label="Trainer name"
-          placeholder="Start typing a trainer name…"
+          aria-label={t("label")}
+          placeholder={t("placeholder")}
           className="h-14 w-full rounded-lg border border-input bg-card pl-11 pr-11 font-display text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           data-testid="user-search"
         />
         {busy && <Loader2 className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 animate-spin text-muted-foreground" aria-hidden />}
       </div>
-      {query && !valid && <p className="text-sm text-muted-foreground">Type at least two letters, numbers, _ or -.</p>}
+      {query && !valid && <p className="text-sm text-muted-foreground">{t("tooShort")}</p>}
       {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
       {hits && valid && (
         <ul className="divide-y overflow-hidden rounded-lg border bg-card" data-testid="user-results">
           {hits.length === 0 ? (
-            <li className="p-4 text-sm text-muted-foreground">No trainer names start with &ldquo;{query}&rdquo;.</li>
+            <li className="p-4 text-sm text-muted-foreground">{t("none", { query })}</li>
           ) : (
             hits.map((u) => (
               <li key={u.username}>

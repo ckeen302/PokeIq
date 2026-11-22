@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useAccount } from "@/lib/account";
-import { PROVIDER_LABEL, enabledOAuthProviders, oauthErrorMessage, type OAuthProvider } from "@/lib/oauth";
+import { OAUTH_ERRORS, PROVIDER_LABEL, enabledOAuthProviders, type OAuthErrorCode, type OAuthProvider } from "@/lib/oauth";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import accountNs from "@/messages/account";
 
 export function ProviderIcon({ provider, className }: { provider: OAuthProvider; className?: string }) {
   if (provider === "discord") {
@@ -24,24 +26,24 @@ export function ProviderIcon({ provider, className }: { provider: OAuthProvider;
   );
 }
 
-export const GOOGLE_TESTING_NOTE = "Google sign-in is in testing — use Discord if it doesn't work.";
-
-/** Reads (and tidies away) `?oauth_error=` after a failed handshake. Only known codes become text. */
+/** Reads (and tidies away) `?oauth_error=` after a failed handshake. Only known codes become text (in the page's language). */
 export function useOAuthError(): string | null {
-  const [error, setError] = useState<string | null>(null);
+  const t = useT(accountNs);
+  const [code, setCode] = useState<OAuthErrorCode | null>(null);
   useEffect(() => {
     const url = new URL(window.location.href);
-    const message = oauthErrorMessage(url.searchParams.get("oauth_error"));
+    const raw = url.searchParams.get("oauth_error");
     if (!url.searchParams.has("oauth_error")) return;
-    setError(message ?? oauthErrorMessage("failed"));
+    setCode(raw && Object.hasOwn(OAUTH_ERRORS, raw) ? (raw as OAuthErrorCode) : "failed");
     url.searchParams.delete("oauth_error");
     window.history.replaceState(null, "", url.pathname + url.search + url.hash);
   }, []);
-  return error;
+  return code ? t(`oauth.errors.${code}`) : null;
 }
 
 /** "Continue with Discord / Google" on /login. Plain links: the handshake is server redirects. */
 export function OAuthButtons() {
+  const t = useT(accountNs);
   const account = useAccount();
   const error = useOAuthError();
   const providers = enabledOAuthProviders();
@@ -61,13 +63,13 @@ export function OAuthButtons() {
             className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full gap-2")}
           >
             <ProviderIcon provider={p} className={cn("h-5 w-5", p === "discord" && "text-[#5865F2]")} />
-            Continue with {PROVIDER_LABEL[p]}
+            {t("oauth.continueWith", { provider: PROVIDER_LABEL[p] })}
           </a>
-          {p === "google" && <p className="text-center text-xs text-muted-foreground">{GOOGLE_TESTING_NOTE}</p>}
+          {p === "google" && <p className="text-center text-xs text-muted-foreground">{t("oauth.googleNote")}</p>}
         </div>
       ))}
       <div className="flex items-center gap-3 pt-1 text-xs uppercase tracking-wide text-muted-foreground" aria-hidden>
-        <span className="h-px flex-1 bg-border" /> or use a trainer name <span className="h-px flex-1 bg-border" />
+        <span className="h-px flex-1 bg-border" /> {t("oauth.orName")} <span className="h-px flex-1 bg-border" />
       </div>
     </div>
   );

@@ -1,0 +1,20 @@
+{
+  "confirm": {
+    "title": "Email confirmed",
+    "body": "You're all set. The daily email arrives when new dailies drop, if it's turned on in Settings.",
+    "error": "That confirmation link has expired or was replaced by a newer one. Ask for a new one in Settings.",
+    "working": "Confirming…"
+  },
+  "unsubscribe": {
+    "title": "You're unsubscribed",
+    "body": "No more daily emails. You can turn them back on in Settings any time.",
+    "error": "That unsubscribe link isn't valid. You can turn the emails off in Settings instead.",
+    "working": "Unsubscribing…"
+  },
+  "tooMany": "Too many tries: wait a minute and open the link again.",
+  "unreachable": "Couldn't reach the server. Open the link again in a moment.",
+  "busy": "Working",
+  "invalid": "Link not valid",
+  "play": "Play today's dailies",
+  "settings": "Settings"
+}

@@ -1,0 +1,20 @@
+{
+  "names": {
+    "lobby": "Main Lobby",
+    "pokedle": "Pokédle",
+    "connections": "Connections",
+    "pikadoku": "Pikadoku",
+    "pokeguessr": "PokéGuessr",
+    "battle": "Battle",
+    "quizzes": "Quizzes"
+  },
+  "descriptions": {
+    "lobby": "Say hi! The main room for everything PokéIQ. Stuck or new? Ask here and other trainers will help.",
+    "pokedle": "The daily Pokémon guessing game: share your score, not the answer.",
+    "connections": "Four hidden groups, sixteen Pokémon: share your grid and talk about the tricky ones.",
+    "pikadoku": "Pokémon Sudoku: compare rare picks and brag about your rarity score.",
+    "pokeguessr": "Where in the Pokémon world was that? Share streaks and great guesses.",
+    "battle": "Random Battles, OU, Little Cup and every format: teams, sets, big plays and comebacks.",
+    "quizzes": "Who's That Pokémon, Name 'em All and every quiz: share scores and challenge each other."
+  }
+}

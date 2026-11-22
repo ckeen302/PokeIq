@@ -3,9 +3,12 @@
 import { useState } from "react";
 import { Check, Copy, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/i18n/client";
+import accountNs from "@/messages/account";
 
 /** Shows a one-time recovery code; the trainer must confirm they saved it. */
 export function RecoveryCodeCard({ code, title, note, onDone }: { code: string; title: string; note: string; onDone: () => void }) {
+  const t = useT(accountNs);
   const [copied, setCopied] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -26,20 +29,20 @@ export function RecoveryCodeCard({ code, title, note, onDone }: { code: string; 
       <p className="text-sm text-muted-foreground">{note}</p>
       <output
         className="block select-all rounded-md border-2 border-warning/50 bg-warning/10 px-4 py-3 font-mono text-lg font-bold tracking-wider text-warning"
-        aria-label="Recovery code"
+        aria-label={t("recovery.label")}
       >
         {code}
       </output>
       <Button variant="outline" className="w-full" onClick={() => void copy()}>
         {copied ? <Check className="h-4 w-4" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />}
-        {copied ? "Copied" : "Copy code"}
+        {copied ? t("recovery.copied") : t("recovery.copy")}
       </Button>
       <label className="flex cursor-pointer items-center justify-center gap-2 text-sm text-muted-foreground">
         <input type="checkbox" checked={saved} onChange={(e) => setSaved(e.target.checked)} className="h-4 w-4 accent-[hsl(var(--primary))]" />
-        I saved my recovery code somewhere safe
+        {t("recovery.savedIt")}
       </label>
       <Button size="lg" className="w-full" disabled={!saved} onClick={onDone}>
-        Continue
+        {t("recovery.continue")}
       </Button>
     </div>
   );

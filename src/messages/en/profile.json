@@ -1,0 +1,58 @@
+{
+  "meta": {
+    "unavailableTitle": "Trainer profile",
+    "unavailableDescription": "Trainer profiles on PokéIQ.",
+    "notFoundTitle": "Trainer not found",
+    "notFoundDescription": "No such trainer on PokéIQ.",
+    "title": "{name} · Trainer profile",
+    "description": "{name} on PokéIQ: Pokédle, PokéGuessr and battle ratings, quiz personal bests, battle records and recent replays."
+  },
+  "back": "Back to trainers",
+  "unavailable": "Trainer profiles are unavailable right now. Try again in a minute.",
+  "find": "Find a trainer",
+  "since": "Trainer since {date}",
+  "trainerOf": "{name}'s trainer",
+  "ranked": "Ranked PokéGuessr",
+  "rankedDuels": "{record} in {n} ranked duels",
+  "position": " · #{position} of {players}",
+  "bestScore": " · best {score} pts",
+  "noRanked": "No ranked PokéGuessr duels yet.",
+  "pastSeasons": "Past seasons",
+  "ladder": "Battle ladder",
+  "noLadder": "No ranked battles yet.",
+  "conn": {
+    "streak": "Streak",
+    "bestStreak": "Best streak",
+    "gamesWon": "Games won",
+    "perfect": "Perfect solves",
+    "duelRecord": "Duel record"
+  },
+  "noConn": "No PokéConnections played yet.",
+  "battleRecord": "Battle record",
+  "insights": "Team insights →",
+  "battleEmpty": "{name} hasn't played a live battle yet.",
+  "battleSoon": "Battle records open soon.",
+  "replays": "Recent public replays",
+  "noReplays": "No public replays yet.",
+  "quiz": {
+    "title": "Quiz personal bests",
+    "none": "{name} hasn't set a quiz best yet.",
+    "play": "Play a quiz",
+    "table": "Best score per mode and format",
+    "mode": "Mode",
+    "formats": {
+      "classic": "Classic",
+      "survival": "Survival",
+      "blitz": "Blitz"
+    },
+    "named": "<b>{named}/{total}</b> named",
+    "cleared": "cleared in <b>{time}</b>"
+  },
+  "users": {
+    "title": "Find a trainer",
+    "description": "Look up a PokéIQ trainer by name: their Pokédle and battle ratings, records and recent replays.",
+    "label": "Community",
+    "heading": "Find a <hl>trainer</hl>",
+    "intro": "Search by account name to see a trainer's profile: ratings, records and recent replays. Add them as a friend from there."
+  }
+}

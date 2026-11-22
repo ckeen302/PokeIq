@@ -1,0 +1,12 @@
+{
+  "card": {
+    "title": "Trainer Card"
+  },
+  "creator": {
+    "title": "Trainer creator",
+    "description": "Make your 3D PokéIQ trainer: hair, hats, outfits, bags and your Poké Ball.",
+    "back": "Back to trainer card",
+    "label": "Trainer creator",
+    "heading": "Make your trainer"
+  }
+}

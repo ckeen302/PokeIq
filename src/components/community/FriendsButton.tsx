@@ -3,16 +3,19 @@
 import { cn } from "@/lib/utils";
 import { Users } from "lucide-react";
 import { openFriends, useCommunity } from "@/lib/friends-client";
+import { useT } from "@/i18n/client";
+import communityNs from "@/messages/community";
 
 /** The header's friends icon: a badge counts friend requests and challenges waiting. */
 export function FriendsButton({ className }: { className?: string } = {}) {
+  const t = useT(communityNs);
   const c = useCommunity();
   const waiting = c.requests + c.challenges.length;
   return (
     <button
       type="button"
       onClick={() => openFriends(c.requests > 0 && c.challenges.length === 0 ? "requests" : "friends")}
-      aria-label={waiting ? `Friends (${waiting} waiting)` : "Friends"}
+      aria-label={waiting ? t("friendsWaiting", { n: waiting }) : t("friends")}
       className={cn("relative flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground", className)}
       data-testid="friends-button"
     >

@@ -8,21 +8,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { RecoveryCodeCard } from "./RecoveryCodeCard";
 import { cn } from "@/lib/utils";
-import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
+import { isCleanName } from "@/lib/name-filter";
 import { DailyEmailOptIn, optInError } from "@/components/email/DailyEmailOptIn";
+import { useT } from "@/i18n/client";
+import accountNs from "@/messages/account";
 
 type Mode = "login" | "register" | "recover";
 
-const TABS: { id: Mode; label: string }[] = [
-  { id: "login", label: "Sign in" },
-  { id: "register", label: "Create account" },
-  { id: "recover", label: "Forgot password" },
-];
+const TABS: Mode[] = ["login", "register", "recover"];
 
 const FIELD =
   "h-11 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:border-screen/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 export function AuthForm({ next = "/trainer" }: { next?: string }) {
+  const t = useT(accountNs);
   const router = useRouter();
   const account = useAccount();
   const [mode, setMode] = useState<Mode>("login");
@@ -45,12 +44,8 @@ export function AuthForm({ next = "/trainer" }: { next?: string }) {
         <CardContent className="p-6">
           <RecoveryCodeCard
             code={newCode.code}
-            title={newCode.recovered ? "Password reset" : `Welcome, ${username}!`}
-            note={
-              newCode.recovered
-                ? "Your old recovery code is used up. Save this new one — it's shown only once."
-                : "This recovery code is the only way back in if you forget your password. It's shown only once."
-            }
+            title={newCode.recovered ? t("resetTitle") : t("welcome", { name: username })}
+            note={newCode.recovered ? t("resetNote") : t("welcomeNote")}
             onDone={() => router.push(next)}
           />
         </CardContent>
@@ -62,9 +57,9 @@ export function AuthForm({ next = "/trainer" }: { next?: string }) {
     return (
       <Card className="mx-auto w-full max-w-sm">
         <CardContent className="space-y-2 p-6 text-center">
-          <h2 className="font-display text-xl font-bold uppercase">Accounts are offline</h2>
+          <h2 className="font-display text-xl font-bold uppercase">{t("offlineTitle")}</h2>
           <p className="text-sm text-muted-foreground">
-            Trainer accounts aren&apos;t switched on for this server yet. Your progress is still saved on this device.
+            {t("offlineBody")}
           </p>
         </CardContent>
       </Card>
@@ -73,9 +68,9 @@ export function AuthForm({ next = "/trainer" }: { next?: string }) {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (mode === "register" && !isCleanName(username)) return setError(NAME_REJECTED);
+    if (mode === "register" && !isCleanName(username)) return setError(t("nameRejected"));
     const emailProblem = mode === "register" && account.emailEnabled ? optInError(optIn) : null;
-    if (emailProblem) return setError(emailProblem);
+    if (emailProblem) return setError(t(`email.${emailProblem}`));
     setBusy(true);
     setError(null);
     try {
@@ -88,7 +83,7 @@ export function AuthForm({ next = "/trainer" }: { next?: string }) {
         setNewCode({ code: await recoverAccount(username, code, password), recovered: true });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      setError(err instanceof Error ? err.message : t("failed"));
     } finally {
       setBusy(false);
     }
@@ -97,30 +92,30 @@ export function AuthForm({ next = "/trainer" }: { next?: string }) {
   return (
     <Card className="mx-auto w-full max-w-sm">
       <CardContent className="space-y-5 p-6">
-        <div className="grid grid-cols-3 gap-1 rounded-md border bg-shade/20 p-1" role="tablist" aria-label="Account">
-          {TABS.map((t) => (
+        <div className="grid grid-cols-3 gap-1 rounded-md border bg-shade/20 p-1" role="tablist" aria-label={t("tablist")}>
+          {TABS.map((id) => (
             <button
-              key={t.id}
+              key={id}
               type="button"
               role="tab"
-              aria-selected={mode === t.id}
+              aria-selected={mode === id}
               onClick={() => {
-                setMode(t.id);
+                setMode(id);
                 setError(null);
               }}
               className={cn(
                 "rounded-sm px-2 py-2 font-display text-xs font-semibold uppercase tracking-wide transition-colors",
-                mode === t.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                mode === id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
               )}
             >
-              {t.label}
+              {t(`tabs.${id}`)}
             </button>
           ))}
         </div>
 
         <form className="space-y-3" onSubmit={submit}>
           <label className="block space-y-1">
-            <span className="hud-label">Trainer name</span>
+            <span className="hud-label">{t("name")}</span>
             <input
               className={FIELD}
               value={username}
@@ -134,7 +129,7 @@ export function AuthForm({ next = "/trainer" }: { next?: string }) {
           </label>
           {mode === "recover" && (
             <label className="block space-y-1">
-              <span className="hud-label">Recovery code</span>
+              <span className="hud-label">{t("code")}</span>
               <input
                 className={cn(FIELD, "font-mono uppercase tracking-wider")}
                 value={code}
@@ -147,7 +142,7 @@ export function AuthForm({ next = "/trainer" }: { next?: string }) {
             </label>
           )}
           <label className="block space-y-1">
-            <span className="hud-label">{mode === "recover" ? "New password" : "Password"}</span>
+            <span className="hud-label">{mode === "recover" ? t("newPassword") : t("password")}</span>
             <input
               className={FIELD}
               type="password"
@@ -162,7 +157,7 @@ export function AuthForm({ next = "/trainer" }: { next?: string }) {
           {mode === "register" && <DailyEmailOptIn enabled={account.emailEnabled} value={optIn} onChange={setOptIn} />}
           {mode === "register" && (
             <p className="text-xs text-muted-foreground">
-              3–20 letters, numbers, _ or -. No email needed — you&apos;ll get a recovery code instead.
+              {t("nameRules")}
             </p>
           )}
           {error && (
@@ -172,11 +167,11 @@ export function AuthForm({ next = "/trainer" }: { next?: string }) {
           )}
           <Button type="submit" size="lg" className="w-full" disabled={busy}>
             {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
-            {mode === "login" ? "Sign in" : mode === "register" ? "Create account" : "Reset password"}
+            {mode === "login" ? t("tabs.login") : mode === "register" ? t("tabs.register") : t("reset")}
           </Button>
         </form>
         <p className="text-center text-xs text-muted-foreground">
-          Signing in saves your badges, streaks, ratings and PokéIQ to your account so they follow you to any device.
+          {t("syncNote")}
         </p>
       </CardContent>
     </Card>
