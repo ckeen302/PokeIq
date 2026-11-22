@@ -164,7 +164,7 @@ export default async function PlacePage({ params }: PageProps) {
               <div key={`${g.game}-${g.leader}`} className="hud space-y-1.5 rounded-lg border bg-card p-4">
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-display text-lg font-bold uppercase tracking-wide">{g.leader}</span>
-                  {g.type && <TypeBadge type={g.type.toLowerCase()} size="sm" />}
+                  {g.type && <TypeBadge type={g.type.toLowerCase()} size="sm" label={names.locale === "en" ? undefined : names.type(g.type)} />}
                 </div>
                 {g.badge && <div className="text-sm">{g.badge}</div>}
                 <div className="text-xs text-muted-foreground">

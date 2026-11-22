@@ -9,7 +9,7 @@
     "daily": "Täglich",
     "iq": "PokéIQ-Test",
     "geo": "PokéGuessr",
-    "geoRanked": "PokéGuessr Ranked",
+    "geoRanked": "PokéGuessr-Rangliste",
     "connections": "PokéConnections",
     "battle": "Kampf-Rangliste"
   },
@@ -20,7 +20,7 @@
   },
   "geoRanked": {
     "intro": "Ranglistenduelle in PokéGuessr: die Besten nach Elo. Pokéball und Superball zeigen nur die Division; die Zahl erscheint ab Hyperball.",
-    "soon": "PokéGuessr Ranked startet bald.",
+    "soon": "Ranglistenduelle in PokéGuessr starten bald.",
     "empty": "Noch niemand ist eingestuft. <link>Such dir ein Ranglistenduell</link> und sei der Erste!"
   },
   "col": {

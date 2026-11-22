@@ -170,7 +170,9 @@
     "inRegion": "{place}（{region}）",
     "area": "エリア{n}",
     "zone": "{type}ゾーン",
-    "towards": "{place}方面"
+    "towards": "{place}方面",
+    "teraRaids": "テラレイドバトル",
+    "mostFishable": "釣りができるほとんどの水辺"
   },
   "dex": {
     "original": "{region}（旧）",

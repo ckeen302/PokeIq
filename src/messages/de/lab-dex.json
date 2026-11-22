@@ -24,7 +24,7 @@
   "sortAsc": "Aufsteigend sortieren",
   "sortDesc": "Absteigend sortieren",
   "specimen": "Exemplar",
-  "scanComplete": "Scan abgeschlossen",
+  "scanComplete": "Gescannt",
   "materialising": "Materialisiert …",
   "biometrics": "Biometrie",
   "height": "Größe",
@@ -67,7 +67,7 @@
     "hp": "KP",
     "atk": "Angriff",
     "def": "Vert.",
-    "spa": "Sp.-Angr.",
+    "spa": "Sp.-Ang.",
     "spd": "Sp.-Vert.",
     "spe": "Initiative"
   },

@@ -50,6 +50,8 @@ function context(locale: OtherLocale, t: Translator<typeof dataNs.en> = serverT(
   const place = (english: string): string => {
     const own = locations[dataKey(english)];
     if (own) return own;
+    if (english === "Tera Raid Battles") return say("x.teraRaids");
+    if (english === "Most fishable water") return say("x.mostFishable");
     const route = /^Route (\d+)$/.exec(english);
     if (route) return say("x.route", { n: route[1] });
     const regional = /^(\w+) Route (\d+)$/.exec(english);

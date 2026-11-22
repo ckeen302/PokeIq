@@ -47,7 +47,7 @@
     "special": "Speziell"
   },
   "method": {
-    "wild": "Wild",
+    "wild": "Wildbegegnung",
     "grass": "Hohes Gras",
     "tallgrass": "Hohes Gras",
     "grassrandom": "Hohes Gras (zufällig)",
@@ -170,7 +170,9 @@
     "inRegion": "{place} ({region})",
     "area": "Bereich {n}",
     "zone": "{type}-Zone",
-    "towards": "Richtung {place}"
+    "towards": "Richtung {place}",
+    "teraRaids": "Tera-Raid-Kämpfe",
+    "mostFishable": "Die meisten Angelgewässer"
   },
   "dex": {
     "original": "{region} (Original)",

@@ -45,10 +45,24 @@
   "personalBests": "Record personali",
   "mode": "Modalità",
   "formats": {
-    "classic": "classica",
+    "classic": "classico",
     "survival": "sopravvivenza",
     "blitz": "blitz"
   },
   "savedHere": "I tuoi progressi sono salvati in questo browser.",
-  "playMore": "Gioca ad altre modalità →"
+  "playMore": "Gioca ad altre modalità →",
+  "modules": {
+    "whos-that": "Chi è quel Pokémon?",
+    "cry": "Quiz dei versi",
+    "dex": "Detective Pokédex",
+    "types": "Maestro dei tipi",
+    "higher-lower": "Più o meno",
+    "games": "Giochi principali",
+    "anime": "Anime Pokémon",
+    "competitive": "Abilità, mosse e strumenti",
+    "shiny": "Cromatico vero?",
+    "zoom-reveal": "Zoom",
+    "whose-team": "Di chi è questa squadra?",
+    "mixed": "Misto"
+  }
 }

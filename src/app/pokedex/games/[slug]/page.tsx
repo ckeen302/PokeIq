@@ -19,6 +19,7 @@ import { gameTexts, localPlatform, localRelease, localizeGame } from "@/lib/dex/
 import { speciesName } from "@/lib/names/species";
 import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
 import { getLocale, serverT } from "@/i18n/server";
+import { typeNames } from "@/lib/pokemon/dex-local";
 import type { Translator } from "@/i18n/catalog";
 import dexGames from "@/messages/dex-games";
 
@@ -295,7 +296,7 @@ function MonCard({ id, locale, big = false }: { id: number; locale: Locale; big?
         <span className={`block font-display font-bold uppercase leading-tight tracking-wide group-hover:text-screen ${big ? "text-base" : "text-sm"}`}>{name}</span>
         <span className={`flex flex-wrap gap-1 ${big ? "justify-center" : ""}`}>
           {s.types.map((t) => (
-            <TypeBadge key={t} type={t} size="sm" />
+            <TypeBadge key={t} type={t} size="sm" label={locale === DEFAULT_LOCALE ? undefined : typeNames(locale)[t]} />
           ))}
         </span>
       </span>

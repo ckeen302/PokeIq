@@ -47,8 +47,22 @@
   "formats": {
     "classic": "クラシック",
     "survival": "サバイバル",
-    "blitz": "ブリッツ"
+    "blitz": "タイムアタック"
   },
   "savedHere": "進行状況はこのブラウザに保存されます。",
-  "playMore": "ほかのモードも遊ぶ →"
+  "playMore": "ほかのモードも遊ぶ →",
+  "modules": {
+    "whos-that": "ポケモンだーれだ？",
+    "cry": "なきごえクイズ",
+    "dex": "図鑑探偵",
+    "types": "タイプマスター",
+    "higher-lower": "ハイ＆ロー",
+    "games": "本編ゲーム",
+    "anime": "ポケモンアニメ",
+    "competitive": "とくせい・わざ・どうぐ",
+    "shiny": "本物の色違いは？",
+    "zoom-reveal": "ズームクイズ",
+    "whose-team": "だれのチーム？",
+    "mixed": "ごちゃまぜ"
+  }
 }

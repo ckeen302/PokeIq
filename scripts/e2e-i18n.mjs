@@ -16,7 +16,7 @@
  *
  * Read-only: GET requests only.
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 
@@ -219,7 +219,23 @@ async function leftovers({ browser, BASE, errors, step }) {
   const species = Object.values(JSON.parse(readFileSync(new URL("../src/data/species-names.json", import.meta.url), "utf8")));
   const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const namesOf = (l) => new RegExp(`(?:${[...brands, ...species.map((n) => n[l]).filter(Boolean)].sort((a, b) => b.length - a.length).map(escape).join("|")})`, "gu");
-  const english = (t, names) => /\p{L}{3}/u.test(t.replace(names, " "));
+  // English needs three Latin letters in a row (a Japanese or Korean name in the other-languages list isn't English);
+  // Showdown format names ("[Gen 9] OU"), Roman numerals, addresses and the languages' own names stay as they are.
+  const KEEP = /^\[Gen \d+\]|^[IVXL]+$|^\S+@\S+$|^(English|日本語|Español|Français|Deutsch|Italiano)$/;
+  const english = (t, names) => !KEEP.test(t) && /[A-Za-zÀ-ÿ]{3}/u.test(t.replace(names, " "));
+  // Text the language itself writes the same way (its own messages and official-name tables say so: "Region",
+  // "Trainer", "Kanto", "Items" in German) is that language's, not English left behind.
+  const ownText = (l) => {
+    const out = new Set();
+    const add = (v) => {
+      if (typeof v === "string") out.add(v.replace(/\s+/g, " ").trim());
+      else if (v && typeof v === "object") Object.values(v).forEach(add);
+    };
+    for (const dir of [`../src/messages/${l}/`, `../src/data/i18n/${l}/`]) {
+      for (const f of readdirSync(new URL(dir, import.meta.url))) if (f.endsWith(".json")) add(JSON.parse(readFileSync(new URL(dir + f, import.meta.url), "utf8")));
+    }
+    return out;
+  };
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   await ctx.addInitScript(() => {
     sessionStorage.setItem("pokeiq-splash", "1");
@@ -250,11 +266,12 @@ async function leftovers({ browser, BASE, errors, step }) {
   try {
     for (const l of live) {
       const names = namesOf(l);
+      const own = ownText(l);
       for (const path of SAMPLE) {
         const r = await get(BASE, prefixed(l, path));
         if (r.status !== 200) continue;
         const en = new Set(await texts(path));
-        const left = [...new Set(await texts(prefixed(l, path)))].filter((t) => en.has(t) && english(t, names));
+        const left = [...new Set(await texts(prefixed(l, path)))].filter((t) => en.has(t) && !own.has(t) && english(t, names));
         if (left.length) errors.push(`i18n: ${prefixed(l, path)} still shows English: ${left.slice(0, 8).map((t) => JSON.stringify(t.slice(0, 60))).join(", ")}${left.length > 8 ? ` (+${left.length - 8})` : ""}`);
       }
     }

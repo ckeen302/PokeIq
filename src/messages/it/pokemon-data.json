@@ -170,7 +170,9 @@
     "inRegion": "{place} ({region})",
     "area": "Zona {n}",
     "zone": "Zona {type}",
-    "towards": "verso {place}"
+    "towards": "verso {place}",
+    "teraRaids": "Raid Teracristal",
+    "mostFishable": "Quasi tutte le acque in cui si può pescare"
   },
   "dex": {
     "original": "{region} (originale)",

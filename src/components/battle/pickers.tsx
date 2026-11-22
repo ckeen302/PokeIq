@@ -20,6 +20,7 @@ import { useBattleNames } from "./use-battle-names";
 
 export function BattleType({ type, size = "sm", className }: { type: string; size?: "sm" | "md"; className?: string }) {
   const t = useT(pickersNs);
+  const names = useBattleNames();
   if (type === "Stellar") {
     return (
       <span
@@ -33,7 +34,8 @@ export function BattleType({ type, size = "sm", className }: { type: string; siz
       </span>
     );
   }
-  return <TypeBadge type={type.toLowerCase()} size={size} className={className} />;
+  const own = names.type(type);
+  return <TypeBadge type={type.toLowerCase()} size={size} className={className} label={own === type ? undefined : own} />;
 }
 
 const CATEGORY_STYLES: Record<string, string> = {

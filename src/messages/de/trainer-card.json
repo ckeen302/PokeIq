@@ -46,9 +46,23 @@
   "mode": "Modus",
   "formats": {
     "classic": "klassisch",
-    "survival": "survival",
+    "survival": "überleben",
     "blitz": "blitz"
   },
   "savedHere": "Dein Fortschritt wird in diesem Browser gespeichert.",
-  "playMore": "Weitere Modi spielen →"
+  "playMore": "Weitere Modi spielen →",
+  "modules": {
+    "whos-that": "Wer ist das Pokémon?",
+    "cry": "Ruf-Quiz",
+    "dex": "Pokédex-Detektiv",
+    "types": "Typen-Meister",
+    "higher-lower": "Höher oder tiefer",
+    "games": "Hauptspiele",
+    "anime": "Pokémon-Anime",
+    "competitive": "Fähigkeiten, Attacken & Items",
+    "shiny": "Echt schillernd?",
+    "zoom-reveal": "Zoom",
+    "whose-team": "Wessen Team ist das?",
+    "mixed": "Bunt gemischt"
+  }
 }

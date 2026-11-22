@@ -61,11 +61,11 @@ function MonCard({ m }: { m: TrainerMon }) {
           {form && <div className="text-[11px] text-muted-foreground">{form}</div>}
           <div className="flex flex-wrap items-center gap-1">
             {s?.types.map((t) => (
-              <TypeBadge key={t} type={t} size="sm" />
+              <TypeBadge key={t} type={t} size="sm" label={names.locale === "en" ? undefined : names.type(t[0].toUpperCase() + t.slice(1))} />
             ))}
             {m.tt && (
               <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground" data-testid="trainer-mon-tera">
-                {t("team.tera")} <TypeBadge type={m.tt.toLowerCase()} size="sm" />
+                {t("team.tera")} <TypeBadge type={m.tt.toLowerCase()} size="sm" label={names.locale === "en" ? undefined : names.type(m.tt)} />
               </span>
             )}
           </div>

@@ -11,7 +11,7 @@ import { localDateString } from "@/lib/daily";
 import { dleStats } from "@/lib/dle-stats";
 import { iqTitle, ratingToIQ } from "@/lib/rating";
 import { ordinal } from "@/lib/cognitive/scoring";
-import { MODULE_INFO, PLAY_MODULES, PLAYABLE_FORMATS as FORMATS } from "@/lib/modes";
+import { PLAY_MODULES, PLAYABLE_FORMATS as FORMATS } from "@/lib/modes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CoachPanel } from "./CoachPanel";
@@ -245,7 +245,7 @@ export function TrainerCard({ local }: { local?: TrainerLocal } = {}) {
                 <tr key={m} className="border-b last:border-0">
                   <td className="p-3">
                     <ModeIcon module={m} className="mr-2 inline h-4 w-4 text-muted-foreground" />
-                    {MODULE_INFO[m].title}
+                    {t(`modules.${m}`)}
                   </td>
                   {FORMATS.map((f) => (
                     <td key={f} className="p-3 text-right font-mono tabular-nums">

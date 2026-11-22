@@ -122,7 +122,7 @@ export default async function ItemPage({ params }: PageProps) {
                         <span className="flex items-center gap-2 font-semibold">
                           {m ? (
                             <>
-                              <TypeBadge type={m.type} size="sm" />
+                              <TypeBadge type={m.type} size="sm" label={L.locale === "en" ? undefined : L.type(m.type)} />
                               <Link href={`/pokedex/moves/${m.slug}`} className="hover:text-screen">{L.move(m.name)}</Link>
                             </>
                           ) : (

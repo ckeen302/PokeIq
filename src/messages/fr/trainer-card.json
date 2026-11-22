@@ -50,5 +50,19 @@
     "blitz": "blitz"
   },
   "savedHere": "Ta progression est enregistrée dans ce navigateur.",
-  "playMore": "Joue à d'autres modes →"
+  "playMore": "Joue à d'autres modes →",
+  "modules": {
+    "whos-that": "Quel est ce Pokémon ?",
+    "cry": "Quiz des cris",
+    "dex": "Détective Pokédex",
+    "types": "Maître des types",
+    "higher-lower": "Plus ou moins",
+    "games": "Jeux principaux",
+    "anime": "Anime Pokémon",
+    "competitive": "Talents, capacités et objets",
+    "shiny": "Vrai chromatique ?",
+    "zoom-reveal": "Zoom",
+    "whose-team": "À qui est cette équipe ?",
+    "mixed": "Pot-pourri"
+  }
 }

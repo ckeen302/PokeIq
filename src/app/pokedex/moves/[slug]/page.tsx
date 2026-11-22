@@ -76,7 +76,7 @@ export default async function MovePage({ params }: PageProps) {
       <DetailNav tab="moves" label={t("move.back")} pager={pager} />
       <DetailHero kicker={t("move.kicker", { gen: m.gen })} title={name}>
         <div className="flex flex-wrap items-center gap-2">
-          <TypeBadge type={m.type} size="lg" />
+          <TypeBadge type={m.type} size="lg" label={L.locale === "en" ? undefined : L.type(m.type)} />
           <span className="rounded-[4px] border border-foreground/10 bg-shade/30 px-3 py-1.5 font-display text-sm font-bold uppercase tracking-wider">{L.locale === "en" ? m.cls : t(`move.cls.${m.cls as Cls}`)}</span>
         </div>
         <p className="max-w-2xl text-foreground/90">{effect || t("move.noEffect")}</p>

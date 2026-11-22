@@ -170,7 +170,9 @@
     "inRegion": "{place} ({region})",
     "area": "Area {n}",
     "zone": "{type} zone",
-    "towards": "towards {place}"
+    "towards": "towards {place}",
+    "teraRaids": "Tera Raid Battles",
+    "mostFishable": "Most fishable water"
   },
   "dex": {
     "original": "{region} (original)",

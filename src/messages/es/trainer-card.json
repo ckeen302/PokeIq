@@ -50,5 +50,19 @@
     "blitz": "contrarreloj"
   },
   "savedHere": "Tu progreso se guarda en este navegador.",
-  "playMore": "Juega más modos →"
+  "playMore": "Juega más modos →",
+  "modules": {
+    "whos-that": "¿Quién es ese Pokémon?",
+    "cry": "Quiz de gritos",
+    "dex": "Detective Pokédex",
+    "types": "Maestro de tipos",
+    "higher-lower": "Más o menos",
+    "games": "Juegos principales",
+    "anime": "Anime Pokémon",
+    "competitive": "Habilidades, movimientos y objetos",
+    "shiny": "¿Variocolor de verdad?",
+    "zoom-reveal": "Zoom",
+    "whose-team": "¿De quién es este equipo?",
+    "mixed": "Variado"
+  }
 }

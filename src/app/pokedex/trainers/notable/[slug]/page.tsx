@@ -75,7 +75,7 @@ export default async function NotableTrainerPage({ params }: PageProps) {
           <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">{n.name}</h1>
           {(n.type || n.badge) && (
             <div className="flex flex-wrap items-center gap-2">
-              {n.type && <TypeBadge type={n.type.toLowerCase()} size="lg" />}
+              {n.type && <TypeBadge type={n.type.toLowerCase()} size="lg" label={names.locale === "en" ? undefined : names.type(n.type)} />}
               {n.badge && <span className="rounded-[4px] border border-foreground/10 bg-shade/30 px-3 py-1.5 font-display text-sm font-bold uppercase tracking-wider">{n.badge}</span>}
             </div>
           )}

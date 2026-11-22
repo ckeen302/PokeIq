@@ -50,5 +50,19 @@
     "blitz": "blitz"
   },
   "savedHere": "Progress is saved in this browser.",
-  "playMore": "Play more modes →"
+  "playMore": "Play more modes →",
+  "modules": {
+    "whos-that": "Who's That Pokémon?",
+    "cry": "Cry Quiz",
+    "dex": "Dex Detective",
+    "types": "Type Master",
+    "higher-lower": "Higher or Lower",
+    "games": "Mainline Games",
+    "anime": "Pokémon Anime",
+    "competitive": "Abilities, Moves & Items",
+    "shiny": "Real Shiny?",
+    "zoom-reveal": "Zoom Reveal",
+    "whose-team": "Whose Team Is This?",
+    "mixed": "Mixed Bag"
+  }
 }

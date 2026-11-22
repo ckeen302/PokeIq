@@ -95,7 +95,7 @@ export default function TrainersPage() {
                         <span className="min-w-0 flex-1 space-y-1">
                           <span className="block truncate font-display text-base font-bold uppercase tracking-wide group-hover:text-screen">{n.name}</span>
                           <span className="flex flex-wrap items-center gap-1.5">
-                            {n.type && <TypeBadge type={n.type.toLowerCase()} size="sm" />}
+                            {n.type && <TypeBadge type={n.type.toLowerCase()} size="sm" label={names.locale === "en" ? undefined : names.type(n.type)} />}
                             <span className="text-[11px] text-muted-foreground">{names.region(n.region)}</span>
                           </span>
                           <span className="block truncate font-pixel text-[9px] uppercase tracking-wider text-muted-foreground">{n.games.map((g) => short.get(g)).join(" · ")}</span>
