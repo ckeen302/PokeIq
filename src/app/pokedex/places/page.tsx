@@ -5,6 +5,7 @@ import { breadcrumbList } from "@/lib/structured-data";
 import { PLACES } from "@/lib/dex/places-data";
 import { dexNames } from "@/lib/dex/local-names";
 import { serverT } from "@/i18n/server";
+import type { Translator } from "@/i18n/catalog";
 import { ClientMessages } from "@/i18n/ClientMessages";
 import placesNs from "@/messages/places";
 import dexRef from "@/messages/dex-ref";
@@ -41,9 +42,16 @@ export default function PlacesPage() {
       <ListHeader kicker={t("list.kicker")} title={ref("title")} accent={ref("accent")} blurb={t("list.blurb")} />
       <DexTabs active="places" />
       <ClientMessages namespaces={[dexLists]}>
-        <DexListExplorer kind="places" items={items} />
+        <DexListExplorer kind="places" items={items} placeLabels={en ? undefined : placeLabels(names.region, t)} />
       </ClientMessages>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbList([{ name: t("crumbs.pokedex"), path: "/pokedex" }, { name: t("crumbs.places"), path: "/pokedex/places" }])) }} />
     </div>
   );
+}
+
+/** The regions and place kinds the list shows, in the page's language, keyed by their English filter values. */
+function placeLabels(region: (name: string) => string, t: Translator<typeof placesNs.en>) {
+  const regions = Object.fromEntries([...new Set(PLACES.map((p) => p.region))].map((r) => [r, region(r)]));
+  const types = Object.fromEntries([...new Set(PLACES.map((p) => p.type))].map((k) => [k, t.has(`types.${k}`) ? t(`types.${k}` as never) : k]));
+  return { regions, types };
 }

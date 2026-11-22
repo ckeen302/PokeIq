@@ -4,6 +4,8 @@ import { BackButton } from "@/components/ui/BackButton";
 import { artUrl } from "@/lib/pokemon/art";
 import { typeColor } from "@/lib/pokemon/type-colors";
 import { TypeBadge } from "../TypeBadge";
+import { getLocale } from "@/i18n/server";
+import { typeNames } from "@/lib/pokemon/dex-local";
 import type { Pager, PagerLink } from "@/lib/dex/neighbours";
 import { DexPager } from "./DexPager";
 import { serverT } from "@/i18n/server";
@@ -89,6 +91,8 @@ export interface SpeciesChip {
 
 /** Grid of Pokémon that link to their Pokédex entries. */
 export function SpeciesGrid({ list }: { list: SpeciesChip[] }) {
+  const locale = getLocale();
+  const names = locale === "en" ? null : typeNames(locale);
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
       {list.map((p) => (
@@ -107,7 +111,7 @@ export function SpeciesGrid({ list }: { list: SpeciesChip[] }) {
               <div className="truncate font-display text-sm font-bold uppercase tracking-wide group-hover:text-screen max-md:tracking-normal max-md:whitespace-normal max-md:leading-tight">{p.name}</div>
               <div className="flex flex-wrap gap-1">
                 {p.types.map((t) => (
-                  <TypeBadge key={t} type={t} size="sm" />
+                  <TypeBadge key={t} type={t} size="sm" label={names?.[t]} />
                 ))}
               </div>
               {p.note && <div className="truncate font-pixel text-[9px] uppercase tracking-wider text-muted-foreground">{p.note}</div>}

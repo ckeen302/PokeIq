@@ -63,7 +63,18 @@ type Item = MoveListItem | AbilityListItem | ItemListItem | PlaceListItem;
 /**
  * `typeNames`: the types' names in the page's language (other languages only; English capitalises the ids).
  */
-export function DexListExplorer({ kind, items, typeNames }: { kind: DexListKind; items: Item[]; typeNames?: Record<string, string> }) {
+export function DexListExplorer({
+  kind,
+  items,
+  typeNames,
+  placeLabels,
+}: {
+  kind: DexListKind;
+  items: Item[];
+  typeNames?: Record<string, string>;
+  /** Places' regions and kinds as the page's language shows them (other languages only); the filters keep the English values. */
+  placeLabels?: { regions: Record<string, string>; types: Record<string, string> };
+}) {
   const t = useT(dexLists);
   const [query, setQuery] = useState("");
   const [type, setType] = useState<string | null>(null);
@@ -181,13 +192,13 @@ export function DexListExplorer({ kind, items, typeNames }: { kind: DexListKind;
               <select value={region} onChange={(e) => setRegion(e.target.value)} aria-label={t("region")} className="h-11 max-w-[200px] rounded-md border border-input bg-shade/40 px-3 font-display text-sm">
                 <option value="">{t("allRegions")}</option>
                 {regions.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c}>{placeLabels?.regions[c] ?? c}</option>
                 ))}
               </select>
               <select value={placeType} onChange={(e) => setPlaceType(e.target.value)} aria-label={t("placeType")} className="h-11 max-w-[200px] rounded-md border border-input bg-shade/40 px-3 font-display text-sm">
                 <option value="">{t("allTypes")}</option>
                 {placeTypes.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c}>{placeLabels?.types[c] ?? c}</option>
                 ))}
               </select>
             </>
@@ -263,7 +274,7 @@ export function DexListExplorer({ kind, items, typeNames }: { kind: DexListKind;
                     <td className="p-2 font-semibold">
                       <Link href={`/pokedex/moves/${m.slug}`} className="hover:text-screen">{m.name}</Link>
                     </td>
-                    <td className="p-2"><TypeBadge type={m.type} size="sm" /></td>
+                    <td className="p-2"><TypeBadge type={m.type} size="sm" label={typeNames?.[m.type]} /></td>
                     <td className="p-2"><Icon className={cn("h-4 w-4", CLASS_CLS[m.cls as keyof typeof CLASS_CLS])} aria-label={t(`cls.${m.cls as (typeof CLASSES)[number]}`)} /></td>
                     <td className="p-2 text-right font-mono tabular-nums">{m.power ?? "—"}</td>
                     <td className="hidden p-2 text-right font-mono tabular-nums sm:table-cell">{m.accuracy ?? "—"}</td>
@@ -292,7 +303,7 @@ export function DexListExplorer({ kind, items, typeNames }: { kind: DexListKind;
             <Link key={it.slug} href={`/pokedex/places/${it.slug}`} data-testid="place-card" className="group rounded-lg border bg-card p-3 transition-colors hover:border-screen/60">
               <span className="block truncate font-display text-sm font-bold uppercase tracking-wide group-hover:text-screen">{it.name}</span>
               <span className="block truncate font-pixel text-[9px] uppercase tracking-wider text-muted-foreground">
-                {it.type} · {it.parent ? `${it.parent}, ` : ""}{it.region}
+                {placeLabels?.types[it.type] ?? it.type} · {it.parent ? `${it.parent}, ` : ""}{placeLabels?.regions[it.region] ?? it.region}
               </span>
             </Link>
           ))}
