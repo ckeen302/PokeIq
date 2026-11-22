@@ -8,7 +8,7 @@ import { buildMatcher } from "@/lib/name-em-all/match";
 import { NEA_PATH, neaCategory } from "@/lib/name-em-all/categories";
 import { neaClock } from "@/lib/name-em-all/share";
 import { RACE_MIN, raceHref, type NeaRaceStanding, type NeaRaceView } from "@/lib/name-em-all/race";
-import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
+import { isCleanName } from "@/lib/name-filter";
 import { useProgress } from "@/lib/progress";
 import { play } from "@/lib/sound";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import { NeaShareButton } from "./NeaShare";
 import { cn } from "@/lib/utils";
 import type { NeaOutsider, NeaTarget } from "@/lib/name-em-all/types";
 import { useT } from "@/i18n/client";
+import communityNs from "@/messages/community";
 import neaRace from "@/messages/nea-race";
 import neaGame from "@/messages/nea-game";
 
@@ -36,6 +37,7 @@ const BAR_COLORS = ["#e2306f", "#38bdf8", "#f59e0b", "#22c55e", "#a855f7", "#f97
 /** `label`: another language's name of the race's category, from the server (English pages use categories.ts'). */
 export function NeaRace({ code, label }: { code: string; label?: string }) {
   const t = useT(neaRace);
+  const ct = useT(communityNs);
   const router = useRouter();
   const progress = useProgress();
   const { view, now, gone, offline, error, setError, busy, act, send, join } = useDuel<NeaRaceView>(`/api/name-em-all/race/${code}`, code);
@@ -116,7 +118,7 @@ export function NeaRace({ code, label }: { code: string; label?: string }) {
                 className="flex flex-wrap items-center gap-2"
                 onSubmit={(e) => {
                   e.preventDefault();
-                  if (!isCleanName(name)) return setError(NAME_REJECTED);
+                  if (!isCleanName(name)) return setError(ct("nameRejected"));
                   void join(name.trim());
                 }}
               >

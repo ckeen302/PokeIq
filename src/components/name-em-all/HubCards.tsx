@@ -10,11 +10,12 @@ import { neaClock } from "@/lib/name-em-all/share";
 import { RACE_MAX, RACE_MINUTES, raceHref, type NeaRaceSeatResponse } from "@/lib/name-em-all/race";
 import { useToday } from "@/lib/use-today";
 import { saveSeat } from "@/lib/duel-seat";
-import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
+import { isCleanName } from "@/lib/name-filter";
 import { setTrainerName, useProgress } from "@/lib/progress";
 import { unlockAudio } from "@/lib/sound";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/i18n/client";
+import communityNs from "@/messages/community";
 import neaHub from "@/messages/nea-hub";
 
 /** Today's shared category, and how this device did on it. */
@@ -54,6 +55,7 @@ export function NeaDailyCard({ labels, counts }: { labels: Record<string, string
 /** Opens a race lobby: pick the category and length, share the link. */
 export function NeaRaceCard({ options }: { options: { id: string; label: string; total: number }[] }) {
   const t = useT(neaHub);
+  const ct = useT(communityNs);
   const router = useRouter();
   const progress = useProgress();
   const id = useId();
@@ -67,7 +69,7 @@ export function NeaRaceCard({ options }: { options: { id: string; label: string;
   }, [progress?.name, name]);
 
   async function start() {
-    if (!isCleanName(name)) return setError(NAME_REJECTED);
+    if (!isCleanName(name)) return setError(ct("nameRejected"));
     unlockAudio();
     setBusy(true);
     setError(null);

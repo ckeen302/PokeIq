@@ -5,7 +5,7 @@ import Link from "@/components/ui/Link";
 import { motion } from "framer-motion";
 import { Loader2, Medal, Trophy } from "lucide-react";
 import { CONN_LEVELS, CONN_MAX_MISTAKES, type ConnBoardRow, type ConnBoardStanding } from "@/lib/connections/types";
-import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
+import { isCleanName } from "@/lib/name-filter";
 import type { BadgeDef } from "@/lib/progress";
 import { clock } from "@/lib/share";
 import { NextDailyCountdown } from "@/components/NextDailyCountdown";
@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { BeatMyTime, FriendsBoard } from "./social";
 import { useT } from "@/i18n/client";
+import communityNs from "@/messages/community";
 import { formatNumber, translator, type Translator } from "@/i18n/catalog";
 import conn from "@/messages/connections";
 import badgesNs from "@/messages/badges";
@@ -165,6 +166,7 @@ export function DailyLeaderboard({
   onName: (name: string) => Promise<void>;
 }) {
   const t = useT(conn);
+  const ct = useT(communityNs);
   const id = useId();
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
@@ -176,7 +178,7 @@ export function DailyLeaderboard({
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     const n = name.trim();
-    if (!isCleanName(n)) return setError(NAME_REJECTED);
+    if (!isCleanName(n)) return setError(ct("nameRejected"));
     setBusy(true);
     setError(null);
     await onName(n);

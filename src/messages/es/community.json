@@ -12,5 +12,6 @@
   "decline": "Rechazar",
   "accepted": "<b>{name}</b> ha aceptado tu desafío: {game}.",
   "declined": "<b>{name}</b> ha rechazado tu desafío: {game}.",
-  "close": "Cerrar"
+  "close": "Cerrar",
+  "nameRejected": "Elige otro nombre."
 }

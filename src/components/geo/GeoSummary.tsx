@@ -17,10 +17,11 @@ import { ShareButton } from "@/components/share/ShareButton";
 import { GeoMap } from "./GeoMap";
 import { GeoCrowdMap } from "./GeoCrowdMap";
 import { cn } from "@/lib/utils";
-import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
+import { isCleanName } from "@/lib/name-filter";
 import { type Game, type Played, type Reward, emoji, maxTotal, placeName, post, useCountUp } from "./GeoGame";
 import { DailyEmailNudge } from "@/components/email/DailyEmailNudge";
 import { useT } from "@/i18n/client";
+import communityNs from "@/messages/community";
 import { formatNumber, type Translator } from "@/i18n/catalog";
 import geoNs from "@/messages/geo";
 import geoSolo from "@/messages/geo-solo";
@@ -52,6 +53,7 @@ export function GeoSummary({
   compact?: boolean;
 }) {
   const t = useT(geoSolo);
+  const ct = useT(communityNs);
   const bt = useT(badgesNs);
   const g = useT(geoNs);
   const names = useGeoNames();
@@ -107,7 +109,7 @@ export function GeoSummary({
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!isCleanName(name)) {
-      setSaveError(NAME_REJECTED);
+      setSaveError(ct("nameRejected"));
       setSave("error");
       return;
     }

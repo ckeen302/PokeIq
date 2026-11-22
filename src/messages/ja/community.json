@@ -12,5 +12,6 @@
   "decline": "断る",
   "accepted": "<b>{name}</b>が{game}の挑戦を受けました。",
   "declined": "<b>{name}</b>が{game}の挑戦を断りました。",
-  "close": "閉じる"
+  "close": "閉じる",
+  "nameRejected": "別の名前にしてください。"
 }
