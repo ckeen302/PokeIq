@@ -163,7 +163,7 @@
       "firstPrompt": "¿Cuál de estos juegos salió primero?",
       "firstExplanation": "{title} es de la {gen}, anterior a los demás.",
       "basisPrompt": "¿Qué lugar del mundo real inspiró la región de {region}?",
-      "basisExplanation": "Modelo de la región de {region}: {basis}.",
+      "basisExplanation": "{region} está inspirada en {basis}.",
       "placePrompt": "¿En qué región está {place}?",
       "placeExplanation": "{place} está en la región de {region}."
     },
@@ -174,7 +174,7 @@
       "france": "Francia",
       "hawaii": "Hawái",
       "britain": "Gran Bretaña",
-      "iberia": "La península ibérica"
+      "iberia": "la península ibérica"
     },
     "league": {
       "finalPrompt": "¿A quién venció {ash} en la final de {league}?",
@@ -204,11 +204,11 @@
     "role": {
       "gymLeader": "Líder de Gimnasio",
       "eliteFour": "Alto Mando",
-      "champion": "Combate final de la Liga",
+      "champion": "Campeón",
       "rival": "Combate contra el rival",
       "boss": "Combate contra el jefe",
       "battle": "Combate",
-      "kahuna": "Gran prueba"
+      "kahuna": "Kahuna"
     },
     "rematch": "{role} (revancha)",
     "gameRole": "{game} — {role}{hasPlace, select, yes {, {place}} other {}}",
