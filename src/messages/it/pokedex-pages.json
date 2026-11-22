@@ -1,0 +1,100 @@
+{
+  "crumbs": {
+    "pokedex": "Pokédex",
+    "types": "Tipi"
+  },
+  "title": "Poké<accent>dex</accent>",
+  "titleStart": "Poké",
+  "titleAccent": "dex",
+  "hub": {
+    "metaTitle": "Pokédex: tutti i Pokémon da Kanto a Paldea",
+    "metaDescription": "Sfoglia e cerca tutti i Pokémon da Kanto a Paldea. Filtra per tipo e generazione, ordina per statistiche e studia evoluzioni, mosse, abilità e debolezze.",
+    "kicker": "Database nazionale",
+    "blurb": "Statistiche, evoluzioni, mosse, abilità, efficacia dei tipi e ogni voce del Pokédex. Studia, poi mettiti alla prova."
+  },
+  "types": {
+    "metaTitle": "Tabella dei tipi Pokémon: tutte le efficacie",
+    "metaDescription": "La tabella completa dei tipi Pokémon: quali tipi in attacco sono superefficaci, non molto efficaci o senza effetto su ogni tipo in difesa.",
+    "kicker": "Tabella dei tipi",
+    "blurb": "Ogni tipo in attacco contro ogni tipo in difesa. Per un Pokémon con due tipi, moltiplica le due colonne.",
+    "listName": "Tipi di Pokémon"
+  },
+  "chart": {
+    "super": "superefficace",
+    "notVery": "non molto efficace",
+    "none": "nessun effetto",
+    "neutral": "neutro",
+    "legend": "Le righe attaccano, le colonne difendono.",
+    "caption": "Efficacia dei tipi: tipo in attacco contro tipo in difesa",
+    "defending": "In difesa: {type}",
+    "attacking": "In attacco: {type}",
+    "cell": "{a} → {d}: {word}"
+  },
+  "type": {
+    "name": "Tipo {type}",
+    "metaTitle": "Pokémon di tipo {type}: debolezze, punti di forza e mosse",
+    "social": "Tipo {type} · Pokédex di PokéIQ",
+    "descSuper": "Le mosse di tipo {type} sono superefficaci contro {list}.",
+    "descSuperNone": "Le mosse di tipo {type} non sono superefficaci contro nessun tipo.",
+    "descWeak": "I Pokémon di tipo {type} sono deboli contro {list}.",
+    "descWeakNone": "I Pokémon di tipo {type} non hanno debolezze.",
+    "descAll": "I {n} Pokémon di tipo {type} e le mosse di tipo {type} più potenti.",
+    "descEvery": "Tutti i Pokémon di tipo {type} e le mosse di tipo {type} più potenti.",
+    "typedPokemon": "Pokémon di tipo {type}",
+    "back": "Tabella dei tipi",
+    "kicker": "Tipo",
+    "attacking": "Mosse di tipo {type} in attacco",
+    "defending": "Pokémon di tipo {type} in difesa",
+    "singleTyped": "Con un solo tipo",
+    "moves": "Mosse di tipo {type}",
+    "superVs": "Superefficace contro",
+    "notVeryVs": "Non molto efficace contro",
+    "noEffectOn": "Nessun effetto su",
+    "weakTo": "Debole contro",
+    "resists": "Resiste a",
+    "immuneTo": "Immune a",
+    "noType": "Nessun tipo",
+    "dualNote": "Per un Pokémon con due tipi, moltiplica i valori di entrambi i tipi: vedi la <link>tabella dei tipi completa</link>.",
+    "physical": "Fisica",
+    "special": "Speciale",
+    "status": "Stato",
+    "strongest": "Potenza base più alta",
+    "common": "Imparate da più Pokémon",
+    "pwr": "POT",
+    "mons": "PKMN",
+    "split": "{pure} con un tipo · {dual} con due tipi",
+    "pure": "Solo tipo {type} · {n}",
+    "part": "In parte tipo {type} · {n}",
+    "others": "Altri tipi"
+  },
+  "natures": {
+    "metaTitle": "Natura dei Pokémon: statistiche e gusti",
+    "metaDescription": "Tutte le nature dei Pokémon: la statistica che ognuna aumenta del 10% e quella che riduce, più il gusto di bacca che un Pokémon ama o detesta.",
+    "kicker": "Nature",
+    "blurb": "Una natura aumenta una statistica del 10% e ne riduce un’altra del 10%. Le nature neutre non cambiano nulla.",
+    "nature": "Natura",
+    "raises": "Aumenta",
+    "lowers": "Riduce",
+    "likes": "Ama",
+    "dislikes": "Detesta",
+    "neutral": "Le nature neutre ({list}) non cambiano alcuna statistica e non hanno gusti preferiti.",
+    "stat": {
+      "atk": "Attacco",
+      "def": "Difesa",
+      "spa": "Att. Sp.",
+      "spd": "Dif. Sp.",
+      "spe": "Velocità"
+    },
+    "flavor": {
+      "atk": "Piccante",
+      "def": "Aspro",
+      "spa": "Secco",
+      "spd": "Amaro",
+      "spe": "Dolce"
+    }
+  },
+  "study": {
+    "metaTitle": "Modalità studio: schede dei Pokémon",
+    "metaDescription": "Impara tutti i Pokémon con le schede: sagome, voci del Pokédex e tipi. Tieni traccia di ciò che padroneggi, generazione per generazione."
+  }
+}

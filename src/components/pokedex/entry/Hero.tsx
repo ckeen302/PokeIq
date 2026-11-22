@@ -14,6 +14,12 @@ import { typeColor } from "@/lib/pokemon/type-colors";
 import { animatedSpriteUrl, artUrl, homeRenderUrl, publicCryUrl } from "@/lib/pokemon/art";
 import { TypeBadge } from "../TypeBadge";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import dexEntryNs from "@/messages/dex-entry";
+
+/** A tenth as a decimal ("1.7 m"): as always in English, with the language's decimal mark elsewhere. */
+const tenths = (v: number, locale: string, unit: string, english: (v: number) => string) =>
+  locale === "en" ? english(v) : `${(v / 10).toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} ${unit}`;
 
 type View = "art" | "animated" | "3d";
 
@@ -26,7 +32,9 @@ interface HeroProps {
 }
 
 export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) {
+  const t = useT(dexEntryNs);
   const p = data.core;
+  const local = data.local;
   const [view, setView] = useState<View>("art");
   const [shiny, setShiny] = useState(false);
   const [burst, setBurst] = useState(0);
@@ -60,10 +68,10 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
         <span className="led h-1.5 w-1.5 text-warning" aria-hidden />
         <span className="led h-1.5 w-1.5 text-success" aria-hidden />
         <span className="font-pixel text-[10px] uppercase tracking-widest text-white/90">
-          Pokédex No.{String(p.id).padStart(4, "0")}
+          {t("hero.dexNo", { n: String(p.id).padStart(4, "0") })}
         </span>
         <span className="ml-auto hidden font-pixel text-[10px] uppercase tracking-widest text-white/70 sm:inline">
-          Gen {p.gen} · {GENERATION_REGIONS[p.gen]}
+          {t("hero.gen", { n: p.gen })} · {local?.region ?? GENERATION_REGIONS[p.gen]}
         </span>
       </div>
 
@@ -90,14 +98,14 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
               aria-hidden
             />
             <PokeballWatermark />
-            <span className="hud-label absolute left-3 top-3 z-[3] text-screen">{view === "3d" ? "3D model" : view === "animated" ? "Live sprite" : "Visual data"}</span>
-            {shiny && <span className="hud-label absolute right-3 top-3 z-[3] text-warning">Shiny</span>}
+            <span className="hud-label absolute left-3 top-3 z-[3] text-screen">{view === "3d" ? t("hero.model") : view === "animated" ? t("hero.live") : t("hero.visual")}</span>
+            {shiny && <span className="hud-label absolute right-3 top-3 z-[3] text-warning">{t("hero.shiny")}</span>}
             <motion.div className="relative z-[1] h-full w-full" style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}>
               <AnimatePresence mode="wait" initial={false}>
                 <motion.img
                   key={srcKey}
                   src={failed[srcKey] ? fallback : src}
-                  alt={`${form?.name ?? p.name}${shiny ? " (shiny)" : ""}`}
+                  alt={shiny ? t("hero.shinyAlt", { name: form?.name ?? p.name }) : (form?.name ?? p.name)}
                   onError={() => setFailed((f) => ({ ...f, [srcKey]: true }))}
                   // The artwork is the page's largest paint.
                   fetchPriority="high"
@@ -124,7 +132,7 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-2">
-            <div className="flex rounded-md border border-foreground/10 bg-shade/30 p-1" role="group" aria-label="Artwork style">
+            <div className="flex rounded-md border border-foreground/10 bg-shade/30 p-1" role="group" aria-label={t("hero.artStyle")}>
               {(["art", "animated", "3d"] as View[]).map((v) => (
                 <button
                   key={v}
@@ -134,7 +142,7 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
                   aria-pressed={view === v}
                 >
                   {view === v && <motion.span layoutId="hero-view-pill" className="absolute inset-0 rounded-sm bg-primary" transition={{ type: "spring", stiffness: 400, damping: 30 }} />}
-                  <span className="relative">{v === "art" ? "Artwork" : v === "animated" ? "Animated" : "3D"}</span>
+                  <span className="relative">{v === "art" ? t("hero.art") : v === "animated" ? t("hero.animated") : t("hero.threeD")}</span>
                 </button>
               ))}
             </div>
@@ -150,7 +158,7 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
                 shiny ? "border-warning/70 bg-warning/15 text-warning" : "border-foreground/10 bg-shade/30 text-muted-foreground hover:text-foreground"
               )}
             >
-              <Sparkles className="h-3.5 w-3.5" /> Shiny
+              <Sparkles className="h-3.5 w-3.5" /> {t("hero.shiny")}
             </button>
             <CryButton id={p.id} />
           </div>
@@ -160,26 +168,26 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
         <div className="space-y-5">
           <motion.div initial={hydrated ? { opacity: 0, y: 16 } : false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <p className="hud-label text-screen">
-              No.{String(p.id).padStart(4, "0")} · {p.genus}
+              {t("no", { n: String(p.id).padStart(4, "0") })} · {p.genus}
             </p>
             <h1 className="font-display text-5xl font-bold uppercase tracking-tight sm:text-6xl">{form?.name ?? p.name}</h1>
-            {p.names.ja && <p className="mt-1 text-base text-muted-foreground">{p.names.ja}</p>}
+            {(local ? local.english : p.names.ja) && <p className="mt-1 text-base text-muted-foreground">{local ? local.english : p.names.ja}</p>}
           </motion.div>
 
           <motion.div className="flex flex-wrap gap-2" initial={hydrated ? "hidden" : false} animate="show" variants={{ show: { transition: { staggerChildren: 0.08, delayChildren: 0.2 } } }}>
-            {types.map((t) => (
-              <motion.span key={`${form?.id}-${t}`} variants={{ hidden: { opacity: 0, scale: 0.5 }, show: { opacity: 1, scale: 1 } }}>
-                <TypeBadge type={t} size="lg" />
+            {types.map((ty) => (
+              <motion.span key={`${form?.id}-${ty}`} variants={{ hidden: { opacity: 0, scale: 0.5 }, show: { opacity: 1, scale: 1 } }}>
+                <TypeBadge type={ty} size="lg" label={local?.types[ty]} />
               </motion.span>
             ))}
-            {p.legendary && <Tag>Legendary</Tag>}
-            {p.mythical && <Tag>Mythical</Tag>}
-            {data.isBaby && <Tag>Baby</Tag>}
+            {p.legendary && <Tag>{t("hero.legendary")}</Tag>}
+            {p.mythical && <Tag>{t("hero.mythical")}</Tag>}
+            {data.isBaby && <Tag>{t("hero.baby")}</Tag>}
           </motion.div>
 
           {data.forms.length > 0 && (
             <div className="space-y-2">
-              <div className="hud-label">Forms</div>
+              <div className="hud-label">{t("hero.forms")}</div>
               <div className="flex flex-wrap gap-1.5">
                 <FormChip active={!form} onClick={() => onFormChange(null)}>
                   {p.name}
@@ -194,10 +202,10 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
           )}
 
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <Fact label="Height" value={formatHeight(p.height)} />
-            <Fact label="Weight" value={formatWeight(p.weight)} />
-            <Fact label="Color" value={titleCase(p.color)} />
-            <Fact label="Shape" value={p.shape ? titleCase(p.shape) : "—"} />
+            <Fact label={t("hero.height")} value={tenths(p.height, t.locale, "m", formatHeight)} />
+            <Fact label={t("hero.weight")} value={tenths(p.weight, t.locale, "kg", formatWeight)} />
+            <Fact label={t("hero.color")} value={titleCase(p.color)} />
+            <Fact label={t("hero.shape")} value={p.shape ? titleCase(p.shape) : "—"} />
           </div>
           <div className="flex flex-wrap gap-2">
             <Link
@@ -205,7 +213,7 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
               className="group inline-flex items-center gap-2 rounded-md border border-foreground/10 bg-shade/25 px-3 py-2 font-display text-[13px] font-bold uppercase tracking-wide transition-colors hover:border-screen/50 hover:text-screen"
               data-testid="dex-see-size"
             >
-              <Ruler className="h-4 w-4 text-screen" aria-hidden /> See its size in 3D
+              <Ruler className="h-4 w-4 text-screen" aria-hidden /> {t("hero.seeSize")}
               <span className="transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
             </Link>
             <Link
@@ -213,7 +221,7 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
               className="group inline-flex items-center gap-2 rounded-md border border-foreground/10 bg-shade/25 px-3 py-2 font-display text-[13px] font-bold uppercase tracking-wide transition-colors hover:border-screen/50 hover:text-screen"
               data-testid="dex-race-it"
             >
-              <Flag className="h-4 w-4 text-screen" aria-hidden /> Race it
+              <Flag className="h-4 w-4 text-screen" aria-hidden /> {t("hero.race")}
               <span className="transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
             </Link>
             {MASS_BATTLE_LIVE && (
@@ -222,7 +230,7 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
                 className="group inline-flex items-center gap-2 rounded-md border border-foreground/10 bg-shade/25 px-3 py-2 font-display text-[13px] font-bold uppercase tracking-wide transition-colors hover:border-screen/50 hover:text-screen"
                 data-testid="dex-battle-it"
               >
-                <Swords className="h-4 w-4 text-screen" aria-hidden /> Battle it
+                <Swords className="h-4 w-4 text-screen" aria-hidden /> {t("hero.battle")}
                 <span className="transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
               </Link>
             )}
@@ -232,14 +240,14 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
                 className="group inline-flex items-center gap-2 rounded-md border border-foreground/10 bg-shade/25 px-3 py-2 font-display text-[13px] font-bold uppercase tracking-wide transition-colors hover:border-screen/50 hover:text-screen"
                 data-testid="dex-games"
               >
-                <Medal className="h-4 w-4 text-screen" aria-hidden /> Games
+                <Medal className="h-4 w-4 text-screen" aria-hidden /> {t("hero.games")}
                 <span className="transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
               </Link>
             )}
           </div>
 
           <div className="space-y-2">
-            <div className="hud-label">Abilities</div>
+            <div className="hud-label">{t("hero.abilities")}</div>
             <div className="grid gap-2">
               {abilities.map((a, i) => (
                 <motion.div
@@ -250,8 +258,8 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
                   className="rounded-md border border-foreground/10 bg-shade/25 p-3"
                 >
                   <div className="flex items-center gap-2 font-display text-[15px] font-bold uppercase tracking-wide">
-                    <Link href={`/pokedex/abilities/${slugify(a.name)}`} className="hover:text-screen">{a.name}</Link>
-                    {a.hidden && <span className="rounded-sm border border-primary/50 px-1.5 py-1 font-pixel text-[9px] uppercase leading-none text-primary">Hidden</span>}
+                    <Link href={`/pokedex/abilities/${slugify(a.name)}`} className="hover:text-screen">{a.label ?? a.name}</Link>
+                    {a.hidden && <span className="rounded-sm border border-primary/50 px-1.5 py-1 font-pixel text-[9px] uppercase leading-none text-primary">{t("hero.hidden")}</span>}
                   </div>
                   {a.effect && <p className="mt-0.5 text-xs text-muted-foreground">{a.effect}</p>}
                 </motion.div>
@@ -295,6 +303,7 @@ function FormChip({ active, onClick, children }: { active: boolean; onClick: () 
 }
 
 function CryButton({ id }: { id: number }) {
+  const t = useT(dexEntryNs);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
   const [supported, setSupported] = useState(true);
@@ -328,10 +337,10 @@ function CryButton({ id }: { id: number }) {
         void a.play().then(() => setPlaying(true));
       }}
       className="flex items-center gap-1.5 rounded-md border border-foreground/10 bg-shade/30 px-3 py-2 font-pixel text-[10px] uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground"
-      aria-label="Play cry"
+      aria-label={t("hero.playCry")}
     >
       <Volume2 className="h-3.5 w-3.5" />
-      Cry
+      {t("hero.cry")}
       <span className="flex h-3 items-end gap-[2px]" aria-hidden>
         {[0, 1, 2, 3].map((i) => (
           <motion.span

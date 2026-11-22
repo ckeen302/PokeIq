@@ -1,0 +1,54 @@
+{
+  "search": {
+    "hint": "名前・番号・分類で検索…（ / ）",
+    "hintShort": "名前・番号・分類…",
+    "label": "ポケモンを検索",
+    "clear": "検索をクリア"
+  },
+  "sortBy": "並び替え",
+  "sortAsc": "昇順に並べる",
+  "sortDesc": "降順に並べる",
+  "sort": {
+    "id": "図鑑番号",
+    "name": "名前",
+    "type": "タイプ",
+    "bst": "種族値合計",
+    "hp": "HP",
+    "atk": "こうげき",
+    "def": "ぼうぎょ",
+    "spa": "とくこう",
+    "spd": "とくぼう",
+    "spe": "すばやさ",
+    "height": "高さ",
+    "weight": "重さ"
+  },
+  "showFilters": "絞り込みを表示",
+  "hideFilters": "絞り込みを隠す",
+  "studyMode": "学習モード",
+  "gen": "第{n}世代",
+  "legends": "伝説・幻",
+  "fullyEvolved": "最終進化",
+  "reset": "リセット",
+  "empty": "条件に合うポケモンはいません。",
+  "view": {
+    "label": "表示",
+    "cards": "カード",
+    "table": "表"
+  },
+  "col": {
+    "id": "No.",
+    "name": "ポケモン",
+    "type": "タイプ",
+    "hp": "HP",
+    "atk": "こうげき",
+    "def": "ぼうぎょ",
+    "spa": "とくこう",
+    "spd": "とくぼう",
+    "spe": "すばやさ",
+    "bst": "合計"
+  },
+  "sortedDesc": "{label}（高い順に並べ替え中・逆順にする）",
+  "sortedAsc": "{label}（低い順に並べ替え中・逆順にする）",
+  "sortThis": "{label}（この列で並べ替え）",
+  "no": "No.{n}"
+}

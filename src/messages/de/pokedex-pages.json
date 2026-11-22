@@ -1,0 +1,100 @@
+{
+  "crumbs": {
+    "pokedex": "Pokédex",
+    "types": "Typen"
+  },
+  "title": "Poké<accent>dex</accent>",
+  "titleStart": "Poké",
+  "titleAccent": "dex",
+  "hub": {
+    "metaTitle": "Pokédex: Alle Pokémon von Kanto bis Paldea",
+    "metaDescription": "Durchsuche alle Pokémon von Kanto bis Paldea. Filtere nach Typ und Generation, sortiere nach Werten und lerne Entwicklungen, Attacken, Fähigkeiten und Schwächen.",
+    "kicker": "Nationale Datenbank",
+    "blurb": "Werte, Entwicklungen, Attacken, Fähigkeiten, Typen-Matchups und jeder Pokédex-Eintrag. Erst lernen, dann testen."
+  },
+  "types": {
+    "metaTitle": "Pokémon-Typentabelle: alle Typ-Effektivitäten",
+    "metaDescription": "Die komplette Pokémon-Typentabelle: welche Angriffstypen gegen welchen Verteidigungstyp sehr effektiv, nicht sehr effektiv oder wirkungslos sind.",
+    "kicker": "Typentabelle",
+    "blurb": "Jeder Angriffstyp gegen jeden Verteidigungstyp. Bei Pokémon mit zwei Typen multiplizierst du beide Spalten.",
+    "listName": "Pokémon-Typen"
+  },
+  "chart": {
+    "super": "sehr effektiv",
+    "notVery": "nicht sehr effektiv",
+    "none": "keine Wirkung",
+    "neutral": "neutral",
+    "legend": "Zeilen greifen an, Spalten verteidigen.",
+    "caption": "Typ-Effektivität: Angriffstyp gegen Verteidigungstyp",
+    "defending": "Verteidigung: {type}",
+    "attacking": "Angriff: {type}",
+    "cell": "{a} → {d}: {word}"
+  },
+  "type": {
+    "name": "Typ {type}",
+    "metaTitle": "{type}-Pokémon: Schwächen, Stärken & Attacken",
+    "social": "Typ {type} · PokéIQ-Pokédex",
+    "descSuper": "{type}-Attacken sind sehr effektiv gegen {list}.",
+    "descSuperNone": "{type}-Attacken sind gegen keinen Typ sehr effektiv.",
+    "descWeak": "{type}-Pokémon sind schwach gegen {list}.",
+    "descWeakNone": "{type}-Pokémon haben keine Schwächen.",
+    "descAll": "Alle {n} {type}-Pokémon und die stärksten {type}-Attacken.",
+    "descEvery": "Alle {type}-Pokémon und die stärksten {type}-Attacken.",
+    "typedPokemon": "{type}-Pokémon",
+    "back": "Typentabelle",
+    "kicker": "Typ",
+    "attacking": "{type}-Attacken im Angriff",
+    "defending": "{type}-Pokémon in der Verteidigung",
+    "singleTyped": "Nur ein Typ",
+    "moves": "{type}-Attacken",
+    "superVs": "Sehr effektiv gegen",
+    "notVeryVs": "Nicht sehr effektiv gegen",
+    "noEffectOn": "Wirkungslos gegen",
+    "weakTo": "Schwach gegen",
+    "resists": "Resistent gegen",
+    "immuneTo": "Immun gegen",
+    "noType": "Kein Typ",
+    "dualNote": "Bei Pokémon mit zwei Typen multiplizierst du die Werte beider Typen – siehe die <link>vollständige Typentabelle</link>.",
+    "physical": "Physisch",
+    "special": "Spezial",
+    "status": "Status",
+    "strongest": "Höchste Basisstärke",
+    "common": "Von den meisten Pokémon erlernt",
+    "pwr": "STK",
+    "mons": "PKMN",
+    "split": "{pure} mit einem Typ · {dual} mit zwei Typen",
+    "pure": "Nur Typ {type} · {n}",
+    "part": "Teils Typ {type} · {n}",
+    "others": "Andere Typen"
+  },
+  "natures": {
+    "metaTitle": "Pokémon-Wesen: Statuswerte und Geschmäcker",
+    "metaDescription": "Alle Pokémon-Wesen: welchen Wert jedes um 10 % erhöht und welchen es senkt, dazu der Beerengeschmack, den ein Pokémon mag oder nicht mag.",
+    "kicker": "Wesen",
+    "blurb": "Ein Wesen erhöht einen Wert um 10 % und senkt einen anderen um 10 %. Neutrale Wesen ändern nichts.",
+    "nature": "Wesen",
+    "raises": "Erhöht",
+    "lowers": "Senkt",
+    "likes": "Mag",
+    "dislikes": "Mag nicht",
+    "neutral": "Neutrale Wesen ({list}) ändern keinen Wert und haben keinen Lieblingsgeschmack.",
+    "stat": {
+      "atk": "Angriff",
+      "def": "Verteidigung",
+      "spa": "Sp.-Angriff",
+      "spd": "Sp.-Verteidigung",
+      "spe": "Initiative"
+    },
+    "flavor": {
+      "atk": "Scharf",
+      "def": "Sauer",
+      "spa": "Trocken",
+      "spd": "Bitter",
+      "spe": "Süß"
+    }
+  },
+  "study": {
+    "metaTitle": "Lernmodus: Pokémon-Karteikarten",
+    "metaDescription": "Lerne alle Pokémon mit Karteikarten: Silhouetten, Pokédex-Einträge und Typen. Behalte im Blick, was du sicher kannst – Generation für Generation."
+  }
+}

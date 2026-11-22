@@ -1,0 +1,18 @@
+{
+  "tabs": {
+    "pokemon": "ポケモン",
+    "moves": "わざ",
+    "abilities": "とくせい",
+    "items": "どうぐ",
+    "places": "場所",
+    "types": "タイプ",
+    "natures": "せいかく",
+    "trainers": "トレーナー",
+    "tcg": "ポケカ",
+    "games": "ゲーム",
+    "movies": "映画",
+    "theories": "考察"
+  },
+  "section": "項目",
+  "sections": "図鑑の項目"
+}

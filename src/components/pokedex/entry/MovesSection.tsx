@@ -7,21 +7,19 @@ import { ChevronDown, CircleDot, Search, Sparkle, Swords } from "lucide-react";
 import type { DexMove } from "@/lib/pokemon/dex-types";
 import { TypeBadge } from "../TypeBadge";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import dexEntryNs from "@/messages/dex-entry";
 
-const TABS: { method: DexMove["method"]; label: string }[] = [
-  { method: "L", label: "Level up" },
-  { method: "M", label: "TM / TR" },
-  { method: "E", label: "Egg" },
-  { method: "T", label: "Tutor" },
-];
+const TABS: { method: DexMove["method"] }[] = [{ method: "L" }, { method: "M" }, { method: "E" }, { method: "T" }];
 
 const CLASS_META = {
-  physical: { icon: Swords, label: "Physical", cls: "text-orange-400" },
-  special: { icon: Sparkle, label: "Special", cls: "text-sky-400" },
-  status: { icon: CircleDot, label: "Status", cls: "text-zinc-400" },
+  physical: { icon: Swords, label: "physical", cls: "text-orange-400" },
+  special: { icon: Sparkle, label: "special", cls: "text-sky-400" },
+  status: { icon: CircleDot, label: "status", cls: "text-zinc-400" },
 } as const;
 
-export function MovesSection({ moves, game }: { moves: DexMove[]; game: string }) {
+export function MovesSection({ moves, game, typeNames }: { moves: DexMove[]; game: string; typeNames?: Record<string, string> }) {
+  const t = useT(dexEntryNs);
   const counts = useMemo(
     () => Object.fromEntries(TABS.map((t) => [t.method, moves.filter((m) => m.method === t.method).length])),
     [moves]
@@ -38,29 +36,29 @@ export function MovesSection({ moves, game }: { moves: DexMove[]; game: string }
     const q = query.trim().toLowerCase();
     return moves
       .filter((m) => m.method === tab)
-      .filter((m) => !q || m.name.toLowerCase().includes(q) || m.type.includes(q))
+      .filter((m) => !q || m.name.toLowerCase().includes(q) || m.type.includes(q) || (typeNames?.[m.type]?.toLowerCase().includes(q) ?? false))
       .sort((a, b) =>
         tab === "L" ? a.level - b.level || a.name.localeCompare(b.name) : tab === "M" ? (a.tm ?? "ZZ").localeCompare(b.tm ?? "ZZ", undefined, { numeric: true }) : a.name.localeCompare(b.name)
       );
-  }, [moves, tab, query]);
+  }, [moves, tab, query, typeNames]);
 
   return (
     <div className="space-y-3 hud rounded-lg border bg-card p-4">
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex flex-wrap rounded-md border border-foreground/10 bg-shade/30 p-1">
-          {TABS.filter((t) => counts[t.method] > 0).map((t) => (
+          {TABS.filter((x) => counts[x.method] > 0).map((x) => (
             <button
-              key={t.method}
+              key={x.method}
               type="button"
               onClick={() => {
-                setTab(t.method);
+                setTab(x.method);
                 setOpen(null);
               }}
-              className={cn("relative rounded-sm px-3 py-1.5 font-pixel text-[10px] uppercase tracking-wider transition-colors", tab === t.method ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+              className={cn("relative rounded-sm px-3 py-1.5 font-pixel text-[10px] uppercase tracking-wider transition-colors", tab === x.method ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
             >
-              {tab === t.method && <motion.span layoutId="moves-tab" className="absolute inset-0 rounded-sm bg-primary" transition={{ type: "spring", stiffness: 400, damping: 30 }} />}
+              {tab === x.method && <motion.span layoutId="moves-tab" className="absolute inset-0 rounded-sm bg-primary" transition={{ type: "spring", stiffness: 400, damping: 30 }} />}
               <span className="relative">
-                {t.label} <span className="opacity-70">{counts[t.method]}</span>
+                {t(`moves.tab.${x.method}`)} <span className="opacity-70">{counts[x.method]}</span>
               </span>
             </button>
           ))}
@@ -70,9 +68,9 @@ export function MovesSection({ moves, game }: { moves: DexMove[]; game: string }
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Filter moves or types"
+            placeholder={t("moves.filter")}
             className="h-9 w-48 rounded-full border border-input bg-background pl-8 pr-3 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            aria-label="Filter moves"
+            aria-label={t("moves.filterLabel")}
           />
         </div>
       </div>
@@ -82,15 +80,15 @@ export function MovesSection({ moves, game }: { moves: DexMove[]; game: string }
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-              <th className="w-14 p-2">{tab === "L" ? "Lv" : tab === "M" ? "TM" : <span className="sr-only">Method</span>}</th>
-              <th className="p-2">Move</th>
-              <th className="p-2">Type</th>
-              <th className="p-2">Cat.</th>
-              <th className="p-2 text-right">Pow</th>
-              <th className="hidden p-2 text-right sm:table-cell">Acc</th>
-              <th className="hidden p-2 text-right sm:table-cell">PP</th>
+              <th className="w-14 p-2">{tab === "L" ? t("moves.lv") : tab === "M" ? t("moves.tm") : <span className="sr-only">{t("moves.method")}</span>}</th>
+              <th className="p-2">{t("moves.move")}</th>
+              <th className="p-2">{t("moves.type")}</th>
+              <th className="p-2">{t("moves.cat")}</th>
+              <th className="p-2 text-right">{t("moves.pow")}</th>
+              <th className="hidden p-2 text-right sm:table-cell">{t("moves.acc")}</th>
+              <th className="hidden p-2 text-right sm:table-cell">{t("moves.pp")}</th>
               <th className="w-6 p-2">
-                <span className="sr-only">Details</span>
+                <span className="sr-only">{t("moves.details")}</span>
               </th>
             </tr>
           </thead>
@@ -110,7 +108,7 @@ export function MovesSection({ moves, game }: { moves: DexMove[]; game: string }
                     className={cn("cursor-pointer border-b border-foreground/5 transition-colors hover:bg-foreground/[0.03]", isOpen && "bg-foreground/[0.04]")}
                   >
                     <td className="p-2 font-mono text-xs text-muted-foreground">
-                      {tab === "L" ? (m.level === 0 ? "Evo" : m.level) : tab === "M" ? m.tm ?? "—" : ""}
+                      {tab === "L" ? (m.level === 0 ? t("moves.evo") : m.level) : tab === "M" ? m.tm ?? "—" : ""}
                     </td>
                     {/* The move's name heads its row, so every cell in the row has a header. */}
                     <th scope="row" className="p-2 text-left font-semibold">
@@ -127,16 +125,16 @@ export function MovesSection({ moves, game }: { moves: DexMove[]; game: string }
                         href={`/pokedex/moves/${m.slug}`}
                         onClick={(e) => e.stopPropagation()}
                         className="ml-2 text-[10px] font-normal uppercase tracking-wider text-muted-foreground hover:text-screen max-md:ml-0 max-md:mt-0.5 max-md:block max-md:w-fit"
-                        aria-label={`${m.name} move page`}
+                        aria-label={t("moves.pageLabel", { name: m.name })}
                       >
-                        Page →
+                        {t("moves.page")}
                       </Link>
                     </th>
                     <td className="p-2">
-                      <TypeBadge type={m.type} size="sm" />
+                      <TypeBadge type={m.type} size="sm" label={typeNames?.[m.type]} />
                     </td>
                     <td className="p-2">
-                      <Icon className={cn("h-4 w-4", meta.cls)} aria-label={meta.label} />
+                      <Icon className={cn("h-4 w-4", meta.cls)} aria-label={t(`moves.cls.${meta.label}`)} />
                     </td>
                     <td className="p-2 text-right font-mono tabular-nums">{m.power ?? "—"}</td>
                     <td className="hidden p-2 text-right font-mono tabular-nums sm:table-cell">{m.accuracy ?? "—"}</td>
@@ -151,10 +149,10 @@ export function MovesSection({ moves, game }: { moves: DexMove[]; game: string }
                         <td colSpan={8} className="p-0">
                           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                             <div className="flex flex-wrap gap-x-4 gap-y-1 bg-foreground/[0.02] px-4 py-3 text-xs text-muted-foreground">
-                              <span className="w-full text-sm text-foreground/90">{m.effect || "No additional effect."}</span>
-                              <span>{meta.label}</span>
-                              <span className="sm:hidden">Acc {m.accuracy ?? "—"} · PP {m.pp ?? "—"}</span>
-                              {m.priority !== 0 && <span>Priority {m.priority > 0 ? `+${m.priority}` : m.priority}</span>}
+                              <span className="w-full text-sm text-foreground/90">{m.effect || t("moves.noEffect")}</span>
+                              <span>{t(`moves.cls.${meta.label}`)}</span>
+                              <span className="sm:hidden">{t("moves.accPp", { acc: m.accuracy ?? "—", pp: m.pp ?? "—" })}</span>
+                              {m.priority !== 0 && <span>{t("moves.priority", { p: m.priority > 0 ? `+${m.priority}` : m.priority })}</span>}
                             </div>
                           </motion.div>
                         </td>
@@ -166,9 +164,9 @@ export function MovesSection({ moves, game }: { moves: DexMove[]; game: string }
             })}
           </tbody>
         </table>
-        {rows.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">No moves match.</p>}
+        {rows.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">{t("moves.none")}</p>}
       </div>
-      <p className="text-[11px] text-muted-foreground">Learnset from {game}. Tap a move for its effect.</p>
+      <p className="text-[11px] text-muted-foreground">{t("moves.from", { game })}</p>
     </div>
   );
 }

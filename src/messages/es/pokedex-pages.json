@@ -1,0 +1,100 @@
+{
+  "crumbs": {
+    "pokedex": "Pokédex",
+    "types": "Tipos"
+  },
+  "title": "Poké<accent>dex</accent>",
+  "titleStart": "Poké",
+  "titleAccent": "dex",
+  "hub": {
+    "metaTitle": "Pokédex: todos los Pokémon, de Kanto a Paldea",
+    "metaDescription": "Explora y busca todos los Pokémon, de Kanto a Paldea. Filtra por tipo y generación, ordena por estadísticas y estudia evoluciones, movimientos, habilidades y debilidades.",
+    "kicker": "Base de datos nacional",
+    "blurb": "Estadísticas, evoluciones, movimientos, habilidades, tipos y todas las entradas de la Pokédex. Estudia y luego ponte a prueba."
+  },
+  "types": {
+    "metaTitle": "Tabla de tipos Pokémon: todas las eficacias",
+    "metaDescription": "La tabla de tipos Pokémon completa: qué tipos atacantes son muy eficaces, poco eficaces o no afectan a cada tipo defensor.",
+    "kicker": "Tabla de tipos",
+    "blurb": "Cada tipo atacante contra cada tipo defensor. Para un Pokémon de dos tipos, multiplica las dos columnas.",
+    "listName": "Tipos de Pokémon"
+  },
+  "chart": {
+    "super": "muy eficaz",
+    "notVery": "poco eficaz",
+    "none": "no afecta",
+    "neutral": "neutro",
+    "legend": "Las filas atacan, las columnas defienden.",
+    "caption": "Eficacia de tipos: tipo atacante contra tipo defensor",
+    "defending": "Defensa: {type}",
+    "attacking": "Ataque: {type}",
+    "cell": "{a} → {d}: {word}"
+  },
+  "type": {
+    "name": "Tipo {type}",
+    "metaTitle": "Pokémon de tipo {type}: debilidades, fortalezas y movimientos",
+    "social": "Tipo {type} · Pokédex de PokéIQ",
+    "descSuper": "Los movimientos de tipo {type} son muy eficaces contra {list}.",
+    "descSuperNone": "Los movimientos de tipo {type} no son muy eficaces contra ningún tipo.",
+    "descWeak": "Los Pokémon de tipo {type} son débiles a {list}.",
+    "descWeakNone": "Los Pokémon de tipo {type} no tienen debilidades.",
+    "descAll": "Los {n} Pokémon de tipo {type} y los movimientos de tipo {type} más fuertes.",
+    "descEvery": "Todos los Pokémon de tipo {type} y los movimientos de tipo {type} más fuertes.",
+    "typedPokemon": "Pokémon de tipo {type}",
+    "back": "Tabla de tipos",
+    "kicker": "Tipo",
+    "attacking": "Movimientos de tipo {type} al atacar",
+    "defending": "Pokémon de tipo {type} al defender",
+    "singleTyped": "De un solo tipo",
+    "moves": "Movimientos de tipo {type}",
+    "superVs": "Muy eficaz contra",
+    "notVeryVs": "Poco eficaz contra",
+    "noEffectOn": "No afecta a",
+    "weakTo": "Débil a",
+    "resists": "Resiste",
+    "immuneTo": "Inmune a",
+    "noType": "Ningún tipo",
+    "dualNote": "Para un Pokémon de dos tipos, multiplica los valores de ambos tipos; consulta la <link>tabla de tipos completa</link>.",
+    "physical": "Físico",
+    "special": "Especial",
+    "status": "Estado",
+    "strongest": "Mayor potencia base",
+    "common": "Los que aprenden más Pokémon",
+    "pwr": "POT",
+    "mons": "PKMN",
+    "split": "{pure} de un tipo · {dual} de dos",
+    "pure": "Solo tipo {type} · {n}",
+    "part": "En parte tipo {type} · {n}",
+    "others": "Otros tipos"
+  },
+  "natures": {
+    "metaTitle": "Naturalezas Pokémon: estadísticas y sabores preferidos",
+    "metaDescription": "Todas las naturalezas Pokémon: la estadística que cada una sube un 10 % y la que baja, y el sabor de baya que le gusta o disgusta al Pokémon.",
+    "kicker": "Naturalezas",
+    "blurb": "Una naturaleza sube una estadística un 10 % y baja otra un 10 %. Las naturalezas neutras no cambian nada.",
+    "nature": "Naturaleza",
+    "raises": "Sube",
+    "lowers": "Baja",
+    "likes": "Le gusta",
+    "dislikes": "No le gusta",
+    "neutral": "Las naturalezas neutras ({list}) no cambian ninguna estadística ni tienen sabor preferido.",
+    "stat": {
+      "atk": "Ataque",
+      "def": "Defensa",
+      "spa": "Ataque Especial",
+      "spd": "Defensa Especial",
+      "spe": "Velocidad"
+    },
+    "flavor": {
+      "atk": "Picante",
+      "def": "Ácido",
+      "spa": "Seco",
+      "spd": "Amargo",
+      "spe": "Dulce"
+    }
+  },
+  "study": {
+    "metaTitle": "Modo estudio: fichas de Pokémon",
+    "metaDescription": "Aprende todos los Pokémon con fichas: siluetas, entradas de la Pokédex y tipos. Lleva la cuenta de lo que dominas, generación a generación."
+  }
+}

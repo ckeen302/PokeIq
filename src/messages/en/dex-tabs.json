@@ -1,0 +1,18 @@
+{
+  "tabs": {
+    "pokemon": "Pokémon",
+    "moves": "Moves",
+    "abilities": "Abilities",
+    "items": "Items",
+    "places": "Places",
+    "types": "Types",
+    "natures": "Natures",
+    "trainers": "Trainers",
+    "tcg": "TCG",
+    "games": "Games",
+    "movies": "Movies",
+    "theories": "Theories"
+  },
+  "section": "Section",
+  "sections": "Pokédex sections"
+}
