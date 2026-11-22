@@ -15,8 +15,9 @@ function Skeleton() {
   return (
     <div className="dark-scope" data-testid="shiny-maker-skeleton">
       <div className="space-y-4 lg:hidden">
-        <header className="px-1">
-          <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight">{t("maker.title")}</h1>
+        {/* One H1 in the page's HTML (the desktop one below); the phone's copy is the same words. */}
+        <header className="px-1" aria-hidden>
+          <p className="font-display text-[22px] font-semibold leading-tight tracking-tight">{t("maker.title")}</p>
           <p className="mt-0.5 text-sm text-muted-foreground">{t("maker.subtitle")}</p>
         </header>
         <section className="sm-stage-skel relative h-[min(440px,56svh)] min-h-[340px] overflow-hidden rounded-[24px] border border-white/[0.06]">
