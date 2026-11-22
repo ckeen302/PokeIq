@@ -71,6 +71,7 @@ const reference = (n: ts.Identifier) => {
   if ((ts.isPropertyAccessExpression(p) && p.name === n) || ((ts.isPropertyAssignment(p) || ts.isPropertySignature(p) || ts.isJsxAttribute(p) || ts.isMethodDeclaration(p)) && p.name === n)) return false;
   if (ts.isBindingElement(p) && p.propertyName === n) return false;
   if (ts.isTypeReferenceNode(p) || ts.isTypeQueryNode(p) || ts.isQualifiedName(p)) return false;
+  if ((ts.isJsxOpeningElement(p) || ts.isJsxSelfClosingElement(p) || ts.isJsxClosingElement(p)) && p.tagName === n && /^[a-z]/.test(n.text)) return false;
   return true;
 };
 const fnOf = (d: ts.Node | null | undefined) =>

@@ -59,7 +59,8 @@ export function battleShareResult(view: BattleView): BattleShareResult | null {
 /** "Share result" after a win: the replay's link once there is one (its card shows the battle), else a /s/ result link. */
 function ShareWin({ view, result }: { view: BattleView; result: BattleShareResult }) {
   const ts = useT(shareNs);
-  const formatName = shownFormat(useT(formatsNs), view);
+  const tf = useT(formatsNs);
+  const formatName = shownFormat(tf, view);
   return (
     <ShareButton
       size="sm"

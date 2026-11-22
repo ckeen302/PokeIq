@@ -227,6 +227,19 @@ function analyze(file, source, compile, registry, src, addDependency, opts = {})
         translators.set(n, { ns: namespaces.get(local), nsArg, escapes: false, edits: [], parent: null, exportAs });
       }
     }
+    // A component's prop typed as a translator (`{ t }: { t: BoardT; … }`): a translator too, handed over as `t={t}`.
+    if (ts.isParameter(n) && ts.isObjectBindingPattern(n.name) && n.type && ts.isTypeLiteralNode(n.type)) {
+      const fn = n.parent;
+      const holder = ts.isFunctionDeclaration(fn) ? fn : (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)) && ts.isVariableDeclaration(fn.parent) ? fn.parent : null;
+      const exported = holder && isExported(holder) && holder.name && ts.isIdentifier(holder.name) && fn.parameters[0] === n ? holder.name.text : null;
+      for (const m of n.type.members) {
+        if (!ts.isPropertySignature(m) || !m.type || !ts.isIdentifier(m.name)) continue;
+        const local = nsOfType(m.type);
+        if (!local) continue;
+        const b = n.name.elements.find((el) => ts.isIdentifier(el.name) && (el.propertyName ?? el.name).getText(sf) === m.name.text && !el.dotDotDotToken && !el.initializer);
+        if (b) translators.set(b, { ns: namespaces.get(local), nsArg: null, escapes: false, edits: [], parent: null, exportAs: exported ? [exported, `p:${m.name.text}`] : null });
+      }
+    }
     ts.forEachChild(n, visitDecls);
   };
   visitDecls(sf);
@@ -304,6 +317,16 @@ function analyze(file, source, compile, registry, src, addDependency, opts = {})
     const name = (d.propertyName ?? d.name).text;
     const slot = target && safeExport(target, name, registry, src)?.[index];
     // "<ns>!": English-only, the helper needs nothing of the translator at run time (see `free` below).
+    return slot === ns.name ? "safe" : slot === `${ns.name}!` ? "free" : false;
+  };
+  // A prop of a component imported from another file, known to need nothing more than its English (see the registry).
+  const importedProp = (attr, ns) => {
+    const el = attr.parent?.parent;
+    if (!el || !(ts.isJsxOpeningElement(el) || ts.isJsxSelfClosingElement(el)) || !ts.isIdentifier(el.tagName)) return false;
+    const d = resolve(el.tagName);
+    if (!d || !ts.isImportSpecifier(d)) return false;
+    const target = resolveModule(d.parent.parent.parent.moduleSpecifier.text, file, src);
+    const slot = target && safeExport(target, (d.propertyName ?? d.name).text, registry, src)?.[`p:${attr.name.getText(sf)}`];
     return slot === ns.name ? "safe" : slot === `${ns.name}!` ? "free" : false;
   };
   const localProp = (attr) => {
@@ -401,7 +424,7 @@ function analyze(file, source, compile, registry, src, addDependency, opts = {})
     if (inDeps && opts.englishOnly) return void (tr.collapsed = (tr.collapsed ?? 0) + 1);
     if (readsLocale || inDeps || tested) return;
     if (localArg) return void (aliases.push([localArg, tr]), (tr.handoffs = (tr.handoffs ?? 0) + 1));
-    const handed = argIndex >= 0 && importedSafe(p, argIndex, tr.ns);
+    const handed = argIndex >= 0 ? importedSafe(p, argIndex, tr.ns) : !localArg && ts.isJsxExpression(p) && ts.isJsxAttribute(p.parent) ? importedProp(p.parent, tr.ns) : false;
     if (handed === "free") tr.handoffs = (tr.handoffs ?? 0) + 1;
     if (handed) return;
     const has = ts.isPropertyAccessExpression(p) && p.expression === n && p.name.text === "has" && ts.isCallExpression(p.parent) && p.parent.expression === p;
@@ -443,7 +466,9 @@ function analyze(file, source, compile, registry, src, addDependency, opts = {})
         const isPropName = parent && ts.isPropertyAccessExpression(parent) && parent.name === n;
         const isKey = parent && (ts.isPropertyAssignment(parent) || ts.isPropertySignature(parent) || ts.isJsxAttribute(parent)) && parent.name === n;
         const isType = parent && (ts.isTypeQueryNode(parent) || ts.isTypeReferenceNode(parent) || ts.isQualifiedName(parent));
-        if (!isDeclName && !isPropName && !isKey && !isType) {
+        // <tr>, <th>: an HTML element, not a translator named tr.
+        const isTag = parent && (ts.isJsxOpeningElement(parent) || ts.isJsxSelfClosingElement(parent) || ts.isJsxClosingElement(parent)) && parent.tagName === n && /^[a-z]/.test(n.text);
+        if (!isDeclName && !isPropName && !isKey && !isType && !isTag) {
           const d = resolve(n);
           if (d && decls.has(d)) visitOne(n, translators.get(d));
         }
@@ -574,7 +599,7 @@ function buildRegistry(src, compile, opts = {}) {
       const before = JSON.stringify([...(registry.get(file) ?? new Map())]);
       const map = new Map();
       for (const [name, index, ns] of safe) {
-        const slots = map.get(name) ?? [];
+        const slots = map.get(name) ?? {};
         slots[index] = ns;
         map.set(name, slots);
       }
@@ -610,6 +635,17 @@ function englishLocale(file, source) {
   return out;
 }
 
+/**
+ * English-only, in the browser: another language's files (`import(\`@/messages/${locale}/…\`)`,
+ * `import("@/data/i18n/ja/…")`) are never loaded, yet each such import adds a chunk per language to the build, and
+ * every chunk an entry in the runtime every page loads. The import becomes a rejection (their callers' fallback: the
+ * English they already show), so the bundler makes no chunk.
+ */
+const OTHER_LANGUAGE_IMPORT = /\bimport\(\s*(?:`@\/(?:messages|data)\/[^`]*\$\{[^`]*`|["']@\/(?:messages|data\/i18n)\/(?:ja|es|fr|de|it)\/[^"']+["']|["']@\/data\/[^"']*\/i18n\/(?:ja|es|fr|de|it)\.json["'])\s*\)/g;
+function noOtherLanguageImports(source) {
+  return source.includes("import(") ? source.replace(OTHER_LANGUAGE_IMPORT, 'Promise.reject(new Error("an English-only build has no other language"))') : source;
+}
+
 module.exports = function inlineLoader(source) {
   const done = this.async();
   const src = path.resolve(this.rootContext ?? process.cwd(), "src");
@@ -618,6 +654,7 @@ module.exports = function inlineLoader(source) {
       registryPromise ??= Promise.resolve().then(() => buildRegistry(src, compile, { englishOnly: !process.env.LIVE_LOCALES }));
       const registry = await registryPromise;
       if (!process.env.LIVE_LOCALES) source = englishLocale(this.resourcePath, source);
+      if (!process.env.LIVE_LOCALES && this._compiler?.name === "client") source = noOtherLanguageImports(source);
       if (!source.includes("@/messages/") && !source.includes("Translator<") && !(registry.typeRe && registry.typeRe.test(source))) return done(null, source);
       // LIVE_LOCALES empty: an English-only build (next.config swaps in catalog.english.ts), whose calls collapse to their English.
       done(null, analyze(this.resourcePath, source, compile, registry, src, (f) => this.addDependency(f), { englishOnly: !process.env.LIVE_LOCALES }).out);
@@ -627,3 +664,4 @@ module.exports = function inlineLoader(source) {
 module.exports.analyze = analyze;
 module.exports.buildRegistry = buildRegistry;
 module.exports.englishLocale = englishLocale;
+module.exports.noOtherLanguageImports = noOtherLanguageImports;
