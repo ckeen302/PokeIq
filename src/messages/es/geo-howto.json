@@ -17,9 +17,23 @@
     "body": "Enfréntate a un amigo en directo. Batalla de PS: los dos empezáis con {hp} PS y la chincheta más cercana daña a la otra. Carrera de puntos: gana el mejor total de todas las rondas."
   },
   "demo": {
-    "label": "Demo: aparece una captura de Pokémon, un cursor va al mapa, hace zoom y pone una chincheta, pulsa Adivinar, una línea muestra el lugar real y la ronda suma {score} de {max}",
-    "where": "¿Dónde está esto?",
-    "guess": "Adivinar",
-    "squares": "a {d} casillas del mapa"
+    "labelDesktop": "Demostración de una ronda: una captura de Pokémon ocupa la pantalla, el mapa de la esquina se amplía, se coloca una chincheta y se pulsa Adivinar; el resultado traza una línea hasta el lugar real y puntúa {score} de {max}",
+    "labelPhone": "Demostración de una ronda: una captura de Pokémon ocupa la pantalla, se abre el mapa, se coloca una chincheta y se pulsa Adivinar; el resultado traza una línea hasta el lugar real y puntúa {score} de {max}",
+    "round": "Ronda {n}",
+    "score": "Puntos",
+    "tapMove": "Toca otra vez para mover tu chincheta",
+    "tapPlace": "Toca el mapa para poner tu chincheta",
+    "spotOn": "¡Clavado!",
+    "close": "¡Casi!",
+    "notBad": "¡Nada mal!",
+    "near": "Por la zona.",
+    "wayOff": "Muy lejos…",
+    "pts": "pts",
+    "squares": "A {d} casillas del mapa",
+    "game": "Pokémon {game}",
+    "atlas": "Atlas",
+    "next": "Siguiente ronda ▶",
+    "space": "Espacio",
+    "report": "Reportar esta captura"
   }
 }

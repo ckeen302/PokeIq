@@ -17,9 +17,23 @@
     "body": "Affronte un ami en direct. Combat de PV : vous commencez tous les deux avec {hp} PV et le repère le plus proche inflige des dégâts à l'autre. Course aux points : le meilleur total sur l'ensemble des manches l'emporte."
   },
   "demo": {
-    "label": "Démo : une capture Pokémon apparaît, un curseur va sur la carte, zoome et place un repère, appuie sur Valider, une ligne montre le vrai lieu et la manche rapporte {score} sur {max}",
-    "where": "Où est-ce ?",
-    "guess": "Valider",
-    "squares": "à {d} cases de la carte"
+    "labelDesktop": "Démo d’une manche : une capture Pokémon remplit l’écran, la carte dans le coin s’agrandit, un repère est placé et on appuie sur Valider ; le résultat trace une ligne jusqu’au vrai lieu et rapporte {score} sur {max}",
+    "labelPhone": "Démo d’une manche : une capture Pokémon remplit l’écran, la carte s’ouvre, un repère est placé et on appuie sur Valider ; le résultat trace une ligne jusqu’au vrai lieu et rapporte {score} sur {max}",
+    "round": "Manche {n}",
+    "score": "Score",
+    "tapMove": "Touche à nouveau pour déplacer ton repère",
+    "tapPlace": "Touche la carte pour placer ton repère",
+    "spotOn": "En plein dans le mille !",
+    "close": "Tout près !",
+    "notBad": "Pas mal !",
+    "near": "Dans le coin.",
+    "wayOff": "Très loin…",
+    "pts": "pts",
+    "squares": "À {d} cases de la carte",
+    "game": "Pokémon {game}",
+    "atlas": "Atlas",
+    "next": "Manche suivante ▶",
+    "space": "Espace",
+    "report": "Signaler cette capture"
   }
 }
