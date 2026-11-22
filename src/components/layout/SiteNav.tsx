@@ -12,8 +12,7 @@ import { Avatar } from "@/components/avatar/Avatar";
 import { cn } from "@/lib/utils";
 import { LAB_PATH, isLabPath } from "@/lib/lab";
 import { AccountMenu } from "./AccountMenu";
-import { MuteToggle } from "./MuteToggle";
-import { FriendsButton } from "@/components/community/FriendsButton";
+import { SoundShortcut } from "./SoundShortcut";
 
 const DESKTOP_LINKS: { href: string; label: string; wideOnly?: boolean }[] = [
   { href: "/pokedle", label: "Wordle" },
@@ -70,7 +69,7 @@ export function DesktopNav() {
           })}
         </div>
       </div>
-      {/* The header keeps the community icons, the sound switch and the avatar; the theme switch lives in the avatar's menu. */}
+      {/* The header keeps chat, the leaderboard and the avatar; friends, the theme and the sound live in the avatar's menu. */}
       <div className="flex items-center gap-1 justify-self-end max-[399px]:gap-0">
         <Link
           href="/rooms"
@@ -83,7 +82,6 @@ export function DesktopNav() {
         >
           <MessagesSquare className="h-4 w-4" aria-hidden />
         </Link>
-        <FriendsButton className="max-md:hidden" />
         <Link
           href="/leaderboard"
           aria-label="Leaderboard"
@@ -97,7 +95,7 @@ export function DesktopNav() {
         >
           <Trophy className="h-4 w-4" aria-hidden />
         </Link>
-        <MuteToggle className="max-md:hidden" />
+        <SoundShortcut />
         {account.status === "ready" && account.enabled && !account.user && (
           <Link
             href="/login"
