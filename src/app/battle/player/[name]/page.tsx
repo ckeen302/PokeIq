@@ -1,4 +1,4 @@
-import { permanentRedirect } from "next/navigation";
+import { permanentRedirect } from "@/i18n/server";
 
 /** Battle profiles are part of the trainer's profile now: /u/<name>. */
 export default async function BattlePlayerPage({ params }: { params: Promise<{ name: string }> }) {

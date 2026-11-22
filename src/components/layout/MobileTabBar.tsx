@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname } from "@/i18n/navigation";
 import {
   BookOpen,
   Box,
@@ -34,6 +34,7 @@ import { Avatar } from "@/components/avatar/Avatar";
 // Links that fetch their page on touch on a phone, not whenever they are on screen: the bar is on every page.
 import Link from "@/components/ui/Link";
 import { cn } from "@/lib/utils";
+import { LanguageSquare } from "@/components/i18n/Lazy";
 
 /** The four tabs before More: the home page and the games most people come for. */
 const TABS: { href: string; label: string; icon: LucideIcon }[] = [
@@ -310,6 +311,7 @@ function MoreSheet({ open, onClose, pathname, waiting }: { open: boolean; onClos
           >
             {muted ? <VolumeX className="h-5 w-5" aria-hidden /> : <Volume2 className="h-5 w-5" aria-hidden />}
           </button>
+          {!!process.env.LIVE_LOCALES && <LanguageSquare />}
         </div>
       </div>
     </div>

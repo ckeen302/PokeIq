@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Compass, LayoutGrid, Loader2, Search, Settings2, Swords, Zap } from "lucide-react";
 import { challengeToDuel, challengeToLiveBattle } from "@/lib/friends-client";
 import { MODULE_INFO, PLAY_MODULES } from "@/lib/modes";

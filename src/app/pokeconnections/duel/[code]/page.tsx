@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { inviteMetadata } from "@/lib/seo";
 import { cache } from "react";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
+import { redirect } from "@/i18n/server";
 import { ConnectionsDuel } from "@/components/connections/ConnectionsDuel";
 import { pvpStore } from "@/lib/server/duel-store";
 import { pvpHref } from "@/lib/pvp-types";

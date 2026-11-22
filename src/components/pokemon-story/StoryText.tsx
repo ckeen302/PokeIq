@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/PlainLink";
 import { ArrowRight, Clapperboard, ExternalLink, Globe2, Landmark } from "lucide-react";
 import { CHAPTERS, STORY, sourceOf } from "@/lib/pokemon-story/data";
 import { chapterPath, STORY_PATH } from "@/lib/pokemon-story/deeplink";

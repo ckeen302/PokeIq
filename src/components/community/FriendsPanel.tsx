@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "@/components/ui/Link";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Ban, Check, ChevronDown, Eye, Loader2, MoreHorizontal, Search, Swords, UserMinus, UserPlus, X } from "lucide-react";
 import { useAccount } from "@/lib/account";
 import { closeFriends, friendAction, refreshFriends, setFriendsTab, useCommunity, type FriendsTab } from "@/lib/friends-client";

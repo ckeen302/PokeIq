@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Play, Search, Swords, X } from "lucide-react";
 import { searchEntrants } from "@/lib/race/lineup";
 import { badgeName } from "@/lib/sizes/badges";

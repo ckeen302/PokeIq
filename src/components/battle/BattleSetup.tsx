@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import Link from "@/components/ui/Link";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Bot, Loader2, Radio, Swords, UserSearch, X } from "lucide-react";
 import { CPU_LEVEL_INFO, CPU_LEVELS, GROUP_FORMATS, GUEST_TRAINER, PLAY_FORMAT_INFO, PLAY_FORMATS, playerCount, type CpuLevel, type GameType, type PlayFormatId, type StandardFormatId } from "@/lib/battle/play";
 import { saveBattleSeat } from "@/lib/battle/seat";

@@ -25,6 +25,8 @@ jobs:
         env:
           POKEIQ_SECRET: ci-only-secret-not-used-anywhere-else
           POKEIQ_LOCAL_ACCOUNTS: "1"
+      # Languages never change how an English page renders (static stays static, ISR keeps its interval).
+      - run: node scripts/i18n/route-types.mjs --check
       - name: Browser E2E
         run: |
           npx playwright install --with-deps chromium

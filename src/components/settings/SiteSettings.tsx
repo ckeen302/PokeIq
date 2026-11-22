@@ -5,6 +5,7 @@ import { Moon, Sun, Volume2, VolumeX, type LucideIcon } from "lucide-react";
 import { getTheme, onThemeChange, setTheme, type Theme } from "@/lib/theme";
 import { isMuted, onMuteChange, play, setMuted } from "@/lib/sound";
 import { cn } from "@/lib/utils";
+import { LanguageRow } from "@/components/i18n/Lazy";
 
 /**
  * The site's own settings: light / dark theme and sound on / off. They live in
@@ -137,6 +138,7 @@ export function SettingsControls({ size = "sm", testIdPrefix }: { size?: "sm" | 
           ]}
         />
       </Row>
+      {!!process.env.LIVE_LOCALES && <LanguageRow size={size} testIdPrefix={testIdPrefix} />}
     </div>
   );
 }

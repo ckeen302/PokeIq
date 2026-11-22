@@ -2,7 +2,7 @@
 
 import { STAGE_POSTERS, StagePoster } from "@/components/lab/StagePoster";
 import dynamic from "next/dynamic";
-import Link from "next/link";
+import Link from "@/components/ui/PlainLink";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Medal, Swords, Trophy, X } from "lucide-react";

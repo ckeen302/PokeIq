@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname } from "@/i18n/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronRight, LogIn, LogOut } from "lucide-react";
 import Link from "@/components/ui/Link";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { saveSeat } from "@/lib/duel-seat";
 import { setTrainerName, useProgress } from "@/lib/progress";
 import { pageHidden } from "@/lib/polling";

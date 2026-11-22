@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useState } from "react";
 import Link from "@/components/ui/Link";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { CalendarDays, Loader2, Users } from "lucide-react";
 import { NEA_PATH, neaDailyCategory, standardMinutes } from "@/lib/name-em-all/categories";
 import { loadBests } from "@/lib/name-em-all/local";

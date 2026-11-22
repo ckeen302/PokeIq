@@ -1,9 +1,10 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/PlainLink";
 import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import { usePathname } from "next/navigation";
+import { usePathname } from "@/i18n/navigation";
+import { localUrl, stripLocale } from "@/i18n/paths";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { ArrowDown, ArrowLeft, BookOpen, Clapperboard, Eye, List, Minus, Pause, Play, Plus, RotateCcw, Share2, Volume2, VolumeX, X } from "lucide-react";
 import { isMuted, onMuteChange, setMuted } from "@/lib/sound";
@@ -240,7 +241,7 @@ export function WorldHistoryExperience({ initialChapter, children }: { initialCh
     if (!s.opened) {
       s.opened = true;
       // The address first: back and forward return to the chapter the film had reached (it keeps the address on it), not the page's first one.
-      const id = chapterFromPath(window.location.pathname) ?? initialChapter;
+      const id = chapterFromPath(stripLocale(window.location.pathname)) ?? initialChapter;
       const i = id ? CHAPTERS.findIndex((c) => c.id === id) : -1;
       s.playhead = s.target = Math.min(film.duration, timeParam() ?? (i >= 0 ? chapterStart(film, i) : 0));
       s.cut = Math.max(s.cut, 1);
@@ -508,7 +509,7 @@ export function WorldHistoryExperience({ initialChapter, children }: { initialCh
         if (path !== s.lastPath) {
           s.lastPath = path;
           s.wrote = [...s.wrote.filter((w) => now - w.at < OWN_PATH_MS), { path, at: now }];
-          try { history.replaceState(history.state, "", path); } catch { /* ignore */ }
+          try { history.replaceState(history.state, "", localUrl(path)); } catch { /* ignore */ }
         }
       } finally {
         const ms = performance.now() - now;

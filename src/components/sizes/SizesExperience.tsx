@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import { localUrl } from "@/i18n/paths";
+import Link from "@/components/ui/PlainLink";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowDown, ArrowLeft, ArrowUp, ArrowUpDown, ChevronDown, Clapperboard, List, Play, Plus, RotateCcw, Scale, Search, Share2, Square, Volume2, VolumeX, X, ZoomIn, ZoomOut } from "lucide-react";
@@ -1029,7 +1030,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
   // ---- Lineups, comparisons and search.
   /** The address for a page of the line: it carries the order (?by=speed&dir=desc), so a shared link opens the same line. */
   const replaceUrl = (path: string, o: Order = orderRef.current) => {
-    try { history.replaceState(history.state, "", withOrder(path, o)); } catch { /* ignore */ }
+    try { history.replaceState(history.state, "", localUrl(withOrder(path, o))); } catch { /* ignore */ }
   };
 
   /** Order by: the same figures (those with a value in it), at their real sizes, in another order. The camera stays on the figure it frames when that one is in the new line. */

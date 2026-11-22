@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element -- screenshots come from the preview proxy, artwork from /api/art */
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/PlainLink";
 import { ChevronLeft, ChevronRight, Pause, Play, Volume2, VolumeX, X } from "lucide-react";
 import { REGION_ORIGINS } from "@/lib/region-origins";
 import { LAB_PATH } from "@/lib/lab";

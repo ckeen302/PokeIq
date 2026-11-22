@@ -20,6 +20,7 @@ import { runDesktopTripwire } from "./e2e-desktop-tripwire.mjs";
 import { runA11y } from "./e2e-a11y.mjs";
 import { runHowTo } from "./e2e-howto.mjs";
 import { runHydration } from "./e2e-hydration.mjs";
+import { runI18n } from "./e2e-i18n.mjs";
 import { runMassBattle } from "./e2e-mass-battle.mjs";
 import { runRace } from "./e2e-race.mjs";
 import { runGames } from "./e2e-games.mjs";
@@ -143,6 +144,10 @@ if (process.env.E2E_ONLY === "lab-dex") {
 await runDesktopTripwire({ browser, BASE, errors, step });
 await runA11y({ browser, BASE, errors, step });
 await runHydration({ browser, BASE, errors, step });
+// Languages: English only has no hreflang and no other language's pages; live languages are checked page by page.
+await runI18n({ browser, BASE, errors, step });
+// E2E_ONLY=i18n runs just the checks above, then exits.
+if (process.env.E2E_ONLY === "i18n") await finish();
 // Every game's how-to pop-up is one size (each on a fresh device, so it opens by itself).
 await runHowTo({ browser, BASE, OUT, errors, step });
 // E2E_ONLY=howto runs just the checks above (desktop tripwire, accessibility, hydration, the how-to pop-ups), then exits.
@@ -669,7 +674,11 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   await page.getByTestId("conn-unlimited").waitFor();
   await page.getByRole("radio", { name: "Unlimited", checked: true }).waitFor();
   const hardTiles = page.waitForResponse((r) => /\/api\/connections\?practice=hard-/.test(r.url()));
-  await page.getByRole("radio", { name: "Hard" }).click();
+  // Difficulty is a dropdown: Normal by default, Hard picked from its list.
+  await page.getByRole("button", { name: "Difficulty Normal", exact: true }).waitFor();
+  await page.getByRole("button", { name: "Board 4×4", exact: true }).waitFor();
+  await page.getByTestId("conn-level").click();
+  await page.getByRole("listbox", { name: "Difficulty" }).getByRole("option", { name: /Hard/ }).click();
   const hard = await (await hardTiles).json();
   await page.locator(`[data-testid=conn-tile][data-id="${hard.tiles[0].id}"]`).waitFor();
   const [unlimitedGroups] = JSON.parse(
@@ -697,7 +706,13 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   // Unlimited 5×5: the size toggle, twenty-five tiles, five groups of five and five mistakes, solved from the data alone.
   step("pokéconnections: an Unlimited 5×5 game, solved to the end");
   const size5 = page.waitForResponse((r) => /\/api\/connections\?practice=s5-/.test(r.url()));
-  await page.getByTestId("conn-size-5").click();
+  // The board dropdown, by keyboard: ↓ opens it on 4×4, ↓ again to 5×5, Enter picks it.
+  await page.getByTestId("conn-size").focus();
+  await page.keyboard.press("ArrowDown");
+  await page.getByTestId("conn-size-list").waitFor();
+  await page.waitForFunction(() => document.activeElement?.getAttribute("data-testid") === "conn-size-4");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("Enter");
   const big = await (await size5).json();
   if (big.size !== 5 || big.tiles.length !== 25) errors.push(`the 5×5 puzzle came as size ${big.size} with ${big.tiles.length} tiles`);
   if (/label|members|category|reveal/.test(JSON.stringify(big))) errors.push("the 5×5 puzzle's tiles came with the groups");
@@ -743,9 +758,10 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   const again5 = page.waitForResponse((r) => /\/api\/connections\?practice=s5-/.test(r.url()));
   await page.getByRole("radio", { name: "Unlimited" }).click();
   await again5;
-  await page.getByRole("radio", { name: "5×5", checked: true }).waitFor();
+  await page.locator('[data-testid=conn-size][data-value="5"]').waitFor();
   // Back to 4×4 for the rest of the run.
   const back4 = page.waitForResponse((r) => /\/api\/connections\?practice=(hard|easy|normal)-/.test(r.url()));
+  await page.getByTestId("conn-size").click();
   await page.getByTestId("conn-size-4").click();
   await back4;
 

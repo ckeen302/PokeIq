@@ -1,7 +1,7 @@
 "use client";
 
 import { useContext, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/PlainLink";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { itemPath } from "@/lib/sizes/deeplink";
 import { dexTag } from "@/lib/sizes/badges";

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "@/components/ui/Link";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { redirect } from "@/i18n/server";
 import { pageMetadata } from "@/lib/seo";
 import { BattleHeader } from "@/components/battle/BattleHeader";
 import { Card, CardContent } from "@/components/ui/card";

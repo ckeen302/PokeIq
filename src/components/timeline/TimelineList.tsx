@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/PlainLink";
 import { ERAS, LANE_BY_ID, ROMAN, dateRows, formatDate, isCompact, type TimelineEntry } from "@/lib/timeline/types";
 import type { EraStart } from "./TimelineExperience";
 

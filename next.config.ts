@@ -1,4 +1,6 @@
 import type { NextConfig } from "next";
+import path from "node:path";
+import { LIVE_OTHER_LOCALES } from "./src/i18n/config";
 import { ROOM_MOVED } from "./src/lib/rooms";
 import { ORDERS } from "./src/lib/sizes/order";
 import { LEADERBOARD_BOARDS } from "./src/lib/leaderboard-boards";
@@ -39,8 +41,50 @@ const artCache = [{ key: "Cache-Control", value: "public, max-age=2592000, stale
  */
 const ogCdnCache = [{ key: "CDN-Cache-Control", value: "max-age=86400, stale-while-revalidate=604800" }];
 
+/** A path rule for every live language's copy of a page as well (/es/..., /ja/...): nothing while English is the only one. */
+const withLocales = <T extends { source: string; destination?: string }>(rule: T): T[] => [
+  rule,
+  ...LIVE_OTHER_LOCALES.map((l) => ({
+    ...rule,
+    source: `/${l}${rule.source}`,
+    ...(rule.destination !== undefined && { destination: rule.destination.startsWith("/") ? `/${l}${rule.destination}` : rule.destination }),
+  })),
+];
+
+/** The modules an English-only build swaps for their `.english` twins (see `webpack` below). */
+const ENGLISH_TWINS = /[\\/]src[\\/](?:components[\\/]layout[\\/]RootChrome|components[\\/]ui[\\/]Anchor|components[\\/]i18n[\\/]Lazy|i18n[\\/](?:navigation|paths))\.tsx?$/;
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Pages in other languages (src/app/[locale]/**/*.locale.tsx, src/app/sitemap-index.xml) exist only in a build with a
+  // language besides English live: an English-only build is exactly the site without languages.
+  pageExtensions: LIVE_OTHER_LOCALES.length ? ["locale.tsx", "locale.ts", "tsx", "ts", "jsx", "js"] : ["tsx", "ts", "jsx", "js"],
+  // Translations (src/messages/**/*.json) are compiled from ICU text to compact arrays at build time (src/i18n/catalog.ts).
+  webpack(config, { webpack }) {
+    // English-only builds: each module with an `.english` twin (the language plumbing of the root layout, the links,
+    // the navigation hooks, the language controls) is that twin, so the browser gets exactly the code it had before
+    // languages existed. tests/i18n-foundation.test.ts keeps every twin's exports equal to its module's.
+    if (!LIVE_OTHER_LOCALES.length) {
+      config.plugins.push(
+        // ui/PlainLink is next/link itself (the request is rewritten before Next resolves it, so its own aliases apply).
+        new webpack.NormalModuleReplacementPlugin(/^@\/components\/ui\/PlainLink$/, "next/link"),
+        new webpack.NormalModuleReplacementPlugin(ENGLISH_TWINS, (resource: { createData?: { resource?: string } }) => {
+          const file = resource.createData?.resource;
+          if (file && ENGLISH_TWINS.test(file)) resource.createData!.resource = file.replace(/\.(tsx?)$/, ".english.$1");
+        })
+      );
+    }
+    config.module.rules.push({ test: /[\\/]src[\\/]messages[\\/].+\.json$/, use: [path.resolve("scripts/i18n/icu-loader.cjs")] });
+    // The language modules have no side effects: whatever an English-only build doesn't use of them is left out.
+    config.module.rules.push({ test: /[\\/]src[\\/]i18n[\\/][^\\/]+\.tsx?$/, sideEffects: false });
+    return config;
+  },
+  // The live languages (src/i18n/config.ts), inlined into server and browser code at build time.
+  // I18N_PREVIEW=1 (local review only, never on Vercel's production) serves every page in every live language.
+  env: {
+    LIVE_LOCALES: LIVE_OTHER_LOCALES.join(","),
+    I18N_PREVIEW: process.env.I18N_PREVIEW === "1" && process.env.VERCEL_ENV !== "production" ? "1" : "",
+  },
   // Pages that render on request stream their <title>, description and
   // canonical tag after the first bytes, except to the crawlers named here,
   // which get them in <head>. Next's own list leaves Googlebot out (it runs
@@ -57,7 +101,7 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     ...Object.fromEntries(
       // Friends name battles (challenges, "now playing") and profiles read battle records: the same engine.
-      ["/api/battle/**", "/battle/**", "/api/friends/**", "/api/presence", "/api/live", "/u/**"].map((route) => [route, ["./node_modules/pokemon-showdown/dist/{config,data,lib,sim}/**/*.{js,json}"]])
+      ["/api/battle/**", "/battle/**", "/api/friends/**", "/api/presence", "/api/live", "/u/**", "/[locale]/battle/**", "/[locale]/u/**"].map((route) => [route, ["./node_modules/pokemon-showdown/dist/{config,data,lib,sim}/**/*.{js,json}"]])
     ),
     "/**/opengraph-image*": ["./src/assets/fonts/*.ttf"],
     // A size comparison's card is a route of its own (it reads ?vs=).
@@ -65,6 +109,7 @@ const nextConfig: NextConfig = {
     "/lab/mass-battle/og": ["./src/assets/fonts/*.ttf"],
     // A shared PokéGuessr result's card draws the map that was played, by a computed path.
     "/pokeguessr/r/**": ["./public/geo/maps/*.webp"],
+    "/[locale]/pokeguessr/r/**": ["./public/geo/maps/*.webp"],
     // The learn card's facts come from the Pokédex's places, which read the encounter tables from disk.
     "/api/geo/learn": ["./src/data/encounters/*.json"],
   },
@@ -91,7 +136,7 @@ const nextConfig: NextConfig = {
         ]),
         { source: "/leaderboard", has: [boardQuery], missing: bare, destination: "/leaderboard/board/:board" },
         { source: "/leaderboard", missing: [{ type: "query" as const, key: "board" }, ...bare], destination: "/leaderboard/board/daily" },
-      ],
+      ].flatMap(withLocales),
       afterFiles: [],
       fallback: [],
     };
@@ -99,21 +144,29 @@ const nextConfig: NextConfig = {
   // Battle profiles became the trainer's profile; merged chat rooms point to their new room.
   async redirects() {
     return [
-      { source: "/battle/player/:name", destination: "/u/:name", permanent: true },
-      // The two games that were called by their plain names now live at their Pokémon-style addresses, like /pokedle and /pikadoku:
-      // old links (shared duels and challenges, search results, bookmarks) keep working, with the rest of the path and the query.
-      { source: "/play", destination: "/quiz", permanent: true },
-      { source: "/guessr", destination: "/pokeguessr", permanent: true },
-      { source: "/guessr/:path*", destination: "/pokeguessr/:path*", permanent: true },
-      { source: "/connections", destination: "/pokeconnections", permanent: true },
-      { source: "/connections/:path*", destination: "/pokeconnections/:path*", permanent: true },
-      // The Pokédex rankings pages are gone (the Pokédex's own filters and sort do the same job): old links land on the Pokédex.
-      { source: "/pokedex/rankings", destination: "/pokedex", permanent: true },
-      { source: "/pokedex/rankings/:path*", destination: "/pokedex", permanent: true },
+      // English has no prefix: /en and /en/... go to the page's one English address (308).
+      { source: "/en", destination: "/", permanent: true },
+      { source: "/en/:path*", destination: "/:path*", permanent: true },
+      // Every rule below also applies inside each live language (/es/guessr → /es/pokeguessr).
+      ...[
+        { source: "/battle/player/:name", destination: "/u/:name", permanent: true },
+        // The two games that were called by their plain names now live at their Pokémon-style addresses, like /pokedle and /pikadoku:
+        // old links (shared duels and challenges, search results, bookmarks) keep working, with the rest of the path and the query.
+        { source: "/play", destination: "/quiz", permanent: true },
+        { source: "/guessr", destination: "/pokeguessr", permanent: true },
+        { source: "/guessr/:path*", destination: "/pokeguessr/:path*", permanent: true },
+        { source: "/connections", destination: "/pokeconnections", permanent: true },
+        { source: "/connections/:path*", destination: "/pokeconnections/:path*", permanent: true },
+        // The Pokédex rankings pages are gone (the Pokédex's own filters and sort do the same job): old links land on the Pokédex.
+        { source: "/pokedex/rankings", destination: "/pokedex", permanent: true },
+        { source: "/pokedex/rankings/:path*", destination: "/pokedex", permanent: true },
+      ].flatMap(withLocales),
       // The old address forwards to playpokeiq.com, path and query kept. /api stays put so
       // webhooks, crons and OAuth callbacks registered on the old host keep working.
       { source: "/:path((?!api/).*)", has: [{ type: "host", value: "pokeiq.vercel.app" }], destination: "https://playpokeiq.com/:path", permanent: true },
-      ...Object.entries(ROOM_MOVED).map(([from, to]) => ({ source: `/rooms/${from}`, destination: `/rooms/${to}`, permanent: true })),
+      ...Object.entries(ROOM_MOVED)
+        .map(([from, to]) => ({ source: `/rooms/${from}`, destination: `/rooms/${to}`, permanent: true }))
+        .flatMap(withLocales),
     ];
   },
   async headers() {
@@ -126,10 +179,9 @@ const nextConfig: NextConfig = {
       { source: "/art/:path*", headers: artCache },
       // The size comparison's and the race's figures, relief maps and far atlas never change for a Pokémon either (the atlas's names are hashed).
       ...["/race/art/:path*", "/sizes/art/:path*", "/sizes/depth/:path*", "/sizes/far/:path*", "/sizes/tex/:path*", "/sizes/env/:path*"].map((source) => ({ source, headers: artCache })),
-      ...["/pokemon/:slug/opengraph-image", "/pokedex/sizes/:slug/opengraph-image", "/pokedex/timeline/:event/opengraph-image", "/quiz/which-pokemon/:slug/opengraph-image"].map((source) => ({
-        source,
-        headers: ogCdnCache,
-      })),
+      ...["/pokemon/:slug/opengraph-image", "/pokedex/sizes/:slug/opengraph-image", "/pokedex/timeline/:event/opengraph-image", "/quiz/which-pokemon/:slug/opengraph-image"]
+        .map((source) => ({ source, headers: ogCdnCache }))
+        .flatMap(withLocales),
     ];
   },
   images: {
