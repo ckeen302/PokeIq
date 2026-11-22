@@ -17,6 +17,9 @@ import type { FieldMon, FieldState } from "@/lib/battle/tooltip-calc";
 import { useBattleKeys, type BattleKeys } from "./hotkeys";
 import { benchOrder } from "./model";
 import { aimableSpots, cycleExtra, emptiedSlots, fainted, fillPasses, slotCount, switchOptions, switchedIn, teamOrder } from "./choice";
+import { useT } from "@/i18n/client";
+import playNs from "@/messages/battle-play";
+import { useBattleNames } from "./local";
 
 /**
  * What the player can do now, built from their request: pick a lead (team
@@ -29,8 +32,7 @@ import { aimableSpots, cycleExtra, emptiedSlots, fainted, fillPasses, slotCount,
  */
 
 type Extra = BattleGimmick;
-const EXTRA_LABEL: Record<Extra, string> = { mega: "Mega Evolve", megax: "Mega Evolve X", megay: "Mega Evolve Y", ultra: "Ultra Burst", zmove: "Z-Move", dynamax: "Dynamax" };
-const EXTRAS = new Set<string>(Object.keys(EXTRA_LABEL));
+const EXTRAS = new Set<string>(["mega", "megax", "megay", "ultra", "zmove", "dynamax"]);
 
 /** A move's name and type by id or name (Max Moves and G-Max Moves included), for the buttons. */
 const moveNamed = (id: string) => {
@@ -67,11 +69,11 @@ function speciesKey(name: string) {
   return { id: s.id, num: s.num };
 }
 
-const EFFECT_LABEL: Record<Effect, { text: string; short: string; className: string; mark: string }> = {
-  super: { short: "Super effective", text: "Super effective", className: "bg-emerald-400 text-black shadow-[0_0_10px_rgb(52_211_153/0.7)]", mark: "▲" },
-  neutral: { short: "Effective", text: "Effective", className: "bg-black/30 text-white", mark: "●" },
-  resisted: { short: "Resisted", text: "Not very effective", className: "bg-amber-300 text-black", mark: "▼" },
-  immune: { short: "No effect", text: "No effect", className: "bg-slate-700 text-white", mark: "✕" },
+const EFFECT_LABEL: Record<Effect, { className: string; mark: string }> = {
+  super: { className: "bg-emerald-400 text-black shadow-[0_0_10px_rgb(52_211_153/0.7)]", mark: "▲" },
+  neutral: { className: "bg-black/30 text-white", mark: "●" },
+  resisted: { className: "bg-amber-300 text-black", mark: "▼" },
+  immune: { className: "bg-slate-700 text-white", mark: "✕" },
 };
 
 /** What the Pokémon tooltips need: the generation, the format and your Pokémon as the field shows them. */
@@ -98,7 +100,7 @@ function attackerOf(p: BattleRequestPokemon | undefined, seen: MonSnap | null | 
   };
 }
 
-const CATEGORY_MARK: Record<string, string> ={ Physical: "✸ Physical", Special: "◎ Special", Status: "◇ Status" };
+const CATEGORY_MARK: Record<string, string> = { Physical: "✸", Special: "◎", Status: "◇" };
 
 function MoveButton({
   gen,
@@ -122,6 +124,8 @@ function MoveButton({
   /** What the move tooltip needs for its damage ranges. */
   tip?: { attacker: FieldMon | null; field: FieldState; randomBattle: boolean; foes: (MonSnap | null)[] };
 }) {
+  const t = useT(playNs);
+  const names = useBattleNames();
   const info = moveInfo(move.move || move.id, gen);
   const type = tera && info.id === "terablast" && teraType ? teraType : info.type;
   const color = typeColor(type.toLowerCase());
@@ -152,20 +156,20 @@ function MoveButton({
       <span className="flex items-start justify-between gap-2">
         <span className="min-w-0 font-display text-base font-bold uppercase leading-tight tracking-wide max-sm:break-words max-sm:text-[13px] max-sm:tracking-normal">
           <kbd className="mr-1.5 hidden rounded-sm bg-black/25 px-1 align-middle font-pixel text-[9px] font-normal sm:inline">{index}</kbd>
-          {info.name}
+          {names.move(info.name)}
         </span>
         <span className={cn("shrink-0 rounded-sm bg-black/25 px-1 py-0.5 font-pixel text-[10px] tabular-nums", ppShare <= 0.25 ? "text-[#ffd1d1]" : "opacity-90")}>
           {move.pp ?? "–"}/{move.maxpp ?? "–"}
         </span>
       </span>
       <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-pixel text-[9px] uppercase opacity-90 max-sm:flex-nowrap max-sm:gap-x-1 max-sm:overflow-hidden max-sm:whitespace-nowrap max-sm:tracking-tighter">
-        <span className="rounded-sm bg-black/25 px-1 py-0.5">{type}</span>
-        <span className="max-sm:hidden">{CATEGORY_MARK[info.category]}</span>
+        <span className="rounded-sm bg-black/25 px-1 py-0.5">{names.type(type)}</span>
+        <span className="max-sm:hidden">{`${CATEGORY_MARK[info.category]} ${t(`category.${info.category}`)}`}</span>
         {/* Phones: the category as its mark alone, and how well the move hits as a short chip on the same line. */}
-        <span className="sm:hidden" title={info.category}>{CATEGORY_MARK[info.category]?.split(" ")[0]}</span>
-        {info.power > 0 && <span>Pow {info.power}</span>}
-        <span className="max-sm:hidden">Acc {info.accuracy === true ? "—" : `${info.accuracy}%`}</span>
-        {info.priority !== 0 && <span>Pri {info.priority > 0 ? `+${info.priority}` : info.priority}</span>}
+        <span className="sm:hidden" title={t(`category.${info.category}`)}>{CATEGORY_MARK[info.category]}</span>
+        {info.power > 0 && <span>{t("move.pow", { n: info.power })}</span>}
+        <span className="max-sm:hidden">{t("move.acc", { acc: info.accuracy === true ? "—" : `${info.accuracy}%` })}</span>
+        {info.priority !== 0 && <span>{t("move.pri", { pri: info.priority > 0 ? `+${info.priority}` : String(info.priority) })}</span>}
       </span>
       {shown.length > 0 && (
         <span className="mt-1 flex flex-wrap gap-1 max-sm:flex-nowrap max-sm:overflow-hidden">
@@ -174,16 +178,16 @@ function MoveButton({
               <span key={i} className={cn("inline-flex items-center gap-1 rounded-sm px-1 py-0.5 font-pixel text-[8px] uppercase max-sm:min-w-0 max-sm:whitespace-nowrap max-sm:tracking-tighter", EFFECT_LABEL[h].className, h === "neutral" && foes.length === 1 && "max-sm:hidden")}>
                 <span aria-hidden>{EFFECT_LABEL[h].mark}</span>
                 <span className="max-sm:hidden">
-                  {foes.length > 1 ? `${foes[i]?.name ?? "?"}: ` : ""}
-                  {EFFECT_LABEL[h].text}
+                  {foes.length > 1 ? `${foes[i] ? names.pokemon(foes[i].name) : "?"}: ` : ""}
+                  {t(`effect.${h}`)}
                 </span>
-                <span className="truncate sm:hidden">{foes.length > 1 ? (foes[i]?.name ?? "?") : EFFECT_LABEL[h].short}</span>
+                <span className="truncate sm:hidden">{foes.length > 1 ? (foes[i] ? names.pokemon(foes[i].name) : "?") : t(`effectShort.${h}`)}</span>
               </span>
             ) : null
           )}
         </span>
       )}
-      {typeof move.disabled === "string" && <span className="font-pixel text-[8px] uppercase">Disabled</span>}
+      {typeof move.disabled === "string" && <span className="font-pixel text-[8px] uppercase">{t("move.disabled")}</span>}
       {/* PP left, as a thin gauge along the bottom. */}
       {move.maxpp ? (
         <span className="absolute inset-x-0 bottom-0 h-1 bg-black/30" aria-hidden>
@@ -211,6 +215,8 @@ function SwitchGrid({
   /** Show Showdown's 5-9 hotkeys on the Pokémon on the bench (the move menu). */
   benchKeys?: boolean;
 }) {
+  const t = useT(playNs);
+  const names = useBattleNames();
   const bench = benchOrder(pokemon);
   return (
     <div className="space-y-2">
@@ -232,18 +238,18 @@ function SwitchGrid({
               onClick={() => onPick(i + 1)}
               data-testid="switch-button"
               aria-keyshortcuts={keyName ? `${keyName} Shift+${i + 1}` : `Shift+${i + 1}`}
-              title={keyName ? `${keyName} or Shift+${i + 1}` : `Shift+${i + 1}`}
+              title={keyName ? t("keyOr", { key: keyName, n: i + 1 }) : `Shift+${i + 1}`}
               className="menu-item relative flex items-center gap-2 rounded-md border bg-card px-2 py-1.5 text-left hover:border-screen/60 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {keyName && ok && <kbd className="pointer-events-none absolute right-1 top-1 hidden rounded border bg-muted px-1 font-mono text-[9px] leading-3 text-muted-foreground lg:block">{keyName}</kbd>}
               <BattleSprite species={speciesKey(species)} animated={false} size={40} className="shrink-0" />
               <span className="min-w-0 flex-1">
                 <span className="flex items-center gap-1">
-                  <span className="truncate font-display text-sm font-bold uppercase">{p.ident.split(": ")[1] ?? species}</span>
-                  {status && STATUS_STYLE[status] && <span className={cn("rounded-sm px-1 font-pixel text-[8px] leading-4", STATUS_STYLE[status].className)}>{STATUS_STYLE[status].label}</span>}
+                  <span className="truncate font-display text-sm font-bold uppercase">{names.pokemon(p.ident.split(": ")[1] ?? species)}</span>
+                  {status && STATUS_STYLE[status] && <span className={cn("rounded-sm px-1 font-pixel text-[8px] leading-4", STATUS_STYLE[status].className)}>{t(`status.${status as "brn"}`)}</span>}
                 </span>
                 <HpBar hp={fainted(p) ? 0 : hp} maxhp={max} className="mt-1 h-1.5" />
-                <span className="font-pixel text-[9px] text-muted-foreground">{fainted(p) ? "Fainted" : p.active ? "In battle" : `${hp}/${max}`}</span>
+                <span className="font-pixel text-[9px] text-muted-foreground">{fainted(p) ? t("fainted") : p.active ? t("inBattle") : `${hp}/${max}`}</span>
               </span>
             </button>
             </Tip>
@@ -292,6 +298,8 @@ function TeamPreview({
   tipInfo: TipInfo;
   keys: BattleKeys;
 }) {
+  const t = useT(playNs);
+  const names = useBattleNames();
   const [leads, setLeads] = useState<number[]>([]);
   const [orderAll, setOrderAll] = useState(false);
   useEffect(() => setOrderAll(readOrderAll()), []);
@@ -324,19 +332,18 @@ function TeamPreview({
     if (!busy && n <= size) pick(n);
   };
   keys.back = () => setLeads([]);
-  const LEADS = ["", "lead", "two leads", "three leads"];
   return (
     <div className="space-y-3">
       {others?.map((o) =>
         o.team.length ? (
           <div key={o.name} className="space-y-1.5">
-            <p className="hud-label">{o.partner ? `Your partner ${o.name}'s team` : `${o.name}'s team`}</p>
+            <p className="hud-label">{o.partner ? t("preview.partnerTeam", { name: o.name }) : t("preview.team", { name: o.name })}</p>
             <div className="flex flex-wrap gap-1" data-testid="foe-preview">
               {o.team.map((m, i) => (
                 <Tip key={`${m.species}:${i}`} content={() => <MonTip mon={tipFromSnap(m)} mine={false} gen={tipInfo.gen} format={tipInfo.format} />}>
                   <span className={cn("flex flex-col items-center rounded-md border bg-shade/20 px-1.5 py-1", o.partner ? "border-primary/40" : "border-screen/30")}>
                     <BattleSprite species={speciesKey(m.species)} size={40} />
-                    <span className="max-w-[4.5rem] truncate text-[10px] text-muted-foreground">{m.species}</span>
+                    <span className="max-w-[4.5rem] truncate text-[10px] text-muted-foreground">{names.species(m.species)}</span>
                   </span>
                 </Tip>
               ))}
@@ -346,14 +353,14 @@ function TeamPreview({
       )}
       {!others && foes.length > 0 && (
         <div className="space-y-1.5">
-          <p className="hud-label">Their team</p>
+          <p className="hud-label">{t("preview.theirTeam")}</p>
           <div className="flex flex-wrap gap-1" data-testid="foe-preview">
             {foes.map((m, i) => (
               // Team preview's Pokémon have no ident yet (an empty key): keyed by their place.
               <Tip key={`${m.species}:${i}`} content={() => <MonTip mon={tipFromSnap(m)} mine={false} gen={tipInfo.gen} format={tipInfo.format} />}>
               <span className="flex flex-col items-center rounded-md border border-screen/30 bg-shade/20 px-1.5 py-1">
                 <BattleSprite species={speciesKey(m.species)} size={44} />
-                <span className="max-w-[4.5rem] truncate text-[10px] text-muted-foreground">{m.species}</span>
+                <span className="max-w-[4.5rem] truncate text-[10px] text-muted-foreground">{names.species(m.species)}</span>
               </span>
               </Tip>
             ))}
@@ -362,13 +369,13 @@ function TeamPreview({
       )}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="font-display text-lg font-bold uppercase">
-          {picking ? `Choose ${need} to battle (the first leads)` : ordering ? "Tap your team in order (the first leads)" : `Choose your ${LEADS[leadsNeeded] ?? `${leadsNeeded} leads`}`}
+          {picking ? t("preview.choose", { n: need }) : ordering ? t("preview.order") : t("preview.leads", { n: leadsNeeded })}
         </p>
         {!picking && size > leadsNeeded && (
           <div className="flex items-center gap-2">
             {ordering && leads.length >= leadsNeeded && (
               <button type="button" disabled={busy} onClick={() => send(leads)} className="rounded-md border border-primary bg-primary px-3 py-1.5 font-display text-xs font-bold uppercase tracking-wider text-primary-foreground disabled:opacity-50" data-testid="send-order">
-                Send this order
+                {t("preview.send")}
               </button>
             )}
             <button
@@ -377,9 +384,10 @@ function TeamPreview({
               aria-pressed={orderAll}
               className={cn("rounded-md border px-3 py-1.5 font-display text-xs font-bold uppercase tracking-wider transition", orderAll ? "border-screen bg-screen/15 text-foreground" : "bg-card text-muted-foreground hover:border-screen/60")}
               data-testid="order-all"
-              title="Choose the order of your whole team, not just the lead"
+              title={t("preview.wholeTitle")}
             >
-              Set the whole order{orderAll ? " on" : ""}
+              {t("preview.whole")}
+              {orderAll ? t("on") : ""}
             </button>
           </div>
         )}
@@ -399,8 +407,8 @@ function TeamPreview({
             >
               {chosen >= 0 && <span className="absolute left-1 top-1 font-pixel text-[10px] text-primary">#{chosen + 1}</span>}
               <BattleSprite species={speciesKey(species)} size={56} />
-              <span className="w-full truncate text-center font-display text-xs font-bold uppercase">{species}</span>
-              <span className="w-full truncate text-center text-[10px] text-muted-foreground">{p.item ? Dex.items.get(p.item).name : "No item"}</span>
+              <span className="w-full truncate text-center font-display text-xs font-bold uppercase">{names.species(species)}</span>
+              <span className="w-full truncate text-center text-[10px] text-muted-foreground">{p.item ? names.item(Dex.items.get(p.item).name) : t("preview.noItem")}</span>
             </button>
           );
         })}
@@ -419,6 +427,7 @@ const FIRST_BATTLE_TURNS = 3;
  * past those turns (kept on this device).
  */
 function FirstBattleNote() {
+  const t = useT(playNs);
   const [show, setShow] = useState(false);
   useEffect(() => {
     try {
@@ -439,10 +448,10 @@ function FirstBattleNote() {
   return (
     <p className="flex items-start gap-2 rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2 text-xs leading-relaxed text-muted-foreground" role="note" data-testid="first-battle-note">
       <span className="min-w-0 flex-1">
-        <b className="text-foreground">New to battling?</b> Pick a move to use it. A green tag means it hits this foe hard; yellow means the foe resists it. Switch swaps in another Pokémon instead of attacking.
+        {t.rich("firstNote", { b: (c) => <b className="text-foreground">{c}</b> })}
       </span>
       <button type="button" onClick={done} className="shrink-0 rounded-sm border border-border px-2 py-1 font-display text-[11px] font-bold uppercase text-foreground hover:bg-muted">
-        Got it
+        {t("gotIt")}
       </button>
     </p>
   );
@@ -458,6 +467,8 @@ function retireFirstBattleNote() {
 }
 
 export function Controls({ request, snap, me, gameType, names, busy, onChoose, format, onHelp }: Props) {
+  const t = useT(playNs);
+  const local = useBattleNames();
   const pastFirstTurns = snap.turn > FIRST_BATTLE_TURNS;
   useEffect(() => {
     if (pastFirstTurns) retireFirstBattleNote();
@@ -520,12 +531,12 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
   }
   if (slot >= slots) return null;
   const actor = request.side.pokemon[slot];
-  const actorName = actor?.ident.split(": ")[1] ?? "your Pokémon";
+  const actorName = actor ? local.pokemon(actor.ident.split(": ")[1] ?? "") : t("yourPokemon");
   const back =
     parts.length > 0 ? (
-      <button type="button" className="hud-label flex items-center gap-1 hover:text-foreground max-sm:min-h-8 max-sm:px-1" onClick={() => setParts([])} aria-label="Start over">
-        <Undo2 className="h-3 w-3" aria-hidden /> <span className="max-sm:hidden">Start over</span>
-        <span className="sm:hidden">Redo</span>
+      <button type="button" className="hud-label flex items-center gap-1 hover:text-foreground max-sm:min-h-8 max-sm:px-1" onClick={() => setParts([])} aria-label={t("startOver")}>
+        <Undo2 className="h-3 w-3" aria-hidden /> <span className="max-sm:hidden">{t("startOver")}</span>
+        <span className="sm:hidden">{t("redo")}</span>
       </button>
     ) : null;
 
@@ -536,7 +547,7 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
     const options = switchOptions(request, slot, filled);
     const canPick = (p: BattleRequestPokemon | undefined, i: number) => !!p && !busy && options.includes(i + 1);
     // Two down and fewer left to send in: the spot without one stays empty.
-    const emptied = emptiedSlots(request, filled).map((s) => request.side.pokemon[s]?.ident.split(": ")[1] ?? "your Pokémon");
+    const emptied = emptiedSlots(request, filled).map((s) => (request.side.pokemon[s] ? local.pokemon(request.side.pokemon[s].ident.split(": ")[1] ?? "") : t("yourPokemon")));
     keys.digit = (n) => {
       if (canPick(request.side.pokemon[n - 1], n - 1)) add(`switch ${n}`);
     };
@@ -544,18 +555,18 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
     return (
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <p className="font-display text-lg font-bold uppercase">{reviving ? "Revive which Pokémon?" : slots > 1 ? `Replace ${actorName}` : "Send out which Pokémon?"}</p>
+          <p className="font-display text-lg font-bold uppercase">{reviving ? t("force.revive") : slots > 1 ? t("force.replace", { name: actorName }) : t("force.sendOut")}</p>
           {back}
         </div>
         {!reviving && emptied.length > 0 && (
           <p className="text-sm text-muted-foreground" data-testid="switch-last-one">
-            Only {options.length} Pokémon left to send in: {emptied.join(" and ")}&apos;s spot stays empty.
+            {t("force.lastOne", { n: options.length, names: emptied.join(t("and")) })}
           </p>
         )}
         <SwitchGrid
           tipInfo={{ gen: snap.gen, format, seen: mySide.team }}
           pokemon={request.side.pokemon}
-          label={reviving ? "Fainted Pokémon" : "Your team"}
+          label={reviving ? t("force.fainted") : t("force.yourTeam")}
           allowed={(p, i) => canPick(p, i)}
           onPick={(n) => add(`switch ${n}`)}
         />
@@ -594,32 +605,32 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
       if (t && !busy) add(`move ${aiming.index} ${t.loc}${suffix()}`);
     };
     keys.back = () => setAiming(null);
-    const button = (t: TargetSpot) => {
-      const mon = at(t.loc);
-      const off = busy || !usable.includes(t);
-      const key = usable.indexOf(t);
-      const owner = four && mon ? (mon.owner === me ? "You" : (names?.[mon.owner] ?? mon.owner)) : null;
+    const button = (spot: TargetSpot) => {
+      const mon = at(spot.loc);
+      const off = busy || !usable.includes(spot);
+      const key = usable.indexOf(spot);
+      const owner = four && mon ? (mon.owner === me ? t("you") : (names?.[mon.owner] ?? mon.owner)) : null;
       return (
         <button
-          key={t.loc}
+          key={spot.loc}
           type="button"
           data-testid="target-button"
-          data-loc={t.loc}
-          data-legal={t.legal}
+          data-loc={spot.loc}
+          data-legal={spot.legal}
           aria-keyshortcuts={key >= 0 ? String(key + 1) : undefined}
           disabled={off}
-          onClick={() => add(`move ${aiming.index} ${t.loc}${suffix()}`)}
-          title={!t.legal ? "Out of reach: this move only reaches adjacent Pokémon" : undefined}
-          className={cn("menu-item flex min-w-0 flex-col items-start gap-0.5 rounded-md border bg-card px-2.5 py-2 text-left hover:border-screen/60 disabled:opacity-40", !t.foe && "border-dashed")}
+          onClick={() => add(`move ${aiming.index} ${spot.loc}${suffix()}`)}
+          title={!spot.legal ? t("aim.outOfReachTitle") : undefined}
+          className={cn("menu-item flex min-w-0 flex-col items-start gap-0.5 rounded-md border bg-card px-2.5 py-2 text-left hover:border-screen/60 disabled:opacity-40", !spot.foe && "border-dashed")}
         >
           <span className="flex w-full min-w-0 items-center gap-1.5">
-            <Crosshair className={cn("h-3.5 w-3.5 shrink-0", t.foe ? "text-primary" : "text-screen")} aria-hidden />
-            <span className="truncate font-display text-sm font-bold uppercase">{mon && !mon.fainted ? mon.name : "Empty spot"}</span>
+            <Crosshair className={cn("h-3.5 w-3.5 shrink-0", spot.foe ? "text-primary" : "text-screen")} aria-hidden />
+            <span className="truncate font-display text-sm font-bold uppercase">{mon && !mon.fainted ? local.pokemon(mon.name) : t("aim.empty")}</span>
           </span>
           <span className="hud-label flex w-full min-w-0 items-center gap-1 truncate">
-            {t.self ? "You" : t.foe ? "Foe" : gameType === "multi" ? "Partner" : "Ally"}
-            {owner && !t.self && <span className="truncate normal-case text-muted-foreground">· {owner}</span>}
-            {!t.legal && !t.self && <span className="text-muted-foreground">· out of reach</span>}
+            {spot.self ? t("you") : spot.foe ? t("aim.foe") : gameType === "multi" ? t("aim.partner") : t("aim.ally")}
+            {owner && !spot.self && <span className="truncate normal-case text-muted-foreground">· {owner}</span>}
+            {!spot.legal && !spot.self && <span className="text-muted-foreground">{t("aim.outOfReach")}</span>}
           </span>
         </button>
       );
@@ -627,14 +638,15 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
     return (
       <div className="space-y-3" data-testid="target-grid">
         <div className="flex items-center justify-between">
-          <p className="font-display text-lg font-bold uppercase">{moveInfo(aiming.move.move || aiming.move.id, snap.gen).name}: pick a target</p>
+          <p className="font-display text-lg font-bold uppercase">{t("aim.pick", { move: local.move(moveInfo(aiming.move.move || aiming.move.id, snap.gen).name) })}</p>
           <button type="button" className="hud-label hover:text-foreground" onClick={() => setAiming(null)}>
-            Back
+            {t("back")}
           </button>
         </div>
         {nobody && (
           <p className="text-sm text-muted-foreground" data-testid="target-none-in-reach">
-            Nobody is in reach from here, so this move will fail.{shiftable ? " Go back to shift to the centre, where every foe is in reach." : ""}
+            {t("aim.nobody")}
+            {shiftable ? t("aim.nobodyShift") : ""}
           </p>
         )}
         <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${perHalf}, minmax(0, 1fr))` }}>
@@ -653,7 +665,10 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
     };
     keys.back = () => setAiming(null);
     const at = (t: number) => (t > 0 ? foeSide.active[t - 1] : mySide.active[-t - 1]);
-    const label = (t: number) => at(t)?.name ?? "Empty spot";
+    const label = (n: number) => {
+      const mon = at(n);
+      return mon ? local.pokemon(mon.name) : t("aim.empty");
+    };
     // Showdown greys out spots with no Pokémon in them (the simulator would retarget anyway).
     const empty = (t: number) => {
       const mon = at(t);
@@ -662,25 +677,25 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <p className="font-display text-lg font-bold uppercase">{moveInfo(aiming.move.move || aiming.move.id, snap.gen).name}: pick a target</p>
+          <p className="font-display text-lg font-bold uppercase">{t("aim.pick", { move: local.move(moveInfo(aiming.move.move || aiming.move.id, snap.gen).name) })}</p>
           <button type="button" className="hud-label hover:text-foreground" onClick={() => setAiming(null)}>
-            Back
+            {t("back")}
           </button>
         </div>
         <div className="grid grid-cols-2 gap-2">
-          {aiming.targets.map((t, ti) => (
+          {aiming.targets.map((n, ti) => (
             <button
-              key={t}
+              key={n}
               type="button"
               data-testid="target-button"
               aria-keyshortcuts={String(ti + 1)}
-              disabled={busy || empty(t)}
-              onClick={() => add(`move ${aiming.index} ${t}${suffix()}`)}
-              className={cn("menu-item flex items-center gap-2 rounded-md border bg-card px-3 py-2 text-left hover:border-screen/60 disabled:opacity-40", t < 0 && "border-dashed")}
+              disabled={busy || empty(n)}
+              onClick={() => add(`move ${aiming.index} ${n}${suffix()}`)}
+              className={cn("menu-item flex items-center gap-2 rounded-md border bg-card px-3 py-2 text-left hover:border-screen/60 disabled:opacity-40", n < 0 && "border-dashed")}
             >
               <Crosshair className="h-4 w-4 text-primary" aria-hidden />
-              <span className="font-display font-bold uppercase">{label(t)}</span>
-              <span className="hud-label ml-auto">{t > 0 ? "Foe" : t === -(slot + 1) ? "Self" : "Ally"}</span>
+              <span className="font-display font-bold uppercase">{label(n)}</span>
+              <span className="hud-label ml-auto">{n > 0 ? t("aim.foe") : n === -(slot + 1) ? t("aim.self") : t("aim.ally")}</span>
             </button>
           ))}
         </div>
@@ -725,9 +740,9 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
     <div className="space-y-3 max-sm:space-y-2">
       <div className="flex flex-wrap items-center justify-between gap-2 max-sm:flex-nowrap">
         <p className="font-display text-lg font-bold uppercase max-sm:min-w-0 max-sm:truncate max-sm:text-sm">
-          <span className="max-sm:hidden">What will {actorName} do?</span>
+          <span className="max-sm:hidden">{t("whatWill", { name: actorName })}</span>
           {/* Phones: the name alone keeps the row to one line beside Tera. */}
-          <span className="sm:hidden">{actorName}&apos;s move</span>
+          <span className="sm:hidden">{t("nameMove", { name: actorName })}</span>
         </p>
         <div className="flex items-center gap-3 max-sm:shrink-0 max-sm:gap-1.5">
           {back}
@@ -745,8 +760,8 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
               )}
               style={tera ? { background: teraColor(teraType), borderColor: teraColor(teraType), boxShadow: `0 0 14px ${teraColor(teraType)}` } : { borderColor: `${teraColor(teraType)}88` }}
             >
-              <Gem className="h-3.5 w-3.5" aria-hidden /> Tera {teraType}
-              {tera ? " on" : ""}
+              <Gem className="h-3.5 w-3.5" aria-hidden /> {t("tera", { type: local.type(teraType) })}
+              {tera ? t("on") : ""}
             </button>
           )}
           {extras.map((e) => (
@@ -762,8 +777,8 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
                 extra === e ? "border-primary bg-primary text-primary-foreground shadow-[0_0_14px_hsl(var(--primary)/0.6)]" : "bg-card text-foreground hover:border-screen/60"
               )}
             >
-              <Sparkles className="h-3.5 w-3.5" aria-hidden /> {EXTRA_LABEL[e]}
-              {extra === e ? " on" : ""}
+              <Sparkles className="h-3.5 w-3.5" aria-hidden /> {t(`extra.${e}`)}
+              {extra === e ? t("on") : ""}
             </button>
           ))}
         </div>
@@ -792,20 +807,20 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
           onClick={() => add("shift")}
           data-testid="shift-button"
           className="menu-item flex w-full items-center justify-center gap-2 rounded-md border border-dashed bg-card px-3 py-2 font-display text-sm font-bold uppercase hover:border-screen/60 disabled:opacity-40"
-          title="Move to the centre spot (the Pokémon there moves to this edge): from the centre every foe is in reach"
+          title={t("shiftTitle")}
         >
-          <MoveHorizontal className="h-4 w-4 text-screen" aria-hidden /> Shift to the centre
+          <MoveHorizontal className="h-4 w-4 text-screen" aria-hidden /> {t("shift")}
         </button>
       )}
       {maybeTrapped && (
         <p className="flex items-center gap-2 rounded-md border border-amber-400/50 bg-amber-400/10 px-3 py-2 text-sm" role="note" data-testid="maybe-trapped">
-          <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400" aria-hidden /> {actorName} might be trapped, so a switch can&apos;t be cancelled.
+          <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400" aria-hidden /> {t("maybeTrapped", { name: actorName })}
         </p>
       )}
       <SwitchGrid
         tipInfo={{ gen: snap.gen, format, seen: mySide.team }}
         pokemon={request.side.pokemon}
-        label={trapped ? "Can't switch: trapped" : "Switch"}
+        label={trapped ? t("trapped") : t("switch")}
         benchKeys
         allowed={(p, i) => canSwitchTo(p, i)}
         onPick={(n) => add(`switch ${n}`)}

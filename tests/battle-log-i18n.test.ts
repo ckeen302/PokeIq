@@ -25,7 +25,8 @@ const MESSAGES: Record<OtherLocale, unknown> = { ja, es, fr, de, it: it_ };
 const LOCALES = Object.keys(MESSAGES) as OtherLocale[];
 
 const pack = (locale: OtherLocale): LogLocal => {
-  const table = JSON.parse(readFileSync(`src/data/i18n/${locale}/battle-names.json`, "utf8")) as BattleNameTable;
+  const read = (k: string) => JSON.parse(readFileSync(`src/data/i18n/${locale}/${k}.json`, "utf8")) as Record<string, string>;
+  const table: BattleNameTable = { species: read("species"), moves: read("moves"), abilities: read("abilities"), items: read("items"), types: read("types"), natures: read("natures") };
   return logLocal(locale, MESSAGES[locale] as Tree, battleNames(table));
 };
 

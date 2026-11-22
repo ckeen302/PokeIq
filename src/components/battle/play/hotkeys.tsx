@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Keyboard } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import playNs from "@/messages/battle-play";
 
 /**
  * Battle hotkeys, after Pokémon Showdown's: 1-4 pick a move, 5-9 switch to
@@ -69,39 +71,40 @@ export function useBattleKeys(keys: BattleKeys, onHelp: () => void) {
   }, []);
 }
 
-const ROWS: [string, string][] = [
-  ["1 – 4", "Use that move (or pick a target)"],
-  ["5 – 9", "Switch to the 1st – 5th Pokémon on the bench"],
-  ["Shift + 1 – 6", "Switch to that Pokémon"],
-  ["1 – 6", "Pick leads at team preview; send one out after a faint"],
-  ["T", "Toggle Terastallize"],
-  ["M", "Toggle Mega Evolution / Z-Move / Dynamax"],
-  ["Esc", "Back / start over"],
-  ["?", "Show or hide this list"],
-];
+const ROWS = [
+  ["1 – 4", "move"],
+  ["5 – 9", "bench"],
+  ["Shift + 1 – 6", "switch"],
+  ["1 – 6", "leads"],
+  ["T", "tera"],
+  ["M", "extra"],
+  ["Esc", "back"],
+  ["?", "help"],
+] as const;
 
 /** The small "Keys" button and its list of hotkeys. */
 export function HotkeyHelp({ open, onToggle }: { open: boolean; onToggle: () => void }) {
+  const t = useT(playNs);
   return (
     <span className="relative">
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        aria-label="Keyboard shortcuts"
-        title="Keyboard shortcuts (?)"
+        aria-label={t("keys.label")}
+        title={t("keys.title")}
         data-testid="hotkeys-button"
         className={cn("hud-label flex items-center gap-1 rounded-sm px-1.5 py-0.5 hover:text-foreground", open && "text-foreground")}
       >
-        <Keyboard className="h-3.5 w-3.5" aria-hidden /> Keys
+        <Keyboard className="h-3.5 w-3.5" aria-hidden /> {t("keys.button")}
       </button>
       {open && (
         <span role="tooltip" data-testid="hotkeys-help" className="absolute right-0 top-full z-30 mt-1 block w-72 rounded-md border bg-popover p-3 text-left text-xs text-popover-foreground shadow-lg">
-          <span className="hud-label mb-2 block">Keyboard shortcuts</span>
+          <span className="hud-label mb-2 block">{t("keys.label")}</span>
           {ROWS.map(([key, what]) => (
             <span key={key} className="flex items-start justify-between gap-3 py-0.5">
               <kbd className="shrink-0 rounded border bg-muted px-1.5 font-mono text-[10px]">{key}</kbd>
-              <span className="text-right text-muted-foreground">{what}</span>
+              <span className="text-right text-muted-foreground">{t(`keys.row.${what}`)}</span>
             </span>
           ))}
         </span>

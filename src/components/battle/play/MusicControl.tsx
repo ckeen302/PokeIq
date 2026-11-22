@@ -5,6 +5,8 @@ import { Music, Music2 } from "lucide-react";
 import { battleMusic, DEFAULT_MUSIC, type BattleTrack, type MusicState } from "@/lib/battle/music";
 import type { BattleView } from "@/lib/battle/play";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import playNs from "@/messages/battle-play";
 
 /** The track a battle calls for: a boss theme for the Tycoon (and each round's last Factory battle), trainer music against people and in runs, and the win jingle. */
 export function trackFor(view: BattleView, ended: boolean, won: boolean): BattleTrack | null {
@@ -34,6 +36,7 @@ function useMusicState(): MusicState {
 
 /** Music on / off and its volume, kept on this device. Silent while the site is muted. */
 export function MusicControl() {
+  const t = useT(playNs);
   const { prefs, muted } = useMusicState();
   const on = prefs.on && !muted;
   return (
@@ -43,11 +46,11 @@ export function MusicControl() {
         onClick={() => battleMusic.setPrefs({ on: !prefs.on })}
         aria-pressed={prefs.on}
         data-testid="music-toggle"
-        title={muted ? "Sound is muted for the whole site" : prefs.on ? "Music on" : "Music off"}
+        title={muted ? t("music.mutedTitle") : prefs.on ? t("music.onTitle") : t("music.off")}
         className={cn("flex h-7 items-center gap-1 rounded-md border px-2 font-display text-[11px] font-bold uppercase tracking-wider", on ? "text-foreground" : "text-muted-foreground")}
       >
         {on ? <Music className="h-3.5 w-3.5" aria-hidden /> : <Music2 className="h-3.5 w-3.5 opacity-50" aria-hidden />}
-        {muted ? "Muted" : prefs.on ? "Music" : "Music off"}
+        {muted ? t("music.muted") : prefs.on ? t("music.music") : t("music.off")}
       </button>
       <input
         type="range"
@@ -57,7 +60,7 @@ export function MusicControl() {
         value={Math.round(prefs.volume * 100)}
         onChange={(e) => battleMusic.setPrefs({ volume: Number(e.target.value) / 100 })}
         disabled={!prefs.on}
-        aria-label="Music volume"
+        aria-label={t("music.volume")}
         data-testid="music-volume"
         className="hidden h-1 w-20 cursor-pointer sm:block accent-[hsl(var(--primary))] disabled:opacity-40"
       />

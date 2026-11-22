@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 import { Trophy } from "lucide-react";
 import { webglAvailable } from "./arena/webgl";
 import { cpuTrainer, FOE_ACCENT, standIn, YOU_ACCENT } from "./Versus";
+import { useT } from "@/i18n/client";
+import playNs from "@/messages/battle-play";
 
 /**
  * The victory screen over the result: the winner's 3D trainer on a lit
@@ -20,6 +22,7 @@ import { cpuTrainer, FOE_ACCENT, standIn, YOU_ACCENT } from "./Versus";
 const CELEBRATIONS: TauntId[] = ["dab", "robot", "ggwave", "salute"];
 
 export function BattleVictory({ view, title, detail, tone }: { view: BattleView; title: string; detail: string; tone: "win" | "loss" | "draw" }) {
+  const t = useT(playNs);
   const winner = view.end?.winner ?? null;
   const seat = winner === null ? null : winner;
   const player = seat === null ? null : view.players[seat];
@@ -55,7 +58,7 @@ export function BattleVictory({ view, title, detail, tone }: { view: BattleView;
         <div className="relative h-52 w-44 shrink-0 sm:h-64 sm:w-56">
           <div className="battle-victory-podium absolute inset-x-[6%] bottom-[2%] h-[16%]" aria-hidden />
           {gl ? (
-            <Avatar3D config={config} pose="victory" taunt={{ id: move, n }} facing="front" label={`${player?.name ?? "The winner"}'s trainer celebrating`} className="absolute inset-0" />
+            <Avatar3D config={config} pose="victory" taunt={{ id: move, n }} facing="front" label={t("victory.celebrating", { name: player?.name ?? t("victory.theWinner") })} className="absolute inset-0" />
           ) : (
             <span className="absolute inset-x-[18%] bottom-[14%] flex aspect-square items-center justify-center rounded-full border-4 border-[#ffd23c]/70 bg-[radial-gradient(circle_at_35%_30%,#fff3b0,#f5b82e_60%,#b7791f)] shadow-2xl" aria-hidden>
               <Trophy className="h-1/2 w-1/2 text-[#5a3a05]" />
@@ -63,7 +66,7 @@ export function BattleVictory({ view, title, detail, tone }: { view: BattleView;
           )}
         </div>
         <div className="relative space-y-1.5 sm:text-left">
-          <p className="hud-label text-white/70">{winners.length > 1 ? "Winners" : "Winner"} · {winnerName || "—"}</p>
+          <p className="hud-label text-white/70">{winners.length > 1 ? t("victory.winners") : t("victory.winner")} · {winnerName || "—"}</p>
           {heading}
         </div>
       </div>

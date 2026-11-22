@@ -1,5 +1,7 @@
 import type { GameType, PlayFormatId } from "./play";
 import type { AvatarMap } from "../avatar";
+import { translator, type Translator } from "@/i18n/catalog";
+import watchNs from "@/messages/battle-watch";
 
 /**
  * The Watch lobby: live battles anyone may spectate (matchmade battles, and
@@ -31,9 +33,9 @@ export interface WatchResponse {
 }
 
 /** "just now", "3 min ago", "1 h 5 min ago". */
-export function startedAgo(startedAt: number, now: number): string {
+export function startedAgo(startedAt: number, now: number, t: Translator<typeof watchNs.en> = translator(watchNs, "en", undefined)): string {
   const min = Math.floor(Math.max(0, now - startedAt) / 60_000);
-  if (min < 1) return "just now";
-  if (min < 60) return `${min} min ago`;
-  return `${Math.floor(min / 60)} h ${min % 60} min ago`;
+  if (min < 1) return t("ago.now");
+  if (min < 60) return t("ago.min", { m: min });
+  return t("ago.hours", { h: Math.floor(min / 60), m: min % 60 });
 }

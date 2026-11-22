@@ -14,7 +14,13 @@ import { cn } from "@/lib/utils";
 import { lastCpuSetup, startBattle } from "./BattleSetup";
 import { TeamPick, type TeamSource } from "./TeamPick";
 import { FrontierAfter } from "./Frontier";
-import { builderFormatFor, customName, describeRules } from "@/lib/battle/custom-rules";
+import { builderFormatFor } from "@/lib/battle/custom-rules";
+import { describeRulesIn } from "@/lib/battle/custom-rules-text";
+import { customRulesName, formatBlurb, formatName } from "@/lib/battle/format-labels";
+import { useT } from "@/i18n/client";
+import roomNs from "@/messages/battle-room";
+import formatsNs from "@/messages/battle-formats";
+import rulesNs from "@/messages/battle-rules";
 import { useBattle, type BattleHandle } from "./use-battle";
 import { ChatBox } from "@/components/chat/ChatBox";
 import { BattleAfter } from "./BattleAfter";
@@ -41,6 +47,7 @@ function readIgnored(): string[] {
  * The game's own lines always show.
  */
 function BattleChat({ view, battle, collapsible, className }: { view: BattleView; battle: BattleHandle; collapsible?: boolean; className?: string }) {
+  const t = useT(roomNs);
   const [ignored, setIgnored] = useState<string[]>([]);
   useEffect(() => setIgnored(readIgnored()), []);
   const toggle = (name: string) => {
@@ -67,12 +74,12 @@ function BattleChat({ view, battle, collapsible, className }: { view: BattleView
               onClick={() => toggle(name)}
               aria-pressed={ignored.includes(name)}
               className={cn("rounded-sm border px-1.5 py-0.5 hover:text-foreground", ignored.includes(name) ? "border-warning/60 text-warning" : "border-border")}
-              title={ignored.includes(name) ? `Show ${name}'s messages again` : `Hide ${name}'s messages (Showdown's /ignore)`}
+              title={ignored.includes(name) ? t("chat.showAgain", { name }) : t("chat.hideTitle", { name })}
             >
-              {ignored.includes(name) ? `Unignore ${name}` : `Ignore ${name}`}
+              {ignored.includes(name) ? t("chat.unignore", { name }) : t("chat.ignore", { name })}
             </button>
           ))}
-          {hidden > 0 && <span>({hidden} hidden)</span>}
+          {hidden > 0 && <span>{t("chat.hidden", { n: hidden })}</span>}
         </div>
       )}
       <ChatBox
@@ -80,9 +87,9 @@ function BattleChat({ view, battle, collapsible, className }: { view: BattleView
         you={view.you}
         players={view.players}
         code={view.code}
-        game="Live battle"
+        game={t("liveBattle")}
         onSend={battle.chat}
-        closed={view.rematch ? "A rematch is open: press Rematch to keep chatting there." : undefined}
+        closed={view.rematch ? t("chat.rematchOpen") : undefined}
         collapsible={collapsible}
         className={className}
       />
@@ -130,21 +137,23 @@ function replayOf(view: BattleView, log: readonly string[]): ReplayData {
 }
 
 function ScreenLoading() {
+  const t = useT(roomNs);
   return (
     <div className="flex aspect-[16/9] w-full items-center justify-center rounded-lg border bg-card">
-      <Loader2 className="h-6 w-6 animate-spin text-screen" aria-label="Loading the battle" />
+      <Loader2 className="h-6 w-6 animate-spin text-screen" aria-label={t("loading")} />
     </div>
   );
 }
 
 export function BattleGone({ message }: { message: string }) {
+  const t = useT(roomNs);
   return (
     <Card className="mx-auto max-w-md">
       <CardContent className="space-y-4 p-6 text-center">
-        <p className="font-display text-xl font-bold uppercase">Battle not found</p>
+        <p className="font-display text-xl font-bold uppercase">{t("gone.title")}</p>
         <p className="text-sm text-muted-foreground">{message}</p>
         <Link href="/battle/play" className={buttonVariants()}>
-          Start a battle
+          {t("gone.start")}
         </Link>
       </CardContent>
     </Card>
@@ -153,22 +162,23 @@ export function BattleGone({ message }: { message: string }) {
 
 /** Forfeit, after a second press. */
 function ForfeitButton({ busy, onForfeit }: { busy: boolean; onForfeit: () => void }) {
+  const t = useT(roomNs);
   const [sure, setSure] = useState(false);
   return (
     <div className="flex items-center justify-end gap-2">
       {sure ? (
         <>
-          <span className="text-sm text-muted-foreground">Forfeit this battle?</span>
+          <span className="text-sm text-muted-foreground">{t("forfeit.sure")}</span>
           <Button size="sm" variant="destructive" disabled={busy} onClick={onForfeit}>
-            Forfeit
+            {t("forfeit.button")}
           </Button>
           <Button size="sm" variant="ghost" onClick={() => setSure(false)}>
-            Keep battling
+            {t("forfeit.keep")}
           </Button>
         </>
       ) : (
         <Button size="sm" variant="ghost" onClick={() => setSure(true)}>
-          <Flag className="h-3.5 w-3.5" aria-hidden /> Forfeit
+          <Flag className="h-3.5 w-3.5" aria-hidden /> {t("forfeit.button")}
         </Button>
       )}
     </div>
@@ -177,6 +187,7 @@ function ForfeitButton({ busy, onForfeit }: { busy: boolean; onForfeit: () => vo
 
 /** After a battle against the computer: the same battle again, or new settings. */
 function CpuAgain() {
+  const t = useT(roomNs);
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -188,7 +199,7 @@ function CpuAgain() {
     try {
       router.push(await startBattle({ mode: "cpu", ...setup }));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't start a battle.");
+      setError(err instanceof Error ? err.message : t("again.error"));
       setBusy(false);
     }
   }
@@ -196,10 +207,10 @@ function CpuAgain() {
     <div className="space-y-2">
       <div className="flex flex-wrap justify-center gap-2">
         <Button onClick={() => void again()} disabled={busy}>
-          {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RotateCcw className="h-4 w-4" aria-hidden />} Play again
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RotateCcw className="h-4 w-4" aria-hidden />} {t("again.play")}
         </Button>
         <Link href="/battle/play" className={buttonVariants({ variant: "outline" })}>
-          <Settings2 className="h-4 w-4" aria-hidden /> New battle
+          <Settings2 className="h-4 w-4" aria-hidden /> {t("again.new")}
         </Link>
       </div>
       {error && <p className="text-sm text-destructive">{error}</p>}
@@ -209,6 +220,7 @@ function CpuAgain() {
 
 /** After a live battle: a rematch with the same trainers (and teams), once both press it. */
 function LiveAgain({ view, battle }: { view: BattleView; battle: BattleHandle }) {
+  const t = useT(roomNs);
   const router = useRouter();
   async function rematch() {
     const next = await battle.rematch();
@@ -219,7 +231,7 @@ function LiveAgain({ view, battle }: { view: BattleView; battle: BattleHandle })
     return (
       <div className="flex flex-wrap justify-center gap-2">
         <Link href={`/battle/tournaments/${view.tournament}`} className={buttonVariants({ variant: "success" })} data-testid="back-to-tournament">
-          <Swords className="h-4 w-4" aria-hidden /> Back to the tournament
+          <Swords className="h-4 w-4" aria-hidden /> {t("again.tournament")}
         </Link>
       </div>
     );
@@ -228,30 +240,38 @@ function LiveAgain({ view, battle }: { view: BattleView; battle: BattleHandle })
     <div className="space-y-2">
       {view.rematch && (
         <p role="status" className="font-display text-sm font-semibold uppercase tracking-wider text-warning">
-          Rematch requested!
+          {t("again.requested")}
         </p>
       )}
       <div className="flex flex-wrap justify-center gap-2">
         <Button variant="success" disabled={battle.busy} onClick={() => void rematch()}>
           {battle.busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RotateCcw className="h-4 w-4" aria-hidden />}
-          {view.rematch ? "Accept rematch" : "Rematch"}
+          {view.rematch ? t("again.accept") : t("again.rematch")}
         </Button>
         <Link href="/battle/play" className={buttonVariants({ variant: "outline" })}>
-          <Swords className="h-4 w-4" aria-hidden /> New battle
+          <Swords className="h-4 w-4" aria-hidden /> {t("again.new")}
         </Link>
       </div>
       <p className="text-xs text-muted-foreground">
-        A rematch keeps the trainers, the format and any teams you brought.{" "}
-        {view.players.length === 4 ? "The computer keeps its seats; it starts when every trainer presses it." : "It starts when you both press it."}
+        {t("again.keeps")}{" "}
+        {view.players.length === 4 ? t("again.startsFour") : t("again.startsTwo")}
       </p>
     </div>
   );
 }
 
 function LiveLobby({ code, view, battle }: { code: string; view: BattleView; battle: BattleHandle }) {
+  const t = useT(roomNs);
+  const tf = useT(formatsNs);
+  const tr = useT(rulesNs);
   const router = useRouter();
   const base = PLAY_FORMAT_INFO[view.format];
-  const info = { ...base, name: view.formatName ?? base.name };
+  const en = t.locale === "en";
+  const info = {
+    ...base,
+    name: en ? (view.formatName ?? base.name) : view.rules ? customRulesName(tf, view.rules) : view.format === "custom" || view.format === "tower" || !view.formatName ? formatName(tf, view.format) : view.formatName,
+    blurb: formatBlurb(tf, view.format),
+  };
   const [team, setTeam] = useState("");
   const onTeam = useCallback((t: string) => setTeam(t), []);
   const timer = view.timer === undefined ? BATTLE_TIMER[info.gameType] : view.timer;
@@ -259,47 +279,43 @@ function LiveLobby({ code, view, battle }: { code: string; view: BattleView; bat
   const source = useMemo<TeamSource | undefined>(
     () =>
       rules
-        ? { name: customName(rules), short: `Gen ${rules.gen}`, saved: builderFormatFor(rules.gen), quick: { rules }, quickNote: `Random-battle sets from Gen ${rules.gen}, checked against these rules.` }
+        ? { name: customRulesName(tf, rules), short: t("lobby.gen", { gen: rules.gen }), saved: builderFormatFor(rules.gen), quick: { rules }, quickNote: t("lobby.quickNote", { gen: rules.gen }) }
         : undefined,
-    [rules]
+    [rules, tf, t]
   );
   const gameType = view.gameType ?? info.gameType;
   const four = playerCount(gameType) === 4;
   const joining = view.you === null && view.players.length < (four ? 4 : 2);
   const host = view.players[0]?.name;
+  const formatRule = { label: t("lobby.format"), text: <>{info.name}: {info.random ? info.blurb : t("lobby.bring")}</> };
+  const ruleRows = rules ? describeRulesIn(tr, rules).map((r) => ({ label: r.label, text: <>{r.text}</> })) : [];
+  const timerText = (anyone: boolean) =>
+    timer ? (
+      <>
+        {t("lobby.timer", { secs: (timer.refill ?? timer.bank) / 1000 })}
+        {timer.refill && timer.refill < timer.bank ? t("lobby.grace", { secs: (timer.bank - timer.refill) / 1000 }) : ""}
+        {timer.perTurn ? t("lobby.perTurn", { secs: timer.perTurn / 1000 }) : ""}
+        {t("lobby.cap", { secs: timer.cap / 1000 })}{" "}
+        {view.timeoutLoses ? (timer.autoChoose ? t("lobby.runOutDefault") : t("lobby.runOutLose")) : t("lobby.runOutPick")}
+      </>
+    ) : (
+      <>{anyone ? t("lobby.timerOffAny") : t("lobby.timerOffEither")}</>
+    );
+  const spectatorRule = {
+    label: t("lobby.spectators"),
+    text: view.public ? <>{t("lobby.public")}</> : <>{t("lobby.private")}</>,
+  };
+  const away = Math.round((BATTLE_AWAY_MS - BATTLE_QUIET_MS) / 1000);
   const lobbyRules = [
-    { label: "Format", text: <>{info.name}: {info.random ? info.blurb : "each of you brings a team, checked against Pokémon Showdown's rules."}</> },
-    ...(rules ? describeRules(rules).map((r) => ({ label: r.label, text: <>{r.text}</> })) : []),
+    formatRule,
+    ...ruleRows,
+    { label: t("lobby.timerLabel"), text: timerText(true) },
+    spectatorRule,
     {
-      label: "Turn timer",
-      text: timer ? (
-        <>
-          Showdown&apos;s timer: {(timer.refill ?? timer.bank) / 1000} s{timer.refill && timer.refill < timer.bank ? ` plus ${(timer.bank - timer.refill) / 1000} s grace` : ""}
-          {timer.perTurn ? `, +${timer.perTurn / 1000} s a turn` : ""}, {timer.cap / 1000} s at most per turn.{" "}
-          {view.timeoutLoses
-            ? timer.autoChoose
-              ? "Run out on a turn and a default move is made; run out of time altogether and you lose."
-              : "Run out and you lose."
-            : "Run out and the timer picks a move for you; a second time in a row loses."}
-        </>
-      ) : (
-        <>Off: take your time. Any of you can start it mid-battle.</>
-      ),
+      label: t("lobby.fairPlay"),
+      text: <>{t(gameType === "multi" ? "lobby.fairFourMulti" : gameType === "freeforall" ? "lobby.fairFourFfa" : "lobby.fairFour", { secs: away })}</>,
     },
-    {
-      label: "Spectators",
-      text: view.public ? <>Listed in Watch live: anyone can watch.</> : <>Private: only people with the link can watch.</>,
-    },
-    {
-      label: "Fair play",
-      text: (
-        <>
-          You see only your own team and what the others reveal. Leaving forfeits after {Math.round((BATTLE_AWAY_MS - BATTLE_QUIET_MS) / 1000)} s away
-          {gameType === "multi" ? " (your team loses, as on Showdown)" : gameType === "freeforall" ? " (you're out; the others battle on)" : ""}.
-        </>
-      ),
-    },
-    ...(four ? [{ label: "Ladder", text: <>Unranked: Showdown doesn&apos;t ladder {gameType === "multi" ? "Multi Battles" : "Free-For-Alls"} either, so these never move your rating.</> }] : []),
+    ...(four ? [{ label: t("lobby.ladder"), text: <>{t(gameType === "multi" ? "lobby.unrankedMulti" : "lobby.unrankedFfa")}</> }] : []),
   ];
 
   if (four) {
@@ -307,7 +323,7 @@ function LiveLobby({ code, view, battle }: { code: string; view: BattleView; bat
       <div className="space-y-3">
         {(battle.error || battle.offline) && (
           <p role="alert" className="text-center text-sm text-destructive">
-            {battle.error ?? "Connection lost. Reconnecting…"}
+            {battle.error ?? t("reconnecting")}
           </p>
         )}
         <GroupLobby
@@ -321,7 +337,7 @@ function LiveLobby({ code, view, battle }: { code: string; view: BattleView; bat
           chat={<BattleChat view={view} battle={battle} />}
           onJoin={(name) => {
             if (!info.random && !team) {
-              battle.setError("Pick or paste a team first.");
+              battle.setError(t("lobby.teamFirst"));
               return;
             }
             void battle.join(name, info.random ? undefined : team);
@@ -340,68 +356,43 @@ function LiveLobby({ code, view, battle }: { code: string; view: BattleView; bat
     <div className="space-y-3">
       {(battle.error || battle.offline) && (
         <p role="alert" className="text-center text-sm text-destructive">
-          {battle.error ?? "Connection lost. Reconnecting…"}
+          {battle.error ?? t("reconnecting")}
         </p>
       )}
       <DuelLobby
         view={view}
         path={`/battle/live/${code}`}
-        tag={`Live battle · ${info.name}`}
+        tag={t("lobby.tag", { format: info.name })}
         title={
           view.players.length === 2 ? (
             <>
-              {view.players[0].name} <span className="text-muted-foreground">vs</span> {view.players[1].name}
+              {view.players[0].name} <span className="text-muted-foreground">{t("vs")}</span> {view.players[1].name}
             </>
           ) : (
-            <>
-              Pokémon <span className="text-primary">battle</span>
-            </>
+            <>{t.rich("lobby.title", { b: (c) => <span className="text-primary">{c}</span> })}</>
           )
         }
-        invite={(h) => `${h} challenges you to a ${info.name} battle. Pick a trainer name${info.random ? "" : " and a team"} to join.`}
-        about={`Send the link to a friend. The battle starts when you're both ready.${info.random ? " Teams are random." : ""}`}
-        shareText={`${host ?? "I"} challenge${host ? "s" : ""} you to a ${info.name} battle on PokéIQ!`}
+        invite={(h) => t(info.random ? "lobby.invite" : "lobby.inviteTeam", { host: h, format: info.name })}
+        about={`${t("lobby.about")}${info.random ? t("lobby.randomTeams") : ""}`}
+        shareText={host ? t("lobby.shareHost", { host, format: info.name }) : t("lobby.shareMe", { format: info.name })}
         rules={[
-          { label: "Format", text: <>{info.name}: {info.random ? info.blurb : "each of you brings a team, checked against Pokémon Showdown's rules."}</> },
-          ...(rules ? describeRules(rules).map((r) => ({ label: r.label, text: <>{r.text}</> })) : []),
+          formatRule,
+          ...ruleRows,
+          { label: t("lobby.timerLabel"), text: timerText(false) },
+          spectatorRule,
           {
-            label: "Turn timer",
-            text: timer ? (
-              <>
-                Showdown&apos;s timer: {(timer.refill ?? timer.bank) / 1000} s{timer.refill && timer.refill < timer.bank ? ` plus ${(timer.bank - timer.refill) / 1000} s grace` : ""}
-                {timer.perTurn ? `, +${timer.perTurn / 1000} s a turn` : ""}, {timer.cap / 1000} s at most per turn.{" "}
-                {view.timeoutLoses
-                  ? timer.autoChoose
-                    ? "Run out on a turn and a default move is made; run out of time altogether and you lose."
-                    : "Run out and you lose."
-                  : "Run out and the timer picks a move for you; a second time in a row loses."}
-              </>
-            ) : (
-              <>Off: take your time. Either of you can start it mid-battle.</>
-            ),
-          },
-          {
-            label: "Spectators",
-            text: view.public ? <>Listed in Watch live: anyone can watch.</> : <>Private: only people with the link can watch.</>,
-          },
-          {
-            label: "Fair play",
-            text: (
-              <>
-                You see only your own team and what your opponent reveals. Leaving forfeits after {Math.round((BATTLE_AWAY_MS - BATTLE_QUIET_MS) / 1000)} s
-                away.
-              </>
-            ),
+            label: t("lobby.fairPlay"),
+            text: <>{t("lobby.fairTwo", { secs: away })}</>,
           },
         ]}
         settings={joining && !info.random ? <TeamPick format={view.format} onChange={onTeam} idPrefix={`join-${code}`} source={source} /> : undefined}
         home="/battle/play?vs=friend"
-        noun="battle"
+        noun={t("lobby.noun")}
         chat={<BattleChat view={view} battle={battle} />}
         busy={battle.busy}
         onJoin={(name) => {
           if (!info.random && !team) {
-            battle.setError("Pick or paste a team first.");
+            battle.setError(t("lobby.teamFirst"));
             return;
           }
           void battle.join(name, info.random ? undefined : team);
@@ -416,6 +407,7 @@ function LiveLobby({ code, view, battle }: { code: string; view: BattleView; bat
 }
 
 export function BattleRoom({ code }: { code: string }) {
+  const t = useT(roomNs);
   const battle = useBattle(code);
   const { view, gone, offline } = battle;
   /** Showdown's instant replay: the battle so far, from the start, while it goes on. */
@@ -430,11 +422,11 @@ export function BattleRoom({ code }: { code: string }) {
     return (
       <div className="space-y-3">
         <p className="hud-label flex items-center justify-center gap-1.5 text-screen" data-testid="spectating">
-          <Eye className="h-3.5 w-3.5" aria-hidden /> You&apos;re watching {view.players.length === 4 && view.gameType === "multi" ? `${view.players[0]?.name} & ${view.players[2]?.name} vs ${view.players[1]?.name} & ${view.players[3]?.name}` : view.players.map((p) => p.name).join(" vs ")}
+          <Eye className="h-3.5 w-3.5" aria-hidden /> {t("watching", { players: view.players.length === 4 && view.gameType === "multi" ? t("multiVs", { a: view.players[0]?.name ?? "", c: view.players[2]?.name ?? "", b: view.players[1]?.name ?? "", d: view.players[3]?.name ?? "" }) : view.players.map((p) => p.name).join(t("vsSep")) })}
         </p>
         {offline && (
           <p role="alert" className="flex items-center justify-center gap-1.5 text-sm text-destructive">
-            <WifiOff className="h-4 w-4" aria-hidden /> Connection lost. Reconnecting…
+            <WifiOff className="h-4 w-4" aria-hidden /> {t("reconnecting")}
           </p>
         )}
         <BattleScreen
@@ -447,10 +439,10 @@ export function BattleRoom({ code }: { code: string }) {
           endActions={
             <div className="flex flex-wrap justify-center gap-2">
               <Link href="/battle/watch" className={buttonVariants()}>
-                <Eye className="h-4 w-4" aria-hidden /> Watch another
+                <Eye className="h-4 w-4" aria-hidden /> {t("watchAnother")}
               </Link>
               <Link href="/battle/play" className={buttonVariants({ variant: "outline" })}>
-                <Swords className="h-4 w-4" aria-hidden /> Battle yourself
+                <Swords className="h-4 w-4" aria-hidden /> {t("battleYourself")}
               </Link>
             </div>
           }
@@ -464,11 +456,11 @@ export function BattleRoom({ code }: { code: string }) {
     return (
       <Card className="mx-auto max-w-md">
         <CardContent className="space-y-3 p-6 text-center">
-          <p className="hud-label text-screen">{view.status === "finished" ? "Battle over" : "Battle in progress"}</p>
-          <p className="font-display text-2xl font-bold uppercase">{view.players.map((p) => p.name).join(" vs ")}</p>
-          <p className="text-sm text-muted-foreground">This battle is between {view.players.length === 4 ? "four" : "two"} other trainers.</p>
+          <p className="hud-label text-screen">{view.status === "finished" ? t("visitor.over") : t("visitor.inProgress")}</p>
+          <p className="font-display text-2xl font-bold uppercase">{view.players.map((p) => p.name).join(t("vsSep"))}</p>
+          <p className="text-sm text-muted-foreground">{view.players.length === 4 ? t("visitor.four") : t("visitor.two")}</p>
           <Link href="/battle/play" className={cn(buttonVariants({ size: "lg" }), "w-full")}>
-            Start your own
+            {t("visitor.start")}
           </Link>
           {view.kind === "pvp" && <BattleChat view={view} battle={battle} />}
         </CardContent>
@@ -486,8 +478,8 @@ export function BattleRoom({ code }: { code: string }) {
   const replayTools = (
     <>
         {canReplay && (
-          <Button size="sm" variant="ghost" onClick={() => setInstant(true)} title="Watch the battle so far from the start (Showdown's instant replay)" data-testid="instant-replay-open">
-            <History className="h-3.5 w-3.5" aria-hidden /> Instant replay
+          <Button size="sm" variant="ghost" onClick={() => setInstant(true)} title={t("replay.instantTitle")} data-testid="instant-replay-open">
+            <History className="h-3.5 w-3.5" aria-hidden /> {t("replay.instant")}
           </Button>
         )}
         {view.status === "finished" && (
@@ -495,10 +487,10 @@ export function BattleRoom({ code }: { code: string }) {
             size="sm"
             variant="ghost"
             onClick={() => void downloadReplay({ ...replayOf(view, battle.log.lines) })}
-            title="Showdown's replay file: opens in any browser and plays in Showdown's replay player"
+            title={t("replay.downloadTitle")}
             data-testid="battle-download-replay"
           >
-            <Download className="h-3.5 w-3.5" aria-hidden /> Download replay
+            <Download className="h-3.5 w-3.5" aria-hidden /> {t("replay.download")}
           </Button>
         )}
     </>
@@ -509,18 +501,18 @@ export function BattleRoom({ code }: { code: string }) {
       {view.kind === "pvp" && <MatchedNote view={view} />}
       {offline && (
         <p role="alert" className="flex items-center justify-center gap-1.5 text-sm text-destructive">
-          <WifiOff className="h-4 w-4" aria-hidden /> Connection lost. Reconnecting…
+          <WifiOff className="h-4 w-4" aria-hidden /> {t("reconnecting")}
         </p>
       )}
       {view.kind === "pvp" && view.status === "playing" && quietOthers.length > 0 && (
         <p role="status" className="flex items-center justify-center gap-1.5 text-sm text-warning" data-testid="foe-disconnected">
-          <WifiOff className="h-4 w-4" aria-hidden /> {quietOthers.map((p) => p.name).join(" and ")} lost their connection. If they don&apos;t come back within a minute,{" "}
-          {view.gameType === "multi" ? "their team forfeits." : "they forfeit."}
+          <WifiOff className="h-4 w-4" aria-hidden /> {t("quiet.lost", { names: quietOthers.map((p) => p.name).join(t("and")) })}{" "}
+          {view.gameType === "multi" ? t("quiet.teamForfeits") : t("quiet.forfeit")}
         </p>
       )}
       {view.kind === "pvp" && view.status === "playing" && view.players.length !== 4 && foe?.quiet && (
         <p role="status" className="flex items-center justify-center gap-1.5 text-sm text-warning" data-testid="foe-disconnected">
-          <WifiOff className="h-4 w-4" aria-hidden /> {foe.name} lost their connection. If they don&apos;t come back within a minute, they forfeit.
+          <WifiOff className="h-4 w-4" aria-hidden /> {t("quiet.lost", { names: foe.name })} {t("quiet.forfeit")}
         </p>
       )}
       <BattleScreen

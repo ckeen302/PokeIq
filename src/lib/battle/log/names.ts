@@ -3,13 +3,13 @@ import type { OtherLocale } from "@/i18n/config";
 
 /**
  * A battle's names (Pokémon, moves, abilities, items, types, natures) in the page's language, from that language's
- * src/data/i18n/<locale>/battle-names.json (scripts/i18n/battle-names.mjs). The battle protocol, the simulator's
+ * tables in src/data/i18n/<locale> (the same files the other battle pages load). The battle protocol, the simulator's
  * requests and @pkmn/dex all speak English; these turn an English name into the official one. A name the language
  * has no official translation for stays English.
  */
 
 export interface BattleNameTable {
-  /** By National Dex number. */
+  /** By data key of the species' English name. */
   species: Record<string, string>;
   /** By data key: the English name in lower case, letters and digits only. */
   moves: Record<string, string>;
@@ -72,7 +72,7 @@ export function battleNames(table: BattleNameTable): BattleNames {
     const sp = english ? Dex.species.get(english) : undefined;
     if (!sp?.exists) return english;
     const base = sp.forme ? Dex.species.get(sp.baseSpecies) : sp;
-    const own = table.species[String(base.num)];
+    const own = table.species[nameKey(base.name)];
     // The languages' tables name species, not formes: a forme goes by its species' name (its sprite shows which).
     return own ?? english;
   };
@@ -93,13 +93,11 @@ export function battleNames(table: BattleNameTable): BattleNames {
   };
 }
 
-const LOADERS: Record<OtherLocale, () => Promise<{ default: unknown }>> = {
-  ja: () => import("@/data/i18n/ja/battle-names.json"),
-  es: () => import("@/data/i18n/es/battle-names.json"),
-  fr: () => import("@/data/i18n/fr/battle-names.json"),
-  de: () => import("@/data/i18n/de/battle-names.json"),
-  it: () => import("@/data/i18n/it/battle-names.json"),
-};
+const KINDS = ["species", "moves", "abilities", "items", "types", "natures"] as const;
+const load = (locale: OtherLocale): Promise<BattleNameTable> =>
+  Promise.all(KINDS.map((k) => import(`@/data/i18n/${locale}/${k}.json`).then((m: { default: Record<string, string> }) => m.default))).then(
+    (tables) => Object.fromEntries(KINDS.map((k, i) => [k, tables[i]])) as unknown as BattleNameTable
+  );
 
 const loads = new Map<OtherLocale, Promise<BattleNames>>();
 
@@ -107,8 +105,8 @@ const loads = new Map<OtherLocale, Promise<BattleNames>>();
 export function loadBattleNames(locale: OtherLocale): Promise<BattleNames> {
   let p = loads.get(locale);
   if (!p) {
-    p = LOADERS[locale]()
-      .then((m) => battleNames(m.default as BattleNameTable))
+    p = load(locale)
+      .then((table) => battleNames(table))
       .catch(() => {
         loads.delete(locale);
         return ENGLISH_NAMES;

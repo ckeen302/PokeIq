@@ -10,9 +10,12 @@ import { loadCalcGenerations } from "@/lib/battle/dex";
 import { calcStat, moveDamage, statRange, type FieldMon, type FieldState, type RandSetsInfo } from "@/lib/battle/tooltip-calc";
 import { typeColor, typeTextColor } from "@/lib/pokemon/type-colors";
 import { cn } from "@/lib/utils";
-import type { MonSnap } from "./model";
+import { VOLATILE_IDS, type MonSnap } from "./model";
 import type { MoveInfo } from "./moves";
 import { STATUS_STYLE } from "./Hud";
+import { useT } from "@/i18n/client";
+import tipsNs from "@/messages/battle-tooltips";
+import { useBattleNames } from "./local";
 
 /**
  * Showdown-style tooltips for the battle screen (desktop: hover or focus).
@@ -112,6 +115,7 @@ export function TapTip({ content, children, place = "top" }: { content: () => Re
 
 /** A field or side condition: what it does (the move or ability's own description) and how long it has left. */
 export function ConditionTip({ id, name, turns, level, gen = 9 }: { id: string; name: string; turns?: [number, number]; level?: number; gen?: number }) {
+  const t = useT(tipsNs);
   const dex = Dex.forGen(Math.min(9, Math.max(1, gen)));
   const source = dex.moves.get(id);
   const ability = source.exists ? null : dex.abilities.get(id);
@@ -125,7 +129,7 @@ export function ConditionTip({ id, name, turns, level, gen = 9 }: { id: string; 
       {desc && <p className="text-white/80">{desc}</p>}
       {turns ? (
         <p className="font-pixel text-[10px] uppercase text-warning">
-          {turns[0] === turns[1] ? turns[0] : `${turns[0]} to ${turns[1]}`} turn{turns[1] === 1 ? "" : "s"} left
+          {t("turnsLeft", { range: turns[0] === turns[1] ? String(turns[0]) : t("range", { min: turns[0], max: turns[1] }), max: turns[1] })}
         </p>
       ) : null}
     </div>
@@ -133,9 +137,10 @@ export function ConditionTip({ id, name, turns, level, gen = 9 }: { id: string; 
 }
 
 function TypeBadge({ type }: { type: string }) {
+  const names = useBattleNames();
   return (
     <span className="rounded-sm px-1.5 py-0.5 font-pixel text-[9px] uppercase" style={{ background: typeColor(type.toLowerCase()), color: typeTextColor(type.toLowerCase()) }}>
-      {type}
+      {names.type(type)}
     </span>
   );
 }
@@ -202,7 +207,7 @@ export const isRandomFormat = (format: string) => format === "gen9randombattle" 
 // Moves
 // ---------------------------------------------------------------------------
 
-const CATEGORY: Record<string, string> = { Physical: "✸ Physical", Special: "◎ Special", Status: "◇ Status" };
+const CATEGORY: Record<string, string> = { Physical: "✸", Special: "◎", Status: "◇" };
 
 export interface MoveTipProps {
   info: MoveInfo;
@@ -233,30 +238,32 @@ export function foeFieldMon(mon: MonSnap): FieldMon {
 }
 
 export function MoveTip({ info, type, pp, maxpp, gen, attacker, foes, field, randomBattle }: MoveTipProps) {
+  const t = useT(tipsNs);
+  const names = useBattleNames();
   const calc = useCalc();
   const damaging = info.category !== "Status";
   const targets = foes.filter((f): f is MonSnap => !!f && !f.fainted);
   return (
     <div className="space-y-2" data-testid="move-tooltip">
       <div className="flex items-center justify-between gap-2">
-        <span className="font-display text-sm font-bold uppercase tracking-wide text-white">{info.name}</span>
+        <span className="font-display text-sm font-bold uppercase tracking-wide text-white">{names.move(info.name)}</span>
         <TypeBadge type={type} />
       </div>
       <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 font-pixel text-[10px] uppercase text-white/80">
-        <span>{CATEGORY[info.category]}</span>
-        <span>Power {info.power > 0 ? info.power : "—"}</span>
-        <span>Accuracy {info.accuracy === true ? "—" : `${info.accuracy}%`}</span>
+        <span>{`${CATEGORY[info.category]} ${t(`category.${info.category}`)}`}</span>
+        <span>{t("power", { n: info.power > 0 ? String(info.power) : "—" })}</span>
+        <span>{t("accuracy", { acc: info.accuracy === true ? "—" : `${info.accuracy}%` })}</span>
         <span>
-          PP {pp ?? "–"}/{maxpp ?? "–"}
+          {t("pp", { pp: String(pp ?? "–"), max: String(maxpp ?? "–") })}
         </span>
-        {info.priority !== 0 && <span className="text-warning">Priority {info.priority > 0 ? `+${info.priority}` : info.priority}</span>}
-        {info.contact && <span>Contact</span>}
+        {info.priority !== 0 && <span className="text-warning">{t("priority", { pri: info.priority > 0 ? `+${info.priority}` : String(info.priority) })}</span>}
+        {info.contact && <span>{t("contact")}</span>}
       </div>
       {info.desc && <p className="text-white/80">{info.desc}</p>}
       {damaging && attacker && targets.length > 0 && (
         <div className="space-y-1.5 border-t border-white/10 pt-2" data-testid="move-damage">
           {!calc ? (
-            <p className="text-white/50">Working out the damage…</p>
+            <p className="text-white/50">{t("working")}</p>
           ) : (
             targets.map((foe) => {
               let line = null;
@@ -269,7 +276,7 @@ export function MoveTip({ info, type, pp, maxpp, gen, attacker, foes, field, ran
               return (
                 <div key={foe.key}>
                   <p className="font-semibold text-white">
-                    vs {foe.name}:{" "}
+                    {t("vs", { name: names.pokemon(foe.name) })}{" "}
                     <span className="tabular-nums text-screen" data-testid="damage-range">
                       {line.percent[0]}–{line.percent[1]}%
                     </span>
@@ -277,7 +284,7 @@ export function MoveTip({ info, type, pp, maxpp, gen, attacker, foes, field, ran
                   </p>
                   {line.spreadNote ? (
                     <p className="text-[10px] text-white/50" data-testid="damage-spread-note">
-                      {line.spreadNote}
+                      {t.locale === "en" || line.spreadSpecial === undefined ? line.spreadNote : t(line.spreadSpecial ? "spreadSpD" : "spreadDef")}
                     </p>
                   ) : (
                     <p className="text-[10px] text-white/50">{line.desc}</p>
@@ -346,10 +353,14 @@ export function tipFromRequest(p: BattleRequestPokemon, seen?: MonSnap): TipMon 
 
 export const tipFromSnap = (m: MonSnap): TipMon => ({ ...m, types: m.types });
 
-const STAT_NAME: Record<string, string> = { atk: "Atk", def: "Def", spa: "SpA", spd: "SpD", spe: "Spe", accuracy: "Acc", evasion: "Eva" };
+const STAT_IDS = new Set(["atk", "def", "spa", "spd", "spe", "accuracy", "evasion"]);
 const boostMult = (stage: number) => (stage >= 0 ? (2 + stage) / 2 : 2 / (2 - stage));
 
 export function MonTip({ mon, mine, gen, format }: { mon: TipMon; mine: boolean; gen: number; format: string }) {
+  const t = useT(tipsNs);
+  const names = useBattleNames();
+  const statName = (s: string) => (STAT_IDS.has(s) ? t(`stat.${s as "atk"}`) : s);
+  const list = (xs: string[], name: (x: string) => string) => xs.map(name).join(", ");
   const dex = Dex.forGen(Math.min(9, Math.max(1, gen)));
   const species = dex.species.get(mon.species);
   const rand = useRandSets(format, species.exists ? species.name : mon.species);
@@ -366,31 +377,31 @@ export function MonTip({ mon, mine, gen, format }: { mon: TipMon; mine: boolean;
     <div className="space-y-2" data-testid="mon-tooltip">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="font-display text-sm font-bold uppercase tracking-wide text-white">
-          {mon.name}
-          {mon.name !== mon.species && <span className="ml-1 text-[11px] font-normal normal-case text-white/60">({mon.species})</span>}
+          {names.pokemon(mon.name)}
+          {mon.name !== mon.species && <span className="ml-1 text-[11px] font-normal normal-case text-white/60">({names.species(mon.species)})</span>}
         </span>
-        <span className="font-pixel text-[10px] text-white/70">Lv{mon.level}</span>
+        <span className="font-pixel text-[10px] text-white/70">{t("level", { n: mon.level })}</span>
       </div>
       <div className="flex flex-wrap items-center gap-1">
         {types.map((t) => (
           <TypeBadge key={t} type={t} />
         ))}
-        {mon.terastallized && <span className="font-pixel text-[9px] uppercase text-white/60">Terastallized</span>}
-        {mine && mon.teraType && !mon.terastallized && <span className="font-pixel text-[9px] uppercase text-white/60">Tera {mon.teraType}</span>}
-        {status && <span className={cn("rounded-sm px-1 font-pixel text-[9px] leading-4", status.className)}>{status.label}</span>}
+        {mon.terastallized && <span className="font-pixel text-[9px] uppercase text-white/60">{t("terastallized")}</span>}
+        {mine && mon.teraType && !mon.terastallized && <span className="font-pixel text-[9px] uppercase text-white/60">{t("tera", { type: names.type(mon.teraType) })}</span>}
+        {status && <span className={cn("rounded-sm px-1 font-pixel text-[9px] leading-4", status.className)}>{t(`status.${mon.status as "brn"}`)}</span>}
       </div>
-      <Row label="HP">{mon.fainted ? "Fainted" : mine ? `${mon.hp}/${mon.maxhp} (${percent}%)` : `${percent}%`}</Row>
-      <Row label="Ability">{mon.ability ? mon.ability : possibleAbilities.length ? <span className="text-white/70">Possible: {possibleAbilities.join(", ")}</span> : "Unknown"}</Row>
-      <Row label="Item">
-        {mon.item ? mon.item : !mine && rand?.items.length ? <span className="text-white/70">Possible: {rand.items.join(", ")}</span> : mine ? "None" : "Unknown"}
+      <Row label={t("row.hp")}>{mon.fainted ? t("fainted") : mine ? `${mon.hp}/${mon.maxhp} (${percent}%)` : `${percent}%`}</Row>
+      <Row label={t("row.ability")}>{mon.ability ? names.ability(mon.ability) : possibleAbilities.length ? <span className="text-white/70">{t("possible", { list: list(possibleAbilities, names.ability) })}</span> : t("unknown")}</Row>
+      <Row label={t("row.item")}>
+        {mon.item ? names.item(mon.item) : !mine && rand?.items.length ? <span className="text-white/70">{t("possible", { list: list(rand.items, names.item) })}</span> : mine ? t("none") : t("unknown")}
       </Row>
       {(boosts.length > 0 || mon.volatiles.length > 0) && (
-        <Row label="Effects">
-          {[...boosts.map(([s, v]) => `${STAT_NAME[s] ?? s} ${v > 0 ? "+" : ""}${v} (×${boostMult(v).toFixed(2).replace(/\.?0+$/, "")})`), ...mon.volatiles].join(" · ")}
+        <Row label={t("row.effects")}>
+          {[...boosts.map(([s, v]) => `${statName(s)} ${v > 0 ? "+" : ""}${v} (×${boostMult(v).toFixed(2).replace(/\.?0+$/, "")})`), ...mon.volatiles.map((v) => (VOLATILE_IDS[v] ? t(`volatile.${VOLATILE_IDS[v] as "substitute"}`) : v))].join(" · ")}
         </Row>
       )}
       {species.exists && (
-        <Row label={mine ? "Stats" : randomLevel ? "Stats (likely)" : "Stat range"}>
+        <Row label={mine ? t("row.stats") : randomLevel ? t("row.statsLikely") : t("row.statRange")}>
           <span className="grid grid-cols-3 gap-x-2 font-pixel text-[9px] tabular-nums">
             {(["atk", "def", "spa", "spd", "spe"] as const).map((s) => {
               const base = species.baseStats[s];
@@ -398,7 +409,7 @@ export function MonTip({ mon, mine, gen, format }: { mon: TipMon; mine: boolean;
               const text = mine && mon.stats ? `${mon.stats[s]}` : randomLevel ? `${calcStat(s, base, mon.level, 31, 84)}` : statRange(s, base, mon.level).join("–");
               return (
                 <span key={s}>
-                  {STAT_NAME[s]} {text}
+                  {statName(s)} {text}
                 </span>
               );
             })}
@@ -406,9 +417,9 @@ export function MonTip({ mon, mine, gen, format }: { mon: TipMon; mine: boolean;
         </Row>
       )}
       {(shownMoves.length > 0 || otherMoves.length > 0) && (
-        <Row label="Moves">
-          {shownMoves.length > 0 && <span className="block">{shownMoves.join(", ")}</span>}
-          {otherMoves.length > 0 && <span className="block text-white/60">Possible: {otherMoves.join(", ")}</span>}
+        <Row label={t("row.moves")}>
+          {shownMoves.length > 0 && <span className="block">{list(shownMoves, names.move)}</span>}
+          {otherMoves.length > 0 && <span className="block text-white/60">{t("possible", { list: list(otherMoves, names.move) })}</span>}
         </Row>
       )}
     </div>

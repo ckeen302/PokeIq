@@ -4,6 +4,8 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { buildIndex, search } from "@/lib/battle/search";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import inputsNs from "@/messages/battle-inputs";
 
 /** Form controls shared by the team builder and the damage calculator. */
 
@@ -147,6 +149,7 @@ export function SearchSelect<T>({
   listClassName?: string;
   disabled?: boolean;
 }) {
+  const t = useT(inputsNs);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [highlight, setHighlight] = useState(0);
@@ -284,7 +287,7 @@ export function SearchSelect<T>({
         <button
           type="button"
           onClick={onClear}
-          aria-label={`Clear ${label.toLowerCase()}`}
+          aria-label={t("clear", { label: label.toLowerCase() })}
           className="absolute right-1 top-0 flex h-9 w-7 items-center max-sm:h-10 max-sm:w-9 justify-center text-muted-foreground hover:text-foreground"
         >
           <X className="h-3.5 w-3.5" aria-hidden />
@@ -311,7 +314,7 @@ export function SearchSelect<T>({
             className="overflow-y-auto overscroll-contain"
           >
             {results.length === 0 ? (
-              <div className="px-3 py-3 text-sm text-muted-foreground">No matches</div>
+              <div className="px-3 py-3 text-sm text-muted-foreground">{t("noMatches")}</div>
             ) : (
               <div style={{ height: results.length * rowHeight, position: "relative" }}>
                 {results.slice(first, last).map((option, k) => {
@@ -337,9 +340,7 @@ export function SearchSelect<T>({
           </div>
           {results.length > 0 && (
             <div className="hud-label flex justify-between gap-2 border-t border-foreground/10 bg-shade/30 px-2 py-1 normal-case tracking-wider">
-              <span>
-                {results.length.toLocaleString()} result{results.length === 1 ? "" : "s"}
-              </span>
+              <span>{t("results", { n: results.length })}</span>
               <span className="hidden sm:inline">↑↓ · Enter · Tab · Esc</span>
             </div>
           )}

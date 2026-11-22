@@ -1,0 +1,26 @@
+{
+  "header": {
+    "battle": "Battle"
+  },
+  "play": {
+    "title": "Battle vs Computer"
+  },
+  "live": {
+    "title": "A live Pokémon battle",
+    "description": "A live Pokémon battle on Pokémon Showdown's engine. Open the link, pick a name and battle.",
+    "titleVs": "{host} vs {guest}: a live Pokémon battle",
+    "titleHost": "{host} challenges you to a live Pokémon battle",
+    "aTrainer": "A trainer",
+    "descriptionFormat": "{format}, live on Pokémon Showdown's engine. Open the link, pick a name and battle."
+  },
+  "watch": {
+    "meta": {
+      "title": "Watch Live Pokémon Battles",
+      "description": "Spectate live Pokémon battles on Pokémon Showdown's engine: ranked ladder matches and open friend battles, as they happen."
+    },
+    "crumb": "Watch",
+    "title": "Watch",
+    "accent": "live",
+    "intro": "Battles under way right now. Spectators see what Showdown's spectators see: each side's team is revealed only as it plays out."
+  }
+}
