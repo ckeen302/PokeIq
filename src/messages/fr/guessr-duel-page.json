@@ -1,7 +1,7 @@
 {
   "duel": {
     "fallbackTitle": "Un duel PokéGuessr",
-    "fallbackDescription": "Les duels de GeoGuessr version Pokémon : les mêmes lieux pour vous deux, l'épingle la plus proche gagne.",
+    "fallbackDescription": "Les duels de GeoGuessr version Pokémon : les mêmes lieux pour vous deux, le repère le plus proche gagne.",
     "titleVs": "{host} contre {guest} : un duel PokéGuessr",
     "titleChallenge": "{host} te défie en duel sur PokéGuessr",
     "aTrainer": "Un Dresseur",
@@ -32,7 +32,7 @@
     "galar": "Galar",
     "paldea": "Paldea",
     "theme-gyms": "Arènes",
-    "theme-towns": "Villes et villages",
+    "theme-towns": "Villes et bourgs",
     "theme-routes": "Routes"
   },
   "gameSep": " / "

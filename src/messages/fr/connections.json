@@ -59,9 +59,9 @@
     "create": "Créer"
   },
   "settings": {
-    "title": "Paramètres",
-    "aria": "Paramètres de PokéConnections",
-    "close": "Fermer les paramètres",
+    "title": "Réglages",
+    "aria": "Réglages de PokéConnections",
+    "close": "Fermer les réglages",
     "symbols": "Symboles des groupes",
     "symbolsLine": "● ▲ ■ ◆ sur chaque groupe en plus de sa couleur (plus simple en cas de daltonisme).",
     "clock": "Afficher le chrono",

@@ -98,7 +98,7 @@
   "victory": "Victoire !",
   "defeat": "Défaite",
   "youSuffix": " · Toi",
-  "timePenalty": "Temps {time} de pénalité ({n} × {s} s)",
+  "timePenalty": "Temps {time}, pénalités comprises ({n} × {s} s)",
   "clean": "Résolu sans faute en {time}",
   "didntFinish": "Pas terminé",
   "line": "{how} · {mistakes}",

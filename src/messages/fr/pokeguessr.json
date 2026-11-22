@@ -78,8 +78,8 @@
       "beatHp": "{winner} a battu {loser} avec {hp} PV sur {max} restants après {n} manches.",
       "title": "{headline} : un duel PokéGuessr sur {map}"
     },
-    "daily": "Quotidien #{n}",
-    "weekly": "Hebdo #{n}",
+    "daily": "Quotidien n° {n}",
+    "weekly": "Hebdo n° {n}",
     "bonus": "+{bonus} de bonus de jeu",
     "chips": {
       "streak": "Série",

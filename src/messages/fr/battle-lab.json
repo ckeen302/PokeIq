@@ -246,7 +246,7 @@
     "capped": "Arrêté à la limite de tours : match nul",
     "draw": "Match nul",
     "won": "{turns, plural, one {{side} a gagné en {turns} tour} other {{side} a gagné en {turns} tours}}",
-    "meta": "Combat nº {n} de la simulation · graine {seed} · toujours le même combat",
+    "meta": "Combat n° {n} de la simulation · graine {seed} · toujours le même combat",
     "close": "Fermer le replay",
     "standing": "{alive} sur {total} encore debout",
     "prev": "Tour précédent",

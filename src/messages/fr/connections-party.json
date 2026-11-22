@@ -25,7 +25,7 @@
   "join": "Rejoindre la partie",
   "startRace": "Lancer la course",
   "waitingMin": "En attente d'au moins {n} joueurs.",
-  "waitingFor": "En attente que {names} soit prêt.",
+  "waitingFor": "Pas encore prêts : {names}.",
   "allReady": "Tout le monde est prêt.",
   "readyButton": "Prêt !",
   "rules": "Les mêmes seize Pokémon pour tout le monde. Chaque erreur ajoute {s} secondes à ton temps, et {n} erreurs t'éliminent.",
@@ -52,5 +52,5 @@
   "placings": "Classement",
   "groupsAria": "{n} groupes sur {max}",
   "out": "Éliminé",
-  "misses": "{n, plural, one {{n} raté} other {{n} ratés}}"
+  "misses": "{n, plural, one {{n} erreur} other {{n} erreurs}}"
 }

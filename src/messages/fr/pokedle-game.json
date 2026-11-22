@@ -10,15 +10,15 @@
   },
   "title": {
     "practice": "Entraînement",
-    "daily": "Défi du jour nº {n}",
-    "dailyStats": "Défi du jour nº {n} · Stats",
-    "archive": "Défi du jour nº {n} · Archives ({date})",
-    "loading": "Défi du jour"
+    "daily": "Quotidien n° {n}",
+    "dailyStats": "Quotidien n° {n} · Stats",
+    "archive": "Quotidien n° {n} · Archives ({date})",
+    "loading": "Quotidien"
   },
   "formats": {
-    "label": "Format du défi du jour",
-    "classicAria": "Défi du jour Classique",
-    "squirdleAria": "Défi du jour Stats",
+    "label": "Format du quotidien",
+    "classicAria": "Quotidien Classique",
+    "squirdleAria": "Quotidien Stats",
     "classicTitle": "Le Classique du jour",
     "squirdleTitle": "Le défi Stats du jour"
   },
@@ -38,8 +38,8 @@
     "locked": "À choisir avant le premier essai : ils restent fixes pour cette partie.",
     "assist": "Aide du Pokédex",
     "hard": "Mode difficile",
-    "hardBlurb": "Chaque essai doit respecter les indices de génération et de type obtenus. Ton partage reçoit une *.",
-    "colourBlind": "Couleurs daltoniens",
+    "hardBlurb": "Chaque essai doit respecter les indices de génération et de type obtenus. Ton partage reçoit un *.",
+    "colourBlind": "Mode daltonien",
     "colourBlindBlurb": "Orange et bleu à la place du vert et du jaune.",
     "practice": "Partie d'entraînement"
   },
@@ -116,7 +116,7 @@
     "dexSetting": "Le réglage <b>Pokédex</b> (Aucun, Carnet, Guide ou Complet ; à choisir avant ton premier essai ; il reste fixe pour la partie) définit à quel point le Pokédex t'aide. Moins d'aide, plus de points :",
     "dexLevel": "{emoji} <b>{label}</b> {m} : {blurb}",
     "dexAfter": "Ton résultat et ton partage indiquent le niveau. En duel, les deux Dresseurs ont le même.",
-    "hard": "<b>Mode difficile</b> (à choisir avant ton premier essai) : chaque essai doit respecter les indices de génération et de type obtenus, donc pas de Pokémon grisé. Ton partage reçoit une *.",
+    "hard": "<b>Mode difficile</b> (à choisir avant ton premier essai) : chaque essai doit respecter les indices de génération et de type obtenus, donc pas de Pokémon grisé. Ton partage reçoit un *.",
     "streaks": "<b>Séries :</b> termine le défi du jour, gagné ou perdu, pour garder ta série 🔥. Tous les {every} jours d'affilée, tu gagnes un 🧊 gel (jusqu'à {max}) qui couvre tout seul un jour manqué.",
     "archive": "<b>Les archives</b> contiennent tous les anciens défis Classiques. Les parties des archives et d'entraînement ne comptent jamais pour les séries ni les stats.",
     "keys": "Touches : <k>/</k> va à la zone de saisie, <k>↑</k> <k>↓</k> et <k>Entrée</k> choisissent, <k>Échap</k> efface."
@@ -145,19 +145,19 @@
     "solvedIn": "Trouvé en {n}",
     "missed": "Raté",
     "inProgress": "En cours · {n}/{max}",
-    "daily": "{status} (défi du jour)"
+    "daily": "{status} (quotidien)"
   },
   "community": {
     "label": "Comment tout le monde s'en est sorti aujourd'hui",
     "trainers": "Les Dresseurs du jour",
-    "summary": "{players} parties · {pct} trouvé",
+    "summary": "{players} ont joué · {pct} ont trouvé",
     "avg": " · moy. {avg}",
     "top": "Top {n} %",
-    "rank": "nº {n}",
+    "rank": "n° {n}",
     "ofTrainers": "{n, plural, one {sur {count} Dresseur aujourd'hui} other {sur {count} Dresseurs aujourd'hui}}",
-    "toSolveToday": "Dresseur à trouver aujourd'hui",
-    "solvedIt": "des Dresseurs ont trouvé",
-    "toSolve": "à trouver",
+    "toSolveToday": "Dresseur à l'avoir trouvé aujourd'hui",
+    "solvedIt": "des Dresseurs l'ont trouvé",
+    "toSolve": "à l'avoir trouvé",
     "list": "Essais nécessaires pour chacun",
     "solvedIn": "Trouvé en {n}",
     "notSolved": "Pas trouvé",

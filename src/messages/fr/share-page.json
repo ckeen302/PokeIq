@@ -38,11 +38,11 @@
     "streakChip": "Série",
     "play": "Jouer à PokéGuessr",
     "playDaily": "Jouer au PokéGuessr du jour",
-    "streakDescription": "GeoGuessr dans le monde Pokémon : observe la vue du jeu, place une épingle sur la carte. Tu peux battre cette série ?",
+    "streakDescription": "GeoGuessr dans le monde Pokémon : observe la vue du jeu, place un repère sur la carte. Tu peux battre cette série ?",
     "outOf": "sur {max} points en {n} lieux",
     "dailyChip": "Partie du jour",
     "rounds": "{n} manches",
-    "description": "GeoGuessr dans le monde Pokémon : observe la vue du jeu, place une épingle sur la carte, marque jusqu’à {max} points. Tu peux faire mieux ?"
+    "description": "GeoGuessr dans le monde Pokémon : observe la vue du jeu, place un repère sur la carte, marque jusqu’à {max} points. Tu peux faire mieux ?"
   },
   "quiz": {
     "dailyGame": "Défi du jour",

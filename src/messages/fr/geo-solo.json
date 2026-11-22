@@ -56,7 +56,7 @@
       "play": "Jouer celle du jour"
     },
     "weekly": {
-      "numbered": "Hebdo #{n}",
+      "numbered": "Hebdo n° {n}",
       "word": "Hebdo",
       "title": "Défi de la semaine",
       "endsIn": "Fin dans {left}",
@@ -107,7 +107,7 @@
   },
   "hud": {
     "picked": "Jeux choisis",
-    "daily": "Quotidien #{n}",
+    "daily": "Quotidien n° {n}",
     "streak": "Série {n}",
     "streakWord": "Série",
     "round": "Manche {n}",
@@ -133,7 +133,7 @@
     "space": "Espace"
   },
   "summary": {
-    "shareDaily": "J'ai marqué {score} au PokéGuessr du jour (Quotidien #{n}). Les mêmes {places} lieux pour tout le monde aujourd'hui : tu peux me battre ?",
+    "shareDaily": "J'ai marqué {score} au PokéGuessr du jour (Quotidien n° {n}). Les mêmes {places} lieux pour tout le monde aujourd'hui : tu peux me battre ?",
     "shareWeekly": "J'ai marqué {score} au Défi de la semaine PokéGuessr. Les mêmes {places} lieux pour tout le monde : tu peux me battre ?",
     "shareGame": "J'ai marqué {score} sur PokéGuessr. Les mêmes {places} lieux : tu peux me battre ?",
     "saveFailed": "Impossible d'enregistrer.",
@@ -234,7 +234,7 @@
   "crowd": {
     "shareText": "Où tout le monde a placé son repère au Quotidien PokéGuessr d'aujourd'hui",
     "title": "Carte des joueurs",
-    "count": "{n} Dresseurs ont joué la manche {round}",
+    "count": "{n} Dresseurs ont placé un repère à la manche {round}",
     "round": "Manche",
     "everyone": "Les repères de tous",
     "answer": "La réponse",

@@ -34,7 +34,7 @@
     "correct": "Bonnes réponses"
   },
   "connections": {
-    "intro": "PokéConnections nº {n} · {date} : le moins d’erreurs, puis le plus rapide.",
+    "intro": "PokéConnections n° {n} · {date} : le moins d’erreurs, puis le plus rapide.",
     "soon": "Le classement de PokéConnections arrive bientôt.",
     "empty": "Personne ne l’a encore résolu. <link>Joue au PokéConnections du jour</link> et sois le premier !",
     "perfect": "Parfait",
@@ -46,11 +46,11 @@
     "eraBoard": "{board} · {era}",
     "mapBoard": "{map} · {board}",
     "regionStreak": "Série de régions",
-    "daily": "Du jour nº {n}",
-    "weekly": "Hebdo nº {n} · {map}",
+    "daily": "Du jour n° {n}",
+    "weekly": "Hebdo n° {n} · {map}",
     "lastWeek": "Semaine dernière · {map}",
     "themed": "Cartes thématiques",
-    "weeklyTitle": "Défi de la semaine nº {n} · {map} · semaine du {week}",
+    "weeklyTitle": "Défi de la semaine n° {n} · {map} · semaine du {week}",
     "inARow": "{score} d’affilée",
     "outOf": "{score} / {max}"
   },
@@ -62,7 +62,7 @@
   "rank": "Rang {place}",
   "pts": "{score} pts",
   "iq": "QI {n}",
-  "dailyIntro": "Défi du jour nº {n} · {date}",
+  "dailyIntro": "Défi du jour n° {n} · {date}",
   "iqIntro": "Classé par le PokéIQ mesuré au test adaptatif",
   "footnote": "Chaque score ici a été corrigé par le serveur : les envois portent un résultat signé, jamais un simple nombre.",
   "unavailable": "Ce classement est indisponible pour le moment. Réessaie dans une minute.",

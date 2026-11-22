@@ -17,7 +17,7 @@
     },
     "headingTeam": "Duel en équipe · {map}",
     "headingHp": "Face à face · {map}",
-    "teamBlurb": "Deux équipes de deux (jusqu'à quatre par camp) sur les mêmes lieux, {hp} PV par équipe. À chaque manche, ton équipe marque sa meilleure épingle, et les coéquipiers voient leurs épingles au fur et à mesure. Envoie le code du salon à trois amis.",
+    "teamBlurb": "Deux équipes de deux (jusqu'à quatre par camp) sur les mêmes lieux, {hp} PV par équipe. À chaque manche, ton équipe marque son meilleur repère, et les coéquipiers voient leurs repères au fur et à mesure. Envoie le code du salon à trois amis.",
     "raceBlurb": "Les mêmes {n} lieux pour vous deux, sur la carte choisie plus haut. Celui qui marque le plus de points en {n} manches gagne. Envoie le lien à ton ami et appuie sur Prêt.",
     "raceBlurbEra": "Les mêmes {n} lieux pour vous deux, sur la carte et les jeux choisis plus haut. Celui qui marque le plus de points en {n} manches gagne. Envoie le lien à ton ami et appuie sur Prêt.",
     "hpBlurb": "Les mêmes lieux pour vous deux, sur la carte choisie plus haut. {hp} PV chacun : à chaque manche, le score le plus bas perd la différence. Envoie le lien à ton ami et appuie sur Prêt.",
@@ -32,7 +32,7 @@
   },
   "party": {
     "royaleBlurb": "Jusqu'à {max} Dresseurs sur les mêmes lieux. Le score le plus bas de chaque manche perd une vie ({lives} chacun) ; le dernier Dresseur en lice gagne.",
-    "teamBlurb": "Équipe rouge contre bleue, 2v2 (jusqu'à 4v4), {hp} PV par équipe. Ton équipe marque sa meilleure épingle, et tu vois les épingles de tes coéquipiers en direct.",
+    "teamBlurb": "Équipe rouge contre bleue, 2v2 (jusqu'à 4v4), {hp} PV par équipe. Ton équipe marque son meilleur repère, et tu vois les repères de tes coéquipiers en direct.",
     "label": "Entre amis · jusqu'à {max} Dresseurs",
     "room": "Salon privé · {map}",
     "gameLabel": "Jeu de la partie",

@@ -19,14 +19,14 @@
   "password": "Mot de passe",
   "nameRules": "3 à 20 lettres, chiffres, _ ou -. Pas besoin d'e-mail : tu recevras un code de récupération à la place.",
   "reset": "Réinitialiser le mot de passe",
-  "syncNote": "En te connectant, tes badges, séries, classements et ton PokéIQ sont enregistrés sur ton compte et te suivent sur tous tes appareils.",
+  "syncNote": "En te connectant, tes badges, séries, cotes et ton PokéIQ sont enregistrés sur ton compte et te suivent sur tous tes appareils.",
   "email": {
     "needEmail": "Ajoute ton e-mail pour recevoir les e-mails quotidiens.",
     "badEmail": "Ça ne ressemble pas à une adresse e-mail."
   },
   "panel": {
     "saveTitle": "Sauvegarde ta progression",
-    "saveBody": "Crée un compte gratuit pour garder tes badges, classements et séries sur tous tes appareils.",
+    "saveBody": "Crée un compte gratuit pour garder tes badges, cotes et séries sur tous tes appareils.",
     "signIn": "Se connecter",
     "newCodeTitle": "Nouveau code de récupération",
     "newCodeNote": "Ton ancien code ne fonctionne plus. Garde bien celui-ci : il ne s'affiche qu'une fois.",

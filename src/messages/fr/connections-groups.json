@@ -190,7 +190,7 @@
     "lure": "cinq lettres : une de trop"
   },
   "symbol": {
-    "label": "Nom anglais pas que en lettres",
+    "label": "Nom anglais : pas que des lettres",
     "rule": "Chaque nom anglais contient autre chose que des lettres : une espace, un point, un trait d'union, une apostrophe, un deux-points, un accent, un chiffre ou un symbole.",
     "gender": "un symbole ♀/♂",
     "digit": "un chiffre",

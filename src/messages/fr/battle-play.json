@@ -306,7 +306,7 @@
     "won": "Victoires",
     "rating": "Classement",
     "wl": "V–D",
-    "position": "N°{n} du classement",
+    "position": "N° {n} du classement",
     "last5": "5 derniers combats",
     "none": "Aucun combat pour l’instant",
     "difficulty": "Difficulté",

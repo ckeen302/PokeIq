@@ -108,11 +108,11 @@
     "themed": "Thème · {name}",
     "lives": "Vies",
     "timer": "Durée d'une manche",
-    "afterPin": "Après la première épingle",
+    "afterPin": "Après le premier repère",
     "rounds": "Manches max.",
     "seconds": "{n} s",
-    "teamHelp": "{hp} PV par équipe. À chaque manche, une équipe marque sa meilleure épingle ; l'équipe la plus basse perd l'écart (×1 manches 1–3, ×1,5 pour 4–6, ×2 pour 7–9…). Les coéquipiers voient leurs épingles en direct.",
-    "royaleHelp": "Tout le monde cherche le même lieu. {s} s après la première épingle, la manche se ferme et le score le plus bas perd une vie (tous en cas d'égalité, personne si tout le monde est à égalité). Plus de vies : tu regardes. Le dernier Dresseur en lice gagne.",
+    "teamHelp": "{hp} PV par équipe. À chaque manche, une équipe marque son meilleur repère ; l'équipe la plus basse perd l'écart (×1 manches 1–3, ×1,5 pour 4–6, ×2 pour 7–9…). Les coéquipiers voient leurs repères en direct.",
+    "royaleHelp": "Tout le monde cherche le même lieu. {s} s après le premier repère, la manche se ferme et le score le plus bas perd une vie (tous en cas d'égalité, personne si tout le monde est à égalité). Plus de vies : tu regardes. Le dernier Dresseur en lice gagne.",
     "start": "Lancer la partie",
     "waitHost": "En attente du lancement par l'hôte",
     "leaveParty": "Quitter la partie"
@@ -134,7 +134,7 @@
     "weWon": "On a gagné !",
     "nextTime": "On les aura la prochaine fois.",
     "shareRoyale": "J'ai fini {place, selectordinal, one {{place}er} other {{place}e}} sur {n} dans notre Combat Royal PokéGuessr sur la carte {where}.",
-    "shareRoyaleWon": "J'ai fini {place, selectordinal, one {{place}er} other {{place}e}} sur {n} dans notre Combat Royal PokéGuessr sur la carte {where} ({winners} a gagné).",
+    "shareRoyaleWon": "J'ai fini {place, selectordinal, one {{place}er} other {{place}e}} sur {n} dans notre Combat Royal PokéGuessr sur la carte {where} (victoire de {winners}).",
     "shareNext": "{text} Joue la prochaine avec nous :",
     "over": "Fin : {mode} · {map}",
     "draw": "Match nul",
@@ -148,7 +148,7 @@
     "share": "Partager le résultat",
     "left": "Parti",
     "outIn": "Éliminé à la manche {n}",
-    "pins": "Tes épingles"
+    "pins": "Tes repères"
   },
   "parts": {
     "lives": "{lives} vies sur {max}",
@@ -156,7 +156,7 @@
     "out": "Éliminé",
     "guessed": "A répondu",
     "host": "Hôte",
-    "lineupTeam": "{hp} PV par équipe · la meilleure épingle compte",
+    "lineupTeam": "{hp} PV par équipe · le meilleur repère compte",
     "lineupRoyale": "{n} Dresseurs · {lives, plural, one {{lives} vie} other {{lives} vies}} chacun",
     "vs": "VS",
     "dances": "Danses",
