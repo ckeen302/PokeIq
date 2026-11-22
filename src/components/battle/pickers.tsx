@@ -13,6 +13,8 @@ import { BattleSprite } from "./BattleSprite";
 import { inputClass, SearchSelect } from "./controls";
 import { useT } from "@/i18n/client";
 import pickersNs from "@/messages/battle-pickers";
+import battleTerms from "@/messages/battle-terms";
+import { useBattleNames } from "./use-battle-names";
 
 /** Pickers for species, items, moves, natures and types, fed by @pkmn/data. */
 
@@ -129,6 +131,7 @@ export function SpeciesSelect({
   filter?: SpeciesFilterSource;
 }) {
   const t = useT(pickersNs);
+  const names = useBattleNames();
   const [type, setType] = useState("");
   const [ability, setAbility] = useState("");
   const [learns, setLearns] = useState("");
@@ -173,7 +176,7 @@ export function SpeciesSelect({
   return (
     <SearchSelect
       label={label ?? t("species")}
-      value={value}
+      value={names.species(value)}
       placeholder={t("searchPokemon")}
       options={species}
       initial={start}
@@ -181,7 +184,7 @@ export function SpeciesSelect({
       keep={keep}
       rowHeight={40}
       getKey={(s) => s.id}
-      getText={(s) => s.name}
+      getText={(s) => (names.locale === "en" ? s.name : `${names.species(s.name)} ${s.name}`)}
       leading={current && <BattleSprite species={current} shiny={shiny} animated={false} size={36} />}
       filters={
         filter && (
@@ -256,7 +259,7 @@ export function SpeciesSelect({
         return (
           <span className={cn("flex items-center gap-2", banned && "opacity-60")}>
             <BattleSprite species={s} animated={false} size={36} className="shrink-0" />
-            <span className="min-w-0 flex-1 truncate font-display font-semibold">{s.name}</span>
+            <span className="min-w-0 flex-1 truncate font-display font-semibold">{names.species(s.name)}</span>
             {banned && <BannedTag reason={banned} />}
             <span className="hidden gap-1 sm:flex">
               {s.types.map((ty) => (
@@ -294,6 +297,7 @@ export function ItemSelect({
   bans?: Record<string, string> | null;
 }) {
   const t = useT(pickersNs);
+  const names = useBattleNames();
   const used = useMemo(() => usageLookup(usage), [usage]);
   const rank = useMemo(
     () => (used.size || bans ? (i: Item) => (used.get(i.id)?.rank ?? used.size + 1) + (bans?.[i.id] ? 10_000 : 0) : undefined),
@@ -302,20 +306,20 @@ export function ItemSelect({
   return (
     <SearchSelect
       label={label ?? t("item")}
-      value={value}
+      value={names.item(value)}
       placeholder={t("noItem")}
       options={items}
       rank={rank}
       rowHeight={40}
       getKey={(i) => i.id}
-      getText={(i) => i.name}
+      getText={(i) => (names.locale === "en" ? i.name : `${names.item(i.name)} ${i.name}`)}
       render={(i) => {
         const share = used.get(i.id)?.share;
         const banned = bans?.[i.id];
         return (
           <span className={cn("flex items-center gap-2", banned && "opacity-60")}>
             <span className="min-w-0 flex-1">
-              <span className="block truncate font-display font-semibold">{i.name}</span>
+              <span className="block truncate font-display font-semibold">{names.item(i.name)}</span>
               <span className="block truncate text-[11px] text-muted-foreground">{i.shortDesc || i.desc}</span>
             </span>
             {banned && <BannedTag reason={banned} />}
@@ -358,6 +362,7 @@ export function MoveSelect({
   types?: readonly string[];
 }) {
   const t = useT(pickersNs);
+  const names = useBattleNames();
   const [type, setType] = useState("");
   const [category, setCategory] = useState("");
   const used = useMemo(() => usageLookup(usage), [usage]);
@@ -373,14 +378,14 @@ export function MoveSelect({
   return (
     <SearchSelect
       label={label}
-      value={value}
+      value={names.move(value)}
       placeholder={loading ? t("loadingMoves") : t("addMove")}
       options={options}
       rank={rank}
       keep={keep}
       rowHeight={32}
       getKey={(m) => m.id}
-      getText={(m) => m.name}
+      getText={(m) => (names.locale === "en" ? m.name : `${names.move(m.name)} ${m.name}`)}
       filters={
         types && (
           <div className="flex flex-wrap items-center gap-1.5" aria-label={t("filters")}>
@@ -426,7 +431,7 @@ export function MoveSelect({
         return (
           <span className={cn(MOVE_GRID, banned && "opacity-60")} title={banned ? t("isBanned", { move: m.name, reason: banned }) : m.shortDesc}>
             <span className="flex min-w-0 items-center gap-1">
-              <span className="truncate font-display font-semibold">{m.name}</span>
+              <span className="truncate font-display font-semibold">{names.move(m.name)}</span>
               {banned && <Ban className="h-3 w-3 shrink-0 text-destructive" aria-label={t("banned")} />}
             </span>
             <BattleType type={m.type} />
@@ -462,12 +467,14 @@ export function NatureSelect({
   label?: string;
 }) {
   const t = useT(pickersNs);
+  const st = useT(battleTerms);
+  const names = useBattleNames();
   return (
     <select aria-label={label ?? t("nature")} value={value} onChange={(e) => onChange(e.target.value)} className={inputClass}>
       {!value && <option value="">Serious (neutral)</option>}
       {natures.map((n) => (
         <option key={n.id} value={n.name}>
-          {natureLabel(n)}
+          {names.locale === "en" ? natureLabel(n) : n.plus && n.minus ? `${names.nature(n.name)} (+${st(`stat.${n.plus}`)}, −${st(`stat.${n.minus}`)})` : names.nature(n.name)}
         </option>
       ))}
     </select>
@@ -487,12 +494,13 @@ export function TypeSelect({
   label: string;
   allowNone?: string;
 }) {
+  const names = useBattleNames();
   return (
     <select aria-label={label} value={value} onChange={(e) => onChange(e.target.value)} className={inputClass}>
       {allowNone !== undefined && <option value="">{allowNone}</option>}
       {types.map((t) => (
         <option key={t} value={t}>
-          {t}
+          {names.type(t)}
         </option>
       ))}
     </select>
