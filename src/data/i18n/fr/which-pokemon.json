@@ -1,253 +1,253 @@
 {
  "bulbasaur": {
-  "title": "The Patient Grower",
-  "blurb": "You grow on your own schedule and you don't apologise for it. People lean on you because you're steady: you'd rather settle an argument between two friends than start one, and you notice when someone is wilting before they say a word. You don't chase glory, but you'll stand your ground for a cause you believe in. Like Bulbasaur, you store up sunshine for the days that need it.",
-  "why": "Pokedex (RSE, FRLG): naps in bright sunlight and grows at its own pace; anime: Ash's Bulbasaur refuses to evolve and keeps the peace at Oak's lab; Mystery Dungeon starter quiz: Calm/Docile."
+  "title": "Celui qui pousse à son rythme",
+  "blurb": "Tu grandis à ton rythme et tu ne t'en excuses pas. Les gens s'appuient sur toi parce que tu es stable : tu préfères régler une dispute entre deux amis plutôt que d'en lancer une, et tu remarques quand quelqu'un se fane avant même qu'il dise un mot. Tu ne cours pas après la gloire, mais tu tiens bon pour une cause en laquelle tu crois. Comme Bulbizarre, tu fais des réserves de soleil pour les jours qui en ont besoin.",
+  "why": "Pokédex (Rubis/Saphir/Émeraude, Rouge Feu/Vert Feuille) : fait la sieste en plein soleil et grandit à son rythme ; anime : le Bulbizarre de Sacha refuse d'évoluer et maintient la paix au labo du Prof. Chen ; questionnaire de départ de Donjon Mystère : Calme/Docile."
  },
  "charmander": {
-  "title": "The Flickering Flame",
-  "blurb": "Your feelings run close to the surface: everyone can tell what kind of day you're having from across the room. You throw yourself at things with real heat, and when you commit to someone you stay long after they've stopped deserving it. A setback can dim you for a while, but it never puts you out. You're Charmander: small flame, enormous potential, impossible to ignore.",
-  "why": "Pokedex (RBY, SV): the tail flame flares with feeling and burns weakly when it is unhappy; anime: waits on a rock in the rain for the trainer who abandoned it; Mystery Dungeon starter quiz: Brave/Timid mix."
+  "title": "La flamme vacillante",
+  "blurb": "Tes émotions sont à fleur de peau : tout le monde voit quel genre de journée tu passes depuis l'autre bout de la pièce. Tu te jettes dans les choses avec une vraie ardeur, et quand tu t'attaches à quelqu'un, tu restes bien après qu'il a cessé de le mériter. Un revers peut t'éteindre un moment, mais jamais complètement. Tu es Salamèche : petite flamme, potentiel immense, impossible à ignorer.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Écarlate/Violet) : la flamme de sa queue s'embrase avec ses émotions et faiblit quand il est malheureux ; anime : attend sur un rocher sous la pluie le Dresseur qui l'a abandonné ; questionnaire de départ de Donjon Mystère : entre Brave et Timide."
  },
  "charizard": {
-  "title": "The Proud Champion",
-  "blurb": "You'd rather lose to someone great than beat someone easy. Respect is your currency: you give it slowly and you expect it back, and when you decide someone has earned yours you become their most loyal weapon. Rules and routines bore you; a worthy opponent wakes you up. You're Charizard, and the people who stuck with you through the difficult phase know exactly what that was worth.",
-  "why": "Pokedex (FRLG, SV): refuses to use its flames on anything weaker than itself and seeks out stronger foes; anime: Ash's Charizard ignores orders until it respects him; Mystery Dungeon: Brave."
+  "title": "Le fier champion",
+  "blurb": "Tu préfères perdre contre quelqu'un de grand que battre quelqu'un de facile. Le respect est ta monnaie : tu l'accordes lentement et tu attends qu'on te le rende, et quand tu décides que quelqu'un a gagné le tien, tu deviens son arme la plus fidèle. Les règles et la routine t'ennuient ; un adversaire digne te réveille. Tu es Dracaufeu, et ceux qui sont restés avec toi pendant la période difficile savent exactement ce que ça valait.",
+  "why": "Pokédex (Rouge Feu/Vert Feuille, Écarlate/Violet) : refuse d'utiliser ses flammes contre plus faible que lui et recherche des adversaires plus forts ; anime : le Dracaufeu de Sacha ignore ses ordres jusqu'à ce qu'il le respecte ; Donjon Mystère : Brave."
  },
  "squirtle": {
-  "title": "The Squad Leader",
-  "blurb": "You've got a crew, and you're the one in the sunglasses at the front of it. You make mischief look like leadership, and your friends follow because being around you is simply more fun. Underneath the swagger is a solid sense of right and wrong: when the joke is over you show up and do the work. You're Squirtle, cool on the outside, dependable all the way down.",
-  "why": "Anime: leader of the Squirtle Squad, sunglasses and all, who still chooses to come back to Ash; Pokedex (RBY): a playful Pokemon that shoots water at any target; Mystery Dungeon: Jolly/Naive."
+  "title": "Le chef de bande",
+  "blurb": "Tu as ta bande, et c'est toi qui es devant avec les lunettes de soleil. Tu fais passer les bêtises pour du leadership, et tes amis te suivent parce qu'avec toi, tout est plus drôle. Sous les airs de frimeur, il y a un vrai sens du bien et du mal : quand la blague est finie, tu es là et tu fais le travail. Tu es Carapuce, cool à l'extérieur, fiable jusqu'au fond.",
+  "why": "Anime : chef de la bande des Carapuce, lunettes de soleil comprises, qui choisit quand même de revenir auprès de Sacha ; Pokédex (Rouge/Bleu/Jaune) : un Pokémon joueur qui projette de l'eau sur n'importe quelle cible ; Donjon Mystère : Jovial/Naïf."
  },
  "butterfree": {
-  "title": "The Gentle Wanderer",
-  "blurb": "You go where the sweetness is. Competition means little to you; connection means everything, and you'd quietly fly off to be with the people you love over any prize. You're easily moved and you don't hide it, which makes you the friend people call when they need to be understood. You're Butterfree: light, loyal, and braver than you look when it counts.",
-  "why": "Pokedex (RBY, SV): searches for the sweetest honey and the flowers that hold it; anime: Ash's first full evolution and the first goodbye, flying off with its mate; nothing combative anywhere on record."
+  "title": "Le doux vagabond",
+  "blurb": "Tu vas là où se trouve la douceur. La compétition compte peu pour toi ; le lien compte plus que tout, et tu t'envolerais discrètement pour rejoindre ceux que tu aimes plutôt que de gagner n'importe quel prix. Tu es facilement ému et tu ne le caches pas, ce qui fait de toi l'ami qu'on appelle quand on a besoin d'être compris. Tu es Papilusion : léger, fidèle et plus courageux qu'il n'y paraît quand ça compte.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Écarlate/Violet) : cherche le miel le plus sucré et les fleurs qui le renferment ; anime : la première évolution complète de Sacha et son premier adieu, quand il s'envole avec sa compagne ; rien de combatif nulle part dans ses archives."
  },
  "pikachu": {
-  "title": "The Loyal Spark",
-  "blurb": "You run on enthusiasm and you share it freely: the room is louder and warmer once you're in it. You pick your people and then you're theirs, through every bad decision and every long road. You like winning, but mostly you like winning next to someone. You're Pikachu: the partner everyone wishes they had, and the one who won't be put in a box.",
-  "why": "Anime: refuses the Poke Ball but never leaves Ash's side across every series; Pokedex (Yellow, Sw): sparks fly from its cheeks when it is excited or angry, and it is curious enough to zap whatever it finds; Mystery Dungeon: Hardy/Jolly."
+  "title": "L'étincelle fidèle",
+  "blurb": "Tu carbures à l'enthousiasme et tu le partages sans compter : la pièce devient plus bruyante et plus chaleureuse dès que tu arrives. Tu choisis tes proches et ensuite tu es à eux, à travers chaque mauvaise décision et chaque longue route. Tu aimes gagner, mais surtout gagner aux côtés de quelqu'un. Tu es Pikachu : le partenaire que tout le monde rêverait d'avoir, et qu'on ne fera jamais rentrer dans une case.",
+  "why": "Anime : refuse la Poké Ball mais ne quitte jamais Sacha, d'une saison à l'autre ; Pokédex (Jaune, Épée) : ses joues crépitent quand il est excité ou en colère, et il est assez curieux pour électrocuter tout ce qu'il trouve ; Donjon Mystère : Hardi/Jovial."
  },
  "clefairy": {
-  "title": "The Moonlight Dancer",
-  "blurb": "You're a little bit from somewhere else and you like it that way. Your imagination runs wild, your heart is soft, and you find rituals and wonder in things other people walk straight past. You'd rather dance in a circle of friends at midnight than fight anyone for anything. You're Clefairy: whimsical, warm, and quietly mysterious.",
-  "why": "Pokedex (GSC, Sw): dances under the full moon and is said to have come from the Moon; shy around people but adorably playful; anime: Clefairy build a rocket ship and hold moonlight rituals."
+  "title": "La danseuse au clair de lune",
+  "blurb": "Tu viens un peu d'ailleurs et ça te va très bien. Ton imagination s'emballe, ton cœur est tendre, et tu trouves des rituels et de l'émerveillement là où les autres passent sans regarder. Tu préfères danser en cercle avec tes amis à minuit plutôt que te battre contre qui que ce soit pour quoi que ce soit. Tu es Mélofée : fantaisiste, chaleureuse et doucement mystérieuse.",
+  "why": "Pokédex (Or/Argent/Cristal, Épée) : danse sous la pleine lune et viendrait de la Lune ; timide avec les humains mais adorablement joueuse ; anime : des Mélofée construisent une fusée et célèbrent des rituels au clair de lune."
  },
  "clefable": {
-  "title": "The Night Fairy",
-  "blurb": "You hear everything and you'd rather not be heard. You're gentle and dreamy, private by instinct, and happiest somewhere quiet with the moon out. You don't compete and you don't crowd. You're Clefable: soft, secretive, and a little bit celestial.",
-  "why": "Pokedex (RBY, Sw): so timid that it flees at the slightest sound, lives on quiet mountains and dances under the moon; said to hear a pin drop a mile away."
+  "title": "La fée de la nuit",
+  "blurb": "Tu entends tout et tu préfères qu'on ne t'entende pas. Tu es doux et rêveur, discret par instinct, et plus heureux dans un endroit calme sous la lune. Tu ne te mets pas en compétition et tu n'envahis personne. Tu es Mélodelfe : tendre, secret et un brin céleste.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : si timide qu'il fuit au moindre bruit, vit dans des montagnes paisibles et danse sous la lune ; il entendrait une épingle tomber à un kilomètre."
  },
  "ninetales": {
-  "title": "The Thousand-Year Grudge",
-  "blurb": "You are patient in a way that unsettles people. You remember everything, forgive little, and never raise your voice, because you don't need to. Your standards are high, your circle is small, and your sense of self is unshakeable. You're Ninetales: elegant, long-memoried, and not to be crossed.",
-  "why": "Pokedex (RBY, Sw): lives a thousand years, understands human speech, and curses anyone who grabs its tails; anime: calm, elegant, and devoted to one master for centuries."
+  "title": "La rancune millénaire",
+  "blurb": "Tu as une patience qui met les gens mal à l'aise. Tu te souviens de tout, tu pardonnes peu et tu n'élèves jamais la voix, parce que tu n'en as pas besoin. Tes exigences sont hautes, ton cercle est restreint et ton assurance est inébranlable. Tu es Feunard : élégant, doté d'une longue mémoire, et qu'il vaut mieux ne pas contrarier.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : vit mille ans, comprend le langage humain et maudit quiconque attrape ses queues ; anime : calme, élégant et dévoué à un seul maître pendant des siècles."
  },
  "jigglypuff": {
-  "title": "The Unstoppable Performer",
-  "blurb": "You need an audience, and you'll make one out of whoever's nearby. You're a performer first and a planner never, and when the room doesn't respond the way it should, you take it very personally. But you bounce back fast and you're already on to the next show. You're Jigglypuff: all heart, all volume, and absolutely unstoppable.",
-  "why": "Anime: sings for any audience, then scribbles on everyone who falls asleep; Pokedex (RBY, Sw): keeps singing until its audience is asleep and is furious when it fails to charm."
+  "title": "L'artiste inarrêtable",
+  "blurb": "Il te faut un public, et tu t'en fais un avec quiconque passe par là. Tu es artiste avant tout et jamais organisateur, et quand la salle ne réagit pas comme elle devrait, tu le prends très personnellement. Mais tu rebondis vite et tu es déjà sur le spectacle suivant. Tu es Rondoudou : tout en cœur, tout en volume, et absolument inarrêtable.",
+  "why": "Anime : chante pour n'importe quel public, puis gribouille sur tous ceux qui s'endorment ; Pokédex (Rouge/Bleu/Jaune, Épée) : chante jusqu'à ce que son public s'endorme et enrage quand il n'arrive pas à charmer."
  },
  "meowth": {
-  "title": "The Scheming Charmer",
-  "blurb": "You've always got a plan, and it's usually a bit of a scheme. You're clever, talkative, and a great deal more sentimental than you let on; most of your schemes are secretly about being seen. You don't do boring work, but you'll work incredibly hard at being charming. You're Meowth: the talker, the dreamer, and the one who learned the hard way and kept going anyway.",
-  "why": "Anime: Team Rocket's Meowth taught itself to talk for love and schemes for status; Pokedex (RBY, LGPE): loves shiny coins, wanders the city at night and collects what catches its eye."
+  "title": "Le charmeur combinard",
+  "blurb": "Tu as toujours un plan, et c'est souvent une petite combine. Tu es malin, bavard et bien plus sentimental que tu ne le montres ; au fond, la plupart de tes combines servent à te faire remarquer. Tu ne fais pas le travail ennuyeux, mais tu te donnes un mal fou pour être charmant. Tu es Miaouss : le bavard, le rêveur, et celui qui a appris à la dure et a continué quand même.",
+  "why": "Anime : le Miaouss de la Team Rocket a appris à parler par amour et manigance pour son statut ; Pokédex (Rouge/Bleu/Jaune, Let's Go, Pikachu/Évoli) : adore les pièces brillantes, rôde en ville la nuit et collectionne tout ce qui attire son regard."
  },
  "persian": {
-  "title": "The Vain Aristocrat",
-  "blurb": "You are nobody's pet. You're elegant, hard to impress, and not interested in pretending otherwise; people have to earn your attention and most won't. You like comfort and you like status, and you'll quietly make sure you get both. You're Persian: sleek, self-possessed, and perfectly happy with a small circle of the right people.",
-  "why": "Pokedex (RBY, Sw): vicious, proud and fickle, it will scratch even its own trainer and is hard to raise; anime: Giovanni's lap cat, favoured and feared."
+  "title": "L'aristocrate vaniteux",
+  "blurb": "Tu n'es l'animal de compagnie de personne. Tu es élégant, difficile à impressionner et pas du tout prêt à faire semblant ; les gens doivent mériter ton attention et la plupart n'y arrivent pas. Tu aimes le confort et le statut, et tu fais discrètement en sorte d'avoir les deux. Tu es Persian : racé, sûr de toi et parfaitement heureux avec un petit cercle des bonnes personnes.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : cruel, fier et capricieux, il griffe même son propre Dresseur et il est difficile à élever ; anime : le chat de Giovanni, choyé et redouté."
  },
  "psyduck": {
-  "title": "The Walking Headache",
-  "blurb": "You carry a lot in your head and most of it is noise. You're confused more often than you'd like, worried more often than you'd admit, and far more capable than anyone (including you) expects. When it all finally comes to a head, you're astonishing. You're Psyduck: anxious, lovable, and secretly the most powerful one in the room.",
-  "why": "Pokedex (RBY, SV): a constant headache leaves it dazed, and only when the pain peaks does its hidden power erupt; anime: Misty's Psyduck, bewildered and accidentally devastating."
+  "title": "La migraine sur pattes",
+  "blurb": "Tu as beaucoup de choses en tête et c'est surtout du bruit. Tu es perdu plus souvent que tu ne le voudrais, inquiet plus souvent que tu ne l'avouerais, et bien plus capable que quiconque (toi compris) ne l'imagine. Quand tout finit par éclater, tu es stupéfiant. Tu es Psykokwak : anxieux, attachant et en secret le plus puissant de la pièce.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Écarlate/Violet) : un mal de tête permanent le laisse hébété, et ce n'est qu'au sommet de la douleur que son pouvoir caché se libère ; anime : le Psykokwak d'Ondine, ahuri et dévastateur sans le faire exprès."
  },
  "primeape": {
-  "title": "The Rage Engine",
-  "blurb": "You have a temper and everyone knows it. You run hot, you hold onto a grievance longer than is healthy, and you'd chase a slight to the ends of the earth. But that same fire makes you a relentless competitor and a loyal friend to anyone who learns not to flinch. You're Primeape: furious, driven, and secretly a champion.",
-  "why": "Pokedex (RBY, Sw): flies into a rage if you so much as look at it and chases you even when you run; its anger only grows; anime: Ash's Primeape becomes a boxing champion."
+  "title": "La machine à colère",
+  "blurb": "Tu as du tempérament et tout le monde le sait. Tu t'emportes vite, tu gardes une rancune plus longtemps que de raison et tu poursuivrais un affront jusqu'au bout du monde. Mais ce même feu fait de toi un compétiteur acharné et un ami fidèle pour quiconque apprend à ne pas reculer. Tu es Colossinge : furieux, déterminé et en secret un champion.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : entre dans une rage folle si on le regarde et vous poursuit même quand on s'enfuit ; sa colère ne fait que grandir ; anime : le Colossinge de Sacha devient champion de boxe."
  },
  "growlithe": {
-  "title": "The Devoted Guard",
-  "blurb": "You've picked your people and you'd do anything for them. You don't need novelty or a big stage, just a job that matters and someone worth doing it for. Strangers get a wary look; friends get your whole heart. You're Growlithe: brave, dependable, and loyal to the bone.",
-  "why": "Pokedex (RBY, Sw): extremely loyal, barks at anything it doesn't know, and never forgets a kind trainer; anime: Officer Jenny's partner on every beat."
+  "title": "Le gardien dévoué",
+  "blurb": "Tu as choisi tes proches et tu ferais n'importe quoi pour eux. Pas besoin de nouveauté ni de grande scène, juste d'une mission qui compte et de quelqu'un pour qui ça vaut la peine. Les inconnus ont droit à un regard méfiant ; les amis, à tout ton cœur. Tu es Caninos : courageux, fiable et fidèle jusqu'à l'os.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : extrêmement fidèle, aboie après tout ce qu'il ne connaît pas et n'oublie jamais un Dresseur gentil ; anime : le partenaire de l'Agent Jenny à chaque patrouille."
  },
  "arcanine": {
-  "title": "The Legendary Protector",
-  "blurb": "You carry yourself like someone who has already proven it. You're capable and composed, you move fast when it matters, and people feel safer with you around. You don't go looking for fights, but you'll finish one for someone you love. You're Arcanine: majestic, loyal, and quietly legendary.",
-  "why": "Pokedex (RBY, Sw): a legendary beast admired for its majesty, loyal and fast enough to cover 6,200 miles in a day; anime: Arcanine often appears as a noble steed or guardian."
+  "title": "Le protecteur légendaire",
+  "blurb": "Tu te tiens comme quelqu'un qui a déjà fait ses preuves. Tu es compétent et posé, tu es rapide quand il le faut, et les gens se sentent plus en sécurité avec toi. Tu ne cherches pas la bagarre, mais tu en finiras une pour quelqu'un que tu aimes. Tu es Arcanin : majestueux, fidèle et discrètement légendaire.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : une bête légendaire admirée pour sa majesté, fidèle et assez rapide pour parcourir 10 000 km en une journée ; anime : Arcanin apparaît souvent en noble monture ou en gardien."
  },
  "alakazam": {
-  "title": "The Grandmaster",
-  "blurb": "You've already thought three moves ahead and you're mildly annoyed everyone else hasn't. You love ideas for their own sake and you work on them with a discipline most people reserve for emergencies. You're not cold, just efficient, and your loyalty goes to the few who can keep up. You're Alakazam: brilliant, composed, and never caught off guard.",
-  "why": "Pokedex (RBY, Sw): an IQ of 5,000 and total recall of everything it has ever experienced; it prefers to win with its mind rather than its body."
+  "title": "Le grand maître",
+  "blurb": "Tu as déjà trois coups d'avance et ça t'agace un peu que les autres non. Tu aimes les idées pour elles-mêmes et tu y travailles avec une discipline que la plupart des gens réservent aux urgences. Tu n'es pas froid, juste efficace, et ta loyauté va aux rares qui arrivent à suivre. Tu es Alakazam : brillant, posé et jamais pris au dépourvu.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : un QI de 5 000 et une mémoire totale de tout ce qu'il a vécu ; il préfère gagner par l'esprit plutôt que par la force."
  },
  "machamp": {
-  "title": "The Honest Powerhouse",
-  "blurb": "You do the work, and then you do more of it. You believe in showing up, lifting the heavy thing, and earning your wins honestly, and you have little patience for anyone who takes shortcuts. Delicate tasks and vague ideas frustrate you; a clear goal and a worthy rival light you up. You're Machamp: strong, straightforward, and all muscle, including the heart.",
-  "why": "Pokedex (RBY, Sw): four arms that can throw 1,000 punches in two seconds, yet it fumbles delicate work; anime: a wrestler through and through."
+  "title": "La force honnête",
+  "blurb": "Tu fais le travail, puis tu en fais encore. Tu crois au fait d'être présent, de soulever le plus lourd et de gagner honnêtement, et tu as peu de patience pour ceux qui prennent des raccourcis. Les tâches délicates et les idées floues te frustrent ; un objectif clair et un rival digne t'enflamment. Tu es Mackogneur : fort, direct et tout en muscles, cœur compris.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : quatre bras capables de donner 1 000 coups de poing en deux secondes, mais maladroit pour les tâches délicates ; anime : un lutteur jusqu'au bout des poings."
  },
  "slowpoke": {
-  "title": "The Unbothered",
-  "blurb": "Nothing gets to you. Deadlines, drama, a Shellder clamped to your tail: you'll get round to it, or you won't, and either way you'll be fine. People find your calm contagious, and you'd never dream of competing with anyone for anything. You're Slowpoke: serene, kind, and living proof that most problems solve themselves if you wait long enough.",
-  "why": "Pokedex (RBY, SV): takes five seconds to feel pain and forgets what it was doing mid-yawn; anime: every Slowpoke appears unbothered by anything happening to it."
+  "title": "L'imperturbable",
+  "blurb": "Rien ne t'atteint. Les échéances, les drames, un Kokiyas accroché à ta queue : tu t'en occuperas, ou pas, et dans tous les cas ça ira. Les gens trouvent ton calme contagieux, et tu n'imaginerais jamais te mesurer à qui que ce soit pour quoi que ce soit. Tu es Ramoloss : serein, gentil et la preuve vivante que la plupart des problèmes se règlent tout seuls si on attend assez longtemps.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Écarlate/Violet) : met cinq secondes à ressentir la douleur et oublie ce qu'il faisait au milieu d'un bâillement ; anime : tous les Ramoloss semblent indifférents à ce qui leur arrive."
  },
  "gengar": {
-  "title": "The Grinning Prankster",
-  "blurb": "You're the funniest person in the room and the most dangerous one to turn your back on. You love a prank, you love a reaction, and you find rules mostly decorative. Underneath the grin is someone who wants to be let in and would rather joke than ask. You're Gengar: mischievous, magnetic, and never, ever boring.",
-  "why": "Pokedex (RBY, Sw): hides in your shadow, steals your warmth, and laughs at the fright it causes; anime: grins at its own pranks; Mystery Dungeon: the cheerful villain who turns out to be lonely."
+  "title": "Le farceur au grand sourire",
+  "blurb": "Tu es la personne la plus drôle de la pièce et celle à qui il est le plus dangereux de tourner le dos. Tu adores les farces, tu adores les réactions, et les règles te semblent surtout décoratives. Sous ce sourire se cache quelqu'un qui veut qu'on le laisse entrer et qui préfère plaisanter que demander. Tu es Ectoplasma : espiègle, magnétique et jamais, au grand jamais, ennuyeux.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : se cache dans ton ombre, te vole ta chaleur et rit de la peur qu'il provoque ; anime : sourit de ses propres farces ; Donjon Mystère : le méchant jovial qui se révèle solitaire."
  },
  "cubone": {
-  "title": "The Grieving Loner",
-  "blurb": "You carry something heavy, and you carry it alone. You're quieter than people expect and more sensitive than you show, and you've built a hard shell around a very soft centre. You keep going because that's what you were taught, and you fight harder than anyone for what little you have. You're Cubone: grieving, brave, and more than your loss.",
-  "why": "Pokedex (RBY, Sw): wears the skull of its dead mother and cries mournfully on the night of the full moon; it has never shown its face to anyone."
+  "title": "Le solitaire en deuil",
+  "blurb": "Tu portes quelque chose de lourd, et tu le portes seul. Tu es plus silencieux qu'on ne le pense et plus sensible que tu ne le montres, et tu as bâti une carapace dure autour d'un cœur très tendre. Tu continues parce que c'est ce qu'on t'a appris, et tu te bats plus fort que quiconque pour le peu que tu as. Tu es Osselait : en deuil, courageux, et bien plus que ta perte.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : porte le crâne de sa mère disparue et pleure tristement les nuits de pleine lune ; il n'a jamais montré son visage à personne."
  },
  "chansey": {
-  "title": "The Caregiver",
-  "blurb": "You're the one with the bandages, the snacks, and the time. Caring for people isn't a role you play, it's just how you move through the world, and you'd give away your last egg without thinking about it. You don't care about winning; you care about everyone making it home. You're Chansey: generous, steady, and the reason other people get to be brave.",
-  "why": "Pokedex (RBY, Sw): shares its nutritious eggs with the injured and is the Pokemon Center nurse's partner everywhere; a kind-hearted species that brings happiness to anyone who catches it."
+  "title": "La soignante",
+  "blurb": "C'est toi qui as les pansements, le goûter et du temps pour les autres. Prendre soin des gens n'est pas un rôle, c'est ta façon d'être au monde, et tu donnerais ton dernier œuf sans y penser. Gagner ne t'intéresse pas ; ce qui compte, c'est que tout le monde rentre à la maison. Tu es Leveinard : généreuse, solide, et la raison pour laquelle les autres peuvent être courageux.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : partage ses œufs nourrissants avec les blessés et accompagne l'Infirmière Joëlle dans tous les Centres Pokémon ; une espèce au grand cœur qui porte bonheur à qui l'attrape."
  },
  "kangaskhan": {
-  "title": "The Fierce Parent",
-  "blurb": "You're gentle with your own and terrifying to anyone who threatens them. You're responsible, grounded, and not much interested in novelty; you've got people to look after. You don't go looking for a fight, but you'll end one in seconds if it comes near your family. You're Kangaskhan: protective, practical, and fierce in all the right ways.",
-  "why": "Pokedex (RBY, Sw): raises its young in its pouch and attacks anyone who comes near, no matter the cost; anime: Kangaskhan herds in the Safari Zone defend their calves to the last."
+  "title": "Le parent féroce",
+  "blurb": "Tu es doux avec les tiens et terrifiant pour qui les menace. Tu es responsable, ancré et peu intéressé par la nouveauté ; tu as des gens à protéger. Tu ne cherches pas la bagarre, mais tu y mets fin en quelques secondes si elle s'approche de ta famille. Tu es Kangourex : protecteur, pragmatique et féroce pour les bonnes raisons.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : élève son petit dans sa poche et attaque quiconque s'approche, quel qu'en soit le prix ; anime : les troupeaux de Kangourex du Parc Safari défendent leurs petits jusqu'au bout."
  },
  "mr-mime": {
-  "title": "The Showman",
-  "blurb": "You're a performer with a work ethic. You love to make people laugh and you take the craft of it surprisingly seriously, rehearsing the bit until the walls you build feel real. You can be a little particular about how things are done, but it's because you care. You're Mr. Mime: expressive, disciplined, and impossible to ignore.",
-  "why": "Pokedex (RBY, Sw): a pantomime master whose invisible walls become real if you don't laugh; anime: Delia's Mimey keeps house with impeccable discipline."
+  "title": "Le showman",
+  "blurb": "Tu es un artiste qui a le sens du travail. Tu adores faire rire et tu prends le métier étonnamment au sérieux, répétant ton numéro jusqu'à ce que les murs que tu dresses paraissent réels. Tu peux être un peu pointilleux sur la façon de faire les choses, mais c'est parce que tu tiens à elles. Tu es M. Mime : expressif, discipliné et impossible à ignorer.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : un maître de la pantomime dont les murs invisibles deviennent réels si on ne rit pas ; anime : le M. Mime de Délia tient la maison avec une discipline impeccable."
  },
  "scyther": {
-  "title": "The Honour-Bound Blade",
-  "blurb": "You hold yourself to a code and you keep your edge sharp. You'd rather earn something the hard way than be handed it, and you have no patience for people who cheat or coast. You're not unfriendly, but you keep your circle small and your standards high. You're Scyther: precise, proud, and always ready.",
-  "why": "Pokedex (RBY, SV): slices with ninja speed and never lets its blades dull; anime: Tracey's Scyther was a proud former swarm leader who fought for its honour."
+  "title": "La lame d'honneur",
+  "blurb": "Tu suis un code et tu gardes ta lame affûtée. Tu préfères mériter les choses à la dure plutôt qu'on te les offre, et tu n'as aucune patience pour les tricheurs et les tire-au-flanc. Tu n'es pas froid, mais ton cercle est restreint et tes exigences élevées. Tu es Insécateur : précis, fier et toujours prêt.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Écarlate/Violet) : tranche avec une vitesse de ninja et ne laisse jamais ses lames s'émousser ; anime : l'Insécateur de Jacky était un ancien chef d'essaim fier qui s'est battu pour son honneur."
  },
  "tauros": {
-  "title": "The Rampant Bull",
-  "blurb": "You charge first and ask later. You're competitive to the core, quick to anger, and quick to forget why you were angry; you just want to be moving. Subtlety isn't your thing and you're fine with that. You're Tauros: all momentum, and a surprisingly good friend once you've stopped running.",
-  "why": "Pokedex (RBY, Sw): whips itself with its three tails to work into a charge and smashes whatever is in front of it; anime: Ash catches an entire herd of them in the Safari Zone."
+  "title": "Le taureau déchaîné",
+  "blurb": "Tu charges d'abord et tu poses les questions ensuite. Tu as l'esprit de compétition chevillé au corps, tu t'emportes vite et tu oublies tout aussi vite pourquoi ; tu veux juste être en mouvement. La subtilité, ce n'est pas ton truc, et ça te va très bien. Tu es Tauros : tout en élan, et un ami étonnamment bon une fois que tu as arrêté de courir.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : se fouette avec ses trois queues pour se lancer à la charge et écrase tout ce qui se trouve devant lui ; anime : Sacha en capture tout un troupeau au Parc Safari."
  },
  "magikarp": {
-  "title": "The Underdog",
-  "blurb": "People have underestimated you your whole life, and you've kept going anyway. You're not flashy and you're not fast, but you're almost impossible to discourage, and you turn up again the next day without fail. The ones who laughed will be very quiet later. You're Magikarp, and anyone who knows the story knows what comes next.",
-  "why": "Pokedex (RBY, Sw): pathetically weak but able to survive in any water, splashing on no matter how many times it is mocked; the single most famous late bloomer in the series."
+  "title": "L'outsider",
+  "blurb": "On t'a sous-estimé toute ta vie, et tu as continué quand même. Tu n'es ni tape-à-l'œil ni rapide, mais il est presque impossible de te décourager, et tu reviens le lendemain sans faute. Ceux qui riaient se feront tout petits plus tard. Tu es Magicarpe, et ceux qui connaissent l'histoire savent ce qui vient ensuite.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : pitoyablement faible, mais capable de survivre dans n'importe quelle eau, il continue de barboter malgré toutes les moqueries ; le plus célèbre exemple de réussite tardive de la série."
  },
  "gyarados": {
-  "title": "The Rampage",
-  "blurb": "You went through something that changed you, and you came out the other side with teeth. Your temper is legendary, your drive is enormous, and when you decide to win there is very little anyone can do about it. Calm doesn't come naturally, but the people who've seen you protect someone know the fury isn't the whole story. You're Gyarados: ferocious, formidable, and forged by what you survived.",
-  "why": "Pokedex (RBY, Sw): the brutal transformation leaves it in a violent rage that can level a city; it is famed for flying into a frenzy at the smallest thing."
+  "title": "Le déchaînement",
+  "blurb": "Tu as traversé quelque chose qui t'a changé, et tu en es ressorti avec des crocs. Ton tempérament est légendaire, ta volonté immense, et quand tu décides de gagner, personne n'y peut grand-chose. Le calme ne te vient pas naturellement, mais ceux qui t'ont vu protéger quelqu'un savent que la fureur n'est pas toute l'histoire. Tu es Léviator : féroce, redoutable et forgé par ce que tu as surmonté.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : sa brutale transformation le plonge dans une rage violente capable de raser une ville ; il est réputé pour s'emporter pour un rien."
  },
  "lapras": {
-  "title": "The Gentle Ferry",
-  "blurb": "You carry people. Sometimes literally, mostly emotionally: you're the calm voice on the long crossing and you'd never leave anyone behind. You're thoughtful and a little melancholy, with a deep memory and a deeper patience. Competition baffles you; kindness is simply the obvious choice. You're Lapras: gentle, wise, and the safest harbour your friends have.",
-  "why": "Pokedex (RBY, Sw): understands human speech, ferries people across the sea, and sings mournfully for its hunted kind; anime: carries Ash across the Orange Islands."
+  "title": "Le doux passeur",
+  "blurb": "Tu portes les autres. Parfois littéralement, surtout émotionnellement : tu es la voix calme pendant la longue traversée et tu ne laisserais jamais personne derrière. Tu es réfléchi et un peu mélancolique, avec une mémoire profonde et une patience plus profonde encore. La compétition te laisse perplexe ; la gentillesse est tout simplement l'évidence. Tu es Lokhlass : doux, sage et le port le plus sûr de tes amis.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : comprend le langage humain, transporte les gens par-delà les mers et chante tristement pour ses semblables chassés ; anime : fait traverser les Îles Orange à Sacha."
  },
  "ditto": {
-  "title": "The Shapeshifter",
-  "blurb": "You can be whoever the moment needs, and you enjoy the trick of it. New people, new places, new ideas: you absorb them all without losing the real you underneath. Routine and rigid plans don't suit you, and you'd rather blend in and watch than compete for the spotlight. You're Ditto: adaptable, curious, and secretly the most original one here.",
-  "why": "Pokedex (RBY, Sw): rearranges its cells to become anything it sees, though it slips up when it laughs; a creature of pure adaptability with no fixed form."
+  "title": "Le métamorphe",
+  "blurb": "Tu peux être qui le moment exige, et tu adores le tour de passe-passe. Nouvelles personnes, nouveaux lieux, nouvelles idées : tu absorbes tout sans perdre le vrai toi en dessous. La routine et les plans rigides ne te vont pas, et tu préfères te fondre dans le décor et observer plutôt que de te disputer la vedette. Tu es Métamorph : adaptable, curieux et en secret le plus original de tous.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : réorganise ses cellules pour devenir tout ce qu'il voit, mais se trahit quand il rit ; une créature de pure adaptabilité sans forme fixe."
  },
  "eevee": {
-  "title": "The Open Door",
-  "blurb": "You haven't decided what you're going to be yet, and that's your superpower. You're curious about everything, easy to love, and you light up around new possibilities more than fixed plans. Some people call that indecisive; you call it keeping the door open. You're Eevee: all potential, and every path is still yours.",
-  "why": "Pokedex (RBY, Sw): unstable genetics let it evolve to suit its environment, so it may be the Pokemon of possibility itself; anime: Chloe's Eevee that just can't decide."
+  "title": "La porte ouverte",
+  "blurb": "Tu n'as pas encore décidé ce que tu vas devenir, et c'est ton superpouvoir. Tout t'intrigue, on t'aime facilement, et les nouvelles possibilités t'allument davantage que les plans tout tracés. Certains appellent ça de l'indécision ; toi, tu appelles ça laisser la porte ouverte. Tu es Évoli : tout en potentiel, et tous les chemins sont encore à toi.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : sa génétique instable lui permet d'évoluer selon son environnement, ce qui en ferait le Pokémon du possible ; anime : l'Évoli de Chloé, qui n'arrive pas à se décider."
  },
  "vaporeon": {
-  "title": "The Calm Current",
-  "blurb": "You go with the flow because you are the flow. People find you soothing to be around: you don't push, you don't panic, and you're perfectly content on your own by the water. You're quietly adaptable and you let most drama wash straight past you. You're Vaporeon: calm, graceful, and deeper than you first appear.",
-  "why": "Pokedex (RBY, Sw): melts into water and lives quietly by clear lakes, its cells so like water that it can vanish into it; the serene eeveelution."
+  "title": "Le courant paisible",
+  "blurb": "Tu suis le courant parce que tu es le courant. Ta compagnie apaise : tu ne forces rien, tu ne paniques pas, et tu es parfaitement bien tout seul au bord de l'eau. Tu t'adaptes sans bruit et tu laisses glisser la plupart des drames. Tu es Aquali : calme, gracieux et plus profond qu'il n'y paraît.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : se fond dans l'eau et vit paisiblement au bord des lacs limpides, ses cellules ressemblant tant à l'eau qu'il peut y disparaître ; l'évolution d'Évoli la plus sereine."
  },
  "jolteon": {
-  "title": "The Live Wire",
-  "blurb": "You feel everything at full voltage. You're quick, funny, and a little prickly, and anyone who startles you will know about it immediately. You're loyal in your own electric way, but you need room to run and you don't love being told what to do. You're Jolteon: fast, intense, and never on standby.",
-  "why": "Pokedex (RBY, Sw): sensitive and quick to change mood, its fur stands on end and fires needles when it is startled or upset; the eeveelution with a short fuse and a big heart."
+  "title": "Le fil à haute tension",
+  "blurb": "Tu ressens tout à pleine tension. Tu es vif, drôle et un peu piquant, et quiconque te fait sursauter le saura immédiatement. Tu es fidèle à ta façon électrique, mais il te faut de l'espace pour courir et tu n'aimes pas trop qu'on te dise quoi faire. Tu es Voltali : rapide, intense et jamais en veille.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : sensible et lunatique, son pelage se hérisse et projette des aiguilles quand il est surpris ou contrarié ; l'évolution d'Évoli au tempérament explosif et au grand cœur."
  },
  "flareon": {
-  "title": "The Warm Hearth",
-  "blurb": "You run warm. You're affectionate and a bit fiery, quick to get excited and quick to get your feelings hurt, and you'd always rather be near your people than off on your own. You don't overthink: you act, then you feel it. You're Flareon: cosy, loyal, and a comfort to be around.",
-  "why": "Pokedex (RBY, Sw): stores fire in its body and fluffs its fur to release heat, running hot when excited; a loyal, cosy eeveelution that loves to be close to its trainer."
+  "title": "Le foyer chaleureux",
+  "blurb": "Tu dégages de la chaleur. Tu es affectueux et un peu fougueux, prompt à t'enthousiasmer comme à te sentir blessé, et tu préfères toujours être près des tiens plutôt que tout seul dans ton coin. Tu ne réfléchis pas trop : tu agis, puis tu ressens. Tu es Pyroli : douillet, fidèle et réconfortant à côtoyer.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : emmagasine du feu dans son corps et gonfle son pelage pour évacuer la chaleur, chauffant quand il est excité ; une évolution d'Évoli fidèle et douillette qui adore rester près de son Dresseur."
  },
  "aerodactyl": {
-  "title": "The Ancient Tyrant",
-  "blurb": "You're from another era and you've never quite fit this one. You're fierce, independent, and a little impatient with modern niceties; you'd rather take what's yours than wait to be offered it. People find you intimidating and you don't mind. You're Aerodactyl: untamed, ambitious, and ruler of your own sky.",
-  "why": "Pokedex (RBY, Sw): a ferocious ancient predator with saw-like fangs that ruled the skies and shrieks as it dives; revived from amber and still wild."
+  "title": "Le tyran ancestral",
+  "blurb": "Tu viens d'une autre époque et tu ne t'es jamais vraiment fait à celle-ci. Tu es féroce, indépendant et un peu impatient face aux politesses modernes ; tu préfères prendre ce qui est à toi plutôt qu'attendre qu'on te l'offre. Les gens te trouvent intimidant et ça ne te dérange pas. Tu es Ptéra : indompté, ambitieux et maître de ton propre ciel.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : un féroce prédateur ancestral aux crocs en dents de scie qui régnait sur les cieux et pousse des cris perçants en piqué ; ressuscité à partir d'ambre et toujours sauvage."
  },
  "snorlax": {
-  "title": "The Great Napper",
-  "blurb": "You've figured out what matters: food, rest, and not being bothered. Nothing rattles you, nobody can rush you, and you're kinder than people expect once they stop trying to wake you up. When something truly matters you can move mountains, briefly, before going back to sleep. You're Snorlax: peaceful, immovable, and beloved.",
-  "why": "Pokedex (RBY, Sw): eats 900 pounds a day and sleeps the rest, so gentle that children bounce on its belly; anime: Ash's Snorlax wakes only for food and the occasional heroic moment."
+  "title": "Le grand dormeur",
+  "blurb": "Tu as compris ce qui compte : manger, te reposer et qu'on te laisse tranquille. Rien ne te perturbe, personne ne peut te presser, et tu es plus gentil qu'on ne le croit une fois qu'on arrête d'essayer de te réveiller. Quand quelque chose compte vraiment, tu peux déplacer des montagnes, un instant, avant de te rendormir. Tu es Ronflex : paisible, inébranlable et adoré.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : mange 400 kg par jour et dort le reste du temps, si doux que les enfants sautent sur son ventre ; anime : le Ronflex de Sacha ne se réveille que pour manger et pour un moment héroïque de temps en temps."
  },
  "dragonite": {
-  "title": "The Kind Giant",
-  "blurb": "You're big-hearted in the most literal way: people instinctively know you'd carry them to shore. You're strong and capable, and you'd rather use that to help than to win. You take your responsibilities seriously but you're never heavy about it; you lead with warmth. You're Dragonite: gentle, mighty, and everybody's safe place.",
-  "why": "Pokedex (RBY, Sw): a kind-hearted Pokemon that rescues shipwrecked sailors and guides ships to shore; anime: Ash's Dragonite hugs first and asks questions later."
+  "title": "Le gentil géant",
+  "blurb": "Tu as un grand cœur au sens le plus littéral : les gens savent instinctivement que tu les porterais jusqu'au rivage. Tu es fort et capable, et tu préfères t'en servir pour aider plutôt que pour gagner. Tu prends tes responsabilités au sérieux sans jamais être pesant ; tu avances avec chaleur. Tu es Dracolosse : doux, puissant et le refuge de tout le monde.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : un Pokémon au grand cœur qui secourt les naufragés et guide les navires jusqu'à la côte ; anime : le Dracolosse de Sacha fait un câlin d'abord et pose les questions ensuite."
  },
  "mewtwo": {
-  "title": "The Lone Experiment",
-  "blurb": "You weren't made for this world and you've stopped apologising for it. You're intensely driven, intensely private, and you'd rather answer to no one than be anyone's project. Trust comes very slowly, and when you finally let someone in it changes everything. You're Mewtwo: powerful, solitary, and still deciding what your strength is for.",
-  "why": "Pokedex (RBY, Sw): created by gene splicing to be the strongest, with a savage heart and no interest in anything but defeating its foes; the first movie: a being asking what it is for."
+  "title": "L'expérience solitaire",
+  "blurb": "Tu n'as pas été fait pour ce monde et tu as arrêté de t'en excuser. Tu es intensément déterminé, intensément secret, et tu préfères n'avoir de comptes à rendre à personne plutôt que d'être le projet de quelqu'un. La confiance vient très lentement, et quand tu laisses enfin quelqu'un entrer, ça change tout. Tu es Mewtwo : puissant, solitaire et encore en train de décider à quoi sert ta force.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : créé par manipulation génétique pour être le plus fort, avec un cœur sauvage et aucun intérêt à part vaincre ses ennemis ; le premier film : un être qui se demande pourquoi il existe."
  },
  "mew": {
-  "title": "The Playful Origin",
-  "blurb": "You find everything fascinating and you refuse to be pinned down. You're playful, warm, and endlessly curious, drifting between interests and people with a lightness that some mistake for not caring. You care enormously; you just don't do it on anyone's schedule. You're Mew: joyful, elusive, and a bit of everything.",
-  "why": "Pokedex (RBY, Sw): said to contain the genetic code of every Pokemon, it turns invisible and only appears to the pure of heart; Mystery Dungeon and the movies: playful, curious, mischievous."
+  "title": "L'origine espiègle",
+  "blurb": "Tout te fascine et tu refuses qu'on te mette dans une case. Tu es joueur, chaleureux et curieux à l'infini, tu passes d'un intérêt à l'autre et d'une personne à l'autre avec une légèreté que certains prennent pour de l'indifférence. Tu tiens énormément aux choses ; tu ne le fais simplement selon l'horaire de personne. Tu es Mew : joyeux, insaisissable et un peu de tout.",
+  "why": "Pokédex (Rouge/Bleu/Jaune, Épée) : il contiendrait le code génétique de tous les Pokémon, devient invisible et n'apparaît qu'aux cœurs purs ; Donjon Mystère et les films : joueur, curieux et espiègle."
  },
  "chikorita": {
-  "title": "The Sunlit Sweetheart",
-  "blurb": "You lead with affection. You want to be close to the people you love and you'll quietly compete for their attention, but you'd never hurt anyone to get it. You're brighter and braver than your size suggests, and you make the room smell like springtime. You're Chikorita: sweet, loyal, and a little possessive in the most endearing way.",
-  "why": "Pokedex (GSC, HGSS): the leaf gives off a soothing aroma and it loves to sunbathe; anime: Ash's Chikorita is affectionate, jealous of Pikachu, and brave for its size."
+  "title": "Le petit cœur ensoleillé",
+  "blurb": "Tu avances avec affection. Tu veux être près de ceux que tu aimes et tu te battras discrètement pour leur attention, mais tu ne ferais jamais de mal à personne pour l'obtenir. Tu es plus brillant et plus courageux que ta taille ne le laisse penser, et tu fais sentir la pièce le printemps. Tu es Germignon : tendre, fidèle et un brin possessif, de la façon la plus attachante.",
+  "why": "Pokédex (Or/Argent/Cristal, Or HeartGold/Argent SoulSilver) : sa feuille dégage un parfum apaisant et il adore prendre le soleil ; anime : le Germignon de Sacha est affectueux, jaloux de Pikachu et courageux pour sa taille."
  },
  "cyndaquil": {
-  "title": "The Shy Blaze",
-  "blurb": "You keep your fire banked. Most of the time you're gentle, a bit nervous, and happier curled up than in the spotlight, and people sometimes mistake that for weakness. Then something matters and you blaze. You're Cyndaquil: quiet, kind, and far hotter than anyone expects.",
-  "why": "Pokedex (GSC, HGSS): timid, it curls into a ball when startled, but the flames on its back flare fiercely when it's angry; anime: Ash's Cyndaquil struggles to light its flame until it matters."
+  "title": "Le feu timide",
+  "blurb": "Tu gardes ton feu sous la cendre. La plupart du temps, tu es doux, un peu nerveux, et plus heureux roulé en boule que sous les projecteurs, et les gens prennent parfois ça pour de la faiblesse. Puis quelque chose compte et tu t'embrases. Tu es Héricendre : discret, gentil et bien plus brûlant que quiconque ne l'imagine.",
+  "why": "Pokédex (Or/Argent/Cristal, Or HeartGold/Argent SoulSilver) : timide, il se roule en boule quand il a peur, mais les flammes de son dos jaillissent avec force quand il est en colère ; anime : l'Héricendre de Sacha a du mal à allumer sa flamme jusqu'à ce que ça compte vraiment."
  },
  "totodile": {
-  "title": "The Playful Chomper",
-  "blurb": "You bite first and dance second. You're loud, fun, and impossible to keep still, and you love the world so much you want to put the whole thing in your mouth. You don't plan; you leap. You're Totodile: playful, fearless, and the life of every party you wander into.",
-  "why": "Pokedex (GSC, HGSS): playful but with a bite that can crush anything, it chomps whatever moves; anime: Ash's Totodile dances its way into every situation."
+  "title": "Le croqueur joueur",
+  "blurb": "Tu mords d'abord et tu danses ensuite. Tu es bruyant, drôle et impossible à faire tenir en place, et tu aimes tant le monde que tu voudrais le mettre tout entier dans ta bouche. Tu ne planifies pas : tu sautes. Tu es Kaiminus : joueur, intrépide et l'âme de toutes les fêtes où tu t'invites.",
+  "why": "Pokédex (Or/Argent/Cristal, Or HeartGold/Argent SoulSilver) : joueur, mais avec des mâchoires capables de tout broyer, il mordille tout ce qui bouge ; anime : le Kaiminus de Sacha entre dans chaque situation en dansant."
  },
  "togepi": {
-  "title": "The Lucky Charm",
-  "blurb": "Good things happen around you, and people notice. You're warm, trusting, and generous with your joy, and you'd rather be carried along by friends than compete with them. You're more capable than anyone realises, including you. You're Togepi: a walking good omen, and the one everyone wants on their team.",
-  "why": "Pokedex (GSC, Sw): its shell is filled with happiness it shares with kind people, and it is said to bring good luck; anime: Misty's Togepi, loved by everyone and secretly powerful."
+  "title": "Le porte-bonheur",
+  "blurb": "Il arrive de bonnes choses autour de toi, et les gens le remarquent. Tu es chaleureux, confiant et généreux de ta joie, et tu préfères te laisser porter par tes amis plutôt que de rivaliser avec eux. Tu es plus capable que quiconque ne le pense, toi compris. Tu es Togepi : un bon présage sur pattes, et celui que tout le monde veut dans son équipe.",
+  "why": "Pokédex (Or/Argent/Cristal, Épée) : sa coquille est remplie de bonheur qu'il partage avec les gens gentils, et il porterait chance ; anime : le Togepi d'Ondine, aimé de tous et puissant en secret."
  },
  "xatu": {
-  "title": "The Silent Oracle",
-  "blurb": "You see further than most and you say less. You're deeply thoughtful, oddly still, and content to watch while everyone else rushes around. People find you mysterious and you find them loud. You're Xatu: wise, patient, and keeping some of what you know to yourself.",
-  "why": "Pokedex (GSC, Sw): stands motionless all day staring at the sun, seeing the past and the future, too fearful of what it sees to move; the stoic mystic."
+  "title": "L'oracle silencieux",
+  "blurb": "Tu vois plus loin que la plupart des gens et tu parles moins. Tu es profondément réfléchi, étrangement immobile, et tu te contentes d'observer pendant que les autres s'agitent. Les gens te trouvent mystérieux et toi, tu les trouves bruyants. Tu es Xatu : sage, patient et gardant pour toi une partie de ce que tu sais.",
+  "why": "Pokédex (Or/Argent/Cristal, Épée) : reste immobile toute la journée à fixer le soleil, voyant le passé et l'avenir, trop effrayé par ce qu'il voit pour bouger ; le mystique stoïque."
  },
  "ampharos": {
-  "title": "The Lighthouse",
-  "blurb": "You're the light people steer by. You're warm, dependable, and a bit of a beacon in a crisis: you don't shout, you just shine where you're needed. You don't need to win anything; you need everyone to get home. You're Ampharos: bright, steady, and quietly essential.",
-  "why": "Pokedex (GSC, Sw): its tail light is bright enough to be seen from space and has been used as a lighthouse to guide ships; anime: the Olivine lighthouse Ampharos."
+  "title": "Le phare",
+  "blurb": "Tu es la lumière sur laquelle les gens se guident. Tu es chaleureux, fiable et un vrai phare en pleine crise : tu ne cries pas, tu brilles simplement là où l'on a besoin de toi. Tu n'as rien besoin de gagner ; tu as besoin que tout le monde rentre à bon port. Tu es Pharamp : lumineux, stable et discrètement indispensable.",
+  "why": "Pokédex (Or/Argent/Cristal, Épée) : la lumière de sa queue est si vive qu'on la voit depuis l'espace et a servi de phare pour guider les navires ; anime : le Pharamp du phare d'Oliville."
  },
  "sudowoodo": {
-  "title": "The Imposter Tree",
-  "blurb": "You'd rather blend in than be noticed, and you'll commit to the bit for years. You're stubborn, a little anxious, and perfectly happy standing in one spot while the world walks past. Water, change, and surprises are not your friends. You're Sudowoodo: steadfast, oddly charming, and not fooling anyone, which is fine.",
-  "why": "Pokedex (GSC, Sw): disguises itself as a tree to avoid attention and panics at water, with the stubborn roadblock role in every Johto journey."
+  "title": "L'arbre imposteur",
+  "blurb": "Tu préfères te fondre dans le paysage qu'être remarqué, et tu tiens le rôle pendant des années. Tu es têtu, un peu anxieux et parfaitement heureux planté au même endroit pendant que le monde passe. L'eau, le changement et les surprises ne sont pas tes amis. Tu es Simularbre : inébranlable, étrangement charmant et ne trompant personne, ce qui n'est pas grave.",
+  "why": "Pokédex (Or/Argent/Cristal, Épée) : se déguise en arbre pour passer inaperçu et panique au contact de l'eau ; l'obstacle têtu de chaque voyage à Johto."
  },
  "quagsire": {
-  "title": "The Easygoing One",
-  "blurb": "You are the most relaxed person anyone has ever met. Things bump into you and you keep swimming, and you've never once worried about a plan because you've never once had one. You're kind without effort and calm without trying. You're Quagsire: unhurried, unbothered, and wonderful to be around.",
-  "why": "Pokedex (GSC, Sw): so easygoing that it bumps its head on boats and rocks while swimming and doesn't seem to mind; the carefree species."
+  "title": "Le pépère",
+  "blurb": "Tu es la personne la plus détendue qu'on ait jamais rencontrée. Les choses te rentrent dedans et tu continues de nager, et tu ne t'es jamais inquiété d'un plan puisque tu n'en as jamais eu. Tu es gentil sans effort et calme sans même essayer. Tu es Maraiste : sans hâte, sans souci et merveilleux à côtoyer.",
+  "why": "Pokédex (Or/Argent/Cristal, Épée) : si insouciant qu'il se cogne la tête contre les bateaux et les rochers en nageant sans que ça le dérange ; l'espèce sans souci."
  },
  "espeon": {
-  "title": "The Devoted Seer",
-  "blurb": "You see things coming before anyone else does, and you use it to look after your people. You're calm, perceptive, and disciplined, with an elegance that sometimes reads as distance. It isn't; you're just watching. You're Espeon: insightful, devoted, and always one step ahead.",
-  "why": "Pokedex (GSC, Sw): extremely loyal to its trainer, it reads air currents to predict the weather and the enemy's next move so it can protect them; the eeveelution of the daytime bond."
+  "title": "Le voyant dévoué",
+  "blurb": "Tu vois venir les choses avant tout le monde, et tu t'en sers pour veiller sur les tiens. Tu es calme, perspicace et discipliné, avec une élégance qu'on prend parfois pour de la distance. Ce n'en est pas ; tu observes, c'est tout. Tu es Mentali : clairvoyant, dévoué et toujours un coup d'avance.",
+  "why": "Pokédex (Or/Argent/Cristal, Épée) : extrêmement fidèle à son Dresseur, il lit les courants d'air pour prévoir la météo et le prochain mouvement de l'ennemi afin de le protéger ; l'évolution d'Évoli du lien diurne."
  },
  "umbreon": {
-  "title": "The Night Watcher",
-  "blurb": "You do your best work after dark and on your own. You're patient, watchful, and unbothered by most things, and you don't need company to feel complete. People who earn your trust get a quiet, fierce loyalty that never shows off. You're Umbreon: cool, self-contained, and glowing when it counts.",
-  "why": "Pokedex (GSC, Sw): lies in wait patiently in the dark and its rings glow when it is agitated; Mystery Dungeon and fan consensus: the lone-wolf eeveelution."
+  "title": "Le veilleur de nuit",
+  "blurb": "Tu donnes le meilleur de toi la nuit et en solo. Tu es patient, vigilant et peu de choses te dérangent, et tu n'as pas besoin de compagnie pour te sentir complet. Ceux qui gagnent ta confiance reçoivent une loyauté silencieuse et farouche qui ne se montre jamais. Tu es Noctali : cool, autonome et lumineux quand il le faut.",
+  "why": "Pokédex (Or/Argent/Cristal, Épée) : attend patiemment dans l'obscurité et ses anneaux s'illuminent quand il est agité ; Donjon Mystère et l'avis des fans : l'évolution d'Évoli loup solitaire."
  },
  "murkrow": {
-  "title": "The Shiny-Things Thief",
-  "blurb": "You're drawn to shiny things and bad ideas, and you have excellent taste in both. You're sociable, mischievous, and a little chaotic, and you'd rather be interesting than reliable. You don't mean any harm; you just can't resist. You're Murkrow: clever, cheeky, and never where you're supposed to be.",
-  "why": "Pokedex (GSC, Sw): steals shiny objects, leads travellers astray at night, and is said to bring bad luck; a cheeky night bird that answers to no one."
+  "title": "Le voleur de choses brillantes",
+  "blurb": "Tu es attiré par ce qui brille et par les mauvaises idées, et tu as un goût excellent pour les deux. Tu es sociable, espiègle et un peu chaotique, et tu préfères être intéressant que fiable. Tu ne penses pas à mal ; tu ne peux simplement pas résister. Tu es Cornèbre : malin, effronté et jamais là où tu devrais être.",
+  "why": "Pokédex (Or/Argent/Cristal, Épée) : vole les objets brillants, égare les voyageurs la nuit et porterait malheur ; un oiseau de nuit effronté qui n'obéit à personne."
  },
  "misdreavus": {
   "title": "The Scare Artist",
