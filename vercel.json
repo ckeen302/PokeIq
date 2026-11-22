@@ -15,6 +15,7 @@
   "git": {
     "deploymentEnabled": {
       "main": true,
+      "feat/shiny-maker": true,
       "**": false
     }
   }
