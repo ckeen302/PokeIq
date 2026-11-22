@@ -21,7 +21,7 @@
     "subtitle": "Senza registrazione. Gioca nel browser.",
     "chips": {
       "battles": "Lotte",
-      "battleLab": "Battle Lab",
+      "battleLab": "Laboratorio di lotta",
       "quizzes": "Quiz"
     }
   },
@@ -205,7 +205,7 @@
       "footer": "Prendi una casella con un Pokémon adatto · vince chi fa tris →"
     },
     "name-em-all": {
-      "eyebrow": "Gara di Name 'em All",
+      "eyebrow": "Gara di Nominali tutti",
       "footer": "Gli stessi Pokémon per tutti · vince chi li nomina tutti per primo →"
     }
   },
@@ -219,7 +219,7 @@
     }
   },
   "nameEmAll": {
-    "eyebrow": "Name 'em All · quiz di memoria",
+    "eyebrow": "Nominali tutti · quiz di memoria",
     "title1": "Riesci a nominare",
     "title2": "tutti i Pokémon?",
     "subtitle": "Scrivi tutti i Pokémon che ricordi prima che scada il tempo. Una nuova categoria ogni giorno.",
@@ -267,7 +267,7 @@
     "footer": "Lotta casuale, OU, Doppie e altro →"
   },
   "battleLab": {
-    "eyebrow": "Battle Lab",
+    "eyebrow": "Laboratorio di lotta",
     "title1": "Chi vince,",
     "title2": "e quanto spesso?",
     "subtitle": "Prepara qualsiasi scontro, dalla Gen. 1 alla 9, e il motore di Showdown lo gioca migliaia di volte nel tuo browser.",

@@ -21,7 +21,7 @@
     "subtitle": "Sans inscription. Joue dans ton navigateur.",
     "chips": {
       "battles": "Combats",
-      "battleLab": "Battle Lab",
+      "battleLab": "Labo de combat",
       "quizzes": "Quiz"
     }
   },
@@ -205,7 +205,7 @@
       "footer": "Prends une case avec un Pokémon qui convient · trois alignées, c'est gagné →"
     },
     "name-em-all": {
-      "eyebrow": "Course Name 'em All",
+      "eyebrow": "Course Nomme-les tous",
       "footer": "Les mêmes Pokémon pour tous · le premier à tous les nommer gagne →"
     }
   },
@@ -219,7 +219,7 @@
     }
   },
   "nameEmAll": {
-    "eyebrow": "Name 'em All · quiz de mémoire",
+    "eyebrow": "Nomme-les tous · quiz de mémoire",
     "title1": "Peux-tu nommer",
     "title2": "tous les Pokémon ?",
     "subtitle": "Tape tous les Pokémon dont tu te souviens avant la fin du chrono. Une nouvelle catégorie chaque jour.",
@@ -267,7 +267,7 @@
     "footer": "Combat aléatoire, OU, Doubles et plus →"
   },
   "battleLab": {
-    "eyebrow": "Battle Lab",
+    "eyebrow": "Labo de combat",
     "title1": "Qui gagne,",
     "title2": "et combien de fois ?",
     "subtitle": "Prépare n'importe quel affrontement, de la 1G à la 9G, et le moteur de Showdown le joue des milliers de fois dans ton navigateur.",

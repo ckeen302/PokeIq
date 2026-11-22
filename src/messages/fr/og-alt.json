@@ -1,5 +1,5 @@
 {
-  "battle_lab": "Battle Lab : les chances de victoire des Pokémon, tirées de milliers de combats simulés",
+  "battle_lab": "Labo de combat : les chances de victoire des Pokémon, tirées de milliers de combats simulés",
   "battle_live_code": "Un défi PokéIQ : ouvre le lien pour jouer",
   "battle": "Des combats Pokémon sur le moteur de Pokémon Showdown",
   "battle_replay_id": "La rediffusion d'un combat Pokémon sur PokéIQ",
@@ -47,7 +47,7 @@
   "pokemon_slug": "L'entrée du Pokédex d'un Pokémon sur PokéIQ",
   "quiz_slug": "Quiz Pokémon PokéIQ",
   "quiz_duel_code": "Un défi PokéIQ : ouvre le lien pour jouer",
-  "quiz_name_em_all": "Name 'em All : combien de Pokémon peux-tu nommer de mémoire ?",
+  "quiz_name_em_all": "Nomme-les tous : combien de Pokémon peux-tu nommer de mémoire ?",
   "quiz_name_em_all_race_code": "Un défi PokéIQ : ouvre le lien pour jouer",
   "quiz": "Les quiz PokéIQ : Quel est ce Pokémon ?, cris, entrées du Pokédex, types et plus",
   "quiz_which_pokemon_slug": "Un résultat de Quel Pokémon es-tu ? sur PokéIQ",
