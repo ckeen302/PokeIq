@@ -151,6 +151,8 @@ const nextConfig: NextConfig = {
         ]),
         { source: "/leaderboard", has: [boardQuery], missing: bare, destination: "/leaderboard/board/:board" },
         { source: "/leaderboard", missing: [{ type: "query" as const, key: "board" }, ...bare], destination: "/leaderboard/board/daily" },
+        // A shared tier list (?s=…) renders per link (its result and preview card); the template's own page stays static.
+        { source: "/tools/tier-list/:template([a-z0-9-]+)", has: [{ type: "query" as const, key: "s" }], destination: "/tools/tier-list/:template/shared" },
       ].flatMap(withLocales),
       afterFiles: [],
       fallback: [],
