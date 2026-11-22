@@ -89,6 +89,8 @@ export const NAMESPACES = [
   "share",
   "share-page",
   "site",
+  "tcg",
+  "tcg-cards",
   "tier",
   "trainer-card",
   "trainer-creator",

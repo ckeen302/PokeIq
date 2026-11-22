@@ -114,16 +114,17 @@ export function tilePriceNote(tiles: CardTile[]): string {
   return `Prices: ${parts.join("; ")}.${unknown ? " Some prices are unavailable right now." : ""}`;
 }
 
-export function formatPrice(value: number, currency: "USD" | "EUR"): string {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(value);
+/** A price as `intl` (an Intl locale; the site's en-US by default) writes it. */
+export function formatPrice(value: number, currency: "USD" | "EUR", intl = "en-US"): string {
+  return new Intl.NumberFormat(intl, { style: "currency", currency }).format(value);
 }
 
-/** The API's "YYYY/MM/DD" (sometimes with a time) → "Oct 15, 2026". Null for anything unreadable. */
-export function formatApiDate(raw: string | undefined | null): string | null {
+/** The API's "YYYY/MM/DD" (sometimes with a time) → "Oct 15, 2026" (as `intl` writes it). Null for anything unreadable. */
+export function formatApiDate(raw: string | undefined | null, intl = "en-US"): string | null {
   const m = raw?.match(/^(\d{4})\/(\d{2})\/(\d{2})/);
   if (!m) return null;
   const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+  return d.toLocaleDateString(intl, { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 }
 
 /** Rarity order for sorting, commonest first; unknown rarities sort after the known ones. */

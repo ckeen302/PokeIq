@@ -1,0 +1,36 @@
+{
+  "grid": {
+    "alt": "{name} card",
+    "noImage": "No image",
+    "titleUsd": "{label} (TCGplayer market)",
+    "titleEur": "{label} (Cardmarket)"
+  },
+  "gallery": {
+    "sort": "Sort",
+    "number": "Number",
+    "priceDesc": "Price ↓",
+    "priceAsc": "Price ↑",
+    "rarity": "Rarity",
+    "allRarities": "All rarities",
+    "type": "Type",
+    "allTypes": "All types",
+    "count": "{shown} / {total} cards",
+    "none": "No cards match those filters."
+  },
+  "pokemon": {
+    "title": "Cards",
+    "all": "See all {n} →",
+    "newest": "{name}'s newest Pokémon TCG cards. {note}"
+  },
+  "note": {
+    "usd": "TCGplayer market (USD)",
+    "eur": "Cardmarket trend (EUR)",
+    "cmTrend": "Cardmarket trend",
+    "via": "{market} via {source}",
+    "asOf": "{what}, as of {date}",
+    "sep": "; ",
+    "line": "Prices: {parts}.",
+    "lineSome": "Prices: {parts}. Some prices are unavailable right now.",
+    "unavailable": "Prices unavailable right now."
+  }
+}
