@@ -7,19 +7,28 @@ import { TodaySection } from "@/components/home/TodaySection";
 import { SITE_NAME } from "@/lib/site";
 import { SITE_DESCRIPTION, SITE_TAGLINE, jsonLd, pageMetadata } from "@/lib/seo";
 import { websiteWithSearch } from "@/lib/structured-data";
+import { ClientMessages } from "@/i18n/ClientMessages";
+import { serverT } from "@/i18n/server";
+import home from "@/messages/home";
+import site from "@/messages/site";
 
-export const metadata: Metadata = {
-  ...pageMetadata({
-    title: `${SITE_NAME}: ${SITE_TAGLINE}`,
-    description: SITE_DESCRIPTION,
-    path: "/",
-    socialTitle: `${SITE_NAME}: GeoGuessr, Wordle and Showdown for Pokémon`,
-    socialDescription:
-      "PokéGuessr with real in-game screenshots of every region, a daily Pokédle with live duels, Showdown-accurate battles and a Battle Lab that simulates thousands of them. Free, no sign-up.",
-  }),
-  // The home page's title is the whole name, not "… · PokéIQ".
-  title: { absolute: `${SITE_NAME}: ${SITE_TAGLINE}` },
-};
+export function generateMetadata(): Metadata {
+  const t = serverT(home);
+  const s = serverT(site);
+  const en = t.locale === "en";
+  const title = `${SITE_NAME}: ${en ? SITE_TAGLINE : s("tagline")}`;
+  return {
+    ...pageMetadata({
+      title,
+      description: en ? SITE_DESCRIPTION : s("description"),
+      path: "/",
+      socialTitle: t("socialTitle"),
+      socialDescription: t("socialDescription"),
+    }),
+    // The home page's title is the whole name, not "… · PokéIQ".
+    title: { absolute: title },
+  };
+}
 
 /**
  * The landing page, kept to the point: the banner (the site's name, what's
@@ -27,6 +36,7 @@ export const metadata: Metadata = {
  * button and the socials.
  */
 export default function HomePage() {
+  const t = serverT(home);
   return (
     // A phone's title screen starts under the header's bottom edge; the structured data goes last so it takes no space.
     // On a desktop the first screen is filled: the hero grows with the window so the coffee button and socials sit just above its bottom edge.
@@ -39,7 +49,9 @@ export default function HomePage() {
       </span>
       <div className="space-y-6 max-sm:space-y-5 lg:flex lg:flex-1 lg:flex-col">
         <Hero />
-        <TodaySection />
+        <ClientMessages namespaces={[home]}>
+          <TodaySection />
+        </ClientMessages>
       </div>
       <div className="flex flex-col items-center gap-4 pb-2 lg:gap-5">
         <a
@@ -50,11 +62,11 @@ export default function HomePage() {
           data-testid="coffee-button"
         >
           <Coffee className="h-4 w-4 text-primary" aria-hidden />
-          Buy me a coffee
+          {t("coffee")}
         </a>
         <SocialLinks />
       </div>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(websiteWithSearch()) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(t.locale === "en" ? websiteWithSearch() : websiteWithSearch(t.locale, serverT(site)("description"))) }} />
     </div>
   );
 }

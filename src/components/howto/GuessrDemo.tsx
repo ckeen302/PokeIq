@@ -10,6 +10,10 @@ import { Flag, GuessPin, LINE_DRAW_MS } from "@/components/geo/GeoMap";
 import { ShotCarousel } from "@/components/geo/ShotCarousel";
 import { HowToHelpButton } from "@/components/geo/GeoHowToButton";
 import { DemoFrame, useDemoFrame } from "./shared";
+import { useT } from "@/i18n/client";
+import { formatNumber } from "@/i18n/format";
+import geoHowto from "@/messages/geo-howto";
+import { useGeoNames, type GeoLocal } from "@/lib/geo-i18n-client";
 
 /**
  * PokéGuessr's how-to demo: the real game screen, shrunk into the pop-up. A
@@ -40,8 +44,7 @@ const GUESS = { x: 448, y: 342 };
 const PX = Math.min(...AREA.map(([x, y]) => Math.hypot(GUESS.x - x, GUESS.y - y)));
 const SCORE = PX <= MAP.squarePx / 2 ? GEO_MAX_ROUND_SCORE : Math.round(GEO_MAX_ROUND_SCORE * Math.exp((-GEO_FALLOFF * PX) / Math.hypot(MAP.w, MAP.h)));
 const SQUARES = Math.round((PX / MAP.squarePx) * 10) / 10;
-const VERDICT = SCORE >= GEO_MAX_ROUND_SCORE ? "Spot on!" : SCORE >= 4000 ? "So close!" : SCORE >= 2500 ? "Not bad!" : SCORE >= 1000 ? "In the neighbourhood." : "Way off…";
-const fmt = (n: number) => n.toLocaleString("en-US");
+const VERDICT = SCORE >= GEO_MAX_ROUND_SCORE ? "spotOn" : SCORE >= 4000 ? "close" : SCORE >= 2500 ? "notBad" : SCORE >= 1000 ? "near" : "wayOff";
 
 /** The atlas's town markers on Paldea (c: city, t: town). */
 const MARKERS: [x: number, y: number, kind: "c" | "t"][] = [
@@ -127,7 +130,7 @@ function textWidth(text: string, font: string): number {
 }
 
 /** The atlas's labels for a view, placed by its rules: by priority, each skipped if it would overlap one already placed. */
-function labelsFor(view: View, w: number, h: number): Label[] {
+function labelsFor(view: View, w: number, h: number, names: GeoLocal): Label[] {
   const { s, tx, ty } = view;
   const f = s / REF_SCALE;
   const css = getComputedStyle(document.body);
@@ -159,19 +162,19 @@ function labelsFor(view: View, w: number, h: number): Label[] {
   if (f < 4.5) {
     const size = Math.round(Math.max(20 * 0.7, Math.min(20 * 1.7, 20 * Math.pow(f, 0.35))));
     const spots: [number, number][] = [[0, 0], [0, -size * 1.25], [0, size * 1.35], [-size * 2.6, 0], [size * 2.6, 0]];
-    spots.some(([dx, dy]) => label(REGION.name.toUpperCase(), REGION.x, REGION.y, `${display}, ${sans}, sans-serif`, 700, size, size / 3 + dy, "#ffffff", 2, dx, true));
+    spots.some(([dx, dy]) => label(names.region(REGION.name).toUpperCase(), REGION.x, REGION.y, `${display}, ${sans}, sans-serif`, 700, size, size / 3 + dy, "#ffffff", 2, dx, true));
   }
-  if (f >= 2.2) for (const [k, name, x, y] of PLACES) if (k === "t") label(name, x, y, `${sans}, system-ui`, 600, f > 4 ? 13 : 11, -12, "#ffffff");
+  if (f >= 2.2) for (const [k, name, x, y] of PLACES) if (k === "t") label(names.place(name), x, y, `${sans}, system-ui`, 600, f > 4 ? 13 : 11, -12, "#ffffff");
   if (f >= 3.6) {
     const spots: [number, number][] = [[0, 4], [0, 22], [0, -14], [34, 4], [-34, 4]];
     for (const [k, name, x, y] of PLACES) {
       if (k !== "r") continue;
-      const text = name.replace(/^(.+?) \((Area .+)\)$/, "$1\n$2");
+      const text = names.place(name).replace(/^(.+?) ?[(（](.+)[)）]$/, "$1\n$2");
       spots.some(([dx, dy]) => label(text, x, y, `${pixel}, monospace`, 400, 10, dy, "#ffe2b5", 0, dx));
     }
-    for (const [k, name, x, y] of PLACES) if (k === "l") label(name, x, y, `${sans}, system-ui`, 600, 11, -10, "#cfe0ff");
+    for (const [k, name, x, y] of PLACES) if (k === "l") label(names.place(name), x, y, `${sans}, system-ui`, 600, 11, -10, "#cfe0ff");
   }
-  if (f >= 6) for (const [, , x, y, inside] of PLACES) inside?.forEach((b, i) => label(b, x, y, `${sans}, system-ui`, 500, 11, 18 + i * 14, "#c9f2dc"));
+  if (f >= 6) for (const [, , x, y, inside] of PLACES) inside?.forEach((b, i) => label(names.place(b), x, y, `${sans}, system-ui`, 500, 11, 18 + i * 14, "#c9f2dc"));
   return out;
 }
 
@@ -199,6 +202,7 @@ function useLayoutSize<T extends HTMLElement>(): [React.RefObject<T | null>, { w
 function DemoMap({ pick, reveal, fill, reduced }: { pick?: boolean; reveal?: boolean; fill?: boolean; reduced: boolean }) {
   const [ref, { w, h }] = useLayoutSize<HTMLDivElement>();
   const maskId = useId();
+  const names = useGeoNames();
   /** The camera's move on a result: 0 framed on the region, 1 on the guess and the flag. */
   const [t, setT] = useState(reveal && reduced ? 1 : 0);
   useEffect(() => {
@@ -235,7 +239,7 @@ function DemoMap({ pick, reveal, fill, reduced }: { pick?: boolean; reveal?: boo
   const { s, tx, ty } = view;
   const at = (x: number, y: number): [number, number] => [x * s + tx, y * s + ty];
   const f = s / REF_SCALE;
-  const labels = ready && reveal ? labelsFor(view, w, h) : [];
+  const labels = ready && reveal ? labelsFor(view, w, h, names) : [];
   const [gx, gy] = at(GUESS.x, GUESS.y);
   const [ax, ay] = at(ANSWER.x, ANSWER.y);
   return (
@@ -330,6 +334,7 @@ const noop = () => undefined;
 
 /** The desktop round, as GeoGame lays it out: exit and full screen, the notch, the score chip, the map dock with Guess under it. */
 function DesktopRound({ open, pinned, pressed, reduced }: { open: boolean; pinned: boolean; pressed: boolean; reduced: boolean }) {
+  const t = useT(geoHowto);
   return (
     <div className="relative h-full">
       <div className="absolute inset-0">
@@ -342,13 +347,13 @@ function DesktopRound({ open, pinned, pressed, reduced }: { open: boolean; pinne
       <Notch>
         <div className="min-w-0 text-center">
           <div className="font-display text-xl font-bold uppercase italic leading-none tracking-wide sm:text-2xl">
-            Round 1<span className="text-white/50">/5</span>
+            {t("demo.round", { n: 1 })}<span className="text-white/50">/5</span>
           </div>
         </div>
       </Notch>
       <div className="absolute right-3 top-3 z-20 flex items-center gap-2">
         <div className="flex h-9 items-center gap-2 rounded-md bg-black/55 px-3 backdrop-blur">
-          <span className="hud-label hidden !text-white/60 sm:inline">Score</span>
+          <span className="hud-label hidden !text-white/60 sm:inline">{t("demo.score")}</span>
           <span className="font-display text-base font-bold tabular-nums text-[#9be15d]">0</span>
         </div>
         <HowToHelpButton className="hud-btn !hidden !p-0 !text-white sm:!flex" />
@@ -379,6 +384,7 @@ function DesktopRound({ open, pinned, pressed, reduced }: { open: boolean; pinne
 
 /** The phone round, GeoGame's phone layout: the dials and round badge, the bottom bar, and the map opening as a large card. */
 function PhoneRound({ open, pinned, pressed, reduced }: { open: boolean; pinned: boolean; pressed: boolean; reduced: boolean }) {
+  const t = useT(geoHowto);
   return (
     <div className="relative h-full">
       <div className="absolute inset-0" style={{ bottom: "var(--geo-bar)" }}>
@@ -405,7 +411,7 @@ function PhoneRound({ open, pinned, pressed, reduced }: { open: boolean; pinned:
           </span>
         </div>
         <p className="absolute left-1/2 top-0 z-[4] -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full bg-[#1e1a3f] px-4 py-2 font-display text-sm font-bold italic text-white shadow-lg ring-2 ring-[#a99cff]/70">
-          {pinned ? "Tap again to move your pin" : "Tap the map to place your guess"}
+          {pinned ? t("demo.tapMove") : t("demo.tapPlace")}
         </p>
       </div>
       <div className="absolute inset-x-0 bottom-0 z-[16] flex items-center gap-2.5 border-t-2 border-[#a99cff]/50 bg-gradient-to-b from-[#2d2766] to-[#1e1a3f] px-4" style={{ height: "var(--geo-bar)" }}>
@@ -463,6 +469,9 @@ function useCountUp(value: number, ms: number, delay: number, reduced: boolean):
 }
 
 function Reveal({ reduced }: { reduced: boolean }) {
+  const t = useT(geoHowto);
+  const names = useGeoNames();
+  const fmt = (n: number) => formatNumber(n, t.locale);
   const countDelay = reduced ? 0 : LINE_DRAW_MS + FIT_MS * 0.6;
   const shown = useCountUp(SCORE, SCORE_COUNT_MS, countDelay, reduced);
   const bar = { initial: { width: reduced ? `${(SCORE / GEO_MAX_ROUND_SCORE) * 100}%` : 0 }, animate: { width: `${(SCORE / GEO_MAX_ROUND_SCORE) * 100}%` }, transition: { duration: reduced ? 0 : SCORE_COUNT_MS / 1000, delay: reduced ? 0 : countDelay / 1000, ease: "easeOut" as const } };
@@ -477,16 +486,16 @@ function Reveal({ reduced }: { reduced: boolean }) {
       </div>
       <Notch>
         <div className="text-center">
-          <div className="font-display text-xl font-bold uppercase italic leading-none tracking-wide sm:text-2xl">Round 1</div>
-          <div className="mt-0.5 font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c8bfff]">Paldea</div>
+          <div className="font-display text-xl font-bold uppercase italic leading-none tracking-wide sm:text-2xl">{t("demo.round", { n: 1 })}</div>
+          <div className="mt-0.5 font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c8bfff]">{names.region("Paldea")}</div>
         </div>
       </Notch>
       <motion.div {...rise(0.15)} className="relative z-20 shrink-0 border-t-4 border-[#a99cff] bg-[#1e1a3f]/95 text-white shadow-[0_-12px_40px_rgba(0,0,0,0.5)] backdrop-blur md:absolute md:inset-x-0 md:bottom-0">
         <div className="mx-auto grid max-w-6xl items-center gap-3 px-4 pb-3 pt-3 sm:gap-6 sm:px-6 md:grid-cols-[1fr_auto_1fr]">
           <div className="min-w-0 text-center md:text-left">
-            <p className="hud-label !text-[#c8bfff]">{VERDICT}</p>
+            <p className="hud-label !text-[#c8bfff]">{t(`demo.${VERDICT}`)}</p>
             <p className="geo-glow font-display text-4xl font-bold italic tabular-nums sm:text-5xl">
-              {fmt(shown)} <span className="text-lg not-italic text-white/60">pts</span>
+              {fmt(shown)} <span className="text-lg not-italic text-white/60">{t("demo.pts")}</span>
             </p>
             <div className="mt-1.5 flex items-center gap-2">
               <div className="meter h-2 flex-1 !bg-black/40">
@@ -498,31 +507,31 @@ function Reveal({ reduced }: { reduced: boolean }) {
           <motion.div {...rise(reduced ? 0 : (LINE_DRAW_MS + FIT_MS) / 1000)} className="flex min-w-0 flex-col items-center gap-2">
             <span className="inline-flex items-center gap-2 rounded-full border-2 border-[#a99cff] bg-[#4cbb17] px-4 py-1.5 font-display text-sm font-bold uppercase italic tracking-wide text-white shadow-lg">
               <MapPinIcon className="h-4 w-4" aria-hidden />
-              {SQUARES.toFixed(1)} map squares away
+              {t("demo.squares", { d: t.locale === "en" ? SQUARES.toFixed(1) : formatNumber(SQUARES, t.locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) })}
             </span>
             {/* LearnCard: the place, its region and game, with the round's screenshot as its artwork. */}
             <div className="flex min-w-0 items-start gap-3">
               {/* eslint-disable-next-line @next/next/no-img-element -- the same screenshot, as a thumbnail */}
               <img src={SHOT} alt="" className="mt-0.5 h-12 w-16 shrink-0 rounded border border-white/20 object-cover" />
               <div className="min-w-0">
-                <p className="truncate font-display text-base font-bold uppercase leading-tight max-md:whitespace-normal max-md:text-sm">Levincia</p>
+                <p className="truncate font-display text-base font-bold uppercase leading-tight max-md:whitespace-normal max-md:text-sm">{names.place("Levincia")}</p>
                 <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-white/70">
-                  <span>Paldea</span>
-                  <span className="rounded-sm border border-white/30 px-1.5 py-0.5 text-[11px] text-white">Pokémon Scarlet / Violet</span>
-                  <span className="inline-flex items-center gap-1 underline underline-offset-2">Atlas</span>
+                  <span>{names.region("Paldea")}</span>
+                  <span className="rounded-sm border border-white/30 px-1.5 py-0.5 text-[11px] text-white">{t("demo.game", { game: names.game("Scarlet / Violet") })}</span>
+                  <span className="inline-flex items-center gap-1 underline underline-offset-2">{t("demo.atlas")}</span>
                 </p>
               </div>
             </div>
           </motion.div>
           <div className="flex flex-col items-center gap-1.5 md:items-end">
             <span className="flex h-12 w-full max-w-xs items-center justify-center gap-2 rounded-md bg-[#4cbb17] px-6 font-display text-base font-bold uppercase tracking-wider text-white shadow-lg">
-              Next round ▶
+              {t("demo.next")}
               <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline [@media(pointer:coarse)]:!hidden">
-                Space
+                {t("demo.space")}
               </kbd>
             </span>
             <span className="inline-flex items-center gap-1.5 text-xs text-white/60">
-              <FlagIcon className="h-3.5 w-3.5" aria-hidden /> Report this screenshot
+              <FlagIcon className="h-3.5 w-3.5" aria-hidden /> {t("demo.report")}
             </span>
           </div>
         </div>
@@ -575,6 +584,8 @@ function phonePointer(f: number): { x: number; y: number } {
 }
 
 export function GuessrDemo() {
+  const t = useT(geoHowto);
+  const fmt = (n: number) => formatNumber(n, t.locale);
   const reduced = !!useReducedMotion();
   const phone = useSyncExternalStore(subscribePhone, () => window.matchMedia(PHONE_QUERY).matches, () => false);
   const f = useDemoFrame(phone ? PHONE_MS : DESKTOP_MS);
@@ -587,7 +598,7 @@ export function GuessrDemo() {
   const tapping = phone ? f === 1 || f === 3 || f === 5 : f === 3 || f === 5;
   return (
     <DemoFrame
-      label={`Demo of a round: a Pokémon screenshot fills the screen, the map ${phone ? "opens" : "in the corner grows"}, a pin goes down and Guess is pressed; the result draws a line to the real spot and scores ${fmt(SCORE)} of ${fmt(GEO_MAX_ROUND_SCORE)}`}
+      label={t(phone ? "demo.labelPhone" : "demo.labelDesktop", { score: fmt(SCORE), max: fmt(GEO_MAX_ROUND_SCORE) })}
     >
       <div ref={ref} className="w-full" style={{ height: screen.h * scale }}>
         {scale > 0 && (

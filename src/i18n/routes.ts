@@ -10,12 +10,15 @@ import { localizePath } from "./paths";
  * Patterns are English paths: "/pokedle" is that page, "/pokedle/**" also every page under it,
  * "/pokemon/*" one segment under /pokemon.
  */
+/** Pages finished in every language: the site's own pages and, once done, each game. */
+const ALL_LANGUAGES = ["/", "/privacy", "/credits", "/feedback", "/s/*", "/pokedle", "/pokedle/**", "/pokeguessr", "/pokeguessr/streak", "/pokeguessr/history/**", "/pokeguessr/r/*", "/pokeguessr/c/*", "/pokeguessr/duel/*", "/pokeguessr/party/*", "/pikadoku", "/pikadoku/**", "/pokeconnections", "/pokeconnections/**"];
+
 export const TRANSLATED: Record<OtherLocale, readonly string[]> = {
-  ja: [],
-  es: [],
-  fr: [],
-  de: [],
-  it: [],
+  ja: ALL_LANGUAGES,
+  es: ALL_LANGUAGES,
+  fr: ALL_LANGUAGES,
+  de: ALL_LANGUAGES,
+  it: ALL_LANGUAGES,
 };
 
 /**

@@ -1,0 +1,239 @@
+{
+  "list": {
+    "abilitiesOne": "seine einzige Fähigkeit ist {list}",
+    "abilitiesMany": "seine Fähigkeiten sind {list}",
+    "hiddenMark": "{name} (versteckt)"
+  },
+  "lureTypeLike": "Typ {type} wie fast die ganze Gruppe, aber {instead}",
+  "type": {
+    "label": "Typ {type}",
+    "rule": "Alle haben den Typ {type} (allein oder mit einem zweiten Typ).",
+    "lureColour": "seine Pokédex-Farbe ist {colour}, aber es hat den Typ {types}, nicht {type}",
+    "lureKin": "sein Verwandter {kin} hat den Typ {type}, aber {name} ist {types}"
+  },
+  "pure": {
+    "label": "Nur Typ {type}",
+    "rule": "{type} ist ihr einziger Typ.",
+    "why": "nur {type}",
+    "lure": "Typ {type}, aber auch {other}"
+  },
+  "dual": {
+    "label": "Typ {a}/{b}",
+    "rule": "Alle haben genau die Typen {a} und {b}.",
+    "lure": "{types}: nur zur Hälfte"
+  },
+  "gen": {
+    "label": "Debüt in Generation {gen} ({region})",
+    "rule": "Alle erschienen zuerst in Generation {gen}, den Spielen in {region}.",
+    "why": "Generation {gen} ({region})",
+    "lure": "sein Verwandter {kin} stammt aus Generation {gen}, aber {name} kam in Generation {own}"
+  },
+  "legendary": {
+    "label": "Legendäre Pokémon",
+    "rule": "Alle sind legendäre Pokémon (nicht mysteriös).",
+    "why": "Legendär",
+    "lureMythical": "Mysteriös, und das ist nicht dasselbe wie legendär",
+    "lureBst": "Basiswerte von zusammen {bst}, aber nicht legendär"
+  },
+  "mythical": {
+    "label": "Mysteriöse Pokémon",
+    "rule": "Alle sind mysteriöse Pokémon, die es nur bei Events gibt.",
+    "why": "Mysteriös",
+    "lure": "Legendär, aber nicht mysteriös"
+  },
+  "baby": {
+    "label": "Baby-Pokémon",
+    "rule": "Alle sind Baby-Pokémon, die Vorentwicklungen, die aus Eiern schlüpfen.",
+    "why": "Baby-Form von {names}",
+    "whyLine": "Baby-Form seiner Linie",
+    "lure": "{baby} ist das Baby; {name} ist, was daraus wird"
+  },
+  "noEvo": {
+    "label": "Entwickelt sich nicht",
+    "rule": "Keines von ihnen entwickelt sich oder ist aus einer Entwicklung entstanden.",
+    "why": "keine Entwicklungen"
+  },
+  "stone": {
+    "label": "Mit einem Stein entwickelt",
+    "rule": "Alle entstehen, indem man einen Entwicklungsstein auf ihre Vorentwicklung anwendet.",
+    "oneLabel": "Mit {stone} entwickelt",
+    "oneRule": "Alle entwickeln sich mit {stone} aus ihrer Vorentwicklung.",
+    "why": "entwickelt sich mit {stone} aus {from}",
+    "lureInto": "es entwickelt sich mit {stone} zu {into}, ist aber selbst keine Steinentwicklung",
+    "lureOther": "eine Steinentwicklung, aber mit {stone}"
+  },
+  "trade": {
+    "label": "Tauschentwicklungen",
+    "rule": "Alle entstehen, indem man ihre Vorentwicklung tauscht.",
+    "why": "entwickelt sich durch Tausch aus {from}",
+    "whyHolding": "entwickelt sich durch Tausch mit {item} aus {from}",
+    "whyFor": "entwickelt sich durch Tausch gegen {pokemon} aus {from}",
+    "lureInto": "es entwickelt sich durch Tausch zu {into}, ist aber selbst keine Tauschentwicklung",
+    "lureHeld": "es entwickelt sich mit einem getragenen Item ({item}), aber per Levelaufstieg, nicht durch Tausch",
+    "lureHeldTime": "es entwickelt sich mit einem getragenen Item ({item}, {time}), aber per Levelaufstieg, nicht durch Tausch"
+  },
+  "time": {
+    "day": "tagsüber",
+    "night": "nachts"
+  },
+  "friendship": {
+    "label": "Freundschaftsentwicklungen",
+    "rule": "Alle entwickeln sich per Levelaufstieg mit hoher Freundschaft aus ihrer Vorentwicklung.",
+    "why": "entwickelt sich mit hoher Freundschaft aus {from}",
+    "whyTime": "entwickelt sich mit hoher Freundschaft aus {from} ({time})",
+    "lure": "es entwickelt sich durch Freundschaft zu {into}, ist aber selbst keine Freundschaftsentwicklung"
+  },
+  "ability": {
+    "label": "Kann {ability} haben",
+    "rule": "Alle können die Fähigkeit {ability} haben (versteckte Fähigkeiten zählen).",
+    "why": "Fähigkeit {ability}",
+    "whyHidden": "Versteckte Fähigkeit {ability}"
+  },
+  "hidden": {
+    "label": "Versteckte Fähigkeit {ability}",
+    "rule": "{ability} ist bei allen die versteckte Fähigkeit."
+  },
+  "move": {
+    "label": "Lernt {move} per Level",
+    "rule": "Alle lernen {move} per Levelaufstieg in Karmesin und Purpur.",
+    "whyEvolving": "lernt {move} bei der Entwicklung (Karmesin/Purpur)",
+    "whyStart": "lernt {move} ab Level 1 (Karmesin/Purpur)",
+    "whyLevel": "lernt {move} auf Level {level} (Karmesin/Purpur)",
+    "lure": "Typ {type}, aber es lernt {move} nicht"
+  },
+  "top": {
+    "label": "Höchster Wert: {stat}",
+    "rule": "{stat} ist bei allen der höchste Basiswert.",
+    "why": "{stat} {value} ist sein höchster Wert",
+    "lure": "{stat} {value}, aber sein {top} ({topValue}) ist höher"
+  },
+  "bst": {
+    "highLabel": "Basiswertsumme 600+",
+    "highRule": "Ihre Basiswerte ergeben zusammen 600 oder mehr.",
+    "lowLabel": "Basiswertsumme unter 260",
+    "lowRule": "Ihre Basiswerte ergeben zusammen weniger als 260.",
+    "why": "Basiswertsumme {bst}",
+    "lureHigh": "eine Basiswertsumme von {bst}, knapp unter 600",
+    "lureLow": "eine Basiswertsumme von {bst}, knapp über 260"
+  },
+  "body": {
+    "heavyLabel": "Wiegt 300 kg oder mehr",
+    "heavyRule": "Alle wiegen mindestens 300 kg.",
+    "lightLabel": "Wiegt 1 kg oder weniger",
+    "lightRule": "Alle wiegen 1 kg oder weniger.",
+    "tallLabel": "3 m groß oder größer",
+    "tallRule": "Alle sind mindestens 3 m groß.",
+    "shortLabel": "0,3 m groß oder kleiner",
+    "shortRule": "Keines ist größer als 0,3 m.",
+    "weighs": "wiegt {kg} kg",
+    "height": "{m} m groß",
+    "lure": "{why}: knapp daneben"
+  },
+  "colour": {
+    "label": "Pokédex-Farbe: {Colour}",
+    "rule": "Der Pokédex führt sie alle unter der Farbe {colour}.",
+    "why": "Pokédex-Farbe {colour}",
+    "lure": "seine Pokédex-Farbe ist {colour}"
+  },
+  "form": {
+    "label": "Hat eine {region}-Form",
+    "rule": "Alle haben eine regionale {region}-Form.",
+    "why": "{region}-{name} gibt es",
+    "lureOther": "es hat eine {other}-Form, keine {region}-Form",
+    "lureKin": "sein Verwandter {kin} hat eine {region}-Form, {name} aber nicht"
+  },
+  "mega": {
+    "label": "Kann megaentwickeln",
+    "rule": "Alle haben eine Mega-Entwicklung (die neuen aus Pokémon-Legenden: Z-A mitgezählt).",
+    "why": "Mega-{name} gibt es",
+    "lure": "es hat eine Gigadynamax-Form, keine Mega-Entwicklung"
+  },
+  "gmax": {
+    "label": "Hat eine Gigadynamax-Form",
+    "rule": "Alle können sich gigadynamaximieren (Schwert und Schild).",
+    "why": "Gigadynamax-{name} gibt es",
+    "lure": "es kann megaentwickeln, hat aber keine Gigadynamax-Form"
+  },
+  "egg": {
+    "label": "Ei-Gruppe {group}",
+    "rule": "Alle sind in der Ei-Gruppe {group}.",
+    "why": "{n, plural, one {Ei-Gruppe} other {Ei-Gruppen}} {groups}",
+    "lure": "{n, plural, one {seine Ei-Gruppe ist} other {seine Ei-Gruppen sind}} {groups}"
+  },
+  "gender": {
+    "maleLabel": "Immer männlich",
+    "maleRule": "Alle sind immer männlich.",
+    "maleWhy": "100 % männlich",
+    "maleLureFemale": "immer weiblich, nicht männlich",
+    "maleLureMostly": "zu 87,5 % männlich, aber nicht immer",
+    "femaleLabel": "Immer weiblich",
+    "femaleRule": "Alle sind immer weiblich.",
+    "femaleWhy": "100 % weiblich",
+    "femaleLureMale": "immer männlich, nicht weiblich",
+    "femaleLureMostly": "meist weiblich, aber nicht immer",
+    "noneLabel": "Geschlechtslos",
+    "noneRule": "Keines von ihnen hat ein Geschlecht.",
+    "noneWhy": "geschlechtslos"
+  },
+  "letter": {
+    "label": "Englischer Name mit {letter}",
+    "rule": "Alle englischen Namen beginnen mit dem Buchstaben {letter}."
+  },
+  "ends": {
+    "label": "Englischer Name auf „-{ending}“",
+    "rule": "Alle englischen Namen enden auf -{ending}."
+  },
+  "short": {
+    "label": "Englischer Name mit max. 4 Buchstaben",
+    "rule": "Alle englischen Namen haben vier Buchstaben oder weniger.",
+    "why": "{n} Buchstaben",
+    "lure": "fünf Buchstaben: einer zu viel"
+  },
+  "symbol": {
+    "label": "Englischer Name nicht nur aus Buchstaben",
+    "rule": "Alle englischen Namen haben noch etwas außer Buchstaben: ein Leerzeichen, einen Punkt, einen Bindestrich, einen Apostroph, einen Doppelpunkt, einen Akzent, eine Ziffer oder ein Symbol.",
+    "gender": "ein ♀/♂-Symbol",
+    "digit": "eine Ziffer",
+    "colon": "ein Doppelpunkt",
+    "stop": "ein Punkt",
+    "hyphen": "ein Bindestrich",
+    "apostrophe": "ein Apostroph",
+    "space": "ein Leerzeichen",
+    "accent": "ein Akzent"
+  },
+  "wordplay": {
+    "hiddenIn": "„{word}“ in {name}",
+    "colourLabel": "Versteckt eine Farbe (auf Englisch)",
+    "colourRule": "Alle englischen Namen verstecken eine englische Farbe: {words}.",
+    "bodyLabel": "Versteckt einen Körperteil (auf Englisch)",
+    "bodyRule": "Alle englischen Namen verstecken einen Körperteil auf Englisch: arm, toe, ear, fin...",
+    "wordLabel": "Beginnt mit einem englischen Wort",
+    "wordRule": "Alle englischen Namen sind ein englisches Alltagswort oder beginnen damit: slow, star, bell, bear...",
+    "wordPlus": "„{word}“ + „{rest}“",
+    "wordAlone": "„{word}“ allein",
+    "rhymeLabel": "Englische Namen, die sich reimen: -{ending}",
+    "rhymeRule": "Alle englischen Namen enden auf dieselben Buchstaben: -{ending}."
+  },
+  "lore": {
+    "aceLabel": "Asse der Arenaleiter",
+    "aceRule": "Jedes ist das letzte, stärkste Pokémon eines Arenaleiters in den Hauptspielen.",
+    "aceWhy": "das Ass eines Arenaleiters",
+    "boxLabel": "Legendäre vom Cover",
+    "boxRule": "Jedes ist das legendäre Pokémon auf dem Cover eines Hauptspiels.",
+    "boxWhy": "auf dem Cover von {games}",
+    "foodLabel": "Englischer Name nach Essen",
+    "foodRule": "Alle englischen Namen stammen von einem Lebensmittel: apple, cherry, vanilla, pumpkin, chestnut, dough, olive, tea, egg, peach...",
+    "foodWhy": "sein englischer Name kommt von einem Lebensmittel",
+    "moveLabel": "Signaturattacke",
+    "moveRule": "Jedes lernt eine Attacke, die keine andere Entwicklungsreihe lernen kann.",
+    "moveWhy": "als Einziges lernt es {moves}"
+  },
+  "mixed": {
+    "label": "Rund um {type}",
+    "rule": "Jedes Feld passt zum Typ {type}: ein Pokémon vom Typ {type}, eine Attacke vom Typ {type}, eine Fähigkeit, die vor allem Pokémon vom Typ {type} haben, oder der Typ {type} selbst.",
+    "why": "Typ {types}",
+    "move": "eine Attacke vom Typ {type}",
+    "ability": "eine Fähigkeit, die vor allem Pokémon vom Typ {type} haben",
+    "type": "der Typ {type} selbst"
+  }
+}

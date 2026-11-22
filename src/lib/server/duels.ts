@@ -1,4 +1,5 @@
 import "server-only";
+import type { Locale } from "@/i18n/config";
 import type { DuelEmote, PvpView } from "@/lib/pvp-types";
 import {
   chatPvp,
@@ -61,8 +62,9 @@ export function asKind<K extends PvpDuel["kind"]>(duel: PvpDuel, kind: K, act: (
 }
 
 /** What one trainer (or a visitor: null) may see of the duel right now. */
-export function duelView(duel: PvpDuel, playerId: string | null, now: number, rev: number): PvpView {
-  if (duel.kind === "connections") return connectionsView(duel, playerId, now, rev);
+/** `locale`: a live language the viewer plays in (PokéConnections names its groups in it); English otherwise. */
+export function duelView(duel: PvpDuel, playerId: string | null, now: number, rev: number, locale: Locale = "en"): PvpView {
+  if (duel.kind === "connections") return connectionsView(duel, playerId, now, rev, locale);
   if (duel.kind === "pikadoku") return pikadokuView(duel, playerId, now, rev);
   return duel.kind === "pokedle" ? pokedleView(duel, playerId, now, rev) : quizView(duel, playerId, now, rev);
 }

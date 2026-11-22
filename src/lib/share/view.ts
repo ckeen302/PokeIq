@@ -3,8 +3,28 @@ import { DLE_ASSIST_INFO } from "@/lib/dle-assist";
 import { MODULE_INFO } from "@/lib/modes";
 import { GEO_MAX_ROUND_SCORE, GEO_ROUNDS, WORLD_REGION } from "@/lib/geo-types";
 import { PLAY_FORMAT_INFO } from "@/lib/battle/play";
-import { battleOpponent, clock, connMistakes, connSizeOf, connectionsScore, connectionsTitle, guessrTitle, pikadokuSolved, pikadokuTitle, quizTitle } from "./text";
+import { translator, type Translator } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
+import sharePage from "@/messages/share-page";
+import share from "@/messages/share";
+import { battleOpponent, clock, connMistakes, connSizeOf, connectionsScore, connectionsTitle, guessrTitle, pikadokuSolved, pikadokuTitle, quizTitle, type ShareT } from "./text";
 import type { ShareResult } from "./payload";
+
+/** The "share-page" namespace's translator. */
+export type SharePageT = Translator<typeof sharePage.en>;
+let englishPage: SharePageT | undefined;
+const englishPageT = (): SharePageT => (englishPage ??= translator(sharePage, "en", undefined));
+let englishShare: ShareT | undefined;
+const englishShareT = (): ShareT => (englishShare ??= translator(share, "en", undefined));
+
+export interface DescribeOptions {
+  /** The share text's words ("share"), in the page's language. Default English. */
+  t?: ShareT;
+  /** The landing page's ("share-page"), likewise. */
+  tp?: SharePageT;
+  /** A region's name in the page's language (the server reads them from src/data/i18n); default the English one. */
+  region?: (id: string) => string | undefined;
+}
 
 /**
  * How a shared result looks on its landing page (/s/<payload>) and its
@@ -47,15 +67,6 @@ export interface ShareView {
   description: string;
 }
 
-const fmt = (n: number) => n.toLocaleString("en-US");
-
-/** 88 -> "88th". */
-function ordinalOf(n: number): string {
-  const v = Math.round(n);
-  const m = v % 100;
-  return `${v}${m >= 11 && m <= 13 ? "th" : v % 10 === 1 ? "st" : v % 10 === 2 ? "nd" : v % 10 === 3 ? "rd" : "th"}`;
-}
-
 const DLE_TILE: Record<string, ShareTile> = { g: "hit", c: "hit", y: "near", p: "near", b: "miss", x: "miss", u: "up", d: "down", m: "mask" };
 
 /** "kanto" -> "Kanto". */
@@ -68,48 +79,56 @@ export function guessrTile(points: number): ShareTile {
   return "wrong";
 }
 
-export function describeShare(r: ShareResult): ShareView {
+/** A shared result's page and card. `opts`: the page's language (translators and region names); English without. */
+export function describeShare(r: ShareResult, opts: DescribeOptions = {}): ShareView {
+  const t = opts.t ?? englishShareT();
+  const tp = opts.tp ?? englishPageT();
+  const fmt = (n: number) => formatNumber(n, tp.locale);
+  const en = tp.locale === "en";
+  const region = (id: string) => (id === WORLD_REGION ? t("guessr.world") : ((!en && opts.region?.(id)) || regionName(id)));
+  const streak = (n: number) => tp("streak", { n });
   switch (r.game) {
     case "pokedle": {
-      const label = r.daily !== undefined ? `Pokédle #${r.daily}${r.archive ? " (archive)" : ""}` : "Pokédle Practice";
+      const label = r.daily !== undefined ? t(r.archive ? "pokedle.archive" : "pokedle.daily", { n: r.daily }) : t("pokedle.practice");
       const score = `${r.solved ? r.rows.length : "X"}/${r.max}`;
       const chips = [
-        r.hard && "Hard mode",
-        r.assist && `Pokédex: ${DLE_ASSIST_INFO[r.assist].label}`,
-        r.hints?.length && `${r.hints.length} hint${r.hints.length === 1 ? "" : "s"}`,
-        r.streak && `${r.streak}-day streak`,
-        r.top !== undefined && r.players !== undefined && `Top ${r.top}% of ${fmt(r.players)}`,
+        r.hard && tp("pokedle.hard"),
+        r.assist && tp("pokedle.assist", { level: en ? DLE_ASSIST_INFO[r.assist].label : tp(`pokedle.assists.${r.assist}`) }),
+        r.hints?.length && tp("pokedle.hints", { n: r.hints.length }),
+        r.streak && streak(r.streak),
+        r.top !== undefined && r.players !== undefined && tp("pokedle.top", { top: r.top, players: fmt(r.players) }),
       ].filter((c): c is string => Boolean(c));
-      const detail = r.solved ? `Solved in ${r.rows.length} of ${r.max} guesses` : `Not solved in ${r.max} guesses`;
+      const detail = r.solved ? tp("pokedle.solved", { n: r.rows.length, max: r.max }) : tp("pokedle.notSolved", { max: r.max });
       return {
         game: "Pokédle",
-        label: `${label} · ${DLE_FORMAT_LABEL[r.format]}`,
+        label: `${label} · ${en ? DLE_FORMAT_LABEL[r.format] : tp(`pokedle.formats.${r.format}`)}`,
         headline: score,
         detail,
         chips,
         tiles: r.rows.map((row) => [...row].map((c) => DLE_TILE[c] ?? "miss")),
         accent: "violet",
         playHref: "/pokedle",
-        playLabel: "Play today's Pokédle",
-        title: `${label}: ${score}${r.hard ? "*" : ""}`,
-        description: `${detail}. Guess the mystery Pokémon from its clues: a new one every day on PokéIQ. Can you do better?`,
+        playLabel: tp("pokedle.play"),
+        title: tp("titled", { label, score: `${score}${r.hard ? "*" : ""}` }),
+        description: tp("pokedle.description", { detail }),
       };
     }
     case "guessr": {
-      const title = guessrTitle(r, regionName(r.region));
+      const title = guessrTitle(r, region(r.region), t);
       if (r.streak !== undefined) {
+        const headline = tp("guessr.inARow", { n: r.streak });
         return {
           game: "PokéGuessr",
           label: title,
-          headline: `${r.streak} in a row`,
-          detail: `Named ${r.streak} place${r.streak === 1 ? "" : "s"} in a row from in-game screenshots`,
-          chips: [regionName(r.region), "Streak"],
+          headline,
+          detail: tp("guessr.named", { n: r.streak }),
+          chips: [region(r.region), tp("guessr.streakChip")],
           tiles: [[...Array.from({ length: Math.min(r.streak, 9) }, () => "hit" as const), "wrong"]],
           accent: "green",
           playHref: "/pokeguessr",
-          playLabel: "Play PokéGuessr",
-          title: `${title}: ${r.streak} in a row`,
-          description: "GeoGuessr for the Pokémon world: look at the in-game view, drop a pin on the map. Can you beat this streak?",
+          playLabel: tp("guessr.play"),
+          title: tp("titled", { label: title, score: headline }),
+          description: tp("guessr.streakDescription"),
         };
       }
       const rounds = r.rounds ?? [];
@@ -119,121 +138,127 @@ export function describeShare(r: ShareResult): ShareView {
         game: "PokéGuessr",
         label: title,
         headline: fmt(total),
-        detail: `out of ${fmt(max)} points over ${rounds.length || GEO_ROUNDS} places`,
-        chips: [regionName(r.region), r.daily !== undefined ? "Daily game" : `${rounds.length || GEO_ROUNDS} rounds`],
+        detail: tp("guessr.outOf", { max: fmt(max), n: rounds.length || GEO_ROUNDS }),
+        chips: [region(r.region), r.daily !== undefined ? tp("guessr.dailyChip") : tp("guessr.rounds", { n: rounds.length || GEO_ROUNDS })],
         tiles: [rounds.map(guessrTile)],
         numbers: rounds.map(fmt),
         accent: "green",
         playHref: "/pokeguessr",
-        playLabel: r.daily !== undefined ? "Play today's PokéGuessr" : "Play PokéGuessr",
-        title: `${title}: ${fmt(total)}/${fmt(max)}`,
-        description: "GeoGuessr for the Pokémon world: look at the in-game view, drop a pin on the map, score up to 25,000. Can you beat it?",
+        playLabel: r.daily !== undefined ? tp("guessr.playDaily") : tp("guessr.play"),
+        title: tp("titled", { label: title, score: `${fmt(total)}/${fmt(max)}` }),
+        description: tp("guessr.description", { max: fmt(GEO_ROUNDS * GEO_MAX_ROUND_SCORE) }),
       };
     }
     case "quiz": {
       const daily = r.daily !== undefined;
       const test = r.format === "adaptive" && !daily;
-      const game = daily ? "Daily Challenge" : test ? "PokéIQ Test" : MODULE_INFO[r.module].title;
-      const label = daily ? `Daily Challenge #${r.daily}` : test ? "The PokéIQ Test" : quizTitle(r);
+      const game = daily ? tp("quiz.dailyGame") : test ? tp("quiz.testGame") : en ? MODULE_INFO[r.module].title : t(`quiz.modules.${r.module}`);
+      const label = daily ? tp("quiz.dailyLabel", { n: r.daily! }) : test ? tp("quiz.testLabel") : quizTitle(r, t);
       const grid = [...r.grid].map((c): ShareTile => (c === "1" ? "hit" : "wrong"));
       const tiles: ShareTile[][] = [];
       for (let i = 0; i < grid.length; i += 10) tiles.push(grid.slice(i, i + 10));
+      const headline = test ? tp("quiz.iq", { iq: r.pokeiq }) : `${r.correct}/${r.total}`;
       return {
         game,
         label,
-        headline: test ? `PokéIQ ${r.pokeiq}` : `${r.correct}/${r.total}`,
-        detail: test ? `${r.correct}/${r.total} right · ${fmt(r.score)} pts` : `PokéIQ ${r.pokeiq} · ${fmt(r.score)} pts`,
-        chips: [r.seconds !== undefined && `Time ${clock(r.seconds)}`, r.streak && `${r.streak}-day streak`].filter((c): c is string => Boolean(c)),
+        headline,
+        detail: test ? tp("quiz.right", { correct: r.correct, total: r.total, points: fmt(r.score) }) : tp("quiz.iqPoints", { iq: r.pokeiq, points: fmt(r.score) }),
+        chips: [r.seconds !== undefined && tp("time", { time: clock(r.seconds) }), r.streak && streak(r.streak)].filter((c): c is string => Boolean(c)),
         tiles,
         accent: daily ? "pink" : test ? "violet" : "yellow",
         playHref: daily ? "/daily" : test ? "/iq-test" : "/quiz",
-        playLabel: daily ? "Take today's Daily Challenge" : test ? "Take the PokéIQ Test" : "Play the quizzes",
-        title: `${label}: ${test ? `PokéIQ ${r.pokeiq}` : `${r.correct}/${r.total}`}`,
-        description: daily
-          ? "Ten Pokémon questions, the same for every trainer, every day. Keep your streak going on PokéIQ."
-          : "How well do you know Pokémon? Free quizzes on all 1,025 Pokémon, no sign-up. Can you beat this score?",
+        playLabel: daily ? tp("quiz.playDaily") : test ? tp("quiz.playTest") : tp("quiz.play"),
+        title: tp("titled", { label, score: headline }),
+        description: daily ? tp("quiz.dailyDescription") : tp("quiz.description"),
       };
     }
     case "cognitive": {
-      const headline = `Cognitive PokéIQ ${r.score}`;
-      const detail = `${ordinalOf(r.percentile)} percentile of trainers`;
-      const chips = [`Reasoning ${r.fluid}`, `Memory ${r.memory}`, `Speed ${r.speed}`, `Spatial ${r.spatial}`, ...(r.knowledge !== undefined ? [`Knowledge ${r.knowledge}`] : [])];
+      const headline = tp("cognitive.headline", { score: r.score });
+      const detail = tp("cognitive.detail", { p: Math.round(r.percentile) });
+      const chips = [
+        tp("cognitive.reasoning", { n: r.fluid }),
+        tp("cognitive.memory", { n: r.memory }),
+        tp("cognitive.speed", { n: r.speed }),
+        tp("cognitive.spatial", { n: r.spatial }),
+        ...(r.knowledge !== undefined ? [tp("cognitive.knowledge", { n: r.knowledge })] : []),
+      ];
       return {
-        game: "Cognitive PokéIQ",
-        label: "The PokéIQ Test · cognitive",
+        game: tp("cognitive.game"),
+        label: tp("cognitive.label"),
         headline,
         detail,
         chips,
         tiles: [],
         accent: "violet",
         playHref: "/iq-test",
-        playLabel: "Take the PokéIQ Test",
-        title: `${headline} (${detail})`,
-        description: "Reasoning, memory, speed and spatial skills, tested with Pokémon and scored against other trainers. Not a clinical IQ test. Where do you land?",
+        playLabel: tp("quiz.playTest"),
+        title: tp("cognitive.title", { headline, detail }),
+        description: tp("cognitive.description"),
       };
     }
     case "connections": {
-      const label = connectionsTitle(r);
+      const label = connectionsTitle(r, t);
       const size = connSizeOf(r.rows);
       const word = size === 5 ? "five" : "four";
       const found = r.rows.filter((row) => /^([0-4])\1{3,4}$/.test(row)).length;
       const mistakes = connMistakes(r.rows);
-      const time = r.seconds !== undefined ? ` in ${clock(r.seconds)}` : "";
       const detail = r.solved
-        ? `Found all ${word} groups with ${mistakes === 0 ? "no mistakes" : `${mistakes} mistake${mistakes === 1 ? "" : "s"}`}${time}`
-        : `Found ${found} of ${size} groups before running out of mistakes`;
-      const headline = r.solved ? (mistakes === 0 ? "Perfect" : "Solved") : `${found}/${size}`;
+        ? r.seconds !== undefined
+          ? tp("connections.solvedIn", { size: word, mistakes, time: clock(r.seconds) })
+          : tp("connections.solved", { size: word, mistakes })
+        : tp("connections.notSolved", { found, size });
+      const headline = r.solved ? (mistakes === 0 ? tp("connections.perfect") : tp("connections.solvedHeadline")) : `${found}/${size}`;
       return {
         game: "PokéConnections",
         label,
         headline,
         detail,
-        chips: [r.seconds !== undefined && `Time ${clock(r.seconds)}`, r.streak && `${r.streak}-day streak`, r.hinted && "Hint used"].filter((c): c is string => Boolean(c)),
+        chips: [r.seconds !== undefined && tp("time", { time: clock(r.seconds) }), r.streak && streak(r.streak), r.hinted && tp("connections.hint")].filter((c): c is string => Boolean(c)),
         tiles: r.rows.map((row) => [...row].map((d) => CONN_SHARE_TILES[Number(d)])),
         accent: "violet",
         playHref: "/pokeconnections",
-        playLabel: r.daily !== undefined ? "Play today's PokéConnections" : "Play PokéConnections",
-        title: `${label}: ${connectionsScore(r)}`,
-        description: `${size === 5 ? "Twenty-five Pokémon, five" : "Sixteen Pokémon, four"} hidden groups. Find what links them in a new puzzle every day on PokéIQ. Can you do better?`,
+        playLabel: r.daily !== undefined ? tp("connections.playDaily") : tp("connections.play"),
+        title: tp("titled", { label, score: connectionsScore(r, t) }),
+        description: tp("connections.description", { size: word }),
       };
     }
     case "pikadoku": {
-      const label = pikadokuTitle(r);
+      const label = pikadokuTitle(r, t);
       const solved = pikadokuSolved(r.grid);
       const rare = [...r.grid].filter((c) => c === "p" || c === "b").length;
-      const detail = solved === 9 ? "Filled the whole grid" : `Filled ${solved} of 9 cells`;
+      const detail = solved === 9 ? tp("pikadoku.full") : tp("pikadoku.filled", { n: solved });
       return {
         game: "Pikadoku",
         label,
         headline: `${solved}/9`,
-        detail: r.score !== undefined ? `${detail} · rarity score ${r.score}` : detail,
-        chips: [r.score !== undefined && `Score ${r.score}`, rare > 0 && `${rare} rare pick${rare === 1 ? "" : "s"}`, r.streak && `${r.streak}-day streak`].filter((c): c is string => Boolean(c)),
+        detail: r.score !== undefined ? tp("pikadoku.withScore", { detail, score: r.score }) : detail,
+        chips: [r.score !== undefined && tp("pikadoku.score", { score: r.score }), rare > 0 && tp("pikadoku.rare", { n: rare }), r.streak && streak(r.streak)].filter((c): c is string => Boolean(c)),
         tiles: [0, 1, 2].map((row) => [...r.grid.slice(row * 3, row * 3 + 3)].map((c) => PDK_TILE[c] ?? "pdk-empty")),
         accent: "yellow",
         playHref: "/pikadoku",
-        playLabel: r.weekly !== undefined ? "Play this week's Pikadoku" : "Play today's Pikadoku",
-        title: `${label}: ${solved}/9${r.score !== undefined ? ` · score ${r.score}` : ""}`,
-        description: "Pokémon Sudoku: one Pokémon for each cell, matching its row and column. The rarer your picks, the lower your score. Can you do better?",
+        playLabel: r.weekly !== undefined ? tp("pikadoku.playWeekly") : tp("pikadoku.play"),
+        title: r.score !== undefined ? tp("pikadoku.titleScore", { label, solved, score: r.score }) : tp("titled", { label, score: `${solved}/9` }),
+        description: tp("pikadoku.description"),
       };
     }
     case "battle": {
       const format = PLAY_FORMAT_INFO[r.format].name;
-      const headline = r.outcome === "win" ? "Victory" : r.outcome === "loss" ? "Defeat" : "Draw";
-      const turns = `${r.turns} turn${r.turns === 1 ? "" : "s"}`;
+      const headline = tp(`battle.${r.outcome}`);
+      const turns = t("battle.turns", { n: r.turns });
+      const opponent = battleOpponent(r, t);
       return {
-        game: "Battle",
-        label: `Battle · ${format}`,
+        game: tp("battle.game"),
+        label: tp("battle.label", { format }),
         headline,
-        detail: `${r.outcome === "win" ? "Won" : r.outcome === "loss" ? "Lost" : "Drew"} in ${turns} · ${battleOpponent(r)}`,
-        chips: [battleOpponent(r), turns],
+        detail: tp("battle.detail", { outcome: r.outcome, turns, opponent }),
+        chips: [opponent, turns],
         tiles: [],
         accent: "pink",
         playHref: "/battle/play",
-        playLabel: "Start a battle",
-        title: `${headline} in ${format}`,
-        description: "Pokémon battles on Pokémon Showdown's engine, against the computer or a friend. Free, in your browser.",
+        playLabel: tp("battle.play"),
+        title: tp("battle.title", { headline, format }),
+        description: tp("battle.description"),
       };
     }
   }
 }
-

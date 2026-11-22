@@ -1,0 +1,86 @@
+{
+  "divisions": {
+    "poke": "Poké Ball",
+    "great": "Super Ball",
+    "ultra": "Ultra Ball",
+    "master": "Master Ball",
+    "beast": "Ente Ball"
+  },
+  "badgeTitle": "{name} · {elo} Elo",
+  "progress": {
+    "to": "Progreso hacia {next}",
+    "toTop": "Progreso hacia la cima",
+    "left": "{n} para {next}",
+    "next": "Siguiente: {next}",
+    "top": "La división más alta"
+  },
+  "bot": {
+    "tag": "Líder de Gimnasio",
+    "tagTitle": "Un rival controlado por el ordenador: el Líder de Gimnasio juega en la clasificatoria cuando no hay ningún Entrenador disponible",
+    "leaders": {
+      "brock": { "name": "Brock", "full": "Líder de Gimnasio Brock" },
+      "misty": { "name": "Misty", "full": "Líder de Gimnasio Misty" },
+      "ltsurge": { "name": "Lt. Surge", "full": "Líder de Gimnasio Lt. Surge" },
+      "erika": { "name": "Erika", "full": "Líder de Gimnasio Erika" },
+      "koga": { "name": "Koga", "full": "Líder de Gimnasio Koga" },
+      "sabrina": { "name": "Sabrina", "full": "Líder de Gimnasio Sabrina" },
+      "blaine": { "name": "Blaine", "full": "Líder de Gimnasio Blaine" },
+      "falkner": { "name": "Pegaso", "full": "Líder de Gimnasio Pegaso" },
+      "bugsy": { "name": "Antón", "full": "Líder de Gimnasio Antón" },
+      "whitney": { "name": "Blanca", "full": "Líder de Gimnasio Blanca" },
+      "morty": { "name": "Morti", "full": "Líder de Gimnasio Morti" },
+      "chuck": { "name": "Aníbal", "full": "Líder de Gimnasio Aníbal" },
+      "jasmine": { "name": "Yasmina", "full": "Líder de Gimnasio Yasmina" },
+      "pryce": { "name": "Fredo", "full": "Líder de Gimnasio Fredo" },
+      "clair": { "name": "Débora", "full": "Líder de Gimnasio Débora" },
+      "roxanne": { "name": "Petra", "full": "Líder de Gimnasio Petra" }
+    }
+  },
+  "record": {
+    "place": "<b>#{position}</b> de {players}",
+    "ladder": "Clasificación: <b>#{position}</b> de {players}",
+    "wl": "{wins} V · {losses} D",
+    "draws": " · {draws} E",
+    "best": "Mejor: {points} pts"
+  },
+  "search": {
+    "searching": "Buscando rival para la clasificatoria…",
+    "any": " · cualquier Entrenador",
+    "widening": " · ampliando la búsqueda",
+    "near": " · Entrenadores con un Elo parecido",
+    "noneYet": "Aún no hay ningún Entrenador. ¿Te enfrentas a un Líder de Gimnasio?",
+    "botAbout": "Un rival controlado por el ordenador que juega a tu nivel de división. Cuenta para el Elo, pero solo con la mitad del cambio habitual.",
+    "bot": "Enfrentarse a un Líder",
+    "cancel": "Cancelar"
+  },
+  "card": {
+    "label": "Clasificatoria · Mapa mundial",
+    "loading": "Cargando tu rango…",
+    "off": "La clasificatoria de PokéGuessr llegará pronto. Los duelos amistosos ya están disponibles: cambia a Amistoso para buscar rival o retar a un amigo.",
+    "ladder": "Clasificación",
+    "how1": "Cara a cara en el mapa mundial. Sube de Poké Ball a Ente Ball contra Entrenadores con un Elo parecido al tuyo.",
+    "how2": "Los mismos lugares para los dos y {hp} PS cada uno: en cada ronda, la puntuación más baja pierde la diferencia. Siempre en el mapa mundial. Abandonar cuenta como derrota.",
+    "how3": "Todo el mundo empieza con {start} de Elo, calculado como en Pokémon Showdown: en Poké Ball y Super Ball solo se muestra tu división; a partir de Ultra Ball también se ve el número. Por encima de {drift}, el Elo baja un poco los días que no juegas.",
+    "how4": "Te emparejamos con Entrenadores de Elo parecido, y la diferencia aumenta cuanto más esperas. Si no aparece nadie en {wait}, puedes enfrentarte a un Líder de Gimnasio: un rival controlado por el ordenador, bien identificado, que juega a tu nivel de división y cuenta con la mitad del cambio habitual.",
+    "waitSeconds": "{n} segundos",
+    "waitWhile": "un rato",
+    "how5": "La clasificatoria va por temporadas de ocho semanas. Tu división más alta de la temporada te da sus recompensas (una insignia de temporada y objetos estéticos de cada división hasta ella) cuando termina. Después, todos los Elo se acercan a medio camino de {start}, bajando como mucho una división, así que vuelves a empezar cerca de donde acabaste.",
+    "nameLabel": "Nombre de Entrenador para la clasificatoria",
+    "namePlaceholder": "Nombre de Entrenador",
+    "nameRejected": "Elige otro nombre.",
+    "queue": "Buscar clasificatoria"
+  },
+  "outcome": {
+    "eloLabel": "Elo {delta}, ahora {after}",
+    "climbing": "Subiendo",
+    "slipping": "Bajando",
+    "holding": "Igual",
+    "botNote": "Duelo contra un Líder de Gimnasio: cuenta con la mitad del cambio habitual.",
+    "promoted": "¡Asciendes a {name}!",
+    "demoted": "Bajas a {name}. Gana el siguiente para volver a subir.",
+    "counting": "Calculando tu Elo…"
+  },
+  "spot": {
+    "none": "Todavía no estás en la clasificación. <link>Juega un duelo clasificatorio</link> para conseguir tu división."
+  }
+}

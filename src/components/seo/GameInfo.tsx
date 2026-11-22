@@ -1,6 +1,8 @@
 import { HowToButton } from "./HowToButton";
 import { webGame } from "@/lib/structured-data";
 import { jsonLd } from "@/lib/seo";
+import { getLocale, serverT } from "@/i18n/server";
+import gameInfo from "@/messages/game-info";
 
 /** Static SEO copy under a game: intro, how to play, FAQ (collapsed) and JSON-LD. */
 
@@ -28,7 +30,8 @@ interface Props {
 }
 
 export function GameInfo({ path, name, intro, steps, faqs, description, howToButton, hidden, noFaq }: Props) {
-  const app = webGame({ name, path, description });
+  const app = webGame({ name, path, description, locale: getLocale() });
+  const t = serverT(gameInfo);
   const faq = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -36,17 +39,17 @@ export function GameInfo({ path, name, intro, steps, faqs, description, howToBut
   };
   if (hidden) return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(app) }} />;
   return (
-    <section className="mx-auto max-w-3xl space-y-6" aria-label={`About ${name}`}>
+    <section className="mx-auto max-w-3xl space-y-6" aria-label={t("about", { name })}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(app) }} />
       {!noFaq && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(faq) }} />}
       {/* With the button (the rules are in its pop-up) it's the button alone; otherwise a heading, the intro and the steps. */}
       {howToButton ? (
         <div className="flex justify-center">
-          <HowToButton name={name} />
+          <HowToButton name={name} label={t("howTo", { name })} />
         </div>
       ) : (
         <div className="space-y-3 text-sm text-muted-foreground">
-          <h2 className="font-display text-base font-bold uppercase tracking-wider text-foreground">How to play {name}</h2>
+          <h2 className="font-display text-base font-bold uppercase tracking-wider text-foreground">{t("howTo", { name })}</h2>
           <p className="max-md:hidden">{intro}</p>
           <ol className="list-decimal space-y-1 pl-5">
             {steps.map((s) => (
@@ -57,7 +60,7 @@ export function GameInfo({ path, name, intro, steps, faqs, description, howToBut
       )}
       {!noFaq && (
         <div className="space-y-2">
-          <h2 className="font-display text-base font-bold uppercase tracking-wider">FAQ</h2>
+          <h2 className="font-display text-base font-bold uppercase tracking-wider">{t("faq")}</h2>
           {faqs.map((f) => (
             <details key={f.q} className="group rounded-lg border bg-card px-4 py-3 text-sm">
               <summary className="tap cursor-pointer font-semibold">{f.q}</summary>

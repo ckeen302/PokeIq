@@ -4,17 +4,20 @@
  * (tests/pokedle-search.test.ts) and fast enough to run on every keystroke.
  */
 
-export type NameEntry = [id: number, name: string, gen: number];
+import { NOT_LETTER, foldLetters } from "@/lib/names/fold";
 
-/** Lowercase letters and digits only: "Farfetch'd" → "farfetchd", "Flabébé" → "flabebe". */
+/**
+ * A Pokémon the box can suggest: its id, its name as shown (in the page's language), its generation and, in another
+ * language, the other names it also answers to (the English one, rōmaji). English pages send no aliases.
+ */
+export type NameEntry = [id: number, name: string, gen: number, aliases?: string[]];
+
+/** Lowercase letters and digits only, in any script: "Farfetch'd" → "farfetchd", "Flabébé" → "flabebe", "ピカチュウ" → "ぴかちゅう". */
 export const normalizeName = (s: string) =>
-  s
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
+  foldLetters(s)
     .replace(/♀/g, "f")
     .replace(/♂/g, "m")
-    .replace(/[^a-z0-9]/g, "");
+    .replace(NOT_LETTER, "");
 
 /** Optimal string alignment distance (Levenshtein plus swapped neighbours), giving up past `max`. */
 export function editDistance(a: string, b: string, max: number): number {
@@ -46,6 +49,8 @@ interface Indexed {
   norm: string;
   /** Each word's start ("mr. mime" → "mrmime", "mime"). */
   words: string[];
+  /** The other names it answers to, normalized (empty on English pages). */
+  alts: string[];
 }
 
 const cache = new WeakMap<readonly NameEntry[], Indexed[]>();
@@ -54,7 +59,7 @@ function indexOf(names: readonly NameEntry[]): Indexed[] {
   if (!index) {
     index = names.map((entry) => {
       const parts = entry[1].split(/[\s\-.:]+/).filter(Boolean);
-      return { entry, norm: normalizeName(entry[1]), words: parts.slice(1).map((_, i) => normalizeName(parts.slice(i + 1).join(""))) };
+      return { entry, norm: normalizeName(entry[1]), words: parts.slice(1).map((_, i) => normalizeName(parts.slice(i + 1).join(""))), alts: (entry[3] ?? []).map(normalizeName).filter(Boolean) };
     });
     cache.set(names, index);
   }
@@ -81,26 +86,29 @@ export function suggest(names: readonly NameEntry[], query: string, exclude: Rea
   const fuzzy: [number, Indexed][] = [];
   let alreadyGuessed: NameEntry | undefined;
   for (const item of indexOf(names)) {
-    const { entry, norm, words } = item;
+    const { entry, norm, words, alts } = item;
     if (exclude.has(entry[0])) {
-      if (norm === q) alreadyGuessed = entry;
+      if (norm === q || alts.includes(q)) alreadyGuessed = entry;
       continue;
     }
     if (entry[1].toLowerCase() === typed) tiers[0].push(entry);
-    else if (norm === q) tiers[1].push(entry);
-    else if (norm.startsWith(q)) tiers[2].push(entry);
+    else if (norm === q || alts.includes(q)) tiers[1].push(entry);
+    else if (norm.startsWith(q) || alts.some((a) => a.startsWith(q))) tiers[2].push(entry);
     else if (words.some((w) => w.startsWith(q))) tiers[3].push(entry);
-    else if (norm.includes(q)) tiers[4].push(entry);
+    else if (norm.includes(q) || alts.some((a) => a.includes(q))) tiers[4].push(entry);
     else fuzzy.push([0, item]);
   }
   const found = tiers.flat();
   const max = typosAllowed(q.length);
   if (found.length === 0 && max > 0) {
     const near: [number, NameEntry][] = [];
-    for (const [, { entry, norm }] of fuzzy) {
-      // A typo in the name, or in the start of it typed so far.
-      let d = editDistance(q, norm, max);
-      for (let len = q.length - 1; len <= q.length + 1 && d > 0; len++) if (len > 0 && len < norm.length) d = Math.min(d, editDistance(q, norm.slice(0, len), max));
+    for (const [, { entry, norm, alts }] of fuzzy) {
+      // A typo in the name (or another name it answers to), or in the start of it typed so far.
+      let d = max + 1;
+      for (const name of [norm, ...alts]) {
+        d = Math.min(d, editDistance(q, name, max));
+        for (let len = q.length - 1; len <= q.length + 1 && d > 0; len++) if (len > 0 && len < name.length) d = Math.min(d, editDistance(q, name.slice(0, len), max));
+      }
       if (d <= max) near.push([d, entry]);
     }
     near.sort((a, b) => a[0] - b[0] || a[1][1].length - b[1][1].length);

@@ -1,0 +1,103 @@
+{
+  "shell": {
+    "fullscreen": "Pantalla completa",
+    "exitFullscreen": "Salir de pantalla completa",
+    "withEsc": "{label} (Esc)",
+    "back": "Volver a PokéGuessr",
+    "secondsLeft": "Quedan {s} segundos"
+  },
+  "dock": {
+    "size": "Tamaño del mapa",
+    "bigger": "Mapa más grande",
+    "smaller": "Mapa más pequeño",
+    "unpin": "Soltar el mapa",
+    "keepOpen": "Mantener el mapa abierto",
+    "backToPicture": "Volver a la imagen",
+    "guessMap": "Mapa para adivinar",
+    "moveHint": "Toca otra vez para mover tu chincheta",
+    "placeHint": "Toca el mapa para poner tu chincheta",
+    "openMove": "Abre el mapa para mover tu chincheta o adivinar",
+    "openPlace": "Abre el mapa para poner tu chincheta"
+  },
+  "guess": {
+    "guess": "Adivinar",
+    "placeFirst": "Primero pon tu chincheta en el mapa",
+    "place": "Pon tu chincheta en el mapa"
+  },
+  "key": {
+    "space": "Espacio"
+  },
+  "round": "Ronda",
+  "inARow": "{n} seguidos",
+  "map": {
+    "pickLabel": "Mapa de {map}: haz clic donde creas que es. Desplaza para hacer zoom y arrastra para moverte.",
+    "label": "Mapa de {map}",
+    "failed": "No se ha podido cargar el mapa. Prueba a recargar.",
+    "loading": "Cargando el mapa",
+    "zoomIn": "Acercar",
+    "zoomOut": "Alejar",
+    "whole": "Ver todo el mapa"
+  },
+  "shot": {
+    "where": "¿Dónde está esto?",
+    "prev": "Vista anterior",
+    "prevKey": "Vista anterior (←)",
+    "next": "Vista siguiente",
+    "nextKey": "Vista siguiente (→)",
+    "whole": "Ver la captura entera",
+    "wholeShort": "Captura entera",
+    "views": "Vistas de este lugar",
+    "view": "Vista {n} de {count}",
+    "fullscreen": "Captura a pantalla completa",
+    "close": "Cerrar"
+  },
+  "report": {
+    "open": "Reportar esta captura",
+    "question": "¿Qué le pasa a esta captura?",
+    "reason": "Motivo",
+    "reasons": {
+      "wrong-place": "Lugar equivocado",
+      "wrong-game": "Juego equivocado",
+      "gives-away": "Revela la respuesta",
+      "too-generic": "Demasiado genérica para ubicarla",
+      "bad-image": "Imagen defectuosa",
+      "other": "Otra cosa"
+    },
+    "placeholder": "Opcional: ¿dónde es en realidad o qué la delata?",
+    "note": "Nota",
+    "send": "Enviar reporte",
+    "cancel": "Cancelar",
+    "failed": "No se ha podido enviar el reporte.",
+    "thanks": "Gracias: revisaremos esta captura."
+  },
+  "share": {
+    "text": "Mi resultado en PokéGuessr",
+    "copy": "Copiar enlace del resultado",
+    "copied": "¡Enlace copiado!"
+  },
+  "learn": {
+    "atlas": "Atlas",
+    "dex": "Pokédex"
+  },
+  "results": {
+    "streakOver": "Fin de la racha",
+    "complete": "Exploración completada",
+    "bestRound": "Mejor ronda",
+    "worstRound": "Peor ronda",
+    "finalStreak": "Racha final",
+    "total": "Puntuación total · {rounds} rondas",
+    "outOf": "de {max}",
+    "rounds": "Rondas",
+    "best": "Mejor",
+    "worst": "Peor",
+    "timeUp": "Se acabó el tiempo",
+    "rightRegion": "Región correcta",
+    "wrongRegion": "Región incorrecta",
+    "spotOn": "Clavado",
+    "squares": "{n, plural, one {a {d} casilla} other {a {d} casillas}}",
+    "correct": "Correcto",
+    "missed": "Fallado",
+    "again": "Jugar otra vez",
+    "shareAndBoard": "Compartir y clasificación"
+  }
+}

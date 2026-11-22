@@ -3,10 +3,14 @@
 import { useMemo, useState } from "react";
 import { ArrowLeft, Check, ChevronDown, Dices, Minus, RotateCcw, Search } from "lucide-react";
 import { DEFAULT_PICK_IDS, PDK_CATALOG, decodePick, encodePick, type PdkCatalogEntry } from "@/lib/pikadoku/catalog";
-import { PDK_BANDS, PDK_FAMILIES, PDK_FAMILY_LABELS, type PdkBand, type PdkFamily, type PdkSettings } from "@/lib/pikadoku/types";
+import { PDK_BANDS, PDK_FAMILIES, type PdkFamily, type PdkSettings } from "@/lib/pikadoku/types";
 import { Button } from "@/components/ui/button";
-import { FAMILY_ICON, FAMILY_TINT } from "./parts";
+import { FAMILY_ICON, FAMILY_TINT, usePdkLocal } from "./parts";
 import { cn } from "@/lib/utils";
+import { INTL_LOCALE } from "@/i18n/format";
+import { useT } from "@/i18n/client";
+import pikadoku from "@/messages/pikadoku";
+import board from "@/messages/pikadoku-board";
 
 /**
  * Unlimited's setup: the rules, a difficulty and which categories may appear,
@@ -14,19 +18,14 @@ import { cn } from "@/lib/utils";
  * page keeps it on this device), and the board is only dealt on Generate.
  */
 
-const BAND_LABEL: Record<PdkBand, string> = { easy: "Easy", normal: "Normal", hard: "Hard" };
-const BAND_HINT: Record<PdkBand, string> = {
-  easy: "Every cell has plenty of answers.",
-  normal: "Any mix the categories allow.",
-  hard: "A few cells have only a handful of answers.",
-};
-
 /** Groups with long lists get a search box and sort A to Z. */
 const SEARCHABLE = new Set<PdkFamily>(["moves", "abilities"]);
-const GROUPS: { family: PdkFamily; cats: PdkCatalogEntry[] }[] = PDK_FAMILIES.map((family) => {
-  const cats = PDK_CATALOG.filter((c) => c.family === family);
-  return { family, cats: SEARCHABLE.has(family) ? [...cats].sort((a, b) => a.label.localeCompare(b.label)) : cats };
-}).filter((g) => g.cats.length > 0);
+const groupsOf = (catalog: PdkCatalogEntry[], intl?: string): { family: PdkFamily; cats: PdkCatalogEntry[] }[] =>
+  PDK_FAMILIES.map((family) => {
+    const cats = catalog.filter((c) => c.family === family);
+    return { family, cats: SEARCHABLE.has(family) ? [...cats].sort((a, b) => a.label.localeCompare(b.label, intl)) : cats };
+  }).filter((g) => g.cats.length > 0);
+const GROUPS = groupsOf(PDK_CATALOG);
 
 /** The ticked categories a device's settings stand for: its own pack, else the classic mix of its families (older devices). */
 export function pickedIds(s: PdkSettings): Set<string> {
@@ -68,13 +67,15 @@ function RuleSwitch({ id, label, description, checked, onChange }: { id: string;
 
 function GroupRow({ family, cats, picked, open, onOpen, onSet }: { family: PdkFamily; cats: PdkCatalogEntry[]; picked: ReadonlySet<string>; open: boolean; onOpen: () => void; onSet: (ids: string[], on: boolean) => void }) {
   const [query, setQuery] = useState("");
+  const t = useT(pikadoku);
+  const tb = useT(board);
   const on = cats.filter((c) => picked.has(c.id));
   const state: boolean | "mixed" = on.length === cats.length ? true : on.length === 0 ? false : "mixed";
   const Icon = FAMILY_ICON[family];
-  const label = PDK_FAMILY_LABELS[family];
+  const label = tb(`family.${family}`);
   const shown = query.trim() ? cats.filter((c) => c.label.toLowerCase().includes(query.trim().toLowerCase())) : cats;
   // What's ticked, in words: the whole group, nothing, or the first few names.
-  const summary = state === true ? "All" : state === false ? "None" : on.map((c) => c.label).join(", ");
+  const summary = state === true ? t("setup.all") : state === false ? t("setup.none") : on.map((c) => c.label).join(t.locale === "ja" ? "、" : ", ");
   return (
     <div className={cn("rounded-lg border bg-card", open ? "border-foreground/30" : "border-foreground/15")} data-testid={`pdk-setup-group-${family}`}>
       <div className="flex items-center gap-1 p-1.5">
@@ -82,7 +83,7 @@ function GroupRow({ family, cats, picked, open, onOpen, onSet }: { family: PdkFa
           type="button"
           role="checkbox"
           aria-checked={state}
-          aria-label={`${label}: ${state === true ? "untick all" : "tick all"}`}
+          aria-label={t(state === true ? "setup.untickAll" : "setup.tickAll", { label })}
           onClick={() => onSet(cats.map((c) => c.id), state !== true)}
           data-testid={`pdk-setup-toggle-${family}`}
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -113,19 +114,19 @@ function GroupRow({ family, cats, picked, open, onOpen, onSet }: { family: PdkFa
         <div id={`pdk-setup-list-${family}`} className="space-y-3 border-t border-foreground/10 p-3">
           <div className="flex flex-wrap items-center gap-2">
             <Button type="button" variant="outline" size="sm" onClick={() => onSet(cats.map((c) => c.id), true)} data-testid={`pdk-setup-all-${family}`}>
-              All
+              {t("setup.all")}
             </Button>
             <Button type="button" variant="outline" size="sm" onClick={() => onSet(cats.map((c) => c.id), false)} data-testid={`pdk-setup-none-${family}`}>
-              None
+              {t("setup.none")}
             </Button>
             {SEARCHABLE.has(family) && (
               <label className="relative min-w-0 flex-1 basis-40">
-                <span className="sr-only">Find {label.toLowerCase()}</span>
+                <span className="sr-only">{t(`setup.find.${family as "moves" | "abilities"}`)}</span>
                 <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder={`Find ${family === "moves" ? "a move" : "an ability"}`}
+                  placeholder={t(family === "moves" ? "setup.findOne.moves" : "setup.findOne.abilities")}
                   className="h-10 w-full rounded-md border border-foreground/20 bg-background pl-8 pr-3 text-base sm:text-sm"
                   data-testid={`pdk-setup-search-${family}`}
                 />
@@ -152,7 +153,7 @@ function GroupRow({ family, cats, picked, open, onOpen, onSet }: { family: PdkFa
                 </button>
               );
             })}
-            {!shown.length && <p className="py-2 text-sm text-muted-foreground">Nothing matches.</p>}
+            {!shown.length && <p className="py-2 text-sm text-muted-foreground">{t("setup.nothing")}</p>}
           </div>
         </div>
       )}
@@ -179,6 +180,10 @@ export function UnlimitedSetup({
 }) {
   const picked = useMemo(() => pickedIds(settings), [settings]);
   const [open, setOpen] = useState<PdkFamily | null>(null);
+  const t = useT(pikadoku);
+  const local = usePdkLocal();
+  // A page in another language lists its own labels (moves and abilities sorted as its language sorts).
+  const groups = useMemo(() => (local ? groupsOf(PDK_CATALOG.map((c) => ({ ...c, label: local.labels[c.id] ?? c.label })), INTL_LOCALE[t.locale]) : GROUPS), [local, t.locale]);
   const band = settings.band ?? "normal";
   const set = (patch: Partial<PdkSettings>) => onChange(withPick({ ...settings, ...patch }, picked));
   const setCats = (ids: string[], on: boolean) => {
@@ -195,30 +200,30 @@ export function UnlimitedSetup({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 id="pdk-setup-title" className="font-display text-2xl font-bold uppercase tracking-tight">
-            Build your board
+            {t("setup.title")}
           </h2>
-          <p className="text-sm text-muted-foreground">Set the rules, choose what may appear, then generate. Never counted toward your streak.</p>
+          <p className="text-sm text-muted-foreground">{t("setup.intro")}</p>
         </div>
         {onBack && (
           <Button type="button" variant="ghost" size="sm" onClick={onBack} data-testid="pdk-setup-back" className="shrink-0">
-            <ArrowLeft className="h-4 w-4" aria-hidden /> Board
+            <ArrowLeft className="h-4 w-4" aria-hidden /> {t("setup.back")}
           </Button>
         )}
       </div>
 
       <div className="space-y-2">
-        <h3 className="hud-label">Rules</h3>
+        <h3 className="hud-label">{t("setup.rules")}</h3>
         <div className="grid gap-2 sm:grid-cols-2">
-          <RuleSwitch id="pp" label="Unlimited PP" description="No cap on guesses: keep going until the board is full." checked={settings.unlimitedPP} onChange={() => set({ unlimitedPP: !settings.unlimitedPP })} />
-          <RuleSwitch id="guard" label="Guaranteed solvable" description="Every board can be finished, and a pick that would strand the other cells is refused." checked={settings.softLockGuard} onChange={() => set({ softLockGuard: !settings.softLockGuard })} />
-          <RuleSwitch id="single" label="Allow one-answer cells" description="A cell may have only one Pokémon that fits." checked={settings.allowSingle} onChange={() => set({ allowSingle: !settings.allowSingle })} />
-          <RuleSwitch id="timer" label="Timer" description="A running clock above the board." checked={settings.timer} onChange={() => set({ timer: !settings.timer })} />
+          <RuleSwitch id="pp" label={t("setup.pp")} description={t("setup.ppHint")} checked={settings.unlimitedPP} onChange={() => set({ unlimitedPP: !settings.unlimitedPP })} />
+          <RuleSwitch id="guard" label={t("setup.guard")} description={t("setup.guardHint")} checked={settings.softLockGuard} onChange={() => set({ softLockGuard: !settings.softLockGuard })} />
+          <RuleSwitch id="single" label={t("setup.single")} description={t("setup.singleHint")} checked={settings.allowSingle} onChange={() => set({ allowSingle: !settings.allowSingle })} />
+          <RuleSwitch id="timer" label={t("setup.timer")} description={t("setup.timerHint")} checked={settings.timer} onChange={() => set({ timer: !settings.timer })} />
         </div>
       </div>
 
       <div className="space-y-2">
         <h3 className="hud-label" id="pdk-band-label">
-          Difficulty
+          {t("setup.difficulty")}
         </h3>
         <div className="grid grid-cols-3 gap-1 rounded-lg border border-foreground/15 bg-card p-1" role="radiogroup" aria-labelledby="pdk-band-label">
           {PDK_BANDS.map((b) => (
@@ -231,27 +236,27 @@ export function UnlimitedSetup({
               data-testid={`pdk-band-${b}`}
               className={cn("min-h-11 rounded-md font-display text-sm font-semibold uppercase tracking-wider transition-colors", band === b ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
             >
-              {BAND_LABEL[b]}
+              {t(`setup.band.${b}`)}
             </button>
           ))}
         </div>
-        <p className="text-xs text-muted-foreground">{BAND_HINT[band]}</p>
+        <p className="text-xs text-muted-foreground">{t(`setup.bandHint.${band}`)}</p>
       </div>
 
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="hud-label">Categories</h3>
+          <h3 className="hud-label">{t("setup.categories")}</h3>
           <button
             type="button"
             onClick={() => onChange(withPick({ ...settings }, new Set(DEFAULT_PICK_IDS)))}
             className="inline-flex min-h-9 items-center gap-1 rounded-md px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground"
             data-testid="pdk-setup-reset"
           >
-            <RotateCcw className="h-3.5 w-3.5" aria-hidden /> Classic mix
+            <RotateCcw className="h-3.5 w-3.5" aria-hidden /> {t("setup.classic")}
           </button>
         </div>
         <div className="space-y-2">
-          {GROUPS.map((g) => (
+          {groups.map((g) => (
             <GroupRow key={g.family} family={g.family} cats={g.cats} picked={picked} open={open === g.family} onOpen={() => setOpen((o) => (o === g.family ? null : g.family))} onSet={setCats} />
           ))}
         </div>
@@ -265,7 +270,7 @@ export function UnlimitedSetup({
           </p>
         )}
         <Button type="button" size="lg" className="w-full" disabled={busy} onClick={() => onGenerate(withPick(settings, picked))} data-testid="pdk-setup-generate">
-          <Dices className="h-5 w-5" aria-hidden /> Generate board
+          <Dices className="h-5 w-5" aria-hidden /> {t("setup.generate")}
         </Button>
       </div>
     </section>

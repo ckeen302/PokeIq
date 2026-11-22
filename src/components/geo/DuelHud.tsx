@@ -14,6 +14,13 @@ import { SEAT_COLORS } from "@/components/duel/DuelParts";
 import { cn } from "@/lib/utils";
 import { GeoBallIcon, GeoDivisionBadge, GymLeaderAvatar, GymLeaderTag } from "./GeoRanked";
 import { geoDivisionOf } from "@/lib/geo-ranked";
+import { useShownName } from "./GeoRanked";
+import { useT } from "@/i18n/client";
+import { useLocale } from "@/i18n/locale-context";
+import { type Translator } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
+import type { Locale } from "@/i18n/config";
+import hud from "@/messages/guessr-hud";
 
 /**
  * The duel's HUD, GeoGuessr's: a top band with slanted HP bars at the screen
@@ -24,7 +31,11 @@ import { geoDivisionOf } from "@/lib/geo-ranked";
  * drains, "It's super effective!") runs here from what the server stamped.
  */
 
-const fmt = (n: number) => n.toLocaleString("en-US");
+type H = Translator<typeof hud.en>;
+/** A number as the page's language writes it (en-US on English pages, as before). */
+export const fmtIn = (locale: Locale) => (n: number) => formatNumber(n, locale);
+/** A damage multiplier as written: "1.5" (with the language's decimal mark elsewhere). */
+export const multIn = (locale: Locale, n: number) => (locale === "en" ? String(n) : formatNumber(n, locale));
 /** You are always green and the opponent purple, whatever seat you sit in. */
 export const YOU_COLOR = "#4cbb17";
 export const THEM_COLOR = "#6c5ce7";
@@ -34,9 +45,14 @@ export const seatImage = (view: DuelView, seat: number): string | undefined => {
   return p?.avatar ? avatarSrc(p.avatar) : undefined;
 };
 
-export function distanceText(squares: number): string {
-  if (squares === 0) return "Right on it!";
-  return `${squares.toFixed(1)} sq`;
+/** "2.4 sq" (town-map squares), or "Right on it!"; `t` gives the page's language (English without it). */
+export function distanceText(squares: number, t?: H): string {
+  if (!t || t.locale === "en") {
+    if (squares === 0) return "Right on it!";
+    return `${squares.toFixed(1)} sq`;
+  }
+  if (squares === 0) return t("distance.exact");
+  return t("distance.squares", { n: formatNumber(squares, t.locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) });
 }
 
 // ---------------------------------------------------------------------------
@@ -149,6 +165,7 @@ export interface BandProps {
 }
 
 export function DuelBand({ view, me, round, hp, multiplier, multipliers, result, seq, compact, below, className }: BandProps) {
+  const t = useT(hud);
   const race = view.mode === "race";
   const revealing = !!result && !!seq;
   const division = view.ranked ? geoDivisionOf(view.ranked.elos[me]) : null;
@@ -185,16 +202,16 @@ export function DuelBand({ view, me, round, hp, multiplier, multipliers, result,
           </span>
         )}
         <div className={cn("font-display font-extrabold uppercase italic leading-none tracking-wide", compact ? "text-base sm:text-xl" : "text-xl sm:text-[1.65rem]")} data-testid="geo-duel-round">
-          Round {round}
+          {t("band.round", { round })}
           <span className="text-white/45">/{view.maxRounds}</span>
         </div>
         {!race && (
           <div className={cn("geo-glow font-display font-extrabold uppercase italic leading-none tracking-wider", compact ? "text-[13px] sm:text-base" : "text-base sm:text-2xl")} data-testid="geo-duel-multiplier">
-            {multiplier.toFixed(1).replace(/\.0$/, "")}× Damage
+            {t("band.damage", { m: t.locale === "en" ? multiplier.toFixed(1).replace(/\.0$/, "") : formatNumber(multiplier, t.locale, { maximumFractionDigits: 1 }) })}
           </div>
         )}
         {race && (
-          <div className="font-display text-xs font-bold uppercase tracking-wider text-[#c8bfff]">Points race</div>
+          <div className="font-display text-xs font-bold uppercase tracking-wider text-[#c8bfff]">{t("band.race")}</div>
         )}
         {below && <div className="mt-1.5">{below}</div>}
       </div>
@@ -213,7 +230,7 @@ export function DuelBand({ view, me, round, hp, multiplier, multipliers, result,
                 data-testid="geo-duel-distance"
               >
                 <span className="flex items-center px-3 sm:px-5" style={{ background: YOU_COLOR }}>
-                  {result.guesses[me] ? distanceText(result.guesses[me]!.squares) : "No pin"}
+                  {result.guesses[me] ? distanceText(result.guesses[me]!.squares, t) : t("band.noPin")}
                 </span>
                 <span className="flex w-8 items-center justify-center bg-[#1e1a3f] sm:w-10" aria-hidden>
                   <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
@@ -222,7 +239,7 @@ export function DuelBand({ view, me, round, hp, multiplier, multipliers, result,
                   </svg>
                 </span>
                 <span className="flex items-center px-3 sm:px-5" style={{ background: THEM_COLOR }}>
-                  {result.guesses[1 - me] ? distanceText(result.guesses[1 - me]!.squares) : "No pin"}
+                  {result.guesses[1 - me] ? distanceText(result.guesses[1 - me]!.squares, t) : t("band.noPin")}
                 </span>
               </motion.div>
             )}
@@ -235,7 +252,7 @@ export function DuelBand({ view, me, round, hp, multiplier, multipliers, result,
       <AnimatePresence>
         {revealing && seq.superPop && (
           <div className="geo-super pointer-events-none absolute left-1/2 top-full z-30 mt-10 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#ffd23c] px-4 py-1.5 font-display text-base font-extrabold uppercase italic tracking-wide text-[#1e1a3f] shadow-xl sm:mt-14 sm:text-2xl" data-testid="geo-super-effective" role="status">
-            It&apos;s super effective!
+            {t("band.super")}
           </div>
         )}
       </AnimatePresence>
@@ -244,6 +261,7 @@ export function DuelBand({ view, me, round, hp, multiplier, multipliers, result,
 }
 
 function Score({ value, missed, winner, dim, testId }: { value: number; missed: boolean; winner: boolean; dim: boolean; testId: string }) {
+  const fmt = fmtIn(useLocale());
   return (
     <span
       className={cn(
@@ -284,6 +302,9 @@ function Fighter({
   winner: boolean;
   dim: boolean;
 }) {
+  const t = useT(hud);
+  const fmt = fmtIn(t.locale);
+  const shownName = useShownName();
   const player = view.players[seat];
   const race = view.mode === "race";
   const you = seat === me;
@@ -327,24 +348,24 @@ function Fighter({
         ) : (
           <div className={cn("flex min-w-0 flex-1 items-center", right ? "justify-start" : "justify-end")}>
             <span className="rounded-md bg-black/40 px-3 py-1 font-display text-base font-extrabold italic tabular-nums sm:text-2xl" data-testid={`geo-duel-total-${seat}`}>
-              {fmt(view.totals?.[seat] ?? 0)} pts
+              {t("band.points", { points: fmt(view.totals?.[seat] ?? 0) })}
             </span>
           </div>
         )}
       </div>
       <div className={cn("mt-1 flex max-w-full items-center gap-1.5 sm:gap-2", right && "flex-row-reverse")}>
         <span className={cn("truncate font-display text-xs font-bold uppercase sm:text-base", winner && "text-[#9be15d]")} data-testid={`geo-name-${seat}`}>
-          {player?.name ?? "—"}
+          {shownName(player) ?? "—"}
         </span>
-        {you && <span className="rounded-sm bg-white/15 px-1 font-pixel text-[8px] uppercase sm:text-[9px]">You</span>}
+        {you && <span className="rounded-sm bg-white/15 px-1 font-pixel text-[8px] uppercase sm:text-[9px]">{t("band.you")}</span>}
         {player?.bot && <GymLeaderTag />}
-        {player?.quiet && view.status === "playing" && <WifiOff className="h-3.5 w-3.5 shrink-0 text-warning" aria-label="Connection lost" />}
+        {player?.quiet && view.status === "playing" && <WifiOff className="h-3.5 w-3.5 shrink-0 text-warning" aria-label={t("band.connectionLost")} />}
       </div>
       <div className={cn("mt-0.5 flex items-center gap-1.5", right && "flex-row-reverse")}>
         {view.ranked && <GeoDivisionBadge elo={view.ranked.elos[seat]} size="sm" className="[&_span]:!text-white/80" />}
         {!race && (
-          <span className={cn("rounded-full px-2 py-0.5 font-display text-[10px] font-bold italic sm:text-xs", multiplier > 1 ? "bg-[#ffd23c] text-[#1e1a3f]" : "bg-white/15 text-white/80")} data-testid={`geo-multiplier-${seat}`} title="This trainer's damage multiplier">
-            ×{multiplier}
+          <span className={cn("rounded-full px-2 py-0.5 font-display text-[10px] font-bold italic sm:text-xs", multiplier > 1 ? "bg-[#ffd23c] text-[#1e1a3f]" : "bg-white/15 text-white/80")} data-testid={`geo-multiplier-${seat}`} title={t("band.multiplierTitle")}>
+            ×{multIn(t.locale, multiplier)}
           </span>
         )}
       </div>
@@ -358,6 +379,7 @@ function Fighter({
 
 /** Under the band once the opponent has locked in: "Opponent guessed", a draining bar, red and flashing for the last seconds. */
 export function OpponentGuessedBar({ name, leftMs: rawLeftMs, totalMs, mine }: { name: string; leftMs: number; totalMs: number; mine: boolean }) {
+  const t = useT(hud);
   // A push lands within a few ms of the guess, while the page's clock ticks every 250 ms: never show more than the countdown.
   const leftMs = Math.min(rawLeftMs, totalMs);
   const frac = totalMs > 0 ? Math.max(0, Math.min(1, leftMs / totalMs)) : 0;
@@ -374,11 +396,11 @@ export function OpponentGuessedBar({ name, leftMs: rawLeftMs, totalMs, mine }: {
     >
       <div className="flex items-center justify-center gap-2 py-1.5 font-display text-sm font-bold uppercase tracking-wider sm:text-base">
         {mine ? (
-          <>Locked in. Waiting for {name}…</>
+          <>{t("guessed.waiting", { name })}</>
         ) : (
           <>
-            <span className={cn("rounded-sm px-1.5 py-0.5 text-[11px]", urgent ? "bg-[#ff5a5a]" : "bg-[#ffd23c] text-[#1e1a3f]")}>{name} guessed</span>
-            {Math.ceil(leftMs / 1000)} s to guess
+            <span className={cn("rounded-sm px-1.5 py-0.5 text-[11px]", urgent ? "bg-[#ff5a5a]" : "bg-[#ffd23c] text-[#1e1a3f]")}>{t("guessed.guessed", { name })}</span>
+            {t("guessed.left", { s: Math.ceil(leftMs / 1000) })}
           </>
         )}
       </div>
@@ -400,6 +422,7 @@ export function OpponentGuessedBar({ name, leftMs: rawLeftMs, totalMs, mine }: {
  * for the first time, or where pushes aren't set up.
  */
 export function LivePill({ status, className }: { status: "off" | "connecting" | "up" | "down"; className?: string }) {
+  const t = useT(hud);
   if (status === "off" || status === "connecting") return null;
   const down = status === "down";
   return (
@@ -408,10 +431,10 @@ export function LivePill({ status, className }: { status: "off" | "connecting" |
       className={cn("hud-btn pointer-events-none !w-auto gap-1.5 px-2.5 text-xs font-semibold", down ? "text-[#ffd23c]" : "text-white/80", className)}
       data-testid="geo-duel-live"
       data-live={status}
-      title={down ? "Lost the live connection: updates come every second until it's back" : "Live: your opponent's moves show at once"}
+      title={down ? t("live.downTitle") : t("live.upTitle")}
     >
       <span className={cn("inline-block h-2 w-2 rounded-full", down ? "animate-pulse bg-[#ffd23c]" : "bg-[#9be15d] shadow-[0_0_6px_#9be15d]")} aria-hidden />
-      {down ? "Reconnecting…" : "Live"}
+      {down ? t("live.down") : t("live.up")}
     </span>
   );
 }
@@ -422,22 +445,23 @@ export function LivePill({ status, className }: { status: "off" | "connecting" |
 
 /** The in-game leave button: a confirm strip, since leaving forfeits. */
 export function DuelLeave({ busy, onLeave }: { busy: boolean; onLeave: () => void }) {
+  const t = useT(hud);
   const [sure, setSure] = useState(false);
   return (
     <div className="flex items-center gap-2">
       {sure ? (
         <div className="flex items-center gap-2 rounded-md bg-black/70 px-3 py-1.5 text-sm text-white backdrop-blur">
-          <span className="hidden sm:inline">Leaving forfeits the duel.</span>
+          <span className="hidden sm:inline">{t("leave.sure")}</span>
           <button type="button" disabled={busy} onClick={onLeave} className="rounded bg-[#ff5a5a] px-2.5 py-1 font-display text-xs font-bold uppercase tracking-wider disabled:opacity-50">
-            Forfeit
+            {t("leave.forfeit")}
           </button>
           <button type="button" onClick={() => setSure(false)} className="rounded px-2 py-1 font-display text-xs font-bold uppercase tracking-wider text-white/80 hover:text-white">
-            Stay
+            {t("leave.stay")}
           </button>
         </div>
       ) : (
-        <button type="button" onClick={() => setSure(true)} className="hud-btn !w-auto gap-1.5 px-2.5 text-xs font-semibold" aria-label="Leave duel" title="Leave duel">
-          <LogOut className="h-3.5 w-3.5" aria-hidden /> <span className="hidden sm:inline">Leave duel</span>
+        <button type="button" onClick={() => setSure(true)} className="hud-btn !w-auto gap-1.5 px-2.5 text-xs font-semibold" aria-label={t("leave.leave")} title={t("leave.leave")}>
+          <LogOut className="h-3.5 w-3.5" aria-hidden /> <span className="hidden sm:inline">{t("leave.leave")}</span>
         </button>
       )}
     </div>
@@ -450,6 +474,7 @@ export function DuelLeave({ busy, onLeave }: { busy: boolean; onLeave: () => voi
 
 /** The persistent emote button at the frame's left edge: opens the eight Pokémon reactions. */
 export function EmoteButton({ onEmote, className }: { onEmote: (e: DuelEmote) => Promise<string | null>; className?: string }) {
+  const t = useT(hud);
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState<string | null>(null);
   const [coolUntil, setCoolUntil] = useState(0);
@@ -469,8 +494,8 @@ export function EmoteButton({ onEmote, className }: { onEmote: (e: DuelEmote) =>
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        aria-label="Send a reaction"
-        title="Send a reaction"
+        aria-label={t("emotes.send")}
+        title={t("emotes.send")}
         data-testid="geo-emote-button"
         className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1e1a3f]/90 text-white shadow-lg ring-2 ring-white/20 backdrop-blur transition-transform hover:scale-105"
       >
@@ -485,7 +510,7 @@ export function EmoteButton({ onEmote, className }: { onEmote: (e: DuelEmote) =>
             transition={{ duration: 0.18 }}
             className="absolute left-12 top-1/2 grid -translate-y-1/2 grid-cols-[repeat(4,3rem)] gap-1 rounded-xl bg-[#1e1a3f]/95 p-2 shadow-2xl ring-2 ring-[#a99cff]/50 backdrop-blur"
             role="menu"
-            aria-label="Reactions"
+            aria-label={t("emotes.menu")}
           >
             {GEO_EMOTES.map((e) => (
               <button
@@ -499,8 +524,8 @@ export function EmoteButton({ onEmote, className }: { onEmote: (e: DuelEmote) =>
                   setNote(await onEmote(e.id));
                 }}
                 data-testid={`geo-emote-${e.id}`}
-                title={e.label}
-                aria-label={`Send ${e.label}`}
+                title={emoteLabel(t, e.id)}
+                aria-label={t("emotes.sendOne", { label: emoteLabel(t, e.id) })}
                 className="flex h-12 w-12 flex-col items-center justify-center rounded-lg transition-[background-color,transform] hover:scale-105 hover:bg-white/10 disabled:opacity-50"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element -- the Pokémon's artwork, cached */}
@@ -550,15 +575,19 @@ function GeoEmotePops({ view, seat }: { view: DuelView; seat: number }) {
   );
 }
 
+/** A Pokémon reaction's label in the page's language. */
+const emoteLabel = (t: H, id: GeoEmoteId) => t(`emotes.${id}`);
+
 function EmotePop({ emote }: { emote: DuelEmote }) {
+  const t = useT(hud);
   const geo = geoEmote(emote);
   return (
     <div className="geo-emote-pop mt-1 flex flex-col items-center">
       {geo ? (
         // eslint-disable-next-line @next/next/no-img-element -- the Pokémon's artwork, cached
-        <img src={artUrl(geo.pokemonId, 96)} alt={geo.label} className="h-14 w-14 object-contain drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)] sm:h-16 sm:w-16" />
+        <img src={artUrl(geo.pokemonId, 96)} alt={emoteLabel(t, geo.id)} className="h-14 w-14 object-contain drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)] sm:h-16 sm:w-16" />
       ) : null}
-      <span className="whitespace-nowrap rounded-full bg-white px-2 py-0.5 font-display text-[11px] font-bold text-[#1e1a3f] shadow">{geo ? geo.label : emote === "gg" ? "GG" : emoteText(emote)}</span>
+      <span className="whitespace-nowrap rounded-full bg-white px-2 py-0.5 font-display text-[11px] font-bold text-[#1e1a3f] shadow">{geo ? emoteLabel(t, geo.id) : emote === "gg" ? "GG" : emoteText(emote)}</span>
     </div>
   );
 }
@@ -571,6 +600,9 @@ const emoteText = (e: DuelEmote) => ({ gg: "GG", fire: "🔥", wow: "😮", swea
 
 /** The round lead-in: the diagonal split, both trainers' cards, "VS" for round 1, and the giant countdown digit. */
 export function VersusIntro({ view, me, round, secondsLeft, mapName }: { view: DuelView; me: number; round: number; secondsLeft: number; mapName: string }) {
+  const t = useT(hud);
+  const fmt = fmtIn(t.locale);
+  const shownName = useShownName();
   const versus = round === 1;
   const reduced = useReducedMotion();
   const mult = view.round?.multiplier ?? 1;
@@ -586,12 +618,12 @@ export function VersusIntro({ view, me, round, secondsLeft, mapName }: { view: D
         data-testid={`geo-vs-card-${seat}`}
       >
         <div className="rounded-full ring-4 ring-[#a99cff]/70">{p?.bot ? <GymLeaderAvatar name={p.name} size={versus ? 72 : 48} /> : <Avatar avatar={p?.avatar} size={versus ? 72 : 48} large />}</div>
-        <p className="w-full truncate font-display text-base font-extrabold uppercase italic sm:text-xl">{p?.name ?? "—"}</p>
-        {seat === me && <span className="rounded-sm bg-white/15 px-1.5 font-pixel text-[9px] uppercase">You</span>}
+        <p className="w-full truncate font-display text-base font-extrabold uppercase italic sm:text-xl">{shownName(p) ?? "—"}</p>
+        {seat === me && <span className="rounded-sm bg-white/15 px-1.5 font-pixel text-[9px] uppercase">{t("versus.you")}</span>}
         {view.ranked && <GeoDivisionBadge elo={view.ranked.elos[seat]} size="sm" className="[&_span]:!text-white/90" />}
         {view.mode !== "race" && (
           <p className="font-display text-xs font-bold text-[#c8bfff]">
-            {fmt(view.hp[seat])} <span className="text-white/60">HP</span>
+            {fmt(view.hp[seat])} <span className="text-white/60">{t("versus.hpUnit")}</span>
           </p>
         )}
       </motion.div>
@@ -601,10 +633,10 @@ export function VersusIntro({ view, me, round, secondsLeft, mapName }: { view: D
     <div className="geo-split relative flex h-full flex-col items-center justify-center overflow-hidden text-white" data-testid="geo-versus">
       <div className="absolute inset-x-0 top-4 flex flex-col items-center gap-0.5 text-center sm:top-8">
         {view.ranked ? <GeoBallIcon division={geoDivisionOf(view.ranked.elos[me]).id} className="h-10 w-10 drop-shadow-lg sm:h-16 sm:w-16" /> : <Swords className="h-8 w-8 sm:h-12 sm:w-12" aria-hidden />}
-        <p className="font-display text-3xl font-extrabold uppercase italic sm:text-5xl">Round {round}</p>
+        <p className="font-display text-3xl font-extrabold uppercase italic sm:text-5xl">{t("versus.round", { round })}</p>
         <p className="font-display text-base font-bold uppercase text-[#ffd23c] sm:text-xl">
-          {view.mode === "race" ? "Points race" : mult > 1 ? `${mult}× damage` : "HP battle"}
-          {view.turbo ? " · Turbo" : ""}
+          {view.mode === "race" ? t("versus.race") : mult > 1 ? t("versus.damage", { m: multIn(t.locale, mult) }) : t("versus.hp")}
+          {view.turbo ? t("versus.turbo") : ""}
         </p>
         <p className="font-display text-sm uppercase tracking-wider text-white/70">{mapName}</p>
       </div>
@@ -616,9 +648,9 @@ export function VersusIntro({ view, me, round, secondsLeft, mapName }: { view: D
             animate={{ scale: 1, opacity: 1, rotate: -6 }}
             transition={{ type: "spring", stiffness: 260, damping: 12, delay: 0.25 }}
             className="geo-glow font-display text-5xl font-extrabold italic sm:text-8xl"
-            aria-label="versus"
+            aria-label={t("versus.versus")}
           >
-            VS
+            {t("versus.vs")}
           </motion.span>
         ) : (
           <span key={`digit-${secondsLeft}`} className="geo-digit font-display text-[7rem] font-extrabold leading-none sm:text-[11rem]" data-testid="geo-intro-digit">
@@ -642,6 +674,7 @@ export function VersusIntro({ view, me, round, secondsLeft, mapName }: { view: D
 
 /** Both trainers' HP after each round, as two lines. */
 export function HpTimeline({ view, me }: { view: DuelView; me: number }) {
+  const t = useT(hud);
   const rounds = view.revealed;
   if (!rounds.length || view.mode === "race") return null;
   const w = 320;
@@ -651,7 +684,7 @@ export function HpTimeline({ view, me }: { view: DuelView; me: number }) {
   const ys = (hp: number) => pad + (1 - Math.max(0, hp) / DUEL_HP) * (h - 2 * pad);
   const line = (seat: number) => [`M${xs(0)} ${ys(DUEL_HP)}`, ...rounds.map((r, i) => `L${xs(i + 1)} ${ys(r.hp[seat])}`)].join(" ");
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="h-24 w-full" role="img" aria-label="HP after each round" data-testid="geo-hp-timeline">
+    <svg viewBox={`0 0 ${w} ${h}`} className="h-24 w-full" role="img" aria-label={t("timeline")} data-testid="geo-hp-timeline">
       {[0.25, 0.5, 0.75].map((f) => (
         <line key={f} x1={pad} x2={w - pad} y1={ys(DUEL_HP * f)} y2={ys(DUEL_HP * f)} stroke="rgba(255,255,255,0.1)" strokeDasharray="3 4" />
       ))}

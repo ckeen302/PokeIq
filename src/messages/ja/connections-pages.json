@@ -1,0 +1,42 @@
+{
+  "meta": {
+    "title": "PokéConnections：毎日のポケモン版Connections",
+    "description": "ポケモン版Connections：16匹のポケモンと4つの隠れたグループ（タイプ、とくせい、進化、種族値など）。ミス4回までに共通点を見つけましょう。毎日新しいパズル、アーカイブ、無制限の練習も。",
+    "communityTitle": "みんなのPokéConnectionsパズル",
+    "communityDescription": "ほかのトレーナーが作ったパズル：今週のおすすめ、高評価順、新着。",
+    "createTitle": "PokéConnectionsのパズルを作る",
+    "createDescription": "ポケモンを16匹選んで4グループに分け、名前をつけてリンクを共有。誰でも遊べて、答えはサーバーだけが知っています。",
+    "puzzleTitle": "みんなのPokéConnectionsパズル",
+    "puzzleDescription": "ほかのトレーナーが作ったPokéConnectionsのパズル。4つのグループを見つけよう。",
+    "creatorTitle": "PokéConnectionsの作者",
+    "creatorDescription": "1人のトレーナーが作ったPokéConnectionsのパズル。",
+    "duelAbout": "PokéConnectionsのレース：2人とも同じ16匹のポケモンで、4つのグループを先に見つけたほうが勝ち。",
+    "duel": "PokéConnectionsの対戦",
+    "duelVs": "{host} vs {guest}：PokéConnectionsの対戦",
+    "duelChallenge": "{host}さんがPokéConnectionsの対戦を申し込んでいます",
+    "aTrainer": "あるトレーナー",
+    "partyAbout": "PokéConnectionsのパーティー：全員同じ16匹のポケモンで、いちばん速いタイムが勝ち。",
+    "party": "PokéConnectionsのパーティー",
+    "partyInvite": "{host}さんがPokéConnectionsのパーティーに招待しています"
+  },
+  "info": {
+    "description": "PokéConnectionsは無料のポケモン版Connections：16匹のポケモンを、ミス4回までに4つの隠れたグループに分けるパズルです。",
+    "intro": "PokéConnectionsはポケモン版Connections。16匹のポケモン、4つの隠れたグループ、そして毎日新しいパズル。",
+    "step1": "16匹のポケモンを見て、共通点のあるポケモンを探しましょう：タイプ、とくせい、進化、種族値など。",
+    "step2": "4匹選んでグループとして決定します。",
+    "step3": "パズル終了までにミスは4回までできます。",
+    "step4": "デイリーパズルで遊んだり、アーカイブを見たり、無制限に練習したりできます。",
+    "faq1": "どんなグループがありますか？",
+    "faq1a": "タイプ、とくせい、進化、種族値などです。",
+    "faq2": "ミスは何回までできますか？",
+    "faq2a": "4回です。"
+  },
+  "back": "PokéConnectionsに戻る",
+  "backCommunity": "みんなのパズルに戻る",
+  "creator": {
+    "unavailable": "作者ページは現在使えません。少し待ってからもう一度お試しください。",
+    "eyebrow": "PokéConnectionsの作者",
+    "totals": "パズル{n}個{n, plural, other {}}・{votes}票{v, plural, other {}}（スコア{score}）",
+    "untitled": "無題のパズル"
+  }
+}

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { CircleHelp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import geoHowto from "@/messages/geo-howto";
 
 /**
  * The light half of PokéGuessr's how-to: the "?" button and the loader that
@@ -25,12 +27,13 @@ const GeoHowTo = dynamic(() => import("./GeoHowTo").then((m) => m.GeoHowTo), { s
 
 /** The "?" icon button: asks the pop-up (GeoHowTo) to open. */
 export function HowToHelpButton({ className }: { className?: string }) {
+  const t = useT(geoHowto);
   return (
     <button
       type="button"
       onClick={() => window.dispatchEvent(new Event("pokeiq:howto"))}
-      aria-label="How to play"
-      title="How to play"
+      aria-label={t("open")}
+      title={t("open")}
       data-testid="geo-howto-open"
       className={cn("tap",
         "rounded-md p-2 text-muted-foreground transition-colors hover:bg-screen/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",

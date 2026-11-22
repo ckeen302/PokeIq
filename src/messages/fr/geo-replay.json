@@ -1,0 +1,99 @@
+{
+  "result": {
+    "win": {
+      "letter": "V",
+      "label": "Victoire"
+    },
+    "loss": {
+      "letter": "D",
+      "label": "Défaite"
+    },
+    "draw": {
+      "letter": "N",
+      "label": "Match nul"
+    }
+  },
+  "elo": {
+    "title": "{before} → {after} Elo",
+    "climbing": "En hausse",
+    "slipping": "En baisse",
+    "holding": "Stable",
+    "word": "Elo"
+  },
+  "vs": "contre",
+  "ranked": "Classé",
+  "casual": "Amical",
+  "race": "Course aux points",
+  "hp": "Combat de PV",
+  "turbo": "Turbo",
+  "finalHpTitle": "PV finaux : les tiens – les siens",
+  "points": "points",
+  "finalHp": "PV finaux",
+  "list": {
+    "failed": "Impossible de charger tes duels.",
+    "loading": "Chargement de tes duels…",
+    "off": "L'historique des duels n'est pas encore activé ici. Tes duels comptent quand même dans ton historique PokéGuessr.",
+    "empty": "Aucun duel pour l'instant. Termine un duel et il apparaîtra ici avec sa rediffusion manche par manche.",
+    "find": "Trouver un duel",
+    "more": "Charger les duels précédents"
+  },
+  "history": "Historique des duels",
+  "load": {
+    "failed": "Impossible de charger la rediffusion.",
+    "loading": "Chargement de la rediffusion…",
+    "missing": "Pas de rediffusion ici",
+    "error": "Une erreur est survenue",
+    "missingBlurb": "La rediffusion de ce duel n'existe pas, ou elle est réservée aux deux Dresseurs qui l'ont joué.",
+    "play": "Jouer à PokéGuessr"
+  },
+  "trainer": "Dresseur",
+  "won": "{name} a gagné",
+  "rankedReplay": "Rediffusion classée",
+  "casualReplay": "Rediffusion amicale",
+  "worldMap": "Carte du monde",
+  "noRounds": "Ce duel s'est terminé avant la première manche.",
+  "shotAlt": "Capture de la manche {n}",
+  "round": "Manche {n}",
+  "multiplier": "Dégâts ×{n}",
+  "roundOf": "Manche {n} sur {total}",
+  "phase": {
+    "shot": "La capture",
+    "pins": "Les repères",
+    "damage": "Les dégâts"
+  },
+  "controls": {
+    "first": "Première étape",
+    "prev": "Étape précédente",
+    "pause": "Pause",
+    "play": "Lecture",
+    "next": "Étape suivante",
+    "last": "Dernière étape",
+    "position": "Position de la rediffusion"
+  },
+  "seat": {
+    "won": "Manche gagnée",
+    "distance": "Distance",
+    "noGuess": "Pas de réponse",
+    "score": "Score",
+    "mult": "Mult.",
+    "damage": "Dégâts",
+    "hp": "PV",
+    "hpOf": "PV de {name}"
+  },
+  "table": {
+    "place": "Lieu",
+    "dmg": "Dégâts",
+    "goTo": "Aller à la manche {n}",
+    "r": "M{n}"
+  },
+  "share": {
+    "copyFallback": "Copie l'adresse depuis la barre d'adresse.",
+    "failed": "Impossible de modifier le partage. Réessaie.",
+    "copied": "Copié",
+    "copy": "Copier le lien",
+    "private": "Rendre privée",
+    "share": "Partager la rediffusion",
+    "public": "Toute personne ayant le lien peut la regarder.",
+    "privateNote": "Visible uniquement par toi et ton adversaire."
+  }
+}

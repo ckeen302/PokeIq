@@ -1,0 +1,39 @@
+{
+  "open": "Come si gioca",
+  "goal": {
+    "title": "L'obiettivo",
+    "body": "Ti ritrovi da qualche parte nel mondo Pokémon e vedi solo uno screenshot. Capisci dov'è, metti una puntina sulla mappa e premi Indovina."
+  },
+  "scoring": {
+    "title": "Punteggio",
+    "body": "Fino a {max} punti per round: più la puntina è vicina, più punti fai. Una partita dura {lengths} round; la Giornaliera sempre {daily}."
+  },
+  "modes": {
+    "title": "Modalità",
+    "body": "Giornaliera: gli stessi {daily} luoghi per tutti. Serie: continua a indovinare luoghi finché una puntina non sbaglia. Gioca sul mondo, su una regione o su una mappa a tema, con giochi in 2D classico o 3D moderno."
+  },
+  "duels": {
+    "title": "Duelli",
+    "body": "Sfida un amico in diretta. Lotta a PS: partite entrambi con {hp} PS e la puntina più vicina infligge danni all'altra. Gara a punti: vince il totale migliore su tutti i round."
+  },
+  "demo": {
+    "labelDesktop": "Demo di un round: uno screenshot Pokémon riempie lo schermo, la mappa nell’angolo si allarga, si piazza una puntina e si preme Indovina; il risultato traccia una linea fino al punto reale e vale {score} su {max}",
+    "labelPhone": "Demo di un round: uno screenshot Pokémon riempie lo schermo, si apre la mappa, si piazza una puntina e si preme Indovina; il risultato traccia una linea fino al punto reale e vale {score} su {max}",
+    "round": "Round {n}",
+    "score": "Punti",
+    "tapMove": "Tocca di nuovo per spostare la puntina",
+    "tapPlace": "Tocca la mappa per mettere la puntina",
+    "spotOn": "In pieno!",
+    "close": "Ci sei quasi!",
+    "notBad": "Niente male!",
+    "near": "Da quelle parti.",
+    "wayOff": "Lontanissimo…",
+    "pts": "pt",
+    "squares": "A {d} caselle sulla mappa",
+    "game": "Pokémon {game}",
+    "atlas": "Atlante",
+    "next": "Round successivo ▶",
+    "space": "Spazio",
+    "report": "Segnala questo screenshot"
+  }
+}

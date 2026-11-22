@@ -1,0 +1,201 @@
+{
+  "column": {
+    "gen": "Gen",
+    "type1": "Type 1",
+    "type2": "Type 2",
+    "height": "Height",
+    "weight": "Weight",
+    "color": "Color",
+    "stage": "Stage"
+  },
+  "help": {
+    "gen": "Generation. Close: one generation away.",
+    "type1": "Primary type. Yellow: the answer has this type as its second type.",
+    "type2": "Secondary type (None if it has one). Yellow: the answer has this type as its first type.",
+    "height": "Height. Close: within 25% (or 0.1 m).",
+    "weight": "Weight. Close: within 25% (or 0.1 kg).",
+    "color": "The Pokédex colour. Match or no match.",
+    "stage": "Evolution stage: Baby, then 1 to 3. Close: one stage away (a Baby is never close)."
+  },
+  "helpStrict": {
+    "gen": "Generation. ▲ / ▼ only, no close state.",
+    "type1": "Primary type. Yellow: the answer has this type as its second type.",
+    "type2": "Secondary type (None if it has one). Yellow: the answer has this type as its first type.",
+    "height": "Height. ▲ / ▼ only, no close state.",
+    "weight": "Weight. ▲ / ▼ only, no close state.",
+    "color": "The Pokédex colour. Match or no match.",
+    "stage": "Evolution stage: Baby, then 1 to 3. ▲ / ▼ only, no close state."
+  },
+  "status": {
+    "match": "match",
+    "partial": "right type, other slot",
+    "close-higher": "close, the answer is higher",
+    "close-lower": "close, the answer is lower",
+    "higher": "the answer is higher",
+    "lower": "the answer is lower",
+    "miss": "no match"
+  },
+  "value": {
+    "none": "None",
+    "baby": "Baby",
+    "babyShort": "B"
+  },
+  "input": {
+    "aria": "Guess a Pokémon (press / to jump here, Esc to clear)",
+    "list": "Pokémon matching your guess",
+    "gen": "Gen {n}",
+    "already": "You've already guessed {name}.",
+    "none": "No Pokémon by that name."
+  },
+  "legend": {
+    "label": "What the clues mean",
+    "match": "Match",
+    "partial": "Type in the other slot",
+    "close": "Close",
+    "higherLower": "Answer is higher / lower",
+    "miss": "No match"
+  },
+  "board": {
+    "label": "Your guesses, newest first",
+    "pokemon": "Pokémon",
+    "checking": "{label}: checking…",
+    "empty": "Guess {n}",
+    "clue": "{label} {value}: {status}",
+    "filterAria": "{clue}. Filter the Pokédex by this clue",
+    "filterTitle": "{clue}. Click to filter the Pokédex by this clue."
+  },
+  "format": {
+    "classic": "Classic",
+    "squirdle": "Stats",
+    "custom": "Custom"
+  },
+  "formatBlurb": {
+    "classic": "Seven clues, with close states (yellow) for near misses.",
+    "squirdle": "Gen, types, height and weight with ▲ / ▼ only. Guesses scale with the generation range.",
+    "custom": "Pick the clue columns you want (3 or more)."
+  },
+  "timer": {
+    "none": "No timer",
+    "3m": "3 min",
+    "60s": "60 s blitz"
+  },
+  "tags": {
+    "clues": "{n} clues",
+    "guesses": "{n} guesses",
+    "strict": "Strict",
+    "noHints": "No hints",
+    "legendaries": "Legendaries",
+    "hard": "Hard",
+    "noDex": "No dex"
+  },
+  "gens": {
+    "all": "All gens",
+    "one": "Gen {n}",
+    "range": "Gen {lo}–{hi}",
+    "list": "Gen {list}"
+  },
+  "bonus": "+{pct}%",
+  "hint": {
+    "genus": "Category",
+    "silhouette": "Silhouette"
+  },
+  "assist": {
+    "off": { "label": "Off", "blurb": "No Pokédex: every clue is yours to work out." },
+    "notebook": { "label": "Notebook", "blurb": "Greys out what the gen and type clues rule out; you cross off the rest." },
+    "field": { "label": "Field Guide", "blurb": "Also shows each Pokémon's stage and color, and filters by them." },
+    "full": { "label": "Full Pokédex", "blurb": "Also filters by height and weight; click a clue to add it as a filter." }
+  },
+  "picker": {
+    "pokedex": "Pokédex",
+    "label": "Pokédex assist",
+    "title": "{label}: {blurb}",
+    "titlePoints": "{label}: {blurb} Points {m}."
+  },
+  "settings": {
+    "label": "Game settings",
+    "format": "Format",
+    "clues": "Clues",
+    "clueColumns": "Clue columns",
+    "minClues": "At least {n} clues",
+    "generations": "Generations",
+    "presetAll": "All gens",
+    "presetGen1": "Gen 1 only",
+    "presetGen12": "Gen 1–2",
+    "presetGen14": "Gen 1–4",
+    "gen": "Gen",
+    "firstGen": "First generation",
+    "lastGen": "Last generation",
+    "to": "to",
+    "guesses": "Guesses",
+    "autoTitle": "Stats' count: 5 for one generation, up to 9 for all",
+    "auto": "Auto ({n})",
+    "hints": "Hints",
+    "on": "On",
+    "off": "Off",
+    "close": "Close states",
+    "closeNever": "Stats never has close states",
+    "closeTitle": "Yellow ▲ / ▼ for near misses",
+    "strictTitle": "Strict: ▲ / ▼ only",
+    "strict": "Strict (▲ / ▼ only)",
+    "roundClock": "Round clock",
+    "timer": "Timer",
+    "pool": "Pool",
+    "every": "Every Pokémon",
+    "legendary": "Legendaries only",
+    "bonusPts": "{bonus} pts"
+  },
+  "dex": {
+    "title": "Pokédex",
+    "tapping": "Tapping a Pokémon",
+    "cross": "Cross off",
+    "fill": "Fill in",
+    "view": "Pokédex view",
+    "hide": "Hide what's out",
+    "uncross": "Uncross all",
+    "showAllAria": "Show all (clear the filters)",
+    "showAllTitle": "Show all: clear the filters",
+    "search": "Search by name",
+    "searchAria": "Search the Pokédex",
+    "hasType": "Has type",
+    "anyType": "Any type",
+    "has": "Has {type}",
+    "andType": "And type",
+    "andAny": "And any",
+    "and": "And {type}",
+    "stage": "Stage",
+    "stageAny": "Stage: any",
+    "stageN": "Stage {stage}",
+    "color": "Color",
+    "colorAny": "Color: any",
+    "height": "Height (m)",
+    "weight": "Weight (kg)",
+    "min": "min",
+    "max": "max",
+    "atLeast": "{label}, at least",
+    "atMost": "{label}, at most",
+    "gen": "Gen",
+    "generations": "Generations",
+    "genN": "Gen {n}",
+    "genRegion": "Gen {n} · {region}",
+    "mono": "No second type",
+    "clueFilters": "Clue filters",
+    "removeFilter": "Remove the filter {clue}",
+    "list": "Pokédex",
+    "failed": "Couldn't load the Pokédex.",
+    "loading": "Loading the Pokédex",
+    "empty": "No Pokémon here. Try “Show all”.",
+    "generation": "Generation {n}",
+    "left": "{n} left in play",
+    "how": "How the Pokédex works",
+    "howNotebook": "Greyed out: ruled out by your generation and type clues. Height, weight, color and stage are yours to work out: cross off what they rule out.",
+    "howField": "Greyed out: ruled out by your generation and type clues. Filter by stage and color; height and weight are yours to work out.",
+    "howFull": "Greyed out: ruled out by your generation and type clues. Filter by any attribute, or click a clue on the board to add it as a filter.",
+    "guessed": "guessed",
+    "crossed": "crossed off",
+    "out": "ruled out by the clues",
+    "fillName": "Fill in {name}",
+    "back": "Put {name} back",
+    "crossName": "Cross off {name}",
+    "withState": "{action} ({state})"
+  }
+}

@@ -1,7 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
-import { DLE_DEFAULT_SETTINGS, DLE_FORMAT_LABEL } from "@/lib/dle-format";
+import { DLE_DEFAULT_SETTINGS } from "@/lib/dle-format";
+import { useT } from "@/i18n/client";
+import board from "@/messages/pokedle-board";
+import game from "@/messages/pokedle-game";
 import { getDlePrefs, setDlePrefs, useDlePrefs } from "@/lib/dle-local";
 import { DLE_DUEL_ROUNDS, DLE_DUEL_ROUND_MS, pvpHref } from "@/lib/pvp-types";
 import { NewDuelCard } from "@/components/duel/NewDuelCard";
@@ -17,6 +20,8 @@ import { cn } from "@/lib/utils";
  * standard rules: few queues, so they fill up).
  */
 export function PokedleDuelCard() {
+  const t = useT(game);
+  const bt = useT(board);
   const prefs = useDlePrefs();
   const assist = prefs?.assist ?? "off";
   const settings = prefs?.settings ?? DLE_DEFAULT_SETTINGS;
@@ -29,20 +34,17 @@ export function PokedleDuelCard() {
       href={(code) => pvpHref("pokedle", code)}
       // Matchmaking plays every generation (one queue per level and format, so it fills up); pick generations and more in a duel with a friend.
       match={match}
-      heading="Head to head · Pokédle"
-      blurb={`The same mystery Pokémon for both of you, ${DLE_DUEL_ROUNDS} rounds of ${DLE_DUEL_ROUND_MS / 60_000} minutes.`}
+      heading={t("duelCard.heading")}
+      blurb={t("duelCard.blurb", { rounds: DLE_DUEL_ROUNDS, minutes: DLE_DUEL_ROUND_MS / 60_000 })}
       info={
         <>
-          <p>Fewer guesses and a quicker solve score more; hints cost points. You see your opponent&apos;s colours as they guess.</p>
-          <p>
-            Send a friend the link, and pick the format, generations and settings in the lobby. Or find an opponent: matched duels use every generation and pair you with someone on the same
-            format and Pokédex.
-          </p>
+          <p>{t("duelCard.info1")}</p>
+          <p>{t("duelCard.info2")}</p>
         </>
       }
     >
       <div className="flex flex-wrap items-center gap-2 pt-1">
-        <div className="flex rounded-md border border-foreground/15 p-0.5" role="radiogroup" aria-label="Duel format">
+        <div className="flex rounded-md border border-foreground/15 p-0.5" role="radiogroup" aria-label={t("duelCard.format")}>
           {(["classic", "squirdle"] as const).map((f) => (
             <button
               key={f}
@@ -52,11 +54,11 @@ export function PokedleDuelCard() {
               onClick={() => setDlePrefs({ settings: { ...getDlePrefs().settings, format: f } })}
               className={cn("rounded px-2 py-1 text-xs font-semibold", format === f ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
             >
-              {DLE_FORMAT_LABEL[f]}
+              {bt(`format.${f}`)}
             </button>
           ))}
         </div>
-        <AssistPicker value={assist} points={false} blurb={false} label="Pokédex assist for duels" onChange={(a) => setDlePrefs({ assist: a })} className="[&>div]:justify-start" />
+        <AssistPicker value={assist} points={false} blurb={false} label={t("duelCard.assist")} onChange={(a) => setDlePrefs({ assist: a })} className="[&>div]:justify-start" />
       </div>
     </NewDuelCard>
   );

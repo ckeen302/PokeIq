@@ -1,0 +1,41 @@
+{
+  "socialTitle": "PokéIQ: GeoGuessr, Wordle e Showdown per i Pokémon",
+  "socialDescription": "PokéGuessr con veri screenshot di ogni regione, un Pokédle quotidiano con sfide dal vivo, lotte fedeli a Showdown e un Laboratorio lotte che ne simula migliaia. Gratis, senza registrazione.",
+  "h1": "PokéIQ: giochi, quiz e lotte Pokémon",
+  "free": "Gratis · senza registrazione",
+  "pitch": "Rompicapi Pokémon quotidiani, un GeoGuessr dei Pokémon con vere visuali dei giochi, lotte su Showdown e Pokémon in 3D.",
+  "play": "Gioca ai giochi di oggi",
+  "coffee": "Offrimi un caffè",
+  "socials": "PokéIQ sui social",
+  "socialOn": "PokéIQ su {name}",
+  "today": {
+    "title": "Oggi",
+    "allDone": "Tutto fatto per oggi",
+    "newIn": " · nuovi rompicapi tra ",
+    "keep": " · gioca oggi per mantenerla",
+    "midnight": "Nuovi rompicapi ogni giorno a mezzanotte",
+    "done": "Fatto",
+    "inProgress": "In corso",
+    "continue": "Continua",
+    "play": "Gioca",
+    "streakOne": "{days, plural, one {Serie di # giorno in {games}} other {Serie di # giorni in {games}}}",
+    "streakTwo": "{days, plural, one {Serie di # giorno in {games}} other {Serie di # giorni in {games}}}",
+    "streakMany": "{days, plural, one {Serie di # giorno in {games}} other {Serie di # giorni in {games}}}"
+  },
+  "games": {
+    "daily": { "name": "Sfida del giorno", "line": "Il quiz Pokémon di oggi" },
+    "pokedle": { "name": "Pokédle", "line": "Indovina il Pokémon misterioso" },
+    "guessr": { "name": "PokéGuessr", "line": "Segna sulla mappa i luoghi di oggi" },
+    "connections": { "name": "Connections", "line": "Trova i gruppi nascosti" },
+    "pikadoku": { "name": "Pikadoku", "line": "Il sudoku dei Pokémon" }
+  },
+  "results": {
+    "right": "{correct}/{total} giuste",
+    "solvedIn": "Risolto in {n}",
+    "missed": "Mancato oggi",
+    "points": "{points} pt",
+    "solvedMistakes": "Risolto · {n, plural, one {# errore} other {# errori}}",
+    "perfect": "Perfetto",
+    "filled": "{n}/9 caselle"
+  }
+}

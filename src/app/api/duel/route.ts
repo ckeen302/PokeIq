@@ -13,6 +13,7 @@ import { DIFFICULTIES, MODULES } from "@/engines/types";
 import { PLAY_MODULES, playDifficulty } from "@/lib/modes";
 import { DLE_ASSISTS } from "@/lib/dle-assist";
 import type { PvpSeatResponse } from "@/lib/pvp-types";
+import { langOf } from "@/lib/server/request-lang";
 
 /**
  * POST /api/duel — open a duel and return its code, the creator's player
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
               ? createPikadokuDuel(body.name, code, now, { turnSecs: body.turnSecs, families: body.families, steals: body.steals })
               : createConnectionsDuel(body.name, code, now, undefined, { size: body.size });
       if (!(await pvpStore.insert(duel))) continue; // code taken: roll another
-      const seat: PvpSeatResponse = { code, token: pvpToken(code, playerId), view: duelView(duel, playerId, now, 0) };
+      const seat: PvpSeatResponse = { code, token: pvpToken(code, playerId), view: duelView(duel, playerId, now, 0, langOf(request)) };
       return NextResponse.json(seat, { headers: { "Cache-Control": "no-store" } });
     }
     return NextResponse.json({ error: "Couldn't open a duel. Try again." }, { status: 503 });

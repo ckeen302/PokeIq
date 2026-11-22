@@ -11,7 +11,7 @@ import { useToday } from "@/lib/use-today";
 import { recordGeoGame, useProgress, type BadgeDef } from "@/lib/progress";
 import { play, unlockAudio } from "@/lib/sound";
 import { guessrSquare } from "@/lib/share";
-import { GEO_DIFFICULTY_NAMES, type GeoDifficulty } from "@/lib/geo-difficulty";
+import type { GeoDifficulty } from "@/lib/geo-difficulty";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { GeoMap, LINE_DRAW_MS, WORLD_MAP as WORLD_MAP_SRC, WORLD_THUMB, mapAspect, type MapPin } from "./GeoMap";
@@ -24,7 +24,7 @@ import { HubSection, HubTile, TileFlag } from "./HubParts";
 import { GeoYou } from "./GeoYou";
 import { AchievementToasts, useGeoProgress, type MyGeoProgress } from "./GeoAchievements";
 import type { DuelQueue } from "./DuelCard";
-import { geoWeekOf, geoWeeklyLeft, geoWeeklyMap, geoWeeklyNumber } from "@/lib/geo-weekly";
+import { geoWeekOf, geoWeeklyLeftParts, geoWeeklyMap, geoWeeklyNumber } from "@/lib/geo-weekly";
 
 /**
  * What a solo round doesn't need is split off the first load: the duel card,
@@ -65,11 +65,18 @@ import { roundViewsOf } from "@/lib/geo-look";
 import { DifficultyPicker, GeoSettingsButton, RoundsPicker } from "./GeoSettings";
 import { DEFAULT_GEO_SETTINGS, GEO_ZOOM, readGeoSettings, rememberGeoSettings, secondsLeft, visibleViews, zoomOrigin, type GeoPlaySettings } from "@/lib/geo-settings";
 import { GameFilter, GameGuessPicker, type FilterChoice, filterPlaces, gameGuessOptions } from "./GameFilter";
-import { GEO_ERA_NAMES, GEO_GAME_BONUS, geoFamily, type GeoEra, type GeoFamilyId } from "@/lib/geo-families";
+import { GEO_GAME_BONUS, geoFamily, type GeoEra, type GeoFamilyId } from "@/lib/geo-families";
 import { cn } from "@/lib/utils";
 import { preloadImage } from "@/lib/preload";
 import { readSeenShots, rememberSeenShot } from "@/lib/geo-seen";
 import { isWorldwide, themeOf } from "@/lib/geo-themes";
+import { useT } from "@/i18n/client";
+import { type Translator } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
+import geoNs from "@/messages/geo";
+import geoSolo from "@/messages/geo-solo";
+import geoNamesNs from "@/messages/geo-names";
+import { useGeoNames, type GeoLocal } from "@/lib/geo-i18n-client";
 
 type Phase = "setup" | "loading" | "guessing" | "submitting" | "revealed" | "results" | "error";
 
@@ -119,16 +126,20 @@ export const maxTotal = (rounds: number) => rounds * GEO_MAX_ROUND_SCORE;
 
 export const emoji = guessrSquare;
 
-function verdict(score: number): string {
-  if (score >= GEO_MAX_ROUND_SCORE) return "Spot on!";
-  if (score >= 4000) return "So close!";
-  if (score >= 2500) return "Not bad!";
-  if (score >= 1000) return "In the neighbourhood.";
-  return "Way off…";
+type SoloT = Translator<typeof geoSolo.en>;
+
+function verdict(score: number, t: SoloT): string {
+  if (score >= GEO_MAX_ROUND_SCORE) return t("verdict.spotOn");
+  if (score >= 4000) return t("verdict.close");
+  if (score >= 2500) return t("verdict.notBad");
+  if (score >= 1000) return t("verdict.near");
+  return t("verdict.wayOff");
 }
 
 const playable = (region: GeoRegionInfo | undefined) => (region?.locations ?? 0) >= GEO_ROUNDS;
-const where = (region: GeoRegionInfo) => (region.id === WORLD_REGION ? "the Pokémon world" : region.theme ? `the ${region.name} map` : region.name);
+/** "Same 5 places in the Pokémon world / on the Gyms map / in Kanto, same screenshots." */
+const sameText = (t: SoloT, names: GeoLocal, n: number, map?: GeoRegionInfo) =>
+  !map ? t("hub.challenge.same", { n }) : map.id === WORLD_REGION ? t("hub.challenge.sameWorld", { n }) : map.theme ? t("hub.challenge.sameTheme", { n, map: names.map(map) }) : t("hub.challenge.sameRegion", { n, map: names.map(map) });
 
 /**
  * "Saffron City" or "Silph Co. · Saffron City", without the "Kanto " prefix
@@ -163,9 +174,9 @@ function rememberArea(answer: { name: string; parent?: string; region?: string }
 }
 
 
-function distanceText(squares: number): string {
-  if (squares === 0) return "Right on it!";
-  return `${squares.toFixed(1)} map square${squares === 1 ? "" : "s"} away`;
+function distanceText(squares: number, t: SoloT): string {
+  if (squares === 0) return t("reveal.rightOn");
+  return t("reveal.squares", { n: squares, d: formatNumber(squares, t.locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) });
 }
 
 export async function post<T>(url: string, body: unknown): Promise<T> {
@@ -236,6 +247,11 @@ export function GeoGame(props: GeoGameProps) {
 }
 
 function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoGameProps & { mine: MyGeoProgress | null; onGameOver: () => void }) {
+  const t = useT(geoSolo);
+  const g = useT(geoNs);
+  const names = useGeoNames();
+  const gn = useT(geoNamesNs);
+  const fmt = (n: number) => formatNumber(n, t.locale);
   const today = useToday();
   const progress = useProgress();
   const account = useAccount();
@@ -461,7 +477,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
       ahead.current = null;
       const res = (ready ? await ready.catch(() => null) : null) ?? (await post<GeoStartResponse>("/api/geo", body));
       const map = byId(res.region) ?? allRegions.find((r) => r.id === res.region);
-      if (!map) throw new Error("That map isn't available right now.");
+      if (!map) throw new Error(t("errors.noMap"));
       // A friend's challenge plays on their filter, the daily on every game.
       const played: FilterChoice = opts.challenge
         ? { era: challenge?.era, families: challenge?.families ?? [] }
@@ -492,7 +508,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
       setPhase("guessing");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't start a game.");
+      setError(err instanceof Error ? err.message : t("errors.start"));
       setPhase("error");
     }
   }
@@ -528,7 +544,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
       setPhase("revealed");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't grade that guess.");
+      setError(err instanceof Error ? err.message : t("errors.grade"));
       setPhase("error");
     }
   }
@@ -619,15 +635,18 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     const week = today ? geoWeekOf(Date.now()) : null;
     const weeklyMap = week ? byId(geoWeeklyMap(week, (id) => playable(byId(id))) ?? "") : undefined;
     const weeklyDone = week ? progress?.best[`geo-weekly:${week}`] : undefined;
+    const weeklyLeft = week ? geoWeeklyLeftParts(week, Date.now()) : null;
+    // The duel and party cards name the map as it stands: in the page's language.
+    const shownRegion = t.locale === "en" ? region : { ...region, name: names.map(region) };
     return (
       <div className="mx-auto max-w-6xl space-y-12">
         <div className="relative space-y-3 text-center">
           <HowToHelpButton className="absolute right-0 top-0" />
-          <p className="hud-label max-md:hidden text-screen">Field survey · {region.name}</p>
+          <p className="hud-label max-md:hidden text-screen">{t("hub.fieldSurvey", { map: names.map(region) })}</p>
           <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-6xl">
             Poké<span className="text-primary">Guessr</span>
           </h1>
-          <p className="mx-auto max-w-xl text-muted-foreground">GeoGuessr, but for the Pokémon world.</p>
+          <p className="mx-auto max-w-xl text-muted-foreground">{t("hub.tagline")}</p>
         </div>
 
         {error && (
@@ -641,13 +660,13 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
             <div className="grid md:grid-cols-[1fr_auto]">
               <CardContent className="space-y-2 p-6">
                 <p className="hud-label flex items-center gap-1.5 text-success">
-                  <Swords className="h-3.5 w-3.5" aria-hidden /> Challenge
+                  <Swords className="h-3.5 w-3.5" aria-hidden />{` ${t("hub.challenge.tag")}`}
                 </p>
                 <p className="font-display text-2xl font-bold uppercase">
-                  {challenge.name || "A trainer"} scored {fmt(challenge.score)}
+                  {t("hub.challenge.scored", { name: challenge.name || t("hub.challenge.aTrainer"), score: fmt(challenge.score) })}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Same {challenge.rounds.length || 5} places{challengeMap ? ` in ${where(challengeMap)}` : ""}, same screenshots.{" "}
+                  {sameText(t, names, challenge.rounds.length || 5, challengeMap)}{" "}
                   {challenge.rounds.map(emoji).join("")}
                 </p>
               </CardContent>
@@ -661,7 +680,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
                   {...warmProps({ kind: "game", challenge: challenge.token })}
                 >
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Swords className="h-4 w-4" aria-hidden />}
-                  Accept challenge
+                  {t("hub.challenge.accept")}
                 </Button>
               </div>
             </div>
@@ -669,20 +688,20 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
         )}
 
         {/* ---- Play ---- */}
-        <HubSection id="play" eyebrow="Single player" title="Play">
+        <HubSection id="play" eyebrow={t("hub.play.eyebrow")} title={t("hub.play.title")}>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <HubTile
               testId="geo-solo-card"
               tone="screen"
               image={region.preview ?? tileImage(region.map.src)}
               icon={<MapPinIcon className="h-5 w-5" />}
-              label={`Solo · ${region.name}`}
-              title="Classic game"
-              blurb="Pick your map, rounds and difficulty."
-              stat={bestGame ? `Best ${fmt(bestGame)}` : null}
+              label={t("hub.solo.label", { map: names.map(region) })}
+              title={t("hub.solo.title")}
+              blurb={t("hub.solo.blurb")}
+              stat={bestGame ? t("hub.best", { score: fmt(bestGame) }) : null}
               action={
                 <Button variant="outline" className="w-full" onClick={toSolo} aria-expanded={soloOpen} aria-controls="solo" data-testid="geo-solo-setup">
-                  <SlidersHorizontal className="h-4 w-4" aria-hidden /> Set up a game
+                  <SlidersHorizontal className="h-4 w-4" aria-hidden />{` ${t("hub.solo.setup")}`}
                   <ChevronDown className={cn("h-4 w-4 transition-transform", soloOpen && "rotate-180")} aria-hidden />
                 </Button>
               }
@@ -694,10 +713,10 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
               tone="warning"
               image={tileImage(dailyMap?.map.src ?? WORLD_MAP_SRC)}
               icon={<Compass className="h-5 w-5" />}
-              label={`Daily ${today ? `#${dailyNumber(today)}` : ""}${dailyMap ? ` · ${dailyMap.name}` : ""}`}
-              title="Daily game"
-              badge={dailyDone !== undefined ? <TileFlag tone="success">Played</TileFlag> : undefined}
-              blurb={dailyDone !== undefined ? `You scored ${fmt(dailyDone)} today.` : "Today's places, the same for everyone."}
+              label={`${t("hub.daily.label", { num: today ? `#${dailyNumber(today)}` : "" })}${dailyMap ? ` · ${names.map(dailyMap)}` : ""}`}
+              title={t("hub.daily.title")}
+              badge={dailyDone !== undefined ? <TileFlag tone="success">{t("hub.played")}</TileFlag> : undefined}
+              blurb={dailyDone !== undefined ? t("hub.daily.scored", { score: fmt(dailyDone) }) : t("hub.daily.blurb")}
               action={
                 <Button
                   className="w-full"
@@ -706,7 +725,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
                   {...warmProps({ kind: "game", daily: today || "today" })}
                 >
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Compass className="h-4 w-4" aria-hidden />}
-                  {dailyDone !== undefined ? "Play again" : "Play today's"}
+                  {dailyDone !== undefined ? t("hub.daily.again") : t("hub.daily.play")}
                 </Button>
               }
             />
@@ -717,10 +736,16 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
               // a themed week (Gyms, Towns, Routes) is played on the world map, so it keeps its own screenshot.
               image={weeklyMap ? (weeklyMap.theme ? (weeklyMap.preview ?? tileImage(weeklyMap.map.src)) : tileImage(weeklyMap.map.src)) : null}
               icon={<CalendarRange className="h-5 w-5" />}
-              label={week ? `Weekly #${geoWeeklyNumber(week)}${weeklyMap ? ` · ${weeklyMap.name}` : ""}` : "Weekly"}
-              title="Weekly Challenge"
-              badge={weeklyDone !== undefined ? <TileFlag tone="success">Played</TileFlag> : week ? <TileFlag>Ends in {geoWeeklyLeft(week, Date.now())}</TileFlag> : undefined}
-              blurb={weeklyDone !== undefined ? `You scored ${fmt(weeklyDone)} this week.` : "This week's map, the same for everyone."}
+              label={week ? `${t("hub.weekly.numbered", { n: geoWeeklyNumber(week) })}${weeklyMap ? ` · ${names.map(weeklyMap)}` : ""}` : t("hub.weekly.word")}
+              title={t("hub.weekly.title")}
+              badge={
+                weeklyDone !== undefined ? (
+                  <TileFlag tone="success">{t("hub.played")}</TileFlag>
+                ) : weeklyLeft ? (
+                  <TileFlag>{t("hub.weekly.endsIn", { left: t(`hub.weekly.${weeklyLeft.unit}`, { d: weeklyLeft.d, h: weeklyLeft.h, m: weeklyLeft.m }) })}</TileFlag>
+                ) : undefined
+              }
+              blurb={weeklyDone !== undefined ? t("hub.weekly.scored", { score: fmt(weeklyDone) }) : t("hub.weekly.blurb")}
               action={
                 <Button
                   variant="success"
@@ -731,7 +756,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
                   data-testid="geo-weekly-play"
                 >
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <CalendarRange className="h-4 w-4" aria-hidden />}
-                  {weeklyDone !== undefined ? "Replay for practice" : "Play this week's"}
+                  {weeklyDone !== undefined ? t("hub.weekly.again") : t("hub.weekly.play")}
                 </Button>
               }
             />
@@ -742,14 +767,14 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
             <Card id="solo" className="scroll-mt-24" data-testid="geo-solo">
               <CardContent className="space-y-4 p-5 sm:p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h3 className="font-display text-xl font-bold uppercase">Solo game</h3>
+                  <h3 className="font-display text-xl font-bold uppercase">{t("hub.solo.heading")}</h3>
                   <Link href="/atlas" className="tap flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground">
-                    <MapIcon className="h-4 w-4" aria-hidden /> World Atlas
+                    <MapIcon className="h-4 w-4" aria-hidden />{` ${t("hub.atlas")}`}
                   </Link>
                 </div>
 
                 {maps.length > 1 && (
-                  <div className="flex flex-wrap gap-1.5 max-md:-mx-5 max-md:flex-nowrap max-md:overflow-x-auto max-md:px-5 max-md:pb-1 max-md:[scrollbar-width:none] max-md:[&>*]:shrink-0" role="radiogroup" aria-label="Map">
+                  <div className="flex flex-wrap gap-1.5 max-md:-mx-5 max-md:flex-nowrap max-md:overflow-x-auto max-md:px-5 max-md:pb-1 max-md:[scrollbar-width:none] max-md:[&>*]:shrink-0" role="radiogroup" aria-label={t("hub.solo.map")}>
                     {maps.map((r) => (
                       <button
                         key={r.id}
@@ -763,7 +788,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
                         )}
                       >
                         {r.id === WORLD_REGION && <Globe2 className="h-3.5 w-3.5" aria-hidden />}
-                        {r.name}
+                        {names.map(r)}
                       </button>
                     ))}
                   </div>
@@ -771,8 +796,8 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
 
                 {themed.length > 0 && (
                   <div className="space-y-1.5">
-                    <p className="hud-label">Themed maps</p>
-                    <div className="flex flex-wrap gap-1.5 max-md:-mx-5 max-md:flex-nowrap max-md:overflow-x-auto max-md:px-5 max-md:pb-1 max-md:[scrollbar-width:none] max-md:[&>*]:shrink-0" role="radiogroup" aria-label="Themed map">
+                    <p className="hud-label">{t("hub.solo.themed")}</p>
+                    <div className="flex flex-wrap gap-1.5 max-md:-mx-5 max-md:flex-nowrap max-md:overflow-x-auto max-md:px-5 max-md:pb-1 max-md:[scrollbar-width:none] max-md:[&>*]:shrink-0" role="radiogroup" aria-label={t("hub.solo.themedMap")}>
                       {themed.map((r) => (
                         <button
                           key={r.id}
@@ -786,13 +811,13 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
                           )}
                         >
                           <Shapes className="h-3.5 w-3.5" aria-hidden />
-                          {r.name}
+                          {names.map(r)}
                         </button>
                       ))}
                     </div>
                     {theme && (
                       <p className="text-sm text-muted-foreground" data-testid="geo-theme-blurb">
-                        {theme.blurb} Places from across the world, with leaderboards of their own.
+                        {t.locale === "en" ? theme.blurb : gn(`themes.${theme.id}.blurb`)} {t("hub.solo.themeMore")}
                       </p>
                     )}
                   </div>
@@ -804,12 +829,12 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
 
                 {(filter.families.length > 0 || filter.era) && (
                   <p className="text-sm text-muted-foreground">
-                    {filter.families.length ? "Hand-picked games are practice: no leaderboard." : `${GEO_ERA_NAMES[filter.era!]} has leaderboards of its own.`}
+                    {filter.families.length ? t("hub.solo.picked") : t("hub.solo.eraBoards", { era: names.era(filter.era!) })}
                   </p>
                 )}
 
                 <div className="grid gap-4 sm:grid-cols-[auto_1fr] sm:gap-8">
-                  <RoundsPicker value={playRounds} onChange={setRounds} max={places} label="Rounds in a game" />
+                  <RoundsPicker value={playRounds} onChange={setRounds} max={places} label={t("hub.solo.rounds")} />
                   <DifficultyPicker value={difficulty} onChange={setDifficulty} />
                 </div>
 
@@ -817,13 +842,9 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
                   <ModeCard
                     preview={region.preview ?? tileImage(region.map.src)}
                     icon={<MapPinIcon className="h-5 w-5" aria-hidden />}
-                    title={`${playRounds}-round game`}
-                    blurb={
-                      isWorld
-                        ? `${playRounds} places in ${playRounds} different regions, up to ${fmt(maxTotal(playRounds))} points. Then challenge a friend to beat you.`
-                        : `${playRounds} places, up to ${fmt(maxTotal(playRounds))} points. Then challenge a friend to beat you.`
-                    }
-                    stat={bestGame ? `Best ${fmt(bestGame)}` : null}
+                    title={t("hub.mode.game", { n: playRounds })}
+                    blurb={isWorld ? t("hub.mode.gameWorld", { n: playRounds, max: fmt(maxTotal(playRounds)) }) : t("hub.mode.gameBlurb", { n: playRounds, max: fmt(maxTotal(playRounds)) })}
+                    stat={bestGame ? t("hub.best", { score: fmt(bestGame) }) : null}
                     disabled={loading || !filterOk}
                     onClick={() => void start({ kind: "game" })}
                     warm={warmProps({ kind: "game" })}
@@ -832,13 +853,9 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
                     preview={tileImage(region.map.src)}
                     whole
                     icon={<Flame className="h-5 w-5" aria-hidden />}
-                    title="Streak"
-                    blurb={
-                      isWorld
-                        ? "Pin the right region, again and again. One miss and it's over."
-                        : "Pin the exact place, again and again. One miss and it's over."
-                    }
-                    stat={bestStreak ? `Best ${bestStreak} in a row` : null}
+                    title={t("hub.mode.streak")}
+                    blurb={isWorld ? t("hub.mode.streakWorld") : t("hub.mode.streakBlurb")}
+                    stat={bestStreak ? t("hub.bestRow", { n: bestStreak }) : null}
                     disabled={loading || !filterOk}
                     onClick={() => void start({ kind: "streak" })}
                     warm={warmProps({ kind: "streak" })}
@@ -850,18 +867,18 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
         </HubSection>
 
         {/* ---- Multiplayer ---- */}
-        <HubSection id="multiplayer" eyebrow="Head to head" title="Multiplayer">
+        <HubSection id="multiplayer" eyebrow={t("hub.multi.eyebrow")} title={t("hub.multi.title")}>
           <div className="grid gap-4 sm:grid-cols-3">
             <HubTile
               testId="geo-duels-card"
               tone="screen"
               icon={<Swords className="h-5 w-5" />}
-              label={`Casual · ${region.name}`}
-              title="Duels"
-              blurb="HP battle or points race, on any map."
+              label={t("hub.multi.duelsLabel", { map: names.map(region) })}
+              title={t("hub.multi.duels")}
+              blurb={t("hub.multi.duelsBlurb")}
               action={
                 <Button variant="outline" className="w-full" onClick={() => openDuels("casual")} data-testid="geo-open-duels">
-                  <Swords className="h-4 w-4" aria-hidden /> Open duels
+                  <Swords className="h-4 w-4" aria-hidden />{` ${t("hub.multi.openDuels")}`}
                 </Button>
               }
             />
@@ -869,12 +886,12 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
               testId="geo-ranked-tile"
               tone="warning"
               icon={<Trophy className="h-5 w-5" />}
-              label="Rated · World map"
-              title="Ranked"
-              blurb="Climb from Poké Ball to Beast Ball."
+              label={t("hub.multi.rankedLabel")}
+              title={t("hub.multi.ranked")}
+              blurb={t("hub.multi.rankedBlurb")}
               action={
                 <Button variant="outline" className="w-full" onClick={() => openDuels("ranked")} data-testid="geo-open-ranked">
-                  <Trophy className="h-4 w-4" aria-hidden /> Open ranked
+                  <Trophy className="h-4 w-4" aria-hidden />{` ${t("hub.multi.openRanked")}`}
                 </Button>
               }
             />
@@ -882,13 +899,13 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
               testId="geo-party-card"
               tone="primary"
               icon={<Users className="h-5 w-5" />}
-              label="Friends · up to 16"
-              title="Party"
-              badge={<TileFlag tone="success">New</TileFlag>}
-              blurb="A private room for your whole group."
+              label={t("hub.multi.partyLabel")}
+              title={t("hub.multi.party")}
+              badge={<TileFlag tone="success">{t("hub.multi.new")}</TileFlag>}
+              blurb={t("hub.multi.partyBlurb")}
               action={
                 <Button variant="outline" className="w-full" onClick={openParty} data-testid="geo-open-party">
-                  <Users className="h-4 w-4" aria-hidden /> Open party
+                  <Users className="h-4 w-4" aria-hidden />{` ${t("hub.multi.openParty")}`}
                 </Button>
               }
             />
@@ -896,7 +913,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
           <div id="duels" className="scroll-mt-24">
             {/* Duels play an era when the map has enough of it (hand-picked games are practice), else every game. */}
             <DuelCard
-              region={region}
+              region={shownRegion}
               places={places}
               era={filter.era && filterPlaces(region, { era: filter.era, families: [] }) >= GEO_FILTER_MIN_PLACES ? filter.era : undefined}
               queue={duelQueue}
@@ -905,35 +922,35 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
           </div>
           {partyOpen && (
             <div id="party" className="scroll-mt-24 space-y-3">
-              <h3 className="font-display text-xl font-bold uppercase">Party</h3>
-              <PartyCard region={region} />
+              <h3 className="font-display text-xl font-bold uppercase">{t("hub.multi.party")}</h3>
+              <PartyCard region={shownRegion} />
             </div>
           )}
         </HubSection>
 
         {/* ---- Explore: the globe and the atlas (maps are picked in the solo setup) ---- */}
-        <HubSection id="maps" eyebrow="The Pokémon world" title="Explore">
+        <HubSection id="maps" eyebrow={t("hub.explore.eyebrow")} title={t("hub.explore.title")}>
           <div className="grid gap-4 lg:grid-cols-2">
             <Card className="overflow-hidden border-primary/40" data-testid="globe-card">
               <CardContent className="flex flex-col items-center gap-4 p-5 sm:flex-row">
                 <GlobePreview />
                 <div className="min-w-0 flex-1 space-y-2 text-center sm:text-left">
-                  <p className="hud-label text-primary">3D · Explore</p>
-                  <p className="font-display text-2xl font-bold uppercase">World Globe</p>
-                  <p className="text-sm text-muted-foreground">Spin the whole Pokémon world in 3D and zoom from regions down to every route.</p>
+                  <p className="hud-label text-primary">{t("hub.explore.globeTag")}</p>
+                  <p className="font-display text-2xl font-bold uppercase">{t("hub.explore.globe")}</p>
+                  <p className="text-sm text-muted-foreground">{t("hub.explore.globeBlurb")}</p>
                   <Link href="/pokeguessr/globe" className={cn(buttonVariants(), "w-full sm:w-auto")}>
-                    Open the globe
+                    {t("hub.explore.openGlobe")}
                   </Link>
                 </div>
               </CardContent>
             </Card>
             <Card className="overflow-hidden">
               <CardContent className="flex h-full flex-col justify-center gap-2 p-5 text-center sm:text-left">
-                <p className="hud-label text-screen">Study · Every place</p>
-                <p className="font-display text-2xl font-bold uppercase">World Atlas</p>
-                <p className="text-sm text-muted-foreground">Every town, route and landmark on the maps, with the games each one is in.</p>
+                <p className="hud-label text-screen">{t("hub.explore.atlasTag")}</p>
+                <p className="font-display text-2xl font-bold uppercase">{t("hub.atlas")}</p>
+                <p className="text-sm text-muted-foreground">{t("hub.explore.atlasBlurb")}</p>
                 <Link href="/atlas" className={cn(buttonVariants({ variant: "outline" }), "w-full sm:w-auto sm:self-start")}>
-                  <MapIcon className="h-4 w-4" aria-hidden /> Open the atlas
+                  <MapIcon className="h-4 w-4" aria-hidden />{` ${t("hub.explore.openAtlas")}`}
                 </Link>
               </CardContent>
             </Card>
@@ -950,9 +967,9 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     return (
       <Card className="mx-auto max-w-md">
         <CardContent className="space-y-4 p-6 text-center">
-          <p className="font-display text-xl font-bold uppercase">Something went wrong</p>
+          <p className="font-display text-xl font-bold uppercase">{t("errors.title")}</p>
           <p className="text-sm text-muted-foreground">{error}</p>
-          <Button onClick={() => setPhase("setup")}>Back to PokéGuessr</Button>
+          <Button onClick={() => setPhase("setup")}>{g("shell.back")}</Button>
         </CardContent>
       </Card>
     );
@@ -981,11 +998,11 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   const isStreak = game.kind === "streak";
   const roundNumber = played.length + (phase === "revealed" ? 0 : 1);
   const modeLine = [
-    game.region.name,
-    game.filter.families.length ? "Picked games" : game.filter.era ? GEO_ERA_NAMES[game.filter.era] : null,
-    game.daily ? `Daily #${dailyNumber(game.daily)}` : null,
-    game.weekly ? `Weekly #${geoWeeklyNumber(game.weekly)}` : null,
-    game.difficulty ? GEO_DIFFICULTY_NAMES[game.difficulty] : null,
+    names.map(game.region),
+    game.filter.families.length ? t("hud.picked") : game.filter.era ? names.era(game.filter.era) : null,
+    game.daily ? t("hud.daily", { n: dailyNumber(game.daily) }) : null,
+    game.weekly ? t("hub.weekly.numbered", { n: geoWeeklyNumber(game.weekly) }) : null,
+    game.difficulty ? names.difficulty(game.difficulty) : null,
   ]
     .filter(Boolean)
     .join(" · ");
@@ -998,11 +1015,11 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
         <div className="font-display text-xl font-bold uppercase italic leading-none tracking-wide sm:text-2xl" data-testid="geo-round">
           {isStreak ? (
             <span className="inline-flex items-center gap-1.5">
-              <Flame className="h-5 w-5 text-warning" aria-hidden /> Streak {streak}
+              <Flame className="h-5 w-5 text-warning" aria-hidden />{` ${t("hud.streak", { n: streak })}`}
             </span>
           ) : (
             <>
-              Round {Math.min(roundNumber, game.rounds)}
+              {t("hud.round", { n: Math.min(roundNumber, game.rounds) })}
               <span className="text-white/50">/{game.rounds}</span>
             </>
           )}
@@ -1016,7 +1033,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     <div className="geo-safe-tr absolute right-3 top-3 z-20 flex items-center gap-2">
       {!isStreak && (
         <div className="flex h-9 items-center gap-2 rounded-md bg-black/55 px-3 backdrop-blur" data-testid="geo-score-chip">
-          <span className="hud-label hidden !text-white/60 sm:inline">Score</span>
+          <span className="hud-label hidden !text-white/60 sm:inline">{t("hud.score")}</span>
           <span className="font-display text-base font-bold tabular-nums text-[#9be15d]">{fmt(total)}</span>
         </div>
       )}
@@ -1028,7 +1045,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   if (phase === "revealed" && current) {
     return (
       <GameShell onExit={() => setPhase("setup")}>
-        {() => <RoundReveal game={game} current={current} round={roundNumber} streak={streak} pinImage={pinImage} onNext={next} onExit={() => setPhase("setup")} />}
+        {() => <RoundReveal game={game} current={current} round={roundNumber} streak={streak} pinImage={pinImage} onNext={next} onExit={() => setPhase("setup")} t={t} names={names} />}
       </GameShell>
     );
   }
@@ -1050,10 +1067,10 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
           {(timeLeft !== null || !isStreak) && (
             <HudDials>
               {timeLeft !== null && <TimerDial ms={timeLeft * 1000} totalMs={timer * 1000} urgentMs={10_000} testId="geo-time-left" />}
-              {!isStreak && <ValueDial value={fmt(total)} unit="pts" testId="geo-score-chip" />}
+              {!isStreak && <ValueDial value={fmt(total)} unit={t("hud.pts")} testId="geo-score-chip" />}
             </HudDials>
           )}
-          <RoundBadge testId="geo-round" label={isStreak ? "Streak" : "Round"} value={isStreak ? streak : Math.min(roundNumber, game.rounds)} of={isStreak ? undefined : game.rounds} mode={modeLine} />
+          <RoundBadge testId="geo-round" label={isStreak ? t("hud.streakWord") : g("round")} value={isStreak ? streak : Math.min(roundNumber, game.rounds)} of={isStreak ? undefined : game.rounds} mode={modeLine} />
         </>
       ) : (
         <>
@@ -1084,7 +1101,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
         )}
         tools={
           <>
-            <button type="button" onClick={() => setPhase("setup")} className={BAR_BTN} aria-label="Back to PokéGuessr" title="Back to PokéGuessr" data-testid="geo-exit" data-keep>
+            <button type="button" onClick={() => setPhase("setup")} className={BAR_BTN} aria-label={g("shell.back")} title={g("shell.back")} data-testid="geo-exit" data-keep>
               <X className="h-5 w-5" />
             </button>
             <HowToHelpButton className={cn(BAR_BTN, "!p-0 !text-white")} />
@@ -1104,13 +1121,13 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
             exit={{ opacity: 0 }}
             onClick={() => setZoomed(false)}
             role="dialog"
-            aria-label="Screenshot, full screen"
+            aria-label={g("shot.fullscreen")}
           >
             <div className="max-h-full max-w-full overflow-hidden rounded-md">
               {/* eslint-disable-next-line @next/next/no-img-element -- same cached screenshot, full size */}
               <img
                 src={views[viewIndex] ?? game.round.shot}
-                alt="Where is this?"
+                alt={g("shot.where")}
                 onLoad={(e) => setZoomPixelated(shotFit(e.currentTarget).pixelated)}
                 className="max-h-[calc(100vh-2rem)] max-w-full object-contain"
                 style={{
@@ -1122,7 +1139,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
             <button
               type="button"
               className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
-              aria-label="Close"
+              aria-label={g("shot.close")}
             >
               <X className="h-5 w-5" />
             </button>
@@ -1215,6 +1232,8 @@ function RoundReveal({
   pinImage,
   onNext,
   onExit,
+  t,
+  names,
 }: {
   game: Game;
   current: Played;
@@ -1223,7 +1242,10 @@ function RoundReveal({
   pinImage?: string;
   onNext: () => void;
   onExit: () => void;
+  t: SoloT;
+  names: GeoLocal;
 }) {
+  const fmt = (n: number) => formatNumber(n, t.locale);
   const { graded, guess: g } = current;
   const reduced = useReducedMotion();
   const LearnCard = loaded.LearnCard ?? LazyLearn;
@@ -1246,8 +1268,8 @@ function RoundReveal({
       </div>
       <Notch>
         <div className="text-center">
-          <div className="font-display text-xl font-bold uppercase italic leading-none tracking-wide sm:text-2xl">{isStreak ? `Streak ${streak}` : `Round ${roundNumber}`}</div>
-          <div className="mt-0.5 font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c8bfff]">{game.region.name}</div>
+          <div className="font-display text-xl font-bold uppercase italic leading-none tracking-wide sm:text-2xl">{isStreak ? t("hud.streak", { n: streak }) : t("hud.round", { n: roundNumber })}</div>
+          <div className="mt-0.5 font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c8bfff]">{names.map(game.region)}</div>
         </div>
       </Notch>
 
@@ -1259,18 +1281,18 @@ function RoundReveal({
             {isStreak ? (
               <>
                 <p className={cn("hud-label", graded.hit ? "!text-[#9be15d]" : "!text-[#ff5a5a]")}>
-                  {graded.hit ? (isWorld ? "Right region!" : "Correct!") : isWorld ? "Wrong region. Streak over" : "Streak over"}
+                  {graded.hit ? (isWorld ? t("reveal.rightRegion") : t("reveal.correct")) : isWorld ? t("reveal.wrongRegion") : t("reveal.over")}
                 </p>
                 <p className="flex items-center justify-center gap-2 font-display text-4xl font-bold italic md:justify-start">
                   {graded.hit ? <Check className="h-8 w-8 text-[#9be15d]" aria-hidden /> : <X className="h-8 w-8 text-[#ff5a5a]" aria-hidden />}
-                  {graded.hit ? `${streak} in a row` : `Final streak: ${streak}`}
+                  {graded.hit ? t("reveal.inARow", { n: streak }) : t("reveal.final", { n: streak })}
                 </p>
               </>
             ) : (
               <>
-                <p className="hud-label !text-[#c8bfff]">{verdict(graded.score)}</p>
+                <p className="hud-label !text-[#c8bfff]">{verdict(graded.score, t)}</p>
                 <p className="geo-glow font-display text-4xl font-bold italic tabular-nums sm:text-5xl" data-testid="geo-round-score">
-                  {fmt(shown)} <span className="text-lg not-italic text-white/60">pts</span>
+                  {fmt(shown)} <span className="text-lg not-italic text-white/60">{t("hud.pts")}</span>
                 </p>
                 <div className="mt-1.5 flex items-center gap-2">
                   <div className="meter h-2 flex-1 !bg-black/40">
@@ -1283,10 +1305,10 @@ function RoundReveal({
             {graded.gameGuess && (
               <p className={cn("mt-1 text-sm font-semibold", graded.gameGuess.correct ? "text-[#9be15d]" : "text-white/60")} data-testid="geo-game-bonus">
                 {graded.gameGuess.correct
-                  ? `Right game! +${fmt(graded.gameGuess.bonus)} bonus`
+                  ? t("reveal.rightGame", { bonus: fmt(graded.gameGuess.bonus) })
                   : graded.gameGuess.guessed
-                    ? `Not ${geoFamily(graded.gameGuess.guessed).name}: no bonus`
-                    : `No game named: no bonus (worth ${fmt(GEO_GAME_BONUS)})`}
+                    ? t("reveal.wrongGame", { game: names.game(geoFamily(graded.gameGuess.guessed).name) })
+                    : t("reveal.noGame", { bonus: fmt(GEO_GAME_BONUS) })}
               </p>
             )}
           </div>
@@ -1295,7 +1317,7 @@ function RoundReveal({
           <motion.div {...rise(reduced ? 0 : (LINE_DRAW_MS + FIT_MS) / 1000)} className="flex min-w-0 flex-col items-center gap-2">
             <span className="inline-flex items-center gap-2 rounded-full border-2 border-[#a99cff] bg-[#4cbb17] px-4 py-1.5 font-display text-sm font-bold uppercase italic tracking-wide text-white shadow-lg" data-testid="geo-distance">
               <MapPinIcon className="h-4 w-4" aria-hidden />
-              {graded.timedOut ? "Time's up: no pin down" : distanceText(graded.answer.squares)}
+              {graded.timedOut ? t("reveal.timeUp") : distanceText(graded.answer.squares, t)}
             </span>
             {/* The learn card: the place, its game, one fact from the Pokédex's place data, and where to read more. */}
             <LearnCard answer={graded.answer} shot={current.shot} map={game.region} />
@@ -1309,8 +1331,8 @@ function RoundReveal({
               data-testid="geo-next"
               className="flex h-12 w-full max-w-xs items-center justify-center gap-2 rounded-md bg-[#4cbb17] px-6 font-display text-base font-bold uppercase tracking-wider text-white shadow-lg transition-[background-color,transform] hover:bg-[#58d01c] active:scale-[0.98]"
             >
-              {graded.done ? (isStreak ? "See results" : "View summary") : "Next round"} ▶
-              <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline [@media(pointer:coarse)]:!hidden">Space</kbd>
+              {graded.done ? (isStreak ? t("reveal.results") : t("reveal.summary")) : t("reveal.next")} ▶
+              <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline [@media(pointer:coarse)]:!hidden">{t("reveal.space")}</kbd>
             </button>
             <div className="text-white/60 [&_button]:text-white/60 [&_button:hover]:text-white">
               <ReportShot key={current.shot} shot={current.shot} mode={game.daily ? "daily" : "solo"} />

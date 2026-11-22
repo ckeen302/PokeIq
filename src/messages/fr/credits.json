@@ -1,0 +1,18 @@
+{
+  "title": "Crédits",
+  "description": "Les données, le moteur, la musique et les textures sur lesquels repose PokéIQ, et leurs licences.",
+  "data": "Données Pokémon",
+  "dataBody": "Données issues de PokéAPI.",
+  "shinyMaker": "Créateur de Pokémon chromatiques",
+  "shinyMakerBody": "Sprites dans le style de Noir/Blanc, tirés de la collection de sprites de PokéAPI ; à partir du n° 650, ce sont des créations de fans dans le même style, par le Smogon Sprite Project. Le style 3D utilise les rendus de Pokémon HOME et le style Illustration les illustrations officielles, eux aussi via PokéAPI (<a>crédits</a>).",
+  "battles": "Combats",
+  "battlesBody": "Les combats tournent sur le simulateur de Pokémon Showdown, dont le minuteur et le format des rediffusions sont adaptés (licence MIT, © Guangcong Luo et contributeurs).",
+  "music": "Musique de combat",
+  "musicBody": "Chiptune originale de Ted Kerr, celestialghost8 et congusbongus via OpenGameArt.org, sous licence CC0 (<a>crédits</a>).",
+  "sizes": "Tailles",
+  "sizesBody": "Musique de cynicmusic et textures urbaines de Poly Haven, toutes deux en CC0 (<a>crédits</a>).",
+  "race": "Course",
+  "raceBody": "Textures du stade de Poly Haven et sons de foule d’OpenGameArt.org, le tout en CC0 (<a>crédits</a>).",
+  "films": "Les deux films",
+  "filmsBody": "Les musiques sont originales, écrites pour PokéIQ et jouées avec la banque de sons MuseScore General (MIT ; cordes de VSCO 2 CE, CC0). Crédits : <world>Histoire du monde Pokémon</world>, <story>L’histoire de Pokémon</story>."
+}

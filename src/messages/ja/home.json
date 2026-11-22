@@ -1,0 +1,41 @@
+{
+  "socialTitle": "PokéIQ：ポケモン版の GeoGuessr、Wordle、Showdown",
+  "socialDescription": "全地方の実際のゲーム画面を使った PokéGuessr、リアルタイム対戦ができる毎日の Pokédle、Showdown 準拠のバトル、数千戦をシミュレートするバトルラボ。無料・登録不要。",
+  "h1": "PokéIQ：ポケモンのゲーム、クイズ、バトル",
+  "free": "無料・登録不要",
+  "pitch": "毎日のポケモンパズル、実際のゲーム画面で遊ぶポケモン版 GeoGuessr、Showdown のバトル、そして3Dのポケモン。",
+  "play": "今日のゲームをプレイ",
+  "coffee": "コーヒーをおごる",
+  "socials": "PokéIQ の SNS",
+  "socialOn": "{name} の PokéIQ",
+  "today": {
+    "title": "今日",
+    "allDone": "今日はすべてクリア",
+    "newIn": "・次のパズルまで ",
+    "keep": "・今日プレイして記録を続けよう",
+    "midnight": "毎日0時に新しいパズル",
+    "done": "クリア",
+    "inProgress": "プレイ中",
+    "continue": "続ける",
+    "play": "プレイ",
+    "streakOne": "{games}で{days}日連続",
+    "streakTwo": "{games}で{days}日連続",
+    "streakMany": "{games}で{days}日連続"
+  },
+  "games": {
+    "daily": { "name": "デイリーチャレンジ", "line": "今日のポケモンクイズ" },
+    "pokedle": { "name": "Pokédle", "line": "なぞのポケモンを当てよう" },
+    "guessr": { "name": "PokéGuessr", "line": "今日の場所にピンを立てよう" },
+    "connections": { "name": "Connections", "line": "隠れたグループを見つけよう" },
+    "pikadoku": { "name": "Pikadoku", "line": "ポケモン数独" }
+  },
+  "results": {
+    "right": "{total}問中{correct}問正解",
+    "solvedIn": "{n}回で正解",
+    "missed": "今日は失敗",
+    "points": "{points}点",
+    "solvedMistakes": "クリア・ミス{n}回",
+    "perfect": "パーフェクト",
+    "filled": "{n}/9マス"
+  }
+}

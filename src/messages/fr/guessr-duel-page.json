@@ -1,0 +1,39 @@
+{
+  "duel": {
+    "fallbackTitle": "Un duel PokéGuessr",
+    "fallbackDescription": "Les duels de GeoGuessr version Pokémon : les mêmes lieux pour vous deux, l'épingle la plus proche gagne.",
+    "titleVs": "{host} contre {guest} : un duel PokéGuessr",
+    "titleChallenge": "{host} te défie en duel sur PokéGuessr",
+    "aTrainer": "Un Dresseur",
+    "raceDescription": "Une course aux points sur la carte {where} : les mêmes {rounds} lieux pour vous deux, et le plus de points l'emporte.",
+    "hpDescription": "Face à face sur la carte {where} : les mêmes lieux pour vous deux, {hp} PV chacun, avec les règles des duels de GeoGuessr."
+  },
+  "party": {
+    "fallbackTitle": "Une partie PokéGuessr entre amis",
+    "fallbackDescription": "GeoGuessr version Pokémon avec tes amis : Combat Royal et duels en équipe, tout le monde sur les mêmes lieux.",
+    "title": "{host} t'invite à une partie PokéGuessr entre amis",
+    "aTrainer": "Un Dresseur",
+    "description": "{mode} sur la carte {where} : tout le monde a les mêmes lieux. {n, plural, one {{n} Dresseur} other {{n} Dresseurs}} dans le salon.",
+    "modes": {
+      "royale": "Combat Royal",
+      "team": "Duel en équipe"
+    }
+  },
+  "where": "du monde Pokémon",
+  "maps": {
+    "world": "Monde",
+    "kanto": "Kanto",
+    "johto": "Johto",
+    "hoenn": "Hoenn",
+    "sinnoh": "Sinnoh",
+    "unova": "Unys",
+    "kalos": "Kalos",
+    "alola": "Alola",
+    "galar": "Galar",
+    "paldea": "Paldea",
+    "theme-gyms": "Arènes",
+    "theme-towns": "Villes et villages",
+    "theme-routes": "Routes"
+  },
+  "gameSep": " / "
+}

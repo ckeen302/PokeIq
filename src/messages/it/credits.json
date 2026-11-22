@@ -1,0 +1,18 @@
+{
+  "title": "Crediti",
+  "description": "I dati, il motore, la musica e le texture su cui si basa PokéIQ, e le loro licenze.",
+  "data": "Dati Pokémon",
+  "dataBody": "Dati di PokéAPI.",
+  "shinyMaker": "Creatore di Pokémon cromatici",
+  "shinyMakerBody": "Sprite in stile Nero/Bianco dalla raccolta di sprite di PokéAPI; dal n. 650 in poi sono realizzati da fan nello stesso stile dallo Smogon Sprite Project. Lo stile 3D usa i render di Pokémon HOME e lo stile Artwork le illustrazioni ufficiali, anch'essi da PokéAPI (<a>crediti</a>).",
+  "battles": "Lotte",
+  "battlesBody": "Le lotte usano il simulatore di Pokémon Showdown, e il timer e il formato dei replay sono adattati da Pokémon Showdown (licenza MIT, © Guangcong Luo e collaboratori).",
+  "music": "Musica delle lotte",
+  "musicBody": "Chiptune originale di Ted Kerr, celestialghost8 e congusbongus tramite OpenGameArt.org, con licenza CC0 (<a>crediti</a>).",
+  "sizes": "Dimensioni",
+  "sizesBody": "Musica di cynicmusic e texture urbane di Poly Haven, entrambe CC0 (<a>crediti</a>).",
+  "race": "Corsa",
+  "raceBody": "Texture dello stadio di Poly Haven e suoni del pubblico di OpenGameArt.org, tutto CC0 (<a>crediti</a>).",
+  "films": "I due film",
+  "filmsBody": "Le colonne sonore sono originali, scritte per PokéIQ e suonate con il banco di suoni MuseScore General (MIT; archi da VSCO 2 CE, CC0). Crediti: <world>Storia del mondo Pokémon</world>, <story>La storia dei Pokémon</story>."
+}

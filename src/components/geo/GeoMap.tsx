@@ -7,6 +7,10 @@ import { createAtlas, loadAtlas, type AtlasData, type AtlasEngine, type AtlasVie
 import { preloadImage } from "@/lib/preload";
 import { cn } from "@/lib/utils";
 import { crowdColor, type GeoCrowdRound } from "@/lib/geo-crowd";
+import { useT } from "@/i18n/client";
+import geoNs from "@/messages/geo";
+import geoNamesNs from "@/messages/geo-names";
+import { localMap } from "@/lib/geo-i18n";
 
 export interface MapPin {
   x: number;
@@ -106,6 +110,9 @@ export function mapAspect(region: Pick<GeoRegionInfo, "map">): number {
  * them both.
  */
 export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, controls = true, className, fill, others = [], land = false, density }: Props) {
+  const t = useT(geoNs);
+  const geoNames = useT(geoNamesNs);
+  const mapName = localMap(geoNames, region);
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engine = useRef<AtlasEngine | null>(null);
@@ -242,7 +249,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
       )}
       style={fill ? undefined : { aspectRatio: `${aspect}` }}
       role={onPick ? "application" : "img"}
-      aria-label={onPick ? `Map of ${region.name}: click where you think this is. Scroll to zoom, drag to move.` : `Map of ${region.name}`}
+      aria-label={onPick ? t("map.pickLabel", { map: mapName }) : t("map.label", { map: mapName })}
       data-testid="geo-map"
       // The map takes taps once it has loaded and been sized (until then a tap does nothing).
       data-ready={view ? "true" : undefined}
@@ -263,7 +270,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
       )}
       {!atlas && (
         <div className="absolute inset-0 flex items-center justify-center text-sm text-white/80">
-          {failed ? "Couldn't load the map. Try reloading." : <Loader2 className="h-5 w-5 animate-spin" aria-label="Loading the map" />}
+          {failed ? t("map.failed") : <Loader2 className="h-5 w-5 animate-spin" aria-label={t("map.loading")} />}
         </div>
       )}
       {view && (
@@ -315,9 +322,9 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
       {controls && (
         <div className="absolute right-1.5 top-1.5 z-[2] flex flex-col gap-1" data-map-controls>
           {[
-            { label: "Zoom in", icon: <Plus className="h-3.5 w-3.5" />, act: () => engine.current?.zoomBy(1.6) },
-            { label: "Zoom out", icon: <Minus className="h-3.5 w-3.5" />, act: () => engine.current?.zoomBy(1 / 1.6) },
-            { label: "Show the whole map", icon: <Maximize2 className="h-3 w-3" />, act: () => engine.current?.reset() },
+            { label: t("map.zoomIn"), icon: <Plus className="h-3.5 w-3.5" />, act: () => engine.current?.zoomBy(1.6) },
+            { label: t("map.zoomOut"), icon: <Minus className="h-3.5 w-3.5" />, act: () => engine.current?.zoomBy(1 / 1.6) },
+            { label: t("map.whole"), icon: <Maximize2 className="h-3 w-3" />, act: () => engine.current?.reset() },
           ].map((b) => (
             <button
               key={b.label}

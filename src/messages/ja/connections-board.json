@@ -1,0 +1,46 @@
+{
+  "level": {
+    "0": "黄",
+    "1": "緑",
+    "2": "青",
+    "3": "紫",
+    "4": "赤"
+  },
+  "kind": {
+    "move": "わざ",
+    "ability": "とくせい",
+    "type": "タイプ",
+    "pokemon": "ポケモン"
+  },
+  "moveChip": "わざ",
+  "tile": {
+    "hinted": "、ヒント：残りでいちばん簡単なグループ",
+    "selected": "、選択中"
+  },
+  "group": {
+    "aria": "{level}のグループ：{label}：{members}",
+    "ariaRevealed": "{level}のグループ（公開）：{label}：{members}"
+  },
+  "legend": {
+    "aria": "グループの色（簡単な順）：{levels}",
+    "easiest": "簡単",
+    "trickiest": "難しい"
+  },
+  "mistakes": {
+    "aria": "ミスはあと{left}回（全{max}回）",
+    "last": "ラストチャンス：",
+    "remaining": "残りミス："
+  },
+  "history": {
+    "guess": "{n}回目：{levels}",
+    "sep": "。"
+  },
+  "why": {
+    "title": "なぜ？",
+    "source": "すべてポケモン図鑑のデータより",
+    "line": "：{why}",
+    "herrings": "ひっかけ",
+    "herring": "<b>{name}</b>：{reason}。"
+  },
+  "sep": "、"
+}

@@ -1,3 +1,5 @@
+import { translator, type Translator } from "@/i18n/catalog";
+import pikadoku from "@/messages/pikadoku";
 import { DEFAULT_PDK_SETTINGS, PDK_FAMILIES, type PdkBand, type PdkFamily, type PdkSettings } from "./types";
 
 /**
@@ -69,5 +71,5 @@ export function judgeChallenge(mine: { solved: number; guesses: number }, theirs
   return "tied";
 }
 
-/** "9/9 in 12 guesses". */
-export const challengeLabel = (r: { solved: number; guesses: number }) => `${r.solved}/9 in ${r.guesses} guess${r.guesses === 1 ? "" : "es"}`;
+/** "9/9 in 12 guesses" (in the page's language when given its translator). */
+export const challengeLabel = (r: { solved: number; guesses: number }, t: Translator<typeof pikadoku.en> = translator(pikadoku, "en", undefined)) => t("challenge.label", { solved: r.solved, guesses: r.guesses });

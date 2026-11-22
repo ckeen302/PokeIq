@@ -1,0 +1,60 @@
+{
+  "distance": {
+    "exact": "Genau getroffen!",
+    "squares": "{n} Felder"
+  },
+  "band": {
+    "round": "Runde {round}",
+    "damage": "{m}× Schaden",
+    "race": "Punkterennen",
+    "noPin": "Keine Markierung",
+    "super": "Das ist sehr effektiv!",
+    "points": "{points} Pkt.",
+    "you": "Du",
+    "connectionLost": "Verbindung verloren",
+    "multiplierTitle": "Schadensmultiplikator dieses Trainers"
+  },
+  "guessed": {
+    "waiting": "Festgelegt. Warte auf {name} …",
+    "guessed": "{name} hat getippt",
+    "left": "Noch {s} s zum Tippen"
+  },
+  "live": {
+    "downTitle": "Live-Verbindung verloren: Bis sie zurück ist, gibt es jede Sekunde ein Update",
+    "upTitle": "Live: Die Züge deines Gegners erscheinen sofort",
+    "down": "Verbinde neu …",
+    "up": "Live"
+  },
+  "leave": {
+    "sure": "Wer geht, gibt das Duell auf.",
+    "forfeit": "Aufgeben",
+    "stay": "Bleiben",
+    "leave": "Duell verlassen"
+  },
+  "emotes": {
+    "send": "Reaktion senden",
+    "menu": "Reaktionen",
+    "sendOne": "„{label}“ senden",
+    "pika": "Pika!",
+    "huh": "Hä?",
+    "zzz": "Zzz …",
+    "splash": "Platscher!",
+    "heh": "Hehe",
+    "cute": "Süß!",
+    "flame": "Feuer und Flamme",
+    "counter": "Konter!"
+  },
+  "versus": {
+    "round": "Runde {round}",
+    "race": "Punkterennen",
+    "damage": "{m}× Schaden",
+    "hp": "KP-Kampf",
+    "turbo": " · Turbo",
+    "ranked": "Rangliste · ",
+    "vs": "VS",
+    "versus": "gegen",
+    "you": "Du",
+    "hpUnit": "KP"
+  },
+  "timeline": "KP nach jeder Runde"
+}

@@ -1,0 +1,54 @@
+{
+  "duel": {
+    "heading": "Sfide",
+    "modes": {
+      "hp": "Sfida a PS",
+      "race": "Gara a punti",
+      "team": "Squadre 2v2"
+    },
+    "queues": {
+      "casual": "Amichevole",
+      "ranked": "Classificata"
+    },
+    "queueLabel": "Tipo di sfida",
+    "eras": {
+      "2d": "2D classico",
+      "3d": "3D moderno"
+    },
+    "headingTeam": "Duello a squadre · {map}",
+    "headingHp": "Testa a testa · {map}",
+    "teamBlurb": "Due squadre da due (fino a quattro per parte) sugli stessi luoghi, {hp} PS per squadra. A ogni round la tua squadra conta la sua puntina migliore, e i compagni vedono le puntine degli altri mentre le piazzano. Manda il codice della stanza a tre amici.",
+    "raceBlurb": "Gli stessi {n} luoghi per entrambi, sulla mappa scelta sopra. Vince chi fa più punti in {n} round. Manda il link al tuo amico e premi Pronto.",
+    "raceBlurbEra": "Gli stessi {n} luoghi per entrambi, sulla mappa e i giochi scelti sopra. Vince chi fa più punti in {n} round. Manda il link al tuo amico e premi Pronto.",
+    "hpBlurb": "Gli stessi luoghi per entrambi, sulla mappa scelta sopra. {hp} PS a testa: a ogni round il punteggio più basso perde la differenza. Manda il link al tuo amico e premi Pronto.",
+    "hpBlurbEra": "Gli stessi luoghi per entrambi, sulla mappa e i giochi scelti sopra. {hp} PS a testa: a ogni round il punteggio più basso perde la differenza. Manda il link al tuo amico e premi Pronto.",
+    "turboInfo": "Turbo: appena uno risponde, l'altro ha {s} secondi invece di 15.",
+    "mode": "Modalità",
+    "modeLabel": "Modalità di sfida",
+    "raceRounds": "Round della gara",
+    "partySettings": "Impostazioni della partita",
+    "turboOn": "Turbo attivo",
+    "turboOff": "Turbo spento"
+  },
+  "party": {
+    "royaleBlurb": "Fino a {max} Allenatori sugli stessi luoghi. Il punteggio più basso di ogni round perde una vita ({lives} a testa); vince l'ultimo Allenatore in gara.",
+    "teamBlurb": "Squadra rossa contro blu, 2v2 (fino a 4v4), {hp} PS per squadra. La tua squadra conta la sua puntina migliore, e vedi le puntine dei compagni in diretta.",
+    "label": "Gruppo · fino a {max} Allenatori",
+    "room": "Stanza privata · {map}",
+    "gameLabel": "Gioco del gruppo",
+    "modes": {
+      "royale": "Battaglia Reale",
+      "team": "Duello a squadre"
+    },
+    "host": "Sei tu l'host: cambia mappa, vite, tempo e round nella stanza, poi avvia quando ci sono tutti.",
+    "nameLabel": "Il tuo nome Allenatore",
+    "namePlaceholder": "Nome Allenatore",
+    "nameRejected": "Scegli un altro nome.",
+    "create": "Crea il gruppo",
+    "code": "Codice stanza",
+    "join": "Entra",
+    "badCode": "I codici stanza sono di sei lettere e numeri.",
+    "failed": "Impossibile aprire il gruppo.",
+    "requestFailed": "Richiesta non riuscita ({status})"
+  }
+}

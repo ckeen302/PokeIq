@@ -1,0 +1,301 @@
+{
+  "loading": "Caricamento",
+  "diff": {
+    "easy": "Facile",
+    "normal": "Normale",
+    "expert": "Esperto"
+  },
+  "diffHint": {
+    "easy": "Categorie ampie, tante risposte",
+    "normal": "La griglia principale: classifica e punteggio",
+    "expert": "Categorie più difficili, anche solo due risposte per casella"
+  },
+  "error": {
+    "generic": "Qualcosa è andato storto.",
+    "noBoard": "Nessuna griglia corrisponde a queste impostazioni.",
+    "grid": "Impossibile caricare la griglia.",
+    "game": "Impossibile caricare la tua partita. Controlla la connessione.",
+    "offline": "Sei offline. La griglia si caricherà quando tornerai online.",
+    "gridConnection": "Impossibile caricare la griglia. Controlla la connessione."
+  },
+  "noBoard": {
+    "few": "Queste categorie da sole non bastano a riempire una griglia. Seleziona più categorie, in più gruppi.",
+    "none": "Nessuna griglia corrisponde a queste impostazioni. Per ampliarle, {tips}.",
+    "or": "{list} o {last}",
+    "more": "seleziona più categorie",
+    "normal": "prova la difficoltà Normale",
+    "single": "consenti caselle con una sola risposta"
+  },
+  "toast": {
+    "softlock": "Così la griglia diventerebbe irrisolvibile. Prova un altro Pokémon.",
+    "fits": "{name} va bene!",
+    "picked": " {emoji} L’ha scelto il {pct}% dei giocatori.",
+    "ppLeft": " Ti restano {n} PP.",
+    "miss": "{name} non va bene qui."
+  },
+  "giveUpConfirm": "Vuoi arrenderti e vedere le risposte?",
+  "challenge": {
+    "title": "Sfida di Pikadoku (Illimitata)",
+    "beatMe": "Riesci a battermi sulla stessa griglia?",
+    "playMe": "Gioca la stessa griglia con me:",
+    "label": "{solved}/9 in {guesses, plural, one {{guesses} tentativo} other {{guesses} tentativi}}",
+    "banner": "Sfida: batti {label}",
+    "beat": "Hai battuto {label}!",
+    "tied": "Pareggio con {label}.",
+    "lost": "Quasi: dovevi battere {label}."
+  },
+  "heading": {
+    "weekly": "Settimanale n. {n}",
+    "weeklyTheme": "Settimanale n. {n} · {theme}",
+    "archive": "Archivio n. {n} · {diff}",
+    "daily": "Giornaliera n. {n} · {diff}",
+    "unlimited": "Illimitata"
+  },
+  "ttt": "Tris",
+  "subtitle": "Sudoku Pokémon: un Pokémon per casella, adatto alla sua riga e alla sua colonna.",
+  "modes": {
+    "label": "Modalità di Pikadoku",
+    "daily": "Giornaliera",
+    "dailyTitle": "La griglia di oggi, uguale per tutti",
+    "unlimited": "Illimitata",
+    "unlimitedTitle": "Crea la tua griglia",
+    "tttTitle": "Tris: prendete a turno le caselle contro un amico o uno sconosciuto"
+  },
+  "tools": {
+    "label": "Opzioni di Pikadoku",
+    "howTo": "Come si gioca",
+    "stats": "Statistiche",
+    "newGrid": "Nuova griglia illimitata",
+    "settings": "Impostazioni della modalità Illimitata"
+  },
+  "weeklyNote": "<b>{theme}</b>: {blurb} Disponibile fino a domenica {sunday}. Non conta per la tua serie giornaliera.",
+  "archiveNote": "Archivio: n. {n} ({date}), {diff}. Per divertimento: non conta mai per la classifica giornaliera né per la tua serie.",
+  "unlimitedNote": "Illimitata: la tua griglia, non conta mai per la tua serie.",
+  "time": "Tempo",
+  "master": "Puzzle maestro di {name}",
+  "bar": {
+    "rarityLabel": "Punteggio di rarità (più basso è più raro), tocca per la classifica",
+    "rarityTitle": "Punteggio di rarità: la somma delle percentuali di giocatori che hanno scelto le tue risposte (una casella vuota conta 100). Più basso è più raro.",
+    "rarity": "Rarità",
+    "filled": "Piene",
+    "ppUnlimited": "Tentativi illimitati",
+    "ppLeft": "{left} tentativi su {pp} rimasti",
+    "ppTitle": "PP: i tuoi tentativi. Anche un errore ne consuma uno.",
+    "pp": "PP",
+    "giveUp": "Arrenditi"
+  },
+  "shareGrid": "Condividi la griglia",
+  "newBoard": "Nuova griglia",
+  "changeSettings": "Cambia impostazioni",
+  "more": "Altro",
+  "dailyDifficulty": "Difficoltà giornaliera",
+  "weekly": "Settimanale",
+  "weeklyTitle": "Una griglia a tema disponibile da lunedì a domenica, con la sua classifica",
+  "archive": "Archivio",
+  "result": {
+    "complete": "Griglia completa · 9 caselle su 9",
+    "cells": "{n} caselle su 9",
+    "score": "Punteggio di rarità {score}",
+    "off": "La rarità è disattivata per ora, quindi questa partita non ha un punteggio di rarità.",
+    "explain": "Ogni casella aggiunge la percentuale di giocatori che lì hanno scelto lo stesso Pokémon (una casella vuota aggiunge 100). Più è basso, più le scelte sono rare: 900 è il risultato più comune, sotto 100 è leggendario.",
+    "tapRank": "Vedi la posizione",
+    "rankWeek": "Sei n. {position} su {total} nella classifica della settimana.",
+    "rankToday": "Sei n. {position} su {total} nella classifica di oggi ({diff}).",
+    "boardOff": "La classifica è disattivata al momento.",
+    "trainerName": "Nome Allenatore per la classifica",
+    "rankMe": "Classificami",
+    "share": "Condividi il risultato",
+    "cantWait": "Non vuoi aspettare? Gioca una griglia illimitata"
+  },
+  "leaderboard": {
+    "label": "Classifica",
+    "week": "Classifica della settimana · {theme}",
+    "today": "Classifica di oggi · {diff}",
+    "scope": "Ambito della classifica",
+    "all": "Tutti",
+    "friends": "Amici",
+    "signIn": "Accedi per vedere come sono andati i tuoi amici.",
+    "off": "La classifica è disattivata al momento.",
+    "empty": "Ancora nessuno in classifica.",
+    "emptyHow": "Completa una griglia con un nome Allenatore per entrare."
+  },
+  "weeklyTheme": {
+    "kanto": { "name": "Settimana di Kanto", "blurb": "Tutto Kanto: i 151 originali e ciò in cui si sono evoluti." },
+    "starters": { "name": "Settimana degli starter", "blurb": "Starter di ogni regione, da Bulbasaur a Quaxly." },
+    "legendary": { "name": "Settimana leggendaria", "blurb": "Leggendari e misteriosi, e le categorie che li distinguono." },
+    "gen9": { "name": "Settimana della 9ª gen.", "blurb": "I Pokémon di Paldea e le forme arrivate con loro." },
+    "competitive": { "name": "Settimana competitiva", "blurb": "Classici dell’OU: statistiche, tipi e gli strumenti del metagame." }
+  },
+  "countdown": "Prossimo Pikadoku tra <b>{time}</b>",
+  "rarity": {
+    "p": "scelto da meno dell’1%",
+    "b": "scelto da meno del 10%",
+    "g": "scelto da meno del 25%",
+    "y": "scelto dal 25% o più",
+    "x": "errore o vuota"
+  },
+  "rarest": {
+    "yours": "Hai trovato la scelta più rara.",
+    "possible": "La più rara possibile: <b>{name}</b>",
+    "nobody": "(nessuno l’ha scelto)",
+    "nobodyMore": "{n, plural, one {(nessuno l’ha scelto, come {n} altro)} other {(nessuno l’ha scelto, come altri {n})}}",
+    "pct": "({pct}%)"
+  },
+  "reveal": {
+    "label": "Risposte",
+    "title": "Tutte le risposte",
+    "intro": "Ogni Pokémon adatto a ciascuna casella.",
+    "introRare": "Ogni Pokémon adatto a ciascuna casella, prima le scelte più rare, con la percentuale di giocatori che le hanno fatte.",
+    "miss": "{name} non rientra in {cats}.",
+    "missCat": "«{label}»",
+    "missOr": "{a} né in {b}",
+    "valid": "{total} valide",
+    "notFilled": "Non riempita",
+    "showAll": "Mostra tutte le {total}"
+  },
+  "banner": {
+    "offline": "Sei offline. Le risposte verranno controllate quando tornerai online.",
+    "newPuzzle": "È uscito un nuovo puzzle giornaliero.",
+    "playIt": "Gioca",
+    "retry": "Riprova"
+  },
+  "card": {
+    "label": "Le tue statistiche giornaliere",
+    "title": "Le tue giornaliere",
+    "streak": "Serie",
+    "best": "Record {best}",
+    "bestRarity": "Miglior rarità",
+    "lower": "Più basso è più raro",
+    "today": "Oggi",
+    "noAverage": "Ancora nessuna media",
+    "average": "La tua media: {avg}",
+    "level": "Pari alla tua media di {avg}",
+    "rarer": "{diff} più raro della tua media di {avg}",
+    "commoner": "{diff} più comune della tua media di {avg}"
+  },
+  "stats": {
+    "title": "Statistiche",
+    "played": "Giocate",
+    "perfect": "% perfette",
+    "rarest": "Giornaliera più rara",
+    "streak": "Serie attuale",
+    "best": "Serie migliore",
+    "duels": "Sfide vinte",
+    "filled": "Caselle riempite nelle giornaliere",
+    "none": "Completa una giornaliera per vedere quanto riempi le tue griglie."
+  },
+  "archiveSheet": {
+    "title": "Archivio",
+    "intro": "Gioca qualsiasi giornaliera passata a qualsiasi difficoltà. Le partite d’archivio sono solo per divertimento: non contano mai per la classifica giornaliera né per la tua serie.",
+    "prev": "Mese precedente",
+    "next": "Mese successivo",
+    "month": "Giornaliere di {month}",
+    "weekdays": {
+      "mon": "Lun",
+      "tue": "Mar",
+      "wed": "Mer",
+      "thu": "Gio",
+      "fri": "Ven",
+      "sat": "Sab",
+      "sun": "Dom"
+    },
+    "today": "{date} (oggi)",
+    "inProgress": "{day}: in corso",
+    "cells": "{day}: {cells} caselle",
+    "todaysDaily": " · giornaliera di oggi",
+    "playing": "In corso",
+    "play": "Gioca"
+  },
+  "howTo": {
+    "subtitle": "Riempi la griglia. Tieni basso il punteggio.",
+    "goal": "L’obiettivo",
+    "goalBody": "Riempi tutte le 9 caselle della griglia, ognuna con un Pokémon adatto sia alla sua riga sia alla sua colonna.",
+    "core": "Regole base",
+    "coreBody": "Hai {pp} tentativi (PP), e anche un errore ne consuma uno. Ogni Pokémon si può usare una sola volta.",
+    "scoring": "Punteggio",
+    "scoringBody": "Riempi più caselle che puoi. Il tuo punteggio di rarità somma le percentuali di giocatori che hanno scelto ciascuna delle tue risposte: scelte più rare, punteggio più basso.",
+    "full": "Regole complete",
+    "boxes": "caselle da riempire",
+    "guesses": "tentativi",
+    "reused": "Pokémon ripetuti",
+    "rules": {
+      "both": "Ogni casella richiede un Pokémon adatto <b>sia</b> alla sua riga sia alla sua colonna. Ogni Pokémon si può usare una sola volta.",
+      "pp": "Hai <b>{pp} tentativi (PP)</b>, e anche un errore ne consuma uno. Le risposte giuste restano fisse.",
+      "score": "Il tuo <b>punteggio di rarità</b> parte da 900 (100 per ogni casella vuota). Ogni scelta conta la percentuale di giocatori che l’hanno fatta in quella casella, quindi le scelte rare lo abbassano. <b>Più basso è meglio.</b> La tua scheda da condividere colora ogni casella: 🟪 meno dell’1%, 🟦 meno del 10%, 🟩 meno del 25%, 🟨 25% o più.",
+      "filled": "<b>Piene</b> conta le tue caselle. Tocca <b>Rarità</b> per vedere la classifica del giorno.",
+      "info": "Tocca la <b>i</b> di una categoria per vedere esattamente cosa conta. A fine partita vedi <b>tutte le risposte valide</b> per ogni casella e perché ogni errore non andava bene.",
+      "master": "Ogni griglia è controllata perché sia risolvibile. Alcuni giorni un <b>puzzle maestro</b> fatto a mano sostituisce il puzzle giornaliero."
+    },
+    "modes": "Modalità",
+    "modeList": {
+      "daily": "<b>Puzzle giornaliero</b>: una griglia al giorno, uguale per tutti. In <b>Altro</b>: le giornaliere Facile ed Esperto, la griglia Settimanale a tema e l’Archivio delle giornaliere passate (che non toccano mai la tua serie).",
+      "unlimited": "<b>Illimitata</b>: una griglia che costruisci tu. Scegli le regole (PP illimitati, risolvibile garantita, caselle con una sola risposta, timer), una difficoltà e le categorie che vuoi, poi generane quante ne vuoi.",
+      "ttt": "<b>Tris</b>: due Allenatori condividono una griglia e prendono a turno le caselle. Vince chi fa tris; un errore o il tempo scaduto passano il turno."
+    },
+    "regions": "Regioni e forme",
+    "kinds": "Che categorie possono esserci",
+    "kind": "{family}: ",
+    "kindList": {
+      "types": "Lotta, Doppio tipo, Tipo singolo (basta un tipo in comune)",
+      "regions": "Da Kanto a Paldea, in base al debutto del Pokémon (una forma regionale conta per la regione in cui ha debuttato)",
+      "evolution": "Senza evoluzioni, Si evolve con pietra o strumento, Può evolversi (un’evoluzione conta da entrambi i lati: Pikachu e Raichu si evolvono entrambi con una pietra)",
+      "moves": "Alcune mosse famose, come Surf o Terremoto (Esperto aggiunge repertori più ampi)",
+      "abilities": "Solo Esperto: abilità note e poco conosciute",
+      "other": "Leggendario, Misterioso, Paradosso, Ultracreatura, Starter, Fossile, Baby, Mega, Gigamax (Esperto aggiunge soglie di statistiche)"
+    }
+  },
+  "rules": {
+    "forms": "Le forme sono scelte a sé: forme regionali (Raichu di Alola), megaevoluzioni (MegaCharizard X e Y), forme Gigamax e alcune forme particolari (Pikachu compagno, ArcheoKyogre, forme Originali, Zacian Re delle Spade).",
+    "own": "Tipi, statistiche e abilità di una forma sono suoi. La linea evolutiva, lo status di leggendario e le mosse sono quelli della sua specie.",
+    "region": "Una forma regionale conta per la regione in cui ha debuttato: Raichu di Alola è di Alola, Meowth di Galar di Galar, Wooper di Paldea di Paldea, Growlithe di Hisui di Hisui. Una forma Mega o Gigamax conta per la regione della sua specie.",
+    "reuse": "Niente ripetizioni: una forma e la sua specie sono lo stesso Pokémon. Se usi Charizard, anche MegaCharizard X è occupato, e viceversa. (Più severo di PokeDoku, dove le forme si possono ripetere.)",
+    "species": "Una specie conta per «Forma di Alola» (e per le sue forme di altre regioni); in una categoria di tipo basta che corrisponda uno dei tipi del Pokémon.",
+    "moves": "Le categorie di mosse usano il repertorio della specie nell’ultimo gioco principale in cui compare (Scarlatto e Violetto per la maggior parte); quelle di statistiche usano le statistiche base.",
+    "evolution": "I metodi di evoluzione contano da entrambi i lati: Pikachu (si evolve con una Pietratuono) e Raichu (si è evoluto con una) rientrano entrambi in «Si evolve con pietra»."
+  },
+  "demo": {
+    "label": "Demo: cerchiamo {first} e lo mettiamo nella casella {fire} e {johto}, poi {second} in {water} e {hoenn}",
+    "search": "Cerca un Pokémon…"
+  },
+  "setup": {
+    "band": {
+      "easy": "Facile",
+      "normal": "Normale",
+      "hard": "Difficile"
+    },
+    "bandHint": {
+      "easy": "Ogni casella ha tante risposte.",
+      "normal": "Qualsiasi mix permesso dalle categorie.",
+      "hard": "Alcune caselle hanno solo una manciata di risposte."
+    },
+    "untickAll": "{label}: deseleziona tutto",
+    "tickAll": "{label}: seleziona tutto",
+    "all": "Tutte",
+    "none": "Nessuna",
+    "find": {
+      "moves": "Cerca mosse",
+      "abilities": "Cerca abilità"
+    },
+    "findOne": {
+      "moves": "Cerca una mossa",
+      "abilities": "Cerca un’abilità"
+    },
+    "nothing": "Nessun risultato.",
+    "title": "Crea la tua griglia",
+    "intro": "Imposta le regole, scegli cosa può comparire e genera. Non conta mai per la tua serie.",
+    "back": "Griglia",
+    "rules": "Regole",
+    "pp": "PP illimitati",
+    "ppHint": "Nessun limite di tentativi: continua finché la griglia è piena.",
+    "guard": "Risolvibile garantita",
+    "guardHint": "Ogni griglia si può completare, e una scelta che bloccherebbe le altre caselle viene rifiutata.",
+    "single": "Caselle con una risposta",
+    "singleHint": "Una casella può avere un solo Pokémon adatto.",
+    "timer": "Timer",
+    "timerHint": "Un cronometro sopra la griglia.",
+    "difficulty": "Difficoltà",
+    "categories": "Categorie",
+    "classic": "Mix classico",
+    "generate": "Genera griglia"
+  }
+}

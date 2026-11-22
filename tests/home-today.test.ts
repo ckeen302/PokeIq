@@ -58,7 +58,7 @@ describe("home: today's dailies", () => {
     expect(s.pokedle).toMatchObject({ state: "done", result: "Solved in 4", streak: 4 });
     expect(s.guessr).toMatchObject({ state: "done", result: "18,240 pts", streak: 2 });
     expect(s.daily.state).toBe("new");
-    expect(bestStreak(s)).toEqual({ days: 4, games: ["Pokédle"], atRisk: false });
+    expect(bestStreak(s)).toEqual({ days: 4, games: ["Pokédle"], ids: ["pokedle"], atRisk: false });
     expect(allDone(s)).toBe(false);
   });
 
@@ -102,5 +102,19 @@ describe("home: today's dailies", () => {
     expect(streakText({ days: 4, games: ["Pokédle"] })).toBe("4-day Pokédle streak");
     expect(streakText({ days: 2, games: ["Pokédle", "PokéGuessr"] })).toBe("2-day Pokédle and PokéGuessr streaks");
     expect(streakText({ days: 3, games: ["Daily Challenge", "Pokédle", "Pikadoku"] })).toBe("3-day streaks in Daily Challenge, Pokédle and Pikadoku");
+  });
+});
+
+describe("home: today's dailies in other languages", () => {
+  it("joins the games' names the language's way", async () => {
+    const { translator } = await import("@/i18n/catalog");
+    const home = (await import("@/messages/home")).default;
+    const es = (await import("@/messages/es/home.json")).default;
+    const ja = (await import("@/messages/ja/home.json")).default;
+    const { localStreakText } = await import("@/components/home/today");
+    expect(localStreakText(translator(home, "es", es), { days: 3, ids: ["daily", "pokedle", "pikadoku"] })).toBe("Rachas de 3 días en Reto diario, Pokédle y Pikadoku");
+    expect(localStreakText(translator(home, "es", es), { days: 1, ids: ["pokedle"] })).toBe("Racha de 1 día en Pokédle");
+    expect(localStreakText(translator(home, "ja", ja), { days: 2, ids: ["pokedle", "guessr"] })).toBe("Pokédle、PokéGuessrで2日連続");
+    expect(localStreakText(translator(home, "en", undefined), { days: 2, ids: ["pokedle", "guessr"] })).toBe("2-day Pokédle and PokéGuessr streaks");
   });
 });

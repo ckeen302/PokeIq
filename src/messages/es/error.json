@@ -1,0 +1,8 @@
+{
+  "label": "Error del sistema",
+  "heading": "Es súper eficaz… contra nosotros.",
+  "body": "Algo ha fallado por nuestra parte. Inténtalo de nuevo.",
+  "ref": "Ref.: {digest}",
+  "retry": "Reintentar",
+  "home": "Inicio"
+}

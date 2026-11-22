@@ -70,11 +70,17 @@ export function geoWeeklyMap(week: string, playable: (id: string) => boolean): s
 export const geoWeeklyBoard = (week: string) => `weekly:${week}`;
 export const GEO_WEEKLY_BOARD_RE = /^weekly:(\d{4}-\d{2}-\d{2})$/;
 
-/** "3d 4h", "5h 12m", "40m": time left until the week ends. */
-export function geoWeeklyLeft(week: string, now: number): string {
+/** Time left until the week ends: shown as days and hours ("dh"), hours and minutes ("hm"), or minutes ("m", at least one). */
+export function geoWeeklyLeftParts(week: string, now: number): { unit: "dh" | "hm" | "m"; d: number; h: number; m: number } {
   const ms = Math.max(0, geoWeeklyEndsAt(week) - now);
   const d = Math.floor(ms / DAY_MS);
   const h = Math.floor((ms % DAY_MS) / 3_600_000);
   const m = Math.floor((ms % 3_600_000) / 60_000);
-  return d > 0 ? `${d}d ${h}h` : h > 0 ? `${h}h ${m}m` : `${Math.max(1, m)}m`;
+  return d > 0 ? { unit: "dh", d, h, m } : h > 0 ? { unit: "hm", d, h, m } : { unit: "m", d, h, m: Math.max(1, m) };
+}
+
+/** "3d 4h", "5h 12m", "40m": time left until the week ends. */
+export function geoWeeklyLeft(week: string, now: number): string {
+  const { unit, d, h, m } = geoWeeklyLeftParts(week, now);
+  return unit === "dh" ? `${d}d ${h}h` : unit === "hm" ? `${h}h ${m}m` : `${m}m`;
 }

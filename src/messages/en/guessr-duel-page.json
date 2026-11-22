@@ -1,0 +1,39 @@
+{
+  "duel": {
+    "fallbackTitle": "A PokéGuessr duel",
+    "fallbackDescription": "GeoGuessr Duels for Pokémon: the same places for both of you, closer pin wins.",
+    "titleVs": "{host} vs {guest}: a PokéGuessr duel",
+    "titleChallenge": "{host} challenges you to a PokéGuessr duel",
+    "aTrainer": "A trainer",
+    "raceDescription": "A points race in {where}: the same {rounds} places for both of you, and the most points wins.",
+    "hpDescription": "Head to head in {where}: the same places for both of you, {hp} HP each, GeoGuessr Duels rules."
+  },
+  "party": {
+    "fallbackTitle": "A PokéGuessr party",
+    "fallbackDescription": "GeoGuessr for Pokémon with your friends: Battle Royale and team duels, everyone on the same places.",
+    "title": "{host} invites you to a PokéGuessr party",
+    "aTrainer": "A trainer",
+    "description": "{mode} in {where}: everyone gets the same places. {n, plural, one {{n} trainer} other {{n} trainers}} in the room.",
+    "modes": {
+      "royale": "Battle Royale",
+      "team": "Team duel"
+    }
+  },
+  "where": "the Pokémon world",
+  "maps": {
+    "world": "World",
+    "kanto": "Kanto",
+    "johto": "Johto",
+    "hoenn": "Hoenn",
+    "sinnoh": "Sinnoh",
+    "unova": "Unova",
+    "kalos": "Kalos",
+    "alola": "Alola",
+    "galar": "Galar",
+    "paldea": "Paldea",
+    "theme-gyms": "Gyms",
+    "theme-towns": "Towns and Cities",
+    "theme-routes": "Routes"
+  },
+  "gameSep": " / "
+}

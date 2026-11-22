@@ -1,0 +1,24 @@
+{
+  "tagline": "Pokémon games: PokéGuessr, Pokédle, battles & quizzes",
+  "description": "Free Pokémon games, no sign-up: PokéGuessr with real in-game screenshots, a daily Pokédle (Pokémon Wordle), Showdown-accurate battles and Pokémon quizzes.",
+  "footer": {
+    "privacy": "Privacy",
+    "credits": "Credits",
+    "disclaimer": "PokéIQ is a free, unofficial fan project and is not affiliated with, endorsed or sponsored by Nintendo, Game Freak, Creatures or The Pokémon Company. Pokémon and all related names are trademarks of their respective owners."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "This page doesn't exist. Head back to PokéIQ's Pokémon games or open the Pokédex.",
+    "heading": "A wild 404 appeared!",
+    "body": "This page fled. Even the Pokédex has no entry for it.",
+    "home": "Back to safety",
+    "pokedex": "Open the Pokédex"
+  },
+  "feedbackPage": {
+    "label": "Feedback",
+    "title": "Feedback",
+    "description": "Send PokéIQ an idea, report a bug, or tell us anything else. We read every message.",
+    "heading": "Tell us <em>anything</em>",
+    "intro": "Ideas, bugs, or something else on your mind: we read every message."
+  }
+}

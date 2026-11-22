@@ -1,0 +1,22 @@
+{
+  "duel": {
+    "heading": "Face à face · PokéConnections",
+    "blurb4": "Les mêmes seize Pokémon pour vous deux. Le premier à trouver les quatre groupes gagne.",
+    "blurb5": "Les mêmes vingt-cinq Pokémon pour vous deux. Le premier à trouver les cinq groupes gagne.",
+    "rules": "Chaque erreur ajoute {seconds} secondes à ton temps, et {mistakes} erreurs t'éliminent. Si vous êtes tous les deux éliminés, celui qui a trouvé le plus de groupes gagne. Tu vois les groupes de ton adversaire sous forme de couleurs au fil de la partie, jamais les Pokémon.",
+    "fresh": "Envoie le lien à un ami ou trouve un adversaire (4×4 uniquement). Les duels utilisent de nouveaux puzzles, jamais le quotidien, et ne comptent jamais pour ta série.",
+    "board": "Grille",
+    "boardAria": "Taille de la grille du duel",
+    "size4": "Seize Pokémon, quatre groupes de quatre",
+    "size5": "Vingt-cinq Pokémon, cinq groupes de cinq"
+  },
+  "potd": {
+    "aria": "Puzzle du jour",
+    "title": "Puzzle du jour",
+    "untitled": "Puzzle sans titre",
+    "by": "par <c></c>",
+    "aTrainer": "un Dresseur",
+    "upVotes": "votes positifs",
+    "play": "Jouer"
+  }
+}

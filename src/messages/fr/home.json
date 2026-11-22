@@ -1,0 +1,41 @@
+{
+  "socialTitle": "PokéIQ : GeoGuessr, Wordle et Showdown version Pokémon",
+  "socialDescription": "PokéGuessr avec de vraies captures de chaque région, un Pokédle quotidien avec des duels en direct, des combats fidèles à Showdown et un Labo de combat qui en simule des milliers. Gratuit, sans inscription.",
+  "h1": "PokéIQ : jeux, quiz et combats Pokémon",
+  "free": "Gratuit · sans inscription",
+  "pitch": "Des énigmes Pokémon quotidiennes, un GeoGuessr Pokémon avec de vraies vues des jeux, des combats Showdown et des Pokémon en 3D.",
+  "play": "Jouer aux jeux du jour",
+  "coffee": "Offre-moi un café",
+  "socials": "PokéIQ sur les réseaux sociaux",
+  "socialOn": "PokéIQ sur {name}",
+  "today": {
+    "title": "Aujourd’hui",
+    "allDone": "Tout est fait pour aujourd’hui",
+    "newIn": " · nouvelles énigmes dans ",
+    "keep": " · joue aujourd’hui pour la garder",
+    "midnight": "De nouvelles énigmes chaque jour à minuit",
+    "done": "Fait",
+    "inProgress": "En cours",
+    "continue": "Continuer",
+    "play": "Jouer",
+    "streakOne": "{days, plural, one {Série de # jour sur {games}} other {Série de # jours sur {games}}}",
+    "streakTwo": "{days, plural, one {Séries de # jour sur {games}} other {Séries de # jours sur {games}}}",
+    "streakMany": "{days, plural, one {Séries de # jour sur {games}} other {Séries de # jours sur {games}}}"
+  },
+  "games": {
+    "daily": { "name": "Défi du jour", "line": "Le quiz Pokémon du jour" },
+    "pokedle": { "name": "Pokédle", "line": "Trouve le Pokémon mystère" },
+    "guessr": { "name": "PokéGuessr", "line": "Place les lieux du jour sur la carte" },
+    "connections": { "name": "Connections", "line": "Trouve les groupes cachés" },
+    "pikadoku": { "name": "Pikadoku", "line": "Le sudoku Pokémon" }
+  },
+  "results": {
+    "right": "{correct}/{total} bonnes réponses",
+    "solvedIn": "Trouvé en {n}",
+    "missed": "Raté aujourd’hui",
+    "points": "{points} pts",
+    "solvedMistakes": "Résolu · {n, plural, one {# erreur} other {# erreurs}}",
+    "perfect": "Parfait",
+    "filled": "{n}/9 cases"
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "result": {
+    "win": {
+      "letter": "S",
+      "label": "Sieg"
+    },
+    "loss": {
+      "letter": "N",
+      "label": "Niederlage"
+    },
+    "draw": {
+      "letter": "U",
+      "label": "Unentschieden"
+    }
+  },
+  "elo": {
+    "title": "{before} → {after} Elo",
+    "climbing": "Steigend",
+    "slipping": "Fallend",
+    "holding": "Stabil",
+    "word": "Elo"
+  },
+  "vs": "gegen",
+  "ranked": "Rangliste",
+  "casual": "Freundschaft",
+  "race": "Punkterennen",
+  "hp": "KP-Kampf",
+  "turbo": "Turbo",
+  "finalHpTitle": "End-KP: deine – gegnerische",
+  "points": "Punkte",
+  "finalHp": "End-KP",
+  "list": {
+    "failed": "Deine Duelle konnten nicht geladen werden.",
+    "loading": "Deine Duelle werden geladen …",
+    "off": "Der Duell-Verlauf ist hier noch nicht eingeschaltet. Deine Duelle zählen trotzdem für deine PokéGuessr-Bilanz.",
+    "empty": "Noch keine Duelle. Beende ein Duell, dann erscheint es hier mit einer Wiederholung Runde für Runde.",
+    "find": "Duell finden",
+    "more": "Ältere Duelle laden"
+  },
+  "history": "Duell-Verlauf",
+  "load": {
+    "failed": "Die Wiederholung konnte nicht geladen werden.",
+    "loading": "Wiederholung wird geladen …",
+    "missing": "Keine Wiederholung",
+    "error": "Etwas ist schiefgelaufen",
+    "missingBlurb": "Die Wiederholung dieses Duells gibt es nicht, oder nur die beiden Trainer, die es gespielt haben, können sie sehen.",
+    "play": "PokéGuessr spielen"
+  },
+  "trainer": "Trainer",
+  "won": "{name} hat gewonnen",
+  "rankedReplay": "Ranglisten-Wiederholung",
+  "casualReplay": "Freundschafts-Wiederholung",
+  "worldMap": "Weltkarte",
+  "noRounds": "Dieses Duell endete, bevor eine Runde gespielt wurde.",
+  "shotAlt": "Screenshot von Runde {n}",
+  "round": "Runde {n}",
+  "multiplier": "×{n} Schaden",
+  "roundOf": "Runde {n} von {total}",
+  "phase": {
+    "shot": "Der Screenshot",
+    "pins": "Die Nadeln",
+    "damage": "Der Schaden"
+  },
+  "controls": {
+    "first": "Erster Schritt",
+    "prev": "Vorheriger Schritt",
+    "pause": "Pause",
+    "play": "Abspielen",
+    "next": "Nächster Schritt",
+    "last": "Letzter Schritt",
+    "position": "Position in der Wiederholung"
+  },
+  "seat": {
+    "won": "Runde gewonnen",
+    "distance": "Abstand",
+    "noGuess": "Kein Tipp",
+    "score": "Punkte",
+    "mult": "Mult.",
+    "damage": "Schaden",
+    "hp": "KP",
+    "hpOf": "KP von {name}"
+  },
+  "table": {
+    "place": "Ort",
+    "dmg": "Schaden",
+    "goTo": "Zu Runde {n}",
+    "r": "R{n}"
+  },
+  "share": {
+    "copyFallback": "Kopiere die Adresse aus der Adressleiste.",
+    "failed": "Freigabe konnte nicht geändert werden. Versuch es noch einmal.",
+    "copied": "Kopiert",
+    "copy": "Link kopieren",
+    "private": "Privat machen",
+    "share": "Wiederholung teilen",
+    "public": "Jeder mit dem Link kann zusehen.",
+    "privateNote": "Nur für dich und deinen Gegner sichtbar."
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "meta": {
+    "title": "Pokédle: Daily Pokémon Wordle",
+    "description": "Pokédle is the daily Pokémon Wordle: guess the mystery Pokémon in 8 tries from clues on type, generation, height and more, plus live duels with a friend."
+  },
+  "info": {
+    "name": "Pokédle",
+    "description": "Pokédle is a free daily Pokémon Wordle: guess the mystery Pokémon in 8 tries from clues about generation, type, height, weight, color and evolution stage.",
+    "intro": "Pokédle is our Pokémon Wordle: one mystery Pokémon, eight guesses, and a new Pokémon every day.",
+    "step1": "Type the name of a Pokémon and submit it as your guess.",
+    "step2": "Each guess shows how it compares with the mystery Pokémon: generation, type, height, weight, color and evolution stage.",
+    "step3": "Use the clues to narrow it down and find the answer within 8 tries.",
+    "step4": "Come back tomorrow for a new Pokémon, or challenge a friend or a stranger to a live duel.",
+    "faqGuessesQ": "How many guesses do I get?",
+    "faqGuessesA": "You have 8 tries to find the mystery Pokémon.",
+    "faqCluesQ": "What clues does each guess show?",
+    "faqCluesA": "Generation, type, height, weight, color and evolution stage, compared with the mystery Pokémon."
+  },
+  "duel": {
+    "title": "A Pokédle duel",
+    "description": "Head-to-head Pokédle: the same mystery Pokémon for both of you, three rounds.",
+    "versus": "{host} vs {guest}: a Pokédle duel",
+    "challenge": "{host} challenges you to a Pokédle duel",
+    "aTrainer": "A trainer",
+    "inviteDescription": "Head-to-head Pokédle: the same mystery Pokémon for both of you, three rounds, fewer guesses and quicker solves score more."
+  }
+}

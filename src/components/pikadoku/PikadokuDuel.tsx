@@ -5,7 +5,11 @@ import { useRouter } from "@/i18n/navigation";
 import { MotionConfig } from "framer-motion";
 import { Crown, RotateCcw, Timer } from "lucide-react";
 import { pvpHref, type PdkDuelView } from "@/lib/pvp-types";
-import { PDK_FAMILIES, PDK_FAMILY_LABELS } from "@/lib/pikadoku/types";
+import { PDK_FAMILIES, type PdkFamily, type PdkLocal } from "@/lib/pikadoku/types";
+import { INTL_LOCALE } from "@/i18n/format";
+import { useT } from "@/i18n/client";
+import duelNs from "@/messages/pikadoku-duel";
+import boardNs from "@/messages/pikadoku-board";
 import { recordPdkDuel, type BadgeDef } from "@/lib/progress";
 import { play, unlockAudio } from "@/lib/sound";
 import { Button } from "@/components/ui/button";
@@ -17,7 +21,7 @@ import { SeriesScore, seriesTag } from "@/components/duel/DuelSeries";
 import { NewDuelCard } from "@/components/duel/NewDuelCard";
 import { AddFriendAfterGame } from "@/components/community/AddFriend";
 import { NewBadges } from "@/components/connections/results";
-import { PdkBoard, PdkPicker, useDex, type BoardCell, type DexName } from "./parts";
+import { PdkBoard, PdkLocalProvider, PdkPicker, useCatLabel, useDex, type BoardCell, type DexName } from "./parts";
 import { cn } from "@/lib/utils";
 
 /**
@@ -34,43 +38,45 @@ export function PikadokuDuelCard() {
   const [turnSecs, setTurnSecs] = useState(30);
   const [families, setFamilies] = useState<string[]>([...PDK_FAMILIES]);
   const [steals, setSteals] = useState(false);
+  const t = useT(duelNs);
+  const tb = useT(boardNs);
   const body = useMemo(() => ({ kind: "pikadoku", turnSecs, families, ...(steals && { steals: true }) }), [turnSecs, families, steals]);
   return (
     <NewDuelCard
       body={body}
       href={(code) => pvpHref("pikadoku", code)}
       match={{ game: "pikadoku", ...(steals && { steals: true }) }}
-      heading="Head to head · Tic Tac Toe"
-      blurb="One grid, two trainers. Take turns claiming a cell with a Pokémon that fits; three in a row wins."
+      heading={t("card.heading")}
+      blurb={t("card.blurb")}
       info={
         <>
-          <p>A wrong guess, or running out of time, passes the turn. Each Pokémon can be used once. Your opponent sees only which cells you have claimed.</p>
-          <p>Steals: claim a cell your opponent holds by naming a different Pokémon that fits it and is rarer (a lower pick %). A stolen cell can be stolen back.</p>
-          <p>Turn timer and categories apply to a game you send to a friend; finding an opponent uses 30-second turns and every category. Steals applies to both.</p>
+          <p>{t("card.info1")}</p>
+          <p>{t("card.info2")}</p>
+          <p>{t("card.info3")}</p>
         </>
       }
     >
       <div className="space-y-2 text-left" data-testid="pdk-lobby-rules">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="hud-label">Mode</span>
+          <span className="hud-label">{t("card.mode")}</span>
           {[false, true].map((on) => (
-            <button key={String(on)} type="button" aria-pressed={steals === on} data-testid={`pdk-steals-${on ? "on" : "off"}`} onClick={() => setSteals(on)} title={on ? "Take cells from your opponent with a rarer Pokémon" : "Classic: a claimed cell stays claimed"} className={cn("rounded border px-2 py-0.5 text-xs font-semibold", steals === on ? "border-primary bg-primary/15" : "border-foreground/15 text-muted-foreground")}>
-              {on ? "Steals" : "Classic"}
+            <button key={String(on)} type="button" aria-pressed={steals === on} data-testid={`pdk-steals-${on ? "on" : "off"}`} onClick={() => setSteals(on)} title={on ? t("card.stealsTitle") : t("card.classicTitle")} className={cn("rounded border px-2 py-0.5 text-xs font-semibold", steals === on ? "border-primary bg-primary/15" : "border-foreground/15 text-muted-foreground")}>
+              {on ? t("card.steals") : t("card.classic")}
             </button>
           ))}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <span className="hud-label flex items-center gap-1">
-            <Timer className="h-3.5 w-3.5" aria-hidden /> Turn timer
+            <Timer className="h-3.5 w-3.5" aria-hidden /> {t("card.timer")}
           </span>
           {TURN_CHOICES.map((s) => (
             <button key={s} type="button" aria-pressed={turnSecs === s} onClick={() => setTurnSecs(s)} className={cn("rounded border px-2 py-0.5 text-xs font-semibold", turnSecs === s ? "border-primary bg-primary/15" : "border-foreground/15 text-muted-foreground")}>
-              {s}s
+              {t("card.secs", { s })}
             </button>
           ))}
         </div>
-        <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Duel categories">
-          <span className="hud-label">Categories</span>
+        <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label={t("card.categoriesLabel")}>
+          <span className="hud-label">{t("card.categories")}</span>
           {PDK_FAMILIES.map((f) => {
             const on = families.includes(f);
             return (
@@ -84,7 +90,7 @@ export function PikadokuDuelCard() {
                 }}
                 className={cn("rounded-full border px-2.5 py-0.5 text-xs font-semibold", on ? "border-primary bg-primary/15" : "border-foreground/15 text-muted-foreground")}
               >
-                {PDK_FAMILY_LABELS[f]}
+                {tb(`family.${f}`)}
               </button>
             );
           })}
@@ -94,8 +100,20 @@ export function PikadokuDuelCard() {
   );
 }
 
-export function PikadokuDuel({ code }: { code: string }) {
+/** The duel page, with its language's Pikadoku words (category labels, Pokémon names) when it isn't English. */
+export function PikadokuDuel({ code, local }: { code: string; local?: PdkLocal }) {
+  return (
+    <PdkLocalProvider local={local}>
+      <DuelGame code={code} />
+    </PdkLocalProvider>
+  );
+}
+
+function DuelGame({ code }: { code: string }) {
   const router = useRouter();
+  const t = useT(duelNs);
+  const tb = useT(boardNs);
+  const labelOf = useCatLabel();
   const dex = useDex();
   const names = useMemo(() => new Map(dex.map((p) => [p.id, p.name])), [dex]);
   const { view, now, gone, offline, error, busy, sawPlay, act, send, join, rematch } = useDuel<PdkDuelView>(`/api/duel/${code}`, code);
@@ -139,10 +157,11 @@ export function PikadokuDuel({ code }: { code: string }) {
     if (next) router.push(pvpHref("pikadoku", next));
   }
 
-  if (gone) return <DuelGone message={gone} href={HOME} label="Back to Pikadoku" />;
+  if (gone) return <DuelGone message={gone} href={HOME} label={t("back")} />;
   if (!view) return <DuelLoading />;
 
-  const tag = `Pikadoku Tic Tac Toe${seriesTag(view.series) ? ` · ${seriesTag(view.series)}` : ""}`;
+  const series = seriesTag(view.series);
+  const tag = series ? t("tagSeries", { series }) : t("tag");
   const notice = (
     <>
       <MatchedNote view={view} />
@@ -158,9 +177,11 @@ export function PikadokuDuel({ code }: { code: string }) {
       }}
     />
   );
-  const chat = <DuelChat view={view} game="Pikadoku duel" onSend={(text) => send({ action: "chat", text })} />;
+  const chat = <DuelChat view={view} game={t("chat")} onSend={(text) => send({ action: "chat", text })} />;
 
   if (view.status === "lobby") {
+    const families = view.settings.families.map((f) => ((PDK_FAMILIES as readonly string[]).includes(f) ? tb(`family.${f as PdkFamily}`) : f));
+    const list = t.locale === "en" ? families.join(", ") : new Intl.ListFormat(INTL_LOCALE[t.locale], { type: "conjunction" }).format(families);
     return (
       <>
         {notice}
@@ -170,17 +191,18 @@ export function PikadokuDuel({ code }: { code: string }) {
           tag={tag}
           title={
             <>
-              Pikadoku <span className="whitespace-nowrap text-primary">Tic Tac Toe</span>
+              {"Pikadoku "}
+              <span className="whitespace-nowrap text-primary">{t("ttt")}</span>
             </>
           }
-          invite={(host) => `${host} challenges you to Pikadoku Tic Tac Toe! Take turns claiming cells with a Pokémon that fits: three in a row wins.`}
-          about="One Pikadoku grid, two trainers. Take turns claiming cells with a Pokémon that fits both its row and column."
-          shareText="Play me at Pikadoku Tic Tac Toe! Claim cells with Pokémon that fit: three in a row wins."
+          invite={(host) => t("invite", { host })}
+          about={t("about")}
+          shareText={t("share")}
           rules={[
-            { label: "The game", text: "One 3×3 grid. Take turns naming a Pokémon that fits a cell's row and column to claim it. Three in a row wins." },
-            { label: "Misses", text: `A wrong guess, or running out of the ${view.settings.turnSecs}-second turn, passes the turn. A Pokémon can be used once (a form and its species count as one).` },
-            ...(view.settings.steals ? [{ label: "Steals", text: "You can claim a cell your opponent holds by naming a different Pokémon that fits and is rarer (a lower pick %; without rarity data, any different Pokémon). A failed steal passes the turn. A stolen cell can be stolen back." }] : []),
-            { label: "Categories", text: `This game draws on: ${view.settings.families.map((f) => PDK_FAMILY_LABELS[f as keyof typeof PDK_FAMILY_LABELS] ?? f).join(", ")}.` },
+            { label: t("rules.game"), text: t("rules.gameText") },
+            { label: t("rules.misses"), text: t("rules.missesText", { secs: view.settings.turnSecs }) },
+            ...(view.settings.steals ? [{ label: t("rules.steals"), text: t("rules.stealsText") }] : []),
+            { label: t("rules.categories"), text: t("rules.categoriesText", { list }) },
           ]}
           home={HOME}
           chat={chat}
@@ -200,7 +222,7 @@ export function PikadokuDuel({ code }: { code: string }) {
       {view.players.map((p, k) => (
         <span key={k} className={cn("font-semibold", view.status === "playing" && view.turn === k && "text-primary")}>
           {k === 0 ? "X" : "O"} · {p.name}
-          {me === k && " (you)"}
+          {me === k && t("you")}
         </span>
       ))}
     </div>
@@ -214,9 +236,9 @@ export function PikadokuDuel({ code }: { code: string }) {
         <DuelVisitor
           tag={tag}
           players={view.players}
-          status={view.status === "finished" ? (winner === null || winner === undefined ? "It ended in a draw." : `${view.players[winner]?.name} won.`) : "Under way."}
+          status={view.status === "finished" ? (winner === null || winner === undefined ? t("draw") : t("won", { name: view.players[winner]?.name ?? "" })) : t("underWay")}
           home={HOME}
-          label="Start your own game"
+          label={t("startOwn")}
         />
       </div>
     );
@@ -230,13 +252,13 @@ export function PikadokuDuel({ code }: { code: string }) {
         <div className="mx-auto max-w-3xl space-y-4 text-center">
           <p className="hud-label text-screen">{tag}</p>
           <h1 className="font-display text-3xl font-bold uppercase" data-testid="pdkd-outcome">
-            {w === null || w === undefined ? "Draw" : w === me ? (
+            {w === null || w === undefined ? t("outcomeDraw") : w === me ? (
               <>
                 <Crown className="mr-2 inline h-6 w-6 text-warning" aria-hidden />
-                You win
+                {t("outcomeWin")}
               </>
             ) : (
-              `${view.players[w]?.name} wins`
+              t("outcomeWins", { name: view.players[w]?.name ?? "" })
             )}
           </h1>
           {status}
@@ -244,7 +266,7 @@ export function PikadokuDuel({ code }: { code: string }) {
           {view.series && <SeriesScore series={view.series} players={view.players} you={me} />}
           <NewBadges badges={badges} />
           <Button type="button" onClick={() => void startRematch()} disabled={busy}>
-            <RotateCcw className="h-4 w-4" aria-hidden /> Rematch
+            <RotateCcw className="h-4 w-4" aria-hidden /> {t("rematch")}
           </Button>
           <AddFriendAfterGame kind="pikadoku" code={view.code} />
           {tools}
@@ -256,6 +278,8 @@ export function PikadokuDuel({ code }: { code: string }) {
 
   const startsAt = view.round?.startsAt ?? now;
   const left = view.turnEndsAt ? Math.max(0, seconds(view.turnEndsAt - now)) : 0;
+  const turnName = view.players[view.turn]?.name;
+  const last = view.last;
   return (
     <div className="mx-auto max-w-3xl space-y-4">
       {notice}
@@ -266,19 +290,19 @@ export function PikadokuDuel({ code }: { code: string }) {
       {!playing ? (
         <Card>
           <CardContent className="space-y-3 p-10 text-center">
-            <p className="hud-label text-screen">Get ready</p>
+            <p className="hud-label text-screen">{t("getReady")}</p>
             <p className="font-display text-7xl font-bold tabular-nums">{Math.max(1, seconds(startsAt - now))}</p>
           </CardContent>
         </Card>
       ) : (
         <>
           <p className="text-center text-sm font-semibold" aria-live="polite" data-testid="pdkd-turn">
-            {myTurn ? "Your turn: pick a cell" : `${view.players[view.turn]?.name ?? "Your opponent"}'s turn`} · <span className="tabular-nums">{left}s</span>
+            {myTurn ? t("yourTurn") : turnName ? t("theirTurn", { name: turnName }) : t("opponentTurn")} · <span className="tabular-nums">{t("card.secs", { s: left })}</span>
           </p>
           {board}
-          {view.last && (
+          {last && (
             <p className="text-center text-xs text-muted-foreground">
-              {view.players[view.last.seat]?.name}: {names.get(view.last.id) ?? `#${view.last.id}`} {view.last.outcome === "stolen" ? "stole a cell." : view.last.outcome === "notrarer" ? "fits, but isn't rarer than the Pokémon there." : view.last.hit ? "claimed a cell." : "missed."}
+              {t(last.outcome === "stolen" ? "last.stolen" : last.outcome === "notrarer" ? "last.notrarer" : last.hit ? "last.hit" : "last.missed", { player: view.players[last.seat]?.name ?? "", pokemon: names.get(last.id) ?? `#${last.id}` })}
             </p>
           )}
         </>
@@ -290,7 +314,7 @@ export function PikadokuDuel({ code }: { code: string }) {
           dex={dex}
           used={new Set([...view.picks.filter((x): x is number => x !== null), ...(view.used ?? [])])}
           busy={busy}
-          title={`${view.grid.rows[Math.floor(picking / 3)].label} × ${view.grid.cols[picking % 3].label}`}
+          title={tb("board.cross", { row: labelOf(view.grid.rows[Math.floor(picking / 3)]), col: labelOf(view.grid.cols[picking % 3]) })}
           onPick={(p) => void claim(p)}
           onClose={() => setPicking(null)}
         />

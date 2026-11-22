@@ -1,42 +1,48 @@
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
-import { POKEDEX } from "@/lib/pokemon/pokedex";
+import { dleLabels, dleNames } from "@/lib/dle-lexicon";
 import { PokedleWithCommunity } from "@/components/pokedle/PokedleCommunity";
 import { PokedleDuelCard } from "@/components/pokedle/PokedleDuelCard";
 import { GameInfo } from "@/components/seo/GameInfo";
+import { ClientMessages } from "@/i18n/ClientMessages";
+import { getLocale, serverT } from "@/i18n/server";
+import pokedle from "@/messages/pokedle";
+import board from "@/messages/pokedle-board";
+import game from "@/messages/pokedle-game";
+import countdown from "@/messages/countdown";
+import duelShared from "@/messages/duel";
+import howto from "@/messages/howto";
+import share from "@/messages/share";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Pokédle: Daily Pokémon Wordle",
-  description:
-    "Pokédle is the daily Pokémon Wordle: guess the mystery Pokémon in 8 tries from clues on type, generation, height and more, plus live duels with a friend.",
-  path: "/pokedle",
-});
+export function generateMetadata(): Metadata {
+  const t = serverT(pokedle);
+  return pageMetadata({ title: t("meta.title"), description: t("meta.description"), path: "/pokedle" });
+}
 
 export default function PokedlePage() {
-  // Only id + name + gen go to the client — enough for autocomplete, no answers.
-  const names = POKEDEX.map((p) => [p.id, p.name, p.gen] as [number, string, number]);
+  const t = serverT(pokedle);
+  const locale = getLocale();
+  // Only id + name + gen go to the client (with the other names it answers to, in another language) — enough for autocomplete, no answers.
+  const names = dleNames(locale);
   return (
     <div className="space-y-10">
-      <PokedleWithCommunity names={names} />
-      <div id="duel" className="scroll-mt-24 space-y-4">
-        <PokedleDuelCard />
-      </div>
+      <ClientMessages namespaces={[board, game, duelShared, share, howto, countdown]}>
+        <PokedleWithCommunity names={names} labels={dleLabels(locale)} />
+        <div id="duel" className="scroll-mt-24 space-y-4">
+          <PokedleDuelCard />
+        </div>
+      </ClientMessages>
       <GameInfo
         howToButton
         noFaq
         path="/pokedle"
-        name={`Pokédle`}
-        description={`Pokédle is a free daily Pokémon Wordle: guess the mystery Pokémon in 8 tries from clues about generation, type, height, weight, color and evolution stage.`}
-        intro={`Pokédle is our Pokémon Wordle: one mystery Pokémon, eight guesses, and a new Pokémon every day.`}
-        steps={[
-          "Type the name of a Pokémon and submit it as your guess.",
-          "Each guess shows how it compares with the mystery Pokémon: generation, type, height, weight, color and evolution stage.",
-          "Use the clues to narrow it down and find the answer within 8 tries.",
-          "Come back tomorrow for a new Pokémon, or challenge a friend or a stranger to a live duel.",
-        ]}
+        name={t("info.name")}
+        description={t("info.description")}
+        intro={t("info.intro")}
+        steps={[t("info.step1"), t("info.step2"), t("info.step3"), t("info.step4")]}
         faqs={[
-          { q: `How many guesses do I get?`, a: `You have 8 tries to find the mystery Pokémon.` },
-          { q: `What clues does each guess show?`, a: `Generation, type, height, weight, color and evolution stage, compared with the mystery Pokémon.` },
+          { q: t("info.faqGuessesQ"), a: t("info.faqGuessesA") },
+          { q: t("info.faqCluesQ"), a: t("info.faqCluesA") },
         ]}
       />
     </div>

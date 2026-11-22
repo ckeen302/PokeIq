@@ -1,0 +1,239 @@
+{
+  "list": {
+    "abilitiesOne": "とくせいは「{list}」だけ",
+    "abilitiesMany": "とくせいは「{list}」",
+    "hiddenMark": "{name}（隠れ特性）"
+  },
+  "lureTypeLike": "グループの多くと同じ{type}タイプだが、{instead}",
+  "type": {
+    "label": "{type}タイプ",
+    "rule": "全員が{type}タイプ（単タイプでも複合でも）。",
+    "lureColour": "図鑑の色は{colour}だが、タイプは{types}で{type}ではない",
+    "lureKin": "同じ進化系の{kin}は{type}タイプだが、{name}は{types}"
+  },
+  "pure": {
+    "label": "{type}単タイプ",
+    "rule": "タイプは{type}だけ。",
+    "why": "{type}単タイプ",
+    "lure": "{type}タイプだが、{other}もある"
+  },
+  "dual": {
+    "label": "{a}・{b}タイプ",
+    "rule": "全員がちょうど{a}・{b}タイプ。",
+    "lure": "{types}：半分だけ"
+  },
+  "gen": {
+    "label": "第{gen}世代（{region}）で初登場",
+    "rule": "全員が第{gen}世代、{region}の作品で初登場。",
+    "why": "第{gen}世代（{region}）",
+    "lure": "同じ進化系の{kin}は第{gen}世代だが、{name}は第{own}世代で登場"
+  },
+  "legendary": {
+    "label": "伝説のポケモン",
+    "rule": "全員が伝説のポケモン（幻ではない）。",
+    "why": "伝説",
+    "lureMythical": "幻のポケモンで、伝説とは別",
+    "lureBst": "種族値の合計は{bst}だが、伝説ではない"
+  },
+  "mythical": {
+    "label": "幻のポケモン",
+    "rule": "全員が幻のポケモン（配信などでしか会えない）。",
+    "why": "幻",
+    "lure": "伝説だが、幻ではない"
+  },
+  "baby": {
+    "label": "ベイビィポケモン",
+    "rule": "全員がタマゴから生まれる進化前のベイビィポケモン。",
+    "why": "{names}のベイビィポケモン",
+    "whyLine": "進化系のベイビィポケモン",
+    "lure": "ベイビィは{baby}で、{name}はその進化後"
+  },
+  "noEvo": {
+    "label": "進化しない",
+    "rule": "全員が進化せず、何かから進化することもない。",
+    "why": "進化なし"
+  },
+  "stone": {
+    "label": "石で進化",
+    "rule": "全員が進化前に進化の石を使って進化する。",
+    "oneLabel": "{stone}で進化",
+    "oneRule": "全員が進化前に{stone}を使って進化する。",
+    "why": "{from}から{stone}で進化",
+    "lureInto": "{stone}で{into}に進化するが、自身は石で進化していない",
+    "lureOther": "石で進化するが、{stone}を使う"
+  },
+  "trade": {
+    "label": "通信交換で進化",
+    "rule": "全員が進化前を通信交換して進化する。",
+    "why": "{from}から通信交換で進化",
+    "whyHolding": "{from}に{item}を持たせて通信交換で進化",
+    "whyFor": "{from}を{pokemon}と通信交換して進化",
+    "lureInto": "通信交換で{into}に進化するが、自身は通信交換で進化していない",
+    "lureHeld": "道具（{item}）を持たせて進化するが、通信交換ではなくレベルアップ",
+    "lureHeldTime": "道具（{item}、{time}）を持たせて進化するが、通信交換ではなくレベルアップ"
+  },
+  "time": {
+    "day": "昼",
+    "night": "夜"
+  },
+  "friendship": {
+    "label": "なつき度で進化",
+    "rule": "全員がなつき度の高い状態でレベルアップして進化する。",
+    "why": "{from}からなつき度で進化",
+    "whyTime": "{from}からなつき度で進化（{time}）",
+    "lure": "なつき度で{into}に進化するが、自身はなつき度で進化していない"
+  },
+  "ability": {
+    "label": "とくせい「{ability}」を持てる",
+    "rule": "全員がとくせい「{ability}」を持てる（隠れ特性も含む）。",
+    "why": "とくせい「{ability}」",
+    "whyHidden": "隠れ特性「{ability}」"
+  },
+  "hidden": {
+    "label": "隠れ特性「{ability}」",
+    "rule": "全員の隠れ特性が「{ability}」。"
+  },
+  "move": {
+    "label": "レベルアップで「{move}」を覚える",
+    "rule": "全員が『スカーレット・バイオレット』でレベルアップで「{move}」を覚える。",
+    "whyEvolving": "進化時に「{move}」を覚える（SV）",
+    "whyStart": "レベル1から「{move}」を覚える（SV）",
+    "whyLevel": "レベル{level}で「{move}」を覚える（SV）",
+    "lure": "{type}タイプだが、「{move}」を覚えない"
+  },
+  "top": {
+    "label": "いちばん高い種族値：{stat}",
+    "rule": "全員の種族値でいちばん高いのが{stat}。",
+    "why": "{stat}{value}がいちばん高い",
+    "lure": "{stat}は{value}だが、{top}（{topValue}）のほうが高い"
+  },
+  "bst": {
+    "highLabel": "種族値合計600以上",
+    "highRule": "種族値の合計が600以上。",
+    "lowLabel": "種族値合計260未満",
+    "lowRule": "種族値の合計が260未満。",
+    "why": "種族値合計{bst}",
+    "lureHigh": "種族値合計{bst}で、600にわずかに届かない",
+    "lureLow": "種族値合計{bst}で、260をわずかに超える"
+  },
+  "body": {
+    "heavyLabel": "重さ300kg以上",
+    "heavyRule": "全員の重さが300kg以上。",
+    "lightLabel": "重さ1kg以下",
+    "lightRule": "全員の重さが1kg以下。",
+    "tallLabel": "高さ3m以上",
+    "tallRule": "全員の高さが3m以上。",
+    "shortLabel": "高さ0.3m以下",
+    "shortRule": "全員の高さが0.3m以下。",
+    "weighs": "重さ{kg}kg",
+    "height": "高さ{m}m",
+    "lure": "{why}：惜しいが届かない"
+  },
+  "colour": {
+    "label": "図鑑の色：{Colour}",
+    "rule": "図鑑で全員が{colour}に分類されている。",
+    "why": "図鑑の色は{colour}",
+    "lure": "図鑑の色は{colour}"
+  },
+  "form": {
+    "label": "{region}のすがたがある",
+    "rule": "全員に{region}のすがたがある。",
+    "why": "{region}の{name}がいる",
+    "lureOther": "{other}のすがたはあるが、{region}のすがたはない",
+    "lureKin": "同じ進化系の{kin}には{region}のすがたがあるが、{name}にはない"
+  },
+  "mega": {
+    "label": "メガシンカできる",
+    "rule": "全員にメガシンカがある（『Pokémon LEGENDS Z-A』の新メガシンカを含む）。",
+    "why": "メガ{name}がいる",
+    "lure": "キョダイマックスはあるが、メガシンカはない"
+  },
+  "gmax": {
+    "label": "キョダイマックスできる",
+    "rule": "全員がキョダイマックスできる（『ソード・シールド』）。",
+    "why": "キョダイマックスの{name}がいる",
+    "lure": "メガシンカはできるが、キョダイマックスはない"
+  },
+  "egg": {
+    "label": "タマゴグループ：{group}",
+    "rule": "全員がタマゴグループ「{group}」。",
+    "why": "タマゴグループ{n, plural, other {}}：{groups}",
+    "lure": "タマゴグループ{n, plural, other {}}は{groups}"
+  },
+  "gender": {
+    "maleLabel": "オスしかいない",
+    "maleRule": "全員がオスしかいない。",
+    "maleWhy": "オス100%",
+    "maleLureFemale": "メスしかいない",
+    "maleLureMostly": "87.5%はオスだが、メスもいる",
+    "femaleLabel": "メスしかいない",
+    "femaleRule": "全員がメスしかいない。",
+    "femaleWhy": "メス100%",
+    "femaleLureMale": "オスしかいない",
+    "femaleLureMostly": "ほとんどメスだが、オスもいる",
+    "noneLabel": "性別不明",
+    "noneRule": "全員が性別不明。",
+    "noneWhy": "性別不明"
+  },
+  "letter": {
+    "label": "英語名が{letter}で始まる",
+    "rule": "全員の英語名が{letter}で始まる。"
+  },
+  "ends": {
+    "label": "英語名が「-{ending}」で終わる",
+    "rule": "全員の英語名が-{ending}で終わる。"
+  },
+  "short": {
+    "label": "英語名が4文字以下",
+    "rule": "全員の英語名が4文字以下。",
+    "why": "{n}文字",
+    "lure": "5文字：1文字多い"
+  },
+  "symbol": {
+    "label": "英語名に文字以外を含む",
+    "rule": "全員の英語名に、文字以外のもの（スペース、ピリオド、ハイフン、アポストロフィ、コロン、アクセント、数字、記号）がある。",
+    "gender": "♀/♂の記号",
+    "digit": "数字",
+    "colon": "コロン",
+    "stop": "ピリオド",
+    "hyphen": "ハイフン",
+    "apostrophe": "アポストロフィ",
+    "space": "スペース",
+    "accent": "アクセント"
+  },
+  "wordplay": {
+    "hiddenIn": "{name}の中に「{word}」",
+    "colourLabel": "英語名に色が隠れている",
+    "colourRule": "全員の英語名に英語の色が隠れている：{words}。",
+    "bodyLabel": "英語名に体の部位が隠れている",
+    "bodyRule": "全員の英語名に英語の体の部位が隠れている：arm、toe、ear、fin…",
+    "wordLabel": "英語名が英単語で始まる",
+    "wordRule": "全員の英語名が身近な英単語そのもの、またはそれで始まる：slow、star、bell、bear…",
+    "wordPlus": "「{word}」＋「{rest}」",
+    "wordAlone": "「{word}」そのもの",
+    "rhymeLabel": "英語名が韻を踏む：-{ending}",
+    "rhymeRule": "全員の英語名が同じ文字で終わる：-{ending}。"
+  },
+  "lore": {
+    "aceLabel": "ジムリーダーの切り札",
+    "aceRule": "全員が本編のジムリーダーが最後に出す、いちばん強いポケモン。",
+    "aceWhy": "ジムリーダーの切り札",
+    "boxLabel": "パッケージの伝説",
+    "boxRule": "全員が本編作品のパッケージを飾る伝説のポケモン。",
+    "boxWhy": "『{games}』のパッケージ",
+    "foodLabel": "英語名が食べ物から",
+    "foodRule": "全員の英語名が食べ物から来ている：apple、cherry、vanilla、pumpkin、chestnut、dough、olive、tea、egg、peach…",
+    "foodWhy": "英語名が食べ物から来ている",
+    "moveLabel": "専用わざ",
+    "moveRule": "全員がほかの進化系では覚えられないわざを覚える。",
+    "moveWhy": "「{moves}」を覚える唯一のポケモン"
+  },
+  "mixed": {
+    "label": "{type}タイプつながり",
+    "rule": "どのマスも{type}タイプに関係する：{type}タイプのポケモン、{type}タイプのわざ、主に{type}タイプが持つとくせい、または{type}タイプそのもの。",
+    "why": "{types}タイプ",
+    "move": "{type}タイプのわざ",
+    "ability": "主に{type}タイプのポケモンが持つとくせい",
+    "type": "{type}タイプそのもの"
+  }
+}

@@ -2,7 +2,9 @@ import { Rng } from "@/lib/rng";
 import { allCategories, categoryById, type PdkCategory } from "./categories";
 import type { PdkGridIds } from "./generator";
 import { gridAnswers, isSolvable } from "./solve";
-import { weekNumber } from "./weeks";
+import { weekNumber, type WeekThemeId } from "./weeks";
+import { translator } from "@/i18n/catalog";
+import pikadoku from "@/messages/pikadoku";
 import { PDK_MIN_ANSWERS, PDK_SIZE } from "./types";
 
 /**
@@ -14,7 +16,7 @@ import { PDK_MIN_ANSWERS, PDK_SIZE } from "./types";
 export { isLiveWeek, weekEnd, weekNumber, weekStart } from "./weeks";
 
 export interface WeekTheme {
-  id: string;
+  id: WeekThemeId;
   name: string;
   blurb: string;
   /** The category that is always on the grid. */
@@ -27,14 +29,17 @@ export interface WeekTheme {
 
 const basic = (c: PdkCategory) => c.tier <= 2;
 const fams = (...f: string[]) => (c: PdkCategory) => basic(c) && f.includes(c.family);
+const en = translator(pikadoku, "en", undefined);
+/** A theme's name and blurb (in English: the server sends them; another language's page shows its own). */
+const named = (id: WeekThemeId) => ({ name: en(`weeklyTheme.${id}.name`), blurb: en(`weeklyTheme.${id}.blurb`) });
 
 /** The rotation, in order: week 1 is Kanto, week 2 Starters, and so on, then round again. */
 export const WEEK_THEMES: readonly WeekTheme[] = [
-  { id: "kanto", name: "Kanto week", blurb: "Everything Kanto: the original 151 and what they grew into.", anchor: "region:1", allow: (c) => fams("types", "evolution", "other")(c) && !c.id.startsWith("other:paradox") && !c.id.startsWith("other:ultrabeast"), min: PDK_MIN_ANSWERS.normal },
-  { id: "starters", name: "Starters week", blurb: "First partners from every region, Bulbasaur to Quaxly.", anchor: "other:partner", allow: fams("types", "evolution", "regions", "other"), min: PDK_MIN_ANSWERS.normal },
-  { id: "legendary", name: "Legendary week", blurb: "Legendaries and Mythicals, and the categories that tell them apart.", anchor: "other:lm", allow: fams("types", "regions", "other", "abilities"), min: PDK_MIN_ANSWERS.normal },
-  { id: "gen9", name: "Gen 9 week", blurb: "Paldea's Pokémon and the forms that came with them.", anchor: "region:9", allow: fams("types", "evolution", "other", "abilities"), min: PDK_MIN_ANSWERS.normal },
-  { id: "competitive", name: "Competitive week", blurb: "OU staples: stats, typing and the tools of the metagame.", anchor: "other:ou", allow: (c) => (fams("types", "evolution", "abilities")(c) || c.id.startsWith("stat:")) && c.id !== "other:ou", min: 2 },
+  { id: "kanto", ...named("kanto"), anchor: "region:1", allow: (c) => fams("types", "evolution", "other")(c) && !c.id.startsWith("other:paradox") && !c.id.startsWith("other:ultrabeast"), min: PDK_MIN_ANSWERS.normal },
+  { id: "starters", ...named("starters"), anchor: "other:partner", allow: fams("types", "evolution", "regions", "other"), min: PDK_MIN_ANSWERS.normal },
+  { id: "legendary", ...named("legendary"), anchor: "other:lm", allow: fams("types", "regions", "other", "abilities"), min: PDK_MIN_ANSWERS.normal },
+  { id: "gen9", ...named("gen9"), anchor: "region:9", allow: fams("types", "evolution", "other", "abilities"), min: PDK_MIN_ANSWERS.normal },
+  { id: "competitive", ...named("competitive"), anchor: "other:ou", allow: (c) => (fams("types", "evolution", "abilities")(c) || c.id.startsWith("stat:")) && c.id !== "other:ou", min: 2 },
 ];
 
 /** The theme of a week. */

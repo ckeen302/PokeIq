@@ -1,0 +1,12 @@
+{
+  "tiers": {
+    "poke": "Poké Ball",
+    "great": "Super Ball",
+    "ultra": "Hyper Ball",
+    "master": "Master Ball"
+  },
+  "division": "{tier} {division}",
+  "rating": "{label} · cote {rating}",
+  "provisional": "Prov.",
+  "provisionalTitle": "Provisoire : la cote bouge plus vite pendant les {n} premières parties"
+}

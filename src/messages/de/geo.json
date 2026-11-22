@@ -1,0 +1,103 @@
+{
+  "shell": {
+    "fullscreen": "Vollbild",
+    "exitFullscreen": "Vollbild beenden",
+    "withEsc": "{label} (Esc)",
+    "back": "Zurück zu PokéGuessr",
+    "secondsLeft": "Noch {s} Sekunden"
+  },
+  "dock": {
+    "size": "Kartengröße",
+    "bigger": "Größere Karte",
+    "smaller": "Kleinere Karte",
+    "unpin": "Karte lösen",
+    "keepOpen": "Karte offen lassen",
+    "backToPicture": "Zurück zum Bild",
+    "guessMap": "Tipp-Karte",
+    "moveHint": "Tippe erneut, um deine Nadel zu versetzen",
+    "placeHint": "Tippe auf die Karte, um deine Nadel zu setzen",
+    "openMove": "Öffne die Karte, um deine Nadel zu versetzen oder zu tippen",
+    "openPlace": "Öffne die Karte, um deine Nadel zu setzen"
+  },
+  "guess": {
+    "guess": "Tippen",
+    "placeFirst": "Setz zuerst deine Nadel auf die Karte",
+    "place": "Setz deine Nadel auf die Karte"
+  },
+  "key": {
+    "space": "Leertaste"
+  },
+  "round": "Runde",
+  "inARow": "{n} in Folge",
+  "map": {
+    "pickLabel": "Karte von {map}: Klicke dorthin, wo du den Ort vermutest. Scrollen zum Zoomen, Ziehen zum Verschieben.",
+    "label": "Karte von {map}",
+    "failed": "Die Karte konnte nicht geladen werden. Lade die Seite neu.",
+    "loading": "Karte wird geladen",
+    "zoomIn": "Hineinzoomen",
+    "zoomOut": "Herauszoomen",
+    "whole": "Ganze Karte zeigen"
+  },
+  "shot": {
+    "where": "Wo ist das?",
+    "prev": "Vorherige Ansicht",
+    "prevKey": "Vorherige Ansicht (←)",
+    "next": "Nächste Ansicht",
+    "nextKey": "Nächste Ansicht (→)",
+    "whole": "Ganzen Screenshot ansehen",
+    "wholeShort": "Ganzer Screenshot",
+    "views": "Ansichten dieses Orts",
+    "view": "Ansicht {n} von {count}",
+    "fullscreen": "Screenshot im Vollbild",
+    "close": "Schließen"
+  },
+  "report": {
+    "open": "Diesen Screenshot melden",
+    "question": "Was stimmt mit diesem Screenshot nicht?",
+    "reason": "Grund",
+    "reasons": {
+      "wrong-place": "Falscher Ort",
+      "wrong-game": "Falsches Spiel",
+      "gives-away": "Verrät die Antwort",
+      "too-generic": "Zu allgemein zum Zuordnen",
+      "bad-image": "Schlechtes Bild",
+      "other": "Etwas anderes"
+    },
+    "placeholder": "Optional: Wo ist es wirklich, oder was verrät es?",
+    "note": "Notiz",
+    "send": "Meldung senden",
+    "cancel": "Abbrechen",
+    "failed": "Die Meldung konnte nicht gesendet werden.",
+    "thanks": "Danke: Wir sehen uns diesen Screenshot an."
+  },
+  "share": {
+    "text": "Mein PokéGuessr-Ergebnis",
+    "copy": "Ergebnis-Link kopieren",
+    "copied": "Link kopiert!"
+  },
+  "learn": {
+    "atlas": "Atlas",
+    "dex": "Pokédex"
+  },
+  "results": {
+    "streakOver": "Serie vorbei",
+    "complete": "Erkundung abgeschlossen",
+    "bestRound": "Beste Runde",
+    "worstRound": "Schlechteste Runde",
+    "finalStreak": "Endstand der Serie",
+    "total": "Gesamtpunktzahl · {rounds} Runden",
+    "outOf": "von {max}",
+    "rounds": "Runden",
+    "best": "Beste",
+    "worst": "Schlechteste",
+    "timeUp": "Zeit abgelaufen",
+    "rightRegion": "Richtige Region",
+    "wrongRegion": "Falsche Region",
+    "spotOn": "Volltreffer",
+    "squares": "{n, plural, one {{d} Feld daneben} other {{d} Felder daneben}}",
+    "correct": "Richtig",
+    "missed": "Verfehlt",
+    "again": "Nochmal spielen",
+    "shareAndBoard": "Teilen & Bestenliste"
+  }
+}

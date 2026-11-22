@@ -1,0 +1,8 @@
+{
+  "label": "Systemfehler",
+  "heading": "Das ist sehr effektiv … gegen uns.",
+  "body": "Bei uns ist etwas schiefgelaufen. Versuch es noch einmal.",
+  "ref": "Ref.: {digest}",
+  "retry": "Nochmal versuchen",
+  "home": "Start"
+}

@@ -3,6 +3,8 @@
 import { cloneElement, isValidElement, useCallback, useEffect, useRef, useState } from "react";
 import { Check, Expand, Hourglass, MapPinned, Maximize, Minimize, Pin, PinOff, Shrink, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import geoNs from "@/messages/geo";
 
 export interface FullscreenApi {
   /** Browser full screen (the game already fills the window). */
@@ -78,6 +80,7 @@ export function GameShell({ children, onExit, className }: { children: (api: Ful
 
 /** The frame's top-right button: browser full screen. */
 export function FullscreenButton({ fs, onClick, className }: { fs: boolean; onClick: () => void; className?: string }) {
+  const t = useT(geoNs);
   const Icon = fs ? Minimize : Maximize;
   return (
     <button
@@ -85,9 +88,9 @@ export function FullscreenButton({ fs, onClick, className }: { fs: boolean; onCl
       onClick={onClick}
       data-testid="geo-fullscreen"
       className={cn("hud-btn", className)}
-      aria-label={fs ? "Exit full screen" : "Full screen"}
+      aria-label={fs ? t("shell.exitFullscreen") : t("shell.fullscreen")}
       aria-pressed={fs}
-      title={fs ? "Exit full screen (Esc)" : "Full screen"}
+      title={fs ? t("shell.withEsc", { label: t("shell.exitFullscreen") }) : t("shell.fullscreen")}
     >
       <Icon className="h-4 w-4" />
     </button>
@@ -95,9 +98,11 @@ export function FullscreenButton({ fs, onClick, className }: { fs: boolean; onCl
 }
 
 /** The frame's top-left button: back to the hub. */
-export function ExitButton({ onClick, label = "Back to PokéGuessr", testId = "geo-exit" }: { onClick: () => void; label?: string; testId?: string }) {
+export function ExitButton({ onClick, label: given, testId = "geo-exit" }: { onClick: () => void; label?: string; testId?: string }) {
+  const t = useT(geoNs);
+  const label = given ?? t("shell.back");
   return (
-    <button type="button" onClick={onClick} data-testid={testId} className="hud-btn" aria-label={label} title={`${label} (Esc)`}>
+    <button type="button" onClick={onClick} data-testid={testId} className="hud-btn" aria-label={label} title={t("shell.withEsc", { label })}>
       <X className="h-4 w-4" />
     </button>
   );
@@ -123,6 +128,7 @@ export function Notch({ children, below, className, wide }: { children: React.Re
  * Purple, then red and flashing for the urgent seconds.
  */
 export function CountdownPill({ ms, totalMs, urgentMs = 10_000, testId, className, label }: { ms: number; totalMs: number; urgentMs?: number; testId?: string; className?: string; label?: string }) {
+  const t = useT(geoNs);
   const left = Math.max(0, ms);
   const s = Math.ceil(left / 1000);
   const frac = totalMs > 0 ? Math.min(1, left / totalMs) : 0;
@@ -132,7 +138,7 @@ export function CountdownPill({ ms, totalMs, urgentMs = 10_000, testId, classNam
       className={cn("geo-pill relative flex h-12 w-[7.5rem] items-center justify-center rounded-full bg-[#1e1a3f] text-white shadow-lg", urgent && "geo-pill-urgent", className)}
       role="timer"
       aria-live={urgent ? "polite" : "off"}
-      aria-label={label ?? `${s} seconds left`}
+      aria-label={label ?? t("shell.secondsLeft", { s })}
       data-urgent={urgent ? "true" : undefined}
     >
       <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 120 48" fill="none" aria-hidden>
@@ -243,6 +249,7 @@ export function MapDock({
   tools?: React.ReactNode;
   testId?: string;
 }) {
+  const t = useT(geoNs);
   const phone = usePhone();
   const [size, setSize] = useState<MapSize>("s");
   const [sticky, setSticky] = useState(false);
@@ -295,14 +302,14 @@ export function MapDock({
     >
       <div className="relative rounded-md shadow-2xl">
         {map({ fill: false })}
-        <div className="absolute left-1.5 top-1.5 z-[2] flex flex-col gap-1" role="group" aria-label="Map size">
-          <button type="button" className={control} onClick={() => chooseSize(MAP_SIZES[Math.min(MAP_SIZES.length - 1, idx + 1)])} disabled={idx >= MAP_SIZES.length - 1} aria-label="Bigger map" title="Bigger map" data-testid="geo-map-grow">
+        <div className="absolute left-1.5 top-1.5 z-[2] flex flex-col gap-1" role="group" aria-label={t("dock.size")}>
+          <button type="button" className={control} onClick={() => chooseSize(MAP_SIZES[Math.min(MAP_SIZES.length - 1, idx + 1)])} disabled={idx >= MAP_SIZES.length - 1} aria-label={t("dock.bigger")} title={t("dock.bigger")} data-testid="geo-map-grow">
             <Expand className="h-3.5 w-3.5" />
           </button>
-          <button type="button" className={control} onClick={() => chooseSize(MAP_SIZES[Math.max(0, idx - 1)])} disabled={idx <= 0} aria-label="Smaller map" title="Smaller map" data-testid="geo-map-shrink">
+          <button type="button" className={control} onClick={() => chooseSize(MAP_SIZES[Math.max(0, idx - 1)])} disabled={idx <= 0} aria-label={t("dock.smaller")} title={t("dock.smaller")} data-testid="geo-map-shrink">
             <Shrink className="h-3.5 w-3.5" />
           </button>
-          <button type="button" className={cn(control, sticky && "bg-[#6c5ce7] hover:bg-[#7d6ff0]")} onClick={toggleSticky} aria-pressed={sticky} aria-label={sticky ? "Unpin the map" : "Keep the map open"} title={sticky ? "Unpin the map" : "Keep the map open"} data-testid="geo-map-pin">
+          <button type="button" className={cn(control, sticky && "bg-[#6c5ce7] hover:bg-[#7d6ff0]")} onClick={toggleSticky} aria-pressed={sticky} aria-label={sticky ? t("dock.unpin") : t("dock.keepOpen")} title={sticky ? t("dock.unpin") : t("dock.keepOpen")} data-testid="geo-map-pin">
             {sticky ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
           </button>
         </div>
@@ -327,6 +334,7 @@ export const BAR_BTN =
  * and the zoom carry over.
  */
 function PhoneMap({ map, button, extra, hasPin, tools, testId }: { map: (o: { fill: boolean }) => React.ReactNode; button: React.ReactNode; extra?: React.ReactNode; hasPin: boolean; tools?: React.ReactNode; testId: string }) {
+  const t = useT(geoNs);
   const [open, setOpen] = useState(false);
   useEffect(() => {
     if (!open) return;
@@ -343,7 +351,7 @@ function PhoneMap({ map, button, extra, hasPin, tools, testId }: { map: (o: { fi
   return (
     <>
       {/* A tap on the picture around the card puts the map away. */}
-      {open && <button type="button" className="absolute inset-x-0 top-0 z-[14] cursor-default" style={{ bottom: "var(--geo-bar)" }} onClick={() => setOpen(false)} aria-label="Back to the picture" tabIndex={-1} />}
+      {open && <button type="button" className="absolute inset-x-0 top-0 z-[14] cursor-default" style={{ bottom: "var(--geo-bar)" }} onClick={() => setOpen(false)} aria-label={t("dock.backToPicture")} tabIndex={-1} />}
       <div
         data-testid={testId}
         data-open={open ? "true" : undefined}
@@ -354,18 +362,18 @@ function PhoneMap({ map, button, extra, hasPin, tools, testId }: { map: (o: { fi
         )}
         style={{ top: "calc(env(safe-area-inset-top) + 6.5rem)", bottom: "calc(var(--geo-bar) + 0.75rem)", marginLeft: "env(safe-area-inset-left)", marginRight: "env(safe-area-inset-right)" }}
         role="dialog"
-        aria-label="Guess map"
+        aria-label={t("dock.guessMap")}
         aria-hidden={!open}
       >
         <div className="relative h-full overflow-hidden rounded-[1.75rem] bg-[#165c96] shadow-[0_12px_40px_rgba(0,0,0,0.55)] ring-4 ring-[#a99cff]/80">
           {map({ fill: true })}
-          <button type="button" onClick={() => setOpen(false)} data-testid="geo-map-collapse" className="absolute left-2.5 top-2.5 z-[3] flex h-9 w-9 items-center justify-center rounded-full bg-[#1e1a3f]/90 text-white shadow-lg ring-1 ring-white/20" aria-label="Back to the picture">
+          <button type="button" onClick={() => setOpen(false)} data-testid="geo-map-collapse" className="absolute left-2.5 top-2.5 z-[3] flex h-9 w-9 items-center justify-center rounded-full bg-[#1e1a3f]/90 text-white shadow-lg ring-1 ring-white/20" aria-label={t("dock.backToPicture")}>
             <X className="h-4 w-4" />
           </button>
           {extra && <div className="absolute inset-x-2 bottom-2 z-[3]">{extra}</div>}
         </div>
         <p className="pointer-events-none absolute left-1/2 top-0 z-[4] -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full bg-[#1e1a3f] px-4 py-2 font-display text-sm font-bold italic text-white shadow-lg ring-2 ring-[#a99cff]/70" data-testid="geo-map-hint">
-          {hasPin ? "Tap again to move your pin" : "Tap the map to place your guess"}
+          {hasPin ? t("dock.moveHint") : t("dock.placeHint")}
         </p>
       </div>
 
@@ -384,7 +392,7 @@ function PhoneMap({ map, button, extra, hasPin, tools, testId }: { map: (o: { fi
             onClick={() => setOpen(true)}
             data-testid="geo-map-pill"
             className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-b from-[#62d42a] to-[#3f9e12] text-white shadow-[0_4px_16px_rgba(76,187,23,0.45),inset_0_-4px_0_rgba(0,0,0,0.2)] ring-4 ring-[#1e1a3f] outline outline-2 outline-[#a99cff]/60 transition-transform active:scale-95 [-webkit-tap-highlight-color:transparent]"
-            aria-label={hasPin ? "Open the map to move your pin or guess" : "Open the map to place your pin"}
+            aria-label={hasPin ? t("dock.openMove") : t("dock.openPlace")}
             aria-expanded={false}
           >
             <MapPinned className="h-7 w-7" aria-hidden />
@@ -409,9 +417,10 @@ export interface GuessButtonProps {
 }
 
 export function GuessButton({ hasPin, disabled, busy, label, onClick, testId = "geo-guess", round }: GuessButtonProps) {
+  const t = useT(geoNs);
   const off = disabled || !hasPin;
   if (round) {
-    const name = label ?? (hasPin ? "Guess" : "Place your pin on the map first");
+    const name = label ?? (hasPin ? t("guess.guess") : t("guess.placeFirst"));
     return (
       <button
         type="button"
@@ -449,8 +458,8 @@ export function GuessButton({ hasPin, disabled, busy, label, onClick, testId = "
       )}
     >
       {busy ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden /> : null}
-      {label ?? (hasPin ? "Guess" : "Place your pin on the map")}
-      {hasPin && !busy && !label && <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline [@media(pointer:coarse)]:!hidden">Space</kbd>}
+      {label ?? (hasPin ? t("guess.guess") : t("guess.place"))}
+      {hasPin && !busy && !label && <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline [@media(pointer:coarse)]:!hidden">{t("key.space")}</kbd>}
     </button>
   );
 }
@@ -472,12 +481,13 @@ const DIAL = "relative flex h-[3.75rem] w-[3.75rem] flex-col items-center justif
 
 /** The countdown as a dial: m:ss inside a ring that drains, red for the urgent seconds. */
 export function TimerDial({ ms, totalMs, urgentMs = 10_000, testId }: { ms: number; totalMs: number; urgentMs?: number; testId?: string }) {
+  const t = useT(geoNs);
   const left = Math.max(0, ms);
   const s = Math.ceil(left / 1000);
   const frac = totalMs > 0 ? Math.min(1, left / totalMs) : 0;
   const urgent = left <= urgentMs && left > 0;
   return (
-    <div className={cn(DIAL, urgent && "geo-pill-urgent")} role="timer" aria-live={urgent ? "polite" : "off"} aria-label={`${s} seconds left`} data-urgent={urgent ? "true" : undefined}>
+    <div className={cn(DIAL, urgent && "geo-pill-urgent")} role="timer" aria-live={urgent ? "polite" : "off"} aria-label={t("shell.secondsLeft", { s })} data-urgent={urgent ? "true" : undefined}>
       <svg className="pointer-events-none absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 60 60" fill="none" aria-hidden>
         <circle cx="30" cy="30" r="25" stroke="rgba(255,255,255,0.12)" strokeWidth="4" />
         <circle cx="30" cy="30" r="25" pathLength={1} stroke={urgent ? "#ff5a5a" : "#8b7cff"} strokeWidth="4" strokeLinecap="round" strokeDasharray="1" strokeDashoffset={1 - frac} className="transition-[stroke-dashoffset] duration-300 ease-linear" />
@@ -502,7 +512,9 @@ export function ValueDial({ value, unit, tone = "#9be15d", testId }: { value: Re
 }
 
 /** The top-right round badge: the word, then the number in a pin-shaped tag. */
-export function RoundBadge({ label = "Round", value, of, mode, testId }: { label?: string; value: React.ReactNode; of?: number; mode?: string; testId?: string }) {
+export function RoundBadge({ label: given, value, of, mode, testId }: { label?: string; value: React.ReactNode; of?: number; mode?: string; testId?: string }) {
+  const t = useT(geoNs);
+  const label = given ?? t("round");
   return (
     <div className="geo-safe-tr absolute right-3 top-3 z-20 flex max-w-[55%] flex-col items-end gap-1">
       <div className="flex h-11 items-center gap-2 rounded-xl bg-[#1e1a3f]/95 pl-3.5 pr-2 shadow-lg ring-2 ring-[#a99cff]/40" data-testid={testId}>

@@ -1,0 +1,18 @@
+{
+  "title": "クレジット",
+  "description": "PokéIQ を支えるデータ、エンジン、音楽、テクスチャと、そのライセンス。",
+  "data": "ポケモンのデータ",
+  "dataBody": "データは PokéAPI から。",
+  "shinyMaker": "色違いポケモンメーカー",
+  "shinyMakerBody": "スプライトはPokéAPIのスプライト集にあるブラック・ホワイト風のもので、No.650以降は Smogon Sprite Project のファンが同じ画風で描いたものです。3DスタイルはPokémon HOMEのレンダー、アートワークスタイルは公式アートワークを使っており、どちらもPokéAPIから取得しています（<a>クレジット</a>）。",
+  "battles": "バトル",
+  "battlesBody": "バトルは Pokémon Showdown のシミュレーターで動いており、バトルタイマーとリプレイ形式も Pokémon Showdown を元にしています（MIT ライセンス、© Guangcong Luo and contributors）。",
+  "music": "バトル音楽",
+  "musicBody": "Ted Kerr、celestialghost8、congusbongus によるオリジナルのチップチューン（OpenGameArt.org より、CC0。<a>クレジット</a>）。",
+  "sizes": "大きさ比べ",
+  "sizesBody": "音楽は cynicmusic、街のテクスチャは Poly Haven より、いずれも CC0（<a>クレジット</a>）。",
+  "race": "レース",
+  "raceBody": "スタジアムのテクスチャは Poly Haven、観客の音は OpenGameArt.org より、すべて CC0（<a>クレジット</a>）。",
+  "films": "2本の映像",
+  "filmsBody": "音楽は PokéIQ のために書かれたオリジナルで、MuseScore General サウンドフォント（MIT。弦楽器は VSCO 2 CE、CC0）で演奏しています。クレジット：<world>ポケモン世界の歴史</world>、<story>ポケモンの物語</story>。"
+}

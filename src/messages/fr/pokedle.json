@@ -1,0 +1,27 @@
+{
+  "meta": {
+    "title": "Pokédle : le Wordle Pokémon du jour",
+    "description": "Pokédle est le Wordle Pokémon du jour : trouve le Pokémon mystère en 8 essais grâce aux indices sur le type, la génération, la taille et plus, et affronte tes amis en duel en direct."
+  },
+  "info": {
+    "name": "Pokédle",
+    "description": "Pokédle est un Wordle Pokémon quotidien et gratuit : trouve le Pokémon mystère en 8 essais grâce aux indices sur la génération, le type, la taille, le poids, la couleur et le stade d'évolution.",
+    "intro": "Pokédle, c'est notre Wordle Pokémon : un Pokémon mystère, huit essais et un nouveau Pokémon chaque jour.",
+    "step1": "Tape le nom d'un Pokémon et valide-le comme proposition.",
+    "step2": "Chaque proposition se compare au Pokémon mystère : génération, type, taille, poids, couleur et stade d'évolution.",
+    "step3": "Sers-toi des indices pour réduire les possibilités et trouve la réponse en 8 essais maximum.",
+    "step4": "Reviens demain pour un nouveau Pokémon, ou défie un ami ou un inconnu en duel en direct.",
+    "faqGuessesQ": "Combien d'essais ai-je ?",
+    "faqGuessesA": "Tu as 8 essais pour trouver le Pokémon mystère.",
+    "faqCluesQ": "Quels indices donne chaque proposition ?",
+    "faqCluesA": "La génération, le type, la taille, le poids, la couleur et le stade d'évolution, comparés au Pokémon mystère."
+  },
+  "duel": {
+    "title": "Un duel Pokédle",
+    "description": "Pokédle en face-à-face : le même Pokémon mystère pour vous deux, trois manches.",
+    "versus": "{host} contre {guest} : un duel Pokédle",
+    "challenge": "{host} te défie en duel Pokédle",
+    "aTrainer": "Un Dresseur",
+    "inviteDescription": "Pokédle en face-à-face : le même Pokémon mystère pour vous deux, trois manches ; moins d'essais et plus de rapidité rapportent plus de points."
+  }
+}

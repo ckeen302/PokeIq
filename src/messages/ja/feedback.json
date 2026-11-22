@@ -1,0 +1,39 @@
+{
+  "close": "閉じる",
+  "about": "内容",
+  "categories": {
+    "idea": "アイデア",
+    "bug": "不具合",
+    "other": "その他"
+  },
+  "prompts": {
+    "idea": "PokéIQ をもっと良くするには？",
+    "bug": "何をしたか、何を期待したか、実際に何が起きたか。",
+    "other": "なんでも教えてください。"
+  },
+  "part": "対象",
+  "partLabel": "PokéIQ のどの部分か",
+  "modes": {
+    "general": "サイト全体",
+    "daily": "デイリーチャレンジ",
+    "quiz": "クイズ",
+    "iqtest": "PokéIQ テスト",
+    "pokedle": "Pokédle",
+    "guessr": "PokéGuessr",
+    "pokedex": "図鑑",
+    "battle": "バトル",
+    "tournaments": "大会",
+    "rooms": "チャット",
+    "friends": "フレンド",
+    "accounts": "アカウント"
+  },
+  "message": "メッセージ",
+  "contact": "連絡先（任意）",
+  "contactLabel": "連絡先",
+  "contactHint": "返信が欲しい場合のみ。先におうちの人に聞いてね！",
+  "sentWith": "今いるページ（<page></page>）{bug, select, true {、ブラウザのバージョン、ページで最近起きたエラーと一緒に送信されます。} other {とブラウザのバージョンと一緒に送信されます。}}",
+  "send": "送信",
+  "empty": "先にメッセージを書いてください。",
+  "thanks": "ありがとうございます！ すべてのメッセージを読んでいます。",
+  "another": "もう一通送る"
+}

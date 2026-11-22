@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 import { CONN_DUEL_PENALTY_MS, pvpHref } from "@/lib/pvp-types";
 import { CONN_MAX_MISTAKES, CONN_SIZES, type ConnSize } from "@/lib/connections/types";
 import { NewDuelCard } from "@/components/duel/NewDuelCard";
+import { useT } from "@/i18n/client";
+import cards from "@/messages/connections-cards";
 
 const MATCH = { game: "connections" };
 
@@ -13,6 +15,7 @@ const MATCH = { game: "connections" };
  * its lobby, or finds an opponent searching right now.
  */
 export function ConnectionsDuelCard() {
+  const t = useT(cards);
   const [size, setSize] = useState<ConnSize>(4);
   const body = useMemo(() => ({ kind: "connections", size }), [size]);
   return (
@@ -21,21 +24,18 @@ export function ConnectionsDuelCard() {
       href={(code) => pvpHref("connections", code)}
       // Matchmaking pairs 4×4 boards only.
       match={size === 4 ? MATCH : undefined}
-      heading="Head to head · PokéConnections"
-      blurb={size === 5 ? "The same twenty-five Pokémon for both of you. The first to find all five groups wins." : "The same sixteen Pokémon for both of you. The first to find all four groups wins."}
+      heading={t("duel.heading")}
+      blurb={t(size === 5 ? "duel.blurb5" : "duel.blurb4")}
       info={
         <>
-          <p>
-            Each mistake adds {CONN_DUEL_PENALTY_MS / 1000} seconds to your time, and {size === 5 ? 5 : CONN_MAX_MISTAKES} mistakes put you out. If you&apos;re both out, more groups found wins. You see your
-            opponent&apos;s groups as colours as they find them, never which Pokémon.
-          </p>
-          <p>Send a friend the link, or find an opponent (4×4 only). Duels use fresh puzzles, never the daily, and never count toward your streak.</p>
+          <p>{t("duel.rules", { seconds: CONN_DUEL_PENALTY_MS / 1000, mistakes: size === 5 ? 5 : CONN_MAX_MISTAKES })}</p>
+          <p>{t("duel.fresh")}</p>
         </>
       }
     >
       <div className="flex items-center gap-2">
-        <span className="hud-label">Board</span>
-        <div className="flex gap-1" role="radiogroup" aria-label="Duel board size" data-testid="conn-duel-size">
+        <span className="hud-label">{t("duel.board")}</span>
+        <div className="flex gap-1" role="radiogroup" aria-label={t("duel.boardAria")} data-testid="conn-duel-size">
           {CONN_SIZES.map((n) => (
             <button
               key={n}
@@ -43,7 +43,7 @@ export function ConnectionsDuelCard() {
               role="radio"
               aria-checked={size === n}
               data-testid={`conn-duel-size-${n}`}
-              title={n === 4 ? "Sixteen Pokémon, four groups of four" : "Twenty-five Pokémon, five groups of five"}
+              title={t(n === 4 ? "duel.size4" : "duel.size5")}
               onClick={() => setSize(n)}
               className={cn(
                 "h-8 rounded-sm border px-2.5 font-pixel text-[10px] uppercase tracking-wider transition-colors",

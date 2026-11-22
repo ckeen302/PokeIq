@@ -1,0 +1,100 @@
+{
+  "hub": {
+    "title": "PokéGuessr: Pokémon GeoGuessr",
+    "description": "PokéGuessr is the Pokémon GeoGuessr. You're dropped somewhere from Kanto to Paldea: look at the in-game view, drop a pin on the map and score up to 25,000 points. New daily game every day.",
+    "info": {
+      "description": "PokéGuessr is a free Pokémon GeoGuessr: look at an in-game view, drop a pin on the map of the Pokémon world and score up to 25,000 points.",
+      "intro": "PokéGuessr is the Pokémon GeoGuessr: you are dropped somewhere in the Pokémon world, from Kanto to Paldea, and have to work out where.",
+      "steps": {
+        "look": "Look at the in-game view you are given.",
+        "pin": "Drop a pin on the map where you think it is.",
+        "submit": "Submit your guess: the closer your pin, the more points you score, up to 25,000.",
+        "daily": "A new daily game is available every day."
+      },
+      "faq": {
+        "q": "How is it scored?",
+        "a": "The closer your pin is to the real location, the higher your score, up to 25,000 points."
+      }
+    }
+  },
+  "streak": {
+    "title": "PokéGuessr Region Streak: name the region from one screenshot",
+    "description": "Region Streak is PokéGuessr's country streak: one in-game screenshot, pick the region from Kanto to Paldea. Right deals the next one, wrong ends the run. How long can you go?"
+  },
+  "globe": {
+    "title": "Pokémon World Globe: spin the whole Pokémon world in 3D",
+    "description": "A holographic 3D globe of the Pokémon world. Spin it, zoom from regions down to every town, route and landmark, watch the world grow generation by generation, and see each town in a real screenshot."
+  },
+  "history": {
+    "title": "PokéGuessr duel history",
+    "description": "Your PokéGuessr duels, casual and ranked, with a round-by-round replay of every one.",
+    "back": "Back to PokéGuessr",
+    "h1": "Duel history",
+    "intro": "Every duel you finish on this device, or on your account when you're signed in. Open one to replay it round by round.",
+    "worldMap": "World map"
+  },
+  "replay": {
+    "title": "PokéGuessr duel replay",
+    "description": "A PokéGuessr duel, round by round: the screenshot, both pins and the true place, the scores, damage and HP."
+  },
+  "challenge": {
+    "fallback": "PokéGuessr challenge",
+    "aTrainer": "A trainer",
+    "title": "{who} scored {score} in PokéGuessr. Can you beat it?",
+    "world": "{n, plural, one {The same {n} place in the Pokémon world: drop your pins and beat their score. GeoGuessr for Pokémon, free.} other {The same {n} places in the Pokémon world: drop your pins and beat their score. GeoGuessr for Pokémon, free.}}",
+    "region": "{n, plural, one {The same {n} place in {map}: drop your pins and beat their score. GeoGuessr for Pokémon, free.} other {The same {n} places in {map}: drop your pins and beat their score. GeoGuessr for Pokémon, free.}}"
+  },
+  "result": {
+    "fallback": "PokéGuessr result",
+    "mapAlt": "Map of {map}",
+    "shared": "A trainer shared their result",
+    "hp": "{hp} HP",
+    "inARow": "{n} in a row",
+    "rounds": "{n} rounds",
+    "beat": "Think you can beat it? Free, no sign-up, right in your browser.",
+    "allModes": "All PokéGuessr modes",
+    "socialTitle": "{title} · PokéIQ",
+    "streak": {
+      "eyebrow": "{map} streak",
+      "detail": "{n, plural, one {{n} place named in a row from in-game screenshots, then a miss.} other {{n} places named in a row from in-game screenshots, then a miss.}}",
+      "title": "{n} in a row in PokéGuessr {map} streak"
+    },
+    "game": {
+      "detailWorld": "{total} of {max} points over {n} places in the Pokémon world.",
+      "detail": "{total} of {max} points over {n} places in {map}.",
+      "title": "{total} points in PokéGuessr {what}"
+    },
+    "regionStreak": {
+      "detail": "{n, plural, one {{n} region named in a row from one screenshot each, then a miss.} other {{n} regions named in a row from one screenshot each, then a miss.}}",
+      "title": "{n} in a row in PokéGuessr Region Streak"
+    },
+    "duel": {
+      "race": "Points race",
+      "duel": "Duel",
+      "draw": "Draw",
+      "wins": "{name} wins",
+      "drew": "{a} and {b} drew after {n} rounds.",
+      "beatRace": "{winner} beat {loser} {mine} to {theirs} over {n} rounds.",
+      "beatHp": "{winner} beat {loser} with {hp} of {max} HP left after {n} rounds.",
+      "title": "{headline}: a PokéGuessr duel in {map}"
+    },
+    "daily": "Daily #{n}",
+    "weekly": "Weekly #{n}",
+    "bonus": "+{bonus} game bonus",
+    "chips": {
+      "streak": "Streak",
+      "race": "Points race",
+      "hpDuel": "HP duel",
+      "turbo": "Turbo",
+      "ranked": "Ranked",
+      "regionStreak": "Region Streak"
+    },
+    "play": {
+      "game": "Play PokéGuessr",
+      "daily": "Play today's daily",
+      "weekly": "Play this week's challenge",
+      "duel": "Start a duel",
+      "regionStreak": "Play Region Streak"
+    }
+  }
+}

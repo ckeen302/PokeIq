@@ -2,7 +2,6 @@
 
 import { GEO_FILTER_MIN_PLACES, type GeoRegionInfo } from "@/lib/geo-types";
 import {
-  GEO_ERA_NAMES,
   GEO_GAME_BONUS,
   allowedFamilies,
   geoFamily,
@@ -11,6 +10,10 @@ import {
   type GeoFamilyId,
 } from "@/lib/geo-families";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import { formatNumber } from "@/i18n/format";
+import geoSolo from "@/messages/geo-solo";
+import { useGeoNames } from "@/lib/geo-i18n-client";
 
 /** The game filter picked on the setup screen: an era (all games when unset) and, optionally, some of its game families. */
 export interface FilterChoice {
@@ -65,6 +68,8 @@ export function GameFilter({
   filter: FilterChoice;
   onChange: (next: FilterChoice) => void;
 }) {
+  const t = useT(geoSolo);
+  const names = useGeoNames();
   const eras: (GeoEra | undefined)[] = [undefined, "2d", "3d"];
   const count = (era?: GeoEra, families: GeoFamilyId[] = []) => placesFor(region.combos, { era, families });
   const places = count(filter.era, filter.families);
@@ -73,8 +78,8 @@ export function GameFilter({
 
   return (
     <div className="space-y-2" data-testid="geo-filter">
-      <div className="flex flex-wrap items-center gap-1.5" role="radiogroup" aria-label="Games">
-        <span className="hud-label mr-1">Games</span>
+      <div className="flex flex-wrap items-center gap-1.5" role="radiogroup" aria-label={t("filter.games")}>
+        <span className="hud-label mr-1">{t("filter.games")}</span>
         {eras.map((era) => {
           const off = !!era && count(era) < GEO_FILTER_MIN_PLACES;
           return (
@@ -84,12 +89,12 @@ export function GameFilter({
               role="radio"
               aria-checked={filter.era === era}
               disabled={off}
-              title={off ? `${GEO_ERA_NAMES[era]}: not enough places with its screenshots on this map` : undefined}
+              title={off ? t("filter.eraOff", { era: names.era(era) }) : undefined}
               onClick={() => onChange({ era, families: [] })}
               className={chip(filter.era === era, off)}
               data-testid={`geo-era-${era ?? "all"}`}
             >
-              {GEO_ERA_NAMES[era ?? "all"]}
+              {names.era(era ?? "all")}
             </button>
           );
         })}
@@ -98,14 +103,14 @@ export function GameFilter({
 
       {tooFew ? (
         <p role="note" className="text-xs text-warning" data-testid="geo-filter-note">
-          Only {places} place{places === 1 ? "" : "s"} on the {region.name} map {places === 1 ? "has" : "have"} screenshots from{" "}
-          {filter.families.length ? "the games picked" : GEO_ERA_NAMES[filter.era!]}: a game needs at least {GEO_FILTER_MIN_PLACES}. Pick more games, another era or another map.
+          {t("filter.tooFew", { n: places, map: names.map(region), from: filter.families.length ? t("filter.picked") : names.era(filter.era!), min: GEO_FILTER_MIN_PLACES })}
         </p>
       ) : (
         offEras.length > 0 && (
           <p className="text-xs text-muted-foreground">
-            {offEras.map((e) => GEO_ERA_NAMES[e]).join(" and ")} {offEras.length === 1 ? "is" : "are"} off on the {region.name} map: fewer than {GEO_FILTER_MIN_PLACES} places
-            have {offEras.length === 1 ? "its" : "their"} screenshots.
+            {offEras.length === 1
+              ? t("filter.offOne", { era: names.era(offEras[0]), map: names.map(region), min: GEO_FILTER_MIN_PLACES })
+              : t("filter.offBoth", { a: names.era(offEras[0]), b: names.era(offEras[1]), map: names.map(region), min: GEO_FILTER_MIN_PLACES })}
           </p>
         )
       )}
@@ -115,20 +120,22 @@ export function GameFilter({
 
 /** "Guess the game too": the family picker under the mini-map, once the pin is down. */
 export function GameGuessPicker({ options, value, onChange }: { options: GeoFamilyId[]; value: string | null; onChange: (id: string | null) => void }) {
+  const t = useT(geoSolo);
+  const names = useGeoNames();
   return (
     <label className="flex items-center gap-2 rounded-md border bg-card/95 px-2 py-1.5 text-sm backdrop-blur">
-      <span className="hud-label shrink-0">Game</span>
+      <span className="hud-label shrink-0">{t("filter.game")}</span>
       <select
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value || null)}
         className="h-8 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        aria-label="Which game is this?"
+        aria-label={t("filter.whichAria")}
         data-testid="geo-game-pick"
       >
-        <option value="">Which game? (+{GEO_GAME_BONUS.toLocaleString("en-US")})</option>
+        <option value="">{t("filter.which", { bonus: formatNumber(GEO_GAME_BONUS, t.locale) })}</option>
         {options.map((id) => (
           <option key={id} value={id}>
-            {geoFamily(id).name}
+            {names.game(geoFamily(id).name)}
           </option>
         ))}
       </select>

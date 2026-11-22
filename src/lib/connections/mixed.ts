@@ -1,5 +1,6 @@
 import { registerCategories, type Category } from "./categories";
 import { FACTS, MOVES, factsOf, type Facts } from "./facts";
+import { ENGLISH_KIT, type Kit } from "./text";
 import { ABILITY_BASE, MOVE_BASE, TYPE_BASE, tileKindOf, type ConnTileKind } from "./tiles";
 
 /**
@@ -95,20 +96,20 @@ export function patternsFor(type: string): string[] {
   return MIXED_PATTERNS.filter((p) => count(p, "M") <= moves.length && count(p, "A") <= abilities.length);
 }
 
-function mixedCategory(type: string): Category {
-  const name = cap(type);
+function mixedCategory(type: string, k: Kit = ENGLISH_KIT): Category {
+  const { t } = k;
+  const name = k.type(type);
   return {
     id: `mixed:${type}`,
     family: "type",
-    label: `${name}-related`,
-    rule: `Each tile goes with the ${name} type: a ${name}-type Pokémon, a ${name}-type move, an ability found mostly on ${name}-type Pokémon, or the ${name} type itself.`,
+    label: t("mixed.label", { type: name }),
+    rule: t("mixed.rule", { type: name }),
     difficulty: 2.3,
     mixed: true,
     test: (f) => f.types.includes(type),
-    why: (f) => `${f.types.map(cap).join("/")} type`,
+    why: (f) => t("mixed.why", { types: f.types.map(k.type).join("/") }),
     testTile: (ref) => ref.kind !== "pokemon" && ref.type === type,
-    whyTile: (ref) =>
-      ref.kind === "move" ? `a ${name}-type move` : ref.kind === "ability" ? `an ability that mostly belongs to ${name}-type Pokémon` : `the ${name} type itself`,
+    whyTile: (ref) => (ref.kind === "move" ? t("mixed.move", { type: name }) : ref.kind === "ability" ? t("mixed.ability", { type: name }) : t("mixed.type", { type: name })),
   };
 }
 
@@ -117,5 +118,5 @@ export const MIXED_TYPES = TYPES.filter(
   (t) => new Set(FACTS.filter((f) => f.pooled && f.types.includes(t)).map((f) => f.familyKey)).size >= 6 && patternsFor(t).length > 0
 );
 
-export const MIXED_CATEGORIES: Category[] = MIXED_TYPES.map(mixedCategory);
-registerCategories(MIXED_CATEGORIES);
+export const MIXED_CATEGORIES: Category[] = MIXED_TYPES.map((t) => mixedCategory(t));
+registerCategories(MIXED_CATEGORIES, (k) => MIXED_TYPES.map((t) => mixedCategory(t, k)));

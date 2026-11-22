@@ -6,6 +6,8 @@ import { tileRef } from "@/lib/connections/mixed";
 import { isPokemonTile } from "@/lib/connections/tiles";
 import { factsOf } from "@/lib/connections/facts";
 import { generatePuzzle, herringsOf, playGuesses, type Puzzle } from "@/lib/connections/generator";
+import { localizedPractice } from "@/lib/connections/localize";
+import type { Locale } from "@/i18n/config";
 import { connLevels, connNumber, type ConnSize, type ConnGroupExplained, type ConnGroupReveal, type ConnGuessResponse, type ConnLevel, type ConnPuzzleResponse, type ConnTile } from "@/lib/connections/types";
 
 /**
@@ -67,8 +69,12 @@ export const DAILIES_COUNT = DAILIES.puzzles.length;
 
 const practiceCache = new Map<string, Puzzle>();
 
-/** A practice puzzle: the same generator, seeded by the player's random seed. */
-export function practiceConnPuzzle(seed: string): Puzzle {
+/** A practice puzzle: the same generator, seeded by the player's random seed (`locale`: its English-only groups swapped, lib/connections/localize). */
+export function practiceConnPuzzle(seed: string, locale: Locale = "en"): Puzzle {
+  return localizedPractice(englishPractice(seed), seed, locale);
+}
+
+function englishPractice(seed: string): Puzzle {
   let p = practiceCache.get(seed);
   if (!p) {
     // "hard-x7k2…": Unlimited's difficulty rides in the seed, so every guess check finds the same puzzle.
@@ -101,34 +107,34 @@ export function puzzleView(puzzle: Puzzle, key: string, date?: string): ConnPuzz
   return { key, ...(date && { number: connNumber(date) }), ...(puzzle.groups.length === 5 && { size: 5 as const }), tiles: puzzle.tiles.map(tile) };
 }
 
-/** A found group: its colour, name and Pokémon (no explanation). */
-export function groupReveal(puzzle: Puzzle, level: ConnLevel): ConnGroupReveal {
+/** A found group: its colour, name (in `locale`) and Pokémon (no explanation). */
+export function groupReveal(puzzle: Puzzle, level: ConnLevel, locale: Locale = "en"): ConnGroupReveal {
   const g = puzzle.groups[level];
-  return { level, label: categoryOf(g.category).label, members: g.members.map(tile) };
+  return { level, label: categoryOf(g.category, locale).label, members: g.members.map(tile) };
 }
 
 /** A group with its explanation: the rule, a line per Pokémon, and the red herrings that pointed at it. */
-export function explainGroup(puzzle: Puzzle, level: ConnLevel): ConnGroupExplained {
-  const c = categoryOf(puzzle.groups[level].category);
+export function explainGroup(puzzle: Puzzle, level: ConnLevel, locale: Locale = "en"): ConnGroupExplained {
+  const c = categoryOf(puzzle.groups[level].category, locale);
   return {
-    ...groupReveal(puzzle, level),
+    ...groupReveal(puzzle, level, locale),
     rule: c.rule,
     lines: puzzle.groups[level].members.map((id) => ({ ...tile(id), why: isPokemonTile(id) ? c.why(factsOf(id)) : c.whyTile!(tileRef(id)) })),
-    herrings: herringsOf(puzzle, level)
+    herrings: herringsOf(puzzle, level, locale)
       .slice(0, 3)
       .map((h) => ({ ...tile(h.id), reason: h.reason })),
   };
 }
 
 /** Plays the guesses so far (see playGuesses; throws on a malformed guess) and says how it stands. */
-export function checkGuesses(puzzle: Puzzle, guesses: number[][]): ConnGuessResponse {
+export function checkGuesses(puzzle: Puzzle, guesses: number[][], locale: Locale = "en"): ConnGuessResponse {
   const state = playGuesses(puzzle, guesses);
   return {
     results: state.results,
-    found: state.found.map((lv) => groupReveal(puzzle, lv)),
+    found: state.found.map((lv) => groupReveal(puzzle, lv, locale)),
     mistakes: state.mistakes,
     over: state.over,
     won: state.won,
-    ...(state.over && { reveal: connLevels(puzzle.groups.length as ConnSize).map((lv) => explainGroup(puzzle, lv)) }),
+    ...(state.over && { reveal: connLevels(puzzle.groups.length as ConnSize).map((lv) => explainGroup(puzzle, lv, locale)) }),
   };
 }
