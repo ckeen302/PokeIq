@@ -425,6 +425,8 @@ export interface BracketDrawing {
   labels: (roundIndex: number, roundCount: number) => string;
   /** Light theme colours for the on-screen view. */
   light?: boolean;
+  /** The on-screen view draws on the page's own background. */
+  transparent?: boolean;
 }
 
 export interface BracketGeometry {
@@ -460,7 +462,8 @@ export function drawBracket(g: CanvasRenderingContext2D, d: BracketDrawing, pics
   const mutedInk = d.light ? "#615d78" : COLORS.muted;
   const panel = d.light ? "rgba(20,16,40,0.05)" : COLORS.panel;
   const line = d.light ? "rgba(20,16,40,0.18)" : "rgba(255,255,255,0.16)";
-  if (d.light) {
+  if (d.transparent) g.clearRect(0, 0, W, H);
+  else if (d.light) {
     g.fillStyle = "#f6f4fc";
     g.fillRect(0, 0, W, H);
   } else background(g, W, H);

@@ -27,6 +27,8 @@ interface Props {
   onTileDouble(key: string, from: string): void;
   onPlace(rowId: string): void;
   onRename(rowId: string, label: string): void;
+  onRenameStart(): void;
+  onRenameEnd(): void;
   onColor(rowId: string, color: string): void;
   onMove(rowId: string, delta: number): void;
   onAdd(after?: string, before?: boolean): void;
@@ -121,6 +123,8 @@ export function TierBoard(p: Props) {
           count={p.rows.length}
           onClose={() => setEditing(null)}
           onRename={(v) => p.onRename(row.id, v)}
+          onRenameStart={p.onRenameStart}
+          onRenameEnd={p.onRenameEnd}
           onColor={(c) => p.onColor(row.id, c)}
           onMove={(d) => p.onMove(row.id, d)}
           onAdd={(before) => p.onAdd(row.id, before)}
@@ -132,12 +136,14 @@ export function TierBoard(p: Props) {
   );
 }
 
-function RowEditor({ row, index, count, onClose, onRename, onColor, onMove, onAdd, onRemove, onClear }: {
+function RowEditor({ row, index, count, onClose, onRename, onRenameStart, onRenameEnd, onColor, onMove, onAdd, onRemove, onClear }: {
   row: TierRow;
   index: number;
   count: number;
   onClose(): void;
   onRename(v: string): void;
+  onRenameStart(): void;
+  onRenameEnd(): void;
   onColor(c: string): void;
   onMove(d: number): void;
   onAdd(before: boolean): void;
@@ -152,6 +158,8 @@ function RowEditor({ row, index, count, onClose, onRename, onColor, onMove, onAd
           <input
             value={row.label}
             onChange={(e) => onRename(e.target.value.slice(0, 40))}
+            onFocus={onRenameStart}
+            onBlur={onRenameEnd}
             className="h-12 w-full rounded-xl bg-foreground/[0.06] px-4 font-display text-lg font-semibold outline-none focus-visible:ring-2 focus-visible:ring-ring"
             maxLength={40}
             aria-label={t("tier.name")}

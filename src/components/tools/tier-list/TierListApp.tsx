@@ -134,6 +134,17 @@ export default function TierListApp({ roster, template, shared }: AppProps) {
     if (next.tier !== s.tier || next.top !== s.top) setHist((h) => replace(h, next));
   }, [pool, s]);
 
+  // Typing (a title, a caption, a tier's name) is one undo step: the state from before the typing began.
+  const editSnap = useRef<ToolState | null>(null);
+  const editStart = useCallback(() => {
+    setHist((h) => ((editSnap.current = h.present), h));
+  }, []);
+  const editEnd = useCallback(() => {
+    const before = editSnap.current;
+    editSnap.current = null;
+    setHist((h) => (before && before !== h.present ? { past: [...h.past, before].slice(-120), present: h.present, future: [] } : h));
+  }, []);
+
   const change = useCallback((fn: (s: ToolState) => ToolState, record = true) => {
     dirty.current = true;
     setHist((h) => (record ? commit(h, fn(h.present)) : replace(h, fn(h.present))));
@@ -337,7 +348,11 @@ export default function TierListApp({ roster, template, shared }: AppProps) {
   const showPool = s.mode === "tier" || s.mode === "top";
   const poolMons = s.mode === "top" ? topPool : tierPool;
   const placingHint = coarse && s.mode === "tier" && selected.length > 0;
-  const modeOptions = MODES.map((m) => ({ value: m, label: modeName(t, m, s.top.length), testId: `mode-${m}` }));
+  const modeOptions = MODES.map((m) => ({
+    value: m,
+    label: m === "blind" ? (<><span className="max-sm:hidden">{modeName(t, m, s.top.length)}</span><span className="sm:hidden">{t("modes.blindShort")}</span></>) : modeName(t, m, s.top.length),
+    testId: `mode-${m}`,
+  }));
   const resetMode = () => {
     change((st) => {
       if (st.mode === "tier") return clearTiers(st);
@@ -350,57 +365,58 @@ export default function TierListApp({ roster, template, shared }: AppProps) {
 
   return (
     <div className="tlm-app" data-testid="tier-list-app" data-mode={s.mode} data-template={template}>
-      {/* Header: the title (editable), the template, and the tools. */}
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+      {/* Header: the title (editable) and the template; the tools; share and download. */}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-3">
         <div className="min-w-0 flex-1">
-          <div className="flex min-w-0 items-center gap-2">
-            <input
-              value={s.title}
-              onChange={(e) => change((st) => ({ ...st, title: e.target.value.slice(0, 80) }), false)}
-              onBlur={() => setHist((h) => (h.past.length && h.past[h.past.length - 1].title === h.present.title ? h : commit({ ...h, present: h.present }, { ...h.present })))}
-              placeholder={templateName(t, tpl)}
-              aria-label={t("bar.titleLabel")}
-              className="w-full min-w-0 truncate bg-transparent font-display text-[32px] font-bold leading-tight tracking-tight outline-none placeholder:text-foreground focus:placeholder:text-muted-foreground/60 max-sm:text-[24px]"
-              maxLength={80}
-              data-testid="tl-title"
-            />
-          </div>
-          <button type="button" onClick={() => setDialog("templates")} className="mt-0.5 inline-flex items-center gap-1 rounded-full text-[14px] font-medium text-muted-foreground transition-colors hover:text-foreground" data-testid="tl-template">
+          <input
+            value={s.title}
+            onFocus={editStart}
+            onChange={(e) => change((st) => ({ ...st, title: e.target.value.slice(0, 80) }), false)}
+            onBlur={editEnd}
+            placeholder={templateName(t, tpl)}
+            aria-label={t("bar.titleLabel")}
+            className="w-full min-w-0 truncate bg-transparent font-display text-[32px] font-bold leading-tight tracking-tight outline-none placeholder:text-foreground focus:placeholder:text-muted-foreground/60 max-sm:text-[22px]"
+            maxLength={80}
+            data-testid="tl-title"
+          />
+          <button type="button" onClick={() => setDialog("templates")} className="mt-0.5 inline-flex items-center gap-1 rounded-full text-[14px] font-medium text-muted-foreground transition-colors hover:text-foreground max-sm:text-[13px]" data-testid="tl-template">
             {t("bar.template", { name: templateName(t, tpl) })} <ChevronDown className="h-3.5 w-3.5" aria-hidden />
           </button>
         </div>
-        <div className="flex flex-wrap items-center gap-1.5 max-sm:w-full max-sm:justify-between">
+        <div className="order-3 flex w-full items-center justify-between gap-1.5 sm:order-2 sm:w-auto sm:justify-end">
           <Segmented size="sm" label={t("bar.art")} value={s.art} onChange={(v) => change((st) => ({ ...st, art: v }), false)} options={[{ value: "hd", label: t("bar.hd"), testId: "art-hd" }, { value: "pixel", label: t("bar.pixel"), testId: "art-pixel" }]} />
-          <IconButton label={t("bar.shiny")} active={s.shiny} aria-pressed={s.shiny} onClick={() => change((st) => ({ ...st, shiny: !st.shiny }), false)} testId="shiny-toggle">
-            <Sparkles className={cn("h-[18px] w-[18px]", s.shiny && "text-[hsl(var(--warning))]")} aria-hidden />
-          </IconButton>
-          <span className="mx-1 h-6 w-px bg-foreground/10 max-sm:hidden" aria-hidden />
-          <IconButton label={t("bar.undo")} onClick={() => setHist(undo)} disabled={!hist.past.length} testId="undo">
-            <Undo2 className="h-[18px] w-[18px]" aria-hidden />
-          </IconButton>
-          <IconButton label={t("bar.redo")} onClick={() => setHist(redo)} disabled={!hist.future.length} testId="redo">
-            <Redo2 className="h-[18px] w-[18px]" aria-hidden />
-          </IconButton>
-          <IconButton label={t("bar.reset")} onClick={() => setDialog("reset")} testId="reset">
-            <RotateCcw className="h-[17px] w-[17px]" aria-hidden />
-          </IconButton>
-          <IconButton label={t("bar.shortcuts")} onClick={() => setDialog("keys")} className="max-lg:hidden">
-            <Keyboard className="h-[18px] w-[18px]" aria-hidden />
-          </IconButton>
-          <span className="flex gap-1.5">
-            <PillButton onClick={() => setDialog("share")} testId="share">
-              <Share2 className="h-4 w-4" aria-hidden /> <span className="max-sm:sr-only">{t("bar.share")}</span>
-            </PillButton>
-            <PillButton primary onClick={() => setDialog("export")} testId="export">
-              <Download className="h-4 w-4" aria-hidden /> <span className="max-sm:sr-only">{t("bar.export")}</span>
-            </PillButton>
+          <span className="flex items-center gap-0.5 sm:gap-1.5">
+            <IconButton label={t("bar.shiny")} active={s.shiny} aria-pressed={s.shiny} onClick={() => change((st) => ({ ...st, shiny: !st.shiny }), false)} testId="shiny-toggle">
+              <Sparkles className={cn("h-[18px] w-[18px]", s.shiny && "text-[hsl(var(--warning))]")} aria-hidden />
+            </IconButton>
+            <span className="mx-1 h-6 w-px bg-foreground/10 max-sm:hidden" aria-hidden />
+            <IconButton label={t("bar.undo")} onClick={() => setHist(undo)} disabled={!hist.past.length} testId="undo">
+              <Undo2 className="h-[18px] w-[18px]" aria-hidden />
+            </IconButton>
+            <IconButton label={t("bar.redo")} onClick={() => setHist(redo)} disabled={!hist.future.length} testId="redo">
+              <Redo2 className="h-[18px] w-[18px]" aria-hidden />
+            </IconButton>
+            <IconButton label={t("bar.reset")} onClick={() => setDialog("reset")} testId="reset">
+              <RotateCcw className="h-[17px] w-[17px]" aria-hidden />
+            </IconButton>
+            <IconButton label={t("bar.shortcuts")} onClick={() => setDialog("keys")} className="max-lg:hidden">
+              <Keyboard className="h-[18px] w-[18px]" aria-hidden />
+            </IconButton>
           </span>
+        </div>
+        <div className="order-2 flex gap-1.5 sm:order-3">
+          <PillButton onClick={() => setDialog("share")} testId="share" className="max-sm:w-11 max-sm:px-0">
+            <Share2 className="h-4 w-4" aria-hidden /> <span className="max-sm:sr-only">{t("bar.share")}</span>
+          </PillButton>
+          <PillButton primary onClick={() => setDialog("export")} testId="export" className="max-sm:w-11 max-sm:px-0">
+            <Download className="h-4 w-4" aria-hidden /> <span className="max-sm:sr-only">{t("bar.export")}</span>
+          </PillButton>
         </div>
       </div>
 
       {/* The mode switch. */}
       <div className="tlm-scroll -mx-1 mt-4 overflow-x-auto px-1 pb-1">
-        <Segmented label={t("modes.label")} value={s.mode} onChange={(m: Mode) => change((st) => ({ ...st, mode: m }), false)} options={modeOptions} className="max-sm:w-full" testId="mode-switch" />
+        <Segmented label={t("modes.label")} value={s.mode} onChange={(m: Mode) => change((st) => ({ ...st, mode: m }), false)} options={modeOptions} className="max-sm:flex max-sm:w-full" testId="mode-switch" />
       </div>
 
       {viaLink && (
@@ -422,7 +438,7 @@ export default function TierListApp({ roster, template, shared }: AppProps) {
         )}
       >
         <section
-          className={cn("min-w-0", showPool && "tlm-scroll lg:overflow-y-auto lg:pr-1", showPool && phone && poolOpen && "pb-[calc(44svh+16px)]")}
+          className={cn("min-w-0", showPool && "tlm-scroll lg:overflow-y-auto lg:pr-1", showPool && phone && poolOpen && "pb-[calc(40svh+16px)]")}
           data-scroll={showPool ? "" : undefined}
           data-testid="tl-stage"
         >
@@ -462,6 +478,8 @@ export default function TierListApp({ roster, template, shared }: AppProps) {
                 onTileDouble={onTileDouble}
                 onPlace={(id) => sendTo(id)}
                 onRename={(id, v) => change((st) => updateRow(st, id, { label: v }), false)}
+                onRenameStart={editStart}
+                onRenameEnd={editEnd}
                 onColor={(id, c) => change((st) => updateRow(st, id, { color: c }))}
                 onMove={(id, d) => change((st) => moveRow(st, id, d))}
                 onAdd={(id, before) => change((st) => addRow(st, id, before))}
@@ -486,7 +504,8 @@ export default function TierListApp({ roster, template, shared }: AppProps) {
                 onRemove={(k) => change((st) => topRemove(st, k))}
                 onMove={(k, to) => change((st) => topAdd(st, k, Math.max(0, to)))}
                 onCaption={(k, v) => change((st) => ({ ...st, top: { ...st.top, captions: { ...st.top.captions, [k]: v } } }), false)}
-                onCaptionDone={() => setHist((h) => commit(h, { ...h.present }))}
+                onCaptionStart={editStart}
+                onCaptionDone={editEnd}
               />
             </>
           )}
@@ -537,7 +556,7 @@ export default function TierListApp({ roster, template, shared }: AppProps) {
             className={cn(
               "flex min-h-0 flex-col rounded-[24px] border border-foreground/[0.07] bg-card/60 p-3 lg:h-full",
               phone && "fixed inset-x-0 bottom-[var(--tabbar-h)] z-40 rounded-b-none border-x-0 border-b-0 bg-background/95 px-3 pb-2 pt-0 shadow-[0_-16px_40px_-12px_rgb(0_0_0/0.45)] backdrop-blur-md",
-              phone && (poolOpen ? "h-[44svh]" : "h-auto")
+              phone && (poolOpen ? "h-[40svh]" : "h-auto")
             )}
             aria-label={t("pool.label")}
             data-testid="tl-pool-panel"
@@ -574,7 +593,7 @@ export default function TierListApp({ roster, template, shared }: AppProps) {
                     <PillButton onClick={() => setDialog("add")} className="h-9 px-3 text-[13px]" testId="pool-add">
                       <Plus className="h-4 w-4" aria-hidden /> {t("pool.add")}
                     </PillButton>
-                    {s.mode === "tier" && selected.length > 0 && (
+                    {s.mode === "tier" && selected.some((k) => placed.has(k)) && (
                       <PillButton onClick={() => sendTo(null)} className="h-9 px-3 text-[13px]">
                         {t("pool.backToPool")}
                       </PillButton>

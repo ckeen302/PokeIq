@@ -41,7 +41,7 @@ export const TEMPLATES: readonly Template[] = [
   { slug: "fossils", group: "category", label: "fossils", face: 142, filter: (m) => species(m) && has(CAT.fossil)(m) },
   { slug: "megas", group: "form", label: "megas", face: 6, filter: (m) => m.f === "mega" },
   { slug: "regional-forms", group: "form", label: "regional", face: 37, filter: (m) => m.f === "regional" },
-  { slug: "every-form", group: "all", label: "everyForm", face: 201, filter: () => true },
+  { slug: "every-form", group: "all", label: "everyForm", face: 1017, filter: () => true },
   { slug: "legends-z-a", group: "game", label: "za", face: 716, filter: has(CAT.za) },
   { slug: "champions", group: "game", label: "champions", face: 445, filter: has(CAT.champions) },
   ...GENERATIONS.map((g): Template => ({ slug: `gen-${g}`, group: "generation", label: "gen", gen: g, face: GEN_FACE[g], filter: (m) => species(m) && m.g === g })),

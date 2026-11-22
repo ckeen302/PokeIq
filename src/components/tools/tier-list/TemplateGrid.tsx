@@ -20,7 +20,7 @@ export function TemplateGrid({ current, onPick, compact }: { current?: string; o
         return (
           <section key={group} className="space-y-3">
             <h3 className="text-[13px] font-semibold uppercase tracking-wider text-muted-foreground">{t(`pick.groups.${group}`)}</h3>
-            <ul className={cn("grid gap-2", compact ? "grid-cols-[repeat(auto-fill,minmax(132px,1fr))]" : "grid-cols-[repeat(auto-fill,minmax(150px,1fr))] max-sm:grid-cols-2")}>
+            <ul className={cn("grid gap-2", compact ? "grid-cols-[repeat(auto-fill,minmax(176px,1fr))] max-sm:grid-cols-2" : "grid-cols-[repeat(auto-fill,minmax(200px,1fr))] max-sm:grid-cols-2")}>
               {list.map((tpl) => (
                 <li key={tpl.slug}>
                   <Link

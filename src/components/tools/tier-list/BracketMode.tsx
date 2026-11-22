@@ -132,7 +132,7 @@ function Matchup(p: Props & { res: ReturnType<typeof resolveBracket>; onView(): 
   }, [pick]);
   const doneAll = res.progress.reduce((s, r) => s + r.done, 0);
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-5" data-testid="bracket-matchup">
+    <div className="mx-auto flex max-w-3xl flex-col gap-5" data-testid="bracket-matchup">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="font-display text-2xl font-semibold tracking-tight" data-testid="bracket-round">{name(cur.round, res.rounds.length)}</p>
@@ -248,7 +248,7 @@ function BracketView(p: Props & { onBack(): void }) {
     const draw = (pics: Parameters<typeof drawBracket>[2]) => {
       if (!live) return;
       g.setTransform(k, 0, 0, k, 0, 0);
-      drawBracket(g, { title: p.title, entrants: p.entrants, picks: p.bracket.picks, byKey: p.byKey, labels: name, light: p.light }, pics, pageFonts(), geo);
+      drawBracket(g, { title: p.title, entrants: p.entrants, picks: p.bracket.picks, byKey: p.byKey, labels: name, light: p.light, transparent: true }, pics, pageFonts(), geo);
     };
     draw({ get: () => null });
     void loadPictures(mons, p.art, p.shiny).then(draw);

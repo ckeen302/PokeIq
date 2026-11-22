@@ -20,13 +20,14 @@ interface Props {
   onRemove(key: string): void;
   onMove(key: string, to: number): void;
   onCaption(key: string, text: string): void;
+  onCaptionStart(): void;
   onCaptionDone(): void;
 }
 
 const MEDAL = ["#f6c94a", "#c9d2e0", "#e09a5f"];
 
 /** Top N: a podium for the top three, then a numbered list; every place is a drop target, each entry can carry a line. */
-export function TopMode({ top, byKey, art, shiny, moving, onTileDown, onRemove, onMove, onCaption, onCaptionDone }: Props) {
+export function TopMode({ top, byKey, art, shiny, moving, onTileDown, onRemove, onMove, onCaption, onCaptionStart, onCaptionDone }: Props) {
   const t = useT(tierList);
   const items = top.items;
   const podium = Math.min(3, top.length);
@@ -38,7 +39,7 @@ export function TopMode({ top, byKey, art, shiny, moving, onTileDown, onRemove, 
         {order.map((i) => {
           const k = items[i];
           const m = k ? byKey.get(k) : undefined;
-          const h = i === 0 ? "h-[260px] max-sm:h-[188px]" : i === 1 ? "h-[220px] max-sm:h-[160px]" : "h-[196px] max-sm:h-[146px]";
+          const h = i === 0 ? "h-[288px] max-sm:h-[204px]" : i === 1 ? "h-[248px] max-sm:h-[178px]" : "h-[224px] max-sm:h-[164px]";
           return (
             <div
               key={i}
@@ -66,6 +67,17 @@ export function TopMode({ top, byKey, art, shiny, moving, onTileDown, onRemove, 
                     />
                   </div>
                   <p className="mt-1 w-full truncate text-center font-display text-[15px] font-semibold max-sm:text-[13px]">{m.n}</p>
+                  <input
+                    value={top.captions[m.k] ?? ""}
+                    onChange={(e) => onCaption(m.k, e.target.value.slice(0, 80))}
+                    onFocus={onCaptionStart}
+                    onBlur={onCaptionDone}
+                    placeholder={t("top.caption")}
+                    aria-label={t("top.captionLabel", { n: i + 1 })}
+                    className="h-7 w-full min-w-0 truncate rounded-lg bg-transparent px-1 text-center text-[13px] text-muted-foreground outline-none placeholder:text-muted-foreground/50 focus:bg-foreground/[0.05] focus:text-foreground max-sm:text-[12px]"
+                    maxLength={80}
+                    data-testid="top-caption"
+                  />
                   <button type="button" onClick={() => onRemove(m.k)} className="absolute right-1.5 top-1.5 flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-foreground/10 hover:text-foreground" aria-label={t("top.remove", { name: m.n })}>
                     <X className="h-4 w-4" aria-hidden />
                   </button>
@@ -77,12 +89,6 @@ export function TopMode({ top, byKey, art, shiny, moving, onTileDown, onRemove, 
           );
         })}
       </div>
-      {podium === 3 &&
-        items.slice(0, 3).some(Boolean) &&
-        items.slice(0, 3).map((k, i) => {
-          const m = byKey.get(k);
-          return m ? <Caption key={k} n={i + 1} value={top.captions[k] ?? ""} onChange={(v) => onCaption(k, v)} onDone={onCaptionDone} name={m.n} compact /> : null;
-        })}
       {top.length > 3 && (
         <ol className="space-y-1.5" data-testid="top-list">
           {Array.from({ length: top.length - 3 }, (_, j) => {
@@ -100,7 +106,8 @@ export function TopMode({ top, byKey, art, shiny, moving, onTileDown, onRemove, 
                       <input
                         value={top.captions[k] ?? ""}
                         onChange={(e) => onCaption(k, e.target.value.slice(0, 80))}
-                        onBlur={onCaptionDone}
+                        onFocus={onCaptionStart}
+                    onBlur={onCaptionDone}
                         placeholder={t("top.caption")}
                         aria-label={t("top.captionLabel", { n: i + 1 })}
                         className="h-8 w-full min-w-0 bg-transparent text-sm text-muted-foreground outline-none placeholder:text-muted-foreground/60 focus:text-foreground"
@@ -129,25 +136,5 @@ export function TopMode({ top, byKey, art, shiny, moving, onTileDown, onRemove, 
       )}
       {!items.length && <p className="px-1 text-center text-sm text-muted-foreground">{t("top.emptyHint")}</p>}
     </div>
-  );
-}
-
-function Caption({ n, value, onChange, onDone, name, compact }: { n: number; value: string; onChange(v: string): void; onDone(): void; name: string; compact?: boolean }) {
-  const t = useT(tierList);
-  return (
-    <label className={cn("flex items-center gap-3 rounded-xl bg-foreground/[0.03] px-3", compact ? "h-10" : "h-12")}>
-      <span className="w-8 shrink-0 font-display text-sm font-bold" style={{ color: MEDAL[n - 1] }}>
-        {t("top.rank", { n })}
-      </span>
-      <input
-        value={value}
-        onChange={(e) => onChange(e.target.value.slice(0, 80))}
-        onBlur={onDone}
-        placeholder={`${name} · ${t("top.caption")}`}
-        aria-label={t("top.captionLabel", { n })}
-        className="h-full min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/60"
-        maxLength={80}
-      />
-    </label>
   );
 }
