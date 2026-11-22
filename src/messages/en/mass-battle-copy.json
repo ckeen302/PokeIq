@@ -1,0 +1,27 @@
+{
+  "question": "How many {challenger} beat {boss}?",
+  "answer": "It takes {n} {challenger}",
+  "spread": "± {spread} over {runs} battles",
+  "winRate": "{n} won {wins} of {runs} battles",
+  "noAnswer": "No army of {challenger} up to {cap} beats {boss}",
+  "two": "{a} and {b}",
+  "three": "{a}, {b} and {c}",
+  "more": "{a}, {b} and more",
+  "group": {
+    "types": "{types} types",
+    "legendariesMythicals": "Legendaries and mythicals",
+    "legendaries": "Legendaries",
+    "mythicals": "Mythicals",
+    "gen": "Gen {gen} Pokémon",
+    "fullyEvolved": "Fully evolved Pokémon",
+    "pokemon": "Pokémon"
+  },
+  "draw": "It's a draw",
+  "winsOne": "{w} wins!",
+  "winsMany": "{w} win!",
+  "timeUp": "Time ran out after {s} seconds with both sides standing.",
+  "resultLine": "{n} left standing after {s} s · {loser} KO'd {kos}",
+  "multiKo": "{pos} {move} KO'd {n} {target}",
+  "crit": "Critical hit! {pos} {move} on {target}",
+  "bossDown": "{pos} {move} knocked out {boss}!"
+}

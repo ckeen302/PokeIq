@@ -7,29 +7,38 @@ import { fmt, questionText, sideName } from "@/lib/mass-battle/copy";
 import { buildRoster } from "@/lib/mass-battle/roster-data";
 import { expandSpec, factsOf } from "@/lib/mass-battle/sets";
 import { MassBattlePage } from "@/components/mass-battle/MassBattlePage";
+import { mbNameOf } from "@/lib/mass-battle/i18n";
+import { typeName } from "@/lib/games/names";
+import { serverT } from "@/i18n/server";
+import mbCopy from "@/messages/mass-battle-copy";
+import mbPages from "@/messages/mass-battle-pages";
 
 type Search = { searchParams: Promise<{ b?: string | string[]; ask?: string | string[]; v?: string | string[] }> };
-
-const DESCRIPTION = "Thousands of Pokémon clash on a 3D battlefield, with the real games' damage maths for every hit. How many Magikarp does it take to beat Arceus? Ask any matchup, or send two armies at each other, then make a video of it.";
 
 export async function generateMetadata({ searchParams }: Search): Promise<Metadata> {
   const sp = await searchParams;
   const q = linkQuestion(sp.ask);
   const b = q ? null : linkBattle(sp.b);
   const slugs = slugIndex();
+  const t = serverT(mbPages);
+  const c = serverT(mbCopy);
+  const lc = t.locale;
+  const name = mbNameOf(lc, nameOf);
+  const ty = lc === "en" ? undefined : (x: string) => typeName(x.toLowerCase(), lc);
+  const side = (s: Parameters<typeof sideName>[0]) => sideName(s, name, undefined, c, ty);
   if (q) {
-    const title = questionText(sideName(q.army, nameOf), sideName(q.boss, nameOf));
+    const title = questionText(side(q.army), side(q.boss), c);
     const code = encodeQuestion(q, slugs);
-    return pageMetadata({ title, description: `${title} The real games' battle maths decide it, thousands of battles deep, then you watch it in 3D.`, path: `${MASS_BATTLE_PATH}?ask=${code}`, image: { url: `${MASS_BATTLE_PATH}/og?ask=${code}`, alt: title }, noindex: true });
+    return pageMetadata({ title, description: t("meta.questionDescription", { title }), path: `${MASS_BATTLE_PATH}?ask=${code}`, image: { url: `${MASS_BATTLE_PATH}/og?ask=${code}`, alt: title }, noindex: true });
   }
   if (b) {
     const x = expandSpec(b, buildRoster().species.map(factsOf));
-    const side = (s: 0 | 1) => `${fmt(x.sides[s].units.reduce((a, u) => a + u.count, 0))} ${sideName(b.sides[s], nameOf)}`;
-    const title = `${side(0)} vs ${side(1)}`;
+    const army = (s: 0 | 1) => t("meta.battleSide", { n: fmt(x.sides[s].units.reduce((a, u) => a + u.count, 0), lc), name: side(b.sides[s]) });
+    const title = t("meta.battleTitle", { a: army(0), b: army(1) });
     const code = encodeBattle(b, slugs);
-    return pageMetadata({ title, description: `${title}: a Pokémon mass battle in 3D with the real games' damage maths. Who wins?`, path: `${MASS_BATTLE_PATH}?b=${code}`, image: { url: `${MASS_BATTLE_PATH}/og?b=${code}`, alt: title }, noindex: true });
+    return pageMetadata({ title, description: t("meta.battleDescription", { title }), path: `${MASS_BATTLE_PATH}?b=${code}`, image: { url: `${MASS_BATTLE_PATH}/og?b=${code}`, alt: title }, noindex: true });
   }
-  return pageMetadata({ title: "Pokémon Mass Battle: how many Magikarp beat Arceus?", description: DESCRIPTION, path: MASS_BATTLE_PATH, socialTitle: "Pokémon Mass Battle · PokéIQ", noindex: !MASS_BATTLE_LIVE });
+  return pageMetadata({ title: t("meta.title"), description: t("meta.description"), path: MASS_BATTLE_PATH, socialTitle: t("meta.social"), noindex: !MASS_BATTLE_LIVE });
 }
 
 export default async function Page({ searchParams }: Search) {

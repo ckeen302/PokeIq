@@ -1,0 +1,212 @@
+{
+  "group": "Grupo",
+  "members": "{detail} · {n} Pokémon",
+  "beat": "…vencen a",
+  "howMany": "¿Cuántos…",
+  "pokemonN": "Pokémon {n}",
+  "each": "Cada uno",
+  "count": "Cantidad",
+  "setOf": "Set de {name}",
+  "remove": "Quitar {name}",
+  "loadingSets": "Cargando los sets…",
+  "addPokemon": "Pokémon",
+  "addGroup": "Grupo",
+  "upTo": "Hasta {n} filas",
+  "formation": "Formación",
+  "spacing": "Separación",
+  "targets": "Objetivos",
+  "stance": "Actitud",
+  "spreadMoves": "Movimientos de área",
+  "title": "Preparar el combate",
+  "kind": "Tipo de combate",
+  "tabAsk": "¿Cuántos?",
+  "tabArmy": "Ejército contra ejército",
+  "shared": "El ejército se reparte a partes iguales entre sus filas (un grupo lo reparte entre todas sus especies).",
+  "blue": "Ejército azul",
+  "red": "Ejército rojo",
+  "level": "Nivel",
+  "arena": "Escenario",
+  "advanced": "Avanzado",
+  "advancedHint": "Sets, clima y campo, cómo lucha cada bando, reproducción",
+  "advancedHintAsk": "Sets, clima y campo, cómo lucha cada bando, el solucionador, reproducción",
+  "setHint": "Abre el <i></i> de una fila para su set: nivel, movimientos, habilidad, objeto, naturaleza, EV e IV, teratipo.",
+  "setIcon": "set",
+  "field": "Terreno",
+  "weather": "Clima",
+  "terrain": "Campo",
+  "time": "Hora del día",
+  "heldItems": "Objetos equipados",
+  "none": "Ninguno",
+  "randomItems": "Objetos de combates aleatorios",
+  "rules": "Reglas",
+  "pp": "PP reales",
+  "ff": "Fuego amigo",
+  "rulesHint": "PP reales: los movimientos se agotan como en los juegos (Presión gasta dos) y luego Forcejeo. Fuego amigo: Terremoto, Surf y Explosión alcanzan también a los aliados, y Pararrayos y Colector atraen los movimientos de un aliado.",
+  "theArmy": "El ejército ({names})",
+  "theBoss": "El jefe ({names})",
+  "answer": "La respuesta",
+  "winsNeeded": "Victorias necesarias",
+  "half": "La mitad (50 %)",
+  "nine": "Nueve de cada diez (90 %)",
+  "perSize": "Combates por tamaño",
+  "playback": "Reproducción",
+  "speed": "Velocidad",
+  "camera": "Cámara",
+  "slowmo": "Cámara lenta en los golpes grandes",
+  "numbers": "Números de daño",
+  "hud": "HUD",
+  "find": "Averiguarlo",
+  "fight": "¡A luchar!",
+  "presets": "Combates prefabricados",
+  "presetsAside": "Cada uno con su enlace",
+  "type": "Tipo",
+  "anyType": "Cualquier tipo",
+  "andType": "Y tipo",
+  "generation": "Generación",
+  "any": "Cualquiera",
+  "gen": "Generación {n}",
+  "legendaries": "Legendarios",
+  "leaveOut": "Excluirlos",
+  "include": "Incluirlos",
+  "onlyLeg": "Solo legendarios",
+  "onlyMyth": "Solo singulares",
+  "both": "Legendarios y singulares",
+  "feOnly": "Solo totalmente evolucionados",
+  "matches": "{label}: <b>{n}</b> Pokémon",
+  "matchesAll": "{label}: <b>{n}</b> Pokémon, {total} en total",
+  "addTheGroup": "Añadir el grupo",
+  "groupLabel": "{name} ({detail})",
+  "detail": {
+    "legendary": "legendarios",
+    "legendaryMythical": "legendarios o singulares",
+    "mythical": "singulares",
+    "fe": "totalmente evolucionados",
+    "gen": "generación {n}",
+    "noLeg": "sin legendarios",
+    "all": "todos"
+  },
+  "labels": {
+    "formation": {
+      "line": "Línea",
+      "wedge": "Cuña",
+      "swarm": "Enjambre",
+      "surround": "Cerco"
+    },
+    "arena": {
+      "plains": "Llanura",
+      "volcano": "Volcán",
+      "snowfield": "Campo nevado",
+      "colosseum": "Coliseo"
+    },
+    "spacing": {
+      "tight": "Cerrada",
+      "normal": "Normal",
+      "loose": "Abierta"
+    },
+    "targeting": {
+      "nearest": "El más cercano",
+      "weakest": "El más débil cerca",
+      "strongest": "El más fuerte cerca",
+      "boss": "Ir a por el jefe"
+    },
+    "stance": {
+      "charge": "Cargar",
+      "hold": "Aguantar la línea"
+    },
+    "spread": {
+      "auto": "Usarlos",
+      "never": "Evitarlos"
+    },
+    "weather": {
+      "none": "Despejado",
+      "sun": "Sol abrasador",
+      "rain": "Lluvia",
+      "sand": "Tormenta de Arena",
+      "snow": "Nieve"
+    },
+    "terrain": {
+      "none": "Ninguno",
+      "electric": "Campo Eléctrico",
+      "grassy": "Campo de Hierba",
+      "psychic": "Campo Psíquico",
+      "misty": "Campo de Niebla"
+    },
+    "time": {
+      "day": "Día",
+      "dusk": "Atardecer",
+      "night": "Noche"
+    },
+    "camera": {
+      "director": "Director",
+      "free": "Libre",
+      "boss": "Seguir al jefe",
+      "top": "Cenital"
+    },
+    "ev": {
+      "random": "Combates aleatorios (85 EV, 31 IV)",
+      "offence": "Máximo ataque",
+      "bulk": "Máxima resistencia"
+    },
+    "evShort": {
+      "random": "85 en todo",
+      "offence": "Máx. ataque",
+      "bulk": "Máx. resistencia"
+    },
+    "itemGroup": {
+      "Damage": "Daño",
+      "Type boosts": "Potenciadores de tipo",
+      "Defence": "Defensa",
+      "Recovery": "Recuperación",
+      "Speed and accuracy": "Velocidad y precisión",
+      "Stat boosts": "Mejoras de características"
+    }
+  },
+  "picker": {
+    "pick": "Elige un Pokémon",
+    "search": "Buscar Pokémon",
+    "noAttacks": "Sin ataques",
+    "none": "Ningún Pokémon con ese nombre",
+    "form": {
+      "mega": "Mega",
+      "alola": "Alola",
+      "galar": "Galar",
+      "hisui": "Hisui",
+      "paldea": "Paldea"
+    }
+  },
+  "set": {
+    "level": "Nivel",
+    "evs": "EV e IV",
+    "nature": "Naturaleza",
+    "tera": "Teratipo",
+    "noTera": "Sin teratipo",
+    "setsTera": "{type} (del set)",
+    "ability": "Habilidad",
+    "default": "{name} (por defecto)",
+    "item": "Objeto equipado",
+    "megaStone": "Su megapiedra",
+    "none": "Ninguno",
+    "itsSet": "{name} (de su set)",
+    "itemEvery": "Objeto equipado (cada especie)",
+    "eachRandom": "El objeto de combate aleatorio de cada uno",
+    "moves": "Movimientos",
+    "movesDefaultSet": "Movimientos (por defecto: su set de combate aleatorio)",
+    "movesDefaultLevel": "Movimientos (por defecto: aprendidos hasta el nivel {n})",
+    "defaultMoves": "Movimientos por defecto",
+    "move": "Movimiento {n}",
+    "rbSet": "Set de combate aleatorio",
+    "learnt": "Aprendidos hasta el nivel {n}",
+    "other": "Sus otros movimientos legales",
+    "loading": "Cargando sus movimientos…",
+    "noMoves": "No tiene ningún ataque que se juegue en el combate: elige uno.",
+    "stats": "Nivel {level} · PS {hp} · Ata {atk} · Def {def} · AtE {spa} · DfE {spd} · Vel {spe}",
+    "statShort": {
+      "atk": "Ata",
+      "def": "Def",
+      "spa": "AtE",
+      "spd": "DfE",
+      "spe": "Vel"
+    },
+    "teraOf": "Tera {type}"
+  }
+}

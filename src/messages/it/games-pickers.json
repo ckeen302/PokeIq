@@ -1,0 +1,40 @@
+{
+  "close": "Chiudi",
+  "title": "Scegli una gara e una formazione",
+  "blurb": "Fino a otto Pokémon o forme. In due è un testa a testa.",
+  "event": "Gara",
+  "remove": "Rimuovi {name}",
+  "addMore": "{n, plural, one {Aggiungine ancora {n}} other {Aggiungine ancora {n}}}",
+  "addUpTo": "Aggiungine fino a 8",
+  "placeholder": "Aggiungi un Pokémon…",
+  "search": "Cerca un Pokémon da aggiungere",
+  "fun": "Formazione divertente",
+  "funLabel": {
+    "giants": "Pesi massimi contro pesi piuma",
+    "starters": "Starter evoluti",
+    "legends": "Leggendari",
+    "favourites": "I preferiti dei fan",
+    "type": "Tipo {type}",
+    "random": "Otto a caso"
+  },
+  "stat": {
+    "spe": "VEL",
+    "atk": "ATT",
+    "def": "DIF",
+    "hp": "PS",
+    "kg": "KG",
+    "height": "ALTEZZA"
+  },
+  "h2h": "Testa a testa",
+  "go": "Via",
+  "nations": "Nazioni",
+  "nationsBlurb": "Fino a otto. Un tipo manda i suoi tre atleti più completi (niente Leggendari); oppure crea una squadra di tre.",
+  "team": "Squadra {name}",
+  "typeNations": "Nazioni per tipo",
+  "build": "Crea una squadra di tre",
+  "removeOne": "Rimuovi",
+  "teamPlaceholder": "Aggiungi un Pokémon alla squadra…",
+  "teamSearch": "Cerca un Pokémon",
+  "addTeam": "Aggiungi questa squadra",
+  "open": "Apri i Giochi"
+}

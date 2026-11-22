@@ -1,5 +1,7 @@
 import type { Athlete } from "@/lib/games/athlete";
-import { eventOf, type EventId, type Venue } from "@/lib/games/events";
+import type { EventId, Venue } from "@/lib/games/events";
+import { translator, type Translator } from "@/i18n/catalog";
+import gamesShow from "@/messages/games-show";
 import { POOL } from "@/lib/games/venues";
 import { dims } from "../scene/motions/common";
 import type { ActorPose } from "../scene/pose";
@@ -40,7 +42,7 @@ const PODIUM_RATIO = 2.5;
 
 const STEP = { 1: { h: 0.6, x: 0 }, 2: { h: 0.42, x: -1.25 }, 3: { h: 0.3, x: 1.25 } } as const;
 
-export function podiumShow(event: EventId, venue: Venue, medallists: Medallist[], o: { video?: boolean; title?: string } = {}): Show {
+export function podiumShow(event: EventId, venue: Venue, medallists: Medallist[], o: { video?: boolean; title?: string } = {}, tr: Translator<typeof gamesShow.en> = translator(gamesShow, "en", undefined)): Show {
   const ath = medallists.map((m) => m.athlete);
   const real = ath.map(dims);
   // On the podium a giant is drawn smaller, so it doesn't hide the others: up to 2.5 times the smallest
@@ -62,7 +64,7 @@ export function podiumShow(event: EventId, venue: Venue, medallists: Medallist[]
   const spot = SPOT[venue];
   const at = spot.at;
   const tl = new Timeline();
-  tl.add({ kind: "podium", cam: "wide", title: o.title ?? eventOf(event).name }, o.video ? 2 : 2.6);
+  tl.add({ kind: "podium", cam: "wide", title: o.title ?? tr(`ev.${event}.name`) }, o.video ? 2 : 2.6);
   const order: (1 | 2 | 3)[] = [3, 2, 1];
   const medalAt = new Map<number, number>();
   for (const m of order) {
@@ -158,9 +160,9 @@ export function podiumShow(event: EventId, venue: Venue, medallists: Medallist[]
     const k = beatK(beat, t);
     if (beat.cam.startsWith("m")) {
       const m = medallists.find((x) => `m${x.medal}` === beat.cam)!;
-      return { lower: { key: m.athlete.key, name: m.athlete.name, line: `${m.mark}${m.nation ? ` · ${m.nation.name}` : ""}`, tag: m.medal === 1 ? "Gold" : m.medal === 2 ? "Silver" : "Bronze", k } };
+      return { lower: { key: m.athlete.key, name: m.athlete.name, line: `${m.mark}${m.nation ? ` · ${m.nation.name}` : ""}`, tag: tr(m.medal === 1 ? "gold" : m.medal === 2 ? "silver" : "bronze"), k } };
     }
-    if (beat.cam === "wide") return { title: { text: "MEDAL CEREMONY", sub: o.title ?? eventOf(event).name, k, signed: venue !== "stadium" } };
+    if (beat.cam === "wide") return { title: { text: tr("ceremony"), sub: o.title ?? tr(`ev.${event}.name`), k, signed: venue !== "stadium" } };
     return { tags: medallists.map((m) => m.athlete.key) };
   };
 
@@ -174,7 +176,7 @@ export function podiumShow(event: EventId, venue: Venue, medallists: Medallist[]
     at: frame,
     overlay,
     resultsAt: 0,
-    hook: eventOf(event).hook,
-    headline: medallists[0] ? `${medallists[0].athlete.name} takes gold` : "",
+    hook: tr(`ev.${event}.hook`),
+    headline: medallists[0] ? tr("takesGold", { name: medallists[0].athlete.name }) : "",
   };
 }

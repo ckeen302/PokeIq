@@ -1,5 +1,7 @@
 import type { Athlete } from "@/lib/games/athlete";
-import { formatMark } from "@/lib/games/events";
+import { formatMark, localNum } from "@/lib/games/events";
+import { translator, type Translator } from "@/i18n/catalog";
+import gamesShow from "@/messages/games-show";
 import { longJumpMark, type LongJumpResult } from "@/lib/games/longjump";
 import { isFlier } from "@/lib/games/athlete";
 import { LJ } from "@/lib/games/venues";
@@ -29,7 +31,9 @@ export interface ShowOptions {
 
 interface Item { pick: Pick; plan: LongJumpPlan; leaderBefore: number | null; standing: { key: string; best: number | null }[] }
 
-export function longJumpShow(result: LongJumpResult, o: ShowOptions): Show {
+export function longJumpShow(result: LongJumpResult, o: ShowOptions, tr: Translator<typeof gamesShow.en> = translator(gamesShow, "en", undefined)): Show {
+  const lc = tr.locale;
+  const num = (s: string) => localNum(s, lc);
   const athletes = result.cards.map((c) => c.athlete);
   const byKey = new Map(athletes.map((a) => [a.key, a]));
   // Chronological: round by round, in jumping order.
@@ -67,7 +71,7 @@ export function longJumpShow(result: LongJumpResult, o: ShowOptions): Show {
   const tl = new Timeline();
   const first = items.find((x) => x.pick.cut !== "skip") ?? items[0];
   if (!o.quick) {
-    tl.add({ kind: "establish", cam: "crane", title: "Long jump", sub: `Final · ${athletes.length} jumpers`, act: items.indexOf(first), clock0: first.plan.start, rate: 0 }, o.lineup ? (o.video ? 2.6 : 4.2) : o.video ? 1.3 : 1.8);
+    tl.add({ kind: "establish", cam: "crane", title: tr("ev.long-jump.name"), sub: tr("lj.establish", { n: athletes.length }), act: items.indexOf(first), clock0: first.plan.start, rate: 0 }, o.lineup ? (o.video ? 2.6 : 4.2) : o.video ? 1.3 : 1.8);
     tl.add({ kind: "startlist", cam: "startlist", act: items.indexOf(first), clock0: first.plan.start, rate: 0 }, o.lineup ? (o.video ? 2.2 : 3.4) : o.video ? 1.2 : 1.7);
   }
   let round = 0;
@@ -76,7 +80,7 @@ export function longJumpShow(result: LongJumpResult, o: ShowOptions): Show {
     if (p.cut === "skip") return;
     if (p.a.round !== round) {
       round = p.a.round;
-      tl.add({ kind: "card", cam: "runway", act: idx, clock0: Math.max(it.plan.start, -it.plan.run.T - 0.6), rate: 0.2, title: `Round ${round}`, sub: round === 3 ? "Last attempts" : "" }, 1.1);
+      tl.add({ kind: "card", cam: "runway", act: idx, clock0: Math.max(it.plan.start, -it.plan.run.T - 0.6), rate: 0.2, title: tr("round", { n: round }), sub: round === 3 ? tr("lj.lastAttempts") : "" }, 1.1);
     }
     const F = it.plan.attempt.physics.flight;
     const t0 = p.cut === "full" ? Math.max(it.plan.start + 0.6, -Math.min(2.6, it.plan.run.T)) : -Math.min(0.95, it.plan.run.T * 0.5);
@@ -194,34 +198,34 @@ export function longJumpShow(result: LongJumpResult, o: ShowOptions): Show {
     const k = beatK(beat, t);
     const it = items[beat.act ?? 0] ?? items[0];
     const a = byKey.get(it.pick.a.key)!;
-    const bug = { title: "Long jump", sub: beat.kind === "board" ? "Final standings" : `Round ${it.pick.a.round}` };
-    const line = `Speed ${a.stats.spe} · Attack ${a.stats.atk} · ${fmtKg(a.kg)}`;
+    const bug = { title: tr("ev.long-jump.name"), sub: beat.kind === "board" ? tr("finalStandings") : tr("round", { n: it.pick.a.round }) };
+    const line = tr("lj.line", { spe: a.stats.spe, atk: a.stats.atk, kg: num(fmtKg(a.kg)) });
     switch (beat.kind) {
       case "establish":
-        return { title: { text: "LONG JUMP", sub: `${athletes.length} Pokémon · 3 attempts each`, k } };
+        return { title: { text: tr("ev.long-jump.name").toUpperCase(), sub: tr("lj.crane", { n: athletes.length }), k } };
       case "startlist":
-        return { bug, board: { title: "Start list", rows: result.turns.map((c, i) => ({ place: String(i + 1), name: c.athlete.name, mark: `Best ${formatMark("long-jump", longJumpBest(c.athlete))}`, key: c.athlete.key, plain: true })), k } };
+        return { bug, board: { title: tr("startList"), rows: result.turns.map((c, i) => ({ place: String(i + 1), name: c.athlete.name, mark: tr("bestMark", { mark: formatMark("long-jump", longJumpBest(c.athlete), lc) }), key: c.athlete.key, plain: true })), k } };
       case "card":
         return { bug, title: { text: beat.title ?? "", sub: beat.sub ?? "", k } };
       case "action":
-        return { bug, lower: { key: a.key, name: a.name, line, tag: `Attempt ${it.pick.a.round}`, k }, tags: [a.key], caption: captionFor(a) };
+        return { bug, lower: { key: a.key, name: a.name, line, tag: tr("attempt", { n: it.pick.a.round }), k }, tags: [a.key], caption: captionFor(a, tr) };
       case "result": {
         const mark = it.pick.a.mark;
         return {
           bug,
-          mark: mark == null ? { text: "FOUL", sub: "Over the line", tone: "bad", k } : { text: formatMark("long-jump", mark), sub: it.pick.lead ? "New leader" : `${placeIn(it, a.key)}`, tone: it.pick.lead ? "lead" : "good", k },
-          board: { title: "Standings", rows: it.standing.slice(0, 8).map((r, i) => ({ place: String(i + 1), name: nameOf(r.key), mark: r.best == null ? "—" : formatMark("long-jump", r.best), key: r.key, hi: r.key === a.key })), k },
+          mark: mark == null ? { text: tr("lj.foul"), sub: tr("lj.over"), tone: "bad", k } : { text: formatMark("long-jump", mark, lc), sub: it.pick.lead ? tr("newLeader") : `${placeIn(it, a.key)}`, tone: it.pick.lead ? "lead" : "good", k },
+          board: { title: tr("standings"), rows: it.standing.slice(0, 8).map((r, i) => ({ place: String(i + 1), name: nameOf(r.key), mark: r.best == null ? "—" : formatMark("long-jump", r.best, lc), key: r.key, hi: r.key === a.key })), k },
         };
       }
       case "replay":
-        return { replay: true, lower: { key: a.key, name: a.name, line: `Take-off ${(it.plan.attempt.physics.vx * 3.6).toFixed(0)} km/h · ${(Math.atan2(it.plan.attempt.physics.vy, it.plan.attempt.physics.vx) / DEG).toFixed(0)}° · ${formatMark("long-jump", it.pick.a.mark)}`, tag: "Replay", k } };
+        return { replay: true, lower: { key: a.key, name: a.name, line: tr("lj.replay", { kmh: (it.plan.attempt.physics.vx * 3.6).toFixed(0), deg: (Math.atan2(it.plan.attempt.physics.vy, it.plan.attempt.physics.vx) / DEG).toFixed(0), mark: formatMark("long-jump", it.pick.a.mark, lc) }), tag: tr("replay"), k } };
       default:
-        return { bug, board: { title: "Long jump · final", rows: result.order.map((c) => ({ place: c.best == null ? "—" : String(c.place), name: c.athlete.name, mark: c.best == null ? "NM" : formatMark("long-jump", c.best), key: c.athlete.key, hi: c.place === 1 })), k } };
+        return { bug, board: { title: tr("final", { event: tr("ev.long-jump.name") }), rows: result.order.map((c) => ({ place: c.best == null ? "—" : String(c.place), name: c.athlete.name, mark: c.best == null ? tr("nm") : formatMark("long-jump", c.best, lc), key: c.athlete.key, hi: c.place === 1 })), k } };
     }
   };
   const placeIn = (it: Item, key: string) => {
     const i = it.standing.findIndex((r) => r.key === key);
-    return i < 0 ? "" : `${ordinal(i + 1)} so far`;
+    return i < 0 ? "" : tr("soFar", { place: ordinal(i + 1, tr) });
   };
 
   return {
@@ -234,8 +238,8 @@ export function longJumpShow(result: LongJumpResult, o: ShowOptions): Show {
     at,
     overlay,
     resultsAt: beats.find((b) => b.kind === "board")?.t0 ?? end,
-    hook: "Which Pokémon jumps the furthest? 🦘",
-    headline: winner.best != null ? `${winner.athlete.name} wins with ${formatMark("long-jump", winner.best)}` : "No legal jump",
+    hook: tr("lj.hook"),
+    headline: winner.best != null ? tr("winsWith", { name: winner.athlete.name, mark: formatMark("long-jump", winner.best, lc) }) : tr("lj.none"),
   };
 }
 
@@ -243,18 +247,20 @@ export function longJumpShow(result: LongJumpResult, o: ShowOptions): Show {
 const longJumpBest = (a: Athlete) => longJumpMark(a);
 
 export const fmtKg = (kg: number) => (kg >= 100 ? `${Math.round(kg)} kg` : `${kg.toFixed(kg < 1 ? 2 : 1)} kg`);
-export const ordinal = (n: number) => `${n}${n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] ?? "th"}`;
+export function ordinal(n: number, tr: Translator<typeof gamesShow.en> = translator(gamesShow, "en", undefined)): string {
+  return tr("ordinal", { n });
+}
 
 /** The commentary line: what's physically true and worth saying. */
-export function captionFor(a: Athlete): string | undefined {
+export function captionFor(a: Athlete, tr: Translator<typeof gamesShow.en> = translator(gamesShow, "en", undefined)): string | undefined {
   const d = dims(a);
-  if (isFlier(a)) return "No gliding: it's a jump, so the same physics as everyone";
-  if (d.h > 4) return `${a.name}'s centre of mass starts ${(0.55 * d.h).toFixed(1)} m up`;
+  if (isFlier(a)) return tr("lj.glide");
+  if (d.h > 4) return tr("lj.com", { name: a.name, m: localNum((0.55 * d.h).toFixed(1), tr.locale) });
   return undefined;
 }
 
 /** The throws' commentary line: a giant lets go far above the ground. */
-export function throwCaption(a: Athlete, releaseHeight: number): string | undefined {
-  if (releaseHeight > 3) return `${a.name} lets go ${releaseHeight.toFixed(1)} m up: a head start on the drop`;
+export function throwCaption(a: Athlete, releaseHeight: number, tr: Translator<typeof gamesShow.en> = translator(gamesShow, "en", undefined)): string | undefined {
+  if (releaseHeight > 3) return tr("throw.letsGo", { name: a.name, m: localNum(releaseHeight.toFixed(1), tr.locale) });
   return undefined;
 }

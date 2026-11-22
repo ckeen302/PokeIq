@@ -4,6 +4,8 @@ import { GAMES_LIVE } from "@/lib/lab";
 import { GAMES_BY_KEY } from "@/lib/games/data";
 import { DEFAULT_NATIONS, PLAY_PATH, parseGamesSeed, parseNations, parseRain, playPath } from "@/lib/games/deeplink";
 import { GamesPlayPage } from "@/components/games/GamesPages";
+import { serverT } from "@/i18n/server";
+import gamesPages from "@/messages/games-pages";
 
 /** /lab/games/play: the Games (?n= nations, ?seed= the draw, ?rain=1), with its own title and preview card. */
 
@@ -17,11 +19,12 @@ function read(sp: Awaited<Search>) {
 export async function generateMetadata({ searchParams }: { searchParams: Search }): Promise<Metadata> {
   const { nations, custom, seed, rain } = read(await searchParams);
   const path = custom || seed != null || rain ? playPath(nations, seed, rain) : PLAY_PATH;
+  const t = serverT(gamesPages);
   return pageMetadata({
-    title: "The PokéIQ Games: nations of Pokémon, every event, a medal table",
-    description: "Up to eight nations of three Pokémon through the 100 m, long jump, shot put, weightlifting, swimming, wrestling and more, with a live medal table and the Champion of the Games, in 3D.",
+    title: t("meta.playTitle"),
+    description: t("meta.playDescription"),
     path,
-    image: { url: `${PLAY_PATH}/og${path.includes("?") ? path.slice(path.indexOf("?")) : ""}`, alt: "The PokéIQ Games medal table" },
+    image: { url: `${PLAY_PATH}/og${path.includes("?") ? path.slice(path.indexOf("?")) : ""}`, alt: t("meta.playAlt") },
     noindex: !GAMES_LIVE,
   });
 }
