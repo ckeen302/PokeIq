@@ -10,9 +10,9 @@
   },
   "title": {
     "practice": "Práctica",
-    "daily": "Reto diario n.º {n}",
-    "dailyStats": "Reto diario n.º {n} · Datos",
-    "archive": "Reto diario n.º {n} · Archivo ({date})",
+    "daily": "Diario n.º {n}",
+    "dailyStats": "Diario n.º {n} · Datos",
+    "archive": "Diario n.º {n} · Archivo ({date})",
     "loading": "Reto diario"
   },
   "formats": {

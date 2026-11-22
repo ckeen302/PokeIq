@@ -40,7 +40,7 @@
   "placesHere": "Lugares aquí",
   "exactFrom": "Exacto · {source}",
   "exact": "Exacto · del mapa del juego",
-  "approximate": "Aproximado · sin marca oficial",
+  "approximate": "Aproximado · sin resaltado oficial",
   "sources": {
     "emerald": "Datos del mapa de Esmeralda",
     "oras": "Mapa de Rubí Omega y Zafiro Alfa",

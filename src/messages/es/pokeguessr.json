@@ -78,7 +78,7 @@
       "beatHp": "{winner} ganó a {loser} con {hp} de {max} PS tras {n} rondas.",
       "title": "{headline}: un duelo de PokéGuessr en {map}"
     },
-    "daily": "Diaria #{n}",
+    "daily": "Diaria n.º {n}",
     "weekly": "Semanal #{n}",
     "bonus": "+{bonus} de bonificación",
     "chips": {

@@ -1,7 +1,7 @@
 {
   "duel": {
     "fallbackTitle": "Un duelo de PokéGuessr",
-    "fallbackDescription": "Los duelos de GeoGuessr, versión Pokémon: los mismos lugares para los dos y gana quien ponga la marca más cerca.",
+    "fallbackDescription": "Los duelos de GeoGuessr, versión Pokémon: los mismos lugares para los dos y gana quien ponga la chincheta más cerca.",
     "titleVs": "{host} contra {guest}: un duelo de PokéGuessr",
     "titleChallenge": "{host} te reta a un duelo de PokéGuessr",
     "aTrainer": "Un Entrenador",

@@ -108,11 +108,11 @@
     "themed": "Temático · {name}",
     "lives": "Vidas",
     "timer": "Tiempo por ronda",
-    "afterPin": "Tras la primera marca",
+    "afterPin": "Tras la primera chincheta",
     "rounds": "Rondas máximas",
     "seconds": "{n} s",
-    "teamHelp": "{hp} PS por equipo. En cada ronda, cada equipo puntúa con su mejor marca; el equipo más bajo pierde la diferencia (×1 en las rondas 1–3, ×1,5 en las 4–6, ×2 en las 7–9…). Los compañeros ven sus marcas en directo.",
-    "royaleHelp": "Todos buscan el mismo lugar. {s} s después de la primera marca, la ronda se cierra y la puntuación más baja pierde una vida (todos los empatados, y nadie si empatan todos). Sin vidas, te toca mirar. Gana el último Entrenador en pie.",
+    "teamHelp": "{hp} PS por equipo. En cada ronda, cada equipo puntúa con su mejor chincheta; el equipo más bajo pierde la diferencia (×1 en las rondas 1–3, ×1,5 en las 4–6, ×2 en las 7–9…). Los compañeros ven sus chinchetas en directo.",
+    "royaleHelp": "Todos buscan el mismo lugar. {s} s después de la primera chincheta, la ronda se cierra y la puntuación más baja pierde una vida (todos los empatados, y nadie si empatan todos). Sin vidas, te toca mirar. Gana el último Entrenador en pie.",
     "start": "Empezar partida",
     "waitHost": "Esperando a que el anfitrión empiece",
     "leaveParty": "Salir de la partida"
@@ -148,7 +148,7 @@
     "share": "Compartir el resultado",
     "left": "Se fue",
     "outIn": "Fuera en la ronda {n}",
-    "pins": "Tus marcas"
+    "pins": "Tus chinchetas"
   },
   "parts": {
     "lives": "{lives} de {max} vidas",
@@ -156,7 +156,7 @@
     "out": "Fuera",
     "guessed": "Ha respondido",
     "host": "Anfitrión",
-    "lineupTeam": "{hp} PS por equipo · cuenta la mejor marca",
+    "lineupTeam": "{hp} PS por equipo · cuenta la mejor chincheta",
     "lineupRoyale": "{n} Entrenadores · {lives, plural, one {{lives} vida} other {{lives} vidas}} cada uno",
     "vs": "VS",
     "dances": "Bailes",

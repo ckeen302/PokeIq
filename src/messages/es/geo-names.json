@@ -3,11 +3,11 @@
   "themes": {
     "gyms": {
       "name": "Gimnasios",
-      "blurb": "Todos los gimnasios, desde Ciudad Plateada hasta Paldea (y los estadios de Galar)."
+      "blurb": "Todos los gimnasios, desde Ciudad Plateada hasta Pueblo Hozkailu (y los estadios de Galar)."
     },
     "towns": {
       "name": "Pueblos y ciudades",
-      "blurb": "Todos los pueblos y ciudades, desde Pueblo Paleta hasta Paldea."
+      "blurb": "Todos los pueblos y ciudades, desde Pueblo Paleta hasta Ciudad Meseta."
     },
     "routes": {
       "name": "Rutas",

@@ -56,7 +56,7 @@
       "play": "Jugar la de hoy"
     },
     "weekly": {
-      "numbered": "Semanal #{n}",
+      "numbered": "Semanal n.º {n}",
       "word": "Semanal",
       "title": "Reto semanal",
       "endsIn": "Termina en {left}",
@@ -81,7 +81,7 @@
       "title": "Multijugador",
       "duelsLabel": "Amistoso · {map}",
       "duels": "Duelos",
-      "duelsBlurb": "Batalla de PS o carrera de puntos, en cualquier mapa.",
+      "duelsBlurb": "Combate de PS o carrera de puntos, en cualquier mapa.",
       "openDuels": "Abrir duelos",
       "rankedLabel": "Clasificatorio · Mapa del mundo",
       "ranked": "Clasificatoria",
@@ -107,7 +107,7 @@
   },
   "hud": {
     "picked": "Juegos elegidos",
-    "daily": "Diaria #{n}",
+    "daily": "Diaria n.º {n}",
     "streak": "Racha {n}",
     "streakWord": "Racha",
     "round": "Ronda {n}",
@@ -133,7 +133,7 @@
     "space": "Espacio"
   },
   "summary": {
-    "shareDaily": "He hecho {score} en el PokéGuessr de hoy (Diaria #{n}). Los mismos {places} lugares para todos hoy: ¿puedes superarme?",
+    "shareDaily": "He hecho {score} en el PokéGuessr de hoy (Diaria n.º {n}). Hoy, los mismos {places} lugares para todos: ¿me superas?",
     "shareWeekly": "He hecho {score} en el Reto semanal de PokéGuessr. Los mismos {places} lugares para todos: ¿puedes superarme?",
     "shareGame": "He hecho {score} en PokéGuessr. Los mismos {places} lugares: ¿puedes superarme?",
     "saveFailed": "No se ha podido guardar.",
@@ -222,7 +222,7 @@
     "historyBlurb": "Tus duelos y partidas clasificatorias, ronda a ronda.",
     "boardsLabel": "Diaria · Semanal · Mapas",
     "boards": "Clasificaciones",
-    "boardsBlurb": "La Diaria, el Reto semanal, las clasificaciones de cada mapa y la de clasificatorias."
+    "boardsBlurb": "La Diaria, el Reto semanal, las clasificaciones de cada mapa y la de los duelos clasificatorios."
   },
   "regionStreak": {
     "label": "Racha de regiones",
@@ -234,7 +234,7 @@
   "crowd": {
     "shareText": "Dónde ha puesto todo el mundo su chincheta en la Diaria de PokéGuessr de hoy",
     "title": "Mapa de jugadores",
-    "count": "{n} Entrenadores han jugado la ronda {round}",
+    "count": "{n} Entrenadores han puesto su chincheta en la ronda {round}",
     "round": "Ronda",
     "everyone": "Chinchetas de todos",
     "answer": "La respuesta",

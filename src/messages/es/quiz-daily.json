@@ -1,6 +1,6 @@
 {
   "label": "Reto diario",
-  "labelNumber": "Reto diario #{n}",
+  "labelNumber": "Reto diario n.º {n}",
   "title": "El test PokéIQ de hoy",
   "intro": "10 preguntas variadas, las mismas para todos los Entrenadores. Un solo intento: que cuente.",
   "youScored": "Has conseguido",
