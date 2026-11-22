@@ -625,129 +625,129 @@
   "why": "図鑑（ブラック・ホワイト、ソード）：ゆらめく炎で相手を催眠状態にし、魂を燃やしてしまう。燃やされた魂は行き場を失ってさまよう。優雅で不気味で、恐れられている。"
  },
  "haxorus": {
-  "title": "The Gentle Axe",
-  "blurb": "You're kind right up until someone crosses a line, and then you're not. You work hard, you keep your word, and you take competition seriously without taking it personally. Your friends know you as gentle; your opponents don't. You're Haxorus: steady, honourable, and sharp when it matters.",
-  "why": "Pokedex (BW, Sw): kind by nature but merciless when its territory is threatened, with tusks that cut through steel; the honourable dragon."
+  "title": "やさしき斧",
+  "blurb": "あなたはだれかが一線を越えるまではやさしく、越えたらもうやさしくありません。よく働き、約束を守り、勝負は真剣に受け止めても、個人的な恨みにはしません。友だちはあなたを穏やかな人だと知っていますが、対戦相手は違います。あなたはオノノクス。ぶれず、誇り高く、ここぞというときに鋭い存在です。",
+  "why": "図鑑（ブラック・ホワイト、ソード）：本来はやさしい性格だが、なわばりをおびやかされると容赦せず、その牙は鉄も切り裂く。誇り高いドラゴン。"
  },
  "golurk": {
-  "title": "The Ancient Servant",
-  "blurb": "You were built to protect, and you've never questioned it. You're steady, dutiful, and quietly immense, and you'd rather serve something you believe in than lead something you don't. People underestimate how much you feel. You're Golurk: loyal, patient, and unbreakable.",
-  "why": "Pokedex (BW, Sw): built by an ancient people to protect them, it obeys its orders without fail and goes on a rampage only if its seal is removed; the loyal guardian."
+  "title": "いにしえのしもべ",
+  "blurb": "あなたは守るために作られ、それを疑ったことは一度もありません。ぶれず、務めに忠実で、静かに大きな存在です。信じられないものを率いるより、信じられるものに仕えたい。どれだけ心で感じているか、まわりは見くびっています。あなたはゴルーグ。忠実で、辛抱強く、決してこわれない存在です。",
+  "why": "図鑑（ブラック・ホワイト、ソード）：古代の人々が自分たちを守らせるために作ったといわれ、命令にはかならず従う。封印をはがされると暴れ出す。忠実な守護者。"
  },
  "bisharp": {
-  "title": "The Ruthless Commander",
-  "blurb": "You lead, and you expect to be followed. You're disciplined and decisive, with no patience for excuses and very little for sentiment, and you earned your rank by being the sharpest blade in the room. People respect you more than they like you. You're Bisharp: commanding, ruthless, and always first.",
-  "why": "Pokedex (BW, Sw): leads a group of Pawniard and cuts down any that fall behind; it finishes off foes without hesitation."
+  "title": "非情な指揮官",
+  "blurb": "あなたは率いる人で、ついてくることを当然と思っています。規律正しく決断が早く、言いわけにはがまんがならず、情にもほとんど流されません。その地位は、その場でいちばん鋭い刃であることで勝ち取ったもの。好かれる以上に一目置かれています。あなたはキリキザン。命令する側で、非情で、いつも先頭に立っています。",
+  "why": "図鑑（ブラック・ホワイト、ソード）：コマタナの群れを率い、遅れをとったものは切り捨てる。ためらうことなく相手にとどめを刺す。"
  },
  "braviary": {
-  "title": "The Fighter for Friends",
-  "blurb": "You fight for your friends and you don't count the cost. You're bold, loyal, and a bit of a show-off about it, and you'd rather be brave than careful every single time. People feel safe behind you. You're Braviary: fearless, devoted, and the hero of somebody's story.",
-  "why": "Pokedex (BW, Sw): fights for its friends without regard for its own safety and is called the hero of the skies; the brave bird."
+  "title": "仲間のために戦う者",
+  "blurb": "あなたは友だちのために戦い、代償は気にしません。大胆で一途で、それを少し見せびらかしたがり、慎重より勇敢であることを毎回選びます。あなたの後ろにいると、みんな安心できます。あなたはウォーグル。恐れを知らず、献身的で、だれかの物語のヒーローです。",
+  "why": "図鑑（ブラック・ホワイト、ソード）：仲間のためなら自分の身を顧みずに戦い、大空の勇者と呼ばれる。勇敢な鳥。"
  },
  "hydreigon": {
-  "title": "The Three-Headed Fury",
-  "blurb": "You're a lot, and you're not sorry. You're aggressive and competitive, hard to argue with and harder to calm down, and you've never seen the point of playing nice. You don't trust easily, which is wise, because you'd eat anyone who tried it. You're Hydreigon: ferocious, untamed, and all in.",
-  "why": "Pokedex (BW, Sw): attacks anything that moves, with three heads that share no reason; the brutal dragon that trusts no one."
+  "title": "三つ首の怒り",
+  "blurb": "あなたは強烈で、それを悪いとも思いません。攻撃的で負けず嫌いで、言い負かすのはむずかしく、落ち着かせるのはさらにむずかしい。いい子でいることに意味を感じたことはありません。簡単に人を信じないのは賢明です。試しに近づいた相手を食べてしまうからです。あなたはサザンドラ。獰猛で、手なずけられず、いつも全力です。",
+  "why": "図鑑（ブラック・ホワイト、ソード）：動くものにはなんでも襲いかかり、3つの頭には理性のかけらもない。だれも信じない凶暴なドラゴン。"
  },
  "volcarona": {
-  "title": "The Sun's Stand-In",
-  "blurb": "You've been the light when the sun went out. You're warm and composed, a little reserved, and happy to be the steady glow rather than the loud flame. People look to you more than you realise. You're Volcarona: radiant, calm, and quietly revered.",
-  "why": "Pokedex (BW, Sw): when volcanic ash blotted out the sun, its fire took the sun's place and it has been worshipped since; the calm, radiant moth."
+  "title": "太陽の代わり",
+  "blurb": "あなたは太陽が消えたとき、光になった人です。あたたかく落ち着いていて、少しひかえめで、にぎやかな炎よりも、ぶれない輝きでいることに満足しています。まわりは、あなたが思うよりずっとあなたを頼りにしています。あなたはウルガモス。光り輝き、おだやかで、ひそかにあがめられている存在です。",
+  "why": "図鑑（ブラック・ホワイト、ソード）：火山灰で太陽がさえぎられたとき、その炎が太陽の代わりになったといわれ、それ以来あがめられている。おだやかで光り輝くガ。"
  },
  "zekrom": {
-  "title": "The Ideals",
-  "blurb": "You believe in something, and you'll fight for it. You're principled, powerful, and a bit uncompromising, and you'd rather follow an ideal than a person. You respect conviction and you despise hypocrisy. You're Zekrom: driven, electric, and true to your ideals.",
-  "why": "Pokedex (BW, Sw): helps those who pursue their ideals and scorches the world of those who don't; the dragon of ideals opposite Reshiram's truth."
+  "title": "理想",
+  "blurb": "あなたは何かを信じていて、そのために戦います。信念があり、強く、少し妥協を知らず、人より理想についていきたい。信念を持つ人を尊敬し、偽善を軽蔑します。あなたはゼクロム。ひたむきで、電撃的で、自分の理想に忠実な存在です。",
+  "why": "図鑑（ブラック・ホワイト、ソード）：理想を追い求める者を助け、そうでない者の世界を焼き払う。レシラムの真実と対をなす、理想のドラゴン。"
  },
  "chespin": {
-  "title": "The Curious Nut",
-  "blurb": "You're cheerful, hungry, and curious about everything, and that combination gets you into exactly as much trouble as it sounds. You're tougher than you look and kinder than you need to be. You follow your nose. You're Chespin: good-hearted, impulsive, and great company.",
-  "why": "Anime: Clemont's Chespin, cheerful, food-obsessed, and forever getting into trouble; Pokedex (XY, Sw): its shell can withstand a truck and it loves to nibble."
+  "title": "好奇心旺盛な食いしん坊",
+  "blurb": "あなたは明るく、食いしん坊で、何にでも興味があります。その組み合わせは、想像どおりのトラブルを呼びます。見た目よりタフで、必要以上にやさしい人。鼻の向くままに進みます。あなたはハリマロン。心がよく、思いつきで動き、いっしょにいると最高に楽しい存在です。",
+  "why": "アニメ：明るくて食べ物に目がなく、いつもトラブルを起こすシトロンのハリマロン。図鑑（X・Y、ソード）：かたいからはトラックがぶつかっても平気で、何かをかじるのが大好き。"
  },
  "greninja": {
-  "title": "The Silent Ninja",
-  "blurb": "You move quietly and you move fast. You're disciplined and calm, highly competitive without any need to show it, and you bond deeply with very few people. When you do, you become something else entirely. You're Greninja: silent, precise, and all in on the right partner.",
-  "why": "Pokedex (XY, Sw): moves with ninja speed and grace, striking before anyone sees it; anime: Ash-Greninja, the bond that becomes a form."
+  "title": "沈黙の忍者",
+  "blurb": "あなたは静かに、すばやく動きます。規律正しく落ち着いていて、見せる必要もないほど負けず嫌いで、深く心を通わせる相手はごくわずか。でもそうなったとき、あなたはまったく別のものになります。あなたはゲッコウガ。静かで、正確で、ふさわしい相棒にすべてをささげる存在です。",
+  "why": "図鑑（X・Y、ソード）：忍者のような速さと身のこなしで、だれにも気づかれないうちに攻撃する。アニメ：きずなが姿になったサトシゲッコウガ。"
  },
  "pyroar": {
-  "title": "The Pride Leader",
-  "blurb": "You lead, and you take the responsibility that comes with it. You're confident and protective, with a competitive streak and a strong sense of who belongs to your pride. Change isn't your favourite thing; your people are. You're Pyroar: proud, protective, and born to lead.",
-  "why": "Pokedex (XY, Sw): the male leads the pride and protects the cubs while the females hunt; its roar sends foes running."
+  "title": "群れのリーダー",
+  "blurb": "あなたは群れを率い、それにともなう責任も引き受けます。自信があり、守ることを大切にし、負けず嫌いで、だれが自分の群れの一員なのかをはっきりわかっています。変化はあまり好きではなく、大切なのは仲間です。あなたはカエンジシ。誇り高く、仲間思いで、率いるために生まれた存在です。",
+  "why": "図鑑（X・Y、ソード）：オスは群れを率いて子どもを守り、メスが狩りをする。その雄たけびで敵は逃げ出す。"
  },
  "gogoat": {
-  "title": "The Trusted Mount",
-  "blurb": "You're the one people climb onto when they're tired. You're calm and dependable, with a sixth sense for how someone's really doing, and you'd carry them all the way without asking for anything back. You don't compete; you carry. You're Gogoat: trustworthy, gentle, and strong in the ways that matter.",
-  "why": "Pokedex (XY, Sw): reads its rider's feelings through its horns and carries people wherever they need to go; the mount of Lumiose City."
+  "title": "信頼の乗り手",
+  "blurb": "あなたは、みんなが疲れたときに背中に乗る人です。落ち着いていて頼りになり、相手が本当はどんな気持ちかを感じとる第六感を持ち、見返りも求めずに最後まで運んであげます。張り合わず、ただ運ぶ。あなたはゴーゴート。信頼できて、やさしく、大事なところで力強い存在です。",
+  "why": "図鑑（X・Y、ソード）：ツノで乗り手の気持ちを感じとり、人々を行きたい場所へ運ぶ。ミアレシティの乗り物。"
  },
  "pancham": {
-  "title": "The Tough Act",
-  "blurb": "You act tough, and you're fooling almost no one. You're competitive and loud, quick to glare and quicker to grin when someone sees through it, and you want to be taken seriously more than you'd admit. You've got heart under the act. You're Pancham: scrappy, sweet, and trying very hard.",
-  "why": "Pokedex (XY, Sw): glares at foes with a leaf in its mouth to look tough, but can't help smiling when patted; the little hard-case."
+  "title": "強がり屋",
+  "blurb": "あなたは強がっていますが、ほとんどだれもだまされていません。負けず嫌いでにぎやか、すぐににらみつけ、見すかされるとさらに早くニヤッとして、自分が認める以上に一人前に見られたいと思っています。強がりの下には熱い心があります。あなたはヤンチャム。ケンカっ早く、かわいくて、とてもがんばっている存在です。",
+  "why": "図鑑（X・Y、ソード）：強く見せようと葉っぱをくわえて相手をにらむが、頭をなでられると思わずニコッとしてしまう。小さな強がり屋。"
  },
  "furfrou": {
-  "title": "The Groomed Guardian",
-  "blurb": "You hold yourself to a standard, and you hold your people close. You're loyal and well put together, a bit traditional, and particular about who gets close. You take care of things properly and expect the same. You're Furfrou: elegant, devoted, and quietly aristocratic.",
-  "why": "Pokedex (XY, Sw): guarded the king of Kalos in ancient times, is highly loyal, and only lets a trusted person groom it."
+  "title": "手入れの行き届いた守り手",
+  "blurb": "あなたは自分に基準を課し、大切な人をそばに置いています。忠実で身だしなみがよく、少し伝統を重んじ、近づいてくる相手を選びます。物事をきちんと扱い、相手にもそれを求めます。あなたはトリミアン。優雅で、献身的で、ひそかに気品のある存在です。",
+  "why": "図鑑（X・Y、ソード）：大昔、カロスの王を守っていたといわれる。とても忠実で、信頼した人にしか毛をカットさせない。"
  },
  "espurr": {
-  "title": "The Blank Stare",
-  "blurb": "You're holding a lot in, and people can tell. You're quiet and intense, with an inner world far bigger than anything you show, and you keep your distance because closeness is complicated. The few who get past the stare find a lot there. You're Espurr: still, deep, and quietly powerful.",
-  "why": "Pokedex (XY, Sw): suppresses enormous psychic power behind an expressionless stare, and its eyes carry a lonely look; the unsettling kitten."
+  "title": "うつろなまなざし",
+  "blurb": "あなたは多くのものを胸の内に抑えていて、それはまわりにも伝わっています。静かで激しく、見せているものよりはるかに大きな心の世界を持ち、近づくことは複雑だから距離を置いています。そのまなざしを越えられた数少ない人は、その奥にたくさんのものを見つけます。あなたはニャスパー。静かで、深く、ひそかに強い存在です。",
+  "why": "図鑑（X・Y、ソード）：無表情なまなざしの奥に強大なサイコパワーを抑えこんでいて、その目はどこかさみしげ。どきっとさせる子ネコ。"
  },
  "malamar": {
-  "title": "The Hypnotic Manipulator",
-  "blurb": "You get people to do what you want, and they thank you for it. You're clever and strategic, with a flair for persuasion and very little interest in playing fair when playing smart works better. You enjoy the long game. You're Malamar: cunning, patient, and quietly in control.",
-  "why": "Pokedex (XY, Sw): hypnotises with its flashing body and makes others do its bidding, and is said to have altered the course of history; the schemer."
+  "title": "催眠の操り手",
+  "blurb": "あなたは人に自分の望むことをさせ、しかも感謝されます。頭がよく戦略的で、説得の才能があり、賢く立ち回るほうがうまくいくなら、正々堂々には興味がありません。長期戦を楽しむ人です。あなたはカラマネロ。ずる賢く、辛抱強く、静かにすべてを操っています。",
+  "why": "図鑑（X・Y、ソード）：体を光らせて相手を催眠状態にし、思いどおりに操る。歴史を動かしてきたともいわれる。策略家。"
  },
  "tyrantrum": {
-  "title": "The Ancient King",
-  "blurb": "You rule, and you've never seen a reason not to. You're confident and dominant, a bit old-fashioned, and not interested in anyone's opinion of your reign. You're generous to your subjects and fierce to your rivals. You're Tyrantrum: regal, powerful, and completely unapologetic.",
-  "why": "Pokedex (XY, Sw): nothing could challenge it a hundred million years ago, so it ruled as a king; the despot of the fossils."
+  "title": "太古の王",
+  "blurb": "あなたは君臨しています。そうしない理由が見つかったことはありません。自信があり支配的で、少し古風で、自分の治世をだれがどう思うかには興味がありません。家来には気前よく、ライバルには容赦なく。あなたはガチゴラス。王者の風格があり、力強く、まったく悪びれない存在です。",
+  "why": "図鑑（X・Y、ソード）：1億年前には敵がいなかったため、王様のようにふるまっていた。化石ポケモンの暴君。"
  },
  "sylveon": {
-  "title": "The Peacemaker Ribbon",
-  "blurb": "You end fights by being too lovely to fight near. You're warm and affectionate, you hold on tight to the people you love, and you'd rather soothe than win every time. People feel cared for around you because they are. You're Sylveon: sweet, soothing, and everyone's favourite.",
-  "why": "Pokedex (XY, Sw): wraps its ribbons around its trainer's arm and sends out a calming aura that ends fights; the eeveelution of affection."
+  "title": "仲直りのリボン",
+  "blurb": "あなたは、そばでケンカなんてできないほどかわいくて、争いを終わらせてしまいます。あたたかく愛情深く、大好きな人をしっかり抱きしめ、勝つより落ち着かせるほうをいつも選びます。あなたのそばで大切にされていると感じるのは、本当にそうだからです。あなたはニンフィア。かわいく、心をなごませ、みんなのお気に入りです。",
+  "why": "図鑑（X・Y、ソード）：リボンのような触角をトレーナーの腕に巻きつけ、争いをしずめるやすらぎのオーラを送りこむ。愛情のイーブイの進化形。"
  },
  "hawlucha": {
-  "title": "The Showboat Wrestler",
-  "blurb": "You win with style or not at all. You're proud and flashy, competitive to the bone, and physically incapable of skipping the pose. You love a crowd and the crowd loves you back. You're Hawlucha: showy, fearless, and always the main event.",
-  "why": "Pokedex (XY, Sw): proud of its graceful moves, it strikes a pose before every attack; anime: Ash's Hawlucha, who never skips the pose."
+  "title": "魅せるレスラー",
+  "blurb": "あなたはかっこよく勝つか、勝たないかです。誇り高く派手で、骨の髄まで負けず嫌いで、決めポーズを省くことは体が許しません。観客が大好きで、観客もあなたが大好き。あなたはルチャブル。派手で、恐れを知らず、いつだってメインイベントです。",
+  "why": "図鑑（X・Y、ソード）：華麗な技が自慢で、攻撃の前には必ずポーズを決める。アニメ：決めポーズを欠かさないサトシのルチャブル。"
  },
  "dedenne": {
-  "title": "The Whisker Messenger",
-  "blurb": "You're small, chatty, and adored. You keep in touch with everyone, you borrow things without quite asking, and you make friends in the time it takes other people to say hello. You nap a lot and nobody minds. You're Dedenne: friendly, cosy, and always in the loop.",
-  "why": "Pokedex (XY, Sw): communicates through its whiskers and steals electricity from homes to fuel its chatter; anime: Bonnie's sleepy, cheerful Dedenne."
+  "title": "ヒゲの伝言係",
+  "blurb": "あなたは小さくて、おしゃべりで、みんなに愛されています。だれとでも連絡をとり、ちゃんと聞かずにものを借り、ほかの人があいさつするあいだに友だちを作ってしまいます。よく昼寝をしますが、だれも気にしません。あなたはデデンネ。人なつっこく、ほっこりしていて、いつも情報通です。",
+  "why": "図鑑（X・Y、ソード）：ヒゲで仲間と通信し、家のコンセントから電気を盗んでおしゃべりの元にする。アニメ：眠たがりで明るいユリーカのデデンネ。"
  },
  "goodra": {
-  "title": "The Clingy Softie",
-  "blurb": "You love people and you show it, maybe a little too much. You're gentle and soft-hearted, a bit clingy, and completely devoted to the people you've chosen. You'd never hurt anyone and you cry at films. You're Goodra: affectionate, loyal, and the best hugger in the region.",
-  "why": "Pokedex (XY, Sw): extremely friendly, it hugs its trainer and covers them in slime; anime: Ash's Goodra, gentle giant with a tearful heart."
+  "title": "甘えん坊のやさしい子",
+  "blurb": "あなたは人が大好きで、それを表に出します。ちょっと出しすぎかもしれません。おだやかで心がやわらかく、少し甘えん坊で、選んだ相手にはどこまでも一途です。だれかを傷つけることは決してなく、映画を見ては泣いてしまいます。あなたはヌメルゴン。愛情深く、一途で、この地方でいちばんのハグ上手です。",
+  "why": "図鑑（X・Y、ソード）：とても人なつっこく、トレーナーに抱きついてヌメヌメにしてしまう。アニメ：涙もろいやさしい巨人、サトシのヌメルゴン。"
  },
  "klefki": {
-  "title": "The Key Keeper",
-  "blurb": "You keep the keys, literally and otherwise. You're organised and trustworthy, a bit of a collector, and you take safeguarding things very seriously. People hand you what matters because you never lose it. You're Klefki: reliable, meticulous, and the keeper of everyone's secrets.",
-  "why": "Pokedex (XY, Sw): collects keys and never gives them up, and was once trusted to guard the keys of noble houses; the organised hoarder."
+  "title": "カギの番人",
+  "blurb": "あなたはカギを預かる人です。文字どおりにも、それ以外の意味でも。整理上手で信頼でき、ちょっとしたコレクターで、ものを守ることをとても真剣に考えています。決してなくさないから、みんな大事なものをあなたに預けます。あなたはクレッフィ。頼りになり、几帳面で、みんなの秘密の番人です。",
+  "why": "図鑑（X・Y、ソード）：カギを集めて決して手放さず、かつては貴族の屋敷のカギを預かっていた。整理好きなコレクター。"
  },
  "noivern": {
-  "title": "The Night Screamer",
-  "blurb": "You come alive at night and you fly fast. You're bold and a bit wild, playful with your friends and fierce with everyone else, and you like the dark because it's quieter. You don't ask for directions. You're Noivern: swift, sonic, and free after sundown.",
-  "why": "Pokedex (XY, Sw): anything that moves in the dark is prey, and it fights with ultrasonic waves; anime: Ash's Noivern, affectionate and playful despite it all."
+  "title": "夜に叫ぶもの",
+  "blurb": "あなたは夜になると生き生きとして、すばやく飛び回ります。大胆で少しワイルド、友だちとは遊び好きで、ほかの相手には容赦なく、静かだから暗やみが好き。道は人に聞きません。あなたはオンバーン。すばやく、音速で、日が沈めば自由です。",
+  "why": "図鑑（X・Y、ソード）：暗やみで動くものはすべて獲物で、超音波で戦う。アニメ：それでも人なつっこく遊び好きなサトシのオンバーン。"
  },
  "hoopa": {
-  "title": "The Ring Trickster",
-  "blurb": "Why walk through a door when you can pull the door to you? You're mischievous and brilliant, bored by rules and thrilled by chaos, and you'd rather pull off something impossible than something sensible. Consequences are for later. You're Hoopa: playful, powerful, and a genie with a grin.",
-  "why": "Pokedex (ORAS, Sw): teleports anything through its rings for the fun of it, delighting in mischief; Hoopa and the Clash of Ages: the trickster who steals the world."
+  "title": "リングのいたずら者",
+  "blurb": "扉を引きよせられるなら、わざわざ扉を通る必要がある？あなたはいたずら好きで天才的、ルールには退屈し、混乱にはわくわくし、まともなことより不可能なことをやってのけたい人です。結果はあとで考えます。あなたはフーパ。遊び好きで、強力で、ニヤリと笑う魔人です。",
+  "why": "図鑑（オメガルビー・アルファサファイア、ソード）：おもしろがって、リングを通してなんでもワープさせる、いたずら好き。映画「光輪の超魔神 フーパ」：世界を盗むいたずら者。"
  },
  "decidueye": {
-  "title": "The Silent Archer",
-  "blurb": "You're calm, careful, and lethal from a distance. You don't need noise or company to feel complete, and you'd rather take one perfect shot than ten loud ones. People think you're aloof; you're just concentrating. You're Decidueye: focused, graceful, and quietly deadly.",
-  "why": "Pokedex (SM, Sw): careful and cool-headed, nocking an arrow in a tenth of a second, though it can be startled into absent-mindedness; the quiet marksman."
+  "title": "沈黙の射手",
+  "blurb": "あなたは落ち着いていて、注意深く、遠くからでも必中です。満たされるのに騒がしさも仲間もいらず、騒がしい10発より完璧な1発を選びます。まわりはあなたをそっけないと思いますが、ただ集中しているだけ。あなたはジュナイパー。集中していて、優雅で、静かに必殺の存在です。",
+  "why": "図鑑（サン・ムーン、ソード）：冷静で慎重、0.1秒で矢をつがえるが、驚くとぼんやりしてしまうことも。静かな狙撃手。"
  },
  "litten": {
-  "title": "The Aloof Loner",
-  "blurb": "You don't do affection on demand. You're cool and self-reliant, allergic to being fussed over, and more loyal than you'd ever admit out loud. You'd rather look after someone quietly than say anything about it. You're Litten: aloof, proud, and secretly devoted.",
-  "why": "Pokedex (SM, Sw): doesn't show its emotions, hates being touched, and grooms itself alone; anime: Ash's Litten, the stray who looked after an old Stoutland."
+  "title": "そっけない一匹狼",
+  "blurb": "あなたは求められても愛情を示しません。クールで自立していて、かまわれるのが大の苦手で、口に出して認めることは絶対にないけれど、とても一途です。何か言うより、だまってだれかの面倒を見るほうを選びます。あなたはニャビー。そっけなく、誇り高く、ひそかに献身的な存在です。",
+  "why": "図鑑（サン・ムーン、ソード）：感情を表に出さず、さわられるのをきらい、ひとりで毛づくろいをする。アニメ：年老いたムーランドの面倒を見ていた野良、サトシのニャビー。"
  },
  "incineroar": {
   "title": "The Heel Champion",
