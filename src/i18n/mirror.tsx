@@ -1,7 +1,8 @@
 import type { Metadata, ResolvingMetadata } from "next";
 import { notFound } from "next/navigation";
 import type { ComponentType, ReactNode } from "react";
-import { enterLocale } from "./server";
+import { enterLocale, getT } from "./server";
+import ogAlt from "@/messages/og-alt";
 import { isLiveLocale, type Locale } from "./config";
 import { localizeMetadata } from "./metadata";
 import { isPageLive } from "./routes";
@@ -63,6 +64,38 @@ export function mirrorPage(route: string, source: Source, { openParams = false }
       await guard(props);
       const Component = source.default as ComponentType<Props>;
       return <Component {...props} />;
+    },
+  };
+}
+
+/** An English share-image route (opengraph-image.tsx) as app/[locale]'s mirror of it imports it. */
+interface ImageSource {
+  default: (props: never) => unknown;
+  alt?: string;
+  size?: { width: number; height: number };
+  contentType?: string;
+}
+
+/**
+ * The /<lang>/ version of a share image (src/app/[locale]/**\/opengraph-image.locale.tsx, see scripts/i18n/mirror.mjs):
+ * the English route's own drawing, given the language in its params (lib/og/i18n reads it there: an image route
+ * renders outside React, so `enterLocale` can't carry it), and its alt text from og-alt under `altKey`. Next reads the
+ * alt per request through generateImageMetadata (an English route's alt is a fixed export), so the language's image
+ * sits one segment deeper: /<lang>/<path>/opengraph-image-<hash>/<lang>.
+ */
+export function mirrorImage(altKey: string, source: ImageSource) {
+  return {
+    async generateImageMetadata({ params }: { params: Params & { locale?: string } }) {
+      const locale = params?.locale;
+      if (!isLiveLocale(locale)) return [];
+      const t = await getT(ogAlt, locale);
+      const alt = t.has(altKey) ? t(altKey as never) : source.alt;
+      return [{ id: locale, alt, size: source.size, contentType: source.contentType }];
+    },
+    async Image(props: { params: Params | Promise<Params>; id?: string }) {
+      const params = await props.params;
+      if (!isLiveLocale(params?.locale)) notFound();
+      return source.default({ ...props, params } as never);
     },
   };
 }

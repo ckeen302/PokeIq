@@ -1,4 +1,5 @@
 import { C, OG_CONTENT_TYPE, OG_SIZE, ogCard } from "@/lib/og/card";
+import { ogT } from "@/lib/og/i18n";
 
 /** Share card for the leaderboards. */
 
@@ -40,13 +41,15 @@ function Podium() {
   );
 }
 
-export default function Image() {
+export default async function Image(props: { params?: unknown }) {
+  const t = await ogT(props);
   return ogCard({
-    eyebrow: "Leaderboards · updated live",
-    title: ["Top", ["trainers", C.yellow]],
-    subtitle: "Daily Challenge, PokéIQ, PokéGuessr and every quiz mode. Where do you rank?",
+    eyebrow: t("leaderboard.eyebrow"),
+    title: [t("leaderboard.title1"), [t("leaderboard.title2"), C.yellow]],
+    subtitle: t("leaderboard.subtitle"),
     accent: C.yellow,
     visual: <Podium />,
-    footer: "Play a run to get on the board →",
+    footer: t("leaderboard.footer"),
+    t,
   });
 }

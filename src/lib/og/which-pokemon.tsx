@@ -5,6 +5,8 @@ import { artworkUrl } from "@/lib/pokemon/pokedex";
 import { typeColor, typeTextColor } from "@/lib/pokemon/type-colors";
 import { AXES, AXIS_INFO, type PooledPokemon, type Profile } from "@/lib/which-pokemon/types";
 import { matchProfile, nameOf, typesOf } from "@/lib/which-pokemon/match";
+import { wpType } from "@/lib/which-pokemon/i18n";
+import type { Locale } from "@/i18n/config";
 import { C, HOST, LOGO, loadFonts } from "./card";
 
 /**
@@ -15,24 +17,24 @@ import { C, HOST, LOGO, loadFonts } from "./card";
 
 export const STORY_SIZE = { width: 1080, height: 1920 };
 
-function TypeRow({ types, size = 26 }: { types: string[]; size?: number }) {
+function TypeRow({ types, size = 26, locale = "en" }: { types: string[]; size?: number; locale?: Locale }) {
   return (
     <div style={{ display: "flex", gap: 10 }}>
       {types.map((t) => (
         <div key={t} style={{ display: "flex", padding: `${size / 3}px ${size}px`, borderRadius: 10, background: typeColor(t), color: typeTextColor(t), fontFamily: "Chakra Petch", fontSize: size, textTransform: "uppercase" }}>
-          {t}
+          {wpType(t, locale)}
         </div>
       ))}
     </div>
   );
 }
 
-/** The right-hand picture of a result's link preview: artwork and types. */
-export function ResultVisual({ pokemon }: { pokemon: PooledPokemon }) {
+/** The right-hand picture of a result's link preview: artwork and types (in the card's language). */
+export function ResultVisual({ pokemon, locale }: { pokemon: PooledPokemon; locale?: Locale }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
       <img src={artworkUrl(pokemon.id)} width={360} height={360} />
-      <TypeRow types={typesOf(pokemon)} />
+      <TypeRow types={typesOf(pokemon)} locale={locale} />
     </div>
   );
 }

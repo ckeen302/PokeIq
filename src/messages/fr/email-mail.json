@@ -1,0 +1,35 @@
+{
+  "links": {
+    "pokedle": "Pokédle",
+    "geo": "PokéGuessr du jour",
+    "conn": "Connections",
+    "pdk": "Pikadoku",
+    "daily": "Défi du jour"
+  },
+  "streak": "Ta série de {days} jours sur {game} s'arrête à minuit.",
+  "daily": {
+    "subject": "Les défis PokéIQ du jour sont en ligne",
+    "testSubject": "[Test] {subject}",
+    "kicker": "Jour n° {n}",
+    "heading": "Les défis du jour sont en ligne",
+    "imageAlt": "L'image PokéGuessr du jour, floutée",
+    "imageCaption": "Où est-ce, dans le monde Pokémon ? Le PokéGuessr du jour commence ici.",
+    "why": "Tu reçois cet e-mail parce que tu as activé les rappels quotidiens pour le Dresseur {name} sur PokéIQ.",
+    "unsubscribe": "Se désabonner",
+    "settings": "Réglages des e-mails",
+    "preheader": "Pokédle, PokéGuessr, Connections, Pikadoku et le Défi du jour sont en ligne.",
+    "textTitle": "PokéIQ Jour n° {n}",
+    "textHeading": "Les défis du jour sont en ligne.",
+    "textUnsubscribe": "Se désabonner : {url}",
+    "textSettings": "Réglages des e-mails : {url}"
+  },
+  "confirm": {
+    "subject": "Confirme ton e-mail pour PokéIQ",
+    "heading": "Confirme ton e-mail",
+    "body": "Confirme cette adresse pour le Dresseur {name} afin de recevoir les rappels quotidiens de PokéIQ. Rien n'est envoyé tant que tu ne l'as pas fait.",
+    "button": "Confirmer l'e-mail",
+    "note": "Le lien est valable 7 jours. Si tu n'as rien demandé, ignore cet e-mail : tu ne recevras rien d'autre.",
+    "why": "Tu reçois cet e-mail parce que cette adresse a été saisie pour les rappels quotidiens de PokéIQ.",
+    "preheader": "Un clic et c'est fait."
+  }
+}

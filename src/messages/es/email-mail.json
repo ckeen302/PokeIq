@@ -1,0 +1,35 @@
+{
+  "links": {
+    "pokedle": "Pokédle",
+    "geo": "PokéGuessr diario",
+    "conn": "Connections",
+    "pdk": "Pikadoku",
+    "daily": "Reto diario"
+  },
+  "streak": "Tu racha de {days} días en {game} se acaba a medianoche.",
+  "daily": {
+    "subject": "Ya están los retos diarios de PokéIQ",
+    "testSubject": "[Prueba] {subject}",
+    "kicker": "Diario n.º {n}",
+    "heading": "Ya están los retos de hoy",
+    "imageAlt": "La imagen de PokéGuessr de hoy, difuminada",
+    "imageCaption": "¿En qué parte del mundo Pokémon está esto? El PokéGuessr de hoy empieza aquí.",
+    "why": "Recibes este correo porque activaste los recordatorios diarios para el Entrenador {name} en PokéIQ.",
+    "unsubscribe": "Darse de baja",
+    "settings": "Ajustes de correo",
+    "preheader": "Ya están Pokédle, PokéGuessr, Connections, Pikadoku y el Reto diario.",
+    "textTitle": "PokéIQ Diario n.º {n}",
+    "textHeading": "Ya están los retos de hoy.",
+    "textUnsubscribe": "Darse de baja: {url}",
+    "textSettings": "Ajustes de correo: {url}"
+  },
+  "confirm": {
+    "subject": "Confirma tu correo para PokéIQ",
+    "heading": "Confirma tu correo",
+    "body": "Confirma esta dirección para el Entrenador {name} y recibe los recordatorios diarios de PokéIQ. No te enviaremos nada hasta que lo hagas.",
+    "button": "Confirmar correo",
+    "note": "El enlace funciona durante 7 días. Si no lo has pedido tú, ignora este correo y no recibirás nada más.",
+    "why": "Recibes este correo porque alguien introdujo esta dirección para los recordatorios diarios de PokéIQ.",
+    "preheader": "Un clic y listo."
+  }
+}

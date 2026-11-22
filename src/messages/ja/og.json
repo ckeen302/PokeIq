@@ -1,0 +1,444 @@
+{
+  "card": {
+    "footer": "無料・登録不要 →",
+    "whereIsThis": "ここはどこ？",
+    "battle": {
+      "whatWill": "{name}はどうする？"
+    },
+    "odds": {
+      "simulated": "1万回のバトルをシミュレート",
+      "sideA": "サイドAの勝率",
+      "ci": "±1.0%（95%信頼区間）"
+    },
+    "vs": "VS",
+    "you": "あなた？"
+  },
+  "home": {
+    "eyebrow": "無料のポケモンゲーム",
+    "title1": "場所を当てよう。",
+    "title2": "ポケモンを当てよう。",
+    "title3": "バトルに勝とう。",
+    "subtitle": "登録不要。ブラウザですぐ遊べます。",
+    "chips": {
+      "battles": "バトル",
+      "battleLab": "バトルラボ",
+      "quizzes": "クイズ"
+    }
+  },
+  "daily": {
+    "eyebrow": "デイリーチャレンジ・毎日更新",
+    "title1": "今日の",
+    "title2": "ポケモン",
+    "title3": "テスト",
+    "subtitle": "ジャンルいろいろの10問は、全トレーナー共通。挑戦は1回だけ。連続記録をつなごう。",
+    "footer": "今日のデイリーをプレイ →"
+  },
+  "iqTest": {
+    "eyebrow": "PokéIQテスト",
+    "title1": "あなたの",
+    "title2": "PokéIQは？",
+    "subtitle": "論理、記憶、スピード、空間認識、ポケモンの知識。制限時間つきの5セクションで、約20分。",
+    "yours": "あなたのPokéIQ",
+    "scored": "ほかのトレーナーと比べたスコア",
+    "footer": "無料でテストを受ける →"
+  },
+  "pokedle": {
+    "eyebrow": "Pokédle・毎日新しいポケモン",
+    "title1": "なぞの",
+    "title2": "ポケモンを",
+    "title3": "当てよう",
+    "subtitle": "チャンスは8回。答えるたびに、タイプ・世代・大きさ・色のヒントが出ます。",
+    "footer": "今日の1匹をプレイ、またはライブで対戦 →"
+  },
+  "pikadoku": {
+    "eyebrow": "Pikadoku・毎日新しいグリッド",
+    "title1": "ポケモン",
+    "title2": "数独",
+    "subtitle": "3×3のグリッドを埋めよう。行と列の両方に合うポケモンを、マスごとに1匹。レアな答えほど低スコア。",
+    "footer": "今日のかんたん・ふつう・エキスパートをプレイ →"
+  },
+  "connections": {
+    "eyebrow": "PokéConnections・毎日新しいパズル",
+    "title1": "4つの",
+    "title2": "グループを",
+    "title3": "見つけよう",
+    "subtitle": "16匹のポケモンに、隠れたつながりが4つ。ミスは4回まで。",
+    "footer": "今日のパズルをプレイ。どの答えにも「なぜ？」つき →"
+  },
+  "guessr": {
+    "eyebrow": "PokéGuessr・毎日新しいゲーム",
+    "title1": "ここは世界の",
+    "title2": "どこだろう？",
+    "subtitle": "ポケモン版GeoGuessr。カントーからパルデアまで、全地方の本物のゲーム画面で。毎日新しいデイリーゲーム。",
+    "fallbackSubtitle": "ポケモン版GeoGuessr。カントーからパルデアまで、本物のゲーム画面で。",
+    "footer": "ピンを置こう・最大25,000点 →",
+    "points": "{n}点",
+    "hp": "HP {n}",
+    "challenge": {
+      "eyebrow": "PokéGuessrチャレンジ・{map}",
+      "detail": "{who}は{n}か所で{max}点中{score}点。あなたも同じ場所に挑戦します。",
+      "play": "チャレンジを受ける",
+      "fallbackEyebrow": "PokéGuessrチャレンジ",
+      "fallbackFooter": "同じ場所で勝負・勝てるかな？ →"
+    },
+    "party": {
+      "eyebrow": "PokéGuessrパーティー",
+      "title1": "パーティーに",
+      "title2": "招待されました",
+      "subtitle": "友だちと同じ場所に、全員いっせいに挑戦。登録不要：開いて名前を決めたら参加できます。",
+      "footer": "バトルロイヤルかチーム対戦・タップで参加 →"
+    }
+  },
+  "quiz": {
+    "eyebrow": "ポケモンクイズ",
+    "title1": "あなたは",
+    "title2": "ポケモンを",
+    "title3": "どこまで知ってる？",
+    "subtitle": "シルエット、鳴き声、図鑑説明、タイプ相性、ゲーム、アニメ。",
+    "chips": {
+      "classic": "クラシック",
+      "survival": "サバイバル",
+      "blitz": "タイムアタック",
+      "all": "全ポケモン"
+    }
+  },
+  "quizPreset": {
+    "eyebrow": "クイズ・{mode}",
+    "footer": "クラシック・サバイバル・タイムアタック →"
+  },
+  "quizChallenge": {
+    "eyebrow": "ポケモンクイズ",
+    "title1": "究極の",
+    "title2": "ポケモンクイズ",
+    "subtitle": "シルエット、鳴き声、図鑑説明、タイプ相性。登録不要。"
+  },
+  "quizSamples": {
+    "label": "Q 03/10",
+    "whos-that": {
+      "question": "だれだ？"
+    },
+    "cry": {
+      "question": "この鳴き声はだれ？"
+    },
+    "dex": {
+      "question": "だれの図鑑説明？"
+    },
+    "types": {
+      "question": "こおり→ドラゴン/ひこう？"
+    },
+    "higher-lower": {
+      "question": "すばやいのはどっち？"
+    },
+    "games": {
+      "question": "第3世代で登場したのは？",
+      "a0": "特性",
+      "a1": "Zワザ",
+      "a2": "ダイマックス",
+      "a3": "テラスタル"
+    },
+    "anime": {
+      "question": "カロスでのサトシの仲間は？",
+      "a0": "ヒカリ",
+      "a1": "セレナ",
+      "a2": "ハルカ",
+      "a3": "アイリス"
+    },
+    "competitive": {
+      "question": "ムーンフォースのタイプは？",
+      "a0": "フェアリー",
+      "a1": "エスパー",
+      "a2": "あく",
+      "a3": "ゴースト"
+    },
+    "shiny": {
+      "question": "本物の色違いはどれ？"
+    },
+    "zoom-reveal": {
+      "question": "アップで見たこのポケモンは？"
+    },
+    "whose-team": {
+      "question": "これはだれのパーティー？",
+      "a0": "シロナ",
+      "a1": "ダイゴ",
+      "a2": "ワタル",
+      "a3": "カルネ"
+    },
+    "mixed": {
+      "question": "いろいろ出題",
+      "a0": "シルエット",
+      "a1": "鳴き声",
+      "a2": "図鑑説明",
+      "a3": "タイプ相性"
+    }
+  },
+  "challenge": {
+    "title1": "挑戦状が",
+    "title2": "届きました",
+    "subtitle": "トレーナーから招待が届きました。登録不要：開いて名前を決めたらプレイできます。",
+    "host": "トレーナー",
+    "pokedle": {
+      "eyebrow": "Pokédle対戦",
+      "footer": "同じなぞのポケモン・3ラウンド・タップでプレイ →"
+    },
+    "quiz": {
+      "eyebrow": "クイズ対戦",
+      "footer": "同じ問題・正確で速いほうが勝ち・タップでプレイ →"
+    },
+    "geo": {
+      "eyebrow": "PokéGuessrデュエル",
+      "footer": "同じ場所・近いピンが勝ち・タップでプレイ →"
+    },
+    "battle": {
+      "eyebrow": "ライブバトル",
+      "footer": "ポケモンショーダウンのルール・ライブ・タップでバトル →"
+    },
+    "connections": {
+      "eyebrow": "PokéConnections対戦",
+      "footer": "同じ16匹・先に4グループを見つけよう・タップで勝負 →"
+    },
+    "connections-party": {
+      "eyebrow": "PokéConnectionsパーティー",
+      "footer": "全員同じ16匹・ベストタイムが勝ち・タップで参加 →"
+    },
+    "pikadoku": {
+      "eyebrow": "Pikadoku三目並べ",
+      "footer": "条件に合うポケモンでマスを取ろう・3つ並べたら勝ち →"
+    },
+    "name-em-all": {
+      "eyebrow": "Name 'em Allレース",
+      "footer": "全員同じポケモン・先に全部答えた人が勝ち →"
+    }
+  },
+  "result": {
+    "footer": "勝てるかな？ {play} →",
+    "aTrainer": "トレーナー",
+    "fallback": {
+      "title1": "この記録を",
+      "title2": "超えられる？",
+      "subtitle": "Pokédle、PokéGuessr、クイズ、バトル。登録不要。"
+    }
+  },
+  "nameEmAll": {
+    "eyebrow": "Name 'em All・記憶クイズ",
+    "title1": "ポケモンを",
+    "title2": "全部言える？",
+    "subtitle": "制限時間内に、思い出せるポケモンをどんどん入力しよう。カテゴリーは毎日新しくなります。",
+    "footer": "全部答えて、時間に勝とう →"
+  },
+  "whichPokemon": {
+    "eyebrow": "性格診断",
+    "title1": "あなたは",
+    "title2": "どのポケモン？",
+    "subtitle": "正直に答えて、ぴったりのポケモンに出会おう。どのプロフィールも図鑑がもとになっています。",
+    "footer": "無料・登録不要・シェア用カードつき →",
+    "result": {
+      "eyebrow": "あなたはどのポケモン？",
+      "title": "わたしは",
+      "subtitle": "{title}。18問の診断。あなたはどのポケモン？",
+      "footer": "診断する・無料・登録不要 →"
+    }
+  },
+  "species": {
+    "eyebrow": "図鑑 No.{number}・第{gen}世代",
+    "subtitle": "{genus}。種族値合計{bst}。",
+    "footer": "能力・進化・わざ・相性 →",
+    "stats": {
+      "hp": "HP",
+      "atk": "攻撃",
+      "def": "防御",
+      "spa": "特攻",
+      "spd": "特防",
+      "spe": "素早"
+    }
+  },
+  "pokedex": {
+    "eyebrow": "ポケモン図鑑・カントーからパルデアまで",
+    "title1": "全{n}匹の",
+    "titleAll": "すべての",
+    "title2": "ポケモン",
+    "subtitle": "能力、進化、覚えるわざ、特性、相性、すべての図鑑説明。覚えるためのフラッシュカードも。",
+    "footer": "検索・絞り込み・学習 →"
+  },
+  "battle": {
+    "eyebrow": "バトル・ポケモンショーダウンのルール",
+    "title1": "組んで、計算して",
+    "title2": "バトル。",
+    "subtitle": "ショーダウンと同じ正確さのバトルを、コンピューターや友だちとライブで。チームビルダーとダメージ計算つき。",
+    "footer": "ランダムバトル、OU、ダブルなど →"
+  },
+  "battleLab": {
+    "eyebrow": "バトルラボ",
+    "title1": "勝つのはどっち？",
+    "title2": "その確率は？",
+    "subtitle": "第1〜9世代のどんな対戦でも設定すれば、ショーダウンのエンジンがブラウザで何千回も戦わせます。",
+    "footer": "95%信頼区間つきの勝率 →"
+  },
+  "replay": {
+    "eyebrow": "リプレイ・{format}",
+    "vs": "VS",
+    "and": "と",
+    "subtitle": "{result}{how, select, forfeit {（降参）} timeout {（時間切れ）} other {}}。",
+    "turns": "{n}ターン",
+    "ranked": "ランクマッチ",
+    "ratings": "{a} VS {b}",
+    "result": {
+      "drew": "{a}と{b}は引き分け",
+      "beat": "{winner}が{loser}に勝利",
+      "noWinner": "{players}：勝者なし",
+      "wonFfa": "{winner}がバトルロイヤルで勝利"
+    },
+    "fallback": {
+      "eyebrow": "バトルリプレイ",
+      "title1": "ポケモン",
+      "title2": "バトルリプレイ",
+      "footer": "ポケモンショーダウンのエンジン・1ターンずつ見られます →"
+    }
+  },
+  "leaderboard": {
+    "eyebrow": "ランキング・リアルタイム更新",
+    "title1": "トップ",
+    "title2": "トレーナー",
+    "subtitle": "デイリーチャレンジ、PokéIQ、PokéGuessr、すべてのクイズモード。あなたは何位？",
+    "footer": "1回プレイしてランキングに載ろう →"
+  },
+  "lab": {
+    "eyebrow": "PokéIQ・3Dラボ",
+    "title1": "3D",
+    "title2": "ラボ",
+    "subtitle": "ポケモンの歴史、大きさ、かけっこ、そしてポケモン世界のすべてを、映画のような3Dで。",
+    "footer": "中に入ろう →"
+  },
+  "timeline": {
+    "eyebrow": "図鑑・3Dでたどる歴史",
+    "title1": "ポケモン",
+    "title2": "年表",
+    "subtitle": "1996年からのすべてのゲーム、アニメのシーズン、映画、カードゲームの時代。飛びながら見てまわろう。",
+    "footer": "ツアーに出発 →"
+  },
+  "timelineEntry": {
+    "eyebrow": "年表・{year}・{lane}",
+    "when": "{label}：{date}",
+    "footer": "{era}・{device} →"
+  },
+  "theories": {
+    "eyebrow": "図鑑・都市伝説",
+    "title1": "事件",
+    "title2": "ファイル",
+    "subtitle": "ファンの説、都市伝説、開発中のうわさ。それぞれに証拠と判定つき。",
+    "caseEyebrow": "CASE {n}・{verdict}",
+    "caseFooter": "事件ファイルを開く →",
+    "verdicts": {
+      "confirmed": "事実",
+      "fan": "ファンの説",
+      "debunked": "誤り"
+    }
+  },
+  "videoGames": {
+    "eyebrow": "第{gen}世代・{kind}・{year}",
+    "kinds": {
+      "mainline": "本編",
+      "remake": "リメイク",
+      "spinoff": "外伝",
+      "mobile": "スマホ"
+    },
+    "footerStarters": "パッケージ、御三家など →",
+    "footerBox": "パッケージなど →",
+    "footerRelease": "発売日、機種など →",
+    "hub": {
+      "eyebrow": "図鑑・ゲーム",
+      "title1": "すべての",
+      "title2": "ポケモンゲーム",
+      "subtitle": "本編、リメイク、外伝、スマホゲームを、パッケージ画像つきで。",
+      "footer": "世代で絞り込む →"
+    }
+  },
+  "movies": {
+    "eyebrow": "ポケモン映画・{kicker}",
+    "footer": "登場ポケモン・キャラクター →",
+    "hub": {
+      "eyebrow": "図鑑・映画",
+      "title1": "ポケモンの",
+      "title2": "映画",
+      "subtitle": "第1作から公開予定の新作まで、すべてのポケモン映画。",
+      "footer": "すべての映画を見る →"
+    }
+  },
+  "tcg": {
+    "name": "ポケモンカードゲーム",
+    "eyebrow": "ポケカ・{series}",
+    "setFallback": "ポケモンカードのセット",
+    "setSubtitle": "セットのすべてのカードを、現在の相場つきで。",
+    "setSubtitleDate": "{date}発売のセットのすべてのカードを、現在の相場つきで。",
+    "setFooter": "カードリスト・相場 →",
+    "cardFallback": "ポケモンカード",
+    "cardFooter": "TCGplayerとCardmarketの相場 →"
+  },
+  "sizes": {
+    "eyebrow": "ポケモンの大きさ・3D",
+    "title1": "全ポケモンを",
+    "title2": "実寸で",
+    "subtitle": "{from}から{to}まで、ミアレシティに並べて。",
+    "footer": "大きさ比べの動画を作ろう →",
+    "itemEyebrow": "ポケモンの大きさ・No.{number}",
+    "itemSubtitle": "{size}。大人の人間と並べて3Dで。",
+    "itemFooter": "実寸で見る →"
+  },
+  "story": {
+    "eyebrow": "PokéIQ 3Dラボ・本当の歴史",
+    "title1": "ポケモンの",
+    "title2": "物語",
+    "subtitle": "ひとりの少年の虫とりから30年へ。出典つきの3D映画。",
+    "footer": "再生する →",
+    "chapterEyebrow": "ポケモンの物語・{numeral}",
+    "chapterFooter": "この章を3Dで見る →"
+  },
+  "history": {
+    "eyebrow": "PokéIQ 3Dラボ・作中の歴史",
+    "title1": "ポケモン世界の",
+    "title2": "歴史",
+    "subtitle": "シンオウの創世神話からエリアゼロまで。すべてゲームの出典つき。",
+    "chapterEyebrow": "ポケモン世界の歴史・{numeral}"
+  },
+  "race": {
+    "eyebrow": "ポケモンかけっこ・{distance}m",
+    "tournament": "すべてのポケモン、勝者はひとり",
+    "subtitle": "{winner}が{time}秒で勝利。",
+    "subtitleAhead": "{winner}が{time}秒で勝利。{second}に{gap}秒差。",
+    "atTheLine": "1位がゴールした瞬間",
+    "footer": "3Dでレースを見る →"
+  },
+  "massBattle": {
+    "eyebrow": "ポケモン大軍バトル・3D",
+    "footer": "3Dで見る →",
+    "howMany1": "{army}が何匹いれば",
+    "howMany2": "{boss}に勝てる？",
+    "howManySubtitle": "本家ゲームのダメージ計算で、数ごとに{runs}回のバトル。それから3Dで決戦。",
+    "howManyFooter": "3Dで見る →",
+    "answer": "{army} {n}匹",
+    "wins": "{side}の勝ち"
+  },
+  "games": {
+    "eventEyebrow": "PokéIQゲームズ・{event}",
+    "h2hEyebrow": "PokéIQゲームズ・{event}・一騎打ち",
+    "h2hSubtitle": "{line}。本物の能力と物理で。",
+    "winsWith": "{name}が{mark}で優勝。本物の能力と物理で。",
+    "winsBracket": "{name}がトーナメントで優勝。本物の能力と物理で。",
+    "realStats": "本物の能力、本物の物理を3Dで。",
+    "recordsEyebrow": "PokéIQゲームズ・{event}の記録",
+    "recordHolder": "全ポケモンの中で、{name}が{mark}で記録保持者。",
+    "recordsFooter": "トップ10を見る →",
+    "wins": "勝ち",
+    "medals": {
+      "1": "金",
+      "2": "銀",
+      "3": "銅"
+    },
+    "hub": {
+      "eyebrow": "3Dラボ・本物のスポーツ、本物の能力",
+      "title1": "PokéIQ",
+      "title2": "ゲームズ",
+      "subtitle": "陸上、重量挙げ、水泳、レスリングを、すべてのポケモンで。本物の物理を3Dで。",
+      "footer": "最強のアスリートはだれ？ →"
+    }
+  }
+}

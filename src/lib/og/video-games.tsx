@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import sharp from "sharp";
 import { C, localImage, ogCard } from "@/lib/og/card";
-import { KIND_LABEL } from "@/lib/dex/video-games-types";
+import { englishOgT, type OgT } from "@/lib/og/i18n";
 import { VIDEO_GAMES, type VideoGame } from "@/lib/dex/video-games";
 import { typeColor } from "@/lib/pokemon/type-colors";
 
@@ -54,28 +54,29 @@ async function CoverVisual({ g }: { g: VideoGame }) {
 
 const KIND_ACCENT = { mainline: C.pink, remake: C.violet, spinoff: C.green, mobile: C.yellow } as const;
 
-export async function videoGameCard(g: VideoGame | undefined) {
-  if (!g) return videoGamesCard();
+export async function videoGameCard(g: VideoGame | undefined, t: OgT = englishOgT()) {
+  if (!g) return videoGamesCard(t);
   const size = g.name.length > 34 ? 40 : g.name.length > 22 ? 48 : 60;
   return ogCard({
-    eyebrow: `Gen ${g.gen} · ${KIND_LABEL[g.kind]} · ${g.released.slice(0, 4)}`,
+    eyebrow: t("videoGames.eyebrow", { gen: g.gen, kind: t(`videoGames.kinds.${g.kind}`), year: g.released.slice(0, 4) }),
     title: [g.name],
     titleSize: size,
     subtitle: g.platforms.join(" · "),
     accent: KIND_ACCENT[g.kind],
     visual: await CoverVisual({ g }),
-    footer: g.starters ? "Box art, starters and more →" : g.cover.kind === "box" ? "Box art and more →" : "Release, platforms and more →",
+    footer: t(g.starters ? "videoGames.footerStarters" : g.cover.kind === "box" ? "videoGames.footerBox" : "videoGames.footerRelease"),
+    t,
   });
 }
 
 /** The list's card: three main-series covers fanned out. */
-export async function videoGamesCard() {
+export async function videoGamesCard(t: OgT = englishOgT()) {
   const picks = ["red-blue", "diamond-pearl", "scarlet-violet"].map((s) => VIDEO_GAMES.find((g) => g.slug === s)!);
   const [a, b, c] = await Promise.all(picks.map(async (g) => (await coverImages(g, 300))[0]));
   return ogCard({
-    eyebrow: "Pokédex · Games",
-    title: ["Every", ["Pokémon game", C.cyan]],
-    subtitle: "The main series, remakes, spin-offs and mobile games, with box art.",
+    eyebrow: t("videoGames.hub.eyebrow"),
+    title: [t("videoGames.hub.title1"), [t("videoGames.hub.title2"), C.cyan]],
+    subtitle: t("videoGames.hub.subtitle"),
     accent: C.cyan,
     visual: (
       <div style={{ display: "flex", position: "relative", width: W, height: H }}>
@@ -84,6 +85,7 @@ export async function videoGamesCard() {
         <img src={b} width={240} height={290} style={{ position: "absolute", left: 115, top: 40, objectFit: "contain" }} />
       </div>
     ),
-    footer: "Filter by generation →",
+    footer: t("videoGames.hub.footer"),
+    t,
   });
 }

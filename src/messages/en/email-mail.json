@@ -1,0 +1,35 @@
+{
+  "links": {
+    "pokedle": "Pokédle",
+    "geo": "PokéGuessr daily",
+    "conn": "Connections",
+    "pdk": "Pikadoku",
+    "daily": "Daily Challenge"
+  },
+  "streak": "Your {days}-day {game} streak ends at midnight.",
+  "daily": {
+    "subject": "Today's PokéIQ dailies are live",
+    "testSubject": "[Test] {subject}",
+    "kicker": "Daily #{n}",
+    "heading": "Today's dailies are live",
+    "imageAlt": "Today's PokéGuessr picture, blurred",
+    "imageCaption": "Where in the Pokémon world is this? Today's PokéGuessr starts here.",
+    "why": "You're getting this because you turned on daily reminder emails for the trainer {name} on PokéIQ.",
+    "unsubscribe": "Unsubscribe",
+    "settings": "Email settings",
+    "preheader": "Pokédle, PokéGuessr, Connections, Pikadoku and the Daily Challenge are up.",
+    "textTitle": "PokéIQ Daily #{n}",
+    "textHeading": "Today's dailies are live.",
+    "textUnsubscribe": "Unsubscribe: {url}",
+    "textSettings": "Email settings: {url}"
+  },
+  "confirm": {
+    "subject": "Confirm your email for PokéIQ",
+    "heading": "Confirm your email",
+    "body": "Confirm this address for the trainer {name} to get PokéIQ's daily reminder emails. Nothing is sent until you do.",
+    "button": "Confirm email",
+    "note": "The link works for 7 days. If you didn't ask for this, ignore this email and nothing more will be sent.",
+    "why": "You're getting this because this address was entered for daily reminder emails on PokéIQ.",
+    "preheader": "One click and you're set."
+  }
+}

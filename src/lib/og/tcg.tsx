@@ -3,6 +3,8 @@ import sharp from "sharp";
 import { C, ogCard } from "./card";
 import type { TcgCard, TcgSet } from "@/lib/tcg/types";
 import { formatApiDate } from "@/lib/tcg/prices";
+import { INTL_LOCALE } from "@/i18n/format";
+import { englishOgT, type OgT } from "@/lib/og/i18n";
 
 /**
  * Share cards for the TCG pages: a set's logo or a card's scan on the site's
@@ -32,31 +34,32 @@ async function picture(url: string | undefined, width: number, height: number): 
 
 const frame = { display: "flex", alignItems: "center", justifyContent: "center", width: 470, height: 400 } as const;
 
-export async function tcgSetCard(set: TcgSet | null) {
+export async function tcgSetCard(set: TcgSet | null, t: OgT = englishOgT()) {
   const logo = await picture(set?.images?.logo, 440, 300);
-  const date = formatApiDate(set?.releaseDate);
-  const name = set?.name ?? "Pokémon TCG set";
+  const date = formatApiDate(set?.releaseDate, INTL_LOCALE[t.locale]);
+  const name = set?.name ?? t("tcg.setFallback");
   return ogCard({
-    eyebrow: set ? `Pokémon TCG · ${set.series}` : "Pokémon TCG",
+    eyebrow: set ? t("tcg.eyebrow", { series: set.series }) : t("tcg.name"),
     title: [name],
     titleSize: name.length > 22 ? 46 : name.length > 14 ? 58 : 72,
-    subtitle: set ? `Every card in the set${date ? `, released ${date}` : ""}, with current market prices.` : "Every card in the set, with current market prices.",
+    subtitle: set && date ? t("tcg.setSubtitleDate", { date }) : t("tcg.setSubtitle"),
     accent: C.cyan,
     visual: logo ? (
       <div style={frame}>
         <img src={logo.src} width={logo.width} height={logo.height} />
       </div>
     ) : undefined,
-    footer: "Set list · card prices →",
+    footer: t("tcg.setFooter"),
+    t,
   });
 }
 
-export async function tcgCardCard(card: TcgCard | null) {
+export async function tcgCardCard(card: TcgCard | null, t: OgT = englishOgT()) {
   const scan = await picture(card?.images?.large ?? card?.images?.small, 300, 410);
-  const name = card?.name ?? "Pokémon card";
+  const name = card?.name ?? t("tcg.cardFallback");
   const where = [card?.set?.name, card?.number && `#${card.number}`].filter(Boolean).join(" · ");
   return ogCard({
-    eyebrow: card?.set?.series ? `Pokémon TCG · ${card.set.series}` : "Pokémon TCG",
+    eyebrow: card?.set?.series ? t("tcg.eyebrow", { series: card.set.series }) : t("tcg.name"),
     title: [name],
     titleSize: name.length > 22 ? 46 : name.length > 14 ? 58 : 72,
     subtitle: [where, card?.rarity].filter(Boolean).join(" · ") || undefined,
@@ -66,6 +69,7 @@ export async function tcgCardCard(card: TcgCard | null) {
         <img src={scan.src} width={scan.width} height={scan.height} style={{ borderRadius: 14 }} />
       </div>
     ) : undefined,
-    footer: "TCGplayer and Cardmarket prices →",
+    footer: t("tcg.cardFooter"),
+    t,
   });
 }
