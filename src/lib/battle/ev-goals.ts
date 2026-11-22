@@ -2,6 +2,8 @@ import type { Generation } from "@pkmn/data";
 import { calcMoves, emptyField, sideFromSet, type CalcField, type CalcModule } from "./calc";
 import { MAX_EVS, MAX_TOTAL_EVS, type StatsTable, type TeamSet } from "./sets";
 import { calcStat, NATURES } from "./tooltip-calc";
+import { translator, type Translator } from "@/i18n/catalog";
+import battleTeams from "@/messages/battle-teams";
 
 /**
  * Goal-based EV spreads: "survive this attack" and "outspeed that speed",
@@ -115,25 +117,39 @@ export function candidateNatures(gen: Generation, set: TeamSet): string[] {
   return [...out];
 }
 
-const label = (set: TeamSet) => set.name || set.species;
+/** The checks' and reasons' words; `move` and `species` name what is shown (the page's language, English by default). */
+export interface EvGoalNames {
+  move: (name: string) => string;
+  species: (name: string) => string;
+}
+const ENGLISH_NAMES: EvGoalNames = { move: (s) => s, species: (s) => s };
 
-function describe(calc: Calc, set: TeamSet, nature: string, evs: StatsTable, goals: EvGoal[], field: CalcField): GoalCheck[] {
+function describe(calc: Calc, set: TeamSet, nature: string, evs: StatsTable, goals: EvGoal[], field: CalcField, t: Translator<typeof battleTeams.en>, names: EvGoalNames): GoalCheck[] {
+  const shown = (s: TeamSet) => s.name || names.species(s.species);
   return goals.map((goal) => {
-    if (goal.kind === "outspeed") return { goal, detail: `Speed ${speedWith(calc.gen, set, nature, evs.spe)} vs ${goal.speed} (${goal.label})` };
+    if (goal.kind === "outspeed") return { goal, detail: t("evGoals.speed", { speed: speedWith(calc.gen, set, nature, evs.spe), target: goal.speed, label: goal.label }) };
     const r = survives(calc, set, nature, evs, goal, field);
-    return { goal, detail: `Takes ${r.percent[0]}–${r.percent[1]}% from ${label(goal.attacker)}'s ${goal.move}` };
+    return { goal, detail: t("evGoals.takes", { lo: r.percent[0], hi: r.percent[1], attacker: shown(goal.attacker), move: names.move(goal.move) }) };
   });
 }
 
 /** Why a goal can't be met even alone, with all 252 EVs and the best nature in it; null if it can. */
-export function impossibleAlone(calc: Calc, set: TeamSet, goal: EvGoal, field: CalcField = emptyField()): string | null {
+export function impossibleAlone(
+  calc: Calc,
+  set: TeamSet,
+  goal: EvGoal,
+  field: CalcField = emptyField(),
+  t: Translator<typeof battleTeams.en> = translator(battleTeams, "en", undefined),
+  names: EvGoalNames = ENGLISH_NAMES
+): string | null {
+  const shown = (s: TeamSet) => s.name || names.species(s.species);
   const natures = candidateNatures(calc.gen, set);
   if (goal.kind === "outspeed") {
     const best = Math.max(...natures.map((n) => speedWith(calc.gen, set, n, MAX_EVS)));
-    return best > goal.speed ? null : `${label(set)} reaches ${best} Speed at most, and ${goal.label} has ${goal.speed}.`;
+    return best > goal.speed ? null : t("evGoals.tooSlow", { name: shown(set), best, label: goal.label, speed: goal.speed });
   }
   const stat = targetStat(calc.gen, goal.move);
-  if (!stat) return `${goal.move} doesn't deal damage.`;
+  if (!stat) return t("evGoals.noDamage", { move: names.move(goal.move) });
   let least: SurviveResult | null = null;
   for (const n of natures) {
     const evs = { ...zeros(), hp: MAX_EVS, [stat]: MAX_EVS };
@@ -141,7 +157,7 @@ export function impossibleAlone(calc: Calc, set: TeamSet, goal: EvGoal, field: C
     if (r.survives) return null;
     if (!least || r.percent[1] < least.percent[1]) least = r;
   }
-  return `Even with 252 HP / 252 ${stat === "def" ? "Def" : "SpD"} EVs, ${label(goal.attacker)}'s ${goal.move} does up to ${least?.percent[1]}% to ${label(set)}.`;
+  return t("evGoals.tooStrong", { stat, attacker: shown(goal.attacker), move: names.move(goal.move), pct: String(least?.percent[1]), name: shown(set) });
 }
 
 /**
@@ -150,14 +166,21 @@ export function impossibleAlone(calc: Calc, set: TeamSet, goal: EvGoal, field: C
  * fewest Def and SpD EVs (binary search: more never hurts) for the attacks.
  * Fewest EVs in total wins; on a tie, the set's own nature.
  */
-export function optimizeSpread(calc: Calc, set: TeamSet, goals: EvGoal[], field: CalcField = emptyField()): OptimizeResult {
+export function optimizeSpread(
+  calc: Calc,
+  set: TeamSet,
+  goals: EvGoal[],
+  field: CalcField = emptyField(),
+  t: Translator<typeof battleTeams.en> = translator(battleTeams, "en", undefined),
+  names: EvGoalNames = ENGLISH_NAMES
+): OptimizeResult {
   const { gen } = calc;
-  if (gen.num <= 2) return { ok: false, reason: "Gen 1 and 2 have no EV limit: max every stat." };
-  if (!gen.species.get(set.species)) return { ok: false, reason: `${set.species} isn't in this generation.` };
-  if (!goals.length) return { ok: false, reason: "Add a goal first." };
+  if (gen.num <= 2) return { ok: false, reason: t("evGoals.noLimit") };
+  if (!gen.species.get(set.species)) return { ok: false, reason: t("evGoals.notInGen", { species: names.species(set.species) }) };
+  if (!goals.length) return { ok: false, reason: t("evGoals.addGoal") };
   for (const goal of goals) {
-    const why = impossibleAlone(calc, set, goal, field);
-    if (why) return { ok: false, reason: `Impossible: ${why}` };
+    const why = impossibleAlone(calc, set, goal, field, t, names);
+    if (why) return { ok: false, reason: t("evGoals.impossible", { why }) };
   }
   const speedTarget = Math.max(-1, ...goals.filter((g): g is OutspeedGoal => g.kind === "outspeed").map((g) => g.speed));
   const surviveGoals = goals.filter((g): g is SurviveGoal => g.kind === "survive");
@@ -194,14 +217,14 @@ export function optimizeSpread(calc: Calc, set: TeamSet, goals: EvGoal[], field:
       if (!best || used < best.used || (used === best.used && nature === set.nature && best.nature !== set.nature)) best = { nature, evs, used };
     }
   }
-  if (!best) return { ok: false, reason: "Impossible: each goal can be met on its own, but not all of them within 510 EVs." };
+  if (!best) return { ok: false, reason: t("evGoals.notAll") };
   return {
     ok: true,
     nature: best.nature,
     evs: best.evs,
     used: best.used,
     remaining: MAX_TOTAL_EVS - best.used,
-    checks: describe(calc, set, best.nature, best.evs, goals, field),
+    checks: describe(calc, set, best.nature, best.evs, goals, field, t, names),
   };
 }
 

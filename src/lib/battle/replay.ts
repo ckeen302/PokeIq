@@ -1,4 +1,9 @@
 import type { BattleEndReason, GameType, PlayFormatId } from "./play";
+import { translator, type Translator } from "@/i18n/catalog";
+import replayWords from "@/messages/battle-replay-words";
+
+/** A replay's words in the page's language (English by default). */
+export type ReplayWordsT = Translator<typeof replayWords.en>;
 
 /**
  * Battle replays: a finished battle's public log (the spectator channel,
@@ -56,25 +61,25 @@ export function replayMatchup(r: Pick<ReplaySummary, "players" | "gameType">): {
 }
 
 /** "Red vs Blue", "Red & Gold vs Blue & Silver", "Red, Blue, Gold and Silver". */
-export const replayTitle = (r: Pick<ReplaySummary, "players" | "gameType">) => {
+export function replayTitle(r: Pick<ReplaySummary, "players" | "gameType">, t: Translator<typeof replayWords.en> = translator(replayWords, "en", undefined)): string {
   const m = replayMatchup(r);
-  return `${m.a} ${m.joiner} ${m.b}`;
-};
+  return t("title", { a: m.a, joiner: t(`joiner.${m.joiner}`), b: m.b });
+}
 
 /** "Red beat Blue", "Red and Blue drew"; "Red & Gold beat Blue & Silver" (Multi); "Red won a Free-For-All". */
-export function replayResult(r: Pick<ReplaySummary, "players" | "winner" | "winners" | "gameType">): string {
+export function replayResult(r: Pick<ReplaySummary, "players" | "winner" | "winners" | "gameType">, t: Translator<typeof replayWords.en> = translator(replayWords, "en", undefined)): string {
   if (r.players.length === 4) {
     const names = (seats: number[]) => seats.map((s) => r.players[s] ?? "?").join(" & ");
     if (r.gameType === "multi" || (r.winners?.length === 2 && r.gameType !== "freeforall")) {
-      if (r.winner === null) return `${names([0, 2])} and ${names([1, 3])} drew`;
+      if (r.winner === null) return t("result.teamsDrew", { a: names([0, 2]), b: names([1, 3]) });
       const won = r.winner % 2;
-      return `${names([won, won + 2])} beat ${names([1 - won, 3 - won])}`;
+      return t("result.beat", { a: names([won, won + 2]), b: names([1 - won, 3 - won]) });
     }
-    if (r.winner === null) return `${r.players.join(", ")}: no winner`;
-    return `${r.players[r.winner]} won a Free-For-All`;
+    if (r.winner === null) return t("result.noWinner", { players: r.players.join(", ") });
+    return t("result.wonFfa", { name: r.players[r.winner] });
   }
-  if (r.winner === null) return `${r.players[0]} and ${r.players[1]} drew`;
-  return `${r.players[r.winner]} beat ${r.players[1 - r.winner]}`;
+  if (r.winner === null) return t("result.drew", { a: r.players[0], b: r.players[1] });
+  return t("result.beat", { a: r.players[r.winner], b: r.players[1 - r.winner] });
 }
 
 /**

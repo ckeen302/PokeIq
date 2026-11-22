@@ -12,13 +12,21 @@ import { ELO_START } from "@/lib/rating/elo";
 import { ladderTop } from "@/lib/server/battle-engine/ladder";
 import { avatarsByNames } from "@/lib/server/avatars";
 import { insightsAvailable } from "@/lib/server/battle-engine/insights";
+import { ClientMessages } from "@/i18n/ClientMessages";
+import { serverT } from "@/i18n/server";
+import battlePages from "@/messages/battle-pages";
+import battleLadder from "@/messages/battle-ladder";
+import battleGlicko from "@/messages/battle-glicko";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Pokémon Battle Ladder — Ranked Ratings by Format",
-  description: "The ranked battle ladder: Elo, GXE and Glicko-2 ratings, as on Pokémon Showdown, for Random Battle, Random Doubles, OU, Ubers, UU, RU, NU, PU, LC, Monotype, National Dex and Doubles OU.",
-  image: SHARE_IMAGES.battle,
-  path: "/battle/ladder",
-});
+export function generateMetadata(): Metadata {
+  const t = serverT(battlePages);
+  return pageMetadata({
+    title: t("ladder.title"),
+    description: t("ladder.description"),
+    image: SHARE_IMAGES.battle,
+    path: "/battle/ladder",
+  });
+}
 
 export const dynamic = "force-dynamic";
 
@@ -27,46 +35,45 @@ export default async function LadderPage({ searchParams }: { searchParams: Promi
   const format: StandardFormatId = isLadderFormat(raw) ? raw : "gen9randombattle";
   const rows = await ladderTop(format);
   const [avatars, insights] = await Promise.all([avatarsByNames((rows ?? []).map((r) => r.name)), insightsAvailable().catch(() => false)]);
-  const RULES = (
-    <>
-      Ratings per format as on Pokémon Showdown: the ladder is ranked by Elo (everyone starts at {ELO_START}, never drops below it, and an Elo above 1400 decays a little each day you don&apos;t play), shown with GXE (your chance of beating a random trainer on the ladder) and a Glicko-2 rating. Everyone starts at {GLICKO_START.rating} ± {GLICKO_START.rd} Glicko-2; a rating is provisional until its deviation drops below {GXE_RD_SHOWN}. A forfeit, running out the clock or leaving counts as a loss.
-    </>
-  );
+  const t = serverT(battlePages);
+  const RULES = <>{t("ladder.rules", { elo: ELO_START, rating: GLICKO_START.rating, rd: GLICKO_START.rd, shown: GXE_RD_SHOWN })}</>;
   return (
     <div className="mx-auto max-w-4xl space-y-6 max-md:space-y-4">
-      <BattleHeader crumb="Ladder" title="Battle" accent="ladder">
+      <BattleHeader crumb={t("ladder.crumb")} title={t("ladder.heading")} accent={t("ladder.accent")}>
         <span className="max-md:hidden">{RULES}</span>
         {/* Phones: one line here, so the ladder itself is on the first screen; the rest is under the table. */}
-        <span className="md:hidden">Ranked by Elo, with GXE and Glicko-2, as on Pokémon Showdown. Everyone starts at {ELO_START}.</span>
+        <span className="md:hidden">{t("ladder.short", { elo: ELO_START })}</span>
       </BattleHeader>
+      <ClientMessages namespaces={[battleLadder, battleGlicko]}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <LadderTabs format={format} hrefBase="/battle/ladder?format=" />
         <div className="flex flex-wrap gap-2">
           {insights && (
             <Link href={`/battle/insights?format=${format}`} className={buttonVariants({ size: "sm", variant: "outline" })} data-testid="ladder-insights">
-              Your insights
+              {t("ladder.insights")}
             </Link>
           )}
           <Link href="/battle/play?vs=anyone" className={buttonVariants({ size: "sm" })}>
-            Play ranked
+            {t("ladder.play")}
           </Link>
         </div>
       </div>
       {rows === null ? (
         <Card>
-          <CardContent className="py-10 text-center text-muted-foreground">Ranked battles open soon.</CardContent>
+          <CardContent className="py-10 text-center text-muted-foreground">{t("ladder.soon")}</CardContent>
         </Card>
       ) : (
         <>
           <YourBattleStanding format={format} />
-          <h2 className="font-display text-xl font-bold uppercase tracking-wide max-md:text-base">{PLAY_FORMAT_INFO[format].name}: top 100</h2>
+          <h2 className="font-display text-xl font-bold uppercase tracking-wide max-md:text-base">{t("ladder.top", { format: PLAY_FORMAT_INFO[format].name })}</h2>
           <LadderTable rows={rows} format={format} avatars={avatars} />
           <details className="rounded-lg border bg-card px-4 py-3 text-sm text-muted-foreground md:hidden" data-testid="ladder-rules">
-            <summary className="cursor-pointer font-display font-bold uppercase tracking-wide text-foreground">How the ratings work</summary>
+            <summary className="cursor-pointer font-display font-bold uppercase tracking-wide text-foreground">{t("ladder.how")}</summary>
             <p className="mt-2">{RULES}</p>
           </details>
         </>
       )}
+      </ClientMessages>
     </div>
   );
 }

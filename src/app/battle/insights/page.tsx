@@ -7,8 +7,13 @@ import { BattleHeader } from "@/components/battle/BattleHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { SESSION_COOKIE, userFromSessionToken } from "@/lib/server/auth";
+import { serverT } from "@/i18n/server";
+import battlePages from "@/messages/battle-pages";
 
-export const metadata: Metadata = pageMetadata({ title: "Team insights", description: "Your battle insights: leads, Pokémon, toughest opponents and rating over time.", path: "/battle/insights", noindex: true });
+export function generateMetadata(): Metadata {
+  const t = serverT(battlePages);
+  return pageMetadata({ title: t("insights.title"), description: t("insights.description"), path: "/battle/insights", noindex: true });
+}
 
 export const dynamic = "force-dynamic";
 
@@ -17,16 +22,17 @@ export default async function MyInsightsPage({ searchParams }: { searchParams: P
   const user = await userFromSessionToken((await cookies()).get(SESSION_COOKIE)?.value).catch(() => null);
   const { format } = await searchParams;
   if (user) redirect(`/battle/insights/${encodeURIComponent(user.username)}${format ? `?format=${encodeURIComponent(format)}` : ""}`);
+  const t = serverT(battlePages);
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <BattleHeader crumb="Team insights" title="Team" accent="insights">
-        Your most common leads, win rate per Pokémon, the foes that beat you most and your rating over time, from your saved battles.
+      <BattleHeader crumb={t("insights.crumb")} title={t("insights.heading")} accent={t("insights.accent")}>
+        {t("insights.intro")}
       </BattleHeader>
       <Card>
         <CardContent className="flex flex-col items-center gap-3 py-10 text-center text-muted-foreground">
-          <p>Insights follow your account: sign in to see yours.</p>
+          <p>{t("insights.signIn")}</p>
           <Link href="/login" className={buttonVariants()}>
-            Sign in
+            {t("insights.signInButton")}
           </Link>
         </CardContent>
       </Card>

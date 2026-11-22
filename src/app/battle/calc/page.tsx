@@ -2,22 +2,32 @@ import type { Metadata } from "next";
 import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { BattleHeader } from "@/components/battle/BattleHeader";
 import { DamageCalc } from "@/components/battle/DamageCalc";
+import { ClientMessages } from "@/i18n/ClientMessages";
+import { serverT } from "@/i18n/server";
+import battlePages from "@/messages/battle-pages";
+import battleCalc from "@/messages/battle-calc";
+import battleTerms from "@/messages/battle-terms";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Pokémon Damage Calculator: Every Gen, Every Hit",
-  description:
-    "A Pokémon damage calculator, the Smogon calculator, for Generations 3 to 9: damage ranges, KO chances and full descriptions with boosts, status, Tera, weather, terrain, screens and doubles spread. Load sets from your teams.",
-  image: SHARE_IMAGES.battle,
-  path: "/battle/calc",
-});
+export function generateMetadata(): Metadata {
+  const t = serverT(battlePages);
+  return pageMetadata({
+    title: t("calc.title"),
+    description: t("calc.description"),
+    image: SHARE_IMAGES.battle,
+    path: "/battle/calc",
+  });
+}
 
 export default function CalcPage() {
+  const t = serverT(battlePages);
   return (
     <div className="mx-auto max-w-6xl space-y-8">
-      <BattleHeader crumb="Damage Calc" title="Damage" accent="Calc">
-        A Pokémon damage calculator: every move&apos;s damage range, KO chance and Showdown description, both ways. Powered by the Smogon damage calculator.
+      <BattleHeader crumb={t("calc.crumb")} title={t("calc.heading")} accent={t("calc.accent")}>
+        {t("calc.intro")}
       </BattleHeader>
-      <DamageCalc />
+      <ClientMessages namespaces={[battleCalc, battleTerms]}>
+        <DamageCalc />
+      </ClientMessages>
     </div>
   );
 }

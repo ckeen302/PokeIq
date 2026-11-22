@@ -1,0 +1,45 @@
+{
+  "coverage": {
+    "label": "Type coverage",
+    "heading": "Weaknesses and coverage",
+    "tera": "Defend as Tera type",
+    "type": "Type",
+    "weakTitle": "Members weak to it",
+    "weak": "Weak",
+    "resistTitle": "Members that resist it",
+    "resist": "Resist",
+    "immuneTitle": "Members immune to it",
+    "immune": "Immune",
+    "seTitle": "Members with a super-effective attack on it",
+    "se": "Hit SE",
+    "nothingNeutral": "Nothing on the team hits this type for neutral damage",
+    "nothingSe": "Nothing hits it super-effectively",
+    "abilities": "Abilities counted: {notes}.",
+    "help": "Columns are your Pokémon (the damage they take from each type). “Hit SE” counts members with a super-effective attack; ✕ means nothing hits that type even neutrally."
+  },
+  "notes": {
+    "wonderGuard": "{ability}: only super-effective hits land",
+    "immune": "{ability}: immune to {types}",
+    "scale": "{ability}: {scales}",
+    "member": "{member}: {note}",
+    "hitter": "{member}: {move}"
+  },
+  "threats": {
+    "label": "Threats",
+    "heading": "Threats in {format}",
+    "noUsage": "No usage statistics for this format, so no threat list.",
+    "running": "Running the damage calc…",
+    "none": "Something on your team answers each of the {n} most used Pokémon.",
+    "help": "Checks the {n} most used Pokémon on their most common item, spread and moves ({source}{stats, select, none {} other {, {battles, number} battles, downloaded {fetched}}}). A member answers a threat if it survives every roll of its strongest attack from full HP, or outspeeds it and OHKOs it at least half the time. No Tera, no boosts, no hazards.",
+    "struggles": "Your team struggles against <b>{species}</b>",
+    "share": "{set} · on {pct}% of teams"
+  },
+  "matchup": {
+    "line": "{member}: {took}; {back}, {speed, select, faster {faster} other {slower}}",
+    "takes": "takes {lo}–{hi}% from {move}",
+    "shrugs": "takes nothing it can't shrug off",
+    "does": "does {lo}–{hi}% back with {move}",
+    "doesKo": "does {lo}–{hi}% back with {move} ({ko}% to OHKO)",
+    "noHurt": "has no attack that hurts it"
+  }
+}

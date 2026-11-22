@@ -1,6 +1,8 @@
 import type { Generation } from "@pkmn/data";
 import { calcMoves, emptyField, makePokemon, sideFromSet, type CalcModule, type CalcSide } from "./calc";
 import type { TeamSet } from "./sets";
+import { translator, type Translator } from "@/i18n/catalog";
+import teamInsights from "@/messages/battle-team-insights";
 
 /**
  * Threats: the format's most used Pokémon on their most common set, each
@@ -77,11 +79,20 @@ export function threatReports(calc: Calc, team: readonly TeamSet[], threats: { s
     });
 }
 
+/** Names as a page shows them (the page's language; English by default). */
+export interface ShownNames {
+  species: (name: string) => string;
+  move: (name: string) => string;
+}
+const AS_IS: ShownNames = { species: (s) => s, move: (s) => s };
+
 /** "Garchomp: takes 54–64% from Earthquake; does 31–37% back with Moonblast (slower)". */
-export function matchupLine(m: Matchup): string {
-  const took = m.takes ? `takes ${m.takes.percent[0]}–${m.takes.percent[1]}% from ${m.takes.move}` : "takes nothing it can't shrug off";
+export function matchupLine(m: Matchup, t: Translator<typeof teamInsights.en> = translator(teamInsights, "en", undefined), names: ShownNames = AS_IS): string {
+  const took = m.takes ? t("matchup.takes", { lo: m.takes.percent[0], hi: m.takes.percent[1], move: names.move(m.takes.move) }) : t("matchup.shrugs");
   const back = m.deals
-    ? `does ${m.deals.percent[0]}–${m.deals.percent[1]}% back with ${m.deals.move}${m.deals.koChance > 0 ? ` (${Math.round(m.deals.koChance * 100)}% to OHKO)` : ""}`
-    : "has no attack that hurts it";
-  return `${m.member}: ${took}; ${back}, ${m.faster ? "faster" : "slower"}`;
+    ? m.deals.koChance > 0
+      ? t("matchup.doesKo", { lo: m.deals.percent[0], hi: m.deals.percent[1], move: names.move(m.deals.move), ko: Math.round(m.deals.koChance * 100) })
+      : t("matchup.does", { lo: m.deals.percent[0], hi: m.deals.percent[1], move: names.move(m.deals.move) })
+    : t("matchup.noHurt");
+  return t("matchup.line", { member: names.species(m.member), took, back, speed: m.faster ? "faster" : "slower" });
 }

@@ -13,6 +13,12 @@ import { inputClass } from "./controls";
 import { useFormatDex, useSpriteLookup, useTeamCheck, type CheckState } from "./hooks";
 import { SetEditor } from "./SetEditor";
 import { TeamInsights } from "./TeamInsights";
+import { useT } from "@/i18n/client";
+import type { Translator } from "@/i18n/catalog";
+import battleTeams from "@/messages/battle-teams";
+import { useBattleNames } from "./use-battle-names";
+
+type TeamsT = Translator<typeof battleTeams.en>;
 
 type Panel = "import" | "export" | null;
 
@@ -36,6 +42,8 @@ export function TeamEditor({
   const format = BATTLE_FORMATS[team.format];
   const { dex, error } = useFormatDex(team.format);
   const sprite = useSpriteLookup();
+  const t = useT(battleTeams);
+  const names = useBattleNames();
   const check = useTeamCheck(team.format, team.sets);
   const [slot, setSlot] = useState(0);
   const [panel, setPanel] = useState<Panel>(null);
@@ -68,7 +76,7 @@ export function TeamEditor({
       {/* Name, format and verdict */}
       <div className="flex flex-wrap items-end gap-3">
         <label className="min-w-[12rem] flex-1 space-y-1.5">
-          <span className="hud-label block">Team name</span>
+          <span className="hud-label block">{t("editor.name")}</span>
           <input
             value={team.name}
             maxLength={60}
@@ -77,7 +85,7 @@ export function TeamEditor({
           />
         </label>
         <label className="w-48 space-y-1.5">
-          <span className="hud-label block">Format</span>
+          <span className="hud-label block">{t("editor.format")}</span>
           <select value={team.format} disabled={lockFormat} onChange={(e) => isBattleFormatId(e.target.value) && save({ format: e.target.value })} className={cn(inputClass, "h-10")}>
             {BATTLE_FORMAT_IDS.map((id) => (
               <option key={id} value={id}>
@@ -86,40 +94,40 @@ export function TeamEditor({
             ))}
           </select>
         </label>
-        <Verdict state={check} formatName={format.name} />
+        <Verdict state={check} formatName={format.name} t={t} />
       </div>
 
       {/* Actions */}
       <div className="flex flex-wrap gap-2">
         <Button size="sm" variant={panel === "import" ? "secondary" : "outline"} onClick={() => setPanel(panel === "import" ? null : "import")}>
-          <FileInput className="h-4 w-4" aria-hidden /> Import
+          <FileInput className="h-4 w-4" aria-hidden /> {t("editor.import")}
         </Button>
         <Button size="sm" variant={panel === "export" ? "secondary" : "outline"} onClick={() => setPanel(panel === "export" ? null : "export")} disabled={!team.sets.length}>
-          <FileOutput className="h-4 w-4" aria-hidden /> Export
+          <FileOutput className="h-4 w-4" aria-hidden /> {t("editor.export")}
         </Button>
         <Button size="sm" variant="outline" onClick={copy} disabled={!team.sets.length}>
           {copied ? <Check className="h-4 w-4 text-success" aria-hidden /> : <ClipboardCopy className="h-4 w-4" aria-hidden />}
-          {copied ? "Copied" : "Copy"}
+          {copied ? t("editor.copied") : t("editor.copy")}
         </Button>
         <Button size="sm" variant="outline" onClick={() => onRandom(team.format)} disabled={randomBusy}>
-          {randomBusy ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> : <Shuffle className="h-4 w-4" aria-hidden />} Random team
+          {randomBusy ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> : <Shuffle className="h-4 w-4" aria-hidden />} {t("editor.random")}
         </Button>
         {onDuplicate && (
           <Button size="sm" variant="outline" onClick={onDuplicate}>
-            <CopyPlus className="h-4 w-4" aria-hidden /> Duplicate
+            <CopyPlus className="h-4 w-4" aria-hidden /> {t("editor.duplicate")}
           </Button>
         )}
         {/* Deleting can be undone (the builder offers Undo), so it doesn't ask first. */}
         {onDelete && (
           <Button size="sm" variant="ghost" onClick={onDelete}>
-            <Trash2 className="h-4 w-4" aria-hidden /> Delete
+            <Trash2 className="h-4 w-4" aria-hidden /> {t("editor.delete")}
           </Button>
         )}
       </div>
 
       {panel === "import" && (
         <ImportPanel
-          confirmLabel="Replace this team"
+          confirmLabel={t("editor.replace")}
           onImport={(sets, meta) => {
             save({ sets, name: meta.name ?? team.name, format: lockFormat ? team.format : (meta.format ?? team.format) });
             setSlot(0);
@@ -130,7 +138,7 @@ export function TeamEditor({
       {panel === "export" && <ExportPanel text={exportShowdown(team.sets)} />}
 
       {done && done.team.length > 0 && (
-        <ul className="space-y-1 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm" aria-label="Team problems">
+        <ul className="space-y-1 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm" aria-label={t("editor.problems")}>
           {done.team.map((p) => (
             <li key={p} className="flex gap-2">
               <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-destructive" aria-hidden />
@@ -141,7 +149,7 @@ export function TeamEditor({
       )}
 
       {/* Slots */}
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-6" role="tablist" aria-label="Team slots">
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-6" role="tablist" aria-label={t("editor.slots")}>
         {Array.from({ length: TEAM_SIZE }, (_, i) => {
           const set = team.sets[i];
           const reachable = i <= team.sets.length;
@@ -164,25 +172,25 @@ export function TeamEditor({
                 <span
                   className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 font-mono text-[10px] font-bold leading-none text-destructive-foreground"
                   title={problems.join("\n")}
-                  aria-label={`${problems.length} problem${problems.length === 1 ? "" : "s"}`}
+                  aria-label={t("editor.slotProblems", { n: problems.length })}
                   data-testid="slot-problems"
                 >
                   {problems.length}
                 </span>
               ) : set && done ? (
-                <ShieldCheck className="absolute right-1 top-1 h-3.5 w-3.5 text-success/80" aria-label="legal" />
+                <ShieldCheck className="absolute right-1 top-1 h-3.5 w-3.5 text-success/80" aria-label={t("editor.legal")} />
               ) : null}
               {set ? (
                 <>
                   <BattleSprite species={sprite?.(set.species)} shiny={set.shiny} animated={false} size={48} />
-                  <span className="w-full truncate text-center font-display text-xs font-semibold">{set.name || set.species}</span>
+                  <span className="w-full truncate text-center font-display text-xs font-semibold">{set.name || names.species(set.species)}</span>
                 </>
               ) : (
                 <>
                   <span className="flex h-12 w-12 items-center justify-center">
                     <Plus className="h-5 w-5 text-muted-foreground" aria-hidden />
                   </span>
-                  <span className="hud-label">{reachable ? "Add" : "Empty"}</span>
+                  <span className="hud-label">{reachable ? t("editor.add") : t("editor.empty")}</span>
                 </>
               )}
             </button>
@@ -201,10 +209,10 @@ export function TeamEditor({
             onChange={(set) => setAt(slot, set)}
           />
         ) : error ? (
-          <p className="py-10 text-center text-sm text-destructive">Couldn&apos;t load the Pokédex data. Check your connection and reload.</p>
+          <p className="py-10 text-center text-sm text-destructive">{t("editor.dexError")}</p>
         ) : (
           <p className="flex items-center justify-center gap-2 py-16 text-sm text-muted-foreground">
-            <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> Loading {format.name} data…
+            <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> {t("editor.loading", { format: format.name })}
           </p>
         )}
       </div>
@@ -214,33 +222,33 @@ export function TeamEditor({
   );
 }
 
-function Verdict({ state, formatName }: { state: CheckState; formatName: string }) {
+function Verdict({ state, formatName, t }: { state: CheckState; formatName: string; t: TeamsT }) {
   const base = "flex h-10 items-center gap-2 rounded-md border px-3 font-display text-sm font-semibold";
   if (state.status === "empty") {
-    return <span className={cn(base, "text-muted-foreground")}>Add a Pokémon to start</span>;
+    return <span className={cn(base, "text-muted-foreground")}>{t("editor.start")}</span>;
   }
   if (state.status === "error") {
     return (
       <span className={cn(base, "border-warning/50 text-warning")} role="status">
-        <ShieldAlert className="h-4 w-4" aria-hidden /> Couldn&apos;t check: {state.message}
+        <ShieldAlert className="h-4 w-4" aria-hidden /> {t("editor.checkFailed", { message: state.message })}
       </span>
     );
   }
   if (state.status === "checking") {
     return (
       <span className={cn(base, "text-muted-foreground")} role="status">
-        <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> Checking…
+        <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> {t("editor.checking")}
       </span>
     );
   }
   const problems = state.check.team.length + state.check.sets.reduce((n, p) => n + p.length, 0);
   return state.check.ok ? (
     <span className={cn(base, "border-success/50 bg-success/10 text-success")} role="status">
-      <ShieldCheck className="h-4 w-4" aria-hidden /> Legal in {formatName}
+      <ShieldCheck className="h-4 w-4" aria-hidden /> {t("editor.legalIn", { format: formatName })}
     </span>
   ) : (
     <span className={cn(base, "border-destructive/50 bg-destructive/10 text-destructive")} role="status">
-      <ShieldAlert className="h-4 w-4" aria-hidden /> {problems} problem{problems === 1 ? "" : "s"}
+      <ShieldAlert className="h-4 w-4" aria-hidden /> {t("editor.count", { n: problems })}
     </span>
   );
 }
@@ -260,20 +268,21 @@ export function ImportPanel({
   const [error, setError] = useState<string | null>(null);
   const [link, setLink] = useState("");
   const [fetching, setFetching] = useState(false);
+  const t = useT(battleTeams);
   // How many teams the text holds, for the button (a backup has one header per team).
   const many = useMemo(() => (onImportMany ? (text.match(/^===.*===\s*$/gm) ?? []).length : 0), [text, onImportMany]);
 
   async function importLink() {
-    if (!pokepasteId(link)) return setError("That isn't a pokepast.es link. Paste one like https://pokepast.es/1a2b3c4d5e6f7a8b.");
+    if (!pokepasteId(link)) return setError(t("import.notPaste"));
     setFetching(true);
     setError(null);
     try {
       const res = await fetch(`/api/battle/pokepaste?url=${encodeURIComponent(link.trim())}`);
       const body = (await res.json().catch(() => ({}))) as Partial<ImportedTeam> & { error?: string };
-      if (!res.ok || !body.sets) throw new Error(body.error ?? "Couldn't import that paste.");
+      if (!res.ok || !body.sets) throw new Error(body.error ?? t("import.pasteFailed"));
       onImport(body.sets, { name: body.name?.slice(0, 60), format: isBattleFormatId(body.format) ? body.format : undefined });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't import that paste.");
+      setError(err instanceof Error ? err.message : t("import.pasteFailed"));
     } finally {
       setFetching(false);
     }
@@ -283,7 +292,7 @@ export function ImportPanel({
     <div className="space-y-2 rounded-lg border bg-card p-4">
       <div className="flex flex-wrap items-end gap-2">
         <label className="min-w-[16rem] flex-1 space-y-1.5">
-          <span className="hud-label block">Pokepaste link</span>
+          <span className="hud-label block">{t("import.link")}</span>
           <input
             value={link}
             onChange={(e) => {
@@ -297,11 +306,11 @@ export function ImportPanel({
           />
         </label>
         <Button size="sm" variant="outline" onClick={importLink} disabled={!link.trim() || fetching} data-testid="pokepaste-import">
-          {fetching ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> : <Link2 className="h-4 w-4" aria-hidden />} Import link
+          {fetching ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> : <Link2 className="h-4 w-4" aria-hidden />} {t("import.importLink")}
         </Button>
       </div>
       <label className="block space-y-1.5">
-        <span className="hud-label block">Showdown team</span>
+        <span className="hud-label block">{t("import.showdown")}</span>
         <textarea
           value={text}
           onChange={(e) => {
@@ -329,7 +338,7 @@ export function ImportPanel({
                 return onImportMany(teams.map((t) => ({ sets: t.sets, name: t.name?.slice(0, 60), format: isBattleFormatId(t.format) ? t.format : undefined })));
             }
             const imported = importShowdown(text);
-            if (!imported) return setError("No Pokémon found. Paste a team exported from Showdown's teambuilder.");
+            if (!imported) return setError(t("import.noMons"));
             onImport(imported.sets, {
               name: imported.name?.slice(0, 60),
               format: isBattleFormatId(imported.format) ? imported.format : undefined,
@@ -337,10 +346,10 @@ export function ImportPanel({
           }}
           disabled={!text.trim()}
         >
-          <FileInput className="h-4 w-4" aria-hidden /> {many > 1 ? `Import ${many} teams` : confirmLabel}
+          <FileInput className="h-4 w-4" aria-hidden /> {many > 1 ? t("import.many", { n: many }) : confirmLabel}
         </Button>
         <span className="text-xs text-muted-foreground">
-          {onImportMany ? "One team, or a whole teambuilder backup (one === [format] Name === header per team)." : "Up to six Pokémon; anything after the sixth is left out."}
+          {onImportMany ? t("import.manyHint") : t("import.oneHint")}
         </span>
       </div>
     </div>
@@ -348,9 +357,10 @@ export function ImportPanel({
 }
 
 function ExportPanel({ text }: { text: string }) {
+  const t = useT(battleTeams);
   return (
     <label className="block space-y-1.5 rounded-lg border bg-card p-4">
-      <span className="hud-label block">Showdown export</span>
+      <span className="hud-label block">{t("import.export")}</span>
       <textarea
         readOnly
         value={text}

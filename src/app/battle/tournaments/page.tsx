@@ -2,21 +2,31 @@ import type { Metadata } from "next";
 import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { BattleHeader } from "@/components/battle/BattleHeader";
 import { TournamentLobby } from "@/components/tournaments/TournamentLobby";
+import { ClientMessages } from "@/i18n/ClientMessages";
+import { serverT } from "@/i18n/server";
+import battlePages from "@/messages/battle-pages";
+import battleTournaments from "@/messages/battle-tournaments";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Tournaments",
-  description: "Pokémon battle tournaments on PokéIQ: single elimination or round robin in any format, plus an official Random Battle tournament every hour.",
-  path: "/battle/tournaments",
-  image: SHARE_IMAGES.battle,
-});
+export function generateMetadata(): Metadata {
+  const t = serverT(battlePages);
+  return pageMetadata({
+    title: t("tournaments.title"),
+    description: t("tournaments.description"),
+    path: "/battle/tournaments",
+    image: SHARE_IMAGES.battle,
+  });
+}
 
 export default function TournamentsPage() {
+  const t = serverT(battlePages);
   return (
     <div className="mx-auto max-w-5xl space-y-8">
-      <BattleHeader crumb="Tournaments" title="Tournaments" accent="live">
-        Join a bracket, or open your own in any format. An official Random Battle tournament starts every hour: sign-ups are open for the first ten minutes.
+      <BattleHeader crumb={t("tournaments.crumb")} title={t("tournaments.heading")} accent={t("tournaments.accent")}>
+        {t("tournaments.intro")}
       </BattleHeader>
-      <TournamentLobby />
+      <ClientMessages namespaces={[battleTournaments]}>
+        <TournamentLobby />
+      </ClientMessages>
     </div>
   );
 }

@@ -6,6 +6,12 @@ import { BattleHeader } from "@/components/battle/BattleHeader";
 import { ReplayViewer } from "@/components/battle/ReplayViewer";
 import { REPLAY_ID_RE, replayMatchup, replayResult, replayTitle } from "@/lib/battle/replay";
 import { ReplaysUnavailable, replayStore } from "@/lib/server/battle-engine/replays";
+import { ClientMessages } from "@/i18n/ClientMessages";
+import { serverT } from "@/i18n/server";
+import battlePages from "@/messages/battle-pages";
+import battleReplayWords from "@/messages/battle-replay-words";
+import battleReplays from "@/messages/battle-replays";
+import battleAnalysis from "@/messages/battle-analysis";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -26,12 +32,14 @@ const findReplay = cache(async (id: string) => {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const replay = await findReplay((await params).id);
-  if (!replay) return pageMetadata({ title: "Battle replay", description: "A Pokémon battle replay on PokéIQ.", noindex: true });
-  const title = `${replayTitle(replay)}: ${replay.formatName} replay`;
+  const t = serverT(battlePages);
+  if (!replay) return pageMetadata({ title: t("replay.fallbackTitle"), description: t("replay.fallbackDescription"), noindex: true });
+  const w = serverT(battleReplayWords);
+  const title = t("replay.title", { title: replayTitle(replay, w), format: replay.formatName });
   return pageMetadata({
     title,
     socialTitle: title,
-    description: `${replayResult(replay)} in ${replay.turns} turns. Watch the replay, turn by turn, on Pokémon Showdown's engine.`,
+    description: t("replay.description", { result: replayResult(replay, w), turns: replay.turns }),
     path: `/battle/replay/${replay.id}`,
     noindex: !replay.public,
   });
@@ -40,13 +48,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function ReplayPage({ params }: PageProps) {
   const replay = await findReplay((await params).id);
   if (!replay) notFound();
+  const t = serverT(battlePages);
+  const w = serverT(battleReplayWords);
   return (
     <div className="mx-auto max-w-7xl space-y-6">
-      <BattleHeader back="/battle/replays" crumb="Replay" title={`${replayMatchup(replay).a} ${replayMatchup(replay).joiner}`} accent={replayMatchup(replay).b}>
-        {replay.ranked ? "Ranked · " : ""}
-        {replay.formatName} · {replayResult(replay)} in {replay.turns} turn{replay.turns === 1 ? "" : "s"}.
+      <BattleHeader back="/battle/replays" crumb={t("replay.crumb")} title={`${replayMatchup(replay).a} ${w(`joiner.${replayMatchup(replay).joiner}`)}`} accent={replayMatchup(replay).b}>
+        {replay.ranked ? t("replay.ranked") : ""}
+        {t("replay.summary", { format: replay.formatName, result: replayResult(replay, w), turns: replay.turns })}
       </BattleHeader>
-      <ReplayViewer replay={replay} />
+      <ClientMessages namespaces={[battleReplays, battleReplayWords, battleAnalysis]}>
+        <ReplayViewer replay={replay} />
+      </ClientMessages>
     </div>
   );
 }

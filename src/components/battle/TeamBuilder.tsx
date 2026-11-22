@@ -12,6 +12,9 @@ import { BattleSprite } from "./BattleSprite";
 import { useSpriteLookup } from "./hooks";
 import { inputClass } from "./controls";
 import { ImportPanel, TeamEditor } from "./TeamEditor";
+import { useT } from "@/i18n/client";
+import battleTeams from "@/messages/battle-teams";
+import { useBattleNames } from "./use-battle-names";
 
 type View = { kind: "team"; id: string } | { kind: "new" } | { kind: "import" };
 
@@ -29,6 +32,7 @@ function writeTeamParam(id: string | null) {
 
 export function TeamBuilder() {
   const teams = useTeams();
+  const t = useT(battleTeams);
   const [view, setView] = useState<View | null>(null);
   const [random, setRandom] = useState<{ busy: boolean; error: string | null }>({ busy: false, error: null });
   const [undo, setUndo] = useState<BattleTeam | null>(null);
@@ -61,11 +65,11 @@ export function TeamBuilder() {
         body: JSON.stringify({ format }),
       });
       const body = (await res.json().catch(() => ({}))) as { sets?: TeamSet[]; error?: string };
-      if (!res.ok || !body.sets) throw new Error(body.error ?? "Couldn't deal a team.");
-      openTeam(createTeam(format, `Random ${BATTLE_FORMATS[format].name}`, body.sets));
+      if (!res.ok || !body.sets) throw new Error(body.error ?? t("builder.dealFailed"));
+      openTeam(createTeam(format, t("builder.randomName", { format: BATTLE_FORMATS[format].name }), body.sets));
       setRandom({ busy: false, error: null });
     } catch (err) {
-      setRandom({ busy: false, error: err instanceof Error ? err.message : "Couldn't deal a team." });
+      setRandom({ busy: false, error: err instanceof Error ? err.message : t("builder.dealFailed") });
     }
   }
 
@@ -76,10 +80,10 @@ export function TeamBuilder() {
       <aside className="space-y-3">
         <div className="grid grid-cols-2 gap-2">
           <Button size="sm" onClick={() => openOther("new")} variant={view?.kind === "new" ? "default" : "secondary"}>
-            <Plus className="h-4 w-4" aria-hidden /> New team
+            <Plus className="h-4 w-4" aria-hidden /> {t("builder.newTeam")}
           </Button>
           <Button size="sm" onClick={() => openOther("import")} variant={view?.kind === "import" ? "default" : "outline"}>
-            <FileInput className="h-4 w-4" aria-hidden /> Import
+            <FileInput className="h-4 w-4" aria-hidden /> {t("builder.import")}
           </Button>
         </div>
         <TeamList teams={teams} activeId={current?.id} onOpen={openTeam} />
@@ -89,7 +93,7 @@ export function TeamBuilder() {
         {undo && (
           <div className="mb-3 flex items-center gap-3 rounded-md border border-foreground/15 bg-card px-3 py-2 text-sm" role="status" data-testid="undo-delete">
             <span className="min-w-0 flex-1 truncate">
-              Deleted <b className="font-display">{undo.name || "Untitled team"}</b>
+              {t.rich("builder.deleted", { name: undo.name || t("builder.untitled"), b: (c) => <b className="font-display">{c}</b> })}
             </span>
             <Button
               size="sm"
@@ -100,7 +104,7 @@ export function TeamBuilder() {
                 setUndo(null);
               }}
             >
-              <Undo2 className="h-4 w-4" aria-hidden /> Undo
+              <Undo2 className="h-4 w-4" aria-hidden /> {t("builder.undo")}
             </Button>
           </div>
         )}
@@ -111,7 +115,7 @@ export function TeamBuilder() {
         )}
         {!teams || !view ? (
           <p className="flex min-h-[60vh] items-center gap-2 py-16 text-sm text-muted-foreground">
-            <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> Loading your teams…
+            <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> {t("builder.loading")}
           </p>
         ) : current ? (
           <TeamEditor
@@ -147,17 +151,20 @@ export function TeamBuilder() {
 /** Saved teams in one folder per format (the open team's folder starts open), with a search over names and Pokémon. */
 function TeamList({ teams, activeId, onOpen }: { teams: BattleTeam[] | null; activeId?: string; onOpen: (team: BattleTeam) => void }) {
   const sprite = useSpriteLookup();
+  const t = useT(battleTeams);
+  const names = useBattleNames();
   const [query, setQuery] = useState("");
   const [closed, setClosed] = useState<Set<string>>(() => new Set());
   const [copied, setCopied] = useState(false);
   const q = normalize(query);
   const folders = useMemo(() => {
-    const matches = (t: BattleTeam) => !q || normalize(t.name).includes(q) || t.sets.some((s) => normalize(s.species).includes(q) || normalize(s.name).includes(q));
-    return BATTLE_FORMAT_IDS.map((format) => ({ format, teams: (teams ?? []).filter((t) => t.format === format && matches(t)) })).filter((f) => f.teams.length > 0);
-  }, [teams, q]);
+    const matches = (team: BattleTeam) =>
+      !q || normalize(team.name).includes(q) || team.sets.some((s) => normalize(s.species).includes(q) || normalize(s.name).includes(q) || (names.locale !== "en" && normalize(names.species(s.species)).includes(q)));
+    return BATTLE_FORMAT_IDS.map((format) => ({ format, teams: (teams ?? []).filter((team) => team.format === format && matches(team)) })).filter((f) => f.teams.length > 0);
+  }, [teams, q, names]);
   if (!teams) return null;
   if (!teams.length) {
-    return <p className="rounded-lg border border-dashed border-foreground/15 p-4 text-sm text-muted-foreground">No teams yet. They save on this device as you build.</p>;
+    return <p className="rounded-lg border border-dashed border-foreground/15 p-4 text-sm text-muted-foreground">{t("builder.noTeams")}</p>;
   }
   async function copyAll() {
     try {
@@ -171,10 +178,10 @@ function TeamList({ teams, activeId, onOpen }: { teams: BattleTeam[] | null; act
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-2">
-        <p className="hud-label">My teams · {teams.length}</p>
-        <button type="button" onClick={copyAll} className="hud-label flex items-center gap-1 hover:text-foreground max-md:min-h-10 max-md:px-1" title="Copy every team as a Showdown backup">
+        <p className="hud-label">{t("builder.myTeams", { n: teams.length })}</p>
+        <button type="button" onClick={copyAll} className="hud-label flex items-center gap-1 hover:text-foreground max-md:min-h-10 max-md:px-1" title={t("builder.backupTitle")}>
           {copied ? <Check className="h-3 w-3 text-success" aria-hidden /> : <ClipboardCopy className="h-3 w-3" aria-hidden />}
-          {copied ? "Copied" : "Backup all"}
+          {copied ? t("builder.copied") : t("builder.backup")}
         </button>
       </div>
       {teams.length > 3 && (
@@ -183,18 +190,18 @@ function TeamList({ teams, activeId, onOpen }: { teams: BattleTeam[] | null; act
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search teams or Pokémon"
-            aria-label="Search teams"
+            placeholder={t("builder.search")}
+            aria-label={t("builder.searchLabel")}
             className={cn(inputClass, "h-8 pl-7 text-xs")}
           />
         </label>
       )}
       <div className="max-h-[70vh] space-y-2 overflow-y-auto pr-1" data-testid="team-folders">
-        {folders.length === 0 && <p className="px-1 text-xs text-muted-foreground">No team matches.</p>}
+        {folders.length === 0 && <p className="px-1 text-xs text-muted-foreground">{t("builder.noMatch")}</p>}
         {folders.map(({ format, teams: list }) => {
           const isOpen = !!q || !closed.has(format);
           return (
-            <section key={format} aria-label={`${BATTLE_FORMATS[format].name} teams`}>
+            <section key={format} aria-label={t("builder.folder", { format: BATTLE_FORMATS[format].name })}>
               <button
                 type="button"
                 aria-expanded={isOpen}
@@ -226,12 +233,12 @@ function TeamList({ teams, activeId, onOpen }: { teams: BattleTeam[] | null; act
                           team.id === activeId && "border-screen/60 bg-screen/10"
                         )}
                       >
-                        <span className="block truncate font-display text-sm font-bold uppercase tracking-wide">{team.name || "Untitled team"}</span>
+                        <span className="block truncate font-display text-sm font-bold uppercase tracking-wide">{team.name || t("builder.untitled")}</span>
                         <span className="mt-1 flex h-8 items-center">
                           {team.sets.map((s, i) => (
                             <BattleSprite key={i} species={sprite?.(s.species)} animated={false} size={32} className="-ml-1 first:ml-0" />
                           ))}
-                          {team.sets.length === 0 && <span className="hud-label normal-case tracking-wider">Empty</span>}
+                          {team.sets.length === 0 && <span className="hud-label normal-case tracking-wider">{t("builder.empty")}</span>}
                         </span>
                       </button>
                     </li>
@@ -255,11 +262,12 @@ function FormatPicker({
   onRandom: (format: BattleFormatId) => void;
   randomBusy: boolean;
 }) {
+  const t = useT(battleTeams);
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="font-display text-xl font-bold uppercase tracking-wide">Pick a format</h2>
-        <p className="text-sm text-muted-foreground">The format sets the rules your team is checked against: which Pokémon, moves and items are allowed.</p>
+        <h2 className="font-display text-xl font-bold uppercase tracking-wide">{t("builder.pick")}</h2>
+        <p className="text-sm text-muted-foreground">{t("builder.pickIntro")}</p>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         {BATTLE_FORMAT_IDS.map((id, i) => {
@@ -269,15 +277,15 @@ function FormatPicker({
               <div className="flex items-baseline gap-2">
                 <span className="hud-label">{String(i + 1).padStart(2, "0")}</span>
                 <span className="font-display text-lg font-bold uppercase tracking-wide">{f.name}</span>
-                <span className="hud-label ml-auto text-screen">{f.gameType}</span>
+                <span className="hud-label ml-auto text-screen">{t(`builder.gameType.${f.gameType}`)}</span>
               </div>
-              <p className="flex-1 text-sm text-muted-foreground">{f.blurb}</p>
+              <p className="flex-1 text-sm text-muted-foreground">{t(`blurbs.${id}`)}</p>
               <div className="flex gap-2">
-                <Button size="sm" onClick={() => onPick(id)} aria-label={`New ${f.name} team`}>
-                  <Plus className="h-4 w-4" aria-hidden /> Build
+                <Button size="sm" onClick={() => onPick(id)} aria-label={t("builder.newLabel", { format: f.name })}>
+                  <Plus className="h-4 w-4" aria-hidden /> {t("builder.build")}
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => onRandom(id)} disabled={randomBusy} aria-label={`Random ${f.name} team`}>
-                  <Shuffle className="h-4 w-4" aria-hidden /> Random
+                <Button size="sm" variant="outline" onClick={() => onRandom(id)} disabled={randomBusy} aria-label={t("builder.randomLabel", { format: f.name })}>
+                  <Shuffle className="h-4 w-4" aria-hidden /> {t("builder.random")}
                 </Button>
               </div>
             </div>
@@ -290,14 +298,15 @@ function FormatPicker({
 
 function NewFromImport({ onCreate }: { onCreate: (team: BattleTeam) => void }) {
   const [format, setFormat] = useState<BattleFormatId>(DEFAULT_FORMAT);
+  const t = useT(battleTeams);
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="font-display text-xl font-bold uppercase tracking-wide">Import a team</h2>
-        <p className="text-sm text-muted-foreground">Paste a team from Pokémon Showdown&apos;s teambuilder (Import / Export, or a team backup).</p>
+        <h2 className="font-display text-xl font-bold uppercase tracking-wide">{t("builder.importHeading")}</h2>
+        <p className="text-sm text-muted-foreground">{t("builder.importIntro")}</p>
       </div>
       <label className="block w-56 space-y-1.5">
-        <span className="hud-label block">Format</span>
+        <span className="hud-label block">{t("builder.format")}</span>
         <select value={format} onChange={(e) => setFormat(e.target.value as BattleFormatId)} className="h-10 w-full rounded-md border-2 border-foreground/15 bg-shade/40 px-2.5 text-sm">
           {BATTLE_FORMAT_IDS.map((id) => (
             <option key={id} value={id}>
@@ -307,11 +316,11 @@ function NewFromImport({ onCreate }: { onCreate: (team: BattleTeam) => void }) {
         </select>
       </label>
       <ImportPanel
-        confirmLabel="Import team"
-        onImport={(sets, meta) => onCreate(createTeam(meta.format ?? format, meta.name ?? "Imported team", sets))}
+        confirmLabel={t("builder.importTeam")}
+        onImport={(sets, meta) => onCreate(createTeam(meta.format ?? format, meta.name ?? t("builder.imported"), sets))}
         onImportMany={(teams) => {
           // Saved last to first, so the backup's order is the list's order; then the first one opens.
-          const made = [...teams].reverse().map((t) => createTeam(t.format ?? format, t.name ?? "Imported team", t.sets));
+          const made = [...teams].reverse().map((team) => createTeam(team.format ?? format, team.name ?? t("builder.imported"), team.sets));
           onCreate(made[made.length - 1]);
         }}
       />
