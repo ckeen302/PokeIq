@@ -37,6 +37,7 @@ export const NAMESPACES = [
   "guessr-ranked",
   "home",
   "howto",
+  "lab-dex",
   "nav",
   "pikadoku",
   "pikadoku-board",
