@@ -328,9 +328,9 @@
     "caseEyebrow": "CASO {n} · {verdict}",
     "caseFooter": "Abre el expediente →",
     "verdicts": {
-      "confirmed": "Confirmado",
+      "confirmed": "Confirmada",
       "fan": "Teoría fan",
-      "debunked": "Desmentido"
+      "debunked": "Desmentida"
     }
   },
   "videoGames": {
