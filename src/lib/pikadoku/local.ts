@@ -3,11 +3,13 @@ import { toRomaji } from "wanakana";
 import type { Locale } from "@/i18n/config";
 import { translator, type Translator, type Tree } from "@/i18n/catalog";
 import page from "@/messages/pikadoku-page";
+import pikadoku from "@/messages/pikadoku";
 import { speciesAliases, speciesName } from "@/lib/names/species";
 import { POKEDEX } from "@/lib/pokemon/pokedex";
 import { allFacts } from "./categories";
 import { PDK_CATALOG } from "./catalog";
 import type { PdkLocal } from "./types";
+import { WEEK_THEME_IDS } from "./weeks";
 
 /**
  * What a Pikadoku page in another language sends its client components (types.ts' PdkLocal): every category's label
@@ -84,9 +86,10 @@ export function pikadokuLocal(locale: Locale): Promise<PdkLocal> | undefined {
 }
 
 async function build(locale: Exclude<Locale, "en">): Promise<PdkLocal> {
-  const [t, types, moves, abilities] = await Promise.all([
+  const [t, tw, types, moves, abilities] = await Promise.all([
     // The language's file of the namespace, read directly (one import per language: the same file getT would load).
     import(`@/messages/${locale}/pikadoku-page.json`).then((m) => translator(page, locale, m.default as Tree)),
+    import(`@/messages/${locale}/pikadoku.json`).then((m) => translator(pikadoku, locale, m.default as Tree)),
     import(`@/data/i18n/${locale}/types.json`).then((m) => m.default as Names),
     import(`@/data/i18n/${locale}/moves.json`).then((m) => m.default as Names),
     import(`@/data/i18n/${locale}/abilities.json`).then((m) => m.default as Names),
@@ -108,5 +111,7 @@ async function build(locale: Exclude<Locale, "en">): Promise<PdkLocal> {
     const own = formName(f.slug, sp.slug, speciesName(sp.id, sp.name, locale), t) ?? f.name;
     put(f.id, f.name, own, locale === "ja" ? [toRomaji(own.replace(/[♀♂]/g, ""))] : []);
   }
-  return { labels, names };
+  const themes: PdkLocal["themes"] = {};
+  for (const id of WEEK_THEME_IDS) themes[id] = { name: tw(`weeklyTheme.${id}.name`), blurb: tw(`weeklyTheme.${id}.blurb`) };
+  return { labels, names, themes };
 }

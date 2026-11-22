@@ -16,6 +16,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { InfoTip } from "@/components/ui/tooltip";
 import { clueText, spriteUrl } from "./parts";
 import { normalizeName } from "./search";
+import { useT } from "@/i18n/client";
+import board from "@/messages/pokedle-board";
 import { useDleWords, type DleWords } from "./lexicon";
 import { cn } from "@/lib/utils";
 
@@ -158,7 +160,7 @@ export function DexPanel({
   const [crossed, setCrossed] = useState<ReadonlySet<number>>(() => new Set());
   const [tool, setTool] = useState<Tool>("cross");
   const words = useDleWords();
-  const { t } = words;
+  const t = useT(board);
   const field = assist !== "notebook";
   const full = assist === "full";
   // A click from before this panel appeared (an earlier puzzle) stays out of it.
@@ -310,8 +312,8 @@ export function DexPanel({
             </select>
             {full && (
               <>
-                <Range label={t("dex.height")} min={filters.hMin} max={filters.hMax} onMin={(v) => set("hMin", v)} onMax={(v) => set("hMax", v)} className={input} words={words} />
-                <Range label={t("dex.weight")} min={filters.wMin} max={filters.wMax} onMin={(v) => set("wMin", v)} onMax={(v) => set("wMax", v)} className={input} words={words} />
+                <Range label={t("dex.height")} min={filters.hMin} max={filters.hMax} onMin={(v) => set("hMin", v)} onMax={(v) => set("hMax", v)} className={input} />
+                <Range label={t("dex.weight")} min={filters.wMin} max={filters.wMax} onMin={(v) => set("wMin", v)} onMax={(v) => set("wMax", v)} className={input} />
               </>
             )}
           </div>
@@ -412,7 +414,6 @@ function Range({
   onMin,
   onMax,
   className,
-  words: { t },
 }: {
   label: string;
   min: string;
@@ -420,8 +421,8 @@ function Range({
   onMin: (v: string) => void;
   onMax: (v: string) => void;
   className: string;
-  words: DleWords;
 }) {
+  const t = useT(board);
   return (
     <fieldset className="col-span-2 flex items-center gap-1.5 sm:col-span-1">
       <legend className="sr-only">{label}</legend>
@@ -467,7 +468,7 @@ const SWATCH: Record<string, string> = {
 
 function Tile({ row, words, out, crossed, guessed, tool, onTap }: { row: DleDexRow; words: DleWords; out: boolean; crossed: boolean; guessed: boolean; tool: Tool; onTap: () => void }) {
   const [id, english, , t1, t2, stage, color, height, weight] = row;
-  const { t } = words;
+  const t = useT(board);
   const name = words.name(id, english);
   const state = guessed ? t("dex.guessed") : crossed ? t("dex.crossed") : out ? t("dex.out") : null;
   const action = tool === "fill" ? t("dex.fillName", { name }) : crossed ? t("dex.back", { name }) : t("dex.crossName", { name });

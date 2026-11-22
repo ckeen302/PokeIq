@@ -84,9 +84,9 @@ export function GeoSummary({
   const challengeUrl = challengeToken && !sharedPlaces ? `${origin}${localeHref(`/pokeguessr/c/${encodeURIComponent(challengeToken)}`, t.locale).href}` : null;
   const canRank = !game.practice && !!resultToken;
   const modeName = game.difficulty ? names.difficulty(game.difficulty) : undefined;
-  const shareTextFull = guessrShareText(shareResult, names.map(region), shareUrl(shareResult, t.locale), { mode: modeName, t: shareT });
+  const shareTextFull = guessrShareText(shareResult, names.map(region), shareUrl(shareResult, t.locale), { mode: modeName }, shareT);
   // The card to copy: the result, then the challenge link (same places) when there is one, else the result page.
-  const shareBody = guessrShareText(shareResult, names.map(region), undefined, { mode: modeName, t: shareT });
+  const shareBody = guessrShareText(shareResult, names.map(region), undefined, { mode: modeName }, shareT);
   const shareLink = challengeUrl ?? shareUrl(shareResult, t.locale);
 
   async function shareChallenge() {

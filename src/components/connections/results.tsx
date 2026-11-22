@@ -18,7 +18,6 @@ import { formatNumber, translator, type Translator } from "@/i18n/catalog";
 import conn from "@/messages/connections";
 
 type ConnT = Translator<typeof conn.en>;
-const english = () => translator(conn, "en", undefined);
 
 /** PokéConnections' results-screen extras: the celebration, the streak flame, tomorrow, badges and the daily leaderboard. */
 
@@ -71,7 +70,7 @@ export function PerfectBanner() {
 }
 
 /** The line under the streak: a record only once there is a run to speak of. */
-export function streakNote(streak: number, best: number, t: ConnT = english()): string {
+export function streakNote(streak: number, best: number, t: ConnT = translator(conn, "en", undefined)): string {
   if (streak <= 1 && best <= 1) return t("streak.keepGoing");
   return streak >= best ? t("streak.best") : t("streak.bestDays", { n: best });
 }

@@ -24,7 +24,8 @@ export const nameKey = (s: string) =>
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "");
 
-const own = (t: GeoNamesT, key: string): string | null => (t.has(key) ? t(key as NameKey) : null);
+// Only ever asked on a page in another language (English keeps the names as given).
+const own = (t: GeoNamesT, key: string): string | null => (t.locale !== DEFAULT_LOCALE && t.has(key) ? t(key as NameKey) : null);
 
 /** A region ("Kanto", "Isle of Armor") in the language; English, or a region with no official name there, as given. */
 export function localRegion(t: GeoNamesT, name: string): string {

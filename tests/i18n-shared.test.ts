@@ -55,9 +55,9 @@ describe("shared pieces in other languages", () => {
     for (const l of OTHERS) {
       const t = translator(share, l, await load(l, "share"));
       const texts = [
-        buildPokedleShare({ number: 3, rows: [["match", "partial"], ["match", "match"]], solved: true, hard: false, hints: [], streak: 2, url: "u", community: { percentile: 80, players: 4213 }, t }),
-        guessrShareText(results[2] as never, "?", "u", { t }),
-        guessrShareText(results[3] as never, "Teselia", "u", { t }),
+        buildPokedleShare({ number: 3, rows: [["match", "partial"], ["match", "match"]], solved: true, hard: false, hints: [], streak: 2, url: "u", community: { percentile: 80, players: 4213 } }, t),
+        guessrShareText(results[2] as never, "?", "u", {}, t),
+        guessrShareText(results[3] as never, "Teselia", "u", {}, t),
         quizShareText(results[4] as never, "u", t),
         quizShareText(results[5] as never, "u", t),
         cognitiveShareText(results[7] as never, "u", t),
@@ -72,7 +72,7 @@ describe("shared pieces in other languages", () => {
       }
     }
     const es = translator(share, "es", await load("es", "share"));
-    expect(guessrShareText(results[2] as never, "?", "https://x/es/s/y", { t: es }).split("\n")).toEqual([
+    expect(guessrShareText(results[2] as never, "?", "https://x/es/s/y", {}, es).split("\n")).toEqual([
       "PokéIQ PokéGuessr diario #6 · Mundo 13.327/25.000",
       "🟩🟨🟩🟥🟧",
       "4812 · 2310 · 5000 · 0 · 1205",

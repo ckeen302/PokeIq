@@ -3,8 +3,9 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { HAS_OTHER_LOCALES } from "@/i18n/config";
 import { useT } from "@/i18n/client";
+import { useLocale } from "@/i18n/locale-context";
 import board from "@/messages/pokedle-board";
-import { dataKey, labelOf, localCellValue, type BoardT, type DleLabels } from "@/lib/dle-i18n";
+import { dataKey, labelOf, localCellValue, type DleLabels } from "@/lib/dle-i18n";
 import type { DleColumn, DleRow } from "@/lib/dle-types";
 import type { NameEntry } from "./search";
 
@@ -40,7 +41,6 @@ function loadGenus(locale: string): Promise<Record<string, string>> {
 }
 
 export interface DleWords {
-  t: BoardT;
   labels: DleLabels | undefined;
   /** A Pokémon's name in the page's language (`english` as sent, on English pages). */
   name: (id: number, english: string) => string;
@@ -62,7 +62,6 @@ export function useDleWords(): DleWords {
     const name = (id: number, english: string) => names?.get(id)?.[1] ?? english;
     const cell = (column: DleColumn, value: string) => localCellValue(column, value, t, labels);
     return {
-      t,
       labels,
       name,
       aliases: (id: number) => names?.get(id)?.[3] ?? [],
@@ -83,7 +82,7 @@ export function useDleWords(): DleWords {
 /** A category ("Mouse Pokémon", as the API sends it) in the page's language, once its words have loaded (English until then). */
 export function useGenus(english: string | undefined): string | undefined {
   const { labels } = useContext(LexiconContext);
-  const { locale } = useT(board);
+  const locale = useLocale();
   const [dict, setDict] = useState<Record<string, string> | null>(null);
   const need = Boolean(labels && english);
   useEffect(() => {

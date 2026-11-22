@@ -74,6 +74,7 @@ import { useT } from "@/i18n/client";
 import { formatNumber, type Translator } from "@/i18n/catalog";
 import geoNs from "@/messages/geo";
 import geoSolo from "@/messages/geo-solo";
+import geoNamesNs from "@/messages/geo-names";
 import { useGeoNames, type GeoLocal } from "@/lib/geo-i18n-client";
 
 type Phase = "setup" | "loading" | "guessing" | "submitting" | "revealed" | "results" | "error";
@@ -248,6 +249,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   const t = useT(geoSolo);
   const g = useT(geoNs);
   const names = useGeoNames();
+  const gn = useT(geoNamesNs);
   const fmt = (n: number) => formatNumber(n, t.locale);
   const today = useToday();
   const progress = useProgress();
@@ -814,7 +816,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
                     </div>
                     {theme && (
                       <p className="text-sm text-muted-foreground" data-testid="geo-theme-blurb">
-                        {t.locale === "en" ? theme.blurb : names.t(`themes.${theme.id}.blurb`)} {t("hub.solo.themeMore")}
+                        {t.locale === "en" ? theme.blurb : gn(`themes.${theme.id}.blurb`)} {t("hub.solo.themeMore")}
                       </p>
                     )}
                   </div>

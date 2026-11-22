@@ -139,7 +139,8 @@ function reducedMotion(): boolean {
  */
 export function Connections({ customId, initial }: { customId?: string; initial?: Readonly<Record<string, ConnPuzzleResponse>> } = {}) {
   const t = useT(conn);
-  const tr = t;
+  // A second handle on the same words, for code where `t` names a puzzle target.
+  const tr = useT(conn);
   const ts = useT(share);
   const locale = useLocale();
   const nameOf = useTileName();

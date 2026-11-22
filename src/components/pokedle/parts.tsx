@@ -287,7 +287,7 @@ export function Board({
 }) {
   const reduced = useReducedMotion();
   const words = useDleWords();
-  const { t } = words;
+  const t = useT(board);
   const shown = DLE_COLUMNS.filter((c) => (columns ? columns.includes(c.key) : rows.some((r) => r.cells[c.key])));
   const pendingRow = pending && !rows.some((r) => r.id === pending.id) ? pending : null;
   const empty = Math.max(0, (slots ?? 0) - rows.length - (pendingRow ? 1 : 0));

@@ -7,7 +7,7 @@ import geoNamesNs from "@/messages/geo-names";
 import type { GeoEra, GeoFamilyId } from "./geo-families";
 import type { GeoDifficulty } from "./geo-difficulty";
 import { placeLabel, type PlaceLocal } from "./geo-names";
-import { localDifficulty, localEra, localFamily, localGame, localMap, localPlace, localRegion, type GeoNamesT } from "./geo-i18n";
+import { localDifficulty, localEra, localFamily, localGame, localMap, localPlace, localRegion } from "./geo-i18n";
 
 /**
  * PokéGuessr's names in the browser, in the page's language (see geo-i18n.ts). Place names come from that language's
@@ -55,7 +55,6 @@ export function usePlaceNames(locale: Locale): Record<string, string> | null {
 }
 
 export interface GeoLocal extends PlaceLocal {
-  t: GeoNamesT;
   region: (name: string) => string;
   map: (map: { id: string; name: string }) => string;
   game: (label: string) => string;
@@ -72,7 +71,6 @@ export function useGeoNames(): GeoLocal {
   const places = usePlaceNames(t.locale);
   return useMemo(() => {
     const local: GeoLocal = {
-      t,
       region: (name) => localRegion(t, name),
       map: (map) => localMap(t, map),
       game: (label) => localGame(t, label),

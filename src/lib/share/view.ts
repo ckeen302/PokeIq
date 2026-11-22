@@ -5,13 +5,16 @@ import { GEO_MAX_ROUND_SCORE, GEO_ROUNDS, WORLD_REGION } from "@/lib/geo-types";
 import { PLAY_FORMAT_INFO } from "@/lib/battle/play";
 import { formatNumber, translator, type Translator } from "@/i18n/catalog";
 import sharePage from "@/messages/share-page";
-import { battleOpponent, clock, connMistakes, connSizeOf, connectionsScore, connectionsTitle, englishShareT, guessrTitle, pikadokuSolved, pikadokuTitle, quizTitle, type ShareT } from "./text";
+import share from "@/messages/share";
+import { battleOpponent, clock, connMistakes, connSizeOf, connectionsScore, connectionsTitle, guessrTitle, pikadokuSolved, pikadokuTitle, quizTitle, type ShareT } from "./text";
 import type { ShareResult } from "./payload";
 
 /** The "share-page" namespace's translator. */
 export type SharePageT = Translator<typeof sharePage.en>;
 let englishPage: SharePageT | undefined;
 const englishPageT = (): SharePageT => (englishPage ??= translator(sharePage, "en", undefined));
+let englishShare: ShareT | undefined;
+const englishShareT = (): ShareT => (englishShare ??= translator(share, "en", undefined));
 
 export interface DescribeOptions {
   /** The share text's words ("share"), in the page's language. Default English. */

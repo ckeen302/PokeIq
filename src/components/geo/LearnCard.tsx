@@ -9,6 +9,7 @@ import { atlasSearchHref, placeLabel } from "@/lib/geo-names";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
 import geoNs from "@/messages/geo";
+import geoNamesNs from "@/messages/geo-names";
 import { useGeoNames } from "@/lib/geo-i18n-client";
 
 const cache = new Map<string, Promise<GeoLearn | null>>();
@@ -37,6 +38,7 @@ function learnOf(answer: Pick<GeoAnswer, "name" | "region" | "parent">): Promise
 export function LearnCard({ answer, shot, map, className }: { answer: GeoAnswer; shot?: string; map?: { name: string }; className?: string }) {
   const t = useT(geoNs);
   const names = useGeoNames();
+  const gn = useT(geoNamesNs);
   const en = t.locale === "en";
   const [learn, setLearn] = useState<GeoLearn | null>(null);
   useEffect(() => {
@@ -60,10 +62,10 @@ export function LearnCard({ answer, shot, map, className }: { answer: GeoAnswer;
         <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-white/70">
           {answer.region && <span>{names.region(answer.region)}</span>}
           {learn?.type && learn.type !== "Other" && learn.type !== "Building" && (
-            <span className="text-white/50">· {names.t.has(`types.${learn.type}`) ? names.t(`types.${learn.type}` as "types.City") : learn.type}</span>
+            <span className="text-white/50">· {t.locale === "en" ? learn.type : gn.has(`types.${learn.type}`) ? gn(`types.${learn.type}` as "types.City") : learn.type}</span>
           )}
           <span className="rounded-sm border border-white/30 px-1.5 py-0.5 text-[11px] text-white" data-testid="geo-answer-game">
-            {en ? <>Pokémon {answer.game}</> : names.t("game", { game: names.game(answer.game) })}
+            {en ? <>Pokémon {answer.game}</> : gn("game", { game: names.game(answer.game) })}
           </span>
           <Link href={atlasSearchHref(answer)} target="_blank" className="inline-flex items-center gap-1 underline underline-offset-2 hover:text-white" data-testid="geo-atlas-link">
             <MapIcon className="h-3 w-3" aria-hidden />{` ${t("learn.atlas")}`}
