@@ -30,10 +30,6 @@
   "toDark": "Switch to dark mode",
   "soundOnAction": "Turn sound on",
   "soundOffAction": "Turn sound off",
-  "unmuteKey": "Unmute sound effects (M)",
-  "muteKey": "Mute sound effects (M)",
-  "soundOffKey": "Sound off (M)",
-  "soundOnKey": "Sound on (M)",
   "settings": {
     "title": "Settings",
     "theme": "Theme",
@@ -45,5 +41,7 @@
     "soundKeyHint": " Press M anywhere to toggle it.",
     "on": "On",
     "off": "Off"
-  }
+  },
+  "accountOfWaiting": "Account and settings ({name}), friends: {n} waiting",
+  "friendsWaiting": "Friends ({n} waiting)"
 }

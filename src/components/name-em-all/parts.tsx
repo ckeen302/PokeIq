@@ -62,7 +62,7 @@ export const Slot = memo(function Slot({ target, state, style, shiny, digits, fr
     state === "named" && "border-success/40 bg-success/[0.08]",
     state === "missed" && "border-destructive/40 bg-destructive/[0.07] hover:border-destructive",
     state === "open" && "border-border/70 bg-card/60",
-    state === "current" && "border-screen bg-screen/10 ring-2 ring-screen/60",
+    state === "current" && "border-[color:hsl(var(--screen))] bg-screen/10 ring-2 ring-[color:hsl(var(--screen)/0.6)]",
     fresh && "animate-in zoom-in-90 fade-in duration-300"
   );
   if (state === "missed") {

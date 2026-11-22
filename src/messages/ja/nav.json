@@ -30,10 +30,6 @@
   "toDark": "ダークモードに切り替え",
   "soundOnAction": "サウンドをオンにする",
   "soundOffAction": "サウンドをオフにする",
-  "unmuteKey": "効果音をオンにする（M）",
-  "muteKey": "効果音をオフにする（M）",
-  "soundOffKey": "サウンドオフ（M）",
-  "soundOnKey": "サウンドオン（M）",
   "settings": {
     "title": "設定",
     "theme": "テーマ",
@@ -45,5 +41,7 @@
     "soundKeyHint": "どこでも M キーで切り替えられます。",
     "on": "オン",
     "off": "オフ"
-  }
+  },
+  "accountOfWaiting": "アカウントと設定（{name}）、フレンド：{n}件の通知",
+  "friendsWaiting": "フレンド（{n}件の通知）"
 }

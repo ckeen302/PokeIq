@@ -68,6 +68,7 @@ export const NAMESPACES = [
   "dex-movies-list",
   "dex-pager",
   "dex-ref",
+  "dex-sprites",
   "dex-tabs",
   "dex-theories",
   "dex-theories-list",

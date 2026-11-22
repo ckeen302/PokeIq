@@ -50,11 +50,14 @@
     "artwork": "Pokémon-Artwork",
     "revealed": "Das aufgedeckte Pokémon",
     "itsName": "Es ist {name}!",
-    "noOgg": "Dein Browser kann keine Pokémon-Rufe (Ogg-Audio) abspielen. Probier Chrome, Firefox oder ein aktuelles Safari.",
-    "stop": "Ruf stoppen",
     "play": "Ruf abspielen",
     "tap": "Tippen, um den Ruf zu hören",
-    "played": "{n}× gehört · tippen zum Wiederholen"
+    "played": "{n}× gehört · tippen zum Wiederholen",
+    "replay": "Ruf wiederholen",
+    "loading": "Ruf lädt …",
+    "playing": "Läuft …",
+    "blocked": "Tippen, um den Ruf zu hören",
+    "error": "Ruf nicht geladen · tippen zum Wiederholen"
   },
   "team": {
     "shown": "Team: {shown} von {total} Pokémon sichtbar",

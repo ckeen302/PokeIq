@@ -30,10 +30,6 @@
   "toDark": "Passa al tema scuro",
   "soundOnAction": "Attiva l’audio",
   "soundOffAction": "Disattiva l’audio",
-  "unmuteKey": "Attiva gli effetti sonori (M)",
-  "muteKey": "Disattiva gli effetti sonori (M)",
-  "soundOffKey": "Audio disattivato (M)",
-  "soundOnKey": "Audio attivo (M)",
   "settings": {
     "title": "Impostazioni",
     "theme": "Tema",
@@ -45,5 +41,7 @@
     "soundKeyHint": " Premi M ovunque per attivarlo o disattivarlo.",
     "on": "Sì",
     "off": "No"
-  }
+  },
+  "accountOfWaiting": "Account e impostazioni ({name}), amici: {n} in attesa",
+  "friendsWaiting": "Amici ({n} in attesa)"
 }

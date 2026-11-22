@@ -50,11 +50,14 @@
     "artwork": "Pokémon artwork",
     "revealed": "Revealed Pokémon",
     "itsName": "It's {name}!",
-    "noOgg": "Your browser can't play Pokémon cries (Ogg audio). Try Chrome, Firefox or a recent Safari.",
-    "stop": "Stop cry",
     "play": "Play cry",
     "tap": "Tap to play cry",
-    "played": "Played {n}x · tap to replay"
+    "played": "Played {n}x · tap to replay",
+    "replay": "Replay cry",
+    "loading": "Loading cry…",
+    "playing": "Playing…",
+    "blocked": "Tap to hear the cry",
+    "error": "Cry didn't load · tap to retry"
   },
   "team": {
     "shown": "Team: {shown} of {total} Pokémon shown",

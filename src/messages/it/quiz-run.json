@@ -50,11 +50,14 @@
     "artwork": "Illustrazione del Pokémon",
     "revealed": "Il Pokémon svelato",
     "itsName": "È {name}!",
-    "noOgg": "Il tuo browser non riproduce i versi dei Pokémon (audio Ogg). Prova Chrome, Firefox o un Safari recente.",
-    "stop": "Ferma il verso",
     "play": "Ascolta il verso",
     "tap": "Tocca per ascoltare il verso",
-    "played": "Ascoltato {n} volte · tocca per riascoltare"
+    "played": "Ascoltato {n} volte · tocca per riascoltare",
+    "replay": "Riascolta il verso",
+    "loading": "Caricamento del verso…",
+    "playing": "In riproduzione…",
+    "blocked": "Tocca per sentire il verso",
+    "error": "Verso non caricato · tocca per riprovare"
   },
   "team": {
     "shown": "Squadra: {shown} Pokémon su {total} visibili",

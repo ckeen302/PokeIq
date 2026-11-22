@@ -15,6 +15,7 @@ import { num } from "@/components/quiz/num";
 import { useT } from "@/i18n/client";
 import challengeNs from "@/messages/quiz-challenge";
 import modesNs from "@/messages/quiz-modes";
+import { unlockCryAudio } from "@/lib/cry-audio";
 
 export function ChallengeLanding({ card, token, runLabel }: { card: ShareCard; token: string; runLabel: string }) {
   const [playing, setPlaying] = useState(false);
@@ -60,7 +61,14 @@ export function ChallengeLanding({ card, token, runLabel }: { card: ShareCard; t
           <p className="text-center text-sm text-muted-foreground">
             {t("same", { mode: t.locale === "en" ? mt(`modules.${card.m}.title`).toLowerCase() : mt(`modules.${card.m}.title`) })}
           </p>
-          <Button size="lg" className="w-full text-base" onClick={() => setPlaying(true)}>
+          <Button
+            size="lg"
+            className="w-full text-base"
+            onClick={() => {
+              if (card.m === "cry") unlockCryAudio(); // question 1's cry can then play by itself
+              setPlaying(true);
+            }}
+          >
             {t("accept")}
           </Button>
           {card.day && (

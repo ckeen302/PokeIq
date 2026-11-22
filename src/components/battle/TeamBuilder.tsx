@@ -228,10 +228,7 @@ function TeamList({ teams, activeId, onOpen }: { teams: BattleTeam[] | null; act
                         type="button"
                         onClick={() => onOpen(team)}
                         data-selected={team.id === activeId}
-                        className={cn(
-                          "menu-item w-full rounded-lg border bg-card px-3 py-2 text-left hover:border-screen/50",
-                          team.id === activeId && "border-screen/60 bg-screen/10"
-                        )}
+                        className="menu-item w-full rounded-lg border bg-card px-3 py-2 text-left hover:border-screen/50 data-[selected=true]:border-screen/60 data-[selected=true]:bg-screen/10"
                       >
                         <span className="block truncate font-display text-sm font-bold uppercase tracking-wide">{team.name || t("builder.untitled")}</span>
                         <span className="mt-1 flex h-8 items-center">

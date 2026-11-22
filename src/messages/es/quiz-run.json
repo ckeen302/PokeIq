@@ -50,11 +50,14 @@
     "artwork": "Ilustración del Pokémon",
     "revealed": "El Pokémon revelado",
     "itsName": "¡Es {name}!",
-    "noOgg": "Tu navegador no puede reproducir los gritos Pokémon (audio Ogg). Prueba con Chrome, Firefox o un Safari reciente.",
-    "stop": "Parar grito",
     "play": "Reproducir grito",
     "tap": "Toca para oír el grito",
-    "played": "Oído {n} veces · toca para repetir"
+    "played": "Oído {n} veces · toca para repetir",
+    "replay": "Repetir grito",
+    "loading": "Cargando grito…",
+    "playing": "Sonando…",
+    "blocked": "Toca para oír el grito",
+    "error": "El grito no ha cargado · toca para reintentar"
   },
   "team": {
     "shown": "Equipo: {shown} de {total} Pokémon visibles",
