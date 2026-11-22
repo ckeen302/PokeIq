@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import Link from "@/components/ui/Link";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { AnimatePresence, LayoutGroup, MotionConfig, motion } from "framer-motion";
 import { Check, Copy, Crown, Loader2, PartyPopper, Shuffle, Users, XCircle } from "lucide-react";
 import { PARTY_MAX, PARTY_MIN, PARTY_PENALTY_MS, partyHref, type PartySeatResponse, type PartyStanding, type PartyView } from "@/lib/connections/party";

@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import { localUrl } from "@/i18n/paths";
+import Link from "@/components/ui/PlainLink";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Clapperboard, CloudRain, Dices, Info, List, Medal, Play, RotateCcw, Share2, SkipForward, Swords, Trophy, Users, Volume2, VolumeX, X } from "lucide-react";
@@ -486,7 +487,7 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
   }, [ready]);
 
   // ---- Actions.
-  const replaceUrl = (path: string) => { try { history.replaceState(history.state, "", path); } catch { /* ignore */ } };
+  const replaceUrl = (path: string) => { try { history.replaceState(history.state, "", localUrl(path)); } catch { /* ignore */ } };
   const sharePath = () => (spec.mode === "event" ? eventRunPath(spec.event, { keys: spec.keys, seed: spec.seed, rain: spec.rain }) : playPath(spec.nations, spec.seed, spec.rain));
   const restart = useCallback(() => { const s = show.current; s.t = 0; s.cueAt = 0; s.free = false; s.orbit = null; s.phase = "show"; setPhase("show"); audioRef.current?.hush(); }, []);
   const skip = () => { const s = show.current; if (s.seq) { s.t = Math.max(s.t, s.seq.resultsAt); s.free = false; audioRef.current?.hush(); } };

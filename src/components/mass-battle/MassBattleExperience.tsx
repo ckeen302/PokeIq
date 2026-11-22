@@ -1,5 +1,6 @@
 "use client";
 
+import { localUrl } from "@/i18n/paths";
 import dynamic from "next/dynamic";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { track } from "@vercel/analytics";
@@ -709,7 +710,7 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
   }, [facts, nameOf]);
 
   const replaceUrl = (href: string) => {
-    try { window.history.replaceState(null, "", href); } catch { /* sandboxed */ }
+    try { window.history.replaceState(null, "", localUrl(href)); } catch { /* sandboxed */ }
   };
   /** The playback part of a link (left out when it's all the defaults). */
   const viewParam = () => {

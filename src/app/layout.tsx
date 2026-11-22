@@ -1,17 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import Link from "next/link";
 import localFont from "next/font/local";
 import { Analytics } from "@vercel/analytics/next";
-import { DesktopNav, MobileTabBar } from "@/components/layout/SiteNav";
-import { Logo } from "@/components/layout/Logo";
-import { AccountSync } from "@/components/account/AccountSync";
-import { CommunityLayer } from "@/components/community/CommunityLayer";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
-import { SITE_DESCRIPTION, SITE_TAGLINE, jsonLd } from "@/lib/seo";
+import { PRODUCTION_URL, SITE_NAME } from "@/lib/site";
+import { SITE_DESCRIPTION, SITE_TAGLINE } from "@/lib/seo";
 import { SPLASH_INIT_SCRIPT, THEME_INIT_SCRIPT } from "@/lib/theme";
 import { BootLoader } from "@/components/layout/BootLoader";
-import { RouteSlot } from "@/components/layout/RouteSlot";
-import { ErrorReporter, ReportProblem } from "@/components/layout/ReportProblem";
+import { ErrorReporter } from "@/components/layout/ReportProblem";
+import { ChromeGate, HtmlRoot } from "@/components/layout/RootChrome";
+import { ChromeAfter, ChromeBefore } from "@/components/layout/SiteChrome";
 import { SHINY_ORIGIN } from "@/lib/shiny";
 import SPLASH_SCREENS from "@/lib/splash-screens.json";
 import "./globals.css";
@@ -48,12 +44,12 @@ const pixel = localFont({
 const GOOGLE_SITE_VERIFICATION = process.env.GOOGLE_SITE_VERIFICATION?.trim();
 
 /**
- * Site-wide defaults. `metadataBase` is SITE_URL (NEXT_PUBLIC_SITE_URL, else
- * playpokeiq.com), so every Open Graph image URL is absolute. Pages set
- * their own title, description and preview through `pageMetadata`.
+ * Site-wide defaults. `metadataBase` is always the production site, so every Open Graph image URL is absolute and
+ * a canonical or hreflang link can never point at localhost or a preview. Pages set their own title, description,
+ * canonical and preview through `pageMetadata` (no canonical here: a page without one simply has none).
  */
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
+  metadataBase: new URL(PRODUCTION_URL),
   title: {
     default: `${SITE_NAME}: ${SITE_TAGLINE}`,
     template: `%s · ${SITE_NAME}`,
@@ -75,22 +71,9 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-// The same @id as the home page's fuller WebSite node (with its SearchAction), so the two read as one site.
-const websiteJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "@id": `${SITE_URL}/#website`,
-  name: SITE_NAME,
-  url: SITE_URL,
-  description: SITE_DESCRIPTION,
-};
-
-const DISCLAIMER =
-  "PokéIQ is a free, unofficial fan project and is not affiliated with, endorsed or sponsored by Nintendo, Game Freak, Creatures or The Pokémon Company. Pokémon and all related names are trademarks of their respective owners.";
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${display.variable} ${body.variable} ${pixel.variable}`} suppressHydrationWarning>
+    <HtmlRoot className={`${display.variable} ${body.variable} ${pixel.variable}`}>
       <head>
         {process.env.NEXT_PUBLIC_SUPABASE_URL && (
           <>
@@ -108,35 +91,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="boot-splash" aria-hidden>
           <BootLoader idPrefix="splash" />
         </div>
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(websiteJsonLd) }} />
-        <header className="glass sticky top-0 z-50">
-          <div className="grid h-14 w-full grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-6 xl:px-10">
-            <Link href="/" aria-label="PokéIQ home" className="tap shrink-0 justify-self-start">
-              <Logo />
-            </Link>
-            <DesktopNav />
-          </div>
-        </header>
-        <main className="container flex-1 pb-28 pt-8 max-md:pb-12 max-md:pt-6 lg:pb-12">
-          <RouteSlot>{children}</RouteSlot>
-        </main>
-        <footer className="mb-[calc(4rem+env(safe-area-inset-bottom))] border-t border-foreground/[0.06] py-8 text-center text-xs text-muted-foreground lg:mb-0">
-          <div className="container space-y-2">
-            <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2 font-pixel text-[10px] uppercase tracking-wider max-md:grid max-md:grid-cols-2 max-md:gap-x-2 max-md:gap-y-0 max-md:text-[11px] max-md:[&>a:not([href='/privacy']):not([href='/credits'])]:hidden max-md:[&>:is(a,button)]:flex max-md:[&>:is(a,button)]:min-h-11 max-md:[&>:is(a,button)]:items-center max-md:[&>:is(a,button)]:justify-center max-md:[&>button]:col-span-2 max-md:[&>button]:text-[11px]">
-              <Link href="/privacy" prefetch={false} className="hover:text-foreground">Privacy</Link>
-              <Link href="/credits" prefetch={false} className="hover:text-foreground">Credits</Link>
-              <ReportProblem />
-            </nav>
-            <p className="mx-auto max-w-3xl pt-2 text-[11px] leading-relaxed text-muted-foreground/70">{DISCLAIMER}</p>
-          </div>
-        </footer>
-        <MobileTabBar />
-        <AccountSync />
-        <CommunityLayer />
+        {/* English pages get the header and footer here; a page in another language gets them from app/[locale]/layout. */}
+        <ChromeGate before={<ChromeBefore locale="en" />} after={<ChromeAfter locale="en" />}>
+          {children}
+        </ChromeGate>
         <ErrorReporter />
         {/* The analytics endpoint only exists on Vercel deployments. */}
         {process.env.VERCEL && <Analytics />}
       </body>
-    </html>
+    </HtmlRoot>
   );
 }

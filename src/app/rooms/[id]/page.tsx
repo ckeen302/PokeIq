@@ -1,7 +1,8 @@
 import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
 import Link from "@/components/ui/Link";
-import { notFound, permanentRedirect } from "next/navigation";
+import { notFound } from "next/navigation";
+import { permanentRedirect } from "@/i18n/server";
 import { ChevronRight, ShieldCheck } from "lucide-react";
 import { pageMetadata } from "@/lib/seo";
 import { ROOMS, ROOM_MOVED, SITE_RULES, roomById } from "@/lib/rooms";
