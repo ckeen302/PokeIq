@@ -7,6 +7,9 @@ import { pokemonPath } from "@/lib/games/deeplink";
 import { FAVOURITES } from "@/lib/games/lineups";
 import { RECORDS_ALL } from "@/lib/games/records-data";
 import { GamesPokemonPage, recordMark } from "@/components/games/GamesRecords";
+import { localName } from "@/components/games/GamesPages";
+import { serverT } from "@/i18n/server";
+import gamesPages from "@/messages/games-pages";
 
 /**
  * /lab/games/pokemon/<key>: one Pokémon's mark and rank in every event.
@@ -24,14 +27,17 @@ export async function generateMetadata({ params }: { params: Promise<{ key: stri
   const key = (await params).key;
   const a = GAMES_BY_KEY.get(key);
   if (!a) return {};
-  const m100 = recordMark("100m", RECORDS_ALL.mark(key, "100m"));
-  const lj = recordMark("long-jump", RECORDS_ALL.mark(key, "long-jump"));
-  const wl = recordMark("weightlifting", RECORDS_ALL.mark(key, "weightlifting"));
+  const t = serverT(gamesPages);
+  const lc = t.locale;
+  const name = localName(a);
+  const m100 = recordMark("100m", RECORDS_ALL.mark(key, "100m"), lc);
+  const lj = recordMark("long-jump", RECORDS_ALL.mark(key, "long-jump"), lc);
+  const wl = recordMark("weightlifting", RECORDS_ALL.mark(key, "weightlifting"), lc);
   return pageMetadata({
-    title: `${a.name} at the PokéIQ Games: every event, every rank`,
-    description: `How good an athlete is ${a.name}? 100 m in ${m100}, a ${lj} long jump, ${wl} in the clean & jerk, and its rank in every event against every Pokémon, from its real stats with real physics.`,
+    title: t("meta.pokemonTitle", { name }),
+    description: t("meta.pokemonDescription", { name, m100, lj, wl }),
     path: pokemonPath(key),
-    image: { url: "/lab/games/opengraph-image", alt: `${a.name} at the PokéIQ Games` },
+    image: { url: "/lab/games/opengraph-image", alt: t("meta.pokemonAlt", { name }) },
     noindex: !GAMES_LIVE,
   });
 }

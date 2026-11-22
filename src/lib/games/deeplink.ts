@@ -1,6 +1,8 @@
 import { parseSeed, parseVs } from "@/lib/race/deeplink";
 import { EVENT_IDS, eventOf, isEventId, type EventId } from "./events";
 import { MAX_NATIONS, NATION_SIZE, NATION_TYPES, type NationSpec } from "./games";
+import { translator, type Translator } from "@/i18n/catalog";
+import gamesEvents from "@/messages/games-events";
 
 /**
  * Links into the PokéIQ Games. Client-safe and unit-tested.
@@ -86,15 +88,15 @@ export function parseNations(raw: string | null | undefined, known: (key: string
 export const DEFAULT_NATIONS: NationSpec[] = ["fire", "water", "grass", "electric", "dragon", "fighting", "psychic", "steel"].map((type) => ({ type }));
 
 /** A head to head's question: "Can Snorlax out-lift Machamp?" */
-export function h2hQuestion(id: EventId, a: string, b: string): string {
+export function h2hQuestion(id: EventId, a: string, b: string, t: Translator<typeof gamesEvents.en> = translator(gamesEvents, "en", undefined)): string {
   switch (eventOf(id).kind) {
-    case "sprint": return `Can ${a} outrun ${b}?`;
-    case "jump": return id === "high-jump" ? `Can ${a} jump higher than ${b}?` : `Can ${a} out-jump ${b}?`;
-    case "throw": return `Can ${a} out-throw ${b}?`;
-    case "lift": return `Can ${a} out-lift ${b}?`;
-    case "swim": return `Can ${a} out-swim ${b}?`;
-    case "wrestle": return `Can ${a} push ${b} out of the ring?`;
-    default: return `${a} or ${b}: who's the better all-rounder?`;
+    case "sprint": return t("h2h.sprint", { a, b });
+    case "jump": return t(id === "high-jump" ? "h2h.highJump" : "h2h.jump", { a, b });
+    case "throw": return t("h2h.throw", { a, b });
+    case "lift": return t("h2h.lift", { a, b });
+    case "swim": return t("h2h.swim", { a, b });
+    case "wrestle": return t("h2h.wrestle", { a, b });
+    default: return t("h2h.allAround", { a, b });
   }
 }
 

@@ -1,4 +1,6 @@
-import { formatMark } from "@/lib/games/events";
+import { formatMark, localNum } from "@/lib/games/events";
+import { translator, type Translator } from "@/i18n/catalog";
+import gamesShow from "@/messages/games-show";
 import { javelinMark, shotMark, type ThrowResult } from "@/lib/games/throws";
 import { JT, SP, jtLine } from "@/lib/games/venues";
 import { planThrow, throwAt, type ThrowPlan } from "../scene/motions/throws";
@@ -20,10 +22,12 @@ import { Timeline, beatAt, beatClock, beatK, type Burst, type Decal, type Overla
 
 interface Item { pick: Pick; plan: ThrowPlan; leaderBefore: number | null; standing: { key: string; best: number | null }[] }
 
-export function throwShow(result: ThrowResult, o: ShowOptions): Show {
+export function throwShow(result: ThrowResult, o: ShowOptions, tr: Translator<typeof gamesShow.en> = translator(gamesShow, "en", undefined)): Show {
+  const lc = tr.locale;
+  const num = (s: string) => localNum(s, lc);
   const shot = result.implement === "shot";
   const ev = shot ? "shot-put" : "javelin";
-  const name = shot ? "Shot put" : "Javelin";
+  const name = tr(shot ? "ev.shot-put.name" : "ev.javelin.name");
   const athletes = result.cards.map((c) => c.athlete);
   const byKey = new Map(athletes.map((a) => [a.key, a]));
   const list: { i: number; key: string; round: number; mark: number | null }[] = [];
@@ -69,7 +73,7 @@ export function throwShow(result: ThrowResult, o: ShowOptions): Show {
     if (p.cut === "skip") return;
     if (p.a.round !== round) {
       round = p.a.round;
-      tl.add({ kind: "card", cam: "throw", act: idx, clock0: it.plan.start, rate: 0.15, title: `Round ${round}`, sub: round === 3 ? "Last throws" : "" }, 1.1);
+      tl.add({ kind: "card", cam: "throw", act: idx, clock0: it.plan.start, rate: 0.15, title: tr("round", { n: round }), sub: round === 3 ? tr("throw.lastThrows") : "" }, 1.1);
     }
     const pl = it.plan;
     const t0 = p.cut === "full" ? Math.max(pl.start + 0.3, shot ? -2.4 : -2.6) : shot ? -0.7 : -0.9;
@@ -200,13 +204,13 @@ export function throwShow(result: ThrowResult, o: ShowOptions): Show {
     const k = beatK(beat, t);
     const it = items[beat.act ?? 0] ?? items[0];
     const a = byKey.get(it.pick.a.key)!;
-    const bug = { title: name, sub: beat.kind === "board" ? "Final standings" : `Round ${it.pick.a.round}` };
+    const bug = { title: name, sub: beat.kind === "board" ? tr("finalStandings") : tr("round", { n: it.pick.a.round }) };
     const ph = it.plan.attempt.physics;
     switch (beat.kind) {
       case "establish":
-        return { title: { text: name.toUpperCase(), sub: shot ? "The real 7.26 kg shot · 3 throws each" : "The real 800 g javelin · 3 throws each", k } };
+        return { title: { text: name.toUpperCase(), sub: tr(shot ? "throw.craneShot" : "throw.craneJav"), k } };
       case "startlist":
-        return { bug, board: { title: "Start list", rows: result.turns.map((c, i) => ({ place: String(i + 1), name: c.athlete.name, mark: `Best ${formatMark(ev, markOf(c.athlete) || null)}`, key: c.athlete.key, plain: true })), k } };
+        return { bug, board: { title: tr("startList"), rows: result.turns.map((c, i) => ({ place: String(i + 1), name: c.athlete.name, mark: tr("bestMark", { mark: formatMark(ev, markOf(c.athlete) || null, lc) }), key: c.athlete.key, plain: true })), k } };
       case "card":
         return { bug, title: { text: beat.title ?? "", sub: beat.sub ?? "", k } };
       case "action": {
@@ -217,9 +221,9 @@ export function throwShow(result: ThrowResult, o: ShowOptions): Show {
         const t1 = (it.plan.noMark ? 0.6 : it.plan.flight) + (it.pick.cut === "full" ? 1.4 : 0.8);
         return {
           bug,
-          lower: tau < nameEnd && nameEnd - t0 > 1.2 ? { key: a.key, name: a.name, line: `Attack ${a.stats.atk} · ${fmtKg(a.kg)}${it.plan.armless ? " · no arms: a flick at 60%" : ""}`, tag: `Throw ${it.pick.a.round}`, k: (tau - t0) / (nameEnd - t0) } : undefined,
+          lower: tau < nameEnd && nameEnd - t0 > 1.2 ? { key: a.key, name: a.name, line: `${tr("attack", { n: a.stats.atk })} · ${num(fmtKg(a.kg))}${it.plan.armless ? tr("throw.noArms") : ""}`, tag: tr("throw.tag", { n: it.pick.a.round }), k: (tau - t0) / (nameEnd - t0) } : undefined,
           tags: tau < 0 ? [a.key] : [],
-          caption: tau < 1 ? (it.plan.noMark ? `${a.name} can't lift a ${shot ? "7.26 kg shot" : "800 g javelin"}` : throwCaption(a, ph.height)) : undefined,
+          caption: tau < 1 ? (it.plan.noMark ? tr(shot ? "throw.cantShot" : "throw.cantJav", { name: a.name }) : throwCaption(a, ph.height, tr)) : undefined,
           mark: tau >= down ? markFor(it, a.key, 0.5 * Math.min(1, (tau - down) / Math.max(0.5, t1 - down))) : undefined,
         };
       }
@@ -228,22 +232,22 @@ export function throwShow(result: ThrowResult, o: ShowOptions): Show {
           bug,
           // (Carried on from the landing: no second pop.)
           mark: markFor(it, a.key, 0.5 + 0.5 * k),
-          board: { title: "Standings", rows: it.standing.slice(0, 8).map((r, i) => ({ place: String(i + 1), name: byKey.get(r.key)!.name, mark: r.best == null ? "—" : formatMark(ev, r.best), key: r.key, hi: r.key === a.key })), k },
+          board: { title: tr("standings"), rows: it.standing.slice(0, 8).map((r, i) => ({ place: String(i + 1), name: byKey.get(r.key)!.name, mark: r.best == null ? "—" : formatMark(ev, r.best, lc), key: r.key, hi: r.key === a.key })), k },
         };
       }
       case "replay":
-        return { replay: true, lower: { key: a.key, name: a.name, line: `Release ${(ph.v * 3.6).toFixed(0)} km/h at ${((ph.angle * 180) / Math.PI).toFixed(0)}° · ${ph.peak.toFixed(1)} m high · ${formatMark(ev, it.pick.a.mark)}`, tag: "Replay", k } };
+        return { replay: true, lower: { key: a.key, name: a.name, line: tr("throw.replay", { kmh: (ph.v * 3.6).toFixed(0), deg: ((ph.angle * 180) / Math.PI).toFixed(0), m: num(ph.peak.toFixed(1)), mark: formatMark(ev, it.pick.a.mark, lc) }), tag: tr("replay"), k } };
       default:
-        return { bug, board: { title: `${name} · final`, rows: result.order.map((c) => ({ place: c.best == null ? "—" : String(c.place), name: c.athlete.name, mark: c.best == null ? "NM" : formatMark(ev, c.best), key: c.athlete.key, hi: c.place === 1 })), k } };
+        return { bug, board: { title: tr("final", { event: name }), rows: result.order.map((c) => ({ place: c.best == null ? "—" : String(c.place), name: c.athlete.name, mark: c.best == null ? tr("nm") : formatMark(ev, c.best, lc), key: c.athlete.key, hi: c.place === 1 })), k } };
     }
   };
   const markFor = (it: Item, key: string, k: number): NonNullable<Overlay["mark"]> => {
     const mark = it.pick.a.mark;
-    return mark == null ? { text: "NO MARK", sub: it.plan.noMark ? "Couldn't lift it" : "", tone: "bad", k } : { text: formatMark(ev, mark), sub: it.pick.lead ? "New leader" : `${place(it, key)}`, tone: it.pick.lead ? "lead" : "good", k };
+    return mark == null ? { text: tr("throw.noMark"), sub: it.plan.noMark ? tr("throw.couldnt") : "", tone: "bad", k } : { text: formatMark(ev, mark, lc), sub: it.pick.lead ? tr("newLeader") : `${place(it, key)}`, tone: it.pick.lead ? "lead" : "good", k };
   };
   const place = (it: Item, key: string) => {
     const i = it.standing.findIndex((r) => r.key === key);
-    return i < 0 ? "" : `${ordinal(i + 1)} so far`;
+    return i < 0 ? "" : tr("soFar", { place: ordinal(i + 1, tr) });
   };
 
   return {
@@ -256,7 +260,7 @@ export function throwShow(result: ThrowResult, o: ShowOptions): Show {
     at,
     overlay,
     resultsAt: beats.find((b) => b.kind === "board")?.t0 ?? end,
-    hook: shot ? "Which Pokémon throws the furthest? 💪" : "Who throws the javelin furthest? 🎯",
-    headline: winner.best != null ? `${winner.athlete.name} wins with ${formatMark(ev, winner.best)}` : "No legal throw",
+    hook: tr(shot ? "throw.hookShot" : "throw.hookJav"),
+    headline: winner.best != null ? tr("winsWith", { name: winner.athlete.name, mark: formatMark(ev, winner.best, lc) }) : tr("throw.none"),
   };
 }

@@ -33,6 +33,9 @@ export type SwimEvent = keyof typeof SWIM_EVENTS;
 
 export interface AquaticPart {
   label: string;
+  /** Which part it is (for its label in another language); `types`: the sinking types. */
+  id: "water" | "waterEgg" | "sinks" | "other" | "fish" | "fin";
+  types?: string[];
   k: number;
 }
 
@@ -42,14 +45,15 @@ const SINKERS = ["fire", "rock", "ground"];
 export function aquatic(a: Athlete): { factor: number; parts: AquaticPart[] } {
   const parts: AquaticPart[] = [];
   let base: number;
-  if (a.types.includes("water")) { base = SWIM.water; parts.push({ label: "Water type", k: SWIM.water }); }
-  else if (has(a, TRAIT.waterEgg)) { base = SWIM.water; parts.push({ label: "Water egg group", k: SWIM.water }); }
+  if (a.types.includes("water")) { base = SWIM.water; parts.push({ label: "Water type", id: "water", k: SWIM.water }); }
+  else if (has(a, TRAIT.waterEgg)) { base = SWIM.water; parts.push({ label: "Water egg group", id: "waterEgg", k: SWIM.water }); }
   else if (a.types.some((t) => SINKERS.includes(t))) {
     base = SWIM.sinkers;
-    parts.push({ label: `${a.types.filter((t) => SINKERS.includes(t)).map((t) => t[0].toUpperCase() + t.slice(1)).join("/")} type: sinks or hates water`, k: SWIM.sinkers });
-  } else { base = SWIM.other; parts.push({ label: "Not a water Pokémon", k: SWIM.other }); }
+    const sink = a.types.filter((t) => SINKERS.includes(t));
+    parts.push({ label: `${sink.map((t) => t[0].toUpperCase() + t.slice(1)).join("/")} type: sinks or hates water`, id: "sinks", types: sink, k: SWIM.sinkers });
+  } else { base = SWIM.other; parts.push({ label: "Not a water Pokémon", id: "other", k: SWIM.other }); }
   let factor = base;
-  if (a.shape === "fish" || has(a, TRAIT.finEgg)) { factor *= SWIM.fin; parts.push({ label: a.shape === "fish" ? "Fish-shaped body" : "Fin (Water 2 egg group)", k: SWIM.fin }); }
+  if (a.shape === "fish" || has(a, TRAIT.finEgg)) { factor *= SWIM.fin; parts.push({ label: a.shape === "fish" ? "Fish-shaped body" : "Fin (Water 2 egg group)", id: a.shape === "fish" ? "fish" : "fin", k: SWIM.fin }); }
   return { factor, parts };
 }
 

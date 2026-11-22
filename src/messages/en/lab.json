@@ -1,0 +1,72 @@
+{
+  "meta": {
+    "title": "3D Lab: Pokémon in cinematic 3D",
+    "descriptionStory": "3D Lab: watch the story of Pokémon as a 3D film, see every Pokémon at real size, race them in a 3D stadium and spin the World Globe. Free, in your browser.",
+    "descriptionTimeline": "3D Lab: fly through Pokémon history in 3D, see every Pokémon at real size, race them in a 3D stadium and spin the World Globe. Free, in your browser.",
+    "socialTitle": "3D Lab: Pokémon in cinematic 3D · PokéIQ"
+  },
+  "experiences": "Experiences",
+  "experiencesAside": "Real-time 3D in your browser",
+  "kicker": "PokéIQ // 3D Lab",
+  "beta": "Beta",
+  "betaTitle": "The 3D Lab is in beta: it's still being improved.",
+  "title": "<b>3D</b> Lab",
+  "linePhone": "Pokémon in cinematic 3D, live in your browser.",
+  "line": "The cinematic side of PokéIQ. Fly through Pokémon history, stand next to every Pokémon at its real size, race them under the floodlights and spin the whole Pokémon world, live in your browser.",
+  "explore": "Explore",
+  "sound": "Best with sound on",
+  "live": "Live 3D",
+  "highlights": "Highlights",
+  "open": "Open",
+  "openLabel": "Open {title}",
+  "cards": {
+    "timeline": {
+      "title": "Pokémon Timeline",
+      "kicker": "History in 3D",
+      "pitch": "Fly through Pokémon history in a time tunnel, from Red and Green in 1996 to today: the games, the anime, the films and the card game.",
+      "tags": { "0": "Guided tour", "1": "Era transitions", "2": "Japanese and Western dates" }
+    },
+    "pokemon-story": {
+      "title": "The Story of Pokémon",
+      "kicker": "The real history, in 3D",
+      "pitch": "A cinematic film of how Pokémon really began, from a boy collecting insects in Machida to thirty years of games, cards and shows. Scroll through it or press Play, with every line sourced.",
+      "tags": { "0": "The real history", "1": "Every line sourced", "2": "Make a video" }
+    },
+    "sizes": {
+      "title": "Pokémon Sizes",
+      "kicker": "Every Pokémon to scale",
+      "pitch": "Glide past every Pokémon at its real size in a 3D Lumiose City, then hit Make a video for a size comparison ready for TikTok, Reels and Shorts.",
+      "tags": { "0": "Make a video", "1": "Compare any Pokémon", "2": "Lumiose City" }
+    },
+    "globe": {
+      "title": "World Globe",
+      "kicker": "The Pokémon world",
+      "pitch": "Spin a holographic globe of the whole Pokémon world and zoom from its regions down to every town, route and landmark.",
+      "tags": { "0": "Generation by generation", "1": "Real screenshots", "2": "From PokéGuessr" }
+    },
+    "race": {
+      "title": "Pokémon Race",
+      "kicker": "Who is fastest?",
+      "pitch": "Line Pokémon up in a 3D stadium at night and watch them sprint, with speeds from their base stats.",
+      "tags": { "0": "Photo finish", "1": "Pick your own race", "2": "Make a video" }
+    },
+    "mass-battle": {
+      "title": "Pokémon Mass Battle",
+      "kicker": "Real battle maths, at scale",
+      "pitch": "Thousands of Pokémon clash on a 3D battlefield with the real games' damage maths. How many Magikarp does it take to beat Arceus? Find out, then make a video of it.",
+      "tags": { "0": "How many?", "1": "Army vs army", "2": "Make a video" }
+    },
+    "games": {
+      "title": "The PokéIQ Games",
+      "kicker": "Every Pokémon, real sport",
+      "pitch": "Track and field, weightlifting, swimming and wrestling for every Pokémon, scored from their real stats with real physics, then played out in 3D with replays, medals and a medal table.",
+      "tags": { "0": "12 events", "1": "Records for all 1,025", "2": "Make a video" }
+    },
+    "world-history": {
+      "title": "The History of the Pokémon World",
+      "kicker": "The story, as the games tell it",
+      "pitch": "A cinematic museum of the Pokémon world's in-universe history, from Sinnoh's creation myth to the time machine in Area Zero. Scroll through it or press Play, with every line sourced to the games.",
+      "tags": { "0": "Told by the games", "1": "Every line sourced", "2": "Make a video" }
+    }
+  }
+}

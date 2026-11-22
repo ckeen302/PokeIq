@@ -1,0 +1,72 @@
+{
+  "meta": {
+    "title": "3D-Labor: Pokémon in filmreifem 3D",
+    "descriptionStory": "3D-Labor: Sieh dir die Geschichte von Pokémon als 3D-Film an, erlebe jedes Pokémon in echter Größe, lass sie in einem 3D-Stadion um die Wette laufen und dreh den Globus. Kostenlos, im Browser.",
+    "descriptionTimeline": "3D-Labor: Flieg durch die Geschichte von Pokémon in 3D, erlebe jedes Pokémon in echter Größe, lass sie in einem 3D-Stadion um die Wette laufen und dreh den Globus. Kostenlos, im Browser.",
+    "socialTitle": "3D-Labor: Pokémon in filmreifem 3D · PokéIQ"
+  },
+  "experiences": "Erlebnisse",
+  "experiencesAside": "Echtzeit-3D im Browser",
+  "kicker": "PokéIQ // 3D-Labor",
+  "beta": "Beta",
+  "betaTitle": "Das 3D-Labor ist in der Beta: Wir verbessern es noch.",
+  "title": "<b>3D</b>-Labor",
+  "linePhone": "Pokémon in filmreifem 3D, live im Browser.",
+  "line": "Die filmreife Seite von PokéIQ. Flieg durch die Geschichte von Pokémon, stell dich neben jedes Pokémon in echter Größe, lass sie unter Flutlicht laufen und dreh die ganze Pokémon-Welt, live im Browser.",
+  "explore": "Entdecken",
+  "sound": "Am besten mit Ton",
+  "live": "Live-3D",
+  "highlights": "Highlights",
+  "open": "Öffnen",
+  "openLabel": "{title} öffnen",
+  "cards": {
+    "timeline": {
+      "title": "Pokémon-Zeitleiste",
+      "kicker": "Geschichte in 3D",
+      "pitch": "Flieg durch einen Zeittunnel durch die Geschichte von Pokémon, von Rot und Grün 1996 bis heute: die Spiele, der Anime, die Filme und das Sammelkartenspiel.",
+      "tags": { "0": "Geführte Tour", "1": "Epochenwechsel", "2": "Japanische und westliche Daten" }
+    },
+    "pokemon-story": {
+      "title": "Die Geschichte von Pokémon",
+      "kicker": "Die wahre Geschichte, in 3D",
+      "pitch": "Ein filmreifer Film darüber, wie Pokémon wirklich begann: von einem Jungen, der in Machida Insekten sammelte, bis zu dreißig Jahren Spiele, Karten und Serien. Scroll hindurch oder drück auf Abspielen, jede Zeile mit Quelle.",
+      "tags": { "0": "Die wahre Geschichte", "1": "Jede Zeile mit Quelle", "2": "Video erstellen" }
+    },
+    "sizes": {
+      "title": "Pokémon-Größen",
+      "kicker": "Jedes Pokémon maßstabsgetreu",
+      "pitch": "Gleite in einem 3D-Illumina City an jedem Pokémon in echter Größe vorbei und tipp dann auf „Video erstellen“ für einen Größenvergleich, fertig für TikTok, Reels und Shorts.",
+      "tags": { "0": "Video erstellen", "1": "Beliebige Pokémon vergleichen", "2": "Illumina City" }
+    },
+    "globe": {
+      "title": "Weltglobus",
+      "kicker": "Die Pokémon-Welt",
+      "pitch": "Dreh einen holografischen Globus der ganzen Pokémon-Welt und zoom von den Regionen bis zu jeder Stadt, jeder Route und jedem Wahrzeichen.",
+      "tags": { "0": "Generation für Generation", "1": "Echte Screenshots", "2": "Aus PokéGuessr" }
+    },
+    "race": {
+      "title": "Pokémon-Rennen",
+      "kicker": "Wer ist am schnellsten?",
+      "pitch": "Stell Pokémon nachts in einem 3D-Stadion auf und sieh zu, wie sie sprinten, mit Tempo aus ihren Basiswerten.",
+      "tags": { "0": "Fotofinish", "1": "Eigenes Rennen", "2": "Video erstellen" }
+    },
+    "mass-battle": {
+      "title": "Pokémon-Massenschlacht",
+      "kicker": "Echte Kampfformeln, im großen Stil",
+      "pitch": "Tausende Pokémon prallen auf einem 3D-Schlachtfeld aufeinander, mit der echten Schadensformel der Spiele. Wie viele Karpador braucht es, um Arceus zu besiegen? Finde es heraus und mach ein Video daraus.",
+      "tags": { "0": "Wie viele?", "1": "Armee gegen Armee", "2": "Video erstellen" }
+    },
+    "games": {
+      "title": "Die PokéIQ-Spiele",
+      "kicker": "Jedes Pokémon, echter Sport",
+      "pitch": "Leichtathletik, Gewichtheben, Schwimmen und Ringen für jedes Pokémon, bewertet nach ihren echten Werten mit echter Physik, dann in 3D gespielt mit Wiederholungen, Medaillen und Medaillenspiegel.",
+      "tags": { "0": "Leichtathletik und mehr", "1": "Rekorde für jedes Pokémon", "2": "Video erstellen" }
+    },
+    "world-history": {
+      "title": "Die Geschichte der Pokémon-Welt",
+      "kicker": "Die Geschichte, wie die Spiele sie erzählen",
+      "pitch": "Ein filmreifes Museum der Geschichte der Pokémon-Welt innerhalb ihres Universums, vom Schöpfungsmythos Sinnohs bis zur Zeitmaschine in Zone Null. Scroll hindurch oder drück auf Abspielen, jede Zeile mit Quelle aus den Spielen.",
+      "tags": { "0": "Von den Spielen erzählt", "1": "Jede Zeile mit Quelle", "2": "Video erstellen" }
+    }
+  }
+}
