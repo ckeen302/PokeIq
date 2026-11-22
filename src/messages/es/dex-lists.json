@@ -1,0 +1,42 @@
+{
+  "search": {
+    "moves": "Buscar movimientos…  ( / )",
+    "abilities": "Buscar habilidades…  ( / )",
+    "items": "Buscar objetos…  ( / )",
+    "places": "Buscar lugares…  ( / )"
+  },
+  "searchLabel": {
+    "moves": "Buscar movimientos",
+    "abilities": "Buscar habilidades",
+    "items": "Buscar objetos",
+    "places": "Buscar lugares"
+  },
+  "clear": "Borrar búsqueda",
+  "itemCategory": "Categoría de objeto",
+  "allCategories": "Todas las categorías",
+  "region": "Región",
+  "allRegions": "Todas las regiones",
+  "placeType": "Tipo de lugar",
+  "allTypes": "Todos los tipos",
+  "cls": {
+    "physical": "físico",
+    "special": "especial",
+    "status": "estado"
+  },
+  "reset": "Restablecer",
+  "empty": {
+    "moves": "Ningún movimiento coincide con esos filtros.",
+    "abilities": "Ninguna habilidad coincide con esos filtros.",
+    "items": "Ningún objeto coincide con esos filtros.",
+    "places": "Ningún lugar coincide con esos filtros."
+  },
+  "col": {
+    "move": "Movimiento",
+    "type": "Tipo",
+    "cat": "Cat.",
+    "pow": "Pot.",
+    "acc": "Prec.",
+    "pp": "PP"
+  },
+  "holders": "{n} Pokémon"
+}

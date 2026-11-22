@@ -8,13 +8,22 @@ import { PagerKeys } from "./PagerKeys";
  * (Pokémon, moves, places, cards…). Plain links, so it works without JS and
  * crawlers follow it; ← / → do the same from the keyboard.
  */
-export function DexPager({ prev, next, center = { href: "/pokedex", label: "Pokédex" } }: Pager & { center?: PagerLink }) {
+export interface PagerWords {
+  nav: string;
+  prev: string;
+  next: string;
+}
+
+/** The row's own words in English; a server page in another language passes its own (the "dex-pager" messages). */
+const ENGLISH: PagerWords = { nav: "Previous and next", prev: "Previous: ", next: "Next: " };
+
+export function DexPager({ prev, next, center = { href: "/pokedex", label: "Pokédex" }, words = ENGLISH }: Pager & { center?: PagerLink; words?: PagerWords }) {
   return (
-    <nav aria-label="Previous and next" data-testid="dex-pager" className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 text-sm text-muted-foreground">
+    <nav aria-label={words.nav} data-testid="dex-pager" className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 text-sm text-muted-foreground">
       {prev ? (
         <Link href={prev.href} rel="prev" data-testid="dex-prev" className="flex min-w-0 items-center gap-1 justify-self-start hover:text-foreground max-sm:min-h-10">
           <ChevronLeft className="h-4 w-4 shrink-0" aria-hidden />
-          <span className="sr-only">Previous: </span>
+          <span className="sr-only">{words.prev}</span>
           <span className="line-clamp-2 break-words">{prev.label}</span>
         </Link>
       ) : (
@@ -25,7 +34,7 @@ export function DexPager({ prev, next, center = { href: "/pokedex", label: "Pok�
       </Link>
       {next ? (
         <Link href={next.href} rel="next" data-testid="dex-next" className="flex min-w-0 items-center gap-1 justify-self-end text-right hover:text-foreground max-sm:min-h-10">
-          <span className="sr-only">Next: </span>
+          <span className="sr-only">{words.next}</span>
           <span className="line-clamp-2 break-words">{next.label}</span>
           <ChevronRight className="h-4 w-4 shrink-0" aria-hidden />
         </Link>
