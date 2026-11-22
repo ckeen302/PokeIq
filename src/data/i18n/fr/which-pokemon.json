@@ -750,129 +750,129 @@
   "why": "Pokédex (Soleil/Lune, Épée) : ne montre pas ses émotions, déteste qu'on le touche et fait sa toilette seul ; anime : le Flamiaou de Sacha, le chat errant qui veillait sur un vieux Mastouffe."
  },
  "incineroar": {
-  "title": "The Heel Champion",
-  "blurb": "You play the villain because it's more fun, and the crowd loves you for it. You're loud, competitive, and rough around the edges, and you'd never admit how much you care about the little ones watching. You're a lot of show and more heart. You're Incineroar: the heel, the champion, and the hero in disguise.",
-  "why": "Pokedex (SM, Sw): a crude showman that ignores its trainer when the crowd cheers, yet protects children and the weak; the heel who's secretly a face."
+  "title": "Le champion méchant",
+  "blurb": "Tu joues les méchants parce que c'est plus drôle, et le public t'adore pour ça. Tu es bruyant, compétitif et un peu rugueux, et tu n'avouerais jamais à quel point tu tiens aux petits qui te regardent. Tu es beaucoup de spectacle et encore plus de cœur. Tu es Félinferno : le méchant, le champion et le héros déguisé.",
+  "why": "Pokédex (Soleil/Lune, Épée) : un frimeur grossier qui ignore son Dresseur quand la foule l'acclame, mais qui protège les enfants et les faibles ; le méchant qui est en secret un gentil."
  },
  "primarina": {
-  "title": "The Songstress",
-  "blurb": "Your voice is your power, and you use it beautifully. You're expressive and warm, a performer with real discipline behind the sparkle, and you'd rather move people than beat them. You love your people and you sing it. You're Primarina: graceful, gifted, and born for the stage.",
-  "why": "Pokedex (SM, Sw): controls water balloons with its singing voice and performs with grace; each one has its own song passed down the family."
+  "title": "La cantatrice",
+  "blurb": "Ta voix est ton pouvoir, et tu t'en sers magnifiquement. Tu es expressive et chaleureuse, une artiste avec une vraie discipline derrière les paillettes, et tu préfères émouvoir les gens plutôt que les battre. Tu aimes les tiens et tu le chantes. Tu es Oratoria : gracieuse, douée et née pour la scène.",
+  "why": "Pokédex (Soleil/Lune, Épée) : contrôle des bulles d'eau avec sa voix et se produit avec grâce ; chacune a sa propre chanson, transmise dans la famille."
  },
  "lycanroc": {
-  "title": "The Loyal Wolf",
-  "blurb": "You're loyal and you're wild, and you don't see why you'd have to pick. You're fiercely competitive, quick to taunt, and quick to defend your pack, and you need a partner who can keep up. You run hot and you run hard. You're Lycanroc: devoted, fierce, and never tame.",
-  "why": "Pokedex (SM, Sw): the Midday form is obedient and loyal; the Midnight form taunts foes and loves a fight; anime: Ash's Dusk Lycanroc, fierce and faithful."
+  "title": "Le loup fidèle",
+  "blurb": "Tu es fidèle et tu es sauvage, et tu ne vois pas pourquoi il faudrait choisir. Tu es férocement compétitif, prompt à provoquer et prompt à défendre ta meute, et il te faut un partenaire capable de suivre. Tu t'enflammes vite et tu cours à fond. Tu es Lougaroc : dévoué, féroce et jamais apprivoisé.",
+  "why": "Pokédex (Soleil/Lune, Épée) : la Forme Diurne est obéissante et fidèle ; la Forme Nocturne provoque ses ennemis et adore se battre ; anime : le Lougaroc Forme Crépusculaire de Sacha, féroce et loyal."
  },
  "wishiwashi": {
-  "title": "The Strength in Numbers",
-  "blurb": "On your own, you worry; together, you're terrifying. You're a team person through and through, loyal and a little anxious, and you do your best work shoulder to shoulder with people you trust. Nobody should underestimate what happens when you all show up. You're Wishiwashi: humble, loyal, and strongest in a crowd.",
-  "why": "Pokedex (SM, Sw): weak and teary alone, but when it schools it terrifies even Gyarados; the species that is only strong together."
+  "title": "L'union fait la force",
+  "blurb": "Seul, tu t'inquiètes ; ensemble, vous êtes terrifiants. Tu as l'esprit d'équipe jusqu'au bout des nageoires, fidèle et un peu anxieux, et tu donnes le meilleur de toi épaule contre épaule avec des gens en qui tu as confiance. Personne ne devrait sous-estimer ce qui se passe quand vous êtes tous là. Tu es Froussardine : humble, fidèle et plus fort en groupe.",
+  "why": "Pokédex (Soleil/Lune, Épée) : faible et pleurnichard seul, mais quand il forme un banc, il terrifie même Léviator ; l'espèce qui n'est forte qu'à plusieurs."
  },
  "mudsdale": {
-  "title": "The Unflinching Workhorse",
-  "blurb": "You just keep going. You're steady and tireless, unbothered by noise or pressure or weather, and you do the heavy work without a single complaint. Flash means nothing to you; finishing means everything. You're Mudsdale: enduring, dependable, and impossible to rattle.",
-  "why": "Pokedex (SM, Sw): carries ten tons across rough ground for three days and nights without rest, and nothing makes it panic; the embodiment of grit."
+  "title": "Le cheval de trait imperturbable",
+  "blurb": "Toi, tu continues. Tu es constant et infatigable, insensible au bruit, à la pression et à la météo, et tu fais le gros du travail sans une seule plainte. L'esbroufe ne veut rien dire pour toi ; finir veut tout dire. Tu es Bourrinos : endurant, fiable et impossible à déstabiliser.",
+  "why": "Pokédex (Soleil/Lune, Épée) : porte dix tonnes sur un terrain accidenté pendant trois jours et trois nuits sans s'arrêter, et rien ne le fait paniquer ; l'incarnation de la ténacité."
  },
  "salazzle": {
-  "title": "The Pheromone Queen",
-  "blurb": "You run the room, and everyone knows it. You're confident and magnetic, a little ruthless, and extremely good at getting people to do what you want and enjoy it. You don't ask permission. You're Salazzle: commanding, charismatic, and in charge.",
-  "why": "Pokedex (SM, Sw): leads a harem of Salandit with pheromones that make others do as it pleases; the queen who runs the show."
+  "title": "La reine des phéromones",
+  "blurb": "C'est toi qui mènes la danse, et tout le monde le sait. Tu es sûre de toi et magnétique, un peu impitoyable, et extrêmement douée pour faire faire aux gens ce que tu veux en leur faisant aimer ça. Tu ne demandes pas la permission. Tu es Malamandre : autoritaire, charismatique et aux commandes.",
+  "why": "Pokédex (Soleil/Lune, Épée) : dirige une cour de Tritox grâce à des phéromones qui poussent les autres à lui obéir ; la reine qui mène le spectacle."
  },
  "bewear": {
-  "title": "The Crushing Hugger",
-  "blurb": "You love hard, sometimes too hard. You're warm and generous and a bit overwhelming, with no idea how strong you are, and the people you've adopted have long since given up resisting. You'd do anything for them, immediately. You're Bewear: affectionate, powerful, and dangerously huggable.",
-  "why": "Pokedex (SM, Sw): its friendly hugs are strong enough to crush, so it must be approached with care; anime: Team Rocket's unbeatable, affectionate landlord."
+  "title": "Le câlin écrasant",
+  "blurb": "Tu aimes fort, parfois trop fort. Tu es chaleureux, généreux et un peu envahissant, sans aucune idée de ta force, et ceux que tu as adoptés ont depuis longtemps renoncé à résister. Tu ferais n'importe quoi pour eux, tout de suite. Tu es Chelours : affectueux, puissant et dangereusement câlin.",
+  "why": "Pokédex (Soleil/Lune, Épée) : ses câlins amicaux peuvent broyer, il faut donc l'approcher avec prudence ; anime : le propriétaire affectueux et imbattable de la Team Rocket."
  },
  "tsareena": {
-  "title": "The Haughty Queen",
-  "blurb": "You have standards, and you enforce them. You're elegant and formidable, a little scornful of people who don't try, and fiercely protective of the ones who look up to you. You lead from the front and you win in heels. You're Tsareena: regal, ruthless, and secretly devoted.",
-  "why": "Pokedex (SM, Sw): haughty and merciless with its kicks, scornful of the weak, yet it protects every Bounsweet in its care; the queen who earns the crown."
+  "title": "La reine hautaine",
+  "blurb": "Tu as des exigences, et tu les fais respecter. Tu es élégante et redoutable, un peu méprisante envers ceux qui ne font pas d'effort, et farouchement protectrice envers ceux qui t'admirent. Tu mènes en première ligne et tu gagnes en talons. Tu es Sucreine : royale, implacable et dévouée en secret.",
+  "why": "Pokédex (Soleil/Lune, Épée) : hautaine et impitoyable avec ses coups de pied, elle méprise les faibles, mais protège chaque Croquine dont elle a la charge ; la reine qui mérite sa couronne."
  },
  "comfey": {
-  "title": "The Flower Healer",
-  "blurb": "You make people feel better, and you do it on purpose. You're cheerful and nurturing, organised in your kindness, and completely uninterested in winning anything. You'd rather decorate someone's day. You're Comfey: healing, warm, and a joy to have around.",
-  "why": "Pokedex (SM, Sw): picks flowers and hangs them on its vine, and the soothing scent heals the sick; it is used in Alola's hospitals."
+  "title": "La guérisseuse fleurie",
+  "blurb": "Tu fais du bien aux gens, et tu le fais exprès. Tu es joyeuse et attentionnée, organisée dans ta gentillesse, et pas du tout intéressée par la victoire. Tu préfères embellir la journée de quelqu'un. Tu es Guérilande : apaisante, chaleureuse et un bonheur à côtoyer.",
+  "why": "Pokédex (Soleil/Lune, Épée) : cueille des fleurs et les accroche à sa liane, et leur parfum apaisant soigne les malades ; on l'emploie dans les hôpitaux d'Alola."
  },
  "oranguru": {
-  "title": "The Forest Sage",
-  "blurb": "You think before you act, and you think a lot. You're wise and observant, a little aloof, and generous in a careful, deliberate way: you help the ones who've earned it. You'd rather understand than compete. You're Oranguru: thoughtful, patient, and quietly profound.",
-  "why": "Pokedex (SM, Sw): sits high in the trees thinking, uses tools and gives items to Pokemon it deems worthy; people once mistook it for a human; the sage."
+  "title": "Le sage de la forêt",
+  "blurb": "Tu réfléchis avant d'agir, et tu réfléchis beaucoup. Tu es sage et observateur, un peu distant, et généreux d'une manière prudente et réfléchie : tu aides ceux qui l'ont mérité. Tu préfères comprendre que rivaliser. Tu es Gouroutan : réfléchi, patient et discrètement profond.",
+  "why": "Pokédex (Soleil/Lune, Épée) : médite en haut des arbres, utilise des outils et donne des objets aux Pokémon qu'il juge dignes ; on le prenait autrefois pour un humain ; le sage."
  },
  "passimian": {
-  "title": "The Team Player",
-  "blurb": "You're nothing without the team, and you're proud of that. You're energetic and loyal, with a strong competitive streak that only ever points outward, and you'd rather pass the ball than take the shot. You'd give anything for your squad. You're Passimian: cooperative, committed, and built for the group.",
-  "why": "Pokedex (SM, Sw): lives in groups of about twenty, passing berries to each other and following a leader who's chosen for its throwing; teamwork is everything."
+  "title": "L'esprit d'équipe",
+  "blurb": "Tu n'es rien sans l'équipe, et tu en es fier. Tu es énergique et fidèle, avec un esprit de compétition toujours tourné vers l'extérieur, et tu préfères faire la passe plutôt que tirer. Tu donnerais tout pour ton équipe. Tu es Quartermac : coopératif, engagé et taillé pour le groupe.",
+  "why": "Pokédex (Soleil/Lune, Épée) : vit en groupes d'une vingtaine, se passe des baies et suit un chef choisi pour son lancer ; le travail d'équipe avant tout."
  },
  "wimpod": {
-  "title": "The Nervous Scavenger",
-  "blurb": "You're scared of a lot, and you keep going anyway. You're gentle and jumpy, quick to run and quick to come back, and you do more good than you realise by just tidying up after everyone. Bravery isn't the absence of fear; it's you. You're Wimpod: nervous, kind, and more useful than you know.",
-  "why": "Pokedex (SM, Sw): a coward that flees at the slightest sound, but it cleans the beaches of whatever it finds; the anxious little helper."
+  "title": "Le charognard nerveux",
+  "blurb": "Beaucoup de choses te font peur, et tu continues quand même. Tu es doux et craintif, prompt à fuir et prompt à revenir, et tu fais plus de bien que tu ne le crois rien qu'en rangeant derrière tout le monde. Le courage n'est pas l'absence de peur ; c'est toi. Tu es Sovkipou : nerveux, gentil et plus utile que tu ne le penses.",
+  "why": "Pokédex (Soleil/Lune, Épée) : un trouillard qui fuit au moindre bruit, mais qui nettoie les plages de tout ce qu'il trouve ; le petit aide anxieux."
  },
  "pyukumuku": {
-  "title": "The Immovable",
-  "blurb": "You've found your spot and you're staying in it. You're calm and stubborn, completely unbothered by being told to move, and quietly content in a way other people find mysterious. Change isn't a threat; it's just not happening. You're Pyukumuku: immovable, serene, and perfectly fine, thanks.",
-  "why": "Pokedex (SM, Sw): never leaves its spot, and if thrown back into the sea it crawls right back to where it was; the stubborn sea cucumber."
+  "title": "L'inamovible",
+  "blurb": "Tu as trouvé ta place et tu y restes. Tu es calme et têtu, totalement insensible quand on te dit de bouger, et discrètement satisfait d'une manière que les autres trouvent mystérieuse. Le changement n'est pas une menace ; il n'arrivera simplement pas. Tu es Concombaffe : inamovible, serein et parfaitement bien, merci.",
+  "why": "Pokédex (Soleil/Lune, Épée) : ne quitte jamais sa place, et si on le rejette à la mer, il revient en rampant exactement où il était ; le concombre de mer têtu."
  },
  "komala": {
-  "title": "The Dreaming Sleeper",
-  "blurb": "You're living in a dream and honestly it's going well. You're peaceful and unbothered, happy in your own head, and more or less immune to stress because you've never really woken up for it. People envy your calm. You're Komala: dreamy, serene, and holding on to your log.",
-  "why": "Pokedex (SM, Sw): born asleep and dies asleep, living out its whole life in dreams while clutching a log; the serene sleeper."
+  "title": "Le dormeur rêveur",
+  "blurb": "Tu vis dans un rêve et, honnêtement, ça se passe bien. Tu es paisible et insouciant, heureux dans ta tête, et plus ou moins immunisé contre le stress parce que tu ne t'es jamais vraiment réveillé pour lui. Les gens envient ton calme. Tu es Dodoala : rêveur, serein et cramponné à ta bûche.",
+  "why": "Pokédex (Soleil/Lune, Épée) : naît endormi et meurt endormi, vivant toute sa vie dans ses rêves en serrant une bûche ; le dormeur serein."
  },
  "mimikyu": {
-  "title": "The Lonely Disguise",
-  "blurb": "You just want to be loved, and you've put a lot of work into the costume. You're shy and sincere, a little anxious, and far more loyal than the people who never looked under the rag deserved. Someone will see you properly. You're Mimikyu: lonely, loving, and worth the look.",
-  "why": "Pokedex (SM, Sw): wears a Pikachu rag so people will love it, and cries under the disguise when it's lonely; Mystery Dungeon: the misunderstood one."
+  "title": "Le déguisement solitaire",
+  "blurb": "Tu veux juste être aimé, et tu t'es donné beaucoup de mal pour le costume. Tu es timide et sincère, un peu anxieux, et bien plus fidèle que ne le méritaient ceux qui n'ont jamais regardé sous le chiffon. Quelqu'un te verra vraiment. Tu es Mimiqui : solitaire, aimant et qui mérite qu'on regarde de plus près.",
+  "why": "Pokédex (Soleil/Lune, Épée) : porte un chiffon à l'effigie de Pikachu pour qu'on l'aime, et pleure sous son déguisement quand il se sent seul ; Donjon Mystère : l'incompris."
  },
  "drampa": {
-  "title": "The Grandparent Dragon",
-  "blurb": "You're gentle with the little ones and terrifying to anyone who hurts them. You're warm and patient, happy to tell the same story twice, and your calm hides an absolutely volcanic protective streak. You don't compete; you look after. You're Drampa: kind, wise, and not to be tested.",
-  "why": "Pokedex (SM, Sw): gentle with children and loves to play with them, but if a child is hurt it goes on a furious rampage; the grandparent."
+  "title": "Le dragon grand-parent",
+  "blurb": "Tu es doux avec les petits et terrifiant avec quiconque leur fait du mal. Tu es chaleureux et patient, ravi de raconter deux fois la même histoire, et ton calme cache un instinct protecteur absolument volcanique. Tu ne rivalises pas ; tu veilles. Tu es Draïeul : gentil, sage, et mieux vaut ne pas te mettre à l'épreuve.",
+  "why": "Pokédex (Soleil/Lune, Épée) : doux avec les enfants et adore jouer avec eux, mais si un enfant est blessé, il entre dans une fureur dévastatrice ; le grand-parent."
  },
  "kommo-o": {
-  "title": "The Clanging Honour",
-  "blurb": "You announce yourself, and you back it up. You're disciplined and proud, with a strong sense of honour and a love of a fair fight, and you train harder than anyone you compete with. You respect people who respect the rules. You're Kommo-o: honourable, loud, and ready.",
-  "why": "Pokedex (SM, Sw): clangs its scales to intimidate before a fight and trains relentlessly, battling only those it respects; the honourable dragon."
+  "title": "L'honneur qui résonne",
+  "blurb": "Tu t'annonces, et tu assures ensuite. Tu es discipliné et fier, avec un sens aigu de l'honneur et l'amour des combats loyaux, et tu t'entraînes plus dur que tous ceux que tu affrontes. Tu respectes ceux qui respectent les règles. Tu es Ékaïser : honorable, bruyant et prêt.",
+  "why": "Pokédex (Soleil/Lune, Épée) : fait cliqueter ses écailles pour intimider avant un combat et s'entraîne sans relâche, n'affrontant que ceux qu'il respecte ; le dragon honorable."
  },
  "tapu-koko": {
-  "title": "The Fickle Guardian",
-  "blurb": "You're curious, impulsive, and impossible to predict. You love a good fight and a good surprise, you help people when you feel like it and vanish when you don't, and you've never once explained yourself. You're a storm with a sense of humour. You're Tapu Koko: wild, playful, and entirely your own.",
-  "why": "Pokedex (SM, Sw): curious and fickle, it loves battles and lends power on a whim, then vanishes; anime: the guardian that picks a fight with Ash for fun."
+  "title": "Le gardien capricieux",
+  "blurb": "Tu es curieux, impulsif et impossible à prévoir. Tu adores un bon combat et une bonne surprise, tu aides les gens quand ça te chante et tu disparais quand ça ne te chante pas, et tu ne t'es jamais expliqué. Tu es un orage avec le sens de l'humour. Tu es Tokorico : sauvage, joueur et entièrement à toi.",
+  "why": "Pokédex (Soleil/Lune, Épée) : curieux et capricieux, il adore les combats et prête sa puissance sur un coup de tête, puis disparaît ; anime : le gardien qui provoque Sacha pour s'amuser."
  },
  "grookey": {
-  "title": "The Stick Drummer",
-  "blurb": "You've always got a beat going. You're upbeat and curious, a little restless, and you make things grow just by being around them. You'd rather jam than plan. You're Grookey: rhythmic, cheerful, and good for the garden.",
-  "why": "Pokedex (SwSh): beats a rhythm with its stick that makes plants grow, and is endlessly curious; anime: Goh's Grookey, who drums on everything."
+  "title": "Le batteur à la baguette",
+  "blurb": "Tu as toujours un rythme en tête. Tu es enjoué et curieux, un peu agité, et tu fais pousser les choses rien qu'en étant à côté. Tu préfères improviser que planifier. Tu es Ouistempo : rythmé, joyeux et bon pour le jardin.",
+  "why": "Pokédex (Épée/Bouclier) : bat un rythme avec sa baguette qui fait pousser les plantes, et il est d'une curiosité sans fin ; anime : l'Ouistempo de Goh, qui tape sur tout."
  },
  "cinderace": {
-  "title": "The Striker",
-  "blurb": "You play to win and you play to the crowd. You're energetic and skilled, a bit of a show-off, and at your best when the stakes are high and people are watching. You've got the goal in sight before anyone else. You're Cinderace: fast, fiery, and the one who takes the shot.",
-  "why": "Pokedex (SwSh): juggles a pebble into a fireball and kicks it with pinpoint aim, but gets carried away showing off when the crowd cheers; the striker."
+  "title": "L'attaquant",
+  "blurb": "Tu joues pour gagner et tu joues pour le public. Tu es énergique et doué, un peu frimeur, et au sommet de ta forme quand l'enjeu est élevé et que les gens regardent. Tu as le but en vue avant tout le monde. Tu es Pyrobut : rapide, ardent et celui qui tente sa chance.",
+  "why": "Pokédex (Épée/Bouclier) : jongle avec un caillou jusqu'à en faire une boule de feu et la tire avec une précision redoutable, mais se laisse emporter à frimer quand la foule l'acclame ; l'attaquant."
  },
  "sobble": {
-  "title": "The Teary Chameleon",
-  "blurb": "You cry easily, and you make everyone else cry with you, which is a skill. You're sensitive and shy, quick to vanish when things get loud, and much braver on the inside than the outside shows. You care enormously. You're Sobble: tender, timid, and growing into something fierce.",
-  "why": "Pokedex (SwSh): turns invisible in water, and its tears are so potent that everyone around starts crying too; anime: Goh's Sobble, hiding in his hood."
+  "title": "Le caméléon pleurnicheur",
+  "blurb": "Tu pleures facilement et tu fais pleurer tout le monde avec toi, ce qui est un vrai talent. Tu es sensible et timide, prompt à disparaître quand ça devient bruyant, et bien plus courageux à l'intérieur qu'il n'y paraît. Tu tiens énormément aux choses. Tu es Larméléon : tendre, timide et en train de devenir quelque chose de féroce.",
+  "why": "Pokédex (Épée/Bouclier) : devient invisible dans l'eau, et ses larmes sont si puissantes que tout le monde autour se met à pleurer ; anime : le Larméléon de Goh, caché dans sa capuche."
  },
  "corviknight": {
-  "title": "The Sky Taxi Knight",
-  "blurb": "You get people where they need to go, reliably, without drama. You're calm and disciplined, with a steely sense of duty and no patience for nonsense, and you're more capable in a crisis than almost anyone. You don't need thanks. You're Corviknight: composed, dependable, and armoured all the way through.",
-  "why": "Pokedex (SwSh): highly intelligent and calm, it carries people across Galar as the Flying Taxi and is the terror of the skies; the stoic knight."
+  "title": "Le chevalier taxi du ciel",
+  "blurb": "Tu emmènes les gens là où ils doivent aller, de façon fiable et sans drame. Tu es calme et discipliné, avec un sens du devoir d'acier et aucune patience pour les bêtises, et en pleine crise tu es plus compétent que presque tout le monde. Tu n'as pas besoin de remerciements. Tu es Corvaillus : posé, fiable et blindé de part en part.",
+  "why": "Pokédex (Épée/Bouclier) : très intelligent et calme, il transporte les gens à travers Galar en tant que Taxi Volant et terrorise les cieux ; le chevalier stoïque."
  },
  "wooloo": {
-  "title": "The Woolly Follower",
-  "blurb": "You go with the group and you avoid the fuss. You're gentle and soft, happiest among your people, and when trouble starts you simply roll away from it, which is honestly a strategy. You're not here to fight. You're Wooloo: cosy, loyal, and wonderfully unbothered.",
-  "why": "Pokedex (SwSh): follows the herd, rolls away from trouble, and hates conflict; the gentle sheep of Galar."
+  "title": "Le mouton qui suit le troupeau",
+  "blurb": "Tu suis le groupe et tu évites les histoires. Tu es doux et moelleux, plus heureux parmi les tiens, et quand les ennuis commencent tu roules simplement loin d'eux, ce qui est honnêtement une stratégie. Tu n'es pas là pour te battre. Tu es Moumouton : douillet, fidèle et merveilleusement serein.",
+  "why": "Pokédex (Épée/Bouclier) : suit le troupeau, roule loin des ennuis et déteste les conflits ; le doux mouton de Galar."
  },
  "yamper": {
-  "title": "The Treat-Driven Pup",
-  "blurb": "You're everyone's best friend, especially if they've got snacks. You're loyal and bouncy, a little food-motivated, and the kind of presence that makes a bad day better just by showing up. You'd follow your people anywhere, at a jog. You're Yamper: joyful, devoted, and extremely good.",
-  "why": "Pokedex (SwSh): herds livestock, chases after anything that runs, and only really moves when it's expecting a treat; the corgi."
+  "title": "Le chiot aux friandises",
+  "blurb": "Tu es le meilleur ami de tout le monde, surtout s'ils ont des friandises. Tu es fidèle et bondissant, un peu motivé par la nourriture, et ta seule présence rend une mauvaise journée meilleure. Tu suivrais les tiens n'importe où, au petit trot. Tu es Voltoutou : joyeux, dévoué et un très bon chien.",
+  "why": "Pokédex (Épée/Bouclier) : garde les troupeaux, court après tout ce qui détale et ne se bouge vraiment que lorsqu'il attend une récompense ; le corgi."
  },
  "cramorant": {
-  "title": "The Gulping Goof",
-  "blurb": "You commit to the bit. You're a bit scatterbrained and a lot stubborn, and once you've got hold of something you're not letting go, however little sense it makes. People find you baffling and endearing in equal measure. You're Cramorant: goofy, tenacious, and never spitting it out.",
-  "why": "Pokedex (SwSh): swallows anything that fits in its beak and refuses to let go, even a Pikachu; a bit dim, entirely committed."
+  "title": "Le gobeur loufoque",
+  "blurb": "Tu vas jusqu'au bout de ton idée. Tu es un peu tête en l'air et très têtu, et une fois que tu tiens quelque chose, tu ne le lâches plus, aussi absurde que ce soit. Les gens te trouvent déroutant et attachant à parts égales. Tu es Nigosier : loufoque, tenace et qui ne recrache jamais rien.",
+  "why": "Pokédex (Épée/Bouclier) : avale tout ce qui tient dans son bec et refuse de le lâcher, même un Pikachu ; un peu benêt, totalement investi."
  },
  "toxtricity": {
   "title": "The Rock Star",
