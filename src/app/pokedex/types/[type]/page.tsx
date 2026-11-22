@@ -145,7 +145,7 @@ export default async function TypePage({ params }: PageProps) {
     <article className="mx-auto max-w-6xl space-y-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(crumbs) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(list) }} />
-      <DetailNav tab="types" label={t("type.back")} pager={pager} {...(locale !== "en" && { home: { href: "/pokedex", label: t("crumbs.pokedex") } })} />
+      <DetailNav tab="types" label={t("type.back")} pager={pager} />
       <DetailHero kicker={t("type.kicker")} title={t("type.name", { type: name })}>
         <TypeBadge type={ty} size="lg" label={name} />
         <p className="max-w-2xl text-foreground/90">{typeDescription(t, ty, locale)}</p>

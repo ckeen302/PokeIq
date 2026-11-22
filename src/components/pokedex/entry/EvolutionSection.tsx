@@ -9,28 +9,32 @@ import { typeColor } from "@/lib/pokemon/type-colors";
 import { artUrl } from "@/lib/pokemon/art";
 import { TypeBadge } from "../TypeBadge";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import dexEntryNs from "@/messages/dex-entry";
 
-export function EvolutionSection({ tree, currentId }: { tree: EvolutionNode; currentId: number }) {
+type Names = Record<string, string> | undefined;
+
+export function EvolutionSection({ tree, currentId, typeNames }: { tree: EvolutionNode; currentId: number; typeNames?: Record<string, string> }) {
   return (
     <div className="overflow-x-auto hud rounded-lg border bg-card p-5" data-hscroll>
       <div className="flex justify-center">
-        <Branch node={tree} currentId={currentId} depth={0} />
+        <Branch node={tree} currentId={currentId} depth={0} names={typeNames} />
       </div>
     </div>
   );
 }
 
-function Branch({ node, currentId, depth }: { node: EvolutionNode; currentId: number; depth: number }) {
+function Branch({ node, currentId, depth, names }: { node: EvolutionNode; currentId: number; depth: number; names: Names }) {
   const many = node.children.length > 2;
   return (
     <div className="flex flex-col items-center gap-3 md:flex-row">
-      <EvoCard node={node} current={node.id === currentId} delay={depth * 0.25} />
+      <EvoCard node={node} current={node.id === currentId} delay={depth * 0.25} names={names} />
       {node.children.length > 0 && (
         <div className={cn("gap-3", many ? "grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4" : "flex flex-col")}>
           {node.children.map((child) => (
             <div key={child.id} className={cn("flex items-center gap-2", many ? "flex-col" : "flex-col md:flex-row")}>
               <Condition conditions={child.conditions} vertical={many} delay={depth * 0.25 + 0.15} />
-              <Branch node={child} currentId={currentId} depth={depth + 1} />
+              <Branch node={child} currentId={currentId} depth={depth + 1} names={names} />
             </div>
           ))}
         </div>
@@ -39,7 +43,7 @@ function Branch({ node, currentId, depth }: { node: EvolutionNode; currentId: nu
   );
 }
 
-function EvoCard({ node, current, delay }: { node: EvolutionNode; current: boolean; delay: number }) {
+function EvoCard({ node, current, delay, names }: { node: EvolutionNode; current: boolean; delay: number; names: Names }) {
   const c = typeColor(node.types[0]);
   return (
     <motion.div
@@ -62,7 +66,7 @@ function EvoCard({ node, current, delay }: { node: EvolutionNode; current: boole
         <span className={cn("text-sm font-bold", current && "text-primary")}>{node.name}</span>
         <div className="flex gap-1">
           {node.types.map((t) => (
-            <TypeBadge key={t} type={t} size="sm" />
+            <TypeBadge key={t} type={t} size="sm" label={names?.[t]} />
           ))}
         </div>
       </Link>
@@ -71,6 +75,7 @@ function EvoCard({ node, current, delay }: { node: EvolutionNode; current: boole
 }
 
 function Condition({ conditions, vertical, delay }: { conditions: string[]; vertical: boolean; delay: number }) {
+  const t = useT(dexEntryNs);
   return (
     <motion.div
       className={cn("flex max-w-[11rem] items-center gap-1 text-center text-[11px] text-muted-foreground", vertical ? "flex-col" : "flex-col md:flex-row")}
@@ -80,7 +85,7 @@ function Condition({ conditions, vertical, delay }: { conditions: string[]; vert
       transition={{ delay }}
     >
       <span className="rounded-lg border border-foreground/10 bg-background/60 px-2 py-1 leading-tight">
-        {conditions.length ? conditions.join(" or ") : "Special"}
+        {conditions.length ? conditions.join(t("evo.or")) : t("evo.special")}
       </span>
       {vertical ? (
         <ArrowDown className="h-4 w-4 shrink-0 text-primary" />

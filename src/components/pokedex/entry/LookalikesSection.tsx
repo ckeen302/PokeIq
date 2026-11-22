@@ -8,6 +8,8 @@ import type { DexEntryData } from "@/lib/pokemon/dex-types";
 import { artUrl } from "@/lib/pokemon/art";
 import { typeColor } from "@/lib/pokemon/type-colors";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import dexEntryNs from "@/messages/dex-entry";
 
 /**
  * Silhouettes a vision model finds most similar to this one — the exact
@@ -15,6 +17,7 @@ import { cn } from "@/lib/utils";
  * reveal each one.
  */
 export function LookalikesSection({ self, lookalikes }: { self: { id: number; name: string }; lookalikes: DexEntryData["lookalikes"] }) {
+  const t = useT(dexEntryNs);
   const [revealed, setRevealed] = useState<Set<number>>(new Set());
   const toggle = (id: number) =>
     setRevealed((cur) => {
@@ -29,7 +32,7 @@ export function LookalikesSection({ self, lookalikes }: { self: { id: number; na
       <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-7">
         <div className="flex flex-col items-center gap-1.5">
           <div className="spotlight flex aspect-square w-full items-center justify-center rounded-md ring-2 ring-primary">
-            <img src={artUrl(self.id, 160)} alt={`${self.name} silhouette`} loading="lazy" decoding="async" className="h-[85%] w-[85%] object-contain [filter:brightness(0)]" />
+            <img src={artUrl(self.id, 160)} alt={t("look.silhouette", { name: self.name })} loading="lazy" decoding="async" className="h-[85%] w-[85%] object-contain [filter:brightness(0)]" />
           </div>
           <span className="text-xs font-bold text-primary">{self.name}</span>
         </div>
@@ -50,12 +53,12 @@ export function LookalikesSection({ self, lookalikes }: { self: { id: number; na
                 onMouseEnter={() => setRevealed((cur) => new Set(cur).add(l.id))}
                 className="group relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-md border border-foreground/10 transition-colors"
                 style={{ background: shown ? `radial-gradient(circle, ${typeColor(l.types[0])}40, transparent 70%)` : undefined }}
-                aria-label={shown ? l.name : "Reveal lookalike"}
+                aria-label={shown ? l.name : t("look.reveal")}
               >
                 {!shown && <div className="spotlight absolute inset-0 opacity-90" aria-hidden />}
                 <img
                   src={artUrl(l.id, 160)}
-                  alt={shown ? l.name : "Lookalike silhouette"}
+                  alt={shown ? l.name : t("look.hidden")}
                   loading="lazy"
                   decoding="async"
                   className={cn("relative h-[85%] w-[85%] object-contain transition-all duration-500", shown ? "scale-105" : "[filter:brightness(0)]")}
@@ -68,14 +71,13 @@ export function LookalikesSection({ self, lookalikes }: { self: { id: number; na
               ) : (
                 <span className="text-xs text-muted-foreground">???</span>
               )}
-              <span className="text-[10px] tabular-nums text-muted-foreground">{Math.round(l.similarity * 100)}% match</span>
+              <span className="text-[10px] tabular-nums text-muted-foreground">{t("look.match", { n: Math.round(l.similarity * 100) })}</span>
             </motion.div>
           );
         })}
       </div>
       <p className="text-[11px] text-muted-foreground">
-        Ranked by a DINOv2 vision model comparing silhouette shapes — these are the options Who&apos;s That Pokémon? will
-        try to trip you up with. Tap to reveal.
+        {t("look.note")}
       </p>
     </div>
   );

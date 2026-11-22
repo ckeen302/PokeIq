@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Quote } from "lucide-react";
+import { useT } from "@/i18n/client";
+import dexEntryNs from "@/messages/dex-entry";
 
 /** Signature colours of each main-series game, for the entry badges. */
 const GAME_COLORS: Record<string, string> = {
@@ -19,7 +21,8 @@ function gameColor(game: string): string {
   return GAME_COLORS[game.toLowerCase()] ?? "#64748b";
 }
 
-export function EntriesSection({ entries }: { entries: { text: string; games: string[] }[] }) {
+export function EntriesSection({ entries }: { entries: { text: string; games: string[]; labels?: string[] }[] }) {
+  const t = useT(dexEntryNs);
   const [expanded, setExpanded] = useState(false);
   const shown = expanded ? entries : entries.slice(-6).reverse();
   return (
@@ -38,7 +41,7 @@ export function EntriesSection({ entries }: { entries: { text: string; games: st
             <blockquote className="text-sm leading-relaxed">{e.text}</blockquote>
             {e.games.length > 0 && (
               <figcaption className="mt-3 flex flex-wrap gap-1">
-                {e.games.map((g) => (
+                {e.games.map((g, k) => (
                   <span
                     key={g}
                     className="rounded-sm px-1.5 py-1 font-pixel text-[9px] uppercase leading-none tracking-wider"
@@ -48,7 +51,7 @@ export function EntriesSection({ entries }: { entries: { text: string; games: st
                       border: `1px solid ${gameColor(g)}55`,
                     }}
                   >
-                    {g}
+                    {e.labels?.[k] ?? g}
                   </span>
                 ))}
               </figcaption>
@@ -58,7 +61,7 @@ export function EntriesSection({ entries }: { entries: { text: string; games: st
       </div>
       {entries.length > 6 && (
         <button type="button" onClick={() => setExpanded((v) => !v)} className="text-sm font-medium text-primary hover:underline">
-          {expanded ? "Show latest only" : `Show all ${entries.length} entries`}
+          {expanded ? t("entries.latest") : t("entries.all", { n: entries.length })}
         </button>
       )}
     </div>
