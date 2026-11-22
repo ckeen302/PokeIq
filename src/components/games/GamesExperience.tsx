@@ -30,6 +30,15 @@ import { h2hSummary } from "@/lib/games/h2h";
 import { FAVOURITES } from "@/lib/games/lineups";
 import { NationsPicker } from "./NationsPicker";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import gamesEvents from "@/messages/games-events";
+import gamesInfo from "@/messages/games-info";
+import gamesShowNs from "@/messages/games-show";
+import gamesUi from "@/messages/games-ui";
+import { typeLabel } from "@/lib/games/games";
+import { sceneFont } from "./font";
+import { localizeAthletes, useGamesNames } from "./names";
+import { sceneLabels } from "./scene-labels";
 
 const MakeGamesVideo = lazy(() => import("./MakeGamesVideo"));
 
@@ -96,6 +105,12 @@ type UiPhase = "loading" | "show" | "end";
  * browsers without WebGL.
  */
 export function GamesExperience({ init, children }: GamesExperienceProps) {
+  const t = useT(gamesUi);
+  const te = useT(gamesEvents);
+  const ts = useT(gamesShowNs);
+  const ti = useT(gamesInfo);
+  const lc = t.locale;
+  const local = useGamesNames();
   const [view, setView] = useState<"boot" | "3d" | "list">("boot");
   const [canGl, setCanGl] = useState(false);
   const [all, setAll] = useState<Athlete[] | null>(null);
@@ -138,21 +153,21 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
   const outcome = useMemo<EventOutcome | null>(() => (spec.mode === "event" && field.length >= (event === "wrestling" || event === "all-around" ? 2 : 1) ? runEvent(event, field, spec.seed, { rain: spec.rain }) : null), [spec, field, event]);
   const games = useMemo<GamesResult | null>(() => {
     if (spec.mode !== "games" || !all) return null;
-    const nations = buildNations(spec.nations, byKey, spec.candidates);
+    const nations = buildNations(spec.nations, byKey, spec.candidates, local ? { team: (name) => t("team", { name }), type: (ty) => local.types?.[ty] ?? typeLabel(ty) } : undefined);
     return nations.length >= 2 ? runGames(nations, spec.seed, { rain: spec.rain }) : null;
-  }, [spec, all, byKey]);
+  }, [spec, all, byKey, local, t]);
   const isH2H = spec.mode === "event" && field.length === 2;
   const budget = typeof window !== "undefined" && window.matchMedia("(max-width: 640px)").matches ? 60 : 72;
   /** The playlist: one sequence for an event; the Games' events one by one. */
   const playlist = useMemo<Sequence[]>(() => {
     // The long opening (every lane introduced) stays behind ?intro=full.
-    if (outcome) return [eventShow(outcome, byKey, { budget, lineup: fullIntro() })];
-    if (games) return gamesShow(games, byKey, { budget: 34 }).parts;
+    if (outcome) return [eventShow(outcome, byKey, { budget, lineup: fullIntro() }, ts)];
+    if (games) return gamesShow(games, byKey, { budget: 34 }, ts).parts;
     return [];
-  }, [outcome, games, byKey, budget]);
+  }, [outcome, games, byKey, budget, ts]);
   const current = playlist[Math.min(partIdx, playlist.length - 1)] ?? null;
   const idleVenue = current?.venue ?? "stadium";
-  const title = spec.mode === "games" ? "The PokéIQ Games" : isH2H ? h2hQuestion(event, field[0].name, field[1].name) : `${eventOf(event).name}`;
+  const title = spec.mode === "games" ? t("games") : isH2H ? h2hQuestion(event, field[0].name, field[1].name, te) : `${te(`events.${event}.name`)}`;
 
   const show = useRef({
     seq: null as Sequence | null,
@@ -198,9 +213,10 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
     let alive = true;
     loadAthletes().then((list) => {
       if (!alive) return;
-      setAll(list);
+      const named = localizeAthletes(list, local);
+      setAll(named);
       const params = new URLSearchParams(window.location.search);
-      const known = (k: string) => list.some((a) => a.key === k);
+      const known = (k: string) => named.some((a) => a.key === k);
       const sd = parseGamesSeed(params.get("seed"));
       const rain = parseRain(params.get("rain"));
       if (init.mode === "event") {
@@ -212,7 +228,7 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
       }
     }, () => alive && setView("list"));
     return () => { alive = false; };
-  }, [view, all, init]);
+  }, [view, all, init, local]);
 
   // ---- Sound: built on the first gesture.
   useEffect(() => {
@@ -245,13 +261,14 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
     if (view !== "3d" || !all || !hostRef.current) return;
     let alive = true;
     const host = hostRef.current;
-    const font = getComputedStyle(document.documentElement).getPropertyValue("--font-display").trim() || "sans-serif";
+    const font = sceneFont(getComputedStyle(document.documentElement).getPropertyValue("--font-display").trim() || "sans-serif", lc);
+    const labels = sceneLabels(ts);
     import("./scene").then(async ({ createGamesScene }) => {
       if (!alive) return;
       try {
         await document.fonts?.load(`700 40px ${font}`).catch(() => undefined);
         const q = qualityParam() ?? initialQuality();
-        sceneRef.current = createGamesScene(host, { quality: q, urls: RACE_URLS, font, onContextGone: () => alive && setSceneGen((g) => g + 1) });
+        sceneRef.current = createGamesScene(host, { quality: q, urls: RACE_URLS, font, labels, onContextGone: () => alive && setSceneGen((g) => g + 1) });
         setQualityState(q);
         if (alive) setReady(true);
       } catch { if (alive) setView("list"); }
@@ -262,7 +279,7 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
       sceneRef.current = null;
       setReady(false);
     };
-  }, [view, all, sceneGen]);
+  }, [view, all, sceneGen, lc, ts]);
 
   // ---- A part of the show: load everyone it draws, then play it.
   useEffect(() => {
@@ -286,13 +303,13 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
       s.phase = "show";
       setPhase("show");
       setPanel(true);
-      scene.setCard(eventOf(current.event).name, current.headline);
+      scene.setCard(te(`events.${current.event}.name`), current.headline);
       // The Games: fetch the next event's athletes while this one plays, so it starts at once.
       const next = spec.mode === "games" ? playlist[partIdx + 1] : null;
       if (next) prefetchAthletes(next, scene.quality);
     }).catch(() => undefined);
     return () => ac.abort();
-  }, [ready, current, runId, spec.mode, playlist, partIdx]);
+  }, [ready, current, runId, spec.mode, playlist, partIdx, te]);
 
   // ---- Size.
   useEffect(() => {
@@ -322,7 +339,7 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
     let last = performance.now();
     let ftEma = FRAME_BUDGET_MS, slowFor = 0, fastFor = 0, warm = 0;
     const pinned = qualityParam() !== null;
-    const font = getComputedStyle(document.documentElement).getPropertyValue("--font-display").trim() || "sans-serif";
+    const font = sceneFont(getComputedStyle(document.documentElement).getPropertyValue("--font-display").trim() || "sans-serif", lc);
     const tick = () => {
       raf = requestAnimationFrame(tick);
       const scene = sceneRef.current;
@@ -418,7 +435,7 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
       const part = seq.partAt(t);
       const heads = scene.heads();
       const sp = part.show as Show & Partial<SprintExtras>;
-      if (sp.racePlan) drawSprint(g, w, h, sp as Show & SprintExtras, t - part.t0, heads, show.current.pfImg, { ...o, title: `${eventOf(sp.event).name} · ${eventOf(sp.event).name === "100 m" ? "final" : "final"}` });
+      if (sp.racePlan) drawSprint(g, w, h, sp as Show & SprintExtras, t - part.t0, heads, show.current.pfImg, { ...o, title: ts("sprint.title", { event: te(`events.${sp.event}.name`) }) }, ts);
       else drawOverlay(g, w, h, seq.overlay(t), heads, byKey, o);
     };
     raf = requestAnimationFrame(tick);
@@ -440,7 +457,7 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
       part(i: number) { setPartIdx(Math.max(0, Math.min(playlist.length - 1, i))); },
     };
     return () => cancelAnimationFrame(raf);
-  }, [ready, byKey, spec.mode, partIdx, playlist, idleVenue]);
+  }, [ready, byKey, spec.mode, partIdx, playlist, idleVenue, lc, ts, te]);
 
   useEffect(() => { if (stageRef.current) stageRef.current.dataset.q = quality; }, [quality]);
   useEffect(() => {
@@ -506,9 +523,9 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
     const url = `${window.location.origin}${sharePath()}`;
     const text = current ? `${title}: ${current.headline}` : title;
     if (typeof navigator.share === "function" && window.matchMedia("(pointer: coarse)").matches) {
-      try { await navigator.share({ title: "The PokéIQ Games", text, url }); return; } catch { /* closed */ }
+      try { await navigator.share({ title: t("games"), text, url }); return; } catch { /* closed */ }
     }
-    if (await copyText(url)) setToast("Link copied");
+    if (await copyText(url)) setToast(t("copied"));
   };
   const toggleMute = () => {
     const next = !isMuted();
@@ -536,8 +553,8 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
   const ended = phase === "end";
   const isSwim = spec.mode === "event" && eventOf(spec.event).kind === "swim";
   const table = games ? medalTable(games.nations, games.outcomes.slice(0, Math.min(partIdx + (ended ? 1 : 0), games.outcomes.length))) : null;
-  const vs = outcome && isH2H ? h2hSummary(outcome, field[0], field[1]) : null;
-  const rows = outcome ? outcome.standings.map((k, i) => ({ key: k, place: i + 1, mark: outcome.event === "wrestling" ? "" : formatMark(outcome.event, outcome.marks.get(k)) })) : [];
+  const vs = outcome && isH2H ? h2hSummary(outcome, field[0], field[1], te) : null;
+  const rows = outcome ? outcome.standings.map((k, i) => ({ key: k, place: i + 1, mark: outcome.event === "wrestling" ? "" : formatMark(outcome.event, outcome.marks.get(k), lc) })) : [];
 
   return (
     <>
@@ -546,7 +563,7 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
       <div>
         {view === "list" && canGl && (
           <div className="mb-4 flex justify-end">
-            <button type="button" onClick={() => setView("3d")} className="rounded-md border bg-card px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:border-screen/60 hover:text-foreground" data-testid="games-3d-view">Watch it in 3D</button>
+            <button type="button" onClick={() => setView("3d")} className="rounded-md border bg-card px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:border-screen/60 hover:text-foreground" data-testid="games-3d-view">{t("watch3d")}</button>
           </div>
         )}
         {children}
@@ -566,7 +583,7 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
           data-photo={photo ? "1" : "0"}
           data-recording={recording ? "1" : "0"}
         >
-          <div ref={hostRef} className="rc-host absolute inset-0 cursor-grab touch-none select-none active:cursor-grabbing" data-testid="games-scene" role="application" aria-label="The PokéIQ Games in 3D. Drag to look around, scroll to zoom." />
+          <div ref={hostRef} className="rc-host absolute inset-0 cursor-grab touch-none select-none active:cursor-grabbing" data-testid="games-scene" role="application" aria-label={t("scene")} />
           <canvas ref={overlayRef} className="rc-overlay h-full w-full" aria-hidden />
           <div className="rc-shade-top" aria-hidden />
           <div className="rc-shade-bottom" aria-hidden />
@@ -575,7 +592,7 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 text-white" aria-live="polite">
               <Medal className="h-8 w-8 animate-pulse text-[#ffd84a]" aria-hidden />
               <div className="font-pixel text-[10px] uppercase tracking-[0.3em]" data-testid="games-loading">
-                {!ready ? "Opening the venue…" : `${current ? eventOf(current.event).name : "Athletes"} · warming up… ${Math.round(loaded * 100)}%`}
+                {!ready ? t("opening") : t("warming", { event: current ? te(`events.${current.event}.name`) : t("athletes"), pct: Math.round(loaded * 100) })}
               </div>
             </div>
           )}
@@ -583,18 +600,18 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
           {/* Top bar. */}
           <div className="rc-ui pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-2 p-3 sm:p-4">
             <div className="flex min-w-0 items-center gap-2">
-              <Link href={GAMES_PATH} className={cn(chip, "px-2.5")} aria-label="Back to the Games" data-testid="games-back">
-                <ArrowLeft className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">Games</span>
+              <Link href={GAMES_PATH} className={cn(chip, "px-2.5")} aria-label={t("back")} data-testid="games-back">
+                <ArrowLeft className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">{t("backShort")}</span>
               </Link>
               <button type="button" className={cn(chip, "min-w-0 max-w-[48vw] sm:max-w-none")} onClick={() => setPicker(true)} disabled={!all} data-testid="games-title">
                 <span className="truncate">{title}</span>
-                {spec.mode === "games" && current && <span className="shrink-0 text-[#ffd84a]">{eventOf(current.event).name}</span>}
+                {spec.mode === "games" && current && <span className="shrink-0 text-[#ffd84a]">{te(`events.${current.event}.name`)}</span>}
               </button>
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              <button type="button" className={cn(chip, "px-2.5")} onClick={() => setInfo((v) => !v)} aria-label="How it works" aria-expanded={info} data-testid="games-info-toggle"><Info className="h-4 w-4" aria-hidden /></button>
-              <button type="button" className={cn(chip, "px-2.5")} onClick={toggleMute} aria-label={muted ? "Turn the sound on" : "Turn the sound off"} data-testid="games-mute">{muted ? <VolumeX className="h-4 w-4" aria-hidden /> : <Volume2 className="h-4 w-4" aria-hidden />}</button>
-              <button type="button" className={cn(chip, "px-2.5 sm:px-3")} onClick={() => setView("list")} aria-label="Results list" data-testid="games-list-view"><List className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">List</span></button>
+              <button type="button" className={cn(chip, "px-2.5")} onClick={() => setInfo((v) => !v)} aria-label={t("how")} aria-expanded={info} data-testid="games-info-toggle"><Info className="h-4 w-4" aria-hidden /></button>
+              <button type="button" className={cn(chip, "px-2.5")} onClick={toggleMute} aria-label={t(muted ? "soundOn" : "soundOff")} data-testid="games-mute">{muted ? <VolumeX className="h-4 w-4" aria-hidden /> : <Volume2 className="h-4 w-4" aria-hidden />}</button>
+              <button type="button" className={cn(chip, "px-2.5 sm:px-3")} onClick={() => setView("list")} aria-label={t("list")} data-testid="games-list-view"><List className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">{t("listShort")}</span></button>
             </div>
           </div>
 
@@ -602,10 +619,10 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
             {info && (
               <motion.div className="rc-ui pointer-events-auto absolute left-3 right-3 top-[3.6rem] z-30 max-h-[70%] overflow-y-auto rounded-xl border border-white/15 bg-[#0b1226]/95 p-4 text-white/85 shadow-2xl backdrop-blur-xl sm:left-4 sm:right-auto sm:w-[32rem]" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} data-testid="games-info-panel" data-rc-scroll>
                 <div className="mb-2 flex items-center justify-between">
-                  <h2 className="font-display text-sm font-bold uppercase tracking-wider text-white">How it works · {eventOf(current?.event ?? event).name}</h2>
-                  <button type="button" onClick={() => setInfo(false)} className="rounded p-1 text-white/60 hover:text-white" aria-label="Close"><X className="h-4 w-4" /></button>
+                  <h2 className="font-display text-sm font-bold uppercase tracking-wider text-white">{t("howEvent", { event: te(`events.${current?.event ?? event}.name`) })}</h2>
+                  <button type="button" onClick={() => setInfo(false)} className="rounded p-1 text-white/60 hover:text-white" aria-label={t("close")}><X className="h-4 w-4" /></button>
                 </div>
-                <GamesInfo event={current?.event ?? event} compact athletes={spec.mode === "event" ? field : []} rain={spec.rain} />
+                <GamesInfo t={ti} event={current?.event ?? event} compact athletes={spec.mode === "event" ? field : []} rain={spec.rain} typeName={(x) => local?.types?.[x] ?? x} />
               </motion.div>
             )}
           </AnimatePresence>
@@ -614,30 +631,30 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
           {ended && panel && (outcome || table) && (
             <div className="rc-ui rc-results pointer-events-auto absolute inset-x-3 bottom-[7.2rem] z-20 max-h-[min(26rem,calc(100%-14rem))] overflow-y-auto rounded-xl border border-white/15 p-3 text-white shadow-2xl backdrop-blur-xl sm:inset-x-auto sm:bottom-24 sm:right-4 sm:w-[27rem] sm:max-h-[min(31rem,calc(100%-12rem))]" data-testid="games-results" data-rc-scroll>
               <div className="mb-1 flex items-center justify-between gap-2">
-                <h2 className="font-display text-sm font-bold uppercase tracking-wider"><Trophy className="mr-1.5 inline h-4 w-4 text-[#ffd84a]" aria-hidden />{table ? "Medal table" : `Results · ${eventOf(event).name}`}</h2>
+                <h2 className="font-display text-sm font-bold uppercase tracking-wider"><Trophy className="mr-1.5 inline h-4 w-4 text-[#ffd84a]" aria-hidden />{table ? t("medalTable") : t("results", { event: te(`events.${event}.name`) })}</h2>
                 <div className="flex shrink-0 items-center gap-1">
-                  {spec.mode === "event" && <button type="button" onClick={() => setVsOpen(true)} disabled={!all} className="inline-flex h-8 items-center gap-1 rounded-md border border-white/20 px-2 font-display text-[10px] font-bold uppercase tracking-wider text-white/85 hover:border-[#ffd84a]/60 hover:text-white" data-testid="games-h2h-open"><Swords className="h-3.5 w-3.5 text-[#ffd84a]" aria-hidden /> Head to head</button>}
-                  <button type="button" onClick={() => setPanel(false)} className="rounded p-1 text-white/60 hover:text-white" aria-label="Hide" data-testid="games-results-close"><X className="h-4 w-4" /></button>
+                  {spec.mode === "event" && <button type="button" onClick={() => setVsOpen(true)} disabled={!all} className="inline-flex h-8 items-center gap-1 rounded-md border border-white/20 px-2 font-display text-[10px] font-bold uppercase tracking-wider text-white/85 hover:border-[#ffd84a]/60 hover:text-white" data-testid="games-h2h-open"><Swords className="h-3.5 w-3.5 text-[#ffd84a]" aria-hidden /> {t("h2h")}</button>}
+                  <button type="button" onClick={() => setPanel(false)} className="rounded p-1 text-white/60 hover:text-white" aria-label={t("hide")} data-testid="games-results-close"><X className="h-4 w-4" /></button>
                 </div>
               </div>
               {vs && (
                 <div className="mb-2 rounded-lg border border-[#ffd84a]/30 bg-[#ffd84a]/[0.06] p-2.5" data-testid="games-h2h-result">
                   <p className="font-display text-sm font-bold uppercase tracking-wide text-[#ffd84a]">{vs.line}</p>
                   <div className="mt-2 grid grid-cols-2 gap-2">
-                    <button type="button" onClick={() => setVideoOpen(true)} className="rc-go inline-flex h-10 items-center justify-center gap-1.5 rounded-lg font-display text-xs font-bold uppercase tracking-wider" data-testid="games-h2h-video"><Clapperboard className="h-4 w-4" aria-hidden /> 9:16 video</button>
-                    <button type="button" onClick={share} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-white/20 font-display text-xs font-bold uppercase tracking-wider text-white" data-testid="games-h2h-share"><Share2 className="h-4 w-4" aria-hidden /> Share link</button>
+                    <button type="button" onClick={() => setVideoOpen(true)} className="rc-go inline-flex h-10 items-center justify-center gap-1.5 rounded-lg font-display text-xs font-bold uppercase tracking-wider" data-testid="games-h2h-video"><Clapperboard className="h-4 w-4" aria-hidden /> {t("video916")}</button>
+                    <button type="button" onClick={share} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-white/20 font-display text-xs font-bold uppercase tracking-wider text-white" data-testid="games-h2h-share"><Share2 className="h-4 w-4" aria-hidden /> {t("shareLink")}</button>
                   </div>
                 </div>
               )}
               {photo && !table && (
                 <figure className="mb-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={photo} alt="Photo finish: the finish line scanned over time" className="h-24 w-full rounded-md border border-white/15 object-cover sm:h-28" data-testid="games-photo" />
+                  <img src={photo} alt={t("photoAlt")} className="h-24 w-full rounded-md border border-white/15 object-cover sm:h-28" data-testid="games-photo" />
                 </figure>
               )}
               {table ? (
                 <table data-testid="games-medal-table">
-                  <thead><tr><th>#</th><th>Nation</th><th className="text-right">🥇</th><th className="text-right">🥈</th><th className="text-right">🥉</th></tr></thead>
+                  <thead><tr><th>#</th><th>{t("colNation")}</th><th className="text-right">🥇</th><th className="text-right">🥈</th><th className="text-right">🥉</th></tr></thead>
                   <tbody>
                     {table.map((r) => (
                       <tr key={r.nation.id} className={r.rank === 1 ? "win" : undefined} data-testid="games-medal-row">
@@ -652,7 +669,7 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
                 </table>
               ) : (
                 <table>
-                  <thead><tr><th>#</th><th>Pokémon</th><th className="text-right">{outcome?.event === "wrestling" ? "" : "Mark"}</th></tr></thead>
+                  <thead><tr><th>#</th><th>{t("colPokemon")}</th><th className="text-right">{outcome?.event === "wrestling" ? "" : t("colMark")}</th></tr></thead>
                   <tbody>
                     {rows.map((r) => (
                       <tr key={r.key} className={r.place === 1 ? "win" : undefined} data-testid="games-result-row">
@@ -673,22 +690,22 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
               <div className="flex items-center gap-2">
                 {!ended ? (
                   <button type="button" onClick={skip} disabled={phase === "loading"} className="rc-go pointer-events-auto inline-flex h-11 items-center gap-2 rounded-lg px-4 font-display text-sm font-bold uppercase tracking-wider disabled:opacity-50" data-testid="games-skip">
-                    <SkipForward className="h-4 w-4" aria-hidden /> <span className="hidden min-[400px]:inline">Results</span>
+                    <SkipForward className="h-4 w-4" aria-hidden /> <span className="hidden min-[400px]:inline">{t("resultsButton")}</span>
                   </button>
                 ) : (
-                  <button type="button" onClick={restart} className="rc-go pointer-events-auto inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-lg px-4 font-display text-sm font-bold uppercase tracking-wider" aria-label="Watch again" data-testid="games-replay">
-                    <RotateCcw className="h-4 w-4" aria-hidden /> <span className="hidden min-[420px]:inline">Watch again</span>
+                  <button type="button" onClick={restart} className="rc-go pointer-events-auto inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-lg px-4 font-display text-sm font-bold uppercase tracking-wider" aria-label={t("again")} data-testid="games-replay">
+                    <RotateCcw className="h-4 w-4" aria-hidden /> <span className="hidden min-[420px]:inline">{t("again")}</span>
                   </button>
                 )}
                 <button type="button" onClick={() => setPicker(true)} disabled={!all} className={cn(chip, "h-11")} data-testid="games-new">
-                  <Users className="h-4 w-4" aria-hidden /> <span className="hidden whitespace-nowrap min-[420px]:inline">{spec.mode === "games" ? "Nations" : "Line-up"}</span>
+                  <Users className="h-4 w-4" aria-hidden /> <span className="hidden whitespace-nowrap min-[420px]:inline">{t(spec.mode === "games" ? "nations" : "lineup")}</span>
                 </button>
-                <button type="button" onClick={again} disabled={!all} className={cn(chip, "h-11 px-3")} aria-label="Another day: new form and reactions" data-testid="games-again">
-                  <Dices className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">Again</span>
+                <button type="button" onClick={again} disabled={!all} className={cn(chip, "h-11 px-3")} aria-label={t("anotherDay")} data-testid="games-again">
+                  <Dices className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">{t("againShort")}</span>
                 </button>
                 {isSwim && (
-                  <button type="button" onClick={toggleRain} aria-pressed={spec.mode === "event" && spec.rain} className={cn(chip, "h-11 px-3", spec.mode === "event" && spec.rain && "border-[#9fd8ff] text-[#9fd8ff]")} aria-label="Rain: Swift Swim doubles Speed" data-testid="games-rain">
-                    <CloudRain className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">Rain</span>
+                  <button type="button" onClick={toggleRain} aria-pressed={spec.mode === "event" && spec.rain} className={cn(chip, "h-11 px-3", spec.mode === "event" && spec.rain && "border-[#9fd8ff] text-[#9fd8ff]")} aria-label={t("rain")} data-testid="games-rain">
+                    <CloudRain className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">{t("rainShort")}</span>
                   </button>
                 )}
                 {ended && !panel && (outcome || table) && (
@@ -696,9 +713,9 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
                 )}
               </div>
               <div className="flex items-center gap-2">
-                <button type="button" onClick={share} className={cn(chip, "h-11 px-3")} aria-label="Share" data-testid="games-share"><Share2 className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">Share</span></button>
+                <button type="button" onClick={share} className={cn(chip, "h-11 px-3")} aria-label={t("share")} data-testid="games-share"><Share2 className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">{t("share")}</span></button>
                 <button type="button" onClick={() => setVideoOpen(true)} className={cn(chip, "h-11 border-[#ffd84a]/50 text-white")} disabled={!current || phase === "loading"} data-testid="games-video">
-                  <Clapperboard className="h-4 w-4 text-[#ffd84a]" aria-hidden /> <span className="sm:hidden">Video</span><span className="hidden sm:inline">Make a video</span>
+                  <Clapperboard className="h-4 w-4 text-[#ffd84a]" aria-hidden /> <span className="sm:hidden">{t("video")}</span><span className="hidden sm:inline">{t("makeVideo")}</span>
                 </button>
               </div>
             </div>

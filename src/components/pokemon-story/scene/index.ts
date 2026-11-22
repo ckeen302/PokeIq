@@ -4,6 +4,7 @@ import type { ChapterBuilder, ChapterRig, Look } from "@/components/world-histor
 import { lens } from "./lens";
 import type { Chapter as HistoryChapter } from "@/lib/world-history/types";
 import { CHAPTERS } from "@/lib/pokemon-story/data";
+import type { Chapter as StoryChapter } from "@/lib/pokemon-story/types";
 import { buildArchive } from "./archive";
 
 /**
@@ -41,13 +42,15 @@ export function archiveLook(h: { from: number; to: number; k: number }): Look {
   return ARCHIVE_LOOK;
 }
 
-export function createStoryScene(host: HTMLElement, opts: Omit<SceneOptions, "chapters" | "builders" | "hall" | "hallLook">): HistoryScene {
+/** `chapters`: the Story's chapters in the page's language (the Archive's plaques show their titles); English when left out. */
+export function createStoryScene(host: HTMLElement, opts: Omit<SceneOptions, "chapters" | "builders" | "hall" | "hallLook"> & { chapters?: StoryChapter[] }): HistoryScene {
+  const { chapters = CHAPTERS, ...rest } = opts;
   return createHistoryScene(host, {
-    ...opts,
+    ...rest,
     // The engine reads a chapter's id, accent and figures; the Story's chapters have all three.
-    chapters: CHAPTERS as unknown as HistoryChapter[],
+    chapters: chapters as unknown as HistoryChapter[],
     builders: BUILDERS,
-    hall: (renderer: THREE.WebGLRenderer) => buildArchive(CHAPTERS, opts.font, renderer),
+    hall: (renderer: THREE.WebGLRenderer) => buildArchive(chapters, opts.font, renderer),
     hallLook: archiveLook,
   });
 }

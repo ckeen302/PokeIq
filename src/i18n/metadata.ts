@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { DEFAULT_LOCALE, OG_LOCALES, type Locale } from "./config";
 import { localizePath } from "./paths";
-import { pageAlternates } from "./routes";
+import { isPageIndexed, pageAlternates } from "./routes";
 
 /** A page's hreflang links for Next's metadata (`alternates.languages`), or nothing while it exists in English only. */
 export function languageAlternates(path: string): Record<string, string> | undefined {
@@ -17,8 +17,10 @@ export function localizeMetadata(meta: Metadata, locale: Locale): Metadata {
   if (locale === DEFAULT_LOCALE) return meta;
   const canonical = meta.alternates?.canonical;
   const path = typeof canonical === "string" ? canonical : undefined;
-  const indexable = !isNoindex(meta);
-  const out: Metadata = { ...meta };
+  // A thin copy (src/i18n/routes.ts UNINDEXED) is served but kept out of search, like a noindex page.
+  const thin = path !== undefined && !isPageIndexed(path, locale);
+  const indexable = !thin && !isNoindex(meta);
+  const out: Metadata = { ...meta, ...(thin && { robots: { index: false, follow: true } }) };
   if (path !== undefined) {
     const languages = indexable ? languageAlternates(path) : undefined;
     out.alternates = { ...meta.alternates, canonical: localizePath(path, locale), ...(languages ? { languages } : { languages: undefined }) };

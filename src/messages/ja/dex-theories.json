@@ -1,0 +1,93 @@
+{
+  "meta": {
+    "title": "ポケモンの都市伝説・考察 — ファン説や没データの噂を検証",
+    "description": "ポケモンのファン説、都市伝説、没データの噂を事件ファイルとして検証。ゲンガーとピクシー、トラックの下のミュウ、MissingNo.（けつばん）、シオンタウン症候群など、それぞれの証拠と出典、そして「確定」「ファン説」「否定」の判定を掲載しています。",
+    "socialTitle": "事件ファイル · PokéIQ ポケモン図鑑"
+  },
+  "header": {
+    "kicker": "考察と陰謀論",
+    "title": "Poké",
+    "accent": "dex",
+    "blurb": "ポケモンの考察、都市伝説、没データの噂を、証拠と判定つきで紹介します。"
+  },
+  "list": {
+    "eyebrow": "ポケモンの考察と陰謀論",
+    "title": "事件<b>ファイル</b>",
+    "lead": "ファン説、陰謀論、噂、そして本物のバグ。どれもゲームで検証済みです。"
+  },
+  "ld": {
+    "pokedex": "ポケモン図鑑",
+    "theories": "考察"
+  },
+  "verdict": {
+    "confirmed": "確定",
+    "fan": "ファン説",
+    "debunked": "否定"
+  },
+  "source": {
+    "games": "ゲーム",
+    "anime": "アニメ",
+    "pokedex": "図鑑",
+    "internet": "ネット",
+    "manga": "マンガ"
+  },
+  "sourceList": "{a}、{b}",
+  "caseNumber": "事件 {n}",
+  "case": {
+    "metaTitle": {
+      "confirmed": "{title} — ポケモンの説（確定）",
+      "fan": "{title} — ポケモンのファン説",
+      "debunked": "{title} — ポケモンの噂（否定）"
+    },
+    "metaDescription": {
+      "confirmed": "確定。{claim}賛否両方の証拠、実際に確定していること、出典を紹介します。",
+      "fan": "未確定のファン説。{claim}賛否両方の証拠、実際に確定していること、出典を紹介します。",
+      "debunked": "否定。{claim}賛否両方の証拠、実際に確定していること、出典を紹介します。"
+    },
+    "socialTitle": "{case}：{title} · PokéIQ",
+    "back": "事件ファイル一覧",
+    "filed": "{case} · {era} · 分類：{sources}",
+    "theory": "説の内容",
+    "claim": "主張",
+    "glitchPokemon": "バグポケモン",
+    "pair": "{a}と{b}",
+    "exhibitA": "証拠A",
+    "silhouette": "{name}のシルエット",
+    "overlaid": "重ねると",
+    "origin": "発端と広まり",
+    "evidenceFor": "肯定する証拠",
+    "evidenceAgainst": "否定する証拠",
+    "confirmed": "実際に確定していること",
+    "verdict": "判定",
+    "sources": "出典",
+    "related": "関連する事件",
+    "footer": {
+      "confirmed": "判定：確定。図鑑の引用は、データにある場合はその言語の公式テキストです。それ以外の引用は英語版のゲーム、図鑑、掲載したインタビューから翻訳しています。RedditやYouTubeは説が広まった場所にすぎず、証拠ではありません。",
+      "fan": "判定：ファン説。図鑑の引用は、データにある場合はその言語の公式テキストです。それ以外の引用は英語版のゲーム、図鑑、掲載したインタビューから翻訳しています。RedditやYouTubeは説が広まった場所にすぎず、証拠ではありません。",
+      "debunked": "判定：否定。図鑑の引用は、データにある場合はその言語の公式テキストです。それ以外の引用は英語版のゲーム、図鑑、掲載したインタビューから翻訳しています。RedditやYouTubeは説が広まった場所にすぎず、証拠ではありません。"
+    }
+  },
+  "board": {
+    "label": "今週の事件",
+    "brand": "POKÉIQ / 事件ボード",
+    "file": "ファイル {no} · {state}",
+    "fileNo": "ファイル {no}",
+    "status": "状態：{status}",
+    "press": "事件を押すとファイルが開きます",
+    "state": {
+      "open": "未解決",
+      "closed": "解決済み"
+    },
+    "verdictStatus": {
+      "confirmed": "立証",
+      "fan": "未立証",
+      "debunked": "反証"
+    },
+    "caseOfTheWeek": "今週の事件",
+    "keyEvidence": "主な証拠",
+    "open": "事件を開く",
+    "noteFiled": "記録：{era}",
+    "noteFrom": "出所：{sources}",
+    "noteLead": "手がかり：{caption}"
+  }
+}

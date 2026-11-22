@@ -1,0 +1,93 @@
+{
+  "meta": {
+    "title": "Teorie Pokémon: teorie dei fan, leggende metropolitane e miti delle beta, verificati",
+    "description": "Teorie dei fan, leggende metropolitane e miti delle beta di Pokémon come fascicoli: Gengar e Clefable, Mew sotto il camion, MissingNo., la sindrome di Lavandonia e altro, ognuno con le sue prove, le fonti e un verdetto: confermata, teoria dei fan o smentita.",
+    "socialTitle": "I fascicoli · Pokédex di PokéIQ"
+  },
+  "header": {
+    "kicker": "Teorie e complotti",
+    "title": "Poké",
+    "accent": "dex",
+    "blurb": "Teorie, leggende metropolitane e miti delle beta di Pokémon, ognuno con le sue prove e un verdetto."
+  },
+  "list": {
+    "eyebrow": "Teorie e complotti Pokémon",
+    "title": "I <b>fascicoli</b>",
+    "lead": "Teorie dei fan, complotti, voci e glitch veri. Tutti verificati sui giochi."
+  },
+  "ld": {
+    "pokedex": "Pokédex",
+    "theories": "Teorie"
+  },
+  "verdict": {
+    "confirmed": "Confermata",
+    "fan": "Teoria dei fan",
+    "debunked": "Smentita"
+  },
+  "source": {
+    "games": "Giochi",
+    "anime": "Anime",
+    "pokedex": "Pokédex",
+    "internet": "Internet",
+    "manga": "Manga"
+  },
+  "sourceList": "{a}, {b}",
+  "caseNumber": "CASO {n}",
+  "case": {
+    "metaTitle": {
+      "confirmed": "{title} — Teoria Pokémon confermata",
+      "fan": "{title} — Teoria dei fan Pokémon",
+      "debunked": "{title} — Mito Pokémon smentito"
+    },
+    "metaDescription": {
+      "confirmed": "Confermata. {claim} Le prove a favore e contro, cosa è davvero confermato e le fonti.",
+      "fan": "Teoria dei fan non confermata. {claim} Le prove a favore e contro, cosa è davvero confermato e le fonti.",
+      "debunked": "Smentita. {claim} Le prove a favore e contro, cosa è davvero confermato e le fonti."
+    },
+    "socialTitle": "{case}: {title} · PokéIQ",
+    "back": "Tutti i fascicoli",
+    "filed": "{case} · {era} · Archiviato in {sources}",
+    "theory": "La teoria",
+    "claim": "L’affermazione",
+    "glitchPokemon": "Pokémon glitch",
+    "pair": "{a} e {b}",
+    "exhibitA": "PROVA A",
+    "silhouette": "Sagoma di {name}",
+    "overlaid": "SOVRAPPOSTE",
+    "origin": "Origine e diffusione",
+    "evidenceFor": "Prove a favore",
+    "evidenceAgainst": "Prove contro",
+    "confirmed": "Cosa è davvero confermato",
+    "verdict": "Il verdetto",
+    "sources": "Fonti",
+    "related": "Casi correlati",
+    "footer": {
+      "confirmed": "Archiviata come confermata. Le citazioni del Pokédex usano il testo ufficiale italiano quando lo abbiamo; le altre sono tradotte dalle versioni inglesi dei giochi, del loro Pokédex e delle interviste citate. Reddit e YouTube sono sempre e solo il luogo in cui una teoria si è diffusa, mai una prova.",
+      "fan": "Archiviata come teoria dei fan. Le citazioni del Pokédex usano il testo ufficiale italiano quando lo abbiamo; le altre sono tradotte dalle versioni inglesi dei giochi, del loro Pokédex e delle interviste citate. Reddit e YouTube sono sempre e solo il luogo in cui una teoria si è diffusa, mai una prova.",
+      "debunked": "Archiviata come smentita. Le citazioni del Pokédex usano il testo ufficiale italiano quando lo abbiamo; le altre sono tradotte dalle versioni inglesi dei giochi, del loro Pokédex e delle interviste citate. Reddit e YouTube sono sempre e solo il luogo in cui una teoria si è diffusa, mai una prova."
+    }
+  },
+  "board": {
+    "label": "Caso della settimana",
+    "brand": "POKÉIQ / BACHECA DEI CASI",
+    "file": "FASCICOLO {no} · {state}",
+    "fileNo": "FASCICOLO {no}",
+    "status": "STATO: {status}",
+    "press": "TOCCA UN CASO PER APRIRE IL FASCICOLO",
+    "state": {
+      "open": "ANCORA APERTO",
+      "closed": "CHIUSO"
+    },
+    "verdictStatus": {
+      "confirmed": "PROVATO",
+      "fan": "NON PROVATO",
+      "debunked": "CONFUTATO"
+    },
+    "caseOfTheWeek": "Caso della settimana",
+    "keyEvidence": "Prove chiave",
+    "open": "Apri il caso",
+    "noteFiled": "Archiviato: {era}",
+    "noteFrom": "Da: {sources}",
+    "noteLead": "Pista: {caption}"
+  }
+}

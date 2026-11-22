@@ -1,5 +1,7 @@
 import type { Athlete } from "@/lib/games/athlete";
-import { MARK_EVENTS, eventOf } from "@/lib/games/events";
+import { MARK_EVENTS, formatMark, localNum } from "@/lib/games/events";
+import { translator, type Translator } from "@/i18n/catalog";
+import gamesShow from "@/messages/games-show";
 import type { AllAroundResult } from "@/lib/games/games";
 import { bump, dims, idleActor, smooth } from "../scene/motions/common";
 import type { ActorPose } from "../scene/pose";
@@ -18,7 +20,10 @@ import { Timeline, beatAt, beatK, type Burst, type Overlay, type Show, type Show
 
 const LINE_Z = 14;
 
-export function allAroundShow(result: AllAroundResult, athletes: Athlete[], o: ShowOptions & { champion?: boolean }): Show {
+export function allAroundShow(result: AllAroundResult, athletes: Athlete[], o: ShowOptions & { champion?: boolean }, tr: Translator<typeof gamesShow.en> = translator(gamesShow, "en", undefined)): Show {
+  const lc = tr.locale;
+  const pts = (n: number) => localNum(n.toLocaleString("en"), lc);
+  const lowerName = (id: (typeof MARK_EVENTS)[number]) => (lc === "de" || lc === "ja" ? tr(`ev.${id}.name`) : tr(`ev.${id}.name`).toLowerCase());
   const byKey = new Map(athletes.map((a) => [a.key, a]));
   const rows = result.rows.filter((r) => byKey.has(r.key));
   // The line-up, left to right in the final order's reverse (the winner ends up in the middle of the shot at the end).
@@ -36,11 +41,11 @@ export function allAroundShow(result: AllAroundResult, athletes: Athlete[], o: S
   if (!o.quick) tl.add({ kind: "establish", cam: "crane" }, o.lineup ? (o.video ? 2.6 : 4) : o.video ? 1.3 : 1.8);
   const per = Math.max(1.1, Math.min(2.4, (Math.max(12, o.budget - 12)) / Math.max(1, events.length)));
   events.forEach((id, i) => {
-    const b = tl.add({ kind: "board", cam: "line", act: i, title: eventOf(id).name }, per);
+    const b = tl.add({ kind: "board", cam: "line", act: i, title: tr(`ev.${id}.name`) }, per);
     tl.cue(b.t0 + 0.15, "beep", 0.4);
   });
   const champ = rows[0];
-  const cb = tl.add({ kind: "result", cam: "champion", key: champ?.key, title: o.champion ? "Champion of the Games" : "All-around champion" }, o.video ? 3 : 4.2);
+  const cb = tl.add({ kind: "result", cam: "champion", key: champ?.key, title: tr(o.champion ? "aa.champion" : "aa.allAroundChampion") }, o.video ? 3 : 4.2);
   tl.cue(cb.t0 + 0.3, "cheer", 1);
   tl.cue(cb.t0 + 0.2, "fanfare", 0.8);
   tl.add({ kind: "board", cam: "final", act: events.length }, o.video ? 2.4 : 3.6);
@@ -123,24 +128,24 @@ export function allAroundShow(result: AllAroundResult, athletes: Athlete[], o: S
     const beat = beatAt(beats, t);
     const k = beatK(beat, t);
     const name = (key: string) => byKey.get(key)?.name ?? key;
-    const bug = { title: "All-around", sub: beat.cam === "line" ? `After ${eventOf(events[beat.act ?? 0]).name.toLowerCase()}` : "Points" };
+    const bug = { title: tr("ev.all-around.name"), sub: beat.cam === "line" ? tr("aa.after", { event: lowerName(events[beat.act ?? 0]) }) : tr("aa.points") };
     switch (beat.cam) {
       case "crane":
-        return { title: { text: "ALL-AROUND", sub: `${rows.length} Pokémon · ${events.length} events · World Athletics points`, k } };
+        return { title: { text: tr("ev.all-around.name").toUpperCase(), sub: tr("aa.crane", { n: rows.length, e: events.length }), k } };
       case "line": {
         const n = (beat.act ?? 0) + 1;
         const st = after(n);
         const top = st.slice().sort((a, b) => b.last - a.last)[0];
         return {
           bug,
-          board: { title: `Points after ${eventOf(events[n - 1]).name}`, rows: st.map((r, i) => ({ place: String(i + 1), name: name(r.key), mark: r.total.toLocaleString("en"), key: r.key, hi: r.key === top.key, note: `+${r.last.toLocaleString("en")}` })), k: Math.min(1, k * 4) },
+          board: { title: tr("aa.pointsAfter", { event: tr(`ev.${events[n - 1]}.name`) }), rows: st.map((r, i) => ({ place: String(i + 1), name: name(r.key), mark: pts(r.total), key: r.key, hi: r.key === top.key, note: `+${pts(r.last)}` })), k: Math.min(1, k * 4) },
           tags: top ? [top.key] : [],
         };
       }
       case "champion":
-        return { mark: { text: champ ? name(champ.key).toUpperCase() : "", sub: `${beat.title} · ${champ?.total.toLocaleString("en")} points`, tone: "lead", k }, tags: champ ? [champ.key] : [] };
+        return { mark: { text: champ ? name(champ.key).toUpperCase() : "", sub: tr("aa.markSub", { title: beat.title ?? "", pts: champ ? pts(champ.total) : "undefined" }), tone: "lead", k }, tags: champ ? [champ.key] : [] };
       default:
-        return { bug: { title: "All-around", sub: "Final" }, board: { title: "All-around · final", rows: rows.map((r) => ({ place: String(r.place), name: name(r.key), mark: `${r.total.toLocaleString("en")} pts`, key: r.key, hi: r.place === 1 })), k } };
+        return { bug: { title: tr("ev.all-around.name"), sub: tr("finalShort") }, board: { title: tr("final", { event: tr("ev.all-around.name") }), rows: rows.map((r) => ({ place: String(r.place), name: name(r.key), mark: formatMark("all-around", r.total, lc), key: r.key, hi: r.place === 1 })), k } };
     }
   };
 
@@ -154,7 +159,7 @@ export function allAroundShow(result: AllAroundResult, athletes: Athlete[], o: S
     at,
     overlay,
     resultsAt: beats.find((b) => b.cam === "final")?.t0 ?? end,
-    hook: "Who's the best all-round Pokémon? 🏆",
-    headline: champ ? `${byKey.get(champ.key)?.name} wins the all-around with ${champ.total.toLocaleString("en")} points` : "The all-around",
+    hook: tr("aa.hook"),
+    headline: champ ? tr("aa.headline", { name: `${byKey.get(champ.key)?.name}`, pts: pts(champ.total) }) : tr("aa.none"),
   };
 }

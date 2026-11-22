@@ -1,0 +1,42 @@
+{
+  "stellar": "Stellar",
+  "category": {
+    "Physical": "Phys",
+    "Special": "Spez",
+    "Status": "Status"
+  },
+  "categoryName": {
+    "Physical": "Physisch",
+    "Special": "Speziell",
+    "Status": "Status"
+  },
+  "banned": "Gebannt",
+  "species": "Pokémon",
+  "searchPokemon": "Pokémon suchen",
+  "filters": "Filter",
+  "filterType": "Nach Typ filtern",
+  "anyType": "Alle Typen",
+  "filterAbility": "Nach Fähigkeit filtern",
+  "ability": "Fähigkeit",
+  "filterMove": "Nach erlernter Attacke filtern",
+  "learns": "Erlernt Attacke",
+  "legalOnly": "Nur erlaubte",
+  "clear": "Zurücksetzen",
+  "bst": "Basiswert-Summe",
+  "item": "Item",
+  "noItem": "Kein Item",
+  "loadingMoves": "Attacken werden geladen…",
+  "addMove": "Attacke hinzufügen",
+  "filterMoveType": "Attacken nach Typ filtern",
+  "head": {
+    "move": "Attacke",
+    "type": "Typ",
+    "cat": "Kat",
+    "pow": "Stä",
+    "acc": "Gen",
+    "pp": "AP",
+    "use": "Nutz"
+  },
+  "isBanned": "{move}: {reason}.",
+  "nature": "Wesen"
+}

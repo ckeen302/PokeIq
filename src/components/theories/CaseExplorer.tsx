@@ -3,9 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SOURCE_LABEL, VERDICT_LABEL, type CaseSource, type Verdict } from "@/lib/theories/types";
+import type { CaseSource, Verdict } from "@/lib/theories/types";
 import { VERDICTS, filterCases, filterQuery, parseFilter, type CaseFilter } from "@/lib/theories/logic";
 import { CaseFolder, type FolderCase } from "./CaseFolder";
+import { useT } from "@/i18n/client";
+import dexTheoriesList from "@/messages/dex-theories-list";
 
 /**
  * The verdict filter, source chips and search over the case folders. The
@@ -17,6 +19,7 @@ const DOT: Record<Verdict, string> = { confirmed: "bg-success", fan: "bg-screen"
 const NONE: CaseFilter = { verdict: null, sources: [], q: "" };
 
 export function CaseExplorer({ cases, sources }: { cases: FolderCase[]; sources: CaseSource[] }) {
+  const t = useT(dexTheoriesList);
   const [f, setF] = useState<CaseFilter>(NONE);
 
   useEffect(() => {
@@ -39,9 +42,9 @@ export function CaseExplorer({ cases, sources }: { cases: FolderCase[]; sources:
   const toggleSource = (x: CaseSource) => update({ ...f, sources: f.sources.includes(x) ? f.sources.filter((y) => y !== x) : [...f.sources, x] });
 
   return (
-    <section aria-label="All case files" className="space-y-2">
+    <section aria-label={t("label")} className="space-y-2">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div role="group" aria-label="Verdict" className="flex flex-wrap gap-0.5 rounded-[10px] border bg-card p-1 max-sm:grid max-sm:w-full max-sm:grid-cols-2" data-testid="case-verdicts">
+        <div role="group" aria-label={t("verdictGroup")} className="flex flex-wrap gap-0.5 rounded-[10px] border bg-card p-1 max-sm:grid max-sm:w-full max-sm:grid-cols-2" data-testid="case-verdicts">
           {[null, ...VERDICTS].map((v) => (
             <button
               key={v ?? "all"}
@@ -55,12 +58,12 @@ export function CaseExplorer({ cases, sources }: { cases: FolderCase[]; sources:
               )}
             >
               {v && <span aria-hidden className={cn("inline-block h-2 w-2 shrink-0 rounded-full", DOT[v])} />}
-              {v ? VERDICT_LABEL[v] : "All cases"}
+              {v ? t(`verdict.${v}`) : t("allCases")}
             </button>
           ))}
         </div>
         <div className="flex flex-wrap items-center gap-2.5 max-sm:w-full">
-          <div role="group" aria-label="Where it comes from" className="flex flex-wrap gap-[7px]">
+          <div role="group" aria-label={t("sourceGroup")} className="flex flex-wrap gap-[7px]">
             {sources.map((x) => (
               <button
                 key={x}
@@ -73,7 +76,7 @@ export function CaseExplorer({ cases, sources }: { cases: FolderCase[]; sources:
                   f.sources.includes(x) ? "border-screen/70 bg-screen/15 text-foreground" : "text-muted-foreground hover:border-screen/50 hover:text-foreground"
                 )}
               >
-                {SOURCE_LABEL[x]}
+                {t(`source.${x}`)}
               </button>
             ))}
           </div>
@@ -83,8 +86,8 @@ export function CaseExplorer({ cases, sources }: { cases: FolderCase[]; sources:
               type="search"
               value={f.q}
               onChange={(e) => update({ ...f, q: e.target.value })}
-              placeholder="Search cases"
-              aria-label="Search cases"
+              placeholder={t("search")}
+              aria-label={t("search")}
               data-testid="case-search"
               className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground max-md:text-base"
             />
@@ -101,7 +104,7 @@ export function CaseExplorer({ cases, sources }: { cases: FolderCase[]; sources:
         </ul>
       ) : (
         <p className="py-12 text-center text-muted-foreground" data-testid="case-none">
-          No case matches that. Try another verdict, source or search.
+          {t("none")}
         </p>
       )}
     </section>

@@ -1,0 +1,40 @@
+{
+  "close": "Cerrar",
+  "title": "Elige una prueba y una alineación",
+  "blurb": "Hasta ocho Pokémon o formas. Con dos, es un cara a cara.",
+  "event": "Prueba",
+  "remove": "Quitar a {name}",
+  "addMore": "{n, plural, one {Añade {n} más} other {Añade {n} más}}",
+  "addUpTo": "Añade hasta 8",
+  "placeholder": "Añade un Pokémon…",
+  "search": "Busca un Pokémon para añadir",
+  "fun": "Alineación divertida",
+  "funLabel": {
+    "giants": "Pesos pesados contra pesos pluma",
+    "starters": "Iniciales evolucionados",
+    "legends": "Legendarios",
+    "favourites": "Favoritos de los fans",
+    "type": "Tipo {type}",
+    "random": "Ocho al azar"
+  },
+  "stat": {
+    "spe": "VEL",
+    "atk": "ATQ",
+    "def": "DEF",
+    "hp": "PS",
+    "kg": "KG",
+    "height": "ALTURA"
+  },
+  "h2h": "Cara a cara",
+  "go": "Vamos",
+  "nations": "Naciones",
+  "nationsBlurb": "Hasta ocho. Un tipo envía a sus tres atletas más completos (sin legendarios); o monta un equipo de tres.",
+  "team": "Equipo {name}",
+  "typeNations": "Naciones por tipo",
+  "build": "Monta un equipo de tres",
+  "removeOne": "Quitar",
+  "teamPlaceholder": "Añade un Pokémon a tu equipo…",
+  "teamSearch": "Buscar un Pokémon",
+  "addTeam": "Añadir este equipo",
+  "open": "Abrir los Juegos"
+}

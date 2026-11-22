@@ -138,7 +138,7 @@ describe("Name 'em All's routes and board in another language", () => {
     vi.stubEnv("LIVE_LOCALES", "ja,fr");
     vi.resetModules();
     const route = await import("@/app/api/name-em-all/targets/[category]/[lang]/route");
-    expect(route.generateStaticParams().length).toBe(NEA_CATEGORIES.length * 2);
+    expect(route.generateStaticParams({ params: {} }).length).toBe(NEA_CATEGORIES.length * 2);
     const res = await route.GET(new Request("http://localhost/api/name-em-all/targets/gen-1/ja"), { params: Promise.resolve({ category: "gen-1", lang: "ja" }) });
     const data = (await res.json()) as { targets: { name: string; aliases?: string[] }[]; label: string; h1: string };
     expect(data.label).toBe("第1世代");

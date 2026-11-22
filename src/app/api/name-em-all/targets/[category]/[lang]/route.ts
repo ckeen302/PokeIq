@@ -15,7 +15,7 @@ import { categoryText, localOutsiders, localTargets } from "@/lib/name-em-all/lo
 export const dynamic = "force-static";
 export const dynamicParams = false;
 
-export function generateStaticParams({ params }: { params?: { category?: string } } = {}) {
+export function generateStaticParams({ params }: { params: { category?: string } }) {
   const categories = params?.category ? NEA_CATEGORIES.filter((c) => c.id === params.category) : NEA_CATEGORIES;
   return categories.flatMap((c) => LIVE_OTHER_LOCALES.map((lang) => ({ category: c.id, lang })));
 }

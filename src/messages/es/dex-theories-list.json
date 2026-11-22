@@ -1,0 +1,22 @@
+{
+  "label": "Todos los expedientes",
+  "verdictGroup": "Veredicto",
+  "allCases": "Todos los casos",
+  "verdict": {
+    "confirmed": "Confirmada",
+    "fan": "Teoría fan",
+    "debunked": "Desmentida"
+  },
+  "sourceGroup": "De dónde viene",
+  "source": {
+    "games": "Juegos",
+    "anime": "Anime",
+    "pokedex": "Pokédex",
+    "internet": "Internet",
+    "manga": "Manga"
+  },
+  "search": "Buscar casos",
+  "none": "Ningún caso coincide. Prueba con otro veredicto, otra fuente u otra búsqueda.",
+  "caseNumber": "CASO {n}",
+  "open": "Abrir →"
+}

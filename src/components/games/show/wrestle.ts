@@ -4,6 +4,9 @@ import { RITUALS, boutPose, planBout, type WrestlePlan } from "../scene/motions/
 import { smooth } from "../scene/motions/common";
 import { crane, drift, framed, mixPose, tall, type CamPose } from "./cams";
 import type { ShowOptions } from "./longjump";
+import { localNum } from "@/lib/games/events";
+import { translator, type Translator } from "@/i18n/catalog";
+import gamesShow from "@/messages/games-show";
 import { Timeline, beatAt, beatClock, beatK, type Burst, type Decal, type Overlay, type Show, type ShowFrame } from "./types";
 
 /**
@@ -25,7 +28,18 @@ interface Item {
 const kN = (n: number) => `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)} kN`;
 const secs = (t: number) => `${t.toFixed(1)} s`;
 
-export function wrestleShow(result: Bracket, o: ShowOptions): Show {
+/** A round's id in the messages (its English name is the bracket's own, and seeds the bouts). */
+const roundId = (r: string) => (r === "Final" ? "final" : r === "Semi-finals" ? "semi" : r === "Quarter-finals" ? "quarter" : r === "Round of 16" ? "r16" : r === "Round of 32" ? "r32" : r === "Round of 64" ? "r64" : "of");
+const roundN = (r: string) => Number(/\d+/.exec(r)?.[0] ?? 0);
+
+export function wrestleShow(result: Bracket, o: ShowOptions, ws: Translator<typeof gamesShow.en> = translator(gamesShow, "en", undefined)): Show {
+  const lc = ws.locale;
+  const num = (s: string) => localNum(s, lc);
+  const kNL = (n: number) => num(kN(n));
+  const secsL = (t: number) => num(secs(t));
+  const roundName = (r: string) => ws(`wr.rounds.${roundId(r)}`, { n: roundN(r) });
+  const roundTag = (r: string) => ws(`wr.roundTag.${roundId(r)}`, { n: roundN(r) });
+  const roundLower = (r: string) => ws(`wr.roundLower.${roundId(r)}`, { n: roundN(r) });
   const athletes: Athlete[] = result.order;
   const bouts: BracketBout[] = [...result.rounds.flatMap((r) => (r.name === "Final" ? [] : r.bouts)), ...(result.bronze ? [result.bronze] : []), ...result.rounds[result.rounds.length - 1].bouts];
   const items: Item[] = bouts
@@ -77,7 +91,7 @@ export function wrestleShow(result: Bracket, o: ShowOptions): Show {
     const e = tr.end;
     if (it.bout.round !== round) {
       round = it.bout.round;
-      tl.add({ kind: "card", cam: "dohyo", act: idx, clock0: -2, rate: 0.2, title: round === "Bronze" ? "Bronze bout" : round, sub: round === "Final" ? "For the gold" : "" }, 1.3);
+      tl.add({ kind: "card", cam: "dohyo", act: idx, clock0: -2, rate: 0.2, title: round === "Bronze" ? ws("wr.bronzeBout") : roundName(round), sub: round === "Final" ? ws("wr.forGold") : "" }, 1.3);
     }
     const segs: [number, number][] = [];
     if (it.cut === "full") {
@@ -209,36 +223,36 @@ export function wrestleShow(result: Bracket, o: ShowOptions): Show {
     const bb = b!;
     const tr = it.bout.trace;
     const tau = beatClock(beat, t);
-    const bug = { title: "Wrestling", sub: beat.kind === "board" ? "Final standings" : it.bout.round === "Bronze" ? "Bronze bout" : it.bout.round };
+    const bug = { title: ws("ev.wrestling.name"), sub: beat.kind === "board" ? ws("finalStandings") : it.bout.round === "Bronze" ? ws("wr.bronzeBout") : roundName(it.bout.round) };
     switch (beat.kind) {
       case "establish":
-        return { title: { text: "WRESTLING", sub: `Push-out · ${athletes.length} wrestlers · knockout`, k } };
+        return { title: { text: ws("ev.wrestling.name").toUpperCase(), sub: ws("wr.crane", { n: athletes.length }), k } };
       case "startlist": {
         const first = result.rounds[0];
-        return { bug, board: { title: `The draw · ${first.name.toLowerCase()}`, rows: first.bouts.map((x, i) => ({ place: String(i + 1), name: x.b ? `${x.a.name} v ${x.b.name}` : `${x.a.name} (bye)`, mark: "", key: x.a.key, plain: true })), k } };
+        return { bug, board: { title: ws("wr.draw", { round: roundLower(first.name) }), rows: first.bouts.map((x, i) => ({ place: String(i + 1), name: x.b ? ws("wr.versus", { a: x.a.name, b: x.b.name }) : ws("wr.bye", { a: x.a.name }), mark: "", key: x.a.key, plain: true })), k } };
       }
       case "card": {
         // The round's title; from the second round on, the last round's results under the round's name instead.
         const prev = result.rounds.find((r) => r.bouts.some((x) => x.loser && items.indexOf(items.find((y) => y.bout === x)!) < items.indexOf(it)) && r.name !== it.bout.round && r.name !== "Final");
         const done = prev ? prev.bouts.filter((x) => x.b && x.trace) : [];
         if (!done.length) return { bug, title: { text: beat.title ?? "", sub: beat.sub ?? "", k } };
-        return { bug, board: { title: `${beat.title} · after the ${prev!.name.toLowerCase()}`, rows: done.map((x, i) => ({ place: String(i + 1), name: `${x.winner.name} beat ${x.loser!.name}`, mark: x.trace!.ringOut ? `out in ${secs(x.trace!.end)}` : "on the bell", key: x.winner.key, plain: true })), k } };
+        return { bug, board: { title: ws("wr.after", { title: beat.title ?? "", round: roundLower(prev!.name) }), rows: done.map((x, i) => ({ place: String(i + 1), name: ws("wr.beat", { a: x.winner.name, b: x.loser!.name }), mark: x.trace!.ringOut ? ws("wr.outIn", { s: secsL(x.trace!.end) }) : ws("wr.onBell"), key: x.winner.key, plain: true })), k } };
       }
       case "action":
         return {
-          bug: { title: "Wrestling", sub: tau > 0 ? `${it.bout.round === "Bronze" ? "Bronze" : it.bout.round} · ${Math.min(tau, tr.end).toFixed(1)} s` : bug.sub },
-          lower: tau < Math.min(tr.end, 1.5) ? { key: a.key, name: `${a.name} v ${bb.name}`, line: `Push ${kN(pushForce(a))} · brace ${kN(braceForce(a))}  |  push ${kN(pushForce(bb))} · brace ${kN(braceForce(bb))}`, tag: it.bout.round === "Bronze" ? "Bronze" : it.bout.round.replace("-finals", "-final"), k } : undefined,
+          bug: { title: ws("ev.wrestling.name"), sub: tau > 0 ? ws("wr.clock", { round: it.bout.round === "Bronze" ? ws("bronze") : roundName(it.bout.round), s: num(Math.min(tau, tr.end).toFixed(1)) }) : bug.sub },
+          lower: tau < Math.min(tr.end, 1.5) ? { key: a.key, name: ws("wr.versus", { a: a.name, b: bb.name }), line: ws("wr.line", { p: kNL(pushForce(a)), b: kNL(braceForce(a)), p2: kNL(pushForce(bb)), b2: kNL(braceForce(bb)) }), tag: it.bout.round === "Bronze" ? ws("bronze") : roundTag(it.bout.round), k } : undefined,
           tags: [a.key, bb.key],
           // (k runs over the rest of the shot: in with a pop, held, out as it ends.)
-          mark: tau >= tr.end ? { text: tr.ringOut ? "OUT!" : "TIME", sub: `${it.bout.winner.name} wins`, tone: "lead", k: Math.min(1, (tau - tr.end) / (it.cut === "full" ? 2.5 : it.cut === "medium" ? 1.5 : 1.2)) } : undefined,
-          caption: beat.sub === "later" && tau < tr.end - 2 ? `${Math.floor(tau)} s in` : undefined,
+          mark: tau >= tr.end ? { text: ws(tr.ringOut ? "wr.out" : "wr.time"), sub: ws("wins", { name: it.bout.winner.name }), tone: "lead", k: Math.min(1, (tau - tr.end) / (it.cut === "full" ? 2.5 : it.cut === "medium" ? 1.5 : 1.2)) } : undefined,
+          caption: beat.sub === "later" && tau < tr.end - 2 ? ws("wr.secondsIn", { s: Math.floor(tau) }) : undefined,
         };
       case "result":
-        return { bug, mark: { text: `${it.bout.winner.name.toUpperCase()} WINS`, sub: tr.ringOut ? `Ring-out in ${secs(tr.end)}` : "Pushed further back at the bell", tone: "good", k } };
+        return { bug, mark: { text: ws("wr.winsBig", { name: it.bout.winner.name.toUpperCase() }), sub: tr.ringOut ? ws("wr.ringOut", { s: secsL(tr.end) }) : ws("wr.pushedBack"), tone: "good", k } };
       case "replay":
-        return { replay: true, lower: { key: it.bout.winner.key, name: it.bout.winner.name, line: `${(it.bout.winner.kg).toLocaleString("en")} kg v ${(it.bout.loser!.kg).toLocaleString("en")} kg · out in ${secs(tr.end)}`, tag: "Replay", k } };
+        return { replay: true, lower: { key: it.bout.winner.key, name: it.bout.winner.name, line: ws("wr.replay", { kg: num((it.bout.winner.kg).toLocaleString("en")), kg2: num((it.bout.loser!.kg).toLocaleString("en")), s: secsL(tr.end) }), tag: ws("replay"), k } };
       default:
-        return { bug, board: { title: "Wrestling · final", rows: result.order.map((x, i) => ({ place: String(i + 1), name: x.name, mark: i === 0 ? "Gold" : i === 1 ? "Silver" : x === result.bronzeMedal ? "Bronze" : "", key: x.key, hi: i === 0 })), k } };
+        return { bug, board: { title: ws("final", { event: ws("ev.wrestling.name") }), rows: result.order.map((x, i) => ({ place: String(i + 1), name: x.name, mark: i === 0 ? ws("gold") : i === 1 ? ws("silver") : x === result.bronzeMedal ? ws("bronze") : "", key: x.key, hi: i === 0 })), k } };
     }
   };
 
@@ -252,8 +266,8 @@ export function wrestleShow(result: Bracket, o: ShowOptions): Show {
     at,
     overlay,
     resultsAt: beats.find((b) => b.kind === "board")?.t0 ?? end,
-    hook: "Which Pokémon pushes everyone out of the ring? 💥",
-    headline: `${result.gold.name} wins the wrestling`,
+    hook: ws("wr.hook"),
+    headline: ws("wr.headline", { name: result.gold.name }),
   };
 }
 

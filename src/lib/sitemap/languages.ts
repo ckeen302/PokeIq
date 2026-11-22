@@ -1,13 +1,13 @@
 import type { MetadataRoute } from "next";
 import type { Locale } from "@/i18n/config";
 import { localizePath } from "@/i18n/paths";
-import { isPageLive, pageAlternates } from "@/i18n/routes";
+import { isPageIndexed, pageAlternates } from "@/i18n/routes";
 import { SITE_URL } from "@/lib/site";
 
 const pathOf = (url: string) => url.slice(SITE_URL.length) || "/";
 
 /**
- * A sitemap's entries in `locale`: only the pages served in that language, at that language's URL, each with the
+ * A sitemap's entries in `locale`: only the pages indexed in that language (served and not thin), at that language's URL, each with the
  * same hreflang set as the page's own <head> (src/i18n/routes.ts pageAlternates is the one source of both).
  * English entries stay exactly as they were while English is the only language.
  */
@@ -15,7 +15,7 @@ export function withAlternates(entries: MetadataRoute.Sitemap, locale: Locale): 
   const out: MetadataRoute.Sitemap = [];
   for (const entry of entries) {
     const path = pathOf(entry.url);
-    if (!isPageLive(path, locale)) continue;
+    if (!isPageIndexed(path, locale)) continue;
     const alternates = pageAlternates(path);
     const languages = alternates && Object.fromEntries(Object.entries(alternates).map(([code, p]) => [code, `${SITE_URL}${p === "/" ? "" : p}`]));
     const url = `${SITE_URL}${localizePath(path, locale) === "/" ? "" : localizePath(path, locale)}`;

@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "title": "L'histoire du monde Pokémon : l'histoire des jeux, en 3D",
+    "description": "L'histoire du monde Pokémon telle que la racontent les jeux : du mythe de la création de Sinnoh et du choc primordial de Hoenn à l'arme ultime de Kalos, la Nuit Noire de Galar, la Tour Cendrée et la machine à voyager dans le temps de la Zone Zéro. Un musée cinématographique en 3D, chaque phrase sourcée dans les jeux.",
+    "socialTitle": "L'histoire du monde Pokémon · PokéIQ",
+    "chapterTitle": "{title} : l'histoire de {region} ({when})",
+    "chapterDescription": "{summary} Chapitre {numeral} de L'histoire du monde Pokémon, un musée en 3D de l'histoire racontée par les jeux, chaque phrase sourcée.",
+    "chapterSocial": "{title} · L'histoire du monde Pokémon"
+  },
+  "wholeHistory": "Toute l'histoire",
+  "lab": "Labo 3D",
+  "realStory": "L'histoire réelle",
+  "realTimeline": "La chronologie réelle",
+  "kicker": "Labo 3D de PokéIQ · L'histoire des jeux",
+  "chapterOf": "{title} · Chapitre {numeral}",
+  "chapters": "Chapitres",
+  "sources": "Sources",
+  "inChapter": "Dans ce chapitre",
+  "chapterPage": "La page de ce chapitre",
+  "rest": "La suite de l'histoire",
+  "separate": "Une continuité à part",
+  "howTo": "Comment lire les étiquettes.",
+  "tagsHelp": "<myth>Mythe, Légende et Conte populaire</myth> : le jeu le raconte comme une histoire. <implied>Implicite</implied> : découle clairement de ce que disent les jeux. <theory>Théorie</theory> et <speculation>Spéculation</speculation> : l'idée ou la supposition d'un personnage. <contested>Sources divergentes</contested> : les jeux le racontent de plusieurs façons. Les phrases sans étiquette sont affirmées telles quelles.",
+  "continuity": "L'anime et les films ont leur propre continuité, présentée à part ci-dessus. Tu cherches quand sont sortis les jeux, l'anime et les films ? Consulte la <link>chronologie Pokémon</link>.",
+  "music": "Musique : une bande originale composée pour ce film, un thème arrangé en quatre pistes, joué avec la banque de sons MuseScore General (MIT ; ses cordes viennent de VSCO 2 Community Edition, CC0). L'ambiance et les effets sont créés dans le navigateur (<a>crédits</a>). Les figurines Pokémon sont faites à partir des rendus de Pokémon HOME fournis par PokéAPI."
+}

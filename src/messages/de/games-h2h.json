@@ -1,0 +1,22 @@
+{
+  "slotFilled": "{which, select, a {Erstes} other {Zweites}} Pokémon: {name}. Ändern",
+  "slotEmpty": "Wähl das {which, select, a {erste} other {zweite}} Pokémon",
+  "searchBelow": "Unten suchen",
+  "tapToPick": "Tippen zum Wählen",
+  "vs": "VS",
+  "placeholderA": "Erstes Pokémon suchen …",
+  "placeholderB": "Rivalen suchen …",
+  "searchA": "Nach dem ersten Pokémon suchen",
+  "searchB": "Nach dem zweiten Pokémon suchen",
+  "list": "Pokémon",
+  "tapOne": "Oder eins antippen",
+  "tapRival": "Oder einen Rivalen antippen",
+  "event": "Die Disziplin",
+  "eventGroup": "Disziplin",
+  "pickTwo": "Wähl zwei Pokémon",
+  "pickEvent": "Wähl eine Disziplin",
+  "pickDifferent": "Wähl zwei verschiedene Pokémon",
+  "failed": "Die Pokémon wurden nicht geladen. Prüf die Verbindung und versuch es noch einmal.",
+  "close": "Schließen",
+  "title": "Duell"
+}

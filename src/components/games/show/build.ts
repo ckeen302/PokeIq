@@ -12,13 +12,15 @@ import { swimShow } from "./swim";
 import { throwShow } from "./throws";
 import { wrestleShow } from "./wrestle";
 import type { Show } from "./types";
+import { translator, type Translator } from "@/i18n/catalog";
+import gamesShow from "@/messages/games-show";
 
 /**
  * An event's broadcast from its outcome (lib/games/games' runEvent): the
  * event's own show, then the medal ceremony.
  */
 
-export function medallists(outcome: EventOutcome, byKey: ReadonlyMap<string, Athlete>, nations?: Nation[]): Medallist[] {
+export function medallists(outcome: EventOutcome, byKey: ReadonlyMap<string, Athlete>, nations?: Nation[], tr: Translator<typeof gamesShow.en> = translator(gamesShow, "en", undefined)): Medallist[] {
   const nationOf = (k: string) => nations?.find((n) => n.athletes.some((a) => a.key === k));
   const out: Medallist[] = [];
   const add = (keys: string[], medal: 1 | 2 | 3) => {
@@ -26,7 +28,7 @@ export function medallists(outcome: EventOutcome, byKey: ReadonlyMap<string, Ath
       const a = byKey.get(k);
       if (!a) continue;
       const n = nationOf(k);
-      const mark = outcome.event === "wrestling" ? (medal === 1 ? "Undefeated" : medal === 2 ? "Lost the final" : "Won the bronze bout") : formatMark(outcome.event, outcome.marks.get(k));
+      const mark = outcome.event === "wrestling" ? tr(medal === 1 ? "undefeated" : medal === 2 ? "lostFinal" : "wonBronze") : formatMark(outcome.event, outcome.marks.get(k), tr.locale);
       out.push({ athlete: a, medal, mark, nation: n ? { name: n.name, color: n.color } : undefined });
     }
   };
@@ -36,25 +38,25 @@ export function medallists(outcome: EventOutcome, byKey: ReadonlyMap<string, Ath
   return out;
 }
 
-export function eventShowOnly(outcome: EventOutcome, o: ShowOptions & { champion?: boolean }, byKey?: ReadonlyMap<string, Athlete>): Show {
+export function eventShowOnly(outcome: EventOutcome, o: ShowOptions & { champion?: boolean }, byKey?: ReadonlyMap<string, Athlete>, tr: Translator<typeof gamesShow.en> = translator(gamesShow, "en", undefined)): Show {
   const d = outcome.detail;
   switch (d.kind) {
     case "combined":
-      return allAroundShow(d.result, d.result.rows.map((r) => byKey?.get(r.key)).filter((a): a is Athlete => !!a), o);
+      return allAroundShow(d.result, d.result.rows.map((r) => byKey?.get(r.key)).filter((a): a is Athlete => !!a), o, tr);
     case "sprint":
-      return sprintShow(d.result, o);
+      return sprintShow(d.result, o, tr);
     case "jump-long":
-      return longJumpShow(d.result, o);
+      return longJumpShow(d.result, o, tr);
     case "jump-high":
-      return highJumpShow(d.result, o);
+      return highJumpShow(d.result, o, tr);
     case "throw":
-      return throwShow(d.result, o);
+      return throwShow(d.result, o, tr);
     case "lift":
-      return liftShow(d.result, o);
+      return liftShow(d.result, o, tr);
     case "wrestle":
-      return wrestleShow(d.result, o);
+      return wrestleShow(d.result, o, tr);
     case "swim":
-      return swimShow(d.result, o);
+      return swimShow(d.result, o, tr);
   }
 }
 
@@ -79,10 +81,10 @@ function withReactions(show: Show, outcome: EventOutcome): Show {
   return { ...show, cues: [...show.cues, { t: call.t0 + 0.2, kind: "roar" as const, gain: 1 }].sort((x, y) => x.t - y.t) };
 }
 
-export function eventShow(outcome: EventOutcome, byKey: ReadonlyMap<string, Athlete>, o: ShowOptions & { nations?: Nation[]; podium?: boolean; champion?: boolean }): Sequence {
-  const main = withReactions(eventShowOnly(outcome, o, byKey), outcome);
+export function eventShow(outcome: EventOutcome, byKey: ReadonlyMap<string, Athlete>, o: ShowOptions & { nations?: Nation[]; podium?: boolean; champion?: boolean }, tr: Translator<typeof gamesShow.en> = translator(gamesShow, "en", undefined)): Sequence {
+  const main = withReactions(eventShowOnly(outcome, o, byKey, tr), outcome);
   const parts: Show[] = [main];
-  const meds = medallists(outcome, byKey, o.nations);
-  if (o.podium !== false && meds.length) parts.push(podiumShow(outcome.event, eventOf(outcome.event).venue, meds, { video: o.video }));
+  const meds = medallists(outcome, byKey, o.nations, tr);
+  if (o.podium !== false && meds.length) parts.push(podiumShow(outcome.event, eventOf(outcome.event).venue, meds, { video: o.video }, tr));
   return sequence(parts, { event: outcome.event, hook: main.hook, headline: main.headline });
 }

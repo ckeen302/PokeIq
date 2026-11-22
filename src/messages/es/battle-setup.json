@@ -1,0 +1,72 @@
+{
+  "fourCpu": {
+    "freeforall": "Tres Entrenadores de la CPU, cada uno por su cuenta.",
+    "multi": "Un compañero de la CPU a tu lado contra dos Entrenadores de la CPU."
+  },
+  "opponents": {
+    "cpu": { "title": "CPU", "blurb": "Combate contra la CPU, ahora mismo." },
+    "match": { "title": "Buscar rival", "blurb": "Te emparejamos con un Entrenador que busca el mismo formato y combatís en directo." },
+    "pvp": { "title": "Un amigo", "blurb": "Consigue un enlace de invitación y combatid en directo, con temporizador." }
+  },
+  "shortGen": "Gen {gen}",
+  "quickNoteCustom": "Sets de combate aleatorio de la gen. {gen}, comprobados con tus reglas.",
+  "quickNoteFormat": "Sets de combate aleatorio legales en {format}.",
+  "nameRejected": "Elige otro nombre.",
+  "startFailed": "No se pudo empezar el combate.",
+  "start": {
+    "cpu": "Empezar combate",
+    "match": "Buscar rival",
+    "challenge": "Retar a {name}",
+    "pvp": "Crear combate"
+  },
+  "opponent": "Rival",
+  "format": "Formato",
+  "random": "Aleatorio",
+  "yourTeam": "Tu equipo",
+  "doubles": "Dobles. ",
+  "bringTeam": "Lleva un equipo: guardado, creado aquí o uno rápido.",
+  "customRules": "Reglas personalizadas",
+  "gens": "Gen 1–9",
+  "groupTitle": "Triples y cuatro Entrenadores",
+  "groupFour": "Cuatro Entrenadores, un Pokémon en el campo cada uno. Lleva un equipo o uno rápido.",
+  "groupThree": "Tres Pokémon por lado. Lleva un equipo o uno rápido.",
+  "frontier": "¿Buscas una racha? Alquila un equipo en la <factory>Factoría Batalla</factory> o sube la <tower>Torre Batalla</tower>.",
+  "cpuLevel": "Nivel de la CPU",
+  "heading": {
+    "cpu": "Combate contra la CPU",
+    "match": "Combate contra quien sea",
+    "pvp": "Combate con un amigo"
+  },
+  "summary": {
+    "cpuFour": "CPU en {level}. {four} {teams, select, random {Equipos aleatorios para todos.} other {Cada uno lleva su propio equipo.}}",
+    "cpu": "CPU en {level}. {teams, select, random {Equipos aleatorios para los dos.} other {Lleva su propio equipo.}}",
+    "matchFour": "Te emparejaremos con el próximo Entrenador que busque {format}; la CPU ocupa los otros dos puestos.{multi, select, yes { Tú y tu rival tendréis cada uno un compañero de la CPU.} other {}} Sin clasificación, como en Showdown.",
+    "match": "Te emparejaremos con el próximo Entrenador que busque {format} y el combate empezará al momento.{teams, select, random { Los equipos son aleatorios.} other { Cada uno lleva su propio equipo.}}",
+    "challenge": "{name} recibe tu reto al momento (y tú también recibes el enlace). El combate empieza cuando los dos estéis listos.",
+    "pvpFour": "Recibirás un enlace para enviar hasta a tres amigos; la CPU puede ocupar los puestos que nadie coja. Sin clasificación, como en Showdown.",
+    "pvp": "Recibirás un enlace para enviarlo. El combate empieza cuando los dos estéis listos."
+  },
+  "nameLabel": "Tu nombre de Entrenador",
+  "namePlaceholder": "Nombre de Entrenador",
+  "ranked": "Clasificatoria",
+  "rankedSoon": "Los combates clasificatorios llegan pronto.",
+  "rankedAccount": "Las clasificatorias requieren una cuenta, para que tu puntuación vaya contigo.",
+  "rankedHint": "Emparejamiento por puntuación en la clasificación. Rendirse o salir cuenta como derrota.",
+  "signIn": "<link>Inicia sesión</link> para jugar clasificatorias.",
+  "unrated": "Sin puntuación: empiezas con 1000 Elo (1500 ± 350 Glicko-2).",
+  "ladder": "Clasificación",
+  "watch": "Que cualquiera pueda verlo",
+  "watchHint": "Aparece en Ver en directo. Desactivado: solo quien tenga el enlace puede verlo.",
+  "timer": "Temporizador de turno",
+  "timerHint": "Desactivado: cualquiera de los dos puede activarlo durante el combate.",
+  "timeout": "Perder por tiempo",
+  "timeoutHint": "Activado, como en Showdown: si se te acaba el tiempo, pierdes (los formatos con temporizador VGC hacen un movimiento por defecto mientras te quede tiempo de reserva). Desactivado: el temporizador elige un movimiento por ti y pierdes al agotar el tiempo dos veces seguidas.",
+  "searchingRanked": "Buscando un rival clasificatorio…",
+  "searching": "Buscando un rival…",
+  "cancel": "Cancelar",
+  "whyName": "Escribe un nombre de Entrenador para empezar.",
+  "whyTeam": "Elige un equipo, o uno rápido, para empezar.",
+  "leaving": "Si sales de esta página o cierras la pestaña, se cancela la búsqueda.",
+  "playNow": "Jugar ya · {format}",
+  "custom": "Personalizado"
+}

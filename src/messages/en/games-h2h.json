@@ -1,0 +1,22 @@
+{
+  "slotFilled": "{which, select, a {First} other {Second}} Pokémon: {name}. Change",
+  "slotEmpty": "Pick the {which, select, a {first} other {second}} Pokémon",
+  "searchBelow": "Search below",
+  "tapToPick": "Tap to pick",
+  "vs": "VS",
+  "placeholderA": "Search the first Pokémon…",
+  "placeholderB": "Search the rival…",
+  "searchA": "Search for the first Pokémon",
+  "searchB": "Search for the second Pokémon",
+  "list": "Pokémon",
+  "tapOne": "Or tap one",
+  "tapRival": "Or tap a rival",
+  "event": "The event",
+  "eventGroup": "Event",
+  "pickTwo": "Pick two Pokémon",
+  "pickEvent": "Pick an event",
+  "pickDifferent": "Pick two different Pokémon",
+  "failed": "The Pokémon didn't load. Check the connection and try again.",
+  "close": "Close",
+  "title": "Head to head"
+}

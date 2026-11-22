@@ -1,0 +1,93 @@
+{
+  "meta": {
+    "title": "Pokémon-Theorien – Fan-Theorien, Urban Legends & Beta-Mythen im Check",
+    "description": "Pokémon-Fan-Theorien, Urban Legends und Beta-Mythen als Fallakten: Gengar und Pixi, Mew unter dem Lastwagen, MissingNo., das Lavandia-Syndrom und mehr, jeweils mit Beweisen, Quellen und einem Urteil: bestätigt, Fan-Theorie oder widerlegt.",
+    "socialTitle": "Die Fallakten · PokéIQ-Pokédex"
+  },
+  "header": {
+    "kicker": "Theorien & Verschwörungen",
+    "title": "Poké",
+    "accent": "dex",
+    "blurb": "Pokémon-Theorien, Urban Legends und Beta-Mythen, jeweils mit Beweisen und einem Urteil."
+  },
+  "list": {
+    "eyebrow": "Pokémon-Theorien & Verschwörungen",
+    "title": "Die <b>Fallakten</b>",
+    "lead": "Fan-Theorien, Verschwörungen, Gerüchte und echte Glitches. Alle an den Spielen überprüft."
+  },
+  "ld": {
+    "pokedex": "Pokédex",
+    "theories": "Theorien"
+  },
+  "verdict": {
+    "confirmed": "Bestätigt",
+    "fan": "Fan-Theorie",
+    "debunked": "Widerlegt"
+  },
+  "source": {
+    "games": "Spiele",
+    "anime": "Anime",
+    "pokedex": "Pokédex",
+    "internet": "Internet",
+    "manga": "Manga"
+  },
+  "sourceList": "{a}, {b}",
+  "caseNumber": "FALL {n}",
+  "case": {
+    "metaTitle": {
+      "confirmed": "{title} – Pokémon-Theorie, bestätigt",
+      "fan": "{title} – Pokémon-Fan-Theorie",
+      "debunked": "{title} – Pokémon-Mythos, widerlegt"
+    },
+    "metaDescription": {
+      "confirmed": "Bestätigt. {claim} Die Beweise dafür und dagegen, was wirklich bestätigt ist, und die Quellen.",
+      "fan": "Unbestätigte Fan-Theorie. {claim} Die Beweise dafür und dagegen, was wirklich bestätigt ist, und die Quellen.",
+      "debunked": "Widerlegt. {claim} Die Beweise dafür und dagegen, was wirklich bestätigt ist, und die Quellen."
+    },
+    "socialTitle": "{case}: {title} · PokéIQ",
+    "back": "Alle Fallakten",
+    "filed": "{case} · {era} · Abgelegt unter {sources}",
+    "theory": "Die Theorie",
+    "claim": "Die Behauptung",
+    "glitchPokemon": "Glitch-Pokémon",
+    "pair": "{a} und {b}",
+    "exhibitA": "BEWEISSTÜCK A",
+    "silhouette": "Silhouette von {name}",
+    "overlaid": "ÜBEREINANDER",
+    "origin": "Ursprung & Verbreitung",
+    "evidenceFor": "Beweise dafür",
+    "evidenceAgainst": "Beweise dagegen",
+    "confirmed": "Was wirklich bestätigt ist",
+    "verdict": "Das Urteil",
+    "sources": "Quellen",
+    "related": "Verwandte Fälle",
+    "footer": {
+      "confirmed": "Abgelegt als bestätigt. Pokédex-Zitate geben den offiziellen deutschen Text wieder, wo wir ihn haben; alle anderen Zitate sind aus den englischen Fassungen der Spiele, ihres Pokédex und der genannten Interviews übersetzt. Reddit und YouTube sind immer nur der Ort, an dem sich eine Theorie verbreitet hat, nie ein Beweis.",
+      "fan": "Abgelegt als Fan-Theorie. Pokédex-Zitate geben den offiziellen deutschen Text wieder, wo wir ihn haben; alle anderen Zitate sind aus den englischen Fassungen der Spiele, ihres Pokédex und der genannten Interviews übersetzt. Reddit und YouTube sind immer nur der Ort, an dem sich eine Theorie verbreitet hat, nie ein Beweis.",
+      "debunked": "Abgelegt als widerlegt. Pokédex-Zitate geben den offiziellen deutschen Text wieder, wo wir ihn haben; alle anderen Zitate sind aus den englischen Fassungen der Spiele, ihres Pokédex und der genannten Interviews übersetzt. Reddit und YouTube sind immer nur der Ort, an dem sich eine Theorie verbreitet hat, nie ein Beweis."
+    }
+  },
+  "board": {
+    "label": "Fall der Woche",
+    "brand": "POKÉIQ / FALLWAND",
+    "file": "AKTE {no} · {state}",
+    "fileNo": "AKTE {no}",
+    "status": "STATUS: {status}",
+    "press": "TIPPE AUF EINEN FALL, UM DIE AKTE ZU ÖFFNEN",
+    "state": {
+      "open": "NOCH OFFEN",
+      "closed": "GESCHLOSSEN"
+    },
+    "verdictStatus": {
+      "confirmed": "BEWIESEN",
+      "fan": "UNBEWIESEN",
+      "debunked": "WIDERLEGT"
+    },
+    "caseOfTheWeek": "Fall der Woche",
+    "keyEvidence": "Wichtigste Beweise",
+    "open": "Fall öffnen",
+    "noteFiled": "Abgelegt: {era}",
+    "noteFrom": "Aus: {sources}",
+    "noteLead": "Spur: {caption}"
+  }
+}

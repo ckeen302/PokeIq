@@ -1,0 +1,698 @@
+{
+  "title": "Die Geschichte der Pokémon-Welt",
+  "tagline": "Vom Ursprünglichen bis zur Zeitmaschine in der Zone Null: die Geschichte der Pokémon-Welt, wie die Spiele selbst sie erzählen.",
+  "intro": "Der größte Teil dieser Geschichte ist selbst in den Spielen Legende: von Ältesten erzählt, in Ruinen gemeißelt, von Spielleuten besungen oder in alten Büchern aufgeschrieben. Jeder Satz unten ist ein Zitat aus einem Spiel oder eine eng daran angelehnte Nacherzählung, und jeder sagt, woher er stammt. Legenden sind als Legenden markiert, die Vermutung einer Figur als Spekulation, und wo sich die Spiele widersprechen, sagt die Seite das.",
+  "method": "Die Spiele nennen selten Jahreszahlen, deshalb reichen die Kapitel grob von den ältesten Geschichten zu den jüngsten, jede nach ihrer Haupthandlung eingeordnet. Ein Kapitel ohne genanntes Datum sagt das. Zitate aus älteren Spielen stehen in heutiger Schreibweise.",
+  "screen": {
+    "title": "Anime & Filme",
+    "note": "Anime und Filme sind eine eigene Kontinuität. Diese Geschichten gehören nicht zur Geschichte der Spiele oben, und manche widersprechen ihr. Es sind Zusammenfassungen der Filme, kein Spieltext.",
+    "items": {
+      "Pokémon: The First Movie": {
+        "film": "Pokémon – Der Film",
+        "text": "Mewtu ist ein Klon, von Wissenschaftlern aus einer versteinerten Wimper von Mew erschaffen."
+      },
+      "Lucario and the Mystery of Mew": {
+        "film": "Lucario und das Geheimnis von Mew",
+        "text": "Sir Aaron versiegelt Lucario in seinem Stab und gibt sein Leben, um einen Krieg zu beenden."
+      },
+      "Arceus and the Jewel of Life": {
+        "film": "Arceus und das Juwel des Lebens",
+        "text": "Arceus leiht Damos das Juwel des Lebens und wird verraten."
+      },
+      "Hoopa and the Clash of Ages": {
+        "film": "Hoopa und der Kampf der Geschichte",
+        "text": "Das entfesselte Hoopa wütete einst und wurde im Banngefäß eingeschlossen."
+      }
+    }
+  },
+  "chapters": {
+    "creation": {
+      "region": "Sinnoh",
+      "title": "Der Ursprüngliche",
+      "when": "Am Anfang",
+      "whenNote": "Ein Schöpfungsmythos: Die Spiele erzählen ihn immer als solchen.",
+      "summary": "Sinnohs Schöpfungsmythos: ein wirbelndes Chaos, ein Ei und der Ursprüngliche, der Zeit, Raum und Geist erschuf und dann einschlief.",
+      "beats": {
+        "chaos": {
+          "lead": "Die Mythen Sinnohs erzählen vom Anfang.",
+          "quote": "Am Anfang gab es nur einen tosenden Strudel aus Chaos."
+        },
+        "egg": {
+          "quote": "Im Herzen des Chaos, wo alles eins wurde, erschien ein Ei. Aus dem Strudel gefallen, brachte das Ei den Ursprünglichen hervor.",
+          "cut": "Im Herzen des Chaos … erschien ein Ei. … das Ei brachte den Ursprünglichen hervor."
+        },
+        "arceus": {
+          "lead": "Eine Mythologieforscherin in der Bibliothek von Fleetburg gibt ihm einen Namen.",
+          "quote": "Aber alles beginnt mit Arceus, dem Ersten. Man nennt es den Ursprünglichen."
+        },
+        "time-space": {
+          "quote": "Aus sich selbst erschuf der Ursprüngliche zwei Wesen. Die Zeit begann sich zu drehen. Der Raum begann sich auszudehnen."
+        },
+        "heartbeat": {
+          "lead": "Sinnohs Gottheiten von Zeit und Raum sind Dialga und Palkia.",
+          "quote": "Man sagt, die Zeit fließe, wenn Dialgas Herz schlägt."
+        },
+        "three": {
+          "quote": "Abermals aus sich selbst erschuf der Ursprüngliche drei Lebewesen."
+        },
+        "spirit": {
+          "lead": "Die Forscherin aus Fleetburg deutet die drei als Selfe, Vesprit und Tobutz.",
+          "quote": "Die zwei Wesen wünschten, und aus ihnen entstand die Materie. Die drei Lebewesen wünschten, und aus ihnen entstand der Geist."
+        },
+        "sleep": {
+          "quote": "Als die Welt erschaffen war, fiel der Ursprüngliche in einen unerschütterlichen Schlaf …"
+        },
+        "third": {
+          "lead": "In Hisui gefundene Tafeln fügen ein drittes Wesen hinzu.",
+          "quote": "Die andere Seite dieser Welt gab der Ursprüngliche seinem tobenden Dritten."
+        },
+        "banished": {
+          "quote": "Es wurde wegen seiner Gewalt verbannt. Schweigend blickte es aus der Zerrwelt auf die alte Welt.",
+          "cut": "Es wurde wegen seiner Gewalt verbannt."
+        }
+      },
+      "notes": {
+        "Myth, not record": {
+          "label": "Mythos, keine Aufzeichnung",
+          "text": "Die Spiele stellen die Schöpfung als Mythos dar. Der Pokédex in Diamant sagt, Arceus werde „in der Mythologie als das Pokémon beschrieben, das mit seinen 1.000 Armen das Universum formte“, der in Platin, es sei „angeblich aus einem Ei an einem Ort hervorgegangen, an dem nichts war, und habe dann die Welt geformt“."
+        },
+        "In its own words": {
+          "label": "In eigenen Worten",
+          "text": "Wenn Arceus in Pokémon-Legenden: Arceus spricht, nennt es sich „das, was die Menschen Arceus nennen“. Den Schöpfungsmythos bestätigt es nie mit eigenen Worten."
+        },
+        "Implied": {
+          "label": "Angedeutet",
+          "text": "Der Mythos selbst spricht nur von „zwei Wesen“ und „drei Lebewesen“. Sie als Dialga und Palkia und als das Seen-Trio zu deuten, folgt den Pokédex-Einträgen und der Forscherin in Fleetburg."
+        },
+        "The birth of spirit": {
+          "label": "Die Geburt des Geistes",
+          "text": "Der Pokédex in Platin: „Als Selfe flog, erlangten die Menschen die Fähigkeit, Probleme zu lösen. Das war die Geburt des Wissens.“ Der Flug von Vesprit war „die Geburt der Gefühle“, der von Tobutz „die Geburt der Willenskraft“."
+        }
+      },
+      "sources": {
+        "original-story": { "game": "Pokémon Platin", "label": "Buch der Bibliothek von Fleetburg, „Die Ursprungsgeschichte“" },
+        "canalave-researcher": { "game": "Pokémon Platin", "label": "Eine Mythologieforscherin, Bibliothek von Fleetburg" },
+        "dex-dialga": { "game": "Pokémon Platin", "label": "Pokédex: Dialga" },
+        "la-plates": { "game": "Pokémon-Legenden: Arceus", "label": "Inschrift einer Tafel" },
+        "dex-giratina": { "game": "Pokémon Platin", "label": "Pokédex: Giratina" },
+        "dex-arceus": { "game": "Pokémon Diamant und Platin", "label": "Pokédex: Arceus" },
+        "la-arceus": { "game": "Pokémon-Legenden: Arceus", "label": "Arceus" },
+        "dex-lake": { "game": "Pokémon Platin", "label": "Pokédex: Selfe, Vesprit und Tobutz" }
+      }
+    },
+    "giants": {
+      "region": "Sinnoh und Hoenn",
+      "title": "Der Riese, der Kontinente bewegte",
+      "when": "Vor langer Zeit",
+      "whenNote": "Pokédex-Legenden, nie datiert. Hoenns Regirock „wurde vor langer Zeit von Menschen versiegelt“.",
+      "summary": "Laut Pokédex-Legenden zog Regigigas die Kontinente mit Seilen und formte Regirock, Regice und Registeel. In Hoenn versiegelte ein altes Volk sie, weil es sie fürchtete.",
+      "beats": {
+        "towed": {
+          "lead": "Pokédex-Legenden erzählen von einem Riesen.",
+          "quote": "Einer alten Legende zufolge soll dieses Pokémon Kontinente mit Seilen gezogen haben."
+        },
+        "hisui": {
+          "quote": "Der Legende nach zog Regigigas Landmassen zusammen und band sie mit Seilen, um den Kontinent Hisui zu erschaffen. Ich habe zwar meine Zweifel, aber vielleicht steckt in der Geschichte ein Körnchen Wahrheit.",
+          "cut": "Der Legende nach zog Regigigas Landmassen zusammen und band sie mit Seilen, um den Kontinent Hisui zu erschaffen."
+        },
+        "shaped": {
+          "quote": "Man glaubt, dass es Regirock, Regice und Registeel aus Lehm, Eis und Magma formte."
+        },
+        "sealed": {
+          "lead": "In Hoenn erinnert die Blindenschrift in der Siegelkammer daran, was die Menschen taten.",
+          "quote": "In dieser Höhle haben wir gelebt. Wir verdanken alles den Pokémon. Doch wir haben das Pokémon versiegelt. Wir fürchteten es."
+        },
+        "long-ago": {
+          "quote": "Regirock wurde vor langer Zeit von Menschen versiegelt."
+        }
+      },
+      "notes": {
+        "A doubting Pokédex": {
+          "label": "Ein zweifelnder Pokédex",
+          "text": "Selbst der Pokédex in Pokémon-Legenden: Arceus bleibt vorsichtig: „Ich habe zwar meine Zweifel, aber vielleicht steckt in der Geschichte ein Körnchen Wahrheit.“"
+        },
+        "A rumour": {
+          "label": "Ein Gerücht",
+          "text": "Der Pokédex in Schild fügt das Gerücht hinzu, Registeel sei tief im Erdmantel entstanden und „vor 10.000 Jahren an die Oberfläche gekommen“."
+        }
+      },
+      "sources": {
+        "dex-regigigas-dp": { "game": "Pokémon Diamant und Perl", "label": "Pokédex: Regigigas" },
+        "dex-regigigas-la": { "game": "Pokémon-Legenden: Arceus", "label": "Pokédex: Regigigas" },
+        "dex-regigigas-hgss": { "game": "Pokémon HeartGold und SoulSilver", "label": "Pokédex: Regigigas" },
+        "braille": { "game": "Pokémon Rubin, Saphir und Smaragd", "label": "Blindenschrift in der Siegelkammer" },
+        "dex-regirock": { "game": "Pokémon Rubin", "label": "Pokédex: Regirock" },
+        "dex-registeel": { "game": "Pokémon Schild", "label": "Pokédex: Registeel" }
+      }
+    },
+    "hoenn": {
+      "region": "Hoenn",
+      "title": "Der Urzeitkampf",
+      "when": "Vor Tausenden von Jahren",
+      "whenNote": "Etwa tausend Jahre später dann der Meteorit von Xeneroville, danach tausend Jahre Frieden.",
+      "summary": "Proto-Groudon und Proto-Kyogre kämpfen, bis Rayquaza herabsteigt. Tausend Jahre später lässt ein Meteorit Xeneroville entstehen, und Rayquaza mega-entwickelt sich zum ersten Mal.",
+      "beats": {
+        "clash": {
+          "lead": "In der Delta-Episode erzählt Amalia Hoenns älteste Geschichte.",
+          "quote": "Vor Tausenden von Jahren, in der längst vergessenen Urzeit … kämpften Proto-Groudon und Proto-Kyogre in endlosen, erbitterten Schlachten um diese Energie.",
+          "cut": "Vor Tausenden von Jahren … kämpften Proto-Groudon und Proto-Kyogre … in endlosen, erbitterten Schlachten."
+        },
+        "land": {
+          "quote": "Groudon tritt in der Mythologie als Schöpfer des Landes auf …"
+        },
+        "sea": {
+          "quote": "Kyogre tritt in der Mythologie als Schöpfer des Meeres auf. Nach langen Jahren des Streits mit Groudon legte es sich auf dem Meeresgrund schlafen.",
+          "cut": "Kyogre tritt in der Mythologie als Schöpfer des Meeres auf."
+        },
+        "rayquaza": {
+          "quote": "… ein Pokémon, das in flammendem Smaragdgrün leuchtete, stieg herab … Rayquaza. Rayquazas Kraft überwältigte die der beiden Proto-Pokémon.",
+          "cut": "… ein Pokémon, das in flammendem Smaragdgrün leuchtete, stieg herab … Rayquaza."
+        },
+        "sootopolis": {
+          "lead": "Amalias Bericht geht weiter: Tausend Jahre später fielen erneut Meteoroiden, und das Land, das aus diesem Einschlag entstand, wurde Xeneroville.",
+          "quote": "So wurde der Mechanismus der Mega-Entwicklung durch die erste Begegnung zwischen Menschen und Rayquaza entdeckt …"
+        },
+        "peace": {
+          "quote": "Auf diese verheerende Zeit folgten tausend Jahre Frieden."
+        }
+      },
+      "notes": {
+        "The first Mega Evolution": {
+          "label": "Die erste Mega-Entwicklung",
+          "text": "In Amalias Bericht verwandelte der Wunsch der Menschen Rayquaza, als die Proto-Pokémon erneut erwachten: die erste Mega-Entwicklung."
+        },
+        "Sources differ": {
+          "label": "Quellen uneins",
+          "text": "Smaragd erzählt die Entstehung von Xeneroville anders: „Ein Unterwasservulkan brach aus und schob sich aus der Tiefe empor. Sein Krater tauchte aus dem Meer auf und füllte sich mit Regenwasser.“"
+        },
+        "No exact year": {
+          "label": "Kein genaues Jahr",
+          "text": "Für den ersten Kampf nennen die Spiele kein Jahr, nur „vor Tausenden von Jahren“. Amalias Bericht zählt dann tausend Jahre bis zum Meteoriten von Xeneroville und danach tausend Jahre Frieden."
+        },
+        "A witness": {
+          "label": "Ein Zeuge",
+          "text": "In Pokémon-Legenden: Z-A erzählt AZ, er habe auf seiner langen Reise auf der Suche nach Floette „ein Phänomen in Hoenn gesehen, das vielleicht der Anfang aller Mega-Entwicklung war“."
+        },
+        "A legend rewritten": {
+          "label": "Eine umgeschriebene Legende",
+          "text": "Vor der Krise in Smaragd schreibt die Hüterin auf dem Gipfel des Pyrobergs alles zwei Kugeln zu: „Der Blaue Edelstein und der Rote Edelstein beendeten die Katastrophe.“ Danach wird die Legende mit „dem Pokémon des Himmels“ neu erzählt."
+        }
+      },
+      "sources": {
+        "zinnia": { "game": "Pokémon Omega Rubin und Alpha Saphir", "label": "Amalia, Delta-Episode" },
+        "dex-groudon": { "game": "Pokémon Smaragd", "label": "Pokédex: Groudon" },
+        "dex-kyogre": { "game": "Pokémon Smaragd", "label": "Pokédex: Kyogre" },
+        "delta-lore": { "game": "Pokémon Omega Rubin und Alpha Saphir", "label": "Die Überlieferung der Drakoniden, Delta-Episode" },
+        "za-azhoenn": { "game": "Pokémon-Legenden: Z-A", "label": "Nebenmission 119, über AZs Reise" },
+        "emerald-sootopolis": { "game": "Pokémon Smaragd", "label": "Ein Bewohner von Xeneroville" },
+        "emerald-mtpyre": { "game": "Pokémon Smaragd", "label": "Die Hüterin auf dem Gipfel des Pyrobergs" }
+      }
+    },
+    "kalos": {
+      "region": "Kalos",
+      "title": "Die ultimative Waffe",
+      "when": "Vor 3.000 Jahren",
+      "whenNote": "Der Krieg, die Maschine und das Licht der Waffe, dreitausend Jahre vor X und Y.",
+      "summary": "Ein Krieg vor dreitausend Jahren. Ein König baut eine Maschine, um sein Floette ins Leben zurückzuholen, macht sie zur ultimativen Waffe, um den Krieg zu beenden, und Floette verlässt ihn.",
+      "beats": {
+        "war": {
+          "lead": "Ein Lied aus Kalos erinnert an den Krieg.",
+          "quote": "Das Leid des Krieges klopfte an jede Tür, bis Mensch und Pokémon es nicht mehr ertrugen, vor dreitausend Jahren, an diesem Ufer."
+        },
+        "man": {
+          "quote": "Es waren einmal ein Mann und ein Pokémon … Ein Krieg brach aus. Das geliebte Pokémon des Mannes zog mit in den Krieg."
+        },
+        "box": {
+          "quote": "Einige Jahre vergingen. Man gab ihm eine winzige Kiste. Der Mann wollte das Pokémon zurück ins Leben holen …"
+        },
+        "weapon": {
+          "quote": "Der Mann baute eine Maschine, um ihm Leben zu schenken … Er machte die Maschine zur ultimativen Waffe. Der Mann wurde zum Bringer der Zerstörung, der den Krieg beendete …",
+          "cut": "Er machte die Maschine zur ultimativen Waffe. Der Mann wurde zum Bringer der Zerstörung, der den Krieg beendete …"
+        },
+        "light": {
+          "lead": "AZ erinnert sich an das Licht der Waffe.",
+          "quote": "Das Licht, das die ultimative Waffe abfeuerte, reichte bis in den Himmel und regnete dann herab und verbrannte alles, was auf der Erde ruhte."
+        },
+        "left": {
+          "quote": "… viele Pokémon mussten ihr Leben lassen, um seines wiederherzustellen. Das wiederbelebte Pokémon verließ den Mann.",
+          "cut": "Das wiederbelebte Pokémon verließ den Mann."
+        },
+        "az": {
+          "lead": "Der Mann war AZ. Dreitausend Jahre später begegnet er Floette wieder.",
+          "quote": "… der Teil von mir, der die ultimative Waffe gebaut hat … Floette … Es sind 3.000 Jahre vergangen …"
+        }
+      },
+      "notes": {
+        "Sources differ": {
+          "label": "Quellen uneins",
+          "text": "Was trieb die Waffe an? Die alte Erzählung sagt, ihr Einsatz habe „die Lebenskraft vieler Pokémon erfordert“. Professor Platans Theorie spricht von „der Energie der legendären Pokémon“."
+        },
+        "A theory": {
+          "label": "Eine Theorie",
+          "text": "Platans Theorie lautet, dass Mega-Steine vor dreitausend Jahren entstanden, „als bestimmte Steine von dem Licht, der Energie der legendären Pokémon, bestrahlt wurden, das die ultimative Waffe abfeuerte“. AZ nickte, als er das hörte."
+        }
+      },
+      "sources": {
+        "xy-song": { "game": "Pokémon X und Y", "label": "Das Kriegslied eines fahrenden Spielmanns" },
+        "xy-tale": { "game": "Pokémon X und Y", "label": "Die Erzählung von der ultimativen Waffe" },
+        "az": { "game": "Pokémon X und Y", "label": "AZ" },
+        "az-za": { "game": "Pokémon-Legenden: Z-A", "label": "AZ, Hotel Z" },
+        "za-sycamore": { "game": "Pokémon-Legenden: Z-A", "label": "Nebenmission 119, über Professor Platans Theorie" }
+      }
+    },
+    "galar": {
+      "region": "Galar",
+      "title": "Die Dunkelste Nacht",
+      "when": "Vor langer Zeit",
+      "whenNote": "Sein Meteorit fiel vor 20.000 Jahren. Die Dunkelste Nacht selbst wird nie datiert.",
+      "summary": "Vor 20.000 Jahren fällt ein Meteorit auf Galar. Vor langer Zeit die Dunkelste Nacht: ein schwarzer Sturm, beendet von zwei jungen Helden, deren Schwert und Schild in Wahrheit Pokémon waren. Und Coronospa, ein König reicher Ernten.",
+      "beats": {
+        "meteorite": {
+          "lead": "Ein Meteorit fällt auf Galar.",
+          "quote": "Es befand sich in einem Meteoriten, der vor 20.000 Jahren einschlug. Dieses Pokémon scheint mit dem Dynamax-Phänomen zusammenzuhängen.",
+          "cut": "Es befand sich in einem Meteoriten, der vor 20.000 Jahren einschlug."
+        },
+        "core": {
+          "quote": "Der Kern auf seiner Brust absorbiert die Energie, die aus dem Boden der Galar-Region strömt …"
+        },
+        "storm": {
+          "lead": "Eine Legende, die man sich in Engine City erzählt.",
+          "quote": "Vor langer Zeit … bedeckte ein gewaltiger schwarzer Sturm die Galar-Region. Die Menschen nannten ihn „die Dunkelste Nacht“. Riesige Pokémon fielen über das Land her …",
+          "cut": "Vor langer Zeit … bedeckte ein gewaltiger schwarzer Sturm die Galar-Region. Die Menschen nannten ihn „die Dunkelste Nacht“."
+        },
+        "hero": {
+          "quote": "… doch sie wurden von einem einzigen jungen Helden mit Schwert und Schild besiegt."
+        },
+        "two": {
+          "lead": "Die Ruinen erzählen es anders.",
+          "quote": "Zwei junge Helden … Schwert und Schild waren in Wirklichkeit Pokémon …"
+        },
+        "ended": {
+          "quote": "Die beiden haben die Dunkelste Nacht mit den Schwert- und Schild-Pokémon beendet!"
+        },
+        "kingdom": {
+          "quote": "Diese Wandteppiche erzählen die Geschichte der Gründung eines Königreichs in Galar."
+        },
+        "calyrex": {
+          "lead": "In den Schneelanden der Krone spricht ein weiterer alter Herrscher: Coronospa, der König der reichen Ernte.",
+          "quote": "In längst vergangenen Tagen herrschte ich als König über dieses Land. Die Menschen schenkten mir ihre Treue und ihren Respekt, denn ich konnte das Land ergrünen lassen und ihnen Jahr für Jahr reiche Ernten bescheren.",
+          "cut": "In längst vergangenen Tagen herrschte ich als König über dieses Land."
+        }
+      },
+      "notes": {
+        "Undated": {
+          "label": "Undatiert",
+          "text": "Die Spiele datieren den Meteoriten (vor 20.000 Jahren), sagen aber nie, wann die Dunkelste Nacht war, und nichts deutet darauf hin, dass beides zur selben Zeit geschah."
+        },
+        "A second Darkest Day": {
+          "label": "Eine zweite Dunkelste Nacht",
+          "text": "In der Gegenwart weckt Präsident Rose Endynalos: „Wir haben die Dunkelste Nacht bereits herbeigeführt … oder sollte ich sagen, das ultimative Pokémon – Endynalos!“"
+        },
+        "Order unknown": {
+          "label": "Reihenfolge unbekannt",
+          "text": "Die Spiele sagen nicht, ob Coronospa vor oder nach der Dunkelsten Nacht herrschte. Sein Pokédex sagt nur, dass es „einst über die Galar-Region herrschte“."
+        }
+      },
+      "sources": {
+        "dex-eternatus-shield": { "game": "Pokémon Schild", "label": "Pokédex: Endynalos" },
+        "dex-eternatus-sword": { "game": "Pokémon Schwert", "label": "Pokédex: Endynalos" },
+        "motostoke-statue": { "game": "Pokémon Schwert und Schild", "label": "Der Führer an der Heldenstatue, Budew Drop Inn, Engine City" },
+        "swsh-ruins": { "game": "Pokémon Schwert und Schild", "label": "Die hinter dem Wandbild von Passbeck verborgenen Statuen" },
+        "hop": { "game": "Pokémon Schwert und Schild", "label": "Hop" },
+        "sonia": { "game": "Pokémon Schwert und Schild", "label": "Sania, über die Wandteppiche von Claw City" },
+        "rose": { "game": "Pokémon Schwert und Schild", "label": "Präsident Rose, das Energiewerk" },
+        "calyrex": { "game": "Pokémon Schwert und Schild: Die Schneelande der Krone", "label": "Coronospa, Freezedale" },
+        "dex-calyrex": { "game": "Pokémon Schwert", "label": "Pokédex: Coronospa" }
+      }
+    },
+    "unova": {
+      "region": "Einall",
+      "title": "Wahrheit und Ideale",
+      "when": "Undatiert",
+      "whenNote": "Kein Spiel datiert die Spaltung. Der Alte Palast, erbaut von einem Helden und seinem Drachen, blühte vor etwa 2.500 Jahren.",
+      "summary": "Ein einziger Drache und die Zwillingshelden gründen Einall. Die Brüder streiten über Wahrheit und Ideale, der Drache teilt sich in zwei, und der Kampf ihrer Söhne zerstört Einall.",
+      "beats": {
+        "one": {
+          "lead": "Einalls Gründungslegende.",
+          "quote": "Dieses eine Drachen-Pokémon erschuf gemeinsam mit den Zwillingshelden eine neue Region."
+        },
+        "brothers": {
+          "quote": "Die Zwillingshelden, der ältere Bruder, der nach der Wahrheit suchte, und der jüngere Bruder, der nach Idealen strebte, begannen darüber zu streiten, wie man entscheiden solle, wer von ihnen recht hatte …",
+          "cut": "… der ältere Bruder, der nach der Wahrheit suchte, und der jüngere Bruder, der nach Idealen strebte, begannen zu streiten …"
+        },
+        "split": {
+          "quote": "Das eine Pokémon vom Typ Drache, das die ganze Zeit bei ihnen gewesen war, teilte seinen Körper in zwei. Der eine Teil stellte sich auf die Seite des älteren Bruders, der andere auf die des jüngeren.",
+          "cut": "Das eine Pokémon vom Typ Drache … teilte seinen Körper in zwei."
+        },
+        "ceased": {
+          "quote": "… ihr Kampf tobte endlos, und keiner konnte zum Sieger erklärt werden … Die Zwillingshelden verkündeten, dass keine Seite allein recht habe, und beendeten den Streit.",
+          "cut": "Die Zwillingshelden verkündeten, dass keine Seite allein recht habe, und beendeten den Streit."
+        },
+        "sons": {
+          "quote": "Die Söhne der beiden Helden fingen den Kampf von Neuem an! Und im nächsten Augenblick zerstörten Reshiram und Zekrom Einall mit Feuer und Blitzen! Dann verschwanden sie!",
+          "cut": "Die Söhne der beiden Helden fingen den Kampf von Neuem an! … Reshiram und Zekrom zerstörten Einall mit Feuer und Blitzen!"
+        },
+        "stone": {
+          "quote": "Als es dann seine körperliche Gestalt verlor, wurde das Pokémon zum Lichtstein und wartete geduldig auf einen neuen Helden.",
+          "cut": "… das Pokémon wurde zum Lichtstein und wartete geduldig auf einen neuen Helden."
+        },
+        "husk": {
+          "lead": "Spekulation: In Schwarz 2 und Weiß 2 fragt sich Lysander, was es mit einem dritten Drachen auf sich hat.",
+          "quote": "… Wenn es Kyurem also gibt, könnte es dann nur eine Hülle sein – eine Schale, die übrig geblieben ist?"
+        }
+      },
+      "notes": {
+        "Undated": {
+          "label": "Undatiert",
+          "text": "Die Spiele datieren die Spaltung nie. Der Alte Palast, „die Ruinen einer Stadt, erbaut vom Helden von einst und dem Drachen-Pokémon, das ihn begleitete“, blühte vor etwa 2.500 Jahren, sagt ein Wissenschaftler, der das dort schlafende Flampivian datiert."
+        },
+        "Speculation": {
+          "label": "Spekulation",
+          "text": "Kyurem als Überrest des ursprünglichen Drachen ist eine Vermutung. Lysander sagt auch, „wie die Geschichte erzählt“, sei Kyurem „ebenfalls in jener Zeit entstanden“."
+        }
+      },
+      "sources": {
+        "iris": { "game": "Pokémon Schwarz und Weiß", "label": "Lilia, in Lysanders Haus in Twindrake City" },
+        "drayden": { "game": "Pokémon Schwarz und Weiß", "label": "Lysander, Twindrake City" },
+        "bw-light-stone": { "game": "Pokémon Schwarz und Weiß", "label": "Ein Bewohner von Nevaio City" },
+        "drayden-b2w2": { "game": "Pokémon Schwarz 2 und Weiß 2", "label": "Lysander" },
+        "relic-castle": { "game": "Pokémon Schwarz und Weiß", "label": "Ein Wissenschaftler im Alten Palast" }
+      }
+    },
+    "kitakami": {
+      "region": "Kitakami",
+      "title": "Die wahre Geschichte des Unholds",
+      "when": "Vor langer, langer Zeit",
+      "whenNote": "Die Geschichte wird nie datiert.",
+      "summary": "Kitakami ehrt drei Helden, die gegen einen Unhold kämpften. Die Familie des Maskenmachers bewahrte die wahre Geschichte: Die drei stahlen die Masken des Unholds, und der Unhold war Ogerpon.",
+      "beats": {
+        "monument": {
+          "lead": "Ein Denkmal in Kitakami erzählt die eine Geschichte.",
+          "quote": "Vor langer Zeit bewahrten diese drei mutigen Pokémon Midoriya vor der Zerstörung. Sie besiegten den Unhold, der das Dorf angegriffen hatte, und bezahlten dafür mit ihrem Leben.",
+          "cut": "Vor langer Zeit bewahrten diese drei mutigen Pokémon Midoriya vor der Zerstörung."
+        },
+        "masks": {
+          "lead": "Die Familie des Maskenmachers bewahrte eine andere.",
+          "quote": "Vor langer, langer Zeit kamen ein Mann und ein Unhold aus einem fernen Land nach Kitakami … der Maskenmacher des Dorfes … fertigte mehrere Masken für den Mann und den Unhold.",
+          "cut": "Vor langer, langer Zeit kamen ein Mann und ein Unhold aus einem fernen Land nach Kitakami …"
+        },
+        "stole": {
+          "quote": "Bald darauf kam eine Gruppe gieriger Pokémon nach Kitakami … Die Pokémon stahlen die anderen drei Masken …",
+          "cut": "Eine Gruppe gieriger Pokémon … Die Pokémon stahlen die anderen drei Masken …"
+        },
+        "donned": {
+          "quote": "Der Unhold setzte diese Maske auf … fand dort die gierigen Pokémon … und besiegte sie …"
+        },
+        "thought": {
+          "quote": "Die Dorfbewohner glaubten, die drei Pokémon seien gefallen, als sie das Dorf vor dem Unhold schützen wollten."
+        },
+        "heretic": {
+          "quote": "… der Maskenmacher – also unser Vorfahr – versuchte verzweifelt, die Wahrheit zu erzählen … er wurde als Ketzer verfolgt … er hielt die Wahrheit lebendig – von Generation zu Generation als Familiengeheimnis weitergegeben.",
+          "cut": "… der Maskenmacher … versuchte verzweifelt, die Wahrheit zu erzählen … er wurde als Ketzer verfolgt …"
+        }
+      },
+      "notes": {
+        "Never said": {
+          "label": "Nie gesagt",
+          "text": "Die Geschichte sagt nicht, was aus dem Mann wurde: nur, dass er „nicht stark genug war, sie alle zu beschützen“, und dass der Unhold sein Zuhause verwüstet vorfand, mit „Spuren eines Kampfes“."
+        }
+      },
+      "sources": {
+        "monument": { "game": "Pokémon Karmesin und Purpur: Die Türkisgrüne Maske", "label": "Das Denkmal der drei Helden" },
+        "grandfather": { "game": "Pokémon Karmesin und Purpur: Die Türkisgrüne Maske", "label": "Carmines Großvater" }
+      }
+    },
+    "johto": {
+      "region": "Johto",
+      "title": "Die Turmruine",
+      "when": "Vor 1.500 bis 150 Jahren",
+      "whenNote": "Die Alph-Ruinen sind etwa 1.500 Jahre alt; die Türme entstanden vor 700 Jahren; das Feuer war vor etwa 150 Jahren.",
+      "summary": "Die Alph-Ruinen, etwa 1.500 Jahre alt. Zwei Türme, vor 700 Jahren erbaut. Vor etwa 150 Jahren setzt ein Blitz einen davon drei Tage lang in Brand, und Ho-Oh belebt drei Pokémon wieder, die darin umkamen.",
+      "beats": {
+        "alph": {
+          "lead": "Johtos älteste Ruinen sind noch älter.",
+          "quote": "Die Ruinen sind etwa 1.500 Jahre alt. Aber man weiß nicht, warum sie gebaut wurden – oder von wem."
+        },
+        "towers": {
+          "lead": "Die Weisen von Teak City bewahren die Geschichte ihrer zwei Türme.",
+          "quote": "Man sagt, die beiden Türme seien gebaut worden, um Freundschaft und Hoffnung zwischen Pokémon und Menschen zu fördern. Das war vor 700 Jahren …",
+          "cut": "… gebaut, um Freundschaft und Hoffnung zwischen Pokémon und Menschen zu fördern. Das war vor 700 Jahren …"
+        },
+        "lugia": {
+          "quote": "Damals soll ein riesiges, silberfarbenes Pokémon auf der Spitze des Messingturms genistet haben."
+        },
+        "fire": {
+          "quote": "Vor etwa 150 Jahren schlug ein Blitz in einen der Türme ein. Er ging in Flammen auf, die drei Tage lang wüteten. Ein plötzlicher Wolkenbruch löschte das Feuer schließlich.",
+          "cut": "Vor etwa 150 Jahren schlug ein Blitz in einen der Türme ein … Ein plötzlicher Wolkenbruch löschte das Feuer schließlich."
+        },
+        "perished": {
+          "quote": "Drei namenlose Pokémon kamen darin um. Ein regenbogenfarbenes Pokémon stieg vom Himmel herab und erweckte sie wieder zum Leben …"
+        },
+        "beasts": {
+          "quote": "Ho-Oh stieg vom Himmel herab und schenkte den drei Pokémon neues Leben. Es sind … Suicune, Entei und Raikou."
+        },
+        "powers": {
+          "quote": "Man sagt, die legendären Pokémon verkörpern drei Kräfte … Den Blitz, der in den Turm einschlug. Das Feuer, das den Turm verbrannte. Und den Regen, der das Feuer löschte …",
+          "cut": "… Den Blitz, der in den Turm einschlug. Das Feuer, das den Turm verbrannte. Und den Regen, der das Feuer löschte …"
+        },
+        "flew": {
+          "quote": "Zwei Türme … Zwei Pokémon … Doch als einer niederbrannte, flogen beide Pokémon davon und kehrten nie zurück."
+        }
+      },
+      "notes": {
+        "Revived, not created": {
+          "label": "Wiederbelebt, nicht erschaffen",
+          "text": "Ho-Oh hat die drei nicht erschaffen. Die Legende sagt, sie lebten bereits, „drei namenlose Pokémon“, und Ho-Oh holte sie zurück."
+        },
+        "Two towers": {
+          "label": "Zwei Türme",
+          "text": "Das silberfarbene Pokémon, Lugia, nistete auf dem Messingturm: dem Turm, der zur Turmruine wurde."
+        }
+      },
+      "sources": {
+        "alph": { "game": "Pokémon Kristall", "label": "Ein Wissenschaftler im Forschungszentrum der Alph-Ruinen" },
+        "sage": { "game": "Pokémon Kristall", "label": "Ein Weiser im Zinnturm, 1. Stock" },
+        "wise-trio": { "game": "Pokémon Kristall", "label": "Der Weise Masa, der Raum der drei Weisen, Teak City" },
+        "ecruteak-legend": { "game": "Pokémon Kristall", "label": "Ein Ältester in Teak City: „eine Legende, die von den Arenaleitern von Teak City überliefert wurde“" },
+        "tower-gate": { "game": "Pokémon Kristall", "label": "Der Eingang des Zinnturms, Teak City" }
+      }
+    },
+    "hisui": {
+      "region": "Hisui",
+      "title": "Der allmächtige Sinnoh",
+      "when": "Eine längst vergangene Zeit",
+      "whenNote": "Hisui ist Sinnoh in „einer längst vergangenen Zeit“. Kein Spiel nennt das Jahr.",
+      "summary": "Sinnoh, als es noch Hisui hieß. Zwei Clans verehren den „allmächtigen Sinnoh“, und jeder meint damit eine andere Gottheit, bis sich ein Raum-Zeit-Riss öffnet; danach wird das Land in Sinnoh umbenannt.",
+      "beats": {
+        "era": {
+          "lead": "Sinnoh hieß in einer längst vergangenen Zeit Hisui.",
+          "quote": "… gaaanz früher, als man die Region noch Hisui nannte."
+        },
+        "celestica": {
+          "quote": "Vor langer und noch längerer Zeit stand hier Elysien. Doch Leute und Ort, sie verschwanden beide. Mit der Zeit kamen neue Leute, segelnd, segelnd übers Meer, gerufen von ihrer Liebe zu Sinnoh …",
+          "cut": "Vor langer und noch längerer Zeit stand hier Elysien. Doch Leute und Ort, sie verschwanden beide."
+        },
+        "diamond": {
+          "lead": "Zwei Clans verehrten denselben Namen, und jeder meinte damit eine andere Gottheit.",
+          "quote": "Der allmächtige Sinnoh lenkt alle Zeit. Man sagt, er habe mit seiner Macht über den Lauf der Zeit das Universum selbst erschaffen.",
+          "cut": "Der allmächtige Sinnoh lenkt alle Zeit."
+        },
+        "pearl": {
+          "quote": "… der wahre allmächtige Sinnoh – Quell aller Schöpfung und Herrscher über den Raum!"
+        },
+        "balls": {
+          "lead": "Es war die Zeit des ersten Pokédex.",
+          "quote": "Pokébälle sind nämlich eine neue Erfindung."
+        },
+        "rift": {
+          "quote": "Ich war es, der dir die Gelegenheit gab, diesen Raum-Zeit-Riss aufzureißen und die Gottheit des Raumes und die Gottheit der Zeit in den Wahnsinn zu treiben, damit du den Schöpfer aus seinem Versteck zerren konntest!",
+          "cut": "… diesen Raum-Zeit-Riss aufzureißen und die Gottheit des Raumes und die Gottheit der Zeit in den Wahnsinn zu treiben …"
+        },
+        "creator": {
+          "quote": "… der Diamant-Clan und der Perl-Clan hätten Dialga und Palkia nie mit dem Schöpfer Arceus verwechselt, wenn etwas Handfestes überliefert worden wäre.",
+          "cut": "… hätten Dialga und Palkia nie mit dem Schöpfer Arceus verwechselt …"
+        },
+        "name": {
+          "lead": "Als sich der Riss schließt, gibt Kommandant Kamado dem Land einen neuen Namen.",
+          "quote": "Es scheint, als würden wir alle von dem geleitet, den man den allmächtigen Sinnoh nennt. Hmm. Es wäre wohl passender, diese Region die Sinnoh-Region zu nennen.",
+          "cut": "Es wäre wohl passender, diese Region die Sinnoh-Region zu nennen."
+        }
+      },
+      "notes": {
+        "No year": {
+          "label": "Kein Jahr",
+          "text": "Die offizielle Website nennt Hisui „eine längst vergangene Zeit Sinnohs“. Kein Spiel nennt das Jahr."
+        },
+        "One title, two deities": {
+          "label": "Ein Titel, zwei Gottheiten",
+          "text": "„Allmächtiger Sinnoh“ ist der Titel, den die Clans ihrer Gottheit geben: Dialga beim Diamant-Clan, Palkia beim Perl-Clan. Keine von beiden ist der Schöpfer."
+        }
+      },
+      "sources": {
+        "perrin": { "game": "Pokémon Karmesin und Purpur", "label": "Perrin" },
+        "la-poem": { "game": "Pokémon-Legenden: Arceus", "label": "Ein Gedicht aus Hisui" },
+        "diamond-clan": { "game": "Pokémon-Legenden: Arceus", "label": "Ein Wächter des Diamant-Clans" },
+        "pearl-clan": { "game": "Pokémon-Legenden: Arceus", "label": "Ein Mitglied des Perl-Clans" },
+        "laventon": { "game": "Pokémon-Legenden: Arceus", "label": "Professor Laventin" },
+        "volo": { "game": "Pokémon-Legenden: Arceus", "label": "Volo" },
+        "cogita": { "game": "Pokémon-Legenden: Arceus", "label": "Cogita" },
+        "la-site": { "game": "Pokémon-Legenden: Arceus", "label": "Offizielle Website: „eine längst vergangene Zeit Sinnohs“" },
+        "kamado": { "game": "Pokémon-Legenden: Arceus", "label": "Kommandant Kamado" }
+      }
+    },
+    "alola": {
+      "region": "Alola",
+      "title": "Der Strahlende",
+      "when": "Vor langer Zeit",
+      "whenNote": "Die Spiele nennen kein Jahr.",
+      "summary": "Die Vorfahren von Ultrametropolis wollten Necrozmas Licht beherrschen, und es stahl alles Licht, das es finden konnte. Vor langer Zeit kämpfte es in Alola außerdem gegen die Kapu.",
+      "beats": {
+        "islands": {
+          "quote": "Die Inseln Alolas nahmen Gestalt an, als vor langer, langer Zeit Unterwasservulkane ausbrachen."
+        },
+        "greed": {
+          "lead": "In Ultrametropolis erzählt der Ultra-Erkundungstrupp seine eigene Geschichte.",
+          "quote": "Unsere Vorfahren waren gierig und wollten das ganze Licht von Necrozma beherrschen …"
+        },
+        "stole": {
+          "quote": "Sie haben Necrozma nur verletzt, sodass es einen Teil von sich verlor, außer Kontrolle geriet und alles Licht stahl, das es finden konnte!",
+          "cut": "… außer Kontrolle geriet und alles Licht stahl, das es finden konnte!"
+        },
+        "tower": {
+          "quote": "Deshalb halten wir Necrozma im Megaloturm eingesperrt, den unsere großen Vorfahren gebaut haben."
+        },
+        "tapu": {
+          "quote": "Den Aufzeichnungen zufolge … kämpfte Necrozma hier gegen die Kapu, als es vor langer Zeit nach Alola kam, hungrig nach ihrem Licht.",
+          "cut": "… kämpfte Necrozma hier gegen die Kapu, als es vor langer Zeit nach Alola kam, hungrig nach ihrem Licht."
+        },
+        "z": {
+          "quote": "Man vermutet, dass die Kraft, die damals aus der Ultrapforte strömte, die Quelle der Kraft der Z-Attacken sein könnte …",
+          "cut": "… die Kraft, die aus der Ultrapforte strömte … könnte die Quelle der Kraft der Z-Attacken sein …"
+        }
+      },
+      "notes": {
+        "A name of respect": {
+          "label": "Ein Name aus Respekt",
+          "text": "„Der Strahlende“ ist der Name, den Ultrametropolis Necrozma gibt: „Wir nennen es aus Respekt den Strahlenden.“"
+        },
+        "Order unknown": {
+          "label": "Reihenfolge unbekannt",
+          "text": "Die Spiele sagen nicht, was zuerst geschah: dass Ultrametropolis sein Licht verlor oder Necrozmas Kampf gegen die Kapu."
+        }
+      },
+      "sources": {
+        "alola-book": { "game": "Pokémon Sonne und Mond", "label": "Buch „Über die Ursprünge der Alola-Region“" },
+        "urs": { "game": "Pokémon Ultrasonne und Ultramond", "label": "Der Ultra-Erkundungstrupp" }
+      }
+    },
+    "kanto": {
+      "region": "Kanto",
+      "title": "Die Tagebücher der Villa",
+      "when": "Kein Jahr angegeben",
+      "whenNote": "Das Tagebuch nennt Tage, keine Jahre.",
+      "summary": "Tagebücher in der Pokémon-Villa auf der Zinnoberinsel: ein neues Pokémon, tief im Dschungel von Guyana entdeckt und Mew getauft, und das Neugeborene namens Mewtu.",
+      "beats": {
+        "jungle": {
+          "lead": "Tagebücher, zurückgelassen in der Pokémon-Villa auf der Zinnoberinsel.",
+          "quote": "Tagebuch: 5. Juli\nGuyana, Südamerika\nTief im Dschungel wurde ein neues Pokémon entdeckt."
+        },
+        "mew": {
+          "quote": "Tagebuch: 10. Juli\nWir haben das neu entdeckte Pokémon Mew getauft."
+        },
+        "ancestor": {
+          "quote": "Weil es jede Attacke erlernen kann, begannen manche zu erforschen, ob es der Vorfahr aller Pokémon ist.",
+          "cut": "… begannen manche zu erforschen, ob es der Vorfahr aller Pokémon ist."
+        },
+        "birth": {
+          "quote": "Tagebuch: 6. Februar\nMew hat ein Junges zur Welt gebracht. Wir haben das Neugeborene Mewtu genannt."
+        },
+        "powerful": {
+          "quote": "Tagebuch: 1. September\nMewtu ist viel zu stark. Es ist uns nicht gelungen, seine bösartigen Neigungen zu bändigen …"
+        },
+        "created": {
+          "lead": "Der Pokédex erzählt es anders.",
+          "quote": "Es wurde von einem Wissenschaftler nach jahrelangen, grauenhaften Experimenten mit Genmanipulation und DNA-Technik erschaffen."
+        }
+      },
+      "notes": {
+        "Sources differ": {
+          "label": "Quellen uneins",
+          "text": "Woher Mewtu stammt, hängt von der Quelle ab. Das Tagebuch in Rot und Blau: „Mew hat ein Junges zur Welt gebracht.“ Das in Let's Go: „Wir haben von Mew ein neues Pokémon erhalten.“ Der Pokédex: Es „wurde von einem Wissenschaftler nach jahrelangen, grauenhaften Experimenten mit Genmanipulation und DNA-Technik erschaffen“."
+        },
+        "Not a clone": {
+          "label": "Kein Klon",
+          "text": "Die Spiele nennen Mewtu nie einen Klon. Das stammt aus dem ersten Film (siehe Anime & Filme)."
+        }
+      },
+      "sources": {
+        "journal": { "game": "Pokémon Rot und Blau", "label": "Tagebücher in der Pokémon-Villa, Zinnoberinsel" },
+        "dex-mew": { "game": "Pokémon Kristall", "label": "Pokédex: Mew" },
+        "dex-mewtwo": { "game": "Pokémon Rot und Blau", "label": "Pokédex: Mewtu" },
+        "lgpe-journal": { "game": "Pokémon: Let's Go, Pikachu! und Let's Go, Evoli!", "label": "Tagebuch in der Pokémon-Villa" }
+      }
+    },
+    "paldea": {
+      "region": "Paldea",
+      "title": "Zone Null",
+      "when": "Seit etwa 2.000 Jahren",
+      "whenNote": "Vom Paldea-Reich bis zur Zeitmaschine tief unten in der Zone Null.",
+      "summary": "Ein Reich, das den Schatz der Zone Null suchte, eine vor 800 Jahren vereinte Nation, Heaths Expedition vor 200 Jahren und eine Zeitmaschine, die Pokémon aus der Vergangenheit oder der Zukunft herholt.",
+      "beats": {
+        "empire": {
+          "lead": "Paldeas Geschichtsunterricht beginnt mit einem Reich.",
+          "quote": "Vor etwa zweitausend Jahren geriet diese Region unter die Herrschaft des Paldea-Reichs."
+        },
+        "treasure": {
+          "text": "Sein Kaiser „glaubte inbrünstig an die Legende vom Schatz, der tief in der Zone Null ruht“. Das Große Zeitalter der Erkundung „dauerte etwa tausend Jahre, doch keine einzige Seele schaffte es bis in die tiefsten Tiefen der Zone Null“.",
+          "cut": "Sein Kaiser „glaubte inbrünstig an die Legende vom Schatz, der tief in der Zone Null ruht“."
+        },
+        "united": {
+          "quote": "Zweihundert Jahre später – also vor achthundert Jahren – vereinten sich das Reich und die umliegenden Nationen zu einem Ganzen. So entstand Paldea, wie wir es heute kennen.",
+          "cut": "… vor achthundert Jahren – vereinten sich das Reich und die umliegenden Nationen zu einem Ganzen."
+        },
+        "heath": {
+          "lead": "Vor zweihundert Jahren behauptete Heaths Expedition, die Tiefen der Zone Null erreicht zu haben.",
+          "quote": "Die Leute begannen, Heath einen Lügner zu nennen."
+        },
+        "tera": {
+          "quote": "Vor etwa 140 Jahren entdeckte man dort Pokémon, die in ein geheimnisvolles Licht gehüllt waren."
+        },
+        "machine": {
+          "quote": "Unsere Forschung an der Zeitmaschine hat einen Triumph hervorgebracht – ein Pokémon aus der fernen Vergangenheit! Ich habe es Koraidon genannt."
+        },
+        "paradox": {
+          "quote": "Selbst jetzt holt die Zeitmaschine weiterhin automatisch urzeitliche Pokémon in diese Zeit."
+        }
+      },
+      "notes": {
+        "The book": {
+          "label": "Das Buch",
+          "text": "Heaths Bericht über die Expedition ist heute als Karmesinbuch bekannt (in Purpur als Purpurbuch)."
+        },
+        "The academy": {
+          "label": "Die Akademie",
+          "text": "Frau Raifort fügt hinzu, dass die Akademie selbst „vor genau 805 Jahren erbaut wurde“."
+        },
+        "The source": {
+          "label": "Die Quelle",
+          "text": "Der Pokédex nennt die Quelle des Lichts: Terapagos „ist der Ursprung des Terakristall-Phänomens“."
+        },
+        "Past or future": {
+          "label": "Vergangenheit oder Zukunft",
+          "text": "In Karmesin holt die Maschine Pokémon aus der fernen Vergangenheit, in Purpur aus der fernen Zukunft."
+        },
+        "Sources differ": {
+          "label": "Quellen uneins",
+          "text": "Die Geschichte nennt es eine Zeitmaschine. Die Pokédex-Einträge der Paradox-Pokémon selbst sind vager: Riesenzahn „ähnelt einem rätselhaften Pokémon, das laut einer Zeitschrift für Übersinnliches seit Urzeiten lebt“."
+        }
+      },
+      "sources": {
+        "raifort": { "game": "Pokémon Karmesin und Purpur", "label": "Frau Raiforts Geschichtsunterricht" },
+        "journal-sv": { "game": "Pokémon Karmesin", "label": "Das Tagebuch des Professors" },
+        "ai-professor": { "game": "Pokémon Karmesin", "label": "Der KI-Professor, Labor Null" },
+        "dex-terapagos": { "game": "Pokémon Karmesin und Purpur", "label": "Pokédex: Terapagos" },
+        "dex-great-tusk": { "game": "Pokémon Purpur", "label": "Pokédex: Riesenzahn" }
+      }
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "stellar": "Astrale",
+  "category": {
+    "Physical": "Fis",
+    "Special": "Spe",
+    "Status": "Sta"
+  },
+  "categoryName": {
+    "Physical": "Fisica",
+    "Special": "Speciale",
+    "Status": "Stato"
+  },
+  "banned": "Bandito",
+  "species": "Specie",
+  "searchPokemon": "Cerca Pokémon",
+  "filters": "Filtri",
+  "filterType": "Filtra per tipo",
+  "anyType": "Qualsiasi tipo",
+  "filterAbility": "Filtra per abilità",
+  "ability": "Abilità",
+  "filterMove": "Filtra per mossa appresa",
+  "learns": "Impara mossa",
+  "legalOnly": "Solo validi",
+  "clear": "Azzera",
+  "bst": "Totale statistiche base",
+  "item": "Strumento",
+  "noItem": "Nessuno strumento",
+  "loadingMoves": "Caricamento mosse…",
+  "addMove": "Aggiungi una mossa",
+  "filterMoveType": "Filtra le mosse per tipo",
+  "head": {
+    "move": "Mossa",
+    "type": "Tipo",
+    "cat": "Cat",
+    "pow": "Pot",
+    "acc": "Prec",
+    "pp": "PP",
+    "use": "Uso"
+  },
+  "isBanned": "{move}: {reason}.",
+  "nature": "Natura"
+}

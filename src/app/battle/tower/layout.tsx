@@ -3,24 +3,35 @@ import { pageMetadata } from "@/lib/seo";
 import { GameJsonLd } from "@/components/seo/GameJsonLd";
 import { BattleHeader } from "@/components/battle/BattleHeader";
 import { RouteSlot } from "@/components/layout/RouteSlot";
+import { ClientMessages } from "@/i18n/ClientMessages";
+import { serverT } from "@/i18n/server";
+import pagesNs from "@/messages/battle-pages";
+import frontierNs from "@/messages/battle-frontier";
+import formatsNs from "@/messages/battle-formats";
+import teamPickNs from "@/messages/battle-team-pick";
+import pickersNs from "@/messages/battle-pickers";
 
-const DESCRIPTION =
-  "The Battle Tower on Pokémon Showdown's engine: bring your team under Flat Rules (level 50, bring six, pick three) and build a streak against computer trainers, with the Tower Tycoon every seventh battle.";
-
-export const metadata: Metadata = pageMetadata({
-  title: "Battle Tower — Flat Rules Streaks vs the Computer",
-  description: DESCRIPTION,
-  path: "/battle/tower",
-});
+export function generateMetadata(): Metadata {
+  const t = serverT(pagesNs);
+  return pageMetadata({
+    title: t("tower.meta.title"),
+    description: t("tower.description"),
+    path: "/battle/tower",
+  });
+}
 
 export default function BattleTowerLayout({ children }: { children: React.ReactNode }) {
+  const t = serverT(pagesNs);
   return (
     <div className="mx-auto max-w-6xl space-y-8">
-      <GameJsonLd name="Battle Tower" path="/battle/tower" description={DESCRIPTION} />
-      <BattleHeader crumb="Battle Tower" title="Battle" accent="Tower">
-        Your team, Flat Rules, and a streak of computer trainers that get tougher as you climb. Every seventh battle is the Tower Tycoon, with its best team.
+      <GameJsonLd name={t("tower.name")} path="/battle/tower" description={t("tower.description")} />
+      <BattleHeader crumb={t("tower.name")} title={t("tower.title")} accent={t("tower.accent")}>
+        {t("tower.intro")}
       </BattleHeader>
-      <RouteSlot>{children}</RouteSlot>
+      {/* The page is a client component (its start panel is a render prop): its words come from here. */}
+      <ClientMessages namespaces={[frontierNs, formatsNs, teamPickNs, pickersNs]}>
+        <RouteSlot>{children}</RouteSlot>
+      </ClientMessages>
     </div>
   );
 }

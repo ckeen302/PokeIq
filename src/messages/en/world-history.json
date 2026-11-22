@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "title": "The History of the Pokémon World: the in-universe story in 3D",
+    "description": "The history of the Pokémon world as the games tell it, from Sinnoh's creation myth and Hoenn's Primal clash to Kalos's ultimate weapon, Galar's Darkest Day, the Burned Tower and Area Zero's time machine. A cinematic 3D museum with every line sourced to the games.",
+    "socialTitle": "The History of the Pokémon World · PokéIQ",
+    "chapterTitle": "{title}: {region}'s history ({when})",
+    "chapterDescription": "{summary} Chapter {numeral} of The History of the Pokémon World, a 3D museum of the in-universe story, with every line sourced to the games.",
+    "chapterSocial": "{title} · The History of the Pokémon World"
+  },
+  "wholeHistory": "The whole history",
+  "lab": "3D Lab",
+  "realStory": "The real-world story",
+  "realTimeline": "The real-world timeline",
+  "kicker": "PokéIQ 3D Lab · In-universe history",
+  "chapterOf": "{title} · Chapter {numeral}",
+  "chapters": "Chapters",
+  "sources": "Sources",
+  "inChapter": "In this chapter",
+  "chapterPage": "This chapter's page",
+  "rest": "The rest of the history",
+  "separate": "A separate continuity",
+  "howTo": "How to read the tags.",
+  "tagsHelp": "<myth>Myth, Legend and Folk tale</myth>: the game tells it as a story. <implied>Implied</implied>: follows closely from what the games state. <theory>Theory</theory> and <speculation>Speculation</speculation>: a character's idea or guess. <contested>Sources differ</contested>: the games tell it more than one way. Untagged lines are stated outright.",
+  "continuity": "The anime and films have their own continuity, kept apart above. Looking for when the games, anime and films came out? See the <link>Pokémon Timeline</link>.",
+  "music": "Music: an original score written for this film, one theme arranged as four stems, played with the MuseScore General sound font (MIT; its strings from VSCO 2 Community Edition, CC0). The ambience and effects are made in the browser (<a>credits</a>). The Pokémon figures are built from Pokémon HOME renders served by PokéAPI."
+}

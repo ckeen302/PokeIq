@@ -1,0 +1,93 @@
+{
+  "meta": {
+    "title": "Bataille géante Pokémon : combien de Magicarpe pour battre Arceus ?",
+    "description": "Des milliers de Pokémon s’affrontent sur un champ de bataille en 3D, avec le vrai calcul de dégâts des jeux à chaque coup. Combien de Magicarpe faut-il pour battre Arceus ? Posez la question pour n’importe quel duel, ou lancez deux armées l’une contre l’autre, puis faites-en une vidéo.",
+    "social": "Bataille géante Pokémon · PokéIQ",
+    "questionDescription": "{title} Les vrais calculs de combat des jeux tranchent, sur des milliers de combats, puis vous le regardez en 3D.",
+    "battleTitle": "{a} contre {b}",
+    "battleSide": "{n} {name}",
+    "battleDescription": "{title} : une bataille géante Pokémon en 3D avec le vrai calcul de dégâts des jeux. Qui gagne ?",
+    "presetDescription": "{blurb} Une bataille géante Pokémon en 3D avec le vrai calcul de dégâts des jeux.",
+    "presetSocial": "{title} · PokéIQ"
+  },
+  "name": "Bataille géante Pokémon",
+  "ldName": "{title} · PokéIQ",
+  "lab": "Labo 3D",
+  "kicker": "Bataille géante",
+  "h1": "<b>Bataille géante</b> Pokémon",
+  "blurb": "Des milliers de Pokémon s’affrontent sur un champ de bataille en 3D, et chaque coup suit le vrai calcul de dégâts des jeux. Demandez combien d’exemplaires d’un Pokémon il faut pour en battre un autre, ou lancez deux armées l’une contre l’autre.",
+  "results": "Résultats",
+  "resultsAside": "Calculés d’avance avec les mêmes combats",
+  "how": "Comment ça marche",
+  "summary": {
+    "pure": " Calcul de combat pur, chacun à portée de tous : {answer}.",
+    "pureN": "{n} ({spread})",
+    "pureMore": "plus de 2 000",
+    "answer": "Sur le champ de bataille, {answer} pour battre {boss} ({spread}).{pure}",
+    "left": "{n} encore debout après {s} secondes."
+  },
+  "presets": {
+    "magikarp-vs-arceus": {
+      "title": "Combien de Magicarpe pour battre Arceus ?",
+      "hook": "Combien de Magicarpe faut-il pour battre Arceus ? 😳",
+      "blurb": "Le plus faible des Pokémon face à celui qui aurait façonné l’univers. Le solveur trouve la plus petite armée qui gagne."
+    },
+    "rattata-vs-mewtwo": {
+      "title": "1 000 Rattata contre 1 Mewtwo",
+      "hook": "1 000 Rattata contre 1 Mewtwo. Qui gagne ? 🐀",
+      "blurb": "Mille exemplaires du Pokémon le plus commun de Kanto face au plus puissant."
+    },
+    "pikachu-vs-snorlax": {
+      "title": "100 Pikachu contre 1 Ronflex",
+      "hook": "100 Pikachu contre 1 Ronflex ⚡",
+      "blurb": "Une vague de Pikachu contre le mur le plus lourd de Kanto."
+    },
+    "kanto-starters": {
+      "title": "La guerre des starters de Kanto",
+      "hook": "600 starters de Kanto contre leurs évolutions finales 🔥💧🌿",
+      "blurb": "Bulbizarre, Salamèche et Carapuce par centaines contre quelques dizaines de Florizarre, Dracaufeu et Tortank.",
+      "a": "Starters",
+      "b": "Évolutions finales"
+    },
+    "fire-vs-water": {
+      "title": "Feu contre Eau",
+      "hook": "Tous les types Feu contre tous les types Eau 🔥🌊",
+      "blurb": "Tous les types Feu au dernier stade contre tous les types Eau au dernier stade : le plus vieux duel de Pokémon, en grand.",
+      "a": "Types Eau",
+      "b": "Types Feu"
+    },
+    "legendaries-vs-everyone": {
+      "title": "Les légendaires contre tous",
+      "hook": "Tous les Pokémon légendaires contre une armée de Kanto 👑",
+      "blurb": "Tous les Pokémon légendaires contre dix exemplaires de chaque autre Pokémon de Kanto au dernier stade.",
+      "a": "Légendaires",
+      "b": "Kanto"
+    },
+    "bug-swarm-vs-charizard": {
+      "title": "Un essaim d’insectes contre un Dracaufeu",
+      "hook": "1 000 insectes contre 1 Dracaufeu 🔥🐝",
+      "blurb": "Dardargnan, Papilusion, Aéromite et Insécateur fondent en essaim sur un Dracaufeu super efficace contre chacun d’eux.",
+      "a": "Essaim d’insectes",
+      "b": "Dracaufeu"
+    },
+    "eeveelution-civil-war": {
+      "title": "La guerre civile des Évolitions",
+      "hook": "Guerre civile des Évolitions : quelle moitié gagne ? 🦊",
+      "blurb": "Aquali, Voltali, Pyroli et Mentali contre Noctali, Phyllali, Givrali et Nymphali.",
+      "a": "Aquali et cie",
+      "b": "Noctali et cie"
+    },
+    "fire-vs-water-sun": {
+      "title": "Feu contre Eau sous un soleil ardent",
+      "hook": "Feu contre Eau… mais le soleil brille ☀️",
+      "blurb": "Les mêmes armées que Feu contre Eau, sous un soleil ardent : les capacités Feu frappent 1,5 fois plus fort et les capacités Eau moitié moins, comme dans les jeux.",
+      "a": "Types Eau",
+      "b": "Types Feu"
+    },
+    "light-ball-pikachu-vs-snorlax": {
+      "title": "Combien de Pikachu avec une Balle Lumière pour battre Ronflex ?",
+      "hook": "Combien de Pikachu faut-il pour battre Ronflex… avec une Balle Lumière ? ⚡",
+      "blurb": "L’objet propre à Pikachu double son Attaque et son Attaque Spéciale. Chaque Pikachu en tient une ; Ronflex ne tient rien."
+    }
+  }
+}

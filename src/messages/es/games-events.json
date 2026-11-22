@@ -1,0 +1,40 @@
+{
+  "events": {
+    "100m": { "name": "100 m", "lower": "los 100 m", "question": "¿Quién es el Pokémon más rápido en 100 m?", "hook": "¿Cuál es el Pokémon más rápido? 100 m ⚡" },
+    "200m": { "name": "200 m", "lower": "los 200 m", "question": "¿Quién es el Pokémon más rápido en la curva, en 200 m?", "hook": "¿Quién gana los 200 m? 🏃" },
+    "400m": { "name": "400 m", "lower": "los 400 m", "question": "¿Qué Pokémon corre la vuelta más rápida?", "hook": "¿Qué Pokémon corre la vuelta más rápida? 🏁" },
+    "long-jump": { "name": "Salto de longitud", "lower": "el salto de longitud", "question": "¿Quién es el mejor saltador de longitud de todos los Pokémon?", "hook": "¿Qué Pokémon salta más lejos? 🦘" },
+    "high-jump": { "name": "Salto de altura", "lower": "el salto de altura", "question": "¿Qué Pokémon salta más alto?", "hook": "¿Qué Pokémon salta más alto? 🪂" },
+    "shot-put": { "name": "Lanzamiento de peso", "lower": "el lanzamiento de peso", "question": "¿Qué Pokémon lanza más lejos un peso de 7,26 kg?", "hook": "¿Qué Pokémon lanza más lejos? 💪" },
+    "javelin": { "name": "Lanzamiento de jabalina", "lower": "el lanzamiento de jabalina", "question": "¿Qué Pokémon lanza la jabalina más lejos?", "hook": "¿Quién lanza la jabalina más lejos? 🎯" },
+    "weightlifting": { "name": "Halterofilia", "lower": "la halterofilia", "question": "¿Cuál es el Pokémon más fuerte? El dos tiempos", "hook": "¿Cuál es el Pokémon más fuerte? 🏋️" },
+    "50m-freestyle": { "name": "50 m libres", "lower": "los 50 m libres", "question": "¿Qué Pokémon es el nadador más rápido en 50 m?", "hook": "¿Qué Pokémon nada más rápido? 🌊" },
+    "100m-freestyle": { "name": "100 m libres", "lower": "los 100 m libres", "question": "¿Qué Pokémon gana los 100 m libres?", "hook": "¿Qué Pokémon gana los 100 m libres? 🏊" },
+    "wrestling": { "name": "Lucha", "lower": "la lucha", "question": "¿Qué Pokémon es el más difícil de sacar del círculo?", "hook": "¿Qué Pokémon saca a los demás del círculo? 🤼" },
+    "all-around": { "name": "Prueba combinada", "lower": "la prueba combinada", "question": "¿Quién es el atleta más completo de todos los Pokémon?", "hook": "¿Cuál es el Pokémon más completo? 🏆" }
+  },
+  "h2h": {
+    "sprint": "¿Puede {a} correr más que {b}?",
+    "highJump": "¿Puede {a} saltar más alto que {b}?",
+    "jump": "¿Puede {a} saltar más lejos que {b}?",
+    "throw": "¿Puede {a} lanzar más lejos que {b}?",
+    "lift": "¿Puede {a} levantar más que {b}?",
+    "swim": "¿Puede {a} nadar más rápido que {b}?",
+    "wrestle": "¿Puede {a} sacar a {b} del círculo?",
+    "allAround": "{a} o {b}: ¿quién es más completo?"
+  },
+  "summary": {
+    "pushedOut": "Expulsado",
+    "lostOnBell": "Pierde al final del tiempo",
+    "winner": "Ganador",
+    "pushesOut": "{w} saca a {l} del círculo",
+    "winsOnBell": "{w} gana al final del tiempo",
+    "noLift": "Sin levantamiento",
+    "noMark": "Sin marca",
+    "deadHeat": "Empate exacto en {mark}",
+    "neither": "Ninguno logra marca",
+    "winsWith": "{w} gana con {mark}",
+    "winsOnPhoto": "{w} gana por foto finish",
+    "winsBy": "{w} gana por {gap}"
+  }
+}

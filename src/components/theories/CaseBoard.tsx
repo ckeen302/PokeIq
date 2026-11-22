@@ -3,10 +3,12 @@ import Link from "@/components/ui/Link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { boardArtUrl } from "@/lib/pokemon/art";
-import { SOURCE_LABEL, caseNumber, casePath, type Board, type TheoryCase } from "@/lib/theories/types";
+import { casePath, type Board, type TheoryCase } from "@/lib/theories/types";
 import { sourceLine } from "@/lib/theories/logic";
 import { Art, Badge, Bolded, ExhibitIcon, GlitchBlock, Marked, Pin, Stamp, dexNo } from "./Parts";
 import s from "./theories.module.css";
+import { serverT } from "@/i18n/server";
+import dexTheories from "@/messages/dex-theories";
 
 /**
  * The Case of the week evidence board: the dossier on the left, the evidence
@@ -21,33 +23,38 @@ type Featured = TheoryCase & { board: Board };
 const PHOTO_BG = ["radial-gradient(circle at 50% 60%, hsl(var(--secondary)) 0%, hsl(var(--background)) 75%)", "radial-gradient(circle at 50% 60%, hsl(var(--screen) / 0.4) 0%, hsl(var(--background)) 75%)"];
 const PHOTO_IMG = ["drop-shadow(0 12px 14px rgb(0 0 0 / 0.6))", "drop-shadow(0 0 20px hsl(var(--screen) / 0.8))"];
 
+/** The file's state and status, in the page's language: a fan theory is still open, the others are closed. */
 function status(c: TheoryCase) {
-  return c.verdict === "fan" ? { file: "STILL OPEN", status: "UNPROVEN", open: true } : c.verdict === "confirmed" ? { file: "CLOSED", status: "PROVEN", open: false } : { file: "CLOSED", status: "DISPROVEN", open: false };
+  const t = serverT(dexTheories);
+  const open = c.verdict === "fan";
+  return { file: t(open ? "board.state.open" : "board.state.closed"), status: t(`board.verdictStatus.${c.verdict}`), open };
 }
 
 function Corners({ c }: { c: Featured }) {
+  const t = serverT(dexTheories);
   const st = status(c);
   const no = String(c.n).padStart(3, "0");
   return (
     <>
       <span className={cn(s.mono, s.corner)} style={{ left: 24, top: 18 }}>
-        POKÉIQ / CASE BOARD
+        {t("board.brand")}
       </span>
       <span className={cn(s.mono, s.corner)} style={{ right: 24, top: 18 }}>
         <span className={cn(s.live, !st.open && s.liveStill)} aria-hidden />
-        FILE {no} · {st.file}
+        {t("board.file", { no, state: st.file })}
       </span>
       <span className={cn(s.mono, s.corner)} style={{ left: 24, bottom: 16 }}>
-        STATUS: {st.status}
+        {t("board.status", { status: st.status })}
       </span>
       <span className={cn(s.mono, s.corner)} style={{ right: 24, bottom: 16 }}>
-        PRESS A CASE TO OPEN ITS FILE
+        {t("board.press")}
       </span>
     </>
   );
 }
 
 function Dossier({ c, mobile }: { c: Featured; mobile?: boolean }) {
+  const t = serverT(dexTheories);
   const b = c.board;
   return (
     <div className={mobile ? s.mDossier : s.dossier} data-testid="case-dossier">
@@ -55,15 +62,15 @@ function Dossier({ c, mobile }: { c: Featured; mobile?: boolean }) {
         <span className="text-warning" aria-hidden>
           ●
         </span>
-        {caseNumber(c.n)}
+        {t("caseNumber", { n: String(c.n).padStart(3, "0") })}
       </span>
-      <span className={cn(s.hud, "text-warning")}>Case of the week</span>
+      <span className={cn(s.hud, "text-warning")}>{t("board.caseOfTheWeek")}</span>
       <h2 className={mobile ? "m-0 font-display text-3xl font-bold uppercase leading-none" : s.dossierTitle}>{b.question}</h2>
       <p className={mobile ? "m-0 text-[15px] leading-relaxed text-foreground/85" : s.dossierHook}>{b.hook}</p>
       <div className={mobile ? "flex flex-col gap-3" : s.dossierFoot}>
         <div className={s.keyList}>
           <span className={cn(s.hud, "text-muted-foreground")} style={{ fontSize: 11 }}>
-            Key evidence
+            {t("board.keyEvidence")}
           </span>
           {b.keys.map((k, i) => (
             <div key={k} className={s.kev}>
@@ -74,9 +81,9 @@ function Dossier({ c, mobile }: { c: Featured; mobile?: boolean }) {
         </div>
         <div className={s.openRow}>
           <Link href={casePath(c.slug)} className={cn(buttonVariants({ size: "default" }), "px-5")} data-testid="case-open">
-            Open the case
+            {t("board.open")}
           </Link>
-          <Stamp verdict={c.verdict} size="big" />
+          <Stamp verdict={c.verdict} label={t(`verdict.${c.verdict}`)} size="big" />
         </div>
       </div>
     </div>
@@ -103,13 +110,15 @@ function Photo({ art, i, mobile, style, glitch }: { art?: { id: number; name: st
 
 /** The sticky note that takes the second photo's place when a case has one suspect. */
 function Note({ c, mobile, style }: { c: Featured; mobile?: boolean; style: React.CSSProperties }) {
+  const t = serverT(dexTheories);
+  const labels = { games: t("source.games"), anime: t("source.anime"), pokedex: t("source.pokedex"), internet: t("source.internet"), manga: t("source.manga") };
   return (
     <div className={mobile ? s.mPhoto : s.evPhoto} style={style}>
       <Pin style={{ left: "50%", top: -6, marginLeft: -7 }} />
       <div className={cn(s.ph, s.mono, "flex-col items-start justify-center gap-2 px-3 text-left text-[11px] uppercase tracking-[0.1em] text-muted-foreground")} style={{ background: "hsl(var(--background) / 0.6)" }}>
-        <span>Filed: {c.era}</span>
-        <span>From: {sourceLine(c, SOURCE_LABEL)}</span>
-        <span className="text-warning">Lead: {c.board.caption}</span>
+        <span>{t("board.noteFiled", { era: c.era })}</span>
+        <span>{t("board.noteFrom", { sources: sourceLine(c, labels) })}</span>
+        <span className="text-warning">{t("board.noteLead", { caption: c.board.caption })}</span>
       </div>
     </div>
   );
@@ -212,15 +221,16 @@ function WideBoard({ c }: { c: Featured }) {
 
 /** The same board, stacked, below xl: two columns on a tablet, one on a phone. */
 function StackedBoard({ c }: { c: Featured }) {
+  const t = serverT(dexTheories);
   const two = !c.glitch && c.art.length > 1;
   const st = status(c);
   return (
     <div className={cn(s.board, s.mBoard, "xl:hidden")} data-testid="case-board-stacked">
       <div className={cn(s.mono, s.mCornerTop)}>
-        <span>POKÉIQ / CASE BOARD</span>
+        <span>{t("board.brand")}</span>
         <span className="flex items-center gap-2">
           <span className={cn(s.live, !st.open && s.liveStill)} aria-hidden />
-          FILE {String(c.n).padStart(3, "0")}
+          {t("board.fileNo", { no: String(c.n).padStart(3, "0") })}
         </span>
       </div>
       <Dossier c={c} mobile />
@@ -250,7 +260,7 @@ function StackedBoard({ c }: { c: Featured }) {
         <ExhibitC c={c} mobile style={{ transform: "rotate(1deg)" }} />
       </div>
       <div className={cn(s.mono, s.mCornerBottom)}>
-        <span>STATUS: {st.status}</span>
+        <span>{t("board.status", { status: st.status })}</span>
         <span>{st.file}</span>
       </div>
     </div>
@@ -258,8 +268,9 @@ function StackedBoard({ c }: { c: Featured }) {
 }
 
 export function CaseBoard({ c }: { c: Featured }) {
+  const t = serverT(dexTheories);
   return (
-    <section aria-label="Case of the week" className="dark-scope" data-testid="case-of-the-week" data-case={c.slug}>
+    <section aria-label={t("board.label")} className="dark-scope" data-testid="case-of-the-week" data-case={c.slug}>
       <WideBoard c={c} />
       <StackedBoard c={c} />
     </section>

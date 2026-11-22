@@ -5,6 +5,8 @@ import { raceTimeAt, shotAt, shotProgress } from "@/lib/race/broadcast";
 import type { Athlete } from "@/lib/games/athlete";
 import type { Overlay, Show } from "./show/types";
 import type { SprintExtras } from "./show/sprint";
+import { translator, type Translator } from "@/i18n/catalog";
+import gamesShow from "@/messages/games-show";
 
 /**
  * The broadcast graphics of the Games, drawn on a 2D canvas so the page and
@@ -352,7 +354,7 @@ export function drawOverlay(g: CanvasRenderingContext2D, W: number, H: number, o
 }
 
 /** The sprints: the Race's graphics on the Race's plan. */
-export function drawSprint(g: CanvasRenderingContext2D, W: number, H: number, show: Show & SprintExtras, t: number, heads: Head[], photo: HTMLCanvasElement | null, o: Gfx & { title: string }) {
+export function drawSprint(g: CanvasRenderingContext2D, W: number, H: number, show: Show & SprintExtras, t: number, heads: Head[], photo: HTMLCanvasElement | null, o: Gfx & { title: string }, tr: Translator<typeof gamesShow.en> = translator(gamesShow, "en", undefined)) {
   const race = show.race!;
   const plan = show.racePlan;
   const st = t - show.pre;
@@ -361,7 +363,8 @@ export function drawSprint(g: CanvasRenderingContext2D, W: number, H: number, sh
     if (ov.mark) drawMark(g, W, H, ov.mark.text, ov.mark.sub, ov.mark.tone, ov.mark.k, o);
     else {
       const b = show.beats.find((x) => t >= x.t0 && t < x.t1);
-      if (b?.title === "On your marks" || b?.title === "Set") drawStartCall(g, W, H, b.title.toUpperCase(), (t - b.t0) / (b.t1 - b.t0), { font: o.font, scale: o.scale });
+      // "On your marks", "Set": the false start's calls (the gun's beat has no title).
+      if (b?.act === -1 && b.title) drawStartCall(g, W, H, b.title.toUpperCase(), (t - b.t0) / (b.t1 - b.t0), { font: o.font, scale: o.scale });
     }
     return;
   }
@@ -370,18 +373,18 @@ export function drawSprint(g: CanvasRenderingContext2D, W: number, H: number, sh
   const raceT = raceTimeAt(plan, Math.min(st, plan.end));
   const gfx = { font: o.font, scale: o.scale };
   const ph = st >= plan.end ? "results" : shot.phase;
-  if (ph === "crane") drawTitle(g, W, H, o.title, `${race.distance} m · PokéIQ Stadium`, k, o);
+  if (ph === "crane") drawTitle(g, W, H, o.title, tr("sprint.stadium", { d: race.distance }), k, o);
   else if (ph === "intro" && shot.lane != null) {
     const r = race.lanes.find((x) => x.lane === shot.lane);
     if (r) drawLaneIntro(g, W, H, r, k, { ...gfx, bottom: o.bottom });
-  } else if (ph === "marks" || ph === "set") drawStartCall(g, W, H, ph === "marks" ? "ON YOUR MARKS" : "SET", k, gfx);
+  } else if (ph === "marks" || ph === "set") drawStartCall(g, W, H, tr(ph === "marks" ? "sprint.marksBig" : "sprint.setBig"), k, gfx);
   if (ph === "race" || ph === "fast") {
     const lead = leaderAt(race, raceT);
     const v = spotsAt(race, raceT).find((x) => x.lane === lead.lane)?.v ?? 0;
     const bug = drawClockBug(g, W, H, { ...gfx, top: o.top, title: o.title, time: formatTime(Math.min(raceT, race.first), 2), leader: raceT < race.first ? { name: lead.entrant.name, v } : null, live: raceT < race.first });
     if (ph === "fast") {
       const r = race.lanes.find((x) => x.lane === shot.lane);
-      drawFastForward(g, W, H, shot.rate, r ? (raceT > race.first ? `Meanwhile, ${r.entrant.name}…` : `${r.entrant.name} leads`) : "", { ...gfx, top: o.top + (o.phone ? 70 : 84) });
+      drawFastForward(g, W, H, shot.rate, r ? (raceT > race.first ? tr("sprint.meanwhile", { name: r.entrant.name }) : tr("sprint.leads", { name: r.entrant.name })) : "", { ...gfx, top: o.top + (o.phone ? 70 : 84) });
     }
     const laneOf = new Map(race.lanes.map((l) => [l.entrant.key, l.lane]));
     const tags = heads.filter((a) => a.visible && a.by - a.y > 20 && laneOf.has(a.key)).map((a) => ({ lane: laneOf.get(a.key)!, name: race.lanes.find((l) => l.entrant.key === a.key)!.entrant.name, x: a.x, y: a.y, lead: laneOf.get(a.key) === lead.lane }));
@@ -396,6 +399,6 @@ export function drawSprint(g: CanvasRenderingContext2D, W: number, H: number, sh
   } else if (ph === "replay") drawReplayBug(g, W, H, { ...gfx, top: o.top });
   else if (ph === "photo") {
     if (photo) drawPhotoFinish(g, W, H, photo, race, show.photoFrame, k, { ...gfx, top: o.top, bottom: o.bottom });
-    else drawStartCall(g, W, H, "PHOTO FINISH…", 0.5, gfx);
+    else drawStartCall(g, W, H, tr("sprint.photo"), 0.5, gfx);
   } else if (ph === "results" && ov.board) drawBoard(g, W, H, ov.board.title, ov.board.rows, Math.min(1, (st - (plan.shots.find((s) => s.phase === "results")?.t0 ?? 0)) / 1.5), o, true);
 }

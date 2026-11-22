@@ -5,6 +5,11 @@ import { createPortal } from "react-dom";
 import { ChevronDown, Info, Loader2, Search, X } from "lucide-react";
 import { PLAYABLE_FORMATS, POPULAR_FORMAT_IDS, catalogueFormat, type CatalogueFormat, type FormatRules } from "@/lib/battle/format-catalogue";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import type { Translator } from "@/i18n/catalog";
+import rulesNs from "@/messages/battle-rules";
+
+type T = Translator<typeof rulesNs.en>;
 
 /**
  * Every Pokémon Showdown format the engine could start a battle in, grouped
@@ -41,34 +46,34 @@ const norm = (s: string) =>
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
 
-function tags(f: CatalogueFormat): string[] {
-  const out = [f.random ? "Random" : "Your team"];
-  if (f.gameType === "doubles") out.push("Doubles");
-  if (f.pick && f.pick < f.teamSize) out.push(`${f.teamSize}→${f.pick}`);
-  else if (!f.random && f.teamSize < 6) out.push(`${f.teamSize} Pokémon`);
-  if (f.level && f.level !== 100) out.push(`Lv ${f.level}`);
+function tags(t: T, f: CatalogueFormat): string[] {
+  const out = [f.random ? t("picker.random") : t("picker.yourTeam")];
+  if (f.gameType === "doubles") out.push(t("picker.doubles"));
+  if (f.pick && f.pick < f.teamSize) out.push(t("picker.pick", { size: f.teamSize, pick: f.pick }));
+  else if (!f.random && f.teamSize < 6) out.push(t("picker.size", { size: f.teamSize }));
+  if (f.level && f.level !== 100) out.push(t("picker.level", { level: f.level }));
   return out;
 }
 
 /** Showdown's names carry the gen in brackets: "[Gen 9] OU" reads as "OU" under a "Gen 9" tag. */
 const shortName = (f: CatalogueFormat) => f.name.replace(/^\[Gen \d+\]\s*/, "");
 
-function FormatRow({ f, selected, onPick, onInfo }: { f: CatalogueFormat; selected: boolean; onPick: () => void; onInfo: () => void }) {
+function FormatRow({ f, selected, onPick, onInfo, t }: { f: CatalogueFormat; selected: boolean; onPick: () => void; onInfo: () => void; t: T }) {
   return (
     <div className={cn("group flex min-w-0 items-stretch rounded-md border bg-card transition-colors hover:border-screen/60", selected && "border-primary ring-1 ring-primary")}>
       <button type="button" onClick={onPick} aria-pressed={selected} className="flex min-w-0 flex-1 flex-col gap-0.5 px-3 py-2 text-left" data-testid={`format-${f.id}`}>
         <span className="flex min-w-0 items-baseline gap-2">
-          <span className="hud-label shrink-0 text-screen">Gen {f.gen}</span>
+          <span className="hud-label shrink-0 text-screen">{t("picker.gen", { gen: f.gen })}</span>
           <span className="truncate font-display text-sm font-bold uppercase">{shortName(f)}</span>
         </span>
-        <span className="truncate text-[11px] text-muted-foreground">{tags(f).join(" · ")}</span>
+        <span className="truncate text-[11px] text-muted-foreground">{tags(t, f).join(" · ")}</span>
       </button>
       <button
         type="button"
         onClick={onInfo}
         className="flex shrink-0 items-center px-2.5 text-muted-foreground hover:text-foreground"
-        aria-label={`Rules of ${f.name}`}
-        title="Rules"
+        aria-label={t("picker.rulesOf", { name: f.name })}
+        title={t("picker.rules")}
         data-testid={`format-info-${f.id}`}
       >
         <Info className="h-4 w-4" aria-hidden />
@@ -78,6 +83,7 @@ function FormatRow({ f, selected, onPick, onInfo }: { f: CatalogueFormat; select
 }
 
 export function FormatPicker({ value, onPick }: { value: string | null | undefined; onPick: (f: CatalogueFormat) => void }) {
+  const t = useT(rulesNs);
   const [query, setQuery] = useState("");
   const [recent, setRecent] = useState<string[]>([]);
   const [open, setOpen] = useState<Set<string>>(new Set());
@@ -111,7 +117,7 @@ export function FormatPicker({ value, onPick }: { value: string | null | undefin
   const toggle = (s: string) => setOpen((o) => new Set(o.has(s) ? [...o].filter((x) => x !== s) : [...o, s]));
 
   const grid = "grid gap-1.5 sm:grid-cols-2 xl:grid-cols-3";
-  const row = (f: CatalogueFormat, key = f.id) => <FormatRow key={key} f={f} selected={value === f.id} onPick={() => pick(f)} onInfo={() => setDrawer(f)} />;
+  const row = (f: CatalogueFormat, key = f.id) => <FormatRow key={key} f={f} selected={value === f.id} onPick={() => pick(f)} onInfo={() => setDrawer(f)} t={t} />;
 
   return (
     <div className="space-y-3" data-testid="format-picker">
@@ -121,29 +127,29 @@ export function FormatPicker({ value, onPick }: { value: string | null | undefin
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={`Search ${PLAYABLE_FORMATS.length} Showdown formats — "gen 4 uu", "doubles", "random"…`}
+          placeholder={t("picker.search", { n: PLAYABLE_FORMATS.length })}
           className="h-10 w-full rounded-md border border-input bg-background pl-8 pr-3 text-sm"
-          aria-label="Search formats"
+          aria-label={t("picker.searchLabel")}
           data-testid="format-search"
         />
       </label>
 
       {!q && recentFormats.length > 0 && (
         <div className="space-y-1.5">
-          <span className="hud-label">Last used</span>
+          <span className="hud-label">{t("picker.lastUsed")}</span>
           <div className={grid}>{recentFormats.map((f) => row(f, `recent-${f.id}`))}</div>
         </div>
       )}
       {!q && (
         <div className="space-y-1.5">
-          <span className="hud-label">Popular</span>
+          <span className="hud-label">{t("picker.popular")}</span>
           <div className={grid}>{popular.map((f) => row(f, `popular-${f.id}`))}</div>
         </div>
       )}
 
       <div className="space-y-1.5">
-        <span className="hud-label">{q ? `${matches.length} match${matches.length === 1 ? "" : "es"}` : "Every format, by section"}</span>
-        {sections.length === 0 && <p className="text-sm text-muted-foreground">No format matches “{query}”.</p>}
+        <span className="hud-label">{q ? t("picker.matches", { n: matches.length }) : t("picker.every")}</span>
+        {sections.length === 0 && <p className="text-sm text-muted-foreground">{t("picker.noMatch", { query })}</p>}
         <div className="divide-y rounded-md border">
           {sections.map(([section, list]) => {
             const expanded = !!q || open.has(section);
@@ -175,6 +181,7 @@ export function FormatPicker({ value, onPick }: { value: string | null | undefin
 }
 
 function RuleList({ title, items }: { title: string; items: string[] }) {
+  // Showdown's own rule and ban names, as Showdown writes them.
   if (!items.length) return null;
   return (
     <div className="space-y-1.5">
@@ -194,6 +201,7 @@ function RuleList({ title, items }: { title: string; items: string[] }) {
 
 /** A format's rules as Showdown defines them, from /api/battle/rules. */
 export function RulesDrawer({ format, selected, onClose, onPick }: { format: CatalogueFormat; selected: boolean; onClose: () => void; onPick: () => void }) {
+  const t = useT(rulesNs);
   const [rules, setRules] = useState<FormatRules | null | "error">(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -215,30 +223,34 @@ export function RulesDrawer({ format, selected, onClose, onPick }: { format: Cat
   }, [onClose]);
 
   const facts = [
-    { label: "Section", text: format.section },
-    { label: "Generation", text: `Gen ${format.gen}` },
+    { label: t("picker.section"), text: format.section },
+    { label: t("picker.generation"), text: t("picker.gen", { gen: format.gen }) },
     {
-      label: "Battle",
-      text: format.gameType === "doubles" ? "Doubles" : "Singles",
+      label: t("picker.battle"),
+      text: format.gameType === "doubles" ? t("picker.doublesBattle") : t("picker.singles"),
     },
     {
-      label: "Teams",
-      text: format.random ? "Random teams, dealt by the engine" : format.pick && format.pick < format.teamSize ? `Bring ${format.teamSize}, pick ${format.pick}` : `Up to ${format.teamSize} Pokémon`,
+      label: t("picker.teams"),
+      text: format.random
+        ? t("picker.randomDealt")
+        : format.pick && format.pick < format.teamSize
+          ? t("picker.bringPick", { size: format.teamSize, pick: format.pick })
+          : t("picker.upTo", { size: format.teamSize }),
     },
-    ...(format.level ? [{ label: "Level", text: `${format.level}` }] : []),
+    ...(format.level ? [{ label: t("picker.levelLabel"), text: `${format.level}` }] : []),
   ];
 
   // Portalled to the body: an animated ancestor would otherwise pin "fixed" to itself, and the phone tab bar sits above z-50.
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex justify-end" role="dialog" aria-modal="true" aria-label={`${format.name} rules`} data-testid="rules-drawer">
-      <button type="button" className="absolute inset-0 bg-black/50" aria-label="Close" onClick={onClose} tabIndex={-1} />
+    <div className="fixed inset-0 z-[100] flex justify-end" role="dialog" aria-modal="true" aria-label={t("picker.drawerLabel", { name: format.name })} data-testid="rules-drawer">
+      <button type="button" className="absolute inset-0 bg-black/50" aria-label={t("picker.close")} onClick={onClose} tabIndex={-1} />
       <div className="relative flex h-full w-full max-w-md flex-col border-l bg-card shadow-xl">
         <div className="flex items-start justify-between gap-3 border-b p-4">
           <div className="min-w-0">
-            <p className="hud-label text-screen">Showdown format</p>
+            <p className="hud-label text-screen">{t("picker.showdownFormat")}</p>
             <h2 className="font-display text-xl font-bold uppercase leading-tight">{format.name}</h2>
           </div>
-          <button ref={closeRef} type="button" onClick={onClose} className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Close rules">
+          <button ref={closeRef} type="button" onClick={onClose} className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground" aria-label={t("picker.closeRules")}>
             <X className="h-5 w-5" aria-hidden />
           </button>
         </div>
@@ -254,16 +266,16 @@ export function RulesDrawer({ format, selected, onClose, onPick }: { format: Cat
           </dl>
           {rules === null && (
             <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> Loading Showdown&apos;s rules…
+              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> {t("picker.loading")}
             </p>
           )}
-          {rules === "error" && <p className="text-xs text-destructive">Couldn&apos;t load the rules. Try again.</p>}
+          {rules === "error" && <p className="text-xs text-destructive">{t("picker.error")}</p>}
           {rules && rules !== "error" && (
             <>
-              <RuleList title="Rules" items={rules.rules} />
-              <RuleList title="Banned" items={rules.bans} />
-              <RuleList title="Restricted" items={rules.restricted} />
-              <RuleList title="Allowed anyway" items={rules.unbans} />
+              <RuleList title={t("picker.listRules")} items={rules.rules} />
+              <RuleList title={t("picker.banned")} items={rules.bans} />
+              <RuleList title={t("picker.restricted")} items={rules.restricted} />
+              <RuleList title={t("picker.unbans")} items={rules.unbans} />
             </>
           )}
         </div>
@@ -275,7 +287,7 @@ export function RulesDrawer({ format, selected, onClose, onPick }: { format: Cat
             className="h-10 w-full rounded-md bg-primary font-display text-sm font-bold uppercase tracking-wider text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
             data-testid="rules-drawer-pick"
           >
-            {selected ? "Selected" : "Battle in this format"}
+            {selected ? t("picker.selected") : t("picker.pickThis")}
           </button>
         </div>
       </div>

@@ -6,12 +6,16 @@ import { ClipboardPaste, Hammer, LoaderCircle, Pencil, Shuffle, Users, X, Zap } 
 import { createTeam, deleteTeam, fetchQuickTeam, fetchQuickTeamFor, lastTeamId, packedTeam, rememberTeam, saveTeam, useTeams, type BattleTeam } from "@/lib/battle/teams";
 import { packTeam, type TeamSet } from "@/lib/battle/sets";
 import type { BattleFormatId } from "@/lib/battle/formats";
-import { BATTLE_TEAM_MAX, PLAY_FORMAT_INFO, type PlayFormatId } from "@/lib/battle/play";
+import { BATTLE_TEAM_MAX, type PlayFormatId } from "@/lib/battle/play";
 import { Button } from "@/components/ui/button";
 import { BattleSprite } from "@/components/battle/BattleSprite";
 import { cn } from "@/lib/utils";
 import { useSpriteLookup } from "./hooks";
 import { TeamEditor } from "./TeamEditor";
+import { useT } from "@/i18n/client";
+import pickNs from "@/messages/battle-team-pick";
+import formats from "@/messages/battle-formats";
+import { formatName, formatShort } from "@/lib/battle/format-labels";
 
 type Mode = "saved" | "quick" | "paste";
 type Quick = { sets: TeamSet[] | null; busy: boolean; error: string | null };
@@ -39,9 +43,11 @@ export interface TeamSource {
 }
 
 export function TeamPick({ format, onChange, idPrefix, source }: { format: PlayFormatId; onChange: (team: string) => void; idPrefix: string; source?: TeamSource }) {
+  const t = useT(pickNs);
+  const tf = useT(formats);
   const fmt = (source ? (source.saved ?? "gen9ou") : format) as BattleFormatId;
-  const short = source?.short ?? PLAY_FORMAT_INFO[format].short;
-  const name = source?.name ?? PLAY_FORMAT_INFO[format].name;
+  const short = source?.short ?? formatShort(tf, format);
+  const name = source?.name ?? formatName(tf, format);
   const canSave = !source || source.saved !== null;
   const library = useTeams(fmt);
   const saved = canSave ? library : library && [];
@@ -69,7 +75,7 @@ export function TeamPick({ format, onChange, idPrefix, source }: { format: PlayF
     try {
       setQuick({ sets: await (source ? fetchQuickTeamFor(source.quick) : fetchQuickTeam(fmt)), busy: false, error: null });
     } catch (err) {
-      setQuick((q) => ({ ...q, busy: false, error: err instanceof Error ? err.message : "Couldn't deal a quick team." }));
+      setQuick((q) => ({ ...q, busy: false, error: err instanceof Error ? err.message : t("quickFailed") }));
     }
   }
 
@@ -86,30 +92,30 @@ export function TeamPick({ format, onChange, idPrefix, source }: { format: PlayF
     else onChange("");
   }, [mode, paste, quick.sets, chosen, onChange]);
 
-  const build = () => setEditing({ id: createTeam(fmt, `My ${short} team`).id, fresh: true });
-  const editQuick = () => quick.sets && setEditing({ id: createTeam(fmt, `Quick ${short} team`, quick.sets).id, fresh: true });
+  const build = () => setEditing({ id: createTeam(fmt, t("newTeam", { format: short })).id, fresh: true });
+  const editQuick = () => quick.sets && setEditing({ id: createTeam(fmt, t("quickTeamName", { format: short }), quick.sets).id, fresh: true });
 
   const OPTIONS = [
-    { key: "saved", Icon: Users, title: "Saved team", note: usable.length ? `${usable.length} for ${short}` : "None yet", disabled: !usable.length, act: () => setPicked("saved") },
-    { key: "build", Icon: Hammer, title: "Build a team", note: canSave ? "Team builder, right here" : "Not for this generation", disabled: !canSave, act: build },
-    { key: "quick", Icon: Zap, title: "Quick team", note: "One click, legal and ready", disabled: false, act: () => setPicked("quick") },
+    { key: "saved", Icon: Users, title: t("saved"), note: usable.length ? t("savedNote", { n: usable.length, format: short }) : t("none"), disabled: !usable.length, act: () => setPicked("saved") },
+    { key: "build", Icon: Hammer, title: t("build"), note: canSave ? t("buildNote") : t("buildNo"), disabled: !canSave, act: build },
+    { key: "quick", Icon: Zap, title: t("quick"), note: t("quickNote"), disabled: false, act: () => setPicked("quick") },
   ] as const;
 
   return (
     <div className="space-y-3" data-testid="team-pick">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="hud-label">Your team · {name}</span>
+        <span className="hud-label">{t("yourTeam", { format: name })}</span>
         <button
           type="button"
           onClick={() => setPicked(mode === "paste" ? null : "paste")}
           aria-pressed={mode === "paste"}
           className={cn("flex items-center gap-1 text-xs underline-offset-2 hover:underline", mode === "paste" ? "text-foreground" : "text-muted-foreground")}
         >
-          <ClipboardPaste className="h-3 w-3" aria-hidden /> Import from Showdown
+          <ClipboardPaste className="h-3 w-3" aria-hidden /> {t("import")}
         </button>
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-3" role="group" aria-label="Team source">
+      <div className="grid gap-2 sm:grid-cols-3" role="group" aria-label={t("source")}>
         {OPTIONS.map(({ key, Icon, title, note, disabled, act }) => (
           <button
             key={key}
@@ -133,28 +139,28 @@ export function TeamPick({ format, onChange, idPrefix, source }: { format: PlayF
 
       {mode === "saved" && (
         <div className="space-y-2">
-          <ul className="max-h-64 space-y-1.5 overflow-y-auto pr-1" role="radiogroup" aria-label="Saved team">
-            {usable.map((t) => (
-              <li key={t.id}>
+          <ul className="max-h-64 space-y-1.5 overflow-y-auto pr-1" role="radiogroup" aria-label={t("saved")}>
+            {usable.map((team) => (
+              <li key={team.id}>
                 <button
                   type="button"
                   role="radio"
-                  aria-checked={t.id === chosen?.id}
-                  onClick={() => choose(t.id)}
+                  aria-checked={team.id === chosen?.id}
+                  onClick={() => choose(team.id)}
                   className={cn(
                     "flex w-full flex-wrap items-center gap-x-3 gap-y-1 rounded-md border bg-card px-3 py-2 text-left hover:border-screen/50",
-                    t.id === chosen?.id && "border-screen/60 bg-screen/10"
+                    team.id === chosen?.id && "border-screen/60 bg-screen/10"
                   )}
                 >
-                  <span className="min-w-[8rem] flex-1 truncate font-display text-sm font-bold uppercase tracking-wide">{t.name || "Untitled team"}</span>
-                  <Sprites sets={t.sets} sprite={sprite} />
+                  <span className="min-w-[8rem] flex-1 truncate font-display text-sm font-bold uppercase tracking-wide">{team.name || t("untitled")}</span>
+                  <Sprites sets={team.sets} sprite={sprite} />
                 </button>
               </li>
             ))}
           </ul>
           {chosen && (
             <Button type="button" size="sm" variant="outline" onClick={() => setEditing({ id: chosen.id, fresh: false })}>
-              <Pencil className="h-4 w-4" aria-hidden /> Edit {chosen.name || "team"}
+              <Pencil className="h-4 w-4" aria-hidden /> {chosen.name ? t("edit", { name: chosen.name }) : t("editTeam")}
             </Button>
           )}
         </div>
@@ -170,21 +176,21 @@ export function TeamPick({ format, onChange, idPrefix, source }: { format: PlayF
             <Sprites sets={quick.sets} sprite={sprite} size={44} />
           ) : (
             <p className="flex items-center gap-2 text-sm text-muted-foreground">
-              <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> Dealing a {short} team…
+              <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> {t("dealing", { format: short })}
             </p>
           )}
-          <p className="text-xs text-muted-foreground">{source?.quickNote ?? `Tournament-tested sets, legal in ${short}.`} Keep it, deal another{canSave ? ", or make it yours" : ""}.</p>
+          <p className="text-xs text-muted-foreground">{source?.quickNote ?? t("quickDefault", { format: short })} {canSave ? t("keepOrEdit") : t("keep")}</p>
           <div className="flex flex-wrap gap-2">
             <Button type="button" size="sm" variant="outline" onClick={() => void dealQuick()} disabled={quick.busy}>
-              <Shuffle className="h-4 w-4" aria-hidden /> Another
+              <Shuffle className="h-4 w-4" aria-hidden /> {t("another")}
             </Button>
             {canSave && (
               <>
                 <Button type="button" size="sm" variant="outline" onClick={editQuick} disabled={!quick.sets || quick.busy}>
-                  <Pencil className="h-4 w-4" aria-hidden /> Edit this team
+                  <Pencil className="h-4 w-4" aria-hidden /> {t("editThis")}
                 </Button>
                 <Button type="button" size="sm" variant="secondary" onClick={build}>
-                  <Hammer className="h-4 w-4" aria-hidden /> Build your own
+                  <Hammer className="h-4 w-4" aria-hidden /> {t("buildOwn")}
                 </Button>
               </>
             )}
@@ -201,11 +207,11 @@ export function TeamPick({ format, onChange, idPrefix, source }: { format: PlayF
             maxLength={BATTLE_TEAM_MAX}
             rows={7}
             spellCheck={false}
-            aria-label="Paste a team in Showdown's export format"
-            placeholder={"Paste a team in Showdown's export format, e.g.\n\nGholdengo @ Choice Specs\nAbility: Good as Gold\nTera Type: Steel\nEVs: 252 SpA / 4 SpD / 252 Spe\nTimid Nature\n- Make It Rain\n- Shadow Ball\n..."}
+            aria-label={t("pasteLabel")}
+            placeholder={t("pastePlaceholder") + "\n\nGholdengo @ Choice Specs\nAbility: Good as Gold\nTera Type: Steel\nEVs: 252 SpA / 4 SpD / 252 Spe\nTimid Nature\n- Make It Rain\n- Shadow Ball\n..."}
             className="w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
-          <p className="text-xs text-muted-foreground">Checked against Pokémon Showdown&apos;s rules when the battle starts.</p>
+          <p className="text-xs text-muted-foreground">{t("checked")}</p>
         </>
       )}
 
@@ -241,6 +247,7 @@ function Sprites({ sets, sprite, size = 32 }: { sets: TeamSet[]; sprite: ReturnT
  * battle (a new team is dropped only on Discard, or if it's still empty).
  */
 function BuilderDialog({ team, fresh, onClose }: { team: BattleTeam | undefined; fresh: boolean; onClose: (discard: boolean) => void }) {
+  const t = useT(pickNs);
   const [random, setRandom] = useState<{ busy: boolean; error: string | null }>({ busy: false, error: null });
 
   useEffect(() => {
@@ -261,17 +268,17 @@ function BuilderDialog({ team, fresh, onClose }: { team: BattleTeam | undefined;
       saveTeam({ ...team, sets: await fetchQuickTeam(format) });
       setRandom({ busy: false, error: null });
     } catch (err) {
-      setRandom({ busy: false, error: err instanceof Error ? err.message : "Couldn't deal a team." });
+      setRandom({ busy: false, error: err instanceof Error ? err.message : t("dealFailed") });
     }
   }
 
   // Portaled out of the setup form, so the builder's buttons and inputs never submit it.
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-2 backdrop-blur-sm max-md:z-[65] sm:p-6">
-      <div role="dialog" aria-modal="true" aria-label="Team builder" className="relative w-full max-w-5xl rounded-xl border bg-background shadow-2xl">
+      <div role="dialog" aria-modal="true" aria-label={t("builder")} className="relative w-full max-w-5xl rounded-xl border bg-background shadow-2xl">
         <div className="flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-6">
-          <h2 className="font-display text-lg font-bold uppercase tracking-wide">Team builder</h2>
-          <button type="button" onClick={() => onClose(false)} aria-label="Close team builder" className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground">
+          <h2 className="font-display text-lg font-bold uppercase tracking-wide">{t("builder")}</h2>
+          <button type="button" onClick={() => onClose(false)} aria-label={t("closeBuilder")} className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground">
             <X className="h-5 w-5" aria-hidden />
           </button>
         </div>
@@ -285,19 +292,19 @@ function BuilderDialog({ team, fresh, onClose }: { team: BattleTeam | undefined;
             <TeamEditor team={team} onRandom={(f) => void reroll(f)} randomBusy={random.busy} lockFormat />
           ) : (
             <p className="flex items-center gap-2 py-16 text-sm text-muted-foreground">
-              <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> Loading…
+              <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> {t("loading")}
             </p>
           )}
         </div>
         <div className="sticky bottom-0 flex flex-wrap items-center justify-end gap-2 rounded-b-xl border-t bg-background/95 px-4 py-3 sm:px-6">
-          <span className="mr-auto text-xs text-muted-foreground">Saved to your teams as you go.</span>
+          <span className="mr-auto text-xs text-muted-foreground">{t("savedAsYouGo")}</span>
           {fresh && (
             <Button type="button" variant="ghost" onClick={() => onClose(true)}>
-              Discard
+              {t("discard")}
             </Button>
           )}
           <Button type="button" onClick={() => onClose(false)} disabled={!team?.sets.length}>
-            Use this team
+            {t("use")}
           </Button>
         </div>
       </div>

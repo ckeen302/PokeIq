@@ -1,5 +1,7 @@
 import type { Athlete } from "@/lib/games/athlete";
-import { formatMark } from "@/lib/games/events";
+import { formatMark, localNum } from "@/lib/games/events";
+import { translator, type Translator } from "@/i18n/catalog";
+import gamesShow from "@/messages/games-show";
 import { countback, highJumpMark, type HighJumpResult, type HjCard, type HjJump } from "@/lib/games/highjump";
 import { HJ } from "@/lib/games/venues";
 import { highJumpAt, planHighJump, type HighJumpPlan } from "../scene/motions/highjump";
@@ -19,7 +21,9 @@ import { Timeline, beatAt, beatClock, beatK, type Overlay, type Show, type ShowF
 
 interface Item { jump: HjJump; plan: HighJumpPlan; cut: "full" | "short"; replay: boolean; jumpOff: boolean; i: number }
 
-export function highJumpShow(result: HighJumpResult, o: ShowOptions): Show {
+export function highJumpShow(result: HighJumpResult, o: ShowOptions, tr: Translator<typeof gamesShow.en> = translator(gamesShow, "en", undefined)): Show {
+  const lc = tr.locale;
+  const num = (s: string) => localNum(s, lc);
   const athletes = result.cards.map((c) => c.athlete);
   const byKey = new Map(athletes.map((a) => [a.key, a]));
   const cardOf = new Map(result.cards.map((c) => [c.athlete.key, c]));
@@ -69,7 +73,7 @@ export function highJumpShow(result: HighJumpResult, o: ShowOptions): Show {
   items.forEach((it, idx) => {
     if (Math.abs(it.jump.height - lastH) > 1e-6 && it.cut === "full") {
       lastH = it.jump.height;
-      tl.add({ kind: "card", cam: "bar", act: idx, clock0: it.plan.start, rate: 0, title: it.jumpOff ? `Jump-off · ${it.jump.height.toFixed(2)} m` : `${it.jump.height.toFixed(2)} m`, sub: it.jumpOff ? "One attempt each" : "The bar goes up" }, 1.2);
+      tl.add({ kind: "card", cam: "bar", act: idx, clock0: it.plan.start, rate: 0, title: it.jumpOff ? tr("hj.jumpOff", { h: num(it.jump.height.toFixed(2)) }) : tr("hj.height", { h: num(it.jump.height.toFixed(2)) }), sub: it.jumpOff ? tr("hj.oneEach") : tr("hj.barUp") }, 1.2);
     }
     lastH = it.jump.height;
     const p = it.plan;
@@ -160,7 +164,7 @@ export function highJumpShow(result: HighJumpResult, o: ShowOptions): Show {
   const series = (c: HjCard) => {
     // "xo" style marks at the athlete's last two heights.
     const hs = [...new Set(c.jumps.map((j) => j.height))].slice(-2);
-    return hs.map((h) => `${h.toFixed(2)} ${c.jumps.filter((j) => j.height === h).map((j) => (j.cleared ? "o" : "x")).join("")}`).join(" · ");
+    return hs.map((h) => `${num(h.toFixed(2))} ${c.jumps.filter((j) => j.height === h).map((j) => (j.cleared ? "o" : "x")).join("")}`).join(" · ");
   };
 
   const overlay = (t: number): Overlay => {
@@ -168,28 +172,28 @@ export function highJumpShow(result: HighJumpResult, o: ShowOptions): Show {
     const k = beatK(beat, t);
     const it = items[beat.act ?? 0] ?? items[0];
     const a = byKey.get(it.jump.key)!;
-    const bug = { title: "High jump", sub: beat.kind === "board" ? "Final standings" : `Bar ${it.jump.height.toFixed(2)} m` };
+    const bug = { title: tr("ev.high-jump.name"), sub: beat.kind === "board" ? tr("finalStandings") : tr("hj.bar", { h: num(it.jump.height.toFixed(2)) }) };
     switch (beat.kind) {
       case "establish":
-        return { title: { text: "HIGH JUMP", sub: `${athletes.length} Pokémon · three failures and out`, k } };
+        return { title: { text: tr("ev.high-jump.name").toUpperCase(), sub: tr("hj.crane", { n: athletes.length }), k } };
       case "startlist":
-        return { bug, board: { title: "Start list · opening height", rows: [...result.cards].sort((x, y) => x.opening - y.opening).map((c, i) => ({ place: String(i + 1), name: c.athlete.name, mark: `${c.opening.toFixed(2)} m`, key: c.athlete.key, note: `best ${formatMark("high-jump", highJumpMark(c.athlete))}`, plain: true })), k } };
+        return { bug, board: { title: tr("hj.startList"), rows: [...result.cards].sort((x, y) => x.opening - y.opening).map((c, i) => ({ place: String(i + 1), name: c.athlete.name, mark: num(`${c.opening.toFixed(2)} m`), key: c.athlete.key, note: tr("best", { mark: formatMark("high-jump", highJumpMark(c.athlete), lc) }), plain: true })), k } };
       case "card":
         return { bug, title: { text: beat.title ?? "", sub: beat.sub ?? "", k } };
       case "action":
-        return { bug, lower: { key: a.key, name: a.name, line: `Attack ${a.stats.atk} · ${fmtKg(a.kg)} · ${a.height.toFixed(1)} m tall`, tag: it.jumpOff ? "Jump-off" : `Attempt ${it.jump.n}`, k }, tags: [a.key], caption: captionFor(a) };
+        return { bug, lower: { key: a.key, name: a.name, line: tr("hj.line", { atk: a.stats.atk, kg: num(fmtKg(a.kg)), h: num(a.height.toFixed(1)) }), tag: it.jumpOff ? tr("hj.jumpOffTag") : tr("attempt", { n: it.jump.n }), k }, tags: [a.key], caption: captionFor(a, tr) };
       case "result": {
         const st = standingAfter(it.i);
         return {
           bug,
-          mark: it.jump.cleared ? { text: `${it.jump.height.toFixed(2)} m`, sub: it.jumpOff ? "Wins the jump-off" : it.jump.n === 1 ? "First time" : `At attempt ${it.jump.n}`, tone: "good", k } : { text: "✕", sub: it.plan.contact === "near" ? "Brushed it off" : "Knocked it down", tone: "bad", k },
-          board: { title: "Standings", rows: st.slice(0, 8).map(([key, best], i) => ({ place: String(i + 1), name: byKey.get(key)!.name, mark: best == null ? "—" : `${best.toFixed(2)} m`, key, hi: key === a.key })), k },
+          mark: it.jump.cleared ? { text: num(`${it.jump.height.toFixed(2)} m`), sub: it.jumpOff ? tr("hj.winsJumpOff") : it.jump.n === 1 ? tr("hj.firstTime") : tr("hj.atAttempt", { n: it.jump.n }), tone: "good", k } : { text: "✕", sub: tr(it.plan.contact === "near" ? "hj.brushed" : "hj.knocked"), tone: "bad", k },
+          board: { title: tr("standings"), rows: st.slice(0, 8).map(([key, best], i) => ({ place: String(i + 1), name: byKey.get(key)!.name, mark: best == null ? "—" : num(`${best.toFixed(2)} m`), key, hi: key === a.key })), k },
         };
       }
       case "replay":
-        return { replay: true, lower: { key: a.key, name: a.name, line: `Take-off ${it.plan.vv.toFixed(2)} m/s up · centre of mass peaks ${(it.plan.com + (it.plan.vv ** 2) / 19.62).toFixed(2)} m`, tag: "Replay", k } };
+        return { replay: true, lower: { key: a.key, name: a.name, line: tr("hj.replay", { v: num(it.plan.vv.toFixed(2)), m: num((it.plan.com + (it.plan.vv ** 2) / 19.62).toFixed(2)) }), tag: tr("replay"), k } };
       default:
-        return { bug, board: { title: "High jump · final", rows: [...result.order].sort((x, y) => x.place - y.place || countback(x, y)).map((c) => ({ place: c.best == null ? "—" : String(c.place), name: c.athlete.name, mark: c.best == null ? "NM" : `${c.best.toFixed(2)} m`, key: c.athlete.key, hi: c.place === 1, note: c.best == null ? undefined : series(c) })), k } };
+        return { bug, board: { title: tr("final", { event: tr("ev.high-jump.name") }), rows: [...result.order].sort((x, y) => x.place - y.place || countback(x, y)).map((c) => ({ place: c.best == null ? "—" : String(c.place), name: c.athlete.name, mark: c.best == null ? tr("nm") : num(`${c.best.toFixed(2)} m`), key: c.athlete.key, hi: c.place === 1, note: c.best == null ? undefined : series(c) })), k } };
     }
   };
 
@@ -203,8 +207,8 @@ export function highJumpShow(result: HighJumpResult, o: ShowOptions): Show {
     at,
     overlay,
     resultsAt: beats.find((b) => b.kind === "board")?.t0 ?? end,
-    hook: "Which Pokémon jumps the highest? ⬆️",
-    headline: gold?.best != null ? `${gold.athlete.name} wins with ${gold.best.toFixed(2)} m` : "No clearance",
+    hook: tr("hj.hook"),
+    headline: gold?.best != null ? tr("winsWith", { name: gold.athlete.name, mark: num(`${gold.best.toFixed(2)} m`) }) : tr("hj.none"),
   };
 }
 

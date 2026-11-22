@@ -5,6 +5,8 @@ import { clip } from "./clip";
 import { sequence, type Sequence } from "./sequence";
 import type { SprintExtras } from "./sprint";
 import type { Beat, Cue, Show } from "./types";
+import { translator, type Translator } from "@/i18n/catalog";
+import gamesShow from "@/messages/games-show";
 
 /**
  * A head to head cut for a short vertical video (TikTok, Reels, Shorts):
@@ -94,7 +96,7 @@ export function h2hClipShow(source: Show): Show[] {
 }
 
 /** The head to head's clip: one sequence on one clock, ready for the recorder. */
-export function h2hClip(outcome: EventOutcome, byKey: ReadonlyMap<string, Athlete>): Sequence {
-  const main = eventShow(outcome, byKey, { budget: 16, video: true, quick: false, podium: false }).parts[0].show;
+export function h2hClip(outcome: EventOutcome, byKey: ReadonlyMap<string, Athlete>, tr: Translator<typeof gamesShow.en> = translator(gamesShow, "en", undefined)): Sequence {
+  const main = eventShow(outcome, byKey, { budget: 16, video: true, quick: false, podium: false }, tr).parts[0].show;
   return sequence(h2hClipShow(main), { event: outcome.event, hook: main.hook, headline: main.headline });
 }

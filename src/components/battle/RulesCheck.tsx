@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
 import type { CustomRules } from "@/lib/battle/custom-rules";
+import { useT } from "@/i18n/client";
+import rulesNs from "@/messages/battle-rules";
 
 /** Pokémon Showdown's word on a custom ruleset and the team picked for it (see CustomRulesEditor). */
 export type RulesVerdict = { state: "checking" } | { state: "ok" } | { state: "bad"; errors: string[]; teamErrors: string[] };
@@ -42,23 +44,24 @@ export function useRulesCheck(rules: CustomRules | null, team: string): RulesVer
 }
 
 export function RulesVerdictNote({ verdict }: { verdict: RulesVerdict | null }) {
+  const t = useT(rulesNs);
   if (!verdict) return null;
   if (verdict.state === "checking")
     return (
       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> Checking with Pokémon Showdown…
+        <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> {t("check.checking")}
       </p>
     );
   if (verdict.state === "ok")
     return (
       <p className="flex items-center gap-1.5 text-xs text-success" data-testid="rules-ok">
-        <CheckCircle2 className="h-3.5 w-3.5" aria-hidden /> Rules and team check out.
+        <CheckCircle2 className="h-3.5 w-3.5" aria-hidden /> {t("check.ok")}
       </p>
     );
   return (
     <div role="alert" className="space-y-1 rounded-md border border-destructive/40 bg-destructive/10 p-2.5 text-xs text-destructive" data-testid="rules-errors">
       <p className="flex items-center gap-1.5 font-semibold">
-        <AlertTriangle className="h-3.5 w-3.5" aria-hidden /> {verdict.errors.length ? "Pokémon Showdown can't use these rules:" : "Your team breaks these rules:"}
+        <AlertTriangle className="h-3.5 w-3.5" aria-hidden /> {verdict.errors.length ? t("check.badRules") : t("check.badTeam")}
       </p>
       <ul className="list-disc space-y-0.5 pl-5">
         {[...verdict.errors, ...verdict.teamErrors].slice(0, 8).map((e, i) => (

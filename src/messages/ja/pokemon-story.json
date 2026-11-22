@@ -1,0 +1,30 @@
+{
+  "meta": {
+    "title": "ポケモンの物語：3Dフィルムでたどる本当の歴史",
+    "description": "1970年代の町田での田尻智の虫取りとゲームボーイの通信ケーブルから、『赤・緑』、ポケモンブーム、『Pokémon GO』、そして30周年まで。ポケモンがどう生まれ、どう広がったのかを描く3Dシネマ。すべての言葉に出典つき。",
+    "socialTitle": "ポケモンの物語 · PokéIQ",
+    "chapterTitle": "{title}（{when}）：ポケモンの物語",
+    "chapterDescription": "{summary} 「ポケモンの物語」第{numeral}章。ポケモンの本当の歴史を描く3Dフィルムで、すべての言葉に出典つき。",
+    "chapterSocial": "{title} · ポケモンの物語"
+  },
+  "wholeStory": "物語の全体",
+  "lab": "3Dラボ",
+  "everyRelease": "すべての作品",
+  "kicker": "PokéIQ 3Dラボ · 本当の歴史",
+  "chapterOf": "{title} · 第{numeral}章",
+  "chapters": "章",
+  "sources": "出典",
+  "inChapter": "この章のポケモン",
+  "chapterPage": "この章のページ",
+  "rest": "物語のつづき",
+  "keepExploring": "さらに見る",
+  "exploreEvery": "すべての作品を見る",
+  "exploreEveryBody": "ポケモン年表：ゲーム、アニメ、映画、カードを日付順に。",
+  "worldOwn": "ポケモン世界そのものの歴史",
+  "worldOwnBody": "ゲーム自身が語る「ポケモン世界の歴史」。",
+  "howTo": "タグの見かた",
+  "tagsHelp": "タグのない文は日付のある記録です。<said>本人の言葉</said>：作り手がインタビューで語ったこと。<reported>報道</reported>：報道や伝記によるもの。<retold>伝えられる話</retold>：いくつかの形で語られている話。",
+  "people": "人物はシルエットと、その人が使った道具だけで登場します。実際の写真、スクリーンショット、ロゴ、パッケージは使っていません。どの場面もこのフィルムのために3Dで作ったものです。",
+  "music": "音楽：このフィルムのために書いたオリジナル曲。ひとつのテーマを6通りに編曲し、MuseScore Generalサウンドフォント（MIT。弦楽器はVSCO 2 Community Edition、CC0）で演奏しています。環境音と効果音はブラウザで生成しています（<a>クレジット</a>）。ポケモンのフィギュアは、PokéAPIが配信するポケモンHOMEの画像から作っています。",
+  "fan": "Pokémon © Nintendo / Creatures / GAME FREAK. ファンによる非公式プロジェクトで、これらの企業とは関係ありません。"
+}

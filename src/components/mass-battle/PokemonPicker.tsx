@@ -5,6 +5,8 @@ import Image from "next/image";
 import { ChevronDown, Search } from "lucide-react";
 import { boardArtUrl } from "@/lib/pokemon/art";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import mbSetup from "@/messages/mass-battle-setup";
 
 export interface PickerMon {
   id: number;
@@ -19,12 +21,16 @@ export interface PickerMon {
   fe: boolean;
   /** "mega", a region ("alola"…), or "" for a default form. */
   form: string;
+  /** On a page in another language: the other names a search takes (English, rōmaji). */
+  aka?: string[];
 }
 
 const FORM_TAG: Record<string, string> = { mega: "Mega", alola: "Alola", galar: "Galar", hisui: "Hisui", paldea: "Paldea" };
+const FORMS = ["mega", "alola", "galar", "hisui", "paldea"] as const;
 
 /** A searchable Pokémon picker: type a name or a Pokédex number, pick from the matches (keyboard or pointer). Forms included. */
 export function PokemonPicker({ label, value, list, onChange, testId, disabled }: { label: string; value: number; list: PickerMon[]; onChange(id: number): void; testId: string; disabled?: boolean }) {
+  const t = useT(mbSetup);
   const id = useId();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -38,8 +44,10 @@ export function PokemonPicker({ label, value, list, onChange, testId, disabled }
       const n = Number(q.replace("#", ""));
       return list.filter((p) => p.id === n || String(p.id).startsWith(String(n))).slice(0, 40);
     }
-    const starts = list.filter((p) => p.name.toLowerCase().startsWith(q) || p.slug.startsWith(q));
-    const has = list.filter((p) => !starts.includes(p) && (p.name.toLowerCase().includes(q) || p.slug.includes(q.replace(/\s+/g, "-"))));
+    // On a page in another language a Pokémon also answers to its English name (and rōmaji): `aka`.
+    const names = (p: PickerMon) => (p.aka ? [p.name, ...p.aka] : [p.name]).map((n) => n.toLowerCase());
+    const starts = list.filter((p) => names(p).some((n) => n.startsWith(q)) || p.slug.startsWith(q));
+    const has = list.filter((p) => !starts.includes(p) && (names(p).some((n) => n.includes(q)) || p.slug.includes(q.replace(/\s+/g, "-"))));
     return [...starts, ...has].slice(0, 40);
   }, [list, query]);
   const choose = (p: PickerMon) => {
@@ -65,7 +73,7 @@ export function PokemonPicker({ label, value, list, onChange, testId, disabled }
           aria-haspopup="listbox"
         >
           {current && <Image src={boardArtUrl(current.id)} alt="" width={40} height={40} className="h-10 w-10 shrink-0 object-contain" unoptimized />}
-          <span className="min-w-0 flex-1 truncate font-display text-base font-bold uppercase tracking-wide">{current?.name ?? "Pick a Pokémon"}</span>
+          <span className="min-w-0 flex-1 truncate font-display text-base font-bold uppercase tracking-wide">{current?.name ?? t("picker.pick")}</span>
           <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
         </button>
       ) : (
@@ -76,7 +84,7 @@ export function PokemonPicker({ label, value, list, onChange, testId, disabled }
               id={`${id}-in`}
               ref={inputRef}
               value={query}
-              placeholder="Search Pokémon"
+              placeholder={t("picker.search")}
               autoComplete="off"
               role="combobox"
               aria-expanded
@@ -115,12 +123,12 @@ export function PokemonPicker({ label, value, list, onChange, testId, disabled }
               >
                 <Image src={boardArtUrl(p.id)} alt="" width={32} height={32} className="h-8 w-8 object-contain" unoptimized />
                 <span className="font-display text-sm font-semibold uppercase tracking-wide">{p.name}</span>
-                {p.form && <span className="rounded bg-primary/15 px-1.5 py-0.5 font-pixel text-[8px] uppercase text-primary">{FORM_TAG[p.form] ?? p.form}</span>}
+                {p.form && <span className="rounded bg-primary/15 px-1.5 py-0.5 font-pixel text-[8px] uppercase text-primary">{t.locale === "en" ? FORM_TAG[p.form] ?? p.form : (FORMS as readonly string[]).includes(p.form) ? t(`picker.form.${p.form as (typeof FORMS)[number]}`) : p.form}</span>}
                 <span className="ml-auto font-pixel text-[9px] uppercase text-muted-foreground">{p.id < 10000 ? `#${String(p.id).padStart(4, "0")}` : ""}</span>
-                {!p.attacks && <span className="font-pixel text-[9px] uppercase text-destructive">No attacks</span>}
+                {!p.attacks && <span className="font-pixel text-[9px] uppercase text-destructive">{t("picker.noAttacks")}</span>}
               </li>
             ))}
-            {!matches.length && <li className="px-2 py-2 text-sm text-muted-foreground">No Pokémon by that name</li>}
+            {!matches.length && <li className="px-2 py-2 text-sm text-muted-foreground">{t("picker.none")}</li>}
           </ul>
         </div>
       )}

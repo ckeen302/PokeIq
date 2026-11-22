@@ -1,0 +1,27 @@
+{
+  "kindGroup": "Art des Spiels",
+  "filter": {
+    "all": "Alle",
+    "mainline": "Hauptreihe",
+    "remake": "Remakes",
+    "spinoff": "Spin-offs",
+    "mobile": "Mobile"
+  },
+  "kind": {
+    "mainline": "Hauptreihe",
+    "remake": "Remake",
+    "spinoff": "Spin-off",
+    "mobile": "Mobile"
+  },
+  "generation": "Generation",
+  "everyGeneration": "Alle Generationen",
+  "gen": "Gen. {gen}",
+  "sortLabel": "Sortieren",
+  "sort": {
+    "newest": "Neueste zuerst",
+    "oldest": "Älteste zuerst"
+  },
+  "none": "Keine Spiele gefunden.",
+  "showAll": "Alle Spiele zeigen",
+  "tileAlt": "{name} auf einer Kachel statt eines Covers"
+}
