@@ -17,6 +17,7 @@ import { CONN_GROUP_SIZE } from "@/lib/connections/types";
 import { DUEL_CODE_RE } from "@/lib/duel-types";
 import { DLE_DUEL_HINTS, DUEL_EMOTES, QUIZ_DUEL_QUESTIONS, type PvpSeatResponse } from "@/lib/pvp-types";
 import { langOf } from "@/lib/server/request-lang";
+import { prepareDuelLang } from "@/lib/server/quiz-duel";
 
 /**
  * GET  /api/duel/:code — the duel as you may see it (header x-duel-token:
@@ -84,6 +85,8 @@ async function codeFrom(context: Context): Promise<string | null> {
 }
 
 export async function GET(request: NextRequest, context: Context) {
+  // A quiz duel words its questions in the trainer's language: that language's words load first.
+  await prepareDuelLang(langOf(request));
   // Two trainers poll about once a second, often from one address.
   if (!rateLimit(`duel:${clientIp(request)}`, 40, 6)) {
     return NextResponse.json({ error: "Slow down, trainer." }, { status: 429 });
@@ -101,6 +104,8 @@ export async function GET(request: NextRequest, context: Context) {
 }
 
 export async function POST(request: NextRequest, context: Context) {
+  // A quiz duel words its questions in the trainer's language: that language's words load first.
+  await prepareDuelLang(langOf(request));
   if (!rateLimit(`duel-act:${clientIp(request)}`, 40, 3)) {
     return NextResponse.json({ error: "Slow down, trainer." }, { status: 429 });
   }
@@ -153,11 +158,11 @@ export async function POST(request: NextRequest, context: Context) {
         case "hint":
           return asKind(duel, "pokedle", (d) => buyPokedleHint(d, playerId, body.round, body.hint, now));
         case "answer":
-          return asKind(duel, "quiz", (d) => answerQuiz(d, playerId, body.round, body.choice, now));
+          return asKind(duel, "quiz", (d) => answerQuiz(d, playerId, body.round, body.choice, now, langOf(request)));
         case "loaded":
           return asKind(duel, "quiz", (d) => loadedQuiz(d, playerId, body.round, now));
         case "zoom":
-          return asKind(duel, "quiz", (d) => zoomQuiz(d, playerId, body.round, body.choice, now));
+          return asKind(duel, "quiz", (d) => zoomQuiz(d, playerId, body.round, body.choice, now, langOf(request)));
         case "reveal":
           return asKind(duel, "quiz", (d) => revealQuiz(d, playerId, body.round, now));
         case "claim":

@@ -92,12 +92,14 @@ export function TeamBoard({ cards, reveal, onReveal, revealing }: TeamBoardProps
 interface GuessBoxProps {
   /** Every answer the server accepts (the question's options). */
   options: readonly string[];
+  /** In another language: each option's other names the server also accepts (English, rōmaji). */
+  aliases?: readonly string[][];
   disabled?: boolean;
   onGuess: (name: string) => void;
 }
 
 /** The guess: type a trainer, pick from the autocomplete (aliases like "Green" find Blue). */
-export function GuessBox({ options, disabled, onGuess }: GuessBoxProps) {
+export function GuessBox({ options, aliases, disabled, onGuess }: GuessBoxProps) {
   const t = useT(runNs);
   const listId = useId();
   const [text, setText] = useState("");
@@ -106,12 +108,14 @@ export function GuessBox({ options, disabled, onGuess }: GuessBoxProps) {
   const [hint, setHint] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const names = useMemo(() => {
+    // Another language: the options are the trainers' names in it, and their English names are aliases.
+    if (aliases) return options.map((name, i) => ({ name, aliases: aliases[i] ?? [] }));
     const allowed = new Set(options);
     // The server's list is the truth; the alias table only adds other spellings.
     const known = TRAINER_NAMES.filter((n) => allowed.has(n.name));
     const extra = options.filter((o) => !known.some((n) => n.name === o)).map((name) => ({ name }));
     return [...known, ...extra];
-  }, [options]);
+  }, [options, aliases]);
   const matches = useMemo(() => suggest(text, names), [text, names]);
 
   const commit = (name: string | null) => {

@@ -659,7 +659,7 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
                 {revealed && graded ? (
                   <TrainerReveal name={graded.answer} appearance={graded.explanation} correct={graded.correct} />
                 ) : (
-                  <GuessBox key={question.index} options={question.options} disabled={phase !== "active" || revealing} onGuess={(name) => void submit(name)} />
+                  <GuessBox key={question.index} options={question.options} aliases={question.optionAliases} disabled={phase !== "active" || revealing} onGuess={(name) => void submit(name)} />
                 )}
               </>
             ) : question.images ? (

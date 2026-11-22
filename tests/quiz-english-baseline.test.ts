@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { Rng } from "@/lib/rng";
 import { buildQuestion, DIFFICULTIES, MODULES, type ModuleId } from "@/engines";
 import { questionAt } from "@/lib/server/session";
@@ -81,6 +81,9 @@ function sessionRuns(): Record<string, string> {
 }
 
 describe("English quiz output", () => {
+  // Session questions carry media tokens sealed with the server secret: hash them under the one the fixture was recorded with.
+  beforeAll(() => vi.stubEnv("POKEIQ_SECRET", "ci-only-secret-not-used-anywhere-else"));
+  afterAll(() => vi.unstubAllEnvs());
   it("is byte-identical to the recorded baseline", () => {
     const now = { ...engineRuns(), ...sessionRuns() };
     if (process.env.QUIZ_BASELINE_WRITE === "1") {

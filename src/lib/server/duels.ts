@@ -66,5 +66,5 @@ export function asKind<K extends PvpDuel["kind"]>(duel: PvpDuel, kind: K, act: (
 export function duelView(duel: PvpDuel, playerId: string | null, now: number, rev: number, locale: Locale = "en"): PvpView {
   if (duel.kind === "connections") return connectionsView(duel, playerId, now, rev, locale);
   if (duel.kind === "pikadoku") return pikadokuView(duel, playerId, now, rev);
-  return duel.kind === "pokedle" ? pokedleView(duel, playerId, now, rev) : quizView(duel, playerId, now, rev);
+  return duel.kind === "pokedle" ? pokedleView(duel, playerId, now, rev) : quizView(duel, playerId, now, rev, locale);
 }
