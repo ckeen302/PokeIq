@@ -5,7 +5,7 @@
     "recover": "Olvidé la contraseña"
   },
   "resetTitle": "Contraseña restablecida",
-  "welcome": "¡Bienvenido, {name}!",
+  "welcome": "¡Te damos la bienvenida, {name}!",
   "resetNote": "Tu código de recuperación anterior ya está usado. Guarda este nuevo: solo se muestra una vez.",
   "welcomeNote": "Este código de recuperación es la única forma de volver a entrar si olvidas tu contraseña. Solo se muestra una vez.",
   "offlineTitle": "Las cuentas no están disponibles",
