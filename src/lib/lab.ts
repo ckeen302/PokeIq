@@ -6,8 +6,11 @@
 
 export const LAB_PATH = "/lab";
 
-/** Pokémon Race (/pokedex/race) shows on /lab only while its page is live. */
-export const RACE_LIVE = true;
+/**
+ * Pokémon Race (/pokedex/race): its card on /lab, its pages in the sitemap and in search, and the link from
+ * Pokémon pages, only while this is true. Until then its pages work by URL.
+ */
+export const RACE_LIVE = false;
 
 /**
  * Pokémon Mass Battle (/lab/mass-battle) shows on /lab, in the sitemap and
@@ -36,7 +39,7 @@ export const POKEMON_STORY_LIVE = true;
  * and in search, and the Games links from Pokédex entries and the Race,
  * only while this is true. Until then its pages work by URL.
  */
-export const GAMES_LIVE = true;
+export const GAMES_LIVE = false;
 
 /**
  * The Professor's Lab (/lab/pokedex), a 3D Pokédex: its card on /lab and its
