@@ -1,12 +1,13 @@
 import "server-only";
 import type { Locale, OtherLocale } from "@/i18n/config";
 import { speciesName } from "@/lib/names/species";
+import ja from "@/data/i18n/ja/content/pokemon-story.json";
 import { STORY } from "./data";
 import { localizeStory, type StoryContent } from "./content";
 import type { Story } from "./types";
 
 /** The Story of Pokémon in the page's language (server only: an English page gets the English data untouched). */
-const CONTENT: Partial<Record<OtherLocale, StoryContent>> = {};
+const CONTENT: Partial<Record<OtherLocale, StoryContent>> = { ja };
 const cache = new Map<Locale, Story>();
 
 export function localStory(locale: Locale): Story {
