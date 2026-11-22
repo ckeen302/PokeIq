@@ -1,0 +1,42 @@
+{
+  "search": {
+    "moves": "わざを検索…  ( / )",
+    "abilities": "とくせいを検索…  ( / )",
+    "items": "どうぐを検索…  ( / )",
+    "places": "場所を検索…  ( / )"
+  },
+  "searchLabel": {
+    "moves": "わざを検索",
+    "abilities": "とくせいを検索",
+    "items": "どうぐを検索",
+    "places": "場所を検索"
+  },
+  "clear": "検索をクリア",
+  "itemCategory": "どうぐの分類",
+  "allCategories": "すべての分類",
+  "region": "地方",
+  "allRegions": "すべての地方",
+  "placeType": "場所の種類",
+  "allTypes": "すべての種類",
+  "cls": {
+    "physical": "ぶつり",
+    "special": "とくしゅ",
+    "status": "へんか"
+  },
+  "reset": "リセット",
+  "empty": {
+    "moves": "条件に合うわざはありません。",
+    "abilities": "条件に合うとくせいはありません。",
+    "items": "条件に合うどうぐはありません。",
+    "places": "条件に合う場所はありません。"
+  },
+  "col": {
+    "move": "わざ",
+    "type": "タイプ",
+    "cat": "分類",
+    "pow": "威力",
+    "acc": "命中",
+    "pp": "PP"
+  },
+  "holders": "{n}匹"
+}

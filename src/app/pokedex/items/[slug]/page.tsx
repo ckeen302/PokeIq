@@ -5,11 +5,15 @@ import Link from "@/components/ui/Link";
 import { SHARE_IMAGES, jsonLd, pageMetadata } from "@/lib/seo";
 import { breadcrumbList } from "@/lib/structured-data";
 import { ITEMS, getItem, moveFromApiSlug, speciesBySlug } from "@/lib/dex/data";
-import { itemSpriteUrl, versionGroupLabel, versionLabel } from "@/lib/dex/build";
+import { itemSpriteUrl } from "@/lib/dex/build";
+import { dexLocal, itemCategory, type DexLocal } from "@/lib/dex/local";
+import type { Translator } from "@/i18n/catalog";
 import { Section } from "@/components/pokedex/entry/Reveal";
 import { TypeBadge } from "@/components/pokedex/TypeBadge";
 import { DetailHero, DetailNav } from "@/components/pokedex/detail/DetailParts";
 import { pagerFor } from "@/lib/dex/neighbours";
+import { getLocale, serverT } from "@/i18n/server";
+import dexRef from "@/messages/dex-ref";
 
 export const dynamicParams = false;
 
@@ -17,20 +21,24 @@ export function generateStaticParams() {
   return ITEMS.map((i) => ({ slug: i.slug }));
 }
 
+type T = Translator<typeof dexRef.en>;
+
 /** What a variant's PokéAPI name points to ("card-key--letsgo", "leaf-letter--eevee"). */
-const VARIANT_LABEL: Record<string, string> = { letsgo: "Let's Go", galar: "Galar", pikachu: "Pikachu", eevee: "Eevee" };
+const VARIANTS = ["letsgo", "galar", "pikachu", "eevee"] as const;
+type Variant = (typeof VARIANTS)[number];
 
 /**
  * An item's name for its tab title. A few names belong to two items (a
  * game's own version of a key item, two Heavy Balls): a twin's title adds
  * its category when that tells them apart, else what its name points to.
  */
-function titleName(i: (typeof ITEMS)[number]): string {
+function titleName(t: T, L: DexLocal, i: (typeof ITEMS)[number]): string {
+  const name = L.item(i.name);
   const twins = ITEMS.filter((o) => o !== i && o.name === i.name);
-  if (!twins.length) return i.name;
-  if (twins.every((o) => o.category !== i.category)) return `${i.name} (${i.category})`;
-  const variant = VARIANT_LABEL[i.slug.split("--")[1] ?? ""];
-  return variant ? `${i.name} (${variant})` : i.name;
+  if (!twins.length) return name;
+  if (twins.every((o) => o.category !== i.category)) return t("item.twin", { name, detail: itemCategory(t, i.category) });
+  const variant = i.slug.split("--")[1] ?? "";
+  return VARIANTS.includes(variant as Variant) ? t("item.twin", { name, detail: t(`item.variant.${variant as Variant}`) }) : name;
 }
 
 interface PageProps {
@@ -40,23 +48,32 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const i = getItem((await params).slug);
   if (!i) return {};
+  const t = serverT(dexRef);
+  const L = await dexLocal(getLocale());
+  const name = L.item(i.name);
+  const effect = L.locale === "en" ? i.effect : (L.itemText(i.slug) ?? "");
   return pageMetadata({
-    title: `${titleName(i)} — Pokémon Item`,
-    description: `${i.name} (${i.category}): ${i.effect} See which wild Pokémon hold it and which games it appears in.`,
+    title: t("item.metaTitle", { name: titleName(t, L, i) }),
+    description: t("item.metaDescription", { name, category: itemCategory(t, i.category), effect }),
     path: `/pokedex/items/${i.slug}`,
     image: SHARE_IMAGES.pokedex,
-    socialTitle: `${i.name} · PokéIQ Pokédex`,
+    socialTitle: t("social", { name }),
   });
 }
 
 export default async function ItemPage({ params }: PageProps) {
   const item = getItem((await params).slug);
   if (!item) notFound();
+  const t = serverT(dexRef);
+  const L = await dexLocal(getLocale());
+  const name = L.item(item.name);
+  const effect = L.locale === "en" ? item.effect : L.itemText(item.slug);
+  const versions = (list: string[]) => list.map(L.version).join(L.locale === "ja" ? "、" : ", ");
   const held = item.held.flatMap(([slug, rarity]) => {
     const s = speciesBySlug(slug);
     return s ? [{ s, rarity }] : [];
   });
-  const pager = pagerFor(ITEMS, (x) => x.slug === item.slug, (x) => ({ href: `/pokedex/items/${x.slug}`, label: x.name }));
+  const pager = pagerFor(ITEMS, (x) => x.slug === item.slug, (x) => ({ href: `/pokedex/items/${x.slug}`, label: L.item(x.name) }));
   const byGen = new Map<number, [string, string][]>();
   for (const [gen, vg, move] of item.machines) {
     const list = byGen.get(gen) ?? [];
@@ -67,46 +84,46 @@ export default async function ItemPage({ params }: PageProps) {
 
   return (
     <article className="mx-auto max-w-6xl space-y-10">
-      <DetailNav tab="items" label="Back to all items" pager={pager} />
+      <DetailNav tab="items" label={t("item.back")} pager={pager} />
       <DetailHero
-        kicker={`Item · ${item.category}`}
-        title={item.name}
+        kicker={t("item.kicker", { category: itemCategory(t, item.category) })}
+        title={name}
         media={
           <span className="screen flex h-24 w-24 shrink-0 items-center justify-center rounded-md">
-            <img src={itemSpriteUrl(item.slug)} alt={`${item.name} sprite`} width={64} height={64} data-testid="item-sprite" className="relative z-[1] h-16 w-16 object-contain [image-rendering:pixelated]" />
+            <img src={itemSpriteUrl(item.slug)} alt={t("item.sprite", { name })} width={64} height={64} data-testid="item-sprite" className="relative z-[1] h-16 w-16 object-contain [image-rendering:pixelated]" />
           </span>
         }
       >
-        <p className="max-w-2xl text-foreground/90">{item.effect || "No effect description available."}</p>
+        <p className="max-w-2xl text-foreground/90">{effect || t("item.noEffect")}</p>
       </DetailHero>
 
-      <Section id="games" index={++idx} title="Games" subtitle="Generations it appears in">
+      <Section id="games" index={++idx} title={t("item.games")} subtitle={t("item.gamesSub")}>
         <div className="flex flex-wrap gap-1.5">
           {item.gens.map((g) => (
             <span key={g} className="rounded-sm border border-primary bg-primary px-2.5 py-1.5 font-pixel text-[10px] uppercase tracking-wider text-primary-foreground">
-              Gen {g}
+              {t("item.gen", { g })}
             </span>
           ))}
         </div>
       </Section>
 
       {byGen.size > 0 && (
-        <Section id="teaches" index={++idx} title="Teaches" subtitle="By generation">
+        <Section id="teaches" index={++idx} title={t("item.teaches")} subtitle={t("item.teachesSub")}>
           <div className="hud space-y-4 rounded-lg border bg-card p-4">
             {[...byGen.entries()].map(([gen, rows]) => (
               <div key={gen} className="space-y-2">
-                <h3 className="font-pixel text-[10px] uppercase tracking-wider text-muted-foreground">Gen {gen}</h3>
+                <h3 className="font-pixel text-[10px] uppercase tracking-wider text-muted-foreground">{t("item.gen", { g: gen })}</h3>
                 <ul className="divide-y divide-foreground/5 text-sm">
                   {rows.map(([vg, move]) => {
                     const m = moveFromApiSlug(move);
                     return (
                       <li key={vg} className="flex flex-wrap items-center justify-between gap-2 py-1.5">
-                        <span className="text-muted-foreground">{versionGroupLabel(vg)}</span>
+                        <span className="text-muted-foreground">{L.versionGroup(vg)}</span>
                         <span className="flex items-center gap-2 font-semibold">
                           {m ? (
                             <>
                               <TypeBadge type={m.type} size="sm" />
-                              <Link href={`/pokedex/moves/${m.slug}`} className="hover:text-screen">{m.name}</Link>
+                              <Link href={`/pokedex/moves/${m.slug}`} className="hover:text-screen">{L.move(m.name)}</Link>
                             </>
                           ) : (
                             move
@@ -123,25 +140,25 @@ export default async function ItemPage({ params }: PageProps) {
       )}
 
       {held.length > 0 && (
-        <Section id="held" index={++idx} title="Held by wild Pokémon">
+        <Section id="held" index={++idx} title={t("item.held")}>
           <div className="hud overflow-x-auto rounded-lg border bg-card p-2" data-hscroll>
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                  <th className="p-2">Pokémon</th>
-                  <th className="p-2">Chance · games</th>
+                  <th className="p-2">{t("item.colPokemon")}</th>
+                  <th className="p-2">{t("item.colChance")}</th>
                 </tr>
               </thead>
               <tbody>
                 {held.map(({ s, rarity }) => (
                   <tr key={s.id} className="border-b border-foreground/5 align-top" data-testid="item-holder">
                     <td className="p-2 font-semibold">
-                      <Link href={`/pokemon/${s.slug}`} className="hover:text-screen">{s.name}</Link>
+                      <Link href={`/pokemon/${s.slug}`} className="hover:text-screen">{L.species(s.id, s.name)}</Link>
                     </td>
                     <td className="space-y-0.5 p-2 text-xs text-muted-foreground">
-                      {rarity.map(([pct, versions]) => (
+                      {rarity.map(([pct, list]) => (
                         <div key={pct}>
-                          <span className="font-mono text-foreground">{pct}%</span> · {versions.map(versionLabel).join(", ")}
+                          <span className="font-mono text-foreground">{pct}%</span> · {versions(list)}
                         </div>
                       ))}
                     </td>
@@ -152,7 +169,7 @@ export default async function ItemPage({ params }: PageProps) {
           </div>
         </Section>
       )}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbList([{ name: "Pokédex", path: "/pokedex" }, { name: "Items", path: "/pokedex/items" }, { name: item.name, path: `/pokedex/items/${item.slug}` }])) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbList([{ name: t("crumb.pokedex"), path: "/pokedex" }, { name: t("crumb.items"), path: "/pokedex/items" }, { name, path: `/pokedex/items/${item.slug}` }])) }} />
     </article>
   );
 }

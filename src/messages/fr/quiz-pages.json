@@ -2,9 +2,6 @@
   "hub": {
     "title": "Quiz Quel est ce Pokémon ? et autres quiz Pokémon",
     "description": "Joue au quiz Quel est ce Pokémon ?, à un quiz des cris, aux entrées du Pokédex, à la table des types et à Plus ou moins, en formats Classique, Survie et Blitz.",
-    "daily": "Défi du jour",
-    "test": "Test PokéIQ",
-    "more": "Encore plus de jeux",
     "h1": "Quiz",
     "duel": "Duel de quiz",
     "duelLine": "Réponds aux mêmes questions qu’un ami, en direct.",

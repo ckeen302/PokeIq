@@ -37,6 +37,7 @@ import { Popover } from "@/components/ui/popover";
 import { ShareButton } from "@/components/share/ShareButton";
 import { howToShownEarly, releaseHowToFirst } from "@/lib/howto-first";
 import { ConnHowToSheet } from "./howto-sheet";
+import { PanelSelect } from "./PanelSelect";
 import { CONTROLS_DOCK, CONTROLS_WRAP, GridTile, GroupBar, GuessHistory, LevelLegend, MistakeDots, TILE_H4, TILE_H5, WhyPanel, preloadTileArt, type TileMotion } from "./parts";
 // The pop-ups (stats, the archive) load when first opened, not with the board. How to play comes with the board:
 // a first visit's copy is in the page's HTML (lib/howto-first).
@@ -805,60 +806,32 @@ export function Connections({ customId, initial }: { customId?: string; initial?
         {mode === "practice" && !isCustom && (
           <div className="mx-auto max-w-lg space-y-2 rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2 text-center text-sm" data-testid="conn-unlimited">
             <p className="text-xs sm:text-sm">{t("banner.unlimited")}</p>
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-            <div className="flex items-center justify-center gap-2">
-              <span className="hud-label">{t("banner.difficulty")}</span>
-              <div className="flex gap-1" role="radiogroup" aria-label={t("banner.difficultyAria")}>
-                {LEVELS.map((l) => (
-                  <button
-                    key={l}
-                    type="button"
-                    role="radio"
-                    aria-checked={level === l}
-                    title={t(`level.${l}Hint`)}
-                    onClick={() => {
-                      if (level === l) return;
-                      setConnPrefs({ level: l });
-                      // A new puzzle at that level, unless this one is under way.
-                      if (guesses.length === 0 || over) newPractice(l);
-                    }}
-                    className={cn(
-                      "h-8 rounded-sm border px-2.5 font-pixel text-[10px] uppercase tracking-wider transition-colors",
-                      level === l ? "border-primary bg-primary text-primary-foreground" : "border-foreground/10 bg-shade/20 text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                    )}
-                  >
-                    {t(`level.${l}`)}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="flex items-center justify-center gap-2">
-              <span className="hud-label">{t("banner.board")}</span>
-              <div className="flex gap-1" role="radiogroup" aria-label={t("banner.boardAria")} data-testid="conn-size">
-                {CONN_SIZES.map((n) => (
-                  <button
-                    key={n}
-                    type="button"
-                    role="radio"
-                    aria-checked={pickedSize === n}
-                    title={t(n === 4 ? "banner.size4" : "banner.size5")}
-                    data-testid={`conn-size-${n}`}
-                    onClick={() => {
-                      if (pickedSize === n) return;
-                      setConnPrefs({ size: n });
-                      // A new puzzle at that size, unless this one is under way.
-                      if (guesses.length === 0 || over) newPractice(level, n);
-                    }}
-                    className={cn(
-                      "h-8 rounded-sm border px-2.5 font-pixel text-[10px] uppercase tracking-wider transition-colors",
-                      pickedSize === n ? "border-primary bg-primary text-primary-foreground" : "border-foreground/10 bg-shade/20 text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                    )}
-                  >
-                    {n}×{n}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <PanelSelect
+                label={t("banner.difficulty")}
+                testId="conn-level"
+                value={level}
+                options={LEVELS.map((l) => ({ id: l, label: t(`level.${l}`), hint: t(`level.${l}Hint`) }))}
+                onChange={(l) => {
+                  if (level === l) return;
+                  setConnPrefs({ level: l });
+                  // A new puzzle at that level, unless this one is under way.
+                  if (guesses.length === 0 || over) newPractice(l);
+                }}
+              />
+              <PanelSelect
+                label={t("banner.board")}
+                testId="conn-size"
+                align="end"
+                value={pickedSize}
+                options={CONN_SIZES.map((n) => ({ id: n, label: `${n}×${n}`, hint: t(n === 4 ? "banner.size4" : "banner.size5") }))}
+                onChange={(n) => {
+                  if (pickedSize === n) return;
+                  setConnPrefs({ size: n });
+                  // A new puzzle at that size, unless this one is under way.
+                  if (guesses.length === 0 || over) newPractice(level, n);
+                }}
+              />
             </div>
             {guesses.length > 0 && !over && <p className="text-xs text-muted-foreground">{t("banner.nextSettings")}</p>}
           </div>

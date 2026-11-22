@@ -1,0 +1,42 @@
+{
+  "search": {
+    "moves": "Rechercher une capacité…  ( / )",
+    "abilities": "Rechercher un talent…  ( / )",
+    "items": "Rechercher un objet…  ( / )",
+    "places": "Rechercher un lieu…  ( / )"
+  },
+  "searchLabel": {
+    "moves": "Rechercher une capacité",
+    "abilities": "Rechercher un talent",
+    "items": "Rechercher un objet",
+    "places": "Rechercher un lieu"
+  },
+  "clear": "Effacer la recherche",
+  "itemCategory": "Catégorie d'objet",
+  "allCategories": "Toutes les catégories",
+  "region": "Région",
+  "allRegions": "Toutes les régions",
+  "placeType": "Type de lieu",
+  "allTypes": "Tous les types",
+  "cls": {
+    "physical": "physique",
+    "special": "spéciale",
+    "status": "statut"
+  },
+  "reset": "Réinitialiser",
+  "empty": {
+    "moves": "Aucune capacité ne correspond à ces filtres.",
+    "abilities": "Aucun talent ne correspond à ces filtres.",
+    "items": "Aucun objet ne correspond à ces filtres.",
+    "places": "Aucun lieu ne correspond à ces filtres."
+  },
+  "col": {
+    "move": "Capacité",
+    "type": "Type",
+    "cat": "Cat.",
+    "pow": "Puiss.",
+    "acc": "Préc.",
+    "pp": "PP"
+  },
+  "holders": "{n} Pokémon"
+}

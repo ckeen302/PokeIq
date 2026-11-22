@@ -1,0 +1,15 @@
+{
+  "daily": {
+    "kicker": "Daily · new every day",
+    "title": "Daily Challenge",
+    "text": "Today's Pokémon trivia quiz, the same for everyone. Keep your streak going.",
+    "cta": "Play today's"
+  },
+  "iq": {
+    "kicker": "Cognitive test · about 20 minutes",
+    "title": "PokéIQ Test",
+    "text": "Reasoning, memory, speed, spatial and Pokémon knowledge, scored against other trainers.",
+    "cta": "Take the test"
+  },
+  "done": "Done today"
+}

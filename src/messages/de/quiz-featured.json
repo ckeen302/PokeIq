@@ -1,0 +1,15 @@
+{
+  "daily": {
+    "kicker": "Täglich · jeden Tag neu",
+    "title": "Tägliche Herausforderung",
+    "text": "Das heutige Pokémon-Quiz, für alle gleich. Halte deine Serie am Leben.",
+    "cta": "Heute spielen"
+  },
+  "iq": {
+    "kicker": "Kognitiver Test · etwa 20 Minuten",
+    "title": "PokéIQ-Test",
+    "text": "Logik, Gedächtnis, Tempo, räumliches Denken und Pokémon-Wissen, verglichen mit anderen Trainern.",
+    "cta": "Zum Test"
+  },
+  "done": "Heute erledigt"
+}

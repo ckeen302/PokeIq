@@ -1,9 +1,9 @@
-import Link from "@/components/ui/Link";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { Swords } from "lucide-react";
 import { ModeGrid } from "@/components/home/ModeGrid";
 import { QuizDuelCard } from "@/components/quiz/QuizDuelCard";
+import { QuizFeatured } from "@/components/quiz/QuizFeatured";
 import { GameInfo } from "@/components/seo/GameInfo";
 import { ClientMessages } from "@/i18n/ClientMessages";
 import { serverT } from "@/i18n/server";
@@ -11,17 +11,12 @@ import pages from "@/messages/quiz-pages";
 import modes from "@/messages/quiz-modes";
 import setup from "@/messages/quiz-setup";
 import duelShared from "@/messages/duel";
+import featured from "@/messages/quiz-featured";
 
 export function generateMetadata(): Metadata {
   const t = serverT(pages);
   return pageMetadata({ title: t("hub.title"), description: t("hub.description"), path: "/quiz" });
 }
-
-/** Daily, the PokéIQ test and the Atlas left the top bar; they live here too. */
-const MORE = [
-  { href: "/daily", label: "daily" },
-  { href: "/iq-test", label: "test" },
-] as const;
 
 export default function PlayPage() {
   const t = serverT(pages);
@@ -30,16 +25,12 @@ export default function PlayPage() {
       <div className="space-y-2 text-center">
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">{t("hub.h1")}</h1>
       </div>
+      <ClientMessages namespaces={[featured]}>
+        <QuizFeatured />
+      </ClientMessages>
       <ClientMessages namespaces={[modes, setup, duelShared]}>
         <ModeGrid />
       </ClientMessages>
-      <nav aria-label={t("hub.more")} className="flex flex-wrap justify-center gap-3">
-        {MORE.map(({ href, label }) => (
-          <Link key={href} href={href} className="rounded-md border bg-card px-4 py-2 text-sm font-semibold transition hover:border-primary/50">
-            {t(`hub.${label}`)}
-          </Link>
-        ))}
-      </nav>
       <section className="space-y-3" aria-labelledby="duels">
         <h2 id="duels" className="flex items-center gap-2 text-xl font-bold">
           <Swords className="h-5 w-5 text-primary" aria-hidden /> {t("hub.duel")}
