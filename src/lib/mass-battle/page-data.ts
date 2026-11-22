@@ -29,6 +29,8 @@ export interface PickerRow {
   fe: boolean;
   /** "mega", a region, or "" for a default form. */
   form: string;
+  /** On a page in another language: the other names a search takes (English, rōmaji). */
+  aka?: string[];
 }
 
 export function pickerList(): PickerRow[] {

@@ -19,7 +19,7 @@ import { GAMES_ATHLETES } from "./data";
 
 const ENGLISH_SPECIES = new Map(POKEDEX.map((p) => [p.id, p.name]));
 
-type Region = "alola" | "galar" | "hisui" | "paldea";
+export type Region = "alola" | "galar" | "hisui" | "paldea";
 const REGIONAL: Record<Exclude<Locale, "en">, (name: string, r: Region) => string> = {
   ja: (n, r) => `${n}（${{ alola: "アローラ", galar: "ガラル", hisui: "ヒスイ", paldea: "パルデア" }[r]}のすがた）`,
   es: (n, r) => `${n} de ${{ alola: "Alola", galar: "Galar", hisui: "Hisui", paldea: "Paldea" }[r]}`,
@@ -35,6 +35,16 @@ const MEGA: Record<Exclude<Locale, "en">, (name: string) => string> = {
   it: (n) => `Mega${n}`,
 };
 
+/** A Mega Evolution's name in the language from its species' ("x"/"y" for Charizard's and Mewtwo's). */
+export function megaName(own: string, xy: string | undefined, locale: Exclude<Locale, "en">): string {
+  return `${MEGA[locale](own)}${xy ? (locale === "ja" ? xy.toUpperCase() : ` ${xy.toUpperCase()}`) : ""}`;
+}
+
+/** A regional form's name in the language from its species'. */
+export function regionalName(own: string, region: Region, locale: Exclude<Locale, "en">): string {
+  return REGIONAL[locale](own, region);
+}
+
 /** An athlete's name in the language. */
 export function athleteName(a: Pick<Athlete, "key" | "name" | "entrant">, locale: Locale): string {
   if (locale === "en") return a.name;
@@ -46,7 +56,7 @@ export function athleteName(a: Pick<Athlete, "key" | "name" | "entrant">, locale
   if (kind === "mega") {
     const m = /-mega(?:-([xy]))?$/.exec(a.key);
     if (!m) return a.name;
-    return `${MEGA[locale](own)}${m[1] ? (locale === "ja" ? m[1].toUpperCase() : ` ${m[1].toUpperCase()}`) : ""}`;
+    return megaName(own, m[1], locale);
   }
   if (kind === "regional") {
     const m = /-(alola|galar|hisui|paldea)$/.exec(a.key);

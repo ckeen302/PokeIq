@@ -1,0 +1,27 @@
+{
+  "question": "¿Cuántos {challenger} hacen falta para vencer a {boss}?",
+  "answer": "Hacen falta {n} {challenger}",
+  "spread": "± {spread} en {runs} combates",
+  "winRate": "{n}: {wins} victorias de {runs} combates",
+  "noAnswer": "Ningún ejército de {challenger} (hasta {cap}) vence a {boss}",
+  "two": "{a} y {b}",
+  "three": "{a}, {b} y {c}",
+  "more": "{a}, {b} y más",
+  "group": {
+    "types": "Tipos {types}",
+    "legendariesMythicals": "Legendarios y singulares",
+    "legendaries": "Legendarios",
+    "mythicals": "Singulares",
+    "gen": "Pokémon de la generación {gen}",
+    "fullyEvolved": "Pokémon totalmente evolucionados",
+    "pokemon": "Pokémon"
+  },
+  "draw": "Empate",
+  "winsOne": "¡Gana {w}!",
+  "winsMany": "¡Ganan {w}!",
+  "timeUp": "Se acabó el tiempo tras {s} segundos con los dos bandos en pie.",
+  "resultLine": "{n} en pie tras {s} s · {loser} debilitó a {kos}",
+  "multiKo": "{move} de {pos} debilitó a {n} {target}",
+  "crit": "¡Golpe crítico! {move} de {pos} contra {target}",
+  "bossDown": "¡{move} de {pos} debilitó a {boss}!"
+}
