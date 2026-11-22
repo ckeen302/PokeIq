@@ -45,6 +45,7 @@ export function TopMode({ top, byKey, art, shiny, moving, onTileDown, onRemove, 
               key={i}
               data-drop={`top@${i}`}
               data-testid="top-slot"
+              data-rank={i}
               className={cn("relative flex flex-col items-center justify-end overflow-hidden rounded-[24px] border border-foreground/[0.07] bg-foreground/[0.035] px-2 pb-3 pt-8 transition-colors max-sm:rounded-[18px] max-sm:pb-2", h)}
               style={m ? { background: `radial-gradient(80% 60% at 50% 40%, ${MEDAL[i]}33, transparent 70%), hsl(var(--foreground) / 0.035)` } : undefined}
             >
@@ -96,7 +97,7 @@ export function TopMode({ top, byKey, art, shiny, moving, onTileDown, onRemove, 
             const k = items[i];
             const m = k ? byKey.get(k) : undefined;
             return (
-              <li key={i} data-drop={`top@${i}`} data-testid="top-slot" className="flex items-center gap-3 rounded-2xl bg-foreground/[0.035] p-1.5 pr-2 transition-colors max-sm:gap-2">
+              <li key={i} data-drop={`top@${i}`} data-testid="top-slot" data-rank={i} className="flex items-center gap-3 rounded-2xl bg-foreground/[0.035] p-1.5 pr-2 transition-colors max-sm:gap-2">
                 <span className="w-10 shrink-0 text-center font-display text-lg font-bold text-muted-foreground max-sm:w-7 max-sm:text-base">{i + 1}</span>
                 {m ? (
                   <>

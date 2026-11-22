@@ -50,7 +50,14 @@ export const Tile = memo(function Tile({ mon, art, shiny, size, from, selected, 
       onPointerDown={onPointerDown && ((e) => onPointerDown(e, mon.k, from))}
       onClick={onClick && ((e) => onClick(e, mon.k, from))}
       onDoubleClick={onDoubleClick && (() => onDoubleClick(mon.k, from))}
-      onKeyDown={onKeyDown && ((e) => onKeyDown(e, mon.k, from))}
+      onKeyDown={(e) => {
+        onKeyDown?.(e, mon.k, from);
+        // Enter and Space act like a click (select; shift adds to the selection).
+        if (!e.defaultPrevented && onClick && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          onClick(e as unknown as React.MouseEvent<HTMLElement>, mon.k, from);
+        }
+      }}
       onContextMenu={(e) => (e.nativeEvent as PointerEvent).pointerType === "touch" && e.preventDefault()}
     >
       <img src={src} alt="" width={size} height={size} loading="lazy" decoding="async" draggable={false} onError={(e) => fallback(e.currentTarget, mon)} />
