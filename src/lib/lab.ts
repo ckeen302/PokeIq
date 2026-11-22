@@ -6,8 +6,11 @@
 
 export const LAB_PATH = "/lab";
 
-/** Pokémon Race (/pokedex/race) shows on /lab only while its page is live. */
-export const RACE_LIVE = true;
+/**
+ * Pokémon Race (/pokedex/race): its card on /lab, its pages in the sitemap and in search, and the link from
+ * Pokémon pages, only while this is true. Until then its pages work by URL.
+ */
+export const RACE_LIVE = false;
 
 /**
  * Pokémon Mass Battle (/lab/mass-battle) shows on /lab, in the sitemap and
@@ -36,10 +39,16 @@ export const POKEMON_STORY_LIVE = true;
  * and in search, and the Games links from Pokédex entries and the Race,
  * only while this is true. Until then its pages work by URL.
  */
-export const GAMES_LIVE = true;
+export const GAMES_LIVE = false;
+
+/**
+ * The Professor's Lab (/lab/pokedex), a 3D Pokédex: its card on /lab and its
+ * page in the sitemap while this is true. Its page works by URL either way.
+ */
+export const LAB_DEX_LIVE = true;
 
 export interface LabExperience {
-  id: "timeline" | "pokemon-story" | "sizes" | "globe" | "race" | "mass-battle" | "world-history" | "games";
+  id: "pokedex" | "timeline" | "pokemon-story" | "sizes" | "globe" | "race" | "mass-battle" | "world-history" | "games";
   href: string;
   title: string;
   /** Small HUD label above the title. */
@@ -148,6 +157,17 @@ export const LAB_EXPERIENCES: LabExperience[] = [
     image: "/lab/world-history.webp",
     accent: "42 92% 66%",
     live: WORLD_HISTORY_LIVE,
+  },
+  {
+    id: "pokedex",
+    href: "/lab/pokedex",
+    title: "Professor's Lab",
+    kicker: "A 3D Pokédex",
+    pitch: "Spin a ring of lab capsules and bring any Pokémon onto the holo-table in 3D, with its base stats, battle roles, Pokédex entry, evolutions and type matchups.",
+    tags: ["Every Pokémon in 3D", "Battle roles", "Filter and sort"],
+    image: "/lab/pokedex.webp",
+    accent: "190 95% 62%",
+    live: LAB_DEX_LIVE,
   },
 ];
 

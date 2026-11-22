@@ -6,7 +6,7 @@
  * camera presets and zoom (buttons, wheel, a trackpad pinch as ctrl +
  * wheel or Safari's gesture events, drag to orbit), a shared race link
  * with its own title and preview card, the preset cards, the list
- * fallback, the Pokédex entry's "Race it" link, the sound staying off when
+ * fallback, the sound staying off when
  * the site is muted, and "Make a video": a 5-second export (?len=5, at the
  * light test quality and 10 fps) that must be a valid 1080 × 1920 MP4 with
  * video and audio.
@@ -55,15 +55,10 @@ export async function runRace({ browser, BASE, OUT, errors, step }) {
   const seek = (t) => page.evaluate((x) => window.__race.seek(x), t);
 
   await part(errors, "3d lab", async () => {
-    // The race lives in the 3D Lab: its card (a real screenshot) opens /pokedex/race, the nav's 3D Lab tab is lit there, and the stage leads back.
+    // The race is off the 3D Lab for now (RACE_LIVE in src/lib/lab.ts): no card on /lab; its page still works by URL, under the 3D Lab tab, and leads back.
     await page.goto(`${BASE}/lab`, { waitUntil: "load" });
-    const card = page.getByTestId("lab-card-race");
-    if (!(await card.count())) throw new Error("no Race card on /lab");
-    const art = card.locator("img").first();
-    await art.evaluate((img) => img.scrollIntoView({ block: "center" }));
-    if (!(await art.evaluate((img) => img.complete ? img.naturalWidth > 0 : new Promise((r) => { img.onload = () => r(true); img.onerror = () => r(false); })))) errors.push("race: the 3D Lab card's picture didn't load");
-    await page.getByTestId("lab-open-race").click();
-    await page.waitForURL(/\/pokedex\/race$/);
+    if (await page.getByTestId("lab-card-race").count()) errors.push("race: /lab still shows the Race card");
+    await page.goto(`${BASE}/pokedex/race`, { waitUntil: "load" });
     const header = page.locator("header");
     if ((await header.getByRole("link", { name: "3D Lab", exact: true }).getAttribute("aria-current")) !== "page") errors.push("race: the nav's 3D Lab tab isn't lit on /pokedex/race");
     if ((await header.getByRole("link", { name: "Pokédex", exact: true }).getAttribute("aria-current")) === "page") errors.push("race: Pokédex is lit on /pokedex/race too");
@@ -183,9 +178,6 @@ export async function runRace({ browser, BASE, OUT, errors, step }) {
     await page.getByTestId("race-list").waitFor({ timeout: 15_000 }).catch(() => errors.push("race: the list view has no results table"));
     // The server's page carries the stage until the page hydrates and reads ?view=list (slow on a busy CI runner).
     await stage.waitFor({ state: "detached", timeout: 60_000 }).catch(() => errors.push("race: the list view still shows the 3D stage"));
-    // The Pokédex entry races it.
-    await page.goto(`${BASE}/pokemon/pikachu`, { waitUntil: "domcontentloaded" });
-    if ((await page.getByTestId("dex-race-it").getAttribute("href")) !== "/pokedex/race/run?vs=pikachu") errors.push("race: Pikachu's Pokédex entry has no 'Race it' link");
   });
 
   step("pokédex Race: make a 5 s video (a valid 1080 × 1920 MP4 with sound), phone layout");

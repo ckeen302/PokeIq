@@ -73,7 +73,7 @@ function LabHero({ shots }: { shots: LabExperience[] }) {
           {/* Phones: one short line. */}
           <p className="text-lg text-foreground/80 sm:hidden">Pokémon in cinematic 3D, live in your browser.</p>
           <p className="max-w-md text-base text-foreground/80 sm:text-lg max-sm:hidden">
-            The cinematic side of PokéIQ. Fly through Pokémon history, stand next to every Pokémon at its real size, race them under the floodlights and spin the whole Pokémon world, live in your browser.
+            The cinematic side of PokéIQ. Fly through Pokémon history, stand next to every Pokémon at its real size and spin the whole Pokémon world, live in your browser.
           </p>
           <div className="flex flex-wrap items-center gap-3 pt-1 max-sm:hidden">
             <Link href="#experiences" className={buttonVariants({ size: "lg" })}>

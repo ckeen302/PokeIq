@@ -3,7 +3,7 @@
  * card, the hub, an event's broadcast from the start to the medal
  * ceremony (the arena and the pool too), the Games to the medal table, the
  * records and a Pokémon's own page, a shared run replaying exactly with
- * its own preview card, the Pokédex entry's and the Race page's links into
+ * its own preview card, the Race page's link into
  * the Games, the phone layout, and "Make a video": a 5-second export (?len=5,
  * at the light test quality and 10 fps) that must be a valid 1080 × 1920
  * MP4 with video and audio. Screenshots at 1440 and 390 px.
@@ -45,14 +45,10 @@ export async function runGames({ browser, BASE, OUT, errors, step }) {
   const frames = (n = 3) => page.evaluate((k) => new Promise((r) => { let i = 0; const f = () => (++i >= k ? r(true) : requestAnimationFrame(f)); requestAnimationFrame(f); }), n);
 
   await part(errors, "3d lab", async () => {
+    // The Games are off the 3D Lab for now (GAMES_LIVE in src/lib/lab.ts): no card on /lab; the pages still work by URL.
     await page.goto(`${BASE}/lab`, { waitUntil: "load" });
-    const card = page.getByTestId("lab-card-games");
-    if (!(await card.count())) throw new Error("no Games card on /lab");
-    const art = card.locator("img").first();
-    await art.evaluate((img) => img.scrollIntoView({ block: "center" }));
-    if (!(await art.evaluate((img) => (img.complete ? img.naturalWidth > 0 : new Promise((r) => { img.onload = () => r(true); img.onerror = () => r(false); }))))) errors.push("games: the 3D Lab card's picture didn't load");
-    await page.getByTestId("lab-open-games").click();
-    await page.waitForURL(/\/lab\/games$/);
+    if (await page.getByTestId("lab-card-games").count()) errors.push("games: /lab still shows the Games card");
+    await page.goto(`${BASE}/lab/games`, { waitUntil: "load" });
     // The first screen: the stadium and one button; no event buttons until you are inside.
     await page.evaluate(() => sessionStorage.removeItem("pokeiq-games-entered"));
     await page.reload({ waitUntil: "load" });
@@ -167,12 +163,9 @@ export async function runGames({ browser, BASE, OUT, errors, step }) {
   });
 
   await part(errors, "links in", async () => {
-    await page.goto(`${BASE}/pokemon/pikachu`, { waitUntil: "load" });
-    const link = page.getByTestId("dex-games");
-    if (!(await link.count())) errors.push("games: the Pokédex entry has no Games link");
-    else if ((await link.getAttribute("href")) !== "/lab/games/pokemon/pikachu") errors.push(`games: the Pokédex entry's Games link is ${await link.getAttribute("href")}`);
     await page.goto(`${BASE}/pokedex/race`, { waitUntil: "load" });
-    if (!(await page.getByTestId("race-games").count())) errors.push("games: the Race page doesn't link to the Games");
+    // With the Games off the site, the Race page doesn't link to them either.
+    if (await page.getByTestId("race-games").count()) errors.push("games: the Race page still links to the Games");
   });
 
   step("the PokéIQ Games: make a 5 s video (a valid 1080 × 1920 MP4 with sound)");
