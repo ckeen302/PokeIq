@@ -190,6 +190,8 @@ const nextConfig: NextConfig = {
       ...["/pokemon/:slug/opengraph-image", "/pokedex/sizes/:slug/opengraph-image", "/pokedex/timeline/:event/opengraph-image", "/quiz/which-pokemon/:slug/opengraph-image"]
         .map((source) => ({ source, headers: ogCdnCache }))
         .flatMap(withLocales),
+      // A language's share images (drawn on request, at /<lang>/…/opengraph-image-<id>/<lang>) are cached like the English ones.
+      ...(LIVE_OTHER_LOCALES.length ? [{ source: `/:locale(${LIVE_OTHER_LOCALES.join("|")})/:path*/opengraph-image-:id/:lang`, headers: ogCdnCache }] : []),
     ];
   },
   images: {
