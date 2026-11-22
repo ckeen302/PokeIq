@@ -60,7 +60,7 @@
     "style": "Style",
     "pixel": "Pixel",
     "hd": "HD",
-    "hdSoon": "HD isn't ready for this Pokémon yet",
+    "hdSoon": "HD couldn't load for this Pokémon, so it's showing in Pixel",
     "hdNoGl": "HD needs WebGL 2, which this browser doesn't have",
     "start": "Start from",
     "startNormal": "Normal",

@@ -2,7 +2,7 @@
  * The Tools tab and the Shiny Pokémon Maker, end to end in the browser: /tools and its card, the maker's first
  * design, picking a Pokémon by search, recolouring a part from its chip and by clicking the sprite, Randomise,
  * the Normal / Official / Yours switch, undo, a share link that reopens with the same pixels, a PNG download, HD
- * (where the browser has WebGL 2), the preview card, and the phone layout (no sideways scroll, controls at least
+ * (where the browser has WebGL 2; a sample from every generation stays in HD and recolours), the preview card, and the phone layout (no sideways scroll, controls at least
  * 40 px, labels at least 12 px, the colour sheet above the tab bar). Each part records a failure instead of
  * stopping the rest. Screenshots are best effort (CI runners sometimes can't capture one).
  *
@@ -53,6 +53,12 @@ const opaquePoint = (page) =>
     if (!best) return null;
     return { x: r.left + ((best.x + 0.5) / c.width) * r.width, y: r.top + ((best.y + 0.5) / c.height) * r.height };
   });
+
+/** HD spot checks, one or more per generation: automatic masks, reviewed fixes and one-piece fallbacks. */
+const HD_SAMPLE = [
+  [9, "Blastoise"], [111, "Rhyhorn"], [202, "Wobbuffet"], [300, "Skitty"], [437, "Bronzong"], [449, "Hippopotas"],
+  [543, "Venipede"], [671, "Florges"], [789, "Cosmog"], [858, "Hatterene"], [1019, "Hydrapple"],
+];
 
 async function shot(page, path, errors) {
   await page.screenshot({ path }).catch((e) => console.log(`  (screenshot skipped: ${e.message.split("\n")[0]})`));
@@ -207,6 +213,37 @@ export async function runShinyMaker({ browser, BASE, OUT = "e2e-screenshots", er
         await page.waitForTimeout(2_000);
         await shot(page, `${OUT}/shiny-maker-hd.png`, errors);
       }
+
+      // HD for every Pokémon: a sample from each generation (automatic masks, a reviewed fix, the one-piece
+      // fallback) stays in HD once its assets load (a failed load falls back to Pixel) and recolours on Randomise.
+      const hdHash = async () => {
+        const c = page.getByTestId("sm-hd-canvas");
+        if (!(await c.isVisible().catch(() => false))) return null;
+        const png = await c.screenshot({ animations: "disabled" }).catch(() => null);
+        if (!png) return null;
+        let h = 2166136261;
+        for (const b of png) h = Math.imul(h ^ b, 16777619);
+        return h >>> 0;
+      };
+      for (const [id, name] of HD_SAMPLE) {
+        await page.getByTestId("sm-pokemon").click();
+        await page.getByTestId("sm-picker-search").fill(name.toLowerCase());
+        await page.getByTestId(`sm-pick-${id}`).click();
+        await page.getByTestId("sm-pokemon").filter({ hasText: name }).waitFor({ timeout: 15_000 });
+        // The mask, the render and the shiny render load; then the figure fades in.
+        const mask = await page.request.get(`${BASE}/shiny-maker/hd/${id}.png`);
+        if (!mask.ok()) { fail(`HD: no mask for #${id} ${name} (${mask.status()})`); continue; }
+        if (!(await page.getByTestId("sm-hd-canvas").waitFor({ timeout: 30_000 }).then(() => true, () => false))) { fail(`HD: #${id} ${name} didn't draw`); continue; }
+        await page.waitForTimeout(2_500);
+        const before = await hdHash();
+        if (before === null) { fail(`HD: #${id} ${name} fell back to Pixel`); continue; }
+        await page.getByTestId("sm-randomise").click();
+        let after = before;
+        for (let t = 0; t < 30 && after === before; t++) { await page.waitForTimeout(150); after = await hdHash(); }
+        if (after === null) fail(`HD: #${id} ${name} fell back to Pixel after Randomise`);
+        else if (after === before) fail(`HD: Randomise didn't recolour #${id} ${name}`);
+      }
+      await shot(page, `${OUT}/shiny-maker-hd-sample.png`, errors);
     }
 
     // The preview card.
