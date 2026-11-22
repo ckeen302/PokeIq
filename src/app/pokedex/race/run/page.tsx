@@ -6,6 +6,7 @@ import { RUN_PATH, parseDistance, parseSeed, parseVs, vsQuery } from "@/lib/race
 import { fieldFor, specFor } from "@/lib/race/lineup";
 import { RACE_ENTRANTS } from "@/lib/race/data";
 import { formatTime, makeRace } from "@/lib/race/race";
+import { RACE_LIVE } from "@/lib/lab";
 import { RacePage } from "@/components/race/RacePage";
 
 /**
@@ -41,6 +42,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Search 
     title: `${field.title}: ${spec.distance} m race`,
     description: `${w.entrant.name} wins the ${spec.distance} m in ${formatTime(w.time)} s. ${race.order.map((r) => `${r.entrant.name} ${formatTime(r.time)}`).join(", ")}. Speeds from their base stats, in 3D on PokéIQ.`,
     path: `${RUN_PATH}?${qs}`,
+    noindex: !RACE_LIVE,
     image: { url: `${RUN_PATH}/og?${qs}`, alt: `${field.title}: a ${spec.distance} m Pokémon race` },
   });
 }
