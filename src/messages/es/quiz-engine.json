@@ -37,7 +37,7 @@
     "effPrompt": "¿Qué eficacia tiene un movimiento de tipo {type} contra {defender}?",
     "effExplanation": "{calc}.",
     "immune": "0× (inmune)",
-    "fourXPrompt": "¿Qué tipo es superefectivo ×4 contra {defender}?",
+    "fourXPrompt": "¿Qué tipo es muy eficaz (×4) contra {defender}?",
     "fourXExplanation": "El tipo {types} recibe daño ×4 de {weak}.",
     "immunePrompt": "¿Qué tipo de ataque NO afecta a {defender}?",
     "immuneExplanation": "El tipo {types} es inmune a {immune}."

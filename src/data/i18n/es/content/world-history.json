@@ -380,24 +380,24 @@
       }
     },
     "kitakami": {
-      "region": "Kitakami",
+      "region": "Noroteo",
       "title": "La verdadera historia del ogro",
       "when": "Hace mucho, mucho tiempo",
       "whenNote": "La historia nunca se fecha.",
-      "summary": "Kitakami honra a tres héroes que lucharon contra un ogro. La familia del mascarero guardó la verdadera historia: los tres robaron las máscaras del ogro, y el ogro era Ogerpon.",
+      "summary": "Noroteo honra a tres héroes que lucharon contra un ogro. La familia del mascarero guardó la verdadera historia: los tres robaron las máscaras del ogro, y el ogro era Ogerpon.",
       "beats": {
         "monument": {
-          "lead": "Un monumento de Kitakami cuenta una historia.",
+          "lead": "Un monumento de Noroteo cuenta una historia.",
           "quote": "Hace mucho tiempo, estos tres valerosos Pokémon salvaron al pueblo Mossui de la destrucción. Derrotaron al ogro que había venido a atacar la aldea, a costa de sus propias vidas.",
           "cut": "Hace mucho tiempo, estos tres valerosos Pokémon salvaron al pueblo Mossui de la destrucción."
         },
         "masks": {
           "lead": "La familia del mascarero guardó otra.",
-          "quote": "Hace mucho, mucho tiempo, un hombre y un ogro llegaron a Kitakami desde una tierra extranjera... el mascarero de la aldea... hizo varias máscaras para el hombre y el ogro.",
-          "cut": "Hace mucho, mucho tiempo, un hombre y un ogro llegaron a Kitakami desde una tierra extranjera..."
+          "quote": "Hace mucho, mucho tiempo, un hombre y un ogro llegaron a Noroteo desde una tierra extranjera... el mascarero de la aldea... hizo varias máscaras para el hombre y el ogro.",
+          "cut": "Hace mucho, mucho tiempo, un hombre y un ogro llegaron a Noroteo desde una tierra extranjera..."
         },
         "stole": {
-          "quote": "Pronto, un grupo de Pokémon codiciosos llegó a la tierra de Kitakami... Los Pokémon robaron las otras tres máscaras...",
+          "quote": "Pronto, un grupo de Pokémon codiciosos llegó a la tierra de Noroteo... Los Pokémon robaron las otras tres máscaras...",
           "cut": "Un grupo de Pokémon codiciosos... Los Pokémon robaron las otras tres máscaras..."
         },
         "donned": {
