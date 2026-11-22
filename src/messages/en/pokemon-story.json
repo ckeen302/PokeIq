@@ -1,0 +1,30 @@
+{
+  "meta": {
+    "title": "The Story of Pokémon: the real history, as a 3D film",
+    "description": "How Pokémon was made and how it grew, from Satoshi Tajiri's bug hunts in 1970s Machida and the Game Boy link cable to Red and Green, Pokémania, Pokémon GO and thirty years. A cinematic 3D film with every line sourced.",
+    "socialTitle": "The Story of Pokémon · PokéIQ",
+    "chapterTitle": "{title} ({when}): The Story of Pokémon",
+    "chapterDescription": "{summary} Chapter {numeral} of The Story of Pokémon, the real history of the franchise as a 3D film, with every line sourced.",
+    "chapterSocial": "{title} · The Story of Pokémon"
+  },
+  "wholeStory": "The whole story",
+  "lab": "3D Lab",
+  "everyRelease": "Every release",
+  "kicker": "PokéIQ 3D Lab · The real history",
+  "chapterOf": "{title} · Chapter {numeral}",
+  "chapters": "Chapters",
+  "sources": "Sources",
+  "inChapter": "In this chapter",
+  "chapterPage": "This chapter's page",
+  "rest": "The rest of the story",
+  "keepExploring": "Keep exploring",
+  "exploreEvery": "Explore every release",
+  "exploreEveryBody": "The Pokémon Timeline: the games, anime, films and cards, date by date.",
+  "worldOwn": "The world's own history",
+  "worldOwnBody": "The History of the Pokémon World, as the games themselves tell it.",
+  "howTo": "How to read the tags.",
+  "tagsHelp": "Untagged lines are dated records. <said>In their words</said>: what a creator said in an interview. <reported>Reported</reported>: from the press or a biography. <retold>As it's told</retold>: a story told in more than one version.",
+  "people": "People appear only as silhouettes and the things they used. No real photographs, screenshots, logos or box art are shown: every scene is built in 3D for this film.",
+  "music": "Music: an original score written for this film, one theme arranged six ways, played with the MuseScore General sound font (MIT; its strings from VSCO 2 Community Edition, CC0). The ambience and effects are made in the browser (<a>credits</a>). The Pokémon figures are built from Pokémon HOME renders served by PokéAPI.",
+  "fan": "Pokémon © Nintendo / Creatures / GAME FREAK. A fan project, not affiliated with them."
+}

@@ -1,0 +1,30 @@
+{
+  "meta": {
+    "title": "Die Geschichte von Pokémon: die wahre Geschichte als 3D-Film",
+    "description": "Wie Pokémon entstand und wuchs: von Satoshi Tajiris Insektenjagden im Machida der 1970er und dem Link-Kabel des Game Boy über Rot und Grün, das Pokémon-Fieber und Pokémon GO bis zu dreißig Jahren. Ein filmischer 3D-Film, jeder Satz mit Quelle.",
+    "socialTitle": "Die Geschichte von Pokémon · PokéIQ",
+    "chapterTitle": "{title} ({when}): Die Geschichte von Pokémon",
+    "chapterDescription": "{summary} Kapitel {numeral} von Die Geschichte von Pokémon, der wahren Geschichte der Reihe als 3D-Film, jeder Satz mit Quelle.",
+    "chapterSocial": "{title} · Die Geschichte von Pokémon"
+  },
+  "wholeStory": "Die ganze Geschichte",
+  "lab": "3D-Labor",
+  "everyRelease": "Alle Veröffentlichungen",
+  "kicker": "PokéIQ 3D-Labor · Die wahre Geschichte",
+  "chapterOf": "{title} · Kapitel {numeral}",
+  "chapters": "Kapitel",
+  "sources": "Quellen",
+  "inChapter": "In diesem Kapitel",
+  "chapterPage": "Seite dieses Kapitels",
+  "rest": "Der Rest der Geschichte",
+  "keepExploring": "Weiter entdecken",
+  "exploreEvery": "Alle Veröffentlichungen entdecken",
+  "exploreEveryBody": "Die Pokémon-Zeitleiste: Spiele, Anime, Filme und Karten, Datum für Datum.",
+  "worldOwn": "Die Geschichte der Welt selbst",
+  "worldOwnBody": "Die Geschichte der Pokémon-Welt, wie die Spiele selbst sie erzählen.",
+  "howTo": "So liest du die Markierungen.",
+  "tagsHelp": "Sätze ohne Markierung sind datierte Fakten. <said>In eigenen Worten</said>: was jemand aus dem Team in einem Interview gesagt hat. <reported>Berichtet</reported>: aus der Presse oder einer Biografie. <retold>Wie man erzählt</retold>: eine Geschichte, die in mehreren Fassungen erzählt wird.",
+  "people": "Menschen erscheinen nur als Silhouetten und mit den Dingen, die sie benutzt haben. Es werden keine echten Fotos, Screenshots, Logos oder Verpackungen gezeigt: Jede Szene ist für diesen Film in 3D gebaut.",
+  "music": "Musik: eine eigens für diesen Film geschriebene Originalmusik, ein Thema in sechs Arrangements, gespielt mit dem Soundfont MuseScore General (MIT; die Streicher aus VSCO 2 Community Edition, CC0). Atmosphäre und Effekte entstehen im Browser (<a>Credits</a>). Die Pokémon-Figuren sind aus Pokémon-HOME-Renderbildern gebaut, die PokéAPI bereitstellt.",
+  "fan": "Pokémon © Nintendo / Creatures / GAME FREAK. Ein Fanprojekt, nicht mit ihnen verbunden."
+}

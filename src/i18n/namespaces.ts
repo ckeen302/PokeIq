@@ -34,6 +34,7 @@ export const NAMESPACES = [
   "email-nudge",
   "error",
   "feedback",
+  "film-video",
   "friends",
   "game-info",
   "geo",
@@ -72,6 +73,8 @@ export const NAMESPACES = [
   "pokedle-duel",
   "pokedle-game",
   "pokeguessr",
+  "pokemon-story",
+  "pokemon-story-film",
   "privacy",
   "profile",
   "quiz-challenge",
@@ -98,4 +101,6 @@ export const NAMESPACES = [
   "which-pokemon",
   "which-pokemon-quiz",
   "which-pokemon-result",
+  "world-history",
+  "world-history-film",
 ] as const;

@@ -1,0 +1,48 @@
+{
+  "title": "Video erstellen",
+  "intro": "Ein Hochformat-Video in 1080 × 1920 für TikTok, Reels und Shorts, mit Musik, Untertiteln und Quellen.",
+  "close": "Schließen",
+  "download": "Herunterladen",
+  "share": "Teilen",
+  "shareUnavailable": "Dieser Browser kann keine Dateien teilen: Lade es stattdessen herunter",
+  "secondsShort": "{n} s",
+  "another": "Noch eins erstellen",
+  "what": "Was gefilmt wird",
+  "whole": "Die ganze Geschichte",
+  "one": "Ein Kapitel",
+  "oneBody": "Ein Kapitel im Tempo des Films, jeder Untertitel mit Quelle.",
+  "chapter": "Kapitel",
+  "seconds": "{n} Sekunden",
+  "webm": "WebM (in Echtzeit aufgenommen)",
+  "unsupported": "in diesem Browser nicht unterstützt",
+  "cancel": "Abbrechen",
+  "make": "Video erstellen",
+  "error": "Etwas ist schiefgelaufen",
+  "credits": "Auf diesem Gerät gerendert, Bild für Bild. Musik: die Originalmusik des Films (Soundfont MuseScore General, MIT). Pokémon-Figuren aus Pokémon-HOME-Renderbildern.",
+  "progress": {
+    "scene": "Szene wird aufgebaut",
+    "music": "Musik wird gemischt",
+    "rendering": "Wird gerendert",
+    "packing": "MP4 wird gepackt",
+    "recording": "Wird aufgenommen"
+  },
+  "story": {
+    "wholeBody": "Die ganze Geschichte von Pokémon in 60 Sekunden: der große Moment jedes Kapitels.",
+    "hook": "Die ganze Geschichte von Pokémon in {seconds} Sekunden",
+    "kicker": "Dreißig Jahre, jeder Satz mit Quelle",
+    "shareTitle": "Die Geschichte von Pokémon",
+    "shareText": "Die ganze Geschichte von Pokémon, von den Insektenjagden eines Jungen bis zu dreißig Jahren #pokemon #pokeiq",
+    "endLine": "Der ganze Film, mit seinen Quellen"
+  },
+  "history": {
+    "wholeBody": "Die ganze Geschichte der Pokémon-Welt in 60 Sekunden: der große Moment jedes Kapitels.",
+    "hook": "Die ganze Geschichte der Pokémon-Welt in {seconds} Sekunden",
+    "kicker": "Mit den Worten der Spiele selbst",
+    "shareTitle": "Die Geschichte der Pokémon-Welt",
+    "shareText": "Die Geschichte der Pokémon-Welt, mit den Worten der Spiele selbst #pokemon #pokeiq",
+    "endTitle": "Die Geschichte der Pokémon-Welt",
+    "endLine": "Jedes Kapitel, mit seinen Quellen"
+  },
+  "quoteOpen": "„",
+  "quoteClose": "“"
+}

@@ -1,0 +1,48 @@
+{
+  "title": "Make a video",
+  "intro": "A vertical 1080 × 1920 video for TikTok, Reels and Shorts, with music, captions and sources.",
+  "close": "Close",
+  "download": "Download",
+  "share": "Share",
+  "shareUnavailable": "Sharing files isn't available in this browser: download it instead",
+  "secondsShort": "{n} s",
+  "another": "Make another",
+  "what": "What to film",
+  "whole": "The whole story",
+  "one": "One chapter",
+  "oneBody": "A chapter at film speed, every caption with its source.",
+  "chapter": "Chapter",
+  "seconds": "{n} seconds",
+  "webm": "WebM (recorded in real time)",
+  "unsupported": "not supported in this browser",
+  "cancel": "Cancel",
+  "make": "Make the video",
+  "error": "Something went wrong",
+  "credits": "Rendered on this device, frame by frame. Music: the film’s original score (MuseScore General sound font, MIT). Pokémon figures from Pokémon HOME renders.",
+  "progress": {
+    "scene": "Setting the scene",
+    "music": "Mixing the music",
+    "rendering": "Rendering",
+    "packing": "Packing the MP4",
+    "recording": "Recording"
+  },
+  "story": {
+    "wholeBody": "The whole story of Pokémon in 60 seconds: every chapter's big moment.",
+    "hook": "The whole story of Pokémon in {seconds} seconds",
+    "kicker": "Thirty years, every line sourced",
+    "shareTitle": "The Story of Pokémon",
+    "shareText": "The whole story of Pokémon, from a boy's bug hunts to thirty years #pokemon #pokeiq",
+    "endLine": "The whole film, with its sources"
+  },
+  "history": {
+    "wholeBody": "The entire history of the Pokémon world in 60 seconds: every chapter's big moment.",
+    "hook": "The entire history of the Pokémon world in {seconds} seconds",
+    "kicker": "From the games' own words",
+    "shareTitle": "The History of the Pokémon World",
+    "shareText": "The history of the Pokémon world, from the games' own words #pokemon #pokeiq",
+    "endTitle": "The History of the Pokémon World",
+    "endLine": "Every chapter, with its sources"
+  },
+  "quoteOpen": "“",
+  "quoteClose": "”"
+}

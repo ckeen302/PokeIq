@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "title": "Die Geschichte der Pokémon-Welt: die Geschichte der Spiele in 3D",
+    "description": "Die Geschichte der Pokémon-Welt, wie die Spiele sie erzählen: vom Schöpfungsmythos Sinnohs und dem Urzeitkampf Hoenns bis zur ultimativen Waffe von Kalos, der Dunkelsten Nacht in Galar, der Turmruine und der Zeitmaschine im Areal Zero. Ein filmisches 3D-Museum, jeder Satz mit Quelle aus den Spielen.",
+    "socialTitle": "Die Geschichte der Pokémon-Welt · PokéIQ",
+    "chapterTitle": "{title}: die Geschichte von {region} ({when})",
+    "chapterDescription": "{summary} Kapitel {numeral} von Die Geschichte der Pokémon-Welt, einem 3D-Museum der Geschichte in den Spielen, jeder Satz mit Quelle aus den Spielen.",
+    "chapterSocial": "{title} · Die Geschichte der Pokémon-Welt"
+  },
+  "wholeHistory": "Die ganze Geschichte",
+  "lab": "3D-Labor",
+  "realStory": "Die echte Geschichte",
+  "realTimeline": "Die echte Zeitleiste",
+  "kicker": "PokéIQ 3D-Labor · Die Geschichte in den Spielen",
+  "chapterOf": "{title} · Kapitel {numeral}",
+  "chapters": "Kapitel",
+  "sources": "Quellen",
+  "inChapter": "In diesem Kapitel",
+  "chapterPage": "Seite dieses Kapitels",
+  "rest": "Der Rest der Geschichte",
+  "separate": "Eine eigene Kontinuität",
+  "howTo": "So liest du die Markierungen.",
+  "tagsHelp": "<myth>Mythos, Legende und Volksmärchen</myth>: Das Spiel erzählt es als Geschichte. <implied>Angedeutet</implied>: folgt direkt aus dem, was die Spiele sagen. <theory>Theorie</theory> und <speculation>Spekulation</speculation>: die Idee oder Vermutung einer Figur. <contested>Quellen uneins</contested>: Die Spiele erzählen es auf mehr als eine Weise. Sätze ohne Markierung sagen die Spiele ausdrücklich.",
+  "continuity": "Anime und Filme haben ihre eigene Kontinuität und stehen oben für sich. Du willst wissen, wann die Spiele, der Anime und die Filme erschienen sind? Sieh dir die <link>Pokémon-Zeitleiste</link> an.",
+  "music": "Musik: eine eigens für diesen Film geschriebene Originalmusik, ein Thema in vier Spuren arrangiert, gespielt mit dem Soundfont MuseScore General (MIT; die Streicher aus VSCO 2 Community Edition, CC0). Atmosphäre und Effekte entstehen im Browser (<a>Credits</a>). Die Pokémon-Figuren sind aus Pokémon-HOME-Renderbildern gebaut, die PokéAPI bereitstellt."
+}

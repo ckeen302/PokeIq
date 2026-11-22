@@ -117,6 +117,32 @@ export function basisTag(b: Basis, chapterTag: string): string | null {
   }
 }
 
+/** How a chapter is framed (its English `tag`), as a message key (the world-history-film namespace's `chapterTag`). */
+export type ChapterTagKey = "myth" | "legend" | "folk" | "record";
+
+export function chapterTagKey(tag: string): ChapterTagKey {
+  return tag === "Myth" ? "myth" : tag === "Legend" ? "legend" : tag === "Folk tale" ? "folk" : "record";
+}
+
+/** basisTag's tag as a key (the world-history-film namespace's `tags`), for a translated label; null for a plain record. */
+export type BasisTagKey = "myth" | "legend" | "folk" | "implied" | "theory" | "speculation" | "contested";
+
+export function basisTagKey(b: Basis, chapterTag: string): BasisTagKey | null {
+  switch (b) {
+    case "myth": {
+      const k = chapterTagKey(chapterTag);
+      return k === "record" ? "legend" : k;
+    }
+    case "implied":
+    case "theory":
+    case "speculation":
+    case "contested":
+      return b;
+    default:
+      return null;
+  }
+}
+
 /** "Pokémon Platinum · Canalave Library book, “The Original Story”". */
 export function sourceLine(s: Source): string {
   return `${s.game} · ${s.label}`;
