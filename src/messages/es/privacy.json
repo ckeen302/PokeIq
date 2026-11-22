@@ -5,7 +5,7 @@
   "intro": "PokéIQ es un proyecto gratuito y no oficial hecho por fans. Recogemos lo mínimo posible, lo usamos para que el juego funcione y nunca lo vendemos.",
   "collect": {
     "title": "Qué recogemos",
-    "name": "<b>Tu nombre de entrenador</b>: se muestra públicamente en las clasificaciones, las listas de amigos y las partidas.",
+    "name": "<b>Tu nombre de Entrenador</b>: se muestra públicamente en las clasificaciones, las listas de amigos y las partidas.",
     "password": "<b>Tu contraseña</b>: solo se guarda como un hash con sal, nunca de forma legible. Si inicias sesión con Discord o Google, no tenemos ninguna contraseña tuya.",
     "email": "<b>Tu correo, solo si nos das uno</b>: la dirección verificada que nos dan Discord o Google cuando inicias sesión con ellos, o una dirección que añades tú para los correos de recordatorio diarios. Es privada: nunca se muestra a otros jugadores.",
     "results": "<b>Resultados y progreso</b>: puntuaciones, medallas, rachas, valoraciones e historial de combates.",
@@ -24,7 +24,7 @@
   },
   "emails": {
     "title": "Correos de recordatorio diarios",
-    "body": "Solo si los activas. Enviamos un correo cuando salen los nuevos retos diarios (o solo cuando tu racha está a punto de terminar, si eliges eso), después de que confirmes tu dirección. Cada correo tiene un enlace para darte de baja con un clic, y puedes desactivarlos cuando quieras en tu <card>ficha de entrenador</card>. Nunca enviamos nada más a esa dirección ni la compartimos."
+    "body": "Solo si los activas. Enviamos un correo cuando salen los nuevos retos diarios (o solo cuando tu racha está a punto de terminar, si eliges eso), después de que confirmes tu dirección. Cada correo tiene un enlace para darte de baja con un clic, y puedes desactivarlos cuando quieras en tu <card>ficha de Entrenador</card>. Nunca enviamos nada más a esa dirección ni la compartimos."
   },
   "age": {
     "title": "Edad",
@@ -32,7 +32,7 @@
   },
   "delete": {
     "title": "Borrar tus datos",
-    "body": "Escribe a <mail></mail> desde cualquier dirección, con tu nombre de entrenador, y pide que borremos tu cuenta. Eliminaremos tu cuenta y todo lo vinculado a ella. También puedes desvincular Discord o Google en cualquier momento desde tu <card>ficha de entrenador</card>."
+    "body": "Escribe a <mail></mail> desde cualquier dirección, con tu nombre de Entrenador, y pide que borremos tu cuenta. Eliminaremos tu cuenta y todo lo vinculado a ella. También puedes desvincular Discord o Google en cualquier momento desde tu <card>ficha de Entrenador</card>."
   },
   "about": {
     "title": "Sobre PokéIQ",

@@ -4,7 +4,7 @@
   "trainer": "Entrenador",
   "eloTitle": "Elo: la puntuación de la clasificación, como en Pokémon Showdown",
   "elo": "Elo",
-  "gxeTitle": "GXE (la probabilidad de ganar a un entrenador al azar de aquí) y la puntuación Glicko-2 ± desviación",
+  "gxeTitle": "GXE (la probabilidad de ganar a un Entrenador al azar de aquí) y la puntuación Glicko-2 ± desviación",
   "gxe": "GXE · Glicko",
   "wl": "V–D",
   "loading": "Cargando tu posición",

@@ -17,7 +17,7 @@
     },
     "headingTeam": "Duelo por equipos · {map}",
     "headingHp": "Cara a cara · {map}",
-    "teamBlurb": "Dos equipos de dos (hasta cuatro por bando) con los mismos lugares, {hp} PS por equipo. En cada ronda tu equipo puntúa con su mejor marca, y los compañeros ven las marcas de los demás sobre la marcha. Envía el código de la sala a tres amigos.",
+    "teamBlurb": "Dos equipos de dos (hasta cuatro por bando) con los mismos lugares, {hp} PS por equipo. En cada ronda tu equipo puntúa con su mejor chincheta, y los compañeros ven las chinchetas de los demás sobre la marcha. Envía el código de la sala a tres amigos.",
     "raceBlurb": "Los mismos {n} lugares para los dos, en el mapa elegido arriba. Gana quien sume más puntos en {n} rondas. Envía el enlace a tu amigo y pulsa Listo.",
     "raceBlurbEra": "Los mismos {n} lugares para los dos, en el mapa y los juegos elegidos arriba. Gana quien sume más puntos en {n} rondas. Envía el enlace a tu amigo y pulsa Listo.",
     "hpBlurb": "Los mismos lugares para los dos, en el mapa elegido arriba. {hp} PS cada uno: en cada ronda, la puntuación más baja pierde la diferencia. Envía el enlace a tu amigo y pulsa Listo.",
@@ -32,7 +32,7 @@
   },
   "party": {
     "royaleBlurb": "Hasta {max} Entrenadores con los mismos lugares. La puntuación más baja de cada ronda pierde una vida ({lives} cada uno); gana el último Entrenador en pie.",
-    "teamBlurb": "Equipo rojo contra azul, 2v2 (hasta 4v4), {hp} PS por equipo. Tu equipo puntúa con su mejor marca, y ves las marcas de tus compañeros en directo.",
+    "teamBlurb": "Equipo rojo contra azul, 2v2 (hasta 4v4), {hp} PS por equipo. Tu equipo puntúa con su mejor chincheta, y ves las chinchetas de tus compañeros en directo.",
     "label": "En grupo · hasta {max} Entrenadores",
     "room": "Sala privada · {map}",
     "gameLabel": "Juego del grupo",

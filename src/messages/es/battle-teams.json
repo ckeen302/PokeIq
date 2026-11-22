@@ -150,7 +150,7 @@
     "share": "el {pct} % usa este reparto",
     "source": "Las elecciones más habituales según {source}, no un set escrito.",
     "goals": "Objetivos de EV",
-    "goalsIntro": "Elige qué debe lograr este Pokémon; la calculadora de daño encuentra los menos EV de PS, Def, DfE y Vel (y la mejor naturaleza) que lo consiguen. «Aguantar» significa todas las tiradas de daño con los PS al máximo, sin golpe crítico. Los atacantes usan su set más habitual ({source}).",
+    "goalsIntro": "Elige qué debe lograr este Pokémon; la calculadora de daño encuentra los menos EV de PS, Def, DfE y Vel (y la mejor naturaleza) que lo consiguen. “Aguantar” significa todas las tiradas de daño con los PS al máximo, sin golpe crítico. Los atacantes usan su set más habitual ({source}).",
     "survive": "Aguantar",
     "outspeed": "Superar en velocidad",
     "pokemon": "Pokémon",

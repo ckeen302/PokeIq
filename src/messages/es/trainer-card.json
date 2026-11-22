@@ -1,6 +1,6 @@
 {
-  "title": "Ficha de entrenador",
-  "namePlaceholder": "Tu nombre de entrenador",
+  "title": "Ficha de Entrenador",
+  "namePlaceholder": "Tu nombre de Entrenador",
   "save": "Guardar",
   "nameRejected": "Elige otro nombre.",
   "unnamed": "Entrenador sin nombre",
@@ -47,7 +47,7 @@
   "formats": {
     "classic": "clásico",
     "survival": "supervivencia",
-    "blitz": "relámpago"
+    "blitz": "contrarreloj"
   },
   "savedHere": "Tu progreso se guarda en este navegador.",
   "playMore": "Juega más modos →"

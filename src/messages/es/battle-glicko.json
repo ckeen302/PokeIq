@@ -1,5 +1,5 @@
 {
-  "title": "{elo, select, none {} other {Elo {elo}. }}GXE {gxe} %: la probabilidad de ganar a un entrenador al azar de esta clasificación. Puntuación Glicko-2: {glicko}.",
+  "title": "{elo, select, none {} other {Elo {elo}. }}GXE {gxe} %: la probabilidad de ganar a un Entrenador al azar de esta clasificación. Puntuación Glicko-2: {glicko}.",
   "gxe": "GXE {gxe} %",
   "deviation": "Puntuación Glicko-2 ± desviación",
   "provisional": "Prov.",

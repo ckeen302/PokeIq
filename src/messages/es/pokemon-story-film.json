@@ -12,15 +12,15 @@
     "chapter": "Abriendo {title}…",
     "exhibit": "Abriendo la exposición…"
   },
-  "backLab": "Volver al Laboratorio 3D",
-  "lab": "Laboratorio 3D",
+  "backLab": "Volver al Lab 3D",
+  "lab": "Lab 3D",
   "name": "La historia de Pokémon",
   "soundOn": "Activar el sonido",
   "soundOff": "Desactivar el sonido",
   "chapters": "Capítulos",
   "readLabel": "Leer la historia y sus fuentes",
   "read": "Leer",
-  "kicker": "Laboratorio 3D de PokéIQ · La historia real",
+  "kicker": "Lab 3D de PokéIQ · La historia real",
   "scrollHint": "Desplázate o pulsa reproducir",
   "soFar": "La historia hasta ahora",
   "exploreEvery": "Explora todos los lanzamientos",
@@ -41,6 +41,6 @@
   "video": "Vídeo",
   "close": "Cerrar",
   "copied": "Enlace copiado",
-  "quoteOpen": "«",
-  "quoteClose": "»"
+  "quoteOpen": "“",
+  "quoteClose": "”"
 }

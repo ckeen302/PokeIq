@@ -64,7 +64,7 @@
     "revealNext": "Revelar otro ({pct} %)",
     "nameLabel": "Nombre del Entrenador",
     "placeholder": "Escribe el nombre de un Entrenador…",
-    "also": "también «{name}»",
+    "also": "también “{name}”",
     "guess": "Responder",
     "pick": "Elige un Entrenador de la lista.",
     "gotIt": "¡Acertaste!",
@@ -84,7 +84,7 @@
     "stageAlt": "Pokémon misterioso, paso de zoom {step} de {steps}",
     "steps": "Paso de zoom {step} de {steps}",
     "daily": "Zoom diario",
-    "dailyNumber": "Zoom diario #{n}",
+    "dailyNumber": "Zoom diario n.º {n}",
     "dailyLine": "Un Pokémon, el mismo primer plano para todos. Sin reloj.",
     "nextIn": "El próximo en",
     "playToday": "Jugar al de hoy"

@@ -1,7 +1,7 @@
 {
   "card": {
     "footer": "Gratis · sin registro →",
-    "whereIsThis": "¿Dónde es esto?",
+    "whereIsThis": "¿Dónde está esto?",
     "battle": {
       "whatWill": "¿Qué hará {name}?"
     },
@@ -21,7 +21,7 @@
     "subtitle": "Sin registro. Juega en tu navegador.",
     "chips": {
       "battles": "Combates",
-      "battleLab": "Battle Lab",
+      "battleLab": "Lab de combate",
       "quizzes": "Quiz"
     }
   },
@@ -51,27 +51,27 @@
     "footer": "Juega el de hoy o reta a alguien en directo →"
   },
   "pikadoku": {
-    "eyebrow": "Pikadoku · nueva cada día",
+    "eyebrow": "Pikadoku · una cuadrícula nueva cada día",
     "title1": "Sudoku",
     "title2": "Pokémon",
     "subtitle": "Llena la cuadrícula de 3×3: un Pokémon por casilla que encaje con su fila y su columna. Cuanto más raro, menos puntos.",
-    "footer": "Juega la Fácil, Normal o Experto de hoy →"
+    "footer": "Juega la cuadrícula Fácil, Normal o Experto de hoy →"
   },
   "connections": {
-    "eyebrow": "PokéConnections · cada día",
+    "eyebrow": "PokéConnections · un puzle nuevo cada día",
     "title1": "Encuentra",
     "title2": "los cuatro",
     "title3": "grupos",
     "subtitle": "Dieciséis Pokémon, cuatro conexiones ocultas y cuatro fallos de margen.",
-    "footer": "Juega el de hoy, con un «¿Por qué?» en cada respuesta →"
+    "footer": "Juega el de hoy, con un “¿Por qué?” en cada respuesta →"
   },
   "guessr": {
-    "eyebrow": "PokéGuessr · nueva cada día",
+    "eyebrow": "PokéGuessr · una partida nueva cada día",
     "title1": "¿Dónde está",
     "title2": "este lugar?",
     "subtitle": "El GeoGuessr de Pokémon: capturas reales de los juegos de todas las regiones, de Kanto a Paldea. Una partida diaria nueva cada día.",
     "fallbackSubtitle": "El GeoGuessr de Pokémon: capturas reales de los juegos, de Kanto a Paldea.",
-    "footer": "Coloca un pin · hasta 25.000 puntos →",
+    "footer": "Pon una chincheta · hasta 25.000 puntos →",
     "points": "{n} pts",
     "hp": "{n} PS",
     "challenge": {
@@ -82,11 +82,11 @@
       "fallbackFooter": "Los mismos lugares · ¿puedes superarlo? →"
     },
     "party": {
-      "eyebrow": "Fiesta de PokéGuessr",
+      "eyebrow": "Partida en grupo de PokéGuessr",
       "title1": "Invitación",
-      "title2": "a una fiesta",
+      "title2": "a una partida en grupo",
       "subtitle": "Amigos en los mismos lugares, todos a la vez. Sin registro: ábrelo, elige un nombre y únete.",
-      "footer": "Battle Royale o duelos por equipos · toca para unirte →"
+      "footer": "Batalla Real o duelos por equipos · toca para unirte →"
     }
   },
   "quiz": {
@@ -186,7 +186,7 @@
     },
     "geo": {
       "eyebrow": "Duelo de PokéGuessr",
-      "footer": "Los mismos lugares · gana el pin más cercano · toca para jugar →"
+      "footer": "Los mismos lugares · gana la chincheta más cercana · toca para jugar →"
     },
     "battle": {
       "eyebrow": "Combate en directo",
@@ -197,7 +197,7 @@
       "footer": "Los mismos 16 Pokémon · encuentra antes los 4 grupos · toca para competir →"
     },
     "connections-party": {
-      "eyebrow": "Fiesta de PokéConnections",
+      "eyebrow": "Partida en grupo de PokéConnections",
       "footer": "Los mismos 16 Pokémon para todos · gana el mejor tiempo · toca para unirte →"
     },
     "pikadoku": {
@@ -205,7 +205,7 @@
       "footer": "Hazte con casillas con un Pokémon que encaje · tres en raya gana →"
     },
     "name-em-all": {
-      "eyebrow": "Carrera de Name 'em All",
+      "eyebrow": "Carrera de Nómbralos a todos",
       "footer": "Los mismos Pokémon para todos · gana quien los nombre todos primero →"
     }
   },
@@ -219,7 +219,7 @@
     }
   },
   "nameEmAll": {
-    "eyebrow": "Name 'em All · quiz de memoria",
+    "eyebrow": "Nómbralos a todos · quiz de memoria",
     "title1": "¿Puedes nombrar",
     "title2": "a todos los Pokémon?",
     "subtitle": "Escribe todos los Pokémon que recuerdes antes de que se acabe el tiempo. Una categoría nueva cada día.",
@@ -267,7 +267,7 @@
     "footer": "Combate aleatorio, OU, dobles y más →"
   },
   "battleLab": {
-    "eyebrow": "Battle Lab",
+    "eyebrow": "Laboratorio de combate",
     "title1": "¿Quién gana",
     "title2": "y cuántas veces?",
     "subtitle": "Prepara cualquier enfrentamiento, de la Gen. 1 a la 9, y el motor de Showdown lo juega miles de veces en tu navegador.",
@@ -299,7 +299,7 @@
     "title1": "Los mejores",
     "title2": "Entrenadores",
     "subtitle": "Reto diario, PokéIQ, PokéGuessr y todos los modos de quiz. ¿En qué puesto estás?",
-    "footer": "Juega una partida para entrar en la tabla →"
+    "footer": "Juega una partida para entrar en la clasificación →"
   },
   "lab": {
     "eyebrow": "PokéIQ · Lab 3D",
@@ -328,9 +328,9 @@
     "caseEyebrow": "CASO {n} · {verdict}",
     "caseFooter": "Abre el expediente →",
     "verdicts": {
-      "confirmed": "Confirmado",
+      "confirmed": "Confirmada",
       "fan": "Teoría fan",
-      "debunked": "Desmentido"
+      "debunked": "Desmentida"
     }
   },
   "videoGames": {
@@ -396,7 +396,7 @@
     "eyebrow": "Lab 3D · la historia del universo",
     "title1": "La historia",
     "title2": "del mundo Pokémon",
-    "subtitle": "Del mito de la creación de Sinnoh a la Zona Cero, cada frase con su fuente en los juegos.",
+    "subtitle": "Del mito de la creación de Sinnoh a la Área Cero, cada frase con su fuente en los juegos.",
     "chapterEyebrow": "Historia del mundo Pokémon · {numeral}"
   },
   "race": {
@@ -426,7 +426,7 @@
     "realStats": "Estadísticas reales y física real, en 3D.",
     "recordsEyebrow": "Los Juegos PokéIQ · récords de {event}",
     "recordHolder": "{name} tiene el récord con {mark} entre todos los Pokémon.",
-    "recordsFooter": "Mira el top 10 →",
+    "recordsFooter": "Mira los diez mejores →",
     "wins": "GANA",
     "medals": {
       "1": "Oro",

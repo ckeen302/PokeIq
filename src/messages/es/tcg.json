@@ -32,7 +32,7 @@
     "searchPlaceholder": "Busca por el nombre en inglés, p. ej. Charizard",
     "search": "Buscar",
     "speciesCards": "Cartas de {name}",
-    "termCards": "Cartas llamadas «{term}»",
+    "termCards": "Cartas llamadas “{term}”",
     "clear": "Borrar",
     "noCards": "No se han encontrado cartas.",
     "entry": "{name} en la Pokédex",

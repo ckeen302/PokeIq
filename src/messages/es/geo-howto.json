@@ -14,7 +14,7 @@
   },
   "duels": {
     "title": "Duelos",
-    "body": "Enfréntate a un amigo en directo. Batalla de PS: los dos empezáis con {hp} PS y la chincheta más cercana daña a la otra. Carrera de puntos: gana el mejor total de todas las rondas."
+    "body": "Enfréntate a un amigo en directo. Combate de PS: los dos empezáis con {hp} PS y la chincheta más cercana daña a la otra. Carrera de puntos: gana el mejor total de todas las rondas."
   },
   "demo": {
     "labelDesktop": "Demostración de una ronda: una captura de Pokémon ocupa la pantalla, el mapa de la esquina se amplía, se coloca una chincheta y se pulsa Adivinar; el resultado traza una línea hasta el lugar real y puntúa {score} de {max}",

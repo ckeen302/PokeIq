@@ -1,15 +1,15 @@
 {
   "login": {
     "title": "Iniciar sesión",
-    "label": "ID de entrenador",
+    "label": "ID de Entrenador",
     "heading": "Iniciar sesión",
     "intro": "Conserva tu progreso en todos tus dispositivos.",
     "ages": "Las cuentas son para mayores de 13 años.",
     "privacy": "Política de privacidad"
   },
   "oauth": {
-    "title": "Elige tu nombre de entrenador",
-    "label": "Nuevo entrenador",
-    "heading": "Elige tu nombre de entrenador"
+    "title": "Elige tu nombre de Entrenador",
+    "label": "Nuevo Entrenador",
+    "heading": "Elige tu nombre de Entrenador"
   }
 }

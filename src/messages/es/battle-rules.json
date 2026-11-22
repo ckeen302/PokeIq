@@ -80,7 +80,7 @@
     "popular": "Populares",
     "matches": "{n, plural, one {{n} resultado} other {{n} resultados}}",
     "every": "Todos los formatos, por sección",
-    "noMatch": "Ningún formato coincide con «{query}».",
+    "noMatch": "Ningún formato coincide con “{query}”.",
     "drawerLabel": "Reglas de {name}",
     "close": "Cerrar",
     "showdownFormat": "Formato de Showdown",

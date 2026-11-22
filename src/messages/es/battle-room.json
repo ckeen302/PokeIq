@@ -35,7 +35,7 @@
     "accept": "Aceptar revancha",
     "rematch": "Revancha",
     "keeps": "La revancha mantiene a los Entrenadores, el formato y los equipos que trajisteis.",
-    "startsFour": "El ordenador conserva sus puestos; empieza cuando todos los Entrenadores la pulsen.",
+    "startsFour": "La CPU conserva sus puestos; empieza cuando todos los Entrenadores la pulsen.",
     "startsTwo": "Empieza cuando los dos la pulséis."
   },
   "lobby": {

@@ -59,7 +59,7 @@
     "another": "Crear otro",
     "lineup": "Fila",
     "thisLineup": "Esta fila: {label}",
-    "ordered": "Ordenado por {label}, {dir}: «{hook}»",
+    "ordered": "Ordenado por {label}, {dir}: “{hook}”",
     "nothing": "En esta fila no hay nada que ordenar por {label}.",
     "length": "Duración",
     "seconds": "{s} s",

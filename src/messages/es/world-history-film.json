@@ -22,15 +22,15 @@
     "chapter": "Abriendo {region}…",
     "exhibit": "Abriendo la exposición…"
   },
-  "backLab": "Volver al Laboratorio 3D",
-  "lab": "Laboratorio 3D",
+  "backLab": "Volver al Lab 3D",
+  "lab": "Lab 3D",
   "name": "Historia del mundo Pokémon",
   "soundOn": "Activar el sonido",
   "soundOff": "Desactivar el sonido",
   "chapters": "Capítulos",
   "readLabel": "Leer la historia y sus fuentes",
   "read": "Leer",
-  "kicker": "Laboratorio 3D de PokéIQ · La historia dentro de los juegos",
+  "kicker": "Lab 3D de PokéIQ · La historia dentro de los juegos",
   "prologueLine": "La historia del mundo Pokémon, tal como la cuentan los propios juegos. Cada frase tiene su fuente.",
   "scrollHint": "Desplázate o pulsa reproducir",
   "soFar": "La historia hasta ahora",
@@ -49,6 +49,6 @@
   "video": "Vídeo",
   "close": "Cerrar",
   "copied": "Enlace copiado",
-  "quoteOpen": "«",
-  "quoteClose": "»"
+  "quoteOpen": "“",
+  "quoteClose": "”"
 }

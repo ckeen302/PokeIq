@@ -38,7 +38,7 @@
     "description": "Un duelo de PokéGuessr ronda a ronda: la captura, las dos chinchetas y el lugar real, las puntuaciones, el daño y los PS."
   },
   "challenge": {
-    "fallback": "Desafío de PokéGuessr",
+    "fallback": "Reto de PokéGuessr",
     "aTrainer": "Un Entrenador",
     "title": "{who} ha hecho {score} en PokéGuessr. ¿Puedes superarlo?",
     "world": "{n, plural, one {El mismo lugar del mundo Pokémon: pon tu chincheta y supera su puntuación. GeoGuessr de Pokémon, gratis.} other {Los mismos {n} lugares del mundo Pokémon: pon tus chinchetas y supera su puntuación. GeoGuessr de Pokémon, gratis.}}",
@@ -78,8 +78,8 @@
       "beatHp": "{winner} ganó a {loser} con {hp} de {max} PS tras {n} rondas.",
       "title": "{headline}: un duelo de PokéGuessr en {map}"
     },
-    "daily": "Diaria #{n}",
-    "weekly": "Semanal #{n}",
+    "daily": "Diaria n.º {n}",
+    "weekly": "Semanal n.º {n}",
     "bonus": "+{bonus} de bonificación",
     "chips": {
       "streak": "Racha",

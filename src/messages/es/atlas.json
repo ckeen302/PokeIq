@@ -25,7 +25,7 @@
   "whole": "Ver el mundo entero",
   "help": "Usa la rueda para hacer zoom, arrastra para explorar y haz clic en un lugar para ver los detalles. Cada región está dibujada a la misma escala a partir de los mapas de los juegos y colocada como los lugares reales en los que se basa.",
   "noMatch": "Sin resultados",
-  "nothing": "No hay nada llamado «{q}». Prueba con una región, ciudad, ruta o lugar, como Ciudad Azafrán, Ruta 24 o Paldea.",
+  "nothing": "No hay nada llamado “{q}”. Prueba con una región, ciudad, ruta o lugar, como Ciudad Azafrán, Ruta 24 o Paldea.",
   "main": "Región de la saga principal",
   "side": "DLC o zona secundaria",
   "partOf": "Parte de {parent}",
@@ -40,7 +40,7 @@
   "placesHere": "Lugares aquí",
   "exactFrom": "Exacto · {source}",
   "exact": "Exacto · del mapa del juego",
-  "approximate": "Aproximado · sin marca oficial",
+  "approximate": "Aproximado · sin resaltado oficial",
   "sources": {
     "emerald": "Datos del mapa de Esmeralda",
     "oras": "Mapa de Rubí Omega y Zafiro Alfa",

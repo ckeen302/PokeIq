@@ -1,6 +1,6 @@
 {
   "label": "Reto diario",
-  "labelNumber": "Reto diario #{n}",
+  "labelNumber": "Reto diario n.º {n}",
   "title": "El test PokéIQ de hoy",
   "intro": "10 preguntas variadas, las mismas para todos los Entrenadores. Un solo intento: que cuente.",
   "youScored": "Has conseguido",
@@ -15,6 +15,6 @@
     "types": "Tabla de tipos",
     "higher-lower": "Duelos de estadísticas"
   },
-  "rules": "15 segundos por pregunta · bonus por rapidez y racha",
-  "start": "Empezar el Reto #{n}"
+  "rules": "15 segundos por pregunta · bonificación por rapidez y racha",
+  "start": "Empezar el Reto diario n.º {n}"
 }

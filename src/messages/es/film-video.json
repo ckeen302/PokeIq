@@ -31,7 +31,7 @@
     "hook": "Toda la historia de Pokémon en {seconds} segundos",
     "kicker": "Treinta años, cada frase con su fuente",
     "shareTitle": "La historia de Pokémon",
-    "shareText": "Toda la historia de Pokémon, de las cacerías de insectos de un niño a sus treinta años #pokemon #pokeiq",
+    "shareText": "Toda la historia de Pokémon, de la caza de insectos de un niño a sus treinta años #pokemon #pokeiq",
     "endLine": "La película completa, con sus fuentes"
   },
   "history": {
@@ -43,6 +43,6 @@
     "endTitle": "Historia del mundo Pokémon",
     "endLine": "Cada capítulo, con sus fuentes"
   },
-  "quoteOpen": "«",
-  "quoteClose": "»"
+  "quoteOpen": "“",
+  "quoteClose": "”"
 }

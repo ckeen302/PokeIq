@@ -33,7 +33,7 @@
     "missed": "KO fallidos y jugadas arriesgadas",
     "noMissed": "No hay KO fallidos (un movimiento que {name} había mostrado con un 50 % o más de probabilidad de KO y no usó) ni cambios hacia un KO probable.",
     "how": "Cómo se ha calculado",
-    "howBody": "Desde el lado de {name}, usando solo lo que mostró el combate: los PS, el estado, los cambios de características, las trampas, el clima y la Teracristalización de cada Pokémon al inicio del turno. Cada turno se jugó hasta el final {n} veces de media con la estrategia Difícil del ordenador para ambos lados; la banda sombreada es el intervalo de confianza del 95 % (hasta ±{widest}).",
+    "howBody": "Desde el lado de {name}, usando solo lo que mostró el combate: los PS, el estado, los cambios de características, las trampas, el clima y la Teracristalización de cada Pokémon al inicio del turno. Cada turno se jugó hasta el final {n} veces de media con la estrategia Difícil de la CPU para ambos lados; la banda sombreada es el intervalo de confianza del 95 % (hasta ±{widest}).",
     "howDoubles": " Los combates dobles juegan a la vez los dos Pokémon de cada lado: objetivos elegidos con la calculadora de daño, movimientos de área al 75 % (y el compañero al que golpean), Protección, Sorpresa y KO compartidos.",
     "assumed": "Lo que no se reveló se supone. {viewer}: {viewerSources}. {foe}: {foeSources}.",
     "nothing": "nada",

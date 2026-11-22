@@ -36,7 +36,7 @@
   "swipeHint": "Desliza → si te la sabías, ← para verla otra vez",
   "flipHint": "Toca la ficha o pulsa Espacio para girarla",
   "mystery": "Silueta misteriosa",
-  "quote": "«{entry}»",
+  "quote": "“{entry}”",
   "genus": "{genus}",
   "fullEntry": "Entrada completa de la Pokédex →",
   "knewStamp": "ME LA SÉ",

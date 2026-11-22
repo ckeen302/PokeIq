@@ -8,7 +8,7 @@
   "settings": {
     "sent": "Te hemos enviado un enlace de confirmación a {email}.",
     "throttled": "Hace un momento salió un enlace de confirmación: revisa tu bandeja de entrada.",
-    "sendFailed": "No hemos podido enviar el correo de confirmación. Prueba «Reenviar» dentro de un minuto.",
+    "sendFailed": "No hemos podido enviar el correo de confirmación. Prueba “Reenviar” dentro de un minuto.",
     "loadFailed": "No se han podido cargar tus ajustes de correo.",
     "saveFailed": "No se ha podido guardar.",
     "addFirst": "Primero añade tu dirección de correo.",
