@@ -792,3 +792,27 @@ html[data-dle-cb] .dle-close { background: rgb(133 192 249 / 0.4); border-color:
 
 /* Solid primary fills carry white text: use the AA-safe fill shade (the plain --primary stays for text and accents). */
 .bg-primary { background-color: hsl(var(--primary-fill)); }
+
+/* The damage calculator's dense panels (src/components/battle/DamageCalc.tsx), tablets and up only: the shared
+   battle fields (36px tall, 14px text) are 28px tall with 13px text inside .calc-dense, like Showdown's calculator.
+   Phones keep the phone design system's 40px fields with 16px text. */
+@media (min-width: 768px) {
+  .calc-dense :is(input:not([type="checkbox"], [type="radio"], [type="range"]), select) {
+    height: 28px;
+    border-width: 1px;
+    border-radius: 5px;
+    font-size: 13px;
+  }
+  .calc-dense select {
+    padding-left: 6px;
+    padding-right: 4px;
+  }
+  .calc-dense .ss-lead,
+  .calc-dense .ss-clear {
+    height: 28px;
+  }
+  .calc-dense .calc-stats :is(input, select) {
+    height: 24px;
+    font-size: 12px;
+  }
+}

@@ -1,13 +1,5 @@
 {
   "crumb": "Combat",
-  "calc": {
-    "title": "Calculateur de dégâts Pokémon : toutes les générations, chaque coup",
-    "description": "Un calculateur de dégâts Pokémon, celui de Smogon, pour les générations 3 à 9 : fourchettes de dégâts, chances de K.O. et descriptions complètes avec boosts, statut, Téracristal, météo, champs, écrans et attaques de zone en double. Charge les sets de tes équipes.",
-    "crumb": "Calcul des dégâts",
-    "heading": "Calcul",
-    "accent": "des dégâts",
-    "intro": "Un calculateur de dégâts Pokémon : la fourchette de dégâts, les chances de K.O. et la description Showdown de chaque capacité, dans les deux sens. Propulsé par le calculateur de dégâts de Smogon."
-  },
   "teams": {
     "title": "Créateur d'équipe Pokémon : formats Showdown, légalité vérifiée",
     "description": "Un créateur d'équipe Pokémon pour les équipes compétitives en OU, Ubers, UU, Double OU, VGC et Dex National de la 9e génération, en OU 4G et en OU 3G. Capacités selon les apprentissages de chaque format, stats en direct, import / export Showdown et la vérification de légalité de Pokémon Showdown lui-même.",

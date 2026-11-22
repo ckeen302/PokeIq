@@ -1,31 +1,30 @@
 import type { Metadata } from "next";
 import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
-import { BattleHeader } from "@/components/battle/BattleHeader";
-import { DamageCalc } from "@/components/battle/DamageCalc";
 import { ClientMessages } from "@/i18n/ClientMessages";
 import { serverT } from "@/i18n/server";
-import battlePages from "@/messages/battle-tools-pages";
 import battleCalc from "@/messages/battle-calc";
 import battleTerms from "@/messages/battle-terms";
 import battlePickers from "@/messages/battle-pickers";
 import battleInputs from "@/messages/battle-inputs";
+import { BattleHeader } from "@/components/battle/BattleHeader";
+import { DamageCalc } from "@/components/battle/DamageCalc";
 
 export function generateMetadata(): Metadata {
-  const t = serverT(battlePages);
+  const t = serverT(battleCalc);
   return pageMetadata({
-    title: t("calc.title"),
-    description: t("calc.description"),
+    title: t("page.metaTitle"),
+    description: t("page.metaDescription"),
     image: SHARE_IMAGES.battle,
     path: "/battle/calc",
   });
 }
 
 export default function CalcPage() {
-  const t = serverT(battlePages);
+  const t = serverT(battleCalc);
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
-      <BattleHeader crumb={t("calc.crumb")} title={t("calc.heading")} accent={t("calc.accent")}>
-        {t("calc.intro")}
+    <div className="mx-auto max-w-6xl space-y-4">
+      <BattleHeader crumb={t("page.crumb")} title={t("page.title")} accent={t("page.accent")} compact>
+        {t("page.intro")}
       </BattleHeader>
       <ClientMessages namespaces={[battleCalc, battleTerms, battlePickers, battleInputs]}>
         <DamageCalc />

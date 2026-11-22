@@ -236,7 +236,7 @@ export function SearchSelect<T>({
         }
       }}
     >
-      {leading && <span className="pointer-events-none absolute left-1 top-0 flex h-9 items-center max-sm:h-10">{leading}</span>}
+      {leading && <span className="ss-lead pointer-events-none absolute left-1 top-0 flex h-9 items-center max-sm:h-10">{leading}</span>}
       <input
         ref={inputRef}
         role="combobox"
@@ -288,7 +288,7 @@ export function SearchSelect<T>({
           type="button"
           onClick={onClear}
           aria-label={t("clear", { label: label.toLowerCase() })}
-          className="absolute right-1 top-0 flex h-9 w-7 items-center max-sm:h-10 max-sm:w-9 justify-center text-muted-foreground hover:text-foreground"
+          className="ss-clear absolute right-1 top-0 flex h-9 w-7 items-center max-sm:h-10 max-sm:w-9 justify-center text-muted-foreground hover:text-foreground"
         >
           <X className="h-3.5 w-3.5" aria-hidden />
         </button>

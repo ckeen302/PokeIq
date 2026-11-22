@@ -119,6 +119,9 @@ const nextConfig: NextConfig = {
     "/lab/mass-battle/og": ["./src/assets/fonts/*.ttf"],
     // A Shiny Pokémon Maker design's card recolours the sprite from its data file.
     "/tools/shiny-maker/og": ["./src/assets/fonts/*.ttf", "./public/shiny-maker/px/*.json", "./public/shiny-maker/hd/*.png", "./public/shiny-maker/art/*.png"],
+    // The Tier List Maker's cards draw the template's or the shared result's Pokémon, from the roster (Showdown's data).
+    "/tools/tier-list/[template]/og": ["./src/assets/fonts/*.ttf", "./public/sizes/art/256/*.webp", "./node_modules/pokemon-showdown/dist/{config,data,lib,sim}/**/*.{js,json}"],
+    "/tools/tier-list/og": ["./src/assets/fonts/*.ttf", "./public/sizes/art/256/*.webp"],
     // A shared PokéGuessr result's card draws the map that was played, by a computed path.
     "/pokeguessr/r/**": ["./public/geo/maps/*.webp"],
     "/[locale]/pokeguessr/r/**": ["./public/geo/maps/*.webp"],
@@ -148,6 +151,8 @@ const nextConfig: NextConfig = {
         ]),
         { source: "/leaderboard", has: [boardQuery], missing: bare, destination: "/leaderboard/board/:board" },
         { source: "/leaderboard", missing: [{ type: "query" as const, key: "board" }, ...bare], destination: "/leaderboard/board/daily" },
+        // A shared tier list (?s=…) renders per link (its result and preview card); the template's own page stays static.
+        { source: "/tools/tier-list/:template([a-z0-9-]+)", has: [{ type: "query" as const, key: "s" }], destination: "/tools/tier-list/:template/shared" },
       ].flatMap(withLocales),
       afterFiles: [],
       fallback: [],

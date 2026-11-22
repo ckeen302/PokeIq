@@ -1,13 +1,5 @@
 {
   "crumb": "Kampf",
-  "calc": {
-    "title": "Pokémon-Schadensrechner: jede Generation, jeder Treffer",
-    "description": "Ein Pokémon-Schadensrechner, der Rechner von Smogon, für die Generationen 3 bis 9: Schadensspannen, K.O.-Chancen und vollständige Beschreibungen mit Statuswerte-Stufen, Statusproblemen, Terakristallisierung, Wetter, Feldern, Schilden und Flächenattacken im Doppelkampf. Lade Sets aus deinen Teams.",
-    "crumb": "Schadensrechner",
-    "heading": "Schadens",
-    "accent": "rechner",
-    "intro": "Ein Pokémon-Schadensrechner: die Schadensspanne, die K.O.-Chance und die Showdown-Beschreibung jeder Attacke, in beide Richtungen. Mit dem Schadensrechner von Smogon."
-  },
   "teams": {
     "title": "Pokémon-Team-Builder: Showdown-Formate, Legalität geprüft",
     "description": "Ein Pokémon-Team-Builder für kompetitive Teams in OU, Ubers, UU, Doppel-OU, VGC und National Dex der 9. Generation, Gen-4-OU und Gen-3-OU. Attacken aus den Erlernlisten jedes Formats, Live-Werte, Showdown-Import und -Export und die Legalitätsprüfung von Pokémon Showdown selbst.",

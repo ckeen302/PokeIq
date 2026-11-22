@@ -1,13 +1,5 @@
 {
   "crumb": "Combate",
-  "calc": {
-    "title": "Calculadora de daño Pokémon: todas las generaciones, cada golpe",
-    "description": "Una calculadora de daño Pokémon, la de Smogon, para las generaciones 3 a 9: rangos de daño, probabilidad de KO y descripciones completas con cambios de características, problemas de estado, Teracristalización, clima, campos, pantallas y movimientos de área en dobles. Carga sets de tus equipos.",
-    "crumb": "Calculadora de daño",
-    "heading": "Calculadora",
-    "accent": "de daño",
-    "intro": "Una calculadora de daño Pokémon: el rango de daño, la probabilidad de KO y la descripción de Showdown de cada movimiento, en ambos sentidos. Funciona con la calculadora de daño de Smogon."
-  },
   "teams": {
     "title": "Creador de equipos Pokémon: formatos de Showdown y legalidad comprobada",
     "description": "Un creador de equipos Pokémon para equipos competitivos en OU, Ubers, UU, Dobles OU, VGC y Dex Nacional de la 9.ª generación, OU de la 4.ª y OU de la 3.ª. Movimientos según los aprendizajes de cada formato, características al momento, importación y exportación de Showdown y la comprobación de legalidad del propio Pokémon Showdown.",

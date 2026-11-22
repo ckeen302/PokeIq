@@ -176,6 +176,7 @@ export const NAMESPACES = [
   "tcg",
   "tcg-cards",
   "tier",
+  "tier-list",
   "timeline",
   "timeline-page",
   "timeline-stage",
