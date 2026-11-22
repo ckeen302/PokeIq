@@ -1,0 +1,113 @@
+{
+  "meta": {
+    "title": "Pokémon Trainers — Every Trainer, Team & Location (Gen I–IX)",
+    "description": "Every trainer from Pokémon Red and Blue to Scarlet and Violet: where they stand and their exact teams, levels, moves and held items, from Gym Leaders and the Elite Four to rivals and rematches.",
+    "gameTitle": "Every Trainer in Pokémon {game} — Teams by Location",
+    "gameDescription": "Every trainer team in Pokémon {game}, route by route: Gym Leaders, the Elite Four, rivals and every generic trainer with their Pokémon, levels, moves and held items.",
+    "gameSocial": "{game} trainers · PokéIQ Pokédex",
+    "areaTitle": "{area} Trainers — Pokémon {game}",
+    "areaDescription": "{n, plural, one {All {n} trainer on {area} in Pokémon {game}, with their Pokémon, levels, moves, held items and rematch teams.} other {All {n} trainers on {area} in Pokémon {game}, with their Pokémon, levels, moves, held items and rematch teams.}}",
+    "areaSocial": "{area} · {game} trainers",
+    "notableTitle": "{name} — {role} Teams & Locations",
+    "notableTitleType": "{name} — {role} ({type} type) Teams & Locations",
+    "notableDescription": "{lead}. Every team {name} uses in {games}, with levels, moves and held items, and where to battle them.",
+    "notableDescriptionLocal": "Every team {name} uses in {games}, with levels, moves and held items, and where to battle them.",
+    "notableSocial": "{name} · PokéIQ Trainers"
+  },
+  "list": {
+    "kicker": "Trainer database",
+    "blurb": "Every trainer from Generation I to IX: where to find them and the exact team they use, from the first Youngster to the Champion — rematches and DLC included.",
+    "byGame": "Browse by game",
+    "byGameAside": "Route by route",
+    "gen": "Gen {gen} · {regions}",
+    "notable": "Notable trainers",
+    "notableAside": "{n} trainers",
+    "sources": "Generation I–IV teams, moves and locations are read from the <pret>pret</pret> decompilations of each game; Generation V–IX teams come from <bulba>Bulbapedia</bulba>'s location pages, spot-checked against Serebii. Battle facilities with random opponents aren't listed."
+  },
+  "headings": {
+    "gymLeader": "Gym Leaders",
+    "eliteFour": "Elite Four",
+    "trialCaptain": "Trial Captains",
+    "kahuna": "Island Kahunas",
+    "champion": "Champions",
+    "rival": "Rivals",
+    "trainer": "Legends",
+    "villain": "Villain bosses",
+    "admin": "Villain admins"
+  },
+  "roles": {
+    "gymLeader": "Gym Leader",
+    "eliteFour": "Elite Four",
+    "trialCaptain": "Trial Captain",
+    "kahuna": "Kahuna",
+    "champion": "Champion",
+    "rival": "Rival",
+    "trainer": "Trainer",
+    "villain": "Villain",
+    "admin": "Admin"
+  },
+  "kinds": {
+    "routes": "Routes",
+    "towns": "Towns & cities",
+    "places": "Places & dungeons"
+  },
+  "allTrainers": "All trainers",
+  "game": {
+    "kicker": "Trainers · Gen {gen} ·{regions}",
+    "title": "Pokémon {game}",
+    "intro": "Every trainer team, place by place. Pick a route, town or dungeon to see everyone you can battle there and the exact Pokémon they use.",
+    "notableAside": "{n} in {game}",
+    "trainers": "{n, plural, one {{n} trainer} other {{n} trainers}}",
+    "importedPret": "Imported from <link>{repo}</link>.",
+    "importedWiki": "Imported from <link>{repo}</link>'s location pages and spot-checked against Serebii. Battle facilities with random opponents aren't listed."
+  },
+  "area": {
+    "back": "{game} trainers",
+    "kicker": "Pokémon {game} · {region}",
+    "count": "{n, plural, one {{n} trainer.} other {{n} trainers.}}",
+    "countAcross": "{n, plural, one {{n} trainer} other {{n} trainers}} across {k, plural, one {{k} area} other {{k} areas}}.",
+    "place": "Place & wild Pokémon",
+    "atlas": "World Atlas",
+    "alsoIn": "Also in"
+  },
+  "notable": {
+    "battles": "{n, plural, one {{n} team} other {{n} teams}}"
+  },
+  "team": {
+    "battles": "Battles",
+    "firstBattle": "First battle",
+    "battle": "Battle {n}",
+    "rematch": "Rematch",
+    "rematchN": "Rematch {n}",
+    "chose": "If you chose {pokemon}",
+    "requires": "Requires {what}",
+    "afterChampion": "After becoming Champion",
+    "beforeHof": "Before the Hall of Fame",
+    "afterHof": "After the Hall of Fame",
+    "postGame": "Post-game",
+    "firstVisit": "First visit",
+    "rolePage": "{role} page",
+    "notInList": "Not in our item list",
+    "lv": "Lv {lv}",
+    "lvRange": "Lv {lo}–{hi}",
+    "tera": "Tera",
+    "heldItem": "Held item: ",
+    "moves": "Moves",
+    "levelUpTitle": "The source lists no moves for this Pokémon, so these are the last moves it learns by level up: the moveset the game gives a trainer's Pokémon that has no set moves.",
+    "levelUp": "Level-up moveset",
+    "size": "{n} Pokémon",
+    "sizeDouble": "{n} Pokémon · Double Battle",
+    "only": "{version} only",
+    "uses": "Uses"
+  },
+  "forms": {
+    "sandyCloak": "Sandy Cloak",
+    "trashCloak": "Trash Cloak",
+    "eastSea": "East Sea",
+    "alolanForm": "Alolan Form",
+    "galarianForm": "Galarian Form",
+    "hisuianForm": "Hisuian Form",
+    "paldeanForm": "Paldean Form",
+    "form": "Form {n}"
+  }
+}

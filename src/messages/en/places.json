@@ -1,0 +1,132 @@
+{
+  "meta": {
+    "title": "Pokémon Places — Towns, Routes, Caves & Gyms",
+    "description": "Every town, route, cave and Gym in every main-series Pokémon region: the wild Pokémon found there in each game, screenshots and Gym Leaders.",
+    "placeTitle": "{name} ({region}) — Pokémon {type}",
+    "placeDescription": "{name} in {region}: the wild Pokémon found there in each game.",
+    "placeDescriptionGame": "{name} in {region}: the wild Pokémon found there in each game, and how it looks in {game}.",
+    "socialTitle": "{name} · PokéIQ Pokédex"
+  },
+  "crumbs": {
+    "pokedex": "Pokédex",
+    "places": "Places"
+  },
+  "list": {
+    "kicker": "Place database",
+    "blurb": "Towns, routes, caves and buildings from every main-series region — the wild Pokémon in each game, plus the World Atlas screenshot and Gym Leaders where there are some."
+  },
+  "back": "Back to all places",
+  "kicker": "Place · {type} · {region}",
+  "inside": "Inside <link>{name}</link>",
+  "atlas": "View on World Atlas",
+  "noAtlas": "Not on the World Atlas yet, so no map pin or screenshot.",
+  "shot": {
+    "title": "Screenshot",
+    "alt": "{place} in Pokémon {game}",
+    "caption": "{place} in {game} · from PokéGuessr"
+  },
+  "games": {
+    "title": "Games",
+    "subtitle": "Games it appears in",
+    "generation": "Generation {gen} games"
+  },
+  "areas": {
+    "title": "Areas",
+    "subtitle": "{n, plural, one {{n} floor and areas} other {{n} floors and areas}}"
+  },
+  "gym": {
+    "title": "Gym",
+    "subtitle": "{n, plural, one {{n} leader} other {{n} leaders}}",
+    "source": "source"
+  },
+  "wild": {
+    "title": "Wild Pokémon",
+    "subtitle": "By game",
+    "pokemon": "Pokémon",
+    "method": "Method",
+    "levels": "Levels",
+    "morning": "Morning",
+    "day": "Day",
+    "night": "Night",
+    "rate": "Rate"
+  },
+  "insidePlaces": {
+    "title": "Inside",
+    "subtitle": "{n, plural, one {{n} place inside} other {{n} places inside}}"
+  },
+  "types": {
+    "City": "City",
+    "Town": "Town",
+    "Route": "Route",
+    "Gym": "Gym",
+    "Forest": "Forest",
+    "Cave": "Cave",
+    "Mountain": "Mountain",
+    "Island": "Island",
+    "Lake": "Lake",
+    "Tower": "Tower",
+    "Ruins": "Ruins",
+    "League": "League",
+    "Building": "Building",
+    "Other": "Other"
+  },
+  "methods": {
+    "wild": "Wild",
+    "grass": "Grass",
+    "grassrandom": "Grass (random)",
+    "grassrarespawns": "Grass - Rare Spawns",
+    "tallgrass": "Tall grass",
+    "darkgrass": "Dark grass",
+    "rustlinggrass": "Rustling grass",
+    "cave": "Cave",
+    "water": "Water",
+    "waterrarespawns": "Water - Rare Spawns",
+    "fishing": "Fishing",
+    "fishingspot": "Fishing spot",
+    "ripplingwater": "Rippling water",
+    "bubblingspot": "Bubbling spot",
+    "headbutthigh": "Headbutt (high)",
+    "headbuttlow": "Headbutt (low)",
+    "shakingtree": "Shaking tree",
+    "gift": "Gift",
+    "giftegg": "Gift (Egg)",
+    "trade": "Trade",
+    "static": "Static",
+    "interact": "Interact",
+    "specialencounter": "Special encounter",
+    "swarm": "Swarm",
+    "swarmfish": "Swarm - Fish",
+    "swarmsurf": "Swarm - Surf",
+    "horde": "Horde",
+    "soscall": "SOS call",
+    "sosbubblingspot": "SOS (bubbling spot)",
+    "teraraid": "Tera Raid",
+    "maxraid": "Max Raid",
+    "overworld": "Overworld",
+    "wandering": "Wandering",
+    "wanderingsurf": "Wandering Surf",
+    "flying": "Flying",
+    "inthesky": "In the Sky",
+    "intheskyrarespawns": "In the Sky - Rare Spawns",
+    "roaming": "Roaming",
+    "roamingwater": "Roaming (water)",
+    "massivemassoutbreak": "Massive mass outbreak",
+    "hiddengrotto": "Hidden Grotto",
+    "honeytree": "Honey Tree",
+    "honeytreerare": "Honey Tree - Rare",
+    "honeytreeveryrare": "Honey Tree - Very Rare",
+    "berrytree": "Berry Tree",
+    "berrypile": "Berry pile",
+    "dustcloud": "Dust cloud",
+    "roughterrain": "Rough terrain",
+    "yellowflowers": "Yellow flowers",
+    "purpleflowers": "Purple flowers",
+    "redflowers": "Red flowers",
+    "ceilingambush": "Ceiling ambush",
+    "groundambush": "Ground ambush",
+    "skyambush": "Sky ambush",
+    "curry": "Curry",
+    "islandscan": "Island Scan",
+    "underground": "Underground"
+  }
+}

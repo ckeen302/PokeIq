@@ -6,31 +6,39 @@ import { typeColor } from "@/lib/pokemon/type-colors";
 import { itemSpriteUrl } from "@/lib/dex/build";
 import { VERSION_BY_KEY } from "@/lib/pokemon/encounter-types";
 import { itemOf, moveName, notable, speciesOf, type TrainerGroup } from "@/lib/trainers/data";
-import { formName, levelRange, teamAnchor } from "@/lib/trainers/format";
+import { formName, teamAnchor } from "@/lib/trainers/format";
+import { battleLabel, formLabel, levelText, roleName, tagName } from "@/lib/trainers/i18n";
+import { dexNames } from "@/lib/dex/local-names";
+import { serverT } from "@/i18n/server";
+import trainersNs from "@/messages/trainers";
 import type { TrainerMon, TrainerTeam } from "@/lib/trainers/types";
 import { TypeBadge } from "@/components/pokedex/TypeBadge";
 import { TeamTabs } from "./TeamTabs";
 import { TrainerAvatar } from "./TrainerAvatar";
 
 function ItemRef({ refId, className }: { refId: string; className?: string }) {
+  const t = serverT(trainersNs);
   const item = itemOf(refId);
   if (!item)
     return (
-      <span className={className} title="Not in our item list">
+      <span className={className} title={t("team.notInList")}>
         {refId}
       </span>
     );
   return (
     <Link href={`/pokedex/items/${item.slug}`} className={`inline-flex items-center gap-1 hover:text-screen ${className ?? ""}`}>
       <img src={itemSpriteUrl(item.slug)} alt="" width={20} height={20} loading="lazy" decoding="async" className="h-5 w-5 shrink-0 [image-rendering:pixelated]" />
-      {item.name}
+      {dexNames().item(item.name)}
     </Link>
   );
 }
 
 function MonCard({ m }: { m: TrainerMon }) {
+  const t = serverT(trainersNs);
+  const names = dexNames();
   const s = speciesOf(m.s);
-  const form = m.fn ?? formName(m.s, m.f);
+  const english = m.fn ?? formName(m.s, m.f);
+  const form = english && formLabel(t, english);
   return (
     <li className="relative overflow-hidden rounded-md border border-foreground/10 bg-shade/20" data-testid="trainer-mon">
       <div className="flex h-[3px]" aria-hidden>
@@ -43,12 +51,12 @@ function MonCard({ m }: { m: TrainerMon }) {
           <div className="flex items-baseline justify-between gap-2">
             {s ? (
               <Link href={`/pokemon/${s.slug}`} className="truncate font-display text-sm font-bold uppercase tracking-wide hover:text-screen">
-                {s.name}
+                {names.species(s.id, s.name)}
               </Link>
             ) : (
               <span className="font-display text-sm font-bold">#{m.s}</span>
             )}
-            <span className="shrink-0 font-mono text-xs tabular-nums text-muted-foreground">Lv {m.lv}</span>
+            <span className="shrink-0 font-mono text-xs tabular-nums text-muted-foreground">{t("team.lv", { lv: m.lv })}</span>
           </div>
           {form && <div className="text-[11px] text-muted-foreground">{form}</div>}
           <div className="flex flex-wrap items-center gap-1">
@@ -57,14 +65,14 @@ function MonCard({ m }: { m: TrainerMon }) {
             ))}
             {m.tt && (
               <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground" data-testid="trainer-mon-tera">
-                Tera <TypeBadge type={m.tt.toLowerCase()} size="sm" />
+                {t("team.tera")} <TypeBadge type={m.tt.toLowerCase()} size="sm" />
               </span>
             )}
           </div>
-          {m.ab && <div className="text-[11px] text-muted-foreground">{m.ab}</div>}
+          {m.ab && <div className="text-[11px] text-muted-foreground">{names.ability(m.ab)}</div>}
           {m.i && (
             <div className="text-xs">
-              <span className="sr-only">Held item: </span>
+              <span className="sr-only">{t("team.heldItem")}</span>
               <ItemRef refId={m.i} />
             </div>
           )}
@@ -72,18 +80,18 @@ function MonCard({ m }: { m: TrainerMon }) {
       </div>
       {m.m.length > 0 && (
         <div className="border-t border-foreground/[0.06] px-2.5 py-2">
-          <ul className="grid grid-cols-2 gap-1" aria-label="Moves">
+          <ul className="grid grid-cols-2 gap-1" aria-label={t("team.moves")}>
             {m.m.map((mv, i) => (
               <li key={mv + i} className="min-w-0">
                 <Link href={`/pokedex/moves/${mv}`} className="block truncate rounded-sm bg-background/40 px-1.5 py-1 text-[12px] leading-tight hover:text-screen">
-                  {moveName(mv) ?? mv}
+                  {names.move(moveName(mv) ?? mv)}
                 </Link>
               </li>
             ))}
           </ul>
           {m.d && (
-            <p className="mt-1.5 text-[10px] text-muted-foreground" title="The source lists no moves for this Pokémon, so these are the last moves it learns by level up: the moveset the game gives a trainer's Pokémon that has no set moves.">
-              Level-up moveset
+            <p className="mt-1.5 text-[10px] text-muted-foreground" title={t("team.levelUpTitle")}>
+              {t("team.levelUp")}
             </p>
           )}
         </div>
@@ -94,27 +102,27 @@ function MonCard({ m }: { m: TrainerMon }) {
 
 /** One team: its Pokémon, plus the items the trainer can use. */
 export function TeamGrid({ team }: { team: TrainerTeam }) {
+  const t = serverT(trainersNs);
+  const names = dexNames();
   const items = new Map<string, number>();
   for (const i of team.items ?? []) items.set(i, (items.get(i) ?? 0) + 1);
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
-        <span className="font-mono tabular-nums">{levelRange(team.team)}</span>
-        <span>
-          {team.team.length} Pokémon{team.double ? " · Double Battle" : ""}
-        </span>
+        <span className="font-mono tabular-nums">{levelText(t, team.team)}</span>
+        <span>{t(team.double ? "team.sizeDouble" : "team.size", { n: team.team.length })}</span>
         {team.ver && (
           <span className="inline-flex items-center gap-1">
             {team.ver.map((v) => (
               <span key={v} className="rounded-sm px-1.5 py-0.5 text-[10px] font-bold" style={{ background: VERSION_BY_KEY[v]?.bg, color: VERSION_BY_KEY[v]?.dark ? "#000c" : "#fff" }}>
-                {VERSION_BY_KEY[v]?.name ?? v} only
+                {t("team.only", { version: names.locale === "en" ? (VERSION_BY_KEY[v]?.name ?? v) : names.version(v) })}
               </span>
             ))}
           </span>
         )}
         {items.size > 0 && (
           <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span>Uses</span>
+            <span>{t("team.uses")}</span>
             {[...items].map(([i, n]) => (
               <span key={i} className="inline-flex items-center gap-0.5 text-foreground/90">
                 <ItemRef refId={i} />
@@ -133,10 +141,10 @@ export function TeamGrid({ team }: { team: TrainerTeam }) {
   );
 }
 
-const tabLabel = (t: TrainerTeam, i: number) => t.tag ?? (i === 0 ? "First battle" : `Battle ${i + 1}`);
-
 /** A trainer as met in one place: header, and their team (or tabs between their battles). */
 export function TrainerCard({ group, game }: { group: TrainerGroup; game?: string }) {
+  const t = serverT(trainersNs);
+  const names = dexNames();
   const n = group.n ? notable(group.n) : undefined;
   const teams = group.teams;
   return (
@@ -157,23 +165,23 @@ export function TrainerCard({ group, game }: { group: TrainerGroup; game?: strin
               group.cls
             )}
           </h3>
-          {teams.length === 1 && teams[0].tag && <p className="text-xs text-primary">{teams[0].tag}</p>}
+          {teams.length === 1 && teams[0].tag && <p className="text-xs text-primary">{tagName(t, names, teams[0].tag)}</p>}
         </div>
         {n && (
           <Link
             href={`/pokedex/trainers/notable/${n.slug}${game ? `#game-${game}` : ""}`}
             className="inline-flex items-center gap-1 rounded-sm border border-primary/40 px-2 py-1 font-pixel text-[9px] uppercase tracking-wider hover:bg-primary hover:text-primary-foreground"
           >
-            {n.role} page <ArrowUpRight className="h-3 w-3" aria-hidden />
+            {t("team.rolePage", { role: roleName(t, n.role) })} <ArrowUpRight className="h-3 w-3" aria-hidden />
           </Link>
         )}
       </header>
       {teams.length === 1 ? (
         <TeamGrid team={teams[0]} />
       ) : (
-        <TeamTabs labels={teams.map(tabLabel)}>
-          {teams.map((t) => (
-            <TeamGrid key={t.id} team={t} />
+        <TeamTabs label={t("team.battles")} labels={teams.map((team, i) => battleLabel(t, names, team, i))}>
+          {teams.map((team) => (
+            <TeamGrid key={team.id} team={team} />
           ))}
         </TeamTabs>
       )}

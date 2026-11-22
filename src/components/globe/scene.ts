@@ -28,7 +28,8 @@ export interface HoverInfo {
 export interface SceneCallbacks {
   ready(): void;
   failed(): void;
-  stats(s: { lon: string; lat: string; zoom: string; tier: string; focus: string }): void;
+  /** `region`/`near`: the region `focus` names, and whether the view is only near it (for a page in another language). */
+  stats(s: { lon: string; lat: string; zoom: string; tier: string; focus: string; region?: string; near?: boolean }): void;
   /** A label with pictures is hovered (or tapped: pinned), or nothing is. */
   hover(h: HoverInfo | null, pinned: boolean): void;
   /** Where the hovered label is on screen, every frame it is. */
@@ -52,6 +53,8 @@ export interface SceneOptions {
   era: number;
   /** The WebGL context was lost and the scene must be built again (see watchContext). */
   onContextGone?: () => void;
+  /** A page in another language: the labels' names, English → that language's (names not in it stay English). */
+  names?: Record<string, string>;
 }
 export interface SceneApi {
   next(): void;
@@ -530,7 +533,7 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
     if (it.el) return it.el;
     const el = pool[it.kind].pop() ?? document.createElement("div");
     el.className = "gl-lb " + it.kind + (it.peak ? " peak" : "");
-    el.textContent = it.n;
+    el.textContent = opts.names?.[it.n] ?? it.n;
     el.dataset.key = it.key;
     if (shotKeys.has(it.key)) el.dataset.shot = "1"; else delete el.dataset.shot;
     el.classList.toggle("is-hover", hoverKey === it.key);
@@ -870,6 +873,7 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
         lon: lon.toFixed(1) + "°", lat: lat.toFixed(1) + "°", zoom: z.toFixed(1) + "×",
         tier: z >= 4.2 ? "Every place" : z >= 2.4 ? "Towns and cities" : z >= 1.7 ? "Major cities" : "Regions",
         focus: near.name ? (near.d < 400 ? near.name : "Near " + near.name) : "",
+        ...(opts.names && { region: near.name, near: near.d >= 400 }),
       });
     }
   }

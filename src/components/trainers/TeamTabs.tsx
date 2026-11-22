@@ -6,14 +6,15 @@ import { cn } from "@/lib/utils";
 /**
  * Switch between one trainer's battles (first battle, rematches, rival
  * variants). Every panel is server-rendered; the inactive ones are hidden.
+ * `label`: the tab list's name in the page's language (from the server).
  */
-export function TeamTabs({ labels, children }: { labels: string[]; children: React.ReactNode }) {
+export function TeamTabs({ labels, label = "Battles", children }: { labels: string[]; label?: string; children: React.ReactNode }) {
   const [active, setActive] = useState(0);
   const id = useId();
   const panels = Children.toArray(children);
   return (
     <div>
-      <div role="tablist" aria-label="Battles" className="-mx-1 mb-3 flex gap-1 overflow-x-auto px-1 pb-1 [scrollbar-width:none]">
+      <div role="tablist" aria-label={label} className="-mx-1 mb-3 flex gap-1 overflow-x-auto px-1 pb-1 [scrollbar-width:none]">
         {labels.map((l, i) => (
           <button
             key={l + i}
