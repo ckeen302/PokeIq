@@ -11,12 +11,12 @@
   "unavailable": "I profili Allenatore non sono disponibili al momento. Riprova tra un minuto.",
   "find": "Trova un Allenatore",
   "since": "Allenatore da {date}",
-  "trainerOf": "L'Allenatore di {name}",
+  "trainerOf": "L’Allenatore di {name}",
   "ranked": "PokéGuessr classificato",
-  "rankedDuels": "{n, plural, one {{record} in {n} sfida classificata} other {{record} in {n} sfide classificate}}",
+  "rankedDuels": "{n, plural, one {{record} in {n} duello classificato} other {{record} in {n} duelli classificati}}",
   "position": " · n. {position} su {players}",
   "bestScore": " · record {score} punti",
-  "noRanked": "Ancora nessuna sfida classificata a PokéGuessr.",
+  "noRanked": "Ancora nessun duello classificato a PokéGuessr.",
   "pastSeasons": "Stagioni passate",
   "ladder": "Classifica delle lotte",
   "noLadder": "Ancora nessuna lotta classificata.",
@@ -25,7 +25,7 @@
     "bestStreak": "Serie migliore",
     "gamesWon": "Partite vinte",
     "perfect": "Senza errori",
-    "duelRecord": "Bilancio sfide"
+    "duelRecord": "Bilancio duelli"
   },
   "noConn": "Non ha ancora giocato a PokéConnections.",
   "battleRecord": "Bilancio delle lotte",
@@ -53,6 +53,6 @@
     "description": "Cerca un Allenatore di PokéIQ per nome: punteggi di Pokédle e lotte, record e replay recenti.",
     "label": "Community",
     "heading": "Trova un <hl>Allenatore</hl>",
-    "intro": "Cerca per nome dell'account per vedere il profilo di un Allenatore: punteggi, record e replay recenti. Da lì puoi aggiungerlo agli amici."
+    "intro": "Cerca per nome dell’account per vedere il profilo di un Allenatore: punteggi, record e replay recenti. Da lì puoi aggiungerlo agli amici."
   }
 }

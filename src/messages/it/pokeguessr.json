@@ -9,7 +9,7 @@
         "look": "Guarda la scena di gioco che ti viene data.",
         "pin": "Metti una puntina sulla mappa dove pensi che sia.",
         "submit": "Invia la risposta: più la puntina è vicina, più punti fai, fino a 25.000.",
-        "daily": "Ogni giorno c'è una nuova partita del giorno."
+        "daily": "Ogni giorno c’è una nuova partita del giorno."
       },
       "faq": {
         "q": "Come si calcola il punteggio?",
@@ -30,7 +30,7 @@
     "description": "I tuoi duelli di PokéGuessr, amichevoli e classificati, con il replay round per round di ognuno.",
     "back": "Torna a PokéGuessr",
     "h1": "Cronologia duelli",
-    "intro": "Tutti i duelli che finisci su questo dispositivo, o sul tuo account se hai effettuato l'accesso. Aprine uno per rivederlo round per round.",
+    "intro": "Tutti i duelli che finisci su questo dispositivo, o sul tuo account se hai effettuato l’accesso. Aprine uno per rivederlo round per round.",
     "worldMap": "Mappa del mondo"
   },
   "replay": {
@@ -92,7 +92,7 @@
     "play": {
       "game": "Gioca a PokéGuessr",
       "daily": "Gioca la giornaliera di oggi",
-      "weekly": "Gioca la sfida della settimana",
+      "weekly": "Gioca la Sfida settimanale",
       "duel": "Inizia un duello",
       "regionStreak": "Gioca a Serie di regioni"
     }

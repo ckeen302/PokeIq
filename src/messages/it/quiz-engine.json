@@ -26,7 +26,7 @@
     "entry": "«{entry}»",
     "entryGenus": "{entry} — il {genus}",
     "genusPrompt": "Quale Pokémon è noto come «{genus}»?",
-    "abilityPrompt": "Quale di queste è un'abilità di {name}?",
+    "abilityPrompt": "Quale di queste è un’abilità di {name}?",
     "abilityExplanation": "Abilità di {name}: {abilities}.",
     "hidden": "{ability} (nascosta)"
   },
@@ -45,9 +45,9 @@
   "hl": {
     "higher": {
       "hp": "Quale Pokémon ha più PS base?",
-      "atk": "Quale Pokémon ha l'Attacco base più alto?",
+      "atk": "Quale Pokémon ha l’Attacco base più alto?",
       "def": "Quale Pokémon ha la Difesa base più alta?",
-      "spa": "Quale Pokémon ha l'Attacco Speciale base più alto?",
+      "spa": "Quale Pokémon ha l’Attacco Speciale base più alto?",
       "spd": "Quale Pokémon ha la Difesa Speciale base più alta?",
       "spe": "Quale Pokémon ha la Velocità base più alta?",
       "bst": "Quale Pokémon ha il totale delle statistiche base più alto?",
@@ -56,9 +56,9 @@
     },
     "lower": {
       "hp": "Quale Pokémon ha meno PS base?",
-      "atk": "Quale Pokémon ha l'Attacco base più basso?",
+      "atk": "Quale Pokémon ha l’Attacco base più basso?",
       "def": "Quale Pokémon ha la Difesa base più bassa?",
-      "spa": "Quale Pokémon ha l'Attacco Speciale base più basso?",
+      "spa": "Quale Pokémon ha l’Attacco Speciale base più basso?",
       "spd": "Quale Pokémon ha la Difesa Speciale base più bassa?",
       "spe": "Quale Pokémon ha la Velocità base più bassa?",
       "bst": "Quale Pokémon ha il totale delle statistiche base più basso?",
@@ -72,7 +72,7 @@
     "explanation": "{a}: {va} · {b}: {vb}."
   },
   "comp": {
-    "holderPrompt": "Quale di questi Pokémon può avere l'abilità {ability}?",
+    "holderPrompt": "Quale di questi Pokémon può avere l’abilità {ability}?",
     "holderExplanation": "{name} può avere {ability}.",
     "moveTypePrompt": "Di che tipo è la mossa {move}?",
     "moveTypeExplanation": "{move} è una mossa di tipo {type}.",
@@ -85,7 +85,7 @@
       "status": "Stato"
     },
     "itemPrompt": "Che cosa fa lo strumento {name}?",
-    "abilityPrompt": "Che cosa fa l'abilità {name}?",
+    "abilityPrompt": "Che cosa fa l’abilità {name}?",
     "descExplanation": "{name}: {desc}"
   },
   "trivia": {
@@ -125,8 +125,8 @@
     },
     "villain": {
       "teamPrompt": "In {game}, quale organizzazione è guidata da {leader}?",
-      "leaderPrompt": "In {game}, chi guida l'organizzazione {team}?",
-      "explanation": "{leader} guida l'organizzazione {team}."
+      "leaderPrompt": "In {game}, chi guida l’organizzazione {team}?",
+      "explanation": "{leader} guida l’organizzazione {team}."
     },
     "teamStar": {
       "prompt": "In {game}, che tipo usa {boss} del {team}?",
@@ -142,7 +142,7 @@
       "doubles": "le lotte in doppio",
       "contests": "le Gare Pokémon",
       "heldItems": "gli strumenti tenuti",
-      "breeding": "l'allevamento e le Uova",
+      "breeding": "l’allevamento e le Uova",
       "shiny": "i Pokémon cromatici",
       "steelDark": "i tipi Acciaio e Buio",
       "split": "la distinzione tra mosse fisiche e speciali",
@@ -204,11 +204,11 @@
     "role": {
       "gymLeader": "Capopalestra",
       "eliteFour": "Superquattro",
-      "champion": "Sfida finale della Lega",
+      "champion": "Campione",
       "rival": "Lotta contro il rivale",
       "boss": "Lotta contro il boss",
       "battle": "Lotta",
-      "kahuna": "Grande Prova"
+      "kahuna": "Kahuna"
     },
     "rematch": "{role} (rivincita)",
     "gameRole": "{game} — {role}{hasPlace, select, yes {, {place}} other {}}",

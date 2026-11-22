@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "La storia del mondo Pokémon: la storia dei giochi in 3D",
-    "description": "La storia del mondo Pokémon come la raccontano i giochi: dal mito della creazione di Sinnoh e dallo scontro primordiale di Hoenn all'arma suprema di Kalos, la Notte Nera di Galar, la Torre Bruciata e la macchina del tempo dell'Area Zero. Un museo cinematografico in 3D con la fonte di ogni frase nei giochi.",
+    "description": "La storia del mondo Pokémon come la raccontano i giochi: dal mito della creazione di Sinnoh e dallo scontro primordiale di Hoenn all’arma suprema di Kalos, la Notte Nera di Galar, la Torre Bruciata e la macchina del tempo dell’Area Zero. Un museo cinematografico in 3D con la fonte di ogni frase nei giochi.",
     "socialTitle": "La storia del mondo Pokémon · PokéIQ",
     "chapterTitle": "{title}: la storia di {region} ({when})",
     "chapterDescription": "{summary} Capitolo {numeral} de La storia del mondo Pokémon, un museo in 3D della storia raccontata nei giochi, con la fonte di ogni frase nei giochi.",
@@ -20,7 +20,7 @@
   "rest": "Il resto della storia",
   "separate": "Una continuità a parte",
   "howTo": "Come leggere le etichette.",
-  "tagsHelp": "<myth>Mito, Leggenda e Racconto popolare</myth>: il gioco lo racconta come una storia. <implied>Implicito</implied>: deriva chiaramente da ciò che dicono i giochi. <theory>Teoria</theory> e <speculation>Speculazione</speculation>: l'idea o l'ipotesi di un personaggio. <contested>Fonti discordanti</contested>: i giochi lo raccontano in più modi. Le frasi senza etichetta sono affermate esplicitamente.",
-  "continuity": "L'anime e i film hanno una loro continuità, tenuta a parte qui sopra. Vuoi sapere quando sono usciti i giochi, l'anime e i film? Guarda la <link>cronologia Pokémon</link>.",
+  "tagsHelp": "<myth>Mito, Leggenda e Racconto popolare</myth>: il gioco lo racconta come una storia. <implied>Implicito</implied>: deriva chiaramente da ciò che dicono i giochi. <theory>Teoria</theory> e <speculation>Speculazione</speculation>: l’idea o l’ipotesi di un personaggio. <contested>Fonti discordanti</contested>: i giochi lo raccontano in più modi. Le frasi senza etichetta sono affermate esplicitamente.",
+  "continuity": "L’anime e i film hanno una loro continuità, tenuta a parte qui sopra. Vuoi sapere quando sono usciti i giochi, l’anime e i film? Guarda la <link>cronologia Pokémon</link>.",
   "music": "Musica: una colonna sonora originale scritta per questo film, un tema arrangiato in quattro tracce, suonato con il banco di suoni MuseScore General (MIT; gli archi da VSCO 2 Community Edition, CC0). Ambienti ed effetti sono creati nel browser (<a>crediti</a>). Le figure dei Pokémon sono ricavate dai render di Pokémon HOME forniti da PokéAPI."
 }

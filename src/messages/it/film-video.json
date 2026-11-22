@@ -23,15 +23,15 @@
     "scene": "Preparazione della scena",
     "music": "Mixaggio della musica",
     "rendering": "Rendering",
-    "packing": "Creazione dell'MP4",
+    "packing": "Creazione dell’MP4",
     "recording": "Registrazione"
   },
   "story": {
     "wholeBody": "Tutta la storia di Pokémon in 60 secondi: il grande momento di ogni capitolo.",
     "hook": "Tutta la storia di Pokémon in {seconds} secondi",
-    "kicker": "Trent'anni, ogni frase con la sua fonte",
+    "kicker": "Trent’anni, ogni frase con la sua fonte",
     "shareTitle": "La storia di Pokémon",
-    "shareText": "Tutta la storia di Pokémon, dalle cacce agli insetti di un bambino ai trent'anni #pokemon #pokeiq",
+    "shareText": "Tutta la storia di Pokémon, dalle cacce agli insetti di un bambino ai trent’anni #pokemon #pokeiq",
     "endLine": "Il film completo, con le sue fonti"
   },
   "history": {

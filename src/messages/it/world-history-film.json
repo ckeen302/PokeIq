@@ -18,15 +18,15 @@
   "sceneLabel": "La storia del mondo Pokémon in 3D. Scorri per muoverti nel film; trascina per guardarti intorno; pizzica o scorri con Ctrl per lo zoom.",
   "loading": {
     "museum": "Apertura del museo…",
-    "restoring": "Ripristino dell'immagine…",
+    "restoring": "Ripristino dell’immagine…",
     "chapter": "Apertura: {region}…",
     "exhibit": "Apertura della mostra…"
   },
   "backLab": "Torna al Laboratorio 3D",
   "lab": "Laboratorio 3D",
   "name": "La storia del mondo Pokémon",
-  "soundOn": "Attiva l'audio",
-  "soundOff": "Disattiva l'audio",
+  "soundOn": "Attiva l’audio",
+  "soundOff": "Disattiva l’audio",
   "chapters": "Capitoli",
   "readLabel": "Leggi la storia e le sue fonti",
   "read": "Leggi",

@@ -18,7 +18,7 @@
         "giveUp": "Arrenditi quando vuoi per vedere quelli che ti sono sfuggiti, ognuno con il link alla sua pagina del Pokédex."
       },
       "faq": {
-        "dailyQ": "C’è una sfida giornaliera?",
+        "dailyQ": "C’è un giornaliero?",
         "dailyA": "Sì: una categoria al giorno, uguale per tutti. Conta un tentativo al giorno.",
         "raceQ": "Posso sfidare i miei amici?",
         "raceA": "Crea una gara, condividi il link e fino a otto Allenatori nominano la stessa categoria insieme, con barre di avanzamento in diretta.",
@@ -43,7 +43,7 @@
     }
   },
   "daily": {
-    "metaTitle": "Nominali tutti, sfida del giorno: il quiz di memoria Pokémon di oggi",
+    "metaTitle": "Nominali tutti, il giornaliero: il quiz di memoria Pokémon di oggi",
     "metaDescription": "Una categoria di Pokémon al giorno, uguale per tutti: nominane il più possibile nel tempo standard e scopri come ti piazzi oggi."
   },
   "race": {

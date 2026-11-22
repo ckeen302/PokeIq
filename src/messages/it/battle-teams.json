@@ -37,10 +37,10 @@
   "blurbs": {
     "gen9ou": "La categoria di punta di Smogon in singolo: tutto ciò che sta sotto gli Ubers.",
     "gen9ubers": "Leggendari di copertina benvenuti. Solo i più squilibrati sono vietati.",
-    "gen9uu": "La categoria sotto l'OU: niente Pokémon OU o UUBL.",
-    "gen9ru": "La categoria sotto l'UU: niente Pokémon UU o RUBL.",
-    "gen9nu": "La categoria sotto l'RU: niente Pokémon RU o NUBL.",
-    "gen9pu": "La categoria sotto l'NU: niente Pokémon NU o PUBL.",
+    "gen9uu": "La categoria sotto l’OU: niente Pokémon OU o UUBL.",
+    "gen9ru": "La categoria sotto l’UU: niente Pokémon UU o RUBL.",
+    "gen9nu": "La categoria sotto l’RU: niente Pokémon RU o NUBL.",
+    "gen9pu": "La categoria sotto l’NU: niente Pokémon NU o PUBL.",
     "gen9lc": "Little Cup: Pokémon al primo stadio che possono evolversi, al livello 5.",
     "gen9monotype": "Tutti i Pokémon della squadra condividono un tipo. Niente Teracristal.",
     "gen9doublesou": "Due contro due, la lista delle categorie in doppio di Smogon.",
@@ -82,7 +82,7 @@
     "showdown": "Squadra di Showdown",
     "noMons": "Nessun Pokémon trovato. Incolla una squadra esportata dal costruttore di squadre di Showdown.",
     "many": "Importa {n} squadre",
-    "manyHint": "Una squadra o un intero backup del costruttore di squadre (un'intestazione === [format] Name === per squadra).",
+    "manyHint": "Una squadra o un intero backup del costruttore di squadre (un’intestazione === [format] Name === per squadra).",
     "oneHint": "Fino a sei Pokémon; quello che viene dopo il sesto viene ignorato.",
     "export": "Esportazione di Showdown"
   },

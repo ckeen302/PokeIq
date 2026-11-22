@@ -9,8 +9,8 @@
   "notFound": {
     "title": "Pagina non trovata",
     "description": "Questa pagina non esiste. Torna ai giochi Pokémon di PokéIQ o apri il Pokédex.",
-    "heading": "Un 404 selvatico è apparso!",
-    "body": "Questa pagina è fuggita. Nemmeno il Pokédex ha una voce su di lei.",
+    "heading": "È apparso un 404 selvatico!",
+    "body": "Questa pagina è fuggita. Non c’è nemmeno nel Pokédex.",
     "home": "Torna al sicuro",
     "pokedex": "Apri il Pokédex"
   },

@@ -50,9 +50,9 @@
     "zoomBlurb": "Gli stessi {n} primi piani per entrambi, {seconds} secondi l’uno. Indovinare al passo 1 vale {first} punti, fino a {last} al passo {steps}; vince chi fa più punti. Manda il link al tuo amico e premi Pronto.",
     "blurb": "Le stesse {n} domande per entrambi, {seconds} secondi l’una. Una risposta giusta vale 100 punti, più fino a 50 per la velocità; vince chi fa più punti. Manda il link al tuo amico e premi Pronto.",
     "mode": "Modalità",
-    "modeLabel": "Modalità della sfida",
+    "modeLabel": "Modalità del duello",
     "difficulty": "Difficoltà",
-    "difficultyLabel": "Difficoltà della sfida"
+    "difficultyLabel": "Difficoltà del duello"
   },
   "grid": {
     "best": "Record {score}",

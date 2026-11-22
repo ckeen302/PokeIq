@@ -1,9 +1,9 @@
 {
   "socialTitle": "PokéIQ: GeoGuessr, Wordle e Showdown per i Pokémon",
-  "socialDescription": "PokéGuessr con veri screenshot di ogni regione, un Pokédle quotidiano con sfide dal vivo, lotte fedeli a Showdown e un Laboratorio lotte che ne simula migliaia. Gratis, senza registrazione.",
+  "socialDescription": "PokéGuessr con veri screenshot di ogni regione, un Pokédle quotidiano con duelli dal vivo, lotte fedeli a Showdown e un Laboratorio lotte che ne simula migliaia. Gratis, senza registrazione.",
   "h1": "PokéIQ: giochi, quiz e lotte Pokémon",
   "free": "Gratis · senza registrazione",
-  "pitch": "Rompicapi Pokémon quotidiani, un GeoGuessr dei Pokémon con vere visuali dei giochi, lotte su Showdown e Pokémon in 3D.",
+  "pitch": "Puzzle Pokémon quotidiani, un GeoGuessr dei Pokémon con vere visuali dei giochi, lotte su Showdown e Pokémon in 3D.",
   "play": "Gioca ai giochi di oggi",
   "coffee": "Offrimi un caffè",
   "socials": "PokéIQ sui social",
@@ -11,9 +11,9 @@
   "today": {
     "title": "Oggi",
     "allDone": "Tutto fatto per oggi",
-    "newIn": " · nuovi rompicapi tra ",
+    "newIn": " · nuovi puzzle tra ",
     "keep": " · gioca oggi per mantenerla",
-    "midnight": "Nuovi rompicapi ogni giorno a mezzanotte",
+    "midnight": "Nuovi puzzle ogni giorno a mezzanotte",
     "done": "Fatto",
     "inProgress": "In corso",
     "continue": "Continua",
@@ -32,7 +32,7 @@
   "results": {
     "right": "{correct}/{total} giuste",
     "solvedIn": "Risolto in {n}",
-    "missed": "Mancato oggi",
+    "missed": "Non risolto",
     "points": "{points} pt",
     "solvedMistakes": "Risolto · {n, plural, one {# errore} other {# errori}}",
     "perfect": "Perfetto",

@@ -43,7 +43,7 @@
     "loading": "Caricamento del replay…",
     "missing": "Nessun replay",
     "error": "Qualcosa è andato storto",
-    "missingBlurb": "Il replay di questo duello non esiste, oppure possono vederlo solo i due Allenatori che l'hanno giocato.",
+    "missingBlurb": "Il replay di questo duello non esiste, oppure possono vederlo solo i due Allenatori che l’hanno giocato.",
     "play": "Gioca a PokéGuessr"
   },
   "trainer": "Allenatore",
@@ -87,7 +87,7 @@
     "r": "R{n}"
   },
   "share": {
-    "copyFallback": "Copia l'indirizzo dalla barra degli indirizzi.",
+    "copyFallback": "Copia l’indirizzo dalla barra degli indirizzi.",
     "failed": "Impossibile cambiare la condivisione. Riprova.",
     "copied": "Copiato",
     "copy": "Copia link",

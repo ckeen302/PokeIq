@@ -16,7 +16,7 @@
   },
   "siteRules": {
     "0": "Sii gentile. Niente bullismo, parolacce o odio.",
-    "1": "Non condividere mai dati personali: il tuo vero nome, l'età, la scuola, l'indirizzo, il telefono o i social.",
+    "1": "Non condividere mai dati personali: il tuo vero nome, l’età, la scuola, l’indirizzo, il telefono o i social.",
     "2": "Non si possono pubblicare link. Parla del gioco!",
     "3": "Vedi qualcosa che non va? Usa la bandierina per segnalare un messaggio. I moderatori leggono ogni segnalazione."
   },
@@ -39,7 +39,7 @@
     },
     "battle": {
       "0": "Non chiedere né combinare vittorie: gioca ogni lotta sul serio.",
-      "1": "Valuta le squadre con gentilezza: di' cosa funziona, poi cosa cambieresti."
+      "1": "Valuta le squadre con gentilezza: di’ cosa funziona, poi cosa cambieresti."
     },
     "quizzes": {
       "0": "Non pubblicare le risposte di un quiz che qualcuno sta giocando."
@@ -72,7 +72,7 @@
     },
     "quizzes": {
       "0": "Tutti i quiz",
-      "1": "Name 'em All"
+      "1": "Nominali tutti"
     }
   }
 }

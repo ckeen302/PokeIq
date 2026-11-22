@@ -93,7 +93,7 @@
   },
   "conn-duel-10": {
     "name": "Bolide",
-    "description": "Vinci 10 sfide di PokéConnections"
+    "description": "Vinci 10 duelli di PokéConnections"
   },
   "conn-featured": {
     "name": "Creatore in vetrina",
@@ -117,7 +117,7 @@
   },
   "pdk-duel-10": {
     "name": "Tris vincente",
-    "description": "Vinci 10 sfide a Tris di Pikadoku"
+    "description": "Vinci 10 duelli a Tris di Pikadoku"
   },
   "conn-hard": {
     "name": "Nervi d’acciaio",

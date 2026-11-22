@@ -3,7 +3,7 @@
     "title": "Quiz Chi è quel Pokémon? e altre modalità di quiz Pokémon",
     "description": "Gioca al quiz Chi è quel Pokémon?, a un quiz dei versi, alle voci del Pokédex, all’efficacia dei tipi e a Più o meno, nei formati Classico, Sopravvivenza e Blitz.",
     "h1": "Quiz",
-    "duel": "Sfida a quiz",
+    "duel": "Duello a quiz",
     "duelLine": "Rispondi alle stesse domande di un amico, dal vivo.",
     "infoName": "i quiz Pokémon",
     "infoDescription": "Quiz Pokémon gratuiti, tra cui Chi è quel Pokémon?, un quiz dei versi e l’efficacia dei tipi, nei formati Classico, Sopravvivenza e Blitz.",
@@ -99,10 +99,10 @@
     "description": "Ogni giorno un nuovo quiz Pokémon da 10 domande, uguale per tutti. Tieni viva la tua serie e confronta il tuo PokéIQ."
   },
   "duel": {
-    "title": "Una sfida a quiz Pokémon",
+    "title": "Un duello a quiz Pokémon",
     "description": "Quiz Pokémon testa a testa: le stesse domande per entrambi, giusto e veloce vale di più.",
-    "versus": "{host} vs {guest}: una sfida a {mode}",
-    "challenge": "{host} ti sfida a {mode}",
+    "versus": "{host} contro {guest}: un duello a {mode}",
+    "challenge": "{host} ti sfida a un duello a {mode}",
     "aTrainer": "Un Allenatore",
     "invite": "{mode} testa a testa: le stesse {n} domande per entrambi, giusto e veloce vale di più.",
     "inviteLevel": "{mode} testa a testa, a livello {level}: le stesse {n} domande per entrambi, giusto e veloce vale di più."
@@ -112,7 +112,7 @@
     "aTrainer": "Un Allenatore",
     "scored": "{who} ha fatto {correct}/{total} (PokéIQ {iq}). Sai fare di meglio?",
     "description": "{run} su PokéIQ. Gioca esattamente le stesse domande e scopri chi conosce meglio i Pokémon.",
-    "daily": "Sfida del giorno #{n}",
+    "daily": "Sfida del giorno n. {n}",
     "run": "{mode} · {format}"
   }
 }

@@ -1,7 +1,7 @@
 {
   "confirm": {
     "title": "Email confermata",
-    "body": "Tutto pronto. L'email giornaliera arriva quando escono le nuove sfide, se è attiva nelle Impostazioni.",
+    "body": "Tutto pronto. L’email giornaliera arriva quando escono le nuove sfide, se è attiva nelle Impostazioni.",
     "error": "Quel link di conferma è scaduto o è stato sostituito da uno più recente. Chiedine uno nuovo nelle Impostazioni.",
     "working": "Conferma in corso…"
   },

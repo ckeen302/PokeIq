@@ -1,12 +1,12 @@
 {
   "duel": {
-    "fallbackTitle": "Una sfida di PokéGuessr",
-    "fallbackDescription": "Le sfide di GeoGuessr in versione Pokémon: gli stessi luoghi per entrambi, vince la puntina più vicina.",
-    "titleVs": "{host} contro {guest}: una sfida di PokéGuessr",
-    "titleChallenge": "{host} ti sfida a PokéGuessr",
+    "fallbackTitle": "Un duello di PokéGuessr",
+    "fallbackDescription": "I duelli di GeoGuessr in versione Pokémon: gli stessi luoghi per entrambi, vince la puntina più vicina.",
+    "titleVs": "{host} contro {guest}: un duello di PokéGuessr",
+    "titleChallenge": "{host} ti sfida a un duello di PokéGuessr",
     "aTrainer": "Un Allenatore",
     "raceDescription": "Una gara a punti sulla mappa {where}: gli stessi {rounds} luoghi per entrambi, vince chi fa più punti.",
-    "hpDescription": "Testa a testa sulla mappa {where}: gli stessi luoghi per entrambi, {hp} PS a testa, con le regole delle sfide di GeoGuessr."
+    "hpDescription": "Testa a testa sulla mappa {where}: gli stessi luoghi per entrambi, {hp} PS a testa, con le regole dei duelli di GeoGuessr."
   },
   "party": {
     "fallbackTitle": "Una partita di gruppo a PokéGuessr",

@@ -6,7 +6,7 @@
   "currentCognitive": "Il tuo PokéIQ cognitivo: <b>{score}</b> ({p}° percentile).",
   "currentKnowledge": "PokéIQ di conoscenza: <b>{iq}</b> ({title}).",
   "start": "Inizia il test",
-  "keys": "I tasti 1–6 scelgono un'opzione. ",
+  "keys": "I tasti 1–6 scelgono un’opzione. ",
   "fresh": "Ogni nuovo tentativo propone esercizi nuovi.",
   "ranks": {
     "professor": "Professore Pokémon",
@@ -21,7 +21,7 @@
     "fluid": { "title": "Ragionamento fluido", "short": "Ragionamento", "intro": "Trova la regola nascosta e scegli il pezzo mancante." },
     "memory": { "title": "Memoria di lavoro", "short": "Memoria", "intro": "Tieni a mente una sequenza o un calcolo, poi rispondi." },
     "speed": { "title": "Velocità di elaborazione", "short": "Velocità", "intro": "75 secondi: tocca ogni corrispondenza il più in fretta possibile." },
-    "spatial": { "title": "Abilità spaziali", "short": "Spaziale", "intro": "Ruota, traccia percorsi e conta oggetti con l'immaginazione." },
+    "spatial": { "title": "Abilità spaziali", "short": "Spaziale", "intro": "Ruota, traccia percorsi e conta oggetti con l’immaginazione." },
     "knowledge": { "title": "Conoscenza dei Pokémon", "short": "Conoscenza", "intro": "20 domande adattive sui Pokémon stessi." }
   },
   "section": "Sezione {n}/5 · <v>{title}</v>",
@@ -30,7 +30,7 @@
   "begin": "Inizia",
   "time": "TEMPO",
   "options": "Opzioni",
-  "matrix": "Lo schema 3 per 3, manca l'ultima casella",
+  "matrix": "Lo schema 3 per 3, manca l’ultima casella",
   "sequence": "La sequenza",
   "rotation": "Quale di questi è {name} ruotato, non specchiato?",
   "routeMap": "Una mappa del percorso di {n} per {n}",

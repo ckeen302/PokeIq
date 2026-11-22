@@ -50,7 +50,7 @@
   },
   "noEvo": {
     "label": "Non si evolve",
-    "rule": "Nessuno di loro si evolve né deriva da un'evoluzione.",
+    "rule": "Nessuno di loro si evolve né deriva da un’evoluzione.",
     "why": "nessuna evoluzione"
   },
   "stone": {
@@ -68,7 +68,7 @@
     "why": "si evolve da {from} con uno scambio",
     "whyHolding": "si evolve da {from} con uno scambio tenendo {item}",
     "whyFor": "si evolve da {from} con uno scambio con {pokemon}",
-    "lureInto": "si evolve in {into} con uno scambio, ma non è un'evoluzione per scambio",
+    "lureInto": "si evolve in {into} con uno scambio, ma non è un’evoluzione per scambio",
     "lureHeld": "si evolve tenendo uno strumento ({item}), ma salendo di livello, non con uno scambio",
     "lureHeldTime": "si evolve tenendo uno strumento ({item}, {time}), ma salendo di livello, non con uno scambio"
   },
@@ -81,17 +81,17 @@
     "rule": "Si evolvono tutti dalla pre-evoluzione salendo di livello con molta amicizia.",
     "why": "si evolve da {from} con molta amicizia",
     "whyTime": "si evolve da {from} con molta amicizia ({time})",
-    "lure": "si evolve in {into} per amicizia, ma non è un'evoluzione per amicizia"
+    "lure": "si evolve in {into} per amicizia, ma non è un’evoluzione per amicizia"
   },
   "ability": {
     "label": "Può avere {ability}",
-    "rule": "Possono avere tutti l'abilità {ability} (contano anche quelle speciali).",
+    "rule": "Possono avere tutti l’abilità {ability} (contano anche quelle speciali).",
     "why": "Abilità {ability}",
     "whyHidden": "Abilità speciale {ability}"
   },
   "hidden": {
     "label": "Abilità speciale {ability}",
-    "rule": "{ability} è l'abilità speciale di tutti."
+    "rule": "{ability} è l’abilità speciale di tutti."
   },
   "move": {
     "label": "Impara {move} salendo di livello",
@@ -165,7 +165,7 @@
     "maleRule": "Sono tutti sempre maschi.",
     "maleWhy": "100% maschio",
     "maleLureFemale": "sempre femmina, non maschio",
-    "maleLureMostly": "maschio l'87,5% delle volte, ma non sempre",
+    "maleLureMostly": "maschio l’87,5% delle volte, ma non sempre",
     "femaleLabel": "Sempre femmina",
     "femaleRule": "Sono tutte sempre femmine.",
     "femaleWhy": "100% femmina",
@@ -180,7 +180,7 @@
     "rule": "Tutti i nomi inglesi iniziano con la lettera {letter}."
   },
   "ends": {
-    "label": "Nome inglese in “-{ending}”",
+    "label": "Nome inglese in «-{ending}»",
     "rule": "Tutti i nomi inglesi finiscono in -{ending}."
   },
   "short": {
@@ -202,22 +202,22 @@
     "accent": "un accento"
   },
   "wordplay": {
-    "hiddenIn": "“{word}” in {name}",
+    "hiddenIn": "«{word}» in {name}",
     "colourLabel": "Nasconde un colore (in inglese)",
     "colourRule": "Tutti i nomi inglesi nascondono un colore in inglese: {words}.",
     "bodyLabel": "Nasconde una parte del corpo (in inglese)",
     "bodyRule": "Tutti i nomi inglesi nascondono una parte del corpo in inglese: arm, toe, ear, fin...",
     "wordLabel": "Inizia con una parola inglese",
     "wordRule": "Tutti i nomi inglesi sono, o iniziano con, una parola inglese comune: slow, star, bell, bear...",
-    "wordPlus": "“{word}” + “{rest}”",
-    "wordAlone": "“{word}” da sola",
+    "wordPlus": "«{word}» + «{rest}»",
+    "wordAlone": "«{word}» da sola",
     "rhymeLabel": "Nomi inglesi in rima: -{ending}",
     "rhymeRule": "Tutti i nomi inglesi finiscono con le stesse lettere: -{ending}."
   },
   "lore": {
     "aceLabel": "Assi dei Capipalestra",
-    "aceRule": "Sono tutti l'ultimo Pokémon, il più forte, di un Capopalestra nei giochi principali.",
-    "aceWhy": "l'asso di un Capopalestra",
+    "aceRule": "Sono tutti l’ultimo Pokémon, il più forte, di un Capopalestra nei giochi principali.",
+    "aceWhy": "l’asso di un Capopalestra",
     "boxLabel": "Leggendari di copertina",
     "boxRule": "Sono tutti il Pokémon leggendario sulla copertina di un gioco della serie principale.",
     "boxWhy": "sulla copertina di {games}",
@@ -225,15 +225,15 @@
     "foodRule": "Tutti i nomi inglesi vengono da un cibo: apple, cherry, vanilla, pumpkin, chestnut, dough, olive, tea, egg, peach...",
     "foodWhy": "il suo nome inglese viene da un cibo",
     "moveLabel": "Mossa esclusiva",
-    "moveRule": "Imparano tutti una mossa che nessun'altra famiglia evolutiva può imparare.",
-    "moveWhy": "l'unico a imparare {moves}"
+    "moveRule": "Imparano tutti una mossa che nessun’altra famiglia evolutiva può imparare.",
+    "moveWhy": "l’unico a imparare {moves}"
   },
   "mixed": {
     "label": "Legato al tipo {type}",
-    "rule": "Ogni casella va con il tipo {type}: un Pokémon di tipo {type}, una mossa di tipo {type}, un'abilità che hanno soprattutto i Pokémon di tipo {type}, o il tipo {type} stesso.",
+    "rule": "Ogni casella va con il tipo {type}: un Pokémon di tipo {type}, una mossa di tipo {type}, un’abilità che hanno soprattutto i Pokémon di tipo {type}, o il tipo {type} stesso.",
     "why": "tipo {types}",
     "move": "una mossa di tipo {type}",
-    "ability": "un'abilità che hanno soprattutto i Pokémon di tipo {type}",
+    "ability": "un’abilità che hanno soprattutto i Pokémon di tipo {type}",
     "type": "il tipo {type} stesso"
   }
 }

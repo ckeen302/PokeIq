@@ -5,7 +5,7 @@
     "lead": "{count} Pokémon in {minutes} minuti. La stessa categoria per tutti, con la sua classifica.",
     "loading": "Caricamento della categoria di oggi…",
     "seeBoard": "Vedi la classifica di oggi",
-    "play": "Gioca la sfida di oggi",
+    "play": "Gioca quello di oggi",
     "you": "Tu: {named}/{total} in {time}"
   },
   "race": {

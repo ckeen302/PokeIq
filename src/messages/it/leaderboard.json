@@ -67,10 +67,10 @@
   "footnote": "Ogni punteggio qui è stato valutato sul server: gli invii contengono un risultato firmato, mai un semplice numero.",
   "unavailable": "Questa classifica non è disponibile in questo momento. Riprova tra un minuto.",
   "invite": {
-    "playDaily": "Gioca alla Sfida di oggi",
-    "playDailyInstead": "Gioca invece alla Sfida di oggi",
+    "playDaily": "Gioca la Giornaliera di oggi",
+    "playDailyInstead": "Gioca invece la Giornaliera di oggi",
     "playWeekly": "Gioca a quella di questa settimana",
-    "playWeeklyInstead": "Gioca alla Sfida settimanale",
+    "playWeeklyInstead": "Gioca la Sfida settimanale",
     "playMap": "Gioca su questa mappa",
     "notSaved": "Nessuno ha salvato un punteggio su {label}",
     "firstDaily": "Sii il primo nella classifica di oggi",

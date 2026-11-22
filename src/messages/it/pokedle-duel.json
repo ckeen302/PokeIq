@@ -12,15 +12,15 @@
   "invite": "{host} ti sfida! Lo stesso Pokémon misterioso per entrambi, tre round, vince chi fa più punti.",
   "about": "Testa a testa: lo stesso Pokémon misterioso per entrambi, tre round. Indovina con meno tentativi, e più in fretta, per fare più punti.",
   "shareText": "Sfidami a Pokédle! Stesso Pokémon misterioso, vince chi usa meno tentativi.",
-  "hostPicks": "L'Allenatore che ha creato il duello sceglie formato e impostazioni; giocate entrambi con le stesse.",
-  "assistNote": "{label}: {blurb} Lo sceglie l'Allenatore che ha creato il duello; avete entrambi lo stesso.",
+  "hostPicks": "L’Allenatore che ha creato il duello sceglie formato e impostazioni; giocate entrambi con le stesse.",
+  "assistNote": "{label}: {blurb} Lo sceglie l’Allenatore che ha creato il duello; avete entrambi lo stesso.",
   "rules": {
     "rounds": "Round",
-    "roundsText": "Tre round, lo stesso Pokémon misterioso per entrambi, con {guesses} tentativi e {clues} indizi ({format}), e {time} a round. Vedi i colori dell'avversario mentre prova, mai i suoi Pokémon.",
+    "roundsText": "Tre round, lo stesso Pokémon misterioso per entrambi, con {guesses} tentativi e {clues} indizi ({format}), e {time} a round. Vedi i colori dell’avversario mentre prova, mai i suoi Pokémon.",
     "seconds60": "60 secondi",
     "minutes": "{n} minuti",
     "points": "Punti",
-    "pointsText": "Indovinare al primo tentativo vale {first}, all'ultimo {last}, più fino a {speed} per la velocità. Gli aiuti costano punti: categoria −{genus}, sagoma −{silhouette}.",
+    "pointsText": "Indovinare al primo tentativo vale {first}, all’ultimo {last}, più fino a {speed} per la velocità. Gli aiuti costano punti: categoria −{genus}, sagoma −{silhouette}.",
     "winning": "Vittoria",
     "winningText": "Vince chi ha più punti dopo tre round; a parità, meno tentativi, poi meno tempo. Se esci o smetti di giocare, perdi a tavolino."
   },
@@ -38,7 +38,7 @@
   "banner": {
     "solved": "Indovinato in {n}! In attesa di {them}…",
     "out": "Tentativi finiti. In attesa di {them}…",
-    "theySolved": "{them} l'ha indovinato in {n}!",
+    "theySolved": "{them} l’ha indovinato in {n}!",
     "theyOut": "{them} ha finito i tentativi."
   },
   "round": "Round {n}/{total}",
@@ -59,8 +59,8 @@
   "you": "Tu",
   "connectionLost": "Connessione persa",
   "pts": "{n} pt",
-  "rivalSolved": "L'avversario ha indovinato!",
-  "rivalGuessed": "L'avversario ha provato!",
+  "rivalSolved": "L’avversario ha indovinato!",
+  "rivalGuessed": "L’avversario ha provato!",
   "boardLabel": "{name}: {progress}",
   "noGuesses": "Nessun tentativo",
   "breakdown": {
@@ -73,7 +73,7 @@
     "hints": "Aiuti",
     "round": "Round"
   },
-  "they": "L'avversario",
+  "they": "L’avversario",
   "even": "Round in parità",
   "youTake": "Vinci il round {n}",
   "takes": "{name} vince il round {n}",

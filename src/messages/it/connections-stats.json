@@ -13,7 +13,7 @@
   "status": {
     "perfect": "Perfetto",
     "solved": "Risolto",
-    "missed": "Mancato",
+    "missed": "Non risolto",
     "progress": "In corso",
     "none": "Non giocato"
   },
@@ -25,5 +25,5 @@
   "key": "Legenda",
   "statsTitle": "Statistiche",
   "archiveTitle": "Archivio",
-  "archiveIntro": "Gioca un qualsiasi giornaliero passato. Le partite dell'archivio sono solo per divertimento: non contano mai per serie e statistiche."
+  "archiveIntro": "Gioca un qualsiasi giornaliero passato. Le partite dell’archivio sono solo per divertimento: non contano mai per serie e statistiche."
 }

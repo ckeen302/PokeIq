@@ -50,7 +50,7 @@
   "legend": {
     "label": "Cosa significano gli indizi",
     "match": "Uguale",
-    "partial": "Tipo nell'altra posizione",
+    "partial": "Tipo nell’altra posizione",
     "close": "Vicino",
     "higherLower": "Risposta più in alto / in basso",
     "miss": "Diverso"

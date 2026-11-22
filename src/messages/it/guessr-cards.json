@@ -1,8 +1,8 @@
 {
   "duel": {
-    "heading": "Sfide",
+    "heading": "Duelli",
     "modes": {
-      "hp": "Sfida a PS",
+      "hp": "Lotta a PS",
       "race": "Gara a punti",
       "team": "Squadre 2v2"
     },
@@ -10,7 +10,7 @@
       "casual": "Amichevole",
       "ranked": "Classificata"
     },
-    "queueLabel": "Tipo di sfida",
+    "queueLabel": "Tipo di duello",
     "eras": {
       "2d": "2D classico",
       "3d": "3D moderno"
@@ -22,16 +22,16 @@
     "raceBlurbEra": "Gli stessi {n} luoghi per entrambi, sulla mappa e i giochi scelti sopra. Vince chi fa più punti in {n} round. Manda il link al tuo amico e premi Pronto.",
     "hpBlurb": "Gli stessi luoghi per entrambi, sulla mappa scelta sopra. {hp} PS a testa: a ogni round il punteggio più basso perde la differenza. Manda il link al tuo amico e premi Pronto.",
     "hpBlurbEra": "Gli stessi luoghi per entrambi, sulla mappa e i giochi scelti sopra. {hp} PS a testa: a ogni round il punteggio più basso perde la differenza. Manda il link al tuo amico e premi Pronto.",
-    "turboInfo": "Turbo: appena uno risponde, l'altro ha {s} secondi invece di 15.",
+    "turboInfo": "Turbo: appena uno risponde, l’altro ha {s} secondi invece di 15.",
     "mode": "Modalità",
-    "modeLabel": "Modalità di sfida",
+    "modeLabel": "Modalità del duello",
     "raceRounds": "Round della gara",
     "partySettings": "Impostazioni della partita",
     "turboOn": "Turbo attivo",
     "turboOff": "Turbo spento"
   },
   "party": {
-    "royaleBlurb": "Fino a {max} Allenatori sugli stessi luoghi. Il punteggio più basso di ogni round perde una vita ({lives} a testa); vince l'ultimo Allenatore in gara.",
+    "royaleBlurb": "Fino a {max} Allenatori sugli stessi luoghi. Il punteggio più basso di ogni round perde una vita ({lives} a testa); vince l’ultimo Allenatore in gara.",
     "teamBlurb": "Squadra rossa contro blu, 2v2 (fino a 4v4), {hp} PS per squadra. La tua squadra conta la sua puntina migliore, e vedi le puntine dei compagni in diretta.",
     "label": "Gruppo · fino a {max} Allenatori",
     "room": "Stanza privata · {map}",
@@ -40,7 +40,7 @@
       "royale": "Battaglia Reale",
       "team": "Duello a squadre"
     },
-    "host": "Sei tu l'host: cambia mappa, vite, tempo e round nella stanza, poi avvia quando ci sono tutti.",
+    "host": "Sei tu l’host: cambia mappa, vite, tempo e round nella stanza, poi avvia quando ci sono tutti.",
     "nameLabel": "Il tuo nome Allenatore",
     "namePlaceholder": "Nome Allenatore",
     "nameRejected": "Scegli un altro nome.",

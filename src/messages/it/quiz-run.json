@@ -67,7 +67,7 @@
     "revealNext": "Svela il prossimo ({pct}%)",
     "nameLabel": "Nome dell’Allenatore",
     "placeholder": "Scrivi il nome di un Allenatore…",
-    "also": "anche “{name}”",
+    "also": "anche «{name}»",
     "guess": "Rispondi",
     "pick": "Scegli un Allenatore dalla lista.",
     "gotIt": "Indovinato",

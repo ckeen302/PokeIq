@@ -1,7 +1,7 @@
 {
   "title": "Nominali tutti",
   "share": {
-    "daily": "Nominali tutti, sfida del giorno {date}",
+    "daily": "Nominali tutti, giornaliero del {date}",
     "score": "{named}/{total} in {time}",
     "copied": "Copiato!",
     "shared": "Condiviso!",

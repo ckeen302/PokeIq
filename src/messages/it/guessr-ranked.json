@@ -16,7 +16,7 @@
   },
   "bot": {
     "tag": "Capopalestra",
-    "tagTitle": "Un avversario controllato dal computer: il Capopalestra gioca in classificata quando non c'è nessun Allenatore",
+    "tagTitle": "Un avversario controllato dal computer: il Capopalestra gioca in classificata quando non c’è nessun Allenatore",
     "leaders": {
       "brock": { "name": "Brock", "full": "Capopalestra Brock" },
       "misty": { "name": "Misty", "full": "Capopalestra Misty" },
@@ -49,21 +49,21 @@
     "widening": " · ricerca allargata",
     "near": " · Allenatori con Elo simile",
     "noneYet": "Nessun Allenatore trovato. Sfidi un Capopalestra?",
-    "botAbout": "Un avversario controllato dal computer al livello della tua divisione. Conta per l'Elo, ma con metà della variazione normale.",
+    "botAbout": "Un avversario controllato dal computer al livello della tua divisione. Conta per l’Elo, ma con metà della variazione normale.",
     "bot": "Sfida un Capopalestra",
     "cancel": "Annulla"
   },
   "card": {
     "label": "Classificata · Mappa del mondo",
     "loading": "Caricamento del tuo grado…",
-    "off": "La classificata di PokéGuessr arriva presto. Le sfide amichevoli sono già attive: passa ad Amichevole per trovare un avversario o sfidare un amico.",
+    "off": "La classificata di PokéGuessr arriva presto. I duelli amichevoli sono già attivi: passa ad Amichevole per trovare un avversario o sfidare un amico.",
     "ladder": "Classifica",
     "how1": "Testa a testa sulla mappa del mondo. Sali dalla Poké Ball alla UC Ball contro Allenatori con un Elo simile al tuo.",
     "how2": "Gli stessi luoghi per entrambi, {hp} PS a testa: a ogni round il punteggio più basso perde la differenza. Sempre sulla mappa del mondo. Abbandonare conta come sconfitta.",
-    "how3": "Tutti partono da {start} Elo, calcolato come su Pokémon Showdown: in Poké Ball e Mega Ball vedi solo la divisione; dalla Ultra Ball in su anche il numero. Sopra {drift}, l'Elo cala un po' nei giorni in cui non giochi.",
+    "how3": "Tutti partono da {start} Elo, calcolato come su Pokémon Showdown: in Poké Ball e Mega Ball vedi solo la divisione; dalla Ultra Ball in su anche il numero. Sopra {drift}, l’Elo cala un po’ nei giorni in cui non giochi.",
     "how4": "Vieni abbinato ad Allenatori con Elo simile, e più aspetti più la distanza può crescere. Se non arriva nessuno entro {wait}, puoi sfidare un Capopalestra: un avversario controllato dal computer, ben segnalato, al livello della tua divisione, che conta con metà della variazione normale.",
     "waitSeconds": "{n} secondi",
-    "waitWhile": "un po'",
+    "waitWhile": "un po’",
     "how5": "La classificata è divisa in stagioni di otto settimane. La divisione più alta raggiunta in una stagione ti dà le sue ricompense (una medaglia della stagione e oggetti estetici per ogni divisione fino a quella) alla fine della stagione. Poi ogni Elo torna a metà strada verso {start}, scendendo al massimo di una divisione, così la scalata riparte vicino a dove eri arrivato.",
     "nameLabel": "Nome Allenatore in classificata",
     "namePlaceholder": "Nome Allenatore",
@@ -75,12 +75,12 @@
     "climbing": "In salita",
     "slipping": "In discesa",
     "holding": "Stabile",
-    "botNote": "Sfida contro un Capopalestra: conta con metà della variazione normale.",
+    "botNote": "Duello contro un Capopalestra: conta con metà della variazione normale.",
     "promoted": "Promosso in {name}!",
     "demoted": "Retrocesso in {name}. Vinci la prossima per risalire.",
     "counting": "Calcolo del tuo Elo…"
   },
   "spot": {
-    "none": "Non sei ancora in classifica. <link>Gioca una sfida in classificata</link> per ottenere la tua divisione."
+    "none": "Non sei ancora in classifica. <link>Gioca un duello classificato</link> per ottenere la tua divisione."
   }
 }

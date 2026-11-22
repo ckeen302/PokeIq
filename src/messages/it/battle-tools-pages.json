@@ -6,7 +6,7 @@
     "crumb": "Calcolo danni",
     "heading": "Calcolo",
     "accent": "danni",
-    "intro": "Un calcolatore di danni Pokémon: l'intervallo di danno, la probabilità di KO e la descrizione di Showdown di ogni mossa, in entrambe le direzioni. Basato sul calcolatore di danni di Smogon."
+    "intro": "Un calcolatore di danni Pokémon: l’intervallo di danno, la probabilità di KO e la descrizione di Showdown di ogni mossa, in entrambe le direzioni. Basato sul calcolatore di danni di Smogon."
   },
   "teams": {
     "title": "Costruttore di squadre Pokémon: formati di Showdown, legalità verificata",
@@ -31,7 +31,7 @@
     "crumb": "Classifica",
     "heading": "Classifica",
     "accent": "delle lotte",
-    "rules": "Punteggi per formato come su Pokémon Showdown: la classifica segue l'Elo (tutti partono da {elo}, non si scende mai sotto e un Elo sopra 1400 cala un po' ogni giorno in cui non giochi), mostrato insieme al GXE (la tua probabilità di battere un Allenatore a caso in classifica) e a un punteggio Glicko-2. Tutti partono da {rating} ± {rd} Glicko-2; un punteggio è provvisorio finché la sua deviazione non scende sotto {shown}. Arrendersi, finire il tempo o uscire conta come sconfitta.",
+    "rules": "Punteggi per formato come su Pokémon Showdown: la classifica segue l’Elo (tutti partono da {elo}, non si scende mai sotto e un Elo sopra 1400 cala un po’ ogni giorno in cui non giochi), mostrato insieme al GXE (la tua probabilità di battere un Allenatore a caso in classifica) e a un punteggio Glicko-2. Tutti partono da {rating} ± {rd} Glicko-2; un punteggio è provvisorio finché la sua deviazione non scende sotto {shown}. Arrendersi, finire il tempo o uscire conta come sconfitta.",
     "short": "In ordine di Elo, con GXE e Glicko-2, come su Pokémon Showdown. Tutti partono da {elo}.",
     "insights": "Le tue statistiche",
     "play": "Gioca classificata",
@@ -41,25 +41,25 @@
   },
   "insights": {
     "title": "Analisi della squadra",
-    "description": "L'analisi delle tue lotte: Pokémon iniziali, Pokémon, avversari più duri e andamento del punteggio.",
+    "description": "L’analisi delle tue lotte: Pokémon iniziali, Pokémon, avversari più duri e andamento del punteggio.",
     "crumb": "Analisi della squadra",
     "heading": "Analisi",
     "accent": "della squadra",
-    "intro": "I tuoi Pokémon iniziali più frequenti, la percentuale di vittorie di ogni Pokémon, gli avversari che ti battono più spesso e l'andamento del tuo punteggio, dalle lotte salvate.",
-    "signIn": "L'analisi segue il tuo account: accedi per vedere la tua.",
+    "intro": "I tuoi Pokémon iniziali più frequenti, la percentuale di vittorie di ogni Pokémon, gli avversari che ti battono più spesso e l’andamento del tuo punteggio, dalle lotte salvate.",
+    "signIn": "L’analisi segue il tuo account: accedi per vedere la tua.",
     "signInButton": "Accedi"
   },
   "playerInsights": {
     "title": "{name} · Analisi della squadra",
-    "description": "L'analisi delle lotte di {name} su PokéIQ: Pokémon iniziali più frequenti, percentuale di vittorie per Pokémon, avversari più duri e andamento del punteggio.",
+    "description": "L’analisi delle lotte di {name} su PokéIQ: Pokémon iniziali più frequenti, percentuale di vittorie per Pokémon, avversari più duri e andamento del punteggio.",
     "heading": "{name}:",
     "accent": "analisi",
     "intro": "Pokémon iniziali, Pokémon, avversari più duri e punteggio nelle lotte salvate di {name}, ricavati dai loro replay.",
     "format": "Formato",
     "allFormats": "Tutti i formati",
     "noBattles": "Ancora nessuna lotta da analizzare.",
-    "soon": "L'analisi della squadra arriva presto.",
-    "empty": "Qui non ci sono ancora replay salvati da cui imparare: l'analisi nasce dalle lotte il cui replay è stato salvato (ogni lotta classificata salva il suo).",
+    "soon": "L’analisi della squadra arriva presto.",
+    "empty": "Qui non ci sono ancora replay salvati da cui imparare: l’analisi nasce dalle lotte il cui replay è stato salvato (ogni lotta classificata salva il suo).",
     "reading": "Si stanno leggendo altre {n} lotte; ricontrolla tra un attimo.",
     "battlesRead": "Lotte lette",
     "winRate": "Vittorie",
@@ -80,10 +80,10 @@
     "mostUsed": "Il più usato",
     "leadTimes": "{n}× iniziale",
     "leadWon": "{rate} vinte",
-    "trendMore": "Gioca {count, select, one {un'altra lotta classificata} other {un paio di lotte classificate}} in questo formato per vedere l'andamento.",
+    "trendMore": "Gioca {count, select, one {un’altra lotta classificata} other {un paio di lotte classificate}} in questo formato per vedere l’andamento.",
     "trendLabel": "Punteggio da {from} a {to} in {n} lotte classificate",
     "trendDelta": "{delta} in {n, plural, one {{n} lotta} other {{n} lotte}}",
-    "lastGxe": "GXE dopo l'ultima lotta: {gxe}%"
+    "lastGxe": "GXE dopo l’ultima lotta: {gxe}%"
   },
   "replays": {
     "title": "Replay delle lotte Pokémon",
@@ -121,7 +121,7 @@
   },
   "tournaments": {
     "title": "Tornei",
-    "description": "Tornei di lotte Pokémon su PokéIQ: eliminazione diretta o girone all'italiana in qualsiasi formato, più un torneo ufficiale di Lotta Casuale ogni ora.",
+    "description": "Tornei di lotte Pokémon su PokéIQ: eliminazione diretta o girone all’italiana in qualsiasi formato, più un torneo ufficiale di Lotta Casuale ogni ora.",
     "crumb": "Tornei",
     "heading": "Tornei",
     "accent": "dal vivo",

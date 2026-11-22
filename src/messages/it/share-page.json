@@ -47,7 +47,7 @@
   "quiz": {
     "dailyGame": "Sfida del giorno",
     "testGame": "Test PokéIQ",
-    "dailyLabel": "Sfida del giorno #{n}",
+    "dailyLabel": "Sfida del giorno n. {n}",
     "testLabel": "Il Test PokéIQ",
     "iq": "PokéIQ {iq}",
     "right": "{correct}/{total} giuste · {points} pt",
@@ -80,7 +80,7 @@
     "hint": "Aiuto usato",
     "play": "Gioca a PokéConnections",
     "playDaily": "Gioca al PokéConnections di oggi",
-    "description": "{size, select, five {Pokémon divisi in gruppi nascosti.} other {Pokémon divisi in gruppi nascosti.}} Scopri cosa li unisce in un nuovo rompicapo ogni giorno su PokéIQ. Sai fare di meglio?"
+    "description": "{size, select, five {Pokémon divisi in gruppi nascosti.} other {Pokémon divisi in gruppi nascosti.}} Scopri cosa li unisce in un nuovo puzzle ogni giorno su PokéIQ. Sai fare di meglio?"
   },
   "pikadoku": {
     "full": "Ha riempito tutta la griglia",

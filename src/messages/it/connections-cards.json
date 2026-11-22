@@ -3,10 +3,10 @@
     "heading": "Testa a testa · PokéConnections",
     "blurb4": "Gli stessi sedici Pokémon per entrambi. Vince chi trova per primo tutti e quattro i gruppi.",
     "blurb5": "Gli stessi venticinque Pokémon per entrambi. Vince chi trova per primo tutti e cinque i gruppi.",
-    "rules": "Ogni errore aggiunge {seconds} secondi al tuo tempo, e con {mistakes} errori sei fuori. Se siete fuori entrambi, vince chi ha trovato più gruppi. Vedi i gruppi dell'avversario come colori man mano che li trova, mai quali Pokémon.",
-    "fresh": "Manda il link a un amico o trova un avversario (solo 4×4). Le sfide usano puzzle nuovi, mai il giornaliero, e non contano mai per la tua serie.",
+    "rules": "Ogni errore aggiunge {seconds} secondi al tuo tempo, e con {mistakes} errori sei fuori. Se siete fuori entrambi, vince chi ha trovato più gruppi. Vedi i gruppi dell’avversario come colori man mano che li trova, mai quali Pokémon.",
+    "fresh": "Manda il link a un amico o trova un avversario (solo 4×4). I duelli usano puzzle nuovi, mai il giornaliero, e non contano mai per la tua serie.",
     "board": "Griglia",
-    "boardAria": "Dimensione della griglia della sfida",
+    "boardAria": "Dimensione della griglia del duello",
     "size4": "Sedici Pokémon, quattro gruppi da quattro",
     "size5": "Venticinque Pokémon, cinque gruppi da cinque"
   },

@@ -1,13 +1,13 @@
 {
   "matched": "Avversario trovato! Tu vs {name}",
   "connectionLost": "Connessione persa. Riconnessione…",
-  "loading": "Caricamento della sfida",
-  "notFound": "Sfida non trovata",
+  "loading": "Caricamento del duello",
+  "notFound": "Duello non trovato",
   "leave": {
-    "warning": "Se esci, ti ritiri dalla sfida.",
+    "warning": "Se esci, ti ritiri dal duello.",
     "forfeit": "Ritirati",
     "stay": "Resta",
-    "button": "Esci dalla sfida"
+    "button": "Esci dal duello"
   },
   "lobby": {
     "host": "Un Allenatore",
@@ -58,20 +58,20 @@
   "howItWorks": "Come funziona",
   "card": {
     "eyebrow": "Sfida un amico",
-    "match": "Crea una sfida e invia il link, oppure affronta chi sta cercando lo stesso gioco in questo momento.",
+    "match": "Crea un duello e invia il link, oppure affronta chi sta cercando lo stesso gioco in questo momento.",
     "nameLabel": "Il tuo nome Allenatore",
     "namePlaceholder": "Nome Allenatore",
     "searching": "Ricerca di un avversario…",
     "cancel": "Annulla",
-    "create": "Crea sfida",
+    "create": "Crea duello",
     "find": "Trova un avversario",
-    "failed": "Impossibile creare la sfida."
+    "failed": "Impossibile creare il duello."
   },
   "errors": {
     "request": "Richiesta non riuscita ({status})",
-    "gone": "Questa sfida è finita o non è mai esistita.",
+    "gone": "Questo duello è finito o non è mai esistito.",
     "generic": "Qualcosa è andato storto.",
-    "join": "Impossibile unirsi alla sfida.",
+    "join": "Impossibile unirsi al duello.",
     "rematch": "Impossibile avviare la rivincita."
   },
   "taunts": {
@@ -122,7 +122,7 @@
     "skip": "Salta",
     "you": "Tu",
     "loading": "Caricamento",
-    "duels": "Sfide",
+    "duels": "Duelli",
     "guessedFirst": "Primo a rispondere",
     "percent": "{n}%",
     "strongest": "Regioni migliori",
@@ -130,8 +130,8 @@
     "won": "Vinta",
     "lost": "Persa",
     "draw": "Pareggio",
-    "last5": "Ultime 5 sfide",
-    "none": "Ancora nessuna sfida",
+    "last5": "Ultimi 5 duelli",
+    "none": "Ancora nessun duello",
     "latest": "Dalla più recente: {results}"
   }
 }

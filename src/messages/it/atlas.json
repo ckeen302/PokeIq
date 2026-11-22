@@ -25,7 +25,7 @@
   "whole": "Mostra tutto il mondo",
   "help": "Scorri per lo zoom, trascina per esplorare, clicca su un luogo per i dettagli. Ogni regione è disegnata alla stessa scala dalle mappe dei giochi e disposta come i luoghi reali a cui si ispira.",
   "noMatch": "Nessun risultato",
-  "nothing": "Niente si chiama “{q}”. Prova una regione, città, percorso o luogo, come Zafferanopoli, Percorso 24 o Paldea.",
+  "nothing": "Niente si chiama «{q}». Prova una regione, città, percorso o luogo, come Zafferanopoli, Percorso 24 o Paldea.",
   "main": "Regione della serie principale",
   "side": "DLC o area secondaria",
   "partOf": "Parte di {parent}",

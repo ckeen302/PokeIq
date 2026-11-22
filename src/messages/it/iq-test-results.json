@@ -22,7 +22,7 @@
     "fluid": { "strength": "individuare la regola dietro uno schema", "weakness": "trovare la regola dietro uno schema" },
     "memory": { "strength": "tenere a mente una sequenza o un calcolo", "weakness": "tenere a mente più cose insieme" },
     "speed": { "strength": "scorrere in fretta e con precisione", "weakness": "scorrere in fretta senza sbagliare" },
-    "spatial": { "strength": "ruotare le cose e tracciare percorsi con l'immaginazione", "weakness": "immaginare oggetti ruotati o impilati" }
+    "spatial": { "strength": "ruotare le cose e tracciare percorsi con l’immaginazione", "weakness": "immaginare oggetti ruotati o impilati" }
   },
   "retake": "Rifai con esercizi nuovi",
   "card": "Vedilo sulla tua scheda Allenatore"

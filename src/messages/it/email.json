@@ -3,18 +3,18 @@
     "email": "Email",
     "optional": "(facoltativa)",
     "box": "Avvisami via email quando escono nuove sfide del giorno",
-    "confirmFirst": "Prima ti invieremo un link per confermare l'indirizzo. Puoi disiscriverti quando vuoi."
+    "confirmFirst": "Prima ti invieremo un link per confermare l’indirizzo. Puoi disiscriverti quando vuoi."
   },
   "settings": {
     "sent": "Abbiamo inviato un link di conferma a {email}.",
     "throttled": "Un link di conferma è partito poco fa: controlla la tua casella di posta.",
-    "sendFailed": "Non siamo riusciti a inviare l'email di conferma. Prova «Invia di nuovo» tra un minuto.",
+    "sendFailed": "Non siamo riusciti a inviare l’email di conferma. Prova «Invia di nuovo» tra un minuto.",
     "loadFailed": "Impossibile caricare le impostazioni email.",
     "saveFailed": "Impossibile salvare.",
     "addFirst": "Aggiungi prima il tuo indirizzo email.",
     "badEmail": "Non sembra un indirizzo email.",
     "daily": "Email di promemoria giornaliere",
-    "dailyHint": "Un'email quando escono le nuove sfide del giorno.",
+    "dailyHint": "Un’email quando escono le nuove sfide del giorno.",
     "on": "Sì",
     "off": "No",
     "loading": "Caricamento",

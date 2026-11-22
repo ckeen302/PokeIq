@@ -5,7 +5,7 @@
   "challenged": "Sei stato sfidato",
   "scored": "{who} ha fatto {correct}/{total}",
   "line": "{run} · PokéIQ <b>{iq}</b> · {score} pt",
-  "same": "Avrai esattamente le stesse domande di “{mode}”, nello stesso formato. Pensi di conoscere meglio i Pokémon?",
+  "same": "Avrai esattamente le stesse domande di «{mode}», nello stesso formato. Pensi di conoscere meglio i Pokémon?",
   "accept": "Accetta la sfida",
   "daily": "Gioca la Sfida del giorno"
 }

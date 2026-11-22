@@ -1,7 +1,7 @@
 {
   "back": "Torna a PokéConnections",
-  "tag": "Sfida di PokéConnections",
-  "tagSeries": "Sfida di PokéConnections · {series}",
+  "tag": "Duello di PokéConnections",
+  "tagSeries": "Duello di PokéConnections · {series}",
   "race": "PokéConnections <r>Gara</r>",
   "invite4": "{host} ti sfida! Gli stessi sedici Pokémon per entrambi: vince chi trova per primo tutti e quattro i gruppi.",
   "invite5": "{host} ti sfida su una griglia 5×5! Gli stessi venticinque Pokémon per entrambi: vince chi trova per primo tutti e cinque i gruppi.",
@@ -15,7 +15,7 @@
     "mistakes": "Errori",
     "mistakesText": "Ogni errore aggiunge {s} secondi al tuo tempo, quindi una soluzione veloce ma pasticciata può perdere. Con {size} errori sei fuori.",
     "winning": "Come si vince",
-    "winningText": "Vince il tempo più basso (penalità comprese). Se siete fuori entrambi, o passano {min} minuti, vince chi ha trovato più gruppi, poi chi ha fatto meno errori. Vedi i gruppi dell'avversario solo come colori."
+    "winningText": "Vince il tempo più basso (penalità comprese). Se siete fuori entrambi, o passano {min} minuti, vince chi ha trovato più gruppi, poi chi ha fatto meno errori. Vedi i gruppi dell’avversario solo come colori."
   },
   "visitor": {
     "draw": "È finita in pareggio.",
@@ -73,27 +73,27 @@
   "out": "Fuori",
   "mistakes": "{n, plural, one {{n} errore} other {{n} errori}}",
   "reason": {
-    "theyLeft": "{name} ha lasciato la sfida.",
-    "youLeft": "Hai lasciato la sfida.",
+    "theyLeft": "{name} ha lasciato il duello.",
+    "youLeft": "Hai lasciato il duello.",
     "deadHeat": "Parità perfetta: {time} a testa.",
     "level": "Pari: {found} gruppi e {mistakes} errori a testa.",
-    "bothYou": "L'hai risolto in {a} contro {b}, penalità comprese.",
-    "bothThem": "{name} l'ha risolto in {a} contro {b}, penalità comprese.",
+    "bothYou": "L’hai risolto in {a} contro {b}, penalità comprese.",
+    "bothThem": "{name} l’ha risolto in {a} contro {b}, penalità comprese.",
     "firstYou": "Hai trovato per primo tutti e {size, select, 5 {cinque} other {quattro}} i gruppi.",
     "firstYouOut": "Hai trovato per primo tutti e {size, select, 5 {cinque} other {quattro}} i gruppi; {name} ha finito gli errori.",
     "firstThem": "{name} ha trovato per primo tutti e {size, select, 5 {cinque} other {quattro}} i gruppi.",
     "firstThemOut": "{name} ha trovato per primo tutti e {size, select, 5 {cinque} other {quattro}} i gruppi; tu hai finito gli errori.",
-    "moreYou": "Nessuno l'ha risolto: hai trovato più gruppi, {a} a {b}.",
-    "moreThem": "Nessuno l'ha risolto: {name} ha trovato più gruppi, {a} a {b}.",
-    "fewerYou": "Nessuno l'ha risolto, e tu hai fatto meno errori.",
-    "fewerThem": "Nessuno l'ha risolto, e {name} ha fatto meno errori."
+    "moreYou": "Nessuno l’ha risolto: hai trovato più gruppi, {a} a {b}.",
+    "moreThem": "Nessuno l’ha risolto: {name} ha trovato più gruppi, {a} a {b}.",
+    "fewerYou": "Nessuno l’ha risolto, e tu hai fatto meno errori.",
+    "fewerThem": "Nessuno l’ha risolto, e {name} ha fatto meno errori."
   },
   "share": {
-    "drew": "Sfida di PokéConnections su PokéIQ: ho pareggiato con {name}! {score}",
-    "beat": "Sfida di PokéConnections su PokéIQ: ho battuto {name}! {score}",
-    "lost": "Sfida di PokéConnections su PokéIQ: ho perso contro {name}! {score}"
+    "drew": "Duello di PokéConnections su PokéIQ: ho pareggiato con {name}! {score}",
+    "beat": "Duello di PokéConnections su PokéIQ: ho battuto {name}! {score}",
+    "lost": "Duello di PokéConnections su PokéIQ: ho perso contro {name}! {score}"
   },
-  "over": "Sfida finita · PokéConnections",
+  "over": "Duello finito · PokéConnections",
   "draw": "Pareggio",
   "victory": "Vittoria!",
   "defeat": "Sconfitta",

@@ -26,10 +26,10 @@
     "up": "In diretta"
   },
   "leave": {
-    "sure": "Se esci, perdi la sfida.",
+    "sure": "Se esci, perdi il duello.",
     "forfeit": "Arrenditi",
     "stay": "Resta",
-    "leave": "Esci dalla sfida"
+    "leave": "Esci dal duello"
   },
   "emotes": {
     "send": "Invia una reazione",
@@ -48,7 +48,7 @@
     "round": "Round {round}",
     "race": "Gara a punti",
     "damage": "Danni ×{m}",
-    "hp": "Sfida a PS",
+    "hp": "Lotta a PS",
     "turbo": " · Turbo",
     "ranked": "Classificata · ",
     "vs": "VS",

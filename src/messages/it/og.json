@@ -48,7 +48,7 @@
     "title2": "Pokémon",
     "title3": "misterioso",
     "subtitle": "Otto tentativi. Ognuno dà indizi su tipo, generazione, dimensioni e colore.",
-    "footer": "Gioca quello di oggi o sfida qualcuno dal vivo →"
+    "footer": "Gioca quello di oggi o sfida qualcuno in duello dal vivo →"
   },
   "pikadoku": {
     "eyebrow": "Pikadoku · nuova ogni giorno",
@@ -94,7 +94,7 @@
     "title1": "Quanto conosci",
     "title2": "davvero",
     "title3": "i Pokémon?",
-    "subtitle": "Sagome, versi, voci del Pokédex, tipi, i giochi e l'anime.",
+    "subtitle": "Sagome, versi, voci del Pokédex, tipi, i giochi e l’anime.",
     "chips": {
       "classic": "Classico",
       "survival": "Sopravvivenza",
@@ -137,7 +137,7 @@
       "a3": "Teracristal"
     },
     "anime": {
-      "question": "L'amica di Ash a Kalos?",
+      "question": "L’amica di Ash a Kalos?",
       "a0": "Lucinda",
       "a1": "Serena",
       "a2": "Vera",
@@ -164,7 +164,7 @@
       "a3": "Diantha"
     },
     "mixed": {
-      "question": "Un po' di tutto",
+      "question": "Un po’ di tutto",
       "a0": "Sagome",
       "a1": "Versi",
       "a2": "Pokédex",
@@ -205,7 +205,7 @@
       "footer": "Prendi una casella con un Pokémon adatto · vince chi fa tris →"
     },
     "name-em-all": {
-      "eyebrow": "Gara di Name 'em All",
+      "eyebrow": "Gara di Nominali tutti",
       "footer": "Gli stessi Pokémon per tutti · vince chi li nomina tutti per primo →"
     }
   },
@@ -219,7 +219,7 @@
     }
   },
   "nameEmAll": {
-    "eyebrow": "Name 'em All · quiz di memoria",
+    "eyebrow": "Nominali tutti · quiz di memoria",
     "title1": "Riesci a nominare",
     "title2": "tutti i Pokémon?",
     "subtitle": "Scrivi tutti i Pokémon che ricordi prima che scada il tempo. Una nuova categoria ogni giorno.",
@@ -305,14 +305,14 @@
     "eyebrow": "PokéIQ · Lab 3D",
     "title1": "Lab",
     "title2": "3D",
-    "subtitle": "La storia dei Pokémon, le loro dimensioni, le loro corse e l'intero mondo Pokémon, in un 3D da cinema.",
+    "subtitle": "La storia dei Pokémon, le loro dimensioni, le loro corse e l’intero mondo Pokémon, in un 3D da cinema.",
     "footer": "Entra →"
   },
   "timeline": {
     "eyebrow": "Pokédex · la storia in 3D",
     "title1": "Cronologia",
     "title2": "Pokémon",
-    "subtitle": "Ogni gioco, stagione dell'anime, film ed era del gioco di carte dal 1996. Attraversala in volo.",
+    "subtitle": "Ogni gioco, stagione dell’anime, film ed era del gioco di carte dal 1996. Attraversala in volo.",
     "footer": "Inizia il tour →"
   },
   "timelineEntry": {
@@ -367,8 +367,8 @@
     "name": "GCC Pokémon",
     "eyebrow": "GCC Pokémon · {series}",
     "setFallback": "Espansione del GCC Pokémon",
-    "setSubtitle": "Tutte le carte dell'espansione, con i prezzi di mercato attuali.",
-    "setSubtitleDate": "Tutte le carte dell'espansione, uscita il {date}, con i prezzi di mercato attuali.",
+    "setSubtitle": "Tutte le carte dell’espansione, con i prezzi di mercato attuali.",
+    "setSubtitleDate": "Tutte le carte dell’espansione, uscita il {date}, con i prezzi di mercato attuali.",
     "setFooter": "Lista delle carte · prezzi →",
     "cardFallback": "Carta Pokémon",
     "cardFooter": "Prezzi di TCGplayer e Cardmarket →"
@@ -377,7 +377,7 @@
     "eyebrow": "Dimensioni dei Pokémon · in 3D",
     "title1": "Tutti i Pokémon",
     "title2": "in scala",
-    "subtitle": "Da {from} a {to}, uno accanto all'altro a Luminopoli.",
+    "subtitle": "Da {from} a {to}, uno accanto all’altro a Luminopoli.",
     "footer": "Crea il tuo video delle dimensioni →",
     "itemEyebrow": "Dimensioni · n. {number}",
     "itemSubtitle": "{size}. Accanto a una persona adulta, in 3D.",
@@ -387,7 +387,7 @@
     "eyebrow": "Lab 3D di PokéIQ · la storia vera",
     "title1": "La storia",
     "title2": "dei Pokémon",
-    "subtitle": "Dalle cacce agli insetti di un bambino a trent'anni di storia: un film in 3D, ogni frase con la sua fonte.",
+    "subtitle": "Dalle cacce agli insetti di un bambino a trent’anni di storia: un film in 3D, ogni frase con la sua fonte.",
     "footer": "Premi play →",
     "chapterEyebrow": "La storia dei Pokémon · {numeral}",
     "chapterFooter": "Guarda il capitolo in 3D →"
@@ -396,7 +396,7 @@
     "eyebrow": "Lab 3D · la storia del mondo Pokémon",
     "title1": "La storia",
     "title2": "del mondo Pokémon",
-    "subtitle": "Dal mito della creazione di Sinnoh all'Area Zero, ogni frase con la sua fonte nei giochi.",
+    "subtitle": "Dal mito della creazione di Sinnoh all’Area Zero, ogni frase con la sua fonte nei giochi.",
     "chapterEyebrow": "Storia del mondo Pokémon · {numeral}"
   },
   "race": {

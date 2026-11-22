@@ -29,7 +29,7 @@
     "streak": "{n} luoghi di fila in una serie (di puntine o di regioni).",
     "daily": "Gioca la Giornaliera {n} giorni di fila.",
     "ranked": "Raggiungi {ball} nei duelli classificati.",
-    "weekly-podium": "Finisci una Sfida settimanale tra i primi 3 (con il nome con cui l'hai salvata).",
+    "weekly-podium": "Finisci una Sfida settimanale tra i primi 3 (con il nome con cui l’hai salvata).",
     "weekly-champion": "Arriva primo in una Sfida settimanale."
   },
   "balls": {
@@ -68,7 +68,7 @@
     "picks": "{hits}/{picks} scelte giuste in serie",
     "bestRound": "record {score}",
     "runs": "{n, plural, one {{runs} partita a Serie di regioni, record di {best} di fila.} other {{runs} partite a Serie di regioni, record di {best} di fila.}}",
-    "empty": "Ancora nessun round di PokéGuessr: qui contano le partite giocate dopo l'accesso."
+    "empty": "Ancora nessun round di PokéGuessr: qui contano le partite giocate dopo l’accesso."
   },
   "rewards": {
     "emote:season-gg": "Emote GG stagionale",

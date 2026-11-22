@@ -12,7 +12,7 @@
     "smaller": "Mappa più piccola",
     "unpin": "Sblocca la mappa",
     "keepOpen": "Tieni aperta la mappa",
-    "backToPicture": "Torna all'immagine",
+    "backToPicture": "Torna all’immagine",
     "guessMap": "Mappa per indovinare",
     "moveHint": "Tocca di nuovo per spostare la puntina",
     "placeHint": "Tocca la mappa per mettere la puntina",
@@ -63,7 +63,7 @@
       "bad-image": "Immagine difettosa",
       "other": "Altro"
     },
-    "placeholder": "Facoltativo: dov'è davvero, o cosa lo rivela?",
+    "placeholder": "Facoltativo: dov’è davvero, o cosa lo rivela?",
     "note": "Nota",
     "send": "Invia segnalazione",
     "cancel": "Annulla",

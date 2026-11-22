@@ -1,8 +1,8 @@
 {
   "open": "Come si gioca",
   "goal": {
-    "title": "L'obiettivo",
-    "body": "Ti ritrovi da qualche parte nel mondo Pokémon e vedi solo uno screenshot. Capisci dov'è, metti una puntina sulla mappa e premi Indovina."
+    "title": "L’obiettivo",
+    "body": "Ti ritrovi da qualche parte nel mondo Pokémon e vedi solo uno screenshot. Capisci dov’è, metti una puntina sulla mappa e premi Indovina."
   },
   "scoring": {
     "title": "Punteggio",
@@ -14,7 +14,7 @@
   },
   "duels": {
     "title": "Duelli",
-    "body": "Sfida un amico in diretta. Lotta a PS: partite entrambi con {hp} PS e la puntina più vicina infligge danni all'altra. Gara a punti: vince il totale migliore su tutti i round."
+    "body": "Sfida un amico in diretta. Lotta a PS: partite entrambi con {hp} PS e la puntina più vicina infligge danni all’altra. Gara a punti: vince il totale migliore su tutti i round."
   },
   "demo": {
     "labelDesktop": "Demo di un round: uno screenshot Pokémon riempie lo schermo, la mappa nell’angolo si allarga, si piazza una puntina e si preme Indovina; il risultato traccia una linea fino al punto reale e vale {score} su {max}",

@@ -1,6 +1,6 @@
 {
   "label": "Sfida del giorno",
-  "labelNumber": "Sfida del giorno #{n}",
+  "labelNumber": "Sfida del giorno n. {n}",
   "title": "Il test PokéIQ di oggi",
   "intro": "10 domande miste, le stesse per tutti gli Allenatori. Un solo tentativo: fallo valere.",
   "youScored": "Il tuo risultato",
@@ -16,5 +16,5 @@
     "higher-lower": "Sfide di statistiche"
   },
   "rules": "15 secondi a domanda · bonus per velocità e serie",
-  "start": "Inizia la Sfida #{n}"
+  "start": "Inizia la Sfida n. {n}"
 }

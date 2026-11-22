@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Pikadoku: sudoku Pokémon quotidiano",
-    "description": "Pikadoku è il sudoku dei Pokémon, un gioco a griglia Pokémon gratuito: riempi una griglia 3×3 con un Pokémon adatto a ogni riga e colonna. Sfide quotidiane Facile, Normale ed Esperto, punteggio di rarità, griglie illimitate e sfide a tris."
+    "description": "Pikadoku è il sudoku dei Pokémon, un gioco a griglia Pokémon gratuito: riempi una griglia 3×3 con un Pokémon adatto a ogni riga e colonna. Giornaliere Facile, Normale ed Esperto, punteggio di rarità, griglie illimitate e sfide a tris."
   },
   "info": {
     "description": "Pikadoku è un sudoku Pokémon e un gioco a griglia Pokémon gratuito: riempi una griglia 3×3 con un Pokémon diverso in ogni casella, adatto sia alla sua riga sia alla sua colonna.",
@@ -9,7 +9,7 @@
     "steps": {
       "read": "Leggi le tre categorie delle righe e le tre delle colonne: tipi, regioni, evoluzione, mosse, abilità, statistiche e altro.",
       "tap": "Tocca una casella e cerca un Pokémon adatto sia alla riga sia alla colonna. Se è giusto, resta fisso.",
-      "pp": "In una sfida quotidiana hai 9 tentativi (PP), e anche un errore ne consuma uno. Ogni Pokémon si può usare una sola volta.",
+      "pp": "In una giornaliera hai 9 tentativi (PP), e anche un errore ne consuma uno. Ogni Pokémon si può usare una sola volta.",
       "score": "Il tuo punteggio di rarità è la somma delle percentuali di giocatori che hanno scelto le tue stesse risposte: più è basso, più è raro, e meglio è.",
       "end": "A fine partita vedi tutte le risposte valide di ogni casella e perché i tuoi errori non andavano bene."
     },
@@ -19,14 +19,14 @@
       "formsQ": "Come contano forme e regioni?",
       "formsA": "Forme regionali, megaevoluzioni, forme Gigamax e alcune forme particolari (come Pikachu compagno) sono scelte a sé, con tipi, statistiche e abilità proprie. La regione di una specie è quella in cui ha debuttato; una forma regionale conta per la regione in cui ha debuttato (Raichu di Alola è di Alola), mentre megaevoluzioni e forme Gigamax contano per la regione della loro specie. Una forma e la sua specie sono lo stesso Pokémon, quindi in una griglia puoi usarne solo una.",
       "solvableQ": "Tutte le griglie sono risolvibili?",
-      "solvableA": "Sì. Ogni sfida quotidiana viene controllata: ogni casella ha abbastanza risposte valide e nove Pokémon diversi possono completare la griglia.",
+      "solvableA": "Sì. Ogni giornaliera viene controllata: ogni casella ha abbastanza risposte valide e nove Pokémon diversi possono completare la griglia.",
       "levelsQ": "Cosa sono Facile, Normale ed Esperto?",
       "levelsA": "Facile usa categorie ampie con tante risposte, Normale è la griglia principale della classifica ed Esperto usa categorie più difficili come mosse, abilità e soglie di statistiche."
     }
   },
   "duel": {
-    "about": "Una sfida a tris di Pikadoku: prendete a turno le caselle con un Pokémon adatto e fai tris.",
-    "invite": "Una sfida di Pikadoku",
+    "about": "Un duello a Tris di Pikadoku: a turno prendete le caselle con un Pokémon adatto e chi fa tris vince.",
+    "invite": "Un duello di Pikadoku",
     "vs": "{host} contro {guest}: tris di Pikadoku",
     "challenges": "{host} ti sfida a tris di Pikadoku",
     "trainer": "Un Allenatore"
