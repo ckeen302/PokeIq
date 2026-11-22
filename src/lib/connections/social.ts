@@ -1,5 +1,7 @@
-import { CONN_LEVELS, type ConnLevel } from "./types";
+import type { ConnLevel } from "./types";
 import type { CustomSummary } from "./custom";
+import { translator, type Translator } from "@/i18n/catalog";
+import conn from "@/messages/connections";
 
 /**
  * PokéConnections' social layer, client-safe: feedback and reports, group
@@ -32,13 +34,12 @@ export interface ConnGroupStats {
   pct: [number, number, number, number];
 }
 
-/** "Only 12% found purple" / "88% found yellow": null while there are too few players. */
-export function groupStatLine(stats: ConnGroupStats | undefined | null, level: ConnLevel): string | null {
+/** "Only 12% found purple" / "88% found yellow": null while there are too few players. `t`: in the page's language. */
+export function groupStatLine(stats: ConnGroupStats | undefined | null, level: ConnLevel, t: Translator<typeof conn.en> = translator(conn, "en", undefined)): string | null {
   if (!stats || stats.players < GROUP_STATS_MIN) return null;
   const pct = (stats.pct as readonly number[])[level];
   if (pct === undefined) return null;
-  const colour = CONN_LEVELS[level].name.toLowerCase();
-  return pct < 50 ? `Only ${pct}% found ${colour}` : `${pct}% found ${colour}`;
+  return t(pct < 50 ? "groupStats.only" : "groupStats.found", { pct, level: String(level) });
 }
 
 // Hints ----------------------------------------------------------------------

@@ -102,6 +102,11 @@ for (const [kind, [csv, idCol, textCol]] of Object.entries(TABLES)) {
   }
   console.log(`${kind}: ${byId.size} entries, ${LOCALES.map((l) => `${l} ${Object.keys(out[l][kind]).length}`).join(", ")}${collisions ? ` (${collisions} same-name variants kept as the first)` : ""}`);
 }
+// Official names PokéAPI doesn't carry (checked against the games): added only where it has none.
+const SUPPLEMENT = {
+  es: { regions: { alola: "Alola", galar: "Galar", hisui: "Hisui", hoenn: "Hoenn", johto: "Johto", kalos: "Kalos", kanto: "Kanto", paldea: "Paldea", sinnoh: "Sinnoh", unova: "Teselia" } },
+};
+for (const [l, kinds] of Object.entries(SUPPLEMENT)) for (const [kind, names] of Object.entries(kinds)) for (const [k, v] of Object.entries(names)) out[l][kind][k] ??= v;
 for (const l of LOCALES) {
   mkdirSync(join(OUT, l), { recursive: true });
   for (const [kind, names] of Object.entries(out[l])) {

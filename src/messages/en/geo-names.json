@@ -1,0 +1,110 @@
+{
+  "world": "World",
+  "themes": {
+    "gyms": {
+      "name": "Gyms",
+      "blurb": "Every Gym, from Pewter to Montenevera (Galar's Gym stadiums too)."
+    },
+    "towns": {
+      "name": "Towns and Cities",
+      "blurb": "Every town and city, from Pallet to Mesagoza."
+    },
+    "routes": {
+      "name": "Routes",
+      "blurb": "The numbered routes between them."
+    }
+  },
+  "eras": {
+    "all": "All games",
+    "2d": "Classic 2D",
+    "3d": "Modern 3D"
+  },
+  "difficulty": {
+    "easy": {
+      "name": "Easy",
+      "blurb": "Towns, landmarks and clear views."
+    },
+    "normal": {
+      "name": "Normal",
+      "blurb": "Every place, as it comes."
+    },
+    "hard": {
+      "name": "Hard",
+      "blurb": "Routes, caves, interiors and tricky views."
+    }
+  },
+  "route": "Route {n}",
+  "placeIn": "{place}, {region}",
+  "types": {
+    "City": "City",
+    "Town": "Town",
+    "Route": "Route",
+    "Gym": "Gym",
+    "Forest": "Forest",
+    "Cave": "Cave",
+    "Mountain": "Mountain",
+    "Island": "Island",
+    "Lake": "Lake",
+    "Tower": "Tower",
+    "Ruins": "Ruins",
+    "League": "League"
+  },
+  "game": "Pokémon {game}",
+  "regions": {
+    "kanto": "Kanto",
+    "johto": "Johto",
+    "hoenn": "Hoenn",
+    "sinnoh": "Sinnoh",
+    "unova": "Unova",
+    "kalos": "Kalos",
+    "alola": "Alola",
+    "galar": "Galar",
+    "paldea": "Paldea",
+    "kitakami": "Kitakami",
+    "blueberryacademy": "Blueberry Academy",
+    "seviiislands": "Sevii Islands",
+    "isleofarmor": "Isle of Armor",
+    "crowntundra": "Crown Tundra"
+  },
+  "games": {
+    "red": "Red",
+    "green": "Green",
+    "blue": "Blue",
+    "yellow": "Yellow",
+    "gold": "Gold",
+    "silver": "Silver",
+    "crystal": "Crystal",
+    "ruby": "Ruby",
+    "sapphire": "Sapphire",
+    "emerald": "Emerald",
+    "firered": "FireRed",
+    "leafgreen": "LeafGreen",
+    "diamond": "Diamond",
+    "pearl": "Pearl",
+    "platinum": "Platinum",
+    "heartgold": "HeartGold",
+    "soulsilver": "SoulSilver",
+    "black": "Black",
+    "white": "White",
+    "black2": "Black 2",
+    "white2": "White 2",
+    "x": "X",
+    "y": "Y",
+    "omegaruby": "Omega Ruby",
+    "alphasapphire": "Alpha Sapphire",
+    "sun": "Sun",
+    "moon": "Moon",
+    "ultrasun": "Ultra Sun",
+    "ultramoon": "Ultra Moon",
+    "letsgopikachu": "Let's Go, Pikachu!",
+    "letsgoeevee": "Let's Go, Eevee!",
+    "sword": "Sword",
+    "shield": "Shield",
+    "brilliantdiamond": "Brilliant Diamond",
+    "shiningpearl": "Shining Pearl",
+    "legendsarceus": "Legends: Arceus",
+    "scarlet": "Scarlet",
+    "violet": "Violet",
+    "legendsza": "Legends: Z-A"
+  }
+}

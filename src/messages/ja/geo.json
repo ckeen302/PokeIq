@@ -1,0 +1,103 @@
+{
+  "shell": {
+    "fullscreen": "全画面",
+    "exitFullscreen": "全画面を終了",
+    "withEsc": "{label}（Esc）",
+    "back": "PokéGuessr に戻る",
+    "secondsLeft": "残り{s}秒"
+  },
+  "dock": {
+    "size": "マップの大きさ",
+    "bigger": "マップを大きく",
+    "smaller": "マップを小さく",
+    "unpin": "マップの固定を解除",
+    "keepOpen": "マップを開いたままにする",
+    "backToPicture": "画像に戻る",
+    "guessMap": "回答マップ",
+    "moveHint": "もう一度タップでピンを移動",
+    "placeHint": "マップをタップしてピンを置こう",
+    "openMove": "マップを開いてピンを動かすか回答する",
+    "openPlace": "マップを開いてピンを置く"
+  },
+  "guess": {
+    "guess": "回答",
+    "placeFirst": "先にマップにピンを置いてください",
+    "place": "マップにピンを置こう"
+  },
+  "key": {
+    "space": "スペース"
+  },
+  "round": "ラウンド",
+  "inARow": "{n}連続",
+  "map": {
+    "pickLabel": "{map}のマップ：ここだと思う場所をクリック。スクロールでズーム、ドラッグで移動。",
+    "label": "{map}のマップ",
+    "failed": "マップを読み込めませんでした。再読み込みしてください。",
+    "loading": "マップを読み込み中",
+    "zoomIn": "ズームイン",
+    "zoomOut": "ズームアウト",
+    "whole": "マップ全体を表示"
+  },
+  "shot": {
+    "where": "ここはどこ？",
+    "prev": "前の視点",
+    "prevKey": "前の視点（←）",
+    "next": "次の視点",
+    "nextKey": "次の視点（→）",
+    "whole": "スクリーンショット全体を見る",
+    "wholeShort": "全体を見る",
+    "views": "この場所の視点",
+    "view": "視点 {n}/{count}",
+    "fullscreen": "スクリーンショット（全画面）",
+    "close": "閉じる"
+  },
+  "report": {
+    "open": "このスクリーンショットを報告",
+    "question": "このスクリーンショットの問題は？",
+    "reason": "理由",
+    "reasons": {
+      "wrong-place": "場所が違う",
+      "wrong-game": "ゲームが違う",
+      "gives-away": "答えがわかってしまう",
+      "too-generic": "特徴がなさすぎる",
+      "bad-image": "画像が悪い",
+      "other": "その他"
+    },
+    "placeholder": "任意：本当はどこか、何が答えのヒントになっているか",
+    "note": "メモ",
+    "send": "報告を送る",
+    "cancel": "キャンセル",
+    "failed": "報告を送れませんでした。",
+    "thanks": "ありがとうございます。このスクリーンショットを確認します。"
+  },
+  "share": {
+    "text": "私の PokéGuessr の結果",
+    "copy": "結果のリンクをコピー",
+    "copied": "リンクをコピーしました！"
+  },
+  "learn": {
+    "atlas": "アトラス",
+    "dex": "図鑑"
+  },
+  "results": {
+    "streakOver": "連続記録ストップ",
+    "complete": "調査完了",
+    "bestRound": "ベストラウンド",
+    "worstRound": "ワーストラウンド",
+    "finalStreak": "最終記録",
+    "total": "合計スコア・{rounds}ラウンド",
+    "outOf": "{max}点満点",
+    "rounds": "ラウンド",
+    "best": "ベスト",
+    "worst": "ワースト",
+    "timeUp": "時間切れ",
+    "rightRegion": "地方正解",
+    "wrongRegion": "地方不正解",
+    "spotOn": "ぴったり",
+    "squares": "{n, plural, other {{d}マス差}}",
+    "correct": "正解",
+    "missed": "はずれ",
+    "again": "もう一度",
+    "shareAndBoard": "シェアとランキング"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "meta": {
+    "title": "PokéConnections: el Connections de Pokémon diario",
+    "description": "Pokémon Connections: dieciséis Pokémon, cuatro grupos ocultos (tipos, habilidades, evoluciones, estadísticas y más). Descubre qué los une con cuatro fallos de margen. Un puzle nuevo cada día, un archivo y práctica ilimitada.",
+    "communityTitle": "Puzles de PokéConnections de la comunidad",
+    "communityDescription": "Puzles creados por otros Entrenadores: el destacado de la semana, los mejor valorados y los más recientes.",
+    "createTitle": "Crea un puzle de PokéConnections",
+    "createDescription": "Elige dieciséis Pokémon, repártelos en cuatro grupos, ponle nombre a cada uno y comparte un enlace. Cualquiera puede jugarlo y las respuestas se quedan en el servidor.",
+    "puzzleTitle": "Puzle de PokéConnections de la comunidad",
+    "puzzleDescription": "Un puzle de PokéConnections creado por otro Entrenador. Encuentra los cuatro grupos.",
+    "creatorTitle": "Creador de PokéConnections",
+    "creatorDescription": "Puzles de PokéConnections de un Entrenador.",
+    "duelAbout": "Una carrera de PokéConnections: los mismos dieciséis Pokémon para los dos, y gana el primero que encuentre los cuatro grupos.",
+    "duel": "Un duelo de PokéConnections",
+    "duelVs": "{host} contra {guest}: un duelo de PokéConnections",
+    "duelChallenge": "{host} te reta a un duelo de PokéConnections",
+    "aTrainer": "Un Entrenador",
+    "partyAbout": "Una fiesta de PokéConnections: los mismos dieciséis Pokémon para todos, y gana el mejor tiempo.",
+    "party": "Una fiesta de PokéConnections",
+    "partyInvite": "{host} te invita a una fiesta de PokéConnections"
+  },
+  "info": {
+    "description": "PokéConnections es un puzle gratuito de Pokémon Connections: reparte dieciséis Pokémon en cuatro grupos ocultos con cuatro fallos de margen.",
+    "intro": "PokéConnections es el Connections de Pokémon: dieciséis Pokémon, cuatro grupos ocultos y un puzle nuevo cada día.",
+    "step1": "Fíjate en los dieciséis Pokémon y busca los que tienen algo en común: un tipo, una habilidad, una evolución, estadísticas y más.",
+    "step2": "Selecciona cuatro y envíalos como grupo.",
+    "step3": "Puedes cometer cuatro fallos antes de que acabe el puzle.",
+    "step4": "Juega el puzle diario, explora el archivo o practica sin límite.",
+    "faq1": "¿Qué tipos de grupos hay?",
+    "faq1a": "Tipos, habilidades, evoluciones, estadísticas y más.",
+    "faq2": "¿Cuántos fallos puedo cometer?",
+    "faq2a": "Cuatro."
+  },
+  "back": "Volver a PokéConnections",
+  "backCommunity": "Volver a la comunidad",
+  "creator": {
+    "unavailable": "Las páginas de creadores no están disponibles ahora mismo. Vuelve a intentarlo en un minuto.",
+    "eyebrow": "Creador de PokéConnections",
+    "totals": "{n, plural, one {{n} puzle} other {{n} puzles}} · {votes} {v, plural, one {voto} other {votos}} (puntuación {score})",
+    "untitled": "Puzle sin título"
+  }
+}

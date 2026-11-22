@@ -1,6 +1,7 @@
 import { Rng } from "@/lib/rng";
 import { allCategories, allFacts, categoryById, membersOf, type PdkCategory } from "./categories";
 import { gridAnswers, isSolvable } from "./solve";
+export { noBoardMessage } from "./no-board";
 import { PDK_FAMILIES, PDK_MIN_ANSWERS, PDK_SIZE, type PdkBand, type PdkDifficulty, type PdkFamily } from "./types";
 
 export interface PdkGrid {
@@ -177,14 +178,4 @@ export function generatePickedGrid(seed: string, opts: PickedOptions): PickedRes
     }
   }
   return { ok: false, reason: "none" };
-}
-
-/** Plain words for a choice that can't make a board, with what to widen. */
-export function noBoardMessage(reason: "few" | "none", opts: { allowSingle: boolean; band: PdkBand }): string {
-  if (reason === "few") return "Those categories can't fill a board on their own. Tick more categories, in more groups.";
-  const tips = ["tick more categories"];
-  if (opts.band !== "normal") tips.push("try Normal difficulty");
-  if (!opts.allowSingle && opts.band !== "easy") tips.push("allow one-answer cells");
-  const list = tips.length > 1 ? `${tips.slice(0, -1).join(", ")} or ${tips.at(-1)}` : tips[0];
-  return `No board fits those settings. To widen them, ${list}.`;
 }

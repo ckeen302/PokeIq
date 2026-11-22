@@ -1,0 +1,41 @@
+{
+  "title": "Politique de confidentialité",
+  "description": "Ce que PokéIQ collecte, pourquoi, et comment le faire supprimer. En termes simples.",
+  "short": "La version courte",
+  "intro": "PokéIQ est un projet de fan gratuit et non officiel. Nous collectons le moins possible, nous l’utilisons pour faire tourner le jeu et nous ne le vendons jamais.",
+  "collect": {
+    "title": "Ce que nous collectons",
+    "name": "<b>Ton nom de Dresseur</b> : affiché publiquement dans les classements, les listes d’amis et les parties.",
+    "password": "<b>Ton mot de passe</b> : stocké uniquement sous forme de hachage salé, jamais lisible. Si tu te connectes avec Discord ou Google, nous n’avons aucun mot de passe pour toi.",
+    "email": "<b>Ton e-mail, seulement si tu nous en donnes un</b> : l’adresse vérifiée que Discord ou Google nous transmet quand tu te connectes avec eux, ou une adresse que tu ajoutes toi-même pour les rappels quotidiens. Elle reste privée : jamais montrée aux autres joueurs.",
+    "results": "<b>Résultats et progression</b> : scores, badges, séries, cotes et historique des combats.",
+    "chat": "<b>Messages de chat</b> : le chat d’une partie disparaît quand elle se termine.",
+    "avatars": "<b>Les avatars que tu envoies</b> : affichés sur ton profil.",
+    "reports": "<b>Signalements</b> : quand tu signales un joueur ou un problème, nous gardons le signalement pour qu’un modérateur puisse l’examiner.",
+    "noAccount": "Tu peux jouer sans compte : ta progression reste alors sur ton appareil. Nous comptons les visites avec les statistiques sans cookies de Vercel, qui ne t’identifient pas. Il n’y a aucune publicité sur PokéIQ aujourd’hui et nous ne déposons aucun cookie de suivi. Si cela change un jour, nous mettrons d’abord cette page à jour en disant ce qui est collecté et comment le refuser."
+  },
+  "why": {
+    "title": "Pourquoi",
+    "body": "Pour gérer ton compte et garder ta progression sur tous tes appareils, afficher les classements, les amis et les parties, garder le jeu juste et sûr (modération, bannissements, lutte contre la triche) et corriger les problèmes."
+  },
+  "share": {
+    "title": "Avec qui nous le partageons",
+    "body": "Nous ne vendons <b>pas</b> tes données et, aujourd’hui, nous ne les partageons pas avec des annonceurs. Si nous ajoutons un jour de la publicité, cette page changera d’abord pour dire exactement ce qui est partagé et comment le refuser. Elles sont stockées chez les services qui font tourner le site (Supabase pour la base de données et la connexion, Vercel pour l’hébergement, Resend pour envoyer les e-mails de rappel). Discord et Google nous disent qui tu es seulement quand tu choisis de te connecter avec eux."
+  },
+  "emails": {
+    "title": "E-mails de rappel quotidiens",
+    "body": "Seulement si tu les actives. Nous envoyons un e-mail quand les nouveaux défis du jour arrivent (ou seulement quand ta série est sur le point de s’arrêter, si tu choisis cette option), après que tu as confirmé ton adresse. Chaque e-mail contient un lien de désinscription en un clic, et tu peux les désactiver à tout moment sur ta <card>carte de Dresseur</card>. Nous n’envoyons jamais rien d’autre à cette adresse et ne la partageons jamais."
+  },
+  "age": {
+    "title": "Âge",
+    "body": "Tu dois avoir <b>13 ans ou plus</b> pour créer un compte. Si tu penses qu’un enfant de moins de 13 ans en a créé un, contacte-nous et nous le supprimerons."
+  },
+  "delete": {
+    "title": "Supprimer tes données",
+    "body": "Écris à <mail></mail> depuis n’importe quelle adresse, avec ton nom de Dresseur, et demande la suppression de ton compte. Nous supprimerons ton compte et tout ce qui y est lié. Tu peux aussi dissocier Discord ou Google à tout moment depuis ta <card>carte de Dresseur</card>."
+  },
+  "about": {
+    "title": "À propos de PokéIQ",
+    "body": "PokéIQ est un projet de fan gratuit, fait pour le plaisir. Il n’est pas affilié à Nintendo, Game Freak, Creatures ou The Pokémon Company. Si cette politique change, nous mettrons cette page à jour."
+  }
+}

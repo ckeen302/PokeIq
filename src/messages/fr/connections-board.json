@@ -1,0 +1,46 @@
+{
+  "level": {
+    "0": "Jaune",
+    "1": "Vert",
+    "2": "Bleu",
+    "3": "Violet",
+    "4": "Rouge"
+  },
+  "kind": {
+    "move": "Capacité",
+    "ability": "Talent",
+    "type": "Type",
+    "pokemon": "Pokémon"
+  },
+  "moveChip": "Capa.",
+  "tile": {
+    "hinted": ", indice : dans le groupe le plus facile restant",
+    "selected": ", sélectionné"
+  },
+  "group": {
+    "aria": "Groupe {level} : {label} : {members}",
+    "ariaRevealed": "Groupe {level} (révélé) : {label} : {members}"
+  },
+  "legend": {
+    "aria": "Couleurs des groupes, du plus facile au plus difficile : {levels}",
+    "easiest": "Plus facile",
+    "trickiest": "Plus difficile"
+  },
+  "mistakes": {
+    "aria": "{left} erreurs restantes sur {max}",
+    "last": "Dernière chance :",
+    "remaining": "Erreurs restantes :"
+  },
+  "history": {
+    "guess": "Essai {n} : {levels}",
+    "sep": ". "
+  },
+  "why": {
+    "title": "Pourquoi ?",
+    "source": "Chaque fait vient des données du Pokédex",
+    "line": " : {why}",
+    "herrings": "Fausses pistes",
+    "herring": "<b>{name}</b> : {reason}."
+  },
+  "sep": ", "
+}

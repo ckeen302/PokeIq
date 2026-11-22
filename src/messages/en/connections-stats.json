@@ -1,0 +1,29 @@
+{
+  "played": "Played",
+  "winPct": "Win %",
+  "current": "Current streak",
+  "max": "Max streak",
+  "freezes": "🧊 Streak freezes: <b>{freezes}</b> of {max}. You earn one every {every} days in a row; a missed day uses one by itself. Win streak: <b>{win}</b> (best {best}).",
+  "distribution": "Mistakes distribution",
+  "distributionAria": "Wins by number of mistakes",
+  "barAria": "{n, plural, one {{n} mistake} other {{n} mistakes}}: {count}",
+  "barLost": "Not solved: {count}",
+  "cardTitle": "Your PokéConnections stats",
+  "onlyDailies": "Only dailies count. Practice and archive games never change your stats or streaks.",
+  "status": {
+    "perfect": "Perfect",
+    "solved": "Solved",
+    "missed": "Missed",
+    "progress": "In progress",
+    "none": "Not played"
+  },
+  "prev": "Previous month",
+  "next": "Next month",
+  "day": "#{n}, {date}: {status}",
+  "fromArchive": " (archive)",
+  "today": ", today",
+  "key": "Key",
+  "statsTitle": "Statistics",
+  "archiveTitle": "Archive",
+  "archiveIntro": "Play any past daily. Archive games are just for fun: they never count toward your streaks or stats."
+}

@@ -1,4 +1,5 @@
 import "server-only";
+import type { Locale } from "@/i18n/config";
 import { CONN_MIN_MS, claimBoardSlot, plausibleMs } from "./board-guard";
 import { getServiceSupabase } from "@/lib/supabase";
 import { isCurrentConnDate, type ConnBoardStanding, type ConnDaySummary } from "@/lib/connections/types";
@@ -105,6 +106,8 @@ export type ConnRecordOutcome = ConnRecordOk | { ok: false; status: number; erro
 
 export interface ConnResultInput {
   date: string;
+  /** The page's language (its puzzle: lib/connections/localize); the board and stats are shared. */
+  locale?: Locale;
   /** "u:<account id>" or "d:<browser id>". */
   identity: string;
   guesses: number[][];
@@ -131,7 +134,7 @@ export async function recordConnResult(
   if (!isCurrentConnDate(input.date, now)) return { ok: false, status: 400, error: "Only today's PokéConnections counts." };
   let state;
   try {
-    state = playGuesses(await effectiveDaily(input.date, social), input.guesses);
+    state = playGuesses(await effectiveDaily(input.date, social, input.locale), input.guesses);
   } catch (err) {
     return { ok: false, status: 400, error: (err as Error).message };
   }

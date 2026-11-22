@@ -1,0 +1,24 @@
+{
+  "tagline": "Pokémon-Spiele: PokéGuessr, Pokédle, Kämpfe und Quiz",
+  "description": "Kostenlose Pokémon-Spiele ohne Anmeldung: PokéGuessr mit echten Screenshots aus den Spielen, ein tägliches Pokédle (Pokémon-Wordle), Kämpfe nach Showdown-Regeln und Pokémon-Quiz.",
+  "footer": {
+    "privacy": "Datenschutz",
+    "credits": "Credits",
+    "disclaimer": "PokéIQ ist ein kostenloses, inoffizielles Fanprojekt und steht in keiner Verbindung zu Nintendo, Game Freak, Creatures oder The Pokémon Company, die es weder unterstützen noch sponsern. Pokémon und alle zugehörigen Namen sind Marken ihrer jeweiligen Inhaber."
+  },
+  "notFound": {
+    "title": "Seite nicht gefunden",
+    "description": "Diese Seite gibt es nicht. Zurück zu den Pokémon-Spielen von PokéIQ oder zum Pokédex.",
+    "heading": "Ein wildes 404 erscheint!",
+    "body": "Diese Seite ist geflohen. Nicht mal der Pokédex hat einen Eintrag dazu.",
+    "home": "Zurück in Sicherheit",
+    "pokedex": "Pokédex öffnen"
+  },
+  "feedbackPage": {
+    "label": "Feedback",
+    "title": "Feedback",
+    "description": "Schick PokéIQ eine Idee, melde einen Fehler oder erzähl uns etwas anderes. Wir lesen jede Nachricht.",
+    "heading": "Erzähl uns <em>alles</em>",
+    "intro": "Ideen, Fehler oder etwas anderes, das dir auf dem Herzen liegt: Wir lesen jede Nachricht."
+  }
+}

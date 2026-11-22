@@ -1,0 +1,46 @@
+{
+  "level": {
+    "0": "Giallo",
+    "1": "Verde",
+    "2": "Blu",
+    "3": "Viola",
+    "4": "Rosso"
+  },
+  "kind": {
+    "move": "Mossa",
+    "ability": "Abilità",
+    "type": "Tipo",
+    "pokemon": "Pokémon"
+  },
+  "moveChip": "Mossa",
+  "tile": {
+    "hinted": ", indizio: nel gruppo più facile rimasto",
+    "selected": ", selezionato"
+  },
+  "group": {
+    "aria": "Gruppo {level}: {label}: {members}",
+    "ariaRevealed": "Gruppo {level} (rivelato): {label}: {members}"
+  },
+  "legend": {
+    "aria": "Colori dei gruppi, dal più facile al più difficile: {levels}",
+    "easiest": "Più facile",
+    "trickiest": "Più difficile"
+  },
+  "mistakes": {
+    "aria": "{left} errori rimasti su {max}",
+    "last": "Ultima possibilità:",
+    "remaining": "Errori rimasti:"
+  },
+  "history": {
+    "guess": "Tentativo {n}: {levels}",
+    "sep": ". "
+  },
+  "why": {
+    "title": "Perché?",
+    "source": "Ogni dato viene dal Pokédex",
+    "line": ": {why}",
+    "herrings": "False piste",
+    "herring": "<b>{name}</b>: {reason}."
+  },
+  "sep": ", "
+}

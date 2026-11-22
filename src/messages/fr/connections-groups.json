@@ -1,0 +1,239 @@
+{
+  "list": {
+    "abilitiesOne": "son seul talent est {list}",
+    "abilitiesMany": "ses talents sont {list}",
+    "hiddenMark": "{name} (caché)"
+  },
+  "lureTypeLike": "type {type} comme la plupart du groupe, mais {instead}",
+  "type": {
+    "label": "Type {type}",
+    "rule": "Ils sont tous de type {type} (seul ou avec un autre type).",
+    "lureColour": "sa couleur Pokédex est {colour}, mais il est de type {types}, pas {type}",
+    "lureKin": "{kin}, de sa lignée, est de type {type}, mais {name} est de type {types}"
+  },
+  "pure": {
+    "label": "Type {type} pur",
+    "rule": "{type} est leur seul et unique type.",
+    "why": "{type} pur",
+    "lure": "type {type}, mais aussi {other}"
+  },
+  "dual": {
+    "label": "Type {a}/{b}",
+    "rule": "Ils sont tous exactement {a} et {b}.",
+    "lure": "{types} : à moitié seulement"
+  },
+  "gen": {
+    "label": "Apparu en génération {gen} ({region})",
+    "rule": "Tous sont apparus en génération {gen}, dans les jeux de {region}.",
+    "why": "Génération {gen} ({region})",
+    "lure": "{kin}, de sa lignée, vient de la génération {gen}, mais {name} est arrivé en génération {own}"
+  },
+  "legendary": {
+    "label": "Pokémon légendaires",
+    "rule": "Ce sont tous des Pokémon légendaires (pas fabuleux).",
+    "why": "Légendaire",
+    "lureMythical": "Fabuleux, ce qui n'est pas la même chose que légendaire",
+    "lureBst": "un total des stats de base de {bst}, mais pas légendaire"
+  },
+  "mythical": {
+    "label": "Pokémon fabuleux",
+    "rule": "Ce sont tous des Pokémon fabuleux, ceux qu'on obtient lors d'évènements.",
+    "why": "Fabuleux",
+    "lure": "Légendaire, mais pas fabuleux"
+  },
+  "baby": {
+    "label": "Bébés Pokémon",
+    "rule": "Ce sont tous des bébés Pokémon, les pré-évolutions qui sortent des Œufs.",
+    "why": "forme bébé de {names}",
+    "whyLine": "forme bébé de sa lignée",
+    "lure": "{baby} est le bébé ; {name} est ce qu'il devient"
+  },
+  "noEvo": {
+    "label": "N'évolue pas",
+    "rule": "Aucun d'eux n'évolue ni n'est issu d'une évolution.",
+    "why": "aucune évolution"
+  },
+  "stone": {
+    "label": "Évolue avec une pierre",
+    "rule": "Chacun s'obtient en utilisant une pierre d'évolution sur sa pré-évolution.",
+    "oneLabel": "Évolue avec une {stone}",
+    "oneRule": "Chacun évolue à partir de sa pré-évolution avec une {stone}.",
+    "why": "évolue de {from} avec une {stone}",
+    "lureInto": "il utilise une {stone} pour évoluer en {into}, mais n'est pas issu d'une pierre",
+    "lureOther": "évolue avec une pierre, mais une {stone}"
+  },
+  "trade": {
+    "label": "Évolutions par échange",
+    "rule": "Chacun s'obtient en échangeant sa pré-évolution.",
+    "why": "évolue de {from} par échange",
+    "whyHolding": "évolue de {from} par échange en tenant {item}",
+    "whyFor": "évolue de {from} par échange contre {pokemon}",
+    "lureInto": "il évolue en {into} par échange, mais n'est pas lui-même une évolution par échange",
+    "lureHeld": "il évolue en tenant un objet ({item}), mais en montant de niveau, pas par échange",
+    "lureHeldTime": "il évolue en tenant un objet ({item}, {time}), mais en montant de niveau, pas par échange"
+  },
+  "time": {
+    "day": "de jour",
+    "night": "de nuit"
+  },
+  "friendship": {
+    "label": "Évolutions par amitié",
+    "rule": "Chacun évolue à partir de sa pré-évolution en montant de niveau avec une grande amitié.",
+    "why": "évolue de {from} avec une grande amitié",
+    "whyTime": "évolue de {from} avec une grande amitié ({time})",
+    "lure": "il évolue en {into} par amitié, mais n'est pas lui-même une évolution par amitié"
+  },
+  "ability": {
+    "label": "Peut avoir {ability}",
+    "rule": "Chacun peut avoir le talent {ability} (talents cachés compris).",
+    "why": "Talent {ability}",
+    "whyHidden": "Talent caché {ability}"
+  },
+  "hidden": {
+    "label": "Talent caché {ability}",
+    "rule": "{ability} est le talent caché de chacun."
+  },
+  "move": {
+    "label": "Apprend {move} en montant de niveau",
+    "rule": "Chacun apprend {move} en montant de niveau dans Écarlate et Violet.",
+    "whyEvolving": "apprend {move} en évoluant (ÉV)",
+    "whyStart": "apprend {move} dès le niveau 1 (ÉV)",
+    "whyLevel": "apprend {move} au niveau {level} (ÉV)",
+    "lure": "de type {type}, mais n'apprend pas {move}"
+  },
+  "top": {
+    "label": "Meilleure stat : {stat}",
+    "rule": "{stat} est la stat de base la plus haute de chacun.",
+    "why": "{stat} {value}, sa meilleure stat",
+    "lure": "{stat} {value}, mais sa stat {top} ({topValue}) est plus haute"
+  },
+  "bst": {
+    "highLabel": "Total des stats de base 600+",
+    "highRule": "Leurs stats de base totalisent 600 ou plus.",
+    "lowLabel": "Total des stats de base sous 260",
+    "lowRule": "Leurs stats de base totalisent moins de 260.",
+    "why": "total des stats de base {bst}",
+    "lureHigh": "un total des stats de base de {bst}, juste sous 600",
+    "lureLow": "un total des stats de base de {bst}, juste au-dessus de 260"
+  },
+  "body": {
+    "heavyLabel": "Pèse 300 kg ou plus",
+    "heavyRule": "Chacun pèse au moins 300 kg.",
+    "lightLabel": "Pèse 1 kg ou moins",
+    "lightRule": "Chacun pèse 1 kg ou moins.",
+    "tallLabel": "Mesure 3 m ou plus",
+    "tallRule": "Chacun mesure au moins 3 m.",
+    "shortLabel": "Mesure 0,3 m ou moins",
+    "shortRule": "Aucun ne mesure plus de 0,3 m.",
+    "weighs": "pèse {kg} kg",
+    "height": "mesure {m} m",
+    "lure": "{why} : proche, mais pas tout à fait"
+  },
+  "colour": {
+    "label": "Couleur Pokédex : {Colour}",
+    "rule": "Le Pokédex les classe tous dans la couleur {colour}.",
+    "why": "couleur Pokédex {colour}",
+    "lure": "sa couleur Pokédex est {colour}"
+  },
+  "form": {
+    "label": "A une forme {region}",
+    "rule": "Chacun a une forme régionale {region}.",
+    "why": "{name} {region} existe",
+    "lureOther": "il a une forme {other}, pas {region}",
+    "lureKin": "{kin}, de sa lignée, a une forme {region}, mais pas {name}"
+  },
+  "mega": {
+    "label": "Peut méga-évoluer",
+    "rule": "Chacun a une Méga-Évolution (nouvelles Méga de Légendes Pokémon : Z-A comprises).",
+    "why": "Méga-{name} existe",
+    "lure": "il a une forme Gigamax, pas de Méga-Évolution"
+  },
+  "gmax": {
+    "label": "A une forme Gigamax",
+    "rule": "Chacun peut se gigamaxer (Épée et Bouclier).",
+    "why": "{name} Gigamax existe",
+    "lure": "il peut méga-évoluer, mais n'a pas de forme Gigamax"
+  },
+  "egg": {
+    "label": "Groupe Œuf {group}",
+    "rule": "Chacun fait partie du groupe Œuf {group}.",
+    "why": "{n, plural, one {Groupe Œuf} other {Groupes Œuf}} {groups}",
+    "lure": "{n, plural, one {son groupe Œuf est} other {ses groupes Œuf sont}} {groups}"
+  },
+  "gender": {
+    "maleLabel": "Toujours mâle",
+    "maleRule": "Chacun est toujours mâle.",
+    "maleWhy": "100 % mâle",
+    "maleLureFemale": "toujours femelle, pas mâle",
+    "maleLureMostly": "mâle 87,5 % du temps, mais pas toujours",
+    "femaleLabel": "Toujours femelle",
+    "femaleRule": "Chacun est toujours femelle.",
+    "femaleWhy": "100 % femelle",
+    "femaleLureMale": "toujours mâle, pas femelle",
+    "femaleLureMostly": "surtout femelle, mais pas toujours",
+    "noneLabel": "Asexués",
+    "noneRule": "Aucun d'eux n'a de sexe.",
+    "noneWhy": "asexué"
+  },
+  "letter": {
+    "label": "Nom anglais en {letter}",
+    "rule": "Chaque nom anglais commence par la lettre {letter}."
+  },
+  "ends": {
+    "label": "Nom anglais en « -{ending} »",
+    "rule": "Chaque nom anglais finit par -{ending}."
+  },
+  "short": {
+    "label": "Nom anglais de 4 lettres max",
+    "rule": "Chaque nom anglais fait quatre lettres ou moins.",
+    "why": "{n} lettres",
+    "lure": "cinq lettres : une de trop"
+  },
+  "symbol": {
+    "label": "Nom anglais pas que en lettres",
+    "rule": "Chaque nom anglais contient autre chose que des lettres : une espace, un point, un trait d'union, une apostrophe, un deux-points, un accent, un chiffre ou un symbole.",
+    "gender": "un symbole ♀/♂",
+    "digit": "un chiffre",
+    "colon": "un deux-points",
+    "stop": "un point",
+    "hyphen": "un trait d'union",
+    "apostrophe": "une apostrophe",
+    "space": "une espace",
+    "accent": "un accent"
+  },
+  "wordplay": {
+    "hiddenIn": "« {word} » dans {name}",
+    "colourLabel": "Cache une couleur (en anglais)",
+    "colourRule": "Chaque nom anglais cache une couleur en anglais : {words}.",
+    "bodyLabel": "Cache une partie du corps (en anglais)",
+    "bodyRule": "Chaque nom anglais cache une partie du corps en anglais : arm, toe, ear, fin...",
+    "wordLabel": "Commence par un mot anglais",
+    "wordRule": "Chaque nom anglais est, ou commence par, un mot anglais courant : slow, star, bell, bear...",
+    "wordPlus": "« {word} » + « {rest} »",
+    "wordAlone": "« {word} » tout seul",
+    "rhymeLabel": "Noms anglais qui riment : -{ending}",
+    "rhymeRule": "Chaque nom anglais finit par les mêmes lettres : -{ending}."
+  },
+  "lore": {
+    "aceLabel": "As des Champions d'Arène",
+    "aceRule": "Chacun est le dernier Pokémon, le plus fort, d'un Champion d'Arène dans les jeux principaux.",
+    "aceWhy": "l'as d'un Champion d'Arène",
+    "boxLabel": "Légendaires de jaquette",
+    "boxRule": "Chacun est le Pokémon légendaire de la jaquette d'un jeu de la série principale.",
+    "boxWhy": "sur la jaquette de {games}",
+    "foodLabel": "Nom anglais tiré d'un aliment",
+    "foodRule": "Chaque nom anglais vient d'un aliment : apple, cherry, vanilla, pumpkin, chestnut, dough, olive, tea, egg, peach...",
+    "foodWhy": "son nom anglais vient d'un aliment",
+    "moveLabel": "Capacité exclusive",
+    "moveRule": "Chacun apprend une capacité qu'aucune autre famille d'évolution ne peut apprendre.",
+    "moveWhy": "le seul à apprendre {moves}"
+  },
+  "mixed": {
+    "label": "Lié au type {type}",
+    "rule": "Chaque case va avec le type {type} : un Pokémon de type {type}, une capacité de type {type}, un talent surtout porté par des Pokémon de type {type}, ou le type {type} lui-même.",
+    "why": "type {types}",
+    "move": "une capacité de type {type}",
+    "ability": "un talent surtout porté par des Pokémon de type {type}",
+    "type": "le type {type} lui-même"
+  }
+}

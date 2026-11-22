@@ -35,27 +35,31 @@ import { Avatar } from "@/components/avatar/Avatar";
 import Link from "@/components/ui/Link";
 import { cn } from "@/lib/utils";
 import { LanguageSquare } from "@/components/i18n/Lazy";
+import { useT } from "@/i18n/client";
+import nav from "@/messages/nav";
+
+type NavLabel = keyof typeof nav.en.links;
 
 /** The four tabs before More: the home page and the games most people come for. */
-const TABS: { href: string; label: string; icon: LucideIcon }[] = [
-  { href: "/", label: "Home", icon: Home },
-  { href: "/pokeguessr", label: "Guessr", icon: Compass },
-  { href: "/pokedle", label: "Wordle", icon: Search },
-  { href: "/battle", label: "Battle", icon: Swords },
+const TABS: { href: string; label: NavLabel; icon: LucideIcon }[] = [
+  { href: "/", label: "home", icon: Home },
+  { href: "/pokeguessr", label: "guessr", icon: Compass },
+  { href: "/pokedle", label: "wordle", icon: Search },
+  { href: "/battle", label: "battle", icon: Swords },
 ];
 
 /** Everything else, in the More sheet: the other games and sections as tiles, then the community pages. */
-const MORE_TILES: { href: string; label: string; icon: LucideIcon; accent: string }[] = [
-  { href: "/daily", label: "Daily", icon: CalendarDays, accent: "340 86% 60%" },
-  { href: "/pokeconnections", label: "Connections", icon: LayoutGrid, accent: "42 98% 60%" },
-  { href: "/pikadoku", label: "Sudoku", icon: Grid3x3, accent: "190 90% 55%" },
-  { href: "/quiz", label: "Quizzes", icon: Gamepad2, accent: "24 95% 58%" },
-  { href: "/pokedex", label: "Pokédex", icon: BookOpen, accent: "214 90% 64%" },
-  { href: LAB_PATH, label: "3D Lab", icon: Box, accent: "300 75% 68%" },
+const MORE_TILES: { href: string; label: NavLabel; icon: LucideIcon; accent: string }[] = [
+  { href: "/daily", label: "daily", icon: CalendarDays, accent: "340 86% 60%" },
+  { href: "/pokeconnections", label: "connections", icon: LayoutGrid, accent: "42 98% 60%" },
+  { href: "/pikadoku", label: "sudoku", icon: Grid3x3, accent: "190 90% 55%" },
+  { href: "/quiz", label: "quizzes", icon: Gamepad2, accent: "24 95% 58%" },
+  { href: "/pokedex", label: "pokedex", icon: BookOpen, accent: "214 90% 64%" },
+  { href: LAB_PATH, label: "lab", icon: Box, accent: "300 75% 68%" },
 ];
-const MORE_LINKS: { href: string; label: string; icon: LucideIcon; testId: string }[] = [
-  { href: "/leaderboard", label: "Leaderboard", icon: Trophy, testId: "more-leaderboard" },
-  { href: "/rooms", label: "Chat rooms", icon: MessagesSquare, testId: "more-rooms" },
+const MORE_LINKS: { href: string; label: NavLabel; icon: LucideIcon; testId: string }[] = [
+  { href: "/leaderboard", label: "leaderboard", icon: Trophy, testId: "more-leaderboard" },
+  { href: "/rooms", label: "rooms", icon: MessagesSquare, testId: "more-rooms" },
 ];
 
 /** The 3D experiences (the timeline, sizes, the globe...) belong to the 3D Lab, not to the Pokédex or PokéGuessr. */
@@ -80,6 +84,7 @@ export function MobileTabBar() {
   const community = useCommunity();
   const waiting = community.requests + community.challenges.length;
   const [open, setOpen] = useState(false);
+  const t = useT(nav);
   const moreButton = useRef<HTMLButtonElement>(null);
   // More is lit on the pages it holds (a share link or a profile lights nothing).
   const inMore = [...MORE_TILES, ...MORE_LINKS, { href: "/trainer" }, { href: "/login" }].some((t) => tabActive(pathname, t.href));
@@ -97,7 +102,7 @@ export function MobileTabBar() {
       <MoreSheet open={open} onClose={close} pathname={pathname} waiting={waiting} />
       <nav
         className="glass-top fixed inset-x-0 bottom-0 z-50 pb-[env(safe-area-inset-bottom)] lg:hidden"
-        aria-label="Primary"
+        aria-label={t("primary")}
         data-testid="tabbar"
       >
         <div className="mx-auto grid h-14 max-w-lg grid-cols-5 px-1">
@@ -114,7 +119,7 @@ export function MobileTabBar() {
                 <span className="tab-pill">
                   <Icon className="h-[22px] w-[22px]" strokeWidth={active ? 2.25 : 1.9} aria-hidden />
                 </span>
-                {label}
+                {t(`links.${label}`)}
               </Link>
             );
           })}
@@ -124,7 +129,7 @@ export function MobileTabBar() {
             className={cn("tab-item", (open || inMore) && "tab-item-on")}
             aria-expanded={open}
             aria-controls="more-sheet"
-            aria-label={waiting ? `More (${waiting} waiting)` : "More"}
+            aria-label={waiting ? t("moreWaiting", { n: waiting }) : t("more")}
             onClick={() => (open ? close(false) : setOpen(true))}
             data-testid="tab-more"
           >
@@ -132,7 +137,7 @@ export function MobileTabBar() {
               <Menu className="h-[22px] w-[22px]" strokeWidth={open || inMore ? 2.25 : 1.9} aria-hidden />
               {waiting > 0 && <span className="absolute right-2.5 top-0.5 h-2 w-2 rounded-full bg-primary ring-2 ring-background" aria-hidden />}
             </span>
-            More
+            {t("more")}
           </button>
         </div>
       </nav>
@@ -149,6 +154,7 @@ function MoreSheet({ open, onClose, pathname, waiting }: { open: boolean; onClos
   const [muted, setMutedState] = useState(true);
   const [drag, setDrag] = useState(0);
   const dragFrom = useRef<number | null>(null);
+  const t = useT(nav);
 
   useEffect(() => onMuteChange(setMutedState), []);
 
@@ -172,7 +178,7 @@ function MoreSheet({ open, onClose, pathname, waiting }: { open: boolean; onClos
     };
   }, [open, onClose]);
 
-  const name = account.user?.username ?? (progress?.name || "Trainer");
+  const name = account.user?.username ?? (progress?.name || t("trainer"));
   const signIn = account.status === "ready" && account.enabled && !account.user;
 
   return (
@@ -187,7 +193,7 @@ function MoreSheet({ open, onClose, pathname, waiting }: { open: boolean; onClos
         id="more-sheet"
         role="dialog"
         aria-modal="true"
-        aria-label="More"
+        aria-label={t("more")}
         inert={!open}
         className={cn(
           "fixed inset-x-0 z-[46] mx-auto max-w-lg rounded-t-3xl border-t border-foreground/[0.08] bg-background px-5 pb-5 pt-2 shadow-[0_-20px_60px_rgb(0_0_0/0.45)] transition-[transform,visibility] duration-300 ease-[cubic-bezier(.2,.8,.2,1)] motion-reduce:transition-none",
@@ -231,7 +237,7 @@ function MoreSheet({ open, onClose, pathname, waiting }: { open: boolean; onClos
                   onClick={() => onClose(false)}
                 >
                   <Icon className="h-6 w-6" style={{ color: `hsl(${accent})` }} aria-hidden />
-                  {label}
+                  {t(`links.${label}`)}
                 </Link>
               </li>
             );
@@ -243,7 +249,7 @@ function MoreSheet({ open, onClose, pathname, waiting }: { open: boolean; onClos
             <li key={href}>
               <Link href={href} className="sheet-row" onClick={() => onClose(false)} aria-current={tabActive(pathname, href) ? "page" : undefined} data-testid={testId}>
                 <Icon className="h-5 w-5 text-muted-foreground" aria-hidden />
-                <span className="flex-1">{label}</span>
+                <span className="flex-1">{t(`links.${label}`)}</span>
                 <ChevronRight className="h-4 w-4 text-muted-foreground/60" aria-hidden />
               </Link>
             </li>
@@ -259,7 +265,7 @@ function MoreSheet({ open, onClose, pathname, waiting }: { open: boolean; onClos
               data-testid="more-friends"
             >
               <Users className="h-5 w-5 text-muted-foreground" aria-hidden />
-              <span className="flex-1">Friends</span>
+              <span className="flex-1">{t("links.friends")}</span>
               {waiting > 0 ? (
                 <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-foreground">{waiting > 9 ? "9+" : waiting}</span>
               ) : (
@@ -278,8 +284,8 @@ function MoreSheet({ open, onClose, pathname, waiting }: { open: boolean; onClos
           >
             <Avatar avatar={account.user?.avatar} size={32} />
             <span className="min-w-0">
-              <span className="block truncate text-[15px] font-semibold leading-tight">{signIn ? "Sign in" : name}</span>
-              <span className="block text-xs text-muted-foreground">{signIn ? "Save your progress" : "Trainer card"}</span>
+              <span className="block truncate text-[15px] font-semibold leading-tight">{signIn ? t("signIn") : name}</span>
+              <span className="block text-xs text-muted-foreground">{signIn ? t("saveProgress") : t("trainerCard")}</span>
             </span>
           </Link>
           <button
@@ -291,7 +297,7 @@ function MoreSheet({ open, onClose, pathname, waiting }: { open: boolean; onClos
               setThemeState(next);
               play("click");
             }}
-            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            aria-label={theme === "dark" ? t("toLight") : t("toDark")}
             data-testid="more-theme"
           >
             {theme === "dark" ? <Sun className="h-5 w-5" aria-hidden /> : <Moon className="h-5 w-5" aria-hidden />}
@@ -305,7 +311,7 @@ function MoreSheet({ open, onClose, pathname, waiting }: { open: boolean; onClos
               setMutedState(next);
               if (!next) play("click");
             }}
-            aria-label={muted ? "Turn sound on" : "Turn sound off"}
+            aria-label={muted ? t("soundOnAction") : t("soundOffAction")}
             aria-pressed={!muted}
             data-testid="more-sound"
           >

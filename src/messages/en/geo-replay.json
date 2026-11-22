@@ -1,0 +1,90 @@
+{
+  "result": {
+    "win": { "letter": "W", "label": "Victory" },
+    "loss": { "letter": "L", "label": "Defeat" },
+    "draw": { "letter": "D", "label": "Draw" }
+  },
+  "elo": {
+    "title": "{before} → {after} Elo",
+    "climbing": "Climbing",
+    "slipping": "Slipping",
+    "holding": "Holding",
+    "word": "Elo"
+  },
+  "vs": "vs",
+  "ranked": "Ranked",
+  "casual": "Casual",
+  "race": "Points race",
+  "hp": "HP battle",
+  "turbo": "Turbo",
+  "finalHpTitle": "Final HP: yours – theirs",
+  "points": "points",
+  "finalHp": "final HP",
+  "list": {
+    "failed": "Couldn't load your duels.",
+    "loading": "Loading your duels…",
+    "off": "Duel history isn't switched on here yet. Your duels still count on your PokéGuessr record.",
+    "empty": "No duels yet. Finish a duel and it shows up here with a round-by-round replay.",
+    "find": "Find a duel",
+    "more": "Load older duels"
+  },
+  "history": "Duel history",
+  "load": {
+    "failed": "Couldn't load the replay.",
+    "loading": "Loading the replay…",
+    "missing": "No replay here",
+    "error": "Something went wrong",
+    "missingBlurb": "This duel's replay doesn't exist, or it's private to the two trainers who played it.",
+    "play": "Play PokéGuessr"
+  },
+  "trainer": "Trainer",
+  "won": "{name} won",
+  "rankedReplay": "Ranked replay",
+  "casualReplay": "Casual replay",
+  "worldMap": "World map",
+  "noRounds": "This duel ended before a round was played.",
+  "shotAlt": "Round {n}'s screenshot",
+  "round": "Round {n}",
+  "multiplier": "×{n} damage",
+  "roundOf": "Round {n} of {total}",
+  "phase": {
+    "shot": "The shot",
+    "pins": "The pins",
+    "damage": "The damage"
+  },
+  "controls": {
+    "first": "First step",
+    "prev": "Previous step",
+    "pause": "Pause",
+    "play": "Play",
+    "next": "Next step",
+    "last": "Last step",
+    "position": "Replay position"
+  },
+  "seat": {
+    "won": "Round won",
+    "distance": "Distance",
+    "noGuess": "No guess",
+    "score": "Score",
+    "mult": "Mult.",
+    "damage": "Damage",
+    "hp": "HP",
+    "hpOf": "{name}'s HP"
+  },
+  "table": {
+    "place": "Place",
+    "dmg": "Dmg",
+    "goTo": "Go to round {n}",
+    "r": "R{n}"
+  },
+  "share": {
+    "copyFallback": "Copy the address from the address bar.",
+    "failed": "Couldn't change sharing. Try again.",
+    "copied": "Copied",
+    "copy": "Copy link",
+    "private": "Make private",
+    "share": "Share replay",
+    "public": "Anyone with the link can watch.",
+    "privateNote": "Private to you and your opponent."
+  }
+}

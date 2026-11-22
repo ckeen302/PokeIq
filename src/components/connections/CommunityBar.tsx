@@ -7,6 +7,9 @@ import { dlePlayerId } from "@/lib/dle-player";
 import { customPath, type CustomMeta } from "@/lib/connections/custom";
 import { ShareButton } from "@/components/share/ShareButton";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import { localizePath } from "@/i18n/paths";
+import community from "@/messages/connections-community";
 
 /**
  * A community puzzle's byline, its thumbs up/down (one vote per player, a
@@ -15,6 +18,7 @@ import { cn } from "@/lib/utils";
  * never the groups.
  */
 export function CommunityBar({ id }: { id: string }) {
+  const t = useT(community);
   const [meta, setMeta] = useState<CustomMeta | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,13 +29,13 @@ export function CommunityBar({ id }: { id: string }) {
       .then(({ ok, b }) => {
         if (!live) return;
         if (ok) setMeta(b as CustomMeta);
-        else setError(b.error ?? "Couldn't load this puzzle's details.");
+        else setError(b.error ?? t("detailsError"));
       })
-      .catch(() => live && setError("Couldn't load this puzzle's details."));
+      .catch(() => live && setError(t("detailsError")));
     return () => {
       live = false;
     };
-  }, [id]);
+  }, [id, t]);
 
   const vote = useCallback(
     async (value: 1 | -1) => {
@@ -41,13 +45,13 @@ export function CommunityBar({ id }: { id: string }) {
       try {
         const res = await fetch(`/api/connections/custom/${id}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ value: next, player: dlePlayerId() }) });
         const body = await res.json();
-        if (!res.ok) throw new Error(body.error ?? "Couldn't save your vote.");
+        if (!res.ok) throw new Error(body.error ?? t("voteError"));
         setMeta({ ...meta, up: body.up, down: body.down, myVote: body.myVote });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Couldn't save your vote.");
+        setError(err instanceof Error ? err.message : t("voteError"));
       }
     },
-    [id, meta]
+    [id, meta, t]
   );
 
   if (!meta) return error ? <p className="text-center text-sm text-destructive">{error}</p> : null;
@@ -69,22 +73,24 @@ export function CommunityBar({ id }: { id: string }) {
   return (
     <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-3 rounded-md border border-foreground/15 bg-card px-4 py-3" data-testid="conn-community-bar">
       <div className="min-w-0">
-        <p className="truncate font-display text-lg font-bold">{meta.title ?? "Untitled puzzle"}</p>
+        <p className="truncate font-display text-lg font-bold">{meta.title ?? t("untitled")}</p>
         <p className="text-xs text-muted-foreground">
-          by{" "}
-          {meta.creator ? (
-            <a href={creatorPath(meta.creator)} className="text-primary hover:underline" data-testid="community-creator-link">
-              {meta.creator}
-            </a>
-          ) : (
-            "a trainer"
-          )}
+          {t.rich("by", {
+            c: () =>
+              meta.creator ? (
+                <a href={localizePath(creatorPath(meta.creator), t.locale)} className="text-primary hover:underline" data-testid="community-creator-link">
+                  {meta.creator}
+                </a>
+              ) : (
+                t("aTrainer")
+              ),
+          })}
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        {button(1, ThumbsUp, meta.up, "Thumbs up")}
-        {button(-1, ThumbsDown, meta.down, "Thumbs down")}
-        <ShareButton getText={() => `Try this PokéConnections puzzle: ${typeof window === "undefined" ? "" : window.location.origin}${customPath(id)}`} label="Share link" kind="connections" variant="outline" />
+        {button(1, ThumbsUp, meta.up, t("up"))}
+        {button(-1, ThumbsDown, meta.down, t("down"))}
+        <ShareButton getText={() => t("shareText", { url: `${typeof window === "undefined" ? "" : window.location.origin}${localizePath(customPath(id), t.locale)}` })} label={t("shareLink")} kind="connections" variant="outline" />
       </div>
       {error && (
         <p className="w-full text-sm text-destructive" role="alert">

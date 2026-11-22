@@ -1,0 +1,53 @@
+{
+  "errors": {
+    "start": "Impossible de lancer la partie.",
+    "grade": "Impossible de noter ce choix.",
+    "title": "Une erreur est survenue"
+  },
+  "setup": {
+    "eyebrow": "Exploration · Le monde Pokémon",
+    "title": "Série de <b>régions</b>",
+    "intro": "Une capture, une question : quelle est cette région ? Pas de repère à placer. Chaque bonne réponse amène la capture suivante ; une mauvaise région met fin à la partie.",
+    "mode": "Mode série",
+    "headline": "De {from} à {to}, jusqu'à l'erreur",
+    "best": "Ton record : {n} d'affilée.",
+    "first": "Ta première partie fixe ton record.",
+    "board": "Les parties terminées entrent au classement de Série de régions.",
+    "start": "Commencer",
+    "regions": "Les neuf régions"
+  },
+  "board": "Classement des séries",
+  "back": "Retour à Série de régions",
+  "hud": {
+    "streak": "Série {n}",
+    "mode": "Série de régions · {world}"
+  },
+  "which": "Quelle est cette région ?",
+  "gen": "Gén. {n}",
+  "pick": "Choisis une région",
+  "reveal": {
+    "right": "Bonne région !",
+    "wrong": "Mauvaise région. Série terminée",
+    "inARow": "{n} d'affilée",
+    "final": "Série finale : {n}",
+    "its": "C'est {region}.",
+    "picked": "Tu as choisi {picked} : c'est {region}.",
+    "nothing": "rien",
+    "results": "Voir les résultats",
+    "next": "Capture suivante",
+    "space": "Espace"
+  },
+  "summary": {
+    "saveFailed": "Impossible d'enregistrer.",
+    "shareTitle": "PokéGuessr Série de régions",
+    "shareCount": "{n, plural, one {{n} région d'affilée} other {{n} régions d'affilée}}",
+    "newBest": "Nouveau record",
+    "best": "Record : {n} d'affilée",
+    "share": "Partager…",
+    "save": "Enregistrer au classement des séries",
+    "name": "Nom de Dresseur",
+    "saved": "Enregistré",
+    "submit": "Envoyer",
+    "needOne": "Trouve au moins une région pour entrer au classement."
+  }
+}

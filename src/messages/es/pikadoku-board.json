@@ -1,0 +1,53 @@
+{
+  "family": {
+    "types": "Tipos",
+    "regions": "Regiones",
+    "evolution": "Evolución",
+    "moves": "Movimientos",
+    "abilities": "Habilidades",
+    "other": "Otros"
+  },
+  "board": {
+    "grid": "Cuadrícula de Pikadoku",
+    "info": "Qué cuenta para {label}",
+    "empty": "Vacía",
+    "cell": "Fila {row}, columna {col}: {label}",
+    "cross": "{row} × {col}"
+  },
+  "picker": {
+    "loading": "Cargando Pokémon…",
+    "placeholder": "Escribe el nombre de un Pokémon",
+    "search": "Buscar un Pokémon",
+    "matching": "Pokémon que coinciden",
+    "used": "Usado",
+    "form": "Forma",
+    "none": "Ningún Pokémon coincide."
+  },
+  "hint": {
+    "type": "Cuenta un Pokémon que tenga el tipo {type} entre sus tipos. Las formas son elecciones propias, con sus propios tipos, estadísticas y habilidades. Mega-Charizard X es de tipo Fuego y Dragón; Raichu de Alola, Eléctrico y Psíquico.",
+    "types": "Cuentan los tipos propios del Pokémon, así que una forma puede diferir de su especie: Charizard tiene dos tipos, y Mega-Charizard X también. Las formas son elecciones propias, con sus propios tipos, estadísticas y habilidades.",
+    "hisui": "Debutó en Leyendas Pokémon: Arceus: las formas de Hisui (Growlithe de Hisui) y las siete especies nuevas (Wyrdeer, Kleavor, Ursaluna, Basculegion, Sneasler, Overqwil, Enamorus).",
+    "region": "La generación en la que debutó la especie (la 8.ª es Galar, con las novedades de Leyendas: Arceus como Kleavor). Una forma regional cuenta para la región en la que debutó (Raichu de Alola es de Alola; Raichu, de Kanto). Las megaevoluciones y las formas Gigamax cuentan para la región de su especie.",
+    "form": "La especie tiene una forma regional de esa región, así que cuentan la especie y cada una de sus formas (Raichu y Raichu de Alola encajan en «Forma de Alola»).",
+    "stage": "Su lugar en su línea evolutiva. Los bebés son opcionales: Pikachu cuenta como Básico y como segunda fase (tras Pichu), y Raichu como segunda o tercera fase. Aquí una forma sigue a su especie.",
+    "item": "Participa en una evolución que usa un objeto o requiere llevarlo, por cualquiera de los dos lados: piedras, manzanas, objetos equipados (Onix y Steelix con el Revestimiento Metálico). Usar un movimiento 20 veces no es un objeto. Aquí una forma sigue a su especie.",
+    "stone": "Participa en una evolución con una de las diez piedras evolutivas, por cualquiera de los dos lados: Pikachu y Raichu, Eevee y Vaporeon. La Piedra Oval, que se lleva equipada, no cuenta. Aquí una forma sigue a su especie.",
+    "kind": "Participa en una evolución de este tipo, por cualquiera de los dos lados: el Pokémon que evoluciona y aquel en el que se convierte. Aquí una forma sigue a su especie.",
+    "level": "Participa en una evolución de este tipo, por cualquiera de los dos lados: el Pokémon que evoluciona y aquel en el que se convierte. Por nivel significa alcanzar un nivel concreto (Charmander al 16). Aquí una forma sigue a su especie.",
+    "branch": "Su familia se ramifica en algún punto: Eevee y todas sus evoluciones, la línea de Oddish (Vileplume o Bellossom), Scyther (Scizor o Kleavor). Aquí una forma sigue a su especie.",
+    "three": "Su familia llega a una tercera fase (la de Charmander, o la de Pichu contando al bebé). La familia de Eevee tiene nueve especies pero solo dos fases. Aquí una forma sigue a su especie.",
+    "none": "No evoluciona ni procede de ninguna evolución (Tauros, Ditto). Aquí una forma sigue a su especie.",
+    "evo": "Se juzga por la línea evolutiva. Aquí una forma sigue a su especie. Raichu de Alola está en su evolución final, como Raichu; Mega-Charizard X es un miembro de la línea de Charmander en su evolución final.",
+    "move": "Necesita el movimiento en el repertorio de la especie en el último juego principal en el que aparece (Escarlata y Púrpura en la mayoría), por nivel, MT, huevo o tutor. Las formas usan los movimientos de su especie.",
+    "hidden": "Tiene una habilidad oculta. Las habilidades son las de la forma elegida: Mega-Charizard X solo tiene Garra Dura, así que no tiene habilidad oculta.",
+    "ability": "Tiene esta habilidad, sea normal u oculta. Las habilidades son las de la forma elegida: Mega-Charizard X tiene Garra Dura, no Mar Llamas.",
+    "stat": "Usa las estadísticas base de la forma elegida: las de una megaevolución son propias y más altas que las de su especie.",
+    "mega": "La especie tiene megaevolución, así que cuentan la especie y cada una de sus formas (Charizard y Mega-Charizard X). Incluye las megaevoluciones nuevas de Leyendas Pokémon: Z-A, como las de Dragonite y Greninja.",
+    "gmax": "La especie tiene forma Gigamax, así que cuentan la especie y cada una de sus formas (Pikachu y Pikachu Gigamax).",
+    "paradox": "Lista hecha a mano de los Pokémon paradoja oficiales (de Colmilargo a Ferrotesta). Las formas siguen a su especie.",
+    "ultrabeast": "Lista hecha a mano de los once Ultraentes (de Nihilego a Blacephalon). Necrozma no es uno de ellos. Las formas siguen a su especie.",
+    "partner": "Cualquier Pokémon de la línea evolutiva de un Pokémon inicial de la saga principal, de Kanto a Paldea. Aquí una forma sigue a su especie.",
+    "ou": "Aparece en los datos de uso de OU de la 9.ª generación (Smogon). Una forma regional solo cuenta si es la que se usa: Slowking de Galar está en OU; Slowking, no. Las demás formas siguen a su especie.",
+    "status": "Ser legendario, singular, fósil o bebé depende de la especie. Aquí una forma sigue a su especie."
+  }
+}

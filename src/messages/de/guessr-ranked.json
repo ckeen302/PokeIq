@@ -1,0 +1,86 @@
+{
+  "divisions": {
+    "poke": "Pokéball",
+    "great": "Superball",
+    "ultra": "Hyperball",
+    "master": "Meisterball",
+    "beast": "Ultraball"
+  },
+  "badgeTitle": "{name} · {elo} Elo",
+  "progress": {
+    "to": "Fortschritt bis {next}",
+    "toTop": "Fortschritt bis ganz oben",
+    "left": "Noch {n} bis {next}",
+    "next": "Als Nächstes: {next}",
+    "top": "Die höchste Liga"
+  },
+  "bot": {
+    "tag": "Arenaleiter",
+    "tagTitle": "Ein Computergegner: Wenn gerade kein Trainer da ist, spielt der Arenaleiter in der Rangliste",
+    "leaders": {
+      "brock": { "name": "Rocko", "full": "Arenaleiter Rocko" },
+      "misty": { "name": "Misty", "full": "Arenaleiterin Misty" },
+      "ltsurge": { "name": "Major Bob", "full": "Arenaleiter Major Bob" },
+      "erika": { "name": "Erika", "full": "Arenaleiterin Erika" },
+      "koga": { "name": "Koga", "full": "Arenaleiter Koga" },
+      "sabrina": { "name": "Sabrina", "full": "Arenaleiterin Sabrina" },
+      "blaine": { "name": "Pyro", "full": "Arenaleiter Pyro" },
+      "falkner": { "name": "Falk", "full": "Arenaleiter Falk" },
+      "bugsy": { "name": "Kai", "full": "Arenaleiter Kai" },
+      "whitney": { "name": "Bianka", "full": "Arenaleiterin Bianka" },
+      "morty": { "name": "Jens", "full": "Arenaleiter Jens" },
+      "chuck": { "name": "Hartwig", "full": "Arenaleiter Hartwig" },
+      "jasmine": { "name": "Jasmin", "full": "Arenaleiterin Jasmin" },
+      "pryce": { "name": "Norbert", "full": "Arenaleiter Norbert" },
+      "clair": { "name": "Sandra", "full": "Arenaleiterin Sandra" },
+      "roxanne": { "name": "Felizia", "full": "Arenaleiterin Felizia" }
+    }
+  },
+  "record": {
+    "place": "<b>#{position}</b> von {players}",
+    "ladder": "Rangliste: <b>#{position}</b> von {players}",
+    "wl": "{wins} S · {losses} N",
+    "draws": " · {draws} U",
+    "best": "Bestwert {points} Pkt."
+  },
+  "search": {
+    "searching": "Suche nach einem Ranglisten-Gegner …",
+    "any": " · beliebiger Trainer",
+    "widening": " · Suche wird ausgeweitet",
+    "near": " · Trainer mit ähnlichem Elo",
+    "noneYet": "Noch kein Trainer gefunden. Gegen einen Arenaleiter antreten?",
+    "botAbout": "Ein Computergegner auf dem Niveau deiner Liga. Zählt für die Wertung, aber nur mit halber Veränderung.",
+    "bot": "Gegen Arenaleiter antreten",
+    "cancel": "Abbrechen"
+  },
+  "card": {
+    "label": "Rangliste · Weltkarte",
+    "loading": "Dein Rang wird geladen …",
+    "off": "Ranglisten-Duelle in PokéGuessr kommen bald. Lockere Duelle laufen schon: Wechsle zu „Locker“, um einen Gegner zu finden oder einen Freund herauszufordern.",
+    "ladder": "Rangliste",
+    "how1": "Eins gegen eins auf der Weltkarte. Steig vom Pokéball bis zum Ultraball auf – gegen Trainer mit ähnlichem Elo.",
+    "how2": "Für euch beide dieselben Orte, {hp} KP für jeden: In jeder Runde verliert die niedrigere Punktzahl die Differenz. Immer auf der Weltkarte. Wer geht, verliert.",
+    "how3": "Alle starten mit {start} Elo, berechnet wie bei Pokémon Showdown: In Pokéball und Superball wird nur deine Liga angezeigt, ab Hyperball auch die Zahl. Wertungen über {drift} sinken an Tagen, an denen du nicht spielst, ein wenig.",
+    "how4": "Du triffst auf Trainer mit ähnlichem Elo – je länger du wartest, desto größer darf der Abstand sein. Taucht nach {wait} niemand auf, kannst du stattdessen gegen einen Arenaleiter antreten: einen klar gekennzeichneten Computergegner auf dem Niveau deiner Liga, der nur mit halber Veränderung zählt.",
+    "waitSeconds": "{n} Sekunden",
+    "waitWhile": "einer Weile",
+    "how5": "Die Rangliste läuft in Saisons von acht Wochen. Deine höchste Liga einer Saison bringt dir am Saisonende ihre Belohnungen (ein Saisonabzeichen und Kosmetik für jede Liga bis dorthin). Danach rückt jede Wertung halb zurück in Richtung {start}, höchstens eine Liga nach unten – so beginnt der Aufstieg nah an deinem Endstand.",
+    "nameLabel": "Trainername für die Rangliste",
+    "namePlaceholder": "Trainername",
+    "nameRejected": "Wähle einen anderen Namen.",
+    "queue": "Rangliste starten"
+  },
+  "outcome": {
+    "eloLabel": "Elo {delta}, jetzt {after}",
+    "climbing": "Steigend",
+    "slipping": "Fallend",
+    "holding": "Stabil",
+    "botNote": "Ein Arenaleiter-Duell: zählt nur mit halber Veränderung.",
+    "promoted": "Aufstieg: {name}!",
+    "demoted": "Abstieg: {name}. Gewinn das nächste Duell, um wieder aufzusteigen.",
+    "counting": "Wertung wird berechnet …"
+  },
+  "spot": {
+    "none": "Du bist noch nicht in der Rangliste. <link>Spiel ein Ranglisten-Duell</link>, um deine Liga zu bekommen."
+  }
+}

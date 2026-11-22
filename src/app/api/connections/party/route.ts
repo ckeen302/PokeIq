@@ -6,6 +6,7 @@ import { duelNameSchema, pvpToken } from "@/lib/server/duel-core";
 import { duelsEnabled, newDuelCode } from "@/lib/server/duel-store";
 import { createParty, partyStore, partyView } from "@/lib/server/connections-party";
 import type { PartySeatResponse } from "@/lib/connections/party";
+import { langOf } from "@/lib/server/request-lang";
 
 /**
  * POST /api/connections/party { name } — opens a party (2 to 8 trainers
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
       const code = newDuelCode();
       const { party, playerId } = createParty(parsed.data.name, code, now);
       if (!(await partyStore.insert(party))) continue; // code taken: roll another
-      const seat: PartySeatResponse = { code, token: pvpToken(code, playerId), view: partyView(party, playerId, now, 0) };
+      const seat: PartySeatResponse = { code, token: pvpToken(code, playerId), view: partyView(party, playerId, now, 0, langOf(request)) };
       return NextResponse.json(seat, { headers: { "Cache-Control": "no-store" } });
     }
     return NextResponse.json({ error: "Couldn't open a party. Try again." }, { status: 503 });

@@ -1,5 +1,7 @@
 import type { ShareTile } from "@/lib/share";
 import { cn } from "@/lib/utils";
+import { serverT } from "@/i18n/server";
+import sharePage from "@/messages/share-page";
 
 const TILE_CLASS: Record<ShareTile, string> = {
   hit: "bg-success",
@@ -22,33 +24,13 @@ const TILE_CLASS: Record<ShareTile, string> = {
   "pdk-empty": "bg-zinc-800",
 };
 
-const TILE_LABEL: Record<ShareTile, string> = {
-  hit: "right",
-  near: "close",
-  far: "far",
-  wrong: "wrong",
-  miss: "wrong",
-  up: "higher",
-  down: "lower",
-  mask: "hidden",
-  "conn-yellow": "yellow",
-  "conn-green": "green",
-  "conn-blue": "blue",
-  "conn-purple": "purple",
-  "conn-red": "red",
-  "pdk-purple": "under 1%",
-  "pdk-blue": "under 10%",
-  "pdk-green": "under 25%",
-  "pdk-yellow": "25% or more",
-  "pdk-empty": "wrong or empty",
-};
-
-/** A shared result's board: rows of squares, plus optional numbers under them (PokéGuessr's points). */
+/** A shared result's board (a server component: its labels come from the "share-page" namespace): rows of squares, plus optional numbers under them (PokéGuessr's points). */
 export function ShareBoard({ tiles, numbers }: { tiles: ShareTile[][]; numbers?: string[] }) {
   if (!tiles.length) return null;
   const cols = Math.max(...tiles.map((r) => r.length));
+  const t = serverT(sharePage);
   return (
-    <div className="mx-auto inline-flex flex-col gap-1.5" role="img" aria-label={tiles.map((r, i) => `Row ${i + 1}: ${r.map((t) => TILE_LABEL[t]).join(", ")}`).join(". ")}>
+    <div className="mx-auto inline-flex flex-col gap-1.5" role="img" aria-label={tiles.map((r, i) => t("board.row", { n: i + 1, tiles: r.map((tile) => t(`board.tiles.${tile}`)).join(", ") })).join(". ")}>
       {tiles.map((row, r) => (
         <div key={r} className="flex justify-center gap-1.5">
           {row.map((t, i) => (

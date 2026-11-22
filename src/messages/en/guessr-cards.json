@@ -1,0 +1,54 @@
+{
+  "duel": {
+    "heading": "Duels",
+    "modes": {
+      "hp": "HP battle",
+      "race": "Points race",
+      "team": "Teams 2v2"
+    },
+    "queues": {
+      "casual": "Casual",
+      "ranked": "Ranked"
+    },
+    "queueLabel": "Duel queue",
+    "eras": {
+      "2d": "Classic 2D",
+      "3d": "Modern 3D"
+    },
+    "headingTeam": "Team duel · {map}",
+    "headingHp": "Head to head · {map}",
+    "teamBlurb": "Two teams of two (up to four a side) on the same places, {hp} HP per team. Each round your team scores its best pin, and teammates see each other's pins as they go. Send the room code to three friends.",
+    "raceBlurb": "The same {n} places for both of you, on the map picked above. Whoever scores the most points over {n} rounds wins. Send your friend the link and press Ready.",
+    "raceBlurbEra": "The same {n} places for both of you, on the map and games picked above. Whoever scores the most points over {n} rounds wins. Send your friend the link and press Ready.",
+    "hpBlurb": "The same places for both of you, on the map picked above. {hp} HP each: every round, the lower score loses the difference. Send your friend the link and press Ready.",
+    "hpBlurbEra": "The same places for both of you, on the map and games picked above. {hp} HP each: every round, the lower score loses the difference. Send your friend the link and press Ready.",
+    "turboInfo": "Turbo: once one of you guesses, the other has {s} seconds instead of 15.",
+    "mode": "Mode",
+    "modeLabel": "Duel mode",
+    "raceRounds": "Rounds in the race",
+    "partySettings": "Party settings",
+    "turboOn": "Turbo on",
+    "turboOff": "Turbo off"
+  },
+  "party": {
+    "royaleBlurb": "Up to {max} trainers on the same places. Lowest score each round loses a life ({lives} each); last trainer standing wins.",
+    "teamBlurb": "Red team against blue, 2v2 (up to 4v4), {hp} HP a team. Your team scores its best pin, and you see your teammates' pins live.",
+    "label": "Party · up to {max} trainers",
+    "room": "Private room · {map}",
+    "gameLabel": "Party game",
+    "modes": {
+      "royale": "Battle Royale",
+      "team": "Team duel"
+    },
+    "host": "You host: change the map, lives, timer and rounds in the lobby, then start when everyone is in.",
+    "nameLabel": "Your trainer name",
+    "namePlaceholder": "Trainer name",
+    "nameRejected": "Pick a different name.",
+    "create": "Create party",
+    "code": "Room code",
+    "join": "Join",
+    "badCode": "Room codes are six letters and numbers.",
+    "failed": "Couldn't open a party.",
+    "requestFailed": "Request failed ({status})"
+  }
+}

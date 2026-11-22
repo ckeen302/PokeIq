@@ -1,0 +1,110 @@
+{
+  "world": "世界",
+  "themes": {
+    "gyms": {
+      "name": "ジム",
+      "blurb": "ニビシティからフリッジタウンまで、すべてのジム（ガラルのスタジアムも）。"
+    },
+    "towns": {
+      "name": "タウンとシティ",
+      "blurb": "マサラタウンからテーブルシティまで、すべての町と街。"
+    },
+    "routes": {
+      "name": "道路",
+      "blurb": "町と町を結ぶ番号つきの道路。"
+    }
+  },
+  "eras": {
+    "all": "すべてのゲーム",
+    "2d": "クラシック2D",
+    "3d": "モダン3D"
+  },
+  "difficulty": {
+    "easy": {
+      "name": "かんたん",
+      "blurb": "町やランドマーク、見通しのいい景色。"
+    },
+    "normal": {
+      "name": "ふつう",
+      "blurb": "すべての場所からランダムに。"
+    },
+    "hard": {
+      "name": "むずかしい",
+      "blurb": "道路、洞窟、建物の中、まぎらわしい景色。"
+    }
+  },
+  "route": "{n}番道路",
+  "placeIn": "{place}（{region}）",
+  "types": {
+    "City": "シティ",
+    "Town": "タウン",
+    "Route": "道路",
+    "Gym": "ジム",
+    "Forest": "森",
+    "Cave": "洞窟",
+    "Mountain": "山",
+    "Island": "島",
+    "Lake": "湖",
+    "Tower": "タワー",
+    "Ruins": "遺跡",
+    "League": "ポケモンリーグ"
+  },
+  "game": "ポケモン {game}",
+  "regions": {
+    "kanto": "カントー",
+    "johto": "ジョウト",
+    "hoenn": "ホウエン",
+    "sinnoh": "シンオウ",
+    "unova": "イッシュ",
+    "kalos": "カロス",
+    "alola": "アローラ",
+    "galar": "ガラル",
+    "paldea": "パルデア",
+    "kitakami": "Kitakami",
+    "blueberryacademy": "Blueberry Academy",
+    "seviiislands": "Sevii Islands",
+    "isleofarmor": "Isle of Armor",
+    "crowntundra": "Crown Tundra"
+  },
+  "games": {
+    "red": "赤",
+    "green": "緑",
+    "blue": "青",
+    "yellow": "ピカチュウ",
+    "gold": "金",
+    "silver": "銀",
+    "crystal": "クリスタル",
+    "ruby": "ルビー",
+    "sapphire": "サファイア",
+    "emerald": "エメラルド",
+    "firered": "ファイアレッド",
+    "leafgreen": "リーフグリーン",
+    "diamond": "ダイヤモンド",
+    "pearl": "パール",
+    "platinum": "プラチナ",
+    "heartgold": "ハートゴールド",
+    "soulsilver": "ソウルシルバー",
+    "black": "ブラック",
+    "white": "ホワイト",
+    "black2": "ブラック2",
+    "white2": "ホワイト2",
+    "x": "X",
+    "y": "Y",
+    "omegaruby": "オメガルビー",
+    "alphasapphire": "アルファサファイア",
+    "sun": "サン",
+    "moon": "ムーン",
+    "ultrasun": "ウルトラサン",
+    "ultramoon": "ウルトラムーン",
+    "letsgopikachu": "Let’s Go! ピカチュウ",
+    "letsgoeevee": "Let’s Go! イーブイ",
+    "sword": "ソード",
+    "shield": "シールド",
+    "brilliantdiamond": "ブリリアントダイヤモンド",
+    "shiningpearl": "シャイニングパール",
+    "legendsarceus": "LEGENDS アルセウス",
+    "scarlet": "スカーレット",
+    "violet": "バイオレット",
+    "legendsza": "LEGENDS Z-A"
+  }
+}

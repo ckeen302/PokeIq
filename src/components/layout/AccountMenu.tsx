@@ -12,6 +12,8 @@ import { openFriends, useCommunity } from "@/lib/friends-client";
 import { useProgress } from "@/lib/progress";
 import { applyThemeColor, getTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import nav from "@/messages/nav";
 
 /**
  * The header's avatar on desktop and tablet: opens a small panel with the
@@ -31,8 +33,9 @@ export function AccountMenu({ className }: { className?: string }) {
   const root = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const panelId = useId();
+  const t = useT(nav);
 
-  const name = account.user?.username ?? (progress?.name || "Trainer");
+  const name = account.user?.username ?? (progress?.name || t("trainer"));
   const signIn = account.status === "ready" && account.enabled && !account.user;
   const signedIn = account.status === "ready" && !!account.user;
   const onTrainer = pathname === "/trainer" || pathname.startsWith("/trainer/");
@@ -75,8 +78,8 @@ export function AccountMenu({ className }: { className?: string }) {
         type="button"
         aria-expanded={open}
         aria-controls={panelId}
-        aria-label={`Account and settings (${name})${waiting ? `, friends: ${waiting} waiting` : ""}`}
-        title="Account and settings"
+        aria-label={waiting ? t("accountOfWaiting", { name, n: waiting }) : t("accountOf", { name })}
+        title={t("account")}
         onClick={() => setOpen((v) => !v)}
         data-testid="account-menu-button"
         className={cn(
@@ -101,7 +104,7 @@ export function AccountMenu({ className }: { className?: string }) {
           <motion.div
             id={panelId}
             role="region"
-            aria-label="Account and settings"
+            aria-label={t("account")}
             initial={{ opacity: 0, y: -6, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -4, scale: 0.98, transition: { duration: 0.12 } }}
@@ -120,7 +123,7 @@ export function AccountMenu({ className }: { className?: string }) {
               <Avatar avatar={account.user?.avatar} size={36} />
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-display text-[15px] font-bold leading-tight">{name}</span>
-                <span className="block text-xs text-muted-foreground">Trainer card</span>
+                <span className="block text-xs text-muted-foreground">{t("trainerCard")}</span>
               </span>
               <ChevronRight className="h-4 w-4 text-muted-foreground/60 transition-transform group-hover:translate-x-0.5" aria-hidden />
             </Link>
@@ -134,10 +137,10 @@ export function AccountMenu({ className }: { className?: string }) {
                   trigger.current?.focus();
                   openFriends(community.requests > 0 && community.challenges.length === 0 ? "requests" : "friends");
                 }}
-                aria-label={waiting ? `Friends (${waiting} waiting)` : "Friends"}
+                aria-label={waiting ? t("friendsWaiting", { n: waiting }) : t("links.friends")}
                 data-testid="account-menu-friends"
               >
-                <Users className="h-4 w-4 text-muted-foreground" aria-hidden /> Friends
+                <Users className="h-4 w-4 text-muted-foreground" aria-hidden /> {t("links.friends")}
                 {waiting > 0 && (
                   <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-foreground" data-testid="account-menu-friends-badge">
                     {waiting > 9 ? "9+" : waiting}
@@ -147,7 +150,7 @@ export function AccountMenu({ className }: { className?: string }) {
             </div>
 
             <div className="border-t border-foreground/[0.07] px-4 py-3">
-              <div className="hud-label mb-3">Settings</div>
+              <div className="hud-label mb-3">{t("settings.title")}</div>
               <SettingsControls size="sm" testIdPrefix="account-menu" />
             </div>
 
@@ -160,8 +163,8 @@ export function AccountMenu({ className }: { className?: string }) {
                     onClick={() => setOpen(false)}
                     data-testid="account-menu-signin"
                   >
-                    <LogIn className="h-4 w-4 text-muted-foreground" aria-hidden /> Sign in
-                    <span className="ml-auto text-xs text-muted-foreground">Save your progress</span>
+                    <LogIn className="h-4 w-4 text-muted-foreground" aria-hidden /> {t("signIn")}
+                    <span className="ml-auto text-xs text-muted-foreground">{t("saveProgress")}</span>
                   </Link>
                 ) : (
                   <button
@@ -174,7 +177,7 @@ export function AccountMenu({ className }: { className?: string }) {
                     }}
                     data-testid="account-menu-signout"
                   >
-                    <LogOut className="h-4 w-4 text-muted-foreground" aria-hidden /> Sign out
+                    <LogOut className="h-4 w-4 text-muted-foreground" aria-hidden /> {t("signOut")}
                   </button>
                 )}
               </div>

@@ -1,7 +1,10 @@
 "use client";
 
 import { CONN_LEVELS_4, CONN_MAX_MISTAKES, type ConnLevel } from "@/lib/connections/types";
-import { LevelMark, levelStyle } from "./parts";
+import { LevelMark, levelName, levelStyle } from "./parts";
+import { useT } from "@/i18n/client";
+import conn from "@/messages/connections";
+import board from "@/messages/connections-board";
 import { HowToActions, HowToCards, HowToDialog } from "@/components/howto/shared";
 import { ConnectionsDemo } from "@/components/howto/ConnectionsDemo";
 
@@ -10,91 +13,63 @@ import { ConnectionsDemo } from "@/components/howto/ConnectionsDemo";
  * pop-ups: a first visit's copy is in the page's HTML (see Connections).
  */
 
-const KINDS: [string, string][] = [
-  ["Types", "Fire type, pure Water type, Water/Ground"],
-  ["Origins", "debuted in Gen 4, Legendary, Mythical"],
-  ["Evolution", "evolved with a stone, by trade or by friendship; baby Pokémon"],
-  ["Battle", "can have an Ability (Hidden ones count), a Hidden Ability, learns a move by level-up in Scarlet & Violet"],
-  ["Stats", "highest base stat is Speed, base stat total 600+"],
-  ["Size and look", "weighs 300 kg or more, 3 m tall or more, Pokédex colour"],
-  ["Forms", "has an Alolan form, can Mega Evolve, has a Gigantamax form"],
-  ["Breeding", "Egg Group, always male, genderless"],
-  ["Names", "starts with the same letter, ends in “-ite”, four letters or fewer"],
-];
+const KINDS = ["types", "origins", "evolution", "battle", "stats", "look", "forms", "breeding", "names"] as const;
 
 export function ConnHowToSheet({ onClose, onNever }: { onClose: () => void; onNever?: () => void }) {
+  const t = useT(conn);
+  const tb = useT(board);
+  const b = (c: React.ReactNode[]) => <b>{c}</b>;
+  const strong = (c: React.ReactNode[]) => <b className="text-foreground">{c}</b>;
+  const kbd = (c: React.ReactNode[]) => <kbd className="rounded border px-1">{c}</kbd>;
   return (
     <HowToDialog onClose={onClose} testId="howto-sheet" footer={<HowToActions onClose={onClose} onNever={onNever} />}>
       <ConnectionsDemo />
       <HowToCards
         cards={[
-          { title: "The goal", body: <p>Find the four groups of four Pokémon that share something. Pick four tiles and press Submit: a whole group locks in as a coloured bar.</p> },
+          { title: t("howto.goal"), body: <p>{t("howto.goalBody")}</p> },
           {
-            title: "Core rules",
-            body: (
-              <p>
-                {CONN_MAX_MISTAKES} mistakes and the game is over. “One away…” means three of your four belong together. Trying the same four again never costs a mistake.
-              </p>
-            ),
+            title: t("howto.core"),
+            body: <p>{t("howto.coreBody", { n: CONN_MAX_MISTAKES })}</p>,
           },
-          { title: "Colours", body: <p>Yellow is the easiest group and purple the trickiest. Watch for red herrings: a Fire type that isn&apos;t in the Fire group.</p> },
-          { title: "Daily", body: <p>A new puzzle every day, the same for everyone. Finish it, won or lost, to keep your 🔥 streak.</p> },
+          { title: t("howto.colours"), body: <p>{t("howto.coloursBody")}</p> },
+          { title: t("howto.daily"), body: <p>{t("howto.dailyBody")}</p> },
         ]}
       />
       <details className="rounded-md border bg-shade/30 p-3">
-        <summary className="tap cursor-pointer font-semibold max-sm:py-2.5">Full rules</summary>
+        <summary className="tap cursor-pointer font-semibold max-sm:py-2.5">{t("howto.full")}</summary>
       <div className="mt-3 space-y-4">
-      <p>
-        Find the <b>four groups of four</b> Pokémon that share something. Pick four tiles and press <b>Submit</b>: a whole group locks in as a coloured bar.
-      </p>
+      <p>{t.rich("howto.fullGoal", { b })}</p>
       <ul className="space-y-1.5">
-        <li>
-          <b>{CONN_MAX_MISTAKES} mistakes</b> and the game is over (the dots under the grid).
-        </li>
-        <li>
-          <b>“One away…”</b> means three of your four belong together.
-        </li>
-        <li>
-          <b>Already guessed:</b> trying the same four again never costs a mistake.
-        </li>
-        <li>Every Pokémon fits exactly one group, so the groups only work out one way. Watch for red herrings: a Fire type that isn&apos;t in the Fire group.</li>
+        <li>{t.rich("howto.fullMistakes", { n: CONN_MAX_MISTAKES, b })}</li>
+        <li>{t.rich("howto.fullOneAway", { b })}</li>
+        <li>{t.rich("howto.fullRepeat", { b })}</li>
+        <li>{t("howto.fullUnique")}</li>
       </ul>
       <div className="space-y-2 rounded-md border bg-shade/30 p-3">
-        <p className="font-semibold">Colours, easiest to trickiest</p>
+        <p className="font-semibold">{t("howto.coloursOrder")}</p>
         <div className="flex flex-wrap gap-2">
           {CONN_LEVELS_4.map((l, i) => (
             <span key={l.name} className="flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-bold uppercase tracking-wide" style={levelStyle(i as ConnLevel)}>
-              <LevelMark level={i as ConnLevel} /> {l.name}
+              <LevelMark level={i as ConnLevel} /> {levelName(tb, i as ConnLevel)}
             </span>
           ))}
         </div>
       </div>
       <div className="space-y-1.5 rounded-md border bg-shade/30 p-3">
-        <p className="font-semibold">What links them</p>
+        <p className="font-semibold">{t("howto.links")}</p>
         <ul className="space-y-1">
-          {KINDS.map(([k, v]) => (
+          {KINDS.map((k) => (
             <li key={k}>
-              <b>{k}:</b> <span className="text-muted-foreground">{v}</span>
+              <b>{t(`howto.kinds.${k}`)}:</b> <span className="text-muted-foreground">{t(`howto.kinds.${k}Line`)}</span>
             </li>
           ))}
         </ul>
       </div>
       <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
-        <li>
-          <b className="text-foreground">Base forms only.</b> Every tile is the Pokémon&apos;s standard form: regional forms, Megas and other forms don&apos;t count unless the group is about them
-          (like “Has an Alolan form”). Types, Abilities, stats and Egg Groups are today&apos;s, and move groups are about Scarlet &amp; Violet.
-        </li>
-        <li>
-          <b className="text-foreground">Every fact comes from the Pokédex data</b>, and after the game the <b className="text-foreground">Why?</b> panel explains each group, Pokémon by Pokémon.
-        </li>
-        <li>
-          <b className="text-foreground">A new puzzle every day</b> at your midnight, the same one for everyone. Finish it, won or lost, to keep your 🔥 streak; past dailies are in the archive and practice
-          puzzles are unlimited (neither counts toward your stats).
-        </li>
-        <li>
-          Keys: <kbd className="rounded border px-1">Tab</kbd> and the arrow keys move between tiles, <kbd className="rounded border px-1">Space</kbd> picks one,{" "}
-          <kbd className="rounded border px-1">Enter</kbd> submits four, <kbd className="rounded border px-1">Esc</kbd> deselects all.
-        </li>
+        <li>{t.rich("howto.baseForms", { b: strong })}</li>
+        <li>{t.rich("howto.facts", { b: strong })}</li>
+        <li>{t.rich("howto.newDaily", { b: strong })}</li>
+        <li>{t.rich("howto.keys", { k: kbd })}</li>
       </ul>
       </div>
       </details>

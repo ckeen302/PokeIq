@@ -1,0 +1,46 @@
+{
+  "level": {
+    "0": "Gelb",
+    "1": "Grün",
+    "2": "Blau",
+    "3": "Lila",
+    "4": "Rot"
+  },
+  "kind": {
+    "move": "Attacke",
+    "ability": "Fähigkeit",
+    "type": "Typ",
+    "pokemon": "Pokémon"
+  },
+  "moveChip": "Attacke",
+  "tile": {
+    "hinted": ", Tipp: in der leichtesten verbleibenden Gruppe",
+    "selected": ", ausgewählt"
+  },
+  "group": {
+    "aria": "Gruppe {level}: {label}: {members}",
+    "ariaRevealed": "Gruppe {level} (aufgedeckt): {label}: {members}"
+  },
+  "legend": {
+    "aria": "Gruppenfarben, von leicht bis knifflig: {levels}",
+    "easiest": "Leicht",
+    "trickiest": "Knifflig"
+  },
+  "mistakes": {
+    "aria": "Noch {left} von {max} Fehlern übrig",
+    "last": "Letzte Chance:",
+    "remaining": "Fehler übrig:"
+  },
+  "history": {
+    "guess": "Versuch {n}: {levels}",
+    "sep": ". "
+  },
+  "why": {
+    "title": "Warum?",
+    "source": "Jeder Fakt stammt aus den Pokédex-Daten",
+    "line": ": {why}",
+    "herrings": "Falsche Fährten",
+    "herring": "<b>{name}</b>: {reason}."
+  },
+  "sep": ", "
+}

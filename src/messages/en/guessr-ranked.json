@@ -1,0 +1,86 @@
+{
+  "divisions": {
+    "poke": "Poké Ball",
+    "great": "Great Ball",
+    "ultra": "Ultra Ball",
+    "master": "Master Ball",
+    "beast": "Beast Ball"
+  },
+  "badgeTitle": "{name} · {elo} Elo",
+  "progress": {
+    "to": "Progress to {next}",
+    "toTop": "Progress to the top",
+    "left": "{n} to {next}",
+    "next": "Next: {next}",
+    "top": "The top division"
+  },
+  "bot": {
+    "tag": "Gym Leader",
+    "tagTitle": "A computer opponent: the Gym Leader plays for the ladder when no trainer is around",
+    "leaders": {
+      "brock": { "name": "Brock", "full": "Gym Leader Brock" },
+      "misty": { "name": "Misty", "full": "Gym Leader Misty" },
+      "ltsurge": { "name": "Lt. Surge", "full": "Gym Leader Lt. Surge" },
+      "erika": { "name": "Erika", "full": "Gym Leader Erika" },
+      "koga": { "name": "Koga", "full": "Gym Leader Koga" },
+      "sabrina": { "name": "Sabrina", "full": "Gym Leader Sabrina" },
+      "blaine": { "name": "Blaine", "full": "Gym Leader Blaine" },
+      "falkner": { "name": "Falkner", "full": "Gym Leader Falkner" },
+      "bugsy": { "name": "Bugsy", "full": "Gym Leader Bugsy" },
+      "whitney": { "name": "Whitney", "full": "Gym Leader Whitney" },
+      "morty": { "name": "Morty", "full": "Gym Leader Morty" },
+      "chuck": { "name": "Chuck", "full": "Gym Leader Chuck" },
+      "jasmine": { "name": "Jasmine", "full": "Gym Leader Jasmine" },
+      "pryce": { "name": "Pryce", "full": "Gym Leader Pryce" },
+      "clair": { "name": "Clair", "full": "Gym Leader Clair" },
+      "roxanne": { "name": "Roxanne", "full": "Gym Leader Roxanne" }
+    }
+  },
+  "record": {
+    "place": "<b>#{position}</b> of {players}",
+    "ladder": "Ladder <b>#{position}</b> of {players}",
+    "wl": "{wins}W · {losses}L",
+    "draws": " · {draws}D",
+    "best": "Best {points} pts"
+  },
+  "search": {
+    "searching": "Searching for a ranked rival…",
+    "any": " · any trainer",
+    "widening": " · widening the search",
+    "near": " · trainers near your Elo",
+    "noneYet": "No trainer found yet. Battle a Gym Leader?",
+    "botAbout": "A computer opponent that plays at your division. Rated, at half the usual swing.",
+    "bot": "Battle a Gym Leader",
+    "cancel": "Cancel"
+  },
+  "card": {
+    "label": "Ranked · World map",
+    "loading": "Loading your rank…",
+    "off": "Ranked PokéGuessr opens soon. Casual duels are on: switch to Casual to find an opponent or duel a friend.",
+    "ladder": "Ranked ladder",
+    "how1": "Head to head on the world map. Climb from Poké Ball to Beast Ball against trainers near your Elo.",
+    "how2": "The same places for you both, {hp} HP each: every round, the lower score loses the difference. Always the world map, every game. Leaving counts as a loss.",
+    "how3": "Everyone starts at {start} Elo, rated as Pokémon Showdown rates battles: Poké Ball and Great Ball show your division only; from Ultra Ball up the number shows too. Ratings above {drift} drift down a little on days you don't play.",
+    "how4": "You're matched with trainers near your Elo, further apart the longer you wait. If nobody turns up in {wait}, you can battle a Gym Leader instead: a clearly labelled computer opponent that plays at your division, rated at half the usual swing.",
+    "waitSeconds": "{n} seconds",
+    "waitWhile": "a while",
+    "how5": "Ranked runs in eight-week seasons. Your highest division in a season earns its rewards (a season badge, and cosmetics for every division up to it) when the season ends. Then every rating resets halfway toward {start}, down one division at most, so the climb starts again close to where you finished.",
+    "nameLabel": "Ranked trainer name",
+    "namePlaceholder": "Trainer name",
+    "nameRejected": "Pick a different name.",
+    "queue": "Queue ranked"
+  },
+  "outcome": {
+    "eloLabel": "Elo {delta}, now {after}",
+    "climbing": "Climbing",
+    "slipping": "Slipping",
+    "holding": "Holding",
+    "botNote": "A Gym Leader duel: rated at half the usual swing.",
+    "promoted": "Promoted to {name}!",
+    "demoted": "Down to {name}. Win the next one to climb back.",
+    "counting": "Counting your rating…"
+  },
+  "spot": {
+    "none": "You're not on the ladder yet. <link>Play a ranked duel</link> to get your division."
+  }
+}

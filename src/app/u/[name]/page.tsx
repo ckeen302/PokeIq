@@ -36,6 +36,8 @@ import { QuizBests } from "@/components/community/QuizBests";
 import { neaBests, quizBests } from "@/lib/quiz-bests";
 import { neaPlayerKey, neaStore } from "@/lib/server/name-em-all-board";
 import type { ReplaySummary } from "@/lib/battle/replay";
+import { serverT } from "@/i18n/server";
+import tier from "@/messages/tier";
 
 interface PageProps {
   params: Promise<{ name: string }>;
@@ -200,7 +202,7 @@ export default async function UserProfilePage({ params }: PageProps) {
                     <span className="truncate text-sm font-semibold">{f.formatName}</span>
                     <span className="flex flex-col items-end gap-0.5">
                       {/* Elo leads (the ladder's rating, shown as its Poké Ball to Master Ball tier); GXE and Glicko-2 follow. */}
-                      <TierBadge rating={f.elo ?? f.rating!} games={f.elo === undefined ? f.ratedGames : undefined} size="sm" />
+                      <TierBadge rating={f.elo ?? f.rating!} games={f.elo === undefined ? f.ratedGames : undefined} size="sm" tr={serverT(tier)} />
                       <GlickoBadge rating={f.rating!} rd={f.rd} gxe={f.gxe} elo={f.elo} headline={false} size="sm" />
                     </span>
                   </li>

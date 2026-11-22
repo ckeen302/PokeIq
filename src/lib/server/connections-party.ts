@@ -9,6 +9,7 @@ import { raceRank, seatRace, type SeatRace } from "./connections-duel";
 import { duelTable } from "./duel-store";
 import { fail, type PvpFailure } from "./duel-core";
 import { randomId } from "./crypto";
+import type { Locale } from "@/i18n/config";
 
 /**
  * PokéConnections party mode: 2 to 8 trainers race one puzzle from a share
@@ -251,7 +252,7 @@ export function guessParty(party: ConnectionsParty, playerId: string, ids: numbe
  * the tiles (once the race starts), everyone's placings as counts, and your
  * own found groups. After it: all four groups explained.
  */
-export function partyView(party: ConnectionsParty, playerId: string | null, now: number, rev: number): PartyView {
+export function partyView(party: ConnectionsParty, playerId: string | null, now: number, rev: number, locale: Locale = "en"): PartyView {
   const seat = playerId ? seatOfParty(party, playerId) : -1;
   const start = party.startsAt;
   const begun = start !== undefined && (party.status === "finished" || now >= start);
@@ -276,10 +277,10 @@ export function partyView(party: ConnectionsParty, playerId: string | null, now:
         mine: {
           guesses: party.boards[seat].guesses.map((g) => g.ids),
           results: mine.results.map((r) => r.kind),
-          found: mine.found.map((lv) => groupReveal(puzzle, lv)),
+          found: mine.found.map((lv) => groupReveal(puzzle, lv, locale)),
         },
       }),
-    ...(party.status === "finished" && puzzle && { reveal: ([0, 1, 2, 3] as ConnLevel[]).map((lv) => explainGroup(puzzle, lv)) }),
+    ...(party.status === "finished" && puzzle && { reveal: ([0, 1, 2, 3] as ConnLevel[]).map((lv) => explainGroup(puzzle, lv, locale)) }),
     ...(party.end && { end: party.end }),
   };
 }

@@ -1,0 +1,301 @@
+{
+  "loading": "Cargando",
+  "diff": {
+    "easy": "Fácil",
+    "normal": "Normal",
+    "expert": "Experto"
+  },
+  "diffHint": {
+    "easy": "Categorías amplias, muchas respuestas",
+    "normal": "La cuadrícula principal: clasificación y puntuación",
+    "expert": "Categorías más difíciles, con solo dos respuestas en algunas casillas"
+  },
+  "error": {
+    "generic": "Algo ha salido mal.",
+    "noBoard": "Ninguna cuadrícula encaja con esos ajustes.",
+    "grid": "No se ha podido cargar la cuadrícula.",
+    "game": "No se ha podido cargar tu partida. Revisa tu conexión.",
+    "offline": "Estás sin conexión. La cuadrícula se cargará cuando vuelvas a estar en línea.",
+    "gridConnection": "No se ha podido cargar la cuadrícula. Revisa tu conexión."
+  },
+  "noBoard": {
+    "few": "Esas categorías no bastan para llenar una cuadrícula. Marca más categorías, de más grupos.",
+    "none": "Ninguna cuadrícula encaja con esos ajustes. Para ampliarlos, {tips}.",
+    "or": "{list} o {last}",
+    "more": "marca más categorías",
+    "normal": "prueba la dificultad Normal",
+    "single": "permite casillas de una sola respuesta"
+  },
+  "toast": {
+    "softlock": "Eso dejaría la cuadrícula sin solución. Prueba con otro Pokémon.",
+    "fits": "¡{name} encaja!",
+    "picked": " {emoji} Lo eligió el {pct} % de los jugadores.",
+    "ppLeft": " Te quedan {n} PP.",
+    "miss": "{name} no encaja ahí."
+  },
+  "giveUpConfirm": "¿Te rindes y ves las respuestas?",
+  "challenge": {
+    "title": "Reto de Pikadoku (Ilimitado)",
+    "beatMe": "¿Me ganas en la misma cuadrícula?",
+    "playMe": "Juega la misma cuadrícula conmigo:",
+    "label": "{solved}/9 en {guesses, plural, one {{guesses} intento} other {{guesses} intentos}}",
+    "banner": "Reto: supera {label}",
+    "beat": "¡Has superado {label}!",
+    "tied": "Has empatado con {label}.",
+    "lost": "Casi: tenías que superar {label}."
+  },
+  "heading": {
+    "weekly": "Semanal n.º {n}",
+    "weeklyTheme": "Semanal n.º {n} · {theme}",
+    "archive": "Archivo n.º {n} · {diff}",
+    "daily": "Diario n.º {n} · {diff}",
+    "unlimited": "Ilimitado"
+  },
+  "ttt": "Tres en raya",
+  "subtitle": "Sudoku Pokémon: un Pokémon por casilla, que encaje con su fila y su columna.",
+  "modes": {
+    "label": "Modo de Pikadoku",
+    "daily": "Diario",
+    "dailyTitle": "La cuadrícula de hoy, la misma para todos",
+    "unlimited": "Ilimitado",
+    "unlimitedTitle": "Crea tu propia cuadrícula",
+    "tttTitle": "Tres en raya: haceos por turnos con casillas contra un amigo o un desconocido"
+  },
+  "tools": {
+    "label": "Opciones de Pikadoku",
+    "howTo": "Cómo se juega",
+    "stats": "Estadísticas",
+    "newGrid": "Nueva cuadrícula ilimitada",
+    "settings": "Ajustes del modo Ilimitado"
+  },
+  "weeklyNote": "<b>{theme}</b>: {blurb} Disponible hasta el domingo {sunday}. No cuenta para tu racha diaria.",
+  "archiveNote": "Archivo: n.º {n} ({date}), {diff}. Por diversión: nunca cuenta para la clasificación diaria ni para tu racha.",
+  "unlimitedNote": "Ilimitado: tu propia cuadrícula, nunca cuenta para tu racha.",
+  "time": "Tiempo",
+  "master": "Puzle maestro de {name}",
+  "bar": {
+    "rarityLabel": "Puntuación de rareza (más baja, más rara); toca para ver la clasificación",
+    "rarityTitle": "Puntuación de rareza: la suma del porcentaje de jugadores que eligieron tus respuestas (una casilla vacía cuenta 100). Más baja, más rara.",
+    "rarity": "Rareza",
+    "filled": "Llenas",
+    "ppUnlimited": "Intentos ilimitados",
+    "ppLeft": "Te quedan {left} de {pp} intentos",
+    "ppTitle": "PP: tus intentos. Un fallo también gasta uno.",
+    "pp": "PP",
+    "giveUp": "Rendirse"
+  },
+  "shareGrid": "Compartir cuadrícula",
+  "newBoard": "Nueva cuadrícula",
+  "changeSettings": "Cambiar ajustes",
+  "more": "Más",
+  "dailyDifficulty": "Dificultad del reto diario",
+  "weekly": "Semanal",
+  "weeklyTitle": "Una cuadrícula temática disponible de lunes a domingo, con su propia clasificación",
+  "archive": "Archivo",
+  "result": {
+    "complete": "Cuadrícula completa · 9 de 9 casillas",
+    "cells": "{n} de 9 casillas",
+    "score": "Rareza: {score}",
+    "off": "La rareza está desactivada por ahora, así que esta partida no tiene puntuación de rareza.",
+    "explain": "Cada casilla suma el porcentaje de jugadores que eligieron ahí el mismo Pokémon (una casilla vacía suma 100). Cuanto más baja, más raras tus elecciones: 900 es el resultado más común y por debajo de 100 es legendario.",
+    "tapRank": "Ver mi puesto",
+    "rankWeek": "Vas n.º {position} de {total} en la clasificación de esta semana.",
+    "rankToday": "Vas n.º {position} de {total} en la clasificación de hoy ({diff}).",
+    "boardOff": "La clasificación está desactivada ahora mismo.",
+    "trainerName": "Nombre de Entrenador para la clasificación",
+    "rankMe": "Clasificarme",
+    "share": "Compartir resultado",
+    "cantWait": "¿No puedes esperar? Juega una cuadrícula ilimitada"
+  },
+  "leaderboard": {
+    "label": "Clasificación",
+    "week": "Clasificación de la semana · {theme}",
+    "today": "Clasificación de hoy · {diff}",
+    "scope": "Ámbito de la clasificación",
+    "all": "Todos",
+    "friends": "Amigos",
+    "signIn": "Inicia sesión para ver cómo les ha ido a tus amigos.",
+    "off": "La clasificación está desactivada ahora mismo.",
+    "empty": "Aún no hay nadie en la clasificación.",
+    "emptyHow": "Completa una cuadrícula con un nombre de Entrenador para aparecer."
+  },
+  "weeklyTheme": {
+    "kanto": { "name": "Semana de Kanto", "blurb": "Todo Kanto: los 151 originales y en lo que se convirtieron." },
+    "starters": { "name": "Semana de iniciales", "blurb": "Pokémon iniciales de todas las regiones, de Bulbasaur a Quaxly." },
+    "legendary": { "name": "Semana legendaria", "blurb": "Legendarios y singulares, y las categorías que los distinguen." },
+    "gen9": { "name": "Semana de la 9.ª generación", "blurb": "Los Pokémon de Paldea y las formas que llegaron con ellos." },
+    "competitive": { "name": "Semana competitiva", "blurb": "Clásicos de OU: estadísticas, tipos y las herramientas del metajuego." }
+  },
+  "countdown": "Próximo Pikadoku en <b>{time}</b>",
+  "rarity": {
+    "p": "lo eligió menos del 1 %",
+    "b": "lo eligió menos del 10 %",
+    "g": "lo eligió menos del 25 %",
+    "y": "lo eligió el 25 % o más",
+    "x": "fallo o vacía"
+  },
+  "rarest": {
+    "yours": "Has encontrado la elección más rara.",
+    "possible": "La más rara posible: <b>{name}</b>",
+    "nobody": "(nadie lo eligió)",
+    "nobodyMore": "{n, plural, one {(nadie lo eligió, ni a {n} más)} other {(nadie lo eligió, ni a otros {n})}}",
+    "pct": "({pct} %)"
+  },
+  "reveal": {
+    "label": "Respuestas",
+    "title": "Todas las respuestas",
+    "intro": "Todos los Pokémon que encajan en cada casilla.",
+    "introRare": "Todos los Pokémon que encajan en cada casilla, de más a menos raro, con el porcentaje de jugadores que los eligieron.",
+    "miss": "{name} no encaja en {cats}.",
+    "missCat": "«{label}»",
+    "missOr": "{a} ni en {b}",
+    "valid": "{total} válidos",
+    "notFilled": "Sin rellenar",
+    "showAll": "Ver los {total}"
+  },
+  "banner": {
+    "offline": "Estás sin conexión. Tus respuestas se comprobarán cuando vuelvas.",
+    "newPuzzle": "Ya hay un nuevo reto diario.",
+    "playIt": "Jugar",
+    "retry": "Reintentar"
+  },
+  "card": {
+    "label": "Tus estadísticas diarias",
+    "title": "Tus retos diarios",
+    "streak": "Racha",
+    "best": "Mejor: {best}",
+    "bestRarity": "Mejor rareza",
+    "lower": "Más baja, más rara",
+    "today": "Hoy",
+    "noAverage": "Aún sin media",
+    "average": "Tu media: {avg}",
+    "level": "Igual que tu media de {avg}",
+    "rarer": "{diff} más rara que tu media de {avg}",
+    "commoner": "{diff} más común que tu media de {avg}"
+  },
+  "stats": {
+    "title": "Estadísticas",
+    "played": "Jugadas",
+    "perfect": "% perfectas",
+    "rarest": "Diario más raro",
+    "streak": "Racha actual",
+    "best": "Mejor racha",
+    "duels": "Duelos ganados",
+    "filled": "Casillas llenas en tus retos diarios",
+    "none": "Termina un reto diario para ver cuánto llenas tus cuadrículas."
+  },
+  "archiveSheet": {
+    "title": "Archivo",
+    "intro": "Juega cualquier reto diario anterior en cualquier dificultad. Las partidas del archivo son por diversión: nunca cuentan para la clasificación diaria ni para tu racha.",
+    "prev": "Mes anterior",
+    "next": "Mes siguiente",
+    "month": "Retos diarios de {month}",
+    "weekdays": {
+      "mon": "Lun",
+      "tue": "Mar",
+      "wed": "Mié",
+      "thu": "Jue",
+      "fri": "Vie",
+      "sat": "Sáb",
+      "sun": "Dom"
+    },
+    "today": "{date} (hoy)",
+    "inProgress": "{day}: en curso",
+    "cells": "{day}: {cells} casillas",
+    "todaysDaily": " · reto de hoy",
+    "playing": "En curso",
+    "play": "Jugar"
+  },
+  "howTo": {
+    "subtitle": "Llena la cuadrícula. Mantén baja tu puntuación.",
+    "goal": "El objetivo",
+    "goalBody": "Llena las 9 casillas de la cuadrícula, cada una con un Pokémon que encaje con su fila y con su columna.",
+    "core": "Reglas básicas",
+    "coreBody": "Tienes {pp} intentos (PP), y un fallo también gasta uno. Cada Pokémon solo se puede usar una vez.",
+    "scoring": "Puntuación",
+    "scoringBody": "Llena tantas casillas como puedas. Tu puntuación de rareza suma el porcentaje de jugadores que eligieron cada una de tus respuestas: elecciones más raras, puntuación más baja.",
+    "full": "Reglas completas",
+    "boxes": "casillas por llenar",
+    "guesses": "intentos",
+    "reused": "Pokémon repetidos",
+    "rules": {
+      "both": "Cada casilla necesita un Pokémon que encaje <b>a la vez</b> con su fila y con su columna. Cada Pokémon solo se puede usar una vez.",
+      "pp": "Tienes <b>{pp} intentos (PP)</b>, y un fallo también gasta uno. Las respuestas correctas se quedan fijas.",
+      "score": "Tu <b>puntuación de rareza</b> empieza en 900 (100 por cada casilla vacía). Cada elección suma el porcentaje de jugadores que la eligieron en esa casilla, así que las más raras la bajan. <b>Cuanto más baja, mejor.</b> Tu tarjeta para compartir colorea cada casilla: 🟪 menos del 1 %, 🟦 menos del 10 %, 🟩 menos del 25 %, 🟨 25 % o más.",
+      "filled": "<b>Llenas</b> cuenta tus casillas. Toca <b>Rareza</b> para ver la clasificación del día.",
+      "info": "Toca la <b>i</b> de cualquier categoría para ver exactamente qué cuenta. Al acabar la partida verás <b>todas las respuestas válidas</b> de cada casilla y por qué no encajaba cada fallo.",
+      "master": "Se comprueba que todas las cuadrículas tengan solución. Algunos días, un <b>puzle maestro</b> hecho a mano sustituye al reto diario."
+    },
+    "modes": "Modos",
+    "modeList": {
+      "daily": "<b>Reto diario</b>: una cuadrícula al día, la misma para todos. En <b>Más</b>: los retos diarios Fácil y Experto, la cuadrícula temática Semanal y el Archivo de retos anteriores (que nunca afectan a tu racha).",
+      "unlimited": "<b>Ilimitado</b>: una cuadrícula que creas tú. Elige las reglas (PP ilimitados, solución garantizada, casillas de una sola respuesta, cronómetro), una dificultad y las categorías que quieras, y genera tantas como quieras.",
+      "ttt": "<b>Tres en raya</b>: dos Entrenadores comparten una cuadrícula y se turnan para hacerse con casillas. Gana quien haga tres en raya; un fallo o quedarse sin tiempo pasa el turno."
+    },
+    "regions": "Regiones y formas",
+    "kinds": "Qué categorías puede haber",
+    "kind": "{family}: ",
+    "kindList": {
+      "types": "Lucha, Doble tipo, Monotipo (basta con que coincida un tipo)",
+      "regions": "De Kanto a Paldea, según dónde debutó el Pokémon (una forma regional cuenta para la región en la que debutó)",
+      "evolution": "Sin línea evolutiva, Evoluciona con piedra u objeto, Puede evolucionar (una evolución cuenta por ambos lados: Pikachu y Raichu encajan en Evoluciona con piedra)",
+      "moves": "Algunos movimientos famosos, como Surf o Terremoto (Experto añade repertorios más amplios)",
+      "abilities": "Solo en Experto: habilidades conocidas y poco comunes",
+      "other": "Legendario, Singular, Paradoja, Ultraente, Inicial, Fósil, Bebé, Mega, Gigamax (Experto añade mínimos de estadísticas)"
+    }
+  },
+  "rules": {
+    "forms": "Las formas son elecciones propias: formas regionales (Raichu de Alola), megaevoluciones (Mega-Charizard X e Y), formas Gigamax y algunas formas especiales (Pikachu compañero, Kyogre primigenio, las formas Origen, Zacian Espada Suprema).",
+    "own": "Los tipos, las estadísticas y las habilidades de una forma son suyos. Su línea evolutiva, si es legendario y sus movimientos son los de su especie.",
+    "region": "Una forma regional cuenta para la región en la que debutó: Raichu de Alola es de Alola; Meowth de Galar, de Galar; Wooper de Paldea, de Paldea; Growlithe de Hisui, de Hisui. Las megaevoluciones y las formas Gigamax cuentan para la región de su especie.",
+    "reuse": "Sin repeticiones: una forma y su especie son el mismo Pokémon. Si usas Charizard, Mega-Charizard X también queda ocupado, y al revés. (Más estricto que PokeDoku, donde las formas pueden repetirse).",
+    "species": "Una especie cuenta para «Forma de Alola» (y para las formas de otras regiones); en una categoría de tipo basta con que coincida uno de los tipos del Pokémon.",
+    "moves": "Las categorías de movimientos usan el repertorio de la especie en el último juego principal en el que aparece (Escarlata y Púrpura en la mayoría); las de estadísticas usan las estadísticas base.",
+    "evolution": "Los métodos de evolución cuentan por ambos lados: Pikachu (evoluciona con una Piedra Trueno) y Raichu (evolucionó con una) encajan en «Evoluciona con piedra»."
+  },
+  "demo": {
+    "label": "Demostración: buscar a {first} y ponerlo en la casilla de {fire} y {johto}, y luego a {second} en la de {water} y {hoenn}",
+    "search": "Busca un Pokémon…"
+  },
+  "setup": {
+    "band": {
+      "easy": "Fácil",
+      "normal": "Normal",
+      "hard": "Difícil"
+    },
+    "bandHint": {
+      "easy": "Todas las casillas tienen muchas respuestas.",
+      "normal": "Cualquier combinación que permitan las categorías.",
+      "hard": "Algunas casillas tienen solo un puñado de respuestas."
+    },
+    "untickAll": "{label}: desmarcar todo",
+    "tickAll": "{label}: marcar todo",
+    "all": "Todo",
+    "none": "Nada",
+    "find": {
+      "moves": "Buscar movimientos",
+      "abilities": "Buscar habilidades"
+    },
+    "findOne": {
+      "moves": "Busca un movimiento",
+      "abilities": "Busca una habilidad"
+    },
+    "nothing": "No hay coincidencias.",
+    "title": "Crea tu cuadrícula",
+    "intro": "Fija las reglas, elige qué puede aparecer y genera. Nunca cuenta para tu racha.",
+    "back": "Cuadrícula",
+    "rules": "Reglas",
+    "pp": "PP ilimitados",
+    "ppHint": "Sin límite de intentos: sigue hasta llenar la cuadrícula.",
+    "guard": "Solución garantizada",
+    "guardHint": "Todas las cuadrículas se pueden completar, y no se acepta una elección que deje otras casillas sin solución.",
+    "single": "Permitir casillas de una respuesta",
+    "singleHint": "Una casilla puede tener un solo Pokémon que encaje.",
+    "timer": "Cronómetro",
+    "timerHint": "Un reloj en marcha sobre la cuadrícula.",
+    "difficulty": "Dificultad",
+    "categories": "Categorías",
+    "classic": "Mezcla clásica",
+    "generate": "Generar cuadrícula"
+  }
+}

@@ -10,6 +10,13 @@ import { CUSTOM_GROUP_NAME_MAX, CUSTOM_TITLE_MAX, customPath, type CustomCheckRe
 import { CONN_GROUPS, CONN_GROUP_SIZE, CONN_LEVELS, CONN_LEVELS_4, type ConnLevel, type ConnTile } from "@/lib/connections/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import { localizePath } from "@/i18n/paths";
+import create from "@/messages/connections-create";
+import board from "@/messages/connections-board";
+import type { NameEntry } from "@/components/pokedle/search";
+import { levelName } from "./level";
+import { useTileName } from "./names";
 
 /**
  * /pokeconnections/create: pick sixteen Pokémon, split them into four named,
@@ -27,7 +34,14 @@ interface DraftGroup {
 
 const emptyGroups = (): DraftGroup[] => CONN_LEVELS_4.map((_, i) => ({ name: "", level: i as ConnLevel, members: [] }));
 
-export function CreatePuzzle() {
+/**
+ * `names`: on a page in another language, every Pokémon's name in it (and the English one), so the search box finds
+ * them as the language writes them; an English page searches on the server, as always.
+ */
+export function CreatePuzzle({ names }: { names?: readonly NameEntry[] } = {}) {
+  const t = useT(create);
+  const tb = useT(board);
+  const nameOf = useTileName();
   const [groups, setGroups] = useState<DraftGroup[]>(emptyGroups);
   const [active, setActive] = useState(0);
   const [title, setTitle] = useState("");
@@ -74,6 +88,16 @@ export function CreatePuzzle() {
       setResults([]);
       return;
     }
+    if (names) {
+      // Another language's page searches its names here (the search is loaded only then: English pages never need it).
+      let live = true;
+      void import("@/components/pokedle/search").then(({ suggest }) => {
+        if (live) setResults(suggest(names, query, new Set(), 8).entries.map(([id, name]) => ({ id, name })));
+      }, () => live && setResults([]));
+      return () => {
+        live = false;
+      };
+    }
     const timer = window.setTimeout(() => {
       fetch(`/api/connections/custom?q=${encodeURIComponent(query.trim())}`)
         .then((r) => r.json())
@@ -81,7 +105,7 @@ export function CreatePuzzle() {
         .catch(() => setResults([]));
     }, 200);
     return () => window.clearTimeout(timer);
-  }, [query]);
+  }, [query, names]);
 
   // Links matching what the creator types in the suggest box.
   useEffect(() => {
@@ -153,8 +177,8 @@ export function CreatePuzzle() {
   const remove = (i: number, id: number) => patch(i, { members: groups[i].members.filter((m) => m.id !== id) });
 
   const blocked = [
-    ...(!complete ? [`Pick ${CONN_GROUPS * CONN_GROUP_SIZE} Pokémon: ${total} so far.`] : []),
-    ...(colours.size !== CONN_GROUPS ? ["Give each group its own colour."] : []),
+    ...(!complete ? [t("pickAll", { need: CONN_GROUPS * CONN_GROUP_SIZE, total })] : []),
+    ...(colours.size !== CONN_GROUPS ? [t("colours")] : []),
     ...(check?.errors ?? []),
   ];
 
@@ -173,21 +197,21 @@ export function CreatePuzzle() {
         }),
       });
       const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? "Couldn't publish.");
+      if (!res.ok) throw new Error(body.error ?? t("publishError"));
       setPublished(body.id as string);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't publish.");
+      setError(err instanceof Error ? err.message : t("publishError"));
     } finally {
       setPublishing(false);
     }
   }
 
   if (published) {
-    const url = `${typeof window === "undefined" ? "" : window.location.origin}${customPath(published)}`;
+    const url = `${typeof window === "undefined" ? "" : window.location.origin}${localizePath(customPath(published), t.locale)}`;
     return (
       <div className="mx-auto max-w-xl space-y-4 text-center" data-testid="create-done">
-        <h1 className="font-display text-3xl font-bold uppercase">Published</h1>
-        <p className="text-sm text-muted-foreground">Share this link. It plays like a practice puzzle, and only you know the answers.</p>
+        <h1 className="font-display text-3xl font-bold uppercase">{t("published")}</h1>
+        <p className="text-sm text-muted-foreground">{t("publishedLine")}</p>
         <p className="break-all rounded-md border border-foreground/15 bg-card px-3 py-2 font-mono text-sm" data-testid="create-link">
           {url}
         </p>
@@ -198,10 +222,10 @@ export function CreatePuzzle() {
               void navigator.clipboard?.writeText(url).then(() => setCopied(true));
             }}
           >
-            {copied ? <Check className="h-4 w-4" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />} {copied ? "Copied" : "Copy link"}
+            {copied ? <Check className="h-4 w-4" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />} {copied ? t("copied") : t("copy")}
           </Button>
-          <a href={customPath(published)} className="inline-flex h-10 items-center rounded-md bg-primary px-4 font-display text-sm font-semibold uppercase text-primary-foreground">
-            Play it
+          <a href={localizePath(customPath(published), t.locale)} className="inline-flex h-10 items-center rounded-md bg-primary px-4 font-display text-sm font-semibold uppercase text-primary-foreground">
+            {t("play")}
           </a>
         </div>
       </div>
@@ -211,31 +235,31 @@ export function CreatePuzzle() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="space-y-2 text-center">
-        <p className="hud-label max-md:hidden text-screen">PokéConnections · Create</p>
-        <h1 className="font-display text-4xl font-bold uppercase tracking-tight">Make a puzzle</h1>
-        <p className="text-sm text-muted-foreground">Pick sixteen Pokémon, split them into four groups of four, name each group and give it a colour.</p>
+        <p className="hud-label max-md:hidden text-screen">{t("eyebrow")}</p>
+        <h1 className="font-display text-4xl font-bold uppercase tracking-tight">{t("title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("intro")}</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="space-y-1 text-sm">
-          <span className="hud-label">Title (optional)</span>
+          <span className="hud-label">{t("titleField")}</span>
           <input value={title} maxLength={CUSTOM_TITLE_MAX} onChange={(e) => setTitle(e.target.value)} className="h-10 w-full rounded-md border border-foreground/15 bg-card px-3" />
         </label>
         <label className="space-y-1 text-sm">
-          <span className="hud-label">Your name (optional)</span>
+          <span className="hud-label">{t("nameField")}</span>
           <input value={creator} maxLength={24} onChange={(e) => setCreator(e.target.value)} className="h-10 w-full rounded-md border border-foreground/15 bg-card px-3" />
         </label>
       </div>
 
       <div className="relative space-y-1">
         <label htmlFor="create-search" className="hud-label">
-          Add a Pokémon to {groups[active].name.trim() || `group ${active + 1}`}
+          {t("addTo", { group: groups[active].name.trim() || t("groupN", { n: active + 1 }) })}
         </label>
         <input
           id="create-search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by name…"
+          placeholder={t("search")}
           autoComplete="off"
           className="h-11 w-full rounded-md border border-foreground/15 bg-card px-3"
           data-testid="create-search"
@@ -252,8 +276,8 @@ export function CreatePuzzle() {
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={artUrl(r.id, 96)} alt="" className="h-8 w-8 object-contain" />
-                  {r.name}
-                  {used.has(r.id) ? <span className="ml-auto text-xs text-muted-foreground">already in</span> : <Plus className="ml-auto h-4 w-4" aria-hidden />}
+                  {nameOf(r)}
+                  {used.has(r.id) ? <span className="ml-auto text-xs text-muted-foreground">{t("alreadyIn")}</span> : <Plus className="ml-auto h-4 w-4" aria-hidden />}
                 </button>
               </li>
             ))}
@@ -263,7 +287,7 @@ export function CreatePuzzle() {
 
       <section className="space-y-2 rounded-md border border-dashed border-foreground/20 p-3" data-testid="create-suggest">
         <label htmlFor="create-link" className="hud-label flex items-center gap-1.5">
-          <Lightbulb className="h-3.5 w-3.5" aria-hidden /> Suggest a group
+          <Lightbulb className="h-3.5 w-3.5" aria-hidden /> {t("suggest")}
         </label>
         <input
           id="create-link"
@@ -273,7 +297,7 @@ export function CreatePuzzle() {
             setLink(null);
             setSuggestion(null);
           }}
-          placeholder="Try “levitate”, “fire”, “stone”…"
+          placeholder={t("suggestPlaceholder")}
           autoComplete="off"
           className="h-10 w-full rounded-md border border-foreground/15 bg-card px-3 text-sm"
           data-testid="create-link-input"
@@ -301,15 +325,15 @@ export function CreatePuzzle() {
         {link && suggestion && (
           <div className="space-y-2 text-sm" data-testid="create-suggestion">
             <p className="text-muted-foreground">
-              {suggestion.tiles.length ? `Four that fit “${suggestion.link.label}” and nothing else in your puzzle` : "Nothing left that fits without clashing."}
-              {suggestion.short && suggestion.tiles.length > 0 && ` (only ${suggestion.tiles.length} found)`}
+              {suggestion.tiles.length ? t("fourThatFit", { link: suggestion.link.label }) : t("nothingLeft")}
+              {suggestion.short && suggestion.tiles.length > 0 && t("onlyFound", { n: suggestion.tiles.length })}
             </p>
             <ul className="flex flex-wrap gap-2">
-              {suggestion.tiles.map((t) => (
-                <li key={t.id} className="flex items-center gap-1 rounded-md border border-foreground/15 bg-card py-1 pl-1 pr-2">
+              {suggestion.tiles.map((tile) => (
+                <li key={tile.id} className="flex items-center gap-1 rounded-md border border-foreground/15 bg-card py-1 pl-1 pr-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={artUrl(t.id, 96)} alt="" className="h-8 w-8 object-contain" />
-                  {t.name}
+                  <img src={artUrl(tile.id, 96)} alt="" className="h-8 w-8 object-contain" />
+                  {nameOf(tile)}
                 </li>
               ))}
             </ul>
@@ -323,7 +347,7 @@ export function CreatePuzzle() {
                 size="sm"
                 disabled={!suggestion.tiles.length}
                 onClick={() => {
-                  suggestion.tiles.forEach((t) => add(t));
+                  suggestion.tiles.forEach((tile) => add(tile));
                   if (!groups[active].name.trim()) patch(active, { name: suggestion.link.label.slice(0, CUSTOM_GROUP_NAME_MAX) });
                   setSuggestion(null);
                   setLink(null);
@@ -331,7 +355,7 @@ export function CreatePuzzle() {
                 }}
                 data-testid="create-suggest-add"
               >
-                Add to {groups[active].name.trim() || `group ${active + 1}`}
+                {t("addToGroup", { group: groups[active].name.trim() || t("groupN", { n: active + 1 }) })}
               </Button>
               <Button
                 size="sm"
@@ -341,7 +365,7 @@ export function CreatePuzzle() {
                   void suggest(link, seed + 1);
                 }}
               >
-                <RefreshCw className="h-3.5 w-3.5" aria-hidden /> Another four
+                <RefreshCw className="h-3.5 w-3.5" aria-hidden /> {t("another")}
               </Button>
             </div>
           </div>
@@ -360,16 +384,16 @@ export function CreatePuzzle() {
             >
               <div className="flex flex-wrap items-center gap-2">
                 <input
-                  aria-label={`Group ${i + 1} name`}
+                  aria-label={t("groupName", { n: i + 1 })}
                   value={g.name}
                   maxLength={CUSTOM_GROUP_NAME_MAX}
                   onChange={(e) => patch(i, { name: e.target.value })}
                   onFocus={() => setActive(i)}
-                  placeholder={`Group ${i + 1}: what links them?`}
+                  placeholder={t("groupPlaceholder", { n: i + 1 })}
                   className="h-9 min-w-0 flex-1 rounded-md border border-foreground/15 bg-card px-3 text-sm"
                 />
                 <select
-                  aria-label={`Group ${i + 1} colour`}
+                  aria-label={t("groupColour", { n: i + 1 })}
                   value={g.level}
                   onChange={(e) => patch(i, { level: Number(e.target.value) as ConnLevel })}
                   className="h-9 rounded-md border border-foreground/15 px-2 text-sm"
@@ -377,7 +401,7 @@ export function CreatePuzzle() {
                 >
                   {CONN_LEVELS_4.map((l, n) => (
                     <option key={l.name} value={n}>
-                      {l.symbol} {l.name}
+                      {l.symbol} {levelName(tb, n as ConnLevel)}
                     </option>
                   ))}
                 </select>
@@ -387,14 +411,14 @@ export function CreatePuzzle() {
                   <li key={m.id} className="flex items-center gap-1 rounded-md border border-foreground/15 bg-card py-1 pl-1 pr-2 text-sm">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={artUrl(m.id, 96)} alt="" className="h-8 w-8 object-contain" />
-                    {m.name}
-                    <button type="button" onClick={() => remove(i, m.id)} aria-label={`Remove ${m.name}`} className="ml-1 text-muted-foreground hover:text-foreground">
+                    {nameOf(m)}
+                    <button type="button" onClick={() => remove(i, m.id)} aria-label={t("remove", { name: nameOf(m) })} className="ml-1 text-muted-foreground hover:text-foreground">
                       <X className="h-3.5 w-3.5" aria-hidden />
                     </button>
                   </li>
                 ))}
                 <li className="self-center text-xs text-muted-foreground">
-                  {g.members.length} of {CONN_GROUP_SIZE}
+                  {t("count", { n: g.members.length, max: CONN_GROUP_SIZE })}
                 </li>
               </ul>
             </div>
@@ -405,7 +429,7 @@ export function CreatePuzzle() {
       {live.length > 0 && (
         <div className="space-y-1 rounded-md border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-sm" data-testid="create-warnings">
           <p className="flex items-center gap-1.5 font-semibold">
-            <AlertTriangle className="h-4 w-4" aria-hidden /> Worth a second look (you can still publish)
+            <AlertTriangle className="h-4 w-4" aria-hidden /> {t("secondLook")}
           </p>
           <ul className="list-disc pl-5">
             {live.map((w) => (
@@ -427,7 +451,7 @@ export function CreatePuzzle() {
         </p>
       )}
       <Button size="lg" className="w-full" disabled={publishing || blocked.length > 0 || !check} onClick={() => void publish()} data-testid="create-publish">
-        {publishing ? "Publishing…" : "Publish"}
+        {publishing ? t("publishing") : t("publish")}
       </Button>
     </div>
   );

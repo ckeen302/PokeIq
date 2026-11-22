@@ -14,6 +14,12 @@ import {
   type GeoProgress,
 } from "@/lib/geo-achievements";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import { formatNumber } from "@/i18n/format";
+import geoRecord from "@/messages/geo-record";
+import geoNamesNs from "@/messages/geo-names";
+import { localRegion } from "@/lib/geo-i18n";
+import { achievementText, achievementNote, type RecordT } from "@/lib/geo-achievements-text";
 
 const fmt = (n: number) => n.toLocaleString("en-US");
 
@@ -27,9 +33,12 @@ const GROUP_ICON: Record<GeoAchievementGroup, typeof Award> = {
 };
 
 /** One badge: its icon (lit once earned), name, what it takes, and how far along. */
-function AchievementItem({ state }: { state: GeoAchievementState }) {
+function AchievementItem({ state, t }: { state: GeoAchievementState; t: RecordT }) {
+  const n = useT(geoNamesNs);
   const def = geoAchievement(state.id);
   if (!def) return null;
+  const text = achievementText(def, t, n);
+  const note = state.note && achievementNote(state.note, t);
   const Icon = GROUP_ICON[def.group];
   const pct = state.need ? Math.round((state.have / state.need) * 100) : 0;
   return (
@@ -37,7 +46,7 @@ function AchievementItem({ state }: { state: GeoAchievementState }) {
       className={cn("flex min-w-0 items-start gap-3 rounded-md border p-2.5", state.earned ? "border-warning/50 bg-warning/[0.07]" : "bg-shade/15")}
       data-testid={`geo-achievement-${state.id}`}
       data-earned={state.earned ? "true" : undefined}
-      title={def.blurb}
+      title={text.blurb}
     >
       <span
         className={cn(
@@ -50,16 +59,18 @@ function AchievementItem({ state }: { state: GeoAchievementState }) {
       </span>
       <span className="min-w-0 flex-1 space-y-1">
         <span className="flex items-baseline justify-between gap-2">
-          <span className={cn("truncate text-sm font-semibold", !state.earned && "text-foreground/80")}>{def.name}</span>
-          <span className="shrink-0 font-pixel text-[9px] tabular-nums text-muted-foreground">{state.earned ? "Earned" : state.need > 1 ? `${fmt(state.have)}/${fmt(state.need)}` : ""}</span>
+          <span className={cn("truncate text-sm font-semibold", !state.earned && "text-foreground/80")}>{text.name}</span>
+          <span className="shrink-0 font-pixel text-[9px] tabular-nums text-muted-foreground">
+            {state.earned ? t("earned") : state.need > 1 ? `${formatNumber(state.have, t.locale)}/${formatNumber(state.need, t.locale)}` : ""}
+          </span>
         </span>
-        <span className="block text-xs leading-snug text-muted-foreground">{def.blurb}</span>
+        <span className="block text-xs leading-snug text-muted-foreground">{text.blurb}</span>
         {!state.earned && state.need > 1 && (
           <span className="meter block h-1.5" aria-hidden>
             <span className="block h-full bg-primary" style={{ width: `${pct}%` }} />
           </span>
         )}
-        {state.note && <span className="block text-[11px] text-muted-foreground">{state.note}</span>}
+        {note && <span className="block text-[11px] text-muted-foreground">{note}</span>}
       </span>
     </li>
   );
@@ -70,6 +81,7 @@ function AchievementItem({ state }: { state: GeoAchievementState }) {
  * shows that many with a button for the rest.
  */
 export function AchievementGrid({ achievements, limit, className }: { achievements: GeoAchievementState[]; limit?: number; className?: string }) {
+  const t = useT(geoRecord);
   const [all, setAll] = useState(false);
   const order = (a: GeoAchievementState) => (a.earned ? 2 : a.need ? a.have / a.need : 0);
   const sorted = [...achievements].sort((a, b) => order(b) - order(a));
@@ -78,12 +90,12 @@ export function AchievementGrid({ achievements, limit, className }: { achievemen
     <div className={cn("space-y-3", className)}>
       <ul className="grid gap-2 sm:grid-cols-2" data-testid="geo-achievements">
         {shown.map((a) => (
-          <AchievementItem key={a.id} state={a} />
+          <AchievementItem key={a.id} state={a} t={t} />
         ))}
       </ul>
       {limit && sorted.length > limit && (
         <button type="button" onClick={() => setAll((x) => !x)} className="tap hud-label hover:text-foreground" data-testid="geo-achievements-more" aria-expanded={all}>
-          {all ? "Show fewer" : `Show all ${sorted.length}`}
+          {all ? t("showFewer") : t("showAll", { n: sorted.length })}
         </button>
       )}
     </div>
@@ -92,14 +104,17 @@ export function AchievementGrid({ achievements, limit, className }: { achievemen
 
 /** Mastery per region: the share of its places scored 4,000+ at least once. */
 export function MasteryList({ mastery, className }: { mastery: GeoMasteryRow[]; className?: string }) {
+  const t = useT(geoRecord);
+  const n = useT(geoNamesNs);
+  const f = (x: number) => formatNumber(x, t.locale);
   return (
     <ul className={cn("space-y-2", className)} data-testid="geo-mastery">
       {mastery.map((r) => {
         const pct = masteryPercent(r);
         return (
           <li key={r.id} className="grid grid-cols-[4.5rem_1fr_auto] items-center gap-2 text-sm sm:grid-cols-[5.5rem_1fr_auto]" data-testid={`geo-mastery-${r.id}`}>
-            <span className="truncate font-semibold">{r.name}</span>
-            <span className="meter h-2" title={`${fmt(r.mastered)} of ${fmt(r.places)} places scored ${fmt(GEO_MASTERY_SCORE)}+`}>
+            <span className="truncate font-semibold">{localRegion(n, r.name)}</span>
+            <span className="meter h-2" title={t("mastery.row", { n: f(r.mastered), total: f(r.places), score: f(GEO_MASTERY_SCORE) })}>
               <span className={cn("block h-full", pct >= 75 ? "bg-success" : pct >= 25 ? "bg-warning" : "bg-primary")} style={{ width: `${pct}%` }} />
             </span>
             <span className="w-[5.5rem] text-right font-pixel text-[10px] tabular-nums text-muted-foreground">
@@ -186,7 +201,10 @@ export function AchievementToasts({ ids, onDismiss }: { ids: string[]; onDismiss
     const t = window.setTimeout(() => onDismiss(id), 5000);
     return () => window.clearTimeout(t);
   }, [id, onDismiss]);
+  const t = useT(geoRecord);
+  const n = useT(geoNamesNs);
   const def = id ? geoAchievement(id) : null;
+  const text = def ? achievementText(def, t, n) : null;
   const Icon = def ? GROUP_ICON[def.group] : Award;
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-4 z-[80] flex justify-center px-4" aria-live="polite">
@@ -206,11 +224,11 @@ export function AchievementToasts({ ids, onDismiss }: { ids: string[]; onDismiss
               <Icon className="h-5 w-5" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="hud-label block text-warning">Achievement unlocked</span>
-              <span className="block truncate font-display text-base font-bold uppercase">{def.name}</span>
-              <span className="block truncate text-xs text-muted-foreground">{def.blurb}</span>
+              <span className="hud-label block text-warning">{t("unlocked")}</span>
+              <span className="block truncate font-display text-base font-bold uppercase">{text?.name}</span>
+              <span className="block truncate text-xs text-muted-foreground">{text?.blurb}</span>
             </span>
-            <button type="button" onClick={() => onDismiss(def.id)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Dismiss">
+            <button type="button" onClick={() => onDismiss(def.id)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground" aria-label={t("dismiss")}>
               <X className="h-4 w-4" />
             </button>
           </motion.div>

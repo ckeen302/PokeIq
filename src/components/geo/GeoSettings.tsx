@@ -4,18 +4,24 @@ import { useCallback, useState } from "react";
 import { Settings, X } from "lucide-react";
 import { Popover } from "@/components/ui/popover";
 import { GEO_ROUND_OPTIONS, type GeoRounds } from "@/lib/geo-types";
-import { GEO_TIMERS, geoSettingsBadge, type GeoPlaySettings } from "@/lib/geo-settings";
-import { GEO_DIFFICULTIES, GEO_DIFFICULTY_BLURBS, GEO_DIFFICULTY_NAMES, type GeoDifficulty } from "@/lib/geo-difficulty";
+import { GEO_TIMERS, type GeoPlaySettings } from "@/lib/geo-settings";
+import { GEO_DIFFICULTIES, type GeoDifficulty } from "@/lib/geo-difficulty";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import geoSolo from "@/messages/geo-solo";
+import geoNamesNs from "@/messages/geo-names";
 
 /**
  * PokéGuessr's play settings (No move, Zoomed, a round timer), in a popover
  * from a Settings button, as on Pokédle. They only make a game harder.
  */
 export function GeoSettingsButton({ value, onChange }: { value: GeoPlaySettings; onChange: (next: GeoPlaySettings) => void }) {
+  const t = useT(geoSolo);
   const [open, setOpen] = useState(false);
   const close = useCallback(() => setOpen(false), []);
-  const badge = geoSettingsBadge(value);
+  // As geoSettingsBadge writes it ("Zoomed · 30s"), in the page's language.
+  const parts = [value.zoomed && t("settings.zoomed"), value.timer > 0 && t("settings.seconds", { n: value.timer })].filter(Boolean);
+  const badge = parts.length ? parts.join(" · ") : null;
   const set = (patch: Partial<GeoPlaySettings>) => onChange({ ...value, ...patch });
   return (
     <div className="relative flex items-center gap-2">
@@ -31,50 +37,50 @@ export function GeoSettingsButton({ value, onChange }: { value: GeoPlaySettings;
         )}
       >
         <Settings className="h-3.5 w-3.5" aria-hidden />
-        Settings
+        {t("settings.button")}
       </button>
       {badge && (
         <span className="rounded-sm border border-foreground/15 px-1.5 py-0.5 font-pixel text-[9px] uppercase tracking-wider text-muted-foreground" data-testid="geo-settings-badge">
           {badge}
         </span>
       )}
-      <Popover open={open} onClose={close} label="PokéGuessr settings" align="start" className="w-[min(24rem,calc(100vw-4.75rem))] space-y-3">
+      <Popover open={open} onClose={close} label={t("settings.popover")} align="start" className="w-[min(24rem,calc(100vw-4.75rem))] space-y-3">
         <div className="flex items-start justify-between gap-3">
-          <p className="hud-label">Play settings</p>
-          <button type="button" onClick={close} aria-label="Close settings" className="rounded-md p-1 text-muted-foreground hover:text-foreground">
+          <p className="hud-label">{t("settings.title")}</p>
+          <button type="button" onClick={close} aria-label={t("settings.close")} className="rounded-md p-1 text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
           </button>
         </div>
         <SettingToggle
-          label="Zoomed"
-          description="A close-up crop of the screenshot instead of all of it."
+          label={t("settings.zoomed")}
+          description={t("settings.zoomedBlurb")}
           checked={value.zoomed}
           onChange={() => set({ zoomed: !value.zoomed })}
           testId="geo-zoomed"
         />
         <div className="space-y-1.5 border-t pt-3">
-          <p className="text-sm font-semibold">Round timer</p>
-          <div className="flex gap-1.5" role="radiogroup" aria-label="Round timer">
-            {GEO_TIMERS.map((t) => (
+          <p className="text-sm font-semibold">{t("settings.timer")}</p>
+          <div className="flex gap-1.5" role="radiogroup" aria-label={t("settings.timer")}>
+            {GEO_TIMERS.map((s) => (
               <button
-                key={t}
+                key={s}
                 type="button"
                 role="radio"
-                aria-checked={value.timer === t}
-                onClick={() => set({ timer: t })}
-                data-testid={`geo-timer-${t}`}
+                aria-checked={value.timer === s}
+                onClick={() => set({ timer: s })}
+                data-testid={`geo-timer-${s}`}
                 className={cn(
                   "flex-1 rounded-md border px-2 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-colors",
-                  value.timer === t ? "border-screen bg-screen/15 text-foreground" : "bg-card text-muted-foreground hover:border-screen/50 hover:text-foreground"
+                  value.timer === s ? "border-screen bg-screen/15 text-foreground" : "bg-card text-muted-foreground hover:border-screen/50 hover:text-foreground"
                 )}
               >
-                {t ? `${t}s` : "Off"}
+                {s ? t("settings.seconds", { n: s }) : t("settings.off")}
               </button>
             ))}
           </div>
-          <p className="text-xs text-muted-foreground">When time runs out, your pin is guessed where it is. No pin scores 0 (and ends a streak).</p>
+          <p className="text-xs text-muted-foreground">{t("settings.timerBlurb")}</p>
         </div>
-        <p className="border-t pt-3 text-xs text-muted-foreground">These only make a game harder, so your scores still count on the leaderboards.</p>
+        <p className="border-t pt-3 text-xs text-muted-foreground">{t("settings.harder")}</p>
       </Popover>
     </div>
   );
@@ -111,7 +117,7 @@ export function RoundsPicker({
   onChange,
   max = Infinity,
   testId = "geo-rounds",
-  label = "Rounds",
+  label: given,
 }: {
   value: GeoRounds;
   onChange: (next: GeoRounds) => void;
@@ -120,6 +126,8 @@ export function RoundsPicker({
   testId?: string;
   label?: string;
 }) {
+  const t = useT(geoSolo);
+  const label = given ?? t("settings.rounds");
   return (
     <div className="space-y-1.5">
       <p className="hud-label">{label}</p>
@@ -151,10 +159,12 @@ export function RoundsPicker({
  * audit's ratings, moved by players' scores). Easy and Hard are practice.
  */
 export function DifficultyPicker({ value, onChange }: { value: GeoDifficulty; onChange: (next: GeoDifficulty) => void }) {
+  const t = useT(geoSolo);
+  const n = useT(geoNamesNs);
   return (
     <div className="space-y-1.5">
-      <p className="hud-label">Difficulty</p>
-      <div className="flex gap-1.5" role="radiogroup" aria-label="Difficulty">
+      <p className="hud-label">{t("settings.difficulty")}</p>
+      <div className="flex gap-1.5" role="radiogroup" aria-label={t("settings.difficulty")}>
         {GEO_DIFFICULTIES.map((d) => (
           <button
             key={d}
@@ -168,13 +178,13 @@ export function DifficultyPicker({ value, onChange }: { value: GeoDifficulty; on
               value === d ? "border-screen bg-screen/15 text-foreground" : "bg-card text-muted-foreground hover:border-screen/50 hover:text-foreground"
             )}
           >
-            {GEO_DIFFICULTY_NAMES[d]}
+            {n(`difficulty.${d}.name`)}
           </button>
         ))}
       </div>
       <p className="text-xs text-muted-foreground" data-testid="geo-difficulty-blurb">
-        {GEO_DIFFICULTY_BLURBS[value]}
-        {value !== "normal" ? " Practice: Normal keeps the leaderboards." : ""}
+        {n(`difficulty.${value}.blurb`)}
+        {value !== "normal" ? ` ${t("settings.practice")}` : ""}
       </p>
     </div>
   );

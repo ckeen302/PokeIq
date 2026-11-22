@@ -7,22 +7,21 @@ import { saveSeat } from "@/lib/duel-seat";
 import { setTrainerName, useProgress } from "@/lib/progress";
 import { unlockAudio } from "@/lib/sound";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
-import { PARTY_CODE_RE, PARTY_DEFAULT_LIVES, PARTY_MAX_PLAYERS, PARTY_MODE_NAMES, PARTY_TEAM_HP, partyPath, type PartyMode } from "@/lib/geo-party";
+import { PARTY_CODE_RE, PARTY_DEFAULT_LIVES, PARTY_MAX_PLAYERS, PARTY_TEAM_HP, partyPath, type PartyMode } from "@/lib/geo-party";
 import type { GeoRegionInfo } from "@/lib/geo-types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-
-const BLURB: Record<PartyMode, string> = {
-  royale: `Up to ${PARTY_MAX_PLAYERS} trainers on the same places. Lowest score each round loses a life (${PARTY_DEFAULT_LIVES} each); last trainer standing wins.`,
-  team: `Red team against blue, 2v2 (up to 4v4), ${PARTY_TEAM_HP.toLocaleString("en-US")} HP a team. Your team scores its best pin, and you see your teammates' pins live.`,
-};
+import { useT } from "@/i18n/client";
+import { formatNumber } from "@/i18n/format";
+import cards from "@/messages/guessr-cards";
 
 /**
  * Party on /pokeguessr: open a private room (the host picks the game in its
  * lobby) or join one with its six-letter code.
  */
 export function PartyCard({ region }: { region: GeoRegionInfo }) {
+  const t = useT(cards);
   const router = useRouter();
   const progress = useProgress();
   const id = useId();
@@ -38,19 +37,19 @@ export function PartyCard({ region }: { region: GeoRegionInfo }) {
 
   async function create(e: React.FormEvent) {
     e.preventDefault();
-    if (!isCleanName(name)) return setError(NAME_REJECTED);
+    if (!isCleanName(name)) return setError(t.locale === "en" ? NAME_REJECTED : t("party.nameRejected"));
     unlockAudio();
     setBusy(true);
     setError(null);
     try {
       const res = await fetch("/api/geo/party", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, region: region.id, mode }) });
       const data = (await res.json().catch(() => ({}))) as { code?: string; token?: string; error?: string };
-      if (!res.ok || !data.code || !data.token) throw new Error(data.error ?? `Request failed (${res.status})`);
+      if (!res.ok || !data.code || !data.token) throw new Error(data.error ?? t("party.requestFailed", { status: res.status }));
       saveSeat(data.code, data.token);
       if (!progress?.name) setTrainerName(name);
       router.push(partyPath(data.code));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't open a party.");
+      setError(err instanceof Error ? err.message : t("party.failed"));
       setBusy(false);
     }
   }
@@ -58,7 +57,7 @@ export function PartyCard({ region }: { region: GeoRegionInfo }) {
   function join(e: React.FormEvent) {
     e.preventDefault();
     const c = code.trim().toLowerCase();
-    if (!PARTY_CODE_RE.test(c)) return setError("Room codes are six letters and numbers.");
+    if (!PARTY_CODE_RE.test(c)) return setError(t("party.badCode"));
     router.push(partyPath(c));
   }
 
@@ -67,10 +66,10 @@ export function PartyCard({ region }: { region: GeoRegionInfo }) {
       <div className="grid md:grid-cols-[1fr_auto]">
         <CardContent className="space-y-3 p-6">
           <p className="hud-label flex items-center gap-1.5 text-primary">
-            <Users className="h-3.5 w-3.5" aria-hidden /> Party · up to {PARTY_MAX_PLAYERS} trainers
+            <Users className="h-3.5 w-3.5" aria-hidden /> {t("party.label", { max: PARTY_MAX_PLAYERS })}
           </p>
-          <p className="font-display text-2xl font-bold uppercase">Private room · {region.name}</p>
-          <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Party game">
+          <p className="font-display text-2xl font-bold uppercase">{t("party.room", { map: region.name })}</p>
+          <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t("party.gameLabel")}>
             {(["royale", "team"] as const).map((m) => (
               <button
                 key={m}
@@ -85,12 +84,14 @@ export function PartyCard({ region }: { region: GeoRegionInfo }) {
                 )}
               >
                 {m === "royale" ? <Heart className="h-3.5 w-3.5" aria-hidden /> : <Users className="h-3.5 w-3.5" aria-hidden />}
-                {PARTY_MODE_NAMES[m]}
+                {t(`party.modes.${m}`)}
               </button>
             ))}
           </div>
-          <p className="text-sm text-muted-foreground">{BLURB[mode]}</p>
-          <p className="text-xs text-muted-foreground">You host: change the map, lives, timer and rounds in the lobby, then start when everyone is in.</p>
+          <p className="text-sm text-muted-foreground">
+            {mode === "royale" ? t("party.royaleBlurb", { max: PARTY_MAX_PLAYERS, lives: PARTY_DEFAULT_LIVES }) : t("party.teamBlurb", { hp: formatNumber(PARTY_TEAM_HP, t.locale) })}
+          </p>
+          <p className="text-xs text-muted-foreground">{t("party.host")}</p>
           {error && (
             <p role="alert" className="text-sm text-destructive">
               {error}
@@ -100,7 +101,7 @@ export function PartyCard({ region }: { region: GeoRegionInfo }) {
         <div className="flex flex-col justify-center gap-2 p-6 pt-0 md:w-72 md:pt-6">
           <form className="flex flex-col gap-2" onSubmit={create}>
             <label htmlFor={id} className="hud-label">
-              Your trainer name
+              {t("party.nameLabel")}
             </label>
             <input
               id={id}
@@ -111,13 +112,13 @@ export function PartyCard({ region }: { region: GeoRegionInfo }) {
               }}
               maxLength={24}
               required
-              placeholder="Trainer name"
+              placeholder={t("party.namePlaceholder")}
               data-testid="geo-party-name"
               className="h-10 min-w-0 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
             <Button type="submit" size="lg" disabled={busy || !name.trim()} data-testid="geo-party-create">
               {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Crown className="h-4 w-4" aria-hidden />}
-              Create party
+              {t("party.create")}
             </Button>
           </form>
           <form className="flex gap-2 pt-1" onSubmit={join}>
@@ -127,14 +128,14 @@ export function PartyCard({ region }: { region: GeoRegionInfo }) {
                 setCode(e.target.value.replace(/[^a-z0-9]/gi, "").slice(0, 6));
                 setError(null);
               }}
-              aria-label="Room code"
-              placeholder="Room code"
+              aria-label={t("party.code")}
+              placeholder={t("party.code")}
               autoCapitalize="characters"
               data-testid="geo-party-code"
               className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 font-mono text-sm uppercase tracking-[0.2em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
             <Button type="submit" variant="outline" disabled={code.length !== 6}>
-              <LogIn className="h-4 w-4" aria-hidden /> Join
+              <LogIn className="h-4 w-4" aria-hidden /> {t("party.join")}
             </Button>
           </form>
         </div>

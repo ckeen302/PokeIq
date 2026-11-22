@@ -1,152 +1,109 @@
 "use client";
 
-import { X } from "lucide-react";
-import { useDialogFocus } from "@/components/ui/use-dialog-focus";
 import { dailyNumber, LAUNCH_DATE, previousDate } from "@/lib/daily";
 import { DLE_FREEZE_EVERY, DLE_MAX_FREEZES, type DleResultLike, type DleStats } from "@/lib/dle-stats";
-import { DLE_COLUMNS, DLE_GUESS_COST, DLE_HINT_COST, DLE_HINT_EMOJI, DLE_HINT_KINDS, DLE_HINT_LABEL, DLE_MAX_GUESSES, DLE_MIN_SOLVE_POINTS, dleBasePoints } from "@/lib/dle-types";
+import { DLE_COLUMNS, DLE_GUESS_COST, DLE_HINT_COST, DLE_HINT_EMOJI, DLE_HINT_KINDS, DLE_MAX_GUESSES, DLE_MIN_SOLVE_POINTS, dleBasePoints } from "@/lib/dle-types";
 import { DLE_COLUMN_BONUS, DLE_MAX_BONUS, DLE_STRICT_BONUS, dailyRules, rulesBonus } from "@/lib/dle-format";
 import { Board } from "./parts";
 import { DLE_EXAMPLE_MONS, exampleRow } from "./examples";
-import { DLE_ASSISTS, DLE_ASSIST_INFO, multiplierText } from "@/lib/dle-assist";
+import { DLE_ASSISTS, DLE_ASSIST_INFO } from "@/lib/dle-assist";
+import { localMultiplier } from "@/lib/dle-i18n";
+import { formatNumber } from "@/i18n/format";
+import { useT } from "@/i18n/client";
+import board from "@/messages/pokedle-board";
+import game from "@/messages/pokedle-game";
+import { useDleWords } from "./lexicon";
 import { cn } from "@/lib/utils";
 import { FitWidth, HowToActions, HowToCards, HowToDialog } from "@/components/howto/shared";
 import { PokedleDemo } from "@/components/howto/PokedleDemo";
+import { Sheet } from "./sheet";
 
 /** Pokédle's pop-up sheets: how to play, stats and the archive. */
 
-export function Sheet({ title, onClose, children, wide }: { title: string; onClose: () => void; children: React.ReactNode; wide?: boolean }) {
-  const closeRef = useDialogFocus(onClose);
-  return (
-    // Phones: a bottom sheet over the tab bar, scrolling inside itself, its title and close button pinned on top
-    // (the sheet has no top padding there: a sticky title would otherwise stop that far down and cover the first line).
-    // It fades in from transparent, so a first visit's how-to never counts as the page's largest paint: the board does.
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 max-md:z-[65] max-md:items-end max-md:overflow-hidden max-md:p-0" onClick={onClose}>
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        onClick={(e) => e.stopPropagation()}
-        className={cn("relative my-8 w-full rounded-lg border-2 sm:my-auto border-foreground/15 bg-card p-5 shadow-2xl max-md:my-0 max-md:max-h-[92dvh] max-md:max-w-none max-md:overflow-y-auto max-md:overscroll-contain max-md:rounded-b-none max-md:border-x-0 max-md:border-b-0 max-md:pt-0 max-md:pb-[calc(1.25rem+env(safe-area-inset-bottom))] max-md:animate-sheet-in", wide ? "max-w-2xl" : "max-w-md")}
-      >
-        <div className="mb-4 flex items-center justify-between gap-2 max-md:sticky max-md:top-0 max-md:z-10 max-md:-mx-5 max-md:mt-0 max-md:mb-2 max-md:bg-card max-md:px-5 max-md:pb-2 max-md:pt-4">
-          <h2 className="font-display text-xl font-bold uppercase tracking-tight">{title}</h2>
-          <button ref={closeRef} type="button" onClick={onClose} aria-label="Close" className="rounded-md p-1 max-md:-mr-2 max-md:p-2.5 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        {children}
-      </div>
-    </div>
-  );
-}
+export { Sheet };
 
 /** Pikachu guessed when the answer is Raichu. */
 const EXAMPLE = exampleRow(DLE_EXAMPLE_MONS.pikachu, DLE_EXAMPLE_MONS.raichu, DLE_COLUMNS.map((c) => c.key));
 
+const B = (c: React.ReactNode[]) => <b>{c}</b>;
+const BF = (c: React.ReactNode[]) => <b className="text-foreground">{c}</b>;
+
 export function HowToSheet({ onClose, onNever }: { onClose: () => void; onNever?: () => void }) {
+  const t = useT(game);
+  const bt = useT(board);
+  const words = useDleWords();
+  const first = formatNumber(dleBasePoints(1), t.locale);
+  const hintWord = { genus: t("howto.hintGenus"), silhouette: t("howto.hintSilhouette") };
   return (
     <HowToDialog onClose={onClose} testId="howto-sheet" footer={<HowToActions onClose={onClose} onNever={onNever} />}>
       <PokedleDemo />
       <HowToCards
         cards={[
-          { title: "The goal", body: <p>Guess the mystery Pokémon in {DLE_MAX_GUESSES} tries (in Classic). Every guess shows how it compares with the answer.</p> },
-          { title: "Core rules", body: <p>🟩 ✓ the answer has the same. 🟨 ≈ near or close. ▲▼ the answer is higher or lower. ⬛ ✕ no match.</p> },
+          { title: t("howto.goal"), body: <p>{t("howto.goalBody", { n: DLE_MAX_GUESSES })}</p> },
+          { title: t("howto.core"), body: <p>{t("howto.coreBody")}</p> },
           {
-            title: "Scoring",
-            body: (
-              <p>
-                A solve scores {dleBasePoints(1).toLocaleString("en-US")} on the first guess, less {DLE_GUESS_COST} for each guess after it, never below {DLE_MIN_SOLVE_POINTS}. A miss scores 0.
-              </p>
-            ),
+            title: t("howto.scoring"),
+            body: <p>{t("howto.scoringBody", { first, cost: DLE_GUESS_COST, min: DLE_MIN_SOLVE_POINTS })}</p>,
           },
-          { title: "Hints", body: <p>After your first guess you can tap to use a hint, at a cost in points.</p> },
+          { title: t("howto.hints"), body: <p>{t("howto.hintsBody")}</p> },
         ]}
       />
       <details className="rounded-md border bg-shade/30 p-3">
-        <summary className="tap cursor-pointer font-semibold max-sm:py-2.5">Full rules</summary>
+        <summary className="tap cursor-pointer font-semibold max-sm:py-2.5">{t("howto.full")}</summary>
       <div className="mt-3 space-y-4">
       <p>
-        Guess the mystery Pokémon in {DLE_MAX_GUESSES} tries (in Classic). Every guess shows how it compares with the answer. Say you guess Pikachu and the answer is Raichu:
+        {t("howto.example", {
+          n: DLE_MAX_GUESSES,
+          guess: words.name(DLE_EXAMPLE_MONS.pikachu.id, DLE_EXAMPLE_MONS.pikachu.name),
+          answer: words.name(DLE_EXAMPLE_MONS.raichu.id, DLE_EXAMPLE_MONS.raichu.name),
+        })}
       </p>
       <FitWidth>
         <Board rows={[EXAMPLE]} flipNewest={false} />
       </FitWidth>
       <ul className="space-y-1.5">
-        <li>
-          <b>🟩 ✓ Match:</b> the answer has the same.
-        </li>
-        <li>
-          <b>🟨 ≈ Near:</b> the right type in the other slot, or <b>close</b> (dashed border, with an arrow): one generation or stage away, or a height or weight within 25%.
-        </li>
-        <li>
-          <b>▲▼ Higher or lower:</b> the way to go, and not close.
-        </li>
-        <li>
-          <b>⬛ ✕ No match.</b> Stage runs Baby, 1, 2, 3, and a Baby is never close.
-        </li>
+        <li>{t.rich("howto.match", { b: B })}</li>
+        <li>{t.rich("howto.near", { b: B })}</li>
+        <li>{t.rich("howto.higher", { b: B })}</li>
+        <li>{t.rich("howto.miss", { b: B })}</li>
       </ul>
       <div className="space-y-1.5 rounded-md border bg-shade/30 p-3">
-        <p className="font-semibold">Formats</p>
+        <p className="font-semibold">{t("howto.formats")}</p>
         <ul className="space-y-1">
-          <li>
-            <b>Classic:</b> the seven clues above, 8 guesses.
-          </li>
-          <li>
-            <b>Stats:</b> Gen, Type 1, Type 2, Height and Weight; ✓ right, ▲▼ higher or lower (no close states), 🟨 the type in the other slot. Guesses scale with the
-            generations: 5 for Gen 1 only, up to 9 for all nine (the daily).
-          </li>
-          <li>
-            <b>Custom</b> (practice and duels): pick 3 or more clue columns.
-          </li>
+          <li>{t.rich("howto.classic", { b: B })}</li>
+          <li>{t.rich("howto.squirdle", { b: B })}</li>
+          <li>{t.rich("howto.custom", { b: B })}</li>
         </ul>
-        <p>
-          The daily comes in Classic and Stats: one puzzle each for everyone, each with its own streaks and stats. Practice games and duels add advanced settings: generations, 6, 8 or 10
-          guesses, hints on or off, strict (▲▼ only, no close states), a 3-minute or 60-second timer, and a legendaries-only pool.
-        </p>
+        <p>{t("howto.dailyFormats")}</p>
       </div>
       <div className="space-y-1.5 rounded-md border bg-shade/30 p-3">
-        <p className="font-semibold">Points and hints</p>
-        <p>
-          A solve scores {dleBasePoints(1).toLocaleString("en-US")} on the first guess, less {DLE_GUESS_COST} for each guess after it, never below {DLE_MIN_SOLVE_POINTS} ({dleBasePoints(DLE_MAX_GUESSES)}{" "}
-          on Classic&apos;s last), the same as a duel without its speed bonus. A miss scores 0.
-        </p>
+        <p className="font-semibold">{t("howto.points")}</p>
+        <p>{t("howto.pointsBody", { first, cost: DLE_GUESS_COST, min: DLE_MIN_SOLVE_POINTS, last: dleBasePoints(DLE_MAX_GUESSES) })}</p>
         <p data-testid="bonus-rule">
-          A harder board pays more: +{Math.round(DLE_COLUMN_BONUS * 100)}% for each clue column hidden and +{Math.round(DLE_STRICT_BONUS * 100)}% without close states, up to +
-          {Math.round(DLE_MAX_BONUS * 100)}% (Stats: +{Math.round(rulesBonus(dailyRules("squirdle")) * 100)}%). It multiplies with the Pokédex level below.
+          {t("howto.bonus", {
+            column: Math.round(DLE_COLUMN_BONUS * 100),
+            strict: Math.round(DLE_STRICT_BONUS * 100),
+            max: Math.round(DLE_MAX_BONUS * 100),
+            stats: Math.round(rulesBonus(dailyRules("squirdle")) * 100),
+          })}
         </p>
-        <p>
-          Hints are never automatic. After your first guess you can tap to use one:{" "}
-          {DLE_HINT_KINDS.map((h) => `${DLE_HINT_EMOJI[h]} ${DLE_HINT_LABEL[h].toLowerCase()} −${DLE_HINT_COST[h]}`).join(", ")}. Each one used is marked on your result and your share.
-        </p>
+        <p>{t("howto.hintList", { list: DLE_HINT_KINDS.map((h) => `${DLE_HINT_EMOJI[h]} ${hintWord[h]} −${DLE_HINT_COST[h]}`).join(", ") })}</p>
       </div>
       <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
+        <li>{t.rich("howto.dex", { b: BF, i: (c) => <i>{c}</i> })}</li>
         <li>
-          <b className="text-foreground">The Pokédex</b> beside the board is your notebook. Like Wordle&apos;s keyboard, it greys out every Pokémon your generation and type clues rule out. Tap a Pokémon to cross it off, or switch to <i>Fill in</i> to put it in the guess box.
-        </li>
-        <li>
-          <b className="text-foreground">The Pokédex</b> setting (Off, Notebook, Field Guide or Full; set it before your first guess; it stays for the game) is how much the Pokédex helps. Less help, more points:
+          {t.rich("howto.dexSetting", { b: BF })}
           <ul className="mt-1 space-y-0.5 pl-1">
             {DLE_ASSISTS.map((a) => (
-              <li key={a}>
-                {DLE_ASSIST_INFO[a].emoji} <b className="text-foreground">{DLE_ASSIST_INFO[a].label}</b> {multiplierText(a)}: {DLE_ASSIST_INFO[a].blurb}
-              </li>
+              <li key={a}>{t.rich("howto.dexLevel", { emoji: DLE_ASSIST_INFO[a].emoji, label: bt(`assist.${a}.label`), m: localMultiplier(a, bt), blurb: bt(`assist.${a}.blurb`), b: BF })}</li>
             ))}
           </ul>
-          Your result and share show the level. Duels give both trainers the same one.
+          {t("howto.dexAfter")}
         </li>
-        <li>
-          <b className="text-foreground">Hard mode</b> (set it before your first guess): every guess must fit the generation and type clues so far, so no greyed-out Pokémon. Your share gets a *.
-        </li>
-        <li>
-          <b className="text-foreground">Streaks:</b> finish the daily, won or lost, to keep your 🔥 play streak. Every {DLE_FREEZE_EVERY} days in a row earn a 🧊 freeze (up to {DLE_MAX_FREEZES}) that covers a missed day by itself.
-        </li>
-        <li>
-          <b className="text-foreground">The archive</b> has every past Classic daily. Archive and practice games never count toward streaks or stats.
-        </li>
-        <li>
-          Keys: <kbd className="rounded border px-1">/</kbd> jumps to the guess box, <kbd className="rounded border px-1">↑</kbd> <kbd className="rounded border px-1">↓</kbd> and <kbd className="rounded border px-1">Enter</kbd> pick, <kbd className="rounded border px-1">Esc</kbd> clears.
-        </li>
+        <li>{t.rich("howto.hard", { b: BF })}</li>
+        <li>{t.rich("howto.streaks", { b: BF, every: DLE_FREEZE_EVERY, max: DLE_MAX_FREEZES })}</li>
+        <li>{t.rich("howto.archive", { b: BF })}</li>
+        <li>{t.rich("howto.keys", { k: (c) => <kbd className="rounded border px-1">{c}</kbd> })}</li>
       </ul>
       </div>
       </details>
@@ -158,7 +115,7 @@ export function StatsSheet({
   stats,
   todayGuesses,
   onClose,
-  title = "Statistics",
+  title,
   footer,
 }: {
   stats: DleStats;
@@ -168,16 +125,17 @@ export function StatsSheet({
   /** Today's daily is done: its share button and the countdown to the next one. */
   footer?: React.ReactNode;
 }) {
+  const t = useT(game);
   const tiles = [
-    { label: "Played", value: stats.played },
-    { label: "Win %", value: stats.winPct },
-    { label: "Play streak", value: `🔥${stats.playStreak}`, sub: `Best ${stats.bestPlayStreak}` },
-    { label: "Win streak", value: stats.winStreak, sub: `Best ${stats.bestWinStreak}` },
+    { label: t("stats.played"), value: stats.played },
+    { label: t("stats.winPct"), value: stats.winPct },
+    { label: t("stats.playStreak"), value: `🔥${stats.playStreak}`, sub: t("stats.best", { n: stats.bestPlayStreak }) },
+    { label: t("stats.winStreak"), value: stats.winStreak, sub: t("stats.best", { n: stats.bestWinStreak }) },
   ];
   const bars = [...stats.distribution.map((n, i) => ({ label: String(i + 1), n, today: todayGuesses === i + 1 })), { label: "X", n: stats.losses, today: todayGuesses === 0 }];
   const peak = Math.max(1, ...bars.map((b) => b.n));
   return (
-    <Sheet title={title} onClose={onClose}>
+    <Sheet title={title ?? t("stats.title")} onClose={onClose}>
       <div className="space-y-5 text-sm">
         <div className="grid grid-cols-4 gap-2 text-center">
           {tiles.map((t) => (
@@ -189,16 +147,21 @@ export function StatsSheet({
           ))}
         </div>
         <p className="rounded-md border bg-shade/30 px-3 py-2">
-          🧊 Streak freezes: <b>{stats.freezes}</b> of {DLE_MAX_FREEZES}. You earn one every {DLE_FREEZE_EVERY} days in a row; a missed day uses one by itself.
+          {t.rich("stats.freezes", { n: stats.freezes, max: DLE_MAX_FREEZES, every: DLE_FREEZE_EVERY, b: B })}
           {stats.savedByFreeze && stats.playStreak > 0 && (
-            <span className="block text-success">Your freeze kept your 🔥{stats.playStreak} alive.</span>
+            <span className="block text-success">{t("stats.saved", { n: stats.playStreak })}</span>
           )}
         </p>
         <div>
-          <p className="hud-label mb-2">Guess distribution</p>
-          <div className="space-y-1" role="list" aria-label="Wins by number of guesses">
+          <p className="hud-label mb-2">{t("stats.distribution")}</p>
+          <div className="space-y-1" role="list" aria-label={t("stats.distributionLabel")}>
             {bars.map((b) => (
-              <div key={b.label} className="flex items-center gap-2" role="listitem" aria-label={`${b.label === "X" ? "Missed" : `${b.label} guess${b.label === "1" ? "" : "es"}`}: ${b.n}`}>
+              <div
+                key={b.label}
+                className="flex items-center gap-2"
+                role="listitem"
+                aria-label={b.label === "X" ? t("stats.missed", { count: b.n }) : t("stats.bar", { n: Number(b.label), count: b.n })}
+              >
                 <span className="w-3 text-right font-semibold tabular-nums">{b.label}</span>
                 <div
                   className={cn("flex h-5 min-w-[1.5rem] items-center justify-end rounded-sm px-1.5 text-[11px] font-semibold", b.today ? "dle-match" : "bg-secondary")}
@@ -210,8 +173,8 @@ export function StatsSheet({
             ))}
           </div>
         </div>
-        {stats.hardWins > 0 && <p className="text-muted-foreground">Hard-mode wins: {stats.hardWins}</p>}
-        <p className="text-xs text-muted-foreground">Only dailies count. Practice and archive games never change your stats or streaks.</p>
+        {stats.hardWins > 0 && <p className="text-muted-foreground">{t("stats.hardWins", { n: stats.hardWins })}</p>}
+        <p className="text-xs text-muted-foreground">{t("stats.only")}</p>
         {footer && <div className="space-y-3 border-t pt-4">{footer}</div>}
       </div>
     </Sheet>
@@ -232,15 +195,24 @@ export function ArchiveSheet({
   onPlay: (date: string) => void;
   onClose: () => void;
 }) {
+  const t = useT(game);
   const dates: string[] = [];
   for (let d = previousDate(today); d >= LAUNCH_DATE; d = previousDate(d)) dates.push(d);
   const status = (r: DleResultLike | undefined) =>
-    !r ? "Not played" : r.over ? (r.solved ? `Solved in ${r.guesses.length}` : "Missed") : r.guesses.length ? `In progress · ${r.guesses.length}/${DLE_MAX_GUESSES}` : "Not played";
+    !r
+      ? t("archive.notPlayed")
+      : r.over
+        ? r.solved
+          ? t("archive.solvedIn", { n: r.guesses.length })
+          : t("archive.missed")
+        : r.guesses.length
+          ? t("archive.inProgress", { n: r.guesses.length, max: DLE_MAX_GUESSES })
+          : t("archive.notPlayed");
   return (
-    <Sheet title="Archive" onClose={onClose}>
-      <p className="mb-3 text-sm text-muted-foreground">Play any past daily. Archive games are just for fun: they never count toward your streaks or stats.</p>
+    <Sheet title={t("archive.title")} onClose={onClose}>
+      <p className="mb-3 text-sm text-muted-foreground">{t("archive.intro")}</p>
       {dates.length === 0 ? (
-        <p className="py-6 text-center text-sm text-muted-foreground">No past dailies yet. Come back tomorrow.</p>
+        <p className="py-6 text-center text-sm text-muted-foreground">{t("archive.empty")}</p>
       ) : (
         <ul className="max-h-[60vh] space-y-1 overflow-y-auto">
           {dates.map((d) => {
@@ -255,7 +227,7 @@ export function ArchiveSheet({
                   <span className="font-semibold">
                     #{dailyNumber(d)} <span className="font-normal text-muted-foreground">· {d}</span>
                   </span>
-                  <span className="text-xs text-muted-foreground">{played ? `${status(played)} (daily)` : status(archive[d])}</span>
+                  <span className="text-xs text-muted-foreground">{played ? t("archive.daily", { status: status(played) }) : status(archive[d])}</span>
                 </button>
               </li>
             );

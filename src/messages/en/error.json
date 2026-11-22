@@ -1,0 +1,8 @@
+{
+  "label": "System error",
+  "heading": "It's super effective… against us.",
+  "body": "Something broke on our side. Give it another try.",
+  "ref": "Ref: {digest}",
+  "retry": "Try again",
+  "home": "Home"
+}

@@ -4,16 +4,47 @@ import { permanentRedirect as nextPermanentRedirect, redirect as nextRedirect, t
 import { DEFAULT_LOCALE, isLiveLocale, type Locale } from "./config";
 import { translator, type Namespace, type Translator, type Tree } from "./catalog";
 import { localeHref } from "./href";
+import { NAMESPACES } from "./namespaces";
 
 /**
  * The language a server render is in. English pages never set it (they render exactly as before, statically);
  * every /<lang>/ entry point (its layout, each mirrored page and layout, their metadata) sets it from its params
  * before rendering, so server components below read it without any request headers or cookies.
  */
-const store = cache((): { locale: Locale } => ({ locale: DEFAULT_LOCALE }));
+const store = cache((): { locale: Locale; messages: Record<string, Tree | undefined> | null } => ({ locale: DEFAULT_LOCALE, messages: null }));
 
 export function setLocale(locale: string): void {
   store().locale = isLiveLocale(locale) ? locale : DEFAULT_LOCALE;
+}
+
+/** Every namespace of a language, loaded once per language for the server's lifetime. */
+const loaded = new Map<Locale, Promise<Record<string, Tree | undefined>>>();
+function loadAll(locale: Locale): Promise<Record<string, Tree | undefined>> {
+  let p = loaded.get(locale);
+  if (!p) {
+    p = Promise.all(NAMESPACES.map(async (name) => [name, await loadMessages(locale, name)] as const)).then(Object.fromEntries);
+    loaded.set(locale, p);
+  }
+  return p;
+}
+
+/**
+ * Sets the render's language and loads its messages, so server components below translate with `serverT` at once
+ * (no await: an English page renders exactly as it did, and a translated one in the same order). Every /<lang>/ entry
+ * point calls it first.
+ */
+export async function enterLocale(locale: string): Promise<void> {
+  setLocale(locale);
+  const l = store().locale;
+  store().messages = l === DEFAULT_LOCALE ? null : await loadAll(l);
+}
+
+/** A namespace's translator in the render's language, synchronously (English, or a language entered with enterLocale). */
+export function serverT<T extends Tree>(ns: Namespace<T>): Translator<T> {
+  const { locale, messages } = store();
+  if (locale === DEFAULT_LOCALE) return translator(ns, locale, undefined);
+  if (!messages) throw new Error(`serverT(${ns.name}): the page's language (${locale}) was set without enterLocale`);
+  return translator(ns, locale, messages[ns.name]);
 }
 
 export function getLocale(): Locale {

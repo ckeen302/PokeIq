@@ -1,5 +1,7 @@
 import { SITE_URL, SITE_NAME } from "./site";
 import { SITE_DESCRIPTION } from "./seo";
+import type { Locale } from "@/i18n/config";
+import { localizePath } from "@/i18n/paths";
 
 /** schema.org JSON-LD builders. Paths are site-relative ("/pokedex"); output URLs are absolute. */
 
@@ -21,14 +23,15 @@ export function breadcrumbList(crumbs: Crumb[]) {
 }
 
 /** The home page's WebSite node, with the sitelinks search box pointed at the TCG card search. */
-export function websiteWithSearch() {
+export function websiteWithSearch(locale: Locale = "en", description: string = SITE_DESCRIPTION) {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "@id": `${SITE_URL}/#website`,
     name: SITE_NAME,
     url: SITE_URL,
-    description: SITE_DESCRIPTION,
+    description,
+    ...(locale !== "en" && { inLanguage: locale }),
     potentialAction: {
       "@type": "SearchAction",
       target: { "@type": "EntryPoint", urlTemplate: `${SITE_URL}/pokedex/tcg?q={search_term_string}` },
@@ -38,13 +41,14 @@ export function websiteWithSearch() {
 }
 
 /** A free browser game. */
-export function webGame({ name, path, description }: { name: string; path: string; description: string }) {
+export function webGame({ name, path, description, locale = "en" }: { name: string; path: string; description: string; locale?: Locale }) {
   return {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     name,
-    url: abs(path),
+    url: abs(localizePath(path, locale)),
     description,
+    ...(locale !== "en" && { inLanguage: locale }),
     applicationCategory: "GameApplication",
     operatingSystem: "Any (web browser)",
     isAccessibleForFree: true,

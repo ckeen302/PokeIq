@@ -5,14 +5,20 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { BookOpen, Check, Eraser, EyeOff, Loader2, PencilLine, RotateCcw, Search, X } from "lucide-react";
 import { GENERATION_REGIONS, formatHeight, formatWeight } from "@/lib/pokemon/constants";
 import { typeColor } from "@/lib/pokemon/type-colors";
-import { DLE_COLUMNS, type CellStatus, type DleColumn, type DleDexRow } from "@/lib/dle-types";
+import type { CellStatus, DleColumn, DleDexRow } from "@/lib/dle-types";
 import { clueStatus, stageLabel } from "@/lib/dle-compare";
 import { strictStatus } from "@/lib/dle-format";
-import { DLE_ASSIST_INFO, type DleAssist } from "@/lib/dle-assist";
+import type { DleAssist } from "@/lib/dle-assist";
 import { dexFullTraits, ruledOut, type DexClue } from "@/lib/dle-dex";
+import { localMeasure, localStage } from "@/lib/dle-i18n";
+import { formatNumber } from "@/i18n/format";
 import { Card, CardContent } from "@/components/ui/card";
 import { InfoTip } from "@/components/ui/tooltip";
-import { STATUS_TEXT, spriteUrl } from "./parts";
+import { clueText, spriteUrl } from "./parts";
+import { normalizeName } from "./search";
+import { useT } from "@/i18n/client";
+import board from "@/messages/pokedle-board";
+import { useDleWords, type DleWords } from "./lexicon";
 import { cn } from "@/lib/utils";
 
 /**
@@ -92,10 +98,13 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 /** A typed bound, or null when blank or not a number. */
 const bound = (s: string) => (s.trim() === "" || Number.isNaN(Number(s)) ? null : Number(s));
 
-/** Does a row pass the view filters (not the greying, crossing off or hiding)? */
-function passes(row: DleDexRow, f: Filters, q: string, byId: Map<number, DleDexRow>, close: boolean): boolean {
-  const [, name, gen, t1, t2, stage, color, height, weight] = row;
-  if (q && !normalize(name).includes(q)) return false;
+/**
+ * Does a row pass the view filters (not the greying, crossing off or hiding)? `match` is the name search, in the
+ * page's language (null: nothing typed).
+ */
+function passes(row: DleDexRow, f: Filters, match: ((row: DleDexRow) => boolean) | null, byId: Map<number, DleDexRow>, close: boolean): boolean {
+  const [, , gen, t1, t2, stage, color, height, weight] = row;
+  if (match && !match(row)) return false;
   if (f.gens.length && !f.gens.includes(gen)) return false;
   if (f.types.some((t) => t !== t1 && t !== t2)) return false;
   if (f.mono && t2) return false;
@@ -150,6 +159,8 @@ export function DexPanel({
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const [crossed, setCrossed] = useState<ReadonlySet<number>>(() => new Set());
   const [tool, setTool] = useState<Tool>("cross");
+  const words = useDleWords();
+  const t = useT(board);
   const field = assist !== "notebook";
   const full = assist === "full";
   // A click from before this panel appeared (an earlier puzzle) stays out of it.
@@ -188,9 +199,15 @@ export function DexPanel({
   const left = base.filter((r) => !out.has(r[0]) && !crossed.has(r[0]) && !guessed.has(r[0])).length;
 
   const groups = useMemo(() => {
-    const q = normalize(filters.q);
+    // English: the name as sent. Another language: its name, the English one, or another it answers to (rōmaji).
+    const q = words.labels ? normalizeName(filters.q) : normalize(filters.q);
+    const match = !q
+      ? null
+      : words.labels
+        ? (row: DleDexRow) => [words.name(row[0], row[1]), row[1], ...words.aliases(row[0])].some((n) => normalizeName(n).includes(q))
+        : (row: DleDexRow) => normalize(row[1]).includes(q);
     const shown = base.filter((row) => {
-      if (!passes(row, filters, q, byId, close)) return false;
+      if (!passes(row, filters, match, byId, close)) return false;
       const id = row[0];
       if (filters.hide && (out.has(id) || crossed.has(id) || guessed.has(id))) return false;
       return true;
@@ -198,7 +215,7 @@ export function DexPanel({
     const byGen = new Map<number, DleDexRow[]>();
     for (const r of shown) byGen.set(r[2], [...(byGen.get(r[2]) ?? []), r]);
     return [...byGen.entries()].sort((a, b) => a[0] - b[0]);
-  }, [base, filters, out, crossed, guessed, byId, close]);
+  }, [base, filters, out, crossed, guessed, byId, close, words]);
 
   const set = <K extends keyof Filters>(key: K, value: Filters[K]) => setFilters((f) => ({ ...f, [key]: value }));
   const toggleGen = (g: number) => set("gens", filters.gens.includes(g) ? filters.gens.filter((x) => x !== g) : [...filters.gens, g].sort((a, b) => a - b));
@@ -230,22 +247,22 @@ export function DexPanel({
         {/* One header row: the title, then how a tap works and the secondary actions, grouped. */}
         <div className="flex items-center justify-between gap-2 max-sm:flex-wrap">
           <p className="hud-label flex items-center gap-1.5 text-screen max-sm:whitespace-nowrap">
-            <BookOpen className="h-3.5 w-3.5" aria-hidden /> Pokédex
-            <span className="font-sans normal-case tracking-normal text-muted-foreground">· {DLE_ASSIST_INFO[assist].label}</span>
+            <BookOpen className="h-3.5 w-3.5" aria-hidden /> {t("dex.title")}
+            <span className="font-sans normal-case tracking-normal text-muted-foreground">· {t(`assist.${assist}.label`)}</span>
           </p>
           <div className="flex items-center gap-1.5">
-            <div className="flex rounded-md border border-foreground/15 p-0.5" role="radiogroup" aria-label="Tapping a Pokémon">
-              <ToolButton active={tool === "cross"} onClick={() => setTool("cross")} icon={<X className="h-3 w-3" aria-hidden />} label="Cross off" />
-              <ToolButton active={tool === "fill"} onClick={() => setTool("fill")} icon={<PencilLine className="h-3 w-3" aria-hidden />} label="Fill in" disabled={!onPick} />
+            <div className="flex rounded-md border border-foreground/15 p-0.5" role="radiogroup" aria-label={t("dex.tapping")}>
+              <ToolButton active={tool === "cross"} onClick={() => setTool("cross")} icon={<X className="h-3 w-3" aria-hidden />} label={t("dex.cross")} />
+              <ToolButton active={tool === "fill"} onClick={() => setTool("fill")} icon={<PencilLine className="h-3 w-3" aria-hidden />} label={t("dex.fill")} disabled={!onPick} />
             </div>
-            <div className="flex rounded-md border border-foreground/15 p-0.5" role="group" aria-label="Pokédex view">
-              <button type="button" className={iconAction(filters.hide)} aria-pressed={filters.hide} onClick={() => set("hide", !filters.hide)} aria-label="Hide what's out" title="Hide what's out">
+            <div className="flex rounded-md border border-foreground/15 p-0.5" role="group" aria-label={t("dex.view")}>
+              <button type="button" className={iconAction(filters.hide)} aria-pressed={filters.hide} onClick={() => set("hide", !filters.hide)} aria-label={t("dex.hide")} title={t("dex.hide")}>
                 <EyeOff className="h-3.5 w-3.5" aria-hidden />
               </button>
-              <button type="button" className={iconAction()} onClick={() => setCrossed(new Set())} disabled={crossed.size === 0} aria-label="Uncross all" title="Uncross all">
+              <button type="button" className={iconAction()} onClick={() => setCrossed(new Set())} disabled={crossed.size === 0} aria-label={t("dex.uncross")} title={t("dex.uncross")}>
                 <Eraser className="h-3.5 w-3.5" aria-hidden />
               </button>
-              <button type="button" className={iconAction()} onClick={() => setFilters(NO_FILTERS)} disabled={!filtered} aria-label="Show all (clear the filters)" title="Show all: clear the filters">
+              <button type="button" className={iconAction()} onClick={() => setFilters(NO_FILTERS)} disabled={!filtered} aria-label={t("dex.showAllAria")} title={t("dex.showAllTitle")}>
                 <RotateCcw className="h-3.5 w-3.5" aria-hidden />
               </button>
             </div>
@@ -255,21 +272,21 @@ export function DexPanel({
         <div className="flex gap-2 max-sm:flex-wrap">
           <div className="relative min-w-0 flex-1 max-sm:basis-full">
             <Search className="pointer-events-none absolute left-2 top-2 h-4 w-4 text-muted-foreground" aria-hidden />
-            <input value={filters.q} onChange={(e) => set("q", e.target.value)} placeholder="Search by name" aria-label="Search the Pokédex" className={cn(input, "w-full pl-8")} />
+            <input value={filters.q} onChange={(e) => set("q", e.target.value)} placeholder={t("dex.search")} aria-label={t("dex.searchAria")} className={cn(input, "w-full pl-8")} />
           </div>
-          <select value={filters.types[0] ?? ""} onChange={(e) => setType(0, e.target.value)} aria-label="Has type" className={cn(input, "w-28 max-sm:min-w-0 max-sm:flex-1")}>
-            <option value="">Any type</option>
-            {types.map((t) => (
-              <option key={t} value={t}>
-                Has {cap(t)}
+          <select value={filters.types[0] ?? ""} onChange={(e) => setType(0, e.target.value)} aria-label={t("dex.hasType")} className={cn(input, "w-28 max-sm:min-w-0 max-sm:flex-1")}>
+            <option value="">{t("dex.anyType")}</option>
+            {types.map((type) => (
+              <option key={type} value={type}>
+                {t("dex.has", { type: words.type(cap(type)) })}
               </option>
             ))}
           </select>
-          <select value={filters.types[1] ?? ""} onChange={(e) => setType(1, e.target.value)} aria-label="And type" className={cn(input, "w-28 max-sm:min-w-0 max-sm:flex-1")} disabled={!filters.types[0]}>
-            <option value="">And any</option>
-            {types.map((t) => (
-              <option key={t} value={t}>
-                And {cap(t)}
+          <select value={filters.types[1] ?? ""} onChange={(e) => setType(1, e.target.value)} aria-label={t("dex.andType")} className={cn(input, "w-28 max-sm:min-w-0 max-sm:flex-1")} disabled={!filters.types[0]}>
+            <option value="">{t("dex.andAny")}</option>
+            {types.map((type) => (
+              <option key={type} value={type}>
+                {t("dex.and", { type: words.type(cap(type)) })}
               </option>
             ))}
           </select>
@@ -277,41 +294,41 @@ export function DexPanel({
 
         {field && (
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <select value={filters.stage} onChange={(e) => set("stage", e.target.value)} aria-label="Stage" className={input}>
-              <option value="">Stage: any</option>
+            <select value={filters.stage} onChange={(e) => set("stage", e.target.value)} aria-label={t("dex.stage")} className={input}>
+              <option value="">{t("dex.stageAny")}</option>
               {STAGES.map((s) => (
                 <option key={s} value={s}>
-                  Stage {stageLabel(s)}
+                  {t("dex.stageN", { stage: localStage(s, t) })}
                 </option>
               ))}
             </select>
-            <select value={filters.color} onChange={(e) => set("color", e.target.value)} aria-label="Color" className={input}>
-              <option value="">Color: any</option>
+            <select value={filters.color} onChange={(e) => set("color", e.target.value)} aria-label={t("dex.color")} className={input}>
+              <option value="">{t("dex.colorAny")}</option>
               {colors.map((c) => (
                 <option key={c} value={c}>
-                  {cap(c)}
+                  {words.color(cap(c))}
                 </option>
               ))}
             </select>
             {full && (
               <>
-                <Range label="Height (m)" min={filters.hMin} max={filters.hMax} onMin={(v) => set("hMin", v)} onMax={(v) => set("hMax", v)} className={input} />
-                <Range label="Weight (kg)" min={filters.wMin} max={filters.wMax} onMin={(v) => set("wMin", v)} onMax={(v) => set("wMax", v)} className={input} />
+                <Range label={t("dex.height")} min={filters.hMin} max={filters.hMax} onMin={(v) => set("hMin", v)} onMax={(v) => set("hMax", v)} className={input} />
+                <Range label={t("dex.weight")} min={filters.wMin} max={filters.wMax} onMin={(v) => set("wMin", v)} onMax={(v) => set("wMax", v)} className={input} />
               </>
             )}
           </div>
         )}
 
         <div className="flex items-center gap-1">
-          <span className="hud-label mr-1">Gen</span>
-          <div className="flex flex-wrap gap-1" role="group" aria-label="Generations">
+          <span className="hud-label mr-1">{t("dex.gen")}</span>
+          <div className="flex flex-wrap gap-1" role="group" aria-label={t("dex.generations")}>
             {genChoices.map((g) => (
               <button
                 key={g}
                 type="button"
                 aria-pressed={filters.gens.includes(g)}
-                aria-label={`Gen ${g}`}
-                title={`Gen ${g} · ${GENERATION_REGIONS[g]}`}
+                aria-label={t("dex.genN", { n: g })}
+                title={t("dex.genRegion", { n: g, region: words.region(GENERATION_REGIONS[g]) })}
                 onClick={() => toggleGen(g)}
                 className={cn(
                   "h-6 w-6 rounded-sm border font-pixel text-[9px] transition-colors",
@@ -324,21 +341,20 @@ export function DexPanel({
           </div>
           <label className="ml-auto flex items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground">
             <input type="checkbox" checked={filters.mono} onChange={(e) => set("mono", e.target.checked)} className="accent-[hsl(var(--primary))]" />
-            No second type
+            {t("dex.mono")}
           </label>
         </div>
         {full && filters.picks.length > 0 && (
-          <ul className="flex flex-wrap gap-1" aria-label="Clue filters">
+          <ul className="flex flex-wrap gap-1" aria-label={t("dex.clueFilters")}>
             {filters.picks.map((p) => {
-              const label = DLE_COLUMNS.find((c) => c.key === p.column)!.label;
-              const text = `${label} ${p.value}: ${STATUS_TEXT[p.status]}`;
+              const text = clueText(t, t(`column.${p.column}`), { value: words.cell(p.column, p.value), status: p.status });
               return (
                 <li key={`${p.column}:${p.guessId}`}>
                   <button
                     type="button"
                     onClick={() => set("picks", filters.picks.filter((x) => x !== p))}
                     className="flex items-center gap-1 rounded-full border border-screen/40 bg-screen/10 px-2 py-0.5 text-[11px]"
-                    aria-label={`Remove the filter ${text}`}
+                    aria-label={t("dex.removeFilter", { clue: text })}
                   >
                     {text} <X className="h-3 w-3" aria-hidden />
                   </button>
@@ -348,23 +364,31 @@ export function DexPanel({
           </ul>
         )}
 
-        <div className="h-[26rem] overflow-y-auto pr-1 xl:h-[32rem]" aria-label="Pokédex">
+        <div className="h-[26rem] overflow-y-auto pr-1 xl:h-[32rem]" aria-label={t("dex.list")}>
           {!rows ? (
             <p className="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
-              {failed ? "Couldn't load the Pokédex." : <Loader2 className="h-4 w-4 animate-spin" aria-label="Loading the Pokédex" />}
+              {failed ? t("dex.failed") : <Loader2 className="h-4 w-4 animate-spin" aria-label={t("dex.loading")} />}
             </p>
           ) : groups.length === 0 ? (
-            <p className="py-10 text-center text-sm text-muted-foreground">No Pokémon here. Try “Show all”.</p>
+            <p className="py-10 text-center text-sm text-muted-foreground">{t("dex.empty")}</p>
           ) : (
             groups.map(([gen, list]) => (
-              <section key={gen} aria-label={`Generation ${gen}`} className="mb-3">
+              <section key={gen} aria-label={t("dex.generation", { n: gen })} className="mb-3">
                 <h3 className="sticky top-0 z-10 mb-1 bg-card/95 py-1 font-pixel text-[9px] uppercase tracking-wider text-muted-foreground backdrop-blur">
-                  Gen {gen} · {GENERATION_REGIONS[gen]}
+                  {t("dex.genRegion", { n: gen, region: words.region(GENERATION_REGIONS[gen]) })}
                 </h3>
                 <ul className="grid grid-cols-[repeat(auto-fill,minmax(4.25rem,1fr))] gap-1">
                   {list.map((row) => (
                     <li key={row[0]}>
-                      <Tile row={row} out={out.has(row[0])} crossed={crossed.has(row[0])} guessed={guessed.has(row[0])} onTap={fill ? () => fill(row[1]) : () => toggleCross(row[0])} tool={fill ? "fill" : "cross"} />
+                      <Tile
+                        row={row}
+                        words={words}
+                        out={out.has(row[0])}
+                        crossed={crossed.has(row[0])}
+                        guessed={guessed.has(row[0])}
+                        onTap={fill ? () => fill(words.name(row[0], row[1])) : () => toggleCross(row[0])}
+                        tool={fill ? "fill" : "cross"}
+                      />
                     </li>
                   ))}
                 </ul>
@@ -373,13 +397,9 @@ export function DexPanel({
           )}
         </div>
         <div className="flex items-center justify-between gap-2 border-t pt-2 text-xs text-muted-foreground">
-          <span role="status">{rows ? `${left.toLocaleString("en-US")} left in play` : ""}</span>
-          <InfoTip label="How the Pokédex works" className="left-auto right-0 translate-x-0">
-            {assist === "notebook"
-            ? "Greyed out: ruled out by your generation and type clues. Height, weight, color and stage are yours to work out: cross off what they rule out."
-            : assist === "field"
-              ? "Greyed out: ruled out by your generation and type clues. Filter by stage and color; height and weight are yours to work out."
-              : "Greyed out: ruled out by your generation and type clues. Filter by any attribute, or click a clue on the board to add it as a filter."}
+          <span role="status">{rows ? t("dex.left", { n: formatNumber(left, t.locale) }) : ""}</span>
+          <InfoTip label={t("dex.how")} className="left-auto right-0 translate-x-0">
+            {assist === "notebook" ? t("dex.howNotebook") : assist === "field" ? t("dex.howField") : t("dex.howFull")}
           </InfoTip>
         </div>
       </CardContent>
@@ -387,14 +407,29 @@ export function DexPanel({
   );
 }
 
-function Range({ label, min, max, onMin, onMax, className }: { label: string; min: string; max: string; onMin: (v: string) => void; onMax: (v: string) => void; className: string }) {
+function Range({
+  label,
+  min,
+  max,
+  onMin,
+  onMax,
+  className,
+}: {
+  label: string;
+  min: string;
+  max: string;
+  onMin: (v: string) => void;
+  onMax: (v: string) => void;
+  className: string;
+}) {
+  const t = useT(board);
   return (
     <fieldset className="col-span-2 flex items-center gap-1.5 sm:col-span-1">
       <legend className="sr-only">{label}</legend>
       <span className="shrink-0 whitespace-nowrap text-muted-foreground">{label}</span>
-      <input inputMode="decimal" value={min} onChange={(e) => onMin(e.target.value)} placeholder="min" aria-label={`${label}, at least`} className={cn(className, "w-full min-w-0")} />
+      <input inputMode="decimal" value={min} onChange={(e) => onMin(e.target.value)} placeholder={t("dex.min")} aria-label={t("dex.atLeast", { label })} className={cn(className, "w-full min-w-0")} />
       <span aria-hidden>–</span>
-      <input inputMode="decimal" value={max} onChange={(e) => onMax(e.target.value)} placeholder="max" aria-label={`${label}, at most`} className={cn(className, "w-full min-w-0")} />
+      <input inputMode="decimal" value={max} onChange={(e) => onMax(e.target.value)} placeholder={t("dex.max")} aria-label={t("dex.atMost", { label })} className={cn(className, "w-full min-w-0")} />
     </fieldset>
   );
 }
@@ -431,22 +466,24 @@ const SWATCH: Record<string, string> = {
   yellow: "#facc15",
 };
 
-function Tile({ row, out, crossed, guessed, tool, onTap }: { row: DleDexRow; out: boolean; crossed: boolean; guessed: boolean; tool: Tool; onTap: () => void }) {
-  const [id, name, , t1, t2, stage, color, height, weight] = row;
-  const state = guessed ? "guessed" : crossed ? "crossed off" : out ? "ruled out by the clues" : null;
-  const action = tool === "fill" ? `Fill in ${name}` : crossed ? `Put ${name} back` : `Cross off ${name}`;
+function Tile({ row, words, out, crossed, guessed, tool, onTap }: { row: DleDexRow; words: DleWords; out: boolean; crossed: boolean; guessed: boolean; tool: Tool; onTap: () => void }) {
+  const [id, english, , t1, t2, stage, color, height, weight] = row;
+  const t = useT(board);
+  const name = words.name(id, english);
+  const state = guessed ? t("dex.guessed") : crossed ? t("dex.crossed") : out ? t("dex.out") : null;
+  const action = tool === "fill" ? t("dex.fillName", { name }) : crossed ? t("dex.back", { name }) : t("dex.crossName", { name });
   const facts = [
-    `${cap(t1)}${t2 ? ` / ${cap(t2)}` : ""}`,
-    stage !== undefined && `Stage ${stageLabel(stage)}`,
-    color && cap(color),
-    height !== undefined && formatHeight(height),
-    weight !== undefined && formatWeight(weight),
+    `${words.type(cap(t1))}${t2 ? ` / ${words.type(cap(t2))}` : ""}`,
+    stage !== undefined && t("dex.stageN", { stage: words.labels ? localStage(stage, t) : stageLabel(stage) }),
+    color && words.color(cap(color)),
+    height !== undefined && (words.labels ? localMeasure(height, "m", t) : formatHeight(height)),
+    weight !== undefined && (words.labels ? localMeasure(weight, "kg", t) : formatWeight(weight)),
   ].filter(Boolean);
   return (
     <button
       type="button"
       onClick={onTap}
-      aria-label={state ? `${action} (${state})` : action}
+      aria-label={state ? t("dex.withState", { action, state }) : action}
       aria-pressed={tool === "cross" ? crossed : undefined}
       title={`${name} · ${facts.join(" · ")}${state ? ` · ${state}` : ""}`}
       className={cn(
@@ -465,7 +502,7 @@ function Tile({ row, out, crossed, guessed, tool, onTap }: { row: DleDexRow; out
       {stage !== undefined && (
         <span className="absolute left-0.5 top-0.5 flex items-center gap-0.5 font-pixel text-[7px] uppercase text-muted-foreground" aria-hidden>
           {color && <span className="h-2 w-2 rounded-full border border-foreground/30" style={{ background: SWATCH[color] ?? color }} />}
-          {stage === 0 ? "B" : stage}
+          {stage === 0 ? t("value.babyShort") : stage}
         </span>
       )}
       {crossed && <X className="absolute left-1/2 top-1 h-9 w-9 -translate-x-1/2 text-destructive" strokeWidth={2.5} aria-hidden />}

@@ -1,0 +1,99 @@
+{
+  "result": {
+    "win": {
+      "letter": "勝",
+      "label": "勝利"
+    },
+    "loss": {
+      "letter": "負",
+      "label": "敗北"
+    },
+    "draw": {
+      "letter": "分",
+      "label": "引き分け"
+    }
+  },
+  "elo": {
+    "title": "{before} → {after} Elo",
+    "climbing": "上昇中",
+    "slipping": "下降中",
+    "holding": "維持",
+    "word": "Elo"
+  },
+  "vs": "vs",
+  "ranked": "ランク戦",
+  "casual": "カジュアル",
+  "race": "ポイントレース",
+  "hp": "HPバトル",
+  "turbo": "ターボ",
+  "finalHpTitle": "最終HP：自分 – 相手",
+  "points": "ポイント",
+  "finalHp": "最終HP",
+  "list": {
+    "failed": "対戦履歴を読み込めませんでした。",
+    "loading": "対戦履歴を読み込み中…",
+    "off": "対戦履歴はまだ利用できません。デュエルは PokéGuessr の記録には反映されます。",
+    "empty": "まだデュエルがありません。デュエルを終えると、1ラウンドずつのリプレイとここに表示されます。",
+    "find": "デュエルを探す",
+    "more": "以前のデュエルを読み込む"
+  },
+  "history": "対戦履歴",
+  "load": {
+    "failed": "リプレイを読み込めませんでした。",
+    "loading": "リプレイを読み込み中…",
+    "missing": "リプレイがありません",
+    "error": "エラーが発生しました",
+    "missingBlurb": "このデュエルのリプレイは存在しないか、対戦した2人のトレーナーだけが見られます。",
+    "play": "PokéGuessr で遊ぶ"
+  },
+  "trainer": "トレーナー",
+  "won": "{name}の勝ち",
+  "rankedReplay": "ランク戦のリプレイ",
+  "casualReplay": "カジュアルのリプレイ",
+  "worldMap": "ワールドマップ",
+  "noRounds": "このデュエルはラウンドが始まる前に終わりました。",
+  "shotAlt": "ラウンド{n}のスクリーンショット",
+  "round": "ラウンド{n}",
+  "multiplier": "ダメージ×{n}",
+  "roundOf": "ラウンド {n}/{total}",
+  "phase": {
+    "shot": "スクリーンショット",
+    "pins": "ピン",
+    "damage": "ダメージ"
+  },
+  "controls": {
+    "first": "最初へ",
+    "prev": "前へ",
+    "pause": "一時停止",
+    "play": "再生",
+    "next": "次へ",
+    "last": "最後へ",
+    "position": "再生位置"
+  },
+  "seat": {
+    "won": "ラウンド勝利",
+    "distance": "距離",
+    "noGuess": "回答なし",
+    "score": "スコア",
+    "mult": "倍率",
+    "damage": "ダメージ",
+    "hp": "HP",
+    "hpOf": "{name}のHP"
+  },
+  "table": {
+    "place": "場所",
+    "dmg": "ダメージ",
+    "goTo": "ラウンド{n}へ",
+    "r": "R{n}"
+  },
+  "share": {
+    "copyFallback": "アドレスバーからURLをコピーしてください。",
+    "failed": "共有設定を変更できませんでした。もう一度お試しください。",
+    "copied": "コピーしました",
+    "copy": "リンクをコピー",
+    "private": "非公開にする",
+    "share": "リプレイを共有",
+    "public": "リンクを知っている人は誰でも見られます。",
+    "privateNote": "あなたと対戦相手だけが見られます。"
+  }
+}

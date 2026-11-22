@@ -1,0 +1,39 @@
+{
+  "open": "So wird gespielt",
+  "goal": {
+    "title": "Das Ziel",
+    "body": "Du landest irgendwo in der Pokémon-Welt und siehst nur einen Screenshot. Finde heraus, wo das ist, setz eine Nadel auf die Karte und drück auf Tippen."
+  },
+  "scoring": {
+    "title": "Punkte",
+    "body": "Bis zu {max} Punkte pro Runde: Je näher deine Nadel, desto mehr Punkte. Ein Spiel hat {lengths} Runden; das Tagesspiel immer {daily}."
+  },
+  "modes": {
+    "title": "Modi",
+    "body": "Tagesspiel: dieselben {daily} Orte für alle. Serie: Errate Orte, bis eine Nadel danebenliegt. Spiel auf der ganzen Welt, in einer Region oder auf einer Themenkarte, mit klassischen 2D- oder modernen 3D-Spielen."
+  },
+  "duels": {
+    "title": "Duelle",
+    "body": "Tritt live gegen Freunde an. KP-Kampf: Ihr startet beide mit {hp} KP, und die nähere Nadel fügt der anderen Schaden zu. Punkterennen: Die beste Gesamtpunktzahl über alle Runden gewinnt."
+  },
+  "demo": {
+    "labelDesktop": "Demo einer Runde: Ein Pokémon-Screenshot füllt den Bildschirm, die Karte in der Ecke wird größer, eine Nadel wird gesetzt und „Tippen“ gedrückt; das Ergebnis zieht eine Linie zum echten Ort und bringt {score} von {max}",
+    "labelPhone": "Demo einer Runde: Ein Pokémon-Screenshot füllt den Bildschirm, die Karte öffnet sich, eine Nadel wird gesetzt und „Tippen“ gedrückt; das Ergebnis zieht eine Linie zum echten Ort und bringt {score} von {max}",
+    "round": "Runde {n}",
+    "score": "Punkte",
+    "tapMove": "Tippe erneut, um deine Nadel zu versetzen",
+    "tapPlace": "Tippe auf die Karte, um deine Nadel zu setzen",
+    "spotOn": "Volltreffer!",
+    "close": "Ganz knapp!",
+    "notBad": "Nicht schlecht!",
+    "near": "In der Gegend.",
+    "wayOff": "Weit daneben …",
+    "pts": "Pkt.",
+    "squares": "{d} Kartenfelder entfernt",
+    "game": "Pokémon {game}",
+    "atlas": "Atlas",
+    "next": "Nächste Runde ▶",
+    "space": "Leertaste",
+    "report": "Diesen Screenshot melden"
+  }
+}

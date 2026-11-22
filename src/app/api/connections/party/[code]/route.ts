@@ -9,6 +9,7 @@ import { CONN_GROUP_SIZE } from "@/lib/connections/types";
 import { TILE_ID_MAX } from "@/lib/connections/tiles";
 import { DUEL_CODE_RE } from "@/lib/duel-types";
 import type { PartySeatResponse } from "@/lib/connections/party";
+import { langOf } from "@/lib/server/request-lang";
 
 /**
  * GET  /api/connections/party/:code — the party as you may see it (header
@@ -56,7 +57,7 @@ export async function GET(request: NextRequest, context: Context) {
   try {
     const out = await partyStore.update(code, (party, now) => ({ ok: true as const, duel: touchParty(party, playerId, now) }));
     if (!out.ok) return failure(out);
-    return NextResponse.json(partyView(out.duel, playerId, out.now, out.rev), { headers: NO_STORE });
+    return NextResponse.json(partyView(out.duel, playerId, out.now, out.rev, langOf(request)), { headers: NO_STORE });
   } catch (err) {
     return storeError(err);
   }
@@ -82,7 +83,7 @@ export async function POST(request: NextRequest, context: Context) {
         return joined.ok ? { ok: true as const, duel: joined.party, playerId: joined.playerId } : joined;
       });
       if (!out.ok) return failure(out);
-      const seat: PartySeatResponse = { code, token: pvpToken(code, out.playerId), view: partyView(out.duel, out.playerId, out.now, out.rev) };
+      const seat: PartySeatResponse = { code, token: pvpToken(code, out.playerId), view: partyView(out.duel, out.playerId, out.now, out.rev, langOf(request)) };
       return NextResponse.json(seat, { headers: NO_STORE });
     }
 
@@ -100,7 +101,7 @@ export async function POST(request: NextRequest, context: Context) {
       return res.ok ? { ok: true as const, duel: res.party } : res;
     });
     if (!out.ok) return failure(out);
-    return NextResponse.json(partyView(out.duel, playerId, out.now, out.rev), { headers: NO_STORE });
+    return NextResponse.json(partyView(out.duel, playerId, out.now, out.rev, langOf(request)), { headers: NO_STORE });
   } catch (err) {
     return storeError(err);
   }

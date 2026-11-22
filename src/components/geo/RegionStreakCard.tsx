@@ -9,9 +9,12 @@ import { cn } from "@/lib/utils";
 // Four regions across the eras (Kanto, Johto, Alola, Paldea), so it never matches a one-region tile beside it.
 import art from "@/assets/guessr/region-streak.webp";
 import { HubTile } from "./HubParts";
+import { useT } from "@/i18n/client";
+import geoSolo from "@/messages/geo-solo";
 
 /** The PokéGuessr hub's way into Region Streak (/pokeguessr/streak): one screenshot, name the region, no pin. */
 export function RegionStreakCard() {
+  const t = useT(geoSolo);
   const progress = useProgress();
   const best = progress?.best[`geo:${GEO_REGION_STREAK_KEY}`] ?? 0;
   return (
@@ -20,13 +23,13 @@ export function RegionStreakCard() {
       tone="warning"
       image={art.src}
       icon={<Flame className="h-5 w-5" />}
-      label="Region Streak"
-      title="Which region is this?"
-      blurb="Name the region from a screenshot."
-      stat={best > 0 ? `Your best: ${best} in a row` : null}
+      label={t("regionStreak.label")}
+      title={t("regionStreak.title")}
+      blurb={t("regionStreak.blurb")}
+      stat={best > 0 ? t("regionStreak.best", { n: best }) : null}
       action={
         <Link href="/pokeguessr/streak" className={cn(buttonVariants({ variant: "secondary" }), "w-full")} data-testid="region-streak-link">
-          Play Region Streak <ArrowRight className="h-4 w-4" aria-hidden />
+          {t("regionStreak.play")} <ArrowRight className="h-4 w-4" aria-hidden />
         </Link>
       }
     />

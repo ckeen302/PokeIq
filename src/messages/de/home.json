@@ -1,0 +1,56 @@
+{
+  "socialTitle": "PokéIQ: GeoGuessr, Wordle und Showdown für Pokémon",
+  "socialDescription": "PokéGuessr mit echten Screenshots aus jeder Region, ein tägliches Pokédle mit Live-Duellen, Kämpfe nach Showdown-Regeln und ein Kampflabor, das Tausende davon simuliert. Kostenlos, ohne Anmeldung.",
+  "h1": "PokéIQ: Pokémon-Spiele, Quiz und Kämpfe",
+  "free": "Kostenlos · ohne Anmeldung",
+  "pitch": "Tägliche Pokémon-Rätsel, ein Pokémon-GeoGuessr mit echten Ansichten aus den Spielen, Showdown-Kämpfe und Pokémon in 3D.",
+  "play": "Die heutigen Spiele spielen",
+  "coffee": "Spendier mir einen Kaffee",
+  "socials": "PokéIQ in den sozialen Medien",
+  "socialOn": "PokéIQ auf {name}",
+  "today": {
+    "title": "Heute",
+    "allDone": "Für heute alles erledigt",
+    "newIn": " · neue Rätsel in ",
+    "keep": " · spiel heute, um sie zu halten",
+    "midnight": "Jeden Tag um Mitternacht neue Rätsel",
+    "done": "Erledigt",
+    "inProgress": "Läuft",
+    "continue": "Weiter",
+    "play": "Spielen",
+    "streakOne": "Serie: {days, plural, one {# Tag} other {# Tage}} in {games}",
+    "streakTwo": "Serien: {days, plural, one {# Tag} other {# Tage}} in {games}",
+    "streakMany": "Serien: {days, plural, one {# Tag} other {# Tage}} in {games}"
+  },
+  "games": {
+    "daily": {
+      "name": "Tägliche Herausforderung",
+      "line": "Das heutige Pokémon-Quiz"
+    },
+    "pokedle": {
+      "name": "Pokédle",
+      "line": "Errate das geheime Pokémon"
+    },
+    "guessr": {
+      "name": "PokéGuessr",
+      "line": "Markiere die Orte von heute"
+    },
+    "connections": {
+      "name": "Connections",
+      "line": "Finde die versteckten Gruppen"
+    },
+    "pikadoku": {
+      "name": "Pikadoku",
+      "line": "Pokémon-Sudoku"
+    }
+  },
+  "results": {
+    "right": "{correct}/{total} richtig",
+    "solvedIn": "Gelöst in {n}",
+    "missed": "Heute verpasst",
+    "points": "{points} Pkt.",
+    "solvedMistakes": "Gelöst · {n, plural, one {# Fehler} other {# Fehler}}",
+    "perfect": "Perfekt",
+    "filled": "{n}/9 gefüllt"
+  }
+}

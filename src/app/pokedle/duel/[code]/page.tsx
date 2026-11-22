@@ -2,11 +2,18 @@ import type { Metadata } from "next";
 import { inviteMetadata } from "@/lib/seo";
 import { cache } from "react";
 import { notFound } from "next/navigation";
-import { redirect } from "@/i18n/server";
+import { getLocale, redirect, serverT } from "@/i18n/server";
+import { ClientMessages } from "@/i18n/ClientMessages";
 import { PokedleDuel } from "@/components/pokedle/PokedleDuel";
-import { POKEDEX } from "@/lib/pokemon/pokedex";
+import { dleLabels, dleNames } from "@/lib/dle-lexicon";
 import { pvpStore } from "@/lib/server/duel-store";
 import { pvpHref } from "@/lib/pvp-types";
+import pokedle from "@/messages/pokedle";
+import board from "@/messages/pokedle-board";
+import duelNs from "@/messages/pokedle-duel";
+import duelShared from "@/messages/duel";
+import share from "@/messages/share";
+import tier from "@/messages/tier";
 
 interface PageProps {
   params: Promise<{ code: string }>;
@@ -17,10 +24,12 @@ const findDuel = cache(pvpStore.peek);
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const duel = await findDuel((await params).code);
-  if (!duel || duel.kind !== "pokedle") return inviteMetadata("A Pokédle duel", "Head-to-head Pokédle: the same mystery Pokémon for both of you, three rounds.");
+  const t = serverT(pokedle);
+  if (!duel || duel.kind !== "pokedle") return inviteMetadata(t("duel.title"), t("duel.description"));
+  // Trainer names are theirs: never translated.
   const [host, guest] = duel.players.map((p) => p.name);
-  const title = guest ? `${host} vs ${guest}: a Pokédle duel` : `${host || "A trainer"} challenges you to a Pokédle duel`;
-  return inviteMetadata(title, "Head-to-head Pokédle: the same mystery Pokémon for both of you, three rounds, fewer guesses and quicker solves score more.");
+  const title = guest ? t("duel.versus", { host, guest }) : t("duel.challenge", { host: host || t("duel.aTrainer") });
+  return inviteMetadata(title, t("duel.inviteDescription"));
 }
 
 export default async function PokedleDuelPage({ params }: PageProps) {
@@ -30,7 +39,12 @@ export default async function PokedleDuelPage({ params }: PageProps) {
   if (duel === null) notFound();
   // A quiz duel's code: off to its own page.
   if (duel && duel.kind !== "pokedle") redirect(pvpHref(duel.kind, code));
-  // Only id + name + gen go to the client: enough for the guess box, no answers.
-  const names = POKEDEX.map((p) => [p.id, p.name, p.gen] as [number, string, number]);
-  return <PokedleDuel key={code} code={code} names={names} />;
+  const locale = getLocale();
+  // Only id + name + gen go to the client (with the other names it answers to, in another language): enough for the guess box, no answers.
+  const names = dleNames(locale);
+  return (
+    <ClientMessages namespaces={[board, duelNs, duelShared, tier, share]}>
+      <PokedleDuel key={code} code={code} names={names} labels={dleLabels(locale)} />
+    </ClientMessages>
+  );
 }

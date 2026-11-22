@@ -4,6 +4,7 @@ import { connLevels, guessKey, type ConnLevel, type ConnSize } from "@/lib/conne
 import { generatePuzzle, playGuesses, type PlayState, type Puzzle } from "@/lib/connections/generator";
 import { connTile, explainGroup, groupReveal } from "./connections";
 import { baseView, fail, finish, newSeat, notPlaying, pvpBase, seatOf, seated, type PvpBase, type PvpOutcome, type PvpRules } from "./duel-core";
+import type { Locale } from "@/i18n/config";
 
 /**
  * PokéConnections duels: a race. Both trainers get the same sixteen (or,
@@ -209,7 +210,7 @@ function boardView(race: SeatRace, start: number): ConnDuelBoard {
  * your own found groups. After it: every group explained, and both trainers'
  * guesses as colours.
  */
-export function connectionsView(duel: ConnectionsDuel, playerId: string | null, now: number, rev: number): ConnDuelView {
+export function connectionsView(duel: ConnectionsDuel, playerId: string | null, now: number, rev: number, locale: Locale = "en"): ConnDuelView {
   const seat = seatOf(duel, playerId);
   const start = duel.startsAt;
   const begun = start !== undefined && (duel.status === "finished" || now >= start);
@@ -231,11 +232,11 @@ export function connectionsView(duel: ConnectionsDuel, playerId: string | null, 
         mine: {
           guesses: duel.boards[seat].guesses.map((g) => g.ids),
           results: mineRace.results.map((r) => r.kind),
-          found: mineRace.found.map((lv) => groupReveal(puzzle, lv)),
+          found: mineRace.found.map((lv) => groupReveal(puzzle, lv, locale)),
         },
       }),
     ...(over && {
-      reveal: connLevels(puzzle.groups.length as ConnSize).map((lv) => explainGroup(puzzle, lv)),
+      reveal: connLevels(puzzle.groups.length as ConnSize).map((lv) => explainGroup(puzzle, lv, locale)),
       rows: duel.boards.map((b) => b.guesses.map((g) => g.ids.map((id) => levelOf!.get(id)!))),
     }),
   };

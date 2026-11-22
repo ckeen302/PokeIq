@@ -7,7 +7,12 @@ import { useProgress } from "@/lib/progress";
 import { useToday } from "@/lib/use-today";
 import { cn } from "@/lib/utils";
 import { HomeHeading } from "./HomeHeading";
-import { DAILIES, allDone, bestStreak, dailyStatuses, streakText, type DailyInfo, type DailyStatus } from "./today";
+import { DAILIES, allDone, bestStreak, dailyStatuses, localStreakText, type DailyInfo, type DailyStatus } from "./today";
+import { useT } from "@/i18n/client";
+import home from "@/messages/home";
+import type { Translator } from "@/i18n/catalog";
+
+type T = Translator<typeof home.en>;
 
 /**
  * Today: the five dailies in one place, each with Play or how today's went
@@ -19,38 +24,39 @@ import { DAILIES, allDone, bestStreak, dailyStatuses, streakText, type DailyInfo
 export function TodaySection() {
   const progress = useProgress();
   const today = useToday();
-  const statuses = dailyStatuses(progress, today);
+  const t = useT(home);
+  const statuses = dailyStatuses(progress, today, t);
   const streak = bestStreak(statuses);
   const finished = progress && today ? allDone(statuses) : false;
 
   const line = finished ? (
     <span data-testid="home-today-alldone">
-      <span className="font-semibold text-success">All done for today</span> · new puzzles in <TimeToNextDaily className="font-semibold tabular-nums text-foreground" />
+      <span className="font-semibold text-success">{t("today.allDone")}</span>{t("today.newIn")}<TimeToNextDaily className="font-semibold tabular-nums text-foreground" />
     </span>
   ) : streak ? (
     <span data-testid="home-today-streak">
       <span aria-hidden>🔥 </span>
-      <span className="font-semibold text-foreground">{streakText(streak)}</span>
-      {streak.atRisk && <span className="max-sm:hidden"> · play today&apos;s to keep it</span>}
+      <span className="font-semibold text-foreground">{localStreakText(t, streak)}</span>
+      {streak.atRisk && <span className="max-sm:hidden">{t("today.keep")}</span>}
     </span>
   ) : (
-    <span>New puzzles every day at midnight</span>
+    <span>{t("today.midnight")}</span>
   );
 
   return (
     <section aria-labelledby="home-today" data-testid="home-today" className="scroll-mt-20">
-      <HomeHeading id="home-today" title="Today" aside={<span className="text-sm text-muted-foreground">{line}</span>} />
+      <HomeHeading id="home-today" title={t("today.title")} aside={<span className="text-sm text-muted-foreground">{line}</span>} />
       <ul className="grid grid-cols-5 gap-3 max-lg:hidden" data-testid="home-today-cards">
         {DAILIES.map((d, i) => (
           <li key={d.id} className="motion-safe:animate-rise" style={{ animationDelay: `${120 + i * 70}ms` }}>
-            <DailyCard info={d} status={statuses[d.id]} />
+            <DailyCard info={d} status={statuses[d.id]} t={t} />
           </li>
         ))}
       </ul>
       <ul className="divide-y divide-foreground/[0.06] lg:hidden" data-testid="home-today-rows">
         {DAILIES.map((d, i) => (
           <li key={d.id} className="motion-safe:animate-rise" style={{ animationDelay: `${80 + i * 60}ms` }}>
-            <DailyRow info={d} status={statuses[d.id]} />
+            <DailyRow info={d} status={statuses[d.id]} t={t} />
           </li>
         ))}
       </ul>
@@ -59,17 +65,17 @@ export function TodaySection() {
 }
 
 /** What the card says under the game's name: today's result, "In progress", or the game's line. */
-function subline(info: DailyInfo, status: DailyStatus): string {
-  if (status.state === "done") return status.result ?? "Done";
-  if (status.state === "progress") return "In progress";
-  return info.line;
+function subline(info: DailyInfo, status: DailyStatus, t: T): string {
+  if (status.state === "done") return status.result ?? t("today.done");
+  if (status.state === "progress") return t("today.inProgress");
+  return t(`games.${info.id}.line`);
 }
 
-function PlayPill({ info, status, className }: { info: DailyInfo; status: DailyStatus; className?: string }) {
+function PlayPill({ info, status, className, t }: { info: DailyInfo; status: DailyStatus; className?: string; t: T }) {
   if (status.state === "done") {
     return (
       <span className={cn("inline-flex h-8 items-center gap-1 text-sm font-semibold text-success", className)}>
-        <Check className="h-4 w-4" aria-hidden /> Done
+        <Check className="h-4 w-4" aria-hidden /> {t("today.done")}
       </span>
     );
   }
@@ -78,12 +84,12 @@ function PlayPill({ info, status, className }: { info: DailyInfo; status: DailyS
       className={cn("inline-flex h-9 items-center rounded-full px-4 text-sm font-semibold text-black", className)}
       style={{ background: `hsl(${info.accent})`, boxShadow: `inset 0 1px 0 rgb(255 255 255 / 0.35), 0 4px 14px -4px hsl(${info.accent} / 0.6)` }}
     >
-      {status.state === "progress" ? "Continue" : "Play"}
+      {status.state === "progress" ? t("today.continue") : t("today.play")}
     </span>
   );
 }
 
-function DailyRow({ info, status }: { info: DailyInfo; status: DailyStatus }) {
+function DailyRow({ info, status, t }: { info: DailyInfo; status: DailyStatus; t: T }) {
   const Icon = info.icon;
   const done = status.state === "done";
   return (
@@ -92,15 +98,15 @@ function DailyRow({ info, status }: { info: DailyInfo; status: DailyStatus }) {
         <Icon className="relative z-[3] h-5 w-5" aria-hidden />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-base font-semibold leading-tight">{info.name}</span>
-        <span className={cn("mt-0.5 block truncate text-sm", done ? "text-success" : status.state === "progress" ? "text-warning" : "text-muted-foreground")}>{subline(info, status)}</span>
+        <span className="block truncate text-base font-semibold leading-tight">{t(`games.${info.id}.name`)}</span>
+        <span className={cn("mt-0.5 block truncate text-sm", done ? "text-success" : status.state === "progress" ? "text-warning" : "text-muted-foreground")}>{subline(info, status, t)}</span>
       </span>
-      <PlayPill info={info} status={status} className="shrink-0" />
+      <PlayPill info={info} status={status} className="shrink-0" t={t} />
     </Link>
   );
 }
 
-function DailyCard({ info, status }: { info: DailyInfo; status: DailyStatus }) {
+function DailyCard({ info, status, t }: { info: DailyInfo; status: DailyStatus; t: T }) {
   const Icon = info.icon;
   const done = status.state === "done";
   return (
@@ -126,12 +132,12 @@ function DailyCard({ info, status }: { info: DailyInfo; status: DailyStatus }) {
       <span className="screen flex h-10 w-10 items-center justify-center rounded-md" style={{ color: `hsl(${info.accent})` }}>
         <Icon className="relative z-[3] h-5 w-5" aria-hidden />
       </span>
-      <span className="mt-3 font-display text-[15px] font-bold uppercase leading-tight tracking-wide xl:text-base">{info.name}</span>
+      <span className="mt-3 font-display text-[15px] font-bold uppercase leading-tight tracking-wide xl:text-base">{t(`games.${info.id}.name`)}</span>
       <span className={cn("mt-1 line-clamp-2 min-h-[2.5rem] text-[13px] leading-snug", done ? "font-medium text-success" : status.state === "progress" ? "text-warning" : "text-muted-foreground")}>
-        {subline(info, status)}
+        {subline(info, status, t)}
       </span>
       <span className="mt-auto flex items-center justify-between pt-3">
-        <PlayPill info={info} status={status} className={done ? undefined : "h-8 px-3.5"} />
+        <PlayPill info={info} status={status} className={done ? undefined : "h-8 px-3.5"} t={t} />
         <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" aria-hidden />
       </span>
     </Link>

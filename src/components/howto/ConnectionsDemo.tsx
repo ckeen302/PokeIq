@@ -6,6 +6,9 @@ import { CONN_MAX_MISTAKES } from "@/lib/connections/types";
 import { LevelMark, MistakeDots, levelStyle } from "@/components/connections/parts";
 import { cn } from "@/lib/utils";
 import { DemoFrame, useDemoFrame } from "./shared";
+import { useTileName } from "@/components/connections/names";
+import { useT } from "@/i18n/client";
+import conn from "@/messages/connections";
 
 /** Real Pokémon: the first four are the Fire-type starters of Gens 1 to 4; Vaporeon, Jolteon, Flareon and Umbreon are Eevee's Gen 1-2 evolutions. */
 const T = (id: number, name: string) => ({ id, name });
@@ -36,18 +39,19 @@ const FRAMES: Frame[] = [
   { selected: WRONG.map((m) => m.id), found: true, oneAway: true, ms: 1900 },
 ];
 const MS = FRAMES.map((f) => f.ms);
-const FOUND_LABEL = "Fire starters";
 
 export function ConnectionsDemo() {
+  const t = useT(conn);
+  const nameOf = useTileName();
   const frame = FRAMES[useDemoFrame(MS)];
   const rest = ORDER.filter((m) => !(frame.found && FIRE.some((f) => f.id === m.id)));
   return (
-    <DemoFrame label="Demo: four Fire-type starters are picked and submitted, locking in as a purple group, then a guess that is one away">
+    <DemoFrame label={t("demo.label")}>
       <div className="mx-auto max-w-sm space-y-1.5">
         <div className="relative h-5 text-center text-xs font-bold">
           {frame.oneAway && (
             <motion.span initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="rounded bg-foreground px-2 py-0.5 text-background">
-              One away…
+              {t("demo.oneAway")}
             </motion.span>
           )}
         </div>
@@ -60,9 +64,9 @@ export function ConnectionsDemo() {
             style={levelStyle(3)}
           >
             <p className="flex items-center gap-1.5 font-display text-sm font-bold uppercase tracking-wide">
-              <LevelMark level={3} className="text-xs opacity-70" /> {FOUND_LABEL} <LevelMark level={3} className="text-xs opacity-70" />
+              <LevelMark level={3} className="text-xs opacity-70" /> {t("demo.found")} <LevelMark level={3} className="text-xs opacity-70" />
             </p>
-            <p className="text-[11px] font-semibold">{FIRE.map((m) => m.name).join(", ")}</p>
+            <p className="text-[11px] font-semibold">{FIRE.map(nameOf).join(", ")}</p>
           </motion.div>
         )}
         <div className="grid grid-cols-4 gap-1.5">
@@ -80,7 +84,7 @@ export function ConnectionsDemo() {
                 )}
               >
                 <img src={boardArtUrl(m.id)} alt="" width={36} height={36} loading="lazy" className="h-9 w-9 object-contain" />
-                <span className="w-full truncate font-display text-[9px] font-bold uppercase leading-tight">{m.name}</span>
+                <span className="w-full truncate font-display text-[9px] font-bold uppercase leading-tight">{nameOf(m)}</span>
               </motion.div>
             );
           })}
@@ -90,7 +94,7 @@ export function ConnectionsDemo() {
             <MistakeDots left={frame.oneAway ? CONN_MAX_MISTAKES - 1 : CONN_MAX_MISTAKES} max={CONN_MAX_MISTAKES} />
           </div>
           {/* Joined without cn: tailwind-merge reads border-screen as a width and would drop border-2, so the pressed button (and with it the how-to) shrank by 4px. */}
-          <span className={`rounded-md border-2 px-3 py-1 text-xs font-bold uppercase ${frame.press ? "border-screen bg-screen text-background" : frame.selected.length === 4 ? "border-foreground/40" : "border-foreground/10 text-muted-foreground"}`}>Submit</span>
+          <span className={`rounded-md border-2 px-3 py-1 text-xs font-bold uppercase ${frame.press ? "border-screen bg-screen text-background" : frame.selected.length === 4 ? "border-foreground/40" : "border-foreground/10 text-muted-foreground"}`}>{t("demo.submit")}</span>
         </div>
       </div>
     </DemoFrame>
