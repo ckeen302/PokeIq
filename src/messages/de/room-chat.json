@@ -1,0 +1,23 @@
+{
+  "notSent": "Das wurde nicht gesendet.",
+  "unreachable": "Der Server ist nicht erreichbar. Versuch es noch mal.",
+  "soon": "Chaträume kommen bald.",
+  "slow": "Langsamer Modus: {s} s",
+  "live": "Live",
+  "polling": "Aktualisiert sich alle paar Sekunden",
+  "turnOn": "Einschalten",
+  "chatOff": "Chat aus",
+  "off": "Der Chat ist aus. Du siehst keine Nachrichten und kannst keine senden.",
+  "empty": "Noch keine Nachrichten. Sag Hallo!",
+  "mute": "{name} stummschalten",
+  "unmute": "Stummschaltung für {name} aufheben",
+  "reported": "Gemeldet",
+  "reportTitle": "Diese Nachricht melden",
+  "reportLabel": "Nachricht von {name} melden",
+  "signIn": "<link>Melde dich an</link>, um zu chatten. Mitlesen kann jeder.",
+  "placeholder": "Schreib etwas Nettes …",
+  "label": "Nachricht im Raum",
+  "send": "Senden",
+  "here": "Gerade hier ({n})",
+  "muted": "Stummgeschaltet: {names}"
+}

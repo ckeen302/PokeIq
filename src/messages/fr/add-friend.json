@@ -1,0 +1,10 @@
+{
+  "signIn": "Connecte-toi pour l'ajouter",
+  "friends": "Amis",
+  "sent": "Demande d'ami envoyée",
+  "blocked": "Bloqué",
+  "accept": "Accepter la demande d'ami",
+  "add": "Ajouter en ami",
+  "failed": "Impossible d'envoyer la demande.",
+  "theySent": "Cette personne t'a envoyé une demande d'ami"
+}

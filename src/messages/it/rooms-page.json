@@ -1,0 +1,78 @@
+{
+  "list": {
+    "title": "Chat",
+    "description": "Chatta con gli altri Allenatori su PokéIQ: la Lobby principale e le stanze Pokédle, Connections, Pikadoku, PokéGuessr, Lotta e Quiz.",
+    "label": "Community",
+    "heading": "Stanze <hl>chat</hl>",
+    "intro": "Parla di Pokémon con gli altri Allenatori. Tutti possono leggere; accedi per chattare. I moderatori mantengono ogni stanza amichevole."
+  },
+  "room": {
+    "title": "Chat {name}",
+    "fallbackTitle": "Stanza chat",
+    "fallbackDescription": "Una stanza chat di PokéIQ.",
+    "back": "Torna alle stanze",
+    "crumb": "Stanze",
+    "rules": "Regole della stanza"
+  },
+  "siteRules": {
+    "0": "Sii gentile. Niente bullismo, parolacce o odio.",
+    "1": "Non condividere mai dati personali: il tuo vero nome, l'età, la scuola, l'indirizzo, il telefono o i social.",
+    "2": "Non si possono pubblicare link. Parla del gioco!",
+    "3": "Vedi qualcosa che non va? Usa la bandierina per segnalare un messaggio. I moderatori leggono ogni segnalazione."
+  },
+  "rules": {
+    "lobby": {
+      "0": "Resta gentile e in tema: Pokémon e PokéIQ.",
+      "1": "Principianti benvenuti: rispondi con pazienza e non prendere mai in giro nessuno."
+    },
+    "pokedle": {
+      "0": "Niente spoiler: non pubblicare mai la risposta di oggi o grandi indizi."
+    },
+    "connections": {
+      "0": "Niente spoiler: non pubblicare mai i gruppi di oggi."
+    },
+    "pikadoku": {
+      "0": "Niente spoiler: non pubblicare mai le risposte di oggi."
+    },
+    "pokeguessr": {
+      "0": "Niente spoiler sui round di oggi."
+    },
+    "battle": {
+      "0": "Non chiedere né combinare vittorie: gioca ogni lotta sul serio.",
+      "1": "Valuta le squadre con gentilezza: di' cosa funziona, poi cosa cambieresti."
+    },
+    "quizzes": {
+      "0": "Non pubblicare le risposte di un quiz che qualcuno sta giocando."
+    }
+  },
+  "links": {
+    "lobby": {
+      "0": "Tutte le modalità",
+      "1": "Sfida del giorno",
+      "2": "Invia un feedback"
+    },
+    "pokedle": {
+      "0": "Gioca a Pokédle"
+    },
+    "connections": {
+      "0": "Gioca a Connections"
+    },
+    "pikadoku": {
+      "0": "Gioca a Pikadoku"
+    },
+    "pokeguessr": {
+      "0": "Gioca a PokéGuessr",
+      "1": "Atlante del mondo"
+    },
+    "battle": {
+      "0": "Lotta!",
+      "1": "Crea squadra",
+      "2": "Calcolo danni",
+      "3": "Tornei"
+    },
+    "quizzes": {
+      "0": "Tutti i quiz",
+      "1": "Name 'em All"
+    }
+  }
+}

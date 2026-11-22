@@ -1,0 +1,20 @@
+{
+  "confirm": {
+    "title": "E-mail confirmé",
+    "body": "Tout est prêt. L'e-mail du jour arrive quand les nouveaux défis sortent, s'il est activé dans les Réglages.",
+    "error": "Ce lien de confirmation a expiré ou a été remplacé par un plus récent. Demandes-en un nouveau dans les Réglages.",
+    "working": "Confirmation…"
+  },
+  "unsubscribe": {
+    "title": "Tu es désinscrit",
+    "body": "Plus d'e-mails quotidiens. Tu peux les réactiver dans les Réglages à tout moment.",
+    "error": "Ce lien de désinscription n'est pas valide. Tu peux désactiver les e-mails dans les Réglages.",
+    "working": "Désinscription…"
+  },
+  "tooMany": "Trop de tentatives : attends une minute et rouvre le lien.",
+  "unreachable": "Impossible de joindre le serveur. Rouvre le lien dans un moment.",
+  "busy": "En cours",
+  "invalid": "Lien non valide",
+  "play": "Jouer aux défis du jour",
+  "settings": "Réglages"
+}

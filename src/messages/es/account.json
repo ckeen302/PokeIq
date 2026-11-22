@@ -1,0 +1,84 @@
+{
+  "tabs": {
+    "login": "Iniciar sesión",
+    "register": "Crear cuenta",
+    "recover": "Olvidé la contraseña"
+  },
+  "resetTitle": "Contraseña restablecida",
+  "welcome": "¡Bienvenido, {name}!",
+  "resetNote": "Tu código de recuperación anterior ya está usado. Guarda este nuevo: solo se muestra una vez.",
+  "welcomeNote": "Este código de recuperación es la única forma de volver a entrar si olvidas tu contraseña. Solo se muestra una vez.",
+  "offlineTitle": "Las cuentas no están disponibles",
+  "offlineBody": "Las cuentas de entrenador aún no están activadas en este servidor. Tu progreso sigue guardado en este dispositivo.",
+  "nameRejected": "Elige otro nombre.",
+  "failed": "Algo ha fallado.",
+  "tablist": "Cuenta",
+  "name": "Nombre de entrenador",
+  "code": "Código de recuperación",
+  "newPassword": "Nueva contraseña",
+  "password": "Contraseña",
+  "nameRules": "De 3 a 20 letras, números, _ o -. No hace falta correo: recibirás un código de recuperación.",
+  "reset": "Restablecer contraseña",
+  "syncNote": "Al iniciar sesión, tus medallas, rachas, puntuaciones y PokéIQ se guardan en tu cuenta y te siguen a cualquier dispositivo.",
+  "email": {
+    "needEmail": "Añade tu correo para recibir los correos diarios.",
+    "badEmail": "Eso no parece una dirección de correo."
+  },
+  "panel": {
+    "saveTitle": "Guarda tu progreso",
+    "saveBody": "Crea una cuenta gratis para conservar tus medallas, puntuaciones y rachas en cualquier dispositivo.",
+    "signIn": "Iniciar sesión",
+    "newCodeTitle": "Nuevo código de recuperación",
+    "newCodeNote": "Tu código anterior ya no funciona. Guarda este: solo se muestra una vez.",
+    "codeFailed": "No se ha podido crear un código nuevo.",
+    "signedInAs": "Has iniciado sesión como <b>{name}</b> · el progreso se sincroniza solo",
+    "newCode": "Nuevo código de recuperación",
+    "signOut": "Cerrar sesión",
+    "confirmPassword": "Confirma tu contraseña",
+    "generate": "Generar"
+  },
+  "connected": {
+    "unlinkFailed": "No se ha podido desvincular esa cuenta.",
+    "title": "Cuentas vinculadas",
+    "linked": "Vinculada",
+    "notLinked": "Sin vincular",
+    "onlyWay": "Es tu única forma de iniciar sesión.",
+    "unlink": "Desvincular",
+    "link": "Vincular {provider}"
+  },
+  "oauth": {
+    "googleNote": "El inicio de sesión con Google está en pruebas: usa Discord si no funciona.",
+    "continueWith": "Continuar con {provider}",
+    "orName": "o usa un nombre de entrenador",
+    "errors": {
+      "denied": "Se ha cancelado el inicio de sesión.",
+      "expired": "El inicio de sesión ha tardado demasiado o se empezó en otra pestaña: inténtalo de nuevo.",
+      "failed": "Ahora mismo no se puede iniciar sesión con ese servicio. Inténtalo de nuevo o usa tu nombre de entrenador y contraseña.",
+      "unavailable": "Esa forma de iniciar sesión no está disponible ahora mismo.",
+      "banned": "Esta cuenta está bloqueada.",
+      "linked_elsewhere": "Esa cuenta ya está vinculada a otro entrenador.",
+      "already_linked": "Ya tienes vinculada una cuenta de ese tipo. Desvincúlala primero.",
+      "signin_required": "Inicia sesión primero y luego vincula la cuenta desde tu ficha de entrenador.",
+      "rate_limited": "Demasiados intentos: vuelve a probar dentro de un minuto."
+    }
+  },
+  "signup": {
+    "expired": "Ese inicio de sesión ha caducado: empieza de nuevo.",
+    "unreachable": "No se ha podido conectar con el servidor: inténtalo de nuevo.",
+    "under13": "Tienes que tener 13 años o más para crear una cuenta.",
+    "loading": "Cargando",
+    "back": "Volver a iniciar sesión",
+    "signedWith": "Has iniciado sesión con {provider}. Elige el nombre que verán los demás entrenadores.",
+    "nameHint": "De 3 a 20 letras, números, _ o -.",
+    "adult": "Tengo 13 años o más.",
+    "create": "Crear entrenador",
+    "privacy": "Tu correo es privado. Consulta la <link>política de privacidad</link>."
+  },
+  "recovery": {
+    "label": "Código de recuperación",
+    "copied": "Copiado",
+    "copy": "Copiar código",
+    "savedIt": "He guardado mi código de recuperación en un lugar seguro",
+    "continue": "Continuar"
+  }
+}

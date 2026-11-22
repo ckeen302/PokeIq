@@ -1,0 +1,21 @@
+{
+  "title": "Chat",
+  "unmuteName": "Stummschaltung für {name} aufheben",
+  "muteName": "{name} stummschalten",
+  "unmute": "Laut",
+  "mute": "Stumm",
+  "turnOnTitle": "Chat einschalten",
+  "turnOffTitle": "Chat ausschalten",
+  "turnOn": "Einschalten",
+  "chatOff": "Chat aus",
+  "off": "Der Chat ist aus. Du siehst keine Nachrichten und kannst keine senden.",
+  "empty": "Noch keine Nachrichten. Sag Hallo!",
+  "reported": "Gemeldet",
+  "reportTitle": "Diese Nachricht melden",
+  "reportLabel": "Nachricht von {name} melden",
+  "isMuted": "{name} ist stummgeschaltet.",
+  "playersOnly": "Nur die spielenden Trainer können chatten.",
+  "placeholder": "Schreib etwas Nettes …",
+  "label": "Chatnachricht",
+  "send": "Senden"
+}

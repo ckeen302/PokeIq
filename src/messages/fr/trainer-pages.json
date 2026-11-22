@@ -1,0 +1,12 @@
+{
+  "card": {
+    "title": "Carte de Dresseur"
+  },
+  "creator": {
+    "title": "Créateur de Dresseur",
+    "description": "Crée ton Dresseur 3D PokéIQ : coiffure, casquettes, tenues, sacs et ta Poké Ball.",
+    "back": "Retour à la carte de Dresseur",
+    "label": "Créateur de Dresseur",
+    "heading": "Crée ton Dresseur"
+  }
+}

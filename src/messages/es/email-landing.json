@@ -1,0 +1,20 @@
+{
+  "confirm": {
+    "title": "Correo confirmado",
+    "body": "¡Todo listo! El correo diario llega cuando salen los nuevos diarios, si lo tienes activado en Ajustes.",
+    "error": "Ese enlace de confirmación ha caducado o se ha sustituido por uno más reciente. Pide otro en Ajustes.",
+    "working": "Confirmando…"
+  },
+  "unsubscribe": {
+    "title": "Te has dado de baja",
+    "body": "No recibirás más correos diarios. Puedes volver a activarlos en Ajustes cuando quieras.",
+    "error": "Ese enlace para darse de baja no es válido. Puedes desactivar los correos en Ajustes.",
+    "working": "Dándote de baja…"
+  },
+  "tooMany": "Demasiados intentos: espera un minuto y vuelve a abrir el enlace.",
+  "unreachable": "No se ha podido conectar con el servidor. Vuelve a abrir el enlace en un momento.",
+  "busy": "Procesando",
+  "invalid": "Enlace no válido",
+  "play": "Jugar a los diarios de hoy",
+  "settings": "Ajustes"
+}

@@ -1,0 +1,10 @@
+{
+  "signIn": "Inicia sesión para añadir amigo",
+  "friends": "Amigos",
+  "sent": "Solicitud enviada",
+  "blocked": "Bloqueado",
+  "accept": "Aceptar solicitud de amistad",
+  "add": "Añadir amigo",
+  "failed": "No se ha podido enviar la solicitud.",
+  "theySent": "Te ha enviado una solicitud de amistad"
+}

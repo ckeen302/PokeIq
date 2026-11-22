@@ -1,0 +1,21 @@
+{
+  "title": "Chat",
+  "unmuteName": "Ne plus masquer {name}",
+  "muteName": "Masquer {name}",
+  "unmute": "Réafficher",
+  "mute": "Masquer",
+  "turnOnTitle": "Activer le chat",
+  "turnOffTitle": "Désactiver le chat",
+  "turnOn": "Activer",
+  "chatOff": "Chat désactivé",
+  "off": "Le chat est désactivé. Tu ne verras aucun message et ne pourras pas en envoyer.",
+  "empty": "Pas encore de message. Dis bonjour !",
+  "reported": "Signalé",
+  "reportTitle": "Signaler ce message",
+  "reportLabel": "Signaler le message de {name}",
+  "isMuted": "{name} est masqué.",
+  "playersOnly": "Seuls les Dresseurs qui jouent peuvent discuter.",
+  "placeholder": "Dis quelque chose de sympa…",
+  "label": "Message du chat",
+  "send": "Envoyer"
+}

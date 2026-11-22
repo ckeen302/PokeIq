@@ -1,0 +1,21 @@
+{
+  "title": "Chat",
+  "unmuteName": "Riattiva {name}",
+  "muteName": "Silenzia {name}",
+  "unmute": "Riattiva",
+  "mute": "Silenzia",
+  "turnOnTitle": "Attiva la chat",
+  "turnOffTitle": "Disattiva la chat",
+  "turnOn": "Attiva",
+  "chatOff": "Chat disattivata",
+  "off": "La chat è disattivata. Non vedrai messaggi e non potrai inviarne.",
+  "empty": "Ancora nessun messaggio. Saluta!",
+  "reported": "Segnalato",
+  "reportTitle": "Segnala questo messaggio",
+  "reportLabel": "Segnala il messaggio di {name}",
+  "isMuted": "{name} è silenziato.",
+  "playersOnly": "Solo gli Allenatori in gioco possono chattare.",
+  "placeholder": "Scrivi qualcosa di carino…",
+  "label": "Messaggio della chat",
+  "send": "Invia"
+}

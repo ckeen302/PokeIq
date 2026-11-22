@@ -1,0 +1,34 @@
+{
+  "optIn": {
+    "email": "Correo",
+    "optional": "(opcional)",
+    "box": "Avisarme por correo cuando haya nuevos diarios",
+    "confirmFirst": "Primero te enviaremos un enlace para confirmar tu dirección. Puedes darte de baja cuando quieras."
+  },
+  "settings": {
+    "sent": "Te hemos enviado un enlace de confirmación a {email}.",
+    "throttled": "Hace un momento salió un enlace de confirmación: revisa tu bandeja de entrada.",
+    "sendFailed": "No hemos podido enviar el correo de confirmación. Prueba «Reenviar» dentro de un minuto.",
+    "loadFailed": "No se han podido cargar tus ajustes de correo.",
+    "saveFailed": "No se ha podido guardar.",
+    "addFirst": "Primero añade tu dirección de correo.",
+    "badEmail": "Eso no parece una dirección de correo.",
+    "daily": "Recordatorios diarios por correo",
+    "dailyHint": "Un correo cuando salen los nuevos diarios.",
+    "on": "Sí",
+    "off": "No",
+    "loading": "Cargando",
+    "address": "Dirección de correo",
+    "save": "Guardar",
+    "turnOn": "Activar",
+    "cancel": "Cancelar",
+    "sendingTo": "<m>Enviando a </m><b>{email}</b>",
+    "confirm": "<m>Confirma </m><b>{email}</b><m> con el enlace de tu bandeja de entrada.</m>",
+    "resend": "Reenviar",
+    "change": "Cambiar",
+    "when": "Cuándo enviar",
+    "whenHint": "Cada día, o solo cuando una racha vaya a acabarse a medianoche.",
+    "everyDay": "Cada día",
+    "atRisk": "Racha en peligro"
+  }
+}

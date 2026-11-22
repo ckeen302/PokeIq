@@ -1,0 +1,21 @@
+{
+  "title": "Il tuo coach",
+  "intro": "Rispondi ad altre {n} domande e il tuo coach individuerà i tuoi punti forti e deboli (generazioni, tipi e modalità) e ti dirà cosa studiare.",
+  "focus": "Da migliorare",
+  "strengths": "Punti forti",
+  "overall": "complessivo {pct}%",
+  "nothing": "Ancora niente spicca: continua a giocare.",
+  "answered": "({n} risposte)",
+  "gen": "Gen. {gen} ({region})",
+  "genCta": "Studia la gen. {gen} con le flashcard",
+  "type": "Pokémon di tipo {type}",
+  "typeCta": "Sfoglia il tipo {type}",
+  "modeCta": "Allenati: {mode}",
+  "stats": {
+    "bst": "Totali delle statistiche base",
+    "height": "Altezze",
+    "weight": "Pesi",
+    "stat": "Statistiche di {stat}"
+  },
+  "statCta": "Vedi la classifica"
+}

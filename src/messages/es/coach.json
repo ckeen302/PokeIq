@@ -1,0 +1,21 @@
+{
+  "title": "Tu entrenador personal",
+  "intro": "Responde {n} preguntas más y tu entrenador personal detectará tus puntos fuertes y débiles (generaciones, tipos y modos) y te dirá qué estudiar.",
+  "focus": "A mejorar",
+  "strengths": "Puntos fuertes",
+  "overall": "total {pct} %",
+  "nothing": "Aún no destaca nada. Sigue jugando.",
+  "answered": "({n} respondidas)",
+  "gen": "Gen. {gen} ({region})",
+  "genCta": "Estudia la gen. {gen} con tarjetas",
+  "type": "Pokémon de tipo {type}",
+  "typeCta": "Ver Pokémon de tipo {type}",
+  "modeCta": "Practica {mode}",
+  "stats": {
+    "bst": "Estadísticas base totales",
+    "height": "Alturas",
+    "weight": "Pesos",
+    "stat": "{stat} base"
+  },
+  "statCta": "Ver la clasificación"
+}

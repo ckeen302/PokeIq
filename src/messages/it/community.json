@@ -1,0 +1,16 @@
+{
+  "friends": "Amici",
+  "friendsWaiting": "Amici ({n} in attesa)",
+  "answerFailed": "Impossibile rispondere alla sfida.",
+  "matchReady": "La tua partita è pronta",
+  "match": "{title}: tu contro <b>{name}</b>.",
+  "playNow": "Gioca ora",
+  "later": "Più tardi",
+  "challenge": "Sfida",
+  "challenges": "<b>{name}</b> ti sfida: <b>{game}</b>.",
+  "accept": "Accetta",
+  "decline": "Rifiuta",
+  "accepted": "<b>{name}</b> ha accettato la tua sfida: {game}.",
+  "declined": "<b>{name}</b> ha rifiutato la tua sfida: {game}.",
+  "close": "Chiudi"
+}

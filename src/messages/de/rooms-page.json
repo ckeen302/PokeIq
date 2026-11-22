@@ -1,0 +1,78 @@
+{
+  "list": {
+    "title": "Chaträume",
+    "description": "Chatte mit anderen Trainern auf PokéIQ: in der Hauptlobby und den Räumen Pokédle, Connections, Pikadoku, PokéGuessr, Kampf und Quiz.",
+    "label": "Community",
+    "heading": "Chat<hl>räume</hl>",
+    "intro": "Sprich mit anderen Trainern über Pokémon. Lesen kann jeder; melde dich an, um mitzuchatten. Moderatoren sorgen in jedem Raum für gute Stimmung."
+  },
+  "room": {
+    "title": "Chatraum {name}",
+    "fallbackTitle": "Chatraum",
+    "fallbackDescription": "Ein Chatraum auf PokéIQ.",
+    "back": "Zurück zu den Räumen",
+    "crumb": "Räume",
+    "rules": "Raumregeln"
+  },
+  "siteRules": {
+    "0": "Sei nett. Kein Mobbing, keine Beleidigungen, kein Hass.",
+    "1": "Teile nie persönliche Daten: deinen echten Namen, dein Alter, deine Schule, Adresse, Telefonnummer oder Social-Media-Konten.",
+    "2": "Links können nicht gepostet werden. Sprecht über das Spiel!",
+    "3": "Siehst du etwas, das nicht in Ordnung ist? Melde die Nachricht mit der Fahne. Moderatoren lesen jede Meldung."
+  },
+  "rules": {
+    "lobby": {
+      "0": "Bleib freundlich und beim Thema: Pokémon und PokéIQ.",
+      "1": "Neulinge willkommen: Beantworte Fragen geduldig und mach dich nie über jemanden lustig."
+    },
+    "pokedle": {
+      "0": "Keine Spoiler: Poste nie die heutige Lösung oder große Hinweise."
+    },
+    "connections": {
+      "0": "Keine Spoiler: Poste nie die heutigen Gruppen."
+    },
+    "pikadoku": {
+      "0": "Keine Spoiler: Poste nie die heutigen Lösungen."
+    },
+    "pokeguessr": {
+      "0": "Keine Spoiler zu den heutigen Runden."
+    },
+    "battle": {
+      "0": "Keine Siege erbitten oder absprechen: Spiel jeden Kampf ernsthaft.",
+      "1": "Bewerte Teams freundlich: Sag erst, was funktioniert, dann, was du ändern würdest."
+    },
+    "quizzes": {
+      "0": "Poste keine Antworten zu einem Quiz, das gerade jemand spielt."
+    }
+  },
+  "links": {
+    "lobby": {
+      "0": "Alle Spielmodi",
+      "1": "Tägliche Herausforderung",
+      "2": "Feedback senden"
+    },
+    "pokedle": {
+      "0": "Pokédle spielen"
+    },
+    "connections": {
+      "0": "Connections spielen"
+    },
+    "pikadoku": {
+      "0": "Pikadoku spielen"
+    },
+    "pokeguessr": {
+      "0": "PokéGuessr spielen",
+      "1": "Weltatlas"
+    },
+    "battle": {
+      "0": "Kämpfen!",
+      "1": "Team-Builder",
+      "2": "Schadensrechner",
+      "3": "Turniere"
+    },
+    "quizzes": {
+      "0": "Alle Quiz",
+      "1": "Name 'em All"
+    }
+  }
+}

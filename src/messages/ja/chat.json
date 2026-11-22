@@ -1,0 +1,21 @@
+{
+  "title": "チャット",
+  "unmuteName": "{name}のミュートを解除",
+  "muteName": "{name}をミュート",
+  "unmute": "ミュート解除",
+  "mute": "ミュート",
+  "turnOnTitle": "チャットをオンにする",
+  "turnOffTitle": "チャットをオフにする",
+  "turnOn": "オンにする",
+  "chatOff": "チャットオフ",
+  "off": "チャットはオフです。メッセージは表示されず、送信もできません。",
+  "empty": "まだメッセージはありません。あいさつしよう！",
+  "reported": "報告済み",
+  "reportTitle": "このメッセージを報告",
+  "reportLabel": "{name}のメッセージを報告",
+  "isMuted": "{name}はミュート中です。",
+  "playersOnly": "チャットできるのは対戦中のトレーナーだけです。",
+  "placeholder": "やさしい言葉でどうぞ…",
+  "label": "チャットのメッセージ",
+  "send": "送信"
+}

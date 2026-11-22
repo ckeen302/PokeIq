@@ -1,0 +1,23 @@
+{
+  "notSent": "No se ha enviado.",
+  "unreachable": "No se ha podido conectar con el servidor. Inténtalo de nuevo.",
+  "soon": "Las salas de chat llegarán pronto.",
+  "slow": "Modo lento: {s} s",
+  "live": "En directo",
+  "polling": "Se actualiza cada pocos segundos",
+  "turnOn": "Activar",
+  "chatOff": "Chat desactivado",
+  "off": "El chat está desactivado. No verás mensajes ni podrás enviarlos.",
+  "empty": "Aún no hay mensajes. ¡Saluda!",
+  "mute": "Silenciar a {name}",
+  "unmute": "Dejar de silenciar a {name}",
+  "reported": "Denunciado",
+  "reportTitle": "Denunciar este mensaje",
+  "reportLabel": "Denunciar el mensaje de {name}",
+  "signIn": "<link>Inicia sesión</link> para chatear. Cualquiera puede leer.",
+  "placeholder": "Di algo bonito…",
+  "label": "Mensaje de la sala",
+  "send": "Enviar",
+  "here": "Aquí ahora ({n})",
+  "muted": "Silenciados: {names}"
+}

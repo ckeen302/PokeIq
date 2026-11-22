@@ -1,0 +1,78 @@
+{
+  "list": {
+    "title": "Salas de chat",
+    "description": "Chatea con otros entrenadores en PokéIQ: el Vestíbulo principal y las salas de Pokédle, Connections, Pikadoku, PokéGuessr, Combate y Quiz.",
+    "label": "Comunidad",
+    "heading": "Salas de <hl>chat</hl>",
+    "intro": "Habla de Pokémon con otros entrenadores. Cualquiera puede leer; inicia sesión para chatear. Los moderadores mantienen todas las salas en buen ambiente."
+  },
+  "room": {
+    "title": "Sala de chat {name}",
+    "fallbackTitle": "Sala de chat",
+    "fallbackDescription": "Una sala de chat de PokéIQ.",
+    "back": "Volver a las salas",
+    "crumb": "Salas",
+    "rules": "Normas de la sala"
+  },
+  "siteRules": {
+    "0": "Sé amable. Nada de acoso, palabrotas ni odio.",
+    "1": "Nunca compartas datos personales: tu nombre real, edad, colegio, dirección, teléfono o redes sociales.",
+    "2": "No se pueden publicar enlaces. ¡Habla del juego!",
+    "3": "¿Ves algo que no está bien? Usa la bandera para denunciar un mensaje. Los moderadores leen todas las denuncias."
+  },
+  "rules": {
+    "lobby": {
+      "0": "Buen rollo y sin salirse del tema: Pokémon y PokéIQ.",
+      "1": "Principiantes bienvenidos: responde con paciencia y nunca te burles de nadie."
+    },
+    "pokedle": {
+      "0": "Sin spoilers: nunca publiques la respuesta de hoy ni pistas importantes."
+    },
+    "connections": {
+      "0": "Sin spoilers: nunca publiques los grupos de hoy."
+    },
+    "pikadoku": {
+      "0": "Sin spoilers: nunca publiques las respuestas de hoy."
+    },
+    "pokeguessr": {
+      "0": "Sin spoilers de las rondas de hoy."
+    },
+    "battle": {
+      "0": "Nada de pedir ni pactar victorias: juega cada combate de verdad.",
+      "1": "Valora los equipos con amabilidad: di qué funciona y luego qué cambiarías."
+    },
+    "quizzes": {
+      "0": "No publiques las respuestas de un quiz que alguien está jugando."
+    }
+  },
+  "links": {
+    "lobby": {
+      "0": "Todos los modos de juego",
+      "1": "Reto diario",
+      "2": "Enviar comentarios"
+    },
+    "pokedle": {
+      "0": "Jugar a Pokédle"
+    },
+    "connections": {
+      "0": "Jugar a Connections"
+    },
+    "pikadoku": {
+      "0": "Jugar a Pikadoku"
+    },
+    "pokeguessr": {
+      "0": "Jugar a PokéGuessr",
+      "1": "Atlas mundial"
+    },
+    "battle": {
+      "0": "¡Combate!",
+      "1": "Creador de equipos",
+      "2": "Calculadora de daño",
+      "3": "Torneos"
+    },
+    "quizzes": {
+      "0": "Todos los quiz",
+      "1": "Name 'em All"
+    }
+  }
+}

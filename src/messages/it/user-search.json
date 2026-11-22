@@ -1,0 +1,7 @@
+{
+  "failed": "La ricerca non funziona al momento.",
+  "label": "Nome Allenatore",
+  "placeholder": "Inizia a scrivere un nome Allenatore…",
+  "tooShort": "Scrivi almeno due lettere, numeri, _ o -.",
+  "none": "Nessun nome Allenatore inizia con «{query}»."
+}

@@ -1,0 +1,20 @@
+{
+  "confirm": {
+    "title": "E-Mail bestätigt",
+    "body": "Alles erledigt. Die tägliche E-Mail kommt, sobald neue Tagesrätsel da sind – wenn sie in den Einstellungen eingeschaltet ist.",
+    "error": "Dieser Bestätigungslink ist abgelaufen oder wurde durch einen neueren ersetzt. Fordere in den Einstellungen einen neuen an.",
+    "working": "Wird bestätigt …"
+  },
+  "unsubscribe": {
+    "title": "Du bist abgemeldet",
+    "body": "Keine täglichen E-Mails mehr. Du kannst sie jederzeit in den Einstellungen wieder einschalten.",
+    "error": "Dieser Abmeldelink ist ungültig. Du kannst die E-Mails stattdessen in den Einstellungen ausschalten.",
+    "working": "Wird abgemeldet …"
+  },
+  "tooMany": "Zu viele Versuche: Warte eine Minute und öffne den Link noch mal.",
+  "unreachable": "Der Server ist nicht erreichbar. Öffne den Link gleich noch mal.",
+  "busy": "Wird bearbeitet",
+  "invalid": "Link ungültig",
+  "play": "Die heutigen Tagesrätsel spielen",
+  "settings": "Einstellungen"
+}

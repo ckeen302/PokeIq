@@ -1,0 +1,21 @@
+{
+  "title": "Ton coach",
+  "intro": "Réponds encore à {n} questions et ton coach repérera tes points forts et tes points faibles (générations, types et modes) pour te dire quoi réviser.",
+  "focus": "À travailler",
+  "strengths": "Points forts",
+  "overall": "global {pct} %",
+  "nothing": "Rien ne ressort encore : continue à jouer.",
+  "answered": "({n} réponses)",
+  "gen": "Gén. {gen} ({region})",
+  "genCta": "Révise la gén. {gen} avec des fiches",
+  "type": "Pokémon de type {type}",
+  "typeCta": "Voir le type {type}",
+  "modeCta": "S'entraîner : {mode}",
+  "stats": {
+    "bst": "Totaux de stats de base",
+    "height": "Tailles",
+    "weight": "Poids",
+    "stat": "Stats de {stat}"
+  },
+  "statCta": "Voir le classement"
+}
