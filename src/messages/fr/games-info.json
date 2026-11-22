@@ -1,0 +1,117 @@
+{
+  "common": "Les nombres qui transforment les stats en force, en vitesse et en détente sont les nôtres, calés pour qu’un athlète de 70 kg avec une base de 100 réalise une marque humaine d’élite ; chaque constante et sa source sont publiques dans lib/games/constants.ts.",
+  "formula": "La formule",
+  "inputs": "Données :",
+  "modelled": "Modélisé",
+  "not": "Non modélisé",
+  "aquatic": "Les facteurs aquatiques de ce groupe",
+  "swiftSwim": " · Glissade sous la pluie : Vitesse ×2",
+  "parts": {
+    "water": "Type Eau",
+    "waterEgg": "Groupe d’œufs Aquatique",
+    "sinks": "Type {types} : coule ou déteste l’eau",
+    "other": "Pas un Pokémon aquatique",
+    "fish": "Corps en forme de poisson",
+    "fin": "Nageoires (groupe d’œufs Aquatique 2)"
+  },
+  "sprint": {
+    "formula": {
+      "0": "Le modèle de la Course Pokémon, inchangé : vitesse maximale = Vitesse de base ÷ 10 m/s, un départ de sprint Furusawa–Hill (τ selon le poids et l’Attaque), un coup de fatigue après 150 m selon les PV, intégré avec RK4.",
+      "1": "Réaction au coup de pistolet : de {fast} à {slow} s selon la Vitesse, tirée d’une graine ; en dessous de {falseStart} s, c’est un faux départ et une disqualification (World Athletics TR 16).",
+      "2": "Le cassé sur la ligne : le buste d’un sprinteur debout franchit la ligne {dip} × sa taille devant ses hanches.",
+      "3": "Temps au 1/100 s arrondis au-dessus ; une égalité est départagée par la photo-finish au 1/1000 s."
+    },
+    "inputs100": "Vitesse, Attaque et poids.",
+    "inputs": "Vitesse, Attaque, PV et poids.",
+    "heats": "Des séries et une finale pendant les Jeux (les éliminatoires de la Course)",
+    "stagger": "Départs décalés dans le virage",
+    "form": "Forme du jour à ±1,5 % près",
+    "not": { "0": "Le vent", "1": "L’effet du couloir attribué" }
+  },
+  "swim": {
+    "formula": {
+      "0": "Vitesse dans l’eau = {vRef} m/s × (Vitesse/100)^{speedExp} × un facteur aquatique.",
+      "1": "Facteur aquatique : type Eau et groupes d’œufs Aquatique 1/2/3 {water} ; types Feu, Roche et Sol {sinkers} (ils coulent ou détestent l’eau) ; tous les autres {other} ; un corps de poisson ou à nageoires × {fin}.",
+      "2": "Glissade double la Vitesse (son vrai effet), seulement sous la pluie.",
+      "3": "Le départ : une réaction, un plongeon (vitesse selon l’Attaque), une coulée ; l’endurance baisse après {fade} m selon les PV.",
+      "3turn": "Le départ : une réaction, un plongeon (vitesse selon l’Attaque), une coulée ; l’endurance baisse après {fade} m selon les PV ; une culbute à 50 m et une poussée selon l’Attaque."
+    },
+    "inputs": "Vitesse, Attaque, PV, poids, longueur, types, groupes d’œufs, Glissade et morphologie.",
+    "modelled": { "0": "Un bassin de 50 m, huit couloirs", "1": "Les grands corps vont plus loin au départ et au virage" },
+    "not": { "0": "Les nages autres que le crawl", "1": "L’aspiration derrière un voisin" }
+  },
+  "long-jump": {
+    "formula": {
+      "0": "Course d’élan : le modèle de sprint de la Course Pokémon sur {runUp} m, × {boardKeep} à la planche (les sauteurs perdent environ 5 % à l’appel).",
+      "1": "Appel : vitesse verticale {v} m/s × √(Attaque/100) × (kg/70)^(−1/6) pour les corps de plus de 70 kg (les corps lourds ont moins de détente par kg ; les plus légers n’en gagnent pas plus, loi de Borelli).",
+      "2": "Vol : un projectile du centre de masse à l’appel ({comTakeoff} × taille) jusqu’à la réception ({comLanding} × taille), plus une distance d’appel et une distance de réception de {share} × taille chacune.",
+      "3": "La planche : le pied se pose derrière la ligne d’une distance tirée d’une graine (plus de dispersion quand on est rapide et grand) ; au-delà, c’est un essai mordu, environ un saut sur dix. Mesuré depuis la ligne, au centimètre inférieur."
+    },
+    "inputs": "Vitesse, Attaque, PV (endurance), poids, taille et morphologie.",
+    "modelled": { "0": "L’accélération de la course d’élan", "1": "Le vol d’un projectile sous g = 9,81", "2": "Les essais mordus et la distance perdue avant la planche", "3": "Trois essais, le meilleur compte, égalités au deuxième meilleur", "4": "Les volants et Lévitation sautent aussi : planer est interdit, donc la même physique" },
+    "not": { "0": "La résistance de l’air (environ 1 % sur un saut)", "1": "Le vent" }
+  },
+  "high-jump": {
+    "formula": {
+      "0": "Hauteur franchie = centre de masse à l’appel ({com} × taille) + élévation v²/2g + technique.",
+      "1": "v = {v} m/s × √(Attaque/100) × (kg/70)^(−1/6) au-delà de 70 kg.",
+      "2": "Technique : un Fosbury pour les bipèdes (+{bonus} m : la barre peut passer au-dessus du centre de masse) ; quatre pattes ou un corps de serpent {penalty} m.",
+      "3": "La barre monte de 5 cm à la fois, puis de 3 cm quand il en reste trois ou moins ; trois échecs d’affilée et c’est fini ; égalités départagées aux échecs (à la dernière hauteur, puis au total), un barrage pour la première place."
+    },
+    "inputs": "Attaque, poids, taille et morphologie.",
+    "modelled": { "0": "Les grands Pokémon partent de haut : leur centre de masse est déjà à plusieurs mètres", "1": "La forme du jour de chaque essai", "2": "Les règles du saut en hauteur de World Athletics et le départage" },
+    "not": { "0": "La courbe et la vitesse de l’élan (elles ne changent pas le résultat ici)" }
+  },
+  "shot-put": {
+    "formula": {
+      "0": "Vitesse de lâcher {v} m/s × √(Attaque/100) × (kg/70)^(1/6) : les grands corps gagnent un peu grâce au levier.",
+      "1": "Limitée par la masse du poids ({mass} kg) : la relation force–vitesse de Hill ralentit un muscle quand la charge approche sa force (son meilleur épaulé-jeté), et aucun membre ne lance un engin à plus de {cap} m/s.",
+      "2": "Lâché à {angle}° depuis {share} × taille (au plus {releaseCap} m), avec la résistance de l’air sur une sphère de {diameter} cm.",
+      "3": "Sans bras (morphologie) : un coup de tête ou de queue à {noArms} % de la vitesse."
+    },
+    "inputs": "Attaque, Défense (via l’haltérophilie), poids, taille et morphologie.",
+    "modelled": { "0": "Projectile avec résistance de l’air, intégré par pas de 1/600 s", "1": "Trop faible pour soulever le poids : aucune marque", "2": "Trois lancers, le meilleur compte" },
+    "not": { "0": "Technique en rotation ou en translation", "1": "Les essais nuls dans le cercle" }
+  },
+  "javelin": {
+    "formula": {
+      "0": "Vitesse de lâcher = {runKeep} × la vitesse du modèle de course après {runUp} m d’élan + vitesse du bras {arm} m/s × √(Attaque/100) × (kg/70)^(1/6), avec les mêmes plafonds que le poids.",
+      "1": "Vol : traînée et portance sur un javelot de {mass} g (Hubbard et Rust, 1984), lâché à {angle}° depuis {share} × taille.",
+      "2": "Sans bras : {noArms} % de la vitesse."
+    },
+    "inputs": "Vitesse, Attaque, poids, taille et morphologie.",
+    "modelled": { "0": "Portance et traînée aérodynamiques", "1": "La vitesse de la course d’élan", "2": "Le plafond de vitesse des membres : les lanceurs puissants se regroupent juste en dessous, la taille fait la différence" },
+    "not": { "0": "Le tangage du javelot (il vole la pointe dans l’axe de sa trajectoire)", "1": "Le vent" }
+  },
+  "weightlifting": {
+    "formula": {
+      "0": "Meilleure barre = {ref} kg × (kg/70)^(2/3) × (Attaque/100) × (Défense/100)^{defExp} : la force musculaire croît avec la masse^(2/3), la règle allométrique derrière les coefficients de Sinclair.",
+      "1": "Trois essais dans l’ordre de barre montante de l’IWF : ouverture à {opening} %, puis environ {second} %, puis {third} % ; un échec répète la charge.",
+      "2": "Chaque barre réussit avec une probabilité qui chute vite au-delà du meilleur niveau du jour (une logistique de {width} % de large).",
+      "3": "De vrais disques par pas de 1 kg (couleurs de l’IWF) sur une barre de 20 kg avec des colliers de 2,5 kg ; des barres plus légères pour les petites charges."
+    },
+    "inputs": "Attaque, Défense et poids.",
+    "modelled": { "0": "Un Pokémon lourd est fort, mais pas proportionnellement plus fort", "1": "Le rapport barre ÷ poids du corps comme récompense à part" },
+    "not": { "0": "L’arraché", "1": "Les fautes techniques" }
+  },
+  "wrestling": {
+    "formula": {
+      "0": "Poussée = {push} N × kg^(2/3) × Attaque/100 ; résistance = {brace} N × kg^(2/3) × Défense/100 + {friction} × son poids en frottement.",
+      "1": "Le combat : les deux chargent (élan selon la Vitesse et la masse), s’agrippent, et celui dont la poussée l’emporte sur la résistance de l’autre fait reculer la paire ; des poussées aléatoires tirées d’une graine font basculer le combat ; l’endurance vient des PV.",
+      "2": "Sortir du cercle (un dohyō de sumo de {ring} m de diamètre, ou plus grand pour un géant), c’est perdre ; après {maxTime} s, celui qui a le plus reculé perd."
+    },
+    "inputs": "Attaque, Défense, Vitesse, PV et poids.",
+    "modelled": { "0": "Un tableau à élimination directe, têtes de série selon poussée + résistance", "1": "Un combat pour le bronze" },
+    "not": { "0": "Capacités, projections ou dégâts de combat (c’est la Bataille géante) : force et masse pures" }
+  },
+  "all-around": {
+    "formula": {
+      "0": "Points par épreuve avec la formule des épreuves combinées de World Athletics : A·(B − T)^C pour les temps, A·(M − B)^C pour les marques.",
+      "1": "Les vraies constantes du décathlon pour le 100 m, le 400 m, le saut en longueur, le saut en hauteur, le poids et le javelot ; les nôtres, de même forme, pour le 200 m, l’haltérophilie et la natation (1 000 points pour une marque d’élite).",
+      "2": "L’athlète le plus complet est le Champion des Jeux."
+    },
+    "inputs": "La marque de chaque épreuve.",
+    "modelled": { "0": "Dix épreuves avec une marque (la lutte se joue en face-à-face)" },
+    "not": { "0": "L’ordre des épreuves ou la fatigue d’une épreuve à l’autre" }
+  }
+}

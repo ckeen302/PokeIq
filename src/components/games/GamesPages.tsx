@@ -267,7 +267,7 @@ export function GamesHub() {
     <ClientMessages namespaces={[gamesStadium, gamesH2h, gamesEvents]}>
     <GamesStadium events={events} groups={groups} playHref={PLAY_PATH} records={records} h2h={pairs} h2hPicker={<H2HPicker rivals={RIVALS} names={rivalNames()} />} backHref={LAB_PATH}>
     <div className="mx-auto max-w-5xl space-y-10" data-testid="games-hub">
-      <ListHeader back={{ href: LAB_PATH, label: t("lab") }} kicker={t("hubKicker")} title={t("hubTitle")} accent={t("playAccent")} blurb={t("hubBlurb")} />
+      <ListHeader back={{ href: LAB_PATH, label: t("lab") }} kicker={t("hubKicker")} title={t("hubTitle")} accent={t("hubAccent")} blurb={t("hubBlurb")} />
       <section aria-labelledby="hub-events" className="space-y-3">
         <h2 id="hub-events" className="font-display text-xl font-bold uppercase tracking-wider">{t("single")}</h2>
         <p className="text-sm text-muted-foreground">{t("singleBlurb")}</p>

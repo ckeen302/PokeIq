@@ -54,10 +54,16 @@
   "champion": "Champion of the Games (the all-around): <b>{name}</b>.",
   "everyEvent": "Every event",
   "team": "Team {name}",
-  "groups": { "Track": "Track", "Field": "Field", "Pool": "Pool", "Arena": "Arena" },
+  "groups": {
+    "Track": "Track",
+    "Field": "Field",
+    "Pool": "Pool",
+    "Arena": "Arena"
+  },
   "recordsOf": "{event} records",
   "hubKicker": "3D Lab · real sport, real stats",
   "hubTitle": "The PokéIQ ",
+  "hubAccent": "Games",
   "hubBlurb": "Real track and field, weightlifting, swimming and wrestling for every Pokémon: scored from their base stats, height, weight and body shape with real physics and each sport's real rules, then played out in 3D in a stadium, an arena and an aquatics centre.",
   "single": "Single events",
   "singleBlurb": "Pick an event and up to eight Pokémon, or let the site pick a fun line-up: heats, a final and the podium, with a share link and a video.",
@@ -76,10 +82,32 @@
   },
   "rec": {
     "worst": {
-      "100m": "The slowest", "200m": "The slowest", "400m": "The slowest", "long-jump": "The shortest", "high-jump": "The lowest", "shot-put": "The shortest", "javelin": "The shortest", "weightlifting": "The lightest lifts", "50m-freestyle": "The slowest", "100m-freestyle": "The slowest", "wrestling": "The easiest to push out", "all-around": "The fewest points"
+      "100m": "The slowest",
+      "200m": "The slowest",
+      "400m": "The slowest",
+      "long-jump": "The shortest",
+      "high-jump": "The lowest",
+      "shot-put": "The shortest",
+      "javelin": "The shortest",
+      "weightlifting": "The lightest lifts",
+      "50m-freestyle": "The slowest",
+      "100m-freestyle": "The slowest",
+      "wrestling": "The easiest to push out",
+      "all-around": "The fewest points"
     },
     "worstLower": {
-      "100m": "the slowest", "200m": "the slowest", "400m": "the slowest", "long-jump": "the shortest", "high-jump": "the lowest", "shot-put": "the shortest", "javelin": "the shortest", "weightlifting": "the lightest lifts", "50m-freestyle": "the slowest", "100m-freestyle": "the slowest", "wrestling": "the easiest to push out", "all-around": "the fewest points"
+      "100m": "the slowest",
+      "200m": "the slowest",
+      "400m": "the slowest",
+      "long-jump": "the shortest",
+      "high-jump": "the lowest",
+      "shot-put": "the shortest",
+      "javelin": "the shortest",
+      "weightlifting": "the lightest lifts",
+      "50m-freestyle": "the slowest",
+      "100m-freestyle": "the slowest",
+      "wrestling": "the easiest to push out",
+      "all-around": "the fewest points"
     },
     "ldName": "{event} records: {question}",
     "kicker": "The PokéIQ Games · {emoji} records",
@@ -94,7 +122,9 @@
     "topLabel": "{event}: the top ten",
     "bottomLabel": "{event}: {worst}",
     "numbered": "Numbered from the bottom: {n} is last.",
-    "howMarks": "How the marks are worked out: <a>{event} · how it works</a>. Every Pokémon has its own page of results, linked from its name."
+    "howMarks": "How the marks are worked out: <a>{event} · how it works</a>. Every Pokémon has its own page of results, linked from its name.",
+    "blurbAll": "{question} {event} pre-run for every Pokémon and form, each at its best: real stats, real physics, the sport's real rules.",
+    "bestOfAll": "The best {lower} of them all."
   },
   "pk": {
     "ldName": "{name} at the PokéIQ Games",

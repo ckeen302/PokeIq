@@ -1,0 +1,40 @@
+{
+  "close": "Fermer",
+  "title": "Choisis une épreuve et une sélection",
+  "blurb": "Jusqu’à huit Pokémon ou formes. À deux, c’est un face-à-face.",
+  "event": "Épreuve",
+  "remove": "Retirer {name}",
+  "addMore": "{n, plural, one {Ajoute-en encore {n}} other {Ajoute-en encore {n}}}",
+  "addUpTo": "Ajoute jusqu’à 8",
+  "placeholder": "Ajoute un Pokémon…",
+  "search": "Chercher un Pokémon à ajouter",
+  "fun": "Sélection fun",
+  "funLabel": {
+    "giants": "Poids lourds contre poids plume",
+    "starters": "Starters évolués",
+    "legends": "Légendaires",
+    "favourites": "Les préférés des fans",
+    "type": "Type {type}",
+    "random": "Huit au hasard"
+  },
+  "stat": {
+    "spe": "VIT",
+    "atk": "ATQ",
+    "def": "DÉF",
+    "hp": "PV",
+    "kg": "KG",
+    "height": "TAILLE"
+  },
+  "h2h": "Face-à-face",
+  "go": "C’est parti",
+  "nations": "Nations",
+  "nationsBlurb": "Jusqu’à huit. Un type envoie ses trois athlètes les plus complets (sans Légendaires) ; ou compose une équipe de trois.",
+  "team": "Équipe {name}",
+  "typeNations": "Nations par type",
+  "build": "Compose une équipe de trois",
+  "removeOne": "Retirer",
+  "teamPlaceholder": "Ajoute un Pokémon à ton équipe…",
+  "teamSearch": "Chercher un Pokémon",
+  "addTeam": "Ajouter cette équipe",
+  "open": "Ouvrir les Jeux"
+}

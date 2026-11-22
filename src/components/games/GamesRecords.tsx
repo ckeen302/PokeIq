@@ -87,7 +87,7 @@ export function GamesRecordsPage({ event }: { event: EventId }) {
     <div className="mx-auto max-w-4xl space-y-6" data-testid="games-records">
       <style>{RACE_CSS}</style>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(ld) }} />
-      <ListHeader back={{ href: GAMES_PATH, label: t("games") }} kicker={t("rec.kicker", { emoji: e.emoji })} title={`${eName} `} accent={t("rec.accent")} blurb={t("rec.blurb", { question, event: eName, n: nFmt(n) })} />
+      <ListHeader back={{ href: GAMES_PATH, label: t("games") }} kicker={t("rec.kicker", { emoji: e.emoji })} title={`${eName} `} accent={t("rec.accent")} blurb={lc === "en" ? t("rec.blurb", { question, event: eName, n: nFmt(n) }) : t("rec.blurbAll", { question, event: eName })} />
       <EventNav current={event} />
       <section aria-labelledby="rec-holder" className="rounded-xl border bg-card/40 p-5">
         <p className="hud-label text-screen">{t("rec.record")}</p>
@@ -96,7 +96,7 @@ export function GamesRecordsPage({ event }: { event: EventId }) {
           <span className="ml-2 text-primary">{recordMark(event, RECORDS_ALL.mark(holder.key, event), lc)}</span>
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          {event === "wrestling" ? t("rec.wrestlingHolder") : t("rec.bestOf", { lower: te(`events.${event}.lower`), n: nFmt(n) })}{t("rec.middle", { mark: recordMark(event, median, lc) })}
+          {event === "wrestling" ? t("rec.wrestlingHolder") : (lc === "en" ? t("rec.bestOf", { lower: te(`events.${event}.lower`), n: nFmt(n) }) : t("rec.bestOfAll", { lower: te(`events.${event}.lower`) }))}{t("rec.middle", { mark: recordMark(event, median, lc) })}
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           <Link href={eventPath(event)} prefetch={false} className="rc-go inline-flex h-10 items-center rounded-lg px-4 font-display text-xs font-bold uppercase tracking-wider" data-testid="records-watch">{t("rec.watch")}</Link>

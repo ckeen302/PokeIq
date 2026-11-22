@@ -1,0 +1,117 @@
+{
+  "common": "Die Zahlen, die Werte in Kraft, Tempo und Sprungkraft umrechnen, sind unsere eigenen, so geeicht, dass ein 70-kg-Athlet mit Basiswert 100 eine menschliche Spitzenleistung erzielt; jede Konstante und ihre Quelle stehen offen in lib/games/constants.ts.",
+  "formula": "Die Formel",
+  "inputs": "Eingaben:",
+  "modelled": "Modelliert",
+  "not": "Nicht modelliert",
+  "aquatic": "Die Wasserfaktoren dieses Feldes",
+  "swiftSwim": " · Wassertempo bei Regen: Initiative ×2",
+  "parts": {
+    "water": "Typ Wasser",
+    "waterEgg": "Ei-Gruppe Wasser",
+    "sinks": "Typ {types}: geht unter oder meidet Wasser",
+    "other": "Kein Wasser-Pokémon",
+    "fish": "Fischförmiger Körper",
+    "fin": "Flossen (Ei-Gruppe Wasser 2)"
+  },
+  "sprint": {
+    "formula": {
+      "0": "Das Modell des Pokémon-Rennens, unverändert: Höchstgeschwindigkeit = Basis-Initiative ÷ 10 m/s, ein Sprintstart nach Furusawa–Hill (τ aus Gewicht und Angriff), ein Leistungsabfall ab 150 m nach KP, integriert mit RK4.",
+      "1": "Reaktion auf den Startschuss: {fast}–{slow} s nach Initiative, mit Seed; unter {falseStart} s ist es ein Fehlstart und eine Disqualifikation (World Athletics TR 16).",
+      "2": "Der Zieleinlauf: Der Oberkörper eines aufrechten Sprinters ist {dip} × seine Größe vor der Hüfte im Ziel.",
+      "3": "Zeiten auf 1/100 s aufgerundet; ein Gleichstand wird per Zielfoto auf 1/1000 s entschieden."
+    },
+    "inputs100": "Initiative, Angriff und Gewicht.",
+    "inputs": "Initiative, Angriff, KP und Gewicht.",
+    "heats": "Vorläufe und ein Finale bei den Spielen (die K.-o.-Runden des Rennens)",
+    "stagger": "Versetzte Starts in der Kurve",
+    "form": "Tagesform innerhalb von ±1,5 %",
+    "not": { "0": "Wind", "1": "Einfluss der Bahnverteilung" }
+  },
+  "swim": {
+    "formula": {
+      "0": "Tempo im Wasser = {vRef} m/s × (Initiative/100)^{speedExp} × ein Wasserfaktor.",
+      "1": "Wasserfaktor: Typ Wasser und die Ei-Gruppen Wasser 1/2/3 {water}; Typen Feuer, Gestein und Boden {sinkers} (sie gehen unter oder meiden Wasser); alle anderen {other}; ein fisch- oder flossenförmiger Körper × {fin}.",
+      "2": "Wassertempo verdoppelt die Initiative (seine echte Wirkung), nur bei Regen.",
+      "3": "Der Start: eine Reaktion, ein Startsprung (Tempo aus Angriff), eine Gleitphase; die Ausdauer lässt ab {fade} m nach KP nach.",
+      "3turn": "Der Start: eine Reaktion, ein Startsprung (Tempo aus Angriff), eine Gleitphase; die Ausdauer lässt ab {fade} m nach KP nach; eine Rollwende bei 50 m und ein Abstoß aus Angriff."
+    },
+    "inputs": "Initiative, Angriff, KP, Gewicht, Länge, Typen, Ei-Gruppen, Wassertempo und Körperform.",
+    "modelled": { "0": "Ein 50-m-Becken mit acht Bahnen", "1": "Große Körper reichen am Start und bei der Wende weiter" },
+    "not": { "0": "Andere Schwimmstile als Freistil", "1": "Windschatten der Nachbarbahn" }
+  },
+  "long-jump": {
+    "formula": {
+      "0": "Anlauf: das Sprintmodell des Pokémon-Rennens über {runUp} m, × {boardKeep} am Balken (Springer verlieren beim Absprung etwa 5 %).",
+      "1": "Absprung: vertikale Geschwindigkeit {v} m/s × √(Angriff/100) × (kg/70)^(−1/6) für Körper über 70 kg (schwere Körper haben weniger Sprungkraft pro kg; leichtere bekommen nichts extra, Borellis Gesetz).",
+      "2": "Flug: ein Wurf vom Körperschwerpunkt beim Absprung ({comTakeoff} × Größe) bis zur Landung ({comLanding} × Größe), plus je eine Absprung- und eine Landedistanz von {share} × Größe.",
+      "3": "Der Balken: Der Fuß setzt mit einem zufälligen, reproduzierbaren Abstand hinter der Linie auf (mehr Streuung, je schneller und größer man ist); darüber ist ungültig, etwa jeder zehnte Sprung. Gemessen ab der Linie, auf den Zentimeter abgerundet."
+    },
+    "inputs": "Initiative, Angriff, KP (Ausdauer), Gewicht, Größe und Körperform.",
+    "modelled": { "0": "Die Beschleunigung im Anlauf", "1": "Ein Wurf unter g = 9,81", "2": "Ungültige Sprünge und der Verlust vor dem Balken", "3": "Drei Versuche, der beste zählt, bei Gleichstand der zweitbeste", "4": "Flieger und Schwebe springen auch: Gleiten ist verboten, also dieselbe Physik" },
+    "not": { "0": "Luftwiderstand (etwa 1 % bei einem Sprung)", "1": "Wind" }
+  },
+  "high-jump": {
+    "formula": {
+      "0": "Übersprunghöhe = Körperschwerpunkt beim Absprung ({com} × Größe) + Steighöhe v²/2g + Technik.",
+      "1": "v = {v} m/s × √(Angriff/100) × (kg/70)^(−1/6) über 70 kg.",
+      "2": "Technik: ein Fosbury-Flop für Zweibeiner (+{bonus} m: Die Latte kann über dem Körperschwerpunkt liegen); vier Beine oder ein Schlangenkörper {penalty} m.",
+      "3": "Die Latte steigt um 5 cm, dann um 3 cm, wenn nur noch drei oder weniger übrig sind; drei Fehlversuche in Folge und man ist raus; Gleichstand nach Fehlversuchen (auf der letzten Höhe, dann insgesamt), ein Stechen um Platz eins."
+    },
+    "inputs": "Angriff, Gewicht, Größe und Körperform.",
+    "modelled": { "0": "Große Pokémon starten hoch: Ihr Körperschwerpunkt liegt schon Meter über dem Boden", "1": "Die Tagesform jedes Versuchs", "2": "Die Hochsprungregeln von World Athletics und die Fehlversuchsregel" },
+    "not": { "0": "Die Kurve und das Tempo des Anlaufs (sie ändern das Ergebnis hier nicht)" }
+  },
+  "shot-put": {
+    "formula": {
+      "0": "Abstoßgeschwindigkeit {v} m/s × √(Angriff/100) × (kg/70)^(1/6): Große Körper gewinnen etwas durch die Hebelwirkung.",
+      "1": "Begrenzt durch die Masse der Kugel ({mass} kg): Hills Kraft-Geschwindigkeits-Beziehung bremst einen Muskel, wenn die Last seiner Kraft nahekommt (sein bestes Stoßen), und kein Glied bewegt ein Wurfgerät schneller als {cap} m/s.",
+      "2": "Abgestoßen bei {angle}° aus {share} × Größe (höchstens {releaseCap} m), mit Luftwiderstand auf einer Kugel von {diameter} cm.",
+      "3": "Ohne Arme (Körperform): ein Schwung mit Kopf oder Schweif mit {noArms} % des Tempos."
+    },
+    "inputs": "Angriff, Verteidigung (über das Heben), Gewicht, Größe und Körperform.",
+    "modelled": { "0": "Wurf mit Luftwiderstand, in Schritten von 1/600 s integriert", "1": "Zu schwach, um die Kugel zu heben: keine Weite", "2": "Drei Stöße, der beste zählt" },
+    "not": { "0": "Dreh- oder Angleittechnik", "1": "Ungültige Versuche im Ring" }
+  },
+  "javelin": {
+    "formula": {
+      "0": "Abwurfgeschwindigkeit = {runKeep} × das Tempo des Laufmodells nach {runUp} m Anlauf + Armgeschwindigkeit {arm} m/s × √(Angriff/100) × (kg/70)^(1/6), mit denselben Grenzen wie bei der Kugel.",
+      "1": "Flug: Luftwiderstand und Auftrieb an einem {mass}-g-Speer (Hubbard & Rust, 1984), abgeworfen bei {angle}° aus {share} × Größe.",
+      "2": "Ohne Arme: {noArms} % des Tempos."
+    },
+    "inputs": "Initiative, Angriff, Gewicht, Größe und Körperform.",
+    "modelled": { "0": "Aerodynamischer Auftrieb und Widerstand", "1": "Das Anlauftempo", "2": "Die Grenze der Gliedergeschwindigkeit: Starke Werfer liegen dicht darunter, die Größe entscheidet" },
+    "not": { "0": "Das Kippen des Speers (er fliegt mit der Spitze entlang seiner Bahn)", "1": "Wind" }
+  },
+  "weightlifting": {
+    "formula": {
+      "0": "Bestleistung = {ref} kg × (kg/70)^(2/3) × (Angriff/100) × (Verteidigung/100)^{defExp}: Muskelkraft wächst mit Masse^(2/3), die allometrische Regel hinter den Sinclair-Koeffizienten.",
+      "1": "Drei Versuche in der IWF-Reihenfolge mit steigender Last: Start bei {opening} %, dann etwa {second} %, dann {third} %; ein Fehlversuch wiederholt das Gewicht.",
+      "2": "Jeder Versuch gelingt mit einer Wahrscheinlichkeit, die über der Tagesbestleistung schnell sinkt (eine Logistikkurve von {width} % Breite).",
+      "3": "Echte Scheiben in 1-kg-Schritten (IWF-Farben) auf einer 20-kg-Stange mit 2,5-kg-Verschlüssen; leichtere Stangen für leichte Lasten."
+    },
+    "inputs": "Angriff, Verteidigung und Gewicht.",
+    "modelled": { "0": "Ein schweres Pokémon ist stark, aber nicht proportional stärker", "1": "Relativ zum Körpergewicht (Last ÷ Körpergewicht) als eigene Wertung" },
+    "not": { "0": "Das Reißen", "1": "Technikfehler" }
+  },
+  "wrestling": {
+    "formula": {
+      "0": "Schub = {push} N × kg^(2/3) × Angriff/100; Standfestigkeit = {brace} N × kg^(2/3) × Verteidigung/100 + {friction} × sein Gewicht als Reibung.",
+      "1": "Der Kampf: Beide stürmen los (Schwung aus Initiative und Masse), packen sich, und wessen Schub die Standfestigkeit des anderen übertrifft, schiebt das Paar zurück; zufällige, reproduzierbare Kraftschübe bringen Wendungen; die Ausdauer kommt aus den KP.",
+      "2": "Wer den Ring verlässt (ein Sumo-Dohyō mit {ring} m Durchmesser, größer für einen Riesen), verliert; nach {maxTime} s verliert, wer weiter zurückgedrängt wurde."
+    },
+    "inputs": "Angriff, Verteidigung, Initiative, KP und Gewicht.",
+    "modelled": { "0": "Ein K.-o.-Turnier, gesetzt nach Schub + Standfestigkeit", "1": "Ein Kampf um Bronze" },
+    "not": { "0": "Attacken, Würfe oder Kampfschaden (das ist die Massenschlacht): reine Kraft und Masse" }
+  },
+  "all-around": {
+    "formula": {
+      "0": "Punkte pro Disziplin nach der Mehrkampfformel von World Athletics: A·(B − T)^C für Zeiten, A·(M − B)^C für Weiten und Höhen.",
+      "1": "Die echten Zehnkampf-Konstanten für 100 m, 400 m, Weitsprung, Hochsprung, Kugelstoßen und Speerwurf; unsere eigenen, in derselben Form, für 200 m, Heben und Schwimmen (1000 Punkte für eine Spitzenleistung).",
+      "2": "Der beste Allrounder ist der Champion der Spiele."
+    },
+    "inputs": "Die Leistung jeder Disziplin.",
+    "modelled": { "0": "Zehn Disziplinen mit Leistung (Ringen ist ein Duell)" },
+    "not": { "0": "Reihenfolge der Disziplinen oder Ermüdung zwischen ihnen" }
+  }
+}
