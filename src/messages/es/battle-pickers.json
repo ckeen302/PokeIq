@@ -1,0 +1,42 @@
+{
+  "stellar": "Astral",
+  "category": {
+    "Physical": "Fís",
+    "Special": "Esp",
+    "Status": "Est"
+  },
+  "categoryName": {
+    "Physical": "Físico",
+    "Special": "Especial",
+    "Status": "Estado"
+  },
+  "banned": "Prohibido",
+  "species": "Especie",
+  "searchPokemon": "Buscar Pokémon",
+  "filters": "Filtros",
+  "filterType": "Filtrar por tipo",
+  "anyType": "Cualquier tipo",
+  "filterAbility": "Filtrar por habilidad",
+  "ability": "Habilidad",
+  "filterMove": "Filtrar por movimiento aprendido",
+  "learns": "Aprende movimiento",
+  "legalOnly": "Solo legales",
+  "clear": "Borrar",
+  "bst": "Total de estadísticas base",
+  "item": "Objeto",
+  "noItem": "Sin objeto",
+  "loadingMoves": "Cargando movimientos…",
+  "addMove": "Añadir un movimiento",
+  "filterMoveType": "Filtrar movimientos por tipo",
+  "head": {
+    "move": "Movimiento",
+    "type": "Tipo",
+    "cat": "Cat",
+    "pow": "Pot",
+    "acc": "Prec",
+    "pp": "PP",
+    "use": "Uso"
+  },
+  "isBanned": "{move}: {reason}.",
+  "nature": "Naturaleza"
+}

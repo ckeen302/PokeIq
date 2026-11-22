@@ -1,0 +1,128 @@
+{
+  "hub": {
+    "meta": {
+      "title": "Pokémon Battle Simulator: PvP, vs Computer & Team Builder",
+      "description": "Free Pokémon battle simulator on Pokémon Showdown's engine: live PvP online, battle a friend or the computer, plus a team builder and damage calculator."
+    },
+    "live": {
+      "cpu": {
+        "title": "Battle vs Computer",
+        "blurb": "Battle a computer that plays to win.",
+        "p1": "Random Battle, Random Doubles or your saved team",
+        "p2": "Easy, Normal and Hard opponents",
+        "p3": "Showdown's move animations, Tera and all"
+      },
+      "online": {
+        "title": "Battle Online",
+        "blurb": "Find an opponent, or invite a friend.",
+        "p1": "Matchmaking in every format, random teams or your own",
+        "p2": "Showdown's turn timer; each side sees only what it should",
+        "p3": "Rematch with one press"
+      },
+      "teams": {
+        "title": "Team Builder",
+        "blurb": "Build teams, checked as you go.",
+        "p1": "Formats from Gen 9 OU back to Gen 3 OU",
+        "p2": "EVs, IVs, natures and live stats",
+        "p3": "Showdown import / export, random teams"
+      },
+      "calc": {
+        "title": "Damage Calc",
+        "blurb": "Damage ranges and KO chances.",
+        "p1": "Boosts, status, Tera and current HP",
+        "p2": "Weather, terrain, screens, spread moves",
+        "p3": "Load sets straight from your teams"
+      },
+      "lab": {
+        "title": "Battle Lab",
+        "blurb": "Run any matchup thousands of times.",
+        "p1": "Any Pokémon, level, item and move, Gen 1 to 9",
+        "p2": "Smart, Greedy, Random or Scripted play per side",
+        "p3": "Win % with a 95% confidence interval, KOs, crits, replays"
+      }
+    },
+    "frontier": {
+      "factory": {
+        "title": "Battle Factory",
+        "blurb": "Rent a team and build a streak.",
+        "p1": "Level 100 Factory or level 50 BSS Factory",
+        "p2": "Trade for your opponent's Pokémon after each win",
+        "p3": "Or battle live: both trainers rent a team"
+      },
+      "tower": {
+        "title": "Battle Tower",
+        "blurb": "Your team vs a streak of trainers.",
+        "p1": "Level 50, bring six, pick three",
+        "p2": "Saved, built or quick teams, checked by Showdown",
+        "p3": "The Tower Tycoon every seventh battle"
+      }
+    },
+    "tools": "Battles and tools",
+    "liveTag": "Live",
+    "soon": "Soon",
+    "frontierTitle": "Battle Frontier",
+    "frontierAside": "Streaks against the computer",
+    "formats": "Formats",
+    "formatsAside": "Pokémon Showdown's rules for each",
+    "gameType": {
+      "singles": "singles",
+      "doubles": "doubles"
+    },
+    "formatBlurb": {
+      "gen9ou": "Smogon's flagship singles tier: everything below Ubers.",
+      "gen9ubers": "Box legendaries welcome. Only the most broken are banned.",
+      "gen9uu": "The tier below OU: no OU or UUBL Pokémon.",
+      "gen9ru": "The tier below UU: no UU or RUBL Pokémon.",
+      "gen9nu": "The tier below RU: no RU or NUBL Pokémon.",
+      "gen9pu": "The tier below NU: no NU or PUBL Pokémon.",
+      "gen9lc": "Little Cup: first-stage Pokémon that can evolve, at level 5.",
+      "gen9monotype": "Every Pokémon on a team shares a type. No Terastallizing.",
+      "gen9doublesou": "Two on two, Smogon's doubles tier list.",
+      "gen9vgc2025regi": "Official doubles: bring six, pick four, level 50, two restricted legendaries.",
+      "gen9nationaldex": "Scarlet / Violet mechanics with every Pokémon, Mega Stone and Z-Crystal back.",
+      "gen4ou": "Diamond / Pearl / Platinum: the physical / special split arrives.",
+      "gen3ou": "Ruby / Sapphire / Emerald: a move's type decides physical or special."
+    },
+    "info": {
+      "name": "Pokémon battles",
+      "description": "A free Pokémon battle simulator on Pokémon Showdown's engine: battle the computer, a friend or a stranger, with a team builder, damage calculator and Battle Lab.",
+      "intro": "This Pokémon battle simulator runs on Pokémon Showdown's own engine: battle the computer, a friend through a link, or an opponent found online.",
+      "step1": "Pick a mode: battle the computer, battle online, or open the Battle Frontier.",
+      "step2": "Use a random team or build your own in the team builder.",
+      "step3": "Choose your moves each turn and win the battle.",
+      "step4": "Check matchups with the damage calculator or simulate thousands of battles in the Battle Lab.",
+      "labQ": "What is the Battle Lab?",
+      "labA": "It lets you set up any matchup and have the engine play it thousands of times to estimate win odds."
+    }
+  },
+  "play": {
+    "meta": {
+      "title": "Pokémon Battle — vs Computer, Online or a Friend",
+      "description": "Real Pokémon battles on Pokémon Showdown's engine: Random Battle, Random Doubles or your own OU team, against a computer opponent, a trainer found by matchmaking, or a friend through an invite link."
+    },
+    "crumb": "Play",
+    "title": "Start a",
+    "accent": "battle",
+    "intro": "Pokémon Showdown's own battle engine: every move, ability and item works as it does there. Pick an opponent, a format and go."
+  },
+  "tower": {
+    "meta": {
+      "title": "Battle Tower — Flat Rules Streaks vs the Computer"
+    },
+    "description": "The Battle Tower on Pokémon Showdown's engine: bring your team under Flat Rules (level 50, bring six, pick three) and build a streak against computer trainers, with the Tower Tycoon every seventh battle.",
+    "name": "Battle Tower",
+    "title": "Battle",
+    "accent": "Tower",
+    "intro": "Your team, Flat Rules, and a streak of computer trainers that get tougher as you climb. Every seventh battle is the Tower Tycoon, with its best team."
+  },
+  "factory": {
+    "meta": {
+      "title": "Battle Factory — Rent a Team, Build a Streak"
+    },
+    "description": "The Battle Factory on Pokémon Showdown's engine: rent six Pokémon from Showdown's Battle Factory sets, win seven in a row against a computer that gets stronger, and trade for your opponent's Pokémon after every win.",
+    "name": "Battle Factory",
+    "title": "Battle",
+    "accent": "Factory",
+    "intro": "No team needed: rent six Pokémon from Pokémon Showdown's Battle Factory sets, win seven in a row, and trade one of yours for one of your opponent's after every win. Or find an opponent who rents one too, from the battle setup."
+  }
+}

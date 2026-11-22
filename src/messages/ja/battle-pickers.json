@@ -1,0 +1,42 @@
+{
+  "stellar": "ステラ",
+  "category": {
+    "Physical": "ぶつり",
+    "Special": "とくしゅ",
+    "Status": "へんか"
+  },
+  "categoryName": {
+    "Physical": "ぶつり",
+    "Special": "とくしゅ",
+    "Status": "へんか"
+  },
+  "banned": "禁止",
+  "species": "ポケモン",
+  "searchPokemon": "ポケモンを検索",
+  "filters": "絞りこみ",
+  "filterType": "タイプで絞りこむ",
+  "anyType": "全タイプ",
+  "filterAbility": "特性で絞りこむ",
+  "ability": "特性",
+  "filterMove": "覚える技で絞りこむ",
+  "learns": "覚える技",
+  "legalOnly": "使えるものだけ",
+  "clear": "クリア",
+  "bst": "種族値の合計",
+  "item": "持ち物",
+  "noItem": "持ち物なし",
+  "loadingMoves": "技を読み込み中…",
+  "addMove": "技を追加",
+  "filterMoveType": "技をタイプで絞りこむ",
+  "head": {
+    "move": "技",
+    "type": "タイプ",
+    "cat": "分類",
+    "pow": "威力",
+    "acc": "命中",
+    "pp": "PP",
+    "use": "採用率"
+  },
+  "isBanned": "{move}は{reason}です。",
+  "nature": "性格"
+}

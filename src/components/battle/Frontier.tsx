@@ -18,7 +18,7 @@ import {
   type FrontierMon,
   type FrontierRunView,
 } from "@/lib/battle/frontier";
-import { CPU_LEVEL_INFO, GUEST_TRAINER, type BattleView } from "@/lib/battle/play";
+import { GUEST_TRAINER, type BattleView } from "@/lib/battle/play";
 import { loadBattleSeat, saveBattleSeat } from "@/lib/battle/seat";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { setTrainerName, useProgress } from "@/lib/progress";
@@ -28,6 +28,40 @@ import { Card, CardContent } from "@/components/ui/card";
 import { BattleSprite } from "@/components/battle/BattleSprite";
 import { cn } from "@/lib/utils";
 import { useSpriteLookup } from "./hooks";
+import { useT } from "@/i18n/client";
+import type { Translator } from "@/i18n/catalog";
+import frontierNs from "@/messages/battle-frontier";
+import formats from "@/messages/battle-formats";
+import { cpuLevelName } from "@/lib/battle/format-labels";
+import type { BattleNames } from "@/lib/battle/local-names";
+
+type T = Translator<typeof frontierNs.en>;
+
+/** A facility's name and blurb in the page's language. */
+function frontierInfo(t: T, key: FrontierKey): { name: string; blurb: string } {
+  if (t.locale === "en") return FRONTIER_INFO[key];
+  return { name: t(`info.${key}.name`), blurb: t(`info.${key}.blurb`) };
+}
+
+/** The rental teams' names in the page's language (null on English pages, and until they arrive). */
+function useLocalNames(t: T): BattleNames | null {
+  const locale = t.locale;
+  const [names, setNames] = useState<BattleNames | null>(null);
+  useEffect(() => {
+    if (!process.env.LIVE_LOCALES || locale === "en") return;
+    let live = true;
+    import("@/lib/battle/local-names")
+      .then((m) => m.loadBattleNames(locale))
+      .then(
+        (n) => live && setNames(n),
+        () => undefined
+      );
+    return () => {
+      live = false;
+    };
+  }, [locale]);
+  return names;
+}
 
 /**
  * The Battle Frontier's pages: a run's hub (rent or bring a team, the streak,
@@ -36,20 +70,20 @@ import { useSpriteLookup } from "./hooks";
  * device keeps it between battles, with the best streaks.
  */
 
-async function frontier<T>(body: Record<string, unknown>): Promise<T> {
+async function frontier<R>(body: Record<string, unknown>, t: T): Promise<R> {
   const res = await fetch("/api/battle/frontier", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-  const data = (await res.json().catch(() => ({}))) as T & { error?: string };
-  if (!res.ok) throw new Error(data.error ?? `Request failed (${res.status})`);
+  const data = (await res.json().catch(() => ({}))) as R & { error?: string };
+  if (!res.ok) throw new Error(data.error ?? t("requestFailed", { status: res.status }));
   return data;
 }
 
 /** Best streaks: this device's, and the account's when signed in. */
-function useBests(): Partial<Record<FrontierKey, number>> {
+function useBests(t: T): Partial<Record<FrontierKey, number>> {
   const [bests, setBests] = useState<Partial<Record<FrontierKey, number>>>({});
   useEffect(() => {
     const local = localBests();
     setBests(local);
-    frontier<{ bests: Partial<Record<FrontierKey, number>> | null }>({ action: "bests" })
+    frontier<{ bests: Partial<Record<FrontierKey, number>> | null }>({ action: "bests" }, t)
       .then(({ bests: server }) => {
         if (!server) return;
         const merged = { ...local };
@@ -57,21 +91,37 @@ function useBests(): Partial<Record<FrontierKey, number>> {
         setBests(merged);
       })
       .catch(() => undefined);
-  }, []);
+  }, [t]);
   return bests;
 }
 
 /** One Pokémon of a run's team. Its lines are cut short rather than wrapped, so every grid it sits in keeps a column that can shrink (minmax(0, 1fr)): otherwise a long move list widens the whole page on a phone. */
-function MonCard({ mon, sprite, picked, onPick, testid }: { mon: FrontierMon; sprite: ReturnType<typeof useSpriteLookup>; picked?: boolean; onPick?: () => void; testid?: string }) {
+function MonCard({
+  mon,
+  sprite,
+  picked,
+  onPick,
+  testid,
+  t,
+  names,
+}: {
+  mon: FrontierMon;
+  sprite: ReturnType<typeof useSpriteLookup>;
+  picked?: boolean;
+  onPick?: () => void;
+  testid?: string;
+  t: T;
+  names: BattleNames | null;
+}) {
   const body = (
     <>
       <BattleSprite species={sprite?.(mon.species)} animated={false} size={48} />
       <span className="min-w-0 flex-1">
-        <span className="block truncate font-display text-sm font-bold uppercase">{mon.species}</span>
+        <span className="block truncate font-display text-sm font-bold uppercase">{names ? names.species(mon.species) : mon.species}</span>
         <span className="block truncate text-xs text-muted-foreground">
-          {mon.item || "No item"} · {mon.ability}
+          {mon.item ? (names ? names.item(mon.item) : mon.item) : t("noItem")} · {names ? names.ability(mon.ability) : mon.ability}
         </span>
-        <span className="block truncate text-xs text-muted-foreground">{mon.moves.join(" / ")}</span>
+        <span className="block truncate text-xs text-muted-foreground">{(names ? mon.moves.map(names.move) : mon.moves).join(" / ")}</span>
       </span>
     </>
   );
@@ -87,20 +137,20 @@ function MonCard({ mon, sprite, picked, onPick, testid }: { mon: FrontierMon; sp
   );
 }
 
-function StreakBar({ run, best }: { run: FrontierRunView; best: number }) {
+function StreakBar({ run, best, t }: { run: FrontierRunView; best: number; t: T }) {
   return (
     <div className="flex flex-wrap items-center gap-x-6 gap-y-2" data-testid="frontier-streak">
       <span className="flex items-baseline gap-2">
-        <span className="hud-label">Streak</span>
+        <span className="hud-label">{t("streak")}</span>
         <span className="font-pixel text-2xl tabular-nums text-primary">{run.streak}</span>
       </span>
       <span className="flex items-baseline gap-2">
-        <span className="hud-label">Best</span>
+        <span className="hud-label">{t("best")}</span>
         <span className="font-pixel text-lg tabular-nums">{Math.max(best, run.streak)}</span>
       </span>
       {!run.over && (
-        <span className="flex items-center gap-1.5" aria-label={`Round ${run.next.round}, battle ${run.next.battle} of ${FRONTIER_ROUND}`}>
-          <span className="hud-label">Round {run.next.round}</span>
+        <span className="flex items-center gap-1.5" aria-label={t("roundLabel", { round: run.next.round, battle: run.next.battle, total: FRONTIER_ROUND })}>
+          <span className="hud-label">{t("round", { round: run.next.round })}</span>
           {Array.from({ length: FRONTIER_ROUND }, (_, i) => (
             <span
               key={i}
@@ -109,17 +159,20 @@ function StreakBar({ run, best }: { run: FrontierRunView; best: number }) {
           ))}
         </span>
       )}
-      {run.tier && <span className="hud-label text-screen">Tier: {run.tier}</span>}
+      {run.tier && <span className="hud-label text-screen">{t("tier", { tier: run.tier })}</span>}
     </div>
   );
 }
 
 /** A Frontier facility's page: the run in progress, or a new one. */
 export function FrontierHub({ mode, startPanel }: { mode: FrontierMode; startPanel?: (props: { name: string; onRun: (run: FrontierRunView) => void }) => React.ReactNode }) {
+  const t = useT(frontierNs);
+  const tf = useT(formats);
+  const names = useLocalNames(t);
   const router = useRouter();
   const progress = useProgress();
   const sprite = useSpriteLookup();
-  const bests = useBests();
+  const bests = useBests(t);
   const [style, setStyle] = useState<FactoryStyle>("open");
   const key = frontierKey(mode, style);
   const [run, setRun] = useState<FrontierRunView | null>(null);
@@ -147,13 +200,13 @@ export function FrontierHub({ mode, startPanel }: { mode: FrontierMode; startPan
     setTake(null);
   }, []);
 
-  async function call<T>(body: Record<string, unknown>, then: (data: T) => void) {
+  async function call<R>(body: Record<string, unknown>, then: (data: R) => void) {
     setBusy(true);
     setError(null);
     try {
-      then(await frontier<T>(body));
+      then(await frontier<R>(body, t));
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Something went wrong.";
+      const message = err instanceof Error ? err.message : t("wrong");
       setError(message);
       // A run whose token has lapsed can't go on: put it away, so the start panel comes back under the message.
       if (run && /isn't valid any more/.test(message)) {
@@ -168,7 +221,7 @@ export function FrontierHub({ mode, startPanel }: { mode: FrontierMode; startPan
   const start = () => {
     // The runs are against the computer: a name is optional.
     const who = name.trim() || GUEST_TRAINER;
-    if (!isCleanName(who)) return setError(NAME_REJECTED);
+    if (!isCleanName(who)) return setError(t.locale === "en" ? NAME_REJECTED : t("nameRejected"));
     if (!progress?.name && name.trim()) setTrainerName(name.trim());
     void call<{ run: FrontierRunView }>({ action: "start", mode, style, name: who }, (d) => keep(d.run));
   };
@@ -187,13 +240,13 @@ export function FrontierHub({ mode, startPanel }: { mode: FrontierMode; startPan
   const abandon = () => keep(null);
 
   const best = bests[key] ?? 0;
-  const info = FRONTIER_INFO[key];
+  const info = frontierInfo(t, key);
 
   return (
     <div className="grid gap-6 max-lg:grid-cols-[minmax(0,1fr)] lg:grid-cols-[1fr_320px]" data-testid={`frontier-${mode}`}>
       <div className="space-y-5">
         {mode === "factory" && (
-          <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Factory">
+          <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label={t("factory")}>
             {(["open", "bss"] as const).map((s) => {
               const k = frontierKey("factory", s);
               return (
@@ -205,9 +258,9 @@ export function FrontierHub({ mode, startPanel }: { mode: FrontierMode; startPan
                   onClick={() => setStyle(s)}
                   className={cn("menu-item hud flex flex-col items-start gap-1 rounded-lg border bg-card p-4 text-left", style === s && "border-primary ring-1 ring-primary")}
                 >
-                  <span className="font-display font-bold uppercase">{FRONTIER_INFO[k].name}</span>
-                  <span className="text-sm text-muted-foreground">{FRONTIER_INFO[k].blurb}</span>
-                  <span className="hud-label text-screen">Best streak: {bests[k] ?? 0}</span>
+                  <span className="font-display font-bold uppercase">{frontierInfo(t, k).name}</span>
+                  <span className="text-sm text-muted-foreground">{frontierInfo(t, k).blurb}</span>
+                  <span className="hud-label text-screen">{t("bestStreak", { n: bests[k] ?? 0 })}</span>
                 </button>
               );
             })}
@@ -218,40 +271,40 @@ export function FrontierHub({ mode, startPanel }: { mode: FrontierMode; startPan
         {!loaded ? <div className="min-h-[26rem]" aria-hidden /> : run ? (
           <Card>
             <CardContent className="space-y-4 p-5">
-              <StreakBar run={run} best={best} />
+              <StreakBar run={run} best={best} t={t} />
               {run.offer ? (
                 <div className="space-y-3" data-testid="factory-swap">
-                  <p className="font-display text-lg font-bold uppercase">Trade with the trainer you beat?</p>
-                  <p className="text-sm text-muted-foreground">Pick one of yours to give up and one of theirs to take, or keep your team.</p>
+                  <p className="font-display text-lg font-bold uppercase">{t("trade")}</p>
+                  <p className="text-sm text-muted-foreground">{t("tradeHelp")}</p>
                   <div className="grid gap-4 max-md:grid-cols-[minmax(0,1fr)] md:grid-cols-2">
                     <div className="space-y-1.5">
-                      <span className="hud-label">Your team: give</span>
+                      <span className="hud-label">{t("give")}</span>
                       {run.team.map((m, i) => (
-                        <MonCard key={i} mon={m} sprite={sprite} picked={give === i} onPick={() => setGive(i)} testid="swap-give" />
+                        <MonCard key={i} mon={m} sprite={sprite} picked={give === i} onPick={() => setGive(i)} testid="swap-give" t={t} names={names} />
                       ))}
                     </div>
                     <div className="space-y-1.5">
-                      <span className="hud-label">Their team: take</span>
+                      <span className="hud-label">{t("take")}</span>
                       {run.offer.map((m, i) => (
-                        <MonCard key={i} mon={m} sprite={sprite} picked={take === i} onPick={() => setTake(i)} testid="swap-take" />
+                        <MonCard key={i} mon={m} sprite={sprite} picked={take === i} onPick={() => setTake(i)} testid="swap-take" t={t} names={names} />
                       ))}
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button type="button" onClick={() => swap(false)} disabled={busy || give === null || take === null} data-testid="swap-confirm">
-                      <ArrowLeftRight className="h-4 w-4" aria-hidden /> Swap
+                      <ArrowLeftRight className="h-4 w-4" aria-hidden /> {t("swap")}
                     </Button>
                     <Button type="button" variant="outline" onClick={() => swap(true)} disabled={busy}>
-                      Keep my team
+                      {t("keep")}
                     </Button>
                   </div>
                 </div>
               ) : (
                 <div className="space-y-1.5">
-                  <span className="hud-label">{mode === "factory" ? "Your rental team" : "Your team"}</span>
+                  <span className="hud-label">{mode === "factory" ? t("rentalTeam") : t("yourTeam")}</span>
                   <div className="grid gap-1.5 max-md:grid-cols-[minmax(0,1fr)] md:grid-cols-2">
                     {run.team.map((m, i) => (
-                      <MonCard key={i} mon={m} sprite={sprite} testid="frontier-mon" />
+                      <MonCard key={i} mon={m} sprite={sprite} testid="frontier-mon" t={t} names={names} />
                     ))}
                   </div>
                 </div>
@@ -261,11 +314,8 @@ export function FrontierHub({ mode, startPanel }: { mode: FrontierMode; startPan
         ) : mode === "factory" ? (
           <Card>
             <CardContent className="space-y-3 p-5">
-              <p className="font-display text-lg font-bold uppercase">Rent a team</p>
-              <p className="text-sm text-muted-foreground">
-                {info.blurb} You get six Pokémon from Pokémon Showdown&apos;s own Battle Factory sets{style === "open" ? ", all from one tier" : ""}. Win seven in a row to clear a round; after each win you may trade one of
-                yours for one of your opponent&apos;s.
-              </p>
+              <p className="font-display text-lg font-bold uppercase">{t("rent")}</p>
+              <p className="text-sm text-muted-foreground">{t("rentHelp", { blurb: info.blurb, open: style === "open" ? "yes" : "no" })}</p>
             </CardContent>
           </Card>
         ) : (
@@ -283,43 +333,41 @@ export function FrontierHub({ mode, startPanel }: { mode: FrontierMode; startPan
               <p className="font-display text-2xl font-bold uppercase leading-tight">
                 {run.next.boss ? (
                   <span className="flex items-center gap-2 text-warning">
-                    <Crown className="h-6 w-6" aria-hidden /> Tower Tycoon
+                    <Crown className="h-6 w-6" aria-hidden /> {t("tycoon")}
                   </span>
                 ) : (
-                  <>Battle {run.next.battle} of {FRONTIER_ROUND}</>
+                  <>{t("battleOf", { battle: run.next.battle, total: FRONTIER_ROUND })}</>
                 )}
               </p>
-              <p className="text-sm text-muted-foreground">
-                Round {run.next.round}. {CPU_LEVEL_INFO[run.next.level].name} computer{run.next.boss ? " with its best team" : ""}.
-              </p>
+              <p className="text-sm text-muted-foreground">{t("nextLine", { round: run.next.round, level: cpuLevelName(tf, run.next.level), boss: run.next.boss ? "yes" : "no" })}</p>
               <Button size="lg" className="w-full" onClick={next} disabled={busy} data-testid="frontier-next">
-                {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Swords className="h-4 w-4" aria-hidden />} {run.offer ? "Skip trade and battle" : "Next battle"}
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Swords className="h-4 w-4" aria-hidden />} {run.offer ? t("skip") : t("next")}
               </Button>
               <Button size="sm" variant="ghost" className="w-full" onClick={abandon} disabled={busy}>
-                <Flag className="h-3.5 w-3.5" aria-hidden /> Give up this run
+                <Flag className="h-3.5 w-3.5" aria-hidden /> {t("giveUp")}
               </Button>
             </>
           ) : (
             <>
               <div className="space-y-1.5">
                 <label htmlFor="frontier-name" className="hud-label">
-                  Your trainer name
+                  {t("nameLabel")}
                 </label>
                 <input
                   id="frontier-name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   maxLength={24}
-                  placeholder="Trainer name"
+                  placeholder={t("namePlaceholder")}
                   className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
               {mode === "factory" && (
                 <Button size="lg" className="w-full" onClick={start} disabled={busy} data-testid="frontier-start">
-                  {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Repeat className="h-4 w-4" aria-hidden />} Rent a team
+                  {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Repeat className="h-4 w-4" aria-hidden />} {t("rent")}
                 </Button>
               )}
-              <p className="text-xs text-muted-foreground">Best streak: {best}. Signed-in trainers keep their best on their account.</p>
+              <p className="text-xs text-muted-foreground">{t("bestNote", { n: best })}</p>
             </>
           )}
           {error && (
@@ -335,6 +383,7 @@ export function FrontierHub({ mode, startPanel }: { mode: FrontierMode; startPan
 
 /** A run's battle is over: the streak, and the way on (a trade, the next battle) or the end of the run. */
 export function FrontierAfter({ view }: { view: BattleView }) {
+  const t = useT(frontierNs);
   const [result, setResult] = useState<{ won: boolean; run: FrontierRunView; best: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const info = view.frontier!;
@@ -343,7 +392,7 @@ export function FrontierAfter({ view }: { view: BattleView }) {
   useEffect(() => {
     let live = true;
     const token = loadBattleSeat(view.code);
-    frontier<{ won: boolean; run: FrontierRunView; best: number | null }>({ action: "result", code: view.code, token })
+    frontier<{ won: boolean; run: FrontierRunView; best: number | null }>({ action: "result", code: view.code, token }, t)
       .then((d) => {
         if (!live) return;
         // Only this run's newest state replaces the one kept on this device.
@@ -353,32 +402,32 @@ export function FrontierAfter({ view }: { view: BattleView }) {
         const best = Math.max(rememberBest(d.run.key, d.run.streak), d.best ?? 0);
         setResult({ won: d.won, run: d.run, best });
       })
-      .catch((err) => live && setError(err instanceof Error ? err.message : "Couldn't record the result."));
+      .catch((err) => live && setError(err instanceof Error ? err.message : t("recordFailed")));
     return () => {
       live = false;
     };
-  }, [view.code]);
+  }, [view.code, t]);
 
   if (error) return <p className="text-sm text-destructive">{error}</p>;
-  if (!result) return <Loader2 className="mx-auto h-5 w-5 animate-spin text-screen" aria-label="Recording the result" />;
+  if (!result) return <Loader2 className="mx-auto h-5 w-5 animate-spin text-screen" aria-label={t("recording")} />;
   return (
     <div className="space-y-2 text-center" data-testid="frontier-after">
       <p className="font-display text-lg font-bold uppercase">
-        {result.won ? `Streak: ${result.run.streak}` : `Run over at ${result.run.streak} win${result.run.streak === 1 ? "" : "s"}`}
+        {result.won ? t("streakResult", { n: result.run.streak }) : t("over", { n: result.run.streak })}
       </p>
-      <p className="text-sm text-muted-foreground">Best streak: {result.best}</p>
+      <p className="text-sm text-muted-foreground">{t("bestStreak", { n: result.best })}</p>
       <div className="flex flex-wrap justify-center gap-2">
         {result.won ? (
           <Link href={hub} className={buttonVariants()} data-testid="frontier-continue">
-            <Swords className="h-4 w-4" aria-hidden /> {info.mode === "factory" ? "Trade and continue" : "Continue"}
+            <Swords className="h-4 w-4" aria-hidden /> {info.mode === "factory" ? t("continueTrade") : t("continue")}
           </Link>
         ) : (
           <Link href={hub} className={buttonVariants()}>
-            <Repeat className="h-4 w-4" aria-hidden /> New run
+            <Repeat className="h-4 w-4" aria-hidden /> {t("newRun")}
           </Link>
         )}
         <Link href="/battle" className={buttonVariants({ variant: "outline" })}>
-          Battle home
+          {t("home")}
         </Link>
       </div>
     </div>

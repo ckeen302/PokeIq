@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "@/components/ui/Link";
 import { Bot, Link2, Loader2, Swords, Users } from "lucide-react";
-import { CPU_LEVEL_INFO, CPU_LEVELS, type BattleView, type CpuLevel, type GameType } from "@/lib/battle/play";
+import { CPU_LEVELS, type BattleView, type CpuLevel, type GameType } from "@/lib/battle/play";
 import { useProgress } from "@/lib/progress";
 import { shareOrCopy } from "@/lib/share";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,10 @@ import { SeatDot } from "@/components/duel/DuelParts";
 import { Avatar } from "@/components/avatar/Avatar";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import groupNs from "@/messages/battle-group";
+import formats from "@/messages/battle-formats";
+import { cpuLevelName } from "@/lib/battle/format-labels";
 
 /**
  * A four-player battle's lobby (Free-For-All and Multi Battles): four
@@ -39,13 +43,15 @@ export interface GroupLobbyProps {
 }
 
 export function GroupLobby({ view, gameType, path, formatName, rules, settings, busy, chat, onJoin, onReady, onFill, onLeave }: GroupLobbyProps) {
+  const t = useT(groupNs);
+  const tf = useT(formats);
   const progress = useProgress();
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState<string | null>(null);
   const [shared, setShared] = useState<"done" | "failed" | null>(null);
   const [level, setLevel] = useState<CpuLevel>("normal");
   const me = view.you;
-  const host = view.players[0]?.name ?? "A trainer";
+  const host = view.players[0]?.name ?? t("aTrainer");
   const url = `${typeof window !== "undefined" ? window.location.origin : ""}${path}`;
   const ready = me !== null && view.players[me]?.ready;
   const empty = 4 - view.players.length;
@@ -56,7 +62,7 @@ export function GroupLobby({ view, gameType, path, formatName, rules, settings, 
   }, [progress?.name, name]);
 
   async function share() {
-    const outcome = await shareOrCopy(`${host} invites you to a ${formatName} battle on PokéIQ!`, url);
+    const outcome = await shareOrCopy(t("invite", { host, format: formatName }), url);
     if (outcome === "failed") setShared("failed");
     else if (outcome !== "cancelled") setShared("done");
   }
@@ -71,15 +77,15 @@ export function GroupLobby({ view, gameType, path, formatName, rules, settings, 
             {player.cpu ? <Bot className="h-7 w-7 shrink-0 text-screen" aria-hidden /> : <Avatar avatar={player.avatar} size={28} />}
             <span className="min-w-0 flex-1 truncate font-display text-base font-bold uppercase">
               {player.name}
-              {me === i && <span className="hud-label ml-2">You</span>}
+              {me === i && <span className="hud-label ml-2">{t("you")}</span>}
             </span>
             <span className={cn("hud-label shrink-0", player.cpu ? "text-screen" : player.ready ? "text-success" : player.quiet ? "text-warning" : "")}>
-              {player.cpu ? "Computer" : player.ready ? "Ready" : player.quiet ? "Away" : "Not ready"}
+              {player.cpu ? t("computer") : player.ready ? t("ready") : player.quiet ? t("away") : t("notReady")}
             </span>
           </>
         ) : (
           <span className="flex min-w-0 flex-1 items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden /> <span className="truncate">Waiting for a trainer…</span>
+            <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden /> <span className="truncate">{t("waiting")}</span>
           </span>
         )}
       </li>
@@ -89,23 +95,12 @@ export function GroupLobby({ view, gameType, path, formatName, rules, settings, 
   return (
     <div className="mx-auto max-w-3xl space-y-6" data-testid="group-lobby">
       <div className="space-y-3 text-center">
-        <p className="hud-label text-screen">Live battle · {formatName}</p>
+        <p className="hud-label text-screen">{t("live", { format: formatName })}</p>
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-6xl">
-          {multi ? (
-            <>
-              Multi <span className="text-primary">battle</span>
-            </>
-          ) : (
-            <>
-              Free-for-<span className="text-primary">all</span>
-            </>
-          )}
+          {t.rich(multi ? "multiTitle" : "ffaTitle", { b: (chunks) => <span className="text-primary">{chunks}</span> })}
         </h1>
         <p className="mx-auto max-w-xl text-muted-foreground">
-          {multi
-            ? "Four trainers, two teams: seats 1 and 3 against seats 2 and 4, one Pokémon out each."
-            : "Four trainers, each on their own, one Pokémon out each. The last trainer standing wins."}{" "}
-          {me === null && empty > 0 ? `${host} saved you a seat.` : "Send the link to up to three friends, or let the computer take the empty seats."}
+          {multi ? t("multiIntro") : t("ffaIntro")} {me === null && empty > 0 ? t("savedSeat", { host }) : t("sendLink")}
         </p>
       </div>
 
@@ -113,19 +108,19 @@ export function GroupLobby({ view, gameType, path, formatName, rules, settings, 
         <CardContent className="space-y-4 p-6">
           {multi ? (
             <div className="grid gap-3 sm:grid-cols-2">
-              {[0, 1].map((t) => (
-                <div key={t} className="space-y-2">
+              {[0, 1].map((side) => (
+                <div key={side} className="space-y-2">
                   <p className="hud-label flex items-center gap-1.5 text-screen">
-                    <Users className="h-3.5 w-3.5" aria-hidden /> Team {t + 1}
+                    <Users className="h-3.5 w-3.5" aria-hidden /> {t("team", { n: side + 1 })}
                   </p>
-                  <ol className="grid gap-2" aria-label={`Team ${t + 1}`}>
-                    {[t, t + 2].map(seat)}
+                  <ol className="grid gap-2" aria-label={t("team", { n: side + 1 })}>
+                    {[side, side + 2].map(seat)}
                   </ol>
                 </div>
               ))}
             </div>
           ) : (
-            <ol className="grid gap-3 sm:grid-cols-2" aria-label="Trainers">
+            <ol className="grid gap-3 sm:grid-cols-2" aria-label={t("trainers")}>
               {[0, 1, 2, 3].map(seat)}
             </ol>
           )}
@@ -138,12 +133,12 @@ export function GroupLobby({ view, gameType, path, formatName, rules, settings, 
                 <input
                   readOnly
                   value={url}
-                  aria-label="Battle link"
+                  aria-label={t("link")}
                   onFocus={(e) => e.currentTarget.select()}
                   className="h-10 min-w-0 flex-1 rounded-md border border-input bg-shade/20 px-3 font-mono text-xs"
                 />
                 <Button variant="outline" onClick={() => void share()}>
-                  <Link2 className="h-4 w-4" aria-hidden /> {shared === "done" ? "Copied!" : "Copy link"}
+                  <Link2 className="h-4 w-4" aria-hidden /> {shared === "done" ? t("copied") : t("copy")}
                 </Button>
               </div>
               {shared === "failed" && <CopyFallback text={url} />}
@@ -151,33 +146,33 @@ export function GroupLobby({ view, gameType, path, formatName, rules, settings, 
                 <div className="flex flex-wrap items-center gap-2 rounded-md border border-dashed px-3 py-2.5" data-testid="lobby-fill">
                   <Bot className="h-4 w-4 shrink-0 text-screen" aria-hidden />
                   <span className="min-w-0 flex-1 text-sm text-muted-foreground">
-                    {empty === 1 ? "One seat is empty." : `${empty} seats are empty.`} The computer can take {empty === 1 ? "it" : "them"}:
+                    {t("empty", { n: empty })}
                   </span>
                   <select
                     value={level}
                     onChange={(e) => setLevel(e.target.value as CpuLevel)}
-                    aria-label="Computer level"
+                    aria-label={t("cpuLevel")}
                     className="h-9 rounded-md border border-input bg-background px-2 text-sm"
                     data-testid="lobby-fill-level"
                   >
                     {CPU_LEVELS.map((l) => (
                       <option key={l} value={l}>
-                        {CPU_LEVEL_INFO[l].name}
+                        {cpuLevelName(tf, l)}
                       </option>
                     ))}
                   </select>
                   <Button size="sm" variant="outline" disabled={busy} onClick={() => onFill(level)} data-testid="lobby-fill-button">
-                    <Bot className="h-4 w-4" aria-hidden /> Fill with the computer
+                    <Bot className="h-4 w-4" aria-hidden /> {t("fill")}
                   </Button>
                 </div>
               )}
               <Button size="lg" className="w-full" variant={ready ? "secondary" : "success"} disabled={busy} onClick={() => onReady(!ready)} data-testid="lobby-ready">
-                {ready ? (empty > 0 ? `Ready. Waiting for ${empty === 1 ? "one more trainer" : `${empty} more trainers`}…` : "Cancel ready") : "Ready"}
+                {ready ? (empty > 0 ? t("readyWaiting", { n: empty }) : t("cancelReady")) : t("ready")}
               </Button>
               <p className="text-center text-xs text-muted-foreground">
-                The battle starts once every seat is taken and every trainer is ready.{" "}
+                {t("startsWhen")}{" "}
                 <button type="button" className="underline underline-offset-2 hover:text-foreground" onClick={onLeave}>
-                  Leave
+                  {t("leave")}
                 </button>
               </p>
             </div>
@@ -187,11 +182,11 @@ export function GroupLobby({ view, gameType, path, formatName, rules, settings, 
               onSubmit={(e) => {
                 e.preventDefault();
                 if (isCleanName(name)) onJoin(name);
-                else setNameError(NAME_REJECTED);
+                else setNameError(t.locale === "en" ? NAME_REJECTED : t("nameRejected"));
               }}
             >
               <label htmlFor="group-join-name" className="hud-label">
-                Your trainer name
+                {t("nameLabel")}
               </label>
               <div className="flex gap-2">
                 <input
@@ -203,12 +198,12 @@ export function GroupLobby({ view, gameType, path, formatName, rules, settings, 
                   }}
                   maxLength={24}
                   required
-                  placeholder="Trainer name"
+                  placeholder={t("namePlaceholder")}
                   className="h-12 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
                 <Button type="submit" size="lg" disabled={busy || !name.trim()}>
                   {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Swords className="h-4 w-4" aria-hidden />}
-                  Join battle
+                  {t("join")}
                 </Button>
               </div>
               {nameError && (
@@ -219,11 +214,13 @@ export function GroupLobby({ view, gameType, path, formatName, rules, settings, 
             </form>
           ) : (
             <p className="text-center text-sm text-muted-foreground">
-              This battle is full.{" "}
-              <Link href="/battle/play?vs=friend" className="underline underline-offset-2">
-                Start your own
-              </Link>
-              .
+              {t.rich("full", {
+                link: (chunks) => (
+                  <Link href="/battle/play?vs=friend" className="underline underline-offset-2">
+                    {chunks}
+                  </Link>
+                ),
+              })}
             </p>
           )}
         </CardContent>
