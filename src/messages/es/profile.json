@@ -43,7 +43,7 @@
     "formats": {
       "classic": "Clásico",
       "survival": "Supervivencia",
-      "blitz": "Relámpago"
+      "blitz": "Contrarreloj"
     },
     "named": "<b>{named}/{total}</b> nombrados",
     "cleared": "completado en <b>{time}</b>"
