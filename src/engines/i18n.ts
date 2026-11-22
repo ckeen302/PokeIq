@@ -252,6 +252,12 @@ export function loadQuizLang(locale: string | undefined): Promise<QuizLang | nul
   return p;
 }
 
+/** A language's words if they're loaded already (null for English, or while they load). */
+export function quizLangIfLoaded(locale: string | undefined): QuizLang | null {
+  if (!locale || locale === "en" || !isLiveLocale(locale)) return null;
+  return loaded.get(locale as OtherLocale) ?? null;
+}
+
 /**
  * A loaded language's words, synchronously. Throws when the language was asked for but not loaded: a question must
  * never come out differently because a request happened to run before the data arrived (grading re-derives it).

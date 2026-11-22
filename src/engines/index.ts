@@ -94,5 +94,5 @@ export function localizeQuestion(q: Question, L: QuizLang | null, opts: Generate
 }
 
 export { localize } from "./localize";
-export { loadQuizLang, quizLang, type QuizLang } from "./i18n";
+export { loadQuizLang, quizLang, quizLangIfLoaded, type QuizLang } from "./i18n";
 export * from "./types";

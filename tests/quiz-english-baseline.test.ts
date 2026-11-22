@@ -22,16 +22,16 @@ const hash = (value: unknown) => createHash("sha256").update(JSON.stringify(valu
 
 function engineRuns(): Record<string, string> {
   const out: Record<string, string> = {};
-  for (const module of MODULES as readonly ModuleId[]) {
+  for (const mod of MODULES as readonly ModuleId[]) {
     for (const difficulty of DIFFICULTIES) {
       for (const gens of [undefined, [1], [4, 9]]) {
         for (let s = 0; s < SEEDS; s++) {
           if (gens && s >= 6) break;
-          const rng = new Rng(`baseline:${module}:${difficulty}:${s}`);
+          const rng = new Rng(`baseline:${mod}:${difficulty}:${s}`);
           const used = new Set<number>();
           const questions = [];
-          for (let i = 0; i < PER_RUN; i++) questions.push(buildQuestion(module, rng, { difficulty, gens, used }));
-          out[`${module}|${difficulty}|${gens?.join(",") ?? ""}|${s}`] = hash(questions);
+          for (let i = 0; i < PER_RUN; i++) questions.push(buildQuestion(mod, rng, { difficulty, gens, used }));
+          out[`${mod}|${difficulty}|${gens?.join(",") ?? ""}|${s}`] = hash(questions);
         }
       }
     }
@@ -66,8 +66,8 @@ function sessionRuns(): Record<string, string> {
     out[`session|${spec.module}|${spec.format}|${spec.seed}`] = hash(questions);
   }
   // Adaptive runs depend on the answers: replay a fixed answer pattern.
-  for (const module of ["whos-that", "types", "games"] as const) {
-    const spec: SessionSpec = { module, format: "adaptive", difficulty: "medium", seed: `baseline-adaptive-${module}` };
+  for (const mod of ["whos-that", "types", "games"] as const) {
+    const spec: SessionSpec = { module: mod, format: "adaptive", difficulty: "medium", seed: `baseline-adaptive-${mod}` };
     const log: [0 | 1, number, number, number][] = [];
     const questions = [];
     for (let i = 0; i < 10; i++) {
@@ -75,7 +75,7 @@ function sessionRuns(): Record<string, string> {
       questions.push(q);
       log.push([i % 3 === 0 ? 0 : 1, 4000, q.rating, q.options.length]);
     }
-    out[`session|${module}|adaptive`] = hash(questions);
+    out[`session|${mod}|adaptive`] = hash(questions);
   }
   return out;
 }

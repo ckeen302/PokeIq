@@ -14,7 +14,9 @@ import {
   type QuizDuelResult,
   type QuizDuelView,
 } from "@/lib/pvp-types";
-import { FORMAT_RULES, learnHref, mediaUrl, questionAt, shownCards, toPublic } from "./session";
+import { FORMAT_RULES, learnHref, mediaUrl, questionAt, rightName, shownCards, toPublic } from "./session";
+import { loadQuizLang, localizeQuestion, quizLangIfLoaded } from "@/engines";
+import type { Locale } from "@/i18n/config";
 import { revealFactor } from "@/lib/whose-team";
 import { defaultGens, playDifficulty } from "@/lib/modes";
 import { guessedSpecies, zoomStepWindow } from "./zoom-reveal";
@@ -85,6 +87,34 @@ const specOf = (d: QuizDuel): SessionSpec => ({ module: d.module, format: "class
 
 /** Question `index`, built on the server from the duel's seed: the same for both trainers. */
 export const duelQuestion = (d: QuizDuel, index: number): Question => questionAt(specOf(d), index);
+
+/**
+ * Question `index` in a trainer's language: the same question re-worded, options in the same order (picks are kept
+ * as the English option, so two trainers in different languages are scored alike). A question with no wording in
+ * that language stays English: both trainers must face the same question, so nothing is swapped in a duel. The
+ * language's words load on first use (await prepareDuelLang first for a request that answers).
+ */
+export function duelQuestionIn(d: QuizDuel, index: number, locale: Locale = "en"): Question {
+  const q = duelQuestion(d, index);
+  if (locale === "en") return q;
+  const L = quizLangIfLoaded(locale);
+  if (!L) {
+    void loadQuizLang(locale).catch(() => undefined);
+    return q;
+  }
+  return localizeQuestion(q, L, { difficulty: d.difficulty, used: new Set() }, null);
+}
+
+/** Loads a language's quiz words, so a duel request in that language reads and answers in its words. */
+export const prepareDuelLang = (locale: Locale) => loadQuizLang(locale).then(() => undefined);
+
+/** A pick as the trainer saw it: the option in their language (typed Zoom Reveal names stay as typed). */
+function pickIn(d: QuizDuel, index: number, choice: string, locale: Locale): string {
+  if (locale === "en") return choice;
+  const q = duelQuestion(d, index);
+  const i = q.options.indexOf(choice);
+  return i >= 0 ? (duelQuestionIn(d, index, locale).options[i] ?? choice) : choice;
+}
 
 /**
  * Loading allowance. Each trainer's clock starts when their browser reports
@@ -199,7 +229,7 @@ export function createQuizDuel(
 // Actions
 // ---------------------------------------------------------------------------
 
-export function answerQuiz(duel: QuizDuel, playerId: string, index: number, choice: string, now: number): PvpOutcome<QuizDuel> {
+export function answerQuiz(duel: QuizDuel, playerId: string, index: number, choice: string, now: number, locale: Locale = "en"): PvpOutcome<QuizDuel> {
   return seated(quizRules, duel, playerId, now, (d, seat) => {
     if (d.status !== "playing") return notPlaying(d);
     const q = d.questions[d.questions.length - 1];
@@ -208,8 +238,13 @@ export function answerQuiz(duel: QuizDuel, playerId: string, index: number, choi
     if (q.picks[seat]) return fail(409, "You've already answered.");
     if (now > seatCloses(q, seat) + GRACE_MS) return fail(409, "Time's up for that question.");
     if (duelQuestion(d, index).input === "name") return fail(400, "Type a Pokémon's name.");
-    if (!duelQuestion(d, index).options.includes(choice)) return fail(400, "Pick one of the options.");
-    q.picks[seat] = { choice, at: now };
+    // A pick in another language is kept as the English option in the same place.
+    const english = duelQuestion(d, index).options;
+    const local = locale === "en" ? english : duelQuestionIn(d, index, locale).options;
+    const at = local.indexOf(choice);
+    const picked = english.includes(choice) ? choice : at >= 0 ? english[at] : null;
+    if (picked === null) return fail(400, "Pick one of the options.");
+    q.picks[seat] = { choice: picked, at: now };
     return { ok: true, duel: d };
   });
 }
@@ -218,7 +253,7 @@ export function answerQuiz(duel: QuizDuel, playerId: string, index: number, choi
  * Zoom Reveal: a typed name (or "" to skip). Right, and it's locked in at
  * this step; wrong, and this trainer zooms out one step, until the last.
  */
-export function zoomQuiz(duel: QuizDuel, playerId: string, index: number, choice: string, now: number): PvpOutcome<QuizDuel> {
+export function zoomQuiz(duel: QuizDuel, playerId: string, index: number, choice: string, now: number, locale: Locale = "en"): PvpOutcome<QuizDuel> {
   return seated(quizRules, duel, playerId, now, (d, seat) => {
     if (d.status !== "playing") return notPlaying(d);
     const q = d.questions[d.questions.length - 1];
@@ -230,7 +265,7 @@ export function zoomQuiz(duel: QuizDuel, playerId: string, index: number, choice
     if (question.input !== "name" || !question.media) return fail(400, "Pick one of the options.");
     q.zs ??= d.players.map(() => 0);
     const step = q.zs[seat] + 1;
-    const ok = choice !== "" && (choice === question.answer || guessedSpecies(choice) === question.media.pokemonId);
+    const ok = choice !== "" && (choice === question.answer || guessedSpecies(choice) === question.media.pokemonId || (locale !== "en" && rightName(question, choice, locale)));
     if (ok || step >= ZOOM_STEPS) q.picks[seat] = { choice, at: now, step, ok };
     else q.zs[seat] = step;
     return { ok: true, duel: d };
@@ -301,13 +336,13 @@ function questionView(q: Question, index: number, step = 1, extra = 0): QuizDuel
 const seatStep = (q: QuizDuelQuestion, seat: number) => q.picks[seat]?.step ?? Math.min(ZOOM_STEPS, (q.zs?.[seat] ?? 0) + 1);
 
 /** What one trainer (or a visitor: null) may see of the duel right now. */
-export function quizView(duel: QuizDuel, playerId: string | null, now: number, rev: number): QuizDuelView {
+export function quizView(duel: QuizDuel, playerId: string | null, now: number, rev: number, locale: Locale = "en"): QuizDuelView {
   const seat = seatOf(duel, playerId);
   const scores = [0, 0];
   const lastRevealed = duel.questions.findLastIndex((q) => q.result);
   const revealed = duel.questions.flatMap((x, index): QuizDuelResult[] => {
     if (!x.result) return [];
-    const q = duelQuestion(duel, index);
+    const q = duelQuestionIn(duel, index, locale);
     x.result.points.forEach((p, k) => (scores[k] += p));
     // The latest reveal is on screen: it gets its media back, and the artwork.
     const mine = seat >= 0 && x.zs ? seatStep(x, seat) : 1;
@@ -322,7 +357,10 @@ export function quizView(duel: QuizDuel, playerId: string | null, now: number, r
         revealUrl: index === lastRevealed && q.revealMedia ? mediaUrl(q.revealMedia) : undefined,
         learnHref: learnHref(q),
         sourceUrl: q.source,
-        picks: x.picks.map((_, k) => scorePick(duel, index, k)),
+        picks: x.picks.map((_, k) => {
+          const pick = scorePick(duel, index, k);
+          return pick && locale !== "en" ? { ...pick, choice: pickIn(duel, index, pick.choice, locale) } : pick;
+        }),
         scores: [...scores],
         ...(zoomFrom && { zoomFrom }),
       },
@@ -344,9 +382,9 @@ export function quizView(duel: QuizDuel, playerId: string | null, now: number, r
       startsAt: live.startsAt,
       endsAt: seat >= 0 ? seatCloses(live, seat) : closesAt(live),
       loaded: seat >= 0 ? live.loaded?.[seat] != null : undefined,
-      question: now >= live.startsAt ? questionView(duelQuestion(duel, index), index, seat >= 0 && live.zs ? seatStep(live, seat) : 1, seat >= 0 ? (live.shown?.[seat] ?? 0) : 0) : undefined,
+      question: now >= live.startsAt ? questionView(duelQuestionIn(duel, index, locale), index, seat >= 0 && live.zs ? seatStep(live, seat) : 1, seat >= 0 ? (live.shown?.[seat] ?? 0) : 0) : undefined,
       answered: live.picks.map(Boolean),
-      yours: seat >= 0 ? live.picks[seat]?.choice : undefined,
+      yours: seat >= 0 && live.picks[seat] ? pickIn(duel, index, live.picks[seat]!.choice, locale) : undefined,
       ...(live.zs && { steps: live.picks.map((_, k) => seatStep(live, k)) }),
     },
     revealed,
