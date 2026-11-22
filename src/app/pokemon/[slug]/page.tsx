@@ -15,6 +15,7 @@ import { getLocale, serverT } from "@/i18n/server";
 import pageNs from "@/messages/pokemon-page";
 import dexEntryNs from "@/messages/dex-entry";
 import dexPager from "@/messages/dex-pager";
+import tcgCards from "@/messages/tcg-cards";
 import { speciesName } from "@/lib/names/species";
 import { dexTexts, typeNames } from "@/lib/pokemon/dex-local";
 import { localDexBreadcrumbs, localDexDescription, localDexSummary, localDexTitle, localizeDexEntry } from "@/lib/pokemon/dex-entry-local";
@@ -70,7 +71,9 @@ export default async function PokemonPage({ params }: PageProps) {
       <ClientMessages namespaces={[dexEntryNs, dexPager]}>
         <DexEntry key={p.id} data={data} />
       </ClientMessages>
-      <PokemonCards key={`cards-${p.id}`} dex={p.id} name={name} />
+      <ClientMessages namespaces={[tcgCards]}>
+        <PokemonCards key={`cards-${p.id}`} dex={p.id} name={name} />
+      </ClientMessages>
       <section className="mx-auto mt-10 max-w-3xl space-y-3 text-sm text-muted-foreground" aria-label={t("about", { name })}>
         <h2 className="font-display text-base font-bold uppercase tracking-wider text-foreground">{t("summary", { name })}</h2>
         <p>{locale === "en" ? dexSummary(p) : localDexSummary(p, locale)}</p>
