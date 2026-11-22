@@ -1,24 +1,31 @@
 import "server-only";
 import type { ModuleId } from "@/engines/types";
+import { speciesName } from "@/lib/names/species";
 import { QuizVisual } from "./card";
+import { englishOgT, type OgT } from "./i18n";
+
+/** An answer in the card's language: a species' official name, or a line of the og namespace. */
+type Answer = (t: OgT) => string;
+const mon = (id: number, english: string): Answer => (t) => speciesName(id, english, t.locale);
+const same = (text: string): Answer => () => text;
 
 /** A sample question per quiz mode for the share cards (a made-up example, never a live question). */
-const SAMPLES: Record<ModuleId, { question: string; answers: string[]; right: number }> = {
-  "whos-that": { question: "Who's that Pokémon?", answers: ["Gengar", "Haunter", "Mimikyu", "Sableye"], right: 0 },
-  cry: { question: "Whose cry is this?", answers: ["Pikachu", "Pichu", "Raichu", "Pachirisu"], right: 0 },
-  dex: { question: "Whose Pokédex entry?", answers: ["Lapras", "Dewgong", "Vaporeon", "Milotic"], right: 0 },
-  types: { question: "Ice vs Dragon/Flying?", answers: ["4×", "2×", "1×", "½×"], right: 0 },
-  "higher-lower": { question: "Who's faster?", answers: ["Jolteon", "Crobat", "Aerodactyl", "Electrode"], right: 3 },
-  games: { question: "New in Gen III?", answers: ["Abilities", "Z-Moves", "Dynamax", "Tera"], right: 0 },
-  anime: { question: "Ash's friend in Kalos?", answers: ["Dawn", "Serena", "May", "Iris"], right: 1 },
-  competitive: { question: "Type of Moonblast?", answers: ["Fairy", "Psychic", "Dark", "Ghost"], right: 0 },
-  shiny: { question: "Which is the real shiny?", answers: ["1", "2", "3", "4"], right: 2 },
-  "zoom-reveal": { question: "Who's this up close?", answers: ["Charizard", "Arcanine", "Flareon", "Typhlosion"], right: 0 },
-  "whose-team": { question: "Whose team is this?", answers: ["Cynthia", "Steven", "Lance", "Diantha"], right: 0 },
-  mixed: { question: "A bit of everything", answers: ["Silhouettes", "Cries", "Dex entries", "Type chart"], right: -1 },
+const SAMPLES: Record<ModuleId, { answers: Answer[]; right: number }> = {
+  "whos-that": { answers: [mon(94, "Gengar"), mon(93, "Haunter"), mon(778, "Mimikyu"), mon(302, "Sableye")], right: 0 },
+  cry: { answers: [mon(25, "Pikachu"), mon(172, "Pichu"), mon(26, "Raichu"), mon(417, "Pachirisu")], right: 0 },
+  dex: { answers: [mon(131, "Lapras"), mon(87, "Dewgong"), mon(134, "Vaporeon"), mon(350, "Milotic")], right: 0 },
+  types: { answers: [same("4×"), same("2×"), same("1×"), same("½×")], right: 0 },
+  "higher-lower": { answers: [mon(135, "Jolteon"), mon(169, "Crobat"), mon(142, "Aerodactyl"), mon(101, "Electrode")], right: 3 },
+  games: { answers: [(t) => t("quizSamples.games.a0"), (t) => t("quizSamples.games.a1"), (t) => t("quizSamples.games.a2"), (t) => t("quizSamples.games.a3")], right: 0 },
+  anime: { answers: [(t) => t("quizSamples.anime.a0"), (t) => t("quizSamples.anime.a1"), (t) => t("quizSamples.anime.a2"), (t) => t("quizSamples.anime.a3")], right: 1 },
+  competitive: { answers: [(t) => t("quizSamples.competitive.a0"), (t) => t("quizSamples.competitive.a1"), (t) => t("quizSamples.competitive.a2"), (t) => t("quizSamples.competitive.a3")], right: 0 },
+  shiny: { answers: [same("1"), same("2"), same("3"), same("4")], right: 2 },
+  "zoom-reveal": { answers: [mon(6, "Charizard"), mon(59, "Arcanine"), mon(136, "Flareon"), mon(157, "Typhlosion")], right: 0 },
+  "whose-team": { answers: [(t) => t("quizSamples.whose-team.a0"), (t) => t("quizSamples.whose-team.a1"), (t) => t("quizSamples.whose-team.a2"), (t) => t("quizSamples.whose-team.a3")], right: 0 },
+  mixed: { answers: [(t) => t("quizSamples.mixed.a0"), (t) => t("quizSamples.mixed.a1"), (t) => t("quizSamples.mixed.a2"), (t) => t("quizSamples.mixed.a3")], right: -1 },
 };
 
-export function sampleQuestion(module: ModuleId, accent: string, label = "Q 03/10") {
+export function sampleQuestion(module: ModuleId, accent: string, t: OgT = englishOgT(), label = t("quizSamples.label")) {
   const s = SAMPLES[module];
-  return <QuizVisual label={label} question={s.question} answers={s.answers} right={s.right} accent={accent} />;
+  return <QuizVisual label={label} question={t(`quizSamples.${module}.question`)} answers={s.answers.map((a) => a(t))} right={s.right} accent={accent} />;
 }

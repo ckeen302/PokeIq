@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/alt-text, @next/next/no-img-element -- Satori draws plain <img> */
 import "server-only";
 import { C, ogCard, type TitleLine } from "@/lib/og/card";
+import { englishOgT, type OgT } from "@/lib/og/i18n";
 import { homeRenderUrl } from "@/lib/pokemon/art";
 import { speciesById } from "@/lib/mass-battle/page-data";
 
@@ -58,15 +59,17 @@ function FaceOff({ left, right, leftCount, rightCount, big }: { left: number[]; 
   );
 }
 
-export function massBattleCard(o: { eyebrow?: string; title: TitleLine[]; subtitle: string; left: number[]; right: number[]; leftCount: number; rightCount: number; big: string | null; footer?: string }) {
+export function massBattleCard(o: { eyebrow?: string; title: TitleLine[]; subtitle: string; left: number[]; right: number[]; leftCount: number; rightCount: number; big: string | null; footer?: string; t?: OgT }) {
+  const t = o.t ?? englishOgT();
   const longest = Math.max(...o.title.map((t) => (typeof t === "string" ? t : t[0]).length));
   return ogCard({
-    eyebrow: o.eyebrow ?? "Pokémon Mass Battle · 3D",
+    eyebrow: o.eyebrow ?? t("massBattle.eyebrow"),
     title: o.title,
     titleSize: longest > 22 ? 46 : longest > 15 ? 56 : 68,
     subtitle: o.subtitle,
     accent: ACCENT,
     visual: <FaceOff left={o.left} right={o.right} leftCount={o.leftCount} rightCount={o.rightCount} big={o.big} />,
-    footer: o.footer ?? "Watch it in 3D →",
+    footer: o.footer ?? t("massBattle.footer"),
+    t,
   });
 }

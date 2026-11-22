@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/alt-text -- Satori draws plain <img> */
 import { C, OG_CONTENT_TYPE, OG_SIZE, ogCard } from "@/lib/og/card";
 import { artworkUrl } from "@/lib/pokemon/pokedex";
+import { ogT } from "@/lib/og/i18n";
 
 /** Link preview for the quiz itself: three very different possible results. */
 
@@ -8,11 +9,12 @@ export const alt = "Which Pokémon Are You? A personality quiz on PokéIQ";
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 
-export default function Image() {
+export default async function Image(props: { params?: unknown }) {
+  const t = await ogT(props);
   return ogCard({
-    eyebrow: "Personality quiz",
-    title: ["Which Pokémon", ["are you?", C.violet]],
-    subtitle: "Answer honestly and meet your match, every profile grounded in the Pokédex.",
+    eyebrow: t("whichPokemon.eyebrow"),
+    title: [t("whichPokemon.title1"), [t("whichPokemon.title2"), C.violet]],
+    subtitle: t("whichPokemon.subtitle"),
     accent: C.violet,
     visual: (
       <div style={{ display: "flex", alignItems: "flex-end" }}>
@@ -21,6 +23,7 @@ export default function Image() {
         ))}
       </div>
     ),
-    footer: "Free · no sign-up · share card included →",
+    footer: t("whichPokemon.footer"),
+    t,
   });
 }

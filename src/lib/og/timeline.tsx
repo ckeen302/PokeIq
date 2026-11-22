@@ -1,6 +1,10 @@
 /* eslint-disable jsx-a11y/alt-text, @next/next/no-img-element -- Satori draws plain <img> */
 import "server-only";
-import { hslHex, localImage, ogCard } from "@/lib/og/card";
+import { hslHex, localImage, ogCard, visualLength } from "@/lib/og/card";
+import { englishOgT, type OgT } from "@/lib/og/i18n";
+import { getT } from "@/i18n/server";
+import { localEntry } from "@/lib/timeline/localize";
+import timelineNs from "@/messages/timeline";
 import { artworkUrl } from "@/lib/pokemon/pokedex";
 import { ERAS, ERA_BY_ID, LANE_BY_ID, REGION_MAPS, firstRelease, formatDate, type TimelineEntry } from "@/lib/timeline/types";
 
@@ -43,26 +47,30 @@ export function TunnelVisual({ year, colors = ERAS.map((e) => e.a) }: { year?: s
 }
 
 /** The page's own card. */
-export function timelineCard() {
+export function timelineCard(t: OgT = englishOgT()) {
   return ogCard({
-    eyebrow: "Pokédex · History in 3D",
-    title: ["Pokémon", ["Timeline", ERAS[0].a]],
-    subtitle: "Every game, anime season, film and card-game era since 1996. Fly through it.",
+    eyebrow: t("timeline.eyebrow"),
+    title: [t("timeline.title1"), [t("timeline.title2"), ERAS[0].a]],
+    subtitle: t("timeline.subtitle"),
     accent: ERAS[0].a,
     visual: <TunnelVisual />,
-    footer: "Take the tour →",
+    footer: t("timeline.footer"),
+    t,
   });
 }
 
 /** An entry's own card: what it is, when, and its Pokémon or its region. */
-export async function timelineEntryCard(entry: TimelineEntry) {
+export async function timelineEntryCard(english: TimelineEntry, t: OgT = englishOgT()) {
+  const entry = t.locale === "en" ? english : (localEntry(english.id, t.locale) ?? english);
+  const tl = await getT(timelineNs, t.locale);
   const era = ERA_BY_ID[entry.era];
   const lane = LANE_BY_ID[entry.lane];
   const first = firstRelease(entry);
   const year = first.date.slice(0, 4);
-  const len = entry.title.length;
-    const subtitle = `${first.label}: ${formatDate(first.date)} · ${entry.platform}${entry.region ? ` · ${entry.region}` : ""}`;
-  const map = entry.region ? Object.values(REGION_MAPS).find((m) => m.region === entry.region) : undefined;
+  const len = visualLength(entry.title);
+  const map = english.region ? Object.values(REGION_MAPS).find((m) => m.region === english.region) : undefined;
+  const when = t("timelineEntry.when", { label: tl(`dates.${first.label}`), date: formatDate(first.date, t.locale) });
+  const subtitle = `${when} · ${entry.platform}${entry.region ? ` · ${entry.region}` : ""}`;
   let visual: React.ReactNode;
   if (entry.legendaries.length || entry.starters.length) {
     const big = entry.legendaries[0] ?? entry.starters[0];
@@ -92,13 +100,14 @@ export async function timelineEntryCard(entry: TimelineEntry) {
     visual = <TunnelVisual year={year} colors={ERAS.slice(0, ERAS.findIndex((e) => e.id === era.id) + 1).map((e) => e.a)} />;
   }
   return ogCard({
-    eyebrow: `Timeline · ${year} · ${lane.label}`,
+    eyebrow: t("timelineEntry.eyebrow", { year, lane: t.locale === "en" ? lane.label : tl(`lanes.${lane.id}`) }),
     title: [entry.title],
     titleSize: len > 40 ? 44 : len > 28 ? 52 : len > 18 ? 60 : 70,
     subtitle,
     accent: entry.lane === "games" ? era.a : hslHex(lane.color),
     visual,
-    footer: `${era.label} · ${era.device} →`,
+    footer: t("timelineEntry.footer", { era: tl(`eras.${era.id}.label`), device: tl(`eras.${era.id}.device`) }),
+    t,
   });
 }
 
