@@ -6,6 +6,8 @@ import { randomId, verifyToken } from "@/lib/server/crypto";
 import { crowdRateLimit, playerRateLimit } from "@/lib/server/rate-limit";
 import { claimOnce, recallResponse, rememberResponse, requestFingerprint } from "@/lib/server/replay-guard";
 import { beginHeld, holdSession, readSession, startSession } from "@/lib/server/session";
+import { loadQuizLang } from "@/engines";
+import { isLiveLocale } from "@/i18n/config";
 import { optionalName } from "@/lib/name-filter";
 import { defaultGens, filterFor, playDifficulty } from "@/lib/modes";
 import type { SessionSpec, ShareCard } from "@/lib/session-types";
@@ -18,6 +20,8 @@ import type { SessionSpec, ShareCard } from "@/lib/session-types";
  *   { zoomDaily: "YYYY-MM-DD" }             today's one-Pokémon Zoom Reveal (shared seed, unranked)
  *   { challenge: "<share token>" }          replay a friend's exact quiz
  * An optional `name` goes on the share card (left off if it isn't fit to show).
+ * An optional `lang` (a page in another language sends its own; `?lang=` works too) words the run's questions in
+ * that language: the same questions as in English, so dailies and challenges stay comparable.
  *
  * Getting a regular run ready before the Start click (QuizSetup does it when
  * the page goes idle, or the Start button is hovered):
@@ -49,6 +53,7 @@ const bodySchema = z.object({
   name: z.string().trim().max(24).optional(),
   hold: z.boolean().optional(),
   begin: z.string().min(10).max(16384).optional(),
+  lang: z.string().max(8).optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -65,6 +70,9 @@ export async function POST(request: NextRequest) {
   }
   const body = parsed.data;
   if (begin) return beginRun(begin);
+  // The run's language: only a live one other than English is signed into the spec (English runs are unchanged).
+  const lang = body.lang ?? request.nextUrl.searchParams.get("lang");
+  const locale = isLiveLocale(lang) && lang !== "en" ? lang : undefined;
   // Only a regular run can be held: a daily's start counts it as played, and challenges start as asked.
   if (body.hold && (body.daily !== undefined || body.zoomDaily !== undefined || body.challenge)) {
     return NextResponse.json({ error: "Only a regular run can be started ahead." }, { status: 400 });
@@ -108,8 +116,10 @@ export async function POST(request: NextRequest) {
     // Like a generation filter, games-only or anime-only runs aren't ranked against full runs.
     if (picked || scope) spec.practice = "filtered";
   }
+  if (locale) spec.locale = locale;
 
   try {
+    await loadQuizLang(spec.locale);
     const response = NextResponse.json(body.hold ? holdSession(spec, optionalName(body.name)) : startSession(spec, optionalName(body.name)), {
       headers: { "Cache-Control": "no-store" },
     });
@@ -134,10 +144,11 @@ export async function POST(request: NextRequest) {
 const NO_STORE = { "Cache-Control": "no-store" };
 
 /** Serve a held run's question 1 and start its clock (see holdSession). */
-function beginRun(token: string) {
+async function beginRun(token: string) {
   const state = readSession(token);
   if (!state) return NextResponse.json({ error: "Session expired or invalid — start a new run." }, { status: 401 });
   if (!state.h) return NextResponse.json({ error: "That run has already started." }, { status: 409 });
+  await loadQuizLang(state.spec.locale);
   const outcome = beginHeld(state);
   if (!outcome.ok) return NextResponse.json({ error: outcome.error }, { status: outcome.status });
   return serveOnce(outcome.claimKey, requestFingerprint(token), outcome.response);

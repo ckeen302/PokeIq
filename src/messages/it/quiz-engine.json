@@ -1,0 +1,195 @@
+{
+  "describe": "È {name}, il {genus}: tipo {types} della {gen}ª generazione ({region}).",
+  "describeShort": "È {name}: tipo {types} della {gen}ª generazione ({region}).",
+  "stat": {
+    "bst": "totale delle statistiche base"
+  },
+  "whosThat": {
+    "prompt": "Chi è quel Pokémon?",
+    "zoomed": "Chi è quel Pokémon? (Ingrandito!)"
+  },
+  "cry": {
+    "prompt": "Di chi è questo verso?",
+    "hintEasy": "Indizio: è di tipo {types} e della {gen}ª generazione.",
+    "hintMedium": "Indizio: ha debuttato nella {gen}ª generazione."
+  },
+  "zoom": {
+    "prompt": "Zoom: chi è quel Pokémon?"
+  },
+  "shiny": {
+    "prompt": "Qual è il vero {name} cromatico?",
+    "hard": "Stavolta i falsi sono molto simili. Guarda bene i dettagli.",
+    "explanation": "Questa è la vera colorazione cromatica di {name}."
+  },
+  "dex": {
+    "entryPrompt": "Quale Pokémon descrive questa voce del Pokédex?",
+    "entry": "«{entry}»",
+    "entryGenus": "{entry} — il {genus}",
+    "genusPrompt": "Quale Pokémon è noto come «{genus}»?",
+    "abilityPrompt": "Quale di queste è un'abilità di {name}?",
+    "abilityExplanation": "Abilità di {name}: {abilities}.",
+    "hidden": "{ability} (nascosta)"
+  },
+  "types": {
+    "typingPrompt": "Di che tipo è {name}?",
+    "typingExplanation": "{name} è di tipo {types}.",
+    "defender": "{name} ({types})",
+    "effPrompt": "Quanto è efficace una mossa di tipo {type} contro {defender}?",
+    "effExplanation": "{calc}.",
+    "immune": "0× (immune)",
+    "fourXPrompt": "Quale tipo è superefficace ×4 contro {defender}?",
+    "fourXExplanation": "Il tipo {types} subisce danni ×4 da {weak}.",
+    "immunePrompt": "Quale tipo di attacco NON ha effetto su {defender}?",
+    "immuneExplanation": "Il tipo {types} è immune a {immune}."
+  },
+  "hl": {
+    "higher": {
+      "hp": "Quale Pokémon ha più PS base?",
+      "atk": "Quale Pokémon ha l'Attacco base più alto?",
+      "def": "Quale Pokémon ha la Difesa base più alta?",
+      "spa": "Quale Pokémon ha l'Attacco Speciale base più alto?",
+      "spd": "Quale Pokémon ha la Difesa Speciale base più alta?",
+      "spe": "Quale Pokémon ha la Velocità base più alta?",
+      "bst": "Quale Pokémon ha il totale delle statistiche base più alto?",
+      "height": "Quale Pokémon è più alto?",
+      "weight": "Quale Pokémon è più pesante?"
+    },
+    "lower": {
+      "hp": "Quale Pokémon ha meno PS base?",
+      "atk": "Quale Pokémon ha l'Attacco base più basso?",
+      "def": "Quale Pokémon ha la Difesa base più bassa?",
+      "spa": "Quale Pokémon ha l'Attacco Speciale base più basso?",
+      "spd": "Quale Pokémon ha la Difesa Speciale base più bassa?",
+      "spe": "Quale Pokémon ha la Velocità base più bassa?",
+      "bst": "Quale Pokémon ha il totale delle statistiche base più basso?",
+      "height": "Quale Pokémon è più basso?",
+      "weight": "Quale Pokémon è più leggero?"
+    },
+    "metres": "{n} m",
+    "kilograms": "{n} kg",
+    "bstValue": "{n} in totale",
+    "statValue": "{n} di {stat}",
+    "explanation": "{a}: {va} · {b}: {vb}."
+  },
+  "comp": {
+    "holderPrompt": "Quale di questi Pokémon può avere l'abilità {ability}?",
+    "holderExplanation": "{name} può avere {ability}.",
+    "moveTypePrompt": "Di che tipo è la mossa {move}?",
+    "moveTypeExplanation": "{move} è una mossa di tipo {type}.",
+    "current": "Nei giochi attuali",
+    "categoryPrompt": "La mossa {move} è {physical}, {special} o {status}?",
+    "categoryExplanation": "{move} è una mossa di categoria {category}.",
+    "category": {
+      "physical": "Fisica",
+      "special": "Speciale",
+      "status": "Stato"
+    },
+    "itemPrompt": "Che cosa fa lo strumento {name}?",
+    "abilityPrompt": "Che cosa fa l'abilità {name}?",
+    "descExplanation": "{name}: {desc}"
+  },
+  "trivia": {
+    "gen": "{n}ª generazione",
+    "gym": {
+      "leaderPrompt": "In {game}, chi è il Capopalestra di {place}?",
+      "placePrompt": "In {game}, dove si trova la Palestra di {leader}?",
+      "explanation": "In {game}, {leader} guida la Palestra di {place}.",
+      "typePrompt": "In {game}, qual è il tipo preferito di {leader}, Capopalestra?",
+      "typeExplanation": "In {game}, la specialità di {leader} è il tipo {type}."
+    },
+    "e4": {
+      "typePrompt": "In {game}, qual è il tipo preferito di {member} dei Superquattro?",
+      "typeExplanation": "{member} dei Superquattro predilige i Pokémon di tipo {type}.",
+      "memberPrompt": "In {game}, quale membro dei Superquattro predilige i Pokémon di tipo {type}?",
+      "memberExplanation": "Nei Superquattro, il tipo {type} è la specialità di {member}."
+    },
+    "champion": {
+      "prompt": "Chi è il Campione della Lega Pokémon in {game}?",
+      "explanation": "In {game}, il titolo di Campione spetta a {champion}."
+    },
+    "professor": {
+      "prompt": "Chi è il professore Pokémon della regione in {game}?",
+      "explanation": "In {game}, è {professor} a studiare i Pokémon della regione."
+    },
+    "starter": {
+      "prompt": "In {game}, qual è il Pokémon iniziale di tipo {type}?",
+      "explanation": "In {game} puoi scegliere {grass}, {fire} o {water}."
+    },
+    "boxArt": {
+      "prompt": "Quale Pokémon compare sulla copertina di {game}?",
+      "explanation": "{pokemon} è la mascotte di {game}."
+    },
+    "exclusive": {
+      "prompt": "Quale di questi Pokémon è esclusivo di {side} rispetto a {other}?",
+      "explanation": "{pokemon} è esclusivo di {side}."
+    },
+    "villain": {
+      "teamPrompt": "In {game}, quale organizzazione è guidata da {leader}?",
+      "leaderPrompt": "In {game}, chi guida l'organizzazione {team}?",
+      "explanation": "{leader} guida l'organizzazione {team}."
+    },
+    "teamStar": {
+      "prompt": "In {game}, che tipo usa {boss} del {team}?",
+      "explanation": "{boss} guida una squadra del {team} specializzata nel tipo {type}."
+    },
+    "mechanic": {
+      "genPrompt": "Quale generazione ha introdotto {name}?",
+      "genExplanation": "{games} ({gen}) hanno introdotto {name}.",
+      "gamesPrompt": "Quali giochi hanno introdotto {name}?",
+      "gamesExplanation": "{games} hanno introdotto {name}.",
+      "abilities": "le abilità",
+      "natures": "le nature",
+      "doubles": "le lotte in doppio",
+      "contests": "le Gare Pokémon",
+      "heldItems": "gli strumenti tenuti",
+      "breeding": "l'allevamento e le Uova",
+      "shiny": "i Pokémon cromatici",
+      "steelDark": "i tipi Acciaio e Buio",
+      "split": "la distinzione tra mosse fisiche e speciali",
+      "gts": "la Global Trade Station (GTS)",
+      "hiddenAbilities": "le abilità speciali",
+      "triples": "le lotte in triplo",
+      "fairy": "il tipo Folletto",
+      "mega": "la megaevoluzione",
+      "zMoves": "le mosse Z",
+      "dynamax": "il Dynamax",
+      "tera": "la teracristallizzazione"
+    },
+    "games": {
+      "regionPrompt": "In quale regione è ambientato {title}?",
+      "regionExplanation": "{title} è ambientato nella regione di {region}.",
+      "genPrompt": "A quale generazione appartiene {title}?",
+      "genExplanation": "{title} appartiene alla {gen}.",
+      "firstPrompt": "Quale di questi giochi è uscito per primo?",
+      "firstExplanation": "{title} è della {gen}, prima degli altri.",
+      "basisPrompt": "Quale luogo reale ha ispirato la regione di {region}?",
+      "basisExplanation": "Modello della regione di {region}: {basis}.",
+      "placePrompt": "In quale regione si trova {place}?",
+      "placeExplanation": "{place} si trova nella regione di {region}."
+    },
+    "basis": {
+      "kyushu": "Kyūshū",
+      "hokkaido": "Hokkaidō",
+      "newYork": "New York",
+      "france": "Francia",
+      "hawaii": "Hawaii",
+      "britain": "Gran Bretagna",
+      "iberia": "La penisola iberica"
+    },
+    "league": {
+      "finalPrompt": "Chi ha battuto {ash} nella finale di {league}?",
+      "outPrompt": "Chi ha eliminato {ash} da {league}?",
+      "wonExplanation": "{ash} ha battuto {opponent} e ha vinto {league}.",
+      "outExplanation": "{opponent} ha eliminato {ash} ({result}).",
+      "resultPrompt": "Fin dove è arrivato {ash} in {league}?",
+      "resultExplanation": "Risultato di {ash} in {league}: {result}."
+    },
+    "result": {
+      "top16": "Ottavi di finale",
+      "top8": "Quarti di finale",
+      "top4": "Semifinale",
+      "runnerUp": "Secondo posto",
+      "winner": "Vincitore"
+    }
+  }
+}

@@ -2,7 +2,9 @@ import { shinyImageUrl } from "@/lib/shiny";
 import "server-only";
 import { z } from "zod";
 import { Rng } from "@/lib/rng";
-import { buildQuestion } from "@/engines";
+import { buildQuestion, localizeQuestion, quizLang, type QuizLang } from "@/engines";
+import { isLiveLocale, type Locale } from "@/i18n/config";
+import { foldLetters, NOT_LETTER } from "@/lib/names/fold";
 import {
   DIFFICULTIES,
   FORMATS,
@@ -13,6 +15,7 @@ import {
 import { revealFactor } from "@/lib/whose-team";
 import { artUrl } from "@/lib/pokemon/art";
 import { artworkUrl, getPokemon } from "@/lib/pokemon/pokedex";
+import { speciesAliases, speciesName } from "@/lib/names/species";
 import { itemInformation, performanceRating, ratingStandardError, ratingToIQ, type AnsweredItem } from "@/lib/rating";
 import { questionAssets } from "@/lib/preload";
 import { deriveSeed, randomId, signToken, verifyToken } from "./crypto";
@@ -55,6 +58,8 @@ export const specSchema = z.object({
   practice: z.enum(["challenge", "repeat-daily", "filtered", "zoom-daily"]).optional(),
   zoomDaily: z.string().optional(),
   scope: z.enum(SCOPES).optional(),
+  /** The run's language when it isn't English (signed, so grading words the questions the same way). */
+  locale: z.enum(["ja", "es", "fr", "de", "it"]).optional(),
 });
 
 export interface FormatRules {
@@ -162,29 +167,38 @@ function streamKey(spec: SessionSpec): string {
   return [spec.seed, spec.module, spec.difficulty, (spec.gens ?? []).join(","), ...(spec.scope ? [spec.scope] : [])].join("|");
 }
 
+/** The run's language words (null for English). Its data must be loaded first (see loadQuizLang in the routes). */
+const runLang = (spec: SessionSpec): QuizLang | null => (spec.locale && isLiveLocale(spec.locale) ? quizLang(spec.locale) : null);
+
 /**
  * Question `index` of a session. Fixed-format runs are a pure function of
  * the seed; adaptive runs also depend on the answers so far (`log`).
+ *
+ * A run in another language is the English run re-worded (same seed, same
+ * questions), except where a question has no faithful wording there: that one
+ * is swapped for another of the same kind, from its own seeded stream.
  */
 export function questionAt(spec: SessionSpec, index: number, log: readonly LogEntry[] = []): Question {
-  if (spec.format === "adaptive") return adaptiveQuestionAt(spec, index, log);
+  const L = runLang(spec);
+  if (spec.format === "adaptive") return adaptiveQuestionAt(spec, index, log, L);
   const key = streamKey(spec);
-  let stream = streams.get(key);
+  const cacheKey = L ? `${key}|${L.locale}` : key;
+  let stream = streams.get(cacheKey);
   if (!stream) {
     stream = { rng: new Rng(deriveSeed("quiz", key)), used: new Set(), questions: [] };
   }
   while (stream.questions.length <= index) {
-    stream.questions.push(
-      buildQuestion(spec.module, stream.rng, {
-        difficulty: spec.difficulty,
-        gens: spec.gens,
-        used: stream.used,
-        scope: spec.scope,
-      })
-    );
+    const opts = {
+      difficulty: spec.difficulty,
+      gens: spec.gens,
+      used: stream.used,
+      scope: spec.scope,
+    };
+    const q = buildQuestion(spec.module, stream.rng, opts);
+    stream.questions.push(L ? localizeQuestion(q, L, opts, deriveSeed("quiz-swap", `${key}:${stream.questions.length}`)) : q);
   }
-  streams.delete(key); // LRU refresh
-  streams.set(key, stream);
+  streams.delete(cacheKey); // LRU refresh
+  streams.set(cacheKey, stream);
   if (streams.size > MAX_STREAMS) streams.delete(streams.keys().next().value!);
   return stream.questions[index];
 }
@@ -211,8 +225,9 @@ const toItems = (log: readonly LogEntry[]): AnsweredItem[] =>
  */
 const adaptiveCache = new Map<string, { used: number[]; q: Question }>();
 
-function adaptiveQuestionAt(spec: SessionSpec, index: number, log: readonly LogEntry[]): Question {
+function adaptiveQuestionAt(spec: SessionSpec, index: number, log: readonly LogEntry[], L: QuizLang | null): Question {
   const key = streamKey(spec);
+  const lang = L ? `|${L.locale}` : "";
   let used = new Set<number>();
   let chosen: Question | null = null;
   let signature = "";
@@ -221,7 +236,7 @@ function adaptiveQuestionAt(spec: SessionSpec, index: number, log: readonly LogE
     // Position i depends only on the seed and answers 0..i-1: memoise on that
     // prefix so a request computes one new step instead of replaying all.
     if (i > 0) signature += `,${log[i - 1][0]}${log[i - 1][2]}.${log[i - 1][3]}`;
-    const cacheKey = `${key}|${i}|${signature}`;
+    const cacheKey = `${key}|${i}|${signature}${lang}`;
     const cached = adaptiveCache.get(cacheKey);
     if (cached) {
       used = new Set(cached.used);
@@ -231,19 +246,21 @@ function adaptiveQuestionAt(spec: SessionSpec, index: number, log: readonly LogE
 
     const theta = performanceRating(toItems(log.slice(0, i)));
     const rng = new Rng(deriveSeed("quiz-adaptive", `${key}:${i}`));
-    const candidates: { q: Question; ids: number[]; info: number }[] = [];
+    const candidates: { q: Question; ids: number[]; info: number; difficulty: SessionSpec["difficulty"] }[] = [];
     for (const difficulty of ["easy", "medium", "hard"] as const) {
       for (let c = 0; c < ADAPTIVE_CANDIDATES[difficulty]; c++) {
         const scratch = new Set(used);
         const q = buildQuestion(spec.module, rng, { difficulty, gens: spec.gens, used: scratch, scope: spec.scope });
         const ids = [...scratch].filter((id) => !used.has(id));
-        candidates.push({ q, ids, info: itemInformation(theta, q.rating, q.options.length) });
+        candidates.push({ q, ids, info: itemInformation(theta, q.rating, q.options.length), difficulty });
       }
     }
     candidates.sort((a, b) => b.info - a.info);
     const pick = candidates[Math.floor(rng.next() * Math.min(3, candidates.length))];
     pick.ids.forEach((id) => used.add(id));
-    chosen = pick.q;
+    chosen = L
+      ? localizeQuestion(pick.q, L, { difficulty: pick.difficulty, gens: spec.gens, used, scope: spec.scope }, deriveSeed("quiz-swap", `${key}:adaptive:${i}:${signature}`))
+      : pick.q;
     adaptiveCache.set(cacheKey, { used: [...used], q: chosen });
     if (adaptiveCache.size > MAX_ADAPTIVE_STEPS) adaptiveCache.delete(adaptiveCache.keys().next().value!);
   }
@@ -288,6 +305,7 @@ export function toPublic(q: Question, index: number, rules: FormatRules, step = 
     cards: cards?.map(cardOf(q)),
     timeLimitMs: rules.questionMs,
     ...(q.input && { input: q.input }),
+    ...(q.optionAliases && { optionAliases: q.optionAliases }),
     ...(q.reveal && { reveal: { shown: shownCards(q, extra), total: q.cards?.length ?? 0 } }),
   };
 }
@@ -320,10 +338,29 @@ function isDone(state: SessionState, rules: FormatRules, now: number): boolean {
   return state.log.length >= MAX_QUESTIONS;
 }
 
-/** A typed guess names the answer: any accepted spelling of the species, or one of its forms. */
-function rightName(q: Question, choice: string): boolean {
+/** Folded for comparing typed names: case, accents, kana and punctuation don't count. */
+const foldName = (s: string) => foldLetters(s).replace(NOT_LETTER, "");
+
+/**
+ * A typed guess names the answer: any accepted spelling of the species, or one of its forms. In another language,
+ * the language's name (and, in Japanese, its rōmaji) counts as well as the English one.
+ */
+export function rightName(q: Question, choice: string, locale?: string): boolean {
   const id = q.revealMedia?.pokemonId ?? q.media?.pokemonId;
-  return choice === q.answer || (id !== undefined && guessedSpecies(choice) === id);
+  if (choice === q.answer || (id !== undefined && guessedSpecies(choice) === id)) return true;
+  if (!locale || locale === "en" || id === undefined || !isLiveLocale(locale)) return false;
+  const p = getPokemon(id);
+  if (!p) return false;
+  const typed = foldName(choice);
+  return !!typed && [speciesName(id, p.name, locale as Locale), ...speciesAliases(id, p.name, locale as Locale)].some((n) => foldName(n) === typed);
+}
+
+/** A typed trainer's name (Whose Team Is This?) in another language: the option, or one of its other spellings. */
+function rightTrainer(q: Question, choice: string): boolean {
+  if (choice === q.answer) return true;
+  const i = q.options.indexOf(q.answer);
+  const typed = foldName(choice);
+  return !!typed && [q.answer, ...(q.optionAliases?.[i] ?? [])].some((n) => foldName(n) === typed);
 }
 
 function buildResult(state: SessionState, now: number): RunResult {
@@ -480,6 +517,8 @@ export function readSession(token: unknown): SessionState | null {
   const state = verifyToken<SessionState>("session", token);
   if (!state || state.v !== 1) return null;
   if (Date.now() - state.startedAt > SESSION_TTL_MS) return null;
+  // A run in a language that has since been taken offline can't be graded in its words any more.
+  if (state.spec.locale && !isLiveLocale(state.spec.locale)) return null;
   return specSchema.safeParse(state.spec).success ? state : null;
 }
 
@@ -512,7 +551,11 @@ export function gradeAnswer(state: SessionState, choice: string | null, loadMs?:
   const timedOut = rules.questionMs !== null && elapsed > rules.questionMs + GRACE_MS;
   const zoom = q.input === "name";
   const step = (state.zs ?? 0) + 1;
-  const correct = !timedOut && !runExpired && choice !== null && (zoom ? rightName(q, choice) : choice === q.answer);
+  const correct =
+    !timedOut &&
+    !runExpired &&
+    choice !== null &&
+    (zoom ? rightName(q, choice, state.spec.locale) : q.optionAliases ? rightTrainer(q, choice) : choice === q.answer);
   const rating = itemRating(q.itemKey, q.rating);
 
   // Zoom Reveal: a wrong name, a skip or the step's clock running out zooms

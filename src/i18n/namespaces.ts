@@ -76,6 +76,7 @@ export const NAMESPACES = [
   "quiz-challenge",
   "quiz-daily",
   "quiz-duel",
+  "quiz-engine",
   "quiz-modes",
   "quiz-pages",
   "quiz-run",

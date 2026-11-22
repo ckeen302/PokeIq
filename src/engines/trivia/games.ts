@@ -1,5 +1,7 @@
 import type { Difficulty } from "../types";
-import { harder, pool, ROMAN, slug, type HandwrittenRow, type TriviaItem } from "./bank";
+import { handwrittenLoc, harder, pool, ROMAN, slug, type HandwrittenRow, type TriviaItem } from "./bank";
+import { must } from "../localize";
+import { gameIn, genIn, genOption, personIn, placeIn, regionIn, typeIn } from "./words";
 import GAMES from "@/data/quiz/games/games.json";
 import GYMS from "@/data/quiz/games/gyms.json";
 import ELITE_FOUR from "@/data/quiz/games/elite-four.json";
@@ -73,6 +75,10 @@ function gymItems(): TriviaItem[] {
         distractors: pool(family.filter((o) => o.place !== r.place).map((o) => o.leader), r.leader),
         explanation: `${r.leader} leads the ${r.place} Gym in ${r.game}.`,
         from: { table: "gyms", index, field: "leader" },
+        loc: (L) => {
+          const v = { game: gameIn(L, r.game), place: placeIn(L, r.place), leader: personIn(L, r.leader) };
+          return { prompt: L.t("trivia.gym.leaderPrompt", v), explanation: L.t("trivia.gym.explanation", v), option: (o) => L.proper(o) };
+        },
       });
     } else if (kind === "type") {
       items.push({
@@ -82,6 +88,10 @@ function gymItems(): TriviaItem[] {
         distractors: typeDistractors(r.gen, family.map((o) => o.type), r.type!, r.leader),
         explanation: `${r.leader} is a ${r.type}-type specialist in ${r.game}.`,
         from: { table: "gyms", index, field: "type" },
+        loc: (L) => {
+          const v = { game: gameIn(L, r.game), leader: personIn(L, r.leader), type: typeIn(L, r.type!) };
+          return { prompt: L.t("trivia.gym.typePrompt", v), explanation: L.t("trivia.gym.typeExplanation", v), option: (o) => typeIn(L, o) };
+        },
       });
     } else if (kind === "badge") {
       items.push({
@@ -100,6 +110,10 @@ function gymItems(): TriviaItem[] {
         distractors: pool(family.map((o) => o.place), r.place),
         explanation: `${r.leader} leads the ${r.place} Gym in ${r.game}.`,
         from: { table: "gyms", index, field: "place" },
+        loc: (L) => {
+          const v = { game: gameIn(L, r.game), place: placeIn(L, r.place), leader: personIn(L, r.leader) };
+          return { prompt: L.t("trivia.gym.placePrompt", v), explanation: L.t("trivia.gym.explanation", v), option: (o) => L.name("locations", o) };
+        },
       });
     }
   });
@@ -121,6 +135,10 @@ function eliteFourItems(): TriviaItem[] {
         distractors: typeDistractors(r.gen, family.map((o) => o.type), r.type, r.member),
         explanation: `${r.member} of the Elite Four specializes in ${r.type}-type Pokémon.`,
         from: { table: "elite-four", index, field: "type" },
+        loc: (L) => {
+          const v = { game: gameIn(L, r.game), member: personIn(L, r.member), type: typeIn(L, r.type) };
+          return { prompt: L.t("trivia.e4.typePrompt", v), explanation: L.t("trivia.e4.typeExplanation", v), option: (o) => typeIn(L, o) };
+        },
       }];
     }
     return [{
@@ -131,6 +149,10 @@ function eliteFourItems(): TriviaItem[] {
       distractors: pool(family.filter((o) => o.type !== r.type).map((o) => o.member), r.member),
       explanation: `${r.member} is the ${r.type}-type specialist of the Elite Four.`,
       from: { table: "elite-four", index, field: "member" },
+      loc: (L) => {
+        const v = { game: gameIn(L, r.game), member: personIn(L, r.member), type: typeIn(L, r.type) };
+        return { prompt: L.t("trivia.e4.memberPrompt", v), explanation: L.t("trivia.e4.memberExplanation", v), option: (o) => L.proper(o) };
+      },
     }];
   });
 }
@@ -150,7 +172,14 @@ function championItems(): TriviaItem[] {
       explanation: `${r.champion} is the ${title} in ${r.game}.`,
       source: r.source,
       from: { table: "champions", index, field: "champion" },
-    };
+      // Paldea's Top Champion is a rank of its own (Nemona is a Champion too): asked in English only.
+      loc: row.title
+        ? undefined
+        : (L) => {
+            const v = { game: gameIn(L, r.game), champion: personIn(L, r.champion) };
+            return { prompt: L.t("trivia.champion.prompt", v), explanation: L.t("trivia.champion.explanation", v), option: (o) => L.proper(o) };
+          },
+    } as TriviaItem;
   });
 }
 
@@ -168,7 +197,11 @@ function professorItems(): TriviaItem[] {
       explanation: `${r.professor} is the Pokémon Professor in ${r.game}.`,
       source: r.source,
       from: { table: "professors", index, field: "professor" },
-    };
+      loc: (L) => {
+        const v = { game: gameIn(L, r.game), professor: personIn(L, r.professor) };
+        return { prompt: L.t("trivia.professor.prompt", v), explanation: L.t("trivia.professor.explanation", v), option: (o) => L.proper(o) };
+      },
+    } as TriviaItem;
   });
 }
 
@@ -190,7 +223,16 @@ function starterItems(): TriviaItem[] {
       explanation: `${r.game} lets you choose ${r.grass}, ${r.fire} or ${r.water}.`,
       source: r.source,
       from: { table: "starters", index, field: kind },
-    };
+      loc: (L) => {
+        const mon = (n: string) => must(L.pokemonNamed(n), n);
+        const game = gameIn(L, r.game);
+        return {
+          prompt: L.t("trivia.starter.prompt", { game, type: L.type(kind) }),
+          explanation: L.t("trivia.starter.explanation", { game, grass: mon(r.grass), fire: mon(r.fire), water: mon(r.water) }),
+          option: (o) => L.pokemonNamed(o),
+        };
+      },
+    } as TriviaItem;
   });
 }
 
@@ -214,7 +256,11 @@ function boxArtItems(): TriviaItem[] {
       explanation: `${r.pokemon} is the mascot of ${r.game}.`,
       source: r.source,
       from: { table: "box-art", index, field: "pokemon" },
-    };
+      loc: (L) => {
+        const v = { game: gameIn(L, r.game), pokemon: must(L.pokemonNamed(r.pokemon), r.pokemon) };
+        return { prompt: L.t("trivia.boxArt.prompt", v), explanation: L.t("trivia.boxArt.explanation", v), option: (o) => L.pokemonNamed(o) };
+      },
+    } as TriviaItem;
   });
 }
 
@@ -238,6 +284,12 @@ function exclusiveItems(): TriviaItem[] {
           explanation: `${mine[k]} is exclusive to ${side}.`,
           source: r.source,
           from: { table: "exclusives", index, field: `${field}.${k}` },
+          loc: (L) => {
+            // Japan's first pair is Red and Green: the West's Blue has Green's Pokémon.
+            const title = (t: string) => gameIn(L, L.locale === "ja" && t === "Pokémon Blue" ? "Pokémon Green" : t);
+            const v = { side: title(side), other: title(other), pokemon: must(L.pokemonNamed(mine[k]), mine[k]) };
+            return { prompt: L.t("trivia.exclusive.prompt", v), explanation: L.t("trivia.exclusive.explanation", v), option: (o) => L.pokemonNamed(o) };
+          },
         });
       }
     }
@@ -258,6 +310,10 @@ function villainItems(): TriviaItem[] {
           distractors: pool(VILLAINS.map((o) => o.team), r.team),
           explanation: `${r.leader} leads ${r.team}.`,
           from: { table: "villains", index, field: "team" },
+          loc: (L) => {
+            const v = { game: gameIn(L, r.game), leader: personIn(L, r.leader), team: personIn(L, r.team) };
+            return { prompt: L.t("trivia.villain.teamPrompt", v), explanation: L.t("trivia.villain.explanation", v), option: (o) => L.proper(o) };
+          },
         }
       : {
           ...common,
@@ -267,6 +323,10 @@ function villainItems(): TriviaItem[] {
           distractors: pool(VILLAINS.map((o) => o.leader), r.leader),
           explanation: `${r.leader} leads ${r.team}.`,
           from: { table: "villains", index, field: "leader" },
+          loc: (L) => {
+            const v = { game: gameIn(L, r.game), leader: personIn(L, r.leader), team: personIn(L, r.team) };
+            return { prompt: L.t("trivia.villain.leaderPrompt", v), explanation: L.t("trivia.villain.explanation", v), option: (o) => L.proper(o) };
+          },
         };
   });
   TEAM_STAR.forEach((r, index) =>
@@ -281,12 +341,46 @@ function villainItems(): TriviaItem[] {
       explanation: `${r.boss} leads Team Star's ${r.squad}, a ${r.type}-type crew.`,
       source: r.source,
       from: { table: "team-star", index, field: "type" },
+      loc: (L) => {
+        const v = { game: gameIn(L, "Pokémon Scarlet and Violet"), boss: personIn(L, r.boss), team: personIn(L, "Team Star"), type: typeIn(L, r.type) };
+        return { prompt: L.t("trivia.teamStar.prompt", v), explanation: L.t("trivia.teamStar.explanation", v), option: (o) => typeIn(L, o) };
+      },
     })
   );
   return items;
 }
 
 const genLabel = (g: number) => `Generation ${ROMAN[g]}`;
+/** Each mechanic's message key (its name is a phrase of its own in every language). */
+const MECHANIC_KEY: Record<string, "abilities" | "natures" | "doubles" | "contests" | "heldItems" | "breeding" | "shiny" | "steelDark" | "split" | "gts" | "hiddenAbilities" | "triples" | "fairy" | "mega" | "zMoves" | "dynamax" | "tera"> = {
+  Abilities: "abilities",
+  Natures: "natures",
+  "Double Battles": "doubles",
+  "Pokémon Contests": "contests",
+  "held items": "heldItems",
+  "Pokémon breeding and Eggs": "breeding",
+  "Shiny Pokémon": "shiny",
+  "the Steel and Dark types": "steelDark",
+  "the physical/special split": "split",
+  "the Global Trade Station (GTS)": "gts",
+  "Hidden Abilities": "hiddenAbilities",
+  "Triple Battles": "triples",
+  "the Fairy type": "fairy",
+  "Mega Evolution": "mega",
+  "Z-Moves": "zMoves",
+  Dynamax: "dynamax",
+  Terastallization: "tera",
+};
+/** The real places the regions are modelled on. */
+const BASIS_KEY: Record<string, "kyushu" | "hokkaido" | "newYork" | "france" | "hawaii" | "britain" | "iberia"> = {
+  Kyushu: "kyushu",
+  Hokkaido: "hokkaido",
+  "New York City": "newYork",
+  France: "france",
+  Hawaii: "hawaii",
+  "Great Britain": "britain",
+  "the Iberian Peninsula": "iberia",
+};
 /** Gimmicks whose debut games are well known enough to ask about by title. */
 const ASK_GAMES = new Set(["Abilities", "the physical/special split", "Mega Evolution", "Z-Moves", "Dynamax", "Terastallization"]);
 
@@ -305,6 +399,10 @@ function mechanicItems(): TriviaItem[] {
       explanation: `${r.name[0].toUpperCase()}${r.name.slice(1)} debuted in ${r.games} (${genLabel(r.gen)}).`,
       source: r.source,
       from: { table: "mechanics", index, field: "gen" },
+      loc: (L) => {
+        const v = { name: L.t(`trivia.mechanic.${MECHANIC_KEY[r.name]}`), games: gameIn(L, r.games), gen: genIn(L, r.gen) };
+        return { prompt: L.t("trivia.mechanic.genPrompt", v), explanation: L.t("trivia.mechanic.genExplanation", v), option: (o) => genOption(L, o) };
+      },
     });
     if (ASK_GAMES.has(r.name)) {
       items.push({
@@ -318,6 +416,10 @@ function mechanicItems(): TriviaItem[] {
         explanation: `${r.name[0].toUpperCase()}${r.name.slice(1)} debuted in ${r.games}.`,
         source: r.source,
         from: { table: "mechanics", index, field: "games" },
+        loc: (L) => {
+          const v = { name: L.t(`trivia.mechanic.${MECHANIC_KEY[r.name]}`), games: gameIn(L, r.games) };
+          return { prompt: L.t("trivia.mechanic.gamesPrompt", v), explanation: L.t("trivia.mechanic.gamesExplanation", v), option: (o) => L.game(o) };
+        },
       });
     }
   });
@@ -355,6 +457,10 @@ function gameItems(): TriviaItem[] {
       explanation: `${r.title} is set in the ${r.region} region.`,
       source: r.source,
       from: { table: "games", index, field: "region" },
+      loc: (L) => {
+        const v = { title: gameIn(L, r.title), region: regionIn(L, r.region) };
+        return { prompt: L.t("trivia.games.regionPrompt", v), explanation: L.t("trivia.games.regionExplanation", v), option: (o) => L.name("regions", o) };
+      },
     });
     if ((r as typeof r & { askGen?: boolean }).askGen) {
       const nearby = [r.gen - 1, r.gen + 1, r.gen - 2, r.gen + 2, r.gen - 3].filter((g) => g >= 1 && g <= 9);
@@ -369,6 +475,10 @@ function gameItems(): TriviaItem[] {
         explanation: `${r.title} is a ${genLabel(r.gen)} game.`,
         source: r.source,
         from: { table: "games", index, field: "gen" },
+        loc: (L) => {
+          const v = { title: gameIn(L, r.title), gen: genIn(L, r.gen) };
+          return { prompt: L.t("trivia.games.genPrompt", v), explanation: L.t("trivia.games.genExplanation", v), option: (o) => genOption(L, o) };
+        },
       });
     }
   });
@@ -386,6 +496,10 @@ function gameItems(): TriviaItem[] {
       explanation: `${first.title} is a ${genLabel(first.gen)} game, older than the others.`,
       source: first.source,
       from: { table: "games", index: GAMES.indexOf(first), field: "title" },
+      loc: (L) => {
+        const v = { title: gameIn(L, first.title), gen: genIn(L, first.gen) };
+        return { prompt: L.t("trivia.games.firstPrompt"), explanation: L.t("trivia.games.firstExplanation", v), option: (o) => L.game(o) };
+      },
     });
   });
   REGIONS.forEach((r, index) =>
@@ -400,6 +514,10 @@ function gameItems(): TriviaItem[] {
       explanation: `${r.region} is based on ${r.basis}.`,
       source: r.source,
       from: { table: "regions", index, field: "basis" },
+      loc: (L) => {
+        const v = { region: regionIn(L, r.region), basis: L.t(`trivia.basis.${BASIS_KEY[r.basis]}`) };
+        return { prompt: L.t("trivia.games.basisPrompt", v), explanation: L.t("trivia.games.basisExplanation", v), option: (o) => (BASIS_KEY[o] ? L.t(`trivia.basis.${BASIS_KEY[o]}`) : undefined) };
+      },
     })
   );
   const placeRegions = [...new Set(PLACES.map((p) => p.region))];
@@ -415,6 +533,10 @@ function gameItems(): TriviaItem[] {
       explanation: `${r.place} is in the ${r.region} region.`,
       source: r.source,
       from: { table: "places", index, field: "region" },
+      loc: (L) => {
+        const v = { place: placeIn(L, r.place), region: regionIn(L, r.region) };
+        return { prompt: L.t("trivia.games.placePrompt", v), explanation: L.t("trivia.games.placeExplanation", v), option: (o) => L.name("regions", o) };
+      },
     })
   );
   return items;
@@ -431,6 +553,7 @@ function handwrittenItems(): TriviaItem[] {
     distractors: r.distractors,
     source: r.source,
     explanation: r.explanation,
+    loc: handwrittenLoc("games", r),
   }));
 }
 

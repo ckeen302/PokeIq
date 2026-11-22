@@ -3,6 +3,7 @@ import { z } from "zod";
 import { playerRateLimit } from "@/lib/server/rate-limit";
 import { claimOnce, recallResponse, rememberResponse, requestFingerprint } from "@/lib/server/replay-guard";
 import { nextQuestion, readSession, type NextOutcome } from "@/lib/server/session";
+import { loadQuizLang } from "@/engines";
 import type { NextResponse as NextQuestionResponse } from "@/lib/session-types";
 
 /**
@@ -38,6 +39,7 @@ export async function POST(request: NextRequest) {
 
   let outcome: NextOutcome;
   try {
+    await loadQuizLang(state.spec.locale);
     outcome = nextQuestion(state);
   } catch (err) {
     console.error("[api/session/next]", err);

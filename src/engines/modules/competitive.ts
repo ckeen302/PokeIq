@@ -1,6 +1,8 @@
 import { Dex } from "@pkmn/dex";
 import type { Rng } from "@/lib/rng";
 import type { Difficulty, GenerateOptions, Question, QuestionBuilder } from "../types";
+import type { QuizLang } from "../i18n";
+import { localizable, must, wordOptions, type Wording } from "../localize";
 
 /**
  * Ability, Move & Item quiz, generated from the Pokémon Showdown data
@@ -109,10 +111,11 @@ export const competitive: QuestionBuilder = (rng, opts): Question | null => {
     answer: string,
     wrong: string[],
     explanation: string,
-    detail?: string
+    detail?: string,
+    reword?: (q: Question, L: QuizLang) => Wording | null
   ): Question => {
     opts.used.add(entry.key);
-    return {
+    const q: Question = {
       itemKey: `competitive:${kind}:${id}`,
       module: "competitive",
       prompt,
@@ -122,6 +125,7 @@ export const competitive: QuestionBuilder = (rng, opts): Question | null => {
       explanation,
       rating: ratingFor(kind, entry.gen),
     };
+    return reword ? localizable(q, (L) => reword(q, L)) : q;
   };
 
   if (kind === "holder") {
@@ -131,16 +135,34 @@ export const competitive: QuestionBuilder = (rng, opts): Question | null => {
     const answer = rng.pick(a.species);
     const holders = b.abilityHolders.get(a.name.toLowerCase().replace(/[^a-z0-9]/g, "")) ?? new Set<string>();
     const wrong = rng.sample(b.speciesNames.filter((n) => !holders.has(n)), 3);
-    return make(a.name, a, `Which of these Pokémon can have the ability ${a.name}?`, answer, wrong, `${answer} can have ${a.name}.`);
+    return make(a.name, a, `Which of these Pokémon can have the ability ${a.name}?`, answer, wrong, `${answer} can have ${a.name}.`, undefined, (q, L) => {
+      const ability = must(L.name("abilities", a.name), a.name);
+      const named = wordOptions(q, (n) => L.pokemonNamed(n));
+      return named && { prompt: L.t("comp.holderPrompt", { ability }), ...named, explanation: L.t("comp.holderExplanation", { name: named.answer, ability }) };
+    });
   }
   if (kind === "move-type" || kind === "move-category") {
     const pool = open(b.moves, opts);
     if (pool.length === 0) return null;
     const m = rng.pick(pool);
     if (kind === "move-type") {
-      return make(m.name, m, `What type is the move ${m.name}?`, m.type, rng.sample(TYPES.filter((t) => t !== m.type), 3), `${m.name} is a ${m.type}-type move.`, "In the current games");
+      return make(m.name, m, `What type is the move ${m.name}?`, m.type, rng.sample(TYPES.filter((t) => t !== m.type), 3), `${m.name} is a ${m.type}-type move.`, "In the current games", (q, L) => {
+        const move = must(L.name("moves", m.name), m.name);
+        const named = wordOptions(q, (t) => L.type(t.toLowerCase()));
+        return named && { prompt: L.t("comp.moveTypePrompt", { move }), detail: L.t("comp.current"), ...named, explanation: L.t("comp.moveTypeExplanation", { move, type: named.answer }) };
+      });
     }
-    return make(m.name, m, `Is the move ${m.name} Physical, Special or Status?`, m.category, CATEGORIES.filter((c) => c !== m.category), `${m.name} is a ${m.category} move.`, "In the current games");
+    return make(m.name, m, `Is the move ${m.name} Physical, Special or Status?`, m.category, CATEGORIES.filter((c) => c !== m.category), `${m.name} is a ${m.category} move.`, "In the current games", (q, L) => {
+      const move = must(L.name("moves", m.name), m.name);
+      const category = (c: string) => L.t(`comp.category.${c.toLowerCase() as "physical" | "special" | "status"}`);
+      const named = wordOptions(q, category);
+      return named && {
+        prompt: L.t("comp.categoryPrompt", { move, physical: category("Physical"), special: category("Special"), status: category("Status") }),
+        detail: L.t("comp.current"),
+        ...named,
+        explanation: L.t("comp.categoryExplanation", { move, category: named.answer }),
+      };
+    });
   }
   if (kind === "item-desc") {
     const pool = open(b.items, opts);
@@ -149,7 +171,8 @@ export const competitive: QuestionBuilder = (rng, opts): Question | null => {
     const same = b.items.filter((o) => o.berry === it.berry && o.desc !== it.desc);
     const wrong = [...new Set(rng.sample(same, 8).map((o) => o.desc))].slice(0, 3);
     if (wrong.length < 3) return null;
-    return make(it.name, it, `What does the item ${it.name} do?`, it.desc, wrong, `${it.name}: ${it.desc}`);
+    const itemOf = new Map([it, ...same].map((o) => [o.desc, o.name]));
+    return make(it.name, it, `What does the item ${it.name} do?`, it.desc, wrong, `${it.name}: ${it.desc}`, undefined, (q, L) => descriptions(q, L, "items", it.name, itemOf));
   }
   const pool = open(b.abilities, opts);
   if (pool.length === 0) return null;
@@ -157,5 +180,22 @@ export const competitive: QuestionBuilder = (rng, opts): Question | null => {
   const others = b.abilities.filter((o) => o.desc !== a.desc);
   const wrong = [...new Set(rng.sample(others, 8).map((o) => o.desc))].slice(0, 3);
   if (wrong.length < 3) return null;
-  return make(a.name, a, `What does the ability ${a.name} do?`, a.desc, wrong, `${a.name}: ${a.desc}`);
+  const abilityOf = new Map([a, ...others].map((o) => [o.desc, o.name]));
+  return make(a.name, a, `What does the ability ${a.name} do?`, a.desc, wrong, `${a.name}: ${a.desc}`, undefined, (q, L) => descriptions(q, L, "abilities", a.name, abilityOf));
 };
+
+/**
+ * "What does X do?" in another language: the games' own description of each option's Ability or item (the English
+ * options are Showdown's summaries, which have no translation). A description that names its own item, or two
+ * options the language describes alike, can't be served.
+ */
+function descriptions(q: Question, L: QuizLang, kind: "abilities" | "items", english: string, nameOf: Map<string, string>): Wording | null {
+  const name = must(L.name(kind, english), english);
+  const named = wordOptions(q, (desc) => {
+    const owner = nameOf.get(desc);
+    return owner ? L.description(kind, owner)?.replace(/\s+/g, " ").trim() : undefined;
+  });
+  if (!named || named.answer.toLowerCase().includes(name.toLowerCase())) return null;
+  const prompt = L.t(kind === "items" ? "comp.itemPrompt" : "comp.abilityPrompt", { name });
+  return { prompt, ...named, explanation: L.t("comp.descExplanation", { name, desc: named.answer }) };
+}

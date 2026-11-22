@@ -1,0 +1,195 @@
+{
+  "describe": "It's {name}, the {genus} — {types} type from Gen {gen} ({region}).",
+  "describeShort": "It's {name} — {types} type from Gen {gen} ({region}).",
+  "stat": {
+    "bst": "base stat total"
+  },
+  "whosThat": {
+    "prompt": "Who's that Pokémon?",
+    "zoomed": "Who's that Pokémon? (Zoomed in!)"
+  },
+  "cry": {
+    "prompt": "Whose cry is this?",
+    "hintEasy": "Hint: it's a {types} type from Gen {gen}.",
+    "hintMedium": "Hint: it debuted in Gen {gen}."
+  },
+  "zoom": {
+    "prompt": "Zoom Reveal: who's that Pokémon?"
+  },
+  "shiny": {
+    "prompt": "Which one is the real shiny {name}?",
+    "hard": "The fakes are very close this time. Look at the details.",
+    "explanation": "That is {name}'s real shiny colouring."
+  },
+  "dex": {
+    "entryPrompt": "Which Pokémon does this Pokédex entry describe?",
+    "entry": "“{entry}”",
+    "entryGenus": "{entry} — the {genus}",
+    "genusPrompt": "Which Pokémon is known as the “{genus}”?",
+    "abilityPrompt": "Which of these is one of {name}'s abilities?",
+    "abilityExplanation": "{name}'s abilities: {abilities}.",
+    "hidden": "{ability} (hidden)"
+  },
+  "types": {
+    "typingPrompt": "What type is {name}?",
+    "typingExplanation": "{name} is {types} type.",
+    "defender": "{name} ({types})",
+    "effPrompt": "How effective is a {type}-type move against {defender}?",
+    "effExplanation": "{calc}.",
+    "immune": "0× (immune)",
+    "fourXPrompt": "Which type is 4× super effective against {defender}?",
+    "fourXExplanation": "{types} is 4× weak to {weak}.",
+    "immunePrompt": "Which attacking type has NO effect on {defender}?",
+    "immuneExplanation": "{types} is immune to {immune}."
+  },
+  "hl": {
+    "higher": {
+      "hp": "Which Pokémon has the higher base HP?",
+      "atk": "Which Pokémon has the higher base Attack?",
+      "def": "Which Pokémon has the higher base Defense?",
+      "spa": "Which Pokémon has the higher base Sp. Atk?",
+      "spd": "Which Pokémon has the higher base Sp. Def?",
+      "spe": "Which Pokémon has the higher base Speed?",
+      "bst": "Which Pokémon has the higher base stat total?",
+      "height": "Which Pokémon is taller?",
+      "weight": "Which Pokémon is heavier?"
+    },
+    "lower": {
+      "hp": "Which Pokémon has the lower base HP?",
+      "atk": "Which Pokémon has the lower base Attack?",
+      "def": "Which Pokémon has the lower base Defense?",
+      "spa": "Which Pokémon has the lower base Sp. Atk?",
+      "spd": "Which Pokémon has the lower base Sp. Def?",
+      "spe": "Which Pokémon has the lower base Speed?",
+      "bst": "Which Pokémon has the lower base stat total?",
+      "height": "Which Pokémon is shorter?",
+      "weight": "Which Pokémon is lighter?"
+    },
+    "metres": "{n} m",
+    "kilograms": "{n} kg",
+    "bstValue": "{n} BST",
+    "statValue": "{n} {stat}",
+    "explanation": "{a}: {va} · {b}: {vb}."
+  },
+  "comp": {
+    "holderPrompt": "Which of these Pokémon can have the ability {ability}?",
+    "holderExplanation": "{name} can have {ability}.",
+    "moveTypePrompt": "What type is the move {move}?",
+    "moveTypeExplanation": "{move} is a {type}-type move.",
+    "current": "In the current games",
+    "categoryPrompt": "Is the move {move} {physical}, {special} or {status}?",
+    "categoryExplanation": "{move} is a {category} move.",
+    "category": {
+      "physical": "Physical",
+      "special": "Special",
+      "status": "Status"
+    },
+    "itemPrompt": "What does the item {name} do?",
+    "abilityPrompt": "What does the ability {name} do?",
+    "descExplanation": "{name}: {desc}"
+  },
+  "trivia": {
+    "gen": "Generation {n, select, 1 {I} 2 {II} 3 {III} 4 {IV} 5 {V} 6 {VI} 7 {VII} 8 {VIII} other {IX}}",
+    "gym": {
+      "leaderPrompt": "In {game}, who is the {place} Gym Leader?",
+      "placePrompt": "In {game}, where is {leader}'s Gym?",
+      "explanation": "{leader} leads the {place} Gym in {game}.",
+      "typePrompt": "In {game}, which type does Gym Leader {leader} specialize in?",
+      "typeExplanation": "{leader} is a {type}-type specialist in {game}."
+    },
+    "e4": {
+      "typePrompt": "In {game}, which type does Elite Four member {member} specialize in?",
+      "typeExplanation": "{member} of the Elite Four specializes in {type}-type Pokémon.",
+      "memberPrompt": "In {game}, which Elite Four member specializes in {type}-type Pokémon?",
+      "memberExplanation": "{member} is the {type}-type specialist of the Elite Four."
+    },
+    "champion": {
+      "prompt": "Who is the Pokémon League Champion in {game}?",
+      "explanation": "{champion} is the Champion in {game}."
+    },
+    "professor": {
+      "prompt": "Who is the regional Pokémon Professor in {game}?",
+      "explanation": "{professor} is the Pokémon Professor in {game}."
+    },
+    "starter": {
+      "prompt": "In {game}, which Pokémon is the {type}-type starter?",
+      "explanation": "{game} lets you choose {grass}, {fire} or {water}."
+    },
+    "boxArt": {
+      "prompt": "Which Pokémon appears on the box art of {game}?",
+      "explanation": "{pokemon} is the mascot of {game}."
+    },
+    "exclusive": {
+      "prompt": "Which of these Pokémon is exclusive to {side}, compared with {other}?",
+      "explanation": "{pokemon} is exclusive to {side}."
+    },
+    "villain": {
+      "teamPrompt": "In {game}, which organization is led by {leader}?",
+      "leaderPrompt": "In {game}, who leads {team}?",
+      "explanation": "{leader} leads {team}."
+    },
+    "teamStar": {
+      "prompt": "In {game}, which type does {team} boss {boss} use?",
+      "explanation": "{boss} leads a {type}-type crew of {team}."
+    },
+    "mechanic": {
+      "genPrompt": "Which generation introduced {name}?",
+      "genExplanation": "{games} ({gen}) introduced {name}.",
+      "gamesPrompt": "Which games introduced {name}?",
+      "gamesExplanation": "{games} introduced {name}.",
+      "abilities": "Abilities",
+      "natures": "Natures",
+      "doubles": "Double Battles",
+      "contests": "Pokémon Contests",
+      "heldItems": "held items",
+      "breeding": "Pokémon breeding and Eggs",
+      "shiny": "Shiny Pokémon",
+      "steelDark": "the Steel and Dark types",
+      "split": "the physical/special split",
+      "gts": "the Global Trade Station (GTS)",
+      "hiddenAbilities": "Hidden Abilities",
+      "triples": "Triple Battles",
+      "fairy": "the Fairy type",
+      "mega": "Mega Evolution",
+      "zMoves": "Z-Moves",
+      "dynamax": "Dynamax",
+      "tera": "Terastallization"
+    },
+    "games": {
+      "regionPrompt": "In which region is {title} set?",
+      "regionExplanation": "{title} is set in the {region} region.",
+      "genPrompt": "Which generation does {title} belong to?",
+      "genExplanation": "{title} is a {gen} game.",
+      "firstPrompt": "Which of these games came out first?",
+      "firstExplanation": "{title} is a {gen} game, older than the others.",
+      "basisPrompt": "Which real-world place inspired the {region} region?",
+      "basisExplanation": "{region} is based on {basis}.",
+      "placePrompt": "In which region is {place}?",
+      "placeExplanation": "{place} is in the {region} region."
+    },
+    "basis": {
+      "kyushu": "Kyushu",
+      "hokkaido": "Hokkaido",
+      "newYork": "New York City",
+      "france": "France",
+      "hawaii": "Hawaii",
+      "britain": "Great Britain",
+      "iberia": "the Iberian Peninsula"
+    },
+    "league": {
+      "finalPrompt": "Who did {ash} defeat in the final of the {league}?",
+      "outPrompt": "Who knocked {ash} out of the {league}?",
+      "wonExplanation": "{ash} beat {opponent} to win the {league}.",
+      "outExplanation": "{opponent} eliminated {ash} ({result}).",
+      "resultPrompt": "How far did {ash} get in the {league}?",
+      "resultExplanation": "{ash}'s result in the {league}: {result}."
+    },
+    "result": {
+      "top16": "Top 16",
+      "top8": "Top 8",
+      "top4": "Top 4",
+      "runnerUp": "Runner-up",
+      "winner": "Winner"
+    }
+  }
+}

@@ -35,6 +35,7 @@ export const questionSchema = z
     rating: z.number().min(400).max(2400),
     input: z.enum(["name", "type"]).optional(),
     reveal: z.number().int().min(1).optional(),
+    optionAliases: z.array(z.array(z.string())).optional(),
   })
   .superRefine((q, ctx) => {
     // Typed-name questions have no options at all; every other kind has 2–6.
@@ -54,6 +55,11 @@ export const questionSchema = z
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: "duplicate options" });
     }
   });
+
+/** The gate without the log line, for another language's wording of a question (one that fails is swapped, by design). */
+export function isServable(q: Question): boolean {
+  return questionSchema.safeParse(q).success;
+}
 
 export function isValidQuestion(q: Question): boolean {
   const result = questionSchema.safeParse(q);

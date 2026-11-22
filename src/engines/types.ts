@@ -67,6 +67,11 @@ export interface Question {
    * one by one on request (POST /api/session/reveal) and cost points.
    */
   reveal?: number;
+  /**
+   * Typed trainer names in another language (Whose Team Is This?): other spellings the guess box accepts for each
+   * option, same order (the English name, kana, rōmaji). Never set in English.
+   */
+  optionAliases?: string[][];
 }
 
 export interface GenerateOptions {

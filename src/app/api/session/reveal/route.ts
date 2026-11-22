@@ -3,6 +3,7 @@ import { z } from "zod";
 import { playerRateLimit } from "@/lib/server/rate-limit";
 import { claimOnce, recallResponse, rememberResponse, requestFingerprint } from "@/lib/server/replay-guard";
 import { readSession, revealCard, type RevealOutcome } from "@/lib/server/session";
+import { loadQuizLang } from "@/engines";
 import type { RevealResponse } from "@/lib/session-types";
 
 /**
@@ -34,6 +35,7 @@ export async function POST(request: NextRequest) {
 
   let outcome: RevealOutcome;
   try {
+    await loadQuizLang(state.spec.locale);
     outcome = revealCard(state);
   } catch (err) {
     console.error("[api/session/reveal]", err);

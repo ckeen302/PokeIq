@@ -1,0 +1,195 @@
+{
+  "describe": "Das ist {name}, das {genus} – Typ {types} aus der {gen}. Generation ({region}).",
+  "describeShort": "Das ist {name} – Typ {types} aus der {gen}. Generation ({region}).",
+  "stat": {
+    "bst": "Basiswert-Summe"
+  },
+  "whosThat": {
+    "prompt": "Wer ist das Pokémon?",
+    "zoomed": "Wer ist das Pokémon? (Herangezoomt!)"
+  },
+  "cry": {
+    "prompt": "Wessen Ruf ist das?",
+    "hintEasy": "Tipp: Es hat den Typ {types} und stammt aus der {gen}. Generation.",
+    "hintMedium": "Tipp: Es ist erstmals in der {gen}. Generation erschienen."
+  },
+  "zoom": {
+    "prompt": "Zoom: Wer ist das Pokémon?"
+  },
+  "shiny": {
+    "prompt": "Welches ist das echte schillernde {name}?",
+    "hard": "Die Fälschungen sind diesmal sehr ähnlich. Achte auf die Details.",
+    "explanation": "Das ist die echte schillernde Färbung von {name}."
+  },
+  "dex": {
+    "entryPrompt": "Welches Pokémon beschreibt dieser Pokédex-Eintrag?",
+    "entry": "„{entry}“",
+    "entryGenus": "{entry} – das {genus}",
+    "genusPrompt": "Welches Pokémon ist als „{genus}“ bekannt?",
+    "abilityPrompt": "Welche dieser Fähigkeiten kann {name} haben?",
+    "abilityExplanation": "Fähigkeiten von {name}: {abilities}.",
+    "hidden": "{ability} (versteckt)"
+  },
+  "types": {
+    "typingPrompt": "Welchen Typ hat {name}?",
+    "typingExplanation": "{name} hat den Typ {types}.",
+    "defender": "{name} ({types})",
+    "effPrompt": "Wie effektiv ist eine Attacke vom Typ {type} gegen {defender}?",
+    "effExplanation": "{calc}.",
+    "immune": "0× (immun)",
+    "fourXPrompt": "Welcher Typ ist gegen {defender} 4× sehr effektiv?",
+    "fourXExplanation": "{types} ist 4× anfällig gegen {weak}.",
+    "immunePrompt": "Welcher Angriffstyp hat KEINE Wirkung auf {defender}?",
+    "immuneExplanation": "{types} ist immun gegen {immune}."
+  },
+  "hl": {
+    "higher": {
+      "hp": "Welches Pokémon hat den höheren KP-Basiswert?",
+      "atk": "Welches Pokémon hat den höheren Angriffs-Basiswert?",
+      "def": "Welches Pokémon hat den höheren Verteidigungs-Basiswert?",
+      "spa": "Welches Pokémon hat den höheren Spezial-Angriffs-Basiswert?",
+      "spd": "Welches Pokémon hat den höheren Spezial-Verteidigungs-Basiswert?",
+      "spe": "Welches Pokémon hat den höheren Initiative-Basiswert?",
+      "bst": "Welches Pokémon hat die höhere Basiswert-Summe?",
+      "height": "Welches Pokémon ist größer?",
+      "weight": "Welches Pokémon ist schwerer?"
+    },
+    "lower": {
+      "hp": "Welches Pokémon hat den niedrigeren KP-Basiswert?",
+      "atk": "Welches Pokémon hat den niedrigeren Angriffs-Basiswert?",
+      "def": "Welches Pokémon hat den niedrigeren Verteidigungs-Basiswert?",
+      "spa": "Welches Pokémon hat den niedrigeren Spezial-Angriffs-Basiswert?",
+      "spd": "Welches Pokémon hat den niedrigeren Spezial-Verteidigungs-Basiswert?",
+      "spe": "Welches Pokémon hat den niedrigeren Initiative-Basiswert?",
+      "bst": "Welches Pokémon hat die niedrigere Basiswert-Summe?",
+      "height": "Welches Pokémon ist kleiner?",
+      "weight": "Welches Pokémon ist leichter?"
+    },
+    "metres": "{n} m",
+    "kilograms": "{n} kg",
+    "bstValue": "{n} insgesamt",
+    "statValue": "{n} {stat}",
+    "explanation": "{a}: {va} · {b}: {vb}."
+  },
+  "comp": {
+    "holderPrompt": "Welches dieser Pokémon kann die Fähigkeit {ability} haben?",
+    "holderExplanation": "{name} kann {ability} haben.",
+    "moveTypePrompt": "Welchen Typ hat die Attacke {move}?",
+    "moveTypeExplanation": "{move} ist eine Attacke vom Typ {type}.",
+    "current": "In den aktuellen Spielen",
+    "categoryPrompt": "Ist die Attacke {move} {physical}, {special} oder {status}?",
+    "categoryExplanation": "{move} ist eine Attacke der Kategorie {category}.",
+    "category": {
+      "physical": "Physisch",
+      "special": "Speziell",
+      "status": "Status"
+    },
+    "itemPrompt": "Was bewirkt das Item {name}?",
+    "abilityPrompt": "Was bewirkt die Fähigkeit {name}?",
+    "descExplanation": "{name}: {desc}"
+  },
+  "trivia": {
+    "gen": "{n}. Generation",
+    "gym": {
+      "leaderPrompt": "Wer leitet in {game} die Arena von {place}?",
+      "placePrompt": "Wo steht in {game} die Arena von {leader}?",
+      "explanation": "{leader} leitet in {game} die Arena von {place}.",
+      "typePrompt": "Auf welchen Typ ist {leader} in {game} als Arenaleitung spezialisiert?",
+      "typeExplanation": "{leader} ist in {game} auf den Typ {type} spezialisiert."
+    },
+    "e4": {
+      "typePrompt": "Auf welchen Typ ist {member} von den Top Vier in {game} spezialisiert?",
+      "typeExplanation": "{member} von den Top Vier ist auf Pokémon vom Typ {type} spezialisiert.",
+      "memberPrompt": "Wer von den Top Vier ist in {game} auf Pokémon vom Typ {type} spezialisiert?",
+      "memberExplanation": "Bei den Top Vier ist {member} auf den Typ {type} spezialisiert."
+    },
+    "champion": {
+      "prompt": "Wer ist in {game} der Champ der Pokémon-Liga?",
+      "explanation": "In {game} trägt {champion} den Titel des Champs."
+    },
+    "professor": {
+      "prompt": "Wer ist in {game} der Pokémon-Professor der Region?",
+      "explanation": "In {game} erforscht {professor} die Pokémon der Region."
+    },
+    "starter": {
+      "prompt": "Welches ist in {game} das Starter-Pokémon vom Typ {type}?",
+      "explanation": "In {game} kannst du {grass}, {fire} oder {water} wählen."
+    },
+    "boxArt": {
+      "prompt": "Welches Pokémon ist auf dem Cover von {game} zu sehen?",
+      "explanation": "{pokemon} ist das Cover-Pokémon von {game}."
+    },
+    "exclusive": {
+      "prompt": "Welches dieser Pokémon gibt es nur in {side}, nicht in {other}?",
+      "explanation": "{pokemon} gibt es nur in {side}."
+    },
+    "villain": {
+      "teamPrompt": "Welche Organisation wird in {game} von {leader} angeführt?",
+      "leaderPrompt": "Wer führt in {game} die Organisation {team} an?",
+      "explanation": "{leader} führt die Organisation {team} an."
+    },
+    "teamStar": {
+      "prompt": "Welchen Typ setzt {boss} von {team} in {game} ein?",
+      "explanation": "{boss} führt eine Gruppe von {team} an, die auf den Typ {type} setzt."
+    },
+    "mechanic": {
+      "genPrompt": "Seit welcher Generation gibt es {name}?",
+      "genExplanation": "{games} ({gen}) führten {name} ein.",
+      "gamesPrompt": "Welche Spiele führten {name} ein?",
+      "gamesExplanation": "{games} führten {name} ein.",
+      "abilities": "Fähigkeiten",
+      "natures": "Wesen",
+      "doubles": "Doppelkämpfe",
+      "contests": "Pokémon-Wettbewerbe",
+      "heldItems": "getragene Items",
+      "breeding": "die Pokémon-Zucht und Eier",
+      "shiny": "schillernde Pokémon",
+      "steelDark": "die Typen Stahl und Unlicht",
+      "split": "die Aufteilung in physische und spezielle Attacken",
+      "gts": "die Global Trade Station (GTS)",
+      "hiddenAbilities": "versteckte Fähigkeiten",
+      "triples": "Dreierkämpfe",
+      "fairy": "den Typ Fee",
+      "mega": "die Mega-Entwicklung",
+      "zMoves": "Z-Attacken",
+      "dynamax": "das Dynamaximieren",
+      "tera": "die Terakristallisierung"
+    },
+    "games": {
+      "regionPrompt": "In welcher Region spielt {title}?",
+      "regionExplanation": "{title} spielt in der Region {region}.",
+      "genPrompt": "Zu welcher Generation gehört {title}?",
+      "genExplanation": "{title} gehört zur {gen}.",
+      "firstPrompt": "Welches dieser Spiele ist zuerst erschienen?",
+      "firstExplanation": "{title} stammt aus der {gen} und ist älter als die anderen.",
+      "basisPrompt": "Welcher reale Ort war das Vorbild für die Region {region}?",
+      "basisExplanation": "Vorbild der Region {region}: {basis}.",
+      "placePrompt": "In welcher Region liegt {place}?",
+      "placeExplanation": "{place} liegt in der Region {region}."
+    },
+    "basis": {
+      "kyushu": "Kyūshū",
+      "hokkaido": "Hokkaidō",
+      "newYork": "New York City",
+      "france": "Frankreich",
+      "hawaii": "Hawaii",
+      "britain": "Großbritannien",
+      "iberia": "Die Iberische Halbinsel"
+    },
+    "league": {
+      "finalPrompt": "Wen besiegte {ash} im Finale der {league}?",
+      "outPrompt": "Wer warf {ash} aus der {league}?",
+      "wonExplanation": "{ash} besiegte {opponent} und gewann die {league}.",
+      "outExplanation": "{opponent} warf {ash} aus dem Turnier ({result}).",
+      "resultPrompt": "Wie weit kam {ash} in der {league}?",
+      "resultExplanation": "Ergebnis von {ash} in der {league}: {result}."
+    },
+    "result": {
+      "top16": "Achtelfinale",
+      "top8": "Viertelfinale",
+      "top4": "Halbfinale",
+      "runnerUp": "Zweiter Platz",
+      "winner": "Sieg"
+    }
+  }
+}

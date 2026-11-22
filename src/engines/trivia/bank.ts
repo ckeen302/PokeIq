@@ -1,4 +1,17 @@
 import type { Difficulty } from "../types";
+import type { QuizLang } from "../i18n";
+import { anyName } from "./words";
+
+/**
+ * A trivia question in another language: its prompt and explanation, and the language's name for each English
+ * option (undefined when it has none). Null when the question can't be faithfully asked in that language.
+ */
+export interface TriviaWording {
+  prompt: string;
+  explanation?: string;
+  option(english: string): string | undefined;
+}
+export type TriviaLoc = (L: QuizLang) => TriviaWording | null;
 
 /**
  * Trivia question banks (Mainline Games, Pokémon Anime).
@@ -24,6 +37,8 @@ export interface TriviaItem {
   explanation?: string;
   /** Generated items: the table row and field the answer comes from. */
   from?: { table: string; index: number; field: string };
+  /** How to ask it in another language (see ../localize.ts). */
+  loc?: TriviaLoc;
 }
 
 export interface HandwrittenRow {
@@ -36,6 +51,17 @@ export interface HandwrittenRow {
   source: string;
   explanation?: string;
   verify?: string[];
+  /** Only makes sense in English (a line from the English dub, an English title): never asked in other languages. */
+  englishOnly?: boolean;
+}
+
+/** A hand-written question in another language (src/data/quiz/<bank>/i18n/<locale>.json). */
+export interface HandwrittenWording {
+  prompt: string;
+  explanation?: string;
+  /** The answer and distractors, in the English order; left out when they're names the language data has. */
+  answer?: string;
+  distractors?: string[];
 }
 
 export const DIFFICULTY_ORDER: Difficulty[] = ["easy", "medium", "hard"];
@@ -65,3 +91,20 @@ export function pool(candidates: Iterable<string | undefined>, answer: string, e
 }
 
 export const ROMAN = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"];
+
+/**
+ * A hand-written question in another language, from its translation (src/data/quiz/<bank>/i18n/<locale>.json). Options
+ * the translation doesn't give are names the language data has (Pokémon, people, items, moves, places, games). A
+ * question marked English-only, or not translated, is never asked in that language.
+ */
+export function handwrittenLoc(bank: "games" | "anime", row: HandwrittenRow): TriviaLoc | undefined {
+  if (row.englishOnly) return undefined;
+  return (L) => {
+    const w = L.handwritten(bank, row.id);
+    if (!w) return null;
+    const given = new Map<string, string>();
+    if (w.answer) given.set(row.answer, w.answer);
+    w.distractors?.forEach((d, i) => given.set(row.distractors[i], d));
+    return { prompt: w.prompt, explanation: w.explanation, option: (o) => given.get(o) ?? anyName(L, o, bank === "anime" ? "anime" : "games") };
+  };
+}
