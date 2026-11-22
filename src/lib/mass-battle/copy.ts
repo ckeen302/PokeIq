@@ -63,7 +63,7 @@ export function resultTitle(winner: Winner, names: [string, string], left: [numb
   if (winner === 2) return t("draw");
   const w = names[winner];
   const one = left[winner] === 1;
-  return t(one && !/ and /.test(w) ? "winsOne" : "winsMany", { w });
+  return one && !/ and /.test(w) ? t("winsOne", { w }) : t("winsMany", { w });
 }
 
 export function resultLine(o: BattleOutcome, names: [string, string], t: CopyT = translator(mbCopy, "en", undefined)): string {

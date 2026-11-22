@@ -452,18 +452,32 @@ function analyze(file, source, compile, registry, src, addDependency, opts = {})
     for (const [param, tr] of batch) {
       if (translators.has(param)) {
         const known = translators.get(param);
+        (tr.kids ??= []).push(known);
         if (known.ns !== tr.ns) known.escapes = tr.escapes = true;
         else if (known !== tr && !known.parent && known.nsArg === null) known.parent = known.parent ?? null;
         continue;
       }
-      translators.set(param, { ns: tr.ns, nsArg: null, escapes: false, edits: [], parent: tr });
+      const kid = { ns: tr.ns, nsArg: null, escapes: false, edits: [], parent: tr };
+      (tr.kids ??= []).push(kid);
+      translators.set(param, kid);
       fresh.add(param);
     }
     if (fresh.size) scan(fresh);
   }
   if (aliases.length) for (const [, tr] of aliases) tr.escapes = true;
-  // An alias that escapes takes its translator's namespace with it.
-  for (const tr of translators.values()) if (tr.escapes) for (let p = tr.parent; p; p = p.parent) p.escapes = true;
+  // A translator, the parameters it is handed to and theirs form one group (a helper's parameter can be handed
+  // translators by several callers, and a typed parameter is a translator of its own): one escape anywhere in it
+  // and every translator in the group keeps its namespace.
+  const group = new Map();
+  const find = (tr) => {
+    let r = tr;
+    while (group.get(r) !== r) r = group.get(r);
+    return r;
+  };
+  for (const tr of translators.values()) group.set(tr, tr);
+  for (const tr of translators.values()) for (const other of [tr.parent, ...(tr.kids ?? [])]) if (other) group.set(find(tr), find(other));
+  const escaping = new Set([...translators.values()].filter((tr) => tr.escapes).map(find));
+  for (const tr of translators.values()) if (escaping.has(find(tr))) tr.escapes = true;
   const rootOf = (tr) => {
     let r = tr;
     while (r.parent) r = r.parent;
