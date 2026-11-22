@@ -764,7 +764,7 @@ function AnswerTile({ index, option, phase, selected, graded, onPick, card, chil
         card ? "py-3" : "min-h-[52px] py-2.5",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         !locked && "hover:border-screen/60 hover:bg-screen/[0.06]",
-        phase === "submitting" && isPicked && "border-screen/70 bg-screen/10",
+        phase === "submitting" && isPicked && "border-[color:hsl(var(--screen)/0.7)] bg-screen/10",
         graded && isAnswer && "border-success bg-success/15 shadow-[0_0_18px_-6px_hsl(var(--success))]",
         wrongPick && "border-destructive bg-destructive/15",
         graded && !isAnswer && !isPicked && "opacity-50"
