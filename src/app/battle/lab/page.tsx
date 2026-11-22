@@ -9,6 +9,8 @@ import battlePages from "@/messages/battle-tools-pages";
 import battleTeams from "@/messages/battle-teams";
 import battleTerms from "@/messages/battle-terms";
 import battlePickers from "@/messages/battle-pickers";
+import battleLab from "@/messages/battle-lab";
+import battleLabCharts from "@/messages/battle-lab-charts";
 
 export function generateMetadata(): Metadata {
   const t = serverT(battlePages);
@@ -27,7 +29,7 @@ export default function LabPage() {
       <BattleHeader crumb={t("lab.crumb")} title={t("lab.heading")} accent={t("lab.accent")}>
         {t("lab.intro")}
       </BattleHeader>
-      <ClientMessages namespaces={[battleTeams, battleTerms, battlePickers]}>
+      <ClientMessages namespaces={[battleLab, battleLabCharts, battleTeams, battleTerms, battlePickers]}>
         <BattleLab />
       </ClientMessages>
     </div>

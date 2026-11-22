@@ -20,6 +20,8 @@ export const NAMESPACES = [
   "battle-glicko",
   "battle-group",
   "battle-home",
+  "battle-lab",
+  "battle-lab-charts",
   "battle-ladder",
   "battle-pages",
   "battle-pickers",

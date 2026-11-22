@@ -254,12 +254,20 @@ export const DEFAULT_RUNS = 1_000;
 /** How many Pokémon start in battle per side. */
 export const activeCount = (setup: Pick<LabSetup, "doubles">) => (setup.doubles ? 2 : 1);
 
-/** What to call each side: "Piplup" for a one-Pokémon side, else (or in a mirror match) "Side A" / "Side B". */
-export function sideLabels(setup: LabSetup): [string, string] {
+/**
+ * What to call each side: "Piplup" for a one-Pokémon side, else (or in a mirror match) "Side A" / "Side B".
+ * Another language passes its side names and species names (a nickname stays as it is).
+ */
+export function sideLabels(
+  setup: LabSetup,
+  words: { sides?: readonly [string, string]; species?: (name: string) => string } = {}
+): [string, string] {
+  const sides = words.sides ?? SIDE_NAMES;
+  const species = words.species ?? ((name: string) => name);
   const one = (side: 0 | 1) => {
     const team = setup.sides[side].team;
-    return team.length === 1 ? team[0].set.name || team[0].set.species : SIDE_NAMES[side];
+    return team.length === 1 ? team[0].set.name || species(team[0].set.species) : sides[side];
   };
   const labels: [string, string] = [one(0), one(1)];
-  return labels[0] === labels[1] ? [SIDE_NAMES[0], SIDE_NAMES[1]] : labels;
+  return labels[0] === labels[1] ? [sides[0], sides[1]] : labels;
 }
