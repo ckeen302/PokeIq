@@ -7,6 +7,8 @@ import { dexBreadcrumbs, dexDescription, dexSummary, dexTitle } from "@/lib/poke
 import { POKEDEX, artworkUrl, getPokemonBySlug } from "@/lib/pokemon/pokedex";
 import { getDexEntry } from "@/lib/pokemon/details";
 import { DexEntry } from "@/components/pokedex/entry/DexEntry";
+import { SpritesSection } from "@/components/pokedex/entry/SpritesSection";
+import { dexSpriteColumns } from "@/lib/pokemon/dex-sprites";
 import { PokemonCards } from "@/components/tcg/PokemonCards";
 import { cardLinksForDex } from "@/lib/tcg/card-index";
 import { capitalize } from "@/lib/pokemon/type-matrix";
@@ -39,6 +41,7 @@ export default async function PokemonPage({ params }: PageProps) {
   if (!p) notFound();
   const data = getDexEntry(p);
   const cards = await cardLinksForDex(p.id, 6);
+  const spriteColumns = dexSpriteColumns(p.id);
 
   const pageLd = {
     "@context": "https://schema.org",
@@ -53,7 +56,7 @@ export default async function PokemonPage({ params }: PageProps) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(pageLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(dexBreadcrumbs(p)) }} />
       <BackButton href="/pokedex" label="Back to Pokédex" className="mb-4" />
-      <DexEntry key={p.id} data={data} />
+      <DexEntry key={p.id} data={data} sprites={spriteColumns.length > 0 && <SpritesSection name={p.name} columns={spriteColumns} />} />
       <PokemonCards key={`cards-${p.id}`} dex={p.id} name={p.name} />
       <section className="mx-auto mt-10 max-w-3xl space-y-3 text-sm text-muted-foreground" aria-label={`About ${p.name}`}>
         <h2 className="font-display text-base font-bold uppercase tracking-wider text-foreground">{p.name} summary</h2>
