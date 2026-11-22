@@ -18,13 +18,13 @@
     "stage": "Fase evolutiva: Bebé, y luego de 1 a 3. Cerca: a una fase (un Bebé nunca está cerca)."
   },
   "helpStrict": {
-    "gen": "Generación. Solo ▲ / ▼, sin «cerca».",
+    "gen": "Generación. Solo ▲ / ▼, sin “cerca”.",
     "type1": "Tipo principal. Amarillo: la respuesta tiene este tipo como segundo tipo.",
     "type2": "Tipo secundario (Ninguno si no tiene). Amarillo: la respuesta tiene este tipo como primer tipo.",
-    "height": "Altura. Solo ▲ / ▼, sin «cerca».",
-    "weight": "Peso. Solo ▲ / ▼, sin «cerca».",
+    "height": "Altura. Solo ▲ / ▼, sin “cerca”.",
+    "weight": "Peso. Solo ▲ / ▼, sin “cerca”.",
     "color": "El color de la Pokédex. Coincide o no coincide.",
-    "stage": "Fase evolutiva: Bebé, y luego de 1 a 3. Solo ▲ / ▼, sin «cerca»."
+    "stage": "Fase evolutiva: Bebé, y luego de 1 a 3. Solo ▲ / ▼, sin “cerca”."
   },
   "status": {
     "match": "coincide",
@@ -70,7 +70,7 @@
     "custom": "A medida"
   },
   "formatBlurb": {
-    "classic": "Siete pistas, con avisos de «cerca» (amarillo) cuando te quedas a poco.",
+    "classic": "Siete pistas, con avisos de “cerca” (amarillo) cuando te quedas a poco.",
     "squirdle": "Generación, tipos, altura y peso, solo con ▲ / ▼. Los intentos dependen del rango de generaciones.",
     "custom": "Elige las columnas de pistas que quieras (3 o más)."
   },
@@ -132,8 +132,8 @@
     "hints": "Ayudas",
     "on": "Sí",
     "off": "No",
-    "close": "Aviso «cerca»",
-    "closeNever": "Datos nunca tiene avisos de «cerca»",
+    "close": "Aviso “cerca”",
+    "closeNever": "Datos nunca tiene avisos de “cerca”",
     "closeTitle": "▲ / ▼ amarillos cuando te quedas a poco",
     "strictTitle": "Estricto: solo ▲ / ▼",
     "strict": "Estricto (solo ▲ / ▼)",
@@ -183,7 +183,7 @@
     "list": "Pokédex",
     "failed": "No se ha podido cargar la Pokédex.",
     "loading": "Cargando la Pokédex",
-    "empty": "Aquí no hay ningún Pokémon. Prueba con «Mostrar todo».",
+    "empty": "Aquí no hay ningún Pokémon. Prueba con “Mostrar todo”.",
     "generation": "Generación {n}",
     "left": "Quedan {n} en juego",
     "how": "Cómo funciona la Pokédex",

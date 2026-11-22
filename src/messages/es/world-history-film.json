@@ -49,6 +49,6 @@
   "video": "Vídeo",
   "close": "Cerrar",
   "copied": "Enlace copiado",
-  "quoteOpen": "«",
-  "quoteClose": "»"
+  "quoteOpen": "“",
+  "quoteClose": "”"
 }

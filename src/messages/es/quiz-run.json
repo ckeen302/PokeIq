@@ -64,7 +64,7 @@
     "revealNext": "Revelar otro ({pct} %)",
     "nameLabel": "Nombre del Entrenador",
     "placeholder": "Escribe el nombre de un Entrenador…",
-    "also": "también «{name}»",
+    "also": "también “{name}”",
     "guess": "Responder",
     "pick": "Elige un Entrenador de la lista.",
     "gotIt": "¡Acertaste!",

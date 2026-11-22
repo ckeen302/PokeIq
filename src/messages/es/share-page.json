@@ -74,7 +74,7 @@
   "connections": {
     "solved": "Encontró {size, select, five {los cinco grupos} other {los cuatro grupos}} {mistakes, plural, =0 {sin fallos} one {con {mistakes} fallo} other {con {mistakes} fallos}}",
     "solvedIn": "Encontró {size, select, five {los cinco grupos} other {los cuatro grupos}} {mistakes, plural, =0 {sin fallos} one {con {mistakes} fallo} other {con {mistakes} fallos}} en {time}",
-    "notSolved": "Encontró {found} de {size} grupos antes de quedarse sin fallos",
+    "notSolved": "Encontró {found} de {size} grupos antes de agotar los fallos",
     "perfect": "Perfecto",
     "solvedHeadline": "Resuelto",
     "hint": "Pista usada",

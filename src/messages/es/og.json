@@ -63,7 +63,7 @@
     "title2": "los cuatro",
     "title3": "grupos",
     "subtitle": "Dieciséis Pokémon, cuatro conexiones ocultas y cuatro fallos de margen.",
-    "footer": "Juega el de hoy, con un «¿Por qué?» en cada respuesta →"
+    "footer": "Juega el de hoy, con un “¿Por qué?” en cada respuesta →"
   },
   "guessr": {
     "eyebrow": "PokéGuessr · nueva cada día",
@@ -205,7 +205,7 @@
       "footer": "Hazte con casillas con un Pokémon que encaje · tres en raya gana →"
     },
     "name-em-all": {
-      "eyebrow": "Carrera de Name 'em All",
+      "eyebrow": "Carrera de Nómbralos a todos",
       "footer": "Los mismos Pokémon para todos · gana quien los nombre todos primero →"
     }
   },
@@ -219,7 +219,7 @@
     }
   },
   "nameEmAll": {
-    "eyebrow": "Name 'em All · quiz de memoria",
+    "eyebrow": "Nómbralos a todos · quiz de memoria",
     "title1": "¿Puedes nombrar",
     "title2": "a todos los Pokémon?",
     "subtitle": "Escribe todos los Pokémon que recuerdes antes de que se acabe el tiempo. Una categoría nueva cada día.",
@@ -426,7 +426,7 @@
     "realStats": "Estadísticas reales y física real, en 3D.",
     "recordsEyebrow": "Los Juegos PokéIQ · récords de {event}",
     "recordHolder": "{name} tiene el récord con {mark} entre todos los Pokémon.",
-    "recordsFooter": "Mira el top 10 →",
+    "recordsFooter": "Mira los diez mejores →",
     "wins": "GANA",
     "medals": {
       "1": "Oro",

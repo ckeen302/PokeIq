@@ -55,7 +55,7 @@
   "nowFriends": "¡{name} y tú ya sois amigos!",
   "requestSent": "Solicitud enviada a {name}.",
   "sendFailed": "No se ha podido enviar la solicitud.",
-  "name": "Nombre de entrenador",
+  "name": "Nombre de Entrenador",
   "namePlaceholder": "Su nombre de cuenta",
   "send": "Enviar",
   "findUser": "¿No sabes el nombre? Busca un usuario",

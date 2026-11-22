@@ -34,7 +34,7 @@
   "emotes": {
     "send": "Enviar una reacción",
     "menu": "Reacciones",
-    "sendOne": "Enviar «{label}»",
+    "sendOne": "Enviar “{label}”",
     "pika": "¡Pika!",
     "huh": "¿Eh?",
     "zzz": "Zzz…",

@@ -55,16 +55,16 @@
     "johto": "Johto",
     "hoenn": "Hoenn",
     "sinnoh": "Sinnoh",
-    "unova": "Unova",
+    "unova": "Teselia",
     "kalos": "Kalos",
     "alola": "Alola",
     "galar": "Galar",
     "paldea": "Paldea",
     "kitakami": "Kitakami",
-    "blueberryacademy": "Blueberry Academy",
-    "seviiislands": "Sevii Islands",
-    "isleofarmor": "Isle of Armor",
-    "crowntundra": "Crown Tundra"
+    "blueberryacademy": "Academia Arándano",
+    "seviiislands": "Islas Sete",
+    "isleofarmor": "Isla de la Armadura",
+    "crowntundra": "Nieves de la Corona"
   },
   "games": {
     "red": "Rojo",

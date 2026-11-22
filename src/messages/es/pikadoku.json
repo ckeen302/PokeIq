@@ -147,7 +147,7 @@
     "intro": "Todos los Pokémon que encajan en cada casilla.",
     "introRare": "Todos los Pokémon que encajan en cada casilla, de más a menos raro, con el porcentaje de jugadores que los eligieron.",
     "miss": "{name} no encaja en {cats}.",
-    "missCat": "«{label}»",
+    "missCat": "“{label}”",
     "missOr": "{a} ni en {b}",
     "valid": "{total} válidos",
     "notFilled": "Sin rellenar",
@@ -249,9 +249,9 @@
     "own": "Los tipos, las estadísticas y las habilidades de una forma son suyos. Su línea evolutiva, si es legendario y sus movimientos son los de su especie.",
     "region": "Una forma regional cuenta para la región en la que debutó: Raichu de Alola es de Alola; Meowth de Galar, de Galar; Wooper de Paldea, de Paldea; Growlithe de Hisui, de Hisui. Las megaevoluciones y las formas Gigamax cuentan para la región de su especie.",
     "reuse": "Sin repeticiones: una forma y su especie son el mismo Pokémon. Si usas Charizard, Mega-Charizard X también queda ocupado, y al revés. (Más estricto que PokeDoku, donde las formas pueden repetirse).",
-    "species": "Una especie cuenta para «Forma de Alola» (y para las formas de otras regiones); en una categoría de tipo basta con que coincida uno de los tipos del Pokémon.",
+    "species": "Una especie cuenta para “Forma de Alola” (y para las formas de otras regiones); en una categoría de tipo basta con que coincida uno de los tipos del Pokémon.",
     "moves": "Las categorías de movimientos usan el repertorio de la especie en el último juego principal en el que aparece (Escarlata y Púrpura en la mayoría); las de estadísticas usan las estadísticas base.",
-    "evolution": "Los métodos de evolución cuentan por ambos lados: Pikachu (evoluciona con una Piedra Trueno) y Raichu (evolucionó con una) encajan en «Evoluciona con piedra»."
+    "evolution": "Los métodos de evolución cuentan por ambos lados: Pikachu (evoluciona con una Piedra Trueno) y Raichu (evolucionó con una) encajan en “Evoluciona con piedra”."
   },
   "demo": {
     "label": "Demostración: buscar a {first} y ponerlo en la casilla de {fire} y {johto}, y luego a {second} en la de {water} y {hoenn}",

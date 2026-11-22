@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Clasificaciones",
-    "description": "Los mejores entrenadores de PokéIQ: el Reto diario de hoy, las puntuaciones de PokéIQ, PokéGuessr, PokéConnections y la escalera de combates, en directo.",
+    "description": "Los mejores Entrenadores de PokéIQ: el Reto diario de hoy, las puntuaciones de PokéIQ, PokéGuessr, PokéConnections y la escalera de combates, en directo.",
     "imageAlt": "Clasificaciones de PokéIQ"
   },
   "heading": "Clasificación",
@@ -38,7 +38,7 @@
     "soon": "La clasificación de PokéConnections llega pronto.",
     "empty": "Nadie lo ha resuelto todavía. <link>Juega al PokéConnections de hoy</link> y sé el primero.",
     "perfect": "Perfecto",
-    "footnote": "El servidor comprueba cada entrada: repite las respuestas de cada entrenador y cronometra la partida con su propio reloj. Solo entrenadores con sesión iniciada y nombre."
+    "footnote": "El servidor comprueba cada entrada: repite las respuestas de cada Entrenador y cronometra la partida con su propio reloj. Solo Entrenadores con sesión iniciada y nombre."
   },
   "geo": {
     "streak": "Racha",
@@ -79,9 +79,9 @@
     "blurbDaily": "Los mismos lugares para todos hoy. Tu primera partida entra en la clasificación.",
     "blurbWeekly": "Los mismos lugares del mapa de esta semana para todos hasta el lunes. Tu primer intento entra en la clasificación.",
     "blurbMap": "Termina una partida en este mapa y guarda tu puntuación para poner tu nombre aquí.",
-    "fewDaily": "{count, plural, one {Solo un entrenador} other {Solo # entrenadores}} en la clasificación de hoy por ahora. Hay sitio arriba.",
-    "fewWeekly": "{count, plural, one {Solo un entrenador} other {Solo # entrenadores}} en la clasificación de esta semana por ahora. Hay sitio arriba.",
-    "fewMap": "{count, plural, one {Solo un entrenador} other {Solo # entrenadores}} en esta clasificación por ahora. Hay sitio arriba.",
+    "fewDaily": "{count, plural, one {Solo un Entrenador} other {Solo # Entrenadores}} en la clasificación de hoy por ahora. Hay sitio arriba.",
+    "fewWeekly": "{count, plural, one {Solo un Entrenador} other {Solo # Entrenadores}} en la clasificación de esta semana por ahora. Hay sitio arriba.",
+    "fewMap": "{count, plural, one {Solo un Entrenador} other {Solo # Entrenadores}} en esta clasificación por ahora. Hay sitio arriba.",
     "pastDaily": "La clasificación de ese día se quedó vacía. La de hoy está abierta.",
     "pastWeekly": "La clasificación de esa semana se quedó vacía. La de esta semana está abierta."
   }

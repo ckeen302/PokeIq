@@ -43,6 +43,6 @@
     "endTitle": "Historia del mundo Pokémon",
     "endLine": "Cada capítulo, con sus fuentes"
   },
-  "quoteOpen": "«",
-  "quoteClose": "»"
+  "quoteOpen": "“",
+  "quoteClose": "”"
 }

@@ -15,7 +15,7 @@
     "nothingNeutral": "Nada del equipo golpea a este tipo ni con daño neutro",
     "nothingSe": "Nada lo golpea de forma supereficaz",
     "abilities": "Habilidades tenidas en cuenta: {notes}.",
-    "help": "Las columnas son tus Pokémon (el daño que reciben de cada tipo). «Golpe SE» cuenta los miembros con un ataque supereficaz; ✕ significa que nada golpea a ese tipo ni siquiera con daño neutro."
+    "help": "Las columnas son tus Pokémon (el daño que reciben de cada tipo). “Golpe SE” cuenta los miembros con un ataque supereficaz; ✕ significa que nada golpea a ese tipo ni siquiera con daño neutro."
   },
   "notes": {
     "wonderGuard": "{ability}: solo le afectan los golpes supereficaces",

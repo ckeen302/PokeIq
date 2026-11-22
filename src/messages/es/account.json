@@ -9,11 +9,11 @@
   "resetNote": "Tu código de recuperación anterior ya está usado. Guarda este nuevo: solo se muestra una vez.",
   "welcomeNote": "Este código de recuperación es la única forma de volver a entrar si olvidas tu contraseña. Solo se muestra una vez.",
   "offlineTitle": "Las cuentas no están disponibles",
-  "offlineBody": "Las cuentas de entrenador aún no están activadas en este servidor. Tu progreso sigue guardado en este dispositivo.",
+  "offlineBody": "Las cuentas de Entrenador aún no están activadas en este servidor. Tu progreso sigue guardado en este dispositivo.",
   "nameRejected": "Elige otro nombre.",
   "failed": "Algo ha fallado.",
   "tablist": "Cuenta",
-  "name": "Nombre de entrenador",
+  "name": "Nombre de Entrenador",
   "code": "Código de recuperación",
   "newPassword": "Nueva contraseña",
   "password": "Contraseña",
@@ -49,16 +49,16 @@
   "oauth": {
     "googleNote": "El inicio de sesión con Google está en pruebas: usa Discord si no funciona.",
     "continueWith": "Continuar con {provider}",
-    "orName": "o usa un nombre de entrenador",
+    "orName": "o usa un nombre de Entrenador",
     "errors": {
       "denied": "Se ha cancelado el inicio de sesión.",
       "expired": "El inicio de sesión ha tardado demasiado o se empezó en otra pestaña: inténtalo de nuevo.",
-      "failed": "Ahora mismo no se puede iniciar sesión con ese servicio. Inténtalo de nuevo o usa tu nombre de entrenador y contraseña.",
+      "failed": "Ahora mismo no se puede iniciar sesión con ese servicio. Inténtalo de nuevo o usa tu nombre de Entrenador y contraseña.",
       "unavailable": "Esa forma de iniciar sesión no está disponible ahora mismo.",
       "banned": "Esta cuenta está bloqueada.",
-      "linked_elsewhere": "Esa cuenta ya está vinculada a otro entrenador.",
+      "linked_elsewhere": "Esa cuenta ya está vinculada a otro Entrenador.",
       "already_linked": "Ya tienes vinculada una cuenta de ese tipo. Desvincúlala primero.",
-      "signin_required": "Inicia sesión primero y luego vincula la cuenta desde tu ficha de entrenador.",
+      "signin_required": "Inicia sesión primero y luego vincula la cuenta desde tu ficha de Entrenador.",
       "rate_limited": "Demasiados intentos: vuelve a probar dentro de un minuto."
     }
   },
@@ -68,10 +68,10 @@
     "under13": "Tienes que tener 13 años o más para crear una cuenta.",
     "loading": "Cargando",
     "back": "Volver a iniciar sesión",
-    "signedWith": "Has iniciado sesión con {provider}. Elige el nombre que verán los demás entrenadores.",
+    "signedWith": "Has iniciado sesión con {provider}. Elige el nombre que verán los demás Entrenadores.",
     "nameHint": "De 3 a 20 letras, números, _ o -.",
     "adult": "Tengo 13 años o más.",
-    "create": "Crear entrenador",
+    "create": "Crear Entrenador",
     "privacy": "Tu correo es privado. Consulta la <link>política de privacidad</link>."
   },
   "recovery": {

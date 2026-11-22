@@ -23,9 +23,9 @@
   },
   "dex": {
     "entryPrompt": "¿Qué Pokémon describe esta entrada de la Pokédex?",
-    "entry": "«{entry}»",
+    "entry": "“{entry}”",
     "entryGenus": "{entry}: el {genus}",
-    "genusPrompt": "¿Qué Pokémon es conocido como «{genus}»?",
+    "genusPrompt": "¿Qué Pokémon es conocido como “{genus}”?",
     "abilityPrompt": "¿Cuál de estas es una habilidad de {name}?",
     "abilityExplanation": "Habilidades de {name}: {abilities}.",
     "hidden": "{ability} (oculta)"
