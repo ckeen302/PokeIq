@@ -50,24 +50,23 @@ export const getMovie = (slug: string) => BY_SLUG.get(slug);
 
 /** The film pages' words (English unless a page passes its language's). */
 export type MoviesT = Translator<typeof dexMovies.en>;
-const ENGLISH: MoviesT = translator(dexMovies, "en", undefined);
 
 /** The label over a film's title: "Movie 10 · Diamond & Pearl era", "Live-action", "Coming soon". */
-export function movieKicker(m: Movie, t: MoviesT = ENGLISH): string {
+export function movieKicker(m: Movie, t: MoviesT = translator(dexMovies, "en", undefined)): string {
   if (m.number === null) return t(`era.${m.era}`);
   const era = m.kicker ?? t(`eraOf.${m.era}`);
   return t("kicker", { n: m.number, era });
 }
 
 /** Release years as shown on the page: "Japan 2007 · US 2008", or just the year when there's no confirmed release yet. */
-export function movieYears(m: Movie, t: MoviesT = ENGLISH): string {
+export function movieYears(m: Movie, t: MoviesT = translator(dexMovies, "en", undefined)): string {
   const parts = [m.years.japan && t("years.japan", { year: m.years.japan }), m.years.us && t("years.us", { year: m.years.us })].filter((x): x is string => Boolean(x));
   if (!m.premiere) return t("years.coming", { year: m.year });
   return parts.length ? parts.reduce((a, b) => t("years.join", { a, b })) : String(m.year);
 }
 
 /** Its trilogy, or the other films of its era (plus the remake or the original), with a heading for them. */
-export function relatedFor(m: Movie, t: MoviesT = ENGLISH): { title: string; films: Movie[] } {
+export function relatedFor(m: Movie, t: MoviesT = translator(dexMovies, "en", undefined)): { title: string; films: Movie[] } {
   const films = m.related.map((s) => BY_SLUG.get(s)).filter((x): x is Movie => Boolean(x));
   const sameEra = films.every((f) => f.era === m.era);
   const title = m.trilogy

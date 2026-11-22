@@ -274,7 +274,8 @@ function analyze(file, source, compile, registry, src, addDependency, opts = {})
       return false;
     };
     if (!collect(keyNode)) return undefined;
-    if (/\bt[A-Za-z]*\(/.test(keyNode.getText(sf))) return undefined;
+    // A translator call inside the key (not a method such as .test( ): its own edit would overlap.
+    if (/(?<![.\w])t[A-Za-z]*\(/.test(keyNode.getText(sf))) return undefined;
     const entries = [];
     for (const [key] of leaves(ns.tree)) if (patterns.some((re) => re.test(key))) entries.push(`${JSON.stringify(key)}:${en(ns, key)}`);
     if (!entries.length) return undefined;
