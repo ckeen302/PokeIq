@@ -1,0 +1,113 @@
+{
+  "meta": {
+    "title": "Allenatori Pokémon: tutti gli Allenatori, squadre e luoghi (gen. I–IX)",
+    "description": "Tutti gli Allenatori da Pokémon Rosso e Blu a Scarlatto e Violetto: dove si trovano e le loro squadre esatte, con livelli, mosse e strumenti tenuti, dai Capipalestra e dai Superquattro ai rivali e alle rivincite.",
+    "gameTitle": "Tutti gli Allenatori di Pokémon {game}: squadre per luogo",
+    "gameDescription": "Tutte le squadre degli Allenatori di Pokémon {game}, percorso per percorso: Capipalestra, Superquattro, rivali e ogni Allenatore comune con Pokémon, livelli, mosse e strumenti tenuti.",
+    "gameSocial": "Allenatori di {game} · Pokédex di PokéIQ",
+    "areaTitle": "Allenatori di {area} — Pokémon {game}",
+    "areaDescription": "{n, plural, one {L’unico Allenatore di {area} in Pokémon {game}, con Pokémon, livelli, mosse, strumenti tenuti e squadre delle rivincite.} other {Tutti i {n} Allenatori di {area} in Pokémon {game}, con Pokémon, livelli, mosse, strumenti tenuti e squadre delle rivincite.}}",
+    "areaSocial": "{area} · Allenatori di {game}",
+    "notableTitle": "{name} — {role}: squadre e luoghi",
+    "notableTitleType": "{name} — {role} (tipo {type}): squadre e luoghi",
+    "notableDescription": "{lead}. Tutte le squadre di {name} in {games}, con livelli, mosse e strumenti tenuti, e dove si svolge ogni lotta.",
+    "notableDescriptionLocal": "Tutte le squadre di {name} in {games}, con livelli, mosse e strumenti tenuti, e dove si svolge ogni lotta.",
+    "notableSocial": "{name} · Allenatori di PokéIQ"
+  },
+  "list": {
+    "kicker": "Database degli Allenatori",
+    "blurb": "Tutti gli Allenatori dalla generazione I alla IX: dove trovarli e la squadra esatta che usano, dal primo Ragazzo al Campione, rivincite e DLC compresi.",
+    "byGame": "Per gioco",
+    "byGameAside": "Percorso per percorso",
+    "gen": "Gen. {gen} · {regions}",
+    "notable": "Allenatori importanti",
+    "notableAside": "{n} Allenatori",
+    "sources": "Squadre, mosse e luoghi delle generazioni I–IV vengono dalle decompilazioni <pret>pret</pret> di ogni gioco; le squadre delle generazioni V–IX dalle pagine dei luoghi di <bulba>Bulbapedia</bulba>, verificate a campione su Serebii. Le strutture di lotta con avversari casuali non sono incluse."
+  },
+  "headings": {
+    "gymLeader": "Capipalestra",
+    "eliteFour": "Superquattro",
+    "trialCaptain": "Capitani",
+    "kahuna": "Kahuna",
+    "champion": "Campioni",
+    "rival": "Rivali",
+    "trainer": "Leggende",
+    "villain": "Capi dei cattivi",
+    "admin": "Ufficiali dei cattivi"
+  },
+  "roles": {
+    "gymLeader": "Capopalestra",
+    "eliteFour": "Superquattro",
+    "trialCaptain": "Capitano",
+    "kahuna": "Kahuna",
+    "champion": "Campione",
+    "rival": "Rivale",
+    "trainer": "Allenatore",
+    "villain": "Cattivo",
+    "admin": "Ufficiale"
+  },
+  "kinds": {
+    "routes": "Percorsi",
+    "towns": "Città e paesi",
+    "places": "Luoghi e dungeon"
+  },
+  "allTrainers": "Tutti gli Allenatori",
+  "game": {
+    "kicker": "Allenatori · Gen. {gen} · {regions}",
+    "title": "Pokémon {game}",
+    "intro": "Tutte le squadre degli Allenatori, luogo per luogo. Scegli un percorso, una città o un dungeon per vedere tutti quelli che puoi sfidare lì e i Pokémon esatti che usano.",
+    "notableAside": "{n} in {game}",
+    "trainers": "{n, plural, one {{n} Allenatore} other {{n} Allenatori}}",
+    "importedPret": "Importato da <link>{repo}</link>.",
+    "importedWiki": "Importato dalle pagine dei luoghi di <link>{repo}</link> e verificato a campione su Serebii. Le strutture di lotta con avversari casuali non sono incluse."
+  },
+  "area": {
+    "back": "Allenatori di {game}",
+    "kicker": "Pokémon {game} · {region}",
+    "count": "{n, plural, one {{n} Allenatore.} other {{n} Allenatori.}}",
+    "countAcross": "{n, plural, one {{n} Allenatore} other {{n} Allenatori}} in {k, plural, one {{k} zona} other {{k} zone}}.",
+    "place": "Luogo e Pokémon selvatici",
+    "atlas": "Atlante mondiale",
+    "alsoIn": "Anche in"
+  },
+  "notable": {
+    "battles": "{n, plural, one {{n} squadra} other {{n} squadre}}"
+  },
+  "team": {
+    "battles": "Lotte",
+    "firstBattle": "Prima lotta",
+    "battle": "Lotta {n}",
+    "rematch": "Rivincita",
+    "rematchN": "Rivincita {n}",
+    "chose": "Se hai scelto {pokemon}",
+    "requires": "Serve {what}",
+    "afterChampion": "Dopo essere diventato Campione",
+    "beforeHof": "Prima della Sala d’Onore",
+    "afterHof": "Dopo la Sala d’Onore",
+    "postGame": "Dopo i titoli di coda",
+    "firstVisit": "Prima visita",
+    "rolePage": "Pagina {role}",
+    "notInList": "Non è nella nostra lista di strumenti",
+    "lv": "Lv. {lv}",
+    "lvRange": "Lv. {lo}–{hi}",
+    "tera": "Tera",
+    "heldItem": "Strumento tenuto: ",
+    "moves": "Mosse",
+    "levelUpTitle": "La fonte non indica mosse per questo Pokémon, quindi queste sono le ultime che impara salendo di livello: quelle che il gioco dà al Pokémon di un Allenatore senza mosse stabilite.",
+    "levelUp": "Mosse per livello",
+    "size": "{n} Pokémon",
+    "sizeDouble": "{n} Pokémon · Lotta in doppio",
+    "only": "Solo in {version}",
+    "uses": "Usa"
+  },
+  "forms": {
+    "sandyCloak": "Manto Sabbia",
+    "trashCloak": "Manto Scarti",
+    "eastSea": "Mare Est",
+    "alolanForm": "Forma di Alola",
+    "galarianForm": "Forma di Galar",
+    "hisuianForm": "Forma di Hisui",
+    "paldeanForm": "Forma di Paldea",
+    "form": "Forma {n}"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "search": "Search a region, town, route or landmark",
+  "searchShort": "Region, town, route…",
+  "kicker": "Every mainline region · one map",
+  "title": "World <accent>Atlas</accent>",
+  "globe": "View it as a 3D globe →",
+  "searchLabel": "Search the map",
+  "go": "Go",
+  "regions": "Regions",
+  "canvas": "Map of the Pokémon world with every region. Use the search or the region buttons to jump to a place.",
+  "failed": "Couldn't load the atlas. Try reloading.",
+  "loading": "Loading the atlas",
+  "zoom": "Zoom <b>{level}</b>",
+  "zoomLevels": {
+    "world": "World",
+    "region": "Region",
+    "towns": "Towns + routes",
+    "close": "Close up"
+  },
+  "cities": "Cities",
+  "towns": "Towns",
+  "close": "Close",
+  "zoomIn": "Zoom in",
+  "zoomOut": "Zoom out",
+  "whole": "Show the whole world",
+  "help": "Scroll to zoom, drag to explore, click a place for details. Every region is drawn at the same scale from the games' own town maps and laid out like the real places it's based on.",
+  "noMatch": "No match",
+  "nothing": "Nothing called “{q}”. Try a region, town, route or landmark, like Saffron City, Route 24 or Paldea.",
+  "main": "Main series region",
+  "side": "DLC or side area",
+  "partOf": "Part of {parent}",
+  "partOfRegion": "Part of a region",
+  "count": "{n} towns and landmarks, laid out like the game's own map. Zoom in for every name.",
+  "countRoutes": "{n} towns and landmarks plus {routes} routes, laid out like the game's own map. Zoom in for every name.",
+  "kinds": {
+    "route": "Route",
+    "landmark": "Landmark",
+    "town": "Town / City"
+  },
+  "placesHere": "Places here",
+  "exactFrom": "Exact · {source}",
+  "exact": "Exact · from the game's own map",
+  "approximate": "Approximate · no official highlight",
+  "sources": {
+    "emerald": "Emerald region map data",
+    "oras": "Omega Ruby/Alpha Sapphire map",
+    "hgss": "HeartGold/SoulSilver Pokégear map data",
+    "platinum": "Platinum town map data"
+  },
+  "play": "Play PokéGuessr {map} →",
+  "world": "World"
+}

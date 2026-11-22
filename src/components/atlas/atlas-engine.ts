@@ -72,6 +72,8 @@ export interface AtlasOptions {
    * drag away) instead of the whole map. "Show the whole map" still shows it all.
    */
   home?: { box: Box; cover?: boolean };
+  /** A page in another language: the names the map writes, English → that language's (names not in it stay English). */
+  names?: Record<string, string>;
 }
 
 export interface AtlasEngine {
@@ -351,8 +353,10 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     // Paldea's areas are routes with long names: "South Province (Area Three)" goes on two lines.
     const routeText = (name: string) => name.replace(/^(.+?) \((Area .+)\)$/, "$1\n$2");
     const { display, sans, pixel } = fonts;
+    const local = opts.names;
+    const nm = (name: string) => (local ? (local[name] ?? name) : name);
 
-    if (selected) label(selected.name, selected.x, selected.y, `700 SIZE ${sans}, system-ui`, 15, -20, "#ffe08a");
+    if (selected) label(nm(selected.name), selected.x, selected.y, `700 SIZE ${sans}, system-ui`, 15, -20, "#ffe08a");
     if (f < 4.5) {
       for (const r of regionOrder) {
         const baseSize = r.tier === 1 ? 20 : r.tier === 2 ? 14 : 12;
@@ -363,7 +367,7 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
         const spots: [number, number][] = r.tier === 1 ? [[0, 0], [0, -size * 1.25], [0, size * 1.35], [-size * 2.6, 0], [size * 2.6, 0]] : [[0, 0]];
         spots.some(([dx, dy]) =>
           label(
-            r.tier === 1 ? r.name.toUpperCase() : r.name,
+            r.tier === 1 ? nm(r.name).toUpperCase() : nm(r.name),
             r.x,
             r.y,
             `${r.tier === 1 ? 700 : 600} SIZE ${display}, ${sans}, sans-serif`,
@@ -377,18 +381,18 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
         );
       }
     }
-    if (f >= 2.2) for (const p of atlas.places) if (p.kind === "town") label(p.name, p.x, p.y, `600 SIZE ${sans}, system-ui`, f > 4 ? 13 : 11, -12, "#ffffff");
+    if (f >= 2.2) for (const p of atlas.places) if (p.kind === "town") label(nm(p.name), p.x, p.y, `600 SIZE ${sans}, system-ui`, f > 4 ? 13 : 11, -12, "#ffffff");
     // Routes before landmarks: where both can't fit, the route keeps its name.
     if (f >= 3.6) {
       for (const p of atlas.places) {
         if (p.kind !== "route") continue;
-        ROUTE_SPOTS.some(([dx, dy]) => label(routeText(p.name), p.x, p.y, `SIZE ${pixel}, monospace`, 10, dy, "#ffe2b5", 0, dx));
+        ROUTE_SPOTS.some(([dx, dy]) => label(routeText(nm(p.name)), p.x, p.y, `SIZE ${pixel}, monospace`, 10, dy, "#ffe2b5", 0, dx));
       }
     }
-    if (f >= 3.6) for (const p of atlas.places) if (p.kind === "landmark") label(p.name, p.x, p.y, `600 SIZE ${sans}, system-ui`, 11, -10, "#cfe0ff");
+    if (f >= 3.6) for (const p of atlas.places) if (p.kind === "landmark") label(nm(p.name), p.x, p.y, `600 SIZE ${sans}, system-ui`, 11, -10, "#cfe0ff");
     if (f >= 6)
       for (const p of atlas.places)
-        p.inside?.forEach((b, i) => label(b, p.x, p.y, `500 SIZE ${sans}, system-ui`, 11, 18 + i * 14, "#c9f2dc"));
+        p.inside?.forEach((b, i) => label(nm(b), p.x, p.y, `500 SIZE ${sans}, system-ui`, 11, 18 + i * 14, "#c9f2dc"));
   }
 
   /** Zoom by k about screen point (cx, cy): eased over a few frames, so wheel notches glide instead of jumping. */

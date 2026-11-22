@@ -1,0 +1,132 @@
+{
+  "meta": {
+    "title": "Lugares Pokémon: ciudades, rutas, cuevas y gimnasios",
+    "description": "Todas las ciudades, rutas, cuevas y gimnasios de cada región de la saga principal Pokémon: los Pokémon salvajes de cada juego, capturas y Líderes de Gimnasio.",
+    "placeTitle": "{name} ({region}) — {type} de Pokémon",
+    "placeDescription": "{name}, en {region}: los Pokémon salvajes que aparecen en cada juego.",
+    "placeDescriptionGame": "{name}, en {region}: los Pokémon salvajes que aparecen en cada juego y cómo se ve en {game}.",
+    "socialTitle": "{name} · Pokédex de PokéIQ"
+  },
+  "crumbs": {
+    "pokedex": "Pokédex",
+    "places": "Lugares"
+  },
+  "list": {
+    "kicker": "Base de datos de lugares",
+    "blurb": "Ciudades, rutas, cuevas y edificios de todas las regiones de la saga principal: los Pokémon salvajes de cada juego, además de la captura del Atlas mundial y los Líderes de Gimnasio cuando los hay."
+  },
+  "back": "Volver a todos los lugares",
+  "kicker": "Lugar · {type} · {region}",
+  "inside": "Dentro de <link>{name}</link>",
+  "atlas": "Ver en el Atlas mundial",
+  "noAtlas": "Aún no está en el Atlas mundial, así que no tiene chincheta ni captura.",
+  "shot": {
+    "title": "Captura",
+    "alt": "{place} en Pokémon {game}",
+    "caption": "{place} en {game} · de PokéGuessr"
+  },
+  "games": {
+    "title": "Juegos",
+    "subtitle": "Juegos en los que aparece",
+    "generation": "Juegos de la generación {gen}"
+  },
+  "areas": {
+    "title": "Zonas",
+    "subtitle": "{n, plural, one {{n} planta y zonas} other {{n} plantas y zonas}}"
+  },
+  "gym": {
+    "title": "Gimnasio",
+    "subtitle": "{n, plural, one {{n} líder} other {{n} líderes}}",
+    "source": "fuente"
+  },
+  "wild": {
+    "title": "Pokémon salvajes",
+    "subtitle": "Por juego",
+    "pokemon": "Pokémon",
+    "method": "Método",
+    "levels": "Niveles",
+    "morning": "Mañana",
+    "day": "Día",
+    "night": "Noche",
+    "rate": "Prob."
+  },
+  "insidePlaces": {
+    "title": "Dentro",
+    "subtitle": "{n, plural, one {{n} lugar dentro} other {{n} lugares dentro}}"
+  },
+  "types": {
+    "City": "Ciudad",
+    "Town": "Pueblo",
+    "Route": "Ruta",
+    "Gym": "Gimnasio",
+    "Forest": "Bosque",
+    "Cave": "Cueva",
+    "Mountain": "Montaña",
+    "Island": "Isla",
+    "Lake": "Lago",
+    "Tower": "Torre",
+    "Ruins": "Ruinas",
+    "League": "Liga",
+    "Building": "Edificio",
+    "Other": "Otro"
+  },
+  "methods": {
+    "wild": "Salvaje",
+    "grass": "Hierba",
+    "grassrandom": "Hierba (aleatorio)",
+    "grassrarespawns": "Hierba (raros)",
+    "tallgrass": "Hierba alta",
+    "darkgrass": "Hierba oscura",
+    "rustlinggrass": "Hierba que se mueve",
+    "cave": "Cueva",
+    "water": "Agua",
+    "waterrarespawns": "Agua (raros)",
+    "fishing": "Pesca",
+    "fishingspot": "Punto de pesca",
+    "ripplingwater": "Agua ondulante",
+    "bubblingspot": "Burbujas en el agua",
+    "headbutthigh": "Golpe Cabeza (frecuente)",
+    "headbuttlow": "Golpe Cabeza (poco frecuente)",
+    "shakingtree": "Árbol que se mueve",
+    "gift": "Regalo",
+    "giftegg": "Regalo (Huevo)",
+    "trade": "Intercambio",
+    "static": "Fijo",
+    "interact": "Interactuar",
+    "specialencounter": "Encuentro especial",
+    "swarm": "Aparición masiva",
+    "swarmfish": "Aparición masiva (pesca)",
+    "swarmsurf": "Aparición masiva (Surf)",
+    "horde": "Horda",
+    "soscall": "Llamada de auxilio",
+    "sosbubblingspot": "Llamada de auxilio (burbujas)",
+    "teraraid": "Teraincursión",
+    "maxraid": "Incursión Dinamax",
+    "overworld": "Visible en el mapa",
+    "wandering": "Deambulando",
+    "wanderingsurf": "Deambulando (Surf)",
+    "flying": "Volando",
+    "inthesky": "En el cielo",
+    "intheskyrarespawns": "En el cielo (raros)",
+    "roaming": "Errante",
+    "roamingwater": "Errante (agua)",
+    "massivemassoutbreak": "Aparición masiva descomunal",
+    "hiddengrotto": "Claro oculto",
+    "honeytree": "Árbol de miel",
+    "honeytreerare": "Árbol de miel (raro)",
+    "honeytreeveryrare": "Árbol de miel (muy raro)",
+    "berrytree": "Árbol de bayas",
+    "berrypile": "Montón de bayas",
+    "dustcloud": "Nube de polvo",
+    "roughterrain": "Terreno irregular",
+    "yellowflowers": "Flores amarillas",
+    "purpleflowers": "Flores moradas",
+    "redflowers": "Flores rojas",
+    "ceilingambush": "Emboscada desde el techo",
+    "groundambush": "Emboscada desde el suelo",
+    "skyambush": "Emboscada desde el cielo",
+    "curry": "Curri",
+    "islandscan": "Escaneo insular",
+    "underground": "Gran Subsuelo"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "origins": {
+    "Kanto": "Ispirata alla regione del Kantō in Giappone, intorno a Tokyo. Zafferanopoli si trova più o meno dove c’è Tokyo.",
+    "Johto": "Ispirata alla regione giapponese del Kansai e a parte del Chūbu. Le torri di Amarantopoli ricordano l’antica Kyoto, e Fiordoropoli si ispira a Osaka.",
+    "Hoenn": "Ispirata al Kyūshū, l’isola principale del sud del Giappone, ruotata su un fianco, con tanto mare e isole tra cui fare Surf.",
+    "Sinnoh": "Ispirata all’Hokkaidō, l’isola settentrionale del Giappone, con montagne innevate e l’imponente Monte Corona al centro.",
+    "Unova": "Ispirata a New York e dintorni. Austropoli è Manhattan, e fu la prima regione fuori dal Giappone.",
+    "Kalos": "Ispirata alla Francia settentrionale. Luminopoli e la sua Torre Prisma rappresentano Parigi e la Torre Eiffel.",
+    "Alola": "Ispirata alle Hawaii: quattro isole principali più una artificiale, con le prove insulari al posto delle palestre.",
+    "Galar": "Ispirata alla Gran Bretagna, soprattutto all’Inghilterra, con le Highlands scozzesi nel nord innevato e la sua capitale al posto di Londra.",
+    "Paldea": "Ispirata alla penisola iberica: Spagna e Portogallo. La città dell’accademia sta al centro, come Madrid."
+  },
+  "japan": "{game} (Giappone)"
+}

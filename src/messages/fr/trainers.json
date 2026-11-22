@@ -1,0 +1,113 @@
+{
+  "meta": {
+    "title": "Dresseurs Pokémon : tous les Dresseurs, équipes et lieux (gén. I–IX)",
+    "description": "Tous les Dresseurs de Pokémon Rouge et Bleu à Écarlate et Violet : où ils se trouvent et leurs équipes exactes, avec niveaux, capacités et objets tenus, des Champions d’Arène et du Conseil 4 aux rivaux et revanches.",
+    "gameTitle": "Tous les Dresseurs de Pokémon {game} : équipes par lieu",
+    "gameDescription": "Toutes les équipes de Dresseurs de Pokémon {game}, route par route : Champions d’Arène, Conseil 4, rivaux et chaque Dresseur ordinaire avec ses Pokémon, niveaux, capacités et objets tenus.",
+    "gameSocial": "Dresseurs de {game} · Pokédex PokéIQ",
+    "areaTitle": "Dresseurs de {area} — Pokémon {game}",
+    "areaDescription": "{n, plural, one {Le {n} Dresseur de {area} dans Pokémon {game}, avec ses Pokémon, niveaux, capacités, objets tenus et équipes de revanche.} other {Les {n} Dresseurs de {area} dans Pokémon {game}, avec leurs Pokémon, niveaux, capacités, objets tenus et équipes de revanche.}}",
+    "areaSocial": "{area} · Dresseurs de {game}",
+    "notableTitle": "{name} — {role} : équipes et lieux",
+    "notableTitleType": "{name} — {role} (type {type}) : équipes et lieux",
+    "notableDescription": "{lead}. Toutes les équipes de {name} dans {games}, avec niveaux, capacités et objets tenus, et le lieu de chaque combat.",
+    "notableDescriptionLocal": "Toutes les équipes de {name} dans {games}, avec niveaux, capacités et objets tenus, et le lieu de chaque combat.",
+    "notableSocial": "{name} · Dresseurs PokéIQ"
+  },
+  "list": {
+    "kicker": "Base de données des Dresseurs",
+    "blurb": "Tous les Dresseurs de la génération I à IX : où les trouver et l’équipe exacte qu’ils utilisent, du premier Gamin au Maître, revanches et DLC compris.",
+    "byGame": "Par jeu",
+    "byGameAside": "Route par route",
+    "gen": "Gén. {gen} · {regions}",
+    "notable": "Dresseurs notables",
+    "notableAside": "{n} Dresseurs",
+    "sources": "Les équipes, capacités et lieux des générations I–IV viennent des décompilations <pret>pret</pret> de chaque jeu ; ceux des générations V–IX, des pages de lieux de <bulba>Bulbapedia</bulba>, vérifiées sur Serebii. Les installations de combat aux adversaires aléatoires ne sont pas listées."
+  },
+  "headings": {
+    "gymLeader": "Champions d’Arène",
+    "eliteFour": "Conseil 4",
+    "trialCaptain": "Capitaines",
+    "kahuna": "Doyens des îles",
+    "champion": "Maîtres",
+    "rival": "Rivaux",
+    "trainer": "Légendes",
+    "villain": "Chefs des méchants",
+    "admin": "Admins des méchants"
+  },
+  "roles": {
+    "gymLeader": "Champion d’Arène",
+    "eliteFour": "Conseil 4",
+    "trialCaptain": "Capitaine",
+    "kahuna": "Doyen",
+    "champion": "Maître",
+    "rival": "Rival",
+    "trainer": "Dresseur",
+    "villain": "Méchant",
+    "admin": "Admin"
+  },
+  "kinds": {
+    "routes": "Routes",
+    "towns": "Villes et bourgs",
+    "places": "Lieux et donjons"
+  },
+  "allTrainers": "Tous les Dresseurs",
+  "game": {
+    "kicker": "Dresseurs · Gén. {gen} · {regions}",
+    "title": "Pokémon {game}",
+    "intro": "Toutes les équipes de Dresseurs, lieu par lieu. Choisis une route, une ville ou un donjon pour voir tous ceux que tu peux y affronter et leurs Pokémon exacts.",
+    "notableAside": "{n} dans {game}",
+    "trainers": "{n, plural, one {{n} Dresseur} other {{n} Dresseurs}}",
+    "importedPret": "Importé de <link>{repo}</link>.",
+    "importedWiki": "Importé des pages de lieux de <link>{repo}</link> et vérifié sur Serebii. Les installations de combat aux adversaires aléatoires ne sont pas listées."
+  },
+  "area": {
+    "back": "Dresseurs de {game}",
+    "kicker": "Pokémon {game} · {region}",
+    "count": "{n, plural, one {{n} Dresseur.} other {{n} Dresseurs.}}",
+    "countAcross": "{n, plural, one {{n} Dresseur} other {{n} Dresseurs}} sur {k, plural, one {{k} zone} other {{k} zones}}.",
+    "place": "Lieu et Pokémon sauvages",
+    "atlas": "Atlas mondial",
+    "alsoIn": "Aussi dans"
+  },
+  "notable": {
+    "battles": "{n, plural, one {{n} équipe} other {{n} équipes}}"
+  },
+  "team": {
+    "battles": "Combats",
+    "firstBattle": "Premier combat",
+    "battle": "Combat {n}",
+    "rematch": "Revanche",
+    "rematchN": "Revanche {n}",
+    "chose": "Si tu as choisi {pokemon}",
+    "requires": "Nécessite {what}",
+    "afterChampion": "Après être devenu Maître",
+    "beforeHof": "Avant le Panthéon",
+    "afterHof": "Après le Panthéon",
+    "postGame": "Après l’aventure",
+    "firstVisit": "Première visite",
+    "rolePage": "Page {role}",
+    "notInList": "Absent de notre liste d’objets",
+    "lv": "N. {lv}",
+    "lvRange": "N. {lo}–{hi}",
+    "tera": "Téra",
+    "heldItem": "Objet tenu : ",
+    "moves": "Capacités",
+    "levelUpTitle": "La source n’indique aucune capacité pour ce Pokémon : voici donc les dernières qu’il apprend par niveau, celles que le jeu donne au Pokémon d’un Dresseur sans capacités définies.",
+    "levelUp": "Capacités par niveau",
+    "size": "{n} Pokémon",
+    "sizeDouble": "{n} Pokémon · Combat Duo",
+    "only": "{version} uniquement",
+    "uses": "Utilise"
+  },
+  "forms": {
+    "sandyCloak": "Cape Sable",
+    "trashCloak": "Cape Déchet",
+    "eastSea": "Mer Orient",
+    "alolanForm": "Forme d’Alola",
+    "galarianForm": "Forme de Galar",
+    "hisuianForm": "Forme de Hisui",
+    "paldeanForm": "Forme de Paldea",
+    "form": "Forme {n}"
+  }
+}
