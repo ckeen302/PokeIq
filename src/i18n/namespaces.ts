@@ -5,6 +5,7 @@
  */
 export const NAMESPACES = [
   "api-errors",
+  "battle-calc",
   "common",
   "connections",
   "connections-board",
