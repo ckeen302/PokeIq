@@ -10,11 +10,12 @@
  *
  *   npx tsx scripts/shiny-maker/hd.ts [ids…]          (--shard i/n to split the work across processes)
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import sharp from "sharp";
 import { labDist, rgbToOklab } from "../../src/lib/shiny-maker/color";
 import type { HdRef, SpeciesFile } from "../../src/lib/shiny-maker/data";
+import { CURATED } from "./curated";
 
 const CACHE = ".cache/shiny-maker";
 const OUT = "public/shiny-maker";
@@ -149,6 +150,13 @@ export async function buildHd(id: number) {
   return { f, hd, png, quality };
 }
 
+/**
+ * Quality over coverage: HD ships only for hand-curated species whose masks were reviewed on contact sheets
+ * (.cache/shiny-maker hd sheets), less those whose parts came out muddled in review. Everything else is Pixel only.
+ */
+export const HD_REJECTED = new Set([9, 59, 155, 156, 256, 390, 635, 652, 785, 911, 913, 914, 1008]);
+export const hdAllowed = (id: number) => id in CURATED && !HD_REJECTED.has(id);
+
 /** Good enough to ship: most pixels found a close colour pair. */
 export const passes = (q: { median: number; p90: number; far: number }) => q.median < 0.06 && q.p90 < 0.12 && q.far < 0.1;
 
@@ -164,13 +172,16 @@ async function main() {
   for (const id of all.filter((_, i) => i % sn === si)) {
     const r = await buildHd(id);
     if (!r) continue;
-    const ok = passes(r.quality);
+    const ok = passes(r.quality) && hdAllowed(id);
     report[id] = { ...r.quality, ok };
     const file = join(OUT, "hd", `${id}.png`);
     if (ok) {
       await sharp(r.png, { raw: { width: N, height: N, channels: 1 } }).png({ compressionLevel: 9, palette: false }).toFile(file);
       r.f.hd = r.hd;
-    } else delete r.f.hd;
+    } else {
+      delete r.f.hd;
+      rmSync(file, { force: true });
+    }
     writeFileSync(join(OUT, "px", `${id}.json`), JSON.stringify(r.f));
     if (id % 50 === 0) console.log(id);
   }

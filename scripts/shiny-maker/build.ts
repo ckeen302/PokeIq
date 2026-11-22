@@ -16,7 +16,7 @@ import { join } from "node:path";
 import sharp from "sharp";
 import { labDist, rgbToOklab } from "../../src/lib/shiny-maker/color";
 import { b64encode, rleEncode, DATA_VERSION, type PartDef, type SpeciesFile } from "../../src/lib/shiny-maker/data";
-import { CURATED } from "./curated";
+import { CURATED, type Curation } from "./curated";
 
 const CACHE = ".cache/shiny-maker";
 const OUT = "public/shiny-maker";
@@ -170,25 +170,34 @@ export function autoParts(sp: Sprite): PartDef[] {
   return groups.map((s, i) => (i === outline ? { n: "Outline", s, o: 1 as const } : { n: GENERIC[g++] ?? `Part ${g}`, s }));
 }
 
-/** Curated parts: each lists its shades by normal colour; any slot left out joins the part it touches most. */
-export function curatedParts(sp: Sprite, spec: [string, string][]): PartDef[] {
-  const byColour = new Map<number, number[]>();
-  sp.slots.forEach((s, i) => byColour.set(s.n, [...(byColour.get(s.n) ?? []), i]));
-  const partOf = new Array(sp.slots.length).fill(-1);
-  const parts: PartDef[] = spec.map(([n, cols], pi) => {
-    const s: number[] = [];
-    for (const c of cols.split(/\s+/).filter(Boolean)) for (const i of byColour.get(parseInt(c, 16)) ?? []) if (partOf[i] < 0) { partOf[i] = pi; s.push(i); }
-    return /^outline$/i.test(n) ? { n, s, o: 1 as const } : { n, s };
-  });
-  for (let i = 0; i < sp.slots.length; i++) {
-    if (partOf[i] >= 0) continue;
-    let best = -1, bw = -1;
-    for (let j = 0; j < sp.slots.length; j++) if (partOf[j] >= 0 && sp.adj[i][j] > bw) { bw = sp.adj[i][j]; best = partOf[j]; }
-    if (best < 0) best = 0;
-    partOf[i] = best;
-    parts[best].s.push(i);
+/**
+ * Curated parts: a name for each automatic part (in the order autoParts gives them; the same name twice merges
+ * them), plus shades moved by normal colour to a named part (a new name makes a new part). Parts keep the order
+ * their names first appear in.
+ */
+export function curatedParts(sp: Sprite, spec: Curation): PartDef[] {
+  const [names, moves = {}] = spec;
+  const list = names.split("|");
+  const { groups } = cluster(sp);
+  if (list.length !== groups.length) throw new Error(`#${sp.id}: ${list.length} names for ${groups.length} parts`);
+  const order: string[] = [];
+  const members = new Map<string, number[]>();
+  const add = (name: string, slot: number) => {
+    if (!members.has(name)) { members.set(name, []); order.push(name); }
+    members.get(name)!.push(slot);
+  };
+  const moved = new Map<number, string>();
+  for (const [hex, name] of Object.entries(moves)) {
+    const n = parseInt(hex, 16);
+    const hits = sp.slots.map((s, i) => (s.n === n ? i : -1)).filter((i) => i >= 0);
+    if (!hits.length) throw new Error(`#${sp.id}: no shade ${hex}`);
+    for (const i of hits) moved.set(i, name);
   }
-  return parts.filter((p) => p.s.length);
+  groups.forEach((g, gi) => g.forEach((slot) => { if (!moved.has(slot)) add(list[gi], slot); }));
+  for (const [slot, name] of moved) add(name, slot);
+  const isOutline = (n: string) => /^outline$/i.test(n);
+  order.sort((a, b) => Number(isOutline(a)) - Number(isOutline(b)));
+  return order.map((n) => (isOutline(n) ? { n, s: members.get(n)!, o: 1 as const } : { n, s: members.get(n)! }));
 }
 
 async function main() {
