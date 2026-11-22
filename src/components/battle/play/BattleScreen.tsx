@@ -69,10 +69,9 @@ export interface BattleScreenProps {
 }
 
 type PlayT = Translator<typeof playNs.en>;
-const ENGLISH_PLAY: PlayT = translator(playNs, "en", undefined);
 
 /** "1st", "2nd", "3rd", "4th". */
-export const place = (n: number, t: PlayT = ENGLISH_PLAY) => t("end.ordinal", { n });
+export const place = (n: number, t: PlayT = translator(playNs, "en", undefined)) => t("end.ordinal", { n });
 
 /** A four-player battle's end: a Multi Battle's winning team, or a Free-For-All's winner and your place in it. */
 function fourEndText(view: Pick<BattleView, "end" | "players" | "you" | "gameType">, turns: number, t: PlayT): { title: string; detail: string; tone: "win" | "loss" | "draw" } {
@@ -98,7 +97,7 @@ function fourEndText(view: Pick<BattleView, "end" | "players" | "you" | "gameTyp
 }
 
 /** How a finished battle ended, told from one trainer's side or, for spectators and replays, neutrally. */
-export function endText(view: Pick<BattleView, "end" | "players" | "you" | "gameType">, turns: number, t: PlayT = ENGLISH_PLAY): { title: string; detail: string; tone: "win" | "loss" | "draw" } {
+export function endText(view: Pick<BattleView, "end" | "players" | "you" | "gameType">, turns: number, t: PlayT = translator(playNs, "en", undefined)): { title: string; detail: string; tone: "win" | "loss" | "draw" } {
   const end = view.end!;
   if (view.players.length === 4) return fourEndText(view, turns, t);
   const names = view.players.map((p) => p.name);
@@ -740,7 +739,7 @@ function Screen({ view, log, offset, busy, error, onChoose, endActions, side, on
     if (!lines.length) return;
     const at = Math.floor(Date.now() / 1000);
     setEntries((list) => [...list.slice(-600), ...lines.map((text) => ({ id: ++entryId.current, text, at }))]);
-  }, [now, view.clocks, view.status, replay, youName, foeName, t]);
+  }, [now, view.clocks, view.status, replay, youName, foeName]); // eslint-disable-line react-hooks/exhaustive-deps -- t is the page language's, fixed
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">

@@ -686,10 +686,10 @@
     "damage": "  {POKEMON} è prigioniero di un incubo!"
   },
   "noretreat": {
-    "start": "  {POKEMON} non può più fuggire perché ha usato Bastione Finale!"
+    "start": "  {POKEMON} non può più fuggire perché ha usato Spalle al Muro!"
   },
   "octolock": {
-    "start": "  {POKEMON} non può più fuggire a causa di Polipresa!"
+    "start": "  {POKEMON} non può più fuggire a causa di Tentacolock!"
   },
   "painsplit": {
     "activate": "  I lottatori condividono il dolore!"

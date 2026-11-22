@@ -1,0 +1,108 @@
+{
+  "loading": "バトルを読み込み中",
+  "liveBattle": "ライブバトル",
+  "reconnecting": "接続が切れました。再接続中…",
+  "vs": "vs",
+  "vsSep": " vs ",
+  "and": "と",
+  "multiVs": "{a}＆{c} vs {b}＆{d}",
+  "watching": "{players}を観戦中",
+  "watchAnother": "ほかのバトルを観る",
+  "battleYourself": "自分もバトルする",
+  "chat": {
+    "showAgain": "{name}のメッセージをまた表示",
+    "hideTitle": "{name}のメッセージを隠す（Showdownの/ignore）",
+    "unignore": "{name}を表示",
+    "ignore": "{name}を無視",
+    "hidden": "（{n}件非表示）",
+    "rematchOpen": "再戦が開かれています：「再戦」を押すと、そちらでチャットを続けられます。"
+  },
+  "gone": {
+    "title": "バトルが見つかりません",
+    "start": "バトルを始める"
+  },
+  "forfeit": {
+    "sure": "このバトルを降参しますか？",
+    "button": "降参",
+    "keep": "バトルを続ける"
+  },
+  "again": {
+    "error": "バトルを始められませんでした。",
+    "play": "もう一度",
+    "new": "新しいバトル",
+    "tournament": "大会に戻る",
+    "requested": "再戦を申し込まれました！",
+    "accept": "再戦を受ける",
+    "rematch": "再戦",
+    "keeps": "再戦では、トレーナー、ルール、持ってきたチームがそのまま引き継がれます。",
+    "startsFour": "コンピューターの席もそのまま。全員が押すと始まります。",
+    "startsTwo": "二人とも押すと始まります。"
+  },
+  "lobby": {
+    "gen": "第{gen}世代",
+    "quickNote": "第{gen}世代のランダムバトルの型を、このルールで確認したものです。",
+    "format": "ルール",
+    "bring": "それぞれがチームを持ち寄り、Pokémon Showdownのルールで確認します。",
+    "timerLabel": "持ち時間",
+    "timer": "Showdownのタイマー：{secs}秒",
+    "grace": "＋猶予{secs}秒",
+    "perTurn": "、1ターンごとに+{secs}秒",
+    "cap": "、1ターン最大{secs}秒。",
+    "runOutDefault": "ターン中に時間切れになると自動で行動が選ばれ、持ち時間がすべてなくなると負けになります。",
+    "runOutLose": "時間切れになると負けになります。",
+    "runOutPick": "時間切れになるとタイマーが行動を選び、2回続けると負けになります。",
+    "timerOffAny": "OFF：ゆっくりどうぞ。バトル中に誰でもONにできます。",
+    "timerOffEither": "OFF：ゆっくりどうぞ。バトル中にどちらでもONにできます。",
+    "spectators": "観戦",
+    "public": "「ライブ観戦」に載ります：誰でも観戦できます。",
+    "private": "非公開：リンクを知っている人だけが観戦できます。",
+    "fairPlay": "フェアプレー",
+    "fairFour": "見えるのは自分のチームと、ほかのトレーナーが見せたものだけです。{secs}秒離れると降参になります。",
+    "fairFourMulti": "見えるのは自分のチームと、ほかのトレーナーが見せたものだけです。{secs}秒離れると降参になります（Showdownと同じく、チームの負けになります）。",
+    "fairFourFfa": "見えるのは自分のチームと、ほかのトレーナーが見せたものだけです。{secs}秒離れると降参になります（あなたは脱落し、残りの人で続けます）。",
+    "fairTwo": "見えるのは自分のチームと、相手が見せたものだけです。{secs}秒離れると降参になります。",
+    "ladder": "ランキング",
+    "unrankedMulti": "レートなし：Showdownでもマルチバトルはランキング対象外なので、レートは変わりません。",
+    "unrankedFfa": "レートなし：Showdownでもバトルロイヤルはランキング対象外なので、レートは変わりません。",
+    "teamFirst": "先にチームを選ぶか貼り付けてください。",
+    "tag": "ライブバトル・{format}",
+    "title": "ポケモン<b>バトル</b>",
+    "invite": "{host}が{format}のバトルを申し込んでいます。トレーナー名を決めて参加しましょう。",
+    "inviteTeam": "{host}が{format}のバトルを申し込んでいます。トレーナー名とチームを決めて参加しましょう。",
+    "about": "リンクを友だちに送りましょう。二人とも準備ができたらバトルが始まります。",
+    "randomTeams": "チームはランダムです。",
+    "shareHost": "{host}がPokéIQで{format}のバトルを申し込んでいます！",
+    "shareMe": "PokéIQで{format}のバトルを申し込みます！",
+    "noun": "バトル"
+  },
+  "visitor": {
+    "over": "バトル終了",
+    "inProgress": "バトル中",
+    "two": "このバトルはほかの2人のトレーナーのものです。",
+    "four": "このバトルはほかの4人のトレーナーのものです。",
+    "start": "自分のバトルを始める"
+  },
+  "replay": {
+    "instant": "インスタントリプレイ",
+    "instantTitle": "ここまでのバトルを最初から観る（Showdownのインスタントリプレイ）",
+    "download": "リプレイをダウンロード",
+    "downloadTitle": "Showdownのリプレイファイル：どのブラウザでも開け、Showdownのリプレイプレイヤーで再生できます"
+  },
+  "quiet": {
+    "lost": "{names}の接続が切れました。1分以内に戻らなければ、",
+    "teamForfeits": "そのチームの降参になります。",
+    "forfeit": "降参になります。"
+  },
+  "after": {
+    "share": "シェア",
+    "updating": "レートを更新中…",
+    "watchReplay": "リプレイを観る",
+    "analysis": "分析",
+    "saving": "リプレイを保存中…",
+    "save": "リプレイを保存",
+    "elo": "Elo",
+    "glicko": "Glicko-2レート",
+    "rating": "レート",
+    "ratingLabel": "{what} {delta}、現在{now}"
+  }
+}

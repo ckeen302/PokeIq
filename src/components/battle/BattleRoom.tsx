@@ -281,7 +281,8 @@ function LiveLobby({ code, view, battle }: { code: string; view: BattleView; bat
       rules
         ? { name: customRulesName(tf, rules), short: t("lobby.gen", { gen: rules.gen }), saved: builderFormatFor(rules.gen), quick: { rules }, quickNote: t("lobby.quickNote", { gen: rules.gen }) }
         : undefined,
-    [rules, tf, t]
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the translators are the page language's, fixed
+    [rules]
   );
   const gameType = view.gameType ?? info.gameType;
   const four = playerCount(gameType) === 4;

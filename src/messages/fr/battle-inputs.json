@@ -1,0 +1,5 @@
+{
+  "clear": "Effacer : {label}",
+  "noMatches": "Aucun résultat",
+  "results": "{n, plural, one {# résultat} other {# résultats}}"
+}

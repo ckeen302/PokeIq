@@ -689,7 +689,7 @@
     "start": "  {POKEMON} kann nicht mehr fliehen, weil es Finalformation eingesetzt hat!"
   },
   "octolock": {
-    "start": "  {POKEMON} kann wegen Oktoklammer nicht mehr fliehen!"
+    "start": "  {POKEMON} kann wegen Octoklammer nicht mehr fliehen!"
   },
   "painsplit": {
     "activate": "  Die Kämpfer teilen ihren Schmerz!"
