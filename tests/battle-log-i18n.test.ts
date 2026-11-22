@@ -46,9 +46,9 @@ const ENGLISH = (() => {
   return [...out].map((p) => ({ p, re: new RegExp(`(^|[^\\p{L}])${p.replace(/[\\^$.*+?()[\]{}|]/g, "\\$&")}($|[^\\p{L}])`, "u") }));
 })();
 
-function englishIn(text: string): string | undefined {
+function englishIn(text: string, english: typeof ENGLISH): string | undefined {
   if (/\[[A-Z]+\]|[\u0001-\u0003]|\?\?\?|undefined/.test(text)) return text;
-  return ENGLISH.find(({ re }) => re.test(text))?.p;
+  return english.find(({ re }) => re.test(text))?.p;
 }
 
 function mulberry(seed: number) {
@@ -194,6 +194,9 @@ describe("battle log in every language", () => {
   for (const locale of LOCALES) {
     it(`${locale}: no English in any line`, () => {
       const local = pack(locale);
+      // Words a language writes the same as English ("Format:") are its own.
+      const raw = readFileSync(`src/messages/${locale}/battle-log.json`, "utf8");
+      const foreign = ENGLISH.filter(({ p }) => !raw.includes(p));
       const leaks = new Map<string, string>();
       const check = (lines: string[], me: SideID) => {
         const model = new BattleModel(me, local);
@@ -208,7 +211,7 @@ describe("battle log in every language", () => {
           const text = step?.text.trim() ?? "";
           // Writes a line exactly where English writes one.
           if (!!en?.text.trim() !== !!text && !isSilentLine(args, kwArgs, 9)) leaks.set(`${args[0]} (no text)`, line);
-          const bad = text && englishIn(text);
+          const bad = text && englishIn(text, foreign);
           if (bad) leaks.set(`${line} → ${text}`, bad);
         }
       };
@@ -232,11 +235,11 @@ describe("battle log in every language", () => {
       for (const l of lines) model.feed(l);
       return more.map((l) => model.feed(l)?.text.trim());
     };
-    expect(said("ja", ["|move|p1a: Pikachu|Thunderbolt|p2a: Charizard", "|-supereffective|p2a: Charizard", "|faint|p2a: Charizard"])).toEqual(["ピカチュウの**10まんボルト**！", "効果は抜群だ！", "相手のリザードンは倒れた！"]);
+    expect(said("ja", ["|move|p1a: Pikachu|Thunderbolt|p2a: Charizard", "|-supereffective|p2a: Charizard", "|faint|p2a: Charizard"])).toEqual(["ピカチュウの**１０まんボルト**！", "効果は抜群だ！", "相手のリザードンは倒れた！"]);
     expect(said("fr", ["|move|p2a: Charizard|Flamethrower|p1a: Pikachu", "|-boost|p2a: Charizard|atk|1"])).toEqual(["Le Dracaufeu adverse utilise **Lance-Flammes** !", "L’Attaque du Dracaufeu adverse augmente !"]);
     expect(said("es", ["|move|p2a: Charizard|Flamethrower|p1a: Pikachu", "|-boost|p2a: Charizard|atk|1"])).toEqual(["¡El Charizard rival usó **Lanzallamas**!", "¡El Ataque del Charizard rival aumentó!"]);
     expect(said("de", ["|move|p1a: Pikachu|Thunderbolt|p2a: Charizard", "|faint|p2a: Charizard"])).toEqual(["Pikachu setzt **Donnerblitz** ein!", "Glurak (Gegner) wurde besiegt!"]);
-    expect(said("it", ["|move|p1a: Pikachu|Thunderbolt|p2a: Charizard", "|faint|p2a: Charizard"])).toEqual(["Pikachu usa **Fulmine**!", "Charizard avversario è esausto!"]);
+    expect(said("it", ["|move|p1a: Pikachu|Thunderbolt|p2a: Charizard", "|faint|p2a: Charizard"])).toEqual(["Pikachu usa **Fulmine**!", "Il Charizard avversario è esausto!"]);
   });
 
   it("keeps a Pokémon's own nickname, and names its species", () => {
