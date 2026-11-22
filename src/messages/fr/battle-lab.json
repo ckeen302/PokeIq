@@ -182,7 +182,7 @@
     "none": "Pas encore de combats.",
     "even": "Égalité parfaite : chaque camp gagne {p} (± {m}) sur {battles, plural, one {# combat} other {# combats}}{draws, select, none {} other {, {draws} de nuls}} ; médiane de {median, plural, one {{turns} tour} other {{turns} tours}}.",
     "fav": "{side} gagne {p} (± {m}) sur {battles, plural, one {# combat} other {# combats}}{draws, select, none {} other {, {draws} de nuls}} ; médiane de {median, plural, one {{turns} tour} other {{turns} tours}}.",
-    "meta": "Gen {gen} {doubles, select, true {double} other {simple}} · {a} contre {b} · graine <mono>{seed}</mono> · <size>{n, plural, one {# combat} other {# combats}}</size>{cancelled, select, true { · annulée} other {}}",
+    "meta": "Gen {gen} en {doubles, select, true {double} other {simple}} · {a} contre {b} · graine <mono>{seed}</mono> · <size>{n, plural, one {# combat} other {# combats}}</size>{cancelled, select, true { · annulée} other {}}",
     "wins": "Victoire {side}",
     "draws": "Nuls",
     "noDraws": "Aucun",

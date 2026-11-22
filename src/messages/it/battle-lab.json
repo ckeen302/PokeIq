@@ -182,7 +182,7 @@
     "none": "Ancora nessuna lotta.",
     "even": "Perfetta parità: ogni lato vince il {p} (± {m}) su {battles, plural, one {# lotta} other {# lotte}}{draws, select, none {} other {, {draws} di pareggi}}; mediana di {median, plural, one {{turns} turno} other {{turns} turni}}.",
     "fav": "{side} vince il {p} (± {m}) su {battles, plural, one {# lotta} other {# lotte}}{draws, select, none {} other {, {draws} di pareggi}}; mediana di {median, plural, one {{turns} turno} other {{turns} turni}}.",
-    "meta": "Gen {gen} {doubles, select, true {doppia} other {singola}} · {a} contro {b} · seed <mono>{seed}</mono> · <size>{n, plural, one {# lotta} other {# lotte}}</size>{cancelled, select, true { · annullata} other {}}",
+    "meta": "Gen {gen} in {doubles, select, true {doppio} other {singolo}} · {a} contro {b} · seed <mono>{seed}</mono> · <size>{n, plural, one {# lotta} other {# lotte}}</size>{cancelled, select, true { · annullata} other {}}",
     "wins": "Vince {side}",
     "draws": "Pareggi",
     "noDraws": "Nessuno",

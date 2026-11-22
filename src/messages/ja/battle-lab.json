@@ -68,7 +68,7 @@
     "label": "ルール",
     "mechanics": "仕様",
     "generation": "世代",
-    "option": "第{gen}世代・{games}",
+    "option": "第{gen}世代（{games}）",
     "battle": "バトル",
     "singlesOrDoubles": "シングルかダブルか",
     "singles": "シングル",
