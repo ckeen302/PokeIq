@@ -25,7 +25,7 @@ const ALL = ["ja", "es", "fr", "de", "it"];
 const CODES = new Set(["en", ...ALL, "x-default"]);
 const OG = { en: "en_US", ja: "ja_JP", es: "es_ES", fr: "fr_FR", de: "de_DE", it: "it_IT" };
 /** English pages every check samples (hubs, the daily games, the Pokédex's kinds of page). */
-export const SAMPLE = ["/", "/daily", "/pokedle", "/pokeconnections", "/pikadoku", "/pokeguessr", "/quiz", "/pokedex", "/pokemon/pikachu", "/pokedex/moves/thunderbolt", "/battle", "/privacy", "/credits", "/trainer", "/leaderboard"];
+export const SAMPLE = ["/", "/daily", "/pokedle", "/pokeconnections", "/pikadoku", "/pokeguessr", "/quiz", "/pokedex", "/pokemon/pikachu", "/pokedex/moves/thunderbolt", "/battle", "/privacy", "/credits", "/trainer", "/leaderboard", "/lab/pokedex"];
 
 // In the site's own order (src/i18n/config.ts LOCALES), whatever order LIVE_LOCALES lists them in.
 const wanted = new Set((process.env.LIVE_LOCALES ?? "").split(",").map((s) => s.trim().toLowerCase()));
