@@ -10,8 +10,16 @@ import { itemSpriteUrl } from "@/lib/dex/build";
 import { TypeBadge } from "./TypeBadge";
 import { cn } from "@/lib/utils";
 import { usePlaceholder } from "@/lib/phone";
+import { NOT_LETTER, foldLetters } from "@/lib/names/fold";
+import { useT } from "@/i18n/client";
+import dexLists from "@/messages/dex-lists";
 
-export interface MoveListItem {
+/** In another language: the other names an entry answers to in the search box (its English name, rōmaji). */
+interface Aliased {
+  aliases?: string[];
+}
+
+export interface MoveListItem extends Aliased {
   slug: string;
   name: string;
   type: string;
@@ -20,19 +28,19 @@ export interface MoveListItem {
   accuracy: number | null;
   pp: number | null;
 }
-export interface AbilityListItem {
+export interface AbilityListItem extends Aliased {
   slug: string;
   name: string;
   effect: string;
   count: number;
 }
-export interface ItemListItem {
+export interface ItemListItem extends Aliased {
   slug: string;
   name: string;
   category: string;
 }
 
-export interface PlaceListItem {
+export interface PlaceListItem extends Aliased {
   slug: string;
   name: string;
   region: string;
@@ -47,11 +55,16 @@ const CLASSES = ["physical", "special", "status"] as const;
 const CLASS_ICON = { physical: Swords, special: Sparkle, status: CircleDot } as const;
 const CLASS_CLS = { physical: "text-orange-400", special: "text-sky-400", status: "text-zinc-400" } as const;
 
-const normalize = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+/** Letters and digits only, without accents or case, in any script (katakana as hiragana). */
+const normalize = (s: string) => foldLetters(s).replace(NOT_LETTER, "");
 
 type Item = MoveListItem | AbilityListItem | ItemListItem | PlaceListItem;
 
-export function DexListExplorer({ kind, items }: { kind: DexListKind; items: Item[] }) {
+/**
+ * `typeNames`: the types' names in the page's language (other languages only; English capitalises the ids).
+ */
+export function DexListExplorer({ kind, items, typeNames }: { kind: DexListKind; items: Item[]; typeNames?: Record<string, string> }) {
+  const t = useT(dexLists);
   const [query, setQuery] = useState("");
   const [type, setType] = useState<string | null>(null);
   const [cls, setCls] = useState<string | null>(null);
@@ -82,7 +95,7 @@ export function DexListExplorer({ kind, items }: { kind: DexListKind; items: Ite
   const filtered = useMemo(() => {
     const q = normalize(query);
     return items.filter((it) => {
-      if (q && !normalize(it.name).includes(q) && !(kind === "abilities" && normalize((it as AbilityListItem).effect).includes(q))) return false;
+      if (q && !normalize(it.name).includes(q) && !it.aliases?.some((a) => normalize(a).includes(q)) && !(kind === "abilities" && normalize((it as AbilityListItem).effect).includes(q))) return false;
       if (kind === "moves") {
         const m = it as MoveListItem;
         if (type && m.type !== type) return false;
@@ -119,8 +132,7 @@ export function DexListExplorer({ kind, items }: { kind: DexListKind; items: Ite
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const label = kind;
-  const searchHint = usePlaceholder(`Search ${label}…  ( / )`);
+  const searchHint = usePlaceholder(t(`search.${kind}`));
   const hasFilters = query || type || cls || category || region || placeType;
   const reset = () => {
     setQuery("");
@@ -142,11 +154,11 @@ export function DexListExplorer({ kind, items }: { kind: DexListKind; items: Ite
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={searchHint}
-              aria-label={`Search ${label}`}
+              aria-label={t(`searchLabel.${kind}`)}
               className="h-11 w-full rounded-md border border-input bg-shade/40 pl-9 pr-9 font-display text-sm tracking-wide focus-visible:border-screen/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
             />
             {query && (
-              <button type="button" onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" aria-label="Clear search">
+              <button type="button" onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" aria-label={t("clear")}>
                 <X className="h-4 w-4" />
               </button>
             )}
@@ -155,10 +167,10 @@ export function DexListExplorer({ kind, items }: { kind: DexListKind; items: Ite
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              aria-label="Item category"
+              aria-label={t("itemCategory")}
               className="h-11 max-w-[220px] rounded-md border border-input bg-shade/40 px-3 font-display text-sm"
             >
-              <option value="">All categories</option>
+              <option value="">{t("allCategories")}</option>
               {categories.map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
@@ -166,14 +178,14 @@ export function DexListExplorer({ kind, items }: { kind: DexListKind; items: Ite
           )}
           {kind === "places" && (
             <>
-              <select value={region} onChange={(e) => setRegion(e.target.value)} aria-label="Region" className="h-11 max-w-[200px] rounded-md border border-input bg-shade/40 px-3 font-display text-sm">
-                <option value="">All regions</option>
+              <select value={region} onChange={(e) => setRegion(e.target.value)} aria-label={t("region")} className="h-11 max-w-[200px] rounded-md border border-input bg-shade/40 px-3 font-display text-sm">
+                <option value="">{t("allRegions")}</option>
                 {regions.map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
               </select>
-              <select value={placeType} onChange={(e) => setPlaceType(e.target.value)} aria-label="Place type" className="h-11 max-w-[200px] rounded-md border border-input bg-shade/40 px-3 font-display text-sm">
-                <option value="">All types</option>
+              <select value={placeType} onChange={(e) => setPlaceType(e.target.value)} aria-label={t("placeType")} className="h-11 max-w-[200px] rounded-md border border-input bg-shade/40 px-3 font-display text-sm">
+                <option value="">{t("allTypes")}</option>
                 {placeTypes.map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
@@ -184,21 +196,21 @@ export function DexListExplorer({ kind, items }: { kind: DexListKind; items: Ite
 
         {kind === "moves" && (
           <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none]">
-            {TYPES.map((t) => {
-              const active = type === t;
+            {TYPES.map((ty) => {
+              const active = type === ty;
               return (
                 <button
-                  key={t}
+                  key={ty}
                   type="button"
-                  onClick={() => setType(active ? null : t)}
+                  onClick={() => setType(active ? null : ty)}
                   aria-pressed={active}
                   className={cn(
                     "shrink-0 rounded-[4px] border px-2.5 py-1 font-display text-[11px] font-bold uppercase tracking-wider transition-all",
                     active ? "border-transparent text-white" : "border-foreground/10 bg-shade/20 text-muted-foreground hover:text-foreground"
                   )}
-                  style={active ? { background: typeColor(t), boxShadow: "inset 0 1px 0 rgb(255 255 255 / 0.35), inset 0 -2px 0 rgb(0 0 0 / 0.25)" } : { borderColor: `${typeColor(t)}66` }}
+                  style={active ? { background: typeColor(ty), boxShadow: "inset 0 1px 0 rgb(255 255 255 / 0.35), inset 0 -2px 0 rgb(0 0 0 / 0.25)" } : { borderColor: `${typeColor(ty)}66` }}
                 >
-                  {capitalize(t)}
+                  {typeNames?.[ty] ?? capitalize(ty)}
                 </button>
               );
             })}
@@ -217,30 +229,30 @@ export function DexListExplorer({ kind, items }: { kind: DexListKind; items: Ite
                   cls === c ? "border-screen/70 bg-screen/10 text-foreground" : "border-foreground/10 bg-shade/20 text-muted-foreground hover:text-foreground"
                 )}
               >
-                {c}
+                {t(`cls.${c}`)}
               </button>
             ))}
           {hasFilters ? (
             <button type="button" onClick={reset} className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline">
-              Reset
+              {t("reset")}
             </button>
           ) : null}
         </div>
       </div>
 
       {filtered.length === 0 ? (
-        <div className="py-20 text-center text-muted-foreground">No {label} match those filters.</div>
+        <div className="py-20 text-center text-muted-foreground">{t(`empty.${kind}`)}</div>
       ) : kind === "moves" ? (
         <div className="hud overflow-x-auto rounded-lg border bg-card p-2" data-hscroll>
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="p-2">Move</th>
-                <th className="p-2">Type</th>
-                <th className="p-2">Cat.</th>
-                <th className="p-2 text-right">Pow</th>
-                <th className="hidden p-2 text-right sm:table-cell">Acc</th>
-                <th className="hidden p-2 text-right sm:table-cell">PP</th>
+                <th className="p-2">{t("col.move")}</th>
+                <th className="p-2">{t("col.type")}</th>
+                <th className="p-2">{t("col.cat")}</th>
+                <th className="p-2 text-right">{t("col.pow")}</th>
+                <th className="hidden p-2 text-right sm:table-cell">{t("col.acc")}</th>
+                <th className="hidden p-2 text-right sm:table-cell">{t("col.pp")}</th>
               </tr>
             </thead>
             <tbody>
@@ -252,7 +264,7 @@ export function DexListExplorer({ kind, items }: { kind: DexListKind; items: Ite
                       <Link href={`/pokedex/moves/${m.slug}`} className="hover:text-screen">{m.name}</Link>
                     </td>
                     <td className="p-2"><TypeBadge type={m.type} size="sm" /></td>
-                    <td className="p-2"><Icon className={cn("h-4 w-4", CLASS_CLS[m.cls as keyof typeof CLASS_CLS])} aria-label={m.cls} /></td>
+                    <td className="p-2"><Icon className={cn("h-4 w-4", CLASS_CLS[m.cls as keyof typeof CLASS_CLS])} aria-label={t(`cls.${m.cls as (typeof CLASSES)[number]}`)} /></td>
                     <td className="p-2 text-right font-mono tabular-nums">{m.power ?? "—"}</td>
                     <td className="hidden p-2 text-right font-mono tabular-nums sm:table-cell">{m.accuracy ?? "—"}</td>
                     <td className="hidden p-2 text-right font-mono tabular-nums sm:table-cell">{m.pp ?? "—"}</td>
@@ -268,7 +280,7 @@ export function DexListExplorer({ kind, items }: { kind: DexListKind; items: Ite
             <Link key={a.slug} href={`/pokedex/abilities/${a.slug}`} className="group block space-y-1.5 rounded-lg border bg-card p-4 transition-colors hover:border-screen/60">
               <div className="flex items-baseline justify-between gap-2">
                 <span className="font-display text-[15px] font-bold uppercase tracking-wide group-hover:text-screen">{a.name}</span>
-                <span className="font-pixel text-[10px] tabular-nums text-muted-foreground">{a.count} Pokémon</span>
+                <span className="font-pixel text-[10px] tabular-nums text-muted-foreground">{t("holders", { n: a.count })}</span>
               </div>
               <p className="line-clamp-2 text-xs text-muted-foreground">{a.effect}</p>
             </Link>

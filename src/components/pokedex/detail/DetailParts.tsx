@@ -6,6 +6,8 @@ import { typeColor } from "@/lib/pokemon/type-colors";
 import { TypeBadge } from "../TypeBadge";
 import type { Pager, PagerLink } from "@/lib/dex/neighbours";
 import { DexPager } from "./DexPager";
+import { serverT } from "@/i18n/server";
+import dexPager from "@/messages/dex-pager";
 
 /**
  * Top of every Pokédex detail page: a back button to the list, then the
@@ -16,7 +18,7 @@ export function DetailNav({
   href = `/pokedex/${tab}`,
   label,
   pager,
-  home = { href: "/pokedex", label: "Pokédex" },
+  home,
 }: {
   tab?: string;
   href?: string;
@@ -24,6 +26,8 @@ export function DetailNav({
   pager?: Pager;
   home?: PagerLink;
 }) {
+  const t = serverT(dexPager);
+  home ??= { href: "/pokedex", label: t("pokedex") };
   if (!pager?.prev && !pager?.next) {
     return (
       <nav className="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
@@ -37,7 +41,7 @@ export function DetailNav({
   return (
     <div className="space-y-4">
       <BackButton href={href} label={label} />
-      <DexPager prev={pager.prev} next={pager.next} center={home} />
+      <DexPager prev={pager.prev} next={pager.next} center={home} words={{ nav: t("nav"), prev: t("prev"), next: t("next") }} />
     </div>
   );
 }

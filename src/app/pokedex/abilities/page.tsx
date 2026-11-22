@@ -3,29 +3,41 @@ import { SHARE_IMAGES, jsonLd, pageMetadata } from "@/lib/seo";
 import { breadcrumbList } from "@/lib/structured-data";
 import { ABILITIES } from "@/lib/dex/data";
 import { DexListExplorer } from "@/components/pokedex/DexListExplorer";
+import { LocalDexList } from "@/components/pokedex/LocalDexList";
 import { DexTabs } from "@/components/pokedex/DexTabs";
 import { ListHeader } from "@/components/pokedex/detail/DetailParts";
+import { ClientMessages } from "@/i18n/ClientMessages";
+import { getLocale, serverT } from "@/i18n/server";
+import dexRef from "@/messages/dex-ref";
+import dexLists from "@/messages/dex-lists";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Pokémon Abilities — Effects & Which Pokémon Have Them",
-  description: "Browse every Pokémon ability with its in-battle effect, and see which Pokémon have it as a normal or hidden ability.",
-  path: "/pokedex/abilities",
-  image: SHARE_IMAGES.pokedex,
-});
+export function generateMetadata(): Metadata {
+  const t = serverT(dexRef);
+  return pageMetadata({
+    title: t("abilities.metaTitle"),
+    description: t("abilities.metaDescription"),
+    path: "/pokedex/abilities",
+    image: SHARE_IMAGES.pokedex,
+  });
+}
 
 export default function AbilitiesPage() {
-  const items = ABILITIES.map((a) => ({ slug: a.slug, name: a.name, effect: a.effect, count: a.holders.length }));
+  const t = serverT(dexRef);
+  const english = getLocale() === "en";
+  const items = english ? ABILITIES.map((a) => ({ slug: a.slug, name: a.name, effect: a.effect, count: a.holders.length })) : [];
   return (
     <div className="mx-auto max-w-7xl space-y-4">
       <ListHeader
-        kicker="Ability database"
-        title="Poké"
-        accent="dex"
-        blurb="What each ability does and every Pokémon that has it."
+        kicker={t("abilities.kicker")}
+        title={t("title")}
+        accent={t("accent")}
+        blurb={t("abilities.blurb")}
       />
       <DexTabs active="abilities" />
-      <DexListExplorer kind="abilities" items={items} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbList([{ name: "Pokédex", path: "/pokedex" }, { name: "Abilities", path: "/pokedex/abilities" }])) }} />
+      <ClientMessages namespaces={[dexLists]}>
+        {english ? <DexListExplorer kind="abilities" items={items} /> : <LocalDexList kind="abilities" />}
+      </ClientMessages>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbList([{ name: t("crumb.pokedex"), path: "/pokedex" }, { name: t("crumb.abilities"), path: "/pokedex/abilities" }])) }} />
     </div>
   );
 }
