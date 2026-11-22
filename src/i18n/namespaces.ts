@@ -136,6 +136,8 @@ export const NAMESPACES = [
   "pikadoku-duel",
   "pikadoku-page",
   "places",
+  "pokeball-maker",
+  "pokeball-maker-page",
   "pokedex-explorer",
   "pokedex-pages",
   "pokedex-study",

@@ -6,7 +6,6 @@
  */
 
 /** Control characters, zero-width and direction marks, line separators. */
-// eslint-disable-next-line no-control-regex
 const INVISIBLE = new RegExp("[\\u0000-\\u001f\\u007f-\\u009f\\u200b-\\u200f\\u2028-\\u202e\\u2060-\\u206f\\ufeff]", "g");
 
 /** Trims text to `max` characters (code points) with no control characters and single spaces. */
