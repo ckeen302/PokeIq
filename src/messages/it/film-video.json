@@ -1,0 +1,48 @@
+{
+  "title": "Crea un video",
+  "intro": "Un video verticale 1080 × 1920 per TikTok, Reels e Shorts, con musica, sottotitoli e fonti.",
+  "close": "Chiudi",
+  "download": "Scarica",
+  "share": "Condividi",
+  "shareUnavailable": "Questo browser non può condividere file: scaricalo",
+  "secondsShort": "{n} s",
+  "another": "Creane un altro",
+  "what": "Cosa filmare",
+  "whole": "Tutta la storia",
+  "one": "Un capitolo",
+  "oneBody": "Un capitolo alla velocità del film, ogni sottotitolo con la sua fonte.",
+  "chapter": "Capitolo",
+  "seconds": "{n} secondi",
+  "webm": "WebM (registrato in tempo reale)",
+  "unsupported": "non supportato da questo browser",
+  "cancel": "Annulla",
+  "make": "Crea il video",
+  "error": "Qualcosa è andato storto",
+  "credits": "Generato su questo dispositivo, fotogramma per fotogramma. Musica: la colonna sonora originale del film (banco di suoni MuseScore General, MIT). Figure dei Pokémon dai render di Pokémon HOME.",
+  "progress": {
+    "scene": "Preparazione della scena",
+    "music": "Mixaggio della musica",
+    "rendering": "Rendering",
+    "packing": "Creazione dell'MP4",
+    "recording": "Registrazione"
+  },
+  "story": {
+    "wholeBody": "Tutta la storia di Pokémon in 60 secondi: il grande momento di ogni capitolo.",
+    "hook": "Tutta la storia di Pokémon in {seconds} secondi",
+    "kicker": "Trent'anni, ogni frase con la sua fonte",
+    "shareTitle": "La storia di Pokémon",
+    "shareText": "Tutta la storia di Pokémon, dalle cacce agli insetti di un bambino ai trent'anni #pokemon #pokeiq",
+    "endLine": "Il film completo, con le sue fonti"
+  },
+  "history": {
+    "wholeBody": "Tutta la storia del mondo Pokémon in 60 secondi: il grande momento di ogni capitolo.",
+    "hook": "Tutta la storia del mondo Pokémon in {seconds} secondi",
+    "kicker": "Con le parole dei giochi stessi",
+    "shareTitle": "La storia del mondo Pokémon",
+    "shareText": "La storia del mondo Pokémon, con le parole dei giochi stessi #pokemon #pokeiq",
+    "endTitle": "La storia del mondo Pokémon",
+    "endLine": "Ogni capitolo, con le sue fonti"
+  },
+  "quoteOpen": "«",
+  "quoteClose": "»"
+}

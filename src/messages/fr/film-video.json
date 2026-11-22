@@ -1,0 +1,48 @@
+{
+  "title": "Faire une vidéo",
+  "intro": "Une vidéo verticale en 1080 × 1920 pour TikTok, Reels et Shorts, avec musique, sous-titres et sources.",
+  "close": "Fermer",
+  "download": "Télécharger",
+  "share": "Partager",
+  "shareUnavailable": "Ce navigateur ne permet pas de partager des fichiers : télécharge-la plutôt",
+  "secondsShort": "{n} s",
+  "another": "En faire une autre",
+  "what": "Que filmer",
+  "whole": "Toute l'histoire",
+  "one": "Un chapitre",
+  "oneBody": "Un chapitre à la vitesse du film, chaque sous-titre avec sa source.",
+  "chapter": "Chapitre",
+  "seconds": "{n} secondes",
+  "webm": "WebM (enregistré en temps réel)",
+  "unsupported": "non pris en charge par ce navigateur",
+  "cancel": "Annuler",
+  "make": "Faire la vidéo",
+  "error": "Un problème est survenu",
+  "credits": "Rendu sur cet appareil, image par image. Musique : la bande originale du film (banque de sons MuseScore General, MIT). Figurines Pokémon tirées des rendus de Pokémon HOME.",
+  "progress": {
+    "scene": "Mise en place de la scène",
+    "music": "Mixage de la musique",
+    "rendering": "Rendu",
+    "packing": "Assemblage du MP4",
+    "recording": "Enregistrement"
+  },
+  "story": {
+    "wholeBody": "Toute l'histoire de Pokémon en 60 secondes : le grand moment de chaque chapitre.",
+    "hook": "Toute l'histoire de Pokémon en {seconds} secondes",
+    "kicker": "Trente ans, chaque phrase sourcée",
+    "shareTitle": "L'histoire de Pokémon",
+    "shareText": "Toute l'histoire de Pokémon, des chasses aux insectes d'un garçon à ses trente ans #pokemon #pokeiq",
+    "endLine": "Le film complet, avec ses sources"
+  },
+  "history": {
+    "wholeBody": "Toute l'histoire du monde Pokémon en 60 secondes : le grand moment de chaque chapitre.",
+    "hook": "Toute l'histoire du monde Pokémon en {seconds} secondes",
+    "kicker": "Avec les mots des jeux eux-mêmes",
+    "shareTitle": "L'histoire du monde Pokémon",
+    "shareText": "L'histoire du monde Pokémon, avec les mots des jeux eux-mêmes #pokemon #pokeiq",
+    "endTitle": "L'histoire du monde Pokémon",
+    "endLine": "Chaque chapitre, avec ses sources"
+  },
+  "quoteOpen": "« ",
+  "quoteClose": " »"
+}

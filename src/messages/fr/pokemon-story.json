@@ -1,0 +1,30 @@
+{
+  "meta": {
+    "title": "L'histoire de Pokémon : la vraie histoire, en film 3D",
+    "description": "Comment Pokémon est né et a grandi : des chasses aux insectes de Satoshi Tajiri dans le Machida des années 1970 et du câble link de la Game Boy à Rouge et Vert, la Pokémania, Pokémon GO et trente ans. Un film cinématographique en 3D, chaque phrase sourcée.",
+    "socialTitle": "L'histoire de Pokémon · PokéIQ",
+    "chapterTitle": "{title} ({when}) : l'histoire de Pokémon",
+    "chapterDescription": "{summary} Chapitre {numeral} de L'histoire de Pokémon, la vraie histoire de la franchise en film 3D, chaque phrase sourcée.",
+    "chapterSocial": "{title} · L'histoire de Pokémon"
+  },
+  "wholeStory": "Toute l'histoire",
+  "lab": "Labo 3D",
+  "everyRelease": "Toutes les sorties",
+  "kicker": "Labo 3D de PokéIQ · La vraie histoire",
+  "chapterOf": "{title} · Chapitre {numeral}",
+  "chapters": "Chapitres",
+  "sources": "Sources",
+  "inChapter": "Dans ce chapitre",
+  "chapterPage": "La page de ce chapitre",
+  "rest": "La suite de l'histoire",
+  "keepExploring": "Continuer l'exploration",
+  "exploreEvery": "Explorer toutes les sorties",
+  "exploreEveryBody": "La chronologie Pokémon : jeux, anime, films et cartes, date par date.",
+  "worldOwn": "L'histoire du monde lui-même",
+  "worldOwnBody": "L'histoire du monde Pokémon, telle que la racontent les jeux eux-mêmes.",
+  "howTo": "Comment lire les étiquettes.",
+  "tagsHelp": "Les phrases sans étiquette sont des faits datés. <said>En leurs mots</said> : ce qu'un créateur a dit en interview. <reported>Rapporté</reported> : d'après la presse ou une biographie. <retold>À ce qu'on raconte</retold> : une histoire racontée de plusieurs façons.",
+  "people": "Les personnes n'apparaissent qu'en silhouettes, avec les objets qu'elles utilisaient. Aucune vraie photo, capture d'écran, logo ni jaquette n'est montré : chaque scène est construite en 3D pour ce film.",
+  "music": "Musique : une bande originale composée pour ce film, un thème arrangé de six façons, joué avec la banque de sons MuseScore General (MIT ; ses cordes viennent de VSCO 2 Community Edition, CC0). L'ambiance et les effets sont créés dans le navigateur (<a>crédits</a>). Les figurines Pokémon sont faites à partir des rendus de Pokémon HOME fournis par PokéAPI.",
+  "fan": "Pokémon © Nintendo / Creatures / GAME FREAK. Un projet de fans, sans lien avec eux."
+}
