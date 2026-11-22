@@ -9,7 +9,6 @@ import { answerChallenge, beat, dismissNote, openTournamentMatch, useCommunity }
 import { PRESENCE_BEAT_MS, PRESENCE_MIN_GAP_MS, activityFromPath } from "@/lib/community";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/avatar/Avatar";
-import { useLocale } from "@/i18n/locale-context";
 import { useT } from "@/i18n/client";
 import communityNs from "@/messages/community";
 
@@ -28,7 +27,9 @@ export function CommunityLayer() {
   const account = useAccount();
   const pathname = usePathname();
   const community = useCommunity();
-  const locale = useLocale();
+  // The page's language (its translator's: an English-only build knows it is English).
+  const tc = useT(communityNs);
+  const locale = tc.locale;
   const userId = account.user?.id ?? null;
   const path = useRef(pathname);
   path.current = pathname;

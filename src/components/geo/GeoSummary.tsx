@@ -212,8 +212,8 @@ export function GeoSummary({
                 <span key={b.id} className="flex items-center gap-2 text-sm">
                   <BadgeMedal id={b.id} size="md" />
                   <span>
-                    <span className="block font-semibold">{t("summary.badge", { name: bt(`${b.id as keyof typeof badgesNs.en & string}.name`) })}</span>
-                    <span className="text-xs text-muted-foreground">{bt(`${b.id as keyof typeof badgesNs.en & string}.description`)}</span>
+                    <span className="block font-semibold">{t("summary.badge", { name: (bt.locale === "en" ? b.name : bt(`${b.id as keyof typeof badgesNs.en & string}.name`)) })}</span>
+                    <span className="text-xs text-muted-foreground">{(bt.locale === "en" ? b.description : bt(`${b.id as keyof typeof badgesNs.en & string}.description`))}</span>
                   </span>
                 </span>
               ))}

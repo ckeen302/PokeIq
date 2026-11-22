@@ -103,7 +103,7 @@ const FIELD_LIST: Record<TrainerField, ItemList> = {
 };
 
 /** An item's name in the page's language. */
-const itemName = (t: CreatorT, field: TrainerField, id: string) => t(`items.${FIELD_LIST[field]}.${id}` as never);
+const itemName = (t: CreatorT, field: TrainerField, item: { id: string; name: string }) => (t.locale === "en" ? item.name : t(`items.${FIELD_LIST[field]}.${item.id}` as never));
 
 /**
  * How to unlock an item ("Earn 3 badges"; `lower`: "earn 3 badges", to go inside a sentence). English as
@@ -244,7 +244,7 @@ export function TrainerCreator() {
           <div className={cn("absolute left-3 top-3 flex items-center gap-2 rounded-full pr-3", backdrop && "bg-background/75 backdrop-blur-sm")}>
             <TrainerPortrait trainer={draft} size={36} className="rounded-full ring-1 ring-border" />
             <div className="leading-tight">
-              <p className="hud-label text-screen">{current ? t(`presets.${current.id}` as never) : t("trainer")}</p>
+              <p className="hud-label text-screen">{current ? (t.locale === "en" ? current.name : t(`presets.${current.id}` as never)) : t("trainer")}</p>
               <p className="font-display text-sm font-bold uppercase tracking-wide">{user?.username ?? t("you")}</p>
             </div>
           </div>
@@ -309,7 +309,7 @@ export function TrainerCreator() {
                       <span className="block aspect-square w-full overflow-hidden rounded-md">
                         <TrainerPortrait trainer={look} size={88} className="h-full w-full transition-transform group-hover:scale-105" />
                       </span>
-                      <span className="w-full text-center leading-tight">{t(`presets.${preset.id}` as never)}</span>
+                      <span className="w-full text-center leading-tight">{t.locale === "en" ? preset.name : t(`presets.${preset.id}` as never)}</span>
                     </button>
                   );
                 })}
@@ -403,7 +403,7 @@ export function TrainerCreator() {
                     return (
                       <Option key={b.id} selected={draft.ball === b.id} locked={lock} hint={hintOf(t, b)} onClick={() => set("ball", b.id)} testid={`trainer-ball-${b.id}`}>
                         <BallIcon top={b.top} bottom={b.bottom} />
-                        {itemName(t, "ball", b.id)}
+                        {itemName(t, "ball", b)}
                       </Option>
                     );
                   })}
@@ -422,7 +422,7 @@ export function TrainerCreator() {
                       key={s.id}
                       type="button"
                       aria-pressed={draft.stage === s.id}
-                      title={lock ? hintOf(t, s) : itemName(t, "stage", s.id)}
+                      title={lock ? hintOf(t, s) : itemName(t, "stage", s)}
                       onClick={() => set("stage", s.id)}
                       className={cn(
                         "relative flex flex-col items-center gap-1 rounded-lg border p-1.5 text-[11px] font-semibold transition-colors",
@@ -432,7 +432,7 @@ export function TrainerCreator() {
                       data-locked={lock || undefined}
                     >
                       <span className={cn("block aspect-[4/3] w-full rounded-md border border-foreground/10", !style && "bg-[radial-gradient(ellipse_at_50%_35%,hsl(var(--screen)/0.16),transparent_62%)]", lock && "opacity-60")} style={style ?? undefined} />
-                      <span className="w-full truncate text-center leading-tight">{itemName(t, "stage", s.id)}</span>
+                      <span className="w-full truncate text-center leading-tight">{itemName(t, "stage", s)}</span>
                       {lock && (
                         <span className="absolute right-1 top-1 rounded-full bg-background/90 p-1 shadow-sm">
                           <Lock className="h-3 w-3" aria-label={hintOf(t, s)} />
@@ -474,7 +474,7 @@ export function TrainerCreator() {
           {settings && !settings.available && <p className="w-full text-sm text-muted-foreground">{t("soon")}</p>}
           {(locked.length > 0 || shinyLocked) && (
             <p className="flex w-full items-center gap-1.5 text-sm text-muted-foreground" data-testid="trainer-locked">
-              <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden /> {locked.length ? t("lockedSave", { item: itemName(t, locked[0].field, locked[0].item.id), hint: hintOf(t, locked[0].item, true) }) : t("shinyLocked")}
+              <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden /> {locked.length ? t("lockedSave", { item: itemName(t, locked[0].field, locked[0].item), hint: hintOf(t, locked[0].item, true) }) : t("shinyLocked")}
             </p>
           )}
           {message && (
@@ -543,7 +543,7 @@ function Chips<F extends TrainerField>({ label, field, list, draft, u, set, hint
       <div className="flex flex-wrap gap-2">
         {list.map((p) => (
           <Option key={p.id} selected={draft[field] === p.id} locked={!unlocked(p, u)} hint={hintOf(t, p)} onClick={() => set(field, p.id as TrainerConfig[F])} testid={`trainer-${field}-${p.id}`}>
-            {itemName(t, field, p.id)}
+            {itemName(t, field, p)}
           </Option>
         ))}
       </div>
@@ -563,7 +563,7 @@ function Tiles<F extends TrainerField>({ label, field, list, draft, u, set, hint
               key={p.id}
               type="button"
               aria-pressed={draft[field] === p.id}
-              title={lock ? hintOf(t, p) : itemName(t, field, p.id)}
+              title={lock ? hintOf(t, p) : itemName(t, field, p)}
               onClick={() => set(field, p.id as TrainerConfig[F])}
               className={cn(
                 "group relative flex flex-col items-center gap-1 rounded-lg border p-1.5 text-[11px] font-semibold transition-colors",
@@ -575,7 +575,7 @@ function Tiles<F extends TrainerField>({ label, field, list, draft, u, set, hint
               <span className="block aspect-square w-full overflow-hidden rounded-md">
                 <TrainerPortrait trainer={look} size={72} className={cn("h-full w-full transition-transform group-hover:scale-105", zoom && "origin-[50%_48%] scale-[1.6] group-hover:scale-[1.7]", lock && "opacity-60 grayscale-[35%]")} />
               </span>
-              <span className="w-full truncate text-center leading-tight">{itemName(t, field, p.id)}</span>
+              <span className="w-full truncate text-center leading-tight">{itemName(t, field, p)}</span>
               {lock && (
                 <span className="absolute right-1 top-1 rounded-full bg-background/90 p-1 shadow-sm">
                   <Lock className="h-3 w-3" aria-label={hintOf(t, p)} />
@@ -601,8 +601,8 @@ function Swatches<F extends TrainerField>({ label, field, list, draft, u, set, h
               key={c.id}
               type="button"
               aria-pressed={on}
-              aria-label={lock ? t("swatchLocked", { name: itemName(t, field, c.id), hint: hintOf(t, c, true) }) : itemName(t, field, c.id)}
-              title={lock ? t("lockedTitle", { name: itemName(t, field, c.id), hint: hintOf(t, c) }) : itemName(t, field, c.id)}
+              aria-label={lock ? t("swatchLocked", { name: itemName(t, field, c), hint: hintOf(t, c, true) }) : itemName(t, field, c)}
+              title={lock ? t("lockedTitle", { name: itemName(t, field, c), hint: hintOf(t, c) }) : itemName(t, field, c)}
               onClick={() => set(field, c.id as TrainerConfig[F])}
               className={cn("relative h-8 w-8 rounded-full border border-foreground/15 shadow-inner transition-transform hover:scale-110", on && "ring-2 ring-screen ring-offset-2 ring-offset-card")}
               style={{ background: c.hex }}
@@ -645,7 +645,7 @@ function TauntPreview({ u, t, onPlay }: { u: AvatarUnlocks; t: CreatorT; onPlay:
           <div className="flex min-w-0 flex-wrap gap-1">
             {TAUNTS.filter((m) => m.kind === kind).map((m) => {
               const lock = !unlocked(m, u);
-              const name = t(`taunts.${m.id}`);
+              const name = t.locale === "en" ? m.name : t(`taunts.${m.id}`);
               return (
                 <button
                   key={m.id}

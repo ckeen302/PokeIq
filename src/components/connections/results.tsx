@@ -132,8 +132,8 @@ export function NewBadges({ badges }: { badges: BadgeDef[] }) {
           >
             <BadgeMedal id={b.id} />
             <span>
-              <span className="block text-sm font-semibold">{bt(`${b.id as keyof typeof badgesNs.en & string}.name`)}</span>
-              <span className="block text-[11px] leading-tight text-muted-foreground">{bt(`${b.id as keyof typeof badgesNs.en & string}.description`)}</span>
+              <span className="block text-sm font-semibold">{(bt.locale === "en" ? b.name : bt(`${b.id as keyof typeof badgesNs.en & string}.name`))}</span>
+              <span className="block text-[11px] leading-tight text-muted-foreground">{(bt.locale === "en" ? b.description : bt(`${b.id as keyof typeof badgesNs.en & string}.description`))}</span>
             </span>
           </motion.div>
         ))}

@@ -47,7 +47,7 @@ export function composeShare({ title, score, badges = [], lines = [], url }: Sha
 }
 
 /** A number as the language writes it (en-US for English, as always). */
-const fmt = (n: number, t?: ShareT) => formatNumber(n, t?.locale ?? "en");
+const fmt = (n: number, t: ShareT) => formatNumber(n, t.locale);
 
 /** 75 seconds -> "1:15". */
 export function clock(seconds: number): string {

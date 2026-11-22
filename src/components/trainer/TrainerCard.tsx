@@ -213,12 +213,12 @@ export function TrainerCard({ local }: { local?: TrainerLocal } = {}) {
               <div
                 key={b.id}
                 className={cn("flex items-center gap-3 rounded-md border p-3", unlocked ? "border-warning/40 bg-warning/[0.06]" : "border-foreground/[0.06] opacity-60")}
-                title={bt(`${b.id as keyof typeof badgesNs.en & string}.description`)}
+                title={(bt.locale === "en" ? b.description : bt(`${b.id as keyof typeof badgesNs.en & string}.description`))}
               >
                 <BadgeMedal id={b.id} unlocked={unlocked} />
                 <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold max-sm:whitespace-normal">{bt(`${b.id as keyof typeof badgesNs.en & string}.name`)}</div>
-                  <div className="text-[11px] leading-tight text-muted-foreground max-[479px]:text-xs">{bt(`${b.id as keyof typeof badgesNs.en & string}.description`)}</div>
+                  <div className="truncate text-sm font-semibold max-sm:whitespace-normal">{(bt.locale === "en" ? b.name : bt(`${b.id as keyof typeof badgesNs.en & string}.name`))}</div>
+                  <div className="text-[11px] leading-tight text-muted-foreground max-[479px]:text-xs">{(bt.locale === "en" ? b.description : bt(`${b.id as keyof typeof badgesNs.en & string}.description`))}</div>
                 </div>
               </div>
             );

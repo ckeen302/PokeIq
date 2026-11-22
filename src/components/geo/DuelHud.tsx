@@ -45,9 +45,9 @@ export const seatImage = (view: DuelView, seat: number): string | undefined => {
   return p?.avatar ? avatarSrc(p.avatar) : undefined;
 };
 
-/** "2.4 sq" (town-map squares), or "Right on it!"; `t` gives the page's language (English without it). */
-export function distanceText(squares: number, t?: H): string {
-  if (!t || t.locale === "en") {
+/** "2.4 sq" (town-map squares), or "Right on it!"; `t` gives the page's language. */
+export function distanceText(squares: number, t: H): string {
+  if (t.locale === "en") {
     if (squares === 0) return "Right on it!";
     return `${squares.toFixed(1)} sq`;
   }

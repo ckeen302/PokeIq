@@ -301,7 +301,9 @@ function analyze(file, source, compile, registry, src, addDependency, opts = {})
     const spec = d.parent.parent.parent.moduleSpecifier.text;
     const target = resolveModule(spec, file, src);
     const name = (d.propertyName ?? d.name).text;
-    return !!target && safeExport(target, name, registry, src)?.[index] === ns.name;
+    const slot = target && safeExport(target, name, registry, src)?.[index];
+    // "<ns>!": English-only, the helper needs nothing of the translator at run time (see `free` below).
+    return slot === ns.name ? "safe" : slot === `${ns.name}!` ? "free" : false;
   };
   const localProp = (attr) => {
     const el = attr.parent?.parent;
@@ -394,9 +396,13 @@ function analyze(file, source, compile, registry, src, addDependency, opts = {})
       tr.collapsed = (tr.collapsed ?? 0) + 1;
       return;
     }
+    // English-only, an effect's dependency on the translator needs nothing of it.
+    if (inDeps && opts.englishOnly) return void (tr.collapsed = (tr.collapsed ?? 0) + 1);
     if (readsLocale || inDeps || tested) return;
-    if (localArg) return void aliases.push([localArg, tr]);
-    if (argIndex >= 0 && importedSafe(p, argIndex, tr.ns)) return;
+    if (localArg) return void (aliases.push([localArg, tr]), (tr.handoffs = (tr.handoffs ?? 0) + 1));
+    const handed = argIndex >= 0 && importedSafe(p, argIndex, tr.ns);
+    if (handed === "free") tr.handoffs = (tr.handoffs ?? 0) + 1;
+    if (handed) return;
     const has = ts.isPropertyAccessExpression(p) && p.expression === n && p.name.text === "has" && ts.isCallExpression(p.parent) && p.parent.expression === p;
     // Only another language's page gets here: its own messages answer, so no English rides along.
     if ((has || call) && otherLanguageOnly(n)) {
@@ -452,11 +458,14 @@ function analyze(file, source, compile, registry, src, addDependency, opts = {})
     for (const [param, tr] of batch) {
       if (translators.has(param)) {
         const known = translators.get(param);
+        (tr.kids ??= []).push(known);
         if (known.ns !== tr.ns) known.escapes = tr.escapes = true;
         else if (known !== tr && !known.parent && known.nsArg === null) known.parent = known.parent ?? null;
         continue;
       }
-      translators.set(param, { ns: tr.ns, nsArg: null, escapes: false, edits: [], parent: tr });
+      const kid = { ns: tr.ns, nsArg: null, escapes: false, edits: [], parent: tr };
+      (tr.kids ??= []).push(kid);
+      translators.set(param, kid);
       fresh.add(param);
     }
     if (fresh.size) scan(fresh);
@@ -472,14 +481,26 @@ function analyze(file, source, compile, registry, src, addDependency, opts = {})
 
   const edits = [];
   for (const tr of translators.values()) if (!rootOf(tr).escapes) edits.push(...tr.edits);
-  for (const tr of translators.values()) if (tr.exportAs && !tr.escapes) result.safe.push([...tr.exportAs, tr.ns.name]);
-  // English-only: a `const t = useT(ns)` (or serverT) whose every use became its English is no longer needed at all.
+  // English-only: a translator is `free` when nothing reads it at run time: every use became its English or a
+  // constant, or hands it to a helper (here or in another file) that is free in turn.
+  const freeMemo = new Map();
+  const free = (tr) => {
+    if (!opts.englishOnly || tr.escapes) return false;
+    if (freeMemo.has(tr)) return freeMemo.get(tr);
+    freeMemo.set(tr, false);
+    const ok = (tr.uses ?? 0) === (tr.collapsed ?? 0) + (tr.handoffs ?? 0) && (tr.kids ?? []).every(free);
+    freeMemo.set(tr, ok);
+    return ok;
+  };
+  for (const tr of translators.values()) if (tr.exportAs && !tr.escapes) result.safe.push([...tr.exportAs, free(tr) ? `${tr.ns.name}!` : tr.ns.name]);
+  // A free `const t = useT(ns)` (or serverT) goes, and so does a free parameter's English default: 0 stands in
+  // (a helper handed it reads nothing of it either).
   if (opts.englishOnly) {
-    const parents = new Set([...translators.values()].map((tr) => tr.parent).filter(Boolean));
     for (const [decl, tr] of translators) {
-      if (!tr.nsArg || tr.escapes || parents.has(tr) || !tr.uses || tr.uses !== tr.collapsed || !ts.isVariableDeclaration(decl)) continue;
+      if (!tr.nsArg || !free(tr)) continue;
       const init = decl.initializer;
-      if (!ts.isCallExpression(init) || !/^(useT|serverT|translator)$/.test(init.expression.text)) continue;
+      if (!init || !ts.isCallExpression(init) || !ts.isIdentifier(init.expression) || !/^(useT|serverT|translator)$/.test(init.expression.text)) continue;
+      if (!ts.isVariableDeclaration(decl) && !ts.isParameter(decl)) continue;
       tr.dropped = true;
       edits.push([init.getStart(sf), init.getEnd(), "0"]);
     }
@@ -513,7 +534,7 @@ function analyze(file, source, compile, registry, src, addDependency, opts = {})
 
 /** Every file of src that uses message namespaces, and which of their exported helpers are safe (to a fixpoint). */
 let registryPromise = null;
-function buildRegistry(src, compile) {
+function buildRegistry(src, compile, opts = {}) {
   const files = [];
   const walk = (dir) => {
     for (const name of fs.readdirSync(dir)) {
@@ -537,7 +558,7 @@ function buildRegistry(src, compile) {
   for (let round = 0; round < 6; round++) {
     let changed = false;
     for (const [file, text] of files) {
-      const { safe } = analyze(file, text, compile, registry, src);
+      const { safe } = analyze(file, text, compile, registry, src, undefined, opts);
       const before = JSON.stringify([...(registry.get(file) ?? new Map())]);
       const map = new Map();
       for (const [name, index, ns] of safe) {
@@ -553,13 +574,38 @@ function buildRegistry(src, compile) {
   return registry;
 }
 
+/** English-only: `useLocale()` (i18n/locale-context, a plain function there) is "en"; the call becomes the constant. */
+function englishLocale(file, source) {
+  if (!source.includes("@/i18n/locale-context")) return source;
+  const sf = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, file.endsWith("x") ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+  const names = new Set();
+  for (const st of sf.statements) {
+    if (!ts.isImportDeclaration(st) || st.moduleSpecifier.text !== "@/i18n/locale-context" || !st.importClause?.namedBindings || !ts.isNamedImports(st.importClause.namedBindings)) continue;
+    for (const el of st.importClause.namedBindings.elements) if ((el.propertyName ?? el.name).text === "useLocale") names.add(el.name.text);
+  }
+  if (!names.size) return source;
+  const edits = [];
+  const walk = (n) => {
+    if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && names.has(n.expression.text) && !n.arguments.length) {
+      const d = resolve(n.expression);
+      if (d && ts.isImportSpecifier(d)) edits.push([n.getStart(sf), n.getEnd()]);
+    }
+    ts.forEachChild(n, walk);
+  };
+  walk(sf);
+  let out = source;
+  for (const [from, to] of edits.sort((a, b) => b[0] - a[0])) out = `${out.slice(0, from)}"en"${out.slice(to)}`;
+  return out;
+}
+
 module.exports = function inlineLoader(source) {
   const done = this.async();
   const src = path.resolve(this.rootContext ?? process.cwd(), "src");
   getCompile()
     .then(async (compile) => {
-      registryPromise ??= Promise.resolve().then(() => buildRegistry(src, compile));
+      registryPromise ??= Promise.resolve().then(() => buildRegistry(src, compile, { englishOnly: !process.env.LIVE_LOCALES }));
       const registry = await registryPromise;
+      if (!process.env.LIVE_LOCALES) source = englishLocale(this.resourcePath, source);
       if (!source.includes("@/messages/") && !source.includes("Translator<") && !(registry.typeRe && registry.typeRe.test(source))) return done(null, source);
       // LIVE_LOCALES empty: an English-only build (next.config swaps in catalog.english.ts), whose calls collapse to their English.
       done(null, analyze(this.resourcePath, source, compile, registry, src, (f) => this.addDependency(f), { englishOnly: !process.env.LIVE_LOCALES }).out);
@@ -568,3 +614,4 @@ module.exports = function inlineLoader(source) {
 };
 module.exports.analyze = analyze;
 module.exports.buildRegistry = buildRegistry;
+module.exports.englishLocale = englishLocale;

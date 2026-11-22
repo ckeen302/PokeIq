@@ -271,7 +271,7 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
               {reward.dailyStreak !== undefined && <Badge variant="success">{t("results.streak", { n: reward.dailyStreak })}</Badge>}
               {reward.newBadges.map((b) => (
                 <Badge key={b.id} variant="outline" className="border-warning/60 text-warning">
-                  <BadgeMedal id={b.id} size="sm" /> {t("results.unlocked", { name: bt(`${b.id as BadgeId}.name`) })}
+                  <BadgeMedal id={b.id} size="sm" /> {t("results.unlocked", { name: (bt.locale === "en" ? b.name : bt(`${b.id as BadgeId}.name`)) })}
                 </Badge>
               ))}
             </motion.div>
