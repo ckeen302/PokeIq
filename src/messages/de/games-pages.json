@@ -139,7 +139,7 @@
     "colRank": "Rang",
     "colRecord": "Rekord",
     "everyLabel": "{name}: alle Disziplinen",
-    "rankOf": "#{rank} von {n}",
+    "rankOf": "Platz {rank} von {n}",
     "theRecord": "Der Rekord",
     "watch": "In 3D ansehen",
     "vs": "gegen {name}"

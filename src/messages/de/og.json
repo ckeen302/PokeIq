@@ -21,7 +21,7 @@
     "subtitle": "Ohne Anmeldung. Spiel direkt im Browser.",
     "chips": {
       "battles": "Kämpfe",
-      "battleLab": "Battle Lab",
+      "battleLab": "Kampflabor",
       "quizzes": "Quiz"
     }
   },
@@ -205,7 +205,7 @@
       "footer": "Hol dir Felder mit einem passenden Pokémon · drei in einer Reihe gewinnen →"
     },
     "name-em-all": {
-      "eyebrow": "Name-'em-All-Rennen",
+      "eyebrow": "Nenn-sie-alle-Rennen",
       "footer": "Dieselben Pokémon für alle · wer zuerst alle nennt, gewinnt →"
     }
   },
@@ -219,7 +219,7 @@
     }
   },
   "nameEmAll": {
-    "eyebrow": "Name 'em All · Gedächtnisquiz",
+    "eyebrow": "Nenn sie alle · Gedächtnisquiz",
     "title1": "Kannst du",
     "title2": "jedes Pokémon nennen?",
     "subtitle": "Tipp jedes Pokémon ein, an das du dich erinnerst, bevor die Zeit abläuft. Jeden Tag eine neue Kategorie.",
@@ -267,7 +267,7 @@
     "footer": "Zufallskampf, OU, Doppel und mehr →"
   },
   "battleLab": {
-    "eyebrow": "Battle Lab",
+    "eyebrow": "Kampflabor",
     "title1": "Wer gewinnt,",
     "title2": "und wie oft?",
     "subtitle": "Stell ein beliebiges Duell aus Gen. 1 bis 9 ein, und die Showdown-Engine spielt es tausendfach in deinem Browser.",

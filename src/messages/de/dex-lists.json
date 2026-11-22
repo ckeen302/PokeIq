@@ -19,9 +19,9 @@
   "placeType": "Art des Ortes",
   "allTypes": "Alle Arten",
   "cls": {
-    "physical": "physisch",
-    "special": "spezial",
-    "status": "status"
+    "physical": "Physisch",
+    "special": "Speziell",
+    "status": "Status"
   },
   "reset": "Zurücksetzen",
   "empty": {

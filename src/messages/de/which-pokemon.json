@@ -23,7 +23,7 @@
     "back": "Welches Pokémon bist du?",
     "kicker": "Welches Pokémon bist du?",
     "youAre": "Du bist <c>{name}</c>",
-    "dexLine": "#{num} · Gen. {gen} · <link>Pokédex-Eintrag</link>",
+    "dexLine": "Nr. {num} · Gen. {gen} · <link>Pokédex-Eintrag</link>",
     "why": "<b>Warum {name}:</b> {why}",
     "profile": "Profil von {name}",
     "partner": "Idealer Partner von {name}",

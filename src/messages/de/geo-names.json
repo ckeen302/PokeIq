@@ -17,7 +17,7 @@
   "eras": {
     "all": "Alle Spiele",
     "2d": "Klassisch 2D",
-    "3d": "Modern 3D"
+    "3d": "Modernes 3D"
   },
   "difficulty": {
     "easy": {
@@ -61,10 +61,10 @@
     "galar": "Galar",
     "paldea": "Paldea",
     "kitakami": "Kitakami",
-    "blueberryacademy": "Blueberry Academy",
-    "seviiislands": "Sevii Islands",
-    "isleofarmor": "Isle of Armor",
-    "crowntundra": "Crown Tundra"
+    "blueberryacademy": "Blaubeer-Akademie",
+    "seviiislands": "Sevii Inseln",
+    "isleofarmor": "Insel der Rüstung",
+    "crowntundra": "Schneelande der Krone"
   },
   "games": {
     "red": "Rot",

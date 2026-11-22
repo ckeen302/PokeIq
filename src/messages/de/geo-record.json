@@ -29,8 +29,8 @@
     "streak": "{n} Orte in Folge in einer Serie (Nadel-Serie oder Regionen-Serie).",
     "daily": "Spiel das Tagesspiel {n} Tage in Folge.",
     "ranked": "Erreiche {ball} in Ranglisten-Duellen.",
-    "weekly-podium": "Beende eine Wochen-Challenge unter den Top 3 (unter dem gespeicherten Namen).",
-    "weekly-champion": "Werde Erster einer Wochen-Challenge."
+    "weekly-podium": "Beende eine Wochen-Herausforderung unter den Top 3 (unter dem gespeicherten Namen).",
+    "weekly-champion": "Werde Erster einer Wochen-Herausforderung."
   },
   "balls": {
     "poke": "Pokéball",

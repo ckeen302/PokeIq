@@ -71,7 +71,7 @@
     "rarity": "Seltenheit",
     "artist": "Illustrator",
     "reg": "Reg.",
-    "entry": "#{dex} {name} — im Pokédex →",
+    "entry": "Nr. {dex} {name} — im Pokédex →",
     "prices": "Preise",
     "pricesAsOf": "Preise, Stand {date}",
     "pricesUnavailable": "Preise gerade nicht verfügbar.",

@@ -112,7 +112,7 @@
     "aTrainer": "Ein Trainer",
     "scored": "{who} hat {correct}/{total} (PokéIQ {iq}) – schaffst du mehr?",
     "description": "{run} auf PokéIQ. Spiel genau dieselben Fragen und finde heraus, wer Pokémon besser kennt.",
-    "daily": "Tägliche Herausforderung #{n}",
+    "daily": "Tägliche Herausforderung Nr. {n}",
     "run": "{mode} · {format}"
   }
 }

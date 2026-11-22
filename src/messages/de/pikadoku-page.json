@@ -21,7 +21,7 @@
       "solvableQ": "Ist jedes Raster lösbar?",
       "solvableA": "Ja. Jedes Tagesrätsel wird geprüft: Jedes Feld hat genug gültige Antworten, und neun verschiedene Pokémon können das Raster füllen.",
       "levelsQ": "Was bedeuten Leicht, Normal und Experte?",
-      "levelsA": "Leicht nutzt breite Kategorien mit vielen Antworten, Normal ist das Hauptraster für die Rangliste, und Experte nutzt schwerere Kategorien wie Attacken, Fähigkeiten und Wertgrenzen."
+      "levelsA": "Leicht nutzt breite Kategorien mit vielen Antworten, Normal ist das Hauptraster für die Bestenliste, und Experte nutzt schwerere Kategorien wie Attacken, Fähigkeiten und Wertgrenzen."
     }
   },
   "duel": {

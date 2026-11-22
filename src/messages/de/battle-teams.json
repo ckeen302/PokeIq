@@ -63,7 +63,7 @@
     "problems": "Probleme im Team",
     "slots": "Teamplätze",
     "slotProblems": "{n, plural, one {{n} Problem} other {{n} Probleme}}",
-    "legal": "legal",
+    "legal": "erlaubt",
     "add": "Hinzufügen",
     "empty": "Leer",
     "dexError": "Die Pokédex-Daten konnten nicht geladen werden. Prüfe deine Verbindung und lade neu.",
@@ -71,7 +71,7 @@
     "start": "Füge ein Pokémon hinzu, um zu starten",
     "checkFailed": "Prüfung fehlgeschlagen: {message}",
     "checking": "Wird geprüft …",
-    "legalIn": "Legal in {format}",
+    "legalIn": "Erlaubt in {format}",
     "count": "{n, plural, one {{n} Problem} other {{n} Probleme}}"
   },
   "import": {
@@ -150,7 +150,7 @@
     "share": "{pct} % nutzen diese Verteilung",
     "source": "Die häufigsten Entscheidungen laut {source}, kein ausgearbeitetes Set.",
     "goals": "EV-Ziele",
-    "goalsIntro": "Wähle, was dieses Pokémon schaffen muss; der Schadensrechner findet die wenigsten KP-, Vert-, SVer- und Init-EVs (und das beste Wesen) dafür. „Überstehen“ heißt: jeden Schadenswurf bei vollen KP, ohne Volltreffer. Angreifer nutzen ihr häufigstes Set ({source}).",
+    "goalsIntro": "Wähle, was dieses Pokémon schaffen muss; der Schadensrechner findet die wenigsten EVs auf KP, Verteidigung, Spezial-Verteidigung und Initiative (und das beste Wesen) dafür. „Überstehen“ heißt: jeden Schadenswurf bei vollen KP, ohne Volltreffer. Angreifer nutzen ihr häufigstes Set ({source}).",
     "survive": "Überstehen",
     "outspeed": "Schneller sein",
     "pokemon": "Pokémon",

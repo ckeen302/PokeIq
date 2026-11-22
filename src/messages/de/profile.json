@@ -42,7 +42,7 @@
     "mode": "Modus",
     "formats": {
       "classic": "Klassisch",
-      "survival": "Survival",
+      "survival": "Überleben",
       "blitz": "Blitz"
     },
     "named": "<b>{named}/{total}</b> genannt",

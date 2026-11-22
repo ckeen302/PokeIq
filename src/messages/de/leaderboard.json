@@ -9,7 +9,7 @@
     "daily": "Täglich",
     "iq": "PokéIQ-Test",
     "geo": "PokéGuessr",
-    "geoRanked": "PokéGuessr Ranked",
+    "geoRanked": "PokéGuessr-Rangliste",
     "connections": "PokéConnections",
     "battle": "Kampf-Rangliste"
   },
@@ -19,8 +19,8 @@
     "soon": "Ranglistenkämpfe starten bald."
   },
   "geoRanked": {
-    "intro": "Ranglistenduelle in PokéGuessr: die Besten nach Elo. Pokéball und Superball zeigen nur die Division; die Zahl erscheint ab Hyperball.",
-    "soon": "PokéGuessr Ranked startet bald.",
+    "intro": "Ranglistenduelle in PokéGuessr: die Top 100 nach Elo. Pokéball und Superball zeigen nur die Division; die Zahl erscheint ab Hyperball.",
+    "soon": "Die PokéGuessr-Rangliste startet bald.",
     "empty": "Noch niemand ist eingestuft. <link>Such dir ein Ranglistenduell</link> und sei der Erste!"
   },
   "col": {
@@ -46,11 +46,11 @@
     "eraBoard": "{board} · {era}",
     "mapBoard": "{map} · {board}",
     "regionStreak": "Regionen-Serie",
-    "daily": "Täglich Nr. {n}",
-    "weekly": "Wöchentlich Nr. {n} · {map}",
+    "daily": "Tagesspiel Nr. {n}",
+    "weekly": "Woche Nr. {n} · {map}",
     "lastWeek": "Letzte Woche · {map}",
     "themed": "Themenkarten",
-    "weeklyTitle": "Wochen-Challenge Nr. {n} · {map} · Woche vom {week}",
+    "weeklyTitle": "Wochen-Herausforderung Nr. {n} · {map} · Woche vom {week}",
     "inARow": "{score} am Stück",
     "outOf": "{score} / {max}"
   },

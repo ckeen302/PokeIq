@@ -78,8 +78,8 @@
       "beatHp": "{winner} schlug {loser} mit {hp} von {max} KP übrig nach {n} Runden.",
       "title": "{headline}: ein PokéGuessr-Duell in {map}"
     },
-    "daily": "Tagesspiel #{n}",
-    "weekly": "Woche #{n}",
+    "daily": "Tagesspiel Nr. {n}",
+    "weekly": "Woche Nr. {n}",
     "bonus": "+{bonus} Spielbonus",
     "chips": {
       "streak": "Serie",
@@ -92,7 +92,7 @@
     "play": {
       "game": "PokéGuessr spielen",
       "daily": "Heutiges Tagesspiel spielen",
-      "weekly": "Challenge dieser Woche spielen",
+      "weekly": "Wochen-Herausforderung spielen",
       "duel": "Duell starten",
       "regionStreak": "Regionen-Serie spielen"
     }

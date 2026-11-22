@@ -47,7 +47,7 @@
   "quiz": {
     "dailyGame": "Tägliche Herausforderung",
     "testGame": "PokéIQ-Test",
-    "dailyLabel": "Tägliche Herausforderung #{n}",
+    "dailyLabel": "Tägliche Herausforderung Nr. {n}",
     "testLabel": "Der PokéIQ-Test",
     "iq": "PokéIQ {iq}",
     "right": "{correct}/{total} richtig · {points} Pkt.",

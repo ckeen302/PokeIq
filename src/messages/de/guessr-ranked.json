@@ -37,8 +37,8 @@
     }
   },
   "record": {
-    "place": "<b>#{position}</b> von {players}",
-    "ladder": "Rangliste: <b>#{position}</b> von {players}",
+    "place": "Platz <b>{position}</b> von {players}",
+    "ladder": "Rangliste: Platz <b>{position}</b> von {players}",
     "wl": "{wins} S · {losses} N",
     "draws": " · {draws} U",
     "best": "Bestwert {points} Pkt."

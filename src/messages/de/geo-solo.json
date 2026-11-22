@@ -56,9 +56,9 @@
       "play": "Heutiges spielen"
     },
     "weekly": {
-      "numbered": "Woche #{n}",
+      "numbered": "Woche Nr. {n}",
       "word": "Woche",
-      "title": "Wochen-Challenge",
+      "title": "Wochen-Herausforderung",
       "endsIn": "Endet in {left}",
       "dh": "{d} T {h} Std.",
       "hm": "{h} Std. {m} Min.",
@@ -88,10 +88,10 @@
       "rankedBlurb": "Steig vom Pokéball bis zum Ultraball auf.",
       "openRanked": "Rangliste öffnen",
       "partyLabel": "Freunde · bis zu 16",
-      "party": "Gruppe",
+      "party": "Party",
       "new": "Neu",
       "partyBlurb": "Ein privater Raum für deine ganze Gruppe.",
-      "openParty": "Gruppe öffnen"
+      "openParty": "Party öffnen"
     },
     "explore": {
       "eyebrow": "Die Pokémon-Welt",
@@ -107,7 +107,7 @@
   },
   "hud": {
     "picked": "Gewählte Spiele",
-    "daily": "Tagesspiel #{n}",
+    "daily": "Tagesspiel Nr. {n}",
     "streak": "Serie {n}",
     "streakWord": "Serie",
     "round": "Runde {n}",
@@ -134,7 +134,7 @@
   },
   "summary": {
     "shareDaily": "Ich habe {score} Punkte im heutigen PokéGuessr (Tagesspiel #{n}). Heute dieselben {places} Orte für alle: Schlägst du mich?",
-    "shareWeekly": "Ich habe {score} Punkte in der PokéGuessr-Wochen-Challenge. Dieselben {places} Orte für alle: Schlägst du mich?",
+    "shareWeekly": "Ich habe {score} Punkte in der PokéGuessr-Wochen-Herausforderung. Dieselben {places} Orte für alle: Schlägst du mich?",
     "shareGame": "Ich habe {score} Punkte in PokéGuessr. Dieselben {places} Orte: Schlägst du mich?",
     "saveFailed": "Speichern fehlgeschlagen.",
     "bonus": "+{bonus} Spielbonus · {total} mit Bonus (die Bestenliste zählt die Kartenpunkte)",
@@ -158,9 +158,9 @@
     "submit": "Eintragen",
     "practice": {
       "daily": "Nur dein erstes Tagesspiel des Tages kommt in die Bestenliste.",
-      "weekly": "Nur deine erste Wochen-Challenge der Woche kommt in die Bestenliste.",
+      "weekly": "Nur deine erste Wochen-Herausforderung der Woche kommt in die Bestenliste.",
       "challenge": "Herausforderungen werden nicht gewertet, weil die Orte geteilt wurden.",
-      "filtered": "Spiele mit ausgewählten Editionen sind Training: Spiel mit Alle Spiele, Klassisch 2D oder Modern 3D, um gewertet zu werden.",
+      "filtered": "Spiele mit ausgewählten Editionen sind Training: Spiel mit Alle Spiele, Klassisch 2D oder Modernes 3D, um gewertet zu werden.",
       "difficulty": "Leicht und Schwer sind Training: Spiel auf Normal, um in die Bestenliste zu kommen."
     },
     "leaderboard": "Bestenliste",
@@ -222,7 +222,7 @@
     "historyBlurb": "Deine bisherigen Duelle und Ranglistenspiele, Runde für Runde.",
     "boardsLabel": "Tag · Woche · Karten",
     "boards": "Bestenlisten",
-    "boardsBlurb": "Das Tagesspiel, die Wochen-Challenge, die Bestenlisten jeder Karte und die Rangliste."
+    "boardsBlurb": "Das Tagesspiel, die Wochen-Herausforderung, die Bestenlisten jeder Karte und die Rangliste."
   },
   "regionStreak": {
     "label": "Regionen-Serie",

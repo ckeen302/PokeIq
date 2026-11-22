@@ -37,14 +37,14 @@
   },
   "move": {
     "metaTitle": "{name} — Pokémon-Attacke",
-    "twin": "{name} ({cls, select, physical {Physisch} special {Spezial} other {Status}})",
+    "twin": "{name} ({cls, select, physical {Physisch} special {Speziell} other {Status}})",
     "metaDescription": "{name} ist eine {cls, select, physical {physische Attacke} special {spezielle Attacke} other {Status-Attacke}} vom Typ {type}. {effect} Sieh ihre Stärke, Genauigkeit, AP und alle Pokémon, die sie erlernen.",
     "back": "Zurück zu allen Attacken",
     "kicker": "Attacke · Gen. {gen}",
     "cls": {
-      "physical": "physisch",
-      "special": "spezial",
-      "status": "status"
+      "physical": "Physisch",
+      "special": "Speziell",
+      "status": "Status"
     },
     "noEffect": "Keine Beschreibung verfügbar.",
     "data": "Attackendaten",

@@ -7,7 +7,7 @@
   },
   "diffHint": {
     "easy": "Breite Kategorien, viele Antworten",
-    "normal": "Das Hauptraster: Rangliste und Wertung",
+    "normal": "Das Hauptraster: Bestenliste und Wertung",
     "expert": "Schwerere Kategorien, manchmal nur zwei Antworten pro Feld"
   },
   "error": {
@@ -69,12 +69,12 @@
     "settings": "Einstellungen für Unbegrenzt"
   },
   "weeklyNote": "<b>{theme}</b>: {blurb} Läuft bis Sonntag, {sunday}. Zählt nicht für deine Tagesserie.",
-  "archiveNote": "Archiv: Nr. {n} ({date}), {diff}. Nur zum Spaß: zählt nie für die Tagesrangliste oder deine Serie.",
+  "archiveNote": "Archiv: Nr. {n} ({date}), {diff}. Nur zum Spaß: zählt nie für die Tagesbestenliste oder deine Serie.",
   "unlimitedNote": "Unbegrenzt: dein eigenes Raster, zählt nie für deine Serie.",
   "time": "Zeit",
   "master": "Meisterrätsel von {name}",
   "bar": {
-    "rarityLabel": "Seltenheitswert (niedriger ist seltener), tippen für die Rangliste",
+    "rarityLabel": "Seltenheitswert (niedriger ist seltener), tippen für die Bestenliste",
     "rarityTitle": "Seltenheitswert: die Anteile der Spieler, die deine Antworten gewählt haben, addiert (ein leeres Feld zählt 100). Niedriger ist seltener.",
     "rarity": "Seltenheit",
     "filled": "Gefüllt",
@@ -90,7 +90,7 @@
   "more": "Mehr",
   "dailyDifficulty": "Schwierigkeit des Tagesrätsels",
   "weekly": "Wöchentlich",
-  "weeklyTitle": "Ein Raster mit Thema, von Montag bis Sonntag, mit eigener Rangliste",
+  "weeklyTitle": "Ein Raster mit Thema, von Montag bis Sonntag, mit eigener Bestenliste",
   "archive": "Archiv",
   "result": {
     "complete": "Raster komplett · 9 von 9 Feldern",
@@ -99,24 +99,24 @@
     "off": "Die Seltenheit ist gerade aus, daher hat dieses Spiel keinen Seltenheitswert.",
     "explain": "Jedes Feld addiert den Anteil der Spieler, die dort dasselbe Pokémon gewählt haben (ein leeres Feld addiert 100). Niedriger heißt seltenere Picks: 900 ist das häufigste Ergebnis, unter 100 ist legendär.",
     "tapRank": "Platzierung zeigen",
-    "rankWeek": "Du bist auf Platz {position} von {total} in der Wochenrangliste.",
-    "rankToday": "Du bist auf Platz {position} von {total} in der heutigen Rangliste ({diff}).",
-    "boardOff": "Die Rangliste ist gerade aus.",
-    "trainerName": "Trainername für die Rangliste",
+    "rankWeek": "Du bist auf Platz {position} von {total} in der Wochenbestenliste.",
+    "rankToday": "Du bist auf Platz {position} von {total} in der heutigen Bestenliste ({diff}).",
+    "boardOff": "Die Bestenliste ist gerade aus.",
+    "trainerName": "Trainername für die Bestenliste",
     "rankMe": "Eintragen",
     "share": "Ergebnis teilen",
     "cantWait": "Keine Lust zu warten? Spiel ein unbegrenztes Raster"
   },
   "leaderboard": {
-    "label": "Rangliste",
-    "week": "Wochenrangliste · {theme}",
-    "today": "Heutige Rangliste · {diff}",
+    "label": "Bestenliste",
+    "week": "Wochenbestenliste · {theme}",
+    "today": "Heutige Bestenliste · {diff}",
     "scope": "Ranglistenbereich",
     "all": "Alle",
     "friends": "Freunde",
     "signIn": "Melde dich an, um die Ergebnisse deiner Freunde zu sehen.",
-    "off": "Die Rangliste ist gerade aus.",
-    "empty": "Noch niemand in der Rangliste.",
+    "off": "Die Bestenliste ist gerade aus.",
+    "empty": "Noch niemand in der Bestenliste.",
     "emptyHow": "Löse ein Raster mit Trainername, um dabei zu sein."
   },
   "weeklyTheme": {
@@ -186,7 +186,7 @@
   },
   "archiveSheet": {
     "title": "Archiv",
-    "intro": "Spiel jedes vergangene Tagesrätsel in jeder Schwierigkeit. Archivspiele sind nur zum Spaß: Sie zählen nie für die Tagesrangliste oder deine Serie.",
+    "intro": "Spiel jedes vergangene Tagesrätsel in jeder Schwierigkeit. Archivspiele sind nur zum Spaß: Sie zählen nie für die Tagesbestenliste oder deine Serie.",
     "prev": "Vorheriger Monat",
     "next": "Nächster Monat",
     "month": "Tagesrätsel im {month}",
@@ -222,7 +222,7 @@
       "both": "Jedes Feld braucht ein Pokémon, das <b>sowohl</b> zu seiner Zeile als auch zu seiner Spalte passt. Jedes Pokémon darf nur einmal vorkommen.",
       "pp": "Du hast <b>{pp} Versuche (AP)</b>, und auch ein Fehlversuch kostet einen. Richtige Antworten werden eingetragen.",
       "score": "Dein <b>Seltenheitswert</b> beginnt bei 900 (100 für jedes leere Feld). Jeder Pick zählt den Anteil der Spieler, die ihn in diesem Feld gewählt haben, seltene Picks drücken den Wert also. <b>Niedriger ist besser.</b> Deine Teilen-Karte färbt jedes Feld: 🟪 unter 1 %, 🟦 unter 10 %, 🟩 unter 25 %, 🟨 25 % oder mehr.",
-      "filled": "<b>Gefüllt</b> zählt deine Felder. Tippe auf <b>Seltenheit</b>, um die Tagesrangliste zu sehen.",
+      "filled": "<b>Gefüllt</b> zählt deine Felder. Tippe auf <b>Seltenheit</b>, um die Tagesbestenliste zu sehen.",
       "info": "Tippe auf das <b>i</b> einer Kategorie, um genau zu sehen, was zählt. Am Ende siehst du <b>jede gültige Antwort</b> für jedes Feld und warum jeder Fehlversuch nicht gepasst hat.",
       "master": "Jedes Raster ist garantiert lösbar. An manchen Tagen ersetzt ein handgemachtes <b>Meisterrätsel</b> das Tagesrätsel."
     },

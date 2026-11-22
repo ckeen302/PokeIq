@@ -1,14 +1,14 @@
 {
   "label": "Tägliche Herausforderung",
-  "labelNumber": "Tägliche Herausforderung #{n}",
+  "labelNumber": "Tägliche Herausforderung Nr. {n}",
   "title": "Der PokéIQ-Test von heute",
   "intro": "10 gemischte Fragen, für alle Trainer dieselben. Nur ein Versuch – nutze ihn.",
   "youScored": "Dein Ergebnis",
   "iq": "PokéIQ <b>{iq}</b> · {score} Pkt.",
   "streak": "{n, plural, one {{n} Tag in Folge · Rekord {best}} other {{n} Tage in Folge · Rekord {best}}}",
-  "leaderboard": "Heutige Rangliste",
+  "leaderboard": "Heutige Bestenliste",
   "next": "Nächste Tägliche Herausforderung in",
-  "more": "Noch nicht genug? Probier das <dle>Pokédle</dle> oder eine <quiz>Überleben-Runde</quiz>.",
+  "more": "Noch nicht genug? Probier das <dle>Pokédle</dle> oder eine <quiz>Überlebensrunde</quiz>.",
   "parts": {
     "whos-that": "Silhouetten",
     "dex": "Pokédex-Einträge",
@@ -16,5 +16,5 @@
     "higher-lower": "Werte-Duelle"
   },
   "rules": "15 Sekunden pro Frage · Bonus für Tempo und Serien",
-  "start": "Herausforderung #{n} starten"
+  "start": "Herausforderung Nr. {n} starten"
 }

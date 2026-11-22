@@ -45,9 +45,9 @@
   "personalBests": "Persönliche Bestwerte",
   "mode": "Modus",
   "formats": {
-    "classic": "klassisch",
-    "survival": "survival",
-    "blitz": "blitz"
+    "classic": "Klassisch",
+    "survival": "Überleben",
+    "blitz": "Blitz"
   },
   "savedHere": "Dein Fortschritt wird in diesem Browser gespeichert.",
   "playMore": "Weitere Modi spielen →"

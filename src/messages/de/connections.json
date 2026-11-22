@@ -111,7 +111,7 @@
     "share": "Teilen",
     "unlimited": "Endlos spielen",
     "duel": "Freund herausfordern",
-    "hinted": "Du hast den Tipp genutzt. Spiele mit Tipp stehen in der Rangliste hinter allen ohne Tipp.",
+    "hinted": "Du hast den Tipp genutzt. Spiele mit Tipp stehen in der Bestenliste hinter allen ohne Tipp.",
     "summary": "<b>{solved} %</b> von {players} {n, plural, one {Trainer} other {Trainern}} haben das heutige gelöst · <b>{perfect} %</b> fehlerfrei",
     "playToday": "Heutiges PokéConnections spielen",
     "archiveNote": "Archivspiele zählen nicht für Serien oder Statistik.",
@@ -133,21 +133,21 @@
   "newPuzzleIn": "Neues Rätsel in",
   "newBadges": "{n, plural, one {Neuer Orden!} other {Neue Orden!}}",
   "board": {
-    "title": "Heutige Rangliste",
-    "full": "Ganze Rangliste →",
-    "tabs": "Rangliste",
+    "title": "Heutige Bestenliste",
+    "full": "Ganze Bestenliste →",
+    "tabs": "Bestenliste",
     "everyone": "Alle",
     "friends": "Freunde",
     "place": "Du bist heute <b>Nr. {position}</b> von {total}.",
-    "nameTaken": "Ein anderer Trainer hat diesen Namen schon in der heutigen Rangliste.",
-    "nameTakenPick": "Ein anderer Trainer hat diesen Namen schon in der heutigen Rangliste. Wähle einen anderen:",
-    "addName": "Gib deinen Trainernamen ein, um in die heutige Rangliste zu kommen:",
+    "nameTaken": "Ein anderer Trainer hat diesen Namen schon in der heutigen Bestenliste.",
+    "nameTakenPick": "Ein anderer Trainer hat diesen Namen schon in der heutigen Bestenliste. Wähle einen anderen:",
+    "addName": "Gib deinen Trainernamen ein, um in die heutige Bestenliste zu kommen:",
     "placeholder": "Trainername",
     "rankMe": "Eintragen",
-    "unsolved": "Löse es, um in die Rangliste zu kommen.",
-    "untimed": "Dieses Spiel begann, bevor die Rangliste es stoppen konnte, deshalb wird es nicht gewertet.",
-    "limited": "Dein Netzwerk hat schon einige Einträge in der heutigen Rangliste.",
-    "empty": "Noch niemand in der Rangliste. Löse es und sei der Erste!",
+    "unsolved": "Löse es, um in die Bestenliste zu kommen.",
+    "untimed": "Dieses Spiel begann, bevor die Bestenliste es stoppen konnte, deshalb wird es nicht gewertet.",
+    "limited": "Dein Netzwerk hat schon einige Einträge in der heutigen Bestenliste.",
+    "empty": "Noch niemand in der Bestenliste. Löse es und sei der Erste!",
     "medal": "Nr. {n}",
     "usedHint": "Hat den Tipp genutzt",
     "usedHintAria": "hat den Tipp genutzt",
@@ -183,7 +183,7 @@
     "found": "{pct} % fanden {level, select, 0 {Gelb} 1 {Grün} 2 {Blau} 3 {Lila} other {Rot}}"
   },
   "friends": {
-    "failed": "Die Rangliste deiner Freunde konnte nicht geladen werden.",
+    "failed": "Die Bestenliste deiner Freunde konnte nicht geladen werden.",
     "loading": "Lädt",
     "signIn": "<a>Melde dich an</a>, um zu sehen, wie deine Freunde abgeschnitten haben.",
     "none": "Noch keiner deiner Freunde hat heute eine gewertete Zeit. Teile einen Link und fordere sie heraus!"
@@ -192,7 +192,7 @@
     "shareTitle": "Schlag meine Zeit bei PokéConnections",
     "button": "Schlag meine Zeit",
     "copied": "Link kopiert. Schick ihn einem Freund!",
-    "failed": "Komm erst in die heutige Rangliste, dann teile deine Zeit."
+    "failed": "Komm erst in die heutige Bestenliste, dann teile deine Zeit."
   },
   "challenge": {
     "banner": "<b>{name}</b> hat das heutige mit {mistakes, plural, =0 {null Fehlern} one {{mistakes} Fehler} other {{mistakes} Fehlern}} in {time}{hint} gelöst. Schaffst du es besser?",
@@ -203,7 +203,7 @@
     "tied": "Unentschieden!",
     "versus": "Du gegen {name}",
     "you": "Du",
-    "compare": "Löse es und komm in die Rangliste, um zu vergleichen."
+    "compare": "Löse es und komm in die Bestenliste, um zu vergleichen."
   },
   "howto": {
     "kinds": {

@@ -2,9 +2,9 @@
   "daily": {
     "eyebrow": "Täglich",
     "today": "Heute: <cat>{label}</cat>",
-    "lead": "{count} Pokémon in {minutes} Minuten. Für alle dieselbe Kategorie, mit eigener Rangliste.",
+    "lead": "{count} Pokémon in {minutes} Minuten. Für alle dieselbe Kategorie, mit eigener Bestenliste.",
     "loading": "Heutige Kategorie wird geladen…",
-    "seeBoard": "Heutige Rangliste ansehen",
+    "seeBoard": "Heutige Bestenliste ansehen",
     "play": "Heutiges spielen",
     "you": "Du: {named}/{total} in {time}"
   },
