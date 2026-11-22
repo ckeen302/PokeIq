@@ -590,7 +590,8 @@ function Game({ initial }: { initial?: PdkPublicDays }) {
 
   const rankName = progress?.name ?? "";
   // The weekly theme as the page's language names it (the API sends English).
-  const weekly = weeklyInfo && local ? { ...weeklyInfo, theme: t(`weeklyTheme.${themeIdFor(weeklyInfo.monday)}.name`), blurb: t(`weeklyTheme.${themeIdFor(weeklyInfo.monday)}.blurb`) } : weeklyInfo;
+  const localTheme = weeklyInfo && local?.themes[themeIdFor(weeklyInfo.monday)];
+  const weekly = weeklyInfo && localTheme ? { ...weeklyInfo, theme: localTheme.name, blurb: localTheme.blurb } : weeklyInfo;
   const heading =
     mode === "weekly" && week
       ? weekly

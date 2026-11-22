@@ -65,15 +65,17 @@ import { roundViewsOf } from "@/lib/geo-look";
 import { DifficultyPicker, GeoSettingsButton, RoundsPicker } from "./GeoSettings";
 import { DEFAULT_GEO_SETTINGS, GEO_ZOOM, readGeoSettings, rememberGeoSettings, secondsLeft, visibleViews, zoomOrigin, type GeoPlaySettings } from "@/lib/geo-settings";
 import { GameFilter, GameGuessPicker, type FilterChoice, filterPlaces, gameGuessOptions } from "./GameFilter";
-import { GEO_GAME_BONUS, type GeoEra, type GeoFamilyId } from "@/lib/geo-families";
+import { GEO_GAME_BONUS, geoFamily, type GeoEra, type GeoFamilyId } from "@/lib/geo-families";
 import { cn } from "@/lib/utils";
 import { preloadImage } from "@/lib/preload";
 import { readSeenShots, rememberSeenShot } from "@/lib/geo-seen";
 import { isWorldwide, themeOf } from "@/lib/geo-themes";
 import { useT } from "@/i18n/client";
-import { formatNumber, type Translator } from "@/i18n/catalog";
+import { type Translator } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import geoNs from "@/messages/geo";
 import geoSolo from "@/messages/geo-solo";
+import geoNamesNs from "@/messages/geo-names";
 import { useGeoNames, type GeoLocal } from "@/lib/geo-i18n-client";
 
 type Phase = "setup" | "loading" | "guessing" | "submitting" | "revealed" | "results" | "error";
@@ -248,6 +250,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   const t = useT(geoSolo);
   const g = useT(geoNs);
   const names = useGeoNames();
+  const gn = useT(geoNamesNs);
   const fmt = (n: number) => formatNumber(n, t.locale);
   const today = useToday();
   const progress = useProgress();
@@ -814,7 +817,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
                     </div>
                     {theme && (
                       <p className="text-sm text-muted-foreground" data-testid="geo-theme-blurb">
-                        {t.locale === "en" ? theme.blurb : names.t(`themes.${theme.id}.blurb`)} {t("hub.solo.themeMore")}
+                        {t.locale === "en" ? theme.blurb : gn(`themes.${theme.id}.blurb`)} {t("hub.solo.themeMore")}
                       </p>
                     )}
                   </div>
@@ -1304,7 +1307,7 @@ function RoundReveal({
                 {graded.gameGuess.correct
                   ? t("reveal.rightGame", { bonus: fmt(graded.gameGuess.bonus) })
                   : graded.gameGuess.guessed
-                    ? t("reveal.wrongGame", { game: names.family(graded.gameGuess.guessed) })
+                    ? t("reveal.wrongGame", { game: names.game(geoFamily(graded.gameGuess.guessed).name) })
                     : t("reveal.noGame", { bonus: fmt(GEO_GAME_BONUS) })}
               </p>
             )}

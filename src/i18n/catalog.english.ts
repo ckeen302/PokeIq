@@ -12,7 +12,7 @@ export function defineNamespace<T extends Tree>(name: string, en: T): Namespace<
   return { name, en };
 }
 
-export const INTL_LOCALE: Record<Locale, string> = { en: "en-US", ja: "ja-JP", es: "es-ES", fr: "fr-FR", de: "de-DE", it: "it-IT" };
+export { INTL_LOCALE, formatNumber } from "./format";
 
 type Message = string | ((values: Record<string, unknown>) => unknown);
 
@@ -41,8 +41,4 @@ export function translator<T extends Tree>(ns: Namespace<T>, _locale?: Locale, _
   t.has = (key: string) => lookup(ns.en, key) !== undefined;
   Object.defineProperty(t, "locale", { value: "en" });
   return t;
-}
-
-export function formatNumber(n: number, _locale?: Locale, opts?: Intl.NumberFormatOptions): string {
-  return n.toLocaleString("en-US", opts);
 }

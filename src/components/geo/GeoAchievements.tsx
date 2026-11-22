@@ -15,7 +15,7 @@ import {
 } from "@/lib/geo-achievements";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
-import { formatNumber } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import geoRecord from "@/messages/geo-record";
 import geoNamesNs from "@/messages/geo-names";
 import { localRegion } from "@/lib/geo-i18n";

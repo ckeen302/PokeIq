@@ -10,13 +10,11 @@ import { useT } from "@/i18n/client";
 import duel from "@/messages/duel";
 
 type DuelT = Translator<typeof duel.en>;
-let english: DuelT | undefined;
-const englishT = (): DuelT => (english ??= translator(duel, "en", undefined));
 
 /** Rematches between the same two trainers: a best-of-three series, its score and what's next. */
 
 /** "Game 2 · 1–0", for the HUD once a series is under way (nothing for a first game). `t`: the page's "duel" translator (default English). */
-export function seriesTag(series: PvpSeriesView | undefined, t: DuelT = englishT()): string | null {
+export function seriesTag(series: PvpSeriesView | undefined, t: DuelT = translator(duel, "en", undefined)): string | null {
   if (!series || (series.game === 1 && series.wins[0] + series.wins[1] + series.draws === 0)) return null;
   const decider = series.wins.every((w) => w === PVP_SERIES_WINS - 1) && series.winner === null;
   return decider ? t("series.decider", { a: series.wins[0], b: series.wins[1] }) : t("series.game", { n: series.game, a: series.wins[0], b: series.wins[1] });

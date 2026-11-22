@@ -29,7 +29,8 @@ import { rankedExtra } from "@/lib/ranked-client";
 import { cn } from "@/lib/utils";
 import { DuelHistoryLink, GeoSeasonStrip } from "./GeoSeason";
 import { useT } from "@/i18n/client";
-import { formatNumber, type Keys, type Translator } from "@/i18n/catalog";
+import { type Keys, type Translator } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import ranked from "@/messages/guessr-ranked";
 
 /**

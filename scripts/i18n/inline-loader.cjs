@@ -15,7 +15,7 @@ const ts = require("typescript");
 const { englishMessage, helperCode, getCompile } = require("./icu-loader.cjs");
 
 const MAKERS = new Set(["useT", "serverT", "getT", "translator"]);
-const H = { N: "__i18nN", O: "__i18nO", F: "__i18nF", M: "__i18nM", A: "__i18nA" };
+const H = { N: "__i18nN", O: "__i18nO", F: "__i18nF", M: "__i18nM", A: "__i18nA", T: "__i18nT", R: "__i18nR" };
 const debug = !!process.env.I18N_INLINE_DEBUG;
 
 function leaf(tree, key) {
@@ -96,11 +96,65 @@ const isExported = (node) => {
   return !!holder && ts.canHaveModifiers(holder) && (ts.getModifiers(holder) ?? []).some((m) => m.kind === ts.SyntaxKind.ExportKeyword);
 };
 
+/** The translator types a file exports (`export type BoardT = Translator<typeof board.en>`): type name → namespace name. */
+const aliasCache = new Map();
+function exportedAliases(file) {
+  if (aliasCache.has(file)) return aliasCache.get(file);
+  const out = new Map();
+  aliasCache.set(file, out);
+  let text;
+  try {
+    text = fs.readFileSync(file, "utf8");
+  } catch {
+    return out;
+  }
+  if (!text.includes("Translator<")) return out;
+  const sf = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, file.endsWith("x") ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+  const nsImports = new Map();
+  for (const st of sf.statements) {
+    if (!ts.isImportDeclaration(st) || !st.importClause?.name) continue;
+    const m = /^@\/messages\/([a-z0-9-]+)$/.exec(st.moduleSpecifier.text);
+    if (m) nsImports.set(st.importClause.name.text, m[1]);
+  }
+  for (const st of sf.statements) {
+    if (!ts.isTypeAliasDeclaration(st) || !isExported(st)) continue;
+    const m = /^Translator<typeof([A-Za-z_$][\w$]*)\.en>$/.exec(st.type.getText(sf).replace(/\s+/g, ""));
+    if (m && nsImports.has(m[1])) out.set(st.name.text, nsImports.get(m[1]));
+  }
+  return out;
+}
+
+/** A file's safe slots for an export, following `export * from` and `export { a as b } from` (an index re-exporting helpers). */
+function safeExport(file, name, registry, src, depth = 0) {
+  const own = registry.get(file)?.get(name);
+  if (own || depth > 4) return own;
+  let text;
+  try {
+    text = fs.readFileSync(file, "utf8");
+  } catch {
+    return undefined;
+  }
+  if (!/\bexport\b[^;]*\bfrom\b/.test(text)) return undefined;
+  const sf = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, file.endsWith("x") ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+  for (const st of sf.statements) {
+    if (!ts.isExportDeclaration(st) || !st.moduleSpecifier || st.isTypeOnly) continue;
+    const target = resolveModule(st.moduleSpecifier.text, file, src);
+    if (!target) continue;
+    if (!st.exportClause) {
+      const found = safeExport(target, name, registry, src, depth + 1);
+      if (found) return found;
+    } else if (ts.isNamedExports(st.exportClause)) {
+      for (const el of st.exportClause.elements) if (el.name.text === name) return safeExport(target, (el.propertyName ?? el.name).text, registry, src, depth + 1);
+    }
+  }
+  return undefined;
+}
+
 /**
  * One file: its translators, how each is used, the edits that inline English, and which of its exported helpers'
  * translator parameters are safe (every use inlined). `registry`: file → export → [param index → namespace] known safe.
  */
-function analyze(file, source, compile, registry, src, addDependency) {
+function analyze(file, source, compile, registry, src, addDependency, opts = {}) {
   const sf = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, file.endsWith("x") ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
   const namespaces = new Map(); // local name -> { name, tree }
   for (const st of sf.statements) {
@@ -111,6 +165,29 @@ function analyze(file, source, compile, registry, src, addDependency) {
     if (!fs.existsSync(json)) continue;
     addDependency?.(json);
     namespaces.set(st.importClause.name.text, { name: m[1], tree: JSON.parse(fs.readFileSync(json, "utf8")) });
+  }
+  // Translator types imported from another file (`import { type BoardT } from "@/lib/dle-i18n"`).
+  const importedTypes = new Map(); // local type name -> local namespace key
+  for (const st of sf.statements) {
+    if (!ts.isImportDeclaration(st) || !st.importClause?.namedBindings || !ts.isNamedImports(st.importClause.namedBindings)) continue;
+    const target = resolveModule(st.moduleSpecifier.text, file, src);
+    if (!target) continue;
+    const aliases = exportedAliases(target);
+    if (!aliases.size) continue;
+    for (const el of st.importClause.namedBindings.elements) {
+      const nsName = aliases.get((el.propertyName ?? el.name).text);
+      if (!nsName) continue;
+      let key = [...namespaces].find(([, v]) => v.name === nsName)?.[0];
+      if (!key) {
+        const json = path.join(src, "messages", "en", `${nsName}.json`);
+        if (!fs.existsSync(json)) continue;
+        addDependency?.(json);
+        key = `\0${nsName}`;
+        namespaces.set(key, { name: nsName, tree: JSON.parse(fs.readFileSync(json, "utf8")) });
+      }
+      addDependency?.(target);
+      importedTypes.set(el.name.text, key);
+    }
   }
   const result = { out: source, safe: [] };
   if (!namespaces.size) return result;
@@ -127,7 +204,7 @@ function analyze(file, source, compile, registry, src, addDependency) {
   const nsOfType = (type) => {
     const text = type.getText(sf).replace(/\s+/g, "");
     const m = translatorType.exec(text);
-    return m && namespaces.has(m[1]) ? m[1] : typeAliases.get(text) ?? null;
+    return m && namespaces.has(m[1]) ? m[1] : typeAliases.get(text) ?? importedTypes.get(text) ?? null;
   };
   const visitDecls = (n) => {
     if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && n.initializer) {
@@ -155,6 +232,8 @@ function analyze(file, source, compile, registry, src, addDependency) {
   if (!translators.size) return result;
 
   const used = new Set();
+  const collapsed = new Set(); // an English-only build's message helpers in use (see visitOne)
+  const tables = new Map(); // a key expression's messages ("({…})") -> the module-level const holding them
   const en = (ns, key) => {
     const text = leaf(ns.tree, key);
     return text === undefined ? undefined : englishMessage(text, compile, `${ns.name}.${key}`, used, H);
@@ -173,8 +252,22 @@ function analyze(file, source, compile, registry, src, addDependency) {
       if (ts.isStringLiteral(e) || ts.isNoSubstitutionTemplateLiteral(e)) return patterns.push(new RegExp(`^${esc(e.text)}$`)), true;
       if (ts.isConditionalExpression(e)) return collect(e.whenTrue) && collect(e.whenFalse);
       if (ts.isTemplateExpression(e)) {
+        // A part that can only be some strings ("help" or "helpStrict") narrows the keys to those.
+        const options = (x0) => {
+          const x = unwrap(x0);
+          if (ts.isStringLiteral(x) || ts.isNoSubstitutionTemplateLiteral(x)) return [x.text];
+          if (ts.isConditionalExpression(x)) {
+            const a = options(x.whenTrue);
+            const b = a && options(x.whenFalse);
+            return b ? [...a, ...b] : null;
+          }
+          return null;
+        };
         let re = esc(e.head.text);
-        for (const span of e.templateSpans) re += `[^.]+${esc(span.literal.text)}`;
+        for (const span of e.templateSpans) {
+          const opts = options(span.expression);
+          re += `${opts ? `(?:${opts.map(esc).join("|")})` : "[^.]+"}${esc(span.literal.text)}`;
+        }
         return patterns.push(new RegExp(`^${re}$`)), true;
       }
       return false;
@@ -184,7 +277,11 @@ function analyze(file, source, compile, registry, src, addDependency) {
     const entries = [];
     for (const [key] of leaves(ns.tree)) if (patterns.some((re) => re.test(key))) entries.push(`${JSON.stringify(key)}:${en(ns, key)}`);
     if (!entries.length) return undefined;
-    return { map: `({${entries.join(",")}})` };
+    if (debug && entries.length > 6) console.log(`[i18n-inline] ${path.relative(process.cwd(), file)}:${sf.getLineAndCharacterOfPosition(keyNode.getStart(sf)).line + 1} inlines ${entries.length} messages for ${keyNode.getText(sf).slice(0, 70)}`);
+    // One table per distinct set of messages, shared by every call in the file that picks from it.
+    const text = `({${entries.join(",")}})`;
+    if (!tables.has(text)) tables.set(text, `__i18nMap${tables.size}`);
+    return { map: tables.get(text) };
   };
 
   const aliases = [];
@@ -203,7 +300,7 @@ function analyze(file, source, compile, registry, src, addDependency) {
     const spec = d.parent.parent.parent.moduleSpecifier.text;
     const target = resolveModule(spec, file, src);
     const name = (d.propertyName ?? d.name).text;
-    return !!target && registry.get(target)?.get(name)?.[index] === ns.name;
+    return !!target && safeExport(target, name, registry, src)?.[index] === ns.name;
   };
   const localProp = (attr) => {
     const el = attr.parent?.parent;
@@ -214,7 +311,64 @@ function analyze(file, source, compile, registry, src, addDependency) {
     return first.name.elements.find((b) => ts.isIdentifier(b.name) && (b.propertyName ? b.propertyName.getText(sf) : b.name.text) === want && !b.dotDotDotToken) ?? null;
   };
 
+  // Code that only runs on a page in another language: behind `if (t.locale === "en") return …`, or on the far side
+  // of `t.locale !== "en" &&` and the like (any of this file's translators: a page has one language). There the
+  // language's own messages answer (every language file has all of English's keys: check-messages), so a `t.has(…)`
+  // or a key that can't be inlined there needs no English and keeps nothing.
+  const EN = (e) => (ts.isStringLiteral(e) && e.text === "en") || (ts.isIdentifier(e) && e.text === "DEFAULT_LOCALE");
+  const isLocaleRead = (e) => {
+    e = unwrap(e);
+    if (!ts.isPropertyAccessExpression(e) || e.name.text !== "locale" || !ts.isIdentifier(unwrap(e.expression))) return false;
+    const d = resolve(unwrap(e.expression));
+    return !!d && translators.has(d);
+  };
+  const localeTest = (c, op) => {
+    c = unwrap(c);
+    if (!ts.isBinaryExpression(c) || c.operatorToken.kind !== op) return false;
+    return (isLocaleRead(c.left) && EN(unwrap(c.right))) || (isLocaleRead(c.right) && EN(unwrap(c.left)));
+  };
+  const isEn = (c) => localeTest(c, ts.SyntaxKind.EqualsEqualsEqualsToken) || localeTest(c, ts.SyntaxKind.EqualsEqualsToken);
+  const isNotEn = (c) => localeTest(c, ts.SyntaxKind.ExclamationEqualsEqualsToken) || localeTest(c, ts.SyntaxKind.ExclamationEqualsToken);
+  /** True ⇒ another language. */
+  const nonEn = (c0) => {
+    const c = unwrap(c0);
+    if (isNotEn(c)) return true;
+    if (ts.isBinaryExpression(c) && c.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken) return nonEn(c.left) || nonEn(c.right);
+    if (ts.isPrefixUnaryExpression(c) && c.operator === ts.SyntaxKind.ExclamationToken) return falseNonEn(c.operand);
+    return false;
+  };
+  /** False ⇒ another language. */
+  const falseNonEn = (c0) => {
+    const c = unwrap(c0);
+    if (isEn(c)) return true;
+    if (ts.isBinaryExpression(c) && c.operatorToken.kind === ts.SyntaxKind.BarBarToken) return falseNonEn(c.left) || falseNonEn(c.right);
+    if (ts.isPrefixUnaryExpression(c) && c.operator === ts.SyntaxKind.ExclamationToken) return nonEn(c.operand);
+    return false;
+  };
+  const exits = (st) => ts.isReturnStatement(st) || ts.isThrowStatement(st) || (ts.isBlock(st) && st.statements.length > 0 && exits(st.statements[st.statements.length - 1]));
+  const otherLanguageOnly = (n) => {
+    for (let child = n, p = n.parent; p; child = p, p = p.parent) {
+      if (ts.isConditionalExpression(p)) {
+        if (child === p.whenTrue && nonEn(p.condition)) return true;
+        if (child === p.whenFalse && falseNonEn(p.condition)) return true;
+      } else if (ts.isBinaryExpression(p) && child === p.right) {
+        if (p.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken && nonEn(p.left)) return true;
+        if (p.operatorToken.kind === ts.SyntaxKind.BarBarToken && falseNonEn(p.left)) return true;
+      } else if (ts.isIfStatement(p)) {
+        if (child === p.thenStatement && nonEn(p.expression)) return true;
+        if (child === p.elseStatement && falseNonEn(p.expression)) return true;
+      } else if (ts.isBlock(p) || ts.isSourceFile(p)) {
+        for (const st of p.statements) {
+          if (st === child) break;
+          if (ts.isIfStatement(st) && !st.elseStatement && exits(st.thenStatement) && falseNonEn(st.expression)) return true;
+        }
+      }
+    }
+    return false;
+  };
+
   const visitOne = (n, tr) => {
+    tr.uses = (tr.uses ?? 0) + 1;
     const p = n.parent;
     let call = null;
     let rich = false;
@@ -225,12 +379,48 @@ function analyze(file, source, compile, registry, src, addDependency) {
     const inDeps = ts.isArrayLiteralExpression(p) && ts.isCallExpression(p.parent) && ts.isIdentifier(p.parent.expression) && /^use(Effect|LayoutEffect|Memo|Callback)$/.test(p.parent.expression.text);
     const argIndex = ts.isCallExpression(p) && p.expression !== n ? p.arguments.indexOf(n) : -1;
     const localArg = argIndex >= 0 ? localParam(p, argIndex) : ts.isJsxExpression(p) && ts.isJsxAttribute(p.parent) ? localProp(p.parent) : null;
-    if (readsLocale || inDeps) return;
+    // `!t` (is there a translator?) reads nothing from it.
+    const tested = ts.isPrefixUnaryExpression(p) && p.operator === ts.SyntaxKind.ExclamationToken;
+    if (readsLocale && opts.englishOnly && !p.questionDotToken) {
+      // English-only: every translator's language is English, and a test of it is a constant (the minifier then
+      // drops what only another language runs).
+      const test = p.parent;
+      const op = ts.isBinaryExpression(test) && (test.left === p || test.right === p) && EN(unwrap(test.left === p ? test.right : test.left)) ? test.operatorToken.kind : null;
+      const K = ts.SyntaxKind;
+      if (op === K.EqualsEqualsEqualsToken || op === K.EqualsEqualsToken) tr.edits.push([test.getStart(sf), test.getEnd(), "true"]);
+      else if (op === K.ExclamationEqualsEqualsToken || op === K.ExclamationEqualsToken) tr.edits.push([test.getStart(sf), test.getEnd(), "false"]);
+      else tr.edits.push([p.getStart(sf), p.getEnd(), '"en"']);
+      tr.collapsed = (tr.collapsed ?? 0) + 1;
+      return;
+    }
+    if (readsLocale || inDeps || tested) return;
     if (localArg) return void aliases.push([localArg, tr]);
     if (argIndex >= 0 && importedSafe(p, argIndex, tr.ns)) return;
+    const has = ts.isPropertyAccessExpression(p) && p.expression === n && p.name.text === "has" && ts.isCallExpression(p.parent) && p.parent.expression === p;
+    // Only another language's page gets here: its own messages answer, so no English rides along.
+    if ((has || call) && otherLanguageOnly(n)) {
+      // English-only, that code never runs: it needs nothing of the translator either.
+      if (opts.englishOnly) tr.collapsed = (tr.collapsed ?? 0) + 1;
+      return;
+    }
     if (english === undefined) {
       tr.escapes = true;
       if (debug) console.log(`[i18n-inline] ${path.relative(process.cwd(), file)}:${sf.getLineAndCharacterOfPosition(n.getStart(sf)).line + 1} keeps ${tr.ns.name}: ${(call ?? p).getText(sf).slice(0, 90)}`);
+      return;
+    }
+    if (opts.englishOnly) {
+      // An English-only build: every translator is English (catalog.english.ts), so `t("key", values)` is its English
+      // and nothing else; the call becomes that English (no key, no lookup), `t.rich` likewise through the same
+      // fragment the translator makes. Arguments stay where they are, so a translator call inside the values keeps
+      // its own edits.
+      const keyArg = call.arguments[0];
+      const start = n.getStart(sf);
+      const fn = rich ? H.R : H.T;
+      const noValues = rich && call.arguments.length === 1 ? ", {}" : "";
+      if (!rich && english.direct !== undefined && call.arguments.length === 1 && english.direct.startsWith('"')) tr.edits.push([start, call.getEnd(), english.direct]);
+      else if (english.direct !== undefined) collapsed.add(fn), tr.edits.push([start, keyArg.getEnd(), `${fn}(${english.direct}${noValues}`]);
+      else collapsed.add(fn), tr.edits.push([start, keyArg.getStart(sf), `${fn}(${english.map}[`], [keyArg.getEnd(), keyArg.getEnd(), `]${noValues}`]);
+      tr.collapsed = (tr.collapsed ?? 0) + 1;
       return;
     }
     const at = call.arguments[call.arguments.length - 1].getEnd();
@@ -282,16 +472,35 @@ function analyze(file, source, compile, registry, src, addDependency) {
   const edits = [];
   for (const tr of translators.values()) if (!rootOf(tr).escapes) edits.push(...tr.edits);
   for (const tr of translators.values()) if (tr.exportAs && !tr.escapes) result.safe.push([...tr.exportAs, tr.ns.name]);
+  // English-only: a `const t = useT(ns)` (or serverT) whose every use became its English is no longer needed at all.
+  if (opts.englishOnly) {
+    const parents = new Set([...translators.values()].map((tr) => tr.parent).filter(Boolean));
+    for (const [decl, tr] of translators) {
+      if (!tr.nsArg || tr.escapes || parents.has(tr) || !tr.uses || tr.uses !== tr.collapsed || !ts.isVariableDeclaration(decl)) continue;
+      const init = decl.initializer;
+      if (!ts.isCallExpression(init) || !/^(useT|serverT|translator)$/.test(init.expression.text)) continue;
+      tr.dropped = true;
+      edits.push([init.getStart(sf), init.getEnd(), "0"]);
+    }
+  }
   const stubs = new Map();
   for (const tr of translators.values()) {
-    if (tr.escapes || !tr.nsArg) continue;
+    if (tr.escapes || !tr.nsArg || tr.dropped) continue;
     const id = `__i18nNs_${tr.ns.name.replace(/[^a-z0-9]/g, "_")}`;
     stubs.set(id, tr.ns.name);
     edits.push([tr.nsArg.getStart(sf), tr.nsArg.getEnd(), id]);
   }
   if (!edits.length) return result;
   const lastImport = [...sf.statements].filter(ts.isImportDeclaration).pop();
-  const head = `\n${helperCode(used, H)}${[...stubs].map(([id, name]) => `const ${id}={name:${JSON.stringify(name)},en:{}};`).join("")}\n`;
+  // Only the tables some kept edit names (a translator that escapes keeps its namespace and drops its edits).
+  const kept = edits.map((e) => e[2]).join("\n");
+  const tableCode = [...tables].filter(([, id]) => kept.includes(id)).map(([text, id]) => `const ${id}=${text};`).join("");
+  const collapse =
+    (collapsed.has(H.T) && kept.includes(`${H.T}(`) ? `const ${H.T}=(m,v)=>typeof m==="string"?m:String(m(v??{}));` : "") +
+    (collapsed.has(H.R) && kept.includes(`${H.R}(`)
+      ? `import { createElement as ${H.R}E, Fragment as ${H.R}F } from "react";const ${H.R}=(m,v)=>{const o=typeof m==="string"?m:m(v);return Array.isArray(o)?${H.R}E(${H.R}F,null,...o):o;};`
+      : "");
+  const head = `\n${helperCode(used, H)}${collapse}${[...stubs].map(([id, name]) => `const ${id}={name:${JSON.stringify(name)},en:{}};`).join("")}${tableCode}\n`;
   const at = lastImport ? lastImport.getEnd() : 0;
   if (head.trim()) edits.push([at, at, head]);
   edits.sort((a, b) => b[0] - a[0] || b[1] - a[1]);
@@ -311,13 +520,19 @@ function buildRegistry(src, compile) {
       if (fs.statSync(full).isDirectory()) {
         if (!/^(messages|i18n|data)$/.test(name) || dir !== src) walk(full);
       } else if (/\.tsx?$/.test(name)) {
-        const text = fs.readFileSync(full, "utf8");
-        if (text.includes("@/messages/")) files.push([full, text]);
+        all.push([full, fs.readFileSync(full, "utf8")]);
       }
     }
   };
+  const all = [];
   walk(src);
+  // The translator types files export (`BoardT`): a file that imports one has translators too.
+  const names = new Set();
+  for (const [full, text] of all) if (text.includes("Translator<")) for (const n of exportedAliases(full).keys()) names.add(n);
+  const typeRe = names.size ? new RegExp(`\\b(${[...names].join("|")})\\b`) : null;
+  for (const [full, text] of all) if (text.includes("@/messages/") || (typeRe && typeRe.test(text))) files.push([full, text]);
   const registry = new Map();
+  registry.typeRe = typeRe;
   for (let round = 0; round < 6; round++) {
     let changed = false;
     for (const [file, text] of files) {
@@ -339,13 +554,14 @@ function buildRegistry(src, compile) {
 
 module.exports = function inlineLoader(source) {
   const done = this.async();
-  if (!source.includes("@/messages/") && !source.includes("Translator<")) return done(null, source);
   const src = path.resolve(this.rootContext ?? process.cwd(), "src");
   getCompile()
     .then(async (compile) => {
       registryPromise ??= Promise.resolve().then(() => buildRegistry(src, compile));
       const registry = await registryPromise;
-      done(null, analyze(this.resourcePath, source, compile, registry, src, (f) => this.addDependency(f)).out);
+      if (!source.includes("@/messages/") && !source.includes("Translator<") && !(registry.typeRe && registry.typeRe.test(source))) return done(null, source);
+      // LIVE_LOCALES empty: an English-only build (next.config swaps in catalog.english.ts), whose calls collapse to their English.
+      done(null, analyze(this.resourcePath, source, compile, registry, src, (f) => this.addDependency(f), { englishOnly: !process.env.LIVE_LOCALES }).out);
     })
     .catch((e) => done(new Error(`${this.resourcePath}: ${e.message}`)));
 };

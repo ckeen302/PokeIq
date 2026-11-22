@@ -9,7 +9,7 @@ import { GeoMap } from "./GeoMap";
 import type { Played } from "./GeoGame";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
-import { formatNumber } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import geoSolo from "@/messages/geo-solo";
 
 /**

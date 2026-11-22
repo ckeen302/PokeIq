@@ -2,8 +2,7 @@ import { DEFAULT_LOCALE } from "@/i18n/config";
 import type { Keys, Translator } from "@/i18n/catalog";
 import type geoNamesNs from "@/messages/geo-names";
 import { WORLD_REGION } from "./geo-types";
-import { themeOf } from "./geo-themes";
-import { geoFamily, type GeoEra, type GeoFamilyId } from "./geo-families";
+import type { GeoEra } from "./geo-families";
 import type { GeoDifficulty } from "./geo-difficulty";
 
 /**
@@ -24,7 +23,8 @@ export const nameKey = (s: string) =>
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "");
 
-const own = (t: GeoNamesT, key: string): string | null => (t.has(key) ? t(key as NameKey) : null);
+// Only ever asked on a page in another language (English keeps the names as given).
+const own = (t: GeoNamesT, key: string): string | null => (t.locale !== DEFAULT_LOCALE && t.has(key) ? t(key as NameKey) : null);
 
 /** A region ("Kanto", "Isle of Armor") in the language; English, or a region with no official name there, as given. */
 export function localRegion(t: GeoNamesT, name: string): string {
@@ -36,8 +36,9 @@ export function localRegion(t: GeoNamesT, name: string): string {
 export function localMap(t: GeoNamesT, map: { id: string; name: string }): string {
   if (t.locale === DEFAULT_LOCALE) return map.name;
   if (map.id === WORLD_REGION) return t("world");
-  const theme = themeOf(map.id);
-  if (theme) return t(`themes.${theme.id}.name`);
+  // A themed map ("theme-gyms"): its name in the messages (read by id, so this file needs no list of the themes).
+  const theme = map.id.startsWith("theme-") ? `themes.${map.id.slice(6)}.name` : null;
+  if (theme && t.has(theme)) return t(theme as NameKey);
   return localRegion(t, map.name);
 }
 
@@ -49,7 +50,6 @@ export function localGame(t: GeoNamesT, label: string): string {
   return names.every(Boolean) ? names.join(" / ") : label;
 }
 
-export const localFamily = (t: GeoNamesT, id: GeoFamilyId) => localGame(t, geoFamily(id).name);
 export const localEra = (t: GeoNamesT, era: GeoEra | "all") => t(`eras.${era}`);
 export const localDifficulty = (t: GeoNamesT, d: GeoDifficulty) => t(`difficulty.${d}.name`);
 

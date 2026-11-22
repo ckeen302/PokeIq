@@ -11,7 +11,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { GymLeaderTag, useShownName } from "./GeoRanked";
 import { useT } from "@/i18n/client";
-import { INTL_LOCALE, formatNumber, type Translator } from "@/i18n/catalog";
+import { type Translator } from "@/i18n/catalog";
+import { INTL_LOCALE, formatNumber } from "@/i18n/format";
 import type { Locale } from "@/i18n/config";
 import geoReplay from "@/messages/geo-replay";
 

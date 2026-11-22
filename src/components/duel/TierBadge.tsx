@@ -1,6 +1,7 @@
 import { RANKED_PROVISIONAL_GAMES, isProvisional, tierOf, type RankedTierId } from "@/lib/ranked";
 import { cn } from "@/lib/utils";
-import { formatNumber, translator, type Translator } from "@/i18n/catalog";
+import { translator, type Translator } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import tierNs from "@/messages/tier";
 
 /** The ranked tiers' look: a ball in each tier's colours (ranked PokéGuessr's divisions use them too) and the tier badge a battle ladder rating shows on a profile. */

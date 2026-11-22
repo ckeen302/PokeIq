@@ -62,9 +62,10 @@ export function useClock(): number {
 export function useDuel<V extends DuelPace>(api: string, code: string, wakeAt?: (view: V) => number | undefined) {
   const t = useT(duel);
   // The poll reads the latest (a page doesn't change language, but the effect shouldn't depend on it).
-  const tRef = useRef(t);
-  tRef.current = t;
-  const failed = (status: number) => tRef.current("errors.request", { status });
+  const text = { failed: (status: number) => t("errors.request", { status }), gone: () => t("errors.gone") };
+  const textRef = useRef(text);
+  textRef.current = text;
+  const failed = (status: number) => textRef.current.failed(status);
   const progress = useProgress();
   const [view, setView] = useState<V | null>(null);
   const [offset, setOffset] = useState(0);
@@ -117,11 +118,11 @@ export function useDuel<V extends DuelPace>(api: string, code: string, wakeAt?: 
           const data = await res.json().catch(() => ({}));
           if (stopped) return;
           if (res.status === 404) {
-            setGone((data as { error?: string }).error ?? tRef.current("errors.gone"));
+            setGone((data as { error?: string }).error ?? textRef.current.gone());
             stopped = true;
           } else if (res.status === 429) {
             throttledUntil.current = Date.now() + 30_000;
-          } else if (!res.ok) throw new Error(tRef.current("errors.request", { status: res.status }));
+          } else if (!res.ok) throw new Error(textRef.current.failed(res.status));
           else {
             receive(data as V, sentAt);
             setOffline(false);

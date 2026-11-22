@@ -111,7 +111,8 @@ export function mapAspect(region: Pick<GeoRegionInfo, "map">): number {
  */
 export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, controls = true, className, fill, others = [], land = false, density }: Props) {
   const t = useT(geoNs);
-  const mapName = localMap(useT(geoNamesNs), region);
+  const geoNames = useT(geoNamesNs);
+  const mapName = localMap(geoNames, region);
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engine = useRef<AtlasEngine | null>(null);

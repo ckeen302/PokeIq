@@ -82,6 +82,8 @@ export interface PdkLocal {
    * the English one (rōmaji). Only where there is something to say: a name the same as English is left out.
    */
   names: Record<number, string[]>;
+  /** Weekly theme id → its name and blurb in the page's language (the API sends English). */
+  themes: Record<string, { name: string; blurb: string }>;
 }
 
 /** What /api/pikadoku/result sends once a game is over. */

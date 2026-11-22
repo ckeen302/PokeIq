@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Clock } from "lucide-react";
 import { useT } from "@/i18n/client";
 import { useLocale } from "@/i18n/locale-context";
-import { INTL_LOCALE } from "@/i18n/catalog";
+import { INTL_LOCALE } from "@/i18n/format";
 import type { Locale } from "@/i18n/config";
 import countdown from "@/messages/countdown";
 

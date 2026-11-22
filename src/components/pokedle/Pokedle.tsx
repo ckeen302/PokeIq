@@ -16,8 +16,9 @@ import { archiveRecords, getArchiveRecord, getDlePrefs, saveArchiveRecord, setDl
 import { DLE_COLUMNS, DLE_HINT_COST, DLE_HINT_EMOJI, DLE_HINT_KINDS, DLE_SQUIRDLE_FROM, dleScore, type DleHint, type DleResponse } from "@/lib/dle-types";
 import { DLE_TIMER_MS, dailyRules, dleRules, rulesBonus, type DleDailyFormat, type DleRules, type DleSettings } from "@/lib/dle-format";
 import { dexTag, localBonusText, localMultiplier, localRulesTags, type DleLabels } from "@/lib/dle-i18n";
-import { formatNumber } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import { useT } from "@/i18n/client";
+import board from "@/messages/pokedle-board";
 import game from "@/messages/pokedle-game";
 import shareNs from "@/messages/share";
 import { Button } from "@/components/ui/button";
@@ -91,7 +92,7 @@ function PokedleGame({ names, community }: { names: NameEntry[]; community?: Com
   const t = useT(game);
   const st = useT(shareNs);
   const words = useDleWords();
-  const bt = words.t;
+  const bt = useT(board);
   const progress = useProgress();
   const prefs = useDlePrefs();
   useApplyDlePrefs();
@@ -427,7 +428,7 @@ function PokedleGame({ names, community }: { names: NameEntry[]; community?: Com
       archive: mode === "archive",
       community: mode === "daily" && shareStanding?.key === finishedKey ? shareStanding.community : undefined,
     };
-    return buildPokedleShare({ ...input, url: shareUrl(pokedleShareResult(input), st.locale), t: st });
+    return buildPokedleShare({ ...input, url: shareUrl(pokedleShareResult(input), st.locale) }, st);
   }
 
   const closeSheet = useCallback(() => {

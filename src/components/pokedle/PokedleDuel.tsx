@@ -10,7 +10,8 @@ import { Crown, Eye, Filter, Flame, Lightbulb, Loader2, RotateCcw, Swords, Tag, 
 import { DLE_COLUMNS, type CellStatus, type DleRow } from "@/lib/dle-types";
 import { settingsOf, type DleRules } from "@/lib/dle-format";
 import { dexTag, localRulesTags, type DleLabels } from "@/lib/dle-i18n";
-import { formatNumber, type Translator } from "@/i18n/catalog";
+import { type Translator } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import { useT } from "@/i18n/client";
 import board from "@/messages/pokedle-board";
 import duelNs from "@/messages/pokedle-duel";

@@ -6,7 +6,7 @@ import { animate, motion, useReducedMotion } from "framer-motion";
 import { GEO_FALLOFF, GEO_MAX_ROUND_SCORE } from "@/lib/geo-types";
 import { DemoFrame, useDemoFrame } from "./shared";
 import { useT } from "@/i18n/client";
-import { formatNumber } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import geoHowto from "@/messages/geo-howto";
 
 /** A real Scarlet / Violet screenshot (Levincia) and the Paldea map crop, scored with the game's own curve. */

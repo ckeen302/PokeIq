@@ -7,7 +7,7 @@ import { GEO_MAX_ROUND_SCORE, GEO_ROUND_OPTIONS, GEO_ROUNDS } from "@/lib/geo-ty
 import { DUEL_HP } from "@/lib/duel-types";
 import { PREFS_KEY, seenDemo } from "./GeoHowToButton";
 import { useT } from "@/i18n/client";
-import { formatNumber } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import geoHowto from "@/messages/geo-howto";
 
 export { HowToHelpButton } from "./GeoHowToButton";

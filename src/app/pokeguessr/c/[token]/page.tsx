@@ -7,7 +7,7 @@ import { WORLD_REGION } from "@/lib/geo-types";
 import { inviteMetadata } from "@/lib/seo";
 import { ClientMessages } from "@/i18n/ClientMessages";
 import { serverT } from "@/i18n/server";
-import { formatNumber } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import pokeguessr from "@/messages/pokeguessr";
 import geoNamesNs from "@/messages/geo-names";
 import { localMap } from "@/lib/geo-i18n";

@@ -6,7 +6,7 @@ import { customPath } from "@/lib/connections/custom";
 import { CREATOR_NAME_RE } from "@/lib/connections/social";
 import { creatorPage } from "@/lib/server/connections-creators";
 import { Card, CardContent } from "@/components/ui/card";
-import { INTL_LOCALE, formatNumber } from "@/i18n/catalog";
+import { INTL_LOCALE, formatNumber } from "@/i18n/format";
 import { localizePath } from "@/i18n/paths";
 import { getLocale, serverT } from "@/i18n/server";
 import pages from "@/messages/connections-pages";

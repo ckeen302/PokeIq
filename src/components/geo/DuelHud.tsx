@@ -16,7 +16,9 @@ import { GeoBallIcon, GeoDivisionBadge, GymLeaderAvatar, GymLeaderTag } from "./
 import { geoDivisionOf } from "@/lib/geo-ranked";
 import { useShownName } from "./GeoRanked";
 import { useT } from "@/i18n/client";
-import { formatNumber, type Translator } from "@/i18n/catalog";
+import { useLocale } from "@/i18n/locale-context";
+import { type Translator } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import type { Locale } from "@/i18n/config";
 import hud from "@/messages/guessr-hud";
 
@@ -259,7 +261,7 @@ export function DuelBand({ view, me, round, hp, multiplier, multipliers, result,
 }
 
 function Score({ value, missed, winner, dim, testId }: { value: number; missed: boolean; winner: boolean; dim: boolean; testId: string }) {
-  const fmt = fmtIn(useT(hud).locale);
+  const fmt = fmtIn(useLocale());
   return (
     <span
       className={cn(

@@ -9,7 +9,7 @@ import { usePokedleCommunity, type PokedleCommunityGame } from "./use-pokedle-co
 import { Pokedle, type PokedleShareCommunity } from "./Pokedle";
 import { spriteUrl, type NameEntry } from "./parts";
 import { useDleWords } from "./lexicon";
-import { formatNumber } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import { useT } from "@/i18n/client";
 import gameNs from "@/messages/pokedle-game";
 import type { DleLabels } from "@/lib/dle-i18n";

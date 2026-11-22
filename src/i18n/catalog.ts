@@ -1,3 +1,4 @@
+import { INTL_LOCALE } from "./format";
 import format, { type CompiledMessage, type FormatOptions } from "icu-minify/format";
 import { Fragment, createElement, type ReactNode } from "react";
 import { DEFAULT_LOCALE, type Locale } from "./config";
@@ -67,7 +68,7 @@ const OPTIONS: FormatOptions = {
 };
 
 /** Intl's code for a language: "en-US" for English, as the site always formatted numbers. */
-export const INTL_LOCALE: Record<Locale, string> = { en: "en-US", ja: "ja-JP", es: "es-ES", fr: "fr-FR", de: "de-DE", it: "it-IT" };
+export { INTL_LOCALE, formatNumber } from "./format";
 
 /** A compiled English message (scripts/i18n/icu-loader.cjs): the values in, the text (or its parts with <tags>) out. */
 type EnglishMessage = (values: Record<string, unknown>) => unknown;
@@ -116,7 +117,3 @@ export function translator<T extends Tree>(ns: Namespace<T>, locale: Locale, mes
   return t;
 }
 
-/** A number as the language writes it ("1,234" / "1.234" / "1 234"). English keeps the site's en-US. */
-export function formatNumber(n: number, locale: Locale, opts?: Intl.NumberFormatOptions): string {
-  return OPTIONS.formatters.getNumberFormat(INTL_LOCALE[locale], opts).format(n);
-}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Sheet } from "@/components/pokedle/sheets";
+import { Sheet } from "@/components/pokedle/sheet";
 import type { DleStats } from "@/lib/dle-stats";
 import type { ConnRecord } from "@/lib/progress";
 import { ConnArchiveCalendar, ConnStatsBody } from "./stats";

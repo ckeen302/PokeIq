@@ -5,7 +5,8 @@ import { FORMAT_INFO, MODULE_INFO, difficultyLabel } from "@/lib/modes";
 import { GEO_MAX_ROUND_SCORE, GEO_ROUNDS, WORLD_REGION } from "@/lib/geo-types";
 import { PLAY_FORMAT_INFO } from "@/lib/battle/play";
 import { rarityLines } from "@/lib/pikadoku/share";
-import { formatNumber, translator, type Translator } from "@/i18n/catalog";
+import { translator, type Translator } from "@/i18n/catalog";
+import { formatNumber } from "@/i18n/format";
 import share from "@/messages/share";
 import type { BattleShareResult, CognitiveShareResult, ConnectionsShareResult, GuessrShareResult, PikadokuShareResult, PokedleShareResult, QuizShareResult } from "./payload";
 
@@ -26,9 +27,6 @@ import type { BattleShareResult, CognitiveShareResult, ConnectionsShareResult, G
 
 /** The "share" namespace's translator. */
 export type ShareT = Translator<typeof share.en>;
-let english: ShareT | undefined;
-/** The share text in English (what every builder writes without a translator). */
-export const englishShareT = (): ShareT => (english ??= translator(share, "en", undefined));
 
 export const SHARE_BRAND = "PokéIQ";
 
@@ -105,8 +103,6 @@ export interface PokedleShareInput {
   community?: { percentile: number; players: number };
   /** The format, for the link's payload (Squirdle when `squirdle`, else Classic). */
   format?: DleFormat;
-  /** The page's translator (default English). */
-  t?: ShareT;
 }
 
 const PALETTE = { normal: { match: "🟩", near: "🟨" }, colourBlind: { match: "🟧", near: "🟦" } };
@@ -167,8 +163,8 @@ export function pokedleShareResult(input: Omit<PokedleShareInput, "url" | "t">):
   };
 }
 
-export function buildPokedleShare(input: PokedleShareInput): string {
-  const t = input.t ?? englishShareT();
+/** `t`: the page's translator (default English). */
+export function buildPokedleShare(input: PokedleShareInput, t: ShareT = translator(share, "en", undefined)): string {
   const score = `${input.solved ? input.rows.length : "X"}/${input.max ?? DLE_MAX_GUESSES}${input.hard ? "*" : ""}`;
   const hints = DLE_HINT_KINDS.filter((h) => input.hints.includes(h))
     .map((h) => DLE_HINT_EMOJI[h])
@@ -203,7 +199,7 @@ export function guessrSquare(points: number): string {
 }
 
 /** "PokéGuessr Daily #12 · World", "PokéGuessr Kanto Streak". */
-export function guessrTitle(r: Pick<GuessrShareResult, "daily" | "weekly" | "region" | "streak">, regionName: string, t: ShareT = englishShareT()): string {
+export function guessrTitle(r: Pick<GuessrShareResult, "daily" | "weekly" | "region" | "streak">, regionName: string, t: ShareT = translator(share, "en", undefined)): string {
   const map = r.region === WORLD_REGION ? t("guessr.world") : regionName;
   if (r.daily !== undefined) return t("guessr.daily", { n: r.daily, map });
   if (r.weekly !== undefined) return t("guessr.weekly", { n: r.weekly, map });
@@ -214,8 +210,7 @@ export function guessrTitle(r: Pick<GuessrShareResult, "daily" | "weekly" | "reg
  * Five rounds: total out of 25,000, a square per round and each round's
  * points. Streak mode: how many places in a row. Never a place's name.
  */
-export function guessrShareText(r: GuessrShareResult, regionName: string, url?: string, opts: { mode?: string; t?: ShareT } = {}): string {
-  const t = opts.t ?? englishShareT();
+export function guessrShareText(r: GuessrShareResult, regionName: string, url?: string, opts: { mode?: string } = {}, t: ShareT = translator(share, "en", undefined)): string {
   const title = `${guessrTitle(r, regionName, t)}${opts.mode ? ` · ${opts.mode}` : ""}`;
   if (r.streak !== undefined) {
     return composeShare({ title, score: t("guessr.inARow", { n: r.streak }), lines: [`${"✅".repeat(Math.min(r.streak, 20))}${r.streak > 20 ? "…" : ""}❌`], url });
@@ -235,7 +230,7 @@ export function guessrShareText(r: GuessrShareResult, regionName: string, url?: 
 // ---------------------------------------------------------------------------
 
 /** "Daily #12", "Test", "Who's That Pokémon? · Blitz", "Real Shiny? · Classic · Hard" (only Whose Team and Real Shiny name a difficulty). */
-export function quizTitle(r: Pick<QuizShareResult, "daily" | "format" | "module" | "difficulty">, t: ShareT = englishShareT()): string {
+export function quizTitle(r: Pick<QuizShareResult, "daily" | "format" | "module" | "difficulty">, t: ShareT = translator(share, "en", undefined)): string {
   if (r.daily !== undefined) return t("quiz.daily", { n: r.daily });
   if (r.format === "adaptive") return t("quiz.test");
   const level = r.difficulty && difficultyLabel(r.module, r.difficulty);
@@ -245,7 +240,7 @@ export function quizTitle(r: Pick<QuizShareResult, "daily" | "format" | "module"
 }
 
 /** Score and time up top, the PokéIQ and points, then a square per answer. */
-export function quizShareText(r: QuizShareResult, url?: string, t: ShareT = englishShareT()): string {
+export function quizShareText(r: QuizShareResult, url?: string, t: ShareT = translator(share, "en", undefined)): string {
   const test = r.format === "adaptive" && r.daily === undefined;
   return composeShare({
     title: quizTitle(r, t),
@@ -267,7 +262,7 @@ export const CONN_SQUARES = ["🟨", "🟩", "🟦", "🟪", "🟥"] as const;
 export const connSizeOf = (rows: readonly string[]) => (rows[0]?.length === 5 ? 5 : 4);
 
 /** "PokéConnections #12", "PokéConnections Practice", "PokéConnections Practice 5×5". */
-export function connectionsTitle(r: Pick<ConnectionsShareResult, "daily" | "archive" | "rows">, t: ShareT = englishShareT()): string {
+export function connectionsTitle(r: Pick<ConnectionsShareResult, "daily" | "archive" | "rows">, t: ShareT = translator(share, "en", undefined)): string {
   if (r.daily !== undefined) return t(r.archive ? "connections.archive" : "connections.daily", { n: r.daily });
   return t(connSizeOf(r.rows) === 5 ? "connections.practice5" : "connections.practice");
 }
@@ -276,14 +271,14 @@ export function connectionsTitle(r: Pick<ConnectionsShareResult, "daily" | "arch
 export const connMistakes = (rows: readonly string[]) => rows.filter((r) => !/^([0-4])\1{3,4}$/.test(r)).length;
 
 /** "Perfect!", "2 mistakes", "Not solved". */
-export function connectionsScore(r: Pick<ConnectionsShareResult, "solved" | "rows">, t: ShareT = englishShareT()): string {
+export function connectionsScore(r: Pick<ConnectionsShareResult, "solved" | "rows">, t: ShareT = translator(share, "en", undefined)): string {
   if (!r.solved) return t("connections.notSolved");
   const m = connMistakes(r.rows);
   return m === 0 ? t("connections.perfect") : t("connections.mistakes", { n: m });
 }
 
 /** The guesses as rows of coloured squares (each Pokémon picked, by its group), like NYT's: never a name. */
-export function connectionsShareText(r: ConnectionsShareResult, url?: string, t: ShareT = englishShareT()): string {
+export function connectionsShareText(r: ConnectionsShareResult, url?: string, t: ShareT = translator(share, "en", undefined)): string {
   return composeShare({
     title: connectionsTitle(r, t),
     score: connectionsScore(r, t),
@@ -298,7 +293,7 @@ export function connectionsShareText(r: ConnectionsShareResult, url?: string, t:
 // ---------------------------------------------------------------------------
 
 /** "Pikadoku #12" (the Normal daily), "Pikadoku #12 (Expert)", "Pikadoku Weekly #3", "Pikadoku (Unlimited)". */
-export function pikadokuTitle(r: Pick<PikadokuShareResult, "daily" | "weekly" | "archive" | "difficulty">, t: ShareT = englishShareT()): string {
+export function pikadokuTitle(r: Pick<PikadokuShareResult, "daily" | "weekly" | "archive" | "difficulty">, t: ShareT = translator(share, "en", undefined)): string {
   if (r.weekly !== undefined) return t("pikadoku.weekly", { n: r.weekly });
   if (r.daily !== undefined) {
     const title = t(r.archive ? "pikadoku.archive" : "pikadoku.daily", { n: r.daily });
@@ -315,7 +310,7 @@ export const pikadokuSolved = (grid: string) => [...grid].filter((c) => c !== "x
  * rarer) and streak, then nine squares coloured by how rare each pick was
  * (🟪 under 1%, 🟦 under 10%, 🟩 under 25%, 🟨 25%+, ⬛ wrong or empty): never a Pokémon.
  */
-export function pikadokuShareText(r: PikadokuShareResult, url?: string, t: ShareT = englishShareT()): string {
+export function pikadokuShareText(r: PikadokuShareResult, url?: string, t: ShareT = translator(share, "en", undefined)): string {
   const stats = [r.score !== undefined && t("pikadoku.rarity", { score: r.score }), r.streak ? `🔥${r.streak}` : null].filter(Boolean).join(" ");
   return composeShare({
     title: pikadokuTitle(r, t),
@@ -330,23 +325,23 @@ export function pikadokuShareText(r: PikadokuShareResult, url?: string, t: Share
 // ---------------------------------------------------------------------------
 
 /** "vs the computer (Hard)", "ranked", "vs a trainer". */
-export function battleOpponent(r: Pick<BattleShareResult, "cpu" | "ranked">, t: ShareT = englishShareT()): string {
+export function battleOpponent(r: Pick<BattleShareResult, "cpu" | "ranked">, t: ShareT = translator(share, "en", undefined)): string {
   if (r.cpu) return t("battle.cpu", { level: t(`battle.levels.${r.cpu}`) });
   return t(r.ranked ? "battle.ranked" : "battle.trainer");
 }
 
 /** The result, the format, who against and how long it took. */
-export function battleShareText(r: BattleShareResult, url?: string, formatName?: string, t: ShareT = englishShareT()): string {
+export function battleShareText(r: BattleShareResult, url?: string, formatName?: string, t: ShareT = translator(share, "en", undefined)): string {
   return composeShare({
     title: t("battle.title"),
-    score: t(`battle.${r.outcome}`),
+    score: t(r.outcome === "win" ? "battle.win" : r.outcome === "loss" ? "battle.loss" : "battle.tie"),
     lines: [`${formatName ?? PLAY_FORMAT_INFO[r.format].name} · ${battleOpponent(r, t)} · ${t("battle.turns", { n: r.turns })}`],
     url,
   });
 }
 
 /** A saved replay: who beat whom (names already on the replay's public page) and where. */
-export function replayShareText(result: string, formatName: string, url?: string, t: ShareT = englishShareT()): string {
+export function replayShareText(result: string, formatName: string, url?: string, t: ShareT = translator(share, "en", undefined)): string {
   return composeShare({ title: t("battle.replay"), lines: [`${result} · ${formatName}`, t("battle.watch")], url });
 }
 
@@ -355,7 +350,7 @@ export function replayShareText(result: string, formatName: string, url?: string
 // ---------------------------------------------------------------------------
 
 /** "PokéIQ Cognitive test 118 (88th percentile)" and a line per domain. */
-export function cognitiveShareText(r: CognitiveShareResult, url?: string, t: ShareT = englishShareT()): string {
+export function cognitiveShareText(r: CognitiveShareResult, url?: string, t: ShareT = translator(share, "en", undefined)): string {
   return composeShare({
     title: t("cognitive.title"),
     score: `${r.score}`,

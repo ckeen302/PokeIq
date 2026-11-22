@@ -5,8 +5,8 @@ import { useRouter } from "@/i18n/navigation";
 import { MotionConfig } from "framer-motion";
 import { Crown, RotateCcw, Timer } from "lucide-react";
 import { pvpHref, type PdkDuelView } from "@/lib/pvp-types";
-import { PDK_FAMILIES, type PdkLocal } from "@/lib/pikadoku/types";
-import { INTL_LOCALE } from "@/i18n/catalog";
+import { PDK_FAMILIES, type PdkFamily, type PdkLocal } from "@/lib/pikadoku/types";
+import { INTL_LOCALE } from "@/i18n/format";
 import { useT } from "@/i18n/client";
 import duelNs from "@/messages/pikadoku-duel";
 import boardNs from "@/messages/pikadoku-board";
@@ -180,7 +180,7 @@ function DuelGame({ code }: { code: string }) {
   const chat = <DuelChat view={view} game={t("chat")} onSend={(text) => send({ action: "chat", text })} />;
 
   if (view.status === "lobby") {
-    const families = view.settings.families.map((f) => (tb.has(`family.${f}`) ? tb(`family.${f as "types"}`) : f));
+    const families = view.settings.families.map((f) => ((PDK_FAMILIES as readonly string[]).includes(f) ? tb(`family.${f as PdkFamily}`) : f));
     const list = t.locale === "en" ? families.join(", ") : new Intl.ListFormat(INTL_LOCALE[t.locale], { type: "conjunction" }).format(families);
     return (
       <>

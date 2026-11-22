@@ -7,7 +7,7 @@ import { PDK_BANDS, PDK_FAMILIES, type PdkFamily, type PdkSettings } from "@/lib
 import { Button } from "@/components/ui/button";
 import { FAMILY_ICON, FAMILY_TINT, usePdkLocal } from "./parts";
 import { cn } from "@/lib/utils";
-import { INTL_LOCALE } from "@/i18n/catalog";
+import { INTL_LOCALE } from "@/i18n/format";
 import { useT } from "@/i18n/client";
 import pikadoku from "@/messages/pikadoku";
 import board from "@/messages/pikadoku-board";

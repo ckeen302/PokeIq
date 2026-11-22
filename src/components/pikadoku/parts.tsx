@@ -4,9 +4,8 @@ import { createContext, useCallback, useContext, useEffect, useLayoutEffect, use
 import Image from "next/image";
 import { Baby, BarChart3, Bone, Circle, Crown, Dna, GitBranch, Handshake, Info, Layers, Loader2, type LucideIcon, Maximize2, MapPin, Orbit, Rocket, Search, Sparkle, Sparkles, Swords, Trophy, Zap } from "lucide-react";
 import { TypeBadge } from "@/components/pokedex/TypeBadge";
-import { Sheet } from "@/components/pokedle/sheets";
+import { Sheet } from "@/components/pokedle/sheet";
 import { spriteUrl } from "@/lib/pokemon/art";
-import { typeColor, typeTextColor } from "@/lib/pokemon/type-colors";
 import { indexEntries, localizeEntries, searchEntries } from "@/lib/pikadoku/search";
 import { categoryHint } from "@/lib/pikadoku/hints";
 import type { PdkCategoryView, PdkFamily, PdkGridView, PdkLocal } from "@/lib/pikadoku/types";
@@ -190,21 +189,6 @@ function FitLabel({ text }: { text: string }) {
   );
 }
 
-/**
- * TypeBadge's plate with the type's name in the page's language (TypeBadge itself shows the English name, which
- * English pages keep).
- */
-function LocalTypeBadge({ type, label }: { type: string; label: string }) {
-  return (
-    <span
-      className="inline-flex items-center justify-center rounded-[4px] font-display font-bold uppercase tracking-[0.08em] px-2.5 py-1 text-[11px] leading-none max-w-full"
-      style={{ background: typeColor(type), color: typeTextColor(type), boxShadow: "inset 0 1px 0 rgb(255 255 255 / 0.35), inset 0 -2px 0 rgb(0 0 0 / 0.25)" }}
-    >
-      {label}
-    </span>
-  );
-}
-
 function Header({ cat, testId, role }: { cat: PdkCategoryView | undefined; testId: string; role: "columnheader" | "rowheader" }) {
   const [open, setOpen] = useState(false);
   const t = useT(board);
@@ -221,7 +205,7 @@ function Header({ cat, testId, role }: { cat: PdkCategoryView | undefined; testI
       onMouseLeave={() => setOpen(false)}
     >
       {cat?.id.startsWith("type:") ? (
-        local ? <LocalTypeBadge type={cat.id.slice(5)} label={label} /> : <TypeBadge type={cat.id.slice(5)} size="md" className="max-w-full" />
+        <TypeBadge type={cat.id.slice(5)} size="md" className="max-w-full" label={local ? label : undefined} />
       ) : (
         <span className="flex w-full min-w-0 flex-col items-center gap-0.5 font-display font-bold uppercase tracking-wide">
           {cat && <CategoryIcon cat={cat} />}
