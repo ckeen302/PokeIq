@@ -1,0 +1,42 @@
+{
+  "stellar": "Stellaire",
+  "category": {
+    "Physical": "Phys",
+    "Special": "Spé",
+    "Status": "Stat"
+  },
+  "categoryName": {
+    "Physical": "Physique",
+    "Special": "Spéciale",
+    "Status": "Statut"
+  },
+  "banned": "Banni",
+  "species": "Espèce",
+  "searchPokemon": "Chercher un Pokémon",
+  "filters": "Filtres",
+  "filterType": "Filtrer par type",
+  "anyType": "Tous types",
+  "filterAbility": "Filtrer par talent",
+  "ability": "Talent",
+  "filterMove": "Filtrer par attaque apprise",
+  "learns": "Apprend l’attaque",
+  "legalOnly": "Légaux seulement",
+  "clear": "Effacer",
+  "bst": "Total des stats de base",
+  "item": "Objet",
+  "noItem": "Aucun objet",
+  "loadingMoves": "Chargement des attaques…",
+  "addMove": "Ajouter une attaque",
+  "filterMoveType": "Filtrer les attaques par type",
+  "head": {
+    "move": "Attaque",
+    "type": "Type",
+    "cat": "Cat",
+    "pow": "Puis",
+    "acc": "Préc",
+    "pp": "PP",
+    "use": "Util"
+  },
+  "isBanned": "{move} : {reason}.",
+  "nature": "Nature"
+}

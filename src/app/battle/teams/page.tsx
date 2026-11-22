@@ -4,10 +4,11 @@ import { BattleHeader } from "@/components/battle/BattleHeader";
 import { TeamBuilder } from "@/components/battle/TeamBuilder";
 import { ClientMessages } from "@/i18n/ClientMessages";
 import { serverT } from "@/i18n/server";
-import battlePages from "@/messages/battle-pages";
+import battlePages from "@/messages/battle-tools-pages";
 import battleTeams from "@/messages/battle-teams";
 import battleTeamInsights from "@/messages/battle-team-insights";
 import battleTerms from "@/messages/battle-terms";
+import battlePickers from "@/messages/battle-pickers";
 
 export function generateMetadata(): Metadata {
   const t = serverT(battlePages);
@@ -26,7 +27,7 @@ export default function TeamsPage() {
       <BattleHeader crumb={t("teams.crumb")} title={t("teams.heading")} accent={t("teams.accent")}>
         {t("teams.intro")}
       </BattleHeader>
-      <ClientMessages namespaces={[battleTeams, battleTeamInsights, battleTerms]}>
+      <ClientMessages namespaces={[battleTeams, battleTeamInsights, battleTerms, battlePickers]}>
         <TeamBuilder />
       </ClientMessages>
     </div>

@@ -1,0 +1,22 @@
+{
+  "label": "Tous les dossiers",
+  "verdictGroup": "Verdict",
+  "allCases": "Tous les dossiers",
+  "verdict": {
+    "confirmed": "Confirmée",
+    "fan": "Théorie de fans",
+    "debunked": "Démentie"
+  },
+  "sourceGroup": "Provenance",
+  "source": {
+    "games": "Jeux",
+    "anime": "Anime",
+    "pokedex": "Pokédex",
+    "internet": "Internet",
+    "manga": "Manga"
+  },
+  "search": "Chercher un dossier",
+  "none": "Aucun dossier ne correspond. Essaie un autre verdict, une autre source ou une autre recherche.",
+  "caseNumber": "DOSSIER {n}",
+  "open": "Ouvrir →"
+}

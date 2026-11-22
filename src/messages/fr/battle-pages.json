@@ -1,136 +1,128 @@
 {
-  "crumb": "Combat",
-  "calc": {
-    "title": "Calculateur de dégâts Pokémon : toutes les générations, chaque coup",
-    "description": "Un calculateur de dégâts Pokémon, celui de Smogon, pour les générations 3 à 9 : fourchettes de dégâts, chances de K.O. et descriptions complètes avec boosts, statut, Téracristal, météo, champs, écrans et attaques de zone en double. Charge les sets de tes équipes.",
-    "crumb": "Calcul des dégâts",
-    "heading": "Calcul",
-    "accent": "des dégâts",
-    "intro": "Un calculateur de dégâts Pokémon : la fourchette de dégâts, les chances de K.O. et la description Showdown de chaque capacité, dans les deux sens. Propulsé par le calculateur de dégâts de Smogon."
+  "hub": {
+    "meta": {
+      "title": "Simulateur de combat Pokémon : PvP, contre l’ordi et créateur d’équipe",
+      "description": "Simulateur de combat Pokémon gratuit sur le moteur de Pokémon Showdown : PvP en ligne en direct, combats contre un ami ou l’ordi, plus un créateur d’équipe et un calculateur de dégâts."
+    },
+    "live": {
+      "cpu": {
+        "title": "Combat contre l’ordi",
+        "blurb": "Affronte un ordi qui joue pour gagner.",
+        "p1": "Combat aléatoire, Duo aléatoire ou ton équipe enregistrée",
+        "p2": "Adversaires Facile, Normal et Difficile",
+        "p3": "Les animations d’attaques de Showdown, Téracristal compris"
+      },
+      "online": {
+        "title": "Combat en ligne",
+        "blurb": "Trouve un adversaire ou invite un ami.",
+        "p1": "Matchmaking dans tous les formats, équipes aléatoires ou la tienne",
+        "p2": "Le chrono de Showdown ; chaque camp ne voit que ce qu’il doit",
+        "p3": "Revanche en un clic"
+      },
+      "teams": {
+        "title": "Créateur d’équipe",
+        "blurb": "Des équipes vérifiées au fil de la création.",
+        "p1": "Des formats OU de la 9e génération à l’OU de la 3e",
+        "p2": "EV, IV, natures et stats en direct",
+        "p3": "Import / export Showdown, équipes aléatoires"
+      },
+      "calc": {
+        "title": "Calcul de dégâts",
+        "blurb": "Fourchettes de dégâts et chances de K.O.",
+        "p1": "Boosts, statut, Téracristal et PV actuels",
+        "p2": "Météo, champs, écrans, attaques de zone",
+        "p3": "Charge des sets directement depuis tes équipes"
+      },
+      "lab": {
+        "title": "Labo de combat",
+        "blurb": "Rejoue n’importe quel affrontement des milliers de fois.",
+        "p1": "N’importe quel Pokémon, niveau, objet et attaque, de la 1re à la 9e génération",
+        "p2": "Jeu malin, gourmand, aléatoire ou scripté pour chaque camp",
+        "p3": "% de victoires avec intervalle de confiance à 95 %, K.O., coups critiques, replays"
+      }
+    },
+    "frontier": {
+      "factory": {
+        "title": "Usine de Combat",
+        "blurb": "Loue une équipe et enchaîne les victoires.",
+        "p1": "Factory niveau 100 ou BSS Factory niveau 50",
+        "p2": "Échange contre un Pokémon de ton adversaire après chaque victoire",
+        "p3": "Ou combats en direct : les deux Dresseurs louent une équipe"
+      },
+      "tower": {
+        "title": "Tour de Combat",
+        "blurb": "Ton équipe face à une série de Dresseurs.",
+        "p1": "Niveau 50, six Pokémon, trois choisis",
+        "p2": "Équipes enregistrées, créées ou rapides, vérifiées par Showdown",
+        "p3": "Le Magnat de la Tour tous les sept combats"
+      }
+    },
+    "tools": "Combats et outils",
+    "liveTag": "En ligne",
+    "soon": "Bientôt",
+    "frontierTitle": "Zone de Combat",
+    "frontierAside": "Des séries contre l’ordi",
+    "formats": "Formats",
+    "formatsAside": "Les règles de Pokémon Showdown pour chacun",
+    "gameType": {
+      "singles": "solo",
+      "doubles": "duo"
+    },
+    "formatBlurb": {
+      "gen9ou": "Le tier solo phare de Smogon : tout ce qui est sous Ubers.",
+      "gen9ubers": "Légendaires de jaquette bienvenus. Seuls les plus abusés sont bannis.",
+      "gen9uu": "Le tier sous l’OU : ni Pokémon OU ni UUBL.",
+      "gen9ru": "Le tier sous l’UU : ni Pokémon UU ni RUBL.",
+      "gen9nu": "Le tier sous le RU : ni Pokémon RU ni NUBL.",
+      "gen9pu": "Le tier sous le NU : ni Pokémon NU ni PUBL.",
+      "gen9lc": "Little Cup : des Pokémon de premier stade capables d’évoluer, au niveau 5.",
+      "gen9monotype": "Tous les Pokémon d’une équipe partagent un type. Pas de Téracristal.",
+      "gen9doublesou": "Deux contre deux, la liste des tiers duo de Smogon.",
+      "gen9vgc2025regi": "Duo officiel : six Pokémon, quatre choisis, niveau 50, deux légendaires restreints.",
+      "gen9nationaldex": "Les mécaniques d’Écarlate / Violet avec tous les Pokémon, Méga-Gemmes et Cristaux Z de retour.",
+      "gen4ou": "Diamant / Perle / Platine : arrivée de la séparation physique / spéciale.",
+      "gen3ou": "Rubis / Saphir / Émeraude : le type d’une attaque décide si elle est physique ou spéciale."
+    },
+    "info": {
+      "name": "Combats Pokémon",
+      "description": "Un simulateur de combat Pokémon gratuit sur le moteur de Pokémon Showdown : affronte l’ordi, un ami ou un inconnu, avec créateur d’équipe, calculateur de dégâts et Labo de combat.",
+      "intro": "Ce simulateur de combat Pokémon tourne sur le moteur même de Pokémon Showdown : affronte l’ordi, un ami via un lien ou un adversaire trouvé en ligne.",
+      "step1": "Choisis un mode : combat contre l’ordi, combat en ligne ou Zone de Combat.",
+      "step2": "Prends une équipe aléatoire ou crée la tienne dans le créateur d’équipe.",
+      "step3": "Choisis tes attaques à chaque tour et remporte le combat.",
+      "step4": "Vérifie les affrontements avec le calculateur de dégâts ou simule des milliers de combats dans le Labo de combat.",
+      "labQ": "Qu’est-ce que le Labo de combat ?",
+      "labA": "Il te permet de préparer n’importe quel affrontement et de le faire jouer des milliers de fois par le moteur pour estimer les chances de victoire."
+    }
   },
-  "teams": {
-    "title": "Créateur d'équipe Pokémon : formats Showdown, légalité vérifiée",
-    "description": "Un créateur d'équipe Pokémon pour les équipes compétitives en OU, Ubers, UU, Double OU, VGC et Dex National de la 9e génération, en OU 4G et en OU 3G. Capacités selon les apprentissages de chaque format, stats en direct, import / export Showdown et la vérification de légalité de Pokémon Showdown lui-même.",
-    "crumb": "Créateur d'équipe",
-    "heading": "Créateur",
-    "accent": "d'équipe",
-    "intro": "Un créateur d'équipe Pokémon avec six emplacements, les apprentissages de chaque format et les règles de Pokémon Showdown lui-même. Les équipes s'enregistrent sur cet appareil au fil de ta création, prêtes pour le combat."
+  "play": {
+    "meta": {
+      "title": "Combat Pokémon : contre l’ordi, en ligne ou avec un ami",
+      "description": "De vrais combats Pokémon sur le moteur de Pokémon Showdown : Combat aléatoire, Duo aléatoire ou ta propre équipe OU, contre l’ordi, un Dresseur trouvé par matchmaking ou un ami grâce à un lien d’invitation."
+    },
+    "crumb": "Jouer",
+    "title": "Lance un",
+    "accent": "combat",
+    "intro": "Le moteur de combat même de Pokémon Showdown : chaque attaque, talent et objet fonctionne comme là-bas. Choisis un adversaire, un format et c’est parti."
   },
-  "lab": {
-    "title": "Labo de combat — simulateur de probabilité de victoire Pokémon",
-    "description": "Prépare deux équipes Pokémon, de la 1re à la 9e génération, et joue le combat des milliers de fois sur le moteur de Pokémon Showdown lui-même. Vois les chances de victoire de chaque camp avec un intervalle de confiance à 95 %, la durée des combats, qui réalise les K.O., et regarde des combats d'exemple.",
-    "name": "Labo de combat",
-    "crumb": "Labo de combat",
-    "heading": "Labo",
-    "accent": "de combat",
-    "intro": "Prépare deux camps et laisse le moteur de Pokémon Showdown jouer le combat des milliers de fois, directement dans ton navigateur. Vois combien de fois chaque camp gagne, combien de temps ça dure et ce qui fait la différence."
+  "tower": {
+    "meta": {
+      "title": "Tour de Combat : séries en Flat Rules contre l’ordi"
+    },
+    "description": "La Tour de Combat sur le moteur de Pokémon Showdown : amène ton équipe en Flat Rules (niveau 50, six Pokémon, trois choisis) et enchaîne les victoires contre des Dresseurs de l’ordi, avec le Magnat de la Tour tous les sept combats.",
+    "name": "Tour de Combat",
+    "title": "Tour de",
+    "accent": "Combat",
+    "intro": "Ton équipe, les Flat Rules et une série de Dresseurs de l’ordi de plus en plus coriaces. Tous les sept combats, le Magnat de la Tour t’attend avec sa meilleure équipe."
   },
-  "ladder": {
-    "title": "Classement des combats Pokémon — cotes classées par format",
-    "description": "Le classement des combats classés : cotes Elo, GXE et Glicko-2, comme sur Pokémon Showdown, en Combat Aléatoire, Double Aléatoire, OU, Ubers, UU, RU, NU, PU, LC, Monotype, Dex National et Double OU.",
-    "crumb": "Classement",
-    "heading": "Classement",
-    "accent": "des combats",
-    "rules": "Des cotes par format comme sur Pokémon Showdown : le classement suit l'Elo (tout le monde commence à {elo}, ne descend jamais en dessous, et un Elo au-dessus de 1400 baisse un peu chaque jour sans jouer), affiché avec le GXE (ta probabilité de battre un Dresseur pris au hasard dans le classement) et une cote Glicko-2. Tout le monde commence à {rating} ± {rd} en Glicko-2 ; une cote reste provisoire tant que son écart ne passe pas sous {shown}. Abandonner, épuiser son temps ou quitter compte comme une défaite.",
-    "short": "Classé par Elo, avec GXE et Glicko-2, comme sur Pokémon Showdown. Tout le monde commence à {elo}.",
-    "insights": "Tes statistiques",
-    "play": "Jouer en classé",
-    "soon": "Les combats classés arrivent bientôt.",
-    "top": "{format} : top 100",
-    "how": "Comment fonctionnent les cotes"
-  },
-  "insights": {
-    "title": "Analyse d'équipe",
-    "description": "L'analyse de tes combats : Pokémon de tête, Pokémon, adversaires les plus coriaces et évolution de ta cote.",
-    "crumb": "Analyse d'équipe",
-    "heading": "Analyse",
-    "accent": "d'équipe",
-    "intro": "Tes Pokémon de tête les plus fréquents, le taux de victoire de chaque Pokémon, les adversaires qui te battent le plus et l'évolution de ta cote, d'après tes combats enregistrés.",
-    "signIn": "L'analyse suit ton compte : connecte-toi pour voir la tienne.",
-    "signInButton": "Se connecter"
-  },
-  "playerInsights": {
-    "title": "{name} · Analyse d'équipe",
-    "description": "L'analyse des combats de {name} sur PokéIQ : Pokémon de tête les plus fréquents, taux de victoire par Pokémon, adversaires les plus coriaces et évolution de la cote.",
-    "heading": "{name} :",
-    "accent": "analyse",
-    "intro": "Pokémon de tête, Pokémon, adversaires les plus coriaces et cote au fil des combats enregistrés de {name}, d'après leurs replays.",
-    "format": "Format",
-    "allFormats": "Tous les formats",
-    "noBattles": "Aucun combat à analyser pour l'instant.",
-    "soon": "L'analyse d'équipe arrive bientôt.",
-    "empty": "Pas encore de replays enregistrés à analyser ici : l'analyse vient des combats dont le replay a été enregistré (chaque combat classé enregistre le sien).",
-    "reading": "{n} combats de plus sont en cours de lecture ; reviens dans un instant.",
-    "battlesRead": "Combats lus",
-    "winRate": "Victoires",
-    "monsUsed": "Pokémon utilisés",
-    "leadsCount": "Têtes différentes",
-    "trend": "Cote dans le temps",
-    "leads": "Pokémon de tête fréquents",
-    "byMon": "Victoires par Pokémon",
-    "byMonAside": "Combats où chacun est entré en jeu",
-    "monRecord": "{wins}–{losses} en {games, plural, one {{games} combat} other {{games} combats}}",
-    "threats": "Adversaires les plus coriaces",
-    "threatsAside": "Adversaires avec un K.O. ou une victoire contre {name} : le plus de K.O., puis le plus de victoires",
-    "threatRecord": "{games, plural, one {{games} combat} other {{games} combats}} · {wins, plural, one {{wins} victoire} other {{wins} victoires}} contre {name}",
-    "kos": "{n, plural, one {K.O.} other {K.O.}}",
-    "noThreats": "Rien n'a encore mis K.O. les Pokémon de {name}.",
-    "pending": "{n, plural, one {{n} combat plus ancien reste} other {{n} combats plus anciens restent}} à lire : ils compteront lors d'une prochaine visite.",
-    "noLeads": "Aucun Pokémon de tête pour l'instant.",
-    "mostUsed": "Le plus utilisé",
-    "leadTimes": "{n}× en tête",
-    "leadWon": "{rate} gagnés",
-    "trendMore": "Joue {count, select, one {un autre combat classé} other {quelques combats classés}} dans ce format pour voir une tendance.",
-    "trendLabel": "Cote de {from} à {to} sur {n} combats classés",
-    "trendDelta": "{delta} sur {n, plural, one {{n} combat} other {{n} combats}}",
-    "lastGxe": "GXE après le dernier combat : {gxe} %"
-  },
-  "replays": {
-    "title": "Replays de combats Pokémon",
-    "description": "Regarde des replays de combats Pokémon tour par tour, sur le moteur de Pokémon Showdown : tes propres combats et les derniers combats classés et publics.",
-    "crumb": "Replays",
-    "heading": "Replays",
-    "accent": "de combats",
-    "intro": "Chaque combat classé ou public est enregistré en replay ; après tout autre combat, appuie sur Enregistrer le replay. Les replays montrent ce que les spectateurs ont vu, tour par tour.",
-    "import": "Regarder un replay Showdown",
-    "live": "Combats en direct"
-  },
-  "replay": {
-    "fallbackTitle": "Replay de combat",
-    "fallbackDescription": "Un replay de combat Pokémon sur PokéIQ.",
-    "title": "{title} : replay {format}",
-    "description": "{result} en {turns} tours. Regarde le replay, tour par tour, sur le moteur de Pokémon Showdown.",
-    "crumb": "Replay",
-    "ranked": "Classé · ",
-    "summary": "{format} · {result} en {turns, plural, one {{turns} tour} other {{turns} tours}}."
-  },
-  "notFound": {
-    "heading": "Replay introuvable",
-    "body": "Ce replay n'existe pas ou n'est pas disponible : le lien est peut-être erroné, ou le combat n'a jamais été enregistré.",
-    "browse": "Voir les replays",
-    "live": "Combats en direct",
-    "import": "Importer un journal"
-  },
-  "import": {
-    "title": "Regarder un replay Showdown",
-    "description": "Colle le journal d'un combat Pokémon Showdown ou ouvre un fichier de replay enregistré, et regarde-le tour par tour.",
-    "crumb": "Importer",
-    "heading": "Regarder un",
-    "accent": "replay Showdown",
-    "intro": "Colle un journal de combat, ou ouvre un fichier de replay enregistré par Showdown, et rejoue-le ici."
-  },
-  "tournaments": {
-    "title": "Tournois",
-    "description": "Des tournois de combats Pokémon sur PokéIQ : élimination directe ou toutes rondes dans n'importe quel format, et un tournoi officiel de Combat Aléatoire toutes les heures.",
-    "crumb": "Tournois",
-    "heading": "Tournois",
-    "accent": "en direct",
-    "intro": "Rejoins un tableau, ou ouvre le tien dans n'importe quel format. Un tournoi officiel de Combat Aléatoire commence toutes les heures : les inscriptions sont ouvertes les dix premières minutes."
-  },
-  "tournament": {
-    "title": "Tournoi",
-    "description": "Un tournoi de combats Pokémon sur PokéIQ : le tableau en direct, les matchs et les résultats.",
-    "back": "Retour aux tournois",
-    "crumb": "Tournois"
+  "factory": {
+    "meta": {
+      "title": "Usine de Combat : loue une équipe, enchaîne les victoires"
+    },
+    "description": "L’Usine de Combat sur le moteur de Pokémon Showdown : loue six Pokémon parmi les sets Battle Factory de Showdown, gagne sept fois d’affilée contre un ordi de plus en plus fort et échange contre un Pokémon de ton adversaire après chaque victoire.",
+    "name": "Usine de Combat",
+    "title": "Usine de",
+    "accent": "Combat",
+    "intro": "Pas besoin d’équipe : loue six Pokémon parmi les sets Battle Factory de Pokémon Showdown, gagne sept fois d’affilée et, après chaque victoire, échange un des tiens contre un de ton adversaire. Ou trouve un adversaire qui loue aussi, depuis la préparation du combat."
   }
 }

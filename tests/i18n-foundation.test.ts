@@ -136,3 +136,26 @@ describe("English-only twins (next.config swaps them in while no other language 
     }
   });
 });
+
+describe("thin copies (served, not indexed)", () => {
+  it("serves a TCG card page in Spanish but keeps it out of hreflang, the sitemap and search", async () => {
+    const { isPageLive, isPageIndexed, pageAlternates, localizeMetadata, pageMetadata, TRANSLATED } = await load("es,fr");
+    (TRANSLATED.es as string[]).push("/pokedex/tcg/card/*", "/pokedex/sizes/*", "/pokedex/places/*");
+    (TRANSLATED.fr as string[]).push("/pokedex/places/*");
+    expect(isPageLive("/pokedex/tcg/card/sv1-1", "es")).toBe(true);
+    expect(isPageIndexed("/pokedex/tcg/card/sv1-1", "es")).toBe(false);
+    expect(pageAlternates("/pokedex/tcg/card/sv1-1")).toBeNull();
+    const meta = localizeMetadata(pageMetadata({ title: "T", description: "D", path: "/pokedex/tcg/card/sv1-1" }), "es");
+    expect(meta.robots).toEqual({ index: false, follow: true });
+    expect(meta.alternates?.languages).toBeUndefined();
+    // A size lineup is a real page; a single Pokémon's size page is not.
+    expect(isPageIndexed("/pokedex/sizes/starters", "es")).toBe(true);
+    expect(isPageIndexed("/pokedex/sizes/pikachu", "es")).toBe(false);
+    // Places: thin where few have official names (es), indexed where most do (fr).
+    expect(isPageIndexed("/pokedex/places/pallet-town", "es")).toBe(false);
+    expect(isPageIndexed("/pokedex/places/pallet-town", "fr")).toBe(true);
+    expect(pageAlternates("/pokedex/places/pallet-town")).toEqual({ en: "/pokedex/places/pallet-town", fr: "/fr/pokedex/places/pallet-town", "x-default": "/pokedex/places/pallet-town" });
+    (TRANSLATED.es as string[]).splice(-3);
+    (TRANSLATED.fr as string[]).splice(-1);
+  });
+});

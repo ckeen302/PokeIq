@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { SESSION_COOKIE, userFromSessionToken } from "@/lib/server/auth";
 import { serverT } from "@/i18n/server";
-import battlePages from "@/messages/battle-pages";
+import battlePages from "@/messages/battle-tools-pages";
 
 export function generateMetadata(): Metadata {
   const t = serverT(battlePages);

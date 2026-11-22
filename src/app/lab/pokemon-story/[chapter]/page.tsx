@@ -6,6 +6,9 @@ import { CHAPTERS, chapterById } from "@/lib/pokemon-story/data";
 import { chapterPath } from "@/lib/pokemon-story/deeplink";
 import { StoryPage } from "@/components/pokemon-story/StoryPage";
 import { StoryFilm } from "@/components/pokemon-story/StoryFilm";
+import { getLocale, serverT } from "@/i18n/server";
+import { localStory } from "@/lib/pokemon-story/i18n";
+import storyNs from "@/messages/pokemon-story";
 
 /** /lab/pokemon-story/<chapter>: the film opened on that chapter, over its own text and sources. Prerendered; anything else is a 404. */
 export const dynamicParams = false;
@@ -15,13 +18,15 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ chapter: string }> }): Promise<Metadata> {
-  const c = chapterById((await params).chapter);
-  if (!c) return {};
+  const id = (await params).chapter;
+  if (!chapterById(id)) return {};
+  const t = serverT(storyNs);
+  const c = localStory(getLocale()).chapters.find((x) => x.id === id)!;
   return pageMetadata({
-    title: `${c.title} (${c.when}): The Story of Pokémon`,
-    description: `${c.summary} Chapter ${c.numeral} of The Story of Pokémon, the real history of the franchise as a 3D film, with every line sourced.`,
+    title: t("meta.chapterTitle", { title: c.title, when: c.when }),
+    description: t("meta.chapterDescription", { summary: c.summary, numeral: c.numeral }),
     path: chapterPath(c.id),
-    socialTitle: `${c.title} · The Story of Pokémon`,
+    socialTitle: t("meta.chapterSocial", { title: c.title }),
     noindex: !POKEMON_STORY_LIVE,
   });
 }
@@ -29,5 +34,5 @@ export async function generateMetadata({ params }: { params: Promise<{ chapter: 
 export default async function Page({ params }: { params: Promise<{ chapter: string }> }) {
   const c = chapterById((await params).chapter);
   if (!c) notFound();
-  return <StoryPage focus={c} film={(text) => <StoryFilm initialChapter={c.id}>{text}</StoryFilm>} />;
+  return <StoryPage focus={c} film={(text, story) => <StoryFilm initialChapter={c.id} story={story}>{text}</StoryFilm>} />;
 }

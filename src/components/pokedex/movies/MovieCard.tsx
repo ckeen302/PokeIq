@@ -15,8 +15,11 @@ export interface MovieCardData {
   featured: { id: number; name: string }[];
 }
 
-/** A film's poster tile: the poster, its year with small art of the Pokémon it stars, and its title. */
-export function MovieCard({ film, className, eager }: { film: MovieCardData; className?: string; eager?: boolean }) {
+/**
+ * A film's poster tile: the poster, its year with small art of the Pokémon it stars, and its title. `posterAlt` and
+ * `soonLabel` are the poster's alt text and the "Coming soon" badge in the page's language.
+ */
+export function MovieCard({ film, className, eager, posterAlt, soonLabel }: { film: MovieCardData; className?: string; eager?: boolean; posterAlt: string; soonLabel: string }) {
   return (
     <Link
       href={moviePath(film.slug)}
@@ -27,7 +30,7 @@ export function MovieCard({ film, className, eager }: { film: MovieCardData; cla
       <span className="relative block overflow-hidden rounded-md border border-foreground/10 bg-shade/40 shadow-sm transition-colors group-hover:border-screen/60">
         <img
           src={film.poster}
-          alt={`${film.title} poster`}
+          alt={posterAlt}
           width={300}
           height={450}
           loading={eager ? "eager" : "lazy"}
@@ -36,7 +39,7 @@ export function MovieCard({ film, className, eager }: { film: MovieCardData; cla
           className="block aspect-[2/3] w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
         />
         {film.comingSoon && (
-          <span className="absolute bottom-1.5 left-1.5 rounded-sm bg-primary px-1.5 py-1 font-pixel text-[9px] uppercase tracking-wider text-primary-foreground">Coming soon</span>
+          <span className="absolute bottom-1.5 left-1.5 rounded-sm bg-primary px-1.5 py-1 font-pixel text-[9px] uppercase tracking-wider text-primary-foreground">{soonLabel}</span>
         )}
       </span>
       <span className="flex items-center justify-between gap-1">

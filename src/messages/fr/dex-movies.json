@@ -1,0 +1,81 @@
+{
+  "meta": {
+    "title": "Films Pokémon : tous les films dans l’ordre de sortie",
+    "description": "Tous les films Pokémon dans l’ordre de sortie, de Mewtwo contre-attaque aux Secrets de la jungle, en passant par Détective Pikachu en prises de vues réelles et Pokémon: Wild Card : affiches, Pokémon à l’affiche, lieux et personnages."
+  },
+  "header": {
+    "kicker": "Archives des films",
+    "title": "Poké",
+    "accent": "dex",
+    "blurb": "Tous les films Pokémon, de Mewtwo contre-attaque à Détective Pikachu en prises de vues réelles et ce qui arrive ensuite : les affiches, les Pokémon à l’affiche et qui est qui."
+  },
+  "credit": "Les années de sortie, les lieux et les personnages sont vérifiés sur <bulba>Bulbapedia</bulba>. L’année sous chaque affiche est celle de la première sortie.",
+  "ld": {
+    "pokedex": "Pokédex",
+    "movies": "Films",
+    "list": "Films Pokémon"
+  },
+  "era": {
+    "original": "Série originale",
+    "advanced": "Advanced Generation",
+    "dp": "Diamant et Perle",
+    "bw": "Best Wishes",
+    "xy": "XY",
+    "modern": "Depuis 2017",
+    "live-action": "Live-action",
+    "coming-soon": "Prochainement"
+  },
+  "eraOf": {
+    "original": "Époque de la série originale",
+    "advanced": "Époque Advanced Generation",
+    "dp": "Époque Diamant et Perle",
+    "bw": "Époque Best Wishes",
+    "xy": "Époque XY",
+    "modern": "Depuis 2017",
+    "live-action": "Époque live-action",
+    "coming-soon": "Prochainement"
+  },
+  "kicker": "Film {n} · {era}",
+  "years": {
+    "japan": "Japon {year}",
+    "us": "États-Unis {year}",
+    "join": "{a} · {b}",
+    "coming": "Sortie en {year}"
+  },
+  "related": {
+    "trilogy": "La trilogie {trilogy}",
+    "other": "Films liés",
+    "modern": "D’autres films depuis 2017",
+    "era": {
+      "original": "D’autres films de la série originale",
+      "advanced": "D’autres films de l’époque Advanced Generation",
+      "dp": "D’autres films de l’époque Diamant et Perle",
+      "bw": "D’autres films de l’époque Best Wishes",
+      "xy": "D’autres films de l’époque XY",
+      "modern": "D’autres films depuis 2017",
+      "live-action": "D’autres films de l’époque live-action",
+      "coming-soon": "D’autres films à venir"
+    }
+  },
+  "film": {
+    "metaTitle": "{title} ({year}) — Film Pokémon",
+    "metaTitleSoon": "{title} (sortie en {year}) — Film Pokémon",
+    "description": "{summary} Les Pokémon à l’affiche, les personnages et leurs partenaires.",
+    "descriptionSetting": "{summary} Les Pokémon à l’affiche, les personnages et leurs partenaires, et le lieu de l’action.",
+    "socialTitle": "{title} · Pokédex PokéIQ",
+    "allMovies": "Tous les films",
+    "poster": "Affiche de {title}",
+    "soon": "Prochainement",
+    "featured": "Pokémon à l’affiche",
+    "featuredSub": "Touche-en un pour voir sa fiche Pokédex",
+    "characters": "Personnages",
+    "charactersSub": "Héros, invités et méchants",
+    "role": {
+      "hero": "Héros",
+      "guest": "Invité",
+      "villain": "Méchant"
+    },
+    "with": "avec {name}",
+    "related": "Liés"
+  }
+}

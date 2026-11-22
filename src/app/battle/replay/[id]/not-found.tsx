@@ -3,7 +3,7 @@ import { Clapperboard, FileUp, Radio } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { serverT } from "@/i18n/server";
-import battlePages from "@/messages/battle-pages";
+import battlePages from "@/messages/battle-tools-pages";
 
 /** A replay that doesn't exist, was never saved, or isn't available to this viewer. */
 export default function ReplayNotFound() {

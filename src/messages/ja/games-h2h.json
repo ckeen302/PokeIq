@@ -1,0 +1,22 @@
+{
+  "slotFilled": "{which, select, a {1匹目} other {2匹目}}のポケモン：{name}。変更する",
+  "slotEmpty": "{which, select, a {1匹目} other {2匹目}}のポケモンを選ぶ",
+  "searchBelow": "下で検索",
+  "tapToPick": "タップして選ぶ",
+  "vs": "VS",
+  "placeholderA": "1匹目のポケモンを検索…",
+  "placeholderB": "ライバルを検索…",
+  "searchA": "1匹目のポケモンを検索",
+  "searchB": "2匹目のポケモンを検索",
+  "list": "ポケモン",
+  "tapOne": "またはタップで選ぶ",
+  "tapRival": "またはライバルをタップ",
+  "event": "種目",
+  "eventGroup": "種目",
+  "pickTwo": "ポケモンを2匹選ぼう",
+  "pickEvent": "種目を選ぼう",
+  "pickDifferent": "ちがうポケモンを2匹選ぼう",
+  "failed": "ポケモンを読み込めませんでした。接続を確認して、もう一度お試しください。",
+  "close": "閉じる",
+  "title": "1対1"
+}

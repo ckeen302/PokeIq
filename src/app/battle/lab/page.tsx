@@ -5,9 +5,10 @@ import { BattleHeader } from "@/components/battle/BattleHeader";
 import { BattleLab } from "@/components/battle/lab/BattleLab";
 import { ClientMessages } from "@/i18n/ClientMessages";
 import { serverT } from "@/i18n/server";
-import battlePages from "@/messages/battle-pages";
+import battlePages from "@/messages/battle-tools-pages";
 import battleTeams from "@/messages/battle-teams";
 import battleTerms from "@/messages/battle-terms";
+import battlePickers from "@/messages/battle-pickers";
 
 export function generateMetadata(): Metadata {
   const t = serverT(battlePages);
@@ -26,7 +27,7 @@ export default function LabPage() {
       <BattleHeader crumb={t("lab.crumb")} title={t("lab.heading")} accent={t("lab.accent")}>
         {t("lab.intro")}
       </BattleHeader>
-      <ClientMessages namespaces={[battleTeams, battleTerms]}>
+      <ClientMessages namespaces={[battleTeams, battleTerms, battlePickers]}>
         <BattleLab />
       </ClientMessages>
     </div>

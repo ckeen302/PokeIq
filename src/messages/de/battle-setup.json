@@ -1,0 +1,72 @@
+{
+  "fourCpu": {
+    "freeforall": "Drei Computer-Trainer, jeder für sich.",
+    "multi": "Ein Computer-Partner an deiner Seite gegen zwei Computer-Trainer."
+  },
+  "opponents": {
+    "cpu": { "title": "Computer", "blurb": "Kämpfe sofort gegen einen Computergegner." },
+    "match": { "title": "Gegner finden", "blurb": "Triff auf einen Trainer, der dasselbe Format sucht, und kämpfe live." },
+    "pvp": { "title": "Ein Freund", "blurb": "Hol dir einen Einladungslink und kämpft live, mit Zug-Timer." }
+  },
+  "shortGen": "Gen {gen}",
+  "quickNoteCustom": "Zufallskampf-Sets aus Gen {gen}, gegen deine Regeln geprüft.",
+  "quickNoteFormat": "Zufallskampf-Sets, die in {format} erlaubt sind.",
+  "nameRejected": "Wähle einen anderen Namen.",
+  "startFailed": "Der Kampf konnte nicht starten.",
+  "start": {
+    "cpu": "Kampf starten",
+    "match": "Gegner finden",
+    "challenge": "{name} herausfordern",
+    "pvp": "Kampf erstellen"
+  },
+  "opponent": "Gegner",
+  "format": "Format",
+  "random": "Zufall",
+  "yourTeam": "Dein Team",
+  "doubles": "Doppel. ",
+  "bringTeam": "Bring ein Team mit: gespeichert, hier gebaut oder ein Schnellteam.",
+  "customRules": "Eigene Regeln",
+  "gens": "Gen 1–9",
+  "groupTitle": "Dreier und vier Trainer",
+  "groupFour": "Vier Trainer, je ein Pokémon im Feld. Bring ein Team mit oder nimm ein Schnellteam.",
+  "groupThree": "Drei Pokémon pro Seite. Bring ein Team mit oder nimm ein Schnellteam.",
+  "frontier": "Lust auf eine Siegesserie? Leih dir ein Team in der <factory>Kampffabrik</factory> oder erklimm den <tower>Duellturm</tower>.",
+  "cpuLevel": "Computerstärke",
+  "heading": {
+    "cpu": "Gegen den Computer",
+    "match": "Gegen jeden",
+    "pvp": "Gegen einen Freund"
+  },
+  "summary": {
+    "cpuFour": "Computer: {level}. {four} {teams, select, random {Zufallsteams für alle.} other {Jeder bringt sein eigenes Team mit.}}",
+    "cpu": "Computer: {level}. {teams, select, random {Zufallsteams für euch beide.} other {Er bringt sein eigenes Team mit.}}",
+    "matchFour": "Du triffst auf den nächsten Trainer, der {format} sucht; der Computer übernimmt die anderen beiden Plätze.{multi, select, yes { Du und dein Gegner bekommt je einen Computer-Partner.} other {}} Ungewertet, wie auf Showdown.",
+    "match": "Du triffst auf den nächsten Trainer, der {format} sucht, und der Kampf beginnt sofort.{teams, select, random { Die Teams sind zufällig.} other { Jeder bringt sein eigenes Team mit.}}",
+    "challenge": "{name} bekommt deine Herausforderung sofort (und du bekommst den Link auch). Der Kampf beginnt, sobald ihr beide bereit seid.",
+    "pvpFour": "Du bekommst einen Link für bis zu drei Freunde; freie Plätze kann der Computer übernehmen. Ungewertet, wie auf Showdown.",
+    "pvp": "Du bekommst einen Link zum Verschicken. Der Kampf beginnt, sobald ihr beide bereit seid."
+  },
+  "nameLabel": "Dein Trainername",
+  "namePlaceholder": "Trainername",
+  "ranked": "Gewertet",
+  "rankedSoon": "Gewertete Kämpfe starten bald.",
+  "rankedAccount": "Gewertete Kämpfe brauchen ein Konto, damit deine Wertung dich begleitet.",
+  "rankedHint": "Nach Wertung auf der Rangliste gepaart. Aufgeben oder Verlassen zählt als Niederlage.",
+  "signIn": "<link>Melde dich an</link>, um gewertet zu spielen.",
+  "unrated": "Ohne Wertung: Du startest bei 1000 Elo (1500 ± 350 Glicko-2).",
+  "ladder": "Rangliste",
+  "watch": "Jeder darf zuschauen",
+  "watchHint": "Unter Live zuschauen anzeigen. Aus: Nur wer den Link hat, kann zuschauen.",
+  "timer": "Zug-Timer",
+  "timerHint": "Aus: Jeder von euch kann ihn im Kampf starten.",
+  "timeout": "Zeit abgelaufen = verloren",
+  "timeoutHint": "An, wie auf Showdown: Läuft deine Zeit ab, verlierst du (Formate mit VGC-Timer machen einen Standardzug, solange du noch Zeit übrig hast). Aus: Der Timer wählt eine Attacke für dich, und erst ein zweites Zeitlimit in Folge bedeutet die Niederlage.",
+  "searchingRanked": "Suche gewerteten Gegner…",
+  "searching": "Suche Gegner…",
+  "cancel": "Abbrechen",
+  "whyName": "Gib einen Trainernamen ein, um zu starten.",
+  "whyTeam": "Wähle ein Team oder ein Schnellteam, um zu starten.",
+  "leaving": "Wenn du diese Seite verlässt oder den Tab schließt, endet die Suche.",
+  "playNow": "Jetzt spielen · {format}",
+  "custom": "Eigene"
+}

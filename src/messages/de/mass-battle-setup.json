@@ -1,0 +1,212 @@
+{
+  "group": "Gruppe",
+  "members": "{detail} · {n} Pokémon",
+  "beat": "…besiegen",
+  "howMany": "Wie viele …",
+  "pokemonN": "Pokémon {n}",
+  "each": "Je",
+  "count": "Anzahl",
+  "setOf": "Set von {name}",
+  "remove": "{name} entfernen",
+  "loadingSets": "Sets werden geladen …",
+  "addPokemon": "Pokémon",
+  "addGroup": "Gruppe",
+  "upTo": "Bis zu {n} Zeilen",
+  "formation": "Formation",
+  "spacing": "Abstand",
+  "targets": "Ziele",
+  "stance": "Haltung",
+  "spreadMoves": "Flächen-Attacken",
+  "title": "Kampf einrichten",
+  "kind": "Art des Kampfes",
+  "tabAsk": "Wie viele?",
+  "tabArmy": "Armee gegen Armee",
+  "shared": "Die Armee wird gleichmäßig auf ihre Zeilen verteilt (eine Gruppe verteilt sie auf alle ihre Arten).",
+  "blue": "Blaue Armee",
+  "red": "Rote Armee",
+  "level": "Level",
+  "arena": "Arena",
+  "advanced": "Erweitert",
+  "advancedHint": "Sets, Wetter und Feld, Taktik jeder Seite, Wiedergabe",
+  "advancedHintAsk": "Sets, Wetter und Feld, Taktik jeder Seite, Löser, Wiedergabe",
+  "setHint": "Öffne das <i></i> einer Zeile für ihr Set: Level, Attacken, Fähigkeit, Item, Wesen, EVs und DVs, Tera-Typ.",
+  "setIcon": "Set",
+  "field": "Schlachtfeld",
+  "weather": "Wetter",
+  "terrain": "Feld",
+  "time": "Tageszeit",
+  "heldItems": "Getragene Items",
+  "none": "Keine",
+  "randomItems": "Items der Zufallskämpfe",
+  "rules": "Regeln",
+  "pp": "Echte AP",
+  "ff": "Eigenbeschuss",
+  "rulesHint": "Echte AP: Attacken gehen aus wie in den Spielen (Erzwinger kostet zwei), dann Verzweifler. Eigenbeschuss: Erdbeben, Surfer und Explosion treffen auch Partner, und Blitzfänger und Sturmsog ziehen die Attacken eines Partners auf sich.",
+  "theArmy": "Die Armee ({names})",
+  "theBoss": "Der Boss ({names})",
+  "answer": "Die Antwort",
+  "winsNeeded": "Nötige Siege",
+  "half": "Die Hälfte (50 %)",
+  "nine": "Neun von zehn (90 %)",
+  "perSize": "Kämpfe pro Größe",
+  "playback": "Wiedergabe",
+  "speed": "Tempo",
+  "camera": "Kamera",
+  "slowmo": "Zeitlupe bei großen Treffern",
+  "numbers": "Schadenszahlen",
+  "hud": "HUD",
+  "find": "Herausfinden",
+  "fight": "Kampf!",
+  "presets": "Fertige Kämpfe",
+  "presetsAside": "Jeder mit eigenem Link",
+  "type": "Typ",
+  "anyType": "Jeder Typ",
+  "andType": "Und Typ",
+  "generation": "Generation",
+  "any": "Alle",
+  "gen": "Generation {n}",
+  "legendaries": "Legendäre",
+  "leaveOut": "Weglassen",
+  "include": "Einschließen",
+  "onlyLeg": "Nur legendäre",
+  "onlyMyth": "Nur mysteriöse",
+  "both": "Legendäre und mysteriöse",
+  "feOnly": "Nur voll entwickelte",
+  "matches": "{label}: <b>{n}</b> Pokémon",
+  "matchesAll": "{label}: <b>{n}</b> Pokémon, {total} insgesamt",
+  "addTheGroup": "Gruppe hinzufügen",
+  "groupLabel": "{name} ({detail})",
+  "detail": {
+    "legendary": "legendär",
+    "legendaryMythical": "legendär oder mysteriös",
+    "mythical": "mysteriös",
+    "fe": "voll entwickelt",
+    "gen": "Generation {n}",
+    "noLeg": "ohne Legendäre",
+    "all": "alle"
+  },
+  "labels": {
+    "formation": {
+      "line": "Linie",
+      "wedge": "Keil",
+      "swarm": "Schwarm",
+      "surround": "Umzingeln"
+    },
+    "arena": {
+      "plains": "Ebene",
+      "volcano": "Vulkan",
+      "snowfield": "Schneefeld",
+      "colosseum": "Kolosseum"
+    },
+    "spacing": {
+      "tight": "Eng",
+      "normal": "Normal",
+      "loose": "Locker"
+    },
+    "targeting": {
+      "nearest": "Nächster",
+      "weakest": "Schwächster in der Nähe",
+      "strongest": "Stärkster in der Nähe",
+      "boss": "Auf den Boss"
+    },
+    "stance": {
+      "charge": "Angreifen",
+      "hold": "Linie halten"
+    },
+    "spread": {
+      "auto": "Nutzen",
+      "never": "Meiden"
+    },
+    "weather": {
+      "none": "Klar",
+      "sun": "Grelles Sonnenlicht",
+      "rain": "Regen",
+      "sand": "Sandsturm",
+      "snow": "Schnee"
+    },
+    "terrain": {
+      "none": "Keins",
+      "electric": "Elektrofeld",
+      "grassy": "Grasfeld",
+      "psychic": "Psychofeld",
+      "misty": "Nebelfeld"
+    },
+    "time": {
+      "day": "Tag",
+      "dusk": "Abend",
+      "night": "Nacht"
+    },
+    "camera": {
+      "director": "Regie",
+      "free": "Frei",
+      "boss": "Boss folgen",
+      "top": "Von oben"
+    },
+    "ev": {
+      "random": "Zufallskämpfe (85 EVs, 31 DVs)",
+      "offence": "Max. Offensive",
+      "bulk": "Max. Defensive"
+    },
+    "evShort": {
+      "random": "Je 85",
+      "offence": "Max. Offensive",
+      "bulk": "Max. Defensive"
+    },
+    "itemGroup": {
+      "Damage": "Schaden",
+      "Type boosts": "Typ-Verstärker",
+      "Defence": "Defensive",
+      "Recovery": "Heilung",
+      "Speed and accuracy": "Initiative und Genauigkeit",
+      "Stat boosts": "Werte-Verstärker"
+    }
+  },
+  "picker": {
+    "pick": "Pokémon wählen",
+    "search": "Pokémon suchen",
+    "noAttacks": "Keine Angriffe",
+    "none": "Kein Pokémon mit diesem Namen",
+    "form": {
+      "mega": "Mega",
+      "alola": "Alola",
+      "galar": "Galar",
+      "hisui": "Hisui",
+      "paldea": "Paldea"
+    }
+  },
+  "set": {
+    "level": "Level",
+    "evs": "EVs und DVs",
+    "nature": "Wesen",
+    "tera": "Tera-Typ",
+    "noTera": "Kein Tera",
+    "setsTera": "{type} (aus dem Set)",
+    "ability": "Fähigkeit",
+    "default": "{name} (Standard)",
+    "item": "Getragenes Item",
+    "megaStone": "Sein Mega-Stein",
+    "none": "Keins",
+    "itsSet": "{name} (aus seinem Set)",
+    "itemEvery": "Getragenes Item (jede Art)",
+    "eachRandom": "Das Zufallskampf-Item jedes Pokémon",
+    "moves": "Attacken",
+    "movesDefaultSet": "Attacken (Standard: sein Zufallskampf-Set)",
+    "movesDefaultLevel": "Attacken (Standard: bis Level {n} erlernt)",
+    "defaultMoves": "Standard-Attacken",
+    "move": "Attacke {n}",
+    "rbSet": "Zufallskampf-Set",
+    "learnt": "Bis Level {n} erlernt",
+    "other": "Seine anderen legalen Attacken",
+    "loading": "Attacken werden geladen …",
+    "noMoves": "Es hat keine Angriffs-Attacke, die der Kampf spielt: Wähle eine.",
+    "stats": "Level {level} · KP {hp} · Ang {atk} · Vert {def} · SpA {spa} · SpV {spd} · Init {spe}",
+    "statShort": {
+      "atk": "Ang",
+      "def": "Vert",
+      "spa": "SpA",
+      "spd": "SpV",
+      "spe": "Init"
+    },
+    "teraOf": "Tera {type}"
+  }
+}

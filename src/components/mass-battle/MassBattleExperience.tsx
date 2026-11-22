@@ -35,6 +35,12 @@ import { factsOfRow, SetupPanel } from "./SetupPanel";
 import type { PickerMon } from "./PokemonPicker";
 import { STAGE_POSTERS, StagePoster } from "@/components/lab/StagePoster";
 import { isMuted, onMuteChange, setMuted } from "@/lib/sound";
+import { useT } from "@/i18n/client";
+import { localNum } from "@/lib/games/events";
+import mbCopy from "@/messages/mass-battle-copy";
+import mbHow from "@/messages/mass-battle-how";
+import mbUi from "@/messages/mass-battle-ui";
+import { useMbNames } from "./names";
 
 const MakeBattleVideo = lazy(() => import("./MakeBattleVideo"));
 
@@ -130,6 +136,9 @@ const SLOW_MS = 18;
 
 const damp = (cur: number, target: number, rate: number, dt: number) => target + (cur - target) * Math.exp(-rate * dt);
 
+/** The scene's own progress steps (English) → the messages. */
+const PROGRESS: Record<string, "preparing" | "deploying" | "warming" | "ready"> = { "Preparing the battlefield": "preparing", "Deploying armies": "deploying", "Warming up": "warming", Ready: "ready" };
+
 export function MassBattleExperience({ list, presets, initial, playback: initialPlayback }: { list: PickerMon[]; presets: PresetCard[]; initial: Initial; playback: PlaybackSpec }) {
   const stageRef = useRef<HTMLDivElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
@@ -167,6 +176,11 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
   /** The top-down camera: where it looks (follows the battle until panned) and how high. */
   const topRef = useRef({ tx: 0, tz: 0, dist: 80, yaw: 0, follow: true });
 
+  const t = useT(mbUi);
+  const c = useT(mbCopy);
+  const th = useT(mbHow);
+  const nm = useMbNames();
+  const lc = t.locale;
   const [phase, setPhaseState] = useState<Phase>("idle");
   const [battle, setBattle] = useState<BattleDesc | null>(null);
   const [progress, setProgress] = useState<{ p: number; label: string }>({ p: 0, label: "" });
@@ -237,6 +251,20 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
     return { id: (s) => bySlug.get(s), slug: (id) => byId.get(id)?.slug };
   }, [list, byId]);
   const nameOf = useCallback((id: number) => byId.get(id)?.name ?? "?", [byId]);
+  /** A roster species' name as the page shows it (the pickers' list carries the language's names). */
+  const spName = useCallback((x: { id: number; name: string } | undefined) => (x ? byId.get(x.id)?.name ?? x.name : ""), [byId]);
+  /** A side's name from its rows, in the page's language. */
+  const armyName = useCallback((army: Parameters<typeof armyLabel>[0]) => armyLabel(army, nameOf, undefined, c, lc === "en" ? undefined : nm.type), [nameOf, c, lc, nm]);
+  /** A form's label over a unit ("Blade Forme", "Fire type") in the page's language. */
+  const formText = useCallback((label: string) => {
+    if (lc === "en" || !label) return label;
+    const m = /^(\w+) type$/.exec(label);
+    if (m) return t("forms.type", { type: nm.type(m[1]) });
+    const k = label.toLowerCase().replace(/[^a-z]/g, "") as keyof typeof mbUi.en.forms;
+    return k in mbUi.en.forms && k !== "type" ? t(`forms.${k as "bladeforme"}`) : label;
+  }, [lc, t, nm]);
+  const noAnswerRef = useRef<string | null>(null);
+  const progressLabel = useCallback((label: string) => (PROGRESS[label] ? t(`progress.${PROGRESS[label]}`) : label), [t]);
 
   useEffect(() => {
     setMutedState(isMuted());
@@ -288,7 +316,7 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
     choreo.budget = qualityRef.current === "low" || qualityRef.current === "draft" ? 24 : 70;
     choreoRef.current = choreo;
     const bossSide = ready.start[0] <= 3 && ready.start[1] >= 4 ? 0 : ready.start[1] <= 3 && ready.start[0] >= 4 ? 1 : -1;
-    const name = (i: number) => speciesRef.current[sp[i]]?.name ?? "";
+    const name = (i: number) => spName(speciesRef.current[sp[i]]);
     choreo.hooks = {
       hit: (type, power, crit) => audioRef.current?.hit(type, power, crit),
       recall: () => audioRef.current?.recall(),
@@ -304,12 +332,12 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
         const form = forms?.forms[n.value]?.label;
         const named = !!form && forms?.rule !== "protean";
         if (n.kind === NOTE.FIELD || n.kind === NOTE.ABILITY) {
-          const line = fieldLine(n.kind, n.value, n.unit >= 0 ? name(n.unit) : "");
+          const line = fieldLine(n.kind, n.value, n.unit >= 0 ? name(n.unit) : "", t);
           // A whole army coming in with Intimidate would flood the feed: the boss's (or a lone one's) only.
           if (line && (n.kind === NOTE.FIELD || n.unit < 0 || view.side[n.unit] === bossSide || ready.start[view.side[n.unit]] <= 3)) pushFeed(line, n.unit >= 0 && view.side[n.unit] === 1 ? "b" : "a");
         }
         const moveName = n.kind === NOTE.MOVE && n.unit >= 0 ? ready.moves[sp[n.unit]]?.[n.value]?.name : undefined;
-        const label = noteLabel(n.kind, n.value, moveName ?? form);
+        const label = noteLabel(n.kind, n.value, moveName ? nm.move(moveName) : form ? formText(form) : form, t);
         if (label && n.unit >= 0 && view.draw[n.unit]) numbersRef.current?.spawnText(n.x, y, n.z, label.text, label.cls, performance.now() / 1000, view.side[n.unit] === bossSide || named || (n.kind === NOTE.MOVE && ready.start[view.side[n.unit]] <= 3), named);
       },
       blast: (x, z, h) => {
@@ -321,17 +349,17 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
         const actorName = name(a.actor);
         const tone: FeedItem["tone"] = view.side[a.actor] === 0 ? "a" : "b";
         if (a.bossKo) {
-          pushFeed(bossDownLine(actorName, a.move, name(a.target)), "gold");
+          pushFeed(bossDownLine(actorName, nm.move(a.move), name(a.target), c), "gold");
           d.offer({ kind: "ko-boss", x: a.x, z: a.z, h: a.h, power: 1 });
           audioRef.current?.boom(1);
         } else if (a.kos >= 3) {
-          pushFeed(multiKoLine(actorName, a.move, a.kos, name(a.target)), tone);
+          pushFeed(multiKoLine(actorName, nm.move(a.move), a.kos, name(a.target), c), tone);
           if (a.kos >= 5) {
             d.offer({ kind: "multi", x: view.x[a.actor], z: view.z[a.actor], h: heights[sp[a.actor]], power: Math.min(1, a.kos / 20) });
             audioRef.current?.boom(Math.min(1, a.kos / 15));
           }
         } else if (a.crit && a.bossHit) {
-          pushFeed(critLine(actorName, a.move, name(a.target)), "gold");
+          pushFeed(critLine(actorName, nm.move(a.move), name(a.target), c), "gold");
           d.offer({ kind: "crit", x: a.x, z: a.z, h: a.h, power: 0.6 });
         }
         if (a.bossHit && a.share > 0.3) d.offer({ kind: "big", x: a.x, z: a.z, h: a.h, power: a.share });
@@ -342,7 +370,7 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
     view.onLaunch = (h) => choreo.launch(h);
     view.onHit = (h) => choreo.hit(h);
     view.onNote = (n) => choreo.note(n);
-  }, [pushFeed]);
+  }, [pushFeed, c, formText, nm, spName, t]);
 
   // ---- Deploying a battle.
   // The context came back (or never did): a fresh scene, and the battle on the field deployed on it again.
@@ -375,10 +403,10 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
     battleRef.current = b;
     setBattle(b);
     setPhase("deploying");
-    setProgress({ p: 0, label: "Deploying armies" });
+    setProgress({ p: 0, label: t("deploying") });
     try {
       const scene = await ensureScene();
-      if (!scene) throw new Error("This browser can't draw the 3D battle (WebGL is off).");
+      if (!scene) throw new Error(t("noGl"));
       const roster = await getRoster();
       if (ac.signal.aborted) return;
       const slice = sliceRoster(roster, specIds(b.spec));
@@ -415,7 +443,7 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
       }
       const env = envOf(b.spec);
       const forms = await formFigures(species, formsRef.current);
-      await scene.deploy({ arena: b.spec.arena, radius: ready.arena, species, bosses, view, weather: env.weather ?? ready.field?.weather, time: env.time ?? ready.field?.time, terrain: env.terrain ?? ready.field?.terrain, forms }, (p, label) => setProgress({ p, label }), ac.signal);
+      await scene.deploy({ arena: b.spec.arena, radius: ready.arena, species, bosses, view, weather: env.weather ?? ready.field?.weather, time: env.time ?? ready.field?.time, terrain: env.terrain ?? ready.field?.terrain, forms }, (p, label) => setProgress({ p, label: progressLabel(label) }), ac.signal);
       if (ac.signal.aborted) return;
       const aspect = hostRef.current ? hostRef.current.clientWidth / Math.max(1, hostRef.current.clientHeight) : 1.6;
       directorRef.current.reset(summarize(view, heightsRef.current, "deploy", aspect));
@@ -467,7 +495,7 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
         let hp = 0, max = 0, bi = -1;
         for (let i = 0; i < view.n; i++) if (view.side[i] === s) { hp += view.hp[i]; max += view.ready.maxHp[view.sp[i]]; if (bi < 0) bi = i; }
         if (phaseRef.current === "ready" || phaseRef.current === "deploying") hp = max;
-        boss = { name: speciesRef.current[view.sp[bi]]?.name ?? "", hp, max, side: s };
+        boss = { name: spName(speciesRef.current[view.sp[bi]]), hp, max, side: s };
       }
     }
     const h: Hud = { left: [...view.left] as [number, number], start: [...start] as [number, number], boss, t: view.t, shot: camRef.current === "free" ? "free" : directorRef.current.shot };
@@ -480,14 +508,15 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
     if (!b) return;
     const o = end.outcome;
     const sp = view.sp;
-    const mvp = end.stats.mvp >= 0 && end.stats.mvpKos >= 2 ? `${speciesRef.current[sp[end.stats.mvp]]?.name} · ${fmt(end.stats.mvpKos)} KOs` : null;
+    const mvp = end.stats.mvp >= 0 && end.stats.mvpKos >= 2 ? t("mvp", { name: `${lc === "en" ? speciesRef.current[sp[end.stats.mvp]]?.name : spName(speciesRef.current[sp[end.stats.mvp]])}`, n: fmt(end.stats.mvpKos, lc) }) : null;
     const bh = end.stats.big;
-    const big = bh ? `${possessive(speciesRef.current[sp[bh.actor]]?.name ?? "")} ${view.ready.moves[sp[bh.actor]][bh.slot]?.name ?? "hit"}: ${fmt(bh.damage)} damage${bh.crit ? " (critical hit)" : ""}` : null;
-    setFinal({ winner: o.winner, title: resultTitle(o.winner, b.names, o.left), line: resultLine(o, b.names), mvp, big, seconds: o.seconds, left: [o.left[0], o.left[1]] });
+    const bigMove = bh ? view.ready.moves[sp[bh.actor]][bh.slot]?.name : undefined;
+    const big = bh ? t(bh.crit ? "bigCrit" : "big", { pos: lc === "en" ? possessive(speciesRef.current[sp[bh.actor]]?.name ?? "") : spName(speciesRef.current[sp[bh.actor]]), move: bigMove ? nm.move(bigMove) : t("hit"), n: fmt(bh.damage, lc) }) : null;
+    setFinal({ winner: o.winner, title: resultTitle(o.winner, b.names, o.left, c), line: resultLine(o, b.names, c), mvp, big, seconds: o.seconds, left: [o.left[0], o.left[1]] });
     if (end.post && !partialRef.current) setPost(end.post);
     audioRef.current?.swell();
     track("mass_battle_end", { preset: b.presetId ?? "custom", winner: o.winner });
-  }, []);
+  }, [c, lc, nm, spName, t]);
 
   // ---- The render loop.
   useEffect(() => {
@@ -652,11 +681,12 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
     const el = dmgLayerRef.current;
     if (!el) return;
     numbersRef.current = new DamageNumbers(el);
+    numbersRef.current.words = { miss: t("notes.miss"), immune: t("notes.immune"), locale: lc };
     return () => {
       numbersRef.current?.dispose();
       numbersRef.current = null;
     };
-  }, []);
+  }, [lc, t]);
   useEffect(() => {
     if (numbersRef.current) numbersRef.current.enabled = numbersOn;
     if (!numbersOn) numbersRef.current?.clear();
@@ -688,26 +718,26 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
   /** The answer battle of a question: `n` of its army (shared by its rows and groups) against the boss. */
   const answerBattle = useCallback((q: Question, answer: { n: number; spread: number; wins: number; runs: number; pure?: PureAnswer | null }, seed: number, hook: string, presetId: string | null): BattleDesc => ({
     spec: questionSpec(expandQuestion(q, facts), answer.n, seed),
-    names: [armyLabel(q.army, nameOf), armyLabel(q.boss, nameOf)],
+    names: [armyName(q.army), armyName(q.boss)],
     hook,
     question: q,
     answer: { n: answer.n, spread: answer.spread, wins: answer.wins, runs: answer.runs, pure: answer.pure ?? null },
     presetId,
     playback: playbackRef.current,
-  }), [facts, nameOf]);
+  }), [facts, armyName]);
 
   const presetBattle = useCallback((p: PresetCard): BattleDesc => {
     if (p.kind === "howmany" && p.question && p.answer) return answerBattle(p.question, p.answer, p.answer.seed, p.hook, p.id);
-    const names = p.labels ?? ([armyLabel(p.spec.sides[0], nameOf), armyLabel(p.spec.sides[1], nameOf)] as [string, string]);
+    const names = p.labels ?? ([armyName(p.spec.sides[0]), armyName(p.spec.sides[1])] as [string, string]);
     return { spec: expandSpec(p.spec, facts), source: p.spec, names, hook: p.hook, question: null, answer: null, presetId: p.id, bonus: p.question && p.answer ? { question: p.question, answer: p.answer } : null, playback: playbackRef.current };
-  }, [answerBattle, facts, nameOf]);
+  }, [answerBattle, facts, armyName]);
 
   const battleOf = useCallback((source: BattleSpec): BattleDesc => {
     const spec = expandSpec(source, facts);
-    const names = [armyLabel(source.sides[0], nameOf), armyLabel(source.sides[1], nameOf)] as [string, string];
+    const names = [armyName(source.sides[0]), armyName(source.sides[1])] as [string, string];
     const total = (s: 0 | 1) => spec.sides[s].units.reduce((a, u) => a + u.count, 0);
-    return { spec, source, names, hook: `${fmt(total(0))} ${names[0]} vs ${fmt(total(1))} ${names[1]}`, question: null, answer: null, presetId: null, playback: playbackRef.current };
-  }, [facts, nameOf]);
+    return { spec, source, names, hook: t("battleHook", { a: fmt(total(0), lc), nameA: names[0], b: fmt(total(1), lc), nameB: names[1] }), question: null, answer: null, presetId: null, playback: playbackRef.current };
+  }, [facts, armyName, t, lc]);
 
   const replaceUrl = (href: string) => {
     try { window.history.replaceState(null, "", localUrl(href)); } catch { /* sandboxed */ }
@@ -727,8 +757,8 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
     setFinal(null);
     setError(null);
     replaceUrl(`${MASS_BATTLE_PATH}?ask=${encodeQuestion(q, slugs)}${viewParam()}${keepQuality()}`);
-    const names: [string, string] = [armyLabel(q.army, nameOf), armyLabel(q.boss, nameOf)];
-    const hook = questionText(names[0], names[1]);
+    const names: [string, string] = [armyName(q.army), armyName(q.boss)];
+    const hook = questionText(names[0], names[1], c);
     const qx = expandQuestion(q, facts);
     setBattle({ spec: questionSpec(qx, 1, 1), names, hook, question: q, answer: null, presetId: null, playback: playbackRef.current });
     setPhase("solving");
@@ -745,7 +775,8 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
       track("mass_battle_solve", { ms: Math.round(performance.now() - t0), answer: res.answer ?? -1 });
       setSolving(null);
       if (res.answer === null) {
-        setError(noAnswerText(names[0], names[1], SOLVER.maxN));
+        noAnswerRef.current = noAnswerText(names[0], names[1], SOLVER.maxN, c);
+        setError(noAnswerRef.current);
         setPhase("error");
         return;
       }
@@ -762,10 +793,10 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
     } catch (e) {
       if ((e as Error)?.name === "AbortError") return;
       setSolving(null);
-      setError(e instanceof Error ? e.message : "Something went wrong");
+      setError(e instanceof Error ? e.message : t("error"));
       setPhase("error");
     }
-  }, [answerBattle, deploy, ensureScene, facts, nameOf, slugs]);
+  }, [answerBattle, deploy, ensureScene, facts, armyName, slugs, c, t]);
 
   const fight = useCallback((spec: BattleSpec) => {
     audioRef.current ??= createBattleAudio();
@@ -1037,13 +1068,13 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
   const share = async () => {
     const url = shareHref();
     const b = battleRef.current;
-    const text = b?.hook ?? "Pokémon Mass Battle";
+    const text = b?.hook ?? t("shareText");
     if (typeof navigator.share === "function" && window.matchMedia("(pointer: coarse)").matches) {
-      try { await navigator.share({ title: "PokéIQ Mass Battle", text, url }); return; } catch { /* closed */ }
+      try { await navigator.share({ title: t("shareTitle"), text, url }); return; } catch { /* closed */ }
     }
     try {
       await navigator.clipboard.writeText(url);
-      setToast("Link copied");
+      setToast(t("copied"));
     } catch {
       setToast(url);
     }
@@ -1079,7 +1110,7 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
           className="mb-host absolute inset-0 cursor-grab touch-none select-none active:cursor-grabbing"
           data-testid="mb-scene"
           role="application"
-          aria-label="The battle in 3D. Drag to look around, right-drag or shift-drag to move, scroll or pinch to zoom (+ and − keys too); 0 hands the camera back to the director."
+          aria-label={t("scene")}
         />
         {posterFits && <StagePoster src={STAGE_POSTERS.massBattle} gone={posterGone} />}
         <ScenePreload />
@@ -1089,7 +1120,7 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
         <div ref={dmgLayerRef} className="mb-dmg-layer" aria-hidden />
         {fightCue > 0 && phase === "playing" && hudOn && (
           <div key={fightCue} className="mb-fight pointer-events-none absolute inset-0 z-[4] flex items-center justify-center" aria-hidden>
-            <span className="mb-title text-5xl sm:text-7xl">Fight!</span>
+            <span className="mb-title text-5xl sm:text-7xl">{t("fight")}</span>
           </div>
         )}
 
@@ -1100,16 +1131,16 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
 
         {drawn && (phase === "playing" || phase === "ready") && (
           <div className="pointer-events-none absolute bottom-16 left-3 z-[3] rounded bg-black/55 px-2 py-1 font-pixel text-[9px] uppercase tracking-wider text-white/80" data-testid="mb-drawn">
-            Showing {fmt(drawn.drawn)} of {fmt(drawn.total)} · all {fmt(drawn.total)} fight
+            {t("showing", { drawn: fmt(drawn.drawn, lc), total: fmt(drawn.total, lc) })}
           </div>
         )}
 
         {/* Ready: the question or the matchup, and Start. */}
         {phase === "ready" && b && (
           <div className="absolute inset-x-0 top-[17%] z-[4] flex flex-col items-center gap-4 px-6 text-center sm:top-[16%]">
-            <p className="mb-title max-w-4xl text-3xl sm:text-5xl lg:text-6xl" data-testid="mb-hook">{b.question ? questionText(b.names[0], b.names[1]) : b.hook.replace(/\s*\p{Extended_Pictographic}+$/u, "")}</p>
+            <p className="mb-title max-w-4xl text-3xl sm:text-5xl lg:text-6xl" data-testid="mb-hook">{b.question ? questionText(b.names[0], b.names[1], c) : b.hook.replace(/\s*\p{Extended_Pictographic}+$/u, "")}</p>
             <button type="button" onClick={start} className="mb-go pointer-events-auto inline-flex h-12 items-center gap-2 rounded-lg px-6 font-display text-sm font-bold uppercase tracking-wider" data-testid="mb-start">
-              <Swords className="h-4 w-4" aria-hidden /> {b.question ? "Watch the answer" : "Start the battle"}
+              <Swords className="h-4 w-4" aria-hidden /> {t(b.question ? "watchAnswer" : "start")}
             </button>
           </div>
         )}
@@ -1118,13 +1149,13 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
         {phase === "solving" && b?.question && (
           <div className="absolute inset-0 z-[4] flex flex-col items-center justify-center gap-4 bg-[#05070f]/55 px-6 text-center backdrop-blur-[2px]" data-testid="mb-solving">
             <div className="mb-loader-ball" aria-hidden />
-            <p className="mb-title text-2xl sm:text-5xl">{questionText(b.names[0], b.names[1])}</p>
+            <p className="mb-title text-2xl sm:text-5xl">{questionText(b.names[0], b.names[1], c)}</p>
             <p className="font-display text-sm font-semibold uppercase tracking-wider text-white/85" data-testid="mb-solving-n">
-              {solving ? `Testing ${fmt(solving.n)} ${b.names[0]} · won ${fmt(solving.wins)} of ${fmt(solving.played)}` : "Getting ready"}
+              {solving ? t("testing", { n: fmt(solving.n, lc), name: b.names[0], wins: fmt(solving.wins, lc), played: fmt(solving.played, lc) }) : t("gettingReady")}
             </p>
-            <p className="max-w-md text-xs text-white/60">Every army size plays the same seeded battles, headless, on every spare core of this device.</p>
+            <p className="max-w-md text-xs text-white/60">{t("solverNote")}</p>
             <button type="button" onClick={() => { abortRef.current?.abort(); setPhase("idle"); setSolving(null); }} className={chip}>
-              <X className="h-4 w-4" aria-hidden /> Cancel
+              <X className="h-4 w-4" aria-hidden /> {t("cancel")}
             </button>
           </div>
         )}
@@ -1133,25 +1164,25 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
         {phase === "deploying" && (
           <div className="absolute inset-0 z-[4] flex flex-col items-center justify-center gap-4 bg-[#05070f]/70 px-6 text-center" data-testid="mb-deploying">
             <div className="mb-loader-ball" aria-hidden />
-            <p className="font-display text-lg font-bold uppercase tracking-[0.2em]">{progress.label || "Deploying armies"}</p>
-            <div className="h-2 w-64 max-w-[70vw] overflow-hidden rounded-full bg-white/10" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress.p * 100)} aria-label="Deploying armies">
+            <p className="font-display text-lg font-bold uppercase tracking-[0.2em]">{progress.label || t("deploying")}</p>
+            <div className="h-2 w-64 max-w-[70vw] overflow-hidden rounded-full bg-white/10" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress.p * 100)} aria-label={t("deploying")}>
               <div className="mb-progress h-full rounded-full" style={{ transform: `scaleX(${progress.p})` }} />
             </div>
-            {b && <p className="text-sm text-white/65">{b.question ? questionText(b.names[0], b.names[1]) : b.hook.replace(/\s*\p{Extended_Pictographic}+$/u, "")}</p>}
+            {b && <p className="text-sm text-white/65">{b.question ? questionText(b.names[0], b.names[1], c) : b.hook.replace(/\s*\p{Extended_Pictographic}+$/u, "")}</p>}
           </div>
         )}
 
         {(phase === "idle" || phase === "error") && (
           <div className="absolute inset-0 z-[4] flex flex-col items-center justify-center gap-3 px-6 text-center">
             {!glOk ? (
-              <p className="max-w-md text-white/80">This browser can&apos;t draw the 3D battle. The results of every ready-made battle are listed below.</p>
+              <p className="max-w-md text-white/80">{t("noGlList")}</p>
             ) : error ? (
               <>
-                <p className="mb-title text-2xl sm:text-4xl">{error.startsWith("No army") ? error : "The battle stopped"}</p>
-                {!error.startsWith("No army") && <p className="max-w-md text-sm text-white/70">{error}</p>}
+                <p className="mb-title text-2xl sm:text-4xl">{error === noAnswerRef.current ? error : t("stopped")}</p>
+                {error !== noAnswerRef.current && <p className="max-w-md text-sm text-white/70">{error}</p>}
               </>
             ) : (
-              <p className="font-display text-lg uppercase tracking-wider text-white/70">Pick a battle below</p>
+              <p className="font-display text-lg uppercase tracking-wider text-white/70">{t("pick")}</p>
             )}
           </div>
         )}
@@ -1162,14 +1193,14 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
             <div className="my-auto w-full max-w-lg space-y-3 rounded-2xl border border-white/15 bg-[#0b1226]/90 p-4 text-center shadow-2xl sm:space-y-4 sm:p-7">
               {b.answer && b.question ? (
                 <>
-                  <p className="font-pixel text-[10px] uppercase tracking-[0.2em] text-white/60">{questionText(b.names[0], b.names[1])}</p>
-                  <p className="font-display text-[11px] font-bold uppercase tracking-[0.18em] text-white/60">On the battlefield</p>
-                  <p className="mb-answer -mt-2 text-4xl sm:text-6xl" data-testid="mb-answer"><b>{fmt(b.answer.n)}</b> {b.names[0]}</p>
-                  <p className="font-display text-sm font-semibold uppercase tracking-wider text-white/80" data-testid="mb-spread">{spreadText(b.answer.spread, b.answer.runs)}</p>
-                  <p className="text-xs text-white/55">{winRateText(b.answer.wins, b.answer.runs, b.answer.n)}. This battle: {final.title}</p>
+                  <p className="font-pixel text-[10px] uppercase tracking-[0.2em] text-white/60">{questionText(b.names[0], b.names[1], c)}</p>
+                  <p className="font-display text-[11px] font-bold uppercase tracking-[0.18em] text-white/60">{t("onField")}</p>
+                  <p className="mb-answer -mt-2 text-4xl sm:text-6xl" data-testid="mb-answer"><b>{fmt(b.answer.n, lc)}</b> {b.names[0]}</p>
+                  <p className="font-display text-sm font-semibold uppercase tracking-wider text-white/80" data-testid="mb-spread">{spreadText(b.answer.spread, b.answer.runs, c)}</p>
+                  <p className="text-xs text-white/55">{t("thisBattle", { rate: winRateText(b.answer.wins, b.answer.runs, b.answer.n, c), title: final.title })}</p>
                   <p className="rounded-lg bg-white/5 px-3 py-2 text-sm text-white/80" data-testid="mb-pure">
-                    <span className="font-display text-[11px] font-bold uppercase tracking-[0.18em] text-white/60">Pure battle maths</span>{" "}
-                    {b.answer.pure ? (b.answer.pure.n > 0 ? <><b className="text-white">{fmt(b.answer.pure.n)}</b> ({spreadText(b.answer.pure.spread, b.answer.pure.runs)}), with everyone in reach of everyone</> : <>more than {fmt(SOLVER.pureMaxN)}, with everyone in reach of everyone</>) : <span className="text-white/55">working it out…</span>}
+                    <span className="font-display text-[11px] font-bold uppercase tracking-[0.18em] text-white/60">{t("pure")}</span>{" "}
+                    {b.answer.pure ? (b.answer.pure.n > 0 ? t.rich("pureN", { n: fmt(b.answer.pure.n, lc), spread: spreadText(b.answer.pure.spread, b.answer.pure.runs, c), b: (x) => <b className="text-white">{x}</b> }) : t("pureMore", { n: fmt(SOLVER.pureMaxN, lc) })) : <span className="text-white/55">{t("working")}</span>}
                   </p>
                 </>
               ) : (
@@ -1182,13 +1213,13 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
                       onClick={() => {
                         const bo = b.bonus!;
                         const q = bo.question;
-                        void deploy(answerBattle(q, bo.answer, bo.answer.seed, questionText(armyLabel(q.army, nameOf), armyLabel(q.boss, nameOf)), null), true);
+                        void deploy(answerBattle(q, bo.answer, bo.answer.seed, questionText(armyName(q.army), armyName(q.boss), c), null), true);
                       }}
                       className="w-full rounded-lg border border-[#ffd84a]/40 bg-[#ffd84a]/10 px-3 py-2 text-sm text-[#ffe680] hover:bg-[#ffd84a]/15"
                       data-testid="mb-bonus"
                     >
-                      <span className="block">{questionText(armyLabel(b.bonus.question.army, nameOf), armyLabel(b.bonus.question.boss, nameOf))} <b>{fmt(b.bonus.answer.n)}</b> ({spreadText(b.bonus.answer.spread, b.bonus.answer.runs)})</span>
-                      <span className="block font-display text-xs font-bold uppercase tracking-wider">Watch it →</span>
+                      <span className="block">{questionText(armyName(b.bonus.question.army), armyName(b.bonus.question.boss), c)} <b>{fmt(b.bonus.answer.n, lc)}</b> ({spreadText(b.bonus.answer.spread, b.bonus.answer.runs, c)})</span>
+                      <span className="block font-display text-xs font-bold uppercase tracking-wider">{t("watchIt")}</span>
                     </button>
                   )}
                 </>
@@ -1196,28 +1227,28 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
               {showStats && post ? (
                 <PostBattleStats
                   post={post}
-                  species={speciesRef.current.map((s) => s.name)}
+                  species={speciesRef.current.map((s) => spName(s))}
                   sides={b.names}
-                  move={(f, slot) => viewRef.current?.ready.moves[f]?.[slot]?.name ?? "a move"}
+                  move={(f, slot) => { const m = viewRef.current?.ready.moves[f]?.[slot]?.name; return m ? nm.move(m) : t("aMove"); }}
                   start={viewRef.current ? [viewRef.current.ready.start[0], viewRef.current.ready.start[1]] : [1, 1]}
                   onReplay={replayFrom}
                   onKillCam={post.bossKoTick >= 0 ? killCam : null}
                 />
               ) : (
               <dl className="grid grid-cols-2 gap-2 text-left text-xs">
-                <div className="rounded-lg bg-white/5 p-2"><dt className="font-pixel text-[9px] uppercase text-white/50">Battle time</dt><dd className="font-display text-sm font-bold">{final.seconds.toFixed(1)} s</dd></div>
-                <div className="rounded-lg bg-white/5 p-2"><dt className="font-pixel text-[9px] uppercase text-white/50">Left standing</dt><dd className="font-display text-sm font-bold">{`${fmt(final.left[0])} · ${fmt(final.left[1])}`}</dd></div>
-                {final.mvp && <div className="col-span-2 rounded-lg bg-white/5 p-2"><dt className="font-pixel text-[9px] uppercase text-white/50">Most KOs</dt><dd className="font-display text-sm font-bold">{final.mvp}</dd></div>}
-                {final.big && <div className="col-span-2 rounded-lg bg-white/5 p-2"><dt className="font-pixel text-[9px] uppercase text-white/50">Biggest hit</dt><dd className="font-display text-sm font-bold">{final.big}</dd></div>}
+                <div className="rounded-lg bg-white/5 p-2"><dt className="font-pixel text-[9px] uppercase text-white/50">{t("time")}</dt><dd className="font-display text-sm font-bold">{localNum(final.seconds.toFixed(1), lc)} s</dd></div>
+                <div className="rounded-lg bg-white/5 p-2"><dt className="font-pixel text-[9px] uppercase text-white/50">{t("left")}</dt><dd className="font-display text-sm font-bold">{`${fmt(final.left[0], lc)} · ${fmt(final.left[1], lc)}`}</dd></div>
+                {final.mvp && <div className="col-span-2 rounded-lg bg-white/5 p-2"><dt className="font-pixel text-[9px] uppercase text-white/50">{t("mostKos")}</dt><dd className="font-display text-sm font-bold">{final.mvp}</dd></div>}
+                {final.big && <div className="col-span-2 rounded-lg bg-white/5 p-2"><dt className="font-pixel text-[9px] uppercase text-white/50">{t("biggest")}</dt><dd className="font-display text-sm font-bold">{final.big}</dd></div>}
               </dl>
               )}
               <div className="flex flex-wrap justify-center gap-2">
-                {post && <button type="button" onClick={() => setShowStats((v) => !v)} aria-pressed={showStats} className={chip} data-testid="mb-stats-toggle"><BarChart3 className="h-4 w-4" aria-hidden /> {showStats ? "Summary" : "Stats"}</button>}
-                {post && post.bossKoTick >= 0 && !showStats && <button type="button" onClick={killCam} className={chip} data-testid="mb-killcam-final"><Crosshair className="h-4 w-4" aria-hidden /> Kill cam</button>}
-                <button type="button" onClick={replay} className={chip} data-testid="mb-replay"><RotateCcw className="h-4 w-4" aria-hidden /> Replay</button>
-                <button type="button" onClick={() => setShowVideo(true)} className={chip} data-testid="mb-video-final"><Clapperboard className="h-4 w-4" aria-hidden /> Make a video</button>
-                <button type="button" onClick={share} className={chip} data-testid="mb-share-final"><Share2 className="h-4 w-4" aria-hidden /> Share</button>
-                <button type="button" onClick={() => { setCardHidden(true); toFree(); }} className={chip} data-testid="mb-look"><Camera className="h-4 w-4" aria-hidden /> Look around</button>
+                {post && <button type="button" onClick={() => setShowStats((v) => !v)} aria-pressed={showStats} className={chip} data-testid="mb-stats-toggle"><BarChart3 className="h-4 w-4" aria-hidden /> {t(showStats ? "summary" : "stats")}</button>}
+                {post && post.bossKoTick >= 0 && !showStats && <button type="button" onClick={killCam} className={chip} data-testid="mb-killcam-final"><Crosshair className="h-4 w-4" aria-hidden /> {t("killCam")}</button>}
+                <button type="button" onClick={replay} className={chip} data-testid="mb-replay"><RotateCcw className="h-4 w-4" aria-hidden /> {t("replay")}</button>
+                <button type="button" onClick={() => setShowVideo(true)} className={chip} data-testid="mb-video-final"><Clapperboard className="h-4 w-4" aria-hidden /> {t("makeVideo")}</button>
+                <button type="button" onClick={share} className={chip} data-testid="mb-share-final"><Share2 className="h-4 w-4" aria-hidden /> {t("share")}</button>
+                <button type="button" onClick={() => { setCardHidden(true); toFree(); }} className={chip} data-testid="mb-look"><Camera className="h-4 w-4" aria-hidden /> {t("look")}</button>
               </div>
             </div>
           </div>
@@ -1234,7 +1265,7 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
             hudOn={hudOn}
             numbersOn={numbersOn}
             muted={muted}
-            quality={pinnedRef.current ? quality : `Auto (${quality})`}
+            quality={pinnedRef.current ? quality : t("auto", { q: quality })}
             showResult={phase === "done" && cardHidden}
             onResult={() => setCardHidden(false)}
             onPlay={togglePause}
@@ -1259,9 +1290,9 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
         {showHow && (
           <div className="absolute inset-0 z-[9] flex items-end justify-center bg-black/55 sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-labelledby="mb-how-title" data-testid="mb-how-panel">
             <div className="relative max-h-full w-full overflow-y-auto rounded-t-2xl border border-white/15 bg-[#0b1226] p-5 sm:max-w-2xl sm:rounded-2xl">
-              <button type="button" onClick={() => setShowHow(false)} className="absolute right-3 top-3 rounded-md p-1.5 text-white/60 hover:text-white" aria-label="Close"><X className="h-5 w-5" /></button>
-              <h2 id="mb-how-title" className="mb-3 font-display text-lg font-bold uppercase tracking-wider">How it works</h2>
-              <HowItWorksBody />
+              <button type="button" onClick={() => setShowHow(false)} className="absolute right-3 top-3 rounded-md p-1.5 text-white/60 hover:text-white" aria-label={t("close")}><X className="h-5 w-5" /></button>
+              <h2 id="mb-how-title" className="mb-3 font-display text-lg font-bold uppercase tracking-wider">{t("how")}</h2>
+              <HowItWorksBody t={th} />
             </div>
           </div>
         )}
@@ -1271,6 +1302,7 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
             <MakeBattleVideo
               battle={b}
               species={speciesRef.current}
+              speciesName={spName}
               onRecording={(on) => {
                 recordingRef.current = on;
                 if (on && phaseRef.current === "playing" && !pausedRef.current) {

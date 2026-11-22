@@ -1,0 +1,53 @@
+{
+  "short": {
+    "gen9randombattle": "Combate aleatorio",
+    "gen9randomdoublesbattle": "Dobles aleatorios",
+    "gen9triples": "Triples",
+    "gen9freeforallrandombattle": "Todos contra todos aleatorio",
+    "gen9multirandombattle": "Múltiple aleatorio",
+    "gen9freeforall": "Todos contra todos",
+    "gen9nationaldex": "Nat Dex",
+    "custom": "Personalizado",
+    "factory": "Factoría Batalla",
+    "bssfactory": "BSS Factory",
+    "tower": "Torre"
+  },
+  "pastRandom": "Gen {gen} aleatorio",
+  "pastTier": "Gen {gen} {tier}",
+  "name": {
+    "custom": "Reglas personalizadas",
+    "tower": "Torre Batalla"
+  },
+  "bring": "Lleva tu propio equipo: uno guardado o uno pegado en el formato de exportación de Showdown.",
+  "pastRandomBlurb": "Seis Pokémon aleatorios cada uno, con los sets y mecánicas propios de la gen. {gen}. No necesitas equipo.",
+  "blurb": {
+    "gen9lc": "Little Cup: nivel 5, solo primeras fases. Lleva tu propio equipo: uno guardado o uno pegado en el formato de exportación de Showdown.",
+    "gen9monotype": "Todos los Pokémon comparten un tipo; sin Teracristalización. Lleva tu propio equipo: uno guardado o uno pegado en el formato de exportación de Showdown.",
+    "gen9nationaldex": "Todos los Pokémon, megaevoluciones y movimientos Z; sin Teracristalización. Lleva tu propio equipo: uno guardado o uno pegado en el formato de exportación de Showdown.",
+    "gen9triples": "Tres Pokémon por lado; los movimientos de un solo objetivo solo alcanzan a los adyacentes, y un Pokémon del extremo puede pasar al centro. Lleva tu propio equipo: uno guardado o uno pegado en el formato de exportación de Showdown.",
+    "gen9freeforallrandombattle": "Cuatro Entrenadores, cada uno por su cuenta, con un Pokémon en el campo cada uno. Gana el último que quede en pie. Equipos aleatorios.",
+    "gen9multirandombattle": "Dos contra dos: compartes lado con un compañero, tres Pokémon aleatorios cada uno, uno en el campo cada uno.",
+    "gen9freeforall": "Cuatro Entrenadores, cada uno por su cuenta, con un Pokémon en el campo cada uno. Lleva tu propio equipo: uno guardado o uno pegado en el formato de exportación de Showdown.",
+    "custom": "Tus propias reglas: las mecánicas de cualquier generación, nivel, mecánicas especiales, cláusulas y tamaño del equipo.",
+    "factory": "Equipos de alquiler con los sets de Battle Factory de Showdown: nivel 100, seis contra seis, reglas Standard. No necesitas equipo.",
+    "bssfactory": "Equipos de alquiler con los sets de Battle Stadium de Showdown: nivel 50, lleva seis y elige tres.",
+    "tower": "Flat Rules: nivel 50, lleva seis y elige tres; cláusulas de especie, objeto y mote.",
+    "gen9randombattle": "Seis Pokémon aleatorios cada uno, con sets hechos para ellos. No necesitas equipo.",
+    "gen9randomdoublesbattle": "Dos Pokémon a la vez en el campo, equipos aleatorios. Elige un objetivo para cada movimiento."
+  },
+  "cpu": {
+    "easy": { "name": "Fácil", "blurb": "Ataca con lo que parece fuerte y nunca cambia." },
+    "normal": { "name": "Normal", "blurb": "Elige buenos movimientos, cambia si el enfrentamiento es malo y usa la Teracristalización." },
+    "hard": { "name": "Difícil", "blurb": "Juega para ganar: KO, prioridad, mejoras seguras, cambios inteligentes y Teracristalización." }
+  },
+  "gameType": {
+    "doubles": "Dobles",
+    "triples": "Triples",
+    "freeforall": "Todos contra todos",
+    "multi": "Combate múltiple"
+  },
+  "custom": {
+    "name": "[Gen {gen}] Personalizado · Nv. {level}",
+    "nameCap": "[Gen {gen}] Personalizado · Nv. ≤{level}"
+  }
+}

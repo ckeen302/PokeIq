@@ -8,7 +8,7 @@ import { REPLAY_ID_RE, replayMatchup, replayResult, replayTitle } from "@/lib/ba
 import { ReplaysUnavailable, replayStore } from "@/lib/server/battle-engine/replays";
 import { ClientMessages } from "@/i18n/ClientMessages";
 import { serverT } from "@/i18n/server";
-import battlePages from "@/messages/battle-pages";
+import battlePages from "@/messages/battle-tools-pages";
 import battleReplayWords from "@/messages/battle-replay-words";
 import battleReplays from "@/messages/battle-replays";
 import battleAnalysis from "@/messages/battle-analysis";

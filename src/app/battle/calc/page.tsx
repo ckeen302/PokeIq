@@ -4,9 +4,10 @@ import { BattleHeader } from "@/components/battle/BattleHeader";
 import { DamageCalc } from "@/components/battle/DamageCalc";
 import { ClientMessages } from "@/i18n/ClientMessages";
 import { serverT } from "@/i18n/server";
-import battlePages from "@/messages/battle-pages";
+import battlePages from "@/messages/battle-tools-pages";
 import battleCalc from "@/messages/battle-calc";
 import battleTerms from "@/messages/battle-terms";
+import battlePickers from "@/messages/battle-pickers";
 
 export function generateMetadata(): Metadata {
   const t = serverT(battlePages);
@@ -25,7 +26,7 @@ export default function CalcPage() {
       <BattleHeader crumb={t("calc.crumb")} title={t("calc.heading")} accent={t("calc.accent")}>
         {t("calc.intro")}
       </BattleHeader>
-      <ClientMessages namespaces={[battleCalc, battleTerms]}>
+      <ClientMessages namespaces={[battleCalc, battleTerms, battlePickers]}>
         <DamageCalc />
       </ClientMessages>
     </div>

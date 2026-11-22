@@ -14,7 +14,7 @@ import { avatarsByNames } from "@/lib/server/avatars";
 import { insightsAvailable } from "@/lib/server/battle-engine/insights";
 import { ClientMessages } from "@/i18n/ClientMessages";
 import { serverT } from "@/i18n/server";
-import battlePages from "@/messages/battle-pages";
+import battlePages from "@/messages/battle-tools-pages";
 import battleLadder from "@/messages/battle-ladder";
 import battleGlicko from "@/messages/battle-glicko";
 

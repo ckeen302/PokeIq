@@ -1,0 +1,22 @@
+{
+  "label": "Alle Fallakten",
+  "verdictGroup": "Urteil",
+  "allCases": "Alle Fälle",
+  "verdict": {
+    "confirmed": "Bestätigt",
+    "fan": "Fan-Theorie",
+    "debunked": "Widerlegt"
+  },
+  "sourceGroup": "Herkunft",
+  "source": {
+    "games": "Spiele",
+    "anime": "Anime",
+    "pokedex": "Pokédex",
+    "internet": "Internet",
+    "manga": "Manga"
+  },
+  "search": "Fälle suchen",
+  "none": "Kein Fall passt dazu. Probier ein anderes Urteil, eine andere Quelle oder Suche.",
+  "caseNumber": "FALL {n}",
+  "open": "Öffnen →"
+}

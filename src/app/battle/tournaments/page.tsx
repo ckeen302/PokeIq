@@ -4,7 +4,7 @@ import { BattleHeader } from "@/components/battle/BattleHeader";
 import { TournamentLobby } from "@/components/tournaments/TournamentLobby";
 import { ClientMessages } from "@/i18n/ClientMessages";
 import { serverT } from "@/i18n/server";
-import battlePages from "@/messages/battle-pages";
+import battlePages from "@/messages/battle-tools-pages";
 import battleTournaments from "@/messages/battle-tournaments";
 
 export function generateMetadata(): Metadata {

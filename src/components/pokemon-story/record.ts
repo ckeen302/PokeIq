@@ -1,9 +1,10 @@
 import { SITE_URL } from "@/lib/site";
 import { Mp4Muxer, aacConfig } from "@/lib/sizes/mp4";
 import { STORY_PATH } from "@/lib/pokemon-story/deeplink";
-import { CHAPTERS, STORY, sourceOf } from "@/lib/pokemon-story/data";
+import { sourceOf } from "@/lib/pokemon-story/data";
 import { filmBeats, filmLine } from "@/lib/world-history/data";
-import { basisTag, type Beat, type Chapter } from "@/lib/pokemon-story/types";
+import type { Beat, Chapter } from "@/lib/pokemon-story/types";
+import { localUrl } from "@/i18n/paths";
 import { beatIndexAt, videoAt, videoSegmentAt, type Film, type VideoPlan } from "@/lib/world-history/timing";
 import { renderVideoAudio } from "./audio";
 import { createStoryScene, type Quality } from "./scene";
@@ -22,7 +23,8 @@ export const VIDEO_W = 1080;
 export const VIDEO_H = 1920;
 const FPS = 30;
 const SITE = new URL(SITE_URL).host;
-export const LINK_TEXT = `${SITE}${STORY_PATH}`;
+const PATH = STORY_PATH;
+export const LINK_TEXT = `${SITE}${PATH}`;
 
 export interface RecordOptions {
   film: Film;
@@ -36,9 +38,21 @@ export interface RecordOptions {
   logo: string;
   quality?: Quality;
   fps?: number;
-  onProgress(p: number, label: string): void;
+  /** The chapters in the page's language (the captions and chapter names drawn on the frames). */
+  chapters: Chapter[];
+  /** A beat's caption tag in the page's language, or null. */
+  tagOf(b: Beat, c: Chapter): string | null;
+  /** The end card's title and line. */
+  endTitle: string;
+  endLine: string;
+  /** Quotation marks around someone's words. */
+  quotes: [string, string];
+  onProgress(p: number, step: RecordStep): void;
   signal: AbortSignal;
 }
+
+/** What the export is doing (the dialog shows it in the page's language). */
+export type RecordStep = "scene" | "music" | "rendering" | "packing" | "recording";
 
 export interface RecordResult {
   blob: Blob;
@@ -91,6 +105,13 @@ function wrap(g: CanvasRenderingContext2D, text: string, maxW: number): string[]
     for (const w of para.split(/ +/)) {
       const next = line ? `${line} ${w}` : w;
       if (g.measureText(next).width > maxW && line) { out.push(line); line = w; } else line = next;
+      // A run with no spaces wider than the line (Japanese): broken between characters.
+      while (g.measureText(line).width > maxW && line.length > 1) {
+        let k = line.length - 1;
+        while (k > 1 && g.measureText(line.slice(0, k)).width > maxW) k--;
+        out.push(line.slice(0, k));
+        line = line.slice(k);
+      }
     }
     if (line) out.push(line);
   }
@@ -109,7 +130,7 @@ function shadowText(g: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 /** The caption block: the narration, someone's words (in quotes), and the source. */
-function drawCaption(g: CanvasRenderingContext2D, W: number, H: number, c: Chapter, b: Beat, alpha: number, o: { serif: string; sans: string }) {
+function drawCaption(g: CanvasRenderingContext2D, W: number, H: number, c: Chapter, b: Beat, alpha: number, o: { serif: string; sans: string; quotes: [string, string] }, tag: string | null) {
   if (alpha <= 0) return;
   g.save();
   g.globalAlpha = alpha;
@@ -124,7 +145,7 @@ function drawCaption(g: CanvasRenderingContext2D, W: number, H: number, c: Chapt
   g.textBaseline = "alphabetic";
   // The game's words, in the film's serif.
   g.font = `italic 500 ${W * 0.06}px ${o.serif}`;
-  const lines = wrap(g, b.quote ? `“${filmLine(b)}”` : filmLine(b), maxW).slice(0, 6);
+  const lines = wrap(g, b.quote ? `${o.quotes[0]}${filmLine(b)}${o.quotes[1]}` : filmLine(b), maxW).slice(0, 6);
   const lh = W * 0.072;
   const top = H * 0.735 - (lines.length * lh) / 2;
   if (b.lead) {
@@ -138,7 +159,6 @@ function drawCaption(g: CanvasRenderingContext2D, W: number, H: number, c: Chapt
   lines.forEach((l, k) => shadowText(g, l, x, top + (k + 1) * lh, 18));
   // Tag and source.
   const src = sourceOf(c, b);
-  const tag = basisTag(b.basis);
   let sx = x;
   const sy = top + (lines.length + 1) * lh + W * 0.02;
   g.font = `600 ${W * 0.024}px ${o.sans}`;
@@ -220,13 +240,13 @@ function drawCards(g: CanvasRenderingContext2D, W: number, H: number, t: number,
     if (logo) g.drawImage(logo, W / 2 - s / 2, H * 0.33 - s / 2, s, s);
     g.font = `600 ${W * 0.07}px ${o.serif}`;
     g.fillStyle = "#ffffff";
-    wrap(g, STORY.title, W * 0.84).forEach((l, k) => shadowText(g, l, W / 2, H * 0.47 + k * W * 0.082, 20));
+    wrap(g, o.endTitle, W * 0.84).forEach((l, k) => shadowText(g, l, W / 2, H * 0.47 + k * W * 0.082, 20));
     g.font = `600 ${W * 0.032}px ${o.sans}`;
     g.fillStyle = "#e8c15a";
-    shadowText(g, "The whole film, with its sources", W / 2, H * 0.6, 10);
+    shadowText(g, o.endLine, W / 2, H * 0.6, 10);
     g.fillStyle = "#cfe0ff";
     g.font = `500 ${W * 0.032}px ${o.sans}`;
-    shadowText(g, LINK_TEXT, W / 2, H * 0.645, 10);
+    shadowText(g, `${SITE}${localUrl(PATH)}`, W / 2, H * 0.645, 10);
     g.restore();
   }
 }
@@ -235,11 +255,11 @@ export async function recordStoryVideo(o: RecordOptions): Promise<RecordResult> 
   const W = VIDEO_W, H = VIDEO_H, fps = o.fps ?? FPS;
   const plan = o.plan;
   const N = Math.round(plan.seconds * fps);
-  o.onProgress(0, "Setting the scene");
+  o.onProgress(0, "scene");
   const host = document.createElement("div");
   host.style.cssText = `position:fixed;left:-20000px;top:0;width:${W}px;height:${H}px;pointer-events:none;`;
   document.body.appendChild(host);
-  const scene = createStoryScene(host, { quality: o.quality ?? "export", film: o.film, font: o.serif, size: { w: W, h: H } });
+  const scene = createStoryScene(host, { quality: o.quality ?? "export", film: o.film, chapters: o.chapters, font: o.serif, size: { w: W, h: H } });
   try {
     await scene.ready;
     const compose = document.createElement("canvas");
@@ -268,7 +288,7 @@ export async function recordStoryVideo(o: RecordOptions): Promise<RecordResult> 
       });
       g.drawImage(scene.canvas, 0, 0, W, H);
       // Captions: the beat on screen (each story segment quotes its chapter's moment).
-      const c = CHAPTERS[f.chapter];
+      const c = o.chapters[f.chapter];
       const beats = filmBeats(c);
       const seg = videoSegmentAt(plan, t);
       const bi = Math.max(0, beatIndexAt(ct, f.anim));
@@ -276,7 +296,7 @@ export async function recordStoryVideo(o: RecordOptions): Promise<RecordResult> 
       const inCard = t < plan.hook - 0.2 || t > plan.endAt + 0.2;
       const capA = inCard ? 0 : fade(t, seg.t0 + 0.25, seg.t1 - (plan.cut > 0 ? plan.cut * 0.6 : -1), 0.3);
       if (plan.kind === "story") drawChapterTag(g, W, H, c, capA, o);
-      if (beat) drawCaption(g, W, H, c, beat, capA, o);
+      if (beat) drawCaption(g, W, H, c, beat, capA, o, o.tagOf(beat, c));
       drawCards(g, W, H, t, plan, o, logo);
     };
 
@@ -296,7 +316,7 @@ export async function recordStoryVideo(o: RecordOptions): Promise<RecordResult> 
         error(e) { failure = e; },
       });
       enc.configure(vcfg);
-      o.onProgress(0.01, "Mixing the music");
+      o.onProgress(0.01, "music");
       const rate = 48000;
       const acodec = await pickAudioCodec(rate);
       const mix = acodec ? await renderVideoAudio(o.film, plan, rate, o.signal) : null;
@@ -335,13 +355,13 @@ export async function recordStoryVideo(o: RecordOptions): Promise<RecordResult> 
         enc.encode(frame, { keyFrame: i % (fps * 2) === 0 });
         frame.close();
         while (enc.encodeQueueSize > 3) await sleep(2);
-        o.onProgress((i + 1) / N, "Rendering");
+        o.onProgress((i + 1) / N, "rendering");
       }
       await enc.flush();
       enc.close();
       if (failure) throw failure;
       if (!description) throw new Error("The video encoder gave no decoder configuration");
-      o.onProgress(1, "Packing the MP4");
+      o.onProgress(1, "packing");
       const mux = new Mp4Muxer(
         { width: W, height: H, description },
         acodec && audioChunks.length ? { codec: acodec.codec, sampleRate: rate, channels: 2, description: audioDesc ?? (acodec.codec === "aac" ? aacConfig(rate, 2) : undefined) } : undefined
@@ -381,7 +401,7 @@ export async function recordStoryVideo(o: RecordOptions): Promise<RecordResult> 
       const t = (performance.now() - t0) / 1000;
       if (t >= plan.seconds) break;
       await drawFrame(Math.floor(t * fps));
-      o.onProgress(t / plan.seconds, "Recording");
+      o.onProgress(t / plan.seconds, "recording");
       await new Promise((r) => requestAnimationFrame(r));
     }
     rec.stop();

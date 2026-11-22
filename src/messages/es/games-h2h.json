@@ -1,0 +1,22 @@
+{
+  "slotFilled": "{which, select, a {Primer} other {Segundo}} Pokémon: {name}. Cambiar",
+  "slotEmpty": "Elige el {which, select, a {primer} other {segundo}} Pokémon",
+  "searchBelow": "Busca abajo",
+  "tapToPick": "Toca para elegir",
+  "vs": "VS",
+  "placeholderA": "Busca el primer Pokémon…",
+  "placeholderB": "Busca el rival…",
+  "searchA": "Buscar el primer Pokémon",
+  "searchB": "Buscar el segundo Pokémon",
+  "list": "Pokémon",
+  "tapOne": "O toca uno",
+  "tapRival": "O toca un rival",
+  "event": "La prueba",
+  "eventGroup": "Prueba",
+  "pickTwo": "Elige dos Pokémon",
+  "pickEvent": "Elige una prueba",
+  "pickDifferent": "Elige dos Pokémon distintos",
+  "failed": "No se han cargado los Pokémon. Revisa la conexión y vuelve a intentarlo.",
+  "close": "Cerrar",
+  "title": "Cara a cara"
+}

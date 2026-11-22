@@ -1,0 +1,53 @@
+{
+  "short": {
+    "gen9randombattle": "Random Battle",
+    "gen9randomdoublesbattle": "Random Doubles",
+    "gen9triples": "Triples",
+    "gen9freeforallrandombattle": "Random Free-For-All",
+    "gen9multirandombattle": "Random Multi",
+    "gen9freeforall": "Free-For-All",
+    "gen9nationaldex": "Nat Dex",
+    "custom": "Custom",
+    "factory": "Battle Factory",
+    "bssfactory": "BSS Factory",
+    "tower": "Tower"
+  },
+  "pastRandom": "Gen {gen} Random",
+  "pastTier": "Gen {gen} {tier}",
+  "name": {
+    "custom": "Custom rules",
+    "tower": "Battle Tower"
+  },
+  "bring": "Bring your own team: a saved one, or paste one in Showdown's export format.",
+  "pastRandomBlurb": "Six random Pokémon each with Gen {gen}'s own sets and mechanics. No team needed.",
+  "blurb": {
+    "gen9lc": "Little Cup: level 5, first stages only. Bring your own team: a saved one, or paste one in Showdown's export format.",
+    "gen9monotype": "Every Pokémon shares a type; no Tera. Bring your own team: a saved one, or paste one in Showdown's export format.",
+    "gen9nationaldex": "Every Pokémon, Megas and Z-Moves; no Tera. Bring your own team: a saved one, or paste one in Showdown's export format.",
+    "gen9triples": "Three Pokémon out a side; single-target moves reach only adjacent Pokémon, and an edge Pokémon can shift to the centre. Bring your own team: a saved one, or paste one in Showdown's export format.",
+    "gen9freeforallrandombattle": "Four trainers, each on their own, one Pokémon out each. Last trainer standing wins. Random teams.",
+    "gen9multirandombattle": "Two against two: you and a partner share a side, three random Pokémon each, one out each.",
+    "gen9freeforall": "Four trainers, each on their own, one Pokémon out each. Bring your own team: a saved one, or paste one in Showdown's export format.",
+    "custom": "Your own ruleset: any generation's mechanics, level, gimmicks, clauses and team size.",
+    "factory": "Rental teams from Showdown's Battle Factory sets: level 100, six on six, Standard rules. No team needed.",
+    "bssfactory": "Rental teams from Showdown's Battle Stadium sets: level 50, bring six, pick three.",
+    "tower": "Flat Rules: level 50, bring six, pick three; Species, Item and Nickname Clauses.",
+    "gen9randombattle": "Six random Pokémon each, with sets built for them. No team needed.",
+    "gen9randomdoublesbattle": "Two Pokémon out at a time, random teams. Pick a target for each move."
+  },
+  "cpu": {
+    "easy": { "name": "Easy", "blurb": "Attacks with whatever looks strong, never switches." },
+    "normal": { "name": "Normal", "blurb": "Picks good moves, switches out of bad matchups, uses Tera." },
+    "hard": { "name": "Hard", "blurb": "Plays to win: KOs, priority, safe setup, smart switches and Tera." }
+  },
+  "gameType": {
+    "doubles": "Doubles",
+    "triples": "Triples",
+    "freeforall": "Free-For-All",
+    "multi": "Multi Battle"
+  },
+  "custom": {
+    "name": "[Gen {gen}] Custom · Lv {level}",
+    "nameCap": "[Gen {gen}] Custom · Lv ≤{level}"
+  }
+}

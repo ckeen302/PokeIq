@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "title": "ポケモン世界の歴史：ゲームが語る物語を3Dで",
+    "description": "シンオウの創世神話、ホウエンの原始の争い、カロスの最終兵器、ガラルのブラックナイト、焼けた塔、エリアゼロのタイムマシンまで、ゲームが語るポケモン世界の歴史。すべての言葉をゲームの出典つきで紹介する3Dの博物館です。",
+    "socialTitle": "ポケモン世界の歴史 · PokéIQ",
+    "chapterTitle": "{title}：{region}の歴史（{when}）",
+    "chapterDescription": "{summary} 「ポケモン世界の歴史」第{numeral}章。ゲームの中の歴史をたどる3Dの博物館で、すべての言葉にゲームの出典つき。",
+    "chapterSocial": "{title} · ポケモン世界の歴史"
+  },
+  "wholeHistory": "歴史の全体",
+  "lab": "3Dラボ",
+  "realStory": "現実の物語",
+  "realTimeline": "現実の年表",
+  "kicker": "PokéIQ 3Dラボ · ゲームの中の歴史",
+  "chapterOf": "{title} · 第{numeral}章",
+  "chapters": "章",
+  "sources": "出典",
+  "inChapter": "この章のポケモン",
+  "chapterPage": "この章のページ",
+  "rest": "歴史のつづき",
+  "separate": "別の世界線",
+  "howTo": "タグの見かた",
+  "tagsHelp": "<myth>神話・伝説・昔話</myth>：ゲームが物語として語るもの。<implied>示唆</implied>：ゲームの記述から自然に導けるもの。<theory>仮説</theory>と<speculation>推測</speculation>：登場人物の考えや推測。<contested>諸説あり</contested>：ゲームによって語られ方が違うもの。タグのない文は、ゲームがはっきり述べていることです。",
+  "continuity": "アニメと映画は独自の世界線なので、上では分けて紹介しています。ゲーム、アニメ、映画がいつ出たかは<link>ポケモン年表</link>をご覧ください。",
+  "music": "音楽：このフィルムのために書いたオリジナル曲。ひとつのテーマを4つのパートに編曲し、MuseScore Generalサウンドフォント（MIT。弦楽器はVSCO 2 Community Edition、CC0）で演奏しています。環境音と効果音はブラウザで生成しています（<a>クレジット</a>）。ポケモンのフィギュアは、PokéAPIが配信するポケモンHOMEの画像から作っています。"
+}

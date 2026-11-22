@@ -20,7 +20,7 @@ import { getLocale, serverT } from "@/i18n/server";
 import type { Translator } from "@/i18n/catalog";
 import { INTL_LOCALE } from "@/i18n/format";
 import { speciesName } from "@/lib/names/species";
-import battlePages from "@/messages/battle-pages";
+import battlePages from "@/messages/battle-tools-pages";
 import battleGlicko from "@/messages/battle-glicko";
 
 type PagesT = Translator<typeof battlePages.en>;

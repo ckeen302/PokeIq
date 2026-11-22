@@ -1,4 +1,7 @@
 import { loadBar, liftMark, type LiftResult } from "@/lib/games/lift";
+import { localNum } from "@/lib/games/events";
+import { translator, type Translator } from "@/i18n/catalog";
+import gamesShow from "@/messages/games-show";
 import { REF_LIGHTS } from "@/lib/games/venues";
 import { liftAt, planLift, type LiftPlan } from "../scene/motions/lift";
 import { smooth } from "../scene/motions/common";
@@ -32,7 +35,8 @@ function barHalf(weight: number): number {
   return Math.max(l.bar === 20 ? 1.1 : 1.0, grip + 0.03 + l.side.reduce((s, p) => s + p.w + 0.004, 0) + (l.collars ? 0.09 : 0));
 }
 
-export function liftShow(result: LiftResult, o: ShowOptions): Show {
+export function liftShow(result: LiftResult, o: ShowOptions, tr: Translator<typeof gamesShow.en> = translator(gamesShow, "en", undefined)): Show {
+  const num = (s: string) => localNum(s, tr.locale);
   const athletes = result.cards.map((c) => c.athlete);
   const byKey = new Map(athletes.map((a) => [a.key, a]));
   const cardOf = new Map(result.cards.map((c) => [c.athlete.key, c]));
@@ -174,12 +178,12 @@ export function liftShow(result: LiftResult, o: ShowOptions): Show {
     const it = items[beat.act ?? 0] ?? items[0];
     const s = seq[it.pick.a.i];
     const a = byKey.get(s.key)!;
-    const bug = { title: "Weightlifting", sub: beat.kind === "board" ? "Final standings" : `Bar ${s.weight} kg` };
+    const bug = { title: tr("ev.weightlifting.name"), sub: beat.kind === "board" ? tr("finalStandings") : tr("lift.bar", { w: s.weight }) };
     switch (beat.kind) {
       case "establish":
-        return { title: { text: "WEIGHTLIFTING", sub: `Clean & jerk · ${athletes.length} lifters · 3 attempts`, k } };
+        return { title: { text: tr("ev.weightlifting.name").toUpperCase(), sub: tr("lift.crane", { n: athletes.length }), k } };
       case "startlist":
-        return { bug, board: { title: "Start list · opening weight", rows: [...result.cards].sort((x, y) => (x.attempts[0]?.weight ?? 0) - (y.attempts[0]?.weight ?? 0)).map((c, i) => ({ place: String(i + 1), name: c.athlete.name, mark: c.attempts[0] && seq.includes(c.attempts[0]) ? `${c.attempts[0].weight} kg` : "—", key: c.athlete.key, note: `best ${liftMark(c.athlete)} kg`, plain: true })), k } };
+        return { bug, board: { title: tr("lift.startList"), rows: [...result.cards].sort((x, y) => (x.attempts[0]?.weight ?? 0) - (y.attempts[0]?.weight ?? 0)).map((c, i) => ({ place: String(i + 1), name: c.athlete.name, mark: c.attempts[0] && seq.includes(c.attempts[0]) ? `${c.attempts[0].weight} kg` : "—", key: c.athlete.key, note: tr("best", { mark: `${liftMark(c.athlete)} kg` }), plain: true })), k } };
       case "action": {
         const tau = beatClock(beat, t);
         const pl = it.plan;
@@ -187,27 +191,27 @@ export function liftShow(result: LiftResult, o: ShowOptions): Show {
         return {
           bug,
           // The name up for the walk out, gone before it pulls (the bar and the plates in the clear).
-          lower: tau < -0.8 && -0.8 - (beat.clock0 ?? 0) > 1.2 ? { key: a.key, name: a.name, line: `Attempt ${s.n} · ${s.weight} kg · ${(s.weight / a.kg).toFixed(s.weight / a.kg >= 10 ? 0 : 1)}× its ${fmtKg(a.kg)}`, tag: `Attempt ${s.n}`, k: (tau - (beat.clock0 ?? 0)) / (-0.8 - (beat.clock0 ?? 0)) } : undefined,
+          lower: tau < -0.8 && -0.8 - (beat.clock0 ?? 0) > 1.2 ? { key: a.key, name: a.name, line: tr("lift.line", { n: s.n, w: s.weight, x: num((s.weight / a.kg).toFixed(s.weight / a.kg >= 10 ? 0 : 1)), kg: num(fmtKg(a.kg)) }), tag: tr("attempt", { n: s.n }), k: (tau - (beat.clock0 ?? 0)) / (-0.8 - (beat.clock0 ?? 0)) } : undefined,
           // (k runs over the rest of the shot: in with a pop, held, out as it ends.)
-          mark: decided ? { text: pl.success ? "GOOD LIFT" : "NO LIFT", sub: `${s.weight} kg`, tone: pl.success ? (it.lead ? "lead" : "good") : "bad", k: Math.min(1, (tau - pl.downT) / Math.max(0.8, Math.max(pl.downT, pl.landT) + (it.pick.cut === "full" ? 1.6 : 0.9) - pl.downT)) } : undefined,
+          mark: decided ? { text: tr(pl.success ? "lift.good" : "lift.noLift"), sub: `${s.weight} kg`, tone: pl.success ? (it.lead ? "lead" : "good") : "bad", k: Math.min(1, (tau - pl.downT) / Math.max(0.8, Math.max(pl.downT, pl.landT) + (it.pick.cut === "full" ? 1.6 : 0.9) - pl.downT)) } : undefined,
           tags: tau < -2 || tau - (beat.clock0 ?? 0) < 1.2 ? [a.key] : [],
-          caption: tau > pl.catchT && tau < pl.downT && pl.grind > 0.7 ? `${Math.round(pl.load * 100)}% of its best today` : undefined,
+          caption: tau > pl.catchT && tau < pl.downT && pl.grind > 0.7 ? tr("lift.grind", { pct: Math.round(pl.load * 100) }) : undefined,
         };
       }
       case "result":
         return {
           bug,
-          mark: { text: it.plan.success ? `${s.weight} kg` : "NO LIFT", sub: it.plan.success ? (it.lead ? "New leader" : `${ordinal(it.standing.findIndex((r) => r.key === a.key) + 1)} so far`) : `${s.weight} kg`, tone: it.plan.success ? (it.lead ? "lead" : "good") : "bad", k },
-          board: { title: "Standings", rows: it.standing.slice(0, 8).map((r, i) => ({ place: String(i + 1), name: byKey.get(r.key)!.name, mark: r.best == null ? "—" : `${r.best} kg`, key: r.key, hi: r.key === a.key, note: attemptsLine(r.key, it.pick.a.i) })), k },
+          mark: { text: it.plan.success ? `${s.weight} kg` : tr("lift.noLift"), sub: it.plan.success ? (it.lead ? tr("newLeader") : tr("soFar", { place: ordinal(it.standing.findIndex((r) => r.key === a.key) + 1, tr) })) : `${s.weight} kg`, tone: it.plan.success ? (it.lead ? "lead" : "good") : "bad", k },
+          board: { title: tr("standings"), rows: it.standing.slice(0, 8).map((r, i) => ({ place: String(i + 1), name: byKey.get(r.key)!.name, mark: r.best == null ? "—" : `${r.best} kg`, key: r.key, hi: r.key === a.key, note: attemptsLine(r.key, it.pick.a.i) })), k },
         };
       case "replay":
-        return { replay: true, lower: { key: a.key, name: a.name, line: `${s.weight} kg overhead · ${(s.weight / a.kg).toFixed(1)}× bodyweight`, tag: "Replay", k } };
+        return { replay: true, lower: { key: a.key, name: a.name, line: tr("lift.replay", { w: s.weight, x: num((s.weight / a.kg).toFixed(1)) }), tag: tr("replay"), k } };
       default: {
         const p4p = result.p4p.find((c) => c.p4p != null);
         return {
           bug,
-          board: { title: "Weightlifting · final", rows: result.order.map((c) => ({ place: c.best == null ? "—" : String(c.place), name: c.athlete.name, mark: c.best == null ? "NM" : `${c.best} kg`, key: c.athlete.key, hi: c.place === 1, note: c.best == null ? "no lift" : attemptsLine(c.athlete.key) })), k },
-          caption: p4p ? `Pound for pound: ${p4p.athlete.name}, ${p4p.p4p!.toFixed(2)}× its bodyweight` : undefined,
+          board: { title: tr("final", { event: tr("ev.weightlifting.name") }), rows: result.order.map((c) => ({ place: c.best == null ? "—" : String(c.place), name: c.athlete.name, mark: c.best == null ? tr("nm") : `${c.best} kg`, key: c.athlete.key, hi: c.place === 1, note: c.best == null ? tr("lift.noLiftNote") : attemptsLine(c.athlete.key) })), k },
+          caption: p4p ? tr("lift.p4p", { name: p4p.athlete.name, x: num(p4p.p4p!.toFixed(2)) }) : undefined,
         };
       }
     }
@@ -224,7 +228,7 @@ export function liftShow(result: LiftResult, o: ShowOptions): Show {
     at,
     overlay,
     resultsAt: beats.find((b) => b.kind === "board")?.t0 ?? end,
-    hook: "Which Pokémon lifts the most? 🏋️",
-    headline: gold?.best != null ? `${gold.athlete.name} wins with ${gold.best} kg` : "No good lift",
+    hook: tr("lift.hook"),
+    headline: gold?.best != null ? tr("winsWith", { name: gold.athlete.name, mark: `${gold.best} kg` }) : tr("lift.none"),
   };
 }

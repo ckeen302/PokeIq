@@ -7,7 +7,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { ReplayLists } from "@/components/battle/ReplayLists";
 import { ClientMessages } from "@/i18n/ClientMessages";
 import { serverT } from "@/i18n/server";
-import battlePages from "@/messages/battle-pages";
+import battlePages from "@/messages/battle-tools-pages";
 import battleReplays from "@/messages/battle-replays";
 import battleReplayWords from "@/messages/battle-replay-words";
 

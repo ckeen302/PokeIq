@@ -111,6 +111,14 @@ export function basisTag(b: Basis): string | null {
   }
 }
 
+/** The bases a caption tags, as message keys (the pokemon-story-film namespace's `tags`). */
+export type TaggedBasis = "said" | "reported" | "retold";
+
+/** basisTag's tag as a key, for a translated label; null when the beat carries none. */
+export function basisTagKey(b: Basis): TaggedBasis | null {
+  return b === "said" || b === "reported" || b === "retold" ? b : null;
+}
+
 /** "TIME · “The Ultimate Game Freak”, interview with Satoshi Tajiri (1999)". */
 export function sourceLine(s: Source): string {
   return `${s.publisher} · ${s.title} (${s.year})`;

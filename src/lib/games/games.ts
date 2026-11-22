@@ -185,6 +185,8 @@ export interface Nation {
   /** "fire" for a type nation, "x-<a>.<b>.<c>" for a built team. */
   id: string;
   name: string;
+  /** The English name, when `name` is in another language (ties in the medal table are broken on it, as in English). */
+  en?: string;
   type: string | null;
   color: string;
   athletes: Athlete[];
@@ -216,7 +218,7 @@ export function medalTable(nations: Nation[], outcomes: EventOutcome[]): MedalRo
       }
     }
   }
-  const out = [...rows.values()].sort((a, b) => b.gold - a.gold || b.silver - a.silver || b.bronze - a.bronze || a.nation.name.localeCompare(b.nation.name));
+  const out = [...rows.values()].sort((a, b) => b.gold - a.gold || b.silver - a.silver || b.bronze - a.bronze || (a.nation.en ?? a.nation.name).localeCompare(b.nation.en ?? b.nation.name));
   out.forEach((r, k) => {
     const p = out[k - 1];
     r.rank = p && p.gold === r.gold && p.silver === r.silver && p.bronze === r.bronze ? p.rank : k + 1;
@@ -264,7 +266,8 @@ export type NationSpec = { type: string } | { keys: string[] };
  * type nation takes its best three all-rounders that no other nation has
  * (`candidates`: each type's best first, from the records).
  */
-export function buildNations(specs: NationSpec[], byKey: ReadonlyMap<string, Athlete>, candidates: Record<string, string[]>): Nation[] {
+export function buildNations(specs: NationSpec[], byKey: ReadonlyMap<string, Athlete>, candidates: Record<string, string[]>, naming?: { team(name: string): string; type(type: string): string }): Nation[] {
+  const team = (name: string) => (naming ? naming.team(name) : `Team ${name}`);
   const taken = new Set<string>();
   const out: (Nation | null)[] = specs.map(() => null);
   specs.forEach((s, i) => {
@@ -272,14 +275,14 @@ export function buildNations(specs: NationSpec[], byKey: ReadonlyMap<string, Ath
     const athletes = s.keys.map((k) => byKey.get(k)).filter((a): a is Athlete => !!a && !taken.has(a.key)).slice(0, NATION_SIZE);
     if (!athletes.length) return;
     athletes.forEach((a) => taken.add(a.key));
-    out[i] = { id: `x-${athletes.map((a) => a.key).join(".")}`, name: `Team ${athletes[0].name}`, type: null, color: TYPE_COLORS[athletes[0].types[0]] ?? "#9fd8ff", athletes };
+    out[i] = { id: `x-${athletes.map((a) => a.key).join(".")}`, name: team(athletes[0].name), ...(naming && { en: `Team ${athletes[0].name}` }), type: null, color: TYPE_COLORS[athletes[0].types[0]] ?? "#9fd8ff", athletes };
   });
   specs.forEach((s, i) => {
     if (!("type" in s) || !TYPE_COLORS[s.type]) return;
     const athletes = (candidates[s.type] ?? []).filter((k) => !taken.has(k)).map((k) => byKey.get(k)).filter((a): a is Athlete => !!a).slice(0, NATION_SIZE);
     if (!athletes.length) return;
     athletes.forEach((a) => taken.add(a.key));
-    out[i] = { id: s.type, name: `Team ${typeLabel(s.type)}`, type: s.type, color: TYPE_COLORS[s.type], athletes };
+    out[i] = { id: s.type, name: team(naming ? naming.type(s.type) : typeLabel(s.type)), ...(naming && { en: `Team ${typeLabel(s.type)}` }), type: s.type, color: TYPE_COLORS[s.type], athletes };
   });
   return out.filter((n): n is Nation => !!n).slice(0, MAX_NATIONS);
 }

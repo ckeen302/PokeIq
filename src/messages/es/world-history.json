@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "title": "Historia del mundo Pokémon: la historia dentro de los juegos, en 3D",
+    "description": "La historia del mundo Pokémon tal como la cuentan los juegos: del mito de la creación de Sinnoh y el choque primigenio de Hoenn al arma definitiva de Kalos, la Noche Oscura de Galar, la Torre Quemada y la máquina del tiempo del Área Cero. Un museo cinematográfico en 3D con la fuente de cada frase en los juegos.",
+    "socialTitle": "Historia del mundo Pokémon · PokéIQ",
+    "chapterTitle": "{title}: la historia de {region} ({when})",
+    "chapterDescription": "{summary} Capítulo {numeral} de Historia del mundo Pokémon, un museo en 3D de la historia dentro de los juegos, con la fuente de cada frase en los juegos.",
+    "chapterSocial": "{title} · Historia del mundo Pokémon"
+  },
+  "wholeHistory": "Toda la historia",
+  "lab": "Laboratorio 3D",
+  "realStory": "La historia real",
+  "realTimeline": "La cronología real",
+  "kicker": "Laboratorio 3D de PokéIQ · La historia dentro de los juegos",
+  "chapterOf": "{title} · Capítulo {numeral}",
+  "chapters": "Capítulos",
+  "sources": "Fuentes",
+  "inChapter": "En este capítulo",
+  "chapterPage": "Página de este capítulo",
+  "rest": "El resto de la historia",
+  "separate": "Una continuidad aparte",
+  "howTo": "Cómo leer las etiquetas.",
+  "tagsHelp": "<myth>Mito, Leyenda y Cuento popular</myth>: el juego lo cuenta como un relato. <implied>Implícito</implied>: se deduce claramente de lo que dicen los juegos. <theory>Teoría</theory> y <speculation>Especulación</speculation>: la idea o la suposición de un personaje. <contested>Las fuentes difieren</contested>: los juegos lo cuentan de más de una forma. Las frases sin etiqueta se afirman sin rodeos.",
+  "continuity": "El anime y las películas tienen su propia continuidad, separada arriba. ¿Buscas cuándo salieron los juegos, el anime y las películas? Consulta la <link>cronología Pokémon</link>.",
+  "music": "Música: una banda sonora original compuesta para esta película, un tema arreglado en cuatro pistas e interpretado con la fuente de sonido MuseScore General (MIT; sus cuerdas, de VSCO 2 Community Edition, CC0). El ambiente y los efectos se generan en el navegador (<a>créditos</a>). Las figuras Pokémon se crean a partir de los modelos de Pokémon HOME que ofrece PokéAPI."
+}

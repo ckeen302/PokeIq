@@ -1,136 +1,128 @@
 {
-  "crumb": "Kampf",
-  "calc": {
-    "title": "Pokémon-Schadensrechner: jede Generation, jeder Treffer",
-    "description": "Ein Pokémon-Schadensrechner, der Rechner von Smogon, für die Generationen 3 bis 9: Schadensspannen, K.O.-Chancen und vollständige Beschreibungen mit Statuswerte-Stufen, Statusproblemen, Terakristallisierung, Wetter, Feldern, Schilden und Flächenattacken im Doppelkampf. Lade Sets aus deinen Teams.",
-    "crumb": "Schadensrechner",
-    "heading": "Schadens",
-    "accent": "rechner",
-    "intro": "Ein Pokémon-Schadensrechner: die Schadensspanne, die K.O.-Chance und die Showdown-Beschreibung jeder Attacke, in beide Richtungen. Mit dem Schadensrechner von Smogon."
+  "hub": {
+    "meta": {
+      "title": "Pokémon-Kampfsimulator: PvP, gegen den Computer & Team-Builder",
+      "description": "Kostenloser Pokémon-Kampfsimulator mit der Engine von Pokémon Showdown: live PvP online, kämpfe gegen einen Freund oder den Computer, dazu Team-Builder und Schadensrechner."
+    },
+    "live": {
+      "cpu": {
+        "title": "Gegen den Computer",
+        "blurb": "Kämpfe gegen einen Computer, der auf Sieg spielt.",
+        "p1": "Zufallskampf, Zufalls-Doppel oder dein gespeichertes Team",
+        "p2": "Gegner auf Leicht, Normal und Schwer",
+        "p3": "Die Attacken-Animationen von Showdown, samt Terakristallisierung"
+      },
+      "online": {
+        "title": "Online-Kampf",
+        "blurb": "Finde einen Gegner oder lade einen Freund ein.",
+        "p1": "Matchmaking in jedem Format, mit Zufallsteams oder deinem eigenen",
+        "p2": "Der Zug-Timer von Showdown; jede Seite sieht nur, was sie sehen soll",
+        "p3": "Revanche mit einem Klick"
+      },
+      "teams": {
+        "title": "Team-Builder",
+        "blurb": "Teams bauen, laufend geprüft.",
+        "p1": "Formate von Gen 9 OU bis zurück zu Gen 3 OU",
+        "p2": "EVs, IVs, Wesen und Live-Werte",
+        "p3": "Showdown-Import / -Export, Zufallsteams"
+      },
+      "calc": {
+        "title": "Schadensrechner",
+        "blurb": "Schadensbereiche und K.O.-Chancen.",
+        "p1": "Statuswert-Stufen, Status, Terakristallisierung und aktuelle KP",
+        "p2": "Wetter, Felder, Schilde, Flächenattacken",
+        "p3": "Sets direkt aus deinen Teams laden"
+      },
+      "lab": {
+        "title": "Kampflabor",
+        "blurb": "Spiel jedes Duell tausendfach durch.",
+        "p1": "Jedes Pokémon, jedes Level, Item und jede Attacke, Gen 1 bis 9",
+        "p2": "Schlaues, gieriges, zufälliges oder geskriptetes Spiel je Seite",
+        "p3": "Sieg-% mit 95-%-Konfidenzintervall, K.O.s, Volltreffer, Replays"
+      }
+    },
+    "frontier": {
+      "factory": {
+        "title": "Kampffabrik",
+        "blurb": "Leih dir ein Team und bau eine Siegesserie auf.",
+        "p1": "Factory auf Level 100 oder BSS Factory auf Level 50",
+        "p2": "Tausche nach jedem Sieg gegen ein Pokémon deines Gegners",
+        "p3": "Oder kämpfe live: Beide Trainer leihen sich ein Team"
+      },
+      "tower": {
+        "title": "Duellturm",
+        "blurb": "Dein Team gegen eine Serie von Trainern.",
+        "p1": "Level 50, sechs mitbringen, drei wählen",
+        "p2": "Gespeicherte, gebaute oder Schnellteams, von Showdown geprüft",
+        "p3": "Der Turmherr in jedem siebten Kampf"
+      }
+    },
+    "tools": "Kämpfe und Tools",
+    "liveTag": "Live",
+    "soon": "Bald",
+    "frontierTitle": "Kampfzone",
+    "frontierAside": "Siegesserien gegen den Computer",
+    "formats": "Formate",
+    "formatsAside": "Jeweils mit den Regeln von Pokémon Showdown",
+    "gameType": {
+      "singles": "Einzel",
+      "doubles": "Doppel"
+    },
+    "formatBlurb": {
+      "gen9ou": "Smogons wichtigster Einzel-Tier: alles unterhalb von Ubers.",
+      "gen9ubers": "Cover-Legendäre willkommen. Nur die stärksten sind gebannt.",
+      "gen9uu": "Der Tier unter OU: keine Pokémon aus OU oder UUBL.",
+      "gen9ru": "Der Tier unter UU: keine Pokémon aus UU oder RUBL.",
+      "gen9nu": "Der Tier unter RU: keine Pokémon aus RU oder NUBL.",
+      "gen9pu": "Der Tier unter NU: keine Pokémon aus NU oder PUBL.",
+      "gen9lc": "Little Cup: Pokémon der ersten Stufe, die sich noch entwickeln können, auf Level 5.",
+      "gen9monotype": "Alle Pokémon eines Teams teilen einen Typ. Keine Terakristallisierung.",
+      "gen9doublesou": "Zwei gegen zwei, Smogons Doppel-Tierliste.",
+      "gen9vgc2025regi": "Offizielles Doppel: sechs mitbringen, vier wählen, Level 50, zwei eingeschränkte Legendäre.",
+      "gen9nationaldex": "Karmesin- / Purpur-Mechanik mit allen Pokémon, Mega-Steinen und Z-Kristallen zurück.",
+      "gen4ou": "Diamant / Perl / Platin: Die Trennung in physisch / speziell kommt.",
+      "gen3ou": "Rubin / Saphir / Smaragd: Der Typ einer Attacke entscheidet über physisch oder speziell."
+    },
+    "info": {
+      "name": "Pokémon-Kämpfe",
+      "description": "Ein kostenloser Pokémon-Kampfsimulator mit der Engine von Pokémon Showdown: Kämpfe gegen den Computer, einen Freund oder Fremde, mit Team-Builder, Schadensrechner und Kampflabor.",
+      "intro": "Dieser Pokémon-Kampfsimulator läuft mit der Engine von Pokémon Showdown selbst: Kämpfe gegen den Computer, einen Freund per Link oder einen online gefundenen Gegner.",
+      "step1": "Wähle einen Modus: gegen den Computer, online kämpfen oder die Kampfzone.",
+      "step2": "Nimm ein Zufallsteam oder bau dein eigenes im Team-Builder.",
+      "step3": "Wähle in jeder Runde deine Attacken und gewinne den Kampf.",
+      "step4": "Prüfe Duelle mit dem Schadensrechner oder simuliere tausende Kämpfe im Kampflabor.",
+      "labQ": "Was ist das Kampflabor?",
+      "labA": "Damit stellst du ein beliebiges Duell ein und lässt es von der Engine tausendfach spielen, um die Siegchancen zu schätzen."
+    }
   },
-  "teams": {
-    "title": "Pokémon-Team-Builder: Showdown-Formate, Legalität geprüft",
-    "description": "Ein Pokémon-Team-Builder für kompetitive Teams in OU, Ubers, UU, Doppel-OU, VGC und National Dex der 9. Generation, Gen-4-OU und Gen-3-OU. Attacken aus den Erlernlisten jedes Formats, Live-Werte, Showdown-Import und -Export und die Legalitätsprüfung von Pokémon Showdown selbst.",
-    "crumb": "Team-Builder",
-    "heading": "Team-",
-    "accent": "Builder",
-    "intro": "Ein Pokémon-Team-Builder mit sechs Plätzen, den Erlernlisten jedes Formats und den Regeln von Pokémon Showdown selbst. Teams werden beim Bauen auf diesem Gerät gespeichert, bereit für den Kampf."
+  "play": {
+    "meta": {
+      "title": "Pokémon-Kampf: gegen den Computer, online oder mit Freunden",
+      "description": "Echte Pokémon-Kämpfe mit der Engine von Pokémon Showdown: Zufallskampf, Zufalls-Doppel oder dein eigenes OU-Team, gegen den Computer, einen per Matchmaking gefundenen Trainer oder einen Freund per Einladungslink."
+    },
+    "crumb": "Spielen",
+    "title": "Starte einen",
+    "accent": "Kampf",
+    "intro": "Die Kampf-Engine von Pokémon Showdown selbst: Jede Attacke, jede Fähigkeit und jedes Item wirkt wie dort. Wähle einen Gegner, ein Format und los."
   },
-  "lab": {
-    "title": "Kampflabor — Pokémon-Siegchancen-Simulator",
-    "description": "Stelle zwei beliebige Pokémon-Teams auf, Gen 1 bis 9, und lass den Kampf tausende Male auf der Engine von Pokémon Showdown selbst laufen. Sieh die Siegchance jeder Seite mit 95-%-Konfidenzintervall, wie lange Kämpfe dauern, wer die K.O.s erzielt, und schau dir Beispielkämpfe an.",
-    "name": "Kampflabor",
-    "crumb": "Kampflabor",
-    "heading": "Kampf",
-    "accent": "labor",
-    "intro": "Stelle zwei Seiten auf und lass die Engine von Pokémon Showdown den Kampf tausende Male spielen, direkt in deinem Browser. Sieh, wie oft jede Seite gewinnt, wie lange es dauert und was den Ausschlag gibt."
+  "tower": {
+    "meta": {
+      "title": "Duellturm: Siegesserien mit Flat Rules gegen den Computer"
+    },
+    "description": "Der Duellturm mit der Engine von Pokémon Showdown: Bring dein Team unter Flat Rules (Level 50, sechs mitbringen, drei wählen) und bau eine Siegesserie gegen Computer-Trainer auf, mit dem Turmherrn in jedem siebten Kampf.",
+    "name": "Duellturm",
+    "title": "Der",
+    "accent": "Duellturm",
+    "intro": "Dein Team, Flat Rules und eine Serie von Computer-Trainern, die beim Aufstieg immer härter werden. Jeder siebte Kampf ist der Turmherr, mit seinem besten Team."
   },
-  "ladder": {
-    "title": "Pokémon-Kampf-Rangliste — Wertungen nach Format",
-    "description": "Die Rangliste der gewerteten Kämpfe: Elo-, GXE- und Glicko-2-Wertungen wie auf Pokémon Showdown, für Zufallskampf, Zufalls-Doppelkampf, OU, Ubers, UU, RU, NU, PU, LC, Monotype, National Dex und Doppel-OU.",
-    "crumb": "Rangliste",
-    "heading": "Kampf-",
-    "accent": "Rangliste",
-    "rules": "Wertungen pro Format wie auf Pokémon Showdown: Die Rangliste ist nach Elo sortiert (alle starten bei {elo}, fallen nie darunter, und ein Elo über 1400 sinkt an jedem Tag ohne Kampf ein wenig), dazu GXE (deine Chance, einen zufälligen Trainer der Rangliste zu schlagen) und eine Glicko-2-Wertung. Alle starten bei {rating} ± {rd} Glicko-2; eine Wertung ist vorläufig, bis ihre Abweichung unter {shown} fällt. Aufgeben, Zeitablauf oder Verlassen zählt als Niederlage.",
-    "short": "Nach Elo sortiert, mit GXE und Glicko-2, wie auf Pokémon Showdown. Alle starten bei {elo}.",
-    "insights": "Deine Analyse",
-    "play": "Gewertet spielen",
-    "soon": "Gewertete Kämpfe starten bald.",
-    "top": "{format}: Top 100",
-    "how": "So funktionieren die Wertungen"
-  },
-  "insights": {
-    "title": "Team-Analyse",
-    "description": "Deine Kampf-Analyse: Starter, Pokémon, härteste Gegner und deine Wertung im Verlauf.",
-    "crumb": "Team-Analyse",
-    "heading": "Team-",
-    "accent": "Analyse",
-    "intro": "Deine häufigsten Starter, die Siegquote pro Pokémon, die Gegner, die dich am öftesten schlagen, und deine Wertung im Verlauf, aus deinen gespeicherten Kämpfen.",
-    "signIn": "Die Analyse gehört zu deinem Konto: Melde dich an, um deine zu sehen.",
-    "signInButton": "Anmelden"
-  },
-  "playerInsights": {
-    "title": "{name} · Team-Analyse",
-    "description": "Die Kampf-Analyse von {name} auf PokéIQ: häufigste Starter, Siegquote pro Pokémon, härteste Gegner und Wertung im Verlauf.",
-    "heading": "{name}:",
-    "accent": "Analyse",
-    "intro": "Starter, Pokémon, härteste Gegner und Wertung über die gespeicherten Kämpfe von {name}, ermittelt aus den Replays.",
-    "format": "Format",
-    "allFormats": "Alle Formate",
-    "noBattles": "Noch keine Kämpfe zum Auswerten.",
-    "soon": "Die Team-Analyse startet bald.",
-    "empty": "Hier gibt es noch keine gespeicherten Replays zum Auswerten: Die Analyse stammt aus Kämpfen, deren Replay gespeichert wurde (jeder gewertete Kampf speichert eins).",
-    "reading": "{n} weitere Kämpfe werden gerade gelesen; schau gleich noch mal vorbei.",
-    "battlesRead": "Gelesene Kämpfe",
-    "winRate": "Siegquote",
-    "monsUsed": "Eingesetzte Pokémon",
-    "leadsCount": "Verschiedene Starter",
-    "trend": "Wertung im Verlauf",
-    "leads": "Häufigste Starter",
-    "byMon": "Siegquote pro Pokémon",
-    "byMonAside": "Kämpfe, in denen es zum Einsatz kam",
-    "monRecord": "{wins}–{losses} in {games, plural, one {{games} Kampf} other {{games} Kämpfen}}",
-    "threats": "Härteste Gegner",
-    "threatsAside": "Gegner mit einem K.O. oder Sieg gegen {name}: meiste K.O.s, dann meiste Siege",
-    "threatRecord": "{games, plural, one {{games} Kampf} other {{games} Kämpfe}} · {wins, plural, one {{wins} Sieg} other {{wins} Siege}} gegen {name}",
-    "kos": "{n, plural, one {K.O.} other {K.O.s}}",
-    "noThreats": "Bisher hat nichts die Pokémon von {name} besiegt.",
-    "pending": "{n, plural, one {{n} älterer Kampf wird} other {{n} ältere Kämpfe werden}} noch gelesen: Sie zählen beim nächsten Besuch.",
-    "noLeads": "Noch keine Starter gesehen.",
-    "mostUsed": "Am häufigsten",
-    "leadTimes": "{n}× Starter",
-    "leadWon": "{rate} gewonnen",
-    "trendMore": "Spiele {count, select, one {noch einen gewerteten Kampf} other {ein paar gewertete Kämpfe}} in diesem Format, um einen Verlauf zu sehen.",
-    "trendLabel": "Wertung von {from} auf {to} in {n} gewerteten Kämpfen",
-    "trendDelta": "{delta} in {n, plural, one {{n} Kampf} other {{n} Kämpfen}}",
-    "lastGxe": "GXE nach dem letzten Kampf: {gxe} %"
-  },
-  "replays": {
-    "title": "Pokémon-Kampf-Replays",
-    "description": "Sieh dir Pokémon-Kampf-Replays Runde für Runde an, auf der Engine von Pokémon Showdown: deine eigenen Kämpfe und die neuesten gewerteten und öffentlichen.",
-    "crumb": "Replays",
-    "heading": "Kampf-",
-    "accent": "Replays",
-    "intro": "Jeder gewertete und öffentliche Kampf wird als Replay gespeichert; nach allen anderen tippe auf Replay speichern. Replays zeigen, was die Zuschauer sahen, Runde für Runde.",
-    "import": "Showdown-Replay ansehen",
-    "live": "Live-Kämpfe"
-  },
-  "replay": {
-    "fallbackTitle": "Kampf-Replay",
-    "fallbackDescription": "Ein Pokémon-Kampf-Replay auf PokéIQ.",
-    "title": "{title}: {format}-Replay",
-    "description": "{result} in {turns} Runden. Sieh dir das Replay Runde für Runde auf der Engine von Pokémon Showdown an.",
-    "crumb": "Replay",
-    "ranked": "Gewertet · ",
-    "summary": "{format} · {result} in {turns, plural, one {{turns} Runde} other {{turns} Runden}}."
-  },
-  "notFound": {
-    "heading": "Replay nicht gefunden",
-    "body": "Dieses Replay gibt es nicht oder es ist nicht verfügbar: Vielleicht ist der Link falsch, oder der Kampf wurde nie gespeichert.",
-    "browse": "Replays durchsuchen",
-    "live": "Live-Kämpfe",
-    "import": "Log importieren"
-  },
-  "import": {
-    "title": "Showdown-Replay ansehen",
-    "description": "Füge ein Kampf-Log von Pokémon Showdown ein oder öffne eine gespeicherte Replay-Datei und sieh sie dir Runde für Runde an.",
-    "crumb": "Import",
-    "heading": "Ansehen:",
-    "accent": "Showdown-Replay",
-    "intro": "Füge ein Kampf-Log ein oder öffne eine Replay-Datei, die Showdown gespeichert hat, und spiel sie hier ab."
-  },
-  "tournaments": {
-    "title": "Turniere",
-    "description": "Pokémon-Kampfturniere auf PokéIQ: K.-o.-System oder Jeder gegen jeden in jedem Format, dazu jede Stunde ein offizielles Zufallskampf-Turnier.",
-    "crumb": "Turniere",
-    "heading": "Turniere",
-    "accent": "live",
-    "intro": "Tritt einem Turnierbaum bei oder eröffne dein eigenes Turnier in jedem Format. Jede Stunde startet ein offizielles Zufallskampf-Turnier: Die Anmeldung ist in den ersten zehn Minuten offen."
-  },
-  "tournament": {
-    "title": "Turnier",
-    "description": "Ein Pokémon-Kampfturnier auf PokéIQ: der Live-Turnierbaum, Matches und Ergebnisse.",
-    "back": "Zurück zu den Turnieren",
-    "crumb": "Turniere"
+  "factory": {
+    "meta": {
+      "title": "Kampffabrik: Team leihen, Siegesserie aufbauen"
+    },
+    "description": "Die Kampffabrik mit der Engine von Pokémon Showdown: Leih dir sechs Pokémon aus Showdowns Battle-Factory-Sets, gewinne sieben in Folge gegen einen immer stärkeren Computer und tausche nach jedem Sieg gegen ein Pokémon deines Gegners.",
+    "name": "Kampffabrik",
+    "title": "Die",
+    "accent": "Kampffabrik",
+    "intro": "Kein Team nötig: Leih dir sechs Pokémon aus den Battle-Factory-Sets von Pokémon Showdown, gewinne sieben in Folge und tausche nach jedem Sieg eines deiner Pokémon gegen eines deines Gegners. Oder finde über die Kampfvorbereitung einen Gegner, der sich ebenfalls eins leiht."
   }
 }

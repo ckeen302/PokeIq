@@ -1,0 +1,117 @@
+{
+  "common": "I numeri che trasformano le statistiche in forza, velocità e spinta sono nostri, tarati perché un atleta di 70 kg con base 100 ottenga una misura umana d’élite; ogni costante e la sua fonte sono pubbliche in lib/games/constants.ts.",
+  "formula": "La formula",
+  "inputs": "Dati:",
+  "modelled": "Modellato",
+  "not": "Non modellato",
+  "aquatic": "I fattori acquatici di questo gruppo",
+  "swiftSwim": " · Nuotovelox con la pioggia: Velocità ×2",
+  "parts": {
+    "water": "Tipo Acqua",
+    "waterEgg": "Gruppo uova Acqua",
+    "sinks": "Tipo {types}: affonda o odia l’acqua",
+    "other": "Non è un Pokémon acquatico",
+    "fish": "Corpo a forma di pesce",
+    "fin": "Pinne (gruppo uova Acqua 2)"
+  },
+  "sprint": {
+    "formula": {
+      "0": "Il modello della Corsa Pokémon, invariato: velocità massima = Velocità base ÷ 10 m/s, una partenza dello sprint Furusawa–Hill (τ da peso e Attacco), un calo dopo 150 m in base ai PS, integrato con RK4.",
+      "1": "Reazione allo sparo: {fast}–{slow} s in base alla Velocità, con un seme; sotto i {falseStart} s è falsa partenza e squalifica (World Athletics TR 16).",
+      "2": "Il tuffo sul traguardo: il busto di uno sprinter eretto passa la linea {dip} × la sua altezza davanti ai fianchi.",
+      "3": "Tempi al centesimo arrotondati per eccesso; un pari merito si decide al fotofinish al millesimo."
+    },
+    "inputs100": "Velocità, Attacco e peso.",
+    "inputs": "Velocità, Attacco, PS e peso.",
+    "heats": "Batterie e finale ai Giochi (gli eliminatori della Corsa)",
+    "stagger": "Partenze sfalsate in curva",
+    "form": "Forma del giorno entro ±1,5%",
+    "not": { "0": "Il vento", "1": "L’effetto della corsia assegnata" }
+  },
+  "swim": {
+    "formula": {
+      "0": "Velocità in acqua = {vRef} m/s × (Velocità/100)^{speedExp} × un fattore acquatico.",
+      "1": "Fattore acquatico: tipo Acqua e gruppi uova Acqua 1/2/3 {water}; tipi Fuoco, Roccia e Terra {sinkers} (affondano o odiano l’acqua); tutti gli altri {other}; un corpo a forma di pesce o con pinne × {fin}.",
+      "2": "Nuotovelox raddoppia la Velocità (il suo vero effetto), solo con la pioggia.",
+      "3": "La partenza: una reazione, un tuffo (velocità dall’Attacco), una scivolata; la resistenza cala dopo {fade} m in base ai PS.",
+      "3turn": "La partenza: una reazione, un tuffo (velocità dall’Attacco), una scivolata; la resistenza cala dopo {fade} m in base ai PS; una virata a capriola ai 50 m e una spinta dall’Attacco."
+    },
+    "inputs": "Velocità, Attacco, PS, peso, lunghezza, tipi, gruppi uova, Nuotovelox e forma del corpo.",
+    "modelled": { "0": "Una vasca da 50 m, otto corsie", "1": "I corpi grandi arrivano più lontano in partenza e in virata" },
+    "not": { "0": "Stili diversi dallo stile libero", "1": "La scia del vicino" }
+  },
+  "long-jump": {
+    "formula": {
+      "0": "Rincorsa: il modello di sprint della Corsa Pokémon su {runUp} m, × {boardKeep} sull’asse (i saltatori perdono circa il 5% allo stacco).",
+      "1": "Stacco: velocità verticale {v} m/s × √(Attacco/100) × (kg/70)^(−1/6) per i corpi sopra i 70 kg (i corpi pesanti hanno meno spinta per kg; quelli leggeri non ne guadagnano, legge di Borelli).",
+      "2": "Volo: un proiettile dal baricentro allo stacco ({comTakeoff} × altezza) all’atterraggio ({comLanding} × altezza), più una distanza di stacco e una di atterraggio di {share} × altezza ciascuna.",
+      "3": "L’asse: il piede stacca dietro la linea di una distanza generata da un seme (più dispersione quanto più sei veloce e grande); oltre è nullo, circa un salto su dieci. Misurato dalla linea, al centimetro inferiore."
+    },
+    "inputs": "Velocità, Attacco, PS (resistenza), peso, altezza e forma del corpo.",
+    "modelled": { "0": "L’accelerazione in rincorsa", "1": "Il volo di un proiettile con g = 9,81", "2": "I nulli e la distanza persa prima dell’asse", "3": "Tre tentativi, conta il migliore, a parità il secondo migliore", "4": "Anche i volatili e Levitazione saltano: planare non è ammesso, quindi stessa fisica" },
+    "not": { "0": "La resistenza dell’aria (circa l’1% su un salto)", "1": "Il vento" }
+  },
+  "high-jump": {
+    "formula": {
+      "0": "Altezza superata = baricentro allo stacco ({com} × altezza) + salita v²/2g + tecnica.",
+      "1": "v = {v} m/s × √(Attacco/100) × (kg/70)^(−1/6) sopra i 70 kg.",
+      "2": "Tecnica: un Fosbury per i bipedi (+{bonus} m: l’asticella può passare sopra il baricentro); quattro zampe o un corpo da serpente {penalty} m.",
+      "3": "L’asticella sale di 5 cm alla volta, poi di 3 cm quando ne restano tre o meno; tre errori di fila e sei fuori; parità decise dagli errori (all’ultima misura, poi in totale), uno spareggio per il primo posto."
+    },
+    "inputs": "Attacco, peso, altezza e forma del corpo.",
+    "modelled": { "0": "I Pokémon alti partono in alto: il loro baricentro è già a metri da terra", "1": "La forma del giorno di ogni tentativo", "2": "Le regole del salto in alto di World Athletics e gli spareggi" },
+    "not": { "0": "La curva e la velocità della rincorsa (qui non cambiano il risultato)" }
+  },
+  "shot-put": {
+    "formula": {
+      "0": "Velocità di rilascio {v} m/s × √(Attacco/100) × (kg/70)^(1/6): i corpi grandi guadagnano un po’ grazie alla leva.",
+      "1": "Limitata dalla massa del peso ({mass} kg): la relazione forza–velocità di Hill rallenta un muscolo quando il carico si avvicina alla sua forza (il suo miglior slancio), e nessun arto muove un attrezzo a più di {cap} m/s.",
+      "2": "Rilasciato a {angle}° da {share} × altezza (al massimo {releaseCap} m), con resistenza dell’aria su una sfera di {diameter} cm.",
+      "3": "Senza braccia (forma del corpo): un colpo di testa o di coda al {noArms}% della velocità."
+    },
+    "inputs": "Attacco, Difesa (tramite l’alzata), peso, altezza e forma del corpo.",
+    "modelled": { "0": "Proiettile con resistenza, integrato a passi di 1/600 s", "1": "Troppo debole per sollevare il peso: nessuna misura", "2": "Tre lanci, conta il migliore" },
+    "not": { "0": "Tecnica rotatoria o traslocazione", "1": "I nulli in pedana" }
+  },
+  "javelin": {
+    "formula": {
+      "0": "Velocità di rilascio = {runKeep} × la velocità del modello di corsa dopo {runUp} m di rincorsa + velocità del braccio {arm} m/s × √(Attacco/100) × (kg/70)^(1/6), con gli stessi limiti del peso.",
+      "1": "Volo: resistenza e portanza su un giavellotto da {mass} g (Hubbard e Rust, 1984), rilasciato a {angle}° da {share} × altezza.",
+      "2": "Senza braccia: il {noArms}% della velocità."
+    },
+    "inputs": "Velocità, Attacco, peso, altezza e forma del corpo.",
+    "modelled": { "0": "Portanza e resistenza aerodinamiche", "1": "La velocità della rincorsa", "2": "Il limite di velocità degli arti: i lanciatori forti si raggruppano lì vicino, decide l’altezza" },
+    "not": { "0": "Il beccheggio del giavellotto (vola con la punta lungo la traiettoria)", "1": "Il vento" }
+  },
+  "weightlifting": {
+    "formula": {
+      "0": "Miglior alzata = {ref} kg × (kg/70)^(2/3) × (Attacco/100) × (Difesa/100)^{defExp}: la forza muscolare cresce con la massa^(2/3), la regola allometrica dietro i coefficienti Sinclair.",
+      "1": "Tre tentativi nell’ordine a carico crescente dell’IWF: apertura al {opening}%, poi circa il {second}%, poi il {third}%; un errore ripete il carico.",
+      "2": "Ogni alzata riesce con una probabilità che crolla rapidamente oltre il meglio del giorno (una logistica larga {width}%).",
+      "3": "Dischi veri a passi di 1 kg (colori IWF) su un bilanciere da 20 kg con fermi da 2,5 kg; bilancieri più leggeri per i carichi piccoli."
+    },
+    "inputs": "Attacco, Difesa e peso.",
+    "modelled": { "0": "Un Pokémon pesante è forte, ma non proporzionalmente più forte", "1": "Il rapporto alzata ÷ peso corporeo come premio a parte" },
+    "not": { "0": "Lo strappo", "1": "Gli errori tecnici" }
+  },
+  "wrestling": {
+    "formula": {
+      "0": "Spinta = {push} N × kg^(2/3) × Attacco/100; tenuta = {brace} N × kg^(2/3) × Difesa/100 + {friction} × il suo peso in attrito.",
+      "1": "L’incontro: entrambi caricano (slancio da Velocità e massa), si afferrano, e chi spinge più di quanto l’altro tenga fa arretrare la coppia; spinte casuali generate da un seme ribaltano l’esito; la resistenza viene dai PS.",
+      "2": "Uscire dal cerchio (un dohyō di sumo di {ring} m di diametro, o più grande per un gigante) significa perdere; dopo {maxTime} s perde chi è stato spinto più indietro."
+    },
+    "inputs": "Attacco, Difesa, Velocità, PS e peso.",
+    "modelled": { "0": "Un tabellone a eliminazione diretta con teste di serie per spinta + tenuta", "1": "Un incontro per il bronzo" },
+    "not": { "0": "Mosse, proiezioni o danni in lotta (quella è la Battaglia di massa): solo forza e massa" }
+  },
+  "all-around": {
+    "formula": {
+      "0": "Punti per gara con la formula delle prove multiple di World Athletics: A·(B − T)^C per i tempi, A·(M − B)^C per le misure.",
+      "1": "Le vere costanti del decathlon per 100 m, 400 m, salto in lungo, salto in alto, peso e giavellotto; le nostre, della stessa forma, per 200 m, sollevamento e nuoto (1000 punti per una misura d’élite).",
+      "2": "Il più completo è il Campione dei Giochi."
+    },
+    "inputs": "La misura di ogni gara.",
+    "modelled": { "0": "Dieci gare con una misura (la lotta è testa a testa)" },
+    "not": { "0": "L’ordine delle gare o la fatica tra una gara e l’altra" }
+  }
+}

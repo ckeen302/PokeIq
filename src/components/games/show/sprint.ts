@@ -1,7 +1,9 @@
 import { excitementAt, photoWindow, planShow, raceTimeAt, shotAt, shotProgress, type Phase } from "@/lib/race/broadcast";
 import { cameraFor } from "@/lib/race/director";
 import { formatTime, leaderAt, spotsAt } from "@/lib/race/race";
-import { formatSeconds } from "@/lib/games/events";
+import { formatSeconds, localNum } from "@/lib/games/events";
+import { translator, type Translator } from "@/i18n/catalog";
+import gamesShow from "@/messages/games-show";
 import type { SprintEventResult } from "@/lib/games/sprint";
 import { NO_PROPS, beatAt, beatK, type Beat, type Cue, type Overlay, type Show, type ShowFrame } from "./types";
 import type { ShowOptions } from "./longjump";
@@ -16,7 +18,9 @@ import type { ShowOptions } from "./longjump";
  * red card, and the restart without the runner who went early.
  */
 
-export function sprintShow(result: SprintEventResult, o: ShowOptions): Show {
+export function sprintShow(result: SprintEventResult, o: ShowOptions, t: Translator<typeof gamesShow.en> = translator(gamesShow, "en", undefined)): Show {
+  const num = (s: string) => localNum(s, t.locale);
+  const setTitle = t("sprint.set");
   const fin = result.final;
   const race = fin.race;
   const plan = planShow(race, { video: o.video, quick: o.quick || o.budget < 40, lineup: o.lineup });
@@ -25,10 +29,10 @@ export function sprintShow(result: SprintEventResult, o: ShowOptions): Show {
   const cues: Cue[] = [];
   const beats: Beat[] = [];
   if (falseRace) {
-    beats.push({ kind: "action", t0: 0, t1: 1.0, cam: "marks", act: -1, title: "On your marks" });
-    beats.push({ kind: "action", t0: 1.0, t1: 1.8, cam: "marks", act: -1, title: "Set" });
+    beats.push({ kind: "action", t0: 0, t1: 1.0, cam: "marks", act: -1, title: t("sprint.marks") });
+    beats.push({ kind: "action", t0: 1.0, t1: 1.8, cam: "marks", act: -1, title: setTitle });
     beats.push({ kind: "action", t0: 1.8, t1: 2.45, cam: "marks", act: -1, clock0: 0, rate: 1 });
-    beats.push({ kind: "card", t0: 2.45, t1: pre, cam: "marks", act: -2, title: "False start" });
+    beats.push({ kind: "card", t0: 2.45, t1: pre, cam: "marks", act: -2, title: t("sprint.falseStart") });
     cues.push({ t: 1.8, kind: "gun", gain: 1 }, { t: 2.15, kind: "recall", gain: 1 }, { t: 2.5, kind: "groan", gain: 0.8 });
   }
   for (const s of plan.shots) beats.push({ kind: s.phase === "replay" ? "replay" : s.phase === "photo" ? "photo" : s.phase === "results" ? "board" : "action", t0: s.t0 + pre, t1: s.t1 + pre, cam: s.camera, clock0: s.race0, rate: s.rate, title: s.phase, ...(s.lane != null ? { act: s.lane } : {}) });
@@ -55,7 +59,7 @@ export function sprintShow(result: SprintEventResult, o: ShowOptions): Show {
       const rt = beat.clock0 != null ? beat.clock0 + (t - beat.t0) : beat.act === -2 ? 0.65 : 0;
       const spots = spotsAt(falseRace, Math.max(0, rt));
       const pose = cameraFor("marks", k, spots, { distance: race.distance, aspect, starts: falseStarts });
-      return { t, venue: "stadium", pose, beat, k, race: { t: rt, pre: rt > 0 ? "race" : beat.title === "Set" ? "set" : "marks", index: 1 }, actors: [], props: NO_PROPS, bursts: [], decals: [], excitement: beat.act === -2 ? 0.3 : 0.08, replay: 0, fade: 0, flash: 0, clock: rt > 0 ? formatTime(rt) : "0.00", screen: null };
+      return { t, venue: "stadium", pose, beat, k, race: { t: rt, pre: rt > 0 ? "race" : beat.title === setTitle ? "set" : "marks", index: 1 }, actors: [], props: NO_PROPS, bursts: [], decals: [], excitement: beat.act === -2 ? 0.3 : 0.08, replay: 0, fade: 0, flash: 0, clock: rt > 0 ? formatTime(rt) : "0.00", screen: null };
     }
     const st = t - pre;
     const shot = shotAt(plan, Math.min(st, plan.end));
@@ -87,22 +91,22 @@ export function sprintShow(result: SprintEventResult, o: ShowOptions): Show {
     };
   };
 
-  const overlay = (t: number): Overlay => {
-    if (falseRace && t < pre) {
-      const beat = beatAt(beats, t);
+  const overlay = (time: number): Overlay => {
+    if (falseRace && time < pre) {
+      const beat = beatAt(beats, time);
       if (beat.act === -2) {
         const cheat = runOf.get(fin.falseStart!.key)!;
-        return { mark: { text: "FALSE START", sub: `${cheat.athlete.name} · reaction ${fin.falseStart!.reaction.toFixed(3)} s · disqualified`, tone: "bad", k: beatK(beat, t) } };
+        return { mark: { text: t("sprint.falseStartBig"), sub: t("sprint.falseSub", { name: cheat.athlete.name, r: num(fin.falseStart!.reaction.toFixed(3)) }), tone: "bad", k: beatK(beat, time) } };
       }
       return {};
     }
     const resultsT0 = (plan.shots.find((x) => x.phase === "results")?.t0 ?? plan.end) + pre;
-    if (t >= resultsT0) {
+    if (time >= resultsT0) {
       return {
         board: {
-          title: `${result.event === "100m" ? "100 m" : result.event === "200m" ? "200 m" : "400 m"} · results`,
-          rows: fin.order.map((r) => ({ place: r.dq ? "DQ" : String(r.place), name: r.athlete.name, mark: r.dq ? "False start" : `${r.photoNeeded ? r.photo.toFixed(3) : formatSeconds(r.time)}`, key: r.athlete.key, hi: r.place === 1, note: r.dq ? undefined : `react ${r.reaction.toFixed(3)}` })),
-          k: Math.min(1, (t - resultsT0) / 1.5),
+          title: t("sprint.results", { event: t(`ev.${result.event}.name`) }),
+          rows: fin.order.map((r) => ({ place: r.dq ? t("sprint.dq") : String(r.place), name: r.athlete.name, mark: r.dq ? t("sprint.falseStart") : num(`${r.photoNeeded ? r.photo.toFixed(3) : formatSeconds(r.time)}`), key: r.athlete.key, hi: r.place === 1, note: r.dq ? undefined : t("sprint.react", { r: num(r.reaction.toFixed(3)) }) })),
+          k: Math.min(1, (time - resultsT0) / 1.5),
         },
       };
     }
@@ -121,8 +125,8 @@ export function sprintShow(result: SprintEventResult, o: ShowOptions): Show {
     at,
     overlay,
     resultsAt: (plan.shots.find((s) => s.phase === "results")?.t0 ?? plan.end) + pre,
-    hook: result.event === "100m" ? "Who's the fastest Pokémon? 100 m ⚡" : result.event === "200m" ? "Who wins the 200 m? 🏃" : "Which Pokémon runs the fastest lap? 🏁",
-    headline: `${winner.athlete.name} wins in ${winner.photoNeeded ? winner.photo.toFixed(3) : formatSeconds(winner.time)} s`,
+    hook: t(result.event === "100m" ? "sprint.hook100" : result.event === "200m" ? "sprint.hook200" : "sprint.hook400"),
+    headline: t("sprint.winsIn", { name: winner.athlete.name, time: num(winner.photoNeeded ? winner.photo.toFixed(3) : formatSeconds(winner.time)) }),
     // The Race's plan, for the page's sprint graphics.
     ...({ racePlan: plan, pre, photoFrame: photoWindow(race), falseRace } as object),
   };

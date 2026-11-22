@@ -1,0 +1,40 @@
+{
+  "events": {
+    "100m": { "name": "100 m", "lower": "le 100 m", "question": "Quel est le Pokémon le plus rapide sur 100 m ?", "hook": "Quel est le Pokémon le plus rapide ? 100 m ⚡" },
+    "200m": { "name": "200 m", "lower": "le 200 m", "question": "Quel Pokémon est le plus rapide dans le virage, sur 200 m ?", "hook": "Qui gagne le 200 m ? 🏃" },
+    "400m": { "name": "400 m", "lower": "le 400 m", "question": "Quel Pokémon boucle le tour le plus rapide ?", "hook": "Quel Pokémon boucle le tour le plus vite ? 🏁" },
+    "long-jump": { "name": "Saut en longueur", "lower": "le saut en longueur", "question": "Quel est le meilleur sauteur en longueur de tous les Pokémon ?", "hook": "Quel Pokémon saute le plus loin ? 🦘" },
+    "high-jump": { "name": "Saut en hauteur", "lower": "le saut en hauteur", "question": "Quel Pokémon saute le plus haut ?", "hook": "Quel Pokémon saute le plus haut ? 🪂" },
+    "shot-put": { "name": "Lancer du poids", "lower": "le lancer du poids", "question": "Quel Pokémon lance le plus loin un poids de 7,26 kg ?", "hook": "Quel Pokémon lance le plus loin ? 💪" },
+    "javelin": { "name": "Lancer du javelot", "lower": "le lancer du javelot", "question": "Quel Pokémon lance le javelot le plus loin ?", "hook": "Qui lance le javelot le plus loin ? 🎯" },
+    "weightlifting": { "name": "Haltérophilie", "lower": "l’haltérophilie", "question": "Quel est le Pokémon le plus fort ? L’épaulé-jeté", "hook": "Quel est le Pokémon le plus fort ? 🏋️" },
+    "50m-freestyle": { "name": "50 m nage libre", "lower": "le 50 m nage libre", "question": "Quel Pokémon est le nageur le plus rapide sur 50 m ?", "hook": "Quel Pokémon nage le plus vite ? 🌊" },
+    "100m-freestyle": { "name": "100 m nage libre", "lower": "le 100 m nage libre", "question": "Quel Pokémon gagne le 100 m nage libre ?", "hook": "Quel Pokémon gagne le 100 m nage libre ? 🏊" },
+    "wrestling": { "name": "Lutte", "lower": "la lutte", "question": "Quel Pokémon est le plus dur à sortir du cercle ?", "hook": "Quel Pokémon pousse les autres hors du cercle ? 🤼" },
+    "all-around": { "name": "Épreuve combinée", "lower": "l’épreuve combinée", "question": "Quel est l’athlète le plus complet de tous les Pokémon ?", "hook": "Quel est le Pokémon le plus complet ? 🏆" }
+  },
+  "h2h": {
+    "sprint": "{a} peut-il courir plus vite que {b} ?",
+    "highJump": "{a} peut-il sauter plus haut que {b} ?",
+    "jump": "{a} peut-il sauter plus loin que {b} ?",
+    "throw": "{a} peut-il lancer plus loin que {b} ?",
+    "lift": "{a} peut-il soulever plus lourd que {b} ?",
+    "swim": "{a} peut-il nager plus vite que {b} ?",
+    "wrestle": "{a} peut-il pousser {b} hors du cercle ?",
+    "allAround": "{a} ou {b} : qui est le plus complet ?"
+  },
+  "summary": {
+    "pushedOut": "Sorti du cercle",
+    "lostOnBell": "Battu au temps",
+    "winner": "Vainqueur",
+    "pushesOut": "{w} pousse {l} hors du cercle",
+    "winsOnBell": "{w} gagne au temps",
+    "noLift": "Aucune barre",
+    "noMark": "Aucune marque",
+    "deadHeat": "Égalité parfaite en {mark}",
+    "neither": "Aucun des deux ne marque",
+    "winsWith": "{w} gagne avec {mark}",
+    "winsOnPhoto": "{w} gagne à la photo",
+    "winsBy": "{w} gagne avec {gap} d’avance"
+  }
+}

@@ -1,136 +1,128 @@
 {
-  "crumb": "Combate",
-  "calc": {
-    "title": "Calculadora de daño Pokémon: todas las generaciones, cada golpe",
-    "description": "Una calculadora de daño Pokémon, la de Smogon, para las generaciones 3 a 9: rangos de daño, probabilidad de KO y descripciones completas con cambios de características, problemas de estado, Teracristalización, clima, campos, pantallas y movimientos de área en dobles. Carga sets de tus equipos.",
-    "crumb": "Calculadora de daño",
-    "heading": "Calculadora",
-    "accent": "de daño",
-    "intro": "Una calculadora de daño Pokémon: el rango de daño, la probabilidad de KO y la descripción de Showdown de cada movimiento, en ambos sentidos. Funciona con la calculadora de daño de Smogon."
+  "hub": {
+    "meta": {
+      "title": "Simulador de combates Pokémon: PvP, contra la CPU y creador de equipos",
+      "description": "Simulador de combates Pokémon gratis con el motor de Pokémon Showdown: PvP en línea en directo, combate contra un amigo o la CPU, y además creador de equipos y calculadora de daño."
+    },
+    "live": {
+      "cpu": {
+        "title": "Combate contra la CPU",
+        "blurb": "Combate contra una CPU que juega para ganar.",
+        "p1": "Combate aleatorio, Dobles aleatorios o tu equipo guardado",
+        "p2": "Rivales en Fácil, Normal y Difícil",
+        "p3": "Las animaciones de movimientos de Showdown, Teracristalización incluida"
+      },
+      "online": {
+        "title": "Combate en línea",
+        "blurb": "Busca un rival o invita a un amigo.",
+        "p1": "Emparejamiento en todos los formatos, con equipos aleatorios o el tuyo",
+        "p2": "El temporizador de Showdown; cada lado solo ve lo que debe",
+        "p3": "Revancha con un toque"
+      },
+      "teams": {
+        "title": "Creador de equipos",
+        "blurb": "Crea equipos y se comprueban sobre la marcha.",
+        "p1": "Formatos desde OU de la 9.ª gen. hasta OU de la 3.ª gen.",
+        "p2": "EV, IV, naturalezas y estadísticas al momento",
+        "p3": "Importar / exportar de Showdown, equipos aleatorios"
+      },
+      "calc": {
+        "title": "Calculadora de daño",
+        "blurb": "Rangos de daño y probabilidades de KO.",
+        "p1": "Cambios de estadísticas, estado, Teracristalización y PS actuales",
+        "p2": "Tiempo, campos, pantallas y movimientos de área",
+        "p3": "Carga sets directamente de tus equipos"
+      },
+      "lab": {
+        "title": "Laboratorio de combate",
+        "blurb": "Repite cualquier enfrentamiento miles de veces.",
+        "p1": "Cualquier Pokémon, nivel, objeto y movimiento, de la 1.ª a la 9.ª gen.",
+        "p2": "Juego inteligente, codicioso, aleatorio o con guion en cada lado",
+        "p3": "% de victorias con intervalo de confianza del 95 %, KO, críticos, repeticiones"
+      }
+    },
+    "frontier": {
+      "factory": {
+        "title": "Factoría Batalla",
+        "blurb": "Alquila un equipo y encadena victorias.",
+        "p1": "Factory a nivel 100 o BSS Factory a nivel 50",
+        "p2": "Cambia por un Pokémon de tu rival tras cada victoria",
+        "p3": "O combate en directo: los dos Entrenadores alquilan equipo"
+      },
+      "tower": {
+        "title": "Torre Batalla",
+        "blurb": "Tu equipo contra una racha de Entrenadores.",
+        "p1": "Nivel 50, lleva seis y elige tres",
+        "p2": "Equipos guardados, creados o rápidos, comprobados por Showdown",
+        "p3": "El Magnate de la Torre cada séptimo combate"
+      }
+    },
+    "tools": "Combates y herramientas",
+    "liveTag": "Activo",
+    "soon": "Pronto",
+    "frontierTitle": "Frente Batalla",
+    "frontierAside": "Rachas contra la CPU",
+    "formats": "Formatos",
+    "formatsAside": "Las reglas de Pokémon Showdown para cada uno",
+    "gameType": {
+      "singles": "individual",
+      "doubles": "dobles"
+    },
+    "formatBlurb": {
+      "gen9ou": "El tier individual estrella de Smogon: todo lo que está por debajo de Ubers.",
+      "gen9ubers": "Se admiten los legendarios de portada. Solo se prohíben los más rotos.",
+      "gen9uu": "El tier bajo OU: sin Pokémon de OU ni UUBL.",
+      "gen9ru": "El tier bajo UU: sin Pokémon de UU ni RUBL.",
+      "gen9nu": "El tier bajo RU: sin Pokémon de RU ni NUBL.",
+      "gen9pu": "El tier bajo NU: sin Pokémon de NU ni PUBL.",
+      "gen9lc": "Little Cup: Pokémon en su primera fase que pueden evolucionar, a nivel 5.",
+      "gen9monotype": "Todos los Pokémon del equipo comparten un tipo. Sin Teracristalización.",
+      "gen9doublesou": "Dos contra dos, la lista de tiers de dobles de Smogon.",
+      "gen9vgc2025regi": "Dobles oficiales: lleva seis, elige cuatro, nivel 50, dos legendarios restringidos.",
+      "gen9nationaldex": "Mecánicas de Escarlata / Púrpura con todos los Pokémon, megapiedras y cristales Z de vuelta.",
+      "gen4ou": "Diamante / Perla / Platino: llega la división físico / especial.",
+      "gen3ou": "Rubí / Zafiro / Esmeralda: el tipo del movimiento decide si es físico o especial."
+    },
+    "info": {
+      "name": "Combates Pokémon",
+      "description": "Un simulador de combates Pokémon gratis con el motor de Pokémon Showdown: combate contra la CPU, un amigo o un desconocido, con creador de equipos, calculadora de daño y Laboratorio de combate.",
+      "intro": "Este simulador de combates Pokémon funciona con el propio motor de Pokémon Showdown: combate contra la CPU, contra un amigo mediante un enlace o contra un rival encontrado en línea.",
+      "step1": "Elige un modo: combate contra la CPU, combate en línea o entra en el Frente Batalla.",
+      "step2": "Usa un equipo aleatorio o crea el tuyo en el creador de equipos.",
+      "step3": "Elige tus movimientos cada turno y gana el combate.",
+      "step4": "Comprueba enfrentamientos con la calculadora de daño o simula miles de combates en el Laboratorio de combate.",
+      "labQ": "¿Qué es el Laboratorio de combate?",
+      "labA": "Te permite preparar cualquier enfrentamiento y hacer que el motor lo juegue miles de veces para estimar las probabilidades de victoria."
+    }
   },
-  "teams": {
-    "title": "Creador de equipos Pokémon: formatos de Showdown y legalidad comprobada",
-    "description": "Un creador de equipos Pokémon para equipos competitivos en OU, Ubers, UU, Dobles OU, VGC y Dex Nacional de la 9.ª generación, OU de la 4.ª y OU de la 3.ª. Movimientos según los aprendizajes de cada formato, características al momento, importación y exportación de Showdown y la comprobación de legalidad del propio Pokémon Showdown.",
-    "crumb": "Creador de equipos",
-    "heading": "Creador",
-    "accent": "de equipos",
-    "intro": "Un creador de equipos Pokémon con seis huecos, los aprendizajes de cada formato y las reglas del propio Pokémon Showdown. Los equipos se guardan en este dispositivo mientras los creas, listos para combatir."
+  "play": {
+    "meta": {
+      "title": "Combate Pokémon: contra la CPU, en línea o con un amigo",
+      "description": "Combates Pokémon de verdad con el motor de Pokémon Showdown: Combate aleatorio, Dobles aleatorios o tu propio equipo de OU, contra la CPU, un Entrenador encontrado por emparejamiento o un amigo mediante un enlace de invitación."
+    },
+    "crumb": "Jugar",
+    "title": "Empieza un",
+    "accent": "combate",
+    "intro": "El propio motor de combate de Pokémon Showdown: cada movimiento, habilidad y objeto funciona como allí. Elige un rival, un formato y adelante."
   },
-  "lab": {
-    "title": "Laboratorio de combate: simulador de probabilidad de victoria Pokémon",
-    "description": "Prepara dos equipos Pokémon cualesquiera, de la 1.ª a la 9.ª generación, y juega el combate miles de veces con el motor del propio Pokémon Showdown. Mira la probabilidad de victoria de cada lado con un intervalo de confianza del 95 %, cuánto duran los combates, quién logra los KO y combates de muestra.",
-    "name": "Laboratorio de combate",
-    "crumb": "Laboratorio de combate",
-    "heading": "Laboratorio",
-    "accent": "de combate",
-    "intro": "Prepara dos bandos y deja que el motor del propio Pokémon Showdown juegue el combate miles de veces, aquí mismo en tu navegador. Mira cuántas veces gana cada bando, cuánto tarda y qué lo decide."
+  "tower": {
+    "meta": {
+      "title": "Torre Batalla: rachas con Flat Rules contra la CPU"
+    },
+    "description": "La Torre Batalla con el motor de Pokémon Showdown: lleva tu equipo con las Flat Rules (nivel 50, lleva seis y elige tres) y encadena victorias contra Entrenadores de la CPU, con el Magnate de la Torre cada séptimo combate.",
+    "name": "Torre Batalla",
+    "title": "Torre",
+    "accent": "Batalla",
+    "intro": "Tu equipo, las Flat Rules y una racha de Entrenadores de la CPU cada vez más duros. Cada séptimo combate te espera el Magnate de la Torre con su mejor equipo."
   },
-  "ladder": {
-    "title": "Clasificación de combates Pokémon: puntuaciones por formato",
-    "description": "La clasificación de combates clasificatorios: puntuaciones Elo, GXE y Glicko-2, como en Pokémon Showdown, para Combate Aleatorio, Dobles Aleatorios, OU, Ubers, UU, RU, NU, PU, LC, Monotipo, Dex Nacional y Dobles OU.",
-    "crumb": "Clasificación",
-    "heading": "Clasificación",
-    "accent": "de combates",
-    "rules": "Puntuaciones por formato como en Pokémon Showdown: la clasificación se ordena por Elo (todo el mundo empieza con {elo}, nunca baja de ahí y un Elo de más de 1400 baja un poco cada día que no juegas), junto con el GXE (tu probabilidad de ganar a un entrenador al azar de la clasificación) y una puntuación Glicko-2. Todo el mundo empieza con {rating} ± {rd} de Glicko-2; una puntuación es provisional hasta que su desviación baja de {shown}. Rendirse, quedarse sin tiempo o salir cuenta como derrota.",
-    "short": "Ordenada por Elo, con GXE y Glicko-2, como en Pokémon Showdown. Todo el mundo empieza con {elo}.",
-    "insights": "Tus estadísticas",
-    "play": "Jugar clasificatoria",
-    "soon": "Los combates clasificatorios llegarán pronto.",
-    "top": "{format}: los 100 mejores",
-    "how": "Cómo funcionan las puntuaciones"
-  },
-  "insights": {
-    "title": "Estadísticas del equipo",
-    "description": "Las estadísticas de tus combates: Pokémon iniciales, Pokémon, rivales más duros y evolución de tu puntuación.",
-    "crumb": "Estadísticas del equipo",
-    "heading": "Estadísticas",
-    "accent": "del equipo",
-    "intro": "Tus Pokémon iniciales más habituales, el porcentaje de victorias de cada Pokémon, los rivales que más te ganan y la evolución de tu puntuación, a partir de tus combates guardados.",
-    "signIn": "Las estadísticas van con tu cuenta: inicia sesión para ver las tuyas.",
-    "signInButton": "Iniciar sesión"
-  },
-  "playerInsights": {
-    "title": "{name} · Estadísticas del equipo",
-    "description": "Las estadísticas de combate de {name} en PokéIQ: Pokémon iniciales más habituales, porcentaje de victorias por Pokémon, rivales más duros y evolución de la puntuación.",
-    "heading": "{name}:",
-    "accent": "estadísticas",
-    "intro": "Pokémon iniciales, Pokémon, rivales más duros y puntuación a lo largo de los combates guardados de {name}, sacados de sus repeticiones.",
-    "format": "Formato",
-    "allFormats": "Todos los formatos",
-    "noBattles": "Todavía no hay combates que analizar.",
-    "soon": "Las estadísticas del equipo llegarán pronto.",
-    "empty": "Aún no hay repeticiones guardadas de las que aprender: las estadísticas salen de los combates cuya repetición se guardó (cada combate clasificatorio guarda la suya).",
-    "reading": "Se están leyendo {n} combates más; vuelve en un momento.",
-    "battlesRead": "Combates leídos",
-    "winRate": "Victorias",
-    "monsUsed": "Pokémon usados",
-    "leadsCount": "Iniciales distintos",
-    "trend": "Puntuación en el tiempo",
-    "leads": "Iniciales más habituales",
-    "byMon": "Victorias por Pokémon",
-    "byMonAside": "Combates en los que salió cada uno",
-    "monRecord": "{wins}–{losses} en {games, plural, one {{games} combate} other {{games} combates}}",
-    "threats": "Rivales más duros",
-    "threatsAside": "Rivales con un KO o una victoria contra {name}: más KO primero, luego más victorias",
-    "threatRecord": "{games, plural, one {{games} combate} other {{games} combates}} · {wins, plural, one {{wins} victoria} other {{wins} victorias}} contra {name}",
-    "kos": "{n, plural, one {KO} other {KO}}",
-    "noThreats": "Nada ha debilitado todavía a los Pokémon de {name}.",
-    "pending": "{n, plural, one {Falta por leer {n} combate antiguo: contará} other {Faltan por leer {n} combates antiguos: contarán}} en una próxima visita.",
-    "noLeads": "Todavía no hay iniciales.",
-    "mostUsed": "El más usado",
-    "leadTimes": "{n}× inicial",
-    "leadWon": "{rate} ganados",
-    "trendMore": "Juega {count, select, one {otro combate clasificatorio} other {un par de combates clasificatorios}} en este formato para ver la evolución.",
-    "trendLabel": "Puntuación de {from} a {to} en {n} combates clasificatorios",
-    "trendDelta": "{delta} en {n, plural, one {{n} combate} other {{n} combates}}",
-    "lastGxe": "GXE tras el último combate: {gxe} %"
-  },
-  "replays": {
-    "title": "Repeticiones de combates Pokémon",
-    "description": "Mira repeticiones de combates Pokémon turno a turno, con el motor de Pokémon Showdown: tus propios combates y los últimos clasificatorios y públicos.",
-    "crumb": "Repeticiones",
-    "heading": "Repeticiones",
-    "accent": "de combates",
-    "intro": "Cada combate clasificatorio y público se guarda como repetición; tras cualquier otro, pulsa Guardar repetición. Las repeticiones muestran lo que vieron los espectadores, turno a turno.",
-    "import": "Ver una repetición de Showdown",
-    "live": "Combates en directo"
-  },
-  "replay": {
-    "fallbackTitle": "Repetición de combate",
-    "fallbackDescription": "Una repetición de un combate Pokémon en PokéIQ.",
-    "title": "{title}: repetición de {format}",
-    "description": "{result} en {turns} turnos. Mira la repetición, turno a turno, con el motor de Pokémon Showdown.",
-    "crumb": "Repetición",
-    "ranked": "Clasificatorio · ",
-    "summary": "{format} · {result} en {turns, plural, one {{turns} turno} other {{turns} turnos}}."
-  },
-  "notFound": {
-    "heading": "Repetición no encontrada",
-    "body": "Esta repetición no existe o no está disponible: puede que el enlace esté mal o que el combate nunca se guardara.",
-    "browse": "Ver repeticiones",
-    "live": "Combates en directo",
-    "import": "Importar un registro"
-  },
-  "import": {
-    "title": "Ver una repetición de Showdown",
-    "description": "Pega el registro de un combate de Pokémon Showdown o abre un archivo de repetición guardado y míralo turno a turno.",
-    "crumb": "Importar",
-    "heading": "Ver una",
-    "accent": "repetición de Showdown",
-    "intro": "Pega el registro de un combate o abre un archivo de repetición que guardó Showdown, y reprodúcelo aquí."
-  },
-  "tournaments": {
-    "title": "Torneos",
-    "description": "Torneos de combates Pokémon en PokéIQ: eliminación directa o liguilla en cualquier formato, y un torneo oficial de Combate Aleatorio cada hora.",
-    "crumb": "Torneos",
-    "heading": "Torneos",
-    "accent": "en directo",
-    "intro": "Únete a un cuadro o abre el tuyo en cualquier formato. Cada hora empieza un torneo oficial de Combate Aleatorio: las inscripciones están abiertas los primeros diez minutos."
-  },
-  "tournament": {
-    "title": "Torneo",
-    "description": "Un torneo de combates Pokémon en PokéIQ: el cuadro en directo, los enfrentamientos y los resultados.",
-    "back": "Volver a los torneos",
-    "crumb": "Torneos"
+  "factory": {
+    "meta": {
+      "title": "Factoría Batalla: alquila un equipo y encadena victorias"
+    },
+    "description": "La Factoría Batalla con el motor de Pokémon Showdown: alquila seis Pokémon de los sets de Battle Factory de Showdown, gana siete seguidos contra una CPU cada vez más fuerte y cambia por un Pokémon de tu rival tras cada victoria.",
+    "name": "Factoría Batalla",
+    "title": "Factoría",
+    "accent": "Batalla",
+    "intro": "No necesitas equipo: alquila seis Pokémon de los sets de Battle Factory de Pokémon Showdown, gana siete seguidos y, tras cada victoria, cambia uno de los tuyos por uno de tu rival. O busca un rival que también alquile, desde la preparación del combate."
   }
 }

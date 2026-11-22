@@ -22,6 +22,7 @@ import { buildInfield, type Infield } from "./venues/infield";
 import { buildArena, type ArenaWorld } from "./venues/arena";
 import { buildAquatics, type PoolWorld } from "./venues/pool";
 import { buildProps, type GameProps } from "./props";
+import { SCENE_LABELS, type SceneLabels } from "./labels";
 
 /**
  * The 3D world of the PokéIQ Games, one renderer for every event:
@@ -77,6 +78,8 @@ export interface SceneOptions {
   font: string;
   size?: { w: number; h: number };
   onContextGone?: () => void;
+  /** The venues' words in the page's language (English when left out). */
+  labels?: SceneLabels;
 }
 
 export interface HeadAnchor {
@@ -114,6 +117,7 @@ interface World {
 }
 
 export function createGamesScene(host: HTMLElement, opts: SceneOptions): GamesScene {
+  const L = opts.labels ?? SCENE_LABELS;
   let quality = opts.quality;
   let Q = QUALITY[quality];
   const Q0 = Q;
@@ -175,7 +179,7 @@ export function createGamesScene(host: HTMLElement, opts: SceneOptions): GamesSc
     g.textBaseline = "middle";
     g.fillStyle = "#ffffff";
     g.font = `700 50px ${opts.font}`;
-    g.fillText("THE POKÉIQ GAMES", 256, 100, 480);
+    g.fillText(L.games, 256, 100, 480);
     g.font = `700 30px ${opts.font}`;
     g.fillStyle = "#ffd23f";
     g.fillText(title.toUpperCase(), 256, 164, 480);
@@ -184,7 +188,7 @@ export function createGamesScene(host: HTMLElement, opts: SceneOptions): GamesSc
     g.fillText(sub.toUpperCase(), 256, 206, 480);
     cardTex.needsUpdate = true;
   };
-  drawCard("Welcome", "");
+  drawCard(L.welcome, "");
   let screenRT: THREE.WebGLRenderTarget | null = null;
   const feedScreens = (on: boolean) => {
     if (on && !screenRT) { screenRT = new THREE.WebGLRenderTarget(512, 288, { type: THREE.HalfFloatType }); screenRT.texture.colorSpace = THREE.LinearSRGBColorSpace; }
@@ -231,11 +235,11 @@ export function createGamesScene(host: HTMLElement, opts: SceneOptions): GamesSc
     if (w) return w;
     if (v === "stadium") w = stadiumWorld();
     else if (v === "arena") {
-      arena = buildArena({ renderer, font: opts.font, occupancy: Q0.crowd, flashes: Q0.flashes, aniso });
+      arena = buildArena({ renderer, font: opts.font, labels: L, occupancy: Q0.crowd, flashes: Q0.flashes, aniso });
       const a = arena;
       w = { group: a.group, env: a.env, fog: a.fog, update: (t, cam, ex) => a.update(t, cam, ex), dispose: () => a.dispose() };
     } else {
-      pool = buildAquatics({ renderer, font: opts.font, occupancy: Q0.crowd, flashes: Q0.flashes, aniso, quality: quality === "draft" || quality === "low" ? "low" : "high" });
+      pool = buildAquatics({ renderer, font: opts.font, labels: L, occupancy: Q0.crowd, flashes: Q0.flashes, aniso, quality: quality === "draft" || quality === "low" ? "low" : "high" });
       const p = pool;
       w = { group: p.group, env: p.env, fog: p.fog, update: (t, cam, ex) => p.update(t, cam, ex), dispose: () => p.dispose() };
     }

@@ -1,0 +1,53 @@
+{
+  "short": {
+    "gen9randombattle": "Zufallskampf",
+    "gen9randomdoublesbattle": "Zufalls-Doppel",
+    "gen9triples": "Dreier",
+    "gen9freeforallrandombattle": "Jeder gegen jeden (Zufall)",
+    "gen9multirandombattle": "Zufalls-Multi",
+    "gen9freeforall": "Jeder gegen jeden",
+    "gen9nationaldex": "Nat Dex",
+    "custom": "Eigene",
+    "factory": "Kampffabrik",
+    "bssfactory": "BSS Factory",
+    "tower": "Turm"
+  },
+  "pastRandom": "Gen {gen} Zufall",
+  "pastTier": "Gen {gen} {tier}",
+  "name": {
+    "custom": "Eigene Regeln",
+    "tower": "Duellturm"
+  },
+  "bring": "Bring dein eigenes Team mit: ein gespeichertes oder eines im Exportformat von Showdown eingefügt.",
+  "pastRandomBlurb": "Je sechs zufällige Pokémon mit den Sets und Mechaniken von Gen {gen}. Kein Team nötig.",
+  "blurb": {
+    "gen9lc": "Little Cup: Level 5, nur erste Entwicklungsstufen. Bring dein eigenes Team mit: ein gespeichertes oder eines im Exportformat von Showdown eingefügt.",
+    "gen9monotype": "Alle Pokémon teilen einen Typ; keine Terakristallisierung. Bring dein eigenes Team mit: ein gespeichertes oder eines im Exportformat von Showdown eingefügt.",
+    "gen9nationaldex": "Alle Pokémon, Mega-Entwicklungen und Z-Attacken; keine Terakristallisierung. Bring dein eigenes Team mit: ein gespeichertes oder eines im Exportformat von Showdown eingefügt.",
+    "gen9triples": "Drei Pokémon pro Seite; Attacken auf ein Ziel erreichen nur benachbarte Pokémon, und ein Pokémon am Rand kann in die Mitte rücken. Bring dein eigenes Team mit: ein gespeichertes oder eines im Exportformat von Showdown eingefügt.",
+    "gen9freeforallrandombattle": "Vier Trainer, jeder für sich, mit je einem Pokémon im Feld. Wer als Letzter steht, gewinnt. Zufallsteams.",
+    "gen9multirandombattle": "Zwei gegen zwei: Du teilst dir eine Seite mit einem Partner, je drei zufällige Pokémon, je eines im Feld.",
+    "gen9freeforall": "Vier Trainer, jeder für sich, mit je einem Pokémon im Feld. Bring dein eigenes Team mit: ein gespeichertes oder eines im Exportformat von Showdown eingefügt.",
+    "custom": "Dein eigenes Regelwerk: die Mechanik jeder Generation, Level, Spezialmechaniken, Klauseln und Teamgröße.",
+    "factory": "Leihteams aus Showdowns Battle-Factory-Sets: Level 100, sechs gegen sechs, Standard-Regeln. Kein Team nötig.",
+    "bssfactory": "Leihteams aus Showdowns Battle-Stadium-Sets: Level 50, sechs mitbringen, drei wählen.",
+    "tower": "Flat Rules: Level 50, sechs mitbringen, drei wählen; Spezies-, Item- und Spitznamen-Klausel.",
+    "gen9randombattle": "Je sechs zufällige Pokémon mit eigens für sie gebauten Sets. Kein Team nötig.",
+    "gen9randomdoublesbattle": "Zwei Pokémon gleichzeitig im Feld, Zufallsteams. Wähle für jede Attacke ein Ziel."
+  },
+  "cpu": {
+    "easy": { "name": "Leicht", "blurb": "Greift mit dem an, was stark aussieht, und wechselt nie." },
+    "normal": { "name": "Normal", "blurb": "Wählt gute Attacken, wechselt aus schlechten Duellen und nutzt die Terakristallisierung." },
+    "hard": { "name": "Schwer", "blurb": "Spielt auf Sieg: K.O.s, Erstschlag, sicheres Aufbauen, kluge Wechsel und Terakristallisierung." }
+  },
+  "gameType": {
+    "doubles": "Doppel",
+    "triples": "Dreier",
+    "freeforall": "Jeder gegen jeden",
+    "multi": "Multi-Kampf"
+  },
+  "custom": {
+    "name": "[Gen {gen}] Eigene · Lv. {level}",
+    "nameCap": "[Gen {gen}] Eigene · Lv. ≤{level}"
+  }
+}

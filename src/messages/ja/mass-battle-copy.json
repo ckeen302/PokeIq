@@ -1,0 +1,27 @@
+{
+  "question": "{boss}を倒すには{challenger}が何匹必要？",
+  "answer": "{challenger}が{n}匹必要",
+  "spread": "±{spread}（{runs}戦）",
+  "winRate": "{n}匹で{runs}戦中{wins}勝",
+  "noAnswer": "{challenger}は{cap}匹までの軍団では{boss}に勝てません",
+  "two": "{a}と{b}",
+  "three": "{a}、{b}、{c}",
+  "more": "{a}、{b}ほか",
+  "group": {
+    "types": "{types}タイプ",
+    "legendariesMythicals": "伝説と幻のポケモン",
+    "legendaries": "伝説のポケモン",
+    "mythicals": "幻のポケモン",
+    "gen": "第{gen}世代のポケモン",
+    "fullyEvolved": "最終進化のポケモン",
+    "pokemon": "ポケモン"
+  },
+  "draw": "引き分け",
+  "winsOne": "{w}の勝ち！",
+  "winsMany": "{w}の勝ち！",
+  "timeUp": "{s}秒で時間切れ。両軍とも生き残りました。",
+  "resultLine": "{s}秒で{n}匹が生存 · {loser}は{kos}匹を倒した",
+  "multiKo": "{pos}の{move}で{target}{n}匹がたおれた",
+  "crit": "急所に当たった！{pos}の{move}が{target}に",
+  "bossDown": "{pos}の{move}で{boss}がたおれた！"
+}

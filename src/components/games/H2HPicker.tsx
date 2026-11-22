@@ -3,13 +3,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { Play, Search, Swords, X } from "lucide-react";
-import { searchEntrants } from "@/lib/race/lineup";
 import { badgeName } from "@/lib/sizes/badges";
 import { fromAthleteRow, type Athlete, type AthleteRow } from "@/lib/games/athlete";
 import { EVENTS, type EventId } from "@/lib/games/events";
 import { eventRunPath, h2hQuestion } from "@/lib/games/deeplink";
 import { RACE_URLS } from "@/components/race/urls";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import gamesEvents from "@/messages/games-events";
+import gamesH2h from "@/messages/games-h2h";
+import { aliasEntrants, localizeAthletes, searchAthletes, useGamesNames } from "./names";
 
 /**
  * Head to head in a few taps: two Pokémon (one may come with the page),
@@ -48,6 +51,9 @@ const EVENT_CHOICES = EVENTS.filter((e) => e.id !== "all-around");
 
 export function H2HPicker({ all: given, a: a0 = null, b: b0 = null, event: e0 = null, rivals, names, variant = "inline", onRun, onClose }: H2HPickerProps) {
   const router = useRouter();
+  const t = useT(gamesH2h);
+  const te = useT(gamesEvents);
+  const local = useGamesNames();
   const [all, setAll] = useState<Athlete[] | null>(given ?? null);
   const [failed, setFailed] = useState(false);
   const [a, setA] = useState<string | null>(a0);
@@ -59,7 +65,7 @@ export function H2HPicker({ all: given, a: a0 = null, b: b0 = null, event: e0 = 
   const root = useRef<HTMLDivElement>(null);
 
   useEffect(() => { if (given) setAll(given); }, [given]);
-  const need = () => { if (!all && !failed) athletes().then(setAll, () => setFailed(true)); };
+  const need = () => { if (!all && !failed) athletes().then((x) => setAll(localizeAthletes(x, local)), () => setFailed(true)); };
   // The sheet loads at once; the inline card when it comes into view (or on a first touch).
   useEffect(() => {
     if (variant === "sheet" || typeof IntersectionObserver === "undefined") { need(); return; }
@@ -72,7 +78,8 @@ export function H2HPicker({ all: given, a: a0 = null, b: b0 = null, event: e0 = 
 
   const byKey = useMemo(() => new Map((all ?? []).map((x) => [x.key, x])), [all]);
   const entrants = useMemo(() => (all ?? []).map((x) => x.entrant), [all]);
-  const results = useMemo(() => (q.trim() ? searchEntrants(entrants, q, 6) : []), [entrants, q]);
+  const alt = useMemo(() => aliasEntrants(all ?? [], local), [all, local]);
+  const results = useMemo(() => (q.trim() ? searchAthletes(entrants, alt, q, 6) : []), [entrants, alt, q]);
   const nameOf = (k: string | null) => (k ? byKey.get(k)?.name ?? names?.[k] ?? k.replace(/-/g, " ") : "");
   const chips = rivals.filter((k) => k !== a && k !== b).slice(0, 8);
 
@@ -82,7 +89,7 @@ export function H2HPicker({ all: given, a: a0 = null, b: b0 = null, event: e0 = 
     setQ("");
   };
   const ready = !!(a && b && ev && a !== b);
-  const question = ready ? h2hQuestion(ev!, nameOf(a), nameOf(b)) : null;
+  const question = ready ? h2hQuestion(ev!, nameOf(a), nameOf(b), te) : null;
   const go = () => {
     if (!ready) return;
     if (onRun) onRun(ev!, [a!, b!]);
@@ -97,7 +104,7 @@ export function H2HPicker({ all: given, a: a0 = null, b: b0 = null, event: e0 = 
         type="button"
         onClick={() => { need(); setSlot(which); input.current?.focus({ preventScroll: true }); }}
         aria-pressed={on}
-        aria-label={k ? `${which === "a" ? "First" : "Second"} Pokémon: ${nameOf(k)}. Change` : `Pick the ${which === "a" ? "first" : "second"} Pokémon`}
+        aria-label={k ? t("slotFilled", { which, name: nameOf(k) }) : t("slotEmpty", { which })}
         className={cn("relative flex min-h-[7.5rem] min-w-0 flex-1 flex-col items-center justify-end gap-1 rounded-xl border p-2 transition-colors", on ? "border-[#ffd84a] bg-[#ffd84a]/10" : "border-white/15 bg-white/[0.04] hover:border-white/35")}
         data-testid={`h2h-slot-${which}`}
         data-key={k ?? ""}
@@ -108,7 +115,7 @@ export function H2HPicker({ all: given, a: a0 = null, b: b0 = null, event: e0 = 
         ) : (
           <span className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full border border-dashed border-white/30 text-white/50"><Search className="h-6 w-6" aria-hidden /></span>
         )}
-        <span className="w-full truncate text-center font-display text-xs font-bold uppercase tracking-wide">{k ? badgeName(nameOf(k)) : on ? "Search below" : "Tap to pick"}</span>
+        <span className="w-full truncate text-center font-display text-xs font-bold uppercase tracking-wide">{k ? badgeName(nameOf(k)) : t(on ? "searchBelow" : "tapToPick")}</span>
       </button>
     );
   };
@@ -117,7 +124,7 @@ export function H2HPicker({ all: given, a: a0 = null, b: b0 = null, event: e0 = 
     <div ref={root} className="space-y-3" onPointerDown={need} onFocus={need}>
       <div className="flex items-stretch gap-2">
         {slotEl("a", a)}
-        <span className="self-center font-display text-lg font-black italic text-[#ffd84a]" aria-hidden>VS</span>
+        <span className="self-center font-display text-lg font-black italic text-[#ffd84a]" aria-hidden>{t("vs")}</span>
         {slotEl("b", b)}
       </div>
       <div className="relative">
@@ -127,14 +134,14 @@ export function H2HPicker({ all: given, a: a0 = null, b: b0 = null, event: e0 = 
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && results[0]) put(results[0].key); }}
-          placeholder={slot === "a" ? "Search the first Pokémon…" : "Search the rival…"}
-          aria-label={slot === "a" ? "Search for the first Pokémon" : "Search for the second Pokémon"}
+          placeholder={t(slot === "a" ? "placeholderA" : "placeholderB")}
+          aria-label={t(slot === "a" ? "searchA" : "searchB")}
           className="h-11 w-full rounded-lg border border-white/20 bg-[#121b36] pl-9 pr-3 font-display text-base text-white placeholder:text-white/45 outline-none focus:border-[#ffd84a] sm:text-sm"
           data-testid="h2h-search"
         />
       </div>
       {results.length > 0 ? (
-        <ul className="max-h-52 overflow-y-auto rounded-lg border border-white/15 bg-[#0e1730] p-1" role="listbox" aria-label="Pokémon">
+        <ul className="max-h-52 overflow-y-auto rounded-lg border border-white/15 bg-[#0e1730] p-1" role="listbox" aria-label={t("list")}>
           {results.map((e) => (
             <li key={e.key}>
               <button type="button" role="option" aria-selected={false} onClick={() => put(e.key)} className="flex min-h-11 w-full items-center rounded-md px-3 text-left font-display text-sm font-semibold uppercase tracking-wide hover:bg-white/10" data-testid="h2h-result" data-key={e.key}>{e.name}</button>
@@ -144,7 +151,7 @@ export function H2HPicker({ all: given, a: a0 = null, b: b0 = null, event: e0 = 
       ) : (
         chips.length > 0 && (
           <div>
-            <p className="mb-1.5 font-pixel text-[9px] uppercase tracking-[0.16em] text-white/50">{slot === "a" ? "Or tap one" : "Or tap a rival"}</p>
+            <p className="mb-1.5 font-pixel text-[9px] uppercase tracking-[0.16em] text-white/50">{t(slot === "a" ? "tapOne" : "tapRival")}</p>
             <div className="flex flex-wrap gap-1.5">
               {chips.map((k) => (
                 <button key={k} type="button" onClick={() => put(k)} className="tap inline-flex min-h-9 items-center rounded-md border border-white/15 px-2.5 font-display text-[11px] font-semibold uppercase tracking-wide text-white/80 hover:border-white/40 hover:text-white" data-testid="h2h-rival" data-key={k}>{badgeName(nameOf(k))}</button>
@@ -154,20 +161,20 @@ export function H2HPicker({ all: given, a: a0 = null, b: b0 = null, event: e0 = 
         )
       )}
       <div>
-        <p className="mb-1.5 font-pixel text-[9px] uppercase tracking-[0.16em] text-white/50">The event</p>
-        <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4" role="radiogroup" aria-label="Event">
+        <p className="mb-1.5 font-pixel text-[9px] uppercase tracking-[0.16em] text-white/50">{t("event")}</p>
+        <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4" role="radiogroup" aria-label={t("eventGroup")}>
           {EVENT_CHOICES.map((e) => (
             <button key={e.id} type="button" role="radio" aria-checked={ev === e.id} onClick={() => setEv(e.id)} className={cn("min-h-10 rounded-md border px-1 py-1.5 font-display text-[11px] font-semibold uppercase leading-tight tracking-normal transition-colors sm:px-1.5 sm:tracking-wide", ev === e.id ? "border-[#ffd84a] bg-[#ffd84a]/10 text-[#ffd84a]" : "border-white/15 text-white/75 hover:text-white")} data-testid={`h2h-event-${e.id}`}>
-              {e.name}
+              {te(`events.${e.id}.name`)}
             </button>
           ))}
         </div>
       </div>
       <button type="button" disabled={!ready} onClick={go} className="rc-go inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-center font-display text-sm font-bold uppercase tracking-wider disabled:opacity-45" data-testid="h2h-go">
         <Play className="h-4 w-4 shrink-0 fill-current" aria-hidden />
-        <span className="min-w-0 break-words">{question ?? (!a || !b ? "Pick two Pokémon" : !ev ? "Pick an event" : "Pick two different Pokémon")}</span>
+        <span className="min-w-0 break-words">{question ?? t(!a || !b ? "pickTwo" : !ev ? "pickEvent" : "pickDifferent")}</span>
       </button>
-      {failed && <p className="text-sm text-red-300" role="alert">The Pokémon didn&apos;t load. Check the connection and try again.</p>}
+      {failed && <p className="text-sm text-red-300" role="alert">{t("failed")}</p>}
     </div>
   );
 
@@ -175,8 +182,8 @@ export function H2HPicker({ all: given, a: a0 = null, b: b0 = null, event: e0 = 
     return (
       <div className="pointer-events-auto absolute inset-0 z-40 flex items-end justify-center bg-black/55 backdrop-blur-sm sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-labelledby="h2h-title" data-testid="h2h-picker">
         <div className="dark-scope relative max-h-full w-full overflow-y-auto rounded-t-2xl border border-white/15 bg-[#0b1226] p-4 text-white shadow-2xl sm:max-w-lg sm:rounded-2xl sm:p-5" data-rc-scroll>
-          <button type="button" onClick={onClose} className="absolute right-3 top-3 rounded-md p-1.5 text-white/60 hover:text-white" aria-label="Close" data-testid="h2h-close"><X className="h-5 w-5" /></button>
-          <h2 id="h2h-title" className="mb-3 flex items-center gap-2 font-display text-lg font-bold uppercase tracking-wider"><Swords className="h-5 w-5 text-[#ffd84a]" aria-hidden /> Head to head</h2>
+          <button type="button" onClick={onClose} className="absolute right-3 top-3 rounded-md p-1.5 text-white/60 hover:text-white" aria-label={t("close")} data-testid="h2h-close"><X className="h-5 w-5" /></button>
+          <h2 id="h2h-title" className="mb-3 flex items-center gap-2 font-display text-lg font-bold uppercase tracking-wider"><Swords className="h-5 w-5 text-[#ffd84a]" aria-hidden /> {t("title")}</h2>
           {body}
         </div>
       </div>

@@ -1,0 +1,48 @@
+{
+  "title": "動画を作る",
+  "intro": "TikTok、リール、ショート向けの縦型1080 × 1920動画。音楽、字幕、出典つき。",
+  "close": "閉じる",
+  "download": "ダウンロード",
+  "share": "シェア",
+  "shareUnavailable": "このブラウザではファイルをシェアできません。ダウンロードしてください",
+  "secondsShort": "{n}秒",
+  "another": "もう1本作る",
+  "what": "撮るもの",
+  "whole": "物語の全体",
+  "one": "1つの章",
+  "oneBody": "1つの章をフィルムの速さで。字幕にはすべて出典つき。",
+  "chapter": "章",
+  "seconds": "{n}秒",
+  "webm": "WebM（リアルタイムで録画）",
+  "unsupported": "このブラウザには対応していません",
+  "cancel": "キャンセル",
+  "make": "動画を作る",
+  "error": "問題が発生しました",
+  "credits": "この端末で1フレームずつ描画します。音楽：フィルムのオリジナル曲（MuseScore Generalサウンドフォント、MIT）。ポケモンのフィギュアはポケモンHOMEの画像から。",
+  "progress": {
+    "scene": "シーンを準備中",
+    "music": "音楽をミックス中",
+    "rendering": "描画中",
+    "packing": "MP4にまとめています",
+    "recording": "録画中"
+  },
+  "story": {
+    "wholeBody": "ポケモンの物語の全体を60秒で。各章の大事な瞬間をつなぎます。",
+    "hook": "{seconds}秒でわかるポケモンの物語",
+    "kicker": "30年の歩み、すべてに出典つき",
+    "shareTitle": "ポケモンの物語",
+    "shareText": "ひとりの少年の虫取りから30周年まで、ポケモンの物語 #pokemon #pokeiq",
+    "endLine": "フィルムの全編を出典つきで"
+  },
+  "history": {
+    "wholeBody": "ポケモン世界の歴史の全体を60秒で。各章の大事な瞬間をつなぎます。",
+    "hook": "{seconds}秒でわかるポケモン世界の歴史",
+    "kicker": "ゲーム自身の言葉から",
+    "shareTitle": "ポケモン世界の歴史",
+    "shareText": "ゲーム自身の言葉でたどるポケモン世界の歴史 #pokemon #pokeiq",
+    "endTitle": "ポケモン世界の歴史",
+    "endLine": "すべての章を出典つきで"
+  },
+  "quoteOpen": "「",
+  "quoteClose": "」"
+}

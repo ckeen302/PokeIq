@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import {
-  CLAUSE_INFO,
   CLAUSES,
   CUSTOM_GENS,
-  GIMMICK_INFO,
   GIMMICKS,
   LEVEL_MAX,
   LEVEL_MIN,
@@ -18,6 +16,9 @@ import {
 import { PLAYABLE_FORMATS, type CatalogueFormat } from "@/lib/battle/format-catalogue";
 import { cn } from "@/lib/utils";
 import { FormatPicker } from "./FormatPicker";
+import { useT } from "@/i18n/client";
+import rulesNs from "@/messages/battle-rules";
+import { clauseBlurb, clauseName, gimmickName } from "@/lib/battle/custom-rules-text";
 
 // The check itself is its own module, so a page can run it without loading this editor (and Showdown's format catalogue).
 export { RulesVerdictNote, useRulesCheck, type RulesVerdict } from "./RulesCheck";
@@ -37,6 +38,7 @@ const chip = (on: boolean) =>
   );
 
 export function CustomRulesEditor({ rules, onChange, live }: { rules: CustomRules; onChange: (rules: CustomRules) => void; live: boolean }) {
+  const t = useT(rulesNs);
   const set = (patch: Partial<CustomRules>) => onChange(normalizeRules({ ...rules, ...patch }));
   const gimmicks = GIMMICKS.filter((g) => gimmickAllowed(g, rules.gen));
   const showdown = !!rules.base;
@@ -49,21 +51,21 @@ export function CustomRulesEditor({ rules, onChange, live }: { rules: CustomRule
   const fallback = PLAYABLE_FORMATS.find((f) => f.id === "gen9ou") ?? PLAYABLE_FORMATS[0];
 
   const modes = (
-    <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Rules">
+    <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t("editor.rules")}>
       <button type="button" role="radio" aria-checked={showdown} className={chip(showdown)} data-testid="rules-mode-showdown" onClick={() => !showdown && chooseFormat(lastBase ?? fallback)}>
-        Showdown format · {PLAYABLE_FORMATS.length}
+        {t("editor.showdown", { n: PLAYABLE_FORMATS.length })}
       </button>
       <button type="button" role="radio" aria-checked={!showdown} className={chip(!showdown)} data-testid="rules-mode-own" onClick={() => showdown && set({ base: null })}>
-        Your own rules
+        {t("editor.own")}
       </button>
     </div>
   );
   const timer = live && (
     <div className="space-y-1.5">
-      <span className="hud-label">Turn timer</span>
+      <span className="hud-label">{t("editor.timer")}</span>
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <button type="button" className={chip(rules.timer)} aria-pressed={rules.timer} onClick={() => set({ timer: !rules.timer })}>
-          {rules.timer ? "On" : "Off"}
+          {rules.timer ? t("editor.on") : t("editor.off")}
         </button>
         {rules.timer && (
           <label className="flex items-center gap-1.5">
@@ -75,9 +77,9 @@ export function CustomRulesEditor({ rules, onChange, live }: { rules: CustomRule
               value={rules.timerSeconds}
               onChange={(e) => set({ timerSeconds: Number(e.target.value) })}
               className="h-9 w-20 rounded-md border border-input bg-background px-2"
-              aria-label="Seconds per turn"
+              aria-label={t("editor.seconds")}
             />
-            seconds at most per turn
+            {t("editor.secondsAtMost")}
           </label>
         )}
       </div>
@@ -89,11 +91,11 @@ export function CustomRulesEditor({ rules, onChange, live }: { rules: CustomRule
       <div className="space-y-4" data-testid="custom-rules">
         {modes}
         <p className="text-sm">
-          <span className="hud-label mr-2">Playing</span>
+          <span className="hud-label mr-2">{t("editor.playing")}</span>
           <span className="font-display font-bold uppercase" data-testid="picked-format">
             {rules.baseName ?? rules.base}
           </span>
-          <span className="text-muted-foreground"> · {rules.baseRandom ? "random teams, dealt by the engine" : "bring a team that's legal in it"}</span>
+          <span className="text-muted-foreground"> · {rules.baseRandom ? t("editor.randomTeams") : t("editor.bringLegal")}</span>
         </p>
         <FormatPicker value={rules.base} onPick={chooseFormat} />
         {timer}
@@ -104,11 +106,11 @@ export function CustomRulesEditor({ rules, onChange, live }: { rules: CustomRule
     <div className="space-y-4" data-testid="custom-rules">
       {modes}
       <div className="space-y-1.5">
-        <span className="hud-label">Generation · mechanics, type chart, Pokémon and moves</span>
-        <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Generation">
+        <span className="hud-label">{t("editor.generation")}</span>
+        <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t("editor.generationLabel")}>
           {CUSTOM_GENS.map((g) => (
             <button key={g} type="button" role="radio" aria-checked={rules.gen === g} data-testid={`gen-${g}`} className={chip(rules.gen === g)} onClick={() => set({ gen: g })}>
-              Gen {g}
+              {t("editor.gen", { gen: g })}
             </button>
           ))}
         </div>
@@ -117,7 +119,7 @@ export function CustomRulesEditor({ rules, onChange, live }: { rules: CustomRule
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <label htmlFor="custom-level" className="hud-label">
-            Level
+            {t("editor.level")}
           </label>
           <div className="flex items-center gap-2">
             <input
@@ -130,20 +132,20 @@ export function CustomRulesEditor({ rules, onChange, live }: { rules: CustomRule
               className="h-9 w-20 rounded-md border border-input bg-background px-2 text-sm"
             />
             <button type="button" className={chip(rules.levelMode === "fixed")} aria-pressed={rules.levelMode === "fixed"} onClick={() => set({ levelMode: "fixed" })}>
-              Everyone at it
+              {t("editor.fixed")}
             </button>
             <button type="button" className={chip(rules.levelMode === "cap")} aria-pressed={rules.levelMode === "cap"} onClick={() => set({ levelMode: "cap" })}>
-              Cap
+              {t("editor.cap")}
             </button>
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <span className="hud-label">Team</span>
+          <span className="hud-label">{t("editor.team")}</span>
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <label className="flex items-center gap-1.5">
-              Bring
-              <select value={rules.teamSize} onChange={(e) => set({ teamSize: Number(e.target.value) })} className="h-9 rounded-md border border-input bg-background px-2" aria-label="Team size">
+              {t("editor.bring")}
+              <select value={rules.teamSize} onChange={(e) => set({ teamSize: Number(e.target.value) })} className="h-9 rounded-md border border-input bg-background px-2" aria-label={t("editor.teamSize")}>
                 {[1, 2, 3, 4, 5, 6].map((n) => (
                   <option key={n} value={n}>
                     {n}
@@ -158,12 +160,12 @@ export function CustomRulesEditor({ rules, onChange, live }: { rules: CustomRule
               data-testid="team-preview-toggle"
               onClick={() => set({ pick: rules.pick === null ? Math.min(3, rules.teamSize) : null })}
             >
-              Team preview
+              {t("editor.preview")}
             </button>
             {rules.pick !== null && (
               <label className="flex items-center gap-1.5">
-                pick
-                <select value={rules.pick} onChange={(e) => set({ pick: Number(e.target.value) })} className="h-9 rounded-md border border-input bg-background px-2" aria-label="Pokémon picked">
+                {t("editor.pick")}
+                <select value={rules.pick} onChange={(e) => set({ pick: Number(e.target.value) })} className="h-9 rounded-md border border-input bg-background px-2" aria-label={t("editor.picked")}>
                   {Array.from({ length: rules.teamSize }, (_, i) => i + 1).map((n) => (
                     <option key={n} value={n}>
                       {n}
@@ -177,7 +179,7 @@ export function CustomRulesEditor({ rules, onChange, live }: { rules: CustomRule
       </div>
 
       <div className="space-y-1.5">
-        <span className="hud-label">Gimmicks</span>
+        <span className="hud-label">{t("editor.gimmicks")}</span>
         {gimmicks.length ? (
           <div className="flex flex-wrap gap-1.5">
             {gimmicks.map((g) => (
@@ -188,29 +190,29 @@ export function CustomRulesEditor({ rules, onChange, live }: { rules: CustomRule
                 className={chip(rules.gimmicks[g])}
                 onClick={() => set({ gimmicks: { ...rules.gimmicks, [g]: !rules.gimmicks[g] } })}
               >
-                {GIMMICK_INFO[g].name} {rules.gimmicks[g] ? "on" : "off"}
+                {t(rules.gimmicks[g] ? "describe.gimmickOn" : "describe.gimmickOff", { name: gimmickName(t, g) })}
               </button>
             ))}
           </div>
         ) : (
-          <p className="text-xs text-muted-foreground">Gen {rules.gen} has no battle gimmick (Mega Evolution arrives in Gen 6, Z-Moves in 7, Dynamax in 8, Terastal in 9).</p>
+          <p className="text-xs text-muted-foreground">{t("editor.noGimmick", { gen: rules.gen })}</p>
         )}
       </div>
 
       <div className="space-y-1.5">
-        <span className="hud-label">Clauses</span>
+        <span className="hud-label">{t("editor.clauses")}</span>
         <div className="flex flex-wrap gap-1.5">
           {CLAUSES.map((c) => (
             <button
               key={c}
               type="button"
               aria-pressed={rules.clauses[c]}
-              title={CLAUSE_INFO[c].blurb}
+              title={clauseBlurb(t, c)}
               data-testid={`clause-${c}`}
               className={chip(rules.clauses[c])}
               onClick={() => set({ clauses: { ...rules.clauses, [c]: !rules.clauses[c] } })}
             >
-              {CLAUSE_INFO[c].name}
+              {clauseName(t, c)}
             </button>
           ))}
         </div>

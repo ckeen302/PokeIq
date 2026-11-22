@@ -1,0 +1,81 @@
+{
+  "meta": {
+    "title": "ポケモン映画一覧 — 公開順にすべての作品",
+    "description": "ポケモンの映画を公開順に紹介。『ミュウツーの逆襲』から『ココ』、実写映画『名探偵ピカチュウ』、『Pokémon: Wild Card』まで、ポスター、主役のポケモン、舞台、キャラクターを掲載しています。"
+  },
+  "header": {
+    "kicker": "映画アーカイブ",
+    "title": "Poké",
+    "accent": "dex",
+    "blurb": "『ミュウツーの逆襲』から実写映画『名探偵ピカチュウ』、そして公開予定の作品まで。ポスター、主役のポケモン、登場人物を紹介します。"
+  },
+  "credit": "公開年・舞台・キャラクターは<bulba>Bulbapedia</bulba>で確認しています。ポスターの下の年は最初の公開年です。",
+  "ld": {
+    "pokedex": "ポケモン図鑑",
+    "movies": "映画",
+    "list": "ポケモンの映画"
+  },
+  "era": {
+    "original": "無印",
+    "advanced": "アドバンスジェネレーション",
+    "dp": "ダイヤモンド&パール",
+    "bw": "ベストウイッシュ",
+    "xy": "XY",
+    "modern": "2017年以降",
+    "live-action": "実写",
+    "coming-soon": "公開予定"
+  },
+  "eraOf": {
+    "original": "無印",
+    "advanced": "アドバンスジェネレーション",
+    "dp": "ダイヤモンド&パール",
+    "bw": "ベストウイッシュ",
+    "xy": "XY",
+    "modern": "2017年以降",
+    "live-action": "実写",
+    "coming-soon": "公開予定"
+  },
+  "kicker": "劇場版第{n}作 · {era}",
+  "years": {
+    "japan": "日本 {year}年",
+    "us": "アメリカ {year}年",
+    "join": "{a} · {b}",
+    "coming": "{year}年公開予定"
+  },
+  "related": {
+    "trilogy": "{trilogy}三部作",
+    "other": "関連作品",
+    "modern": "2017年以降の作品",
+    "era": {
+      "original": "無印の作品",
+      "advanced": "アドバンスジェネレーションの作品",
+      "dp": "ダイヤモンド&パールの作品",
+      "bw": "ベストウイッシュの作品",
+      "xy": "XYの作品",
+      "modern": "2017年以降の作品",
+      "live-action": "実写の作品",
+      "coming-soon": "公開予定の作品"
+    }
+  },
+  "film": {
+    "metaTitle": "{title}（{year}年）— ポケモン映画",
+    "metaTitleSoon": "{title}（{year}年公開予定）— ポケモン映画",
+    "description": "{summary}登場するポケモン、キャラクターとそのパートナーを紹介します。",
+    "descriptionSetting": "{summary}登場するポケモン、キャラクターとそのパートナー、舞台を紹介します。",
+    "socialTitle": "{title} · PokéIQ ポケモン図鑑",
+    "allMovies": "映画一覧",
+    "poster": "{title}のポスター",
+    "soon": "公開予定",
+    "featured": "登場ポケモン",
+    "featuredSub": "タップすると図鑑が開きます",
+    "characters": "キャラクター",
+    "charactersSub": "主人公・ゲスト・悪役",
+    "role": {
+      "hero": "主人公",
+      "guest": "ゲスト",
+      "villain": "悪役"
+    },
+    "with": "パートナー：{name}",
+    "related": "関連作品"
+  }
+}
