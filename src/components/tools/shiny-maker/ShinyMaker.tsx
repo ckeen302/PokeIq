@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element -- small static board pictures */
 import "./maker.css";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown, Dices, Ellipsis, Lock, Share, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
@@ -448,13 +449,13 @@ export default function ShinyMaker({ initial, linkBroken }: { initial: Design | 
               design={design}
               view={shownView}
               size={geo.rest.size}
-              hover={hover}
+              hover={hover >= 0 ? hover : sel}
               motion={motion}
               label={label}
               onFail={() => setHdFailed((s) => new Set(s).add(sp.id))}
             />
           ) : (
-            <PixelFigure ref={figure} sp={sp} design={design} view={shownView} scale={geo.rest.s} hover={hover >= 0 ? hover : -1} selected={sel} motion={motion} frames={frames} label={label} />
+            <PixelFigure ref={figure} sp={sp} design={design} view={shownView} scale={geo.rest.s} hover={hover >= 0 ? hover : sel} selected={sel} motion={motion} frames={frames} label={label} />
           )}
           {design.sparkle && shownView === "yours" && <Sparkles />}
         </div>
@@ -732,7 +733,7 @@ const Dock = ({ ref, sp, design, parts, sel, locked, panel, onPart, onPanel, onR
         if (typeof ref === "function") ref(el);
         else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = el;
       }}
-      className="sm-dock absolute bottom-8 left-1/2 z-20 flex max-w-[calc(100%-48px)] -translate-x-1/2 items-center gap-1 rounded-full p-1.5"
+      className="sm-dock absolute inset-x-0 bottom-8 z-20 mx-auto flex w-fit max-w-[calc(100%-48px)] items-center gap-1 rounded-full p-1.5"
       role="toolbar"
       aria-label={t("dock.toolbar")}
       data-testid="sm-dock"
@@ -788,10 +789,11 @@ const Dock = ({ ref, sp, design, parts, sel, locked, panel, onPart, onPanel, onR
         type="button"
         onClick={onRandomise}
         title={t("keys.hint")}
-        className="flex h-11 shrink-0 items-center gap-2 rounded-full px-4 text-[14px] text-foreground/70 transition-colors hover:bg-white/[0.05] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+        aria-label={t("dock.randomise")}
+        className="flex h-11 shrink-0 items-center gap-2 rounded-full px-4 text-[14px] text-foreground/70 transition-colors hover:bg-white/[0.05] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 max-xl:px-3"
         data-testid="sm-randomise"
       >
-        <Dices className="h-[18px] w-[18px]" aria-hidden /> {t("dock.randomise")}
+        <Dices className="h-[18px] w-[18px]" aria-hidden /> <span className="max-xl:hidden">{t("dock.randomise")}</span>
       </button>
       <button
         type="button"
@@ -865,8 +867,8 @@ function Sheet({ title, onClose, tall, children, t }: { title: string; onClose: 
   useEffect(() => {
     close.current?.focus({ preventScroll: true });
   }, []);
-  return (
-    <>
+  return createPortal(
+    <div className="dark-scope">
       {tall && <div className="sm-fade fixed inset-0 z-40 bg-black/50" onClick={onClose} aria-hidden />}
       <div
         className={cn("sm-pop sm-sheet-enter fixed inset-x-0 z-50 flex flex-col rounded-t-[26px] px-4 pb-4 pt-2", tall ? "h-[min(78svh,640px)]" : "")}
@@ -884,7 +886,8 @@ function Sheet({ title, onClose, tall, children, t }: { title: string; onClose: 
         </div>
         <div className={cn("min-h-0", tall && "flex-1 overflow-y-auto overscroll-contain")}>{children}</div>
       </div>
-    </>
+    </div>,
+    document.body
   );
 }
 

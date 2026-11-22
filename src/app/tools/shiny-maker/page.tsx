@@ -20,9 +20,12 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   if (!d || !raw) return pageMetadata(base);
   const pokemon = speciesName(d.id) ?? "Pokémon";
   const title = t("maker.metaDesignTitle", { name: d.name || t("maker.title"), pokemon });
+  const meta = pageMetadata({ ...base, title, description: t("maker.metaDesignDescription", { pokemon }), image: { url: `${PATH}/og?d=${raw}`, alt: t("maker.ogAlt", { pokemon }) } });
   return {
-    ...pageMetadata({ ...base, title, description: t("maker.metaDesignDescription", { pokemon }), image: { url: `${PATH}/og?d=${raw}`, alt: t("maker.ogAlt", { pokemon }) } }),
-    // One canonical page; designs are shared, not indexed one by one.
+    ...meta,
+    // A shared link keeps its design (the card's link), while the canonical page stays the maker itself; designs are
+    // shared, not indexed one by one.
+    openGraph: { ...meta.openGraph, url: `${PATH}?d=${raw}` },
     robots: { index: false, follow: true },
   };
 }

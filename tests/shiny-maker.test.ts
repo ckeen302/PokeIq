@@ -11,7 +11,7 @@ const species = (id: number) => decodeSpecies(JSON.parse(readFileSync(`public/sh
 
 describe("shiny maker: colour", () => {
   it("round-trips sRGB through OKLCH", () => {
-    for (const rgb of [[0, 0, 0], [255, 255, 255], [238, 131, 41], [32, 115, 148], [12, 200, 90]] as const) {
+    for (const rgb of [[0, 0, 0], [255, 255, 255], [238, 131, 41], [32, 115, 148], [12, 200, 90]] as [number, number, number][]) {
       const c = rgbToLch(...rgb);
       expect(lchToRgb(c.l, c.c, c.h)).toEqual([...rgb]);
     }

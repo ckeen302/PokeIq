@@ -1,8 +1,8 @@
 /* eslint-disable jsx-a11y/alt-text, @next/next/no-img-element -- Satori draws plain <img> */
 import "server-only";
 import sharp from "sharp";
-import { C, ogCard } from "@/lib/og/card";
-import { hex } from "@/lib/shiny-maker/color";
+import { C, hslHex, ogCard } from "@/lib/og/card";
+import { hex, rgbToLch } from "@/lib/shiny-maker/color";
 import type { Species } from "@/lib/shiny-maker/data";
 import type { Design } from "@/lib/shiny-maker/design";
 import { partSwatch, renderPixels, type View } from "@/lib/shiny-maker/recolor";
@@ -33,10 +33,12 @@ export async function shinyMakerCard(sp: Species | null, design: Design | null) 
     return ogCard({ eyebrow: "PokéIQ tools", title: ["Shiny Pokémon", ["Maker", accentFallback]], subtitle: "Design your own shiny Pokémon.", accent: accentFallback, footer: "Make your own shiny →" });
   }
   const d = design ?? firstDesign(sp);
-  const main = sp.parts.findIndex((p) => !p.o);
-  const accent = hex(partSwatch(sp, d, Math.max(0, main)));
+  // The card's accent: the design's most colourful part that reads on the dark card.
+  const swatches = sp.parts.map((p, i) => (p.o ? null : partSwatch(sp, d, i))).filter((c) => c !== null);
+  const vivid = swatches.map((rgb) => ({ rgb, c: rgbToLch(...rgb) })).filter(({ c }) => c.l > 0.55).sort((a, b) => b.c.c - a.c.c)[0];
+  const accent = vivid && vivid.c.c > 0.05 ? hex(vivid.rgb) : accentFallback;
   const [yours, normal, official] = await Promise.all([sprite(sp, d, "yours", 300), sprite(sp, d, "normal", 112), sprite(sp, d, "official", 112)]);
-  const glow = TYPE_GLOW[sp.types[0]] ?? TYPE_GLOW.normal;
+  const glow = hslHex(TYPE_GLOW[sp.types[0]] ?? TYPE_GLOW.normal);
   const title = d.name || `Shiny ${sp.name}`;
   const visual = (
     <div style={{ display: "flex", width: 500, height: 400, alignItems: "center", justifyContent: "space-between" }}>
@@ -51,7 +53,7 @@ export async function shinyMakerCard(sp: Species | null, design: Design | null) 
         </div>
       </div>
       <div style={{ display: "flex", position: "relative", flexDirection: "column", alignItems: "center", justifyContent: "center", width: 350, height: 400 }}>
-        <div style={{ position: "absolute", left: 0, top: 10, width: 350, height: 350, display: "flex", borderRadius: 175, backgroundImage: `radial-gradient(circle, hsl(${glow} / 0.35) 0%, hsl(${glow} / 0.08) 50%, transparent 70%)` }} />
+        <div style={{ position: "absolute", left: 0, top: 10, width: 350, height: 350, display: "flex", borderRadius: 175, backgroundImage: `radial-gradient(circle, ${glow}59 0%, ${glow}14 50%, ${glow}00 70%)` }} />
         <img src={yours.uri} width={yours.w} height={yours.h} style={{ imageRendering: "pixelated" }} />
         <div style={{ display: "flex", fontFamily: "Silkscreen", fontSize: 20, letterSpacing: 1, color: accent, textTransform: "uppercase", marginTop: 10 }}>Yours</div>
       </div>
