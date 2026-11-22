@@ -26,7 +26,7 @@ const DESKTOP_LINKS: { href: string; label: string; wideOnly?: boolean }[] = [
   // Only on wide screens, where the leaderboard link was: the row is full at 1024px (the footer links it too).
   // The leaderboard is the trophy among the header's icons.
   { href: LAB_PATH, label: "3D Lab", wideOnly: true },
-  // MOCK (Shiny Studio): the new Tools tab.
+  // The Tools tab (the Shiny Pokémon Maker): wide screens only, like the 3D Lab (the row is full at 1024px; the phone's More sheet has it).
   { href: "/tools", label: "Tools", wideOnly: true },
 ];
 

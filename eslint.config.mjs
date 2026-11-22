@@ -23,6 +23,7 @@ const eslintConfig = [
       "build/**",
       "next-env.d.ts",
       "e2e-screenshots/**",
+      ".cache/**",
       "src/data/**",
     ],
   },

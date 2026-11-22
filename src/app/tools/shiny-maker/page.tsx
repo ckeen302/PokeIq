@@ -1,15 +1,34 @@
-// MOCK ONLY: three directions for the Shiny Pokémon Maker, for review (?v=a|b|c, &pop=1 opens the colour popover).
 import type { Metadata } from "next";
-import { ShinyMakerMock, type Direction } from "@/components/tools/mock/ShinyMakerMock";
+import { pageMetadata } from "@/lib/seo";
+import { getT } from "@/i18n/server";
+import tools from "@/messages/tools";
+import { decodeDesign } from "@/lib/shiny-maker/design";
+import { speciesName } from "@/lib/shiny-maker/server";
+import { MakerShell } from "@/components/tools/shiny-maker/MakerShell";
 
-export const metadata: Metadata = {
-  title: "Shiny Pokémon Maker",
-  description: "Design your own shiny Pokémon: pick a Pokémon, colour its parts and share it.",
-  robots: { index: false },
-};
+/** /tools/shiny-maker?d=…: the Shiny Pokémon Maker; a design link opens that design, with its own preview card. */
 
-export default async function Page({ searchParams }: { searchParams: Promise<{ v?: string; pop?: string }> }) {
-  const { v, pop } = await searchParams;
-  const direction: Direction = v === "b" || v === "c" ? v : "a";
-  return <ShinyMakerMock direction={direction} popover={pop === "1"} />;
+type Query = { d?: string | string[] };
+const PATH = "/tools/shiny-maker";
+const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
+
+export async function generateMetadata({ searchParams }: { searchParams: Promise<Query> }): Promise<Metadata> {
+  const t = await getT(tools);
+  const raw = one((await searchParams).d);
+  const d = decodeDesign(raw);
+  const base = { title: t("maker.metaTitle"), description: t("maker.metaDescription"), path: PATH, image: { url: `${PATH}/og`, alt: t("maker.title") } };
+  if (!d || !raw) return pageMetadata(base);
+  const pokemon = speciesName(d.id) ?? "Pokémon";
+  const title = t("maker.metaDesignTitle", { name: d.name || t("maker.title"), pokemon });
+  return {
+    ...pageMetadata({ ...base, title, description: t("maker.metaDesignDescription", { pokemon }), image: { url: `${PATH}/og?d=${raw}`, alt: t("maker.ogAlt", { pokemon }) } }),
+    // One canonical page; designs are shared, not indexed one by one.
+    robots: { index: false, follow: true },
+  };
+}
+
+export default async function Page({ searchParams }: { searchParams: Promise<Query> }) {
+  const raw = one((await searchParams).d);
+  const d = decodeDesign(raw);
+  return <MakerShell initial={d} linkBroken={!!raw && !d} />;
 }

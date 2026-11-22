@@ -109,6 +109,8 @@ const nextConfig: NextConfig = {
     // A size comparison's card is a route of its own (it reads ?vs=).
     "/pokedex/sizes/compare/og": ["./src/assets/fonts/*.ttf"],
     "/lab/mass-battle/og": ["./src/assets/fonts/*.ttf"],
+    // A Shiny Pokémon Maker design's card recolours the sprite from its data file.
+    "/tools/shiny-maker/og": ["./src/assets/fonts/*.ttf", "./public/shiny-maker/px/*.json"],
     // A shared PokéGuessr result's card draws the map that was played, by a computed path.
     "/pokeguessr/r/**": ["./public/geo/maps/*.webp"],
     "/[locale]/pokeguessr/r/**": ["./public/geo/maps/*.webp"],
