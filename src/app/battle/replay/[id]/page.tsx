@@ -12,6 +12,13 @@ import battlePages from "@/messages/battle-tools-pages";
 import battleReplayWords from "@/messages/battle-replay-words";
 import battleReplays from "@/messages/battle-replays";
 import battleAnalysis from "@/messages/battle-analysis";
+import battlePlay from "@/messages/battle-play";
+import battleTooltips from "@/messages/battle-tooltips";
+import battleRoom from "@/messages/battle-room";
+import battleFormatsNs from "@/messages/battle-formats";
+import shareNs from "@/messages/share";
+import battleLabCharts from "@/messages/battle-lab-charts";
+import battleInputs from "@/messages/battle-inputs";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -56,7 +63,7 @@ export default async function ReplayPage({ params }: PageProps) {
         {replay.ranked ? t("replay.ranked") : ""}
         {t("replay.summary", { format: replay.formatName, result: replayResult(replay, w), turns: replay.turns })}
       </BattleHeader>
-      <ClientMessages namespaces={[battleReplays, battleReplayWords, battleAnalysis]}>
+      <ClientMessages namespaces={[battleReplays, battleReplayWords, battleAnalysis, battlePlay, battleTooltips, battleRoom, battleFormatsNs, shareNs, battleLabCharts, battleInputs]}>
         <ReplayViewer replay={replay} />
       </ClientMessages>
     </div>

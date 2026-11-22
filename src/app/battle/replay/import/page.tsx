@@ -7,6 +7,13 @@ import { serverT } from "@/i18n/server";
 import battlePages from "@/messages/battle-tools-pages";
 import battleReplays from "@/messages/battle-replays";
 import battleReplayWords from "@/messages/battle-replay-words";
+import battlePlay from "@/messages/battle-play";
+import battleTooltips from "@/messages/battle-tooltips";
+import battleRoom from "@/messages/battle-room";
+import battleFormatsNs from "@/messages/battle-formats";
+import shareNs from "@/messages/share";
+import battleLabCharts from "@/messages/battle-lab-charts";
+import battleInputs from "@/messages/battle-inputs";
 
 export function generateMetadata(): Metadata {
   const t = serverT(battlePages);
@@ -25,7 +32,7 @@ export default function ReplayImportPage() {
       <BattleHeader back="/battle/replays" crumb={t("import.crumb")} title={t("import.heading")} accent={t("import.accent")}>
         {t("import.intro")}
       </BattleHeader>
-      <ClientMessages namespaces={[battleReplays, battleReplayWords]}>
+      <ClientMessages namespaces={[battleReplays, battleReplayWords, battlePlay, battleTooltips, battleRoom, battleFormatsNs, shareNs, battleLabCharts, battleInputs]}>
         <ReplayImport />
       </ClientMessages>
     </div>

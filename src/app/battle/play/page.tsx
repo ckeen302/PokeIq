@@ -14,6 +14,7 @@ import battleGlicko from "@/messages/battle-glicko";
 import battleTeams from "@/messages/battle-teams";
 import battleTeamInsights from "@/messages/battle-team-insights";
 import battleTerms from "@/messages/battle-terms";
+import battleInputs from "@/messages/battle-inputs";
 
 export function generateMetadata(): Metadata {
   const t = serverT(pagesNs);
@@ -36,7 +37,7 @@ export default async function BattlePlayPage({ searchParams }: { searchParams: P
       <BattleHeader crumb={t("play.crumb")} title={t("play.title")} accent={t("play.accent")}>
         {t("play.intro")}
       </BattleHeader>
-      <ClientMessages namespaces={[setupNs, formatsNs, teamPickNs, rulesNs, pickersNs, battleGlicko, battleTeams, battleTeamInsights, battleTerms]}>
+      <ClientMessages namespaces={[setupNs, formatsNs, teamPickNs, rulesNs, pickersNs, battleGlicko, battleTeams, battleTeamInsights, battleTerms, battleInputs]}>
         <BattleSetup initial={opening} challenge={friend} />
       </ClientMessages>
     </div>

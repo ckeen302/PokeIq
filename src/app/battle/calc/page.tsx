@@ -8,6 +8,7 @@ import battlePages from "@/messages/battle-tools-pages";
 import battleCalc from "@/messages/battle-calc";
 import battleTerms from "@/messages/battle-terms";
 import battlePickers from "@/messages/battle-pickers";
+import battleInputs from "@/messages/battle-inputs";
 
 export function generateMetadata(): Metadata {
   const t = serverT(battlePages);
@@ -26,7 +27,7 @@ export default function CalcPage() {
       <BattleHeader crumb={t("calc.crumb")} title={t("calc.heading")} accent={t("calc.accent")}>
         {t("calc.intro")}
       </BattleHeader>
-      <ClientMessages namespaces={[battleCalc, battleTerms, battlePickers]}>
+      <ClientMessages namespaces={[battleCalc, battleTerms, battlePickers, battleInputs]}>
         <DamageCalc />
       </ClientMessages>
     </div>
