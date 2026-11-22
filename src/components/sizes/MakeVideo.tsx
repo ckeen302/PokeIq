@@ -6,9 +6,14 @@ import { track } from "@vercel/analytics";
 import { Clapperboard, Download, Loader2, Share2, X } from "lucide-react";
 import { DEFAULT_LENGTH, MIN_SECONDS, VIDEO_H, VIDEO_LENGTHS, VIDEO_W } from "@/lib/sizes/export";
 import { PRESETS, presetLineup } from "@/lib/sizes/presets";
-import { dirLabel, isDefaultOrder, orderInfo, orderSegment, orderTitle, type Order } from "@/lib/sizes/order";
+import { isDefaultOrder, orderSegment, type Order } from "@/lib/sizes/order";
 import type { SizeItem } from "@/lib/sizes/types";
 import type { Quality } from "./scene";
+import type { RecordStage } from "./record";
+import { useT } from "@/i18n/client";
+import sizes3d from "@/messages/sizes-3d";
+import sizesLines from "@/messages/sizes-lines";
+import { dirText, lowerIn, orderLabel, presetHook, presetLabel, stopCaptionText } from "./words";
 import { MUSIC_URL } from "./audio";
 import { SCENE_URLS } from "./scene-item";
 import { trainerFigure } from "./trainer-figure";
@@ -17,7 +22,7 @@ import { cn } from "@/lib/utils";
 
 type Phase =
   | { kind: "idle" }
-  | { kind: "recording"; p: number; label: string }
+  | { kind: "recording"; p: number; label: RecordStage }
   | { kind: "done"; url: string; blob: Blob; name: string; type: string; seconds: number }
   | { kind: "error"; message: string };
 
@@ -79,6 +84,8 @@ export default function MakeVideo({ items, line, order, hook, slug, lineLabel, t
   onRecording(on: boolean): void;
   onClose(): void;
 }) {
+  const t = useT(sizes3d);
+  const tl = useT(sizesLines);
   const [source, setSource] = useState<string>("current");
   const [extraLen] = useState<number | null>(() => lengthFromUrl());
   const [seconds, setSeconds] = useState<number>(() => extraLen ?? DEFAULT_LENGTH);
@@ -100,8 +107,8 @@ export default function MakeVideo({ items, line, order, hook, slug, lineLabel, t
   const chosen = useMemo(() => {
     if (source === "current") return { items: line, hook, slug, label: lineLabel };
     const p = PRESETS.find((x) => x.id === source)!;
-    return { items: presetLineup(p, items, order), hook: orderTitle(p.hook, order), slug: isDefaultOrder(order) ? p.id : `${p.id}-by-${orderSegment(order)}`, label: p.label };
-  }, [source, line, hook, slug, lineLabel, items, order]);
+    return { items: presetLineup(p, items, order), hook: presetHook(p.id, order, tl), slug: isDefaultOrder(order) ? p.id : `${p.id}-by-${orderSegment(order)}`, label: presetLabel(p.id, tl) };
+  }, [source, line, hook, slug, lineLabel, items, order, tl]);
 
   const lengths = [...VIDEO_LENGTHS] as number[];
   if (extraLen && !lengths.includes(extraLen)) lengths.unshift(extraLen);
@@ -111,7 +118,7 @@ export default function MakeVideo({ items, line, order, hook, slug, lineLabel, t
     const ac = new AbortController();
     abortRef.current = ac;
     lastProgress.current = 0;
-    setPhase({ kind: "recording", p: 0, label: "Setting the scene" });
+    setPhase({ kind: "recording", p: 0, label: "scene" });
     onRecording(true);
     try {
       const { recordVideo } = await import("./record");
@@ -131,6 +138,10 @@ export default function MakeVideo({ items, line, order, hook, slug, lineLabel, t
         quality: qualityFromUrl(),
         fps: fpsFromUrl(),
         signal: ac.signal,
+        // Another language: the video's captions and its own two lines in it (English pages: record's own English).
+        ...(process.env.LIVE_LOCALES && tl.locale !== "en"
+          ? { words: { caption: (item: SizeItem | undefined, all: SizeItem[], o: Order, finale: boolean) => stopCaptionText(item, all, o, finale, tl), subtitle: t("v.subtitle"), endLine: t("v.endLine") } }
+          : {}),
         onProgress(p, label) {
           const now = performance.now();
           if (now - lastProgress.current < 120 && p < 1) return;
@@ -142,7 +153,7 @@ export default function MakeVideo({ items, line, order, hook, slug, lineLabel, t
       track("sizes_video", { lineup: chosen.slug, seconds, format: res.type });
     } catch (e) {
       if ((e as Error)?.name === "AbortError") setPhase({ kind: "idle" });
-      else setPhase({ kind: "error", message: e instanceof Error ? e.message : "Something went wrong" });
+      else setPhase({ kind: "error", message: e instanceof Error && t.locale === "en" ? e.message : t("v.failed") });
     } finally {
       abortRef.current = null;
       onRecording(false);
@@ -170,33 +181,33 @@ export default function MakeVideo({ items, line, order, hook, slug, lineLabel, t
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
       >
-        <button type="button" onClick={() => { abortRef.current?.abort(); onClose(); }} className="absolute right-3 top-3 rounded-md p-1.5 text-white/60 hover:text-white" aria-label="Close" data-testid="sizes-video-close">
+        <button type="button" onClick={() => { abortRef.current?.abort(); onClose(); }} className="absolute right-3 top-3 rounded-md p-1.5 text-white/60 hover:text-white" aria-label={t("v.close")} data-testid="sizes-video-close">
           <X className="h-5 w-5" />
         </button>
         <div className="flex items-center gap-2">
           <Clapperboard className="h-5 w-5 text-[#ffd84a]" aria-hidden />
-          <h2 id="sz-video-title" className="font-display text-lg font-bold uppercase tracking-wider">Make a video</h2>
+          <h2 id="sz-video-title" className="font-display text-lg font-bold uppercase tracking-wider">{t("makeVideo")}</h2>
         </div>
-        <p className="mt-1 text-sm text-white/65">A vertical 1080 × 1920 video for TikTok, Reels and Shorts, with music.</p>
+        <p className="mt-1 text-sm text-white/65">{t("v.intro")}</p>
 
         {phase.kind === "done" ? (
           <div className="mt-4 space-y-3">
             <video src={phase.url} controls playsInline loop autoPlay muted className="mx-auto aspect-[9/16] max-h-[52vh] rounded-lg bg-black" data-testid="sizes-video-preview" />
             <div className="grid grid-cols-2 gap-2">
               <a href={phase.url} download={phase.name} className="sz-play inline-flex h-11 items-center justify-center gap-2 rounded-lg font-display text-sm font-bold uppercase tracking-wider" data-testid="sizes-video-download" onClick={() => track("sizes_video_download", { lineup: chosen.slug })}>
-                <Download className="h-4 w-4" aria-hidden /> Download
+                <Download className="h-4 w-4" aria-hidden /> {t("v.download")}
               </a>
-              <button type="button" onClick={shareFile} disabled={!canShare} className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-white/20 font-display text-sm font-bold uppercase tracking-wider text-white disabled:opacity-40" data-testid="sizes-video-share" title={canShare ? undefined : "Sharing files isn't available in this browser: download it instead"}>
-                <Share2 className="h-4 w-4" aria-hidden /> Share
+              <button type="button" onClick={shareFile} disabled={!canShare} className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-white/20 font-display text-sm font-bold uppercase tracking-wider text-white disabled:opacity-40" data-testid="sizes-video-share" title={canShare ? undefined : t("v.noShare")}>
+                <Share2 className="h-4 w-4" aria-hidden /> {t("v.share")}
               </button>
             </div>
-            <p className="text-center text-xs text-white/50">{phase.name} · {phase.type === "video/mp4" ? "MP4" : "WebM"} · {phase.seconds} s</p>
-            <button type="button" onClick={() => setPhase({ kind: "idle" })} className="w-full text-center font-display text-xs font-semibold uppercase tracking-wider text-white/60 hover:text-white">Make another</button>
+            <p className="text-center text-xs text-white/50">{phase.name} · {phase.type === "video/mp4" ? "MP4" : "WebM"} · {t("v.seconds", { s: phase.seconds })}</p>
+            <button type="button" onClick={() => setPhase({ kind: "idle" })} className="w-full text-center font-display text-xs font-semibold uppercase tracking-wider text-white/60 hover:text-white">{t("v.another")}</button>
           </div>
         ) : (
           <div className="mt-4 space-y-4">
             <div>
-              <label htmlFor="sz-video-lineup" className="font-pixel text-[9px] uppercase tracking-[0.18em] text-white/55">Lineup</label>
+              <label htmlFor="sz-video-lineup" className="font-pixel text-[9px] uppercase tracking-[0.18em] text-white/55">{t("v.lineup")}</label>
               <select
                 id="sz-video-lineup"
                 value={source}
@@ -205,19 +216,19 @@ export default function MakeVideo({ items, line, order, hook, slug, lineLabel, t
                 className="mt-1 h-11 w-full rounded-lg border border-white/20 bg-[#121b36] px-3 font-display text-sm font-semibold uppercase tracking-wide text-white"
                 data-testid="sizes-video-lineup"
               >
-                <option value="current">This lineup: {lineLabel}</option>
+                <option value="current">{t("v.thisLineup", { label: lineLabel })}</option>
                 {PRESETS.map((p) => (
-                  <option key={p.id} value={p.id}>{p.label}</option>
+                  <option key={p.id} value={p.id}>{presetLabel(p.id, tl)}</option>
                 ))}
               </select>
-              {!isDefaultOrder(order) && <p className="mt-1.5 text-xs text-white/55" data-testid="sizes-video-order">{chosen.items.length ? `Ordered by ${orderInfo(order).label}, ${dirLabel(order.by, order.dir).toLowerCase()}: “${chosen.hook.replace(/\s*\p{Extended_Pictographic}+$/u, "")}”` : `This lineup has nothing to order by ${orderInfo(order).label.toLowerCase()}.`}</p>}
+              {!isDefaultOrder(order) && <p className="mt-1.5 text-xs text-white/55" data-testid="sizes-video-order">{chosen.items.length ? t("v.ordered", { label: orderLabel(order.by, tl), dir: lowerIn(dirText(order.by, order.dir, tl), tl), hook: chosen.hook.replace(/\s*\p{Extended_Pictographic}+$/u, "") }) : t("v.nothing", { label: lowerIn(orderLabel(order.by, tl), tl) })}</p>}
             </div>
             <div>
-              <div className="font-pixel text-[9px] uppercase tracking-[0.18em] text-white/55">Length</div>
-              <div className="mt-1 grid grid-cols-3 gap-2" role="radiogroup" aria-label="Length">
+              <div className="font-pixel text-[9px] uppercase tracking-[0.18em] text-white/55">{t("v.length")}</div>
+              <div className="mt-1 grid grid-cols-3 gap-2" role="radiogroup" aria-label={t("v.length")}>
                 {lengths.map((s) => (
                   <button key={s} type="button" role="radio" aria-checked={seconds === s} disabled={busy} onClick={() => setSeconds(s)} className={cn(tile, seconds === s ? "border-[#ffd84a] bg-[#ffd84a]/10 text-[#ffd84a]" : "border-white/15 text-white/75 hover:text-white")} data-testid={`sizes-video-length-${s}`}>
-                    {s} s
+                    {t("v.seconds", { s })}
                   </button>
                 ))}
               </div>
@@ -229,28 +240,28 @@ export default function MakeVideo({ items, line, order, hook, slug, lineLabel, t
             {phase.kind === "recording" ? (
               <div className="space-y-2" data-testid="sizes-video-progress" data-p={phase.p.toFixed(3)}>
                 <div className="flex items-center justify-between text-xs text-white/70">
-                  <span className="inline-flex items-center gap-1.5"><Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> {phase.label}</span>
+                  <span className="inline-flex items-center gap-1.5"><Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> {t(`v.stage.${phase.label}`)}</span>
                   <span className="tabular-nums">{Math.round(phase.p * 100)}%</span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-white/10" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(phase.p * 100)} aria-label="Rendering the video">
+                <div className="h-2 overflow-hidden rounded-full bg-white/10" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(phase.p * 100)} aria-label={t("v.rendering")}>
                   <div className="sz-progress h-full origin-left rounded-full" style={{ transform: `scaleX(${phase.p})` }} />
                 </div>
                 <button type="button" onClick={() => abortRef.current?.abort()} className="w-full rounded-lg border border-white/20 py-2.5 font-display text-sm font-bold uppercase tracking-wider text-white/85 hover:text-white" data-testid="sizes-video-cancel">
-                  Cancel
+                  {t("v.cancel")}
                 </button>
               </div>
             ) : (
               <button type="button" onClick={record} disabled={support === "none" || !chosen.items.length} className="sz-play inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg font-display text-sm font-bold uppercase tracking-wider disabled:opacity-50" data-testid="sizes-video-record">
-                <Clapperboard className="h-4 w-4" aria-hidden /> Record
+                <Clapperboard className="h-4 w-4" aria-hidden /> {t("v.record")}
               </button>
             )}
             {phase.kind === "error" && <p className="text-sm text-red-300" role="alert">{phase.message}</p>}
             <p className="text-xs leading-relaxed text-white/45">
               {support === "none"
-                ? "This browser can't record video. Try Chrome, Edge or Safari."
+                ? t("v.noVideo")
                 : support === "webm"
-                  ? "This browser records in real time. Chrome, Edge and Safari make an MP4 frame by frame."
-                  : "Rendered frame by frame on this device, so it stays smooth. Keep this tab open while it records."}
+                  ? t("v.realtime")
+                  : t("v.frames")}
             </p>
           </div>
         )}

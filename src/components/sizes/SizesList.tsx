@@ -5,12 +5,16 @@ import Link from "@/components/ui/PlainLink";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { itemPath } from "@/lib/sizes/deeplink";
 import { dexTag } from "@/lib/sizes/badges";
-import { listCaption, listItems, listNote, listOrder, listRows, type ListRow, type ListSpec } from "@/lib/sizes/list";
-import { ORDERS, dirLabel, isHeight, orderInfo, sameOrder, type Order, type OrderKey } from "@/lib/sizes/order";
-import { KIND_LABEL, formatFeet, formatMetres } from "@/lib/sizes/types";
+import { listItems, listOrder, listRows, type ListRow, type ListSpec } from "@/lib/sizes/list";
+import { ORDERS, isHeight, orderInfo, sameOrder, type Order, type OrderKey } from "@/lib/sizes/order";
+import { formatFeet, formatMetres } from "@/lib/sizes/types";
 import { TYPE_COLORS } from "@/lib/pokemon/type-colors";
+import { useT } from "@/i18n/client";
+import sizesLines from "@/messages/sizes-lines";
 import { SizesOrderContext } from "./order-context";
+import { SizesLocalContext, localizeItems } from "./local-names";
 import { loadSizeItems } from "./load-items";
+import { dirText, kgText, listCaptionText, listNoteText, metres, orderLabel } from "./words";
 
 export type { ListRow };
 
@@ -37,19 +41,23 @@ function rowStat(r: ListRow, by: OrderKey): number | null {
  * rows travel once, as compact data, rather than as a second rendered tree.
  */
 export function SizesList({ rows, focus, caption, note, spec, order, path }: { rows: ListRow[]; focus?: string; caption: string; note: string | null; spec: ListSpec; order: Order; path: string }) {
+  const t = useT(sizesLines);
   const ctx = useContext(SizesOrderContext);
+  const local = useContext(SizesLocalContext);
   const live = ctx?.order ?? order;
   // The table for another order than the server's: built here from every figure's data.
   const [built, setBuilt] = useState<{ order: Order; rows: ListRow[]; caption: string; note: string | null; shown: Order } | null>(null);
   useEffect(() => {
     if (sameOrder(live, order)) return;
     let alive = true;
-    void loadSizeItems().then((all) => {
+    void loadSizeItems().then((en) => {
       if (!alive) return;
-      setBuilt({ order: live, rows: listRows(listItems(all, spec, live), all), caption: listCaption(all, spec, live), note: listNote(all, spec, live), shown: listOrder(all, spec, live) });
+      const all = local ? localizeItems(en, local) : en;
+      setBuilt({ order: live, rows: listRows(listItems(all, spec, live), all), caption: listCaptionText(all, spec, live, t), note: listNoteText(all, spec, live, t), shown: listOrder(all, spec, live) });
     }, () => undefined);
     return () => { alive = false; };
-  }, [live, order, spec]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [live, order, spec, local]);
   const cur = !sameOrder(live, order) && built && sameOrder(built.order, live) ? built : null;
   const view = cur ?? { rows, caption, note, shown: order };
   const by = view.shown.by;
@@ -73,12 +81,12 @@ export function SizesList({ rows, focus, caption, note, spec, order, path }: { r
   }, [view.rows, sort, by]);
 
   const head: { key: SortKey; label: string; cls?: string }[] = [
-    { key: "name", label: "Pokémon" },
+    { key: "name", label: t("list.pokemon") },
     // The order's value comes first, so it shows on a phone too.
-    ...(valueCol ? [{ key: "v" as SortKey, label: orderInfo(by).label, cls: "szt-v" }] : []),
-    { key: "m", label: "Size", cls: valueCol ? "szt-s" : undefined },
-    ...(by === "weight" ? [] : [{ key: "kg" as SortKey, label: "Weight", cls: "szt-w" }]),
-    { key: "dex", label: "Dex", cls: "szt-d" },
+    ...(valueCol ? [{ key: "v" as SortKey, label: orderLabel(by, t), cls: "szt-v" }] : []),
+    { key: "m", label: t("list.size"), cls: valueCol ? "szt-s" : undefined },
+    ...(by === "weight" ? [] : [{ key: "kg" as SortKey, label: t("list.weight"), cls: "szt-w" }]),
+    { key: "dex", label: t("list.dex"), cls: "szt-d" },
   ];
   const rank = useMemo(() => new Map(view.rows.map((r, i) => [r[0], i + 1])), [view.rows]);
   const toggle = (key: SortKey) => setSort((s) => ({ key, dir: s.key === key ? (s.dir === 1 ? -1 : 1) : 1 }));
@@ -90,16 +98,16 @@ export function SizesList({ rows, focus, caption, note, spec, order, path }: { r
       <form method="get" action={path} className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b py-3 text-sm" onSubmit={(e) => { if (ctx) e.preventDefault(); }} data-testid="sizes-list-order">
         {spec.vs && spec.vs.length >= 2 && <input type="hidden" name="vs" value={spec.vs.join(",")} />}
         <label className="flex items-center gap-2">
-          <span className="font-pixel text-[9px] uppercase tracking-wider text-muted-foreground">Order by</span>
+          <span className="font-pixel text-[9px] uppercase tracking-wider text-muted-foreground">{t("list.orderBy")}</span>
           <select name="by" value={orderInfo(live).param} onChange={(e) => { const o = ORDERS.find((x) => x.param === e.target.value); if (o) setOrder({ by: o.key, dir: live.dir }); }} className="h-8 rounded-md border bg-background px-2 font-display text-xs font-semibold uppercase tracking-wide" data-testid="sizes-list-by">
-            {ORDERS.map((o) => <option key={o.key} value={o.param}>{o.label}</option>)}
+            {ORDERS.map((o) => <option key={o.key} value={o.param}>{orderLabel(o.key, t)}</option>)}
           </select>
         </label>
-        <select name="dir" value={live.dir} onChange={(e) => setOrder({ by: live.by, dir: e.target.value === "desc" ? "desc" : "asc" })} aria-label="Direction" className="h-8 rounded-md border bg-background px-2 font-display text-xs font-semibold uppercase tracking-wide" data-testid="sizes-list-dir">
-          <option value="asc">{dirLabel(live.by, "asc")}</option>
-          <option value="desc">{dirLabel(live.by, "desc")}</option>
+        <select name="dir" value={live.dir} onChange={(e) => setOrder({ by: live.by, dir: e.target.value === "desc" ? "desc" : "asc" })} aria-label={t("list.direction")} className="h-8 rounded-md border bg-background px-2 font-display text-xs font-semibold uppercase tracking-wide" data-testid="sizes-list-dir">
+          <option value="asc">{dirText(live.by, "asc", t)}</option>
+          <option value="desc">{dirText(live.by, "desc", t)}</option>
         </select>
-        <noscript><button type="submit" className="h-8 rounded-md border px-3 font-display text-xs font-semibold uppercase">Show</button></noscript>
+        <noscript><button type="submit" className="h-8 rounded-md border px-3 font-display text-xs font-semibold uppercase">{t("list.show")}</button></noscript>
         {view.note && <p className="basis-full text-xs text-muted-foreground sm:basis-auto" data-testid="sizes-list-note">{view.note}</p>}
       </form>
       <table className="szt" aria-label={view.caption}>
@@ -127,23 +135,29 @@ export function SizesList({ rows, focus, caption, note, spec, order, path }: { r
             const plus = min ? "+" : "";
             const ref = kind === "ref";
             const v = valueCol ? value(r) : null;
+            // Another language: metric only, numbers as it writes them.
+            const other = process.env.LIVE_LOCALES && t.locale !== "en";
             return (
               <tr key={key} id={`size-${key}`} className={`${ref ? "ref" : ""}${key === focus ? " sz-list-hit" : ""}`}>
                 <td>{rank.get(key)}</td>
                 <td>
                   {ref ? (
-                    <>{name}<span className="k">real-world size</span></>
+                    <>{name}<span className="k">{t("list.refSize")}</span></>
                   ) : (
                     <>
                       <Link href={itemPath(key)} prefetch={false} className="n">{name}</Link>
-                      {kind !== "pokemon" && <span className="k">{KIND_LABEL[kind]}</span>}
+                      {kind !== "pokemon" && <span className="k">{t(`kind.${kind}`)}</span>}
                       {types.split("/").filter(Boolean).map((t) => <i key={t} style={{ background: TYPE_COLORS[t] ?? "#888" }} title={t} />)}
                     </>
                   )}
                 </td>
-                {valueCol && <td className="szt-v">{v == null ? "—" : by === "weight" ? `${v.toLocaleString("en-US")} kg` : v}</td>}
-                <td className={valueCol ? "szt-s" : undefined}><b>{formatMetres(m)}{plus}</b><small>{formatFeet(m)}{plus}{length ? " · length" : ""}</small></td>
-                {by !== "weight" && <td className="szt-w">{kg != null ? `${kg.toLocaleString("en-US")} kg` : "—"}</td>}
+                {valueCol && <td className="szt-v">{v == null ? "—" : by === "weight" ? (other ? kgText(v, t) : `${v.toLocaleString("en-US")} kg`) : v}</td>}
+                {other ? (
+                  <td className={valueCol ? "szt-s" : undefined}><b>{metres(m, t)}{plus}</b>{length ? <small>{t("list.lengthAlone")}</small> : null}</td>
+                ) : (
+                  <td className={valueCol ? "szt-s" : undefined}><b>{formatMetres(m)}{plus}</b><small>{formatFeet(m)}{plus}{length ? t("list.length") : ""}</small></td>
+                )}
+                {by !== "weight" && <td className="szt-w">{kg != null ? (other ? kgText(kg, t) : `${kg.toLocaleString("en-US")} kg`) : "—"}</td>}
                 <td className="szt-d">{ref ? null : <Link href={`/pokemon/${slug}`} prefetch={false}>{dexTag(dex)}</Link>}</td>
               </tr>
             );

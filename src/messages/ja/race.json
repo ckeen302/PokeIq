@@ -1,0 +1,193 @@
+{
+  "presets": {
+    "fastest-eight": {
+      "label": "最速の8匹",
+      "hook": "最速ポケモンの100 m走 ⚡"
+    },
+    "slowest-eight": {
+      "label": "最も遅い8匹",
+      "hook": "最も遅いポケモンの100 m走 🐌"
+    },
+    "shuckle-vs-regieleki": {
+      "label": "ツボツボ vs レジエレキ",
+      "hook": "ツボツボ vs レジエレキ 😳"
+    },
+    "gen-1-final": {
+      "label": "第1世代決勝",
+      "hook": "第1世代最速は？ 100 m決勝 🏁"
+    },
+    "starters": {
+      "label": "御三家",
+      "hook": "最速の御三家は？ 🔥💧🌿"
+    },
+    "legendaries": {
+      "label": "伝説",
+      "hook": "伝説のポケモンの200 m走 👑"
+    },
+    "eeveelutions": {
+      "label": "ブイズ",
+      "hook": "最速のブイズは？ ✨"
+    },
+    "pseudo-legendaries": {
+      "label": "600族",
+      "hook": "600族がトラック1周 🐉"
+    },
+    "heavyweights": {
+      "label": "重量級",
+      "hook": "最重量ポケモンの100 m走 🏋️"
+    },
+    "every-pokemon": {
+      "label": "全ポケモン",
+      "hook": "全ポケモンが走る。勝者はただ1匹 🏆"
+    }
+  },
+  "field": {
+    "heat": "{name}の組",
+    "heatHook": "{name}は組で勝てる？ 🏁",
+    "sep": " vs ",
+    "vsHook": "{names} 😳",
+    "final": "{label}：決勝"
+  },
+  "round": {
+    "final": "決勝",
+    "semis": "準決勝",
+    "quarters": "準々決勝",
+    "round2": "2回戦",
+    "heats": "予選"
+  },
+  "exp": {
+    "watch3d": "3Dで観る",
+    "scene": "3Dのポケモンレース。ドラッグでカメラを回し、スクロールかピンチでズームします。",
+    "building": "PokéIQスタジアムを作っています…",
+    "warming": "ウォーミングアップ中… {done}/{total}",
+    "back": "3Dラボに戻る",
+    "lab": "3Dラボ",
+    "info": "レースのしくみ",
+    "soundOn": "サウンドをオン",
+    "soundOff": "サウンドをオフ",
+    "resultsList": "結果の一覧",
+    "list": "リスト",
+    "camera": "カメラ",
+    "cam": {
+      "broadcast": "中継",
+      "headon": "正面",
+      "overhead": "真上",
+      "free": "自由"
+    },
+    "zoomIn": "ズームイン",
+    "zoomOut": "ズームアウト",
+    "close": "閉じる",
+    "hideResults": "結果を隠す",
+    "results": "結果・{d} m",
+    "photoAlt": "写真判定：ゴールラインを時間に沿ってスキャンした画像",
+    "photoCaption": "写真判定：ゴールラインを左から右へ時間に沿ってスキャン。",
+    "lane": "レーン",
+    "pokemon": "ポケモン",
+    "time": "タイム",
+    "gap": "差",
+    "spe": "素早",
+    "fullLineup": "全員の紹介から観る",
+    "toStart": "スタートへ",
+    "start": "スタート",
+    "watchAgain": "もう一度観る",
+    "again": "もう一度",
+    "restart": "最初から",
+    "newRace": "新しいレース",
+    "bracket": "トーナメント表",
+    "resultsButton": "結果",
+    "share": "シェア",
+    "video": "動画",
+    "makeVideo": "動画を作る",
+    "copied": "リンクをコピーしました",
+    "shareTitle": "PokéIQ レース",
+    "shareText": "{title}：{name}が{time}秒で勝利",
+    "custom": "カスタムレース",
+    "raceLabel": "{d} m・{label}"
+  },
+  "gfx": {
+    "lane": "レーン",
+    "replay": "リプレイ",
+    "speedNote": "スピード＝すばやさの種族値",
+    "marks": "位置について",
+    "set": "よーい",
+    "photo": "写真判定…",
+    "crane": "{d} M・POKÉIQスタジアム",
+    "meanwhile": "そのころ{name}は…",
+    "leads": "{name}がトップ",
+    "cardWins": "{name}の勝利",
+    "cardSub": "{time}秒・{d} m",
+    "baseSpeed": "すばやさ",
+    "intro": "{motion}・最高{v} KM/H",
+    "motion": {
+      "run": "走る",
+      "gallop": "駆ける",
+      "scuttle": "ちょこちょこ走る",
+      "fly": "飛ぶ",
+      "hover": "浮かぶ",
+      "slither": "這う",
+      "flop": "はねる",
+      "roll": "転がる",
+      "bounce": "弾む",
+      "swim": "泳ぐ"
+    }
+  },
+  "picker": {
+    "close": "閉じる",
+    "title": "レースを選ぶ",
+    "intro": "2〜8匹のポケモンやすがたで、100・200・400 mを走ります。",
+    "remove": "{name}を外す",
+    "addMore": "あと{n}匹追加",
+    "addUpTo": "8匹まで追加できます",
+    "placeholder": "ポケモンを追加…",
+    "searchAria": "追加するポケモンを探す",
+    "spe": "素早",
+    "distance": "距離",
+    "metres": "{d} m",
+    "run": "走らせる",
+    "orPreset": "おすすめのレース",
+    "knockout": "トーナメント"
+  },
+  "bracket": {
+    "close": "閉じる",
+    "title": "全ポケモン：トーナメント表",
+    "champion": "優勝：<c>{name}</c>。Q＝着順で通過、q＝タイムで通過。",
+    "rounds": "ラウンド",
+    "placeholder": "ポケモンの勝ち上がりを探す…",
+    "searchAria": "トーナメント表でポケモンを探す",
+    "out": " 敗退",
+    "heat": "{round}・第{n}組",
+    "watchFinal": "決勝を観る",
+    "redraw": "組み直す"
+  },
+  "video": {
+    "close": "閉じる",
+    "title": "動画を作る",
+    "intro": "このレースのTikTok・リール・ショート向け縦型{w} × {h}動画（スタジアムの音つき）。",
+    "download": "ダウンロード",
+    "share": "シェア",
+    "seconds": "{s}秒",
+    "another": "もう1本作る",
+    "about": "{d} m・約{s}秒・{format}",
+    "rendering": "動画をレンダリング中",
+    "cancel": "キャンセル",
+    "record": "録画",
+    "noVideo": "このブラウザは動画を録画できません。Chrome、Edge、Safariをお試しください。",
+    "realtime": "このブラウザはリアルタイムで録画します。Chrome、Edge、SafariならMP4を1コマずつ作ります。",
+    "frames": "この端末で1コマずつレンダリングするので、なめらかに仕上がります。録画中はこのタブを開いたままにしてください。",
+    "failed": "問題が発生しました",
+    "stage": {
+      "scene": "シーンを準備中",
+      "warming": "ウォーミングアップ中",
+      "sound": "スタジアムの音をミックス中",
+      "rendering": "レンダリング中",
+      "packing": "MP4にまとめています",
+      "recording": "録画中"
+    },
+    "hookLine": "{d} M・種族値をもとに",
+    "endTitle": "PokéIQ レース",
+    "endSub": "{d} m・結果",
+    "endCta": "どのポケモンでも走らせよう",
+    "results": "結果・{d} m",
+    "sec": "秒"
+  }
+}

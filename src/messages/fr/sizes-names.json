@@ -1,0 +1,36 @@
+{
+  "form": {
+    "mega": "Méga-{name}",
+    "megaVariant": "Méga-{name} {variant}",
+    "gmax": "{name} Gigamax",
+    "gmaxStyle": {
+      "single": "{name} Gigamax (style Poing Final)",
+      "rapid": "{name} Gigamax (style Mille Poings)",
+      "amped": "{name} Gigamax (forme Aigüe)",
+      "lowkey": "{name} Gigamax (forme Basse)"
+    },
+    "alola": "{name} d’Alola",
+    "galar": "{name} de Galar",
+    "hisui": "{name} de Hisui",
+    "paldea": "{name} de Paldea",
+    "breed": "{name} de Paldea ({breed})",
+    "breeds": {
+      "combat": "race Combative",
+      "blaze": "race Flamboyante",
+      "aqua": "race Aquatique"
+    },
+    "darmanitan": {
+      "standard": "{name} de Galar (mode Normal)",
+      "zen": "{name} de Galar (mode Transe)"
+    },
+    "eternamax": "{name} Infinimax"
+  },
+  "refs": {
+    "phone": "Smartphone",
+    "human": "Humain adulte",
+    "car": "Voiture",
+    "bus": "Bus scolaire",
+    "house": "Maison à deux niveaux",
+    "building": "Immeuble de 10 niveaux"
+  }
+}

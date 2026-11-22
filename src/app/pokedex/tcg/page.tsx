@@ -6,10 +6,18 @@ import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { DexTabs } from "@/components/pokedex/DexTabs";
 import { ListHeader } from "@/components/pokedex/detail/DetailParts";
 import { HudHeading } from "@/components/game/HudHeading";
-import { CardGrid, TcgUnavailable } from "@/components/tcg/CardGrid";
+import { CardGrid, gridText } from "@/components/tcg/CardGrid";
+import { TcgUnavailable } from "@/components/tcg/TcgUnavailable";
+import { localPriceNote } from "@/components/tcg/price-note";
+import { pageIntl, pageTiles } from "@/components/tcg/local";
 import { cardsForDex, cleanSearch, getSets, searchCards } from "@/lib/tcg/api";
-import { formatApiDate, groupSetsBySeries, tilePriceNote, toTile } from "@/lib/tcg/prices";
+import { formatApiDate, groupSetsBySeries, tilePriceNote } from "@/lib/tcg/prices";
 import { getPokemon } from "@/lib/pokemon/pokedex";
+import { speciesName } from "@/lib/names/species";
+import { getLocale, serverT } from "@/i18n/server";
+import tcg from "@/messages/tcg";
+import tcgCards from "@/messages/tcg-cards";
+import { localeHref } from "@/i18n/href";
 
 // Rendered per request from Next's data cache (sets: weekly, cards: daily), so a deploy never needs the API.
 export const dynamic = "force-dynamic";
@@ -20,9 +28,10 @@ interface PageProps {
 
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
   const { q, dex } = await searchParams;
+  const t = serverT(tcg);
   return pageMetadata({
-    title: "Pokémon TCG — Every Set, Every Card, Card Prices",
-    description: "Every Pokémon Trading Card Game set from Base Set to today, grouped by era, with every card, its rarity and artist, and recent TCGplayer and Cardmarket prices.",
+    title: t("meta.title"),
+    description: t("meta.description"),
     path: "/pokedex/tcg",
     image: SHARE_IMAGES.pokedex,
     noindex: Boolean(q || dex),
@@ -39,36 +48,41 @@ export default async function TcgPage({ searchParams }: PageProps) {
     species ? cardsForDex(species.id, 250).then((r) => r?.cards ?? null) : term ? searchCards(term) : Promise.resolve(undefined),
   ]);
   const groups = sets ? groupSetsBySeries(sets) : [];
-  const resultTiles = results ? results.map(toTile) : [];
-  const resultNote = tilePriceNote(resultTiles);
+  const resultTiles = results ? pageTiles(results) : [];
+  const t = serverT(tcg);
+  const tc = serverT(tcgCards);
+  const locale = getLocale();
+  const intl = pageIntl();
+  const resultNote = locale === "en" ? tilePriceNote(resultTiles) : localPriceNote(resultTiles, tc);
+  const speciesLocal = species ? speciesName(species.id, species.name, locale) : "";
 
   return (
     <div className="mx-auto max-w-6xl space-y-8">
       <div className="space-y-4">
         <ListHeader
-          kicker="Trading Card Game"
-          title="Poké"
-          accent="dex"
-          blurb="Every Pokémon TCG set ever printed, every card in it, and recent market prices from TCGplayer and Cardmarket."
+          kicker={t("index.kicker")}
+          title={t("index.title")}
+          accent={t("index.accent")}
+          blurb={t("index.blurb")}
         />
         <DexTabs active="tcg" />
       </div>
 
-      <form action="/pokedex/tcg" method="get" role="search" className="mx-auto flex max-w-xl gap-2" data-testid="tcg-search">
+      <form action={localeHref("/pokedex/tcg", locale).href} method="get" role="search" className="mx-auto flex max-w-xl gap-2" data-testid="tcg-search">
         <label className="relative flex-1">
-          <span className="sr-only">Search cards by name</span>
+          <span className="sr-only">{t("index.searchLabel")}</span>
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
           <input
             name="q"
             type="search"
             defaultValue={term}
-            placeholder="Search cards by name, e.g. Charizard"
+            placeholder={t("index.searchPlaceholder")}
             maxLength={40}
             className="h-11 w-full rounded-md border border-foreground/15 bg-card pl-9 pr-3 text-sm placeholder:text-muted-foreground focus:border-screen focus:outline-none"
           />
         </label>
         <button type="submit" className="h-11 rounded-md bg-primary px-5 font-pixel text-[10px] uppercase tracking-wider text-primary-foreground hover:brightness-110">
-          Search
+          {t("index.search")}
         </button>
       </form>
 
@@ -76,10 +90,10 @@ export default async function TcgPage({ searchParams }: PageProps) {
         <section className="space-y-4" aria-labelledby="tcg-results-title" data-testid="tcg-results">
           <HudHeading
             id="tcg-results-title"
-            title={species ? `${species.name} cards` : `Cards named “${term}”`}
+            title={species ? t("index.speciesCards", { name: speciesLocal }) : t("index.termCards", { term })}
             aside={
               <Link href="/pokedex/tcg" className="hover:text-foreground">
-                Clear
+                {t("index.clear")}
               </Link>
             }
           />
@@ -87,16 +101,16 @@ export default async function TcgPage({ searchParams }: PageProps) {
             <TcgUnavailable />
           ) : results.length ? (
             <>
-              <CardGrid tiles={resultTiles} showSet />
+              <CardGrid tiles={resultTiles} showSet text={gridText(tc)} />
               {resultNote && <p className="text-center text-xs text-muted-foreground" data-testid="tcg-price-note">{resultNote}</p>}
             </>
           ) : (
-            <p className="py-6 text-center text-sm text-muted-foreground">No cards found.</p>
+            <p className="py-6 text-center text-sm text-muted-foreground">{t("index.noCards")}</p>
           )}
           {species && (
             <p className="text-center text-sm">
               <Link href={`/pokemon/${species.slug}`} className="text-screen underline-offset-2 hover:underline">
-                {species.name}&apos;s Pokédex entry
+                {t("index.entry", { name: speciesLocal })}
               </Link>
             </p>
           )}
@@ -104,11 +118,11 @@ export default async function TcgPage({ searchParams }: PageProps) {
       )}
 
       {!sets ? (
-        <TcgUnavailable what="The set list" />
+        <TcgUnavailable what="sets" />
       ) : (
         groups.map((g, gi) => (
           <section key={g.series} className="space-y-4" aria-labelledby={`series-${gi}`} data-testid="tcg-series">
-            <HudHeading id={`series-${gi}`} index={gi + 1} title={g.series} aside={`${g.sets.length} set${g.sets.length === 1 ? "" : "s"}`} />
+            <HudHeading id={`series-${gi}`} index={gi + 1} title={g.series === "Other" ? t("index.otherSeries") : g.series} aside={t("index.sets", { n: g.sets.length })} />
             <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
               {g.sets.map((s) => (
                 <li key={s.id}>
@@ -119,7 +133,7 @@ export default async function TcgPage({ searchParams }: PageProps) {
                   >
                     <div className="flex h-24 items-center justify-center bg-shade/30 p-3 sm:h-28">
                       {s.images?.logo ? (
-                        <img src={s.images.logo} alt={`${s.name} logo`} loading={gi === 0 ? "eager" : "lazy"} decoding="async" className="max-h-full max-w-full object-contain drop-shadow transition-transform duration-300 group-hover:scale-105" />
+                        <img src={s.images.logo} alt={t("index.logo", { name: s.name })} loading={gi === 0 ? "eager" : "lazy"} decoding="async" className="max-h-full max-w-full object-contain drop-shadow transition-transform duration-300 group-hover:scale-105" />
                       ) : (
                         <span className="font-display text-lg font-bold uppercase">{s.name}</span>
                       )}
@@ -129,7 +143,7 @@ export default async function TcgPage({ searchParams }: PageProps) {
                       <div className="min-w-0">
                         <div className="font-display text-sm font-bold uppercase leading-tight tracking-wide group-hover:text-screen">{s.name}</div>
                         <div className="mt-1 text-[11px] text-muted-foreground">
-                          {[formatApiDate(s.releaseDate), s.total ? `${s.total} cards` : null].filter(Boolean).join(" · ")}
+                          {[formatApiDate(s.releaseDate, intl), s.total ? t("index.cards", { n: s.total }) : null].filter(Boolean).join(" · ")}
                         </div>
                       </div>
                     </div>
@@ -141,19 +155,23 @@ export default async function TcgPage({ searchParams }: PageProps) {
         ))
       )}
       <p className="text-center text-xs text-muted-foreground">
-        Card data and images from the{" "}
-        <a href="https://pokemontcg.io" className="underline-offset-2 hover:underline" rel="noopener" target="_blank">
-          Pokémon TCG API
-        </a>
-        ; prices from it, or TCGplayer via{" "}
-        <a href="https://tcgcsv.com" className="underline-offset-2 hover:underline" rel="noopener" target="_blank">
-          TCGCSV
-        </a>{" "}
-        and Cardmarket via{" "}
-        <a href="https://tcgdex.dev" className="underline-offset-2 hover:underline" rel="noopener" target="_blank">
-          TCGdex
-        </a>
-        . Not affiliated with The Pokémon Company.
+        {t.rich("index.credits", {
+          api: (c) => (
+            <a href="https://pokemontcg.io" className="underline-offset-2 hover:underline" rel="noopener" target="_blank">
+              {c}
+            </a>
+          ),
+          csv: (c) => (
+            <a href="https://tcgcsv.com" className="underline-offset-2 hover:underline" rel="noopener" target="_blank">
+              {c}
+            </a>
+          ),
+          dex: (c) => (
+            <a href="https://tcgdex.dev" className="underline-offset-2 hover:underline" rel="noopener" target="_blank">
+              {c}
+            </a>
+          ),
+        })}
       </p>
     </div>
   );

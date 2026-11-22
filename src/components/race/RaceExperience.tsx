@@ -22,9 +22,14 @@ import { X0, type Distance } from "@/lib/race/track";
 import type { Quality, RaceScene } from "./scene";
 import { RACE_URLS } from "./urls";
 import type { RaceAudio } from "./audio";
-import { drawClockBug, drawFastForward, drawLaneIntro, drawNameTags, drawPhotoFinish, drawReplayBug, drawStartCall, type Rect } from "./graphics";
+import { drawClockBug, drawFastForward, drawLaneIntro, drawNameTags, drawPhotoFinish, drawReplayBug, drawStartCall, setRaceGfxWords, type Rect } from "./graphics";
 import { RACE_CSS } from "./race-css";
-import { RaceInfo } from "./RaceInfo";
+import { raceInfoText } from "./RaceInfo";
+import { useT } from "@/i18n/client";
+import raceNs from "@/messages/race";
+import raceInfo from "@/messages/race-info";
+import { localizeEntrants, type RaceLocal } from "./local-names";
+import { fieldText, presetLabel } from "./words";
 import { RacePicker } from "./RacePicker";
 import { RaceBracket } from "./RaceBracket";
 import { cn } from "@/lib/utils";
@@ -88,6 +93,8 @@ export interface RaceExperienceProps {
   distance?: Distance | null;
   seed?: number | null;
   children: React.ReactNode;
+  /** A page in another language: its names for every runner (English pages send none). */
+  local?: RaceLocal;
 }
 
 /**
@@ -100,7 +107,13 @@ export interface RaceExperienceProps {
  * or make a vertical video. The server-rendered results underneath are the
  * page for search engines, reduced motion and browsers without WebGL.
  */
-export function RaceExperience({ preset, vs = [], distance = null, seed = null, children }: RaceExperienceProps) {
+export function RaceExperience({ preset, vs = [], distance = null, seed = null, children, local }: RaceExperienceProps) {
+  const tx = useT(raceNs);
+  const ti = useT(raceInfo);
+  /** Another language: its names and the broadcast's words in it. */
+  const other = !!process.env.LIVE_LOCALES && tx.locale !== "en";
+  /** The other names each runner answers to in the picker and the bracket (English, rōmaji), in another language. */
+  const [alt, setAlt] = useState<Map<string, string[]> | undefined>(undefined);
   const [mode, setMode] = useState<Mode>("boot");
   const [canGl, setCanGl] = useState(false);
   const [all, setAll] = useState<Entrant[] | null>(null);
@@ -142,8 +155,9 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
   const times = useMemo(() => (race ? displayTimes(race) : new Map()), [race]);
   const presetInfo = PRESET_BY_ID.get(spec.preset) ?? DEFAULT_PRESET;
   const custom = spec.vs.length > 0;
-  const title = field?.title ?? presetInfo.label;
-  const raceLabel = `${spec.distance} m · ${custom ? (title.length <= 24 ? title : "Custom race") : presetInfo.label}`;
+  const words = useMemo(() => (field ? fieldText(spec, field.entrants, tx) : null), [field, spec, tx]);
+  const title = words?.title ?? presetLabel(presetInfo.id, tx);
+  const raceLabel = tx("exp.raceLabel", { d: spec.distance, label: custom ? (title.length <= 24 ? title : tx("exp.custom")) : presetLabel(presetInfo.id, tx) });
 
   /** Mutable show state, read by the frame loop. */
   const show = useRef({
@@ -210,9 +224,30 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
   useEffect(() => {
     if (mode !== "3d" || all) return;
     let alive = true;
-    loadEntrants().then((list) => alive && setAll(list), () => alive && setMode("list"));
+    loadEntrants().then((list) => {
+      if (!alive) return;
+      if (local) {
+        const a = new Map<string, string[]>();
+        setAll(localizeEntrants(list, local, a));
+        setAlt(a);
+      } else setAll(list);
+    }, () => alive && setMode("list"));
     return () => { alive = false; };
-  }, [mode, all]);
+  }, [mode, all, local]);
+
+  // Another language: the broadcast graphics' own words in it.
+  useEffect(() => {
+    if (!other || !local) return;
+    setRaceGfxWords({
+      lane: tx("gfx.lane"),
+      replay: tx("gfx.replay"),
+      speedNote: tx("gfx.speedNote"),
+      baseSpeed: tx("gfx.baseSpeed"),
+      introLine: (motion, v) => tx("gfx.intro", { motion: tx(`gfx.motion.${motion as "run"}`), v }),
+      types: local.types,
+    });
+    return () => setRaceGfxWords(null);
+  }, [other, local, tx]);
 
   // ---- Sound: built on the first press or key, started inside that gesture.
   useEffect(() => {
@@ -460,7 +495,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
         s.roar = true;
         au?.roar();
         const w = race.order[0];
-        scene.setCard(`${w.entrant.name} wins`, `${formatTime(w.time)} s · ${race.distance} m`);
+        scene.setCard(tx("gfx.cardWins", { name: w.entrant.name }), tx("gfx.cardSub", { time: formatTime(w.time), d: race.distance }));
       }
       // Photo finish: developed during the replay, a few columns a frame.
       if ((ph === "replay" || ph === "photo" || ph === "results") && !s.pfImg) {
@@ -542,13 +577,13 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
         g.fillText(words, w / 2, h * 0.36);
         g.font = `800 ${Math.min(w * 0.04, 22)}px ${font}`;
         g.fillStyle = "#9fd8ff";
-        g.fillText(`${race.distance} M · POKÉIQ STADIUM`, w / 2, h * 0.36 + px * 0.95);
+        g.fillText(tx("gfx.crane", { d: race.distance }), w / 2, h * 0.36 + px * 0.95);
         g.restore();
       } else if (ph === "intro" && lane != null) {
         const r = race.lanes.find((x) => x.lane === lane);
         if (r) drawLaneIntro(g, w, h, r, k, { ...o, bottom });
       } else if (ph === "marks" || ph === "set") {
-        drawStartCall(g, w, h, ph === "marks" ? "ON YOUR MARKS" : "SET", k, o);
+        drawStartCall(g, w, h, ph === "marks" ? tx("gfx.marks") : tx("gfx.set"), k, o);
       }
       if (ph === "race" || ph === "fast") {
         const lead = leaderAt(race, raceT);
@@ -557,7 +592,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
         const bug = drawClockBug(g, w, h, { ...o, top, title: raceLabel, time: formatTime(Math.min(raceT, race.first), 2), leader: raceT < race.first ? { name: lead.entrant.name, v: Math.max(0, lead.profile ? spotsAt(race, raceT).find((x) => x.lane === lead.lane)?.v ?? 0 : 0) } : null, live: raceT < race.first });
         if (ph === "fast") {
           const r = race.lanes.find((x) => x.lane === shot.lane);
-          const caption = r ? (raceT > race.first ? `Meanwhile, ${r.entrant.name}…` : `${r.entrant.name} leads`) : "";
+          const caption = r ? (raceT > race.first ? tx("gfx.meanwhile", { name: r.entrant.name }) : tx("gfx.leads", { name: r.entrant.name })) : "";
           drawFastForward(g, w, h, rate, caption, { ...o, top: top + (phone ? 70 : 84) });
         }
         // Name tags while the runners are big enough on screen.
@@ -581,7 +616,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
         drawReplayBug(g, w, h, { ...o, top });
       } else if (ph === "photo") {
         if (s.pfImg) drawPhotoFinish(g, w, h, s.pfImg, race, s.pfWin, k, { ...o, top, bottom });
-        else drawStartCall(g, w, h, "PHOTO FINISH…", 0.5, o);
+        else drawStartCall(g, w, h, tx("gfx.photo"), 0.5, o);
       }
     };
 
@@ -600,9 +635,9 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
       },
     };
     return () => cancelAnimationFrame(raf);
-  }, [ready, raceLabel]);
+  }, [ready, raceLabel, tx]);
 
-  useEffect(() => { show.current.title = field?.title ?? ""; }, [field]);
+  useEffect(() => { show.current.title = words?.title ?? ""; }, [words]);
   useEffect(() => { if (stageRef.current) stageRef.current.dataset.q = quality; }, [quality]);
   useEffect(() => {
     if (!toast) return;
@@ -782,11 +817,11 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
   const share = async () => {
     const url = `${window.location.origin}${sharePath()}`;
     const winner = race?.order[0];
-    const text = winner ? `${title}: ${winner.entrant.name} wins in ${formatTime(winner.time)}` : title;
+    const text = winner ? tx("exp.shareText", { title, name: winner.entrant.name, time: formatTime(winner.time) }) : title;
     if (typeof navigator.share === "function" && window.matchMedia("(pointer: coarse)").matches) {
-      try { await navigator.share({ title: "PokéIQ Race", text, url }); return; } catch { /* closed: copy instead */ }
+      try { await navigator.share({ title: tx("exp.shareTitle"), text, url }); return; } catch { /* closed: copy instead */ }
     }
-    if (await copyText(url)) setToast("Link copied");
+    if (await copyText(url)) setToast(tx("exp.copied"));
   };
 
   const toggleMute = () => {
@@ -808,7 +843,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
         {mode === "list" && canGl && (
           <div className="mb-4 flex justify-end">
             <button type="button" onClick={() => setMode("3d")} className="rounded-md border bg-card px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:border-screen/60 hover:text-foreground" data-testid="race-3d-view">
-              Watch it in 3D
+              {tx("exp.watch3d")}
             </button>
           </div>
         )}
@@ -828,7 +863,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
           data-photo={photo ? "1" : "0"}
           data-recording={recording ? "1" : "0"}
         >
-          <div ref={hostRef} className="rc-host absolute inset-0 cursor-grab touch-none select-none active:cursor-grabbing" data-testid="race-scene" role="application" aria-label="A Pokémon race in 3D. Drag to orbit the camera, scroll or pinch to zoom." />
+          <div ref={hostRef} className="rc-host absolute inset-0 cursor-grab touch-none select-none active:cursor-grabbing" data-testid="race-scene" role="application" aria-label={tx("exp.scene")} />
           <StagePoster src={STAGE_POSTERS.race} gone={ready} />
           <ScenePreload />
           <canvas ref={overlayRef} className="rc-overlay h-full w-full" aria-hidden />
@@ -839,7 +874,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 text-white" aria-live="polite">
               <Flag className="h-8 w-8 animate-pulse text-[#ffd84a]" aria-hidden />
               <div className="font-pixel text-[10px] uppercase tracking-[0.3em]" data-testid="race-loading">
-                {!ready ? "Building PokéIQ Stadium…" : `Runners warming up… ${Math.round(loaded * (race?.lanes.length ?? 0))}/${race?.lanes.length ?? 0}`}
+                {!ready ? tx("exp.building") : tx("exp.warming", { done: Math.round(loaded * (race?.lanes.length ?? 0)), total: race?.lanes.length ?? 0 })}
               </div>
             </div>
           )}
@@ -847,39 +882,39 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
           {/* Top bar. */}
           <div className="rc-ui pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-2 p-3 sm:p-4">
             <div className="flex min-w-0 items-center gap-2">
-              <Link href={LAB_PATH} className={cn(chip, "px-2.5")} aria-label="Back to the 3D Lab" data-testid="race-back">
-                <ArrowLeft className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">3D Lab</span>
+              <Link href={LAB_PATH} className={cn(chip, "px-2.5")} aria-label={tx("exp.back")} data-testid="race-back">
+                <ArrowLeft className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">{tx("exp.lab")}</span>
               </Link>
               <button type="button" className={cn(chip, "min-w-0 max-w-[44vw] sm:max-w-none")} onClick={() => setPicker(true)} disabled={!all} data-testid="race-title">
                 <span className="truncate">{title}</span>
-                <span className="shrink-0 text-[#ffd84a]">{spec.distance} m</span>
+                <span className="shrink-0 text-[#ffd84a]">{tx("picker.metres", { d: spec.distance })}</span>
               </button>
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              <button type="button" className={cn(chip, "px-2.5")} onClick={() => setInfo((v) => !v)} aria-label="How the race works" aria-expanded={info} data-testid="race-info-toggle">
+              <button type="button" className={cn(chip, "px-2.5")} onClick={() => setInfo((v) => !v)} aria-label={tx("exp.info")} aria-expanded={info} data-testid="race-info-toggle">
                 <Info className="h-4 w-4" aria-hidden />
               </button>
-              <button type="button" className={cn(chip, "px-2.5")} onClick={toggleMute} aria-label={muted ? "Turn the sound on" : "Turn the sound off"} data-testid="race-mute">
+              <button type="button" className={cn(chip, "px-2.5")} onClick={toggleMute} aria-label={muted ? tx("exp.soundOn") : tx("exp.soundOff")} data-testid="race-mute">
                 {muted ? <VolumeX className="h-4 w-4" aria-hidden /> : <Volume2 className="h-4 w-4" aria-hidden />}
               </button>
-              <button type="button" className={cn(chip, "px-2.5 sm:px-3")} onClick={() => setMode("list")} aria-label="Results list" data-testid="race-list-view">
-                <List className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">List</span>
+              <button type="button" className={cn(chip, "px-2.5 sm:px-3")} onClick={() => setMode("list")} aria-label={tx("exp.resultsList")} data-testid="race-list-view">
+                <List className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">{tx("exp.list")}</span>
               </button>
             </div>
           </div>
 
           {/* Camera: presets and zoom (always available). */}
           <div ref={camUiRef} className="rc-ui pointer-events-none absolute right-3 top-[3.6rem] z-10 flex flex-col items-end gap-2 sm:right-4 sm:top-[4.1rem]">
-            <div className="rc-seg pointer-events-auto flex overflow-hidden rounded-md border border-white/15 bg-[#0b1226]/75 backdrop-blur-md" role="group" aria-label="Camera">
+            <div className="rc-seg pointer-events-auto flex overflow-hidden rounded-md border border-white/15 bg-[#0b1226]/75 backdrop-blur-md" role="group" aria-label={tx("exp.camera")}>
               {(["broadcast", "headon", "overhead", "free"] as CamMode[]).map((m) => (
                 <button key={m} type="button" aria-pressed={cam === m} onClick={() => setCamMode(m)} className="border-l border-white/10 px-2 py-1.5 font-display text-[10px] font-semibold uppercase tracking-wider text-white/75 first:border-l-0 hover:text-white sm:px-2.5 sm:text-[11px]" data-testid={`race-cam-${m}`}>
-                  {m === "headon" ? "Head-on" : m[0].toUpperCase() + m.slice(1)}
+                  {tx(`exp.cam.${m}`)}
                 </button>
               ))}
             </div>
             <div className="pointer-events-auto flex flex-col overflow-hidden rounded-md border border-white/15 bg-[#0b1226]/75 backdrop-blur-md">
-              <button type="button" onClick={() => zoom(1.25)} className="p-2 text-white/80 hover:text-white max-sm:p-3" aria-label="Zoom in" data-testid="race-zoom-in"><Plus className="h-4 w-4" /></button>
-              <button type="button" onClick={() => zoom(0.8)} className="border-t border-white/10 p-2 text-white/80 hover:text-white max-sm:p-3" aria-label="Zoom out" data-testid="race-zoom-out"><Minus className="h-4 w-4" /></button>
+              <button type="button" onClick={() => zoom(1.25)} className="p-2 text-white/80 hover:text-white max-sm:p-3" aria-label={tx("exp.zoomIn")} data-testid="race-zoom-in"><Plus className="h-4 w-4" /></button>
+              <button type="button" onClick={() => zoom(0.8)} className="border-t border-white/10 p-2 text-white/80 hover:text-white max-sm:p-3" aria-label={tx("exp.zoomOut")} data-testid="race-zoom-out"><Minus className="h-4 w-4" /></button>
             </div>
           </div>
 
@@ -888,10 +923,10 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
             {info && (
               <motion.div className="rc-ui pointer-events-auto absolute left-3 right-3 top-[3.6rem] z-30 max-h-[70%] overflow-y-auto rounded-xl border border-white/15 bg-[#0b1226]/95 p-4 text-white/85 shadow-2xl backdrop-blur-xl sm:left-4 sm:right-auto sm:w-[30rem]" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} data-testid="race-info-panel" data-rc-scroll>
                 <div className="mb-2 flex items-center justify-between">
-                  <h2 className="font-display text-sm font-bold uppercase tracking-wider text-white">How the race works</h2>
-                  <button type="button" onClick={() => setInfo(false)} className="rounded p-1 text-white/60 hover:text-white" aria-label="Close"><X className="h-4 w-4" /></button>
+                  <h2 className="font-display text-sm font-bold uppercase tracking-wider text-white">{tx("exp.info")}</h2>
+                  <button type="button" onClick={() => setInfo(false)} className="rounded p-1 text-white/60 hover:text-white" aria-label={tx("exp.close")}><X className="h-4 w-4" /></button>
                 </div>
-                <RaceInfo compact />
+                {raceInfoText(ti, true)}
               </motion.div>
             )}
           </AnimatePresence>
@@ -900,18 +935,18 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
           {after && race && resultsOpen && (
             <div className="rc-ui pointer-events-auto absolute inset-x-3 bottom-[7.2rem] z-20 max-h-[min(26rem,calc(100%-14rem))] sm:max-h-[min(31rem,calc(100%-12rem))] overflow-y-auto rounded-xl border border-white/15 p-3 text-white shadow-2xl backdrop-blur-xl sm:inset-x-auto sm:bottom-24 sm:right-4 sm:w-[27rem] rc-results" data-testid="race-results" data-rc-scroll>
               <div className="mb-1 flex items-center justify-between gap-2">
-                <h2 className="font-display text-sm font-bold uppercase tracking-wider"><Trophy className="mr-1.5 inline h-4 w-4 text-[#ffd84a]" aria-hidden />Results · {spec.distance} m</h2>
-                <button type="button" onClick={() => setResultsOpen(false)} className="rounded p-1 text-white/60 hover:text-white" aria-label="Hide the results" data-testid="race-results-close"><X className="h-4 w-4" /></button>
+                <h2 className="font-display text-sm font-bold uppercase tracking-wider"><Trophy className="mr-1.5 inline h-4 w-4 text-[#ffd84a]" aria-hidden />{tx("exp.results", { d: spec.distance })}</h2>
+                <button type="button" onClick={() => setResultsOpen(false)} className="rounded p-1 text-white/60 hover:text-white" aria-label={tx("exp.hideResults")} data-testid="race-results-close"><X className="h-4 w-4" /></button>
               </div>
               {photo && (
                 <figure className="mb-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={photo} alt="Photo finish: the finish line scanned over time" className="h-24 w-full rounded-md border border-white/15 object-cover sm:h-28" data-testid="race-photo" />
-                  <figcaption className="mt-1 text-[11px] text-white/50">Photo finish: the line scanned over time, left to right.</figcaption>
+                  <img src={photo} alt={tx("exp.photoAlt")} className="h-24 w-full rounded-md border border-white/15 object-cover sm:h-28" data-testid="race-photo" />
+                  <figcaption className="mt-1 text-[11px] text-white/50">{tx("exp.photoCaption")}</figcaption>
                 </figure>
               )}
               <table>
-                <thead><tr><th>#</th><th>Lane</th><th>Pokémon</th><th className="text-right">Time</th><th className="text-right">Gap</th><th className="text-right">Spe</th></tr></thead>
+                <thead><tr><th>#</th><th>{tx("exp.lane")}</th><th>{tx("exp.pokemon")}</th><th className="text-right">{tx("exp.time")}</th><th className="text-right">{tx("exp.gap")}</th><th className="text-right">{tx("exp.spe")}</th></tr></thead>
                 <tbody>
                   {race.order.map((r) => (
                     <tr key={r.lane} className={r.place === 1 ? "win" : undefined} data-testid="race-result-row">
@@ -926,7 +961,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
                 </tbody>
               </table>
               <button type="button" onClick={() => replay(false, true)} className="mt-2 inline-flex min-h-10 items-center gap-1.5 rounded-md px-1 font-display text-xs font-semibold uppercase tracking-wider text-white/70 hover:text-white" data-testid="race-lineup">
-                <Play className="h-3.5 w-3.5 fill-current" aria-hidden /> Watch with the full line-up
+                <Play className="h-3.5 w-3.5 fill-current" aria-hidden /> {tx("exp.fullLineup")}
               </button>
             </div>
           )}
@@ -937,40 +972,40 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
               <div className="flex items-center gap-2">
                 {pre ? (
                   <button type="button" onClick={skipIntro} className="rc-go pointer-events-auto inline-flex h-11 items-center gap-2 rounded-lg px-4 font-display text-sm font-bold uppercase tracking-wider" data-testid="race-skip">
-                    <SkipForward className="h-4 w-4" aria-hidden /> <span className="hidden min-[400px]:inline">To the start</span><span className="min-[400px]:hidden">Start</span>
+                    <SkipForward className="h-4 w-4" aria-hidden /> <span className="hidden min-[400px]:inline">{tx("exp.toStart")}</span><span className="min-[400px]:hidden">{tx("exp.start")}</span>
                   </button>
                 ) : (
-                  <button type="button" onClick={() => replay(!after)} disabled={phase === "loading"} aria-label={after ? "Watch again" : undefined} className="rc-go pointer-events-auto inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-lg px-4 font-display text-sm font-bold uppercase tracking-wider disabled:opacity-50" data-testid="race-replay">
+                  <button type="button" onClick={() => replay(!after)} disabled={phase === "loading"} aria-label={after ? tx("exp.watchAgain") : undefined} className="rc-go pointer-events-auto inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-lg px-4 font-display text-sm font-bold uppercase tracking-wider disabled:opacity-50" data-testid="race-replay">
                     {after ? <RotateCcw className="h-4 w-4" aria-hidden /> : <Play className="h-4 w-4 fill-current" aria-hidden />}
                     {after ? (
                       <>
                         {/* A phone's bar also holds the results (and the bracket's) buttons after a race. */}
-                        <span className="hidden min-[420px]:inline">Watch again</span>
-                        {!field?.tournament && <span className="min-[420px]:hidden">Again</span>}
+                        <span className="hidden min-[420px]:inline">{tx("exp.watchAgain")}</span>
+                        {!field?.tournament && <span className="min-[420px]:hidden">{tx("exp.again")}</span>}
                       </>
-                    ) : "Restart"}
+                    ) : tx("exp.restart")}
                   </button>
                 )}
                 <button type="button" onClick={() => setPicker(true)} disabled={!all} className={cn(chip, "h-11")} data-testid="race-new">
-                  <Flag className="h-4 w-4" aria-hidden /> <span className="hidden whitespace-nowrap min-[420px]:inline">New race</span>
+                  <Flag className="h-4 w-4" aria-hidden /> <span className="hidden whitespace-nowrap min-[420px]:inline">{tx("exp.newRace")}</span>
                 </button>
                 {field?.tournament && (
                   <button type="button" onClick={() => setBracket(true)} className={cn(chip, "h-11")} data-testid="race-bracket-open">
-                    <Trophy className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">Bracket</span>
+                    <Trophy className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">{tx("exp.bracket")}</span>
                   </button>
                 )}
                 {after && !resultsOpen && (
                   <button type="button" onClick={() => setResultsOpen(true)} className={cn(chip, "h-11")} data-testid="race-results-open">
-                    <Trophy className="h-4 w-4 text-[#ffd84a]" aria-hidden /> <span className="hidden sm:inline">Results</span>
+                    <Trophy className="h-4 w-4 text-[#ffd84a]" aria-hidden /> <span className="hidden sm:inline">{tx("exp.resultsButton")}</span>
                   </button>
                 )}
               </div>
               <div className="flex items-center gap-2">
-                <button type="button" onClick={share} className={cn(chip, "h-11 px-3")} aria-label="Share" data-testid="race-share">
-                  <Share2 className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">Share</span>
+                <button type="button" onClick={share} className={cn(chip, "h-11 px-3")} aria-label={tx("exp.share")} data-testid="race-share">
+                  <Share2 className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">{tx("exp.share")}</span>
                 </button>
                 <button type="button" onClick={() => setVideoOpen(true)} className={cn(chip, "h-11 border-[#ffd84a]/50 text-white")} disabled={!race || phase === "loading"} data-testid="race-video">
-                  <Clapperboard className="h-4 w-4 text-[#ffd84a]" aria-hidden /> <span className="sm:hidden">Video</span><span className="hidden sm:inline">Make a video</span>
+                  <Clapperboard className="h-4 w-4 text-[#ffd84a]" aria-hidden /> <span className="sm:hidden">{tx("exp.video")}</span><span className="hidden sm:inline">{tx("exp.makeVideo")}</span>
                 </button>
               </div>
             </div>
@@ -985,14 +1020,14 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
           </AnimatePresence>
 
           {picker && all && (
-            <RacePicker all={all} keys={spec.vs.length >= 2 ? spec.vs : (field?.entrants ?? []).map((e) => e.key)} distance={spec.distance} onRun={runCustom} onPreset={runPreset} onClose={() => setPicker(false)} />
+            <RacePicker all={all} alt={alt} keys={spec.vs.length >= 2 ? spec.vs : (field?.entrants ?? []).map((e) => e.key)} distance={spec.distance} onRun={runCustom} onPreset={runPreset} onClose={() => setPicker(false)} />
           )}
           {bracket && field?.tournament && (
-            <RaceBracket t={field.tournament} byKey={byKey} onClose={() => setBracket(false)} onWatchFinal={() => { setBracket(false); quickRef.current = false; setRunId((x) => x + 1); }} onRedraw={redraw} />
+            <RaceBracket t={field.tournament} byKey={byKey} alt={alt} onClose={() => setBracket(false)} onWatchFinal={() => { setBracket(false); quickRef.current = false; setRunId((x) => x + 1); }} onRedraw={redraw} />
           )}
           {videoOpen && race && field && (
             <Suspense fallback={null}>
-              <MakeRaceVideo race={race} hook={field.hook} title={title} slug={custom ? spec.vs.join("-vs-") : spec.preset} link={sharePath()} onRecording={setRecording} onClose={() => setVideoOpen(false)} />
+              <MakeRaceVideo race={race} hook={words?.hook ?? field.hook} title={title} slug={custom ? spec.vs.join("-vs-") : spec.preset} link={sharePath()} onRecording={setRecording} onClose={() => setVideoOpen(false)} />
             </Suspense>
           )}
         </div>

@@ -1,0 +1,193 @@
+{
+  "presets": {
+    "fastest-eight": {
+      "label": "Fastest Eight",
+      "hook": "The fastest Pokémon race 100 m ⚡"
+    },
+    "slowest-eight": {
+      "label": "Slowest Eight",
+      "hook": "The slowest Pokémon race 100 m 🐌"
+    },
+    "shuckle-vs-regieleki": {
+      "label": "Shuckle vs Regieleki",
+      "hook": "Shuckle vs Regieleki 😳"
+    },
+    "gen-1-final": {
+      "label": "Gen 1 final",
+      "hook": "Fastest Gen 1 Pokémon? 100 m final 🏁"
+    },
+    "starters": {
+      "label": "Starters",
+      "hook": "Which starter is fastest? 🔥💧🌿"
+    },
+    "legendaries": {
+      "label": "Legendaries",
+      "hook": "Legendary Pokémon race 200 m 👑"
+    },
+    "eeveelutions": {
+      "label": "Eeveelutions",
+      "hook": "Which Eeveelution is fastest? ✨"
+    },
+    "pseudo-legendaries": {
+      "label": "Pseudo-legendaries",
+      "hook": "Pseudo-legendaries race a full lap 🐉"
+    },
+    "heavyweights": {
+      "label": "Heavyweights",
+      "hook": "The heaviest Pokémon race 100 m 🏋️"
+    },
+    "every-pokemon": {
+      "label": "Every Pokémon",
+      "hook": "Every Pokémon races. One winner 🏆"
+    }
+  },
+  "field": {
+    "heat": "{name}'s heat",
+    "heatHook": "Can {name} win its heat? 🏁",
+    "sep": " vs ",
+    "vsHook": "{names} 😳",
+    "final": "{label}: the final"
+  },
+  "round": {
+    "final": "Final",
+    "semis": "Semi-finals",
+    "quarters": "Quarter-finals",
+    "round2": "Round 2",
+    "heats": "Heats"
+  },
+  "exp": {
+    "watch3d": "Watch it in 3D",
+    "scene": "A Pokémon race in 3D. Drag to orbit the camera, scroll or pinch to zoom.",
+    "building": "Building PokéIQ Stadium…",
+    "warming": "Runners warming up… {done}/{total}",
+    "back": "Back to the 3D Lab",
+    "lab": "3D Lab",
+    "info": "How the race works",
+    "soundOn": "Turn the sound on",
+    "soundOff": "Turn the sound off",
+    "resultsList": "Results list",
+    "list": "List",
+    "camera": "Camera",
+    "cam": {
+      "broadcast": "Broadcast",
+      "headon": "Head-on",
+      "overhead": "Overhead",
+      "free": "Free"
+    },
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "close": "Close",
+    "hideResults": "Hide the results",
+    "results": "Results · {d} m",
+    "photoAlt": "Photo finish: the finish line scanned over time",
+    "photoCaption": "Photo finish: the line scanned over time, left to right.",
+    "lane": "Lane",
+    "pokemon": "Pokémon",
+    "time": "Time",
+    "gap": "Gap",
+    "spe": "Spe",
+    "fullLineup": "Watch with the full line-up",
+    "toStart": "To the start",
+    "start": "Start",
+    "watchAgain": "Watch again",
+    "again": "Again",
+    "restart": "Restart",
+    "newRace": "New race",
+    "bracket": "Bracket",
+    "resultsButton": "Results",
+    "share": "Share",
+    "video": "Video",
+    "makeVideo": "Make a video",
+    "copied": "Link copied",
+    "shareTitle": "PokéIQ Race",
+    "shareText": "{title}: {name} wins in {time}",
+    "custom": "Custom race",
+    "raceLabel": "{d} m · {label}"
+  },
+  "gfx": {
+    "lane": "LANE",
+    "replay": "REPLAY",
+    "speedNote": "SPEED = BASE SPEED",
+    "marks": "ON YOUR MARKS",
+    "set": "SET",
+    "photo": "PHOTO FINISH…",
+    "crane": "{d} M · POKÉIQ STADIUM",
+    "meanwhile": "Meanwhile, {name}…",
+    "leads": "{name} leads",
+    "cardWins": "{name} wins",
+    "cardSub": "{time} s · {d} m",
+    "baseSpeed": "BASE SPEED",
+    "intro": "{motion} · {v} KM/H TOP",
+    "motion": {
+      "run": "Runs",
+      "gallop": "Gallops",
+      "scuttle": "Scuttles",
+      "fly": "Flies",
+      "hover": "Hovers",
+      "slither": "Slithers",
+      "flop": "Flops",
+      "roll": "Rolls",
+      "bounce": "Bounces",
+      "swim": "Swims"
+    }
+  },
+  "picker": {
+    "close": "Close",
+    "title": "Pick a race",
+    "intro": "Two to eight Pokémon or forms, over 100, 200 or 400 m.",
+    "remove": "Remove {name}",
+    "addMore": "Add {n} more",
+    "addUpTo": "Add up to 8",
+    "placeholder": "Add a Pokémon…",
+    "searchAria": "Search for a Pokémon to add",
+    "spe": "SPE",
+    "distance": "Distance",
+    "metres": "{d} m",
+    "run": "Race them",
+    "orPreset": "Or a preset",
+    "knockout": "Knockout"
+  },
+  "bracket": {
+    "close": "Close",
+    "title": "Every Pokémon: the bracket",
+    "champion": "Champion: <c>{name}</c>. Q = through by place, q = fastest loser.",
+    "rounds": "Rounds",
+    "placeholder": "Find a Pokémon's path…",
+    "searchAria": "Find a Pokémon in the bracket",
+    "out": " out",
+    "heat": "{round} · heat {n}",
+    "watchFinal": "Watch the final",
+    "redraw": "Redraw"
+  },
+  "video": {
+    "close": "Close",
+    "title": "Make a video",
+    "intro": "A vertical {w} × {h} video of this race for TikTok, Reels and Shorts, with the stadium sound.",
+    "download": "Download",
+    "share": "Share",
+    "seconds": "{s} s",
+    "another": "Make another",
+    "about": "{d} m · about {s} s · {format}",
+    "rendering": "Rendering the video",
+    "cancel": "Cancel",
+    "record": "Record",
+    "noVideo": "This browser can't record video. Try Chrome, Edge or Safari.",
+    "realtime": "This browser records in real time. Chrome, Edge and Safari make an MP4 frame by frame.",
+    "frames": "Rendered frame by frame on this device, so it stays smooth. Keep this tab open while it records.",
+    "failed": "Something went wrong",
+    "stage": {
+      "scene": "Setting the scene",
+      "warming": "Runners warming up",
+      "sound": "Mixing the stadium sound",
+      "rendering": "Rendering",
+      "packing": "Packing the MP4",
+      "recording": "Recording"
+    },
+    "hookLine": "{d} M · BASED ON THEIR STATS",
+    "endTitle": "PokéIQ Race",
+    "endSub": "{d} m · results",
+    "endCta": "Race any Pokémon",
+    "results": "Results · {d} m",
+    "sec": " s"
+  }
+}

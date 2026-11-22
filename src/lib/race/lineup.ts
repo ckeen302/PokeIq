@@ -3,6 +3,7 @@ import { DEFAULT_SEED, knockout, type Tournament } from "./tournament";
 import { vsOk } from "./deeplink";
 import type { Distance } from "./track";
 import type { Entrant } from "./types";
+import { foldLetters } from "@/lib/names/fold";
 
 /**
  * Which race /pokedex/race runs, from what the page was opened with (a
@@ -73,20 +74,28 @@ export function fieldFor(spec: RaceSpec, all: Entrant[]): Field {
 /** Folds case and accents: "Flabébé" → "flabebe". */
 export const fold = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
-/** Pokémon and forms matching a search (name, Dex number or "#25"): exact names first, then prefixes, then the rest; species before forms. */
-export function searchEntrants(all: Entrant[], query: string, limit = 8): Entrant[] {
-  const q = fold(query.trim()).replace(/^#/, "");
+/**
+ * Pokémon and forms matching a search (name, Dex number or "#25"): exact names first, then prefixes, then the rest;
+ * species before forms. `alt` (pages in another language): other names each runner answers to (English, rōmaji),
+ * matched in any script.
+ */
+export function searchEntrants(all: Entrant[], query: string, limit = 8, alt?: Map<string, string[]>): Entrant[] {
+  const f = alt ? foldLetters : fold;
+  const q = f(query.trim()).replace(/^#/, "");
   if (!q) return [];
   const num = /^\d+$/.test(q) ? Number(q) : null;
   const scored: { e: Entrant; s: number }[] = [];
   for (const e of all) {
-    const name = fold(e.name);
     let s = -1;
     if (num !== null) s = e.species === num ? 0 : -1;
-    else if (name === q || e.key === q) s = 0;
-    else if (name.startsWith(q)) s = 2;
-    else if (name.split(/[\s-]+/).some((w) => w.startsWith(q))) s = 3;
-    else if (name.includes(q)) s = 4;
+    else if (e.key === q) s = 0;
+    else {
+      for (const n of alt ? [e.name, ...(alt.get(e.key) ?? [])] : [e.name]) {
+        const name = f(n);
+        const m = name === q ? 0 : name.startsWith(q) ? 2 : name.split(/[\s-]+/).some((w) => w.startsWith(q)) ? 3 : name.includes(q) ? 4 : -1;
+        if (m >= 0 && (s < 0 || m < s)) s = m;
+      }
+    }
     if (s < 0) continue;
     if (e.kind !== "pokemon") s += 0.5;
     scored.push({ e, s });

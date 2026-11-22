@@ -1,0 +1,36 @@
+{
+  "grid": {
+    "alt": "Karte {name}",
+    "noImage": "Kein Bild",
+    "titleUsd": "{label} (TCGplayer-Marktpreis)",
+    "titleEur": "{label} (Cardmarket)"
+  },
+  "gallery": {
+    "sort": "Sortierung",
+    "number": "Nummer",
+    "priceDesc": "Preis ↓",
+    "priceAsc": "Preis ↑",
+    "rarity": "Seltenheit",
+    "allRarities": "Alle Seltenheiten",
+    "type": "Typ",
+    "allTypes": "Alle Typen",
+    "count": "{shown} / {total} Karten",
+    "none": "Keine Karte passt zu diesen Filtern."
+  },
+  "pokemon": {
+    "title": "Karten",
+    "all": "Alle {n} ansehen →",
+    "newest": "Die neuesten Pokémon-TCG-Karten von {name}. {note}"
+  },
+  "note": {
+    "usd": "TCGplayer-Marktpreis (USD)",
+    "eur": "Cardmarket-Trend (EUR)",
+    "cmTrend": "Cardmarket-Trend",
+    "via": "{market} über {source}",
+    "asOf": "{what}, Stand {date}",
+    "sep": "; ",
+    "line": "Preise: {parts}.",
+    "lineSome": "Preise: {parts}. Manche Preise sind gerade nicht verfügbar.",
+    "unavailable": "Preise gerade nicht verfügbar."
+  }
+}

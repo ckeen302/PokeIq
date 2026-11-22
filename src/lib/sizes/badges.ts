@@ -24,6 +24,8 @@ export interface BadgeInfo {
   types: string[];
   /** In a stat or weight order, the line's value: a second box beside the height ("130 / speed", "460 / kg weight"). */
   stat?: { num: string; unit: string; sub: string } | null;
+  /** The badge's words in another language (English pages leave it out): the height box, "(LENGTH)" and the type names. */
+  words?: { num: string; unit: string; sub: string; lengthTag: string; types: string[] };
 }
 
 /** The number in the height box: "3.8", "0.1", "14.5", "100", "1.71". */
@@ -163,7 +165,7 @@ export function drawBadge(g: CanvasRenderingContext2D, info: BadgeInfo, p: { x: 
     g.stroke();
     gameText(g, tag, x + s * 0.1 + tw / 2, y + th * 0.53, th * 0.72, font, "#ffffff", ink, th * 0.16);
     if (info.length) {
-      const lt = "(LENGTH)";
+      const lt = info.words?.lengthTag ?? "(LENGTH)";
       g.font = `800 ${th * 0.6}px ${font}`;
       const lw = g.measureText(lt).width + th * 0.6;
       roundRect(g, x + s * 0.2 + tw, y, lw, th, th * 0.22);
@@ -217,13 +219,13 @@ export function drawBadge(g: CanvasRenderingContext2D, info: BadgeInfo, p: { x: 
   g.lineWidth = Math.max(1.5, s * 0.07);
   g.strokeStyle = "#eef3f7";
   g.stroke();
-  const num = badgeNumber(info.m, info.min);
+  const num = info.words?.num ?? badgeNumber(info.m, info.min);
   let npx = s * 0.78;
   g.font = `800 ${npx}px ${font}`;
   const nw = g.measureText(num).width;
   if (nw > hw * 0.86) npx *= (hw * 0.86) / nw;
   gameText(g, num, x + hw / 2, y + hb * 0.36, npx, font, "#ffffff", ink, npx * 0.16);
-  const unit = info.length ? "meter length" : "meter height";
+  const unit = info.words?.unit ?? (info.length ? "meter length" : "meter height");
   let upx = s * 0.27;
   g.font = `800 ${upx}px ${font}`;
   const uw = g.measureText(unit).width;
@@ -231,7 +233,7 @@ export function drawBadge(g: CanvasRenderingContext2D, info: BadgeInfo, p: { x: 
   gameText(g, unit, x + hw / 2, y + hb * 0.68, upx, font, "#ffd21f", ink, upx * 0.2);
   g.font = `700 ${s * 0.21}px ${font}`;
   g.fillStyle = "#c8d3de";
-  g.fillText(`${formatFeet(info.m)}${info.min ? "+" : ""}`, x + hw / 2, y + hb * 0.88);
+  g.fillText(info.words ? info.words.sub : `${formatFeet(info.m)}${info.min ? "+" : ""}`, x + hw / 2, y + hb * 0.88);
   // The line's value in a stat or weight order: a gold box beside the height.
   let tx = x + hw;
   if (info.stat) {
@@ -293,7 +295,7 @@ export function drawBadge(g: CanvasRenderingContext2D, info: BadgeInfo, p: { x: 
       g.fill(path, "evenodd");
       g.restore();
     }
-    const label = t.toUpperCase();
+    const label = (info.words?.types[k] ?? t).toUpperCase();
     let lpx = s * 0.3;
     g.font = `800 ${lpx}px ${font}`;
     const lw = g.measureText(label).width;

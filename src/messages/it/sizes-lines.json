@@ -1,0 +1,283 @@
+{
+  "order": {
+    "height": {
+      "label": "Altezza",
+      "short": "Altezza",
+      "by": "grandezza",
+      "byHigh": "grandezza, dal più grande",
+      "lowFirst": "Prima i più piccoli",
+      "highFirst": "Prima i più grandi",
+      "top": "il più grande",
+      "bottom": "il più piccolo",
+      "more": "più grande del",
+      "none": "altezza",
+      "leftOut": "Le forme senza altezza registrata non compaiono.",
+      "closeTo": "Pokémon di grandezza simile a {name}",
+      "badge": "altezza"
+    },
+    "weight": {
+      "label": "Peso",
+      "short": "Peso",
+      "by": "peso",
+      "byHigh": "peso, dal più pesante",
+      "lowFirst": "Prima i più leggeri",
+      "highFirst": "Prima i più pesanti",
+      "top": "il più pesante",
+      "bottom": "il più leggero",
+      "more": "più pesante del",
+      "none": "peso",
+      "leftOut": "Le forme senza peso registrato non compaiono.",
+      "closeTo": "Pokémon di peso simile a {name}",
+      "badge": "kg di peso"
+    },
+    "hp": {
+      "label": "PS",
+      "short": "PS",
+      "by": "PS",
+      "byHigh": "PS, dal più alto",
+      "lowFirst": "Prima i più bassi",
+      "highFirst": "Prima i più alti",
+      "top": "il valore più alto",
+      "bottom": "il valore più basso",
+      "more": "sopra il",
+      "none": "statistiche base",
+      "leftOut": "Le forme senza statistiche base registrate non compaiono.",
+      "closeTo": "Pokémon con PS simili a quelli di {name}",
+      "badge": "PS"
+    },
+    "atk": {
+      "label": "Attacco",
+      "short": "Attacco",
+      "by": "Attacco",
+      "byHigh": "Attacco, dal più alto",
+      "lowFirst": "Prima i più bassi",
+      "highFirst": "Prima i più alti",
+      "top": "il valore più alto",
+      "bottom": "il valore più basso",
+      "more": "sopra il",
+      "none": "statistiche base",
+      "leftOut": "Le forme senza statistiche base registrate non compaiono.",
+      "closeTo": "Pokémon con un Attacco simile a quello di {name}",
+      "badge": "attacco"
+    },
+    "def": {
+      "label": "Difesa",
+      "short": "Difesa",
+      "by": "Difesa",
+      "byHigh": "Difesa, dal più alto",
+      "lowFirst": "Prima i più bassi",
+      "highFirst": "Prima i più alti",
+      "top": "il valore più alto",
+      "bottom": "il valore più basso",
+      "more": "sopra il",
+      "none": "statistiche base",
+      "leftOut": "Le forme senza statistiche base registrate non compaiono.",
+      "closeTo": "Pokémon con una Difesa simile a quella di {name}",
+      "badge": "difesa"
+    },
+    "spa": {
+      "label": "Attacco Speciale",
+      "short": "Att. Sp.",
+      "by": "Attacco Speciale",
+      "byHigh": "Attacco Speciale, dal più alto",
+      "lowFirst": "Prima i più bassi",
+      "highFirst": "Prima i più alti",
+      "top": "il valore più alto",
+      "bottom": "il valore più basso",
+      "more": "sopra il",
+      "none": "statistiche base",
+      "leftOut": "Le forme senza statistiche base registrate non compaiono.",
+      "closeTo": "Pokémon con un Attacco Speciale simile a quello di {name}",
+      "badge": "att. sp."
+    },
+    "spd": {
+      "label": "Difesa Speciale",
+      "short": "Dif. Sp.",
+      "by": "Difesa Speciale",
+      "byHigh": "Difesa Speciale, dal più alto",
+      "lowFirst": "Prima i più bassi",
+      "highFirst": "Prima i più alti",
+      "top": "il valore più alto",
+      "bottom": "il valore più basso",
+      "more": "sopra il",
+      "none": "statistiche base",
+      "leftOut": "Le forme senza statistiche base registrate non compaiono.",
+      "closeTo": "Pokémon con una Difesa Speciale simile a quella di {name}",
+      "badge": "dif. sp."
+    },
+    "spe": {
+      "label": "Velocità",
+      "short": "Velocità",
+      "by": "Velocità",
+      "byHigh": "Velocità, dal più veloce",
+      "lowFirst": "Prima i più lenti",
+      "highFirst": "Prima i più veloci",
+      "top": "il più veloce",
+      "bottom": "il più lento",
+      "more": "più veloce del",
+      "none": "statistiche base",
+      "leftOut": "Le forme senza statistiche base registrate non compaiono.",
+      "closeTo": "Pokémon con una Velocità simile a quella di {name}",
+      "badge": "velocità"
+    },
+    "bst": {
+      "label": "Totale statistiche base",
+      "short": "Totale",
+      "by": "totale delle statistiche base",
+      "byHigh": "totale delle statistiche base, dal più alto",
+      "lowFirst": "Prima i più bassi",
+      "highFirst": "Prima i più alti",
+      "top": "il valore più alto",
+      "bottom": "il valore più basso",
+      "more": "sopra il",
+      "none": "statistiche base",
+      "leftOut": "Le forme senza statistiche base registrate non compaiono.",
+      "closeTo": "Pokémon con un totale delle statistiche base simile a quello di {name}",
+      "badge": "totale"
+    }
+  },
+  "presets": {
+    "every-pokemon": {
+      "label": "Tutti i Pokémon",
+      "title": "Tutti i Pokémon per grandezza",
+      "titleBy": "Tutti i Pokémon per {by}",
+      "hook": "Tutti i Pokémon per grandezza 😳",
+      "hookBy": "Tutti i Pokémon per {by} 😳"
+    },
+    "legendaries": {
+      "label": "Leggendari e misteriosi",
+      "title": "Tutti i Pokémon leggendari e misteriosi per grandezza",
+      "titleBy": "Tutti i Pokémon leggendari e misteriosi per {by}",
+      "hook": "Leggendari e misteriosi per grandezza 😳",
+      "hookBy": "Leggendari e misteriosi per {by} 😳"
+    },
+    "starters": {
+      "label": "Starter",
+      "title": "Tutti i Pokémon starter per grandezza",
+      "titleBy": "Tutti i Pokémon starter per {by}",
+      "hook": "Tutti gli starter per grandezza 🔥💧🌿",
+      "hookBy": "Tutti gli starter per {by} 🔥💧🌿"
+    },
+    "eeveelutions": {
+      "label": "Eeveelution",
+      "title": "Eevee e tutte le sue evoluzioni per grandezza",
+      "titleBy": "Eevee e tutte le sue evoluzioni per {by}",
+      "hook": "Tutte le Eeveelution per grandezza ✨",
+      "hookBy": "Tutte le Eeveelution per {by} ✨"
+    },
+    "gen-1": {
+      "label": "1ª gen.",
+      "title": "I Pokémon della prima generazione per grandezza",
+      "titleBy": "I Pokémon della prima generazione per {by}",
+      "hook": "I Pokémon della 1ª generazione per grandezza 😳",
+      "hookBy": "I Pokémon della 1ª generazione per {by} 😳"
+    },
+    "gigantamax": {
+      "label": "Gigamax",
+      "title": "Tutti i Pokémon Gigamax per grandezza",
+      "titleBy": "Tutti i Pokémon Gigamax per {by}",
+      "hook": "Tutti i Pokémon Gigamax per grandezza 😳",
+      "hookBy": "Tutti i Pokémon Gigamax per {by} 😳"
+    },
+    "bigger-than-a-house": {
+      "label": "Più grandi di una casa",
+      "title": "Pokémon più grandi di una casa",
+      "titleBy": "Pokémon più grandi di una casa, per {by}",
+      "hook": "Pokémon più grandi di una casa 🏠",
+      "hookBy": "Pokémon più grandi di una casa, per {by} 🏠"
+    },
+    "smaller-than-your-phone": {
+      "label": "Più piccoli del tuo telefono",
+      "title": "Pokémon più piccoli del tuo telefono",
+      "titleBy": "Pokémon più piccoli del tuo telefono, per {by}",
+      "hook": "Pokémon più piccoli del tuo telefono 📱",
+      "hookBy": "Pokémon più piccoli del tuo telefono, per {by} 📱"
+    }
+  },
+  "compare": {
+    "sep": " vs ",
+    "caption": "{names} per grandezza",
+    "captionBy": "{names} per {by}",
+    "hook": "{names} 😳",
+    "hookBy": "{names}, per {by} 😳",
+    "empty": "Pokémon per grandezza 😳",
+    "emptyBy": "Pokémon per {by} 😳"
+  },
+  "kind": {
+    "pokemon": "Pokémon",
+    "mega": "Megaevoluzione",
+    "gmax": "Gigamax",
+    "regional": "Forma regionale",
+    "eternamax": "Dynamax Infinito",
+    "ref": "Grandezza reale"
+  },
+  "tag": "{label} {value}",
+  "range": {
+    "height": "Da {a} a {b}",
+    "other": "{label}: da {a} a {b}"
+  },
+  "note": {
+    "refs": "Le grandezze reali compaiono solo nell’ordine per altezza."
+  },
+  "list": {
+    "orderBy": "Ordina per",
+    "direction": "Verso",
+    "show": "Mostra",
+    "pokemon": "Pokémon",
+    "size": "Grandezza",
+    "weight": "Peso",
+    "dex": "N.",
+    "refSize": "grandezza reale",
+    "length": " · lunghezza",
+    "lengthAlone": "lunghezza"
+  },
+  "unit": {
+    "height": "Altezza",
+    "length": "Lunghezza",
+    "times": "{k} volte"
+  },
+  "badge": {
+    "meterHeight": "m di altezza",
+    "meterLength": "m di lunghezza",
+    "lengthTag": "(LUNGHEZZA)",
+    "baseStat": "statistica base",
+    "baseStats": "statistiche base"
+  },
+  "fact": {
+    "refSize": {
+      "car": "{name} è{min, select, yes { almeno} other {}} {k} più grande di un’automobile",
+      "bus": "{name} è{min, select, yes { almeno} other {}} {k} più grande di uno scuolabus",
+      "house": "{name} è{min, select, yes { almeno} other {}} {k} più grande di una casa a due piani",
+      "building": "{name} è{min, select, yes { almeno} other {}} {k} più grande di un palazzo di 10 piani",
+      "human": "{name} è{min, select, yes { almeno} other {}} {k} più grande di un essere umano adulto"
+    },
+    "tallerThanHuman": "{name} è{min, select, yes { almeno} other {}} {k} più alto di un essere umano adulto",
+    "longerThanHuman": "{name} è{min, select, yes { almeno} other {}} {k} più lungo di un essere umano adulto",
+    "youAre": "Sei {k} più alto di {name}",
+    "weighs": "{name} pesa {weight}",
+    "isTall": "{name} è alto {size}",
+    "isLong": "{name} è lungo {size}",
+    "span": "{big} è {k} più grande di {small}",
+    "stat": {
+      "hp": "I PS base di {name} sono {v}",
+      "atk": "L’Attacco base di {name} è {v}",
+      "def": "La Difesa base di {name} è {v}",
+      "spa": "L’Attacco Speciale base di {name} è {v}",
+      "spd": "La Difesa Speciale base di {name} è {v}",
+      "spe": "La Velocità base di {name} è {v}",
+      "bst": "Il totale delle statistiche base di {name} è {v}"
+    },
+    "rank": "{what}: {sup} di questa fila{joint, select, yes { (a pari merito)} other {}}",
+    "more": "{what}: {more} {pct}% di questa fila",
+    "spanWeight": "{hi} pesa {k} quanto {lo}",
+    "spanStat": {
+      "hp": "I PS base di {hi} sono {k} quelli di {lo}",
+      "atk": "L’Attacco base di {hi} è {k} quello di {lo}",
+      "def": "La Difesa base di {hi} è {k} quella di {lo}",
+      "spa": "L’Attacco Speciale base di {hi} è {k} quello di {lo}",
+      "spd": "La Difesa Speciale base di {hi} è {k} quella di {lo}",
+      "spe": "La Velocità base di {hi} è {k} quella di {lo}",
+      "bst": "Il totale delle statistiche base di {hi} è {k} quello di {lo}"
+    }
+  }
+}

@@ -1,0 +1,283 @@
+{
+  "order": {
+    "height": {
+      "label": "高さ",
+      "short": "高さ",
+      "by": "大きさ順",
+      "byHigh": "大きい順",
+      "lowFirst": "小さい順",
+      "highFirst": "大きい順",
+      "top": "いちばん大きい",
+      "bottom": "いちばん小さい",
+      "more": "大きい",
+      "none": "高さのデータ",
+      "leftOut": "高さのデータがないすがたは除いています。",
+      "closeTo": "{name}と大きさが近いポケモン",
+      "badge": "高さ"
+    },
+    "weight": {
+      "label": "重さ",
+      "short": "重さ",
+      "by": "重さ順",
+      "byHigh": "重い順",
+      "lowFirst": "軽い順",
+      "highFirst": "重い順",
+      "top": "いちばん重い",
+      "bottom": "いちばん軽い",
+      "more": "重い",
+      "none": "重さのデータ",
+      "leftOut": "重さのデータがないすがたは除いています。",
+      "closeTo": "{name}と重さが近いポケモン",
+      "badge": "kg・重さ"
+    },
+    "hp": {
+      "label": "HP",
+      "short": "HP",
+      "by": "HP順",
+      "byHigh": "HPが高い順",
+      "lowFirst": "低い順",
+      "highFirst": "高い順",
+      "top": "いちばん高い",
+      "bottom": "いちばん低い",
+      "more": "高い",
+      "none": "種族値のデータ",
+      "leftOut": "種族値のデータがないすがたは除いています。",
+      "closeTo": "{name}とHPが近いポケモン",
+      "badge": "HP"
+    },
+    "atk": {
+      "label": "こうげき",
+      "short": "こうげき",
+      "by": "こうげき順",
+      "byHigh": "こうげきが高い順",
+      "lowFirst": "低い順",
+      "highFirst": "高い順",
+      "top": "いちばん高い",
+      "bottom": "いちばん低い",
+      "more": "高い",
+      "none": "種族値のデータ",
+      "leftOut": "種族値のデータがないすがたは除いています。",
+      "closeTo": "{name}とこうげきが近いポケモン",
+      "badge": "こうげき"
+    },
+    "def": {
+      "label": "ぼうぎょ",
+      "short": "ぼうぎょ",
+      "by": "ぼうぎょ順",
+      "byHigh": "ぼうぎょが高い順",
+      "lowFirst": "低い順",
+      "highFirst": "高い順",
+      "top": "いちばん高い",
+      "bottom": "いちばん低い",
+      "more": "高い",
+      "none": "種族値のデータ",
+      "leftOut": "種族値のデータがないすがたは除いています。",
+      "closeTo": "{name}とぼうぎょが近いポケモン",
+      "badge": "ぼうぎょ"
+    },
+    "spa": {
+      "label": "とくこう",
+      "short": "とくこう",
+      "by": "とくこう順",
+      "byHigh": "とくこうが高い順",
+      "lowFirst": "低い順",
+      "highFirst": "高い順",
+      "top": "いちばん高い",
+      "bottom": "いちばん低い",
+      "more": "高い",
+      "none": "種族値のデータ",
+      "leftOut": "種族値のデータがないすがたは除いています。",
+      "closeTo": "{name}ととくこうが近いポケモン",
+      "badge": "とくこう"
+    },
+    "spd": {
+      "label": "とくぼう",
+      "short": "とくぼう",
+      "by": "とくぼう順",
+      "byHigh": "とくぼうが高い順",
+      "lowFirst": "低い順",
+      "highFirst": "高い順",
+      "top": "いちばん高い",
+      "bottom": "いちばん低い",
+      "more": "高い",
+      "none": "種族値のデータ",
+      "leftOut": "種族値のデータがないすがたは除いています。",
+      "closeTo": "{name}ととくぼうが近いポケモン",
+      "badge": "とくぼう"
+    },
+    "spe": {
+      "label": "すばやさ",
+      "short": "すばやさ",
+      "by": "すばやさ順",
+      "byHigh": "速い順",
+      "lowFirst": "遅い順",
+      "highFirst": "速い順",
+      "top": "いちばん速い",
+      "bottom": "いちばん遅い",
+      "more": "速い",
+      "none": "種族値のデータ",
+      "leftOut": "種族値のデータがないすがたは除いています。",
+      "closeTo": "{name}とすばやさが近いポケモン",
+      "badge": "すばやさ"
+    },
+    "bst": {
+      "label": "種族値合計",
+      "short": "合計",
+      "by": "種族値合計順",
+      "byHigh": "種族値合計が高い順",
+      "lowFirst": "低い順",
+      "highFirst": "高い順",
+      "top": "いちばん高い",
+      "bottom": "いちばん低い",
+      "more": "高い",
+      "none": "種族値のデータ",
+      "leftOut": "種族値のデータがないすがたは除いています。",
+      "closeTo": "{name}と種族値合計が近いポケモン",
+      "badge": "合計"
+    }
+  },
+  "presets": {
+    "every-pokemon": {
+      "label": "全ポケモン",
+      "title": "全ポケモンの大きさ比べ",
+      "titleBy": "全ポケモン（{by}）",
+      "hook": "全ポケモンの大きさ比べ 😳",
+      "hookBy": "全ポケモン（{by}）😳"
+    },
+    "legendaries": {
+      "label": "伝説・幻",
+      "title": "伝説・幻のポケモンの大きさ比べ",
+      "titleBy": "伝説・幻のポケモン（{by}）",
+      "hook": "伝説・幻のポケモンの大きさ比べ 😳",
+      "hookBy": "伝説・幻のポケモン（{by}）😳"
+    },
+    "starters": {
+      "label": "御三家",
+      "title": "御三家ポケモンの大きさ比べ",
+      "titleBy": "御三家ポケモン（{by}）",
+      "hook": "御三家ポケモンの大きさ比べ 🔥💧🌿",
+      "hookBy": "御三家ポケモン（{by}）🔥💧🌿"
+    },
+    "eeveelutions": {
+      "label": "ブイズ",
+      "title": "イーブイと進化形の大きさ比べ",
+      "titleBy": "イーブイと進化形（{by}）",
+      "hook": "ブイズの大きさ比べ ✨",
+      "hookBy": "ブイズ（{by}）✨"
+    },
+    "gen-1": {
+      "label": "第1世代",
+      "title": "第1世代のポケモンの大きさ比べ",
+      "titleBy": "第1世代のポケモン（{by}）",
+      "hook": "第1世代のポケモンの大きさ比べ 😳",
+      "hookBy": "第1世代のポケモン（{by}）😳"
+    },
+    "gigantamax": {
+      "label": "キョダイマックス",
+      "title": "キョダイマックスポケモンの大きさ比べ",
+      "titleBy": "キョダイマックスポケモン（{by}）",
+      "hook": "キョダイマックスの大きさ比べ 😳",
+      "hookBy": "キョダイマックス（{by}）😳"
+    },
+    "bigger-than-a-house": {
+      "label": "家より大きい",
+      "title": "家より大きいポケモン",
+      "titleBy": "家より大きいポケモン（{by}）",
+      "hook": "家より大きいポケモン 🏠",
+      "hookBy": "家より大きいポケモン（{by}）🏠"
+    },
+    "smaller-than-your-phone": {
+      "label": "スマホより小さい",
+      "title": "スマホより小さいポケモン",
+      "titleBy": "スマホより小さいポケモン（{by}）",
+      "hook": "スマホより小さいポケモン 📱",
+      "hookBy": "スマホより小さいポケモン（{by}）📱"
+    }
+  },
+  "compare": {
+    "sep": " vs ",
+    "caption": "{names}の大きさ比べ",
+    "captionBy": "{names}（{by}）",
+    "hook": "{names} 😳",
+    "hookBy": "{names}（{by}）😳",
+    "empty": "ポケモンの大きさ比べ 😳",
+    "emptyBy": "ポケモン（{by}）😳"
+  },
+  "kind": {
+    "pokemon": "ポケモン",
+    "mega": "メガシンカ",
+    "gmax": "キョダイマックス",
+    "regional": "リージョンフォーム",
+    "eternamax": "ムゲンダイマックス",
+    "ref": "現実の大きさ"
+  },
+  "tag": "{label} {value}",
+  "range": {
+    "height": "{a}から{b}まで",
+    "other": "{label} {a}から{b}まで"
+  },
+  "note": {
+    "refs": "現実の大きさは高さ順でのみ並びます。"
+  },
+  "list": {
+    "orderBy": "並べ替え",
+    "direction": "順番",
+    "show": "表示",
+    "pokemon": "ポケモン",
+    "size": "大きさ",
+    "weight": "重さ",
+    "dex": "図鑑",
+    "refSize": "現実の大きさ",
+    "length": "・長さ",
+    "lengthAlone": "長さ"
+  },
+  "unit": {
+    "height": "高さ",
+    "length": "長さ",
+    "times": "{k}倍"
+  },
+  "badge": {
+    "meterHeight": "m・高さ",
+    "meterLength": "m・長さ",
+    "lengthTag": "（長さ）",
+    "baseStat": "種族値",
+    "baseStats": "種族値"
+  },
+  "fact": {
+    "refSize": {
+      "car": "{name}は{min, select, yes {少なくとも} other {}}乗用車の{k}の大きさ",
+      "bus": "{name}は{min, select, yes {少なくとも} other {}}スクールバスの{k}の大きさ",
+      "house": "{name}は{min, select, yes {少なくとも} other {}}2階建ての家の{k}の大きさ",
+      "building": "{name}は{min, select, yes {少なくとも} other {}}10階建てのビルの{k}の大きさ",
+      "human": "{name}は{min, select, yes {少なくとも} other {}}大人の人間の{k}の大きさ"
+    },
+    "tallerThanHuman": "{name}の高さは{min, select, yes {少なくとも} other {}}大人の人間の{k}",
+    "longerThanHuman": "{name}の長さは{min, select, yes {少なくとも} other {}}大人の人間の{k}",
+    "youAre": "あなたの背は{name}の{k}",
+    "weighs": "{name}の重さは{weight}",
+    "isTall": "{name}の高さは{size}",
+    "isLong": "{name}の長さは{size}",
+    "span": "{big}は{small}の{k}の大きさ",
+    "stat": {
+      "hp": "{name}のHPの種族値は{v}",
+      "atk": "{name}のこうげきの種族値は{v}",
+      "def": "{name}のぼうぎょの種族値は{v}",
+      "spa": "{name}のとくこうの種族値は{v}",
+      "spd": "{name}のとくぼうの種族値は{v}",
+      "spe": "{name}のすばやさの種族値は{v}",
+      "bst": "{name}の種族値合計は{v}"
+    },
+    "rank": "{what}。このラインで{joint, select, yes {同率で} other {}}{sup}",
+    "more": "{what}。このラインの{pct}%より{more}",
+    "spanWeight": "{hi}の重さは{lo}の{k}",
+    "spanStat": {
+      "hp": "{hi}のHPの種族値は{lo}の{k}",
+      "atk": "{hi}のこうげきの種族値は{lo}の{k}",
+      "def": "{hi}のぼうぎょの種族値は{lo}の{k}",
+      "spa": "{hi}のとくこうの種族値は{lo}の{k}",
+      "spd": "{hi}のとくぼうの種族値は{lo}の{k}",
+      "spe": "{hi}のすばやさの種族値は{lo}の{k}",
+      "bst": "{hi}の種族値合計は{lo}の{k}"
+    }
+  }
+}

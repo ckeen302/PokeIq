@@ -1,0 +1,62 @@
+{
+  "meta": {
+    "mainTitle": "Pokémon-Größenvergleich: alle Pokémon maßstabsgetreu in 3D",
+    "mainDescription": "Alle Pokémon nebeneinander in echter Größe, von 0,1 m bis Unendynamax-Endynalos mit 100 m, in einem 3D-Illumina City. Starte den Flug, vergleiche beliebige Pokémon und erstell dein eigenes Größenvergleich-Video für TikTok, Reels und Shorts.",
+    "mainSocial": "Alle Pokémon maßstabsgetreu in 3D · PokéIQ",
+    "orderTitle": "{title} (alle Pokémon maßstabsgetreu in 3D)",
+    "orderDescription": "Alle Pokémon nach {label} aufgereiht, jedes in echter Größe, in einem 3D-Illumina City. Starte den Flug, vergleiche beliebige Pokémon oder erstell ein Video.",
+    "social": "{title} · PokéIQ",
+    "presetTitle": "{title} (3D-Größenvergleich)",
+    "presetDescription": "{blurb} Sieh sie maßstabsgetreu in 3D, vergleiche zwei beliebige oder erstell ein Größenvergleich-Video.",
+    "itemTitle": "Wie groß ist {name}? {size} {measure}",
+    "itemTall": "{name} ist {size} groß{weighs}. Sieh es maßstabsgetreu neben allen anderen Pokémon und einem erwachsenen Menschen in 3D.",
+    "itemLong": "{name} ist {size} lang{weighs}. Sieh es maßstabsgetreu neben allen anderen Pokémon und einem erwachsenen Menschen in 3D.",
+    "itemWeighs": " und wiegt {kg} kg",
+    "itemSocial": "Wie groß ist {name}? · PokéIQ",
+    "compareTitle": "Pokémon-Größen in 3D vergleichen",
+    "compareDescription": "Stell 2 bis 6 Pokémon in echter Größe nebeneinander in 3D und teile den Vergleich oder mach ein Video daraus.",
+    "compareImage": "Alle Pokémon maßstabsgetreu in 3D",
+    "pairTitle": "{names}: Größenvergleich",
+    "pairTitleBy": "{names}: Größenvergleich, nach {by}",
+    "pairDescription": "{list}. Nebeneinander in echter Größe in 3D auf PokéIQ.",
+    "pairImage": "{names} nebeneinander in echter Größe"
+  },
+  "main": {
+    "kicker": "Pokémon maßstabsgetreu",
+    "title": "Pokémon-",
+    "accent": "Größen",
+    "blurb": "Alle Pokémon nebeneinander in echter Größe, vom kleinsten mit 0,1 m bis Unendynamax-Endynalos mit 100 m, in einem sonnigen Illumina City. Reih sie nach Größe, Gewicht oder einem Basiswert auf, starte den Flug, erkunde, vergleiche beliebige oder erstell dein eigenes Größenvideo."
+  },
+  "preset": {
+    "kicker": "Pokémon-Größen",
+    "title": "{label} ",
+    "accent": "nach Größe"
+  },
+  "blurbs": {
+    "every-pokemon": "Alle Pokémon in einer Reihe, von 0,1 m bis Unendynamax-Endynalos mit 100 m.",
+    "legendaries": "Alle legendären und mysteriösen Pokémon nebeneinander, zum Schluss Unendynamax-Endynalos.",
+    "starters": "Alle Starter-Linien, von Bisasam bis Bailonda, von der ersten Stufe bis zur letzten Entwicklung.",
+    "eeveelutions": "Evoli und seine Entwicklungen, von Aquana bis Feelinara.",
+    "gen-1": "Die Originale aus Kanto, von Digda bis Onix.",
+    "gigantamax": "Alle Gigadynamax-Formen in ihrer Pokédex-Größe (jeweils ein Mindestwert), zum Schluss Unendynamax-Endynalos.",
+    "bigger-than-a-house": "Alle Pokémon über 6,2 m, so hoch wie ein zweistöckiges Haus.",
+    "smaller-than-your-phone": "Alle Pokémon, die kleiner sind als ein Smartphone (ein iPhone 16 ist 147,6 mm hoch)."
+  },
+  "nav": {
+    "lineups": "Reihen",
+    "compare": "Vergleichen"
+  },
+  "footer": "Größen und Gewichte aus dem Pokédex (PokéAPI); Gigadynamax-Größen sind der Mindestwert des Pokédex. Lange Pokémon wie Schlangen und Fische werden nach Länge gemessen. Basiswerte aus dem Pokédex, die jeder Mega-Entwicklung, Regionalform und Gigadynamax-Form aus den Daten von Pokémon Showdown. Echte Größen sind belegte Werte, jeweils mit Quelle.",
+  "focus": {
+    "back": "Alle Pokémon-Größen",
+    "sizes": "Pokémon-Größen",
+    "title": "Wie groß ist {name}?",
+    "height": "Größe",
+    "length": "Länge",
+    "kg": " · {kg} kg",
+    "entry": "{name} im Pokédex"
+  },
+  "compare": {
+    "kicker": "Pokémon-Größenvergleich"
+  }
+}

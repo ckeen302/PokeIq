@@ -1,0 +1,62 @@
+{
+  "meta": {
+    "mainTitle": "Pokémon size comparison: every Pokémon to scale in 3D",
+    "mainDescription": "Every Pokémon side by side at its real size, from 0.1 m to Eternamax Eternatus at 100 m, in a 3D Lumiose City. Play the glide, compare any Pokémon, and make your own size comparison video for TikTok, Reels and Shorts.",
+    "mainSocial": "Every Pokémon to scale, in 3D · PokéIQ",
+    "orderTitle": "{title} (every Pokémon to scale in 3D)",
+    "orderDescription": "Every Pokémon lined up by {label}, each at its real size, in a 3D Lumiose City. Play the glide, compare any Pokémon, or make a video.",
+    "social": "{title} · PokéIQ",
+    "presetTitle": "{title} (3D size comparison)",
+    "presetDescription": "{blurb} See them to scale in 3D, compare any two, or make a size comparison video.",
+    "itemTitle": "How big is {name}? {size} {measure}",
+    "itemTall": "{name} is {size} tall{weighs}. See it to scale next to every other Pokémon and an adult human in 3D.",
+    "itemLong": "{name} is {size} long{weighs}. See it to scale next to every other Pokémon and an adult human in 3D.",
+    "itemWeighs": " and weighs {kg} kg",
+    "itemSocial": "How big is {name}? · PokéIQ",
+    "compareTitle": "Compare Pokémon sizes in 3D",
+    "compareDescription": "Put 2 to 6 Pokémon side by side at their real sizes in 3D, and share the comparison or make it a video.",
+    "compareImage": "Every Pokémon to scale, in 3D",
+    "pairTitle": "{names}: size comparison",
+    "pairTitleBy": "{names}: size comparison, by {by}",
+    "pairDescription": "{list}. Side by side at their real sizes in 3D on PokéIQ.",
+    "pairImage": "{names}, side by side at their real sizes"
+  },
+  "main": {
+    "kicker": "Pokémon to scale",
+    "title": "Pokémon ",
+    "accent": "Sizes",
+    "blurb": "Every Pokémon side by side at its real size, from the smallest at 0.1 m to Eternamax Eternatus at 100 m, in a sunny Lumiose City. Line them up by height, weight or any base stat, play the glide, explore, compare any of them, or make your own size video."
+  },
+  "preset": {
+    "kicker": "Pokémon sizes",
+    "title": "{label} ",
+    "accent": "by size"
+  },
+  "blurbs": {
+    "every-pokemon": "All 1,025 Pokémon in one line, from 0.1 m to Eternamax Eternatus at 100 m.",
+    "legendaries": "Every Legendary and Mythical Pokémon side by side, ending with Eternamax Eternatus.",
+    "starters": "All 27 starter lines, Bulbasaur to Quaquaval, from first stage to final evolution.",
+    "eeveelutions": "Eevee and its eight evolutions, Vaporeon to Sylveon.",
+    "gen-1": "The original 151, from Diglett to Onix.",
+    "gigantamax": "Every Gigantamax form at its Pokédex height (each a minimum), with Eternamax Eternatus at the end.",
+    "bigger-than-a-house": "Every Pokémon over 6.2 m, the height of a two-storey house.",
+    "smaller-than-your-phone": "Every Pokémon shorter than a smartphone (an iPhone 16 is 147.6 mm)."
+  },
+  "nav": {
+    "lineups": "Lineups",
+    "compare": "Compare"
+  },
+  "footer": "Heights and weights from the Pokédex (PokéAPI); Gigantamax heights are the Pokédex's minimum. Long Pokémon such as serpents and fish are measured by length. Base stats from the Pokédex, and each Mega, regional and Gigantamax form's own from Pokémon Showdown's data. Real-world sizes are documented figures, each with its source.",
+  "focus": {
+    "back": "All Pokémon sizes",
+    "sizes": "Pokémon sizes",
+    "title": "How big is {name}?",
+    "height": "height",
+    "length": "length",
+    "kg": " · {kg} kg",
+    "entry": "{name}'s Pokédex entry"
+  },
+  "compare": {
+    "kicker": "Pokémon size comparison"
+  }
+}

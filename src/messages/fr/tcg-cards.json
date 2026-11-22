@@ -1,0 +1,36 @@
+{
+  "grid": {
+    "alt": "Carte {name}",
+    "noImage": "Pas d’image",
+    "titleUsd": "{label} (marché TCGplayer)",
+    "titleEur": "{label} (Cardmarket)"
+  },
+  "gallery": {
+    "sort": "Tri",
+    "number": "Numéro",
+    "priceDesc": "Prix ↓",
+    "priceAsc": "Prix ↑",
+    "rarity": "Rareté",
+    "allRarities": "Toutes les raretés",
+    "type": "Type",
+    "allTypes": "Tous les types",
+    "count": "{shown} / {total} cartes",
+    "none": "Aucune carte ne correspond à ces filtres."
+  },
+  "pokemon": {
+    "title": "Cartes",
+    "all": "Voir les {n} →",
+    "newest": "Les cartes JCC Pokémon les plus récentes de {name}. {note}"
+  },
+  "note": {
+    "usd": "marché TCGplayer (USD)",
+    "eur": "tendance Cardmarket (EUR)",
+    "cmTrend": "Tendance Cardmarket",
+    "via": "{market} via {source}",
+    "asOf": "{what}, au {date}",
+    "sep": " ; ",
+    "line": "Prix : {parts}.",
+    "lineSome": "Prix : {parts}. Certains prix sont indisponibles pour le moment.",
+    "unavailable": "Prix indisponibles pour le moment."
+  }
+}

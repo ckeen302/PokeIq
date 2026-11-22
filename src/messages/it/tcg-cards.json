@@ -1,0 +1,36 @@
+{
+  "grid": {
+    "alt": "Carta di {name}",
+    "noImage": "Nessuna immagine",
+    "titleUsd": "{label} (mercato TCGplayer)",
+    "titleEur": "{label} (Cardmarket)"
+  },
+  "gallery": {
+    "sort": "Ordina",
+    "number": "Numero",
+    "priceDesc": "Prezzo ↓",
+    "priceAsc": "Prezzo ↑",
+    "rarity": "Rarità",
+    "allRarities": "Tutte le rarità",
+    "type": "Tipo",
+    "allTypes": "Tutti i tipi",
+    "count": "{shown} / {total} carte",
+    "none": "Nessuna carta corrisponde a questi filtri."
+  },
+  "pokemon": {
+    "title": "Carte",
+    "all": "Vedi tutte le {n} →",
+    "newest": "Le carte più recenti di {name} nel GCC Pokémon. {note}"
+  },
+  "note": {
+    "usd": "mercato TCGplayer (USD)",
+    "eur": "tendenza Cardmarket (EUR)",
+    "cmTrend": "Tendenza Cardmarket",
+    "via": "{market} tramite {source}",
+    "asOf": "{what}, al {date}",
+    "sep": "; ",
+    "line": "Prezzi: {parts}.",
+    "lineSome": "Prezzi: {parts}. Alcuni prezzi non sono disponibili al momento.",
+    "unavailable": "Prezzi non disponibili al momento."
+  }
+}

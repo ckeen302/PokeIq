@@ -2,6 +2,7 @@ import { COMPARE_MAX, compareOk } from "./deeplink";
 import { DEFAULT_PRESET, PRESET_BY_ID, compareLineup, presetLineup } from "./presets";
 import { HEIGHT_ORDER, inOrder, orderCompare, orderTitle, type Order } from "./order";
 import { type SizeItem } from "./types";
+import { foldLetters } from "@/lib/names/fold";
 
 /**
  * Which line /pokedex/sizes shows, from what the page was opened with (a
@@ -42,21 +43,26 @@ export const fold = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").to
  * Pokémon and forms matching a search (by name, Dex number or "#25"):
  * exact names first, then names that start with it, then the rest; default
  * forms before their Megas and Gigantamax forms. References are left out.
+ * `alt` (pages in another language): other names each figure answers to (its
+ * English name, rōmaji), matched in any script.
  */
-export function searchItems(all: SizeItem[], query: string, limit = 8): SizeItem[] {
-  const q = fold(query.trim()).replace(/^#/, "");
+export function searchItems(all: SizeItem[], query: string, limit = 8, alt?: Map<string, string[]>): SizeItem[] {
+  const f = alt ? foldLetters : fold;
+  const q = f(query.trim()).replace(/^#/, "");
   if (!q) return [];
   const num = /^\d+$/.test(q) ? Number(q) : null;
   const scored: { i: SizeItem; s: number }[] = [];
   for (const i of all) {
     if (i.kind === "ref") continue;
-    const name = fold(i.name);
     let s = -1;
     if (num !== null) s = i.species === num ? (i.kind === "pokemon" ? 0 : 1) : -1;
-    else if (name === q) s = 0;
-    else if (name.startsWith(q)) s = 2;
-    else if (name.split(/[\s-]+/).some((w) => w.startsWith(q))) s = 3;
-    else if (name.includes(q)) s = 4;
+    else {
+      for (const n of alt ? [i.name, ...(alt.get(i.key) ?? [])] : [i.name]) {
+        const name = f(n);
+        const m = name === q ? 0 : name.startsWith(q) ? 2 : name.split(/[\s-]+/).some((w) => w.startsWith(q)) ? 3 : name.includes(q) ? 4 : -1;
+        if (m >= 0 && (s < 0 || m < s)) s = m;
+      }
+    }
     if (s < 0) continue;
     if (i.kind !== "pokemon") s += 0.5;
     scored.push({ i, s });

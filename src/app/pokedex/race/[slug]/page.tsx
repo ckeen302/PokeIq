@@ -4,6 +4,8 @@ import { pageMetadata } from "@/lib/seo";
 import { PRESETS, PRESET_BY_ID } from "@/lib/race/presets";
 import { HUB_PRESET, presetPath } from "@/lib/race/deeplink";
 import { RacePage } from "@/components/race/RacePage";
+import { serverT } from "@/i18n/server";
+import racePages from "@/messages/race-pages";
 
 /** /pokedex/race/<preset>: Shuckle vs Regieleki, the Gen 1 final, every Pokémon… Prerendered; anything else is a 404. */
 export const dynamicParams = false;
@@ -15,7 +17,9 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const preset = PRESET_BY_ID.get((await params).slug);
   if (!preset) return {};
-  return pageMetadata({ title: `${preset.title} (3D Pokémon race)`, description: `${preset.blurb} Speeds from their base stats, in a 3D stadium at night. Watch it, pick your own race or make a video.`, path: presetPath(preset.id) });
+  const t = serverT(racePages);
+  const id = preset.id as keyof typeof racePages.en.titles;
+  return pageMetadata({ title: t("meta.presetTitle", { title: t(`titles.${id}`) }), description: t("meta.presetDescription", { blurb: t(`blurbs.${id}`) }), path: presetPath(preset.id) });
 }
 
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
