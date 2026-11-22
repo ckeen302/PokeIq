@@ -52,7 +52,9 @@ export default function CreditsPage() {
         <p>{t("dataBody")}</p>
       </Section>
       <Section title={t("shinyMaker")}>
-        <p>{t.rich("shinyMakerBody", { a: file("/shiny-maker/CREDITS.md") })}</p>
+        <p>
+          {t.rich("shinyMakerBody", { a: file("/shiny-maker/CREDITS.md") })}
+        </p>
       </Section>
       <Section title={t("battles")}>
         <p>

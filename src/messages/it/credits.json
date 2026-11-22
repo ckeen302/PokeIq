@@ -4,7 +4,7 @@
   "data": "Dati Pokémon",
   "dataBody": "Dati di PokéAPI.",
   "shinyMaker": "Creatore di Pokémon cromatici",
-  "shinyMakerBody": "Sprite in stile Nero/Bianco dalla raccolta di sprite di PokéAPI; dal n. 650 in poi sono realizzati da fan nello stesso stile dallo Smogon Sprite Project. Lo stile 3D usa i render di Pokémon HOME e lo stile Artwork le illustrazioni ufficiali, entrambi sempre da PokéAPI (<a>crediti</a>).",
+  "shinyMakerBody": "Sprite in stile Nero/Bianco dalla raccolta di sprite di PokéAPI; dal n. 650 in poi sono realizzati da fan nello stesso stile dallo Smogon Sprite Project. Lo stile 3D usa i render di Pokémon HOME e lo stile Artwork le illustrazioni ufficiali, anch'essi da PokéAPI (<a>crediti</a>).",
   "battles": "Lotte",
   "battlesBody": "Le lotte usano il simulatore di Pokémon Showdown, e il timer e il formato dei replay sono adattati da Pokémon Showdown (licenza MIT, © Guangcong Luo e collaboratori).",
   "music": "Musica delle lotte",

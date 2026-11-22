@@ -4,7 +4,7 @@
   "data": "ポケモンのデータ",
   "dataBody": "データは PokéAPI から。",
   "shinyMaker": "色違いポケモンメーカー",
-  "shinyMakerBody": "ブラック・ホワイト風のスプライトは PokéAPI のスプライト集より。#650 以降は Smogon Sprite Project が同じ画風で作ったファン作品です。3D スタイルは Pokémon HOME のレンダー、アートワークスタイルは公式アートワークを使用し、いずれも PokéAPI より（<a>クレジット</a>）。",
+  "shinyMakerBody": "スプライトはPokéAPIのスプライト集にあるブラック・ホワイト風のもので、No.650以降は Smogon Sprite Project のファンが同じ画風で描いたものです。3DスタイルはPokémon HOMEのレンダー、アートワークスタイルは公式アートワークを使っており、どちらもPokéAPIから取得しています（<a>クレジット</a>）。",
   "battles": "バトル",
   "battlesBody": "バトルは Pokémon Showdown のシミュレーターで動いており、バトルタイマーとリプレイ形式も Pokémon Showdown を元にしています（MIT ライセンス、© Guangcong Luo and contributors）。",
   "music": "バトル音楽",

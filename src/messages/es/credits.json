@@ -4,7 +4,7 @@
   "data": "Datos de Pokémon",
   "dataBody": "Datos de PokéAPI.",
   "shinyMaker": "Creador de Pokémon variocolor",
-  "shinyMakerBody": "Sprites al estilo de Negro/Blanco de la colección de sprites de PokéAPI; a partir del #650 son obra de fans en el mismo estilo, del Smogon Sprite Project. El estilo 3D usa renders de Pokémon HOME y el estilo Ilustración el arte oficial, ambos también de PokéAPI (<a>créditos</a>).",
+  "shinyMakerBody": "Sprites al estilo de Negro/Blanco de la colección de sprites de PokéAPI; a partir del n.º 650 son obra de fans en el mismo estilo, del Smogon Sprite Project. El estilo 3D usa renders de Pokémon HOME y el estilo Ilustración el arte oficial, ambos también de PokéAPI (<a>créditos</a>).",
   "battles": "Combates",
   "battlesBody": "Los combates funcionan con el simulador de Pokémon Showdown, y su temporizador y su formato de repeticiones están adaptados de Pokémon Showdown (licencia MIT, © Guangcong Luo y colaboradores).",
   "music": "Música de combate",
