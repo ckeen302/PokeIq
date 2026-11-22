@@ -27,7 +27,7 @@ export function movieTexts(locale: Locale): Promise<Record<string, MovieText> | 
   if (locale === "en") return Promise.resolve(null);
   let p = loaded.get(locale);
   if (!p) {
-    p = import(`@/data/i18n/${locale}/content/movies.json`).then((m: { default: Record<string, MovieText> }) => m.default);
+    p = import(`../../data/i18n/${locale}/content/movies.json`).then((m: { default: Record<string, MovieText> }) => m.default);
     loaded.set(locale, p);
   }
   return p;

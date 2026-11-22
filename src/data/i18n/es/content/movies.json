@@ -1,0 +1,208 @@
+{
+  "mewtwo-strikes-back": {
+    "title": "Pokémon: La película",
+    "fullTitle": "Pokémon: La película",
+    "setting": "New Island, Kanto",
+    "summary": "Mewtwo, un Pokémon clonado de Mew por unos científicos, escapa del Team Rocket y acaba odiando a las personas que lo crearon. Invita a Entrenadores Pokémon a su isla para someterlos a la prueba definitiva, y Ash, Misty y Brock acuden a la llamada.",
+    "characters": {}
+  },
+  "the-movie-2000": {
+    "title": "Pokémon 2: El poder de uno",
+    "fullTitle": "Pokémon 2: El poder de uno",
+    "setting": "Isla Shamouti, Islas Naranja",
+    "summary": "Un coleccionista llamado Lawrence III se propone capturar a Moltres, Zapdos y Articuno, y el clima del mundo se vuelve loco. En la isla Shamouti, los lugareños piden a Ash que reúna tres tesoros de las islas vecinas, como dice una antigua profecía que debe hacer el Elegido.",
+    "characters": {}
+  },
+  "spell-of-the-unown": {
+    "title": "Pokémon 3: El hechizo de los Unown",
+    "fullTitle": "Pokémon 3: El hechizo de los Unown",
+    "setting": "Greenfield, Johto",
+    "summary": "Después de que su padre desaparezca, los misteriosos Unown cumplen los deseos de la pequeña Molly Hale: cubren de cristal su casa de Greenfield y crean un Entei para que sea su padre. Cuando Molly quiere también una madre, Entei se lleva a la madre de Ash, Delia, y Ash parte para traerla de vuelta a casa.",
+    "characters": {}
+  },
+  "pokemon-4ever": {
+    "title": "Pokémon 4Ever",
+    "fullTitle": "Pokémon 4Ever",
+    "setting": "Arborville, Johto",
+    "summary": "Hace cuarenta años, un joven Entrenador llamado Sam salvó a Celebi de un cazador, y los dos desaparecieron del bosque. En el presente, Ash y sus amigos se encuentran con ellos justo cuando llega el Cazador de la Máscara de Hierro para atrapar a Celebi con sus Dark Balls.",
+    "characters": {
+      "Iron-Masked Marauder": "Cazador de la Máscara de Hierro"
+    }
+  },
+  "pokemon-heroes": {
+    "title": "Pokémon Héroes",
+    "fullTitle": "Pokémon Héroes",
+    "setting": "Alto Mare, Johto",
+    "summary": "En Alto Mare, la ciudad de los canales, Ash rescata a una chica misteriosa de dos ladronas, Annie y Oakley, y resulta ser Latias disfrazada. Las ladronas van tras Latias, Latios y el Rocío Bondad, una joya que da energía a la antigua máquina de defensa de la ciudad.",
+    "characters": {}
+  },
+  "jirachi-wish-maker": {
+    "title": "Jirachi y los deseos",
+    "fullTitle": "Pokémon: Jirachi y los deseos",
+    "setting": "Forina, Hoenn",
+    "summary": "El Cometa del Milenio vuelve a surcar el cielo, y en su festival Max oye una voz que lo llama desde un extraño capullo que guarda el mago Butler. De él sale Jirachi, que solo despierta durante las siete noches que el cometa está en el cielo, y Butler quiere su poder para revivir a Groudon.",
+    "characters": {
+      "May": "Aura"
+    }
+  },
+  "destiny-deoxys": {
+    "title": "El destino de Deoxys",
+    "fullTitle": "Pokémon: El destino de Deoxys",
+    "setting": "LaRousse City, Hoenn",
+    "summary": "En la ultramoderna LaRousse City, el compañero de Ash en la Torre Batalla es Tory, un chico que tiene miedo a los Pokémon desde un día terrible de su infancia. Entonces llega Deoxys y se apodera de la ciudad, y Rayquaza va tras el invasor.",
+    "characters": {
+      "May": "Aura"
+    }
+  },
+  "lucario-and-the-mystery-of-mew": {
+    "title": "Lucario y el misterio de Mew",
+    "fullTitle": "Pokémon: Lucario y el misterio de Mew",
+    "setting": "Rota, Kanto",
+    "summary": "Cada año, Rota rinde homenaje a Sir Aaron, el Guardián del Aura que salvó el palacio Cameran hace mucho tiempo. Cuando Ash gana el torneo del festival, el Lucario de Aaron despierta de su bastón, y después de que Mew se lleve a Pikachu al Árbol de la Vida, Lucario es el único que puede guiarlos.",
+    "characters": {
+      "May": "Aura"
+    }
+  },
+  "pokemon-ranger-and-the-temple-of-the-sea": {
+    "title": "Pokémon Ranger y el Templo del Mar",
+    "fullTitle": "Pokémon Ranger y el Templo del Mar",
+    "setting": "Samiya, el Templo del Mar",
+    "summary": "El Pokémon Ranger Jack Walker rescata un Huevo de Manaphy del pirata Phantom, que necesita a Manaphy para encontrar la Corona del Mar escondida en el Templo del Mar. Ash, Aura y sus amigos viajan con el Pueblo del Agua para llegar antes que él, y Aura crea un vínculo especial con Manaphy.",
+    "characters": {
+      "May": "Aura"
+    }
+  },
+  "the-rise-of-darkrai": {
+    "title": "El ascenso de Darkrai",
+    "fullTitle": "Pokémon: El ascenso de Darkrai",
+    "setting": "Alamos Town, Sinnoh",
+    "summary": "De camino a un Concurso Pokémon, Ash y sus amigos llegan a Alamos Town, donde Pokémon y personas sufren pesadillas terribles. El barón Alberto culpa a Darkrai, y el cielo sobre el pueblo empieza a desgarrarse mientras Dialga y Palkia luchan a través de las dimensiones.",
+    "trilogy": "Darkrai, Giratina y Arceus",
+    "characters": {
+      "Dawn": "Maya",
+      "Baron Alberto": "Barón Alberto"
+    }
+  },
+  "giratina-and-the-sky-warrior": {
+    "title": "Giratina y el Guardián del Cielo",
+    "fullTitle": "Pokémon: Giratina y el Guardián del Cielo",
+    "summary": "Giratina arrastra a Dialga al Mundo Distorsión para combatir, y un diminuto Shaymin queda atrapado en medio. Shaymin pide a Ash y sus amigos que lo ayuden a reunirse con los demás Shaymin en el jardín de Gracídeas, mientras un hombre llamado Zero quiere el poder de Giratina para él solo.",
+    "trilogy": "Darkrai, Giratina y Arceus",
+    "characters": {
+      "Dawn": "Maya"
+    }
+  },
+  "arceus-and-the-jewel-of-life": {
+    "title": "Arceus y la Joya de la Vida",
+    "fullTitle": "Pokémon: Arceus y la Joya de la Vida",
+    "setting": "Michina Town, Sinnoh",
+    "summary": "Hace mucho tiempo, Arceus entregó la Joya de la Vida a la gente de Michina Town, y ahora regresa convencido de que lo traicionaron. Con la ayuda de Sheena y el poder de Dialga sobre el tiempo, Ash y sus amigos viajan al pasado para arreglar las cosas.",
+    "trilogy": "Darkrai, Giratina y Arceus",
+    "characters": {
+      "Dawn": "Maya"
+    }
+  },
+  "zoroark-master-of-illusions": {
+    "title": "Zoroark, el maestro de ilusiones",
+    "fullTitle": "Pokémon: Zoroark, el maestro de ilusiones",
+    "setting": "Crown City, Sinnoh",
+    "summary": "De camino a la Copa Mundial de Baccer Pokémon en Crown City, Ash y sus amigos conocen a Zorua, que ha escapado del empresario Grings Kodai. Pronto Raikou, Entei y Suicune empiezan a arrasar la ciudad, y Zoroark se ve envuelto en ello.",
+    "characters": {
+      "Dawn": "Maya"
+    }
+  },
+  "black-victini-and-reshiram-white-victini-and-zekrom": {
+    "title": "Negro: Victini y Reshiram / Blanco: Victini y Zekrom",
+    "fullTitle": "Pokémon, la película: Negro: Victini y Reshiram / Blanco: Victini y Zekrom",
+    "setting": "Eindoak Town, Teselia",
+    "summary": "Ash, Iris y Millo llegan a Eindoak Town para su competición de combates, donde Victini echa una mano a Ash. Damon, descendiente del Pueblo del Valle, quiere recuperar su reino perdido y planea atrapar a Victini para aprovechar su poder. Una sola película, estrenada en dos versiones.",
+    "characters": {
+      "Cilan": "Millo"
+    }
+  },
+  "kyurem-vs-the-sword-of-justice": {
+    "title": "Kyurem contra el Espadachín Místico",
+    "fullTitle": "Pokémon, la película: Kyurem contra el Espadachín Místico",
+    "summary": "Desde su tren, Ash, Iris y Millo ven a un Pokémon herido justo antes de que Kyurem ataque. Es Keldeo, que intenta rescatar a sus amigos, los Espadachines Místicos, de las garras heladas de Kyurem.",
+    "characters": {
+      "Cilan": "Millo"
+    }
+  },
+  "genesect-and-the-legend-awakened": {
+    "title": "Genesect y el despertar de una leyenda",
+    "fullTitle": "Pokémon, la película: Genesect y el despertar de una leyenda",
+    "setting": "New Tork City, Teselia",
+    "summary": "Cinco Genesect construyen su nido en un parque natural en pleno centro de New Tork City, y eso pone en peligro la electricidad de la ciudad. Su llegada atrae a Mewtwo, que sabe lo que es haber sido creado por las personas, pero el líder del grupo, el Genesect Rojo, no se fía de él.",
+    "characters": {
+      "Cilan": "Millo"
+    }
+  },
+  "diancie-and-the-cocoon-of-destruction": {
+    "title": "Diancie y la crisálida de la destrucción",
+    "fullTitle": "Pokémon, la película: Diancie y la crisálida de la destrucción",
+    "setting": "Allearth Forest, Kalos",
+    "summary": "El Diamante Corazón que mantiene con vida el Dominio Diamante se está apagando, y su joven soberana, Diancie, todavía no sabe crear uno nuevo. Al partir en busca de Xerneas, Diancie conoce a Ash y sus amigos, y a una banda de ladrones que quiere su poder para crear diamantes.",
+    "characters": {}
+  },
+  "hoopa-and-the-clash-of-ages": {
+    "title": "Hoopa y un duelo histórico",
+    "fullTitle": "Pokémon, la película: Hoopa y un duelo histórico",
+    "setting": "Dahara City, Kalos",
+    "summary": "En Dahara City, una ciudad del desierto junto al mar, Ash y sus amigos conocen a Hoopa, que puede invocar cualquier cosa a través de sus aros. Oyen hablar de un héroe que detuvo a un Pokémon terrible hace mucho tiempo, y de que ese peligro podría volver a desatarse.",
+    "characters": {}
+  },
+  "volcanion-and-the-mechanical-marvel": {
+    "title": "Volcanion y la maravilla mecánica",
+    "fullTitle": "Pokémon, la película: Volcanion y la maravilla mecánica",
+    "setting": "Reino de Azoth, Kalos",
+    "summary": "Volcanion cae del cielo y una fuerza misteriosa lo ata a Ash, así que tiene que arrastrarlo con él en su misión de rescate. En el Reino de Azoth, un ministro corrupto ha robado al Pokémon artificial Magearna para hacerse con el control del reino.",
+    "characters": {}
+  },
+  "i-choose-you": {
+    "title": "¡Te elijo a ti!",
+    "fullTitle": "Pokémon, la película: ¡Te elijo a ti!",
+    "setting": "Kanto",
+    "summary": "Ash se queda dormido el día de su décimo cumpleaños y acaba con un Pikachu testarudo como primer compañero. Después de ver a Ho-Oh en pleno vuelo, salen juntos a buscarlo, y los Entrenadores Verity y Sorrel se les unen por el camino.",
+    "trilogy": "¡Te elijo a ti!",
+    "characters": {}
+  },
+  "the-power-of-us": {
+    "title": "El poder de todos",
+    "fullTitle": "Pokémon, la película: El poder de todos",
+    "setting": "Fula City",
+    "summary": "Cada año, Fula City celebra un Festival del Viento en honor a Lugia, que trae el viento que da energía a la ciudad. Ash y Pikachu llegan para la fiesta y se cruzan con vecinos que no tienen nada más en común, desde una antigua estrella del atletismo hasta una investigadora tímida.",
+    "trilogy": "¡Te elijo a ti!",
+    "characters": {}
+  },
+  "detective-pikachu": {
+    "title": "Detective Pikachu",
+    "fullTitle": "Pokémon: Detective Pikachu",
+    "setting": "Ryme City",
+    "summary": "Cuando el detective privado Harry Goodman desaparece, su hijo Tim va a Ryme City para averiguar qué ha pasado. Allí conoce al compañero Pokémon de Harry, un Detective Pikachu muy bromista, y descubre que los dos pueden entenderse.",
+    "characters": {
+      "Lieutenant Hide Yoshida": "Teniente Hide Yoshida"
+    }
+  },
+  "mewtwo-strikes-back-evolution": {
+    "title": "Mewtwo contraataca: Evolución",
+    "fullTitle": "Pokémon: Mewtwo contraataca: Evolución",
+    "kicker": "Remake en CGI",
+    "setting": "New Island, Kanto",
+    "summary": "Un remake en CGI de la primera película. Mewtwo, clonado de Mew por unos científicos, se vuelve contra las personas que lo crearon, y Ash, Pikachu y sus amigos quedan atrapados en el centro de su venganza.",
+    "characters": {}
+  },
+  "secrets-of-the-jungle": {
+    "title": "Los secretos de la selva",
+    "fullTitle": "Pokémon: Los secretos de la selva",
+    "setting": "Bosque de Okoya",
+    "summary": "En lo más profundo del Bosque de Okoya, un Zarude deja su manada para criar a un bebé humano, Koko, que crece convencido de que él también es un Zarude. Años después, un encuentro casual con Ash y Pikachu le da a Koko su primer amigo humano.",
+    "trilogy": "¡Te elijo a ti!",
+    "characters": {}
+  },
+  "wild-card": {
+    "title": "Pokémon: Wild Card",
+    "fullTitle": "Pokémon: Wild Card",
+    "summary": "Una película de animación basada en el Juego de Cartas Coleccionables Pokémon, sobre un jugador de JCC Pokémon y su compañero, Mimikyu.",
+    "characters": {}
+  }
+}

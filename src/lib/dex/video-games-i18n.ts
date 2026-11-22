@@ -37,7 +37,7 @@ export function gameTexts(locale: Locale): Promise<GameTexts | null> {
   if (locale === "en") return Promise.resolve(null);
   let p = loaded.get(locale);
   if (!p) {
-    p = import(`@/data/i18n/${locale}/content/games.json`).then((m: { default: GameTexts }) => m.default);
+    p = import(`../../data/i18n/${locale}/content/games.json`).then((m: { default: GameTexts }) => m.default);
     loaded.set(locale, p);
   }
   return p;

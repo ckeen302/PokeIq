@@ -35,7 +35,7 @@ export function theoryTexts(locale: Locale): Promise<Record<string, CaseText> | 
   if (locale === "en") return Promise.resolve(null);
   let p = loaded.get(locale);
   if (!p) {
-    p = import(`@/data/i18n/${locale}/content/theories.json`).then((m: { default: Record<string, CaseText> }) => m.default);
+    p = import(`../../data/i18n/${locale}/content/theories.json`).then((m: { default: Record<string, CaseText> }) => m.default);
     loaded.set(locale, p);
   }
   return p;
