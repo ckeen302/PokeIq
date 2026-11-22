@@ -12,7 +12,7 @@ import { artUrl, isPixelUrl, type ArtStyle } from "@/lib/tier-list/art";
 import { bracketGeometry, drawBracket, loadPictures, pageFonts } from "@/lib/tier-list/render";
 import type { Mon } from "@/lib/tier-list/types";
 import { Tile } from "./Tile";
-import { PillButton, Segmented, Field } from "./ui";
+import { PillButton, Segmented, Field, useShowOnChange } from "./ui";
 import type { TierListT } from "./names";
 
 interface Props {
@@ -49,10 +49,21 @@ export function BracketMode(p: Props) {
   const t = useT(tierList);
   const [view, setView] = useState(false);
   const res = useMemo(() => resolveBracket(p.entrants, p.bracket.picks), [p.entrants, p.bracket.picks]);
-  if (!p.bracket.started) return <Setup {...p} />;
-  if (view) return <BracketView {...p} onBack={() => setView(false)} />;
-  if (res.champion) return <Champion {...p} res={res} onView={() => setView(true)} />;
-  return <Matchup {...p} res={res} onView={() => setView(true)} t={t} />;
+  const phase = !p.bracket.started ? "setup" : view ? "view" : res.champion ? "champion" : "match";
+  const ref = useShowOnChange<HTMLDivElement>(phase);
+  return (
+    <div ref={ref} className="scroll-mt-20">
+      {phase === "setup" ? (
+        <Setup {...p} />
+      ) : phase === "view" ? (
+        <BracketView {...p} onBack={() => setView(false)} />
+      ) : phase === "champion" ? (
+        <Champion {...p} res={res} onView={() => setView(true)} />
+      ) : (
+        <Matchup {...p} res={res} onView={() => setView(true)} t={t} />
+      )}
+    </div>
+  );
 }
 
 function Setup(p: Props) {
@@ -66,14 +77,14 @@ function Setup(p: Props) {
     <div className="mx-auto max-w-3xl space-y-6" data-testid="bracket-setup">
       <h2 className="font-display text-2xl font-semibold tracking-tight">{t("bracket.setup")}</h2>
       <Field label={t("bracket.size")}>
-        <div className="tlm-scroll -mx-1 overflow-x-auto px-1 pb-1">
-          <Segmented label={t("bracket.size")} value={p.bracket.size > p.poolSize ? 0 : p.bracket.size} onChange={(v) => p.onSetup({ size: v })} options={sizes} />
+        <div>
+          <Segmented wrap label={t("bracket.size")} value={p.bracket.size > p.poolSize ? 0 : p.bracket.size} onChange={(v) => p.onSetup({ size: v })} options={sizes} />
         </div>
       </Field>
       <Field label={t("bracket.seeding")}>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="tlm-scroll -mx-1 max-w-full overflow-x-auto px-1 pb-1">
-            <Segmented label={t("bracket.seeding")} value={p.bracket.seeding} onChange={(v: Seeding) => p.onSetup({ seeding: v })} options={SEEDINGS.map((s) => ({ value: s, label: t(`bracket.seedings.${s}`), testId: `bracket-seeding-${s}` }))} />
+          <div className="max-w-full">
+            <Segmented wrap label={t("bracket.seeding")} value={p.bracket.seeding} onChange={(v: Seeding) => p.onSetup({ seeding: v })} options={SEEDINGS.map((s) => ({ value: s, label: t(`bracket.seedings.${s}`), testId: `bracket-seeding-${s}` }))} />
           </div>
           {(p.bracket.seeding === "random" || (p.bracket.size !== 0 && p.bracket.size < p.poolSize)) && (
             <PillButton onClick={() => p.onSetup({ seed: Math.random().toString(36).slice(2, 8) })} testId="bracket-reshuffle">

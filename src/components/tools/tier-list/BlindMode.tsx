@@ -10,7 +10,7 @@ import { BLIND_LENGTHS, agreement, isDone, placedCount, slotKeys } from "@/lib/t
 import type { BlindState } from "@/lib/tier-list/state";
 import { artUrl, isPixelUrl, type ArtStyle } from "@/lib/tier-list/art";
 import type { Mon } from "@/lib/tier-list/types";
-import { Field, PillButton, Segmented } from "./ui";
+import { Field, PillButton, Segmented, useShowOnChange } from "./ui";
 
 interface Props {
   blind: BlindState;
@@ -29,7 +29,6 @@ interface Props {
 
 /** Blind Ranking: one card at a time, flipped over; every Pokémon goes into a free slot for good. */
 export function BlindMode(p: Props) {
-  const t = useT(tierList);
   const placed = placedCount(p.blind.slots);
   const done = isDone(p.blind.slots);
   const [started, setStarted] = useState(placed > 0);
@@ -37,43 +36,49 @@ export function BlindMode(p: Props) {
     if (placed > 0) setStarted(true);
   }, [placed]);
 
-  if (p.challenge) return <ChallengeIntro {...p} />;
-  if (done) return <Result {...p} />;
-  if (!started) {
-    return (
-      <div className="mx-auto max-w-xl space-y-6 text-center" data-testid="blind-setup">
-        <div className="relative mx-auto h-[220px] w-[170px]">
-          <div className="tlm-card-back absolute inset-0 rotate-[-8deg] rounded-[24px] border border-white/10 opacity-60" />
-          <div className="tlm-card-back absolute inset-0 rotate-[5deg] rounded-[24px] border border-white/10 opacity-80" />
-          <div className="tlm-card-back absolute inset-0 flex items-center justify-center rounded-[24px] border border-white/15 font-display text-6xl font-bold text-white/80">?</div>
-        </div>
-        <div className="space-y-2">
-          <h2 className="font-display text-2xl font-semibold tracking-tight">{t("blind.setup")}</h2>
-          <p className="text-[15px] text-muted-foreground">{t("blind.explain")}</p>
-        </div>
-        <div className="flex flex-wrap items-end justify-center gap-5 text-left">
-          <Field label={t("blind.length")}>
-            <Segmented label={t("blind.length")} value={p.blind.length} onChange={(v) => p.onSetup({ length: v })} options={BLIND_LENGTHS.map((n) => ({ value: n, label: String(n), testId: `blind-length-${n}` }))} />
-          </Field>
-          <Field label={t("blind.source")}>
-            <Segmented
-              label={t("blind.source")}
-              value={p.blind.source}
-              onChange={(v) => p.onSetup({ source: v })}
-              options={[
-                { value: "template", label: t("blind.fromTemplate") },
-                { value: "random", label: t("blind.fromRandom"), testId: "blind-source-random" },
-              ]}
-            />
-          </Field>
-        </div>
-        <PillButton primary onClick={() => setStarted(true)} disabled={!p.drawn.length} className="h-12 px-10 text-[15px]" testId="blind-start">
-          {t("blind.start")}
-        </PillButton>
+  const phase = p.challenge ? "challenge" : done ? "done" : started ? "reveal" : "setup";
+  const ref = useShowOnChange<HTMLDivElement>(phase);
+  return (
+    <div ref={ref} className="scroll-mt-20">
+      {phase === "challenge" ? <ChallengeIntro {...p} /> : phase === "done" ? <Result {...p} /> : phase === "reveal" ? <Reveal {...p} /> : <Setup {...p} onStart={() => setStarted(true)} />}
+    </div>
+  );
+}
+
+function Setup(p: Props & { onStart(): void }) {
+  const t = useT(tierList);
+  return (
+    <div className="mx-auto max-w-xl space-y-6 text-center" data-testid="blind-setup">
+      <div className="relative mx-auto h-[220px] w-[170px]">
+        <div className="tlm-card-back absolute inset-0 rotate-[-8deg] rounded-[24px] border border-white/10 opacity-60" />
+        <div className="tlm-card-back absolute inset-0 rotate-[5deg] rounded-[24px] border border-white/10 opacity-80" />
+        <div className="tlm-card-back absolute inset-0 flex items-center justify-center rounded-[24px] border border-white/15 font-display text-6xl font-bold text-white/80">?</div>
       </div>
-    );
-  }
-  return <Reveal {...p} />;
+      <div className="space-y-2">
+        <h2 className="font-display text-2xl font-semibold tracking-tight">{t("blind.setup")}</h2>
+        <p className="text-[15px] text-muted-foreground">{t("blind.explain")}</p>
+      </div>
+      <div className="flex flex-wrap items-end justify-center gap-5 text-left">
+        <Field label={t("blind.length")}>
+          <Segmented label={t("blind.length")} value={p.blind.length} onChange={(v) => p.onSetup({ length: v })} options={BLIND_LENGTHS.map((n) => ({ value: n, label: String(n), testId: `blind-length-${n}` }))} />
+        </Field>
+        <Field label={t("blind.source")}>
+          <Segmented
+            label={t("blind.source")}
+            value={p.blind.source}
+            onChange={(v) => p.onSetup({ source: v })}
+            options={[
+              { value: "template", label: t("blind.fromTemplate") },
+              { value: "random", label: t("blind.fromRandom"), testId: "blind-source-random" },
+            ]}
+          />
+        </Field>
+      </div>
+      <PillButton primary onClick={p.onStart} disabled={!p.drawn.length} className="h-12 px-10 text-[15px]" testId="blind-start">
+        {t("blind.start")}
+      </PillButton>
+    </div>
+  );
 }
 
 function Reveal(p: Props) {

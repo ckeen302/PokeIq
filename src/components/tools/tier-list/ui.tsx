@@ -15,6 +15,7 @@ export function Segmented<T extends string | number>({
   className,
   size = "md",
   testId,
+  wrap,
 }: {
   value: T;
   options: readonly { value: T; label: ReactNode; disabled?: boolean; testId?: string }[];
@@ -23,9 +24,11 @@ export function Segmented<T extends string | number>({
   className?: string;
   size?: "sm" | "md";
   testId?: string;
+  /** Let the options wrap onto a second line on narrow screens (a long list). */
+  wrap?: boolean;
 }) {
   return (
-    <div role="radiogroup" aria-label={label} className={cn("inline-flex rounded-full bg-foreground/[0.06] p-1", className)} data-testid={testId}>
+    <div role="radiogroup" aria-label={label} className={cn("inline-flex rounded-full bg-foreground/[0.06] p-1", wrap && "max-sm:flex max-sm:flex-wrap max-sm:rounded-[22px]", className)} data-testid={testId}>
       {options.map((o) => {
         const on = o.value === value;
         return (
@@ -38,7 +41,7 @@ export function Segmented<T extends string | number>({
             onClick={() => onChange(o.value)}
             data-testid={o.testId}
             className={cn(
-              "flex-1 whitespace-nowrap rounded-full font-semibold transition-[background-color,color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-35 motion-reduce:transition-none",
+              "flex-1 whitespace-nowrap rounded-full max-sm:min-w-fit font-semibold transition-[background-color,color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-35 motion-reduce:transition-none",
               size === "sm" ? "h-8 px-3 text-[13px] max-md:h-10" : "h-9 px-4 text-sm max-md:h-10",
               on ? "bg-card text-foreground shadow-[0_1px_3px_hsl(var(--shade)/0.35),0_0_0_1px_hsl(var(--foreground)/0.06)]" : "text-muted-foreground hover:text-foreground"
             )}
@@ -157,4 +160,24 @@ export function Field({ label, children, className }: { label: string; children:
       {children}
     </div>
   );
+}
+
+/**
+ * When a mode moves on to its next screen (the bracket starts, the champion is crowned), brings the screen's top into
+ * view if the page was left scrolled past it (on a phone the button pressed sits far below the new screen's top).
+ */
+export function useShowOnChange<T extends HTMLElement>(key: string) {
+  const ref = useRef<T>(null);
+  const first = useRef(true);
+  useEffect(() => {
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    const el = ref.current;
+    if (!el || el.getBoundingClientRect().top >= 64) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
+  }, [key]);
+  return ref;
 }

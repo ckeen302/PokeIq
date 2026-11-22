@@ -24,7 +24,8 @@ interface Props {
   onCaptionDone(): void;
 }
 
-const MEDAL = ["#f6c94a", "#c9d2e0", "#e09a5f"];
+/** Gold, silver and bronze, dark enough to read on the light theme too. */
+const MEDAL = ["#e0aa1c", "#8f9bb0", "#d07a3a"];
 
 /** Top N: a podium for the top three, then a numbered list; every place is a drop target, each entry can carry a line. */
 export function TopMode({ top, byKey, art, shiny, moving, onTileDown, onRemove, onMove, onCaption, onCaptionStart, onCaptionDone }: Props) {
