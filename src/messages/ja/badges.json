@@ -1,0 +1,126 @@
+{
+  "first-run": {
+    "name": "新人トレーナー",
+    "description": "初めてのプレイを完了する"
+  },
+  "certified": {
+    "name": "認定済み",
+    "description": "適応型のPokéIQテストを完了する"
+  },
+  "perfect": {
+    "name": "パーフェクト",
+    "description": "クラシックで10/10を取る"
+  },
+  "streak-10": {
+    "name": "絶好調",
+    "description": "10問連続で正解する"
+  },
+  "survivor": {
+    "name": "サバイバー",
+    "description": "サバイバル1回で25問正解する"
+  },
+  "blitz": {
+    "name": "せんせいのツメ",
+    "description": "タイムアタック1回で20問正解する"
+  },
+  "purist": {
+    "name": "カントー純血",
+    "description": "第1世代だけのクラシックでパーフェクトを取る"
+  },
+  "iq-120": {
+    "name": "ジムリーダーの頭脳",
+    "description": "PokéIQ 120以上を取る"
+  },
+  "iq-140": {
+    "name": "博士",
+    "description": "PokéIQ 140以上を取る"
+  },
+  "all-modes": {
+    "name": "コンプリート",
+    "description": "すべてのゲームモードを遊ぶ"
+  },
+  "daily-3": {
+    "name": "常連",
+    "description": "デイリーチャレンジ3日連続"
+  },
+  "daily-7": {
+    "name": "努力家",
+    "description": "デイリーチャレンジ7日連続"
+  },
+  "daily-30": {
+    "name": "レジェンド",
+    "description": "デイリーチャレンジ30日連続"
+  },
+  "dle-3": {
+    "name": "名探偵",
+    "description": "Pokédleを3回以内で当てる"
+  },
+  "dle-1": {
+    "name": "エスパー",
+    "description": "Pokédleを1回で当てる"
+  },
+  "geo-first": {
+    "name": "探検家",
+    "description": "PokéGuessrを1ゲーム終える"
+  },
+  "geo-pinpoint": {
+    "name": "ピンポイント",
+    "description": "PokéGuessrの1ラウンドで5,000点を取る"
+  },
+  "geo-20k": {
+    "name": "地図職人",
+    "description": "PokéGuessrの1ゲームで20,000点以上を取る"
+  },
+  "geo-streak-10": {
+    "name": "道しるべ",
+    "description": "PokéGuessrの連続モードで10か所連続で当てる"
+  },
+  "conn-first": {
+    "name": "つながった",
+    "description": "PokéConnectionsを初めてクリアする"
+  },
+  "conn-streak-7": {
+    "name": "つながり続けて",
+    "description": "PokéConnections 7日連続"
+  },
+  "conn-streak-30": {
+    "name": "つながりの達人",
+    "description": "PokéConnections 30日連続"
+  },
+  "conn-perfect-10": {
+    "name": "パーフェクト",
+    "description": "PokéConnectionsをノーミスで10回クリアする"
+  },
+  "conn-duel-10": {
+    "name": "スピードスター",
+    "description": "PokéConnectionsの対戦で10勝する"
+  },
+  "conn-featured": {
+    "name": "注目のクリエイター",
+    "description": "あなたが作ったPokéConnectionsのパズルがピックアップされるか、今日のピックアップになる"
+  },
+  "pdk-first": {
+    "name": "マス目デビュー",
+    "description": "Pikadokuを初めてクリアする"
+  },
+  "pdk-perfect": {
+    "name": "9マス制覇",
+    "description": "Pikadokuの9マスをすべて埋める"
+  },
+  "pdk-rare": {
+    "name": "レア発見",
+    "description": "Pikadokuのレア度スコア50未満"
+  },
+  "pdk-streak-7": {
+    "name": "マス目の常連",
+    "description": "Pikadoku 7日連続"
+  },
+  "pdk-duel-10": {
+    "name": "三目並べ名人",
+    "description": "Pikadoku三目並べの対戦で10勝する"
+  },
+  "conn-hard": {
+    "name": "筋金入り",
+    "description": "PokéConnectionsのエンドレスをむずかしいでクリアする"
+  }
+}

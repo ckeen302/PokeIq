@@ -1,0 +1,88 @@
+{
+  "modules": {
+    "whos-that": {
+      "title": "ポケモンだーれだ？",
+      "description": "シルエットから名前を当てよう。"
+    },
+    "cry": {
+      "title": "なきごえクイズ",
+      "description": "鳴き声を聞いて、ポケモンを当てよう。"
+    },
+    "dex": {
+      "title": "図鑑探偵",
+      "description": "図鑑の説明から当てよう。"
+    },
+    "types": {
+      "title": "タイプマスター",
+      "description": "タイプ相性の知識を試そう。"
+    },
+    "higher-lower": {
+      "title": "ハイ＆ロー",
+      "description": "能力が高いのはどっち？"
+    },
+    "games": {
+      "title": "本編ゲーム",
+      "description": "ジムリーダー、ライバル、地方。"
+    },
+    "anime": {
+      "title": "ポケモンアニメ",
+      "description": "サトシと仲間たち、ロケット団。"
+    },
+    "competitive": {
+      "title": "とくせい・わざ・どうぐ",
+      "description": "このわざやどうぐの効果は？"
+    },
+    "shiny": {
+      "title": "本物の色違いは？",
+      "description": "ニセモノではなく本物の色違いを選ぼう。"
+    },
+    "zoom-reveal": {
+      "title": "ズームクイズ",
+      "description": "アップの画像から当てよう。"
+    },
+    "whose-team": {
+      "title": "だれのチーム？",
+      "description": "手持ちポケモンからトレーナーを当てよう。"
+    },
+    "mixed": {
+      "title": "ごちゃまぜ",
+      "description": "シルエット、タイプ、能力など。"
+    }
+  },
+  "formats": {
+    "classic": {
+      "title": "クラシック",
+      "description": "10問・各15秒"
+    },
+    "survival": {
+      "title": "サバイバル",
+      "description": "エンドレス・ライフ3"
+    },
+    "blitz": {
+      "title": "タイムアタック",
+      "description": "60秒・できるだけ多く"
+    },
+    "adaptive": {
+      "title": "PokéIQテスト",
+      "description": "適応型の20問・各20秒"
+    }
+  },
+  "levels": {
+    "whose-team-medium": {
+      "label": "ふつう",
+      "blurb": "チーム全員"
+    },
+    "whose-team-hard": {
+      "label": "むずかしい",
+      "blurb": "1匹ずつ、エースは最後"
+    },
+    "shiny-easy": {
+      "label": "かんたん",
+      "blurb": "ニセモノは見分けやすい"
+    },
+    "shiny-hard": {
+      "label": "むずかしい",
+      "blurb": "ニセモノはほぼそっくり"
+    }
+  }
+}

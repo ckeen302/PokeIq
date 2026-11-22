@@ -1,0 +1,11 @@
+{
+  "aTrainer": "あるトレーナー",
+  "from": "<b>{who}</b>からのチャレンジ・{run}",
+  "back": "ゲーム一覧に戻る",
+  "challenged": "チャレンジが届きました",
+  "scored": "{who}は{total}問中{correct}問正解",
+  "line": "{run}・PokéIQ <b>{iq}</b>・{score}点",
+  "same": "「{mode}」のまったく同じ問題が、同じ形式で出題されます。あなたのほうがポケモンにくわしい？",
+  "accept": "チャレンジを受ける",
+  "daily": "今日のデイリーチャレンジをプレイ"
+}

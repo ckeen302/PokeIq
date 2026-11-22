@@ -1,0 +1,121 @@
+{
+  "hub": {
+    "title": "Quiz Quel est ce Pokémon ? et autres quiz Pokémon",
+    "description": "Joue au quiz Quel est ce Pokémon ?, à un quiz des cris, aux entrées du Pokédex, à la table des types et à Plus ou moins, en formats Classique, Survie et Blitz.",
+    "daily": "Défi du jour",
+    "test": "Test PokéIQ",
+    "more": "Encore plus de jeux",
+    "h1": "Quiz",
+    "duel": "Duel de quiz",
+    "duelLine": "Réponds aux mêmes questions qu’un ami, en direct.",
+    "infoName": "les quiz Pokémon",
+    "infoDescription": "Des quiz Pokémon gratuits, dont Quel est ce Pokémon ?, un quiz des cris et la table des types, en formats Classique, Survie et Blitz.",
+    "infoIntro": "Joue au quiz Quel est ce Pokémon ? et à nos autres quiz Pokémon dans trois formats, avec tous les Pokémon.",
+    "step1": "Choisis un mode de quiz et les générations à inclure.",
+    "step2": "Choisis un format : Classique, Survie ou Blitz.",
+    "step3": "Réponds avant la fin du chrono.",
+    "step4": "Ton PokéIQ pondère chaque bonne réponse selon la difficulté de la question.",
+    "faqFormatsQ": "Quels formats existent ?",
+    "faqFormatsA": "Classique, c’est 10 questions de 15 secondes chacune ; Survie est sans fin avec 3 vies ; Blitz te donne 60 secondes pour répondre au plus de questions possible.",
+    "faqGensQ": "Puis-je choisir les générations ?",
+    "faqGensA": "Oui : choisis un mode, puis les générations à inclure."
+  },
+  "presets": {
+    "whos-that-pokemon": {
+      "title": "Quel est ce Pokémon ? Quiz des silhouettes",
+      "h1": "Quel est ce Pokémon ?",
+      "description": "Devine le Pokémon à sa silhouette. Choisis n’importe laquelle des neuf générations, en modes Classique, Survie et Blitz."
+    },
+    "pokemon-cry-quiz": {
+      "title": "Quiz des cris Pokémon : devine le Pokémon à son cri",
+      "h1": "Quiz des cris Pokémon",
+      "description": "Sauras-tu reconnaître les Pokémon à leur cri ? Écoute et devine, toutes générations confondues."
+    },
+    "pokedex-entry-quiz": {
+      "title": "Quiz Pokédex : devine le Pokémon grâce à son entrée du Pokédex",
+      "h1": "Détective Pokédex",
+      "description": "Lis une entrée du Pokédex censurée et trouve le Pokémon. Avec aussi des questions sur les catégories et les talents."
+    },
+    "pokemon-type-quiz": {
+      "title": "Quiz de la table des types Pokémon : faiblesses, immunités et efficacités",
+      "h1": "Maître des types",
+      "description": "Teste ta maîtrise de la table des types : faiblesses des doubles types, efficacités ×4, immunités et types."
+    },
+    "pokemon-higher-or-lower": {
+      "title": "Pokémon Plus ou moins : le jeu des statistiques de base",
+      "h1": "Plus ou moins",
+      "description": "Quel Pokémon est le plus rapide, le plus lourd ou a le meilleur total de stats de base ? Garde ta série en vie."
+    },
+    "pokemon-games-quiz": {
+      "title": "Quiz des jeux Pokémon : Champions d’Arène, Maîtres et régions",
+      "h1": "Quiz des jeux principaux",
+      "description": "Connais-tu bien les RPG Pokémon principaux ? Champions d’Arène, Conseil 4, rivaux, méchants, starters et régions, de Rouge et Bleu à Légendes Pokémon : Z-A."
+    },
+    "pokemon-ability-move-item-quiz": {
+      "title": "Quiz Pokémon des talents, capacités et objets",
+      "h1": "Talents, capacités et objets",
+      "description": "Quel Pokémon peut avoir ce talent ? De quel type est cette capacité ? Que fait cet objet ? Des questions générées à partir des données de Pokémon Showdown."
+    },
+    "real-shiny-quiz": {
+      "title": "Lequel est le vrai chromatique ? Quiz des Pokémon chromatiques",
+      "h1": "Lequel est le vrai chromatique ?",
+      "description": "Une des quatre couleurs est le vrai chromatique, les autres sont des faux. Sauras-tu le repérer ? Tous les Pokémon, en Facile ou Difficile."
+    },
+    "pokemon-zoom-quiz": {
+      "title": "Quiz Pokémon zoom : devine le Pokémon en gros plan",
+      "h1": "Zoom",
+      "description": "Devine le Pokémon à partir d’un très gros plan de son illustration officielle. Chaque erreur dézoome d’une étape, six en tout, avec en plus un zoom du jour."
+    },
+    "pokemon-anime-quiz": {
+      "title": "Quiz de l’anime Pokémon : Sacha, la Team Rocket et Horizons",
+      "h1": "Quiz de l’anime Pokémon",
+      "description": "Les Pokémon de Sacha, ses amis et rivaux, la Team Rocket, les résultats des Ligues, les films et Pokémon Horizons. Chaque réponse vérifiée sur Bulbapedia."
+    },
+    "whose-team-is-this": {
+      "title": "À qui est cette équipe ? Devine le Dresseur Pokémon grâce à son équipe",
+      "h1": "À qui est cette équipe ?",
+      "description": "Champions d’Arène, Conseil 4, Maîtres, rivaux et méchants de tous les jeux principaux, plus Sacha et ses amis de l’anime : trouve le Dresseur grâce à son équipe."
+    },
+    "pokemon-trivia-quiz": {
+      "title": "Quiz de culture Pokémon : questions variées",
+      "h1": "Culture Pokémon",
+      "description": "Un quiz Pokémon varié : silhouettes, entrées du Pokédex, table des types et duels de stats."
+    }
+  },
+  "gen": {
+    "title": "Quiz Pokémon Gén. {n} : Quel est ce Pokémon ? de {region}",
+    "h1": "Quiz Pokémon Gén. {n} ({region})",
+    "description": "Connais-tu bien le Pokédex de {region} ? Trouve chaque Pokémon de la Gén. {n} à sa silhouette."
+  },
+  "preset": {
+    "modeSelect": "Choix du mode",
+    "intro": "{name} fait partie de nos quiz Pokémon gratuits, comme le quiz Quel est ce Pokémon ? : {description}",
+    "stepDifficulty": "Choisis un format, une difficulté et les générations à inclure.",
+    "stepFormat": "Choisis un format et les générations à inclure.",
+    "step2": "Réponds à chaque question avant la fin du chrono.",
+    "step3": "Ton PokéIQ pondère chaque bonne réponse selon la difficulté de la question.",
+    "faqQ": "À quels formats puis-je jouer ?",
+    "faqA": "Classique, c’est 10 questions de 15 secondes chacune ; Survie est sans fin avec 3 vies ; Blitz te donne 60 secondes pour répondre au plus de questions possible."
+  },
+  "daily": {
+    "title": "Défi Pokémon du jour",
+    "description": "Un nouveau quiz Pokémon de 10 questions chaque jour, le même pour tout le monde. Garde ta série et compare ton PokéIQ."
+  },
+  "duel": {
+    "title": "Un duel de quiz Pokémon",
+    "description": "Quiz Pokémon en face-à-face : les mêmes questions pour vous deux, juste et rapide rapporte le plus.",
+    "versus": "{host} vs {guest} : un duel « {mode} »",
+    "challenge": "{host} te défie en duel « {mode} »",
+    "aTrainer": "Un Dresseur",
+    "invite": "« {mode} » en face-à-face : les mêmes {n} questions pour vous deux, juste et rapide rapporte le plus.",
+    "inviteLevel": "« {mode} » en face-à-face, en {level} : les mêmes {n} questions pour vous deux, juste et rapide rapporte le plus."
+  },
+  "challenge": {
+    "title": "Défi",
+    "aTrainer": "Un Dresseur",
+    "scored": "{who} a fait {correct}/{total} (PokéIQ {iq}). Sauras-tu faire mieux ?",
+    "description": "{run} sur PokéIQ. Joue exactement les mêmes questions et voyez qui connaît le mieux les Pokémon.",
+    "daily": "Défi du jour #{n}",
+    "run": "{mode} · {format}"
+  }
+}

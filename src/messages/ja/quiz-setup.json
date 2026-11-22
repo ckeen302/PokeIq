@@ -1,0 +1,64 @@
+{
+  "setup": {
+    "changeSettings": "設定を変更",
+    "format": "形式",
+    "difficulty": "難易度",
+    "teamsFrom": "チームの出典",
+    "scope": {
+      "both": "ゲームとアニメ",
+      "games": "ゲーム",
+      "anime": "アニメ"
+    },
+    "selected": "{label}（{n}件を選択）",
+    "all": "{label}（すべて）",
+    "allChip": "すべて",
+    "start": "{mode}をスタート"
+  },
+  "filters": {
+    "gen": "世代",
+    "chip": "第{n}世代",
+    "series": "シリーズ",
+    "anime": {
+      "original": "無印",
+      "advanced": "AG",
+      "dp": "DP",
+      "bw": "BW",
+      "xy": "XY",
+      "sm": "SM",
+      "journeys": "新無印",
+      "horizons": "リコとロイ"
+    },
+    "items": "初登場",
+    "itemsNote": "指定しない場合は第1〜7世代から出題します。世代を選ぶと、どの世代でも遊べます。",
+    "team": "世代・地方",
+    "teamChip": "{region}：第{n}世代のゲーム、{region}が舞台のアニメ",
+    "teamNote": "ゲームは世代で分けます（ファイアレッドは第3世代）。アニメのチームは、そのシリーズの舞台の地方で分けます。"
+  },
+  "regions": {
+    "kanto": "カントー",
+    "johto": "ジョウト",
+    "hoenn": "ホウエン",
+    "sinnoh": "シンオウ",
+    "unova": "イッシュ",
+    "kalos": "カロス",
+    "alola": "アローラ",
+    "galar": "ガラル",
+    "paldea": "パルデア"
+  },
+  "duel": {
+    "heading": "1対1・{mode}",
+    "zoomBlurb": "2人とも同じアップ画像が{n}枚、各{seconds}秒。1段階目で当てると{first}点、{steps}段階目では{last}点。合計点が多いほうの勝ちです。友だちにリンクを送って「準備OK」を押しましょう。",
+    "blurb": "2人とも同じ{n}問、各{seconds}秒。正解で100点、速さで最大50点のボーナス。合計点が多いほうの勝ちです。友だちにリンクを送って「準備OK」を押しましょう。",
+    "mode": "モード",
+    "modeLabel": "対戦のモード",
+    "difficulty": "難易度",
+    "difficultyLabel": "対戦の難易度"
+  },
+  "grid": {
+    "best": "ベスト {score}",
+    "nameEmAll": "ポケモン言えるかな？",
+    "nameEmAllLine": "思いつくポケモンをぜんぶ答えよう。",
+    "whichPokemon": "あなたはどのポケモン？",
+    "whichPokemonLine": "あなたにいちばん近いポケモンを見つけよう。"
+  }
+}

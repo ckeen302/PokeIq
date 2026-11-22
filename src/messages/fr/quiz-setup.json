@@ -1,0 +1,64 @@
+{
+  "setup": {
+    "changeSettings": "Modifier les réglages",
+    "format": "Format",
+    "difficulty": "Difficulté",
+    "teamsFrom": "Équipes de",
+    "scope": {
+      "both": "Jeux et anime",
+      "games": "Jeux",
+      "anime": "Anime"
+    },
+    "selected": "{label} (sélection : {n})",
+    "all": "{label} (sans filtre)",
+    "allChip": "Toutes",
+    "start": "Lancer {mode}"
+  },
+  "filters": {
+    "gen": "Générations",
+    "chip": "Gén. {n}",
+    "series": "Séries",
+    "anime": {
+      "original": "Originale",
+      "advanced": "Advanced",
+      "dp": "Diamant et Perle",
+      "bw": "Noir et Blanc",
+      "xy": "XY",
+      "sm": "Soleil et Lune",
+      "journeys": "Les Voyages",
+      "horizons": "Horizons"
+    },
+    "items": "Apparu en",
+    "itemsNote": "Sans filtre, les questions couvrent les Gén. 1 à 7. Choisis des générations pour jouer avec n’importe laquelle des neuf.",
+    "team": "Génération ou région",
+    "teamChip": "{region} : jeux de la Gén. {n}, anime se déroulant à {region}",
+    "teamNote": "Les jeux comptent par génération (Rouge Feu est en Gén. 3) ; les équipes de l’anime, par la région de la série."
+  },
+  "regions": {
+    "kanto": "Kanto",
+    "johto": "Johto",
+    "hoenn": "Hoenn",
+    "sinnoh": "Sinnoh",
+    "unova": "Unys",
+    "kalos": "Kalos",
+    "alola": "Alola",
+    "galar": "Galar",
+    "paldea": "Paldea"
+  },
+  "duel": {
+    "heading": "Face-à-face · {mode}",
+    "zoomBlurb": "Les mêmes {n} gros plans pour vous deux, {seconds} secondes chacun. Trouver à l’étape 1 rapporte {first} points, jusqu’à {last} à l’étape {steps} ; le plus de points l’emporte. Envoie le lien à ton ami et appuie sur Prêt.",
+    "blurb": "Les mêmes {n} questions pour vous deux, {seconds} secondes chacune. Une bonne réponse rapporte 100 points, plus jusqu’à 50 pour la rapidité ; le plus de points l’emporte. Envoie le lien à ton ami et appuie sur Prêt.",
+    "mode": "Mode",
+    "modeLabel": "Mode du duel",
+    "difficulty": "Difficulté",
+    "difficultyLabel": "Difficulté du duel"
+  },
+  "grid": {
+    "best": "Record {score}",
+    "nameEmAll": "Nomme-les tous",
+    "nameEmAllLine": "Nomme tous les Pokémon que tu peux.",
+    "whichPokemon": "Quel Pokémon es-tu ?",
+    "whichPokemonLine": "Trouve le Pokémon qui te ressemble le plus."
+  }
+}

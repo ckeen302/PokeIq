@@ -1,0 +1,121 @@
+{
+  "hub": {
+    "title": "Quiz Chi è quel Pokémon? e altre modalità di quiz Pokémon",
+    "description": "Gioca al quiz Chi è quel Pokémon?, a un quiz dei versi, alle voci del Pokédex, all’efficacia dei tipi e a Più o meno, nei formati Classico, Sopravvivenza e Blitz.",
+    "daily": "Sfida del giorno",
+    "test": "Test PokéIQ",
+    "more": "Altro da giocare",
+    "h1": "Quiz",
+    "duel": "Sfida a quiz",
+    "duelLine": "Rispondi alle stesse domande di un amico, dal vivo.",
+    "infoName": "i quiz Pokémon",
+    "infoDescription": "Quiz Pokémon gratuiti, tra cui Chi è quel Pokémon?, un quiz dei versi e l’efficacia dei tipi, nei formati Classico, Sopravvivenza e Blitz.",
+    "infoIntro": "Gioca al quiz Chi è quel Pokémon? e agli altri nostri quiz Pokémon in tre formati, con tutti i Pokémon.",
+    "step1": "Scegli una modalità di quiz e le generazioni da includere.",
+    "step2": "Scegli un formato: Classico, Sopravvivenza o Blitz.",
+    "step3": "Rispondi prima che scada il tempo.",
+    "step4": "Il tuo PokéIQ pesa ogni risposta giusta in base a quanto è difficile la domanda.",
+    "faqFormatsQ": "Quali formati ci sono?",
+    "faqFormatsA": "Classico sono 10 domande da 15 secondi l’una, Sopravvivenza è senza fine con 3 vite e Blitz ti dà 60 secondi per rispondere a più domande possibile.",
+    "faqGensQ": "Posso scegliere le generazioni?",
+    "faqGensA": "Sì: scegli una modalità, poi le generazioni da includere."
+  },
+  "presets": {
+    "whos-that-pokemon": {
+      "title": "Chi è quel Pokémon? Quiz delle sagome",
+      "h1": "Chi è quel Pokémon?",
+      "description": "Indovina il Pokémon dalla sagoma. Scegli una qualsiasi delle nove generazioni, nelle modalità Classico, Sopravvivenza e Blitz."
+    },
+    "pokemon-cry-quiz": {
+      "title": "Quiz dei versi Pokémon: indovina il Pokémon dal verso",
+      "h1": "Quiz dei versi Pokémon",
+      "description": "Riesci a riconoscere i Pokémon dai loro versi? Ascolta e indovina, generazione dopo generazione."
+    },
+    "pokedex-entry-quiz": {
+      "title": "Quiz del Pokédex: indovina il Pokémon dalla voce del Pokédex",
+      "h1": "Detective Pokédex",
+      "description": "Leggi una voce del Pokédex censurata e indovina il Pokémon. In più, domande su categorie e abilità."
+    },
+    "pokemon-type-quiz": {
+      "title": "Quiz sui tipi Pokémon: debolezze, immunità ed efficacia",
+      "h1": "Maestro dei tipi",
+      "description": "Metti alla prova la tua conoscenza dei tipi: debolezze dei doppi tipi, efficacia ×4, immunità e combinazioni di tipi."
+    },
+    "pokemon-higher-or-lower": {
+      "title": "Pokémon Più o meno: il gioco delle statistiche base",
+      "h1": "Più o meno",
+      "description": "Quale Pokémon è più veloce, più pesante o ha il totale di statistiche base più alto? Tieni viva la tua serie."
+    },
+    "pokemon-games-quiz": {
+      "title": "Quiz sui giochi Pokémon: Capipalestra, Campioni e regioni",
+      "h1": "Quiz sui giochi principali",
+      "description": "Quanto conosci i GDR Pokémon principali? Capipalestra, Superquattro, rivali, cattivi, starter e regioni, da Rosso e Blu a Leggende Pokémon: Z-A."
+    },
+    "pokemon-ability-move-item-quiz": {
+      "title": "Quiz Pokémon su abilità, mosse e strumenti",
+      "h1": "Abilità, mosse e strumenti",
+      "description": "Quale Pokémon può avere questa abilità? Di che tipo è questa mossa? Cosa fa questo strumento? Domande generate dai dati di Pokémon Showdown."
+    },
+    "real-shiny-quiz": {
+      "title": "Qual è il vero cromatico? Quiz sui Pokémon cromatici",
+      "h1": "Qual è il vero cromatico?",
+      "description": "Una delle quattro colorazioni è il vero cromatico, le altre sono falsi. Sai riconoscerlo? Tutti i Pokémon, a livello Facile o Difficile."
+    },
+    "pokemon-zoom-quiz": {
+      "title": "Quiz Pokémon zoom: indovina il Pokémon da un primo piano",
+      "h1": "Zoom",
+      "description": "Indovina il Pokémon da un primissimo piano della sua illustrazione ufficiale. Ogni errore allarga lo zoom di un passo, sei in tutto, e in più c’è lo zoom del giorno."
+    },
+    "pokemon-anime-quiz": {
+      "title": "Quiz sull’anime Pokémon: Ash, il Team Rocket e Orizzonti",
+      "h1": "Quiz sull’anime Pokémon",
+      "description": "I Pokémon di Ash, i suoi amici e rivali, il Team Rocket, i risultati delle Leghe, i film e Orizzonti Pokémon. Ogni risposta verificata su Bulbapedia."
+    },
+    "whose-team-is-this": {
+      "title": "Di chi è questa squadra? Indovina l’Allenatore Pokémon dalla sua squadra",
+      "h1": "Di chi è questa squadra?",
+      "description": "Capipalestra, Superquattro, Campioni, rivali e cattivi di tutti i giochi principali, più Ash e i suoi amici dell’anime: indovina l’Allenatore dalla sua squadra."
+    },
+    "pokemon-trivia-quiz": {
+      "title": "Quiz di cultura Pokémon: domande miste",
+      "h1": "Cultura Pokémon",
+      "description": "Un quiz Pokémon misto: sagome, voci del Pokédex, efficacia dei tipi e sfide di statistiche."
+    }
+  },
+  "gen": {
+    "title": "Quiz Pokémon Gen. {n}: Chi è quel Pokémon? di {region}",
+    "h1": "Quiz Pokémon Gen. {n} ({region})",
+    "description": "Quanto conosci il Pokédex di {region}? Indovina dalla sagoma ogni Pokémon della Gen. {n}."
+  },
+  "preset": {
+    "modeSelect": "Scegli la modalità",
+    "intro": "{name} è uno dei nostri quiz Pokémon gratuiti, come Chi è quel Pokémon?: {description}",
+    "stepDifficulty": "Scegli un formato, la difficoltà e le generazioni da includere.",
+    "stepFormat": "Scegli un formato e le generazioni da includere.",
+    "step2": "Rispondi a ogni domanda prima che scada il tempo.",
+    "step3": "Il tuo PokéIQ pesa ogni risposta giusta in base a quanto è difficile la domanda.",
+    "faqQ": "A quali formati posso giocare?",
+    "faqA": "Classico sono 10 domande da 15 secondi l’una, Sopravvivenza è senza fine con 3 vite e Blitz ti dà 60 secondi per rispondere a più domande possibile."
+  },
+  "daily": {
+    "title": "Sfida Pokémon del giorno",
+    "description": "Ogni giorno un nuovo quiz Pokémon da 10 domande, uguale per tutti. Tieni viva la tua serie e confronta il tuo PokéIQ."
+  },
+  "duel": {
+    "title": "Una sfida a quiz Pokémon",
+    "description": "Quiz Pokémon testa a testa: le stesse domande per entrambi, giusto e veloce vale di più.",
+    "versus": "{host} vs {guest}: una sfida a {mode}",
+    "challenge": "{host} ti sfida a {mode}",
+    "aTrainer": "Un Allenatore",
+    "invite": "{mode} testa a testa: le stesse {n} domande per entrambi, giusto e veloce vale di più.",
+    "inviteLevel": "{mode} testa a testa, a livello {level}: le stesse {n} domande per entrambi, giusto e veloce vale di più."
+  },
+  "challenge": {
+    "title": "Sfida",
+    "aTrainer": "Un Allenatore",
+    "scored": "{who} ha fatto {correct}/{total} (PokéIQ {iq}). Sai fare di meglio?",
+    "description": "{run} su PokéIQ. Gioca esattamente le stesse domande e scopri chi conosce meglio i Pokémon.",
+    "daily": "Sfida del giorno #{n}",
+    "run": "{mode} · {format}"
+  }
+}

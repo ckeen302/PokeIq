@@ -1,0 +1,126 @@
+{
+  "first-run": {
+    "name": "Neuer Trainer",
+    "description": "Schließ deine erste Runde ab"
+  },
+  "certified": {
+    "name": "Zertifiziert",
+    "description": "Schließ den adaptiven PokéIQ-Test ab"
+  },
+  "perfect": {
+    "name": "Makellos",
+    "description": "Schaff 10/10 in einer klassischen Runde"
+  },
+  "streak-10": {
+    "name": "In Topform",
+    "description": "Beantworte 10 Fragen in Folge richtig"
+  },
+  "survivor": {
+    "name": "Überlebender",
+    "description": "25 richtige in einer Überleben-Runde"
+  },
+  "blitz": {
+    "name": "Flinkklaue",
+    "description": "20 richtige in einer Blitz-Runde"
+  },
+  "purist": {
+    "name": "Kanto-Purist",
+    "description": "Perfekte klassische Runde nur mit Gen. 1"
+  },
+  "iq-120": {
+    "name": "Arenaleiter-Hirn",
+    "description": "Erreiche einen PokéIQ von 120+"
+  },
+  "iq-140": {
+    "name": "Professor",
+    "description": "Erreiche einen PokéIQ von 140+"
+  },
+  "all-modes": {
+    "name": "Komplettist",
+    "description": "Spiel jeden Spielmodus"
+  },
+  "daily-3": {
+    "name": "Stammgast",
+    "description": "3 Tage in Folge bei der Täglichen Herausforderung"
+  },
+  "daily-7": {
+    "name": "Ausdauernd",
+    "description": "7 Tage in Folge bei der Täglichen Herausforderung"
+  },
+  "daily-30": {
+    "name": "Legende",
+    "description": "30 Tage in Folge bei der Täglichen Herausforderung"
+  },
+  "dle-3": {
+    "name": "Detektiv",
+    "description": "Lös ein Pokédle in höchstens 3 Versuchen"
+  },
+  "dle-1": {
+    "name": "Hellseher",
+    "description": "Lös ein Pokédle mit dem ersten Versuch"
+  },
+  "geo-first": {
+    "name": "Entdecker",
+    "description": "Schließ ein PokéGuessr-Spiel ab"
+  },
+  "geo-pinpoint": {
+    "name": "Volltreffer",
+    "description": "Hol 5.000 Punkte in einer PokéGuessr-Runde"
+  },
+  "geo-20k": {
+    "name": "Kartograf",
+    "description": "Hol 20.000+ Punkte in einem PokéGuessr-Spiel"
+  },
+  "geo-streak-10": {
+    "name": "Pfadfinder",
+    "description": "Errate 10 Orte in Folge in der PokéGuessr-Serie"
+  },
+  "conn-first": {
+    "name": "Verbunden",
+    "description": "Lös dein erstes PokéConnections"
+  },
+  "conn-streak-7": {
+    "name": "Gut vernetzt",
+    "description": "7 Tage in Folge PokéConnections"
+  },
+  "conn-streak-30": {
+    "name": "Großmeister der Verbindungen",
+    "description": "30 Tage in Folge PokéConnections"
+  },
+  "conn-perfect-10": {
+    "name": "Makellos",
+    "description": "10 perfekte PokéConnections (ohne Fehler)"
+  },
+  "conn-duel-10": {
+    "name": "Raser",
+    "description": "Gewinn 10 PokéConnections-Duelle"
+  },
+  "conn-featured": {
+    "name": "Ausgezeichneter Ersteller",
+    "description": "Ein PokéConnections-Rätsel von dir wurde hervorgehoben oder zum Rätsel des Tages"
+  },
+  "pdk-first": {
+    "name": "Gitter-Neuling",
+    "description": "Lös dein erstes Pikadoku"
+  },
+  "pdk-perfect": {
+    "name": "Neun von neun",
+    "description": "Füll alle 9 Felder eines Pikadoku"
+  },
+  "pdk-rare": {
+    "name": "Raritätenjäger",
+    "description": "Ein Pikadoku-Seltenheitswert unter 50"
+  },
+  "pdk-streak-7": {
+    "name": "Gitter-Stammgast",
+    "description": "7 Tage in Folge Pikadoku"
+  },
+  "pdk-duel-10": {
+    "name": "Drei in einer Reihe",
+    "description": "Gewinn 10 Pikadoku-Tic-Tac-Toe-Duelle"
+  },
+  "conn-hard": {
+    "name": "Hart verdrahtet",
+    "description": "Lös ein endloses PokéConnections auf Schwer"
+  }
+}

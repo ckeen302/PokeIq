@@ -1,0 +1,126 @@
+{
+  "first-run": {
+    "name": "Nouveau Dresseur",
+    "description": "Termine ta première partie"
+  },
+  "certified": {
+    "name": "Certifié",
+    "description": "Termine le Test PokéIQ adaptatif"
+  },
+  "perfect": {
+    "name": "Sans faute",
+    "description": "Fais 10/10 en partie Classique"
+  },
+  "streak-10": {
+    "name": "En feu",
+    "description": "Réponds juste 10 fois d’affilée"
+  },
+  "survivor": {
+    "name": "Survivant",
+    "description": "Fais 25 bonnes réponses en une partie Survie"
+  },
+  "blitz": {
+    "name": "Vive Griffe",
+    "description": "Fais 20 bonnes réponses en un Blitz"
+  },
+  "purist": {
+    "name": "Puriste de Kanto",
+    "description": "Partie Classique parfaite en Gén. 1 seule"
+  },
+  "iq-120": {
+    "name": "Cerveau de Champion",
+    "description": "Atteins un PokéIQ de 120 ou plus"
+  },
+  "iq-140": {
+    "name": "Professeur",
+    "description": "Atteins un PokéIQ de 140 ou plus"
+  },
+  "all-modes": {
+    "name": "Complétionniste",
+    "description": "Joue à tous les modes de jeu"
+  },
+  "daily-3": {
+    "name": "Habitué",
+    "description": "Série de 3 jours au Défi du jour"
+  },
+  "daily-7": {
+    "name": "Assidu",
+    "description": "Série de 7 jours au Défi du jour"
+  },
+  "daily-30": {
+    "name": "Légende",
+    "description": "Série de 30 jours au Défi du jour"
+  },
+  "dle-3": {
+    "name": "Détective",
+    "description": "Résous un Pokédle en 3 essais ou moins"
+  },
+  "dle-1": {
+    "name": "Médium",
+    "description": "Résous un Pokédle du premier coup"
+  },
+  "geo-first": {
+    "name": "Explorateur",
+    "description": "Termine une partie de PokéGuessr"
+  },
+  "geo-pinpoint": {
+    "name": "Dans le mille",
+    "description": "Marque 5 000 points sur une manche de PokéGuessr"
+  },
+  "geo-20k": {
+    "name": "Cartographe",
+    "description": "Marque 20 000 points ou plus sur une partie de PokéGuessr"
+  },
+  "geo-streak-10": {
+    "name": "Éclaireur",
+    "description": "Trouve 10 lieux d’affilée en Série PokéGuessr"
+  },
+  "conn-first": {
+    "name": "Connecté",
+    "description": "Résous ton premier PokéConnections"
+  },
+  "conn-streak-7": {
+    "name": "Bien branché",
+    "description": "Série de 7 jours sur PokéConnections"
+  },
+  "conn-streak-30": {
+    "name": "Grand connecteur",
+    "description": "Série de 30 jours sur PokéConnections"
+  },
+  "conn-perfect-10": {
+    "name": "Sans faute",
+    "description": "10 PokéConnections parfaits (sans erreur)"
+  },
+  "conn-duel-10": {
+    "name": "Bolide",
+    "description": "Gagne 10 duels PokéConnections"
+  },
+  "conn-featured": {
+    "name": "Créateur à l’affiche",
+    "description": "Un puzzle PokéConnections que tu as créé a été mis en avant ou est devenu le Puzzle du jour"
+  },
+  "pdk-first": {
+    "name": "Première grille",
+    "description": "Résous ton premier Pikadoku"
+  },
+  "pdk-perfect": {
+    "name": "Neuf sur neuf",
+    "description": "Remplis les 9 cases d’un Pikadoku"
+  },
+  "pdk-rare": {
+    "name": "Dénicheur",
+    "description": "Un score de rareté Pikadoku sous 50"
+  },
+  "pdk-streak-7": {
+    "name": "Habitué des grilles",
+    "description": "Série de 7 jours sur Pikadoku"
+  },
+  "pdk-duel-10": {
+    "name": "Trois d’affilée",
+    "description": "Gagne 10 duels de Morpion Pikadoku"
+  },
+  "conn-hard": {
+    "name": "Nerfs d’acier",
+    "description": "Résous un PokéConnections Illimité en Difficile"
+  }
+}

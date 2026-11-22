@@ -1,0 +1,20 @@
+{
+  "label": "Sfida del giorno",
+  "labelNumber": "Sfida del giorno #{n}",
+  "title": "Il test PokéIQ di oggi",
+  "intro": "10 domande miste, le stesse per tutti gli Allenatori. Un solo tentativo: fallo valere.",
+  "youScored": "Il tuo risultato",
+  "iq": "PokéIQ <b>{iq}</b> · {score} pt",
+  "streak": "{n, plural, one {Serie di {n} giorno · record {best}} other {Serie di {n} giorni · record {best}}}",
+  "leaderboard": "Classifica di oggi",
+  "next": "Prossima Sfida del giorno tra",
+  "more": "Ne vuoi ancora? Prova il <dle>Pokédle</dle> o una <quiz>partita Sopravvivenza</quiz>.",
+  "parts": {
+    "whos-that": "Sagome",
+    "dex": "Voci del Pokédex",
+    "types": "Efficacia dei tipi",
+    "higher-lower": "Sfide di statistiche"
+  },
+  "rules": "15 secondi a domanda · bonus per velocità e serie",
+  "start": "Inizia la Sfida #{n}"
+}

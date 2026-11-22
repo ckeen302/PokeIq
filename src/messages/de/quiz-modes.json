@@ -1,0 +1,88 @@
+{
+  "modules": {
+    "whos-that": {
+      "title": "Wer ist das Pokémon?",
+      "description": "Erkenne es an seiner Silhouette."
+    },
+    "cry": {
+      "title": "Ruf-Quiz",
+      "description": "Hör den Ruf, nenn das Pokémon."
+    },
+    "dex": {
+      "title": "Pokédex-Detektiv",
+      "description": "Erkenne es an seinem Pokédex-Eintrag."
+    },
+    "types": {
+      "title": "Typen-Meister",
+      "description": "Teste dein Wissen über Typen."
+    },
+    "higher-lower": {
+      "title": "Höher oder tiefer",
+      "description": "Wer hat den höheren Statuswert?"
+    },
+    "games": {
+      "title": "Hauptspiele",
+      "description": "Arenaleiter, Rivalen und Regionen."
+    },
+    "anime": {
+      "title": "Pokémon-Anime",
+      "description": "Ash, seine Freunde und Team Rocket."
+    },
+    "competitive": {
+      "title": "Fähigkeiten, Attacken & Items",
+      "description": "Was bewirkt diese Attacke oder dieses Item?"
+    },
+    "shiny": {
+      "title": "Echt schillernd?",
+      "description": "Finde das echte schillernde Pokémon."
+    },
+    "zoom-reveal": {
+      "title": "Zoom",
+      "description": "Erkenne es an einer Nahaufnahme."
+    },
+    "whose-team": {
+      "title": "Wessen Team ist das?",
+      "description": "Erkenne den Trainer an seinem Team."
+    },
+    "mixed": {
+      "title": "Bunt gemischt",
+      "description": "Silhouetten, Typen, Werte und mehr."
+    }
+  },
+  "formats": {
+    "classic": {
+      "title": "Klassisch",
+      "description": "10 Fragen · je 15 s"
+    },
+    "survival": {
+      "title": "Überleben",
+      "description": "Endlos · 3 Leben"
+    },
+    "blitz": {
+      "title": "Blitz",
+      "description": "60 Sekunden · so viele wie möglich"
+    },
+    "adaptive": {
+      "title": "PokéIQ-Test",
+      "description": "20 adaptive Fragen · je 20 s"
+    }
+  },
+  "levels": {
+    "whose-team-medium": {
+      "label": "Normal",
+      "blurb": "Das ganze Team"
+    },
+    "whose-team-hard": {
+      "label": "Schwer",
+      "blurb": "Ein Pokémon nach dem anderen, das Ass zuletzt"
+    },
+    "shiny-easy": {
+      "label": "Leicht",
+      "blurb": "Die Fälschungen weichen stark ab"
+    },
+    "shiny-hard": {
+      "label": "Schwer",
+      "blurb": "Die Fälschungen sind kaum anders"
+    }
+  }
+}

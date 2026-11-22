@@ -85,7 +85,8 @@ function filterNote(filter: QuizFilter, t: SetupT): string | undefined {
 export function QuizSetup({ module, initialFormat, initialDifficulty, initialGens = [] }: QuizSetupProps) {
   const t = useT(setupNs);
   const mt = useT(modesNs);
-  const lang = t.locale;
+  // The page's language (it never changes under the page): a ref, so the effects below that warm runs needn't list it.
+  const lang = useRef(t.locale);
   const info = MODULE_INFO[module];
   const filter = filterFor(module);
   const [format, setFormat] = useState<QuizFormat>(initialFormat ?? info.defaultFormat);
@@ -104,7 +105,7 @@ export function QuizSetup({ module, initialFormat, initialDifficulty, initialGen
   // One per page view: it keeps the run held for the settings on screen.
   const prefetcher = useRef<QuizPrefetcher | null>(null);
   const warm = (req: StartRequest) => {
-    prefetcher.current ??= createQuizPrefetcher({ post: (body) => postSession(body, lang), preload: preloadHeld });
+    prefetcher.current ??= createQuizPrefetcher({ post: (body) => postSession(body, lang.current), preload: preloadHeld });
     prefetcher.current.prefetch(req, getProgress().name || undefined);
   };
   const latest = useRef(settings);

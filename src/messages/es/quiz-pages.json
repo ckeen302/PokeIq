@@ -1,0 +1,121 @@
+{
+  "hub": {
+    "title": "Quiz ¿Quién es ese Pokémon? y más quizzes de Pokémon",
+    "description": "Juega al quiz ¿Quién es ese Pokémon?, a un quiz de gritos, de entradas de la Pokédex, de tipos y a Más o menos, en los formatos Clásico, Supervivencia y Contrarreloj.",
+    "daily": "Reto diario",
+    "test": "Test PokéIQ",
+    "more": "Más para jugar",
+    "h1": "Quizzes",
+    "duel": "Duelo de quiz",
+    "duelLine": "Responde las mismas preguntas que un amigo, en directo.",
+    "infoName": "los quizzes de Pokémon",
+    "infoDescription": "Quizzes de Pokémon gratis, como ¿Quién es ese Pokémon?, un quiz de gritos y la tabla de tipos, en los formatos Clásico, Supervivencia y Contrarreloj.",
+    "infoIntro": "Juega a ¿Quién es ese Pokémon? y a nuestros otros quizzes de Pokémon en tres formatos, con todos los Pokémon.",
+    "step1": "Elige un modo de quiz y las generaciones que quieras incluir.",
+    "step2": "Elige un formato: Clásico, Supervivencia o Contrarreloj.",
+    "step3": "Responde antes de que se acabe el tiempo.",
+    "step4": "Tu PokéIQ valora cada acierto según lo difícil que sea la pregunta.",
+    "faqFormatsQ": "¿Qué formatos hay?",
+    "faqFormatsA": "Clásico son 10 preguntas de 15 segundos cada una, Supervivencia no tiene fin y te da 3 vidas, y Contrarreloj te da 60 segundos para responder todas las que puedas.",
+    "faqGensQ": "¿Puedo elegir qué generaciones jugar?",
+    "faqGensA": "Sí: elige un modo y luego las generaciones que quieras incluir."
+  },
+  "presets": {
+    "whos-that-pokemon": {
+      "title": "¿Quién es ese Pokémon? Quiz de siluetas",
+      "h1": "¿Quién es ese Pokémon?",
+      "description": "Adivina el Pokémon por su silueta. Elige cualquiera de las nueve generaciones, en los modos Clásico, Supervivencia y Contrarreloj."
+    },
+    "pokemon-cry-quiz": {
+      "title": "Quiz de gritos Pokémon: adivina el Pokémon por su grito",
+      "h1": "Quiz de gritos Pokémon",
+      "description": "¿Reconoces a los Pokémon por sus gritos? Escucha y adivina Pokémon de todas las generaciones."
+    },
+    "pokedex-entry-quiz": {
+      "title": "Quiz de la Pokédex: adivina el Pokémon por su entrada de la Pokédex",
+      "h1": "Detective Pokédex",
+      "description": "Lee una entrada de la Pokédex censurada y di qué Pokémon es. Y además, preguntas de categoría y habilidades."
+    },
+    "pokemon-type-quiz": {
+      "title": "Quiz de la tabla de tipos Pokémon: debilidades, inmunidades y eficacias",
+      "h1": "Maestro de tipos",
+      "description": "Pon a prueba lo que sabes de la tabla de tipos: debilidades de tipos dobles, eficacias ×4, inmunidades y tipos."
+    },
+    "pokemon-higher-or-lower": {
+      "title": "Pokémon Más o menos: juego de estadísticas base",
+      "h1": "Más o menos",
+      "description": "¿Qué Pokémon es más rápido, pesa más o tiene más estadísticas base en total? Mantén viva tu racha."
+    },
+    "pokemon-games-quiz": {
+      "title": "Quiz de juegos Pokémon: Líderes de Gimnasio, Campeones y regiones",
+      "h1": "Quiz de juegos principales",
+      "description": "¿Cuánto sabes de los RPG principales de Pokémon? Líderes de Gimnasio, Alto Mando, rivales, villanos, iniciales y regiones, de Rojo y Azul a Leyendas Pokémon: Z-A."
+    },
+    "pokemon-ability-move-item-quiz": {
+      "title": "Quiz Pokémon de habilidades, movimientos y objetos",
+      "h1": "Habilidades, movimientos y objetos",
+      "description": "¿Qué Pokémon puede tener esta habilidad? ¿De qué tipo es este movimiento? ¿Qué hace este objeto? Preguntas generadas con los datos de Pokémon Showdown."
+    },
+    "real-shiny-quiz": {
+      "title": "¿Cuál es el variocolor de verdad? Quiz de Pokémon variocolor",
+      "h1": "¿Cuál es el variocolor de verdad?",
+      "description": "Uno de los cuatro colores es el variocolor de verdad; los demás son falsos. ¿Sabrías distinguirlo? Todos los Pokémon, en Fácil o Difícil."
+    },
+    "pokemon-zoom-quiz": {
+      "title": "Quiz Pokémon de zoom: adivina el Pokémon por un primer plano",
+      "h1": "Zoom",
+      "description": "Adivina el Pokémon con un primer plano extremo de su ilustración oficial. Cada fallo aleja el zoom un paso, seis en total, y hay uno nuevo cada día."
+    },
+    "pokemon-anime-quiz": {
+      "title": "Quiz del anime Pokémon: Ash, el Team Rocket y Horizontes",
+      "h1": "Quiz del anime Pokémon",
+      "description": "Los Pokémon de Ash, sus amigos y rivales, el Team Rocket, los resultados de las ligas, las películas y Horizontes Pokémon. Todas las respuestas comprobadas en Bulbapedia."
+    },
+    "whose-team-is-this": {
+      "title": "¿De quién es este equipo? Adivina el Entrenador Pokémon por su equipo",
+      "h1": "¿De quién es este equipo?",
+      "description": "Líderes de Gimnasio, Alto Mando, Campeones, rivales y villanos de todos los juegos principales, además de Ash y sus amigos del anime: adivina el Entrenador por su equipo."
+    },
+    "pokemon-trivia-quiz": {
+      "title": "Trivial Pokémon: quiz de preguntas variadas",
+      "h1": "Trivial Pokémon",
+      "description": "Un quiz de Pokémon variado: siluetas, entradas de la Pokédex, tabla de tipos y duelos de estadísticas."
+    }
+  },
+  "gen": {
+    "title": "Quiz Pokémon de la Gen. {n}: ¿Quién es ese Pokémon? de {region}",
+    "h1": "Quiz Pokémon de la Gen. {n} ({region})",
+    "description": "¿Cuánto sabes de la Pokédex de {region}? Adivina por su silueta todos los Pokémon de la Gen. {n}."
+  },
+  "preset": {
+    "modeSelect": "Elige modo",
+    "intro": "{name} es uno de nuestros quizzes de Pokémon gratis, como ¿Quién es ese Pokémon?: {description}",
+    "stepDifficulty": "Elige un formato, la dificultad y las generaciones que quieras incluir.",
+    "stepFormat": "Elige un formato y las generaciones que quieras incluir.",
+    "step2": "Responde cada pregunta antes de que se acabe el tiempo.",
+    "step3": "Tu PokéIQ valora cada acierto según lo difícil que sea la pregunta.",
+    "faqQ": "¿Qué formatos puedo jugar?",
+    "faqA": "Clásico son 10 preguntas de 15 segundos cada una, Supervivencia no tiene fin y te da 3 vidas, y Contrarreloj te da 60 segundos para responder todas las que puedas."
+  },
+  "daily": {
+    "title": "Reto diario Pokémon",
+    "description": "Un quiz de Pokémon nuevo de 10 preguntas cada día, el mismo para todos. Mantén tu racha y compara tu PokéIQ."
+  },
+  "duel": {
+    "title": "Un duelo de quiz Pokémon",
+    "description": "Quiz Pokémon cara a cara: las mismas preguntas para los dos; acertar rápido da más puntos.",
+    "versus": "{host} vs {guest}: un duelo de {mode}",
+    "challenge": "{host} te reta a un duelo de {mode}",
+    "aTrainer": "Un Entrenador",
+    "invite": "{mode} cara a cara: las mismas {n} preguntas para los dos; acertar rápido da más puntos.",
+    "inviteLevel": "{mode} cara a cara en {level}: las mismas {n} preguntas para los dos; acertar rápido da más puntos."
+  },
+  "challenge": {
+    "title": "Reto",
+    "aTrainer": "Un Entrenador",
+    "scored": "{who} ha acertado {correct}/{total} (PokéIQ {iq}). ¿Puedes superarlo?",
+    "description": "{run} en PokéIQ. Juega exactamente las mismas preguntas y descubre quién sabe más de Pokémon.",
+    "daily": "Reto diario #{n}",
+    "run": "{mode} · {format}"
+  }
+}
