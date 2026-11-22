@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/PlainLink";
 import { useEffect, useState } from "react";
 import { ChevronRight, ExternalLink, Layers, MapPin } from "lucide-react";
 import { spriteUrl } from "@/lib/pokemon/art";

@@ -4,7 +4,7 @@ import { SourceLink } from "./SourceLink";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "@/components/ui/Link";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, Crown, Loader2, RotateCcw, Swords, WifiOff, XCircle } from "lucide-react";
 import {

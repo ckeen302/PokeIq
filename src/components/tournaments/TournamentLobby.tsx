@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "@/components/ui/Link";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Clock, Crown, Loader2, Plus, Trophy, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAccount } from "@/lib/account";

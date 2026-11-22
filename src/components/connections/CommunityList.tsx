@@ -1,5 +1,6 @@
 "use client";
 
+import Anchor from "@/components/ui/Anchor";
 import { useEffect, useState } from "react";
 import { PencilLine, Star, ThumbsDown, ThumbsUp } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
@@ -47,9 +48,9 @@ export function CommunityList() {
         <p className="hud-label max-md:hidden text-screen">PokéConnections · Community</p>
         <h1 className="font-display text-3xl font-bold uppercase tracking-tight sm:text-4xl">Trainer-made puzzles</h1>
         <p className="text-sm text-muted-foreground">Puzzles other trainers built. Play one, vote it up, or make your own and share the link.</p>
-        <a href="/pokeconnections/create" className={cn(buttonVariants({ size: "sm" }), "mt-1")} data-testid="community-create">
+        <Anchor href="/pokeconnections/create" className={cn(buttonVariants({ size: "sm" }), "mt-1")} data-testid="community-create">
           <PencilLine className="h-4 w-4" aria-hidden /> Make your own
-        </a>
+        </Anchor>
       </div>
       {/* Holds the space the list (or its empty state) will take, so the footer doesn't jump when it arrives. */}
       <div className="min-h-[15rem] space-y-8">
@@ -60,9 +61,9 @@ export function CommunityList() {
           <div className="mx-auto max-w-md space-y-3 rounded-lg border border-dashed border-foreground/20 bg-card px-5 py-8 text-center" data-testid="community-empty">
             <p className="font-display text-lg font-bold uppercase">No puzzles yet</p>
             <p className="text-sm text-muted-foreground">Be the first: pick four groups of four Pokémon, name them, and send the link to a friend. The builder warns you when a Pokémon could fit two groups.</p>
-            <a href="/pokeconnections/create" className={buttonVariants()}>
+            <Anchor href="/pokeconnections/create" className={buttonVariants()}>
               <PencilLine className="h-4 w-4" aria-hidden /> Create a puzzle
-            </a>
+            </Anchor>
           </div>
         )}
         {data?.available && (data.featured || data.top.length > 0 || data.newest.length > 0) && (

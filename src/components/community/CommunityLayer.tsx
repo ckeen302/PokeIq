@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import dynamic from "next/dynamic";
 import { Check, Loader2, Swords, Trophy, X } from "lucide-react";
 import { useAccount } from "@/lib/account";

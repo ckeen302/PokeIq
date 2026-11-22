@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { inviteMetadata } from "@/lib/seo";
 import { cache } from "react";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
+import { redirect } from "@/i18n/server";
 import { BattleRoom } from "@/components/battle/BattleRoom";
 import { peekBattle } from "@/lib/server/battle-engine/store";
 import { DUEL_CODE_RE } from "@/lib/duel-types";

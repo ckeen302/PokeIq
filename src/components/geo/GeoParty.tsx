@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "@/components/ui/Link";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { Check, Crown, Eye, Heart, Link2, Loader2, LogOut, Play, RotateCcw, Share2, Swords, UserMinus, Users, X } from "lucide-react";
 import type { DuelEmote } from "@/lib/pvp-types";

@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import { localUrl } from "@/i18n/paths";
+import Link from "@/components/ui/PlainLink";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ChevronLeft, ChevronRight, List, Play, Share2, SlidersHorizontal, Square, X } from "lucide-react";
@@ -156,7 +157,7 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
     else if (!id && was) audioRef.current?.close();
     try {
       // Each entry's own page is its share link; the address bar follows the open entry.
-      history.replaceState(history.state, "", urlFor(id, window.location.search));
+      history.replaceState(history.state, "", localUrl(urlFor(id, window.location.search)));
     } catch { /* ignore */ }
   }, []);
 

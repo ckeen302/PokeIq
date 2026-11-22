@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { inviteMetadata } from "@/lib/seo";
 import { cache } from "react";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
+import { redirect } from "@/i18n/server";
 import { PokedleDuel } from "@/components/pokedle/PokedleDuel";
 import { POKEDEX } from "@/lib/pokemon/pokedex";
 import { pvpStore } from "@/lib/server/duel-store";

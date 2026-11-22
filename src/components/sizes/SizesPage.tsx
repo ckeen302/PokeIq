@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/PlainLink";
 import { jsonLd } from "@/lib/seo";
 import { SITE_URL } from "@/lib/site";
 import { SIZE_ITEMS } from "@/lib/sizes/data";
