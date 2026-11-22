@@ -20,7 +20,7 @@ import { friendStatus, type FriendsT } from "./friend-status";
 
 // The panel is on every page but loads on its own (CommunityLayer): a page in another language fetches its words
 // with it, instead of carrying them in every page.
-const trees = new Map<Locale, Tree>();
+const trees = new Map<Locale, Record<string, Tree>>();
 const loading = new Map<Locale, Promise<void>>();
 const listeners = new Set<() => void>();
 
@@ -29,9 +29,10 @@ export function loadFriendsMessages(locale: Locale): Promise<void> {
   if (!process.env.LIVE_LOCALES || locale === "en") return Promise.resolve();
   let p = loading.get(locale);
   if (!p) {
-    p = import(`@/messages/${locale}/friends.json`)
-      .then((m) => {
-        trees.set(locale, m.default as Tree);
+    // The panel's own words, and the quiz modes' names for a challenge's mode picker.
+    p = Promise.all([import(`@/messages/${locale}/friends.json`), import(`@/messages/${locale}/quiz-modes.json`)])
+      .then(([friends, modes]) => {
+        trees.set(locale, { friends: friends.default as Tree, "quiz-modes": modes.default as Tree });
         listeners.forEach((l) => l());
       })
       .catch(() => void loading.delete(locale));
@@ -50,7 +51,7 @@ export function FriendsPanel() {
   if (locale === "en") return <Panel />;
   if (!own) return null;
   return (
-    <MessagesProvider messages={{ friends: own }}>
+    <MessagesProvider messages={own}>
       <Panel />
     </MessagesProvider>
   );

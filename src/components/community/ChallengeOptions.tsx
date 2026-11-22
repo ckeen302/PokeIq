@@ -4,11 +4,12 @@ import { useState } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { Compass, LayoutGrid, Loader2, Search, Settings2, Swords, Zap } from "lucide-react";
 import { challengeToDuel, challengeToLiveBattle } from "@/lib/friends-client";
-import { MODULE_INFO, PLAY_MODULES } from "@/lib/modes";
+import { PLAY_MODULES } from "@/lib/modes";
 import type { ModuleId } from "@/engines/types";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
 import friendsNs from "@/messages/friends";
+import modesNs from "@/messages/quiz-modes";
 
 /**
  * Challenge a friend: each choice opens the game through its usual invite
@@ -17,6 +18,7 @@ import friendsNs from "@/messages/friends";
  */
 export function ChallengeOptions({ friend, me, onDone, className }: { friend: string; me: string; onDone?: () => void; className?: string }) {
   const t = useT(friendsNs);
+  const mt = useT(modesNs);
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -69,7 +71,7 @@ export function ChallengeOptions({ friend, me, onDone, className }: { friend: st
         <select aria-label={t("options.quizMode")} value={quiz} onChange={(e) => setQuiz(e.target.value as ModuleId)} className="h-8 min-w-0 flex-1 rounded-md border bg-background px-2 text-xs">
           {PLAY_MODULES.map((m) => (
             <option key={m} value={m}>
-              {MODULE_INFO[m].title}
+              {mt(`modules.${m}.title`)}
             </option>
           ))}
         </select>

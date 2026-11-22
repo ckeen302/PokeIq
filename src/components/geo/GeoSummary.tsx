@@ -24,6 +24,7 @@ import { useT } from "@/i18n/client";
 import { formatNumber, type Translator } from "@/i18n/catalog";
 import geoNs from "@/messages/geo";
 import geoSolo from "@/messages/geo-solo";
+import badgesNs from "@/messages/badges";
 import share from "@/messages/share";
 import { localeHref } from "@/i18n/href";
 import { useGeoNames } from "@/lib/geo-i18n-client";
@@ -51,6 +52,7 @@ export function GeoSummary({
   compact?: boolean;
 }) {
   const t = useT(geoSolo);
+  const bt = useT(badgesNs);
   const g = useT(geoNs);
   const names = useGeoNames();
   const shareT = useT(share);
@@ -207,8 +209,8 @@ export function GeoSummary({
                 <span key={b.id} className="flex items-center gap-2 text-sm">
                   <BadgeMedal id={b.id} size="md" />
                   <span>
-                    <span className="block font-semibold">{t("summary.badge", { name: b.name })}</span>
-                    <span className="text-xs text-muted-foreground">{b.description}</span>
+                    <span className="block font-semibold">{t("summary.badge", { name: bt(`${b.id as keyof typeof badgesNs.en & string}.name`) })}</span>
+                    <span className="text-xs text-muted-foreground">{bt(`${b.id as keyof typeof badgesNs.en & string}.description`)}</span>
                   </span>
                 </span>
               ))}

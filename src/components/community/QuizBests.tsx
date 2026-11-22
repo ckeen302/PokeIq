@@ -1,6 +1,6 @@
 import Link from "@/components/ui/Link";
 import { ListChecks, Trophy } from "lucide-react";
-import { MODULE_INFO, PLAYABLE_FORMATS, moduleHref } from "@/lib/modes";
+import { PLAYABLE_FORMATS, moduleHref } from "@/lib/modes";
 import { neaClock } from "@/lib/name-em-all/share";
 import { neaHref } from "@/lib/name-em-all/categories";
 import type { NeaBestRow, QuizBestRow } from "@/lib/quiz-bests";
@@ -9,10 +9,20 @@ import { Card, CardContent } from "@/components/ui/card";
 import { serverT } from "@/i18n/server";
 import { formatNumber } from "@/i18n/catalog";
 import profile from "@/messages/profile";
+import modesNs from "@/messages/quiz-modes";
+import neaCats from "@/messages/nea-cats";
+import { NEA_CATEGORIES } from "@/lib/name-em-all/categories";
+import { categoryText } from "@/lib/name-em-all/localize";
 
 /** A trainer's quiz personal bests on their profile: the best score per mode and format, and Name 'em All per category. */
 export function QuizBests({ username, quiz, nea }: { username: string; quiz: QuizBestRow[]; nea: NeaBestRow[] }) {
   const t = serverT(profile);
+  const mt = serverT(modesNs);
+  const nt = serverT(neaCats);
+  const neaLabel = (row: NeaBestRow) => {
+    const cat = t.locale === "en" ? undefined : NEA_CATEGORIES.find((c) => c.id === row.category);
+    return cat ? categoryText(cat, nt).label : row.label;
+  };
   const b = (c: React.ReactNode) => <b className="tabular-nums text-foreground">{c}</b>;
   return (
     <Card id="quiz-bests" className="scroll-mt-20" data-testid="profile-quiz-bests">
@@ -52,7 +62,7 @@ export function QuizBests({ username, quiz, nea }: { username: string; quiz: Qui
                     <span role="rowheader" className="col-span-3 min-w-0 sm:col-span-1">
                       <Link href={moduleHref(row.module)} className="flex min-w-0 items-center gap-2 font-semibold hover:text-screen">
                         <ModeIcon module={row.module} className="h-4 w-4 shrink-0 text-muted-foreground" />
-                        <span className="truncate">{MODULE_INFO[row.module].title}</span>
+                        <span className="truncate">{mt(`modules.${row.module}.title`)}</span>
                       </Link>
                     </span>
                     {PLAYABLE_FORMATS.map((f) => (
@@ -73,7 +83,7 @@ export function QuizBests({ username, quiz, nea }: { username: string; quiz: Qui
                   {nea.map((row) => (
                     <li key={row.category} className="flex items-center justify-between gap-3 py-2" data-testid="profile-nea-best">
                       <Link href={neaHref(row.category)} className="min-w-0 truncate font-semibold hover:text-screen">
-                        {row.label}
+                        {neaLabel(row)}
                       </Link>
                       <span className="flex shrink-0 flex-wrap justify-end gap-x-3 text-right text-xs text-muted-foreground">
                         {row.count && <span>{t.rich("quiz.named", { named: row.count.named, total: row.total, b })}</span>}

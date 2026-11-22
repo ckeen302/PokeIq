@@ -49,6 +49,7 @@ import aboutMe from "@/messages/about-me";
 import geoRecord from "@/messages/geo-record";
 import geoNames from "@/messages/geo-names";
 import guessrRanked from "@/messages/guessr-ranked";
+import quizModes from "@/messages/quiz-modes";
 
 interface PageProps {
   params: Promise<{ name: string }>;
@@ -150,7 +151,7 @@ export default async function UserProfilePage({ params }: PageProps) {
   // A page in another language names the picked Pokémon in it (forms keep their English name) and the game choices.
   const aboutNames = en ? found.aboutNames : Object.fromEntries(Object.entries(found.about.pokemon).map(([slot, p]) => [slot, p.id <= 1025 ? speciesName(p.id, found.aboutNames[slot], t.locale) : found.aboutNames[slot]]));
   return (
-    <ClientMessages namespaces={[friends, addFriend, aboutMe, geoRecord, geoNames, guessrRanked]}>
+    <ClientMessages namespaces={[friends, addFriend, aboutMe, geoRecord, geoNames, guessrRanked, quizModes]}>
     <div className="mx-auto max-w-4xl space-y-6">
       <BackButton href="/users" label={t("back")} />
       <nav aria-label="Breadcrumb" className="hud-label flex items-center gap-1.5">

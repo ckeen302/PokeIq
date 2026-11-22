@@ -13,6 +13,8 @@ import pikadokuBoard from "@/messages/pikadoku-board";
 import pikadokuDuel from "@/messages/pikadoku-duel";
 import duelNs from "@/messages/duel";
 import share from "@/messages/share";
+import conn from "@/messages/connections";
+import badges from "@/messages/badges";
 
 interface PageProps {
   params: Promise<{ code: string }>;
@@ -41,7 +43,7 @@ export default async function PikadokuDuelPage({ params }: PageProps) {
   const local = await pikadokuLocal(getLocale());
   // Nothing about the grid goes in the page: the categories come from the duel's API once play starts.
   return (
-    <ClientMessages namespaces={[pikadokuBoard, pikadokuDuel, duelNs, share]}>
+    <ClientMessages namespaces={[pikadokuBoard, pikadokuDuel, duelNs, share, conn, badges]}>
       <PikadokuDuel key={code} code={code} local={local} />
     </ClientMessages>
   );

@@ -16,6 +16,7 @@ import { BeatMyTime, FriendsBoard } from "./social";
 import { useT } from "@/i18n/client";
 import { formatNumber, translator, type Translator } from "@/i18n/catalog";
 import conn from "@/messages/connections";
+import badgesNs from "@/messages/badges";
 
 type ConnT = Translator<typeof conn.en>;
 const english = () => translator(conn, "en", undefined);
@@ -114,6 +115,7 @@ export function ComeBackTomorrow({ next }: { next: number }) {
 /** Badges this game just earned. */
 export function NewBadges({ badges }: { badges: BadgeDef[] }) {
   const t = useT(conn);
+  const bt = useT(badgesNs);
   if (!badges.length) return null;
   return (
     <div className="space-y-2" data-testid="conn-badges">
@@ -129,8 +131,8 @@ export function NewBadges({ badges }: { badges: BadgeDef[] }) {
           >
             <BadgeMedal id={b.id} />
             <span>
-              <span className="block text-sm font-semibold">{b.name}</span>
-              <span className="block text-[11px] leading-tight text-muted-foreground">{b.description}</span>
+              <span className="block text-sm font-semibold">{bt(`${b.id as keyof typeof badgesNs.en & string}.name`)}</span>
+              <span className="block text-[11px] leading-tight text-muted-foreground">{bt(`${b.id as keyof typeof badgesNs.en & string}.description`)}</span>
             </span>
           </motion.div>
         ))}

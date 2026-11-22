@@ -29,6 +29,7 @@ import { AvatarPanel } from "@/components/avatar/AvatarPanel";
 import { useT } from "@/i18n/client";
 import { formatNumber, type Translator } from "@/i18n/catalog";
 import trainerCard from "@/messages/trainer-card";
+import badgesNs from "@/messages/badges";
 import type { CoachNames } from "./coach-text";
 
 type CardT = Translator<typeof trainerCard.en>;
@@ -58,6 +59,7 @@ const usNum = (t: CardT, n: number) => (t.locale === "en" ? n.toLocaleString("en
 /** Local-first trainer profile: PokéIQ, streaks, bests and badges. */
 export function TrainerCard({ local }: { local?: TrainerLocal } = {}) {
   const t = useT(trainerCard);
+  const bt = useT(badgesNs);
   const progress = useProgress();
   const account = useAccount();
   const [editing, setEditing] = useState(false);
@@ -211,12 +213,12 @@ export function TrainerCard({ local }: { local?: TrainerLocal } = {}) {
               <div
                 key={b.id}
                 className={cn("flex items-center gap-3 rounded-md border p-3", unlocked ? "border-warning/40 bg-warning/[0.06]" : "border-foreground/[0.06] opacity-60")}
-                title={b.description}
+                title={bt(`${b.id as keyof typeof badgesNs.en & string}.description`)}
               >
                 <BadgeMedal id={b.id} unlocked={unlocked} />
                 <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold max-sm:whitespace-normal">{b.name}</div>
-                  <div className="text-[11px] leading-tight text-muted-foreground max-[479px]:text-xs">{b.description}</div>
+                  <div className="truncate text-sm font-semibold max-sm:whitespace-normal">{bt(`${b.id as keyof typeof badgesNs.en & string}.name`)}</div>
+                  <div className="text-[11px] leading-tight text-muted-foreground max-[479px]:text-xs">{bt(`${b.id as keyof typeof badgesNs.en & string}.description`)}</div>
                 </div>
               </div>
             );
