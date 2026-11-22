@@ -1,0 +1,36 @@
+{
+  "form": {
+    "mega": "Mega-{name}",
+    "megaVariant": "Mega-{name} {variant}",
+    "gmax": "{name} Gigamax",
+    "gmaxStyle": {
+      "single": "{name} Gigamax (estilo Brusco)",
+      "rapid": "{name} Gigamax (estilo Fluido)",
+      "amped": "{name} Gigamax (forma Aguda)",
+      "lowkey": "{name} Gigamax (forma Grave)"
+    },
+    "alola": "{name} de Alola",
+    "galar": "{name} de Galar",
+    "hisui": "{name} de Hisui",
+    "paldea": "{name} de Paldea",
+    "breed": "{name} de Paldea ({breed})",
+    "breeds": {
+      "combat": "raza Combatiente",
+      "blaze": "raza Ardiente",
+      "aqua": "raza Acuática"
+    },
+    "darmanitan": {
+      "standard": "{name} de Galar (modo Normal)",
+      "zen": "{name} de Galar (modo Daruma)"
+    },
+    "eternamax": "{name} Dinamax Infinito"
+  },
+  "refs": {
+    "phone": "Smartphone",
+    "human": "Persona adulta",
+    "car": "Coche",
+    "bus": "Autobús escolar",
+    "house": "Casa de dos plantas",
+    "building": "Edificio de 10 plantas"
+  }
+}

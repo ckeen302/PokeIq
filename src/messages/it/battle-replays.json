@@ -1,0 +1,50 @@
+{
+  "lists": {
+    "loadFailed": "Impossibile caricare i replay.",
+    "loading": "Caricamento dei replay",
+    "unavailable": "I replay non sono ancora disponibili su questo server.",
+    "mine": "I miei replay",
+    "mineEmpty": "Ancora nessun replay. Le lotte classificate e pubbliche salvano il loro; dopo tutte le altre, premi Salva replay.",
+    "recent": "Replay recenti",
+    "filter": "Filtra per formato",
+    "all": "Tutti",
+    "recentEmpty": "Ancora nessun replay pubblico in questo formato."
+  },
+  "import": {
+    "log": "Registro della lotta",
+    "watch": "Guarda",
+    "open": "Apri un file di replay",
+    "tooBig": "Questo file è troppo grande per essere il replay di una lotta.",
+    "hint": "Replay salvati da Showdown (.html) e registri di lotta (.log). Letti sul tuo dispositivo, mai caricati.",
+    "errors": {
+      "empty": "Incolla il registro di una lotta o scegli un file di replay.",
+      "notLog": "Non sembra il registro di una lotta di Showdown: nessun giocatore o Pokémon trovato.",
+      "gameType": "Qui si possono guardare solo lotte singole e doppie."
+    }
+  },
+  "viewer": {
+    "loading": "Caricamento del replay",
+    "back": "Indietro di un turno",
+    "turn": "Turno",
+    "pause": "Pausa",
+    "replay": "Rivedi",
+    "play": "Riproduci",
+    "forward": "Avanti di un turno",
+    "nextKoTitle": "Vai al prossimo turno in cui un Pokémon va KO",
+    "nextKo": "Prossimo KO",
+    "end": "Fine",
+    "start": "Inizio",
+    "leads": "Iniziali",
+    "turnN": "Turno {n}",
+    "seek": "Vai a un turno",
+    "downloadTitle": "Il file di replay di Showdown: si apre in qualsiasi browser e si riproduce nel lettore di replay di Showdown",
+    "download": "Scarica il replay",
+    "logTitle": "Il registro grezzo della lotta (il protocollo di Showdown), una riga per evento",
+    "log": "Registro",
+    "instant": "<b>Replay istantaneo</b> della lotta finora. {timed, select, yes {Intanto la lotta va avanti: il tuo timer del turno continua a scorrere.} other {La lotta ti aspetta.}}",
+    "backToBattle": "Torna alla lotta",
+    "another": "Guardane un altro",
+    "battle": "Lotta",
+    "more": "Altri replay"
+  }
+}

@@ -1,0 +1,193 @@
+{
+  "presets": {
+    "fastest-eight": {
+      "label": "Les 8 plus rapides",
+      "hook": "Les Pokémon les plus rapides sur 100 m ⚡"
+    },
+    "slowest-eight": {
+      "label": "Les 8 plus lents",
+      "hook": "Les Pokémon les plus lents sur 100 m 🐌"
+    },
+    "shuckle-vs-regieleki": {
+      "label": "Caratroc vs Regieleki",
+      "hook": "Caratroc vs Regieleki 😳"
+    },
+    "gen-1-final": {
+      "label": "Finale 1re gén.",
+      "hook": "Le plus rapide de la 1re gén. ? Finale du 100 m 🏁"
+    },
+    "starters": {
+      "label": "Starters",
+      "hook": "Quel starter est le plus rapide ? 🔥💧🌿"
+    },
+    "legendaries": {
+      "label": "Légendaires",
+      "hook": "Les Légendaires sur 200 m 👑"
+    },
+    "eeveelutions": {
+      "label": "Évolitions",
+      "hook": "Quelle Évolition est la plus rapide ? ✨"
+    },
+    "pseudo-legendaries": {
+      "label": "Pseudo-légendaires",
+      "hook": "Les pseudo-légendaires sur un tour complet 🐉"
+    },
+    "heavyweights": {
+      "label": "Poids lourds",
+      "hook": "Les Pokémon les plus lourds sur 100 m 🏋️"
+    },
+    "every-pokemon": {
+      "label": "Tous les Pokémon",
+      "hook": "Tous les Pokémon courent. Un seul gagnant 🏆"
+    }
+  },
+  "field": {
+    "heat": "La série de {name}",
+    "heatHook": "{name} peut-il gagner sa série ? 🏁",
+    "sep": " vs ",
+    "vsHook": "{names} 😳",
+    "final": "{label} : la finale"
+  },
+  "round": {
+    "final": "Finale",
+    "semis": "Demi-finales",
+    "quarters": "Quarts de finale",
+    "round2": "2e tour",
+    "heats": "Séries"
+  },
+  "exp": {
+    "watch3d": "La voir en 3D",
+    "scene": "Une course de Pokémon en 3D. Fais glisser pour tourner la caméra, fais défiler ou pince pour zoomer.",
+    "building": "Construction du stade PokéIQ…",
+    "warming": "Échauffement… {done}/{total}",
+    "back": "Retour au Labo 3D",
+    "lab": "Labo 3D",
+    "info": "Comment marche la course",
+    "soundOn": "Activer le son",
+    "soundOff": "Couper le son",
+    "resultsList": "Liste des résultats",
+    "list": "Liste",
+    "camera": "Caméra",
+    "cam": {
+      "broadcast": "TV",
+      "headon": "De face",
+      "overhead": "Vue du ciel",
+      "free": "Libre"
+    },
+    "zoomIn": "Zoomer",
+    "zoomOut": "Dézoomer",
+    "close": "Fermer",
+    "hideResults": "Masquer les résultats",
+    "results": "Résultats · {d} m",
+    "photoAlt": "Photo-finish : la ligne d’arrivée scannée dans le temps",
+    "photoCaption": "Photo-finish : la ligne scannée dans le temps, de gauche à droite.",
+    "lane": "Couloir",
+    "pokemon": "Pokémon",
+    "time": "Temps",
+    "gap": "Écart",
+    "spe": "Vit.",
+    "fullLineup": "Voir avec la présentation complète",
+    "toStart": "Au départ",
+    "start": "Départ",
+    "watchAgain": "Revoir",
+    "again": "Revoir",
+    "restart": "Recommencer",
+    "newRace": "Nouvelle course",
+    "bracket": "Tableau",
+    "resultsButton": "Résultats",
+    "share": "Partager",
+    "video": "Vidéo",
+    "makeVideo": "Créer une vidéo",
+    "copied": "Lien copié",
+    "shareTitle": "Course PokéIQ",
+    "shareText": "{title} : {name} gagne en {time}",
+    "custom": "Course perso",
+    "raceLabel": "{d} m · {label}"
+  },
+  "gfx": {
+    "lane": "COULOIR",
+    "replay": "RALENTI",
+    "speedNote": "VITESSE = VITESSE DE BASE",
+    "marks": "À VOS MARQUES",
+    "set": "PRÊTS",
+    "photo": "PHOTO-FINISH…",
+    "crane": "{d} M · STADE POKÉIQ",
+    "meanwhile": "Pendant ce temps, {name}…",
+    "leads": "{name} en tête",
+    "cardWins": "{name} gagne",
+    "cardSub": "{time} s · {d} m",
+    "baseSpeed": "VITESSE DE BASE",
+    "intro": "{motion} · {v} KM/H MAX",
+    "motion": {
+      "run": "Court",
+      "gallop": "Galope",
+      "scuttle": "Trottine",
+      "fly": "Vole",
+      "hover": "Lévite",
+      "slither": "Ondule",
+      "flop": "Sautille",
+      "roll": "Roule",
+      "bounce": "Rebondit",
+      "swim": "Nage"
+    }
+  },
+  "picker": {
+    "close": "Fermer",
+    "title": "Choisis une course",
+    "intro": "De deux à huit Pokémon ou formes, sur 100, 200 ou 400 m.",
+    "remove": "Retirer {name}",
+    "addMore": "Ajoute-en {n}",
+    "addUpTo": "Jusqu’à 8",
+    "placeholder": "Ajoute un Pokémon…",
+    "searchAria": "Chercher un Pokémon à ajouter",
+    "spe": "VIT",
+    "distance": "Distance",
+    "metres": "{d} m",
+    "run": "Lancer la course",
+    "orPreset": "Ou une course toute prête",
+    "knockout": "Tournoi"
+  },
+  "bracket": {
+    "close": "Fermer",
+    "title": "Tous les Pokémon : le tableau",
+    "champion": "Champion : <c>{name}</c>. Q = qualifié à la place, q = meilleur perdant.",
+    "rounds": "Tours",
+    "placeholder": "Trouve le parcours d’un Pokémon…",
+    "searchAria": "Trouver un Pokémon dans le tableau",
+    "out": " éliminé",
+    "heat": "{round} · série {n}",
+    "watchFinal": "Voir la finale",
+    "redraw": "Nouveau tirage"
+  },
+  "video": {
+    "close": "Fermer",
+    "title": "Créer une vidéo",
+    "intro": "Une vidéo verticale de {w} × {h} de cette course pour TikTok, Reels et Shorts, avec le son du stade.",
+    "download": "Télécharger",
+    "share": "Partager",
+    "seconds": "{s} s",
+    "another": "En créer une autre",
+    "about": "{d} m · environ {s} s · {format}",
+    "rendering": "Rendu de la vidéo",
+    "cancel": "Annuler",
+    "record": "Enregistrer",
+    "noVideo": "Ce navigateur ne peut pas enregistrer de vidéo. Essaie Chrome, Edge ou Safari.",
+    "realtime": "Ce navigateur enregistre en temps réel. Chrome, Edge et Safari créent un MP4 image par image.",
+    "frames": "Rendu image par image sur cet appareil, pour une vidéo fluide. Garde cet onglet ouvert pendant l’enregistrement.",
+    "failed": "Un problème est survenu",
+    "stage": {
+      "scene": "Mise en place de la scène",
+      "warming": "Échauffement",
+      "sound": "Mixage du son du stade",
+      "rendering": "Rendu",
+      "packing": "Assemblage du MP4",
+      "recording": "Enregistrement"
+    },
+    "hookLine": "{d} M · D’APRÈS LEURS STATS",
+    "endTitle": "Course PokéIQ",
+    "endSub": "{d} m · résultats",
+    "endCta": "Fais courir n’importe quel Pokémon",
+    "results": "Résultats · {d} m",
+    "sec": " s"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "stat": {
+    "hp": "KP",
+    "atk": "Angriff",
+    "def": "Verteidigung",
+    "spa": "Spezialangriff",
+    "spd": "Spezialverteidigung",
+    "spe": "Initiative"
+  },
+  "short": {
+    "hp": "KP",
+    "atk": "Angr",
+    "def": "Vert",
+    "spa": "SAng",
+    "spd": "SVer",
+    "spe": "Init",
+    "spc": "Spez"
+  }
+}

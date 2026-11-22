@@ -15,6 +15,7 @@ import stats from "@/messages/connections-stats";
 import community from "@/messages/connections-community";
 import share from "@/messages/share";
 import howto from "@/messages/howto";
+import badges from "@/messages/badges";
 
 // A trainer's puzzle: playable by its link, not for search engines.
 export function generateMetadata(): Metadata {
@@ -35,7 +36,7 @@ export default async function CommunityPuzzlePage({ params }: { params: Promise<
   return (
     <div className="space-y-6">
       <BackButton href="/pokeconnections/community" label={t("backCommunity")} />
-      <ClientMessages namespaces={[conn, board, stats, community, share, howto]}>
+      <ClientMessages namespaces={[conn, board, stats, community, share, howto, badges]}>
         <ConnNamesProvider names={connTileNames(getLocale())}>
           <CommunityBar id={id} />
           <Connections customId={id} />

@@ -1,0 +1,220 @@
+{
+  "describe": "{name}（{genus}）。{types}タイプ、第{gen}世代（{region}地方）のポケモンです。",
+  "describeShort": "{name}。{types}タイプ、第{gen}世代（{region}地方）のポケモンです。",
+  "stat": {
+    "bst": "種族値の合計"
+  },
+  "whosThat": {
+    "prompt": "このポケモンはだれ？",
+    "zoomed": "このポケモンはだれ？（ズームイン！）"
+  },
+  "cry": {
+    "prompt": "この鳴き声はだれ？",
+    "hintEasy": "ヒント：第{gen}世代の{types}タイプです。",
+    "hintMedium": "ヒント：第{gen}世代で初登場しました。"
+  },
+  "zoom": {
+    "prompt": "ズームで当てよう：このポケモンはだれ？"
+  },
+  "shiny": {
+    "prompt": "本物の色違いの{name}はどれ？",
+    "hard": "今回は偽物がそっくりです。細かいところまでよく見てください。",
+    "explanation": "これが{name}の本物の色違いです。"
+  },
+  "dex": {
+    "entryPrompt": "この図鑑説明はどのポケモン？",
+    "entry": "「{entry}」",
+    "entryGenus": "{entry}（{genus}）",
+    "genusPrompt": "「{genus}」と呼ばれるポケモンはどれ？",
+    "abilityPrompt": "{name}の特性はどれ？",
+    "abilityExplanation": "{name}の特性：{abilities}。",
+    "hidden": "{ability}（隠れ特性）"
+  },
+  "types": {
+    "typingPrompt": "{name}のタイプは？",
+    "typingExplanation": "{name}は{types}タイプです。",
+    "defender": "{name}（{types}）",
+    "effPrompt": "{type}タイプの技は{defender}にどれくらい効く？",
+    "effExplanation": "{calc}",
+    "immune": "0×（効果なし）",
+    "fourXPrompt": "{defender}に4倍で効くタイプは？",
+    "fourXExplanation": "{types}は{weak}の技を4倍で受けます。",
+    "immunePrompt": "{defender}に効果がない技のタイプは？",
+    "immuneExplanation": "{types}には{immune}の技は効果がありません。"
+  },
+  "hl": {
+    "higher": {
+      "hp": "HPの種族値が高いのはどっち？",
+      "atk": "こうげきの種族値が高いのはどっち？",
+      "def": "ぼうぎょの種族値が高いのはどっち？",
+      "spa": "とくこうの種族値が高いのはどっち？",
+      "spd": "とくぼうの種族値が高いのはどっち？",
+      "spe": "すばやさの種族値が高いのはどっち？",
+      "bst": "種族値の合計が高いのはどっち？",
+      "height": "背が高いのはどっち？",
+      "weight": "重いのはどっち？"
+    },
+    "lower": {
+      "hp": "HPの種族値が低いのはどっち？",
+      "atk": "こうげきの種族値が低いのはどっち？",
+      "def": "ぼうぎょの種族値が低いのはどっち？",
+      "spa": "とくこうの種族値が低いのはどっち？",
+      "spd": "とくぼうの種族値が低いのはどっち？",
+      "spe": "すばやさの種族値が低いのはどっち？",
+      "bst": "種族値の合計が低いのはどっち？",
+      "height": "背が低いのはどっち？",
+      "weight": "軽いのはどっち？"
+    },
+    "metres": "{n} m",
+    "kilograms": "{n} kg",
+    "bstValue": "合計{n}",
+    "statValue": "{stat} {n}",
+    "explanation": "{a}：{va}・{b}：{vb}"
+  },
+  "comp": {
+    "holderPrompt": "特性「{ability}」を持つことがあるポケモンはどれ？",
+    "holderExplanation": "{name}は特性「{ability}」を持つことがあります。",
+    "moveTypePrompt": "技「{move}」のタイプは？",
+    "moveTypeExplanation": "「{move}」は{type}タイプの技です。",
+    "current": "最新作での情報です",
+    "categoryPrompt": "技「{move}」の分類は{physical}・{special}・{status}のどれ？",
+    "categoryExplanation": "「{move}」は{category}技です。",
+    "category": {
+      "physical": "ぶつり",
+      "special": "とくしゅ",
+      "status": "へんか"
+    },
+    "itemPrompt": "道具「{name}」の効果は？",
+    "abilityPrompt": "特性「{name}」の効果は？",
+    "descExplanation": "{name}：{desc}"
+  },
+  "trivia": {
+    "gen": "第{n}世代",
+    "gym": {
+      "leaderPrompt": "{game}で、{place}のジムリーダーはだれ？",
+      "placePrompt": "{game}で、{leader}のジムがあるのはどこ？",
+      "explanation": "{game}では、{leader}が{place}のジムリーダーです。",
+      "typePrompt": "{game}で、ジムリーダーの{leader}が得意とするタイプは？",
+      "typeExplanation": "{game}の{leader}は{type}タイプの使い手です。"
+    },
+    "e4": {
+      "typePrompt": "{game}で、四天王の{member}が得意とするタイプは？",
+      "typeExplanation": "四天王の{member}は{type}タイプの使い手です。",
+      "memberPrompt": "{game}で、{type}タイプの使い手の四天王はだれ？",
+      "memberExplanation": "{member}は{type}タイプの使い手の四天王です。"
+    },
+    "champion": {
+      "prompt": "{game}のポケモンリーグのチャンピオンはだれ？",
+      "explanation": "{game}のチャンピオンは{champion}です。"
+    },
+    "professor": {
+      "prompt": "{game}の地方のポケモン博士はだれ？",
+      "explanation": "{game}のポケモン博士は{professor}です。"
+    },
+    "starter": {
+      "prompt": "{game}で、最初のパートナーの{type}タイプのポケモンはどれ？",
+      "explanation": "{game}では、{grass}、{fire}、{water}から選べます。"
+    },
+    "boxArt": {
+      "prompt": "{game}のパッケージに描かれているポケモンは？",
+      "explanation": "{pokemon}は{game}のパッケージを飾るポケモンです。"
+    },
+    "exclusive": {
+      "prompt": "{other}には出なくて、{side}だけに出るポケモンはどれ？",
+      "explanation": "{pokemon}は{side}だけに出るポケモンです。"
+    },
+    "villain": {
+      "teamPrompt": "{game}で、{leader}が率いる組織は？",
+      "leaderPrompt": "{game}で、{team}を率いるのはだれ？",
+      "explanation": "{team}を率いるのは{leader}です。"
+    },
+    "teamStar": {
+      "prompt": "{game}で、{team}のボスの{boss}が使うタイプは？",
+      "explanation": "{boss}は{team}の{type}タイプのチームを率いています。"
+    },
+    "mechanic": {
+      "genPrompt": "{name}が初めて登場した世代は？",
+      "genExplanation": "{name}は{games}（{gen}）で初めて登場しました。",
+      "gamesPrompt": "{name}が初めて登場したゲームは？",
+      "gamesExplanation": "{name}は{games}で初めて登場しました。",
+      "abilities": "特性",
+      "natures": "せいかく",
+      "doubles": "ダブルバトル",
+      "contests": "ポケモンコンテスト",
+      "heldItems": "持ち物",
+      "breeding": "育て屋とタマゴ",
+      "shiny": "色違いのポケモン",
+      "steelDark": "はがねタイプとあくタイプ",
+      "split": "技ごとの物理・特殊の分類",
+      "gts": "GTS（グローバルトレードステーション）",
+      "hiddenAbilities": "隠れ特性",
+      "triples": "トリプルバトル",
+      "fairy": "フェアリータイプ",
+      "mega": "メガシンカ",
+      "zMoves": "Zワザ",
+      "dynamax": "ダイマックス",
+      "tera": "テラスタル"
+    },
+    "games": {
+      "regionPrompt": "{title}の舞台になっている地方は？",
+      "regionExplanation": "{title}の舞台は{region}地方です。",
+      "genPrompt": "{title}は第何世代のゲーム？",
+      "genExplanation": "{title}は{gen}のゲームです。",
+      "firstPrompt": "この中でいちばん早く発売されたゲームは？",
+      "firstExplanation": "{title}は{gen}のゲームで、ほかのゲームより前に発売されました。",
+      "basisPrompt": "{region}地方のモデルになった現実の場所は？",
+      "basisExplanation": "{region}地方のモデルは{basis}です。",
+      "placePrompt": "{place}があるのはどの地方？",
+      "placeExplanation": "{place}は{region}地方にあります。"
+    },
+    "basis": {
+      "kyushu": "九州",
+      "hokkaido": "北海道",
+      "newYork": "ニューヨーク",
+      "france": "フランス",
+      "hawaii": "ハワイ",
+      "britain": "イギリス（グレートブリテン島）",
+      "iberia": "イベリア半島"
+    },
+    "league": {
+      "finalPrompt": "{league}の決勝で{ash}が勝った相手はだれ？",
+      "outPrompt": "{league}で{ash}を破ったのはだれ？",
+      "wonExplanation": "{ash}は{opponent}に勝って{league}で優勝しました。",
+      "outExplanation": "{opponent}が{ash}を破りました（{result}）。",
+      "resultPrompt": "{league}での{ash}の成績は？",
+      "resultExplanation": "{league}での{ash}の成績：{result}。"
+    },
+    "result": {
+      "top16": "ベスト16",
+      "top8": "ベスト8",
+      "top4": "ベスト4",
+      "runnerUp": "準優勝",
+      "winner": "優勝"
+    },
+    "hm": "ひでんマシン{n} {move}"
+  },
+  "team": {
+    "prompt": "これはだれのチーム？",
+    "form": {
+      "alolan": "{name}（アローラのすがた）",
+      "galarian": "{name}（ガラルのすがた）",
+      "midnight": "{name}（まよなかのすがた）",
+      "lowKey": "{name}（ローなすがた）"
+    },
+    "role": {
+      "gymLeader": "ジムリーダー",
+      "eliteFour": "四天王",
+      "champion": "チャンピオン",
+      "rival": "ライバル戦",
+      "boss": "ボス戦",
+      "battle": "バトル",
+      "kahuna": "大試練"
+    },
+    "rematch": "{role}（再戦）",
+    "gameRole": "{game}・{role}{hasPlace, select, yes {（{place}）} other {}}",
+    "anime": "アニメ",
+    "animeIn": "アニメ（{region}地方）",
+    "sep": "・",
+    "chose": "最初のパートナーに{name}を選んだ場合"
+  }
+}

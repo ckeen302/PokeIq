@@ -5,8 +5,14 @@ import { SIZE_BY_KEY, SIZE_ITEMS } from "@/lib/sizes/data";
 import { DEFAULT_PRESET, PRESET_BY_ID } from "@/lib/sizes/presets";
 import { itemPath, presetPath } from "@/lib/sizes/deeplink";
 import { listOrder } from "@/lib/sizes/list";
-import { HEIGHT_ORDER, isDefaultOrder, orderInfo, orderTitle, withOrder, type Order } from "@/lib/sizes/order";
-import { formatFeet, formatMetres, measureOf, type SizeItem } from "@/lib/sizes/types";
+import { HEIGHT_ORDER, isDefaultOrder, withOrder, type Order } from "@/lib/sizes/order";
+import { formatFeet, formatMetres, type SizeItem } from "@/lib/sizes/types";
+import { formatNumber } from "@/i18n/catalog";
+import { serverT } from "@/i18n/server";
+import sizesPages from "@/messages/sizes-pages";
+import sizesLines from "@/messages/sizes-lines";
+import { pageItem } from "./local";
+import { lowerIn, orderLabel, presetTitle, sizeText } from "./words";
 
 /**
  * The pages of /pokedex/sizes, shared by their plain routes and the routes
@@ -22,40 +28,44 @@ export function resolveSlug(slug: string): { preset?: (typeof DEFAULT_PRESET); i
   return { preset, item: item && item.kind !== "ref" ? item : undefined };
 }
 
-const DEFAULT_DESCRIPTION =
-  "Every Pokémon side by side at its real size, from 0.1 m to Eternamax Eternatus at 100 m, in a 3D Lumiose City. Play the glide, compare any Pokémon, and make your own size comparison video for TikTok, Reels and Shorts.";
-
 /** The main page's metadata in an order. */
 export function mainMetadata(order: Order = HEIGHT_ORDER): Metadata {
+  const t = serverT(sizesPages);
+  const tl = serverT(sizesLines);
   if (isDefaultOrder(order)) {
-    return pageMetadata({ title: "Pokémon size comparison: every Pokémon to scale in 3D", description: DEFAULT_DESCRIPTION, path: presetPath(DEFAULT_PRESET.id), socialTitle: "Every Pokémon to scale, in 3D · PokéIQ" });
+    return pageMetadata({ title: t("meta.mainTitle"), description: t("meta.mainDescription"), path: presetPath(DEFAULT_PRESET.id), socialTitle: t("meta.mainSocial") });
   }
-  const title = orderTitle(DEFAULT_PRESET.title, order);
+  const title = presetTitle(DEFAULT_PRESET.id, order, tl);
   return pageMetadata({
-    title: `${title} (every Pokémon to scale in 3D)`,
-    description: `Every Pokémon lined up by ${orderInfo(order).label.toLowerCase()}, each at its real size, in a 3D Lumiose City. Play the glide, compare any Pokémon, or make a video.`,
+    title: t("meta.orderTitle", { title }),
+    description: t("meta.orderDescription", { label: lowerIn(orderLabel(order.by, tl), tl) }),
     path: withOrder(presetPath(DEFAULT_PRESET.id), order),
-    socialTitle: `${title} · PokéIQ`,
+    socialTitle: t("meta.social", { title }),
   });
 }
 
 /** A preset's or a Pokémon's page metadata in an order. */
 export function slugMetadata(slug: string, order: Order = HEIGHT_ORDER): Metadata {
-  const { preset, item } = resolveSlug(slug);
+  const { preset, item: itemEn } = resolveSlug(slug);
+  const t = serverT(sizesPages);
+  const tl = serverT(sizesLines);
   if (preset) {
     // A lineup with nothing to show in the order (Gigantamax by weight) stands by height.
     const o = listOrder(SIZE_ITEMS, { preset: preset.id }, order);
-    const title = orderTitle(preset.title, o);
-    return pageMetadata({ title: `${title} (3D size comparison)`, description: `${preset.blurb} See them to scale in 3D, compare any two, or make a size comparison video.`, path: withOrder(presetPath(preset.id), o) });
+    const title = presetTitle(preset.id, o, tl);
+    return pageMetadata({ title: t("meta.presetTitle", { title }), description: t("meta.presetDescription", { blurb: t(`blurbs.${preset.id as keyof typeof sizesPages.en.blurbs}`) }), path: withOrder(presetPath(preset.id), o) });
   }
+  const item = pageItem(itemEn);
   if (item) {
-    const size = `${formatMetres(item.m)}${item.min ? "+" : ""} (${formatFeet(item.m)}${item.min ? "+" : ""})`;
+    const en = t.locale === "en";
+    const size = en ? `${formatMetres(item.m)}${item.min ? "+" : ""} (${formatFeet(item.m)}${item.min ? "+" : ""})` : sizeText(item, tl);
     const o = listOrder(SIZE_ITEMS, { preset: DEFAULT_PRESET.id, focus: item.key }, order);
+    const weighs = item.kg != null ? t("meta.itemWeighs", { kg: en ? item.kg.toLocaleString("en-US") : formatNumber(item.kg, t.locale) }) : "";
     return pageMetadata({
-      title: `How big is ${item.name}? ${size} ${measureOf(item).toLowerCase()}`,
-      description: `${item.name} is ${size} ${item.length ? "long" : "tall"}${item.kg != null ? ` and weighs ${item.kg.toLocaleString("en-US")} kg` : ""}. See it to scale next to every other Pokémon and an adult human in 3D.`,
+      title: t("meta.itemTitle", { name: item.name, size, measure: t(item.length ? "focus.length" : "focus.height") }),
+      description: t(item.length ? "meta.itemLong" : "meta.itemTall", { name: item.name, size, weighs }),
       path: withOrder(itemPath(item.key), o),
-      socialTitle: `How big is ${item.name}? · PokéIQ`,
+      socialTitle: t("meta.itemSocial", { name: item.name }),
     });
   }
   return {};

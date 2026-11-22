@@ -1,0 +1,444 @@
+{
+  "card": {
+    "footer": "Gratuit · sans inscription →",
+    "whereIsThis": "C'est où ?",
+    "battle": {
+      "whatWill": "Que doit faire {name} ?"
+    },
+    "odds": {
+      "simulated": "10 000 combats simulés",
+      "sideA": "Victoire du camp A",
+      "ci": "± 1,0 % (IC 95 %)"
+    },
+    "vs": "vs",
+    "you": "Toi ?"
+  },
+  "home": {
+    "eyebrow": "Jeux Pokémon gratuits",
+    "title1": "Trouve le lieu.",
+    "title2": "Nomme le Pokémon.",
+    "title3": "Gagne le combat.",
+    "subtitle": "Sans inscription. Joue dans ton navigateur.",
+    "chips": {
+      "battles": "Combats",
+      "battleLab": "Labo de combat",
+      "quizzes": "Quiz"
+    }
+  },
+  "daily": {
+    "eyebrow": "Défi du jour · chaque jour",
+    "title1": "Le test",
+    "title2": "Pokémon",
+    "title3": "du jour",
+    "subtitle": "Dix questions variées, les mêmes pour tous les Dresseurs. Un seul essai : garde ta série.",
+    "footer": "Joue au défi du jour →"
+  },
+  "iqTest": {
+    "eyebrow": "Le test PokéIQ",
+    "title1": "Quel est ton",
+    "title2": "PokéIQ ?",
+    "subtitle": "Cinq épreuves chronométrées : raisonnement, mémoire, rapidité, vision dans l'espace et culture Pokémon. Environ 20 minutes.",
+    "yours": "Ton PokéIQ",
+    "scored": "comparé aux autres Dresseurs",
+    "footer": "Passe le test, c'est gratuit →"
+  },
+  "pokedle": {
+    "eyebrow": "Pokédle · un Pokémon par jour",
+    "title1": "Trouve le",
+    "title2": "Pokémon",
+    "title3": "mystère",
+    "subtitle": "Huit essais. Chacun donne des indices de type, de génération, de taille et de couleur.",
+    "footer": "Joue à celui du jour ou défie quelqu'un en direct →"
+  },
+  "pikadoku": {
+    "eyebrow": "Pikadoku · une grille par jour",
+    "title1": "Sudoku",
+    "title2": "Pokémon",
+    "subtitle": "Remplis la grille 3×3 : un Pokémon par case, qui correspond à sa ligne et à sa colonne. Plus il est rare, plus ton score est bas.",
+    "footer": "Joue la grille Facile, Normal ou Expert du jour →"
+  },
+  "connections": {
+    "eyebrow": "PokéConnections · un puzzle par jour",
+    "title1": "Trouve",
+    "title2": "les quatre",
+    "title3": "groupes",
+    "subtitle": "Seize Pokémon, quatre liens cachés, quatre erreurs permises.",
+    "footer": "Joue à celui du jour, avec un « Pourquoi ? » pour chaque réponse →"
+  },
+  "guessr": {
+    "eyebrow": "PokéGuessr · une partie par jour",
+    "title1": "Où se trouve",
+    "title2": "cet endroit ?",
+    "subtitle": "Le GeoGuessr Pokémon : de vraies captures des jeux, dans toutes les régions, de Kanto à Paldea. Une nouvelle partie chaque jour.",
+    "fallbackSubtitle": "Le GeoGuessr Pokémon : de vraies captures des jeux, de Kanto à Paldea.",
+    "footer": "Place ton repère · jusqu'à 25 000 points →",
+    "points": "{n} pts",
+    "hp": "{n} PV",
+    "challenge": {
+      "eyebrow": "Défi PokéGuessr · {map}",
+      "detail": "{who} a marqué {score} sur {max} en {n, plural, one {{n} lieu} other {{n} lieux}}. Tu auras les mêmes.",
+      "play": "Relève le défi",
+      "fallbackEyebrow": "Défi PokéGuessr",
+      "fallbackFooter": "Les mêmes lieux · tu peux faire mieux ? →"
+    },
+    "party": {
+      "eyebrow": "Partie PokéGuessr",
+      "title1": "Tu es invité",
+      "title2": "à une partie",
+      "subtitle": "Des amis sur les mêmes lieux, tous en même temps. Sans inscription : ouvre le lien, choisis un nom et rejoins-les.",
+      "footer": "Battle Royale ou duels en équipe · touche pour rejoindre →"
+    }
+  },
+  "quiz": {
+    "eyebrow": "Quiz Pokémon",
+    "title1": "Connais-tu",
+    "title2": "vraiment",
+    "title3": "les Pokémon ?",
+    "subtitle": "Silhouettes, cris, entrées du Pokédex, types, les jeux et l'anime.",
+    "chips": {
+      "classic": "Classique",
+      "survival": "Survie",
+      "blitz": "Blitz",
+      "all": "Tous les Pokémon"
+    }
+  },
+  "quizPreset": {
+    "eyebrow": "Quiz · {mode}",
+    "footer": "Classique · Survie · Blitz →"
+  },
+  "quizChallenge": {
+    "eyebrow": "Quiz Pokémon",
+    "title1": "Le quiz",
+    "title2": "Pokémon ultime",
+    "subtitle": "Silhouettes, cris, entrées du Pokédex et types. Sans inscription."
+  },
+  "quizSamples": {
+    "label": "Q 03/10",
+    "whos-that": {
+      "question": "Quel est ce Pokémon ?"
+    },
+    "cry": {
+      "question": "À qui est ce cri ?"
+    },
+    "dex": {
+      "question": "À qui est cette entrée ?"
+    },
+    "types": {
+      "question": "Glace contre Dragon/Vol ?"
+    },
+    "higher-lower": {
+      "question": "Qui est le plus rapide ?"
+    },
+    "games": {
+      "question": "Nouveau en 3G ?",
+      "a0": "Talents",
+      "a1": "Capacités Z",
+      "a2": "Dynamax",
+      "a3": "Téracristal"
+    },
+    "anime": {
+      "question": "L'amie de Sacha à Kalos ?",
+      "a0": "Aurore",
+      "a1": "Serena",
+      "a2": "Flora",
+      "a3": "Iris"
+    },
+    "competitive": {
+      "question": "Type de Pouvoir Lunaire ?",
+      "a0": "Fée",
+      "a1": "Psy",
+      "a2": "Ténèbres",
+      "a3": "Spectre"
+    },
+    "shiny": {
+      "question": "Lequel est le vrai chromatique ?"
+    },
+    "zoom-reveal": {
+      "question": "Qui est-ce, de près ?"
+    },
+    "whose-team": {
+      "question": "À qui est cette équipe ?",
+      "a0": "Cynthia",
+      "a1": "Pierre Rochard",
+      "a2": "Peter",
+      "a3": "Dianthéa"
+    },
+    "mixed": {
+      "question": "Un peu de tout",
+      "a0": "Silhouettes",
+      "a1": "Cris",
+      "a2": "Pokédex",
+      "a3": "Table des types"
+    }
+  },
+  "challenge": {
+    "title1": "Tu as été",
+    "title2": "défié",
+    "subtitle": "Un Dresseur t'a envoyé une invitation. Sans inscription : ouvre-la, choisis un nom et joue.",
+    "host": "Un Dresseur",
+    "pokedle": {
+      "eyebrow": "Duel Pokédle",
+      "footer": "Le même Pokémon mystère · trois manches · touche pour jouer →"
+    },
+    "quiz": {
+      "eyebrow": "Duel de quiz",
+      "footer": "Les mêmes questions · juste et rapide l'emporte · touche pour jouer →"
+    },
+    "geo": {
+      "eyebrow": "Duel PokéGuessr",
+      "footer": "Les mêmes lieux · le repère le plus proche gagne · touche pour jouer →"
+    },
+    "battle": {
+      "eyebrow": "Combat en direct",
+      "footer": "Règles de Pokémon Showdown · en direct · touche pour combattre →"
+    },
+    "connections": {
+      "eyebrow": "Duel PokéConnections",
+      "footer": "Les mêmes 16 Pokémon · trouve les 4 groupes en premier · touche pour jouer →"
+    },
+    "connections-party": {
+      "eyebrow": "Partie PokéConnections",
+      "footer": "Les mêmes 16 Pokémon pour tous · le meilleur temps gagne · touche pour rejoindre →"
+    },
+    "pikadoku": {
+      "eyebrow": "Morpion Pikadoku",
+      "footer": "Prends une case avec un Pokémon qui convient · trois alignées, c'est gagné →"
+    },
+    "name-em-all": {
+      "eyebrow": "Course Nomme-les tous",
+      "footer": "Les mêmes Pokémon pour tous · le premier à tous les nommer gagne →"
+    }
+  },
+  "result": {
+    "footer": "Tu peux faire mieux ? {play} →",
+    "aTrainer": "Un Dresseur",
+    "fallback": {
+      "title1": "Tu peux",
+      "title2": "faire mieux ?",
+      "subtitle": "Pokédle, PokéGuessr, quiz et combats. Sans inscription."
+    }
+  },
+  "nameEmAll": {
+    "eyebrow": "Nomme-les tous · quiz de mémoire",
+    "title1": "Peux-tu nommer",
+    "title2": "tous les Pokémon ?",
+    "subtitle": "Tape tous les Pokémon dont tu te souviens avant la fin du chrono. Une nouvelle catégorie chaque jour.",
+    "footer": "Nomme-les tous · bats le chrono →"
+  },
+  "whichPokemon": {
+    "eyebrow": "Test de personnalité",
+    "title1": "Quel Pokémon",
+    "title2": "es-tu ?",
+    "subtitle": "Réponds franchement et découvre ton Pokémon, chaque profil s'appuyant sur le Pokédex.",
+    "footer": "Gratuit · sans inscription · carte à partager incluse →",
+    "result": {
+      "eyebrow": "Quel Pokémon es-tu ?",
+      "title": "Je suis",
+      "subtitle": "{title}. 18 questions. Et toi, quel Pokémon es-tu ?",
+      "footer": "Fais le test · gratuit · sans inscription →"
+    }
+  },
+  "species": {
+    "eyebrow": "Pokédex n° {number} · {gen}G",
+    "subtitle": "{genus}. Total des stats de base : {bst}.",
+    "footer": "Stats · évolutions · capacités · types →",
+    "stats": {
+      "hp": "PV",
+      "atk": "Att",
+      "def": "Déf",
+      "spa": "ASp",
+      "spd": "DSp",
+      "spe": "Vit"
+    }
+  },
+  "pokedex": {
+    "eyebrow": "Pokédex · de Kanto à Paldea",
+    "title1": "Les {n}",
+    "titleAll": "Tous les",
+    "title2": "Pokémon",
+    "subtitle": "Stats, évolutions, capacités, talents, types et toutes les entrées du Pokédex. Plus des cartes mémo pour les apprendre.",
+    "footer": "Cherche, filtre et révise →"
+  },
+  "battle": {
+    "eyebrow": "Combat · règles de Showdown",
+    "title1": "Compose. Calcule.",
+    "title2": "Combats.",
+    "subtitle": "Des combats aussi précis que sur Showdown contre l'ordinateur ou un ami, en direct. Créateur d'équipe et calculateur de dégâts inclus.",
+    "footer": "Combat aléatoire, OU, Doubles et plus →"
+  },
+  "battleLab": {
+    "eyebrow": "Labo de combat",
+    "title1": "Qui gagne,",
+    "title2": "et combien de fois ?",
+    "subtitle": "Prépare n'importe quel affrontement, de la 1G à la 9G, et le moteur de Showdown le joue des milliers de fois dans ton navigateur.",
+    "footer": "Chances de victoire avec un intervalle de confiance à 95 % →"
+  },
+  "replay": {
+    "eyebrow": "Rediffusion · {format}",
+    "vs": "vs",
+    "and": "et",
+    "subtitle": "{result}{how, select, forfeit { par abandon} timeout { au temps} other {}}.",
+    "turns": "{n} tours",
+    "ranked": "Classé",
+    "ratings": "{a} vs {b}",
+    "result": {
+      "drew": "{a} et {b} ont fait match nul",
+      "beat": "{winner} a battu {loser}",
+      "noWinner": "{players} : pas de vainqueur",
+      "wonFfa": "{winner} a gagné un Chacun pour soi"
+    },
+    "fallback": {
+      "eyebrow": "Rediffusion de combat",
+      "title1": "Rediffusion",
+      "title2": "de combat Pokémon",
+      "footer": "Moteur de Pokémon Showdown · à revoir tour par tour →"
+    }
+  },
+  "leaderboard": {
+    "eyebrow": "Classements · en direct",
+    "title1": "Meilleurs",
+    "title2": "Dresseurs",
+    "subtitle": "Défi du jour, PokéIQ, PokéGuessr et tous les modes de quiz. Où te places-tu ?",
+    "footer": "Fais une partie pour entrer au classement →"
+  },
+  "lab": {
+    "eyebrow": "PokéIQ · Labo 3D",
+    "title1": "Labo",
+    "title2": "3D",
+    "subtitle": "L'histoire de Pokémon, leurs tailles et tout le monde Pokémon, en 3D digne du cinéma.",
+    "footer": "Entre →"
+  },
+  "timeline": {
+    "eyebrow": "Pokédex · l'histoire en 3D",
+    "title1": "Chronologie",
+    "title2": "Pokémon",
+    "subtitle": "Chaque jeu, saison de l'anime, film et ère du jeu de cartes depuis 1996. Survole-les.",
+    "footer": "Fais la visite →"
+  },
+  "timelineEntry": {
+    "eyebrow": "Chronologie · {year} · {lane}",
+    "when": "{label} : {date}",
+    "footer": "{era} · {device} →"
+  },
+  "theories": {
+    "eyebrow": "Pokédex · théories",
+    "title1": "Les dossiers",
+    "title2": "d'enquête",
+    "subtitle": "Théories de fans, légendes urbaines et mythes des versions bêta, chacun avec ses preuves et un verdict.",
+    "caseEyebrow": "DOSSIER {n} · {verdict}",
+    "caseFooter": "Ouvre le dossier →",
+    "verdicts": {
+      "confirmed": "Confirmé",
+      "fan": "Théorie de fan",
+      "debunked": "Démenti"
+    }
+  },
+  "videoGames": {
+    "eyebrow": "{gen}G · {kind} · {year}",
+    "kinds": {
+      "mainline": "Principal",
+      "remake": "Remake",
+      "spinoff": "Spin-off",
+      "mobile": "Mobile"
+    },
+    "footerStarters": "Jaquette, starters et plus →",
+    "footerBox": "Jaquette et plus →",
+    "footerRelease": "Sortie, plateformes et plus →",
+    "hub": {
+      "eyebrow": "Pokédex · jeux",
+      "title1": "Tous les",
+      "title2": "jeux Pokémon",
+      "subtitle": "La série principale, les remakes, les spin-off et les jeux mobiles, avec leurs jaquettes.",
+      "footer": "Filtre par génération →"
+    }
+  },
+  "movies": {
+    "eyebrow": "Films Pokémon · {kicker}",
+    "footer": "Pokémon vedettes · personnages →",
+    "hub": {
+      "eyebrow": "Pokédex · films",
+      "title1": "Films",
+      "title2": "Pokémon",
+      "subtitle": "Tous les films Pokémon, du premier au prochain.",
+      "footer": "Vois tous les films →"
+    }
+  },
+  "tcg": {
+    "name": "JCC Pokémon",
+    "eyebrow": "JCC Pokémon · {series}",
+    "setFallback": "Extension du JCC Pokémon",
+    "setSubtitle": "Toutes les cartes de l'extension, avec leurs prix actuels.",
+    "setSubtitleDate": "Toutes les cartes de l'extension, sortie le {date}, avec leurs prix actuels.",
+    "setFooter": "Liste des cartes · prix →",
+    "cardFallback": "Carte Pokémon",
+    "cardFooter": "Prix TCGplayer et Cardmarket →"
+  },
+  "sizes": {
+    "eyebrow": "Tailles des Pokémon · en 3D",
+    "title1": "Tous les Pokémon",
+    "title2": "à l'échelle",
+    "subtitle": "De {from} à {to}, côte à côte à Illumis.",
+    "footer": "Crée ta propre vidéo de tailles →",
+    "itemEyebrow": "Tailles Pokémon · n° {number}",
+    "itemSubtitle": "{size}. À côté d'un adulte, en 3D.",
+    "itemFooter": "Vois-le à l'échelle →"
+  },
+  "story": {
+    "eyebrow": "Labo 3D PokéIQ · la vraie histoire",
+    "title1": "L'histoire",
+    "title2": "de Pokémon",
+    "subtitle": "Des chasses aux insectes d'un garçon à trente ans d'histoire : un film en 3D, chaque phrase sourcée.",
+    "footer": "Lance la lecture →",
+    "chapterEyebrow": "L'histoire de Pokémon · {numeral}",
+    "chapterFooter": "Regarde le chapitre en 3D →"
+  },
+  "history": {
+    "eyebrow": "Labo 3D · l'histoire de l'univers",
+    "title1": "L'histoire",
+    "title2": "du monde Pokémon",
+    "subtitle": "Du mythe de la création de Sinnoh à la Zone Zéro, chaque phrase sourcée dans les jeux.",
+    "chapterEyebrow": "L'histoire du monde Pokémon · {numeral}"
+  },
+  "race": {
+    "eyebrow": "Course Pokémon · {distance} m",
+    "tournament": "Tous les Pokémon, un seul vainqueur",
+    "subtitle": "{winner} gagne en {time} s.",
+    "subtitleAhead": "{winner} gagne en {time} s, {gap} s devant {second}.",
+    "atTheLine": "QUAND LE VAINQUEUR FRANCHIT LA LIGNE",
+    "footer": "Regarde la course en 3D →"
+  },
+  "massBattle": {
+    "eyebrow": "Bataille de masse Pokémon · 3D",
+    "footer": "Regarde-la en 3D →",
+    "howMany1": "Combien de {army}",
+    "howMany2": "pour battre {boss} ?",
+    "howManySubtitle": "Les vrais calculs de dégâts des jeux, {runs} combats par effectif, puis la bataille en 3D.",
+    "howManyFooter": "Regarde en 3D →",
+    "answer": "{n} {army}",
+    "wins": "Victoire : {side}"
+  },
+  "games": {
+    "eventEyebrow": "Les Jeux PokéIQ · {event}",
+    "h2hEyebrow": "Les Jeux PokéIQ · {event} · face-à-face",
+    "h2hSubtitle": "{line}, avec de vraies stats et une vraie physique.",
+    "winsWith": "{name} gagne avec {mark}, avec de vraies stats et une vraie physique.",
+    "winsBracket": "{name} remporte le tableau, avec de vraies stats et une vraie physique.",
+    "realStats": "De vraies stats, une vraie physique, en 3D.",
+    "recordsEyebrow": "Les Jeux PokéIQ · records : {event}",
+    "recordHolder": "{name} détient le record avec {mark}, parmi tous les Pokémon.",
+    "recordsFooter": "Vois le top 10 →",
+    "wins": "GAGNE",
+    "medals": {
+      "1": "Or",
+      "2": "Argent",
+      "3": "Bronze"
+    },
+    "hub": {
+      "eyebrow": "Labo 3D · vrai sport, vraies stats",
+      "title1": "Les Jeux",
+      "title2": "PokéIQ",
+      "subtitle": "Athlétisme, haltérophilie, natation et lutte pour tous les Pokémon, avec une vraie physique, en 3D.",
+      "footer": "Qui est le meilleur athlète ? →"
+    }
+  }
+}

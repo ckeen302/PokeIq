@@ -86,13 +86,13 @@ function byNumber(a: LabMon, b: LabMon): number {
 }
 
 /** The filtered, sorted list (indexes into `all`). */
-export function buildSequence(all: readonly LabMon[], v: LabView): number[] {
+export function buildSequence(all: readonly LabMon[], v: LabView, locale = "en"): number[] {
   const idx: number[] = [];
   for (let i = 0; i < all.length; i++) if (matchesView(all[i], v)) idx.push(i);
   const natural = ASCENDING_FIRST.includes(v.sort) ? 1 : -1;
   const dir = v.reverse ? -natural : natural;
   if (v.sort === "name") {
-    idx.sort((a, b) => all[a].name.localeCompare(all[b].name, "en") * dir || byNumber(all[a], all[b]));
+    idx.sort((a, b) => all[a].name.localeCompare(all[b].name, locale) * dir || byNumber(all[a], all[b]));
   } else {
     const vals = new Map(idx.map((i) => [i, sortValue(all[i], v.sort)]));
     idx.sort((a, b) => (vals.get(a)! - vals.get(b)!) * dir || byNumber(all[a], all[b]));
@@ -103,9 +103,11 @@ export function buildSequence(all: readonly LabMon[], v: LabView): number[] {
 /**
  * Where typing should take the wheel: positions in the sequence, best match
  * first (an exact number or name, names starting with it, a later word
- * starting with it, names containing it, then categories).
+ * starting with it, names containing it, then categories). On a page in
+ * another language `fold` folds names in any script (pokedle/search's
+ * normalizeName, loaded there only) and a Pokémon's other names count too.
  */
-export function searchSequence(all: readonly LabMon[], seq: readonly number[], query: string, limit = 6): number[] {
+export function searchSequence(all: readonly LabMon[], seq: readonly number[], query: string, limit = 6, fold?: (s: string) => string): number[] {
   const trimmed = query.trim();
   if (!trimmed) return [];
   const out: number[][] = [[], [], [], [], []];
@@ -119,17 +121,19 @@ export function searchSequence(all: readonly LabMon[], seq: readonly number[], q
     for (const t of out) t.sort((a, b) => byNumber(all[seq[a]], all[seq[b]]));
     return out.flat().slice(0, limit);
   }
-  const q = normalizeDexQuery(trimmed);
+  const norm = fold ?? normalizeDexQuery;
+  const q = norm(trimmed);
   if (!q) return [];
   seq.forEach((i, pos) => {
     const m = all[i];
-    const name = normalizeDexQuery(m.name);
-    const words = m.name.split(/[\s\-.:]+/).filter(Boolean).slice(1).map(normalizeDexQuery);
-    if (name === q) out[0].push(pos);
-    else if (name.startsWith(q)) out[1].push(pos);
+    const name = norm(m.name);
+    const words = m.name.split(/[\s\-.:]+/).filter(Boolean).slice(1).map(norm);
+    const others = fold && m.alt ? m.alt.split(" ") : [];
+    if (name === q || others.includes(q)) out[0].push(pos);
+    else if (name.startsWith(q) || others.some((o) => o.startsWith(q))) out[1].push(pos);
     else if (words.some((w) => w.startsWith(q))) out[2].push(pos);
-    else if (name.includes(q)) out[3].push(pos);
-    else if (normalizeDexQuery(m.genus).includes(q)) out[4].push(pos);
+    else if (name.includes(q) || others.some((o) => o.includes(q))) out[3].push(pos);
+    else if (norm(m.genus).includes(q)) out[4].push(pos);
   });
   // Within a tier, species before forms, then by number (Charizard before Mega Charizard X).
   for (const t of out) t.sort((a, b) => byNumber(all[seq[a]], all[seq[b]]));

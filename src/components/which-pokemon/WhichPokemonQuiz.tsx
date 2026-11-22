@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "@/i18n/navigation";
 import Link from "@/components/ui/Link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
@@ -9,12 +9,14 @@ import { track } from "@vercel/analytics";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ANSWER_LABELS, type Answer, type Question } from "@/lib/which-pokemon/types";
+import type { Answer, Question } from "@/lib/which-pokemon/types";
 import { RUN_LENGTH, drawQuestions, type Response } from "@/lib/which-pokemon/questions";
 import { nextStep } from "@/lib/which-pokemon/run";
 import { matchProfile, resultPath } from "@/lib/which-pokemon/match";
 import { lastResult, saveLastResult } from "@/lib/which-pokemon/local";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import quizNs from "@/messages/which-pokemon-quiz";
 
 /**
  * The quiz: one statement at a time, five thumb-sized answers, a progress
@@ -31,7 +33,13 @@ const TONE: Record<Answer, string> = {
   5: "hover:border-success/70",
 };
 
+type QuestionId = keyof typeof quizNs.en.q;
+
+const bold = (c: ReactNode[]) => <b className="text-foreground">{c}</b>;
+const strong = (c: ReactNode[]) => <span className="text-foreground">{c}</span>;
+
 export function WhichPokemonQuiz() {
+  const t = useT(quizNs);
   const router = useRouter();
   const reduceMotion = useReducedMotion();
   const [questions, setQuestions] = useState<Question[] | null>(null);
@@ -94,16 +102,15 @@ export function WhichPokemonQuiz() {
       <Card className="mx-auto w-full max-w-xl">
         <CardContent className="space-y-5 p-6 text-center">
           <p className="text-muted-foreground">
-            {RUN_LENGTH} quick statements about life on the road. Rate each one from <b className="text-foreground">Not me at all</b> to{" "}
-            <b className="text-foreground">Totally me</b>, and the Pokédex does the rest.
+            {t.rich("intro", { n: RUN_LENGTH, b: bold })}
           </p>
           <Button size="lg" className="h-14 w-full text-base" onClick={start} data-testid="wp-start">
-            <Sparkles className="h-5 w-5" aria-hidden /> Find my Pokémon
+            <Sparkles className="h-5 w-5" aria-hidden /> {t("start")}
           </Button>
-          <p className="hud-label">About two minutes · 200 possible results · no sign-up</p>
+          <p className="hud-label">{t("hint")}</p>
           {last && (
             <Link href={last} className="text-sm text-muted-foreground underline-offset-2 hover:text-foreground hover:underline" data-testid="wp-last">
-              See your last result
+              {t("last")}
             </Link>
           )}
         </CardContent>
@@ -116,7 +123,7 @@ export function WhichPokemonQuiz() {
     return (
       <Card className="mx-auto w-full max-w-xl">
         <CardContent className="p-8 text-center" role="status">
-          <p className="hud-label animate-pulse text-screen">Consulting the Pokédex…</p>
+          <p className="hud-label animate-pulse text-screen">{t("consulting")}</p>
         </CardContent>
       </Card>
     );
@@ -128,11 +135,11 @@ export function WhichPokemonQuiz() {
     <Card className="mx-auto w-full max-w-xl scroll-mt-20 overflow-hidden" data-testid="wp-quiz">
       <div className="flex items-center justify-between gap-3 border-b border-foreground/[0.07] bg-shade/30 px-4 py-3 sm:px-6">
         <span className="font-pixel text-xs tracking-wider text-muted-foreground">
-          Q <span className="text-foreground">{String(index + 1).padStart(2, "0")}</span>/{total}
+          {t.rich("count", { n: String(index + 1).padStart(2, "0"), total, v: strong })}
         </span>
-        <span className="hud-label text-screen">{tieBreaker ? "Tie-breaker" : "Which Pokémon are you?"}</span>
+        <span className="hud-label text-screen">{tieBreaker ? t("tieBreaker") : t("kicker")}</span>
       </div>
-      <Progress value={(index / total) * 100} className="rounded-none" aria-label="Quiz progress" />
+      <Progress value={(index / total) * 100} className="rounded-none" aria-label={t("progress")} />
       <CardContent className="space-y-4 p-4 sm:p-6">
         <AnimatePresence mode="popLayout" initial={false}>
           <motion.div
@@ -144,9 +151,9 @@ export function WhichPokemonQuiz() {
             className="space-y-4"
           >
             <h2 className="dialog-box min-h-[5.5rem] text-balance text-lg font-semibold leading-snug sm:text-xl" data-testid="wp-question">
-              {question.text}
+              {t(`q.${question.id as QuestionId}`)}
             </h2>
-            <div className="grid gap-2" role="group" aria-label="Your answer">
+            <div className="grid gap-2" role="group" aria-label={t("yourAnswer")}>
               {ANSWERS.map((value) => (
                 <button
                   key={value}
@@ -159,7 +166,7 @@ export function WhichPokemonQuiz() {
                   data-testid="wp-answer"
                   data-answer={value}
                 >
-                  {ANSWER_LABELS[value]}
+                  {t(`answers.${value}`)}
                   <span className="hud-label">{value}</span>
                 </button>
               ))}
@@ -168,9 +175,9 @@ export function WhichPokemonQuiz() {
         </AnimatePresence>
         <div className="flex items-center justify-between">
           <Button variant="ghost" size="sm" onClick={back} disabled={responses.length === 0} data-testid="wp-back">
-            <ArrowLeft className="h-4 w-4" aria-hidden /> Back
+            <ArrowLeft className="h-4 w-4" aria-hidden /> {t("back")}
           </Button>
-          <span className="hud-label max-md:hidden">1–5 on the keyboard works too</span>
+          <span className="hud-label max-md:hidden">{t("keys")}</span>
         </div>
       </CardContent>
     </Card>

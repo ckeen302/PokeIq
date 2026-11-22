@@ -52,7 +52,7 @@ export function TypePicker({ types, onChange, inline = false }: { types: string[
             className={cn("flex items-center gap-1.5 rounded-md px-2 py-1.5 font-display text-[11px] font-semibold uppercase tracking-wider transition-colors", on ? "bg-white/[0.14] text-white" : "text-white/60 hover:bg-white/[0.06] hover:text-white")}
           >
             <TypeDot t={t} />
-            {t}
+            {S.typeName(t) ?? t}
             {on && <Check className="ml-auto h-3 w-3" aria-hidden />}
           </button>
         );
@@ -170,8 +170,13 @@ export function SearchBox({ all, seq, onJump, onShowAnyway, className, inputRef 
   const box = useRef<HTMLDivElement>(null);
   const listId = useId();
   useOutside(box, open, () => setOpen(false));
-  const hits = useMemo(() => searchSequence(all, seq, q, 6), [all, seq, q]);
-  const everyone = useMemo(() => (q.trim() && hits.length === 0 ? searchSequence(all, all.map((_, i) => i), q, 3) : []), [all, hits.length, q]);
+  // Another language's page folds names in any script (kana, accents), with code English pages never load.
+  const [fold, setFold] = useState<((s: string) => string) | undefined>(undefined);
+  useEffect(() => {
+    if (S.locale !== "en") void import("@/components/pokedle/search").then((m) => setFold(() => m.normalizeName));
+  }, [S.locale]);
+  const hits = useMemo(() => searchSequence(all, seq, q, 6, fold), [all, seq, q, fold]);
+  const everyone = useMemo(() => (q.trim() && hits.length === 0 ? searchSequence(all, all.map((_, i) => i), q, 3, fold) : []), [all, hits.length, q, fold]);
   useEffect(() => setHi(0), [q]);
   const go = (pos: number) => {
     onJump(pos);

@@ -1,0 +1,118 @@
+{
+  "hub": {
+    "title": "Who's That Pokémon Quiz and More Pokémon Quiz Modes",
+    "description": "Play the Who's That Pokémon quiz, a cry quiz, Pokédex entries, type matchups, higher or lower — in Classic, Survival and Blitz formats.",
+    "h1": "Quizzes",
+    "duel": "Quiz duel",
+    "duelLine": "Answer the same questions as a friend, live.",
+    "infoName": "the Pokémon quizzes",
+    "infoDescription": "Free Pokémon quizzes including the Who's That Pokémon quiz, a cry quiz and type matchups, in Classic, Survival and Blitz formats.",
+    "infoIntro": "Play the Who's That Pokémon quiz and our other Pokémon quizzes in three formats, covering all 1,025 Pokémon.",
+    "step1": "Pick a quiz mode and the generations to include.",
+    "step2": "Choose a format: Classic, Survival or Blitz.",
+    "step3": "Answer before the clock runs out.",
+    "step4": "Your PokéIQ weighs each right answer by how tricky that question is.",
+    "faqFormatsQ": "What formats are there?",
+    "faqFormatsA": "Classic is 10 questions with 15 seconds each, Survival is endless with 3 lives and Blitz gives you 60 seconds to answer as many as you can.",
+    "faqGensQ": "Can I choose which generations to play?",
+    "faqGensA": "Yes, pick a mode, then choose the generations to include."
+  },
+  "presets": {
+    "whos-that-pokemon": {
+      "title": "Who's That Pokémon? Silhouette Quiz",
+      "h1": "Who's That Pokémon?",
+      "description": "Guess the Pokémon from its silhouette. Pick any of the nine generations, in Classic, Survival and Blitz modes."
+    },
+    "pokemon-cry-quiz": {
+      "title": "Pokémon Cry Quiz — Guess the Pokémon by Its Cry",
+      "h1": "Pokémon Cry Quiz",
+      "description": "Can you recognize Pokémon by their cries? Listen and guess across every generation."
+    },
+    "pokedex-entry-quiz": {
+      "title": "Pokédex Entry Quiz — Guess the Pokémon from Its Pokédex Entry",
+      "h1": "Dex Detective",
+      "description": "Read a censored Pokédex entry and name the Pokémon. Plus category and ability questions."
+    },
+    "pokemon-type-quiz": {
+      "title": "Pokémon Type Chart Quiz — Weaknesses, Immunities & Matchups",
+      "h1": "Type Master",
+      "description": "Test your type chart knowledge: dual-type weaknesses, 4× matchups, immunities and typings."
+    },
+    "pokemon-higher-or-lower": {
+      "title": "Pokémon Higher or Lower — Base Stats Game",
+      "h1": "Higher or Lower",
+      "description": "Which Pokémon is faster, heavier or has the higher base stat total? Keep your streak alive."
+    },
+    "pokemon-games-quiz": {
+      "title": "Pokémon Games Quiz — Gym Leaders, Champions & Regions",
+      "h1": "Mainline Games Quiz",
+      "description": "How well do you know the core Pokémon RPGs? Gym Leaders, Elite Four, rivals, villains, starters and regions from Red and Blue to Legends: Z-A."
+    },
+    "pokemon-ability-move-item-quiz": {
+      "title": "Pokémon Ability, Move & Item Quiz",
+      "h1": "Abilities, Moves & Items",
+      "description": "Which Pokémon can have this ability? What type is this move? What does this item do? Questions generated from the Pokémon Showdown data."
+    },
+    "real-shiny-quiz": {
+      "title": "Which Is the Real Shiny? Pokémon Shiny Quiz",
+      "h1": "Which Is the Real Shiny?",
+      "description": "One of four colourings is the real shiny, the rest are fakes. Can you tell? Every Pokémon, on Easy or Hard."
+    },
+    "pokemon-zoom-quiz": {
+      "title": "Pokémon Zoom Quiz — Zoom Reveal",
+      "h1": "Zoom Reveal",
+      "description": "Name the Pokémon from an extreme close-up of its official artwork. Each miss zooms out one step, six in all, plus a daily one."
+    },
+    "pokemon-anime-quiz": {
+      "title": "Pokémon Anime Quiz — Ash, Team Rocket & Horizons",
+      "h1": "Pokémon Anime Quiz",
+      "description": "Ash's Pokémon, his friends and rivals, Team Rocket, league results, the movies and Pokémon Horizons. Every answer checked against Bulbapedia."
+    },
+    "whose-team-is-this": {
+      "title": "Whose Team Is This? — Guess the Pokémon Trainer from Their Team",
+      "h1": "Whose Team Is This?",
+      "description": "Gym Leaders, Elite Four, Champions, rivals and villains from every core game, plus Ash and friends from the anime: name the trainer from their team."
+    },
+    "pokemon-trivia-quiz": {
+      "title": "Pokémon Trivia Quiz — Mixed Questions",
+      "h1": "Pokémon Trivia",
+      "description": "A mixed Pokémon quiz: silhouettes, Pokédex entries, type matchups and stat battles."
+    }
+  },
+  "gen": {
+    "title": "Gen {n} Pokémon Quiz — {region} Who's That Pokémon?",
+    "h1": "Gen {n} Pokémon Quiz ({region})",
+    "description": "How well do you know the {region} Pokédex? Name every Gen {n} Pokémon from its silhouette."
+  },
+  "preset": {
+    "modeSelect": "Mode select",
+    "intro": "{name} is one of our free Pokémon quizzes, like the Who's That Pokémon quiz: {description}",
+    "stepDifficulty": "Choose a format and difficulty, and the generations to include.",
+    "stepFormat": "Choose a format and the generations to include.",
+    "step2": "Answer each question before the timer runs out.",
+    "step3": "Your PokéIQ weighs each right answer by how tricky that question is.",
+    "faqQ": "What formats can I play?",
+    "faqA": "Classic is 10 questions with 15 seconds each, Survival is endless with 3 lives and Blitz gives you 60 seconds to answer as many as you can."
+  },
+  "daily": {
+    "title": "Daily Pokémon Challenge",
+    "description": "A new 10-question Pokémon quiz every day — the same for everyone. Keep your streak and compare your PokéIQ."
+  },
+  "duel": {
+    "title": "A Pokémon quiz duel",
+    "description": "Head-to-head Pokémon quiz: the same questions for both of you, right and fast scores most.",
+    "versus": "{host} vs {guest}: a {mode} duel",
+    "challenge": "{host} challenges you to a {mode} duel",
+    "aTrainer": "A trainer",
+    "invite": "Head-to-head {mode}: the same {n} questions for both of you, right and fast scores most.",
+    "inviteLevel": "Head-to-head {mode} on {level}: the same {n} questions for both of you, right and fast scores most."
+  },
+  "challenge": {
+    "title": "Challenge",
+    "aTrainer": "A trainer",
+    "scored": "{who} scored {correct}/{total} (PokéIQ {iq}) — can you beat it?",
+    "description": "{run} on PokéIQ. Play the exact same questions and see who knows Pokémon better.",
+    "daily": "Daily #{n}",
+    "run": "{mode} · {format}"
+  }
+}

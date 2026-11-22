@@ -1,0 +1,84 @@
+{
+  "tabs": {
+    "login": "Anmelden",
+    "register": "Konto erstellen",
+    "recover": "Passwort vergessen"
+  },
+  "resetTitle": "Passwort zurückgesetzt",
+  "welcome": "Willkommen, {name}!",
+  "resetNote": "Dein alter Wiederherstellungscode ist verbraucht. Speichere diesen neuen – er wird nur einmal angezeigt.",
+  "welcomeNote": "Mit diesem Wiederherstellungscode kommst du wieder rein, falls du dein Passwort vergisst. Er wird nur einmal angezeigt.",
+  "offlineTitle": "Konten sind offline",
+  "offlineBody": "Trainerkonten sind auf diesem Server noch nicht aktiviert. Dein Fortschritt bleibt auf diesem Gerät gespeichert.",
+  "nameRejected": "Wähle einen anderen Namen.",
+  "failed": "Etwas ist schiefgelaufen.",
+  "tablist": "Konto",
+  "name": "Trainername",
+  "code": "Wiederherstellungscode",
+  "newPassword": "Neues Passwort",
+  "password": "Passwort",
+  "nameRules": "3–20 Buchstaben, Zahlen, _ oder -. Keine E-Mail nötig – du bekommst stattdessen einen Wiederherstellungscode.",
+  "reset": "Passwort zurücksetzen",
+  "syncNote": "Wenn du dich anmeldest, werden deine Orden, Serien, Wertungen und dein PokéIQ in deinem Konto gespeichert und begleiten dich auf jedes Gerät.",
+  "email": {
+    "needEmail": "Gib deine E-Mail-Adresse an, um die täglichen E-Mails zu bekommen.",
+    "badEmail": "Das sieht nicht nach einer E-Mail-Adresse aus."
+  },
+  "panel": {
+    "saveTitle": "Fortschritt speichern",
+    "saveBody": "Erstelle ein kostenloses Konto, um deine Orden, Wertungen und Serien auf jedem Gerät zu behalten.",
+    "signIn": "Anmelden",
+    "newCodeTitle": "Neuer Wiederherstellungscode",
+    "newCodeNote": "Dein bisheriger Code funktioniert nicht mehr. Speichere diesen – er wird nur einmal angezeigt.",
+    "codeFailed": "Es konnte kein neuer Code erstellt werden.",
+    "signedInAs": "Angemeldet als <b>{name}</b> · Fortschritt wird automatisch synchronisiert",
+    "newCode": "Neuer Wiederherstellungscode",
+    "signOut": "Abmelden",
+    "confirmPassword": "Passwort bestätigen",
+    "generate": "Erstellen"
+  },
+  "connected": {
+    "unlinkFailed": "Das Konto konnte nicht getrennt werden.",
+    "title": "Verknüpfte Konten",
+    "linked": "Verknüpft",
+    "notLinked": "Nicht verknüpft",
+    "onlyWay": "Das ist deine einzige Anmeldemöglichkeit.",
+    "unlink": "Trennen",
+    "link": "{provider} verknüpfen"
+  },
+  "oauth": {
+    "googleNote": "Die Anmeldung mit Google ist noch im Test – nimm Discord, falls sie nicht klappt.",
+    "continueWith": "Weiter mit {provider}",
+    "orName": "oder mit einem Trainernamen",
+    "errors": {
+      "denied": "Die Anmeldung wurde abgebrochen.",
+      "expired": "Die Anmeldung hat zu lange gedauert oder wurde in einem anderen Tab gestartet – versuch es noch mal.",
+      "failed": "Mit diesem Anbieter klappt die Anmeldung gerade nicht. Versuch es noch mal oder nutze deinen Trainernamen und dein Passwort.",
+      "unavailable": "Diese Anmeldeoption ist gerade nicht verfügbar.",
+      "banned": "Dieses Konto ist gesperrt.",
+      "linked_elsewhere": "Dieses Konto ist schon mit einem anderen Trainer verknüpft.",
+      "already_linked": "Du hast schon ein Konto dieser Art verknüpft. Trenne es zuerst.",
+      "signin_required": "Melde dich zuerst an und verknüpfe das Konto dann in deinem Trainerpass.",
+      "rate_limited": "Zu viele Versuche – probier es in einer Minute noch mal."
+    }
+  },
+  "signup": {
+    "expired": "Diese Anmeldung ist abgelaufen – fang noch mal an.",
+    "unreachable": "Der Server ist nicht erreichbar – versuch es noch mal.",
+    "under13": "Für ein Konto musst du mindestens 13 Jahre alt sein.",
+    "loading": "Wird geladen",
+    "back": "Zurück zur Anmeldung",
+    "signedWith": "Mit {provider} angemeldet. Wähle den Namen, den andere Trainer sehen.",
+    "nameHint": "3–20 Buchstaben, Zahlen, _ oder -.",
+    "adult": "Ich bin mindestens 13 Jahre alt.",
+    "create": "Trainer erstellen",
+    "privacy": "Deine E-Mail-Adresse bleibt privat. Mehr in der <link>Datenschutzerklärung</link>."
+  },
+  "recovery": {
+    "label": "Wiederherstellungscode",
+    "copied": "Kopiert",
+    "copy": "Code kopieren",
+    "savedIt": "Ich habe meinen Wiederherstellungscode sicher gespeichert",
+    "continue": "Weiter"
+  }
+}

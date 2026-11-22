@@ -1,0 +1,21 @@
+{
+  "title": "Dein Coach",
+  "intro": "Beantworte noch {n} Fragen, dann findet dein Coach deine Stärken und Schwächen (Generationen, Typen und Modi) und sagt dir, was du lernen solltest.",
+  "focus": "Daran arbeiten",
+  "strengths": "Stärken",
+  "overall": "gesamt {pct} %",
+  "nothing": "Noch fällt nichts auf – spiel einfach weiter.",
+  "answered": "({n} beantwortet)",
+  "gen": "Gen. {gen} ({region})",
+  "genCta": "Gen. {gen} mit Lernkarten üben",
+  "type": "Pokémon vom Typ {type}",
+  "typeCta": "Typ {type} ansehen",
+  "modeCta": "{mode} üben",
+  "stats": {
+    "bst": "Basiswert-Summen",
+    "height": "Größen",
+    "weight": "Gewichte",
+    "stat": "{stat}-Werte"
+  },
+  "statCta": "Zur Rangliste"
+}

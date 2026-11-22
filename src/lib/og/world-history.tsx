@@ -3,6 +3,7 @@ import "server-only";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { C, localImage, ogCard } from "@/lib/og/card";
+import { englishOgT, type OgT } from "@/lib/og/i18n";
 import { homeRenderUrl } from "@/lib/pokemon/art";
 import { figureAsset } from "@/lib/world-history/assets";
 import type { Chapter } from "@/lib/world-history/types";
@@ -52,10 +53,10 @@ function Figures({ chapter }: { chapter: Chapter }) {
   );
 }
 
-export async function historyChapterCard(chapter: Chapter) {
+export async function historyChapterCard(chapter: Chapter, t: OgT = englishOgT()) {
   const pic = await still(chapter.id);
   return ogCard({
-    eyebrow: `History of the Pokémon World · ${chapter.numeral}`,
+    eyebrow: t("history.chapterEyebrow", { numeral: chapter.numeral }),
     title: [chapter.title],
     titleSize: chapter.title.length > 22 ? 56 : 66,
     subtitle: `${chapter.region} · ${chapter.when}`,
@@ -65,20 +66,22 @@ export async function historyChapterCard(chapter: Chapter) {
         {pic ? <img src={pic} width={W} height={H} style={{ objectFit: "cover" }} /> : <Figures chapter={chapter} />}
       </Exhibit>
     ),
-    footer: "Watch the chapter in 3D →",
+    footer: t("story.chapterFooter"),
+    t,
   });
 }
 
-export async function historyHubCard(chapters: Chapter[]) {
+export async function historyHubCard(chapters: Chapter[], t: OgT = englishOgT()) {
   const pic = await still("hall");
   const hero = chapters[0];
   return ogCard({
-    eyebrow: "PokéIQ 3D Lab · In-universe history",
-    title: ["The History of", ["the Pokémon World", C.yellow]],
+    eyebrow: t("history.eyebrow"),
+    title: [t("history.title1"), [t("history.title2"), C.yellow]],
     titleSize: 54,
-    subtitle: "From Sinnoh's creation myth to Area Zero, each line sourced to the games.",
+    subtitle: t("history.subtitle"),
     accent: hero.accent,
     visual: <Exhibit accent={hero.accent}>{pic ? <img src={pic} width={W} height={H} style={{ objectFit: "cover" }} /> : <Figures chapter={hero} />}</Exhibit>,
-    footer: "Step inside →",
+    footer: t("lab.footer"),
+    t,
   });
 }

@@ -1,0 +1,15 @@
+{
+  "login": {
+    "title": "Accedi",
+    "label": "ID Allenatore",
+    "heading": "Accedi",
+    "intro": "Conserva i tuoi progressi su ogni dispositivo.",
+    "ages": "Gli account sono per chi ha almeno 13 anni.",
+    "privacy": "Informativa sulla privacy"
+  },
+  "oauth": {
+    "title": "Scegli il tuo nome Allenatore",
+    "label": "Nuovo Allenatore",
+    "heading": "Scegli il tuo nome Allenatore"
+  }
+}

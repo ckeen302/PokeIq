@@ -1,0 +1,21 @@
+{
+  "title": "Your coach",
+  "intro": "Answer {n} more questions and your coach will spot your strongest and weakest areas — generations, types and modes — and point you at what to study.",
+  "focus": "Focus areas",
+  "strengths": "Strengths",
+  "overall": "overall {pct}%",
+  "nothing": "Nothing stands out yet — keep playing.",
+  "answered": "({n} answered)",
+  "gen": "Gen {gen} ({region})",
+  "genCta": "Study Gen {gen} flashcards",
+  "type": "{type}-type Pokémon",
+  "typeCta": "Browse {type} types",
+  "modeCta": "Practice {mode}",
+  "stats": {
+    "bst": "Base stat totals",
+    "height": "Heights",
+    "weight": "Weights",
+    "stat": "{stat} stats"
+  },
+  "statCta": "See the rankings"
+}

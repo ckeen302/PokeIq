@@ -1,0 +1,36 @@
+{
+  "grid": {
+    "alt": "{name} のカード",
+    "noImage": "画像なし",
+    "titleUsd": "{label}（TCGplayer 市場価格）",
+    "titleEur": "{label}（Cardmarket）"
+  },
+  "gallery": {
+    "sort": "並べ替え",
+    "number": "番号",
+    "priceDesc": "価格 ↓",
+    "priceAsc": "価格 ↑",
+    "rarity": "レアリティ",
+    "allRarities": "すべてのレアリティ",
+    "type": "タイプ",
+    "allTypes": "すべてのタイプ",
+    "count": "{shown} / {total}枚",
+    "none": "条件に合うカードはありません。"
+  },
+  "pokemon": {
+    "title": "カード",
+    "all": "すべて見る（{n}枚）→",
+    "newest": "{name}の最新のポケモンカード。{note}"
+  },
+  "note": {
+    "usd": "TCGplayer 市場価格（USD）",
+    "eur": "Cardmarket トレンド（EUR）",
+    "cmTrend": "Cardmarket トレンド",
+    "via": "{market}（{source} 経由）",
+    "asOf": "{what}、{date}時点",
+    "sep": "／",
+    "line": "相場：{parts}。",
+    "lineSome": "相場：{parts}。一部の相場は現在取得できません。",
+    "unavailable": "相場を現在取得できません。"
+  }
+}

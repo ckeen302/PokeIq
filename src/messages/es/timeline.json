@@ -1,0 +1,54 @@
+{
+  "lanes": {
+    "events": "Hitos",
+    "tcg": "JCC",
+    "games": "Juegos principales",
+    "anime": "Anime",
+    "movies": "Películas",
+    "spinoffs": "Spin-offs"
+  },
+  "eras": {
+    "gb": {
+      "label": "Generación I",
+      "device": "Game Boy"
+    },
+    "gbc": {
+      "label": "Generación II",
+      "device": "Game Boy Color"
+    },
+    "gba": {
+      "label": "Generación III",
+      "device": "Game Boy Advance"
+    },
+    "ds": {
+      "label": "Generación IV",
+      "device": "Nintendo DS"
+    },
+    "ds2": {
+      "label": "Generación V",
+      "device": "Nintendo DS"
+    },
+    "3ds": {
+      "label": "Generaciones VI–VII",
+      "device": "Nintendo 3DS"
+    },
+    "switch": {
+      "label": "Generaciones VIII–IX",
+      "device": "Nintendo Switch"
+    }
+  },
+  "dates": {
+    "Worldwide": "Mundial",
+    "Japan": "Japón",
+    "North America": "Norteamérica",
+    "Europe": "Europa"
+  },
+  "today": "hoy",
+  "region": "Región",
+  "starters": "Iniciales",
+  "boxLegendaries": "Legendarios de portada",
+  "genPokemon": "Pokémon de la generación {gen} →",
+  "browseCards": "Ver las cartas de la expansión →",
+  "sources": "Fuentes:",
+  "cards": "Cartas →"
+}

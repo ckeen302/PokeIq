@@ -1,0 +1,128 @@
+{
+  "crumb": "Battle",
+  "teams": {
+    "title": "Pokémon Team Builder: Showdown Formats, Legality Checked",
+    "description": "A Pokémon team builder for competitive teams in Gen 9 OU, Ubers, UU, Doubles OU, VGC, National Dex, Gen 4 OU and Gen 3 OU. Moves from each format's learnsets, live stats, Showdown import / export and Pokémon Showdown's own legality check.",
+    "crumb": "Team Builder",
+    "heading": "Team",
+    "accent": "Builder",
+    "intro": "A Pokémon team builder with six slots, every format's learnsets and Pokémon Showdown's own rules. Teams save on this device as you build, ready for battle."
+  },
+  "lab": {
+    "title": "Battle Lab — Pokémon Win Probability Simulator",
+    "description": "Set up any two Pokémon teams, Gen 1 to 9, and run the battle thousands of times on Pokémon Showdown's own engine. See each side's win chance with a 95% confidence interval, how long battles last, who scores the KOs, and watch sample battles.",
+    "name": "Battle Lab",
+    "crumb": "Battle Lab",
+    "heading": "Battle",
+    "accent": "Lab",
+    "intro": "Set up two sides and let Pokémon Showdown's own engine play the battle thousands of times, right in your browser. See how often each side wins, how long it takes and what decides it."
+  },
+  "ladder": {
+    "title": "Pokémon Battle Ladder — Ranked Ratings by Format",
+    "description": "The ranked battle ladder: Elo, GXE and Glicko-2 ratings, as on Pokémon Showdown, for Random Battle, Random Doubles, OU, Ubers, UU, RU, NU, PU, LC, Monotype, National Dex and Doubles OU.",
+    "crumb": "Ladder",
+    "heading": "Battle",
+    "accent": "ladder",
+    "rules": "Ratings per format as on Pokémon Showdown: the ladder is ranked by Elo (everyone starts at {elo}, never drops below it, and an Elo above 1400 decays a little each day you don't play), shown with GXE (your chance of beating a random trainer on the ladder) and a Glicko-2 rating. Everyone starts at {rating} ± {rd} Glicko-2; a rating is provisional until its deviation drops below {shown}. A forfeit, running out the clock or leaving counts as a loss.",
+    "short": "Ranked by Elo, with GXE and Glicko-2, as on Pokémon Showdown. Everyone starts at {elo}.",
+    "insights": "Your insights",
+    "play": "Play ranked",
+    "soon": "Ranked battles open soon.",
+    "top": "{format}: top 100",
+    "how": "How the ratings work"
+  },
+  "insights": {
+    "title": "Team insights",
+    "description": "Your battle insights: leads, Pokémon, toughest opponents and rating over time.",
+    "crumb": "Team insights",
+    "heading": "Team",
+    "accent": "insights",
+    "intro": "Your most common leads, win rate per Pokémon, the foes that beat you most and your rating over time, from your saved battles.",
+    "signIn": "Insights follow your account: sign in to see yours.",
+    "signInButton": "Sign in"
+  },
+  "playerInsights": {
+    "title": "{name} · Team insights",
+    "description": "{name}'s battle insights on PokéIQ: most common leads, win rate per Pokémon, toughest opponents and rating over time.",
+    "heading": "{name}'s",
+    "accent": "insights",
+    "intro": "Leads, Pokémon, toughest opponents and rating over {name}'s saved battles, worked out from their replays.",
+    "format": "Format",
+    "allFormats": "All formats",
+    "noBattles": "No battles to look at yet.",
+    "soon": "Team insights open soon.",
+    "empty": "No saved replays to learn from here yet: insights come from battles whose replay was saved (every ranked battle saves one).",
+    "reading": "{n} more battles are being read; check back in a moment.",
+    "battlesRead": "Battles read",
+    "winRate": "Win rate",
+    "monsUsed": "Pokémon used",
+    "leadsCount": "Different leads",
+    "trend": "Rating over time",
+    "leads": "Most common leads",
+    "byMon": "Win rate by Pokémon",
+    "byMonAside": "Battles each one came out in",
+    "monRecord": "{wins}–{losses} in {games, plural, one {{games} battle} other {{games} battles}}",
+    "threats": "Toughest opponents",
+    "threatsAside": "Foes with a KO or a win against {name}: most KOs, then most wins",
+    "threatRecord": "{games, plural, one {{games} battle} other {{games} battles}} · {wins, plural, one {{wins} win} other {{wins} wins}} against {name}",
+    "kos": "{n, plural, one {KO} other {KOs}}",
+    "noThreats": "Nothing has knocked out {name}'s Pokémon yet.",
+    "pending": "{n, plural, one {{n} older battle is} other {{n} older battles are}} still to be read: they'll count on a later visit.",
+    "noLeads": "No leads seen yet.",
+    "mostUsed": "Most used",
+    "leadTimes": "{n}× lead",
+    "leadWon": "{rate} won",
+    "trendMore": "Play {count, select, one {another ranked battle} other {a couple of ranked battles}} in this format to see a trend.",
+    "trendLabel": "Rating from {from} to {to} over {n} ranked battles",
+    "trendDelta": "{delta} over {n, plural, one {{n} game} other {{n} games}}",
+    "lastGxe": "GXE after the last game: {gxe}%"
+  },
+  "replays": {
+    "title": "Pokémon Battle Replays",
+    "description": "Watch Pokémon battle replays turn by turn, on Pokémon Showdown's engine: your own battles and the latest ranked and public ones.",
+    "crumb": "Replays",
+    "heading": "Battle",
+    "accent": "replays",
+    "intro": "Every ranked and public battle is saved as a replay; after any other, press Save replay. Replays show what spectators saw, turn by turn.",
+    "import": "Watch a Showdown replay",
+    "live": "Live battles"
+  },
+  "replay": {
+    "fallbackTitle": "Battle replay",
+    "fallbackDescription": "A Pokémon battle replay on PokéIQ.",
+    "title": "{title}: {format} replay",
+    "description": "{result} in {turns} turns. Watch the replay, turn by turn, on Pokémon Showdown's engine.",
+    "crumb": "Replay",
+    "ranked": "Ranked · ",
+    "summary": "{format} · {result} in {turns, plural, one {{turns} turn} other {{turns} turns}}."
+  },
+  "notFound": {
+    "heading": "Replay not found",
+    "body": "This replay doesn't exist or isn't available: the link may be wrong, or the battle was never saved.",
+    "browse": "Browse replays",
+    "live": "Live battles",
+    "import": "Import a log"
+  },
+  "import": {
+    "title": "Watch a Showdown Replay",
+    "description": "Paste a Pokémon Showdown battle log or open a saved replay file and watch it turn by turn.",
+    "crumb": "Import",
+    "heading": "Watch a",
+    "accent": "Showdown replay",
+    "intro": "Paste a battle log, or open a replay file Showdown saved, and play it back here."
+  },
+  "tournaments": {
+    "title": "Tournaments",
+    "description": "Pokémon battle tournaments on PokéIQ: single elimination or round robin in any format, plus an official Random Battle tournament every hour.",
+    "crumb": "Tournaments",
+    "heading": "Tournaments",
+    "accent": "live",
+    "intro": "Join a bracket, or open your own in any format. An official Random Battle tournament starts every hour: sign-ups are open for the first ten minutes."
+  },
+  "tournament": {
+    "title": "Tournament",
+    "description": "A Pokémon battle tournament on PokéIQ: the live bracket, matches and results.",
+    "back": "Back to tournaments",
+    "crumb": "Tournaments"
+  }
+}

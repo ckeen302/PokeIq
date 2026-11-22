@@ -1,6 +1,9 @@
 import { SITE_URL } from "@/lib/site";
 import { Director } from "@/lib/mass-battle/director";
-import { answerText, bossDownLine, critLine, fmt, multiKoLine, resultTitle, spreadText } from "@/lib/mass-battle/copy";
+import { answerText, bossDownLine, critLine, fmt, multiKoLine, resultTitle, spreadText, type CopyT } from "@/lib/mass-battle/copy";
+import { translator, type Translator } from "@/i18n/catalog";
+import mbCopy from "@/messages/mass-battle-copy";
+import mbUi from "@/messages/mass-battle-ui";
 import { TICK_HZ } from "@/lib/mass-battle/constants";
 import { figureSize } from "@/lib/mass-battle/stats";
 import type { ArenaId, MBSpecies } from "@/lib/mass-battle/types";
@@ -51,7 +54,20 @@ export interface RecordOptions {
   fps?: number;
   onProgress(p: number, label: string): void;
   signal: AbortSignal;
+  /** The page's language: its words, and its names for the species and moves (English when left out). */
+  words?: VideoWords;
 }
+
+type UiT = Translator<typeof mbUi.en>;
+
+export interface VideoWords {
+  t: UiT;
+  c: CopyT;
+  species(s: MBSpecies): string;
+  move(name: string): string;
+}
+
+const enWords = (): VideoWords => ({ t: translator(mbUi, "en", undefined), c: translator(mbCopy, "en", undefined), species: (s) => s.name, move: (m) => m });
 
 export interface RecordResult {
   blob: Blob;
@@ -72,7 +88,7 @@ export function videoPlan(seconds: number) {
 }
 
 /** The video's opening question ("How many Magikarp does it take to beat Arceus? 😳"), or the battle's own hook. */
-export const videoHook = (b: Pick<BattleDesc, "question" | "names" | "hook">) => (b.question ? `How many ${b.names[0]} does it take to beat ${b.names[1]}? 😳` : b.hook);
+export const videoHook = (b: Pick<BattleDesc, "question" | "names" | "hook">, t: UiT = translator(mbUi, "en", undefined)) => (b.question ? t("vid.hookQuestion", { a: b.names[0], b: b.names[1] }) : b.hook);
 
 export const videoFileName = (slug: string, seconds: number, ext: "mp4" | "webm") =>
   `pokeiq-mass-battle-${slug.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || "battle"}-${seconds}s.${ext}`;
@@ -86,12 +102,16 @@ const easeOutBack = (k: number) => {
 };
 const easeOut = (k: number) => 1 - Math.pow(1 - Math.min(1, Math.max(0, k)), 3);
 
+/** Kana, kanji and full-width forms: Japanese breaks between any two of them (it has no spaces). */
+const CJK = /[\u3000-\u30ff\u3400-\u9fff\uff00-\uffef]/;
+
 function wrap(g: CanvasRenderingContext2D, text: string, maxW: number): string[] {
-  const words = text.split(/ +/);
+  const cjk = CJK.test(text);
+  const words = cjk ? text.match(/[\u3000-\u30ff\u3400-\u9fff\uff00-\uffef][、。！？）」]*|[^\s\u3000-\u30ff\u3400-\u9fff\uff00-\uffef]+|\s+/g) ?? [text] : text.split(/ +/);
   const lines: string[] = [];
   let line = "";
   for (const w of words) {
-    const next = line ? `${line} ${w}` : w;
+    const next = cjk ? line + w : line ? `${line} ${w}` : w;
     if (g.measureText(next).width > maxW && line) { lines.push(line); line = w; } else line = next;
   }
   if (line) lines.push(line);
@@ -239,7 +259,9 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
   const plan = videoPlan(seconds);
   const N = Math.round(seconds * fps);
   const b = o.battle;
-  o.onProgress(0, "Setting up the battle");
+  const W8 = o.words ?? enWords();
+  const { t: tv, c } = W8;
+  o.onProgress(0, tv("vid.setting"));
   const host = document.createElement("div");
   host.style.cssText = `position:fixed;left:-20000px;top:0;width:${W}px;height:${H}px;pointer-events:none;`;
   document.body.appendChild(host);
@@ -251,7 +273,7 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
     const slice = sliceRoster(roster, specIds(b.spec));
     const ready = await sim.init(slice, b.spec);
     // The same battle played ahead, for its length.
-    o.onProgress(0.01, "Reading the battle");
+    o.onProgress(0.01, tv("vid.reading"));
     const ahead = await sim.plan();
     const species: MBSpecies[] = ready.species.map((id) => slice.species.find((s) => s.id === id)!);
     const heights = species.map((s) => figureSize(s).h);
@@ -264,7 +286,7 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
     for (let i = 0; i < ready.n; i++) counts.set(ready.sp[i], (counts.get(ready.sp[i]) ?? 0) + 1);
     species.forEach((s, k) => { if ((counts.get(k) ?? 0) <= 3 && (ready.start[0] <= 3 || ready.start[1] <= 3)) bosses.add(s.id); });
     const envSpec = envOf(b.spec);
-    await scene.deploy({ arena: b.spec.arena, radius: ready.arena, species, bosses, view, weather: envSpec.weather ?? ready.field?.weather, time: envSpec.time ?? ready.field?.time, terrain: envSpec.terrain ?? ready.field?.terrain, forms: await formFigures(species, forms) }, (p) => o.onProgress(0.01 + p * 0.07, "Deploying armies"), o.signal);
+    await scene.deploy({ arena: b.spec.arena, radius: ready.arena, species, bosses, view, weather: envSpec.weather ?? ready.field?.weather, time: envSpec.time ?? ready.field?.time, terrain: envSpec.terrain ?? ready.field?.terrain, forms: await formFigures(species, forms) }, (p) => o.onProgress(0.01 + p * 0.07, tv("deploying")), o.signal);
     // Frames from the worker, on demand.
     let waiting: (() => void) | null = null;
     sim.onFrames = (frames, end) => {
@@ -287,7 +309,7 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
     const director = new Director();
     const choreo = createChoreographer(scene.effects, view, ready, heights, widths, forms);
     const bossSide = ready.start[0] <= 3 && ready.start[1] >= 4 ? 0 : ready.start[1] <= 3 && ready.start[0] >= 4 ? 1 : -1;
-    const nameOf = (i: number) => species[ready.sp[i]]?.name ?? "";
+    const nameOf = (i: number) => { const s = species[ready.sp[i]]; return s ? W8.species(s) : ""; };
     let caption: { text: string; at: number; gold: boolean } | null = null;
     choreo.hooks = {
       hit: (type, power, crit) => cues.push({ t: videoT, kind: "hit", type, power: Math.min(1, 0.3 + power), crit }),
@@ -301,16 +323,16 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
           director.offer({ kind: "ko-boss", x: a.x, z: a.z, h: a.h, power: 1 });
           cues.push({ t: videoT, kind: "boom", power: 1 });
           finaleAt = videoT;
-          caption = { text: bossDownLine(nameOf(a.actor), a.move, nameOf(a.target)), at: videoT, gold: true };
+          caption = { text: bossDownLine(nameOf(a.actor), W8.move(a.move), nameOf(a.target), c), at: videoT, gold: true };
         } else if (a.kos >= 3) {
           if (a.kos >= 5) {
             director.offer({ kind: "multi", x: view.x[a.actor], z: view.z[a.actor], h: heights[ready.sp[a.actor]], power: Math.min(1, a.kos / 20) });
             cues.push({ t: videoT, kind: "boom", power: Math.min(1, a.kos / 15) });
           }
-          if (!caption || videoT - caption.at > 1.2 || a.kos >= 8) caption = { text: multiKoLine(nameOf(a.actor), a.move, a.kos, nameOf(a.target)), at: videoT, gold: false };
+          if (!caption || videoT - caption.at > 1.2 || a.kos >= 8) caption = { text: multiKoLine(nameOf(a.actor), W8.move(a.move), a.kos, nameOf(a.target), c), at: videoT, gold: false };
         } else if (a.crit && a.bossHit) {
           director.offer({ kind: "crit", x: a.x, z: a.z, h: a.h, power: 0.6 });
-          caption = { text: critLine(nameOf(a.actor), a.move, nameOf(a.target)), at: videoT, gold: true };
+          caption = { text: critLine(nameOf(a.actor), W8.move(a.move), nameOf(a.target), c), at: videoT, gold: true };
         }
         if (a.bossHit && a.share > 0.3) director.offer({ kind: "big", x: a.x, z: a.z, h: a.h, power: a.share });
         if (a.kos > 0) director.offer({ kind: "final", x: a.x, z: a.z, h: a.h, power: 0 });
@@ -339,7 +361,8 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
     const logo = await loadImage(o.logo);
     const font = o.font;
     const names = b.names;
-    const hookText = videoHook(b);
+    const hookText = videoHook(b, tv);
+    const lc = tv.locale;
     const total = (s: 0 | 1) => ready.start[s];
     const bossIdx = bossSide >= 0 ? Array.from({ length: ready.n }, (_, i) => i).filter((i) => ready.side[i] === bossSide) : [];
     const bossMax = bossIdx.reduce((a, i) => a + ready.maxHp[ready.sp[i]], 0);
@@ -387,7 +410,7 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
           g.textAlign = s === 0 ? "left" : "right";
           const tx = s === 0 ? x + W * 0.03 : x + pw - W * 0.03;
           outlined(g, (names[s].length > 16 ? `${names[s].slice(0, 15)}…` : names[s]).toUpperCase(), tx, y - ph * 0.2, W * 0.03, font, s === 0 ? "#9fd0ff" : "#ffb3a6", 800, 0.16);
-          outlined(g, hide ? "?" : fmt(view.left[s]), tx, y + ph * 0.14, W * 0.052, font, "#ffffff", 800, 0.16);
+          outlined(g, hide ? "?" : fmt(view.left[s], lc), tx, y + ph * 0.14, W * 0.052, font, "#ffffff", 800, 0.16);
           const bx = x + W * 0.03, bw = pw - W * 0.06, by = y + ph * 0.36;
           g.fillStyle = "rgba(255,255,255,0.16)";
           g.fillRect(bx, by, bw, W * 0.008);
@@ -397,7 +420,7 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
           else g.fillRect(bx + bw * (1 - share), by, bw * share, W * 0.008);
         }
         g.textAlign = "center";
-        outlined(g, "VS", W / 2, y, W * 0.04, font, "#ffd84a", 800, 0.18);
+        outlined(g, tv("vid.vsShort"), W / 2, y, W * 0.04, font, "#ffd84a", 800, 0.18);
         // The boss's health.
         if (bossIdx.length && bossMax > 0) {
           let hp = 0;
@@ -480,10 +503,10 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
         g.restore();
         g.save();
         g.globalAlpha = a * Math.min(1, Math.max(0, (t - 0.35) / 0.3));
-        const left = b.answer ? `? ${names[0]}` : `${fmt(total(0))} ${names[0]}`;
-        const right = `${fmt(total(1))} ${names[1]}`;
-        outlined(g, `${left}  VS  ${right}`.toUpperCase(), W / 2, vsY, W * 0.045, font, "#ffffff", 800, 0.18);
-        outlined(g, "POKÉMON MASS BATTLE · REAL BATTLE MATHS", W / 2, subY, W * 0.028, font, "#9fd8ff", 800, 0.16);
+        const left = b.answer ? tv("vid.sideUnknown", { name: names[0] }) : tv("vid.sideCount", { n: fmt(total(0), lc), name: names[0] });
+        const right = tv("vid.sideCount", { n: fmt(total(1), lc), name: names[1] });
+        outlined(g, tv("vid.vs", { left, right }).toUpperCase(), W / 2, vsY, W * 0.045, font, "#ffffff", 800, 0.18);
+        outlined(g, tv("vid.sub"), W / 2, subY, W * 0.028, font, "#9fd8ff", 800, 0.16);
         g.restore();
       }
       // The answer (counted up), or the result.
@@ -502,15 +525,15 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
         g.fillStyle = rays;
         g.fillRect(0, H * 0.2, W, H * 0.5);
         if (b.answer) {
-          outlined(g, "IT TAKES", W / 2, H * 0.355, W * 0.065, font, "#ffffff");
+          outlined(g, tv("vid.itTakes"), W / 2, H * 0.355, W * 0.065, font, "#ffffff");
           const pop = 1 + 0.18 * Math.max(0, 1 - Math.abs(k - 1) * 3);
           const shown = Math.round(b.answer.n * easeOut(k));
-          outlined(g, fmt(Math.max(1, shown)), W / 2, H * 0.445, W * 0.22 * pop, font, "#ffd84a");
+          outlined(g, fmt(Math.max(1, shown), lc), W / 2, H * 0.445, W * 0.22 * pop, font, "#ffd84a");
           outlined(g, names[0].toUpperCase(), W / 2, H * 0.535, W * 0.08, font, "#ffffff");
-          outlined(g, spreadText(b.answer.spread, b.answer.runs), W / 2, H * 0.59, W * 0.034, font, "#9fd8ff", 800, 0.16);
+          outlined(g, spreadText(b.answer.spread, b.answer.runs, c), W / 2, H * 0.59, W * 0.034, font, "#9fd8ff", 800, 0.16);
         } else {
           const o2 = view.end?.outcome;
-          const title = o2 ? resultTitle(o2.winner, names, o2.left) : "";
+          const title = o2 ? resultTitle(o2.winner, names, o2.left, c) : "";
           const pop = 0.8 + 0.2 * easeOutBack(k);
           g.save();
           g.translate(W / 2, H * 0.42);
@@ -519,7 +542,7 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
           const lines = wrap(g, title.toUpperCase(), W * 0.86);
           lines.forEach((l, j) => outlined(g, l, 0, (j - (lines.length - 1) / 2) * W * 0.1, W * 0.09, font, "#ffd84a"));
           g.restore();
-          if (o2 && o2.winner !== 2) outlined(g, `${fmt(o2.left[o2.winner])} LEFT STANDING`, W / 2, H * 0.53, W * 0.048, font, "#ffffff");
+          if (o2 && o2.winner !== 2) outlined(g, tv("vid.leftStanding", { n: fmt(o2.left[o2.winner], lc) }), W / 2, H * 0.53, W * 0.048, font, "#ffffff");
         }
         g.restore();
       }
@@ -533,13 +556,13 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
         const s = W * 0.26 * (0.9 + 0.1 * easeOutBack((t - (seconds - plan.end)) / 0.4));
         if (logo) g.drawImage(logo, W / 2 - s / 2, H * 0.33 - s / 2, s, s);
         outlined(g, "PokéIQ", W / 2, H * 0.33 + W * 0.2, W * 0.11, font, "#ffffff");
-        outlined(g, b.answer ? answerText(b.answer.n, names[0]) : "Make your own battle", W / 2, H * 0.51, W * 0.05, font, "#ffd21f");
-        outlined(g, LINK_TEXT, W / 2, H * 0.565, W * 0.04, font, "#9fd8ff", 800, 0.16);
+        outlined(g, b.answer ? answerText(b.answer.n, names[0], c) : tv("vid.own"), W / 2, H * 0.51, W * 0.05, font, "#ffd21f");
+        outlined(g, lc === "en" ? LINK_TEXT : `${new URL(SITE_URL).host}/${lc}/lab/mass-battle`, W / 2, H * 0.565, W * 0.04, font, "#9fd8ff", 800, 0.16);
         g.restore();
       }
     };
     const vcfg = await pickVideoCodec(W, H, fps);
-    if (!vcfg) throw new Error("This browser can't encode video (WebCodecs is needed: try Chrome, Edge or Safari)");
+    if (!vcfg) throw new Error(tv("vid.noEncode"));
     let failure: unknown = null;
     let description: Uint8Array | null = null;
     const chunks: { data: Uint8Array; ts: number; dur: number; key: boolean }[] = [];
@@ -564,14 +587,14 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
       enc.encode(frame, { keyFrame: i % (fps * 2) === 0 });
       frame.close();
       while (enc.encodeQueueSize > 3) await sleep(2);
-      o.onProgress(0.08 + ((i + 1) / N) * 0.86, "Rendering");
+      o.onProgress(0.08 + ((i + 1) / N) * 0.86, tv("vid.renderingShort"));
     }
     await enc.flush();
     enc.close();
     if (failure) throw failure;
-    if (!description) throw new Error("The video encoder gave no decoder configuration");
+    if (!description) throw new Error(tv("vid.noConfig"));
     // The soundtrack, now the hits' times are known.
-    o.onProgress(0.95, "Mixing the sound");
+    o.onProgress(0.95, tv("vid.mixing"));
     const rate = 48000;
     const acodec = await pickAudioCodec(rate);
     const mix = acodec ? await mixAudio(seconds, cues, Math.min(finaleAt, seconds - plan.end), revealAt, rate, o.signal, b.spec.arena) : null;
@@ -605,7 +628,7 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
       await aenc.flush();
       aenc.close();
     }
-    o.onProgress(1, "Packing the MP4");
+    o.onProgress(1, tv("vid.packing"));
     const mux = new Mp4Muxer({ width: W, height: H, description }, acodec && audioChunks.length ? { codec: acodec.codec, sampleRate: rate, channels: 2, description: audioDesc ?? (acodec.codec === "aac" ? aacConfig(rate, 2) : undefined) } : undefined);
     for (const c of chunks) mux.addVideo(c.data, c.ts, c.dur, c.key);
     for (const c of audioChunks) mux.addAudio(c.data, c.ts, c.dur);

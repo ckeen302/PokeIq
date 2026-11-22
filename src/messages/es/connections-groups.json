@@ -180,7 +180,7 @@
     "rule": "Todos los nombres en inglés empiezan por la letra {letter}."
   },
   "ends": {
-    "label": "Nombre inglés en «-{ending}»",
+    "label": "Nombre inglés en “-{ending}”",
     "rule": "Todos los nombres en inglés terminan en -{ending}."
   },
   "short": {
@@ -202,15 +202,15 @@
     "accent": "una tilde"
   },
   "wordplay": {
-    "hiddenIn": "«{word}» en {name}",
+    "hiddenIn": "“{word}” en {name}",
     "colourLabel": "Esconde un color (en inglés)",
     "colourRule": "Todos los nombres en inglés esconden un color en inglés: {words}.",
     "bodyLabel": "Esconde una parte del cuerpo (en inglés)",
     "bodyRule": "Todos los nombres en inglés esconden una parte del cuerpo en inglés: arm, toe, ear, fin...",
     "wordLabel": "Empieza por una palabra inglesa",
     "wordRule": "Todos los nombres en inglés son, o empiezan por, una palabra inglesa común: slow, star, bell, bear...",
-    "wordPlus": "«{word}» + «{rest}»",
-    "wordAlone": "«{word}» a secas",
+    "wordPlus": "“{word}” + “{rest}”",
+    "wordAlone": "“{word}” a secas",
     "rhymeLabel": "Nombres ingleses que riman: -{ending}",
     "rhymeRule": "Todos los nombres en inglés terminan en las mismas letras: -{ending}."
   },

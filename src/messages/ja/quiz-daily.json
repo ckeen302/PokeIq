@@ -1,0 +1,20 @@
+{
+  "label": "デイリーチャレンジ",
+  "labelNumber": "デイリーチャレンジ #{n}",
+  "title": "今日のPokéIQテスト",
+  "intro": "全10問のミックスクイズ。問題は全トレーナー共通、挑戦は1回だけ。全力でいこう。",
+  "youScored": "あなたの結果",
+  "iq": "PokéIQ <b>{iq}</b>・{score}点",
+  "streak": "{n}日連続・最高 {best}日",
+  "leaderboard": "今日のランキング",
+  "next": "次のデイリーチャレンジまで",
+  "more": "まだ遊び足りない？ <dle>Pokédle</dle>や<quiz>サバイバル</quiz>もどうぞ。",
+  "parts": {
+    "whos-that": "シルエット",
+    "dex": "図鑑の説明",
+    "types": "タイプ相性",
+    "higher-lower": "能力くらべ"
+  },
+  "rules": "1問15秒・スピードと連続正解のボーナスあり",
+  "start": "デイリー #{n} をスタート"
+}

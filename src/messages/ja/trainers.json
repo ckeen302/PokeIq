@@ -1,0 +1,113 @@
+{
+  "meta": {
+    "title": "ポケモントレーナー一覧 — すべてのトレーナー・手持ち・場所（第1〜9世代）",
+    "description": "『赤・緑』から『スカーレット・バイオレット』まで、すべてのトレーナーがいる場所と手持ちのポケモン、レベル、わざ、持ち物を掲載。ジムリーダーや四天王からライバル、再戦まで。",
+    "gameTitle": "『ポケモン {game}』のすべてのトレーナー — 場所別の手持ち",
+    "gameDescription": "『ポケモン {game}』のトレーナーの手持ちを道路ごとに掲載。ジムリーダー、四天王、ライバル、一般トレーナーのポケモン、レベル、わざ、持ち物。",
+    "gameSocial": "{game}のトレーナー · PokéIQ ポケモン図鑑",
+    "areaTitle": "{area}のトレーナー — 『ポケモン {game}』",
+    "areaDescription": "『ポケモン {game}』の{area}にいるトレーナー{n}人の手持ちのポケモン、レベル、わざ、持ち物、再戦時の手持ち。",
+    "areaSocial": "{area} · {game}のトレーナー",
+    "notableTitle": "{name}（{role}）の手持ちと場所",
+    "notableTitleType": "{name}（{role}・{type}タイプ）の手持ちと場所",
+    "notableDescription": "{lead}。{games}で{name}が使うすべての手持ちと、レベル、わざ、持ち物、戦える場所。",
+    "notableDescriptionLocal": "{games}で{name}が使うすべての手持ちと、レベル、わざ、持ち物、戦える場所。",
+    "notableSocial": "{name} · PokéIQ トレーナー"
+  },
+  "list": {
+    "kicker": "トレーナーデータベース",
+    "blurb": "第1世代から第9世代まで、すべてのトレーナーの居場所と手持ちのポケモン。最初のたんパンこぞうからチャンピオンまで、再戦やDLCも収録しています。",
+    "byGame": "ゲームから探す",
+    "byGameAside": "道路ごとに",
+    "gen": "第{gen}世代 · {regions}",
+    "notable": "主要なトレーナー",
+    "notableAside": "{n}人",
+    "sources": "第1〜4世代の手持ち、わざ、場所は各ゲームの<pret>pret</pret>逆アセンブルから、第5〜9世代の手持ちは<bulba>Bulbapedia</bulba>の場所ページから取得し、Serebiiで確認しています。相手がランダムに変わるバトル施設は載せていません。"
+  },
+  "headings": {
+    "gymLeader": "ジムリーダー",
+    "eliteFour": "四天王",
+    "trialCaptain": "キャプテン",
+    "kahuna": "しまキング・しまクイーン",
+    "champion": "チャンピオン",
+    "rival": "ライバル",
+    "trainer": "レジェンド",
+    "villain": "悪の組織のボス",
+    "admin": "悪の組織の幹部"
+  },
+  "roles": {
+    "gymLeader": "ジムリーダー",
+    "eliteFour": "四天王",
+    "trialCaptain": "キャプテン",
+    "kahuna": "しまキング",
+    "champion": "チャンピオン",
+    "rival": "ライバル",
+    "trainer": "トレーナー",
+    "villain": "ボス",
+    "admin": "幹部"
+  },
+  "kinds": {
+    "routes": "道路",
+    "towns": "町と街",
+    "places": "その他の場所とダンジョン"
+  },
+  "allTrainers": "すべてのトレーナー",
+  "game": {
+    "kicker": "トレーナー · 第{gen}世代 · {regions}",
+    "title": "『ポケモン {game}』",
+    "intro": "場所ごとのトレーナーの手持ち。道路、町、ダンジョンを選ぶと、そこで戦えるトレーナー全員と使うポケモンがわかります。",
+    "notableAside": "{game}に{n}人",
+    "trainers": "トレーナー{n}人",
+    "importedPret": "<link>{repo}</link>から取得。",
+    "importedWiki": "<link>{repo}</link>の場所ページから取得し、Serebiiで確認しています。相手がランダムに変わるバトル施設は載せていません。"
+  },
+  "area": {
+    "back": "{game}のトレーナー",
+    "kicker": "『ポケモン {game}』 · {region}",
+    "count": "トレーナー{n}人。",
+    "countAcross": "{k}つのエリアにトレーナー{n}人。",
+    "place": "場所と野生のポケモン",
+    "atlas": "ワールドアトラス",
+    "alsoIn": "ほかの登場作品："
+  },
+  "notable": {
+    "battles": "手持ち{n}組"
+  },
+  "team": {
+    "battles": "バトル",
+    "firstBattle": "1回目",
+    "battle": "{n}回目",
+    "rematch": "再戦",
+    "rematchN": "再戦{n}",
+    "chose": "{pokemon}を選んだ場合",
+    "requires": "{what}が必要",
+    "afterChampion": "チャンピオンになった後",
+    "beforeHof": "殿堂入り前",
+    "afterHof": "殿堂入り後",
+    "postGame": "クリア後",
+    "firstVisit": "初めて訪れたとき",
+    "rolePage": "{role}のページ",
+    "notInList": "道具リストにありません",
+    "lv": "Lv.{lv}",
+    "lvRange": "Lv.{lo}〜{hi}",
+    "tera": "テラス",
+    "heldItem": "持ち物：",
+    "moves": "わざ",
+    "levelUpTitle": "出典にわざの記載がないため、レベルアップで最後に覚えるわざを表示しています。わざが決まっていないトレーナーのポケモンに、ゲームが与えるわざ構成です。",
+    "levelUp": "レベルアップわざ",
+    "size": "{n}匹",
+    "sizeDouble": "{n}匹 · ダブルバトル",
+    "only": "{version}のみ",
+    "uses": "使う道具"
+  },
+  "forms": {
+    "sandyCloak": "すなちのミノ",
+    "trashCloak": "ゴミのミノ",
+    "eastSea": "ひがしのうみ",
+    "alolanForm": "アローラのすがた",
+    "galarianForm": "ガラルのすがた",
+    "hisuianForm": "ヒスイのすがた",
+    "paldeanForm": "パルデアのすがた",
+    "form": "フォルム{n}"
+  }
+}

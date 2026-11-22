@@ -1,0 +1,18 @@
+{
+  "tabs": {
+    "pokemon": "Pokémon",
+    "moves": "Capacités",
+    "abilities": "Talents",
+    "items": "Objets",
+    "places": "Lieux",
+    "types": "Types",
+    "natures": "Natures",
+    "trainers": "Dresseurs",
+    "tcg": "JCC",
+    "games": "Jeux",
+    "movies": "Films",
+    "theories": "Théories"
+  },
+  "section": "Rubrique",
+  "sections": "Rubriques du Pokédex"
+}

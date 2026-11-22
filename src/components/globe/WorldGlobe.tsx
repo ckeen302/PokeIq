@@ -15,6 +15,8 @@ import type { GlobeShotIndex } from "@/lib/globe/shots";
 import type { GlobeEra, GlobeRegionCard } from "@/lib/globe/regions";
 import type { HoverInfo, SceneApi } from "./scene";
 import type { GlobeAudio } from "./audio";
+import { useT } from "@/i18n/client";
+import globeNs from "@/messages/globe";
 
 const CSS = `
 .gl-lb{position:absolute;left:0;top:0;white-space:nowrap;will-change:transform;transition:color .15s}
@@ -40,6 +42,18 @@ const CSS = `
 
 type Popup = { info: HoverInfo; pinned: boolean; i: number };
 
+/**
+ * A page in another language (from the server, lib/globe/local.ts): the names the globe shows (places, regions and
+ * screenshot game labels, English → that language's) and where each region is based on. English pages pass none.
+ */
+export interface GlobeLocal {
+  names: Record<string, string>;
+  origins: Record<string, string>;
+}
+
+/** The scene's detail levels → their messages. */
+const TIER_KEY: Record<string, "all" | "towns" | "major" | "regions"> = { "Every place": "all", "Towns and cities": "towns", "Major cities": "major", Regions: "regions" };
+
 function localStore(): Storage | null {
   try {
     return window.localStorage;
@@ -48,7 +62,9 @@ function localStore(): Storage | null {
   }
 }
 
-export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras: GlobeEra[] }) {
+export function WorldGlobe({ regions, eras, local }: { regions: GlobeRegionCard[]; eras: GlobeEra[]; local?: GlobeLocal }) {
+  const t = useT(globeNs);
+  const n = (name: string) => local?.names[name] ?? name;
   const hostRef = useRef<HTMLDivElement>(null);
   const layerRef = useRef<HTMLDivElement>(null);
   const popRef = useRef<HTMLDivElement>(null);
@@ -61,7 +77,7 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
   /** Bumped to build the scene again (after its WebGL context was lost). */
   const [sceneGen, setSceneGen] = useState(0);
   const [state, setState] = useState<"loading" | "ready" | "nogl" | "failed">("loading");
-  const [stats, setStats] = useState({ lon: "0.0°", lat: "0.0°", zoom: "1.0×", tier: "Regions", focus: "Kanto" });
+  const [stats, setStats] = useState<{ lon: string; lat: string; zoom: string; tier: string; focus: string; region?: string; near?: boolean }>({ lon: "0.0°", lat: "0.0°", zoom: "1.0×", tier: "Regions", focus: "Kanto" });
   const [auto, setAuto] = useState(true);
   const [intro, setIntro] = useState<boolean | null>(null);
   const [era, setEraState] = useState(LAST_GEN);
@@ -173,7 +189,7 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
           introDone() { setIntro(false); },
           firstPointer() { void ensureShots(); },
         },
-        { intro: playIntro, quality: q !== null && /^[0-3]$/.test(q) ? Number(q) : null, era: startEra, onContextGone: () => alive && setSceneGen((g) => g + 1) },
+        { intro: playIntro, quality: q !== null && /^[0-3]$/.test(q) ? Number(q) : null, era: startEra, onContextGone: () => alive && setSceneGen((g) => g + 1), ...(local && { names: local.names }) },
       );
       if (!s) { setIntro(false); return setState("nogl"); }
       api.current = s;
@@ -188,6 +204,7 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
       api.current?.dispose();
       api.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the names come with the page and never change
   }, [ensureShots, preload, sceneGen]);
 
   // ---- the globe is full screen: the page behind it doesn't scroll (nor show a scrollbar)
@@ -293,6 +310,9 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
   const btn = "tap pointer-events-auto rounded-md border bg-card/80 px-3 py-2 font-display text-xs font-semibold uppercase tracking-[0.12em] backdrop-blur hover:border-screen focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
   const ready = state === "ready";
   const hudOn = ready && intro === false;
+  // The HUD's place in the view: the scene's English, or the region's name in the page's language.
+  const focus = !local ? stats.focus : stats.region === undefined ? n(stats.focus) : stats.region ? (stats.near ? t("near", { name: n(stats.region) }) : n(stats.region)) : "";
+  const origin = !local ? REGION_ORIGINS[stats.focus] : stats.near ? undefined : local.origins[stats.region ?? stats.focus];
 
   return (
     <div ref={hostRef} className="fixed inset-0 z-[60] overflow-hidden bg-background text-foreground" data-testid="world-globe" data-state={state} data-era={era} data-intro={intro ? "1" : "0"} data-card={card ?? ""}>
@@ -305,30 +325,30 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
       <div aria-hidden className={"pointer-events-none absolute inset-x-0 bottom-0 h-56 transition-opacity duration-700 " + (hudOn ? "opacity-100" : "opacity-0")} style={{ background: "linear-gradient(transparent, hsl(var(--background) / .78))" }} />
       {state === "nogl" && (
         <div className="absolute inset-0 flex items-center justify-center p-6 text-center" data-testid="globe-fallback">
-          <p className="font-display text-lg font-semibold uppercase tracking-wider text-muted-foreground">Your browser can&apos;t show 3D graphics</p>
+          <p className="font-display text-lg font-semibold uppercase tracking-wider text-muted-foreground">{t("noGl")}</p>
         </div>
       )}
-      {state === "failed" && <p className="absolute inset-0 flex items-center justify-center font-display text-muted-foreground">Couldn&apos;t load the atlas. Try reloading.</p>}
+      {state === "failed" && <p className="absolute inset-0 flex items-center justify-center font-display text-muted-foreground">{t("failed")}</p>}
 
       {/* HUD */}
       <div className={"transition-opacity duration-700 " + (hudOn || state === "nogl" || state === "failed" || intro === false ? "opacity-100" : "opacity-0")}>
         <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-between gap-3 px-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-6">
           <div className="min-w-0">
-            <nav aria-label="Breadcrumb" className="mb-3 flex flex-wrap gap-2">
-              <Link href={LAB_PATH} className={btn} data-testid="globe-lab">← 3D Lab</Link>
+            <nav aria-label={t("breadcrumb")} className="mb-3 flex flex-wrap gap-2">
+              <Link href={LAB_PATH} className={btn} data-testid="globe-lab">{t("lab")}</Link>
               <Link href="/pokeguessr" className={btn}>PokéGuessr</Link>
             </nav>
-            <h1 className="font-display text-xl font-bold uppercase tracking-[0.14em] sm:text-3xl">Poké<span className="text-primary">IQ</span> World</h1>
+            <h1 className="font-display text-xl font-bold uppercase tracking-[0.14em] sm:text-3xl">{t.rich("title", { accent: (chunks) => <span className="text-primary">{chunks}</span> })}</h1>
             <p className="mt-1.5 font-pixel text-[10px] uppercase tracking-[0.14em] text-screen">
-              {state === "ready" ? "Every region, on one world" : "Loading the world…"}
+              {state === "ready" ? t("tagline") : t("loading")}
             </p>
           </div>
           <div className="flex shrink-0 flex-col items-end gap-2">
-            <button type="button" onClick={toggleSound} data-testid="globe-sound" aria-pressed={!muted} aria-label={muted ? "Turn sound on" : "Turn sound off"} title={muted ? "Sound off" : "Sound on"} className={btn + " flex h-9 w-9 items-center justify-center !p-0"}>
+            <button type="button" onClick={toggleSound} data-testid="globe-sound" aria-pressed={!muted} aria-label={muted ? t("soundOn") : t("soundOff")} title={muted ? t("soundIsOff") : t("soundIsOn")} className={btn + " flex h-9 w-9 items-center justify-center !p-0"}>
               {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4 text-primary" />}
             </button>
             <div className="hidden text-right font-pixel text-[10px] uppercase leading-[1.9] tracking-[0.12em] tabular-nums text-muted-foreground sm:block">
-              Lon <b className="font-normal text-foreground">{stats.lon}</b><br />Lat <b className="font-normal text-foreground">{stats.lat}</b><br />Zoom <b className="font-normal text-foreground">{stats.zoom}</b>
+              {t("lon")} <b className="font-normal text-foreground">{stats.lon}</b><br />{t("lat")} <b className="font-normal text-foreground">{stats.lat}</b><br />{t("zoom")} <b className="font-normal text-foreground">{stats.zoom}</b>
             </div>
           </div>
         </div>
@@ -336,17 +356,17 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
         <div className={"pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-3 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] transition-opacity sm:px-6 " + (card && narrow ? "invisible opacity-0" : "")}>
           <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
             <div className="min-w-0 max-w-md">
-              <p className="mb-1 font-pixel text-[10px] uppercase tracking-[0.14em] text-screen">Detail: {stats.tier}</p>
-              <p className="min-h-[1.3em] font-display text-base font-bold uppercase tracking-[0.14em] sm:text-2xl">{stats.focus}</p>
-              {REGION_ORIGINS[stats.focus] && <p className="mb-1 hidden text-sm text-foreground/85 sm:block" data-testid="globe-region-origin">{REGION_ORIGINS[stats.focus]}</p>}
-              <p className="hidden text-xs text-muted-foreground sm:block">Drag to spin · scroll or pinch to zoom · hover a town to see it · click a region to fly there</p>
+              <p className="mb-1 font-pixel text-[10px] uppercase tracking-[0.14em] text-screen">{t("detail", { tier: t(`tiers.${TIER_KEY[stats.tier] ?? "regions"}`) })}</p>
+              <p className="min-h-[1.3em] font-display text-base font-bold uppercase tracking-[0.14em] sm:text-2xl">{focus}</p>
+              {origin && <p className="mb-1 hidden text-sm text-foreground/85 sm:block" data-testid="globe-region-origin">{origin}</p>}
+              <p className="hidden text-xs text-muted-foreground sm:block">{t("help")}</p>
             </div>
             <div className="flex flex-col items-stretch gap-2 sm:items-end">
-              <EraControl eras={eras} era={era} playing={playing} onEra={(g) => { setPlaying(false); chooseEra(g); }} onPlay={() => setPlaying((p) => !p)} caption={eraInfo} />
+              <EraControl eras={eras} era={era} playing={playing} onEra={(g) => { setPlaying(false); chooseEra(g); }} onPlay={() => setPlaying((p) => !p)} caption={eraInfo} local={local} />
               <div className="flex flex-wrap gap-2 sm:justify-end">
-                <button type="button" aria-pressed={auto} onClick={() => api.current?.setAuto(!auto)} className={btn + (auto ? " border-primary text-primary" : "")}>Auto-spin</button>
-                <button type="button" onClick={() => api.current?.next()} className={btn}>Next region</button>
-                <button type="button" onClick={() => api.current?.out()} className={btn}>Zoom out</button>
+                <button type="button" aria-pressed={auto} onClick={() => api.current?.setAuto(!auto)} className={btn + (auto ? " border-primary text-primary" : "")}>{t("autoSpin")}</button>
+                <button type="button" onClick={() => api.current?.next()} className={btn}>{t("nextRegion")}</button>
+                <button type="button" onClick={() => api.current?.out()} className={btn}>{t("zoomOut")}</button>
               </div>
             </div>
           </div>
@@ -363,32 +383,32 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
           className="gl-pop pointer-events-auto fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-3 right-3 z-20 overflow-hidden rounded-lg border border-screen/50 bg-card/95 shadow-[0_0_32px_hsl(var(--screen)/0.25)] backdrop-blur sm:absolute sm:bottom-auto sm:left-0 sm:right-auto sm:top-0 sm:w-[320px]"
           style={{ visibility: "hidden" }}
         >
-          <ShotFrame shot={shot} name={popup.info.name} loading={!shotIndex} />
+          <ShotFrame shot={shot} name={popup.info.name} loading={!shotIndex} local={local} />
           <div className="flex items-start gap-2 p-3">
             <div className="min-w-0 flex-1">
-              <p className="truncate font-display text-sm font-bold uppercase tracking-[0.1em]" data-testid="globe-shot-name">{shot?.n ?? popup.info.name}</p>
+              <p className="truncate font-display text-sm font-bold uppercase tracking-[0.1em]" data-testid="globe-shot-name">{n(shot?.n ?? popup.info.name)}</p>
               <p className="font-pixel text-[9px] uppercase leading-relaxed tracking-[0.14em] text-screen">
-                {popup.info.region}{shot ? ` · ${shot.g}` : ""}
+                {n(popup.info.region)}{shot ? ` · ${n(shot.g)}` : ""}
               </p>
               {shot && (
                 <Link href={`/pokedex/places/${placeSlug({ name: shot.n, region: popup.info.region })}`} className="mt-1 inline-block text-[11px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline">
-                  Open its Pokédex page
+                  {t("dexPage")}
                 </Link>
               )}
             </div>
             {shotList.length > 1 && (
               <div className="flex shrink-0 items-center gap-1">
                 <span className="font-pixel text-[9px] tabular-nums text-muted-foreground">{(popup.i % shotList.length) + 1}/{shotList.length}</span>
-                <button type="button" aria-label="Previous picture" className={btn + " !p-1.5"} onClick={() => { audio.current?.hover(); setPopup((p) => p && { ...p, i: (p.i + shotList.length - 1) % shotList.length }); }}>
+                <button type="button" aria-label={t("prevPicture")} className={btn + " !p-1.5"} onClick={() => { audio.current?.hover(); setPopup((p) => p && { ...p, i: (p.i + shotList.length - 1) % shotList.length }); }}>
                   <ChevronLeft className="h-3.5 w-3.5" />
                 </button>
-                <button type="button" aria-label="Next picture" data-testid="globe-shot-next" className={btn + " !p-1.5"} onClick={() => { audio.current?.hover(); setPopup((p) => p && { ...p, i: (p.i + 1) % shotList.length }); }}>
+                <button type="button" aria-label={t("nextPicture")} data-testid="globe-shot-next" className={btn + " !p-1.5"} onClick={() => { audio.current?.hover(); setPopup((p) => p && { ...p, i: (p.i + 1) % shotList.length }); }}>
                   <ChevronRight className="h-3.5 w-3.5" />
                 </button>
               </div>
             )}
             {(popup.pinned || narrow) && (
-              <button type="button" aria-label="Close" data-testid="globe-shot-close" className={btn + " !p-1.5"} onClick={closePopup}>
+              <button type="button" aria-label={t("close")} data-testid="globe-shot-close" className={btn + " !p-1.5"} onClick={closePopup}>
                 <X className="h-3.5 w-3.5" />
               </button>
             )}
@@ -402,6 +422,7 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
           key={regionCard.name}
           card={regionCard}
           narrow={narrow}
+          local={local}
           onClose={() => { audio.current?.close(); setCard(null); }}
         />
       )}
@@ -415,23 +436,23 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
           onWheel={() => api.current?.skipIntro()}
           onTouchStart={() => api.current?.skipIntro()}
           className="absolute inset-0 z-30 flex cursor-pointer flex-col items-center justify-center text-center outline-none"
-          aria-label="Skip the intro"
+          aria-label={t("skipIntro")}
         >
           {/* Dark until the world is built, then the veil lifts as the camera falls in from space. */}
           <span aria-hidden className="absolute inset-0 bg-background" style={ready ? { animation: "gl-intro-veil 1.4s ease-out .15s both" } : undefined} />
           {ready && (
             <>
               <span className="relative font-display text-3xl font-bold uppercase text-foreground sm:text-6xl" style={{ animation: "gl-intro-title 3.4s ease-out .2s both", textShadow: "0 0 28px hsl(var(--screen) / .6)" }}>
-                Poké<span className="text-primary">IQ</span> World
+                {t.rich("title", { accent: (chunks) => <span className="text-primary">{chunks}</span> })}
               </span>
               <span className="relative mt-3 font-pixel text-[10px] uppercase tracking-[0.3em] text-screen sm:text-xs" style={{ animation: "gl-intro-sub 3.4s ease-out .2s both" }}>
-                Every region, on one world
+                {t("tagline")}
               </span>
             </>
           )}
           <span data-testid="globe-intro-skip" className="absolute bottom-[max(1.5rem,env(safe-area-inset-bottom))] font-pixel text-[9px] uppercase tracking-[0.3em] text-muted-foreground" style={{ animation: "gl-blink 1.2s steps(2) infinite" }}>
-            <span className="max-md:hidden">Click or press any key to skip</span>
-            <span className="md:hidden">Tap to skip</span>
+            <span className="max-md:hidden">{t("skipClick")}</span>
+            <span className="md:hidden">{t("skipTap")}</span>
           </span>
         </button>
       )}
@@ -440,7 +461,9 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
   );
 }
 
-function ShotFrame({ shot, name, loading }: { shot: { src: string; b?: string; n: string; g: string } | null; name: string; loading: boolean }) {
+function ShotFrame({ shot, name, loading, local }: { shot: { src: string; b?: string; n: string; g: string } | null; name: string; loading: boolean; local?: GlobeLocal }) {
+  const t = useT(globeNs);
+  const n = (s: string) => local?.names[s] ?? s;
   const [loaded, setLoaded] = useState<string | null>(null);
   return (
     <div className="relative aspect-[16/9] w-full overflow-hidden bg-shade/40">
@@ -449,7 +472,7 @@ function ShotFrame({ shot, name, loading }: { shot: { src: string; b?: string; n
         <img
           key={shot.src}
           src={shot.src}
-          alt={`${shot.n} in Pokémon ${shot.g}`}
+          alt={t("shotAlt", { place: n(shot.n), game: n(shot.g) })}
           data-testid="globe-shot-img"
           decoding="async"
           onLoad={() => setLoaded(shot.src)}
@@ -457,22 +480,26 @@ function ShotFrame({ shot, name, loading }: { shot: { src: string; b?: string; n
         />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center p-4 text-center font-pixel text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
-          {loading ? "Loading…" : `No picture of ${name} yet`}
+          {loading ? t("shotLoading") : t("noPicture", { name: n(name) })}
         </div>
       )}
     </div>
   );
 }
 
-function EraControl({ eras, era, playing, onEra, onPlay, caption }: { eras: GlobeEra[]; era: number; playing: boolean; onEra(g: number): void; onPlay(): void; caption?: GlobeEra }) {
+function EraControl({ eras, era, playing, onEra, onPlay, caption, local }: { eras: GlobeEra[]; era: number; playing: boolean; onEra(g: number): void; onPlay(): void; caption?: GlobeEra; local?: GlobeLocal }) {
+  const t = useT(globeNs);
+  const n = (s: string) => local?.names[s] ?? s;
+  // Japanese writes generations as numbers (第3世代); the others keep the games' Roman numerals.
+  const gen = (g: number) => (t.locale === "ja" ? String(g) : ROMAN[g]);
   return (
     <div className="pointer-events-auto" data-testid="globe-era">
       <p className="mb-1.5 font-pixel text-[9px] uppercase tracking-[0.14em] text-muted-foreground sm:text-right" data-testid="globe-era-caption">
-        <span className="text-screen">Era</span> · Gen {ROMAN[era]}{caption?.year ? ` · ${caption.year}` : ""}
-        {caption?.regions.length ? ` · ${era === eras.at(-1)?.gen ? "the whole world" : `adds ${caption.regions.join(", ")}`}` : ""}
+        <span className="text-screen">{t("era")}</span> · {t("gen", { gen: gen(era) })}{caption?.year ? ` · ${caption.year}` : ""}
+        {caption?.regions.length ? ` · ${era === eras.at(-1)?.gen ? t("wholeWorld") : t("adds", { regions: caption.regions.map(n).join(t("sep")) })}` : ""}
       </p>
-      <div role="group" aria-label="Show the world as it was at a generation" className="flex items-center gap-1 rounded-md border bg-card/80 p-1 backdrop-blur">
-        <button type="button" onClick={onPlay} aria-pressed={playing} data-testid="globe-era-play" aria-label={playing ? "Stop" : "Watch the world grow, generation by generation"} title="Watch the world grow" className="tap flex h-7 w-7 shrink-0 items-center justify-center rounded-sm text-primary max-sm:h-10 max-sm:w-8 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+      <div role="group" aria-label={t("eraGroup")} className="flex items-center gap-1 rounded-md border bg-card/80 p-1 backdrop-blur">
+        <button type="button" onClick={onPlay} aria-pressed={playing} data-testid="globe-era-play" aria-label={playing ? t("stop") : t("watch")} title={t("watchTitle")} className="tap flex h-7 w-7 shrink-0 items-center justify-center rounded-sm text-primary max-sm:h-10 max-sm:w-8 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           {playing ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
         </button>
         {eras.map((e) => {
@@ -483,7 +510,7 @@ function EraControl({ eras, era, playing, onEra, onPlay, caption }: { eras: Glob
               type="button"
               data-testid={`globe-era-${e.gen}`}
               aria-pressed={cur}
-              aria-label={`Generation ${e.gen}${e.year ? `, ${e.year}` : ""}${e.regions.length ? `: ${e.regions.join(", ")}` : ""}`}
+              aria-label={`${t("generation", { gen: String(e.gen) })}${e.year ? `, ${e.year}` : ""}${e.regions.length ? `: ${e.regions.map(n).join(t("sep"))}` : ""}`}
               onClick={() => onEra(e.gen)}
               className={
                 "h-7 min-w-0 flex-1 rounded-sm px-1 font-pixel text-[9px] tabular-nums max-sm:h-10 max-sm:px-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-8 sm:flex-none " +
@@ -499,11 +526,13 @@ function EraControl({ eras, era, playing, onEra, onPlay, caption }: { eras: Glob
   );
 }
 
-function RegionCard({ card, narrow, onClose }: { card: GlobeRegionCard; narrow: boolean; onClose(): void }) {
+function RegionCard({ card, narrow, local, onClose }: { card: GlobeRegionCard; narrow: boolean; local?: GlobeLocal; onClose(): void }) {
+  const t = useT(globeNs);
+  const name = local?.names[card.name] ?? card.name;
   return (
     <aside
       data-testid="globe-region-card"
-      aria-label={`${card.name} region`}
+      aria-label={t("regionLabel", { name })}
       className={
         "pointer-events-auto absolute z-20 overflow-y-auto border border-screen/50 bg-card/90 p-5 shadow-[0_0_40px_hsl(var(--screen)/0.22)] backdrop-blur-md " +
         (narrow
@@ -515,18 +544,18 @@ function RegionCard({ card, narrow, onClose }: { card: GlobeRegionCard; narrow: 
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="font-pixel text-[10px] uppercase tracking-[0.16em] text-screen" data-testid="globe-region-gen">
-            Generation {ROMAN[card.gen]}{card.year ? ` · ${card.year}` : ""}
+            {t("generation", { gen: t.locale === "ja" ? String(card.gen) : ROMAN[card.gen] })}{card.year ? ` · ${card.year}` : ""}
           </p>
-          <h2 className="mt-1 font-display text-3xl font-bold uppercase tracking-[0.14em]">{card.name}</h2>
+          <h2 className="mt-1 font-display text-3xl font-bold uppercase tracking-[0.14em]">{name}</h2>
         </div>
-        <button type="button" onClick={onClose} aria-label="Close" data-testid="globe-region-close" className="rounded-md border bg-card/80 p-1.5 hover:border-screen focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <button type="button" onClick={onClose} aria-label={t("close")} data-testid="globe-region-close" className="rounded-md border bg-card/80 p-1.5 hover:border-screen focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           <X className="h-4 w-4" />
         </button>
       </div>
       {card.origin && <p className={"mt-2 leading-snug text-foreground/80 " + (narrow ? "text-xs" : "text-sm")}>{card.origin}</p>}
       {card.starters.length > 0 && (
         <div className="mt-4">
-          <p className="mb-2 font-pixel text-[9px] uppercase tracking-[0.14em] text-muted-foreground">{card.starters.length === 1 ? "Partner" : "Starters"}</p>
+          <p className="mb-2 font-pixel text-[9px] uppercase tracking-[0.14em] text-muted-foreground">{card.starters.length === 1 ? t("partner") : t("starters")}</p>
           <ul className="grid grid-cols-3 gap-2" data-testid="globe-region-starters">
             {card.starters.map((s) => (
               <li key={s.id}>
@@ -541,7 +570,7 @@ function RegionCard({ card, narrow, onClose }: { card: GlobeRegionCard; narrow: 
       )}
       {card.games.length > 0 && (
         <div className="mt-4">
-          <p className="mb-2 font-pixel text-[9px] uppercase tracking-[0.14em] text-muted-foreground">Games set here</p>
+          <p className="mb-2 font-pixel text-[9px] uppercase tracking-[0.14em] text-muted-foreground">{t("gamesHere")}</p>
           <ul className="flex flex-wrap gap-1.5" data-testid="globe-region-games">
             {card.games.map((g) => (
               <li key={g.title} className="rounded-sm border px-2 py-1 text-[11px] leading-tight">
@@ -554,12 +583,12 @@ function RegionCard({ card, narrow, onClose }: { card: GlobeRegionCard; narrow: 
       <div className={"grid gap-2 " + (narrow ? "mt-4 grid-cols-2" : "mt-5")}>
         {card.guessr && (
           <Link href={card.guessr} data-testid="globe-region-play" className="inline-flex h-10 items-center justify-center whitespace-nowrap rounded-md bg-primary px-3 font-display text-xs sm:text-sm font-semibold uppercase tracking-wider text-primary-foreground shadow-[0_4px_0_hsl(var(--primary-shadow))] hover:brightness-110 active:translate-y-[2px] active:shadow-[0_2px_0_hsl(var(--primary-shadow))]">
-            Play PokéGuessr here
+            {t("play")}
           </Link>
         )}
         {card.places && (
           <Link href={card.places} data-testid="globe-region-dex" className="inline-flex h-10 items-center justify-center whitespace-nowrap rounded-md border border-border bg-card px-3 font-display text-xs sm:text-sm font-semibold uppercase tracking-wider shadow-[0_3px_0_hsl(var(--border))] hover:border-screen/60 active:translate-y-[2px]">
-            Open in Pokédex
+            {t("dex")}
           </Link>
         )}
       </div>

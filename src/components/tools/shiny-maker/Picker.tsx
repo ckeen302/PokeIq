@@ -1,34 +1,43 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element -- small static board pictures, many at once */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Search } from "lucide-react";
 import { useT } from "@/i18n/client";
 import tools from "@/messages/tools";
 import { boardArtUrl } from "@/lib/pokemon/art";
 import { loadSpeciesList, type SpeciesEntry } from "@/lib/shiny-maker/data";
 import { cn } from "@/lib/utils";
+import { ShinyLocalContext } from "./local";
 
 const fold = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
 
 /** Search and a grid of every Pokémon (the list is fetched when the picker first opens). */
 export function Picker({ current, onPick }: { current: number; onPick: (id: number) => void }) {
   const t = useT(tools);
+  const local = useContext(ShinyLocalContext);
   const [list, setList] = useState<SpeciesEntry[] | null>(null);
+  // Another language's page folds names in any script (kana, accents), with code English pages never load.
+  const [foldAny, setFoldAny] = useState<((s: string) => string) | null>(null);
+  useEffect(() => {
+    if (local) void import("@/components/pokedle/search").then((m) => setFoldAny(() => m.normalizeName));
+  }, [local]);
   const [q, setQ] = useState("");
   const input = useRef<HTMLInputElement>(null);
   useEffect(() => {
-    loadSpeciesList().then(setList, () => setList([]));
+    loadSpeciesList().then((l) => setList(local ? l.map(([id, name, type]) => [id, local.names[id] ?? name, type]) : l), () => setList([]));
     // Focus the search without scrolling the page on phones.
     input.current?.focus({ preventScroll: true });
-  }, []);
+  }, [local]);
   const shown = useMemo(() => {
     if (!list) return [];
-    const f = fold(q.trim());
+    const norm = local && foldAny ? foldAny : fold;
+    const f = norm(q.trim());
     if (!f) return list;
     const num = /^\d+$/.test(f) ? Number(f) : null;
-    return list.filter(([id, name]) => (num !== null ? String(id).startsWith(String(num)) : fold(name).includes(f))).sort((a, b) => (num === null ? Number(!fold(a[1]).startsWith(f)) - Number(!fold(b[1]).startsWith(f)) : 0));
-  }, [list, q]);
+    const hit = (id: number, name: string) => norm(name).includes(f) || (!!local && !!local.alt[id]?.split(" ").some((a) => a.includes(f)));
+    return list.filter(([id, name]) => (num !== null ? String(id).startsWith(String(num)) : hit(id, name))).sort((a, b) => (num === null ? Number(!norm(a[1]).startsWith(f)) - Number(!norm(b[1]).startsWith(f)) : 0));
+  }, [list, q, local, foldAny]);
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
       <label className="relative block shrink-0">

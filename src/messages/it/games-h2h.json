@@ -1,0 +1,22 @@
+{
+  "slotFilled": "{which, select, a {Primo} other {Secondo}} Pokémon: {name}. Cambia",
+  "slotEmpty": "Scegli il {which, select, a {primo} other {secondo}} Pokémon",
+  "searchBelow": "Cerca qui sotto",
+  "tapToPick": "Tocca per scegliere",
+  "vs": "VS",
+  "placeholderA": "Cerca il primo Pokémon…",
+  "placeholderB": "Cerca il rivale…",
+  "searchA": "Cerca il primo Pokémon",
+  "searchB": "Cerca il secondo Pokémon",
+  "list": "Pokémon",
+  "tapOne": "Oppure toccane uno",
+  "tapRival": "Oppure tocca un rivale",
+  "event": "La gara",
+  "eventGroup": "Gara",
+  "pickTwo": "Scegli due Pokémon",
+  "pickEvent": "Scegli una gara",
+  "pickDifferent": "Scegli due Pokémon diversi",
+  "failed": "I Pokémon non si sono caricati. Controlla la connessione e riprova.",
+  "close": "Chiudi",
+  "title": "Testa a testa"
+}

@@ -1,10 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useT } from "@/i18n/client";
 import tierList from "@/messages/tier-list";
-import type { Roster } from "@/lib/tier-list/types";
+import type { Roster, TierListLocal } from "@/lib/tier-list/types";
 import { PillButton } from "./ui";
 
 /**
@@ -56,9 +56,14 @@ function Skeleton() {
 
 const TierListApp = dynamic(() => import("./TierListApp"), { ssr: false, loading: Skeleton });
 
-export function TierListShell({ template, shared, version }: { template: string; shared: string | null; version: number }) {
+/** `local`: a page in another language's names (English pages send none). */
+export function TierListShell({ template, shared, version, local }: { template: string; shared: string | null; version: number; local?: TierListLocal }) {
   const t = useT(tierList);
-  const [roster, setRoster] = useState<Roster | null>(null);
+  const [loaded, setRoster] = useState<Roster | null>(null);
+  const roster = useMemo(
+    () => (loaded && local ? { ...loaded, mons: loaded.mons.map((m) => ({ ...m, n: local.names[m.k] ?? m.n, l: local.alt[m.k] ?? "" })) } : loaded),
+    [loaded, local]
+  );
   const [failed, setFailed] = useState(false);
   const load = useCallback(() => {
     setFailed(false);

@@ -1,0 +1,102 @@
+{
+  "meta": {
+    "hubTitle": "Gara Pokémon: qual è il Pokémon più veloce? Gare di velocità in 3D",
+    "hubDescription": "Guarda i Pokémon correre i 100, 200 e 400 m in uno stadio 3D di notte, con velocità tratte dalle statistiche base e un modello di velocità della scienza dello sport: Regieleki contro Shuckle, gli 8 più veloci, un torneo a eliminazione con tutti i Pokémon. Scegli la tua gara, condividila o crea un video.",
+    "hubSocial": "Qual è il Pokémon più veloce? Guardali correre · PokéIQ",
+    "presetTitle": "{title} (gara Pokémon in 3D)",
+    "presetDescription": "{blurb} Velocità tratte dalle statistiche base, in uno stadio 3D di notte. Guardala, scegli la tua gara o crea un video.",
+    "runTitle": "{title}: gara dei {d} m",
+    "runDescription": "{name} vince i {d} m in {time} s. {list}. Velocità tratte dalle statistiche base, in 3D su PokéIQ.",
+    "runImage": "{title}: una gara Pokémon sui {d} m"
+  },
+  "titles": {
+    "fastest-eight": "I Pokémon più veloci: la finale dei 100 m",
+    "slowest-eight": "I Pokémon più lenti sui 100 m",
+    "shuckle-vs-regieleki": "Shuckle vs Regieleki: il Pokémon più lento contro il più veloce",
+    "gen-1-final": "I Pokémon più veloci della 1ª generazione: la finale dei 100 m",
+    "starters": "Gli starter più veloci (evoluzioni finali)",
+    "legendaries": "I Pokémon leggendari e misteriosi più veloci: 200 m",
+    "eeveelutions": "Tutte le Eeveelution sui 100 m",
+    "pseudo-legendaries": "I Pokémon pseudoleggendari sui 400 m",
+    "heavyweights": "I Pokémon più pesanti sui 100 m",
+    "every-pokemon": "Tutti i Pokémon in un solo torneo a eliminazione"
+  },
+  "blurbs": {
+    "fastest-eight": "I Pokémon più veloci per Velocità base e accelerazione, in una finale dei 100 m.",
+    "slowest-eight": "Shuckle, Munchlax e gli altri Pokémon più lenti sui 100 m. Porta uno spuntino.",
+    "shuckle-vs-regieleki": "Velocità base 5 contro Velocità base 200 sui 100 m.",
+    "gen-1-final": "I Pokémon più veloci della prima generazione, gli originali di Kanto.",
+    "starters": "Gli starter completamente evoluti più veloci, scelti da tutte le linee, da quella di Bulbasaur a quella di Quaxly.",
+    "legendaries": "I Pokémon leggendari e misteriosi più veloci sui 200 m, curva compresa.",
+    "eeveelutions": "Vaporeon, Jolteon, Flareon, Espeon, Umbreon, Leafeon, Glaceon e Sylveon.",
+    "pseudo-legendaries": "Gli pseudoleggendari più veloci su un giro, dove la resistenza (PS) comincia a contare.",
+    "heavyweights": "I Pokémon più pesanti, da 800 kg in su. Occhio al terreno.",
+    "every-pokemon": "Tutti i Pokémon sorteggiati in batterie da otto, turno dopo turno fino a una finale dei 100 m."
+  },
+  "page": {
+    "back": "Gara Pokémon",
+    "customKicker": "Gara Pokémon · {d} m",
+    "wins": "{name} vince in {time} s, in base alle statistiche.",
+    "lab": "Lab 3D",
+    "hubKicker": "Gara Pokémon · 3D",
+    "hubTitle": "Gara ",
+    "hubAccent": "Pokémon",
+    "hubBlurb": "Qual è il Pokémon più veloce? Guardali correre i 100, 200 o 400 m sotto i riflettori di uno stadio 3D, con velocità tratte dalle statistiche e un modello di velocità della scienza dello sport. Scegli quelli che vuoi, condividi la gara o crea un video.",
+    "presetKicker": "Gara Pokémon · {d} m",
+    "presetTitle": "{label} ",
+    "presetAccent": "in gara",
+    "races": "Gare"
+  },
+  "ko": {
+    "title": "Il torneo a eliminazione",
+    "body": "Tutti i Pokémon vengono sorteggiati in batterie da otto. Ogni turno ne tiene circa un quarto: i primi di ogni batteria (Q) e i migliori perdenti (q). Campione: <b>{name}</b>.",
+    "one": "una gara",
+    "heats": "batterie",
+    "through": "passano {who}{losers}",
+    "winner": "il vincitore di ogni batteria",
+    "first": "i primi {n} di ogni batteria",
+    "losers": " e i {n} migliori perdenti"
+  },
+  "results": {
+    "final": "La finale · {d} m",
+    "title": "Risultati · {d} m",
+    "aria": "{title}: risultati dei {d} m",
+    "pokemon": "Pokémon",
+    "time": "Tempo",
+    "gap": "Distacco",
+    "speed": "Velocità",
+    "top": "Vel. massima",
+    "lane": "{motion} · corsia {n}",
+    "kmh": "{v} km/h",
+    "crossedAria": "Dove si trovavano tutti quando il vincitore ha tagliato il traguardo",
+    "crossed": "Quando {name} ha tagliato il traguardo",
+    "won": "vinto",
+    "back": "a {m} m",
+    "item": "{name} ({time} s)"
+  },
+  "how": "Come funziona la gara",
+  "games": {
+    "title": "Non solo velocità: i Giochi PokéIQ",
+    "body": "Gli stessi corridori nei 100, 200 e 400 m, più salto in lungo, salto in alto, getto del peso, giavellotto, sollevamento pesi, nuoto e lotta, con medaglie e medagliere.",
+    "open": "Apri i Giochi",
+    "records": "Record dei 100 m"
+  },
+  "kind": {
+    "pokemon": "Pokémon",
+    "mega": "Megaevoluzione",
+    "regional": "Forma regionale",
+    "form": "Forma alternativa"
+  },
+  "motion": {
+    "run": "Corre",
+    "gallop": "Galoppa",
+    "scuttle": "Zampetta",
+    "fly": "Vola",
+    "hover": "Levita",
+    "slither": "Striscia",
+    "flop": "Saltella",
+    "roll": "Rotola",
+    "bounce": "Rimbalza",
+    "swim": "Nuota"
+  }
+}

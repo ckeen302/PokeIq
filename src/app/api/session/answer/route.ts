@@ -4,6 +4,7 @@ import { playerRateLimit } from "@/lib/server/rate-limit";
 import { claimOnce, recallResponse, rememberResponse, requestFingerprint } from "@/lib/server/replay-guard";
 import { calibrationSettled, recordAttempt } from "@/lib/server/calibration";
 import { answerClaimKey, gradeAnswer, readSession, type AnswerOutcome } from "@/lib/server/session";
+import { loadQuizLang } from "@/engines";
 import type { AnswerResponse } from "@/lib/session-types";
 
 /** POST /api/session/answer — { token, choice } -> graded result (+ next question in Blitz). */
@@ -40,6 +41,8 @@ export async function POST(request: NextRequest) {
 
   let outcome: AnswerOutcome;
   try {
+    // A run in another language grades against the same words it was asked in.
+    await loadQuizLang(state.spec.locale);
     outcome = gradeAnswer(state, choice, loadMs);
   } catch (err) {
     console.error("[api/session/answer]", err);

@@ -1,0 +1,22 @@
+{
+  "none": "Ancora nessuna lotta dal vivo.",
+  "wins": "{pct}% di vittorie",
+  "rankedOnly": "solo classificate",
+  "recent": "Lotte recenti",
+  "result": {
+    "win": "Vinta",
+    "loss": "Persa",
+    "draw": "Pari"
+  },
+  "vs": "contro <b>{name}</b> <muted>· {format}</muted>",
+  "ranked": "Classificata",
+  "today": "oggi",
+  "yesterday": "ieri",
+  "daysAgo": "{n} giorni fa",
+  "replay": "Replay",
+  "ladder": "Classifica →",
+  "title": "Storico lotte",
+  "loading": "Caricamento del tuo storico lotte",
+  "find": "Trova un avversario",
+  "profile": "Il tuo profilo lotte pubblico →"
+}

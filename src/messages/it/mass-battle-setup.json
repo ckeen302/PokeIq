@@ -1,0 +1,212 @@
+{
+  "group": "Gruppo",
+  "members": "{detail} · {n} Pokémon",
+  "beat": "…battono",
+  "howMany": "Quanti…",
+  "pokemonN": "Pokémon {n}",
+  "each": "Ciascuno",
+  "count": "Numero",
+  "setOf": "Set di {name}",
+  "remove": "Rimuovi {name}",
+  "loadingSets": "Caricamento dei set…",
+  "addPokemon": "Pokémon",
+  "addGroup": "Gruppo",
+  "upTo": "Fino a {n} righe",
+  "formation": "Formazione",
+  "spacing": "Distanza",
+  "targets": "Bersagli",
+  "stance": "Tattica",
+  "spreadMoves": "Mosse ad area",
+  "title": "Prepara la lotta",
+  "kind": "Tipo di lotta",
+  "tabAsk": "Quanti?",
+  "tabArmy": "Esercito contro esercito",
+  "shared": "L’esercito è diviso equamente tra le sue righe (un gruppo lo divide tra tutte le sue specie).",
+  "blue": "Esercito blu",
+  "red": "Esercito rosso",
+  "level": "Livello",
+  "arena": "Arena",
+  "advanced": "Avanzate",
+  "advancedHint": "Set, meteo e campo, tattica di ogni parte, riproduzione",
+  "advancedHintAsk": "Set, meteo e campo, tattica di ogni parte, risolutore, riproduzione",
+  "setHint": "Apri l’icona <i></i> di una riga per il suo set: livello, mosse, abilità, strumento, natura, EV e IV, teratipo.",
+  "setIcon": "set",
+  "field": "Terreno",
+  "weather": "Meteo",
+  "terrain": "Campo",
+  "time": "Ora del giorno",
+  "heldItems": "Strumenti tenuti",
+  "none": "Nessuno",
+  "randomItems": "Strumenti delle lotte casuali",
+  "rules": "Regole",
+  "pp": "PP reali",
+  "ff": "Fuoco amico",
+  "rulesHint": "PP reali: le mosse si esauriscono come nei giochi (Pressione ne toglie due), poi Scontro. Fuoco amico: Terremoto, Surf ed Esplosione colpiscono anche i compagni, e Parafulmine e Acquascolo attirano le mosse di un compagno.",
+  "theArmy": "L’esercito ({names})",
+  "theBoss": "Il boss ({names})",
+  "answer": "La risposta",
+  "winsNeeded": "Vittorie richieste",
+  "half": "Metà (50%)",
+  "nine": "Nove su dieci (90%)",
+  "perSize": "Lotte per dimensione",
+  "playback": "Riproduzione",
+  "speed": "Velocità",
+  "camera": "Telecamera",
+  "slowmo": "Rallentatore sui colpi forti",
+  "numbers": "Numeri dei danni",
+  "hud": "HUD",
+  "find": "Scoprilo",
+  "fight": "Lotta!",
+  "presets": "Lotte già pronte",
+  "presetsAside": "Ognuna con il suo link",
+  "type": "Tipo",
+  "anyType": "Qualsiasi tipo",
+  "andType": "E tipo",
+  "generation": "Generazione",
+  "any": "Tutte",
+  "gen": "Generazione {n}",
+  "legendaries": "Leggendari",
+  "leaveOut": "Escludili",
+  "include": "Includili",
+  "onlyLeg": "Solo leggendari",
+  "onlyMyth": "Solo misteriosi",
+  "both": "Leggendari e misteriosi",
+  "feOnly": "Solo completamente evoluti",
+  "matches": "{label}: <b>{n}</b> Pokémon",
+  "matchesAll": "{label}: <b>{n}</b> Pokémon, {total} in tutto",
+  "addTheGroup": "Aggiungi il gruppo",
+  "groupLabel": "{name} ({detail})",
+  "detail": {
+    "legendary": "leggendari",
+    "legendaryMythical": "leggendari o misteriosi",
+    "mythical": "misteriosi",
+    "fe": "completamente evoluti",
+    "gen": "generazione {n}",
+    "noLeg": "senza leggendari",
+    "all": "tutti"
+  },
+  "labels": {
+    "formation": {
+      "line": "Linea",
+      "wedge": "Cuneo",
+      "swarm": "Sciame",
+      "surround": "Accerchiamento"
+    },
+    "arena": {
+      "plains": "Pianura",
+      "volcano": "Vulcano",
+      "snowfield": "Distesa innevata",
+      "colosseum": "Colosseo"
+    },
+    "spacing": {
+      "tight": "Stretta",
+      "normal": "Normale",
+      "loose": "Larga"
+    },
+    "targeting": {
+      "nearest": "Il più vicino",
+      "weakest": "Il più debole vicino",
+      "strongest": "Il più forte vicino",
+      "boss": "Punta al boss"
+    },
+    "stance": {
+      "charge": "Carica",
+      "hold": "Tieni la linea"
+    },
+    "spread": {
+      "auto": "Usale",
+      "never": "Evitale"
+    },
+    "weather": {
+      "none": "Sereno",
+      "sun": "Sole intenso",
+      "rain": "Pioggia",
+      "sand": "Tempesta di sabbia",
+      "snow": "Neve"
+    },
+    "terrain": {
+      "none": "Nessuno",
+      "electric": "Campo Elettrico",
+      "grassy": "Campo Erboso",
+      "psychic": "Campo Psichico",
+      "misty": "Campo Nebbioso"
+    },
+    "time": {
+      "day": "Giorno",
+      "dusk": "Tramonto",
+      "night": "Notte"
+    },
+    "camera": {
+      "director": "Regia",
+      "free": "Libera",
+      "boss": "Segui il boss",
+      "top": "Dall’alto"
+    },
+    "ev": {
+      "random": "Lotte casuali (85 EV, 31 IV)",
+      "offence": "Attacco massimo",
+      "bulk": "Resistenza massima"
+    },
+    "evShort": {
+      "random": "85 ovunque",
+      "offence": "Attacco max",
+      "bulk": "Resistenza max"
+    },
+    "itemGroup": {
+      "Damage": "Danni",
+      "Type boosts": "Potenziamenti di tipo",
+      "Defence": "Difesa",
+      "Recovery": "Cura",
+      "Speed and accuracy": "Velocità e precisione",
+      "Stat boosts": "Potenziamenti delle statistiche"
+    }
+  },
+  "picker": {
+    "pick": "Scegli un Pokémon",
+    "search": "Cerca Pokémon",
+    "noAttacks": "Nessun attacco",
+    "none": "Nessun Pokémon con questo nome",
+    "form": {
+      "mega": "Mega",
+      "alola": "Alola",
+      "galar": "Galar",
+      "hisui": "Hisui",
+      "paldea": "Paldea"
+    }
+  },
+  "set": {
+    "level": "Livello",
+    "evs": "EV e IV",
+    "nature": "Natura",
+    "tera": "Teratipo",
+    "noTera": "Nessun teratipo",
+    "setsTera": "{type} (del set)",
+    "ability": "Abilità",
+    "default": "{name} (predefinita)",
+    "item": "Strumento tenuto",
+    "megaStone": "La sua megapietra",
+    "none": "Nessuno",
+    "itsSet": "{name} (del suo set)",
+    "itemEvery": "Strumento tenuto (ogni specie)",
+    "eachRandom": "Lo strumento da lotta casuale di ognuno",
+    "moves": "Mosse",
+    "movesDefaultSet": "Mosse (predefinite: il suo set da lotta casuale)",
+    "movesDefaultLevel": "Mosse (predefinite: imparate fino al livello {n})",
+    "defaultMoves": "Mosse predefinite",
+    "move": "Mossa {n}",
+    "rbSet": "Set da lotta casuale",
+    "learnt": "Imparate fino al livello {n}",
+    "other": "Le sue altre mosse legali",
+    "loading": "Caricamento delle sue mosse…",
+    "noMoves": "Non ha mosse d’attacco giocate in questa lotta: scegline una.",
+    "stats": "Livello {level} · PS {hp} · Att {atk} · Dif {def} · AttSp {spa} · DifSp {spd} · Vel {spe}",
+    "statShort": {
+      "atk": "Att",
+      "def": "Dif",
+      "spa": "AttSp",
+      "spd": "DifSp",
+      "spe": "Vel"
+    },
+    "teraOf": "Tera {type}"
+  }
+}

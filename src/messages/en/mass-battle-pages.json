@@ -1,0 +1,41 @@
+{
+  "meta": {
+    "title": "Pokémon Mass Battle: how many Magikarp beat Arceus?",
+    "description": "Thousands of Pokémon clash on a 3D battlefield, with the real games' damage maths for every hit. How many Magikarp does it take to beat Arceus? Ask any matchup, or send two armies at each other, then make a video of it.",
+    "social": "Pokémon Mass Battle · PokéIQ",
+    "questionDescription": "{title} The real games' battle maths decide it, thousands of battles deep, then you watch it in 3D.",
+    "battleTitle": "{a} vs {b}",
+    "battleSide": "{n} {name}",
+    "battleDescription": "{title}: a Pokémon mass battle in 3D with the real games' damage maths. Who wins?",
+    "presetDescription": "{blurb} A Pokémon mass battle in 3D with the real games' damage maths.",
+    "presetSocial": "{title} · PokéIQ"
+  },
+  "name": "Pokémon Mass Battle",
+  "ldName": "{title} · PokéIQ",
+  "lab": "3D Lab",
+  "kicker": "Mass Battle",
+  "h1": "Pokémon <b>Mass Battle</b>",
+  "blurb": "Thousands of Pokémon clash on a 3D battlefield, and every hit uses the real games' damage maths. Ask how many of one Pokémon it takes to beat another, or send two armies at each other.",
+  "results": "Results",
+  "resultsAside": "Precomputed with the same battles",
+  "how": "How it works",
+  "summary": {
+    "pure": " Pure battle maths, with everyone in reach of everyone: {answer}.",
+    "pureN": "{n} ({spread})",
+    "pureMore": "more than 2,000",
+    "answer": "On the battlefield, {answer} to beat {boss} ({spread}).{pure}",
+    "left": "{n} left standing after {s} seconds."
+  },
+  "presets": {
+    "magikarp-vs-arceus": { "title": "How many Magikarp beat Arceus?", "hook": "How many Magikarp does it take to beat Arceus? 😳", "blurb": "The weakest Pokémon against the one said to have shaped the universe. The solver finds the smallest army that wins." },
+    "rattata-vs-mewtwo": { "title": "1,000 Rattata vs 1 Mewtwo", "hook": "1,000 Rattata vs 1 Mewtwo. Who wins? 🐀", "blurb": "A thousand of the commonest Pokémon in Kanto against its most powerful one." },
+    "pikachu-vs-snorlax": { "title": "100 Pikachu vs 1 Snorlax", "hook": "100 Pikachu vs 1 Snorlax ⚡", "blurb": "A wave of Pikachu against the heaviest wall in Kanto." },
+    "kanto-starters": { "title": "Kanto starters war", "hook": "600 Kanto starters vs their final evolutions 🔥💧🌿", "blurb": "Bulbasaur, Charmander and Squirtle in their hundreds against a few dozen Venusaur, Charizard and Blastoise.", "a": "Starters", "b": "Final evolutions" },
+    "fire-vs-water": { "title": "Fire vs Water", "hook": "Every Fire type vs every Water type 🔥🌊", "blurb": "Every fully evolved Fire type against every fully evolved Water type: the oldest matchup in Pokémon, at scale.", "a": "Water types", "b": "Fire types" },
+    "legendaries-vs-everyone": { "title": "Legendaries vs everyone", "hook": "Every legendary Pokémon vs an army of Kanto 👑", "blurb": "Every legendary Pokémon against ten of every other fully evolved Pokémon from Kanto.", "a": "Legendaries", "b": "Kanto" },
+    "bug-swarm-vs-charizard": { "title": "Bug swarm vs one Charizard", "hook": "1,000 bugs vs 1 Charizard 🔥🐝", "blurb": "Beedrill, Butterfree, Venomoth and Scyther swarm a Charizard that is super effective against every one of them.", "a": "Bug swarm", "b": "Charizard" },
+    "eeveelution-civil-war": { "title": "Eeveelution civil war", "hook": "Eeveelution civil war: which half wins? 🦊", "blurb": "Vaporeon, Jolteon, Flareon and Espeon against Umbreon, Leafeon, Glaceon and Sylveon.", "a": "Vaporeon & co.", "b": "Umbreon & co." },
+    "fire-vs-water-sun": { "title": "Fire vs Water in harsh sunlight", "hook": "Fire vs Water… but the sun is out ☀️", "blurb": "The same armies as Fire vs Water, under harsh sunlight: Fire moves hit 1.5× harder and Water moves half as hard, as in the games.", "a": "Water types", "b": "Fire types" },
+    "light-ball-pikachu-vs-snorlax": { "title": "How many Pikachu with a Light Ball beat Snorlax?", "hook": "How many Pikachu does it take to beat Snorlax… with a Light Ball? ⚡", "blurb": "Pikachu's own held item doubles its Attack and Special Attack. Every Pikachu holds one; Snorlax holds nothing." }
+  }
+}

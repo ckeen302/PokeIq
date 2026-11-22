@@ -1,0 +1,78 @@
+{
+  "list": {
+    "title": "Chat rooms",
+    "description": "Chat with other trainers on PokéIQ: the Main Lobby, Pokédle, Connections, Pikadoku, PokéGuessr, Battle and Quizzes rooms.",
+    "label": "Community",
+    "heading": "Chat <hl>rooms</hl>",
+    "intro": "Talk Pokémon with other trainers. Anyone can read; sign in to chat. Moderators keep every room friendly."
+  },
+  "room": {
+    "title": "{name} chat room",
+    "fallbackTitle": "Chat room",
+    "fallbackDescription": "A PokéIQ chat room.",
+    "back": "Back to rooms",
+    "crumb": "Rooms",
+    "rules": "Room rules"
+  },
+  "siteRules": {
+    "0": "Be kind. No bullying, swearing or hate.",
+    "1": "Never share personal details: your real name, age, school, address, phone or socials.",
+    "2": "Links can't be posted. Talk about the game!",
+    "3": "Spot something wrong? Use the flag to report a message. Moderators read every report."
+  },
+  "rules": {
+    "lobby": {
+      "0": "Keep it friendly and on topic: Pokémon and PokéIQ.",
+      "1": "Beginners welcome: answer questions patiently, never make fun of one."
+    },
+    "pokedle": {
+      "0": "No spoilers: never post today's answer or big hints."
+    },
+    "connections": {
+      "0": "No spoilers: never post today's groups."
+    },
+    "pikadoku": {
+      "0": "No spoilers: never post today's answers."
+    },
+    "pokeguessr": {
+      "0": "No spoilers for today's rounds."
+    },
+    "battle": {
+      "0": "No asking for or arranging wins: play every battle for real.",
+      "1": "Rate teams kindly: say what works, then what you'd change."
+    },
+    "quizzes": {
+      "0": "No posting answers to a quiz someone is playing."
+    }
+  },
+  "links": {
+    "lobby": {
+      "0": "All game modes",
+      "1": "Daily Challenge",
+      "2": "Send feedback"
+    },
+    "pokedle": {
+      "0": "Play Pokédle"
+    },
+    "connections": {
+      "0": "Play Connections"
+    },
+    "pikadoku": {
+      "0": "Play Pikadoku"
+    },
+    "pokeguessr": {
+      "0": "Play PokéGuessr",
+      "1": "World atlas"
+    },
+    "battle": {
+      "0": "Battle!",
+      "1": "Team Builder",
+      "2": "Damage calc",
+      "3": "Tournaments"
+    },
+    "quizzes": {
+      "0": "All quizzes",
+      "1": "Name 'em All"
+    }
+  }
+}

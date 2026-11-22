@@ -1,6 +1,9 @@
 import type { Rng } from "@/lib/rng";
 import { POKEDEX, evolutionFamily, titleCase, type Pokemon } from "@/lib/pokemon/pokedex";
 import type { GenerateOptions, Question, QuestionBuilder } from "../types";
+import type { QuizLang } from "../i18n";
+import { localizable, must, wordOptions } from "../localize";
+import { describeIn, genusOf, pokemonName } from "../words";
 import {
   SIMILARITY_BY_DIFFICULTY,
   clampRating,
@@ -79,6 +82,10 @@ function compileNames(pokemon: readonly Pokemon[]): RegExp | null {
 export function censorEntry(text: string, target: Pokemon): string {
   const re = namesRegex(evolutionFamily(target));
   if (!re) return text;
+  return censorWith(text, re);
+}
+
+function censorWith(text: string, re: RegExp): string {
   const chars = [...text];
   const folded = chars.map((ch) => {
     const f = ch < "\x80" ? ch.toLowerCase() : foldChar(ch);
@@ -107,6 +114,44 @@ export function censorEntry(text: string, target: Pokemon): string {
 export function leaksName(text: string, target: Pokemon): boolean {
   const re = namesRegex([target]);
   return re !== null && foldText(text).search(re) !== -1;
+}
+
+/**
+ * The same, for an entry in another language: the family's names in that language (and in English, which some
+ * entries keep). Japanese has no spaces between words, so its names match anywhere; German glues endings on
+ * ("Bisasams"), so a name may run on into a word there.
+ */
+function localNamesRegex(pokemon: readonly Pokemon[], L: QuizLang): RegExp | null {
+  const key = `${L.locale}:${pokemon.map((p) => p.id).join(",")}`;
+  if (!regexCache.has(key)) {
+    const names = pokemon.flatMap((p) => [L.pokemon(p), p.name]).filter((n): n is string => !!n);
+    const patterns = [...new Set(names.map((n) => localPattern(n, L.locale)))]
+      .filter((x): x is string => x !== null)
+      .sort((a, b) => b.length - a.length);
+    regexCache.set(key, patterns.length ? new RegExp(patterns.join("|"), "gu") : null);
+  }
+  return regexCache.get(key)!;
+}
+
+const KANA_OR_KANJI = /[぀-ヿ一-鿿]/u;
+const TRAILING_BOUNDARY = "(?![\\p{L}\\p{N}])";
+
+function localPattern(name: string, locale: string): string | null {
+  const folded = foldText(name.replace(/[♀♂]/g, ""));
+  if (KANA_OR_KANJI.test(folded)) {
+    return [...folded].length >= 2 ? folded.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") : null;
+  }
+  const pattern = namePattern(name);
+  return pattern && locale === "de" && pattern.endsWith(TRAILING_BOUNDARY) ? pattern.slice(0, -TRAILING_BOUNDARY.length) : pattern;
+}
+
+/** An entry in another language with the family's names blacked out (null when a name would still show). */
+export function censorEntryIn(text: string, target: Pokemon, L: QuizLang): string | null {
+  const re = localNamesRegex(evolutionFamily(target), L);
+  const out = re ? censorWith(text, re) : text;
+  const own = [L.pokemon(target), target.name].filter((n): n is string => !!n).map((n) => foldText(n.replace(/[♀♂]/g, "")));
+  const shown = foldText(out);
+  return own.some((n) => [...n].length >= 2 && shown.includes(n)) ? null : out;
 }
 
 /**
@@ -150,7 +195,7 @@ function entryQuestion(rng: Rng, opts: GenerateOptions): Question | null {
   );
   if (distractors.length < 3) return null;
 
-  return {
+  const q: Question = {
     itemKey: `dex:entry:${target.id}`,
     module: "dex",
     prompt: "Which Pokémon does this Pokédex entry describe?",
@@ -161,6 +206,26 @@ function entryQuestion(rng: Rng, opts: GenerateOptions): Question | null {
     explanation: describe(target),
     rating: clampRating(genRating(target) + (opts.difficulty === "easy" ? 40 : 180)),
   };
+  const byName = new Map([target, ...distractors].map((p) => [p.name, p]));
+  const which = servableEntries(target).indexOf(original);
+  return localizable(q, (L) => {
+    // The language's own entries (none after Generation 8): the one in the English entry's place, as near as can be.
+    const own = [...new Set(L.entries(target.id))];
+    if (own.length === 0) return null;
+    const text = own[which % own.length];
+    const censored = censorEntryIn(text, target, L);
+    if (!censored || [...censored].length < (L.locale === "ja" ? 16 : 40)) return null;
+    const seen = foldText(text);
+    if (distractors.some((p) => L.entries(p.id).some((e) => foldText(e).includes(seen)))) return null;
+    const named = wordOptions(q, (name) => L.pokemon(byName.get(name)!));
+    const entry = L.t("dex.entry", { entry: censored });
+    return named && {
+      prompt: L.t("dex.entryPrompt"),
+      detail: opts.difficulty === "easy" ? L.t("dex.entryGenus", { entry, genus: genusOf(L, target) }) : entry,
+      ...named,
+      explanation: describeIn(L, target),
+    };
+  });
 }
 
 function genusQuestion(rng: Rng, opts: GenerateOptions): Question | null {
@@ -179,7 +244,7 @@ function genusQuestion(rng: Rng, opts: GenerateOptions): Question | null {
   );
   if (distractors.length < 3) return null;
 
-  return {
+  const q: Question = {
     itemKey: `dex:genus:${target.id}`,
     module: "dex",
     prompt: `Which Pokémon is known as the “${target.genus}”?`,
@@ -189,6 +254,14 @@ function genusQuestion(rng: Rng, opts: GenerateOptions): Question | null {
     explanation: describe(target),
     rating: clampRating(genRating(target) + 220),
   };
+  const byName = new Map([target, ...distractors].map((p) => [p.name, p]));
+  return localizable(q, (L) => {
+    const genus = genusOf(L, target);
+    // Two English categories can share one name in another language.
+    if (distractors.some((p) => genusOf(L, p) === genus)) return null;
+    const named = wordOptions(q, (name) => L.pokemon(byName.get(name)!));
+    return named && { prompt: L.t("dex.genusPrompt", { genus }), ...named, explanation: describeIn(L, target) };
+  });
 }
 
 const ALL_ABILITIES = [...new Set(POKEDEX.flatMap((p) => p.abilities.map((a) => a.name)))];
@@ -213,7 +286,7 @@ function abilityQuestion(rng: Rng, opts: GenerateOptions): Question | null {
     .map((a) => `${titleCase(a.name)}${a.hidden ? " (hidden)" : ""}`)
     .join(", ");
 
-  return {
+  const q: Question = {
     itemKey: `dex:ability:${target.id}:${correct.name}`,
     module: "dex",
     prompt: `Which of these is one of ${target.name}'s abilities?`,
@@ -223,6 +296,20 @@ function abilityQuestion(rng: Rng, opts: GenerateOptions): Question | null {
     explanation: `${target.name}'s abilities: ${owned}.`,
     rating: clampRating(1150 + (correct.hidden ? 200 : 0) + (opts.difficulty === "easy" ? 0 : 120)),
   };
+  return localizable(q, (L) => {
+    const ability = (slug: string) => L.name("abilities", slug);
+    const named = wordOptions(q, (title) => ability(title));
+    const list = target.abilities.map((a) => {
+      const n = must(ability(a.name), `ability ${a.name}`);
+      return a.hidden ? L.t("dex.hidden", { ability: n }) : n;
+    });
+    const name = pokemonName(L, target);
+    return named && {
+      prompt: L.t("dex.abilityPrompt", { name }),
+      ...named,
+      explanation: L.t("dex.abilityExplanation", { name, abilities: list.join(L.locale === "ja" ? "、" : ", ") }),
+    };
+  });
 }
 
 export const dex: QuestionBuilder = (rng, opts) => {

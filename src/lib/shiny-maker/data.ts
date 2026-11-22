@@ -15,6 +15,8 @@ export interface PartDef {
   s: number[];
   /** The outline (only edited in Expert mode; Randomise leaves it). */
   o?: 1;
+  /** Its name in the page's language, on a page in another language (set by the page, not in the data). */
+  l?: string;
 }
 
 /** HD reference colours of a part (from the HOME renders): normal and shiny, [l, c, h] each. */

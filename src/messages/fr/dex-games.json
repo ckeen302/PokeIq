@@ -1,0 +1,67 @@
+{
+  "meta": {
+    "title": "Tous les jeux Pokémon : série principale, remakes, spin-off et mobile",
+    "description": "Tous les jeux vidéo Pokémon, de Rouge et Vert à Légendes Pokémon : Z-A, avec leurs jaquettes : la série principale, les remakes, les spin-off comme Snap, Donjon Mystère et Stadium, et les jeux mobiles comme Pokémon GO. Filtre par génération et par type.",
+    "socialTitle": "Tous les jeux Pokémon · Pokédex PokéIQ"
+  },
+  "header": {
+    "kicker": "Base de données des jeux",
+    "title": "Poké",
+    "accent": "dex",
+    "blurb": "Tous les jeux Pokémon, de Rouge et Vert sur Game Boy à aujourd’hui : la série principale et ses remakes, les spin-off et les jeux mobiles, chacun avec sa jaquette."
+  },
+  "credit": "Dates de sortie, plateformes et développeurs : <wiki>Wikipédia</wiki> ; jaquettes, exclusivités de version et Pokémon légendaires : <serebii>Serebii</serebii>. L’année est celle de la première sortie de chaque jeu ; la génération est celle du jeu ou, pour un spin-off, celle en cours à sa sortie.",
+  "ld": {
+    "pokedex": "Pokédex",
+    "games": "Jeux",
+    "list": "Jeux vidéo Pokémon"
+  },
+  "kind": {
+    "mainline": "Principal",
+    "remake": "Remake",
+    "spinoff": "Spin-off",
+    "mobile": "Mobile"
+  },
+  "game": {
+    "metaTitle": "{name} ({year}) — Jeu Pokémon · {kind}",
+    "describe": "{name} ({year}, {platforms}) : {summary}",
+    "socialTitle": "{name} · Pokédex PokéIQ",
+    "allGames": "Tous les jeux",
+    "kicker": "Génération {gen} · {kind}",
+    "list": "{a}, {b}",
+    "releasedNote": "{date} ({note})",
+    "facts": {
+      "released": "Sortie",
+      "platform": "Plateforme",
+      "region": "Région",
+      "developer": "Développeur"
+    },
+    "placesLink": "Lieux de {region}",
+    "trainersLink": "Équipes des Dresseurs",
+    "whatsNew": "Nouveautés",
+    "starter": "Pokémon de départ",
+    "starters": "Pokémon de départ",
+    "starterSub": "Ton premier partenaire",
+    "startersSub": "Choisis ton premier partenaire",
+    "legendaries": "Pokémon légendaires et fabuleux",
+    "legendariesSub": "Présents dans le jeu",
+    "legendariesDlcSub": "Présents dans le jeu et son DLC",
+    "exclusives": "Exclusivités de version",
+    "exclusivesSub": "Présents dans une seule version",
+    "onlyIn": "Uniquement dans {version}",
+    "dlc": "DLC et extensions",
+    "related": "Jeux liés",
+    "why": {
+      "previous": "Précédent",
+      "next": "Suivant",
+      "region": "Aussi à {region}",
+      "series": "Même série",
+      "platform": "Aussi sur {platform}"
+    },
+    "credit": "Infos de sortie : la <wiki>liste des jeux vidéo Pokémon</wiki> de Wikipédia. Les jaquettes et les logos appartiennent à leurs éditeurs.",
+    "creditSerebii": "Infos de sortie : la <wiki>liste des jeux vidéo Pokémon</wiki> de Wikipédia ; exclusivités de version et Pokémon légendaires : Serebii, vérifiés avec les données de rencontre du Pokédex lui-même. Les jaquettes et les logos appartiennent à leurs éditeurs."
+  },
+  "cover": {
+    "tileAlt": "{name}, sur une vignette à la place de la jaquette"
+  }
+}

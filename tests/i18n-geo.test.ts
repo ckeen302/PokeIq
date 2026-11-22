@@ -26,7 +26,7 @@ describe("PokéGuessr names in other languages", () => {
 
   it("uses each language's official regions, games and places", () => {
     expect(localRegion(ja, "Unova")).toBe("イッシュ");
-    expect(localRegion(fr, "Kitakami")).toBe("Kitakami");
+    expect(localRegion(fr, "Kitakami")).toBe("Septentria");
     expect(localGame(fr, "FireRed / LeafGreen")).toBe("Rouge Feu / Vert Feuille");
     expect(localGame(ja, "Let's Go, Pikachu! / Eevee!")).toBe("Let’s Go! ピカチュウ / Let’s Go! イーブイ");
     expect(localMap(fr, { id: "world", name: "World" })).toBe("Monde");

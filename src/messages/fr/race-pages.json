@@ -1,0 +1,102 @@
+{
+  "meta": {
+    "hubTitle": "Course Pokémon : quel est le Pokémon le plus rapide ? Sprints en 3D",
+    "hubDescription": "Regarde les Pokémon courir le 100, le 200 et le 400 m dans un stade en 3D de nuit, avec des vitesses tirées de leurs stats de base et un modèle de sprint issu des sciences du sport : Regieleki contre Caratroc, les 8 plus rapides, un tournoi de tous les Pokémon. Choisis ta course, partage-la ou fais-en une vidéo.",
+    "hubSocial": "Quel est le Pokémon le plus rapide ? Regarde-les courir · PokéIQ",
+    "presetTitle": "{title} (course Pokémon en 3D)",
+    "presetDescription": "{blurb} Vitesses tirées de leurs stats de base, dans un stade en 3D de nuit. Regarde-la, choisis ta course ou fais-en une vidéo.",
+    "runTitle": "{title} : course de {d} m",
+    "runDescription": "{name} gagne le {d} m en {time} s. {list}. Vitesses tirées de leurs stats de base, en 3D sur PokéIQ.",
+    "runImage": "{title} : une course Pokémon de {d} m"
+  },
+  "titles": {
+    "fastest-eight": "Les Pokémon les plus rapides : la finale du 100 m",
+    "slowest-eight": "Les Pokémon les plus lents sur 100 m",
+    "shuckle-vs-regieleki": "Caratroc vs Regieleki : le Pokémon le plus lent contre le plus rapide",
+    "gen-1-final": "Les Pokémon les plus rapides de la 1re génération : la finale du 100 m",
+    "starters": "Les starters les plus rapides (évolutions finales)",
+    "legendaries": "Les Pokémon légendaires et fabuleux les plus rapides : 200 m",
+    "eeveelutions": "Toutes les Évolitions sur 100 m",
+    "pseudo-legendaries": "Les Pokémon pseudo-légendaires sur 400 m",
+    "heavyweights": "Les Pokémon les plus lourds sur 100 m",
+    "every-pokemon": "Tous les Pokémon dans un seul tournoi"
+  },
+  "blurbs": {
+    "fastest-eight": "Les Pokémon les plus rapides en Vitesse de base et en accélération, dans une finale du 100 m.",
+    "slowest-eight": "Caratroc, Goinfrex et les autres Pokémon les plus lents sur 100 m. Prévois un goûter.",
+    "shuckle-vs-regieleki": "Vitesse de base 5 contre Vitesse de base 200 sur 100 m.",
+    "gen-1-final": "Les Pokémon les plus rapides de la première génération, les originaux de Kanto.",
+    "starters": "Les starters entièrement évolués les plus rapides, choisis dans toutes les lignées, de celle de Bulbizarre à celle de Coiffeton.",
+    "legendaries": "Les Pokémon légendaires et fabuleux les plus rapides sur 200 m, virage compris.",
+    "eeveelutions": "Aquali, Voltali, Pyroli, Mentali, Noctali, Phyllali, Givrali et Nymphali.",
+    "pseudo-legendaries": "Les pseudo-légendaires les plus rapides sur un tour, là où l’endurance (PV) commence à compter.",
+    "heavyweights": "Les Pokémon les plus lourds, 800 kg et plus. Attention au sol.",
+    "every-pokemon": "Tous les Pokémon répartis en séries de huit, de tour en tour jusqu’à une finale du 100 m."
+  },
+  "page": {
+    "back": "Course Pokémon",
+    "customKicker": "Course Pokémon · {d} m",
+    "wins": "{name} gagne en {time} s, d’après ses stats.",
+    "lab": "Labo 3D",
+    "hubKicker": "Course Pokémon · 3D",
+    "hubTitle": "Course ",
+    "hubAccent": "Pokémon",
+    "hubBlurb": "Quel est le Pokémon le plus rapide ? Regarde-les courir le 100, le 200 ou le 400 m sous les projecteurs d’un stade en 3D, avec des vitesses tirées de leurs stats et un modèle de sprint issu des sciences du sport. Choisis ceux que tu veux, partage la course ou fais-en une vidéo.",
+    "presetKicker": "Course Pokémon · {d} m",
+    "presetTitle": "{label} ",
+    "presetAccent": "en course",
+    "races": "Courses"
+  },
+  "ko": {
+    "title": "Le tournoi",
+    "body": "Tous les Pokémon sont tirés au sort en séries de huit. Chaque tour en garde environ un quart : les premiers de chaque série (Q) et les meilleurs perdants (q). Champion : <b>{name}</b>.",
+    "one": "une course",
+    "heats": "séries",
+    "through": "{who}{losers} passent",
+    "winner": "le vainqueur de chaque série",
+    "first": "les {n} premiers de chaque série",
+    "losers": " et les {n} meilleurs perdants"
+  },
+  "results": {
+    "final": "La finale · {d} m",
+    "title": "Résultats · {d} m",
+    "aria": "{title} : résultats du {d} m",
+    "pokemon": "Pokémon",
+    "time": "Temps",
+    "gap": "Écart",
+    "speed": "Vitesse",
+    "top": "Vitesse max.",
+    "lane": "{motion} · couloir {n}",
+    "kmh": "{v} km/h",
+    "crossedAria": "Où était chacun quand le vainqueur a franchi la ligne",
+    "crossed": "Quand {name} a franchi la ligne",
+    "won": "gagné",
+    "back": "à {m} m",
+    "item": "{name} ({time} s)"
+  },
+  "how": "Comment marche la course",
+  "games": {
+    "title": "Plus que du sprint : les Jeux PokéIQ",
+    "body": "Les mêmes coureurs sur 100, 200 et 400 m, plus le saut en longueur, le saut en hauteur, le lancer du poids, le javelot, l’haltérophilie, la natation et la lutte, avec médailles et tableau des médailles.",
+    "open": "Ouvrir les Jeux",
+    "records": "Records du 100 m"
+  },
+  "kind": {
+    "pokemon": "Pokémon",
+    "mega": "Méga-Évolution",
+    "regional": "Forme régionale",
+    "form": "Autre forme"
+  },
+  "motion": {
+    "run": "Court",
+    "gallop": "Galope",
+    "scuttle": "Trottine",
+    "fly": "Vole",
+    "hover": "Lévite",
+    "slither": "Ondule",
+    "flop": "Sautille",
+    "roll": "Roule",
+    "bounce": "Rebondit",
+    "swim": "Nage"
+  }
+}

@@ -1,6 +1,8 @@
 import answers from "@/data/shiny/answers.json";
 import { poolFor } from "@/lib/pokemon/pokedex";
-import type { Difficulty, QuestionBuilder } from "../types";
+import type { Difficulty, Question, QuestionBuilder } from "../types";
+import { localizable } from "../localize";
+import { pokemonName } from "../words";
 import { pickTarget } from "../shared";
 
 /**
@@ -21,7 +23,7 @@ export const shiny: QuestionBuilder = (rng, opts) => {
   const target = pickTarget(rng, poolFor(opts.gens), opts.used, (p) => Boolean(SETS[p.id]));
   if (!target) return null;
   const [real, ...fakes] = SETS[target.id][DIFFICULTY_INDEX[opts.difficulty]];
-  return {
+  const q: Question = {
     itemKey: `shiny:${target.id}:${opts.difficulty}`,
     module: "shiny",
     prompt: `Which one is the real shiny ${target.name}?`,
@@ -33,4 +35,13 @@ export const shiny: QuestionBuilder = (rng, opts) => {
     revealMedia: { kind: "artwork", pokemonId: target.id },
     rating: RATING[opts.difficulty],
   };
+  // The options are pictures: only the words change.
+  return localizable(q, (L) => {
+    const name = pokemonName(L, target);
+    return {
+      prompt: L.t("shiny.prompt", { name }),
+      detail: opts.difficulty === "hard" ? L.t("shiny.hard") : undefined,
+      explanation: L.t("shiny.explanation", { name }),
+    };
+  });
 };

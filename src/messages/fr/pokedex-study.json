@@ -1,0 +1,44 @@
+{
+  "prompt": {
+    "silhouette": {
+      "label": "Silhouette",
+      "hint": "Quel est ce Pokémon ?"
+    },
+    "entry": {
+      "label": "Entrée du Pokédex",
+      "hint": "De quel Pokémon s’agit-il ?"
+    },
+    "typing": {
+      "label": "Types",
+      "hint": "Quel est son type ?"
+    }
+  },
+  "back": "Retour au Pokédex",
+  "title": "Mode révision",
+  "blurb": "Retourne, rappelle-toi, recommence. Les cartes ratées reviennent jusqu’à ce que tu les saches.",
+  "generations": "Générations",
+  "gen": "Gén. {n}",
+  "cardFront": "Recto de la carte",
+  "deckSize": "Taille du paquet",
+  "all": "Toutes",
+  "skipMastered": "Passer les acquises",
+  "mastered": "Acquises dans la sélection",
+  "start": "Commencer la révision",
+  "keys": "Espace pour retourner · → je savais · ← à revoir · Échap pour quitter · ou fais glisser la carte",
+  "complete": "Paquet terminé !",
+  "summary": "{known}/{total} du premier coup · {missed} à revoir",
+  "drill": "Revoir les erreurs",
+  "newDeck": "Nouveau paquet",
+  "testYourself": "Teste-toi →",
+  "exit": "Quitter la révision",
+  "again": "À revoir",
+  "knew": "Je savais",
+  "swipeHint": "Glisse → si tu savais, ← pour la revoir",
+  "flipHint": "Touche la carte ou appuie sur Espace pour la retourner",
+  "mystery": "Silhouette mystère",
+  "quote": "« {entry} »",
+  "genus": "{genus}",
+  "fullEntry": "Fiche Pokédex complète →",
+  "knewStamp": "SU !",
+  "againStamp": "À REVOIR"
+}

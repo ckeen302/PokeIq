@@ -13,6 +13,16 @@ import { dexSpriteColumns } from "@/lib/pokemon/dex-sprites";
 import { PokemonCards } from "@/components/tcg/PokemonCards";
 import { cardLinksForDex } from "@/lib/tcg/card-index";
 import { capitalize } from "@/lib/pokemon/type-matrix";
+import { ClientMessages } from "@/i18n/ClientMessages";
+import { getLocale, serverT } from "@/i18n/server";
+import pageNs from "@/messages/pokemon-page";
+import dexEntryNs from "@/messages/dex-entry";
+import dexPager from "@/messages/dex-pager";
+import dexSprites from "@/messages/dex-sprites";
+import tcgCards from "@/messages/tcg-cards";
+import { speciesName } from "@/lib/names/species";
+import { dexTexts, typeNames } from "@/lib/pokemon/dex-local";
+import { localDexBreadcrumbs, localDexDescription, localDexSummary, localDexTitle, localizeDexEntry } from "@/lib/pokemon/dex-entry-local";
 
 /** Static, crawlable study page for every species (1,025 pages at build time). */
 
@@ -29,57 +39,67 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const p = getPokemonBySlug((await params).slug);
   if (!p) return {};
+  const t = serverT(pageNs);
+  const locale = getLocale();
   return pageMetadata({
-    title: dexTitle(p),
-    description: dexDescription(p),
+    title: locale === "en" ? dexTitle(p) : localDexTitle(p, locale),
+    description: locale === "en" ? dexDescription(p) : localDexDescription(p, locale),
     path: `/pokemon/${p.slug}`,
-    socialTitle: `${p.name} (#${p.id}) · PokéIQ Pokédex`,
+    socialTitle: t("social", { name: locale === "en" ? p.name : speciesName(p.id, p.name, locale), id: p.id }),
   });
 }
 
 export default async function PokemonPage({ params }: PageProps) {
   const p = getPokemonBySlug((await params).slug);
   if (!p) notFound();
-  const data = getDexEntry(p);
+  const t = serverT(pageNs);
+  const locale = getLocale();
+  const data = locale === "en" ? getDexEntry(p) : localizeDexEntry(getDexEntry(p), locale);
   const cards = await cardLinksForDex(p.id, 6);
+  const name = data.core.name;
+  const typeName = locale === "en" ? capitalize : (ty: string) => typeNames(locale)[ty];
   const spriteColumns = dexSpriteColumns(p.id);
 
   const pageLd = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    name: `${p.name} — PokéIQ Pokédex`,
-    about: { "@type": "Thing", name: p.name, description: p.flavor[0] },
+    name: t("ldName", { name }),
+    about: { "@type": "Thing", name, description: locale === "en" ? p.flavor[0] : dexTexts(locale, "species")[p.id]?.[0]?.text },
     primaryImageOfPage: artworkUrl(p.id),
   };
 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(pageLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(dexBreadcrumbs(p)) }} />
-      <BackButton href="/pokedex" label="Back to Pokédex" className="mb-4" />
-      <DexEntry key={p.id} data={data} sprites={spriteColumns.length > 0 && <SpritesSection name={p.name} columns={spriteColumns} />} />
-      <PokemonCards key={`cards-${p.id}`} dex={p.id} name={p.name} />
-      <section className="mx-auto mt-10 max-w-3xl space-y-3 text-sm text-muted-foreground" aria-label={`About ${p.name}`}>
-        <h2 className="font-display text-base font-bold uppercase tracking-wider text-foreground">{p.name} summary</h2>
-        <p>{dexSummary(p)}</p>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(locale === "en" ? dexBreadcrumbs(p) : localDexBreadcrumbs(p, locale)) }} />
+      <BackButton href="/pokedex" label={t("back")} className="mb-4" />
+      <ClientMessages namespaces={[dexEntryNs, dexPager, dexSprites]}>
+        <DexEntry key={p.id} data={data} sprites={spriteColumns.length > 0 && <SpritesSection name={name} columns={spriteColumns} />} />
+      </ClientMessages>
+      <ClientMessages namespaces={[tcgCards]}>
+        <PokemonCards key={`cards-${p.id}`} dex={p.id} name={name} />
+      </ClientMessages>
+      <section className="mx-auto mt-10 max-w-3xl space-y-3 text-sm text-muted-foreground" aria-label={t("about", { name })}>
+        <h2 className="font-display text-base font-bold uppercase tracking-wider text-foreground">{t("summary", { name })}</h2>
+        <p>{locale === "en" ? dexSummary(p) : localDexSummary(p, locale)}</p>
         <p className="flex flex-wrap gap-x-4 gap-y-1">
-          <Link href="/quiz/whos-that-pokemon" className="underline-offset-2 hover:text-foreground hover:underline">Who&apos;s That Pokémon quiz</Link>
-          <Link href="/battle/teams" className="underline-offset-2 hover:text-foreground hover:underline">Pokémon team builder</Link>
-          <Link href="/battle/calc" className="underline-offset-2 hover:text-foreground hover:underline">Pokémon damage calculator</Link>
-          <Link href={`/pokedex/sizes/${p.slug}`} className="underline-offset-2 hover:text-foreground hover:underline">How big is {p.name}?</Link>
-          {RACE_LIVE && <Link href={`/pokedex/race/run?vs=${p.slug}`} className="underline-offset-2 hover:text-foreground hover:underline">How fast is {p.name}?</Link>}
-          <Link href="/pokedex" className="underline-offset-2 hover:text-foreground hover:underline">Full Pokédex</Link>
+          <Link href="/quiz/whos-that-pokemon" className="underline-offset-2 hover:text-foreground hover:underline">{t("whosThat")}</Link>
+          <Link href="/battle/teams" className="underline-offset-2 hover:text-foreground hover:underline">{t("teams")}</Link>
+          <Link href="/battle/calc" className="underline-offset-2 hover:text-foreground hover:underline">{t("calc")}</Link>
+          <Link href={`/pokedex/sizes/${p.slug}`} className="underline-offset-2 hover:text-foreground hover:underline">{t("big", { name })}</Link>
+          {RACE_LIVE && <Link href={`/pokedex/race/run?vs=${p.slug}`} className="underline-offset-2 hover:text-foreground hover:underline">{t("fast", { name })}</Link>}
+          <Link href="/pokedex" className="underline-offset-2 hover:text-foreground hover:underline">{t("full")}</Link>
         </p>
         <p className="flex flex-wrap gap-x-4 gap-y-1">
-          {p.types.map((t) => (
-            <Link key={t} href={`/pokedex/types/${t}`} className="underline-offset-2 hover:text-foreground hover:underline" data-testid="dex-type-link">
-              {capitalize(t)}-type Pokémon
+          {p.types.map((ty) => (
+            <Link key={ty} href={`/pokedex/types/${ty}`} className="underline-offset-2 hover:text-foreground hover:underline" data-testid="dex-type-link">
+              {t("typed", { type: typeName(ty) })}
             </Link>
           ))}
         </p>
         {cards.total > 0 && (
           <p className="flex flex-wrap gap-x-4 gap-y-1" data-testid="dex-card-links">
-            <span className="text-foreground">{p.name} cards:</span>
+            <span className="text-foreground">{t("cards", { name })}</span>
             {cards.cards.map((c) => (
               <Link key={c.id} href={`/pokedex/tcg/card/${c.id}`} prefetch={false} className="underline-offset-2 hover:text-foreground hover:underline">
                 {c.name} ({c.setName} {c.number})
@@ -87,7 +107,7 @@ export default async function PokemonPage({ params }: PageProps) {
             ))}
             {cards.total > cards.cards.length && (
               <Link href={`/pokedex/tcg?dex=${p.id}`} prefetch={false} className="underline-offset-2 hover:text-foreground hover:underline">
-                All {cards.total} →
+                {t("allCards", { n: cards.total })}
               </Link>
             )}
           </p>

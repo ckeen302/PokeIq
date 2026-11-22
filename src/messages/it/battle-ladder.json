@@ -1,0 +1,17 @@
+{
+  "tabs": "Formato della classifica",
+  "nobody": "Ancora nessuno in classifica in {format}. <link>Cerca una lotta classificata</link> e sii il primo!",
+  "trainer": "Allenatore",
+  "eloTitle": "Elo: il punteggio della classifica, come su Pokémon Showdown",
+  "elo": "Elo",
+  "gxeTitle": "GXE (la probabilità di battere un Allenatore a caso qui) e il punteggio Glicko-2 ± deviazione",
+  "gxe": "GXE · Glicko",
+  "wl": "V–S",
+  "loading": "Caricamento della tua posizione",
+  "you": "Tu · {format}",
+  "of": "su {n, number}",
+  "streak": "serie",
+  "none": "Ancora nessuna lotta classificata in questo formato.",
+  "start": "Tutti partono da 1000 Elo (e 1500 ± 350 Glicko-2); le prime vittorie valgono di più e un punteggio nuovo si muove molto. ",
+  "find": "Trova una lotta classificata"
+}

@@ -1,0 +1,58 @@
+{
+  "meta": {
+    "unavailableTitle": "Perfil de Entrenador",
+    "unavailableDescription": "Perfiles de Entrenador en PokéIQ.",
+    "notFoundTitle": "Entrenador no encontrado",
+    "notFoundDescription": "Ese Entrenador no existe en PokéIQ.",
+    "title": "{name} · Perfil de Entrenador",
+    "description": "{name} en PokéIQ: puntuaciones de Pokédle, PokéGuessr y combates, récords en quiz, historial de combates y repeticiones recientes."
+  },
+  "back": "Volver a Entrenadores",
+  "unavailable": "Los perfiles de Entrenador no están disponibles ahora mismo. Vuelve a intentarlo en un minuto.",
+  "find": "Buscar un Entrenador",
+  "since": "Entrenador desde {date}",
+  "trainerOf": "Entrenador de {name}",
+  "ranked": "PokéGuessr clasificatorio",
+  "rankedDuels": "{n, plural, one {{record} en {n} duelo clasificatorio} other {{record} en {n} duelos clasificatorios}}",
+  "position": " · n.º {position} de {players}",
+  "bestScore": " · mejor: {score} pts",
+  "noRanked": "Aún no hay duelos clasificatorios de PokéGuessr.",
+  "pastSeasons": "Temporadas anteriores",
+  "ladder": "Clasificación de combates",
+  "noLadder": "Aún no hay combates clasificatorios.",
+  "conn": {
+    "streak": "Racha",
+    "bestStreak": "Mejor racha",
+    "gamesWon": "Partidas ganadas",
+    "perfect": "Perfectos",
+    "duelRecord": "Duelos"
+  },
+  "noConn": "Aún no ha jugado a PokéConnections.",
+  "battleRecord": "Historial de combates",
+  "insights": "Análisis de equipos →",
+  "battleEmpty": "{name} aún no ha jugado ningún combate en directo.",
+  "battleSoon": "El historial de combates llegará pronto.",
+  "replays": "Repeticiones públicas recientes",
+  "noReplays": "Aún no hay repeticiones públicas.",
+  "quiz": {
+    "title": "Récords en quiz",
+    "none": "{name} aún no tiene ningún récord en quiz.",
+    "play": "Jugar a un quiz",
+    "table": "Mejor puntuación por modo y formato",
+    "mode": "Modo",
+    "formats": {
+      "classic": "Clásico",
+      "survival": "Supervivencia",
+      "blitz": "Contrarreloj"
+    },
+    "named": "<b>{named}/{total}</b> nombrados",
+    "cleared": "completado en <b>{time}</b>"
+  },
+  "users": {
+    "title": "Buscar un Entrenador",
+    "description": "Busca a un Entrenador de PokéIQ por su nombre: sus puntuaciones de Pokédle y combates, sus récords y sus repeticiones recientes.",
+    "label": "Comunidad",
+    "heading": "Busca un <hl>Entrenador</hl>",
+    "intro": "Busca por nombre de cuenta para ver el perfil de un Entrenador: puntuaciones, récords y repeticiones recientes. Desde ahí puedes añadirlo como amigo."
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "coverage": {
+    "label": "Copertura dei tipi",
+    "heading": "Debolezze e copertura",
+    "tera": "Difendi col teratipo",
+    "type": "Tipo",
+    "weakTitle": "Membri deboli",
+    "weak": "Debole",
+    "resistTitle": "Membri che resistono",
+    "resist": "Resiste",
+    "immuneTitle": "Membri immuni",
+    "immune": "Immune",
+    "seTitle": "Membri con un attacco superefficace",
+    "se": "Colpo SE",
+    "nothingNeutral": "Niente in squadra colpisce questo tipo nemmeno in modo neutro",
+    "nothingSe": "Niente lo colpisce in modo superefficace",
+    "abilities": "Abilità considerate: {notes}.",
+    "help": "Le colonne sono i tuoi Pokémon (il danno che subiscono da ogni tipo). «Colpo SE» conta i membri con un attacco superefficace; ✕ significa che niente colpisce quel tipo nemmeno in modo neutro."
+  },
+  "notes": {
+    "wonderGuard": "{ability}: passano solo i colpi superefficaci",
+    "immune": "{ability}: immune a {types}",
+    "scale": "{ability}: {scales}",
+    "member": "{member}: {note}",
+    "hitter": "{member}: {move}"
+  },
+  "threats": {
+    "label": "Minacce",
+    "heading": "Minacce in {format}",
+    "noUsage": "Nessuna statistica di utilizzo per questo formato, quindi nessuna lista delle minacce.",
+    "running": "Calcolo dei danni in corso…",
+    "none": "Qualcuno nella tua squadra risponde a ciascuno dei {n} Pokémon più usati.",
+    "help": "Controlla i {n} Pokémon più usati con il loro strumento, la distribuzione e le mosse più comuni ({source}{stats, select, none {} other {, {battles, number} lotte, scaricato il {fetched}}}). Un membro risponde a una minaccia se resiste a ogni tiro del suo attacco più forte a PS pieni, oppure se è più veloce e la manda KO in un colpo almeno metà delle volte. Niente Teracristal, niente modifiche alle statistiche, niente trappole.",
+    "struggles": "La tua squadra fatica contro <b>{species}</b>",
+    "share": "{set} · nel {pct}% delle squadre"
+  },
+  "matchup": {
+    "line": "{member}: {took}; {back}, {speed, select, faster {più veloce} other {più lento}}",
+    "takes": "subisce {lo}–{hi}% da {move}",
+    "shrugs": "non subisce niente di preoccupante",
+    "does": "restituisce {lo}–{hi}% con {move}",
+    "doesKo": "restituisce {lo}–{hi}% con {move} ({ko}% di KO in un colpo)",
+    "noHurt": "non ha attacchi che lo danneggino"
+  }
+}

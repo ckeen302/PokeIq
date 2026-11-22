@@ -1,0 +1,271 @@
+{
+ "questions": {
+  "rival-rb-grandfather": {
+   "prompt": "[[game:Pokémon Red and Blue]]で、ライバルはだれの孫？"
+  },
+  "rival-gs-lab": {
+   "prompt": "[[game:Pokémon Gold and Silver]]で、ライバルがポケモンを盗んだのはだれの研究所？"
+  },
+  "rival-rse-wally": {
+   "prompt": "[[game:Pokémon Ruby, Sapphire and Emerald]]で、[[loc:Petalburg City]]の近くで主人公に手伝ってもらって[[mon:Ralts]]を捕まえる少年はだれ？"
+  },
+  "rival-pt-barry": {
+   "prompt": "[[game:Pokémon Platinum]]で、せっかちな幼なじみでライバルの名前は？"
+  },
+  "rival-bw-friends": {
+   "prompt": "[[game:Pokémon Black and White]]で、主人公といっしょに旅立つ幼なじみのふたりは？"
+  },
+  "rival-b2w2-hugh": {
+   "prompt": "[[game:Pokémon Black 2 and White 2]]で、[[loc:Aspertia City]]出身のライバルはだれ？"
+  },
+  "rival-sm-hau": {
+   "prompt": "[[game:Pokémon Sun and Moon]]で、しまキングの[[p:Hala]]の孫であるライバルはだれ？"
+  },
+  "rival-sm-gladion": {
+   "prompt": "[[game:Pokémon Sun and Moon]]で、[[p:Lillie]]の兄だとわかる[[p:Team Skull]]の用心棒はだれ？"
+  },
+  "rival-swsh-hop": {
+   "prompt": "[[game:Pokémon Sword and Shield]]で、ライバルの[[p:Hop]]はどのチャンピオンの弟？"
+  },
+  "rival-sv-nemona": {
+   "prompt": "[[game:Pokémon Scarlet and Violet]]で、すでにチャンピオンランクを持つ生徒で、主人公のライバルになるのはだれ？"
+  },
+  "rival-swsh-marnie": {
+   "prompt": "[[game:Pokémon Sword and Shield]]で、[[p:Marnie]]はどのジムリーダーの妹？"
+  },
+  "villain-galactic-legends": {
+   "prompt": "[[game:Pokémon Diamond and Pearl]]で、[[p:Team Galactic]]の計画の中心にある伝説のポケモンは？"
+  },
+  "villain-plasma-king": {
+   "prompt": "[[game:Pokémon Black and White]]で、[[p:Team Plasma]]の王はだれ？"
+  },
+  "villain-plasma-goal": {
+   "prompt": "[[game:Pokémon Black and White]]で、[[p:Team Plasma]]が表向きにかかげている目的は？",
+   "answer": "ポケモンを人間から解放すること",
+   "distractors": [
+    "海を広げること",
+    "新しい宇宙をつくること",
+    "世界のエネルギーを支配すること"
+   ]
+  },
+  "villain-flare-weapon": {
+   "prompt": "[[game:Pokémon X and Y]]で、[[p:Team Flare]]が使おうとする最終兵器を3000年前に作ったのはだれ？"
+  },
+  "villain-swsh-eternatus": {
+   "prompt": "[[game:Pokémon Sword and Shield]]で、[[p:Darkest Day]]を引き起こす伝説のポケモンは？"
+  },
+  "villain-usum-rainbow": {
+   "prompt": "[[game:Pokémon Ultra Sun and Ultra Moon]]で、[[p:Giovanni]]のもとに歴代の悪の組織のボスを集めた組織は？",
+   "distractors": [
+    "ネオ・プラズマ団",
+    "[[p:Team Flare]]",
+    "[[p:Team Yell]]"
+   ]
+  },
+  "villain-pla-volo": {
+   "prompt": "[[game:Pokémon Legends: Arceus]]で、最後の敵だと明かされるのはだれ？"
+  },
+  "villain-hgss-archer": {
+   "prompt": "[[game:Pokémon HeartGold and SoulSilver]]で、[[p:Giovanni]]がいない間、[[region:Johto]]の[[p:Team Rocket]]を率いる幹部はだれ？"
+  },
+  "villain-magma-goal": {
+   "prompt": "[[game:Pokémon Ruby, Sapphire and Emerald]]で、陸を広げようとしている組織は？"
+  },
+  "villain-aqua-goal": {
+   "prompt": "[[game:Pokémon Ruby, Sapphire and Emerald]]で、海を広げようとしている組織は？"
+  },
+  "villain-magma-groudon": {
+   "prompt": "[[game:Pokémon Ruby, Sapphire and Emerald]]で、[[p:Team Magma]]が目覚めさせようとしている伝説のポケモンは？"
+  },
+  "item-rb-silph-scope": {
+   "prompt": "[[game:Pokémon Red and Blue]]で、[[loc:Pokémon Tower]]のゆうれいの正体を見破れる道具は？"
+  },
+  "item-rb-poke-flute": {
+   "prompt": "[[game:Pokémon Red and Blue]]で、道をふさいでいる[[mon:Snorlax]]を起こす道具は？"
+  },
+  "item-rb-ss-ticket": {
+   "prompt": "[[game:Pokémon Red and Blue]]で、主人公に[[item:S.S. Ticket]]をくれるのはだれ？"
+  },
+  "item-rb-card-key": {
+   "prompt": "[[game:Pokémon Red and Blue]]で、[[p:Silph Co.]]の中の閉ざされた扉を開ける道具は？"
+  },
+  "item-rb-gold-teeth": {
+   "prompt": "[[game:Pokémon Red and Blue]]で、[[loc:Safari Zone]]の園長に[[item:Gold Teeth]]を返すともらえるものは？"
+  },
+  "item-gs-squirtbottle": {
+   "prompt": "[[game:Pokémon Gold and Silver]]で、[[loc:Route 36]]の変な木を動かす道具は？"
+  },
+  "item-gs-secretpotion": {
+   "prompt": "[[game:Pokémon Gold and Silver]]で、[[loc:Olivine City]]の灯台にいる病気の[[mon:Ampharos]]を治す道具は？"
+  },
+  "item-rse-devon-scope": {
+   "prompt": "[[game:Pokémon Ruby, Sapphire and Emerald]]で、見えない[[mon:Kecleon]]の姿を見破れる道具は？"
+  },
+  "item-rse-go-goggles": {
+   "prompt": "[[game:Pokémon Ruby, Sapphire and Emerald]]で、[[loc:Route 111]]の砂漠の砂嵐の中を進めるようになる道具は？"
+  },
+  "hm-rs-dive": {
+   "prompt": "[[game:Pokémon Ruby and Sapphire]]で登場した、海の底を探検できるひでんわざは？"
+  },
+  "hm-gs-whirlpool": {
+   "prompt": "[[game:Pokémon Gold and Silver]]で登場した、海のうずしおを越えられるひでんわざは？"
+  },
+  "hm-dp-defog": {
+   "prompt": "[[game:Pokémon Diamond and Pearl]]で、バトル以外で濃い霧を晴らせるひでんわざは？"
+  },
+  "hm-dp-rock-climb": {
+   "prompt": "[[game:Pokémon Diamond and Pearl]]で登場した、岩壁をのぼれるひでんわざは？"
+  },
+  "hm-sm-ride": {
+   "prompt": "ひでんわざの代わりに[[p:Poké Ride]]を取り入れたゲームは？"
+  },
+  "item-hgss-pokewalker": {
+   "prompt": "[[game:Pokémon HeartGold and SoulSilver]]に同梱されていた歩数計型のアクセサリーは？"
+  },
+  "item-lgpe-pokeball-plus": {
+   "prompt": "[[game:Pokémon: Let's Go, Pikachu! and Let's Go, Eevee!]]といっしょに、コントローラーとして発売されたアクセサリーは？"
+  },
+  "legend-rb-mewtwo": {
+   "prompt": "[[game:Pokémon Red and Blue]]で、[[mon:Mewtwo]]がいる場所は？"
+  },
+  "legend-rb-zapdos": {
+   "prompt": "[[game:Pokémon Red and Blue]]で、[[mon:Zapdos]]がいる場所は？"
+  },
+  "legend-rb-articuno": {
+   "prompt": "[[game:Pokémon Red and Blue]]で、[[mon:Articuno]]がいる場所は？"
+  },
+  "legend-rb-moltres": {
+   "prompt": "[[game:Pokémon Red and Blue]]で、[[mon:Moltres]]がいる場所は？"
+  },
+  "legend-gs-lugia": {
+   "prompt": "[[game:Pokémon Gold and Silver]]で、[[mon:Lugia]]がいる場所は？"
+  },
+  "legend-gs-hooh": {
+   "prompt": "[[game:Pokémon Gold and Silver]]で、[[mon:Ho-Oh]]がいる場所は？"
+  },
+  "legend-gs-beasts": {
+   "prompt": "[[game:Pokémon Gold and Silver]]で、[[mon:Raikou]]・[[mon:Entei]]・[[mon:Suicune]]が目覚める場所は？"
+  },
+  "legend-gs-red-gyarados": {
+   "prompt": "[[game:Pokémon Gold and Silver]]で、[[loc:Lake of Rage]]で暴れている赤いポケモンは？"
+  },
+  "legend-rse-rayquaza": {
+   "prompt": "[[game:Pokémon Ruby, Sapphire and Emerald]]で、[[mon:Rayquaza]]を捕まえられる場所は？"
+  },
+  "legend-dp-spear-pillar": {
+   "prompt": "[[game:Pokémon Diamond and Pearl]]で、[[loc:Mt. Coronet]]の頂上にある、[[mon:Dialga]]や[[mon:Palkia]]と戦う場所は？"
+  },
+  "legend-pt-distortion": {
+   "prompt": "[[game:Pokémon Platinum]]で、[[p:Distortion World]]を支配する伝説のポケモンは？"
+  },
+  "legend-dp-azelf": {
+   "prompt": "[[region:Sinnoh]]地方のゲームで、[[mon:Azelf]]がすんでいる湖は？"
+  },
+  "legend-dp-uxie": {
+   "prompt": "[[region:Sinnoh]]地方のゲームで、[[mon:Uxie]]がすんでいる湖は？"
+  },
+  "legend-bw-ns-castle": {
+   "prompt": "[[game:Pokémon Black and White]]で、[[mon:Reshiram]]や[[mon:Zekrom]]と戦って捕まえる場所は？"
+  },
+  "legend-pla-noble-first": {
+   "prompt": "[[game:Pokémon Legends: Arceus]]で、主人公が最初に鎮める[[p:Noble Pokémon]]は？"
+  },
+  "npc-rb-marowak": {
+   "prompt": "[[game:Pokémon Red and Blue]]で、[[loc:Pokémon Tower]]に出るゆうれいの正体は、どのポケモンの魂？"
+  },
+  "npc-rb-fuji": {
+   "prompt": "[[game:Pokémon Red and Blue]]で、[[loc:Pokémon Tower]]の最上階で[[p:Team Rocket]]に捕まっているのはだれ？",
+   "distractors": [
+    "[[p:Bill]]",
+    "[[p:Professor Oak]]",
+    "モノマネむすめ"
+   ]
+  },
+  "npc-rb-dojo": {
+   "prompt": "[[game:Pokémon Red and Blue]]で、[[loc:Saffron City]]の[[p:Fighting Dojo]]で選べるポケモンは？"
+  },
+  "npc-gs-red": {
+   "prompt": "[[game:Pokémon Gold and Silver]]で、[[loc:Mt. Silver]]の頂上で待つ無口な最後の相手はだれ？"
+  },
+  "npc-gs-whitney": {
+   "prompt": "[[game:Pokémon Gold and Silver]]で、[[move:Rollout]]で恐れられている[[mon:Miltank]]を使うジムリーダーは？"
+  },
+  "npc-gs-jasmine": {
+   "prompt": "[[game:Pokémon Gold and Silver]]で、病気の[[mon:Ampharos]]が治るまでジムに戻らないジムリーダーは？"
+  },
+  "npc-gs-kurt": {
+   "prompt": "[[game:Pokémon Gold and Silver]]で、[[loc:Azalea Town]]の[[p:Kurt]]がぼんぐりから作るものは？",
+   "answer": "モンスターボール",
+   "distractors": [
+    "きのみ",
+    "進化の石",
+    "キズぐすり"
+   ]
+  },
+  "npc-rse-steven": {
+   "prompt": "[[game:Pokémon Ruby and Sapphire]]で、[[p:Devon Corporation]]の社長の息子はだれ？"
+  },
+  "npc-sm-nebby": {
+   "prompt": "[[game:Pokémon Sun and Moon]]で、[[p:Lillie]]が[[mon:Cosmog]]につけたニックネームは？",
+   "distractors": [
+    "[[p:Snowy]]",
+    "スターダスト",
+    "コスモ"
+   ]
+  },
+  "npc-swsh-leon-ace": {
+   "prompt": "[[game:Pokémon Sword and Shield]]で、チャンピオンの[[p:Leon]]のエースポケモンは？"
+  },
+  "npc-sv-herba": {
+   "prompt": "[[game:Pokémon Scarlet and Violet]]で、[[p:Arven]]が探している珍しい食材は？",
+   "answer": "[[p:Herba Mystica]]",
+   "distractors": [
+    "[[p:Tera Shard]]",
+    "[[p:Wishing Piece]]",
+    "[[p:Galarica Twig]]"
+   ]
+  },
+  "npc-sv-path-titans": {
+   "prompt": "[[game:Pokémon Scarlet and Violet]]で、[[p:Titan Pokémon]]を探すストーリーは？",
+   "answer": "レジェンドルート",
+   "distractors": [
+    "チャンピオンロード",
+    "スターダスト★ストリート",
+    "ザ・ホームウェイ"
+   ]
+  },
+  "npc-sv-starfall": {
+   "prompt": "[[game:Pokémon Scarlet and Violet]]で、[[p:Team Star]]のアジトに挑むストーリーは？",
+   "answer": "スターダスト★ストリート",
+   "distractors": [
+    "チャンピオンロード",
+    "レジェンドルート",
+    "ザ・ホームウェイ"
+   ]
+  },
+  "npc-pla-clans": {
+   "prompt": "[[game:Pokémon Legends: Arceus]]で、[[p:Diamond Clan]]を率いるのはだれ？"
+  },
+  "npc-pla-kamado": {
+   "prompt": "[[game:Pokémon Legends: Arceus]]で、[[p:Galaxy Expedition Team]]の団長はだれ？"
+  },
+  "za-lumiose": {
+   "prompt": "[[game:Pokémon Legends: Z-A]]の舞台となる街は？"
+  },
+  "za-mega": {
+   "prompt": "[[game:Pokémon Legends: Z-A]]で復活するバトルの仕組みは？",
+   "answer": "メガシンカ",
+   "distractors": [
+    "Zワザ",
+    "ダイマックス",
+    "テラスタル"
+   ]
+  },
+  "frlg-sevii": {
+   "prompt": "[[game:Pokémon FireRed and LeafGreen]]で[[region:Kanto]]に加わった島々は？"
+  },
+  "yellow-starter": {
+   "prompt": "[[game:Pokémon Yellow]]で、[[p:Professor Oak]]から最初のパートナーとしてもらえるポケモンは？"
+  }
+ }
+}

@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Flame, Play, Trophy } from "lucide-react";
 import { dailyNumber } from "@/lib/daily";
 import { currentStreak, useProgress } from "@/lib/progress";
-import { quizShareText, shareUrl, type QuizShareResult } from "@/lib/share";
+import { challengeUrl, quizShareText, shareUrl, type QuizShareResult } from "@/lib/share";
 import { useToday } from "@/lib/use-today";
 import { ShareButton } from "@/components/share/ShareButton";
 import { QuizController } from "@/components/quiz/QuizController";
@@ -18,8 +18,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { DailyEmailNudge } from "@/components/email/DailyEmailNudge";
+import { num } from "@/components/quiz/num";
+import { useT } from "@/i18n/client";
+import dailyNs from "@/messages/quiz-daily";
+import shareNs from "@/messages/share";
 
 export function DailyChallenge() {
+  const t = useT(dailyNs);
+  const st = useT(shareNs);
   const progress = useProgress();
   // The local date is only known after mount (the page is prerendered) and
   // rolls over at midnight; a run in progress keeps the date it started on.
@@ -31,9 +37,9 @@ export function DailyChallenge() {
 
   const header = (
     <div className="mx-auto max-w-2xl space-y-2 text-center">
-      <p className="hud-label text-screen">Daily Challenge{number ? ` #${number}` : ""}</p>
-      <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Today&apos;s PokéIQ test</h1>
-      <p className="text-muted-foreground">10 mixed questions, the same for every trainer. One attempt — make it count.</p>
+      <p className="hud-label text-screen">{number ? t("labelNumber", { n: number }) : t("label")}</p>
+      <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">{t("title")}</h1>
+      <p className="text-muted-foreground">{t("intro")}</p>
     </div>
   );
 
@@ -75,7 +81,7 @@ export function DailyChallenge() {
         grid: done.grid,
         ...(streak > 0 ? { streak } : {}),
       };
-      return quizShareText(result, done.shareToken ? `${window.location.origin}/c/${done.shareToken}` : shareUrl(result));
+      return quizShareText(result, done.shareToken ? challengeUrl(done.shareToken, st.locale) : shareUrl(result, st.locale), st);
     };
     return (
       <div className="space-y-8">
@@ -84,30 +90,31 @@ export function DailyChallenge() {
           <Card className="mx-auto max-w-2xl">
             <CardContent className="space-y-6 p-6 text-center">
               <div>
-                <div className="text-sm text-muted-foreground">You scored</div>
+                <div className="text-sm text-muted-foreground">{t("youScored")}</div>
                 <div className="text-5xl font-black">
                   {done.correct}/{done.total}
                 </div>
                 <div className="mt-1 text-muted-foreground">
-                  PokéIQ <b className="text-primary">{done.pokeiq}</b> · {done.score.toLocaleString()} pts
+                  {t.rich("iq", { iq: done.pokeiq, score: num(done.score, t.locale), b: (c) => <b className="text-primary">{c}</b> })}
                 </div>
               </div>
               <ResultGrid grid={done.grid} />
               <div className="flex items-center justify-center gap-2 text-sm font-semibold text-orange-400">
-                <Flame className="h-4 w-4" /> {streak}-day streak · best {progress.daily.best}
+                <Flame className="h-4 w-4" /> {t("streak", { n: streak, best: progress.daily.best })}
               </div>
               <div className="grid gap-2 sm:grid-cols-2">
                 <ShareButton size="lg" kind="daily" getText={shareTextNow} />
                 <Link href={`/leaderboard?board=daily&date=${date}`} className={cn(buttonVariants({ variant: "outline", size: "lg" }))}>
-                  <Trophy className="h-4 w-4" /> Today&apos;s leaderboard
+                  <Trophy className="h-4 w-4" /> {t("leaderboard")}
                 </Link>
               </div>
-              <NextDailyCountdown label="Next Daily Challenge in" />
+              <NextDailyCountdown label={t("next")} />
               <DailyEmailNudge />
               <p className="text-sm text-muted-foreground">
-                Still hungry? Try the{" "}
-                <Link href="/pokedle" className="text-primary hover:underline">Pokédle</Link> or a{" "}
-                <Link href="/quiz" className="text-primary hover:underline">Survival run</Link>.
+                {t.rich("more", {
+                  dle: (c) => <Link href="/pokedle" className="text-primary hover:underline">{c}</Link>,
+                  quiz: (c) => <Link href="/quiz" className="text-primary hover:underline">{c}</Link>,
+                })}
               </p>
             </CardContent>
           </Card>
@@ -126,29 +133,30 @@ export function DailyChallenge() {
 
 /** Today's challenge, ready to start. While the date and progress load, an invisible copy sizes the placeholder, so nothing below it moves. */
 function FreshCard({ number, onStart }: { number: number | null; onStart: () => void }) {
+  const t = useT(dailyNs);
   return (
     <Card className="mx-auto max-w-2xl">
       <CardContent className="space-y-6 p-6">
         <ul className="grid gap-3 text-sm sm:grid-cols-2">
           {(
             [
-              ["whos-that", "Silhouettes"],
-              ["dex", "Pokédex entries"],
-              ["types", "Type matchups"],
-              ["higher-lower", "Stat battles"],
+              "whos-that",
+              "dex",
+              "types",
+              "higher-lower",
             ] as const
-          ).map(([mod, label]) => (
-            <li key={label} className="flex items-center gap-3 rounded-md border bg-shade/20 p-3 font-display font-semibold uppercase tracking-wide">
+          ).map((mod) => (
+            <li key={mod} className="flex items-center gap-3 rounded-md border bg-shade/20 p-3 font-display font-semibold uppercase tracking-wide">
               <span className="screen flex h-9 w-9 items-center justify-center rounded-sm text-screen">
                 <ModeIcon module={mod} className="relative z-[3] h-4 w-4" />
               </span>
-              {label}
+              {t(`parts.${mod}`)}
             </li>
           ))}
         </ul>
-        <p className="text-center text-sm text-muted-foreground">15 seconds per question · speed and streak bonuses</p>
+        <p className="text-center text-sm text-muted-foreground">{t("rules")}</p>
         <Button size="lg" className="w-full text-base" onClick={onStart}>
-          <Play className="h-5 w-5" /> Start Daily #{number ?? ""}
+          <Play className="h-5 w-5" /> {t("start", { n: number ?? "" })}
         </Button>
       </CardContent>
     </Card>

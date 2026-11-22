@@ -1,0 +1,64 @@
+{
+  "setup": {
+    "changeSettings": "Cambiar ajustes",
+    "format": "Formato",
+    "difficulty": "Dificultad",
+    "teamsFrom": "Equipos de",
+    "scope": {
+      "both": "Juegos y anime",
+      "games": "Juegos",
+      "anime": "Anime"
+    },
+    "selected": "{label} (selección: {n})",
+    "all": "{label} (sin filtro)",
+    "allChip": "Todas",
+    "start": "Jugar a {mode}"
+  },
+  "filters": {
+    "gen": "Generaciones",
+    "chip": "Gen. {n}",
+    "series": "Series",
+    "anime": {
+      "original": "Original",
+      "advanced": "Advanced",
+      "dp": "Diamante y Perla",
+      "bw": "Negro y Blanco",
+      "xy": "XY",
+      "sm": "Sol y Luna",
+      "journeys": "Viajes",
+      "horizons": "Horizontes"
+    },
+    "items": "Debut",
+    "itemsNote": "Sin filtro, las preguntas abarcan de la Gen. 1 a la 7. Elige generaciones para jugar con cualquiera de las nueve.",
+    "team": "Generación o región",
+    "teamChip": "{region}: juegos de la Gen. {n}, anime ambientado en {region}",
+    "teamNote": "Los juegos cuentan por generación (Rojo Fuego es de la Gen. 3); los equipos del anime, por la región de la serie."
+  },
+  "regions": {
+    "kanto": "Kanto",
+    "johto": "Johto",
+    "hoenn": "Hoenn",
+    "sinnoh": "Sinnoh",
+    "unova": "Teselia",
+    "kalos": "Kalos",
+    "alola": "Alola",
+    "galar": "Galar",
+    "paldea": "Paldea"
+  },
+  "duel": {
+    "heading": "Cara a cara · {mode}",
+    "zoomBlurb": "Los mismos {n} primeros planos para los dos, {seconds} segundos cada uno. Acertar en el paso 1 da {first} puntos, y baja hasta {last} en el paso {steps}; gana quien sume más puntos. Envía el enlace a tu amigo y pulsa Listo.",
+    "blurb": "Las mismas {n} preguntas para los dos, {seconds} segundos cada una. Un acierto da 100 puntos, más hasta 50 por rapidez; gana quien sume más puntos. Envía el enlace a tu amigo y pulsa Listo.",
+    "mode": "Modo",
+    "modeLabel": "Modo del duelo",
+    "difficulty": "Dificultad",
+    "difficultyLabel": "Dificultad del duelo"
+  },
+  "grid": {
+    "best": "Récord {score}",
+    "nameEmAll": "Nómbralos a todos",
+    "nameEmAllLine": "Di todos los Pokémon que puedas.",
+    "whichPokemon": "¿Qué Pokémon eres?",
+    "whichPokemonLine": "Descubre el Pokémon que más se parece a ti."
+  }
+}

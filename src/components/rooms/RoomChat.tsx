@@ -11,6 +11,8 @@ import { CHAT_MAX } from "@/lib/chat";
 import { ROOM_KEPT, ROOM_POLL_MS, ROOM_USERS_MS, type RoomEvent, type RoomMessage, type RoomState } from "@/lib/rooms";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/avatar/Avatar";
+import { useT } from "@/i18n/client";
+import roomChat from "@/messages/room-chat";
 
 /**
  * A chat room: the last 100 messages (plain text, every one checked on the
@@ -36,6 +38,7 @@ function readList(key: string): string[] {
 const time = (at: number) => new Date(at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
 export function RoomChat({ room }: { room: string }) {
+  const t = useT(roomChat);
   const account = useAccount();
   const me = account.user?.username ?? null;
   const [messages, setMessages] = useState<RoomMessage[]>([]);
@@ -119,8 +122,8 @@ export function RoomChat({ room }: { room: string }) {
   useVisiblePoll(loadUsers, ROOM_USERS_MS);
   // Once more shortly after arriving, when this page's own heartbeat has said we're here.
   useEffect(() => {
-    const t = window.setTimeout(() => void loadUsers(), 4_000);
-    return () => window.clearTimeout(t);
+    const timer = window.setTimeout(() => void loadUsers(), 4_000);
+    return () => window.clearTimeout(timer);
   }, [loadUsers]);
   const here = me && !users.includes(me) ? [...users, me].sort((a, b) => a.localeCompare(b)) : users;
 
@@ -140,13 +143,13 @@ export function RoomChat({ room }: { room: string }) {
     try {
       const res = await fetch(`/api/rooms/${room}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "post", text }) });
       const body = await res.json();
-      if (!res.ok) setError(body.error ?? "That wasn't sent.");
+      if (!res.ok) setError(body.error ?? t("notSent"));
       else {
         setDraft("");
         apply({ type: "msg", room, msg: body.message });
       }
     } catch {
-      setError("Couldn't reach the server. Try again.");
+      setError(t("unreachable"));
     } finally {
       setSending(false);
     }
@@ -180,7 +183,7 @@ export function RoomChat({ room }: { room: string }) {
     });
   }
 
-  if (state === "off") return <p className="rounded-lg border border-dashed p-6 text-center text-muted-foreground">Chat rooms open soon.</p>;
+  if (state === "off") return <p className="rounded-lg border border-dashed p-6 text-center text-muted-foreground">{t("soon")}</p>;
 
   return (
     <div className="grid gap-4 lg:grid-cols-[1fr_14rem]">
@@ -188,21 +191,21 @@ export function RoomChat({ room }: { room: string }) {
         <div className="flex items-center gap-2 border-b px-3 py-2 text-xs text-muted-foreground">
           {slow > 0 && (
             <span className="flex items-center gap-1 text-warning" data-testid="slow-mode">
-              <Timer className="h-3.5 w-3.5" aria-hidden /> Slow mode: {slow}s
+              <Timer className="h-3.5 w-3.5" aria-hidden /> {t("slow", { s: slow })}
             </span>
           )}
-          <span className="ml-auto">{realtime && !polling ? "Live" : "Updates every few seconds"}</span>
+          <span className="ml-auto">{realtime && !polling ? t("live") : t("polling")}</span>
           <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={toggleOff} aria-pressed={chatOff}>
-            <MessageSquareOff className="h-3.5 w-3.5" aria-hidden /> {chatOff ? "Turn on" : "Chat off"}
+            <MessageSquareOff className="h-3.5 w-3.5" aria-hidden /> {chatOff ? t("turnOn") : t("chatOff")}
           </Button>
         </div>
         {chatOff ? (
-          <p className="flex-1 px-3 py-8 text-center text-sm text-muted-foreground">Chat is off. You won&apos;t see messages, and can&apos;t send any.</p>
+          <p className="flex-1 px-3 py-8 text-center text-sm text-muted-foreground">{t("off")}</p>
         ) : (
           <>
             <div ref={list} className="h-[26rem] flex-1 space-y-1 overflow-y-auto px-3 py-2 text-sm" aria-live="polite" data-testid="room-messages">
               {state === "loading" && <Loader2 className="mx-auto h-5 w-5 animate-spin text-muted-foreground" aria-hidden />}
-              {state === "ready" && shown.length === 0 && <p className="py-6 text-center text-xs text-muted-foreground">No messages yet. Say hi!</p>}
+              {state === "ready" && shown.length === 0 && <p className="py-6 text-center text-xs text-muted-foreground">{t("empty")}</p>}
               {shown.map((m) => (
                 <div key={m.id} className="group flex items-baseline gap-1.5 break-words" data-testid="room-line">
                   <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">{time(m.at)}</span>
@@ -216,13 +219,13 @@ export function RoomChat({ room }: { room: string }) {
                   </p>
                   {me && m.name !== me && (
                     <span className="flex shrink-0 gap-1 opacity-0 focus-within:opacity-100 group-hover:opacity-100">
-                      <button type="button" className="text-muted-foreground hover:text-foreground" onClick={() => toggleMute(m.name)} title={`Mute ${m.name}`} aria-label={`Mute ${m.name}`}>
+                      <button type="button" className="text-muted-foreground hover:text-foreground" onClick={() => toggleMute(m.name)} title={t("mute", { name: m.name })} aria-label={t("mute", { name: m.name })}>
                         <VolumeX className="h-3 w-3" aria-hidden />
                       </button>
                       {reported.has(m.id) ? (
-                        <span className="text-[10px] text-muted-foreground">Reported</span>
+                        <span className="text-[10px] text-muted-foreground">{t("reported")}</span>
                       ) : (
-                        <button type="button" className="text-muted-foreground hover:text-destructive" onClick={() => void report(m)} title="Report this message" aria-label={`Report ${m.name}'s message`} data-testid="room-report">
+                        <button type="button" className="text-muted-foreground hover:text-destructive" onClick={() => void report(m)} title={t("reportTitle")} aria-label={t("reportLabel", { name: m.name })} data-testid="room-report">
                           <Flag className="h-3 w-3" aria-hidden />
                         </button>
                       )}
@@ -233,10 +236,13 @@ export function RoomChat({ room }: { room: string }) {
             </div>
             {!me ? (
               <p className="border-t px-3 py-3 text-center text-xs text-muted-foreground">
-                <Link href="/login" className="font-semibold text-primary hover:underline">
-                  Sign in
-                </Link>{" "}
-                to chat. Anyone can read along.
+                {t.rich("signIn", {
+                  link: (c) => (
+                    <Link href="/login" className="font-semibold text-primary hover:underline">
+                      {c}
+                    </Link>
+                  ),
+                })}
               </p>
             ) : (
               <form className="flex gap-2 border-t p-2" onSubmit={send}>
@@ -247,12 +253,12 @@ export function RoomChat({ room }: { room: string }) {
                     setError(null);
                   }}
                   maxLength={CHAT_MAX}
-                  placeholder="Say something nice…"
-                  aria-label="Room message"
+                  placeholder={t("placeholder")}
+                  aria-label={t("label")}
                   autoComplete="off"
                   className="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
-                <Button type="submit" size="sm" className="h-9" disabled={sending || !draft.trim()} aria-label="Send">
+                <Button type="submit" size="sm" className="h-9" disabled={sending || !draft.trim()} aria-label={t("send")}>
                   {sending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Send className="h-4 w-4" aria-hidden />}
                 </Button>
               </form>
@@ -267,7 +273,7 @@ export function RoomChat({ room }: { room: string }) {
       </div>
       <aside className="hud space-y-2 rounded-lg border bg-card p-3 text-sm">
         <p className="hud-label flex items-center gap-1.5">
-          <Users className="h-3.5 w-3.5" aria-hidden /> Here now ({here.length})
+          <Users className="h-3.5 w-3.5" aria-hidden /> {t("here", { n: here.length })}
         </p>
         <ul className="max-h-80 space-y-1 overflow-y-auto" data-testid="room-users">
           {here.map((u) => (
@@ -276,14 +282,14 @@ export function RoomChat({ room }: { room: string }) {
                 {u}
               </Link>
               {muted.includes(u.toLowerCase()) && (
-                <button type="button" onClick={() => toggleMute(u)} title={`Unmute ${u}`} aria-label={`Unmute ${u}`} className="text-muted-foreground hover:text-foreground">
+                <button type="button" onClick={() => toggleMute(u)} title={t("unmute", { name: u })} aria-label={t("unmute", { name: u })} className="text-muted-foreground hover:text-foreground">
                   <Volume2 className="h-3 w-3" aria-hidden />
                 </button>
               )}
             </li>
           ))}
         </ul>
-        {muted.length > 0 && <p className="text-xs text-muted-foreground">Muted: {muted.join(", ")}</p>}
+        {muted.length > 0 && <p className="text-xs text-muted-foreground">{t("muted", { names: muted.join(", ") })}</p>}
       </aside>
     </div>
   );

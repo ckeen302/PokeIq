@@ -1,0 +1,52 @@
+{
+  "search": "Cerca una regione, città, percorso o luogo",
+  "searchShort": "Regione, città, percorso…",
+  "kicker": "Tutte le regioni principali · una mappa",
+  "title": "Atlante <accent>mondiale</accent>",
+  "globe": "Guardalo come globo 3D →",
+  "searchLabel": "Cerca nella mappa",
+  "go": "Vai",
+  "regions": "Regioni",
+  "canvas": "Mappa del mondo Pokémon con tutte le regioni. Usa la ricerca o i pulsanti delle regioni per raggiungere un luogo.",
+  "failed": "Impossibile caricare l’atlante. Prova a ricaricare.",
+  "loading": "Caricamento dell’atlante",
+  "zoom": "Zoom <b>{level}</b>",
+  "zoomLevels": {
+    "world": "Mondo",
+    "region": "Regione",
+    "towns": "Città e percorsi",
+    "close": "Da vicino"
+  },
+  "cities": "Città",
+  "towns": "Paesi",
+  "close": "Chiudi",
+  "zoomIn": "Ingrandisci",
+  "zoomOut": "Riduci",
+  "whole": "Mostra tutto il mondo",
+  "help": "Scorri per lo zoom, trascina per esplorare, clicca su un luogo per i dettagli. Ogni regione è disegnata alla stessa scala dalle mappe dei giochi e disposta come i luoghi reali a cui si ispira.",
+  "noMatch": "Nessun risultato",
+  "nothing": "Niente si chiama “{q}”. Prova una regione, città, percorso o luogo, come Zafferanopoli, Percorso 24 o Paldea.",
+  "main": "Regione della serie principale",
+  "side": "DLC o area secondaria",
+  "partOf": "Parte di {parent}",
+  "partOfRegion": "Parte di una regione",
+  "count": "{n} città e luoghi, disposti come nella mappa del gioco. Ingrandisci per vedere tutti i nomi.",
+  "countRoutes": "{n} città e luoghi più {routes} percorsi, disposti come nella mappa del gioco. Ingrandisci per vedere tutti i nomi.",
+  "kinds": {
+    "route": "Percorso",
+    "landmark": "Luogo d’interesse",
+    "town": "Paese / Città"
+  },
+  "placesHere": "Luoghi qui",
+  "exactFrom": "Esatto · {source}",
+  "exact": "Esatto · dalla mappa del gioco",
+  "approximate": "Approssimativo · nessuna evidenziazione ufficiale",
+  "sources": {
+    "emerald": "Dati della mappa di Smeraldo",
+    "oras": "Mappa di Rubino Omega e Zaffiro Alpha",
+    "hgss": "Dati della mappa del PokéGear di Oro HeartGold e Argento SoulSilver",
+    "platinum": "Dati della mappa di Platino"
+  },
+  "play": "Gioca a PokéGuessr: {map} →",
+  "world": "Mondo"
+}

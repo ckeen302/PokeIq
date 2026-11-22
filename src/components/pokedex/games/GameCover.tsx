@@ -14,12 +14,12 @@ import { cn } from "@/lib/utils";
  * A game with no box (a phone app) gets its best-known Pokémon on a tile in
  * that Pokémon's type colour.
  */
-export function GameCover({ cover, className, eager = false }: { cover: CoverArt; className?: string; eager?: boolean }) {
+export function GameCover({ cover, className, eager = false, tileAlt }: { cover: CoverArt; className?: string; eager?: boolean; /** The tile's alt text (a phone app), in the page's language. */ tileAlt?: string }) {
   const loading = eager ? "eager" : "lazy";
   return (
     <div className={cn("relative aspect-[5/4] w-full", className)} data-testid="game-cover">
       {cover.kind === "art" ? (
-        <ArtTile id={cover.id} alt={cover.alt} types={cover.types} loading={loading} />
+        <ArtTile id={cover.id} alt={tileAlt ?? `${cover.alt}, on a tile in place of box art`} types={cover.types} loading={loading} />
       ) : cover.files.length === 2 ? (
         <>
           {/* 58% × 78% boxes turned 6°: about 64% × 68% of the frame's width once rotated (the frame is 80% as tall as wide), so each stays inside with room to spare. */}
@@ -63,7 +63,7 @@ function ArtTile({ id, alt, types, loading }: { id: number; alt: string; types: 
       style={{ background: `linear-gradient(145deg, ${a}, ${b})` }}
       data-testid="game-cover-img"
     >
-      <img src={boardArtUrl(id)} alt={`${alt}, on a tile in place of box art`} loading={loading} decoding="async" className="h-[82%] w-[82%] object-contain" />
+      <img src={boardArtUrl(id)} alt={alt} loading={loading} decoding="async" className="h-[82%] w-[82%] object-contain" />
     </div>
   );
 }

@@ -1,0 +1,7 @@
+{
+  "eyebrow": "Name 'em All · Daily {date}",
+  "fallback": "Today's category",
+  "lead": "One category a day, the same for everyone. One try counts towards your best: Regular mode, the standard time, no hints or pauses.",
+  "loading": "Loading today's Pokémon…",
+  "failed": "Couldn't load the Pokémon. Check your connection and reload."
+}

@@ -27,7 +27,7 @@ import { AboutMe } from "@/components/community/AboutMe";
 import { Avatar } from "@/components/avatar/Avatar";
 import { Avatar3D } from "@/components/trainer3d/Avatar3D";
 import { BattleProfileView } from "@/components/battle/BattleProfileView";
-import { GlickoBadge } from "@/components/battle/GlickoBadge";
+import { glickoBadge } from "@/components/battle/GlickoBadge";
 import { ReplayRow } from "@/components/battle/ReplayLists";
 import { TierBadge } from "@/components/duel/TierBadge";
 import { ProfileActions } from "@/components/community/ProfileActions";
@@ -37,7 +37,21 @@ import { neaBests, quizBests } from "@/lib/quiz-bests";
 import { neaPlayerKey, neaStore } from "@/lib/server/name-em-all-board";
 import type { ReplaySummary } from "@/lib/battle/replay";
 import { serverT } from "@/i18n/server";
+import { ClientMessages } from "@/i18n/ClientMessages";
+import { INTL_LOCALE, formatNumber } from "@/i18n/catalog";
+import { speciesName } from "@/lib/names/species";
+import { aboutLocal } from "@/lib/about-local";
 import tier from "@/messages/tier";
+import profile from "@/messages/profile";
+import friends from "@/messages/friends";
+import addFriend from "@/messages/add-friend";
+import aboutMe from "@/messages/about-me";
+import geoRecord from "@/messages/geo-record";
+import geoNames from "@/messages/geo-names";
+import guessrRanked from "@/messages/guessr-ranked";
+import quizModes from "@/messages/quiz-modes";
+import battleGlicko from "@/messages/battle-glicko";
+import battleReplayWords from "@/messages/battle-replay-words";
 
 interface PageProps {
   params: Promise<{ name: string }>;
@@ -107,11 +121,12 @@ const findProfile = cache(async (raw: string) => {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const found = await findProfile((await params).name);
-  if (found === "unavailable") return pageMetadata({ title: "Trainer profile", description: "Trainer profiles on PokéIQ.", noindex: true });
-  if (!found) return pageMetadata({ title: "Trainer not found", description: "No such trainer on PokéIQ.", noindex: true });
+  const t = serverT(profile);
+  if (found === "unavailable") return pageMetadata({ title: t("meta.unavailableTitle"), description: t("meta.unavailableDescription"), noindex: true });
+  if (!found) return pageMetadata({ title: t("meta.notFoundTitle"), description: t("meta.notFoundDescription"), noindex: true });
   return pageMetadata({
-    title: `${found.username} · Trainer profile`,
-    description: `${found.username} on PokéIQ: Pokédle, PokéGuessr and battle ratings, quiz personal bests, battle records and recent replays.`,
+    title: t("meta.title", { name: found.username }),
+    description: t("meta.description", { name: found.username }),
     path: `/u/${encodeURIComponent(found.username)}`,
   });
 }
@@ -119,13 +134,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function UserProfilePage({ params }: PageProps) {
   const found = await findProfile((await params).name);
   if (!found) notFound();
+  const t = serverT(profile);
   if (found === "unavailable") {
     return (
       <div className="mx-auto max-w-4xl space-y-6">
-        <BackButton href="/users" label="Back to trainers" />
+        <BackButton href="/users" label={t("back")} />
         <Card>
           <CardContent className="py-10 text-center text-muted-foreground" data-testid="profile-unavailable">
-            Trainer profiles are unavailable right now. Try again in a minute.
+            {t("unavailable")}
           </CardContent>
         </Card>
       </div>
@@ -133,12 +149,16 @@ export default async function UserProfilePage({ params }: PageProps) {
   }
   const now = Date.now();
   const rated = found.battles?.formats.filter((f) => f.rating !== undefined) ?? [];
+  const en = t.locale === "en";
+  // A page in another language names the picked Pokémon in it (forms keep their English name) and the game choices.
+  const aboutNames = en ? found.aboutNames : Object.fromEntries(Object.entries(found.about.pokemon).map(([slot, p]) => [slot, p.id <= 1025 ? speciesName(p.id, found.aboutNames[slot], t.locale) : found.aboutNames[slot]]));
   return (
+    <ClientMessages namespaces={[friends, addFriend, aboutMe, geoRecord, geoNames, guessrRanked, quizModes, battleReplayWords]}>
     <div className="mx-auto max-w-4xl space-y-6">
-      <BackButton href="/users" label="Back to trainers" />
+      <BackButton href="/users" label={t("back")} />
       <nav aria-label="Breadcrumb" className="hud-label flex items-center gap-1.5">
         <Link href="/users" className="flex items-center gap-1 text-screen hover:text-foreground">
-          <Search className="h-3 w-3" aria-hidden /> Find a trainer
+          <Search className="h-3 w-3" aria-hidden /> {t("find")}
         </Link>
       </nav>
 
@@ -151,7 +171,7 @@ export default async function UserProfilePage({ params }: PageProps) {
                 {found.username}
               </h1>
               <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <CalendarDays className="h-3.5 w-3.5" aria-hidden /> Trainer since {new Date(found.joined).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+                <CalendarDays className="h-3.5 w-3.5" aria-hidden /> {t("since", { date: new Date(found.joined).toLocaleDateString(INTL_LOCALE[t.locale], { month: "long", year: "numeric" }) })}
               </p>
             </div>
             <ProfileActions username={found.username} />
@@ -159,34 +179,33 @@ export default async function UserProfilePage({ params }: PageProps) {
           {found.avatar?.trainer && (
             // Their 3D trainer (three.js loads only on profiles that have one).
             <div className={found.avatar.trainer.stage === "plain" ? "-mb-6 h-56 w-full sm:-my-6 sm:h-72 sm:w-96" : "h-56 w-full overflow-hidden rounded-lg border sm:h-72 sm:w-96"} data-testid="profile-trainer">
-              <Avatar3D config={found.avatar.trainer} pose="victory" stage label={`${found.username}'s trainer`} />
+              <Avatar3D config={found.avatar.trainer} pose="victory" stage label={t("trainerOf", { name: found.username })} />
             </div>
           )}
         </div>
       </section>
 
-      <AboutMe username={found.username} initial={found.about} names={found.aboutNames} />
+      <AboutMe username={found.username} initial={found.about} names={aboutNames} local={aboutLocal(t.locale)} />
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card data-testid="profile-guessr">
           <CardContent className="space-y-3 p-5">
-            <p className="hud-label text-screen">Ranked PokéGuessr</p>
+            <p className="hud-label text-screen">{t("ranked")}</p>
             {found.guessr && found.guessr.games > 0 ? (
               <div className="space-y-2">
                 <GeoDivisionBadge elo={found.guessr.elo} />
                 <p className="text-sm text-muted-foreground">
-                  {found.guessr.wins}–{found.guessr.losses}
-                  {found.guessr.draws ? `–${found.guessr.draws}` : ""} in {found.guessr.games} ranked duels
-                  {found.guessr.position ? ` · #${found.guessr.position} of ${found.guessr.players}` : ""}
-                  {found.guessr.bestScore > 0 ? ` · best ${found.guessr.bestScore.toLocaleString("en-US")} pts` : ""}
+                  {t("rankedDuels", { record: `${found.guessr.wins}–${found.guessr.losses}${found.guessr.draws ? `–${found.guessr.draws}` : ""}`, n: found.guessr.games })}
+                  {found.guessr.position ? t("position", { position: found.guessr.position, players: found.guessr.players }) : ""}
+                  {found.guessr.bestScore > 0 ? t("bestScore", { score: formatNumber(found.guessr.bestScore, t.locale) }) : ""}
                 </p>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No ranked PokéGuessr duels yet.</p>
+              <p className="text-sm text-muted-foreground">{t("noRanked")}</p>
             )}
             {found.geoSeasons.length > 0 && (
               <div className="space-y-2 border-t pt-3">
-                <p className="hud-label">Past seasons</p>
+                <p className="hud-label">{t("pastSeasons")}</p>
                 <GeoSeasonHistory records={found.geoSeasons} />
               </div>
             )}
@@ -194,7 +213,7 @@ export default async function UserProfilePage({ params }: PageProps) {
         </Card>
         <Card>
           <CardContent className="space-y-3 p-5">
-            <p className="hud-label text-screen">Battle ladder</p>
+            <p className="hud-label text-screen">{t("ladder")}</p>
             {rated.length ? (
               <ul className="space-y-2">
                 {rated.slice(0, 4).map((f) => (
@@ -203,13 +222,13 @@ export default async function UserProfilePage({ params }: PageProps) {
                     <span className="flex flex-col items-end gap-0.5">
                       {/* Elo leads (the ladder's rating, shown as its Poké Ball to Master Ball tier); GXE and Glicko-2 follow. */}
                       <TierBadge rating={f.elo ?? f.rating!} games={f.elo === undefined ? f.ratedGames : undefined} size="sm" tr={serverT(tier)} />
-                      <GlickoBadge rating={f.rating!} rd={f.rd} gxe={f.gxe} elo={f.elo} headline={false} size="sm" />
+                      {glickoBadge({ rating: f.rating!, rd: f.rd, gxe: f.gxe, elo: f.elo, headline: false, size: "sm" }, serverT(battleGlicko))}
                     </span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-muted-foreground">No ranked battles yet.</p>
+              <p className="text-sm text-muted-foreground">{t("noLadder")}</p>
             )}
           </CardContent>
         </Card>
@@ -219,11 +238,11 @@ export default async function UserProfilePage({ params }: PageProps) {
             {found.connections ? (
               <dl className="grid grid-cols-2 gap-3 text-center sm:grid-cols-5">
                 {[
-                  ["Streak", `🔥${found.connections.streak}`],
-                  ["Best streak", found.connections.best],
-                  ["Games won", found.connections.wins],
-                  ["Perfect solves", found.connections.perfect],
-                  ["Duel record", `${found.connections.duelWins}–${found.connections.duelLosses}${found.connections.duelDraws ? `–${found.connections.duelDraws}` : ""}`],
+                  [t("conn.streak"), `🔥${found.connections.streak}`],
+                  [t("conn.bestStreak"), found.connections.best],
+                  [t("conn.gamesWon"), found.connections.wins],
+                  [t("conn.perfect"), found.connections.perfect],
+                  [t("conn.duelRecord"), `${found.connections.duelWins}–${found.connections.duelLosses}${found.connections.duelDraws ? `–${found.connections.duelDraws}` : ""}`],
                 ].map(([label, value]) => (
                   <div key={label} className="flex flex-col-reverse rounded-md border bg-shade/20 p-2">
                     <dt className="text-[11px] text-muted-foreground">{label}</dt>
@@ -232,7 +251,7 @@ export default async function UserProfilePage({ params }: PageProps) {
                 ))}
               </dl>
             ) : (
-              <p className="text-sm text-muted-foreground">No PokéConnections played yet.</p>
+              <p className="text-sm text-muted-foreground">{t("noConn")}</p>
             )}
           </CardContent>
         </Card>
@@ -246,25 +265,25 @@ export default async function UserProfilePage({ params }: PageProps) {
         <CardContent className="space-y-4 p-5">
           <div className="flex items-center justify-between gap-2">
             <p className="hud-label flex items-center gap-1.5 text-screen">
-              <Swords className="h-3.5 w-3.5" aria-hidden /> Battle record
+              <Swords className="h-3.5 w-3.5" aria-hidden /> {t("battleRecord")}
             </p>
             {found.insights && (
               <Link href={`/battle/insights/${encodeURIComponent(found.username)}`} className="hud-label flex items-center gap-1 hover:text-foreground" data-testid="profile-insights">
-                <BarChart3 className="h-3.5 w-3.5" aria-hidden /> Team insights →
+                <BarChart3 className="h-3.5 w-3.5" aria-hidden /> {t("insights")}
               </Link>
             )}
           </div>
           {found.battles ? (
-            <BattleProfileView profile={{ ...found.battles, name: found.username }} now={now} empty={`${found.username} hasn't played a live battle yet.`} />
+            <BattleProfileView profile={{ ...found.battles, name: found.username }} now={now} empty={t("battleEmpty", { name: found.username })} />
           ) : (
-            <p className="text-sm text-muted-foreground">Battle records open soon.</p>
+            <p className="text-sm text-muted-foreground">{t("battleSoon")}</p>
           )}
         </CardContent>
       </Card>
 
       <section className="space-y-3">
         <p className="hud-label flex items-center gap-1.5">
-          <Clapperboard className="h-3.5 w-3.5" aria-hidden /> Recent public replays
+          <Clapperboard className="h-3.5 w-3.5" aria-hidden /> {t("replays")}
         </p>
         {found.replays.length ? (
           <div className="space-y-2" data-testid="profile-replays">
@@ -273,9 +292,10 @@ export default async function UserProfilePage({ params }: PageProps) {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">No public replays yet.</p>
+          <p className="text-sm text-muted-foreground">{t("noReplays")}</p>
         )}
       </section>
     </div>
+    </ClientMessages>
   );
 }

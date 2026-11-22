@@ -1,0 +1,54 @@
+{
+  "search": {
+    "hint": "Name, Nummer oder Kategorie suchen…  ( / )",
+    "hintShort": "Name, Nummer, Kategorie…",
+    "label": "Pokémon suchen",
+    "clear": "Suche löschen"
+  },
+  "sortBy": "Sortieren nach",
+  "sortAsc": "Aufsteigend sortieren",
+  "sortDesc": "Absteigend sortieren",
+  "sort": {
+    "id": "Pokédex-Nr.",
+    "name": "Name",
+    "type": "Typ",
+    "bst": "Basiswerte gesamt",
+    "hp": "KP",
+    "atk": "Angriff",
+    "def": "Verteidigung",
+    "spa": "Spezialangriff",
+    "spd": "Spezialverteidigung",
+    "spe": "Initiative",
+    "height": "Größe",
+    "weight": "Gewicht"
+  },
+  "showFilters": "Filter zeigen",
+  "hideFilters": "Filter ausblenden",
+  "studyMode": "Lernmodus",
+  "gen": "Gen. {n}",
+  "legends": "Legendär + mysteriös",
+  "fullyEvolved": "Voll entwickelt",
+  "reset": "Zurücksetzen",
+  "empty": "Kein Pokémon passt zu diesen Filtern.",
+  "view": {
+    "label": "Ansicht",
+    "cards": "Karten",
+    "table": "Tabelle"
+  },
+  "col": {
+    "id": "Nr.",
+    "name": "Pokémon",
+    "type": "Typ",
+    "hp": "KP",
+    "atk": "Angr.",
+    "def": "Vert.",
+    "spa": "Sp.-Angr.",
+    "spd": "Sp.-Vert.",
+    "spe": "Init.",
+    "bst": "Gesamt"
+  },
+  "sortedDesc": "{label}, absteigend sortiert (umkehren)",
+  "sortedAsc": "{label}, aufsteigend sortiert (umkehren)",
+  "sortThis": "{label} (Tabelle sortieren)",
+  "no": "Nr. {n}"
+}

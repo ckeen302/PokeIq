@@ -8,6 +8,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { PublicAvatar } from "@/lib/avatar";
 import { Avatar } from "@/components/avatar/Avatar";
+import { useT } from "@/i18n/client";
+import chatNs from "@/messages/chat";
 
 /**
  * Chat between the two trainers of a live battle or a duel. Every message
@@ -100,6 +102,7 @@ export interface ChatBoxProps {
 }
 
 export function ChatBox({ lines = [], you, players, code, game, onSend, closed, collapsible, className }: ChatBoxProps) {
+  const t = useT(chatNs);
   const opponentSeat = you === null ? null : 1 - you;
   const opponent = opponentSeat === null ? undefined : players[opponentSeat]?.name;
   const { off, muted, toggleOff, toggleMuted } = useChatPrefs(opponent);
@@ -161,7 +164,7 @@ export function ChatBox({ lines = [], you, players, code, game, onSend, closed, 
             aria-expanded={collapsible ? open : undefined}
             disabled={!collapsible}
           >
-            <MessageSquare className="h-3 w-3" aria-hidden /> Chat
+            <MessageSquare className="h-3 w-3" aria-hidden /> {t("title")}
             {unread > 0 && (
               <span className="ml-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] leading-none text-primary-foreground" data-testid="chat-unread">
                 {unread}
@@ -170,25 +173,25 @@ export function ChatBox({ lines = [], you, players, code, game, onSend, closed, 
             {collapsible && (open ? <ChevronUp className="ml-auto h-3.5 w-3.5" aria-hidden /> : <ChevronDown className="ml-auto h-3.5 w-3.5" aria-hidden />)}
           </button>
           {open && opponent && !off && (
-            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={toggleMuted} aria-pressed={muted} title={muted ? `Unmute ${opponent}` : `Mute ${opponent}`}>
+            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={toggleMuted} aria-pressed={muted} title={muted ? t("unmuteName", { name: opponent }) : t("muteName", { name: opponent })}>
               {muted ? <VolumeX className="h-3.5 w-3.5" aria-hidden /> : <Volume2 className="h-3.5 w-3.5" aria-hidden />}
-              {muted ? "Unmute" : "Mute"}
+              {muted ? t("unmute") : t("mute")}
             </Button>
           )}
           {open && (
-            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={toggleOff} aria-pressed={off} title={off ? "Turn chat on" : "Turn chat off"}>
-              <MessageSquareOff className="h-3.5 w-3.5" aria-hidden /> {off ? "Turn on" : "Chat off"}
+            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={toggleOff} aria-pressed={off} title={off ? t("turnOnTitle") : t("turnOffTitle")}>
+              <MessageSquareOff className="h-3.5 w-3.5" aria-hidden /> {off ? t("turnOn") : t("chatOff")}
             </Button>
           )}
         </div>
 
         {open &&
           (off ? (
-            <p className="px-3 py-4 text-center text-xs text-muted-foreground">Chat is off. You won&apos;t see messages, and can&apos;t send any.</p>
+            <p className="px-3 py-4 text-center text-xs text-muted-foreground">{t("off")}</p>
           ) : (
             <>
               <div ref={list} className="max-h-56 min-h-[5rem] space-y-1 overflow-y-auto px-3 py-2 text-sm" data-testid="chat-lines" aria-live="polite">
-                {shown.length === 0 && <p className="py-2 text-center text-xs text-muted-foreground">No messages yet. Say hi!</p>}
+                {shown.length === 0 && <p className="py-2 text-center text-xs text-muted-foreground">{t("empty")}</p>}
                 {shown.map((line) =>
                   line.seat === null ? (
                     <p key={line.n} className="text-center text-xs italic text-muted-foreground">
@@ -205,14 +208,14 @@ export function ChatBox({ lines = [], you, players, code, game, onSend, closed, 
                       </p>
                       {line.seat !== you &&
                         (reported.has(line.n) ? (
-                          <span className="shrink-0 text-[10px] text-muted-foreground">Reported</span>
+                          <span className="shrink-0 text-[10px] text-muted-foreground">{t("reported")}</span>
                         ) : (
                           <button
                             type="button"
                             className="shrink-0 text-muted-foreground opacity-0 hover:text-destructive focus-visible:opacity-100 group-hover:opacity-100"
                             onClick={() => void report(line)}
-                            title="Report this message"
-                            aria-label={`Report ${line.name}'s message`}
+                            title={t("reportTitle")}
+                            aria-label={t("reportLabel", { name: line.name ?? "" })}
                           >
                             <Flag className="h-3 w-3" aria-hidden />
                           </button>
@@ -220,10 +223,10 @@ export function ChatBox({ lines = [], you, players, code, game, onSend, closed, 
                     </div>
                   )
                 )}
-                {muted && <p className="text-center text-[10px] text-muted-foreground">{opponent} is muted.</p>}
+                {muted && <p className="text-center text-[10px] text-muted-foreground">{t("isMuted", { name: opponent ?? "" })}</p>}
               </div>
               {you === null ? (
-                <p className="border-t px-3 py-2 text-center text-xs text-muted-foreground">Only the trainers playing can chat.</p>
+                <p className="border-t px-3 py-2 text-center text-xs text-muted-foreground">{t("playersOnly")}</p>
               ) : closed ? (
                 <p className="border-t px-3 py-2 text-center text-xs text-muted-foreground">{closed}</p>
               ) : (
@@ -241,12 +244,12 @@ export function ChatBox({ lines = [], you, players, code, game, onSend, closed, 
                       setError(null);
                     }}
                     maxLength={CHAT_MAX}
-                    placeholder="Say something nice…"
-                    aria-label="Chat message"
+                    placeholder={t("placeholder")}
+                    aria-label={t("label")}
                     autoComplete="off"
                     className="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   />
-                  <Button type="submit" size="sm" className="h-9" disabled={sending || !draft.trim()} aria-label="Send">
+                  <Button type="submit" size="sm" className="h-9" disabled={sending || !draft.trim()} aria-label={t("send")}>
                     {sending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Send className="h-4 w-4" aria-hidden />}
                   </Button>
                 </form>

@@ -1,0 +1,27 @@
+{
+  "question": "Combien de {challenger} pour battre {boss} ?",
+  "answer": "Il faut {n} {challenger}",
+  "spread": "± {spread} sur {runs} combats",
+  "winRate": "{n} : {wins} victoires sur {runs} combats",
+  "noAnswer": "Aucune armée de {challenger} (jusqu’à {cap}) ne bat {boss}",
+  "two": "{a} et {b}",
+  "three": "{a}, {b} et {c}",
+  "more": "{a}, {b} et d’autres",
+  "group": {
+    "types": "Types {types}",
+    "legendariesMythicals": "Légendaires et fabuleux",
+    "legendaries": "Légendaires",
+    "mythicals": "Fabuleux",
+    "gen": "Pokémon de la génération {gen}",
+    "fullyEvolved": "Pokémon au dernier stade",
+    "pokemon": "Pokémon"
+  },
+  "draw": "Match nul",
+  "winsOne": "{w} gagne !",
+  "winsMany": "{w} gagnent !",
+  "timeUp": "Temps écoulé après {s} secondes, les deux camps encore debout.",
+  "resultLine": "{n} encore debout après {s} s · {loser} a mis K.O. {kos}",
+  "multiKo": "{pos} met K.O. {n} {target} avec {move}",
+  "crit": "Coup critique ! {move} de {pos} sur {target}",
+  "bossDown": "{pos} met K.O. {boss} avec {move} !"
+}

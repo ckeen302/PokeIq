@@ -1,0 +1,27 @@
+{
+  "nav": "Epoche dei film",
+  "all": "Tutti",
+  "era": {
+    "original": "Serie originale",
+    "advanced": "Advanced Generation",
+    "dp": "Diamante e Perla",
+    "bw": "Best Wishes",
+    "xy": "XY",
+    "modern": "Dal 2017",
+    "live-action": "Live action",
+    "coming-soon": "Prossimamente"
+  },
+  "showing": {
+    "all": "Sono mostrati tutti i film",
+    "original": "Film mostrati: Serie originale",
+    "advanced": "Film mostrati: Advanced Generation",
+    "dp": "Film mostrati: Diamante e Perla",
+    "bw": "Film mostrati: Best Wishes",
+    "xy": "Film mostrati: XY",
+    "modern": "Film mostrati: Dal 2017",
+    "live-action": "Film mostrati: Live action",
+    "coming-soon": "Film mostrati: Prossimamente"
+  },
+  "poster": "Locandina di {title}",
+  "soon": "Prossimamente"
+}

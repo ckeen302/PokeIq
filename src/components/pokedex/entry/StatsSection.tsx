@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { STAT_LABELS, type StatKey } from "@/lib/pokemon/constants";
+import type { StatKey } from "@/lib/pokemon/constants";
 import { statRange } from "@/lib/pokemon/stat-calc";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import dexEntryNs from "@/messages/dex-entry";
 
 const ORDER: StatKey[] = ["hp", "atk", "def", "spa", "spd", "spe"];
 /** Game-style radar order, clockwise from the top. */
@@ -29,6 +31,7 @@ interface StatsSectionProps {
 }
 
 export function StatsSection({ stats, percentiles, accent, isShedinja, showPercentiles }: StatsSectionProps) {
+  const t = useT(dexEntryNs);
   const [level, setLevel] = useState<50 | 100>(100);
   const bst = ORDER.reduce((sum, k) => sum + stats[k], 0);
 
@@ -36,8 +39,8 @@ export function StatsSection({ stats, percentiles, accent, isShedinja, showPerce
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
       <div className="space-y-3 hud rounded-lg border bg-card p-5">
         <div className="grid grid-cols-[72px_40px_minmax(0,1fr)_90px] items-center gap-x-3 text-[11px] uppercase tracking-wider text-muted-foreground">
-          <span>Stat</span>
-          <span className="text-right">Base</span>
+          <span>{t("stats.stat")}</span>
+          <span className="text-right">{t("stats.base")}</span>
           <span />
           <div className="flex justify-end">
             <div className="flex rounded-sm border border-foreground/10 bg-shade/30 p-0.5">
@@ -48,7 +51,7 @@ export function StatsSection({ stats, percentiles, accent, isShedinja, showPerce
                   onClick={() => setLevel(l)}
                   className={cn("rounded-sm px-2 py-1 font-pixel text-[9px] leading-none max-sm:min-h-10", level === l ? "bg-primary text-primary-foreground" : "text-muted-foreground")}
                 >
-                  Lv{l}
+                  {t("stats.lv", { n: l })}
                 </button>
               ))}
             </div>
@@ -58,7 +61,7 @@ export function StatsSection({ stats, percentiles, accent, isShedinja, showPerce
           const [min, max] = statRange(k, stats[k], level, isShedinja);
           return (
             <div key={k} className="grid grid-cols-[72px_40px_minmax(0,1fr)_90px] items-center gap-x-3 text-sm">
-              <span className="text-muted-foreground">{STAT_LABELS[k]}</span>
+              <span className="text-muted-foreground">{t(`stat.${k}`)}</span>
               <span className="text-right font-mono font-bold tabular-nums">{stats[k]}</span>
               <div className="meter">
                 <motion.div
@@ -77,17 +80,17 @@ export function StatsSection({ stats, percentiles, accent, isShedinja, showPerce
           );
         })}
         <div className="grid grid-cols-[72px_40px_minmax(0,1fr)_90px] items-center gap-x-3 border-t border-foreground/5 pt-3 text-sm">
-          <span className="font-semibold">Total</span>
+          <span className="font-semibold">{t("stats.total")}</span>
           <span className="text-right font-mono font-black tabular-nums" style={{ color: accent }}>
             {bst}
           </span>
           <span className="text-xs text-muted-foreground">
-            {showPercentiles && `Higher than ${percentiles.bst}% of all Pokémon`}
+            {showPercentiles && t("stats.higher", { n: percentiles.bst })}
           </span>
           <span />
         </div>
         <p className="text-[11px] text-muted-foreground">
-          Ranges assume 0 IV/0 EV with a hindering nature (min) up to 31 IV/252 EV with a boosting nature (max).
+          {t("stats.ranges")}
         </p>
       </div>
 
@@ -97,8 +100,8 @@ export function StatsSection({ stats, percentiles, accent, isShedinja, showPerce
           <ul className="grid grid-cols-2 gap-1.5 text-xs">
             {ORDER.map((k) => (
               <li key={k} className="flex justify-between rounded-md bg-muted/40 px-2 py-1">
-                <span className="text-muted-foreground">{STAT_LABELS[k]}</span>
-                <span className="font-semibold tabular-nums">top {Math.max(1, 100 - percentiles[k])}%</span>
+                <span className="text-muted-foreground">{t(`stat.${k}`)}</span>
+                <span className="font-semibold tabular-nums">{t("stats.top", { n: Math.max(1, 100 - percentiles[k]) })}</span>
               </li>
             ))}
           </ul>
@@ -109,6 +112,7 @@ export function StatsSection({ stats, percentiles, accent, isShedinja, showPerce
 }
 
 function Radar({ stats, accent }: { stats: Record<StatKey, number>; accent: string }) {
+  const t = useT(dexEntryNs);
   const size = 260;
   const c = size / 2;
   const r = c - 34;
@@ -122,7 +126,7 @@ function Radar({ stats, accent }: { stats: Record<StatKey, number>; accent: stri
   const target = RADAR.map((k) => stats[k] / max);
 
   return (
-    <svg viewBox={`0 0 ${size} ${size}`} className="mx-auto w-full max-w-[260px]" role="img" aria-label="Base stat radar chart">
+    <svg viewBox={`0 0 ${size} ${size}`} className="mx-auto w-full max-w-[260px]" role="img" aria-label={t("stats.radar")}>
       {[0.25, 0.5, 0.75, 1].map((s) => (
         <path key={s} d={path(Array(6).fill(s))} fill="none" stroke="currentColor" className="text-foreground/10" />
       ))}
@@ -144,7 +148,7 @@ function Radar({ stats, accent }: { stats: Record<StatKey, number>; accent: stri
         const [x, y] = point(i, 1.2);
         return (
           <text key={k} x={x} y={y} textAnchor="middle" dominantBaseline="middle" className="fill-muted-foreground text-[10px] font-semibold">
-            {STAT_LABELS[k]} {stats[k]}
+            {t(`stat.${k}`)} {stats[k]}
           </text>
         );
       })}

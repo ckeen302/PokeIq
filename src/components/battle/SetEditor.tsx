@@ -14,6 +14,9 @@ import { useLearnable, useUsage } from "./hooks";
 import { EvGoals, PopularSets } from "./SetTools";
 import { BattleType, ItemSelect, MoveSelect, NatureSelect, pct, SpeciesSelect, TypeSelect, useFormatBans, usageLookup, type SpeciesFilterSource } from "./pickers";
 import { StatEditor } from "./StatEditor";
+import { useT } from "@/i18n/client";
+import battleTeams from "@/messages/battle-teams";
+import { useBattleNames } from "./use-battle-names";
 
 type WithTera = Specie & { requiredTeraType?: string };
 
@@ -38,6 +41,8 @@ export function SetEditor({
   const bans = useFormatBans(format.id);
   const mon = usage && set ? findUsage(usage, set.species) : undefined;
   const [copied, setCopied] = useState(false);
+  const t = useT(battleTeams);
+  const names = useBattleNames();
   // The species search's filters: type, ability, a move it learns, legal only; most used first.
   const filter = useMemo<SpeciesFilterSource>(
     () => ({
@@ -93,10 +98,10 @@ export function SetEditor({
   if (!set) {
     return (
       <div className="space-y-4 rounded-lg border border-dashed border-foreground/15 bg-card/50 p-6 text-center">
-        <p className="hud-label">Slot {slot + 1} · empty</p>
-        <p className="text-sm text-muted-foreground">Pick a Pokémon for this slot.</p>
+        <p className="hud-label">{t("set.slotEmpty", { n: slot + 1 })}</p>
+        <p className="text-sm text-muted-foreground">{t("set.pickMon")}</p>
         <div className="mx-auto max-w-sm text-left">
-          <SpeciesSelect species={dex.species} initial={initial} tier={dex.tier} value="" onSelect={pickSpecies} label={`Slot ${slot + 1} species`} filter={filter} />
+          <SpeciesSelect species={dex.species} initial={initial} tier={dex.tier} value="" onSelect={pickSpecies} label={t("set.slotSpecies", { n: slot + 1 })} filter={filter} />
         </div>
       </div>
     );
@@ -111,7 +116,7 @@ export function SetEditor({
     const id = a.toLowerCase().replace(/[^a-z0-9]/g, "");
     const share = abilityUse.get(id)?.share;
     const banned = bans?.abilities[id];
-    return `${a}${species?.abilities.H === a ? " (Hidden)" : ""}${share ? ` · ${pct(share)}` : ""}${banned ? " · banned" : ""}`;
+    return `${names.ability(a)}${species?.abilities.H === a ? t("set.hidden") : ""}${share ? ` · ${pct(share)}` : ""}${banned ? t("set.banned") : ""}`;
   };
   async function copySet() {
     try {
@@ -126,7 +131,7 @@ export function SetEditor({
   return (
     <div className="space-y-5">
       {problems.length > 0 && (
-        <ul className="space-y-1 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm" aria-label={`Slot ${slot + 1} problems`}>
+        <ul className="space-y-1 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm" aria-label={t("set.slotProblems", { n: slot + 1 })}>
           {problems.map((p) => (
             <li key={p} className="flex gap-2">
               <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-destructive" aria-hidden />
@@ -150,16 +155,16 @@ export function SetEditor({
             )}
             {species && <span className="hud-label absolute right-2 top-2 z-[3] text-screen">{dex.tier(species)}</span>}
           </div>
-          <Field label="Species">
+          <Field label={t("set.species")}>
             <SpeciesSelect species={dex.species} initial={initial} tier={dex.tier} value={set.species} current={species} shiny={set.shiny} onSelect={pickSpecies} filter={filter} />
           </Field>
-          {!species && <p className="text-xs text-destructive">{set.species} isn&apos;t in {format.name}.</p>}
+          {!species && <p className="text-xs text-destructive">{t("set.notIn", { species: names.species(set.species), format: format.name })}</p>}
           {species && <PopularSets dex={dex} usage={usage} set={set} onChange={onChange} />}
-          <Field label="Nickname">
+          <Field label={t("set.nickname")}>
             <input
               value={set.name}
               maxLength={18}
-              placeholder={set.species}
+              placeholder={names.species(set.species)}
               onChange={(e) => update({ name: e.target.value })}
               className={inputClass}
             />
@@ -171,14 +176,14 @@ export function SetEditor({
               className="flex items-center justify-center gap-1.5 rounded-md border border-foreground/10 py-1.5 text-xs text-muted-foreground transition-colors hover:border-screen/50 hover:text-foreground max-md:min-h-11"
             >
               {copied ? <Check className="h-3.5 w-3.5 text-success" aria-hidden /> : <ClipboardCopy className="h-3.5 w-3.5" aria-hidden />}
-              {copied ? "Copied" : "Copy set"}
+              {copied ? t("set.copied") : t("set.copySet")}
             </button>
             <button
               type="button"
               onClick={() => onChange(null)}
               className="flex items-center justify-center gap-1.5 rounded-md border border-foreground/10 py-1.5 text-xs text-muted-foreground transition-colors hover:border-destructive/50 hover:text-destructive max-md:min-h-11"
             >
-              <Trash2 className="h-3.5 w-3.5" aria-hidden /> Remove
+              <Trash2 className="h-3.5 w-3.5" aria-hidden /> {t("set.remove")}
             </button>
           </div>
         </div>
@@ -186,44 +191,44 @@ export function SetEditor({
         <div className="min-w-0 space-y-5">
           {/* Details */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Field label="Level">
-              <NumberInput label="Level" value={set.level} min={1} max={100} onChange={(level) => update({ level })} />
+            <Field label={t("set.level")}>
+              <NumberInput label={t("set.level")} value={set.level} min={1} max={100} onChange={(level) => update({ level })} />
             </Field>
             {gen.num > 1 && (
-              <Field label="Gender">
+              <Field label={t("set.gender")}>
                 <select
                   value={species?.gender ?? set.gender}
                   disabled={!!species?.gender}
                   onChange={(e) => update({ gender: e.target.value })}
                   className={inputClass}
                 >
-                  {species?.gender === "N" && <option value="N">None</option>}
-                  <option value="">Random</option>
-                  <option value="M">Male</option>
-                  <option value="F">Female</option>
+                  {species?.gender === "N" && <option value="N">{t("set.genderNone")}</option>}
+                  <option value="">{t("set.genderRandom")}</option>
+                  <option value="M">{t("set.male")}</option>
+                  <option value="F">{t("set.female")}</option>
                 </select>
               </Field>
             )}
             {hasTera(format) ? (
-              <Field label="Tera type">
-                <TypeSelect label="Tera type" types={dex.types} value={set.teraType ?? ""} allowNone="Default" onChange={(t) => update({ teraType: t || undefined })} />
+              <Field label={t("set.tera")}>
+                <TypeSelect label={t("set.tera")} types={dex.types} value={set.teraType ?? ""} allowNone={t("set.teraDefault")} onChange={(teraType) => update({ teraType: teraType || undefined })} />
               </Field>
             ) : (
               <span />
             )}
             {gen.num > 1 && (
               <div className="space-y-1.5">
-                <span className="hud-label block">Shiny</span>
+                <span className="hud-label block">{t("set.shiny")}</span>
                 <Toggle pressed={!!set.shiny} onChange={(shiny) => update({ shiny: shiny || undefined })} className="h-9 w-full justify-center">
-                  <Sparkles className={cn("h-3.5 w-3.5", set.shiny && "text-warning")} aria-hidden /> {set.shiny ? "Shiny" : "Regular"}
+                  <Sparkles className={cn("h-3.5 w-3.5", set.shiny && "text-warning")} aria-hidden /> {set.shiny ? t("set.shiny") : t("set.regular")}
                 </Toggle>
               </div>
             )}
             {/* Abilities and natures arrive in Gen 3, held items in Gen 2. */}
             {gen.num >= 3 && (
-              <Field label="Ability" className="col-span-2">
+              <Field label={t("set.ability")} className="col-span-2">
                 <select value={set.ability} onChange={(e) => update({ ability: e.target.value })} className={inputClass}>
-                  {!abilities.includes(set.ability) && <option value={set.ability}>{set.ability || "—"}</option>}
+                  {!abilities.includes(set.ability) && <option value={set.ability}>{names.ability(set.ability) || "—"}</option>}
                   {abilities.map((a) => (
                     <option key={a} value={a}>
                       {abilityText(a)}
@@ -233,12 +238,12 @@ export function SetEditor({
               </Field>
             )}
             {gen.num >= 2 && (
-              <Field label="Item" className="col-span-2">
+              <Field label={t("set.item")} className="col-span-2">
                 <ItemSelect items={dex.items} value={set.item} usage={mon?.items} bans={bans?.items} onSelect={(item) => update({ item: item?.name ?? "" })} />
               </Field>
             )}
             {gen.num >= 3 && (
-              <Field label="Nature" className="col-span-2 sm:col-span-4">
+              <Field label={t("set.nature")} className="col-span-2 sm:col-span-4">
                 <NatureSelect natures={dex.natures} value={set.nature} onChange={(n) => update({ nature: n })} />
               </Field>
             )}
@@ -247,9 +252,9 @@ export function SetEditor({
           {/* Moves */}
           <div className="space-y-2">
             <div className="flex items-baseline justify-between">
-              <span className="hud-label">Moves</span>
+              <span className="hud-label">{t("set.moves")}</span>
               <span className="hud-label normal-case tracking-wider">
-                {loading ? "Loading learnset…" : dex.anyMove ? `Any ${format.name} move · its own first` : `${learnable.length} learnable in ${format.name}`}
+                {loading ? t("set.learnsetLoading") : dex.anyMove ? t("set.anyMove", { format: format.name }) : t("set.learnable", { n: learnable.length, format: format.name })}
               </span>
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
@@ -260,7 +265,7 @@ export function SetEditor({
                   <div key={i} className="flex items-center gap-2">
                     <span className="font-pixel text-[10px] text-muted-foreground max-sm:w-3 max-sm:shrink-0">{i + 1}</span>
                     <MoveSelect
-                      label={`Move ${i + 1}`}
+                      label={t("set.move", { n: i + 1 })}
                       moves={learnable}
                       loading={loading}
                       value={name}
@@ -296,7 +301,7 @@ export function SetEditor({
             {species ? (
               <EvGoals dex={dex} usage={usage} set={set} onChange={onChange} />
             ) : (
-              <p className="text-sm text-muted-foreground">Pick a species to see its stats.</p>
+              <p className="text-sm text-muted-foreground">{t("set.pickSpecies")}</p>
             )}
           </div>
         </div>

@@ -10,17 +10,32 @@ import { ShareButton } from "@/components/share/ShareButton";
 import { Button, buttonVariants } from "@/components/ui/button";
 import type { BattleHandle } from "./use-battle";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import roomNs from "@/messages/battle-room";
+import shareNs from "@/messages/share";
+import formatsNs from "@/messages/battle-formats";
+import { customRulesName, formatName } from "@/lib/battle/format-labels";
+import type { FormatsT } from "@/lib/battle/format-labels";
+
+/** The format's name as the players see it, in the page's language where it is ours. */
+function shownFormat(tf: FormatsT, view: BattleView): string {
+  if (tf.locale === "en") return view.formatName ?? PLAY_FORMAT_INFO[view.format].name;
+  if (view.rules) return customRulesName(tf, view.rules);
+  return view.format === "custom" || view.format === "tower" || !view.formatName ? formatName(tf, view.format) : view.formatName;
+}
 
 /** Shares a replay's link (the system share sheet, or the clipboard): `result` is "Red beat Blue". */
 export function ShareReplay({ id, result, formatName, size = "sm" }: { id: string; result: string; formatName: string; size?: "sm" | "default" }) {
+  const t = useT(roomNs);
+  const ts = useT(shareNs);
   return (
     <ShareButton
       size={size}
       variant="outline"
-      label="Share"
+      label={t("after.share")}
       kind="replay"
       data-testid="share-replay"
-      getText={() => replayShareText(result, formatName, `${window.location.origin}/battle/replay/${id}`)}
+      getText={() => replayShareText(result, formatName, `${window.location.origin}/battle/replay/${id}`, ts)}
     />
   );
 }
@@ -43,12 +58,13 @@ export function battleShareResult(view: BattleView): BattleShareResult | null {
 
 /** "Share result" after a win: the replay's link once there is one (its card shows the battle), else a /s/ result link. */
 function ShareWin({ view, result }: { view: BattleView; result: BattleShareResult }) {
-  const formatName = view.formatName ?? PLAY_FORMAT_INFO[view.format].name;
+  const ts = useT(shareNs);
+  const formatName = shownFormat(useT(formatsNs), view);
   return (
     <ShareButton
       size="sm"
       kind="battle"
-      getText={() => battleShareText(result, view.replay ? `${window.location.origin}/battle/replay/${view.replay}` : shareUrl(result), formatName)}
+      getText={() => battleShareText(result, view.replay ? `${window.location.origin}/battle/replay/${view.replay}` : shareUrl(result), formatName, ts)}
     />
   );
 }
@@ -58,6 +74,7 @@ function ShareWin({ view, result }: { view: BattleView; result: BattleShareResul
  * save theirs on their own; any other can be saved by either trainer.
  */
 export function BattleAfter({ view, battle }: { view: BattleView; battle: BattleHandle }) {
+  const t = useT(roomNs);
   const [saving, setSaving] = useState(false);
   const auto = view.kind === "pvp" && (view.public || view.ranked);
   const played = view.turn >= 1 && view.end?.reason !== "nocontest";
@@ -67,7 +84,10 @@ export function BattleAfter({ view, battle }: { view: BattleView; battle: Battle
   }, [view.replay, view.you]);
 
   if (view.you === null) return null;
-  const players = view.players.length === 4 && view.gameType === "multi" ? `${view.players[0]?.name} & ${view.players[2]?.name} vs ${view.players[1]?.name} & ${view.players[3]?.name}` : view.players.map((p) => p.name).join(" vs ");
+  const players =
+    view.players.length === 4 && view.gameType === "multi"
+      ? t("multiVs", { a: view.players[0]?.name ?? "", c: view.players[2]?.name ?? "", b: view.players[1]?.name ?? "", d: view.players[3]?.name ?? "" })
+      : view.players.map((p) => p.name).join(t("vsSep"));
   const mine = view.ratings?.[view.you];
   const win = battleShareResult(view);
   return (
@@ -84,7 +104,7 @@ export function BattleAfter({ view, battle }: { view: BattleView; battle: Battle
           </div>
         ) : !view.settled ? (
           <p className="hud-label flex items-center justify-center gap-1.5">
-            <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> Updating ratings…
+            <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> {t("after.updating")}
           </p>
         ) : null)}
       {played && <ReplayButtons view={view} battle={battle} auto={auto} saving={saving} setSaving={setSaving} players={players} />}
@@ -107,21 +127,23 @@ function ReplayButtons({
   setSaving: (s: boolean) => void;
   players: string;
 }) {
+  const t = useT(roomNs);
+  const tf = useT(formatsNs);
   return (
     <div className="flex flex-wrap items-center justify-center gap-2" data-testid="replay-actions">
       {view.replay ? (
         <>
           <Link href={`/battle/replay/${view.replay}`} className={buttonVariants({ size: "sm" })} data-testid="watch-replay">
-            <Clapperboard className="h-4 w-4" aria-hidden /> Watch replay
+            <Clapperboard className="h-4 w-4" aria-hidden /> {t("after.watchReplay")}
           </Link>
           <Link href={`/battle/replay/${view.replay}?analysis=1&side=${view.you ?? 0}#analysis`} className={buttonVariants({ size: "sm", variant: "outline" })} data-testid="analyse-battle">
-            <Activity className="h-4 w-4" aria-hidden /> Analysis
+            <Activity className="h-4 w-4" aria-hidden /> {t("after.analysis")}
           </Link>
-          <ShareReplay id={view.replay} result={players} formatName={view.formatName ?? PLAY_FORMAT_INFO[view.format].name} />
+          <ShareReplay id={view.replay} result={players} formatName={shownFormat(tf, view)} />
         </>
       ) : auto && !view.settled ? (
         <span className="hud-label flex items-center gap-1.5">
-          <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> Saving the replay…
+          <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> {t("after.saving")}
         </span>
       ) : (
         <Button
@@ -136,7 +158,7 @@ function ReplayButtons({
           }}
           data-testid="save-replay"
         >
-          {saving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Save className="h-4 w-4" aria-hidden />} Save replay
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Save className="h-4 w-4" aria-hidden />} {t("after.save")}
         </Button>
       )}
     </div>
@@ -149,13 +171,14 @@ function ReplayButtons({
  * before the ladder had Elo shows its Glicko-2 change alone.
  */
 function BattleRatingChange({ before, after, elo }: { before: number; after: number; elo?: { before: number; after: number } }) {
+  const t = useT(roomNs);
   const head = elo ?? { before, after };
   const delta = head.after - head.before;
   const glickoDelta = after - before;
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-warning/40 bg-warning/[0.05] p-4">
       <span className="space-y-0.5">
-        <span className="hud-label block">{elo ? "Elo" : "Glicko-2 rating"}</span>
+        <span className="hud-label block">{elo ? t("after.elo") : t("after.glicko")}</span>
         <span className="font-display text-2xl font-bold tabular-nums" data-testid="rating-headline">
           {head.before} → {head.after}
         </span>
@@ -168,7 +191,7 @@ function BattleRatingChange({ before, after, elo }: { before: number; after: num
       </span>
       <span
         className={cn("font-display text-4xl font-bold tabular-nums", delta > 0 ? "text-success" : delta < 0 ? "text-destructive" : "text-muted-foreground")}
-        aria-label={`${elo ? "Elo" : "Rating"} ${delta >= 0 ? "+" : ""}${delta}, now ${head.after}`}
+        aria-label={t("after.ratingLabel", { what: elo ? t("after.elo") : t("after.rating"), delta: `${delta >= 0 ? "+" : ""}${delta}`, now: head.after })}
       >
         {delta > 0 ? "+" : ""}
         {delta}

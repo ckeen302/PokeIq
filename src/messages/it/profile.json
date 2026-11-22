@@ -1,0 +1,58 @@
+{
+  "meta": {
+    "unavailableTitle": "Profilo Allenatore",
+    "unavailableDescription": "I profili Allenatore su PokéIQ.",
+    "notFoundTitle": "Allenatore non trovato",
+    "notFoundDescription": "Questo Allenatore non esiste su PokéIQ.",
+    "title": "{name} · Profilo Allenatore",
+    "description": "{name} su PokéIQ: punteggi di Pokédle, PokéGuessr e lotte, record nei quiz, bilancio delle lotte e replay recenti."
+  },
+  "back": "Torna agli Allenatori",
+  "unavailable": "I profili Allenatore non sono disponibili al momento. Riprova tra un minuto.",
+  "find": "Trova un Allenatore",
+  "since": "Allenatore da {date}",
+  "trainerOf": "L'Allenatore di {name}",
+  "ranked": "PokéGuessr classificato",
+  "rankedDuels": "{n, plural, one {{record} in {n} sfida classificata} other {{record} in {n} sfide classificate}}",
+  "position": " · n. {position} su {players}",
+  "bestScore": " · record {score} punti",
+  "noRanked": "Ancora nessuna sfida classificata a PokéGuessr.",
+  "pastSeasons": "Stagioni passate",
+  "ladder": "Classifica delle lotte",
+  "noLadder": "Ancora nessuna lotta classificata.",
+  "conn": {
+    "streak": "Serie",
+    "bestStreak": "Serie migliore",
+    "gamesWon": "Partite vinte",
+    "perfect": "Senza errori",
+    "duelRecord": "Bilancio sfide"
+  },
+  "noConn": "Non ha ancora giocato a PokéConnections.",
+  "battleRecord": "Bilancio delle lotte",
+  "insights": "Analisi delle squadre →",
+  "battleEmpty": "{name} non ha ancora giocato una lotta dal vivo.",
+  "battleSoon": "I bilanci delle lotte arrivano presto.",
+  "replays": "Replay pubblici recenti",
+  "noReplays": "Ancora nessun replay pubblico.",
+  "quiz": {
+    "title": "Record nei quiz",
+    "none": "{name} non ha ancora un record nei quiz.",
+    "play": "Gioca a un quiz",
+    "table": "Miglior punteggio per modalità e formato",
+    "mode": "Modalità",
+    "formats": {
+      "classic": "Classica",
+      "survival": "Sopravvivenza",
+      "blitz": "Blitz"
+    },
+    "named": "<b>{named}/{total}</b> nominati",
+    "cleared": "completato in <b>{time}</b>"
+  },
+  "users": {
+    "title": "Trova un Allenatore",
+    "description": "Cerca un Allenatore di PokéIQ per nome: punteggi di Pokédle e lotte, record e replay recenti.",
+    "label": "Community",
+    "heading": "Trova un <hl>Allenatore</hl>",
+    "intro": "Cerca per nome dell'account per vedere il profilo di un Allenatore: punteggi, record e replay recenti. Da lì puoi aggiungerlo agli amici."
+  }
+}

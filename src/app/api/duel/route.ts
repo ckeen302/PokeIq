@@ -14,6 +14,7 @@ import { PLAY_MODULES, playDifficulty } from "@/lib/modes";
 import { DLE_ASSISTS } from "@/lib/dle-assist";
 import type { PvpSeatResponse } from "@/lib/pvp-types";
 import { langOf } from "@/lib/server/request-lang";
+import { prepareDuelLang } from "@/lib/server/quiz-duel";
 
 /**
  * POST /api/duel — open a duel and return its code, the creator's player
@@ -38,6 +39,7 @@ const bodySchema = z.discriminatedUnion("kind", [
 ]);
 
 export async function POST(request: NextRequest) {
+  await prepareDuelLang(langOf(request));
   if (!rateLimit(`duel-new:${clientIp(request)}`, ...GAMEPLAY_IP_LIMIT)) {
     return NextResponse.json({ error: "Too many duels started — take a breather." }, { status: 429 });
   }

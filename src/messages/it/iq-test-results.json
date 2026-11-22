@@ -1,0 +1,29 @@
+{
+  "complete": "Test PokéIQ completato",
+  "bands": {
+    "exceptional": "Eccezionale",
+    "superior": "Superiore",
+    "highAverage": "Medio-alto",
+    "average": "Nella media",
+    "lowAverage": "Medio-basso",
+    "below": "Sotto la media"
+  },
+  "cognitive": "PokéIQ cognitivo",
+  "percentile": "{p}° percentile degli Allenatori",
+  "summary": "PokéIQ cognitivo {score} · {p}° percentile degli Allenatori. Misura ragionamento, memoria, velocità e abilità spaziali con i Pokémon, rispetto agli altri Allenatori; non è un test del QI clinico.",
+  "bar": "{title}: {scaled}, {p}° percentile",
+  "scale": "Tutte le barre usano la stessa scala con media 100. Le prime quattro formano il punteggio cognitivo; la conoscenza è il PokéIQ della sezione di quiz e viene valutata a parte.",
+  "scaleKnowledge": "Tutte le barre usano la stessa scala con media 100. Le prime quattro formano il punteggio cognitivo; la conoscenza è il PokéIQ della sezione di quiz ({iq}, {title}) e viene valutata a parte.",
+  "even": "Un profilo equilibrato: nessuna sezione si è distinta nettamente sopra o sotto le altre.",
+  "strengths": "<b>Punti di forza:</b> {list}.",
+  "weaknesses": "<b>Ti riesce più difficile:</b> {list}.",
+  "sep": "; ",
+  "words": {
+    "fluid": { "strength": "individuare la regola dietro uno schema", "weakness": "trovare la regola dietro uno schema" },
+    "memory": { "strength": "tenere a mente una sequenza o un calcolo", "weakness": "tenere a mente più cose insieme" },
+    "speed": { "strength": "scorrere in fretta e con precisione", "weakness": "scorrere in fretta senza sbagliare" },
+    "spatial": { "strength": "ruotare le cose e tracciare percorsi con l'immaginazione", "weakness": "immaginare oggetti ruotati o impilati" }
+  },
+  "retake": "Rifai con esercizi nuovi",
+  "card": "Vedilo sulla tua scheda Allenatore"
+}

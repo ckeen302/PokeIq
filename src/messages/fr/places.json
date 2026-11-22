@@ -1,0 +1,132 @@
+{
+  "meta": {
+    "title": "Lieux Pokémon : villes, routes, grottes et Arènes",
+    "description": "Toutes les villes, routes, grottes et Arènes de chaque région de la série principale Pokémon : les Pokémon sauvages de chaque jeu, des captures d’écran et les Champions d’Arène.",
+    "placeTitle": "{name} ({region}) — {type} Pokémon",
+    "placeDescription": "{name}, à {region} : les Pokémon sauvages qu’on y trouve dans chaque jeu.",
+    "placeDescriptionGame": "{name}, à {region} : les Pokémon sauvages qu’on y trouve dans chaque jeu, et son apparence dans {game}.",
+    "socialTitle": "{name} · Pokédex PokéIQ"
+  },
+  "crumbs": {
+    "pokedex": "Pokédex",
+    "places": "Lieux"
+  },
+  "list": {
+    "kicker": "Base de données des lieux",
+    "blurb": "Villes, routes, grottes et bâtiments de toutes les régions de la série principale : les Pokémon sauvages de chaque jeu, plus la capture de l’Atlas mondial et les Champions d’Arène quand il y en a."
+  },
+  "back": "Retour à tous les lieux",
+  "kicker": "Lieu · {type} · {region}",
+  "inside": "Dans <link>{name}</link>",
+  "atlas": "Voir sur l’Atlas mondial",
+  "noAtlas": "Pas encore sur l’Atlas mondial : ni repère sur la carte, ni capture.",
+  "shot": {
+    "title": "Capture d’écran",
+    "alt": "{place} dans Pokémon {game}",
+    "caption": "{place} dans {game} · via PokéGuessr"
+  },
+  "games": {
+    "title": "Jeux",
+    "subtitle": "Jeux où il apparaît",
+    "generation": "Jeux de la génération {gen}"
+  },
+  "areas": {
+    "title": "Zones",
+    "subtitle": "{n, plural, one {{n} étage et zones} other {{n} étages et zones}}"
+  },
+  "gym": {
+    "title": "Arène",
+    "subtitle": "{n, plural, one {{n} Champion} other {{n} Champions}}",
+    "source": "source"
+  },
+  "wild": {
+    "title": "Pokémon sauvages",
+    "subtitle": "Par jeu",
+    "pokemon": "Pokémon",
+    "method": "Méthode",
+    "levels": "Niveaux",
+    "morning": "Matin",
+    "day": "Jour",
+    "night": "Nuit",
+    "rate": "Taux"
+  },
+  "insidePlaces": {
+    "title": "À l’intérieur",
+    "subtitle": "{n, plural, one {{n} lieu à l’intérieur} other {{n} lieux à l’intérieur}}"
+  },
+  "types": {
+    "City": "Ville",
+    "Town": "Bourg",
+    "Route": "Route",
+    "Gym": "Arène",
+    "Forest": "Forêt",
+    "Cave": "Grotte",
+    "Mountain": "Montagne",
+    "Island": "Île",
+    "Lake": "Lac",
+    "Tower": "Tour",
+    "Ruins": "Ruines",
+    "League": "Ligue",
+    "Building": "Bâtiment",
+    "Other": "Autre"
+  },
+  "methods": {
+    "wild": "Sauvage",
+    "grass": "Herbes",
+    "grassrandom": "Herbes (aléatoire)",
+    "grassrarespawns": "Herbes (rares)",
+    "tallgrass": "Hautes herbes",
+    "darkgrass": "Herbes sombres",
+    "rustlinggrass": "Herbes qui bougent",
+    "cave": "Grotte",
+    "water": "Eau",
+    "waterrarespawns": "Eau (rares)",
+    "fishing": "Pêche",
+    "fishingspot": "Coin de pêche",
+    "ripplingwater": "Remous",
+    "bubblingspot": "Bulles à la surface",
+    "headbutthigh": "Coup d’Boule (fréquent)",
+    "headbuttlow": "Coup d’Boule (rare)",
+    "shakingtree": "Arbre qui bouge",
+    "gift": "Cadeau",
+    "giftegg": "Cadeau (Œuf)",
+    "trade": "Échange",
+    "static": "Fixe",
+    "interact": "Interaction",
+    "specialencounter": "Rencontre spéciale",
+    "swarm": "Essaim",
+    "swarmfish": "Essaim (pêche)",
+    "swarmsurf": "Essaim (Surf)",
+    "horde": "Horde",
+    "soscall": "Appel à l’aide",
+    "sosbubblingspot": "Appel à l’aide (bulles)",
+    "teraraid": "Raid Téracristal",
+    "maxraid": "Raid Dynamax",
+    "overworld": "Visible sur la carte",
+    "wandering": "En balade",
+    "wanderingsurf": "En balade (Surf)",
+    "flying": "En vol",
+    "inthesky": "Dans le ciel",
+    "intheskyrarespawns": "Dans le ciel (rares)",
+    "roaming": "Errant",
+    "roamingwater": "Errant (eau)",
+    "massivemassoutbreak": "Apparitions massives XXL",
+    "hiddengrotto": "Trouée Cachée",
+    "honeytree": "Arbre à Miel",
+    "honeytreerare": "Arbre à Miel (rare)",
+    "honeytreeveryrare": "Arbre à Miel (très rare)",
+    "berrytree": "Plant de Baies",
+    "berrypile": "Tas de Baies",
+    "dustcloud": "Nuage de poussière",
+    "roughterrain": "Terrain accidenté",
+    "yellowflowers": "Fleurs jaunes",
+    "purpleflowers": "Fleurs violettes",
+    "redflowers": "Fleurs rouges",
+    "ceilingambush": "Embuscade (plafond)",
+    "groundambush": "Embuscade (sol)",
+    "skyambush": "Embuscade (ciel)",
+    "curry": "Curry",
+    "islandscan": "Scan Insulaire",
+    "underground": "Grands Souterrains"
+  }
+}

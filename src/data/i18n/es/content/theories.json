@@ -1,0 +1,1550 @@
+{
+ "cubone-wears-its-mothers-skull": {
+  "title": "Cubone lleva el cráneo de su madre",
+  "era": "Gen. I · 1996",
+  "summary": "Lo dice la Pokédex, y el fantasma de la Torre Pokémon es una madre Marowak.",
+  "claim": "El casco de hueso que Cubone nunca se quita es el cráneo de su madre muerta, y el fantasma que bloquea lo alto de la Torre Pokémon en Rojo y Azul es una madre Marowak asesinada por el Team Rocket.",
+  "origin": "Empieza en Rojo y Verde (1996): los vecinos de Pueblo Lavanda hablan de la madre asesinada de un Cubone, y el Visor Silph desenmascara a su fantasma en la Torre Pokémon. Desde Amarillo, la Pokédex lo dice sin rodeos. Se convirtió en uno de los datos oscuros más conocidos de la saga, fijo en las listas de “las entradas más oscuras de la Pokédex” y en los vídeos de icebergs, y los juegos posteriores siguieron añadiendo detalles.",
+  "evidenceFor": [
+   {
+    "text": "La entrada de la Pokédex de Amarillo lo dice claramente:",
+    "quote": "Lleva el cráneo de su difunta madre. Sus gritos resuenan dentro del cráneo y salen convertidos en una triste melodía.",
+    "mark": [
+     "el cráneo de su difunta madre"
+    ],
+    "source": "Cubone · Pokédex · Amarillo"
+   },
+   {
+    "text": "Cristal añade cuándo murió:",
+    "quote": "Perdió a su madre después de nacer. Lleva el cráneo de su madre y nunca muestra su verdadero rostro.",
+    "mark": [
+     "el cráneo de su madre"
+    ],
+    "source": "Cubone · Pokédex · Cristal"
+   },
+   {
+    "text": "En la Torre Pokémon, el Visor Silph revela al fantasma que bloquea las escaleras:",
+    "quote": "¡El fantasma era el alma inquieta de la madre de Cubone!",
+    "mark": [
+     "la madre de Cubone"
+    ],
+    "source": "Torre Pokémon · Rojo y Azul"
+   },
+   {
+    "text": "Una chica de Pueblo Lavanda cuenta cómo murió:",
+    "quote": "¡Odio a esos horribles Rocket! La pobre madre de Cubone... ¡La mataron cuando intentaba escapar del Team Rocket!",
+    "mark": [
+     "mataron"
+    ],
+    "source": "Pueblo Lavanda · Rojo y Azul"
+   },
+   {
+    "text": "En el código del juego, el fantasma es un Marowak de verdad: el desensamblado define el alma inquieta como MAROWAK, y la rutina de captura tiene un caso especial para que no se pueda atrapar.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Las entradas de Marowak continúan la historia: en Rubí y Zafiro es “la forma evolucionada de un Cubone que ha superado la tristeza por la pérdida de su madre”, y en Escudo el cráneo de la madre se le fusiona al evolucionar.",
+    "source": "Marowak · Pokédex · Rubí, Zafiro y Escudo"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "La propia entrada de la Pokédex de Rojo y Azul nunca menciona a una madre:",
+    "quote": "Como nunca se quita su casco de cráneo, nadie ha visto jamás la verdadera cara de este Pokémon.",
+    "source": "Cubone · Pokédex · Rojo y Azul"
+   },
+   {
+    "text": "Ningún juego muestra cómo consigue un Cubone su cráneo, ni si todos los Cubone han perdido a su madre. Esa parte queda en manos de la redacción de la Pokédex.",
+    "source": "Fuentes oficiales"
+   }
+  ],
+  "confirmed": "Las entradas de la Pokédex desde Amarillo (entre ellas Plata, Cristal, Rojo Fuego, X, Y, Sol, Luna, Espada y Escudo) dicen que el cráneo es de su madre, y el fantasma de la Torre Pokémon de Rojo y Azul es la madre de Cubone, un Marowak asesinado por el Team Rocket. Las ideas que van más allá, como que Cubone sea una cría de Kangaskhan, son añadidos de los fans y están archivadas aparte.",
+  "verdictText": "Confirmada por los juegos: los textos de la Pokédex a lo largo de la saga y el evento de la Torre Pokémon en Rojo y Azul lo dicen.",
+  "links": [
+   "pret/pokered: texto de la Torre Pokémon, 6.ª planta",
+   "pret/pokered: Pueblo Lavanda, texto de la casa de Cubone",
+   "pret/pokered: rutina de captura (el Marowak fantasma no se puede atrapar)",
+   "Texto de la Pokédex de Cubone (PokeAPI)",
+   "Texto de la Pokédex de Marowak (PokeAPI)",
+   "Bulbapedia: Marowak (fantasma)"
+  ],
+  "board": {
+   "question": "¿De quién es el cráneo que lleva Cubone?",
+   "hook": "La Pokédex lo dice, y el fantasma de las escaleras de la torre es la prueba. Uno de los pocos casos que los propios juegos han cerrado.",
+   "caption": "Madre e hijo",
+   "keys": [
+    "La Pokédex dice que es de su madre",
+    "El fantasma de la torre es la madre de Cubone",
+    "El Team Rocket la mató"
+   ],
+   "b": {
+    "label": "Entrada de la Pokédex de Cubone · Amarillo",
+    "quote": "Lleva el cráneo de su difunta madre. Sus gritos resuenan dentro del cráneo y salen convertidos en una triste melodía.",
+    "mark": [
+     "difunta madre"
+    ]
+   },
+   "c": {
+    "text": "El Visor Silph desenmascara al fantasma: es un Marowak, la madre de Cubone.",
+    "bold": [
+     "Marowak"
+    ]
+   }
+  }
+ },
+ "gengar-is-clefables-shadow": {
+  "title": "Gengar es la sombra de Clefable",
+  "era": "Gen. I · 1996",
+  "summary": "Siluetas iguales y una entrada de la Pokédex a la luz de la luna. Nada oficial los relaciona.",
+  "claim": "Los fans llevan años señalando que Gengar y Clefable tienen la misma silueta. La teoría dice que Gengar es la sombra de un Clefable que ha cobrado vida, o su fantasma.",
+  "origin": "Los jugadores los ponen lado a lado desde Rojo y Azul. La idea se difundió por foros, listas de teorías de la época de las creepypastas e hilos de Reddit, y es habitual en artículos y vídeos de teorías; el paso de Clefable al tipo Hada en X e Y le dio un nuevo giro.",
+  "evidenceFor": [
+   {
+    "text": "Lado a lado, los dos tienen un cuerpo redondo, orejas puntiagudas y brazos y piernas cortos. Ver la prueba A.",
+    "source": "Ilustraciones oficiales"
+   },
+   {
+    "text": "La primera entrada de la Pokédex de Gengar lo relaciona con las sombras y la luna llena:",
+    "quote": "Las noches de luna llena, a este Pokémon le gusta imitar las sombras de la gente y reírse de su miedo.",
+    "mark": [
+     "luna llena",
+     "sombras"
+    ],
+    "source": "Gengar · Pokédex · Rojo y Azul"
+   },
+   {
+    "text": "La familia de Clefable pertenece a la luna: en Rojo y Azul, los Clefairy viven en el Mt. Moon, donde les espera una Piedra Lunar para evolucionar.",
+    "source": "Juegos · Rojo y Azul"
+   },
+   {
+    "text": "Leyendas: Arceus dice que los parientes de Clefable viven en la luna:",
+    "quote": "Cuenta la leyenda que, en las noches despejadas y tranquilas, escucha las voces de sus parientes que viven en la luna.",
+    "mark": [
+     "sus parientes que viven en la luna"
+    ],
+    "source": "Clefable · Pokédex · Leyendas: Arceus"
+   },
+   {
+    "text": "Tipos en espejo: en la tabla de tipos de Rojo y Azul, los movimientos Normal no afectan a los tipos Fantasma, y los movimientos Fantasma no afectan a los tipos Normal. Clefable era de tipo Normal entonces.",
+    "source": "Datamine · Tabla de tipos de Rojo y Azul"
+   },
+   {
+    "text": "Casi el mismo peso: Clefable pesa 40,0 kg y Gengar 40,5 kg.",
+    "source": "Datos de la Pokédex"
+   },
+   {
+    "text": "En la lista interna de Rojo y Azul, Gengar es el número 14, mucho antes que Gastly (25) y Haunter (147), y cerca de Clefairy (4).",
+    "source": "Datamine · pret/pokered"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Son dos familias distintas. Gengar evoluciona de Haunter, y Clefable de Clefairy.",
+    "source": "Juegos"
+   },
+   {
+    "text": "Tipos distintos. Gengar es Fantasma/Veneno. Clefable era Normal, y pasó a Hada en X e Y.",
+    "source": "Juegos"
+   },
+   {
+    "text": "Pokémon Luna apunta a un lugar totalmente distinto:",
+    "quote": "Al parecer, desea un compañero de viaje. Como él mismo fue humano, intenta crearse uno arrebatando la vida a otros humanos.",
+    "mark": [
+     "fue humano"
+    ],
+    "source": "Gengar · Pokédex · Luna (texto en inglés)"
+   },
+   {
+    "text": "Ningún juego, entrada de la Pokédex ni episodio los relaciona.",
+    "source": "Fuentes oficiales"
+   }
+  ],
+  "confirmed": "El texto de la Pokédex de Gengar sí lo relaciona con las sombras y la luna llena, y la familia de Clefable sí está ligada a la luna. El vínculo entre los dos es idea de los fans.",
+  "verdictText": "Las pistas son reales, pero nada oficial relaciona a Gengar con Clefable. El contraargumento más fuerte es la entrada de Pokémon Luna, que dice que Gengar fue humano. Game Freak nunca ha hablado de la teoría, así que sigue abierta.",
+  "links": [
+   "Texto de la Pokédex de Gengar (PokeAPI)",
+   "Texto de la Pokédex de Clefable (PokeAPI)",
+   "pret/pokered: tabla de tipos de la 1.ª generación",
+   "pret/pokered: lista interna de Pokémon",
+   "pret/pokered: Pokémon salvajes del Mt. Moon",
+   "Game Rant: la teoría de Gengar y Clefable (donde se difundió)",
+   "GAMINGbible: Reddit sigue debatiéndolo (2024)"
+  ],
+  "silhouettes": {
+   "title": "Las siluetas",
+   "text": "Los dos Pokémon en negro sólido, tal como los ve la teoría. Y después, uno encima del otro."
+  },
+  "board": {
+   "question": "¿Es Gengar de verdad la sombra de Clefable?",
+   "hook": "Las siluetas coinciden, y los dos Pokémon no paran de apuntar a la luna. ¿Coincidencia o pista?",
+   "caption": "¿La misma sombra?",
+   "keys": [
+    "Sus siluetas coinciden",
+    "Gengar imita sombras bajo la luna llena",
+    "La familia de Clefable pertenece a la luna"
+   ],
+   "b": {
+    "label": "Entrada de la Pokédex de Gengar · Rojo y Azul",
+    "quote": "Las noches de luna llena, a este Pokémon le gusta imitar las sombras de la gente y reírse de su miedo.",
+    "mark": [
+     "luna llena",
+     "sombras"
+    ]
+   },
+   "c": {
+    "text": "Los Clefairy viven en el Mt. Moon y evolucionan con una Piedra Lunar.",
+    "bold": [
+     "Mt. Moon",
+     "Piedra Lunar"
+    ]
+   }
+  }
+ },
+ "there-was-a-war-in-kanto": {
+  "title": "Hubo una guerra en Kanto",
+  "era": "Gen. I · 1996",
+  "summary": "El Teniente Surge dice que los Pokémon eléctricos le salvaron durante la guerra.",
+  "claim": "El mundo Pokémon ha tenido una guerra de verdad, y el Líder de Gimnasio de Ciudad Carmín, el Teniente Surge, luchó en ella.",
+  "origin": "Es una sola frase del discurso del Teniente Surge antes de su combate de Gimnasio en Rojo y Azul. Los fans la han ido ampliando desde entonces en foros y en Reddit: que la guerra explica los padres ausentes de Kanto, o por qué tantos Entrenadores son niños.",
+  "evidenceFor": [
+   {
+    "text": "El Teniente Surge, antes del combate:",
+    "quote": "¡Te lo digo, chaval, los Pokémon eléctricos me salvaron durante la guerra! ¡Dejaron paralizados a mis enemigos!",
+    "mark": [
+     "durante la guerra"
+    ],
+    "source": "Teniente Surge · Gimnasio Carmín · Rojo y Azul"
+   },
+   {
+    "text": "El mismo discurso suena a soldado:",
+    "quote": "¡No durarías mucho en combate! ¡Eso seguro!",
+    "mark": [
+     "en combate"
+    ],
+    "source": "Teniente Surge · Gimnasio Carmín · Rojo y Azul"
+   },
+   {
+    "text": "Su título, Teniente, es un rango militar.",
+    "source": "Juegos"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Ningún juego da nombre a la guerra, ni dice cuándo fue ni quién luchó.",
+    "source": "Fuentes oficiales"
+   },
+   {
+    "text": "Nada en los juegos la relaciona con los padres ausentes de Kanto ni con los Entrenadores niños. Esas ideas son añadidos de los fans.",
+    "source": "Fuentes oficiales"
+   }
+  ],
+  "confirmed": "El Teniente Surge dice que los Pokémon eléctricos le salvaron “durante la guerra”. Está en el guion de Rojo y Azul. Qué guerra fue, y todo lo que los fans le han colgado, nunca se dice.",
+  "verdictText": "Confirmada: una guerra forma parte del pasado del Teniente Surge, según el propio guion de Rojo y Azul. Qué guerra fue nunca se explica.",
+  "links": [
+   "pret/pokered: texto del Gimnasio Carmín"
+  ]
+ },
+ "mew-is-under-the-truck": {
+  "title": "Mew está debajo del camión",
+  "era": "Gen. I · 1998",
+  "summary": "El camión junto al S.S. Anne no esconde nada. Los propios datos del juego lo demuestran.",
+  "claim": "Si mueves con Fuerza el camión solitario del muelle de Ciudad Carmín, junto al S.S. Anne, encontrarás a Mew debajo.",
+  "origin": "Un rumor de patio de colegio de finales de los 90. El camión está en el muelle sin ninguna función, Mew existía pero casi nadie lo tenía, y el rumor creció a medida que Mew aparecía en las partidas de algunos jugadores. Las versiones no coincidían en el truco (Fuerza, un equipo especial), pero ninguna funcionaba.",
+  "evidenceFor": [
+   {
+    "text": "El camión es único: un vehículo solitario en un muelle al que solo se llega por el S.S. Anne, y con el que no se puede hacer nada.",
+    "source": "Juegos · Rojo y Azul"
+   },
+   {
+    "text": "Mew existía, y era lo bastante raro como para parecer un secreto:",
+    "quote": "Es tan raro que muchos expertos todavía dicen que es un espejismo. Muy pocas personas lo han visto en todo el mundo.",
+    "mark": [
+     "espejismo"
+    ],
+    "source": "Mew · Pokédex · Rojo y Azul"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Los datos del mapa del muelle tienen dos accesos y nada más: ni carteles, ni personas, ni objetos, ni eventos ocultos. No hay nada en el camión que el juego pueda ejecutar.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Los únicos Pokémon salvajes del muelle son los que se pescan con la Supercaña.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Mew se repartía en eventos. El primero fue para 20 ganadores de un concurso de CoroCoro en Japón en 1996, y cada uno se creó en el PC de Shigeki Morimoto y se intercambió por Cable Link.",
+    "source": "Desarrollador · Shigeki Morimoto"
+   },
+   {
+    "text": "Rojo Fuego y Verde Hoja mantuvieron el camión y escondieron una Galleta Lava en el muelle, un guiño al rumor. Y seguía sin haber Mew.",
+    "source": "Juegos · Rojo Fuego y Verde Hoja"
+   }
+  ],
+  "confirmed": "El camión es decorado. Mew solo se repartió en eventos (o se atrapó con glitches), nunca en el muelle.",
+  "verdictText": "Desmentida por los propios datos del juego: el muelle de Carmín no tiene ningún evento, así que empujar el camión no puede hacer nada. La Galleta Lava escondida de los remakes es lo único que se ha colocado nunca allí.",
+  "links": [
+   "pret/pokered: objetos del mapa del muelle de Carmín",
+   "pret/pokered: grupos de la Supercaña",
+   "pret/pokefirered: muelle del S.S. Anne, Galleta Lava escondida",
+   "Kotaku: cuando los jugadores creían que Mew estaba debajo de un camión",
+   "Siliconera: Morimoto sobre el primer reparto de Mew"
+  ],
+  "board": {
+   "question": "¿Está Mew de verdad debajo del camión?",
+   "hook": "Un camión que nadie puede usar, aparcado junto al S.S. Anne. Todos los niños tenían una teoría sobre lo que había debajo.",
+   "caption": "¿Aquí debajo?",
+   "keys": [
+    "Un camión sin ninguna función",
+    "Los datos del muelle no tienen nada que ejecutar",
+    "Los remakes dejaron una Galleta Lava"
+   ],
+   "b": {
+    "label": "Muelle de Carmín · datos del mapa · Rojo y Azul",
+    "text": "Accesos: 2. Carteles: ninguno. Personas: ninguna. Objetos: ninguno. Eventos ocultos: ninguno."
+   },
+   "c": {
+    "text": "Rojo Fuego y Verde Hoja escondieron una Galleta Lava en el muelle. Y seguía sin haber Mew.",
+    "bold": [
+     "Galleta Lava"
+    ]
+   }
+  }
+ },
+ "missingno-is-real": {
+  "title": "MissingNo. existe",
+  "era": "Gen. I · 1998",
+  "summary": "Un Pokémon glitch real en Rojo y Azul, que aparece surfeando por la costa de Isla Canela.",
+  "claim": "En Rojo y Azul se puede encontrar un “Pokémon” roto llamado MissingNo.: deja que el anciano de Ciudad Verde te enseñe a atrapar Pokémon, vuela a Isla Canela y surfea arriba y abajo por su costa este.",
+  "origin": "Los jugadores lo descubrieron poco después del lanzamiento en inglés. Se difundió de boca en boca y por las primeras webs de fans, ayudado por su efecto secundario: encontrarlo suma 128 al sexto objeto de la mochila, un truco favorito para conseguir Caramelos Raros y Master Balls.",
+  "evidenceFor": [
+   {
+    "text": "El código desensamblado lo explica: el tutorial del anciano guarda tu nombre donde está la lista de Pokémon salvajes de la zona, y esa lista debería reescribirse al entrar en una zona nueva…",
+    "quote": "pero un descuido lo impide en Canela y en la Ruta 21, así que puede aparecer el infame glitch de MissingNo.",
+    "mark": [
+     "un descuido"
+    ],
+    "source": "Datamine · pret/pokered (comentario del código)"
+   },
+   {
+    "text": "La lista interna de Pokémon del juego tiene 190 huecos para 151 Pokémon. Los huecos que no son Pokémon son los que aparecen como MissingNo.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Sus datos de la Pokédex son provisionales: la especie dice “???” y el texto de la entrada es la nota japonesa コメント作成中, “comentario por escribir”.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Encontrarlo activa el bit superior de la cantidad del sexto objeto, lo que suma 128 a ese objeto.",
+    "source": "TCRF · Bulbapedia"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "No es un Pokémon secreto que alguien diseñara. Es lo que muestra el juego cuando lee un hueco sin usar, y solo aparece por un descuido en el código.",
+    "source": "Datamine · pret/pokered"
+   }
+  ],
+  "confirmed": "El glitch es real y se puede repetir en Rojo y Azul: el anciano de Ciudad Verde y, después, surfear por la costa este de Isla Canela. Es un encuentro con un hueco de datos sin usar, no un Pokémon oculto.",
+  "verdictText": "Confirmada por el código: el desensamblado muestra exactamente qué descuido permite que aparezca MissingNo. y de qué datos provisionales está hecho.",
+  "links": [
+   "pret/pokered: motor de combate (el tutorial del anciano)",
+   "pret/pokered: lista interna de Pokémon",
+   "pret/pokered: entradas de la Pokédex (los datos provisionales de MissingNo.)",
+   "TCRF: MissingNo.",
+   "Bulbapedia: MissingNo."
+  ],
+  "board": {
+   "question": "¿Es MissingNo. un Pokémon de verdad?",
+   "hook": "Habla con un anciano, surfea por una costa y algo que no debería existir te ataca. El código dice exactamente por qué.",
+   "caption": "Comentario por escribir",
+   "keys": [
+    "Aparece en la costa de Canela",
+    "El código lo llama un descuido",
+    "Su entrada de la Pokédex nunca se escribió"
+   ],
+   "b": {
+    "label": "pret/pokered · comentario del motor de combate",
+    "quote": "pero un descuido lo impide en Canela y en la Ruta 21, así que puede aparecer el infame glitch de MissingNo.",
+    "mark": [
+     "un descuido"
+    ]
+   },
+   "c": {
+    "text": "190 huecos en la lista del juego, 151 Pokémon. Los huecos son MissingNo.",
+    "bold": [
+     "190 huecos",
+     "151 Pokémon"
+    ]
+   }
+  }
+ },
+ "pikablu-the-blue-pikachu": {
+  "title": "Pikablu, el Pikachu azul",
+  "era": "Gen. I–II · 1998",
+  "summary": "El supuesto nuevo Pikachu resultó ser Marill, revelado en Oro y Plata.",
+  "claim": "Existe un primo o una evolución de Pikachu, azul y de tipo Agua, llamado Pikablu, y se puede conseguir en Rojo y Azul, por ejemplo con una Piedra Agua.",
+  "origin": "Un ratón azul y redondo apareció junto a Pikachu en el cortometraje Las vacaciones de Pikachu (julio de 1998), antes de que salieran Oro y Plata. Sin un nombre oficial, los fans lo llamaron Pikablu, y los patios de colegio pusieron el resto.",
+  "evidenceFor": [
+   {
+    "text": "De verdad parecía un Pikachu azul: un ratón redondo con una bola en la cola, visto por primera vez junto a Pikachu en Las vacaciones de Pikachu.",
+    "source": "Anime · Las vacaciones de Pikachu"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "En los datos de Rojo y Azul, Pikachu tiene una sola evolución: Raichu, con una Piedra Trueno. Raichu no evoluciona en nada. Una Piedra Agua no hace nada a ninguno de los dos.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Oro y Plata revelaron que era Marill, el número 183, de tipo Agua (Agua/Hada desde X e Y), que evoluciona a Azumarill y no pertenece a la familia de Pikachu.",
+    "source": "Juegos · Oro y Plata"
+   }
+  ],
+  "confirmed": "El Pokémon azul de Las vacaciones de Pikachu es Marill. Nunca hubo un Pikablu en ningún juego.",
+  "verdictText": "Desmentida por Oro y Plata, que lo llamaron Marill, y por los propios datos de evolución de Rojo y Azul.",
+  "links": [
+   "pret/pokered: evoluciones y movimientos",
+   "Datos de la Pokédex de Marill (PokeAPI)",
+   "Bulbapedia: Pikablu",
+   "Bulbapedia: Las vacaciones de Pikachu"
+  ]
+ },
+ "ash-has-been-in-a-coma": {
+  "title": "Ash está en coma",
+  "era": "Anime · años 2000",
+  "summary": "La idea de que toda la serie es un sueño de Ash. El anime nunca la respalda.",
+  "claim": "Ash nunca llegó a despertar después del primer episodio. La descarga de Pikachu en la tormenta lo dejó en coma, y todos los episodios desde entonces son un sueño, y por eso nunca envejece.",
+  "origin": "Una teoría de foro de los primeros años del anime, mantenida viva por fanfics, hilos de Bulbagarden y, más tarde, vídeos y artículos de teorías.",
+  "evidenceFor": [
+   {
+    "text": "En el primer episodio, una tormenta estalla mientras Pikachu descarga su electricidad sobre una bandada de Spearow, con Ash justo a su lado.",
+    "source": "Anime · ¡Pokémon, te elijo a ti!"
+   },
+   {
+    "text": "Ash empieza su viaje con diez años y sigue teniendo diez durante más de dos décadas de episodios.",
+    "source": "Anime"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "El anime le dio a Ash un final de verdad: ganó el torneo de los Ocho Maestros de la Serie Mundial de Coronación en un episodio emitido por primera vez el 11 de noviembre de 2022.",
+    "source": "Anime · Pokémon: Los viajes definitivos"
+   },
+   {
+    "text": "Nada en la serie, ni ninguna declaración de sus creadores, respalda lo del coma.",
+    "source": "Fuentes oficiales"
+   },
+   {
+    "text": "Un héroe que nunca envejece es una vieja convención de los dibujos animados, no una pista.",
+    "source": "Anime"
+   }
+  ],
+  "confirmed": "La tormenta y la descarga de Pikachu ocurren en el primer episodio, y la edad de Ash no cambia. Eso es todo lo que tiene la teoría.",
+  "verdictText": "Sin confirmar y sin respaldo: la serie trata cada episodio como real y termina la historia de Ash con un campeonato. Solo sobrevive porque los creadores nunca han hablado de ella.",
+  "links": [
+   "CBR: la teoría del coma de Ash (donde se difundió)",
+   "TV Tropes: Ash's Coma (fanfic)",
+   "NPR (vía WSKG): Ash se convierte en campeón del mundo",
+   "Anime News Network: ganador de la Serie Mundial de Coronación"
+  ]
+ },
+ "lavender-town-syndrome": {
+  "title": "El síndrome de Pueblo Lavanda",
+  "era": "Internet · 2010",
+  "summary": "Una historia de terror de internet sobre la música del pueblo. No hay constancia de que ocurriera nunca.",
+  "claim": "Después de que Rojo y Verde salieran en Japón en 1996, la música de Pueblo Lavanda llevó al suicidio a más de cien niños, y el juego se modificó discretamente para taparlo.",
+  "origin": "Una creepypasta publicada por primera vez en Pastebin el 21 de febrero de 2010, y en el tablón paranormal de 4chan a principios de marzo de 2010. Se fue reescribiendo al difundirse, entró en el Creepypasta Index en 2011 y acumuló “pruebas” falsas, como supuestas melodías beta manipuladas en YouTube.",
+  "evidenceFor": [
+   {
+    "text": "La melodía es realmente inquietante, y Pueblo Lavanda es un pueblo cementerio: su Torre Pokémon está llena de tumbas, fantasmas y Médiums.",
+    "source": "Juegos · Rojo y Azul"
+   },
+   {
+    "text": "Las Médiums poseídas de la torre no ayudan:",
+    "quote": "Dame... tu... alma...",
+    "source": "Médium · Torre Pokémon · Rojo y Azul"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "La historia apareció por primera vez en 2010, catorce años después de las supuestas muertes. No hay ninguna noticia, historial médico ni registro policial de casos así en 1996.",
+    "source": "Internet"
+   },
+   {
+    "text": "Se escribió como ficción: las versiones que circulan incluyen detalles inventados, como un juicio de una “Comisión de Juegos”.",
+    "source": "Internet · Know Your Meme"
+   }
+  ],
+  "confirmed": "La música de Pueblo Lavanda es inquietante a propósito. Nada más de la historia es cierto.",
+  "verdictText": "Desmentida: el “síndrome” se inventó en una creepypasta de 2010. Ninguno de sus casos tiene ningún registro detrás.",
+  "links": [
+   "Know Your Meme: la creepypasta del síndrome de Pueblo Lavanda",
+   "pret/pokered: texto de la Torre Pokémon, 5.ª planta (las Médiums)"
+  ]
+ },
+ "mew-was-added-at-the-last-minute": {
+  "title": "Mew se añadió en el último momento",
+  "era": "Gen. I · 1996",
+  "summary": "Un programador coló a Mew en Rojo y Verde cuando el juego ya estaba terminado.",
+  "claim": "Mew nunca formó parte del juego terminado: un programador lo añadió en secreto a Rojo y Verde justo antes del lanzamiento.",
+  "origin": "Los jugadores encontraron a Mew en las primeras copias gracias a glitches y se preguntaron cómo había llegado allí. Game Freak contó la historia años después, en la entrevista Iwata pregunta de Nintendo sobre Oro HeartGold y Plata SoulSilver.",
+  "evidenceFor": [
+   {
+    "text": "Shigeki Morimoto, que programó Rojo y Verde: quitar las funciones de depuración liberó espacio…",
+    "quote": "y quedaron unos minúsculos 300 bytes libres. … Así que pensamos que podíamos meter a Mew ahí.",
+    "mark": [
+     "300 bytes",
+     "meter a Mew"
+    ],
+    "source": "Entrevista · Iwata pregunta: Oro HeartGold y Plata SoulSilver"
+   },
+   {
+    "text": "Tsunekazu Ishihara, de The Pokémon Company:",
+    "quote": "¡Y eso que nos habían dicho que, una vez terminada la depuración, no se tocara ni un solo bit!",
+    "mark": [
+     "ni un solo bit"
+    ],
+    "source": "Entrevista · Iwata pregunta: Oro HeartGold y Plata SoulSilver"
+   },
+   {
+    "text": "El propio juego trata a Mew como un extra: el diseñador de juegos de Ciudad Azulona da la Pokédex por completa sin él (el comentario del desensamblado sobre esa comprobación dice “discount Mew”, “sin contar a Mew”).",
+    "source": "Datamine · pret/pokered"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Mew estaba en la historia antes que en los datos: los diarios de la Mansión Pokémon ya lo nombran.",
+    "quote": "Bautizamos al Pokémon recién descubierto como Mew.",
+    "source": "Mansión Pokémon · Rojo y Azul"
+   }
+  ],
+  "confirmed": "El propio personal de Game Freak dijo que Mew entró después de la depuración, en unos 300 bytes liberados al quitar las funciones de depuración, en contra de las instrucciones.",
+  "verdictText": "Confirmada por entrevista con los desarrolladores: Morimoto e Ishihara contaron la historia en Iwata pregunta.",
+  "links": [
+   "Iwata pregunta: Oro HeartGold y Plata SoulSilver, “Justo a tiempo para el último tren”",
+   "Siliconera: Game Freak revela la historia de Mew",
+   "pret/pokered: script de la Mansión Azulona, 3.ª planta",
+   "pret/pokered: texto de la Mansión Pokémon, 2.ª planta"
+  ]
+ },
+ "ditto-is-a-failed-mew-clone": {
+  "title": "Ditto es un clon fallido de Mew",
+  "era": "Gen. I · 1996",
+  "summary": "Mismo peso, mismo movimiento característico, y viven cerca del laboratorio de clonación. Nunca confirmado.",
+  "claim": "Los Ditto son intentos fallidos de clonar a Mew, los restos de los experimentos que crearon a Mewtwo.",
+  "origin": "Una teoría de foro de larga trayectoria, debatida durante años en PokéCommunity y en los foros de Serebii, y un clásico de los artículos de teorías.",
+  "evidenceFor": [
+   {
+    "text": "Exactamente el mismo peso: Ditto y Mew pesan 4,0 kg.",
+    "source": "Datos de la Pokédex"
+   },
+   {
+    "text": "Transformación es el único movimiento de Ditto, y Mew lo aprende al nivel 10 en Rojo y Azul.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "La primera entrada de Ditto gira en torno al código genético:",
+    "quote": "Es capaz de copiar el código genético de un enemigo para transformarse al instante en un duplicado suyo.",
+    "mark": [
+     "código genético"
+    ],
+    "source": "Ditto · Pokédex · Rojo y Azul"
+   },
+   {
+    "text": "Y la de Mew:",
+    "quote": "Se dice que su ADN contiene los códigos genéticos de todos los Pokémon, por lo que puede usar todo tipo de técnicas.",
+    "mark": [
+     "los códigos genéticos de todos los Pokémon"
+    ],
+    "source": "Mew · Pokédex · Plata"
+   },
+   {
+    "text": "Dónde viven: en Rojo y Azul, los Ditto llenan la Cueva Celeste, la guarida de Mewtwo. En Amarillo también aparecen en el sótano de la Mansión Pokémon, donde están los diarios de la clonación.",
+    "source": "Datamine · pret/pokered y pokeyellow"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Los Ditto también viven en estado salvaje lejos de Isla Canela, en las Rutas 13, 14, 15 y 23 de Rojo y Azul.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Los diarios describen un único experimento, y es Mewtwo:",
+    "quote": "Mew dio a luz. Llamamos Mewtwo al recién nacido.",
+    "source": "Mansión Pokémon · Rojo y Azul"
+   },
+   {
+    "text": "Están hechos de forma distinta: Ditto es de tipo Normal y puede criar con casi cualquiera, mientras que Mew es Psíquico y no puede criar.",
+    "source": "Juegos"
+   },
+   {
+    "text": "Ningún juego, entrada de la Pokédex ni entrevista los relaciona.",
+    "source": "Fuentes oficiales"
+   }
+  ],
+  "confirmed": "El peso compartido, el movimiento compartido y las dos entradas de la Pokédex sobre el código genético son reales. Que Ditto venga de Mew es idea de los fans.",
+  "verdictText": "Sin confirmar. Las coincidencias llaman la atención, pero que haya Ditto salvajes por todo Kanto y que los diarios no digan nada de ellos son contraargumentos fuertes, y Game Freak nunca ha hablado de ello.",
+  "links": [
+   "pret/pokered: evoluciones y movimientos (Mew aprende Transformación)",
+   "pret/pokered: Pokémon salvajes de la Cueva Celeste",
+   "pret/pokeyellow: Pokémon salvajes del sótano de la Mansión Pokémon",
+   "pret/pokered: texto de la Mansión Pokémon, 3.ª planta",
+   "Datos de la Pokédex de Ditto (PokeAPI)",
+   "Datos de la Pokédex de Mew (PokeAPI)",
+   "Sportskeeda: ¿es Ditto un clon de Mew? (donde se difundió)"
+  ],
+  "board": {
+   "question": "¿Es Ditto un Mew que salió mal?",
+   "hook": "El mismo peso al gramo, el mismo movimiento característico, y viven donde se creó a Mewtwo. ¿Coincidencia o restos?",
+   "caption": "¿Copia de una copia?",
+   "keys": [
+    "Los dos pesan exactamente 4,0 kg",
+    "De los dos se habla en código genético",
+    "Los Ditto viven donde se creó a Mewtwo"
+   ],
+   "b": {
+    "label": "Entrada de la Pokédex de Ditto · Rojo y Azul",
+    "quote": "Es capaz de copiar el código genético de un enemigo para transformarse al instante en un duplicado suyo.",
+    "mark": [
+     "código genético"
+    ]
+   },
+   "c": {
+    "text": "Mew aprende Transformación al nivel 10. Es el único movimiento de Ditto.",
+    "bold": [
+     "Transformación",
+     "único movimiento"
+    ]
+   }
+  }
+ },
+ "complete-the-pokedex-and-you-get-mew": {
+  "title": "Completa la Pokédex y consigues a Mew",
+  "era": "Gen. I · 1998",
+  "summary": "Atrapa a los 150 y Game Freak te da un diploma, no a Mew.",
+  "claim": "Llena tu Pokédex con los 150 Pokémon y el juego te recompensa con el número 151, Mew.",
+  "origin": "Una promesa de patio de colegio de finales de los 90: todo el mundo sabía que había una recompensa por completar la Pokédex, y Mew era el único Pokémon que nadie podía atrapar.",
+  "evidenceFor": [
+   {
+    "text": "Sí hay una recompensa por completar la Pokédex: el diseñador de juegos de la oficina de Game Freak en Ciudad Azulona.",
+    "source": "Juegos · Rojo y Azul"
+   },
+   {
+    "text": "Y el recuento deja fuera a Mew, así que una Pokédex “completa” tiene 150, como si Mew fuera el premio.",
+    "source": "Datamine · pret/pokered"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "La reacción del diseñador de juegos es todo lo que recibes:",
+    "quote": "¡Vaya! ¡Excelente! ¡Has completado tu Pokédex! ¡Enhorabuena!",
+    "source": "Diseñador de juegos · Mansión Azulona · Rojo y Azul"
+   },
+   {
+    "text": "Después te enseña un diploma firmado por Game Freak:",
+    "quote": "¡Enhorabuena! Este diploma certifica que has completado tu Pokédex.",
+    "mark": [
+     "diploma"
+    ],
+    "source": "Diploma · Rojo y Azul"
+   },
+   {
+    "text": "El script solo muestra el diploma. Nada en él entrega un Pokémon. Mew solo se repartió en eventos.",
+    "source": "Datamine · pret/pokered"
+   }
+  ],
+  "confirmed": "Una Pokédex completa (sin necesidad de Mew) se gana un diploma del diseñador de juegos de Game Freak en Ciudad Azulona.",
+  "verdictText": "Desmentida por el script: la recompensa es un diploma, y el código que comprueba tu Pokédex nunca entrega un Pokémon.",
+  "links": [
+   "pret/pokered: script de la Mansión Azulona, 3.ª planta",
+   "pret/pokered: texto de la Mansión Azulona, 3.ª planta",
+   "pret/pokered: el diploma"
+  ]
+ },
+ "you-were-meant-to-battle-professor-oak": {
+  "title": "Ibas a combatir contra el Profesor Oak",
+  "era": "Gen. I · 1996",
+  "summary": "Su equipo completo, más fuerte que el del Campeón, sigue en los datos de Rojo y Azul.",
+  "claim": "Rojo y Azul se diseñaron con un combate contra el propio Profesor Oak, y sigue escondido en el juego.",
+  "origin": "Lo encontraron dataminers que rebuscaban en los datos de Entrenadores de Rojo y Azul; lo documentaron The Cutting Room Floor y Bulbapedia, y lo recogieron webs de videojuegos. Con glitches y dispositivos de trucos se puede provocar el combate.",
+  "evidenceFor": [
+   {
+    "text": "Los datos de Entrenador de Oak están en el juego, marcados como sin usar: Tauros (nivel 66), Exeggutor (67), Arcanine (68), un inicial de Kanto completamente evolucionado (69) y Gyarados (70).",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Es más fuerte que el Campeón, tu rival, cuyo equipo llega como mucho al nivel 65.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Con glitches o un dispositivo de trucos puedes iniciar el combate, y Oak lucha con ese equipo.",
+    "source": "Kotaku"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Nada en el juego terminado inicia nunca el combate, y según Bulbapedia, Oak no tiene frases escritas para antes ni para después.",
+    "source": "Bulbapedia"
+   }
+  ],
+  "confirmed": "El equipo y el hueco de Entrenador del Profesor Oak están en los datos de Rojo y Azul. El combate se recortó antes del lanzamiento.",
+  "verdictText": "Confirmada por datamine: su equipo está en los datos de Entrenadores del juego, sin usar.",
+  "links": [
+   "pret/pokered: equipos de Entrenadores (ProfOakData)",
+   "Kotaku: el combate Pokémon que no deberían haber recortado",
+   "Bulbapedia: datos de Entrenadores sin usar"
+  ]
+ },
+ "your-rivals-raticate-died": {
+  "title": "El Raticate de tu rival murió",
+  "era": "Gen. I · 1996",
+  "summary": "Raticate desaparece después del S.S. Anne, y tu rival aparece en un cementerio Pokémon.",
+  "claim": "Venciste tan duramente al Raticate de tu rival en el S.S. Anne que murió. Por eso está en la Torre Pokémon, el cementerio de Pueblo Lavanda, la siguiente vez que os veis.",
+  "origin": "Una teoría de patio de colegio y de foro de los primeros años de Rojo y Azul, que todavía se comenta en archivos de Let's Play y en Reddit.",
+  "evidenceFor": [
+   {
+    "text": "En el S.S. Anne su equipo incluye un Raticate de nivel 16. En la Torre Pokémon ya no está, y nunca vuelve.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Está en un cementerio, y él mismo saca el tema de la muerte:",
+    "quote": "¿Qué te trae por aquí? ¡Tus Pokémon no parecen muertos!",
+    "mark": [
+     "muertos"
+    ],
+    "source": "Rival · Torre Pokémon · Rojo y Azul"
+   },
+   {
+    "text": "En Amarillo, lo que desaparece entre esos mismos dos combates es su Rattata.",
+    "source": "Datamine · pret/pokeyellow"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Está allí atrapando Pokémon, no de luto:",
+    "quote": "¡Acabo de atrapar un Cubone! ¡Todavía no encuentro al Marowak adulto!",
+    "mark": [
+     "Acabo de atrapar un Cubone"
+    ],
+    "source": "Rival · Torre Pokémon · Rojo y Azul"
+   },
+   {
+    "text": "Tiene muchos donde elegir. En el barco dice:",
+    "quote": "¡Ya he atrapado 40 especies, colega!",
+    "source": "Rival · S.S. Anne · Rojo y Azul"
+   },
+   {
+    "text": "Los rivales cambian de Pokémon todo el tiempo, y ningún Pokémon de los juegos muere por un combate.",
+    "source": "Juegos"
+   }
+  ],
+  "confirmed": "Raticate sí deja su equipo después del S.S. Anne, y él sí está en la Torre Pokémon. Nunca se dice por qué.",
+  "verdictText": "Sin confirmar. Los datos del equipo y la frase del cementerio son reales, pero él te dice que fue a atrapar un Cubone, y Game Freak nunca ha dicho qué le pasó a Raticate.",
+  "links": [
+   "pret/pokered: equipos de Entrenadores (Rival2Data)",
+   "pret/pokeyellow: equipos de Entrenadores",
+   "pret/pokered: texto de la Torre Pokémon, 2.ª planta",
+   "pret/pokered: texto del S.S. Anne, 2.ª planta",
+   "LP Archive: “Is Raticate dead???” (donde se difundió)"
+  ]
+ },
+ "red-is-a-ghost-on-mt-silver": {
+  "title": "Rojo es un fantasma en el Monte Plateado",
+  "era": "Gen. II · 1999",
+  "summary": "Callado, solo en una cima helada, desaparece tras el combate. Y luego aparece en juegos posteriores.",
+  "claim": "Rojo, el protagonista de Rojo y Azul, murió en el Monte Plateado. El Entrenador silencioso contra el que luchas en la cima en Oro, Plata y Cristal es su fantasma.",
+  "origin": "Nació del combate final de Oro y Plata y se difundió por foros, y después en la época de la creepypasta “Lost Silver” y de los vídeos de teorías.",
+  "evidenceFor": [
+   {
+    "text": "No dice nada. Sus únicas frases antes y después del combate son “…”.",
+    "source": "Datamine · pret/pokecrystal"
+   },
+   {
+    "text": "Tras el combate la pantalla se funde a negro, él desaparece y salen los créditos.",
+    "source": "Datamine · pret/pokecrystal"
+   },
+   {
+    "text": "Su madre, en Pueblo Paleta, no sabe nada de él:",
+    "quote": "Rojo lleva mucho tiempo fuera. Tampoco ha llamado, así que no tengo ni idea de dónde está ni de qué ha estado haciendo.",
+    "mark": [
+     "Tampoco ha llamado"
+    ],
+    "source": "Madre de Rojo · Pueblo Paleta · Cristal"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Rojo aparece vivo, y mayor, en juegos posteriores: en Sol y Luna es una de las Leyendas del Combate del Árbol de Combate, junto a Azul.",
+    "source": "Juegos · Sol y Luna"
+   },
+   {
+    "text": "Su madre no está de luto, está orgullosa:",
+    "quote": "Me preocupa que Rojo se haga daño o se ponga enfermo, pero es un chico. Estoy orgullosa de que haga lo que quiere hacer.",
+    "mark": [
+     "orgullosa"
+    ],
+    "source": "Madre de Rojo · Pueblo Paleta · Cristal"
+   },
+   {
+    "text": "Combate con un equipo real (un Pikachu de nivel 81, Espeon, Snorlax, Venusaur, Charizard y Blastoise) y se va; no desaparece en mitad del combate.",
+    "source": "Datamine · pret/pokecrystal"
+   }
+  ],
+  "confirmed": "Rojo entrena solo en la cima del Monte Plateado, nunca habla y se va cuando lo vences. Vuelve a aparecer en juegos posteriores.",
+  "verdictText": "Desmentida por el canon oficial: Rojo está vivo en juegos posteriores y combate en el Árbol de Combate de Sol y Luna.",
+  "links": [
+   "pret/pokecrystal: cima del Monte Plateado (script de Rojo)",
+   "pret/pokecrystal: texto de la casa de Rojo",
+   "pret/pokecrystal: equipos de Entrenadores (Rojo)",
+   "Serebii: el Árbol de Combate (Sol y Luna)"
+  ]
+ },
+ "the-gs-ball-opens-for-celebi": {
+  "title": "La Bola GS se abre para Celebi",
+  "era": "Gen. II · 2000",
+  "summary": "El evento completo de la Bola GS de Cristal está en el código. La reedición de 3DS por fin lo activó.",
+  "claim": "La misteriosa Bola GS sí lleva a algún sitio: Cruz la examina y el santuario del Encinar invoca a Celebi.",
+  "origin": "El evento de la Bola GS de Cristal estaba ligado a sus funciones móviles japonesas, así que los jugadores de fuera de Japón nunca lo vieron, y la Bola GS se convirtió en leyenda. La versión de la Consola Virtual de Nintendo 3DS de 2018 la hizo realidad para todos.",
+  "evidenceFor": [
+   {
+    "text": "El Centro Pokémon de Ciudad Trigal tiene una escena que entrega la Bola GS, si un indicador de los datos de guardado dice que está disponible:",
+    "quote": "¡Como oferta especial, se te ha enviado una Bola GS solo para ti! ¡Acéptala, por favor!",
+    "mark": [
+     "Bola GS"
+    ],
+    "source": "Centro Pokémon de Ciudad Trigal · Cristal"
+   },
+   {
+    "text": "Cruz se queda la bola una noche, y después el script del santuario del Encinar toma la Bola GS e inicia un combate contra un Celebi de nivel 30.",
+    "source": "Datamine · pret/pokecrystal · Nintendo Wire"
+   },
+   {
+    "text": "La versión de la Consola Virtual de 3DS (26 de enero de 2018) activa ese indicador al entrar en el Hall de la Fama, así que la recepcionista te da la Bola GS.",
+    "source": "Datamine · pret/pokecrystal"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "En los cartuchos originales de Cristal en inglés, nada en el juego activa nunca el indicador, así que el evento no se puede alcanzar de forma normal.",
+    "source": "Datamine · pret/pokecrystal"
+   }
+  ],
+  "confirmed": "El evento Bola GS → Cruz → santuario del Encinar → Celebi está entero en Cristal. En Japón se podía alcanzar con sus funciones móviles; en la Consola Virtual de 3DS, cualquiera podía.",
+  "verdictText": "Confirmada por datamine y por la reedición oficial de 3DS, donde el evento se desarrolla tal como está escrito.",
+  "links": [
+   "pret/pokecrystal: Centro Pokémon de Ciudad Trigal (Bola GS)",
+   "pret/pokecrystal: santuario del Encinar",
+   "pret/pokecrystal: código de guardado (el enganche de la Consola Virtual)",
+   "Nintendo Wire: cómo atrapar a Celebi en Cristal de 3DS"
+  ]
+ },
+ "mimikyu-is-a-pikachus-ghost": {
+  "title": "Mimikyu es el fantasma de un Pikachu",
+  "era": "Gen. VII · 2016",
+  "summary": "Un fantasma con un disfraz casero de Pikachu. Nunca se muestra lo que hay debajo.",
+  "claim": "Bajo su trapo, Mimikyu es el fantasma de un Pikachu que se disfraza del Pokémon que fue.",
+  "origin": "Empezó en cuanto Sol y Luna presentaron a Mimikyu en 2016, en Reddit y Tumblr, junto a una teoría rival según la cual es Porygon escondiéndose desde el episodio del “Pokémon Shock” de 1997.",
+  "evidenceFor": [
+   {
+    "text": "El disfraz es de Pikachu a propósito:",
+    "quote": "Se cubre con un saco andrajoso con aspecto de Pikachu para no resultar tan aterrador, aunque este le confiere un aspecto aún más terrorífico.",
+    "mark": [
+     "saco andrajoso con aspecto de Pikachu"
+    ],
+    "source": "Mimikyu · Pokédex · Espada"
+   },
+   {
+    "text": "Lo que hay debajo mata:",
+    "quote": "Su verdadero aspecto es un misterio total. Un investigador que intentó mirar dentro del saco recibió, literalmente, un susto de muerte.",
+    "mark": [
+     "Su verdadero aspecto es un misterio"
+    ],
+    "source": "Mimikyu · Pokédex · Sol"
+   },
+   {
+    "text": "Es de tipo Fantasma, y el disfraz copia las orejas, las mejillas y la cola en forma de rayo de Pikachu.",
+    "source": "Juegos · Sol y Luna"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "La Pokédex da otro motivo para el disfraz:",
+    "quote": "El saco andrajoso le permite ocultar su aspecto aterrador para acercarse a otros Pokémon o a la gente y vencer así la soledad que lo atenaza.",
+    "mark": [
+     "acercarse a otros Pokémon o a la gente"
+    ],
+    "source": "Mimikyu · Pokédex · Luna"
+   },
+   {
+    "text": "La descripción oficial de Sol y Luna decía que imita a Pikachu por el auge de los productos de Pikachu de unos 20 años antes: popularidad, no una vida pasada.",
+    "source": "Web oficial, vía Kotaku"
+   },
+   {
+    "text": "Su verdadera forma nunca se muestra, así que un Pikachu muerto es una suposición entre varias (los fans también dicen Porygon).",
+    "source": "Internet"
+   }
+  ],
+  "confirmed": "Mimikyu es un Pokémon Fantasma/Hada que lleva un disfraz casero de Pikachu, y ver lo que hay debajo es mortal. Quién hay dentro nunca se revela.",
+  "verdictText": "Sin confirmar. Todos los textos oficiales dicen que el disfraz está hecho para parecerse a Pikachu, no que Mimikyu fuera uno, y su forma real nunca se ha mostrado.",
+  "links": [
+   "Texto de la Pokédex de Mimikyu (PokeAPI)",
+   "Kotaku: la teoría que relaciona un episodio prohibido con Mimikyu"
+  ],
+  "silhouettes": {
+   "title": "El disfraz",
+   "text": "El trapo de Mimikyu y el Pikachu de verdad, los dos en negro sólido. Y después, uno encima del otro."
+  }
+ },
+ "porygon-gave-kids-seizures": {
+  "title": "Porygon provocó convulsiones a los niños",
+  "era": "Anime · 1997",
+  "summary": "Porygon cargó con la culpa del episodio de 1997, pero los destellos vinieron de Pikachu.",
+  "claim": "El ataque de Porygon en un episodio de 1997 provocó convulsiones a cientos de niños, así que lo vetaron en la serie.",
+  "origin": "El episodio “Dennō Senshi Porygon” se emitió una sola vez en Japón, el 16 de diciembre de 1997. Cientos de espectadores acabaron en el hospital, fue noticia en todo el mundo, y como Porygon era el Pokémon del título y después desapareció de la serie, cargó con la culpa.",
+  "evidenceFor": [
+   {
+    "text": "Porygon era el Pokémon del título del episodio, y después Porygon (y más tarde Porygon2 y Porygon-Z) nunca volvió a tener un papel destacado en el anime.",
+    "source": "Anime"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Los destellos vinieron de Pikachu: unos misiles antivirus se acercaban, y el Rayo de Pikachu los alcanzó y provocó una explosión con destellos.",
+    "source": "Anime · Mental Floss"
+   },
+   {
+    "text": "En el episodio Porygon es una víctima, no un atacante. El episodio se retiró y toda la serie dejó de emitirse hasta abril de 1998.",
+    "source": "Mental Floss"
+   },
+   {
+    "text": "Las cifras varían (Mental Floss habla de 618 personas hospitalizadas), pero todos los relatos atribuyen los destellos a la explosión, no a Porygon.",
+    "source": "Mental Floss"
+   }
+  ],
+  "confirmed": "El episodio se emitió una vez y provocó cientos de visitas al hospital. La explosión con destellos fue el Rayo de Pikachu al alcanzar los misiles.",
+  "verdictText": "Desmentida: Porygon fue castigado por una escena en la que fue el ataque de Pikachu el que causó los destellos.",
+  "links": [
+   "Mental Floss: cuando Pokémon mandó al hospital a cientos de espectadores"
+  ]
+ },
+ "ho-oh-flew-over-the-first-episode": {
+  "title": "Ho-Oh sobrevoló el primer episodio",
+  "era": "Anime · 1997",
+  "summary": "El pájaro del arcoíris al final del primer episodio era una leyenda de la 2.ª generación, con años de adelanto.",
+  "claim": "El pájaro dorado que Ash ve volar sobre un arcoíris al final del primerísimo episodio era Ho-Oh, un Pokémon que los jugadores no pudieron encontrar hasta Oro y Plata.",
+  "origin": "El primer episodio se emitió en Japón el 1 de abril de 1997. Nadie sabía qué pájaro era; cuando Oro y Plata salieron en Japón en noviembre de 1999, los fans lo reconocieron, y “¿qué era aquel pájaro?” se convirtió en una curiosidad del anime.",
+  "evidenceFor": [
+   {
+    "text": "Tras la tormenta, Ash ve un pájaro brillante cruzar un arcoíris volando, y su Pokédex no puede identificarlo.",
+    "source": "Anime · ¡Pokémon, te elijo a ti!"
+   },
+   {
+    "text": "La Pokédex de Oro describe a Ho-Oh tal como aparece:",
+    "quote": "Según las leyendas, este Pokémon surca sin descanso los cielos del mundo con sus magníficas alas de siete colores.",
+    "mark": [
+     "magníficas alas de siete colores"
+    ],
+    "source": "Ho-Oh · Pokédex · Oro"
+   },
+   {
+    "text": "La película de 2017 Pokémon, la película: ¡Te elijo a ti! vuelve a contar el primer episodio, y el pájaro es Ho-Oh, que le deja a Ash un Ala Arcoíris.",
+    "source": "Anime · ¡Te elijo a ti! (2017)"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "El episodio de 1997 nunca dice qué pájaro es. Se identificó más tarde.",
+    "source": "Anime"
+   }
+  ],
+  "confirmed": "El pájaro del primer episodio es Ho-Oh, como muestra la propia versión del anime de 2017.",
+  "verdictText": "Confirmada por el propio anime: el remake de la escena en la película de 2017 convierte al pájaro en Ho-Oh.",
+  "links": [
+   "Nintendo Life: análisis de Pokémon, la película: ¡Te elijo a ti!",
+   "Texto de la Pokédex de Ho-Oh (PokeAPI)",
+   "Bulbapedia: Ho-Oh (anime)"
+  ]
+ },
+ "cubone-is-a-baby-kangaskhan": {
+  "title": "Cubone es una cría de Kangaskhan",
+  "era": "Gen. I · 1996",
+  "summary": "Una cría sin madre y una madre cuya cría no tiene especie. La Megaevolución dice que no.",
+  "claim": "Los Cubone son crías de Kangaskhan cuyas madres murieron. Llevan el cráneo de su madre y crecen solos.",
+  "origin": "Una de las teorías Pokémon más antiguas, debatida en los foros de Serebii y PokéCommunity y repetida desde entonces en artículos de teorías.",
+  "evidenceFor": [
+   {
+    "text": "Todos los Kangaskhan son hembras, y la cría de la bolsa nunca ha sido una especie propia.",
+    "source": "Juegos"
+   },
+   {
+    "text": "Cubone y Kangaskhan comparten el mismo grupo huevo, Monstruo.",
+    "source": "Juegos"
+   },
+   {
+    "text": "Las crías de Kangaskhan se quedan en la bolsa:",
+    "quote": "La cría rara vez sale de la bolsa protectora de su madre hasta que cumple 3 años.",
+    "mark": [
+     "La cría"
+    ],
+    "source": "Kangaskhan · Pokédex · Rojo y Azul"
+   },
+   {
+    "text": "Y Cubone no tiene madre:",
+    "quote": "Perdió a su madre después de nacer. Lleva el cráneo de su madre y nunca muestra su verdadero rostro.",
+    "mark": [
+     "Perdió a su madre"
+    ],
+    "source": "Cubone · Pokédex · Cristal"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Cubone evoluciona a Marowak, nunca a Kangaskhan.",
+    "source": "Juegos"
+   },
+   {
+    "text": "Mega-Kangaskhan (X e Y) saca a la cría a luchar, y es un Kangaskhan pequeño, no un Cubone.",
+    "source": "Juegos · X e Y"
+   },
+   {
+    "text": "Los juegos muestran de quién es el cráneo: la madre fantasma de Rojo y Azul es un Marowak.",
+    "source": "Juegos · Rojo y Azul"
+   }
+  ],
+  "confirmed": "Los Kangaskhan son hembras y llevan una cría; Cubone lleva el cráneo de su madre muerta. Nada une ambas cosas.",
+  "verdictText": "Sin confirmar, y el canon apunta en sentido contrario: la cría de Mega-Kangaskhan es un Kangaskhan, y la madre de Cubone en Rojo y Azul es un Marowak. Game Freak nunca ha hablado de ello.",
+  "links": [
+   "Datos de la Pokédex de Kangaskhan (PokeAPI)",
+   "Datos de la Pokédex de Cubone (PokeAPI)",
+   "TheGamer: la teoría de Kangaskhan y Cubone (donde se difundió)"
+  ],
+  "silhouettes": {
+   "title": "El parecido",
+   "text": "Cubone y Kangaskhan en negro sólido, tal como los ve la teoría. Y después, uno encima del otro."
+  }
+ },
+ "pikachus-tail-has-a-black-tip": {
+  "title": "La cola de Pikachu tiene la punta negra",
+  "era": "Internet · años 2010",
+  "summary": "Un falso recuerdo compartido. La cola de Pikachu siempre ha terminado en amarillo.",
+  "claim": "La cola de Pikachu antes terminaba en negro, y alguien la cambió.",
+  "origin": "Un efecto Mandela, el nombre que se da a un falso recuerdo compartido por mucha gente, acuñado en 2009. Se difundió por Reddit y las redes sociales, con peluches de imitación que circulaban como “prueba”.",
+  "evidenceFor": [
+   {
+    "text": "Las orejas de Pikachu sí tienen las puntas negras, y la cola de Pichu es negra; las dos cosas son fáciles de confundir.",
+    "source": "Juegos"
+   },
+   {
+    "text": "Pikachu Coqueta, de Rubí Omega y Zafiro Alfa, tiene una forma de corazón negra en la punta de la cola.",
+    "source": "Juegos · Rubí Omega y Zafiro Alfa"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "En las ilustraciones oficiales la cola es amarilla, con una mancha marrón en la base, desde los primeros juegos y cartas hasta Detective Pikachu.",
+    "source": "Ilustraciones oficiales"
+   },
+   {
+    "text": "El único cambio en la cola de Pikachu es la punta en forma de corazón de la hembra, y no es negra.",
+    "source": "Juegos"
+   }
+  ],
+  "confirmed": "La cola de Pikachu es amarilla con la base marrón. Sus orejas de punta negra y la cola negra de Pichu son el origen más probable del recuerdo.",
+  "verdictText": "Desmentida por todas las ilustraciones oficiales: el Pikachu normal nunca ha tenido la punta de la cola negra.",
+  "links": [
+   "/Film: explicación del efecto Mandela del Pikachu de cola negra"
+  ]
+ },
+ "silver-is-giovannis-son": {
+  "title": "Silver es el hijo de Giovanni",
+  "era": "Gen. II · 1999",
+  "summary": "El rival pelirrojo de Oro y Plata es el hijo del jefe del Team Rocket.",
+  "claim": "Tu rival pelirrojo de Oro, Plata y Cristal, el chico que roba un inicial al Profesor Elm, es el hijo de Giovanni, el jefe del Team Rocket.",
+  "origin": "Los fans lo sospechaban desde Oro y Plata. Rojo Fuego y Verde Hoja (2004) dejaron caer una pista, y Oro HeartGold y Plata SoulSilver (2009) lo mostraron.",
+  "evidenceFor": [
+   {
+    "text": "Un científico del Team Rocket en Isla Quinta te confunde con otra persona:",
+    "quote": "Tú… ¿No serás el hijo de Giovanni? ¡No, no puede ser! El hijo de Giovanni es pelirrojo.",
+    "mark": [
+     "pelirrojo"
+    ],
+    "source": "Almacén Rocket · Rojo Fuego y Verde Hoja"
+   },
+   {
+    "text": "El Fame Checker de Rojo Fuego y Verde Hoja archiva esa frase en el apartado “¿Familia y amigos?” de Giovanni.",
+    "source": "Juegos · Rojo Fuego y Verde Hoja"
+   },
+   {
+    "text": "En el evento de Celebi de Oro HeartGold y Plata SoulSilver viajas tres años atrás y ves a Silver discutir con su padre, que quiere que entre en el Team Rocket, antes de que el padre se marche: es Giovanni.",
+    "source": "Juegos · Oro HeartGold y Plata SoulSilver (Serebii)"
+   },
+   {
+    "text": "En Cristal, Silver tiene sus propios asuntos con el Team Rocket:",
+    "quote": "No te quiero en medio mientras me ocupo del Team Rocket.",
+    "source": "Silver · Túnel Trigal · Cristal"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Oro, Plata y Cristal nunca lo dicen por sí mismos.",
+    "source": "Juegos"
+   }
+  ],
+  "confirmed": "El evento de Celebi de Oro HeartGold y Plata SoulSilver muestra que Giovanni es el padre de Silver.",
+  "verdictText": "Confirmada en Oro HeartGold y Plata SoulSilver, tras una pista en Rojo Fuego y Verde Hoja.",
+  "links": [
+   "pret/pokefirered: texto del Almacén Rocket de Isla Quinta",
+   "pret/pokefirered: texto del Fame Checker",
+   "Serebii: el evento de Celebi en Oro HeartGold y Plata SoulSilver",
+   "pret/pokecrystal: texto del Túnel Trigal"
+  ]
+ },
+ "voltorb-is-a-poke-ball-come-to-life": {
+  "title": "Voltorb es una Poké Ball con vida",
+  "era": "Gen. I · 1996",
+  "summary": "La Pokédex no para de insinuarlo, y no para de llamarlo rumor.",
+  "claim": "Voltorb nació de una Poké Ball, en un accidente de fábrica o por una descarga de energía.",
+  "origin": "La propia Pokédex plantea la idea, y los fans la han desarrollado desde Rojo y Azul. El Voltorb de Hisui de Leyendas: Arceus, con la forma de las Poké Balls de aquella época, la revivió.",
+  "evidenceFor": [
+   {
+    "text": "Plata los relaciona:",
+    "quote": "Se descubrió cuando se introdujeron las Poké Balls. Se dice que hay alguna relación.",
+    "mark": [
+     "alguna relación"
+    ],
+    "source": "Voltorb · Pokédex · Plata"
+   },
+   {
+    "text": "Rubí dice el lugar:",
+    "quote": "Voltorb se avistó por primera vez en una empresa que fabrica Poké Balls. La relación entre ese avistamiento y el hecho de que este Pokémon se parezca mucho a una Poké Ball sigue siendo un misterio.",
+    "mark": [
+     "una empresa que fabrica Poké Balls"
+    ],
+    "source": "Voltorb · Pokédex · Rubí"
+   },
+   {
+    "text": "Cristal dice que no es natural:",
+    "quote": "Durante el estudio de este Pokémon se descubrió que sus componentes no se encuentran en la naturaleza.",
+    "mark": [
+     "no se encuentran en la naturaleza"
+    ],
+    "source": "Voltorb · Pokédex · Cristal"
+   },
+   {
+    "text": "En Leyendas: Arceus, el Electrode de Hisui está hecho de material de Poké Ball:",
+    "quote": "El tejido de la superficie de su cuerpo tiene, curiosamente, una composición muy parecida a la de un Bonguri.",
+    "mark": [
+     "Bonguri"
+    ],
+    "source": "Electrode · Pokédex · Leyendas: Arceus"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "La Pokédex lo archiva como rumor, no como hecho:",
+    "quote": "Se rumorea que se creó cuando una Poké Ball fue expuesta a un potente pulso de energía.",
+    "mark": [
+     "Se rumorea"
+    ],
+    "source": "Voltorb · Pokédex · Zafiro"
+   },
+   {
+    "text": "Rojo Fuego no dice qué es:",
+    "quote": "Una forma de vida de identidad desconocida. Se dice que usa Chirrido o que usa Autodestrucción de repente.",
+    "mark": [
+     "identidad desconocida"
+    ],
+    "source": "Voltorb · Pokédex · Rojo Fuego"
+   },
+   {
+    "text": "Vive y cría como cualquier otro Pokémon: los Voltorb ponen Huevos (con Ditto) de los que nacen Voltorb.",
+    "source": "Juegos"
+   }
+  ],
+  "confirmed": "La Pokédex dice que Voltorb apareció cuando lo hicieron las Poké Balls, que se vio por primera vez en un fabricante de Poké Balls y que está hecho de componentes no naturales. Nunca dice que una Poké Ball se convirtiera en Voltorb.",
+  "verdictText": "Abierta: las pistas vienen de la propia Pokédex, pero todas las entradas se quedan en “rumor” o “misterio”, y Game Freak nunca ha dicho más.",
+  "links": [
+   "Texto de la Pokédex de Voltorb (PokeAPI)",
+   "Texto de la Pokédex de Electrode (PokeAPI)"
+  ]
+ },
+ "the-pokegods": {
+  "title": "Los PokéDioses",
+  "era": "Gen. I–II · 1999",
+  "summary": "Superpokémon secretos más allá de los 151. Ninguno estuvo nunca en los juegos.",
+  "claim": "Más allá de los 151 había Pokémon secretos y divinos (“PokéDioses”) que se desbloqueaban con códigos, rituales o hazañas imposibles.",
+  "origin": "Se cree que los rumores empezaron con Mew, que al principio nadie entendía, y crecieron a medida que se filtraban los nuevos Pokémon de Oro y Plata. Las primeras webs de fans intercambiaban nombres inventados, y las bromas del Día de los Inocentes de abril de 1999 añadieron más, como que Dragonite evolucionaba a Yoshi y Lickitung a Luigi.",
+  "evidenceFor": [
+   {
+    "text": "Sí hubo un Pokémon secreto: Mew, el número 151, y el juego nunca dice cómo atraparlo.",
+    "source": "Juegos"
+   },
+   {
+    "text": "Pokémon reales de Oro y Plata (entre ellos Marill y Togepi) se mostraron antes del lanzamiento, lo que hacía que cualquier rumor pareciera posible.",
+    "source": "Bulbapedia"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Los datos de Rojo y Azul tienen 151 especies y nada oculto: el resto de su lista interna son huecos provisionales vacíos.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Las “evoluciones” a Yoshi y Luigi eran bromas del 1 de abril (en la revista Expert Gamer y en la web de Nintendo, según Bulbapedia).",
+    "source": "Bulbapedia"
+   }
+  ],
+  "confirmed": "Mew era el único Pokémon secreto de Rojo y Azul. El resto eran inventos de fans y bromas.",
+  "verdictText": "Desmentida por los datos del juego: en Rojo y Azul no hay sitio para ningún Pokémon más allá de los 151.",
+  "links": [
+   "Bulbapedia: PokéDioses",
+   "pret/pokered: lista interna de Pokémon"
+  ]
+ },
+ "gold-and-silver-had-lost-pokemon": {
+  "title": "Oro y Plata tenían Pokémon perdidos",
+  "era": "Gen. II · 1997",
+  "summary": "La demo de 1997 tenía Pokémon que nunca llegaron al juego final.",
+  "claim": "El Oro y Plata que se mostró en Nintendo Space World en 1997 era un juego distinto, con Pokémon que se recortaron antes del lanzamiento.",
+  "origin": "Los jugadores vieron la demo en Space World en noviembre de 1997. Una versión jugable se filtró en internet a finales de mayo de 2018, y The Cutting Room Floor la desmenuzó.",
+  "evidenceFor": [
+   {
+    "text": "Tiene diseños antiguos de Raikou, Entei y Suicune.",
+    "source": "Datamine · Game Informer"
+   },
+   {
+    "text": "Tiene una evolución sin usar de Farfetch’d, y una evolución sin usar de Hoothoot que después sustituyó Noctowl.",
+    "source": "Datamine · Game Informer"
+   },
+   {
+    "text": "Tiene Pokémon que desaparecieron por completo, entre ellos una preevolución bebé de Meowth y dos iniciales sin usar.",
+    "source": "Datamine · Game Informer"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Es una versión de demostración, no el juego terminado; los nombres de los Pokémon recortados vienen sobre todo de fans y traductores.",
+    "source": "Game Informer"
+   }
+  ],
+  "confirmed": "La versión de demostración existe, se mostró en 1997 y se filtró en 2018, y sus Pokémon recortados están en sus datos.",
+  "verdictText": "Confirmada por datamine: la versión filtrada de Space World contiene los Pokémon recortados, documentados por The Cutting Room Floor.",
+  "links": [
+   "Game Informer: la demo de Oro y Plata revela Pokémon inéditos",
+   "TCRF: demo de Spaceworld 1997",
+   "Bulbapedia: demo de Oro y Plata de Spaceworld '97"
+  ]
+ },
+ "mr-fuji-made-mewtwo": {
+  "title": "El Señor Fuji creó a Mewtwo",
+  "era": "Gen. I · 1996",
+  "summary": "¿El amable Señor Fuji, o el científico que escribió los diarios de la Mansión?",
+  "claim": "El Señor Fuji, el amable anciano de Pueblo Lavanda que cuida de Pokémon huérfanos, es el científico cuyos diarios en la Mansión Pokémon de Isla Canela describen la creación de Mewtwo.",
+  "origin": "El anime dio al creador de Mewtwo el nombre de Dr. Fuji, y Rojo Fuego y Verde Hoja (2004) añadieron fotos de un Dr. Fuji en Isla Canela. Los fans relacionaron a los dos Fuji.",
+  "evidenceFor": [
+   {
+    "text": "El Laboratorio Pokémon de Isla Canela en Rojo Fuego y Verde Hoja tiene una foto:",
+    "quote": "Una foto del fundador del laboratorio… ¡¿El Dr. Fuji?!",
+    "mark": [
+     "Dr. Fuji"
+    ],
+    "source": "Laboratorio Pokémon · Rojo Fuego y Verde Hoja"
+   },
+   {
+    "text": "El Gimnasio Canela tiene otra:",
+    "quote": "Es una foto de Blaine y el Señor Fuji. Están hombro con hombro y con una gran sonrisa.",
+    "mark": [
+     "Señor Fuji"
+    ],
+    "source": "Gimnasio Canela · Rojo Fuego y Verde Hoja"
+   },
+   {
+    "text": "El Fame Checker transmite un rumor:",
+    "quote": "He oído que el Señor Fuji tampoco es de por aquí.",
+    "source": "Fame Checker · Rojo Fuego y Verde Hoja"
+   },
+   {
+    "text": "El autor de los diarios de la Mansión se arrepiente de lo que crearon:",
+    "quote": "Mewtwo es demasiado poderoso. No hemos logrado frenar sus instintos violentos…",
+    "source": "Mansión Pokémon · Rojo y Azul"
+   },
+   {
+    "text": "En el anime, un científico llamado Dr. Fuji clona a Mewtwo en el prólogo de Mewtwo contraataca.",
+    "source": "Anime · Bulbapedia"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Los diarios no están firmados. Ningún juego dice quién los escribió.",
+    "source": "Juegos"
+   },
+   {
+    "text": "Ningún juego dice que el Señor Fuji de Pueblo Lavanda y el Dr. Fuji del laboratorio sean el mismo hombre.",
+    "source": "Juegos"
+   },
+   {
+    "text": "El anime tiene su propia continuidad: su Dr. Fuji es un personaje distinto del Señor Fuji de los juegos.",
+    "source": "Anime"
+   }
+  ],
+  "confirmed": "Un Dr. Fuji fundó el Laboratorio Pokémon de Isla Canela, el Señor Fuji es viejo amigo de Blaine y alguien en Isla Canela creó a Mewtwo. Los juegos nunca juntan las tres cosas.",
+  "verdictText": "Sin confirmar. Todas las pistas apuntan en la misma dirección, pero los juegos se quedan a un paso de nombrarlo, y Game Freak nunca lo ha dicho.",
+  "links": [
+   "pret/pokefirered: texto del Laboratorio Pokémon de Isla Canela",
+   "pret/pokefirered: texto del Fame Checker",
+   "pret/pokered: texto del sótano de la Mansión Pokémon",
+   "Bulbapedia: Dr. Fuji (anime)"
+  ]
+ },
+ "ghost-moves-beat-psychic-in-red-and-blue": {
+  "title": "Fantasma vencía a Psíquico en Rojo y Azul",
+  "era": "Gen. I · 1997",
+  "summary": "Fantasma era la respuesta a Psíquico en el anime. En el código de los juegos, no hacía nada.",
+  "claim": "En Rojo y Azul, los movimientos de tipo Fantasma eran supereficaces contra los tipos Psíquico, la forma de vencer a Sabrina.",
+  "origin": "El anime mandó a Ash a Pueblo Lavanda a por un tipo Fantasma para vencer a los Pokémon Psíquico de Sabrina (“La torre del terror”, 1997), y así aprendieron esa relación la mayoría de los niños.",
+  "evidenceFor": [
+   {
+    "text": "En el anime, Ash va a la Torre Pokémon de Pueblo Lavanda a buscar un tipo Fantasma para usarlo contra Sabrina.",
+    "source": "Anime · La torre del terror"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "La tabla de tipos de Rojo y Azul pone Fantasma contra Psíquico como “no afecta”.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Oro y Plata lo cambiaron: su tabla hace a Fantasma muy eficaz contra Psíquico.",
+    "source": "Datamine · pret/pokecrystal"
+   },
+   {
+    "text": "Rojo y Azul solo tienen tres movimientos Fantasma: Lengüetazo, Rayo Confuso y Tinieblas, que hace un daño fijo sea cual sea el tipo.",
+    "source": "Datamine · pret/pokered"
+   }
+  ],
+  "confirmed": "En Rojo y Azul, los movimientos Fantasma no afectan a los tipos Psíquico. Desde Oro y Plata, son supereficaces.",
+  "verdictText": "Desmentida por los datos del juego: la tabla de tipos de la 1.ª generación dice que Fantasma no hace nada a Psíquico.",
+  "links": [
+   "pret/pokered: tabla de tipos de la 1.ª generación",
+   "pret/pokecrystal: tabla de tipos de la 2.ª generación",
+   "pret/pokered: datos de movimientos",
+   "Bulbapedia: La torre del terror"
+  ]
+ },
+ "rhydon-was-one-of-the-first-pokemon": {
+  "title": "Rhydon fue uno de los primeros Pokémon",
+  "era": "Gen. I · 2000",
+  "summary": "Número uno en la propia lista del juego, y el primer nombre que da Ken Sugimori.",
+  "claim": "Rhydon, y no Bulbasaur ni Pikachu, fue el primer Pokémon que se creó.",
+  "origin": "Los dataminers vieron que Rhydon ocupa el hueco 1 de la lista interna de Rojo y Azul. Una entrevista de 2000 a Ken Sugimori en Nintendo Online Magazine, traducida en 2011 y de nuevo por Dr Lava en 2020, lo respaldó.",
+  "evidenceFor": [
+   {
+    "text": "La lista interna de Rojo y Azul empieza con Rhydon, Kangaskhan, Nidoran♂ y Clefairy.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Cuando le preguntaron “¿Cuál fue el primer Pokémon que se creó?”, Ken Sugimori respondió:",
+    "quote": "Rhydon, Clefairy, Lapras, etc. Nuestra idea original era que los Pokémon vivieran junto a los humanos y los ayudaran de formas útiles.",
+    "mark": [
+     "Rhydon"
+    ],
+    "source": "Entrevista · Nintendo Online Magazine (julio de 2000)"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "La nueva traducción de Dr Lava subraya que Sugimori los nombró entre los primeros Pokémon, no necesariamente como los tres primeros por orden.",
+    "source": "Archivo de Dr Lava"
+   },
+   {
+    "text": "El orden de una lista interna no demuestra por sí solo el orden de creación.",
+    "source": "Datamine"
+   }
+  ],
+  "confirmed": "Rhydon ocupa el hueco 1 en los datos de Rojo y Azul, y Sugimori lo nombra el primero entre los primeros Pokémon.",
+  "verdictText": "Confirmada por entrevista con el desarrollador y por los datos del juego, con un matiz: Sugimori dice “entre los primeros”, no “el primerísimo”.",
+  "links": [
+   "Dr Lava: Sugimori y Masuda sobre la creación de la 1.ª generación",
+   "pret/pokered: lista interna de Pokémon"
+  ]
+ },
+ "butterfree-and-venomoth-were-swapped": {
+  "title": "Butterfree y Venomoth se intercambiaron",
+  "era": "Gen. I · 1996",
+  "summary": "Venonat tiene los ojos de Butterfree. La propia lista del juego dice que las familias se crearon juntas.",
+  "claim": "Butterfree debía evolucionar de Venonat, y Venomoth de Metapod. Los dos se intercambiaron al final del desarrollo.",
+  "origin": "Una teoría de foro de larga trayectoria (hay hilos de PokéCommunity de hace más de una década), que webs de teorías y Reddit reviven cada pocos años.",
+  "evidenceFor": [
+   {
+    "text": "Los ojos de Venonat:",
+    "quote": "Sus grandes ojos son en realidad grupos de ojos diminutos. De noche, los de su especie se sienten atraídos por la luz.",
+    "mark": [
+     "grupos de ojos diminutos"
+    ],
+    "source": "Venonat · Pokédex · Diamante"
+   },
+   {
+    "text": "Y los de Butterfree:",
+    "quote": "Al mirar sus grandes ojos desde cerca, puede observarse como en realidad están compuestos de incontables ojos diminutos.",
+    "mark": [
+     "incontables ojos diminutos"
+    ],
+    "source": "Butterfree · Pokédex · Sol"
+   },
+   {
+    "text": "Los movimientos de Butterfree en Rojo y Azul (Polvo Veneno, Paralizador, Somnífero, Psicorrayo) son los de la familia de Venonat.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Los dos tienen grandes ojos compuestos rojos en sus ilustraciones. Ver la prueba A.",
+    "source": "Ilustraciones oficiales"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "En la lista interna de Rojo y Azul, Caterpie, Metapod y Butterfree ocupan tres huecos seguidos (123, 124, 125): se añadieron como familia.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Los tipos encajan con las familias: Butterfree es Bicho/Volador como una mariposa; Venomoth es Bicho/Veneno como Venonat.",
+    "source": "Juegos"
+   },
+   {
+    "text": "Game Freak nunca lo ha confirmado ni desmentido.",
+    "source": "Fuentes oficiales"
+   }
+  ],
+  "confirmed": "Venonat y Butterfree sí comparten los ojos y muchos movimientos. Un intercambio nunca se ha confirmado.",
+  "verdictText": "Sin confirmar. Los parecidos son reales, pero la lista interna mantiene juntos a Caterpie, Metapod y Butterfree, y Game Freak nunca ha hablado de ello.",
+  "links": [
+   "pret/pokered: lista interna de Pokémon",
+   "pret/pokered: evoluciones y movimientos",
+   "Texto de la Pokédex de Venonat (PokeAPI)",
+   "Texto de la Pokédex de Butterfree (PokeAPI)",
+   "Pokémaniacal: la cuestión de Venomoth (donde se difundió)"
+  ],
+  "silhouettes": {
+   "title": "Los ojos",
+   "text": "Venonat y Butterfree, la pareja que según la teoría va junta, en negro sólido. Y después, uno encima del otro."
+  },
+  "board": {
+   "question": "¿Se intercambiaron Butterfree y Venomoth?",
+   "hook": "Venonat tiene los ojos de Butterfree y Butterfree tiene los movimientos de Venonat. ¿Un cambio de última hora, o dos diseños que simplemente riman?",
+   "caption": "¿Padres equivocados?",
+   "keys": [
+    "Venonat tiene los ojos de Butterfree",
+    "Los dos están hechos de ojos diminutos",
+    "Butterfree tiene los movimientos de Venonat"
+   ],
+   "b": {
+    "label": "Entrada de la Pokédex de Butterfree · Sol",
+    "quote": "Al mirar sus grandes ojos desde cerca, puede observarse como en realidad están compuestos de incontables ojos diminutos.",
+    "mark": [
+     "incontables ojos diminutos"
+    ]
+   },
+   "c": {
+    "text": "Butterfree aprende Polvo Veneno, Paralizador y Somnífero, como Venonat.",
+    "bold": [
+     "Polvo Veneno",
+     "Paralizador",
+     "Somnífero"
+    ]
+   }
+  }
+ },
+ "pokemon-gray-was-coming": {
+  "title": "Iba a salir Pokémon Gris",
+  "era": "Gen. V · 2011",
+  "summary": "Todo el mundo esperaba una tercera versión. Game Freak hizo en su lugar las primeras secuelas directas.",
+  "claim": "Como Amarillo, Cristal, Esmeralda y Platino antes que él, Negro y Blanco iba a tener una tercera versión: Pokémon Gris.",
+  "origin": "Todas las generaciones desde Rojo y Azul habían tenido una tercera versión, así que los fans y las webs de rumores daban Gris por hecho. En febrero de 2012, Junichi Masuda pidió a los fans que “vieran el próximo Pokémon Smash”, y las especulaciones tocaron techo.",
+  "evidenceFor": [
+   {
+    "text": "Cada pareja anterior tuvo una tercera versión: Amarillo, Cristal, Esmeralda y Platino.",
+    "source": "Juegos"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "En Pokémon Smash (26 de febrero de 2012), Masuda anunció Pokémon Negro 2 y Blanco 2, no Gris.",
+    "source": "Game Informer"
+   },
+   {
+    "text": "Game Informer, al informar del anuncio: “En lugar de ir en la dirección que la mayoría suponía con Pokémon Gris, Masuda anunció Pokémon Negro 2 y Pokémon Blanco 2”.",
+    "source": "Game Informer"
+   },
+   {
+    "text": "Masuda explicó después que el equipo nunca había hecho una secuela directa de un juego de Pokémon y quería ver qué pasaba con personajes como N y Ghechis.",
+    "source": "Entrevista · Game Informer (2012)"
+   }
+  ],
+  "confirmed": "La continuación de Negro y Blanco fue Negro 2 y Blanco 2, las primeras secuelas directas de la saga. Nunca se anunció ni se lanzó un Gris.",
+  "verdictText": "Desmentida por el propio anuncio de Game Freak: el tercer juego de Negro y Blanco fueron dos secuelas.",
+  "links": [
+   "Game Informer: anunciados Pokémon Negro y Blanco 2",
+   "Game Informer: Game Freak habla de la primera secuela numerada de Pokémon",
+   "Nintendo Life: el director de Pokémon adelanta algo para el domingo"
+  ]
+ },
+ "wobbuffets-tail-is-the-real-pokemon": {
+  "title": "La cola de Wobbuffet es el verdadero Pokémon",
+  "era": "Gen. II · 1999",
+  "summary": "Esconde su cola negra a toda costa. Puede que el cuerpo azul sea el señuelo.",
+  "claim": "El cuerpo azul y sonriente es un señuelo. La cola negra de Wobbuffet, con sus ojos, es el verdadero Pokémon.",
+  "origin": "Construida a partir de entradas de la Pokédex que vuelven una y otra vez a la cola, y debatida en foros de Pokémon y en webs de preguntas y respuestas como PokéBase.",
+  "evidenceFor": [
+   {
+    "text": "Esconde la cola:",
+    "quote": "Para mantener oculta su cola negra como el carbón, vive tranquilamente en la oscuridad. Nunca es el primero en atacar.",
+    "mark": [
+     "oculta su cola"
+    ],
+    "source": "Wobbuffet · Pokédex · Plata"
+   },
+   {
+    "text": "Aguanta los ataques, pero no en la cola:",
+    "quote": "Wobbuffet no hace otra cosa que aguantar los golpes que recibe: nunca usa movimientos ofensivos. Pero, si le atacan a la cola, intentará llevarse con él al enemigo usando Mismo Destino.",
+    "mark": [
+     "si le atacan a la cola"
+    ],
+    "source": "Wobbuffet · Pokédex · Zafiro Alfa"
+   },
+   {
+    "text": "Y la propia Pokédex lo llama un secreto:",
+    "quote": "Intenta desesperadamente mantener oculta su cola negra. Se dice que es la prueba de que la cola esconde un secreto.",
+    "mark": [
+     "la cola esconde un secreto"
+    ],
+    "source": "Wobbuffet · Pokédex · Diamante"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "El cuerpo azul es el que tiene rasgos: las hembras de Wobbuffet tienen pintalabios en el cuerpo azul, una diferencia de sexo que la cola nunca muestra.",
+    "source": "Juegos"
+   },
+   {
+    "text": "La cola de Wynaut solo muestra su estado de ánimo:",
+    "quote": "A Wynaut siempre se le ve con una gran sonrisa en la cara. Mira su cola para saber si está enfadado.",
+    "mark": [
+     "Mira su cola"
+    ],
+    "source": "Wynaut · Pokédex · Rubí"
+   },
+   {
+    "text": "Ninguna entrada dice nunca que la cola sea el verdadero Wobbuffet; “un secreto” es lo más lejos que llega.",
+    "source": "Fuentes oficiales"
+   }
+  ],
+  "confirmed": "Wobbuffet protege su cola negra por encima de todo y devuelve el golpe cuando le atacan. Cuál es el secreto nunca se ha dicho.",
+  "verdictText": "Abierta: la Pokédex invita a la teoría y después nunca explica el secreto.",
+  "links": [
+   "Texto de la Pokédex de Wobbuffet (PokeAPI)",
+   "Texto de la Pokédex de Wynaut (PokeAPI)",
+   "PokéBase: ¿cuál es el misterio de la cola de Wobbuffet? (donde se difundió)"
+  ]
+ }
+}

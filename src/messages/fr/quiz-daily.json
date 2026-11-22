@@ -1,0 +1,20 @@
+{
+  "label": "Défi du jour",
+  "labelNumber": "Défi du jour #{n}",
+  "title": "Le test PokéIQ du jour",
+  "intro": "10 questions variées, les mêmes pour tous les Dresseurs. Un seul essai : fais-le compter.",
+  "youScored": "Ton score",
+  "iq": "PokéIQ <b>{iq}</b> · {score} pts",
+  "streak": "{n, plural, one {Série de {n} jour · record {best}} other {Série de {n} jours · record {best}}}",
+  "leaderboard": "Classement du jour",
+  "next": "Prochain Défi du jour dans",
+  "more": "Encore faim ? Essaie le <dle>Pokédle</dle> ou une <quiz>partie Survie</quiz>.",
+  "parts": {
+    "whos-that": "Silhouettes",
+    "dex": "Entrées du Pokédex",
+    "types": "Table des types",
+    "higher-lower": "Duels de stats"
+  },
+  "rules": "15 secondes par question · bonus de vitesse et de série",
+  "start": "Lancer le Défi #{n}"
+}

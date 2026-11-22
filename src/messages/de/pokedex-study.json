@@ -1,0 +1,44 @@
+{
+  "prompt": {
+    "silhouette": {
+      "label": "Silhouette",
+      "hint": "Wer ist das Pokémon?"
+    },
+    "entry": {
+      "label": "Pokédex-Eintrag",
+      "hint": "Welches Pokémon ist das?"
+    },
+    "typing": {
+      "label": "Typen",
+      "hint": "Welchen Typ hat es?"
+    }
+  },
+  "back": "Zurück zum Pokédex",
+  "title": "Lernmodus",
+  "blurb": "Umdrehen, erinnern, wiederholen. Verpasste Karten kommen wieder, bis du sie draufhast.",
+  "generations": "Generationen",
+  "gen": "Gen. {n}",
+  "cardFront": "Vorderseite",
+  "deckSize": "Stapelgröße",
+  "all": "Alle",
+  "skipMastered": "Gelernte überspringen",
+  "mastered": "Gelernt in der Auswahl",
+  "start": "Lernen starten",
+  "keys": "Leertaste zum Umdrehen · → gewusst · ← nochmal · Esc zum Beenden · oder Karte wischen",
+  "complete": "Stapel geschafft!",
+  "summary": "{known}/{total} beim ersten Versuch · {missed} zum Wiederholen",
+  "drill": "Fehler üben",
+  "newDeck": "Neuer Stapel",
+  "testYourself": "Teste dich →",
+  "exit": "Lernrunde beenden",
+  "again": "Nochmal",
+  "knew": "Gewusst",
+  "swipeHint": "Wische →, wenn du es wusstest, ←, um es nochmal zu sehen",
+  "flipHint": "Tippe auf die Karte oder drücke die Leertaste zum Umdrehen",
+  "mystery": "Geheimnisvolle Silhouette",
+  "quote": "„{entry}“",
+  "genus": "{genus}",
+  "fullEntry": "Ganzer Pokédex-Eintrag →",
+  "knewStamp": "GEWUSST",
+  "againStamp": "NOCHMAL"
+}

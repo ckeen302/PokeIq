@@ -19,7 +19,7 @@ import {
   type QuizDuelResult,
   type QuizDuelView,
 } from "@/lib/pvp-types";
-import { MODULE_INFO, difficultyLabel, moduleHref } from "@/lib/modes";
+import { levelKey, moduleHref } from "@/lib/modes";
 import { play, unlockAudio, vibrate } from "@/lib/sound";
 import { unlockCryAudio } from "@/lib/cry-audio";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -36,8 +36,14 @@ import { cn } from "@/lib/utils";
 import { AddFriendAfterGame } from "@/components/community/AddFriend";
 import { ZOOM_POINTS, ZOOM_SKIP, ZOOM_STEPS, zoomShareLine } from "@/lib/zoom-reveal";
 import type { NameEntry } from "@/components/pokedle/parts";
-import { ZoomPlay } from "./zoom/ZoomPlay";
+import { ZoomPlay, zoomGuess as guessName } from "./zoom/ZoomPlay";
 import { Avatar } from "@/components/avatar/Avatar";
+import { useT } from "@/i18n/client";
+import { formatNumber, type Translator } from "@/i18n/catalog";
+import type { Locale } from "@/i18n/config";
+import duelNs from "@/messages/quiz-duel";
+import runNs from "@/messages/quiz-run";
+import modesNs from "@/messages/quiz-modes";
 
 /**
  * A quiz duel at /quiz/duel/<code>: the lobby, ten questions with their
@@ -47,7 +53,16 @@ import { Avatar } from "@/components/avatar/Avatar";
  * right answer and both picks.
  */
 
-const fmt = (n: number) => n.toLocaleString("en-US");
+const fmt = (n: number, locale: Locale) => formatNumber(n, locale);
+/** Seconds with one decimal: "1.5" ("1,5" in a language that writes a decimal comma). */
+const secs = (ms: number, locale: Locale) => (locale === "en" ? (ms / 1000).toFixed(1) : formatNumber(ms / 1000, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }));
+
+type ModesT = Translator<typeof modesNs.en>;
+/** The mode's name, and its difficulty's where it has a choice (Whose Team and Real Shiny; every other mode plays one fixed tuning). */
+function modeWords(view: QuizDuelView, mt: ModesT): { mode: string; level: string | null } {
+  const key = levelKey(view.module, view.difficulty);
+  return { mode: mt(`modules.${view.module}.title`), level: key ? mt(`levels.${key}.label`) : null };
+}
 
 /** The first value seen for `key`. Media URLs are re-signed on every poll, and the media shouldn't reload each time. */
 function useFirst<T>(key: number | undefined, value: T | undefined): T | undefined {
@@ -63,8 +78,13 @@ function useFirst<T>(key: number | undefined, value: T | undefined): T | undefin
 const questionDue = (v: QuizDuelView) => (v.question && !v.question.question ? v.question.startsAt : undefined);
 
 export function QuizDuel({ code }: { code: string }) {
+  const t = useT(duelNs);
+  const rt = useT(runNs);
+  const mt = useT(modesNs);
+  const lang = t.locale;
   const router = useRouter();
-  const { view, now, gone, offline, error, busy, sawPlay, act, send, join, rematch } = useDuel<QuizDuelView>(`/api/duel/${code}`, code, questionDue);
+  // A page in another language asks for the questions in it.
+  const { view, now, gone, offline, error, busy, sawPlay, act, send, join, rematch } = useDuel<QuizDuelView>(`/api/duel/${code}${lang === "en" ? "" : `?lang=${lang}`}`, code, questionDue);
   const [summary, setSummary] = useState(false);
   const heard = useRef({ revealed: -1, theirs: false, end: false });
 
@@ -157,7 +177,7 @@ export function QuizDuel({ code }: { code: string }) {
     if (!view?.question?.question?.zoom || view.question.yours || busy) return;
     unlockAudio();
     sentGuess.current = { index: view.question.index, step: view.question.question.zoom.step, entry };
-    if (!(await act({ action: "zoom", round: view.question.index, choice: entry ? entry[1] : ZOOM_SKIP }))) sentGuess.current = null;
+    if (!(await act({ action: "zoom", round: view.question.index, choice: entry ? guessName(entry) : ZOOM_SKIP }))) sentGuess.current = null;
   }
 
   async function nextQuestion() {
@@ -199,15 +219,13 @@ export function QuizDuel({ code }: { code: string }) {
     if (next) router.push(pvpHref("quiz", next));
   }
 
-  if (gone) return <DuelGone message={gone} href="/quiz" label="Back to the game modes" />;
+  if (gone) return <DuelGone message={gone} href="/quiz" label={t("backToModes")} />;
   if (!view) return <DuelLoading />;
 
-  const info = MODULE_INFO[view.module];
+  const { mode, level } = modeWords(view, mt);
   const isZoom = view.module === "zoom-reveal";
   const questionMs = isZoom ? ZOOM_DUEL_QUESTION_MS : QUIZ_DUEL_QUESTION_MS;
-  // Only Whose Team and Real Shiny have a difficulty worth naming; every other mode plays one fixed tuning.
-  const level = difficultyLabel(view.module, view.difficulty);
-  const tag = ["Quiz duel", info.title, level].filter(Boolean).join(" · ");
+  const tag = [t("tag"), mode, level].filter(Boolean).join(" · ");
   const notice = (
     <>
       <DuelNotice error={error} offline={offline} />
@@ -222,7 +240,7 @@ export function QuizDuel({ code }: { code: string }) {
       }}
     />
   );
-  const chat = <DuelChat view={view} game="Quiz duel" onSend={(text) => send({ action: "chat", text })} />;
+  const chat = <DuelChat view={view} game={t("tag")} onSend={(text) => send({ action: "chat", text })} />;
 
   if (view.status === "lobby") {
     return (
@@ -232,50 +250,42 @@ export function QuizDuel({ code }: { code: string }) {
           view={view}
           path={pvpHref("quiz", view.code)}
           tag={tag}
-          title={
-            <>
-              {info.title} <span className="text-primary">Duel</span>
-            </>
-          }
-          invite={(host) => `${host} challenges you! The same ${view.total} questions for both of you, the most points wins.`}
-          about={`Head to head: the same ${view.total} ${info.title} questions for both of you${level ? `, on ${level}` : ""}. Right and fast scores most.`}
-          shareText={`Duel me in ${info.title}! Same ${view.total} questions, the most points wins.`}
+          title={t.rich("title", { mode, d: (c) => <span className="text-primary">{c}</span> })}
+          invite={(host) => t("invite", { host, n: view.total })}
+          about={level ? t("aboutLevel", { n: view.total, mode, level }) : t("about", { n: view.total, mode })}
+          shareText={t("shareText", { mode, n: view.total })}
           settings={
             <p className="text-center text-sm text-muted-foreground">
-              Mode: <b className="text-foreground">{info.title}</b>
-              {level && (
-                <>
-                  {" "}
-                  · Difficulty: <b className="text-foreground">{level}</b>
-                </>
-              )}
+              {level
+                ? t.rich("settingsLevel", { mode, level, b: (c) => <b className="text-foreground">{c}</b> })
+                : t.rich("settings", { mode, b: (c) => <b className="text-foreground">{c}</b> })}
             </p>
           }
           rules={isZoom ? [
             {
-              label: "Pokémon",
-              text: `${view.total} Pokémon, the same close-ups for both of you, ${ZOOM_DUEL_QUESTION_MS / 1000} seconds each. A wrong name or a skip zooms you out one step, six in all.`,
+              label: t("rules.pokemon"),
+              text: t("rules.zoomPokemon", { n: view.total, seconds: ZOOM_DUEL_QUESTION_MS / 1000 }),
             },
             {
-              label: "Points",
-              text: `Named on step 1 scores ${ZOOM_POINTS[0]}, down to ${ZOOM_POINTS[ZOOM_STEPS - 1]} on step ${ZOOM_STEPS}. Not named in time scores nothing.`,
+              label: t("rules.points"),
+              text: t("rules.zoomPoints", { first: ZOOM_POINTS[0], last: ZOOM_POINTS[ZOOM_STEPS - 1], steps: ZOOM_STEPS }),
             },
             {
-              label: "Winning",
-              text: `The most points after ${view.total} Pokémon wins; level on points, the quicker right names. Leave, or go quiet, and you forfeit.`,
+              label: t("rules.winning"),
+              text: t("rules.zoomWinning", { n: view.total }),
             },
           ] : [
             {
-              label: "Questions",
-              text: `${view.total} questions, the same for both of you, ${QUIZ_DUEL_QUESTION_MS / 1000} seconds each. You see when your opponent locks in, never what they picked.`,
+              label: t("rules.questions"),
+              text: t("rules.questionsText", { n: view.total, seconds: QUIZ_DUEL_QUESTION_MS / 1000 }),
             },
             {
-              label: "Points",
-              text: `A right answer scores ${QUIZ_DUEL_POINTS}, plus up to ${QUIZ_DUEL_SPEED_BONUS} for speed. A wrong answer, or none in time, scores nothing.`,
+              label: t("rules.points"),
+              text: t("rules.pointsText", { points: QUIZ_DUEL_POINTS, bonus: QUIZ_DUEL_SPEED_BONUS }),
             },
             {
-              label: "Winning",
-              text: `The most points after ${view.total} questions wins; level on points, the quicker right answers. Leave, or go quiet, and you forfeit.`,
+              label: t("rules.winning"),
+              text: t("rules.winningText", { n: view.total }),
             },
           ]}
           home={home}
@@ -298,18 +308,18 @@ export function QuizDuel({ code }: { code: string }) {
         status={
           view.status === "finished"
             ? winner === null || winner === undefined
-              ? "It ended in a draw."
-              : `${view.players[winner]?.name} won.`
-            : `Under way: question ${view.revealed.length + 1} of ${view.total}. ${fmt(view.scores[0])} points to ${fmt(view.scores[1])}.`
+              ? t("visitor.draw")
+              : t("visitor.won", { name: `${view.players[winner]?.name}` })
+            : t("visitor.underway", { n: view.revealed.length + 1, total: view.total, a: fmt(view.scores[0], lang), b: fmt(view.scores[1], lang) })
         }
         home={home}
-        label="Start your own duel"
+        label={t("visitor.start")}
       />
     );
   }
 
   const me = view.you;
-  const them = view.players[1 - me]?.name ?? "your opponent";
+  const them = view.players[1 - me]?.name ?? t("yourOpponent");
 
   if (view.status === "finished" && (summary || !sawPlay || view.end?.reason === "left" || !last)) {
     return (
@@ -332,11 +342,11 @@ export function QuizDuel({ code }: { code: string }) {
     return (
       <div className="mx-auto max-w-2xl space-y-4">
         {notice}
-        <DuelHud view={view} center={<div className="hud-label">Get ready</div>} />
+        <DuelHud view={view} center={<div className="hud-label">{t("getReady")}</div>} />
         <Card>
           <CardContent className="space-y-3 p-10 text-center">
             <p className="hud-label text-screen">
-              Question {view.question.index + 1} of {view.total}
+              {t("questionOf", { n: view.question.index + 1, total: view.total })}
             </p>
             <motion.p
               key={seconds(view.question.startsAt - now)}
@@ -347,7 +357,7 @@ export function QuizDuel({ code }: { code: string }) {
               {Math.max(1, seconds(view.question.startsAt - now))}
             </motion.p>
             <p className="text-sm text-muted-foreground">
-              {isZoom ? `Fewest steps: up to ${ZOOM_POINTS[0]} points.` : `Right and fast: up to ${QUIZ_DUEL_POINTS + QUIZ_DUEL_SPEED_BONUS} points.`}
+              {isZoom ? t("zoomUpTo", { points: ZOOM_POINTS[0] }) : t("upTo", { points: QUIZ_DUEL_POINTS + QUIZ_DUEL_SPEED_BONUS })}
             </p>
           </CardContent>
         </Card>
@@ -367,7 +377,7 @@ export function QuizDuel({ code }: { code: string }) {
     return (
       <div className="mx-auto max-w-2xl space-y-4">
         {notice}
-        <DuelHud view={view} center={<div className="hud-label">Q {live.index + 1}/{view.total}</div>} />
+        <DuelHud view={view} center={<div className="hud-label">{t("hud", { n: live.index + 1, total: view.total })}</div>} />
         <AnimatePresence>
           {(theyLocked || locked) && (
             <motion.p
@@ -381,20 +391,20 @@ export function QuizDuel({ code }: { code: string }) {
               )}
             >
               {isZoom
-                ? locked ? (theyLocked ? "Both done!" : `Done. Waiting for ${them}…`) : `${them} is done!`
-                : locked ? (theyLocked ? "Both locked in!" : `Locked in. Waiting for ${them}…`) : `${them} has locked in!`}
+                ? locked ? (theyLocked ? t("bothDone") : t("doneWaiting", { name: them })) : t("theyDone", { name: them })
+                : locked ? (theyLocked ? t("bothLocked") : t("lockedWaiting", { name: them })) : t("theyLocked", { name: them })}
             </motion.p>
           )}
         </AnimatePresence>
         <Card className="overflow-hidden">
           <div className="flex items-center gap-3 px-4 pt-4 sm:px-6">
-            <HpBar value={left / questionMs} label="TIME" className="flex-1" />
+            <HpBar value={left / questionMs} label={t("time")} className="flex-1" />
             <span className={cn("w-8 text-right font-pixel text-xs tabular-nums", left < questionMs / 4 && "animate-blink text-destructive")}>{seconds(left)}</span>
           </div>
           <CardContent className="relative space-y-5 p-4 pt-4 sm:p-6 sm:pt-5">
             {loading && (
               <div className="absolute inset-0 z-10 flex items-start justify-center pt-16" role="status">
-                <span className="hud-label animate-pulse text-muted-foreground">Loading question…</span>
+                <span className="hud-label animate-pulse text-muted-foreground">{t("loading")}</span>
               </div>
             )}
             <div className={cn("space-y-5", loading && "invisible")} aria-hidden={loading || undefined}>
@@ -408,11 +418,11 @@ export function QuizDuel({ code }: { code: string }) {
                   locked={!!locked || timeUp || busy || loading}
                   onGuess={(entry) => void zoomGuess(entry)}
                   onSkip={() => void zoomGuess(null)}
-                  waiting={locked ? (theyLocked ? "Both done! Revealing…" : `Waiting for ${them}…`) : timeUp ? "Time's up! Waiting for the reveal…" : undefined}
+                  waiting={locked ? (theyLocked ? t("bothDoneRevealing") : t("waitingFor", { name: them })) : timeUp ? t("timeUpWaiting") : undefined}
                 />
                 {live.steps && !theyLocked && (
                   <p className="text-center font-pixel text-[10px] uppercase tracking-wider text-muted-foreground">
-                    {them}: step {live.steps[1 - me]}/{ZOOM_STEPS}
+                    {t("theirStep", { name: them, step: live.steps[1 - me], steps: ZOOM_STEPS })}
                   </p>
                 )}
               </>
@@ -427,7 +437,7 @@ export function QuizDuel({ code }: { code: string }) {
                 />
                 {locked ? (
                   <p className="rounded-md border-2 border-screen/50 bg-screen/10 px-4 py-3 text-center font-display font-semibold tracking-wide" role="status">
-                    Locked in: {locked}
+                    {t("lockedIn", { answer: locked })}
                   </p>
                 ) : (
                   <GuessBox key={live.index} options={live.question.options} disabled={timeUp || busy || loading} onGuess={(name) => void answer(name)} />
@@ -444,7 +454,7 @@ export function QuizDuel({ code }: { code: string }) {
               </>
             )}
             </div>
-            {timeUp && !locked && !isZoom && <p className="text-center text-sm text-muted-foreground">Time&apos;s up! Waiting for the reveal…</p>}
+            {timeUp && !locked && !isZoom && <p className="text-center text-sm text-muted-foreground">{t("timeUpWaiting")}</p>}
           </CardContent>
         </Card>
         {tools}
@@ -462,16 +472,16 @@ export function QuizDuel({ code }: { code: string }) {
     // Picture questions grade by a card id, which means nothing to read out.
     const typed = last.question.input === "type";
     const pictures = !!last.question.cards?.length && !typed;
-    const answerText = pictures ? "the one marked in green" : last.answer;
+    const answerText = pictures ? rt("verdict.markedGreen") : last.answer;
     const verdict = isZoom
       ? mine?.correct
-        ? `Correct! It's ${last.answer}, on step ${mine.step ?? 1} of ${ZOOM_STEPS}.`
-        : `Not this time… it was ${last.answer}.`
-      : mine?.correct ? (pictures ? "Correct! That's the one!" : `Correct! It's ${answerText}!`) : mine ? `Not quite… it was ${answerText}.` : `Time's up! It was ${answerText}.`;
+        ? rt("verdict.zoomCorrect", { answer: last.answer, step: mine.step ?? 1, steps: ZOOM_STEPS })
+        : rt("verdict.zoomMissed", { answer: last.answer })
+      : mine?.correct ? (pictures ? rt("verdict.theOne") : rt("verdict.correct", { answer: answerText })) : mine ? rt("verdict.wrong", { answer: answerText }) : rt("verdict.timeUp", { answer: answerText });
     return (
       <div className="mx-auto max-w-2xl space-y-4">
         {notice}
-        <DuelHud view={view} center={<div className="hud-label">Q {last.index + 1}/{view.total}</div>} gained={last.picks.map((p) => p?.points ?? 0)} />
+        <DuelHud view={view} center={<div className="hud-label">{t("hud", { n: last.index + 1, total: view.total })}</div>} gained={last.picks.map((p) => p?.points ?? 0)} />
         <Card className="overflow-hidden">
           <CardContent className="space-y-5 p-4 sm:p-6">
             {isZoom && zoomView ? (
@@ -485,7 +495,7 @@ export function QuizDuel({ code }: { code: string }) {
                   outcome={{ step: mine?.step ?? ZOOM_STEPS, solved: !!mine?.correct, answer: last.answer, revealUrl: revealArt, revealFrom: last.zoomFrom }}
                   onGuess={() => undefined}
                   onSkip={() => undefined}
-                  shareTitle={`PokéIQ Zoom Reveal duel · Q${last.index + 1}`}
+                  shareTitle={t("shareTitle", { n: last.index + 1 })}
                 />
               </>
             ) : typed ? (
@@ -513,7 +523,7 @@ export function QuizDuel({ code }: { code: string }) {
                     <>
                       {" "}
                       <Link href={last.learnHref} target="_blank" className="font-medium text-screen hover:underline">
-                        Study it in the Pokédex →
+                        {rt("study")}
                       </Link>
                     </>
                   )}
@@ -522,7 +532,7 @@ export function QuizDuel({ code }: { code: string }) {
               )}
             </DialogBox>
             <Button size="lg" className="w-full" disabled={!final && (pressed || busy)} onClick={() => (final ? showResults() : void nextQuestion())}>
-              {final ? "See results ▶" : pressed ? `Waiting for ${them}… (${nextIn})` : `Next question (${nextIn}) ▶`}
+              {final ? t("seeResults") : pressed ? t("waitingNext", { name: them, n: nextIn }) : t("next", { n: nextIn })}
             </Button>
           </CardContent>
         </Card>
@@ -551,6 +561,7 @@ function DuelHud({ view, center, gained }: { view: QuizDuelView; center: React.R
 }
 
 function Fighter({ view, seat, gained, right }: { view: QuizDuelView; seat: number; gained?: number; right?: boolean }) {
+  const t = useT(duelNs);
   const player = view.players[seat];
   const ahead = view.scores[seat] > view.scores[1 - seat];
   return (
@@ -559,11 +570,11 @@ function Fighter({ view, seat, gained, right }: { view: QuizDuelView; seat: numb
         <SeatDot seat={seat} />
         {player && <Avatar avatar={player.avatar} size={24} />}
         <span className="truncate font-display font-bold uppercase">{player?.name ?? "—"}</span>
-        {view.you === seat && <span className="hud-label">You</span>}
-        {player?.quiet && view.status === "playing" && <WifiOff className="h-3.5 w-3.5 shrink-0 text-warning" aria-label="Connection lost" />}
+        {view.you === seat && <span className="hud-label">{t("you")}</span>}
+        {player?.quiet && view.status === "playing" && <WifiOff className="h-3.5 w-3.5 shrink-0 text-warning" aria-label={t("connectionLost")} />}
       </div>
       <div className={cn("flex items-center gap-2 font-pixel text-base tabular-nums", right && "flex-row-reverse", ahead ? "text-success" : "text-screen")}>
-        <span>{fmt(view.scores[seat])} pts</span>
+        <span>{t("pts", { score: fmt(view.scores[seat], t.locale) })}</span>
         {!!gained && (
           <motion.span key={`${seat}-${view.revealed.length}`} initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-success">
             +{gained}
@@ -586,6 +597,7 @@ function QuestionBody({
   revealUrl?: string;
   answer?: string;
 }) {
+  const rt = useT(runNs);
   const isEntry = question.module === "dex" && question.detail?.startsWith("“");
   return (
     <>
@@ -593,7 +605,7 @@ function QuestionBody({
       {question.detail &&
         (isEntry ? (
           <div className="screen rounded-md p-4">
-            <div className="hud-label relative z-[3] mb-2 text-screen">Pokédex entry</div>
+            <div className="hud-label relative z-[3] mb-2 text-screen">{rt("entry")}</div>
             <p className="relative z-[3] text-[15px] leading-relaxed text-foreground/90">{question.detail}</p>
           </div>
         ) : (
@@ -631,6 +643,8 @@ function Options({
   result?: QuizDuelResult;
   names?: string[];
 }) {
+  const t = useT(duelNs);
+  const rt = useT(runNs);
   const cards = question.cards?.length ? question.cards : null;
   const images = question.images ?? null;
   return (
@@ -668,25 +682,25 @@ function Options({
             {images && (
               <div className="screen relative mx-auto aspect-square w-full max-w-[200px] rounded-md">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={images[i]} alt={`Option ${i + 1}`} width={384} height={384} draggable={false} className="relative z-[1] h-full w-full object-contain p-1 [image-rendering:pixelated]" />
+                <img src={images[i]} alt={rt("option", { n: i + 1 })} width={384} height={384} draggable={false} className="relative z-[1] h-full w-full object-contain p-1 [image-rendering:pixelated]" />
               </div>
             )}
             <span className="flex items-center justify-between gap-2">
-              <span className={cn("flex-1", (card || images) && "text-center")}>{images ? `Option ${i + 1}` : (card?.label ?? option)}</span>
+              <span className={cn("flex-1", (card || images) && "text-center")}>{images ? rt("option", { n: i + 1 }) : (card?.label ?? option)}</span>
               {pickedBy.map((seat) => (
                 <span
                   key={seat}
                   className="rounded-sm px-1.5 py-0.5 font-pixel text-[9px] uppercase text-white"
                   style={{ background: SEAT_COLORS[seat] }}
-                  title={`${names?.[seat] ?? "A trainer"}'s pick`}
+                  title={t("pick", { name: names?.[seat] ?? t("aTrainer") })}
                 >
                   {names?.[seat] ?? "?"}
                 </span>
               ))}
               {result ? (
-                right && <CheckCircle2 className="h-4 w-4 shrink-0 text-success" aria-label="Right answer" />
+                right && <CheckCircle2 className="h-4 w-4 shrink-0 text-success" aria-label={t("rightAnswer")} />
               ) : mine === option ? (
-                <span className="hud-label text-screen">Locked in</span>
+                <span className="hud-label text-screen">{t("locked")}</span>
               ) : (
                 <kbd className="hidden font-pixel text-[10px] text-muted-foreground sm:inline" aria-hidden>
                   [{i + 1}]
@@ -702,6 +716,7 @@ function Options({
 
 /** One trainer's result for a question: right or wrong, how fast, the points. */
 function PickResult({ seat, name, pick, said }: { seat: number; name: string; pick: QuizDuelPick | null; said?: boolean }) {
+  const t = useT(duelNs);
   return (
     <div className={cn("rounded-md border bg-shade/20 p-3 text-center", pick?.correct && "border-success/50")}>
       <p className="hud-label flex items-center justify-center gap-1.5">
@@ -714,60 +729,66 @@ function PickResult({ seat, name, pick, said }: { seat: number; name: string; pi
         <p className="text-xs text-muted-foreground">{zoomShareLine(pick.step, pick.correct)}</p>
       ) : (
         <p className="text-xs text-muted-foreground">
-          {pick ? `${pick.correct ? "Right" : "Wrong"} in ${(pick.ms / 1000).toFixed(1)} s` : "No answer in time"}
-          {pick?.shown !== undefined && ` · saw ${pick.shown}`}
+          {pick ? t(pick.correct ? "rightIn" : "wrongIn", { s: secs(pick.ms, t.locale) }) : t("noAnswer")}
+          {pick?.shown !== undefined && t("saw", { n: pick.shown })}
         </p>
       )}
-      {said && pick && !pick.correct && <p className="truncate text-xs text-muted-foreground">Said {pick.choice}</p>}
+      {said && pick && !pick.correct && <p className="truncate text-xs text-muted-foreground">{t("said", { answer: pick.choice })}</p>}
     </div>
   );
 }
 
 function DuelSummary({ view, busy, home, onRematch }: { view: QuizDuelView; busy: boolean; home: string; onRematch: () => void }) {
+  const t = useT(duelNs);
+  const mt = useT(modesNs);
+  const lang = t.locale;
+  const { mode, level } = modeWords(view, mt);
   const me = view.you!;
   const end = view.end!;
-  const them = view.players[1 - me]?.name ?? "Your opponent";
+  const them = view.players[1 - me]?.name ?? t("opponent");
   const won = end.winner === me;
   const draw = end.winner === null;
   const [mine, theirs] = [view.scores[me], view.scores[1 - me]];
   const right = (seat: number) => view.revealed.filter((r) => r.picks[seat]?.correct).length;
   const reason = {
     played: draw
-      ? "Level on points, and just as quick."
+      ? t("summary.levelQuick")
       : mine !== theirs
         ? won
-          ? `You scored ${fmt(mine)} to ${fmt(theirs)}.`
-          : `${them} scored ${fmt(theirs)} to ${fmt(mine)}.`
-        : `Level on ${fmt(mine)} points: ${won ? "your" : `${them}'s`} right answers were quicker.`,
-    left: won ? `${them} left the duel.` : "You left the duel.",
+          ? t("summary.youScored", { a: fmt(mine, lang), b: fmt(theirs, lang) })
+          : t("summary.theyScored", { name: them, a: fmt(theirs, lang), b: fmt(mine, lang) })
+        : won
+          ? t("summary.yourQuicker", { a: fmt(mine, lang) })
+          : t("summary.theirQuicker", { a: fmt(mine, lang), name: them }),
+    left: won ? t("summary.theyLeft", { name: them }) : t("summary.youLeft"),
     idle: draw
-      ? `Neither of you answered for ${QUIZ_DUEL_IDLE_QUESTIONS} questions.`
+      ? t("summary.neitherIdle", { n: QUIZ_DUEL_IDLE_QUESTIONS })
       : won
-        ? `${them} stopped answering.`
-        : `You didn't answer for ${QUIZ_DUEL_IDLE_QUESTIONS} questions.`,
+        ? t("summary.theyIdle", { name: them })
+        : t("summary.youIdle", { n: QUIZ_DUEL_IDLE_QUESTIONS }),
   }[end.reason];
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="space-y-2 text-center">
         <p className="hud-label text-screen">
-          {["Duel over", MODULE_INFO[view.module].title, difficultyLabel(view.module, view.difficulty)].filter(Boolean).join(" · ")}
+          {[t("summary.over"), mode, level].filter(Boolean).join(" · ")}
         </p>
         <div className={cn("flex items-center justify-center gap-3 font-display text-6xl font-bold uppercase", won ? "text-success" : draw ? "text-screen" : "text-destructive")}>
           {won && <Crown className="h-12 w-12" aria-hidden />}
-          {draw ? "Draw" : won ? "Victory!" : "Defeat"}
+          {draw ? t("summary.draw") : won ? t("summary.victory") : t("summary.defeat")}
         </div>
         <p className="text-muted-foreground">{reason}</p>
       </div>
 
-      <DuelHud view={view} center={<div className="hud-label">Final</div>} />
+      <DuelHud view={view} center={<div className="hud-label">{t("summary.final")}</div>} />
 
       <Card>
         <CardContent className="space-y-5 p-5">
           {view.revealed.length > 0 && (
             <div className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-x-4 gap-y-1.5 text-sm">
               <span />
-              <span className="hud-label">Answer</span>
+              <span className="hud-label">{t("summary.answer")}</span>
               {[0, 1].map((seat) => (
                 <span key={seat} className="hud-label flex items-center justify-end gap-1.5">
                   <SeatDot seat={seat} />
@@ -776,13 +797,17 @@ function DuelSummary({ view, busy, home, onRematch }: { view: QuizDuelView; busy
               ))}
               {view.revealed.map((r) => (
                 <div key={r.index} className="contents">
-                  <span className="font-pixel text-xs text-muted-foreground">Q{r.index + 1}</span>
+                  <span className="font-pixel text-xs text-muted-foreground">{t("summary.row", { n: r.index + 1 })}</span>
                   <span className="min-w-0 truncate font-semibold" title={r.question.prompt}>
                     {r.answer}
                   </span>
                   {r.picks.map((p, seat) => (
                     <span key={seat} className={cn("text-right tabular-nums", p?.correct ? "font-bold text-success" : "text-muted-foreground")}>
-                      {p ? `${p.correct ? "✓" : "✗"} +${p.points} · ${p.step !== undefined ? `${p.correct ? p.step : "X"}/${ZOOM_STEPS}` : `${(p.ms / 1000).toFixed(1)} s`}` : "—"}
+                      {p
+                        ? p.step !== undefined
+                          ? t("summary.zoomPick", { mark: p.correct ? "✓" : "✗", points: p.points, step: p.correct ? p.step : "X", steps: ZOOM_STEPS })
+                          : t("summary.pick", { mark: p.correct ? "✓" : "✗", points: p.points, s: secs(p.ms, lang) })
+                        : "—"}
                     </span>
                   ))}
                 </div>
@@ -792,19 +817,19 @@ function DuelSummary({ view, busy, home, onRematch }: { view: QuizDuelView; busy
 
           {view.rematch && (
             <p role="status" className="text-center font-display text-sm font-semibold uppercase tracking-wider text-warning">
-              Rematch requested!
+              {t("summary.rematchRequested")}
             </p>
           )}
           <div className="grid gap-2 sm:grid-cols-2">
             <Button size="lg" variant="success" disabled={busy} onClick={onRematch}>
               {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RotateCcw className="h-4 w-4" aria-hidden />}
-              {view.rematch ? "Accept rematch" : "Rematch"}
+              {view.rematch ? t("summary.accept") : t("summary.rematch")}
             </Button>
             <Link href={home} className={cn(buttonVariants({ variant: "outline", size: "lg" }))}>
-              <Swords className="h-4 w-4" aria-hidden /> Back to {MODULE_INFO[view.module].title}
+              <Swords className="h-4 w-4" aria-hidden /> {t("summary.back", { mode })}
             </Link>
           </div>
-          <p className="text-center text-xs text-muted-foreground">A rematch keeps the mode{difficultyLabel(view.module, view.difficulty) ? ", difficulty" : ""} and trainers, with new questions. It starts when you both press it.</p>
+          <p className="text-center text-xs text-muted-foreground">{level ? t("summary.keepsLevel") : t("summary.keeps")}</p>
         </CardContent>
       </Card>
     </div>

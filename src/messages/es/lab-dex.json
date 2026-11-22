@@ -1,0 +1,121 @@
+{
+  "brand": "Laboratorio del Profesor",
+  "loading": "Calibrando el laboratorio…",
+  "noWebgl": "Este navegador no admite 3D, así que el laboratorio muestra sus fichas de especímenes.",
+  "searchLabel": "Buscar Pokémon",
+  "searchPlaceholder": "Buscar Pokémon",
+  "clearSearch": "Borrar búsqueda",
+  "notInView": "No está en estos filtros",
+  "showAll": "Mostrarlo",
+  "noMatch": "Ningún Pokémon cumple esos filtros.",
+  "noSearchMatch": "No se ha encontrado ningún Pokémon",
+  "reset": "Restablecer",
+  "filters": "Filtros",
+  "allTypes": "Todos los tipos",
+  "types": "Tipos",
+  "typesHint": "Elige hasta dos",
+  "gen": "Gen.",
+  "genN": "Gen. {n}",
+  "legends": "Legendarios + singulares",
+  "final": "Evolución final",
+  "forms": "Formas",
+  "formsHint": "Megaevoluciones, formas regionales y Gigamax tras cada Pokémon",
+  "sortBy": "Orden",
+  "sortAsc": "Orden ascendente",
+  "sortDesc": "Orden descendente",
+  "specimen": "Espécimen",
+  "scanComplete": "Escaneado",
+  "materialising": "Materializando…",
+  "biometrics": "Biometría",
+  "height": "Altura",
+  "weight": "Peso",
+  "region": "Región",
+  "entry": "Registro de la Pokédex",
+  "abilities": "Habilidades",
+  "hidden": "Oculta",
+  "evolution": "Linaje",
+  "noEvolution": "No evoluciona",
+  "matchups": "Análisis de tipos",
+  "weakTo": "Débil a",
+  "resists": "Resiste",
+  "immune": "Inmune",
+  "baseStats": "Características",
+  "roles": "Roles",
+  "total": "Total",
+  "bestRole": "Mejor rol",
+  "rolesNote": "Cada puntuación se compara con todos los Pokémon",
+  "rolesNoteForms": "Cada puntuación se compara con todos los Pokémon y sus formas",
+  "top": "Mejor {n} %",
+  "bottom": "Peor {n} %",
+  "openInDex": "Abrir en la Pokédex",
+  "prev": "Anterior",
+  "next": "Siguiente",
+  "prevNamed": "Anterior: {name}",
+  "nextNamed": "Siguiente: {name}",
+  "hint": "Arrastra o usa ← → para elegir",
+  "hintTouch": "Desliza para elegir",
+  "stage": "El Laboratorio del Profesor: una rueda de Pokémon. Usa las flechas izquierda y derecha para girarla.",
+  "stageRole": "carrusel",
+  "announce": "{name}, número {no}, {types}",
+  "sheetHandle": "Mostrar detalles",
+  "sheetClose": "Ocultar detalles",
+  "close": "Cerrar",
+  "done": "Hecho",
+  "evoJump": "Mostrar a {name}",
+  "captionIdle": "Laboratorio del Profesor · Proyector de especímenes",
+  "stats": {
+    "hp": "PS",
+    "atk": "Ataque",
+    "def": "Defensa",
+    "spa": "At. Esp.",
+    "spd": "Def. Esp.",
+    "spe": "Velocidad"
+  },
+  "statsShort": {
+    "hp": "PS",
+    "atk": "ATQ",
+    "def": "DEF",
+    "spa": "AT.E",
+    "spd": "DEF.E",
+    "spe": "VEL"
+  },
+  "regions": {
+    "kanto": "Kanto",
+    "johto": "Johto",
+    "hoenn": "Hoenn",
+    "sinnoh": "Sinnoh",
+    "unova": "Teselia",
+    "kalos": "Kalos",
+    "alola": "Alola",
+    "galar": "Galar",
+    "paldea": "Paldea",
+    "hisui": "Hisui"
+  },
+  "role": {
+    "physicalSweeper": {
+      "name": "Atacante físico",
+      "formula": "Ataque + Velocidad"
+    },
+    "specialSweeper": {
+      "name": "Atacante especial",
+      "formula": "At. Esp. + Velocidad"
+    },
+    "wall": {
+      "name": "Muro",
+      "formula": "PS + Defensa + Def. Esp."
+    },
+    "physicalTank": {
+      "name": "Tanque físico",
+      "formula": "Ataque + Defensa"
+    },
+    "specialTank": {
+      "name": "Tanque especial",
+      "formula": "At. Esp. + Def. Esp."
+    }
+  },
+  "sort": {
+    "id": "Número",
+    "name": "Nombre",
+    "bst": "Total"
+  }
+}

@@ -30,6 +30,8 @@ export interface Mon {
   c: number;
   /** The base species' key, for forms. */
   s?: string;
+  /** On a page in another language only: the other names its search takes (folded, space separated). */
+  l?: string;
 }
 
 /** Art availability bits (Mon.m). */
@@ -72,4 +74,13 @@ export const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
 export interface Roster {
   v: number;
   mons: Mon[];
+}
+
+/**
+ * A page in another language's names for the roster (built on the server: lib/tier-list/local), by entry key: its
+ * name there, and the other names the search takes (folded, space separated). English pages have none.
+ */
+export interface TierListLocal {
+  names: Record<string, string>;
+  alt: Record<string, string>;
 }

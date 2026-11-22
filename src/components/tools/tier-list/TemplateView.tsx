@@ -2,13 +2,15 @@ import "server-only";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { jsonLd, pageMetadata } from "@/lib/seo";
-import { serverT } from "@/i18n/server";
+import { getLocale, serverT } from "@/i18n/server";
 import { ClientMessages } from "@/i18n/ClientMessages";
 import tierList from "@/messages/tier-list";
+import tools from "@/messages/tools";
 import { getTemplate } from "@/lib/tier-list/templates";
 import { peekShare } from "@/lib/tier-list/share";
 import { toolJsonLd } from "@/lib/tier-list/seo";
 import { ROSTER_JSON_VERSION } from "@/lib/tier-list/version";
+import { tierListLocal } from "@/lib/tier-list/local";
 import { TierListShell } from "./TierListShell";
 import { TemplateGrid } from "./TemplateGrid";
 import { modeNoun, templateName, templateSeoName } from "./names";
@@ -45,12 +47,13 @@ export function TemplateView({ slug, raw }: { slug: string; raw: string | null }
   const t = serverT(tierList);
   const name = templateSeoName(t, tpl);
   const path = `/tools/tier-list/${tpl.slug}`;
+  const locale = getLocale();
   return (
     <div data-testid="tier-list-page">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(toolJsonLd({ name: t("templateTitle", { name }), path, description: t("templateDescription", { name }) })) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(toolJsonLd({ name: t("templateTitle", { name }), path, description: t("templateDescription", { name }), ...(locale !== "en" && { locale, crumbs: { tools: serverT(tools)("hub.title"), maker: t("title") } }) })) }} />
       <h1 className="sr-only">{t("templateTitle", { name })}</h1>
       <ClientMessages namespaces={[tierList]}>
-        <TierListShell key={tpl.slug} template={tpl.slug} shared={raw} version={ROSTER_JSON_VERSION} />
+        <TierListShell key={tpl.slug} template={tpl.slug} shared={raw} version={ROSTER_JSON_VERSION} {...(locale !== "en" && { local: tierListLocal(locale) })} />
         <section className="mx-auto mt-16 max-w-5xl max-sm:mt-12" aria-labelledby="tl-more">
           <h2 id="tl-more" className="mb-5 font-display text-2xl font-semibold tracking-tight">{t("pick.heading")}</h2>
           <TemplateGrid current={tpl.slug} />

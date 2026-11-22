@@ -3,26 +3,33 @@ import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { GameJsonLd } from "@/components/seo/GameJsonLd";
 import { BattleHeader } from "@/components/battle/BattleHeader";
 import { FrontierHub } from "@/components/battle/Frontier";
+import { ClientMessages } from "@/i18n/ClientMessages";
+import { serverT } from "@/i18n/server";
+import pagesNs from "@/messages/battle-pages";
+import frontierNs from "@/messages/battle-frontier";
+import formatsNs from "@/messages/battle-formats";
 
-const DESCRIPTION =
-  "The Battle Factory on Pokémon Showdown's engine: rent six Pokémon from Showdown's Battle Factory sets, win seven in a row against a computer that gets stronger, and trade for your opponent's Pokémon after every win.";
-
-export const metadata: Metadata = pageMetadata({
-  title: "Battle Factory — Rent a Team, Build a Streak",
-  description: DESCRIPTION,
-  path: "/battle/factory",
-  image: SHARE_IMAGES.battle,
-});
+export function generateMetadata(): Metadata {
+  const t = serverT(pagesNs);
+  return pageMetadata({
+    title: t("factory.meta.title"),
+    description: t("factory.description"),
+    path: "/battle/factory",
+    image: SHARE_IMAGES.battle,
+  });
+}
 
 export default function BattleFactoryPage() {
+  const t = serverT(pagesNs);
   return (
     <div className="mx-auto max-w-6xl space-y-8">
-      <GameJsonLd name="Battle Factory" path="/battle/factory" description={DESCRIPTION} />
-      <BattleHeader crumb="Battle Factory" title="Battle" accent="Factory">
-        No team needed: rent six Pokémon from Pokémon Showdown&apos;s Battle Factory sets, win seven in a row, and trade one of yours for one of your opponent&apos;s after
-        every win. Or find an opponent who rents one too, from the battle setup.
+      <GameJsonLd name={t("factory.name")} path="/battle/factory" description={t("factory.description")} />
+      <BattleHeader crumb={t("factory.name")} title={t("factory.title")} accent={t("factory.accent")}>
+        {t("factory.intro")}
       </BattleHeader>
-      <FrontierHub mode="factory" />
+      <ClientMessages namespaces={[frontierNs, formatsNs]}>
+        <FrontierHub mode="factory" />
+      </ClientMessages>
     </div>
   );
 }

@@ -2,7 +2,10 @@ import { capitalize } from "@/lib/pokemon/type-matrix";
 import { typeColor, typeTextColor } from "@/lib/pokemon/type-colors";
 import { cn } from "@/lib/utils";
 
-/** In-game style type plate: solid colour, bevelled edge, uppercase label (`label`: the type's name in another language). */
+/**
+ * In-game style type plate: solid colour, bevelled edge, uppercase label. `label` is the type's name in the page's
+ * language (official names, src/data/i18n); without it the plate shows the English name.
+ */
 export function TypeBadge({ type, size = "md", className, label }: { type: string; size?: "sm" | "md" | "lg"; className?: string; label?: string }) {
   return (
     <span

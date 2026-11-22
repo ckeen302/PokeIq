@@ -26,6 +26,7 @@ import party from "@/messages/connections-party";
 import share from "@/messages/share";
 import howto from "@/messages/howto";
 import duel from "@/messages/duel";
+import badges from "@/messages/badges";
 
 export function generateMetadata(): Metadata {
   const t = serverT(pages);
@@ -86,7 +87,7 @@ export default async function ConnectionsPage() {
     <>
     <script dangerouslySetInnerHTML={{ __html: localDayScript(initial) + HOWTO_FIRST }} />
     <div className="space-y-10">
-      <ClientMessages namespaces={[conn, board, stats, cards, party, share, howto, duel]}>
+      <ClientMessages namespaces={[conn, board, stats, cards, party, share, howto, duel, badges]}>
         <ConnNamesProvider names={connTileNames(locale)}>
           <Connections initial={initial} />
           <PuzzleOfTheDay />

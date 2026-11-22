@@ -11,6 +11,11 @@ import { MAX_SIDE, MAX_SPECIES, RUN_CHOICES, newSeed } from "@/lib/mass-battle/s
 import { clampLevel, groupDetail, groupLabel, groupMembers, type GroupFacts } from "@/lib/mass-battle/sets";
 import { defaultSetup, fromBattle, fromQuestion, rowKey, toBattle, toQuestion, type RowState, type SetupState, type SideState } from "@/lib/mass-battle/setup";
 import { fmt, groupName, questionText } from "@/lib/mass-battle/copy";
+import { useT } from "@/i18n/client";
+import type { Translator } from "@/i18n/catalog";
+import mbCopy from "@/messages/mass-battle-copy";
+import mbSetup from "@/messages/mass-battle-setup";
+import { useMbNames, type MbNameFns } from "./names";
 import { HudHeading } from "@/components/game/HudHeading";
 import { buttonVariants } from "@/components/ui/button";
 import { PokemonPicker, type PickerMon } from "./PokemonPicker";
@@ -25,6 +30,27 @@ export const factsOfRow = (p: PickerMon): GroupFacts => ({ id: p.id, form: p.for
 const label = "font-pixel text-[9px] uppercase tracking-[0.18em] text-muted-foreground";
 const select = "mt-1 h-11 w-full min-w-0 rounded-lg border bg-card px-2 font-display text-sm font-semibold uppercase tracking-wide";
 const small = "mt-1 h-10 w-full min-w-0 rounded-md border bg-card px-2 text-sm";
+
+type SetupT = Translator<typeof mbSetup.en>;
+
+/** What a group adds to its type or kind, in a language other than English (English: groupDetail). */
+function localDetail(g: GroupRule, t: SetupT): string {
+  const parts: string[] = [];
+  if (g.types?.length && g.legendary === true) parts.push(t(g.mythical ? "detail.legendaryMythical" : "detail.legendary"));
+  else if (g.types?.length && g.mythical) parts.push(t("detail.mythical"));
+  if (g.fullyEvolved) parts.push(t("detail.fe"));
+  if (g.gen && (g.types?.length || g.legendary === true || g.mythical)) parts.push(t("detail.gen", { n: g.gen }));
+  if (g.legendary === "no") parts.push(t("detail.noLeg"));
+  return parts.length ? parts.join(", ") : t("detail.all");
+}
+
+/** A group's full name and its detail line in the page's language (English exactly as before). */
+function groupWords(g: GroupRule, t: SetupT, c: Translator<typeof mbCopy.en>, nm: MbNameFns) {
+  if (t.locale === "en") return { label: groupLabel(g), name: groupName(g), detail: groupDetail(g) };
+  const name = groupName(g, c, nm.type);
+  const detail = localDetail(g, t);
+  return { label: t("groupLabel", { name, detail }), name, detail };
+}
 
 /**
  * The Battle setup panel. Simple by default: "How many X beat Y?" (the
@@ -49,6 +75,10 @@ export function SetupPanel({ list, presets, busy, current, playback, onPlayback,
   onFight(spec: BattleSpec): void;
   onPreset(p: PresetCard): void;
 }) {
+  const t = useT(mbSetup);
+  const c = useT(mbCopy);
+  const nm = useMbNames();
+  const lc = t.locale;
   const bySlug = useMemo(() => new Map(list.map((p) => [p.slug, p.id])), [list]);
   const byId = useMemo(() => new Map(list.map((p) => [p.id, p])), [list]);
   const facts = useMemo(() => list.map(factsOfRow), [list]);
@@ -101,12 +131,13 @@ export function SetupPanel({ list, presets, busy, current, playback, onPlayback,
   const addRow = (id: SideId, row: Omit<RowState, "key">) => setSide(id, (sd) => (sd.rows.length >= MAX_SPECIES ? sd : { ...sd, rows: [...sd.rows, { ...row, key: rowKey() }] }));
 
   const nameOf = (id: number) => byId.get(id)?.name ?? "";
-  const rowName = (r: RowState) => (r.group ? groupName(r.group) : nameOf(r.id));
+  const rowName = (r: RowState) => (r.group ? groupWords(r.group, t, c, nm).name : nameOf(r.id));
   const members = (g: GroupRule) => groupMembers(facts, g).length;
   const rowUnits = (r: RowState) => (r.group ? r.count * members(r.group) : r.count);
   const total = (sd: SideState) => sd.rows.reduce((a, r) => a + rowUnits(r), 0);
   const names = (sd: SideState) => {
     const n = sd.rows.map(rowName);
+    if (lc !== "en") return n.length <= 1 ? n[0] ?? "" : new Intl.ListFormat(lc, { type: "conjunction" }).format(n);
     return n.length <= 1 ? n[0] ?? "" : n.length === 2 ? `${n[0]} and ${n[1]}` : `${n.slice(0, -1).join(", ")} and ${n[n.length - 1]}`;
   };
   const tabBtn = (on: boolean) => cn("flex-1 rounded-md px-3 py-2 font-display text-xs font-bold uppercase tracking-wider transition-colors sm:flex-none", on ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground");
@@ -123,25 +154,25 @@ export function SetupPanel({ list, presets, busy, current, playback, onPlayback,
         <div className={cn("grid items-end gap-2", counts ? "grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[minmax(0,1fr)_5.5rem_auto]" : "grid-cols-[minmax(0,1fr)_auto]")}>
           {r.group ? (
             <div className={cn("min-w-0", counts && "col-span-2 sm:col-span-1")}>
-              <span className={label}>Group</span>
-              <div className="mt-1 flex h-12 items-center gap-2 rounded-lg border bg-card px-3" data-testid={`${tid}-group`} title={groupLabel(r.group)}>
+              <span className={label}>{t("group")}</span>
+              <div className="mt-1 flex h-12 items-center gap-2 rounded-lg border bg-card px-3" data-testid={`${tid}-group`} title={groupWords(r.group, t, c, nm).label}>
                 <Layers className="h-4 w-4 shrink-0 text-primary" aria-hidden />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-display text-sm font-bold uppercase leading-tight tracking-wide">{groupName(r.group)}</span>
-                  <span className="block truncate text-[11px] leading-tight text-muted-foreground">{groupDetail(r.group)} · {members(r.group)} Pokémon</span>
+                  <span className="block truncate font-display text-sm font-bold uppercase leading-tight tracking-wide">{groupWords(r.group, t, c, nm).name}</span>
+                  <span className="block truncate text-[11px] leading-tight text-muted-foreground">{t("members", { detail: groupWords(r.group, t, c, nm).detail, n: members(r.group) })}</span>
                 </span>
               </div>
             </div>
           ) : counts ? (
             <div className="col-span-2 min-w-0 sm:col-span-1">
-              <PokemonPicker label={sideId === "boss" ? "…beat" : `Pokémon ${k + 1}`} value={r.id} list={list} onChange={(id) => setRow(sideId, r.key, { id, set: undefined })} testId={typeof sideId === "number" ? `mb-side-${sideId}-pick-${k}` : sideId === "boss" ? "mb-pick-boss" : `mb-pick-army-${k}`} disabled={busy} />
+              <PokemonPicker label={sideId === "boss" ? t("beat") : t("pokemonN", { n: k + 1 })} value={r.id} list={list} onChange={(id) => setRow(sideId, r.key, { id, set: undefined })} testId={typeof sideId === "number" ? `mb-side-${sideId}-pick-${k}` : sideId === "boss" ? "mb-pick-boss" : `mb-pick-army-${k}`} disabled={busy} />
             </div>
           ) : (
-            <PokemonPicker label={sideId === "boss" ? "…beat" : k === 0 && sideId === "army" ? "How many…" : `Pokémon ${k + 1}`} value={r.id} list={list} onChange={(id) => setRow(sideId, r.key, { id, set: undefined })} testId={sideId === "army" ? (k === 0 ? "mb-pick-challenger" : `mb-pick-army-${k}`) : sideId === "boss" ? "mb-pick-boss" : `mb-side-${sideId}-pick-${k}`} disabled={busy} />
+            <PokemonPicker label={sideId === "boss" ? t("beat") : k === 0 && sideId === "army" ? t("howMany") : t("pokemonN", { n: k + 1 })} value={r.id} list={list} onChange={(id) => setRow(sideId, r.key, { id, set: undefined })} testId={sideId === "army" ? (k === 0 ? "mb-pick-challenger" : `mb-pick-army-${k}`) : sideId === "boss" ? "mb-pick-boss" : `mb-side-${sideId}-pick-${k}`} disabled={busy} />
           )}
           {counts && (
             <div>
-              <label className={label} htmlFor={`${tid}-count`}>{r.group ? "Each" : "Count"}</label>
+              <label className={label} htmlFor={`${tid}-count`}>{t(r.group ? "each" : "count")}</label>
               <input
                 id={`${tid}-count`}
                 type="number"
@@ -157,12 +188,12 @@ export function SetupPanel({ list, presets, busy, current, playback, onPlayback,
           )}
           <div className="mb-0.5 flex gap-1">
             {advanced && (
-              <button type="button" onClick={() => setOpenSet(setOpen ? null : r.key)} aria-expanded={setOpen} aria-label={`${rowName(r)}'s set`} className={cn("h-11 rounded-lg border px-2 text-muted-foreground hover:text-foreground", setOpen && "border-primary text-primary", r.set && "text-primary")} data-testid={`${tid}-set-toggle`}>
+              <button type="button" onClick={() => setOpenSet(setOpen ? null : r.key)} aria-expanded={setOpen} aria-label={t("setOf", { name: rowName(r) })} className={cn("h-11 rounded-lg border px-2 text-muted-foreground hover:text-foreground", setOpen && "border-primary text-primary", r.set && "text-primary")} data-testid={`${tid}-set-toggle`}>
                 <Settings2 className="h-4 w-4" />
               </button>
             )}
             {removable && (
-              <button type="button" aria-label={`Remove ${rowName(r)}`} disabled={busy} onClick={() => removeRow(sideId, r.key)} className="h-11 rounded-lg border px-2 text-muted-foreground hover:text-foreground disabled:opacity-30" data-testid={`${tid}-remove`}>
+              <button type="button" aria-label={t("remove", { name: rowName(r) })} disabled={busy} onClick={() => removeRow(sideId, r.key)} className="h-11 rounded-lg border px-2 text-muted-foreground hover:text-foreground disabled:opacity-30" data-testid={`${tid}-remove`}>
                 <Trash2 className="h-4 w-4" />
               </button>
             )}
@@ -182,7 +213,7 @@ export function SetupPanel({ list, presets, busy, current, playback, onPlayback,
               idPrefix={tid}
             />
           ) : (
-            <p className="text-xs text-muted-foreground">Loading the sets…</p>
+            <p className="text-xs text-muted-foreground">{t("loadingSets")}</p>
           )
         )}
       </div>
@@ -199,14 +230,14 @@ export function SetupPanel({ list, presets, busy, current, playback, onPlayback,
         {sd.rows.map((r, k) => renderRow({ sideId, r, k, counts, removable: sd.rows.length > min }))}
         <div className="flex flex-wrap gap-2">
           <button type="button" disabled={full || busy} onClick={() => addRow(sideId, { id: idOf(sideId === 1 || sideId === "boss" ? "snorlax" : "pikachu"), count: counts ? (sideId === 1 ? 1 : 50) : 1 })} className={buttonVariants({ variant: "outline", size: "sm" })} data-testid={`mb-add-${key}`}>
-            <Plus className="h-4 w-4" aria-hidden /> Pokémon
+            <Plus className="h-4 w-4" aria-hidden /> {t("addPokemon")}
           </button>
           <button type="button" disabled={full || busy} onClick={() => setAdding(adding === key ? null : key)} aria-expanded={adding === key} className={buttonVariants({ variant: "outline", size: "sm" })} data-testid={`mb-add-group-${key}`}>
-            <Layers className="h-4 w-4" aria-hidden /> Group
+            <Layers className="h-4 w-4" aria-hidden /> {t("addGroup")}
           </button>
-          {full && <span className="self-center text-xs text-muted-foreground">Up to {MAX_SPECIES} rows</span>}
+          {full && <span className="self-center text-xs text-muted-foreground">{t("upTo", { n: MAX_SPECIES })}</span>}
         </div>
-        {adding === key && <GroupAdder facts={facts} counts={counts} onAdd={(g, count) => { addRow(sideId, { id: 0, count, group: g }); setAdding(null); }} testId={`mb-group-${key}`} />}
+        {adding === key && <GroupAdder t={t} c={c} nm={nm} facts={facts} counts={counts} onAdd={(g, count) => { addRow(sideId, { id: 0, count, group: g }); setAdding(null); }} testId={`mb-group-${key}`} />}
       </div>
     );
   };
@@ -220,11 +251,11 @@ export function SetupPanel({ list, presets, busy, current, playback, onPlayback,
       <fieldset className="space-y-2 rounded-lg border p-3" data-testid={tid}>
         <legend className="px-1 font-display text-xs font-bold uppercase tracking-wider">{title}</legend>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          <div><label className={label} htmlFor={`${tid}-f`}>Formation</label><select id={`${tid}-f`} value={sd.formation} onChange={(e) => set({ formation: e.target.value as SideState["formation"] })} className={small} data-testid={`${tid}-formation`}>{FORMATIONS.map((f) => <option key={f} value={f}>{FORMATION_LABEL[f]}</option>)}</select></div>
-          <div><label className={label} htmlFor={`${tid}-s`}>Spacing</label><select id={`${tid}-s`} value={sd.spacing} onChange={(e) => set({ spacing: e.target.value as SideState["spacing"] })} className={small} data-testid={`${tid}-spacing`}>{SPACINGS.map((f) => <option key={f} value={f}>{SPACING_LABEL[f]}</option>)}</select></div>
-          <div><label className={label} htmlFor={`${tid}-t`}>Targets</label><select id={`${tid}-t`} value={sd.targeting} onChange={(e) => set({ targeting: e.target.value as SideState["targeting"] })} className={small} data-testid={`${tid}-targeting`}>{TARGETINGS.map((f) => <option key={f} value={f}>{TARGETING_LABEL[f]}</option>)}</select></div>
-          <div><label className={label} htmlFor={`${tid}-st`}>Stance</label><select id={`${tid}-st`} value={sd.stance} onChange={(e) => set({ stance: e.target.value as SideState["stance"] })} className={small} data-testid={`${tid}-stance`}>{STANCES.map((f) => <option key={f} value={f}>{STANCE_LABEL[f]}</option>)}</select></div>
-          <div><label className={label} htmlFor={`${tid}-sp`}>Spread moves</label><select id={`${tid}-sp`} value={sd.spread} onChange={(e) => set({ spread: e.target.value as SideState["spread"] })} className={small} data-testid={`${tid}-spread`}>{SPREAD_USES.map((f) => <option key={f} value={f}>{SPREAD_LABEL[f]}</option>)}</select></div>
+          <div><label className={label} htmlFor={`${tid}-f`}>{t("formation")}</label><select id={`${tid}-f`} value={sd.formation} onChange={(e) => set({ formation: e.target.value as SideState["formation"] })} className={small} data-testid={`${tid}-formation`}>{FORMATIONS.map((f) => <option key={f} value={f}>{lc === "en" ? FORMATION_LABEL[f] : t(`labels.formation.${f}`)}</option>)}</select></div>
+          <div><label className={label} htmlFor={`${tid}-s`}>{t("spacing")}</label><select id={`${tid}-s`} value={sd.spacing} onChange={(e) => set({ spacing: e.target.value as SideState["spacing"] })} className={small} data-testid={`${tid}-spacing`}>{SPACINGS.map((f) => <option key={f} value={f}>{lc === "en" ? SPACING_LABEL[f] : t(`labels.spacing.${f}`)}</option>)}</select></div>
+          <div><label className={label} htmlFor={`${tid}-t`}>{t("targets")}</label><select id={`${tid}-t`} value={sd.targeting} onChange={(e) => set({ targeting: e.target.value as SideState["targeting"] })} className={small} data-testid={`${tid}-targeting`}>{TARGETINGS.map((f) => <option key={f} value={f}>{lc === "en" ? TARGETING_LABEL[f] : t(`labels.targeting.${f}`)}</option>)}</select></div>
+          <div><label className={label} htmlFor={`${tid}-st`}>{t("stance")}</label><select id={`${tid}-st`} value={sd.stance} onChange={(e) => set({ stance: e.target.value as SideState["stance"] })} className={small} data-testid={`${tid}-stance`}>{STANCES.map((f) => <option key={f} value={f}>{lc === "en" ? STANCE_LABEL[f] : t(`labels.stance.${f}`)}</option>)}</select></div>
+          <div><label className={label} htmlFor={`${tid}-sp`}>{t("spreadMoves")}</label><select id={`${tid}-sp`} value={sd.spread} onChange={(e) => set({ spread: e.target.value as SideState["spread"] })} className={small} data-testid={`${tid}-spread`}>{SPREAD_USES.map((f) => <option key={f} value={f}>{lc === "en" ? SPREAD_LABEL[f] : t(`labels.spread.${f}`)}</option>)}</select></div>
         </div>
       </fieldset>
     );
@@ -243,20 +274,20 @@ export function SetupPanel({ list, presets, busy, current, playback, onPlayback,
     <div className="space-y-8">
       <section className="space-y-5 rounded-xl border bg-card/60 p-4 sm:p-6" aria-labelledby="mb-setup" data-testid="mb-setup">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 id="mb-setup" className="font-display text-xl font-bold uppercase tracking-tight sm:text-2xl">Battle setup</h2>
-          <div className="flex gap-1 rounded-lg border bg-background/60 p-1" role="tablist" aria-label="Kind of battle">
-            <button type="button" role="tab" aria-selected={s.tab === "ask"} onClick={() => patch({ tab: "ask" })} className={tabBtn(s.tab === "ask")} data-testid="mb-tab-ask">How many?</button>
-            <button type="button" role="tab" aria-selected={s.tab === "army"} onClick={() => patch({ tab: "army" })} className={tabBtn(s.tab === "army")} data-testid="mb-tab-army">Army vs army</button>
+          <h2 id="mb-setup" className="font-display text-xl font-bold uppercase tracking-tight sm:text-2xl">{t("title")}</h2>
+          <div className="flex gap-1 rounded-lg border bg-background/60 p-1" role="tablist" aria-label={t("kind")}>
+            <button type="button" role="tab" aria-selected={s.tab === "ask"} onClick={() => patch({ tab: "ask" })} className={tabBtn(s.tab === "ask")} data-testid="mb-tab-ask">{t("tabAsk")}</button>
+            <button type="button" role="tab" aria-selected={s.tab === "army"} onClick={() => patch({ tab: "army" })} className={tabBtn(s.tab === "army")} data-testid="mb-tab-army">{t("tabArmy")}</button>
           </div>
         </div>
 
         {s.tab === "ask" ? (
           <div className="space-y-4" role="tabpanel">
-            <p className="font-display text-lg font-bold uppercase tracking-tight sm:text-2xl" data-testid="mb-question">{questionText(names(s.army), names(s.boss))}</p>
+            <p className="font-display text-lg font-bold uppercase tracking-tight sm:text-2xl" data-testid="mb-question">{questionText(names(s.army), names(s.boss), c)}</p>
             <div className="grid gap-4 lg:grid-cols-2">
               <div className="space-y-2">
                 {renderRows({ sideId: "army", counts: false })}
-                {s.army.rows.length > 1 && <p className="text-xs text-muted-foreground">The army is shared evenly between its rows (a group shares it between all its species).</p>}
+                {s.army.rows.length > 1 && <p className="text-xs text-muted-foreground">{t("shared")}</p>}
               </div>
               <div className="space-y-2">
                 {s.boss.rows.map((r, k) => renderRow({ sideId: "boss", r, k, counts: advanced, removable: false }))}
@@ -269,8 +300,8 @@ export function SetupPanel({ list, presets, busy, current, playback, onPlayback,
               {([0, 1] as const).map((sd) => (
                 <div key={sd} className={cn("space-y-3 rounded-lg border p-3", sd === 0 ? "border-[#4f9bff]/40" : "border-[#ff5a64]/40")} data-testid={`mb-side-${sd}`}>
                   <div className="flex items-center justify-between">
-                    <span className={cn("font-display text-sm font-bold uppercase tracking-wider", sd === 0 ? "text-[#4f9bff]" : "text-[#ff5a64]")}>{sd === 0 ? "Blue army" : "Red army"}</span>
-                    <span className={cn("font-pixel text-[10px]", total(s.sides[sd]) > MAX_SIDE ? "text-destructive" : "text-muted-foreground")} data-testid={`mb-side-${sd}-total`}>{fmt(total(s.sides[sd]))} / {fmt(MAX_SIDE)}</span>
+                    <span className={cn("font-display text-sm font-bold uppercase tracking-wider", sd === 0 ? "text-[#4f9bff]" : "text-[#ff5a64]")}>{t(sd === 0 ? "blue" : "red")}</span>
+                    <span className={cn("font-pixel text-[10px]", total(s.sides[sd]) > MAX_SIDE ? "text-destructive" : "text-muted-foreground")} data-testid={`mb-side-${sd}-total`}>{fmt(total(s.sides[sd]), lc)} / {fmt(MAX_SIDE, lc)}</span>
                   </div>
                   {renderRows({ sideId: sd, counts: true })}
                 </div>
@@ -281,76 +312,76 @@ export function SetupPanel({ list, presets, busy, current, playback, onPlayback,
 
         <div className="grid grid-cols-2 gap-3 sm:max-w-md">
           <div>
-            <label className={label} htmlFor="mb-level">Level</label>
+            <label className={label} htmlFor="mb-level">{t("level")}</label>
             <input id="mb-level" type="number" inputMode="numeric" min={1} max={100} list="mb-levels" value={s.level} onChange={(e) => patch({ level: clampLevel(Number(e.target.value) || 1) })} className={cn(select, "tabular-nums")} data-testid="mb-level" />
             <datalist id="mb-levels">{LEVELS.map((l) => <option key={l} value={l} />)}</datalist>
           </div>
           <div>
-            <label className={label} htmlFor="mb-arena">Arena</label>
+            <label className={label} htmlFor="mb-arena">{t("arena")}</label>
             <select id="mb-arena" value={s.arena} onChange={(e) => patch({ arena: e.target.value as ArenaId })} className={select} data-testid="mb-arena">
-              {ARENAS.map((a) => <option key={a} value={a}>{ARENA_LABEL[a]}</option>)}
+              {ARENAS.map((a) => <option key={a} value={a}>{lc === "en" ? ARENA_LABEL[a] : t(`labels.arena.${a}`)}</option>)}
             </select>
           </div>
         </div>
 
         <div className="rounded-lg border">
           <button type="button" onClick={() => setAdvanced((a) => !a)} aria-expanded={advanced} className="flex w-full items-center justify-between gap-2 px-3 py-3 text-left" data-testid="mb-advanced">
-            <span className="font-display text-sm font-bold uppercase tracking-wider">Advanced</span>
+            <span className="font-display text-sm font-bold uppercase tracking-wider">{t("advanced")}</span>
             <span className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="hidden sm:inline">Sets, weather and terrain, how each side fights{s.tab === "ask" ? ", the solver" : ""}, playback</span>
+              <span className="hidden sm:inline">{t(s.tab === "ask" ? "advancedHintAsk" : "advancedHint")}</span>
               <ChevronDown className={cn("h-4 w-4 transition-transform", advanced && "rotate-180")} aria-hidden />
             </span>
           </button>
           {advanced && (
             <div className="space-y-5 border-t p-3 sm:p-4" data-testid="mb-advanced-panel">
-              <p className="text-xs text-muted-foreground">Open a row&apos;s <Settings2 className="inline h-3 w-3" aria-label="set" /> for its set: level, moves, ability, item, nature, EVs and IVs, Tera type.</p>
+              <p className="text-xs text-muted-foreground">{t.rich("setHint", { i: () => <Settings2 className="inline h-3 w-3" aria-label={t("setIcon")} /> })}</p>
               <fieldset className="space-y-2" data-testid="mb-field">
-                <legend className="font-display text-xs font-bold uppercase tracking-wider">Field</legend>
+                <legend className="font-display text-xs font-bold uppercase tracking-wider">{t("field")}</legend>
                 <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-                  <div><label className={label} htmlFor="mb-weather">Weather</label><select id="mb-weather" value={s.field.weather} onChange={(e) => patch({ field: { ...s.field, weather: e.target.value as Weather } })} className={small} data-testid="mb-weather">{WEATHERS.map((w) => <option key={w} value={w}>{WEATHER_LABEL[w]}</option>)}</select></div>
-                  <div><label className={label} htmlFor="mb-terrain">Terrain</label><select id="mb-terrain" value={s.field.terrain} onChange={(e) => patch({ field: { ...s.field, terrain: e.target.value as Terrain } })} className={small} data-testid="mb-terrain">{TERRAINS.map((t) => <option key={t} value={t}>{TERRAIN_LABEL[t]}</option>)}</select></div>
-                  <div><label className={label} htmlFor="mb-time">Time of day</label><select id="mb-time" value={s.field.time} onChange={(e) => patch({ field: { ...s.field, time: e.target.value as TimeOfDay } })} className={small} data-testid="mb-time">{TIMES.map((t) => <option key={t} value={t}>{TIME_LABEL[t]}</option>)}</select></div>
-                  <div><label className={label} htmlFor="mb-items">Held items</label><select id="mb-items" value={s.items} onChange={(e) => patch({ items: e.target.value as SetupState["items"] })} className={small} data-testid="mb-items"><option value="none">None</option><option value="sets">Random-battle items</option></select></div>
+                  <div><label className={label} htmlFor="mb-weather">{t("weather")}</label><select id="mb-weather" value={s.field.weather} onChange={(e) => patch({ field: { ...s.field, weather: e.target.value as Weather } })} className={small} data-testid="mb-weather">{WEATHERS.map((w) => <option key={w} value={w}>{lc === "en" ? WEATHER_LABEL[w] : t(`labels.weather.${w}`)}</option>)}</select></div>
+                  <div><label className={label} htmlFor="mb-terrain">{t("terrain")}</label><select id="mb-terrain" value={s.field.terrain} onChange={(e) => patch({ field: { ...s.field, terrain: e.target.value as Terrain } })} className={small} data-testid="mb-terrain">{TERRAINS.map((x) => <option key={x} value={x}>{lc === "en" ? TERRAIN_LABEL[x] : t(`labels.terrain.${x}`)}</option>)}</select></div>
+                  <div><label className={label} htmlFor="mb-time">{t("time")}</label><select id="mb-time" value={s.field.time} onChange={(e) => patch({ field: { ...s.field, time: e.target.value as TimeOfDay } })} className={small} data-testid="mb-time">{TIMES.map((x) => <option key={x} value={x}>{lc === "en" ? TIME_LABEL[x] : t(`labels.time.${x}`)}</option>)}</select></div>
+                  <div><label className={label} htmlFor="mb-items">{t("heldItems")}</label><select id="mb-items" value={s.items} onChange={(e) => patch({ items: e.target.value as SetupState["items"] })} className={small} data-testid="mb-items"><option value="none">{t("none")}</option><option value="sets">{t("randomItems")}</option></select></div>
                 </div>
               </fieldset>
               <fieldset className="space-y-2" data-testid="mb-rules">
-                <legend className="font-display text-xs font-bold uppercase tracking-wider">Rules</legend>
+                <legend className="font-display text-xs font-bold uppercase tracking-wider">{t("rules")}</legend>
                 <div className="flex flex-wrap gap-2">
-                  {toggle(s.pp, (v) => patch({ pp: v }), "Real PP", "mb-pp")}
-                  {toggle(s.friendlyFire, (v) => patch({ friendlyFire: v }), "Friendly fire", "mb-ff")}
+                  {toggle(s.pp, (v) => patch({ pp: v }), t("pp"), "mb-pp")}
+                  {toggle(s.friendlyFire, (v) => patch({ friendlyFire: v }), t("ff"), "mb-ff")}
                 </div>
-                <p className="text-xs text-muted-foreground">Real PP: moves run out as in the games (Pressure takes two), then Struggle. Friendly fire: Earthquake, Surf and Explosion hit partners too, and Lightning Rod and Storm Drain pull a partner&apos;s moves in.</p>
+                <p className="text-xs text-muted-foreground">{t("rulesHint")}</p>
               </fieldset>
               {s.tab === "ask" ? (
                 <div className="grid gap-3 lg:grid-cols-2">
-                  {renderBehaviour({ sideId: "army", title: `The army (${names(s.army)})` })}
-                  {renderBehaviour({ sideId: "boss", title: `The boss (${names(s.boss)})` })}
+                  {renderBehaviour({ sideId: "army", title: t("theArmy", { names: names(s.army) }) })}
+                  {renderBehaviour({ sideId: "boss", title: t("theBoss", { names: names(s.boss) }) })}
                 </div>
               ) : (
                 <div className="grid gap-3 lg:grid-cols-2">
-                  {renderBehaviour({ sideId: 0, title: "Blue army" })}
-                  {renderBehaviour({ sideId: 1, title: "Red army" })}
+                  {renderBehaviour({ sideId: 0, title: t("blue") })}
+                  {renderBehaviour({ sideId: 1, title: t("red") })}
                 </div>
               )}
               {s.tab === "ask" && (
                 <fieldset className="space-y-2" data-testid="mb-solver">
-                  <legend className="font-display text-xs font-bold uppercase tracking-wider">The answer</legend>
+                  <legend className="font-display text-xs font-bold uppercase tracking-wider">{t("answer")}</legend>
                   <div className="grid grid-cols-2 gap-2 sm:max-w-md">
-                    <div><label className={label} htmlFor="mb-threshold">Wins needed</label><select id="mb-threshold" value={s.threshold} onChange={(e) => patch({ threshold: Number(e.target.value) })} className={small} data-testid="mb-threshold"><option value={0.5}>Half (50%)</option><option value={0.9}>Nine in ten (90%)</option></select></div>
-                    <div><label className={label} htmlFor="mb-runs">Battles per size</label><select id="mb-runs" value={s.runs} onChange={(e) => patch({ runs: Number(e.target.value) })} className={small} data-testid="mb-runs">{RUN_CHOICES.map((n) => <option key={n} value={n}>{n}</option>)}</select></div>
+                    <div><label className={label} htmlFor="mb-threshold">{t("winsNeeded")}</label><select id="mb-threshold" value={s.threshold} onChange={(e) => patch({ threshold: Number(e.target.value) })} className={small} data-testid="mb-threshold"><option value={0.5}>{t("half")}</option><option value={0.9}>{t("nine")}</option></select></div>
+                    <div><label className={label} htmlFor="mb-runs">{t("perSize")}</label><select id="mb-runs" value={s.runs} onChange={(e) => patch({ runs: Number(e.target.value) })} className={small} data-testid="mb-runs">{RUN_CHOICES.map((n) => <option key={n} value={n}>{n}</option>)}</select></div>
                   </div>
                 </fieldset>
               )}
               <fieldset className="space-y-2" data-testid="mb-playback">
-                <legend className="font-display text-xs font-bold uppercase tracking-wider">Playback</legend>
+                <legend className="font-display text-xs font-bold uppercase tracking-wider">{t("playback")}</legend>
                 <div className="grid grid-cols-2 gap-2 sm:max-w-md">
-                  <div><label className={label} htmlFor="mb-speed-pick">Speed</label><select id="mb-speed-pick" value={playback.speed} onChange={(e) => onPlayback({ ...playback, speed: Number(e.target.value) })} className={small} data-testid="mb-speed-pick">{SPEEDS.map((x) => <option key={x} value={x}>{x}×</option>)}</select></div>
-                  <div><label className={label} htmlFor="mb-camera-pick">Camera</label><select id="mb-camera-pick" value={playback.camera} onChange={(e) => onPlayback({ ...playback, camera: e.target.value as CameraMode })} className={small} data-testid="mb-camera-pick">{CAMERA_MODES.map((c) => <option key={c} value={c}>{CAMERA_LABEL[c]}</option>)}</select></div>
+                  <div><label className={label} htmlFor="mb-speed-pick">{t("speed")}</label><select id="mb-speed-pick" value={playback.speed} onChange={(e) => onPlayback({ ...playback, speed: Number(e.target.value) })} className={small} data-testid="mb-speed-pick">{SPEEDS.map((x) => <option key={x} value={x}>{x}×</option>)}</select></div>
+                  <div><label className={label} htmlFor="mb-camera-pick">{t("camera")}</label><select id="mb-camera-pick" value={playback.camera} onChange={(e) => onPlayback({ ...playback, camera: e.target.value as CameraMode })} className={small} data-testid="mb-camera-pick">{CAMERA_MODES.map((c) => <option key={c} value={c}>{lc === "en" ? CAMERA_LABEL[c] : t(`labels.camera.${c}`)}</option>)}</select></div>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {toggle(playback.slowmo, (v) => onPlayback({ ...playback, slowmo: v }), "Slow motion on big hits", "mb-slowmo")}
-                  {toggle(playback.numbers, (v) => onPlayback({ ...playback, numbers: v }), "Damage numbers", "mb-numbers")}
-                  {toggle(playback.hud, (v) => onPlayback({ ...playback, hud: v }), "HUD", "mb-hud-toggle")}
+                  {toggle(playback.slowmo, (v) => onPlayback({ ...playback, slowmo: v }), t("slowmo"), "mb-slowmo")}
+                  {toggle(playback.numbers, (v) => onPlayback({ ...playback, numbers: v }), t("numbers"), "mb-numbers")}
+                  {toggle(playback.hud, (v) => onPlayback({ ...playback, hud: v }), t("hud"), "mb-hud-toggle")}
                 </div>
               </fieldset>
             </div>
@@ -359,17 +390,17 @@ export function SetupPanel({ list, presets, busy, current, playback, onPlayback,
 
         {s.tab === "ask" ? (
           <button type="button" disabled={busy || !askOk} onClick={() => onAsk(toQuestion(s))} className={buttonVariants({ size: "lg" })} data-testid="mb-ask">
-            <Trophy className="h-4 w-4" aria-hidden /> Find out
+            <Trophy className="h-4 w-4" aria-hidden /> {t("find")}
           </button>
         ) : (
           <button type="button" disabled={busy || !armyOk} onClick={() => onFight(toBattle(s, newSeed()))} className={buttonVariants({ size: "lg" })} data-testid="mb-fight">
-            <Swords className="h-4 w-4" aria-hidden /> Battle!
+            <Swords className="h-4 w-4" aria-hidden /> {t("fight")}
           </button>
         )}
       </section>
 
       <section className="space-y-4" aria-labelledby="mb-presets">
-        <HudHeading index={1} id="mb-presets" title="Ready-made battles" aside="Each with its own link" />
+        <HudHeading index={1} id="mb-presets" title={t("presets")} aside={t("presetsAside")} />
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {presets.map((p) => (
             <li key={p.id}>
@@ -392,7 +423,8 @@ export function SetupPanel({ list, presets, busy, current, playback, onPlayback,
 }
 
 /** Adds a whole group: by type (or a type pair), generation, legendaries or mythicals, fully evolved. */
-function GroupAdder({ facts, counts, onAdd, testId }: { facts: GroupFacts[]; counts: boolean; onAdd(g: GroupRule, count: number): void; testId: string }) {
+function GroupAdder({ t, c, nm, facts, counts, onAdd, testId }: { t: SetupT; c: Translator<typeof mbCopy.en>; nm: MbNameFns; facts: GroupFacts[]; counts: boolean; onAdd(g: GroupRule, count: number): void; testId: string }) {
+  const lc = t.locale;
   const [t1, setT1] = useState("fire");
   const [t2, setT2] = useState("");
   const [gen, setGen] = useState(0);
@@ -416,19 +448,19 @@ function GroupAdder({ facts, counts, onAdd, testId }: { facts: GroupFacts[]; cou
   return (
     <div className="space-y-3 rounded-lg border border-dashed p-3" data-testid={testId}>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-        <div><label className={label} htmlFor={`${testId}-t1`}>Type</label><select id={`${testId}-t1`} value={t1} onChange={(e) => setT1(e.target.value)} className={small} data-testid={`${testId}-type`}><option value="">Any type</option>{TYPE_NAMES.map((t) => <option key={t} value={t.toLowerCase()}>{t}</option>)}</select></div>
-        <div><label className={label} htmlFor={`${testId}-t2`}>And type</label><select id={`${testId}-t2`} value={t2} onChange={(e) => setT2(e.target.value)} className={small} data-testid={`${testId}-type2`}><option value="">—</option>{TYPE_NAMES.map((t) => <option key={t} value={t.toLowerCase()}>{t}</option>)}</select></div>
-        <div><label className={label} htmlFor={`${testId}-gen`}>Generation</label><select id={`${testId}-gen`} value={gen} onChange={(e) => setGen(Number(e.target.value))} className={small} data-testid={`${testId}-gen`}><option value={0}>Any</option>{Array.from({ length: 9 }, (_, k) => <option key={k} value={k + 1}>Gen {k + 1}</option>)}</select></div>
-        <div><label className={label} htmlFor={`${testId}-kind`}>Legendaries</label><select id={`${testId}-kind`} value={kind} onChange={(e) => setKind(e.target.value as typeof kind)} className={small} data-testid={`${testId}-kind`}><option value="no">Leave them out</option><option value="any">Include them</option><option value="legendary">Only legendaries</option><option value="mythical">Only mythicals</option><option value="both">Legendaries and mythicals</option></select></div>
-        <label className="flex items-end gap-2 pb-2 text-sm"><input type="checkbox" checked={fe} onChange={(e) => setFe(e.target.checked)} className="h-4 w-4" data-testid={`${testId}-fe`} /> Fully evolved only</label>
+        <div><label className={label} htmlFor={`${testId}-t1`}>{t("type")}</label><select id={`${testId}-t1`} value={t1} onChange={(e) => setT1(e.target.value)} className={small} data-testid={`${testId}-type`}><option value="">{t("anyType")}</option>{TYPE_NAMES.map((x) => <option key={x} value={x.toLowerCase()}>{nm.type(x)}</option>)}</select></div>
+        <div><label className={label} htmlFor={`${testId}-t2`}>{t("andType")}</label><select id={`${testId}-t2`} value={t2} onChange={(e) => setT2(e.target.value)} className={small} data-testid={`${testId}-type2`}><option value="">—</option>{TYPE_NAMES.map((x) => <option key={x} value={x.toLowerCase()}>{nm.type(x)}</option>)}</select></div>
+        <div><label className={label} htmlFor={`${testId}-gen`}>{t("generation")}</label><select id={`${testId}-gen`} value={gen} onChange={(e) => setGen(Number(e.target.value))} className={small} data-testid={`${testId}-gen`}><option value={0}>{t("any")}</option>{Array.from({ length: 9 }, (_, k) => <option key={k} value={k + 1}>{t("gen", { n: k + 1 })}</option>)}</select></div>
+        <div><label className={label} htmlFor={`${testId}-kind`}>{t("legendaries")}</label><select id={`${testId}-kind`} value={kind} onChange={(e) => setKind(e.target.value as typeof kind)} className={small} data-testid={`${testId}-kind`}><option value="no">{t("leaveOut")}</option><option value="any">{t("include")}</option><option value="legendary">{t("onlyLeg")}</option><option value="mythical">{t("onlyMyth")}</option><option value="both">{t("both")}</option></select></div>
+        <label className="flex items-end gap-2 pb-2 text-sm"><input type="checkbox" checked={fe} onChange={(e) => setFe(e.target.checked)} className="h-4 w-4" data-testid={`${testId}-fe`} /> {t("feOnly")}</label>
         {counts && (
-          <div><label className={label} htmlFor={`${testId}-count`}>Each</label><input id={`${testId}-count`} type="number" inputMode="numeric" min={1} max={max} value={Math.min(count, max)} onChange={(e) => setCount(Math.max(1, Math.min(max, Math.floor(Number(e.target.value) || 1))))} className={cn(small, "tabular-nums")} data-testid={`${testId}-count`} /></div>
+          <div><label className={label} htmlFor={`${testId}-count`}>{t("each")}</label><input id={`${testId}-count`} type="number" inputMode="numeric" min={1} max={max} value={Math.min(count, max)} onChange={(e) => setCount(Math.max(1, Math.min(max, Math.floor(Number(e.target.value) || 1))))} className={cn(small, "tabular-nums")} data-testid={`${testId}-count`} /></div>
         )}
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-sm text-muted-foreground" data-testid={`${testId}-matches`}>{groupLabel(rule)}: <b className="text-foreground">{n}</b> Pokémon{counts && n ? `, ${fmt(n * Math.min(count, max))} in all` : ""}</span>
+        <span className="text-sm text-muted-foreground" data-testid={`${testId}-matches`}>{t.rich(counts && n ? "matchesAll" : "matches", { label: groupWords(rule, t, c, nm).label, n, total: fmt(n * Math.min(count, max), lc), b: (x) => <b className="text-foreground">{x}</b> })}</span>
         <button type="button" disabled={!n} onClick={() => onAdd(rule, counts ? Math.min(count, max) : 1)} className={buttonVariants({ size: "sm" })} data-testid={`${testId}-add`}>
-          <Plus className="h-4 w-4" aria-hidden /> Add the group
+          <Plus className="h-4 w-4" aria-hidden /> {t("addTheGroup")}
         </button>
       </div>
     </div>

@@ -1,0 +1,15 @@
+{
+  "login": {
+    "title": "Sign in",
+    "label": "Trainer ID",
+    "heading": "Sign in",
+    "intro": "Keep your progress on every device.",
+    "ages": "Accounts are for ages 13 and up.",
+    "privacy": "Privacy policy"
+  },
+  "oauth": {
+    "title": "Pick your trainer name",
+    "label": "New trainer",
+    "heading": "Pick your trainer name"
+  }
+}

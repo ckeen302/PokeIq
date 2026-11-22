@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "title": "Welches Pokémon bist du? Persönlichkeitstest",
+    "description": "Finde heraus, welches Pokémon du bist: Ein paar schnelle Fragen messen die Big Five plus Ehrgeiz und Unabhängigkeit und vergleichen dich mit Profilen aus dem Pokédex, Mystery Dungeon und dem Anime. Mit Teilen-Karte und Link zum Vergleich mit Freunden.",
+    "socialTitle": "Welches Pokémon bist du?",
+    "socialDescription": "Antworte ehrlich und triff dein Pokémon – jedes Profil stützt sich auf den Pokédex. Kostenlos, ohne Anmeldung.",
+    "ldName": "Welches Pokémon bist du?",
+    "ldDescription": "Ein Pokémon-Persönlichkeitstest mit einem Modell aus sieben Eigenschaften und gut belegten Ergebnissen."
+  },
+  "page": {
+    "kicker": "Persönlichkeitstest",
+    "title": "Welches Pokémon bist du?",
+    "lead": "Sieben Eigenschaften, Pokémon mit belegter Persönlichkeit und ein Ergebnis, das wirklich zu dir passt.",
+    "samples": "Beispielergebnisse",
+    "sample": "Ich bin {name}"
+  },
+  "result": {
+    "metaTitle": "Ich bin {name}! Welches Pokémon bist du?",
+    "metaDescription": "{name}, {title}: {first} Mach den Pokémon-Persönlichkeitstest und finde dein eigenes Pokémon.",
+    "socialTitle": "Ich bin {name}! Welches Pokémon bist du?",
+    "socialDescription": "{title}. {first}",
+    "ldName": "Ich bin {name}: Welches Pokémon bist du?",
+    "back": "Welches Pokémon bist du?",
+    "kicker": "Welches Pokémon bist du?",
+    "youAre": "Du bist <c>{name}</c>",
+    "dexLine": "#{num} · Gen. {gen} · <link>Pokédex-Eintrag</link>",
+    "why": "<b>Warum {name}:</b> {why}",
+    "profile": "Profil von {name}",
+    "partner": "Idealer Partner von {name}",
+    "rival": "Rivale von {name}"
+  },
+  "compare": {
+    "title": "Vergleich: Welches Pokémon bist du?",
+    "description": "Die Ergebnisse zweier Trainer im Pokémon-Persönlichkeitstest nebeneinander, mit Kompatibilitätswert. Mach den Test und vergleich dich mit Freunden.",
+    "socialTitle": "Welches Pokémon bist du? Vergleich dich mit mir",
+    "imageAlt": "Welches Pokémon bist du? Ein Persönlichkeitstest",
+    "kicker": "Mit Freunden vergleichen",
+    "title2": "Zwei Trainer, zwei Pokémon"
+  }
+}

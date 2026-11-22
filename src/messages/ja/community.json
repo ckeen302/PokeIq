@@ -1,0 +1,17 @@
+{
+  "friends": "フレンド",
+  "friendsWaiting": "フレンド（{n}件の通知）",
+  "answerFailed": "挑戦に返事できませんでした。",
+  "matchReady": "試合の準備ができました",
+  "match": "{title}：あなた vs <b>{name}</b>",
+  "playNow": "今すぐプレイ",
+  "later": "あとで",
+  "challenge": "挑戦",
+  "challenges": "<b>{name}</b>から<b>{game}</b>の挑戦が届きました。",
+  "accept": "受ける",
+  "decline": "断る",
+  "accepted": "<b>{name}</b>が{game}の挑戦を受けました。",
+  "declined": "<b>{name}</b>が{game}の挑戦を断りました。",
+  "close": "閉じる",
+  "nameRejected": "別の名前にしてください。"
+}

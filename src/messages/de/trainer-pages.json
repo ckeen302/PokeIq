@@ -1,0 +1,12 @@
+{
+  "card": {
+    "title": "Trainerpass"
+  },
+  "creator": {
+    "title": "Trainer-Editor",
+    "description": "Erstelle deinen 3D-Trainer für PokéIQ: Frisur, Mützen, Outfits, Taschen und deinen Pokéball.",
+    "back": "Zurück zum Trainerpass",
+    "label": "Trainer-Editor",
+    "heading": "Erstelle deinen Trainer"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "names": {
+    "lobby": "Salon principal",
+    "pokedle": "Pokédle",
+    "connections": "Connections",
+    "pikadoku": "Pikadoku",
+    "pokeguessr": "PokéGuessr",
+    "battle": "Combat",
+    "quizzes": "Quiz"
+  },
+  "descriptions": {
+    "lobby": "Dis bonjour ! Le salon principal pour tout ce qui touche à PokéIQ. Bloqué ou nouveau ? Pose ta question ici, d'autres Dresseurs t'aideront.",
+    "pokedle": "Le jeu quotidien pour deviner un Pokémon : partage ton score, pas la réponse.",
+    "connections": "Des groupes de Pokémon cachés : partage ta grille et parlez des plus retors.",
+    "pikadoku": "Le sudoku Pokémon : compare tes choix rares et frime avec ton score de rareté.",
+    "pokeguessr": "C'était où dans le monde Pokémon ? Partage tes séries et tes meilleures trouvailles.",
+    "battle": "Combats aléatoires, OU, Little Cup et tous les formats : équipes, sets, grosses actions et remontées.",
+    "quizzes": "Quel est ce Pokémon ?, Nomme-les tous et tous les quiz : partagez vos scores et défiez-vous."
+  }
+}

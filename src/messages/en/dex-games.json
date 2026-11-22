@@ -1,0 +1,67 @@
+{
+  "meta": {
+    "title": "Every Pokémon Game — Main Series, Remakes, Spin-offs & Mobile",
+    "description": "Every Pokémon video game from Red and Green to Legends: Z-A, with box art: the main series, remakes, spin-offs like Snap, Mystery Dungeon and Stadium, and mobile games like Pokémon GO. Filter by generation and type.",
+    "socialTitle": "Every Pokémon game · PokéIQ Pokédex"
+  },
+  "header": {
+    "kicker": "Game database",
+    "title": "Poké",
+    "accent": "dex",
+    "blurb": "Every Pokémon game, from Red and Green on the Game Boy to today: the main series and its remakes, the spin-offs and the mobile games, each with its box art."
+  },
+  "credit": "Release dates, platforms and developers from <wiki>Wikipedia</wiki>; box art, version exclusives and Legendary Pokémon from <serebii>Serebii</serebii>. Years are each game's first release; Gen is the generation it belongs to, or for a spin-off the one that was current.",
+  "ld": {
+    "pokedex": "Pokédex",
+    "games": "Games",
+    "list": "Pokémon video games"
+  },
+  "kind": {
+    "mainline": "Mainline",
+    "remake": "Remake",
+    "spinoff": "Spin-off",
+    "mobile": "Mobile"
+  },
+  "game": {
+    "metaTitle": "{name} ({year}) — {kind} Pokémon game",
+    "describe": "{name} ({year}, {platforms}): {summary}",
+    "socialTitle": "{name} · PokéIQ Pokédex",
+    "allGames": "All games",
+    "kicker": "Generation {gen} · {kind}",
+    "list": "{a}, {b}",
+    "releasedNote": "{date} ({note})",
+    "facts": {
+      "released": "Released",
+      "platform": "Platform",
+      "region": "Region",
+      "developer": "Developer"
+    },
+    "placesLink": "{region} in Places",
+    "trainersLink": "Trainer teams",
+    "whatsNew": "What's new",
+    "starter": "Starter",
+    "starters": "Starters",
+    "starterSub": "Your first partner",
+    "startersSub": "Pick your first partner",
+    "legendaries": "Legendary & Mythical Pokémon",
+    "legendariesSub": "Found in the game",
+    "legendariesDlcSub": "Found in the game and its DLC",
+    "exclusives": "Version exclusives",
+    "exclusivesSub": "Only found in one version",
+    "onlyIn": "Only in {version}",
+    "dlc": "DLC & expansions",
+    "related": "Related games",
+    "why": {
+      "previous": "Previous",
+      "next": "Next",
+      "region": "Also in {region}",
+      "series": "Same series",
+      "platform": "Also on {platform}"
+    },
+    "credit": "Release details from Wikipedia's <wiki>list of Pokémon video games</wiki>. Box art and logos belong to their publishers.",
+    "creditSerebii": "Release details from Wikipedia's <wiki>list of Pokémon video games</wiki>; version exclusives and Legendary Pokémon from Serebii, checked against the Pokédex's own encounter data. Box art and logos belong to their publishers."
+  },
+  "cover": {
+    "tileAlt": "{name}, on a tile in place of box art"
+  }
+}

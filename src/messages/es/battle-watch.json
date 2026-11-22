@@ -1,0 +1,25 @@
+{
+  "ranked": "Clasificatorio",
+  "cpu": "CPU",
+  "multi": "Combate múltiple · 2 contra 2",
+  "ffa": "Todos contra todos · 4 Entrenadores",
+  "vs": "VS",
+  "turn": "Turno {n}",
+  "watching": "{n} viendo",
+  "started": "Empezó {ago}",
+  "watch": "Ver →",
+  "ago": {
+    "now": "ahora mismo",
+    "min": "hace {m} min",
+    "hours": "hace {h} h {m} min"
+  },
+  "loadError": "No se pudieron cargar los combates en directo.",
+  "filter": "Filtrar por formato",
+  "all": "Todos los formatos",
+  "refreshes": "Se actualiza solo",
+  "loading": "Cargando combates en directo",
+  "noneIn": "No hay combates en directo de {format}",
+  "noneNow": "No hay combates en directo ahora mismo",
+  "noneBlurb": "Los combates emparejados aparecen aquí al empezar. Empieza uno y otros podrán verte.",
+  "find": "Buscar rival"
+}

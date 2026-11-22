@@ -6,7 +6,7 @@ import confetti from "canvas-confetti";
 import { animate, motion, useMotionValue, useTransform } from "framer-motion";
 import { track } from "@vercel/analytics";
 import { Check, Link2, Loader2, RotateCcw, Swords, Trophy, UserRound } from "lucide-react";
-import type { PracticeReason, RunResult, ShareCard } from "@/lib/session-types";
+import type { RunResult, ShareCard } from "@/lib/session-types";
 import { iqInterval, iqTitle } from "@/lib/rating";
 import { currentStreak, recordRun, setTrainerName, useProgress, type RunReward } from "@/lib/progress";
 import { challengeUrl, resultShareText, shareOrCopy, shareText } from "@/lib/share";
@@ -22,9 +22,15 @@ import { IqConvergence } from "./IqConvergence";
 import { CopyFallback } from "./CopyFallback";
 import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { cn } from "@/lib/utils";
-import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
+import { isCleanName } from "@/lib/name-filter";
 import { useAccount } from "@/lib/account";
 import { DailyEmailNudge } from "@/components/email/DailyEmailNudge";
+import { useT } from "@/i18n/client";
+import runNs from "@/messages/quiz-run";
+import modesNs from "@/messages/quiz-modes";
+import badgesNs from "@/messages/badges";
+import shareNs from "@/messages/share";
+import { num } from "./num";
 
 interface QuizResultsProps {
   result: RunResult;
@@ -36,26 +42,36 @@ interface QuizResultsProps {
 
 type SaveState = "idle" | "saving" | "saved" | "failed" | "disabled";
 
-/** Why a Daily Challenge or PokéIQ Test run can't go on its board (quiz modes have no boards at all). */
-const PRACTICE_NOTES: Record<PracticeReason, string> = {
-  challenge: "Practice run — challenge replays don't go on the leaderboard.",
-  "repeat-daily": "Practice run — only your first Daily Challenge of the day goes on the leaderboard.",
-  filtered: "Practice run — generation-filtered runs aren't ranked; boards compare all-generation runs.",
-  "zoom-daily": "The daily Zoom Reveal isn't ranked.",
-};
+/** A badge's id: its key in the "badges" namespace. (Why a run can't go on its board: results.practice.<reason>.) */
+type BadgeId = keyof typeof badgesNs.en & string;
+
+/** iqTitle's titles, as keys of the "quiz-run" namespace's results.titles / results.youAre. */
+const IQ_TITLE_KEYS = {
+  "Pokémon Professor": "professor",
+  Champion: "champion",
+  "Elite Four": "elite",
+  "Gym Leader": "leader",
+  "Ace Trainer": "ace",
+  Trainer: "trainer",
+  Youngster: "youngster",
+} as const;
+const iqKey = (iq: number) => IQ_TITLE_KEYS[iqTitle(iq) as keyof typeof IQ_TITLE_KEYS];
 
 /** Runs already credited this page-life (guards against re-mounts double-counting XP). */
 const recorded = new Map<string, RunReward>();
 
 function gradeFor(accuracy: number) {
-  if (accuracy >= 90) return { grade: "S", color: "text-primary", message: "Champion material!" };
-  if (accuracy >= 75) return { grade: "A", color: "text-success", message: "Elite Four level." };
-  if (accuracy >= 60) return { grade: "B", color: "text-success", message: "Gym Leader worthy." };
-  if (accuracy >= 40) return { grade: "C", color: "text-muted-foreground", message: "Keep training!" };
-  return { grade: "D", color: "text-muted-foreground", message: "Back to Pallet Town…" };
+  if (accuracy >= 90) return { grade: "S", color: "text-primary" } as const;
+  if (accuracy >= 75) return { grade: "A", color: "text-success" } as const;
+  if (accuracy >= 60) return { grade: "B", color: "text-success" } as const;
+  if (accuracy >= 40) return { grade: "C", color: "text-muted-foreground" } as const;
+  return { grade: "D", color: "text-muted-foreground" } as const;
 }
 
 export function QuizResults({ result, resultToken, shareToken, challenger, onRestart }: QuizResultsProps) {
+  const t = useT(runNs);
+  const bt = useT(badgesNs);
+  const st = useT(shareNs);
   const progress = useProgress();
   const account = useAccount();
   const [reward, setReward] = useState<RunReward | null>(null);
@@ -67,7 +83,7 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
   const firedRef = useRef(false);
 
   const accuracy = result.total ? Math.round((result.correct / result.total) * 100) : 0;
-  const { grade, color, message } = gradeFor(accuracy);
+  const { grade, color } = gradeFor(accuracy);
   const isDaily = Boolean(result.spec.daily);
   const isAdaptive = result.spec.format === "adaptive";
   const practice = result.practice ?? result.spec.practice;
@@ -92,7 +108,8 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
   const iqValue = useMotionValue(70);
   const iqDisplay = useTransform(iqValue, (v) => Math.round(v));
   const scoreValue = useMotionValue(0);
-  const scoreDisplay = useTransform(scoreValue, (v) => Math.round(v).toLocaleString());
+  const lang = t.locale;
+  const scoreDisplay = useTransform(scoreValue, (v) => num(Math.round(v), lang));
   useEffect(() => {
     const a = animate(iqValue, result.pokeiq, { duration: 1.4, ease: "easeOut" });
     const b = animate(scoreValue, result.score, { duration: 1.1, ease: "easeOut" });
@@ -121,12 +138,12 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
   function shareTextNow(): string {
     const day = result.spec.daily;
     const streak = day && progress ? currentStreak(progress.daily.last, progress.daily.streak, day) : undefined;
-    return resultShareText(result, challengeUrl(shareToken), streak);
+    return resultShareText(result, challengeUrl(shareToken, st.locale), streak, st);
   }
 
   async function copyChallenge() {
-    const text = `Think you know Pokémon? I scored ${result.correct}/${result.total} (PokéIQ ${result.pokeiq}). Beat me:`;
-    const url = challengeUrl(shareToken);
+    const text = t("results.challengeText", { correct: result.correct, total: result.total, iq: result.pokeiq });
+    const url = challengeUrl(shareToken, t.locale);
     const outcome = await shareOrCopy(text, url);
     if (outcome === "failed") return setCopyFallback(shareText(text, url));
     if (outcome !== "cancelled") {
@@ -141,7 +158,7 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
     const name = playerName.trim();
     if (!name || !ranked || practice || saveState === "saving" || saveState === "saved") return;
     if (!isCleanName(name)) {
-      setSaveError(NAME_REJECTED);
+      setSaveError(t("results.nameRejected"));
       setSaveState("failed");
       return;
     }
@@ -155,10 +172,10 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
         body: JSON.stringify({ playerName: name, resultToken }),
       });
       const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? "Save failed");
+      if (!res.ok) throw new Error(body.error ?? t("results.saveFailed"));
       setSaveState(body.saved ? "saved" : "disabled");
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : "Could not save");
+      setSaveError(err instanceof Error ? err.message : t("results.couldNotSave"));
       setSaveState("failed");
     }
   }
@@ -171,20 +188,20 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
       <Card className="mx-auto w-full max-w-2xl overflow-hidden">
         <div className="flex items-center justify-between border-b border-foreground/[0.07] bg-shade/30 px-6 py-3">
           <span className="hud-label flex items-center gap-2 text-screen">
-            <span className="led h-1.5 w-1.5 text-screen" /> {isAdaptive ? "PokéIQ Test complete" : "Run complete"}
+            <span className="led h-1.5 w-1.5 text-screen" /> {isAdaptive ? t("results.testDone") : t("results.runDone")}
           </span>
           <span className="hud-label">
-            {result.correct}/{result.total} correct
+            {t("results.correct", { correct: result.correct, total: result.total })}
           </span>
         </div>
         <CardHeader className="items-center space-y-5 text-center">
           <h2 className="font-display text-3xl font-bold uppercase tracking-tight">
-            {isAdaptive ? `You're a${/^[AEIOU]/.test(iqTitle(result.pokeiq)) ? "n" : ""} ${iqTitle(result.pokeiq)}` : message}
+            {isAdaptive ? t(`results.youAre.${iqKey(result.pokeiq)}`) : t(`results.grades.${grade}`)}
           </h2>
           <div className="grid w-full max-w-md grid-cols-[auto_1fr_1fr] gap-3">
             {!isAdaptive && (
               <div className="screen flex w-20 flex-col items-center justify-center rounded-md">
-                <span className="hud-label relative z-[3]">Rank</span>
+                <span className="hud-label relative z-[3]">{t("results.rank")}</span>
                 <motion.span
                   className={cn("relative z-[3] font-display text-5xl font-bold", color)}
                   initial={{ scale: 0, rotate: -20 }}
@@ -201,13 +218,13 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
                 {iqDisplay}
               </motion.div>
               <div className="relative z-[3] text-[11px] text-muted-foreground">
-                {interval ? `90% range ${interval[0]}–${interval[1]}` : iqTitle(result.pokeiq)}
+                {interval ? t("results.range", { lo: interval[0], hi: interval[1] }) : t(`results.titles.${iqKey(result.pokeiq)}`)}
               </div>
             </div>
             <div className="screen rounded-md px-4 py-3 text-left">
-              <div className="hud-label relative z-[3]">Score</div>
+              <div className="hud-label relative z-[3]">{t("results.score")}</div>
               <motion.div className="relative z-[3] font-pixel text-2xl tabular-nums leading-[3rem] text-foreground">{scoreDisplay}</motion.div>
-              <div className="relative z-[3] text-[11px] text-muted-foreground">Best streak {result.bestStreak}</div>
+              <div className="relative z-[3] text-[11px] text-muted-foreground">{t("results.bestStreak", { n: result.bestStreak })}</div>
             </div>
           </div>
         </CardHeader>
@@ -225,19 +242,19 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
             >
               <div className="flex items-center justify-center gap-2 text-sm font-semibold">
                 <Swords className="h-4 w-4" aria-hidden />
-                {beatChallenger === "win" ? "You won the challenge!" : beatChallenger === "tie" ? "It's a tie!" : "Challenge lost — rematch?"}
+                {beatChallenger === "win" ? t("results.won") : beatChallenger === "tie" ? t("results.tie") : t("results.lost")}
               </div>
               <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
                 <div>
-                  <div className="font-semibold">You</div>
+                  <div className="font-semibold">{t("results.you")}</div>
                   <div className="tabular-nums text-muted-foreground">
-                    {result.score.toLocaleString()} pts · {result.correct}/{result.total} · IQ {result.pokeiq}
+                    {t("results.line", { score: num(result.score, t.locale), correct: result.correct, total: result.total, iq: result.pokeiq })}
                   </div>
                 </div>
                 <div>
-                  <div className="font-semibold">{challenger.n || "Challenger"}</div>
+                  <div className="font-semibold">{challenger.n || t("results.challenger")}</div>
                   <div className="tabular-nums text-muted-foreground">
-                    {challenger.sc.toLocaleString()} pts · {challenger.c}/{challenger.t} · IQ {challenger.q}
+                    {t("results.line", { score: num(challenger.sc, t.locale), correct: challenger.c, total: challenger.t, iq: challenger.q })}
                   </div>
                 </div>
               </div>
@@ -251,10 +268,10 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
             >
-              {reward.dailyStreak !== undefined && <Badge variant="success">🔥 {reward.dailyStreak}-day streak</Badge>}
+              {reward.dailyStreak !== undefined && <Badge variant="success">{t("results.streak", { n: reward.dailyStreak })}</Badge>}
               {reward.newBadges.map((b) => (
                 <Badge key={b.id} variant="outline" className="border-warning/60 text-warning">
-                  <BadgeMedal id={b.id} size="sm" /> {b.name} unlocked
+                  <BadgeMedal id={b.id} size="sm" /> {t("results.unlocked", { name: bt(`${b.id as BadgeId}.name`) })}
                 </Badge>
               ))}
             </motion.div>
@@ -267,8 +284,12 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
                 className="flex items-center justify-between gap-3 rounded-md border border-screen/30 bg-screen/[0.05] px-4 py-3 text-sm transition hover:bg-screen/10 max-md:flex-col max-md:items-start max-md:gap-1"
               >
                 <span>
-                  <span className="text-muted-foreground">Coach tip: your weakest area is </span>
-                  <b>{focus.label}</b> <span className="text-muted-foreground">(~{Math.round(focus.accuracy * 100)}%)</span>
+                  {t.rich("results.coach", {
+                    area: focus.label,
+                    pct: Math.round(focus.accuracy * 100),
+                    m: (c) => <span className="text-muted-foreground">{c}</span>,
+                    b: (c) => <b>{c}</b>,
+                  })}
                 </span>
                 <span className="shrink-0 font-semibold text-screen max-md:shrink">{focus.cta} →</span>
               </Link>
@@ -279,27 +300,27 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
             <ShareButton size="lg" kind={isDaily ? "daily" : isAdaptive ? "iq-test" : "run"} getText={shareTextNow} />
             <Button size="lg" variant="outline" onClick={copyChallenge}>
               {linkState === "copied" ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
-              {linkState === "copied" ? "Challenge link copied!" : "Challenge a friend"}
+              {linkState === "copied" ? t("results.linkCopied") : t("results.challenge")}
             </Button>
           </div>
 
           {copyFallback && <CopyFallback text={copyFallback} />}
 
-          {isDaily && <NextDailyCountdown label="Next Daily Challenge in" />}
+          {isDaily && <NextDailyCountdown label={t("results.nextDaily")} />}
           {isDaily && !result.spec.zoomDaily && <DailyEmailNudge />}
 
           {!ranked ? (
             result.spec.zoomDaily ? (
-              <p className="rounded-md border border-dashed px-4 py-3 text-center text-xs text-muted-foreground">{PRACTICE_NOTES["zoom-daily"]}</p>
+              <p className="rounded-md border border-dashed px-4 py-3 text-center text-xs text-muted-foreground">{t("results.practice.zoom-daily")}</p>
             ) : (
               <PersonalBestLine result={result} reward={reward} username={account.user?.username ?? null} />
             )
           ) : practice ? (
-            <p className="rounded-md border border-dashed px-4 py-3 text-center text-xs text-muted-foreground">{PRACTICE_NOTES[practice]}</p>
+            <p className="rounded-md border border-dashed px-4 py-3 text-center text-xs text-muted-foreground">{t(`results.practice.${practice}`)}</p>
           ) : (
             <div className="space-y-2">
               <label htmlFor="player-name" className="hud-label">
-                {isDaily ? "Post to today's daily leaderboard" : "Save to leaderboard"}
+                {isDaily ? t("results.postDaily") : t("results.save")}
               </label>
               <div className="flex gap-2">
                 <input
@@ -311,7 +332,7 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
                   }}
                   onKeyDown={(e) => e.key === "Enter" && submitScore()}
                   maxLength={24}
-                  placeholder="Trainer name"
+                  placeholder={t("results.namePlaceholder")}
                   disabled={saveState === "saved" || saveState === "disabled"}
                   className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
                 />
@@ -320,7 +341,7 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
                   disabled={!playerName.trim() || saveState === "saving" || saveState === "saved" || saveState === "disabled"}
                 >
                   {saveState === "saving" && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
-                  {saveState === "saved" ? "Saved!" : "Submit"}
+                  {saveState === "saved" ? t("results.saved") : t("results.submit")}
                 </Button>
               </div>
               {saveState === "failed" && (
@@ -329,7 +350,7 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
                 </p>
               )}
               {saveState === "disabled" && (
-                <p className="text-xs text-muted-foreground">Leaderboards aren&apos;t enabled on this deployment.</p>
+                <p className="text-xs text-muted-foreground">{t("results.disabled")}</p>
               )}
             </div>
           )}
@@ -337,7 +358,7 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
           <div className="flex flex-col gap-2 sm:flex-row">
             {!isDaily && (
               <Button className="flex-1 max-sm:flex-none" size="lg" variant="secondary" onClick={onRestart}>
-                <RotateCcw className="h-4 w-4" aria-hidden /> Play again
+                <RotateCcw className="h-4 w-4" aria-hidden /> {t("results.playAgain")}
               </Button>
             )}
             {ranked && (
@@ -345,7 +366,7 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
                 href={isDaily ? `/leaderboard?board=daily&date=${result.spec.daily}` : "/leaderboard?board=iq"}
                 className={cn(buttonVariants({ variant: "outline", size: "lg" }), "flex-1 max-sm:flex-none")}
               >
-                <Trophy className="h-4 w-4" aria-hidden /> Leaderboard
+                <Trophy className="h-4 w-4" aria-hidden /> {t("results.leaderboard")}
               </Link>
             )}
           </div>
@@ -360,35 +381,36 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
  * bests show on their public profile once they're signed in.
  */
 function PersonalBestLine({ result, reward, username }: { result: RunResult; reward: RunReward | null; username: string | null }) {
+  const t = useT(runNs);
+  const mt = useT(modesNs);
   const best = reward?.personalBest;
   if (!best) return null;
-  const format = result.spec.format.charAt(0).toUpperCase() + result.spec.format.slice(1);
+  const format = mt(`formats.${result.spec.format}.title`);
+  const muted = (c: React.ReactNode) => <span className="text-muted-foreground">{c}</span>;
+  const bold = (c: React.ReactNode) => <b className="text-foreground">{c}</b>;
   return (
     <div className="flex flex-col items-center justify-between gap-2 rounded-md border bg-shade/20 px-4 py-3 text-sm sm:flex-row" data-testid="quiz-personal-best">
       <span className="flex items-center gap-2">
         <Trophy className={cn("h-4 w-4 shrink-0", best.isNew ? "text-warning" : "text-muted-foreground")} aria-hidden />
         {best.isNew ? (
           <span>
-            <b className="text-foreground">New personal best</b>
-            <span className="text-muted-foreground">
-              {" "}
-              for {format}
-              {best.before ? ` (was ${best.before.toLocaleString()})` : ""}
-            </span>
+            {best.before
+              ? t.rich("results.best.newWas", { format, before: num(best.before, t.locale), b: bold, m: muted })
+              : t.rich("results.best.new", { format, b: bold, m: muted })}
           </span>
         ) : (
           <span className="text-muted-foreground">
-            Your {format} best: <b className="tabular-nums text-foreground">{best.before?.toLocaleString()}</b>
+            {t.rich("results.best.yours", { format, best: best.before ? num(best.before, t.locale) : "", b: (c) => <b className="tabular-nums text-foreground">{c}</b> })}
           </span>
         )}
       </span>
       {username ? (
         <Link href={`/u/${encodeURIComponent(username)}#quiz-bests`} className="flex shrink-0 items-center gap-1 text-xs font-semibold text-screen hover:underline">
-          <UserRound className="h-3.5 w-3.5" aria-hidden /> On your profile
+          <UserRound className="h-3.5 w-3.5" aria-hidden /> {t("results.best.profile")}
         </Link>
       ) : (
         <Link href="/login" className="shrink-0 text-xs font-semibold text-screen hover:underline">
-          Sign in to show it on your profile
+          {t("results.best.signIn")}
         </Link>
       )}
     </div>

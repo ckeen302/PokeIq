@@ -1,0 +1,23 @@
+{
+  "notSent": "Messaggio non inviato.",
+  "unreachable": "Impossibile raggiungere il server. Riprova.",
+  "soon": "Le chat arrivano presto.",
+  "slow": "Modalità lenta: {s} s",
+  "live": "Dal vivo",
+  "polling": "Si aggiorna ogni pochi secondi",
+  "turnOn": "Attiva",
+  "chatOff": "Chat disattivata",
+  "off": "La chat è disattivata. Non vedrai messaggi e non potrai inviarne.",
+  "empty": "Ancora nessun messaggio. Saluta!",
+  "mute": "Silenzia {name}",
+  "unmute": "Riattiva {name}",
+  "reported": "Segnalato",
+  "reportTitle": "Segnala questo messaggio",
+  "reportLabel": "Segnala il messaggio di {name}",
+  "signIn": "<link>Accedi</link> per chattare. Tutti possono leggere.",
+  "placeholder": "Scrivi qualcosa di carino…",
+  "label": "Messaggio nella stanza",
+  "send": "Invia",
+  "here": "Presenti ({n})",
+  "muted": "Silenziati: {names}"
+}

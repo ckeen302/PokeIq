@@ -1,5 +1,7 @@
 import { ABILITY_NOTE, EV, FIELD_NOTE, NOTE, NOTE_CONFUSION, NOTE_ITEM, NOTE_SKIP } from "@/lib/mass-battle/constants";
 import { fmt } from "@/lib/mass-battle/copy";
+import { translator, type Translator } from "@/i18n/catalog";
+import mbUi from "@/messages/mass-battle-ui";
 
 /**
  * Damage numbers over the battle (optional): a small pool of labels that
@@ -24,52 +26,56 @@ interface Label {
 
 const LIFE = 0.95;
 
-const STATUS_NAME: Record<number, string> = { 1: "Paralysed", 2: "Burned", 3: "Poisoned", 4: "Badly poisoned", 5: "Asleep", 6: "Frozen", [NOTE_CONFUSION]: "Confused", 10: "Seeded" };
-const STAT_NAME = ["Attack", "Defense", "Sp. Atk", "Sp. Def", "Speed", "Accuracy", "Evasion"];
-const SKIP_NAME: Record<number, string> = { [NOTE_SKIP.sleep]: "Fast asleep", [NOTE_SKIP.frozen]: "Frozen solid", [NOTE_SKIP.flinch]: "Flinched", [NOTE_SKIP.paralysed]: "Fully paralysed", [NOTE_SKIP.confused]: "Hurt itself", [NOTE_SKIP.loafing]: "Loafing around", [NOTE_SKIP.recharge]: "Recharging", [NOTE_SKIP.failed]: "But it failed" };
-const ITEM_NAME: Record<number, string> = { [NOTE_ITEM.sitrus]: "Sitrus Berry", [NOTE_ITEM.lum]: "Lum Berry", [NOTE_ITEM.disguise]: "Disguise", [NOTE_ITEM.sash]: "Focus Sash", [NOTE_ITEM.weaknessPolicy]: "Weakness Policy", [NOTE_ITEM.balloon]: "Air Balloon popped", [NOTE_ITEM.knockedOff]: "Item knocked off" };
+type UiT = Translator<typeof mbUi.en>;
 
-const ABILITY_NAME: Record<number, string> = { [ABILITY_NOTE.intimidate]: "Intimidate", [ABILITY_NOTE.trace]: "Trace", [ABILITY_NOTE.download]: "Download", [ABILITY_NOTE.gas]: "Neutralizing Gas", [ABILITY_NOTE.pressure]: "Pressure" };
-const WEATHER_START = ["The skies cleared", "The sunlight turned harsh", "It started to rain", "A sandstorm kicked up", "It started to snow"];
-const TERRAIN_START = ["The terrain faded", "Electric Terrain spread out", "Grass grew to cover the field", "The field got weird", "Mist swirled over the field"];
-const SCREEN_NAME = ["", "Reflect", "Light Screen", "Aurora Veil"];
+/** Statuses with a label (their note value → message). */
+const STATUS_KEY: Record<number, "1" | "2" | "3" | "4" | "5" | "6" | "confused" | "10"> = { 1: "1", 2: "2", 3: "3", 4: "4", 5: "5", 6: "6", [NOTE_CONFUSION]: "confused", 10: "10" };
+const SKIP_KEY: Record<number, keyof typeof mbUi.en.notes.skip> = { [NOTE_SKIP.sleep]: "sleep", [NOTE_SKIP.frozen]: "frozen", [NOTE_SKIP.flinch]: "flinch", [NOTE_SKIP.paralysed]: "paralysed", [NOTE_SKIP.confused]: "confused", [NOTE_SKIP.loafing]: "loafing", [NOTE_SKIP.recharge]: "recharge", [NOTE_SKIP.failed]: "failed" };
+const ITEM_KEY: Record<number, keyof typeof mbUi.en.notes.item> = { [NOTE_ITEM.sitrus]: "sitrus", [NOTE_ITEM.lum]: "lum", [NOTE_ITEM.disguise]: "disguise", [NOTE_ITEM.sash]: "sash", [NOTE_ITEM.weaknessPolicy]: "weaknessPolicy", [NOTE_ITEM.balloon]: "balloon", [NOTE_ITEM.knockedOff]: "knockedOff" };
+const ABILITY_KEY: Record<number, keyof typeof mbUi.en.notes.ability> = { [ABILITY_NOTE.intimidate]: "intimidate", [ABILITY_NOTE.trace]: "trace", [ABILITY_NOTE.download]: "download", [ABILITY_NOTE.gas]: "gas", [ABILITY_NOTE.pressure]: "pressure" };
+const WEATHERS = ["0", "1", "2", "3", "4"] as const;
+const SCREENS = ["", "1", "2", "3"] as const;
+const STATS = ["0", "1", "2", "3", "4", "5", "6"] as const;
 
 /** A kill-feed line for a change to the field or an ability as a Pokémon comes in, or null. */
-export function fieldLine(kind: number, value: number, who: string): string | null {
+export function fieldLine(kind: number, value: number, who: string, t: UiT = translator(mbUi, "en", undefined)): string | null {
   if (kind === NOTE.ABILITY) {
-    if (value === ABILITY_NOTE.gas) return `${who}'s Neutralizing Gas filled the area`;
-    if (value === ABILITY_NOTE.intimidate) return `${who}'s Intimidate`;
-    if (value === ABILITY_NOTE.trace) return `${who} traced an ability`;
+    if (value === ABILITY_NOTE.gas) return t("notes.gasLine", { who });
+    if (value === ABILITY_NOTE.intimidate) return t("notes.intimidateLine", { who });
+    if (value === ABILITY_NOTE.trace) return t("notes.traceLine", { who });
     return null;
   }
   if (kind !== NOTE.FIELD) return null;
   const what = Math.floor(value / 16), v = value % 16;
-  const by = who ? ` (${who})` : "";
-  if (what === FIELD_NOTE.weather) return WEATHER_START[v] ? `${WEATHER_START[v]}${by}` : null;
-  if (what === FIELD_NOTE.terrain) return TERRAIN_START[v] ? `${TERRAIN_START[v]}${by}` : null;
-  if (what === FIELD_NOTE.screen) return SCREEN_NAME[v % 4] ? `${SCREEN_NAME[v % 4]} went up${by}` : null;
-  if (what === FIELD_NOTE.screenEnd) return SCREEN_NAME[v % 4] ? `${SCREEN_NAME[v % 4]} wore off` : null;
+  const by = (line: string) => (who ? t("notes.by", { line, who }) : line);
+  const w = WEATHERS[v];
+  if (what === FIELD_NOTE.weather) return w ? by(t(`notes.weather.${w}`)) : null;
+  if (what === FIELD_NOTE.terrain) return w ? by(t(`notes.terrain.${w}`)) : null;
+  const sc = SCREENS[v % 4];
+  if (what === FIELD_NOTE.screen) return sc ? by(t("notes.screenUp", { screen: t(`notes.screen.${sc}`) })) : null;
+  if (what === FIELD_NOTE.screenEnd) return sc ? t("notes.screenOff", { screen: t(`notes.screen.${sc}`) }) : null;
   return null;
 }
 
 /** The label for a note (a status, healing, chip damage, a stat stage, a lost turn, an item, a form: its name), or null. */
-export function noteLabel(kind: number, value: number, form?: string): { text: string; cls: string } | null {
+export function noteLabel(kind: number, value: number, form?: string, t: UiT = translator(mbUi, "en", undefined)): { text: string; cls: string } | null {
+  const lc = t.locale;
   switch (kind) {
-    case NOTE.HEAL: return value > 0 ? { text: `+${fmt(value)}`, cls: "mb-dmg-heal" } : null;
-    case NOTE.CHIP: return value > 0 ? { text: `−${fmt(value)}`, cls: "mb-dmg-chip" } : null;
-    case NOTE.STATUS: return STATUS_NAME[value] ? { text: STATUS_NAME[value], cls: `mb-dmg-status mb-st-${value}` } : null;
-    case NOTE.CURE: return STATUS_NAME[value] ? { text: value === NOTE_CONFUSION ? "Snapped out" : "Cured", cls: "mb-dmg-heal" } : null;
+    case NOTE.HEAL: return value > 0 ? { text: `+${fmt(value, lc)}`, cls: "mb-dmg-heal" } : null;
+    case NOTE.CHIP: return value > 0 ? { text: `−${fmt(value, lc)}`, cls: "mb-dmg-chip" } : null;
+    case NOTE.STATUS: return STATUS_KEY[value] ? { text: t(`notes.status.${STATUS_KEY[value]}`), cls: `mb-dmg-status mb-st-${value}` } : null;
+    case NOTE.CURE: return STATUS_KEY[value] ? { text: t(value === NOTE_CONFUSION ? "notes.snapped" : "notes.cured"), cls: "mb-dmg-heal" } : null;
     case NOTE.BOOST: {
       const stat = Math.floor(value / 16), change = (value % 16) - 8;
-      if (!STAT_NAME[stat] || !change) return null;
-      return { text: `${STAT_NAME[stat]} ${change > 0 ? "↑".repeat(Math.min(3, change)) : "↓".repeat(Math.min(3, -change))}`, cls: change > 0 ? "mb-dmg-up" : "mb-dmg-down" };
+      if (!STATS[stat] || !change) return null;
+      return { text: `${t(`notes.stat.${STATS[stat]}`)} ${change > 0 ? "↑".repeat(Math.min(3, change)) : "↓".repeat(Math.min(3, -change))}`, cls: change > 0 ? "mb-dmg-up" : "mb-dmg-down" };
     }
-    case NOTE.SKIP: return SKIP_NAME[value] ? { text: SKIP_NAME[value], cls: "mb-dmg-miss" } : null;
-    case NOTE.ITEM: return ITEM_NAME[value] ? { text: ITEM_NAME[value], cls: "mb-dmg-item" } : null;
+    case NOTE.SKIP: return SKIP_KEY[value] ? { text: t(`notes.skip.${SKIP_KEY[value]}`), cls: "mb-dmg-miss" } : null;
+    case NOTE.ITEM: return ITEM_KEY[value] ? { text: t(`notes.item.${ITEM_KEY[value]}`), cls: "mb-dmg-item" } : null;
     case NOTE.FORM: return form ? { text: form, cls: "mb-dmg-form" } : null;
     case NOTE.MOVE: return form ? { text: form, cls: "mb-dmg-up" } : null;
-    case NOTE.PP: return { text: "Out of PP: Struggle", cls: "mb-dmg-miss" };
-    case NOTE.ABILITY: return ABILITY_NAME[value] ? { text: ABILITY_NAME[value], cls: "mb-dmg-item" } : null;
+    case NOTE.PP: return { text: t("notes.struggle"), cls: "mb-dmg-miss" };
+    case NOTE.ABILITY: return ABILITY_KEY[value] ? { text: t(`notes.ability.${ABILITY_KEY[value]}`), cls: "mb-dmg-item" } : null;
   }
   return null;
 }
@@ -85,6 +91,8 @@ export class DamageNumbers {
   private budget = 0;
   private lastAt = 0;
   enabled = false;
+  /** The words a hit can show instead of its damage, and the language its numbers are written in. */
+  words = { miss: "Miss", immune: "Immune", locale: "en" };
 
   constructor(private root: HTMLElement, size = 28) {
     for (let i = 0; i < size; i++) {
@@ -106,10 +114,10 @@ export class DamageNumbers {
     const l = this.labels[this.next];
     this.next = (this.next + 1) % this.labels.length;
     const crit = !!(flags & EV.CRIT), sup = !!(flags & EV.SUPER), res = !!(flags & EV.RESIST);
-    let text = fmt(damage);
+    let text = fmt(damage, this.words.locale);
     let cls = "mb-dmg";
-    if (flags & EV.MISS) { text = "Miss"; cls += " mb-dmg-miss"; }
-    else if (flags & EV.IMMUNE) { text = "Immune"; cls += " mb-dmg-miss"; }
+    if (flags & EV.MISS) { text = this.words.miss; cls += " mb-dmg-miss"; }
+    else if (flags & EV.IMMUNE) { text = this.words.immune; cls += " mb-dmg-miss"; }
     else if (crit) cls += " mb-dmg-crit";
     else if (sup) cls += " mb-dmg-super";
     else if (res) cls += " mb-dmg-resist";

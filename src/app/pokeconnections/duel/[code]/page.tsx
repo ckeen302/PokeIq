@@ -17,6 +17,7 @@ import conn from "@/messages/connections";
 import share from "@/messages/share";
 import duelShared from "@/messages/duel";
 import tier from "@/messages/tier";
+import badges from "@/messages/badges";
 
 interface PageProps {
   params: Promise<{ code: string }>;
@@ -43,7 +44,7 @@ export default async function ConnectionsDuelPage({ params }: PageProps) {
   if (duel && duel.kind !== "connections") redirect(pvpHref(duel.kind, code));
   // Nothing about the puzzle goes in the page: the tiles come from the duel's API once the race starts.
   return (
-    <ClientMessages namespaces={[duelNs, board, conn, share, duelShared, tier]}>
+    <ClientMessages namespaces={[duelNs, board, conn, share, duelShared, tier, badges]}>
       <ConnNamesProvider names={connTileNames(getLocale())}>
         <ConnectionsDuel key={code} code={code} />
       </ConnNamesProvider>

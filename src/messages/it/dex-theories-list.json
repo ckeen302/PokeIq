@@ -1,0 +1,22 @@
+{
+  "label": "Tutti i fascicoli",
+  "verdictGroup": "Verdetto",
+  "allCases": "Tutti i casi",
+  "verdict": {
+    "confirmed": "Confermata",
+    "fan": "Teoria dei fan",
+    "debunked": "Smentita"
+  },
+  "sourceGroup": "Da dove viene",
+  "source": {
+    "games": "Giochi",
+    "anime": "Anime",
+    "pokedex": "Pokédex",
+    "internet": "Internet",
+    "manga": "Manga"
+  },
+  "search": "Cerca casi",
+  "none": "Nessun caso corrisponde. Prova un altro verdetto, un’altra fonte o un’altra ricerca.",
+  "caseNumber": "CASO {n}",
+  "open": "Apri →"
+}

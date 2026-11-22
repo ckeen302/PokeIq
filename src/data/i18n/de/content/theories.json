@@ -1,0 +1,1550 @@
+{
+ "cubone-wears-its-mothers-skull": {
+  "title": "Tragosso trägt den Schädel seiner Mutter",
+  "era": "Gen. I · 1996",
+  "summary": "Der Pokédex sagt es, und der Geist im Pokémon-Turm ist eine Knogga-Mutter.",
+  "claim": "Der Knochenhelm, den Tragosso nie abnimmt, ist der Schädel seiner toten Mutter, und der Geist, der in Rot und Blau die Spitze des Pokémon-Turms versperrt, ist eine Knogga-Mutter, die von Team Rocket getötet wurde.",
+  "origin": "Es beginnt mit Rot und Grün (1996): Die Bewohner von Lavandia erzählen von der ermordeten Mutter eines Tragosso, und das Silph Scope entlarvt ihren Geist im Pokémon-Turm. Ab Gelb sagt es der Pokédex ganz offen. Es wurde zu einer der bekanntesten düsteren Tatsachen der Reihe, fester Bestandteil von Listen der „düstersten Pokédex-Einträge“ und von Eisberg-Videos, und spätere Spiele haben immer weiter daran angeknüpft.",
+  "evidenceFor": [
+   {
+    "text": "Der Pokédex-Eintrag aus Gelb sagt es direkt:",
+    "quote": "Trägt den Schädel seiner verstorbenen Mutter. Seine Schreie hallen im Schädel wider und kommen als traurige Melodie heraus.",
+    "mark": [
+     "den Schädel seiner verstorbenen Mutter"
+    ],
+    "source": "Tragosso · Pokédex · Gelb"
+   },
+   {
+    "text": "Kristall ergänzt, wann sie starb:",
+    "quote": "Es verlor seine Mutter nach seiner Geburt. Es trägt den Schädel seiner Mutter und zeigt nie sein wahres Gesicht.",
+    "mark": [
+     "den Schädel seiner Mutter"
+    ],
+    "source": "Tragosso · Pokédex · Kristall"
+   },
+   {
+    "text": "Im Pokémon-Turm enthüllt das Silph Scope den Geist, der die Treppe versperrt:",
+    "quote": "Der Geist war die ruhelose Seele von Tragossos Mutter!",
+    "mark": [
+     "Tragossos Mutter"
+    ],
+    "source": "Pokémon-Turm · Rot & Blau"
+   },
+   {
+    "text": "Ein Mädchen in Lavandia erzählt, wie sie starb:",
+    "quote": "Ich hasse diese schrecklichen Rockets! Die arme Mutter von Tragosso … Sie wurde getötet, als sie vor Team Rocket fliehen wollte!",
+    "mark": [
+     "getötet"
+    ],
+    "source": "Lavandia · Rot & Blau"
+   },
+   {
+    "text": "Im Code des Spiels ist der Geist ein echtes Knogga: Das Disassembly definiert die ruhelose Seele als MAROWAK, und die Fangroutine hat einen Sonderfall, damit man es nicht fangen kann.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Knoggas Einträge führen die Geschichte fort: In Rubin und Saphir ist es „die Entwicklung eines Tragosso, das die Trauer über den Verlust seiner Mutter überwunden hat“, und in Schild verwächst der Schädel der Mutter bei der Entwicklung mit ihm.",
+    "source": "Knogga · Pokédex · Rubin, Saphir & Schild"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Der Pokédex-Eintrag aus Rot und Blau selbst erwähnt nie eine Mutter:",
+    "quote": "Da es seinen Knochenhelm nie abnimmt, hat noch nie jemand das wahre Gesicht dieses Pokémon gesehen.",
+    "source": "Tragosso · Pokédex · Rot & Blau"
+   },
+   {
+    "text": "Kein Spiel zeigt, wie ein Tragosso zu seinem Schädel kommt oder ob jedes Tragosso seine Mutter verloren hat. Das bleibt der Formulierung des Pokédex überlassen.",
+    "source": "Offizielle Quellen"
+   }
+  ],
+  "confirmed": "Pokédex-Einträge ab Gelb (darunter Silber, Kristall, Feuerrot, X, Y, Sonne, Mond, Schwert und Schild) sagen, dass der Schädel der seiner Mutter ist, und der Geist im Pokémon-Turm aus Rot und Blau ist Tragossos Mutter, ein Knogga, das Team Rocket getötet hat. Ideen, die weitergehen, etwa dass Tragosso ein Kangama-Baby ist, sind Ergänzungen von Fans und separat abgelegt.",
+  "verdictText": "Von den Spielen bestätigt: Pokédex-Texte quer durch die Reihe und das Ereignis im Pokémon-Turm in Rot und Blau sagen es beide.",
+  "links": [
+   "pret/pokered: Text des Pokémon-Turms, 6. Stock",
+   "pret/pokered: Lavandia, Text des Tragosso-Hauses",
+   "pret/pokered: Fangroutine (das Geister-Knogga kann nicht gefangen werden)",
+   "Pokédex-Text von Tragosso (PokeAPI)",
+   "Pokédex-Text von Knogga (PokeAPI)",
+   "Bulbapedia: Knogga (Geist)"
+  ],
+  "board": {
+   "question": "Wessen Schädel trägt Tragosso?",
+   "hook": "Der Pokédex nennt es, und der Geist auf der Turmtreppe ist der Beweis. Ein seltener Fall, den die Spiele selbst gelöst haben.",
+   "caption": "Mutter und Kind",
+   "keys": [
+    "Der Pokédex sagt, es ist der seiner Mutter",
+    "Der Turmgeist ist Tragossos Mutter",
+    "Team Rocket hat sie getötet"
+   ],
+   "b": {
+    "label": "Pokédex-Eintrag von Tragosso · Gelb",
+    "quote": "Trägt den Schädel seiner verstorbenen Mutter. Seine Schreie hallen im Schädel wider und kommen als traurige Melodie heraus.",
+    "mark": [
+     "verstorbenen Mutter"
+    ]
+   },
+   "c": {
+    "text": "Das Silph Scope entlarvt den Geist als Knogga: Tragossos Mutter.",
+    "bold": [
+     "Knogga"
+    ]
+   }
+  }
+ },
+ "gengar-is-clefables-shadow": {
+  "title": "Gengar ist Pixis Schatten",
+  "era": "Gen. I · 1996",
+  "summary": "Gleiche Umrisse und ein Pokédex-Eintrag im Mondschein. Nichts Offizielles verbindet die beiden.",
+  "claim": "Fans weisen seit Jahren darauf hin, dass Gengar und Pixi denselben Umriss haben. Die Theorie besagt, dass Gengar der lebendig gewordene Schatten eines Pixi ist – oder sein Geist.",
+  "origin": "Spieler stellen die beiden seit Rot und Blau nebeneinander. Die Idee verbreitete sich über Foren, Theorie-Listen aus der Creepypasta-Ära und Reddit-Threads und taucht regelmäßig in Theorie-Artikeln und -Videos auf; dass Pixi in X und Y zum Typ Fee wurde, gab ihr eine neue Wendung.",
+  "evidenceFor": [
+   {
+    "text": "Nebeneinander haben beide einen runden Körper, spitze Ohren und kurze Arme und Beine. Siehe Beweisstück A.",
+    "source": "Offizielle Artworks"
+   },
+   {
+    "text": "Gengars erster Pokédex-Eintrag verbindet es mit Schatten und dem Vollmond:",
+    "quote": "Bei Vollmond ahmt dieses Pokémon gern die Schatten von Menschen nach und lacht über ihre Angst.",
+    "mark": [
+     "Vollmond",
+     "Schatten"
+    ],
+    "source": "Gengar · Pokédex · Rot & Blau"
+   },
+   {
+    "text": "Pixis Familie gehört zum Mond: In Rot und Blau leben Piepi im Mondberg, wo ein Mondstein darauf wartet, sie zu entwickeln.",
+    "source": "Spiele · Rot & Blau"
+   },
+   {
+    "text": "Legenden: Arceus sagt, dass Pixis Artgenossen auf dem Mond leben:",
+    "quote": "Einer Legende zufolge lauscht es in klaren, stillen Nächten den Stimmen seiner Artgenossen, die auf dem Mond leben.",
+    "mark": [
+     "seiner Artgenossen, die auf dem Mond leben"
+    ],
+    "source": "Pixi · Pokédex · Legenden: Arceus"
+   },
+   {
+    "text": "Spiegelbildliche Typen: In der Typentabelle von Rot und Blau haben Normal-Attacken keine Wirkung auf Geist-Pokémon, und Geist-Attacken keine Wirkung auf Normal-Pokémon. Pixi war damals vom Typ Normal.",
+    "source": "Datamine · Typentabelle von Rot & Blau"
+   },
+   {
+    "text": "Fast dasselbe Gewicht: Pixi wiegt 40,0 kg und Gengar 40,5 kg.",
+    "source": "Pokédex-Daten"
+   },
+   {
+    "text": "In der internen Liste von Rot und Blau ist Gengar Nummer 14, weit vor Nebulak (25) und Alpollo (147) und nahe bei Piepi (4).",
+    "source": "Datamine · pret/pokered"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Es sind zwei getrennte Familien. Gengar entwickelt sich aus Alpollo, Pixi aus Piepi.",
+    "source": "Spiele"
+   },
+   {
+    "text": "Verschiedene Typen. Gengar ist Geist/Gift. Pixi war Normal und wurde in X und Y zu Fee.",
+    "source": "Spiele"
+   },
+   {
+    "text": "Pokémon Mond weist in eine ganz andere Richtung:",
+    "quote": "Gengar raubt Menschen das Leben, um einen Begleiter an seiner Seite zu haben, der wie es selbst einmal ein Mensch war.",
+    "mark": [
+     "wie es selbst einmal ein Mensch war"
+    ],
+    "source": "Gengar · Pokédex · Mond"
+   },
+   {
+    "text": "Kein Spiel, kein Pokédex-Eintrag und keine Episode verbindet die beiden.",
+    "source": "Offizielle Quellen"
+   }
+  ],
+  "confirmed": "Gengars Pokédex-Text verbindet es tatsächlich mit Schatten und dem Vollmond, und Pixis Familie ist tatsächlich mit dem Mond verbunden. Die Verbindung zwischen den beiden ist die Idee der Fans.",
+  "verdictText": "Die Hinweise sind echt, aber nichts Offizielles verbindet Gengar und Pixi. Das stärkste Gegenargument ist der Eintrag aus Pokémon Mond, laut dem Gengar einst ein Mensch war. Game Freak hat sich nie zu der Theorie geäußert, also bleibt sie offen.",
+  "links": [
+   "Pokédex-Text von Gengar (PokeAPI)",
+   "Pokédex-Text von Pixi (PokeAPI)",
+   "pret/pokered: Typentabelle der 1. Generation",
+   "pret/pokered: interne Pokémon-Liste",
+   "pret/pokered: wilde Pokémon im Mondberg",
+   "Game Rant: die Theorie zu Gengar und Pixi (wo sie sich verbreitete)",
+   "GAMINGbible: Reddit diskutiert immer noch (2024)"
+  ],
+  "silhouettes": {
+   "title": "Die Umrisse",
+   "text": "Beide Pokémon in Schwarz, so wie die Theorie sie sieht. Dann übereinandergelegt."
+  },
+  "board": {
+   "question": "Ist Gengar wirklich Pixis Schatten?",
+   "hook": "Die Umrisse passen, und beide Pokémon verweisen immer wieder auf den Mond. Zufall oder Hinweis?",
+   "caption": "Derselbe Schatten?",
+   "keys": [
+    "Ihre Umrisse passen",
+    "Gengar ahmt bei Vollmond Schatten nach",
+    "Pixis Familie gehört zum Mond"
+   ],
+   "b": {
+    "label": "Pokédex-Eintrag von Gengar · Rot & Blau",
+    "quote": "Bei Vollmond ahmt dieses Pokémon gern die Schatten von Menschen nach und lacht über ihre Angst.",
+    "mark": [
+     "Vollmond",
+     "Schatten"
+    ]
+   },
+   "c": {
+    "text": "Piepi leben im Mondberg und entwickeln sich mit einem Mondstein.",
+    "bold": [
+     "Mondberg",
+     "Mondstein"
+    ]
+   }
+  }
+ },
+ "there-was-a-war-in-kanto": {
+  "title": "Es gab einen Krieg in Kanto",
+  "era": "Gen. I · 1996",
+  "summary": "Major Bob sagt, Elektro-Pokémon hätten ihn im Krieg gerettet.",
+  "claim": "In der Pokémon-Welt gab es einen echten Krieg, und Orania Citys Arenaleiter Major Bob hat darin gekämpft.",
+  "origin": "Es ist ein einziger Satz aus Major Bobs Ansprache vor seinem Arenakampf in Rot und Blau. Fans haben seitdem in Foren und auf Reddit darauf aufgebaut: Der Krieg erkläre die fehlenden Väter in Kanto oder warum so viele Trainer Kinder sind.",
+  "evidenceFor": [
+   {
+    "text": "Major Bob vor dem Kampf:",
+    "quote": "Ich sag dir was, Kleiner: Elektro-Pokémon haben mich im Krieg gerettet! Sie haben meine Feinde paralysiert!",
+    "mark": [
+     "im Krieg"
+    ],
+    "source": "Major Bob · Arena von Orania City · Rot & Blau"
+   },
+   {
+    "text": "Dieselbe Ansprache klingt nach einem Soldaten:",
+    "quote": "Im Gefecht würdest du nicht lange überleben! So viel ist sicher!",
+    "mark": [
+     "Im Gefecht"
+    ],
+    "source": "Major Bob · Arena von Orania City · Rot & Blau"
+   },
+   {
+    "text": "Sein Titel, Major, ist ein militärischer Rang.",
+    "source": "Spiele"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Kein Spiel nennt den Krieg beim Namen oder sagt, wann er war oder wer ihn führte.",
+    "source": "Offizielle Quellen"
+   },
+   {
+    "text": "Nichts in den Spielen verbindet ihn mit Kantos fehlenden Eltern oder mit Kindern als Trainern. Diese Ideen sind Ergänzungen von Fans.",
+    "source": "Offizielle Quellen"
+   }
+  ],
+  "confirmed": "Major Bob sagt, Elektro-Pokémon hätten ihn „im Krieg“ gerettet. Das steht im Skript von Rot und Blau. Welcher Krieg, und alles, was Fans daran aufgehängt haben, wird nie gesagt.",
+  "verdictText": "Bestätigt: Ein Krieg gehört zu Major Bobs Vergangenheit, direkt aus dem Skript von Rot und Blau. Was das für ein Krieg war, wird nie erklärt.",
+  "links": [
+   "pret/pokered: Text der Arena von Orania City"
+  ]
+ },
+ "mew-is-under-the-truck": {
+  "title": "Mew ist unter dem Lastwagen",
+  "era": "Gen. I · 1998",
+  "summary": "Der Lastwagen neben der MS Anne verbirgt nichts. Die Daten des Spiels beweisen es.",
+  "claim": "Verschiebe den einsamen Lastwagen am Kai von Orania City, neben der MS Anne, mit Stärke, und darunter findest du Mew.",
+  "origin": "Ein Schulhofgerücht der späten 1990er. Der Lastwagen steht ohne Zweck am Kai, Mew war echt, aber fast niemand hatte eins, und das Gerücht wuchs, als Mew in den Spielen einiger Spieler auftauchte. Die Versionen waren sich beim Trick nicht einig (Stärke, ein besonderes Team), aber keine funktionierte.",
+  "evidenceFor": [
+   {
+    "text": "Der Lastwagen ist einmalig: ein einzelnes Fahrzeug an einem Kai, den man nur rund um die MS Anne erreicht, und man kann nichts mit ihm machen.",
+    "source": "Spiele · Rot & Blau"
+   },
+   {
+    "text": "Mew war echt – und selten genug, um sich wie ein Geheimnis anzufühlen:",
+    "quote": "So selten, dass viele Experten es noch immer für eine Fata Morgana halten. Nur wenige Menschen auf der Welt haben es gesehen.",
+    "mark": [
+     "Fata Morgana"
+    ],
+    "source": "Mew · Pokédex · Rot & Blau"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Die Kartendaten des Kais enthalten zwei Durchgänge und sonst nichts: keine Schilder, keine Personen, keine Items, keine versteckten Ereignisse. Am Lastwagen gibt es nichts, was das Spiel ausführen könnte.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Die einzigen wilden Pokémon am Kai sind die, die man mit der Superangel fängt.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Mew wurde bei Events verteilt. Die ersten gingen 1996 in Japan an 20 Gewinner eines CoroCoro-Gewinnspiels; jedes wurde auf Shigeki Morimotos PC erstellt und per Link-Kabel getauscht.",
+    "source": "Entwickler · Shigeki Morimoto"
+   },
+   {
+    "text": "Feuerrot und Blattgrün behielten den Lastwagen und versteckten am Kai einen Lavakeks, ein Augenzwinkern zum Gerücht. Trotzdem kein Mew.",
+    "source": "Spiele · Feuerrot & Blattgrün"
+   }
+  ],
+  "confirmed": "Der Lastwagen ist Kulisse. Mew wurde nur bei Events verteilt (oder per Glitch gefangen), nie am Kai.",
+  "verdictText": "Von den Daten des Spiels widerlegt: Der Kai von Orania City hat keinerlei Ereignis, also kann das Schieben des Lastwagens nichts bewirken. Der versteckte Lavakeks der Remakes ist das Einzige, was dort je platziert wurde.",
+  "links": [
+   "pret/pokered: Kartenobjekte des Kais von Orania City",
+   "pret/pokered: Superangel-Gruppen",
+   "pret/pokefirered: Kai der MS Anne, versteckter Lavakeks",
+   "Kotaku: als Spieler dachten, Mew sei unter einem Lastwagen",
+   "Siliconera: Morimoto über die erste Mew-Verteilung"
+  ],
+  "board": {
+   "question": "Ist Mew wirklich unter dem Lastwagen?",
+   "hook": "Ein Lastwagen, den niemand benutzen kann, geparkt neben der MS Anne. Jedes Kind hatte eine Theorie, was darunter war.",
+   "caption": "Hier drunter?",
+   "keys": [
+    "Ein Lastwagen ohne Zweck",
+    "Die Daten des Kais haben nichts auszuführen",
+    "Die Remakes hinterließen einen Lavakeks"
+   ],
+   "b": {
+    "label": "Kai von Orania City · Kartendaten · Rot & Blau",
+    "text": "Durchgänge: 2. Schilder: keine. Personen: keine. Items: keine. Versteckte Ereignisse: keine."
+   },
+   "c": {
+    "text": "Feuerrot und Blattgrün versteckten am Kai einen Lavakeks. Trotzdem kein Mew.",
+    "bold": [
+     "Lavakeks"
+    ]
+   }
+  }
+ },
+ "missingno-is-real": {
+  "title": "MissingNo. ist echt",
+  "era": "Gen. I · 1998",
+  "summary": "Ein echtes Glitch-Pokémon in Rot und Blau, dem man beim Surfen an der Küste der Zinnoberinsel begegnet.",
+  "claim": "In Rot und Blau kann man einem kaputten „Pokémon“ namens MissingNo. begegnen: Lass dir vom alten Mann in Vertania City zeigen, wie man Pokémon fängt, flieg zur Zinnoberinsel und surfe an ihrer Ostküste auf und ab.",
+  "origin": "Spieler stießen kurz nach der englischen Veröffentlichung darauf. Es verbreitete sich per Mundpropaganda und über frühe Fanseiten, unterstützt von seinem Nebeneffekt: Die Begegnung erhöht das sechste Item im Beutel um 128, ein beliebter Trick für Sonderbonbons und Meisterbälle.",
+  "evidenceFor": [
+   {
+    "text": "Der disassemblierte Code erklärt es: Das Tutorial des alten Mannes speichert deinen Namen dort, wo die Liste der wilden Pokémon des Gebiets liegt, und diese Liste sollte beim Betreten eines neuen Gebiets neu geschrieben werden –",
+    "quote": "doch ein Versehen verhindert das auf der Zinnoberinsel und auf Route 21, sodass der berüchtigte MissingNo.-Glitch auftreten kann.",
+    "mark": [
+     "ein Versehen"
+    ],
+    "source": "Datamine · pret/pokered (Code-Kommentar)"
+   },
+   {
+    "text": "Die interne Pokémon-Liste des Spiels hat 190 Plätze für 151 Pokémon. Die Plätze, die keine Pokémon sind, tauchen als MissingNo. auf.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Seine Pokédex-Daten sind Platzhalter: Die Art lautet „???“, und der Eintragstext ist die japanische Notiz コメント作成中, „Kommentar folgt“.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Die Begegnung setzt das höchste Bit der Anzahl des sechsten Items und erhöht dieses Item damit um 128.",
+    "source": "TCRF · Bulbapedia"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Es ist kein geheimes Pokémon, das jemand entworfen hat. Es ist das, was das Spiel zeigt, wenn es einen unbenutzten Platz liest, und es erscheint nur wegen eines Versehens im Code.",
+    "source": "Datamine · pret/pokered"
+   }
+  ],
+  "confirmed": "Der Glitch ist echt und in Rot und Blau wiederholbar: der alte Mann in Vertania City, dann an der Ostküste der Zinnoberinsel surfen. Es ist eine Begegnung mit einem unbenutzten Datenplatz, kein verstecktes Pokémon.",
+  "verdictText": "Vom Code bestätigt: Das Disassembly zeigt genau, welches Versehen MissingNo. erscheinen lässt und aus welchen Platzhalterdaten es besteht.",
+  "links": [
+   "pret/pokered: Kampf-Engine (das Tutorial des alten Mannes)",
+   "pret/pokered: interne Pokémon-Liste",
+   "pret/pokered: Pokédex-Einträge (MissingNo.s Platzhalter)",
+   "TCRF: MissingNo.",
+   "Bulbapedia: MissingNo."
+  ],
+  "board": {
+   "question": "Ist MissingNo. ein echtes Pokémon?",
+   "hook": "Sprich mit einem alten Mann, surfe eine Küste entlang, und etwas, das es nicht geben dürfte, greift an. Der Code sagt genau, warum.",
+   "caption": "Kommentar folgt",
+   "keys": [
+    "Es taucht an der Küste der Zinnoberinsel auf",
+    "Der Code nennt es ein Versehen",
+    "Sein Pokédex-Eintrag wurde nie geschrieben"
+   ],
+   "b": {
+    "label": "pret/pokered · Kommentar in der Kampf-Engine",
+    "quote": "doch ein Versehen verhindert das auf der Zinnoberinsel und auf Route 21, sodass der berüchtigte MissingNo.-Glitch auftreten kann.",
+    "mark": [
+     "ein Versehen"
+    ]
+   },
+   "c": {
+    "text": "190 Plätze in der Liste des Spiels, 151 Pokémon. Die Lücken sind MissingNo.",
+    "bold": [
+     "190 Plätze",
+     "151 Pokémon"
+    ]
+   }
+  }
+ },
+ "pikablu-the-blue-pikachu": {
+  "title": "Pikablu, das blaue Pikachu",
+  "era": "Gen. I–II · 1998",
+  "summary": "Das angebliche neue Pikachu war Marill, enthüllt in Gold und Silber.",
+  "claim": "Es gibt einen blauen Wasser-Verwandten oder eine Entwicklung von Pikachu namens Pikablu, und man bekommt es in Rot und Blau, etwa mit einem Wasserstein.",
+  "origin": "Eine runde blaue Maus erschien im Kurzfilm Pikachus Ferien (Juli 1998) neben Pikachu, bevor Gold und Silber herauskamen. Ohne offiziellen Namen nannten Fans sie Pikablu, und die Schulhöfe erledigten den Rest.",
+  "evidenceFor": [
+   {
+    "text": "Es sah wirklich aus wie ein blaues Pikachu: eine runde Maus mit einer Kugel am Schweif, zum ersten Mal an Pikachus Seite in Pikachus Ferien zu sehen.",
+    "source": "Anime · Pikachus Ferien"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "In den Daten von Rot und Blau hat Pikachu eine einzige Entwicklung: Raichu, per Donnerstein. Raichu entwickelt sich nicht weiter. Ein Wasserstein bewirkt bei beiden nichts.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Gold und Silber enthüllten es als Marill, Nummer 183, vom Typ Wasser (seit X und Y Wasser/Fee), das sich zu Azumarill entwickelt und nicht zu Pikachus Familie gehört.",
+    "source": "Spiele · Gold & Silber"
+   }
+  ],
+  "confirmed": "Das blaue Pokémon aus Pikachus Ferien ist Marill. Ein Pikablu gab es in keinem Spiel.",
+  "verdictText": "Widerlegt von Gold und Silber, die es Marill nannten, und von den Entwicklungsdaten von Rot und Blau selbst.",
+  "links": [
+   "pret/pokered: Entwicklungen und Attacken",
+   "Pokédex-Daten von Marill (PokeAPI)",
+   "Bulbapedia: Pikablu",
+   "Bulbapedia: Pikachus Ferien"
+  ]
+ },
+ "ash-has-been-in-a-coma": {
+  "title": "Ash liegt im Koma",
+  "era": "Anime · 2000er",
+  "summary": "Die Idee, dass die ganze Serie Ashs Traum ist. Der Anime stützt sie nie.",
+  "claim": "Ash ist nach der ersten Folge nie wirklich aufgewacht. Pikachus Stromschlag im Gewitter hat ihn ins Koma versetzt, und jede Folge seitdem ist ein Traum – deshalb wird er nie älter.",
+  "origin": "Eine Forentheorie aus den frühen Jahren des Animes, am Leben gehalten von Fanfiction, Bulbagarden-Threads und später Theorie-Videos und -Artikeln.",
+  "evidenceFor": [
+   {
+    "text": "In der ersten Folge zieht ein Gewitter auf, als Pikachu seine Elektrizität auf einen Schwarm Habitak entlädt, mit Ash direkt daneben.",
+    "source": "Anime · Pokémon – Ich wähle dich!"
+   },
+   {
+    "text": "Ash beginnt seine Reise mit zehn und bleibt über mehr als zwei Jahrzehnte voller Folgen zehn.",
+    "source": "Anime"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Der Anime gab Ash ein echtes Ende: Er gewann das Masters-Eight-Turnier der Pokémon-Weltmeisterschaften in einer Folge, die am 11. November 2022 erstmals ausgestrahlt wurde.",
+    "source": "Anime · Pokémon: Ultimative Reisen"
+   },
+   {
+    "text": "Nichts in der Serie und kein Wort ihrer Macher stützt ein Koma.",
+    "source": "Offizielle Quellen"
+   },
+   {
+    "text": "Ein Held, der nie altert, ist eine alte Zeichentrick-Konvention, kein Hinweis.",
+    "source": "Anime"
+   }
+  ],
+  "confirmed": "Das Gewitter und Pikachus Stromschlag passieren in der ersten Folge, und Ashs Alter ändert sich nicht. Mehr hat die Theorie nicht.",
+  "verdictText": "Unbestätigt und ohne Grundlage: Die Serie behandelt jede Folge als real und beendet Ashs Geschichte mit einem Meistertitel. Sie überlebt nur, weil sich die Macher nie dazu geäußert haben.",
+  "links": [
+   "CBR: die Theorie zu Ashs Koma (wo sie sich verbreitete)",
+   "TV Tropes: Ash's Coma (Fanfiction)",
+   "NPR (via WSKG): Ash wird Weltmeister",
+   "Anime News Network: Sieger der Pokémon-Weltmeisterschaften"
+  ]
+ },
+ "lavender-town-syndrome": {
+  "title": "Das Lavandia-Syndrom",
+  "era": "Internet · 2010",
+  "summary": "Eine Internet-Horrorgeschichte über die Musik der Stadt. Es gibt keinen Beleg, dass es je passiert ist.",
+  "claim": "Nachdem Rot und Grün 1996 in Japan erschienen waren, soll die Musik von Lavandia über hundert Kinder in den Selbstmord getrieben haben, und das Spiel sei heimlich geändert worden, um es zu vertuschen.",
+  "origin": "Eine Creepypasta, die am 21. Februar 2010 zuerst auf Pastebin erschien und Anfang März 2010 im Paranormal-Board von 4chan. Sie wurde beim Verbreiten umgeschrieben, kam 2011 in den Creepypasta Index und bekam falsche „Beweise“ dazu, etwa manipulierte Beta-Themes auf YouTube.",
+  "evidenceFor": [
+   {
+    "text": "Das Thema ist wirklich unheimlich, und Lavandia ist eine Friedhofsstadt: Ihr Pokémon-Turm ist voller Gräber, Geister und Medien.",
+    "source": "Spiele · Rot & Blau"
+   },
+   {
+    "text": "Besessene Medien im Turm helfen nicht gerade:",
+    "quote": "Gib … mir … deine … Seele …",
+    "source": "Medium · Pokémon-Turm · Rot & Blau"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Die Geschichte tauchte 2010 zum ersten Mal auf, vierzehn Jahre nach den angeblichen Todesfällen. Es gibt keine Nachrichtenmeldung, keine Krankenakte und keinen Polizeibericht zu solchen Fällen aus dem Jahr 1996.",
+    "source": "Internet"
+   },
+   {
+    "text": "Sie wurde als Fiktion geschrieben: Die kursierenden Fassungen enthalten erfundene Details wie einen Prozess vor einer „Spielekommission“.",
+    "source": "Internet · Know Your Meme"
+   }
+  ],
+  "confirmed": "Die Musik von Lavandia ist absichtlich beunruhigend. Nichts sonst an der Geschichte ist wahr.",
+  "verdictText": "Widerlegt: Das „Syndrom“ wurde in einer Creepypasta von 2010 erfunden. Hinter keinem seiner Fälle steht irgendein Beleg.",
+  "links": [
+   "Know Your Meme: die Creepypasta zum Lavandia-Syndrom",
+   "pret/pokered: Text des Pokémon-Turms, 5. Stock (die Medien)"
+  ]
+ },
+ "mew-was-added-at-the-last-minute": {
+  "title": "Mew wurde in letzter Minute hinzugefügt",
+  "era": "Gen. I · 1996",
+  "summary": "Ein Programmierer schmuggelte Mew in Rot und Grün, als das Spiel schon fertig war.",
+  "claim": "Mew war nie Teil des fertigen Spiels: Ein Programmierer fügte es kurz vor der Veröffentlichung heimlich in Rot und Grün ein.",
+  "origin": "Spieler fanden Mew in frühen Exemplaren durch Glitches und fragten sich, wie es dorthin kam. Game Freak erzählte die Geschichte Jahre später selbst, in Nintendos Interview Iwata fragt zu HeartGold und SoulSilver.",
+  "evidenceFor": [
+   {
+    "text": "Shigeki Morimoto, der Rot und Grün programmierte: Das Entfernen der Debug-Funktionen schuf Platz –",
+    "quote": "es entstanden winzige 300 Byte freier Speicher. … Also dachten wir, wir könnten Mew dort hineinpacken.",
+    "mark": [
+     "300 Byte",
+     "Mew dort hineinpacken"
+    ],
+    "source": "Interview · Iwata fragt: HeartGold & SoulSilver"
+   },
+   {
+    "text": "Tsunekazu Ishihara von The Pokémon Company:",
+    "quote": "Und das, obwohl man uns nach dem Debugging gesagt hatte, dass wir nicht einmal ein einziges Bit anrühren dürfen!",
+    "mark": [
+     "ein einziges Bit"
+    ],
+    "source": "Interview · Iwata fragt: HeartGold & SoulSilver"
+   },
+   {
+    "text": "Das Spiel selbst behandelt Mew als Extra: Der Spieledesigner in Prismania City wertet einen Pokédex auch ohne Mew als vollständig (der Kommentar im Disassembly zu dieser Prüfung lautet „discount Mew“, „Mew nicht mitzählen“).",
+    "source": "Datamine · pret/pokered"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Mew war in der Geschichte, bevor es in den Daten war: Die Tagebücher der Pokémon-Villa nennen es bereits.",
+    "quote": "Wir tauften das neu entdeckte Pokémon auf den Namen Mew.",
+    "source": "Pokémon-Villa · Rot & Blau"
+   }
+  ],
+  "confirmed": "Game Freaks eigene Mitarbeiter sagten, Mew kam nach dem Debugging hinein, in etwa 300 Byte, die durch das Entfernen der Debug-Funktionen frei wurden – entgegen den Anweisungen.",
+  "verdictText": "Durch ein Entwicklerinterview bestätigt: Morimoto und Ishihara erzählten die Geschichte in Iwata fragt.",
+  "links": [
+   "Iwata fragt: HeartGold & SoulSilver, „Gerade noch den letzten Zug erwischt“",
+   "Siliconera: Game Freak enthüllt die Geschichte von Mew",
+   "pret/pokered: Skript der Villa in Prismania City, 3. Stock",
+   "pret/pokered: Text der Pokémon-Villa, 2. Stock"
+  ]
+ },
+ "ditto-is-a-failed-mew-clone": {
+  "title": "Ditto ist ein misslungener Mew-Klon",
+  "era": "Gen. I · 1996",
+  "summary": "Gleiches Gewicht, gleiche Signaturattacke, und sie leben nahe dem Klonlabor. Nie bestätigt.",
+  "claim": "Ditto sind misslungene Versuche, Mew zu klonen – Überbleibsel der Experimente, aus denen Mewtu entstand.",
+  "origin": "Eine langlebige Forentheorie, jahrelang auf PokéCommunity und in den Serebii-Foren diskutiert und ein Klassiker der Theorie-Artikel.",
+  "evidenceFor": [
+   {
+    "text": "Genau dasselbe Gewicht: Ditto und Mew wiegen beide 4,0 kg.",
+    "source": "Pokédex-Daten"
+   },
+   {
+    "text": "Wandler ist Dittos einzige Attacke, und Mew lernt sie in Rot und Blau auf Level 10.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Dittos erster Eintrag dreht sich ganz um den genetischen Code:",
+    "quote": "Kann den genetischen Code eines Gegners kopieren und sich so sofort in ein Duplikat des Gegners verwandeln.",
+    "mark": [
+     "genetischen Code"
+    ],
+    "source": "Ditto · Pokédex · Rot & Blau"
+   },
+   {
+    "text": "Und der von Mew:",
+    "quote": "Seine DNS soll die genetischen Codes aller Pokémon enthalten, weshalb es alle möglichen Techniken einsetzen kann.",
+    "mark": [
+     "die genetischen Codes aller Pokémon"
+    ],
+    "source": "Mew · Pokédex · Silber"
+   },
+   {
+    "text": "Wo sie leben: In Rot und Blau bevölkern Ditto die Azuria-Höhle, Mewtus Versteck. In Gelb tauchen sie auch im Keller der Pokémon-Villa auf, wo die Klon-Tagebücher liegen.",
+    "source": "Datamine · pret/pokered & pokeyellow"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Ditto leben auch weit weg von der Zinnoberinsel in freier Wildbahn, in Rot und Blau auf den Routen 13, 14, 15 und 23.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Die Tagebücher beschreiben ein einziges Experiment, und das ist Mewtu:",
+    "quote": "Mew hat ein Junges zur Welt gebracht. Wir nannten das Neugeborene Mewtu.",
+    "source": "Pokémon-Villa · Rot & Blau"
+   },
+   {
+    "text": "Sie sind unterschiedlich gebaut: Ditto ist vom Typ Normal und kann sich mit fast allem paaren, während Mew vom Typ Psycho ist und sich gar nicht fortpflanzen kann.",
+    "source": "Spiele"
+   },
+   {
+    "text": "Kein Spiel, kein Pokédex-Eintrag und kein Interview verbindet die beiden.",
+    "source": "Offizielle Quellen"
+   }
+  ],
+  "confirmed": "Das gemeinsame Gewicht, die gemeinsame Attacke und beide Pokédex-Einträge über den genetischen Code sind echt. Dass Ditto von Mew abstammt, ist die Idee der Fans.",
+  "verdictText": "Unbestätigt. Die Überschneidungen sind auffällig, aber wilde Ditto in ganz Kanto und das Schweigen der Tagebücher dazu sind starke Gegenargumente, und Game Freak hat sich nie dazu geäußert.",
+  "links": [
+   "pret/pokered: Entwicklungen und Attacken (Mew lernt Wandler)",
+   "pret/pokered: wilde Pokémon der Azuria-Höhle",
+   "pret/pokeyellow: wilde Pokémon im Keller der Pokémon-Villa",
+   "pret/pokered: Text der Pokémon-Villa, 3. Stock",
+   "Pokédex-Daten von Ditto (PokeAPI)",
+   "Pokédex-Daten von Mew (PokeAPI)",
+   "Sportskeeda: Ist Ditto ein Mew-Klon? (wo sie sich verbreitete)"
+  ],
+  "board": {
+   "question": "Ist Ditto ein schiefgegangenes Mew?",
+   "hook": "Aufs Gramm dasselbe Gewicht, dieselbe Signaturattacke, und sie leben dort, wo Mewtu erschaffen wurde. Zufall oder Überbleibsel?",
+   "caption": "Kopie einer Kopie?",
+   "keys": [
+    "Beide wiegen genau 4,0 kg",
+    "Bei beiden geht es um den genetischen Code",
+    "Ditto leben dort, wo Mewtu erschaffen wurde"
+   ],
+   "b": {
+    "label": "Pokédex-Eintrag von Ditto · Rot & Blau",
+    "quote": "Kann den genetischen Code eines Gegners kopieren und sich so sofort in ein Duplikat des Gegners verwandeln.",
+    "mark": [
+     "genetischen Code"
+    ]
+   },
+   "c": {
+    "text": "Mew lernt Wandler auf Level 10. Es ist Dittos einzige Attacke.",
+    "bold": [
+     "Wandler",
+     "einzige Attacke"
+    ]
+   }
+  }
+ },
+ "complete-the-pokedex-and-you-get-mew": {
+  "title": "Vervollständige den Pokédex und du bekommst Mew",
+  "era": "Gen. I · 1998",
+  "summary": "Fang alle 150, und Game Freak überreicht dir ein Diplom, nicht Mew.",
+  "claim": "Füll deinen Pokédex mit allen 150 Pokémon, und das Spiel belohnt dich mit dem 151., Mew.",
+  "origin": "Ein Schulhofversprechen der späten 1990er: Jeder wusste, dass es für einen vollständigen Pokédex eine Belohnung gab, und Mew war das eine Pokémon, das niemand fangen konnte.",
+  "evidenceFor": [
+   {
+    "text": "Es gibt tatsächlich eine Belohnung für einen vollständigen Pokédex: den Spieledesigner in Game Freaks Büro in Prismania City.",
+    "source": "Spiele · Rot & Blau"
+   },
+   {
+    "text": "Und die Zählung lässt Mew weg, also hat ein „vollständiger“ Pokédex 150 – als wäre Mew der Preis.",
+    "source": "Datamine · pret/pokered"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Die Reaktion des Spieledesigners ist alles, was du bekommst:",
+    "quote": "Wow! Ausgezeichnet! Du hast deinen Pokédex vervollständigt! Glückwunsch!",
+    "source": "Spieledesigner · Villa in Prismania City · Rot & Blau"
+   },
+   {
+    "text": "Dann zeigt er dir ein von Game Freak unterschriebenes Diplom:",
+    "quote": "Glückwunsch! Dieses Diplom bestätigt, dass du deinen Pokédex vervollständigt hast.",
+    "mark": [
+     "Diplom"
+    ],
+    "source": "Diplom · Rot & Blau"
+   },
+   {
+    "text": "Das Skript zeigt nur das Diplom. Nichts darin gibt ein Pokémon heraus. Mew wurde nur bei Events verteilt.",
+    "source": "Datamine · pret/pokered"
+   }
+  ],
+  "confirmed": "Ein vollständiger Pokédex (Mew nicht nötig) bringt ein Diplom von Game Freaks Spieledesigner in Prismania City.",
+  "verdictText": "Vom Skript widerlegt: Die Belohnung ist ein Diplom, und der Code, der deinen Pokédex prüft, gibt nie ein Pokémon heraus.",
+  "links": [
+   "pret/pokered: Skript der Villa in Prismania City, 3. Stock",
+   "pret/pokered: Text der Villa in Prismania City, 3. Stock",
+   "pret/pokered: das Diplom"
+  ]
+ },
+ "you-were-meant-to-battle-professor-oak": {
+  "title": "Du solltest gegen Professor Eich kämpfen",
+  "era": "Gen. I · 1996",
+  "summary": "Sein komplettes Team, stärker als das des Champs, steckt noch in den Daten von Rot und Blau.",
+  "claim": "Rot und Blau wurden mit einem Kampf gegen Professor Eich selbst gebaut, und er ist noch immer im Spiel versteckt.",
+  "origin": "Gefunden von Dataminern, die die Trainerdaten von Rot und Blau durchforsteten, dokumentiert von The Cutting Room Floor und Bulbapedia und von Spieleseiten aufgegriffen. Mit Glitches und Cheat-Geräten lässt sich der Kampf auslösen.",
+  "evidenceFor": [
+   {
+    "text": "Eichs Trainerdaten stecken im Spiel, als unbenutzt markiert: Tauros (Level 66), Kokowei (67), Arkani (68), ein voll entwickelter Kanto-Starter (69) und Garados (70).",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Das ist stärker als der Champ, dein Rivale, dessen Team höchstens Level 65 erreicht.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Mit Glitches oder einem Cheat-Gerät kannst du den Kampf starten, und Eich kämpft mit diesem Team.",
+    "source": "Kotaku"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Nichts im fertigen Spiel startet den Kampf je, und laut Bulbapedia hat Eich weder davor noch danach geschriebene Sätze.",
+    "source": "Bulbapedia"
+   }
+  ],
+  "confirmed": "Professor Eichs Team und sein Trainerplatz stecken in den Daten von Rot und Blau. Der Kampf wurde vor der Veröffentlichung gestrichen.",
+  "verdictText": "Per Datamine bestätigt: Sein Team steckt unbenutzt in den Trainerdaten des Spiels.",
+  "links": [
+   "pret/pokered: Trainer-Teams (ProfOakData)",
+   "Kotaku: der Pokémon-Kampf, der nicht hätte gestrichen werden sollen",
+   "Bulbapedia: unbenutzte Trainerdaten"
+  ]
+ },
+ "your-rivals-raticate-died": {
+  "title": "Das Rattikarl deines Rivalen ist gestorben",
+  "era": "Gen. I · 1996",
+  "summary": "Rattikarl verschwindet nach der MS Anne, und dein Rivale taucht auf einem Pokémon-Friedhof auf.",
+  "claim": "Du hast das Rattikarl deines Rivalen auf der MS Anne so schwer besiegt, dass es gestorben ist. Deshalb ist er beim nächsten Treffen im Pokémon-Turm, dem Friedhof von Lavandia.",
+  "origin": "Eine Schulhof- und Forentheorie aus den frühen Jahren von Rot und Blau, die in Let’s-Play-Archiven und auf Reddit noch immer diskutiert wird.",
+  "evidenceFor": [
+   {
+    "text": "Auf der MS Anne hat er ein Rattikarl auf Level 16 im Team. Im Pokémon-Turm ist es weg und kommt nie zurück.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Er ist auf einem Friedhof und spricht selbst vom Tod:",
+    "quote": "Was führt dich denn hierher? Deine Pokémon sehen nicht tot aus!",
+    "mark": [
+     "tot"
+    ],
+    "source": "Rivale · Pokémon-Turm · Rot & Blau"
+   },
+   {
+    "text": "In Gelb ist es sein Rattfratz, das zwischen denselben beiden Kämpfen verschwindet.",
+    "source": "Datamine · pret/pokeyellow"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Er fängt dort Pokémon, statt zu trauern:",
+    "quote": "Ich hab gerade ein Tragosso gefangen! Das ausgewachsene Knogga finde ich noch nicht!",
+    "mark": [
+     "Ich hab gerade ein Tragosso gefangen"
+    ],
+    "source": "Rivale · Pokémon-Turm · Rot & Blau"
+   },
+   {
+    "text": "Er hat genug Auswahl. Auf dem Schiff sagt er:",
+    "quote": "Ich hab schon 40 Arten gefangen, Kumpel!",
+    "source": "Rivale · MS Anne · Rot & Blau"
+   },
+   {
+    "text": "Rivalen tauschen ständig Pokémon aus, und kein Pokémon in den Spielen stirbt durch einen Kampf.",
+    "source": "Spiele"
+   }
+  ],
+  "confirmed": "Rattikarl verlässt nach der MS Anne wirklich sein Team, und er ist wirklich im Pokémon-Turm. Warum, wird nie gesagt.",
+  "verdictText": "Unbestätigt. Die Teamdaten und der Friedhofssatz sind echt, aber er sagt dir, dass er gekommen ist, um ein Tragosso zu fangen, und Game Freak hat nie gesagt, was mit Rattikarl passiert ist.",
+  "links": [
+   "pret/pokered: Trainer-Teams (Rival2Data)",
+   "pret/pokeyellow: Trainer-Teams",
+   "pret/pokered: Text des Pokémon-Turms, 2. Stock",
+   "pret/pokered: Text der MS Anne, 2. Deck",
+   "LP Archive: „Is Raticate dead???“ (wo sie sich verbreitete)"
+  ]
+ },
+ "red-is-a-ghost-on-mt-silver": {
+  "title": "Rot ist ein Geist auf dem Silberberg",
+  "era": "Gen. II · 1999",
+  "summary": "Stumm, allein auf einem eisigen Gipfel, nach dem Kampf verschwunden. Dann taucht er in späteren Spielen auf.",
+  "claim": "Rot, der Held von Rot und Blau, ist auf dem Silberberg gestorben. Der stumme Trainer, gegen den du in Gold, Silber und Kristall auf dem Gipfel kämpfst, ist sein Geist.",
+  "origin": "Entstanden aus dem letzten Kampf von Gold und Silber und verbreitet über Foren, dann in der Ära der Creepypasta „Lost Silver“ und der Theorie-Videos.",
+  "evidenceFor": [
+   {
+    "text": "Er sagt nichts. Seine einzigen Sätze vor und nach dem Kampf sind „…“.",
+    "source": "Datamine · pret/pokecrystal"
+   },
+   {
+    "text": "Nach dem Kampf wird der Bildschirm schwarz, er ist weg, und der Abspann läuft.",
+    "source": "Datamine · pret/pokecrystal"
+   },
+   {
+    "text": "Seine Mutter in Alabastia hat nichts von ihm gehört:",
+    "quote": "Rot ist schon lange fort. Angerufen hat er auch nicht, also habe ich keine Ahnung, wo er ist oder was er treibt.",
+    "mark": [
+     "Angerufen hat er auch nicht"
+    ],
+    "source": "Rots Mutter · Alabastia · Kristall"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Rot erscheint in späteren Spielen lebendig und älter: In Sonne und Mond ist er zusammen mit Blau einer der Kampflegenden des Kampfbaums.",
+    "source": "Spiele · Sonne & Mond"
+   },
+   {
+    "text": "Seine Mutter trauert nicht, sie ist stolz:",
+    "quote": "Ich mache mir Sorgen, dass Rot sich verletzt oder krank wird, aber er ist ein Junge. Ich bin stolz, dass er tut, was er tun will.",
+    "mark": [
+     "stolz"
+    ],
+    "source": "Rots Mutter · Alabastia · Kristall"
+   },
+   {
+    "text": "Er kämpft mit einem echten Team (ein Pikachu auf Level 81, Psiana, Relaxo, Bisaflor, Glurak und Turtok) und geht dann; er verschwindet nicht mitten im Kampf.",
+    "source": "Datamine · pret/pokecrystal"
+   }
+  ],
+  "confirmed": "Rot trainiert allein auf dem Gipfel des Silberbergs, spricht nie und geht, nachdem du ihn besiegt hast. In späteren Spielen taucht er wieder auf.",
+  "verdictText": "Vom offiziellen Kanon widerlegt: Rot lebt in späteren Spielen und kämpft im Kampfbaum von Sonne und Mond.",
+  "links": [
+   "pret/pokecrystal: Gipfel des Silberbergs (Rots Skript)",
+   "pret/pokecrystal: Text von Rots Haus",
+   "pret/pokecrystal: Trainer-Teams (Rot)",
+   "Serebii: der Kampfbaum (Sonne & Mond)"
+  ]
+ },
+ "the-gs-ball-opens-for-celebi": {
+  "title": "Der GS-Ball öffnet sich für Celebi",
+  "era": "Gen. II · 2000",
+  "summary": "Das komplette GS-Ball-Ereignis von Kristall steckt im Code. Die 3DS-Neuauflage hat es endlich freigeschaltet.",
+  "claim": "Der rätselhafte GS-Ball führt tatsächlich irgendwohin: Kurt untersucht ihn, und der Schrein im Steineichenwald ruft Celebi herbei.",
+  "origin": "Das GS-Ball-Ereignis von Kristall war an die japanischen Mobilfunktionen gebunden, also haben Spieler außerhalb Japans es nie gesehen, und der GS-Ball wurde zur Legende. Die Virtual-Console-Fassung für Nintendo 3DS von 2018 machte es für alle real.",
+  "evidenceFor": [
+   {
+    "text": "Das Pokémon-Center von Dukatia City hat eine Szene, in der man den GS-Ball bekommt, wenn ein Flag im Spielstand sagt, dass er verfügbar ist:",
+    "quote": "Als besonderes Angebot wurde ein GS-Ball nur für dich geschickt! Bitte nimm ihn an!",
+    "mark": [
+     "GS-Ball"
+    ],
+    "source": "Pokémon-Center von Dukatia City · Kristall"
+   },
+   {
+    "text": "Kurt behält den Ball über Nacht, dann nimmt das Skript des Schreins im Steineichenwald den GS-Ball und startet einen Kampf gegen ein Celebi auf Level 30.",
+    "source": "Datamine · pret/pokecrystal · Nintendo Wire"
+   },
+   {
+    "text": "Die 3DS-Virtual-Console-Fassung (26. Januar 2018) setzt dieses Flag beim Eintritt in die Ruhmeshalle, also gibt dir die Empfangsdame den GS-Ball.",
+    "source": "Datamine · pret/pokecrystal"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Auf den ursprünglichen englischen Kristall-Modulen setzt nichts im Spiel das Flag je, also ist das Ereignis normal nicht erreichbar.",
+    "source": "Datamine · pret/pokecrystal"
+   }
+  ],
+  "confirmed": "Das Ereignis GS-Ball → Kurt → Schrein im Steineichenwald → Celebi steckt komplett in Kristall. Japan konnte es über seine Mobilfunktionen erreichen; auf der 3DS-Virtual-Console konnte es jeder.",
+  "verdictText": "Per Datamine und durch die offizielle 3DS-Neuauflage bestätigt, in der das Ereignis so abläuft, wie es geschrieben wurde.",
+  "links": [
+   "pret/pokecrystal: Pokémon-Center von Dukatia City (GS-Ball)",
+   "pret/pokecrystal: Schrein im Steineichenwald",
+   "pret/pokecrystal: Speichercode (der Virtual-Console-Haken)",
+   "Nintendo Wire: So fängst du Celebi in Kristall auf dem 3DS"
+  ]
+ },
+ "mimikyu-is-a-pikachus-ghost": {
+  "title": "Mimigma ist der Geist eines Pikachu",
+  "era": "Gen. VII · 2016",
+  "summary": "Ein Geist in einem selbst gemachten Pikachu-Kostüm. Was darunter steckt, wird nie gezeigt.",
+  "claim": "Unter seinem Lumpen ist Mimigma der Geist eines Pikachu, das sich als das Pokémon verkleidet, das es einmal war.",
+  "origin": "Sie begann in dem Moment, als Sonne und Mond 2016 Mimigma enthüllten, auf Reddit und Tumblr, neben einer Gegentheorie, nach der es Porygon ist, das sich seit der „Pokémon-Schock“-Folge von 1997 versteckt.",
+  "evidenceFor": [
+   {
+    "text": "Das Kostüm ist absichtlich ein Pikachu:",
+    "quote": "Es verbirgt sich unter einem Lumpen, der wie ein Pikachu aussieht, damit niemand Angst vor ihm bekommt. Leider wird es dadurch noch gruseliger.",
+    "mark": [
+     "einem Lumpen, der wie ein Pikachu aussieht"
+    ],
+    "source": "Mimigma · Pokédex · Schwert"
+   },
+   {
+    "text": "Was darunter steckt, tötet:",
+    "quote": "Niemand weiß, wie es wirklich aussieht. Ein Forscher, der unter seinen Lumpen blickte, soll sich buchstäblich zu Tode erschreckt haben.",
+    "mark": [
+     "Niemand weiß, wie es wirklich aussieht"
+    ],
+    "source": "Mimigma · Pokédex · Sonne"
+   },
+   {
+    "text": "Es ist vom Typ Geist, und das Kostüm ahmt Pikachus Ohren, Backen und blitzförmigen Schweif nach.",
+    "source": "Spiele · Sonne & Mond"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Der Pokédex nennt einen anderen Grund für die Verkleidung:",
+    "quote": "Es versteckt seine schreckliche Gestalt unter einem Lumpen, um sich Menschen und anderen Pokémon zu nähern. Oft fühlt es sich einsam.",
+    "mark": [
+     "um sich Menschen und anderen Pokémon zu nähern"
+    ],
+    "source": "Mimigma · Pokédex · Mond"
+   },
+   {
+    "text": "Die offizielle Beschreibung zu Sonne und Mond sagte, es ahme Pikachu wegen des Pikachu-Merchandise-Booms von vor rund 20 Jahren nach: Beliebtheit, kein früheres Leben.",
+    "source": "Offizielle Website, via Kotaku"
+   },
+   {
+    "text": "Seine wahre Gestalt wird nie gezeigt, also ist ein totes Pikachu nur eine Vermutung unter mehreren (Fans sagen auch Porygon).",
+    "source": "Internet"
+   }
+  ],
+  "confirmed": "Mimigma ist ein Geist/Fee-Pokémon, das ein selbst gemachtes Pikachu-Kostüm trägt, und darunterzusehen ist tödlich. Wer darin steckt, wird nie verraten.",
+  "verdictText": "Unbestätigt. Jeder offizielle Text sagt, dass das Kostüm Pikachu ähneln soll, nicht, dass Mimigma eines war, und seine echte Gestalt wurde nie gezeigt.",
+  "links": [
+   "Pokédex-Text von Mimigma (PokeAPI)",
+   "Kotaku: die Theorie, die eine verbotene Folge mit Mimigma verbindet"
+  ],
+  "silhouettes": {
+   "title": "Das Kostüm",
+   "text": "Mimigmas Lumpen und das echte Pikachu, beide in Schwarz. Dann übereinandergelegt."
+  }
+ },
+ "porygon-gave-kids-seizures": {
+  "title": "Porygon löste bei Kindern Anfälle aus",
+  "era": "Anime · 1997",
+  "summary": "Porygon bekam die Schuld für die Folge von 1997, aber das Flackern kam von Pikachu.",
+  "claim": "Porygons Angriff in einer Folge von 1997 löste bei Hunderten Kindern Anfälle aus, deshalb wurde es aus der Serie verbannt.",
+  "origin": "Die Folge „Dennō Senshi Porygon“ lief am 16. Dezember 1997 ein einziges Mal in Japan. Hunderte Zuschauer kamen ins Krankenhaus, es ging um die Welt, und weil Porygon das Titel-Pokémon war und danach aus der Serie verschwand, bekam es die Schuld.",
+  "evidenceFor": [
+   {
+    "text": "Porygon war das Titel-Pokémon der Folge, und danach bekamen Porygon (und später Porygon2 und Porygon-Z) nie wieder eine tragende Rolle im Anime.",
+    "source": "Anime"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Das Flackern kam von Pikachu: Virus-Raketen kamen näher, und Pikachus Donnerblitz traf sie und löste eine flackernde Explosion aus.",
+    "source": "Anime · Mental Floss"
+   },
+   {
+    "text": "Porygon ist in der Folge ein Opfer, kein Angreifer. Die Folge wurde zurückgezogen, und die ganze Serie lief bis April 1998 nicht mehr.",
+    "source": "Mental Floss"
+   },
+   {
+    "text": "Die gemeldeten Zahlen schwanken (Mental Floss nennt 618 Menschen im Krankenhaus), aber jeder Bericht führt das Flackern auf die Explosion zurück, nicht auf Porygon.",
+    "source": "Mental Floss"
+   }
+  ],
+  "confirmed": "Die Folge lief einmal und führte zu Hunderten Krankenhausbesuchen. Die flackernde Explosion war Pikachus Donnerblitz, der die Raketen traf.",
+  "verdictText": "Widerlegt: Porygon wurde für eine Szene bestraft, in der Pikachus Attacke das Flackern auslöste.",
+  "links": [
+   "Mental Floss: als Pokémon Hunderte Zuschauer ins Krankenhaus brachte"
+  ]
+ },
+ "ho-oh-flew-over-the-first-episode": {
+  "title": "Ho-Oh flog über die erste Folge",
+  "era": "Anime · 1997",
+  "summary": "Der Regenbogenvogel am Ende der ersten Folge war eine Legende der 2. Generation – Jahre zu früh.",
+  "claim": "Der goldene Vogel, den Ash am Ende der allerersten Folge über einen Regenbogen fliegen sieht, war Ho-Oh, ein Pokémon, dem Spieler erst in Gold und Silber begegnen konnten.",
+  "origin": "Die erste Folge lief am 1. April 1997 in Japan. Niemand konnte den Vogel benennen; als Gold und Silber im November 1999 in Japan erschienen, erkannten Fans ihn, und „Was war das für ein Vogel?“ wurde zur Anime-Trivia.",
+  "evidenceFor": [
+   {
+    "text": "Nach dem Gewitter sieht Ash einen leuchtenden Vogel über einen Regenbogen fliegen, und sein Pokédex kann ihn nicht bestimmen.",
+    "source": "Anime · Pokémon – Ich wähle dich!"
+   },
+   {
+    "text": "Golds Pokédex beschreibt Ho-Oh so, wie er erscheint:",
+    "quote": "Legenden zufolge fliegt dieses Pokémon auf seinen prächtigen, siebenfarbigen Schwingen unablässig über die Himmel der Welt.",
+    "mark": [
+     "prächtigen, siebenfarbigen Schwingen"
+    ],
+    "source": "Ho-Oh · Pokédex · Gold"
+   },
+   {
+    "text": "Der Film von 2017, Pokémon – Der Film: Du bist dran!, erzählt die erste Folge neu, und der Vogel ist Ho-Oh, das Ash eine Buntschwinge hinterlässt.",
+    "source": "Anime · Du bist dran! (2017)"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Die Folge von 1997 nennt den Vogel nie. Er wurde erst später erkannt.",
+    "source": "Anime"
+   }
+  ],
+  "confirmed": "Der Vogel in der ersten Folge ist Ho-Oh, wie die Neuerzählung des Animes von 2017 zeigt.",
+  "verdictText": "Vom Anime selbst bestätigt: Das Remake der Szene im Film von 2017 macht den Vogel zu Ho-Oh.",
+  "links": [
+   "Nintendo Life: Test zu Pokémon – Der Film: Du bist dran!",
+   "Pokédex-Text von Ho-Oh (PokeAPI)",
+   "Bulbapedia: Ho-Oh (Anime)"
+  ]
+ },
+ "cubone-is-a-baby-kangaskhan": {
+  "title": "Tragosso ist ein Kangama-Baby",
+  "era": "Gen. I · 1996",
+  "summary": "Ein Baby ohne Mutter und eine Mutter, deren Baby keine eigene Art ist. Die Mega-Entwicklung sagt Nein.",
+  "claim": "Tragosso sind Kangama-Babys, deren Mütter gestorben sind. Sie tragen die Schädel ihrer Mütter und wachsen allein auf.",
+  "origin": "Eine der ältesten Pokémon-Theorien, in den Foren von Serebii und PokéCommunity diskutiert und seitdem in Theorie-Artikeln immer wieder aufgegriffen.",
+  "evidenceFor": [
+   {
+    "text": "Kangama sind alle weiblich, und das Baby im Beutel war nie eine eigene Art.",
+    "source": "Spiele"
+   },
+   {
+    "text": "Tragosso und Kangama gehören zur selben Ei-Gruppe, Monster.",
+    "source": "Spiele"
+   },
+   {
+    "text": "Kangamas Babys bleiben im Beutel:",
+    "quote": "Das Junge verlässt den schützenden Beutel seiner Mutter selten, bevor es 3 Jahre alt ist.",
+    "mark": [
+     "Das Junge"
+    ],
+    "source": "Kangama · Pokédex · Rot & Blau"
+   },
+   {
+    "text": "Und Tragosso hat keine Mutter:",
+    "quote": "Es verlor seine Mutter nach seiner Geburt. Es trägt den Schädel seiner Mutter und zeigt nie sein wahres Gesicht.",
+    "mark": [
+     "verlor seine Mutter"
+    ],
+    "source": "Tragosso · Pokédex · Kristall"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Tragosso entwickelt sich zu Knogga, nie zu Kangama.",
+    "source": "Spiele"
+   },
+   {
+    "text": "Mega-Kangama (X und Y) lässt das Baby mitkämpfen, und es ist ein kleines Kangama, kein Tragosso.",
+    "source": "Spiele · X & Y"
+   },
+   {
+    "text": "Die Spiele zeigen, wessen Schädel es ist: Die Geistermutter aus Rot und Blau ist ein Knogga.",
+    "source": "Spiele · Rot & Blau"
+   }
+  ],
+  "confirmed": "Kangama sind weiblich und tragen ein Baby; Tragosso trägt den Schädel seiner toten Mutter. Nichts verbindet beides.",
+  "verdictText": "Unbestätigt, und der Kanon zeigt in die andere Richtung: Mega-Kangamas Baby ist ein Kangama, und Tragossos Mutter in Rot und Blau ist ein Knogga. Game Freak hat sich nie dazu geäußert.",
+  "links": [
+   "Pokédex-Daten von Kangama (PokeAPI)",
+   "Pokédex-Daten von Tragosso (PokeAPI)",
+   "TheGamer: die Theorie zu Kangama und Tragosso (wo sie sich verbreitete)"
+  ],
+  "silhouettes": {
+   "title": "Die Ähnlichkeit",
+   "text": "Tragosso und Kangama in Schwarz, so wie die Theorie sie sieht. Dann übereinandergelegt."
+  }
+ },
+ "pikachus-tail-has-a-black-tip": {
+  "title": "Pikachus Schweif hat eine schwarze Spitze",
+  "era": "Internet · 2010er",
+  "summary": "Eine gemeinsame falsche Erinnerung. Pikachus Schweif endete schon immer gelb.",
+  "claim": "Pikachus Schweif endete früher schwarz, und jemand hat das geändert.",
+  "origin": "Ein Mandela-Effekt, so heißt eine falsche Erinnerung, die viele Menschen teilen; der Begriff entstand 2009. Er verbreitete sich auf Reddit und in sozialen Medien, mit nachgemachten Plüschfiguren als „Beweis“.",
+  "evidenceFor": [
+   {
+    "text": "Pikachus Ohren haben tatsächlich schwarze Spitzen, und Pichus Schweif ist schwarz – beides leicht zu verwechseln.",
+    "source": "Spiele"
+   },
+   {
+    "text": "Das Cosplay-Pikachu in Omega Rubin und Alpha Saphir hat an der Schweifspitze eine schwarze Herzform.",
+    "source": "Spiele · Omega Rubin & Alpha Saphir"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "In offiziellen Artworks ist der Schweif gelb, mit einem braunen Fleck am Ansatz, von den ersten Spielen und Karten bis Meisterdetektiv Pikachu.",
+    "source": "Offizielle Artworks"
+   },
+   {
+    "text": "Die einzige Änderung an Pikachus Schweif ist die herzförmige Spitze des Weibchens, und die ist nicht schwarz.",
+    "source": "Spiele"
+   }
+  ],
+  "confirmed": "Pikachus Schweif ist gelb mit braunem Ansatz. Die schwarzen Ohrspitzen und Pichus schwarzer Schweif sind wahrscheinlich der Ursprung der Erinnerung.",
+  "verdictText": "Von jedem offiziellen Artwork widerlegt: Das normale Pikachu hatte nie eine schwarze Schweifspitze.",
+  "links": [
+   "/Film: der Mandela-Effekt um das Pikachu mit schwarzem Schweif erklärt"
+  ]
+ },
+ "silver-is-giovannis-son": {
+  "title": "Silber ist Giovannis Sohn",
+  "era": "Gen. II · 1999",
+  "summary": "Der rothaarige Rivale aus Gold und Silber ist der Sohn des Team-Rocket-Bosses.",
+  "claim": "Dein rothaariger Rivale in Gold, Silber und Kristall, der Junge, der Professor Lind einen Starter stiehlt, ist der Sohn von Giovanni, dem Boss von Team Rocket.",
+  "origin": "Fans vermuteten es schon seit Gold und Silber. Feuerrot und Blattgrün (2004) ließen einen Hinweis fallen, und HeartGold und SoulSilver (2009) zeigten es.",
+  "evidenceFor": [
+   {
+    "text": "Ein Team-Rocket-Wissenschaftler auf Eiland Fünf verwechselt dich mit jemandem:",
+    "quote": "Du … Du bist doch nicht Giovannis Kind, oder? Nein, das kann nicht sein! Giovannis Kind hat rote Haare.",
+    "mark": [
+     "rote Haare"
+    ],
+    "source": "Rocket-Lagerhaus · Feuerrot & Blattgrün"
+   },
+   {
+    "text": "Der Fame Checker von Feuerrot und Blattgrün legt diesen Satz unter Giovannis „Familie und Freunde?“ ab.",
+    "source": "Spiele · Feuerrot & Blattgrün"
+   },
+   {
+    "text": "Im Celebi-Ereignis von HeartGold und SoulSilver reist du drei Jahre zurück und siehst, wie Silber mit seinem Vater streitet, der ihn bei Team Rocket haben will, bevor der Vater geht: Giovanni.",
+    "source": "Spiele · HeartGold & SoulSilver (Serebii)"
+   },
+   {
+    "text": "In Kristall hat Silber seine eigene Rechnung mit Team Rocket offen:",
+    "quote": "Ich brauche dich nicht im Weg, während ich mich um Team Rocket kümmere.",
+    "source": "Silber · Dukatia-Untergrund · Kristall"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Gold, Silber und Kristall sagen es nie selbst.",
+    "source": "Spiele"
+   }
+  ],
+  "confirmed": "Das Celebi-Ereignis in HeartGold und SoulSilver zeigt, dass Giovanni Silbers Vater ist.",
+  "verdictText": "In HeartGold und SoulSilver bestätigt, nach einem Hinweis in Feuerrot und Blattgrün.",
+  "links": [
+   "pret/pokefirered: Text des Rocket-Lagerhauses auf Eiland Fünf",
+   "pret/pokefirered: Text des Fame Checkers",
+   "Serebii: das Celebi-Ereignis in HeartGold & SoulSilver",
+   "pret/pokecrystal: Text des Dukatia-Untergrunds"
+  ]
+ },
+ "voltorb-is-a-poke-ball-come-to-life": {
+  "title": "Voltobal ist ein lebendig gewordener Pokéball",
+  "era": "Gen. I · 1996",
+  "summary": "Der Pokédex deutet es immer wieder an – und nennt es immer wieder ein Gerücht.",
+  "claim": "Voltobal ist aus einem Pokéball entstanden, durch einen Fabrikunfall oder einen Energiestoß.",
+  "origin": "Der Pokédex selbst bringt die Idee ins Spiel, und Fans spinnen sie seit Rot und Blau weiter. Das Hisui-Voltobal aus Legenden: Arceus, geformt wie die Pokébälle jener Zeit, hat sie wiederbelebt.",
+  "evidenceFor": [
+   {
+    "text": "Silber verbindet die beiden:",
+    "quote": "Es wurde entdeckt, als die Pokébälle eingeführt wurden. Es heißt, es gebe einen Zusammenhang.",
+    "mark": [
+     "einen Zusammenhang"
+    ],
+    "source": "Voltobal · Pokédex · Silber"
+   },
+   {
+    "text": "Rubin nennt den Ort:",
+    "quote": "Voltobal wurde zuerst in einer Firma gesichtet, die Pokébälle herstellt. Der Zusammenhang zwischen dieser Sichtung und der Tatsache, dass dieses Pokémon einem Pokéball sehr ähnlich sieht, bleibt ein Rätsel.",
+    "mark": [
+     "einer Firma gesichtet, die Pokébälle herstellt"
+    ],
+    "source": "Voltobal · Pokédex · Rubin"
+   },
+   {
+    "text": "Kristall sagt, dass es nicht natürlich ist:",
+    "quote": "Bei der Erforschung dieses Pokémon wurde entdeckt, dass seine Bestandteile in der Natur nicht vorkommen.",
+    "mark": [
+     "in der Natur nicht vorkommen"
+    ],
+    "source": "Voltobal · Pokédex · Kristall"
+   },
+   {
+    "text": "In Legenden: Arceus besteht Hisuis Lektrobal aus Pokéball-Material:",
+    "quote": "Das Gewebe an seiner Körperoberfläche ähnelt in seiner Zusammensetzung merkwürdigerweise einem Aprikoko.",
+    "mark": [
+     "Aprikoko"
+    ],
+    "source": "Lektrobal · Pokédex · Legenden: Arceus"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Der Pokédex legt es als Gerücht ab, nicht als Tatsache:",
+    "quote": "Gerüchten zufolge entstand es, als ein Pokéball einem starken Energieimpuls ausgesetzt wurde.",
+    "mark": [
+     "Gerüchten zufolge"
+    ],
+    "source": "Voltobal · Pokédex · Saphir"
+   },
+   {
+    "text": "Feuerrot sagt nicht, was es ist:",
+    "quote": "Eine Lebensform unbekannter Identität. Es soll Kreideschrei einsetzen oder plötzlich Finale.",
+    "mark": [
+     "unbekannter Identität"
+    ],
+    "source": "Voltobal · Pokédex · Feuerrot"
+   },
+   {
+    "text": "Es lebt und vermehrt sich wie jedes andere Pokémon: Voltobal legen Eier (mit Ditto), aus denen Voltobal schlüpfen.",
+    "source": "Spiele"
+   }
+  ],
+  "confirmed": "Der Pokédex sagt, Voltobal sei aufgetaucht, als es Pokébälle gab, sei zuerst bei einem Pokéball-Hersteller gesichtet worden und bestehe aus unnatürlichen Bestandteilen. Er sagt nie, dass ein Pokéball zu Voltobal wurde.",
+  "verdictText": "Offen: Die Hinweise stammen aus dem Pokédex selbst, aber jeder Eintrag endet bei „Gerücht“ oder „Rätsel“, und Game Freak hat nie mehr gesagt.",
+  "links": [
+   "Pokédex-Text von Voltobal (PokeAPI)",
+   "Pokédex-Text von Lektrobal (PokeAPI)"
+  ]
+ },
+ "the-pokegods": {
+  "title": "Die PokéGötter",
+  "era": "Gen. I–II · 1999",
+  "summary": "Geheime Super-Pokémon jenseits der 151. Keines war je in den Spielen.",
+  "claim": "Jenseits der 151 gab es geheime, gottgleiche Pokémon („PokéGötter“), die man mit Codes, Ritualen oder unmöglichen Leistungen freischalten konnte.",
+  "origin": "Die Gerüchte begannen vermutlich mit Mew, das anfangs niemand verstand, und wuchsen, als die neuen Pokémon aus Gold und Silber durchsickerten. Frühe Fanseiten tauschten erfundene Namen aus, und Aprilscherze von 1999 kamen hinzu, etwa dass sich Dragoran zu Yoshi und Schlurp zu Luigi entwickelt.",
+  "evidenceFor": [
+   {
+    "text": "Es gab wirklich ein geheimes Pokémon: Mew, das 151., und das Spiel sagt nie, wie man es fängt.",
+    "source": "Spiele"
+   },
+   {
+    "text": "Echte Pokémon aus Gold und Silber (darunter Marill und Togepi) wurden vor der Veröffentlichung gezeigt, was jedes Gerücht möglich klingen ließ.",
+    "source": "Bulbapedia"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Die Daten von Rot und Blau enthalten 151 Arten und nichts Verstecktes: Der Rest der internen Liste sind leere Platzhalter.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Die „Entwicklungen“ zu Yoshi und Luigi waren Aprilscherze (im Magazin Expert Gamer und auf Nintendos Website, laut Bulbapedia).",
+    "source": "Bulbapedia"
+   }
+  ],
+  "confirmed": "Mew war das einzige geheime Pokémon in Rot und Blau. Der Rest waren Erfindungen von Fans und Scherze.",
+  "verdictText": "Von den Spieldaten widerlegt: In Rot und Blau ist kein Platz für irgendein Pokémon jenseits der 151.",
+  "links": [
+   "Bulbapedia: PokéGötter",
+   "pret/pokered: interne Pokémon-Liste"
+  ]
+ },
+ "gold-and-silver-had-lost-pokemon": {
+  "title": "Gold und Silber hatten verlorene Pokémon",
+  "era": "Gen. II · 1997",
+  "summary": "Die Demo von 1997 enthielt Pokémon, die es nie ins fertige Spiel schafften.",
+  "claim": "Das Gold und Silber, das 1997 auf der Nintendo Space World gezeigt wurde, war ein anderes Spiel, mit Pokémon, die vor der Veröffentlichung gestrichen wurden.",
+  "origin": "Spieler sahen die Demo im November 1997 auf der Space World. Ende Mai 2018 tauchte eine spielbare Fassung davon online auf, und The Cutting Room Floor nahm sie auseinander.",
+  "evidenceFor": [
+   {
+    "text": "Sie enthält ältere Designs von Raikou, Entei und Suicune.",
+    "source": "Datamine · Game Informer"
+   },
+   {
+    "text": "Sie enthält eine unbenutzte Entwicklung von Porenta und eine unbenutzte Entwicklung von Hoothoot, die später durch Noctuh ersetzt wurde.",
+    "source": "Datamine · Game Informer"
+   },
+   {
+    "text": "Sie enthält Pokémon, die ganz verschwunden sind, darunter eine Baby-Vorentwicklung von Mauzi und zwei unbenutzte Starter-Pokémon.",
+    "source": "Datamine · Game Informer"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Es ist eine Demo-Fassung, nicht das fertige Spiel; die Namen der gestrichenen Pokémon stammen meist von Fans und Übersetzern.",
+    "source": "Game Informer"
+   }
+  ],
+  "confirmed": "Die Demo-Fassung existiert, 1997 gezeigt und 2018 geleakt, und ihre gestrichenen Pokémon stecken in ihren Daten.",
+  "verdictText": "Per Datamine bestätigt: Die geleakte Space-World-Fassung enthält die gestrichenen Pokémon, dokumentiert von The Cutting Room Floor.",
+  "links": [
+   "Game Informer: Demo von Gold und Silber zeigt unveröffentlichte Pokémon",
+   "TCRF: Spaceworld-1997-Demo",
+   "Bulbapedia: Gold-und-Silber-Demo der Spaceworld ’97"
+  ]
+ },
+ "mr-fuji-made-mewtwo": {
+  "title": "Mr. Fuji hat Mewtu erschaffen",
+  "era": "Gen. I · 1996",
+  "summary": "Der freundliche Mr. Fuji – oder der Wissenschaftler, der die Tagebücher der Villa schrieb?",
+  "claim": "Mr. Fuji, der freundliche alte Mann aus Lavandia, der sich um verwaiste Pokémon kümmert, ist der Wissenschaftler, dessen Tagebücher in der Pokémon-Villa auf der Zinnoberinsel die Erschaffung von Mewtu beschreiben.",
+  "origin": "Der Anime gab Mewtus Schöpfer den Namen Dr. Fuji, und Feuerrot und Blattgrün (2004) fügten Fotos eines Dr. Fuji auf der Zinnoberinsel hinzu. Fans verbanden die beiden Fujis.",
+  "evidenceFor": [
+   {
+    "text": "Im Pokémon-Labor auf der Zinnoberinsel in Feuerrot und Blattgrün hängt ein Foto:",
+    "quote": "Ein Foto des Laborgründers … Dr. Fuji?!",
+    "mark": [
+     "Dr. Fuji"
+    ],
+    "source": "Pokémon-Labor · Feuerrot & Blattgrün"
+   },
+   {
+    "text": "Die Arena der Zinnoberinsel hat ein weiteres:",
+    "quote": "Es ist ein Foto von Pyro und Mr. Fuji. Sie stehen Schulter an Schulter und grinsen breit.",
+    "mark": [
+     "Mr. Fuji"
+    ],
+    "source": "Arena der Zinnoberinsel · Feuerrot & Blattgrün"
+   },
+   {
+    "text": "Der Fame Checker gibt ein Gerücht weiter:",
+    "quote": "Ich habe gehört, Mr. Fuji stammt ursprünglich auch nicht von hier.",
+    "source": "Fame Checker · Feuerrot & Blattgrün"
+   },
+   {
+    "text": "Der Tagebuchschreiber der Villa bereut, was sie erschaffen haben:",
+    "quote": "Mewtu ist viel zu mächtig. Es ist uns nicht gelungen, seine bösartigen Neigungen zu zügeln …",
+    "source": "Pokémon-Villa · Rot & Blau"
+   },
+   {
+    "text": "Im Anime wird Mewtu im Prolog von Mewtu gegen Mew von einem Wissenschaftler namens Dr. Fuji geklont.",
+    "source": "Anime · Bulbapedia"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Die Tagebücher sind nicht unterschrieben. Kein Spiel sagt, wer sie schrieb.",
+    "source": "Spiele"
+   },
+   {
+    "text": "Kein Spiel sagt, dass Mr. Fuji aus Lavandia und Dr. Fuji aus dem Labor derselbe Mann sind.",
+    "source": "Spiele"
+   },
+   {
+    "text": "Der Anime hat seine eigene Kontinuität: Sein Dr. Fuji ist eine andere Figur als der Mr. Fuji der Spiele.",
+    "source": "Anime"
+   }
+  ],
+  "confirmed": "Ein Dr. Fuji gründete das Pokémon-Labor auf der Zinnoberinsel, Mr. Fuji ist ein alter Freund von Pyro, und jemand auf der Zinnoberinsel hat Mewtu erschaffen. Die Spiele bringen die drei nie zusammen.",
+  "verdictText": "Unbestätigt. Die Hinweise zeigen alle in dieselbe Richtung, aber die Spiele hören kurz davor auf, ihn zu nennen, und Game Freak hat es nie gesagt.",
+  "links": [
+   "pret/pokefirered: Text des Pokémon-Labors auf der Zinnoberinsel",
+   "pret/pokefirered: Text des Fame Checkers",
+   "pret/pokered: Text des Kellers der Pokémon-Villa",
+   "Bulbapedia: Dr. Fuji (Anime)"
+  ]
+ },
+ "ghost-moves-beat-psychic-in-red-and-blue": {
+  "title": "Geist schlug Psycho in Rot und Blau",
+  "era": "Gen. I · 1997",
+  "summary": "Im Anime war Geist die Antwort auf Psycho. Im Code der Spiele bewirkte es gar nichts.",
+  "claim": "In Rot und Blau waren Geist-Attacken gegen Psycho-Pokémon sehr effektiv – der Weg, Sabrina zu besiegen.",
+  "origin": "Der Anime schickte Ash nach Lavandia, um ein Geist-Pokémon gegen Sabrinas Psycho-Pokémon zu finden („Der Turm des Schreckens“, 1997), und so lernten die meisten Kinder das Typenverhältnis.",
+  "evidenceFor": [
+   {
+    "text": "Im Anime geht Ash zum Pokémon-Turm in Lavandia, um ein Geist-Pokémon für den Kampf gegen Sabrina zu finden.",
+    "source": "Anime · Der Turm des Schreckens"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Die Typentabelle von Rot und Blau führt Geist gegen Psycho als „keine Wirkung“.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Gold und Silber änderten das: Ihre Tabelle macht Geist sehr effektiv gegen Psycho.",
+    "source": "Datamine · pret/pokecrystal"
+   },
+   {
+    "text": "Rot und Blau haben nur drei Geist-Attacken: Schlecker, Konfusstrahl und Nachtnebel, das unabhängig vom Typ festen Schaden anrichtet.",
+    "source": "Datamine · pret/pokered"
+   }
+  ],
+  "confirmed": "In Rot und Blau haben Geist-Attacken keine Wirkung auf Psycho-Pokémon. Ab Gold und Silber sind sie sehr effektiv.",
+  "verdictText": "Von den Spieldaten widerlegt: Die Typentabelle der 1. Generation sagt, dass Geist gegen Psycho nichts bewirkt.",
+  "links": [
+   "pret/pokered: Typentabelle der 1. Generation",
+   "pret/pokecrystal: Typentabelle der 2. Generation",
+   "pret/pokered: Attackendaten",
+   "Bulbapedia: Der Turm des Schreckens"
+  ]
+ },
+ "rhydon-was-one-of-the-first-pokemon": {
+  "title": "Rizeros war eines der ersten Pokémon",
+  "era": "Gen. I · 2000",
+  "summary": "Nummer eins in der eigenen Liste des Spiels und der erste Name, den Ken Sugimori nennt.",
+  "claim": "Rizeros, nicht Bisasam oder Pikachu, war das allererste Pokémon, das erschaffen wurde.",
+  "origin": "Dataminer bemerkten, dass Rizeros in der internen Liste von Rot und Blau Platz 1 belegt. Ken Sugimoris Interview im Nintendo Online Magazine von 2000, 2011 und 2020 erneut von Dr Lava übersetzt, bestätigte es.",
+  "evidenceFor": [
+   {
+    "text": "Die interne Liste von Rot und Blau beginnt mit Rizeros, Kangama, Nidoran♂ und Piepi.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Auf die Frage „Welches Pokémon wurde als allererstes erschaffen?“ antwortete Ken Sugimori:",
+    "quote": "Rizeros, Piepi, Lapras usw. Unsere ursprüngliche Idee war, dass Pokémon an der Seite der Menschen leben und ihnen auf nützliche Weise helfen.",
+    "mark": [
+     "Rizeros"
+    ],
+    "source": "Interview · Nintendo Online Magazine (Juli 2000)"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Dr Lavas Neuübersetzung betont, dass Sugimori sie unter den frühesten Pokémon nannte, nicht unbedingt als die ersten drei der Reihe nach.",
+    "source": "Archiv von Dr Lava"
+   },
+   {
+    "text": "Die Reihenfolge einer internen Liste beweist für sich allein nicht die Reihenfolge der Erschaffung.",
+    "source": "Datamine"
+   }
+  ],
+  "confirmed": "Rizeros belegt in den Daten von Rot und Blau Platz 1, und Sugimori nennt es als Erstes unter den frühesten Pokémon.",
+  "verdictText": "Durch ein Entwicklerinterview und die Spieldaten bestätigt, mit einer Einschränkung: Sugimori sagt „unter den ersten“, nicht „das allererste“.",
+  "links": [
+   "Dr Lava: Sugimori und Masuda über die Entstehung der 1. Generation",
+   "pret/pokered: interne Pokémon-Liste"
+  ]
+ },
+ "butterfree-and-venomoth-were-swapped": {
+  "title": "Smettbo und Omot wurden vertauscht",
+  "era": "Gen. I · 1996",
+  "summary": "Bluzuk hat Smettbos Augen. Die Liste des Spiels zeigt, dass die Familien zusammen entstanden.",
+  "claim": "Smettbo sollte sich aus Bluzuk entwickeln und Omot aus Safcon. Die beiden wurden spät in der Entwicklung vertauscht.",
+  "origin": "Eine langlebige Forentheorie (PokéCommunity-Threads reichen über ein Jahrzehnt zurück), die alle paar Jahre von Theorie-Seiten und Reddit wiederbelebt wird.",
+  "evidenceFor": [
+   {
+    "text": "Bluzuks Augen:",
+    "quote": "Seine großen Augen sind in Wahrheit Ansammlungen winziger Augen. Nachts zieht Licht seine Artgenossen an.",
+    "mark": [
+     "Ansammlungen winziger Augen"
+    ],
+    "source": "Bluzuk · Pokédex · Diamant"
+   },
+   {
+    "text": "Und Smettbos:",
+    "quote": "Bei genauerer Betrachtung zeigt sich, dass seine zwei großen Augen jeweils aus einer Vielzahl an kleineren Augen bestehen.",
+    "mark": [
+     "aus einer Vielzahl an kleineren Augen"
+    ],
+    "source": "Smettbo · Pokédex · Sonne"
+   },
+   {
+    "text": "Smettbos Attacken in Rot und Blau (Giftpuder, Stachelspore, Schlafpuder, Psystrahl) sind die Attacken der Bluzuk-Familie.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Beide haben in ihren Artworks große rote Facettenaugen. Siehe Beweisstück A.",
+    "source": "Offizielle Artworks"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "In der internen Liste von Rot und Blau stehen Raupy, Safcon und Smettbo auf drei aufeinanderfolgenden Plätzen (123, 124, 125): Sie wurden als Familie hinzugefügt.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Die Typen passen zu den Familien: Smettbo ist Käfer/Flug wie ein Schmetterling, Omot ist Käfer/Gift wie Bluzuk.",
+    "source": "Spiele"
+   },
+   {
+    "text": "Game Freak hat es nie bestätigt oder dementiert.",
+    "source": "Offizielle Quellen"
+   }
+  ],
+  "confirmed": "Bluzuk und Smettbo teilen sich tatsächlich die Augen und viele Attacken. Ein Tausch wurde nie bestätigt.",
+  "verdictText": "Unbestätigt. Die Ähnlichkeiten sind echt, aber die interne Liste hält Raupy, Safcon und Smettbo zusammen, und Game Freak hat sich nie dazu geäußert.",
+  "links": [
+   "pret/pokered: interne Pokémon-Liste",
+   "pret/pokered: Entwicklungen und Attacken",
+   "Pokédex-Text von Bluzuk (PokeAPI)",
+   "Pokédex-Text von Smettbo (PokeAPI)",
+   "Pokémaniacal: die Omot-Frage (wo sie sich verbreitete)"
+  ],
+  "silhouettes": {
+   "title": "Die Augen",
+   "text": "Bluzuk und Smettbo, das Paar, das laut der Theorie zusammengehört, in Schwarz. Dann übereinandergelegt."
+  },
+  "board": {
+   "question": "Wurden Smettbo und Omot vertauscht?",
+   "hook": "Bluzuk hat Smettbos Augen, und Smettbo hat Bluzuks Attacken. Ein später Tausch oder zwei Designs, die sich nur ähneln?",
+   "caption": "Falsche Eltern?",
+   "keys": [
+    "Bluzuk hat Smettbos Augen",
+    "Beide bestehen aus winzigen Augen",
+    "Smettbo hat Bluzuks Attacken"
+   ],
+   "b": {
+    "label": "Pokédex-Eintrag von Smettbo · Sonne",
+    "quote": "Bei genauerer Betrachtung zeigt sich, dass seine zwei großen Augen jeweils aus einer Vielzahl an kleineren Augen bestehen.",
+    "mark": [
+     "aus einer Vielzahl an kleineren Augen"
+    ]
+   },
+   "c": {
+    "text": "Smettbo lernt Giftpuder, Stachelspore und Schlafpuder, wie Bluzuk.",
+    "bold": [
+     "Giftpuder",
+     "Stachelspore",
+     "Schlafpuder"
+    ]
+   }
+  }
+ },
+ "pokemon-gray-was-coming": {
+  "title": "Pokémon Grau sollte kommen",
+  "era": "Gen. V · 2011",
+  "summary": "Alle erwarteten eine dritte Edition. Game Freak machte stattdessen die ersten direkten Fortsetzungen.",
+  "claim": "Wie Gelb, Kristall, Smaragd und Platin vor ihr sollte auch Schwarz und Weiß eine dritte Edition bekommen: Pokémon Grau.",
+  "origin": "Jede Generation seit Rot und Blau hatte eine dritte Edition, also gingen Fans und Gerüchteseiten von Grau aus. Im Februar 2012 sagte Junichi Masuda den Fans, sie sollten „das nächste Pokémon Smash anschauen“, und die Spekulationen erreichten ihren Höhepunkt.",
+  "evidenceFor": [
+   {
+    "text": "Jedes frühere Paar bekam eine dritte Edition: Gelb, Kristall, Smaragd und Platin.",
+    "source": "Spiele"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "In Pokémon Smash (26. Februar 2012) kündigte Masuda Pokémon Schwarz 2 und Weiß 2 an, nicht Grau.",
+    "source": "Game Informer"
+   },
+   {
+    "text": "Game Informer berichtete über die Ankündigung: „Statt in die Richtung zu gehen, die die meisten mit Pokémon Grau erwartet hatten, kündigte Masuda Pokémon Schwarz 2 und Pokémon Weiß 2 an.“",
+    "source": "Game Informer"
+   },
+   {
+    "text": "Masuda erklärte später, das Team habe nie eine direkte Fortsetzung eines Pokémon-Spiels gemacht und habe sehen wollen, was aus Figuren wie N und G-Cis wurde.",
+    "source": "Interview · Game Informer (2012)"
+   }
+  ],
+  "confirmed": "Auf Schwarz und Weiß folgten Schwarz 2 und Weiß 2, die ersten direkten Fortsetzungen der Reihe. Ein Grau wurde nie angekündigt oder veröffentlicht.",
+  "verdictText": "Von Game Freaks eigener Ankündigung widerlegt: Das dritte Spiel zu Schwarz und Weiß waren zwei Fortsetzungen.",
+  "links": [
+   "Game Informer: Pokémon Schwarz und Weiß 2 angekündigt",
+   "Game Informer: Game Freak über die erste nummerierte Pokémon-Fortsetzung",
+   "Nintendo Life: Pokémon-Director kündigt etwas für Sonntag an"
+  ]
+ },
+ "wobbuffets-tail-is-the-real-pokemon": {
+  "title": "Woingenaus Schweif ist das echte Pokémon",
+  "era": "Gen. II · 1999",
+  "summary": "Es versteckt seinen schwarzen Schweif um jeden Preis. Vielleicht ist der blaue Körper der Köder.",
+  "claim": "Der blaue, grinsende Körper ist ein Köder. Woingenaus schwarzer Schweif mit seinen Augen ist das echte Pokémon.",
+  "origin": "Zusammengesetzt aus Pokédex-Einträgen, die immer wieder auf den Schweif zurückkommen, und diskutiert in Pokémon-Foren und auf Frage-und-Antwort-Seiten wie PokéBase.",
+  "evidenceFor": [
+   {
+    "text": "Es versteckt den Schweif:",
+    "quote": "Um seinen pechschwarzen Schweif zu verbergen, lebt es still in der Dunkelheit. Es greift nie als Erstes an.",
+    "mark": [
+     "seinen pechschwarzen Schweif zu verbergen"
+    ],
+    "source": "Woingenau · Pokédex · Silber"
+   },
+   {
+    "text": "Es steckt Angriffe weg, aber nicht am Schweif:",
+    "quote": "Woingenau tut nichts anderes als Angriffe auszuhalten. Von sich aus würde es nie angreifen. Eine Attacke auf seinen Schweif würde es allerdings niemals dulden. Wenn das passiert, setzt es Abgangsbund ein.",
+    "mark": [
+     "Eine Attacke auf seinen Schweif würde es allerdings niemals dulden"
+    ],
+    "source": "Woingenau · Pokédex · Alpha Saphir"
+   },
+   {
+    "text": "Und der Pokédex selbst nennt es ein Geheimnis:",
+    "quote": "Es versucht verzweifelt, seinen schwarzen Schweif zu verbergen. Das soll beweisen, dass der Schweif ein Geheimnis birgt.",
+    "mark": [
+     "der Schweif ein Geheimnis birgt"
+    ],
+    "source": "Woingenau · Pokédex · Diamant"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Der blaue Körper ist der mit den Merkmalen: Weibliche Woingenau tragen Lippenstift am blauen Körper, ein Geschlechtsunterschied, den der Schweif nie zeigt.",
+    "source": "Spiele"
+   },
+   {
+    "text": "Issos Schweif zeigt nur seine Laune:",
+    "quote": "Isso sieht man immer mit einem breiten, fröhlichen Lächeln. Ein Blick auf seinen Schweif verrät, ob es wütend ist.",
+    "mark": [
+     "Ein Blick auf seinen Schweif"
+    ],
+    "source": "Isso · Pokédex · Rubin"
+   },
+   {
+    "text": "Kein Eintrag sagt je, dass der Schweif das echte Woingenau ist; „ein Geheimnis“ ist das Äußerste.",
+    "source": "Offizielle Quellen"
+   }
+  ],
+  "confirmed": "Woingenau schützt seinen schwarzen Schweif über alles und schlägt zurück, wenn es getroffen wird. Was das Geheimnis ist, wurde nie gesagt.",
+  "verdictText": "Offen: Der Pokédex lädt zur Theorie ein und erklärt das Geheimnis dann nie.",
+  "links": [
+   "Pokédex-Text von Woingenau (PokeAPI)",
+   "Pokédex-Text von Isso (PokeAPI)",
+   "PokéBase: Was ist das Geheimnis hinter Woingenaus Schweif? (wo sie sich verbreitete)"
+  ]
+ }
+}

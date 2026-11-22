@@ -9,7 +9,7 @@ import { currentGeoWeekly, geoRegions, isGeoSpec } from "@/lib/server/geo";
 import { GEO_WEEKLY_BOARD_RE, geoPreviousWeek, geoWeeklyBoard, geoWeeklyMap, geoWeeklyNumber, isGeoWeek } from "@/lib/geo-weekly";
 import { GEO_ROUND_OPTIONS, WORLD_REGION, geoBoardKey, geoMapRank } from "@/lib/geo-types";
 import { GEO_REGION_STREAK_BOARD } from "@/lib/geo-streak-types";
-import { GEO_ERA_NAMES, type GeoEra } from "@/lib/geo-families";
+import type { GeoEra } from "@/lib/geo-families";
 import { dailyNumber, isValidDailyDate, previousDate } from "@/lib/daily";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,15 +27,33 @@ import { NameAvatar } from "@/components/avatar/Avatar";
 import { connBoardStore } from "@/lib/server/connections-board";
 import { connNumber, isPlayableConnDate, type ConnBoardRow } from "@/lib/connections/types";
 import { clock } from "@/lib/share/text";
+import { serverT } from "@/i18n/server";
+import { ClientMessages } from "@/i18n/ClientMessages";
+import type { Translator } from "@/i18n/catalog";
+import leaderboard from "@/messages/leaderboard";
+import geoNames from "@/messages/geo-names";
+import guessrRanked from "@/messages/guessr-ranked";
+import { localEra, localMap } from "@/lib/geo-i18n";
+import battleGlicko from "@/messages/battle-glicko";
+import battleLadder from "@/messages/battle-ladder";
 
-const LEADERBOARD_PAGE = {
-  title: "Leaderboards",
-  description: "The top PokéIQ trainers: today's Daily Challenge, PokéIQ ratings, PokéGuessr, PokéConnections and the battle ladder, updated live.",
-  path: "/leaderboard",
-};
-export const leaderboardMetadata: Metadata = pageMetadata(LEADERBOARD_PAGE);
+type T = Translator<typeof leaderboard.en>;
+
+function leaderboardPage() {
+  const t = serverT(leaderboard);
+  return { t, page: { title: t("meta.title"), description: t("meta.description"), path: "/leaderboard" } };
+}
+export function leaderboardMetadata(): Metadata {
+  return pageMetadata(leaderboardPage().page);
+}
 /** The cached per-board pages (what /leaderboard is rewritten to) sit in a segment without the image file, so they name it. */
-export const leaderboardBoardMetadata: Metadata = pageMetadata({ ...LEADERBOARD_PAGE, image: { url: "/leaderboard/opengraph-image", alt: "PokéIQ leaderboards" } });
+export function leaderboardBoardMetadata(): Metadata {
+  const { t, page } = leaderboardPage();
+  return pageMetadata({ ...page, image: { url: "/leaderboard/opengraph-image", alt: t("meta.imageAlt") } });
+}
+
+/** A number as the page's language writes it; English keeps the server's own formatting. */
+const num = (t: T, n: number, english?: string) => (t.locale === "en" ? n.toLocaleString(english) : n.toLocaleString(t.locale));
 
 export interface LeaderboardParams {
   board?: string;
@@ -55,23 +73,24 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
       ? params.board
       : // Quiz modes have no boards (personal bests show on profiles): old quiz links land on the Daily.
         "daily";
+  const t = serverT(leaderboard);
   const today = new Date().toISOString().slice(0, 10);
   const date = params.date && isValidDailyDate(params.date) ? params.date : today;
 
   const tabs = [
-    { id: "daily", label: "Daily" },
-    { id: "iq", label: "PokéIQ Test" },
-    { id: "geo", label: "PokéGuessr" },
-    { id: "geo-ranked", label: "PokéGuessr Ranked" },
-    { id: "connections", label: "PokéConnections" },
-    { id: "battle", label: "Battle Ladder" },
+    { id: "daily", label: t("tabs.daily") },
+    { id: "iq", label: t("tabs.iq") },
+    { id: "geo", label: t("tabs.geo") },
+    { id: "geo-ranked", label: t("tabs.geoRanked") },
+    { id: "connections", label: t("tabs.connections") },
+    { id: "battle", label: t("tabs.battle") },
   ];
   const tabRow = (
     <div className="flex flex-wrap justify-center gap-2 max-md:grid max-md:grid-cols-2" data-testid="leaderboard-tabs">
-      {tabs.map((t) => (
-        <Link key={t.id} href={`/leaderboard?board=${t.id}`} className="max-md:block">
-          <Badge variant={t.id === board ? "default" : "outline"} className="px-3 py-1 hover:bg-accent max-md:flex max-md:h-10 max-md:w-full max-md:justify-center max-md:text-[11px]">
-            {t.label}
+      {tabs.map((tab) => (
+        <Link key={tab.id} href={`/leaderboard?board=${tab.id}`} className="max-md:block">
+          <Badge variant={tab.id === board ? "default" : "outline"} className="px-3 py-1 hover:bg-accent max-md:flex max-md:h-10 max-md:w-full max-md:justify-center max-md:text-[11px]">
+            {tab.label}
           </Badge>
         </Link>
       ))}
@@ -85,26 +104,30 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
     return (
       <div className="mx-auto max-w-3xl space-y-6">
         <div className="space-y-4 text-center">
-          <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Leaderboard</h1>
+          <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">{t("heading")}</h1>
           {tabRow}
           <p className="text-sm text-muted-foreground">
-            The ranked battle ladder: the top 100 by Elo in each format, with GXE and Glicko-2 as on Pokémon Showdown.{" "}
+            {t("battle.intro")}{" "}
             <Link href={`/battle/ladder?format=${battleFormat}`} className="text-primary underline-offset-2 hover:underline">
-              Full ladder
+              {t("battle.full")}
             </Link>
           </p>
         </div>
         <div className="flex justify-center">
-          <LadderTabs format={battleFormat} hrefBase="/leaderboard?board=battle&format=" />
+          <ClientMessages namespaces={[battleLadder, battleGlicko]}>
+            <LadderTabs format={battleFormat} hrefBase="/leaderboard?board=battle&format=" />
+          </ClientMessages>
         </div>
         {rows === null ? (
           <Card>
-            <CardContent className="py-10 text-center text-muted-foreground">Ranked battles open soon.</CardContent>
+            <CardContent className="py-10 text-center text-muted-foreground">{t("battle.soon")}</CardContent>
           </Card>
         ) : (
           <>
-            <YourBattleStanding format={battleFormat} />
-            <LadderTable rows={rows} format={battleFormat} avatars={avatars} />
+            <ClientMessages namespaces={[battleLadder, battleGlicko]}>
+              <YourBattleStanding format={battleFormat} />
+              <LadderTable rows={rows} format={battleFormat} avatars={avatars} />
+            </ClientMessages>
           </>
         )}
       </div>
@@ -117,25 +140,29 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
     return (
       <div className="mx-auto max-w-3xl space-y-6" data-testid="leaderboard-geo-ranked">
         <div className="space-y-4 text-center">
-          <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Leaderboard</h1>
+          <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">{t("heading")}</h1>
           {tabRow}
-          <p className="text-sm text-muted-foreground">Ranked PokéGuessr duels: the top 100 by Elo. Poké Ball and Great Ball show the division only; the number shows from Ultra Ball up.</p>
+          <p className="text-sm text-muted-foreground">{t("geoRanked.intro")}</p>
         </div>
         {ladder === null ? (
           <Card>
-            <CardContent className="py-10 text-center text-muted-foreground">Ranked PokéGuessr opens soon.</CardContent>
+            <CardContent className="py-10 text-center text-muted-foreground">{t("geoRanked.soon")}</CardContent>
           </Card>
         ) : (
           <>
-            <YourGeoLadderSpot />
+            <ClientMessages namespaces={[guessrRanked]}>
+              <YourGeoLadderSpot />
+            </ClientMessages>
             {ladder.length === 0 ? (
               <Card>
                 <CardContent className="py-10 text-center text-muted-foreground">
-                  Nobody is ranked yet.{" "}
-                  <Link href="/pokeguessr#ranked" className="text-primary underline-offset-2 hover:underline">
-                    Queue a ranked duel
-                  </Link>{" "}
-                  and be the first!
+                  {t.rich("geoRanked.empty", {
+                    link: (c) => (
+                      <Link href="/pokeguessr#ranked" className="text-primary underline-offset-2 hover:underline">
+                        {c}
+                      </Link>
+                    ),
+                  })}
                 </CardContent>
               </Card>
             ) : (
@@ -145,9 +172,9 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
                     <thead>
                       <tr className="border-b text-left text-xs uppercase text-muted-foreground">
                         <th className="p-3">#</th>
-                        <th className="p-3">Trainer</th>
-                        <th className="p-3">Division</th>
-                        <th className="hidden p-3 text-right sm:table-cell">W–L</th>
+                        <th className="p-3">{t("col.trainer")}</th>
+                        <th className="p-3">{t("col.division")}</th>
+                        <th className="hidden p-3 text-right sm:table-cell">{t("col.wl")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -161,7 +188,9 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
                             </span>
                           </td>
                           <td className="p-3">
-                            <GeoDivisionBadge elo={row.elo} division={row.division} size="sm" />
+                            <ClientMessages namespaces={[guessrRanked]}>
+                              <GeoDivisionBadge elo={row.elo} division={row.division} size="sm" />
+                            </ClientMessages>
                           </td>
                           <td className="hidden p-3 text-right tabular-nums sm:table-cell">
                             {row.wins}–{row.losses}
@@ -187,24 +216,26 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
       <div className="mx-auto max-w-3xl space-y-6" data-testid="leaderboard-connections">
         {!params.date && <LocalDateRedirect serverDate={connDate} board="connections" />}
         <div className="space-y-4 text-center">
-          <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Leaderboard</h1>
+          <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">{t("heading")}</h1>
           {tabRow}
           <p className="text-sm text-muted-foreground">
-            PokéConnections #{connNumber(connDate)} · {connDate}: fewest mistakes, then fastest.
+            {t("connections.intro", { n: connNumber(connDate), date: connDate })}
           </p>
         </div>
         {rows === null ? (
           <Card>
-            <CardContent className="py-10 text-center text-muted-foreground">The PokéConnections leaderboard opens soon.</CardContent>
+            <CardContent className="py-10 text-center text-muted-foreground">{t("connections.soon")}</CardContent>
           </Card>
         ) : rows.length === 0 ? (
           <Card>
             <CardContent className="py-10 text-center text-muted-foreground">
-              No solves yet.{" "}
-              <Link href="/pokeconnections" className="text-primary underline-offset-2 hover:underline">
-                Play today&apos;s PokéConnections
-              </Link>{" "}
-              and be the first!
+              {t.rich("connections.empty", {
+                link: (c) => (
+                  <Link href="/pokeconnections" className="text-primary underline-offset-2 hover:underline">
+                    {c}
+                  </Link>
+                ),
+              })}
             </CardContent>
           </Card>
         ) : (
@@ -214,9 +245,9 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
                 <thead>
                   <tr className="border-b text-left text-xs uppercase text-muted-foreground">
                     <th className="p-3">#</th>
-                    <th className="p-3">Trainer</th>
-                    <th className="p-3 text-right">Mistakes</th>
-                    <th className="p-3 text-right">Time</th>
+                    <th className="p-3">{t("col.trainer")}</th>
+                    <th className="p-3 text-right">{t("col.mistakes")}</th>
+                    <th className="p-3 text-right">{t("col.time")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -229,7 +260,7 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
                           {row.name}
                         </span>
                       </td>
-                      <td className="p-3 text-right tabular-nums">{row.mistakes === 0 ? "Perfect" : row.mistakes}</td>
+                      <td className="p-3 text-right tabular-nums">{row.mistakes === 0 ? t("connections.perfect") : row.mistakes}</td>
                       <td className="p-3 text-right font-mono tabular-nums">{clock(row.ms / 1000)}</td>
                     </tr>
                   ))}
@@ -239,16 +270,18 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
           </Card>
         )}
         <p className="text-center text-xs text-muted-foreground">
-          Every entry was checked on the server: it replays each trainer&apos;s guesses and times the game with its own clock. Signed-in and named trainers only.
+          {t("connections.footnote")}
         </p>
       </div>
     );
   }
 
   if (board === "geo") {
+    const g = serverT(geoNames);
     const maps = geoRegions()
       .map((r) => ({
         ...r,
+        name: localMap(g, r),
         // Every game, then Classic 2D and Modern 3D (each where the map has enough of its places).
         boards: ([undefined, "2d", "3d"] as (GeoEra | undefined)[]).flatMap((era) =>
           // A board per game length (3 / 5 / 10 rounds) and the streak.
@@ -256,12 +289,12 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
             .filter(({ kind, rounds }) => isGeoSpec({ region: r.id, kind, rounds, ...(era ? { era } : {}) }))
             .map(({ kind, rounds }) => ({
               id: geoBoardKey({ region: r.id, kind, era, rounds }),
-              name: `${era ? `${GEO_ERA_NAMES[era]} ` : ""}${kind === "streak" ? "Streak" : `${rounds} rounds`}`,
+              name: geoBoardName(t, g, kind === "streak" ? t("geo.streak") : t("geo.rounds", { rounds: rounds! }), era),
             }))
         ),
       }))
       // Region Streak (name the region from one screenshot) is played on the world map.
-      .map((r) => (r.id === WORLD_REGION ? { ...r, boards: [...r.boards, { id: GEO_REGION_STREAK_BOARD, name: "Region Streak" }] } : r))
+      .map((r) => (r.id === WORLD_REGION ? { ...r, boards: [...r.boards, { id: GEO_REGION_STREAK_BOARD, name: t("geo.regionStreak") }] } : r))
       .filter((r) => r.boards.length)
       .sort((a, b) => geoMapRank(a.id) - geoMapRank(b.id));
     // The Weekly Challenge: this week's board, and the weeks before it by their Monday.
@@ -276,35 +309,35 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
     const geoEntries = geoRead === "unavailable" ? [] : geoRead;
     // What the board invites to when it's empty or nearly: today's Daily, this week's Weekly, or a game on the map.
     const invite: GeoInvite = week
-      ? { kind: "weekly", current: week === thisWeek?.week, label: `Weekly #${geoWeeklyNumber(week)} · ${weekMapName(week)}` }
+      ? { kind: "weekly", current: week === thisWeek?.week, label: t("geo.weekly", { n: geoWeeklyNumber(week), map: weekMapName(week) }) }
       : map
         ? { kind: "map", current: true, label: map.name, href: `/pokeguessr?region=${map.id}` }
         : // Your local date can be a day either side of the server's.
-          { kind: "daily", current: date >= previousDate(today), label: `Daily #${dailyNumber(date)}` };
+          { kind: "daily", current: date >= previousDate(today), label: t("geo.daily", { n: dailyNumber(date) }) };
     const avatars = await avatarsByNames((geoEntries ?? []).map((r) => r.player_name));
     return (
       <div className="mx-auto max-w-3xl space-y-6">
         {!mode && !params.date && <LocalDateRedirect serverDate={date} board="geo" />}
         <div className="space-y-4 text-center">
-          <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Leaderboard</h1>
+          <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">{t("heading")}</h1>
           {tabRow}
           <div className="flex flex-wrap justify-center gap-2">
             <Link href="/leaderboard?board=geo">
               <Badge variant={!mode ? "secondary" : "outline"} className="hover:bg-accent">
-                Daily #{dailyNumber(date)}
+                {t("geo.daily", { n: dailyNumber(date) })}
               </Badge>
             </Link>
             {thisWeek && (
               <Link href={`/leaderboard?board=geo&format=${geoWeeklyBoard(thisWeek.week)}`} data-testid="geo-board-weekly">
                 <Badge variant={week === thisWeek.week ? "secondary" : "outline"} className="border-warning/50 hover:bg-accent">
-                  Weekly #{geoWeeklyNumber(thisWeek.week)} · {weekMapName(thisWeek.week)}
+                  {t("geo.weekly", { n: geoWeeklyNumber(thisWeek.week), map: weekMapName(thisWeek.week) })}
                 </Badge>
               </Link>
             )}
             {lastWeek && (
               <Link href={`/leaderboard?board=geo&format=${geoWeeklyBoard(lastWeek)}`}>
                 <Badge variant={week === lastWeek ? "secondary" : "outline"} className="hover:bg-accent">
-                  Last week · {weekMapName(lastWeek)}
+                  {t("geo.lastWeek", { map: weekMapName(lastWeek) })}
                 </Badge>
               </Link>
             )}
@@ -319,7 +352,7 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
               ))}
           </div>
           {maps.some((r) => r.theme) && (
-            <div className="flex flex-wrap justify-center gap-2" aria-label="Themed maps">
+            <div className="flex flex-wrap justify-center gap-2" aria-label={t("geo.themed")}>
               {maps
                 .filter((r) => r.theme)
                 .map((r) => (
@@ -333,7 +366,7 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
           )}
           {week && (
             <p className="text-sm text-muted-foreground" data-testid="geo-weekly-board-title">
-              Weekly Challenge #{geoWeeklyNumber(week)} · {weekMapName(week)} · week of {week}
+              {t("geo.weeklyTitle", { n: geoWeeklyNumber(week), map: weekMapName(week), week })}
             </p>
           )}
           {map && (
@@ -341,7 +374,7 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
               {map.boards.map((b) => (
                 <Link key={b.id} href={`/leaderboard?board=geo&format=${b.id}`}>
                   <Badge variant={mode === b.id ? "secondary" : "outline"} className="hover:bg-accent">
-                    {map.name} {b.name}
+                    {t("geo.mapBoard", { map: map.name, board: b.name })}
                   </Badge>
                 </Link>
               ))}
@@ -349,13 +382,13 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
           )}
         </div>
         {geoRead === "unavailable" ? (
-          <BoardUnavailable />
+          <BoardUnavailable t={t} />
         ) : geoEntries === null ? (
           <Card>
-            <CardContent className="py-10 text-center text-muted-foreground">Leaderboards aren&apos;t enabled here.</CardContent>
+            <CardContent className="py-10 text-center text-muted-foreground">{t("notEnabledLine")}</CardContent>
           </Card>
         ) : geoEntries.length === 0 ? (
-          <GeoBoardInvite {...invite} empty />
+          <GeoBoardInvite {...invite} t={t} empty />
         ) : (
           <Card>
             <CardContent className="p-0">
@@ -363,9 +396,9 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
                 <thead>
                   <tr className="border-b text-left text-xs uppercase text-muted-foreground">
                     <th className="p-3">#</th>
-                    <th className="p-3">Trainer</th>
-                    <th className="p-3 text-right">Score</th>
-                    <th className="hidden p-3 text-right sm:table-cell">Time</th>
+                    <th className="p-3">{t("col.trainer")}</th>
+                    <th className="p-3 text-right">{t("col.score")}</th>
+                    <th className="hidden p-3 text-right sm:table-cell">{t("col.time")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -379,9 +412,9 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
                         </span>
                       </td>
                       <td className="p-3 text-right font-mono tabular-nums">
-                        {mode && /streak$/.test(mode) ? `${row.score} in a row` : `${row.score.toLocaleString("en-US")} / 25,000`}
+                        {mode && /streak$/.test(mode) ? t("geo.inARow", { score: row.score }) : t("geo.outOf", { score: num(t, row.score, "en-US"), max: num(t, 25000, "en-US") })}
                       </td>
-                      <td className="hidden p-3 text-right tabular-nums sm:table-cell">{Math.round(row.duration_ms / 1000)}s</td>
+                      <td className="hidden p-3 text-right tabular-nums sm:table-cell">{t("seconds", { s: Math.round(row.duration_ms / 1000) })}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -390,7 +423,7 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
           </Card>
         )}
         {/* A board that's only getting started: the scores it has (never made-up ones), and the way onto it. */}
-        {geoEntries && geoEntries.length > 0 && geoEntries.length < GEO_BOARD_FEW && invite.current && <GeoBoardInvite {...invite} count={geoEntries.length} />}
+        {geoEntries && geoEntries.length > 0 && geoEntries.length < GEO_BOARD_FEW && invite.current && <GeoBoardInvite {...invite} t={t} count={geoEntries.length} />}
       </div>
     );
   }
@@ -404,30 +437,27 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
     <div className="mx-auto max-w-3xl space-y-6">
       {board === "daily" && !params.date && <LocalDateRedirect serverDate={date} />}
       <div className="space-y-4 text-center">
-        <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Leaderboard</h1>
+        <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">{t("heading")}</h1>
         {tabRow}
         {board === "daily" ? (
-          <p className="text-sm text-muted-foreground">Daily Challenge #{dailyNumber(date)} · {date}</p>
+          <p className="text-sm text-muted-foreground">{t("dailyIntro", { n: dailyNumber(date), date })}</p>
         ) : (
-          <p className="text-sm text-muted-foreground">Ranked by measured PokéIQ from the adaptive test</p>
+          <p className="text-sm text-muted-foreground">{t("iqIntro")}</p>
         )}
       </div>
 
       {read === "unavailable" ? (
-        <BoardUnavailable />
+        <BoardUnavailable t={t} />
       ) : entries === null ? (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Leaderboards aren&apos;t enabled here</CardTitle>
-            <CardDescription>
-              Set <code>SUPABASE_URL</code> and <code>SUPABASE_SERVICE_ROLE_KEY</code> and run the migration in{" "}
-              <code>supabase/migrations/</code>. Everything else works without it.
-            </CardDescription>
+            <CardTitle className="text-lg">{t("notEnabled")}</CardTitle>
+            <CardDescription>{t.rich("supabase", { code: (c) => <code>{c}</code> })}</CardDescription>
           </CardHeader>
         </Card>
       ) : entries.length === 0 ? (
         <Card>
-          <CardContent className="py-10 text-center text-muted-foreground">No scores yet — be the first on the board!</CardContent>
+          <CardContent className="py-10 text-center text-muted-foreground">{t("noScores")}</CardContent>
         </Card>
       ) : (
         <>
@@ -447,12 +477,12 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
                         place === 2 && "text-slate-300",
                         place === 3 && "text-amber-600"
                       )}
-                      aria-label={`Rank ${place}`}
+                      aria-label={t("rank", { place })}
                     />
                     <NameAvatar name={row.player_name} avatars={avatars} size={40} className="mx-auto mt-2" />
                     <div className="mt-2 truncate font-semibold">{row.player_name}</div>
-                    <div className="font-mono text-sm tabular-nums text-muted-foreground">{row.score.toLocaleString()} pts</div>
-                    <Badge variant="secondary" className="mt-2">IQ {row.pokeiq}</Badge>
+                    <div className="font-mono text-sm tabular-nums text-muted-foreground">{t("pts", { score: num(t, row.score) })}</div>
+                    <Badge variant="secondary" className="mt-2">{t("iq", { n: row.pokeiq })}</Badge>
                   </div>
                 );
               })}
@@ -464,11 +494,11 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
                 <thead>
                   <tr className="border-b text-left text-xs uppercase text-muted-foreground">
                     <th className="p-3">#</th>
-                    <th className="p-3">Trainer</th>
-                    <th className="p-3 text-right">Score</th>
-                    <th className="p-3 text-right">PokéIQ</th>
-                    <th className="hidden p-3 text-right sm:table-cell">Correct</th>
-                    <th className="hidden p-3 text-right sm:table-cell">Time</th>
+                    <th className="p-3">{t("col.trainer")}</th>
+                    <th className="p-3 text-right">{t("col.score")}</th>
+                    <th className="p-3 text-right">{t("col.pokeiq")}</th>
+                    <th className="hidden p-3 text-right sm:table-cell">{t("col.correct")}</th>
+                    <th className="hidden p-3 text-right sm:table-cell">{t("col.time")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -481,12 +511,12 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
                           {row.player_name}
                         </span>
                       </td>
-                      <td className="p-3 text-right font-mono tabular-nums">{row.score.toLocaleString()}</td>
+                      <td className="p-3 text-right font-mono tabular-nums">{num(t, row.score)}</td>
                       <td className="p-3 text-right tabular-nums">{row.pokeiq}</td>
                       <td className="hidden p-3 text-right tabular-nums sm:table-cell">
                         {row.correct}/{row.total}
                       </td>
-                      <td className="hidden p-3 text-right tabular-nums sm:table-cell">{Math.round(row.duration_ms / 1000)}s</td>
+                      <td className="hidden p-3 text-right tabular-nums sm:table-cell">{t("seconds", { s: Math.round(row.duration_ms / 1000) })}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -496,18 +526,18 @@ export async function LeaderboardView({ params }: { params: LeaderboardParams })
         </>
       )}
       <p className="text-center text-xs text-muted-foreground">
-        Every score here was graded on the server — submissions carry a signed result, never a raw number.
+        {t("footnote")}
       </p>
     </div>
   );
 }
 
 /** A board whose read failed (the database is down): said plainly, never an empty board inviting a first score. */
-function BoardUnavailable() {
+function BoardUnavailable({ t }: { t: T }) {
   return (
     <Card>
       <CardContent className="py-10 text-center text-muted-foreground" data-testid="board-unavailable">
-        This leaderboard is unavailable right now. Try again in a minute.
+        {t("unavailable")}
       </CardContent>
     </Card>
   );
@@ -539,30 +569,34 @@ interface GeoInvite {
  * just the way onto it. Empty: a card that fills the table's spot. A few
  * scores: a line under them.
  */
-function GeoBoardInvite({ kind, current, label, href, empty, count = 0 }: GeoInvite & { empty?: boolean; count?: number }) {
+function GeoBoardInvite({ kind, current, label, href, empty, count = 0, t }: GeoInvite & { empty?: boolean; count?: number; t: T }) {
   const daily = kind === "daily";
   const weekly = kind === "weekly";
   const Icon = daily ? Compass : weekly ? CalendarRange : Trophy;
   // The Daily's Play starts today's game straight away; the Weekly's tile is in the hub's Play section.
   const playHref = daily ? "/pokeguessr?play=daily#play" : weekly ? "/pokeguessr#play" : (href ?? "/pokeguessr");
-  const playLabel = daily ? (current ? "Play today's Daily" : "Play today's Daily instead") : weekly ? (current ? "Play this week's" : "Play this week's Weekly") : "Play this map";
-  const title = !current
-    ? `Nobody saved a score on ${label}`
-    : daily
-      ? "Be the first on today's board"
-      : weekly
-        ? "Be the first on this week's board"
-        : `Be the first on the ${label} board`;
-  const blurb = daily
-    ? "5 places, the same for everyone today. Your first game goes on the board."
+  const playLabel = daily
+    ? current
+      ? t("invite.playDaily")
+      : t("invite.playDailyInstead")
     : weekly
-      ? "5 places on this week's map, the same for everyone until Monday. Your first try goes on the board."
-      : "Finish a game on this map and save your score to put your name here.";
+      ? current
+        ? t("invite.playWeekly")
+        : t("invite.playWeeklyInstead")
+      : t("invite.playMap");
+  const title = !current
+    ? t("invite.notSaved", { label })
+    : daily
+      ? t("invite.firstDaily")
+      : weekly
+        ? t("invite.firstWeekly")
+        : t("invite.firstMap", { label });
+  const blurb = daily ? t("invite.blurbDaily") : weekly ? t("invite.blurbWeekly") : t("invite.blurbMap");
   if (!empty) {
     return (
       <div className="flex flex-col items-center justify-between gap-3 rounded-lg border border-dashed px-4 py-3 text-center sm:flex-row sm:text-left" data-testid="geo-board-few">
         <p className="text-sm text-muted-foreground">
-          {count === 1 ? "Just one trainer" : `Just ${count} trainers`} on {daily ? "today's board" : weekly ? "this week's board" : "this board"} so far. Room at the top.
+          {daily ? t("invite.fewDaily", { count }) : weekly ? t("invite.fewWeekly", { count }) : t("invite.fewMap", { count })}
         </p>
         <Link href={playHref} className={cn(buttonVariants({ size: "sm", variant: weekly ? "success" : "default" }), "shrink-0")}>
           <Icon className="h-4 w-4" aria-hidden /> {playLabel}
@@ -578,11 +612,16 @@ function GeoBoardInvite({ kind, current, label, href, empty, count = 0 }: GeoInv
         </span>
         <p className="hud-label">{label}</p>
         <h2 className="text-balance font-display text-2xl font-bold uppercase leading-tight sm:text-3xl">{title}</h2>
-        <p className="max-w-md text-balance text-sm text-muted-foreground">{current ? blurb : daily ? "That day's board stayed empty. Today's is open." : "That week's board stayed empty. This week's is open."}</p>
+        <p className="max-w-md text-balance text-sm text-muted-foreground">{current ? blurb : daily ? t("invite.pastDaily") : t("invite.pastWeekly")}</p>
         <Link href={playHref} className={cn(buttonVariants({ size: "lg", variant: weekly ? "success" : "default" }), "mt-1 w-full sm:w-auto")} data-testid="geo-board-play">
           <Icon className="h-4 w-4" aria-hidden /> {playLabel}
         </Link>
       </CardContent>
     </Card>
   );
+}
+
+/** A PokéGuessr board's name on its map: the game length or the streak, after the era when there is one. */
+function geoBoardName(t: T, g: Parameters<typeof localEra>[0], board: string, era: GeoEra | undefined): string {
+  return era ? t("geo.eraBoard", { era: localEra(g, era), board }) : board;
 }

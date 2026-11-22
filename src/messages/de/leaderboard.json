@@ -1,0 +1,88 @@
+{
+  "meta": {
+    "title": "Bestenlisten",
+    "description": "Die besten PokéIQ-Trainer: die heutige Tägliche Herausforderung, PokéIQ-Werte, PokéGuessr, PokéConnections und die Kampf-Rangliste, live aktualisiert.",
+    "imageAlt": "PokéIQ-Bestenlisten"
+  },
+  "heading": "Bestenliste",
+  "tabs": {
+    "daily": "Täglich",
+    "iq": "PokéIQ-Test",
+    "geo": "PokéGuessr",
+    "geoRanked": "PokéGuessr-Rangliste",
+    "connections": "PokéConnections",
+    "battle": "Kampf-Rangliste"
+  },
+  "battle": {
+    "intro": "Die Rangliste der Ranglistenkämpfe: die Besten nach Elo in jedem Format, mit GXE und Glicko-2 wie bei Pokémon Showdown.",
+    "full": "Ganze Rangliste",
+    "soon": "Ranglistenkämpfe starten bald."
+  },
+  "geoRanked": {
+    "intro": "Ranglistenduelle in PokéGuessr: die Besten nach Elo. Pokéball und Superball zeigen nur die Division; die Zahl erscheint ab Hyperball.",
+    "soon": "Ranglistenduelle in PokéGuessr starten bald.",
+    "empty": "Noch niemand ist eingestuft. <link>Such dir ein Ranglistenduell</link> und sei der Erste!"
+  },
+  "col": {
+    "trainer": "Trainer",
+    "score": "Punkte",
+    "time": "Zeit",
+    "mistakes": "Fehler",
+    "division": "Division",
+    "wl": "S–N",
+    "pokeiq": "PokéIQ",
+    "correct": "Richtig"
+  },
+  "connections": {
+    "intro": "PokéConnections Nr. {n} · {date}: wenigste Fehler, dann am schnellsten.",
+    "soon": "Die PokéConnections-Bestenliste startet bald.",
+    "empty": "Noch hat es niemand gelöst. <link>Spiel das heutige PokéConnections</link> und sei der Erste!",
+    "perfect": "Perfekt",
+    "footnote": "Jeder Eintrag wurde auf dem Server geprüft: Er spielt die Tipps jedes Trainers nach und misst die Zeit mit seiner eigenen Uhr. Nur angemeldete Trainer mit Namen."
+  },
+  "geo": {
+    "streak": "Serie",
+    "rounds": "{rounds} Runden",
+    "eraBoard": "{board} · {era}",
+    "mapBoard": "{map} · {board}",
+    "regionStreak": "Regionen-Serie",
+    "daily": "Täglich Nr. {n}",
+    "weekly": "Wöchentlich Nr. {n} · {map}",
+    "lastWeek": "Letzte Woche · {map}",
+    "themed": "Themenkarten",
+    "weeklyTitle": "Wochen-Challenge Nr. {n} · {map} · Woche vom {week}",
+    "inARow": "{score} am Stück",
+    "outOf": "{score} / {max}"
+  },
+  "seconds": "{s} s",
+  "notEnabledLine": "Bestenlisten sind hier nicht aktiviert.",
+  "notEnabled": "Bestenlisten sind hier nicht aktiviert",
+  "supabase": "Setz <code>SUPABASE_URL</code> und <code>SUPABASE_SERVICE_ROLE_KEY</code> und führ die Migration in <code>supabase/migrations/</code> aus. Alles andere funktioniert auch ohne.",
+  "noScores": "Noch keine Punkte – sei der Erste auf der Bestenliste!",
+  "rank": "Platz {place}",
+  "pts": "{score} Pkt.",
+  "iq": "IQ {n}",
+  "dailyIntro": "Tägliche Herausforderung Nr. {n} · {date}",
+  "iqIntro": "Sortiert nach dem im adaptiven Test gemessenen PokéIQ",
+  "footnote": "Jede Punktzahl hier wurde auf dem Server bewertet – Einsendungen enthalten ein signiertes Ergebnis, nie eine bloße Zahl.",
+  "unavailable": "Diese Bestenliste ist gerade nicht verfügbar. Versuch es in einer Minute noch mal.",
+  "invite": {
+    "playDaily": "Spiel die heutige Tägliche",
+    "playDailyInstead": "Spiel stattdessen die heutige Tägliche",
+    "playWeekly": "Spiel die dieser Woche",
+    "playWeeklyInstead": "Spiel die Wochen-Challenge",
+    "playMap": "Auf dieser Karte spielen",
+    "notSaved": "Niemand hat auf {label} eine Punktzahl gespeichert",
+    "firstDaily": "Sei der Erste auf der heutigen Bestenliste",
+    "firstWeekly": "Sei der Erste auf der Bestenliste dieser Woche",
+    "firstMap": "Sei der Erste auf der Bestenliste {label}",
+    "blurbDaily": "Für alle heute dieselben Orte. Dein erstes Spiel kommt auf die Bestenliste.",
+    "blurbWeekly": "Bis Montag für alle dieselben Orte auf der Karte dieser Woche. Dein erster Versuch kommt auf die Bestenliste.",
+    "blurbMap": "Beende ein Spiel auf dieser Karte und speichere deine Punktzahl, um hier zu stehen.",
+    "fewDaily": "{count, plural, one {Erst ein Trainer} other {Erst # Trainer}} auf der heutigen Bestenliste. Oben ist noch Platz.",
+    "fewWeekly": "{count, plural, one {Erst ein Trainer} other {Erst # Trainer}} auf der Bestenliste dieser Woche. Oben ist noch Platz.",
+    "fewMap": "{count, plural, one {Erst ein Trainer} other {Erst # Trainer}} auf dieser Bestenliste. Oben ist noch Platz.",
+    "pastDaily": "Die Bestenliste dieses Tages blieb leer. Die heutige ist offen.",
+    "pastWeekly": "Die Bestenliste dieser Woche blieb leer. Die aktuelle ist offen."
+  }
+}

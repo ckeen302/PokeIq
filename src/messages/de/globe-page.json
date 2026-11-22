@@ -1,0 +1,14 @@
+{
+  "origins": {
+    "Kanto": "Nach der japanischen Region Kantō rund um Tokio. Saffronia City liegt ungefähr dort, wo Tokio liegt.",
+    "Johto": "Nach Japans Region Kansai und einem Teil von Chūbu. Die Türme von Teak City erinnern an das alte Kyoto, Dukatia City ist Osaka nachempfunden.",
+    "Hoenn": "Nach Kyūshū, Japans südlicher Hauptinsel, auf die Seite gedreht, mit viel Meer und Inseln zum Surfen.",
+    "Sinnoh": "Nach Hokkaidō, Japans nördlicher Insel, mit verschneiten Bergen und dem mächtigen Kraterberg in der Mitte.",
+    "Unova": "Nach New York City und Umgebung. Stratos City ist Manhattan, und es war die erste Region außerhalb Japans.",
+    "Kalos": "Nach Nordfrankreich. Illumina City und ihr Prismaturm stehen für Paris und den Eiffelturm.",
+    "Alola": "Nach Hawaii: vier Hauptinseln und eine künstliche, mit Inselprüfungen statt Arenen.",
+    "Galar": "Nach Großbritannien, vor allem England, mit den schottischen Highlands im verschneiten Norden und Score City als London.",
+    "Paldea": "Nach der Iberischen Halbinsel: Spanien und Portugal. Mesalona City und seine Akademie liegen in der Mitte, wie Madrid."
+  },
+  "japan": "{game} (Japan)"
+}

@@ -1,0 +1,36 @@
+{
+  "form": {
+    "mega": "メガ{name}",
+    "megaVariant": "メガ{name}{variant}",
+    "gmax": "{name}（キョダイマックスのすがた）",
+    "gmaxStyle": {
+      "single": "{name}（いちげきのかた・キョダイマックスのすがた）",
+      "rapid": "{name}（れんげきのかた・キョダイマックスのすがた）",
+      "amped": "{name}（ハイなすがた・キョダイマックスのすがた）",
+      "lowkey": "{name}（ローなすがた・キョダイマックスのすがた）"
+    },
+    "alola": "{name}（アローラのすがた）",
+    "galar": "{name}（ガラルのすがた）",
+    "hisui": "{name}（ヒスイのすがた）",
+    "paldea": "{name}（パルデアのすがた）",
+    "breed": "{name}（パルデアのすがた・{breed}）",
+    "breeds": {
+      "combat": "コンバット種",
+      "blaze": "ブレイズ種",
+      "aqua": "ウォーター種"
+    },
+    "darmanitan": {
+      "standard": "{name}（ガラルのすがた・ノーマルモード）",
+      "zen": "{name}（ガラルのすがた・ダルマモード）"
+    },
+    "eternamax": "{name}（ムゲンダイマックス）"
+  },
+  "refs": {
+    "phone": "スマートフォン",
+    "human": "大人の人間",
+    "car": "乗用車",
+    "bus": "スクールバス",
+    "house": "2階建ての家",
+    "building": "10階建てのビル"
+  }
+}

@@ -1,0 +1,427 @@
+{
+  "title": "La storia di Pokémon",
+  "tagline": "Dalle cacce agli insetti di un bambino alle porte di Tokyo a trent'anni di Pokémon: la storia vera del franchise, in un film in 3D.",
+  "intro": "Questa è la storia reale di come è nato Pokémon e di come è cresciuto. Ogni frase dice da dove viene: un fatto documentato con una data, qualcosa che un autore ha detto in un'intervista o qualcosa riportato dalla stampa. Quando la storia viene raccontata in più modi, il sottotitolo lo segnala.",
+  "method": "Le date sono quelle di uscita in Giappone, salvo diversa indicazione, e corrispondono alla cronologia Pokémon. Le persone compaiono solo come sagome, mani e oggetti che usavano; tutto ciò che si vede sullo schermo è costruito in 3D per questo film.",
+  "prologue": {
+    "title": "La storia di Pokémon",
+    "line": "Ogni Pokémon è nato da qualche parte. Questo è nato in un prato."
+  },
+  "chapters": {
+    "collector": {
+      "title": "Il collezionista",
+      "when": "Gli anni '70",
+      "place": "Machida, Tokyo",
+      "tag": "Infanzia",
+      "summary": "Satoshi Tajiri è cresciuto a Machida, al margine occidentale di Tokyo, tra risaie, fiumi e boschi. Catturava più insetti di chiunque altro, finché la città non si è estesa sui campi.",
+      "beats": {
+        "fields": {
+          "lead": "Satoshi Tajiri è cresciuto a Machida, al margine occidentale di Tokyo.",
+          "quote": "C'erano risaie, fiumi, foreste. Era pieno di natura."
+        },
+        "dr-bug": {
+          "text": "Collezionava insetti. Gli altri bambini lo chiamavano «Dottor Insetto»."
+        },
+        "learned": {
+          "lead": "Ha imparato come vivevano.",
+          "quote": "Mi venne l'idea di mettere una pietra sotto un albero, perché di giorno dormivano e amavano dormire sotto i sassi."
+        },
+        "jar": {
+          "quote": "Prendevo più insetti di chiunque altro."
+        },
+        "paved": {
+          "lead": "Poi la città è cresciuta.",
+          "quote": "Poi sono cominciati i lavori, e man mano che la città cresceva, tutti gli insetti sono stati scacciati."
+        },
+        "kept": {
+          "text": "Gli insetti se ne andavano. L'emozione di trovarli gli è rimasta dentro."
+        }
+      },
+      "notes": {
+        "About the jar": {
+          "label": "Sul barattolo",
+          "text": "Il barattolo è l'immagine con cui il film rappresenta una collezione. Nel racconto di Tajiri a TIME ci sono coleotteri trovati sotto i sassi, gamberi di fiume e il fatto di prendere più insetti di chiunque altro."
+        }
+      },
+      "sources": {
+        "time-gf": { "title": "«The Ultimate Game Freak», intervista a Satoshi Tajiri" }
+      }
+    },
+    "game-freak": {
+      "title": "Game Freak",
+      "when": "1981–1989",
+      "place": "Tokyo",
+      "tag": "La fanzine",
+      "summary": "Da ragazzo, Tajiri scoprì le sale giochi e poi scrisse una rivista fatta a mano sui videogiochi chiamata Game Freak. Ken Sugimori la illustrava, e nel 1989 diventò uno studio di videogiochi con lo stesso nome.",
+      "beats": {
+        "arcade": {
+          "text": "Da ragazzo, Tajiri trovò un nuovo tipo di prato: la sala giochi."
+        },
+        "zine": {
+          "lead": "Scriveva di videogiochi in una rivista di trucchi e segreti, e la chiamò Game Freak.",
+          "quote": "Era scritta a mano. Le pagine le pinzavo io."
+        },
+        "sugimori": {
+          "text": "Un illustratore di nome Ken Sugimori la trovò in un negozio di fanzine e cominciò a disegnare per lei."
+        },
+        "pages": {
+          "text": "Le copie passavano di mano in mano. Un numero speciale vendette 10.000 copie."
+        },
+        "studio": {
+          "text": "Nell'aprile del 1989, la rivista diventò uno studio di videogiochi con lo stesso nome."
+        }
+      },
+      "notes": {
+        "The first game": {
+          "label": "Il primo gioco",
+          "text": "Tajiri raccontò a TIME di aver impiegato due anni per imparare a programmare e uno per realizzare il primo gioco di Game Freak, Quinty, pubblicato da Namco nel 1989."
+        }
+      },
+      "sources": {
+        "time-gf": { "title": "«The Ultimate Game Freak», intervista a Satoshi Tajiri" },
+        "gf-about": { "title": "Profilo aziendale (fondata il 26 aprile 1989)" }
+      }
+    },
+    "cable": {
+      "title": "Il cavo",
+      "when": "1989–1990",
+      "place": "Game Freak, Tokyo",
+      "tag": "L'idea",
+      "summary": "Il Game Boy aveva un cavo per collegarne due. Tajiri immaginò creature vive che andavano avanti e indietro lungo quel cavo: catturarle, collezionarle, scambiarle.",
+      "beats": {
+        "game-boy": {
+          "text": "Nel 1989 Nintendo lanciò il Game Boy e, insieme, un cavo per collegarne due."
+        },
+        "crawl": {
+          "lead": "Tajiri immaginò qualcosa che viaggiava lungo quel filo.",
+          "quote": "Pensai a veri organismi viventi che andavano avanti e indietro attraverso il cavo."
+        },
+        "trade": {
+          "lead": "Catturarli, collezionarli, scambiarli. Nessuno avrebbe potuto trovarli tutti da solo.",
+          "quote": "La mia idea era che le informazioni andassero avanti e indietro. Non si trattava di competizione."
+        },
+        "pitch": {
+          "text": "Il primo nome fu Capsule Monsters. Tsunekazu Ishihara lo produsse insieme a Game Freak, e Shigeru Miyamoto diede i suoi consigli."
+        },
+        "name": {
+          "text": "Si racconta che problemi di marchio registrato fecero cambiare il nome più di una volta. Diventò Pocket Monsters."
+        }
+      },
+      "notes": {
+        "Miyamoto": {
+          "label": "Miyamoto",
+          "text": "Tajiri su Shigeru Miyamoto, a TIME: «Memorizzavo ogni consiglio che mi dava»."
+        },
+        "Ishihara": {
+          "label": "Ishihara",
+          "text": "In Iwata chiede, Tsunekazu Ishihara si descrive come «un produttore che lavorava allo sviluppo di Pokémon Rosso e Verde insieme a Game Freak», e dice che la progettazione iniziò nel 1990."
+        },
+        "Sources differ": {
+          "label": "Fonti discordanti",
+          "text": "I racconti sui titoli provvisori tra Capsule Monsters e Pocket Monsters non coincidono; concordano sul fatto che i problemi di marchio imposero i cambiamenti."
+        }
+      },
+      "sources": {
+        "nintendo-history": { "title": "Storia dell'azienda: «Lancio del sistema di gioco portatile Game Boy»" },
+        "time-gf": { "title": "«The Ultimate Game Freak», intervista a Satoshi Tajiri" },
+        "iwata-hgss": { "title": "Iwata chiede: Pokémon Versione Oro HeartGold e Versione Argento SoulSilver" }
+      }
+    },
+    "six-years": {
+      "title": "Sei anni",
+      "when": "1990–1996",
+      "place": "Game Freak, Tokyo",
+      "tag": "La strada in salita",
+      "summary": "Realizzare Pocket Monsters richiese quasi sei anni e per poco non affondò Game Freak. Junichi Masuda scrisse la musica, Atsuko Nishida disegnò Pikachu, Ken Sugimori guidò la grafica di tutti i 151 e, proprio alla fine, Shigeki Morimoto aggiunse di nascosto Mew.",
+      "beats": {
+        "hard": {
+          "text": "Ci vollero quasi sei anni. I soldi erano così pochi che lo studio rischiò il fallimento, e cinque persone se ne andarono."
+        },
+        "masuda": {
+          "text": "Junichi Masuda scrisse la musica, e la programmò anche."
+        },
+        "pikachu": {
+          "lead": "Atsuko Nishida disegnò Pikachu pixel per pixel, direttamente sullo schermo.",
+          "quote": "Non feci un'illustrazione su carta: andai direttamente allo schermo del computer e inserii i pixel."
+        },
+        "151": {
+          "text": "Ken Sugimori guidò la grafica. Uno dopo l'altro, trovarono la loro forma. Erano 151."
+        },
+        "mew": {
+          "lead": "E proprio alla fine, il programmatore Shigeki Morimoto ne aggiunse di nascosto un altro: Mew.",
+          "quote": "Abbiamo inserito Mew proprio alla fine."
+        }
+      },
+      "notes": {
+        "Nintendo's doubts": {
+          "label": "I dubbi di Nintendo",
+          "text": "Alla domanda se Nintendo avesse capito il gioco fin dall'inizio, Tajiri rispose a TIME: «All'inizio no. Non si aspettavano molto da quel gioco»."
+        },
+        "Nishida's starters": {
+          "label": "Gli starter di Nishida",
+          "text": "Secondo Ken Sugimori, anche Bulbasaur, Charmander e Squirtle furono tutti disegnati da Atsuko Nishida."
+        },
+        "A prank": {
+          "label": "Uno scherzo",
+          "text": "In Iwata chiede, Ishihara definisce Mew uno scherzo di cui erano al corrente tutti, fino a Tajiri; fu aggiunto dopo che Nintendo aveva terminato il debug."
+        }
+      },
+      "sources": {
+        "time-gf": { "title": "«The Ultimate Game Freak», intervista a Satoshi Tajiri" },
+        "masuda": { "title": "Junichi Masuda sul suo modo di comporre (e i titoli di coda del gioco stesso)" },
+        "iwata-hgss": { "title": "Iwata chiede: Pokémon Versione Oro HeartGold e Versione Argento SoulSilver" }
+      }
+    },
+    "red-green": {
+      "title": "Rosso e Verde",
+      "when": "27 febbraio 1996",
+      "place": "Giappone",
+      "tag": "Il lancio",
+      "summary": "Pocket Monsters Rosso e Verde uscirono in Giappone il 27 febbraio 1996, nella parte finale della vita del Game Boy. Un concorso di una rivista per avere Mew e il passaparola fecero il resto.",
+      "beats": {
+        "launch": {
+          "text": "Il 27 febbraio 1996, Pocket Monsters Rosso e Verde uscirono in Giappone."
+        },
+        "old": {
+          "text": "Il Game Boy aveva quasi sette anni, e si aveva la sensazione che fosse arrivato a fine corsa."
+        },
+        "three": {
+          "text": "Tutti i giocatori cominciavano allo stesso modo: una scelta fra tre. Bulbasaur, Charmander o Squirtle."
+        },
+        "mew-rumour": {
+          "text": "Poi cominciarono le voci: un 151° Pokémon nascosto. Un concorso di una rivista regalò Mew, e le vendite decollarono."
+        },
+        "word": {
+          "text": "Non esplose da un giorno all'altro. Crebbe, perché i bambini ne parlavano ad altri bambini."
+        },
+        "blue": {
+          "text": "A ottobre arrivò Blu, per corrispondenza, e nello stesso mese il Gioco di Carte Collezionabili."
+        }
+      },
+      "notes": {
+        "When it turned": {
+          "label": "La svolta",
+          "text": "Satoru Iwata definì l'offerta di Mew di CoroCoro il momento «in cui le cose cambiarono per Pokémon»; Tsunekazu Ishihara dice che le vendite crebbero «di tre, poi di quattro volte», e lo attribuisce al «potere del passaparola»."
+        }
+      },
+      "sources": {
+        "tpc-history": { "title": "Storia dell'azienda" },
+        "iwata-hgss": { "title": "Iwata chiede: Pokémon Versione Oro HeartGold e Versione Argento SoulSilver" }
+      }
+    },
+    "pokemania": {
+      "title": "Pokémania",
+      "when": "1996–1999",
+      "place": "Il Giappone, poi il mondo",
+      "tag": "Fenomeno",
+      "summary": "Il gioco di carte, l'anime, The Pokémon Company, il primo Pokémon Center e il primo film, poi il Nord America e l'Europa: in tre anni Pokémon era ovunque.",
+      "beats": {
+        "cards": {
+          "text": "Collezionare saltò fuori dallo schermo e finì nelle tasche dei bambini: il Gioco di Carte Collezionabili."
+        },
+        "anime": {
+          "text": "Il 1° aprile 1997 cominciò l'anime: un ragazzo di nome Ash e un Pikachu che non voleva entrare nella sua Poké Ball."
+        },
+        "face": {
+          "text": "Pikachu diventò il volto di tutto."
+        },
+        "company": {
+          "text": "Nell'aprile del 1998, Nintendo, Game Freak e Creatures fondarono una società per occuparsi di tutto. Due giorni dopo, a Tokyo aprì il primo Pokémon Center."
+        },
+        "movie": {
+          "text": "Quell'estate, Mewtwo colpisce ancora riempì i cinema."
+        },
+        "world": {
+          "text": "Nel settembre del 1998 i giochi arrivarono in Nord America, e in Europa un anno dopo."
+        },
+        "catch": {
+          "text": "Acchiappali tutti!"
+        }
+      },
+      "notes": {
+        "The company's name": {
+          "label": "Il nome della società",
+          "text": "La società fondata nell'aprile del 1998 era la Pokémon Center Co., Ltd.; prese il nome di The Pokémon Company nell'ottobre del 2000."
+        }
+      },
+      "sources": {
+        "tpc-history": { "title": "Storia dell'azienda" },
+        "wiki-pikachu": { "title": "Pikachu: come mascotte del franchise" },
+        "wiki-pokemon": { "title": "Pokémon: lo slogan inglese «Gotta catch 'em all»" }
+      }
+    },
+    "growing": {
+      "title": "Un mondo che cresce",
+      "when": "1999–2010",
+      "place": "Da Johto a Unima",
+      "tag": "Generazioni II–V",
+      "summary": "L'orologio di Oro e Argento, i colori di Rubino e Zaffiro, gli scambi online di Diamante e Perla, i primi Campionati Mondiali e la regione tutta nuova di Nero e Bianco.",
+      "beats": {
+        "clock": {
+          "text": "Oro e Argento aggiunsero un orologio. Il giorno diventava notte. Le Uova si schiudevano. E dopo i titoli di coda, un'intera seconda regione."
+        },
+        "colour": {
+          "text": "Rubino e Zaffiro portarono i colori del Game Boy Advance, con abilità, natura e lotte in doppio."
+        },
+        "online": {
+          "text": "Diamante e Perla portarono gli scambi online. Il cavo link diventò il pianeta intero."
+        },
+        "worlds": {
+          "text": "I giocatori iniziarono a ritrovarsi per sfidarsi: un Campionato Mondiale del gioco di carte nel 2004 e, dal 2009, anche dei videogiochi."
+        },
+        "fresh": {
+          "text": "Nero e Bianco osarono qualcosa di audace: solo Pokémon nuovi, fino alla fine della storia. Tutti tornavano principianti."
+        }
+      },
+      "notes": {
+        "The first official Worlds": {
+          "label": "I primi Mondiali ufficiali",
+          "text": "The Pokémon Company considera l'evento del 2009 il primo Campionato Mondiale Pokémon ufficiale; il campionato del 2004 a Orlando era dedicato al gioco di carte."
+        }
+      },
+      "sources": {
+        "tpc-history": { "title": "Storia dell'azienda" }
+      }
+    },
+    "together": {
+      "title": "Insieme",
+      "when": "2013–2016",
+      "place": "Da Kalos ad Alola",
+      "tag": "Verso il 3D",
+      "summary": "X e Y uscirono in tutto il mondo lo stesso giorno, interamente in 3D. Pikachu sfilò per Yokohama, gli originali tornarono per il 20° compleanno e Sole e Luna partirono verso isole ispirate alle Hawaii.",
+      "beats": {
+        "same-day": {
+          "text": "Il 12 ottobre 2013, X e Y uscirono ovunque lo stesso giorno. Per la prima volta, il mondo intero cominciò insieme."
+        },
+        "fold": {
+          "text": "E per la prima volta nella serie principale, tutti i Pokémon erano completamente in 3D."
+        },
+        "outbreak": {
+          "text": "Nell'agosto del 2014, una parata di Pikachu invase le strade di Yokohama."
+        },
+        "twenty": {
+          "text": "Per il 20° compleanno tornarono i giochi originali, esattamente 20 anni dopo Rosso e Verde."
+        },
+        "alola": {
+          "text": "Quel novembre, Sole e Luna sostituirono le Palestre con le prove del giro delle isole, su isole ispirate alle Hawaii."
+        }
+      },
+      "notes": {},
+      "sources": {
+        "tpc-history": { "title": "Storia dell'azienda" }
+      }
+    },
+    "outside": {
+      "title": "Fuori",
+      "when": "Luglio 2016",
+      "place": "Ovunque",
+      "tag": "Pokémon GO",
+      "summary": "Un pesce d'aprile su Google Maps è diventato Pokémon GO. Nel luglio del 2016 ha trasformato il mondo reale nella mappa, e la gente di tutto il mondo è uscita a cercare.",
+      "beats": {
+        "april": {
+          "text": "Nacque da un pesce d'aprile del 2014: Pokémon nascosti dentro Google Maps."
+        },
+        "launch": {
+          "text": "Il 6 luglio 2016, Pokémon GO trasformò il mondo reale nella mappa."
+        },
+        "parks": {
+          "text": "I parchi si riempivano a mezzanotte. Sconosciuti parlavano tra loro. La gente camminava per chilometri senza accorgersene."
+        },
+        "wild": {
+          "text": "Pokémon, proprio dove li cercheresti."
+        },
+        "together": {
+          "text": "Un anno dopo, migliaia di persone si riunirono in un solo parco, il Grant Park di Chicago, per giocare insieme."
+        },
+        "outside": {
+          "text": "Decenni dopo che i campi erano stati asfaltati, le creature erano di nuovo all'aperto, e tutti uscirono a cercarle."
+        }
+      },
+      "notes": {
+        "Where it began": {
+          "label": "Dove tutto è iniziato",
+          "text": "Tatsuo Nomura di Niantic, che aveva lavorato alla «Pokémon Challenge» di Google Maps del 2014, disse all'E3 2016 che Pokémon GO era nato da lì."
+        }
+      },
+      "sources": {
+        "go-prank": { "title": "«Come Pokémon GO è passato da scherzo a fenomeno»" },
+        "tpc-history": { "title": "Storia dell'azienda" },
+        "wiki-go": { "title": "Pokémon Go: modalità di gioco e impatto sociale" },
+        "time-gf": { "title": "«The Ultimate Game Freak», intervista a Satoshi Tajiri" }
+      }
+    },
+    "open-worlds": {
+      "title": "Mondi aperti",
+      "when": "2018–2025",
+      "place": "Da Kanto a Luminopoli",
+      "tag": "L'era di Switch",
+      "summary": "Il ritorno a Kanto di Let's Go, gli stadi di Galar, il passato remoto di Hisui, il mondo aperto di Paldea, il titolo e l'addio di Ash e un'intera avventura dentro Luminopoli.",
+      "beats": {
+        "home": {
+          "text": "Let's Go riportò i giocatori a Kanto, con Pikachu ed Eevee che camminavano al loro fianco."
+        },
+        "galar": {
+          "text": "Spada e Scudo portarono una nuova generazione su Switch, con stadi pieni di folle in festa."
+        },
+        "twenty-five": {
+          "text": "Per il 25° anniversario, il franchise guardò indietro nel tempo, al passato remoto di Sinnoh."
+        },
+        "hisui": {
+          "text": "Leggende Pokémon: Arceus tornò in una terra antica e selvaggia, prima che venisse scritto il primo Pokédex."
+        },
+        "open": {
+          "text": "Scarlatto e Violetto aprirono l'intera mappa: vai dove vuoi, nell'ordine che vuoi."
+        },
+        "champion": {
+          "text": "Dopo 25 anni, Ash e Pikachu diventarono finalmente campioni del mondo."
+        },
+        "farewell": {
+          "text": "Poi si salutarono. Tre settimane dopo cominciò un nuovo viaggio con nuovi protagonisti."
+        },
+        "lumiose": {
+          "text": "E nel 2025, Leggende Pokémon: Z-A trasformò un'intera città, Luminopoli, nell'avventura."
+        }
+      },
+      "notes": {},
+      "sources": {
+        "tpc-history": { "title": "Storia dell'azienda" },
+        "wiki-arceus": { "title": "Leggende Pokémon: Arceus, annunciato al Pokémon Presents del 25° anniversario" }
+      }
+    },
+    "thirty": {
+      "title": "Trent'anni",
+      "when": "27 febbraio 2026",
+      "place": "Ovunque",
+      "tag": "Oggi",
+      "summary": "Esattamente trent'anni dopo Rosso e Verde fu annunciata la generazione successiva. Tutto era iniziato con due Game Boy e un cavo; oggi ci sono più di mille Pokémon.",
+      "beats": {
+        "thirty": {
+          "text": "Esattamente trent'anni dopo Rosso e Verde fu annunciata la generazione successiva: Pokémon Winds e Pokémon Waves, per il 2027."
+        },
+        "then": {
+          "text": "Tutto era iniziato con due Game Boy e un cavo."
+        },
+        "now": {
+          "text": "Oggi sono giochi, carte, serie e film, e generazioni di giocatori cresciuti insieme senza essersi mai incontrati."
+        },
+        "thousand": {
+          "text": "Più di mille Pokémon. Ognuno di loro è il preferito di qualcuno."
+        },
+        "yours": {
+          "text": "Tutto è nato da una sensazione: quella che provi quando sollevi un sasso e sotto c'è qualcosa. Vai a trovare il tuo."
+        }
+      },
+      "notes": {
+        "How many": {
+          "label": "Quanti sono",
+          "text": "Il Pokédex Nazionale è arrivato a 1025 specie con le aggiunte di Scarlatto e Violetto. Winds e Waves ne aggiungeranno altre."
+        }
+      },
+      "sources": {
+        "winds-waves": { "title": "Pokémon Winds e Waves (annunciati al Pokémon Presents del 27 febbraio 2026)" },
+        "time-gf": { "title": "«The Ultimate Game Freak», intervista a Satoshi Tajiri" },
+        "tpc-history": { "title": "Storia dell'azienda" }
+      }
+    }
+  }
+}

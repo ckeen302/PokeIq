@@ -5,33 +5,48 @@ import { BackButton } from "@/components/ui/BackButton";
 import { GameInfo } from "@/components/seo/GameInfo";
 import { NeaDailyCard, NeaRaceCard } from "@/components/name-em-all/HubCards";
 import { pageMetadata } from "@/lib/seo";
-import { NEA_CATEGORIES, NEA_GROUPS, NEA_PATH, NEA_TITLE, neaHref } from "@/lib/name-em-all/categories";
+import { NEA_CATEGORIES, NEA_GROUPS, NEA_PATH, neaHref } from "@/lib/name-em-all/categories";
 import { neaCounts } from "@/lib/name-em-all/targets";
+import { categoryLabels } from "@/lib/name-em-all/localize";
+import { formatNumber } from "@/i18n/catalog";
+import { ClientMessages } from "@/i18n/ClientMessages";
+import { serverT } from "@/i18n/server";
+import neaPages from "@/messages/nea-pages";
+import neaCats from "@/messages/nea-cats";
+import neaHub from "@/messages/nea-hub";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Name 'em All: Can You Name Every Pokémon? Recall Quiz",
-  description: "Type every Pokémon you can remember: all of them, a generation, a type, Legendaries, Megas, regional forms or a regional Pokédex. Daily quiz, races with friends and personal bests.",
-  path: NEA_PATH,
-  image: { url: `${NEA_PATH}/opengraph-image`, alt: "Name 'em All: how many Pokémon can you name from memory?" },
-});
+export function generateMetadata(): Metadata {
+  const t = serverT(neaPages);
+  return pageMetadata({
+    title: t("hub.metaTitle"),
+    description: t("hub.metaDescription"),
+    path: NEA_PATH,
+    image: { url: `${NEA_PATH}/opengraph-image`, alt: t("ogAlt") },
+  });
+}
 
 export default function NameEmAllHub() {
+  const t = serverT(neaPages);
+  const tc = serverT(neaCats);
   const counts = neaCounts();
-  const options = NEA_CATEGORIES.map((c) => ({ id: c.id, label: c.label, total: counts[c.id] }));
+  const labels = categoryLabels(tc);
+  const options = NEA_CATEGORIES.map((c) => ({ id: c.id, label: labels[c.id], total: counts[c.id] }));
   return (
     <div className="mx-auto max-w-5xl space-y-8">
       <BackButton href="/quiz" />
       <header className="mx-auto max-w-2xl space-y-2 text-center">
-        <p className="hud-label max-md:hidden text-screen">Recall quiz</p>
-        <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">{NEA_TITLE}</h1>
+        <p className="hud-label max-md:hidden text-screen">{t("hub.eyebrow")}</p>
+        <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">{t("title")}</h1>
         <p className="text-muted-foreground">
-          How many Pokémon can you name from memory? Type them in, and each one pops into its slot the moment it&apos;s spelled right.
+          {t("hub.lead")}
         </p>
       </header>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <NeaDailyCard labels={Object.fromEntries(NEA_CATEGORIES.map((c) => [c.id, c.label]))} counts={counts} />
-        <NeaRaceCard options={options} />
+        <ClientMessages namespaces={[neaHub]}>
+          <NeaDailyCard labels={labels} counts={counts} />
+          <NeaRaceCard options={options} />
+        </ClientMessages>
       </div>
 
       <div className="space-y-6" data-testid="nea-categories">
@@ -40,7 +55,7 @@ export default function NameEmAllHub() {
           return (
             <section key={g.id} className="space-y-2.5" aria-labelledby={`nea-g-${g.id}`}>
               <h2 id={`nea-g-${g.id}`} className="font-display text-lg font-bold uppercase tracking-wide">
-                {g.label}
+                {tc(`groups.${g.id}`)}
               </h2>
               <ul className={g.id === "all" ? "grid gap-2" : "grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4"}>
                 {cats.map((c) => (
@@ -51,8 +66,8 @@ export default function NameEmAllHub() {
                       data-testid={`nea-cat-${c.id}`}
                     >
                       <span className="min-w-0">
-                        <span className="block truncate font-semibold">{c.label}</span>
-                        <span className="hud-label">{counts[c.id].toLocaleString("en-US")} Pokémon</span>
+                        <span className="block truncate font-semibold">{labels[c.id]}</span>
+                        <span className="hud-label">{t("count", { n: formatNumber(counts[c.id], t.locale) })}</span>
                       </span>
                       <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" aria-hidden />
                     </Link>
@@ -67,20 +82,11 @@ export default function NameEmAllHub() {
       <GameInfo
         hidden
         path={NEA_PATH}
-        name={NEA_TITLE}
-        description="A free Pokémon recall quiz: name every Pokémon in a category against the clock."
-        intro="Name 'em All is a Pokémon recall quiz: pick a category and type every Pokémon in it from memory. Names count the instant they're spelled right, in any order."
-        steps={[
-          "Pick a category: everything, a generation, a type, the Legendaries, Megas, regional forms or a regional Pokédex.",
-          "Choose Regular, Chaos or Dex order, a timer and any hints.",
-          "Type names: each fills its slot as soon as it's spelled right. Capitals, accents and punctuation don't matter.",
-          "Give up any time to see the ones you missed, each linked to its Pokédex page.",
-        ]}
-        faqs={[
-          { q: "Is there a daily?", a: "Yes: one category a day, the same for everyone. One try a day counts." },
-          { q: "Can I race my friends?", a: "Start a race, share the link, and up to eight trainers name the same category at once with live progress bars." },
-          { q: "Where are my best runs?", a: "Sign in and play in Regular mode without hints or pausing: your fastest full clear and the most you named inside the standard time show on your trainer profile." },
-        ]}
+        name={t("title")}
+        description={t("hub.info.description")}
+        intro={t("hub.info.intro")}
+        steps={(["pick", "mode", "type", "giveUp"] as const).map((k) => t(`hub.info.steps.${k}`))}
+        faqs={(["daily", "race", "best"] as const).map((k) => ({ q: t(`hub.info.faq.${k}Q`), a: t(`hub.info.faq.${k}A`) }))}
       />
     </div>
   );

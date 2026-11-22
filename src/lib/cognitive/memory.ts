@@ -48,6 +48,7 @@ export function spanCorrect(item: SpanItem, taps: readonly number[]): boolean {
 
 interface Sum {
   prompt: string;
+  values: Record<string, number>;
   answer: number;
   near: number[];
 }
@@ -57,23 +58,23 @@ function sum(rng: Rng, level: Level, name: string): Sum {
   const dmg = rng.int(2, Math.floor(max / 10) - 1) * 5;
   switch (level) {
     case 1:
-      return { prompt: `${name} has ${max} HP and takes ${dmg} damage. How much HP is left?`, answer: max - dmg, near: [max - dmg + 10, max - dmg - 10, max - dmg + 5, max + dmg, max - dmg - 5] };
+      return { prompt: `${name} has ${max} HP and takes ${dmg} damage. How much HP is left?`, values: { max, dmg }, answer: max - dmg, near: [max - dmg + 10, max - dmg - 10, max - dmg + 5, max + dmg, max - dmg - 5] };
     case 2: {
       const heal = rng.int(2, 8) * 5;
-      return { prompt: `${name} has ${max} HP, takes ${dmg} damage, then heals ${heal}. HP now?`, answer: max - dmg + heal, near: [max - dmg - heal, max - dmg + heal + 10, max - dmg + heal - 10, max - dmg, max - dmg + heal + 5] };
+      return { prompt: `${name} has ${max} HP, takes ${dmg} damage, then heals ${heal}. HP now?`, values: { max, dmg, heal }, answer: max - dmg + heal, near: [max - dmg - heal, max - dmg + heal + 10, max - dmg + heal - 10, max - dmg, max - dmg + heal + 5] };
     }
     case 3: {
       const dmg2 = rng.int(2, 6) * 5;
       const heal = rng.int(2, 8) * 5;
       const a = max - dmg - dmg2 + heal;
-      return { prompt: `${name} has ${max} HP. It takes ${dmg}, heals ${heal}, then takes ${dmg2}. HP now?`, answer: a, near: [a + 10, a - 10, a + dmg2, a - heal, a + 5] };
+      return { prompt: `${name} has ${max} HP. It takes ${dmg}, heals ${heal}, then takes ${dmg2}. HP now?`, values: { max, dmg, heal, dmg2 }, answer: a, near: [a + 10, a - 10, a + dmg2, a - heal, a + 5] };
     }
     case 4: {
       // Sitrus Berry: a quarter of max HP.
       const base = rng.int(8, 30) * 20;
       const d = rng.int(3, 12) * 10;
       const a = base - d + base / 4;
-      return { prompt: `${name} has ${base} max HP, takes ${d} damage, then eats a Sitrus Berry (restores ¼ of max HP). HP now?`, answer: a, near: [base - d + base / 2, base - d + 25, a + 10, a - 10, base - d] };
+      return { prompt: `${name} has ${base} max HP, takes ${d} damage, then eats a Sitrus Berry (restores ¼ of max HP). HP now?`, values: { max: base, dmg: d }, answer: a, near: [base - d + base / 2, base - d + 25, a + 10, a - 10, base - d] };
     }
     case 5: {
       // Two hits of a move and a half-HP recovery.
@@ -81,7 +82,7 @@ function sum(rng: Rng, level: Level, name: string): Sum {
       const hit = rng.int(2, 9) * 10;
       const a = base - 2 * hit + base / 2 - rng.int(1, 4) * 10;
       const extra = base - 2 * hit + base / 2 - a;
-      return { prompt: `${name} has ${base} max HP. It is hit twice for ${hit}, uses Rest (restores ½ of max HP), then takes ${extra} more. HP now?`, answer: a, near: [a + hit, a - hit, base - hit + base / 2 - extra, a + 10, a - 10] };
+      return { prompt: `${name} has ${base} max HP. It is hit twice for ${hit}, uses Rest (restores ½ of max HP), then takes ${extra} more. HP now?`, values: { max: base, hit, extra }, answer: a, near: [a + hit, a - hit, base - hit + base / 2 - extra, a + 10, a - 10] };
     }
   }
 }
@@ -99,5 +100,5 @@ export function arithItem(seed: string, level: Level): ArithItem {
     if (distractors.length === ARITH_OPTIONS - 1) break;
   }
   const options = rng.shuffle([s.answer, ...distractors]);
-  return { kind: "arith", id: `ar:${seed}`, level, timeMs: ARITH_MS, rule: `level ${level} sum`, monId, prompt: s.prompt, options, answer: options.indexOf(s.answer) };
+  return { kind: "arith", id: `ar:${seed}`, level, timeMs: ARITH_MS, rule: `level ${level} sum`, monId, prompt: s.prompt, values: s.values, options, answer: options.indexOf(s.answer) };
 }

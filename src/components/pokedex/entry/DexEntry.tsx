@@ -23,6 +23,10 @@ import { EncountersSection } from "./EncountersSection";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { DexPager } from "@/components/pokedex/detail/DexPager";
+import { useT } from "@/i18n/client";
+import dexEntryNs from "@/messages/dex-entry";
+import dexPager from "@/messages/dex-pager";
+import dexSprites from "@/messages/dex-sprites";
 
 /**
  * One Pokémon's full study page. Selecting a form (Mega, regional,
@@ -30,6 +34,9 @@ import { DexPager } from "@/components/pokedex/detail/DexPager";
  * `sprites` is the sprites table, rendered on the server by the page.
  */
 export function DexEntry({ data, sprites }: { data: DexEntryData; sprites?: React.ReactNode }) {
+  const t = useT(dexEntryNs);
+  const tp = useT(dexPager);
+  const ts = useT(dexSprites);
   const p = data.core;
   const [form, setForm] = useState<DexForm | null>(null);
 
@@ -48,18 +55,20 @@ export function DexEntry({ data, sprites }: { data: DexEntryData; sprites?: Reac
     [form, data.stabSuperEffective]
   );
 
+  // A page in another language has no entries for a species its games' texts don't cover (Generation 9).
+  const hasEntries = !data.local || data.entries.length > 0;
   const sections = [
-    { id: "overview", label: "Overview" },
-    { id: "stats", label: "Stats" },
-    { id: "matchups", label: "Matchups" },
-    data.evolutionTree && { id: "evolution", label: "Evolution" },
-    data.lookalikes.length > 0 && { id: "lookalikes", label: "Lookalikes" },
-    data.encounters && { id: "encounters", label: "Where to find it" },
-    data.learnset && { id: "moves", label: "Moves" },
-    { id: "pokedex", label: "Pokédex" },
-    sprites && { id: "sprites", label: "Sprites" },
-    data.names.length > 0 && { id: "names", label: "Names" },
-    { id: "breeding", label: "Training + breeding" },
+    { id: "overview", label: t("nav.overview") },
+    { id: "stats", label: t("nav.stats") },
+    { id: "matchups", label: t("nav.matchups") },
+    data.evolutionTree && { id: "evolution", label: t("nav.evolution") },
+    data.lookalikes.length > 0 && { id: "lookalikes", label: t("nav.lookalikes") },
+    data.encounters && { id: "encounters", label: t("nav.encounters") },
+    data.learnset && { id: "moves", label: t("nav.moves") },
+    hasEntries && { id: "pokedex", label: t("nav.pokedex") },
+    sprites && { id: "sprites", label: ts("nav") },
+    data.names.length > 0 && { id: "names", label: t("nav.names") },
+    { id: "breeding", label: t("nav.breeding") },
   ].filter(Boolean) as { id: string; label: string }[];
   const active = useScrollSpy(sections.map((s) => s.id));
   const sectionIndex = (id: string) => sections.findIndex((s) => s.id === id) + 1;
@@ -69,6 +78,8 @@ export function DexEntry({ data, sprites }: { data: DexEntryData; sprites?: Reac
       <DexPager
         prev={data.prev && { href: `/pokemon/${data.prev.slug}`, label: `#${data.prev.id} ${data.prev.name}` }}
         next={data.next && { href: `/pokemon/${data.next.slug}`, label: `#${data.next.id} ${data.next.name}` }}
+        center={{ href: "/pokedex", label: tp("pokedex") }}
+        words={{ nav: tp("nav"), prev: tp("prev"), next: tp("next") }}
       />
 
       <Hero data={data} form={form} onFormChange={setForm} types={types} abilities={abilities} />
@@ -91,55 +102,57 @@ export function DexEntry({ data, sprites }: { data: DexEntryData; sprites?: Reac
         </div>
       </div>
 
-      <Section id="stats" index={sectionIndex("stats")} title="Base stats" subtitle={form ? form.name : undefined}>
+      <Section id="stats" index={sectionIndex("stats")} title={t("sec.stats")} subtitle={form ? form.name : undefined}>
         <StatsSection stats={stats} percentiles={data.percentiles} accent={accent} isShedinja={p.slug === "shedinja"} showPercentiles={!form} />
       </Section>
 
-      <Section id="matchups" index={sectionIndex("matchups")} title="Type matchups" subtitle="Defensive multipliers">
-        <MatchupSection defenses={defenses} stab={stab} />
+      <Section id="matchups" index={sectionIndex("matchups")} title={t("sec.matchups")} subtitle={t("sec.matchupsSub")}>
+        <MatchupSection defenses={defenses} stab={stab} typeNames={data.local?.types} />
       </Section>
 
       {data.evolutionTree && (
-        <Section id="evolution" index={sectionIndex("evolution")} title="Evolution">
-          <EvolutionSection tree={data.evolutionTree} currentId={p.id} />
+        <Section id="evolution" index={sectionIndex("evolution")} title={t("sec.evolution")}>
+          <EvolutionSection tree={data.evolutionTree} currentId={p.id} typeNames={data.local?.types} />
         </Section>
       )}
 
       {data.lookalikes.length > 0 && (
-        <Section id="lookalikes" index={sectionIndex("lookalikes")} title="Easily confused with" subtitle="Most similar silhouettes">
+        <Section id="lookalikes" index={sectionIndex("lookalikes")} title={t("sec.lookalikes")} subtitle={t("sec.lookalikesSub")}>
           <LookalikesSection self={{ id: p.id, name: p.name }} lookalikes={data.lookalikes} />
         </Section>
       )}
 
       {data.encounters && (
-        <Section id="encounters" index={sectionIndex("encounters")} title="Where to find it" subtitle="By game">
-          <EncountersSection gens={data.encounters} name={p.name} />
+        <Section id="encounters" index={sectionIndex("encounters")} title={t("sec.encounters")} subtitle={t("sec.encountersSub")}>
+          <EncountersSection gens={data.encounters} name={p.name} local={data.local} />
         </Section>
       )}
 
       {data.learnset && (
-        <Section id="moves" index={sectionIndex("moves")} title="Moves">
-          <MovesSection moves={data.learnset.moves} game={data.learnset.game} />
+        <Section id="moves" index={sectionIndex("moves")} title={t("sec.moves")}>
+          <MovesSection moves={data.learnset.moves} game={data.learnset.game} typeNames={data.local?.types} />
         </Section>
       )}
 
-      <Section id="pokedex" index={sectionIndex("pokedex")} title="Pokédex entries" subtitle={`${data.entries.length} unique entries`}>
-        <EntriesSection entries={data.entries} />
-      </Section>
+      {hasEntries && (
+        <Section id="pokedex" index={sectionIndex("pokedex")} title={t("sec.entries")} subtitle={t("sec.entriesSub", { n: data.entries.length })}>
+          <EntriesSection entries={data.entries} />
+        </Section>
+      )}
 
       {sprites && (
-        <Section id="sprites" index={sectionIndex("sprites")} title={`${p.name} sprites`} subtitle="By generation">
+        <Section id="sprites" index={sectionIndex("sprites")} title={ts("title", { name: p.name })} subtitle={ts("subtitle")}>
           {sprites}
         </Section>
       )}
 
       {data.names.length > 0 && (
-        <Section id="names" index={sectionIndex("names")} title="Names in other languages" subtitle={`${data.names.length} languages`}>
+        <Section id="names" index={sectionIndex("names")} title={t("sec.names")} subtitle={t("sec.namesSub", { n: data.names.length })}>
           <NamesSection names={data.names} />
         </Section>
       )}
 
-      <Section id="breeding" index={sectionIndex("breeding")} title="Training & breeding">
+      <Section id="breeding" index={sectionIndex("breeding")} title={t("sec.breeding")}>
         <TrainingSection data={data} />
       </Section>
 
@@ -152,14 +165,14 @@ export function DexEntry({ data, sprites }: { data: DexEntryData; sprites?: Reac
         viewport={{ once: true }}
       >
         <img src={artUrl(p.id, 256)} alt="" aria-hidden loading="lazy" decoding="async" className="pointer-events-none absolute -bottom-8 -right-6 h-48 w-48 opacity-20 [filter:brightness(0)_invert(1)] [.light_&]:opacity-10 [.light_&]:[filter:brightness(0)]" />
-        <h2 className="font-display text-2xl font-bold uppercase">Think you&apos;ve got {p.name} down?</h2>
-        <p className="mt-1 max-w-lg text-muted-foreground">Lock it in with flashcards, then prove it in a quiz.</p>
+        <h2 className="font-display text-2xl font-bold uppercase">{t("cta.title", { name: p.name })}</h2>
+        <p className="mt-1 max-w-lg text-muted-foreground">{t("cta.body")}</p>
         <div className="mt-5 flex flex-wrap gap-2">
           <Link href={`/pokedex/study?gen=${p.gen}`} className={buttonVariants()}>
-            <BookOpenCheck className="h-4 w-4" /> Study Gen {p.gen} flashcards
+            <BookOpenCheck className="h-4 w-4" /> {t("cta.study", { n: p.gen })}
           </Link>
           <Link href={`/quiz/gen-${p.gen}-pokemon-quiz`} className={buttonVariants({ variant: "outline" })}>
-            <Gamepad2 className="h-4 w-4" /> Gen {p.gen} quiz
+            <Gamepad2 className="h-4 w-4" /> {t("cta.quiz", { n: p.gen })}
           </Link>
         </div>
       </motion.div>
@@ -174,7 +187,7 @@ export function DexEntry({ data, sprites }: { data: DexEntryData; sprites?: Reac
             >
               <img src={artUrl(n.id, 96)} loading="lazy" alt="" width={64} height={64} className="h-16 w-16 transition-transform group-hover:scale-110" />
               <div>
-                <div className="hud-label">No.{String(n.id).padStart(4, "0")}</div>
+                <div className="hud-label">{t("no", { n: String(n.id).padStart(4, "0") })}</div>
                 <div className="font-display font-bold uppercase tracking-wide">{n.name}</div>
               </div>
             </Link>

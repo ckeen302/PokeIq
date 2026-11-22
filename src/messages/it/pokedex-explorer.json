@@ -1,0 +1,54 @@
+{
+  "search": {
+    "hint": "Cerca nome, numero o categoria…  ( / )",
+    "hintShort": "Nome, numero, categoria…",
+    "label": "Cerca Pokémon",
+    "clear": "Cancella ricerca"
+  },
+  "sortBy": "Ordina per",
+  "sortAsc": "Ordine crescente",
+  "sortDesc": "Ordine decrescente",
+  "sort": {
+    "id": "N. Pokédex",
+    "name": "Nome",
+    "type": "Tipo",
+    "bst": "Totale statistiche",
+    "hp": "PS",
+    "atk": "Attacco",
+    "def": "Difesa",
+    "spa": "Attacco Speciale",
+    "spd": "Difesa Speciale",
+    "spe": "Velocità",
+    "height": "Altezza",
+    "weight": "Peso"
+  },
+  "showFilters": "Mostra filtri",
+  "hideFilters": "Nascondi filtri",
+  "studyMode": "Modalità studio",
+  "gen": "Gen. {n}",
+  "legends": "Leggendari + misteriosi",
+  "fullyEvolved": "Ultimo stadio",
+  "reset": "Azzera",
+  "empty": "Nessun Pokémon corrisponde a questi filtri.",
+  "view": {
+    "label": "Vista",
+    "cards": "Schede",
+    "table": "Tabella"
+  },
+  "col": {
+    "id": "N.",
+    "name": "Pokémon",
+    "type": "Tipo",
+    "hp": "PS",
+    "atk": "Attacco",
+    "def": "Difesa",
+    "spa": "Att. Sp.",
+    "spd": "Dif. Sp.",
+    "spe": "Velocità",
+    "bst": "Totale"
+  },
+  "sortedDesc": "{label}, dal più alto al più basso (inverti)",
+  "sortedAsc": "{label}, dal più basso al più alto (inverti)",
+  "sortThis": "{label} (ordina la tabella)",
+  "no": "N. {n}"
+}

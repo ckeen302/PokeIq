@@ -15,9 +15,9 @@
     "duelVs": "{host} contra {guest}: un duelo de PokéConnections",
     "duelChallenge": "{host} te reta a un duelo de PokéConnections",
     "aTrainer": "Un Entrenador",
-    "partyAbout": "Una fiesta de PokéConnections: los mismos dieciséis Pokémon para todos, y gana el mejor tiempo.",
-    "party": "Una fiesta de PokéConnections",
-    "partyInvite": "{host} te invita a una fiesta de PokéConnections"
+    "partyAbout": "Una partida en grupo de PokéConnections: los mismos dieciséis Pokémon para todos, y gana el mejor tiempo.",
+    "party": "Una partida en grupo de PokéConnections",
+    "partyInvite": "{host} te invita a una partida en grupo de PokéConnections"
   },
   "info": {
     "description": "PokéConnections es un puzle gratuito de Pokémon Connections: reparte dieciséis Pokémon en cuatro grupos ocultos con cuatro fallos de margen.",

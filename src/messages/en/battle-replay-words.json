@@ -1,0 +1,21 @@
+{
+  "joiner": {
+    "vs": "vs",
+    "and": "and"
+  },
+  "title": "{a} {joiner} {b}",
+  "result": {
+    "teamsDrew": "{a} and {b} drew",
+    "beat": "{a} beat {b}",
+    "noWinner": "{players}: no winner",
+    "wonFfa": "{name} won a Free-For-All",
+    "drew": "{a} and {b} drew"
+  },
+  "turns": "{n, plural, one {{n} turn} other {{n} turns}}",
+  "ranked": "Ranked",
+  "ago": {
+    "now": "now",
+    "min": "{min} min ago",
+    "hours": "{h} h {min} min ago"
+  }
+}

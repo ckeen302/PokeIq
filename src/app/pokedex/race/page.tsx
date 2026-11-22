@@ -2,15 +2,19 @@ import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { RACE_LIVE } from "@/lib/lab";
 import { RacePage } from "@/components/race/RacePage";
+import { serverT } from "@/i18n/server";
+import racePages from "@/messages/race-pages";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Pokémon race: which Pokémon is fastest? 3D sprint races",
-  description:
-    "Watch Pokémon race 100, 200 and 400 m in a 3D stadium at night, with speeds from their base stats and a sprint model from sports science: Regieleki against Shuckle, the fastest eight, a knockout of every Pokémon. Pick your own race, share it or make a video.",
-  path: "/pokedex/race",
-  socialTitle: "Which Pokémon is fastest? Watch them race · PokéIQ",
-  noindex: !RACE_LIVE,
-});
+export function generateMetadata(): Metadata {
+  const t = serverT(racePages);
+  return pageMetadata({
+    title: t("meta.hubTitle"),
+    description: t("meta.hubDescription"),
+    path: "/pokedex/race",
+    socialTitle: t("meta.hubSocial"),
+    noindex: !RACE_LIVE,
+  });
+}
 
 export default function Page() {
   return <RacePage />;

@@ -4,9 +4,12 @@ import { useState } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { Compass, LayoutGrid, Loader2, Search, Settings2, Swords, Zap } from "lucide-react";
 import { challengeToDuel, challengeToLiveBattle } from "@/lib/friends-client";
-import { MODULE_INFO, PLAY_MODULES } from "@/lib/modes";
+import { PLAY_MODULES } from "@/lib/modes";
 import type { ModuleId } from "@/engines/types";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import friendsNs from "@/messages/friends";
+import modesNs from "@/messages/quiz-modes";
 
 /**
  * Challenge a friend: each choice opens the game through its usual invite
@@ -14,6 +17,8 @@ import { cn } from "@/lib/utils";
  * challenge, and takes you to the lobby to wait for them.
  */
 export function ChallengeOptions({ friend, me, onDone, className }: { friend: string; me: string; onDone?: () => void; className?: string }) {
+  const t = useT(friendsNs);
+  const mt = useT(modesNs);
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +32,7 @@ export function ChallengeOptions({ friend, me, onDone, className }: { friend: st
       onDone?.();
       router.push(href);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't send the challenge.");
+      setError(err instanceof Error ? err.message : t("options.failed"));
       setBusy(null);
     }
   }
@@ -37,7 +42,7 @@ export function ChallengeOptions({ friend, me, onDone, className }: { friend: st
   return (
     <div className={cn("mt-2 space-y-0.5 border-t pt-2", className)} data-testid="challenge-options">
       <button type="button" className={item} disabled={!!busy} onClick={() => void go("random", () => challengeToLiveBattle(friend, me))}>
-        {spin("random", <Zap className="h-4 w-4 text-primary" aria-hidden />)} Random Battle
+        {spin("random", <Zap className="h-4 w-4 text-primary" aria-hidden />)} {t("options.random")}
       </button>
       <button
         type="button"
@@ -45,28 +50,28 @@ export function ChallengeOptions({ friend, me, onDone, className }: { friend: st
         disabled={!!busy}
         onClick={() => (onDone?.(), router.push(`/battle/play?challenge=${encodeURIComponent(friend)}`))}
       >
-        <Settings2 className="h-4 w-4 text-primary" aria-hidden /> Battle: any format or custom rules…
+        <Settings2 className="h-4 w-4 text-primary" aria-hidden /> {t("options.custom")}
       </button>
       <button type="button" className={item} disabled={!!busy} onClick={() => void go("pokedle", () => challengeToDuel(friend, me, { kind: "pokedle" }))}>
-        {spin("pokedle", <Search className="h-4 w-4 text-primary" aria-hidden />)} Pokédle duel
+        {spin("pokedle", <Search className="h-4 w-4 text-primary" aria-hidden />)} {t("options.pokedle")}
       </button>
       <button type="button" className={item} disabled={!!busy} onClick={() => void go("guessr", () => challengeToDuel(friend, me, { kind: "guessr" }))}>
-        {spin("guessr", <Compass className="h-4 w-4 text-primary" aria-hidden />)} PokéGuessr duel
+        {spin("guessr", <Compass className="h-4 w-4 text-primary" aria-hidden />)} {t("options.guessr")}
       </button>
       <button type="button" className={item} disabled={!!busy} onClick={() => void go("connections", () => challengeToDuel(friend, me, { kind: "connections" }))}>
-        {spin("connections", <LayoutGrid className="h-4 w-4 text-primary" aria-hidden />)} PokéConnections race
+        {spin("connections", <LayoutGrid className="h-4 w-4 text-primary" aria-hidden />)} {t("options.connections")}
       </button>
       <button type="button" className={item} disabled={!!busy} onClick={() => void go("pikadoku", () => challengeToDuel(friend, me, { kind: "pikadoku" }))}>
-        {spin("pikadoku", <LayoutGrid className="h-4 w-4 text-primary" aria-hidden />)} Pikadoku Tic Tac Toe
+        {spin("pikadoku", <LayoutGrid className="h-4 w-4 text-primary" aria-hidden />)} {t("options.pikadoku")}
       </button>
       <div className="flex items-center gap-2 px-2.5 py-1">
         <button type="button" className="flex items-center gap-2 text-sm hover:underline disabled:opacity-50" disabled={!!busy} onClick={() => void go("quiz", () => challengeToDuel(friend, me, { kind: "quiz", module: quiz }))}>
-          {spin("quiz", <Swords className="h-4 w-4 text-primary" aria-hidden />)} Quiz duel:
+          {spin("quiz", <Swords className="h-4 w-4 text-primary" aria-hidden />)} {t("options.quiz")}
         </button>
-        <select aria-label="Quiz mode" value={quiz} onChange={(e) => setQuiz(e.target.value as ModuleId)} className="h-8 min-w-0 flex-1 rounded-md border bg-background px-2 text-xs">
+        <select aria-label={t("options.quizMode")} value={quiz} onChange={(e) => setQuiz(e.target.value as ModuleId)} className="h-8 min-w-0 flex-1 rounded-md border bg-background px-2 text-xs">
           {PLAY_MODULES.map((m) => (
             <option key={m} value={m}>
-              {MODULE_INFO[m].title}
+              {mt(`modules.${m}.title`)}
             </option>
           ))}
         </select>

@@ -11,7 +11,7 @@ import { play, unlockAudio } from "@/lib/sound";
 import { preloadImage } from "@/lib/preload";
 import { useAccount } from "@/lib/account";
 import { avatarSrc } from "@/lib/avatar";
-import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
+import { isCleanName } from "@/lib/name-filter";
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,6 +24,7 @@ import { ReportShot } from "./ReportShot";
 import { GeoResults, type ResultsRound } from "./GeoResults";
 import { resultPath } from "./ShareResultLink";
 import { useT } from "@/i18n/client";
+import communityNs from "@/messages/community";
 import type { Translator } from "@/i18n/catalog";
 import geoNs from "@/messages/geo";
 import geoStreak from "@/messages/geo-streak";
@@ -404,6 +405,7 @@ function StreakReveal({ world, current, streak, notch, onNext, onExit, t, names 
 
 /** Under the results map: the best streak, the leaderboard form and sharing. */
 function StreakSummary({ streak, best, newBest, resultToken, t }: { streak: number; best: number; newBest: boolean; resultToken?: string; t: StreakT }) {
+  const ct = useT(communityNs);
   const progress = useProgress();
   const [name, setName] = useState("");
   const [save, setSave] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -415,7 +417,7 @@ function StreakSummary({ streak, best, newBest, resultToken, t }: { streak: numb
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!isCleanName(name)) {
-      setSaveError(NAME_REJECTED);
+      setSaveError(ct("nameRejected"));
       setSave("error");
       return;
     }

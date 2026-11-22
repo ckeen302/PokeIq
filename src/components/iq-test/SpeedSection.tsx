@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { SkipForward } from "lucide-react";
 import { sameGlyph, speedRow } from "@/lib/cognitive/speed";
@@ -8,6 +8,11 @@ import { Button } from "@/components/ui/button";
 import { HpBar } from "@/components/game/HpBar";
 import { cn } from "@/lib/utils";
 import { GlyphView } from "./CellView";
+import { useT } from "@/i18n/client";
+import play from "@/messages/iq-test-play";
+
+const success = (c: ReactNode[]) => <span className="text-success">{c}</span>;
+const destructive = (c: ReactNode[]) => <span className="text-destructive">{c}</span>;
 
 /**
  * Processing speed: for `ms`, a target and a row of six; tap every one that
@@ -15,6 +20,7 @@ import { GlyphView } from "./CellView";
  * hits and false taps when the clock runs out.
  */
 export function SpeedSection({ seed, ms, onDone }: { seed: string; ms: number; onDone: (hits: number, falseTaps: number) => void }) {
+  const t = useT(play);
   const [index, setIndex] = useState(0);
   const [marks, setMarks] = useState<("hit" | "miss" | null)[]>(() => Array(6).fill(null));
   const [now, setNow] = useState(() => Date.now());
@@ -72,12 +78,12 @@ export function SpeedSection({ seed, ms, onDone }: { seed: string; ms: number; o
   return (
     <div className="space-y-5" data-testid="cog-speed">
       <div className="flex items-center gap-3">
-        <HpBar value={left / ms} label="TIME" className="flex-1" />
+        <HpBar value={left / ms} label={t("time")} className="flex-1" />
         <span className={cn("w-8 text-right font-pixel text-xs tabular-nums", left < ms * 0.2 && "animate-blink text-destructive")}>{Math.ceil(left / 1000)}</span>
       </div>
       <div className="flex items-center justify-between rounded-lg border border-foreground/10 bg-shade/20 px-4 py-3">
         <div className="flex items-center gap-3">
-          <span className="hud-label">Find</span>
+          <span className="hud-label">{t("find")}</span>
           <motion.div key={row.id} initial={{ scale: 0.6 }} animate={{ scale: 1 }} className="screen flex h-16 w-16 items-center justify-center rounded-md">
             <span className="relative z-[3]">
               <GlyphView glyph={row.target} size={48} />
@@ -85,15 +91,11 @@ export function SpeedSection({ seed, ms, onDone }: { seed: string; ms: number; o
           </motion.div>
         </div>
         <div className="text-right font-pixel text-xs text-muted-foreground">
-          <div>
-            <span className="text-success">{hits}</span> hit
-          </div>
-          <div>
-            <span className="text-destructive">{falseTaps}</span> wrong
-          </div>
+          <div>{t.rich("hits", { n: hits, s: success })}</div>
+          <div>{t.rich("wrong", { n: falseTaps, s: destructive })}</div>
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-2.5" role="group" aria-label="The row to search">
+      <div className="grid grid-cols-3 gap-2.5" role="group" aria-label={t("row")}>
         {row.row.map((g, i) => (
           <button
             key={`${row.id}:${i}`}
@@ -115,7 +117,7 @@ export function SpeedSection({ seed, ms, onDone }: { seed: string; ms: number; o
       </div>
       <div className="flex justify-center">
         <Button variant="outline" size="sm" onClick={advance} data-testid="cog-speed-skip">
-          <SkipForward className="h-4 w-4" aria-hidden /> Skip row
+          <SkipForward className="h-4 w-4" aria-hidden /> {t("skip")}
         </Button>
       </div>
     </div>

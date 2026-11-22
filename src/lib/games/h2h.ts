@@ -1,6 +1,8 @@
 import type { Athlete } from "./athlete";
-import { eventOf, floorCm, formatMark, formatSeconds, type EventId } from "./events";
+import { eventOf, floorCm, formatMark, formatSeconds, localNum, type EventId } from "./events";
 import { runEvent, type EventOutcome } from "./games";
+import { translator, type Translator } from "@/i18n/catalog";
+import gamesEvents from "@/messages/games-events";
 
 /**
  * Head to heads: two Pokémon, one event. How a result reads ("Snorlax
@@ -28,16 +30,17 @@ export interface H2HSummary {
 }
 
 /** The gap between two marks as it's read out: "0.08 s", "12 cm", "12 kg", "84 pts". */
-export function formatGap(id: EventId, d: number): string {
+export function formatGap(id: EventId, d: number, locale = "en"): string {
   const u = eventOf(id).unit;
-  if (u === "s") return `${formatSeconds(Math.abs(d))} s`;
-  if (u === "m") { const cm = Math.round(floorCm(Math.abs(d)) * 100); return cm < 100 ? `${cm} cm` : `${(cm / 100).toFixed(2)} m`; }
-  if (u === "kg") return `${Math.round(Math.abs(d)).toLocaleString("en-US")} kg`;
-  if (u === "pts") return `${Math.round(Math.abs(d)).toLocaleString("en-US")} pts`;
+  if (u === "s") return localNum(`${formatSeconds(Math.abs(d))} s`, locale);
+  if (u === "m") { const cm = Math.round(floorCm(Math.abs(d)) * 100); return localNum(cm < 100 ? `${cm} cm` : `${(cm / 100).toFixed(2)} m`, locale); }
+  if (u === "kg") return localNum(`${Math.round(Math.abs(d)).toLocaleString("en-US")} kg`, locale);
+  if (u === "pts") return formatMark("all-around", Math.round(Math.abs(d)), locale);
   return "";
 }
 
-export function h2hSummary(o: EventOutcome, a: Athlete, b: Athlete): H2HSummary {
+export function h2hSummary(o: EventOutcome, a: Athlete, b: Athlete, t: Translator<typeof gamesEvents.en> = translator(gamesEvents, "en", undefined)): H2HSummary {
+  const lc = t.locale;
   const gold = o.podium.gold;
   const dead = gold.includes(a.key) && gold.includes(b.key);
   const winKey = dead ? null : gold[0] ?? o.standings[0] ?? null;
@@ -45,25 +48,25 @@ export function h2hSummary(o: EventOutcome, a: Athlete, b: Athlete): H2HSummary 
     const d = o.detail.kind === "wrestle" ? o.detail.result : null;
     const bout = d?.rounds[d.rounds.length - 1]?.bouts[0];
     const ringOut = bout?.trace?.ringOut ?? false;
-    const loseMark = ringOut ? "Pushed out" : "Lost on the bell";
-    const side = (x: Athlete): H2HSide => ({ key: x.key, name: x.name, win: x.key === winKey, mark: x.key === winKey ? "Winner" : loseMark });
+    const loseMark = t(ringOut ? "summary.pushedOut" : "summary.lostOnBell");
+    const side = (x: Athlete): H2HSide => ({ key: x.key, name: x.name, win: x.key === winKey, mark: x.key === winKey ? t("summary.winner") : loseMark });
     const w = winKey === a.key ? a : b, l = w === a ? b : a;
-    return { sides: [side(a), side(b)], winner: winKey, gap: null, line: ringOut ? `${w.name} pushes ${l.name} out of the ring` : `${w.name} wins on the bell` };
+    return { sides: [side(a), side(b)], winner: winKey, gap: null, line: ringOut ? t("summary.pushesOut", { w: w.name, l: l.name }) : t("summary.winsOnBell", { w: w.name }) };
   }
   const ma = o.marks.get(a.key) ?? null, mb = o.marks.get(b.key) ?? null;
-  const none = eventOf(o.event).kind === "lift" ? "No lift" : "No mark";
-  const side = (x: Athlete, m: number | null): H2HSide => ({ key: x.key, name: x.name, win: x.key === winKey || dead, mark: m == null ? none : formatMark(o.event, m) });
+  const none = t(eventOf(o.event).kind === "lift" ? "summary.noLift" : "summary.noMark");
+  const side = (x: Athlete, m: number | null): H2HSide => ({ key: x.key, name: x.name, win: x.key === winKey || dead, mark: m == null ? none : formatMark(o.event, m, lc) });
   const sides: [H2HSide, H2HSide] = [side(a, ma), side(b, mb)];
-  if (dead) return { sides, winner: null, gap: 0, line: `A dead heat at ${formatMark(o.event, ma)}` };
+  if (dead) return { sides, winner: null, gap: 0, line: t("summary.deadHeat", { mark: formatMark(o.event, ma, lc) }) };
   const w = winKey === a.key ? a : b;
   const mw = w === a ? ma : mb, ml = w === a ? mb : ma;
-  if (mw == null) return { sides, winner: null, gap: null, line: "Neither gets a mark" };
-  if (ml == null) return { sides, winner: winKey, gap: null, line: `${w.name} wins with ${formatMark(o.event, mw)}` };
+  if (mw == null) return { sides, winner: null, gap: null, line: t("summary.neither") };
+  if (ml == null) return { sides, winner: winKey, gap: null, line: t("summary.winsWith", { w: w.name, mark: formatMark(o.event, mw, lc) }) };
   const gap = Math.abs(mw - ml) / Math.max(1e-9, Math.abs(mw));
   // (Marks are read out rounded: a gap under the last digit is a win on the photo or on countback.)
-  const g = formatGap(o.event, mw - ml);
+  const g = formatGap(o.event, mw - ml, lc);
   const shown = formatMark(o.event, mw) === formatMark(o.event, ml);
-  return { sides, winner: winKey, gap, line: shown ? `${w.name} wins on the photo` : `${w.name} wins by ${g}` };
+  return { sides, winner: winKey, gap, line: shown ? t("summary.winsOnPhoto", { w: w.name }) : t("summary.winsBy", { w: w.name, gap: g }) };
 }
 
 export interface Matchup {

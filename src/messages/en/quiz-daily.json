@@ -1,0 +1,20 @@
+{
+  "label": "Daily Challenge",
+  "labelNumber": "Daily Challenge #{n}",
+  "title": "Today's PokéIQ test",
+  "intro": "10 mixed questions, the same for every trainer. One attempt — make it count.",
+  "youScored": "You scored",
+  "iq": "PokéIQ <b>{iq}</b> · {score} pts",
+  "streak": "{n}-day streak · best {best}",
+  "leaderboard": "Today's leaderboard",
+  "next": "Next Daily Challenge in",
+  "more": "Still hungry? Try the <dle>Pokédle</dle> or a <quiz>Survival run</quiz>.",
+  "parts": {
+    "whos-that": "Silhouettes",
+    "dex": "Pokédex entries",
+    "types": "Type matchups",
+    "higher-lower": "Stat battles"
+  },
+  "rules": "15 seconds per question · speed and streak bonuses",
+  "start": "Start Daily #{n}"
+}

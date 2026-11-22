@@ -11,7 +11,6 @@ import { PLAY_FORMAT_INFO } from "@/lib/battle/play";
 import {
   MAX_RR_PLAYERS,
   SIGNUP_MINUTES,
-  STYLE_NAME,
   TOURNAMENT_FORMATS,
   type BestOf,
   type TournamentFormat,
@@ -19,6 +18,18 @@ import {
   type TournamentSummary,
 } from "@/lib/tournaments";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import type { Translator } from "@/i18n/catalog";
+import battleTournaments from "@/messages/battle-tournaments";
+
+/** A tournament's title in the page's language: the server names them in English ("Official hourly Random Battle", "Red's OU tournament"). */
+export function tournamentName(t: Translator<typeof battleTournaments.en>, title: string): string {
+  if (t.locale === "en") return title;
+  const official = /^Official hourly (.+)$/.exec(title);
+  if (official) return t("titles.official", { format: official[1] });
+  const hosted = /^(.+)'s (.+) tournament$/.exec(title);
+  return hosted ? t("titles.hosted", { host: hosted[1], format: hosted[2] }) : title;
+}
 
 const SIZES = [4, 8, 16, 32, 64];
 const FIELD = "h-9 w-full rounded-md border border-input bg-background px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -34,6 +45,7 @@ export function TournamentLobby() {
   const [data, setData] = useState<{ active: TournamentSummary[]; history: TournamentSummary[] } | null>(null);
   const [off, setOff] = useState(false);
   const [now, setNow] = useState(() => Date.now());
+  const t = useT(battleTournaments);
 
   useVisiblePoll(async () => {
     try {
@@ -47,41 +59,41 @@ export function TournamentLobby() {
     setNow(Date.now());
   }, 10_000);
 
-  if (off) return <p className="rounded-lg border border-dashed p-6 text-center text-muted-foreground">Tournaments open soon.</p>;
+  if (off) return <p className="rounded-lg border border-dashed p-6 text-center text-muted-foreground">{t("lobby.soon")}</p>;
 
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[1fr_20rem]">
       {/* Until the list is in, hold the room it usually takes, so what's below doesn't jump when it arrives. */}
       <div className={cn("space-y-6", !data && "min-h-[36rem]")}>
         <section className="space-y-3">
-          <h2 className="hud-label">Open and running</h2>
+          <h2 className="hud-label">{t("lobby.open")}</h2>
           {!data ? (
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" aria-hidden />
           ) : data.active.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No tournaments right now. Open one!</p>
+            <p className="text-sm text-muted-foreground">{t("lobby.none")}</p>
           ) : (
             <ul className="space-y-2" data-testid="tournament-list">
-              {data.active.map((t) => (
-                <li key={t.id}>
-                  <Link href={`/battle/tournaments/${t.id}`} className="hud flex items-center gap-3 rounded-lg border bg-card p-3 hover:border-primary/60 max-sm:flex-wrap max-sm:gap-y-1.5" data-testid="tournament-row">
-                    {t.official ? <Crown className="h-5 w-5 shrink-0 text-warning" aria-hidden /> : <Trophy className="h-5 w-5 shrink-0 text-primary" aria-hidden />}
+              {data.active.map((tm) => (
+                <li key={tm.id}>
+                  <Link href={`/battle/tournaments/${tm.id}`} className="hud flex items-center gap-3 rounded-lg border bg-card p-3 hover:border-primary/60 max-sm:flex-wrap max-sm:gap-y-1.5" data-testid="tournament-row">
+                    {tm.official ? <Crown className="h-5 w-5 shrink-0 text-warning" aria-hidden /> : <Trophy className="h-5 w-5 shrink-0 text-primary" aria-hidden />}
                     <span className="min-w-0 flex-1 max-sm:basis-[calc(100%-2rem)]">
-                      <span className="block truncate font-semibold max-sm:whitespace-normal">{t.title}</span>
+                      <span className="block truncate font-semibold max-sm:whitespace-normal">{tournamentName(t, tm.title)}</span>
                       <span className="block text-xs text-muted-foreground">
-                        {t.formatName} · {STYLE_NAME[t.style]} · Bo{t.bestOf}
+                        {tm.formatName} · {t(`style.${tm.style}`)} · {t("bestOf", { n: tm.bestOf })}
                       </span>
                     </span>
                     <span className="flex items-center gap-1 text-sm tabular-nums max-sm:ml-8">
-                      <Users className="h-3.5 w-3.5" aria-hidden /> {t.players}/{t.maxPlayers}
+                      <Users className="h-3.5 w-3.5" aria-hidden /> {tm.players}/{tm.maxPlayers}
                     </span>
-                    <span className={cn("w-28 text-right text-xs max-sm:ml-auto max-sm:w-auto", t.status === "signup" ? "text-success" : "text-warning")}>
-                      {t.status === "signup" ? (
+                    <span className={cn("w-28 text-right text-xs max-sm:ml-auto max-sm:w-auto", tm.status === "signup" ? "text-success" : "text-warning")}>
+                      {tm.status === "signup" ? (
                         <>
                           <Clock className="mr-1 inline h-3 w-3" aria-hidden />
-                          Sign-ups {countdown(t.signupEndsAt - now)}
+                          {t("lobby.signups", { time: countdown(tm.signupEndsAt - now) })}
                         </>
                       ) : (
-                        "In progress"
+                        t("lobby.running")
                       )}
                     </span>
                   </Link>
@@ -92,15 +104,15 @@ export function TournamentLobby() {
         </section>
         {!!data?.history.length && (
           <section className="space-y-3">
-            <h2 className="hud-label">Recent tournaments</h2>
+            <h2 className="hud-label">{t("lobby.recent")}</h2>
             <ul className="divide-y rounded-lg border bg-card text-sm" data-testid="tournament-history">
-              {data.history.map((t) => (
-                <li key={t.id}>
-                  <Link href={`/battle/tournaments/${t.id}`} className="flex items-center gap-3 px-3 py-2 hover:bg-accent max-md:min-h-14 max-md:flex-wrap max-md:gap-x-3 max-md:gap-y-0.5 max-md:py-2.5">
-                    <span className="min-w-0 flex-1 truncate max-md:basis-full max-md:font-medium">{t.title}</span>
-                    <span className="text-xs text-muted-foreground max-md:flex-1">{t.endedAt ? new Date(t.endedAt).toLocaleString([], { dateStyle: "short", timeStyle: "short" }) : ""}</span>
+              {data.history.map((tm) => (
+                <li key={tm.id}>
+                  <Link href={`/battle/tournaments/${tm.id}`} className="flex items-center gap-3 px-3 py-2 hover:bg-accent max-md:min-h-14 max-md:flex-wrap max-md:gap-x-3 max-md:gap-y-0.5 max-md:py-2.5">
+                    <span className="min-w-0 flex-1 truncate max-md:basis-full max-md:font-medium">{tournamentName(t, tm.title)}</span>
+                    <span className="text-xs text-muted-foreground max-md:flex-1">{tm.endedAt ? new Date(tm.endedAt).toLocaleString([], { dateStyle: "short", timeStyle: "short" }) : ""}</span>
                     <span className="w-36 truncate text-right max-md:w-auto max-md:max-w-[50%] max-md:text-xs">
-                      {t.status === "cancelled" ? <span className="text-muted-foreground">Cancelled</span> : <span className="font-semibold text-warning">🏆 {t.winner}</span>}
+                      {tm.status === "cancelled" ? <span className="text-muted-foreground">{t("lobby.cancelled")}</span> : <span className="font-semibold text-warning">🏆 {tm.winner}</span>}
                     </span>
                   </Link>
                 </li>
@@ -115,12 +127,13 @@ export function TournamentLobby() {
 }
 
 function SignInNote() {
+  const t = useT(battleTournaments);
   return (
     <div className="hud space-y-2 rounded-lg border bg-card p-4 text-sm">
-      <p className="hud-label">Open a tournament</p>
-      <p className="text-muted-foreground">Tournaments are for trainer accounts: sign in to join or open one.</p>
+      <p className="hud-label">{t("lobby.openOne")}</p>
+      <p className="text-muted-foreground">{t("lobby.signInNote")}</p>
       <Link href="/login?next=/battle/tournaments" className="font-semibold text-primary hover:underline">
-        Sign in
+        {t("lobby.signIn")}
       </Link>
     </div>
   );
@@ -128,6 +141,7 @@ function SignInNote() {
 
 function CreateForm() {
   const router = useRouter();
+  const t = useT(battleTournaments);
   const [format, setFormat] = useState<TournamentFormat>("gen9randombattle");
   const [style, setStyle] = useState<TournamentStyle>("elim");
   const [maxPlayers, setMax] = useState(8);
@@ -147,20 +161,20 @@ function CreateForm() {
         body: JSON.stringify({ format, style, maxPlayers: style === "rr" ? Math.min(maxPlayers, MAX_RR_PLAYERS) : maxPlayers, signupMinutes, bestOf }),
       });
       const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? "Couldn't open the tournament.");
+      if (!res.ok) throw new Error(body.error ?? t("lobby.failed"));
       router.push(`/battle/tournaments/${body.id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't open the tournament.");
+      setError(err instanceof Error ? err.message : t("lobby.failed"));
       setBusy(false);
     }
   }
 
   return (
     <form onSubmit={create} className="hud space-y-3 rounded-lg border bg-card p-4 text-sm" data-testid="tournament-create">
-      <p className="hud-label">Open a tournament</p>
+      <p className="hud-label">{t("lobby.openOne")}</p>
       <label className="block space-y-1">
-        <span className="text-xs text-muted-foreground">Format</span>
-        <select className={FIELD} value={format} onChange={(e) => setFormat(e.target.value as TournamentFormat)} aria-label="Format">
+        <span className="text-xs text-muted-foreground">{t("lobby.format")}</span>
+        <select className={FIELD} value={format} onChange={(e) => setFormat(e.target.value as TournamentFormat)} aria-label={t("lobby.format")}>
           {TOURNAMENT_FORMATS.map((f) => (
             <option key={f} value={f}>
               {PLAY_FORMAT_INFO[f].name}
@@ -169,19 +183,19 @@ function CreateForm() {
         </select>
       </label>
       <fieldset className="space-y-1">
-        <legend className="text-xs text-muted-foreground">Bracket</legend>
+        <legend className="text-xs text-muted-foreground">{t("lobby.bracket")}</legend>
         <div className="flex gap-2">
           {(["elim", "rr"] as const).map((s) => (
             <Button key={s} type="button" size="sm" variant={style === s ? "default" : "outline"} onClick={() => setStyle(s)} aria-pressed={style === s}>
-              {STYLE_NAME[s]}
+              {t(`style.${s}`)}
             </Button>
           ))}
         </div>
       </fieldset>
       <div className="grid grid-cols-2 gap-2">
         <label className="block space-y-1">
-          <span className="text-xs text-muted-foreground">Max players</span>
-          <select className={FIELD} value={maxPlayers} onChange={(e) => setMax(Number(e.target.value))} aria-label="Max players">
+          <span className="text-xs text-muted-foreground">{t("lobby.max")}</span>
+          <select className={FIELD} value={maxPlayers} onChange={(e) => setMax(Number(e.target.value))} aria-label={t("lobby.max")}>
             {(style === "rr" ? [4, 6, 8, MAX_RR_PLAYERS] : SIZES).map((n) => (
               <option key={n} value={n}>
                 {n}
@@ -190,22 +204,22 @@ function CreateForm() {
           </select>
         </label>
         <label className="block space-y-1">
-          <span className="text-xs text-muted-foreground">Sign-ups for</span>
-          <select className={FIELD} value={signupMinutes} onChange={(e) => setSignup(Number(e.target.value))} aria-label="Sign-up time">
+          <span className="text-xs text-muted-foreground">{t("lobby.signupFor")}</span>
+          <select className={FIELD} value={signupMinutes} onChange={(e) => setSignup(Number(e.target.value))} aria-label={t("lobby.signupTime")}>
             {SIGNUP_MINUTES.map((m) => (
               <option key={m} value={m}>
-                {m} min
+                {t("lobby.minutes", { n: m })}
               </option>
             ))}
           </select>
         </label>
       </div>
       <fieldset className="space-y-1">
-        <legend className="text-xs text-muted-foreground">Each match</legend>
+        <legend className="text-xs text-muted-foreground">{t("lobby.each")}</legend>
         <div className="flex gap-2">
           {([1, 3] as const).map((b) => (
             <Button key={b} type="button" size="sm" variant={bestOf === b ? "default" : "outline"} onClick={() => setBestOf(b)} aria-pressed={bestOf === b}>
-              Bo{b}
+              {t("bestOf", { n: b })}
             </Button>
           ))}
         </div>
@@ -216,9 +230,9 @@ function CreateForm() {
         </p>
       )}
       <Button type="submit" className="w-full" disabled={busy}>
-        {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Plus className="h-4 w-4" aria-hidden />} Open tournament
+        {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Plus className="h-4 w-4" aria-hidden />} {t("lobby.create")}
       </Button>
-      <p className="text-xs text-muted-foreground">Sign-ups close when the time is up or the bracket is full. Ladder formats are rated.</p>
+      <p className="text-xs text-muted-foreground">{t("lobby.note")}</p>
     </form>
   );
 }

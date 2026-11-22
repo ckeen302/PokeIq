@@ -1,0 +1,58 @@
+{
+  "meta": {
+    "unavailableTitle": "トレーナープロフィール",
+    "unavailableDescription": "PokéIQのトレーナープロフィール。",
+    "notFoundTitle": "トレーナーが見つかりません",
+    "notFoundDescription": "PokéIQにそのトレーナーはいません。",
+    "title": "{name}・トレーナープロフィール",
+    "description": "PokéIQの{name}：Pokédle、PokéGuessr、バトルのレート、クイズの自己ベスト、バトルの戦績、最近のリプレイ。"
+  },
+  "back": "トレーナー一覧に戻る",
+  "unavailable": "現在トレーナープロフィールを表示できません。1分後にもう一度お試しください。",
+  "find": "トレーナーを探す",
+  "since": "{date}からのトレーナー",
+  "trainerOf": "{name}のトレーナー",
+  "ranked": "ランクマッチ PokéGuessr",
+  "rankedDuels": "ランクマッチ{n}戦で{record}",
+  "position": "・{players}人中{position}位",
+  "bestScore": "・最高{score}点",
+  "noRanked": "PokéGuessrのランクマッチはまだありません。",
+  "pastSeasons": "過去のシーズン",
+  "ladder": "バトルのランキング",
+  "noLadder": "ランクバトルはまだありません。",
+  "conn": {
+    "streak": "連続",
+    "bestStreak": "最高連続記録",
+    "gamesWon": "勝利数",
+    "perfect": "パーフェクト",
+    "duelRecord": "対戦成績"
+  },
+  "noConn": "PokéConnectionsはまだプレイしていません。",
+  "battleRecord": "バトルの戦績",
+  "insights": "チーム分析 →",
+  "battleEmpty": "{name}はまだライブバトルをしていません。",
+  "battleSoon": "バトルの戦績はまもなく公開されます。",
+  "replays": "最近の公開リプレイ",
+  "noReplays": "公開リプレイはまだありません。",
+  "quiz": {
+    "title": "クイズの自己ベスト",
+    "none": "{name}はまだクイズの自己ベストがありません。",
+    "play": "クイズで遊ぶ",
+    "table": "モードと形式ごとのベストスコア",
+    "mode": "モード",
+    "formats": {
+      "classic": "クラシック",
+      "survival": "サバイバル",
+      "blitz": "ブリッツ"
+    },
+    "named": "<b>{named}/{total}</b>匹",
+    "cleared": "<b>{time}</b>でクリア"
+  },
+  "users": {
+    "title": "トレーナーを探す",
+    "description": "PokéIQのトレーナーを名前で検索：Pokédleやバトルのレート、戦績、最近のリプレイ。",
+    "label": "コミュニティ",
+    "heading": "<hl>トレーナー</hl>を探す",
+    "intro": "アカウント名で検索して、トレーナーのプロフィール（レート、戦績、最近のリプレイ）を見られます。そこからフレンドに追加もできます。"
+  }
+}

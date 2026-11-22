@@ -1,0 +1,93 @@
+{
+  "meta": {
+    "title": "Teorías Pokémon: teorías fan, leyendas urbanas y mitos de las betas, a examen",
+    "description": "Teorías fan, leyendas urbanas y mitos de las betas de Pokémon como expedientes: Gengar y Clefable, Mew bajo el camión, MissingNo., el síndrome de Pueblo Lavanda y más, cada una con sus pruebas, sus fuentes y un veredicto: confirmada, teoría fan o desmentida.",
+    "socialTitle": "Los expedientes · Pokédex de PokéIQ"
+  },
+  "header": {
+    "kicker": "Teorías y conspiraciones",
+    "title": "Poké",
+    "accent": "dex",
+    "blurb": "Teorías, leyendas urbanas y mitos de las betas de Pokémon, cada uno con sus pruebas y un veredicto."
+  },
+  "list": {
+    "eyebrow": "Teorías y conspiraciones Pokémon",
+    "title": "Los <b>expedientes</b>",
+    "lead": "Teorías fan, conspiraciones, rumores y glitches reales. Todos comprobados con los juegos."
+  },
+  "ld": {
+    "pokedex": "Pokédex",
+    "theories": "Teorías"
+  },
+  "verdict": {
+    "confirmed": "Confirmada",
+    "fan": "Teoría fan",
+    "debunked": "Desmentida"
+  },
+  "source": {
+    "games": "Juegos",
+    "anime": "Anime",
+    "pokedex": "Pokédex",
+    "internet": "Internet",
+    "manga": "Manga"
+  },
+  "sourceList": "{a}, {b}",
+  "caseNumber": "CASO {n}",
+  "case": {
+    "metaTitle": {
+      "confirmed": "{title} — Teoría Pokémon confirmada",
+      "fan": "{title} — Teoría fan de Pokémon",
+      "debunked": "{title} — Mito Pokémon desmentido"
+    },
+    "metaDescription": {
+      "confirmed": "Confirmada. {claim} Las pruebas a favor y en contra, lo que está confirmado de verdad y las fuentes.",
+      "fan": "Teoría fan sin confirmar. {claim} Las pruebas a favor y en contra, lo que está confirmado de verdad y las fuentes.",
+      "debunked": "Desmentida. {claim} Las pruebas a favor y en contra, lo que está confirmado de verdad y las fuentes."
+    },
+    "socialTitle": "{case}: {title} · PokéIQ",
+    "back": "Todos los expedientes",
+    "filed": "{case} · {era} · Archivado en {sources}",
+    "theory": "La teoría",
+    "claim": "La afirmación",
+    "glitchPokemon": "Pokémon glitch",
+    "pair": "{a} y {b}",
+    "exhibitA": "PRUEBA A",
+    "silhouette": "Silueta de {name}",
+    "overlaid": "SUPERPUESTAS",
+    "origin": "Origen y difusión",
+    "evidenceFor": "Pruebas a favor",
+    "evidenceAgainst": "Pruebas en contra",
+    "confirmed": "Lo que está confirmado de verdad",
+    "verdict": "El veredicto",
+    "sources": "Fuentes",
+    "related": "Casos relacionados",
+    "footer": {
+      "confirmed": "Archivada como confirmada. Las citas de la Pokédex usan el texto oficial en español cuando lo tenemos; las demás están traducidas de las versiones en inglés de los juegos, su Pokédex y las entrevistas citadas. Reddit y YouTube solo son el lugar donde se difundió una teoría, nunca una prueba.",
+      "fan": "Archivada como teoría fan. Las citas de la Pokédex usan el texto oficial en español cuando lo tenemos; las demás están traducidas de las versiones en inglés de los juegos, su Pokédex y las entrevistas citadas. Reddit y YouTube solo son el lugar donde se difundió una teoría, nunca una prueba.",
+      "debunked": "Archivada como desmentida. Las citas de la Pokédex usan el texto oficial en español cuando lo tenemos; las demás están traducidas de las versiones en inglés de los juegos, su Pokédex y las entrevistas citadas. Reddit y YouTube solo son el lugar donde se difundió una teoría, nunca una prueba."
+    }
+  },
+  "board": {
+    "label": "Caso de la semana",
+    "brand": "POKÉIQ / TABLÓN DE CASOS",
+    "file": "EXPEDIENTE {no} · {state}",
+    "fileNo": "EXPEDIENTE {no}",
+    "status": "ESTADO: {status}",
+    "press": "PULSA UN CASO PARA ABRIR SU EXPEDIENTE",
+    "state": {
+      "open": "AÚN ABIERTO",
+      "closed": "CERRADO"
+    },
+    "verdictStatus": {
+      "confirmed": "PROBADO",
+      "fan": "SIN PROBAR",
+      "debunked": "REFUTADO"
+    },
+    "caseOfTheWeek": "Caso de la semana",
+    "keyEvidence": "Pruebas clave",
+    "open": "Abrir el caso",
+    "noteFiled": "Archivado: {era}",
+    "noteFrom": "Origen: {sources}",
+    "noteLead": "Pista: {caption}"
+  }
+}

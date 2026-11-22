@@ -1,0 +1,1550 @@
+{
+ "cubone-wears-its-mothers-skull": {
+  "title": "Osselait porte le crâne de sa mère",
+  "era": "Gén. I · 1996",
+  "summary": "Le Pokédex le dit, et le fantôme de la Tour Pokémon est une mère Ossatueur.",
+  "claim": "Le casque d’os qu’Osselait ne retire jamais est le crâne de sa mère morte, et le fantôme qui bloque le haut de la Tour Pokémon dans Rouge et Bleu est une mère Ossatueur tuée par la Team Rocket.",
+  "origin": "Tout commence dans Rouge et Vert (1996) : les habitants de Lavanville parlent de la mère assassinée d’un Osselait, et le Scope Sylphe démasque son fantôme dans la Tour Pokémon. À partir de Jaune, le Pokédex le dit clairement. C’est devenu l’un des faits sombres les plus connus de la série, un incontournable des listes des « entrées du Pokédex les plus sombres » et des vidéos iceberg, et les jeux suivants ont continué à l’étoffer.",
+  "evidenceFor": [
+   {
+    "text": "L’entrée du Pokédex de Jaune le dit sans détour :",
+    "quote": "Il porte le crâne de sa mère défunte. Ses cris résonnent dans le crâne et en ressortent comme une triste mélodie.",
+    "mark": [
+     "le crâne de sa mère défunte"
+    ],
+    "source": "Osselait · Pokédex · Jaune"
+   },
+   {
+    "text": "Cristal précise quand elle est morte :",
+    "quote": "Il a perdu sa mère après sa naissance. Il porte le crâne de sa mère et ne montre jamais son vrai visage.",
+    "mark": [
+     "le crâne de sa mère"
+    ],
+    "source": "Osselait · Pokédex · Cristal"
+   },
+   {
+    "text": "Dans la Tour Pokémon, le Scope Sylphe révèle le fantôme qui bloque l’escalier :",
+    "quote": "Le fantôme était l’âme tourmentée de la mère d’Osselait !",
+    "mark": [
+     "la mère d’Osselait"
+    ],
+    "source": "Tour Pokémon · Rouge et Bleu"
+   },
+   {
+    "text": "Une fille de Lavanville raconte comment elle est morte :",
+    "quote": "Je déteste ces horribles Rocket ! La pauvre mère d’Osselait… Elle a été tuée en essayant d’échapper à la Team Rocket !",
+    "mark": [
+     "tuée"
+    ],
+    "source": "Lavanville · Rouge et Bleu"
+   },
+   {
+    "text": "Dans le code du jeu, le fantôme est un vrai Ossatueur : le désassemblage définit l’âme tourmentée comme MAROWAK, et la routine de capture contient un cas particulier pour qu’on ne puisse pas l’attraper.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Les entrées d’Ossatueur prolongent l’histoire : dans Rubis et Saphir, c’est « la forme évoluée d’un Osselait qui a surmonté la tristesse d’avoir perdu sa mère », et dans Bouclier, le crâne de la mère fusionne avec lui quand il évolue.",
+    "source": "Ossatueur · Pokédex · Rubis, Saphir et Bouclier"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "L’entrée du Pokédex de Rouge et Bleu ne parle jamais d’une mère :",
+    "quote": "Comme il ne retire jamais son casque d’os, personne n’a jamais vu le vrai visage de ce Pokémon.",
+    "source": "Osselait · Pokédex · Rouge et Bleu"
+   },
+   {
+    "text": "Aucun jeu ne montre comment un Osselait obtient son crâne, ni si tous les Osselait ont perdu leur mère. Cette partie est laissée à la formulation du Pokédex.",
+    "source": "Sources officielles"
+   }
+  ],
+  "confirmed": "Les entrées du Pokédex depuis Jaune (dont Argent, Cristal, Rouge Feu, X, Y, Soleil, Lune, Épée et Bouclier) disent que le crâne est celui de sa mère, et le fantôme de la Tour Pokémon de Rouge et Bleu est la mère d’Osselait, un Ossatueur tué par la Team Rocket. Les idées qui vont plus loin, comme Osselait bébé Kangourex, sont des ajouts de fans et sont classées à part.",
+  "verdictText": "Confirmée par les jeux : les textes du Pokédex à travers la série et l’événement de la Tour Pokémon dans Rouge et Bleu le disent tous les deux.",
+  "links": [
+   "pret/pokered : texte de la Tour Pokémon, 6e étage",
+   "pret/pokered : Lavanville, texte de la maison d’Osselait",
+   "pret/pokered : routine de capture (l’Ossatueur fantôme ne peut pas être capturé)",
+   "Texte du Pokédex d’Osselait (PokeAPI)",
+   "Texte du Pokédex d’Ossatueur (PokeAPI)",
+   "Bulbapedia : Ossatueur (fantôme)"
+  ],
+  "board": {
+   "question": "À qui appartient le crâne d’Osselait ?",
+   "hook": "Le Pokédex le dit, et le fantôme de l’escalier de la tour en est la preuve. Un rare dossier que les jeux ont classé eux-mêmes.",
+   "caption": "Mère et enfant",
+   "keys": [
+    "Le Pokédex dit que c’est celui de sa mère",
+    "Le fantôme de la tour est la mère d’Osselait",
+    "La Team Rocket l’a tuée"
+   ],
+   "b": {
+    "label": "Entrée du Pokédex d’Osselait · Jaune",
+    "quote": "Il porte le crâne de sa mère défunte. Ses cris résonnent dans le crâne et en ressortent comme une triste mélodie.",
+    "mark": [
+     "mère défunte"
+    ]
+   },
+   "c": {
+    "text": "Le Scope Sylphe démasque le fantôme : c’est un Ossatueur, la mère d’Osselait.",
+    "bold": [
+     "Ossatueur"
+    ]
+   }
+  }
+ },
+ "gengar-is-clefables-shadow": {
+  "title": "Ectoplasma est l’ombre de Mélodelfe",
+  "era": "Gén. I · 1996",
+  "summary": "Des silhouettes identiques et une entrée du Pokédex au clair de lune. Rien d’officiel ne les relie.",
+  "claim": "Les fans remarquent depuis des années qu’Ectoplasma et Mélodelfe ont la même silhouette. La théorie dit qu’Ectoplasma est l’ombre d’un Mélodelfe devenue vivante, ou son fantôme.",
+  "origin": "Les joueurs les comparent côte à côte depuis Rouge et Bleu. L’idée s’est répandue sur les forums, dans les listes de théories de l’époque des creepypastas et sur Reddit, et revient régulièrement dans les articles et vidéos de théories ; le passage de Mélodelfe au type Fée dans X et Y lui a donné un nouveau rebondissement.",
+  "evidenceFor": [
+   {
+    "text": "Côte à côte, les deux ont un corps rond, des oreilles pointues et des bras et des jambes courts. Voir la pièce A.",
+    "source": "Illustrations officielles"
+   },
+   {
+    "text": "La première entrée du Pokédex d’Ectoplasma le lie aux ombres et à la pleine lune :",
+    "quote": "Les soirs de pleine lune, ce Pokémon aime imiter l’ombre des gens et rire de leur frayeur.",
+    "mark": [
+     "pleine lune",
+     "l’ombre"
+    ],
+    "source": "Ectoplasma · Pokédex · Rouge et Bleu"
+   },
+   {
+    "text": "La famille de Mélodelfe appartient à la lune : dans Rouge et Bleu, les Mélofée vivent au Mont Sélénite, où une Pierre Lune les attend pour évoluer.",
+    "source": "Jeux · Rouge et Bleu"
+   },
+   {
+    "text": "Légendes : Arceus dit que les proches de Mélodelfe vivent sur la lune :",
+    "quote": "La légende raconte que, par les nuits claires et calmes, il écoute les voix de ses semblables qui vivent sur la lune.",
+    "mark": [
+     "ses semblables qui vivent sur la lune"
+    ],
+    "source": "Mélodelfe · Pokédex · Légendes : Arceus"
+   },
+   {
+    "text": "Types en miroir : dans la table des types de Rouge et Bleu, les capacités Normal n’ont aucun effet sur les types Spectre, et les capacités Spectre n’ont aucun effet sur les types Normal. Mélodelfe était de type Normal à l’époque.",
+    "source": "Datamine · Table des types de Rouge et Bleu"
+   },
+   {
+    "text": "Presque le même poids : Mélodelfe pèse 40,0 kg et Ectoplasma 40,5 kg.",
+    "source": "Données du Pokédex"
+   },
+   {
+    "text": "Dans la liste interne de Rouge et Bleu, Ectoplasma est le numéro 14, bien avant Fantominus (25) et Spectrum (147), et près de Mélofée (4).",
+    "source": "Datamine · pret/pokered"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Ce sont deux familles distinctes. Ectoplasma évolue de Spectrum, et Mélodelfe de Mélofée.",
+    "source": "Jeux"
+   },
+   {
+    "text": "Types différents. Ectoplasma est Spectre/Poison. Mélodelfe était Normal, et est devenu Fée dans X et Y.",
+    "source": "Jeux"
+   },
+   {
+    "text": "Pokémon Lune pointe dans une tout autre direction :",
+    "quote": "S’il attente à la vie des humains, c’est parce qu’ils deviendront des Ectoplasma après la mort et qu’il veut les entraîner avec lui.",
+    "mark": [
+     "ils deviendront des Ectoplasma après la mort"
+    ],
+    "source": "Ectoplasma · Pokédex · Lune"
+   },
+   {
+    "text": "Aucun jeu, aucune entrée du Pokédex ni aucun épisode ne relie les deux.",
+    "source": "Sources officielles"
+   }
+  ],
+  "confirmed": "Le texte du Pokédex d’Ectoplasma le lie vraiment aux ombres et à la pleine lune, et la famille de Mélodelfe est vraiment liée à la lune. Le lien entre les deux est l’idée des fans.",
+  "verdictText": "Les indices sont réels, mais rien d’officiel ne relie Ectoplasma et Mélodelfe. Le contre-argument le plus fort est l’entrée de Pokémon Lune, qui dit qu’Ectoplasma était autrefois humain. Game Freak ne s’est jamais exprimé sur la théorie, qui reste donc ouverte.",
+  "links": [
+   "Texte du Pokédex d’Ectoplasma (PokeAPI)",
+   "Texte du Pokédex de Mélodelfe (PokeAPI)",
+   "pret/pokered : table des types de la 1re génération",
+   "pret/pokered : liste interne des Pokémon",
+   "pret/pokered : Pokémon sauvages du Mont Sélénite",
+   "Game Rant : la théorie Ectoplasma et Mélodelfe (là où elle s’est répandue)",
+   "GAMINGbible : Reddit en débat toujours (2024)"
+  ],
+  "silhouettes": {
+   "title": "Les silhouettes",
+   "text": "Les deux Pokémon en noir uni, tels que la théorie les voit. Puis superposés."
+  },
+  "board": {
+   "question": "Ectoplasma est-il vraiment l’ombre de Mélodelfe ?",
+   "hook": "Les silhouettes correspondent, et les deux Pokémon ramènent sans cesse à la lune. Coïncidence ou indice ?",
+   "caption": "La même ombre ?",
+   "keys": [
+    "Leurs silhouettes correspondent",
+    "Ectoplasma imite les ombres sous la pleine lune",
+    "La famille de Mélodelfe appartient à la lune"
+   ],
+   "b": {
+    "label": "Entrée du Pokédex d’Ectoplasma · Rouge et Bleu",
+    "quote": "Les soirs de pleine lune, ce Pokémon aime imiter l’ombre des gens et rire de leur frayeur.",
+    "mark": [
+     "pleine lune",
+     "l’ombre"
+    ]
+   },
+   "c": {
+    "text": "Les Mélofée vivent au Mont Sélénite et évoluent avec une Pierre Lune.",
+    "bold": [
+     "Mont Sélénite",
+     "Pierre Lune"
+    ]
+   }
+  }
+ },
+ "there-was-a-war-in-kanto": {
+  "title": "Il y a eu une guerre à Kanto",
+  "era": "Gén. I · 1996",
+  "summary": "Le Major Bob dit que des Pokémon Électrik l’ont sauvé pendant la guerre.",
+  "claim": "Le monde Pokémon a connu une vraie guerre, et le Champion d’Arène de Carmin sur Mer, le Major Bob, y a combattu.",
+  "origin": "C’est une seule phrase du discours du Major Bob avant son combat d’Arène dans Rouge et Bleu. Les fans l’ont développée depuis, sur les forums et Reddit : la guerre expliquerait les pères absents de Kanto, ou pourquoi tant de Dresseurs sont des enfants.",
+  "evidenceFor": [
+   {
+    "text": "Le Major Bob, avant le combat :",
+    "quote": "Je te le dis, gamin, les Pokémon Électrik m’ont sauvé pendant la guerre ! Ils paralysaient mes ennemis !",
+    "mark": [
+     "pendant la guerre"
+    ],
+    "source": "Major Bob · Arène de Carmin sur Mer · Rouge et Bleu"
+   },
+   {
+    "text": "Le même discours parle comme un soldat :",
+    "quote": "Tu ne ferais pas long feu au combat ! Ça, c’est sûr !",
+    "mark": [
+     "au combat"
+    ],
+    "source": "Major Bob · Arène de Carmin sur Mer · Rouge et Bleu"
+   },
+   {
+    "text": "Son titre, Major, est un grade militaire.",
+    "source": "Jeux"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Aucun jeu ne nomme la guerre, ne dit quand elle a eu lieu ni qui l’a menée.",
+    "source": "Sources officielles"
+   },
+   {
+    "text": "Rien dans les jeux ne la relie aux parents absents de Kanto ni aux Dresseurs enfants. Ces idées sont des ajouts de fans.",
+    "source": "Sources officielles"
+   }
+  ],
+  "confirmed": "Le Major Bob dit que des Pokémon Électrik l’ont sauvé « pendant la guerre ». C’est dans le script de Rouge et Bleu. De quelle guerre il s’agit, et tout ce que les fans y ont rattaché, n’est jamais dit.",
+  "verdictText": "Confirmée : une guerre fait partie du passé du Major Bob, d’après le script même de Rouge et Bleu. Ce qu’était cette guerre n’est jamais expliqué.",
+  "links": [
+   "pret/pokered : texte de l’Arène de Carmin sur Mer"
+  ]
+ },
+ "mew-is-under-the-truck": {
+  "title": "Mew est sous le camion",
+  "era": "Gén. I · 1998",
+  "summary": "Le camion près de L’Océane ne cache rien. Les données du jeu le prouvent.",
+  "claim": "Déplace avec Force le camion solitaire du quai de Carmin sur Mer, près de L’Océane, et tu trouveras Mew dessous.",
+  "origin": "Une rumeur de cour de récré de la fin des années 1990. Le camion est sur le quai sans aucune utilité, Mew existait mais presque personne n’en avait, et la rumeur a grandi à mesure que Mew apparaissait dans les parties de quelques joueurs. Les versions ne s’accordaient pas sur l’astuce (Force, une équipe spéciale), mais aucune ne marchait.",
+  "evidenceFor": [
+   {
+    "text": "Le camion est unique : un véhicule seul sur un quai qu’on ne peut atteindre qu’autour de L’Océane, et dont on ne peut rien faire.",
+    "source": "Jeux · Rouge et Bleu"
+   },
+   {
+    "text": "Mew existait, et il était assez rare pour ressembler à un secret :",
+    "quote": "Si rare que de nombreux experts le considèrent encore comme un mirage. Très peu de gens l’ont vu dans le monde.",
+    "mark": [
+     "mirage"
+    ],
+    "source": "Mew · Pokédex · Rouge et Bleu"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Les données de la carte du quai ne contiennent que deux accès : aucun panneau, aucune personne, aucun objet, aucun événement caché. Il n’y a rien au camion que le jeu puisse exécuter.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Les seuls Pokémon sauvages du quai sont ceux qu’on pêche avec la Méga Canne.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Mew était distribué lors d’événements. Le premier est allé à 20 gagnants d’un concours CoroCoro au Japon en 1996, chacun créé sur le PC de Shigeki Morimoto et échangé par câble Link.",
+    "source": "Développeur · Shigeki Morimoto"
+   },
+   {
+    "text": "Rouge Feu et Vert Feuille ont gardé le camion et caché un Lava Cookie sur le quai, un clin d’œil à la rumeur. Toujours pas de Mew.",
+    "source": "Jeux · Rouge Feu et Vert Feuille"
+   }
+  ],
+  "confirmed": "Le camion est un élément de décor. Mew n’a jamais été distribué qu’à des événements (ou capturé grâce à des bugs), jamais sur le quai.",
+  "verdictText": "Démentie par les données du jeu : le quai de Carmin sur Mer n’a aucun événement, donc pousser le camion ne peut rien faire. Le Lava Cookie caché des remakes est la seule chose jamais placée là.",
+  "links": [
+   "pret/pokered : objets de la carte du quai de Carmin sur Mer",
+   "pret/pokered : groupes de la Méga Canne",
+   "pret/pokefirered : quai de L’Océane, Lava Cookie caché",
+   "Kotaku : quand les joueurs croyaient que Mew était sous un camion",
+   "Siliconera : Morimoto sur la première distribution de Mew"
+  ],
+  "board": {
+   "question": "Mew est-il vraiment sous le camion ?",
+   "hook": "Un camion dont personne ne peut se servir, garé à côté de L’Océane. Chaque enfant avait sa théorie sur ce qu’il y avait dessous.",
+   "caption": "Là-dessous ?",
+   "keys": [
+    "Un camion sans aucune utilité",
+    "Les données du quai n’ont rien à exécuter",
+    "Les remakes ont laissé un Lava Cookie"
+   ],
+   "b": {
+    "label": "Quai de Carmin sur Mer · données de la carte · Rouge et Bleu",
+    "text": "Accès : 2. Panneaux : aucun. Personnes : aucune. Objets : aucun. Événements cachés : aucun."
+   },
+   "c": {
+    "text": "Rouge Feu et Vert Feuille ont caché un Lava Cookie sur le quai. Toujours pas de Mew.",
+    "bold": [
+     "Lava Cookie"
+    ]
+   }
+  }
+ },
+ "missingno-is-real": {
+  "title": "MissingNo. existe",
+  "era": "Gén. I · 1998",
+  "summary": "Un vrai Pokémon bug de Rouge et Bleu, qu’on rencontre en surfant le long de la côte de Cramois’Île.",
+  "claim": "On peut rencontrer un « Pokémon » cassé appelé MissingNo. dans Rouge et Bleu : regarde le vieil homme de Jadielle te montrer comment capturer des Pokémon, vole jusqu’à Cramois’Île et surfe le long de sa côte est.",
+  "origin": "Des joueurs l’ont découvert peu après la sortie en anglais. Il s’est répandu par le bouche-à-oreille et les premiers sites de fans, aidé par son effet secondaire : le rencontrer ajoute 128 au sixième objet du sac, une astuce prisée pour les Super Bonbons et les Master Balls.",
+  "evidenceFor": [
+   {
+    "text": "Le code désassemblé l’explique : le tutoriel du vieil homme enregistre ton nom là où se trouve la liste des Pokémon sauvages de la zone, et cette liste devrait être réécrite quand tu entres dans une nouvelle zone —",
+    "quote": "mais un oubli l’empêche à Cramois’Île et sur le Chenal 21, si bien que le tristement célèbre bug MissingNo. peut apparaître.",
+    "mark": [
+     "un oubli"
+    ],
+    "source": "Datamine · pret/pokered (commentaire du code)"
+   },
+   {
+    "text": "La liste interne des Pokémon du jeu compte 190 emplacements pour 151 Pokémon. Les emplacements qui ne sont pas des Pokémon apparaissent sous la forme de MissingNo.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Ses données du Pokédex sont provisoires : l’espèce indique « ??? » et le texte de l’entrée est la note japonaise コメント作成中, « commentaire à écrire ».",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Le rencontrer active le bit le plus haut de la quantité du sixième objet, ce qui ajoute 128 à cet objet.",
+    "source": "TCRF · Bulbapedia"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Ce n’est pas un Pokémon secret que quelqu’un aurait conçu. C’est ce que le jeu affiche quand il lit un emplacement inutilisé, et il n’apparaît qu’à cause d’un oubli dans le code.",
+    "source": "Datamine · pret/pokered"
+   }
+  ],
+  "confirmed": "Le bug est réel et reproductible dans Rouge et Bleu : le vieil homme de Jadielle, puis surfer sur la côte est de Cramois’Île. C’est une rencontre avec un emplacement de données inutilisé, pas un Pokémon caché.",
+  "verdictText": "Confirmée par le code : le désassemblage montre exactement quel oubli permet à MissingNo. d’apparaître, et de quelles données provisoires il est fait.",
+  "links": [
+   "pret/pokered : moteur de combat (le tutoriel du vieil homme)",
+   "pret/pokered : liste interne des Pokémon",
+   "pret/pokered : entrées du Pokédex (les données provisoires de MissingNo.)",
+   "TCRF : MissingNo.",
+   "Bulbapedia : MissingNo."
+  ],
+  "board": {
+   "question": "MissingNo. est-il un vrai Pokémon ?",
+   "hook": "Parle à un vieil homme, surfe le long d’une côte, et quelque chose qui ne devrait pas exister t’attaque. Le code dit exactement pourquoi.",
+   "caption": "Commentaire à écrire",
+   "keys": [
+    "Il apparaît sur la côte de Cramois’Île",
+    "Le code parle d’un oubli",
+    "Son entrée du Pokédex n’a jamais été écrite"
+   ],
+   "b": {
+    "label": "pret/pokered · commentaire du moteur de combat",
+    "quote": "mais un oubli l’empêche à Cramois’Île et sur le Chenal 21, si bien que le tristement célèbre bug MissingNo. peut apparaître.",
+    "mark": [
+     "un oubli"
+    ]
+   },
+   "c": {
+    "text": "190 emplacements dans la liste du jeu, 151 Pokémon. Les trous, c’est MissingNo.",
+    "bold": [
+     "190 emplacements",
+     "151 Pokémon"
+    ]
+   }
+  }
+ },
+ "pikablu-the-blue-pikachu": {
+  "title": "Pikablu, le Pikachu bleu",
+  "era": "Gén. I–II · 1998",
+  "summary": "Le prétendu nouveau Pikachu était en fait Marill, dévoilé dans Or et Argent.",
+  "claim": "Il existe un cousin ou une évolution de Pikachu, bleu et de type Eau, appelé Pikablu, et on peut l’obtenir dans Rouge et Bleu, par exemple avec une Pierre Eau.",
+  "origin": "Une souris bleue et ronde est apparue à côté de Pikachu dans le court métrage Les Vacances de Pikachu (juillet 1998), avant la sortie d’Or et Argent. Faute de nom officiel, les fans l’ont appelée Pikablu, et les cours de récré ont fait le reste.",
+  "evidenceFor": [
+   {
+    "text": "Elle ressemblait vraiment à un Pikachu bleu : une souris ronde avec une boule au bout de la queue, vue pour la première fois aux côtés de Pikachu dans Les Vacances de Pikachu.",
+    "source": "Anime · Les Vacances de Pikachu"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Dans les données de Rouge et Bleu, Pikachu n’a qu’une évolution : Raichu, avec une Pierre Foudre. Raichu n’évolue en rien. Une Pierre Eau n’a aucun effet sur l’un ou l’autre.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Or et Argent l’ont dévoilée sous le nom de Marill, numéro 183, de type Eau (Eau/Fée depuis X et Y), qui évolue en Azumarill et ne fait pas partie de la famille de Pikachu.",
+    "source": "Jeux · Or et Argent"
+   }
+  ],
+  "confirmed": "Le Pokémon bleu des Vacances de Pikachu est Marill. Il n’y a jamais eu de Pikablu dans aucun jeu.",
+  "verdictText": "Démentie par Or et Argent, qui l’ont nommé Marill, et par les propres données d’évolution de Rouge et Bleu.",
+  "links": [
+   "pret/pokered : évolutions et capacités",
+   "Données du Pokédex de Marill (PokeAPI)",
+   "Bulbapedia : Pikablu",
+   "Bulbapedia : Les Vacances de Pikachu"
+  ]
+ },
+ "ash-has-been-in-a-coma": {
+  "title": "Sacha est dans le coma",
+  "era": "Anime · années 2000",
+  "summary": "L’idée que toute la série est un rêve de Sacha. L’anime ne la soutient jamais.",
+  "claim": "Sacha ne s’est jamais vraiment réveillé après le premier épisode. La décharge de Pikachu pendant l’orage l’a plongé dans le coma, et chaque épisode depuis est un rêve, ce qui explique qu’il ne vieillisse jamais.",
+  "origin": "Une théorie de forum des premières années de l’anime, entretenue par des fanfictions, des fils de Bulbagarden et, plus tard, des vidéos et articles de théories.",
+  "evidenceFor": [
+   {
+    "text": "Dans le premier épisode, un orage éclate au moment où Pikachu déchaîne son électricité sur une nuée de Piafabec, avec Sacha juste à côté.",
+    "source": "Anime · Pokémon, je te choisis !"
+   },
+   {
+    "text": "Sacha commence son voyage à dix ans et a toujours dix ans après plus de deux décennies d’épisodes.",
+    "source": "Anime"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "L’anime a donné à Sacha une vraie fin : il a remporté le tournoi des Masters 8 des Championnats du Monde Pokémon dans un épisode diffusé pour la première fois le 11 novembre 2022.",
+    "source": "Anime · Pokémon, la série : Les Voyages Ultimes"
+   },
+   {
+    "text": "Rien dans la série, ni aucune déclaration de ses créateurs, ne soutient l’idée du coma.",
+    "source": "Sources officielles"
+   },
+   {
+    "text": "Un héros qui ne vieillit jamais est une vieille convention des dessins animés, pas un indice.",
+    "source": "Anime"
+   }
+  ],
+  "confirmed": "L’orage et la décharge de Pikachu ont lieu dans le premier épisode, et l’âge de Sacha ne change pas. C’est tout ce qu’a la théorie.",
+  "verdictText": "Non confirmée et sans fondement : la série traite chaque épisode comme réel et termine l’histoire de Sacha par un titre de champion. Elle ne survit que parce que les créateurs ne s’en sont jamais mêlés.",
+  "links": [
+   "CBR : la théorie du coma de Sacha (là où elle s’est répandue)",
+   "TV Tropes : Ash's Coma (fanfiction)",
+   "NPR (via WSKG) : Sacha devient champion du monde",
+   "Anime News Network : le vainqueur des Championnats du Monde"
+  ]
+ },
+ "lavender-town-syndrome": {
+  "title": "Le syndrome de Lavanville",
+  "era": "Internet · 2010",
+  "summary": "Une histoire d’horreur d’internet sur la musique de la ville. Aucune trace que cela soit jamais arrivé.",
+  "claim": "Après la sortie de Rouge et Vert au Japon en 1996, la musique de Lavanville aurait poussé plus d’une centaine d’enfants au suicide, et le jeu aurait été discrètement modifié pour l’étouffer.",
+  "origin": "Une creepypasta publiée pour la première fois sur Pastebin le 21 février 2010, puis sur le forum paranormal de 4chan début mars 2010. Elle a été réécrite au fil de sa diffusion, a rejoint le Creepypasta Index en 2011 et s’est enrichie de fausses « preuves », comme des thèmes bêta trafiqués sur YouTube.",
+  "evidenceFor": [
+   {
+    "text": "Le thème est vraiment inquiétant, et Lavanville est une ville-cimetière : sa Tour Pokémon est pleine de tombes, de fantômes et d’Exorcistes.",
+    "source": "Jeux · Rouge et Bleu"
+   },
+   {
+    "text": "Les Exorcistes possédées de la tour n’arrangent rien :",
+    "quote": "Donne… moi… ton… âme…",
+    "source": "Exorciste · Tour Pokémon · Rouge et Bleu"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "L’histoire est apparue pour la première fois en 2010, quatorze ans après les supposés décès. Il n’existe aucun article de presse, dossier médical ou rapport de police sur de tels cas en 1996.",
+    "source": "Internet"
+   },
+   {
+    "text": "Elle a été écrite comme une fiction : les versions qui circulent contiennent des détails inventés, comme un procès devant une « Commission des jeux ».",
+    "source": "Internet · Know Your Meme"
+   }
+  ],
+  "confirmed": "La musique de Lavanville est inquiétante à dessein. Rien d’autre dans l’histoire n’est vrai.",
+  "verdictText": "Démentie : le « syndrome » a été inventé dans une creepypasta de 2010. Aucun de ses cas ne s’appuie sur la moindre trace.",
+  "links": [
+   "Know Your Meme : la creepypasta du syndrome de Lavanville",
+   "pret/pokered : texte de la Tour Pokémon, 5e étage (les Exorcistes)"
+  ]
+ },
+ "mew-was-added-at-the-last-minute": {
+  "title": "Mew a été ajouté à la dernière minute",
+  "era": "Gén. I · 1996",
+  "summary": "Un programmeur a glissé Mew dans Rouge et Vert une fois le jeu terminé.",
+  "claim": "Mew n’a jamais fait partie du jeu terminé : un programmeur l’a ajouté en secret à Rouge et Vert juste avant la sortie.",
+  "origin": "Des joueurs ont trouvé Mew dans les premières cartouches grâce à des bugs et se sont demandé comment il était arrivé là. Game Freak a raconté l’histoire elle-même, des années plus tard, dans l’interview Iwata demande de Nintendo consacrée à Or HeartGold et Argent SoulSilver.",
+  "evidenceFor": [
+   {
+    "text": "Shigeki Morimoto, qui a programmé Rouge et Vert : retirer les fonctions de débogage a libéré de la place —",
+    "quote": "créant un minuscule espace libre de 300 octets. … Alors on s’est dit qu’on pouvait y glisser Mew.",
+    "mark": [
+     "300 octets",
+     "y glisser Mew"
+    ],
+    "source": "Interview · Iwata demande : Or HeartGold et Argent SoulSilver"
+   },
+   {
+    "text": "Tsunekazu Ishihara, de The Pokémon Company :",
+    "quote": "Et ce, alors qu’on nous avait dit, une fois le débogage terminé, de ne pas toucher à un seul bit !",
+    "mark": [
+     "un seul bit"
+    ],
+    "source": "Interview · Iwata demande : Or HeartGold et Argent SoulSilver"
+   },
+   {
+    "text": "Le jeu lui-même traite Mew comme un bonus : le concepteur de jeux de Céladopole considère un Pokédex comme complet sans lui (le commentaire du désassemblage sur cette vérification dit « discount Mew », « sans compter Mew »).",
+    "source": "Datamine · pret/pokered"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Mew était dans l’histoire avant d’être dans les données : les journaux du Manoir Pokémon le nomment déjà.",
+    "quote": "Nous avons baptisé le Pokémon nouvellement découvert : Mew.",
+    "source": "Manoir Pokémon · Rouge et Bleu"
+   }
+  ],
+  "confirmed": "Le personnel de Game Freak lui-même a dit que Mew a été ajouté après le débogage, dans environ 300 octets libérés en retirant les fonctions de débogage, contre les consignes.",
+  "verdictText": "Confirmée par interview des développeurs : Morimoto et Ishihara ont raconté l’histoire dans Iwata demande.",
+  "links": [
+   "Iwata demande : Or HeartGold et Argent SoulSilver, « Juste à temps pour le dernier train »",
+   "Siliconera : Game Freak révèle l’histoire de Mew",
+   "pret/pokered : script de la Résidence de Céladopole, 3e étage",
+   "pret/pokered : texte du Manoir Pokémon, 2e étage"
+  ]
+ },
+ "ditto-is-a-failed-mew-clone": {
+  "title": "Métamorph est un clone raté de Mew",
+  "era": "Gén. I · 1996",
+  "summary": "Même poids, même capacité phare, et ils vivent près du labo de clonage. Jamais confirmé.",
+  "claim": "Les Métamorph sont des tentatives ratées de cloner Mew, les restes des expériences qui ont donné Mewtwo.",
+  "origin": "Une théorie de forum de longue date, débattue pendant des années sur PokéCommunity et les forums de Serebii, et un classique des articles de théories.",
+  "evidenceFor": [
+   {
+    "text": "Exactement le même poids : Métamorph et Mew pèsent tous deux 4,0 kg.",
+    "source": "Données du Pokédex"
+   },
+   {
+    "text": "Morphing est la seule capacité de Métamorph, et Mew l’apprend au niveau 10 dans Rouge et Bleu.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "La première entrée de Métamorph ne parle que de code génétique :",
+    "quote": "Il peut copier le code génétique d’un ennemi pour se transformer instantanément en un double de celui-ci.",
+    "mark": [
+     "code génétique"
+    ],
+    "source": "Métamorph · Pokédex · Rouge et Bleu"
+   },
+   {
+    "text": "Et celle de Mew :",
+    "quote": "On dit que son ADN contient les codes génétiques de tous les Pokémon, ce qui lui permet d’utiliser toutes sortes de techniques.",
+    "mark": [
+     "les codes génétiques de tous les Pokémon"
+    ],
+    "source": "Mew · Pokédex · Argent"
+   },
+   {
+    "text": "Où ils vivent : dans Rouge et Bleu, les Métamorph peuplent la Caverne Azurée, le repaire de Mewtwo. Dans Jaune, ils apparaissent aussi au sous-sol du Manoir Pokémon, où se trouvent les journaux du clonage.",
+    "source": "Datamine · pret/pokered et pokeyellow"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Les Métamorph vivent aussi à l’état sauvage loin de Cramois’Île, sur les Routes 13, 14, 15 et 23 dans Rouge et Bleu.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Les journaux décrivent une seule expérience, et c’est Mewtwo :",
+    "quote": "Mew a donné naissance. Nous avons appelé le nouveau-né Mewtwo.",
+    "source": "Manoir Pokémon · Rouge et Bleu"
+   },
+   {
+    "text": "Ils ne sont pas faits pareil : Métamorph est de type Normal et peut se reproduire avec presque tout le monde, alors que Mew est Psy et ne peut pas se reproduire du tout.",
+    "source": "Jeux"
+   },
+   {
+    "text": "Aucun jeu, aucune entrée du Pokédex ni aucune interview ne les relie.",
+    "source": "Sources officielles"
+   }
+  ],
+  "confirmed": "Le poids commun, la capacité commune et les deux entrées du Pokédex sur le code génétique sont réels. Que Métamorph vienne de Mew est l’idée des fans.",
+  "verdictText": "Non confirmée. Les points communs sont frappants, mais la présence de Métamorph sauvages dans tout Kanto et le silence des journaux à leur sujet sont de solides contre-arguments, et Game Freak ne s’est jamais exprimé là-dessus.",
+  "links": [
+   "pret/pokered : évolutions et capacités (Mew apprend Morphing)",
+   "pret/pokered : Pokémon sauvages de la Caverne Azurée",
+   "pret/pokeyellow : Pokémon sauvages du sous-sol du Manoir Pokémon",
+   "pret/pokered : texte du Manoir Pokémon, 3e étage",
+   "Données du Pokédex de Métamorph (PokeAPI)",
+   "Données du Pokédex de Mew (PokeAPI)",
+   "Sportskeeda : Métamorph est-il un clone de Mew ? (là où elle s’est répandue)"
+  ],
+  "board": {
+   "question": "Métamorph est-il un Mew raté ?",
+   "hook": "Le même poids au gramme près, la même capacité phare, et ils vivent là où Mewtwo a été créé. Coïncidence ou restes ?",
+   "caption": "Copie d’une copie ?",
+   "keys": [
+    "Les deux pèsent exactement 4,0 kg",
+    "Les deux sont décrits par leur code génétique",
+    "Les Métamorph vivent là où Mewtwo a été créé"
+   ],
+   "b": {
+    "label": "Entrée du Pokédex de Métamorph · Rouge et Bleu",
+    "quote": "Il peut copier le code génétique d’un ennemi pour se transformer instantanément en un double de celui-ci.",
+    "mark": [
+     "code génétique"
+    ]
+   },
+   "c": {
+    "text": "Mew apprend Morphing au niveau 10. C’est la seule capacité de Métamorph.",
+    "bold": [
+     "Morphing",
+     "seule capacité"
+    ]
+   }
+  }
+ },
+ "complete-the-pokedex-and-you-get-mew": {
+  "title": "Complète le Pokédex et tu auras Mew",
+  "era": "Gén. I · 1998",
+  "summary": "Capture les 150 et Game Freak te remet un diplôme, pas Mew.",
+  "claim": "Remplis ton Pokédex avec les 150 Pokémon et le jeu te récompense avec le 151e, Mew.",
+  "origin": "Une promesse de cour de récré de la fin des années 1990 : tout le monde savait qu’il y avait une récompense pour un Pokédex complet, et Mew était le seul Pokémon que personne ne pouvait capturer.",
+  "evidenceFor": [
+   {
+    "text": "Il existe bien une récompense pour un Pokédex complet : le concepteur de jeux du bureau de Game Freak à Céladopole.",
+    "source": "Jeux · Rouge et Bleu"
+   },
+   {
+    "text": "Et le décompte exclut Mew, donc un Pokédex « complet » compte 150 Pokémon, comme si Mew était le prix.",
+    "source": "Datamine · pret/pokered"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "La réaction du concepteur de jeux est tout ce que tu obtiens :",
+    "quote": "Ouah ! Excellent ! Tu as complété ton Pokédex ! Félicitations !",
+    "source": "Concepteur de jeux · Résidence de Céladopole · Rouge et Bleu"
+   },
+   {
+    "text": "Puis il te montre un diplôme signé par Game Freak :",
+    "quote": "Félicitations ! Ce diplôme certifie que tu as complété ton Pokédex.",
+    "mark": [
+     "diplôme"
+    ],
+    "source": "Diplôme · Rouge et Bleu"
+   },
+   {
+    "text": "Le script se contente d’afficher le diplôme. Rien dedans ne donne de Pokémon. Mew n’a jamais été distribué qu’à des événements.",
+    "source": "Datamine · pret/pokered"
+   }
+  ],
+  "confirmed": "Un Pokédex complet (Mew non requis) rapporte un diplôme du concepteur de jeux de Game Freak à Céladopole.",
+  "verdictText": "Démentie par le script : la récompense est un diplôme, et le code qui vérifie ton Pokédex ne donne jamais de Pokémon.",
+  "links": [
+   "pret/pokered : script de la Résidence de Céladopole, 3e étage",
+   "pret/pokered : texte de la Résidence de Céladopole, 3e étage",
+   "pret/pokered : le diplôme"
+  ]
+ },
+ "you-were-meant-to-battle-professor-oak": {
+  "title": "Tu devais affronter le Professeur Chen",
+  "era": "Gén. I · 1996",
+  "summary": "Son équipe complète, plus forte que celle du Maître, est toujours dans les données de Rouge et Bleu.",
+  "claim": "Rouge et Bleu ont été conçus avec un combat contre le Professeur Chen lui-même, et il est toujours caché dans le jeu.",
+  "origin": "Découvert par des dataminers qui fouillaient les données des Dresseurs de Rouge et Bleu, documenté par The Cutting Room Floor et Bulbapedia, et repris par les sites de jeux vidéo. Des bugs et des appareils de triche permettent de déclencher le combat.",
+  "evidenceFor": [
+   {
+    "text": "Les données de Dresseur de Chen sont dans le jeu, marquées comme inutilisées : Tauros (niveau 66), Noadkoko (67), Arcanin (68), un starter de Kanto entièrement évolué (69) et Léviator (70).",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "C’est plus fort que le Maître, ton rival, dont l’équipe plafonne au niveau 65.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Avec des bugs ou un appareil de triche, tu peux lancer le combat, et Chen se bat avec cette équipe.",
+    "source": "Kotaku"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Rien dans le jeu final ne lance jamais ce combat, et d’après Bulbapedia, Chen n’a aucune réplique écrite pour avant ou après.",
+    "source": "Bulbapedia"
+   }
+  ],
+  "confirmed": "L’équipe et l’emplacement de Dresseur du Professeur Chen sont dans les données de Rouge et Bleu. Le combat a été coupé avant la sortie.",
+  "verdictText": "Confirmée par datamine : son équipe est dans les données des Dresseurs du jeu, inutilisée.",
+  "links": [
+   "pret/pokered : équipes des Dresseurs (ProfOakData)",
+   "Kotaku : le combat Pokémon qui n’aurait pas dû être coupé",
+   "Bulbapedia : données de Dresseurs inutilisées"
+  ]
+ },
+ "your-rivals-raticate-died": {
+  "title": "Le Rattatac de ton rival est mort",
+  "era": "Gén. I · 1996",
+  "summary": "Rattatac disparaît après L’Océane, et ton rival se retrouve dans un cimetière Pokémon.",
+  "claim": "Tu as battu si durement le Rattatac de ton rival sur L’Océane qu’il en est mort. C’est pour ça qu’il est à la Tour Pokémon, le cimetière de Lavanville, la fois suivante où tu le croises.",
+  "origin": "Une théorie de cour de récré et de forum des débuts de Rouge et Bleu, encore discutée dans les archives de Let’s Play et sur Reddit.",
+  "evidenceFor": [
+   {
+    "text": "Sur L’Océane, son équipe compte un Rattatac de niveau 16. À la Tour Pokémon, il n’est plus là, et il ne revient jamais.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Il est dans un cimetière, et c’est lui qui parle de mort :",
+    "quote": "Qu’est-ce que tu fais là ? Tes Pokémon n’ont pas l’air morts !",
+    "mark": [
+     "morts"
+    ],
+    "source": "Rival · Tour Pokémon · Rouge et Bleu"
+   },
+   {
+    "text": "Dans Jaune, c’est son Rattata qui disparaît entre les deux mêmes combats.",
+    "source": "Datamine · pret/pokeyellow"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Il est là pour capturer des Pokémon, pas pour faire son deuil :",
+    "quote": "Je viens de capturer un Osselait ! Je ne trouve pas encore l’Ossatueur adulte !",
+    "mark": [
+     "Je viens de capturer un Osselait"
+    ],
+    "source": "Rival · Tour Pokémon · Rouge et Bleu"
+   },
+   {
+    "text": "Il a l’embarras du choix. Sur le bateau, il dit :",
+    "quote": "J’ai déjà capturé 40 espèces, mon vieux !",
+    "source": "Rival · L’Océane · Rouge et Bleu"
+   },
+   {
+    "text": "Les rivaux changent de Pokémon tout le temps, et aucun Pokémon des jeux ne meurt d’un combat.",
+    "source": "Jeux"
+   }
+  ],
+  "confirmed": "Rattatac quitte bien son équipe après L’Océane, et il est bien à la Tour Pokémon. La raison n’est jamais donnée.",
+  "verdictText": "Non confirmée. Les données d’équipe et la réplique du cimetière sont réelles, mais il te dit être venu capturer un Osselait, et Game Freak n’a jamais dit ce qui est arrivé à Rattatac.",
+  "links": [
+   "pret/pokered : équipes des Dresseurs (Rival2Data)",
+   "pret/pokeyellow : équipes des Dresseurs",
+   "pret/pokered : texte de la Tour Pokémon, 2e étage",
+   "pret/pokered : texte de L’Océane, 2e pont",
+   "LP Archive : « Is Raticate dead??? » (là où elle s’est répandue)"
+  ]
+ },
+ "red-is-a-ghost-on-mt-silver": {
+  "title": "Red est un fantôme au Mont Argenté",
+  "era": "Gén. II · 1999",
+  "summary": "Muet, seul sur un sommet gelé, disparu après le combat. Puis il réapparaît dans les jeux suivants.",
+  "claim": "Red, le héros de Rouge et Bleu, est mort au Mont Argenté. Le Dresseur muet que tu affrontes au sommet dans Or, Argent et Cristal est son fantôme.",
+  "origin": "Née du dernier combat d’Or et Argent, elle s’est répandue sur les forums, puis à l’époque de la creepypasta « Lost Silver » et des vidéos de théories.",
+  "evidenceFor": [
+   {
+    "text": "Il ne dit rien. Ses seules répliques avant et après le combat sont « … ».",
+    "source": "Datamine · pret/pokecrystal"
+   },
+   {
+    "text": "Après le combat, l’écran passe au noir, il a disparu et le générique défile.",
+    "source": "Datamine · pret/pokecrystal"
+   },
+   {
+    "text": "Sa mère, à Bourg Palette, n’a pas de nouvelles de lui :",
+    "quote": "Red est parti depuis longtemps. Il n’a pas appelé non plus, alors je n’ai aucune idée de l’endroit où il est ni de ce qu’il fait.",
+    "mark": [
+     "Il n’a pas appelé"
+    ],
+    "source": "La mère de Red · Bourg Palette · Cristal"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Red apparaît vivant, plus âgé, dans des jeux suivants : dans Soleil et Lune, c’est l’une des Légendes de l’Arbre de Combat, avec Blue.",
+    "source": "Jeux · Soleil et Lune"
+   },
+   {
+    "text": "Sa mère n’est pas en deuil, elle est fière :",
+    "quote": "J’ai peur que Red se blesse ou tombe malade, mais c’est un garçon. Je suis fière qu’il fasse ce qu’il a envie de faire.",
+    "mark": [
+     "fière"
+    ],
+    "source": "La mère de Red · Bourg Palette · Cristal"
+   },
+   {
+    "text": "Il se bat avec une vraie équipe (un Pikachu de niveau 81, Mentali, Ronflex, Florizarre, Dracaufeu et Tortank) puis s’en va ; il ne disparaît pas en plein combat.",
+    "source": "Datamine · pret/pokecrystal"
+   }
+  ],
+  "confirmed": "Red s’entraîne seul au sommet du Mont Argenté, ne parle jamais et s’en va une fois battu. Il réapparaît dans des jeux suivants.",
+  "verdictText": "Démentie par le canon officiel : Red est vivant dans des jeux suivants, où il combat à l’Arbre de Combat de Soleil et Lune.",
+  "links": [
+   "pret/pokecrystal : sommet du Mont Argenté (script de Red)",
+   "pret/pokecrystal : texte de la maison de Red",
+   "pret/pokecrystal : équipes des Dresseurs (Red)",
+   "Serebii : l’Arbre de Combat (Soleil et Lune)"
+  ]
+ },
+ "the-gs-ball-opens-for-celebi": {
+  "title": "La GS Ball s’ouvre pour Celebi",
+  "era": "Gén. II · 2000",
+  "summary": "L’événement complet de la GS Ball de Cristal est dans le code. La réédition 3DS l’a enfin activé.",
+  "claim": "La mystérieuse GS Ball mène bien quelque part : Fargas l’examine, et l’autel du Bois aux Chênes invoque Celebi.",
+  "origin": "L’événement de la GS Ball de Cristal était lié à ses fonctions mobiles japonaises, si bien que les joueurs hors du Japon ne l’ont jamais vu, et la GS Ball est devenue une légende. La version Console virtuelle Nintendo 3DS de 2018 l’a rendue réelle pour tout le monde.",
+  "evidenceFor": [
+   {
+    "text": "Le Centre Pokémon de Doublonville contient une scène qui remet la GS Ball, si un indicateur de la sauvegarde dit qu’elle est disponible :",
+    "quote": "Offre spéciale : une GS Ball vous a été envoyée rien que pour vous ! Veuillez l’accepter !",
+    "mark": [
+     "GS Ball"
+    ],
+    "source": "Centre Pokémon de Doublonville · Cristal"
+   },
+   {
+    "text": "Fargas garde la balle une nuit, puis le script de l’autel du Bois aux Chênes prend la GS Ball et lance un combat contre un Celebi de niveau 30.",
+    "source": "Datamine · pret/pokecrystal · Nintendo Wire"
+   },
+   {
+    "text": "La version Console virtuelle 3DS (26 janvier 2018) active cet indicateur quand tu entres au Panthéon, donc la réceptionniste te donne la GS Ball.",
+    "source": "Datamine · pret/pokecrystal"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Sur les cartouches anglaises d’origine de Cristal, rien dans le jeu n’active jamais l’indicateur, donc l’événement est inaccessible normalement.",
+    "source": "Datamine · pret/pokecrystal"
+   }
+  ],
+  "confirmed": "L’événement GS Ball → Fargas → autel du Bois aux Chênes → Celebi est entièrement dans Cristal. Le Japon pouvait y accéder grâce à ses fonctions mobiles ; tout le monde a pu le faire sur la Console virtuelle 3DS.",
+  "verdictText": "Confirmée par datamine et par la réédition officielle 3DS, où l’événement se déroule comme il a été écrit.",
+  "links": [
+   "pret/pokecrystal : Centre Pokémon de Doublonville (GS Ball)",
+   "pret/pokecrystal : autel du Bois aux Chênes",
+   "pret/pokecrystal : code de sauvegarde (le crochet de la Console virtuelle)",
+   "Nintendo Wire : comment capturer Celebi dans Cristal sur 3DS"
+  ]
+ },
+ "mimikyu-is-a-pikachus-ghost": {
+  "title": "Mimiqui est le fantôme d’un Pikachu",
+  "era": "Gén. VII · 2016",
+  "summary": "Un fantôme dans un costume de Pikachu fait main. Ce qu’il y a dessous n’est jamais montré.",
+  "claim": "Sous son chiffon, Mimiqui est le fantôme d’un Pikachu, qui se déguise en le Pokémon qu’il était autrefois.",
+  "origin": "Elle est apparue dès que Soleil et Lune ont révélé Mimiqui en 2016, sur Reddit et Tumblr, en même temps qu’une théorie rivale selon laquelle c’est Porygon qui se cache depuis l’épisode du « Pokémon Shock » de 1997.",
+  "evidenceFor": [
+   {
+    "text": "Le costume est un Pikachu, exprès :",
+    "quote": "Il se cache sous des guenilles en forme de Pikachu pour avoir l’air moins effrayant, mais cela le rend encore plus inquiétant.",
+    "mark": [
+     "guenilles en forme de Pikachu"
+    ],
+    "source": "Mimiqui · Pokédex · Épée"
+   },
+   {
+    "text": "Ce qu’il y a dessous tue :",
+    "quote": "Sa véritable apparence est inconnue. Les chercheurs qui ont vu sous son déguisement sont littéralement morts de peur.",
+    "mark": [
+     "Sa véritable apparence est inconnue"
+    ],
+    "source": "Mimiqui · Pokédex · Soleil"
+   },
+   {
+    "text": "C’est un type Spectre, et le costume copie les oreilles, les joues et la queue en éclair de Pikachu.",
+    "source": "Jeux · Soleil et Lune"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Le Pokédex donne une autre raison au déguisement :",
+    "quote": "Son apparence est si effrayante qu’il doit se déguiser pour oser s’approcher des gens et des autres Pokémon.",
+    "mark": [
+     "s’approcher des gens et des autres Pokémon"
+    ],
+    "source": "Mimiqui · Pokédex · Lune"
+   },
+   {
+    "text": "La description officielle de Soleil et Lune disait qu’il imite Pikachu à cause de l’engouement pour les produits Pikachu d’une vingtaine d’années plus tôt : la popularité, pas une vie antérieure.",
+    "source": "Site officiel, via Kotaku"
+   },
+   {
+    "text": "Sa vraie forme n’est jamais montrée, donc un Pikachu mort n’est qu’une hypothèse parmi d’autres (les fans parlent aussi de Porygon).",
+    "source": "Internet"
+   }
+  ],
+  "confirmed": "Mimiqui est un Pokémon Spectre/Fée qui porte un costume de Pikachu fait main, et voir ce qu’il y a dessous est mortel. Qui se trouve à l’intérieur n’est jamais révélé.",
+  "verdictText": "Non confirmée. Tous les textes officiels disent que le costume est fait pour ressembler à Pikachu, pas que Mimiqui en était un, et sa vraie forme n’a jamais été montrée.",
+  "links": [
+   "Texte du Pokédex de Mimiqui (PokeAPI)",
+   "Kotaku : la théorie qui relie un épisode interdit et Mimiqui"
+  ],
+  "silhouettes": {
+   "title": "Le costume",
+   "text": "Le chiffon de Mimiqui et le vrai Pikachu, tous deux en noir uni. Puis superposés."
+  }
+ },
+ "porygon-gave-kids-seizures": {
+  "title": "Porygon a provoqué des crises chez les enfants",
+  "era": "Anime · 1997",
+  "summary": "Porygon a été accusé pour l’épisode de 1997, mais les flashs venaient de Pikachu.",
+  "claim": "L’attaque de Porygon dans un épisode de 1997 a provoqué des crises chez des centaines d’enfants, et il a donc été banni de la série.",
+  "origin": "L’épisode « Dennō Senshi Porygon » n’a été diffusé qu’une fois au Japon, le 16 décembre 1997. Des centaines de téléspectateurs ont été hospitalisés, l’affaire a fait le tour du monde, et comme Porygon était le Pokémon du titre avant de disparaître de la série, c’est lui qui a été accusé.",
+  "evidenceFor": [
+   {
+    "text": "Porygon était le Pokémon du titre de l’épisode, et ensuite Porygon (puis Porygon2 et Porygon-Z) n’a plus jamais eu de rôle important dans l’anime.",
+    "source": "Anime"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Les flashs venaient de Pikachu : des missiles antivirus approchaient, et le Tonnerre de Pikachu les a touchés, provoquant une explosion clignotante.",
+    "source": "Anime · Mental Floss"
+   },
+   {
+    "text": "Dans l’épisode, Porygon est une victime, pas un attaquant. L’épisode a été retiré et toute la série a été interrompue jusqu’en avril 1998.",
+    "source": "Mental Floss"
+   },
+   {
+    "text": "Les chiffres varient (Mental Floss parle de 618 personnes hospitalisées), mais tous les récits attribuent les flashs à l’explosion, pas à Porygon.",
+    "source": "Mental Floss"
+   }
+  ],
+  "confirmed": "L’épisode n’a été diffusé qu’une fois et a entraîné des centaines de passages à l’hôpital. L’explosion clignotante était le Tonnerre de Pikachu frappant les missiles.",
+  "verdictText": "Démentie : Porygon a été puni pour une scène où c’est l’attaque de Pikachu qui a causé les flashs.",
+  "links": [
+   "Mental Floss : quand Pokémon a envoyé des centaines de téléspectateurs à l’hôpital"
+  ]
+ },
+ "ho-oh-flew-over-the-first-episode": {
+  "title": "Ho-Oh a survolé le premier épisode",
+  "era": "Anime · 1997",
+  "summary": "L’oiseau de l’arc-en-ciel à la fin du premier épisode était une légende de la 2e génération, des années en avance.",
+  "claim": "L’oiseau doré que Sacha voit traverser un arc-en-ciel à la fin du tout premier épisode était Ho-Oh, un Pokémon que les joueurs n’ont pu rencontrer qu’à partir d’Or et Argent.",
+  "origin": "Le premier épisode a été diffusé au Japon le 1er avril 1997. Personne ne savait quel était cet oiseau ; quand Or et Argent sont sortis au Japon en novembre 1999, les fans l’ont reconnu, et « c’était quoi, cet oiseau ? » est devenu une anecdote de l’anime.",
+  "evidenceFor": [
+   {
+    "text": "Après l’orage, Sacha voit un oiseau brillant traverser un arc-en-ciel, et son Pokédex ne parvient pas à l’identifier.",
+    "source": "Anime · Pokémon, je te choisis !"
+   },
+   {
+    "text": "Le Pokédex d’Or décrit Ho-Oh tel qu’il apparaît :",
+    "quote": "Selon la légende, ce Pokémon parcourt sans cesse le ciel du monde sur ses magnifiques ailes aux sept couleurs.",
+    "mark": [
+     "magnifiques ailes aux sept couleurs"
+    ],
+    "source": "Ho-Oh · Pokédex · Or"
+   },
+   {
+    "text": "Le film de 2017 Pokémon, le film : Je te choisis ! raconte de nouveau le premier épisode, et l’oiseau est Ho-Oh, qui laisse à Sacha un Arc-en-Ci’Aile.",
+    "source": "Anime · Je te choisis ! (2017)"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "L’épisode de 1997 ne nomme jamais l’oiseau. Il n’a été identifié que plus tard.",
+    "source": "Anime"
+   }
+  ],
+  "confirmed": "L’oiseau du premier épisode est Ho-Oh, comme le montre la nouvelle version de l’anime en 2017.",
+  "verdictText": "Confirmée par l’anime lui-même : le remake de la scène dans le film de 2017 fait de l’oiseau Ho-Oh.",
+  "links": [
+   "Nintendo Life : critique de Pokémon, le film : Je te choisis !",
+   "Texte du Pokédex de Ho-Oh (PokeAPI)",
+   "Bulbapedia : Ho-Oh (anime)"
+  ]
+ },
+ "cubone-is-a-baby-kangaskhan": {
+  "title": "Osselait est un bébé Kangourex",
+  "era": "Gén. I · 1996",
+  "summary": "Un bébé sans mère, et une mère dont le bébé n’a pas d’espèce. La Méga-Évolution dit non.",
+  "claim": "Les Osselait sont des bébés Kangourex dont la mère est morte. Ils portent le crâne de leur mère et grandissent seuls.",
+  "origin": "L’une des plus vieilles théories Pokémon, débattue sur les forums de Serebii et PokéCommunity et reprise depuis dans les articles de théories.",
+  "evidenceFor": [
+   {
+    "text": "Les Kangourex sont tous femelles, et le bébé de la poche n’a jamais été une espèce à part.",
+    "source": "Jeux"
+   },
+   {
+    "text": "Osselait et Kangourex partagent le même groupe d’œufs, Monstrueux.",
+    "source": "Jeux"
+   },
+   {
+    "text": "Les bébés Kangourex restent dans la poche :",
+    "quote": "Le petit sort rarement de la poche protectrice de sa mère avant l’âge de 3 ans.",
+    "mark": [
+     "Le petit"
+    ],
+    "source": "Kangourex · Pokédex · Rouge et Bleu"
+   },
+   {
+    "text": "Et Osselait n’a pas de mère :",
+    "quote": "Il a perdu sa mère après sa naissance. Il porte le crâne de sa mère et ne montre jamais son vrai visage.",
+    "mark": [
+     "perdu sa mère"
+    ],
+    "source": "Osselait · Pokédex · Cristal"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Osselait évolue en Ossatueur, jamais en Kangourex.",
+    "source": "Jeux"
+   },
+   {
+    "text": "Méga-Kangourex (X et Y) fait sortir le bébé pour combattre, et c’est un petit Kangourex, pas un Osselait.",
+    "source": "Jeux · X et Y"
+   },
+   {
+    "text": "Les jeux montrent à qui appartient le crâne : la mère fantôme de Rouge et Bleu est un Ossatueur.",
+    "source": "Jeux · Rouge et Bleu"
+   }
+  ],
+  "confirmed": "Les Kangourex sont femelles et portent un bébé ; Osselait porte le crâne de sa mère morte. Rien ne relie les deux.",
+  "verdictText": "Non confirmée, et le canon va dans l’autre sens : le bébé de Méga-Kangourex est un Kangourex, et la mère d’Osselait dans Rouge et Bleu est un Ossatueur. Game Freak ne s’est jamais exprimé là-dessus.",
+  "links": [
+   "Données du Pokédex de Kangourex (PokeAPI)",
+   "Données du Pokédex d’Osselait (PokeAPI)",
+   "TheGamer : la théorie Kangourex et Osselait (là où elle s’est répandue)"
+  ],
+  "silhouettes": {
+   "title": "La ressemblance",
+   "text": "Osselait et Kangourex en noir uni, tels que la théorie les voit. Puis superposés."
+  }
+ },
+ "pikachus-tail-has-a-black-tip": {
+  "title": "La queue de Pikachu a le bout noir",
+  "era": "Internet · années 2010",
+  "summary": "Un faux souvenir partagé. La queue de Pikachu s’est toujours terminée en jaune.",
+  "claim": "La queue de Pikachu se terminait autrefois en noir, et quelqu’un l’a changée.",
+  "origin": "Un effet Mandela, nom donné à un faux souvenir partagé par beaucoup de gens, inventé en 2009. Il s’est répandu sur Reddit et les réseaux sociaux, avec des peluches de contrefaçon brandies comme « preuves ».",
+  "evidenceFor": [
+   {
+    "text": "Les oreilles de Pikachu ont vraiment le bout noir, et la queue de Pichu est noire : deux choses faciles à confondre.",
+    "source": "Jeux"
+   },
+   {
+    "text": "Pikachu Cosplayeur dans Rubis Oméga et Saphir Alpha a un cœur noir au bout de la queue.",
+    "source": "Jeux · Rubis Oméga et Saphir Alpha"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Sur les illustrations officielles, la queue est jaune, avec une tache marron à la base, des premiers jeux et cartes jusqu’à Détective Pikachu.",
+    "source": "Illustrations officielles"
+   },
+   {
+    "text": "Le seul changement de la queue de Pikachu est le bout en forme de cœur de la femelle, et il n’est pas noir.",
+    "source": "Jeux"
+   }
+  ],
+  "confirmed": "La queue de Pikachu est jaune avec une base marron. Ses oreilles au bout noir et la queue noire de Pichu sont l’origine la plus probable du souvenir.",
+  "verdictText": "Démentie par toutes les illustrations officielles : le Pikachu normal n’a jamais eu le bout de la queue noir.",
+  "links": [
+   "/Film : l’effet Mandela du Pikachu à la queue noire expliqué"
+  ]
+ },
+ "silver-is-giovannis-son": {
+  "title": "Silver est le fils de Giovanni",
+  "era": "Gén. II · 1999",
+  "summary": "Le rival aux cheveux roux d’Or et Argent est le fils du chef de la Team Rocket.",
+  "claim": "Ton rival aux cheveux roux dans Or, Argent et Cristal, le garçon qui vole un starter au Professeur Orme, est le fils de Giovanni, le chef de la Team Rocket.",
+  "origin": "Les fans s’en doutaient dès Or et Argent. Rouge Feu et Vert Feuille (2004) ont glissé un indice, et Or HeartGold et Argent SoulSilver (2009) l’ont montré.",
+  "evidenceFor": [
+   {
+    "text": "Un scientifique de la Team Rocket sur l’Île 5 te prend pour quelqu’un d’autre :",
+    "quote": "Tu… Tu n’es pas le fils de Giovanni, si ? Non, impossible ! Le fils de Giovanni a les cheveux roux.",
+    "mark": [
+     "les cheveux roux"
+    ],
+    "source": "Entrepôt Rocket · Rouge Feu et Vert Feuille"
+   },
+   {
+    "text": "Le Fame Checker de Rouge Feu et Vert Feuille classe cette réplique dans la rubrique « Famille et amis ? » de Giovanni.",
+    "source": "Jeux · Rouge Feu et Vert Feuille"
+   },
+   {
+    "text": "Dans l’événement Celebi d’Or HeartGold et Argent SoulSilver, tu remontes trois ans en arrière et tu vois Silver se disputer avec son père, qui veut le voir rejoindre la Team Rocket, avant que le père ne parte : c’est Giovanni.",
+    "source": "Jeux · Or HeartGold et Argent SoulSilver (Serebii)"
+   },
+   {
+    "text": "Dans Cristal, Silver a ses propres affaires avec la Team Rocket :",
+    "quote": "Je n’ai pas besoin de toi dans mes pattes pendant que je m’occupe de la Team Rocket.",
+    "source": "Silver · Souterrain de Doublonville · Cristal"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Or, Argent et Cristal ne le disent jamais eux-mêmes.",
+    "source": "Jeux"
+   }
+  ],
+  "confirmed": "L’événement Celebi d’Or HeartGold et Argent SoulSilver montre que Giovanni est le père de Silver.",
+  "verdictText": "Confirmée dans Or HeartGold et Argent SoulSilver, après un indice dans Rouge Feu et Vert Feuille.",
+  "links": [
+   "pret/pokefirered : texte de l’Entrepôt Rocket de l’Île 5",
+   "pret/pokefirered : texte du Fame Checker",
+   "Serebii : l’événement Celebi dans Or HeartGold et Argent SoulSilver",
+   "pret/pokecrystal : texte du Souterrain de Doublonville"
+  ]
+ },
+ "voltorb-is-a-poke-ball-come-to-life": {
+  "title": "Voltorbe est une Poké Ball devenue vivante",
+  "era": "Gén. I · 1996",
+  "summary": "Le Pokédex ne cesse de le suggérer, et ne cesse de parler de rumeur.",
+  "claim": "Voltorbe est né d’une Poké Ball, lors d’un accident d’usine ou d’une décharge d’énergie.",
+  "origin": "Le Pokédex lui-même avance l’idée, et les fans la développent depuis Rouge et Bleu. Le Voltorbe de Hisui de Légendes : Arceus, en forme de Poké Ball de cette époque, l’a relancée.",
+  "evidenceFor": [
+   {
+    "text": "Argent les relie :",
+    "quote": "Il a été découvert quand les Poké Balls ont été introduites. On dit qu’il y a un lien.",
+    "mark": [
+     "il y a un lien"
+    ],
+    "source": "Voltorbe · Pokédex · Argent"
+   },
+   {
+    "text": "Rubis donne le lieu :",
+    "quote": "Voltorbe a été aperçu pour la première fois dans une entreprise qui fabrique des Poké Balls. Le lien entre cette observation et le fait que ce Pokémon ressemble beaucoup à une Poké Ball reste un mystère.",
+    "mark": [
+     "une entreprise qui fabrique des Poké Balls"
+    ],
+    "source": "Voltorbe · Pokédex · Rubis"
+   },
+   {
+    "text": "Cristal dit qu’il n’est pas naturel :",
+    "quote": "En étudiant ce Pokémon, on a découvert que ses composants n’existent pas dans la nature.",
+    "mark": [
+     "n’existent pas dans la nature"
+    ],
+    "source": "Voltorbe · Pokédex · Cristal"
+   },
+   {
+    "text": "Dans Légendes : Arceus, l’Électrode de Hisui est fait de matière de Poké Ball :",
+    "quote": "Le tissu à la surface de son corps a une composition curieusement proche de celle d’une Noigrume.",
+    "mark": [
+     "Noigrume"
+    ],
+    "source": "Électrode · Pokédex · Légendes : Arceus"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Le Pokédex le classe comme rumeur, pas comme fait :",
+    "quote": "La rumeur dit qu’il est né quand une Poké Ball a été exposée à une puissante impulsion d’énergie.",
+    "mark": [
+     "La rumeur dit"
+    ],
+    "source": "Voltorbe · Pokédex · Saphir"
+   },
+   {
+    "text": "Rouge Feu refuse de dire ce qu’il est :",
+    "quote": "Une forme de vie d’identité inconnue. On dit qu’il utilise Grincement ou Destruction sans prévenir.",
+    "mark": [
+     "identité inconnue"
+    ],
+    "source": "Voltorbe · Pokédex · Rouge Feu"
+   },
+   {
+    "text": "Il vit et se reproduit comme n’importe quel Pokémon : les Voltorbe pondent des Œufs (avec Métamorph) d’où naissent des Voltorbe.",
+    "source": "Jeux"
+   }
+  ],
+  "confirmed": "Le Pokédex dit que Voltorbe est apparu en même temps que les Poké Balls, qu’il a été vu pour la première fois chez un fabricant de Poké Balls et qu’il est fait de composants non naturels. Il ne dit jamais qu’une Poké Ball est devenue Voltorbe.",
+  "verdictText": "Ouverte : les indices viennent du Pokédex lui-même, mais chaque entrée s’arrête à « rumeur » ou « mystère », et Game Freak n’en a jamais dit plus.",
+  "links": [
+   "Texte du Pokédex de Voltorbe (PokeAPI)",
+   "Texte du Pokédex d’Électrode (PokeAPI)"
+  ]
+ },
+ "the-pokegods": {
+  "title": "Les PokéDieux",
+  "era": "Gén. I–II · 1999",
+  "summary": "Des super-Pokémon secrets au-delà des 151. Aucun n’a jamais été dans les jeux.",
+  "claim": "Au-delà des 151, il existait des Pokémon secrets, quasi divins (des « PokéDieux »), qu’on débloquait avec des codes, des rituels ou des exploits impossibles.",
+  "origin": "On pense que les rumeurs sont parties de Mew, que personne ne comprenait au début, et qu’elles ont enflé à mesure que les nouveaux Pokémon d’Or et Argent fuitaient. Les premiers sites de fans s’échangeaient des noms inventés, et des poissons d’avril de 1999 en ont ajouté d’autres, comme Dracolosse évoluant en Yoshi et Excelangue en Luigi.",
+  "evidenceFor": [
+   {
+    "text": "Il y avait bien un Pokémon secret : Mew, le 151e, dont le jeu ne dit jamais comment le capturer.",
+    "source": "Jeux"
+   },
+   {
+    "text": "De vrais Pokémon d’Or et Argent (dont Marill et Togepi) ont été montrés avant la sortie, ce qui rendait n’importe quelle rumeur plausible.",
+    "source": "Bulbapedia"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Les données de Rouge et Bleu contiennent 151 espèces et rien de caché : le reste de la liste interne n’est fait que d’emplacements provisoires vides.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Les « évolutions » en Yoshi et Luigi étaient des poissons d’avril (dans le magazine Expert Gamer et sur le site de Nintendo, d’après Bulbapedia).",
+    "source": "Bulbapedia"
+   }
+  ],
+  "confirmed": "Mew était le seul Pokémon secret de Rouge et Bleu. Le reste n’était qu’inventions de fans et blagues.",
+  "verdictText": "Démentie par les données du jeu : il n’y a pas de place dans Rouge et Bleu pour un Pokémon au-delà des 151.",
+  "links": [
+   "Bulbapedia : PokéDieux",
+   "pret/pokered : liste interne des Pokémon"
+  ]
+ },
+ "gold-and-silver-had-lost-pokemon": {
+  "title": "Or et Argent avaient des Pokémon perdus",
+  "era": "Gén. II · 1997",
+  "summary": "La démo de 1997 contenait des Pokémon qui ne sont jamais arrivés dans le jeu final.",
+  "claim": "Le Or et Argent montré au Nintendo Space World en 1997 était un jeu différent, avec des Pokémon coupés avant la sortie.",
+  "origin": "Les joueurs ont vu la démo au Space World en novembre 1997. Une version jouable a fuité sur internet fin mai 2018, et The Cutting Room Floor l’a décortiquée.",
+  "evidenceFor": [
+   {
+    "text": "Elle contient d’anciens designs de Raikou, Entei et Suicune.",
+    "source": "Datamine · Game Informer"
+   },
+   {
+    "text": "Elle contient une évolution inutilisée de Canarticho, et une évolution inutilisée de Hoothoot que Noarfang a remplacée par la suite.",
+    "source": "Datamine · Game Informer"
+   },
+   {
+    "text": "Elle contient des Pokémon qui ont totalement disparu, dont une pré-évolution bébé de Miaouss et deux starters inutilisés.",
+    "source": "Datamine · Game Informer"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "C’est une version de démonstration, pas le jeu final ; les noms des Pokémon coupés viennent surtout des fans et des traducteurs.",
+    "source": "Game Informer"
+   }
+  ],
+  "confirmed": "La version de démonstration existe, montrée en 1997 et fuitée en 2018, et ses Pokémon coupés sont dans ses données.",
+  "verdictText": "Confirmée par datamine : la version fuitée du Space World contient les Pokémon coupés, documentés par The Cutting Room Floor.",
+  "links": [
+   "Game Informer : la démo d’Or et Argent dévoile des Pokémon inédits",
+   "TCRF : démo Spaceworld 1997",
+   "Bulbapedia : démo d’Or et Argent du Spaceworld 97"
+  ]
+ },
+ "mr-fuji-made-mewtwo": {
+  "title": "M. Fuji a créé Mewtwo",
+  "era": "Gén. I · 1996",
+  "summary": "Le gentil M. Fuji, ou le scientifique qui a écrit les journaux du Manoir ?",
+  "claim": "M. Fuji, le gentil vieil homme de Lavanville qui s’occupe des Pokémon orphelins, est le scientifique dont les journaux, dans le Manoir Pokémon de Cramois’Île, décrivent la création de Mewtwo.",
+  "origin": "L’anime a donné au créateur de Mewtwo le nom de Dr Fuji, et Rouge Feu et Vert Feuille (2004) ont ajouté des photos d’un Dr Fuji à Cramois’Île. Les fans ont relié les deux Fuji.",
+  "evidenceFor": [
+   {
+    "text": "Le Labo Pokémon de Cramois’Île dans Rouge Feu et Vert Feuille contient une photo :",
+    "quote": "Une photo du fondateur du labo… Le Dr Fuji ?!",
+    "mark": [
+     "Dr Fuji"
+    ],
+    "source": "Labo Pokémon · Rouge Feu et Vert Feuille"
+   },
+   {
+    "text": "L’Arène de Cramois’Île en a une autre :",
+    "quote": "C’est une photo d’Auguste et de M. Fuji. Ils se tiennent épaule contre épaule avec de grands sourires.",
+    "mark": [
+     "M. Fuji"
+    ],
+    "source": "Arène de Cramois’Île · Rouge Feu et Vert Feuille"
+   },
+   {
+    "text": "Le Fame Checker rapporte une rumeur :",
+    "quote": "Il paraît que M. Fuji n’est pas d’ici non plus, à l’origine.",
+    "source": "Fame Checker · Rouge Feu et Vert Feuille"
+   },
+   {
+    "text": "L’auteur des journaux du Manoir regrette ce qu’ils ont créé :",
+    "quote": "Mewtwo est bien trop puissant. Nous n’avons pas réussi à maîtriser ses penchants violents…",
+    "source": "Manoir Pokémon · Rouge et Bleu"
+   },
+   {
+    "text": "Dans l’anime, Mewtwo est cloné par un scientifique appelé Dr Fuji, dans le prologue de Mewtwo contre-attaque.",
+    "source": "Anime · Bulbapedia"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Les journaux ne sont pas signés. Aucun jeu ne dit qui les a écrits.",
+    "source": "Jeux"
+   },
+   {
+    "text": "Aucun jeu ne dit que le M. Fuji de Lavanville et le Dr Fuji du labo sont le même homme.",
+    "source": "Jeux"
+   },
+   {
+    "text": "L’anime a sa propre continuité : son Dr Fuji est un personnage différent du M. Fuji des jeux.",
+    "source": "Anime"
+   }
+  ],
+  "confirmed": "Un Dr Fuji a fondé le Labo Pokémon de Cramois’Île, M. Fuji est un vieil ami d’Auguste, et quelqu’un à Cramois’Île a créé Mewtwo. Les jeux ne rassemblent jamais les trois.",
+  "verdictText": "Non confirmée. Les indices pointent tous dans la même direction, mais les jeux s’arrêtent juste avant de le nommer, et Game Freak ne l’a jamais dit.",
+  "links": [
+   "pret/pokefirered : texte du Labo Pokémon de Cramois’Île",
+   "pret/pokefirered : texte du Fame Checker",
+   "pret/pokered : texte du sous-sol du Manoir Pokémon",
+   "Bulbapedia : Dr Fuji (anime)"
+  ]
+ },
+ "ghost-moves-beat-psychic-in-red-and-blue": {
+  "title": "Spectre battait Psy dans Rouge et Bleu",
+  "era": "Gén. I · 1997",
+  "summary": "Spectre était la réponse à Psy dans l’anime. Dans le code des jeux, il ne faisait rien du tout.",
+  "claim": "Dans Rouge et Bleu, les capacités de type Spectre étaient super efficaces contre les types Psy, le moyen de battre Morgane.",
+  "origin": "L’anime a envoyé Sacha à Lavanville chercher un type Spectre pour battre les Pokémon Psy de Morgane (« La Tour de la Terreur », 1997), et c’est ainsi que la plupart des enfants ont appris cette relation.",
+  "evidenceFor": [
+   {
+    "text": "Dans l’anime, Sacha va à la Tour Pokémon de Lavanville trouver un type Spectre à utiliser contre Morgane.",
+    "source": "Anime · La Tour de la Terreur"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "La table des types de Rouge et Bleu indique Spectre contre Psy comme « sans effet ».",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Or et Argent l’ont changé : leur table rend Spectre super efficace contre Psy.",
+    "source": "Datamine · pret/pokecrystal"
+   },
+   {
+    "text": "Rouge et Bleu n’ont que trois capacités Spectre : Léchouille, Onde Folie et Ombre Nocturne, qui inflige des dégâts fixes quel que soit le type.",
+    "source": "Datamine · pret/pokered"
+   }
+  ],
+  "confirmed": "Dans Rouge et Bleu, les capacités Spectre n’ont aucun effet sur les types Psy. À partir d’Or et Argent, elles sont super efficaces.",
+  "verdictText": "Démentie par les données du jeu : la table des types de la 1re génération dit que Spectre ne fait rien à Psy.",
+  "links": [
+   "pret/pokered : table des types de la 1re génération",
+   "pret/pokecrystal : table des types de la 2e génération",
+   "pret/pokered : données des capacités",
+   "Bulbapedia : La Tour de la Terreur"
+  ]
+ },
+ "rhydon-was-one-of-the-first-pokemon": {
+  "title": "Rhinoféros fut l’un des premiers Pokémon",
+  "era": "Gén. I · 2000",
+  "summary": "Numéro un dans la liste du jeu, et le premier nom cité par Ken Sugimori.",
+  "claim": "Rhinoféros, et non Bulbizarre ou Pikachu, fut le tout premier Pokémon créé.",
+  "origin": "Des dataminers ont remarqué que Rhinoféros occupe l’emplacement 1 de la liste interne de Rouge et Bleu. Une interview de Ken Sugimori parue en 2000 dans Nintendo Online Magazine, traduite en 2011 puis de nouveau par Dr Lava en 2020, l’a confirmé.",
+  "evidenceFor": [
+   {
+    "text": "La liste interne de Rouge et Bleu commence par Rhinoféros, Kangourex, Nidoran♂ et Mélofée.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "À la question « Quel a été le tout premier Pokémon créé ? », Ken Sugimori a répondu :",
+    "quote": "Rhinoféros, Mélofée, Lokhlass, etc. Notre idée de départ était que les Pokémon vivent aux côtés des humains et les aident de façon utile.",
+    "mark": [
+     "Rhinoféros"
+    ],
+    "source": "Interview · Nintendo Online Magazine (juillet 2000)"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "La nouvelle traduction de Dr Lava souligne que Sugimori les a cités parmi les tout premiers Pokémon, pas forcément comme les trois premiers dans l’ordre.",
+    "source": "Archives de Dr Lava"
+   },
+   {
+    "text": "L’ordre d’une liste interne ne prouve pas à lui seul l’ordre de création.",
+    "source": "Datamine"
+   }
+  ],
+  "confirmed": "Rhinoféros occupe l’emplacement 1 dans les données de Rouge et Bleu, et Sugimori le cite en premier parmi les tout premiers Pokémon.",
+  "verdictText": "Confirmée par interview du développeur et par les données du jeu, avec une réserve : Sugimori dit « parmi les premiers », pas « le tout premier ».",
+  "links": [
+   "Dr Lava : Sugimori et Masuda sur la création de la 1re génération",
+   "pret/pokered : liste interne des Pokémon"
+  ]
+ },
+ "butterfree-and-venomoth-were-swapped": {
+  "title": "Papilusion et Aéromite ont été inversés",
+  "era": "Gén. I · 1996",
+  "summary": "Mimitoss a les yeux de Papilusion. La liste du jeu dit que les familles ont été créées ensemble.",
+  "claim": "Papilusion devait évoluer de Mimitoss, et Aéromite de Chrysacier. Les deux auraient été inversés tard dans le développement.",
+  "origin": "Une théorie de forum de longue date (des fils de PokéCommunity remontent à plus de dix ans), relancée par des sites de théories et Reddit tous les deux ou trois ans.",
+  "evidenceFor": [
+   {
+    "text": "Les yeux de Mimitoss :",
+    "quote": "Ses grands yeux sont en fait des amas de minuscules yeux. La nuit, ceux de son espèce sont attirés par la lumière.",
+    "mark": [
+     "des amas de minuscules yeux"
+    ],
+    "source": "Mimitoss · Pokédex · Diamant"
+   },
+   {
+    "text": "Et ceux de Papilusion :",
+    "quote": "Si l’on regarde ses grands yeux de plus près, on remarque qu’il s’agit en réalité d’une multitude de petits yeux réunis.",
+    "mark": [
+     "une multitude de petits yeux"
+    ],
+    "source": "Papilusion · Pokédex · Soleil"
+   },
+   {
+    "text": "Les capacités de Papilusion dans Rouge et Bleu (Poudre Toxik, Para-Spore, Poudre Dodo, Rafale Psy) sont celles de la famille de Mimitoss.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Les deux ont de grands yeux composés rouges sur leurs illustrations. Voir la pièce A.",
+    "source": "Illustrations officielles"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Dans la liste interne de Rouge et Bleu, Chenipan, Chrysacier et Papilusion occupent trois emplacements consécutifs (123, 124, 125) : ils ont été ajoutés en tant que famille.",
+    "source": "Datamine · pret/pokered"
+   },
+   {
+    "text": "Les types collent aux familles : Papilusion est Insecte/Vol comme un papillon ; Aéromite est Insecte/Poison comme Mimitoss.",
+    "source": "Jeux"
+   },
+   {
+    "text": "Game Freak ne l’a jamais confirmé ni démenti.",
+    "source": "Sources officielles"
+   }
+  ],
+  "confirmed": "Mimitoss et Papilusion partagent vraiment leurs yeux et beaucoup de capacités. Une inversion n’a jamais été confirmée.",
+  "verdictText": "Non confirmée. Les ressemblances sont réelles, mais la liste interne garde Chenipan, Chrysacier et Papilusion ensemble, et Game Freak ne s’est jamais exprimé là-dessus.",
+  "links": [
+   "pret/pokered : liste interne des Pokémon",
+   "pret/pokered : évolutions et capacités",
+   "Texte du Pokédex de Mimitoss (PokeAPI)",
+   "Texte du Pokédex de Papilusion (PokeAPI)",
+   "Pokémaniacal : la question d’Aéromite (là où elle s’est répandue)"
+  ],
+  "silhouettes": {
+   "title": "Les yeux",
+   "text": "Mimitoss et Papilusion, le duo qui selon la théorie va ensemble, en noir uni. Puis superposés."
+  },
+  "board": {
+   "question": "Papilusion et Aéromite ont-ils été inversés ?",
+   "hook": "Mimitoss a les yeux de Papilusion et Papilusion a les capacités de Mimitoss. Un échange de dernière minute, ou deux designs qui se font écho ?",
+   "caption": "Mauvais parents ?",
+   "keys": [
+    "Mimitoss a les yeux de Papilusion",
+    "Les deux sont faits de minuscules yeux",
+    "Papilusion a les capacités de Mimitoss"
+   ],
+   "b": {
+    "label": "Entrée du Pokédex de Papilusion · Soleil",
+    "quote": "Si l’on regarde ses grands yeux de plus près, on remarque qu’il s’agit en réalité d’une multitude de petits yeux réunis.",
+    "mark": [
+     "une multitude de petits yeux"
+    ]
+   },
+   "c": {
+    "text": "Papilusion apprend Poudre Toxik, Para-Spore et Poudre Dodo, comme Mimitoss.",
+    "bold": [
+     "Poudre Toxik",
+     "Para-Spore",
+     "Poudre Dodo"
+    ]
+   }
+  }
+ },
+ "pokemon-gray-was-coming": {
+  "title": "Pokémon Gris allait sortir",
+  "era": "Gén. V · 2011",
+  "summary": "Tout le monde attendait une troisième version. Game Freak a fait les premières suites directes à la place.",
+  "claim": "Comme Jaune, Cristal, Émeraude et Platine avant lui, Noir et Blanc allait avoir une troisième version : Pokémon Gris.",
+  "origin": "Chaque génération depuis Rouge et Bleu avait eu une troisième version, alors les fans et les sites de rumeurs tenaient Gris pour acquis. En février 2012, Junichi Masuda a dit aux fans de « regarder le prochain Pokémon Smash », et les spéculations ont atteint leur sommet.",
+  "evidenceFor": [
+   {
+    "text": "Chaque duo précédent a eu une troisième version : Jaune, Cristal, Émeraude et Platine.",
+    "source": "Jeux"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "Dans Pokémon Smash (26 février 2012), Masuda a annoncé Pokémon Noir 2 et Blanc 2, pas Gris.",
+    "source": "Game Informer"
+   },
+   {
+    "text": "Game Informer, en rendant compte de l’annonce : « Au lieu d’aller dans la direction que la plupart imaginaient avec Pokémon Gris, Masuda a annoncé Pokémon Noir 2 et Pokémon Blanc 2. »",
+    "source": "Game Informer"
+   },
+   {
+    "text": "Masuda a expliqué plus tard que l’équipe n’avait jamais fait de suite directe à un jeu Pokémon et voulait voir ce qui arrivait à des personnages comme N et Ghetis.",
+    "source": "Interview · Game Informer (2012)"
+   }
+  ],
+  "confirmed": "La suite de Noir et Blanc a été Noir 2 et Blanc 2, les premières suites directes de la série. Aucun Gris n’a été annoncé ni n’est sorti.",
+  "verdictText": "Démentie par l’annonce de Game Freak elle-même : le troisième jeu de Noir et Blanc, ce furent deux suites.",
+  "links": [
+   "Game Informer : Pokémon Noir et Blanc 2 annoncés",
+   "Game Informer : Game Freak parle de la première suite numérotée de Pokémon",
+   "Nintendo Life : le directeur de Pokémon tease quelque chose pour dimanche"
+  ]
+ },
+ "wobbuffets-tail-is-the-real-pokemon": {
+  "title": "La queue de Qulbutoké est le vrai Pokémon",
+  "era": "Gén. II · 1999",
+  "summary": "Il cache sa queue noire à tout prix. Le corps bleu est peut-être le leurre.",
+  "claim": "Le corps bleu et souriant est un leurre. La queue noire de Qulbutoké, avec ses yeux, est le vrai Pokémon.",
+  "origin": "Construite à partir d’entrées du Pokédex qui reviennent sans cesse à la queue, et débattue sur des forums Pokémon et des sites de questions-réponses comme PokéBase.",
+  "evidenceFor": [
+   {
+    "text": "Il cache sa queue :",
+    "quote": "Pour garder cachée sa queue noire comme la nuit, il vit discrètement dans l’obscurité. Il n’attaque jamais le premier.",
+    "mark": [
+     "garder cachée sa queue"
+    ],
+    "source": "Qulbutoké · Pokédex · Argent"
+   },
+   {
+    "text": "Il encaisse les attaques, sauf sur la queue :",
+    "quote": "Qulbutoké ne fait rien, à part encaisser des coups. Il n’attaque jamais de lui-même. Cependant, il ne supporte pas qu’on attaque sa queue. Lorsque ça arrive, ce Pokémon essaie d’entraîner son ennemi grâce à Prélèvem. Destin.",
+    "mark": [
+     "il ne supporte pas qu’on attaque sa queue"
+    ],
+    "source": "Qulbutoké · Pokédex · Saphir Alpha"
+   },
+   {
+    "text": "Et le Pokédex lui-même parle d’un secret :",
+    "quote": "Il essaie désespérément de garder sa queue noire cachée. On dit que c’est la preuve que la queue cache un secret.",
+    "mark": [
+     "la queue cache un secret"
+    ],
+    "source": "Qulbutoké · Pokédex · Diamant"
+   }
+  ],
+  "evidenceAgainst": [
+   {
+    "text": "C’est le corps bleu qui a des signes distinctifs : les Qulbutoké femelles ont du rouge à lèvres sur le corps bleu, une différence entre les sexes que la queue ne montre jamais.",
+    "source": "Jeux"
+   },
+   {
+    "text": "La queue d’Okéoké ne montre que son humeur :",
+    "quote": "On voit toujours Okéoké avec un grand sourire. Regarde sa queue pour savoir s’il est en colère.",
+    "mark": [
+     "Regarde sa queue"
+    ],
+    "source": "Okéoké · Pokédex · Rubis"
+   },
+   {
+    "text": "Aucune entrée ne dit jamais que la queue est le vrai Qulbutoké ; « un secret » est le plus loin qu’elles aillent.",
+    "source": "Sources officielles"
+   }
+  ],
+  "confirmed": "Qulbutoké protège sa queue noire par-dessus tout et contre-attaque quand on le frappe. Le secret n’a jamais été révélé.",
+  "verdictText": "Ouverte : le Pokédex invite à la théorie, puis n’explique jamais le secret.",
+  "links": [
+   "Texte du Pokédex de Qulbutoké (PokeAPI)",
+   "Texte du Pokédex d’Okéoké (PokeAPI)",
+   "PokéBase : quel est le mystère de la queue de Qulbutoké ? (là où elle s’est répandue)"
+  ]
+ }
+}

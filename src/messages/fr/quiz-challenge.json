@@ -1,0 +1,11 @@
+{
+  "aTrainer": "Un Dresseur",
+  "from": "Défi de <b>{who}</b> · {run}",
+  "back": "Retour aux jeux",
+  "challenged": "Tu as été défié",
+  "scored": "{who} a fait {correct}/{total}",
+  "line": "{run} · PokéIQ <b>{iq}</b> · {score} pts",
+  "same": "Tu auras exactement les mêmes questions « {mode} », dans le même format. Tu crois mieux connaître les Pokémon ?",
+  "accept": "Relever le défi",
+  "daily": "Jouer au Défi du jour"
+}

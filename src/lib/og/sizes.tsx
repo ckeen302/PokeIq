@@ -1,6 +1,8 @@
 /* eslint-disable jsx-a11y/alt-text, @next/next/no-img-element -- Satori draws plain <img> */
 import "server-only";
-import { ogCard } from "@/lib/og/card";
+import { ogCard, visualLength } from "@/lib/og/card";
+import { englishOgT, type OgT } from "@/lib/og/i18n";
+import { speciesName } from "@/lib/names/species";
 import { homeRenderUrl } from "@/lib/pokemon/art";
 import { SIZE_ITEMS } from "@/lib/sizes/data";
 import { presetLineup, type SizePreset } from "@/lib/sizes/presets";
@@ -74,31 +76,35 @@ export function spread(line: SizeItem[], n: number): SizeItem[] {
   return out;
 }
 
-export function sizesCard(preset: SizePreset) {
+export function sizesCard(preset: SizePreset, t: OgT = englishOgT()) {
   const line = presetLineup(preset, SIZE_ITEMS);
   const mons = line.filter((i) => i.kind !== "ref");
   const small = mons[0], big = mons[mons.length - 1];
   return ogCard({
-    eyebrow: "Pokémon sizes · in 3D",
-    title: preset.id === "every-pokemon" ? ["Every Pokémon", ["to scale", ACCENT]] : [preset.label],
+    eyebrow: t("sizes.eyebrow"),
+    title: preset.id === "every-pokemon" ? [t("sizes.title1"), [t("sizes.title2"), ACCENT]] : [preset.label],
     titleSize: preset.label.length > 18 ? 54 : 68,
-    subtitle: small && big ? `From ${formatMetres(small.m)} to ${formatMetres(big.m)}${big.min ? "+" : ""}, side by side in Lumiose City.` : preset.blurb,
+    subtitle: small && big ? t("sizes.subtitle", { from: formatMetres(small.m), to: `${formatMetres(big.m)}${big.min ? "+" : ""}` }) : preset.blurb,
     accent: ACCENT,
     visual: <Lineup items={spread(line, 5)} />,
-    footer: "Make your own size video →",
+    footer: t("sizes.footer"),
+    t,
   });
 }
 
-export function sizesItemCard(item: SizeItem) {
-  const len = item.name.length;
+export function sizesItemCard(item: SizeItem, t: OgT = englishOgT()) {
+  // Another language names the species officially (a form keeps its English name: there's no official list of them here).
+  const name = t.locale !== "en" && item.art === item.species ? speciesName(item.species, item.name, t.locale) : item.name;
+  const len = visualLength(name);
   return ogCard({
-    eyebrow: `Pokémon sizes · #${String(item.species).padStart(4, "0")}`,
-    title: [item.name],
+    eyebrow: t("sizes.itemEyebrow", { number: String(item.species).padStart(4, "0") }),
+    title: [name],
     titleSize: len > 22 ? 46 : len > 14 ? 58 : 72,
-    subtitle: `${sizeText(item)} ${measureOf(item).toLowerCase()}. Next to an adult human, in 3D.`,
+    subtitle: t.locale === "en" ? `${sizeText(item)} ${measureOf(item).toLowerCase()}. Next to an adult human, in 3D.` : t("sizes.itemSubtitle", { size: sizeText(item) }),
     accent: ACCENT,
     visual: <Lineup items={[human(), item].sort((a, b) => a.m - b.m)} />,
-    footer: "See it to scale →",
+    footer: t("sizes.itemFooter"),
+    t,
   });
 }
 

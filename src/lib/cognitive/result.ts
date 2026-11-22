@@ -46,13 +46,28 @@ export function profileBars(r: CognitiveRecord): DomainBar[] {
   return bars;
 }
 
+export type CognitiveBand = "exceptional" | "superior" | "highAverage" | "average" | "lowAverage" | "below";
+const BAND_TITLE: Record<CognitiveBand, string> = {
+  exceptional: "Exceptional",
+  superior: "Superior",
+  highAverage: "High average",
+  average: "Average",
+  lowAverage: "Low average",
+  below: "Below average",
+};
+
+/** The score's band (the key of its title in the page's language). */
+export function cognitiveBand(score: number): CognitiveBand {
+  if (score >= 130) return "exceptional";
+  if (score >= 120) return "superior";
+  if (score >= 110) return "highAverage";
+  if (score >= 90) return "average";
+  if (score >= 80) return "lowAverage";
+  return "below";
+}
+
 export function cognitiveTitle(score: number): string {
-  if (score >= 130) return "Exceptional";
-  if (score >= 120) return "Superior";
-  if (score >= 110) return "High average";
-  if (score >= 90) return "Average";
-  if (score >= 80) return "Low average";
-  return "Below average";
+  return BAND_TITLE[cognitiveBand(score)];
 }
 
 const DOMAIN_WORDS: Record<CogSection, { strength: string; weakness: string }> = {
@@ -63,13 +78,19 @@ const DOMAIN_WORDS: Record<CogSection, { strength: string; weakness: string }> =
 };
 
 /** Strengths and weaknesses in plain words: sections clearly above or below the trainer's own composite. */
-export function profileWords(r: CognitiveRecord): { strengths: string[]; weaknesses: string[]; even: boolean } {
-  const strengths: string[] = [];
-  const weaknesses: string[] = [];
+export function profileWords(r: CognitiveRecord): { strengths: string[]; weaknesses: string[]; even: boolean; strong: CogSection[]; weak: CogSection[] } {
+  const strong: CogSection[] = [];
+  const weak: CogSection[] = [];
   for (const k of COG_SECTIONS) {
     const gap = r.sections[k].scaled - r.score;
-    if (gap >= 8) strengths.push(DOMAIN_WORDS[k].strength);
-    else if (gap <= -8) weaknesses.push(DOMAIN_WORDS[k].weakness);
+    if (gap >= 8) strong.push(k);
+    else if (gap <= -8) weak.push(k);
   }
-  return { strengths, weaknesses, even: strengths.length === 0 && weaknesses.length === 0 };
+  return {
+    strengths: strong.map((k) => DOMAIN_WORDS[k].strength),
+    weaknesses: weak.map((k) => DOMAIN_WORDS[k].weakness),
+    even: strong.length === 0 && weak.length === 0,
+    strong,
+    weak,
+  };
 }

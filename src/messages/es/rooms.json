@@ -1,0 +1,20 @@
+{
+  "names": {
+    "lobby": "Vestíbulo principal",
+    "pokedle": "Pokédle",
+    "connections": "Connections",
+    "pikadoku": "Pikadoku",
+    "pokeguessr": "PokéGuessr",
+    "battle": "Combate",
+    "quizzes": "Quiz"
+  },
+  "descriptions": {
+    "lobby": "¡Saluda! La sala principal para todo lo de PokéIQ. ¿Atascado o nuevo? Pregunta aquí y otros Entrenadores te ayudarán.",
+    "pokedle": "El juego diario de adivinar Pokémon: comparte tu puntuación, no la respuesta.",
+    "connections": "Cuatro grupos ocultos, dieciséis Pokémon: comparte tu tablero y comenta los más difíciles.",
+    "pikadoku": "El sudoku de Pokémon: compara elecciones raras y presume de tu puntuación de rareza.",
+    "pokeguessr": "¿En qué parte del mundo Pokémon estaba eso? Comparte rachas y grandes aciertos.",
+    "battle": "Combates aleatorios, OU, Little Cup y todos los formatos: equipos, sets, grandes jugadas y remontadas.",
+    "quizzes": "¿Quién es ese Pokémon?, Nómbralos a todos y todos los quiz: comparte puntuaciones y desafiaos."
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "list": {
+    "title": "Salons de discussion",
+    "description": "Discute avec d'autres Dresseurs sur PokéIQ : le Salon principal et les salons Pokédle, Connections, Pikadoku, PokéGuessr, Combat et Quiz.",
+    "label": "Communauté",
+    "heading": "Salons de <hl>discussion</hl>",
+    "intro": "Parle Pokémon avec d'autres Dresseurs. Tout le monde peut lire ; connecte-toi pour discuter. Des modérateurs veillent à la bonne ambiance de chaque salon."
+  },
+  "room": {
+    "title": "Salon {name}",
+    "fallbackTitle": "Salon de discussion",
+    "fallbackDescription": "Un salon de discussion PokéIQ.",
+    "back": "Retour aux salons",
+    "crumb": "Salons",
+    "rules": "Règles du salon"
+  },
+  "siteRules": {
+    "0": "Sois gentil. Pas de harcèlement, de grossièretés ni de haine.",
+    "1": "Ne partage jamais d'infos personnelles : ton vrai nom, ton âge, ton école, ton adresse, ton téléphone ou tes réseaux sociaux.",
+    "2": "Les liens ne peuvent pas être publiés. Parle du jeu !",
+    "3": "Tu vois quelque chose qui cloche ? Utilise le drapeau pour signaler un message. Les modérateurs lisent chaque signalement."
+  },
+  "rules": {
+    "lobby": {
+      "0": "Reste sympa et dans le sujet : Pokémon et PokéIQ.",
+      "1": "Débutants bienvenus : réponds patiemment aux questions et ne te moque jamais."
+    },
+    "pokedle": {
+      "0": "Pas de spoilers : ne publie jamais la réponse du jour ni de gros indices."
+    },
+    "connections": {
+      "0": "Pas de spoilers : ne publie jamais les groupes du jour."
+    },
+    "pikadoku": {
+      "0": "Pas de spoilers : ne publie jamais les réponses du jour."
+    },
+    "pokeguessr": {
+      "0": "Pas de spoilers sur les manches du jour."
+    },
+    "battle": {
+      "0": "Ne demande pas et n'arrange pas de victoires : joue chaque combat pour de vrai.",
+      "1": "Note les équipes avec bienveillance : dis ce qui marche, puis ce que tu changerais."
+    },
+    "quizzes": {
+      "0": "Ne publie pas les réponses d'un quiz que quelqu'un est en train de jouer."
+    }
+  },
+  "links": {
+    "lobby": {
+      "0": "Tous les modes de jeu",
+      "1": "Défi du jour",
+      "2": "Donner ton avis"
+    },
+    "pokedle": {
+      "0": "Jouer à Pokédle"
+    },
+    "connections": {
+      "0": "Jouer à Connections"
+    },
+    "pikadoku": {
+      "0": "Jouer à Pikadoku"
+    },
+    "pokeguessr": {
+      "0": "Jouer à PokéGuessr",
+      "1": "Atlas du monde"
+    },
+    "battle": {
+      "0": "Combat !",
+      "1": "Créateur d'équipe",
+      "2": "Calculateur de dégâts",
+      "3": "Tournois"
+    },
+    "quizzes": {
+      "0": "Tous les quiz",
+      "1": "Nomme-les tous"
+    }
+  }
+}

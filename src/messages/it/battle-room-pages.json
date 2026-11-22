@@ -1,0 +1,26 @@
+{
+  "header": {
+    "battle": "Lotta"
+  },
+  "play": {
+    "title": "Lotta contro il computer"
+  },
+  "live": {
+    "title": "Una lotta Pokémon dal vivo",
+    "description": "Una lotta Pokémon dal vivo con il motore di Pokémon Showdown. Apri il link, scegli un nome e lotta.",
+    "titleVs": "{host} vs {guest}: una lotta Pokémon dal vivo",
+    "titleHost": "{host} ti sfida a una lotta Pokémon dal vivo",
+    "aTrainer": "Un Allenatore",
+    "descriptionFormat": "{format}, dal vivo con il motore di Pokémon Showdown. Apri il link, scegli un nome e lotta."
+  },
+  "watch": {
+    "meta": {
+      "title": "Guarda lotte Pokémon dal vivo",
+      "description": "Guarda lotte Pokémon dal vivo con il motore di Pokémon Showdown: partite classificate e lotte aperte tra amici, in tempo reale."
+    },
+    "crumb": "Guarda",
+    "title": "Guarda dal",
+    "accent": "vivo",
+    "intro": "Le lotte in corso adesso. Gli spettatori vedono ciò che vedono quelli di Showdown: la squadra di ogni lato si rivela solo man mano che si gioca."
+  }
+}

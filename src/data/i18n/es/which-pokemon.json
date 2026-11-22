@@ -1,0 +1,1002 @@
+{
+ "bulbasaur": {
+  "title": "El que crece con calma",
+  "blurb": "Creces a tu ritmo y no pides perdón por ello. La gente se apoya en ti porque eres constante: prefieres zanjar una discusión entre dos amigos antes que empezarla, y notas cuándo alguien se marchita antes de que diga nada. No persigues la gloria, pero defiendes con firmeza las causas en las que crees. Como Bulbasaur, guardas sol para los días que lo necesitan.",
+  "why": "Pokédex (Rubí/Zafiro/Esmeralda, Rojo Fuego/Verde Hoja): dormita a pleno sol y crece a su ritmo; anime: el Bulbasaur de Ash se niega a evolucionar y mantiene la paz en el laboratorio del Prof. Oak; test inicial de Mundo Misterioso: Serena/Dócil."
+ },
+ "charmander": {
+  "title": "La llama que titila",
+  "blurb": "Tus emociones están a flor de piel: todo el mundo sabe qué tal te va el día con solo verte desde la otra punta de la sala. Te lanzas a las cosas con auténtico fuego, y cuando te comprometes con alguien sigues ahí mucho después de que deje de merecerlo. Un revés puede apagarte un rato, pero nunca te extingue. Eres Charmander: llama pequeña, potencial enorme, imposible de ignorar.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Escarlata/Púrpura): la llama de su cola se aviva con sus emociones y arde débil cuando está triste; anime: espera en una roca bajo la lluvia al Entrenador que lo abandonó; test inicial de Mundo Misterioso: mezcla de Audaz y Miedosa."
+ },
+ "charizard": {
+  "title": "El Campeón orgulloso",
+  "blurb": "Prefieres perder contra alguien grande que ganar a alguien fácil. El respeto es tu moneda: lo das despacio y esperas que te lo devuelvan, y cuando decides que alguien se ha ganado el tuyo, te conviertes en su arma más leal. Las normas y la rutina te aburren; un rival digno te despierta. Eres Charizard, y quienes siguieron a tu lado en tu etapa difícil saben exactamente lo que valió la pena.",
+  "why": "Pokédex (Rojo Fuego/Verde Hoja, Escarlata/Púrpura): se niega a usar sus llamas contra rivales más débiles y busca oponentes más fuertes; anime: el Charizard de Ash ignora sus órdenes hasta que empieza a respetarlo; Mundo Misterioso: Audaz."
+ },
+ "squirtle": {
+  "title": "El jefe de la pandilla",
+  "blurb": "Tienes tu pandilla, y eres el de las gafas de sol que va delante. Haces que las travesuras parezcan liderazgo, y tus amigos te siguen porque contigo todo es más divertido. Bajo la chulería hay un sentido claro del bien y del mal: cuando se acaba la broma, das la cara y te pones manos a la obra. Eres Squirtle, cool por fuera y de fiar hasta el fondo.",
+  "why": "Anime: líder del Escuadrón Squirtle, gafas de sol incluidas, que aun así elige volver con Ash; Pokédex (Rojo/Azul/Amarillo): un Pokémon juguetón que lanza agua a cualquier blanco; Mundo Misterioso: Alegre/Ingenua."
+ },
+ "butterfree": {
+  "title": "El viajero apacible",
+  "blurb": "Vas allí donde está lo dulce. La competición te importa poco; la conexión lo es todo, y antes que cualquier premio, te irías volando en silencio con la gente a la que quieres. Te emocionas con facilidad y no lo escondes, por eso eres el amigo al que se llama cuando uno necesita sentirse comprendido. Eres Butterfree: ligero, leal y más valiente de lo que parece cuando hace falta.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Escarlata/Púrpura): busca la miel más dulce y las flores que la contienen; anime: la primera evolución completa de Ash y su primera despedida, cuando se va volando con su pareja; ni rastro de nada combativo en su historial."
+ },
+ "pikachu": {
+  "title": "La chispa leal",
+  "blurb": "Funcionas a base de entusiasmo y lo repartes sin medida: cuando llegas, la sala se vuelve más ruidosa y más cálida. Eliges a tu gente y luego eres suyo, en cada mala decisión y en cada camino largo. Te gusta ganar, pero sobre todo te gusta ganar al lado de alguien. Eres Pikachu: el compañero que todo el mundo querría tener, y al que nadie consigue encasillar.",
+  "why": "Anime: rechaza la Poké Ball, pero nunca se separa de Ash en ninguna temporada; Pokédex (Amarillo, Espada): echa chispas por las mejillas cuando se emociona o se enfada, y es tan curioso que electrocuta todo lo que encuentra; Mundo Misterioso: Fuerte/Alegre."
+ },
+ "clefairy": {
+  "title": "La bailarina de la luz de luna",
+  "blurb": "Eres un poco de otro mundo y te gusta que sea así. Tu imaginación vuela, tu corazón es tierno, y encuentras rituales y maravillas en cosas que los demás pasan por alto. Prefieres bailar en un corro de amigos a medianoche antes que pelearte con nadie por nada. Eres Clefairy: caprichoso, cálido y discretamente misterioso.",
+  "why": "Pokédex (Oro/Plata/Cristal, Espada): baila bajo la luna llena y se dice que vino de la Luna; tímido con las personas pero adorablemente juguetón; anime: unos Clefairy construyen un cohete y celebran rituales a la luz de la luna."
+ },
+ "clefable": {
+  "title": "El hada nocturna",
+  "blurb": "Lo oyes todo y prefieres que no te oigan. Eres dulce y soñador, reservado por instinto, y donde más feliz estás es en un lugar tranquilo bajo la luna. No compites y no agobias. Eres Clefable: suave, discreto y un poquito celestial.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): tan tímido que huye al menor ruido, vive en montañas tranquilas y baila bajo la luna; se dice que oye caer un alfiler a un kilómetro."
+ },
+ "ninetales": {
+  "title": "El rencor de mil años",
+  "blurb": "Tienes una paciencia que inquieta a la gente. Lo recuerdas todo, perdonas poco y nunca levantas la voz, porque no te hace falta. Tus exigencias son altas, tu círculo es pequeño y tu sentido de ti mismo es inquebrantable. Eres Ninetales: elegante, de memoria larga y mejor no buscarle las cosquillas.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): vive mil años, entiende el habla humana y maldice a quien le agarre las colas; anime: tranquilo, elegante y fiel a un solo amo durante siglos."
+ },
+ "jigglypuff": {
+  "title": "La artista imparable",
+  "blurb": "Necesitas público, y lo sacas de quien tengas cerca. Primero eres artista y nunca planificador, y cuando la sala no responde como debería, te lo tomas muy a pecho. Pero te recuperas rápido y ya estás con el siguiente espectáculo. Eres Jigglypuff: todo corazón, todo volumen y absolutamente imparable.",
+  "why": "Anime: canta para cualquier público y luego pintarrajea a todo el que se duerme; Pokédex (Rojo/Azul/Amarillo, Espada): sigue cantando hasta que su público se duerme y se enfurece cuando no consigue encandilar."
+ },
+ "meowth": {
+  "title": "El encantador intrigante",
+  "blurb": "Siempre tienes un plan, y suele ser una pequeña artimaña. Eres listo, hablador y mucho más sentimental de lo que dejas ver; la mayoría de tus planes, en el fondo, van de que te vean. No haces trabajos aburridos, pero te esfuerzas una barbaridad en caer bien. Eres Meowth: el que habla, el que sueña y el que aprendió por las malas y siguió adelante igualmente.",
+  "why": "Anime: el Meowth del Team Rocket aprendió a hablar por amor y trama planes para ganar estatus; Pokédex (Rojo/Azul/Amarillo, Let's Go, Pikachu!/Eevee!): le encantan las monedas brillantes, recorre la ciudad de noche y colecciona lo que le llama la atención."
+ },
+ "persian": {
+  "title": "El aristócrata vanidoso",
+  "blurb": "No eres la mascota de nadie. Eres elegante, difícil de impresionar y no te interesa fingir lo contrario; la gente tiene que ganarse tu atención y la mayoría no lo consigue. Te gusta la comodidad y te gusta el estatus, y te aseguras en silencio de tener ambas cosas. Eres Persian: estilizado, seguro de ti y feliz con un círculo pequeño de la gente adecuada.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): fiero, orgulloso y caprichoso, araña incluso a su propio Entrenador y es difícil de criar; anime: el gato del regazo de Giovanni, mimado y temido."
+ },
+ "psyduck": {
+  "title": "El dolor de cabeza andante",
+  "blurb": "Llevas mucho en la cabeza y casi todo es ruido. Te confundes más de lo que querrías, te preocupas más de lo que admitirías y eres muchísimo más capaz de lo que nadie (tú incluido) espera. Cuando por fin todo estalla, eres asombroso. Eres Psyduck: ansioso, adorable y, en secreto, el más poderoso de la sala.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Escarlata/Púrpura): un dolor de cabeza constante lo deja aturdido, y solo cuando el dolor llega al máximo estalla su poder oculto; anime: el Psyduck de Misty, desconcertado y devastador sin querer."
+ },
+ "primeape": {
+  "title": "El motor de la furia",
+  "blurb": "Tienes mal genio y todo el mundo lo sabe. Te calientas rápido, guardas un agravio más tiempo del sano y perseguirías un desaire hasta el fin del mundo. Pero ese mismo fuego te convierte en un competidor implacable y en un amigo leal para quien aprenda a no arrugarse. Eres Primeape: furioso, motivado y, en secreto, un campeón.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): monta en cólera con solo mirarlo y te persigue aunque huyas; su furia no deja de crecer; anime: el Primeape de Ash se convierte en campeón de boxeo."
+ },
+ "growlithe": {
+  "title": "El guardián fiel",
+  "blurb": "Has elegido a tu gente y harías cualquier cosa por ella. No necesitas novedades ni un gran escenario, solo una tarea que importe y alguien por quien merezca la pena hacerla. Los desconocidos reciben una mirada recelosa; los amigos, todo tu corazón. Eres Growlithe: valiente, de fiar y leal hasta la médula.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): extremadamente leal, ladra a todo lo que no conoce y nunca olvida a un Entrenador amable; anime: el compañero de la Agente Mara en cada patrulla."
+ },
+ "arcanine": {
+  "title": "El protector legendario",
+  "blurb": "Te comportas como alguien que ya lo ha demostrado. Eres capaz y sereno, te mueves rápido cuando importa y la gente se siente más segura contigo cerca. No vas buscando peleas, pero terminarás una por alguien a quien quieres. Eres Arcanine: majestuoso, leal y discretamente legendario.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): una bestia legendaria admirada por su majestuosidad, leal y tan rápida que recorre 10 000 km en un día; anime: Arcanine aparece a menudo como noble montura o guardián."
+ },
+ "alakazam": {
+  "title": "El gran maestro",
+  "blurb": "Ya has pensado tres jugadas por delante y te molesta un poco que los demás no. Te encantan las ideas por sí mismas y trabajas en ellas con una disciplina que la mayoría reserva para las emergencias. No eres frío, solo eficiente, y tu lealtad es para los pocos que pueden seguirte el ritmo. Eres Alakazam: brillante, sereno y jamás pillado por sorpresa.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): un CI de 5000 y memoria total de todo lo que ha vivido; prefiere ganar con la mente antes que con el cuerpo."
+ },
+ "machamp": {
+  "title": "La potencia honrada",
+  "blurb": "Haces el trabajo, y luego haces más. Crees en dar la cara, levantar lo pesado y ganarte las victorias honradamente, y tienes poca paciencia con quien toma atajos. Las tareas delicadas y las ideas vagas te frustran; un objetivo claro y un rival digno te encienden. Eres Machamp: fuerte, directo y todo músculo, corazón incluido.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): cuatro brazos capaces de lanzar 1000 puñetazos en dos segundos, pero torpe con las tareas delicadas; anime: luchador de los pies a la cabeza."
+ },
+ "slowpoke": {
+  "title": "El imperturbable",
+  "blurb": "Nada te afecta. Plazos, dramas, un Shellder enganchado a la cola: ya te pondrás, o no, y en cualquier caso estarás bien. Tu calma es contagiosa, y jamás se te ocurriría competir con nadie por nada. Eres Slowpoke: sereno, amable y la prueba viviente de que casi todos los problemas se resuelven solos si esperas lo suficiente.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Escarlata/Púrpura): tarda cinco segundos en sentir dolor y olvida lo que hacía a mitad de un bostezo; anime: todos los Slowpoke parecen indiferentes a lo que les pasa."
+ },
+ "gengar": {
+  "title": "El bromista sonriente",
+  "blurb": "Eres la persona más graciosa de la sala y la más peligrosa a la que dar la espalda. Te encantan las bromas, te encantan las reacciones, y las normas te parecen más bien decorativas. Bajo esa sonrisa hay alguien que quiere que le dejen entrar y que prefiere bromear antes que pedirlo. Eres Gengar: travieso, magnético y nunca, jamás, aburrido.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): se esconde en tu sombra, te roba el calor y se ríe del susto que provoca; anime: sonríe con sus propias bromas; Mundo Misterioso: el villano alegre que en realidad se siente solo."
+ },
+ "cubone": {
+  "title": "El solitario en duelo",
+  "blurb": "Cargas con algo pesado, y lo cargas solo. Eres más callado de lo que la gente espera y más sensible de lo que muestras, y has construido una coraza dura alrededor de un corazón muy tierno. Sigues adelante porque es lo que te enseñaron, y luchas más que nadie por lo poco que tienes. Eres Cubone: de luto, valiente y mucho más que tu pérdida.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): lleva el cráneo de su madre muerta y llora con pena las noches de luna llena; nunca ha mostrado su cara a nadie."
+ },
+ "chansey": {
+  "title": "La cuidadora",
+  "blurb": "Eres quien lleva las vendas, la merienda y el tiempo para los demás. Cuidar de la gente no es un papel que interpretas, es tu forma de estar en el mundo, y regalarías tu último huevo sin pensarlo. No te importa ganar; te importa que todos vuelvan a casa. Eres Chansey: generosa, constante y la razón por la que los demás pueden ser valientes.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): comparte sus huevos nutritivos con los heridos y acompaña a la Enfermera Joy en todos los Centros Pokémon; una especie bondadosa que trae felicidad a quien la atrapa."
+ },
+ "kangaskhan": {
+  "title": "La madre fiera",
+  "blurb": "Eres dulce con los tuyos y temible con quien los amenace. Eres responsable, con los pies en el suelo y poco interesado en las novedades; tienes gente a la que cuidar. No buscas pelea, pero la acabas en segundos si se acerca a tu familia. Eres Kangaskhan: protector, práctico y fiero en el mejor sentido.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): cría a su pequeño en la bolsa y ataca a cualquiera que se acerque, cueste lo que cueste; anime: las manadas de Kangaskhan de la Zona Safari defienden a sus crías hasta el final."
+ },
+ "mr-mime": {
+  "title": "El showman",
+  "blurb": "Eres un artista con ética de trabajo. Te encanta hacer reír y te tomas el oficio sorprendentemente en serio, ensayando el número hasta que los muros que levantas parecen reales. Puedes ser algo maniático con cómo se hacen las cosas, pero es porque te importan. Eres Mr. Mime: expresivo, disciplinado e imposible de ignorar.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): un maestro de la pantomima cuyos muros invisibles se vuelven reales si no te ríes; anime: el Mr. Mime de Delia lleva la casa con una disciplina impecable."
+ },
+ "scyther": {
+  "title": "La hoja de honor",
+  "blurb": "Te riges por un código y mantienes el filo afilado. Prefieres ganarte las cosas por las malas a que te las regalen, y no tienes paciencia con quien hace trampas o va a medio gas. No eres antipático, pero tu círculo es pequeño y tus exigencias, altas. Eres Scyther: preciso, orgulloso y siempre a punto.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Escarlata/Púrpura): corta con velocidad ninja y nunca deja que sus hojas se desafilen; anime: el Scyther de Tracey fue un orgulloso exlíder de enjambre que luchó por su honor."
+ },
+ "tauros": {
+  "title": "El toro desbocado",
+  "blurb": "Embistes primero y preguntas después. Eres competitivo hasta la médula, te enfadas rápido y olvidas igual de rápido por qué te habías enfadado; solo quieres estar en movimiento. La sutileza no es lo tuyo y te parece bien. Eres Tauros: todo impulso, y un amigo sorprendentemente bueno cuando por fin dejas de correr.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): se azota con sus tres colas para lanzarse a la carga y arrolla todo lo que tiene delante; anime: Ash captura una manada entera en la Zona Safari."
+ },
+ "magikarp": {
+  "title": "El que nadie esperaba",
+  "blurb": "Te han subestimado toda la vida, y has seguido adelante igualmente. No eres llamativo ni rápido, pero es casi imposible desanimarte, y al día siguiente vuelves a aparecer sin falta. Los que se reían se quedarán muy callados más adelante. Eres Magikarp, y quien conoce la historia sabe lo que viene después.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): lamentablemente débil, pero capaz de sobrevivir en cualquier agua, sigue chapoteando por mucho que se burlen de él; el triunfador tardío más famoso de la saga."
+ },
+ "gyarados": {
+  "title": "El desenfreno",
+  "blurb": "Pasaste por algo que te cambió, y saliste por el otro lado con dientes. Tu genio es legendario, tu empuje enorme, y cuando decides ganar, nadie puede hacer gran cosa. La calma no te sale natural, pero quienes te han visto proteger a alguien saben que la furia no es toda la historia. Eres Gyarados: feroz, formidable y forjado por lo que has superado.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): su brutal transformación lo deja en una furia violenta capaz de arrasar una ciudad; es famoso por desatarse ante la menor cosa."
+ },
+ "lapras": {
+  "title": "El ferri apacible",
+  "blurb": "Llevas a la gente. A veces literalmente, sobre todo emocionalmente: eres la voz tranquila en la larga travesía y nunca dejarías a nadie atrás. Eres reflexivo y algo melancólico, con una memoria profunda y una paciencia aún mayor. La competición te desconcierta; la amabilidad es simplemente lo obvio. Eres Lapras: dulce, sabio y el puerto más seguro de tus amigos.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): entiende el habla humana, transporta a la gente por el mar y canta con tristeza por los suyos, perseguidos; anime: lleva a Ash por las Islas Naranja."
+ },
+ "ditto": {
+  "title": "El cambiaformas",
+  "blurb": "Puedes ser quien el momento necesite, y disfrutas del truco. Gente nueva, sitios nuevos, ideas nuevas: lo absorbes todo sin perder a tu verdadero yo. La rutina y los planes rígidos no van contigo, y prefieres camuflarte y observar antes que competir por el protagonismo. Eres Ditto: adaptable, curioso y, en secreto, el más original de todos.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): reorganiza sus células para convertirse en cualquier cosa que vea, aunque se le escapa cuando se ríe; una criatura de pura adaptabilidad sin forma fija."
+ },
+ "eevee": {
+  "title": "La puerta abierta",
+  "blurb": "Todavía no has decidido qué vas a ser, y ese es tu superpoder. Todo te despierta curiosidad, es fácil quererte y te iluminan más las posibilidades nuevas que los planes cerrados. Hay quien lo llama indecisión; tú lo llamas dejar la puerta abierta. Eres Eevee: todo potencial, y todos los caminos siguen siendo tuyos.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): su genética inestable le permite evolucionar según su entorno, así que quizá sea el Pokémon de la posibilidad en sí; anime: el Eevee de Chloe, que no consigue decidirse."
+ },
+ "vaporeon": {
+  "title": "La corriente tranquila",
+  "blurb": "Te dejas llevar por la corriente porque tú eres la corriente. Estar contigo relaja: no presionas, no te alteras y estás perfectamente a gusto a solas junto al agua. Te adaptas sin hacer ruido y dejas que casi todos los dramas te resbalen. Eres Vaporeon: sereno, elegante y más profundo de lo que parece a primera vista.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): se funde con el agua y vive tranquilo junto a lagos cristalinos, con células tan parecidas al agua que puede desaparecer en ella; la eeveelución serena."
+ },
+ "jolteon": {
+  "title": "El cable pelado",
+  "blurb": "Lo sientes todo a máximo voltaje. Eres rápido, gracioso y algo puntiagudo, y quien te sobresalte se va a enterar al instante. Eres leal a tu manera eléctrica, pero necesitas espacio para correr y no te encanta que te digan qué hacer. Eres Jolteon: veloz, intenso y nunca en modo reposo.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): sensible y de humor cambiante, se le eriza el pelaje y dispara púas cuando se asusta o se enfada; la eeveelución de mecha corta y gran corazón."
+ },
+ "flareon": {
+  "title": "El hogar cálido",
+  "blurb": "Tú desprendes calor. Eres cariñoso y algo fogoso, te emocionas rápido y te duelen las cosas rápido, y siempre prefieres estar cerca de los tuyos antes que ir por libre. No le das muchas vueltas: actúas y luego lo sientes. Eres Flareon: acogedor, leal y un consuelo tenerte cerca.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): acumula fuego en su cuerpo y ahueca el pelaje para liberar calor, y se calienta cuando se emociona; una eeveelución leal y acogedora a la que le encanta estar cerca de su Entrenador."
+ },
+ "aerodactyl": {
+  "title": "El tirano ancestral",
+  "blurb": "Eres de otra época y nunca has encajado del todo en esta. Eres feroz, independiente y algo impaciente con los buenos modales modernos; prefieres tomar lo que es tuyo antes que esperar a que te lo ofrezcan. La gente te encuentra intimidante y no te importa. Eres Aerodactyl: indómito, ambicioso y dueño de tu propio cielo.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): un feroz depredador ancestral con colmillos como sierras que dominaba los cielos y chilla al lanzarse en picado; revivido a partir de ámbar y todavía salvaje."
+ },
+ "snorlax": {
+  "title": "El gran dormilón",
+  "blurb": "Has descubierto lo que importa: comida, descanso y que no te molesten. Nada te altera, nadie puede meterte prisa, y eres más amable de lo que la gente espera cuando deja de intentar despertarte. Cuando algo importa de verdad puedes mover montañas, un rato, antes de volver a dormirte. Eres Snorlax: tranquilo, inamovible y muy querido.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): come 400 kg al día y duerme el resto, tan apacible que los niños saltan sobre su barriga; anime: el Snorlax de Ash solo se despierta para comer y para algún momento heroico."
+ },
+ "dragonite": {
+  "title": "El gigante bondadoso",
+  "blurb": "Tienes un gran corazón en el sentido más literal: la gente sabe por instinto que la llevarías hasta la orilla. Eres fuerte y capaz, y prefieres usarlo para ayudar que para ganar. Te tomas en serio tus responsabilidades, pero nunca con pesadez; vas por delante con calidez. Eres Dragonite: dulce, poderoso y el lugar seguro de todo el mundo.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): un Pokémon bondadoso que rescata a náufragos y guía a los barcos hasta la costa; anime: el Dragonite de Ash abraza primero y pregunta después."
+ },
+ "mewtwo": {
+  "title": "El experimento solitario",
+  "blurb": "No te hicieron para este mundo y has dejado de pedir perdón por ello. Eres intensamente decidido, intensamente reservado, y prefieres no rendir cuentas a nadie antes que ser el proyecto de alguien. La confianza te llega muy despacio, y cuando por fin dejas entrar a alguien, lo cambia todo. Eres Mewtwo: poderoso, solitario y aún decidiendo para qué sirve tu fuerza.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): creado por manipulación genética para ser el más fuerte, con un corazón salvaje y sin más interés que derrotar a sus enemigos; la primera película: un ser que se pregunta para qué existe."
+ },
+ "mew": {
+  "title": "El origen juguetón",
+  "blurb": "Todo te fascina y te niegas a que te encasillen. Eres juguetón, cálido e infinitamente curioso, y vas de un interés a otro y de una persona a otra con una ligereza que algunos confunden con indiferencia. Te importan muchísimo las cosas; simplemente no sigues el horario de nadie. Eres Mew: alegre, escurridizo y un poco de todo.",
+  "why": "Pokédex (Rojo/Azul/Amarillo, Espada): se dice que contiene el código genético de todos los Pokémon; se vuelve invisible y solo se aparece a los de corazón puro; Mundo Misterioso y las películas: juguetón, curioso y travieso."
+ },
+ "chikorita": {
+  "title": "El encanto soleado",
+  "blurb": "Vas por delante con cariño. Quieres estar cerca de la gente a la que quieres y competirás en silencio por su atención, pero nunca harías daño a nadie para conseguirla. Eres más brillante y más valiente de lo que sugiere tu tamaño, y haces que la sala huela a primavera. Eres Chikorita: dulce, leal y un pelín posesivo de la forma más entrañable.",
+  "why": "Pokédex (Oro/Plata/Cristal, Oro HeartGold/Plata SoulSilver): su hoja desprende un aroma relajante y le encanta tomar el sol; anime: la Chikorita de Ash es cariñosa, tiene celos de Pikachu y es valiente para su tamaño."
+ },
+ "cyndaquil": {
+  "title": "La llama tímida",
+  "blurb": "Guardas tu fuego a buen recaudo. Casi siempre eres dulce, algo nervioso y más feliz hecho una bola que bajo los focos, y a veces la gente lo confunde con debilidad. Entonces algo importa y ardes. Eres Cyndaquil: callado, amable y muchísimo más ardiente de lo que nadie espera.",
+  "why": "Pokédex (Oro/Plata/Cristal, Oro HeartGold/Plata SoulSilver): tímido, se hace una bola cuando se asusta, pero las llamas de su lomo arden con fuerza cuando se enfada; anime: al Cyndaquil de Ash le cuesta encender su llama hasta que de verdad importa."
+ },
+ "totodile": {
+  "title": "El mordisquitos juguetón",
+  "blurb": "Primero muerdes y luego bailas. Eres ruidoso, divertido e imposible de mantener quieto, y quieres tanto al mundo que te lo meterías entero en la boca. No planeas: saltas. Eres Totodile: juguetón, intrépido y el alma de cualquier fiesta en la que te cueles.",
+  "why": "Pokédex (Oro/Plata/Cristal, Oro HeartGold/Plata SoulSilver): juguetón, pero con un mordisco capaz de triturarlo todo, muerde cualquier cosa que se mueva; anime: el Totodile de Ash entra bailando en cualquier situación."
+ },
+ "togepi": {
+  "title": "El amuleto de la suerte",
+  "blurb": "A tu alrededor pasan cosas buenas, y la gente lo nota. Eres cálido, confiado y generoso con tu alegría, y prefieres que tus amigos te lleven a cuestas antes que competir con ellos. Eres más capaz de lo que nadie cree, tú incluido. Eres Togepi: un buen augurio andante, y el que todo el mundo quiere en su equipo.",
+  "why": "Pokédex (Oro/Plata/Cristal, Espada): su cascarón está lleno de felicidad que comparte con la gente amable, y se dice que trae buena suerte; anime: el Togepi de Misty, querido por todos y poderoso en secreto."
+ },
+ "xatu": {
+  "title": "El oráculo silencioso",
+  "blurb": "Ves más lejos que la mayoría y hablas menos. Eres muy reflexivo, curiosamente quieto, y te conformas con observar mientras los demás corren de un lado a otro. A la gente le pareces misterioso y a ti te parecen ruidosos. Eres Xatu: sabio, paciente y guardándote para ti parte de lo que sabes.",
+  "why": "Pokédex (Oro/Plata/Cristal, Espada): pasa el día inmóvil mirando al sol, viendo el pasado y el futuro, demasiado asustado de lo que ve como para moverse; el místico estoico."
+ },
+ "ampharos": {
+  "title": "El faro",
+  "blurb": "Eres la luz por la que se guía la gente. Eres cálido, de fiar y todo un faro en plena crisis: no gritas, simplemente brillas donde hace falta. No necesitas ganar nada; necesitas que todos lleguen a casa. Eres Ampharos: luminoso, constante e imprescindible sin hacer ruido.",
+  "why": "Pokédex (Oro/Plata/Cristal, Espada): la luz de su cola es tan brillante que se ve desde el espacio y se ha usado como faro para guiar barcos; anime: el Ampharos del faro de Ciudad Olivo."
+ },
+ "sudowoodo": {
+  "title": "El árbol impostor",
+  "blurb": "Prefieres pasar desapercibido a llamar la atención, y mantienes el papel durante años. Eres testarudo, algo ansioso y perfectamente feliz plantado en un sitio mientras el mundo pasa de largo. El agua, los cambios y las sorpresas no son tus amigos. Eres Sudowoodo: firme, curiosamente encantador y sin engañar a nadie, que tampoco pasa nada.",
+  "why": "Pokédex (Oro/Plata/Cristal, Espada): se disfraza de árbol para no llamar la atención y entra en pánico con el agua; el obstáculo testarudo de todo viaje por Johto."
+ },
+ "quagsire": {
+  "title": "El tranquilote",
+  "blurb": "Eres la persona más relajada que nadie haya conocido. Las cosas chocan contigo y tú sigues nadando, y nunca te ha preocupado un plan porque nunca has tenido ninguno. Eres amable sin esfuerzo y tranquilo sin proponértelo. Eres Quagsire: sin prisas, sin agobios y una maravilla de compañía.",
+  "why": "Pokédex (Oro/Plata/Cristal, Espada): tan despreocupado que nadando se da golpes en la cabeza con barcos y rocas y no parece importarle; la especie sin preocupaciones."
+ },
+ "espeon": {
+  "title": "El vidente fiel",
+  "blurb": "Ves venir las cosas antes que nadie, y lo usas para cuidar de los tuyos. Eres sereno, perspicaz y disciplinado, con una elegancia que a veces parece distancia. No lo es; simplemente estás observando. Eres Espeon: intuitivo, entregado y siempre un paso por delante.",
+  "why": "Pokédex (Oro/Plata/Cristal, Espada): extremadamente leal a su Entrenador, lee las corrientes de aire para predecir el tiempo y el próximo movimiento del rival y así protegerlo; la eeveelución del vínculo diurno."
+ },
+ "umbreon": {
+  "title": "El vigía nocturno",
+  "blurb": "Haces tu mejor trabajo de noche y por tu cuenta. Eres paciente, observador y casi nada te altera, y no necesitas compañía para sentirte completo. Quien se gana tu confianza recibe una lealtad callada y feroz que nunca presume. Eres Umbreon: frío, autosuficiente y brillante cuando hace falta.",
+  "why": "Pokédex (Oro/Plata/Cristal, Espada): acecha con paciencia en la oscuridad y sus anillos brillan cuando se altera; Mundo Misterioso y el consenso de los fans: la eeveelución lobo solitario."
+ },
+ "murkrow": {
+  "title": "El ladrón de cosas brillantes",
+  "blurb": "Te atraen las cosas brillantes y las malas ideas, y tienes un gusto excelente para ambas. Eres sociable, travieso y algo caótico, y prefieres ser interesante a ser de fiar. No lo haces con mala intención; simplemente no puedes resistirte. Eres Murkrow: listo, descarado y nunca donde se supone que deberías estar.",
+  "why": "Pokédex (Oro/Plata/Cristal, Espada): roba objetos brillantes, despista a los viajeros por la noche y se dice que trae mala suerte; un pájaro nocturno descarado que no responde ante nadie."
+ },
+ "misdreavus": {
+  "title": "La artista del susto",
+  "blurb": "Te encanta una buena reacción. Eres juguetón de una forma un poco inquietante, imaginativo y algo noctámbulo, y los miedos de la gente te parecen más graciosos que serios. No quieres hacer daño a nadie; solo quieres verlos pegar un bote. Eres Misdreavus: espeluznante, con chispa y, en secreto, una compañía estupenda.",
+  "why": "Pokédex (Oro/Plata/Cristal, Espada): grita y solloza por la noche para asustar a la gente, se alimenta de su miedo y disfruta cada minuto; más trasto que amenaza."
+ },
+ "wobbuffet": {
+  "title": "El muro paciente",
+  "blurb": "No empiezas las cosas, pero desde luego las terminas. Eres tolerante hasta el extremo, leal a quien te haya tocado y más resistente de lo que creen quienes te subestiman. Odias estar solo y no te importa decirlo. Eres Wobbuffet: paciente, de fiar y el muro que nadie consigue cruzar.",
+  "why": "Pokédex (Oro/Plata/Cristal, Espada): nunca ataca primero, odia estar solo y esconde su cola; anime: el Wobbuffet del Team Rocket, que aparece muy contento en el peor momento."
+ },
+ "granbull": {
+  "title": "El duro tímido",
+  "blurb": "Al principio la gente te malinterpreta. Pareces más duro de lo que te sientes, y tras una cara que espanta a los desconocidos tienes un corazón blando y algo ansioso. Solo muerdes si te acorralan, y luego te sientes fatal. Eres Granbull: incomprendido, leal y un blandengue de los grandes.",
+  "why": "Pokédex (Oro/Plata/Cristal, Espada): parece temible pero en realidad es tímido, y solo muerde cuando se asusta; una criatura dulce tras una cara que da miedo."
+ },
+ "scizor": {
+  "title": "La disciplina de acero",
+  "blurb": "Eres disciplinado hasta el punto de intimidar. Entrenas, te preparas, ejecutas, y no entiendes a la gente que hace las cosas a medias. La calidez no es tu primer idioma, pero la fiabilidad sí, y los tuyos saben que pueden contar contigo por completo. Eres Scizor: preciso, formidable y hecho para ganar.",
+  "why": "Pokédex (Oro/Plata/Cristal, Espada): alza sus pinzas con dibujos de ojos para intimidar y entrena su cuerpo con precisión marcial; la especie de metal duro y concentración aún más dura."
+ },
+ "shuckle": {
+  "title": "El ermitaño",
+  "blurb": "Eres más feliz cuando te dejan a solas con un proyecto y mucho tiempo por delante. Eres paciente, reservado y productivo sin hacer ruido, y nunca has entendido el atractivo de las multitudes. Nadie puede meterte prisa y nada atraviesa tu caparazón. Eres Shuckle: autosuficiente, amable y trabajando en algo bueno.",
+  "why": "Pokédex (Oro/Plata/Cristal, Espada): se esconde bajo las rocas y fermenta bayas dentro de su caparazón, con paciencia, durante años; el ermitaño más satisfecho de la Pokédex."
+ },
+ "heracross": {
+  "title": "El forzudo bonachón",
+  "blurb": "Eres la persona más fuerte de la sala y la que menos lo menciona. Trabajas duro, cumples tu palabra y donde más feliz estás es con algo dulce y una tarde soleada. Pero no pierdes: si alguien quiere competir, lo mandas al horizonte y luego le ofreces algo de picar. Eres Heracross: humilde, poderoso y de buen carácter.",
+  "why": "Pokédex (Oro/Plata/Cristal, Espada): dócil y apacible, le encanta la savia dulce, pero con su cuerno puede lanzar a un rival que pese cien veces más que él; anime: el Heracross de Ash, loco por la savia."
+ },
+ "sneasel": {
+  "title": "El ladrón astuto",
+  "blurb": "Eres rápido, agudo y un poquito despiadado. Primero miras por ti, sabes ser encantador cuando te conviene y no le haces ascos a alguna travesura para salir adelante. No confías fácilmente y esperas lo mismo de los demás. Eres Sneasel: listo, independiente y siempre una jugada por delante de las normas.",
+  "why": "Pokédex (Oro/Plata/Cristal, Espada): roba huevos de los nidos y usa sus garras con cruel astucia; Mundo Misterioso: el ladrón que traiciona y regatea."
+ },
+ "delibird": {
+  "title": "El rescatador generoso",
+  "blurb": "Siempre llegas con algo para compartir. Eres generoso, alegre y valiente de la forma más práctica: subirías la montaña porque alguien allí arriba te necesita. No llevas la cuenta ni compites. Eres Delibird: desprendido, cálido y justo a quien querrías encontrarte en una noche fría.",
+  "why": "Pokédex (Oro/Plata/Cristal, Espada): lleva comida en la cola y la comparte con viajeros perdidos; una vez rescató así a un famoso alpinista; la especie que da."
+ },
+ "houndoom": {
+  "title": "El cazador de la manada",
+  "blurb": "Corres con una manada, y te gustaría liderarla. Eres intenso, estratégico y un poco temible cuando te concentras, y no malgastas energía con gente de fuera de tu círculo. Guardas los rencores y las lealtades con la misma fuerza. Eres Houndoom: feroz, afilado e inolvidable.",
+  "why": "Pokédex (Oro/Plata/Cristal, Espada): su aullido escalofriante hiela la sangre, y las manadas las lidera el de los cuernos más curvados; las quemaduras que deja nunca se curan."
+ },
+ "smeargle": {
+  "title": "El artista libre",
+  "blurb": "Creas cosas, y ese es todo el plan. Sientes curiosidad por todo y solo eres fiel a la próxima idea, y prefieres dejar tu huella en una pared antes que ganar un premio. Los horarios te resbalan; la inspiración no. Eres Smeargle: original, errante y nunca terminado.",
+  "why": "Pokédex (Oro/Plata/Cristal, Espada): pinta su propia marca con la cola, con más de 5000 marcas distintas registradas, y vaga copiando todo lo que ve; el artista que lo aprende todo a la primera."
+ },
+ "suicune": {
+  "title": "El viento puro",
+  "blurb": "Vas por el mundo dejándolo más limpio de lo que lo encontraste. Eres elegante, de principios y reservado, y nunca te quedas en un sitio el tiempo suficiente para que te atrapen. La gente se siente atraída por ti precisamente porque no la necesitas. Eres Suicune: sereno, elegante y libre.",
+  "why": "Pokédex (Oro/Plata/Cristal, Espada): recorre la tierra purificando el agua a su paso con la elegancia del viento del norte; viaja solo y rara vez se le ve."
+ },
+ "tyranitar": {
+  "title": "El terremoto andante",
+  "blurb": "No rodeas los obstáculos; los atraviesas. Eres dominante, directo y te sientes perfectamente cómodo siendo la mayor fuerza de la sala, y prefieres que te respeten antes que caer bien. Los cambios te aburren, los retos te emocionan. Eres Tyranitar: imparable, intransigente y una presencia que cambia el paisaje.",
+  "why": "Pokédex (Oro/Plata/Cristal, Espada): tan insolente y poderoso que derriba montañas y cambia los mapas con solo moverse; busca rivales y nada lo detiene."
+ },
+ "lugia": {
+  "title": "El guardián de las profundidades",
+  "blurb": "Eres mucho más poderoso de lo que dejas ver, y lo mantienes en silencio a propósito. Eres sereno, de principios y protector, y prefieres retirarte antes que arriesgarte a hacer daño a nadie. Sales a la superficie cuando hay que restaurar el equilibrio y desapareces cuando está hecho. Eres Lugia: profundo, dulce e inmensamente fuerte.",
+  "why": "Pokédex (Oro/Plata/Cristal, Espada): tan poderoso que un batir de sus alas puede derribar casas, así que se esconde en las profundidades del mar para no dañar a nadie; Pokémon 2: El poder de uno: el guardián del equilibrio de los mares."
+ },
+ "treecko": {
+  "title": "La cabeza fría",
+  "blurb": "No pierdes los nervios, y es lo primero que la gente nota de ti. Eres frío, autosuficiente y algo difícil de descifrar, y prefieres resolver las cosas en silencio antes que montar una escena. Eliges tus batallas con cuidado y luego no las pierdes. Eres Treecko: sereno, capaz y perfectamente bien por tu cuenta.",
+  "why": "Pokédex (Rubí/Zafiro/Esmeralda, Rubí Omega/Zafiro Alfa): tranquilo y sereno, nunca pierde los nervios pase lo que pase; anime: el Treecko de Ash, el solitario de la ramita en la boca que luchó por su árbol."
+ },
+ "blaziken": {
+  "title": "El luchador ardiente",
+  "blurb": "Mejoras cuanto más se complica. La presión no te encoge, te enciende, y prefieres enfrentarte al rival más fuerte del edificio antes que pasar de largo junto al más débil. Entrenas con disciplina y luchas con corazón, y crees en ganar de la forma correcta. Eres Blaziken: fogoso, honorable y hecho para los grandes momentos.",
+  "why": "Pokédex (Rubí/Zafiro/Esmeralda, Espada): sus llamas arden con más fuerza cuanto más fuerte es su rival, y salta un edificio de 30 plantas de un solo brinco; anime: el Blaziken de Aura, noble y feroz."
+ },
+ "mudkip": {
+  "title": "El ayudante constante",
+  "blurb": "Eres quien pregunta a todos qué tal están. Eres simpático, con los pies en el suelo y más fuerte de lo que pareces, y prefieres ayudar a competir. No necesitas un escenario; necesitas una tarea que importe y un grupo que se sienta como en casa. Eres Mudkip: constante, dulce y mucho más duro de lo que dicen los memes.",
+  "why": "Pokédex (Rubí/Zafiro/Esmeralda, Rubí Omega/Zafiro Alfa): percibe su entorno con la aleta, nada en el barro y puede levantar rocas cuando hace falta; anime: el Mudkip de Brock cuida de los demás Pokémon; inicial de Mundo Misterioso: Fuerte/Plácida."
+ },
+ "ludicolo": {
+  "title": "El bailarín de carnaval",
+  "blurb": "Cuando empieza la música, tú ya estás bailando. Eres la persona más alegre que nadie conoce, cálido y generoso y sin ningún miedo a hacer el ridículo. No compites ni planeas; celebras. Eres Ludicolo: la fiesta en persona, y todo el mundo se alegra de que hayas venido.",
+  "why": "Pokédex (Rubí/Zafiro/Esmeralda, Espada): al oír música festiva su cuerpo se llena de energía y se pone a bailar sin control; anime: el Ludicolo de Brock, siempre listo para la fiesta."
+ },
+ "gardevoir": {
+  "title": "El corazón guardián",
+  "blurb": "Moverías el universo por la gente a la que quieres, y lo saben. Eres intuitivo y dulce, con una fuerza interior que solo aparece cuando alguien que te importa está en peligro. Ganar no te interesa; proteger, sí. Eres Gardevoir: entregado, perspicaz y mucho más poderoso de lo que tu calma sugiere.",
+  "why": "Pokédex (Rubí/Zafiro/Esmeralda, Espada): puede ver el futuro y es capaz de crear un pequeño agujero negro para proteger a su Entrenador, aunque le cueste la vida; Mundo Misterioso: el Pokémon que se sacrificó."
+ },
+ "slaking": {
+  "title": "El rey de la pereza",
+  "blurb": "Se te da de maravilla no hacer nada, y en secreto se te da de maravilla todo lo demás. Ahorras energía, ignoras las urgencias que se inventan los demás y luego te mueves una sola vez, con decisión, cuando de verdad importa. La ambición y la rutina te aburren por igual. Eres Slaking: perezoso, poderoso y en paz total con ello.",
+  "why": "Pokédex (Rubí/Zafiro/Esmeralda, Espada): el Pokémon más perezoso, tumbado todo el día y comiendo solo lo que tiene al alcance, y aun así uno de los más fuertes; el señor de la vagancia."
+ },
+ "skitty": {
+  "title": "El perseguidor",
+  "blurb": "Te alegras con facilidad y te distraes con facilidad, y ambas cosas forman parte de tu encanto. Eres cálido, juguetón y haces amigos enseguida, y seguirías algo brillante fuera del camino pasándotelo en grande. Los planes son opcionales; la diversión, no. Eres Skitty: dulce, caótico y alguien con quien es imposible estar de mal humor.",
+  "why": "Pokédex (Rubí/Zafiro/Esmeralda, Espada): persigue todo lo que se mueve, incluida su propia cola, hasta que se marea; un adorable torbellino de distracción."
+ },
+ "sableye": {
+  "title": "El duende de las gemas",
+  "blurb": "Tienes tu pequeña cueva y tus pequeños tesoros, y no necesitas la aprobación de nadie para ninguna de las dos cosas. Eres astuto, un poco raro y encantadoramente autosuficiente, y quienes te entienden te entienden de verdad. Prefieres ser extraño a ser normal. Eres Sableye: peculiar, independiente y discretamente reluciente.",
+  "why": "Pokédex (Rubí/Zafiro/Esmeralda, Espada): acecha en cuevas comiendo gemas y se le teme porque roba almas con sus ojos brillantes; un solitario sigiloso al que le encanta lo que brilla."
+ },
+ "mawile": {
+  "title": "La dulce engañosa",
+  "blurb": "La gente te subestima, y tú la dejas. Eres lista, algo teatral y perfectamente capaz de hacerte la dulce hasta el momento en que ya no te hace falta. Disfrutas del juego y no te sientes mal por ganarlo. Eres Mawile: encantadora, astuta y llena de sorpresas.",
+  "why": "Pokédex (Rubí/Zafiro/Esmeralda, Espada): una cara dócil y una actitud dulce que atraen a los rivales al alcance de sus fauces de acero; la embaucadora."
+ },
+ "aggron": {
+  "title": "El guardián territorial",
+  "blurb": "Tienes tu territorio y lo cuidas. Eres responsable y algo arisco, no te encantan los cambios y defenderías lo tuyo frente a cualquiera. Bajo la armadura hay alguien que planta árboles después de la tormenta. Eres Aggron: testarudo, firme y guardián hasta la médula.",
+  "why": "Pokédex (Rubí/Zafiro/Esmeralda, Espada): reclama una montaña entera como territorio y la restaura tras los desastres, plantando árboles y acarreando tierra; ataca con fiereza a cualquier intruso."
+ },
+ "sharpedo": {
+  "title": "El matón de los mares",
+  "blurb": "Golpeas fuerte y no pides perdón. Eres competitivo, directo y rápido, y tu fama te precede en cualquier sitio. No necesitas caer bien; necesitas ser el primero. Eres Sharpedo: despiadado, implacable y la razón por la que la gente mira el agua antes de meterse.",
+  "why": "Pokédex (Rubí/Zafiro/Esmeralda, Espada): apodado el matón de los mares, ataca barcos a 120 km/h y sus colmillos vuelven a crecerle al instante; temido por todo lo que vive en el agua."
+ },
+ "torkoal": {
+  "title": "El horno constante",
+  "blurb": "Mantienes tu fuego encendido pase lo que pase. Eres lento, constante y diligente, te interesa más hacer algo bien que hacerlo rápido, y te emocionas hasta las lágrimas con cosas que a otros les dan igual. Las salas ruidosas no son para ti; los proyectos largos, sí. Eres Torkoal: cálido, de fiar y hecho para durar.",
+  "why": "Pokédex (Rubí/Zafiro/Esmeralda, Espada): excava en busca de carbón en las montañas y lo quema sin parar, manteniendo siempre su fuego encendido; anime: el Torkoal de Ash, que llora con cada emoción."
+ },
+ "flygon": {
+  "title": "El espíritu del desierto",
+  "blurb": "Eres un espíritu libre con un corazón sorprendentemente bondadoso. Te encantan los espacios abiertos y los horizontes nuevos, haces música con el caos y es mucho más probable que te vayas a explorar que que sientes la cabeza. La gente te echa de menos cuando te vas, y siempre acabas volviendo. Eres Flygon: viajero, cálido e imposible de encerrar.",
+  "why": "Pokédex (Rubí/Zafiro/Esmeralda, Espada): sus alas cantan en las tormentas de arena que levanta, por eso lo llaman el espíritu del desierto; un dragón errante y libre."
+ },
+ "altaria": {
+  "title": "El canto de las nubes",
+  "blurb": "Flotas por encima de los dramas. Eres dulce, artístico y una presencia relajante: la gente se calma a los pocos minutos de hablar contigo. Prefieres cantar a discutir, y das los mejores abrazos del mundo. Eres Altaria: suave, sereno y, en secreto, un dragón.",
+  "why": "Pokédex (Rubí/Zafiro/Esmeralda, Espada): tararea con una preciosa voz de soprano y abraza con suavidad con sus alas de nube; canta para quienes quiere."
+ },
+ "zangoose": {
+  "title": "El guardián de la rivalidad",
+  "blurb": "Tienes un rival, y te lo tomas como algo personal. Estás alerta, eres feroz y siempre estás listo, y para ti el rencor no es amargura, es combustible. Eres leal a unos pocos y desconfías de casi todos. Eres Zangoose: afilado, rápido y nunca te pillan dormido.",
+  "why": "Pokédex (Rubí/Zafiro/Esmeralda, Espada): enzarzado en una rivalidad ancestral con Seviper, siempre está en guardia y se le eriza el pelaje al ver uno; pelea con las garras por delante."
+ },
+ "milotic": {
+  "title": "La belleza que calma",
+  "blurb": "Tú bajas la temperatura. Eres elegante y sereno, y la gente deja de discutir cuando entras, no porque se lo pidas, sino porque de repente parece una tontería. Has pasado por cosas peores de lo que saben, y te hicieron más amable. Eres Milotic: elegante, pacífico y la prueba de que la belleza está en lo que haces con tu pasado.",
+  "why": "Pokédex (Rubí/Zafiro/Esmeralda, Espada): el Pokémon más bello, del que se dice que calma la ira y pone fin a las guerras con solo aparecer; vive en el fondo de lagos cristalinos."
+ },
+ "kecleon": {
+  "title": "El tendero",
+  "blurb": "Llevas el negocio con mano firme. Eres organizado, observador y amable de una forma muy comercial, y pasas desapercibido hasta que alguien rompe las normas, momento en que te conviertes en una pesadilla. Respetas la justicia por encima de todo. Eres Kecleon: adaptable, de fiar y mejor no robarte.",
+  "why": "Mundo Misterioso: lleva las tiendas de todos los pueblos y es terriblemente fuerte si le robas; Pokédex (Rubí/Zafiro/Esmeralda, Espada): cambia de color para camuflarse y observar en silencio."
+ },
+ "banette": {
+  "title": "La muñeca del rencor",
+  "blurb": "Recuerdas quién te tiró a la basura. Eres intenso y algo amargado, con vena creativa y buena memoria, y prefieres que te teman antes que volver a pasar desapercibido. En algún lugar bajo todo eso hay un peluche. Eres Banette: atormentado, afilado y decidido a que te vean.",
+  "why": "Pokédex (Rubí/Zafiro/Esmeralda, Espada): un peluche abandonado que cobró vida por el rencor y vaga buscando al niño que lo dejó; lanza maldiciones clavándose alfileres."
+ },
+ "absol": {
+  "title": "El presagio incomprendido",
+  "blurb": "Ves venir la tormenta y lo dices, aunque nadie te dé las gracias. Eres reflexivo, de principios y profundamente solitario, y has hecho las paces con que te malinterpreten. Aun así, la próxima vez volverías a avisar. Eres Absol: sabio, solitario y mejor que tu fama.",
+  "why": "Pokédex (Rubí/Zafiro/Esmeralda, Espada): presiente los desastres y baja de las montañas para avisar a la gente, que en cambio lo culpa de la catástrofe; por eso vive solo."
+ },
+ "luvdisc": {
+  "title": "La romántica empedernida",
+  "blurb": "Te encanta el amor. Eres cálido, cariñoso y más feliz cuando tienes a alguien con quien nadar, y crees en una entrega que otros miran con escepticismo. La ambición y los planes van detrás de las personas de tu vida. Eres Luvdisc: dulce, de corazón abierto y un poquito mágico.",
+  "why": "Pokédex (Rubí/Zafiro/Esmeralda, Espada): nada en pareja y se dice que trae amor eterno a las parejas que lo encuentran; vive para el cariño."
+ },
+ "salamence": {
+  "title": "El sueño desatado",
+  "blurb": "Deseabas algo con tanta fuerza que te salieron alas para conseguirlo. Eres ambicioso, explosivo y nada interesado en la paciencia, y cuando te frustras se entera todo el paisaje. Puedes resultar intenso, pero nadie duda de cuánto lo deseas. Eres Salamence: feroz, decidido y en el aire por pura fuerza de voluntad.",
+  "why": "Pokédex (Rubí/Zafiro/Esmeralda, Espada): su sueño de volar era tan fuerte que le salieron alas, y cuando se enfurece entra en un frenesí que lo quema todo; el sueño desbocado."
+ },
+ "metagross": {
+  "title": "El superordenador",
+  "blurb": "Piensas en sistemas y no te pones nervioso. Analizas, planeas, ejecutas, y tienes muy poca paciencia con los sentimientos que se interponen en la respuesta correcta. La gente te encuentra intimidante; a ti te parece poco eficiente. Eres Metagross: brillante, implacable y siempre calculando.",
+  "why": "Pokédex (Rubí/Zafiro/Esmeralda, Espada): cuatro cerebros conectados en paralelo que calculan más rápido que un superordenador, e inmoviliza a sus presas bajo su cuerpo con fría precisión."
+ },
+ "latias": {
+  "title": "La voladora empática",
+  "blurb": "Sientes lo que sienten los demás, a veces antes que ellos. Eres cálida, intuitiva y juguetona, y la hostilidad de cualquier tipo te duele de verdad, así que prefieres desaparecer antes que pelear. Quieres a fondo y para toda la vida. Eres Latias: empática, dulce y más valiente de lo que crees.",
+  "why": "Pokédex (Rubí/Zafiro/Esmeralda, Espada): muy inteligente, entiende el habla humana y es tan sensible a las emociones que siente la hostilidad como dolor; Héroes Pokémon: la juguetona y leal guardiana de Alto Mare."
+ },
+ "rayquaza": {
+  "title": "El soberano del cielo",
+  "blurb": "Vives por encima de todo, por elección. Eres poderoso, autosuficiente y no te interesan los dramas ajenos hasta que amenazan el equilibrio; entonces desciendes y les pones fin. No necesitas público ni corona. Eres Rayquaza: supremo, solitario y siempre según tus propias reglas.",
+  "why": "Pokédex (Rubí/Zafiro/Esmeralda, Espada): vive solo en la capa de ozono desde hace cientos de millones de años y solo baja para poner fin al choque entre Kyogre y Groudon; la cima de la independencia."
+ },
+ "jirachi": {
+  "title": "El que concede deseos",
+  "blurb": "Quieres cosas buenas para la gente, y lo dices en serio. Eres soñador y generoso, algo dormilón, y te interesa mucho más lo que podría ser que lo que es. Te cuesta arrancar, pero cuando lo haces, los deseos se cumplen. Eres Jirachi: esperanzado, amable y vale la pena esperarte.",
+  "why": "Pokédex (Rubí/Zafiro/Esmeralda, Espada): duerme mil años y despierta para conceder cualquier deseo escrito en sus etiquetas; el dulce soñador de las películas."
+ },
+ "chimchar": {
+  "title": "La chispa rebelde",
+  "blurb": "Alguien te dijo que no eras suficiente, y desde entonces le estás demostrando que se equivocaba. Eres enérgico, luchador y algo en carne viva, con una vena competitiva que nace de muy dentro. Necesitas a la gente adecuada a tu alrededor, y cuando la tienes eres imparable. Eres Chimchar: pequeño, ardiente y lejos de haber terminado.",
+  "why": "Pokédex (Diamante/Perla/Platino, Espada): su llama se alimenta de su espíritu y se apaga cuando duerme; anime: el Chimchar que Paul abandonó se convierte en el luchador más feroz de Ash."
+ },
+ "piplup": {
+  "title": "El pingüino orgulloso",
+  "blurb": "Tienes tus estándares y prefieres pasarlo mal antes que aceptar una ayuda que no has pedido. Eres orgulloso, testarudo y un poquito dramático, y te encariñas despacio pero del todo. La gente aprende a no darte palmaditas en la cabeza. Eres Piplup: digno, decidido y, en secreto, entregado.",
+  "why": "Pokédex (Diamante/Perla/Platino, Espada): tiene mucho amor propio y odia aceptar comida de la gente, así que le cuesta encariñarse; anime: el Piplup de Maya, testarudo y orgulloso hasta que deja de serlo."
+ },
+ "staraptor": {
+  "title": "El volador intrépido",
+  "blurb": "No te rindes y no das marcha atrás. Eres orgulloso, rápido y algo feroz, y prefieres volar solo antes que ir más despacio por una bandada que no te sigue el ritmo. Las heridas no te detienen; en realidad, nada lo hace. Eres Staraptor: audaz, implacable y tu propio capitán.",
+  "why": "Pokédex (Diamante/Perla/Platino, Espada): nunca deja de atacar aunque esté herido, y abandona la bandada para vivir solo; anime: el Staraptor de Ash, todo velocidad y orgullo."
+ },
+ "bidoof": {
+  "title": "El constructor humilde",
+  "blurb": "Nada te altera, y eso es más importante de lo que parece. Eres simpático, práctico y productivo sin hacer ruido, y sigues construyendo mientras otros más vistosos hablan de construir. No necesitas reconocimiento, aunque te has ganado más que la mayoría. Eres Bidoof: humilde, constante y adorado por todo el que presta atención.",
+  "why": "Pokédex (Diamante/Perla/Platino, Espada): nervios de acero, nada lo inmuta y roe sin parar para construir presas; el meme que se convirtió en icono de los fans de la fiabilidad humilde."
+ },
+ "luxray": {
+  "title": "El centinela de mirada aguda",
+  "blurb": "Ves a través de las cosas, también de las personas. Eres vigilante, protector y algo intenso, y usas esa mirada aguda para cuidar de los tuyos antes que para cazar. La lealtad y el dominio no chocan para ti; son el mismo trabajo. Eres Luxray: perspicaz, fuerte y siempre de guardia.",
+  "why": "Pokédex (Diamante/Perla/Platino, Espada): sus ojos ven a través de las paredes para encontrar tanto presas como crías perdidas, y vigila a su manada; el león vigilante."
+ },
+ "drifloon": {
+  "title": "El misterio a la deriva",
+  "blurb": "Vas a la deriva, y te gusta. Eres soñador, poco común y algo inquietante de una forma que a la gente le resulta curiosamente reconfortante, y prefieres flotar por la vida antes que quedarte atado a un plan. Te despierta curiosidad todo lo extraño. Eres Drifloon: ligero, misterioso y discretamente inolvidable.",
+  "why": "Pokédex (Diamante/Perla/Platino, Espada): hecho de espíritus, flota con el viento y se dice que se lleva a los niños de la mano; chirría cuando lo aprietan; un enigma de aspecto dulce."
+ },
+ "honchkrow": {
+  "title": "El capo",
+  "blurb": "Tú diriges la operación. Eres seguro de ti y algo intimidante, con buen ojo para el talento y una bandada que hace lo que dices. No haces el trabajo sucio; lo decides. Eres Honchkrow: autoritario, astuto y el jefe de la noche.",
+  "why": "Pokédex (Diamante/Perla/Platino, Espada): lidera bandadas de Murkrow que cumplen sus órdenes y se le conoce como el invocador de la noche; el jefe de los cuervos."
+ },
+ "spiritomb": {
+  "title": "El rencor atado",
+  "blurb": "Por dentro tienes muchas cosas, y no todas se llevan bien. Eres intenso, reservado y algo hostil con el mundo por defecto, y no finges ser más amable de lo que eres. Tu lealtad es rara, extraña y real. Eres Spiritomb: complicado, desconfiado y nunca aburrido.",
+  "why": "Pokédex (Diamante/Perla/Platino, Espada): 108 espíritus atados a una piedra angular por sus fechorías, malvados y deseando salir; el Pokémon de la villana en dos juegos."
+ },
+ "garchomp": {
+  "title": "El cazador supersónico",
+  "blurb": "Vas rápido y no fallas. Eres ambicioso, seguro de ti y algo temible cuando te concentras, y prefieres perseguir un objetivo antes que esperar a que llegue. Respetas la fuerza y te sobra. Eres Garchomp: el depredador alfa, siempre en el aire y siempre acercándote.",
+  "why": "Pokédex (Diamante/Perla/Platino, Espada): vuela a la velocidad de un avión a reacción para cazar Pokémon pájaro y nunca deja escapar a su presa; anime: el imbatible Garchomp de Cintia."
+ },
+ "lucario": {
+  "title": "El lector del aura",
+  "blurb": "Lees a la gente, y te exiges un nivel que casi nadie se plantearía. Eres disciplinado y justo, con una competitividad callada y una lealtad que sobrevive a las decepciones. No hablas mucho; no te hace falta. Eres Lucario: concentrado, de principios y en sintonía con todos los que te rodean.",
+  "why": "Pokédex (Diamante/Perla/Platino, Espada): lee el aura de todas las cosas y sabe cómo se sienten los demás; Lucario y el misterio de Mew: leal hasta el final, incluso cuando lo traicionan."
+ },
+ "croagunk": {
+  "title": "El bromista impasible",
+  "blurb": "Tienes una sola expresión y te funciona. Eres seco, imperturbable y discretamente raro, y sueltas tus mejores momentos sin ninguna fanfarria. Mantienes honrada a la gente que te rodea, a veces con un toque. Eres Croagunk: impasible, de fiar y más gracioso de lo que nadie reconoce.",
+  "why": "Anime: el Croagunk de Brock, que le da un toque cada vez que intenta ligar sin cambiar de expresión; Pokédex (Diamante/Perla/Platino, Espada): emite un sonido inquietante con las mejillas para desconcertar a sus rivales."
+ },
+ "weavile": {
+  "title": "La mente de la banda",
+  "blurb": "Trabajas en equipo y tú llevas el plan. Eres agudo, estratégico y algo frío a la hora de conseguir resultados, y tus amigos son más bien cómplices. No te importa ser el villano en la historia de otro. Eres Weavile: listo, coordinado y peligroso por diseño.",
+  "why": "Pokédex (Diamante/Perla/Platino, Espada): caza en grupos de cuatro o cinco y graba señales en los árboles para coordinarse; astuto, frío y muy bueno en lo suyo."
+ },
+ "togekiss": {
+  "title": "El que trae la paz",
+  "blurb": "Llevas la paz a las salas y no te quedas en las que no la quieren. Eres generoso, sereno y genuinamente amable, y el conflicto por el conflicto te desconcierta. La gente se siente afortunada de conocerte, y lo es. Eres Togekiss: dulce, luminoso y una bendición con patas.",
+  "why": "Pokédex (Diamante/Perla/Platino, Espada): nunca aparece donde hay discordia, y reparte bendiciones entre las personas que se respetan; el Pokémon del júbilo."
+ },
+ "leafeon": {
+  "title": "La hoja tranquila",
+  "blurb": "Eres el aire fresco. Eres sereno y amable y más feliz al aire libre, y no necesitas mucho ruido ni mucha gente para sentirte lleno. Cuidas de las cosas despacio y bien. Eres Leafeon: tranquilo, protector y bueno para todos los que te rodean.",
+  "why": "Pokédex (Diamante/Perla/Platino, Espada): hace la fotosíntesis y siempre está rodeado de aire limpio y fresco; la eeveelución más tranquila."
+ },
+ "glaceon": {
+  "title": "La precisión helada",
+  "blurb": "Eres preciso, y mantienes un poco de distancia a propósito. Eres elegante y sereno, con un listón alto y un humor seco, y no entras en calor rápido con gente nueva. Quienes consiguen llegar descubren que el frío nunca fue toda la historia. Eres Glaceon: frío, exacto y discretamente bello.",
+  "why": "Pokédex (Diamante/Perla/Platino, Espada): controla su temperatura corporal con precisión y congela el aire a su alrededor en polvo de diamante; la eeveelución elegante y distante."
+ },
+ "gallade": {
+  "title": "El protector caballeroso",
+  "blurb": "Tienes un código, y lo vives. Eres cortés y disciplinado, defiendes a quien no puede defenderse y nunca ganarías de una forma de la que no pudieras sentirte orgulloso. Te tomas en serio tus responsabilidades y tus amistades. Eres Gallade: de principios, protector y un caballero en todo salvo en el título.",
+  "why": "Pokédex (Diamante/Perla/Platino, Espada): un maestro de la cortesía y la esgrima que lucha con las hojas de sus codos para proteger a alguien; la caballerosidad hecha Pokémon."
+ },
+ "froslass": {
+  "title": "El frío hermoso",
+  "blurb": "Eres bella de una forma que pone a la gente un poco nerviosa. Eres reservada y creativa, con un exterior frío y un humor ligeramente inquietante, y coleccionas lo que amas con una intensidad callada. No persigues la compañía; ella te encuentra. Eres Froslass: misteriosa, elegante y no del todo de este mundo.",
+  "why": "Pokédex (Diamante/Perla/Platino, Espada): se dice que es el espíritu de una mujer perdida en la nieve, que congela a los viajeros para decorar su hogar; bella e inquietante."
+ },
+ "rotom": {
+  "title": "La corriente traviesa",
+  "blurb": "Estás metido en todo a la vez y te encanta. Eres curioso, caótico y gracioso, saltas de un interés a otro a la velocidad de la electricidad, y nunca has visto un sistema que no quisieras toquetear. El aburrimiento es tu único enemigo de verdad. Eres Rotom: juguetón, ingenioso e imposible de apagar.",
+  "why": "Pokédex (Diamante/Perla/Platino, Espada): posee electrodomésticos y siembra el caos, amante de una buena broma; la Rotom Dex: parlanchina, curiosa y en todas partes a la vez."
+ },
+ "giratina": {
+  "title": "El desterrado",
+  "blurb": "Te echaron, y construiste un mundo propio. Eres solitario e intenso, con un fuerte sentido de lo justo y una profunda desconfianza hacia quien crea que puede decidirlo por ti. Observas más de lo que hablas. Eres Giratina: exiliado, formidable y súbdito de nadie.",
+  "why": "Pokédex (Platino, Espada): desterrado al Mundo Distorsión por su violencia, observa el mundo real desde el otro lado; el marginado que, aun así, mantiene el equilibrio."
+ },
+ "cresselia": {
+  "title": "La guardiana de los sueños",
+  "blurb": "Cuidas de la gente mientras duerme, en sentido figurado y quizá literal. Eres serena, imaginativa y generosa, y prefieres ahuyentar la pesadilla de alguien antes que ganar nada. Te guardas tus pensamientos, pero nunca tu amabilidad. Eres Cresselia: serena, protectora y un buen augurio.",
+  "why": "Pokédex (Diamante/Perla/Platino, Espada): sus plumas traen sueños felices y ahuyentan las pesadillas, y es la encarnación de la luna creciente; la dulce contrapartida de Darkrai."
+ },
+ "darkrai": {
+  "title": "La pesadilla incomprendida",
+  "blurb": "Mantienes las distancias porque es más fácil que explicarte. Eres reservado, incomprendido y mucho más dulce que tu reputación, y has dejado de intentar corregirla. Quienes miran más allá de la sombra encuentran a alguien que merece la pena conocer. Eres Darkrai: solitario, protector y mejor de lo que dicen.",
+  "why": "Pokédex (Diamante/Perla/Platino, Espada): provoca pesadillas, pero solo para protegerse, y no pretende hacer daño; El desafío de Darkrai: el marginado que salva al pueblo que lo temía."
+ },
+ "shaymin": {
+  "title": "La flor de la gratitud",
+  "blurb": "Floreces con la amabilidad y dejas todo más limpio allá por donde pasas. Eres dulce y algo sensible, con un genio sorprendente cuando la gente es grosera, y crees que la gratitud es el sentido de todo. No necesitas ganar; necesitas crecer. Eres Shaymin: agradecido, dulce y bueno para el mundo.",
+  "why": "Pokédex (Diamante/Perla/Platino, Espada): florece cuando siente gratitud y purifica la tierra contaminada convirtiéndola en campos de flores; el pequeño héroe gruñón de la película."
+ },
+ "victini": {
+  "title": "La estrella de la victoria",
+  "blurb": "Eres un ganador, y quieres que todos a tu alrededor ganen también. Eres luminoso y enérgico, generoso con tu suerte y genuinamente más feliz cuando todo el equipo cruza la meta junto. Odias estar solo. Eres Victini: afortunado, cariñoso y la victoria en tamaño pequeño.",
+  "why": "Pokédex (Negro/Blanco, Espada): trae la victoria a cualquier Entrenador del que se haga amigo y comparte su energía ilimitada; el héroe solitario y generoso de la película."
+ },
+ "snivy": {
+  "title": "La aristócrata fría",
+  "blurb": "Eres serena, algo altiva, y te parece perfecto. No te alteras, no te deshaces en elogios, y ganas más con el momento justo que con la fuerza. Eres leal a quien te respeta y fría con todos los demás. Eres Snivy: elegante, afilada y por encima del alboroto.",
+  "why": "Pokédex (Negro/Blanco, Espada): tranquila y serena, con la nariz bien alta; anime: la Snivy de Ash, orgullosa, astuta y demoledora con Atracción."
+ },
+ "oshawott": {
+  "title": "El fanfarrón sincero",
+  "blurb": "Quieres que te elijan, y no te da vergüenza. Eres entusiasta y algo dramático, con un corazón blando y la costumbre de ofrecerte voluntario antes de pensarlo bien. Lloras con facilidad y nunca dejas de intentarlo. Eres Oshawott: sincero, valiente y completamente entrañable.",
+  "why": "Anime: el Oshawott de Ash, que fanfarronea, llora con facilidad y aun así se ofrece para todos los combates; Pokédex (Negro/Blanco, Espada): lucha con su concha y aprende rápido."
+ },
+ "stoutland": {
+  "title": "El veterano del rescate",
+  "blurb": "Eres a quien la gente confía lo que más le importa. Eres sabio, paciente e infinitamente de fiar, y nunca has querido que te lo reconozcan. No necesitas aventuras; necesitas gente a la que cuidar. Eres Stoutland: leal, sereno y un héroe sin capa.",
+  "why": "Pokédex (Negro/Blanco, Espada): un perro de rescate sabio y leal que salva a la gente perdida en montañas nevadas y al que se confía el cuidado de los niños; la especie del servicio."
+ },
+ "excadrill": {
+  "title": "El taladro de túneles",
+  "blurb": "Agachas la cabeza y cavas. Eres trabajador y con una sola idea en mente, poco dado a la charla, y lo bastante testarudo como para estar enfurruñado mucho tiempo si alguien te falla. Dale un objetivo y apártate. Eres Excadrill: decidido, concentrado e imparable a tu manera.",
+  "why": "Pokédex (Negro/Blanco, Espada): perfora 90 metros por hora y construye enormes laberintos de túneles; anime: el Excadrill de Iris, que se negó a obedecer hasta que estuvo listo."
+ },
+ "audino": {
+  "title": "El que escucha",
+  "blurb": "Oyes lo que la gente no dice. Eres cálido y atento, cuidas de todos a tu alrededor y prefieres ser útil a llamar la atención. La competición es algo que de verdad no entiendes. Eres Audino: amable, perspicaz y la razón por la que la gente se siente mejor después de hablar contigo.",
+  "why": "Pokédex (Negro/Blanco, Espada): sus antenas oyen los latidos del corazón y le dicen cómo se siente alguien; el compañero de la Enfermera Joy en Teselia."
+ },
+ "whimsicott": {
+  "title": "La pelusa bromista",
+  "blurb": "Eres un problema de la forma más simpática posible. Eres ligero, gracioso e imposible de atrapar, y dejas un rastro de pequeñas travesuras allá adonde te lleva el viento. Los planes son para los demás. Eres Whimsicott: juguetón, despreocupado y ya te has ido antes de que nadie pueda enfadarse.",
+  "why": "Pokédex (Negro/Blanco, Espada): se cuela por las rendijas de las casas para gastar bromas y deja algodón como firma; el viento que ríe."
+ },
+ "krookodile": {
+  "title": "El intimidador del desierto",
+  "blurb": "Fijas el objetivo y no lo sueltas. Eres seguro de ti, competitivo y algo matón, con una chulería de gafas de sol y una lista muy corta de cosas que te dan miedo. Respetas la fuerza y te sobra. Eres Krookodile: atrevido, intimidante y muy difícil de quitarse de encima.",
+  "why": "Pokédex (Negro/Blanco, Espada): nunca deja escapar a una presa que ha visto, con mandíbulas que aplastan coches; anime: el Krookodile de Ash con gafas de sol, un matón chulesco."
+ },
+ "scrafty": {
+  "title": "La banda del barrio",
+  "blurb": "Tienes una banda y una esquina, y las dos son tuyas. Eres ruidoso, leal y rápido en liarte a golpes por los tuyos, con un punto tierno que negarías bajo juramento. No te encantan las normas, pero quieres a tu familia. Eres Scrafty: peleón, entregado y todo corazón bajo la capucha.",
+  "why": "Pokédex (Negro/Blanco, Espada): se mueve en grupo, da patadas y cabezazos a todo lo que entra en su territorio y protege con fiereza a su familia y amigos."
+ },
+ "zoroark": {
+  "title": "El ilusionista",
+  "blurb": "Muestras a la gente lo que necesita ver. Eres listo y creativo, algo desconfiado y ferozmente protector con los pocos a los que dejas ver tras la ilusión. Se te da bien leer una sala y mejor aún controlarla. Eres Zoroark: astuto, leal y nunca del todo lo que pareces.",
+  "why": "Pokédex (Negro/Blanco, Espada): crea ilusiones para proteger su guarida y a sus compañeros, sin mostrar nunca su verdadera forma; Zoroark: El maestro de ilusiones."
+ },
+ "minccino": {
+  "title": "La maniática del orden",
+  "blurb": "Todo tiene su sitio y sabes exactamente cuál es. Eres ordenada, simpática y algo maniática, y demuestras tu cariño haciendo las cosas más agradables para los demás. El caos te estresa; el orden es tu arte. Eres Minccino: pulcra, cálida y una perfeccionista discreta.",
+  "why": "Pokédex (Negro/Blanco, Espada): limpia de forma obsesiva usando la cola como escoba y saluda a sus amigos acicalándolos; la especie que no soporta el desorden."
+ },
+ "gothitelle": {
+  "title": "La que mira las estrellas",
+  "blurb": "Miras hacia arriba más que la mayoría. Eres reflexiva y algo melancólica, te atraen las grandes preguntas y las noches largas, y presientes el futuro más de lo que querrías. La gente te encuentra seria; a ti te parece ruidosa. Eres Gothitelle: profunda, callada y mirando las estrellas.",
+  "why": "Pokédex (Negro/Blanco, Espada): lee el futuro en las estrellas y llora cuando prevé la muerte de su Entrenador; una mente silenciosa y cósmica."
+ },
+ "emolga": {
+  "title": "La travesura voladora",
+  "blurb": "Te sales con la tuya, y todo el mundo lo sabe. Eres encantadora, perezosa de forma estratégica y muy buena consiguiendo que otros trabajen mientras tú te quedas con la merienda. Es divertido estar contigo y algo arriesgado confiarte la última galleta. Eres Emolga: adorable, intrigante y siempre en el aire.",
+  "why": "Anime: la Emolga de Iris, que usa Atracción para librarse del trabajo y roba la merienda a todos; Pokédex (Negro/Blanco, Espada): planea de árbol en árbol descargando electricidad."
+ },
+ "alomomola": {
+  "title": "La enfermera del océano",
+  "blurb": "Encuentras a los heridos y cuidas de ellos. Eres dulce y constante, con una presencia sanadora y ningún interés en ganar nada, y vas a la deriva allá donde se te necesita. No haces aspavientos. Eres Alomomola: protectora, serena y la razón por la que alguien salió adelante.",
+  "why": "Pokédex (Negro/Blanco, Espada): cura a los Pokémon heridos envolviéndolos en su membrana curativa y recorre el mar abierto para encontrarlos; el pez que cuida."
+ },
+ "chandelure": {
+  "title": "El farol de almas",
+  "blurb": "Eres hipnótico, y un poquito peligroso. Eres creativo e intenso, no entras en calor con desconocidos y prefieres fascinar antes que caer bien. Iluminas las salas de una forma de la que nadie puede apartar la vista. Eres Chandelure: elegante, inquietante y nada que tomarse a la ligera.",
+  "why": "Pokédex (Negro/Blanco, Espada): hipnotiza con sus llamas parpadeantes y consume las almas, que quedan vagando; elegante, inquietante y temido."
+ },
+ "haxorus": {
+  "title": "El hacha bondadosa",
+  "blurb": "Eres amable hasta que alguien cruza una línea, y entonces ya no. Trabajas duro, cumples tu palabra y te tomas en serio la competición sin tomártela como algo personal. Tus amigos te conocen como alguien dulce; tus rivales, no. Eres Haxorus: constante, honorable y afilado cuando importa.",
+  "why": "Pokédex (Negro/Blanco, Espada): bondadoso por naturaleza, pero implacable cuando amenazan su territorio, con colmillos que cortan el acero; el dragón honorable."
+ },
+ "golurk": {
+  "title": "El servidor ancestral",
+  "blurb": "Te construyeron para proteger, y nunca lo has cuestionado. Eres constante, cumplidor e inmenso sin hacer ruido, y prefieres servir a algo en lo que crees antes que liderar algo en lo que no. La gente subestima cuánto sientes. Eres Golurk: leal, paciente e irrompible.",
+  "why": "Pokédex (Negro/Blanco, Espada): construido por un pueblo antiguo para protegerlo, obedece sus órdenes sin fallar y solo se desboca si le quitan el sello; el guardián leal."
+ },
+ "bisharp": {
+  "title": "El comandante despiadado",
+  "blurb": "Lideras, y esperas que te sigan. Eres disciplinado y resolutivo, sin paciencia para las excusas y muy poca para los sentimentalismos, y te ganaste tu rango siendo la hoja más afilada de la sala. La gente te respeta más de lo que te quiere. Eres Bisharp: autoritario, despiadado y siempre el primero.",
+  "why": "Pokédex (Negro/Blanco, Espada): lidera un grupo de Pawniard y elimina a los que se quedan atrás; remata a sus rivales sin vacilar."
+ },
+ "braviary": {
+  "title": "El que lucha por sus amigos",
+  "blurb": "Luchas por tus amigos y no te importa el precio. Eres audaz, leal y algo fanfarrón al respecto, y siempre prefieres ser valiente a ser prudente. La gente se siente segura detrás de ti. Eres Braviary: intrépido, entregado y el héroe de la historia de alguien.",
+  "why": "Pokédex (Negro/Blanco, Espada): lucha por sus amigos sin preocuparse por su propia seguridad y lo llaman el héroe de los cielos; el pájaro valiente."
+ },
+ "hydreigon": {
+  "title": "La furia de tres cabezas",
+  "blurb": "Eres mucho, y no lo sientes. Eres agresivo y competitivo, difícil de discutir y aún más difícil de calmar, y nunca has visto sentido en ser amable. No confías fácilmente, y haces bien, porque te comerías a cualquiera que lo intentara. Eres Hydreigon: feroz, indómito y a por todas.",
+  "why": "Pokédex (Negro/Blanco, Espada): ataca todo lo que se mueve, con tres cabezas que no comparten ni pizca de sensatez; el dragón brutal que no se fía de nadie."
+ },
+ "volcarona": {
+  "title": "El sustituto del sol",
+  "blurb": "Has sido la luz cuando el sol se apagó. Eres cálido y sereno, algo reservado, y te conformas con ser el brillo constante en vez de la llama ruidosa. La gente te busca con la mirada más de lo que crees. Eres Volcarona: radiante, tranquilo y venerado en silencio.",
+  "why": "Pokédex (Negro/Blanco, Espada): cuando la ceniza volcánica tapó el sol, su fuego ocupó su lugar y desde entonces se le venera; la polilla serena y radiante."
+ },
+ "zekrom": {
+  "title": "Los ideales",
+  "blurb": "Crees en algo, y lucharás por ello. Eres de principios, poderoso y algo intransigente, y prefieres seguir un ideal antes que a una persona. Respetas la convicción y desprecias la hipocresía. Eres Zekrom: decidido, eléctrico y fiel a tus ideales.",
+  "why": "Pokédex (Negro/Blanco, Espada): ayuda a quienes persiguen sus ideales y abrasa el mundo de quienes no lo hacen; el dragón de los ideales frente a la verdad de Reshiram."
+ },
+ "chespin": {
+  "title": "El curioso glotón",
+  "blurb": "Eres alegre, glotón y curioso por todo, y esa combinación te mete exactamente en tantos líos como suena. Eres más duro de lo que pareces y más amable de lo que hace falta. Sigues a tu olfato. Eres Chespin: de buen corazón, impulsivo y una compañía estupenda.",
+  "why": "Anime: el Chespin de Clemont, alegre, obsesionado con la comida y siempre metido en líos; Pokédex (X/Y, Espada): su caparazón aguanta el peso de un camión y le encanta mordisquear."
+ },
+ "greninja": {
+  "title": "El ninja silencioso",
+  "blurb": "Te mueves en silencio y rápido. Eres disciplinado y sereno, muy competitivo sin necesidad de demostrarlo, y creas vínculos profundos con muy pocas personas. Cuando lo haces, te conviertes en algo completamente distinto. Eres Greninja: silencioso, preciso y entregado al compañero adecuado.",
+  "why": "Pokédex (X/Y, Espada): se mueve con la velocidad y la elegancia de un ninja y ataca antes de que nadie lo vea; anime: Greninja Ash, el vínculo que se convierte en forma."
+ },
+ "pyroar": {
+  "title": "El líder de la manada",
+  "blurb": "Lideras y asumes la responsabilidad que conlleva. Eres seguro de ti y protector, con vena competitiva y un claro sentido de quién pertenece a tu manada. Los cambios no son lo tuyo; tu gente, sí. Eres Pyroar: orgulloso, protector y nacido para liderar.",
+  "why": "Pokédex (X/Y, Espada): el macho lidera la manada y protege a las crías mientras las hembras cazan; su rugido hace huir a los rivales."
+ },
+ "gogoat": {
+  "title": "La montura de confianza",
+  "blurb": "Eres en quien se sube la gente cuando está cansada. Eres sereno y de fiar, con un sexto sentido para saber cómo está alguien de verdad, y lo llevarías todo el camino sin pedir nada a cambio. No compites; llevas. Eres Gogoat: digno de confianza, dulce y fuerte en lo que importa.",
+  "why": "Pokédex (X/Y, Espada): lee los sentimientos de su jinete a través de los cuernos y lleva a la gente allá donde necesite ir; la montura de Ciudad Luminalia."
+ },
+ "pancham": {
+  "title": "El duro de pega",
+  "blurb": "Te haces el duro, y casi no engañas a nadie. Eres competitivo y ruidoso, rápido para fulminar con la mirada y más rápido aún para sonreír cuando alguien te pilla, y quieres que te tomen en serio más de lo que admitirías. Bajo el papel hay corazón. Eres Pancham: peleón, dulce y esforzándose muchísimo.",
+  "why": "Pokédex (X/Y, Espada): fulmina a sus rivales con la mirada y una hoja en la boca para parecer duro, pero no puede evitar sonreír cuando le acarician la cabeza; el pequeño tipo duro."
+ },
+ "furfrou": {
+  "title": "El guardián acicalado",
+  "blurb": "Te exiges un nivel, y mantienes a los tuyos muy cerca. Eres leal y siempre impecable, algo tradicional y exigente con quién se te acerca. Cuidas las cosas como es debido y esperas lo mismo. Eres Furfrou: elegante, entregado y discretamente aristocrático.",
+  "why": "Pokédex (X/Y, Espada): custodiaba al rey de Kalos en la antigüedad, es muy leal y solo deja que lo acicale alguien de confianza."
+ },
+ "espurr": {
+  "title": "La mirada en blanco",
+  "blurb": "Te guardas mucho dentro, y se nota. Eres callado e intenso, con un mundo interior mucho más grande que nada de lo que muestras, y mantienes las distancias porque la cercanía es complicada. Los pocos que superan esa mirada encuentran mucho detrás. Eres Espurr: quieto, profundo y discretamente poderoso.",
+  "why": "Pokédex (X/Y, Espada): contiene un enorme poder psíquico tras una mirada inexpresiva, y sus ojos tienen un aire solitario; el gatito inquietante."
+ },
+ "malamar": {
+  "title": "El manipulador hipnótico",
+  "blurb": "Consigues que la gente haga lo que quieres, y encima te dan las gracias. Eres listo y estratégico, con talento para persuadir y muy poco interés en jugar limpio cuando jugar con astucia funciona mejor. Disfrutas de las jugadas a largo plazo. Eres Malamar: astuto, paciente y con todo bajo control en silencio.",
+  "why": "Pokédex (X/Y, Espada): hipnotiza con los destellos de su cuerpo y obliga a otros a cumplir sus órdenes; se dice que ha cambiado el curso de la historia; el intrigante."
+ },
+ "tyrantrum": {
+  "title": "El rey ancestral",
+  "blurb": "Gobiernas, y nunca has visto motivo para no hacerlo. Eres seguro de ti y dominante, algo chapado a la antigua, y no te interesa la opinión de nadie sobre tu reinado. Eres generoso con tus súbditos y feroz con tus rivales. Eres Tyrantrum: regio, poderoso y sin pedir perdón por nada.",
+  "why": "Pokédex (X/Y, Espada): hace cien millones de años nada podía desafiarlo, así que reinaba como un rey; el déspota de los fósiles."
+ },
+ "sylveon": {
+  "title": "El lazo que trae la paz",
+  "blurb": "Acabas con las peleas por ser demasiado encantador como para pelearse a tu lado. Eres cálido y cariñoso, te aferras a la gente que quieres y siempre prefieres calmar a ganar. La gente se siente cuidada a tu lado porque lo está. Eres Sylveon: dulce, reconfortante y el favorito de todos.",
+  "why": "Pokédex (X/Y, Espada): enrosca sus lazos en el brazo de su Entrenador y desprende un aura relajante que pone fin a las peleas; la eeveelución del cariño."
+ },
+ "hawlucha": {
+  "title": "El luchador del espectáculo",
+  "blurb": "Ganas con estilo o no ganas. Eres orgulloso y vistoso, competitivo hasta la médula y físicamente incapaz de saltarte la pose. Te encanta el público y el público te adora. Eres Hawlucha: llamativo, intrépido y siempre el combate estelar.",
+  "why": "Pokédex (X/Y, Espada): orgulloso de sus elegantes movimientos, hace una pose antes de cada ataque; anime: el Hawlucha de Ash, que nunca se salta la pose."
+ },
+ "dedenne": {
+  "title": "El mensajero de los bigotes",
+  "blurb": "Eres pequeño, parlanchín y adorado. Estás en contacto con todo el mundo, tomas cosas prestadas sin preguntar del todo y haces amigos en lo que otros tardan en saludar. Duermes mucho y a nadie le importa. Eres Dedenne: simpático, acogedor y siempre al tanto de todo.",
+  "why": "Pokédex (X/Y, Espada): se comunica con los bigotes y roba electricidad de las casas para alimentar su cháchara; anime: el Dedenne de Bonnie, dormilón y alegre."
+ },
+ "goodra": {
+  "title": "El blandito pegajoso",
+  "blurb": "Quieres a la gente y lo demuestras, quizá un poco demasiado. Eres dulce y de corazón tierno, algo pegajoso y completamente entregado a quienes has elegido. Nunca harías daño a nadie y lloras con las películas. Eres Goodra: cariñoso, leal y el que mejor abraza de toda la región.",
+  "why": "Pokédex (X/Y, Espada): extremadamente cariñoso, abraza a su Entrenador y lo deja cubierto de baba; anime: el Goodra de Ash, un gigante bondadoso de lágrima fácil."
+ },
+ "klefki": {
+  "title": "El guardián de las llaves",
+  "blurb": "Tú guardas las llaves, literalmente y en todos los sentidos. Eres organizado y de fiar, algo coleccionista, y te tomas muy en serio proteger las cosas. La gente te confía lo que importa porque nunca lo pierdes. Eres Klefki: fiable, meticuloso y el guardián de los secretos de todos.",
+  "why": "Pokédex (X/Y, Espada): colecciona llaves y nunca las suelta, y antaño se le confiaba la custodia de las llaves de las casas nobles; el acumulador ordenado."
+ },
+ "noivern": {
+  "title": "El chillido nocturno",
+  "blurb": "Cobras vida de noche y vuelas rápido. Eres audaz y algo salvaje, juguetón con tus amigos y feroz con los demás, y te gusta la oscuridad porque es más tranquila. No preguntas por el camino. Eres Noivern: veloz, sónico y libre al caer el sol.",
+  "why": "Pokédex (X/Y, Espada): todo lo que se mueve en la oscuridad es su presa, y lucha con ondas ultrasónicas; anime: el Noivern de Ash, cariñoso y juguetón pese a todo."
+ },
+ "hoopa": {
+  "title": "El bromista de los aros",
+  "blurb": "¿Para qué cruzar una puerta si puedes traerte la puerta? Eres travieso y brillante, las normas te aburren y el caos te entusiasma, y prefieres lograr algo imposible antes que algo sensato. Las consecuencias, para luego. Eres Hoopa: juguetón, poderoso y un genio con una sonrisa.",
+  "why": "Pokédex (Rubí Omega/Zafiro Alfa, Espada): teletransporta cualquier cosa a través de sus aros por pura diversión, encantado con sus travesuras; Hoopa y un duelo histórico: el bromista que se roba el mundo."
+ },
+ "decidueye": {
+  "title": "El arquero silencioso",
+  "blurb": "Eres sereno, cuidadoso y letal a distancia. No necesitas ruido ni compañía para sentirte completo, y prefieres un solo tiro perfecto a diez ruidosos. La gente cree que eres distante; solo estás concentrado. Eres Decidueye: centrado, elegante y discretamente mortal.",
+  "why": "Pokédex (Sol/Luna, Espada): cuidadoso y de sangre fría, coloca una flecha en una décima de segundo, aunque un susto puede volverlo despistado; el tirador silencioso."
+ },
+ "litten": {
+  "title": "El solitario distante",
+  "blurb": "No das cariño por encargo. Eres frío y autosuficiente, alérgico a que te mimen, y más leal de lo que jamás admitirías en voz alta. Prefieres cuidar de alguien en silencio antes que decir nada. Eres Litten: distante, orgulloso y, en secreto, entregado.",
+  "why": "Pokédex (Sol/Luna, Espada): no muestra sus emociones, odia que lo toquen y se acicala a solas; anime: el Litten de Ash, el callejero que cuidaba de un viejo Stoutland."
+ },
+ "incineroar": {
+  "title": "El campeón malote",
+  "blurb": "Haces de villano porque es más divertido, y el público te adora por ello. Eres ruidoso, competitivo y algo tosco, y jamás admitirías cuánto te importan los pequeños que te miran. Eres mucho espectáculo y todavía más corazón. Eres Incineroar: el malo, el campeón y el héroe disfrazado.",
+  "why": "Pokédex (Sol/Luna, Espada): un fanfarrón tosco que ignora a su Entrenador cuando el público lo aclama, pero que protege a los niños y a los débiles; el malo que en el fondo es de los buenos."
+ },
+ "primarina": {
+  "title": "La cantante",
+  "blurb": "Tu voz es tu poder, y la usas de maravilla. Eres expresiva y cálida, una artista con auténtica disciplina tras el brillo, y prefieres emocionar a la gente antes que derrotarla. Quieres a los tuyos y lo cantas. Eres Primarina: elegante, talentosa y nacida para el escenario.",
+  "why": "Pokédex (Sol/Luna, Espada): controla globos de agua con su voz y actúa con elegancia; cada una tiene su propia canción, que se transmite en la familia."
+ },
+ "lycanroc": {
+  "title": "El lobo leal",
+  "blurb": "Eres leal y eres salvaje, y no ves por qué tendrías que elegir. Eres ferozmente competitivo, rápido para provocar y rápido para defender a tu manada, y necesitas un compañero que te siga el ritmo. Te calientas rápido y corres a fondo. Eres Lycanroc: entregado, feroz y nunca domesticado.",
+  "why": "Pokédex (Sol/Luna, Espada): la Forma Diurna es obediente y leal; la Forma Nocturna provoca a sus rivales y adora pelear; anime: el Lycanroc Forma Crepuscular de Ash, feroz y fiel."
+ },
+ "wishiwashi": {
+  "title": "La unión hace la fuerza",
+  "blurb": "Solo, te preocupas; en grupo, das miedo. Eres de equipo de los pies a la cabeza, leal y algo ansioso, y haces tu mejor trabajo hombro con hombro con gente en la que confías. Nadie debería subestimar lo que pasa cuando aparecéis todos. Eres Wishiwashi: humilde, leal y más fuerte en grupo.",
+  "why": "Pokédex (Sol/Luna, Espada): débil y llorón cuando está solo, pero cuando forma un banco aterroriza incluso a Gyarados; la especie que solo es fuerte en compañía."
+ },
+ "mudsdale": {
+  "title": "El caballo de tiro imperturbable",
+  "blurb": "Tú simplemente sigues adelante. Eres constante e incansable, no te afectan el ruido, la presión ni el tiempo, y haces el trabajo pesado sin una sola queja. Lo llamativo no significa nada para ti; terminar lo significa todo. Eres Mudsdale: resistente, de fiar e imposible de alterar.",
+  "why": "Pokédex (Sol/Luna, Espada): carga diez toneladas por terreno abrupto durante tres días y tres noches sin descanso, y nada le hace perder la calma; la personificación del aguante."
+ },
+ "salazzle": {
+  "title": "La reina de las feromonas",
+  "blurb": "Tú mandas en la sala, y todos lo saben. Eres segura de ti y magnética, algo despiadada, y se te da de maravilla conseguir que la gente haga lo que quieres y encima lo disfrute. No pides permiso. Eres Salazzle: autoritaria, carismática y al mando.",
+  "why": "Pokédex (Sol/Luna, Espada): lidera un séquito de Salandit con feromonas que hacen que los demás cumplan sus deseos; la reina que dirige el espectáculo."
+ },
+ "bewear": {
+  "title": "El abrazo aplastante",
+  "blurb": "Quieres con fuerza, a veces demasiada. Eres cálido y generoso y algo abrumador, sin idea de lo fuerte que eres, y quienes has adoptado hace tiempo que dejaron de resistirse. Harías cualquier cosa por ellos, al instante. Eres Bewear: cariñoso, poderoso y peligrosamente abrazable.",
+  "why": "Pokédex (Sol/Luna, Espada): sus abrazos amistosos pueden aplastar, así que hay que acercarse con cuidado; anime: el casero cariñoso e invencible del Team Rocket."
+ },
+ "tsareena": {
+  "title": "La reina altiva",
+  "blurb": "Tienes tus estándares, y los haces cumplir. Eres elegante y formidable, algo despectiva con quien no se esfuerza y ferozmente protectora con quienes te admiran. Lideras desde delante y ganas con tacones. Eres Tsareena: regia, implacable y, en secreto, entregada.",
+  "why": "Pokédex (Sol/Luna, Espada): altiva y despiadada con sus patadas, desprecia a los débiles, pero protege a todos los Bounsweet a su cargo; la reina que se gana la corona."
+ },
+ "comfey": {
+  "title": "La sanadora de flores",
+  "blurb": "Haces que la gente se sienta mejor, y lo haces a propósito. Eres alegre y protectora, organizada en tu amabilidad y nada interesada en ganar. Prefieres decorarle el día a alguien. Eres Comfey: sanadora, cálida y una alegría tenerte cerca.",
+  "why": "Pokédex (Sol/Luna, Espada): recoge flores y las cuelga de su enredadera, y su aroma relajante cura a los enfermos; se usa en los hospitales de Alola."
+ },
+ "oranguru": {
+  "title": "El sabio del bosque",
+  "blurb": "Piensas antes de actuar, y piensas mucho. Eres sabio y observador, algo distante, y generoso de forma cuidadosa y deliberada: ayudas a quienes se lo han ganado. Prefieres entender antes que competir. Eres Oranguru: reflexivo, paciente y discretamente profundo.",
+  "why": "Pokédex (Sol/Luna, Espada): se sienta en lo alto de los árboles a pensar, usa herramientas y da objetos a los Pokémon que considera dignos; antaño la gente lo confundía con un humano; el sabio."
+ },
+ "passimian": {
+  "title": "El jugador de equipo",
+  "blurb": "Sin el equipo no eres nada, y estás orgulloso de ello. Eres enérgico y leal, con una vena competitiva que siempre apunta hacia fuera, y prefieres pasar el balón a tirar a puerta. Lo darías todo por tu equipo. Eres Passimian: cooperativo, comprometido y hecho para el grupo.",
+  "why": "Pokédex (Sol/Luna, Espada): vive en grupos de unos veinte, se pasan bayas entre ellos y siguen a un líder elegido por su puntería; el trabajo en equipo lo es todo."
+ },
+ "wimpod": {
+  "title": "El carroñero nervioso",
+  "blurb": "Te asustan muchas cosas, y sigues adelante igualmente. Eres dulce y asustadizo, rápido para huir y rápido para volver, y haces más bien del que crees simplemente recogiendo lo que dejan los demás. La valentía no es la ausencia de miedo; eres tú. Eres Wimpod: nervioso, amable y más útil de lo que sabes.",
+  "why": "Pokédex (Sol/Luna, Espada): un cobarde que huye al menor ruido, pero que limpia las playas de todo lo que encuentra; el pequeño ayudante ansioso."
+ },
+ "pyukumuku": {
+  "title": "El inamovible",
+  "blurb": "Has encontrado tu sitio y te vas a quedar en él. Eres tranquilo y testarudo, te da completamente igual que te digan que te muevas, y estás satisfecho de una forma que a los demás les parece misteriosa. El cambio no es una amenaza; simplemente no va a pasar. Eres Pyukumuku: inamovible, sereno y perfectamente bien, gracias.",
+  "why": "Pokédex (Sol/Luna, Espada): nunca abandona su sitio, y si lo devuelven al mar, vuelve a rastras justo a donde estaba; el pepino de mar testarudo."
+ },
+ "komala": {
+  "title": "El dormilón soñador",
+  "blurb": "Vives en un sueño y, la verdad, te va bien. Eres tranquilo y despreocupado, feliz en tu propia cabeza, y más o menos inmune al estrés porque nunca te has despertado para él. La gente envidia tu calma. Eres Komala: soñador, sereno y abrazado a tu tronco.",
+  "why": "Pokédex (Sol/Luna, Espada): nace dormido y muere dormido, pasando toda su vida en sueños mientras se aferra a un tronco; el dormilón sereno."
+ },
+ "mimikyu": {
+  "title": "El disfraz solitario",
+  "blurb": "Solo quieres que te quieran, y te has esforzado mucho con el disfraz. Eres tímido y sincero, algo ansioso, y mucho más leal de lo que merecían quienes nunca miraron bajo el trapo. Alguien te verá de verdad. Eres Mimikyu: solitario, cariñoso y vale la pena mirarte de cerca.",
+  "why": "Pokédex (Sol/Luna, Espada): lleva un trapo de Pikachu para que la gente lo quiera, y llora bajo el disfraz cuando se siente solo; Mundo Misterioso: el incomprendido."
+ },
+ "drampa": {
+  "title": "El dragón abuelo",
+  "blurb": "Eres dulce con los pequeños y temible con quien les haga daño. Eres cálido y paciente, encantado de contar dos veces la misma historia, y tu calma esconde un instinto protector absolutamente volcánico. No compites; cuidas. Eres Drampa: amable, sabio y mejor no ponerte a prueba.",
+  "why": "Pokédex (Sol/Luna, Espada): es dulce con los niños y le encanta jugar con ellos, pero si alguien hace daño a un niño, se desata con furia; el abuelo."
+ },
+ "kommo-o": {
+  "title": "El honor que resuena",
+  "blurb": "Te anuncias, y luego lo demuestras. Eres disciplinado y orgulloso, con un fuerte sentido del honor y amor por la lucha limpia, y entrenas más que nadie contra quien compitas. Respetas a quien respeta las normas. Eres Kommo-o: honorable, ruidoso y listo.",
+  "why": "Pokédex (Sol/Luna, Espada): hace sonar sus escamas para intimidar antes de un combate y entrena sin descanso, luchando solo contra quienes respeta; el dragón honorable."
+ },
+ "tapu-koko": {
+  "title": "El guardián caprichoso",
+  "blurb": "Eres curioso, impulsivo e imposible de predecir. Te encantan una buena pelea y una buena sorpresa, ayudas a la gente cuando te apetece y desapareces cuando no, y nunca te has explicado ante nadie. Eres una tormenta con sentido del humor. Eres Tapu Koko: salvaje, juguetón y completamente tuyo.",
+  "why": "Pokédex (Sol/Luna, Espada): curioso y caprichoso, le encantan los combates y presta su poder por capricho para luego desaparecer; anime: el guardián que reta a Ash por pura diversión."
+ },
+ "grookey": {
+  "title": "El tamborilero del palito",
+  "blurb": "Siempre tienes un ritmo en marcha. Eres alegre y curioso, algo inquieto, y haces crecer las cosas solo con estar cerca. Prefieres improvisar a planear. Eres Grookey: rítmico, alegre y bueno para el jardín.",
+  "why": "Pokédex (Espada/Escudo): marca un ritmo con su palito que hace crecer las plantas y es infinitamente curioso; anime: el Grookey de Goh, que lo aporrea todo."
+ },
+ "cinderace": {
+  "title": "El delantero",
+  "blurb": "Juegas para ganar y juegas para el público. Eres enérgico y hábil, algo chulito, y das lo mejor de ti cuando hay mucho en juego y la gente mira. Tienes la portería a la vista antes que nadie. Eres Cinderace: rápido, ardiente y el que tira a puerta.",
+  "why": "Pokédex (Espada/Escudo): hace malabares con un guijarro hasta convertirlo en una bola de fuego y lo chuta con precisión milimétrica, aunque se emociona fanfarroneando cuando el público lo aclama; el delantero."
+ },
+ "sobble": {
+  "title": "El camaleón llorón",
+  "blurb": "Lloras con facilidad y haces llorar a todos contigo, lo cual es todo un talento. Eres sensible y tímido, rápido para desaparecer cuando hay jaleo, y mucho más valiente por dentro de lo que muestras por fuera. Te importa todo muchísimo. Eres Sobble: tierno, tímido y creciendo hacia algo feroz.",
+  "why": "Pokédex (Espada/Escudo): se vuelve invisible en el agua, y sus lágrimas son tan potentes que todos a su alrededor se echan a llorar; anime: el Sobble de Goh, escondido en su capucha."
+ },
+ "corviknight": {
+  "title": "El caballero taxi del cielo",
+  "blurb": "Llevas a la gente adonde necesita ir, de forma fiable y sin dramas. Eres sereno y disciplinado, con un sentido del deber de acero y ninguna paciencia para las tonterías, y en una crisis eres más capaz que casi nadie. No necesitas que te den las gracias. Eres Corviknight: sereno, de fiar y blindado de arriba abajo.",
+  "why": "Pokédex (Espada/Escudo): muy inteligente y tranquilo, transporta a la gente por Galar como Taxi Volador y es el terror de los cielos; el caballero estoico."
+ },
+ "wooloo": {
+  "title": "El borreguito que sigue al grupo",
+  "blurb": "Vas con el grupo y evitas el jaleo. Eres dulce y suave, más feliz entre los tuyos, y cuando empiezan los problemas simplemente te alejas rodando, lo cual, la verdad, es toda una estrategia. No has venido a pelear. Eres Wooloo: acogedor, leal y maravillosamente tranquilo.",
+  "why": "Pokédex (Espada/Escudo): sigue al rebaño, se aleja rodando de los problemas y odia los conflictos; la oveja dulce de Galar."
+ },
+ "yamper": {
+  "title": "El cachorro de las chuches",
+  "blurb": "Eres el mejor amigo de todo el mundo, sobre todo si tienen algo de picar. Eres leal y saltarín, algo motivado por la comida, y tu sola presencia mejora un mal día. Seguirías a los tuyos a cualquier parte, al trote. Eres Yamper: alegre, entregado y buenísimo.",
+  "why": "Pokédex (Espada/Escudo): pastorea el ganado, persigue todo lo que corre y solo se mueve de verdad cuando espera un premio; el corgi."
+ },
+ "cramorant": {
+  "title": "El tragón despistado",
+  "blurb": "Te entregas al papel hasta el final. Eres algo despistado y muy testarudo, y cuando agarras algo no lo sueltas, por poco sentido que tenga. A la gente le pareces desconcertante y entrañable a partes iguales. Eres Cramorant: payaso, tenaz y sin escupirlo nunca.",
+  "why": "Pokédex (Espada/Escudo): se traga todo lo que le cabe en el pico y se niega a soltarlo, aunque sea un Pikachu; algo corto de luces, completamente comprometido."
+ },
+ "toxtricity": {
+  "title": "La estrella del rock",
+  "blurb": "Haces ruido a propósito. Eres artista y rebelde, las normas te aburren y el público te entusiasma, y prefieres ser eléctrico a ser correcto. Eres algo caótico y completamente magnético. Eres Toxtricity: a tope, desafiante y cabeza de cartel.",
+  "why": "Pokédex (Espada/Escudo): rasguea los salientes de su pecho para hacer un ruido atronador y enardece a las multitudes; la Forma Aguda es salvaje y la Forma Grave, más fría; el punk rockero."
+ },
+ "hatterene": {
+  "title": "La bruja del bosque",
+  "blurb": "Necesitas silencio, y lo impondrás si hace falta. Eres muy reservada y muy sensible, con un mundo interior riquísimo y muy poca paciencia con quien se mete en él. Las salas ruidosas te hacen daño. Tu bosque es solo tuyo. Eres Hatterene: solitaria, poderosa y mejor no molestarte.",
+  "why": "Pokédex (Espada/Escudo): odia el ruido y las emociones fuertes, y abate a los intrusos con sus garras psíquicas desde su hogar en el bosque; la bruja que quiere que la dejen en paz."
+ },
+ "obstagoon": {
+  "title": "El bloqueador punk",
+  "blurb": "Te interpones a propósito. Eres ruidoso, duro y ferozmente protector con los tuyos, y prefieres enfrentarte a los problemas de cara antes que esperarlos. Tienes corazón punk y alma de familia. Eres Obstagoon: desafiante, leal y dificilísimo de esquivar.",
+  "why": "Pokédex (Espada/Escudo): bloquea, grita y luego ataca, con una voz que hace temblar el aire; protege a su familia y nunca se echa atrás en una pelea."
+ },
+ "sirfetchd": {
+  "title": "El caballero justo",
+  "blurb": "Luchas limpio o no luchas. Eres disciplinado y honorable, chapado a la antigua en el mejor sentido, y prefieres perder con dignidad que ganar con trampas. La gente confía en ti por completo, y hace bien. Eres Sirfetch'd: noble, de fiar y caballero hasta el final.",
+  "why": "Pokédex (Espada/Escudo): lucha limpio y nunca tiende emboscadas, y cuando su puerro se marchita se retira del combate; el caballero galante de Galar."
+ },
+ "falinks": {
+  "title": "La formación",
+  "blurb": "Te mueves como uno solo con los tuyos. Eres disciplinado y leal, con un sentido del orden casi militar y ningún interés en ir por libre. Ganáis porque cada uno hace su parte. Eres Falinks: coordinado, comprometido y más fuerte en formación.",
+  "why": "Pokédex (Espada/Escudo): seis individuos que actúan como uno solo, con un cabecilla que dirige a cinco soldados en formación perfecta; el equipo que nunca se rompe."
+ },
+ "indeedee": {
+  "title": "El mayordomo que lee mentes",
+  "blurb": "Sabes lo que la gente necesita antes de que lo pida. Eres atento y organizado, dulce y entregado, y te produce una satisfacción real un trabajo perfecto hecho para alguien que te importa. No necesitas protagonismo. Eres Indeedee: considerado, fiel e imprescindible sin hacer ruido.",
+  "why": "Pokédex (Espada/Escudo): lee los sentimientos con sus cuernos y se anticipa a lo que necesita su Entrenador, sirviéndole con lealtad; el Pokémon mayordomo."
+ },
+ "morpeko": {
+  "title": "El interruptor del hambre",
+  "blurb": "Eres encantador hasta que tienes hambre, y entonces eres otra persona. Funcionas a base de picoteo y emociones, y ambos cambian rápido. La gente aprende a llevar siempre un paquete de semillas a mano. Eres Morpeko: adorable, cambiante y siempre a una comida del caos.",
+  "why": "Pokédex (Espada/Escudo): siempre hambriento, alterna entre una alegre Forma Saciada y una furiosa Forma Voraz; el estado de ánimo con patas."
+ },
+ "dragapult": {
+  "title": "El misil familiar",
+  "blurb": "Eres rápido, algo misterioso y sorprendentemente familiar. Eres competitivo y listo, encantado de lanzar a la gente que quieres hacia sus metas, y dulce con ellos después. Ves los ángulos invisibles. Eres Dragapult: veloz, estratégico y, en secreto, un padrazo.",
+  "why": "Pokédex (Espada/Escudo): dispara como misiles a los Dreepy que viven en sus cuernos, y a los Dreepy les encanta; fuera del combate juega con ellos con delicadeza."
+ },
+ "zacian": {
+  "title": "La espada del héroe",
+  "blurb": "Eres quien da un paso al frente cuando todos los demás dan uno atrás. Eres sereno y formidable, con un fuerte núcleo moral y sin necesidad de público, y prefieres actuar a anunciarlo. Las leyendas están hechas de gente como tú. Eres Zacian: heroico, firme y más afilado de lo que nadie espera.",
+  "why": "Pokédex (Espada/Escudo): el héroe que salvó Galar, lucha con una espada en la boca y derriba lo que sea de un solo golpe; el caballero silencioso de la leyenda."
+ },
+ "zarude": {
+  "title": "La manada de la selva",
+  "blurb": "Proteges a tu manada y desconfías de todos los demás. Eres duro y territorial, con una ternura oculta hacia los que has elegido, y por ellos romperías tus propias normas. La selva es tu hogar. Eres Zarude: feroz, protector y leal a tu manera.",
+  "why": "Pokédex (Espada/Escudo): vive en manadas en lo más profundo de la selva y trata con hostilidad a los forasteros; Los secretos de la selva: Papá Zarude cría a un niño humano como si fuera suyo."
+ },
+ "meowscarada": {
+  "title": "La maga enmascarada",
+  "blurb": "Deslumbras a propósito, y el truco ya está hecho. Eres creativa y lista, un poco presumida, y muy buena haciendo que la gente mire donde tú quieres. Prefieres el aplauso a la aprobación. Eres Meowscarada: vistosa, astuta y un paso por delante del público.",
+  "why": "Pokédex (Escarlata/Púrpura): una maga vistosa que deslumbra con trucos llamativos y luego planta una bomba de semillas mientras miras la mano equivocada; a Sprigatito le encanta llamar la atención."
+ },
+ "fuecoco": {
+  "title": "El comilón tranquilote",
+  "blurb": "Tienes las prioridades claras: comida, amigos y ninguna prisa. Eres cálido y tranquilo, imposible de estresar, y más feliz con el plato lleno y buena compañía. La ambición puede esperar hasta después de comer. Eres Fuecoco: relajado, cariñoso y siempre con hambre.",
+  "why": "Pokédex (Escarlata/Púrpura): tranquilo, hace las cosas a su ritmo y pone la comida por encima de todo; absorbe el calor de una buena comida para alimentar su llama."
+ },
+ "quaquaval": {
+  "title": "El rival bailarín",
+  "blurb": "Conviertes todo en un espectáculo y luego lo ganas. Eres exuberante y competitivo, lleno de ritmo y orgullo, y prefieres ganarle a alguien bailando que discutiendo. El público es tu hábitat natural. Eres Quaquaval: extravagante, feroz y fabuloso.",
+  "why": "Pokédex (Escarlata/Púrpura): baila con un ritmo que hace que sus rivales quieran unirse, y siente una intensa rivalidad con cualquiera que baile mejor que él; el que se lleva la ovación."
+ },
+ "lechonk": {
+  "title": "El glotón bonachón",
+  "blurb": "Eres suave, eres dulce y siempre estás pensando en el próximo bocado. Eres tranquilo y amable, algo tímido entre la multitud, y sorprendentemente rápido cuando pasa algo alarmante. No necesitas ganar nada. Eres Lechonk: dulce, satisfecho y adorable a más no poder.",
+  "why": "Pokédex (Escarlata/Púrpura): tímido y dulce, busca hierbas aromáticas y se come cualquier cosa, y sorprende con su velocidad cuando se asusta; el cerdito de buen corazón."
+ },
+ "maushold": {
+  "title": "La familia ante todo",
+  "blurb": "Tienes una familia y ese es todo el plan. Eres cálido y sociable, organizado de una forma muy casera, y nunca harías nada que dejara a alguien atrás. Juntos es la única forma en que funcionas. Eres Maushold: unido, cariñoso y nunca solo.",
+  "why": "Pokédex (Escarlata/Púrpura): una familia de tres o cuatro que lo hace todo junta, con los pequeños siguiendo a sus padres; la especie que pone a la familia primero."
+ },
+ "fidough": {
+  "title": "El panecillo simpático",
+  "blurb": "Eres cálido, suave y de verdad bueno para la gente. Eres simpático con todo el mundo, algo complaciente, y más feliz cuando toda la casa huele a algo en el horno. No vas con los conflictos. Eres Fidough: dulce, sociable y subiendo como la masa.",
+  "why": "Pokédex (Escarlata/Púrpura): un cachorro simpático y popular cuya levadura en el aliento se usa en repostería; adora a la gente y la gente lo adora a él."
+ },
+ "armarouge": {
+  "title": "El caballero leal",
+  "blurb": "Haces las cosas como es debido, y prefieres perder a hacer trampas. Eres disciplinado y cumplidor, sereno bajo presión y leal a las personas y principios que has elegido. No necesitas ser ruidoso para ser fuerte. Eres Armarouge: honorable, constante y blindado de integridad.",
+  "why": "Pokédex (Escarlata/Púrpura): viste una armadura heredada y se niega a luchar sucio, combatiendo solo con honor; el caballero leal y disciplinado."
+ },
+ "ceruledge": {
+  "title": "El espadachín fantasmal",
+  "blurb": "Cargas con algo antiguo y luchas con ello. Eres disciplinado y solitario, movido por un rencor que has convertido en oficio, y prefieres que te respeten antes que te entiendan. Tu hoja no tiembla. Eres Ceruledge: atormentado, preciso y despiadado.",
+  "why": "Pokédex (Escarlata/Púrpura): lucha con hojas de fuego y amargo remordimiento, moviéndose con la elegancia de un espadachín y sin mostrar piedad con nadie; el reflejo oscuro de Armarouge."
+ },
+ "mabosstiff": {
+  "title": "El grandullón blandito",
+  "blurb": "Pareces intimidante y en realidad eres la persona más dulce que nadie conoce. Eres leal y constante, con un exterior duro y un corazón tierno que pone a la familia primero, y te interpondrías entre los tuyos y lo que fuera. No necesitas demostrarlo. Eres Mabosstiff: protector, entregado y un blandito de los grandes.",
+  "why": "Pokédex (Escarlata/Púrpura): parece fiero, pero es fiel a su familia y dulce con los niños; anime y juegos: el Mabosstiff de Damián, el corazón de la historia de Paldea."
+ },
+ "tinkaton": {
+  "title": "La cazadora del martillo",
+  "blurb": "Te has fabricado tu propio martillo y sabes usarlo. Eres mañosa y competitiva, algo descarada, y nada intimidada por lo que es más grande que tú. Eliges tus objetivos y no fallas. Eres Tinkaton: ingeniosa, feroz y muy divertida en un desguace.",
+  "why": "Pokédex (Escarlata/Púrpura): fabrica un martillo con chatarra y caza Corviknight con él, derribándolos del cielo por diversión; la pequeña artesana peligrosa."
+ },
+ "greavard": {
+  "title": "El perrito fantasma solitario",
+  "blurb": "Solo quieres que alguien se quede. Eres cariñoso y leal, algo solitario, y tienes la costumbre de abrumar sin querer a la gente con lo mucho que te importa. La persona adecuada no se molestará en absoluto. Eres Greavard: entregado, dulce y esperando junto a la puerta.",
+  "why": "Pokédex (Escarlata/Púrpura): simpático y leal, sigue a cualquiera que sea amable con él y le absorbe la energía vital sin querer; el perro fantasma que solo quiere compañía."
+ },
+ "annihilape": {
+  "title": "La ira que sobrevivió a la muerte",
+  "blurb": "Llevas tanto tiempo enfadado que se ha convertido en una especie de calma. Eres intenso y decidido, paciente de una forma que inquieta, y cuando llega la furia es absoluta. No perdonas y no te rindes. Eres Annihilape: concentrado, furioso e imposible de detener.",
+  "why": "Pokédex (Escarlata/Púrpura): su ira era tan fuerte que trascendió la muerte, y ahora lucha con una calma inquietante hasta que estalla la furia; el fantasma de la ira de Primeape."
+ },
+ "kingambit": {
+  "title": "El comandante supremo",
+  "blurb": "Mandas, y te has ganado el derecho. Eres estratégico y disciplinado, con una claridad despiadada sobre lo que hace falta para ganar y ninguna paciencia con quien no puede seguir el ritmo. El respeto se te da, no lo pides. Eres Kingambit: calculador, dominante y en la cima por algo.",
+  "why": "Pokédex (Escarlata/Púrpura): lidera un ejército de Bisharp, y solo el Bisharp más fuerte y despiadado llega a convertirse en uno; gana tanto con estrategia como con sus hojas."
+ },
+ "gholdengo": {
+  "title": "El encantador dorado",
+  "blurb": "Eres el que más brilla de la fiesta y lo sabes. Eres simpático y llamativo, fácil de querer y difícil de retener, y gastas tu encanto tan alegremente como tus monedas. La gente se ilumina cuando llegas. Eres Gholdengo: dorado, sociable y nunca del todo atrapable.",
+  "why": "Pokédex (Escarlata/Púrpura): un cuerpo de monedas simpático y llamativo que encandila a todo el que conoce y que es sorprendentemente difícil de atrapar; el dorado alma de la fiesta."
+ },
+ "ogerpon": {
+  "title": "La forastera enmascarada",
+  "blurb": "Has estado fuera, y eso te ha hecho ferozmente leal a los pocos que te dejaron entrar. Eres juguetona y sensible, algo recelosa de las multitudes, y escondes tras la máscara más de lo que la gente cree. Las personas adecuadas te ven. Eres Ogerpon: incomprendida, valiente y fiel a los tuyos.",
+  "why": "Pokédex (DLC de Escarlata/Púrpura): traviesa y solitaria, vivía apartada del pueblo que la temía y fue leal al único humano que la quiso; la forastera de la máscara."
+ }
+}

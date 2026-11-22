@@ -1,6 +1,11 @@
 import { composeShare } from "@/lib/share/text";
 import { keySwings, pct, swings, type Swing, type WinPoint } from "./maths";
 import type { BattleStats, MonStats, NoteKind, SideLuck, StatsSide, TurnNote } from "./stats-types";
+import { translator, type Translator } from "@/i18n/catalog";
+import battleAnalysis from "@/messages/battle-analysis";
+
+/** The analysis' words in the page's language. */
+export type AnalysisT = Translator<typeof battleAnalysis.en>;
 
 /**
  * The words for a battle's stats, from one player's side: the turning
@@ -175,11 +180,11 @@ export function turningPoints(points: readonly WinPoint[], stats: BattleStats, v
 export const signed = (n: number) => (Math.abs(n) < 0.05 ? "0.0" : `${n > 0 ? "+" : "−"}${Math.abs(n).toFixed(1)}`);
 
 /** The verdict on a side's luck: how far from expected, against the spread luck alone gives. */
-export function luckVerdict(l: SideLuck): { label: string; tone: "good" | "bad" | "even" } {
+export function luckVerdict(l: SideLuck, t: Translator<typeof battleAnalysis.en> = translator(battleAnalysis, "en", undefined)): { label: string; tone: "good" | "bad" | "even" } {
   const z = l.sd > 0 ? l.score / l.sd : 0;
-  if (Math.abs(l.score) < 0.5 || Math.abs(z) < 0.5) return { label: "About as lucky as expected", tone: "even" };
-  if (Math.abs(z) < 1.5) return l.score > 0 ? { label: "A bit luckier than expected", tone: "good" } : { label: "A bit unluckier than expected", tone: "bad" };
-  return l.score > 0 ? { label: "Much luckier than expected", tone: "good" } : { label: "Much unluckier than expected", tone: "bad" };
+  if (Math.abs(l.score) < 0.5 || Math.abs(z) < 0.5) return { label: t("words.verdict.even"), tone: "even" };
+  if (Math.abs(z) < 1.5) return l.score > 0 ? { label: t("words.verdict.bitLucky"), tone: "good" } : { label: t("words.verdict.bitUnlucky"), tone: "bad" };
+  return l.score > 0 ? { label: t("words.verdict.lucky"), tone: "good" } : { label: t("words.verdict.unlucky"), tone: "bad" };
 }
 
 /** How much a Pokémon did: damage dealt (its moves and its hazards, status and weather), and a KO counts as 30 more. */
@@ -193,9 +198,9 @@ export function mvpOf(mons: readonly MonStats[], side: StatsSide): MonStats | nu
 }
 
 /** "212% dealt · 3 KOs". */
-export function workLine(m: MonStats): string {
+export function workLine(m: MonStats, t: Translator<typeof battleAnalysis.en> = translator(battleAnalysis, "en", undefined)): string {
   const dealt = Math.round(m.dealt + m.dealtIndirect);
-  return [`${dealt}% dealt`, m.kos ? `${m.kos} KO${m.kos === 1 ? "" : "s"}` : null].filter(Boolean).join(" · ");
+  return m.kos ? t("words.workKos", { dealt, n: m.kos }) : t("words.work", { dealt });
 }
 
 // ---------------------------------------------------------------------------
@@ -203,7 +208,7 @@ export function workLine(m: MonStats): string {
 // ---------------------------------------------------------------------------
 
 /** The card's headline: the result with the luck that went into it. */
-export function shareHeadline(stats: BattleStats, viewer: StatsSide): string {
+export function shareHeadline(stats: BattleStats, viewer: StatsSide, t: Translator<typeof battleAnalysis.en> = translator(battleAnalysis, "en", undefined)): string {
   const l = stats.luck[viewer];
   const crits = l.critsReceived.observed;
   // As shown (one decimal), so "Luck −1.0" never reads as "about even".
@@ -211,30 +216,35 @@ export function shareHeadline(stats: BattleStats, viewer: StatsSide): string {
   const result = stats.winner === null ? "draw" : stats.winner === viewer ? "win" : "loss";
   const lucky = score >= 1;
   const unlucky = score <= -1;
-  if (result === "loss" && unlucky && crits >= 2) return `Lost to ${crits} crits 😤`;
-  if (result === "loss" && unlucky) return "Lost to bad luck 😤";
-  if (result === "loss" && lucky) return "Lost despite the luck 😅";
-  if (result === "win" && unlucky) return "Won through bad luck 💪";
-  if (result === "win" && lucky) return "Won with a little luck 🍀";
-  return result === "win" ? "Won 🏆" : result === "loss" ? "Lost" : "Drew 🤝";
+  if (result === "loss" && unlucky && crits >= 2) return t("words.share.crits", { n: crits });
+  if (result === "loss" && unlucky) return t("words.share.badLuck");
+  if (result === "loss" && lucky) return t("words.share.despite");
+  if (result === "win" && unlucky) return t("words.share.through");
+  if (result === "win" && lucky) return t("words.share.little");
+  return result === "win" ? t("words.share.won") : result === "loss" ? t("words.share.lost") : t("words.share.drew");
 }
 
-export function shareText(stats: BattleStats, viewer: StatsSide, opts: { formatName: string; url: string; turning?: TurningPoint | null }): string {
+/** `species`: a Pokémon's name as the page shows it (English by default). */
+export function shareText(
+  stats: BattleStats,
+  viewer: StatsSide,
+  opts: { formatName: string; url: string; turning?: TurningPoint | null },
+  t: Translator<typeof battleAnalysis.en> = translator(battleAnalysis, "en", undefined),
+  species: (name: string) => string = (s) => s
+): string {
   const l = stats.luck[viewer];
   const mvp = mvpOf(stats.mons, viewer);
   const foe = stats.players[foeOf(viewer)];
-  const headline = [shareHeadline(stats, viewer), `Luck ${signed(l.score)}`, mvp ? `MVP ${mvp.species}` : null].filter(Boolean).join(" · ");
-  const crits = `${l.critsLanded.observed} crit${l.critsLanded.observed === 1 ? "" : "s"} landed, ${l.critsReceived.observed} taken`;
-  const misses = `${l.missesOwn.observed} miss${l.missesOwn.observed === 1 ? "" : "es"} vs ${l.missesFoe.observed} against`;
-  const t = opts.turning;
+  const headline = [shareHeadline(stats, viewer, t), t("words.share.luck", { score: signed(l.score) }), mvp ? t("words.share.mvp", { species: species(mvp.species) }) : null].filter(Boolean).join(" · ");
+  const tp = opts.turning;
   return composeShare({
-    title: "Battle stats",
+    title: t("words.share.title"),
     lines: [
       headline,
-      `vs ${foe} · ${opts.formatName} · ${stats.turns} turn${stats.turns === 1 ? "" : "s"}`,
-      `🎲 ${crits} · ${misses}`,
-      mvp ? `🏆 ${mvp.species}: ${workLine(mvp)}` : null,
-      t ? `📈 Turn ${t.turn}: ${pct(t.before)} → ${t.ended ? (t.after === 1 ? "won" : t.after === 0 ? "lost" : "draw") : pct(t.after)}` : null,
+      t("words.share.vs", { foe, format: opts.formatName, n: stats.turns }),
+      t("words.share.dice", { landed: l.critsLanded.observed, taken: l.critsReceived.observed, misses: l.missesOwn.observed, against: l.missesFoe.observed }),
+      mvp ? t("words.share.mvpLine", { species: species(mvp.species), work: workLine(mvp, t) }) : null,
+      tp ? t("words.share.turn", { turn: tp.turn, before: pct(tp.before), after: tp.ended ? (tp.after === 1 ? t("words.share.endWon") : tp.after === 0 ? t("words.share.endLost") : t("words.share.endDraw")) : pct(tp.after) }) : null,
     ],
     url: opts.url,
   });

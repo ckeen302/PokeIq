@@ -1,0 +1,20 @@
+{
+  "names": {
+    "lobby": "Lobby principale",
+    "pokedle": "Pokédle",
+    "connections": "Connections",
+    "pikadoku": "Pikadoku",
+    "pokeguessr": "PokéGuessr",
+    "battle": "Lotta",
+    "quizzes": "Quiz"
+  },
+  "descriptions": {
+    "lobby": "Saluta! La stanza principale per tutto ciò che riguarda PokéIQ. Bloccato o nuovo? Chiedi qui e gli altri Allenatori ti aiuteranno.",
+    "pokedle": "Il gioco quotidiano per indovinare i Pokémon: condividi il punteggio, non la risposta.",
+    "connections": "Gruppi di Pokémon nascosti: condividi la tua griglia e parlate di quelli più difficili.",
+    "pikadoku": "Il sudoku dei Pokémon: confronta le scelte rare e vantati del tuo punteggio di rarità.",
+    "pokeguessr": "Dov'era quel posto nel mondo Pokémon? Condividi serie e grandi intuizioni.",
+    "battle": "Lotte casuali, OU, Little Cup e tutti i formati: squadre, set, grandi mosse e rimonte.",
+    "quizzes": "Chi è quel Pokémon?, Nominali tutti e tutti i quiz: condividete i punteggi e sfidatevi."
+  }
+}

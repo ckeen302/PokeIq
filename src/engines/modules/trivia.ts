@@ -1,6 +1,7 @@
 import type { Rng } from "@/lib/rng";
 import type { Difficulty, GenerateOptions, Question, QuestionBuilder } from "../types";
 import type { TriviaItem } from "../trivia/bank";
+import { localizable, wordOptions } from "../localize";
 import { GAMES_BANK } from "../trivia/games";
 import { ANIME_BANK } from "../trivia/anime";
 
@@ -37,7 +38,7 @@ function triviaBuilder(module: "games" | "anime", bank: readonly TriviaItem[], o
     const { item, key } = rng.pick(tier.length ? tier : open);
     opts.used.add(key);
     const options = rng.shuffle([item.answer, ...rng.sample(item.distractors, 3)]);
-    return {
+    const q: Question = {
       itemKey: `${module}:${item.id}`,
       module,
       prompt: item.prompt,
@@ -47,6 +48,13 @@ function triviaBuilder(module: "games" | "anime", bank: readonly TriviaItem[], o
       source: item.source,
       rating: TRIVIA_RATING[item.difficulty],
     };
+    const loc = item.loc;
+    if (!loc) return q;
+    return localizable(q, (L) => {
+      const w = loc(L);
+      const named = w && wordOptions(q, (o) => w.option(o));
+      return named && { prompt: w.prompt, ...named, explanation: w.explanation };
+    });
   };
 }
 

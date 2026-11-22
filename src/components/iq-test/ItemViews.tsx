@@ -1,10 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { monName } from "@/lib/cognitive/materials";
 import type { ArithItem, MatrixItem, NumberItem, PathItem, PileItem, RotationItem } from "@/lib/cognitive/types";
 import { cn } from "@/lib/utils";
 import { CellView, MonSprite, PokeBall } from "./CellView";
+import { useCogLocal } from "./local";
+import { useT } from "@/i18n/client";
+import play from "@/messages/iq-test-play";
 
 /**
  * The option-based items. Each view draws its stimulus and hands the
@@ -21,8 +23,9 @@ export interface OptionProps {
 
 export function OptionGrid({ count, picked, correct, onPick, render, columns = 3, square }: OptionProps & { count: number; render: (i: number) => React.ReactNode; columns?: 2 | 3; square?: boolean }) {
   const locked = picked !== null;
+  const t = useT(play);
   return (
-    <div className={cn("grid gap-2.5", columns === 3 ? "grid-cols-3" : "grid-cols-2")} role="group" aria-label="Options">
+    <div className={cn("grid gap-2.5", columns === 3 ? "grid-cols-3" : "grid-cols-2")} role="group" aria-label={t("options")}>
       {Array.from({ length: count }, (_, i) => {
         const isPicked = picked === i;
         return (
@@ -58,10 +61,11 @@ export function OptionGrid({ count, picked, correct, onPick, render, columns = 3
 }
 
 export function MatrixView({ item, ...opts }: OptionProps & { item: MatrixItem }) {
+  const t = useT(play);
   return (
     <div className="space-y-5 max-md:space-y-3">
       {/* Phones: the pattern drawn a size down, so the options sit on the same screen. */}
-      <div className="mx-auto grid w-full max-w-[330px] grid-cols-3 gap-1.5 rounded-lg border border-foreground/10 bg-shade/20 p-1.5 max-md:[zoom:0.6]" data-testid="cog-matrix" aria-label="The 3 by 3 pattern, last cell missing">
+      <div className="mx-auto grid w-full max-w-[330px] grid-cols-3 gap-1.5 rounded-lg border border-foreground/10 bg-shade/20 p-1.5 max-md:[zoom:0.6]" data-testid="cog-matrix" aria-label={t("matrix")}>
         {item.cells.map((c, i) => (
           <div key={i} className={cn("flex aspect-square items-center justify-center rounded-md bg-background/60", c.k === "blank" && "border-2 border-dashed border-[color:hsl(var(--screen)/0.5)]")}>
             <CellView cell={c} box={88} />
@@ -74,9 +78,10 @@ export function MatrixView({ item, ...opts }: OptionProps & { item: MatrixItem }
 }
 
 export function NumberView({ item, ...opts }: OptionProps & { item: NumberItem }) {
+  const t = useT(play);
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-center gap-2" aria-label="The sequence">
+      <div className="flex flex-wrap items-center justify-center gap-2" aria-label={t("sequence")}>
         {item.terms.map((t, i) => (
           <span key={i} className="screen flex h-14 min-w-14 items-center justify-center rounded-md px-3 font-display text-2xl font-bold tabular-nums">
             <span className="relative z-[3]">{t}</span>
@@ -90,11 +95,13 @@ export function NumberView({ item, ...opts }: OptionProps & { item: NumberItem }
 }
 
 export function ArithView({ item, ...opts }: OptionProps & { item: ArithItem }) {
+  const t = useT(play);
+  const local = useCogLocal();
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-4 rounded-lg border border-foreground/10 bg-shade/20 p-4">
         <MonSprite id={item.monId} size={72} className="shrink-0" />
-        <p className="text-[17px] font-medium leading-snug">{item.prompt}</p>
+        <p className="text-[17px] font-medium leading-snug">{t(`arith.l${item.level}`, { name: local.mon(item.monId), ...item.values })}</p>
       </div>
       <OptionGrid count={item.options.length} {...opts} render={(i) => <span className="tabular-nums">{item.options[i]}</span>} />
     </div>
@@ -102,13 +109,15 @@ export function ArithView({ item, ...opts }: OptionProps & { item: ArithItem }) 
 }
 
 export function RotationView({ item, ...opts }: OptionProps & { item: RotationItem }) {
+  const t = useT(play);
+  const local = useCogLocal();
   return (
     <div className="space-y-5">
       <div className="flex flex-col items-center gap-2">
         <div className="screen flex h-36 w-36 items-center justify-center rounded-md">
           <MonSprite id={item.monId} size={120} className="relative z-[3]" />
         </div>
-        <p className="text-center text-sm text-muted-foreground">Which one is this {monName(item.monId)} turned — not mirrored?</p>
+        <p className="text-center text-sm text-muted-foreground">{t("rotation", { name: local.mon(item.monId) })}</p>
       </div>
       <OptionGrid count={item.options.length} {...opts} square columns={item.options.length > 4 ? 3 : 2} render={(i) => <MonSprite id={item.monId} size={84} rot={item.options[i].rot} flip={item.options[i].flip} />} />
     </div>
@@ -118,10 +127,11 @@ export function RotationView({ item, ...opts }: OptionProps & { item: RotationIt
 export function PathView({ item, ...opts }: OptionProps & { item: PathItem }) {
   const n = item.size;
   const t = 100 / n;
+  const tr = useT(play);
   return (
     <div className="space-y-5">
       <div className="mx-auto w-full max-w-[300px]">
-        <svg viewBox="0 0 100 100" className="w-full rounded-lg border border-foreground/10" role="img" aria-label={`A ${n} by ${n} route map`}>
+        <svg viewBox="0 0 100 100" className="w-full rounded-lg border border-foreground/10" role="img" aria-label={tr("routeMap", { n })}>
           <rect width="100" height="100" fill="#7ac74c" />
           {item.walls.map((w, i) => {
             const x = (i % n) * t;
@@ -143,7 +153,7 @@ export function PathView({ item, ...opts }: OptionProps & { item: PathItem }) {
             <path d={`M${-t * 0.18} ${t * 0.2} v${-t * 0.4} h${t * 0.36}`} stroke="#1b1b1b" strokeWidth="1.2" fill="none" />
           </g>
         </svg>
-        <p className="mt-2 text-center text-sm text-muted-foreground">Fewest steps from the Poké Ball to the Gym (up, down, left, right; trees block)?</p>
+        <p className="mt-2 text-center text-sm text-muted-foreground">{tr("path")}</p>
       </div>
       <OptionGrid count={item.options.length} {...opts} render={(i) => <span className="tabular-nums">{item.options[i]}</span>} />
     </div>
@@ -164,6 +174,7 @@ function Pile({ layers }: { layers: readonly [number, number][] }) {
     }
   });
   balls.sort((a, b) => a.order - b.order);
+  const t = useT(play);
   const xs = balls.map((b) => b.x);
   const ys = balls.map((b) => b.y);
   const minX = Math.min(...xs) - R * 1.2;
@@ -171,7 +182,7 @@ function Pile({ layers }: { layers: readonly [number, number][] }) {
   const minY = Math.min(...ys) - R * 1.2;
   const maxY = Math.max(...ys) + R * 1.2;
   return (
-    <svg viewBox={`${minX} ${minY} ${maxX - minX} ${maxY - minY}`} className="mx-auto h-56 w-full max-w-[320px]" role="img" aria-label="A pile of Poké Balls">
+    <svg viewBox={`${minX} ${minY} ${maxX - minX} ${maxY - minY}`} className="mx-auto h-56 w-full max-w-[320px]" role="img" aria-label={t("pileLabel")}>
       {balls.map((b, i) => (
         <PokeBall key={i} size={R * 2} x={b.x - R} y={b.y - R} />
       ))}
@@ -180,11 +191,12 @@ function Pile({ layers }: { layers: readonly [number, number][] }) {
 }
 
 export function PileView({ item, ...opts }: OptionProps & { item: PileItem }) {
+  const t = useT(play);
   return (
     <div className="space-y-5">
       <div className="rounded-lg border border-foreground/10 bg-shade/20 p-2">
         <Pile layers={item.layers} />
-        <p className="pb-1 text-center text-sm text-muted-foreground">How many Poké Balls in the pile, the hidden ones included? Every ball rests on balls below it.</p>
+        <p className="pb-1 text-center text-sm text-muted-foreground">{t("pile")}</p>
       </div>
       <OptionGrid count={item.options.length} {...opts} render={(i) => <span className="tabular-nums">{item.options[i]}</span>} />
     </div>

@@ -9,5 +9,16 @@
   "Discord",
   "GitHub",
   "Google",
-  "OK"
+  "OK",
+  "Enter",
+  "Esc",
+  "Tab",
+  "Space",
+  "TikTok",
+  "Instagram",
+  "YouTube",
+  "Pokémon HOME",
+  "SUPABASE_URL",
+  "SUPABASE_SERVICE_ROLE_KEY",
+  "supabase/migrations/"
 ]

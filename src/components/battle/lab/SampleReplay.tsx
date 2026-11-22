@@ -5,10 +5,15 @@ import { ChevronLeft, ChevronRight, ListEnd, Pause, Play, X } from "lucide-react
 import { HpBar } from "@/components/game/HpBar";
 import { BattleModel, textLines, type MonSnap, type Snap } from "@/components/battle/play/model";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/i18n/client";
+import battleLab from "@/messages/battle-lab";
+import battleTerms from "@/messages/battle-terms";
 import type { LabReplay } from "@/lib/battle/lab/pool";
-import { STATUS_NAMES, type LabStatus } from "@/lib/battle/lab/types";
+import { LAB_STATUSES, STATUS_NAMES, type LabStatus } from "@/lib/battle/lab/types";
+import { labMessage } from "@/lib/battle/lab/words";
 import { cn } from "@/lib/utils";
 import { BattleSprite } from "../BattleSprite";
+import { useBattleNames } from "../use-battle-names";
 import { SIDE_COLOR, Swatch } from "./charts";
 
 /**
@@ -20,7 +25,7 @@ import { SIDE_COLOR, Swatch } from "./charts";
 interface Entry {
   turn: number;
   text: string;
-  /** A "Turn N" heading. */
+  /** A "Turn N" heading (its text is given when it's shown). */
   heading?: boolean;
 }
 
@@ -35,7 +40,7 @@ function readReplay(lines: string[]): { entries: Entry[]; snaps: Snap[]; turns: 
     if (step.cmd === "turn") {
       snaps[turn] = model.snapshot();
       turn = Number(step.args[1]) || turn + 1;
-      entries.push({ turn, text: `Turn ${turn}`, heading: true });
+      entries.push({ turn, text: "", heading: true });
       continue;
     }
     const text = step.text.trim();
@@ -59,21 +64,30 @@ function Rich({ text }: { text: string }) {
   );
 }
 
+const BOOSTS = new Set(["atk", "def", "spa", "spd", "spe", "accuracy", "evasion"]);
+
 function MonLine({ mon, side }: { mon: MonSnap | null; side: 0 | 1 }) {
+  const t = useT(battleLab);
+  const terms = useT(battleTerms);
+  const names = useBattleNames();
   if (!mon) return <div className="h-12" />;
-  const status = mon.fainted ? "Fainted" : STATUS_NAMES[mon.status as LabStatus] ?? mon.status;
+  const known = (LAB_STATUSES as readonly string[]).includes(mon.status) && mon.status !== "";
+  const status = mon.fainted ? t("status.fainted") : t.locale === "en" ? (STATUS_NAMES[mon.status as LabStatus] ?? mon.status) : known ? t(`status.${mon.status as "brn"}`) : mon.status;
+  // Stat stages by Showdown's ids ("atk +1"); another language names them.
+  const stat = (id: string) =>
+    t.locale === "en" || !BOOSTS.has(id) ? id : id === "accuracy" || id === "evasion" ? t(`boost.${id}`) : terms(`short.${id as "atk"}`);
   return (
     <div className={cn("flex min-w-0 items-center gap-2", side === 1 && "flex-row-reverse text-right")}>
       <BattleSprite species={{ id: mon.speciesId, num: mon.num }} shiny={mon.shiny} animated={false} size={44} className={cn(mon.fainted && "opacity-30 grayscale")} />
       <div className="min-w-0 flex-1">
         <p className="truncate font-display text-sm font-bold">
-          {mon.name} <span className="font-mono text-[11px] font-normal text-muted-foreground">Lv{mon.level}</span>
+          {names.species(mon.name)} <span className="font-mono text-[11px] font-normal text-muted-foreground">{t("level", { level: mon.level })}</span>
         </p>
         <HpBar value={mon.maxhp ? mon.hp / mon.maxhp : 0} />
         <p className="font-mono text-[10px] tabular-nums text-muted-foreground">
           {mon.hp}/{mon.maxhp}
           {mon.status || mon.fainted ? ` · ${status}` : ""}
-          {Object.entries(mon.boosts).map(([stat, n]) => ` · ${stat} ${n > 0 ? "+" : ""}${n}`)}
+          {Object.entries(mon.boosts).map(([id, n]) => ` · ${stat(id)} ${n > 0 ? "+" : ""}${n}`)}
         </p>
       </div>
     </div>
@@ -81,6 +95,8 @@ function MonLine({ mon, side }: { mon: MonSnap | null; side: 0 | 1 }) {
 }
 
 export default function SampleReplay({ replay, labels, seed, onClose }: { replay: LabReplay; labels: [string, string]; seed: string; onClose: () => void }) {
+  const t = useT(battleLab);
+  const names = useBattleNames();
   const { entries, snaps, turns } = useMemo(() => readReplay(replay.log), [replay.log]);
   const [turn, setTurn] = useState(Math.min(1, turns));
   const [playing, setPlaying] = useState(false);
@@ -104,7 +120,7 @@ export default function SampleReplay({ replay, labels, seed, onClose }: { replay
 
   const snap = snaps[turn] ?? snaps[snaps.length - 1];
   const shown = entries.filter((e) => e.turn <= turn);
-  const result = outcome === 2 ? (replay.record.capped ? "Stopped at the turn limit: a draw" : "A draw") : `${labels[outcome]} won in ${replay.record.turns} turn${replay.record.turns === 1 ? "" : "s"}`;
+  const result = outcome === 2 ? (replay.record.capped ? t("replay.capped") : t("replay.draw")) : t("replay.won", { side: labels[outcome], turns: replay.record.turns });
 
   return (
     <div className="space-y-3" data-testid="lab-replay">
@@ -112,17 +128,17 @@ export default function SampleReplay({ replay, labels, seed, onClose }: { replay
         <div>
           <p className="font-display text-lg font-bold uppercase tracking-wide">{result}</p>
           <p className="hud-label normal-case tracking-wider">
-            Battle #{replay.index + 1} of the run · seed {seed} · the same battle every time
+            {t("replay.meta", { n: replay.index + 1, seed })}
           </p>
         </div>
-        <Button size="sm" variant="ghost" onClick={onClose} aria-label="Close the replay">
+        <Button size="sm" variant="ghost" onClick={onClose} aria-label={t("replay.close")}>
           <X className="h-4 w-4" aria-hidden />
         </Button>
       </div>
       {replay.misses.length > 0 && (
         <ul className="text-xs text-warning">
           {replay.misses.map((m) => (
-            <li key={m}>{m}</li>
+            <li key={m}>{labMessage(m, names, t)}</li>
           ))}
         </ul>
       )}
@@ -143,7 +159,7 @@ export default function SampleReplay({ replay, labels, seed, onClose }: { replay
                 ))}
                 {side.team.length > side.active.length && (
                   <p className={cn("font-mono text-[10px] text-muted-foreground", s === 1 && "text-right")}>
-                    {side.team.filter((m) => !m.fainted).length} of {side.total} still standing
+                    {t("replay.standing", { alive: side.team.filter((m) => !m.fainted).length, total: side.total })}
                   </p>
                 )}
               </div>
@@ -153,20 +169,20 @@ export default function SampleReplay({ replay, labels, seed, onClose }: { replay
       )}
 
       <div className="flex flex-wrap items-center gap-2">
-        <Button size="sm" variant="outline" onClick={() => setTurn((t) => Math.max(0, t - 1))} disabled={turn <= 0} aria-label="Previous turn">
+        <Button size="sm" variant="outline" onClick={() => setTurn((t) => Math.max(0, t - 1))} disabled={turn <= 0} aria-label={t("replay.prev")}>
           <ChevronLeft className="h-4 w-4" aria-hidden />
         </Button>
         <span className="min-w-[7.5rem] text-center font-mono text-sm tabular-nums" aria-live="polite">
-          {turn === 0 ? "Start" : `Turn ${turn} of ${turns}`}
+          {turn === 0 ? t("replay.start") : t("replay.turnOf", { turn, turns })}
         </span>
-        <Button size="sm" variant="outline" onClick={() => setTurn((t) => Math.min(turns, t + 1))} disabled={turn >= turns} aria-label="Next turn">
+        <Button size="sm" variant="outline" onClick={() => setTurn((t) => Math.min(turns, t + 1))} disabled={turn >= turns} aria-label={t("replay.next")}>
           <ChevronRight className="h-4 w-4" aria-hidden />
         </Button>
         <Button size="sm" variant="secondary" onClick={() => (turn >= turns ? (setTurn(0), setPlaying(true)) : setPlaying((p) => !p))}>
-          {playing ? <Pause className="h-4 w-4" aria-hidden /> : <Play className="h-4 w-4" aria-hidden />} {playing ? "Pause" : "Play"}
+          {playing ? <Pause className="h-4 w-4" aria-hidden /> : <Play className="h-4 w-4" aria-hidden />} {playing ? t("replay.pause") : t("replay.play")}
         </Button>
         <Button size="sm" variant="ghost" onClick={() => setTurn(turns)} disabled={turn >= turns}>
-          <ListEnd className="h-4 w-4" aria-hidden /> Show all
+          <ListEnd className="h-4 w-4" aria-hidden /> {t("replay.showAll")}
         </Button>
       </div>
 
@@ -174,7 +190,7 @@ export default function SampleReplay({ replay, labels, seed, onClose }: { replay
         {shown.map((e, i) =>
           e.heading ? (
             <p key={i} className="hud-label pt-2 text-screen">
-              {e.text}
+              {t("replay.turn", { turn: e.turn })}
             </p>
           ) : (
             <div key={i}>

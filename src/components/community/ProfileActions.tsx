@@ -8,6 +8,9 @@ import { useCommunity } from "@/lib/friends-client";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { AddFriendButton } from "./AddFriend";
 import { ChallengeOptions } from "./ChallengeOptions";
+import { useT } from "@/i18n/client";
+import friendsNs from "@/messages/friends";
+import { friendStatus } from "./friend-status";
 
 /**
  * A profile's actions: Add friend, and for friends, Challenge and Watch
@@ -15,6 +18,7 @@ import { ChallengeOptions } from "./ChallengeOptions";
  * is only ever shown to their friends.
  */
 export function ProfileActions({ username }: { username: string }) {
+  const t = useT(friendsNs);
   const account = useAccount();
   const { list } = useCommunity();
   const [challenging, setChallenging] = useState(false);
@@ -26,18 +30,18 @@ export function ProfileActions({ username }: { username: string }) {
         <AddFriendButton username={username} />
         {friend && me && (
           <Button size="sm" variant={challenging ? "default" : "outline"} onClick={() => setChallenging(!challenging)} aria-expanded={challenging}>
-            <Swords className="h-4 w-4" aria-hidden /> Challenge
+            <Swords className="h-4 w-4" aria-hidden /> {t("challenge")}
           </Button>
         )}
         {friend?.activity?.watch && (
           <Link href={`/battle/live/${friend.activity.watch}`} className={buttonVariants({ size: "sm", variant: "outline" })} data-testid="profile-watch">
-            <Eye className="h-4 w-4" aria-hidden /> Watch
+            <Eye className="h-4 w-4" aria-hidden /> {t("watch")}
           </Link>
         )}
         {friend && (
           <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <span className={friend.online ? "h-2 w-2 rounded-full bg-success" : "h-2 w-2 rounded-full bg-foreground/25"} aria-hidden />
-            {friend.online ? (friend.activity?.label ?? "Online") : "Offline"}
+            {friendStatus(t, friend)}
           </span>
         )}
       </div>

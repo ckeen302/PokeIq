@@ -1,4 +1,6 @@
-import type { QuestionBuilder } from "../types";
+import type { Question, QuestionBuilder } from "../types";
+import { localizable } from "../localize";
+import { describeIn, pokemonName } from "../words";
 import { zoomCropCount } from "@/lib/server/zoom-reveal";
 import { clampRating, describe, difficultyPool, genRating, pickTarget } from "../shared";
 
@@ -22,7 +24,7 @@ export const zoomReveal: QuestionBuilder = (rng, opts) => {
   const target = pickTarget(rng, pool, opts.used, (p) => zoomCropCount(p.id) > 0);
   if (!target) return null;
   const crop = rng.int(0, zoomCropCount(target.id) - 1);
-  return {
+  const q: Question = {
     itemKey: `zoom-reveal:${target.id}:${crop}`,
     module: "zoom-reveal",
     prompt: "Zoom Reveal: who's that Pokémon?",
@@ -34,4 +36,5 @@ export const zoomReveal: QuestionBuilder = (rng, opts) => {
     explanation: describe(target),
     rating: clampRating(genRating(target) + TYPED_BONUS),
   };
+  return localizable(q, (L) => ({ prompt: L.t("zoom.prompt"), answer: pokemonName(L, target), explanation: describeIn(L, target) }));
 };

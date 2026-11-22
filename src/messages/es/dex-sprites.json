@@ -1,0 +1,13 @@
+{
+  "title": "Sprites de {name}",
+  "subtitle": "Por generación",
+  "nav": "Sprites",
+  "sprite": "Sprite",
+  "gen": "Gen. {gen}",
+  "normal": "Normal",
+  "shiny": "Variocolor",
+  "alt": "{name}, sprite de la generación {gen}",
+  "altShiny": "{name}, sprite variocolor de la generación {gen}",
+  "none": "Ninguno",
+  "note": "Sprites frontales de un juego por generación, vía PokéAPI. La generación 9 muestra el modelo de Pokémon HOME. Un guion indica que ese juego no tiene."
+}

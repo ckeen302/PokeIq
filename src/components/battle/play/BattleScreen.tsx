@@ -3,14 +3,22 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { MusicControl, trackFor, useBattleMusic } from "./MusicControl";
 import { AlertTriangle, ChevronDown, Eye, Undo2, FastForward, Gauge, Loader2, ScrollText, SkipForward, Sparkles, Timer } from "lucide-react";
-import { CPU_LEVEL_INFO, PLAY_FORMAT_INFO, isGameType, playerCount, teamOf, timerNagMarks, type BattleRequestPokemon, type BattleView, type GameType } from "@/lib/battle/play";
+import { PLAY_FORMAT_INFO, isGameType, playerCount, teamOf, timerNagMarks, type BattleRequestPokemon, type BattleView, type GameType } from "@/lib/battle/play";
+import { useT } from "@/i18n/client";
+import { useLocale } from "@/i18n/locale-context";
+import { translator, type Translator } from "@/i18n/catalog";
+import playNs from "@/messages/battle-play";
+import formatsNs from "@/messages/battle-formats";
+import { cpuLevelName, customRulesName, formatName, type FormatsT } from "@/lib/battle/format-labels";
+import { BattleLocalContext, useLogLocal } from "./local";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { isPhone } from "@/lib/phone";
 import { Dex } from "@pkmn/dex";
 import { BattleModel, SIDE_IDS, emptySide, endNote, sideOfSeat, textLines, type SideId, type Snap, type Step } from "./model";
 import { preloadSprite } from "./sprites";
-import { loadAnims, playStep, type PopupTone, type StageHandle } from "./player";
+import { loadAnims, playStep, type PopupLabel, type PopupTone, type StageHandle } from "./player";
+import type { LogLocal } from "@/lib/battle/log/local";
 import { Stage, type Popup } from "./Stage";
 import { Controls } from "./Controls";
 import { choiceLine } from "./choice";
@@ -60,68 +68,78 @@ export interface BattleScreenProps {
   onIdle?: () => void;
 }
 
+type PlayT = Translator<typeof playNs.en>;
+
 /** "1st", "2nd", "3rd", "4th". */
-export const place = (n: number) => `${n}${n === 1 ? "st" : n === 2 ? "nd" : n === 3 ? "rd" : "th"}`;
+export const place = (n: number, t: PlayT = translator(playNs, "en", undefined)) => t("end.ordinal", { n });
 
 /** A four-player battle's end: a Multi Battle's winning team, or a Free-For-All's winner and your place in it. */
-function fourEndText(view: Pick<BattleView, "end" | "players" | "you" | "gameType">, turns: number): { title: string; detail: string; tone: "win" | "loss" | "draw" } {
+function fourEndText(view: Pick<BattleView, "end" | "players" | "you" | "gameType">, turns: number, t: PlayT): { title: string; detail: string; tone: "win" | "loss" | "draw" } {
   const end = view.end!;
   const names = view.players.map((p) => p.name);
-  const turnsText = `${turns} turn${turns === 1 ? "" : "s"}`;
-  if (end.winner === null) return { title: end.reason === "nocontest" ? "No contest" : "A draw", detail: end.reason === "nocontest" ? "The battle couldn't go on." : `After ${turnsText}.`, tone: "draw" };
+  const turnsText = t("end.turns", { n: turns });
+  if (end.winner === null) return { title: end.reason === "nocontest" ? t("end.noContest") : t("end.draw"), detail: end.reason === "nocontest" ? t("end.cantGoOn") : t("end.after", { turns: turnsText }), tone: "draw" };
   const winners = end.winners ?? [end.winner];
-  const winnerNames = winners.map((s) => names[s] ?? "A trainer").join(" & ");
+  const winnerNames = winners.map((s) => names[s] ?? t("aTrainer")).join(" & ");
   if (view.gameType === "multi") {
-    const team = (t: number) => [t, t + 2].map((s) => names[s] ?? "?").join(" & ");
+    const team = (n: number) => [n, n + 2].map((s) => names[s] ?? "?").join(" & ");
     const lost = team(1 - (end.winner % 2));
-    if (view.you === null) return { title: `${winnerNames} won!`, detail: `They beat ${lost} in ${turnsText}.`, tone: "win" };
+    if (view.you === null) return { title: t("end.won", { name: winnerNames }), detail: t("end.theyBeat", { lost, turns: turnsText }), tone: "win" };
     const won = winners.includes(view.you);
-    const partner = names[view.you < 2 ? view.you + 2 : view.you - 2] ?? "your partner";
-    return won ? { title: "Victory!", detail: `You and ${partner} beat ${lost} in ${turnsText}.`, tone: "win" } : { title: "Defeat", detail: `${winnerNames} won in ${turnsText}.`, tone: "loss" };
+    const partner = names[view.you < 2 ? view.you + 2 : view.you - 2] ?? t("yourPartner");
+    return won ? { title: t("end.victory"), detail: t("end.youAndPartner", { partner, lost, turns: turnsText }), tone: "win" } : { title: t("end.defeat"), detail: t("end.wonIn", { name: winnerNames, turns: turnsText }), tone: "loss" };
   }
   const standings = end.standings ?? [end.winner];
-  if (view.you === null) return { title: `${winnerNames} won!`, detail: `Last trainer standing after ${turnsText}.`, tone: "win" };
+  if (view.you === null) return { title: t("end.won", { name: winnerNames }), detail: t("end.lastStanding", { turns: turnsText }), tone: "win" };
   const at = standings.indexOf(view.you);
-  if (winners.includes(view.you)) return { title: "Victory!", detail: `Last trainer standing after ${turnsText}.`, tone: "win" };
-  return { title: at >= 0 ? `${place(at + 1)} place` : "Defeat", detail: `${winnerNames} won the Free-For-All in ${turnsText}.`, tone: "loss" };
+  if (winners.includes(view.you)) return { title: t("end.victory"), detail: t("end.lastStanding", { turns: turnsText }), tone: "win" };
+  return { title: at >= 0 ? t("end.place", { place: place(at + 1, t) }) : t("end.defeat"), detail: t("end.wonFfa", { name: winnerNames, turns: turnsText }), tone: "loss" };
 }
 
 /** How a finished battle ended, told from one trainer's side or, for spectators and replays, neutrally. */
-export function endText(view: Pick<BattleView, "end" | "players" | "you" | "gameType">, turns: number): { title: string; detail: string; tone: "win" | "loss" | "draw" } {
+export function endText(view: Pick<BattleView, "end" | "players" | "you" | "gameType">, turns: number, t: PlayT = translator(playNs, "en", undefined)): { title: string; detail: string; tone: "win" | "loss" | "draw" } {
   const end = view.end!;
-  if (view.players.length === 4) return fourEndText(view, turns);
+  if (view.players.length === 4) return fourEndText(view, turns, t);
   const names = view.players.map((p) => p.name);
-  const winner = end.winner === null ? null : (names[end.winner] ?? "A trainer");
-  const loser = end.winner === null ? null : (names[1 - end.winner] ?? "A trainer");
-  const turnsText = `${turns} turn${turns === 1 ? "" : "s"}`;
+  const winner = end.winner === null ? null : (names[end.winner] ?? t("aTrainer"));
+  const loser = end.winner === null ? null : (names[1 - end.winner] ?? t("aTrainer"));
+  const turnsText = t("end.turns", { n: turns });
   if (view.you === null) {
-    if (end.winner === null) return { title: end.reason === "nocontest" ? "No contest" : "A draw", detail: end.reason === "nocontest" ? "The battle couldn't go on." : `After ${turnsText}.`, tone: "draw" };
+    if (end.winner === null) return { title: end.reason === "nocontest" ? t("end.noContest") : t("end.draw"), detail: end.reason === "nocontest" ? t("end.cantGoOn") : t("end.after", { turns: turnsText }), tone: "draw" };
+    const who = loser ?? "";
     const why =
-      end.reason === "forfeit" ? `${loser} forfeited.` : end.reason === "timeout" ? `${loser} ran out of time.` : end.reason === "left" ? `${loser} disconnected.` : `In ${turnsText}.`;
-    return { title: `${winner} won!`, detail: why, tone: "win" };
+      end.reason === "forfeit" ? t("end.forfeited", { name: who }) : end.reason === "timeout" ? t("end.ranOut", { name: who }) : end.reason === "left" ? t("end.disconnected", { name: who }) : t("end.inTurns", { turns: turnsText });
+    return { title: t("end.won", { name: winner ?? "" }), detail: why, tone: "win" };
   }
   const won = end.winner === view.you;
-  const foe = names[view.you === 0 ? 1 : 0] ?? "Opponent";
-  if (end.winner === null) return { title: "A draw", detail: end.reason === "nocontest" ? "The battle couldn't go on." : `After ${turnsText}.`, tone: "draw" };
+  const foe = names[view.you === 0 ? 1 : 0] ?? t("opponent");
+  if (end.winner === null) return { title: t("end.draw"), detail: end.reason === "nocontest" ? t("end.cantGoOn") : t("end.after", { turns: turnsText }), tone: "draw" };
   const detail =
     end.reason === "forfeit"
       ? won
-        ? `${foe} forfeited.`
-        : "You forfeited."
+        ? t("end.forfeited", { name: foe })
+        : t("end.youForfeited")
       : end.reason === "timeout"
         ? won
-          ? `${foe} ran out of time.`
-          : "You ran out of time."
+          ? t("end.ranOut", { name: foe })
+          : t("end.youRanOut")
         : end.reason === "left"
           ? won
-            ? `${foe} disconnected.`
-            : "You were disconnected."
+            ? t("end.disconnected", { name: foe })
+            : t("end.youDisconnected")
           : end.reason === "nocontest"
-            ? "The battle couldn't go on."
+            ? t("end.cantGoOn")
             : won
-              ? `You beat ${foe} in ${turnsText}.`
-              : `${foe} won in ${turnsText}.`;
-  return { title: won ? "Victory!" : "Defeat", detail, tone: won ? "win" : "loss" };
+              ? t("end.youBeat", { name: foe, turns: turnsText })
+              : t("end.wonIn", { name: foe, turns: turnsText });
+  return { title: won ? t("end.victory") : t("end.defeat"), detail, tone: won ? "win" : "loss" };
+}
+
+/** The format's name as the players see it: Showdown's own names stay; ours ("Custom rules") in the page's language. */
+function shownFormat(tf: FormatsT, view: Pick<BattleView, "format" | "formatName" | "rules">): string {
+  if (tf.locale === "en") return view.formatName ?? PLAY_FORMAT_INFO[view.format].name;
+  if (view.rules) return customRulesName(tf, view.rules);
+  return view.format === "custom" || view.format === "tower" || !view.formatName ? formatName(tf, view.format) : view.formatName;
 }
 
 interface Entry {
@@ -132,18 +150,21 @@ interface Entry {
   at?: number;
   /** The battle's header (format and rules), or a note of how it ended: set apart from the play-by-play. */
   note?: boolean;
+  /** Another language's "(… lost N% of its health!)" line. */
+  pct?: boolean;
 }
 
 /** Lines for the log alone, never the text box: turn headers and the battle's format and rules. */
 const LOG_ONLY = new Set(["turn", "tier", "rule"]);
 
-function entryOf(step: Step, id: number, view: Pick<BattleView, "end" | "players">): Entry[] {
+function entryOf(step: Step, id: number, view: Pick<BattleView, "end" | "players">, local: LogLocal | null): Entry[] {
   const text = step.text.trim();
   if (!text) return [];
   if (step.cmd === "turn") return [{ id, turn: Number(step.args[1]), text, at: step.at }];
   const entry: Entry = { id, text, at: step.at };
+  if (step.pct) entry.pct = true;
   if (step.cmd === "tier" || step.cmd === "rule") entry.note = true;
-  const why = step.cmd === "win" ? endNote(view) : null;
+  const why = step.cmd === "win" ? endNote(view, local ?? undefined) : null;
   return why ? [{ id: id - 0.5, text: why, at: step.at, note: true }, entry] : [entry];
 }
 
@@ -193,18 +214,19 @@ function emptySnap(): Snap {
 
 /** A Free-For-All's standings, or a Multi Battle's two teams, under the result. */
 export function FourResult({ view }: { view: Pick<BattleView, "end" | "players" | "you" | "gameType"> }) {
+  const t = useT(playNs);
   const end = view.end;
   if (!end || view.players.length !== 4) return null;
-  const name = (s: number) => (s === view.you ? `${view.players[s]?.name ?? "You"} (you)` : (view.players[s]?.name ?? "A trainer"));
+  const name = (s: number) => (s === view.you ? t("youTag", { name: view.players[s]?.name ?? t("you") }) : (view.players[s]?.name ?? t("aTrainer")));
   if (view.gameType === "multi") {
     return (
       <div className="mx-auto grid max-w-md grid-cols-2 gap-2 text-left" data-testid="multi-result">
-        {[0, 1].map((t) => {
-          const won = end.winner !== null && end.winner % 2 === t;
+        {[0, 1].map((team) => {
+          const won = end.winner !== null && end.winner % 2 === team;
           return (
-            <div key={t} className={cn("rounded-md border px-3 py-2", won ? "border-success/60 bg-success/10" : "border-border")}>
-              <p className={cn("hud-label", won ? "text-success" : "text-muted-foreground")}>{won ? "Winners" : end.winner === null ? `Team ${t + 1}` : "Beaten"}</p>
-              {[t, t + 2].map((s) => (
+            <div key={team} className={cn("rounded-md border px-3 py-2", won ? "border-success/60 bg-success/10" : "border-border")}>
+              <p className={cn("hud-label", won ? "text-success" : "text-muted-foreground")}>{won ? t("four.winners") : end.winner === null ? t("four.team", { n: team + 1 }) : t("four.beaten")}</p>
+              {[team, team + 2].map((s) => (
                 <p key={s} className="truncate font-display text-sm font-bold uppercase">
                   {name(s)}
                 </p>
@@ -218,14 +240,14 @@ export function FourResult({ view }: { view: Pick<BattleView, "end" | "players" 
   const order = end.standings ?? [];
   if (!order.length) return null;
   return (
-    <ol className="mx-auto max-w-sm space-y-1 text-left" data-testid="ffa-standings" aria-label="Final standings">
+    <ol className="mx-auto max-w-sm space-y-1 text-left" data-testid="ffa-standings" aria-label={t("four.standings")}>
       {order.map((s, i) => {
         const out = view.players[s]?.out;
         return (
           <li key={s} className={cn("flex items-center gap-2 rounded-md border px-3 py-1.5", i === 0 ? "border-success/60 bg-success/10" : "border-border", s === view.you && "ring-1 ring-primary")} data-testid="ffa-standing">
-            <span className={cn("w-9 shrink-0 font-pixel text-[11px]", i === 0 ? "text-success" : "text-muted-foreground")}>{place(i + 1)}</span>
+            <span className={cn("w-9 shrink-0 font-pixel text-[11px]", i === 0 ? "text-success" : "text-muted-foreground")}>{place(i + 1, t)}</span>
             <span className="min-w-0 flex-1 truncate font-display text-sm font-bold uppercase">{name(s)}</span>
-            <span className="hud-label shrink-0 text-muted-foreground">{i === 0 ? "Last standing" : out ? `Out on turn ${out}` : "Out"}</span>
+            <span className="hud-label shrink-0 text-muted-foreground">{i === 0 ? t("four.lastStanding") : out ? t("four.outOn", { n: out }) : t("four.out")}</span>
           </li>
         );
       })}
@@ -234,7 +256,8 @@ export function FourResult({ view }: { view: Pick<BattleView, "end" | "players" 
 }
 
 /** A four-player battle's trainers: your team against theirs (Multi), or all four (Free-For-All), with who's out. */
-function FourHeader({ view, gameType, cpu }: { view: BattleView; gameType: GameType; cpu: string | null }) {
+function FourHeader({ view, gameType, cpu, format }: { view: BattleView; gameType: GameType; cpu: string | null; format: string }) {
+  const t = useT(playNs);
   const chip = (seat: number) => {
     const p = view.players[seat];
     if (!p) return null;
@@ -251,12 +274,12 @@ function FourHeader({ view, gameType, cpu }: { view: BattleView; gameType: GameT
     <div className="flex min-w-0 basis-full flex-wrap items-center gap-x-2 gap-y-1 font-display text-sm font-bold uppercase tracking-wide sm:basis-auto sm:flex-1" data-testid="battle-four-header">
       {gameType === "multi" ? (
         <>
-          {[0, 1].map((t) => {
+          {[0, 1].map((n) => {
             const mine = view.you !== null ? teamOf("multi", view.you) : 0;
-            const team = t === 0 ? mine : 1 - mine;
+            const team = n === 0 ? mine : 1 - mine;
             return (
-              <span key={t} className="flex min-w-0 items-center gap-1.5">
-                {t === 1 && <span className="hud-label mr-1">vs</span>}
+              <span key={n} className="flex min-w-0 items-center gap-1.5">
+                {n === 1 && <span className="hud-label mr-1">{t("vs")}</span>}
                 {chip(team)}
                 <span className="text-muted-foreground">&amp;</span>
                 {chip(team + 2)}
@@ -273,8 +296,8 @@ function FourHeader({ view, gameType, cpu }: { view: BattleView; gameType: GameT
         ))
       )}
       <span className="hud-label ml-1 hidden sm:inline">
-        {view.formatName ?? PLAY_FORMAT_INFO[view.format].name}
-        {cpu && view.players.some((p) => p.cpu) ? ` · ${cpu} computer` : ""}
+        {format}
+        {cpu && view.players.some((p) => p.cpu) ? t("cpuComputer", { level: cpu }) : ""}
       </span>
     </div>
   );
@@ -320,7 +343,31 @@ function useTick(active: boolean) {
   return now;
 }
 
-export default function BattleScreen({ view, log, offset, busy, error, onChoose, endActions, side, onUndo, onStartTimer, onStopTimer, toolbar, replay, onIdle }: BattleScreenProps) {
+export default function BattleScreen(props: BattleScreenProps) {
+  const local = useLogLocal(useLocale());
+  // Another language's log and names arrive first: the battle never starts in English.
+  if (local === undefined) return <BattleLoading />;
+  return (
+    <BattleLocalContext.Provider value={local}>
+      <Screen {...props} local={local} />
+    </BattleLocalContext.Provider>
+  );
+}
+
+function BattleLoading() {
+  const t = useT(playNs);
+  return (
+    <div className="flex aspect-[16/9] w-full items-center justify-center rounded-lg border bg-card">
+      <Loader2 className="h-6 w-6 animate-spin text-screen" aria-label={t("loading")} />
+    </div>
+  );
+}
+
+function Screen({ view, log, offset, busy, error, onChoose, endActions, side, onUndo, onStartTimer, onStopTimer, toolbar, replay, onIdle, local }: BattleScreenProps & { local: LogLocal | null }) {
+  const t = useT(playNs);
+  const tf = useT(formatsNs);
+  const names_ = local?.names;
+  const format = shownFormat(tf, view);
   const watching = view.you === null;
   /** The latest view, for the log's end-of-battle note (read as steps play, after the render that brought them). */
   const viewRef = useRef(view);
@@ -478,14 +525,17 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
     stage.current = handle;
   }, []);
 
-  const addEntry = useCallback((step: Step) => {
-    const added = entryOf(step, ++entryId.current, viewRef.current);
-    if (added.length) setEntries((list) => [...list.slice(-600), ...added]);
-  }, []);
+  const addEntry = useCallback(
+    (step: Step) => {
+      const added = entryOf(step, ++entryId.current, viewRef.current, local);
+      if (added.length) setEntries((list) => [...list.slice(-600), ...added]);
+    },
+    [local]
+  );
 
-  const popup = useCallback((ref: Step["who"], text: string, tone: PopupTone) => {
+  const popup = useCallback((ref: Step["who"], label: PopupLabel, tone: PopupTone) => {
     const id = ++popupId.current;
-    setPopups((list) => [...list, { id, ref, text, tone }]);
+    setPopups((list) => [...list, { id, ref, label, tone }]);
     window.setTimeout(() => setPopups((list) => list.filter((p) => p.id !== id)), 1200);
   }, []);
 
@@ -538,7 +588,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
     let first = false;
     if (!model.current || log.reset !== resetSeen.current) {
       const restart = !!model.current;
-      model.current = new BattleModel(me);
+      model.current = new BattleModel(me, local ?? undefined);
       fed.current = 0;
       queue.current = [];
       resetSeen.current = log.reset;
@@ -561,7 +611,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
       const caught: Entry[] = [];
       for (const line of fresh) {
         const step = m.feed(line);
-        if (step) caught.push(...entryOf(step, ++entryId.current, viewRef.current).map((e) => ({ ...e, at: undefined })));
+        if (step) caught.push(...entryOf(step, ++entryId.current, viewRef.current, local).map((e) => ({ ...e, at: undefined })));
       }
       setEntries(caught.slice(-600));
       setSnap(m.snapshot());
@@ -579,7 +629,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
       if ((step.cmd === "switch" || step.cmd === "drag" || step.cmd === "replace") && step.who) preloadDetails(step.args[2] ?? "", step.who.side === me);
     }
     void run();
-  }, [log, me, run]);
+  }, [log, me, run, local]);
 
   // Your team's sprites, ready for when they switch in.
   const requestTeam = view.request?.data.side.pokemon;
@@ -619,19 +669,19 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
 
   const pending = playing || log.lines.length > fed.current;
   const now = useTick(!!view.clocks && view.status === "playing") + offset;
-  const youName = view.players[view.you ?? 0]?.name ?? "You";
-  const foeName = four ? "the other trainers" : (view.players[view.you === 1 ? 0 : 1]?.name ?? "Opponent");
+  const youName = view.players[view.you ?? 0]?.name ?? t("you");
+  const foeName = four ? t("otherTrainers") : (view.players[view.you === 1 ? 0 : 1]?.name ?? t("opponent"));
   /** A Free-For-All trainer who's out watches the rest. */
   const youOut = view.you !== null && view.players[view.you]?.out !== undefined;
-  const cpu = view.cpu ? CPU_LEVEL_INFO[view.cpu.level].name : null;
+  const cpu = view.cpu ? cpuLevelName(tf, view.cpu.level) : null;
   const showControls = !pending && view.status === "playing" && !!view.request && !view.end;
   const ended = !!view.end && !pending;
   const won = ended && view.end!.winner !== null && (view.end!.winner === view.you || (view.you !== null && !!view.end!.winners?.includes(view.you)));
-  const result = ended ? endText({ ...view, gameType }, snap.turn) : null;
+  const result = ended ? endText({ ...view, gameType }, snap.turn, t) : null;
   useBattleMusic(trackFor(view, ended, won));
   const help = useHotkeyHelp();
   const myLeft = view.clocks && view.status === "playing" && view.clocks.you.deadline && !view.waiting && view.request ? view.clocks.you.deadline - now : null;
-  const warning = timerWarning(myLeft);
+  const warning = timerWarning(myLeft, t);
 
   // Phones: when it's your move, bring the move buttons into thumb reach (above the tab bar), as Showdown's mobile layout keeps them.
   const controlsCard = useRef<HTMLDivElement>(null);
@@ -682,14 +732,14 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
       for (const m of marks) {
         if (left <= m && !done.has(m)) {
           done.add(m);
-          lines.push(`${names[who]} has ${m} seconds left.`);
+          lines.push(t("secondsLeft", { name: names[who], n: m }));
         }
       }
     }
     if (!lines.length) return;
     const at = Math.floor(Date.now() / 1000);
     setEntries((list) => [...list.slice(-600), ...lines.map((text) => ({ id: ++entryId.current, text, at }))]);
-  }, [now, view.clocks, view.status, replay, youName, foeName]);
+  }, [now, view.clocks, view.status, replay, youName, foeName]); // eslint-disable-line react-hooks/exhaustive-deps -- t is the page language's, fixed
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
@@ -698,7 +748,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
         {/* Who's playing, the clocks and playback controls. */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           {four ? (
-            <FourHeader view={view} gameType={gameType} cpu={cpu} />
+            <FourHeader view={view} gameType={gameType} cpu={cpu} format={format} />
           ) : (
           <div className="flex min-w-0 basis-full items-center gap-2 font-display text-sm font-bold uppercase tracking-wide sm:basis-auto sm:flex-1">
             <Avatar avatar={view.players[view.you ?? 0]?.avatar} size={24} />
@@ -706,7 +756,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
               {youName}
               {view.players[view.you ?? 0]?.rating !== undefined && <span className="hud-label ml-1.5 tabular-nums">{view.players[view.you ?? 0].elo ?? view.players[view.you ?? 0].rating}</span>}
             </span>
-            <span className="hud-label">vs</span>
+            <span className="hud-label">{t("vs")}</span>
             <Avatar avatar={view.cpu ? null : view.players[view.you === 1 ? 0 : 1]?.avatar} size={24} />
             <span className="truncate text-screen">
               {foeName}
@@ -714,14 +764,14 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
               {view.players[view.you === 1 ? 0 : 1]?.rating !== undefined && <span className="hud-label ml-1.5 tabular-nums">{view.players[view.you === 1 ? 0 : 1].elo ?? view.players[view.you === 1 ? 0 : 1].rating}</span>}
             </span>
             <span className="hud-label ml-2 hidden sm:inline">
-              {view.ranked ? "Ranked · " : ""}
-              {view.formatName ?? PLAY_FORMAT_INFO[view.format].name}
+              {view.ranked ? t("rankedDot") : ""}
+              {format}
             </span>
           </div>
           )}
           {view.kind === "pvp" && view.spectators !== undefined && !replay && (
-            <span className="hud-label flex items-center gap-1" title="Spectators watching now" data-testid="spectator-count">
-              <Eye className="h-3.5 w-3.5" aria-hidden /> {view.spectators} watching
+            <span className="hud-label flex items-center gap-1" title={t("spectators")} data-testid="spectator-count">
+              <Eye className="h-3.5 w-3.5" aria-hidden /> {t("watching", { n: view.spectators })}
             </span>
           )}
           {view.timerStartable && onStartTimer && !watching && (
@@ -732,7 +782,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
               className="flex items-center gap-1 rounded-sm border border-screen/50 px-2 py-0.5 font-pixel text-[10px] uppercase text-screen hover:bg-screen/10 disabled:opacity-50"
               data-testid="start-timer"
             >
-              <Timer className="h-3 w-3" aria-hidden /> Start timer
+              <Timer className="h-3 w-3" aria-hidden /> {t("timer.start")}
             </button>
           )}
           {view.timerStoppable && onStopTimer && !watching && (
@@ -741,22 +791,23 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
               onClick={onStopTimer}
               disabled={busy}
               className="flex items-center gap-1 rounded-sm border border-border px-2 py-0.5 font-pixel text-[10px] uppercase text-muted-foreground hover:bg-muted disabled:opacity-50"
-              title="You asked for the timer: turn it off again (it stays on if your opponent asked for it too)"
+              title={t("timer.stopTitle")}
               data-testid="stop-timer"
             >
-              <Timer className="h-3 w-3" aria-hidden /> Stop timer
+              <Timer className="h-3 w-3" aria-hidden /> {t("timer.stop")}
             </button>
           )}
           {view.frontier && (
             <span className="hud-label rounded-sm border border-primary/40 px-1.5 py-1 text-primary" data-testid="battle-streak">
-              {view.frontier.boss ? "Tycoon battle · " : ""}Round {view.frontier.round}, battle {view.frontier.battle}/7 · Streak {view.frontier.streak}
+              {view.frontier.boss ? t("frontier.boss") : ""}
+              {t("frontier.streak", { round: view.frontier.round, battle: view.frontier.battle, streak: view.frontier.streak })}
             </span>
           )}
           {view.clocks && view.status === "playing" && (
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-pixel text-[11px]" data-testid="battle-clocks">
               <Timer className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
               <span className={cn(view.clocks.you.deadline && view.clocks.you.deadline - now < 20_000 ? "text-destructive" : "text-foreground")}>
-                You {view.clocks.you.deadline ? clock(view.clocks.you.deadline - now) : clock(view.clocks.you.bank)}
+                {t("clock.you", { time: view.clocks.you.deadline ? clock(view.clocks.you.deadline - now) : clock(view.clocks.you.bank) })}
               </span>
               {view.clocks.seats ? (
                 view.clocks.seats.map((c, i) =>
@@ -767,14 +818,14 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
                   ) : null
                 )
               ) : (
-                <span className="text-muted-foreground">Foe {view.clocks.foe.deadline ? clock(view.clocks.foe.deadline - now) : clock(view.clocks.foe.bank)}</span>
+                <span className="text-muted-foreground">{t("clock.foe", { time: view.clocks.foe.deadline ? clock(view.clocks.foe.deadline - now) : clock(view.clocks.foe.bank) })}</span>
               )}
             </div>
           )}
           <MusicControl />
           {/* No keyboard on a phone: no key list. */}
           {!replay && !watching && <span className="contents max-md:hidden"><HotkeyHelp open={help.open} onToggle={help.toggle} /></span>}
-          <div className="flex flex-wrap items-center gap-1" role="group" aria-label="Battle log options: text speed and animations" title="Text speed">
+          <div className="flex flex-wrap items-center gap-1" role="group" aria-label={t("options.label")} title={t("options.speed")}>
             <Gauge className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
             {SPEEDS.map((s) => (
               <button
@@ -787,21 +838,21 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
                 {s}x
               </button>
             ))}
-            <button type="button" onClick={skip} disabled={!playing} className="ml-1 flex items-center gap-1 rounded-sm px-1.5 py-0.5 font-pixel text-[10px] text-muted-foreground hover:text-foreground disabled:opacity-40" aria-label="Skip the animations">
-              <SkipForward className="h-3 w-3" aria-hidden /> Skip
+            <button type="button" onClick={skip} disabled={!playing} className="ml-1 flex items-center gap-1 rounded-sm px-1.5 py-0.5 font-pixel text-[10px] text-muted-foreground hover:text-foreground disabled:opacity-40" aria-label={t("options.skipLabel")}>
+              <SkipForward className="h-3 w-3" aria-hidden /> {t("options.skip")}
             </button>
             <button
               type="button"
               onClick={() => toggleAnimations(!animationsOn)}
               aria-pressed={animationsOn}
               className="ml-1 flex items-center whitespace-nowrap gap-1 rounded-sm px-1.5 py-0.5 font-pixel text-[10px] text-muted-foreground hover:text-foreground"
-              title="Battle log option: animate each step, or show it at once"
+              title={t("options.animsTitle")}
               data-testid="animations-toggle"
             >
-              <Sparkles className="h-3 w-3" aria-hidden /> {animationsOn ? "Anims on" : "Anims off"}
+              <Sparkles className="h-3 w-3" aria-hidden /> {animationsOn ? t("options.animsOn") : t("options.animsOff")}
             </button>
             <button type="button" onClick={() => setShowLog((s) => !s)} className="ml-1 flex items-center gap-1 rounded-sm px-1.5 py-0.5 font-pixel text-[10px] text-muted-foreground hover:text-foreground lg:hidden" aria-expanded={showLog}>
-              <ScrollText className="h-3 w-3" aria-hidden /> Log
+              <ScrollText className="h-3 w-3" aria-hidden /> {t("options.log")}
             </button>
           </div>
         </div>
@@ -814,7 +865,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
 
         {/* The text box: the latest line of the battle. */}
         <div className="dialog-box min-h-[4.25rem] max-sm:min-h-[3.25rem] max-sm:px-3.5 max-sm:py-2.5 text-sm leading-relaxed text-muted-foreground" data-done={showControls} aria-live="polite" data-testid="battle-message">
-          {message ? <RichText text={message} /> : <span>The battle is about to begin…</span>}
+          {message ? <RichText text={message} /> : <span>{t("aboutToBegin")}</span>}
         </div>
 
         {warning && (
@@ -826,7 +877,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
               myLeft! <= TIMER_WARNINGS[1] ? "animate-pulse border-destructive bg-destructive/15 text-destructive" : "border-warning/60 bg-warning/10 text-warning"
             )}
           >
-            <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden /> {warning} {view.timeoutLoses ? (view.timer?.autoChoose && view.clocks && view.clocks.you.bank > (myLeft ?? 0) ? "Run out and a default move is made for you." : "Run out and you lose the battle.") : "Run out and the timer picks for you."}
+            <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden /> {warning} {view.timeoutLoses ? (view.timer?.autoChoose && view.clocks && view.clocks.you.bank > (myLeft ?? 0) ? t("timer.runOutDefault") : t("timer.runOutLose")) : t("timer.runOutPick")}
           </p>
         )}
 
@@ -853,7 +904,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
                   // Showdown: a switch sent while maybe trapped can't be cancelled (the cancel would tell whether it was).
                   if (/\bswitch\b/.test(choice) && view.request!.data.active?.some((a) => a?.maybeTrapped)) setNoCancel(rqid);
                   // The text box answers the tap at once, before the server does.
-                  const line = choiceLine(view.request!.data, choice);
+                  const line = choiceLine(view.request!.data, choice, t, names_);
                   if (line) {
                     beforeChoice.current = message;
                     setMessage(line);
@@ -870,26 +921,26 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
               </div>
             ) : replay ? (
               <p className="flex items-center justify-center gap-2 py-3 text-sm text-muted-foreground" data-testid="replay-status">
-                <FastForward className={cn("h-4 w-4", pending && "animate-pulse")} aria-hidden /> {pending ? "Playing the turn…" : `Turn ${snap.turn}`}
+                <FastForward className={cn("h-4 w-4", pending && "animate-pulse")} aria-hidden /> {pending ? t("playingTurn") : t("turn", { n: snap.turn })}
               </p>
             ) : (
               <p className="flex items-center justify-center gap-2 py-3 text-sm text-muted-foreground" data-testid="battle-waiting">
                 {pending ? (
                   <>
-                    <FastForward className="h-4 w-4 animate-pulse" aria-hidden /> Playing the turn…
+                    <FastForward className="h-4 w-4 animate-pulse" aria-hidden /> {t("playingTurn")}
                   </>
                 ) : (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" aria-hidden />{" "}
                     {busy
-                      ? "Sending…"
+                      ? t("wait.sending")
                       : youOut
-                        ? "You're out: watching the rest of the Free-For-All…"
+                        ? t("wait.youreOut")
                         : view.cpu && (view.kind === "cpu" || !four)
-                          ? "The computer is thinking…"
+                          ? t("wait.cpu")
                           : watching
-                            ? "The trainers are choosing…"
-                            : `Waiting for ${foeName}…`}
+                            ? t("wait.trainers")
+                            : t("wait.foe", { name: foeName })}
                     {view.cancel && onUndo && !busy && view.cancel.rqid !== noCancel && (
                       <button
                         type="button"
@@ -898,10 +949,10 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
                           onUndo(view.cancel!.rqid);
                         }}
                         className="ml-2 flex items-center gap-1 rounded-sm border border-border px-2 py-0.5 font-pixel text-[10px] uppercase text-foreground hover:bg-muted"
-                        title="Take back your choice before your opponent makes theirs"
+                        title={t("cancelTitle")}
                         data-testid="cancel-choice"
                       >
-                        <Undo2 className="h-3 w-3" aria-hidden /> Cancel
+                        <Undo2 className="h-3 w-3" aria-hidden /> {t("cancel")}
                       </button>
                     )}
                   </>
@@ -914,31 +965,31 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
 
       {/* The battle log. */}
       <aside className="min-w-0 space-y-3 lg:sticky lg:top-20 lg:self-start">
-        <Card className={cn("lg:block", showLog ? "block" : "hidden")} aria-label="Battle log">
+        <Card className={cn("lg:block", showLog ? "block" : "hidden")} aria-label={t("log.title")}>
           <CardContent className="p-0">
             <div className="flex items-center gap-1.5 border-b px-4 py-2">
               <p className="hud-label flex flex-1 items-center gap-1.5 py-1">
-                <ScrollText className="h-3 w-3" aria-hidden /> Battle log
+                <ScrollText className="h-3 w-3" aria-hidden /> {t("log.title")}
               </p>
               <button
                 type="button"
                 onClick={() => changeLogOpts({ time: !logOpts.time })}
                 aria-pressed={logOpts.time}
                 className={cn("rounded-sm px-1.5 py-1 font-pixel text-[10px] uppercase", logOpts.time ? "bg-screen text-black" : "text-muted-foreground hover:text-foreground")}
-                title="Show the time of each line"
+                title={t("log.timeTitle")}
                 data-testid="log-timestamps"
               >
-                Time
+                {t("log.time")}
               </button>
               <button
                 type="button"
                 onClick={() => changeLogOpts({ hidePct: !logOpts.hidePct })}
                 aria-pressed={logOpts.hidePct}
                 className={cn("rounded-sm px-1.5 py-1 font-pixel text-[10px] uppercase", logOpts.hidePct ? "bg-screen text-black" : "text-muted-foreground hover:text-foreground")}
-                title='Hide the "(lost N% of its health)" lines'
+                title={t("log.hidePctTitle")}
                 data-testid="log-hide-percent"
               >
-                Hide HP %
+                {t("log.hidePct")}
               </button>
               <button
                 type="button"
@@ -946,8 +997,8 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
                 aria-expanded={!logOpts.collapsed}
                 aria-controls="battle-log-body"
                 className="rounded-sm p-1 text-muted-foreground hover:text-foreground"
-                title={logOpts.collapsed ? "Show the battle log" : "Collapse the battle log"}
-                aria-label={logOpts.collapsed ? "Show the battle log" : "Collapse the battle log"}
+                title={logOpts.collapsed ? t("log.show") : t("log.collapse")}
+                aria-label={logOpts.collapsed ? t("log.show") : t("log.collapse")}
                 data-testid="log-collapse"
               >
                 <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", logOpts.collapsed && "-rotate-90")} aria-hidden />
@@ -972,9 +1023,9 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
                 e.turn !== undefined ? (
                   <p key={e.id} className="hud-label pt-2 text-screen">
                     {logOpts.time && e.at ? <span className="mr-1.5 font-mono normal-case text-muted-foreground">{stamp(e.at)}</span> : null}
-                    Turn {e.turn}
+                    {t("turn", { n: e.turn })}
                   </p>
-                ) : logOpts.hidePct && PERCENT_LINE.test(e.text) ? null : (
+                ) : logOpts.hidePct && (e.pct || PERCENT_LINE.test(e.text)) ? null : (
                   <div key={e.id} className={cn(logOpts.time && e.at && "flex gap-1.5", e.note && "text-[11px] italic text-muted-foreground/80")} data-note={e.note || undefined}>
                     {logOpts.time && e.at ? <span className="shrink-0 font-mono text-[10px] text-muted-foreground/70">{stamp(e.at)}</span> : null}
                     <div className="min-w-0">
@@ -992,7 +1043,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
                 className="absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full border border-screen/50 bg-card px-2.5 py-1 font-pixel text-[10px] uppercase text-screen shadow-md hover:bg-muted"
                 data-testid="log-latest"
               >
-                <ChevronDown className="h-3 w-3" aria-hidden /> Latest
+                <ChevronDown className="h-3 w-3" aria-hidden /> {t("log.latest")}
               </button>
             )}
             </div>

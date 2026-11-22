@@ -1,0 +1,26 @@
+{
+  "header": {
+    "battle": "Kampf"
+  },
+  "play": {
+    "title": "Kampf gegen den Computer"
+  },
+  "live": {
+    "title": "Ein Live-Pokémon-Kampf",
+    "description": "Ein Live-Pokémon-Kampf mit der Engine von Pokémon Showdown. Link öffnen, Namen wählen und kämpfen.",
+    "titleVs": "{host} vs. {guest}: ein Live-Pokémon-Kampf",
+    "titleHost": "{host} fordert dich zu einem Live-Pokémon-Kampf heraus",
+    "aTrainer": "Ein Trainer",
+    "descriptionFormat": "{format}, live mit der Engine von Pokémon Showdown. Link öffnen, Namen wählen und kämpfen."
+  },
+  "watch": {
+    "meta": {
+      "title": "Pokémon-Kämpfe live ansehen",
+      "description": "Schau Pokémon-Kämpfen live zu, mit der Engine von Pokémon Showdown: gewertete Ranglistenkämpfe und offene Freundeskämpfe, während sie laufen."
+    },
+    "crumb": "Zuschauen",
+    "title": "Live",
+    "accent": "zuschauen",
+    "intro": "Kämpfe, die gerade laufen. Zuschauer sehen, was Showdowns Zuschauer sehen: Das Team jeder Seite zeigt sich erst im Lauf des Kampfes."
+  }
+}

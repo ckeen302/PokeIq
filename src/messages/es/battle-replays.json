@@ -1,0 +1,50 @@
+{
+  "lists": {
+    "loadFailed": "No se han podido cargar las repeticiones.",
+    "loading": "Cargando repeticiones",
+    "unavailable": "Las repeticiones aún no están disponibles en este servidor.",
+    "mine": "Mis repeticiones",
+    "mineEmpty": "Aún no hay repeticiones. Los combates clasificatorios y públicos guardan la suya; tras cualquier otro, pulsa Guardar repetición.",
+    "recent": "Repeticiones recientes",
+    "filter": "Filtrar por formato",
+    "all": "Todos",
+    "recentEmpty": "Aún no hay repeticiones públicas en este formato."
+  },
+  "import": {
+    "log": "Registro del combate",
+    "watch": "Ver",
+    "open": "Abrir un archivo de repetición",
+    "tooBig": "Ese archivo es demasiado grande para ser una repetición de combate.",
+    "hint": "Repeticiones guardadas de Showdown (.html) y registros de combate (.log). Se leen en tu dispositivo, nunca se suben.",
+    "errors": {
+      "empty": "Pega un registro de combate o elige un archivo de repetición.",
+      "notLog": "No parece un registro de combate de Showdown: no hay jugadores ni Pokémon.",
+      "gameType": "Aquí solo se pueden ver combates individuales y dobles."
+    }
+  },
+  "viewer": {
+    "loading": "Cargando la repetición",
+    "back": "Retroceder un turno",
+    "turn": "Turno",
+    "pause": "Pausa",
+    "replay": "Repetir",
+    "play": "Reproducir",
+    "forward": "Avanzar un turno",
+    "nextKoTitle": "Saltar al siguiente turno en que se debilite un Pokémon",
+    "nextKo": "Siguiente KO",
+    "end": "Final",
+    "start": "Inicio",
+    "leads": "Iniciales",
+    "turnN": "Turno {n}",
+    "seek": "Saltar a un turno",
+    "downloadTitle": "El archivo de repetición de Showdown: se abre en cualquier navegador y se reproduce en el reproductor de Showdown",
+    "download": "Descargar repetición",
+    "logTitle": "El registro del combate en bruto (el protocolo de Showdown), una línea por suceso",
+    "log": "Registro",
+    "instant": "<b>Repetición instantánea</b> del combate hasta ahora. {timed, select, yes {El combate sigue mientras tanto: tu reloj de turno no se detiene.} other {El combate te espera.}}",
+    "backToBattle": "Volver al combate",
+    "another": "Ver otra",
+    "battle": "Combatir",
+    "more": "Más repeticiones"
+  }
+}

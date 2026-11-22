@@ -1,0 +1,44 @@
+{
+  "prompt": {
+    "silhouette": {
+      "label": "シルエット",
+      "hint": "だーれだ？"
+    },
+    "entry": {
+      "label": "図鑑説明",
+      "hint": "このポケモンはだれ？"
+    },
+    "typing": {
+      "label": "タイプ",
+      "hint": "タイプは何？"
+    }
+  },
+  "back": "ポケモン図鑑に戻る",
+  "title": "学習モード",
+  "blurb": "めくって、思い出して、くり返す。まちがえたカードは覚えるまで何度でも出てきます。",
+  "generations": "世代",
+  "gen": "第{n}世代",
+  "cardFront": "カードの表",
+  "deckSize": "枚数",
+  "all": "すべて",
+  "skipMastered": "覚えたカードを除く",
+  "mastered": "選択中の覚えたカード",
+  "start": "学習スタート",
+  "keys": "スペースでめくる · → 覚えた · ← もう一度 · Escで終了 · カードのスワイプでも操作できます",
+  "complete": "デッキ完了！",
+  "summary": "1回目で正解 {known}/{total} · 復習が必要 {missed}",
+  "drill": "まちがえたカードを復習",
+  "newDeck": "新しいデッキ",
+  "testYourself": "腕試しする →",
+  "exit": "学習を終了",
+  "again": "もう一度",
+  "knew": "覚えた",
+  "swipeHint": "覚えていたら→、もう一度見るなら←にスワイプ",
+  "flipHint": "カードをタップするかスペースキーでめくります",
+  "mystery": "なぞのシルエット",
+  "quote": "「{entry}」",
+  "genus": "{genus}",
+  "fullEntry": "図鑑の詳しいページ →",
+  "knewStamp": "覚えた",
+  "againStamp": "もう一度"
+}

@@ -1,3 +1,4 @@
+import type { SceneLabels } from "../labels";
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { POOL, poolLaneZ } from "@/lib/games/venues";
@@ -67,7 +68,7 @@ const CAUSTICS = /* glsl */ `
   }
 `;
 
-export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; occupancy: number; flashes: number; aniso: number; quality: "low" | "high" }): PoolWorld {
+export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; labels: SceneLabels; occupancy: number; flashes: number; aniso: number; quality: "low" | "high" }): PoolWorld {
   const group = new THREE.Group();
   const geos: THREE.BufferGeometry[] = [];
   const mats: THREE.Material[] = [];
@@ -523,12 +524,12 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
     const W = 4096, H = 96;
     const [c, g] = canvas(W, H);
     const panels = [
-      { bg: "#0b1a3a", fg: "#ffffff", text: "THE POKÉIQ GAMES" },
-      { bg: "#00a6d6", fg: "#ffffff", text: "SWIMMING" },
+      { bg: "#0b1a3a", fg: "#ffffff", text: o.labels.games },
+      { bg: "#00a6d6", fg: "#ffffff", text: o.labels.swimming.toUpperCase() },
       { bg: "#ffd23f", fg: "#14213d", text: "POKÉIQ" },
-      { bg: "#101010", fg: "#3bceac", text: "WHO SWIMS FASTEST?" },
-      { bg: "#d7263d", fg: "#ffffff", text: "AQUATICS CENTRE" },
-      { bg: "#6a4c93", fg: "#ffffff", text: "THE POKÉIQ GAMES" },
+      { bg: "#101010", fg: "#3bceac", text: o.labels.fastest },
+      { bg: "#d7263d", fg: "#ffffff", text: o.labels.aquatics },
+      { bg: "#6a4c93", fg: "#ffffff", text: o.labels.games },
     ];
     const pw = W / panels.length;
     panels.forEach((q, i) => {
@@ -638,7 +639,7 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
     g.textBaseline = "middle";
     g.fillStyle = "#ffffff";
     g.font = `800 84px ${o.font}`;
-    g.fillText("THE POKÉIQ GAMES", 512, 130, 960);
+    g.fillText(o.labels.games, 512, 130, 960);
     g.fillStyle = "#ffd23f";
     g.font = `800 64px ${o.font}`;
     g.fillText(title.toUpperCase(), 512, 250, 960);
@@ -646,7 +647,7 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
     for (let x = 0; x < 1024; x += 4) g.fillRect(x, 0, 1, 384);
     boardTex.needsUpdate = true;
   };
-  drawBoard("Swimming");
+  drawBoard(o.labels.swimming);
   const board = new THREE.Mesh(G(new THREE.PlaneGeometry(16, 6)), M(new THREE.MeshBasicMaterial({ map: boardTex, color: new THREE.Color(1.4, 1.4, 1.4) })));
   board.position.set(41.8, 9, 0);
   board.rotation.y = -Math.PI / 2;
@@ -711,10 +712,10 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
           swimmers[i].set(w.x, w.z, Math.max(0, Math.min(3, w.v / 2)), w.len);
           swimDir[i].set(w.dir, 0);
         }
-        drawBoard(p.board ? "Results" : "Swimming");
+        drawBoard(p.board ? o.labels.results : o.labels.swimming);
       } else {
         for (const s of swimmers) s.set(0, 0, 0, 0);
-        if (p.kind === "podium") drawBoard("Medal ceremony");
+        if (p.kind === "podium") drawBoard(o.labels.ceremony);
       }
     },
     dispose() {

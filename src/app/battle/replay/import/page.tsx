@@ -2,21 +2,39 @@ import type { Metadata } from "next";
 import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { BattleHeader } from "@/components/battle/BattleHeader";
 import { ReplayImport } from "@/components/battle/ReplayLists";
+import { ClientMessages } from "@/i18n/ClientMessages";
+import { serverT } from "@/i18n/server";
+import battlePages from "@/messages/battle-tools-pages";
+import battleReplays from "@/messages/battle-replays";
+import battleReplayWords from "@/messages/battle-replay-words";
+import battlePlay from "@/messages/battle-play";
+import battleTooltips from "@/messages/battle-tooltips";
+import battleRoom from "@/messages/battle-room";
+import battleFormatsNs from "@/messages/battle-formats";
+import shareNs from "@/messages/share";
+import battleLabCharts from "@/messages/battle-lab-charts";
+import battleInputs from "@/messages/battle-inputs";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Watch a Showdown Replay",
-  description: "Paste a Pokémon Showdown battle log or open a saved replay file and watch it turn by turn.",
-  path: "/battle/replay/import",
-  image: SHARE_IMAGES.battle,
-});
+export function generateMetadata(): Metadata {
+  const t = serverT(battlePages);
+  return pageMetadata({
+    title: t("import.title"),
+    description: t("import.description"),
+    path: "/battle/replay/import",
+    image: SHARE_IMAGES.battle,
+  });
+}
 
 export default function ReplayImportPage() {
+  const t = serverT(battlePages);
   return (
     <div className="mx-auto max-w-7xl space-y-6">
-      <BattleHeader back="/battle/replays" crumb="Import" title="Watch a" accent="Showdown replay">
-        Paste a battle log, or open a replay file Showdown saved, and play it back here.
+      <BattleHeader back="/battle/replays" crumb={t("import.crumb")} title={t("import.heading")} accent={t("import.accent")}>
+        {t("import.intro")}
       </BattleHeader>
-      <ReplayImport />
+      <ClientMessages namespaces={[battleReplays, battleReplayWords, battlePlay, battleTooltips, battleRoom, battleFormatsNs, shareNs, battleLabCharts, battleInputs]}>
+        <ReplayImport />
+      </ClientMessages>
     </div>
   );
 }

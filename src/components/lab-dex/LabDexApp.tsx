@@ -7,14 +7,14 @@ import { publicCryUrl } from "@/lib/pokemon/art";
 import { isMuted } from "@/lib/sound";
 import { roleTable } from "@/lib/lab-dex/roles";
 import { DEFAULT_VIEW, buildSequence, sameView, viewFromParams, viewToParams, type LabView } from "@/lib/lab-dex/sequence";
-import { fromRow, type LabDetails, type LabMon, type LabRow } from "@/lib/lab-dex/types";
+import { fromRow, type LabDetails, type LabLocal, type LabMon, type LabRow } from "@/lib/lab-dex/types";
 import { PODS, Wheel, mod, nearestSlot } from "@/lib/lab-dex/wheel";
 import { SCENE_URLS } from "@/components/sizes/scene-item";
 import { cn } from "@/lib/utils";
 import { Fallback2D, type Fallback2DHandle } from "./Fallback2D";
 import { BaseStats, Corners, Heading, InfoCard, OpenInDex, Roles, StatsTabs, dexNo, glass, type StatsTab } from "./panels";
 import { GenPicker, SearchBox, SortPicker, Toolbar, TogglesList, TypePicker, activeCount } from "./Toolbar";
-import { useLabStrings } from "./strings";
+import { LabLocalContext, useLabStrings } from "./strings";
 import type { LabScene } from "./scene";
 import { Governor, startTier, type Tier } from "./scene/quality";
 
@@ -68,13 +68,23 @@ const isTyping = (el: EventTarget | null) => {
   return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || e.isContentEditable;
 };
 
-export function LabDexApp({ rows }: { rows: LabRow[] }) {
+/** `local`: a page in another language's type names (English pages send none). */
+export function LabDexApp({ rows, local }: { rows: LabRow[]; local?: LabLocal }) {
+  return (
+    <LabLocalContext.Provider value={local}>
+      <Lab rows={rows} />
+    </LabLocalContext.Provider>
+  );
+}
+
+function Lab({ rows }: { rows: LabRow[] }) {
   const S = useLabStrings();
+  const lang = S.locale;
   const all = useMemo(() => rows.map(fromRow), [rows]);
   const tables = useMemo(() => ({ species: roleTable(all.filter((m) => !m.isForm)), everyone: roleTable(all) }), [all]);
   const [booted, setBooted] = useState(false);
   const [view, setView] = useState<LabView>(DEFAULT_VIEW);
-  const seq = useMemo(() => buildSequence(all, view), [all, view]);
+  const seq = useMemo(() => buildSequence(all, view, lang), [all, view, lang]);
   const inSeq = useMemo(() => new Map(seq.map((i, pos) => [all[i].id, pos])), [all, seq]);
   const [shown, setShown] = useState<number | null>(null);
   const [settled, setSettled] = useState<number | null>(null);
@@ -215,7 +225,7 @@ export function LabDexApp({ rows }: { rows: LabRow[] }) {
     let ro: ResizeObserver | null = null;
     setReady(false);
     (async () => {
-      const fonts = { display: cssFont("--font-display", "sans-serif"), pixel: cssFont("--font-pixel", "monospace"), body: cssFont("--font-body", "sans-serif") };
+      const fonts = { display: cssFont("--font-display", "sans-serif"), pixel: cssFont("--font-pixel", "monospace"), body: cssFont("--font-body", "sans-serif"), ...(S.caption && { words: S.caption }) };
       await Promise.all([document.fonts.load(`700 40px ${fonts.display}`), document.fonts.load(`600 20px ${fonts.display}`), document.fonts.load(`400 20px ${fonts.pixel}`)]).catch(() => undefined);
       const { createLabScene } = await import("./scene");
       if (!alive) return;
@@ -248,7 +258,7 @@ export function LabDexApp({ rows }: { rows: LabRow[] }) {
       if (sceneRef.current === scene) sceneRef.current = null;
       scene?.dispose();
     };
-  }, [mode, sceneKey, all]);
+  }, [mode, sceneKey, all, S.caption]);
 
   useEffect(() => {
     if (mode === "2d") setReady(true);
@@ -304,7 +314,7 @@ export function LabDexApp({ rows }: { rows: LabRow[] }) {
       else window.history.replaceState(window.history.state, "", url);
     }
     pushNext.current = false;
-    setAnnounce(S.announce(m.name, String(m.species), m.types.join(", ")));
+    setAnnounce(S.announce(m.name, String(m.species), m.types.map((ty) => S.typeName(ty) ?? ty).join(", ")));
     if (interacted.current && !isMuted()) {
       try {
         const a = new Audio();
@@ -325,13 +335,13 @@ export function LabDexApp({ rows }: { rows: LabRow[] }) {
     if (detailId === null || details.current.has(detailId)) return;
     const ac = new AbortController();
     const t = setTimeout(() => {
-      fetch(`/api/lab-dex/${detailId}`, { signal: ac.signal })
+      fetch(lang === "en" ? `/api/lab-dex/${detailId}` : `/api/lab-dex/${detailId}/${lang}`, { signal: ac.signal })
         .then((r) => (r.ok ? (r.json() as Promise<LabDetails>) : null))
         .then((d) => { details.current.set(detailId, d); setDetailsTick((x) => x + 1); })
         .catch(() => undefined);
     }, 120);
     return () => { clearTimeout(t); ac.abort(); };
-  }, [detailId]);
+  }, [detailId, lang]);
 
   // ---- The view: filters and sort (a new history entry, so Back undoes them).
   const changeView = useCallback((part: Partial<LabView>) => {

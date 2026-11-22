@@ -1,3 +1,4 @@
+import { foldLetters, NOT_LETTERS } from "@/lib/names/fold";
 import { CAT, type Category, type FormKind, type Mon } from "./types";
 
 /** The pool's search, filters and sort. */
@@ -23,14 +24,24 @@ export function fold(s: string): string {
   return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "");
 }
 
+/** The same in any script, for pages in another language: accents and case go, katakana become hiragana. */
+export function foldAny(s: string): string {
+  return foldLetters(s).replace(NOT_LETTERS, "");
+}
+
 /** Whether a Pokémon matches a search: its name, or its National Dex number ("25", "#025"). */
 export function matchesQuery(m: Mon, q: string): boolean {
   const t = q.trim();
   if (!t) return true;
   const num = /^#?0*(\d{1,4})$/.exec(t);
   if (num) return m.d === Number(num[1]);
-  const f = fold(t);
-  return !!f && fold(m.n).includes(f);
+  if (m.l === undefined) {
+    const f = fold(t);
+    return !!f && fold(m.n).includes(f);
+  }
+  // A page in another language: its name in any script, or one of its other names (English, rōmaji).
+  const a = foldAny(t);
+  return !!a && (foldAny(m.n).includes(a) || m.l.split(" ").some((o) => o.includes(a)));
 }
 
 export function applyFilter(mons: readonly Mon[], f: PoolFilter): Mon[] {

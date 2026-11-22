@@ -1,4 +1,5 @@
-import { NEA_TITLE } from "./categories";
+import { translator, type Translator } from "@/i18n/catalog";
+import neaGame from "@/messages/nea-game";
 import type { NeaMode } from "./types";
 
 /** 372_000 -> "6:12"; an hour or more -> "1:02:03". */
@@ -21,10 +22,10 @@ export interface NeaShareInput {
   url?: string;
 }
 
-/** "Name 'em All · Gen 1 · 151/151 in 6:12 🏆", then the link. Never which Pokémon were missed. */
-export function neaShareText({ label, named, total, ms, mode, daily, url }: NeaShareInput): string {
-  const parts = [daily ? `${NEA_TITLE} Daily ${daily}` : NEA_TITLE, label];
-  if (mode !== "regular") parts.push(mode === "chaos" ? "Chaos" : "Dex order");
-  const head = `${parts.join(" · ")} · ${named}/${total} in ${neaClock(ms)}${named === total ? " 🏆" : ""}`;
+/** "Name 'em All · Gen 1 · 151/151 in 6:12 🏆", then the link. Never which Pokémon were missed. `t`: in the page's language. */
+export function neaShareText({ label, named, total, ms, mode, daily, url }: NeaShareInput, t: Translator<typeof neaGame.en> = translator(neaGame, "en", undefined)): string {
+  const parts = [daily ? t("share.daily", { date: daily }) : t("title"), label];
+  if (mode !== "regular") parts.push(t(mode === "chaos" ? "modes.chaos.label" : "modes.dex.label"));
+  const head = `${parts.join(" · ")} · ${t("share.score", { named, total, time: neaClock(ms) })}${named === total ? " 🏆" : ""}`;
   return url ? `${head}\n${url}` : head;
 }

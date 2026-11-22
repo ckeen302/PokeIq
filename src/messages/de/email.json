@@ -1,0 +1,34 @@
+{
+  "optIn": {
+    "email": "E-Mail",
+    "optional": "(optional)",
+    "box": "Schick mir eine E-Mail, wenn neue Tagesrätsel da sind",
+    "confirmFirst": "Wir schicken dir zuerst einen Link, um deine Adresse zu bestätigen. Abmelden geht jederzeit."
+  },
+  "settings": {
+    "sent": "Wir haben einen Bestätigungslink an {email} geschickt.",
+    "throttled": "Gerade eben ging ein Bestätigungslink raus: Schau in dein Postfach.",
+    "sendFailed": "Die Bestätigungs-E-Mail konnte nicht gesendet werden. Versuch es in einer Minute mit „Erneut senden“.",
+    "loadFailed": "Deine E-Mail-Einstellungen konnten nicht geladen werden.",
+    "saveFailed": "Das konnte nicht gespeichert werden.",
+    "addFirst": "Gib zuerst deine E-Mail-Adresse an.",
+    "badEmail": "Das sieht nicht nach einer E-Mail-Adresse aus.",
+    "daily": "Tägliche Erinnerungs-E-Mails",
+    "dailyHint": "Eine E-Mail, wenn neue Tagesrätsel da sind.",
+    "on": "An",
+    "off": "Aus",
+    "loading": "Wird geladen",
+    "address": "E-Mail-Adresse",
+    "save": "Speichern",
+    "turnOn": "Einschalten",
+    "cancel": "Abbrechen",
+    "sendingTo": "<m>Wird gesendet an </m><b>{email}</b>",
+    "confirm": "<m>Bestätige </m><b>{email}</b><m> über den Link in deinem Postfach.</m>",
+    "resend": "Erneut senden",
+    "change": "Ändern",
+    "when": "Wann senden",
+    "whenHint": "Jeden Tag oder nur, wenn um Mitternacht eine Serie enden würde.",
+    "everyDay": "Jeden Tag",
+    "atRisk": "Serie in Gefahr"
+  }
+}

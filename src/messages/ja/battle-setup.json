@@ -1,0 +1,72 @@
+{
+  "fourCpu": {
+    "freeforall": "CPUトレーナー3人が、それぞれ単独で戦います。",
+    "multi": "CPUのパートナーと組んで、CPUトレーナー2人と戦います。"
+  },
+  "opponents": {
+    "cpu": { "title": "CPU", "blurb": "CPUの相手と、今すぐバトル。" },
+    "match": { "title": "対戦相手を探す", "blurb": "同じルールで相手を探しているトレーナーとマッチングして、ライブでバトル。" },
+    "pvp": { "title": "友だち", "blurb": "招待リンクを作って、持ち時間つきのライブバトル。" }
+  },
+  "shortGen": "第{gen}世代",
+  "quickNoteCustom": "第{gen}世代のランダムバトルの型を、あなたのルールでチェックしたもの。",
+  "quickNoteFormat": "{format}で使えるランダムバトルの型。",
+  "nameRejected": "別の名前にしてください。",
+  "startFailed": "バトルを始められませんでした。",
+  "start": {
+    "cpu": "バトル開始",
+    "match": "対戦相手を探す",
+    "challenge": "{name}に挑戦",
+    "pvp": "バトルを作成"
+  },
+  "opponent": "対戦相手",
+  "format": "ルール",
+  "random": "ランダム",
+  "yourTeam": "自分のチーム",
+  "doubles": "ダブル。",
+  "bringTeam": "チームを持ちこみ：保存したもの、ここで作るもの、クイックチーム。",
+  "customRules": "カスタムルール",
+  "gens": "第1〜9世代",
+  "groupTitle": "トリプルと4人対戦",
+  "groupFour": "4人のトレーナーが1匹ずつ出して戦います。チームを持ちこむか、クイックチームで。",
+  "groupThree": "1サイド3匹ずつ。チームを持ちこむか、クイックチームで。",
+  "frontier": "連勝を目指すなら、<factory>バトルファクトリー</factory>でチームをレンタルするか、<tower>バトルタワー</tower>に挑みましょう。",
+  "cpuLevel": "CPUの強さ",
+  "heading": {
+    "cpu": "CPUとバトル",
+    "match": "誰とでもバトル",
+    "pvp": "友だちとバトル"
+  },
+  "summary": {
+    "cpuFour": "CPU（{level}）。{four}{teams, select, random {全員ランダムチームです。} other {それぞれ自分のチームを使います。}}",
+    "cpu": "CPU（{level}）。{teams, select, random {おたがいランダムチームです。} other {CPUは自分のチームを使います。}}",
+    "matchFour": "{format}で次に相手を探しているトレーナーとマッチングし、残りの2席はCPUが入ります。{multi, select, yes {あなたと相手にそれぞれCPUのパートナーがつきます。} other {}}Showdownと同じくランクなしです。",
+    "match": "{format}で次に相手を探しているトレーナーとマッチングし、すぐにバトルが始まります。{teams, select, random {チームはランダムです。} other {おたがい自分のチームを持ちこみます。}}",
+    "challenge": "{name}にすぐ挑戦が届きます（あなたにもリンクが届きます）。おたがいの準備ができたらバトル開始です。",
+    "pvpFour": "最大3人の友だちに送れるリンクが届きます。誰も座らない席はCPUで埋められます。Showdownと同じくランクなしです。",
+    "pvp": "送るためのリンクが届きます。おたがいの準備ができたらバトル開始です。"
+  },
+  "nameLabel": "トレーナー名",
+  "namePlaceholder": "トレーナー名",
+  "ranked": "ランクマッチ",
+  "rankedSoon": "ランクマッチはまもなく開始します。",
+  "rankedAccount": "ランクマッチにはアカウントが必要です（レートをどの端末でも引き継げます）。",
+  "rankedHint": "ラダーのレートでマッチング。降参や退出は負けになります。",
+  "signIn": "ランクマッチは<link>ログイン</link>してから。",
+  "unrated": "レートなし：1000 Elo（Glicko-2で1500 ± 350）からスタートします。",
+  "ladder": "ラダー",
+  "watch": "誰でも観戦できる",
+  "watchHint": "観戦リストに載せます。オフ：リンクを知っている人だけが観戦できます。",
+  "timer": "持ち時間",
+  "timerHint": "オフ：バトル中にどちらでも開始できます。",
+  "timeout": "時間切れで負け",
+  "timeoutHint": "オン（Showdownと同じ）：時間切れになると負けです（VGCタイマーのルールでは、持ち時間が残っていれば自動で技が選ばれます）。オフ：タイマーが技を選び、2回連続で時間切れになると負けです。",
+  "searchingRanked": "ランクマッチの相手を探しています…",
+  "searching": "対戦相手を探しています…",
+  "cancel": "キャンセル",
+  "whyName": "始めるにはトレーナー名を入力してください。",
+  "whyTeam": "始めるにはチームかクイックチームを選んでください。",
+  "leaving": "このページを離れたりタブを閉じたりすると、検索は終わります。",
+  "playNow": "今すぐプレイ・{format}",
+  "custom": "カスタム"
+}

@@ -1,0 +1,23 @@
+{
+  "notSent": "Message non envoyé.",
+  "unreachable": "Impossible de joindre le serveur. Réessaie.",
+  "soon": "Les salons de discussion arrivent bientôt.",
+  "slow": "Mode lent : {s} s",
+  "live": "En direct",
+  "polling": "Mise à jour toutes les quelques secondes",
+  "turnOn": "Activer",
+  "chatOff": "Chat désactivé",
+  "off": "Le chat est désactivé. Tu ne verras aucun message et ne pourras pas en envoyer.",
+  "empty": "Pas encore de message. Dis bonjour !",
+  "mute": "Masquer {name}",
+  "unmute": "Ne plus masquer {name}",
+  "reported": "Signalé",
+  "reportTitle": "Signaler ce message",
+  "reportLabel": "Signaler le message de {name}",
+  "signIn": "<link>Connecte-toi</link> pour discuter. Tout le monde peut lire.",
+  "placeholder": "Dis quelque chose de sympa…",
+  "label": "Message du salon",
+  "send": "Envoyer",
+  "here": "Présents ({n})",
+  "muted": "Masqués : {names}"
+}

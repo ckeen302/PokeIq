@@ -1,0 +1,58 @@
+{
+  "meta": {
+    "unavailableTitle": "Profil de Dresseur",
+    "unavailableDescription": "Les profils de Dresseur sur PokéIQ.",
+    "notFoundTitle": "Dresseur introuvable",
+    "notFoundDescription": "Ce Dresseur n'existe pas sur PokéIQ.",
+    "title": "{name} · Profil de Dresseur",
+    "description": "{name} sur PokéIQ : classements Pokédle, PokéGuessr et combats, records en quiz, bilan des combats et rediffusions récentes."
+  },
+  "back": "Retour aux Dresseurs",
+  "unavailable": "Les profils de Dresseur sont indisponibles pour le moment. Réessaie dans une minute.",
+  "find": "Trouver un Dresseur",
+  "since": "Dresseur depuis {date}",
+  "trainerOf": "Dresseur de {name}",
+  "ranked": "PokéGuessr classé",
+  "rankedDuels": "{n, plural, one {{record} en {n} duel classé} other {{record} en {n} duels classés}}",
+  "position": " · n° {position} sur {players}",
+  "bestScore": " · record : {score} pts",
+  "noRanked": "Pas encore de duel PokéGuessr classé.",
+  "pastSeasons": "Saisons passées",
+  "ladder": "Classement des combats",
+  "noLadder": "Pas encore de combat classé.",
+  "conn": {
+    "streak": "Série",
+    "bestStreak": "Meilleure série",
+    "gamesWon": "Parties gagnées",
+    "perfect": "Sans faute",
+    "duelRecord": "Bilan en duel"
+  },
+  "noConn": "Pas encore de partie de PokéConnections.",
+  "battleRecord": "Bilan des combats",
+  "insights": "Analyse des équipes →",
+  "battleEmpty": "{name} n'a pas encore joué de combat en direct.",
+  "battleSoon": "Le bilan des combats arrive bientôt.",
+  "replays": "Rediffusions publiques récentes",
+  "noReplays": "Pas encore de rediffusion publique.",
+  "quiz": {
+    "title": "Records en quiz",
+    "none": "{name} n'a pas encore de record en quiz.",
+    "play": "Jouer à un quiz",
+    "table": "Meilleur score par mode et format",
+    "mode": "Mode",
+    "formats": {
+      "classic": "Classique",
+      "survival": "Survie",
+      "blitz": "Blitz"
+    },
+    "named": "<b>{named}/{total}</b> nommés",
+    "cleared": "terminé en <b>{time}</b>"
+  },
+  "users": {
+    "title": "Trouver un Dresseur",
+    "description": "Cherche un Dresseur PokéIQ par son nom : ses classements Pokédle et combats, ses records et ses rediffusions récentes.",
+    "label": "Communauté",
+    "heading": "Trouve un <hl>Dresseur</hl>",
+    "intro": "Cherche par nom de compte pour voir le profil d'un Dresseur : classements, records et rediffusions récentes. Tu peux l'ajouter en ami depuis sa page."
+  }
+}

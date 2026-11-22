@@ -1,7 +1,10 @@
 import type { Rng } from "@/lib/rng";
 import ROUNDS from "@/data/trainer-teams.json";
-import { ANSWER_NAMES, monLabel, revealOrder, teamKey, type TeamEntry } from "@/lib/whose-team";
+import { toRomaji } from "wanakana";
+import { ANSWER_NAMES, TRAINER_NAMES, monLabel, revealOrder, teamKey, type TeamEntry, type TeamMon } from "@/lib/whose-team";
 import type { GenerateOptions, Question, QuestionBuilder } from "../types";
+import type { QuizLang } from "../i18n";
+import { localizable, must } from "../localize";
 
 /**
  * Whose Team Is This? — a famous trainer's team, name the trainer. The guess
@@ -47,7 +50,7 @@ export function roundsFor(opts: Pick<GenerateOptions, "gens" | "scope">): number
 
 export function teamQuestion(r: TeamEntry, hard: boolean): Question {
   const team = hard ? revealOrder(r) : r.team;
-  return {
+  const q: Question = {
     itemKey: `whose-team:${r.id}${hard ? ":hard" : ""}`,
     module: "whose-team",
     prompt: "Whose team is this?",
@@ -60,6 +63,91 @@ export function teamQuestion(r: TeamEntry, hard: boolean): Question {
     input: "type",
     ...(hard && { reveal: 1 }),
   };
+  return localizable(q, (L) => {
+    const names = answerNames(L);
+    return {
+      prompt: L.t("team.prompt"),
+      cards: team.map((m) => ({ pokemonId: m.art ?? m.dex, label: monIn(L, m) })),
+      options: names.options,
+      answer: names.options[ANSWER_NAMES.indexOf(r.trainer)],
+      optionAliases: names.aliases,
+      explanation: appearanceIn(L, r),
+    };
+  });
+}
+
+/** Form labels in the language (the team cards say "Ninetales (Alolan)"). */
+const FORM_KEY: Record<string, "alolan" | "galarian" | "midnight" | "lowKey"> = { Alolan: "alolan", Galarian: "galarian", Midnight: "midnight", "Low Key": "lowKey" };
+
+function monIn(L: QuizLang, m: TeamMon): string {
+  const name = must(L.pokemon(m.dex), m.species);
+  if (!m.form) return name;
+  return L.t(`team.form.${must(FORM_KEY[m.form], m.form)}`, { name });
+}
+
+/**
+ * Every trainer's name in the language, in the English order, with the other spellings the guess box takes: the
+ * English name and its aliases, and in Japanese the rōmaji. Two trainers the language names alike (Italian's Grant
+ * and Wally are both Lino) are told apart by their English names.
+ */
+const namesCache = new Map<string, { options: string[]; aliases: string[][] }>();
+function answerNames(L: QuizLang): { options: string[]; aliases: string[][] } {
+  const cached = namesCache.get(L.locale);
+  if (cached) return cached;
+  const own = TRAINER_NAMES.map((n) => must(L.proper(n.name), n.name));
+  const count = new Map<string, number>();
+  own.forEach((n) => count.set(n, (count.get(n) ?? 0) + 1));
+  const options = own.map((n, i) => (count.get(n)! > 1 && n !== TRAINER_NAMES[i].name ? `${n} (${TRAINER_NAMES[i].name})` : n));
+  const aliases = TRAINER_NAMES.map((n, i) => {
+    const out = new Set([n.name, ...(n.aliases ?? [])]);
+    if (L.locale === "ja") out.add(toRomaji(own[i]));
+    out.delete(options[i]);
+    return [...out];
+  });
+  const names = { options, aliases };
+  namesCache.set(L.locale, names);
+  return names;
+}
+
+/** The roles an appearance starts with ("Gym Leader, Pewter City (Gym)"). */
+const ROLE_KEY: Record<string, "gymLeader" | "eliteFour" | "champion" | "rival" | "boss" | "battle" | "kahuna"> = {
+  "Gym Leader": "gymLeader",
+  "Elite Four": "eliteFour",
+  Champion: "champion",
+  "Champion battle": "champion",
+  "Rival battle": "rival",
+  "Boss battle": "boss",
+  Battle: "battle",
+  Kahuna: "kahuna",
+};
+const REGIONS = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola", "Galar", "Paldea"];
+
+/**
+ * Where the team is from, in the language: the game and the trainer's role there (and the place when the language
+ * data names it), or, for the anime, the series' region. Shorter than the English, never different.
+ */
+function appearanceIn(L: QuizLang, r: TeamEntry): string {
+  const [where, what = ""] = r.appearance.split(" — ");
+  let text: string;
+  if (r.kind === "anime") {
+    const region = REGIONS.find((g) => r.appearance.includes(`(${g}`) || r.appearance.includes(` ${g})`));
+    text = region ? L.t("team.animeIn", { region: must(L.name("regions", region), region) }) : L.t("team.anime");
+  } else {
+    const game = must(L.game(where), where);
+    const parts = what.split(", ");
+    const role = ROLE_KEY[parts[0]];
+    if (!role) {
+      text = game;
+    } else {
+      const rematch = parts.some((p) => /^rematch/i.test(p));
+      const placeText = parts.find((p, i) => i > 0 && !/^rematch/i.test(p))?.replace(/\s*\(.*\)$/, "");
+      const place = placeText ? L.name("locations", placeText) : undefined;
+      const label = L.t(`team.role.${role}`);
+      text = L.t("team.gameRole", { game, role: rematch ? L.t("team.rematch", { role: label }) : label, place: place ?? "", hasPlace: place ? "yes" : "no" });
+    }
+  }
+  const chose = /^Player chose (.+)$/.exec(r.variant ?? "");
+  return chose ? `${text}${L.t("team.sep")}${L.t("team.chose", { name: must(L.pokemonNamed(chose[1]), chose[1]) })}` : text;
 }
 
 export const whoseTeam: QuestionBuilder = (rng: Rng, opts: GenerateOptions): Question | null => {

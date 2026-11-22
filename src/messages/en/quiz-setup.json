@@ -1,0 +1,64 @@
+{
+  "setup": {
+    "changeSettings": "Change settings",
+    "format": "Format",
+    "difficulty": "Difficulty",
+    "teamsFrom": "Teams from",
+    "scope": {
+      "both": "Games & anime",
+      "games": "Games",
+      "anime": "Anime"
+    },
+    "selected": "{label} ({n} selected)",
+    "all": "{label} (all)",
+    "allChip": "All",
+    "start": "Start {mode}"
+  },
+  "filters": {
+    "gen": "Generations",
+    "chip": "Gen {n}",
+    "series": "Series",
+    "anime": {
+      "original": "Original",
+      "advanced": "Advanced",
+      "dp": "Diamond & Pearl",
+      "bw": "Black & White",
+      "xy": "XY",
+      "sm": "Sun & Moon",
+      "journeys": "Journeys",
+      "horizons": "Horizons"
+    },
+    "items": "Introduced in",
+    "itemsNote": "Without a filter, questions cover Gens 1–7. Pick generations to play any of the nine.",
+    "team": "Generation or region",
+    "teamChip": "{region}: games of Gen {n}, anime set in {region}",
+    "teamNote": "Games count by generation (FireRed is Gen 3); anime teams by the region of the series."
+  },
+  "regions": {
+    "kanto": "Kanto",
+    "johto": "Johto",
+    "hoenn": "Hoenn",
+    "sinnoh": "Sinnoh",
+    "unova": "Unova",
+    "kalos": "Kalos",
+    "alola": "Alola",
+    "galar": "Galar",
+    "paldea": "Paldea"
+  },
+  "duel": {
+    "heading": "Head to head · {mode}",
+    "zoomBlurb": "The same {n} close-ups for both of you, {seconds} seconds each. Named on step 1 scores {first}, down to {last} on step {steps}; the most points wins. Send your friend the link and press Ready.",
+    "blurb": "The same {n} questions for both of you, {seconds} seconds each. A right answer scores 100, plus up to 50 for speed; the most points wins. Send your friend the link and press Ready.",
+    "mode": "Mode",
+    "modeLabel": "Duel mode",
+    "difficulty": "Difficulty",
+    "difficultyLabel": "Duel difficulty"
+  },
+  "grid": {
+    "best": "Best {score}",
+    "nameEmAll": "Name 'em All",
+    "nameEmAllLine": "Name every Pokémon you can.",
+    "whichPokemon": "Which Pokémon Are You?",
+    "whichPokemonLine": "Find the Pokémon most like you."
+  }
+}

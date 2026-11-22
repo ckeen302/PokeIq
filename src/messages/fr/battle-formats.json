@@ -1,0 +1,53 @@
+{
+  "short": {
+    "gen9randombattle": "Combat aléatoire",
+    "gen9randomdoublesbattle": "Duo aléatoire",
+    "gen9triples": "Trio",
+    "gen9freeforallrandombattle": "Chacun pour soi aléatoire",
+    "gen9multirandombattle": "Multi aléatoire",
+    "gen9freeforall": "Chacun pour soi",
+    "gen9nationaldex": "Nat Dex",
+    "custom": "Perso",
+    "factory": "Usine de Combat",
+    "bssfactory": "BSS Factory",
+    "tower": "Tour"
+  },
+  "pastRandom": "Gen {gen} aléatoire",
+  "pastTier": "Gen {gen} {tier}",
+  "name": {
+    "custom": "Règles perso",
+    "tower": "Tour de Combat"
+  },
+  "bring": "Amène ta propre équipe : une équipe enregistrée, ou colle-en une au format d’export de Showdown.",
+  "pastRandomBlurb": "Six Pokémon aléatoires chacun, avec les sets et mécaniques de la Gen {gen}. Pas besoin d’équipe.",
+  "blurb": {
+    "gen9lc": "Little Cup : niveau 5, premiers stades uniquement. Amène ta propre équipe : une équipe enregistrée, ou colle-en une au format d’export de Showdown.",
+    "gen9monotype": "Tous les Pokémon partagent un type ; pas de Téracristal. Amène ta propre équipe : une équipe enregistrée, ou colle-en une au format d’export de Showdown.",
+    "gen9nationaldex": "Tous les Pokémon, les Méga-Évolutions et les capacités Z ; pas de Téracristal. Amène ta propre équipe : une équipe enregistrée, ou colle-en une au format d’export de Showdown.",
+    "gen9triples": "Trois Pokémon par camp ; les attaques à cible unique n’atteignent que les Pokémon adjacents, et un Pokémon sur le côté peut passer au centre. Amène ta propre équipe : une équipe enregistrée, ou colle-en une au format d’export de Showdown.",
+    "gen9freeforallrandombattle": "Quatre Dresseurs, chacun pour soi, un Pokémon sur le terrain chacun. Le dernier Dresseur debout gagne. Équipes aléatoires.",
+    "gen9multirandombattle": "Deux contre deux : tu partages un camp avec un partenaire, trois Pokémon aléatoires chacun, un sur le terrain chacun.",
+    "gen9freeforall": "Quatre Dresseurs, chacun pour soi, un Pokémon sur le terrain chacun. Amène ta propre équipe : une équipe enregistrée, ou colle-en une au format d’export de Showdown.",
+    "custom": "Tes propres règles : les mécaniques de n’importe quelle génération, niveau, gimmicks, clauses et taille d’équipe.",
+    "factory": "Équipes de location issues des sets Battle Factory de Showdown : niveau 100, six contre six, règles Standard. Pas besoin d’équipe.",
+    "bssfactory": "Équipes de location issues des sets Battle Stadium de Showdown : niveau 50, six Pokémon, trois choisis.",
+    "tower": "Flat Rules : niveau 50, six Pokémon, trois choisis ; clauses d’espèce, d’objet et de surnom.",
+    "gen9randombattle": "Six Pokémon aléatoires chacun, avec des sets faits pour eux. Pas besoin d’équipe.",
+    "gen9randomdoublesbattle": "Deux Pokémon à la fois sur le terrain, équipes aléatoires. Choisis une cible pour chaque attaque."
+  },
+  "cpu": {
+    "easy": { "name": "Facile", "blurb": "Attaque avec ce qui a l’air fort, ne change jamais de Pokémon." },
+    "normal": { "name": "Normal", "blurb": "Choisit de bonnes attaques, change face aux mauvais affrontements, utilise le Téracristal." },
+    "hard": { "name": "Difficile", "blurb": "Joue pour gagner : K.O., priorité, boosts sûrs, changements malins et Téracristal." }
+  },
+  "gameType": {
+    "doubles": "Duo",
+    "triples": "Trio",
+    "freeforall": "Chacun pour soi",
+    "multi": "Combat Multi"
+  },
+  "custom": {
+    "name": "[Gen {gen}] Perso · N. {level}",
+    "nameCap": "[Gen {gen}] Perso · N. ≤{level}"
+  }
+}

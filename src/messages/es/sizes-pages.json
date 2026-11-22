@@ -1,0 +1,62 @@
+{
+  "meta": {
+    "mainTitle": "Comparativa de tamaños Pokémon: todos los Pokémon a escala en 3D",
+    "mainDescription": "Todos los Pokémon uno al lado del otro a su tamaño real, de 0,1 m a Eternatus Dinamax Infinito con 100 m, en una Ciudad Luminalia en 3D. Reproduce el recorrido, compara cualquier Pokémon y crea tu propio vídeo de tamaños para TikTok, Reels y Shorts.",
+    "mainSocial": "Todos los Pokémon a escala, en 3D · PokéIQ",
+    "orderTitle": "{title} (todos los Pokémon a escala en 3D)",
+    "orderDescription": "Todos los Pokémon en fila por {label}, cada uno a su tamaño real, en una Ciudad Luminalia en 3D. Reproduce el recorrido, compara cualquier Pokémon o crea un vídeo.",
+    "social": "{title} · PokéIQ",
+    "presetTitle": "{title} (comparativa de tamaños en 3D)",
+    "presetDescription": "{blurb} Míralos a escala en 3D, compara dos cualesquiera o crea un vídeo comparando sus tamaños.",
+    "itemTitle": "¿Cuánto mide {name}? {size} de {measure}",
+    "itemTall": "{name} mide {size} de alto{weighs}. Míralo a escala junto a todos los demás Pokémon y una persona adulta en 3D.",
+    "itemLong": "{name} mide {size} de largo{weighs}. Míralo a escala junto a todos los demás Pokémon y una persona adulta en 3D.",
+    "itemWeighs": " y pesa {kg} kg",
+    "itemSocial": "¿Cuánto mide {name}? · PokéIQ",
+    "compareTitle": "Compara tamaños de Pokémon en 3D",
+    "compareDescription": "Pon de 2 a 6 Pokémon uno al lado del otro a su tamaño real en 3D, y comparte la comparación o conviértela en vídeo.",
+    "compareImage": "Todos los Pokémon a escala, en 3D",
+    "pairTitle": "{names}: comparativa de tamaños",
+    "pairTitleBy": "{names}: comparativa de tamaños, por {by}",
+    "pairDescription": "{list}. Uno al lado del otro a su tamaño real en 3D en PokéIQ.",
+    "pairImage": "{names}, uno al lado del otro a su tamaño real"
+  },
+  "main": {
+    "kicker": "Pokémon a escala",
+    "title": "Tamaños ",
+    "accent": "Pokémon",
+    "blurb": "Todos los Pokémon uno al lado del otro a su tamaño real, del más pequeño con 0,1 m a Eternatus Dinamax Infinito con 100 m, en una Ciudad Luminalia soleada. Ordénalos por altura, peso o cualquier estadística base, reproduce el recorrido, explora, compara los que quieras o crea tu propio vídeo de tamaños."
+  },
+  "preset": {
+    "kicker": "Tamaños Pokémon",
+    "title": "{label} ",
+    "accent": "por tamaño"
+  },
+  "blurbs": {
+    "every-pokemon": "Todos los Pokémon en una sola fila, de 0,1 m a Eternatus Dinamax Infinito con 100 m.",
+    "legendaries": "Todos los Pokémon legendarios y singulares uno al lado del otro, con Eternatus Dinamax Infinito al final.",
+    "starters": "Todas las líneas de iniciales, de Bulbasaur a Quaquaval, de la primera fase a la evolución final.",
+    "eeveelutions": "Eevee y sus evoluciones, de Vaporeon a Sylveon.",
+    "gen-1": "Los originales de Kanto, de Diglett a Onix.",
+    "gigantamax": "Todas las formas Gigamax a su altura de la Pokédex (siempre un mínimo), con Eternatus Dinamax Infinito al final.",
+    "bigger-than-a-house": "Todos los Pokémon de más de 6,2 m, la altura de una casa de dos plantas.",
+    "smaller-than-your-phone": "Todos los Pokémon más bajos que un smartphone (un iPhone 16 mide 147,6 mm)."
+  },
+  "nav": {
+    "lineups": "Filas",
+    "compare": "Comparar"
+  },
+  "footer": "Alturas y pesos de la Pokédex (PokéAPI); las alturas Gigamax son el mínimo que indica la Pokédex. Los Pokémon alargados, como serpientes y peces, se miden por su longitud. Estadísticas base de la Pokédex, y las de cada megaevolución, forma regional y forma Gigamax, de los datos de Pokémon Showdown. Los tamaños reales son cifras documentadas, cada una con su fuente.",
+  "focus": {
+    "back": "Todos los tamaños Pokémon",
+    "sizes": "Tamaños Pokémon",
+    "title": "¿Cuánto mide {name}?",
+    "height": "de altura",
+    "length": "de longitud",
+    "kg": " · {kg} kg",
+    "entry": "{name} en la Pokédex"
+  },
+  "compare": {
+    "kicker": "Comparativa de tamaños Pokémon"
+  }
+}

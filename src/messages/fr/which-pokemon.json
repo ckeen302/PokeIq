@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "title": "Quel Pokémon es-tu ? Test de personnalité",
+    "description": "Découvre quel Pokémon tu es : quelques questions rapides mesurent les cinq grands traits de personnalité, plus l'esprit de compétition et l'indépendance, et te comparent à des profils tirés du Pokédex, de Donjon Mystère et de l'anime. Carte à partager et lien pour te comparer à un ami inclus.",
+    "socialTitle": "Quel Pokémon es-tu ?",
+    "socialDescription": "Réponds honnêtement et découvre ton Pokémon : chaque profil s'appuie sur le Pokédex. Gratuit, sans inscription.",
+    "ldName": "Quel Pokémon es-tu ?",
+    "ldDescription": "Un test de personnalité Pokémon avec un modèle à sept traits et des résultats documentés."
+  },
+  "page": {
+    "kicker": "Test de personnalité",
+    "title": "Quel Pokémon es-tu ?",
+    "lead": "Sept traits, des Pokémon à la personnalité bien documentée, et un résultat qui te ressemble vraiment.",
+    "samples": "Exemples de résultats",
+    "sample": "J'ai eu {name}"
+  },
+  "result": {
+    "metaTitle": "J'ai eu {name} ! Quel Pokémon es-tu ?",
+    "metaDescription": "{name}, {title} : {first} Fais le test de personnalité Pokémon et découvre le tien.",
+    "socialTitle": "Je suis {name} ! Et toi, quel Pokémon es-tu ?",
+    "socialDescription": "{title}. {first}",
+    "ldName": "J'ai eu {name} : Quel Pokémon es-tu ?",
+    "back": "Quel Pokémon es-tu ?",
+    "kicker": "Quel Pokémon es-tu ?",
+    "youAre": "Tu es <c>{name}</c>",
+    "dexLine": "#{num} · Gén. {gen} · <link>Fiche Pokédex</link>",
+    "why": "<b>Pourquoi {name} :</b> {why}",
+    "profile": "Profil de {name}",
+    "partner": "Partenaire idéal de {name}",
+    "rival": "Rival de {name}"
+  },
+  "compare": {
+    "title": "Comparer : Quel Pokémon es-tu ?",
+    "description": "Les résultats au test de personnalité Pokémon de deux Dresseurs, côte à côte, avec leur compatibilité. Fais le test et compare-toi à un ami.",
+    "socialTitle": "Quel Pokémon es-tu ? Compare-toi à moi",
+    "imageAlt": "Quel Pokémon es-tu ? Un test de personnalité",
+    "kicker": "Compare-toi à un ami",
+    "title2": "Deux Dresseurs, deux Pokémon"
+  }
+}

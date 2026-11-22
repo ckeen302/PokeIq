@@ -5,20 +5,30 @@ import { TYPES, capitalize } from "@/lib/pokemon/type-matrix";
 import { DexTabs } from "@/components/pokedex/DexTabs";
 import { TypeChart } from "@/components/pokedex/TypeChart";
 import { ListHeader } from "@/components/pokedex/detail/DetailParts";
+import { getLocale, serverT } from "@/i18n/server";
+import pages from "@/messages/pokedex-pages";
+import { typeNames } from "@/lib/pokemon/dex-local";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Pokémon Type Chart — Every Type Matchup",
-  description: "The full 18-type Pokémon effectiveness chart: which attacking types are super effective, not very effective, or have no effect on each defending type.",
-  path: "/pokedex/types",
-  image: SHARE_IMAGES.pokedex,
-});
+export function generateMetadata(): Metadata {
+  const t = serverT(pages);
+  return pageMetadata({
+    title: t("types.metaTitle"),
+    description: t("types.metaDescription"),
+    path: "/pokedex/types",
+    image: SHARE_IMAGES.pokedex,
+  });
+}
 
 export default function TypesPage() {
+  const t = serverT(pages);
+  const locale = getLocale();
+  const names = locale === "en" ? null : typeNames(locale);
+  const name = (type: string) => names?.[type] ?? capitalize(type);
   return (
     <div className="mx-auto max-w-7xl space-y-4">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbList([{ name: "Pokédex", path: "/pokedex" }, { name: "Types", path: "/pokedex/types" }])) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(itemList("Pokémon types", TYPES.map((t) => ({ name: `${capitalize(t)} type`, path: `/pokedex/types/${t}` })))) }} />
-      <ListHeader kicker="Type chart" title="Poké" accent="dex" blurb="Every attacking type against every defending type. For a dual-typed Pokémon, multiply the two columns." />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbList([{ name: t("crumbs.pokedex"), path: "/pokedex" }, { name: t("crumbs.types"), path: "/pokedex/types" }])) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(itemList(t("types.listName"), TYPES.map((ty) => ({ name: t("type.name", { type: name(ty) }), path: `/pokedex/types/${ty}` })))) }} />
+      <ListHeader kicker={t("types.kicker")} title={t("titleStart")} accent={t("titleAccent")} blurb={t("types.blurb")} />
       <DexTabs active="types" />
       <TypeChart />
     </div>

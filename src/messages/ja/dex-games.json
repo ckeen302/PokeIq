@@ -1,0 +1,67 @@
+{
+  "meta": {
+    "title": "ポケモンのゲーム一覧 — 本編・リメイク・外伝・スマホアプリ",
+    "description": "『ポケットモンスター 赤・緑』から『Pokémon LEGENDS Z-A』まで、ポケモンのゲームをパッケージ画像つきで紹介。本編、リメイク、『ポケモンスナップ』『ポケモン不思議のダンジョン』『ポケモンスタジアム』などの外伝作品、『Pokémon GO』などのスマホアプリまで、世代や種類で絞り込めます。",
+    "socialTitle": "ポケモンのゲーム一覧 · PokéIQ ポケモン図鑑"
+  },
+  "header": {
+    "kicker": "ゲームデータベース",
+    "title": "Poké",
+    "accent": "dex",
+    "blurb": "ゲームボーイの『赤・緑』から最新作まで、ポケモンのゲームを紹介。本編とリメイク、外伝作品、スマホアプリを、それぞれのパッケージ画像とともに掲載しています。"
+  },
+  "credit": "発売日・機種・開発元は<wiki>Wikipedia</wiki>、パッケージ画像・バージョン限定ポケモン・伝説のポケモンは<serebii>Serebii</serebii>より。年は各作品が最初に発売された年です。世代は本編ならその作品の世代、外伝なら発売当時の世代です。",
+  "ld": {
+    "pokedex": "ポケモン図鑑",
+    "games": "ゲーム",
+    "list": "ポケモンのゲーム"
+  },
+  "kind": {
+    "mainline": "本編",
+    "remake": "リメイク",
+    "spinoff": "外伝",
+    "mobile": "スマホ"
+  },
+  "game": {
+    "metaTitle": "{name}（{year}年）— ポケモンのゲーム・{kind}",
+    "describe": "{name}（{year}年、{platforms}）：{summary}",
+    "socialTitle": "{name} · PokéIQ ポケモン図鑑",
+    "allGames": "ゲーム一覧",
+    "kicker": "第{gen}世代 · {kind}",
+    "list": "{a}、{b}",
+    "releasedNote": "{date}（{note}）",
+    "facts": {
+      "released": "発売日",
+      "platform": "機種",
+      "region": "舞台",
+      "developer": "開発"
+    },
+    "placesLink": "{region}の場所",
+    "trainersLink": "トレーナーの手持ち",
+    "whatsNew": "新要素",
+    "starter": "最初のポケモン",
+    "starters": "最初のポケモン",
+    "starterSub": "最初のパートナー",
+    "startersSub": "最初のパートナーを選ぼう",
+    "legendaries": "伝説・幻のポケモン",
+    "legendariesSub": "ゲーム内で出会える",
+    "legendariesDlcSub": "本編と追加コンテンツで出会える",
+    "exclusives": "バージョン限定ポケモン",
+    "exclusivesSub": "片方のバージョンでしか出会えない",
+    "onlyIn": "{version}のみ",
+    "dlc": "追加コンテンツ",
+    "related": "関連するゲーム",
+    "why": {
+      "previous": "前の作品",
+      "next": "次の作品",
+      "region": "同じく{region}が舞台",
+      "series": "同じシリーズ",
+      "platform": "同じく{platform}"
+    },
+    "credit": "発売情報はWikipediaの<wiki>ポケモンのゲーム一覧</wiki>より。パッケージ画像とロゴの権利は各発売元に帰属します。",
+    "creditSerebii": "発売情報はWikipediaの<wiki>ポケモンのゲーム一覧</wiki>より。バージョン限定ポケモンと伝説のポケモンはSerebiiより、図鑑の出現データと照合済みです。パッケージ画像とロゴの権利は各発売元に帰属します。"
+  },
+  "cover": {
+    "tileAlt": "{name}（パッケージ画像の代わりのタイル）"
+  }
+}

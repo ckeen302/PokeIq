@@ -1,0 +1,17 @@
+{
+  "tabs": "Ranglisten-Format",
+  "nobody": "In {format} ist noch niemand gewertet. <link>Starte einen Ranglisten-Kampf</link> und sei der Erste!",
+  "trainer": "Trainer",
+  "eloTitle": "Elo: die Wertung der Rangliste, wie auf Pokémon Showdown",
+  "elo": "Elo",
+  "gxeTitle": "GXE (die Chance, einen zufälligen Trainer hier zu schlagen) und die Glicko-2-Wertung ± Abweichung",
+  "gxe": "GXE · Glicko",
+  "wl": "S–N",
+  "loading": "Deine Platzierung wird geladen",
+  "you": "Du · {format}",
+  "of": "von {n, number}",
+  "streak": "Serie",
+  "none": "Noch keine Ranglisten-Kämpfe in diesem Format.",
+  "start": "Alle starten mit 1000 Elo (und 1500 ± 350 Glicko-2); deine ersten Siege bringen am meisten, und eine neue Wertung schwankt stark. ",
+  "find": "Ranglisten-Kampf finden"
+}

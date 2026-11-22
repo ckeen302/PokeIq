@@ -9,8 +9,20 @@ import type { Anchor } from "./scene";
  * the live page's overlay canvas and the video recorder.
  */
 
+/** The badges' words on a page in another language (set by the page; English pages never set it). */
+export type BadgeWords = (i: SizeItem, order: Order) => { num: string; unit: string; sub: string; lengthTag: string; types: string[]; stat: BadgeInfo["stat"] };
+let badgeWords: BadgeWords | null = null;
+export function setBadgeWords(fn: BadgeWords | null) {
+  badgeWords = fn;
+}
+
 /** A figure's badge; in a stat or weight order it also carries the line's value. */
-export const badgeInfo = (i: SizeItem, order: Order = HEIGHT_ORDER): BadgeInfo => ({ name: i.name, dex: i.kind === "ref" ? 0 : i.species, kind: i.kind, m: i.m, length: i.length, min: i.min, types: i.types, stat: badgeStat(i, order) });
+export const badgeInfo = (i: SizeItem, order: Order = HEIGHT_ORDER): BadgeInfo => {
+  const info: BadgeInfo = { name: i.name, dex: i.kind === "ref" ? 0 : i.species, kind: i.kind, m: i.m, length: i.length, min: i.min, types: i.types, stat: badgeStat(i, order) };
+  if (!badgeWords) return info;
+  const { stat, ...words } = badgeWords(i, order);
+  return { ...info, stat, words };
+};
 
 export interface OverlayOptions {
   /** Font family for the badges (the page's display font). */
@@ -122,7 +134,7 @@ export class BadgeLayer {
     const pad = Math.ceil(s * 0.45);
     // The dex tag (and "(LENGTH)") may run past a short name's banner.
     const th = s * 0.5;
-    const tagW = info.dex ? s * 0.1 + this.measure(dexTagText(info.dex), th * 0.72) + th * 0.7 + (info.length ? s * 0.1 + this.measure("(LENGTH)", th * 0.6) + th * 0.6 : 0) : 0;
+    const tagW = info.dex ? s * 0.1 + this.measure(dexTagText(info.dex), th * 0.72) + th * 0.7 + (info.length ? s * 0.1 + this.measure(info.words?.lengthTag ?? "(LENGTH)", th * 0.6) + th * 0.6 : 0) : 0;
     // Reuse an evicted canvas when there is one.
     const canvas = this.spare.pop() ?? document.createElement("canvas");
     canvas.width = Math.ceil((Math.max(w, tagW) + pad * 2) * dpr);

@@ -1,0 +1,444 @@
+{
+  "card": {
+    "footer": "Free · no sign-up →",
+    "whereIsThis": "Where is this?",
+    "battle": {
+      "whatWill": "What will {name} do?"
+    },
+    "odds": {
+      "simulated": "10,000 battles simulated",
+      "sideA": "Side A wins",
+      "ci": "± 1.0% (95% CI)"
+    },
+    "vs": "vs",
+    "you": "You?"
+  },
+  "home": {
+    "eyebrow": "Free Pokémon games",
+    "title1": "Guess the place.",
+    "title2": "Name the Pokémon.",
+    "title3": "Win the battle.",
+    "subtitle": "No sign-up. Play in your browser.",
+    "chips": {
+      "battles": "Battles",
+      "battleLab": "Battle Lab",
+      "quizzes": "Quizzes"
+    }
+  },
+  "daily": {
+    "eyebrow": "Daily Challenge · new every day",
+    "title1": "Today's",
+    "title2": "Pokémon",
+    "title3": "test",
+    "subtitle": "Ten mixed questions, the same for every trainer. One attempt: keep your streak.",
+    "footer": "Play today's Daily →"
+  },
+  "iqTest": {
+    "eyebrow": "The PokéIQ Test",
+    "title1": "What's your",
+    "title2": "PokéIQ?",
+    "subtitle": "Five timed sections: reasoning, memory, speed, spatial skills and Pokémon knowledge. About 20 minutes.",
+    "yours": "Your PokéIQ",
+    "scored": "scored against other trainers",
+    "footer": "Take the test, free →"
+  },
+  "pokedle": {
+    "eyebrow": "Pokédle · new Pokémon daily",
+    "title1": "Guess the",
+    "title2": "mystery",
+    "title3": "Pokémon",
+    "subtitle": "Eight guesses. Every one shows type, generation, size and colour clues.",
+    "footer": "Play today's, or duel a stranger live →"
+  },
+  "pikadoku": {
+    "eyebrow": "Pikadoku · new grid daily",
+    "title1": "Pokémon",
+    "title2": "Sudoku",
+    "subtitle": "Fill the 3×3 grid: one Pokémon per cell that fits its row and column. Be rare to score low.",
+    "footer": "Play today's Easy, Normal or Expert grid →"
+  },
+  "connections": {
+    "eyebrow": "PokéConnections · new puzzle daily",
+    "title1": "Find the",
+    "title2": "four",
+    "title3": "groups",
+    "subtitle": "Sixteen Pokémon, four hidden links, four mistakes to spare.",
+    "footer": "Play today's, with a “Why?” for every answer →"
+  },
+  "guessr": {
+    "eyebrow": "PokéGuessr · new daily game",
+    "title1": "Where in the",
+    "title2": "world is this?",
+    "subtitle": "GeoGuessr for Pokémon: real in-game screenshots of every region, Kanto to Paldea. A new daily game every day.",
+    "fallbackSubtitle": "GeoGuessr for Pokémon: real in-game screenshots, Kanto to Paldea.",
+    "footer": "Drop a pin · up to 25,000 points →",
+    "points": "{n} pts",
+    "hp": "{n} HP",
+    "challenge": {
+      "eyebrow": "PokéGuessr challenge · {map}",
+      "detail": "{who} scored {score} of {max} on {n, plural, one {{n} place} other {{n} places}}. You get the same ones.",
+      "play": "Take the challenge",
+      "fallbackEyebrow": "PokéGuessr challenge",
+      "fallbackFooter": "Same places · can you beat it? →"
+    },
+    "party": {
+      "eyebrow": "PokéGuessr party",
+      "title1": "You're invited",
+      "title2": "to a party",
+      "subtitle": "Friends on the same places, everyone at once. No sign-up: open it, pick a name and join.",
+      "footer": "Battle Royale or team duels · tap to join →"
+    }
+  },
+  "quiz": {
+    "eyebrow": "Pokémon quizzes",
+    "title1": "How well do",
+    "title2": "you know",
+    "title3": "Pokémon?",
+    "subtitle": "Silhouettes, cries, Pokédex entries, type matchups, the games and the anime.",
+    "chips": {
+      "classic": "Classic",
+      "survival": "Survival",
+      "blitz": "Blitz",
+      "all": "All 1,025 Pokémon"
+    }
+  },
+  "quizPreset": {
+    "eyebrow": "Quiz · {mode}",
+    "footer": "Classic · Survival · Blitz →"
+  },
+  "quizChallenge": {
+    "eyebrow": "Pokémon quiz",
+    "title1": "The ultimate",
+    "title2": "Pokémon quiz",
+    "subtitle": "Silhouettes, cries, Pokédex entries and type matchups. No sign-up."
+  },
+  "quizSamples": {
+    "label": "Q 03/10",
+    "whos-that": {
+      "question": "Who's that Pokémon?"
+    },
+    "cry": {
+      "question": "Whose cry is this?"
+    },
+    "dex": {
+      "question": "Whose Pokédex entry?"
+    },
+    "types": {
+      "question": "Ice vs Dragon/Flying?"
+    },
+    "higher-lower": {
+      "question": "Who's faster?"
+    },
+    "games": {
+      "question": "New in Gen III?",
+      "a0": "Abilities",
+      "a1": "Z-Moves",
+      "a2": "Dynamax",
+      "a3": "Tera"
+    },
+    "anime": {
+      "question": "Ash's friend in Kalos?",
+      "a0": "Dawn",
+      "a1": "Serena",
+      "a2": "May",
+      "a3": "Iris"
+    },
+    "competitive": {
+      "question": "Type of Moonblast?",
+      "a0": "Fairy",
+      "a1": "Psychic",
+      "a2": "Dark",
+      "a3": "Ghost"
+    },
+    "shiny": {
+      "question": "Which is the real shiny?"
+    },
+    "zoom-reveal": {
+      "question": "Who's this up close?"
+    },
+    "whose-team": {
+      "question": "Whose team is this?",
+      "a0": "Cynthia",
+      "a1": "Steven",
+      "a2": "Lance",
+      "a3": "Diantha"
+    },
+    "mixed": {
+      "question": "A bit of everything",
+      "a0": "Silhouettes",
+      "a1": "Cries",
+      "a2": "Dex entries",
+      "a3": "Type chart"
+    }
+  },
+  "challenge": {
+    "title1": "You've been",
+    "title2": "challenged",
+    "subtitle": "A trainer sent you an invite. No sign-up: open it, pick a name and play.",
+    "host": "A trainer",
+    "pokedle": {
+      "eyebrow": "Pokédle duel",
+      "footer": "Same mystery Pokémon · three rounds · tap to play →"
+    },
+    "quiz": {
+      "eyebrow": "Quiz duel",
+      "footer": "Same questions · right and fast wins · tap to play →"
+    },
+    "geo": {
+      "eyebrow": "PokéGuessr duel",
+      "footer": "Same places · closer pin wins · tap to play →"
+    },
+    "battle": {
+      "eyebrow": "Live battle",
+      "footer": "Pokémon Showdown rules · live · tap to battle →"
+    },
+    "connections": {
+      "eyebrow": "PokéConnections duel",
+      "footer": "Same 16 Pokémon · find the 4 groups first · tap to race →"
+    },
+    "connections-party": {
+      "eyebrow": "PokéConnections party",
+      "footer": "Same 16 Pokémon for everyone · best time wins · tap to join →"
+    },
+    "pikadoku": {
+      "eyebrow": "Pikadoku Tic Tac Toe",
+      "footer": "Claim a cell with a Pokémon that fits · three in a row wins →"
+    },
+    "name-em-all": {
+      "eyebrow": "Name 'em All race",
+      "footer": "Same Pokémon for everyone · first to name them all wins →"
+    }
+  },
+  "result": {
+    "footer": "Can you beat it? {play} →",
+    "aTrainer": "A trainer",
+    "fallback": {
+      "title1": "Can you",
+      "title2": "beat it?",
+      "subtitle": "Pokédle, PokéGuessr, quizzes and battles. No sign-up."
+    }
+  },
+  "nameEmAll": {
+    "eyebrow": "Name 'em All · recall quiz",
+    "title1": "Can you name",
+    "title2": "every Pokémon?",
+    "subtitle": "Type every Pokémon you can remember before the clock runs out. A new category every day.",
+    "footer": "Name them all · beat the clock →"
+  },
+  "whichPokemon": {
+    "eyebrow": "Personality quiz",
+    "title1": "Which Pokémon",
+    "title2": "are you?",
+    "subtitle": "Answer honestly and meet your match, every profile grounded in the Pokédex.",
+    "footer": "Free · no sign-up · share card included →",
+    "result": {
+      "eyebrow": "Which Pokémon are you?",
+      "title": "I got",
+      "subtitle": "{title}. 18 questions, 200 possible results. Which one are you?",
+      "footer": "Take the quiz · free · no sign-up →"
+    }
+  },
+  "species": {
+    "eyebrow": "Pokédex #{number} · Gen {gen}",
+    "subtitle": "The {genus}. Base stat total {bst}.",
+    "footer": "Stats · evolutions · moves · matchups →",
+    "stats": {
+      "hp": "HP",
+      "atk": "Atk",
+      "def": "Def",
+      "spa": "SpA",
+      "spd": "SpD",
+      "spe": "Spe"
+    }
+  },
+  "pokedex": {
+    "eyebrow": "Pokédex · Kanto to Paldea",
+    "title1": "All {n}",
+    "titleAll": "All",
+    "title2": "Pokémon",
+    "subtitle": "Stats, evolutions, movesets, abilities, matchups and every Pokédex entry. Plus flashcards to learn them.",
+    "footer": "Search, filter and study →"
+  },
+  "battle": {
+    "eyebrow": "Battle · Pokémon Showdown rules",
+    "title1": "Build. Calc.",
+    "title2": "Battle.",
+    "subtitle": "Showdown-accurate battles against the computer or a friend, live. Team builder and damage calc included.",
+    "footer": "Random Battle, OU, Doubles and more →"
+  },
+  "battleLab": {
+    "eyebrow": "Battle Lab",
+    "title1": "Who wins,",
+    "title2": "and how often?",
+    "subtitle": "Set up any matchup, Gen 1 to 9, and Showdown's engine plays it thousands of times in your browser.",
+    "footer": "Win odds with a 95% confidence interval →"
+  },
+  "replay": {
+    "eyebrow": "Replay · {format}",
+    "vs": "vs",
+    "and": "and",
+    "subtitle": "{result}{how, select, forfeit { by forfeit} timeout { on time} other {}}.",
+    "turns": "{n} turns",
+    "ranked": "Ranked",
+    "ratings": "{a} vs {b}",
+    "result": {
+      "drew": "{a} and {b} drew",
+      "beat": "{winner} beat {loser}",
+      "noWinner": "{players}: no winner",
+      "wonFfa": "{winner} won a Free-For-All"
+    },
+    "fallback": {
+      "eyebrow": "Battle replay",
+      "title1": "Pokémon",
+      "title2": "battle replay",
+      "footer": "Pokémon Showdown's engine · watch it turn by turn →"
+    }
+  },
+  "leaderboard": {
+    "eyebrow": "Leaderboards · updated live",
+    "title1": "Top",
+    "title2": "trainers",
+    "subtitle": "Daily Challenge, PokéIQ, PokéGuessr and every quiz mode. Where do you rank?",
+    "footer": "Play a run to get on the board →"
+  },
+  "lab": {
+    "eyebrow": "PokéIQ · 3D Lab",
+    "title1": "3D",
+    "title2": "Lab",
+    "subtitle": "Pokémon history, Pokémon sizes and the whole Pokémon world, in cinematic 3D.",
+    "footer": "Step inside →"
+  },
+  "timeline": {
+    "eyebrow": "Pokédex · History in 3D",
+    "title1": "Pokémon",
+    "title2": "Timeline",
+    "subtitle": "Every game, anime season, film and card-game era since 1996. Fly through it.",
+    "footer": "Take the tour →"
+  },
+  "timelineEntry": {
+    "eyebrow": "Timeline · {year} · {lane}",
+    "when": "{label}: {date}",
+    "footer": "{era} · {device} →"
+  },
+  "theories": {
+    "eyebrow": "Pokédex · theories",
+    "title1": "The case",
+    "title2": "files",
+    "subtitle": "Fan theories, urban legends and beta myths, each with its evidence and a verdict.",
+    "caseEyebrow": "CASE {n} · {verdict}",
+    "caseFooter": "Open the case file →",
+    "verdicts": {
+      "confirmed": "Confirmed",
+      "fan": "Fan theory",
+      "debunked": "Debunked"
+    }
+  },
+  "videoGames": {
+    "eyebrow": "Gen {gen} · {kind} · {year}",
+    "kinds": {
+      "mainline": "Mainline",
+      "remake": "Remake",
+      "spinoff": "Spin-off",
+      "mobile": "Mobile"
+    },
+    "footerStarters": "Box art, starters and more →",
+    "footerBox": "Box art and more →",
+    "footerRelease": "Release, platforms and more →",
+    "hub": {
+      "eyebrow": "Pokédex · Games",
+      "title1": "Every",
+      "title2": "Pokémon game",
+      "subtitle": "The main series, remakes, spin-offs and mobile games, with box art.",
+      "footer": "Filter by generation →"
+    }
+  },
+  "movies": {
+    "eyebrow": "Pokémon movies · {kicker}",
+    "footer": "Featured Pokémon · characters →",
+    "hub": {
+      "eyebrow": "Pokédex · Movies",
+      "title1": "Pokémon",
+      "title2": "Movies",
+      "subtitle": "Every Pokémon film, from the first to what's coming next.",
+      "footer": "See every film →"
+    }
+  },
+  "tcg": {
+    "name": "Pokémon TCG",
+    "eyebrow": "Pokémon TCG · {series}",
+    "setFallback": "Pokémon TCG set",
+    "setSubtitle": "Every card in the set, with current market prices.",
+    "setSubtitleDate": "Every card in the set, released {date}, with current market prices.",
+    "setFooter": "Set list · card prices →",
+    "cardFallback": "Pokémon card",
+    "cardFooter": "TCGplayer and Cardmarket prices →"
+  },
+  "sizes": {
+    "eyebrow": "Pokémon sizes · in 3D",
+    "title1": "Every Pokémon",
+    "title2": "to scale",
+    "subtitle": "From {from} to {to}, side by side in Lumiose City.",
+    "footer": "Make your own size video →",
+    "itemEyebrow": "Pokémon sizes · #{number}",
+    "itemSubtitle": "{size}. Next to an adult human, in 3D.",
+    "itemFooter": "See it to scale →"
+  },
+  "story": {
+    "eyebrow": "PokéIQ 3D Lab · The real history",
+    "title1": "The Story of",
+    "title2": "Pokémon",
+    "subtitle": "From a boy's bug hunts to thirty years: a 3D film, every line sourced.",
+    "footer": "Press play →",
+    "chapterEyebrow": "The Story of Pokémon · {numeral}",
+    "chapterFooter": "Watch the chapter in 3D →"
+  },
+  "history": {
+    "eyebrow": "PokéIQ 3D Lab · In-universe history",
+    "title1": "The History of",
+    "title2": "the Pokémon World",
+    "subtitle": "From Sinnoh's creation myth to Area Zero, each line sourced to the games.",
+    "chapterEyebrow": "History of the Pokémon World · {numeral}"
+  },
+  "race": {
+    "eyebrow": "Pokémon race · {distance} m",
+    "tournament": "Every Pokémon, one winner",
+    "subtitle": "{winner} wins in {time} s.",
+    "subtitleAhead": "{winner} wins in {time} s, {gap} s ahead of {second}.",
+    "atTheLine": "AS THE WINNER CROSSES THE LINE",
+    "footer": "Watch the race in 3D →"
+  },
+  "massBattle": {
+    "eyebrow": "Pokémon Mass Battle · 3D",
+    "footer": "Watch it in 3D →",
+    "howMany1": "How many {army}",
+    "howMany2": "beat {boss}?",
+    "howManySubtitle": "The real games' damage maths, {runs} battles a size, then the battle in 3D.",
+    "howManyFooter": "See it in 3D →",
+    "answer": "{n} {army}",
+    "wins": "{side} wins"
+  },
+  "games": {
+    "eventEyebrow": "The PokéIQ Games · {event}",
+    "h2hEyebrow": "The PokéIQ Games · {event} · head to head",
+    "h2hSubtitle": "{line}, from real stats and real physics.",
+    "winsWith": "{name} wins with {mark}, from real stats and real physics.",
+    "winsBracket": "{name} wins the bracket, from real stats and real physics.",
+    "realStats": "Real stats, real physics, in 3D.",
+    "recordsEyebrow": "The PokéIQ Games · {event} records",
+    "recordHolder": "{name} holds the record with {mark}, out of every Pokémon.",
+    "recordsFooter": "See the top ten →",
+    "wins": "WINS",
+    "medals": {
+      "1": "Gold",
+      "2": "Silver",
+      "3": "Bronze"
+    },
+    "hub": {
+      "eyebrow": "3D Lab · real sport, real stats",
+      "title1": "The PokéIQ",
+      "title2": "Games",
+      "subtitle": "Track and field, weightlifting, swimming and wrestling for every Pokémon, with real physics, in 3D.",
+      "footer": "Who is the best athlete? →"
+    }
+  }
+}

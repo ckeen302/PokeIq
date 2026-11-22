@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Writes src/app/[locale]: one small file per English page (and per layout, loading or not-found file), which
+// Writes src/app/[locale]: one small file per English page (and per layout, loading, not-found or share image), which
 // serves that page at /<lang>/<path> through src/i18n/mirror.tsx. English pages stay exactly where they are.
 //   node scripts/i18n/mirror.mjs           write the files
 //   node scripts/i18n/mirror.mjs --check   fail if they are out of date (CI)
@@ -79,6 +79,31 @@ function pageFile(rel, src) {
   return lines.join("\n");
 }
 
+/** The share-image files Next reads from a route segment. */
+const IMAGE = /^(opengraph-image|twitter-image)\.tsx?$/;
+
+/**
+ * A share image's key in the og-alt namespace: its route's folders joined by "_", "home" for the root
+ * ("pokedex/games/[slug]" → "pokedex_games_slug"). tests/i18n-og.test.ts derives the same keys.
+ */
+const altKey = (relDir) => relDir.replace(/\[+(?:\.\.\.)?([^\]]+)\]+/g, "$1").replace(/[^A-Za-z0-9]+/g, "_") || "home";
+
+/**
+ * A share image in the language: the English image route's own drawing, called with the language in its params
+ * (the card reads it there, see lib/og/i18n), with its alt text from og-alt. Drawn on request.
+ */
+function imageFile(rel, src) {
+  const relDir = dirname(rel) === "." ? "" : dirname(rel);
+  const imp = `@/app/${rel.replace(/\.tsx?$/, "")}`;
+  const { consts } = exportsOf(src);
+  const lines = [HEADER, `// Source: src/app/${rel}`];
+  lines.push(`import * as Source from "${imp}";`, `import { mirrorImage } from "@/i18n/mirror";`, "");
+  lines.push(`const m = mirrorImage(${JSON.stringify(altKey(relDir))}, Source);`, "");
+  for (const key of COPIED) if (consts[key] !== undefined) lines.push(`export const ${key} = ${consts[key]};`);
+  lines.push("export const generateImageMetadata = m.generateImageMetadata;", "export default m.Image;", "");
+  return lines.join("\n");
+}
+
 function reexportFile(rel, src) {
   const imp = `@/app/${rel.replace(/\.tsx?$/, "")}`;
   const { consts, client } = exportsOf(src);
@@ -104,6 +129,7 @@ for (const rel of walk(APP)) {
   const src = readFileSync(join(APP, rel), "utf8");
   if (base === "page.tsx") wanted.set(rel, pageFile(rel, src));
   else if (["layout.tsx", "loading.tsx", "not-found.tsx", "error.tsx"].includes(base)) wanted.set(rel, reexportFile(rel, src));
+  else if (IMAGE.test(base)) wanted.set(rel, imageFile(rel, src));
 }
 
 const check = process.argv.includes("--check");

@@ -1,0 +1,7 @@
+{
+  "eyebrow": "Nomme-les tous · Quiz du jour {date}",
+  "fallback": "La catégorie du jour",
+  "lead": "Une catégorie par jour, la même pour tout le monde. Un essai compte pour ton record : mode Normal, temps standard, sans indices ni pause.",
+  "loading": "Chargement des Pokémon du jour…",
+  "failed": "Impossible de charger les Pokémon. Vérifie ta connexion et recharge la page."
+}

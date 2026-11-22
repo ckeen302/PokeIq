@@ -10,7 +10,7 @@ import { LeaderboardView, leaderboardBoardMetadata } from "../../view";
  */
 export const revalidate = 15;
 export const dynamicParams = false;
-export const metadata = leaderboardBoardMetadata;
+export const generateMetadata = leaderboardBoardMetadata;
 
 export function generateStaticParams() {
   return LEADERBOARD_BOARDS.map((board) => ({ board }));

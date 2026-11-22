@@ -1,3 +1,4 @@
+import { ogT } from "@/lib/og/i18n";
 import { C, OG_CONTENT_TYPE, OG_SIZE, ogCard } from "@/lib/og/card";
 import { TilesVisual } from "@/lib/og/result";
 
@@ -7,11 +8,12 @@ export const alt = "PokéConnections: find the four groups of Pokémon";
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 
-export default function Image() {
+export default async function Image(props: { params?: unknown }) {
+  const t = await ogT(props);
   return ogCard({
-    eyebrow: "PokéConnections · new puzzle daily",
-    title: ["Find the", ["four", C.violet], ["groups", C.violet]],
-    subtitle: "Sixteen Pokémon, four hidden links, four mistakes to spare.",
+    eyebrow: t("connections.eyebrow"),
+    title: [t("connections.title1"), [t("connections.title2"), C.violet], [t("connections.title3"), C.violet]],
+    subtitle: t("connections.subtitle"),
     accent: C.violet,
     visual: (
       <TilesVisual
@@ -26,6 +28,7 @@ export default function Image() {
         ]}
       />
     ),
-    footer: "Play today's, with a “Why?” for every answer →",
+    footer: t("connections.footer"),
+    t,
   });
 }

@@ -1,0 +1,163 @@
+{
+  "groups": {
+    "all": "Tout",
+    "gen": "Générations",
+    "type": "Types",
+    "special": "Légendaires et plus",
+    "forms": "Formes",
+    "dex": "Pokédex régionaux"
+  },
+  "all": {
+    "label": "Tous",
+    "h1": "Nomme tous les Pokémon",
+    "title": "Quiz : nomme tous les Pokémon, de Bulbizarre à Pêchaminus",
+    "description": "Tape le nom de chaque Pokémon, de Bulbizarre à Pêchaminus. Chacun prend sa case dès qu’il est bien écrit. Chrono, indices, sprites chromatiques et records personnels."
+  },
+  "gen": {
+    "label": "Gén. {n}",
+    "h1": "Nomme les Pokémon de la génération {n}",
+    "title": "Quiz : nomme tous les Pokémon de la génération {n} ({region})",
+    "description": "Combien de Pokémon apparus à {region} peux-tu nommer de mémoire ? Tape-les dans n’importe quel ordre et bats le chrono."
+  },
+  "type": {
+    "label": "{type}",
+    "h1": "Nomme tous les Pokémon de type {type}",
+    "title": "Quiz : nomme tous les Pokémon de type {type}",
+    "description": "Nomme tous les Pokémon de type {type}, à type simple ou double, de toutes les générations."
+  },
+  "cats": {
+    "legendary": {
+      "label": "Légendaires",
+      "h1": "Nomme tous les Pokémon légendaires",
+      "title": "Quiz : nomme tous les Pokémon légendaires",
+      "description": "Tous les Pokémon que les jeux classent comme légendaires, des oiseaux de Kanto à Terapagos, sous-légendaires compris."
+    },
+    "sub-legendary": {
+      "label": "Sous-légendaires",
+      "h1": "Nomme tous les Pokémon sous-légendaires",
+      "title": "Quiz : nomme tous les Pokémon sous-légendaires",
+      "description": "Les légendaires qui ne font pas la jaquette : trios, gardiens d’Alola et bien d’autres."
+    },
+    "mythical": {
+      "label": "Fabuleux",
+      "h1": "Nomme tous les Pokémon fabuleux",
+      "title": "Quiz : nomme tous les Pokémon fabuleux",
+      "description": "Mew, Celebi, Jirachi et tous les autres Pokémon fabuleux distribués lors d’évènements, jusqu’à Pêchaminus."
+    },
+    "ultra-beasts": {
+      "label": "Ultra-Chimères",
+      "h1": "Nomme toutes les Ultra-Chimères",
+      "title": "Quiz : nomme toutes les Ultra-Chimères",
+      "description": "Les créatures venues des Ultra-Brèches, de Zéroïd à Pierroteknik."
+    },
+    "paradox": {
+      "label": "Paradoxe",
+      "h1": "Nomme tous les Pokémon Paradoxe",
+      "title": "Quiz : nomme tous les Pokémon Paradoxe",
+      "description": "Les Pokémon Paradoxe du passé et du futur d’Écarlate et Violet et de leur DLC."
+    },
+    "mega-evolutions": {
+      "label": "Méga-Évolutions",
+      "h1": "Nomme toutes les Méga-Évolutions",
+      "title": "Quiz : nomme toutes les Méga-Évolutions",
+      "description": "Toutes les Méga-Évolutions de X et Y et de Rubis Oméga et Saphir Alpha. Tape « Méga-Florizarre » ou juste « Florizarre »."
+    },
+    "gigantamax": {
+      "label": "Gigamax",
+      "h1": "Nomme tous les Pokémon Gigamax",
+      "title": "Quiz : nomme tous les Pokémon Gigamax",
+      "description": "Toutes les formes Gigamax d’Épée et Bouclier. Tape « Ronflex Gigamax », « Gmax Ronflex » ou juste « Ronflex »."
+    },
+    "regional-forms": {
+      "label": "Formes régionales",
+      "h1": "Nomme toutes les formes régionales",
+      "title": "Quiz : nomme toutes les formes régionales (Alola, Galar, Hisui, Paldea)",
+      "description": "Toutes les formes d’Alola, de Galar, de Hisui et de Paldea. Tape « Goupix d’Alola » ou « Goupix Alola »."
+    }
+  },
+  "dex": {
+    "kanto-dex": {
+      "label": "Pokédex de Kanto",
+      "h1": "Nomme le Pokédex de Kanto",
+      "title": "Quiz : nomme tous les Pokémon du Pokédex de Kanto",
+      "description": "Tous les Pokémon du Pokédex régional de Kanto dans Rouge, Bleu et Jaune, numérotés comme dans le jeu."
+    },
+    "johto-dex": {
+      "label": "Pokédex de Johto",
+      "h1": "Nomme le Pokédex de Johto",
+      "title": "Quiz : nomme tous les Pokémon du Pokédex de Johto",
+      "description": "Tous les Pokémon du Pokédex régional de Johto dans Or HeartGold et Argent SoulSilver, numérotés comme dans le jeu."
+    },
+    "hoenn-dex": {
+      "label": "Pokédex de Hoenn",
+      "h1": "Nomme le Pokédex de Hoenn",
+      "title": "Quiz : nomme tous les Pokémon du Pokédex de Hoenn",
+      "description": "Tous les Pokémon du Pokédex régional de Hoenn dans Rubis Oméga et Saphir Alpha, numérotés comme dans le jeu."
+    },
+    "sinnoh-dex": {
+      "label": "Pokédex de Sinnoh",
+      "h1": "Nomme le Pokédex de Sinnoh",
+      "title": "Quiz : nomme tous les Pokémon du Pokédex de Sinnoh",
+      "description": "Tous les Pokémon du Pokédex régional de Sinnoh dans Platine, numérotés comme dans le jeu."
+    },
+    "unova-dex": {
+      "label": "Pokédex d’Unys",
+      "h1": "Nomme le Pokédex d’Unys",
+      "title": "Quiz : nomme tous les Pokémon du Pokédex d’Unys",
+      "description": "Tous les Pokémon du Pokédex régional d’Unys dans Noir 2 et Blanc 2, numérotés comme dans le jeu."
+    },
+    "kalos-dex": {
+      "label": "Pokédex de Kalos",
+      "h1": "Nomme le Pokédex de Kalos",
+      "title": "Quiz : nomme tous les Pokémon du Pokédex de Kalos",
+      "description": "Tous les Pokémon du Pokédex régional de Kalos dans X et Y (Centre, Côtes et Monts), numérotés comme dans le jeu."
+    },
+    "alola-dex": {
+      "label": "Pokédex d’Alola",
+      "h1": "Nomme le Pokédex d’Alola",
+      "title": "Quiz : nomme tous les Pokémon du Pokédex d’Alola",
+      "description": "Tous les Pokémon du Pokédex régional d’Alola dans Ultra-Soleil et Ultra-Lune, numérotés comme dans le jeu."
+    },
+    "galar-dex": {
+      "label": "Pokédex de Galar",
+      "h1": "Nomme le Pokédex de Galar",
+      "title": "Quiz : nomme tous les Pokémon du Pokédex de Galar",
+      "description": "Tous les Pokémon du Pokédex régional de Galar dans Épée et Bouclier, numérotés comme dans le jeu."
+    },
+    "paldea-dex": {
+      "label": "Pokédex de Paldea",
+      "h1": "Nomme le Pokédex de Paldea",
+      "title": "Quiz : nomme tous les Pokémon du Pokédex de Paldea",
+      "description": "Tous les Pokémon du Pokédex régional de Paldea dans Écarlate et Violet, numérotés comme dans le jeu."
+    }
+  },
+  "form": {
+    "mega": "Méga-{name}",
+    "megaVariant": "Méga-{name} {variant}",
+    "gmax": "{name} Gigamax",
+    "gmaxStyle": {
+      "single": "{name} Gigamax (style Poing Final)",
+      "rapid": "{name} Gigamax (style Mille Poings)",
+      "amped": "{name} Gigamax (forme Aigüe)",
+      "lowkey": "{name} Gigamax (forme Basse)"
+    },
+    "alola": "{name} d’Alola",
+    "galar": "{name} de Galar",
+    "hisui": "{name} de Hisui",
+    "paldea": "{name} de Paldea",
+    "breed": "{name} de Paldea ({breed})",
+    "breeds": {
+      "combat": "race Combative",
+      "blaze": "race Flamboyante",
+      "aqua": "race Aquatique"
+    },
+    "darmanitan": {
+      "standard": "{name} de Galar (mode Normal)",
+      "zen": "{name} de Galar (mode Transe)"
+    }
+  },
+  "words": {
+    "mega": "Méga",
+    "gmax": "Gigamax"
+  }
+}

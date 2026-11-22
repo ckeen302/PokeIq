@@ -1,0 +1,121 @@
+{
+  "brand": "博士の研究所",
+  "loading": "研究所を調整しています…",
+  "noWebgl": "このブラウザでは3Dが使えないため、標本カードで表示しています。",
+  "searchLabel": "ポケモンを検索",
+  "searchPlaceholder": "ポケモンを検索",
+  "clearSearch": "検索をクリア",
+  "notInView": "この絞り込みには含まれません",
+  "showAll": "表示する",
+  "noMatch": "条件に合うポケモンがいません。",
+  "noSearchMatch": "ポケモンが見つかりません",
+  "reset": "リセット",
+  "filters": "絞り込み",
+  "allTypes": "すべてのタイプ",
+  "types": "タイプ",
+  "typesHint": "2つまで選べます",
+  "gen": "世代",
+  "genN": "第{n}世代",
+  "legends": "伝説・幻",
+  "final": "最終進化",
+  "forms": "フォルム",
+  "formsHint": "メガシンカ・リージョンフォーム・キョダイマックスを各ポケモンの後ろに表示",
+  "sortBy": "並び替え",
+  "sortAsc": "昇順に並べる",
+  "sortDesc": "降順に並べる",
+  "specimen": "標本",
+  "scanComplete": "スキャン完了",
+  "materialising": "実体化中…",
+  "biometrics": "生体データ",
+  "height": "高さ",
+  "weight": "重さ",
+  "region": "地方",
+  "entry": "図鑑の記録",
+  "abilities": "特性",
+  "hidden": "隠れ特性",
+  "evolution": "進化",
+  "noEvolution": "進化しません",
+  "matchups": "タイプ相性",
+  "weakTo": "弱点",
+  "resists": "耐性",
+  "immune": "無効",
+  "baseStats": "種族値",
+  "roles": "役割",
+  "total": "合計",
+  "bestRole": "最適",
+  "rolesNote": "各スコアはすべてのポケモンの中での順位です",
+  "rolesNoteForms": "各スコアはすべてのポケモンとフォルムの中での順位です",
+  "top": "上位{n}%",
+  "bottom": "下位{n}%",
+  "openInDex": "図鑑で開く",
+  "prev": "前へ",
+  "next": "次へ",
+  "prevNamed": "前：{name}",
+  "nextNamed": "次：{name}",
+  "hint": "ドラッグか ← → で選択",
+  "hintTouch": "スワイプで選択",
+  "stage": "博士の研究所：ポケモンのホイール。左右の矢印キーで回せます。",
+  "stageRole": "カルーセル",
+  "announce": "{name}、No.{no}、{types}",
+  "sheetHandle": "詳細を表示",
+  "sheetClose": "詳細を隠す",
+  "close": "閉じる",
+  "done": "完了",
+  "evoJump": "{name}を表示",
+  "captionIdle": "博士の研究所 · 標本プロジェクター",
+  "stats": {
+    "hp": "HP",
+    "atk": "こうげき",
+    "def": "ぼうぎょ",
+    "spa": "とくこう",
+    "spd": "とくぼう",
+    "spe": "すばやさ"
+  },
+  "statsShort": {
+    "hp": "HP",
+    "atk": "こうげき",
+    "def": "ぼうぎょ",
+    "spa": "とくこう",
+    "spd": "とくぼう",
+    "spe": "すばやさ"
+  },
+  "regions": {
+    "kanto": "カントー",
+    "johto": "ジョウト",
+    "hoenn": "ホウエン",
+    "sinnoh": "シンオウ",
+    "unova": "イッシュ",
+    "kalos": "カロス",
+    "alola": "アローラ",
+    "galar": "ガラル",
+    "paldea": "パルデア",
+    "hisui": "ヒスイ"
+  },
+  "role": {
+    "physicalSweeper": {
+      "name": "物理アタッカー",
+      "formula": "こうげき＋すばやさ"
+    },
+    "specialSweeper": {
+      "name": "特殊アタッカー",
+      "formula": "とくこう＋すばやさ"
+    },
+    "wall": {
+      "name": "耐久型",
+      "formula": "HP＋ぼうぎょ＋とくぼう"
+    },
+    "physicalTank": {
+      "name": "物理タンク",
+      "formula": "こうげき＋ぼうぎょ"
+    },
+    "specialTank": {
+      "name": "特殊タンク",
+      "formula": "とくこう＋とくぼう"
+    }
+  },
+  "sort": {
+    "id": "図鑑番号",
+    "name": "名前",
+    "bst": "合計"
+  }
+}

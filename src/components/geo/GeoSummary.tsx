@@ -17,14 +17,16 @@ import { ShareButton } from "@/components/share/ShareButton";
 import { GeoMap } from "./GeoMap";
 import { GeoCrowdMap } from "./GeoCrowdMap";
 import { cn } from "@/lib/utils";
-import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
+import { isCleanName } from "@/lib/name-filter";
 import { type Game, type Played, type Reward, emoji, maxTotal, placeName, post, useCountUp } from "./GeoGame";
 import { DailyEmailNudge } from "@/components/email/DailyEmailNudge";
 import { useT } from "@/i18n/client";
+import communityNs from "@/messages/community";
 import { type Translator } from "@/i18n/catalog";
 import { formatNumber } from "@/i18n/format";
 import geoNs from "@/messages/geo";
 import geoSolo from "@/messages/geo-solo";
+import badgesNs from "@/messages/badges";
 import share from "@/messages/share";
 import { localeHref } from "@/i18n/href";
 import { useGeoNames } from "@/lib/geo-i18n-client";
@@ -52,6 +54,8 @@ export function GeoSummary({
   compact?: boolean;
 }) {
   const t = useT(geoSolo);
+  const ct = useT(communityNs);
+  const bt = useT(badgesNs);
   const g = useT(geoNs);
   const names = useGeoNames();
   const shareT = useT(share);
@@ -106,7 +110,7 @@ export function GeoSummary({
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!isCleanName(name)) {
-      setSaveError(NAME_REJECTED);
+      setSaveError(ct("nameRejected"));
       setSave("error");
       return;
     }
@@ -208,8 +212,8 @@ export function GeoSummary({
                 <span key={b.id} className="flex items-center gap-2 text-sm">
                   <BadgeMedal id={b.id} size="md" />
                   <span>
-                    <span className="block font-semibold">{t("summary.badge", { name: b.name })}</span>
-                    <span className="text-xs text-muted-foreground">{b.description}</span>
+                    <span className="block font-semibold">{t("summary.badge", { name: bt(`${b.id as keyof typeof badgesNs.en & string}.name`) })}</span>
+                    <span className="text-xs text-muted-foreground">{bt(`${b.id as keyof typeof badgesNs.en & string}.description`)}</span>
                   </span>
                 </span>
               ))}

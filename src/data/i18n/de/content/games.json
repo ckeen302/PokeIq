@@ -1,0 +1,1118 @@
+{
+ "platforms": {
+  "3DS": "3DS",
+  "3DS / Mobile": "3DS / Mobil",
+  "Arcade / Wii U": "Spielhalle / Wii U",
+  "DS": "DS",
+  "GBA": "GBA",
+  "GBA / DS": "GBA / DS",
+  "GBC": "GBC",
+  "Game Boy": "Game Boy",
+  "GameCube": "GameCube",
+  "Mobile": "Mobil",
+  "N64": "N64",
+  "PC / Mobile": "PC / Mobil",
+  "Switch": "Switch",
+  "Switch / Mobile": "Switch / Mobil",
+  "Switch 2": "Switch 2",
+  "Wii": "Wii",
+  "Wii U": "Wii U",
+  "WiiWare": "WiiWare",
+  "Android": "Android",
+  "Arcade": "Spielhalle",
+  "Game Boy Advance": "Game Boy Advance",
+  "Game Boy Advance (Red Rescue Team)": "Game Boy Advance (Team Rot)",
+  "Game Boy Color": "Game Boy Color",
+  "Nintendo 3DS": "Nintendo 3DS",
+  "Nintendo 3DS (eShop)": "Nintendo 3DS (eShop)",
+  "Nintendo 64": "Nintendo 64",
+  "Nintendo DS": "Nintendo DS",
+  "Nintendo DS (Blue Rescue Team)": "Nintendo DS (Team Blau)",
+  "Nintendo Switch": "Nintendo Switch",
+  "Nintendo Switch (2026)": "Nintendo Switch (2026)",
+  "Nintendo Switch 2": "Nintendo Switch 2",
+  "Wii (WiiWare)": "Wii (WiiWare)",
+  "Wii U (eShop)": "Wii U (eShop)",
+  "Windows": "Windows",
+  "iOS": "iOS",
+  "macOS": "macOS"
+ },
+ "games": {
+  "champions": {
+   "name": "Pokémon Champions",
+   "summary": "Ein Kampfspiel mit Fokus auf Mehrspieler. Es erschien zuerst für Nintendo Switch und am 17. Juni 2026 für iOS und Android.",
+   "alts": [
+    "Artwork von Pokémon Champions"
+   ]
+  },
+  "pokopia": {
+   "name": "Pokémon Pokopia",
+   "summary": "Eine Lebenssimulation, gemeinsam mit Koei Tecmo entwickelt: Spiele ein Ditto, das menschliche Gestalt angenommen hat, und verwandle ein leeres Land in ein Zuhause für Pokémon.",
+   "alts": [
+    "Cover von Pokémon Pokopia"
+   ]
+  },
+  "legends-z-a": {
+   "name": "Pokémon-Legenden: Z-A",
+   "summary": "Ein Action-Rollenspiel, das komplett in Illumina City spielt, während die Stadt umgestaltet werden soll, mit Echtzeitkämpfen und der Rückkehr der Mega-Entwicklung.",
+   "region": "Kalos",
+   "alts": [
+    "Cover von Pokémon-Legenden: Z-A"
+   ],
+   "whatsNew": [
+    {
+     "title": "Echtzeitkämpfe",
+     "text": "Kämpfe laufen in Echtzeit ab, und deine Position zählt."
+    },
+    {
+     "title": "Wildzonen",
+     "text": "Bereiche in Illumina City, in denen Pokémon Seite an Seite mit Menschen leben."
+    },
+    {
+     "title": "Z-A Royale",
+     "text": "Kämpfe nachts gegen andere Trainer, um im Rang aufzusteigen."
+    },
+    {
+     "title": "Mega-Entwicklung",
+     "text": "Die Mega-Entwicklung kehrt zurück."
+    }
+   ],
+   "dlc": [
+    {
+     "name": "Mega-Dimension",
+     "text": "Eine Erweiterung, die dich ins Hyperraum-Illumina führt, mit weiteren Mega-Entwicklungen und Legendären Pokémon."
+    }
+   ]
+  },
+  "friends": {
+   "name": "Pokémon Friends",
+   "summary": "Ein Rätselspiel: Löse Logikrätsel, um Wolle zu sammeln, mach daraus Pokémon-Plüschfiguren und hilf den Bewohnern von Think Town. Auf dem Smartphone kostenlos spielbar.",
+   "alts": [
+    "Artwork von Pokémon Friends"
+   ]
+  },
+  "tcg-pocket": {
+   "name": "Pokémon-Sammelkartenspiel-Pocket",
+   "summary": "Das Pokémon-Sammelkartenspiel fürs Smartphone: Öffne jeden Tag kostenlose Boosterpackungen, sammle digitale Karten und spiele schnelle Kämpfe.",
+   "alts": [
+    "App-Symbol von Pokémon-Sammelkartenspiel-Pocket"
+   ]
+  },
+  "detective-pikachu-returns": {
+   "name": "Meisterdetektiv Pikachu kehrt zurück",
+   "summary": "Die Fortsetzung von Meisterdetektiv Pikachu: Tim und sein sprechendes Pikachu übernehmen neue Fälle in Ryme City.",
+   "region": "Ryme City",
+   "alts": [
+    "Artwork von Meisterdetektiv Pikachu kehrt zurück"
+   ]
+  },
+  "sleep": {
+   "name": "Pokémon Sleep",
+   "summary": "Eine App, die deinen Schlaf aufzeichnet: Je besser du schläfst, desto mehr Pokémon versammeln sich um Relaxo, damit du sie erforschen kannst.",
+   "alts": [
+    "Logo von Pokémon Sleep"
+   ]
+  },
+  "tcg-live": {
+   "name": "Pokémon-Sammelkartenspiel-Live",
+   "summary": "Der offizielle Weg, das Pokémon-Sammelkartenspiel online zu spielen, auf Computer und Smartphone.",
+   "releasedAs": "nach der Beta, als Nachfolger von Pokémon-Sammelkartenspiel-Online",
+   "alts": [
+    "Pikachu"
+   ]
+  },
+  "scarlet-violet": {
+   "name": "Pokémon Karmesin und Purpur",
+   "summary": "Die ersten Hauptspiele mit offener Welt, angesiedelt in der von der Iberischen Halbinsel inspirierten Region Paldea, mit drei Geschichten, die du in beliebiger Reihenfolge spielen kannst.",
+   "region": "Paldea",
+   "alts": [
+    "Cover von Pokémon Karmesin",
+    "Cover von Pokémon Purpur"
+   ],
+   "versions": [
+    "Karmesin",
+    "Purpur"
+   ],
+   "whatsNew": [
+    {
+     "title": "Offene Welt",
+     "text": "Ganz Paldea ist eine einzige offene Welt."
+    },
+    {
+     "title": "Terakristallisierung",
+     "text": "Das Terakristall-Phänomen ändert im Kampf den Typ eines Pokémon."
+    },
+    {
+     "title": "Drei Geschichten",
+     "text": "Siegesstraße, Pfad der Legenden und Operation Sternenstaub, in beliebiger Reihenfolge."
+    },
+    {
+     "title": "Paradox-Pokémon",
+     "text": "Urzeitliche und futuristische Verwandte bekannter Pokémon."
+    }
+   ],
+   "dlc": [
+    {
+     "name": "Die Türkisgrüne Maske",
+     "text": "Teil eins von Der Schatz von Zone Null: ein Schulausflug nach Kitakami und die Legende von Ogerpon."
+    },
+    {
+     "name": "Die Indigoblaue Scheibe",
+     "text": "Teil zwei: ein Austausch an der Blaubeer-Akademie und das Legendäre Pokémon Terapagos."
+    },
+    {
+     "name": "Mochi Mayhem",
+     "text": "Der Epilog: zurück in Kitakami, um das Mysteriöse Pokémon Infamomo zu treffen."
+    }
+   ]
+  },
+  "legends-arceus": {
+   "name": "Pokémon-Legenden: Arceus",
+   "summary": "Ein Action-Rollenspiel, das vor langer Zeit in Hisui spielt, dem Land, aus dem Sinnoh wurde. Du wirst in die Vergangenheit geschickt, um den ersten Pokédex der Region zu vervollständigen.",
+   "region": "Hisui",
+   "alts": [
+    "Cover von Pokémon-Legenden: Arceus"
+   ],
+   "whatsNew": [
+    {
+     "title": "Offene Gebiete",
+     "text": "Große offene Gebiete voller wilder Pokémon, die du erkunden kannst."
+    },
+    {
+     "title": "Fangen im Freien",
+     "text": "Schleich dich an und wirf Pokébälle direkt auf wilde Pokémon, ganz ohne Kampf."
+    },
+    {
+     "title": "Herrscher-Pokémon",
+     "text": "Besänftige rasende Herrscher-Pokémon in actionreichen Bosskämpfen."
+    }
+   ]
+  },
+  "brilliant-diamond-shining-pearl": {
+   "name": "Pokémon Strahlender Diamant und Leuchtende Perle",
+   "summary": "Originalgetreue Remakes von Diamant und Perl für Nintendo Switch, entwickelt von ILCA, mit der Draufsicht-Karte des Originals im Chibi-Stil neu gezeichnet.",
+   "region": "Sinnoh",
+   "alts": [
+    "Cover von Pokémon Strahlender Diamant",
+    "Cover von Pokémon Leuchtende Perle"
+   ],
+   "versions": [
+    "Strahlender Diamant",
+    "Leuchtende Perle"
+   ],
+   "whatsNew": [
+    {
+     "title": "Der Große Untergrund",
+     "text": "Der Untergrund kehrt zurück, größer, mit Pokémon-Höhlen, in denen Pokémon leben."
+    },
+    {
+     "title": "Individualisierung",
+     "text": "Ändere das Outfit deines Trainers."
+    }
+   ]
+  },
+  "unite": {
+   "name": "Pokémon UNITE",
+   "summary": "Ein kostenlos spielbares Teamkampfspiel, in dem Pokémon wilde Pokémon besiegen und in den Zielzonen des gegnerischen Teams Punkte erzielen. Auf dem Smartphone erschien es am 22. September 2021.",
+   "alts": [
+    "Artwork von Pokémon UNITE"
+   ]
+  },
+  "new-pokemon-snap": {
+   "name": "New Pokémon Snap",
+   "summary": "Die Fortsetzung von Pokémon Snap: Fotografiere wilde Pokémon auf den Inseln der Lental-Region für die Forschung von Professor Mirror.",
+   "region": "Lental",
+   "alts": [
+    "Cover von New Pokémon Snap"
+   ]
+  },
+  "cafe-remix": {
+   "name": "Pokémon Café ReMix",
+   "summary": "Ein kostenloses Rätselspiel: Verbinde Symbole, um Getränke und Gerichte für die Pokémon-Gäste deines Cafés zuzubereiten. Bis 2021 hieß es Pokémon Café Mix.",
+   "releasedAs": "als Pokémon Café Mix",
+   "alts": [
+    "App-Symbol von Pokémon Café ReMix"
+   ]
+  },
+  "smile": {
+   "name": "Pokémon Smile",
+   "summary": "Eine kostenlose App, die Zähneputzen zum Spiel macht: Putz die Bakterien weg, die Pokémon gefangen halten, und fang die Pokémon dann.",
+   "alts": [
+    "App-Symbol von Pokémon Smile"
+   ]
+  },
+  "mystery-dungeon-rescue-team-dx": {
+   "name": "Pokémon Mystery Dungeon: Retterteam DX",
+   "summary": "Ein Remake der ersten Mystery-Dungeon-Spiele, Team Rot und Team Blau, für Nintendo Switch.",
+   "alts": [
+    "Cover von Pokémon Mystery Dungeon: Retterteam DX"
+   ]
+  },
+  "sword-shield": {
+   "name": "Pokémon Schwert und Schild",
+   "summary": "Die erste neue Generation auf Nintendo Switch, angesiedelt in der Region Galar, die vom Vereinigten Königreich inspiriert ist und in der Arenaleiter in Stadien kämpfen.",
+   "region": "Galar",
+   "alts": [
+    "Cover von Pokémon Schwert",
+    "Cover von Pokémon Schild"
+   ],
+   "versions": [
+    "Schwert",
+    "Schild"
+   ],
+   "whatsNew": [
+    {
+     "title": "Dynamaximierung",
+     "text": "Pokémon werden für drei Runden riesig; manche haben eine Gigadynamax-Form."
+    },
+    {
+     "title": "Die Naturzone",
+     "text": "Ein offenes Gebiet mit frei steuerbarer Kamera, in dem Pokémon frei herumstreifen."
+    },
+    {
+     "title": "Dyna-Raids",
+     "text": "Tu dich mit bis zu drei anderen gegen dynamaximierte Pokémon zusammen."
+    }
+   ],
+   "dlc": [
+    {
+     "name": "Die Insel der Rüstung",
+     "text": "Teil eins des Erweiterungspasses: Trainiere im Meisterdojo auf der Insel der Rüstung."
+    },
+    {
+     "name": "Die Schneelande der Krone",
+     "text": "Teil zwei: Hilf Coronospa in den Schneelanden der Krone und stell dich den Dyna-Abenteuern."
+    }
+   ]
+  },
+  "masters-ex": {
+   "name": "Pokémon Masters EX",
+   "summary": "Drei-gegen-drei-Kämpfe auf der künstlichen Insel Pasio, auf der berühmte Trainer aus der ganzen Reihe mit ihren Partner-Pokémon Teams bilden.",
+   "releasedAs": "als Pokémon Masters (2020 umbenannt)",
+   "region": "Pasio",
+   "alts": [
+    "App-Symbol von Pokémon Masters EX"
+   ]
+  },
+  "rumble-rush": {
+   "name": "Pokémon Rumble Rush",
+   "summary": "Die Rumble-Reihe auf dem Smartphone: Spielzeug-Pokémon kämpfen sich von Insel zu Insel. Das Spiel wurde im Juli 2020 eingestellt.",
+   "firstIn": "Australien (Android)",
+   "alts": [
+    "App-Symbol von Pokémon Rumble Rush"
+   ]
+  },
+  "lets-go-pikachu-eevee": {
+   "name": "Pokémon: Let’s Go, Pikachu! und Let’s Go, Evoli!",
+   "summary": "Remakes von Pokémon Gelbe Edition für Nintendo Switch, mit Fangen wie in Pokémon GO und einem Partner-Pikachu oder -Evoli, das auf deiner Schulter sitzt.",
+   "region": "Kanto",
+   "alts": [
+    "Cover von Pokémon: Let’s Go, Pikachu!",
+    "Cover von Pokémon: Let’s Go, Evoli!"
+   ],
+   "versions": [
+    "Let’s Go, Pikachu!",
+    "Let’s Go, Evoli!"
+   ],
+   "whatsNew": [
+    {
+     "title": "Fangen wie in GO",
+     "text": "Wilde Pokémon sind auf der Karte zu sehen, und du fängst sie, indem du Pokébälle wirfst, statt zu kämpfen."
+    },
+    {
+     "title": "GO-Park",
+     "text": "Bring in Pokémon GO gefangene Pokémon mit, darunter das neue Mysteriöse Pokémon Meltan."
+    },
+    {
+     "title": "Pokéball Plus",
+     "text": "Ein optionaler Controller in Form eines Pokéballs."
+    }
+   ]
+  },
+  "quest": {
+   "name": "Pokémon Quest",
+   "summary": "Ein kostenlos spielbares Abenteuer auf der Insel Tumblecube, auf der jedes Pokémon ein Würfel ist: Koche, um ein Team anzulocken, und erkunde mit ihm die Gebiete. Aufs Smartphone kam es im Juni 2018.",
+   "alts": [
+    "App-Symbol von Pokémon Quest"
+   ]
+  },
+  "ultra-sun-ultra-moon": {
+   "name": "Pokémon Ultrasonne und Ultramond",
+   "summary": "Eine alternative Version der Geschichte von Sonne und Mond, mit Necrozma im Mittelpunkt, Ultrapforten zum Durchreisen und Legendären Pokémon aus allen Regionen zum Fangen.",
+   "region": "Alola",
+   "alts": [
+    "Cover von Pokémon Ultrasonne",
+    "Cover von Pokémon Ultramond"
+   ],
+   "versions": [
+    "Ultrasonne",
+    "Ultramond"
+   ],
+   "whatsNew": [
+    {
+     "title": "Ultrasprung",
+     "text": "Flieg durch Ultrapforten, um Ultrabestien und Legendären Pokémon zu begegnen."
+    },
+    {
+     "title": "Mantax-Surfen",
+     "text": "Surfe auf einem Mantax zwischen den Inseln und zeig Tricks."
+    },
+    {
+     "title": "Team Rainbow Rocket",
+     "text": "Eine Geschichte nach dem Abspann mit den Bossen aller früheren Schurkenorganisationen."
+    }
+   ]
+  },
+  "pokken-tournament-dx": {
+   "name": "Pokkén Tournament DX",
+   "summary": "Eine erweiterte Fassung von Pokkén Tournament für Nintendo Switch.",
+   "alts": [
+    "Cover von Pokkén Tournament DX"
+   ]
+  },
+  "magikarp-jump": {
+   "name": "Pokémon: Karpador Jump",
+   "summary": "Ein kostenloses Smartphone-Spiel, in dem du Karpador großziehst und bei Sprungwettbewerben antreten lässt.",
+   "alts": [
+    "App-Symbol von Pokémon: Karpador Jump"
+   ]
+  },
+  "sun-moon": {
+   "name": "Pokémon Sonne und Mond",
+   "summary": "Eine Inselwanderschaft über die vier Inseln von Alola, einer an Hawaii angelehnten Region, statt der üblichen Arena-Herausforderung.",
+   "region": "Alola",
+   "alts": [
+    "Cover von Pokémon Sonne",
+    "Cover von Pokémon Mond"
+   ],
+   "versions": [
+    "Sonne",
+    "Mond"
+   ],
+   "whatsNew": [
+    {
+     "title": "Inselwanderschaft",
+     "text": "Prüfungen unter der Leitung der Captains und eine große Prüfung gegen den Inselkönig oder die Inselkönigin jeder Insel."
+    },
+    {
+     "title": "Z-Attacken",
+     "text": "Mächtige Attacken, die ein Pokémon einmal pro Kampf einsetzen kann."
+    },
+    {
+     "title": "Alola-Formen",
+     "text": "Regionalformen bekannter Pokémon, an Alola angepasst."
+    },
+    {
+     "title": "Ultrabestien",
+     "text": "Seltsame Wesen aus einer anderen Welt."
+    }
+   ]
+  },
+  "go": {
+   "name": "Pokémon GO",
+   "summary": "Ein Augmented-Reality-Spiel fürs Smartphone: Erkunde die echte Welt, um Pokémon zu finden, zu fangen und mit ihnen zu kämpfen, und besuche PokéStops und Arenen an echten Orten.",
+   "firstIn": "Australien, Neuseeland und USA",
+   "alts": [
+    "App-Symbol von Pokémon GO"
+   ]
+  },
+  "duel": {
+   "name": "Pokémon Duel",
+   "summary": "Ein digitales Brettspiel nach dem Pokémon Trading Figure Game: Bewege Pokémon-Figuren über ein Spielbrett, um das Ziel deines Gegners zu erreichen. Es wurde inzwischen eingestellt.",
+   "firstIn": "Japan",
+   "releasedAs": "als Pokémon Comaster",
+   "alts": [
+    "App-Symbol von Pokémon Duel"
+   ]
+  },
+  "detective-pikachu": {
+   "name": "Meisterdetektiv Pikachu",
+   "summary": "Ein Abenteuerspiel, in dem du mit einem sprechenden, kaffeeliebenden Pikachu zusammenarbeitest, um in Ryme City Rätsel zu lösen.",
+   "firstIn": "Japan",
+   "releasedAs": "als Download der ersten Kapitel; das vollständige Spiel folgte am 23. März 2018",
+   "region": "Ryme City",
+   "alts": [
+    "Cover von Meisterdetektiv Pikachu"
+   ]
+  },
+  "picross": {
+   "name": "Pokémon Picross",
+   "summary": "Picross-Logikrätsel: Füll ein Raster anhand seiner Zahlen aus, um das Bild eines Pokémon aufzudecken.",
+   "firstIn": "Japan",
+   "alts": [
+    "Artwork von Pokémon Picross"
+   ]
+  },
+  "super-mystery-dungeon": {
+   "name": "Pokémon Super Mystery Dungeon",
+   "summary": "Mystery Dungeon auf dem Nintendo 3DS, mit allen bis dahin erschienenen Pokémon.",
+   "firstIn": "Japan",
+   "alts": [
+    "Cover von Pokémon Super Mystery Dungeon"
+   ]
+  },
+  "pokken-tournament": {
+   "name": "Pokkén Tournament",
+   "summary": "Ein Kampfspiel von den Machern von Tekken, in dem Pokémon in 3D- und 2D-Phasen kämpfen. Es startete in japanischen Spielhallen; die Wii-U-Fassung folgte am 18. März 2016.",
+   "firstIn": "Japan (Spielhallen)",
+   "alts": [
+    "Cover von Pokkén Tournament"
+   ]
+  },
+  "rumble-world": {
+   "name": "Pokémon Rumble World",
+   "summary": "Das vierte Rumble-Spiel: Dein Mii reist im Heißluftballon in neue Gebiete, um Spielzeug-Pokémon zu bekämpfen und zu sammeln.",
+   "alts": [
+    "Cover von Pokémon Rumble World"
+   ]
+  },
+  "shuffle": {
+   "name": "Pokémon Shuffle",
+   "summary": "Ein kostenloses Rätselspiel: Bring drei oder mehr gleiche Pokémon in eine Reihe, um gegen wilde Pokémon zu kämpfen. Es erschien zuerst für 3DS und im August desselben Jahres fürs Smartphone.",
+   "alts": [
+    "Artwork von Pokémon Shuffle"
+   ]
+  },
+  "omega-ruby-alpha-sapphire": {
+   "name": "Pokémon Omega Rubin und Alpha Saphir",
+   "summary": "Remakes von Rubin und Saphir für Nintendo 3DS, mit Proto-Groudon und Proto-Kyogre und einer neuen Geschichte nach dem Abspann, der Delta-Episode.",
+   "region": "Hoenn",
+   "alts": [
+    "Cover von Pokémon Omega Rubin",
+    "Cover von Pokémon Alpha Saphir"
+   ],
+   "versions": [
+    "Omega Rubin",
+    "Alpha Saphir"
+   ],
+   "whatsNew": [
+    {
+     "title": "Proto-Rückentwicklung",
+     "text": "Groudon und Kyogre nehmen wieder ihre Urform an."
+    },
+    {
+     "title": "Himmelsflug",
+     "text": "Flieg auf Latios oder Latias über Hoenn, zu Orten, die nur aus der Luft erreichbar sind."
+    },
+    {
+     "title": "Die Delta-Episode",
+     "text": "Eine Geschichte nach dem Abspann über Rayquaza und einen herabstürzenden Meteoriten."
+    }
+   ]
+  },
+  "art-academy": {
+   "name": "Pokémon Art Academy",
+   "summary": "Lektionen, in denen du Schritt für Schritt Pokémon auf dem Touchscreen des Nintendo 3DS zeichnest.",
+   "firstIn": "Japan",
+   "alts": [
+    "Cover von Pokémon Art Academy"
+   ]
+  },
+  "battle-trozei": {
+   "name": "Pokémon Link: Battle!",
+   "summary": "Die Fortsetzung von Pokémon Trozei!: Bring drei oder mehr gleiche Pokémon in eine Reihe, um gegen wilde Pokémon zu kämpfen.",
+   "firstIn": "Japan",
+   "alts": [
+    "Artwork von Pokémon Battle Trozei (in Europa Pokémon Link: Battle!)"
+   ]
+  },
+  "x-y": {
+   "name": "Pokémon X und Y",
+   "summary": "Die ersten Hauptspiele komplett in 3D und die ersten, die weltweit gleichzeitig erschienen, angesiedelt in der Region Kalos.",
+   "region": "Kalos",
+   "alts": [
+    "Cover von Pokémon X",
+    "Cover von Pokémon Y"
+   ],
+   "versions": [
+    "X",
+    "Y"
+   ],
+   "whatsNew": [
+    {
+     "title": "Mega-Entwicklung",
+     "text": "Eine neue Entwicklung im Kampf für manche voll entwickelten Pokémon."
+    },
+    {
+     "title": "Typ Fee",
+     "text": "Der erste neue Typ seit Gold und Silber."
+    },
+    {
+     "title": "Individualisierung",
+     "text": "Ändere Kleidung, Frisur und Accessoires deines Trainers."
+    }
+   ]
+  },
+  "rumble-u": {
+   "name": "Pokémon Rumble U",
+   "summary": "Die Rumble-Reihe im Wii U eShop: Raufereien mit Spielzeug-Pokémon und das erste Spiel, das den NFC-Leser des Wii U GamePad mit Pokémon-Figuren nutzte.",
+   "firstIn": "Japan",
+   "alts": [
+    "Artwork von Pokémon Rumble U"
+   ]
+  },
+  "mystery-dungeon-gates-to-infinity": {
+   "name": "Pokémon Mystery Dungeon: Portale in die Unendlichkeit",
+   "summary": "Mystery Dungeon auf dem Nintendo 3DS, mit den Pokémon aus Einall und Dungeons, die sich durch Magnaportale öffnen.",
+   "firstIn": "Japan",
+   "alts": [
+    "Cover von Pokémon Mystery Dungeon: Portale in die Unendlichkeit"
+   ]
+  },
+  "black-2-white-2": {
+   "name": "Pokémon Schwarze Edition 2 und Weiße Edition 2",
+   "summary": "Die ersten direkten Fortsetzungen der Hauptreihe, angesiedelt in Einall zwei Jahre nach Schwarz und Weiß, mit neuen Orten und einer größeren Auswahl an Pokémon.",
+   "firstIn": "Japan",
+   "region": "Einall",
+   "alts": [
+    "Cover von Pokémon Schwarze Edition 2",
+    "Cover von Pokémon Weiße Edition 2"
+   ],
+   "versions": [
+    "Schwarz 2",
+    "Weiß 2"
+   ],
+   "whatsNew": [
+    {
+     "title": "Pokémon World Tournament",
+     "text": "Kämpfe gegen Arenaleiter und Champs aus allen früheren Spielen."
+    },
+    {
+     "title": "Schlüsselsystem",
+     "text": "Schalte den leichten Modus, den Herausforderungsmodus und neue Gebiete frei und teile die Schlüssel zwischen den Editionen."
+    },
+    {
+     "title": "Verborgene Lichtungen",
+     "text": "Versteckte Orte, an denen seltene Pokémon und Items auftauchen."
+    }
+   ]
+  },
+  "conquest": {
+   "name": "Pokémon Conquest",
+   "summary": "Ein taktisches Rollenspiel als Crossover mit Nobunaga’s Ambition: Krieger und ihre Pokémon kämpfen um die Einigung der Region Ransei.",
+   "firstIn": "Japan",
+   "region": "Ransei",
+   "alts": [
+    "Cover von Pokémon Conquest"
+   ]
+  },
+  "pokepark-2": {
+   "name": "PokéPark 2: Wunderwelten",
+   "summary": "Der zweite PokéPark: Spiele Pikachu, Ottaro, Serpifeu oder Floink und rette den PokéPark vor der Bedrohung durch den Wunschpark.",
+   "firstIn": "Japan",
+   "alts": [
+    "Cover von PokéPark 2: Wunderwelten"
+   ]
+  },
+  "rumble-blast": {
+   "name": "Super Pokémon Rumble",
+   "summary": "Die Rumble-Reihe auf dem Nintendo 3DS: Spielzeug-Pokémon kämpfen sich durch die Level. In Europa heißt es Super Pokémon Rumble.",
+   "firstIn": "Japan",
+   "alts": [
+    "Cover von Super Pokémon Rumble"
+   ]
+  },
+  "typing-adventure": {
+   "name": "Lernen mit Pokémon: Tasten-Abenteuer",
+   "summary": "Ein Lernspiel, das mit Pokémon das Zehnfingersystem beibringt, verkauft mit einer kabellosen Tastatur. In Nordamerika ist es nie erschienen.",
+   "firstIn": "Japan",
+   "alts": [
+    "Cover von Lernen mit Pokémon: Tasten-Abenteuer"
+   ]
+  },
+  "black-white": {
+   "name": "Pokémon Schwarze und Weiße Edition",
+   "summary": "Ein Neuanfang in der Region Einall, in der bis zum Ende der Geschichte nur neue Pokémon auftauchen und Team Plasma fordert, dass Pokémon befreit werden.",
+   "firstIn": "Japan",
+   "region": "Einall",
+   "alts": [
+    "Cover von Pokémon Schwarze Edition",
+    "Cover von Pokémon Weiße Edition"
+   ],
+   "versions": [
+    "Schwarz",
+    "Weiß"
+   ],
+   "whatsNew": [
+    {
+     "title": "Jahreszeiten",
+     "text": "Die Jahreszeiten wechseln jeden Monat, und Einall verändert sich mit ihnen."
+    },
+    {
+     "title": "Dreier- und Rotationskämpfe",
+     "text": "Zwei neue Kampfformate mit drei Pokémon auf jeder Seite."
+    },
+    {
+     "title": "Animierte Sprites",
+     "text": "Pokémon bewegen sich im Kampf ständig."
+    }
+   ]
+  },
+  "ranger-guardian-signs": {
+   "name": "Pokémon Ranger: Spuren des Lichts",
+   "summary": "Das dritte Ranger-Spiel: Halte mit deinen Partner-Pokémon die Pokémon Pinchers auf und bring der Inselregion Oblivia den Frieden zurück.",
+   "firstIn": "Japan",
+   "region": "Oblivia",
+   "alts": [
+    "Cover von Pokémon Ranger: Spuren des Lichts"
+   ]
+  },
+  "pokepark-wii": {
+   "name": "PokéPark Wii: Pikachus großes Abenteuer",
+   "summary": "Ein 3D-Abenteuer, in dem du Pikachu spielst und dich in Minispielen mit den Pokémon des PokéParks anfreundest.",
+   "firstIn": "Japan",
+   "alts": [
+    "Cover von PokéPark Wii: Pikachus großes Abenteuer"
+   ]
+  },
+  "heartgold-soulsilver": {
+   "name": "Pokémon HeartGold und SoulSilver",
+   "summary": "Remakes von Gold und Silber für Nintendo DS, mit Johto und Kanto im Stil von Diamant und Perl neu aufgebaut.",
+   "firstIn": "Japan",
+   "region": "Johto",
+   "alts": [
+    "Cover von Pokémon HeartGold",
+    "Cover von Pokémon SoulSilver"
+   ],
+   "versions": [
+    "HeartGold",
+    "SoulSilver"
+   ],
+   "whatsNew": [
+    {
+     "title": "Pokémon folgen dir",
+     "text": "Das erste Pokémon in deinem Team läuft hinter dir her."
+    },
+    {
+     "title": "Pokéwalker",
+     "text": "Ein Schrittzähler, der in der Packung lag: Nimm ein Pokémon mit auf einen Spaziergang in der echten Welt."
+    },
+    {
+     "title": "Kampfzone",
+     "text": "Die komplette Kampfzone, wo Kristall nur den Duellturm hatte."
+    }
+   ]
+  },
+  "rumble": {
+   "name": "Pokémon Rumble",
+   "summary": "Ein WiiWare-Actionspiel, in dem sich Spielzeug-Pokémon durch die Level bis in die Battle Royale prügeln.",
+   "firstIn": "Japan",
+   "alts": [
+    "Cover von Pokémon Rumble"
+   ]
+  },
+  "mystery-dungeon-explorers-of-sky": {
+   "name": "Pokémon Mystery Dungeon: Erkundungsteam Himmel",
+   "summary": "Die erweiterte Fassung von Erkundungsteam Zeit und Dunkelheit, mit neuen Dungeons und zusätzlichen Story-Episoden.",
+   "firstIn": "Japan",
+   "alts": [
+    "Cover von Pokémon Mystery Dungeon: Erkundungsteam Himmel"
+   ]
+  },
+  "platinum": {
+   "name": "Pokémon Platin-Edition",
+   "summary": "Die erweiterte Fassung von Diamant und Perl, mit Giratina und seiner Urform im Mittelpunkt der Geschichte.",
+   "firstIn": "Japan",
+   "region": "Sinnoh",
+   "alts": [
+    "Cover von Pokémon Platin-Edition"
+   ],
+   "whatsNew": [
+    {
+     "title": "Die Zerrwelt",
+     "text": "Giratinas Zuhause, ein neues Gebiet, in dem oben auch seitlich sein kann."
+    },
+    {
+     "title": "Kampfzone",
+     "text": "Die Kampfeinrichtungen nach dem Abspann kehren zurück."
+    },
+    {
+     "title": "Giratinas Urform",
+     "text": "Eine neue Form für Giratina."
+    }
+   ]
+  },
+  "ranger-shadows-of-almia": {
+   "name": "Pokémon Ranger: Finsternis über Almia",
+   "summary": "Das zweite Ranger-Spiel: Lass dich an der Ranger-Schule ausbilden und erfülle dann mit dem Fangkom Missionen in der ganzen Region Almia.",
+   "firstIn": "Japan",
+   "region": "Almia",
+   "alts": [
+    "Cover von Pokémon Ranger: Finsternis über Almia"
+   ]
+  },
+  "my-pokemon-ranch": {
+   "name": "Meine Pokémon-Ranch",
+   "summary": "Eine WiiWare-Ranch, auf der du Pokémon, die du aus Diamant und Perl dort abgibst, zusammen mit deinem Mii hältst und beobachtest.",
+   "firstIn": "Japan",
+   "alts": [
+    "Cover von Meine Pokémon-Ranch"
+   ]
+  },
+  "mystery-dungeon-explorers": {
+   "name": "Pokémon Mystery Dungeon: Erkundungsteam Zeit & Dunkelheit",
+   "summary": "Das zweite Mystery-Dungeon-Paar: Ein Mensch, der in ein Pokémon verwandelt wurde, tritt mit einem Partner der Knuddeluff-Gilde bei und lässt sich zum Erkunder ausbilden.",
+   "firstIn": "Japan",
+   "alts": [
+    "Cover von Pokémon Mystery Dungeon: Erkundungsteam Zeit",
+    "Cover von Pokémon Mystery Dungeon: Erkundungsteam Dunkelheit"
+   ]
+  },
+  "battle-revolution": {
+   "name": "Pokémon Battle Revolution",
+   "summary": "3D-Kämpfe auf der Wii mit deinen Pokémon aus Diamant und Perl, in den Kolosseen eines Pokémon-Freizeitparks namens Pokétopia.",
+   "firstIn": "Japan",
+   "region": "Pokétopia",
+   "alts": [
+    "Cover von Pokémon Battle Revolution"
+   ]
+  },
+  "diamond-pearl": {
+   "name": "Pokémon Diamant- und Perl-Edition",
+   "summary": "Die ersten Hauptspiele für Nintendo DS, angesiedelt in der bergigen Region Sinnoh, in der Team Galaktik Dialgas und Palkias Macht über Zeit und Raum will.",
+   "firstIn": "Japan",
+   "region": "Sinnoh",
+   "alts": [
+    "Cover von Pokémon Diamant-Edition",
+    "Cover von Pokémon Perl-Edition"
+   ],
+   "versions": [
+    "Diamant",
+    "Perl"
+   ],
+   "whatsNew": [
+    {
+     "title": "Physisch und speziell",
+     "text": "Jede Attacke ist für sich physisch oder speziell, statt nach ihrem Typ."
+    },
+    {
+     "title": "Online spielen",
+     "text": "Tausche und kämpfe über die Nintendo Wi-Fi Connection und tausche über die Globale Tauschstation mit jedem."
+    },
+    {
+     "title": "Der Untergrund",
+     "text": "Tunnel unter Sinnoh, um Items auszugraben, Geheimbasen zu bauen und mit Freunden zu spielen."
+    }
+   ]
+  },
+  "ranger": {
+   "name": "Pokémon Ranger",
+   "summary": "Ein Actionspiel, in dem du dich mit Pokémon anfreundest, indem du mit dem Fangkom Kreise um sie ziehst, als Pokémon-Ranger in der Region Fiore.",
+   "firstIn": "Japan",
+   "region": "Fiore",
+   "alts": [
+    "Cover von Pokémon Ranger"
+   ]
+  },
+  "mystery-dungeon-rescue-team": {
+   "name": "Pokémon Mystery Dungeon: Team Rot und Team Blau",
+   "summary": "Die ersten Mystery-Dungeon-Spiele: Du wachst als Pokémon auf und gründest ein Rettungsteam, das Dungeons erkundet, die jedes Mal anders sind.",
+   "firstIn": "Japan",
+   "alts": [
+    "Cover von Pokémon Mystery Dungeon: Team Rot",
+    "Cover von Pokémon Mystery Dungeon: Team Blau"
+   ]
+  },
+  "trozei": {
+   "name": "Pokémon Trozei!",
+   "summary": "Ein Puzzlespiel mit fallenden Steinen: Verschiebe Reihen von Pokémon, um vier gleiche aneinanderzureihen und sie zu fangen.",
+   "firstIn": "Japan",
+   "alts": [
+    "Cover von Pokémon Trozei!"
+   ]
+  },
+  "xd-gale-of-darkness": {
+   "name": "Pokémon XD: Der dunkle Sturm",
+   "summary": "Der Nachfolger von Colosseum, wieder in Orre: Entreiße Crypto-Pokémon und erlöse sie, um Cipher aufzuhalten, dessen Meisterstück das Crypto-Lugia XD001 ist.",
+   "firstIn": "Japan",
+   "region": "Orre",
+   "alts": [
+    "Cover von Pokémon XD: Der dunkle Sturm"
+   ]
+  },
+  "dash": {
+   "name": "Pokémon Dash",
+   "summary": "Ein Rennspiel, in dem du Pikachu mit dem DS-Touchpen über eine Karte voller Kontrollpunkte steuerst. In Japan und Europa erschien es zusammen mit dem Nintendo DS.",
+   "firstIn": "Japan",
+   "alts": [
+    "Cover von Pokémon Dash"
+   ]
+  },
+  "emerald": {
+   "name": "Pokémon Smaragd-Edition",
+   "summary": "Die erweiterte Fassung von Rubin und Saphir: Team Magma und Team Aqua spielen beide in der Geschichte mit, und Rayquaza steht im Mittelpunkt.",
+   "firstIn": "Japan",
+   "region": "Hoenn",
+   "alts": [
+    "Cover von Pokémon Smaragd-Edition"
+   ],
+   "whatsNew": [
+    {
+     "title": "Kampfzone",
+     "text": "Ein Gebiet nach dem Abspann mit Kampfeinrichtungen, jede mit eigenen Regeln."
+    },
+    {
+     "title": "Animierte Pokémon",
+     "text": "Pokémon bewegen sich, wenn sie im Kampf erscheinen."
+    }
+   ]
+  },
+  "firered-leafgreen": {
+   "name": "Pokémon Feuerrote und Blattgrüne Edition",
+   "summary": "Remakes der Originalspiele für Game Boy Advance, mit den Sevii Eilanden nach den Top Vier. Am 27. Februar 2026 erschienen sie erneut für Nintendo Switch.",
+   "firstIn": "Japan",
+   "region": "Kanto",
+   "alts": [
+    "Cover von Pokémon Feuerrote Edition",
+    "Cover von Pokémon Blattgrüne Edition"
+   ],
+   "versions": [
+    "Feuerrot",
+    "Blattgrün"
+   ],
+   "whatsNew": [
+    {
+     "title": "Sevii Eilande",
+     "text": "Ein neues Gebiet, das du nach dem Sieg über die Top Vier erkunden kannst."
+    },
+    {
+     "title": "Kabelloser Tausch",
+     "text": "Den Spielen lag der Game Boy Advance Wireless Adapter bei, um ohne Kabel zu tauschen und zu kämpfen."
+    },
+    {
+     "title": "Ein Hilfemenü",
+     "text": "Eine kontextbezogene Hilfe erklärt das Spiel, wann immer du sie brauchst."
+    }
+   ]
+  },
+  "colosseum": {
+   "name": "Pokémon Colosseum",
+   "summary": "Ein 3D-Rollenspiel in der Wüstenregion Orre: Statt wilde Pokémon zu fangen, entreißt du anderen Trainern Crypto-Pokémon und erlöst sie. Jeder Kampf ist ein Doppelkampf.",
+   "firstIn": "Japan",
+   "region": "Orre",
+   "alts": [
+    "Cover von Pokémon Colosseum"
+   ]
+  },
+  "pinball-ruby-sapphire": {
+   "name": "Pokémon Pinball: Rubin & Saphir",
+   "summary": "Pokémon Pinball auf dem Game Boy Advance, mit Rubin- und Saphir-Tischen und den Pokémon aus Hoenn zum Fangen.",
+   "firstIn": "Japan",
+   "alts": [
+    "Cover von Pokémon Pinball: Rubin & Saphir"
+   ]
+  },
+  "channel": {
+   "name": "Pokémon Channel",
+   "summary": "Schau mit Pikachu Pokémon-Fernsehsendungen, um Professor Eich bei der Werbung für seinen neuen Fernsehsender zu helfen – eine Mischung aus Abenteuer und virtuellem Haustier.",
+   "firstIn": "Japan",
+   "alts": [
+    "Cover von Pokémon Channel"
+   ]
+  },
+  "ruby-sapphire": {
+   "name": "Pokémon Rubin- und Saphir-Edition",
+   "summary": "Die ersten Hauptspiele für den Game Boy Advance, angesiedelt in Hoenn, der Region aus Meer und Vulkanen, in der Team Magma und Team Aqua hinter der Macht von Groudon und Kyogre her sind.",
+   "firstIn": "Japan",
+   "region": "Hoenn",
+   "alts": [
+    "Cover von Pokémon Rubin-Edition",
+    "Cover von Pokémon Saphir-Edition"
+   ],
+   "versions": [
+    "Rubin",
+    "Saphir"
+   ],
+   "whatsNew": [
+    {
+     "title": "Doppelkämpfe",
+     "text": "Zwei Pokémon auf jeder Seite gleichzeitig."
+    },
+    {
+     "title": "Fähigkeiten",
+     "text": "Jedes Pokémon bekommt eine Fähigkeit, die im Kampf und außerhalb wirkt."
+    },
+    {
+     "title": "Pokémon-Wettbewerbe",
+     "text": "Gewinne Bänder für Coolness, Schönheit, Anmut, Klugheit und Stärke."
+    }
+   ]
+  },
+  "crystal": {
+   "name": "Pokémon Kristall-Edition",
+   "summary": "Die erweiterte Fassung von Gold und Silber, mit einer Geschichte rund um das Legendäre Pokémon Suicune.",
+   "firstIn": "Japan",
+   "region": "Johto",
+   "alts": [
+    "Cover von Pokémon Kristall-Edition"
+   ],
+   "whatsNew": [
+    {
+     "title": "Als Mädchen spielen",
+     "text": "Das erste Spiel der Hauptreihe, in dem man eine weibliche Spielfigur wählen kann."
+    },
+    {
+     "title": "Animierte Pokémon",
+     "text": "Die Sprites der Pokémon bewegen sich, wenn sie in den Kampf ziehen."
+    },
+    {
+     "title": "Duellturm",
+     "text": "Ein Gebäude mit Kämpfen am Stück gegen die Teams anderer Trainer."
+    }
+   ]
+  },
+  "stadium-2": {
+   "name": "Pokémon Stadium 2",
+   "summary": "Die Stadium-Reihe für Gold, Silber und Kristall: 3D-Kämpfe mit allen Pokémon der ersten beiden Generationen, ein Minispielpark und Earls Pokémon-Akademie.",
+   "firstIn": "Japan",
+   "alts": [
+    "Cover von Pokémon Stadium 2"
+   ]
+  },
+  "puzzle-league": {
+   "name": "Pokémon Puzzle League",
+   "summary": "Ein Puzzle-League-Spiel zum Vertauschen von Feldern auf dem Nintendo 64, im Stil des Animes. Es wurde für den Westen gemacht und erschien nie in Japan.",
+   "firstIn": "Nordamerika (nie in Japan erschienen)",
+   "alts": [
+    "Cover von Pokémon Puzzle League"
+   ]
+  },
+  "puzzle-challenge": {
+   "name": "Pokémon Puzzle Challenge",
+   "summary": "Ein Puzzle-League-Spiel zum Vertauschen von Feldern auf dem Game Boy Color, mit den Pokémon und Figuren aus Gold und Silber.",
+   "firstIn": "Japan",
+   "alts": [
+    "Cover von Pokémon Puzzle Challenge"
+   ]
+  },
+  "gold-silver": {
+   "name": "Pokémon Goldene und Silberne Edition",
+   "summary": "Fortsetzungen, die drei Jahre nach Rot und Blau spielen, in der neuen Region Johto, und Kanto lässt sich erneut erkunden, sobald seine Pokémon-Liga besiegt ist.",
+   "firstIn": "Japan",
+   "region": "Johto",
+   "alts": [
+    "Cover von Pokémon Goldene Edition",
+    "Cover von Pokémon Silberne Edition"
+   ],
+   "versions": [
+    "Gold",
+    "Silber"
+   ],
+   "whatsNew": [
+    {
+     "title": "Tag und Nacht",
+     "text": "Eine Echtzeituhr verfolgt Uhrzeit und Wochentag."
+    },
+    {
+     "title": "Zucht",
+     "text": "Pokémon in der Pension können Eier bekommen."
+    },
+    {
+     "title": "Schillernde Pokémon",
+     "text": "Seltene Pokémon in anderen Farben, wie das rote Garados am See des Zorns."
+    },
+    {
+     "title": "Zwei neue Typen",
+     "text": "Die Typen Unlicht und Stahl kommen zur Typentabelle hinzu."
+    }
+   ]
+  },
+  "stadium": {
+   "name": "Pokémon Stadium",
+   "summary": "3D-Kämpfe mit den Pokémon aus Rot, Blau und Gelb, in vier Pokalen mit Drei-gegen-drei-Kämpfen. Mit dem Transfer Pak holst du dein eigenes Team aus den Game-Boy-Spielen.",
+   "firstIn": "Japan",
+   "alts": [
+    "Cover von Pokémon Stadium"
+   ]
+  },
+  "pinball": {
+   "name": "Pokémon Pinball",
+   "summary": "Flipper mit einem Pokéball als Kugel: Triff die richtigen Ziele, um auf zwei Tischen Pokémon zu fangen und zu entwickeln. Im Modul steckt ein eingebautes Rumble Pak.",
+   "firstIn": "Japan",
+   "alts": [
+    "Cover von Pokémon Pinball"
+   ]
+  },
+  "snap": {
+   "name": "Pokémon Snap",
+   "summary": "Ein Fotospiel: Fahr auf Schienen durch die Pokémon-Insel und fotografiere wilde Pokémon für Professor Eich.",
+   "firstIn": "Japan",
+   "region": "Pokémon-Insel",
+   "alts": [
+    "Cover von Pokémon Snap"
+   ]
+  },
+  "trading-card-game": {
+   "name": "Pokémon Trading Card Game",
+   "summary": "Das Kartenspiel auf dem Game Boy Color: Stell Decks aus den ersten Erweiterungen des Pokémon-Sammelkartenspiels zusammen und kämpf dich durch die Club-Meister.",
+   "firstIn": "Japan",
+   "alts": [
+    "Cover von Pokémon Trading Card Game"
+   ]
+  },
+  "hey-you-pikachu": {
+   "name": "Hey You, Pikachu!",
+   "summary": "Ein Spiel mit virtuellem Haustier: Du sprichst über das Mikrofon des Nintendo 64 mit Pikachu und hilfst Professor Eich, ein Gerät zu testen, mit dem Menschen mit Pokémon sprechen können.",
+   "firstIn": "Japan",
+   "alts": [
+    "Cover von Hey You, Pikachu!"
+   ]
+  },
+  "yellow": {
+   "name": "Pokémon Gelbe Edition",
+   "summary": "Eine Pikachu-Sonderedition von Rot und Blau, die sich enger an den Anime hält: Dein erstes Pokémon ist Pikachu, und es läuft auf der Karte hinter dir her.",
+   "firstIn": "Japan",
+   "region": "Kanto",
+   "alts": [
+    "Cover von Pokémon Gelbe Edition"
+   ],
+   "whatsNew": [
+    {
+     "title": "Pikachu folgt dir",
+     "text": "Das erste Spiel, in dem ein Pokémon aus deinem Team auf der Karte mit dir läuft und du mit ihm sprechen kannst."
+    },
+    {
+     "title": "Aus dem Anime",
+     "text": "Figuren und Teams ähneln stärker denen aus dem Anime, darunter Jessie und James von Team Rocket."
+    }
+   ]
+  },
+  "pocket-monsters-stadium": {
+   "name": "Pocket Monsters Stadium",
+   "summary": "Das erste Stadium-Spiel: Pokémon-Kämpfe im Game-Boy-Stil in 3D auf dem Nintendo 64. Es erschien nur in Japan.",
+   "firstIn": "nur in Japan",
+   "alts": [
+    "Cover von Pocket Monsters Stadium"
+   ]
+  },
+  "red-blue": {
+   "name": "Pokémon Rote und Blaue Edition",
+   "summary": "Die ersten Pokémon-Spiele: Fang, trainiere und tausche Pokémon in ganz Kanto, besiege die acht Arenaleiter und die Top Vier und vervollständige den Pokédex. Japan bekam 1996 Rot und Grün und im Herbst eine überarbeitete Blaue Edition; der Rest der Welt bekam ab 1998 Rot und Blau.",
+   "firstIn": "Japan",
+   "releasedAs": "als Pokémon Rote und Grüne Edition",
+   "region": "Kanto",
+   "alts": [
+    "Cover von Pokémon Rote Edition",
+    "Cover von Pokémon Blaue Edition"
+   ],
+   "versions": [
+    "Rot",
+    "Blau"
+   ],
+   "whatsNew": [
+    {
+     "title": "Tauschen",
+     "text": "Zwei Game Boys und ein Game-Link-Kabel tauschen Pokémon zwischen den Editionen oder lassen sie gegeneinander kämpfen."
+    },
+    {
+     "title": "Arenen und Top Vier",
+     "text": "Acht Arenaleiter, danach die Top Vier und der Champ auf dem Indigo Plateau."
+    },
+    {
+     "title": "Zwei Editionen",
+     "text": "Jede Edition hat Pokémon, die die andere nicht hat, also braucht ein vollständiger Pokédex einen Tausch."
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,11 @@
+{
+  "aTrainer": "Un Entrenador",
+  "from": "Reto de <b>{who}</b> · {run}",
+  "back": "Volver a los juegos",
+  "challenged": "Te han retado",
+  "scored": "{who} ha acertado {correct}/{total}",
+  "line": "{run} · PokéIQ <b>{iq}</b> · {score} pts",
+  "same": "Te tocarán exactamente las mismas preguntas de “{mode}”, en el mismo formato. ¿Crees que sabes más de Pokémon?",
+  "accept": "Aceptar el reto",
+  "daily": "Jugar el Reto diario de hoy"
+}

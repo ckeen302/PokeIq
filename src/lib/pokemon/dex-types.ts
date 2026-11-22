@@ -7,6 +7,8 @@ export interface DexAbility {
   name: string;
   hidden: boolean;
   effect: string;
+  /** Its official name in the page's language (other languages only; `name` stays English for its link). */
+  label?: string;
 }
 
 export interface DexForm {
@@ -66,7 +68,8 @@ export interface DexEntryData {
   baseExp: number | null;
   evYield: Partial<Record<StatKey, number>>;
   abilities: DexAbility[];
-  entries: { text: string; games: string[] }[];
+  /** `labels`: the games' names in the page's language (other languages only; `games` then holds the colour keys). */
+  entries: { text: string; games: string[]; labels?: string[] }[];
   dexNumbers: { dex: string; number: number }[];
   forms: DexForm[];
   /** The species name in each language the games ship (empty if none recorded). */
@@ -82,4 +85,20 @@ export interface DexEntryData {
   next: DexNeighbour | null;
   /** Most similar silhouettes (DINOv2 embedding neighbours). */
   lookalikes: (DexNeighbour & { similarity: number; types: string[] })[];
+  /** On a page in another language (the rest of the data is then in that language); absent in English. */
+  local?: DexEntryLocal;
+}
+
+/** What a species page in another language needs besides its translated data. */
+export interface DexEntryLocal {
+  /** Type id → official name. */
+  types: Record<string, string>;
+  /** The species' home region. */
+  region: string;
+  /** The English name, shown under the heading. */
+  english: string;
+  /** Version key → the game's official name (the encounter badges' titles). */
+  versions: Record<string, string>;
+  /** Each generation's collapsed summary of where to find it, by generation. */
+  encKinds: Record<number, "entries" | "notInGames" | "notWild">;
 }

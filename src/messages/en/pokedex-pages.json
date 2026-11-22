@@ -1,0 +1,100 @@
+{
+  "crumbs": {
+    "pokedex": "Pokédex",
+    "types": "Types"
+  },
+  "title": "Poké<accent>dex</accent>",
+  "titleStart": "Poké",
+  "titleAccent": "dex",
+  "hub": {
+    "metaTitle": "Pokédex: Every Pokémon from Kanto to Paldea",
+    "metaDescription": "Browse and search every Pokémon from Kanto to Paldea. Filter by type and generation, sort by stats, and study evolutions, moves, abilities and weaknesses.",
+    "kicker": "National database",
+    "blurb": "Stats, evolutions, moves, abilities, matchups and every Pokédex entry. Study up, then test yourself."
+  },
+  "types": {
+    "metaTitle": "Pokémon Type Chart — Every Type Matchup",
+    "metaDescription": "The full 18-type Pokémon effectiveness chart: which attacking types are super effective, not very effective, or have no effect on each defending type.",
+    "kicker": "Type chart",
+    "blurb": "Every attacking type against every defending type. For a dual-typed Pokémon, multiply the two columns.",
+    "listName": "Pokémon types"
+  },
+  "chart": {
+    "super": "super effective",
+    "notVery": "not very effective",
+    "none": "no effect",
+    "neutral": "neutral",
+    "legend": "Rows attack, columns defend.",
+    "caption": "Type effectiveness: attacking type by defending type",
+    "defending": "Defending: {type}",
+    "attacking": "Attacking: {type}",
+    "cell": "{a} → {d}: {word}"
+  },
+  "type": {
+    "name": "{type} type",
+    "metaTitle": "{type} Type Pokémon: Weaknesses, Strengths & Moves",
+    "social": "{type} type · PokéIQ Pokédex",
+    "descSuper": "{type} moves are super effective against {list}.",
+    "descSuperNone": "{type} moves are super effective against no type.",
+    "descWeak": "{type}-type Pokémon are weak to {list}.",
+    "descWeakNone": "{type}-type Pokémon are weak to nothing.",
+    "descAll": "All {n} {type}-type Pokémon and the strongest {type} moves.",
+    "descEvery": "Every {type}-type Pokémon and the strongest {type} moves.",
+    "typedPokemon": "{type}-type Pokémon",
+    "back": "Type chart",
+    "kicker": "Type",
+    "attacking": "{type} moves attacking",
+    "defending": "{type} Pokémon defending",
+    "singleTyped": "Single-typed",
+    "moves": "{type} moves",
+    "superVs": "Super effective vs",
+    "notVeryVs": "Not very effective vs",
+    "noEffectOn": "No effect on",
+    "weakTo": "Weak to",
+    "resists": "Resists",
+    "immuneTo": "Immune to",
+    "noType": "No type",
+    "dualNote": "For a dual-typed Pokémon, multiply both types' values — see the <link>full type chart</link>.",
+    "physical": "Physical",
+    "special": "Special",
+    "status": "Status",
+    "strongest": "Highest base power",
+    "common": "Learned by the most Pokémon",
+    "pwr": "PWR",
+    "mons": "MONS",
+    "split": "{pure} pure · {dual} dual",
+    "pure": "Pure {type} type · {n}",
+    "part": "Part {type} type · {n}",
+    "others": "Other types"
+  },
+  "natures": {
+    "metaTitle": "Pokémon Natures — Stat Boosts & Flavor Preferences",
+    "metaDescription": "Every Pokémon nature: the stat each one raises by 10% and the stat it lowers, plus the berry flavor a Pokémon likes or dislikes.",
+    "kicker": "Natures",
+    "blurb": "A nature raises one stat by 10% and lowers another by 10%. Five natures change nothing.",
+    "nature": "Nature",
+    "raises": "Raises",
+    "lowers": "Lowers",
+    "likes": "Likes",
+    "dislikes": "Dislikes",
+    "neutral": "Neutral natures ({list}) have no stat change and no flavor preference.",
+    "stat": {
+      "atk": "Attack",
+      "def": "Defense",
+      "spa": "Sp. Atk",
+      "spd": "Sp. Def",
+      "spe": "Speed"
+    },
+    "flavor": {
+      "atk": "Spicy",
+      "def": "Sour",
+      "spa": "Dry",
+      "spd": "Bitter",
+      "spe": "Sweet"
+    }
+  },
+  "study": {
+    "metaTitle": "Study Mode — Pokémon Flashcards",
+    "metaDescription": "Learn every Pokémon with flashcards: silhouettes, Pokédex entries and typings. Track what you've mastered, generation by generation."
+  }
+}

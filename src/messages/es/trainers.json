@@ -1,0 +1,113 @@
+{
+  "meta": {
+    "title": "Entrenadores Pokémon: todos los Entrenadores, equipos y lugares (gen. I–IX)",
+    "description": "Todos los Entrenadores desde Pokémon Rojo y Azul hasta Escarlata y Púrpura: dónde están y sus equipos exactos, con niveles, movimientos y objetos equipados, de los Líderes de Gimnasio y el Alto Mando a los rivales y las revanchas.",
+    "gameTitle": "Todos los Entrenadores de Pokémon {game}: equipos por lugar",
+    "gameDescription": "Todos los equipos de Entrenadores de Pokémon {game}, ruta a ruta: Líderes de Gimnasio, Alto Mando, rivales y cada Entrenador corriente con sus Pokémon, niveles, movimientos y objetos equipados.",
+    "gameSocial": "Entrenadores de {game} · Pokédex de PokéIQ",
+    "areaTitle": "Entrenadores de {area} — Pokémon {game}",
+    "areaDescription": "{n, plural, one {El {n} Entrenador de {area} en Pokémon {game}, con sus Pokémon, niveles, movimientos, objetos equipados y equipos de revancha.} other {Los {n} Entrenadores de {area} en Pokémon {game}, con sus Pokémon, niveles, movimientos, objetos equipados y equipos de revancha.}}",
+    "areaSocial": "{area} · Entrenadores de {game}",
+    "notableTitle": "{name} — {role}: equipos y lugares",
+    "notableTitleType": "{name} — {role} (tipo {type}): equipos y lugares",
+    "notableDescription": "{lead}. Todos los equipos de {name} en {games}, con niveles, movimientos y objetos equipados, y dónde es cada combate.",
+    "notableDescriptionLocal": "Todos los equipos de {name} en {games}, con niveles, movimientos y objetos equipados, y dónde es cada combate.",
+    "notableSocial": "{name} · Entrenadores de PokéIQ"
+  },
+  "list": {
+    "kicker": "Base de datos de Entrenadores",
+    "blurb": "Todos los Entrenadores de la generación I a la IX: dónde encontrarlos y el equipo exacto que usan, del primer Joven al Campeón, con revanchas y DLC incluidos.",
+    "byGame": "Por juego",
+    "byGameAside": "Ruta a ruta",
+    "gen": "Gen. {gen} · {regions}",
+    "notable": "Entrenadores destacados",
+    "notableAside": "{n} Entrenadores",
+    "sources": "Los equipos, movimientos y lugares de las generaciones I–IV salen de las descompilaciones <pret>pret</pret> de cada juego; los de las generaciones V–IX, de las páginas de lugares de <bulba>Bulbapedia</bulba>, comprobadas con Serebii. No se incluyen las instalaciones de combate con rivales aleatorios."
+  },
+  "headings": {
+    "gymLeader": "Líderes de Gimnasio",
+    "eliteFour": "Alto Mando",
+    "trialCaptain": "Capitanes",
+    "kahuna": "Kahunas",
+    "champion": "Campeones",
+    "rival": "Rivales",
+    "trainer": "Leyendas",
+    "villain": "Jefes villanos",
+    "admin": "Comandantes villanos"
+  },
+  "roles": {
+    "gymLeader": "Líder de Gimnasio",
+    "eliteFour": "Alto Mando",
+    "trialCaptain": "Capitán",
+    "kahuna": "Kahuna",
+    "champion": "Campeón",
+    "rival": "Rival",
+    "trainer": "Entrenador",
+    "villain": "Villano",
+    "admin": "Comandante"
+  },
+  "kinds": {
+    "routes": "Rutas",
+    "towns": "Pueblos y ciudades",
+    "places": "Lugares y mazmorras"
+  },
+  "allTrainers": "Todos los Entrenadores",
+  "game": {
+    "kicker": "Entrenadores · Gen. {gen} · {regions}",
+    "title": "Pokémon {game}",
+    "intro": "Todos los equipos de Entrenadores, lugar a lugar. Elige una ruta, ciudad o mazmorra para ver a todos los que puedes combatir allí y los Pokémon exactos que usan.",
+    "notableAside": "{n} en {game}",
+    "trainers": "{n, plural, one {{n} Entrenador} other {{n} Entrenadores}}",
+    "importedPret": "Importado de <link>{repo}</link>.",
+    "importedWiki": "Importado de las páginas de lugares de <link>{repo}</link> y comprobado con Serebii. No se incluyen las instalaciones de combate con rivales aleatorios."
+  },
+  "area": {
+    "back": "Entrenadores de {game}",
+    "kicker": "Pokémon {game} · {region}",
+    "count": "{n, plural, one {{n} Entrenador.} other {{n} Entrenadores.}}",
+    "countAcross": "{n, plural, one {{n} Entrenador} other {{n} Entrenadores}} en {k, plural, one {{k} zona} other {{k} zonas}}.",
+    "place": "Lugar y Pokémon salvajes",
+    "atlas": "Atlas mundial",
+    "alsoIn": "También en"
+  },
+  "notable": {
+    "battles": "{n, plural, one {{n} equipo} other {{n} equipos}}"
+  },
+  "team": {
+    "battles": "Combates",
+    "firstBattle": "Primer combate",
+    "battle": "Combate {n}",
+    "rematch": "Revancha",
+    "rematchN": "Revancha {n}",
+    "chose": "Si elegiste a {pokemon}",
+    "requires": "Requiere {what}",
+    "afterChampion": "Tras ser Campeón",
+    "beforeHof": "Antes del Hall de la Fama",
+    "afterHof": "Tras el Hall de la Fama",
+    "postGame": "Posjuego",
+    "firstVisit": "Primera visita",
+    "rolePage": "Página de {role}",
+    "notInList": "No está en nuestra lista de objetos",
+    "lv": "Nv. {lv}",
+    "lvRange": "Nv. {lo}–{hi}",
+    "tera": "Tera",
+    "heldItem": "Objeto equipado: ",
+    "moves": "Movimientos",
+    "levelUpTitle": "La fuente no indica movimientos para este Pokémon, así que estos son los últimos que aprende por nivel: los que el juego da a un Pokémon de Entrenador sin movimientos fijados.",
+    "levelUp": "Movimientos por nivel",
+    "size": "{n} Pokémon",
+    "sizeDouble": "{n} Pokémon · Combate doble",
+    "only": "Solo en {version}",
+    "uses": "Usa"
+  },
+  "forms": {
+    "sandyCloak": "Tronco Arena",
+    "trashCloak": "Tronco Basura",
+    "eastSea": "Mar Este",
+    "alolanForm": "Forma de Alola",
+    "galarianForm": "Forma de Galar",
+    "hisuianForm": "Forma de Hisui",
+    "paldeanForm": "Forma de Paldea",
+    "form": "Forma {n}"
+  }
+}

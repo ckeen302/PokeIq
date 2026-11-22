@@ -3,7 +3,7 @@
   "winPct": "% victorias",
   "current": "Racha actual",
   "max": "Mejor racha",
-  "freezes": "🧊 Congeladores de racha: <b>{freezes}</b> de {max}. Ganas uno cada {every} días seguidos; si fallas un día, se gasta uno solo. Racha de victorias: <b>{win}</b> (récord {best}).",
+  "freezes": "🧊 Congelaciones de racha: <b>{freezes}</b> de {max}. Ganas una cada {every} días seguidos; si te saltas un día, se gasta una sola. Racha de victorias: <b>{win}</b> (récord {best}).",
   "distribution": "Distribución de fallos",
   "distributionAria": "Victorias según el número de fallos",
   "barAria": "{n, plural, one {{n} fallo} other {{n} fallos}}: {count}",

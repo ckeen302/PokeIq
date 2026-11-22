@@ -23,6 +23,7 @@ import { BATTLE_FORMATS } from "@/lib/battle/formats";
 import { cn } from "@/lib/utils";
 import { CalcPanel, type CalcLists } from "./CalcPanel";
 import { BattleType } from "./pickers";
+import { useBattleNames } from "./use-battle-names";
 
 const GENS = [9, 8, 7, 6, 5, 4, 3];
 const NO_CRITS = [false, false, false, false];
@@ -59,6 +60,7 @@ const pair = <T,>(a: T, b: T, i: Side, value: T): [T, T] => (i === 0 ? [value, b
 
 export function DamageCalc() {
   const t = useT(battleCalc);
+  const names = useBattleNames();
   const [lib, setLib] = useState<{ calc: CalcModule; gens: Generations } | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [genNum, setGenNum] = useState(9);
@@ -189,7 +191,7 @@ export function DamageCalc() {
             <MoveResults
               key={i}
               side={i}
-              title={t("results.moves", { name: sides[i].species })}
+              title={t("results.moves", { name: names.species(sides[i].species) })}
               lines={results[i]}
               picked={shown?.side === i ? shown.line.slot : null}
               onPick={(slot) => setPick({ side: i, slot })}
@@ -235,6 +237,7 @@ function MoveResults({
   onPick: (slot: number) => void;
 }) {
   const t = useT(battleCalc);
+  const names = useBattleNames();
   return (
     <div className="min-w-0 space-y-1.5" data-testid={`calc-moves-${side + 1}`}>
       <h2 className="hud-label truncate">{title}</h2>
@@ -255,7 +258,7 @@ function MoveResults({
                 <button
                   type="button"
                   aria-pressed={on}
-                  aria-label={t("results.showMove", { move: line.move, range })}
+                  aria-label={t("results.showMove", { move: names.move(line.move), range })}
                   onClick={() => onPick(line.slot)}
                   data-testid="calc-move"
                   className={cn(
@@ -264,7 +267,7 @@ function MoveResults({
                   )}
                 >
                   <BattleType type={line.type} className="w-[52px] shrink-0 max-sm:hidden" />
-                  <span className={cn("min-w-0 flex-1 truncate font-display text-[13px] font-semibold", on && "text-foreground")}>{line.move}</span>
+                  <span className={cn("min-w-0 flex-1 truncate font-display text-[13px] font-semibold", on && "text-foreground")}>{names.move(line.move)}</span>
                   {line.ko && <span className="hidden shrink-0 truncate text-[11px] text-muted-foreground xl:inline">{line.ko}</span>}
                   <span className={cn("shrink-0 font-mono text-[12.5px] font-bold tabular-nums", status || none ? "font-normal text-muted-foreground" : koTone(line))}>{range}</span>
                   {!status && !none && (
@@ -286,12 +289,13 @@ function MoveResults({
 /** The picked move's Showdown line in bold, its rolls underneath, and the copy button. */
 function MainLine({ line }: { line: SlotLine | null }) {
   const t = useT(battleCalc);
+  const names = useBattleNames();
   const [copied, setCopied] = useState(false);
   if (!line) {
     return <p className="border-t border-foreground/10 px-3 py-2.5 text-[13px] text-muted-foreground">{t("results.pick")}</p>;
   }
   const status = line.category === "Status";
-  const desc = status ? t("results.statusLine", { move: line.move }) : line.desc;
+  const desc = status ? t("results.statusLine", { move: names.move(line.move) }) : line.desc;
   return (
     <div className="space-y-1 border-t border-foreground/10 bg-shade/15 px-2.5 py-2 md:px-3">
       <div className="flex items-start gap-2">
@@ -301,7 +305,7 @@ function MainLine({ line }: { line: SlotLine | null }) {
         {!status && (
           <button
             type="button"
-            aria-label={t("results.copy", { move: line.move })}
+            aria-label={t("results.copy", { move: names.move(line.move) })}
             onClick={() =>
               navigator.clipboard?.writeText(line.desc).then(
                 () => {
@@ -388,6 +392,7 @@ function FieldPanel({
   className?: string;
 }) {
   const t = useT(battleCalc);
+  const names = useBattleNames();
   const update = (patch: Partial<CalcField>) => onChange({ ...field, ...patch });
   const none = { value: "", label: t("field.none") };
   return (
@@ -463,12 +468,12 @@ function FieldPanel({
       {/* Each side's screens, support and hazards: Pokémon 1's on the left, Pokémon 2's on the right, as the panels. */}
       <FieldGroup label={t("field.sides")}>
         <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-1.5 gap-y-[3px] max-md:gap-y-1">
-          <p className="truncate font-display text-xs font-semibold" title={sides[0].species}>
-            {sides[0].species}
+          <p className="truncate font-display text-xs font-semibold" title={names.species(sides[0].species)}>
+            {names.species(sides[0].species)}
           </p>
           <span />
-          <p className="truncate text-right font-display text-xs font-semibold" title={sides[1].species}>
-            {sides[1].species}
+          <p className="truncate text-right font-display text-xs font-semibold" title={names.species(sides[1].species)}>
+            {names.species(sides[1].species)}
           </p>
           {SIDE_ORDER.map((flag) =>
             flag === "spikes" ? (
@@ -481,7 +486,7 @@ function FieldPanel({
                   <SideToggle
                     side={i}
                     pressed={!!sides[i].flags[flag]}
-                    label={t("field.flagLabel", { side: sides[i].species, flag: t(`sideFlags.${flag}`) })}
+                    label={t("field.flagLabel", { side: names.species(sides[i].species), flag: t(`sideFlags.${flag}`) })}
                     onClick={() => onSide(i, { ...sides[i], flags: { ...sides[i].flags, [flag]: !sides[i].flags[flag] } })}
                   />
                 )}
@@ -539,8 +544,9 @@ function SideToggle({ side, pressed, label, onClick }: { side: Side; pressed: bo
 
 function SpikesRow({ sides, onSide }: { sides: [CalcSide, CalcSide]; onSide: (i: Side, side: CalcSide) => void }) {
   const t = useT(battleCalc);
+  const names = useBattleNames();
   const cell = (i: Side) => (
-    <div role="group" aria-label={t("field.spikesLabel", { side: sides[i].species })} className="grid grid-cols-4 gap-0.5">
+    <div role="group" aria-label={t("field.spikesLabel", { side: names.species(sides[i].species) })} className="grid grid-cols-4 gap-0.5">
       {[0, 1, 2, 3].map((n) => (
         <Chip key={n} pressed={sides[i].spikes === n} onClick={() => onSide(i, { ...sides[i], spikes: n })} className="h-[22px] px-0 font-mono text-[11px]">
           {n}

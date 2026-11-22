@@ -1,0 +1,128 @@
+{
+  "crumb": "Combat",
+  "teams": {
+    "title": "Créateur d'équipe Pokémon : formats Showdown, légalité vérifiée",
+    "description": "Un créateur d'équipe Pokémon pour les équipes compétitives en OU, Ubers, UU, Double OU, VGC et Dex National de la 9e génération, en OU 4G et en OU 3G. Capacités selon les apprentissages de chaque format, stats en direct, import / export Showdown et la vérification de légalité de Pokémon Showdown lui-même.",
+    "crumb": "Créateur d'équipe",
+    "heading": "Créateur",
+    "accent": "d'équipe",
+    "intro": "Un créateur d'équipe Pokémon avec six emplacements, les apprentissages de chaque format et les règles de Pokémon Showdown lui-même. Les équipes s'enregistrent sur cet appareil au fil de ta création, prêtes pour le combat."
+  },
+  "lab": {
+    "title": "Labo de combat — simulateur de probabilité de victoire Pokémon",
+    "description": "Prépare deux équipes Pokémon, de la 1re à la 9e génération, et joue le combat des milliers de fois sur le moteur de Pokémon Showdown lui-même. Vois les chances de victoire de chaque camp avec un intervalle de confiance à 95 %, la durée des combats, qui réalise les K.O., et regarde des combats d'exemple.",
+    "name": "Labo de combat",
+    "crumb": "Labo de combat",
+    "heading": "Labo",
+    "accent": "de combat",
+    "intro": "Prépare deux camps et laisse le moteur de Pokémon Showdown jouer le combat des milliers de fois, directement dans ton navigateur. Vois combien de fois chaque camp gagne, combien de temps ça dure et ce qui fait la différence."
+  },
+  "ladder": {
+    "title": "Classement des combats Pokémon — cotes classées par format",
+    "description": "Le classement des combats classés : cotes Elo, GXE et Glicko-2, comme sur Pokémon Showdown, en Combat Aléatoire, Double Aléatoire, OU, Ubers, UU, RU, NU, PU, LC, Monotype, Dex National et Double OU.",
+    "crumb": "Classement",
+    "heading": "Classement",
+    "accent": "des combats",
+    "rules": "Des cotes par format comme sur Pokémon Showdown : le classement suit l'Elo (tout le monde commence à {elo}, ne descend jamais en dessous, et un Elo au-dessus de 1400 baisse un peu chaque jour sans jouer), affiché avec le GXE (ta probabilité de battre un Dresseur pris au hasard dans le classement) et une cote Glicko-2. Tout le monde commence à {rating} ± {rd} en Glicko-2 ; une cote reste provisoire tant que son écart ne passe pas sous {shown}. Abandonner, épuiser son temps ou quitter compte comme une défaite.",
+    "short": "Classé par Elo, avec GXE et Glicko-2, comme sur Pokémon Showdown. Tout le monde commence à {elo}.",
+    "insights": "Tes statistiques",
+    "play": "Jouer en classé",
+    "soon": "Les combats classés arrivent bientôt.",
+    "top": "{format} : top 100",
+    "how": "Comment fonctionnent les cotes"
+  },
+  "insights": {
+    "title": "Analyse d'équipe",
+    "description": "L'analyse de tes combats : Pokémon de tête, Pokémon, adversaires les plus coriaces et évolution de ta cote.",
+    "crumb": "Analyse d'équipe",
+    "heading": "Analyse",
+    "accent": "d'équipe",
+    "intro": "Tes Pokémon de tête les plus fréquents, le taux de victoire de chaque Pokémon, les adversaires qui te battent le plus et l'évolution de ta cote, d'après tes combats enregistrés.",
+    "signIn": "L'analyse suit ton compte : connecte-toi pour voir la tienne.",
+    "signInButton": "Se connecter"
+  },
+  "playerInsights": {
+    "title": "{name} · Analyse d'équipe",
+    "description": "L'analyse des combats de {name} sur PokéIQ : Pokémon de tête les plus fréquents, taux de victoire par Pokémon, adversaires les plus coriaces et évolution de la cote.",
+    "heading": "{name} :",
+    "accent": "analyse",
+    "intro": "Pokémon de tête, Pokémon, adversaires les plus coriaces et cote au fil des combats enregistrés de {name}, d'après leurs replays.",
+    "format": "Format",
+    "allFormats": "Tous les formats",
+    "noBattles": "Aucun combat à analyser pour l'instant.",
+    "soon": "L'analyse d'équipe arrive bientôt.",
+    "empty": "Pas encore de replays enregistrés à analyser ici : l'analyse vient des combats dont le replay a été enregistré (chaque combat classé enregistre le sien).",
+    "reading": "{n} combats de plus sont en cours de lecture ; reviens dans un instant.",
+    "battlesRead": "Combats lus",
+    "winRate": "Victoires",
+    "monsUsed": "Pokémon utilisés",
+    "leadsCount": "Têtes différentes",
+    "trend": "Cote dans le temps",
+    "leads": "Pokémon de tête fréquents",
+    "byMon": "Victoires par Pokémon",
+    "byMonAside": "Combats où chacun est entré en jeu",
+    "monRecord": "{wins}–{losses} en {games, plural, one {{games} combat} other {{games} combats}}",
+    "threats": "Adversaires les plus coriaces",
+    "threatsAside": "Adversaires avec un K.O. ou une victoire contre {name} : le plus de K.O., puis le plus de victoires",
+    "threatRecord": "{games, plural, one {{games} combat} other {{games} combats}} · {wins, plural, one {{wins} victoire} other {{wins} victoires}} contre {name}",
+    "kos": "{n, plural, one {K.O.} other {K.O.}}",
+    "noThreats": "Rien n'a encore mis K.O. les Pokémon de {name}.",
+    "pending": "{n, plural, one {{n} combat plus ancien reste} other {{n} combats plus anciens restent}} à lire : ils compteront lors d'une prochaine visite.",
+    "noLeads": "Aucun Pokémon de tête pour l'instant.",
+    "mostUsed": "Le plus utilisé",
+    "leadTimes": "{n}× en tête",
+    "leadWon": "{rate} gagnés",
+    "trendMore": "Joue {count, select, one {un autre combat classé} other {quelques combats classés}} dans ce format pour voir une tendance.",
+    "trendLabel": "Cote de {from} à {to} sur {n} combats classés",
+    "trendDelta": "{delta} sur {n, plural, one {{n} combat} other {{n} combats}}",
+    "lastGxe": "GXE après le dernier combat : {gxe} %"
+  },
+  "replays": {
+    "title": "Replays de combats Pokémon",
+    "description": "Regarde des replays de combats Pokémon tour par tour, sur le moteur de Pokémon Showdown : tes propres combats et les derniers combats classés et publics.",
+    "crumb": "Replays",
+    "heading": "Replays",
+    "accent": "de combats",
+    "intro": "Chaque combat classé ou public est enregistré en replay ; après tout autre combat, appuie sur Enregistrer le replay. Les replays montrent ce que les spectateurs ont vu, tour par tour.",
+    "import": "Regarder un replay Showdown",
+    "live": "Combats en direct"
+  },
+  "replay": {
+    "fallbackTitle": "Replay de combat",
+    "fallbackDescription": "Un replay de combat Pokémon sur PokéIQ.",
+    "title": "{title} : replay {format}",
+    "description": "{result} en {turns} tours. Regarde le replay, tour par tour, sur le moteur de Pokémon Showdown.",
+    "crumb": "Replay",
+    "ranked": "Classé · ",
+    "summary": "{format} · {result} en {turns, plural, one {{turns} tour} other {{turns} tours}}."
+  },
+  "notFound": {
+    "heading": "Replay introuvable",
+    "body": "Ce replay n'existe pas ou n'est pas disponible : le lien est peut-être erroné, ou le combat n'a jamais été enregistré.",
+    "browse": "Voir les replays",
+    "live": "Combats en direct",
+    "import": "Importer un journal"
+  },
+  "import": {
+    "title": "Regarder un replay Showdown",
+    "description": "Colle le journal d'un combat Pokémon Showdown ou ouvre un fichier de replay enregistré, et regarde-le tour par tour.",
+    "crumb": "Importer",
+    "heading": "Regarder un",
+    "accent": "replay Showdown",
+    "intro": "Colle un journal de combat, ou ouvre un fichier de replay enregistré par Showdown, et rejoue-le ici."
+  },
+  "tournaments": {
+    "title": "Tournois",
+    "description": "Des tournois de combats Pokémon sur PokéIQ : élimination directe ou toutes rondes dans n'importe quel format, et un tournoi officiel de Combat Aléatoire toutes les heures.",
+    "crumb": "Tournois",
+    "heading": "Tournois",
+    "accent": "en direct",
+    "intro": "Rejoins un tableau, ou ouvre le tien dans n'importe quel format. Un tournoi officiel de Combat Aléatoire commence toutes les heures : les inscriptions sont ouvertes les dix premières minutes."
+  },
+  "tournament": {
+    "title": "Tournoi",
+    "description": "Un tournoi de combats Pokémon sur PokéIQ : le tableau en direct, les matchs et les résultats.",
+    "back": "Retour aux tournois",
+    "crumb": "Tournois"
+  }
+}

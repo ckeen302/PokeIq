@@ -7,6 +7,9 @@ import { Check, Copy, Share2 } from "lucide-react";
 import { copyText } from "@/lib/share";
 import { entryPath } from "@/lib/timeline/deeplink";
 import { firstRelease, formatDate, type TimelineEntry } from "@/lib/timeline/types";
+import { localUrl } from "@/i18n/paths";
+import { useT } from "@/i18n/client";
+import stageNs from "@/messages/timeline-stage";
 
 /**
  * The detail panel's share drawer: the entry's own link (it opens the 3D
@@ -14,18 +17,19 @@ import { firstRelease, formatDate, type TimelineEntry } from "@/lib/timeline/typ
  * copy, the system share sheet where there is one, and a post on X.
  */
 export function TimelineShare({ entry, onShared }: { entry: TimelineEntry; onShared?: () => void }) {
+  const t = useT(stageNs);
   const [url, setUrl] = useState(entryPath(entry.id));
   const [copied, setCopied] = useState(false);
   const [canNative, setCanNative] = useState(false);
   const timer = useRef<number | undefined>(undefined);
   useEffect(() => {
-    setUrl(`${window.location.origin}${entryPath(entry.id)}`);
+    setUrl(`${window.location.origin}${localUrl(entryPath(entry.id))}`);
     setCanNative(typeof navigator.share === "function" && window.matchMedia("(pointer: coarse)").matches);
     return () => window.clearTimeout(timer.current);
   }, [entry.id]);
 
-  const when = formatDate(firstRelease(entry).date);
-  const text = `${entry.title} (${when}) on the Pokémon Timeline`;
+  const when = formatDate(firstRelease(entry).date, t.locale);
+  const text = t("shareText", { title: entry.title, when });
 
   async function copy() {
     const ok = await copyText(url);
@@ -56,7 +60,7 @@ export function TimelineShare({ entry, onShared }: { entry: TimelineEntry; onSha
       data-testid="timeline-share-panel"
     >
       <div className="space-y-2.5 border-t border-foreground/[0.06] px-4 pb-3.5 pt-3">
-        <p className="font-pixel text-[9px] uppercase tracking-[0.16em] text-muted-foreground">Share this moment</p>
+        <p className="font-pixel text-[9px] uppercase tracking-[0.16em] text-muted-foreground">{t("shareMoment")}</p>
         <div className="flex items-stretch gap-1.5">
           <output
             className="min-w-0 flex-1 select-all truncate rounded-md border bg-shade/40 px-2.5 py-2 font-mono text-xs text-foreground/90"
@@ -72,13 +76,13 @@ export function TimelineShare({ entry, onShared }: { entry: TimelineEntry; onSha
             data-testid="timeline-share-copy"
           >
             {copied ? <Check className="h-3.5 w-3.5" aria-hidden /> : <Copy className="h-3.5 w-3.5" aria-hidden />}
-            {copied ? "Copied" : "Copy"}
+            {copied ? t("copied") : t("copy")}
           </button>
         </div>
         <div className="flex flex-wrap gap-1.5">
           {canNative && (
             <button type="button" onClick={() => void native()} className="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground">
-              <Share2 className="h-3.5 w-3.5" aria-hidden /> Share…
+              <Share2 className="h-3.5 w-3.5" aria-hidden /> {t("shareNative")}
             </button>
           )}
           <a
@@ -89,10 +93,10 @@ export function TimelineShare({ entry, onShared }: { entry: TimelineEntry; onSha
             className="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground"
             data-testid="timeline-share-x"
           >
-            Post on X
+            {t("postX")}
           </a>
         </div>
-        <p className="sr-only" role="status" aria-live="polite">{copied ? "Link copied" : ""}</p>
+        <p className="sr-only" role="status" aria-live="polite">{copied ? t("linkCopied") : ""}</p>
       </div>
     </motion.div>
   );

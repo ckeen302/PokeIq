@@ -1,0 +1,34 @@
+{
+  "optIn": {
+    "email": "E-mail",
+    "optional": "(facultatif)",
+    "box": "M'envoyer un e-mail quand de nouveaux défis du jour sortent",
+    "confirmFirst": "On t'enverra d'abord un lien pour confirmer ton adresse. Désinscription possible à tout moment."
+  },
+  "settings": {
+    "sent": "On a envoyé un lien de confirmation à {email}.",
+    "throttled": "Un lien de confirmation vient de partir : regarde ta boîte de réception.",
+    "sendFailed": "Impossible d'envoyer l'e-mail de confirmation. Réessaie « Renvoyer » dans une minute.",
+    "loadFailed": "Impossible de charger tes réglages d'e-mail.",
+    "saveFailed": "Impossible d'enregistrer.",
+    "addFirst": "Ajoute d'abord ton adresse e-mail.",
+    "badEmail": "Ça ne ressemble pas à une adresse e-mail.",
+    "daily": "E-mails de rappel quotidiens",
+    "dailyHint": "Un e-mail quand les nouveaux défis du jour sortent.",
+    "on": "Oui",
+    "off": "Non",
+    "loading": "Chargement",
+    "address": "Adresse e-mail",
+    "save": "Enregistrer",
+    "turnOn": "Activer",
+    "cancel": "Annuler",
+    "sendingTo": "<m>Envoi à </m><b>{email}</b>",
+    "confirm": "<m>Confirme </m><b>{email}</b><m> grâce au lien reçu par e-mail.</m>",
+    "resend": "Renvoyer",
+    "change": "Modifier",
+    "when": "Quand envoyer",
+    "whenHint": "Chaque jour, ou seulement quand une série se terminerait à minuit.",
+    "everyDay": "Chaque jour",
+    "atRisk": "Série en danger"
+  }
+}

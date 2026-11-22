@@ -2,7 +2,9 @@
 import "server-only";
 import { C, localImage, ogCard } from "./card";
 import { CASES } from "@/lib/theories/data";
-import { VERDICT_LABEL, caseNumber, type TheoryCase, type Verdict } from "@/lib/theories/types";
+import { type TheoryCase, type Verdict } from "@/lib/theories/types";
+import { speciesName } from "@/lib/names/species";
+import { englishOgT, type OgT } from "./i18n";
 
 /**
  * Preview cards for the Theories tab: the case files' card shows a few case
@@ -38,64 +40,67 @@ function Photo({ src, name, rotate, glitch }: { src?: string; name: string; rota
   );
 }
 
-function Stamp({ verdict }: { verdict: Verdict }) {
+function Stamp({ verdict, t }: { verdict: Verdict; t: OgT }) {
   const color = VERDICT_COLOR[verdict];
   return (
     <div style={{ display: "flex", padding: "8px 18px", border: `4px solid ${color}`, borderRadius: 8, color, fontFamily: "Chakra Petch", fontSize: 30, letterSpacing: 6, textTransform: "uppercase", background: "rgba(8,7,18,0.75)", transform: "rotate(-8deg)" }}>
-      {VERDICT_LABEL[verdict]}
+      {t(`theories.verdicts.${verdict}`)}
     </div>
   );
 }
 
-async function CaseVisual({ c }: { c: TheoryCase }) {
+async function CaseVisual({ c, t }: { c: TheoryCase; t: OgT }) {
+  const name = (i: number) => speciesName(c.art[i].id, c.art[i].name, t.locale);
   const pics = c.glitch ? [] : await Promise.all(c.art.slice(0, 2).map((a) => art(a.id)));
   return (
     <div style={{ display: "flex", position: "relative", width: 470, height: 400, alignItems: "center", justifyContent: "center" }}>
       {c.glitch || pics.length < 2 ? (
-        <Photo src={pics[0]} name={c.glitch ? "MissingNo." : c.art[0].name} rotate={4} glitch={c.glitch} />
+        <Photo src={pics[0]} name={c.glitch ? "MissingNo." : name(0)} rotate={4} glitch={c.glitch} />
       ) : (
         <div style={{ display: "flex", gap: 30 }}>
-          <Photo src={pics[0]} name={c.art[0].name} rotate={-6} />
-          <Photo src={pics[1]} name={c.art[1].name} rotate={5} />
+          <Photo src={pics[0]} name={name(0)} rotate={-6} />
+          <Photo src={pics[1]} name={name(1)} rotate={5} />
         </div>
       )}
       <div style={{ display: "flex", position: "absolute", bottom: 6, left: 120 }}>
-        <Stamp verdict={c.verdict} />
+        <Stamp verdict={c.verdict} t={t} />
       </div>
     </div>
   );
 }
 
-export async function theoryCaseCard(c: TheoryCase) {
+export async function theoryCaseCard(c: TheoryCase, t: OgT = englishOgT()) {
   const accent = VERDICT_COLOR[c.verdict];
   return ogCard({
-    eyebrow: `${caseNumber(c.n)} · ${VERDICT_LABEL[c.verdict]}`,
+    eyebrow: t("theories.caseEyebrow", { n: String(c.n).padStart(3, "0"), verdict: t(`theories.verdicts.${c.verdict}`) }),
     title: [[c.title, C.text]],
     titleSize: c.title.length > 34 ? 46 : c.title.length > 22 ? 54 : 64,
     subtitle: c.summary,
     accent,
-    visual: await CaseVisual({ c }),
-    footer: "Open the case file →",
+    visual: await CaseVisual({ c, t }),
+    footer: t("theories.caseFooter"),
+    t,
   });
 }
 
-export async function theoriesCard() {
+export async function theoriesCard(t: OgT = englishOgT()) {
   const picks = ["gengar-is-clefables-shadow", "mew-is-under-the-truck", "cubone-wears-its-mothers-skull"].map((slug) => CASES.find((c) => c.slug === slug)!);
   const pics = await Promise.all(picks.map((c) => art(c.art[c.art.length - 1].id)));
   return ogCard({
-    eyebrow: "Pokédex · theories",
-    title: ["The case", ["files", C.pink]],
-    subtitle: "Fan theories, urban legends and beta myths, each with its evidence and a verdict.",
+    eyebrow: t("theories.eyebrow"),
+    title: [t("theories.title1"), [t("theories.title2"), C.pink]],
+    subtitle: t("theories.subtitle"),
     accent: C.violet,
     visual: (
       <div style={{ display: "flex", position: "relative", width: 470, height: 400 }}>
         {picks.map((c, i) => (
           <div key={c.slug} style={{ display: "flex", position: "absolute", left: [0, 250, 125][i], top: [10, 0, 170][i] }}>
-            <Photo src={pics[i]} name={c.art[c.art.length - 1].name} rotate={[-6, 5, -2][i]} />
+            <Photo src={pics[i]} name={speciesName(c.art[c.art.length - 1].id, c.art[c.art.length - 1].name, t.locale)} rotate={[-6, 5, -2][i]} />
           </div>
         ))}
       </div>
     ),
-    chips: ["Confirmed", "Fan theory", "Debunked"],
+    chips: [t("theories.verdicts.confirmed"), t("theories.verdicts.fan"), t("theories.verdicts.debunked")],
+    t,
   });
 }

@@ -1,0 +1,24 @@
+{
+  "daily": {
+    "eyebrow": "Täglich",
+    "today": "Heute: <cat>{label}</cat>",
+    "lead": "{count} Pokémon in {minutes} Minuten. Für alle dieselbe Kategorie, mit eigener Rangliste.",
+    "loading": "Heutige Kategorie wird geladen…",
+    "seeBoard": "Heutige Rangliste ansehen",
+    "play": "Heutiges spielen",
+    "you": "Du: {named}/{total} in {time}"
+  },
+  "race": {
+    "eyebrow": "Rennen",
+    "title": "Tritt gegen bis zu {max} Freunde an",
+    "category": "Kategorie",
+    "categoryLabel": "Kategorie des Rennens",
+    "length": "Dauer",
+    "lengthLabel": "Dauer des Rennens",
+    "option": "{label} ({total})",
+    "minutes": "{m} Minuten",
+    "name": "Dein Trainername",
+    "start": "Rennen starten",
+    "failed": "Das Rennen konnte nicht eröffnet werden."
+  }
+}

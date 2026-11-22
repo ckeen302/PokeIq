@@ -1,0 +1,10 @@
+{
+  "signIn": "Sign in to add friend",
+  "friends": "Friends",
+  "sent": "Friend request sent",
+  "blocked": "Blocked",
+  "accept": "Accept friend request",
+  "add": "Add friend",
+  "failed": "Couldn't send the request.",
+  "theySent": "They sent you a friend request"
+}

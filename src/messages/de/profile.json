@@ -1,0 +1,58 @@
+{
+  "meta": {
+    "unavailableTitle": "Trainerprofil",
+    "unavailableDescription": "Trainerprofile auf PokéIQ.",
+    "notFoundTitle": "Trainer nicht gefunden",
+    "notFoundDescription": "Diesen Trainer gibt es auf PokéIQ nicht.",
+    "title": "{name} · Trainerprofil",
+    "description": "{name} auf PokéIQ: Wertungen in Pokédle, PokéGuessr und Kämpfen, Quiz-Bestwerte, Kampfbilanz und neue Wiederholungen."
+  },
+  "back": "Zurück zu den Trainern",
+  "unavailable": "Trainerprofile sind gerade nicht verfügbar. Versuch es in einer Minute noch mal.",
+  "find": "Trainer finden",
+  "since": "Trainer seit {date}",
+  "trainerOf": "Trainer von {name}",
+  "ranked": "PokéGuessr-Rangliste",
+  "rankedDuels": "{n, plural, one {{record} in {n} Ranglistenduell} other {{record} in {n} Ranglistenduellen}}",
+  "position": " · Platz {position} von {players}",
+  "bestScore": " · Bestwert {score} Pkt.",
+  "noRanked": "Noch keine PokéGuessr-Ranglistenduelle.",
+  "pastSeasons": "Frühere Saisons",
+  "ladder": "Kampf-Rangliste",
+  "noLadder": "Noch keine Ranglistenkämpfe.",
+  "conn": {
+    "streak": "Serie",
+    "bestStreak": "Beste Serie",
+    "gamesWon": "Siege",
+    "perfect": "Fehlerfrei",
+    "duelRecord": "Duellbilanz"
+  },
+  "noConn": "Noch kein PokéConnections gespielt.",
+  "battleRecord": "Kampfbilanz",
+  "insights": "Team-Analyse →",
+  "battleEmpty": "{name} hat noch keinen Live-Kampf gespielt.",
+  "battleSoon": "Kampfbilanzen kommen bald.",
+  "replays": "Neue öffentliche Wiederholungen",
+  "noReplays": "Noch keine öffentlichen Wiederholungen.",
+  "quiz": {
+    "title": "Quiz-Bestwerte",
+    "none": "{name} hat noch keinen Quiz-Bestwert.",
+    "play": "Ein Quiz spielen",
+    "table": "Bester Punktestand pro Modus und Format",
+    "mode": "Modus",
+    "formats": {
+      "classic": "Klassisch",
+      "survival": "Survival",
+      "blitz": "Blitz"
+    },
+    "named": "<b>{named}/{total}</b> genannt",
+    "cleared": "geschafft in <b>{time}</b>"
+  },
+  "users": {
+    "title": "Trainer finden",
+    "description": "Finde einen PokéIQ-Trainer über den Namen: Pokédle- und Kampfwertungen, Bilanzen und neue Wiederholungen.",
+    "label": "Community",
+    "heading": "Finde einen <hl>Trainer</hl>",
+    "intro": "Such nach dem Kontonamen, um das Profil eines Trainers zu sehen: Wertungen, Bilanzen und neue Wiederholungen. Von dort kannst du ihn als Freund hinzufügen."
+  }
+}

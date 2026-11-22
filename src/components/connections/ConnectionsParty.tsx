@@ -9,7 +9,7 @@ import { PARTY_MAX, PARTY_MIN, PARTY_PENALTY_MS, partyHref, type PartySeatRespon
 import { CONN_GROUP_SIZE, CONN_GROUPS, CONN_MAX_MISTAKES, guessKey, type ConnTile } from "@/lib/connections/types";
 import { useConnPrefs } from "@/lib/connections/local";
 import { saveSeat } from "@/lib/duel-seat";
-import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
+import { isCleanName } from "@/lib/name-filter";
 import { setTrainerName, useProgress } from "@/lib/progress";
 import { play, unlockAudio, vibrate } from "@/lib/sound";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import { DuelGone, DuelLoading, DuelNotice, clock, seconds } from "@/components/
 import { CONTROLS_DOCK, CONTROLS_WRAP, GridTile, GroupBar, MistakeDots, WhyPanel, type TileMotion } from "./parts";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
+import communityNs from "@/messages/community";
 import { localizePath } from "@/i18n/paths";
 import partyNs from "@/messages/connections-party";
 
@@ -42,6 +43,7 @@ const TOAST_MS = 1600;
 /** "Start a party" on /pokeconnections: opens a party and goes to its lobby, where the share link is. */
 export function ConnectionsPartyCard() {
   const t = useT(partyNs);
+  const ct = useT(communityNs);
   const router = useRouter();
   const progress = useProgress();
   const id = useId();
@@ -53,7 +55,7 @@ export function ConnectionsPartyCard() {
   }, [progress?.name, name]);
 
   async function start() {
-    if (!isCleanName(name)) return setError(NAME_REJECTED);
+    if (!isCleanName(name)) return setError(ct("nameRejected"));
     unlockAudio();
     setBusy(true);
     setError(null);
@@ -117,6 +119,7 @@ export function ConnectionsPartyCard() {
 
 export function ConnectionsParty({ code }: { code: string }) {
   const t = useT(partyNs);
+  const ct = useT(communityNs);
   const router = useRouter();
   const prefs = useConnPrefs();
   const progress = useProgress();
@@ -261,7 +264,7 @@ export function ConnectionsParty({ code }: { code: string }) {
                   className="flex flex-wrap items-center gap-2"
                   onSubmit={(e) => {
                     e.preventDefault();
-                    if (!isCleanName(name)) return setError(NAME_REJECTED);
+                    if (!isCleanName(name)) return setError(ct("nameRejected"));
                     void join(name.trim());
                   }}
                 >

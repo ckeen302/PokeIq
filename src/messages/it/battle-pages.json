@@ -1,0 +1,128 @@
+{
+  "hub": {
+    "meta": {
+      "title": "Simulatore di lotte Pokémon: PvP, contro il computer e costruttore di squadre",
+      "description": "Simulatore di lotte Pokémon gratuito con il motore di Pokémon Showdown: PvP online dal vivo, lotte contro un amico o il computer, più un costruttore di squadre e un calcolatore di danni."
+    },
+    "live": {
+      "cpu": {
+        "title": "Lotta contro il computer",
+        "blurb": "Sfida un computer che gioca per vincere.",
+        "p1": "Lotta casuale, Doppio casuale o la tua squadra salvata",
+        "p2": "Avversari Facile, Normale e Difficile",
+        "p3": "Le animazioni delle mosse di Showdown, Teracristal compreso"
+      },
+      "online": {
+        "title": "Lotta online",
+        "blurb": "Trova un avversario o invita un amico.",
+        "p1": "Matchmaking in ogni formato, con squadre casuali o la tua",
+        "p2": "Il timer dei turni di Showdown; ogni lato vede solo ciò che deve",
+        "p3": "Rivincita con un tocco"
+      },
+      "teams": {
+        "title": "Costruttore di squadre",
+        "blurb": "Squadre controllate mentre le crei.",
+        "p1": "Formati dalla OU di 9ª gen. alla OU di 3ª gen.",
+        "p2": "EV, IV, nature e statistiche in tempo reale",
+        "p3": "Importa / esporta da Showdown, squadre casuali"
+      },
+      "calc": {
+        "title": "Calcolo danni",
+        "blurb": "Intervalli di danno e probabilità di KO.",
+        "p1": "Modifiche alle statistiche, stato, Teracristal e PS attuali",
+        "p2": "Meteo, campi, schermi, mosse ad area",
+        "p3": "Carica i set direttamente dalle tue squadre"
+      },
+      "lab": {
+        "title": "Laboratorio lotta",
+        "blurb": "Ripeti qualsiasi scontro migliaia di volte.",
+        "p1": "Qualsiasi Pokémon, livello, strumento e mossa, dalla 1ª alla 9ª gen.",
+        "p2": "Gioco intelligente, avido, casuale o scriptato per ogni lato",
+        "p3": "% di vittorie con intervallo di confidenza al 95%, KO, brutti colpi, replay"
+      }
+    },
+    "frontier": {
+      "factory": {
+        "title": "Industria Lotta",
+        "blurb": "Noleggia una squadra e costruisci una serie di vittorie.",
+        "p1": "Factory al livello 100 o BSS Factory al livello 50",
+        "p2": "Scambia con un Pokémon dell’avversario dopo ogni vittoria",
+        "p3": "Oppure lotta dal vivo: entrambi gli Allenatori noleggiano una squadra"
+      },
+      "tower": {
+        "title": "Torre Lotta",
+        "blurb": "La tua squadra contro una serie di Allenatori.",
+        "p1": "Livello 50, porti sei, ne scegli tre",
+        "p2": "Squadre salvate, create o rapide, controllate da Showdown",
+        "p3": "Il Magnate della Torre ogni settima lotta"
+      }
+    },
+    "tools": "Lotte e strumenti",
+    "liveTag": "Attivo",
+    "soon": "Presto",
+    "frontierTitle": "Parco Lotta",
+    "frontierAside": "Serie di vittorie contro il computer",
+    "formats": "Formati",
+    "formatsAside": "Le regole di Pokémon Showdown per ognuno",
+    "gameType": {
+      "singles": "singolo",
+      "doubles": "doppio"
+    },
+    "formatBlurb": {
+      "gen9ou": "Il tier in singolo di punta di Smogon: tutto ciò che sta sotto Ubers.",
+      "gen9ubers": "Leggendari di copertina benvenuti. Banditi solo i più esagerati.",
+      "gen9uu": "Il tier sotto OU: niente Pokémon OU o UUBL.",
+      "gen9ru": "Il tier sotto UU: niente Pokémon UU o RUBL.",
+      "gen9nu": "Il tier sotto RU: niente Pokémon RU o NUBL.",
+      "gen9pu": "Il tier sotto NU: niente Pokémon NU o PUBL.",
+      "gen9lc": "Little Cup: Pokémon al primo stadio che possono evolversi, al livello 5.",
+      "gen9monotype": "Tutti i Pokémon della squadra hanno un tipo in comune. Niente Teracristal.",
+      "gen9doublesou": "Due contro due, la lista dei tier in doppio di Smogon.",
+      "gen9vgc2025regi": "Doppio ufficiale: porti sei, ne scegli quattro, livello 50, due leggendari con restrizioni.",
+      "gen9nationaldex": "Meccaniche di Scarlatto / Violetto con tutti i Pokémon, le Megapietre e i Cristalli Z di ritorno.",
+      "gen4ou": "Diamante / Perla / Platino: arriva la distinzione fisico / speciale.",
+      "gen3ou": "Rubino / Zaffiro / Smeraldo: è il tipo della mossa a decidere se è fisica o speciale."
+    },
+    "info": {
+      "name": "Lotte Pokémon",
+      "description": "Un simulatore di lotte Pokémon gratuito con il motore di Pokémon Showdown: sfida il computer, un amico o uno sconosciuto, con costruttore di squadre, calcolatore di danni e Laboratorio lotta.",
+      "intro": "Questo simulatore di lotte Pokémon usa il motore stesso di Pokémon Showdown: sfida il computer, un amico tramite un link o un avversario trovato online.",
+      "step1": "Scegli una modalità: lotta contro il computer, lotta online o entra nel Parco Lotta.",
+      "step2": "Usa una squadra casuale o crea la tua nel costruttore di squadre.",
+      "step3": "Scegli le mosse a ogni turno e vinci la lotta.",
+      "step4": "Verifica gli scontri con il calcolatore di danni o simula migliaia di lotte nel Laboratorio lotta.",
+      "labQ": "Che cos’è il Laboratorio lotta?",
+      "labA": "Ti permette di impostare qualsiasi scontro e di farlo giocare al motore migliaia di volte per stimare le probabilità di vittoria."
+    }
+  },
+  "play": {
+    "meta": {
+      "title": "Lotta Pokémon: contro il computer, online o con un amico",
+      "description": "Vere lotte Pokémon con il motore di Pokémon Showdown: Lotta casuale, Doppio casuale o la tua squadra OU, contro il computer, un Allenatore trovato con il matchmaking o un amico tramite un link d’invito."
+    },
+    "crumb": "Gioca",
+    "title": "Inizia una",
+    "accent": "lotta",
+    "intro": "Il motore di lotta stesso di Pokémon Showdown: ogni mossa, abilità e strumento funziona come lì. Scegli un avversario, un formato e via."
+  },
+  "tower": {
+    "meta": {
+      "title": "Torre Lotta: serie con le Flat Rules contro il computer"
+    },
+    "description": "La Torre Lotta con il motore di Pokémon Showdown: porta la tua squadra con le Flat Rules (livello 50, porti sei, ne scegli tre) e costruisci una serie di vittorie contro Allenatori del computer, con il Magnate della Torre ogni settima lotta.",
+    "name": "Torre Lotta",
+    "title": "Torre",
+    "accent": "Lotta",
+    "intro": "La tua squadra, le Flat Rules e una serie di Allenatori del computer sempre più tosti man mano che sali. Ogni settima lotta c’è il Magnate della Torre, con la sua squadra migliore."
+  },
+  "factory": {
+    "meta": {
+      "title": "Industria Lotta: noleggia una squadra, costruisci una serie"
+    },
+    "description": "L’Industria Lotta con il motore di Pokémon Showdown: noleggia sei Pokémon dai set Battle Factory di Showdown, vinci sette volte di fila contro un computer sempre più forte e scambia con un Pokémon dell’avversario dopo ogni vittoria.",
+    "name": "Industria Lotta",
+    "title": "Industria",
+    "accent": "Lotta",
+    "intro": "Non serve una squadra: noleggia sei Pokémon dai set Battle Factory di Pokémon Showdown, vinci sette volte di fila e, dopo ogni vittoria, scambia uno dei tuoi con uno dell’avversario. Oppure trova un avversario che noleggia anche lui, dalla preparazione della lotta."
+  }
+}

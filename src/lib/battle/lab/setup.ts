@@ -150,17 +150,27 @@ export function normalizeSetup(raw: unknown): LabSetup | null {
   });
 }
 
-/** Why the setup can't run yet (null when it can). */
-export function setupProblem(setup: LabSetup): string | null {
+/** Why the setup can't run yet, as data (null when it can): the side, and for a Pokémon without moves, the Pokémon. */
+export type SetupIssue = { key: "needsMon" | "needsTwo"; side: 0 | 1 } | { key: "needsMove"; side: 0 | 1; mon: LabMon };
+
+export function setupIssue(setup: LabSetup): SetupIssue | null {
   for (const s of [0, 1] as const) {
-    const name = s === 0 ? "Side A" : "Side B";
     const team = setup.sides[s].team;
-    if (!team.length) return `${name} needs a Pokémon.`;
-    if (setup.doubles && team.length < 2) return `${name} needs two Pokémon for a double battle.`;
+    if (!team.length) return { key: "needsMon", side: s };
+    if (setup.doubles && team.length < 2) return { key: "needsTwo", side: s };
     const moveless = team.find((m) => !m.set.moves.filter(Boolean).length);
-    if (moveless) return `${name}'s ${moveless.set.name || moveless.set.species} needs at least one move.`;
+    if (moveless) return { key: "needsMove", side: s, mon: moveless };
   }
   return null;
+}
+
+/** Why the setup can't run yet (null when it can). */
+export function setupProblem(setup: LabSetup): string | null {
+  const issue = setupIssue(setup);
+  if (!issue) return null;
+  const name = issue.side === 0 ? "Side A" : "Side B";
+  if (issue.key !== "needsMove") return issue.key === "needsMon" ? `${name} needs a Pokémon.` : `${name} needs two Pokémon for a double battle.`;
+  return `${name}'s ${issue.mon.set.name || issue.mon.set.species} needs at least one move.`;
 }
 
 // ---------------------------------------------------------------------------

@@ -35,9 +35,15 @@ export interface RecordOptions {
   quality?: Quality;
   /** Frame rate (30 by default; tests can ask for fewer frames). */
   fps?: number;
-  onProgress(p: number, label: string): void;
+  /** What it is doing (the dialog words it). */
+  onProgress(p: number, stage: RecordStage): void;
   signal: AbortSignal;
+  /** A page in another language: the captions and the video's own lines in it (English otherwise). */
+  words?: { caption(item: SizeItem | undefined, line: SizeItem[], order: Order, finale: boolean): string | null; subtitle: string; endLine: string };
 }
+
+/** The recorder's steps, for its progress line. */
+export type RecordStage = "scene" | "music" | "rendering" | "packing" | "recording";
 
 export interface RecordResult {
   blob: Blob;
@@ -154,6 +160,9 @@ function outlined(g: CanvasRenderingContext2D, text: string, x: number, y: numbe
 
 export interface VideoOverlay {
   hook: string;
+  /** The hook card's line and the end card's call to action (English unless given). */
+  subtitle?: string;
+  endLine?: string;
   font: string;
   logo: HTMLImageElement | null;
   link: string;
@@ -213,7 +222,7 @@ export function drawVideoLayers(g: CanvasRenderingContext2D, W: number, H: numbe
     fill.addColorStop(0, "#fff27a");
     fill.addColorStop(1, "#ffb000");
     lines.forEach((l, k) => outlined(g, l, W / 2, y0 + k * lh, W * 0.085, font, fill));
-    outlined(g, "SIZE COMPARISON · LUMIOSE CITY", W / 2, y0 + lines.length * lh + W * 0.01, W * 0.034, font, "#9fd8ff");
+    outlined(g, o.subtitle ?? "SIZE COMPARISON · LUMIOSE CITY", W / 2, y0 + lines.length * lh + W * 0.01, W * 0.034, font, "#9fd8ff");
     g.restore();
   }
   // End card.
@@ -226,7 +235,7 @@ export function drawVideoLayers(g: CanvasRenderingContext2D, W: number, H: numbe
     const s = W * 0.26;
     if (o.logo) g.drawImage(o.logo, W / 2 - s / 2, H * 0.34 - s / 2, s, s);
     outlined(g, "PokéIQ", W / 2, H * 0.34 + s * 0.72, W * 0.11, font, "#ffffff");
-    outlined(g, "Make your own size video", W / 2, H * 0.52, W * 0.05, font, "#ffd21f");
+    outlined(g, o.endLine ?? "Make your own size video", W / 2, H * 0.52, W * 0.05, font, "#ffd21f");
     outlined(g, o.link, W / 2, H * 0.58, W * 0.044, font, "#9fd8ff");
     g.restore();
   }
@@ -237,7 +246,7 @@ export async function recordVideo(o: RecordOptions): Promise<RecordResult> {
   const W = v.width, H = v.height, fps = v.fps;
   const N = frameCount(v);
   const tl = videoTimeline(v.seconds);
-  o.onProgress(0, "Setting the scene");
+  o.onProgress(0, "scene");
   const host = document.createElement("div");
   host.style.cssText = `position:fixed;left:-20000px;top:0;width:${W}px;height:${H}px;pointer-events:none;`;
   document.body.appendChild(host);
@@ -251,13 +260,13 @@ export async function recordVideo(o: RecordOptions): Promise<RecordResult> {
     const byKey = new Map(o.items.map((i) => [i.key, i]));
     const holdStarts = plan.glide.stops.map((s) => s.t0);
     const finaleAt = plan.glide.stops.find((s) => s.finale)?.t0 ?? v.seconds - 2;
-    const captions = new Map(plan.glide.stops.map((s) => [s.key, stopCaption(byKey.get(s.key), o.items, order, s.finale)]));
+    const captions = new Map(plan.glide.stops.map((s) => [s.key, (o.words?.caption ?? stopCaption)(byKey.get(s.key), o.items, order, s.finale)]));
     const compose = document.createElement("canvas");
     compose.width = W;
     compose.height = H;
     const g = compose.getContext("2d")!;
     const logo = await loadImage(o.logo);
-    const layers: VideoOverlay = { hook: o.hook, font: o.font, logo, link: v.endLink, watermark: v.watermark };
+    const layers: VideoOverlay = { hook: o.hook, font: o.font, logo, link: v.endLink, watermark: v.watermark, ...(o.words && { subtitle: o.words.subtitle, endLine: o.words.endLine }) };
     const drawFrame = async (i: number) => {
       const t = i / fps;
       const pf = playAt(plan, t, scene.heightAt);
@@ -294,7 +303,7 @@ export async function recordVideo(o: RecordOptions): Promise<RecordResult> {
       });
       enc.configure(vcfg);
       // Audio, mixed and encoded first (it's quick).
-      o.onProgress(0.01, "Mixing the music");
+      o.onProgress(0.01, "music");
       const rate = 48000;
       const acodec = await pickAudioCodec(rate, v.audioBitrate);
       const mix = acodec ? await mixAudio(o.music, v.seconds, holdStarts, finaleAt, rate, o.signal) : null;
@@ -336,13 +345,13 @@ export async function recordVideo(o: RecordOptions): Promise<RecordResult> {
         enc.encode(frame, { keyFrame: i % (fps * 2) === 0 });
         frame.close();
         while (enc.encodeQueueSize > 3) await sleep(2);
-        o.onProgress((i + 1) / N, "Rendering");
+        o.onProgress((i + 1) / N, "rendering");
       }
       await enc.flush();
       enc.close();
       if (failure) throw failure;
       if (!description) throw new Error("The video encoder gave no decoder configuration");
-      o.onProgress(1, "Packing the MP4");
+      o.onProgress(1, "packing");
       const mux = new Mp4Muxer(
         { width: W, height: H, description },
         acodec && audioChunks.length ? { codec: acodec.codec, sampleRate: rate, channels: 2, description: audioDesc ?? (acodec.codec === "aac" ? aacConfig(rate, 2) : undefined) } : undefined
@@ -381,7 +390,7 @@ export async function recordVideo(o: RecordOptions): Promise<RecordResult> {
       const t = (performance.now() - t0) / 1000;
       if (t >= v.seconds) break;
       await drawFrame(Math.floor(t * fps));
-      o.onProgress(t / v.seconds, "Recording");
+      o.onProgress(t / v.seconds, "recording");
       await new Promise((r) => requestAnimationFrame(r));
     }
     rec.stop();

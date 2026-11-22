@@ -1,0 +1,13 @@
+{
+  "title": "{name} sprites",
+  "subtitle": "By generation",
+  "nav": "Sprites",
+  "sprite": "Sprite",
+  "gen": "Gen {gen}",
+  "normal": "Normal",
+  "shiny": "Shiny",
+  "alt": "{name}, Generation {gen} sprite",
+  "altShiny": "{name}, Generation {gen} shiny sprite",
+  "none": "None",
+  "note": "Front sprites from one game per generation, via PokéAPI. Gen 9 shows the Pokémon HOME model. A dash means that game has none."
+}

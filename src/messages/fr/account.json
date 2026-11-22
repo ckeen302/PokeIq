@@ -1,0 +1,84 @@
+{
+  "tabs": {
+    "login": "Connexion",
+    "register": "Créer un compte",
+    "recover": "Mot de passe oublié"
+  },
+  "resetTitle": "Mot de passe réinitialisé",
+  "welcome": "Bienvenue, {name} !",
+  "resetNote": "Ton ancien code de récupération a servi. Garde bien ce nouveau code : il ne s'affiche qu'une fois.",
+  "welcomeNote": "Ce code de récupération est le seul moyen de revenir si tu oublies ton mot de passe. Il ne s'affiche qu'une fois.",
+  "offlineTitle": "Les comptes sont indisponibles",
+  "offlineBody": "Les comptes de Dresseur ne sont pas encore activés sur ce serveur. Ta progression reste enregistrée sur cet appareil.",
+  "nameRejected": "Choisis un autre nom.",
+  "failed": "Un problème est survenu.",
+  "tablist": "Compte",
+  "name": "Nom de Dresseur",
+  "code": "Code de récupération",
+  "newPassword": "Nouveau mot de passe",
+  "password": "Mot de passe",
+  "nameRules": "3 à 20 lettres, chiffres, _ ou -. Pas besoin d'e-mail : tu recevras un code de récupération à la place.",
+  "reset": "Réinitialiser le mot de passe",
+  "syncNote": "En te connectant, tes badges, séries, classements et ton PokéIQ sont enregistrés sur ton compte et te suivent sur tous tes appareils.",
+  "email": {
+    "needEmail": "Ajoute ton e-mail pour recevoir les e-mails quotidiens.",
+    "badEmail": "Ça ne ressemble pas à une adresse e-mail."
+  },
+  "panel": {
+    "saveTitle": "Sauvegarde ta progression",
+    "saveBody": "Crée un compte gratuit pour garder tes badges, classements et séries sur tous tes appareils.",
+    "signIn": "Se connecter",
+    "newCodeTitle": "Nouveau code de récupération",
+    "newCodeNote": "Ton ancien code ne fonctionne plus. Garde bien celui-ci : il ne s'affiche qu'une fois.",
+    "codeFailed": "Impossible de créer un nouveau code.",
+    "signedInAs": "Connecté en tant que <b>{name}</b> · progression synchronisée automatiquement",
+    "newCode": "Nouveau code de récupération",
+    "signOut": "Se déconnecter",
+    "confirmPassword": "Confirme ton mot de passe",
+    "generate": "Générer"
+  },
+  "connected": {
+    "unlinkFailed": "Impossible de dissocier ce compte.",
+    "title": "Comptes associés",
+    "linked": "Associé",
+    "notLinked": "Non associé",
+    "onlyWay": "C'est ton seul moyen de connexion.",
+    "unlink": "Dissocier",
+    "link": "Associer {provider}"
+  },
+  "oauth": {
+    "googleNote": "La connexion avec Google est en test : utilise Discord si elle ne marche pas.",
+    "continueWith": "Continuer avec {provider}",
+    "orName": "ou utilise un nom de Dresseur",
+    "errors": {
+      "denied": "La connexion a été annulée.",
+      "expired": "La connexion a pris trop de temps ou a été lancée dans un autre onglet : réessaie.",
+      "failed": "Impossible de te connecter avec ce service pour le moment. Réessaie, ou utilise ton nom de Dresseur et ton mot de passe.",
+      "unavailable": "Cette méthode de connexion n'est pas disponible pour le moment.",
+      "banned": "Ce compte est banni.",
+      "linked_elsewhere": "Ce compte est déjà associé à un autre Dresseur.",
+      "already_linked": "Tu as déjà associé un compte de ce type. Dissocie-le d'abord.",
+      "signin_required": "Connecte-toi d'abord, puis associe le compte depuis ta carte de Dresseur.",
+      "rate_limited": "Trop de tentatives : réessaie dans une minute."
+    }
+  },
+  "signup": {
+    "expired": "Cette connexion a expiré : recommence.",
+    "unreachable": "Impossible de joindre le serveur : réessaie.",
+    "under13": "Tu dois avoir 13 ans ou plus pour créer un compte.",
+    "loading": "Chargement",
+    "back": "Retour à la connexion",
+    "signedWith": "Connecté avec {provider}. Choisis le nom que les autres Dresseurs verront.",
+    "nameHint": "3 à 20 lettres, chiffres, _ ou -.",
+    "adult": "J'ai 13 ans ou plus.",
+    "create": "Créer le Dresseur",
+    "privacy": "Ton e-mail reste privé. Consulte la <link>politique de confidentialité</link>."
+  },
+  "recovery": {
+    "label": "Code de récupération",
+    "copied": "Copié",
+    "copy": "Copier le code",
+    "savedIt": "J'ai mis mon code de récupération en lieu sûr",
+    "continue": "Continuer"
+  }
+}

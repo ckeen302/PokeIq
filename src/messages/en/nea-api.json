@@ -1,0 +1,12 @@
+{
+  "notKept": "Personal bests aren't kept on this server.",
+  "nameOne": "Name at least one Pokémon in the standard time to set a best.",
+  "unavailable": "Personal bests aren't available right now.",
+  "off": "Personal bests are off on this server.",
+  "signIn": "Sign in to keep your best on your profile.",
+  "noStart": "This run has no start time from our server.",
+  "addUp": "That run doesn't add up.",
+  "tooLong": "That run took longer than it's been going.",
+  "paused": "Paused runs don't count as personal bests.",
+  "tooFast": "That's faster than anyone types."
+}

@@ -1,6 +1,19 @@
 /* eslint-disable @next/next/no-img-element -- pixel sprites and GIFs are drawn as they are; the HOME render goes through the image optimizer by URL */
 import { SPRITE_CELL, optimizedImageUrl, type SpriteColumn } from "@/lib/pokemon/sprites";
 import { cn } from "@/lib/utils";
+import { serverT } from "@/i18n/server";
+import spritesNs from "@/messages/dex-sprites";
+import geoNames from "@/messages/geo-names";
+import { localGame } from "@/lib/geo-i18n";
+
+/** Each column's game as localGame reads it (English keeps the column's own label). */
+const GAME_LABEL: Record<string, string> = {
+  "Red & Blue": "Red / Blue",
+  "Black & White": "Black / White",
+  "X & Y": "X / Y",
+  "Ultra Sun & Moon": "Ultra Sun / Ultra Moon",
+  "Sword & Shield": "Sword / Shield",
+};
 
 /**
  * "<Name> sprites": each generation's front sprite, normal over shiny, one
@@ -12,9 +25,12 @@ import { cn } from "@/lib/utils";
 const PINNED = "sticky left-0 z-[1] bg-card after:pointer-events-none after:absolute after:inset-y-0 after:-right-3 after:w-3 after:bg-gradient-to-r after:from-card after:to-transparent";
 
 export function SpritesSection({ name, columns }: { name: string; columns: SpriteColumn[] }) {
+  const t = serverT(spritesNs);
+  const g = serverT(geoNames);
+  const game = (label: string) => (t.locale === "en" ? label : localGame(g, GAME_LABEL[label] ?? label));
   const rows = [
-    { key: "normal", label: "Normal", shiny: false },
-    { key: "shiny", label: "Shiny", shiny: true },
+    { key: "normal", label: t("normal"), shiny: false },
+    { key: "shiny", label: t("shiny"), shiny: true },
   ] as const;
   return (
     <div className="space-y-3 hud rounded-lg border bg-card p-4" data-testid="dex-sprites">
@@ -23,12 +39,12 @@ export function SpritesSection({ name, columns }: { name: string; columns: Sprit
           <thead>
             <tr>
               <th className={cn(PINNED, "border-b p-2 pl-0")}>
-                <span className="sr-only">Sprite</span>
+                <span className="sr-only">{t("sprite")}</span>
               </th>
               {columns.map((c) => (
                 <th key={c.gen} scope="col" className="w-28 min-w-28 border-b px-2 pb-2.5 pt-1 text-center align-bottom font-normal">
-                  <span className="block font-pixel text-[10px] uppercase tracking-wider text-primary">Gen {c.gen}</span>
-                  <span className="mt-1 block whitespace-nowrap text-[11px] text-muted-foreground">{c.game}</span>
+                  <span className="block font-pixel text-[10px] uppercase tracking-wider text-primary">{t("gen", { gen: c.gen })}</span>
+                  <span className="mt-1 block whitespace-nowrap text-[11px] text-muted-foreground">{game(c.game)}</span>
                 </th>
               ))}
             </tr>
@@ -52,13 +68,13 @@ export function SpritesSection({ name, columns }: { name: string; columns: Sprit
                     <td key={c.gen} className={cn("px-2 py-2", r.key === "normal" && "border-b border-foreground/5")}>
                       <div className="mx-auto grid h-24 w-24 place-items-center overflow-hidden">
                         {src ? (
-                          <Sprite col={c} src={src} alt={`${name}, Generation ${c.gen}${r.shiny ? " shiny" : ""} sprite`} />
+                          <Sprite col={c} src={src} alt={t(r.shiny ? "altShiny" : "alt", { name, gen: c.gen })} />
                         ) : (
                           <>
                             <span className="text-muted-foreground/60" aria-hidden>
                               —
                             </span>
-                            <span className="sr-only">None</span>
+                            <span className="sr-only">{t("none")}</span>
                           </>
                         )}
                       </div>
@@ -71,7 +87,7 @@ export function SpritesSection({ name, columns }: { name: string; columns: Sprit
         </table>
       </div>
       <p className="text-[11px] text-muted-foreground">
-        Front sprites from one game per generation, via PokéAPI. Gen 9 shows the Pokémon HOME model. A dash means that game has none.
+        {t("note")}
       </p>
     </div>
   );

@@ -1,0 +1,36 @@
+{
+  "form": {
+    "mega": "Mega {name}",
+    "megaVariant": "Mega {name} {variant}",
+    "gmax": "Gigantamax {name}",
+    "gmaxStyle": {
+      "single": "Gigantamax Single Strike {name}",
+      "rapid": "Gigantamax Rapid Strike {name}",
+      "amped": "Gigantamax Amped {name}",
+      "lowkey": "Gigantamax Low Key {name}"
+    },
+    "alola": "Alolan {name}",
+    "galar": "Galarian {name}",
+    "hisui": "Hisuian {name}",
+    "paldea": "Paldean {name}",
+    "breed": "Paldean {name} ({breed})",
+    "breeds": {
+      "combat": "Combat Breed",
+      "blaze": "Blaze Breed",
+      "aqua": "Aqua Breed"
+    },
+    "darmanitan": {
+      "standard": "Standard Galarian {name}",
+      "zen": "Zen Galarian {name}"
+    },
+    "eternamax": "Eternamax {name}"
+  },
+  "refs": {
+    "phone": "Smartphone",
+    "human": "Adult human",
+    "car": "Car",
+    "bus": "School bus",
+    "house": "Two-storey house",
+    "building": "10-storey building"
+  }
+}

@@ -65,13 +65,34 @@ export function formatSeconds(s: number, dp = 2): string {
 /** Distances and heights are measured to the centimetre below (World Athletics TR 25.19). */
 export const floorCm = (m: number) => Math.floor(m * 100 + 1e-7) / 100;
 
-/** A mark as it's read out: "9.81 s", "8.42 m", "212 kg", "8,123 pts". */
-export function formatMark(id: EventId, v: number | null | undefined): string {
+/**
+ * A number written the English way ("1,234.56", "9.58") as the language writes it: a decimal comma and a dot (or,
+ * in French, a narrow space) between thousands in Spanish, French, German and Italian (Spanish groups from five
+ * digits); Japanese as English. English comes back as given.
+ */
+export function localNum(text: string, locale = "en"): string {
+  if (locale === "en" || locale === "ja") return text;
+  return text.replace(/\d[\d,]*(?:\.\d+)?/g, (n) => {
+    const [int, frac] = n.split(".");
+    const digits = int.replace(/,/g, "");
+    const sep = locale === "fr" ? " " : ".";
+    const grouped = locale === "es" && digits.length < 5 ? digits : digits.replace(/\B(?=(\d{3})+(?!\d))/g, sep);
+    return frac != null ? `${grouped},${frac}` : grouped;
+  });
+}
+
+/** "pts" in each language. */
+const POINTS: Record<string, string> = { ja: "点", es: "pts", fr: "pts", de: "Pkt.", it: "pt" };
+
+/** A mark as it's read out: "9.81 s", "8.42 m", "212 kg", "8,123 pts" (in the language given: "9,81 s"). */
+export function formatMark(id: EventId, v: number | null | undefined, locale = "en"): string {
   if (v == null || !Number.isFinite(v)) return "—";
   const e = eventOf(id);
-  if (e.unit === "s") return `${formatSeconds(v)} s`;
-  if (e.unit === "m") return `${floorCm(v).toFixed(2)} m`;
-  if (e.unit === "kg") return `${Math.floor(v + 1e-7).toLocaleString("en-US")} kg`;
-  if (e.unit === "pts") return `${Math.floor(v).toLocaleString("en-US")} pts`;
-  return String(v);
+  let out: string;
+  if (e.unit === "s") out = `${formatSeconds(v)} s`;
+  else if (e.unit === "m") out = `${floorCm(v).toFixed(2)} m`;
+  else if (e.unit === "kg") out = `${Math.floor(v + 1e-7).toLocaleString("en-US")} kg`;
+  else if (e.unit === "pts") out = `${Math.floor(v).toLocaleString("en-US")} ${POINTS[locale] ?? "pts"}`;
+  else out = String(v);
+  return localNum(out, locale);
 }

@@ -1,0 +1,904 @@
+{
+ "entries": {
+  "red-green": {
+   "title": "Pokémon Rouge et Vert",
+   "note": "Sorti hors du Japon sous le nom de Pokémon Rouge et Bleu."
+  },
+  "blue-jp": {
+   "title": "Pokémon Bleu (Japon)",
+   "note": "Une version revue de Rouge et Vert, sortie uniquement au Japon."
+  },
+  "tcg-japan": {
+   "title": "Le Jeu de Cartes à Collectionner sort au Japon",
+   "note": "Édité au Japon par Media Factory."
+  },
+  "anime-s01": {
+   "title": "Saison 1 : Ligue Indigo",
+   "series": "Pocket Monsters"
+  },
+  "porygon-incident": {
+   "title": "Diffusion de « Electric Soldier Porygon »",
+   "note": "Des centaines de téléspectateurs ont été hospitalisés après la diffusion, et l'anime a été suspendu jusqu'au 16 avril 1998."
+  },
+  "company-founded": {
+   "title": "Création de The Pokémon Company",
+   "note": "Fondée sous le nom de Pokémon Center Co., Ltd. par Nintendo, Game Freak et Creatures ; renommée The Pokémon Company en octobre 2000."
+  },
+  "pokemon-center-tokyo": {
+   "title": "Ouverture du premier Pokémon Center",
+   "note": "Le Pokémon Center Tokyo a ouvert dans le quartier de Nihonbashi."
+  },
+  "movie-01": {
+   "title": "Film 1 : Mewtwo contre-attaque"
+  },
+  "yellow": {
+   "title": "Pokémon Jaune"
+  },
+  "hey-you-pikachu": {
+   "title": "Hey You, Pikachu!"
+  },
+  "tcg-game-boy": {
+   "title": "Pokémon Trading Card Game"
+  },
+  "tcg-base": {
+   "title": "Set de Base : le JCC arrive en Occident",
+   "note": "Édité en anglais par Wizards of the Coast."
+  },
+  "anime-s02": {
+   "title": "Saison 2 : Les Îles Orange",
+   "series": "Pocket Monsters"
+  },
+  "snap": {
+   "title": "Pokémon Snap"
+  },
+  "pinball": {
+   "title": "Pokémon Pinball"
+  },
+  "stadium": {
+   "title": "Pokémon Stadium"
+  },
+  "tcg-base2": {
+   "title": "Jungle"
+  },
+  "movie-02": {
+   "title": "Film 2 : Le Pouvoir est en toi"
+  },
+  "tcg-base3": {
+   "title": "Fossile"
+  },
+  "anime-s03": {
+   "title": "Saison 3 : Voyage à Johto",
+   "series": "Pocket Monsters"
+  },
+  "gold-silver": {
+   "title": "Pokémon Or et Argent"
+  },
+  "tcg-base4": {
+   "title": "Base Set 2"
+  },
+  "tcg-base5": {
+   "title": "Team Rocket"
+  },
+  "movie-03": {
+   "title": "Film 3 : Le Sort des Zarbi"
+  },
+  "anime-s04": {
+   "title": "Saison 4 : Les Champions de la Ligue Johto",
+   "series": "Pocket Monsters"
+  },
+  "tcg-gym1": {
+   "title": "Gym Heroes"
+  },
+  "puzzle-challenge": {
+   "title": "Pokémon Puzzle Challenge"
+  },
+  "puzzle-league": {
+   "title": "Pokémon Puzzle League",
+   "note": "Conçu pour l'Occident ; il n'est jamais sorti au Japon."
+  },
+  "tcg-gym2": {
+   "title": "Gym Challenge"
+  },
+  "crystal": {
+   "title": "Pokémon Cristal"
+  },
+  "stadium-2": {
+   "title": "Pokémon Stadium 2"
+  },
+  "tcg-neo": {
+   "title": "Neo Genesis"
+  },
+  "tcg-neo2": {
+   "title": "Neo Discovery"
+  },
+  "movie-04": {
+   "title": "Film 4 : Celebi, la voix de la forêt"
+  },
+  "anime-s05": {
+   "title": "Saison 5 : Master Quest",
+   "series": "Pocket Monsters"
+  },
+  "tcg-neo3": {
+   "title": "Neo Revelation"
+  },
+  "pokemon-center-new-york": {
+   "title": "Ouverture du Pokémon Center New York",
+   "note": "Au 10 Rockefeller Plaza, à New York."
+  },
+  "tcg-neo4": {
+   "title": "Neo Destiny"
+  },
+  "tcg-base6": {
+   "title": "Legendary Collection"
+  },
+  "movie-05": {
+   "title": "Film 5 : Pokémon Heroes : Latios et Latias"
+  },
+  "tcg-ecard1": {
+   "title": "Expedition"
+  },
+  "ruby-sapphire": {
+   "title": "Pokémon Rubis et Saphir"
+  },
+  "anime-s06": {
+   "title": "Saison 6 : Advanced",
+   "series": "Pocket Monsters Advanced Generation"
+  },
+  "tcg-ecard2": {
+   "title": "Aquapolis"
+  },
+  "tcg-ecard3": {
+   "title": "Skyridge"
+  },
+  "tcg-ex1": {
+   "title": "EX Rubis & Saphir"
+  },
+  "movie-06": {
+   "title": "Film 6 : Jirachi, le génie des vœux"
+  },
+  "anime-s07": {
+   "title": "Saison 7 : Advanced Challenge",
+   "series": "Pocket Monsters Advanced Generation"
+  },
+  "tcg-ex2": {
+   "title": "EX Tempête de sable"
+  },
+  "colosseum": {
+   "title": "Pokémon Colosseum"
+  },
+  "tcg-ex3": {
+   "title": "EX Dragon"
+  },
+  "firered-leafgreen": {
+   "title": "Pokémon Rouge Feu et Vert Feuille",
+   "note": "Remakes de Pokémon Rouge et Vert."
+  },
+  "tcg-ex4": {
+   "title": "EX Team Magma vs Team Aqua"
+  },
+  "tcg-ex5": {
+   "title": "EX Légendes Oubliées"
+  },
+  "movie-07": {
+   "title": "Film 7 : La Destinée de Deoxys"
+  },
+  "first-worlds": {
+   "title": "Les premiers Championnats du Monde",
+   "note": "Organisés du 20 au 22 août 2004 à Orlando, en Floride, pour le Jeu de Cartes à Collectionner."
+  },
+  "anime-s08": {
+   "title": "Saison 8 : Advanced Battle",
+   "series": "Pocket Monsters Advanced Generation"
+  },
+  "tcg-ex6": {
+   "title": "EX Rouge Feu & Vert Feuille"
+  },
+  "emerald": {
+   "title": "Pokémon Émeraude"
+  },
+  "tcg-ex7": {
+   "title": "EX Team Rocket Returns"
+  },
+  "tcg-ex8": {
+   "title": "EX Deoxys"
+  },
+  "tcg-ex9": {
+   "title": "EX Émeraude"
+  },
+  "movie-08": {
+   "title": "Film 8 : Lucario et le Mystère de Mew"
+  },
+  "xd": {
+   "title": "Pokémon XD : Le Souffle des Ténèbres"
+  },
+  "tcg-ex10": {
+   "title": "EX Forces Cachées"
+  },
+  "anime-s09": {
+   "title": "Saison 9 : Battle Frontier",
+   "series": "Pocket Monsters Advanced Generation"
+  },
+  "tcg-ex11": {
+   "title": "EX Espèces Delta"
+  },
+  "mystery-dungeon": {
+   "title": "Pokémon Donjon Mystère : Équipe de Secours Rouge et Équipe de Secours Bleue"
+  },
+  "tcg-ex12": {
+   "title": "EX Créateurs de légendes"
+  },
+  "ranger": {
+   "title": "Pokémon Ranger"
+  },
+  "tcg-ex13": {
+   "title": "EX Fantômes Holon"
+  },
+  "movie-09": {
+   "title": "Film 9 : Pokémon Ranger et le Temple des Mers"
+  },
+  "tcg-ex14": {
+   "title": "EX Gardiens de Cristal"
+  },
+  "diamond-pearl": {
+   "title": "Pokémon Diamant et Perle"
+  },
+  "anime-s10": {
+   "title": "Saison 10 : Diamant et Perle",
+   "series": "Pocket Monsters Diamond & Pearl"
+  },
+  "tcg-ex15": {
+   "title": "EX Île des Dragons"
+  },
+  "tcg-ex16": {
+   "title": "EX Gardiens du Pouvoir"
+  },
+  "tcg-dp1": {
+   "title": "Diamant & Perle"
+  },
+  "movie-10": {
+   "title": "Film 10 : L'Ascension de Darkrai"
+  },
+  "tcg-dp2": {
+   "title": "Trésors Mystérieux"
+  },
+  "mystery-dungeon-explorers": {
+   "title": "Pokémon Donjon Mystère : Explorateurs du Temps et Explorateurs des Ténèbres"
+  },
+  "anime-s11": {
+   "title": "Saison 11 : DP : Battle Dimension",
+   "series": "Pocket Monsters Diamond & Pearl"
+  },
+  "tcg-dp3": {
+   "title": "Merveilles Secrètes"
+  },
+  "tcg-dp4": {
+   "title": "Duels au Sommet"
+  },
+  "tcg-dp5": {
+   "title": "Aube Majestueuse"
+  },
+  "movie-11": {
+   "title": "Film 11 : Giratina et le Gardien du Ciel"
+  },
+  "tcg-dp6": {
+   "title": "Éveil des Légendes"
+  },
+  "platinum": {
+   "title": "Pokémon Platine"
+  },
+  "tcg-dp7": {
+   "title": "Tempête"
+  },
+  "anime-s12": {
+   "title": "Saison 12 : DP : Galactic Battles",
+   "series": "Pocket Monsters Diamond & Pearl"
+  },
+  "tcg-pl1": {
+   "title": "Platine"
+  },
+  "tcg-pl2": {
+   "title": "Rivaux Émergents"
+  },
+  "rumble": {
+   "title": "Pokémon Rumble"
+  },
+  "movie-12": {
+   "title": "Film 12 : Arceus et le Joyau de Vie"
+  },
+  "first-vgc-worlds": {
+   "title": "Les premiers Championnats du Monde de jeu vidéo",
+   "note": "Disputés sur Pokémon Platine à San Diego, les 14 et 15 août 2009."
+  },
+  "tcg-pl3": {
+   "title": "Vainqueurs Suprêmes"
+  },
+  "heartgold-soulsilver": {
+   "title": "Pokémon Or HeartGold et Argent SoulSilver",
+   "note": "Remakes de Pokémon Or et Argent."
+  },
+  "tcg-pl4": {
+   "title": "Arceus"
+  },
+  "pokepark": {
+   "title": "PokéPark Wii : La Grande Aventure de Pikachu"
+  },
+  "anime-s13": {
+   "title": "Saison 13 : DP : Les Vainqueurs de la Ligue Sinnoh",
+   "series": "Pocket Monsters Diamond & Pearl"
+  },
+  "tcg-hgss1": {
+   "title": "HeartGold & SoulSilver"
+  },
+  "tcg-hgss2": {
+   "title": "HS—Déchaînement"
+  },
+  "movie-13": {
+   "title": "Film 13 : Zoroark, le Maître des illusions"
+  },
+  "tcg-hgss3": {
+   "title": "HS—Indomptable"
+  },
+  "black-white": {
+   "title": "Pokémon Noir et Blanc"
+  },
+  "anime-s14": {
+   "title": "Saison 14 : Noir & Blanc",
+   "series": "Pocket Monsters Best Wishes!"
+  },
+  "tcg-hgss4": {
+   "title": "HS—Triomphant"
+  },
+  "tcg-col1": {
+   "title": "L'Appel des Légendes"
+  },
+  "tcg-bw": {
+   "title": "L'ère Noir & Blanc"
+  },
+  "movie-14": {
+   "title": "Film 14 : Victini et Reshiram / Victini et Zekrom"
+  },
+  "tcg-bw2": {
+   "title": "Pouvoirs Émergents"
+  },
+  "anime-s15": {
+   "title": "Saison 15 : N&B : Destinées rivales",
+   "series": "Pocket Monsters Best Wishes!"
+  },
+  "tcg-bw3": {
+   "title": "Nobles Victoires"
+  },
+  "tcg-bw4": {
+   "title": "Destinées Futures"
+  },
+  "conquest": {
+   "title": "Pokémon Conquest"
+  },
+  "tcg-bw5": {
+   "title": "Explorateurs Obscurs"
+  },
+  "black2-white2": {
+   "title": "Pokémon Noir 2 et Blanc 2"
+  },
+  "movie-15": {
+   "title": "Film 15 : Kyurem vs la Lame de la Justice"
+  },
+  "tcg-bw6": {
+   "title": "Dragons Exaltés"
+  },
+  "tcg-dv1": {
+   "title": "Coffre des Dragons"
+  },
+  "anime-s16": {
+   "title": "Saison 16 : N&B : Aventures à Unys et au-delà",
+   "series": "Pocket Monsters Best Wishes! Season 2"
+  },
+  "tcg-bw7": {
+   "title": "Frontières Franchies"
+  },
+  "tcg-bw8": {
+   "title": "Tempête Plasma"
+  },
+  "tcg-bw9": {
+   "title": "Glaciation Plasma"
+  },
+  "movie-16": {
+   "title": "Film 16 : Genesect et l'Éveil de la Légende"
+  },
+  "tcg-bw10": {
+   "title": "Explosion Plasma"
+  },
+  "x-y": {
+   "title": "Pokémon X et Y"
+  },
+  "anime-s17": {
+   "title": "Saison 17 : XY",
+   "series": "Pocket Monsters XY"
+  },
+  "tcg-bw11": {
+   "title": "Legendary Treasures"
+  },
+  "tcg-xy": {
+   "title": "L'ère XY",
+   "note": "Le type Fée fait son entrée dans le jeu de cartes."
+  },
+  "tcg-xy2": {
+   "title": "Étincelles"
+  },
+  "movie-17": {
+   "title": "Film 17 : Diancie et le Cocon de l'Annihilation"
+  },
+  "pikachu-outbreak": {
+   "title": "Pikachu Outbreak! envahit Yokohama",
+   "note": "Des parades de Pikachu ont envahi le quartier de Minato Mirai du 9 au 17 août 2014."
+  },
+  "tcg-xy3": {
+   "title": "Poings Furieux"
+  },
+  "tcg-xy4": {
+   "title": "Vigueur Spectrale"
+  },
+  "anime-s18": {
+   "title": "Saison 18 : XY : L'Aventure à Kalos",
+   "series": "Pocket Monsters XY"
+  },
+  "omega-ruby-alpha-sapphire": {
+   "title": "Pokémon Rubis Oméga et Saphir Alpha",
+   "note": "Remakes de Pokémon Rubis et Saphir."
+  },
+  "tcg-xy5": {
+   "title": "Primo-Choc"
+  },
+  "shuffle": {
+   "title": "Pokémon Shuffle"
+  },
+  "tcg-dc1": {
+   "title": "Double Danger"
+  },
+  "tcg-xy6": {
+   "title": "Ciel Rugissant"
+  },
+  "pokken": {
+   "title": "Pokkén Tournament",
+   "note": "D'abord dans les salles d'arcade japonaises ; la version Wii U a suivi le 18 mars 2016."
+  },
+  "movie-18": {
+   "title": "Film 18 : Hoopa et le Choc des Légendes"
+  },
+  "tcg-xy7": {
+   "title": "Origines Antiques"
+  },
+  "anime-s19": {
+   "title": "Saison 19 : XYZ",
+   "series": "Pocket Monsters XY&Z"
+  },
+  "tcg-xy8": {
+   "title": "Impulsion Turbo"
+  },
+  "picross": {
+   "title": "Pokémon Picross"
+  },
+  "detective-pikachu-game": {
+   "title": "Détective Pikachu",
+   "note": "Le Japon a reçu ses premiers chapitres en téléchargement en 2016 ; le jeu complet est sorti le 23 mars 2018."
+  },
+  "tcg-xy9": {
+   "title": "Rupture Turbo"
+  },
+  "tcg-g1": {
+   "title": "Générations"
+  },
+  "anniversary-20": {
+   "title": "20ᵉ anniversaire : le retour de Rouge, Bleu et Jaune",
+   "note": "Les jeux d'origine sont sortis sur la Console virtuelle de la Nintendo 3DS dans le monde entier, 20 ans jour pour jour après Rouge et Vert."
+  },
+  "tcg-xy10": {
+   "title": "Impact des Destins"
+  },
+  "pokemon-go": {
+   "title": "Pokémon GO",
+   "note": "Lancé d'abord en Australie et aux États-Unis."
+  },
+  "movie-19": {
+   "title": "Film 19 : Volcanion et la Merveille mécanique"
+  },
+  "tcg-xy11": {
+   "title": "Offensive Vapeur"
+  },
+  "tcg-xy12": {
+   "title": "Évolutions"
+  },
+  "anime-s20": {
+   "title": "Saison 20 : Soleil et Lune",
+   "series": "Pocket Monsters Sun & Moon"
+  },
+  "sun-moon": {
+   "title": "Pokémon Soleil et Lune"
+  },
+  "tcg-sm": {
+   "title": "L'ère Soleil et Lune"
+  },
+  "tcg-sm2": {
+   "title": "Gardiens Ascendants"
+  },
+  "movie-20": {
+   "title": "Film 20 : Je te choisis !"
+  },
+  "go-fest-2017": {
+   "title": "Le premier Pokémon GO Fest",
+   "note": "Organisé à Grant Park, à Chicago."
+  },
+  "tcg-sm3": {
+   "title": "Ombres Ardentes"
+  },
+  "anime-s21": {
+   "title": "Saison 21 : Soleil et Lune : Ultra-Aventures",
+   "series": "Pocket Monsters Sun & Moon"
+  },
+  "tcg-sm35": {
+   "title": "Légendes Brillantes"
+  },
+  "tcg-sm4": {
+   "title": "Invasion Carmin"
+  },
+  "ultra-sun-ultra-moon": {
+   "title": "Pokémon Ultra-Soleil et Ultra-Lune"
+  },
+  "tcg-sm5": {
+   "title": "Ultra-Prisme"
+  },
+  "tcg-sm6": {
+   "title": "Lumière Interdite"
+  },
+  "quest": {
+   "title": "Pokémon Quest"
+  },
+  "movie-21": {
+   "title": "Film 21 : Ensemble"
+  },
+  "tcg-sm7": {
+   "title": "Tempête Céleste"
+  },
+  "tcg-sm75": {
+   "title": "Majesté des Dragons"
+  },
+  "anime-s22": {
+   "title": "Saison 22 : Soleil et Lune : Ultra-Légendes",
+   "series": "Pocket Monsters Sun & Moon"
+  },
+  "tcg-sm8": {
+   "title": "Tonnerre Perdu"
+  },
+  "lets-go": {
+   "title": "Pokémon : Let's Go, Pikachu et Let's Go, Évoli",
+   "note": "À Kanto, d'après Pokémon Jaune."
+  },
+  "tcg-sm9": {
+   "title": "Duo de Choc"
+  },
+  "tcg-det1": {
+   "title": "Détective Pikachu"
+  },
+  "detective-pikachu": {
+   "title": "Pokémon : Détective Pikachu",
+   "note": "Le premier film Pokémon en prises de vues réelles."
+  },
+  "tcg-sm10": {
+   "title": "Alliance Infaillible"
+  },
+  "movie-22": {
+   "title": "Film 22 : Mewtwo contre-attaque : L'Évolution"
+  },
+  "tcg-sm11": {
+   "title": "Harmonie des Esprits"
+  },
+  "tcg-sm115": {
+   "title": "Destinées Occultes"
+  },
+  "masters": {
+   "title": "Pokémon Masters",
+   "note": "Aujourd'hui Pokémon Masters EX."
+  },
+  "tcg-sm12": {
+   "title": "Éclipse Cosmique"
+  },
+  "sword-shield": {
+   "title": "Pokémon Épée et Bouclier"
+  },
+  "anime-s23": {
+   "title": "Saison 23 : Les Voyages Pokémon",
+   "series": "Pocket Monsters (2019)"
+  },
+  "tcg-swsh": {
+   "title": "L'ère Épée et Bouclier"
+  },
+  "tcg-swsh2": {
+   "title": "Clash des Rebelles"
+  },
+  "cafe-mix": {
+   "title": "Pokémon Café Mix"
+  },
+  "isle-of-armor": {
+   "title": "Épée et Bouclier : L'île solitaire de l'Armure",
+   "note": "Première partie du Pass d'extension d'Épée et Bouclier."
+  },
+  "smile": {
+   "title": "Pokémon Smile"
+  },
+  "tcg-swsh3": {
+   "title": "Ténèbres Embrasées"
+  },
+  "tcg-swsh35": {
+   "title": "La Voie du Maître"
+  },
+  "crown-tundra": {
+   "title": "Épée et Bouclier : Les terres enneigées de la Couronne",
+   "note": "Deuxième partie du Pass d'extension d'Épée et Bouclier, sortie au même moment dans le monde entier."
+  },
+  "tcg-swsh4": {
+   "title": "Voltage Éclatant"
+  },
+  "anime-s24": {
+   "title": "Saison 24 : Les Voyages d'un Maître Pokémon",
+   "series": "Pocket Monsters (2019)"
+  },
+  "movie-23": {
+   "title": "Film 23 : Les Secrets de la jungle",
+   "note": "Sa sortie a été repoussée de juillet à décembre 2020."
+  },
+  "tcg-swsh45": {
+   "title": "Destinées Radieuses"
+  },
+  "anniversary-25": {
+   "title": "Pokémon Presents du 25ᵉ anniversaire",
+   "note": "Diamant Étincelant et Perle Scintillante et Légendes Pokémon : Arceus y ont été révélés."
+  },
+  "tcg-swsh5": {
+   "title": "Styles de Combat"
+  },
+  "new-pokemon-snap": {
+   "title": "New Pokémon Snap"
+  },
+  "target-card-pause": {
+   "title": "Folie des cartes : Target les retire de ses magasins",
+   "note": "Target a suspendu par sécurité la vente en magasin des cartes Pokémon et de sport ; elles restaient en vente en ligne."
+  },
+  "tcg-swsh6": {
+   "title": "Règne de Glace"
+  },
+  "unite": {
+   "title": "Pokémon UNITE",
+   "note": "La version mobile a suivi dans le monde entier le 22 septembre 2021."
+  },
+  "tcg-swsh7": {
+   "title": "Évolution Céleste"
+  },
+  "tcg-cel25": {
+   "title": "Célébrations"
+  },
+  "tcg-swsh8": {
+   "title": "Poing de Fusion"
+  },
+  "brilliant-diamond-shining-pearl": {
+   "title": "Pokémon Diamant Étincelant et Perle Scintillante",
+   "note": "Remakes de Pokémon Diamant et Perle."
+  },
+  "anime-s25": {
+   "title": "Saison 25 : Les Voyages Ultimes Pokémon",
+   "series": "Pocket Monsters (2019)"
+  },
+  "legends-arceus": {
+   "title": "Légendes Pokémon : Arceus"
+  },
+  "tcg-swsh9": {
+   "title": "Stars Étincelantes"
+  },
+  "tcg-swsh10": {
+   "title": "Astres Radieux"
+  },
+  "tcg-pgo": {
+   "title": "Pokémon GO"
+  },
+  "tcg-swsh11": {
+   "title": "Origine Perdue"
+  },
+  "tcg-swsh12": {
+   "title": "Tempête Argentée"
+  },
+  "ash-world-champion": {
+   "title": "Sacha devient Champion du Monde",
+   "note": "Sacha et Pikachu battent Tarak en finale du tournoi des Huit Maîtres."
+  },
+  "scarlet-violet": {
+   "title": "Pokémon Écarlate et Violet"
+  },
+  "tcg-swsh12pt5": {
+   "title": "Zénith Suprême"
+  },
+  "ash-farewell": {
+   "title": "Fin du voyage de Sacha et Pikachu",
+   "note": "Le dernier épisode avec Sacha en héros ; Horizons Pokémon a commencé trois semaines plus tard."
+  },
+  "tcg-sv": {
+   "title": "L'ère Écarlate et Violet"
+  },
+  "anime-s26": {
+   "title": "Saison 26 : Horizons Pokémon",
+   "series": "Pocket Monsters (2023)"
+  },
+  "tcg-live": {
+   "title": "Pokémon Trading Card Game Live",
+   "note": "Sorti de sa bêta mondiale, il a remplacé Pokémon TCG Online."
+  },
+  "tcg-sv2": {
+   "title": "Évolutions à Paldea"
+  },
+  "sleep": {
+   "title": "Pokémon Sleep"
+  },
+  "tcg-sv3": {
+   "title": "Flammes Obsidiennes"
+  },
+  "teal-mask": {
+   "title": "Écarlate et Violet : Le Masque Turquoise",
+   "note": "Première partie du DLC Le Trésor enfoui de la Zone Zéro."
+  },
+  "tcg-sv3pt5": {
+   "title": "Écarlate et Violet—151"
+  },
+  "detective-pikachu-returns": {
+   "title": "Le Retour de Détective Pikachu"
+  },
+  "tcg-sv4": {
+   "title": "Faille Paradoxe"
+  },
+  "indigo-disk": {
+   "title": "Écarlate et Violet : Le Disque Indigo",
+   "note": "Deuxième partie du DLC Le Trésor enfoui de la Zone Zéro."
+  },
+  "tcg-sv4pt5": {
+   "title": "Destinées de Paldea"
+  },
+  "tcg-sv5": {
+   "title": "Forces Temporelles"
+  },
+  "anime-s27": {
+   "title": "Saison 27 : Horizons – La Quête de Laqua",
+   "series": "Pocket Monsters (2023)"
+  },
+  "tcg-sv6": {
+   "title": "Mascarade Crépusculaire"
+  },
+  "tcg-sv6pt5": {
+   "title": "Fable Nébuleuse"
+  },
+  "tcg-sv7": {
+   "title": "Couronne Stellaire"
+  },
+  "tcg-pocket": {
+   "title": "JCC Pokémon Pocket"
+  },
+  "tcg-sv8": {
+   "title": "Étincelles Déferlantes"
+  },
+  "tcg-sv8pt5": {
+   "title": "Évolutions Prismatiques"
+  },
+  "tcg-sv9": {
+   "title": "Aventures Ensemble"
+  },
+  "anime-s28": {
+   "title": "Saison 28 : Horizons – Un espoir qui s'élève",
+   "series": "Pocket Monsters (2023)"
+  },
+  "tcg-sv10": {
+   "title": "Rivalités Destinées"
+  },
+  "tcg-rsv10pt5": {
+   "title": "Flamme Blanche"
+  },
+  "tcg-zsv10pt5": {
+   "title": "Foudre Noire"
+  },
+  "tcg-me": {
+   "title": "L'ère Méga-Évolution"
+  },
+  "legends-z-a": {
+   "title": "Légendes Pokémon : Z-A",
+   "note": "L'action se déroule à Illumis."
+  },
+  "tcg-me2": {
+   "title": "Flammes Fantasmagoriques"
+  },
+  "mega-dimension": {
+   "title": "Légendes : Z-A – Méga-Dimension"
+  },
+  "tcg-me2pt5": {
+   "title": "Héros Transcendants"
+  },
+  "firered-leafgreen-switch": {
+   "title": "Rouge Feu et Vert Feuille sur Nintendo Switch",
+   "note": "Les jeux Game Boy Advance, ressortis sur Nintendo Switch."
+  },
+  "gen-10-revealed": {
+   "title": "30ᵉ anniversaire : la 10ᵉ génération est dévoilée",
+   "note": "Pokémon Winds and Waves ont été annoncés sur Nintendo Switch 2 pour 2027."
+  },
+  "pokopia": {
+   "title": "Pokémon Pokopia"
+  },
+  "tcg-me3": {
+   "title": "Équilibre Parfait"
+  },
+  "champions": {
+   "title": "Pokémon Champions",
+   "note": "La version Switch est sortie en premier ; iOS et Android ont été annoncés pour plus tard."
+  },
+  "anime-s29": {
+   "title": "Saison 29 : Horizons – Merveilles à venir",
+   "series": "Pocket Monsters (2023)"
+  },
+  "tcg-me4": {
+   "title": "Chaos Ascendant"
+  },
+  "tcg-me5": {
+   "title": "Nuit Noire"
+  },
+  "tcg-me55": {
+   "title": "30ᵉ Anniversaire"
+  }
+ },
+ "platforms": {
+  "Game Boy": "Game Boy",
+  "Trading Card Game": "Jeu de Cartes à Collectionner",
+  "TV series": "Série TV",
+  "TV broadcast": "Diffusion TV",
+  "Company": "Entreprise",
+  "Retail": "Commerce",
+  "Animated film": "Film d'animation",
+  "Nintendo 64": "Nintendo 64",
+  "Game Boy Color": "Game Boy Color",
+  "Game Boy Advance": "Game Boy Advance",
+  "Nintendo GameCube": "Nintendo GameCube",
+  "Esports": "Esport",
+  "Game Boy Advance / Nintendo DS": "Game Boy Advance / Nintendo DS",
+  "Nintendo DS": "Nintendo DS",
+  "WiiWare": "WiiWare",
+  "Wii": "Wii",
+  "Nintendo 3DS": "Nintendo 3DS",
+  "Event": "Événement",
+  "Nintendo 3DS, then iOS / Android": "Nintendo 3DS, puis iOS / Android",
+  "Arcade, then Wii U": "Arcade, puis Wii U",
+  "iOS / Android": "iOS / Android",
+  "Nintendo Switch, then iOS / Android": "Nintendo Switch, puis iOS / Android",
+  "Nintendo Switch": "Nintendo Switch",
+  "Live-action film": "Film en prises de vues réelles",
+  "Nintendo Switch, iOS / Android": "Nintendo Switch, iOS / Android",
+  "Broadcast": "Diffusion",
+  "iOS / Android / Windows / macOS": "iOS / Android / Windows / macOS",
+  "Nintendo Switch / Switch 2": "Nintendo Switch / Switch 2",
+  "Nintendo Switch 2": "Nintendo Switch 2"
+ },
+ "tcg": {
+  "name": "JCC",
+  "series": {
+   "Base series": "série Base",
+   "Gym series": "série Gym",
+   "Neo series": "série Neo",
+   "Other series": "autres séries",
+   "E-Card series": "série e-Card",
+   "EX series": "série EX",
+   "Diamond & Pearl series": "série Diamant & Perle",
+   "Platinum series": "série Platine",
+   "HeartGold & SoulSilver series": "série HeartGold & SoulSilver",
+   "Black & White series": "série Noir & Blanc",
+   "XY series": "série XY",
+   "Sun & Moon series": "série Soleil et Lune",
+   "Sword & Shield series": "série Épée et Bouclier",
+   "Scarlet & Violet series": "série Écarlate et Violet",
+   "Mega Evolution series": "série Méga-Évolution"
+  }
+ },
+ "regions": {
+  "Kitakami": "Septentria"
+ }
+}

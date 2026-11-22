@@ -5,7 +5,7 @@ import Link from "@/components/ui/Link";
 import { motion } from "framer-motion";
 import { Loader2, Medal, Trophy } from "lucide-react";
 import { CONN_LEVELS, CONN_MAX_MISTAKES, type ConnBoardRow, type ConnBoardStanding } from "@/lib/connections/types";
-import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
+import { isCleanName } from "@/lib/name-filter";
 import type { BadgeDef } from "@/lib/progress";
 import { clock } from "@/lib/share";
 import { NextDailyCountdown } from "@/components/NextDailyCountdown";
@@ -14,9 +14,11 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { BeatMyTime, FriendsBoard } from "./social";
 import { useT } from "@/i18n/client";
+import communityNs from "@/messages/community";
 import { translator, type Translator } from "@/i18n/catalog";
 import { formatNumber } from "@/i18n/format";
 import conn from "@/messages/connections";
+import badgesNs from "@/messages/badges";
 
 type ConnT = Translator<typeof conn.en>;
 
@@ -114,6 +116,7 @@ export function ComeBackTomorrow({ next }: { next: number }) {
 /** Badges this game just earned. */
 export function NewBadges({ badges }: { badges: BadgeDef[] }) {
   const t = useT(conn);
+  const bt = useT(badgesNs);
   if (!badges.length) return null;
   return (
     <div className="space-y-2" data-testid="conn-badges">
@@ -129,8 +132,8 @@ export function NewBadges({ badges }: { badges: BadgeDef[] }) {
           >
             <BadgeMedal id={b.id} />
             <span>
-              <span className="block text-sm font-semibold">{b.name}</span>
-              <span className="block text-[11px] leading-tight text-muted-foreground">{b.description}</span>
+              <span className="block text-sm font-semibold">{bt(`${b.id as keyof typeof badgesNs.en & string}.name`)}</span>
+              <span className="block text-[11px] leading-tight text-muted-foreground">{bt(`${b.id as keyof typeof badgesNs.en & string}.description`)}</span>
             </span>
           </motion.div>
         ))}
@@ -163,6 +166,7 @@ export function DailyLeaderboard({
   onName: (name: string) => Promise<void>;
 }) {
   const t = useT(conn);
+  const ct = useT(communityNs);
   const id = useId();
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
@@ -174,7 +178,7 @@ export function DailyLeaderboard({
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     const n = name.trim();
-    if (!isCleanName(n)) return setError(NAME_REJECTED);
+    if (!isCleanName(n)) return setError(ct("nameRejected"));
     setBusy(true);
     setError(null);
     await onName(n);

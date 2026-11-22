@@ -6,6 +6,8 @@ import { ArrowRight, Brain, CalendarDays, Check } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { useProgress } from "@/lib/progress";
 import { useToday } from "@/lib/use-today";
+import { useT } from "@/i18n/client";
+import featuredNs from "@/messages/quiz-featured";
 
 interface Featured {
   id: "daily" | "iq";
@@ -13,10 +15,6 @@ interface Featured {
   /** HSL triplet. */
   accent: string;
   icon: LucideIcon;
-  kicker: string;
-  title: string;
-  text: string;
-  cta: string;
   variant: "default" | "secondary";
 }
 
@@ -26,10 +24,6 @@ const FEATURED: readonly Featured[] = [
     href: "/daily",
     accent: "340 86% 60%",
     icon: CalendarDays,
-    kicker: "Daily · new every day",
-    title: "Daily Challenge",
-    text: "Today's Pokémon trivia quiz, the same for everyone. Keep your streak going.",
-    cta: "Play today's",
     variant: "default",
   },
   {
@@ -37,10 +31,6 @@ const FEATURED: readonly Featured[] = [
     href: "/iq-test",
     accent: "265 85% 72%",
     icon: Brain,
-    kicker: "Cognitive test · about 20 minutes",
-    title: "PokéIQ Test",
-    text: "Reasoning, memory, speed, spatial and Pokémon knowledge, scored against other trainers.",
-    cta: "Take the test",
     variant: "secondary",
   },
 ];
@@ -54,6 +44,7 @@ export function QuizFeatured() {
   const progress = useProgress();
   const today = useToday();
   const dailyDone = Boolean(today && progress?.daily?.results?.[today]);
+  const t = useT(featuredNs);
   return (
     <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
       {FEATURED.map((f) => {
@@ -81,19 +72,19 @@ export function QuizFeatured() {
                 </span>
                 <span className="min-w-0">
                   <span className="hud-label block" style={{ color: `hsl(${f.accent})` }}>
-                    {f.kicker}
+                    {t(`${f.id}.kicker`)}
                   </span>
-                  <span className="block font-display text-2xl font-bold uppercase tracking-wide max-md:text-xl">{f.title}</span>
+                  <span className="block font-display text-2xl font-bold uppercase tracking-wide max-md:text-xl">{t(`${f.id}.title`)}</span>
                 </span>
               </span>
-              <span className="mt-3 block text-sm text-muted-foreground">{f.text}</span>
+              <span className="mt-3 block text-sm text-muted-foreground">{t(`${f.id}.text`)}</span>
               <span className="mt-5 flex items-center gap-3">
                 <span className={buttonVariants({ variant: f.variant })}>
-                  {f.cta} <ArrowRight className="h-4 w-4" aria-hidden />
+                  {t(`${f.id}.cta`)} <ArrowRight className="h-4 w-4" aria-hidden />
                 </span>
                 {done && (
                   <span className="inline-flex items-center gap-1 text-sm font-semibold text-success" data-testid="quiz-featured-daily-done">
-                    <Check className="h-4 w-4" aria-hidden /> Done today
+                    <Check className="h-4 w-4" aria-hidden /> {t("done")}
                   </span>
                 )}
               </span>

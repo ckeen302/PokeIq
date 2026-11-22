@@ -10,12 +10,24 @@ import { Button } from "@/components/ui/button";
 import { GROUP_FORMATS, PLAY_FORMAT_INFO, PLAY_FORMATS, type PlayFormatId } from "@/lib/battle/play";
 import { replayMatchup, replayResult, replayTitle, type ReplayListResponse, type ReplaySummary } from "@/lib/battle/replay";
 import { battleIdHeaders, ensureBattleId, rememberedReplays } from "@/lib/battle/replay-client";
-import { startedAgo } from "@/lib/battle/watch";
 import { HudHeading } from "@/components/game/HudHeading";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import type { Translator } from "@/i18n/catalog";
+import battleReplays from "@/messages/battle-replays";
+import battleReplayWords from "@/messages/battle-replay-words";
+
+/** "now", "12 min ago", "2 h 5 min ago". */
+function ago(w: Translator<typeof battleReplayWords.en>, at: number, now: number): string {
+  const min = Math.floor(Math.max(0, now - at) / 60_000);
+  if (min < 1) return w("ago.now");
+  if (min < 60) return w("ago.min", { min });
+  return w("ago.hours", { h: Math.floor(min / 60), min: min % 60 });
+}
 
 export function ReplayRow({ r, now }: { r: ReplaySummary; now: number }) {
+  const w = useT(battleReplayWords);
   return (
     <Link
       href={`/battle/replay/${r.id}`}
@@ -25,22 +37,22 @@ export function ReplayRow({ r, now }: { r: ReplaySummary; now: number }) {
       <Clapperboard className="h-4 w-4 shrink-0 text-screen" aria-hidden />
       <span className="min-w-0 flex-1">
         <span className="block truncate font-display font-bold uppercase">
-          {replayMatchup(r).a} <span className="text-muted-foreground">{replayMatchup(r).joiner}</span> {replayMatchup(r).b}
+          {replayMatchup(r).a} <span className="text-muted-foreground">{w(`joiner.${replayMatchup(r).joiner}`)}</span> {replayMatchup(r).b}
         </span>
         <span className="block truncate text-xs text-muted-foreground">
-          {replayResult(r)} · {r.turns} turn{r.turns === 1 ? "" : "s"}
+          {replayResult(r, w)} · {w("turns", { n: r.turns })}
         </span>
       </span>
       <span className="hud-label flex items-center gap-1.5">
-        {r.ranked && <Trophy className="h-3 w-3 text-warning" aria-label="Ranked" />}
+        {r.ranked && <Trophy className="h-3 w-3 text-warning" aria-label={w("ranked")} />}
         {r.formatName}
       </span>
-      <span className="w-24 text-right text-xs text-muted-foreground">{startedAgo(r.uploadedAt, now).replace("just now", "now")}</span>
+      <span className="w-24 text-right text-xs text-muted-foreground">{ago(w, r.uploadedAt, now)}</span>
     </Link>
   );
 }
 
-function useReplays(scope: "recent" | "mine", format: PlayFormatId | null) {
+function useReplays(scope: "recent" | "mine", format: PlayFormatId | null, failed: string) {
   const [state, setState] = useState<{ loading: boolean; data: ReplayListResponse | null; error: string | null }>({ loading: true, data: null, error: null });
   useEffect(() => {
     let live = true;
@@ -58,32 +70,33 @@ function useReplays(scope: "recent" | "mine", format: PlayFormatId | null) {
         const res = await fetch(url, { headers, cache: "no-store" });
         const data = (await res.json().catch(() => null)) as (ReplayListResponse & { error?: string }) | null;
         if (!live) return;
-        if (!res.ok || !data) throw new Error(data?.error ?? "Couldn't load replays.");
+        if (!res.ok || !data) throw new Error(data?.error ?? failed);
         setState({ loading: false, data, error: null });
       } catch (err) {
-        if (live) setState({ loading: false, data: null, error: err instanceof Error ? err.message : "Couldn't load replays." });
+        if (live) setState({ loading: false, data: null, error: err instanceof Error ? err.message : failed });
       }
     })();
     return () => {
       live = false;
     };
-  }, [scope, format]);
+  }, [scope, format, failed]);
   return state;
 }
 
 /** `hold`: while loading, keep the room a full list takes, so the page below doesn't jump when it arrives. */
 function List({ state, empty, hold }: { state: ReturnType<typeof useReplays>; empty: string; hold?: boolean }) {
   const [now, setNow] = useState(0);
+  const t = useT(battleReplays);
   useEffect(() => setNow(Date.now()), [state.data]);
   if (state.loading) {
     return (
       <div className={cn(hold && "min-h-[30rem]")}>
-        <Loader2 className="mx-auto my-8 h-5 w-5 animate-spin text-screen" aria-label="Loading replays" />
+        <Loader2 className="mx-auto my-8 h-5 w-5 animate-spin text-screen" aria-label={t("lists.loading")} />
       </div>
     );
   }
   if (state.error) return <p className="text-sm text-destructive">{state.error}</p>;
-  if (!state.data?.available) return <p className="text-sm text-muted-foreground">Replays aren&apos;t available on this server yet.</p>;
+  if (!state.data?.available) return <p className="text-sm text-muted-foreground">{t("lists.unavailable")}</p>;
   if (!state.data.replays.length) return <p className="text-sm text-muted-foreground">{empty}</p>;
   return (
     <div className="space-y-2">
@@ -97,21 +110,22 @@ function List({ state, empty, hold }: { state: ReturnType<typeof useReplays>; em
 /** "My replays" and the recent public ones, filtered by format. */
 export function ReplayLists() {
   const [format, setFormat] = useState<PlayFormatId | null>(null);
-  const mine = useReplays("mine", null);
-  const recent = useReplays("recent", format);
+  const t = useT(battleReplays);
+  const mine = useReplays("mine", null, t("lists.loadFailed"));
+  const recent = useReplays("recent", format, t("lists.loadFailed"));
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <section className="space-y-3" data-testid="my-replays">
-        <HudHeading index={1} title="My replays" />
+        <HudHeading index={1} title={t("lists.mine")} />
         <Card>
           <CardContent className="p-3">
-            <List state={mine} empty="No replays yet. Ranked and public battles save theirs; after any other, press Save replay." />
+            <List state={mine} empty={t("lists.mineEmpty")} />
           </CardContent>
         </Card>
       </section>
       <section className="space-y-3" data-testid="recent-replays">
-        <HudHeading index={2} title="Recent replays" />
-        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter by format">
+        <HudHeading index={2} title={t("lists.recent")} />
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label={t("lists.filter")}>
           {[null, ...PLAY_FORMATS, ...GROUP_FORMATS].map((f) => (
             <button
               key={f ?? "all"}
@@ -123,13 +137,13 @@ export function ReplayLists() {
                 format === f ? "border-primary bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:text-foreground"
               )}
             >
-              {f ? PLAY_FORMAT_INFO[f].short : "All"}
+              {f ? PLAY_FORMAT_INFO[f].short : t("lists.all")}
             </button>
           ))}
         </div>
         <Card>
           <CardContent className="p-3">
-            <List state={recent} empty="No public replays in this format yet." hold />
+            <List state={recent} empty={t("lists.recentEmpty")} hold />
           </CardContent>
         </Card>
       </section>
@@ -149,9 +163,11 @@ export function ReplayImport() {
   const [error, setError] = useState<string | null>(null);
   const [replay, setReplay] = useState<ReplayData | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const t = useT(battleReplays);
+  const w = useT(battleReplayWords);
 
   const load = (input: string) => {
-    const res = parseShowdownReplay(input, PLAY_FORMAT_INFO);
+    const res = parseShowdownReplay(input, PLAY_FORMAT_INFO, t);
     if (res.ok) {
       setError(null);
       setReplay(res.replay);
@@ -164,9 +180,9 @@ export function ReplayImport() {
       <div className="space-y-3">
         <p className="text-sm text-muted-foreground" data-testid="import-summary">
           <strong className="text-foreground">
-            {replayTitle(replay)}
+            {replayTitle(replay, w)}
           </strong>{" "}
-          · {replay.formatName} · {replay.turns} turn{replay.turns === 1 ? "" : "s"}
+          · {replay.formatName} · {w("turns", { n: replay.turns })}
         </p>
         <ReplayViewer replay={replay} imported={{ onReset: () => setReplay(null) }} />
       </div>
@@ -177,7 +193,7 @@ export function ReplayImport() {
     <Card>
       <CardContent className="space-y-4 p-4 sm:p-6">
         <label className="block space-y-2">
-          <span className="hud-label">Battle log</span>
+          <span className="hud-label">{t("import.log")}</span>
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -195,10 +211,10 @@ export function ReplayImport() {
         )}
         <div className="flex flex-wrap items-center gap-2">
           <Button type="button" onClick={() => load(text)} disabled={!text.trim()} data-testid="import-watch">
-            <Play className="h-4 w-4" aria-hidden /> Watch
+            <Play className="h-4 w-4" aria-hidden /> {t("import.watch")}
           </Button>
           <Button type="button" variant="outline" onClick={() => fileRef.current?.click()} data-testid="import-file-button">
-            <FileUp className="h-4 w-4" aria-hidden /> Open a replay file
+            <FileUp className="h-4 w-4" aria-hidden /> {t("import.open")}
           </Button>
           <input
             ref={fileRef}
@@ -210,11 +226,11 @@ export function ReplayImport() {
               const file = e.target.files?.[0];
               e.target.value = "";
               if (!file) return;
-              if (file.size > IMPORT_MAX_BYTES) return setError("That file is too big to be a battle replay.");
+              if (file.size > IMPORT_MAX_BYTES) return setError(t("import.tooBig"));
               load(await file.text());
             }}
           />
-          <span className="text-xs text-muted-foreground">Showdown&apos;s saved replays (.html) and battle logs (.log). Read on your device, never uploaded.</span>
+          <span className="text-xs text-muted-foreground">{t("import.hint")}</span>
         </div>
       </CardContent>
     </Card>

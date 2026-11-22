@@ -8,6 +8,8 @@ import { TrainerAvatar } from "@/components/trainers/TrainerAvatar";
 import { Button } from "@/components/ui/button";
 import { revealFactor, suggest, resolveGuess, TRAINER_NAMES } from "@/lib/whose-team";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import runNs from "@/messages/quiz-run";
 
 /**
  * Whose Team Is This? pieces, shared by solo runs (QuizController) and
@@ -38,6 +40,7 @@ interface TeamBoardProps {
 
 /** The team: every Pokémon, or in Hard the ones revealed so far and a "?" for each still hidden. */
 export function TeamBoard({ cards, reveal, onReveal, revealing }: TeamBoardProps) {
+  const t = useT(runNs);
   const total = reveal?.total ?? cards.length;
   const hidden = Math.max(0, total - cards.length);
   const nextFactor = reveal && reveal.shown < reveal.total ? revealFactor(reveal.shown + 1, reveal.total) : null;
@@ -45,7 +48,7 @@ export function TeamBoard({ cards, reveal, onReveal, revealing }: TeamBoardProps
     <div className="space-y-3">
       <ol
         className={cn("mx-auto grid gap-2 sm:gap-3", GRID[Math.min(total, 8)] ?? GRID[6])}
-        aria-label={reveal ? `Team: ${cards.length} of ${total} Pokémon shown` : `Team of ${total} Pokémon`}
+        aria-label={reveal ? t("team.shown", { shown: cards.length, total }) : t("team.all", { total })}
       >
         {cards.map((card, i) => (
           <motion.li
@@ -75,10 +78,10 @@ export function TeamBoard({ cards, reveal, onReveal, revealing }: TeamBoardProps
       {reveal && onReveal && nextFactor !== null && (
         <div className="flex flex-col items-center gap-2 sm:flex-row sm:justify-between">
           <p className="hud-label normal-case tracking-wide text-muted-foreground" data-testid="team-worth">
-            Seen {reveal.shown}/{reveal.total} · a right answer now is worth {Math.round(revealFactor(reveal.shown, reveal.total) * 100)}%
+            {t("team.worth", { shown: reveal.shown, total: reveal.total, pct: Math.round(revealFactor(reveal.shown, reveal.total) * 100) })}
           </p>
           <Button type="button" variant="outline" size="sm" onClick={onReveal} disabled={revealing} data-testid="team-reveal">
-            <Eye className="h-4 w-4" aria-hidden /> {revealing ? "Revealing…" : `Reveal next (${Math.round(nextFactor * 100)}%)`}
+            <Eye className="h-4 w-4" aria-hidden /> {revealing ? t("team.revealing") : t("team.revealNext", { pct: Math.round(nextFactor * 100) })}
           </Button>
         </div>
       )}
@@ -89,12 +92,15 @@ export function TeamBoard({ cards, reveal, onReveal, revealing }: TeamBoardProps
 interface GuessBoxProps {
   /** Every answer the server accepts (the question's options). */
   options: readonly string[];
+  /** In another language: each option's other names the server also accepts (English, rōmaji). */
+  aliases?: readonly string[][];
   disabled?: boolean;
   onGuess: (name: string) => void;
 }
 
 /** The guess: type a trainer, pick from the autocomplete (aliases like "Green" find Blue). */
-export function GuessBox({ options, disabled, onGuess }: GuessBoxProps) {
+export function GuessBox({ options, aliases, disabled, onGuess }: GuessBoxProps) {
+  const t = useT(runNs);
   const listId = useId();
   const [text, setText] = useState("");
   const [active, setActive] = useState(0);
@@ -102,12 +108,14 @@ export function GuessBox({ options, disabled, onGuess }: GuessBoxProps) {
   const [hint, setHint] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const names = useMemo(() => {
+    // Another language: the options are the trainers' names in it, and their English names are aliases.
+    if (aliases) return options.map((name, i) => ({ name, aliases: aliases[i] ?? [] }));
     const allowed = new Set(options);
     // The server's list is the truth; the alias table only adds other spellings.
     const known = TRAINER_NAMES.filter((n) => allowed.has(n.name));
     const extra = options.filter((o) => !known.some((n) => n.name === o)).map((name) => ({ name }));
     return [...known, ...extra];
-  }, [options]);
+  }, [options, aliases]);
   const matches = useMemo(() => suggest(text, names), [text, names]);
 
   const commit = (name: string | null) => {
@@ -141,8 +149,8 @@ export function GuessBox({ options, disabled, onGuess }: GuessBoxProps) {
             aria-controls={listId}
             aria-autocomplete="list"
             aria-activedescendant={open && matches[active] ? `${listId}-${active}` : undefined}
-            aria-label="Trainer's name"
-            placeholder="Type a trainer's name…"
+            aria-label={t("team.nameLabel")}
+            placeholder={t("team.placeholder")}
             autoComplete="off"
             autoCorrect="off"
             spellCheck={false}
@@ -202,7 +210,7 @@ export function GuessBox({ options, disabled, onGuess }: GuessBoxProps) {
                     className={cn("flex cursor-pointer items-center justify-between gap-2 px-4 py-2.5 font-display text-[15px] font-semibold tracking-wide", i === active && "bg-screen/10 text-foreground")}
                   >
                     <span>{m.name}</span>
-                    {m.via && <span className="text-xs font-normal text-muted-foreground">also “{m.via}”</span>}
+                    {m.via && <span className="text-xs font-normal text-muted-foreground">{t("team.also", { name: m.via })}</span>}
                   </li>
                 ))}
               </motion.ul>
@@ -210,16 +218,17 @@ export function GuessBox({ options, disabled, onGuess }: GuessBoxProps) {
           </AnimatePresence>
         </div>
         <Button type="submit" size="lg" className="h-12 shrink-0" disabled={disabled} data-testid="team-submit">
-          <Send className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">Guess</span>
+          <Send className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">{t("team.guess")}</span>
         </Button>
       </div>
-      {hint && <p className="mt-2 text-xs text-destructive">Pick a trainer from the list.</p>}
+      {hint && <p className="mt-2 text-xs text-destructive">{t("team.pick")}</p>}
     </form>
   );
 }
 
 /** Who it was: the trainer's plate (initials, as on the trainer pages) and which appearance this team is from. */
 export function TrainerReveal({ name, appearance, correct }: { name: string; appearance?: string; correct: boolean }) {
+  const t = useT(runNs);
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -229,7 +238,7 @@ export function TrainerReveal({ name, appearance, correct }: { name: string; app
     >
       <TrainerAvatar name={name} size="md" />
       <div className="min-w-0">
-        <p className="hud-label">{correct ? "You got it" : "It was"}</p>
+        <p className="hud-label">{correct ? t("team.gotIt") : t("team.itWas")}</p>
         <p className="font-display text-2xl font-bold uppercase leading-tight">{name}</p>
         {appearance && <p className="text-sm text-muted-foreground">{appearance}</p>}
       </div>

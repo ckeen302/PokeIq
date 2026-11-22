@@ -1,0 +1,100 @@
+{
+  "events": {
+    "100m": {
+      "name": "100 m",
+      "lower": "the 100 m",
+      "question": "Who is the fastest Pokémon over 100 m?",
+      "hook": "Who's the fastest Pokémon? 100 m ⚡"
+    },
+    "200m": {
+      "name": "200 m",
+      "lower": "the 200 m",
+      "question": "Who is the fastest Pokémon round the bend, over 200 m?",
+      "hook": "Who wins the 200 m? 🏃"
+    },
+    "400m": {
+      "name": "400 m",
+      "lower": "the 400 m",
+      "question": "Which Pokémon runs the fastest lap?",
+      "hook": "Which Pokémon runs the fastest lap? 🏁"
+    },
+    "long-jump": {
+      "name": "Long jump",
+      "lower": "the long jump",
+      "question": "Who is the best long jumper of all Pokémon?",
+      "hook": "Which Pokémon jumps the furthest? 🦘"
+    },
+    "high-jump": {
+      "name": "High jump",
+      "lower": "the high jump",
+      "question": "Which Pokémon jumps the highest?",
+      "hook": "Which Pokémon jumps the highest? 🪂"
+    },
+    "shot-put": {
+      "name": "Shot put",
+      "lower": "the shot put",
+      "question": "Which Pokémon throws a 7.26 kg shot the furthest?",
+      "hook": "Which Pokémon throws the furthest? 💪"
+    },
+    "javelin": {
+      "name": "Javelin",
+      "lower": "the javelin",
+      "question": "Which Pokémon throws the javelin the furthest?",
+      "hook": "Who throws the javelin furthest? 🎯"
+    },
+    "weightlifting": {
+      "name": "Weightlifting",
+      "lower": "the weightlifting",
+      "question": "Who's the strongest Pokémon? The clean & jerk",
+      "hook": "Who's the strongest Pokémon? 🏋️"
+    },
+    "50m-freestyle": {
+      "name": "50 m freestyle",
+      "lower": "the 50 m freestyle",
+      "question": "Which Pokémon is the fastest swimmer over 50 m?",
+      "hook": "Which Pokémon swims fastest? 🌊"
+    },
+    "100m-freestyle": {
+      "name": "100 m freestyle",
+      "lower": "the 100 m freestyle",
+      "question": "Which Pokémon wins the 100 m freestyle?",
+      "hook": "Which Pokémon wins the 100 m freestyle? 🏊"
+    },
+    "wrestling": {
+      "name": "Wrestling",
+      "lower": "the wrestling",
+      "question": "Which Pokémon is the hardest to push out of the ring?",
+      "hook": "Which Pokémon can push the others out? 🤼"
+    },
+    "all-around": {
+      "name": "All-around",
+      "lower": "the all-around",
+      "question": "Who is the best all-round athlete of all Pokémon?",
+      "hook": "Who's the best all-round Pokémon? 🏆"
+    }
+  },
+  "h2h": {
+    "sprint": "Can {a} outrun {b}?",
+    "highJump": "Can {a} jump higher than {b}?",
+    "jump": "Can {a} out-jump {b}?",
+    "throw": "Can {a} out-throw {b}?",
+    "lift": "Can {a} out-lift {b}?",
+    "swim": "Can {a} out-swim {b}?",
+    "wrestle": "Can {a} push {b} out of the ring?",
+    "allAround": "{a} or {b}: who's the better all-rounder?"
+  },
+  "summary": {
+    "pushedOut": "Pushed out",
+    "lostOnBell": "Lost on the bell",
+    "winner": "Winner",
+    "pushesOut": "{w} pushes {l} out of the ring",
+    "winsOnBell": "{w} wins on the bell",
+    "noLift": "No lift",
+    "noMark": "No mark",
+    "deadHeat": "A dead heat at {mark}",
+    "neither": "Neither gets a mark",
+    "winsWith": "{w} wins with {mark}",
+    "winsOnPhoto": "{w} wins on the photo",
+    "winsBy": "{w} wins by {gap}"
+  }
+}

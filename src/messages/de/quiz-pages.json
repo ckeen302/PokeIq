@@ -1,0 +1,118 @@
+{
+  "hub": {
+    "title": "Wer ist das Pokémon? Quiz und weitere Pokémon-Quiz-Modi",
+    "description": "Spiel das Quiz „Wer ist das Pokémon?“, ein Ruf-Quiz, Pokédex-Einträge, Typen-Effektivität und Höher oder tiefer – in den Formaten Klassisch, Überleben und Blitz.",
+    "h1": "Quiz",
+    "duel": "Quiz-Duell",
+    "duelLine": "Beantworte live dieselben Fragen wie ein Freund.",
+    "infoName": "die Pokémon-Quiz",
+    "infoDescription": "Kostenlose Pokémon-Quiz wie „Wer ist das Pokémon?“, ein Ruf-Quiz und Typen-Effektivität, in den Formaten Klassisch, Überleben und Blitz.",
+    "infoIntro": "Spiel das Quiz „Wer ist das Pokémon?“ und unsere anderen Pokémon-Quiz in drei Formaten, mit allen Pokémon.",
+    "step1": "Wähl einen Quiz-Modus und die Generationen, die dabei sein sollen.",
+    "step2": "Wähl ein Format: Klassisch, Überleben oder Blitz.",
+    "step3": "Antworte, bevor die Zeit abläuft.",
+    "step4": "Dein PokéIQ gewichtet jede richtige Antwort danach, wie knifflig die Frage ist.",
+    "faqFormatsQ": "Welche Formate gibt es?",
+    "faqFormatsA": "Klassisch sind 10 Fragen mit je 15 Sekunden, Überleben ist endlos mit 3 Leben, und bei Blitz hast du 60 Sekunden für so viele Antworten wie möglich.",
+    "faqGensQ": "Kann ich die Generationen auswählen?",
+    "faqGensA": "Ja: Wähl einen Modus und dann die Generationen, die dabei sein sollen."
+  },
+  "presets": {
+    "whos-that-pokemon": {
+      "title": "Wer ist das Pokémon? Silhouetten-Quiz",
+      "h1": "Wer ist das Pokémon?",
+      "description": "Errate das Pokémon an seiner Silhouette. Wähl eine beliebige der neun Generationen, in den Modi Klassisch, Überleben und Blitz."
+    },
+    "pokemon-cry-quiz": {
+      "title": "Pokémon-Ruf-Quiz – errate das Pokémon an seinem Ruf",
+      "h1": "Pokémon-Ruf-Quiz",
+      "description": "Erkennst du Pokémon an ihren Rufen? Hör genau hin und rate dich durch alle Generationen."
+    },
+    "pokedex-entry-quiz": {
+      "title": "Pokédex-Quiz – errate das Pokémon an seinem Pokédex-Eintrag",
+      "h1": "Pokédex-Detektiv",
+      "description": "Lies einen zensierten Pokédex-Eintrag und nenn das Pokémon. Dazu Fragen zu Kategorien und Fähigkeiten."
+    },
+    "pokemon-type-quiz": {
+      "title": "Pokémon-Typen-Quiz – Schwächen, Immunitäten & Effektivität",
+      "h1": "Typen-Meister",
+      "description": "Teste dein Wissen über Typen: Schwächen von Doppeltypen, 4×-Effektivität, Immunitäten und Typ-Kombinationen."
+    },
+    "pokemon-higher-or-lower": {
+      "title": "Pokémon Höher oder tiefer – das Basiswerte-Spiel",
+      "h1": "Höher oder tiefer",
+      "description": "Welches Pokémon ist schneller, schwerer oder hat die höhere Basiswertsumme? Halte deine Serie am Leben."
+    },
+    "pokemon-games-quiz": {
+      "title": "Pokémon-Spiele-Quiz – Arenaleiter, Champs & Regionen",
+      "h1": "Hauptspiele-Quiz",
+      "description": "Wie gut kennst du die Pokémon-Haupt-RPGs? Arenaleiter, Top Vier, Rivalen, Schurken, Starter und Regionen von Rot und Blau bis Pokémon-Legenden: Z-A."
+    },
+    "pokemon-ability-move-item-quiz": {
+      "title": "Pokémon-Quiz zu Fähigkeiten, Attacken & Items",
+      "h1": "Fähigkeiten, Attacken & Items",
+      "description": "Welches Pokémon kann diese Fähigkeit haben? Welchen Typ hat diese Attacke? Was bewirkt dieses Item? Fragen aus den Daten von Pokémon Showdown."
+    },
+    "real-shiny-quiz": {
+      "title": "Welches ist das echte Shiny? Quiz zu schillernden Pokémon",
+      "h1": "Welches ist das echte Shiny?",
+      "description": "Eine von vier Färbungen ist das echte schillernde Pokémon, die anderen sind Fälschungen. Erkennst du es? Alle Pokémon, auf Leicht oder Schwer."
+    },
+    "pokemon-zoom-quiz": {
+      "title": "Pokémon-Zoom-Quiz – errate das Pokémon an einer Nahaufnahme",
+      "h1": "Zoom",
+      "description": "Nenn das Pokémon anhand einer extremen Nahaufnahme seines offiziellen Artworks. Jeder Fehler zoomt eine Stufe heraus, sechs insgesamt, dazu ein täglicher Zoom."
+    },
+    "pokemon-anime-quiz": {
+      "title": "Pokémon-Anime-Quiz – Ash, Team Rocket & Horizonte",
+      "h1": "Pokémon-Anime-Quiz",
+      "description": "Ashs Pokémon, seine Freunde und Rivalen, Team Rocket, Liga-Ergebnisse, die Filme und Pokémon Horizonte. Jede Antwort mit Bulbapedia geprüft."
+    },
+    "whose-team-is-this": {
+      "title": "Wessen Team ist das? – Errate den Pokémon-Trainer an seinem Team",
+      "h1": "Wessen Team ist das?",
+      "description": "Arenaleiter, Top Vier, Champs, Rivalen und Schurken aus allen Hauptspielen, dazu Ash und seine Freunde aus dem Anime: Erkenne den Trainer an seinem Team."
+    },
+    "pokemon-trivia-quiz": {
+      "title": "Pokémon-Trivia-Quiz – gemischte Fragen",
+      "h1": "Pokémon-Trivia",
+      "description": "Ein gemischtes Pokémon-Quiz: Silhouetten, Pokédex-Einträge, Typen-Effektivität und Werte-Duelle."
+    }
+  },
+  "gen": {
+    "title": "Gen.-{n}-Pokémon-Quiz – Wer ist das Pokémon? aus {region}",
+    "h1": "Gen.-{n}-Pokémon-Quiz ({region})",
+    "description": "Wie gut kennst du den {region}-Pokédex? Erkenne jedes Pokémon der Gen. {n} an seiner Silhouette."
+  },
+  "preset": {
+    "modeSelect": "Modus wählen",
+    "intro": "{name} ist eins unserer kostenlosen Pokémon-Quiz, wie „Wer ist das Pokémon?“: {description}",
+    "stepDifficulty": "Wähl ein Format, die Schwierigkeit und die Generationen, die dabei sein sollen.",
+    "stepFormat": "Wähl ein Format und die Generationen, die dabei sein sollen.",
+    "step2": "Beantworte jede Frage, bevor die Zeit abläuft.",
+    "step3": "Dein PokéIQ gewichtet jede richtige Antwort danach, wie knifflig die Frage ist.",
+    "faqQ": "Welche Formate kann ich spielen?",
+    "faqA": "Klassisch sind 10 Fragen mit je 15 Sekunden, Überleben ist endlos mit 3 Leben, und bei Blitz hast du 60 Sekunden für so viele Antworten wie möglich."
+  },
+  "daily": {
+    "title": "Tägliche Pokémon-Herausforderung",
+    "description": "Jeden Tag ein neues Pokémon-Quiz mit 10 Fragen – für alle dasselbe. Halte deine Serie und vergleiche deinen PokéIQ."
+  },
+  "duel": {
+    "title": "Ein Pokémon-Quiz-Duell",
+    "description": "Pokémon-Quiz im Direktduell: dieselben Fragen für euch beide, richtig und schnell bringt am meisten.",
+    "versus": "{host} vs {guest}: ein {mode}-Duell",
+    "challenge": "{host} fordert dich zu einem {mode}-Duell heraus",
+    "aTrainer": "Ein Trainer",
+    "invite": "{mode} im Direktduell: dieselben {n} Fragen für euch beide, richtig und schnell bringt am meisten.",
+    "inviteLevel": "{mode} im Direktduell auf {level}: dieselben {n} Fragen für euch beide, richtig und schnell bringt am meisten."
+  },
+  "challenge": {
+    "title": "Herausforderung",
+    "aTrainer": "Ein Trainer",
+    "scored": "{who} hat {correct}/{total} (PokéIQ {iq}) – schaffst du mehr?",
+    "description": "{run} auf PokéIQ. Spiel genau dieselben Fragen und finde heraus, wer Pokémon besser kennt.",
+    "daily": "Tägliche Herausforderung #{n}",
+    "run": "{mode} · {format}"
+  }
+}

@@ -1,6 +1,9 @@
 import { STAT_LABELS, formatHeight, formatWeight, type Pokemon, type StatKey } from "@/lib/pokemon/pokedex";
-import type { QuestionBuilder } from "../types";
+import type { Question, QuestionBuilder } from "../types";
 import { clampRating, difficultyPool } from "../shared";
+import type { QuizLang } from "../i18n";
+import { localizable, wordOptions } from "../localize";
+import { pokemonName } from "../words";
 
 /**
  * Higher or Lower — two Pokémon, one stat. Difficulty is the relative gap
@@ -24,6 +27,14 @@ function format(p: Pokemon, m: Metric): string {
   if (m === "weight") return formatWeight(p.weight);
   if (m === "bst") return `${p.bst} BST`;
   return `${p.stats[m]} ${STAT_LABELS[m]}`;
+}
+
+/** A value in the language: "1,7 m", "90,5 kg", "525 (total)", "130 Attaque". */
+function formatIn(L: QuizLang, p: Pokemon, m: Metric): string {
+  if (m === "height") return L.t("hl.metres", { n: L.num(p.height / 10) });
+  if (m === "weight") return L.t("hl.kilograms", { n: L.num(p.weight / 10) });
+  if (m === "bst") return L.t("hl.bstValue", { n: p.bst });
+  return L.t("hl.statValue", { n: p.stats[m], stat: L.stat(m) });
 }
 
 function promptFor(m: Metric, higher: boolean): string {
@@ -54,7 +65,7 @@ export const higherLower: QuestionBuilder = (rng, opts) => {
     opts.used.add(a.id);
     opts.used.add(b.id);
     const winner = (va > vb) === higher ? a : b;
-    return {
+    const q: Question = {
       itemKey: `higher-lower:${metric}:${Math.min(a.id, b.id)}-${Math.max(a.id, b.id)}:${higher ? "hi" : "lo"}`,
       module: "higher-lower",
       prompt: promptFor(metric, higher),
@@ -68,6 +79,20 @@ export const higherLower: QuestionBuilder = (rng, opts) => {
       // 2 options means a 50% guess floor; tight gaps are where knowledge shows.
       rating: clampRating(1450 - Math.min(gap, 0.6) * 1100),
     };
+    return localizable(q, (L) => {
+      const na = pokemonName(L, a);
+      const nb = pokemonName(L, b);
+      const named = wordOptions(q, (name) => (name === a.name ? na : nb));
+      return named && {
+        prompt: L.t(`hl.${higher ? "higher" : "lower"}.${metric}`),
+        cards: [
+          { pokemonId: a.id, label: na },
+          { pokemonId: b.id, label: nb },
+        ],
+        ...named,
+        explanation: L.t("hl.explanation", { a: na, va: formatIn(L, a, metric), b: nb, vb: formatIn(L, b, metric) }),
+      };
+    });
   }
   return null;
 };

@@ -1,0 +1,15 @@
+{
+  "daily": {
+    "kicker": "Diario · uno nuevo cada día",
+    "title": "Reto diario",
+    "text": "El quiz de curiosidades Pokémon de hoy, el mismo para todos. Mantén tu racha.",
+    "cta": "Jugar al de hoy"
+  },
+  "iq": {
+    "kicker": "Test cognitivo · unos 20 minutos",
+    "title": "Test PokéIQ",
+    "text": "Razonamiento, memoria, velocidad, visión espacial y conocimiento Pokémon, comparados con otros Entrenadores.",
+    "cta": "Hacer el test"
+  },
+  "done": "Hecho hoy"
+}

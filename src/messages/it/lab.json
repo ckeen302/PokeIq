@@ -1,0 +1,114 @@
+{
+  "meta": {
+    "title": "Lab 3D: i Pokémon in 3D cinematografico",
+    "descriptionStory": "Lab 3D: guarda la storia dei Pokémon come un film in 3D, scopri ogni Pokémon nelle sue dimensioni reali e fai girare il globo. Gratis, nel tuo browser.",
+    "descriptionTimeline": "Lab 3D: attraversa la storia dei Pokémon in 3D, scopri ogni Pokémon nelle sue dimensioni reali e fai girare il globo. Gratis, nel tuo browser.",
+    "socialTitle": "Lab 3D: i Pokémon in 3D cinematografico · PokéIQ"
+  },
+  "experiences": "Esperienze",
+  "experiencesAside": "3D in tempo reale nel tuo browser",
+  "kicker": "PokéIQ // Lab 3D",
+  "beta": "Beta",
+  "betaTitle": "Il Lab 3D è in beta: lo stiamo ancora migliorando.",
+  "title": "Lab <b>3D</b>",
+  "linePhone": "I Pokémon in 3D cinematografico, dal vivo nel tuo browser.",
+  "line": "Il lato cinematografico di PokéIQ. Attraversa la storia dei Pokémon, mettiti accanto a ogni Pokémon nelle sue dimensioni reali e fai girare tutto il mondo Pokémon, dal vivo nel tuo browser.",
+  "explore": "Esplora",
+  "sound": "Meglio con l’audio",
+  "live": "3D dal vivo",
+  "highlights": "In evidenza",
+  "open": "Apri",
+  "openLabel": "Apri {title}",
+  "cards": {
+    "timeline": {
+      "title": "Cronologia Pokémon",
+      "kicker": "La storia in 3D",
+      "pitch": "Attraversa la storia dei Pokémon in un tunnel del tempo, da Rosso e Verde nel 1996 a oggi: i giochi, l’anime, i film e il gioco di carte.",
+      "tags": {
+        "0": "Visita guidata",
+        "1": "Passaggi d’epoca",
+        "2": "Date giapponesi e occidentali"
+      }
+    },
+    "pokemon-story": {
+      "title": "La storia dei Pokémon",
+      "kicker": "La vera storia, in 3D",
+      "pitch": "Un film cinematografico su come sono nati davvero i Pokémon, da un bambino che collezionava insetti a Machida a trent’anni di giochi, carte e serie. Scorrilo o premi Riproduci: ogni frase ha la sua fonte.",
+      "tags": {
+        "0": "La vera storia",
+        "1": "Ogni frase con la fonte",
+        "2": "Crea un video"
+      }
+    },
+    "sizes": {
+      "title": "Dimensioni Pokémon",
+      "kicker": "Ogni Pokémon in scala",
+      "pitch": "Scivola accanto a ogni Pokémon nelle sue dimensioni reali in una Luminopoli in 3D, poi premi Crea un video per un confronto di dimensioni pronto per TikTok, Reels e Shorts.",
+      "tags": {
+        "0": "Crea un video",
+        "1": "Confronta qualsiasi Pokémon",
+        "2": "Luminopoli"
+      }
+    },
+    "globe": {
+      "title": "Globo del mondo",
+      "kicker": "Il mondo Pokémon",
+      "pitch": "Fai girare un globo olografico di tutto il mondo Pokémon e zooma dalle regioni fino a ogni città, percorso e luogo simbolo.",
+      "tags": {
+        "0": "Generazione per generazione",
+        "1": "Screenshot veri",
+        "2": "Da PokéGuessr"
+      }
+    },
+    "race": {
+      "title": "Corsa Pokémon",
+      "kicker": "Chi è il più veloce?",
+      "pitch": "Schiera i Pokémon in uno stadio 3D di notte e guardali scattare, con velocità ricavate dalle loro statistiche base.",
+      "tags": {
+        "0": "Fotofinish",
+        "1": "Scegli la tua corsa",
+        "2": "Crea un video"
+      }
+    },
+    "mass-battle": {
+      "title": "Battaglia di massa Pokémon",
+      "kicker": "I veri calcoli dei danni, in grande",
+      "pitch": "Migliaia di Pokémon si scontrano su un campo di battaglia 3D con i veri calcoli dei danni dei giochi. Quanti Magikarp servono per battere Arceus? Scoprilo, poi fanne un video.",
+      "tags": {
+        "0": "Quanti?",
+        "1": "Esercito contro esercito",
+        "2": "Crea un video"
+      }
+    },
+    "games": {
+      "title": "I Giochi di PokéIQ",
+      "kicker": "Ogni Pokémon, sport vero",
+      "pitch": "Atletica, sollevamento pesi, nuoto e lotta per ogni Pokémon, con punteggi dalle loro vere statistiche e fisica reale, poi giocati in 3D con replay, medaglie e medagliere.",
+      "tags": {
+        "0": "Atletica e altro",
+        "1": "Record di ogni Pokémon",
+        "2": "Crea un video"
+      }
+    },
+    "world-history": {
+      "title": "La storia del mondo Pokémon",
+      "kicker": "La storia, come la raccontano i giochi",
+      "pitch": "Un museo cinematografico della storia del mondo Pokémon all’interno del suo universo, dal mito della creazione di Sinnoh alla macchina del tempo dell’Area Zero. Scorrilo o premi Riproduci: ogni frase ha la sua fonte nei giochi.",
+      "tags": {
+        "0": "Raccontata dai giochi",
+        "1": "Ogni frase con la fonte",
+        "2": "Crea un video"
+      }
+    },
+    "pokedex": {
+      "title": "Laboratorio del Professore",
+      "kicker": "Un Pokédex in 3D",
+      "pitch": "Fai girare un anello di capsule del laboratorio e porta qualsiasi Pokémon sul tavolo olografico in 3D, con statistiche base, ruoli in lotta, voce del Pokédex, evoluzioni ed efficacia dei tipi.",
+      "tags": {
+        "0": "Tutti i Pokémon in 3D",
+        "1": "Ruoli in lotta",
+        "2": "Filtra e ordina"
+      }
+    }
+  }
+}

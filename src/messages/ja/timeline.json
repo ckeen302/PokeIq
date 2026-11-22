@@ -1,0 +1,54 @@
+{
+  "lanes": {
+    "events": "できごと",
+    "tcg": "カード",
+    "games": "本編",
+    "anime": "アニメ",
+    "movies": "映画",
+    "spinoffs": "スピンオフ"
+  },
+  "eras": {
+    "gb": {
+      "label": "第1世代",
+      "device": "ゲームボーイ"
+    },
+    "gbc": {
+      "label": "第2世代",
+      "device": "ゲームボーイカラー"
+    },
+    "gba": {
+      "label": "第3世代",
+      "device": "ゲームボーイアドバンス"
+    },
+    "ds": {
+      "label": "第4世代",
+      "device": "ニンテンドーDS"
+    },
+    "ds2": {
+      "label": "第5世代",
+      "device": "ニンテンドーDS"
+    },
+    "3ds": {
+      "label": "第6〜7世代",
+      "device": "ニンテンドー3DS"
+    },
+    "switch": {
+      "label": "第8〜9世代",
+      "device": "Nintendo Switch"
+    }
+  },
+  "dates": {
+    "Worldwide": "世界同時",
+    "Japan": "日本",
+    "North America": "北米",
+    "Europe": "欧州"
+  },
+  "today": "現在",
+  "region": "地方",
+  "starters": "御三家",
+  "boxLegendaries": "パッケージ伝説",
+  "genPokemon": "第{gen}世代のポケモン →",
+  "browseCards": "このセットのカードを見る →",
+  "sources": "出典：",
+  "cards": "カード →"
+}

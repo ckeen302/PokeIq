@@ -1,0 +1,22 @@
+{
+  "none": "No live battles yet.",
+  "wins": "{pct}% wins",
+  "rankedOnly": "ranked only",
+  "recent": "Recent battles",
+  "result": {
+    "win": "Won",
+    "loss": "Lost",
+    "draw": "Drew"
+  },
+  "vs": "vs <b>{name}</b> <muted>· {format}</muted>",
+  "ranked": "Ranked",
+  "today": "today",
+  "yesterday": "yesterday",
+  "daysAgo": "{n} days ago",
+  "replay": "Replay",
+  "ladder": "Ladder →",
+  "title": "Battle record",
+  "loading": "Loading your battle record",
+  "find": "Find an opponent",
+  "profile": "Your public battle profile →"
+}

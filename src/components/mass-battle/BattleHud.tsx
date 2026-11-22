@@ -3,7 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Camera, Clapperboard, Crown, Expand, Gauge, Info, Map as MapIcon, Minus, Move3d, Pause, Play, Plus, RotateCcw, Settings2, Share2, SkipForward, Trophy, Volume2, VolumeX } from "lucide-react";
 import { fmt } from "@/lib/mass-battle/copy";
+import { localNum } from "@/lib/games/events";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import mbUi from "@/messages/mass-battle-ui";
 
 /**
  * The battle's heads-up display and playback controls: the two armies'
@@ -102,6 +105,8 @@ export function LiveHud({ bind, ...rest }: { bind(api: HudApi | null): void; nam
 }
 
 export function BattleHud({ hud, names, hideCount, phase, feed, visible }: { hud: HudState; names: [string, string]; hideCount: boolean; phase: string; feed: FeedEntry[]; visible: boolean }) {
+  const t = useT(mbUi);
+  const lc = t.locale;
   if (!visible) return null;
   const boss = hud.boss;
   return (
@@ -114,18 +119,18 @@ export function BattleHud({ hud, names, hideCount, phase, feed, visible }: { hud
               <div className={cn("flex items-baseline justify-between gap-2", s === 1 && "flex-row-reverse")}>
                 <span className="truncate font-display text-[11px] font-bold uppercase tracking-wide text-white/90 sm:text-sm">{names[s]}</span>
                 <span className="mb-count font-display text-base font-bold tabular-nums leading-none sm:text-2xl" data-testid={`mb-left-${s}`}>
-                  {hideCount && s === 0 ? "?" : fmt(hud.left[s])}
+                  {hideCount && s === 0 ? "?" : fmt(hud.left[s], lc)}
                 </span>
               </div>
               <TrailBar value={hideCount && s === 0 ? 1 : share} tone={s === 0 ? "mb-a" : "mb-b"} flip={s === 1} className="mt-1" />
               <div className={cn("mt-1 flex items-center gap-2 font-pixel text-[8px] uppercase tracking-wider text-white/55 sm:text-[9px]", s === 1 && "flex-row-reverse")}>
-                <span>KOs {fmt(hud.start[1 - s] - hud.left[1 - s])}</span>
+                <span>{t("kos", { n: fmt(hud.start[1 - s] - hud.left[1 - s], lc) })}</span>
               </div>
             </div>
           );
         })}
         <div className="order-2 flex flex-col items-center pt-0.5">
-          <span className="mb-vs font-display text-[11px] font-bold uppercase tracking-[0.2em] text-white/80 sm:text-xs">vs</span>
+          <span className="mb-vs font-display text-[11px] font-bold uppercase tracking-[0.2em] text-white/80 sm:text-xs">{t("vs")}</span>
           {phase !== "ready" && <span className="mt-0.5 font-pixel text-[9px] tabular-nums text-white/70 sm:text-[10px]" data-testid="mb-clock">{clock(hud.t)}</span>}
         </div>
       </div>
@@ -136,7 +141,7 @@ export function BattleHud({ hud, names, hideCount, phase, feed, visible }: { hud
             {boss.name}
           </div>
           <TrailBar value={boss.hp / Math.max(1, boss.max)} tone="mb-boss-fill" className="mb-boss h-[9px] sm:h-[12px]" />
-          <div className="font-pixel text-[8px] tabular-nums text-white/70 sm:text-[9px]">{fmt(boss.hp)} / {fmt(boss.max)} HP</div>
+          <div className="font-pixel text-[8px] tabular-nums text-white/70 sm:text-[9px]">{t("hp", { hp: fmt(boss.hp, lc), max: fmt(boss.max, lc) })}</div>
         </div>
       )}
       {feed.length > 0 && (
@@ -185,9 +190,10 @@ export interface ControlsProps {
 }
 
 const CAM_NEXT: Record<CamMode, CamMode> = { director: "free", free: "boss", boss: "top", top: "director" };
-const CAM_LABEL: Record<CamMode, string> = { director: "Director", free: "Free camera", boss: "Follow the boss", top: "Top-down" };
 
 export function BattleControls(p: ControlsProps) {
+  const t = useT(mbUi);
+  const camLabel = t(`cam.${p.cam}`);
   const [menu, setMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -212,52 +218,52 @@ export function BattleControls(p: ControlsProps) {
       <div className="flex flex-wrap items-center gap-1.5">
         {p.showResult && (
           <button type="button" onClick={p.onResult} className={cn(chip, on)} data-testid="mb-show-result">
-            <Trophy className="h-4 w-4" aria-hidden /> Result
+            <Trophy className="h-4 w-4" aria-hidden /> {t("result")}
           </button>
         )}
-        <button type="button" onClick={p.onPlay} className={chip} aria-label={p.phase === "ready" ? "Start" : p.paused ? "Play" : "Pause"} data-testid="mb-play" disabled={p.phase === "done"}>
+        <button type="button" onClick={p.onPlay} className={chip} aria-label={t(p.phase === "ready" ? "playStart" : p.paused ? "play" : "pause")} data-testid="mb-play" disabled={p.phase === "done"}>
           {p.phase === "playing" && !p.paused ? <Pause className="h-4 w-4" aria-hidden /> : <Play className="h-4 w-4" aria-hidden />}
         </button>
         {p.paused && p.phase === "playing" && (
-          <button type="button" onClick={p.onStep} className={chip} aria-label="Step forward" data-testid="mb-step">
+          <button type="button" onClick={p.onStep} className={chip} aria-label={t("step")} data-testid="mb-step">
             <SkipForward className="h-4 w-4" aria-hidden />
           </button>
         )}
-        <button type="button" onClick={p.onReplay} className={chip} aria-label="Replay" data-testid="mb-restart"><RotateCcw className="h-4 w-4" aria-hidden /></button>
-        <button type="button" onClick={nextSpeed} className={cn(chip, "min-w-[2.6rem] justify-center tabular-nums", p.speed !== 1 && on)} aria-label={`Speed ${p.speed}×`} title="Speed (1–5 keys)" data-testid="mb-speed">
+        <button type="button" onClick={p.onReplay} className={chip} aria-label={t("replay")} data-testid="mb-restart"><RotateCcw className="h-4 w-4" aria-hidden /></button>
+        <button type="button" onClick={nextSpeed} className={cn(chip, "min-w-[2.6rem] justify-center tabular-nums", p.speed !== 1 && on)} aria-label={t("speed", { n: localNum(String(p.speed), t.locale) })} title={t("speedTitle")} data-testid="mb-speed">
           <Gauge className="hidden h-4 w-4 sm:block" aria-hidden />
           {speedLabel(p.speed)}×
         </button>
-        <button type="button" onClick={() => p.onCam(CAM_NEXT[p.cam])} className={cn(chip, p.cam === "director" && on)} data-testid="mb-camera" data-mode={p.cam} aria-pressed={p.cam === "director"} aria-label={`Camera: ${CAM_LABEL[p.cam]}`} title="Camera: director, free, follow the boss, top-down (C)">
-          <CamIcon className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">{CAM_LABEL[p.cam]}</span>
+        <button type="button" onClick={() => p.onCam(CAM_NEXT[p.cam])} className={cn(chip, p.cam === "director" && on)} data-testid="mb-camera" data-mode={p.cam} aria-pressed={p.cam === "director"} aria-label={t("camera", { mode: camLabel })} title={t("cameraTitle")}>
+          <CamIcon className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">{camLabel}</span>
         </button>
       </div>
       <div className="flex flex-wrap items-center justify-end gap-1.5">
-        <button type="button" onClick={() => p.onZoom(1 / 1.45)} className={chip} aria-label="Zoom in" data-testid="mb-zoom-in"><Plus className="h-4 w-4" aria-hidden /></button>
-        <button type="button" onClick={() => p.onZoom(1.45)} className={chip} aria-label="Zoom out" data-testid="mb-zoom-out"><Minus className="h-4 w-4" aria-hidden /></button>
+        <button type="button" onClick={() => p.onZoom(1 / 1.45)} className={chip} aria-label={t("zoomIn")} data-testid="mb-zoom-in"><Plus className="h-4 w-4" aria-hidden /></button>
+        <button type="button" onClick={() => p.onZoom(1.45)} className={chip} aria-label={t("zoomOut")} data-testid="mb-zoom-out"><Minus className="h-4 w-4" aria-hidden /></button>
         <div className="relative" ref={menuRef}>
-          <button type="button" onClick={() => setMenu((m) => !m)} className={cn(chip, menu && on)} aria-label="Options" aria-expanded={menu} data-testid="mb-options"><Settings2 className="h-4 w-4" aria-hidden /></button>
+          <button type="button" onClick={() => setMenu((m) => !m)} className={cn(chip, menu && on)} aria-label={t("options")} aria-expanded={menu} data-testid="mb-options"><Settings2 className="h-4 w-4" aria-hidden /></button>
           {menu && (
             <div className="mb-menu pointer-events-auto absolute bottom-11 right-0 w-56 space-y-1 rounded-lg p-2 text-left" role="menu" data-testid="mb-options-menu">
               {([
-                ["Slow motion", p.slowmo, p.onSlowmo, "mb-opt-slowmo", "S"],
-                ["Damage numbers", p.numbersOn, p.onNumbers, "mb-opt-numbers", "D"],
-                ["Show the HUD", p.hudOn, p.onHud, "mb-opt-hud", "H"],
+                [t("slowmo"), p.slowmo, p.onSlowmo, "mb-opt-slowmo", "S"],
+                [t("numbers"), p.numbersOn, p.onNumbers, "mb-opt-numbers", "D"],
+                [t("hud"), p.hudOn, p.onHud, "mb-opt-hud", "H"],
               ] as const).map(([label, value, fn, id, key]) => (
                 <button key={id} type="button" role="menuitemcheckbox" aria-checked={value} onClick={fn} className="flex w-full items-center justify-between rounded-md px-2 py-1.5 font-display text-xs font-semibold uppercase tracking-wider text-white/85 hover:bg-white/10" data-testid={id}>
                   <span>{label} <span className="ml-1 font-pixel text-[8px] text-white/40">{key}</span></span>
                   <span className={cn("mb-switch", value && "mb-switch-on")} aria-hidden />
                 </button>
               ))}
-              <div className="px-2 pt-1 font-pixel text-[8px] uppercase tracking-wider text-white/40" data-testid="mb-quality-label">Quality · {p.quality}</div>
+              <div className="px-2 pt-1 font-pixel text-[8px] uppercase tracking-wider text-white/40" data-testid="mb-quality-label">{t("quality", { q: p.quality })}</div>
             </div>
           )}
         </div>
-        <button type="button" onClick={p.onMute} className={chip} aria-label={p.muted ? "Sound on" : "Sound off"} data-testid="mb-sound">{p.muted ? <VolumeX className="h-4 w-4" aria-hidden /> : <Volume2 className="h-4 w-4" aria-hidden />}</button>
-        <button type="button" onClick={p.onHow} className={chip} aria-label="How it works" data-testid="mb-how"><Info className="h-4 w-4" aria-hidden /></button>
-        <button type="button" onClick={p.onShare} className={chip} aria-label="Share" data-testid="mb-share"><Share2 className="h-4 w-4" aria-hidden /></button>
-        <button type="button" onClick={p.onVideo} className={chip} aria-label="Make a video" data-testid="mb-video"><Clapperboard className="h-4 w-4" aria-hidden /><span className="hidden lg:inline">Video</span></button>
-        <button type="button" onClick={p.onFullscreen} className={cn(chip, "hidden sm:inline-flex")} aria-label="Full screen"><Expand className="h-4 w-4" aria-hidden /></button>
+        <button type="button" onClick={p.onMute} className={chip} aria-label={t(p.muted ? "soundOn" : "soundOff")} data-testid="mb-sound">{p.muted ? <VolumeX className="h-4 w-4" aria-hidden /> : <Volume2 className="h-4 w-4" aria-hidden />}</button>
+        <button type="button" onClick={p.onHow} className={chip} aria-label={t("how")} data-testid="mb-how"><Info className="h-4 w-4" aria-hidden /></button>
+        <button type="button" onClick={p.onShare} className={chip} aria-label={t("share")} data-testid="mb-share"><Share2 className="h-4 w-4" aria-hidden /></button>
+        <button type="button" onClick={p.onVideo} className={chip} aria-label={t("makeVideo")} data-testid="mb-video"><Clapperboard className="h-4 w-4" aria-hidden /><span className="hidden lg:inline">{t("video")}</span></button>
+        <button type="button" onClick={p.onFullscreen} className={cn(chip, "hidden sm:inline-flex")} aria-label={t("fullscreen")}><Expand className="h-4 w-4" aria-hidden /></button>
       </div>
     </div>
   );

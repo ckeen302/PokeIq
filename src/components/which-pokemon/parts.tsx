@@ -1,17 +1,46 @@
 /* eslint-disable @next/next/no-img-element -- artwork comes pre-sized from /api/art */
+"use client";
+
+import { createContext, useContext, type ReactNode } from "react";
 import Link from "@/components/ui/Link";
 import { artUrl } from "@/lib/pokemon/art";
 import { typeColor, typeTextColor } from "@/lib/pokemon/type-colors";
-import { AXES, AXIS_INFO, type Profile } from "@/lib/which-pokemon/types";
+import { AXES, type PooledPokemon, type Profile } from "@/lib/which-pokemon/types";
+import { nameOf } from "@/lib/which-pokemon/match";
+import type { WpLocal } from "@/lib/which-pokemon/i18n";
+import { useT } from "@/i18n/client";
+import result from "@/messages/which-pokemon-result";
 import { cn } from "@/lib/utils";
+
+/**
+ * A page in another language's words, sent by the server (species names, archetypes, type names). English pages
+ * have none: everything shows as the pool has it.
+ */
+const LocalContext = createContext<WpLocal | null>(null);
+
+export function WpLocalProvider({ local, children }: { local?: WpLocal; children: ReactNode }) {
+  return local ? <LocalContext.Provider value={local}>{children}</LocalContext.Provider> : children;
+}
+
+/** Names in the page's language: a species by id (with its English name), a pooled Pokémon, its archetype, a type. */
+export function useWpLocal() {
+  const local = useContext(LocalContext);
+  return {
+    species: (id: number, english: string) => local?.names[id] ?? english,
+    name: (p: PooledPokemon) => local?.names[p.id] ?? nameOf(p),
+    title: (p: PooledPokemon) => local?.titles[p.slug] ?? p.title,
+    type: (t: string) => local?.types[t] ?? t,
+  };
+}
 
 /** Type chips in the Pokédex colours. */
 export function TypeChips({ types, className }: { types: string[]; className?: string }) {
+  const local = useWpLocal();
   return (
     <span className={cn("flex flex-wrap gap-1.5", className)}>
       {types.map((t) => (
         <span key={t} className="rounded-sm px-2 py-0.5 font-pixel text-[10px] uppercase" style={{ background: typeColor(t), color: typeTextColor(t) }}>
-          {t}
+          {local.type(t)}
         </span>
       ))}
     </span>
@@ -25,7 +54,7 @@ export function TypeChips({ types, className }: { types: string[]; className?: s
 export function TraitBars({
   a,
   b,
-  aLabel = "You",
+  aLabel,
   bLabel,
   accent = "hsl(var(--screen))",
   testId,
@@ -38,28 +67,27 @@ export function TraitBars({
   accent?: string;
   testId?: string;
 }) {
+  const t = useT(result);
+  const you = aLabel ?? t("you");
   return (
     <ul className="space-y-3" data-testid={testId}>
-      {AXES.map((axis, i) => {
-        const info = AXIS_INFO[axis];
-        return (
-          <li key={axis} className="space-y-1">
-            <div className="flex items-baseline justify-between gap-3">
-              <span className="font-display text-sm font-bold uppercase tracking-wide">{info.label}</span>
-              <span className="hud-label truncate">{a[i] >= 50 ? info.high : info.low}</span>
-            </div>
-            <Bar value={a[i]} label={aLabel} className="bg-primary" />
-            {b && <Bar value={b[i]} label={bLabel ?? ""} style={{ background: accent }} />}
-          </li>
-        );
-      })}
+      {AXES.map((axis, i) => (
+        <li key={axis} className="space-y-1">
+          <div className="flex items-baseline justify-between gap-3">
+            <span className="font-display text-sm font-bold uppercase tracking-wide">{t(`axes.${axis}.label`)}</span>
+            <span className="hud-label truncate">{a[i] >= 50 ? t(`axes.${axis}.high`) : t(`axes.${axis}.low`)}</span>
+          </div>
+          <Bar value={a[i]} label={you} aria={t("bar", { label: you, value: a[i] })} className="bg-primary" />
+          {b && <Bar value={b[i]} label={bLabel ?? ""} aria={t("bar", { label: bLabel ?? "", value: b[i] })} style={{ background: accent }} />}
+        </li>
+      ))}
     </ul>
   );
 }
 
-function Bar({ value, label, className, style }: { value: number; label: string; className?: string; style?: React.CSSProperties }) {
+function Bar({ value, label, aria, className, style }: { value: number; label: string; aria: string; className?: string; style?: React.CSSProperties }) {
   return (
-    <div className="flex items-center gap-2" aria-label={`${label}: ${value} out of 100`}>
+    <div className="flex items-center gap-2" aria-label={aria}>
       <span className="w-14 shrink-0 truncate font-pixel text-[9px] uppercase text-muted-foreground">{label}</span>
       <div className="meter h-2 flex-1">
         <div className={cn("h-full transition-[width] duration-500", className)} style={{ width: `${value}%`, ...style }} />

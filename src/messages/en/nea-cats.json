@@ -1,0 +1,163 @@
+{
+  "groups": {
+    "all": "Everything",
+    "gen": "Generations",
+    "type": "Types",
+    "special": "Legends & more",
+    "forms": "Forms",
+    "dex": "Regional Pokédexes"
+  },
+  "all": {
+    "label": "All 1,025",
+    "h1": "Name all 1,025 Pokémon",
+    "title": "Name All the Pokémon Quiz: Every Species from Bulbasaur to Pecharunt",
+    "description": "Type the name of every Pokémon from Bulbasaur to Pecharunt. Each one fills its slot the moment you spell it right. Timer, hints, shiny sprites and personal bests."
+  },
+  "gen": {
+    "label": "Gen {n}",
+    "h1": "Name every Gen {n} Pokémon",
+    "title": "Name Every Gen {n} Pokémon Quiz ({region})",
+    "description": "How many of the Pokémon that debuted in {region} can you name from memory? Type them in any order and race the clock."
+  },
+  "type": {
+    "label": "{type}",
+    "h1": "Name every {type}-type Pokémon",
+    "title": "Name Every {type}-Type Pokémon Quiz",
+    "description": "Name every Pokémon with the {type} type, single or dual typed, from all nine generations."
+  },
+  "cats": {
+    "legendary": {
+      "label": "Legendary",
+      "h1": "Name every Legendary Pokémon",
+      "title": "Name Every Legendary Pokémon Quiz",
+      "description": "Every Pokémon the games class as Legendary, from the Kanto birds to Terapagos, sub-legendaries included."
+    },
+    "sub-legendary": {
+      "label": "Sub-legendary",
+      "h1": "Name every sub-legendary Pokémon",
+      "title": "Name Every Sub-Legendary Pokémon Quiz",
+      "description": "The Legendaries that aren't the headline box legends: trios, Tapus, Treasures of Ruin, the Loyal Three and more."
+    },
+    "mythical": {
+      "label": "Mythical",
+      "h1": "Name every Mythical Pokémon",
+      "title": "Name Every Mythical Pokémon Quiz",
+      "description": "Mew, Celebi, Jirachi and the rest of the event-only Mythical Pokémon, all the way to Pecharunt."
+    },
+    "ultra-beasts": {
+      "label": "Ultra Beasts",
+      "h1": "Name every Ultra Beast",
+      "title": "Name Every Ultra Beast Quiz",
+      "description": "The visitors from Ultra Space, from Nihilego to Blacephalon."
+    },
+    "paradox": {
+      "label": "Paradox",
+      "h1": "Name every Paradox Pokémon",
+      "title": "Name Every Paradox Pokémon Quiz",
+      "description": "The ancient and future Paradox Pokémon from Scarlet and Violet and their DLC."
+    },
+    "mega-evolutions": {
+      "label": "Mega Evolutions",
+      "h1": "Name every Mega Evolution",
+      "title": "Name Every Mega Evolution Quiz",
+      "description": "Every Mega Evolution from X and Y and Omega Ruby and Alpha Sapphire. Type “Mega Venusaur”, or just “Venusaur”."
+    },
+    "gigantamax": {
+      "label": "Gigantamax",
+      "h1": "Name every Gigantamax Pokémon",
+      "title": "Name Every Gigantamax Pokémon Quiz",
+      "description": "Every Gigantamax form from Sword and Shield. Type “Gigantamax Snorlax”, “Gmax Snorlax”, or just “Snorlax”."
+    },
+    "regional-forms": {
+      "label": "Regional forms",
+      "h1": "Name every regional form",
+      "title": "Name Every Regional Form Quiz (Alolan, Galarian, Hisuian, Paldean)",
+      "description": "Every Alolan, Galarian, Hisuian and Paldean form. Type “Alolan Vulpix” or “Vulpix Alola”."
+    }
+  },
+  "dex": {
+    "kanto-dex": {
+      "label": "Kanto Dex",
+      "h1": "Name the Kanto Pokédex",
+      "title": "Name Every Pokémon in the Kanto Pokédex Quiz",
+      "description": "Every Pokémon in the Kanto regional Pokédex of Red, Blue and Yellow, numbered as in the game."
+    },
+    "johto-dex": {
+      "label": "Johto Dex",
+      "h1": "Name the Johto Pokédex",
+      "title": "Name Every Pokémon in the Johto Pokédex Quiz",
+      "description": "Every Pokémon in the Johto regional Pokédex of HeartGold and SoulSilver, numbered as in the game."
+    },
+    "hoenn-dex": {
+      "label": "Hoenn Dex",
+      "h1": "Name the Hoenn Pokédex",
+      "title": "Name Every Pokémon in the Hoenn Pokédex Quiz",
+      "description": "Every Pokémon in the Hoenn regional Pokédex of Omega Ruby and Alpha Sapphire, numbered as in the game."
+    },
+    "sinnoh-dex": {
+      "label": "Sinnoh Dex",
+      "h1": "Name the Sinnoh Pokédex",
+      "title": "Name Every Pokémon in the Sinnoh Pokédex Quiz",
+      "description": "Every Pokémon in the Sinnoh regional Pokédex of Platinum, numbered as in the game."
+    },
+    "unova-dex": {
+      "label": "Unova Dex",
+      "h1": "Name the Unova Pokédex",
+      "title": "Name Every Pokémon in the Unova Pokédex Quiz",
+      "description": "Every Pokémon in the Unova regional Pokédex of Black 2 and White 2, numbered as in the game."
+    },
+    "kalos-dex": {
+      "label": "Kalos Dex",
+      "h1": "Name the Kalos Pokédex",
+      "title": "Name Every Pokémon in the Kalos Pokédex Quiz",
+      "description": "Every Pokémon in the Kalos regional Pokédex of X and Y (Central, Coastal and Mountain), numbered as in the game."
+    },
+    "alola-dex": {
+      "label": "Alola Dex",
+      "h1": "Name the Alola Pokédex",
+      "title": "Name Every Pokémon in the Alola Pokédex Quiz",
+      "description": "Every Pokémon in the Alola regional Pokédex of Ultra Sun and Ultra Moon, numbered as in the game."
+    },
+    "galar-dex": {
+      "label": "Galar Dex",
+      "h1": "Name the Galar Pokédex",
+      "title": "Name Every Pokémon in the Galar Pokédex Quiz",
+      "description": "Every Pokémon in the Galar regional Pokédex of Sword and Shield, numbered as in the game."
+    },
+    "paldea-dex": {
+      "label": "Paldea Dex",
+      "h1": "Name the Paldea Pokédex",
+      "title": "Name Every Pokémon in the Paldea Pokédex Quiz",
+      "description": "Every Pokémon in the Paldea regional Pokédex of Scarlet and Violet, numbered as in the game."
+    }
+  },
+  "form": {
+    "mega": "Mega {name}",
+    "megaVariant": "Mega {name} {variant}",
+    "gmax": "Gigantamax {name}",
+    "gmaxStyle": {
+      "single": "Gigantamax Single Strike {name}",
+      "rapid": "Gigantamax Rapid Strike {name}",
+      "amped": "Gigantamax Amped {name}",
+      "lowkey": "Gigantamax Low Key {name}"
+    },
+    "alola": "Alolan {name}",
+    "galar": "Galarian {name}",
+    "hisui": "Hisuian {name}",
+    "paldea": "Paldean {name}",
+    "breed": "Paldean {name} ({breed})",
+    "breeds": {
+      "combat": "Combat Breed",
+      "blaze": "Blaze Breed",
+      "aqua": "Aqua Breed"
+    },
+    "darmanitan": {
+      "standard": "Standard Galarian {name}",
+      "zen": "Zen Galarian {name}"
+    }
+  },
+  "words": {
+    "mega": "Mega",
+    "gmax": "Gigantamax|Gmax"
+  }
+}

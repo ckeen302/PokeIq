@@ -9,9 +9,14 @@ import { useAccount } from "@/lib/account";
 import { openTournamentMatch } from "@/lib/friends-client";
 import { useVisiblePoll } from "@/lib/use-visible-poll";
 import { PLAY_FORMAT_INFO } from "@/lib/battle/play";
-import { STYLE_NAME, type BracketNodeView, type TournamentMatchView, type TournamentView } from "@/lib/tournaments";
+import type { BracketNodeView, TournamentMatchView, TournamentView } from "@/lib/tournaments";
 import { cn } from "@/lib/utils";
-import { countdown } from "./TournamentLobby";
+import { countdown, tournamentName } from "./TournamentLobby";
+import { useT } from "@/i18n/client";
+import type { Translator } from "@/i18n/catalog";
+import battleTournaments from "@/messages/battle-tournaments";
+
+type TourT = Translator<typeof battleTournaments.en>;
 import { NameAvatar } from "@/components/avatar/Avatar";
 import type { AvatarMap } from "@/lib/avatar";
 
@@ -24,6 +29,7 @@ export function TournamentRoom({ id }: { id: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [team, setTeam] = useState("");
+  const t = useT(battleTournaments);
   const live = !view || view.status === "signup" || view.status === "running";
 
   async function load() {
@@ -31,7 +37,7 @@ export function TournamentRoom({ id }: { id: string }) {
       const res = await fetch(`/api/tournaments/${id}`, { cache: "no-store" });
       const body = await res.json();
       if (res.ok) setView(body);
-      else if (res.status === 404 || body.available === false) setMissing(body.error ?? "That tournament doesn't exist.");
+      else if (res.status === 404 || body.available === false) setMissing(body.error ?? t("room.missing"));
     } catch {
       // the next poll
     }
@@ -44,7 +50,7 @@ export function TournamentRoom({ id }: { id: string }) {
     try {
       const res = await fetch(`/api/tournaments/${id}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, ...extra }) });
       const body = await res.json();
-      if (!res.ok) setError(body.error ?? "That didn't work.");
+      if (!res.ok) setError(body.error ?? t("room.failed"));
       await load();
     } finally {
       setBusy(false);
@@ -64,11 +70,11 @@ export function TournamentRoom({ id }: { id: string }) {
         <div>
           <p className="hud-label flex items-center gap-1.5">
             {view.official ? <Crown className="h-3.5 w-3.5 text-warning" aria-hidden /> : <Trophy className="h-3.5 w-3.5 text-primary" aria-hidden />}
-            {view.formatName} · {STYLE_NAME[view.style]} · Bo{view.bestOf} {view.rated && "· Rated"}
+            {view.formatName} · {t(`style.${view.style}`)} · {t("bestOf", { n: view.bestOf })} {view.rated && t("room.rated")}
           </p>
-          <h1 className="font-display text-3xl font-bold uppercase tracking-tight">{view.title}</h1>
+          <h1 className="font-display text-3xl font-bold uppercase tracking-tight">{tournamentName(t, view.title)}</h1>
         </div>
-        <StatusBadge view={view} />
+        <StatusBadge view={view} t={t} />
       </div>
 
       {error && (
@@ -81,31 +87,31 @@ export function TournamentRoom({ id }: { id: string }) {
         <div className="hud flex flex-wrap items-center gap-3 rounded-lg border border-warning/60 bg-card p-4" role="alert" data-testid="your-match">
           <Swords className="h-6 w-6 text-warning" aria-hidden />
           <p className="flex-1">
-            <span className="font-display text-lg font-bold uppercase">Your match is ready</span>
-            <span className="block text-sm text-muted-foreground">You vs {you.match.against}. Turn up within 3 minutes or it&apos;s a loss.</span>
+            <span className="font-display text-lg font-bold uppercase">{t("room.ready")}</span>
+            <span className="block text-sm text-muted-foreground">{t("room.readyNote", { name: you.match.against })}</span>
           </p>
           <Button variant="success" onClick={() => router.push(openTournamentMatch(you.match!))} data-testid="play-match">
-            <Play className="h-4 w-4" aria-hidden /> Play now
+            <Play className="h-4 w-4" aria-hidden /> {t("room.playNow")}
           </Button>
         </div>
       )}
 
-      {view.status === "finished" && <Winner view={view} />}
-      {view.status === "cancelled" && <p className="rounded-lg border border-dashed p-4 text-center text-muted-foreground">This tournament was cancelled. {view.cancelReason}</p>}
+      {view.status === "finished" && <Winner view={view} t={t} />}
+      {view.status === "cancelled" && <p className="rounded-lg border border-dashed p-4 text-center text-muted-foreground">{t("room.cancelled", { reason: view.cancelReason ?? "" })}</p>}
 
       {view.status === "signup" && (
         <div className="hud space-y-3 rounded-lg border bg-card p-4">
           <p className="flex items-center gap-2 text-sm">
-            <Clock className="h-4 w-4 text-success" aria-hidden /> Sign-ups close in <span className="font-semibold tabular-nums">{countdown(view.signupEndsAt - now)}</span> or when{" "}
-            {view.maxPlayers} trainers are in.
+            <Clock className="h-4 w-4 text-success" aria-hidden />{" "}
+            {t.rich("room.closes", { time: countdown(view.signupEndsAt - now), n: view.maxPlayers, b: (c) => <span className="font-semibold tabular-nums">{c}</span> })}
           </p>
           {!account.user ? (
             <Link href="/login" className={buttonVariants({ size: "sm" })}>
-              <LogIn className="h-4 w-4" aria-hidden /> Sign in to join
+              <LogIn className="h-4 w-4" aria-hidden /> {t("room.signIn")}
             </Link>
           ) : you?.joined ? (
             <Button size="sm" variant="outline" disabled={busy} onClick={() => void act("leave")} data-testid="leave-tournament">
-              <LogOut className="h-4 w-4" aria-hidden /> Leave
+              <LogOut className="h-4 w-4" aria-hidden /> {t("room.leave")}
             </Button>
           ) : (
             <div className="space-y-2">
@@ -114,50 +120,48 @@ export function TournamentRoom({ id }: { id: string }) {
                   value={team}
                   onChange={(e) => setTeam(e.target.value)}
                   rows={5}
-                  placeholder="Paste your team (Showdown export format)"
-                  aria-label="Your team"
+                  placeholder={t("room.teamPlaceholder")}
+                  aria-label={t("room.team")}
                   className="w-full rounded-md border border-input bg-background p-2 font-mono text-xs"
                 />
               )}
               <Button size="sm" disabled={busy || view.players.length >= view.maxPlayers || (needsTeam && !team.trim())} onClick={() => void act("join", needsTeam ? { team } : {})} data-testid="join-tournament">
-                <LogIn className="h-4 w-4" aria-hidden /> Join
+                <LogIn className="h-4 w-4" aria-hidden /> {t("room.join")}
               </Button>
             </div>
           )}
           {you?.host && (
             <div className="flex gap-2 border-t pt-3">
               <Button size="sm" variant="success" disabled={busy || view.players.length < 2} onClick={() => void act("start")} data-testid="start-tournament">
-                <Play className="h-4 w-4" aria-hidden /> Start now
+                <Play className="h-4 w-4" aria-hidden /> {t("room.start")}
               </Button>
               <Button size="sm" variant="ghost" disabled={busy} onClick={() => void act("cancel")}>
-                <Ban className="h-4 w-4" aria-hidden /> Cancel tournament
+                <Ban className="h-4 w-4" aria-hidden /> {t("room.cancel")}
               </Button>
             </div>
           )}
-          <PlayerList view={view} />
+          <PlayerList view={view} t={t} />
         </div>
       )}
 
-      {view.status !== "signup" && view.style === "elim" && view.bracket && <Bracket root={view.bracket} matches={view.matches} avatars={view.avatars} />}
-      {view.status !== "signup" && view.style === "rr" && <Standings view={view} />}
-      {view.status !== "signup" && <MatchList view={view} />}
+      {view.status !== "signup" && view.style === "elim" && view.bracket && <Bracket root={view.bracket} matches={view.matches} avatars={view.avatars} t={t} />}
+      {view.status !== "signup" && view.style === "rr" && <Standings view={view} t={t} />}
+      {view.status !== "signup" && <MatchList view={view} t={t} />}
     </div>
   );
 }
 
-function StatusBadge({ view }: { view: TournamentView }) {
-  const label = { signup: "Sign-ups open", running: "In progress", finished: "Finished", cancelled: "Cancelled" }[view.status];
+function StatusBadge({ view, t }: { view: TournamentView; t: TourT }) {
+  const label = t(`room.status.${view.status}`);
   return <span className={cn("rounded-full border px-3 py-1 font-display text-xs font-semibold uppercase tracking-wider", view.status === "signup" ? "border-success/60 text-success" : view.status === "running" ? "border-warning/60 text-warning" : "text-muted-foreground")}>{label}</span>;
 }
 
-function PlayerList({ view }: { view: TournamentView }) {
+function PlayerList({ view, t }: { view: TournamentView; t: TourT }) {
   return (
     <div>
-      <p className="hud-label mb-2">
-        Trainers {view.players.length}/{view.maxPlayers}
-      </p>
+      <p className="hud-label mb-2">{t("room.trainers", { n: view.players.length, max: view.maxPlayers })}</p>
       {view.players.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Nobody yet. Be the first!</p>
+        <p className="text-sm text-muted-foreground">{t("room.nobody")}</p>
       ) : (
         <ul className="flex flex-wrap gap-2" data-testid="tournament-players">
           {view.players.map((p) => (
@@ -174,12 +178,12 @@ function PlayerList({ view }: { view: TournamentView }) {
   );
 }
 
-function Winner({ view }: { view: TournamentView }) {
+function Winner({ view, t }: { view: TournamentView; t: TourT }) {
   const [first, ...rest] = view.results ?? [];
   return (
     <div className="hud space-y-3 rounded-xl border border-warning/60 bg-card p-6 text-center" data-testid="tournament-winner">
       <Trophy className="mx-auto h-12 w-12 text-warning" aria-hidden />
-      <p className="hud-label">Champion</p>
+      <p className="hud-label">{t("room.champion")}</p>
       <p className="font-display text-4xl font-bold uppercase text-warning">{first?.join(" & ") ?? "?"}</p>
       {rest.length > 0 && (
         <ol className="mx-auto max-w-xs space-y-1 text-sm text-muted-foreground">
@@ -195,7 +199,7 @@ function Winner({ view }: { view: TournamentView }) {
 }
 
 /** The elimination tree, one column per round. */
-function Bracket({ root, matches, avatars }: { root: BracketNodeView; matches: TournamentMatchView[]; avatars?: AvatarMap }) {
+function Bracket({ root, matches, avatars, t }: { root: BracketNodeView; matches: TournamentMatchView[]; avatars?: AvatarMap; t: TourT }) {
   const byId = new Map(matches.map((m) => [m.id, m]));
   const rounds: BracketNodeView[][] = [];
   const height = (n: BracketNodeView): number => (n.children ? 1 + Math.max(height(n.children[0]), height(n.children[1])) : 0);
@@ -210,11 +214,11 @@ function Bracket({ root, matches, avatars }: { root: BracketNodeView; matches: T
   const last = rounds.length;
   return (
     <section className="space-y-2">
-      <h2 className="hud-label">Bracket</h2>
+      <h2 className="hud-label">{t("room.bracket")}</h2>
       <div className="flex gap-4 overflow-x-auto pb-2" data-testid="bracket">
         {rounds.map((nodes, r) => (
           <div key={r} className="flex min-w-[12rem] flex-col justify-around gap-3">
-            <p className="text-center text-xs text-muted-foreground">{r + 1 === last ? "Final" : r + 2 === last ? "Semifinals" : `Round ${r + 1}`}</p>
+            <p className="text-center text-xs text-muted-foreground">{r + 1 === last ? t("room.final") : r + 2 === last ? t("room.semis") : t("room.round", { n: r + 1 })}</p>
             {nodes.map((n) => {
               const m = n.match ? byId.get(n.match) : undefined;
               const side = (c: BracketNodeView, i: 0 | 1) => {
@@ -224,7 +228,7 @@ function Bracket({ root, matches, avatars }: { root: BracketNodeView; matches: T
                   <div className={cn("flex items-center justify-between gap-2 px-2 py-1", won && "font-semibold text-success")}>
                     <span className="flex min-w-0 items-center gap-1.5">
                       {name && <NameAvatar name={name} avatars={avatars} />}
-                      <span className={cn("truncate", !name && "italic text-muted-foreground")}>{name ?? "TBD"}</span>
+                      <span className={cn("truncate", !name && "italic text-muted-foreground")}>{name ?? t("room.tbd")}</span>
                     </span>
                     {m && <span className="tabular-nums text-xs">{m.wins[i]}</span>}
                   </div>
@@ -237,7 +241,7 @@ function Bracket({ root, matches, avatars }: { root: BracketNodeView; matches: T
                   {side(n.children![1], 1)}
                   {m?.code && m.state === "playing" && (
                     <Link href={`/battle/live/${m.code}`} className="flex items-center justify-center gap-1 border-t py-1 text-xs text-primary hover:underline">
-                      <Eye className="h-3 w-3" aria-hidden /> Watch
+                      <Eye className="h-3 w-3" aria-hidden /> {t("room.watch")}
                     </Link>
                   )}
                 </div>
@@ -250,19 +254,19 @@ function Bracket({ root, matches, avatars }: { root: BracketNodeView; matches: T
   );
 }
 
-function Standings({ view }: { view: TournamentView }) {
+function Standings({ view, t }: { view: TournamentView; t: TourT }) {
   const rows = [...view.players].sort((a, b) => b.score - a.score || b.wins - a.wins);
   return (
     <section className="space-y-2">
-      <h2 className="hud-label">Standings</h2>
+      <h2 className="hud-label">{t("room.standings")}</h2>
       <table className="w-full max-w-lg rounded-lg border bg-card text-sm" data-testid="standings">
         <thead>
           <tr className="text-left text-xs text-muted-foreground">
             <th className="px-3 py-2">#</th>
-            <th className="px-3 py-2">Trainer</th>
-            <th className="px-3 py-2 text-right">W</th>
-            <th className="px-3 py-2 text-right">L</th>
-            <th className="px-3 py-2 text-right">Points</th>
+            <th className="px-3 py-2">{t("room.trainer")}</th>
+            <th className="px-3 py-2 text-right">{t("room.w")}</th>
+            <th className="px-3 py-2 text-right">{t("room.l")}</th>
+            <th className="px-3 py-2 text-right">{t("room.points")}</th>
           </tr>
         </thead>
         <tbody>
@@ -286,18 +290,18 @@ function Standings({ view }: { view: TournamentView }) {
   );
 }
 
-function MatchList({ view }: { view: TournamentView }) {
+function MatchList({ view, t }: { view: TournamentView; t: TourT }) {
   const shown = [...view.matches].sort((a, b) => (a.state === "done" ? 1 : 0) - (b.state === "done" ? 1 : 0) || b.round - a.round);
   if (!shown.length) return null;
   return (
     <section className="space-y-2">
-      <h2 className="hud-label">Matches</h2>
+      <h2 className="hud-label">{t("room.matches")}</h2>
       <ul className="divide-y rounded-lg border bg-card text-sm" data-testid="match-list">
         {shown.map((m) => (
           <li key={m.id} className="flex items-center gap-3 px-3 py-2" data-state={m.state}>
-            <span className="w-16 text-xs text-muted-foreground">{m.round ? `Round ${m.round}` : ""}</span>
+            <span className="w-16 text-xs text-muted-foreground">{m.round ? t("room.round", { n: m.round }) : ""}</span>
             <span className="min-w-0 flex-1 truncate">
-              <span className={cn(m.winner === m.a && "font-semibold text-success")}>{m.a}</span> vs <span className={cn(m.winner === m.b && "font-semibold text-success")}>{m.b}</span>
+              <span className={cn(m.winner === m.a && "font-semibold text-success")}>{m.a}</span> {t("room.vs")} <span className={cn(m.winner === m.b && "font-semibold text-success")}>{m.b}</span>
             </span>
             <span className="tabular-nums">
               {m.wins[0]}–{m.wins[1]}
@@ -305,18 +309,18 @@ function MatchList({ view }: { view: TournamentView }) {
             <span className="w-24 text-right text-xs">
               {m.state === "playing" && m.code ? (
                 <Link href={`/battle/live/${m.code}`} className="text-primary hover:underline">
-                  Watch live
+                  {t("room.watchLive")}
                 </Link>
               ) : m.state === "waiting" ? (
-                <span className="text-muted-foreground">Starting…</span>
+                <span className="text-muted-foreground">{t("room.starting")}</span>
               ) : m.note === "noshow" ? (
-                <span className="text-muted-foreground">No-show</span>
+                <span className="text-muted-foreground">{t("room.noShow")}</span>
               ) : m.note === "dq" ? (
-                <span className="text-muted-foreground">Disqualified</span>
+                <span className="text-muted-foreground">{t("room.dq")}</span>
               ) : m.winner === null ? (
-                <span className="text-muted-foreground">Draw</span>
+                <span className="text-muted-foreground">{t("room.draw")}</span>
               ) : (
-                <span className="text-muted-foreground">Done</span>
+                <span className="text-muted-foreground">{t("room.done")}</span>
               )}
             </span>
           </li>

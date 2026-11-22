@@ -1,0 +1,35 @@
+{
+  "links": {
+    "pokedle": "Pokédle",
+    "geo": "PokéGuessr del giorno",
+    "conn": "Connections",
+    "pdk": "Pikadoku",
+    "daily": "Sfida del giorno"
+  },
+  "streak": "La tua serie di {days} giorni in {game} finisce a mezzanotte.",
+  "daily": {
+    "subject": "Le sfide del giorno di PokéIQ sono online",
+    "testSubject": "[Test] {subject}",
+    "kicker": "Giorno n. {n}",
+    "heading": "Le sfide di oggi sono online",
+    "imageAlt": "L'immagine di PokéGuessr di oggi, sfocata",
+    "imageCaption": "Dove si trova, nel mondo Pokémon? Il PokéGuessr di oggi parte da qui.",
+    "why": "Ricevi questa email perché hai attivato i promemoria giornalieri per l'Allenatore {name} su PokéIQ.",
+    "unsubscribe": "Annulla l'iscrizione",
+    "settings": "Impostazioni email",
+    "preheader": "Pokédle, PokéGuessr, Connections, Pikadoku e la Sfida del giorno sono online.",
+    "textTitle": "PokéIQ Giorno n. {n}",
+    "textHeading": "Le sfide di oggi sono online.",
+    "textUnsubscribe": "Annulla l'iscrizione: {url}",
+    "textSettings": "Impostazioni email: {url}"
+  },
+  "confirm": {
+    "subject": "Conferma la tua email per PokéIQ",
+    "heading": "Conferma la tua email",
+    "body": "Conferma questo indirizzo per l'Allenatore {name} per ricevere i promemoria giornalieri di PokéIQ. Non inviamo nulla finché non lo fai.",
+    "button": "Conferma email",
+    "note": "Il link vale 7 giorni. Se non l'hai chiesto tu, ignora questa email e non riceverai altro.",
+    "why": "Ricevi questa email perché questo indirizzo è stato inserito per i promemoria giornalieri di PokéIQ.",
+    "preheader": "Un clic ed è fatta."
+  }
+}

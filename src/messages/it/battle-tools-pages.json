@@ -1,0 +1,128 @@
+{
+  "crumb": "Lotta",
+  "teams": {
+    "title": "Costruttore di squadre Pokémon: formati di Showdown, legalità verificata",
+    "description": "Un costruttore di squadre Pokémon per squadre competitive in OU, Ubers, UU, Doppie OU, VGC e Dex Nazionale della nona generazione, OU di quarta e OU di terza. Mosse dalle liste di apprendimento di ogni formato, statistiche in tempo reale, importazione / esportazione di Showdown e il controllo di legalità di Pokémon Showdown stesso.",
+    "crumb": "Costruttore di squadre",
+    "heading": "Costruttore",
+    "accent": "di squadre",
+    "intro": "Un costruttore di squadre Pokémon con sei posti, le liste di apprendimento di ogni formato e le regole di Pokémon Showdown stesso. Le squadre si salvano su questo dispositivo mentre le crei, pronte per la lotta."
+  },
+  "lab": {
+    "title": "Laboratorio di lotta — simulatore di probabilità di vittoria Pokémon",
+    "description": "Prepara due squadre Pokémon qualsiasi, dalla prima alla nona generazione, e fai giocare la lotta migliaia di volte sul motore di Pokémon Showdown stesso. Scopri la probabilità di vittoria di ogni parte con un intervallo di confidenza al 95%, quanto durano le lotte, chi mette a segno i KO, e guarda lotte di esempio.",
+    "name": "Laboratorio di lotta",
+    "crumb": "Laboratorio di lotta",
+    "heading": "Laboratorio",
+    "accent": "di lotta",
+    "intro": "Prepara due schieramenti e lascia che il motore di Pokémon Showdown giochi la lotta migliaia di volte, direttamente nel tuo browser. Scopri quante volte vince ciascuno, quanto ci vuole e cosa fa la differenza."
+  },
+  "ladder": {
+    "title": "Classifica delle lotte Pokémon — punteggi per formato",
+    "description": "La classifica delle lotte classificate: punteggi Elo, GXE e Glicko-2, come su Pokémon Showdown, per Lotta Casuale, Doppie Casuali, OU, Ubers, UU, RU, NU, PU, LC, Monotipo, Dex Nazionale e Doppie OU.",
+    "crumb": "Classifica",
+    "heading": "Classifica",
+    "accent": "delle lotte",
+    "rules": "Punteggi per formato come su Pokémon Showdown: la classifica segue l'Elo (tutti partono da {elo}, non si scende mai sotto e un Elo sopra 1400 cala un po' ogni giorno in cui non giochi), mostrato insieme al GXE (la tua probabilità di battere un Allenatore a caso in classifica) e a un punteggio Glicko-2. Tutti partono da {rating} ± {rd} Glicko-2; un punteggio è provvisorio finché la sua deviazione non scende sotto {shown}. Arrendersi, finire il tempo o uscire conta come sconfitta.",
+    "short": "In ordine di Elo, con GXE e Glicko-2, come su Pokémon Showdown. Tutti partono da {elo}.",
+    "insights": "Le tue statistiche",
+    "play": "Gioca classificata",
+    "soon": "Le lotte classificate arrivano presto.",
+    "top": "{format}: top 100",
+    "how": "Come funzionano i punteggi"
+  },
+  "insights": {
+    "title": "Analisi della squadra",
+    "description": "L'analisi delle tue lotte: Pokémon iniziali, Pokémon, avversari più duri e andamento del punteggio.",
+    "crumb": "Analisi della squadra",
+    "heading": "Analisi",
+    "accent": "della squadra",
+    "intro": "I tuoi Pokémon iniziali più frequenti, la percentuale di vittorie di ogni Pokémon, gli avversari che ti battono più spesso e l'andamento del tuo punteggio, dalle lotte salvate.",
+    "signIn": "L'analisi segue il tuo account: accedi per vedere la tua.",
+    "signInButton": "Accedi"
+  },
+  "playerInsights": {
+    "title": "{name} · Analisi della squadra",
+    "description": "L'analisi delle lotte di {name} su PokéIQ: Pokémon iniziali più frequenti, percentuale di vittorie per Pokémon, avversari più duri e andamento del punteggio.",
+    "heading": "{name}:",
+    "accent": "analisi",
+    "intro": "Pokémon iniziali, Pokémon, avversari più duri e punteggio nelle lotte salvate di {name}, ricavati dai loro replay.",
+    "format": "Formato",
+    "allFormats": "Tutti i formati",
+    "noBattles": "Ancora nessuna lotta da analizzare.",
+    "soon": "L'analisi della squadra arriva presto.",
+    "empty": "Qui non ci sono ancora replay salvati da cui imparare: l'analisi nasce dalle lotte il cui replay è stato salvato (ogni lotta classificata salva il suo).",
+    "reading": "Si stanno leggendo altre {n} lotte; ricontrolla tra un attimo.",
+    "battlesRead": "Lotte lette",
+    "winRate": "Vittorie",
+    "monsUsed": "Pokémon usati",
+    "leadsCount": "Iniziali diversi",
+    "trend": "Punteggio nel tempo",
+    "leads": "Iniziali più frequenti",
+    "byMon": "Vittorie per Pokémon",
+    "byMonAside": "Lotte in cui è sceso in campo",
+    "monRecord": "{wins}–{losses} in {games, plural, one {{games} lotta} other {{games} lotte}}",
+    "threats": "Avversari più duri",
+    "threatsAside": "Avversari con un KO o una vittoria contro {name}: più KO prima, poi più vittorie",
+    "threatRecord": "{games, plural, one {{games} lotta} other {{games} lotte}} · {wins, plural, one {{wins} vittoria} other {{wins} vittorie}} contro {name}",
+    "kos": "{n, plural, one {KO} other {KO}}",
+    "noThreats": "Finora niente ha mandato KO i Pokémon di {name}.",
+    "pending": "{n, plural, one {{n} lotta meno recente è} other {{n} lotte meno recenti sono}} ancora da leggere: conteranno alla prossima visita.",
+    "noLeads": "Ancora nessun iniziale.",
+    "mostUsed": "Il più usato",
+    "leadTimes": "{n}× iniziale",
+    "leadWon": "{rate} vinte",
+    "trendMore": "Gioca {count, select, one {un'altra lotta classificata} other {un paio di lotte classificate}} in questo formato per vedere l'andamento.",
+    "trendLabel": "Punteggio da {from} a {to} in {n} lotte classificate",
+    "trendDelta": "{delta} in {n, plural, one {{n} lotta} other {{n} lotte}}",
+    "lastGxe": "GXE dopo l'ultima lotta: {gxe}%"
+  },
+  "replays": {
+    "title": "Replay delle lotte Pokémon",
+    "description": "Guarda i replay delle lotte Pokémon turno per turno, sul motore di Pokémon Showdown: le tue lotte e le ultime classificate e pubbliche.",
+    "crumb": "Replay",
+    "heading": "Replay",
+    "accent": "delle lotte",
+    "intro": "Ogni lotta classificata e pubblica viene salvata come replay; dopo tutte le altre, premi Salva replay. I replay mostrano quello che hanno visto gli spettatori, turno per turno.",
+    "import": "Guarda un replay di Showdown",
+    "live": "Lotte dal vivo"
+  },
+  "replay": {
+    "fallbackTitle": "Replay di una lotta",
+    "fallbackDescription": "Il replay di una lotta Pokémon su PokéIQ.",
+    "title": "{title}: replay {format}",
+    "description": "{result} in {turns} turni. Guarda il replay, turno per turno, sul motore di Pokémon Showdown.",
+    "crumb": "Replay",
+    "ranked": "Classificata · ",
+    "summary": "{format} · {result} in {turns, plural, one {{turns} turno} other {{turns} turni}}."
+  },
+  "notFound": {
+    "heading": "Replay non trovato",
+    "body": "Questo replay non esiste o non è disponibile: forse il link è sbagliato, oppure la lotta non è mai stata salvata.",
+    "browse": "Sfoglia i replay",
+    "live": "Lotte dal vivo",
+    "import": "Importa un registro"
+  },
+  "import": {
+    "title": "Guarda un replay di Showdown",
+    "description": "Incolla il registro di una lotta di Pokémon Showdown o apri un file di replay salvato e guardalo turno per turno.",
+    "crumb": "Importa",
+    "heading": "Guarda un",
+    "accent": "replay di Showdown",
+    "intro": "Incolla il registro di una lotta, o apri un file di replay salvato da Showdown, e riproducilo qui."
+  },
+  "tournaments": {
+    "title": "Tornei",
+    "description": "Tornei di lotte Pokémon su PokéIQ: eliminazione diretta o girone all'italiana in qualsiasi formato, più un torneo ufficiale di Lotta Casuale ogni ora.",
+    "crumb": "Tornei",
+    "heading": "Tornei",
+    "accent": "dal vivo",
+    "intro": "Entra in un tabellone o aprine uno tuo in qualsiasi formato. Ogni ora parte un torneo ufficiale di Lotta Casuale: le iscrizioni restano aperte i primi dieci minuti."
+  },
+  "tournament": {
+    "title": "Torneo",
+    "description": "Un torneo di lotte Pokémon su PokéIQ: il tabellone dal vivo, gli incontri e i risultati.",
+    "back": "Torna ai tornei",
+    "crumb": "Tornei"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "coverage": {
+    "label": "Cobertura de tipos",
+    "heading": "Debilidades y cobertura",
+    "tera": "Defender con el teratipo",
+    "type": "Tipo",
+    "weakTitle": "Miembros débiles a él",
+    "weak": "Débil",
+    "resistTitle": "Miembros que lo resisten",
+    "resist": "Resiste",
+    "immuneTitle": "Miembros inmunes",
+    "immune": "Inmune",
+    "seTitle": "Miembros con un ataque muy eficaz contra él",
+    "se": "Golpe SE",
+    "nothingNeutral": "Nada del equipo golpea a este tipo ni con daño neutro",
+    "nothingSe": "Nada lo golpea de forma muy eficaz",
+    "abilities": "Habilidades tenidas en cuenta: {notes}.",
+    "help": "Las columnas son tus Pokémon (el daño que reciben de cada tipo). “Golpe SE” cuenta los miembros con un ataque muy eficaz; ✕ significa que nada golpea a ese tipo ni siquiera con daño neutro."
+  },
+  "notes": {
+    "wonderGuard": "{ability}: solo le afectan los golpes supereficaces",
+    "immune": "{ability}: inmune a {types}",
+    "scale": "{ability}: {scales}",
+    "member": "{member}: {note}",
+    "hitter": "{member}: {move}"
+  },
+  "threats": {
+    "label": "Amenazas",
+    "heading": "Amenazas en {format}",
+    "noUsage": "No hay estadísticas de uso para este formato, así que no hay lista de amenazas.",
+    "running": "Ejecutando la calculadora de daño…",
+    "none": "Algo de tu equipo responde a cada uno de los {n} Pokémon más usados.",
+    "help": "Comprueba los {n} Pokémon más usados con su objeto, reparto y movimientos más habituales ({source}{stats, select, none {} other {, {battles, number} combates, descargado el {fetched}}}). Un miembro responde a una amenaza si aguanta todas las tiradas de su ataque más fuerte con los PS al máximo, o si es más rápido y la deja KO de un golpe al menos la mitad de las veces. Sin Teracristalización, sin cambios de características, sin trampas.",
+    "struggles": "Tu equipo sufre contra <b>{species}</b>",
+    "share": "{set} · en el {pct} % de los equipos"
+  },
+  "matchup": {
+    "line": "{member}: {took}; {back}, {speed, select, faster {más rápido} other {más lento}}",
+    "takes": "recibe {lo}–{hi} % de {move}",
+    "shrugs": "no recibe nada que no aguante",
+    "does": "devuelve {lo}–{hi} % con {move}",
+    "doesKo": "devuelve {lo}–{hi} % con {move} ({ko} % de KO de un golpe)",
+    "noHurt": "no tiene ataques que le hagan daño"
+  }
+}

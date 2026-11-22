@@ -10,6 +10,21 @@ import {
 } from "@/lib/pokemon/type-matrix";
 import type { GenerateOptions, Question, QuestionBuilder } from "../types";
 import { clampRating, difficultyPool, genRating, pickTarget, typeLabel } from "../shared";
+import type { QuizLang } from "../i18n";
+import { localizable, wordOptions } from "../localize";
+import { pokemonName } from "../words";
+
+/** "Charizard (Fire / Flying)" in the language, or just the name on hard. */
+function defenderIn(L: QuizLang, p: Pokemon, opts: GenerateOptions): string {
+  const name = pokemonName(L, p);
+  return opts.difficulty === "hard" ? name : L.t("types.defender", { name, types: L.typing(p.types) });
+}
+
+/** A type option ("Fire") or typing option ("Fire / Flying") in the language. */
+const typeOption = (L: QuizLang, label: string) => L.typing(label.split(" / ").map((t) => t.toLowerCase()));
+
+/** A multiplier in the language: only "0× (immune)" has words. */
+const multiplierIn = (L: QuizLang, m: string) => (m === formatMultiplier(0) ? L.t("types.immune") : m);
 
 /**
  * Type Master — every answer is computed from the 18×18 effectiveness
@@ -73,7 +88,7 @@ function typingQuestion(rng: Rng, opts: GenerateOptions): Question | null {
   const label = (types: readonly string[]) => types.map(capitalize).join(" / ");
   const distractors = rng.sample([...candidates.values()].slice(0, 6), 3).map(label);
 
-  return {
+  const q: Question = {
     itemKey: `types:typing:${target.id}`,
     module: "types",
     prompt: `What type is ${target.name}?`,
@@ -83,6 +98,11 @@ function typingQuestion(rng: Rng, opts: GenerateOptions): Question | null {
     explanation: `${target.name} is ${typeLabel(target)} type.`,
     rating: clampRating(genRating(target) + (target.types.length === 2 ? 60 : -40)),
   };
+  return localizable(q, (L) => {
+    const named = wordOptions(q, (label) => typeOption(L, label));
+    const name = pokemonName(L, target);
+    return named && { prompt: L.t("types.typingPrompt", { name }), ...named, explanation: L.t("types.typingExplanation", { name, types: L.typing(target.types) }) };
+  });
 }
 
 const MULTIPLIERS = [0, 0.25, 0.5, 1, 2, 4];
@@ -107,7 +127,7 @@ function effectivenessQuestion(rng: Rng, opts: GenerateOptions): Question | null
   const distractors = rng.sample(MULTIPLIERS.filter((m) => m !== multiplier), 3);
   const extreme = multiplier === 4 || multiplier === 0.25 || multiplier === 0;
 
-  return {
+  const q: Question = {
     itemKey: `types:eff:${attacker}>${typingKey(target.types)}${opts.difficulty === "hard" ? ":hidden" : ""}`,
     module: "types",
     prompt: `How effective is a ${capitalize(attacker)}-type move against ${defenderLabel(target, opts)}?`,
@@ -121,6 +141,15 @@ function effectivenessQuestion(rng: Rng, opts: GenerateOptions): Question | null
       { easy: 950, medium: 1120, hard: 1350 }[opts.difficulty] + (extreme ? 80 : 0)
     ),
   };
+  return localizable(q, (L) => {
+    const named = wordOptions(q, (m) => multiplierIn(L, m));
+    const steps = target.types.map((t) => formatMultiplier(effectiveness(attacker, [t]))).map((m) => multiplierIn(L, m));
+    return named && {
+      prompt: L.t("types.effPrompt", { type: L.type(attacker), defender: defenderIn(L, target, opts) }),
+      ...named,
+      explanation: L.t("types.effExplanation", { calc: `${L.type(attacker)} → ${L.typing(target.types)} = ${steps.join(" × ")} = ${multiplierIn(L, formatMultiplier(multiplier))}` }),
+    };
+  });
 }
 
 function weaknessQuestion(rng: Rng, opts: GenerateOptions): Question | null {
@@ -143,7 +172,7 @@ function weaknessQuestion(rng: Rng, opts: GenerateOptions): Question | null {
   const distractors = rng.sample(pool, 3);
   if (distractors.length < 3) return null;
 
-  return {
+  const q: Question = {
     itemKey: `types:4x:${typingKey(target.types)}${opts.difficulty === "hard" ? ":hidden" : ""}`,
     module: "types",
     prompt: `Which type is 4× super effective against ${defenderLabel(target, opts)}?`,
@@ -153,6 +182,14 @@ function weaknessQuestion(rng: Rng, opts: GenerateOptions): Question | null {
     explanation: `${typeLabel(target)} is 4× weak to ${fourX.map(capitalize).join(" and ")}.`,
     rating: clampRating({ easy: 1050, medium: 1200, hard: 1420 }[opts.difficulty]),
   };
+  return localizable(q, (L) => {
+    const named = wordOptions(q, (label) => typeOption(L, label));
+    return named && {
+      prompt: L.t("types.fourXPrompt", { defender: defenderIn(L, target, opts) }),
+      ...named,
+      explanation: L.t("types.fourXExplanation", { types: L.typing(target.types), weak: L.and(fourX.map((t) => L.type(t))) }),
+    };
+  });
 }
 
 function immunityQuestion(rng: Rng, opts: GenerateOptions): Question | null {
@@ -177,7 +214,7 @@ function immunityQuestion(rng: Rng, opts: GenerateOptions): Question | null {
   const distractors = rng.sample(pool, 3);
   if (distractors.length < 3) return null;
 
-  return {
+  const q: Question = {
     itemKey: `types:immune:${typingKey(target.types)}${opts.difficulty === "hard" ? ":hidden" : ""}`,
     module: "types",
     prompt: `Which attacking type has NO effect on ${defenderLabel(target, opts)}?`,
@@ -187,6 +224,14 @@ function immunityQuestion(rng: Rng, opts: GenerateOptions): Question | null {
     explanation: `${typeLabel(target)} is immune to ${immune.map(capitalize).join(" and ")}.`,
     rating: clampRating({ easy: 1000, medium: 1150, hard: 1380 }[opts.difficulty]),
   };
+  return localizable(q, (L) => {
+    const named = wordOptions(q, (label) => typeOption(L, label));
+    return named && {
+      prompt: L.t("types.immunePrompt", { defender: defenderIn(L, target, opts) }),
+      ...named,
+      explanation: L.t("types.immuneExplanation", { types: L.typing(target.types), immune: L.and(immune.map((t) => L.type(t))) }),
+    };
+  });
 }
 
 export const types: QuestionBuilder = (rng, opts) => {

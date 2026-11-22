@@ -1,5 +1,6 @@
 import { OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og/card";
 import { theoriesCard } from "@/lib/og/theories";
+import { ogT } from "@/lib/og/i18n";
 
 /** Share card for the Theories tab, the case files. */
 
@@ -7,6 +8,6 @@ export const alt = "The case files: Pokémon theories, urban legends and beta my
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 
-export default function Image() {
-  return theoriesCard();
+export default async function Image(props: { params?: unknown }) {
+  return theoriesCard(await ogT(props));
 }

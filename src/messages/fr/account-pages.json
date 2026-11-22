@@ -1,0 +1,15 @@
+{
+  "login": {
+    "title": "Connexion",
+    "label": "ID de Dresseur",
+    "heading": "Connexion",
+    "intro": "Garde ta progression sur tous tes appareils.",
+    "ages": "Les comptes sont réservés aux 13 ans et plus.",
+    "privacy": "Politique de confidentialité"
+  },
+  "oauth": {
+    "title": "Choisis ton nom de Dresseur",
+    "label": "Nouveau Dresseur",
+    "heading": "Choisis ton nom de Dresseur"
+  }
+}

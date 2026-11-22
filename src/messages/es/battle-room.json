@@ -1,0 +1,108 @@
+{
+  "loading": "Cargando el combate",
+  "liveBattle": "Combate en directo",
+  "reconnecting": "Conexión perdida. Reconectando…",
+  "vs": "vs",
+  "vsSep": " vs ",
+  "and": " y ",
+  "multiVs": "{a} y {c} vs {b} y {d}",
+  "watching": "Estás viendo {players}",
+  "watchAnother": "Ver otro",
+  "battleYourself": "Combatir tú",
+  "chat": {
+    "showAgain": "Volver a mostrar los mensajes de {name}",
+    "hideTitle": "Ocultar los mensajes de {name} (el /ignore de Showdown)",
+    "unignore": "Dejar de ignorar a {name}",
+    "ignore": "Ignorar a {name}",
+    "hidden": "({n} ocultos)",
+    "rematchOpen": "Hay una revancha abierta: pulsa Revancha para seguir chateando allí."
+  },
+  "gone": {
+    "title": "Combate no encontrado",
+    "start": "Empezar un combate"
+  },
+  "forfeit": {
+    "sure": "¿Rendirte en este combate?",
+    "button": "Rendirse",
+    "keep": "Seguir combatiendo"
+  },
+  "again": {
+    "error": "No se pudo empezar el combate.",
+    "play": "Jugar otra vez",
+    "new": "Nuevo combate",
+    "tournament": "Volver al torneo",
+    "requested": "¡Te han pedido la revancha!",
+    "accept": "Aceptar revancha",
+    "rematch": "Revancha",
+    "keeps": "La revancha mantiene a los Entrenadores, el formato y los equipos que trajisteis.",
+    "startsFour": "La CPU conserva sus puestos; empieza cuando todos los Entrenadores la pulsen.",
+    "startsTwo": "Empieza cuando los dos la pulséis."
+  },
+  "lobby": {
+    "gen": "Gen. {gen}",
+    "quickNote": "Sets de combate aleatorio de la Gen. {gen}, comprobados con estas reglas.",
+    "format": "Formato",
+    "bring": "cada uno trae un equipo, comprobado con las reglas de Pokémon Showdown.",
+    "timerLabel": "Temporizador",
+    "timer": "Temporizador de Showdown: {secs} s",
+    "grace": " más {secs} s de cortesía",
+    "perTurn": ", +{secs} s por turno",
+    "cap": ", {secs} s como máximo por turno.",
+    "runOutDefault": "Si se te acaba en un turno, se elige un movimiento por ti; si se te acaba el tiempo del todo, pierdes.",
+    "runOutLose": "Si se te acaba, pierdes.",
+    "runOutPick": "Si se te acaba, el temporizador elige un movimiento por ti; si pasa dos veces seguidas, pierdes.",
+    "timerOffAny": "Desactivado: tómate tu tiempo. Cualquiera puede activarlo en mitad del combate.",
+    "timerOffEither": "Desactivado: tómate tu tiempo. Cualquiera de los dos puede activarlo en mitad del combate.",
+    "spectators": "Espectadores",
+    "public": "Aparece en Ver en directo: cualquiera puede verlo.",
+    "private": "Privado: solo quien tenga el enlace puede verlo.",
+    "fairPlay": "Juego limpio",
+    "fairFour": "Solo ves tu equipo y lo que revelan los demás. Si te vas, te rindes tras {secs} s ausente.",
+    "fairFourMulti": "Solo ves tu equipo y lo que revelan los demás. Si te vas, te rindes tras {secs} s ausente (tu equipo pierde, como en Showdown).",
+    "fairFourFfa": "Solo ves tu equipo y lo que revelan los demás. Si te vas, te rindes tras {secs} s ausente (quedas fuera; los demás siguen).",
+    "fairTwo": "Solo ves tu equipo y lo que revela tu rival. Si te vas, te rindes tras {secs} s ausente.",
+    "ladder": "Clasificación",
+    "unrankedMulti": "Sin puntuación: Showdown tampoco clasifica los combates múltiples, así que nunca cambian tu puntuación.",
+    "unrankedFfa": "Sin puntuación: Showdown tampoco clasifica los todos contra todos, así que nunca cambian tu puntuación.",
+    "teamFirst": "Primero elige o pega un equipo.",
+    "tag": "Combate en directo · {format}",
+    "title": "Combate <b>Pokémon</b>",
+    "invite": "{host} te reta a un combate de {format}. Elige un nombre de Entrenador para unirte.",
+    "inviteTeam": "{host} te reta a un combate de {format}. Elige un nombre de Entrenador y un equipo para unirte.",
+    "about": "Envía el enlace a un amigo. El combate empieza cuando los dos estéis listos.",
+    "randomTeams": " Los equipos son aleatorios.",
+    "shareHost": "¡{host} te reta a un combate de {format} en PokéIQ!",
+    "shareMe": "¡Te reto a un combate de {format} en PokéIQ!",
+    "noun": "combate"
+  },
+  "visitor": {
+    "over": "Combate terminado",
+    "inProgress": "Combate en curso",
+    "two": "Este combate es entre otros dos Entrenadores.",
+    "four": "Este combate es entre otros cuatro Entrenadores.",
+    "start": "Empieza el tuyo"
+  },
+  "replay": {
+    "instant": "Repetición instantánea",
+    "instantTitle": "Ver el combate desde el principio (la repetición instantánea de Showdown)",
+    "download": "Descargar repetición",
+    "downloadTitle": "Archivo de repetición de Showdown: se abre en cualquier navegador y se reproduce en el reproductor de Showdown"
+  },
+  "quiet": {
+    "lost": "{names} ha perdido la conexión. Si no vuelve en un minuto,",
+    "teamForfeits": "su equipo se rinde.",
+    "forfeit": "se rinde."
+  },
+  "after": {
+    "share": "Compartir",
+    "updating": "Actualizando puntuaciones…",
+    "watchReplay": "Ver repetición",
+    "analysis": "Análisis",
+    "saving": "Guardando la repetición…",
+    "save": "Guardar repetición",
+    "elo": "Elo",
+    "glicko": "Puntuación Glicko-2",
+    "rating": "Puntuación",
+    "ratingLabel": "{what} {delta}, ahora {now}"
+  }
+}

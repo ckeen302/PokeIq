@@ -6,7 +6,12 @@ import { FX } from "./fx";
 import { other, sameHalf, type MonSnap, type SideId, type SideSnap, type SlotRef, type Snap } from "./model";
 import { projectPos, spritePosition, STAGE_H, STAGE_W } from "./scene";
 import { battleSpriteCandidates, spriteData } from "./sprites";
-import type { PopupTone, StageHandle, StageSprite } from "./player";
+import type { PopupLabel, PopupTone, StageHandle, StageSprite } from "./player";
+import { useT } from "@/i18n/client";
+import { type Translator } from "@/i18n/catalog";
+import playNs from "@/messages/battle-play";
+import { useBattleNames } from "./local";
+import type { BattleNames } from "@/lib/battle/log/names";
 import { Hud, TeamBalls, type Ball } from "./Hud";
 import { Arena } from "./Arena";
 import type { ArenaApi } from "./arena/ArenaScene";
@@ -19,8 +24,30 @@ import { cn } from "@/lib/utils";
 export interface Popup {
   id: number;
   ref?: SlotRef;
-  text: string;
+  label: PopupLabel;
   tone: PopupTone;
+}
+
+type PlayT = Translator<typeof playNs.en>;
+
+const STATUS_POPUP = new Set(["brn", "par", "slp", "frz", "psn", "tox"]);
+const STAT_POPUP = new Set(["atk", "def", "spa", "spd", "spe", "accuracy", "evasion"]);
+
+/** A popup's words: "Critical hit!", "Burned", "Atk ↑↑", "Tera Fire!". */
+function popupText(t: PlayT, names: BattleNames, label: PopupLabel): string {
+  switch (label.k) {
+    case "status":
+      return STATUS_POPUP.has(label.status) ? t(`popup.status.${label.status as "brn"}`) : label.status;
+    case "stat": {
+      const arrow = label.up ? "↑" : "↓";
+      const arrows = `${arrow}${label.amount > 1 ? arrow : ""}${label.amount > 2 ? arrow : ""}`;
+      return `${STAT_POPUP.has(label.stat) ? t(`popup.stat.${label.stat as "atk"}`) : label.stat} ${arrows}`;
+    }
+    case "tera":
+      return t("popup.tera", { type: names.type(label.type) });
+    default:
+      return t(`popup.${label.k}`);
+  }
 }
 
 /** Where a slot's Pokémon stands, as a fraction of the stage (for popups over it). */
@@ -188,6 +215,8 @@ export interface StageProps {
 }
 
 export function Stage({ snap, me, gameType, names, popups, onHandle, myBalls, format = "", myRequest, watching = false, balls, holdArena = false }: StageProps) {
+  const t = useT(playNs);
+  const local = useBattleNames();
   const outer = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const backdrop = useRef<HTMLDivElement>(null);
@@ -204,7 +233,7 @@ export function Stage({ snap, me, gameType, names, popups, onHandle, myBalls, fo
   const nearSides = halfSides(me);
   const farSides = halfSides(foe);
   // Four trainers: whose Pokémon each box is (yours, your partner's, or a foe's), by name.
-  const tagOf = (mon: MonSnap) => (four ? `${mon.owner === me && !watching ? "You" : (names?.[mon.owner] ?? mon.owner)}${gameType === "multi" && !watching && mon.owner !== me && sameHalf(mon.owner, me) ? " · partner" : ""}` : undefined);
+  const tagOf = (mon: MonSnap) => (four ? `${mon.owner === me && !watching ? t("you") : (names?.[mon.owner] ?? mon.owner)}${gameType === "multi" && !watching && mon.owner !== me && sameHalf(mon.owner, me) ? t("partnerTag") : ""}` : undefined);
   const mineOf = (mon: MonSnap) => !watching && (!four || mon.owner === me);
   const arena = useRef<ArenaApi | null>(null);
   const [arena3d, setArena3d] = useState(false);
@@ -264,9 +293,9 @@ export function Stage({ snap, me, gameType, names, popups, onHandle, myBalls, fo
   const field = useMemo(() => arenaField(snap.weather, snap.terrain, snap.pseudo), [snap.weather, snap.terrain, pseudoKey]);
   const kind = arenaKindOf(format, active > 1);
   const fieldChips: Chip[] = [];
-  if (snap.weather) fieldChips.push({ id: WEATHER_ID[snap.weather] ?? snap.weather, label: snap.weather, turns: snap.turns?.weather });
-  if (snap.terrain) fieldChips.push({ id: `${snap.terrain.toLowerCase()}terrain`, label: `${snap.terrain} Terrain`, turns: snap.turns?.terrain });
-  for (const p of snap.pseudo) if (PSEUDO[p]) fieldChips.push({ id: p, label: PSEUDO[p], turns: snap.turns?.[p] });
+  if (snap.weather) fieldChips.push({ id: WEATHER_ID[snap.weather] ?? snap.weather, label: WEATHER_ID[snap.weather] ? t(`weather.${WEATHER_ID[snap.weather] as "sandstorm"}`) : snap.weather, turns: snap.turns?.weather });
+  if (snap.terrain) fieldChips.push({ id: `${snap.terrain.toLowerCase()}terrain`, label: local.move(`${snap.terrain} Terrain`), turns: snap.turns?.terrain });
+  for (const p of snap.pseudo) if (PSEUDO[p]) fieldChips.push({ id: p, label: local.move(PSEUDO[p]), turns: snap.turns?.[p] });
 
   return (
     <div className="relative">
@@ -294,7 +323,7 @@ export function Stage({ snap, me, gameType, names, popups, onHandle, myBalls, fo
 
         {/* Overlays in screen space. */}
         <div className="pointer-events-none absolute inset-0 z-10">
-          <span className="hud-label absolute left-2 top-2 rounded-sm sm:left-1/2 sm:-translate-x-1/2 bg-black/55 px-2 py-1 text-white/80">Turn {Math.max(1, snap.turn)}</span>
+          <span className="hud-label absolute left-2 top-2 rounded-sm sm:left-1/2 sm:-translate-x-1/2 bg-black/55 px-2 py-1 text-white/80">{t("turn", { n: Math.max(1, snap.turn) })}</span>
           {fieldChips.length > 0 && (
             <div className="absolute right-2 top-2 flex flex-col items-end gap-1" data-testid="field-conditions">
               {fieldChips.map((chip) => (
@@ -327,7 +356,7 @@ export function Stage({ snap, me, gameType, names, popups, onHandle, myBalls, fo
               <SideConditions key={id} side={snap.sides[id]} align="end" />
             ))}
             {nearSides.map((id) => (
-              <TeamBalls key={id} side={snap.sides[id]} align="end" balls={id === me ? myBalls : undefined} label={four ? (id === me && !watching ? "You" : (names?.[id] ?? id)) : undefined} />
+              <TeamBalls key={id} side={snap.sides[id]} align="end" balls={id === me ? myBalls : undefined} label={four ? (id === me && !watching ? t("you") : (names?.[id] ?? id)) : undefined} />
             ))}
             {snap.sides[me].active.map((mon, i) => {
               if (!mon) return null;
@@ -341,11 +370,12 @@ export function Stage({ snap, me, gameType, names, popups, onHandle, myBalls, fo
           </div>
           {popups.map((p) => {
             const at = p.ref ? slotCenter(p.ref, me, active) : { x: 0.5, y: 0.35 };
-            const callout = CALLOUT[p.tone] ?? (p.text === "No effect" ? "battle-callout-weak" : undefined);
+            const callout = CALLOUT[p.tone] ?? (p.label.k === "immune" ? "battle-callout-weak" : undefined);
+            const text = popupText(t, local, p.label);
             if (callout) {
               return (
                 <span key={p.id} className={cn("battle-callout absolute whitespace-nowrap", callout)} style={{ left: `${at.x * 100}%`, top: `${Math.max(0.16, at.y) * 100}%` }}>
-                  <span className="battle-callout-text">{p.text}</span>
+                  <span className="battle-callout-text">{text}</span>
                 </span>
               );
             }
@@ -355,7 +385,7 @@ export function Stage({ snap, me, gameType, names, popups, onHandle, myBalls, fo
                 className={cn("battle-popup absolute whitespace-nowrap rounded-md px-2.5 py-1 font-display text-sm font-bold uppercase tracking-wide shadow-lg sm:text-base", POPUP_TONES[p.tone])}
                 style={{ left: `${at.x * 100}%`, top: `${at.y * 100}%` }}
               >
-                {p.text}
+                {text}
               </span>
             );
           })}
@@ -393,7 +423,7 @@ export function Stage({ snap, me, gameType, names, popups, onHandle, myBalls, fo
           })}
           <div className={cn("flex flex-wrap items-center justify-between gap-1.5", active > 1 && "col-span-2", active === 1 && "order-first")}>
             {nearSides.map((id) => (
-              <TeamBalls key={id} side={snap.sides[id]} balls={id === me ? myBalls : undefined} label={four ? (id === me && !watching ? "You" : (names?.[id] ?? id)) : undefined} />
+              <TeamBalls key={id} side={snap.sides[id]} balls={id === me ? myBalls : undefined} label={four ? (id === me && !watching ? t("you") : (names?.[id] ?? id)) : undefined} />
             ))}
             {nearSides.map((id) => (
               <SideConditions key={id} side={snap.sides[id]} align="end" />
@@ -425,9 +455,10 @@ interface Chip {
 
 /** "3" or "3–5": turns left, as Showdown counts them. */
 function TurnsLeft({ turns }: { turns: [number, number] }) {
+  const t = useT(playNs);
   const [min, max] = turns;
   return (
-    <span className="rounded-sm bg-white/15 px-1 font-pixel text-[9px] tabular-nums text-white" title={`${min === max ? min : `${min} to ${max}`} turn${max === 1 ? "" : "s"} left`}>
+    <span className="rounded-sm bg-white/15 px-1 font-pixel text-[9px] tabular-nums text-white" title={t("turnsLeft", { range: min === max ? String(min) : t("range", { min, max }), max })}>
       {min === max ? min : `${min}–${max}`}
     </span>
   );
@@ -448,11 +479,12 @@ const SIDE_KIND: Record<string, "hazard" | "screen"> = {
 
 /** One side's hazards, screens and the rest (Tailwind, Lucky Chant...), with layers and turns left. */
 function SideConditions({ side, align = "start" }: { side: SideSnap; align?: "start" | "end" }) {
+  const names = useBattleNames();
   if (!side.conditions.length) return null;
   return (
     <div className={cn("flex flex-wrap gap-1", align === "end" && "justify-end")} data-testid={`side-conditions-${side.id}`}>
       {side.conditions.map((c) => (
-        <Tip key={c.id} content={() => <ConditionTip id={c.id} name={c.name} turns={c.turns} level={c.level} />}>
+        <Tip key={c.id} content={() => <ConditionTip id={c.id} name={names.move(c.name)} turns={c.turns} level={c.level} />}>
         <span
           tabIndex={0}
           className={cn(
@@ -460,7 +492,7 @@ function SideConditions({ side, align = "start" }: { side: SideSnap; align?: "st
             SIDE_KIND[c.id] === "hazard" ? "bg-amber-500/80 text-black" : SIDE_KIND[c.id] === "screen" ? "bg-sky-400/80 text-black" : "bg-black/60 text-white/90"
           )}
         >
-          {c.name}
+          {names.move(c.name)}
           {c.level > 1 && <span>×{c.level}</span>}
           {c.turns && <TurnsLeft turns={c.turns} />}
         </span>

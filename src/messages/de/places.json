@@ -1,0 +1,132 @@
+{
+  "meta": {
+    "title": "Pokémon-Orte: Städte, Routen, Höhlen und Arenen",
+    "description": "Alle Städte, Routen, Höhlen und Arenen jeder Region der Pokémon-Hauptreihe: die wilden Pokémon in jedem Spiel, Screenshots und Arenaleiter.",
+    "placeTitle": "{name} ({region}) – Pokémon-{type}",
+    "placeDescription": "{name} in {region}: die wilden Pokémon, die du dort in jedem Spiel findest.",
+    "placeDescriptionGame": "{name} in {region}: die wilden Pokémon, die du dort in jedem Spiel findest, und so sieht es in {game} aus.",
+    "socialTitle": "{name} · PokéIQ-Pokédex"
+  },
+  "crumbs": {
+    "pokedex": "Pokédex",
+    "places": "Orte"
+  },
+  "list": {
+    "kicker": "Orts-Datenbank",
+    "blurb": "Städte, Routen, Höhlen und Gebäude aus jeder Region der Hauptreihe – die wilden Pokémon in jedem Spiel, dazu der Screenshot aus dem Weltatlas und die Arenaleiter, wo es welche gibt."
+  },
+  "back": "Zurück zu allen Orten",
+  "kicker": "Ort · {type} · {region}",
+  "inside": "In <link>{name}</link>",
+  "atlas": "Im Weltatlas ansehen",
+  "noAtlas": "Noch nicht im Weltatlas, daher keine Kartenmarkierung und kein Screenshot.",
+  "shot": {
+    "title": "Screenshot",
+    "alt": "{place} in Pokémon {game}",
+    "caption": "{place} in {game} · aus PokéGuessr"
+  },
+  "games": {
+    "title": "Spiele",
+    "subtitle": "Spiele, in denen es vorkommt",
+    "generation": "Spiele der Generation {gen}"
+  },
+  "areas": {
+    "title": "Bereiche",
+    "subtitle": "{n, plural, one {{n} Etage und Bereiche} other {{n} Etagen und Bereiche}}"
+  },
+  "gym": {
+    "title": "Arena",
+    "subtitle": "{n, plural, one {{n} Arenaleiter} other {{n} Arenaleiter}}",
+    "source": "Quelle"
+  },
+  "wild": {
+    "title": "Wilde Pokémon",
+    "subtitle": "Nach Spiel",
+    "pokemon": "Pokémon",
+    "method": "Methode",
+    "levels": "Level",
+    "morning": "Morgens",
+    "day": "Tags",
+    "night": "Nachts",
+    "rate": "Rate"
+  },
+  "insidePlaces": {
+    "title": "Darin",
+    "subtitle": "{n, plural, one {{n} Ort darin} other {{n} Orte darin}}"
+  },
+  "types": {
+    "City": "Stadt",
+    "Town": "Ort",
+    "Route": "Route",
+    "Gym": "Arena",
+    "Forest": "Wald",
+    "Cave": "Höhle",
+    "Mountain": "Berg",
+    "Island": "Insel",
+    "Lake": "See",
+    "Tower": "Turm",
+    "Ruins": "Ruinen",
+    "League": "Liga",
+    "Building": "Gebäude",
+    "Other": "Sonstiges"
+  },
+  "methods": {
+    "wild": "Wild",
+    "grass": "Gras",
+    "grassrandom": "Gras (zufällig)",
+    "grassrarespawns": "Gras (selten)",
+    "tallgrass": "Hohes Gras",
+    "darkgrass": "Dunkles Gras",
+    "rustlinggrass": "Raschelndes Gras",
+    "cave": "Höhle",
+    "water": "Wasser",
+    "waterrarespawns": "Wasser (selten)",
+    "fishing": "Angeln",
+    "fishingspot": "Angelplatz",
+    "ripplingwater": "Kräuselndes Wasser",
+    "bubblingspot": "Blubbernde Stelle",
+    "headbutthigh": "Kopfnuss (häufig)",
+    "headbuttlow": "Kopfnuss (selten)",
+    "shakingtree": "Wackelnder Baum",
+    "gift": "Geschenk",
+    "giftegg": "Geschenk (Ei)",
+    "trade": "Tausch",
+    "static": "Fest",
+    "interact": "Ansprechen",
+    "specialencounter": "Besondere Begegnung",
+    "swarm": "Massenauftreten",
+    "swarmfish": "Massenauftreten (Angeln)",
+    "swarmsurf": "Massenauftreten (Surfer)",
+    "horde": "Horde",
+    "soscall": "Hilferuf",
+    "sosbubblingspot": "Hilferuf (blubbernde Stelle)",
+    "teraraid": "Tera-Raid",
+    "maxraid": "Dyna-Raid",
+    "overworld": "Auf der Karte",
+    "wandering": "Unterwegs",
+    "wanderingsurf": "Unterwegs (Surfer)",
+    "flying": "Fliegend",
+    "inthesky": "Am Himmel",
+    "intheskyrarespawns": "Am Himmel (selten)",
+    "roaming": "Umherstreifend",
+    "roamingwater": "Umherstreifend (Wasser)",
+    "massivemassoutbreak": "Massives Massenauftreten",
+    "hiddengrotto": "Versteckte Lichtung",
+    "honeytree": "Honigbaum",
+    "honeytreerare": "Honigbaum (selten)",
+    "honeytreeveryrare": "Honigbaum (sehr selten)",
+    "berrytree": "Beerenbaum",
+    "berrypile": "Beerenhaufen",
+    "dustcloud": "Staubwolke",
+    "roughterrain": "Unebenes Gelände",
+    "yellowflowers": "Gelbe Blumen",
+    "purpleflowers": "Lila Blumen",
+    "redflowers": "Rote Blumen",
+    "ceilingambush": "Angriff von der Decke",
+    "groundambush": "Angriff aus dem Boden",
+    "skyambush": "Angriff aus der Luft",
+    "curry": "Curry",
+    "islandscan": "Inselscan",
+    "underground": "Untergrund"
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "title": "Nominali tutti",
+  "share": {
+    "daily": "Nominali tutti, sfida del giorno {date}",
+    "score": "{named}/{total} in {time}",
+    "copied": "Copiato!",
+    "shared": "Condiviso!",
+    "button": "Condividi il risultato"
+  },
+  "modes": {
+    "regular": {
+      "label": "Normale",
+      "blurb": "Nell’ordine che preferisci."
+    },
+    "chaos": {
+      "label": "Caos",
+      "blurb": "Nomina quello che indichiamo, in ordine casuale."
+    },
+    "dex": {
+      "label": "Ordine Pokédex",
+      "blurb": "Uno dopo l’altro, nell’ordine del Pokédex."
+    }
+  },
+  "hud": {
+    "resume": "Riprendi",
+    "pause": "Pausa",
+    "silhouetteAnother": "Suggerimento sagoma: mostrane un’altra",
+    "silhouette": "Suggerimento sagoma",
+    "showAnother": "Mostrane un’altra",
+    "askDex": "Prossimo: n. {num}",
+    "askChaos": "Nomina il n. {num}",
+    "paused": "In pausa",
+    "whoThis": "Chi è questo?",
+    "typeName": "Scrivi il nome di un Pokémon…",
+    "nameLabel": "Nomina un Pokémon",
+    "skipLabel": "Salta questo",
+    "skip": "Salta",
+    "reveal": "Mostrare?",
+    "giveUp": "Arrenditi",
+    "didYouMean": "Forse intendevi {name}? Tocca o premi Invio",
+    "giveUpConfirm": "Arrenderti e vedere quelli che mancano?",
+    "keepGoing": "Continua",
+    "regularLong": "In qualsiasi ordine. I nomi contano appena sono scritti giusti.",
+    "regularShort": "In qualsiasi ordine. Conta appena è scritto giusto.",
+    "chaos": "Nomina quello che indichiamo, o saltalo.",
+    "dex": "Nell’ordine del Pokédex. Saltane uno per tornarci dopo.",
+    "pausedNote": "Il tempo è fermo. Le partite messe in pausa non contano come record personale.",
+    "left": "Mancano {time}",
+    "played": "{time} di gioco"
+  },
+  "setup": {
+    "resumeTitle": "Riprendi da dove avevi lasciato?",
+    "resumeText": "{named}/{total} nominati in {time} ({mode}). Le partite riprese non contano come record personale.",
+    "mode": "Modalità",
+    "timer": "Timer",
+    "minutes": "{m, plural, one {{m} minuto} other {{m} minuti}}",
+    "minutesStandard": "{m, plural, one {{m} minuto (standard)} other {{m} minuti (standard)}}",
+    "noLimit": "Senza limite (∞)",
+    "hints": "Suggerimenti",
+    "silhouette": "Sagoma",
+    "silhouetteHint": "L’ombra di uno che non hai ancora nominato",
+    "autoCycle": "Cambio automatico",
+    "autoCycleHint": "Una nuova sagoma ogni 20 s",
+    "spelling": "Aiuto ortografico",
+    "spellingHint": "Suggerisce il nome più vicino",
+    "options": "Opzioni",
+    "shiny": "Sprite cromatici",
+    "cycle": "Alterna gli sprite",
+    "cycleHint": "Pixel ↔ illustrazione",
+    "sound": "Suono",
+    "save": "Salva i progressi",
+    "saveHint": "Su questo dispositivo",
+    "startOver": "Ricomincia",
+    "start": "Inizia",
+    "dailyNote": "Un tentativo al giorno per il tuo record: niente suggerimenti, niente pause.",
+    "bestsNote": "Record personali: modalità Normale, niente suggerimenti, niente pause. Il tempo standard è {standard}:00.",
+    "best": "Il tuo record: {named}/{total} in {time}"
+  },
+  "results": {
+    "clear": "Li hai nominati tutti!",
+    "time": "Tempo scaduto!",
+    "gaveUp": "Ecco quelli che ti sono sfuggiti",
+    "score": "<final>{named}/{total}</final> in <b>{time}</b>",
+    "missed": "{n, plural, one {{n} mancante, in rosso qui sotto (toccalo per la sua pagina del Pokédex)} other {{n} mancanti, in rosso qui sotto (toccane uno per la sua pagina del Pokédex)}}",
+    "newBest": "Nuovo record personale!",
+    "again": "Gioca ancora",
+    "other": "Altre categorie",
+    "practice": "Partita di prova: contano come record personale solo le partite in modalità Normale senza suggerimenti, pause o riprese.",
+    "checking": "Verifica della partita…",
+    "signIn": "<link>Accedi</link> per salvare il tuo record sul tuo profilo Allenatore.",
+    "improved": "Nuovo record salvato sul tuo profilo.",
+    "stands": "Verificato. Il record sul tuo profilo resta valido.",
+    "seeIt": "Vedi",
+    "notSaved": "Non salvato.",
+    "postFailed": "Impossibile inviare il risultato.",
+    "noClock": "Impossibile contattare il server per cronometrare questa partita."
+  },
+  "feedback": {
+    "wrong": "Non questo: quello è {name}.",
+    "dup": "{name} è già stato nominato.",
+    "out": "{name} non è in «{label}»."
+  },
+  "grid": {
+    "gen": "Gen. {n} · {region}",
+    "pokemon": "Pokémon",
+    "open": "{name}: apri la sua pagina del Pokédex"
+  },
+  "regions": {
+    "kanto": "Kanto",
+    "johto": "Johto",
+    "hoenn": "Hoenn",
+    "sinnoh": "Sinnoh",
+    "unova": "Unima",
+    "kalos": "Kalos",
+    "alola": "Alola",
+    "galar": "Galar",
+    "paldea": "Paldea"
+  }
+}

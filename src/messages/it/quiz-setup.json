@@ -1,0 +1,64 @@
+{
+  "setup": {
+    "changeSettings": "Cambia impostazioni",
+    "format": "Formato",
+    "difficulty": "Difficoltà",
+    "teamsFrom": "Squadre da",
+    "scope": {
+      "both": "Giochi e anime",
+      "games": "Giochi",
+      "anime": "Anime"
+    },
+    "selected": "{label} (selezione: {n})",
+    "all": "{label} (nessun filtro)",
+    "allChip": "Tutte",
+    "start": "Gioca a {mode}"
+  },
+  "filters": {
+    "gen": "Generazioni",
+    "chip": "Gen. {n}",
+    "series": "Serie",
+    "anime": {
+      "original": "Originale",
+      "advanced": "Advanced",
+      "dp": "Diamante e Perla",
+      "bw": "Nero e Bianco",
+      "xy": "XY",
+      "sm": "Sole e Luna",
+      "journeys": "Esplorazioni",
+      "horizons": "Orizzonti"
+    },
+    "items": "Debutto",
+    "itemsNote": "Senza filtri, le domande coprono le Gen. 1–7. Scegli le generazioni per giocare con una qualsiasi delle nove.",
+    "team": "Generazione o regione",
+    "teamChip": "{region}: giochi della Gen. {n}, anime ambientato a {region}",
+    "teamNote": "I giochi contano per generazione (Rosso Fuoco è Gen. 3); le squadre dell’anime per la regione della serie."
+  },
+  "regions": {
+    "kanto": "Kanto",
+    "johto": "Johto",
+    "hoenn": "Hoenn",
+    "sinnoh": "Sinnoh",
+    "unova": "Unima",
+    "kalos": "Kalos",
+    "alola": "Alola",
+    "galar": "Galar",
+    "paldea": "Paldea"
+  },
+  "duel": {
+    "heading": "Testa a testa · {mode}",
+    "zoomBlurb": "Gli stessi {n} primi piani per entrambi, {seconds} secondi l’uno. Indovinare al passo 1 vale {first} punti, fino a {last} al passo {steps}; vince chi fa più punti. Manda il link al tuo amico e premi Pronto.",
+    "blurb": "Le stesse {n} domande per entrambi, {seconds} secondi l’una. Una risposta giusta vale 100 punti, più fino a 50 per la velocità; vince chi fa più punti. Manda il link al tuo amico e premi Pronto.",
+    "mode": "Modalità",
+    "modeLabel": "Modalità della sfida",
+    "difficulty": "Difficoltà",
+    "difficultyLabel": "Difficoltà della sfida"
+  },
+  "grid": {
+    "best": "Record {score}",
+    "nameEmAll": "Nominali tutti",
+    "nameEmAllLine": "Nomina tutti i Pokémon che puoi.",
+    "whichPokemon": "Che Pokémon sei?",
+    "whichPokemonLine": "Scopri il Pokémon più simile a te."
+  }
+}

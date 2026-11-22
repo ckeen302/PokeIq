@@ -1,0 +1,24 @@
+{
+  "daily": {
+    "eyebrow": "Quiz du jour",
+    "today": "Aujourd’hui : <cat>{label}</cat>",
+    "lead": "{count} Pokémon en {minutes} minutes. La même catégorie pour tout le monde, avec son propre classement.",
+    "loading": "Chargement de la catégorie du jour…",
+    "seeBoard": "Voir le classement du jour",
+    "play": "Jouer au quiz du jour",
+    "you": "Toi : {named}/{total} en {time}"
+  },
+  "race": {
+    "eyebrow": "Course",
+    "title": "Fais la course avec jusqu’à {max} amis",
+    "category": "Catégorie",
+    "categoryLabel": "Catégorie de la course",
+    "length": "Durée",
+    "lengthLabel": "Durée de la course",
+    "option": "{label} ({total})",
+    "minutes": "{m} minutes",
+    "name": "Ton nom de Dresseur",
+    "start": "Lancer une course",
+    "failed": "Impossible de lancer la course."
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "daily": {
+    "eyebrow": "デイリー",
+    "today": "今日：<cat>{label}</cat>",
+    "lead": "{count}匹を{minutes}分で。全員共通のカテゴリです。",
+    "loading": "今日のカテゴリを読み込み中…",
+    "seeBoard": "今日の結果を見る",
+    "play": "今日の問題に挑戦",
+    "you": "あなた：{named}/{total}（{time}）"
+  },
+  "race": {
+    "eyebrow": "レース",
+    "title": "最大{max}人の友だちとレース",
+    "category": "カテゴリ",
+    "categoryLabel": "レースのカテゴリ",
+    "length": "時間",
+    "lengthLabel": "レースの時間",
+    "option": "{label}（{total}）",
+    "minutes": "{m}分",
+    "name": "トレーナーの名前",
+    "start": "レースを作る",
+    "failed": "レースを作れませんでした。"
+  }
+}

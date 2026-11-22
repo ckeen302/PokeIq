@@ -1,5 +1,7 @@
 import { C, OG_CONTENT_TYPE, OG_SIZE, ogCard } from "@/lib/og/card";
 import { POKEDEX } from "@/lib/pokemon/pokedex";
+import { ogT } from "@/lib/og/i18n";
+import { speciesName } from "@/lib/names/species";
 
 /**
  * Share card for Name 'em All (the hub, its daily and every category): the
@@ -13,13 +15,14 @@ export const contentType = OG_CONTENT_TYPE;
 
 const NAMED = new Set([1, 2, 4, 5, 7, 9, 10, 12, 16]);
 
-export default function Image() {
+export default async function Image(props: { params?: unknown }) {
+  const t = await ogT(props);
   const slots = POKEDEX.slice(0, 16);
   return ogCard({
-    eyebrow: "Name 'em All · recall quiz",
-    title: ["Can you name", ["every Pokémon?", C.green]],
+    eyebrow: t("nameEmAll.eyebrow"),
+    title: [t("nameEmAll.title1"), [t("nameEmAll.title2"), C.green]],
     titleSize: 64,
-    subtitle: "Type every Pokémon you can remember before the clock runs out. A new category every day.",
+    subtitle: t("nameEmAll.subtitle"),
     accent: C.green,
     visual: (
       <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: 20, borderRadius: 18, background: C.panel, border: `3px solid ${C.edge}` }}>
@@ -46,13 +49,14 @@ export default function Image() {
                 }}
               >
                 <span style={{ display: "flex", fontFamily: "Silkscreen", fontSize: 13, color: C.muted }}>{String(p.id).padStart(4, "0")}</span>
-                <span style={{ display: "flex", fontSize: 16, color: named ? C.text : C.muted }}>{named ? p.name : "?"}</span>
+                <span style={{ display: "flex", fontSize: 16, color: named ? C.text : C.muted }}>{named ? speciesName(p.id, p.name, t.locale) : "?"}</span>
               </div>
             );
           })}
         </div>
       </div>
     ),
-    footer: "Name them all · beat the clock →",
+    footer: t("nameEmAll.footer"),
+    t,
   });
 }

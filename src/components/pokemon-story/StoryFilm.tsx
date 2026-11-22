@@ -11,9 +11,11 @@ import { isMuted, onMuteChange, setMuted } from "@/lib/sound";
 import { LAB_PATH } from "@/lib/lab";
 import { copyText } from "@/lib/share";
 import { filmBeats, filmLine } from "@/lib/world-history/data";
-import { CHAPTERS, STORY, sourceOf } from "@/lib/pokemon-story/data";
+import { CHAPTERS as EN_CHAPTERS, STORY as EN_STORY, sourceOf } from "@/lib/pokemon-story/data";
 import { STORY_PATH as HISTORY_PATH, chapterFromPath, chapterPath } from "@/lib/pokemon-story/deeplink";
-import { basisTag } from "@/lib/pokemon-story/types";
+import { basisTagKey, type Story } from "@/lib/pokemon-story/types";
+import { useT } from "@/i18n/client";
+import filmNs from "@/messages/pokemon-story-film";
 import { buildFilm } from "@/lib/pokemon-story/timing";
 import { HISTORY_PATH as WORLD_HISTORY_PATH } from "@/lib/world-history/deeplink";
 import { blendPose, clampOrbit, orbitBy, orbitFrom, orbitPose, wheelFactor, zoomBy, type Orbit, type OrbitLimits, type Pose } from "@/lib/world-history/camera";
@@ -115,7 +117,11 @@ interface Ui extends Cue {
  * own chapters, its Archive hall, captions that cite real-world sources,
  * and its own music.
  */
-export function StoryFilm({ initialChapter, children }: { initialChapter: string | null; children: React.ReactNode }) {
+export function StoryFilm({ initialChapter, story, children }: { initialChapter: string | null; story?: Story; children: React.ReactNode }) {
+  const t = useT(filmNs);
+  /** The words in the page's language (another language's page sends its story; the clock stays English's, so links and moments match). */
+  const STORY = story ?? EN_STORY;
+  const CHAPTERS = STORY.chapters;
   const film = useMemo(() => buildFilm(), []);
   const [mode, setMode] = useState<Mode>("boot");
   const [canGl, setCanGl] = useState(false);
@@ -253,7 +259,7 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
       s.opened = true;
       // The address first: back and forward return to the chapter the film had reached (it keeps the address on it), not the page's first one.
       const id = chapterFromPath(stripLocale(window.location.pathname)) ?? initialChapter;
-      const i = id ? CHAPTERS.findIndex((c) => c.id === id) : -1;
+      const i = id ? EN_CHAPTERS.findIndex((c) => c.id === id) : -1;
       s.playhead = s.target = Math.min(film.duration, timeParam() ?? (i >= 0 ? chapterStart(film, i) : 0));
       s.cut = Math.max(s.cut, 1);
       s.lastPath = i >= 0 ? chapterPath(id) : HISTORY_PATH;
@@ -298,7 +304,7 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
         const font = getComputedStyle(host).getPropertyValue("--font-wh-serif").trim() || "Georgia";
         await document.fonts?.load(`600 40px ${font}`).catch(() => undefined);
         const q = qualityParam() ?? initialQuality();
-        const scene = createStoryScene(host, { quality: q, film, font, poster: HAS_STILLS ? (id) => `/lab/pokemon-story/${id}.webp` : undefined });
+        const scene = createStoryScene(host, { quality: q, film, font, chapters: story?.chapters, poster: HAS_STILLS ? (id) => `/lab/pokemon-story/${id}.webp` : undefined });
         sceneRef.current = scene;
         setQualityState(q);
         await scene.ready;
@@ -314,7 +320,7 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
       sceneRef.current = null;
       setReady(false);
     };
-  }, [mode, film, sceneGen]);
+  }, [mode, film, sceneGen, story]);
 
   // ---- Size.
   useEffect(() => {
@@ -393,7 +399,7 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
     const id = chapterFromPath(pathname);
     if (!id && pathname !== HISTORY_PATH) return;
     s.lastPath = pathname;
-    seek(id ? chapterStart(film, CHAPTERS.findIndex((c) => c.id === id)) : 0);
+    seek(id ? chapterStart(film, EN_CHAPTERS.findIndex((c) => c.id === id)) : 0);
   }, [pathname, mode, film, seek]);
 
   /** A dip through black over the picture (the words stay on top): a cut that reads as one, or a chapter appearing once built. */
@@ -516,7 +522,7 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
         if (barRef.current) barRef.current.style.transform = `scaleX(${(s.playhead / film.duration).toFixed(4)})`;
         prev = nextUi;
         // The address follows the chapter.
-        const path = s.playhead < PROLOGUE * 0.6 ? HISTORY_PATH : chapterPath(CHAPTERS[cur].id);
+        const path = s.playhead < PROLOGUE * 0.6 ? HISTORY_PATH : chapterPath(EN_CHAPTERS[cur].id);
         if (path !== s.lastPath) {
           s.lastPath = path;
           s.wrote = [...s.wrote.filter((w) => now - w.at < OWN_PATH_MS), { path, at: now }];
@@ -719,13 +725,13 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
 
   const share = async () => {
     const id = CHAPTERS[ui.chapter]?.id;
-    const url = `${window.location.origin}${show.current.playhead < PROLOGUE * 0.6 ? HISTORY_PATH : chapterPath(id)}`;
+    const url = `${window.location.origin}${localUrl(show.current.playhead < PROLOGUE * 0.6 ? HISTORY_PATH : chapterPath(id))}`;
     const c = CHAPTERS[ui.chapter];
     const text = show.current.playhead < PROLOGUE * 0.6 || !c ? STORY.title : `${c.title} (${c.when}) · ${STORY.title}`;
     if (typeof navigator.share === "function" && window.matchMedia("(pointer: coarse)").matches) {
       try { await navigator.share({ title: STORY.title, text, url }); return; } catch { /* closed: copy instead */ }
     }
-    if (await copyText(url)) setToast("Link copied");
+    if (await copyText(url)) setToast(t("copied"));
   };
 
   const toText = () => {
@@ -739,7 +745,8 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
   const fb = chapter ? filmBeats(chapter) : [];
   const beat = ui.kind === "chapter" && ui.beat >= 0 ? fb[ui.beat] : null;
   const source = beat && chapter ? sourceOf(chapter, beat) : null;
-  const tag = beat ? basisTag(beat.basis) : null;
+  const tagKey = beat ? basisTagKey(beat.basis) : null;
+  const tag = tagKey ? t(`tags.${tagKey}`) : null;
   const ticks = film.chapters.map((c) => c.start / film.duration);
   /** Words go up only over the picture they belong to: not while a chapter is still being built (the stage says which). */
   const words = ready && !ui.loading;
@@ -757,7 +764,7 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
       {mode === "list" && canGl && (
         <div className="mb-4 flex justify-end">
           <button type="button" onClick={() => setMode("3d")} className="rounded-md border bg-card px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:border-screen/60 hover:text-foreground" data-testid="ps-3d-view">
-            Watch the film in 3D
+            {t("watch3d")}
           </button>
         </div>
       )}
@@ -779,7 +786,7 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
           data-title={ui.title}
           data-recording={recording ? "1" : "0"}
         >
-          <div ref={hostRef} className="absolute inset-0 cursor-grab select-none active:cursor-grabbing" data-testid="ps-scene" role="application" aria-label="The Story of Pokémon in 3D. Scroll to move through the film; drag to look around; pinch or scroll with ctrl to zoom." />
+          <div ref={hostRef} className="absolute inset-0 cursor-grab select-none active:cursor-grabbing" data-testid="ps-scene" role="application" aria-label={t("sceneLabel")} />
           <div ref={dipRef} className="wh-dip" aria-hidden />
           <div className="wh-shade-top" aria-hidden />
           <div className="wh-shade-bottom" aria-hidden />
@@ -787,33 +794,33 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
           {(!ready || ui.loading) && (
             <div className="wh-loading pointer-events-none absolute inset-0 z-[5] flex flex-col items-center justify-center gap-4 text-white" aria-live="polite">
               <div className="wh-load-ring" aria-hidden />
-              <p className="wh-title-k text-[10px] uppercase text-white/80" data-testid="ps-loading">{!ready ? "Opening the archive…" : ui.lost ? "Restoring the picture…" : `Opening ${chapter?.title ?? "the exhibit"}…`}</p>
+              <p className="wh-title-k text-[10px] uppercase text-white/80" data-testid="ps-loading">{!ready ? t("loading.archive") : ui.lost ? t("loading.restoring") : chapter ? t("loading.chapter", { title: chapter.title }) : t("loading.exhibit")}</p>
             </div>
           )}
 
           {/* Top bar. */}
           <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-2 p-3 sm:p-4">
             <div className="flex min-w-0 items-center gap-2">
-              <Link href={LAB_PATH} className="wh-chip px-2.5" aria-label="Back to the 3D Lab" data-testid="ps-back">
-                <ArrowLeft className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">3D Lab</span>
+              <Link href={LAB_PATH} className="wh-chip px-2.5" aria-label={t("backLab")} data-testid="ps-back">
+                <ArrowLeft className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">{t("lab")}</span>
               </Link>
-              <span className="wh-chip hidden min-w-0 md:inline-flex" aria-hidden><span className="truncate">The Story of Pokémon</span></span>
+              <span className="wh-chip hidden min-w-0 md:inline-flex" aria-hidden><span className="truncate">{t("name")}</span></span>
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              <button type="button" className="wh-chip px-2.5" onClick={toggleMute} aria-label={muted ? "Turn the sound on" : "Turn the sound off"} data-testid="ps-mute">
+              <button type="button" className="wh-chip px-2.5" onClick={toggleMute} aria-label={muted ? t("soundOn") : t("soundOff")} data-testid="ps-mute">
                 {muted ? <VolumeX className="h-4 w-4" aria-hidden /> : <Volume2 className="h-4 w-4" aria-hidden />}
               </button>
-              <button type="button" className="wh-chip px-2.5 lg:hidden" onClick={() => setRailOpen(true)} aria-label="Chapters" data-testid="ps-chapters-open">
+              <button type="button" className="wh-chip px-2.5 lg:hidden" onClick={() => setRailOpen(true)} aria-label={t("chapters")} data-testid="ps-chapters-open">
                 <List className="h-4 w-4" aria-hidden />
               </button>
-              <button type="button" className="wh-chip px-2.5 sm:px-3" onClick={toText} aria-label="Read the story and its sources" data-testid="ps-to-text">
-                <BookOpen className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">Read</span>
+              <button type="button" className="wh-chip px-2.5 sm:px-3" onClick={toText} aria-label={t("readLabel")} data-testid="ps-to-text">
+                <BookOpen className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">{t("read")}</span>
               </button>
             </div>
           </div>
 
           {/* Chapter rail (desktop). */}
-          <nav aria-label="Chapters" className="wh-rail pointer-events-none absolute right-4 top-1/2 z-10 hidden -translate-y-1/2 lg:block">
+          <nav aria-label={t("chapters")} className="wh-rail pointer-events-none absolute right-4 top-1/2 z-10 hidden -translate-y-1/2 lg:block">
             <ol className="space-y-1">
               {CHAPTERS.map((c, i) => (
                 <li key={c.id} style={{ "--wh-accent": c.accent } as React.CSSProperties}>
@@ -833,10 +840,10 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
           <AnimatePresence custom={ui.jumped}>
             {ready && ui.title === "prologue" && (
               <FilmWords key="pro" kind="prologue" jumped={ui.jumped} className="wh-pro pointer-events-none absolute inset-x-0 top-[18%] z-[6] flex flex-col items-center px-6 text-center text-white" testId="ps-prologue">
-                <p className="wh-title-k text-[10px] uppercase text-[#e8c15a] sm:text-xs">PokéIQ 3D Lab · The real history</p>
+                <p className="wh-title-k text-[10px] uppercase text-[#e8c15a] sm:text-xs">{t("kicker")}</p>
                 <h1 className="wh-serif wh-title mt-3 max-w-4xl text-5xl font-semibold leading-[0.95] sm:text-7xl lg:text-8xl">{STORY.prologue.title}</h1>
                 <p className="wh-serif wh-cap-lead mt-4 max-w-xl text-lg italic text-white/85 sm:text-2xl">{STORY.prologue.line}</p>
-                <p className="wh-hint mt-6 inline-flex items-center gap-2 font-display text-[11px] font-semibold uppercase tracking-[0.2em] text-white/75">Scroll, or press play <ArrowDown className="h-3.5 w-3.5" aria-hidden /></p>
+                <p className="wh-hint mt-6 inline-flex items-center gap-2 font-display text-[11px] font-semibold uppercase tracking-[0.2em] text-white/75">{t("scrollHint")} <ArrowDown className="h-3.5 w-3.5" aria-hidden /></p>
               </FilmWords>
             )}
           </AnimatePresence>
@@ -859,18 +866,18 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
           <AnimatePresence custom={ui.jumped}>
             {ui.title === "end" && (
               <FilmWords key="end" kind="end" jumped={ui.jumped} className="absolute inset-x-0 top-[16%] z-[7] flex flex-col items-center px-6 text-center text-white" testId="ps-end">
-                <p className="wh-title-k text-[10px] uppercase text-[#e8c15a] sm:text-xs">The story so far</p>
+                <p className="wh-title-k text-[10px] uppercase text-[#e8c15a] sm:text-xs">{t("soFar")}</p>
                 <h2 className="wh-serif wh-title mt-3 max-w-3xl text-4xl font-semibold leading-none sm:text-6xl">{STORY.title}</h2>
                 <div className="mt-6 flex flex-wrap justify-center gap-2">
-                  <Link href="/pokedex/timeline" className="wh-chip h-11" data-testid="ps-end-timeline"><Film className="h-4 w-4 text-[#e8c15a]" aria-hidden /> Explore every release</Link>
-                  <Link href={WORLD_HISTORY_PATH} className="wh-chip h-11" data-testid="ps-end-world"><Landmark className="h-4 w-4 text-[#e8c15a]" aria-hidden /> The world&apos;s own history</Link>
+                  <Link href="/pokedex/timeline" className="wh-chip h-11" data-testid="ps-end-timeline"><Film className="h-4 w-4 text-[#e8c15a]" aria-hidden /> {t("exploreEvery")}</Link>
+                  <Link href={WORLD_HISTORY_PATH} className="wh-chip h-11" data-testid="ps-end-world"><Landmark className="h-4 w-4 text-[#e8c15a]" aria-hidden /> {t("worldOwn")}</Link>
                 </div>
                 <div className="mt-2 flex flex-wrap justify-center gap-2">
-                  <button type="button" onClick={() => { seek(0); show.current.playing = true; setPlaying(true); }} className="wh-chip h-11" data-testid="ps-again"><RotateCcw className="h-4 w-4" aria-hidden /> Watch again</button>
-                  <button type="button" onClick={() => setVideoOpen(true)} className="wh-chip h-11" data-testid="ps-end-video"><Clapperboard className="h-4 w-4 text-[#f2c96b]" aria-hidden /> Make a video</button>
-                  <button type="button" onClick={toText} className="wh-chip h-11"><BookOpen className="h-4 w-4" aria-hidden /> Sources and music credits</button>
+                  <button type="button" onClick={() => { seek(0); show.current.playing = true; setPlaying(true); }} className="wh-chip h-11" data-testid="ps-again"><RotateCcw className="h-4 w-4" aria-hidden /> {t("again")}</button>
+                  <button type="button" onClick={() => setVideoOpen(true)} className="wh-chip h-11" data-testid="ps-end-video"><Clapperboard className="h-4 w-4 text-[#f2c96b]" aria-hidden /> {t("makeVideo")}</button>
+                  <button type="button" onClick={toText} className="wh-chip h-11"><BookOpen className="h-4 w-4" aria-hidden /> {t("credits")}</button>
                 </div>
-                <p className="wh-cap-src mt-5 max-w-md text-[11px] text-white/60">Pokémon © Nintendo / Creatures / GAME FREAK. A fan project, not affiliated.</p>
+                <p className="wh-cap-src mt-5 max-w-md text-[11px] text-white/60">{t("fan")}</p>
               </FilmWords>
             )}
           </AnimatePresence>
@@ -883,7 +890,7 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
                   <FilmWords key={`${chapter.id}-${beat.id}`} kind="caption" jumped={ui.jumped} as="figure" className="wh-lower absolute bottom-0 left-0 w-full max-w-[46rem] text-white" style={{ ["--wh-accent" as string]: chapter.accent }} testId="ps-caption">
                     {beat.lead && <p className="wh-serif wh-cap-lead mb-1.5 text-base leading-snug text-white/85 sm:text-xl">{beat.lead}</p>}
                     <blockquote className={cn("wh-cap-q wh-wipe whitespace-pre-line text-[1.45rem] sm:text-3xl lg:text-[2.15rem]", !beat.quote && "not-italic")}>
-                      {beat.quote ? `“${filmLine(beat)}”` : filmLine(beat)}
+                      {beat.quote ? `${t("quoteOpen")}${filmLine(beat)}${t("quoteClose")}` : filmLine(beat)}
                     </blockquote>
                     <figcaption className="wh-cap-src mt-2.5 flex flex-wrap items-center gap-2 text-[11px] text-white/70 sm:text-xs">
                       {tag && <span className="wh-tag" style={{ color: chapter.accent }}>{tag}</span>}
@@ -897,7 +904,7 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
 
           {/* Bottom bar: play, the scrubber, look around and zoom, video, share. */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-3 pb-3 sm:px-5 sm:pb-4">
-            <div className="wh-scrub pointer-events-auto mb-2" role="slider" aria-label="Film position" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(ui.progress * 100)} tabIndex={-1}
+            <div className="wh-scrub pointer-events-auto mb-2" role="slider" aria-label={t("position")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(ui.progress * 100)} tabIndex={-1}
               onPointerDown={(e) => {
                 try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* a synthetic pointer */ }
                 pause();
@@ -920,28 +927,28 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
             </div>
             <div className="flex items-center justify-between gap-2">
               <div className="flex min-w-0 items-center gap-2">
-                <button type="button" onClick={togglePlay} disabled={!ready} className="wh-play disabled:opacity-60" aria-label={playing ? "Pause" : "Play"} data-testid="ps-play">
+                <button type="button" onClick={togglePlay} disabled={!ready} className="wh-play disabled:opacity-60" aria-label={playing ? t("pause") : t("play")} data-testid="ps-play">
                   {playing ? <Pause className="h-4 w-4 fill-current" aria-hidden /> : <Play className="h-4 w-4 fill-current" aria-hidden />}
-                  <span className="hidden min-[420px]:inline">{playing ? "Pause" : "Play"}</span>
+                  <span className="hidden min-[420px]:inline">{playing ? t("pause") : t("play")}</span>
                 </button>
                 <span className="wh-chip hidden max-w-[16rem] sm:inline-flex" aria-live="off" data-testid="ps-now">
                   <span className="shrink-0" style={{ color: chapter?.accent }}>{chapter?.numeral}</span>
-                  <span className="truncate">{ui.kind === "hall" && ui.title === "prologue" ? "The archive" : chapter?.title}</span>
+                  <span className="truncate">{ui.kind === "hall" && ui.title === "prologue" ? t("archive") : chapter?.title}</span>
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 {free ? (
-                  <button type="button" onClick={exitFree} className="wh-chip h-11" aria-pressed data-testid="ps-look"><X className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">Back to the film</span></button>
+                  <button type="button" onClick={exitFree} className="wh-chip h-11" aria-pressed data-testid="ps-look"><X className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">{t("backFilm")}</span></button>
                 ) : (
-                  <button type="button" onClick={() => enterFree()} disabled={!canLook} className="wh-chip h-11" data-testid="ps-look"><Eye className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">Look around</span></button>
+                  <button type="button" onClick={() => enterFree()} disabled={!canLook} className="wh-chip h-11" data-testid="ps-look"><Eye className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">{t("look")}</span></button>
                 )}
                 <div className="pointer-events-auto flex overflow-hidden rounded-md border border-white/15 bg-[#0a0816]/60 backdrop-blur-md">
-                  <button type="button" onClick={() => zoom(1 / 1.25)} disabled={!canLook} className="h-11 px-2.5 text-white/80 hover:text-white disabled:opacity-40" aria-label="Zoom out" data-testid="ps-zoom-out"><Minus className="h-4 w-4" /></button>
-                  <button type="button" onClick={() => zoom(1.25)} disabled={!canLook} className="h-11 border-l border-white/10 px-2.5 text-white/80 hover:text-white disabled:opacity-40" aria-label="Zoom in" data-testid="ps-zoom-in"><Plus className="h-4 w-4" /></button>
+                  <button type="button" onClick={() => zoom(1 / 1.25)} disabled={!canLook} className="h-11 px-2.5 text-white/80 hover:text-white disabled:opacity-40" aria-label={t("zoomOut")} data-testid="ps-zoom-out"><Minus className="h-4 w-4" /></button>
+                  <button type="button" onClick={() => zoom(1.25)} disabled={!canLook} className="h-11 border-l border-white/10 px-2.5 text-white/80 hover:text-white disabled:opacity-40" aria-label={t("zoomIn")} data-testid="ps-zoom-in"><Plus className="h-4 w-4" /></button>
                 </div>
-                <button type="button" onClick={share} className="wh-chip h-11 px-3" aria-label="Share this chapter" data-testid="ps-share"><Share2 className="h-4 w-4" aria-hidden /></button>
+                <button type="button" onClick={share} className="wh-chip h-11 px-3" aria-label={t("share")} data-testid="ps-share"><Share2 className="h-4 w-4" aria-hidden /></button>
                 <button type="button" onClick={() => { pause(); setVideoOpen(true); }} disabled={!ready} className="wh-chip h-11 border-[#f2c96b]/50" data-testid="ps-video">
-                  <Clapperboard className="h-4 w-4 text-[#f2c96b]" aria-hidden /> <span className="sm:hidden">Video</span><span className="hidden sm:inline">Make a video</span>
+                  <Clapperboard className="h-4 w-4 text-[#f2c96b]" aria-hidden /> <span className="sm:hidden">{t("video")}</span><span className="hidden sm:inline">{t("makeVideo")}</span>
                 </button>
               </div>
             </div>
@@ -950,10 +957,10 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
           {/* Chapters (phones). */}
           <AnimatePresence>
             {railOpen && (
-              <motion.div className="wh-sheet absolute inset-x-0 bottom-0 z-30 max-h-[75%] overflow-y-auto rounded-t-2xl border-t border-white/15 p-4 text-white" initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }} role="dialog" aria-label="Chapters" data-wh-scroll data-testid="ps-chapters">
+              <motion.div className="wh-sheet absolute inset-x-0 bottom-0 z-30 max-h-[75%] overflow-y-auto rounded-t-2xl border-t border-white/15 p-4 text-white" initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }} role="dialog" aria-label={t("chapters")} data-wh-scroll data-testid="ps-chapters">
                 <div className="mb-3 flex items-center justify-between">
-                  <h2 className="font-display text-sm font-bold uppercase tracking-wider">Chapters</h2>
-                  <button type="button" onClick={() => setRailOpen(false)} className="rounded p-1 text-white/60 hover:text-white" aria-label="Close"><X className="h-5 w-5" /></button>
+                  <h2 className="font-display text-sm font-bold uppercase tracking-wider">{t("chapters")}</h2>
+                  <button type="button" onClick={() => setRailOpen(false)} className="rounded p-1 text-white/60 hover:text-white" aria-label={t("close")}><X className="h-5 w-5" /></button>
                 </div>
                 <ol className="space-y-1">
                   {CHAPTERS.map((c, i) => (
@@ -982,7 +989,7 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
 
           {videoOpen && (
             <Suspense fallback={null}>
-              <MakeHistoryVideo film={film} chapter={ui.chapter} onRecording={setRecording} onClose={() => setVideoOpen(false)} />
+              <MakeHistoryVideo film={film} chapters={CHAPTERS} title={STORY.title} chapter={ui.chapter} onRecording={setRecording} onClose={() => setVideoOpen(false)} />
             </Suspense>
           )}
         </div>

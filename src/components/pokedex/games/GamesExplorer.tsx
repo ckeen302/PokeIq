@@ -6,6 +6,8 @@ import { GameCover } from "./GameCover";
 import { KindTag } from "./KindTag";
 import { DEFAULT_QUERY, GENS, KIND_FILTERS, SORTS, applyGameQuery, gameQueryString, parseGameQuery, releaseYear, type GameCard, type GameQuery, type GameSort } from "@/lib/dex/video-games-types";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import dexGamesList from "@/messages/dex-games-list";
 
 /**
  * The Games list: kind chips, a generation picker and the sort, all kept in
@@ -14,6 +16,7 @@ import { cn } from "@/lib/utils";
  * link's filter is applied once the page is running.
  */
 export function GamesExplorer({ games }: { games: GameCard[] }) {
+  const t = useT(dexGamesList);
   const [q, setQ] = useState<GameQuery>(DEFAULT_QUERY);
 
   useEffect(() => {
@@ -42,7 +45,7 @@ export function GamesExplorer({ games }: { games: GameCard[] }) {
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3" data-testid="games-filters">
-        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Kind of game">
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label={t("kindGroup")}>
           {KIND_FILTERS.map((f) => {
             const on = q.kind === f.id;
             return (
@@ -57,7 +60,7 @@ export function GamesExplorer({ games }: { games: GameCard[] }) {
                   on ? "border-transparent bg-primary text-primary-foreground" : "border-foreground/10 bg-shade/20 text-muted-foreground hover:text-foreground"
                 )}
               >
-                {f.label}
+                {t(`filter.${f.id}`)}
               </button>
             );
           })}
@@ -66,27 +69,27 @@ export function GamesExplorer({ games }: { games: GameCard[] }) {
           <select
             value={q.gen ?? ""}
             onChange={(e) => update({ gen: e.target.value ? Number(e.target.value) : null })}
-            aria-label="Generation"
+            aria-label={t("generation")}
             data-testid="games-gen"
             className="h-9 rounded-md border border-input bg-shade/40 px-3 font-display text-sm max-md:h-10 max-md:text-base"
           >
-            <option value="">Every generation</option>
+            <option value="">{t("everyGeneration")}</option>
             {GENS.map((g) => (
               <option key={g} value={g}>
-                Gen {g}
+                {t("gen", { gen: g })}
               </option>
             ))}
           </select>
           <select
             value={q.sort}
             onChange={(e) => update({ sort: e.target.value as GameSort })}
-            aria-label="Sort"
+            aria-label={t("sortLabel")}
             data-testid="games-sort"
             className="h-9 rounded-md border border-input bg-shade/40 px-3 font-display text-sm max-md:h-10 max-md:text-base"
           >
             {SORTS.map((s) => (
               <option key={s.id} value={s.id}>
-                {s.label}
+                {t(`sort.${s.id}`)}
               </option>
             ))}
           </select>
@@ -104,7 +107,7 @@ export function GamesExplorer({ games }: { games: GameCard[] }) {
                 className="group flex h-full flex-col overflow-hidden rounded-lg border bg-card transition-colors hover:border-screen/60"
               >
                 <span className="block border-b border-foreground/5 bg-shade/30 px-1 py-2">
-                  <GameCover cover={g.cover} eager={i < 12} />
+                  <GameCover cover={g.cover} eager={i < 12} tileAlt={g.cover.kind === "art" ? t("tileAlt", { name: g.cover.alt }) : undefined} />
                 </span>
                 <span className="flex flex-1 flex-col gap-1.5 p-2.5">
                   <span className="hud-label flex flex-wrap gap-x-1.5 gap-y-1 leading-snug">
@@ -112,11 +115,11 @@ export function GamesExplorer({ games }: { games: GameCard[] }) {
                     <span aria-hidden>·</span>
                     <span className="whitespace-nowrap">{g.platform}</span>
                     <span aria-hidden>·</span>
-                    <span className="whitespace-nowrap">Gen {g.gen}</span>
+                    <span className="whitespace-nowrap">{t("gen", { gen: g.gen })}</span>
                   </span>
                   <span className="font-display text-sm font-bold uppercase leading-tight tracking-wide group-hover:text-screen">{g.name}</span>
                   <span className="mt-auto pt-0.5">
-                    <KindTag kind={g.kind} />
+                    <KindTag kind={g.kind} label={t(`kind.${g.kind}`)} />
                   </span>
                 </span>
               </Link>
@@ -125,9 +128,9 @@ export function GamesExplorer({ games }: { games: GameCard[] }) {
         </ul>
       ) : (
         <p className="py-10 text-center text-muted-foreground" data-testid="games-empty">
-          No games match.{" "}
+          {t("none")}{" "}
           <button type="button" onClick={() => update(DEFAULT_QUERY)} className="font-semibold text-foreground underline-offset-2 hover:underline">
-            Show every game
+            {t("showAll")}
           </button>
         </p>
       )}

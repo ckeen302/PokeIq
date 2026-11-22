@@ -9,9 +9,15 @@ import { loadBattleSeat } from "@/lib/battle/seat";
 import { loadSeat } from "@/lib/duel-seat";
 import type { ChallengeKind, MetRelation, MetResponse } from "@/lib/community";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/i18n/client";
+import type { Translator } from "@/i18n/catalog";
+import addFriend from "@/messages/add-friend";
+
+type AddT = Translator<typeof addFriend.en>;
 
 /** "Add friend" on a trainer's profile. Guests are asked to sign in. */
 export function AddFriendButton({ username }: { username: string }) {
+  const t = useT(addFriend);
   const account = useAccount();
   const { list, off } = useCommunity();
   const [busy, setBusy] = useState(false);
@@ -26,7 +32,7 @@ export function AddFriendButton({ username }: { username: string }) {
   if (!me) {
     return (
       <Link href="/login" className="inline-flex h-9 items-center gap-2 rounded-md border bg-card px-3 font-display text-xs font-semibold uppercase tracking-wider hover:border-screen/60">
-        <UserPlus className="h-4 w-4" aria-hidden /> Sign in to add friend
+        <UserPlus className="h-4 w-4" aria-hidden /> {t("signIn")}
       </Link>
     );
   }
@@ -51,22 +57,22 @@ export function AddFriendButton({ username }: { username: string }) {
     await friendAction({ action: relation === "received" ? "accept" : "request", username }).catch((err: Error) => setError(err.message));
     setBusy(false);
   }
-  return <RelationButton relation={relation} busy={busy || !list} error={error} onAdd={() => void add()} />;
+  return <RelationButton relation={relation} busy={busy || !list} error={error} onAdd={() => void add()} t={t} />;
 }
 
-function RelationButton({ relation, busy, error, onAdd }: { relation: MetRelation; busy: boolean; error: string | null; onAdd: () => void }) {
+function RelationButton({ relation, busy, error, onAdd, t }: { relation: MetRelation; busy: boolean; error: string | null; onAdd: () => void; t: AddT }) {
   if (relation === "friends")
     return (
       <span className="inline-flex items-center gap-1.5 font-display text-xs font-semibold uppercase tracking-wider text-success" data-testid="friend-status-badge">
-        <Check className="h-4 w-4" aria-hidden /> Friends
+        <Check className="h-4 w-4" aria-hidden /> {t("friends")}
       </span>
     );
-  if (relation === "sent") return <span className="hud-label">Friend request sent</span>;
-  if (relation === "blocked") return <span className="hud-label">Blocked</span>;
+  if (relation === "sent") return <span className="hud-label">{t("sent")}</span>;
+  if (relation === "blocked") return <span className="hud-label">{t("blocked")}</span>;
   return (
     <span className="inline-flex flex-col items-start gap-1">
       <Button size="sm" variant="outline" disabled={busy} onClick={onAdd} data-testid="add-friend">
-        {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <UserPlus className="h-4 w-4" aria-hidden />} {relation === "received" ? "Accept friend request" : "Add friend"}
+        {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <UserPlus className="h-4 w-4" aria-hidden />} {relation === "received" ? t("accept") : t("add")}
       </Button>
       {error && <span className="text-xs text-destructive">{error}</span>}
     </span>
@@ -79,6 +85,7 @@ function RelationButton({ relation, busy, error, onAdd }: { relation: MetRelatio
  * goes through the game, so neither account name is revealed first.
  */
 export function AddFriendAfterGame({ kind, code }: { kind: ChallengeKind; code: string }) {
+  const t = useT(addFriend);
   const account = useAccount();
   const [met, setMet] = useState<MetResponse | null>(null);
   const [busy, setBusy] = useState(false);
@@ -121,7 +128,7 @@ export function AddFriendAfterGame({ kind, code }: { kind: ChallengeKind; code: 
       const out = await friendAction({ action: "request", via: { kind, code, token } });
       setMet({ ...met!, relation: out.status === "friends" ? "friends" : "sent" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't send the request.");
+      setError(err instanceof Error ? err.message : t("failed"));
     }
     setBusy(false);
   }
@@ -129,10 +136,10 @@ export function AddFriendAfterGame({ kind, code }: { kind: ChallengeKind; code: 
     <div className="flex justify-center" data-testid="add-friend-after">
       {met.relation === "received" ? (
         <Button size="sm" variant="outline" onClick={() => openFriends("requests")}>
-          <UserPlus className="h-4 w-4" aria-hidden /> They sent you a friend request
+          <UserPlus className="h-4 w-4" aria-hidden /> {t("theySent")}
         </Button>
       ) : (
-        <RelationButton relation={met.relation ?? "none"} busy={busy} error={error} onAdd={() => void add()} />
+        <RelationButton relation={met.relation ?? "none"} busy={busy} error={error} onAdd={() => void add()} t={t} />
       )}
     </div>
   );

@@ -1,3 +1,4 @@
+import { NOT_LETTER, foldLetters } from "@/lib/names/fold";
 import type { NeaTarget } from "./types";
 
 /**
@@ -7,18 +8,17 @@ import type { NeaTarget } from "./types";
  * ("Mega Charizard X", "Charizard X", "Alolan Vulpix", "Vulpix Alola",
  * "Gmax Snorlax"). A matcher maps every accepted spelling to exactly one
  * slot of its category: a spelling two slots could claim equally is
- * dropped, so a bare "Charizard" names neither Mega.
+ * dropped, so a bare "Charizard" names neither Mega. In another language a
+ * slot also answers to its names there (sent with the targets), kana in
+ * either script and rōmaji for Japanese.
  */
 
-/** Lower-case letters and digits only: "Flabébé" -> "flabebe", "Type: Null" -> "typenull", "Nidoran♀" -> "nidoranf". */
+/** Lower-case letters and digits only, in any script: "Flabébé" -> "flabebe", "Type: Null" -> "typenull", "Nidoran♀" -> "nidoranf", "ピカチュウ" -> "ぴかちゅう". */
 export function normalizeName(input: string): string {
-  return input
-    .normalize("NFKD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
+  return foldLetters(input.normalize("NFKC"))
     .replace(/♀/g, "f")
     .replace(/♂/g, "m")
-    .replace(/[^a-z0-9]/g, "");
+    .replace(NOT_LETTER, "");
 }
 
 /** Extra spellings for a few species, by national number. */
@@ -65,22 +65,25 @@ export function targetSpellings(t: NeaTarget): { key: string; priority: number }
     if (key && (!out.has(key) || out.get(key)! > priority)) out.set(key, priority);
   };
   add(t.name, 0);
+  for (const a of t.aliases ?? []) add(a, 0);
   if (!t.form) {
     add(t.slug, 0);
     for (const a of SPECIES_ALIASES[t.species] ?? []) add(a, 0);
     return [...out].map(([key, priority]) => ({ key, priority }));
   }
-  const { kind, base, region, qualifier, primary } = t.form;
-  const prefixes = PREFIXES[kind === "regional" ? region ?? "" : kind] ?? [];
+  const { kind, base, region, qualifier, primary, bases = [], prefixes: own = [] } = t.form;
+  const prefixes = [...(PREFIXES[kind === "regional" ? region ?? "" : kind] ?? []), ...own.map(normalizeName)];
   const quals = qualifier ? qualifierVariants(qualifier) : [];
-  const b = normalizeName(base);
-  for (const p of prefixes) {
-    if (quals.length) for (const q of quals) for (const order of permutations([p, b, q])) add(order.join(""), 0);
-    else for (const order of permutations([p, b])) add(order.join(""), 0);
-    if (primary) for (const order of permutations([p, b])) add(order.join(""), 1);
+  for (const name of [base, ...bases]) {
+    const b = normalizeName(name);
+    for (const p of prefixes) {
+      if (quals.length) for (const q of quals) for (const order of permutations([p, b, q])) add(order.join(""), 0);
+      else for (const order of permutations([p, b])) add(order.join(""), 0);
+      if (primary) for (const order of permutations([p, b])) add(order.join(""), 1);
+    }
+    for (const q of quals) for (const order of permutations([b, q])) add(order.join(""), 1);
+    add(name, 2);
   }
-  for (const q of quals) for (const order of permutations([b, q])) add(order.join(""), 1);
-  add(base, 2);
   return [...out].map(([key, priority]) => ({ key, priority }));
 }
 

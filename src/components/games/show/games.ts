@@ -8,6 +8,8 @@ import { clip } from "./clip";
 import { crane } from "./cams";
 import { sequence, type Sequence } from "./sequence";
 import { NO_PROPS, beatAt, type Overlay, type Show, type ShowFrame } from "./types";
+import { translator, type Translator } from "@/i18n/catalog";
+import gamesShowNs from "@/messages/games-show";
 
 /**
  * The Games as a broadcast: every event in order, each condensed (its
@@ -45,24 +47,26 @@ export function boardShow(event: Show["event"], venue: Venue, title: string, row
   };
 }
 
-const tableRows = (t: MedalRow[]) => t.map((r) => ({ place: String(r.rank), name: r.nation.name, mark: `${r.gold} · ${r.silver} · ${r.bronze}`, key: r.nation.id, hi: r.rank === 1, note: "gold · silver · bronze" }));
+function tableRows(t: MedalRow[], tr: Translator<typeof gamesShowNs.en>) {
+  return t.map((r) => ({ place: String(r.rank), name: r.nation.name, mark: `${r.gold} · ${r.silver} · ${r.bronze}`, key: r.nation.id, hi: r.rank === 1, note: tr("medalsNote") }));
+}
 
-export function gamesShow(g: GamesResult, byKey: ReadonlyMap<string, Athlete>, o: { budget: number; video?: boolean }): GamesShow {
+export function gamesShow(g: GamesResult, byKey: ReadonlyMap<string, Athlete>, o: { budget: number; video?: boolean }, tr: Translator<typeof gamesShowNs.en> = translator(gamesShowNs, "en", undefined)): GamesShow {
   const parts: Sequence[] = [];
   g.outcomes.forEach((out, i) => {
     const ev = eventOf(out.event);
-    const main = eventShow(out, byKey, { budget: o.budget, quick: true, video: o.video, nations: g.nations, champion: out.event === "all-around" });
+    const main = eventShow(out, byKey, { budget: o.budget, quick: true, video: o.video, nations: g.nations, champion: out.event === "all-around" }, tr);
     const table = medalTable(g.nations, g.outcomes.slice(0, i + 1));
     const last = i === g.outcomes.length - 1;
-    const tail = boardShow(out.event, ev.venue === "pool" ? "pool" : ev.venue, last ? "Final medal table" : `Medal table · after ${ev.lower}`, tableRows(table), last ? 6 : 3.6);
+    const tail = boardShow(out.event, ev.venue === "pool" ? "pool" : ev.venue, last ? tr("finalTable") : tr("tableAfter", { lower: tr(`ev.${out.event}.lower`) }), tableRows(table, tr), last ? 6 : 3.6);
     const champ = last && g.champion ? byKey.get(g.champion) : null;
     const shows: Show[] = [...main.parts.map((p) => p.show), tail];
     // The close: the top three nations on the podium, each represented by its first athlete.
     if (last) {
-      const meds: Medallist[] = table.slice(0, 3).filter((r) => r.nation.athletes[0]).map((r) => ({ athlete: r.nation.athletes[0], medal: Math.min(3, r.rank) as 1 | 2 | 3, mark: `${r.gold} gold · ${r.silver} silver · ${r.bronze} bronze`, nation: { name: r.nation.name, color: r.nation.color } }));
-      if (meds.length) shows.push(podiumShow("all-around", "stadium", meds, { video: o.video, title: "The Games · the nations" }));
+      const meds: Medallist[] = table.slice(0, 3).filter((r) => r.nation.athletes[0]).map((r) => ({ athlete: r.nation.athletes[0], medal: Math.min(3, r.rank) as 1 | 2 | 3, mark: tr("medalLine", { gold: r.gold, silver: r.silver, bronze: r.bronze }), nation: { name: r.nation.name, color: r.nation.color } }));
+      if (meds.length) shows.push(podiumShow("all-around", "stadium", meds, { video: o.video, title: tr("nations") }, tr));
     }
-    parts.push(sequence(shows, { event: out.event, hook: main.hook, headline: champ ? `${champ.name} is the Champion of the Games` : main.headline }));
+    parts.push(sequence(shows, { event: out.event, hook: main.hook, headline: champ ? tr("champion", { name: champ.name }) : main.headline }));
   });
   return { parts };
 }
@@ -73,11 +77,11 @@ export function gamesShow(g: GamesResult, byKey: ReadonlyMap<string, Athlete>, o
  * the all-around) under the event's name and its gold, then the final
  * medal table.
  */
-export function gamesSummary(g: GamesResult, byKey: ReadonlyMap<string, Athlete>): Sequence[] {
+export function gamesSummary(g: GamesResult, byKey: ReadonlyMap<string, Athlete>, tr: Translator<typeof gamesShowNs.en> = translator(gamesShowNs, "en", undefined)): Sequence[] {
   const parts: Sequence[] = [];
   g.outcomes.forEach((out, i) => {
     const ev = eventOf(out.event);
-    const main = eventShow(out, byKey, { budget: 30, quick: true, video: true, podium: false, nations: g.nations, champion: out.event === "all-around" });
+    const main = eventShow(out, byKey, { budget: 30, quick: true, video: true, podium: false, nations: g.nations, champion: out.event === "all-around" }, tr);
     // The replay of the decisive moment; else (a bout won on the bell) the last few seconds before the last result.
     const replay = main.beats.find((b) => b.kind === "replay") ?? main.beats.find((b) => b.kind === "result" && b.cam === "champion");
     const last = [...main.beats].reverse().find((b) => b.kind === "result");
@@ -86,11 +90,11 @@ export function gamesSummary(g: GamesResult, byKey: ReadonlyMap<string, Athlete>
     const c = clip(main, t0, t1);
     const gold = out.podium.gold.map((k) => byKey.get(k)?.name ?? k).join(", ");
     const nation = g.nations.find((n) => n.athletes.some((a) => a.key === out.podium.gold[0]));
-    const line = `Gold: ${gold}${out.event !== "wrestling" && out.podium.gold[0] ? ` · ${formatMark(out.event, out.marks.get(out.podium.gold[0]))}` : ""}${nation ? ` · ${nation.name}` : ""}`;
+    const line = `${tr("goldLine", { gold })}${out.event !== "wrestling" && out.podium.gold[0] ? ` · ${formatMark(out.event, out.marks.get(out.podium.gold[0]), tr.locale)}` : ""}${nation ? ` · ${nation.name}` : ""}`;
     // Every clip says what it is, whatever its own graphics show.
-    const labelled: Show = { ...c, overlay: (t) => { const ov = c.overlay(t); return { ...ov, bug: { title: ev.name, sub: line }, board: undefined, title: undefined, replay: ov.replay || beatAt(c.beats, t).kind === "replay" }; } };
+    const labelled: Show = { ...c, overlay: (t) => { const ov = c.overlay(t); return { ...ov, bug: { title: tr(`ev.${out.event}.name`), sub: line }, board: undefined, title: undefined, replay: ov.replay || beatAt(c.beats, t).kind === "replay" }; } };
     const shows: Show[] = [labelled];
-    if (i === g.outcomes.length - 1) shows.push(boardShow(out.event, ev.venue, "Final medal table", tableRows(medalTable(g.nations, g.outcomes)), 4.5));
+    if (i === g.outcomes.length - 1) shows.push(boardShow(out.event, ev.venue, tr("finalTable"), tableRows(medalTable(g.nations, g.outcomes), tr), 4.5));
     parts.push(sequence(shows, { event: out.event, hook: main.hook, headline: main.headline }));
   });
   return parts;

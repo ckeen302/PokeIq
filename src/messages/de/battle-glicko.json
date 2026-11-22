@@ -1,0 +1,7 @@
+{
+  "title": "{elo, select, none {} other {Elo {elo}. }}GXE {gxe} %: die Chance, einen zufälligen Trainer dieser Rangliste zu schlagen. Glicko-2-Wertung {glicko}.",
+  "gxe": "GXE {gxe} %",
+  "deviation": "Glicko-2-Wertung ± Abweichung",
+  "provisional": "Vorl.",
+  "provisionalTitle": "Vorläufig, bis die Abweichung unter {rd} fällt"
+}

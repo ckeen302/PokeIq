@@ -1,16 +1,18 @@
 "use client";
 
-import { useMemo } from "react";
+import { createContext, useContext, useMemo } from "react";
 import { useT } from "@/i18n/client";
 import type { Translator } from "@/i18n/catalog";
 import labDex from "@/messages/lab-dex";
 import type { RoleKey } from "@/lib/lab-dex/roles";
 import type { SortKey } from "@/lib/lab-dex/sequence";
+import type { LabLocal } from "@/lib/lab-dex/types";
 
 /**
  * Every piece of the Professor's Lab's UI copy, from the site's messages
  * (src/messages/en/lab-dex.json), shaped as one object the components read.
- * (The 3D scene's own decorative labels, drawn into its screens, stay as they are.)
+ * (The 3D scene's decorative wall screens, sci-fi set dressing with made-up readouts, stay as they are; the
+ * caption round the holo-table, which names the Pokémon on it, is in the page's language.)
  */
 
 export const GEN_NUMERALS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"] as const;
@@ -20,7 +22,14 @@ const ROLE_KEYS: RoleKey[] = ["physicalSweeper", "specialSweeper", "wall", "phys
 
 type T = Translator<typeof labDex.en>;
 
-function build(t: T) {
+/** What the scene draws in another language: the caption round the holo-table (English pages draw their own). */
+export interface LabWords {
+  idle: string;
+  total: string;
+  type: (id: string) => string;
+}
+
+function build(t: T, local: LabLocal | undefined) {
   const plain = Object.fromEntries(
     (["brand", "loading", "noWebgl", "searchLabel", "searchPlaceholder", "clearSearch", "notInView", "showAll", "noMatch", "noSearchMatch", "reset", "filters", "allTypes", "types", "typesHint", "gen", "legends", "final", "forms", "formsHint", "sortBy", "sortAsc", "sortDesc", "specimen", "scanComplete", "materialising", "biometrics", "height", "weight", "region", "entry", "abilities", "hidden", "evolution", "noEvolution", "matchups", "weakTo", "resists", "immune", "baseStats", "roles", "total", "bestRole", "rolesNote", "rolesNoteForms", "openInDex", "prev", "next", "hint", "hintTouch", "stage", "stageRole", "sheetHandle", "sheetClose", "close", "done"] as const).map((k) => [k, t(k)])
   ) as Record<"brand" | "loading" | "noWebgl" | "searchLabel" | "searchPlaceholder" | "clearSearch" | "notInView" | "showAll" | "noMatch" | "noSearchMatch" | "reset" | "filters" | "allTypes" | "types" | "typesHint" | "gen" | "legends" | "final" | "forms" | "formsHint" | "sortBy" | "sortAsc" | "sortDesc" | "specimen" | "scanComplete" | "materialising" | "biometrics" | "height" | "weight" | "region" | "entry" | "abilities" | "hidden" | "evolution" | "noEvolution" | "matchups" | "weakTo" | "resists" | "immune" | "baseStats" | "roles" | "total" | "bestRole" | "rolesNote" | "rolesNoteForms" | "openInDex" | "prev" | "next" | "hint" | "hintTouch" | "stage" | "stageRole" | "sheetHandle" | "sheetClose" | "close" | "done", string>;
@@ -38,8 +47,15 @@ function build(t: T) {
     spe: stats[5],
     ...(Object.fromEntries(ROLE_KEYS.map((k) => [k, roles[k].name])) as Record<RoleKey, string>),
   };
+  const caption: LabWords | false = t.locale !== "en" && { idle: t("captionIdle"), total: t("total"), type: (id: string) => local?.types[id] ?? id };
   return {
     ...plain,
+    locale: t.locale,
+    /** A height or weight to one decimal, as the page's language writes it. */
+    dec: (n: number) => (t.locale === "en" ? n.toFixed(1) : n.toLocaleString(t.locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })),
+    caption,
+    /** A type's name on this page (English pages: none, so callers show the id as before). */
+    typeName: (id: string): string | undefined => local?.types[id],
     genN: (n: string) => t("genN", { n }),
     top: (n: number) => t("top", { n }),
     bottom: (n: number) => t("bottom", { n }),
@@ -58,8 +74,12 @@ function build(t: T) {
 
 export type LabStrings = ReturnType<typeof build>;
 
+/** A page in another language's type names (from the server); English pages have none. */
+export const LabLocalContext = createContext<LabLocal | undefined>(undefined);
+
 /** The lab's copy in the page's language. */
 export function useLabStrings(): LabStrings {
   const t = useT(labDex);
-  return useMemo(() => build(t), [t]);
+  const local = useContext(LabLocalContext);
+  return useMemo(() => build(t, local), [t, local]);
 }

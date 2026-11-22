@@ -1,0 +1,15 @@
+{
+  "login": {
+    "title": "Anmelden",
+    "label": "Trainer-ID",
+    "heading": "Anmelden",
+    "intro": "Behalte deinen Fortschritt auf jedem Gerät.",
+    "ages": "Konten gibt es ab 13 Jahren.",
+    "privacy": "Datenschutzerklärung"
+  },
+  "oauth": {
+    "title": "Wähle deinen Trainernamen",
+    "label": "Neuer Trainer",
+    "heading": "Wähle deinen Trainernamen"
+  }
+}

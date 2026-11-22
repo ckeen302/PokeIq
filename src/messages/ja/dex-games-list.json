@@ -1,0 +1,27 @@
+{
+  "kindGroup": "ゲームの種類",
+  "filter": {
+    "all": "すべて",
+    "mainline": "本編",
+    "remake": "リメイク",
+    "spinoff": "外伝",
+    "mobile": "スマホ"
+  },
+  "kind": {
+    "mainline": "本編",
+    "remake": "リメイク",
+    "spinoff": "外伝",
+    "mobile": "スマホ"
+  },
+  "generation": "世代",
+  "everyGeneration": "すべての世代",
+  "gen": "第{gen}世代",
+  "sortLabel": "並び順",
+  "sort": {
+    "newest": "新しい順",
+    "oldest": "古い順"
+  },
+  "none": "該当するゲームはありません。",
+  "showAll": "すべて表示",
+  "tileAlt": "{name}（パッケージ画像の代わりのタイル）"
+}

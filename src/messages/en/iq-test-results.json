@@ -1,0 +1,29 @@
+{
+  "complete": "PokéIQ Test complete",
+  "bands": {
+    "exceptional": "Exceptional",
+    "superior": "Superior",
+    "highAverage": "High average",
+    "average": "Average",
+    "lowAverage": "Low average",
+    "below": "Below average"
+  },
+  "cognitive": "Cognitive PokéIQ",
+  "percentile": "{p, selectordinal, one {{p}st} two {{p}nd} few {{p}rd} other {{p}th}} percentile of trainers",
+  "summary": "Cognitive PokéIQ {score} · {p, selectordinal, one {{p}st} two {{p}nd} few {{p}rd} other {{p}th}} percentile of trainers. Measures reasoning, memory, speed and spatial skills with Pokémon, scored against other trainers; not a clinical IQ test.",
+  "bar": "{title}: {scaled}, {p, selectordinal, one {{p}st} two {{p}nd} few {{p}rd} other {{p}th}} percentile",
+  "scale": "Each bar is on the same mean-100 scale. The first four make the cognitive score; knowledge is the PokéIQ rating from the quiz section and is scored separately.",
+  "scaleKnowledge": "Each bar is on the same mean-100 scale. The first four make the cognitive score; knowledge is the PokéIQ rating from the quiz section ({iq}, {title}) and is scored separately.",
+  "even": "An even profile: no section stood clearly above or below the others.",
+  "strengths": "<b>Strengths:</b> {list}.",
+  "weaknesses": "<b>Harder for you:</b> {list}.",
+  "sep": "; ",
+  "words": {
+    "fluid": { "strength": "spotting the rule behind a pattern", "weakness": "finding the rule behind a pattern" },
+    "memory": { "strength": "holding a sequence or a sum in mind", "weakness": "holding several things in mind at once" },
+    "speed": { "strength": "quick, accurate scanning", "weakness": "scanning quickly without slipping" },
+    "spatial": { "strength": "turning and routing things in your mind's eye", "weakness": "picturing things turned or stacked" }
+  },
+  "retake": "Retake with fresh items",
+  "card": "See it on your trainer card"
+}

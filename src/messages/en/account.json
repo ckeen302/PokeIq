@@ -1,0 +1,84 @@
+{
+  "tabs": {
+    "login": "Sign in",
+    "register": "Create account",
+    "recover": "Forgot password"
+  },
+  "resetTitle": "Password reset",
+  "welcome": "Welcome, {name}!",
+  "resetNote": "Your old recovery code is used up. Save this new one — it's shown only once.",
+  "welcomeNote": "This recovery code is the only way back in if you forget your password. It's shown only once.",
+  "offlineTitle": "Accounts are offline",
+  "offlineBody": "Trainer accounts aren't switched on for this server yet. Your progress is still saved on this device.",
+  "nameRejected": "Pick a different name.",
+  "failed": "Something went wrong.",
+  "tablist": "Account",
+  "name": "Trainer name",
+  "code": "Recovery code",
+  "newPassword": "New password",
+  "password": "Password",
+  "nameRules": "3–20 letters, numbers, _ or -. No email needed — you'll get a recovery code instead.",
+  "reset": "Reset password",
+  "syncNote": "Signing in saves your badges, streaks, ratings and PokéIQ to your account so they follow you to any device.",
+  "email": {
+    "needEmail": "Add your email to get the daily emails.",
+    "badEmail": "That doesn't look like an email address."
+  },
+  "panel": {
+    "saveTitle": "Save your progress",
+    "saveBody": "Create a free account to keep your badges, ratings and streaks on any device.",
+    "signIn": "Sign in",
+    "newCodeTitle": "New recovery code",
+    "newCodeNote": "Your previous code no longer works. Save this one — it's shown only once.",
+    "codeFailed": "Couldn't make a new code.",
+    "signedInAs": "Signed in as <b>{name}</b> · progress syncs automatically",
+    "newCode": "New recovery code",
+    "signOut": "Sign out",
+    "confirmPassword": "Confirm your password",
+    "generate": "Generate"
+  },
+  "connected": {
+    "unlinkFailed": "Couldn't unlink that account.",
+    "title": "Connected accounts",
+    "linked": "Linked",
+    "notLinked": "Not linked",
+    "onlyWay": "This is your only way to sign in.",
+    "unlink": "Unlink",
+    "link": "Link {provider}"
+  },
+  "oauth": {
+    "googleNote": "Google sign-in is in testing — use Discord if it doesn't work.",
+    "continueWith": "Continue with {provider}",
+    "orName": "or use a trainer name",
+    "errors": {
+      "denied": "Sign-in was cancelled.",
+      "expired": "That sign-in took too long or was started in another tab — try again.",
+      "failed": "Couldn't sign you in with that provider right now. Try again, or use your trainer name and password.",
+      "unavailable": "That sign-in option isn't available right now.",
+      "banned": "This account is banned.",
+      "linked_elsewhere": "That account is already linked to a different trainer.",
+      "already_linked": "You already have an account of that kind linked. Unlink it first.",
+      "signin_required": "Sign in first, then link the account from your trainer card.",
+      "rate_limited": "Too many attempts — try again in a minute."
+    }
+  },
+  "signup": {
+    "expired": "That sign-in has expired — start again.",
+    "unreachable": "Couldn't reach the server — try again.",
+    "under13": "You need to be 13 or older to make an account.",
+    "loading": "Loading",
+    "back": "Back to sign in",
+    "signedWith": "Signed in with {provider}. Choose the name other trainers will see.",
+    "nameHint": "3–20 letters, numbers, _ or -.",
+    "adult": "I am 13 years old or older.",
+    "create": "Create trainer",
+    "privacy": "Your email stays private. See the <link>privacy policy</link>."
+  },
+  "recovery": {
+    "label": "Recovery code",
+    "copied": "Copied",
+    "copy": "Copy code",
+    "savedIt": "I saved my recovery code somewhere safe",
+    "continue": "Continue"
+  }
+}

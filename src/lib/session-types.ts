@@ -28,6 +28,11 @@ export interface SessionSpec {
   practice?: PracticeReason;
   /** Local date (YYYY-MM-DD) of a daily Zoom Reveal: one Pokémon, untimed. */
   zoomDaily?: string;
+  /**
+   * The language the questions are worded in, when it isn't English (a page in another language starts the run with
+   * `lang`). The seed still decides the questions: the same run in every language, re-worded.
+   */
+  locale?: "ja" | "es" | "fr" | "de" | "it";
 }
 
 export interface PublicQuestion {
@@ -51,6 +56,11 @@ export interface PublicQuestion {
   zoom?: ZoomView;
   /** Cards revealed one at a time: `cards` holds the `shown` so far, out of `total`. */
   reveal?: { shown: number; total: number };
+  /**
+   * Typed trainer names in another language (Whose Team Is This?): the other spellings the guess box accepts for each
+   * option, same order (the English name; in Japanese also kana and rōmaji). Never sent for English.
+   */
+  optionAliases?: string[][];
 }
 
 /** POST /api/session/reveal: one more card of the current question. */

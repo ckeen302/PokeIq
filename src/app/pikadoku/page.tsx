@@ -15,6 +15,8 @@ import pikadokuDuel from "@/messages/pikadoku-duel";
 import duel from "@/messages/duel";
 import howto from "@/messages/howto";
 import share from "@/messages/share";
+import conn from "@/messages/connections";
+import badges from "@/messages/badges";
 
 /**
  * Regenerated hourly (ISR): the HTML carries the public daily grids for
@@ -49,7 +51,7 @@ export default async function PikadokuPage() {
     <>
     <script dangerouslySetInnerHTML={{ __html: HOWTO_FIRST }} />
     <div className="space-y-10">
-      <ClientMessages namespaces={[pikadoku, pikadokuBoard, pikadokuDuel, duel, howto, share]}>
+      <ClientMessages namespaces={[pikadoku, pikadokuBoard, pikadokuDuel, duel, howto, share, conn, badges]}>
         <Pikadoku initial={publicDailies()} local={local} />
       </ClientMessages>
       <GameInfo

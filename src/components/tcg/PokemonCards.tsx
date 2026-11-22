@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "@/components/ui/Link";
 import type { CardTile } from "@/lib/tcg/types";
 import { HudHeading } from "@/components/game/HudHeading";
-import { CardGrid } from "./CardGrid";
+import { CardGrid, gridText } from "./CardGrid";
+import { localPriceNote } from "./price-note";
+import { useT } from "@/i18n/client";
+import tcgCards from "@/messages/tcg-cards";
 
 /**
  * "Cards" section on a Pokémon's page. The page itself is static, so the
@@ -14,6 +17,7 @@ import { CardGrid } from "./CardGrid";
 export function PokemonCards({ dex, name }: { dex: number; name: string }) {
   const [data, setData] = useState<{ cards: CardTile[]; total: number; priceNote?: string } | null>(null);
   const [el, setEl] = useState<HTMLElement | null>(null);
+  const t = useT(tcgCards);
 
   useEffect(() => {
     if (!el) return;
@@ -43,16 +47,17 @@ export function PokemonCards({ dex, name }: { dex: number; name: string }) {
         <>
           <HudHeading
             id="cards-title"
-            title="Cards"
+            title={t("pokemon.title")}
             aside={
               <Link href={`/pokedex/tcg?dex=${dex}`} className="text-screen hover:underline" data-testid="pokemon-cards-all">
-                See all {data.total} →
+                {t("pokemon.all", { n: data.total })}
               </Link>
             }
           />
-          <CardGrid tiles={data.cards} showSet />
+          <CardGrid tiles={data.cards} showSet text={gridText(t)} />
           <p className="text-center text-xs text-muted-foreground">
-            {name}&apos;s newest Pokémon TCG cards. {data.priceNote}
+            {/* The API's note is English: another language words it from the tiles (prices' labels stay the API's). */}
+            {t("pokemon.newest", { name, note: (process.env.LIVE_LOCALES && t.locale !== "en" ? localPriceNote(data.cards, t) : data.priceNote) ?? "" })}
           </p>
         </>
       )}

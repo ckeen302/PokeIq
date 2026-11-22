@@ -1,0 +1,20 @@
+{
+  "confirm": {
+    "title": "Email confermata",
+    "body": "Tutto pronto. L'email giornaliera arriva quando escono le nuove sfide, se è attiva nelle Impostazioni.",
+    "error": "Quel link di conferma è scaduto o è stato sostituito da uno più recente. Chiedine uno nuovo nelle Impostazioni.",
+    "working": "Conferma in corso…"
+  },
+  "unsubscribe": {
+    "title": "Disiscrizione completata",
+    "body": "Niente più email giornaliere. Puoi riattivarle nelle Impostazioni quando vuoi.",
+    "error": "Quel link di disiscrizione non è valido. Puoi disattivare le email nelle Impostazioni.",
+    "working": "Disiscrizione in corso…"
+  },
+  "tooMany": "Troppi tentativi: aspetta un minuto e riapri il link.",
+  "unreachable": "Impossibile raggiungere il server. Riapri il link tra poco.",
+  "busy": "In corso",
+  "invalid": "Link non valido",
+  "play": "Gioca alle sfide di oggi",
+  "settings": "Impostazioni"
+}

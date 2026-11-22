@@ -1,0 +1,45 @@
+{
+  "coverage": {
+    "label": "Couverture des types",
+    "heading": "Faiblesses et couverture",
+    "tera": "Défendre avec le type Téra",
+    "type": "Type",
+    "weakTitle": "Membres faibles",
+    "weak": "Faible",
+    "resistTitle": "Membres qui résistent",
+    "resist": "Résiste",
+    "immuneTitle": "Membres immunisés",
+    "immune": "Immunisé",
+    "seTitle": "Membres avec une attaque super efficace dessus",
+    "se": "Touche SE",
+    "nothingNeutral": "Rien dans l'équipe ne touche ce type, même en neutre",
+    "nothingSe": "Rien ne le touche en super efficace",
+    "abilities": "Talents pris en compte : {notes}.",
+    "help": "Les colonnes sont tes Pokémon (les dégâts qu'ils subissent de chaque type). « Touche SE » compte les membres avec une attaque super efficace ; ✕ signifie que rien ne touche ce type, même en neutre."
+  },
+  "notes": {
+    "wonderGuard": "{ability} : seuls les coups super efficaces touchent",
+    "immune": "{ability} : immunisé contre {types}",
+    "scale": "{ability} : {scales}",
+    "member": "{member} : {note}",
+    "hitter": "{member} : {move}"
+  },
+  "threats": {
+    "label": "Menaces",
+    "heading": "Menaces en {format}",
+    "noUsage": "Pas de statistiques d'utilisation pour ce format, donc pas de liste de menaces.",
+    "running": "Calcul des dégâts en cours…",
+    "none": "Un membre de ton équipe répond à chacun des {n} Pokémon les plus utilisés.",
+    "help": "Vérifie les {n} Pokémon les plus utilisés avec leur objet, leur répartition et leurs capacités les plus courants ({source}{stats, select, none {} other {, {battles, number} combats, téléchargé le {fetched}}}). Un membre répond à une menace s'il encaisse tous les jets de son attaque la plus forte depuis ses PV au max, ou s'il est plus rapide et la met K.O. en un coup au moins une fois sur deux. Pas de Téracristal, pas de boosts, pas de pièges.",
+    "struggles": "Ton équipe peine contre <b>{species}</b>",
+    "share": "{set} · dans {pct} % des équipes"
+  },
+  "matchup": {
+    "line": "{member} : {took} ; {back}, {speed, select, faster {plus rapide} other {plus lent}}",
+    "takes": "subit {lo}–{hi} % de {move}",
+    "shrugs": "ne subit rien d'inquiétant",
+    "does": "renvoie {lo}–{hi} % avec {move}",
+    "doesKo": "renvoie {lo}–{hi} % avec {move} ({ko} % de K.O. en un coup)",
+    "noHurt": "n'a aucune attaque qui le blesse"
+  }
+}

@@ -11,6 +11,9 @@ import { RACE_URLS } from "@/components/race/urls";
 import { RACE_CSS } from "@/components/race/race-css";
 import type { GamesScene, Quality } from "./scene";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import gamesStadium from "@/messages/games-stadium";
+import { sceneFont } from "./font";
 
 export interface StadiumEvent { id: EventId; name: string; emoji: string; question: string; href: string; group: string }
 export interface StadiumLink { label: string; href: string }
@@ -55,6 +58,8 @@ const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
  * underneath (the same links) is the page.
  */
 export function GamesStadium({ events, groups, playHref, records, h2h, h2hPicker, backHref, children }: GamesStadiumProps) {
+  const t = useT(gamesStadium);
+  const cardTitle = t("cardTitle"), cardSub = t("choose");
   const [view, setView] = useState<"boot" | "3d" | "list">("boot");
   const [ready, setReady] = useState(false);
   const [entered, setEntered] = useState(false);
@@ -89,7 +94,7 @@ export function GamesStadium({ events, groups, playHref, records, h2h, h2hPicker
     const ac = new AbortController();
     import("./scene").then(async ({ createGamesScene }) => {
       if (!alive) return;
-      const font = getComputedStyle(document.documentElement).getPropertyValue("--font-display").trim() || "sans-serif";
+      const font = sceneFont(getComputedStyle(document.documentElement).getPropertyValue("--font-display").trim() || "sans-serif", t.locale);
       try {
         await document.fonts?.load(`700 40px ${font}`).catch(() => undefined);
         if (!alive) return;
@@ -97,7 +102,7 @@ export function GamesStadium({ events, groups, playHref, records, h2h, h2hPicker
         sceneRef.current = scene;
         await scene.load({ athletes: [], venue: "stadium" }, ac.signal);
         if (!alive) return;
-        scene.setCard("The PokéIQ Games", "Choose your event");
+        scene.setCard(cardTitle, cardSub);
         const fit = () => scene.resize(Math.max(1, host.clientWidth), Math.max(1, host.clientHeight));
         fit();
         ro = new ResizeObserver(fit);
@@ -135,7 +140,7 @@ export function GamesStadium({ events, groups, playHref, records, h2h, h2hPicker
       sceneRef.current = null;
       setReady(false);
     };
-  }, [view]);
+  }, [view, cardTitle, cardSub, t.locale]);
 
   const enter = () => {
     setEntered(true);
@@ -170,25 +175,25 @@ export function GamesStadium({ events, groups, playHref, records, h2h, h2hPicker
           <ScenePreload />
           <div className="rc-shade-top" aria-hidden />
           <div className="rc-shade-bottom" aria-hidden />
-          <h1 className="sr-only">The PokéIQ Games: real track and field, swimming, weightlifting and wrestling for every Pokémon</h1>
+          <h1 className="sr-only">{t("h1")}</h1>
 
           <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-2 p-3 sm:p-4">
             {entered ? (
-              <button type="button" onClick={leave} className={chip} data-testid="stadium-leave"><ArrowLeft className="h-4 w-4" aria-hidden /> Outside</button>
+              <button type="button" onClick={leave} className={chip} data-testid="stadium-leave"><ArrowLeft className="h-4 w-4" aria-hidden /> {t("outside")}</button>
             ) : (
-              <Link href={backHref} className={chip} data-testid="stadium-back"><ArrowLeft className="h-4 w-4" aria-hidden /> 3D Lab</Link>
+              <Link href={backHref} className={chip} data-testid="stadium-back"><ArrowLeft className="h-4 w-4" aria-hidden /> {t("lab")}</Link>
             )}
           </div>
 
           <AnimatePresence>
             {!entered && (
               <motion.div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-5 px-4 text-center text-white" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 1.04 }} transition={{ duration: 0.4 }}>
-                <p className="font-pixel text-[10px] uppercase tracking-[0.3em] text-[#ffd84a]">3D Lab · real sport, real stats</p>
-                <p className="font-display text-4xl font-bold uppercase leading-none tracking-tight drop-shadow-[0_4px_24px_rgb(0_0_0/0.6)] sm:text-6xl" aria-hidden>The PokéIQ <span className="text-[#ffd84a]">Games</span></p>
+                <p className="font-pixel text-[10px] uppercase tracking-[0.3em] text-[#ffd84a]">{t("kicker")}</p>
+                <p className="font-display text-4xl font-bold uppercase leading-none tracking-tight drop-shadow-[0_4px_24px_rgb(0_0_0/0.6)] sm:text-6xl" aria-hidden>{t.rich("title", { b: (c) => <span className="text-[#ffd84a]">{c}</span> })}</p>
                 <button type="button" onClick={enter} className="rc-go inline-flex h-16 min-w-[16rem] items-center justify-center gap-3 rounded-xl px-8 font-display text-lg font-bold uppercase tracking-wider sm:h-[4.5rem] sm:text-xl" data-testid="stadium-enter" autoFocus>
-                  <Medal className="h-6 w-6" aria-hidden /> Enter the stadium
+                  <Medal className="h-6 w-6" aria-hidden /> {t("enter")}
                 </button>
-                {!ready && <p className="font-pixel text-[10px] uppercase tracking-[0.3em] text-white/60" aria-live="polite">Opening the venue…</p>}
+                {!ready && <p className="font-pixel text-[10px] uppercase tracking-[0.3em] text-white/60" aria-live="polite">{t("opening")}</p>}
               </motion.div>
             )}
           </AnimatePresence>
@@ -198,28 +203,28 @@ export function GamesStadium({ events, groups, playHref, records, h2h, h2hPicker
               <motion.div
                 key="board"
                 role="dialog"
-                aria-label="Choose your event"
+                aria-label={t("choose")}
                 className="absolute inset-x-0 bottom-0 z-20 mx-auto flex max-h-[78%] flex-col rounded-t-2xl border border-white/15 bg-[#070c1c]/90 text-white shadow-2xl backdrop-blur-xl sm:bottom-auto sm:top-16 sm:max-h-[calc(100%-6rem)] sm:w-[min(52rem,calc(100%-3rem))] sm:rounded-2xl lg:top-[max(4rem,calc(50%-20rem))] lg:max-h-[min(40rem,calc(100%-6rem))]"
                 initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }} transition={{ duration: 0.35 }}
                 data-testid="stadium-picker" data-rc-scroll
               >
                 <div className="flex items-center justify-between gap-2 border-b border-white/10 px-4 py-3 sm:px-5">
                   <div className="min-w-0">
-                    <p className="font-pixel text-[9px] uppercase tracking-[0.3em] text-[#ffd84a]">PokéIQ Stadium · tonight</p>
-                    <h2 className="font-display text-xl font-bold uppercase tracking-wider">Choose your event</h2>
+                    <p className="font-pixel text-[9px] uppercase tracking-[0.3em] text-[#ffd84a]">{t("tonight")}</p>
+                    <h2 className="font-display text-xl font-bold uppercase tracking-wider">{t("choose")}</h2>
                   </div>
-                  <button type="button" onClick={leave} className="rounded p-2 text-white/60 hover:text-white" aria-label="Back outside"><X className="h-5 w-5" /></button>
+                  <button type="button" onClick={leave} className="rounded p-2 text-white/60 hover:text-white" aria-label={t("backOutside")}><X className="h-5 w-5" /></button>
                 </div>
                 <div className="flex flex-wrap gap-2 px-4 pt-3 sm:px-5">
-                  {tabBtn("events", "Events")}
-                  {tabBtn("records", "Records", Trophy)}
-                  {tabBtn("h2h", "Head to head", Swords)}
+                  {tabBtn("events", t("events"))}
+                  {tabBtn("records", t("records"), Trophy)}
+                  {tabBtn("h2h", t("h2h"), Swords)}
                 </div>
                 <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:px-5 sm:pb-5">
                   {tab === "events" && (
                     <div className="space-y-4">
                       <Link href={playHref} className="rc-go flex min-h-14 items-center justify-between gap-3 rounded-xl px-4 py-3" data-testid="stadium-play">
-                        <span><span className="block font-display text-base font-bold uppercase tracking-wider">The full Games</span><span className="block text-xs opacity-80">Nations of three through every event, with a medal table</span></span>
+                        <span><span className="block font-display text-base font-bold uppercase tracking-wider">{t("full")}</span><span className="block text-xs opacity-80">{t("fullBlurb")}</span></span>
                         <Trophy className="h-6 w-6 shrink-0" aria-hidden />
                       </Link>
                       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

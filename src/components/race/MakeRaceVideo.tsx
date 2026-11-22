@@ -9,11 +9,13 @@ import { VIDEO_H, VIDEO_W } from "@/lib/sizes/export";
 import type { Race } from "@/lib/race/race";
 import type { Quality } from "./scene";
 import { RACE_URLS } from "./urls";
-import { videoPlan } from "./record";
+import { videoPlan, type RaceRecordStage } from "./record";
+import { useT } from "@/i18n/client";
+import raceNs from "@/messages/race";
 
 type Phase =
   | { kind: "idle" }
-  | { kind: "recording"; p: number; label: string }
+  | { kind: "recording"; p: number; label: RaceRecordStage }
   | { kind: "done"; url: string; blob: Blob; name: string; type: string; seconds: number }
   | { kind: "error"; message: string };
 
@@ -48,6 +50,7 @@ export default function MakeRaceVideo({ race, hook, title, slug, link, onRecordi
   onRecording(on: boolean): void;
   onClose(): void;
 }) {
+  const t = useT(raceNs);
   const [phase, setPhase] = useState<Phase>({ kind: "idle" });
   const [support, setSupport] = useState<"mp4" | "webm" | "none">("mp4");
   const [canShare, setCanShare] = useState(false);
@@ -79,7 +82,7 @@ export default function MakeRaceVideo({ race, hook, title, slug, link, onRecordi
     const ac = new AbortController();
     abortRef.current = ac;
     lastProgress.current = 0;
-    setPhase({ kind: "recording", p: 0, label: "Setting the scene" });
+    setPhase({ kind: "recording", p: 0, label: "scene" });
     onRecording(true);
     try {
       const { recordRace } = await import("./record");
@@ -98,6 +101,23 @@ export default function MakeRaceVideo({ race, hook, title, slug, link, onRecordi
         quality: qualityFromUrl(),
         fps: fpsFromUrl(),
         signal: ac.signal,
+        // Another language: the video's own words in it (English pages: the recorder's English).
+        ...(process.env.LIVE_LOCALES && t.locale !== "en"
+          ? {
+              words: {
+                marks: t("gfx.marks"),
+                set: t("gfx.set"),
+                meanwhile: (name: string) => t("gfx.meanwhile", { name }),
+                leads: (name: string) => t("gfx.leads", { name }),
+                results: (d: number) => t("video.results", { d }),
+                hookLine: (d: number) => t("video.hookLine", { d }),
+                endTitle: t("video.endTitle"),
+                endSub: (d: number) => t("video.endSub", { d }),
+                endCta: t("video.endCta"),
+                sec: t("video.sec"),
+              },
+            }
+          : {}),
         onProgress(p, label) {
           if (ac.signal.aborted) return;
           const now = performance.now();
@@ -112,7 +132,7 @@ export default function MakeRaceVideo({ race, hook, title, slug, link, onRecordi
     } catch (e) {
       // (Cancelled: the dialog went back to the start the moment Cancel was pressed.)
       if (ac.signal.aborted || (e as Error)?.name === "AbortError") return;
-      setPhase({ kind: "error", message: e instanceof Error ? e.message : "Something went wrong" });
+      setPhase({ kind: "error", message: e instanceof Error && t.locale === "en" ? e.message : t("video.failed") });
     } finally {
       if (abortRef.current === ac) {
         abortRef.current = null;
@@ -134,53 +154,53 @@ export default function MakeRaceVideo({ race, hook, title, slug, link, onRecordi
   return (
     <div className="pointer-events-auto absolute inset-0 z-40 flex items-end justify-center bg-black/55 p-0 backdrop-blur-sm sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-labelledby="rc-video-title" data-testid="race-video-dialog">
       <motion.div className="dark-scope relative max-h-full w-full overflow-y-auto rounded-t-2xl border border-white/15 bg-[#0b1226] p-5 text-white shadow-2xl sm:max-w-md sm:rounded-2xl" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }}>
-        <button type="button" onClick={() => { cancel(); onClose(); }} className="absolute right-3 top-3 rounded-md p-1.5 text-white/60 hover:text-white" aria-label="Close" data-testid="race-video-close">
+        <button type="button" onClick={() => { cancel(); onClose(); }} className="absolute right-3 top-3 rounded-md p-1.5 text-white/60 hover:text-white" aria-label={t("video.close")} data-testid="race-video-close">
           <X className="h-5 w-5" />
         </button>
         <div className="flex items-center gap-2">
           <Clapperboard className="h-5 w-5 text-[#ffd84a]" aria-hidden />
-          <h2 id="rc-video-title" className="font-display text-lg font-bold uppercase tracking-wider">Make a video</h2>
+          <h2 id="rc-video-title" className="font-display text-lg font-bold uppercase tracking-wider">{t("video.title")}</h2>
         </div>
-        <p className="mt-1 text-sm text-white/65">A vertical {VIDEO_W} × {VIDEO_H} video of this race for TikTok, Reels and Shorts, with the stadium sound.</p>
+        <p className="mt-1 text-sm text-white/65">{t("video.intro", { w: VIDEO_W, h: VIDEO_H })}</p>
         {phase.kind === "done" ? (
           <div className="mt-4 space-y-3">
             <video src={phase.url} controls playsInline loop autoPlay muted className="mx-auto aspect-[9/16] max-h-[52vh] rounded-lg bg-black" data-testid="race-video-preview" />
             <div className="grid grid-cols-2 gap-2">
               <a href={phase.url} download={phase.name} className="rc-go inline-flex h-11 items-center justify-center gap-2 rounded-lg font-display text-sm font-bold uppercase tracking-wider" data-testid="race-video-download">
-                <Download className="h-4 w-4" aria-hidden /> Download
+                <Download className="h-4 w-4" aria-hidden /> {t("video.download")}
               </a>
               <button type="button" onClick={shareFile} disabled={!canShare} className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-white/20 font-display text-sm font-bold uppercase tracking-wider text-white disabled:opacity-40" data-testid="race-video-share">
-                <Share2 className="h-4 w-4" aria-hidden /> Share
+                <Share2 className="h-4 w-4" aria-hidden /> {t("video.share")}
               </button>
             </div>
-            <p className="text-center text-xs text-white/50">{phase.name} · {phase.type === "video/mp4" ? "MP4" : "WebM"} · {phase.seconds.toFixed(1)} s</p>
-            <button type="button" onClick={() => setPhase({ kind: "idle" })} className="w-full text-center font-display text-xs font-semibold uppercase tracking-wider text-white/60 hover:text-white">Make another</button>
+            <p className="text-center text-xs text-white/50">{phase.name} · {phase.type === "video/mp4" ? "MP4" : "WebM"} · {t("video.seconds", { s: phase.seconds.toFixed(1) })}</p>
+            <button type="button" onClick={() => setPhase({ kind: "idle" })} className="w-full text-center font-display text-xs font-semibold uppercase tracking-wider text-white/60 hover:text-white">{t("video.another")}</button>
           </div>
         ) : (
           <div className="mt-4 space-y-4">
             <div className="rounded-lg border border-white/10 bg-white/[0.04] p-3 text-sm">
               <p className="font-display font-semibold uppercase tracking-wide text-[#ffd84a]">“{hook}”</p>
-              <p className="mt-1 text-white/60">{race.distance} m · about {Math.round(length)} s · {support === "webm" ? "WebM" : "MP4"}</p>
+              <p className="mt-1 text-white/60">{t("video.about", { d: race.distance, s: Math.round(length), format: support === "webm" ? "WebM" : "MP4" })}</p>
             </div>
             {phase.kind === "recording" ? (
               <div className="space-y-2" data-testid="race-video-progress" data-p={phase.p.toFixed(3)}>
                 <div className="flex items-center justify-between text-xs text-white/70">
-                  <span className="inline-flex items-center gap-1.5"><Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> {phase.label}</span>
+                  <span className="inline-flex items-center gap-1.5"><Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> {t(`video.stage.${phase.label}`)}</span>
                   <span className="tabular-nums">{Math.round(phase.p * 100)}%</span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-white/10" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(phase.p * 100)} aria-label="Rendering the video">
+                <div className="h-2 overflow-hidden rounded-full bg-white/10" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(phase.p * 100)} aria-label={t("video.rendering")}>
                   <div className="h-full origin-left rounded-full bg-gradient-to-r from-[#ffd84a] to-[#ff9d00]" style={{ transform: `scaleX(${phase.p})` }} />
                 </div>
-                <button type="button" onClick={cancel} className="w-full rounded-lg border border-white/20 py-2.5 font-display text-sm font-bold uppercase tracking-wider text-white/85 hover:text-white" data-testid="race-video-cancel">Cancel</button>
+                <button type="button" onClick={cancel} className="w-full rounded-lg border border-white/20 py-2.5 font-display text-sm font-bold uppercase tracking-wider text-white/85 hover:text-white" data-testid="race-video-cancel">{t("video.cancel")}</button>
               </div>
             ) : (
               <button type="button" onClick={record} disabled={support === "none"} className="rc-go inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg font-display text-sm font-bold uppercase tracking-wider disabled:opacity-50" data-testid="race-video-record">
-                <Clapperboard className="h-4 w-4" aria-hidden /> Record
+                <Clapperboard className="h-4 w-4" aria-hidden /> {t("video.record")}
               </button>
             )}
             {phase.kind === "error" && <p className="text-sm text-red-300" role="alert">{phase.message}</p>}
             <p className="text-xs leading-relaxed text-white/45">
-              {support === "none" ? "This browser can't record video. Try Chrome, Edge or Safari." : support === "webm" ? "This browser records in real time. Chrome, Edge and Safari make an MP4 frame by frame." : "Rendered frame by frame on this device, so it stays smooth. Keep this tab open while it records."}
+              {support === "none" ? t("video.noVideo") : support === "webm" ? t("video.realtime") : t("video.frames")}
             </p>
           </div>
         )}

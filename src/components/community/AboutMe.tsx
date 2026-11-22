@@ -6,7 +6,32 @@ import { Check, Loader2, Pencil, Search, Share2, Sparkles, X } from "lucide-reac
 import { useAccount } from "@/lib/account";
 import { artUrl } from "@/lib/pokemon/art";
 import Link from "@/components/ui/Link";
-import { CARD_SLOTS, GAME_SLOTS, POKEMON_SLOTS, RULE_HINT, aboutIsEmpty, choiceLabel, type AboutCard, type AboutData, type PokemonSlot } from "@/lib/about-data";
+import { CARD_SLOTS, GAMES, GAME_SLOTS, POKEMON_SLOTS, REGIONS, aboutIsEmpty, type AboutCard, type AboutData, type Choice, type GameSlot, type PokemonSlot } from "@/lib/about-data";
+import type { AboutLocal } from "@/lib/about-local";
+import { useT } from "@/i18n/client";
+import type { Translator } from "@/i18n/catalog";
+import { foldLetters } from "@/lib/names/fold";
+import aboutNs from "@/messages/about-me";
+
+type AboutT = Translator<typeof aboutNs.en>;
+
+/** A game choice's name: the official one in the page's language for games and regions (sent by the page). */
+const choiceName = (slot: GameSlot, c: Choice, local?: AboutLocal) => ((slot.choices === GAMES || slot.choices === REGIONS) && local?.choices[c.id]) || c.label;
+
+/** The name of the choice picked in a game slot (lib/about-data's choiceLabel, in the page's language), or null. */
+function pickedName(slot: GameSlot, id: string, local?: AboutLocal): string | null {
+  const c = slot.choices.find((x) => x.id === id);
+  return c ? choiceName(slot, c, local) : null;
+}
+
+/** A choice group's name ("Gen 1", "Kanto", "Champions") in the page's language. */
+function groupName(t: AboutT, group: string, local?: AboutLocal): string {
+  if (!local) return group;
+  const gen = /^Gen (\d+)$/.exec(group);
+  if (gen) return t("gen", { n: gen[1] });
+  if (group === "Champions") return t("champions");
+  return local.regions[group.toLowerCase()] ?? group;
+}
 import type { CardTile } from "@/lib/tcg/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,7 +47,8 @@ type Validate = typeof import("@/lib/about-validate");
  * games. Everyone sees the filled slots; the owner gets an edit mode. The
  * server checks every pick again before saving.
  */
-export function AboutMe({ username, initial, names }: { username: string; initial: AboutData; names: Record<string, string> }) {
+export function AboutMe({ username, initial, names, local }: { username: string; initial: AboutData; names: Record<string, string>; local?: AboutLocal }) {
+  const t = useT(aboutNs);
   const account = useAccount();
   const router = useRouter();
   const mine = account.user?.username.toLowerCase() === username.toLowerCase();
@@ -59,16 +85,16 @@ export function AboutMe({ username, initial, names }: { username: string; initia
       const res = await fetch("/api/profile/about", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(draft) });
       const body = (await res.json().catch(() => ({}))) as { error?: string; about?: AboutData };
       if (!res.ok || !body.about) {
-        setError(body.error ?? "Couldn't save.");
+        setError(body.error ?? t("saveFailed"));
         return;
       }
       setAbout(body.about);
-      if (v) setLabels(Object.fromEntries(Object.entries(body.about.pokemon).map(([k, p]) => [k, v.pokemonName(p.id) ?? ""])));
+      if (v) setLabels(Object.fromEntries(Object.entries(body.about.pokemon).map(([k, p]) => [k, local?.species[p.id] ?? v.pokemonName(p.id) ?? ""])));
       setEditing(false);
       setOpen(null);
       router.refresh();
     } catch {
-      setError("Couldn't save. Check your connection.");
+      setError(t("offline"));
     } finally {
       setSaving(false);
     }
@@ -81,7 +107,7 @@ export function AboutMe({ username, initial, names }: { username: string; initia
       const blob = await (await fetch(url, { cache: "no-store" })).blob();
       const file = new File([blob], `pokeiq-${username}.png`, { type: "image/png" });
       if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: `${username} on PokéIQ`, url: `${location.origin}/u/${encodeURIComponent(username)}` });
+        await navigator.share({ files: [file], title: t("shareTitle", { name: username }), url: `${location.origin}/u/${encodeURIComponent(username)}` });
       } else {
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
@@ -101,12 +127,12 @@ export function AboutMe({ username, initial, names }: { username: string; initia
       <CardContent className="space-y-5 p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="hud-label flex items-center gap-1.5 text-screen">
-            <Sparkles className="h-3.5 w-3.5" aria-hidden /> About me
+            <Sparkles className="h-3.5 w-3.5" aria-hidden /> {t("title")}
           </p>
           <div className="flex flex-wrap gap-2">
             {!empty && !editing && (
               <Button size="sm" variant="outline" onClick={share} disabled={sharing} data-testid="about-share">
-                {sharing ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Share2 className="h-4 w-4" aria-hidden />} Share / Download
+                {sharing ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Share2 className="h-4 w-4" aria-hidden />} {t("share")}
               </Button>
             )}
             {mine && !editing && (
@@ -119,16 +145,16 @@ export function AboutMe({ username, initial, names }: { username: string; initia
                 }}
                 data-testid="about-edit"
               >
-                <Pencil className="h-4 w-4" aria-hidden /> {empty ? "Add" : "Edit"}
+                <Pencil className="h-4 w-4" aria-hidden /> {empty ? t("add") : t("edit")}
               </Button>
             )}
             {editing && (
               <>
                 <Button size="sm" onClick={save} disabled={saving} data-testid="about-save">
-                  {saving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Check className="h-4 w-4" aria-hidden />} Save
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Check className="h-4 w-4" aria-hidden />} {t("save")}
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => (setEditing(false), setOpen(null), setError(null))}>
-                  <X className="h-4 w-4" aria-hidden /> Cancel
+                  <X className="h-4 w-4" aria-hidden /> {t("cancel")}
                 </Button>
               </>
             )}
@@ -144,7 +170,7 @@ export function AboutMe({ username, initial, names }: { username: string; initia
         {editing ? (
           <div className="space-y-5">
             <section className="space-y-3">
-              <p className="hud-label">My Pokémon</p>
+              <p className="hud-label">{t("myPokemon")}</p>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
                 {POKEMON_SLOTS.map((s) => {
                   const pick = draft.pokemon[s.id];
@@ -157,7 +183,7 @@ export function AboutMe({ username, initial, names }: { username: string; initia
                       className="flex flex-col items-center rounded-md border bg-shade/20 p-2 text-center hover:border-screen/60 aria-expanded:border-screen"
                       data-testid={`about-slot-${s.id}`}
                     >
-                      <span className="text-[11px] text-muted-foreground">{s.label}</span>
+                      <span className="text-[11px] text-muted-foreground">{t(`slots.${s.id}` as never)}</span>
                       {pick ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={artUrl(pick.id, 96, pick.shiny)} alt="" width={64} height={64} className="h-16 w-16 object-contain" />
@@ -166,7 +192,7 @@ export function AboutMe({ username, initial, names }: { username: string; initia
                           +
                         </span>
                       )}
-                      <span className="w-full truncate text-xs font-semibold">{pick ? (v?.pokemonName(pick.id) ?? labels[s.id] ?? "") : "Empty"}</span>
+                      <span className="w-full truncate text-xs font-semibold">{pick ? (local?.species[pick.id] ?? v?.pokemonName(pick.id) ?? labels[s.id] ?? "") : t("empty")}</span>
                     </button>
                   );
                 })}
@@ -176,6 +202,8 @@ export function AboutMe({ username, initial, names }: { username: string; initia
                   key={open}
                   slot={POKEMON_SLOTS.find((s) => s.id === open)!}
                   v={v}
+                  t={t}
+                  local={local}
                   current={draft.pokemon[open]}
                   onPick={(pick) => {
                     const pokemon = { ...draft.pokemon };
@@ -188,7 +216,7 @@ export function AboutMe({ username, initial, names }: { username: string; initia
               )}
             </section>
             <section className="space-y-3">
-              <p className="hud-label">My TCG cards</p>
+              <p className="hud-label">{t("myCards")}</p>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
                 {CARD_SLOTS.map((s) => {
                   const pick = draft.cards?.[s.id];
@@ -201,7 +229,7 @@ export function AboutMe({ username, initial, names }: { username: string; initia
                       className="flex flex-col items-center rounded-md border bg-shade/20 p-2 text-center hover:border-screen/60 aria-expanded:border-screen"
                       data-testid={`about-slot-${s.id}`}
                     >
-                      <span className="text-[11px] text-muted-foreground">{s.label}</span>
+                      <span className="text-[11px] text-muted-foreground">{t(`cardSlots.${s.id}` as never)}</span>
                       {pick?.image ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={pick.image} alt="" width={46} height={64} className="h-16 w-auto rounded-[3px] object-contain" />
@@ -210,7 +238,7 @@ export function AboutMe({ username, initial, names }: { username: string; initia
                           +
                         </span>
                       )}
-                      <span className="w-full truncate text-xs font-semibold">{pick?.name ?? "Empty"}</span>
+                      <span className="w-full truncate text-xs font-semibold">{pick?.name ?? t("empty")}</span>
                     </button>
                   );
                 })}
@@ -218,7 +246,8 @@ export function AboutMe({ username, initial, names }: { username: string; initia
               {open && CARD_SLOTS.some((s) => s.id === open) && (
                 <CardPicker
                   key={open}
-                  label={CARD_SLOTS.find((s) => s.id === open)!.label}
+                  label={t(`cardSlots.${open}` as never)}
+                  t={t}
                   current={draft.cards?.[open]}
                   onPick={(card) => {
                     const cards = { ...draft.cards };
@@ -231,13 +260,13 @@ export function AboutMe({ username, initial, names }: { username: string; initia
               )}
             </section>
             <section className="space-y-3">
-              <p className="hud-label">My Pokémon games</p>
+              <p className="hud-label">{t("myGames")}</p>
               <div className="grid gap-3 sm:grid-cols-2">
                 {GAME_SLOTS.map((s) => {
                   const groups = [...new Set(s.choices.map((c) => c.group ?? ""))];
                   return (
                     <label key={s.id} className="flex flex-col gap-1 text-xs text-muted-foreground">
-                      {s.label}
+                      {t(`games.${s.id}` as never)}
                       <select
                         value={draft.games[s.id] ?? ""}
                         onChange={(e) => {
@@ -249,16 +278,16 @@ export function AboutMe({ username, initial, names }: { username: string; initia
                         className={cn(FIELD, "text-foreground")}
                         data-testid={`about-game-${s.id}`}
                       >
-                        <option value="">Not picked</option>
+                        <option value="">{t("notPicked")}</option>
                         {groups.map((g) => {
                           const items = s.choices.filter((c) => (c.group ?? "") === g);
                           const opts = items.map((c) => (
                             <option key={c.id} value={c.id}>
-                              {c.label}
+                              {choiceName(s, c, local)}
                             </option>
                           ));
                           return g ? (
-                            <optgroup key={g} label={g}>
+                            <optgroup key={g} label={groupName(t, g, local)}>
                               {opts}
                             </optgroup>
                           ) : (
@@ -274,20 +303,20 @@ export function AboutMe({ username, initial, names }: { username: string; initia
           </div>
         ) : (
           <>
-            {empty && <p className="text-sm text-muted-foreground">Pick your favorite Pokémon, TCG cards and games to show on your profile.</p>}
+            {empty && <p className="text-sm text-muted-foreground">{t("intro")}</p>}
             {shown.length > 0 && (
               <section className="space-y-3">
-                <p className="hud-label">My Pokémon</p>
+                <p className="hud-label">{t("myPokemon")}</p>
                 <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5" data-testid="about-pokemon">
                   {shown.map((s) => {
                     const pick = about.pokemon[s.id];
                     return (
                       <li key={s.id} className="flex flex-col items-center rounded-md border bg-shade/20 p-2 text-center" data-testid={`about-pokemon-${s.id}`}>
-                        <span className="text-[11px] text-muted-foreground">{s.label}</span>
+                        <span className="text-[11px] text-muted-foreground">{t(`slots.${s.id}` as never)}</span>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={artUrl(pick.id, 160, pick.shiny)} alt="" width={80} height={80} loading="lazy" className="h-20 w-20 object-contain" />
                         <span className="w-full truncate text-sm font-semibold">
-                          {pick.shiny && <span aria-label="Shiny">✨ </span>}
+                          {pick.shiny && <span aria-label={t("shinyMark")}>✨ </span>}
                           {labels[s.id]}
                         </span>
                       </li>
@@ -298,17 +327,17 @@ export function AboutMe({ username, initial, names }: { username: string; initia
             )}
             {cardsShown.length > 0 && (
               <section className="space-y-3">
-                <p className="hud-label">My TCG cards</p>
+                <p className="hud-label">{t("myCards")}</p>
                 <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5" data-testid="about-cards">
                   {cardsShown.map((s) => {
                     const c = about.cards![s.id];
                     return (
                       <li key={s.id} className="rounded-md border bg-shade/20 text-center" data-testid={`about-card-${s.id}`}>
                         <Link href={`/pokedex/tcg/card/${c.id}`} className="group flex h-full flex-col items-center gap-1 p-2" title={c.set ? `${c.name} · ${c.set}` : c.name}>
-                          <span className="text-[11px] text-muted-foreground">{s.label}</span>
+                          <span className="text-[11px] text-muted-foreground">{t(`cardSlots.${s.id}` as never)}</span>
                           {c.image && (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={c.image} alt={`${c.name} card`} width={86} height={120} loading="lazy" className="h-[120px] w-auto rounded-[4px] object-contain shadow-md shadow-black/40 transition-transform group-hover:scale-105" />
+                            <img src={c.image} alt={t("cardAlt", { name: c.name })} width={86} height={120} loading="lazy" className="h-[120px] w-auto rounded-[4px] object-contain shadow-md shadow-black/40 transition-transform group-hover:scale-105" />
                           )}
                           <span className="w-full truncate text-sm font-semibold group-hover:text-screen">{c.name}</span>
                           {c.set && <span className="-mt-1 w-full truncate text-[11px] text-muted-foreground">{c.set}</span>}
@@ -321,12 +350,12 @@ export function AboutMe({ username, initial, names }: { username: string; initia
             )}
             {gamesShown.length > 0 && (
               <section className="space-y-3">
-                <p className="hud-label">My Pokémon games</p>
+                <p className="hud-label">{t("myGames")}</p>
                 <dl className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3" data-testid="about-games">
                   {gamesShown.map((s) => (
                     <div key={s.id} className="flex flex-col-reverse rounded-md border bg-shade/20 p-2" data-testid={`about-game-view-${s.id}`}>
-                      <dt className="text-[11px] text-muted-foreground">{s.label}</dt>
-                      <dd className="font-display text-lg font-bold">{choiceLabel(s.id, about.games[s.id])}</dd>
+                      <dt className="text-[11px] text-muted-foreground">{t(`games.${s.id}` as never)}</dt>
+                      <dd className="font-display text-lg font-bold">{pickedName(s, about.games[s.id], local)}</dd>
                     </div>
                   ))}
                 </dl>
@@ -339,7 +368,7 @@ export function AboutMe({ username, initial, names }: { username: string; initia
   );
 }
 
-function Picker({ slot, v, current, onPick }: { slot: PokemonSlot; v: Validate | null; current?: { id: number; shiny: boolean }; onPick: (p: { id: number; shiny: boolean } | null) => void }) {
+function Picker({ slot, v, t, local, current, onPick }: { slot: PokemonSlot; v: Validate | null; t: AboutT; local?: AboutLocal; current?: { id: number; shiny: boolean }; onPick: (p: { id: number; shiny: boolean } | null) => void }) {
   const [query, setQuery] = useState("");
   const [shiny, setShiny] = useState(slot.shinyForced ? true : (current?.shiny ?? false));
   const [shown, setShown] = useState(PAGE);
@@ -352,55 +381,58 @@ function Picker({ slot, v, current, onPick }: { slot: PokemonSlot; v: Validate |
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return (dex ?? []).filter((p) => !q || p.name.toLowerCase().includes(q) || String(p.id) === q);
-  }, [dex, query]);
+    // A page in another language also finds a Pokémon by its name in that language.
+    const own = local ? foldLetters(query.trim()) : "";
+    const named = (id: number) => !!own && !!local?.species[id] && foldLetters(local.species[id]).includes(own);
+    return (dex ?? []).filter((p) => !q || p.name.toLowerCase().includes(q) || String(p.id) === q || named(p.id));
+  }, [dex, query, local]);
   useEffect(() => setShown(PAGE), [query]);
 
   return (
     <div className="space-y-3 rounded-lg border bg-card p-3" data-testid="about-picker">
       <div className="flex flex-wrap items-center gap-3">
         <p className="text-sm font-semibold">
-          {slot.label} <span className="text-xs font-normal text-muted-foreground">· {RULE_HINT[slot.rule]}</span>
+          {t(`slots.${slot.id}` as never)} <span className="text-xs font-normal text-muted-foreground">· {t(`rules.${slot.rule}`)}</span>
         </p>
         <label className="relative">
           <Search className="pointer-events-none absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" aria-hidden />
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by name" aria-label="Search Pokémon by name" className={cn(FIELD, "w-56 pl-8")} data-testid="about-search" />
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("searchPlaceholder")} aria-label={t("searchLabel")} className={cn(FIELD, "w-56 pl-8")} data-testid="about-search" />
         </label>
         <label className="flex items-center gap-1.5 text-sm">
-          <input type="checkbox" checked={shiny} disabled={slot.shinyForced} onChange={(e) => setShiny(e.target.checked)} data-testid="about-shiny" /> Shiny{slot.shinyForced ? " (always)" : ""}
+          <input type="checkbox" checked={shiny} disabled={slot.shinyForced} onChange={(e) => setShiny(e.target.checked)} data-testid="about-shiny" /> {t("shiny")}{slot.shinyForced ? t("always") : ""}
         </label>
         {current && (
           <Button size="sm" variant="ghost" onClick={() => onPick(null)} data-testid="about-clear">
-            Clear
+            {t("clear")}
           </Button>
         )}
       </div>
       {!dex ? (
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" aria-label="Loading Pokémon" />
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" aria-label={t("loading")} />
       ) : (
         <>
-          <div className="grid max-h-80 grid-cols-4 gap-2 overflow-y-auto pr-1 sm:grid-cols-6 lg:grid-cols-8" role="listbox" aria-label="Pokémon">
+          <div className="grid max-h-80 grid-cols-4 gap-2 overflow-y-auto pr-1 sm:grid-cols-6 lg:grid-cols-8" role="listbox" aria-label={t("pokemon")}>
             {list.slice(0, shown).map((p) => (
               <button
                 key={p.id}
                 type="button"
                 role="option"
                 aria-selected={p.id === current?.id}
-                title={`#${p.id} ${p.name}`}
+                title={`#${p.id} ${local?.species[p.id] ?? p.name}`}
                 onClick={() => onPick({ id: p.id, shiny })}
                 className={cn("flex flex-col items-center rounded-md border p-1 text-[10px] hover:border-screen/60", p.id === current?.id ? "border-screen bg-screen/10" : "border-border")}
                 data-testid={`about-mon-${p.id}`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={artUrl(p.id, 96, shiny)} alt="" loading="lazy" decoding="async" width={48} height={48} className="h-12 w-12 object-contain" />
-                <span className="w-full truncate text-center">{p.name}</span>
+                <span className="w-full truncate text-center">{local?.species[p.id] ?? p.name}</span>
               </button>
             ))}
           </div>
-          {list.length === 0 && <p className="text-sm text-muted-foreground">No match.</p>}
+          {list.length === 0 && <p className="text-sm text-muted-foreground">{t("noMatch")}</p>}
           {list.length > shown && (
             <Button size="sm" variant="ghost" onClick={() => setShown((s) => s + PAGE)}>
-              Show more
+              {t("more")}
             </Button>
           )}
         </>
@@ -410,7 +442,7 @@ function Picker({ slot, v, current, onPick }: { slot: PokemonSlot; v: Validate |
 }
 
 /** A TCG card slot: search the Pokémon TCG by name, in the same style as the Pokémon picker. */
-function CardPicker({ label, current, onPick }: { label: string; current?: AboutCard; onPick: (c: AboutCard | null) => void }) {
+function CardPicker({ label, t, current, onPick }: { label: string; t: AboutT; current?: AboutCard; onPick: (c: AboutCard | null) => void }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<CardTile[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -442,24 +474,24 @@ function CardPicker({ label, current, onPick }: { label: string; current?: About
     <div className="space-y-3 rounded-lg border bg-card p-3" data-testid="about-card-picker">
       <div className="flex flex-wrap items-center gap-3">
         <p className="text-sm font-semibold">
-          {label} <span className="text-xs font-normal text-muted-foreground">· Any Pokémon TCG card</span>
+          {label} <span className="text-xs font-normal text-muted-foreground">· {t("anyCard")}</span>
         </p>
         <label className="relative">
           <Search className="pointer-events-none absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" aria-hidden />
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search cards by name" aria-label="Search cards by name" className={cn(FIELD, "w-56 pl-8")} data-testid="about-card-search" />
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("cardSearchPlaceholder")} aria-label={t("cardSearchLabel")} className={cn(FIELD, "w-56 pl-8")} data-testid="about-card-search" />
         </label>
         {current && (
           <Button size="sm" variant="ghost" onClick={() => onPick(null)} data-testid="about-card-clear">
-            Clear
+            {t("clear")}
           </Button>
         )}
       </div>
-      {loading && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" aria-label="Searching cards" />}
-      {failed && <p className="text-sm text-muted-foreground">Card search is unavailable right now.</p>}
-      {!results && !loading && <p className="text-sm text-muted-foreground">Type at least two letters.</p>}
-      {results && results.length === 0 && <p className="text-sm text-muted-foreground">No match.</p>}
+      {loading && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" aria-label={t("searching")} />}
+      {failed && <p className="text-sm text-muted-foreground">{t("cardSearchDown")}</p>}
+      {!results && !loading && <p className="text-sm text-muted-foreground">{t("typeTwo")}</p>}
+      {results && results.length === 0 && <p className="text-sm text-muted-foreground">{t("noMatch")}</p>}
       {results && results.length > 0 && (
-        <div className="grid max-h-80 grid-cols-4 gap-2 overflow-y-auto pr-1 sm:grid-cols-6 lg:grid-cols-8" role="listbox" aria-label="Cards">
+        <div className="grid max-h-80 grid-cols-4 gap-2 overflow-y-auto pr-1 sm:grid-cols-6 lg:grid-cols-8" role="listbox" aria-label={t("cards")}>
           {results.map((c) => (
             <button
               key={c.id}

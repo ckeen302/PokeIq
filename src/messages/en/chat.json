@@ -1,0 +1,21 @@
+{
+  "title": "Chat",
+  "unmuteName": "Unmute {name}",
+  "muteName": "Mute {name}",
+  "unmute": "Unmute",
+  "mute": "Mute",
+  "turnOnTitle": "Turn chat on",
+  "turnOffTitle": "Turn chat off",
+  "turnOn": "Turn on",
+  "chatOff": "Chat off",
+  "off": "Chat is off. You won't see messages, and can't send any.",
+  "empty": "No messages yet. Say hi!",
+  "reported": "Reported",
+  "reportTitle": "Report this message",
+  "reportLabel": "Report {name}'s message",
+  "isMuted": "{name} is muted.",
+  "playersOnly": "Only the trainers playing can chat.",
+  "placeholder": "Say something nice…",
+  "label": "Chat message",
+  "send": "Send"
+}

@@ -1,0 +1,126 @@
+{
+  "first-run": {
+    "name": "Nuovo Allenatore",
+    "description": "Completa la tua prima partita"
+  },
+  "certified": {
+    "name": "Certificato",
+    "description": "Completa il Test PokéIQ adattivo"
+  },
+  "perfect": {
+    "name": "Impeccabile",
+    "description": "Fai 10/10 in una partita Classica"
+  },
+  "streak-10": {
+    "name": "Inarrestabile",
+    "description": "Rispondi giusto 10 volte di fila"
+  },
+  "survivor": {
+    "name": "Sopravvissuto",
+    "description": "25 risposte giuste in una partita Sopravvivenza"
+  },
+  "blitz": {
+    "name": "Rapidartigli",
+    "description": "20 risposte giuste in un Blitz"
+  },
+  "purist": {
+    "name": "Purista di Kanto",
+    "description": "Partita Classica perfetta solo con la Gen. 1"
+  },
+  "iq-120": {
+    "name": "Mente da Capopalestra",
+    "description": "Ottieni un PokéIQ di 120 o più"
+  },
+  "iq-140": {
+    "name": "Professore",
+    "description": "Ottieni un PokéIQ di 140 o più"
+  },
+  "all-modes": {
+    "name": "Completista",
+    "description": "Gioca a tutte le modalità"
+  },
+  "daily-3": {
+    "name": "Abituale",
+    "description": "Serie di 3 giorni nella Sfida del giorno"
+  },
+  "daily-7": {
+    "name": "Costante",
+    "description": "Serie di 7 giorni nella Sfida del giorno"
+  },
+  "daily-30": {
+    "name": "Leggenda",
+    "description": "Serie di 30 giorni nella Sfida del giorno"
+  },
+  "dle-3": {
+    "name": "Detective",
+    "description": "Risolvi un Pokédle in 3 tentativi o meno"
+  },
+  "dle-1": {
+    "name": "Sensitivo",
+    "description": "Risolvi un Pokédle al primo tentativo"
+  },
+  "geo-first": {
+    "name": "Esploratore",
+    "description": "Completa una partita di PokéGuessr"
+  },
+  "geo-pinpoint": {
+    "name": "Centro perfetto",
+    "description": "Fai 5.000 punti in un round di PokéGuessr"
+  },
+  "geo-20k": {
+    "name": "Cartografo",
+    "description": "Fai 20.000+ punti in una partita di PokéGuessr"
+  },
+  "geo-streak-10": {
+    "name": "Apripista",
+    "description": "Indovina 10 luoghi di fila nella Serie di PokéGuessr"
+  },
+  "conn-first": {
+    "name": "Connesso",
+    "description": "Risolvi il tuo primo PokéConnections"
+  },
+  "conn-streak-7": {
+    "name": "Sempre connesso",
+    "description": "Serie di 7 giorni a PokéConnections"
+  },
+  "conn-streak-30": {
+    "name": "Gran connettore",
+    "description": "Serie di 30 giorni a PokéConnections"
+  },
+  "conn-perfect-10": {
+    "name": "Impeccabile",
+    "description": "10 PokéConnections perfetti (senza errori)"
+  },
+  "conn-duel-10": {
+    "name": "Bolide",
+    "description": "Vinci 10 sfide di PokéConnections"
+  },
+  "conn-featured": {
+    "name": "Creatore in vetrina",
+    "description": "Un tuo puzzle di PokéConnections è stato messo in evidenza o è diventato il Puzzle del giorno"
+  },
+  "pdk-first": {
+    "name": "Prima griglia",
+    "description": "Risolvi il tuo primo Pikadoku"
+  },
+  "pdk-perfect": {
+    "name": "Nove su nove",
+    "description": "Riempi tutte le 9 caselle di un Pikadoku"
+  },
+  "pdk-rare": {
+    "name": "Scova rarità",
+    "description": "Un punteggio di rarità di Pikadoku sotto 50"
+  },
+  "pdk-streak-7": {
+    "name": "Habitué della griglia",
+    "description": "Serie di 7 giorni a Pikadoku"
+  },
+  "pdk-duel-10": {
+    "name": "Tris vincente",
+    "description": "Vinci 10 sfide a Tris di Pikadoku"
+  },
+  "conn-hard": {
+    "name": "Nervi d’acciaio",
+    "description": "Risolvi un PokéConnections Illimitato in Difficile"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "tabs": "Format du classement",
+  "nobody": "Personne n'est encore classé en {format}. <link>Lance un match classé</link> et sois le premier !",
+  "trainer": "Dresseur",
+  "eloTitle": "Elo : la cote du classement, comme sur Pokémon Showdown",
+  "elo": "Elo",
+  "gxeTitle": "GXE (la probabilité de battre un Dresseur pris au hasard ici) et la cote Glicko-2 ± écart",
+  "gxe": "GXE · Glicko",
+  "wl": "V–D",
+  "loading": "Chargement de ton classement",
+  "you": "Toi · {format}",
+  "of": "sur {n, number}",
+  "streak": "série",
+  "none": "Aucun match classé dans ce format pour l'instant.",
+  "start": "Tout le monde commence à 1000 Elo (et 1500 ± 350 en Glicko-2) ; tes premières victoires rapportent le plus, et une nouvelle cote bouge beaucoup. ",
+  "find": "Trouver un match classé"
+}

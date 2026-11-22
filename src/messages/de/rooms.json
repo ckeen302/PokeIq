@@ -1,0 +1,20 @@
+{
+  "names": {
+    "lobby": "Hauptlobby",
+    "pokedle": "Pokédle",
+    "connections": "Connections",
+    "pikadoku": "Pikadoku",
+    "pokeguessr": "PokéGuessr",
+    "battle": "Kampf",
+    "quizzes": "Quiz"
+  },
+  "descriptions": {
+    "lobby": "Sag Hallo! Der Hauptraum für alles rund um PokéIQ. Kommst du nicht weiter oder bist neu? Frag hier, andere Trainer helfen dir.",
+    "pokedle": "Das tägliche Pokémon-Ratespiel: Teil deinen Punktestand, nicht die Lösung.",
+    "connections": "Versteckte Pokémon-Gruppen: Teil dein Raster und sprecht über die kniffligen.",
+    "pikadoku": "Pokémon-Sudoku: Vergleicht seltene Picks und gebt mit eurem Seltenheitswert an.",
+    "pokeguessr": "Wo in der Pokémon-Welt war das? Teil Serien und starke Tipps.",
+    "battle": "Zufallskämpfe, OU, Little Cup und jedes Format: Teams, Sets, starke Züge und Comebacks.",
+    "quizzes": "Wer ist das Pokémon?, Nenn sie alle und jedes Quiz: Teilt Ergebnisse und fordert euch heraus."
+  }
+}

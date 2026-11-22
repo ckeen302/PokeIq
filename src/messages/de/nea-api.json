@@ -1,0 +1,12 @@
+{
+  "notKept": "Auf diesem Server werden keine Bestleistungen gespeichert.",
+  "nameOne": "Nenne mindestens ein Pokémon in der Standardzeit, um eine Bestleistung aufzustellen.",
+  "unavailable": "Bestleistungen sind gerade nicht verfügbar.",
+  "off": "Bestleistungen sind auf diesem Server ausgeschaltet.",
+  "signIn": "Melde dich an, um deine Bestleistung in deinem Profil zu behalten.",
+  "noStart": "Für diese Runde gibt es keine Startzeit von unserem Server.",
+  "addUp": "Diese Runde geht nicht auf.",
+  "tooLong": "Diese Runde hat länger gedauert, als sie läuft.",
+  "paused": "Pausierte Runden zählen nicht als Bestleistung.",
+  "tooFast": "Das ist schneller, als irgendwer tippen kann."
+}

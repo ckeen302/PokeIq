@@ -1,0 +1,121 @@
+{
+  "brand": "Labo du Professeur",
+  "loading": "Calibrage du labo…",
+  "noWebgl": "La 3D n’est pas disponible dans ce navigateur : le labo affiche donc ses fiches de spécimens.",
+  "searchLabel": "Chercher un Pokémon",
+  "searchPlaceholder": "Chercher un Pokémon",
+  "clearSearch": "Effacer la recherche",
+  "notInView": "Hors de ces filtres",
+  "showAll": "L’afficher",
+  "noMatch": "Aucun Pokémon ne correspond à ces filtres.",
+  "noSearchMatch": "Aucun Pokémon trouvé",
+  "reset": "Réinitialiser",
+  "filters": "Filtres",
+  "allTypes": "Tous les types",
+  "types": "Types",
+  "typesHint": "Deux au maximum",
+  "gen": "Gén.",
+  "genN": "Gén. {n}",
+  "legends": "Légendaires + fabuleux",
+  "final": "Stade final",
+  "forms": "Formes",
+  "formsHint": "Méga-Évolutions, formes régionales et Gigamax après chaque Pokémon",
+  "sortBy": "Trier par",
+  "sortAsc": "Tri croissant",
+  "sortDesc": "Tri décroissant",
+  "specimen": "Spécimen",
+  "scanComplete": "Analysé",
+  "materialising": "Matérialisation…",
+  "biometrics": "Biométrie",
+  "height": "Taille",
+  "weight": "Poids",
+  "region": "Région",
+  "entry": "Journal du Pokédex",
+  "abilities": "Talents",
+  "hidden": "Caché",
+  "evolution": "Lignée",
+  "noEvolution": "N’évolue pas",
+  "matchups": "Analyse des types",
+  "weakTo": "Faible contre",
+  "resists": "Résiste à",
+  "immune": "Immunisé",
+  "baseStats": "Stats de base",
+  "roles": "Rôles",
+  "total": "Total",
+  "bestRole": "Meilleur rôle",
+  "rolesNote": "Chaque score est classé par rapport à tous les Pokémon",
+  "rolesNoteForms": "Chaque score est classé par rapport à tous les Pokémon et leurs formes",
+  "top": "Top {n} %",
+  "bottom": "Derniers {n} %",
+  "openInDex": "Ouvrir dans le Pokédex",
+  "prev": "Précédent",
+  "next": "Suivant",
+  "prevNamed": "Précédent : {name}",
+  "nextNamed": "Suivant : {name}",
+  "hint": "Fais glisser ou ← → pour choisir",
+  "hintTouch": "Balaie pour choisir",
+  "stage": "Le Labo du Professeur : une roue de Pokémon. Utilise les flèches gauche et droite pour la faire tourner.",
+  "stageRole": "carrousel",
+  "announce": "{name}, numéro {no}, {types}",
+  "sheetHandle": "Afficher les détails",
+  "sheetClose": "Masquer les détails",
+  "close": "Fermer",
+  "done": "OK",
+  "evoJump": "Afficher {name}",
+  "captionIdle": "Labo du Professeur · Projecteur de spécimens",
+  "stats": {
+    "hp": "PV",
+    "atk": "Attaque",
+    "def": "Défense",
+    "spa": "Atq. Spé.",
+    "spd": "Déf. Spé.",
+    "spe": "Vitesse"
+  },
+  "statsShort": {
+    "hp": "PV",
+    "atk": "ATQ",
+    "def": "DÉF",
+    "spa": "ASP",
+    "spd": "DSP",
+    "spe": "VIT"
+  },
+  "regions": {
+    "kanto": "Kanto",
+    "johto": "Johto",
+    "hoenn": "Hoenn",
+    "sinnoh": "Sinnoh",
+    "unova": "Unys",
+    "kalos": "Kalos",
+    "alola": "Alola",
+    "galar": "Galar",
+    "paldea": "Paldea",
+    "hisui": "Hisui"
+  },
+  "role": {
+    "physicalSweeper": {
+      "name": "Attaquant physique",
+      "formula": "Attaque + Vitesse"
+    },
+    "specialSweeper": {
+      "name": "Attaquant spécial",
+      "formula": "Atq. Spé. + Vitesse"
+    },
+    "wall": {
+      "name": "Mur",
+      "formula": "PV + Défense + Déf. Spé."
+    },
+    "physicalTank": {
+      "name": "Tank physique",
+      "formula": "Attaque + Défense"
+    },
+    "specialTank": {
+      "name": "Tank spécial",
+      "formula": "Atq. Spé. + Déf. Spé."
+    }
+  },
+  "sort": {
+    "id": "Numéro",
+    "name": "Nom",
+    "bst": "Total"
+  }
+}

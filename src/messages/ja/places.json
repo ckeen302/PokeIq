@@ -1,0 +1,132 @@
+{
+  "meta": {
+    "title": "ポケモンの場所 — 町・道路・洞窟・ジム",
+    "description": "メインシリーズ全地方の町、道路、洞窟、ジム。各ゲームで出会える野生のポケモン、スクリーンショット、ジムリーダーを掲載。",
+    "placeTitle": "{name}（{region}の{type}）｜ポケモン",
+    "placeDescription": "{region}の{name}：各ゲームで出会える野生のポケモン。",
+    "placeDescriptionGame": "{region}の{name}：各ゲームで出会える野生のポケモンと、『{game}』での様子。",
+    "socialTitle": "{name} · PokéIQ ポケモン図鑑"
+  },
+  "crumbs": {
+    "pokedex": "ポケモン図鑑",
+    "places": "場所"
+  },
+  "list": {
+    "kicker": "場所データベース",
+    "blurb": "メインシリーズ全地方の町、道路、洞窟、建物。各ゲームの野生のポケモンに加え、ワールドアトラスのスクリーンショットやジムリーダーも掲載しています。"
+  },
+  "back": "場所の一覧に戻る",
+  "kicker": "場所 · {type} · {region}",
+  "inside": "<link>{name}</link>の中",
+  "atlas": "ワールドアトラスで見る",
+  "noAtlas": "まだワールドアトラスに載っていないため、地図のピンやスクリーンショットはありません。",
+  "shot": {
+    "title": "スクリーンショット",
+    "alt": "『ポケモン {game}』の{place}",
+    "caption": "『{game}』の{place} · PokéGuessrより"
+  },
+  "games": {
+    "title": "ゲーム",
+    "subtitle": "登場するゲーム",
+    "generation": "第{gen}世代のゲーム"
+  },
+  "areas": {
+    "title": "エリア",
+    "subtitle": "フロアとエリア：{n}か所"
+  },
+  "gym": {
+    "title": "ジム",
+    "subtitle": "ジムリーダー：{n}人",
+    "source": "出典"
+  },
+  "wild": {
+    "title": "野生のポケモン",
+    "subtitle": "ゲーム別",
+    "pokemon": "ポケモン",
+    "method": "出現方法",
+    "levels": "レベル",
+    "morning": "朝",
+    "day": "昼",
+    "night": "夜",
+    "rate": "出現率"
+  },
+  "insidePlaces": {
+    "title": "中にある場所",
+    "subtitle": "{n}か所"
+  },
+  "types": {
+    "City": "シティ",
+    "Town": "タウン",
+    "Route": "道路",
+    "Gym": "ジム",
+    "Forest": "森",
+    "Cave": "洞窟",
+    "Mountain": "山",
+    "Island": "島",
+    "Lake": "湖",
+    "Tower": "タワー",
+    "Ruins": "遺跡",
+    "League": "ポケモンリーグ",
+    "Building": "建物",
+    "Other": "その他"
+  },
+  "methods": {
+    "wild": "野生",
+    "grass": "草むら",
+    "grassrandom": "草むら（ランダム）",
+    "grassrarespawns": "草むら（レア）",
+    "tallgrass": "背の高い草むら",
+    "darkgrass": "濃い草むら",
+    "rustlinggrass": "揺れる草むら",
+    "cave": "洞窟",
+    "water": "水上",
+    "waterrarespawns": "水上（レア）",
+    "fishing": "釣り",
+    "fishingspot": "釣りスポット",
+    "ripplingwater": "波立つ水面",
+    "bubblingspot": "泡の出る釣りスポット",
+    "headbutthigh": "ずつき（出やすい木）",
+    "headbuttlow": "ずつき（出にくい木）",
+    "shakingtree": "揺れる木",
+    "gift": "もらう",
+    "giftegg": "もらう（タマゴ）",
+    "trade": "交換",
+    "static": "固定シンボル",
+    "interact": "調べる",
+    "specialencounter": "特別な出現",
+    "swarm": "大量発生",
+    "swarmfish": "大量発生（釣り）",
+    "swarmsurf": "大量発生（なみのり）",
+    "horde": "群れバトル",
+    "soscall": "助けを呼ぶ",
+    "sosbubblingspot": "助けを呼ぶ（泡の出る釣りスポット）",
+    "teraraid": "テラレイドバトル",
+    "maxraid": "マックスレイドバトル",
+    "overworld": "シンボルエンカウント",
+    "wandering": "うろつくポケモン",
+    "wanderingsurf": "うろつくポケモン（水上）",
+    "flying": "空を飛ぶ",
+    "inthesky": "空",
+    "intheskyrarespawns": "空（レア）",
+    "roaming": "徘徊",
+    "roamingwater": "徘徊（水上）",
+    "massivemassoutbreak": "大大大発生",
+    "hiddengrotto": "かくしあな",
+    "honeytree": "甘い香りの木",
+    "honeytreerare": "甘い香りの木（レア）",
+    "honeytreeveryrare": "甘い香りの木（超レア）",
+    "berrytree": "きのみの木",
+    "berrypile": "きのみの山",
+    "dustcloud": "砂煙",
+    "roughterrain": "荒れた地面",
+    "yellowflowers": "黄色い花",
+    "purpleflowers": "紫の花",
+    "redflowers": "赤い花",
+    "ceilingambush": "天井から襲ってくる",
+    "groundambush": "地面から襲ってくる",
+    "skyambush": "空から襲ってくる",
+    "curry": "カレー",
+    "islandscan": "しまスキャン",
+    "underground": "地下大洞窟"
+  }
+}

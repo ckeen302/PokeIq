@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element -- small static board pictures */
 import "./maker.css";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown, Dices, Ellipsis, Lock, Share, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -23,6 +23,7 @@ import { Dot } from "./ColourControls";
 import { ColourPanel } from "./ColourPanel";
 import { ExtrasPanel, Seg, type ColourBlind } from "./ExtrasPanel";
 import { HdFigure, hasWebGL2 } from "./HdFigure";
+import { localizeSpecies, ShinyLocalContext } from "./local";
 import { Picker } from "./Picker";
 import { PixelFigure, type FigureHandle } from "./PixelFigure";
 
@@ -64,6 +65,7 @@ const CB: Record<Exclude<ColourBlind, "off">, string> = {
 };
 
 export default function ShinyMaker({ initial, linkBroken }: { initial: Design | null; linkBroken: boolean }) {
+  const local = useContext(ShinyLocalContext);
   const t = useT(tools);
   const phone = useMedia("(max-width: 1023px)");
   const motion = !useMedia("(prefers-reduced-motion: reduce)");
@@ -142,8 +144,9 @@ export default function ShinyMaker({ initial, linkBroken }: { initial: Design | 
     let live = true;
     setLoadError(false);
     loadSpecies(wantId).then(
-      (s) => {
+      (loaded) => {
         if (!live) return;
+        const s = local ? localizeSpecies(loaded, local) : loaded;
         setSp(s);
         const d = designRef.current;
         if (!d) setDesign(firstDesign(s));
@@ -156,7 +159,7 @@ export default function ShinyMaker({ initial, linkBroken }: { initial: Design | 
       () => live && setLoadError(true)
     );
     return () => { live = false; };
-  }, [wantId, retry, say, t]);
+  }, [wantId, retry, say, t, local]);
 
   const ready = !!sp && !!design && sp.id === design.id && fitsSpecies(design, sp.parts.length, sp.slots.length);
 
@@ -626,7 +629,7 @@ export default function ShinyMaker({ initial, linkBroken }: { initial: Design | 
           {sheetOpen && (
             <Sheet
               onClose={() => { setSel(-1); setPanel(null); }}
-              title={sel >= 0 && sp ? t("colour.dialog", { part: sp.parts[sel]?.n ?? "" }) : panel === "extras" ? t("extras.title") : t("picker.title")}
+              title={sel >= 0 && sp ? t("colour.dialog", { part: sp.parts[sel]?.l ?? sp.parts[sel]?.n ?? "" }) : panel === "extras" ? t("extras.title") : t("picker.title")}
               tall={panel === "picker" || panel === "borrow" || panel === "extras"}
               t={t}
             >
@@ -790,7 +793,7 @@ const Dock = ({ ref, sp, design, parts, sel, locked, panel, onPart, onPanel, onR
           className="sm-pop sm-enter absolute bottom-full mb-4 rounded-[24px] p-4 pr-5"
           style={{ left, transform: "translateX(-50%)" }}
           role="dialog"
-          aria-label={t("colour.dialog", { part: sp?.parts[sel]?.n ?? "" })}
+          aria-label={t("colour.dialog", { part: sp?.parts[sel]?.l ?? sp?.parts[sel]?.n ?? "" })}
           data-testid="sm-popover"
         >
           {popover}
@@ -814,7 +817,7 @@ const Dock = ({ ref, sp, design, parts, sel, locked, panel, onPart, onPanel, onR
         {sp && design
           ? parts.map(({ p, i }) => (
               <div key={i} ref={(el) => { if (el) chipRefs.current.set(i, el); else chipRefs.current.delete(i); }} className="shrink-0">
-                <PartChip sp={sp} design={design} i={i} name={p.n} on={sel === i} locked={locked.has(i)} onClick={() => onPart(i)} onHover={onHover} />
+                <PartChip sp={sp} design={design} i={i} name={p.l ?? p.n} on={sel === i} locked={locked.has(i)} onClick={() => onPart(i)} onHover={onHover} />
               </div>
             ))
           : Array.from({ length: 4 }, (_, i) => <span key={i} className="h-11 w-24 shrink-0 animate-pulse rounded-full bg-white/[0.04]" aria-hidden />)}
@@ -868,7 +871,7 @@ function PhoneControls({ sp, design, parts, sel, locked, onPart, onPanel, onRand
       </div>
       <div className="sm-noscroll -mx-4 flex gap-2 overflow-x-auto px-4" role="group" aria-label={t("dock.parts")}>
         {sp && design
-          ? parts.map(({ p, i }) => <PartChip key={i} phone sp={sp} design={design} i={i} name={p.n} on={sel === i} locked={locked.has(i)} onClick={() => onPart(i)} />)
+          ? parts.map(({ p, i }) => <PartChip key={i} phone sp={sp} design={design} i={i} name={p.l ?? p.n} on={sel === i} locked={locked.has(i)} onClick={() => onPart(i)} />)
           : Array.from({ length: 4 }, (_, i) => <span key={i} className="h-11 w-24 shrink-0 animate-pulse rounded-full bg-white/[0.04]" aria-hidden />)}
       </div>
       <div className="grid grid-cols-2 gap-3 pt-1">

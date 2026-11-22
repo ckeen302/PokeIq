@@ -1,0 +1,40 @@
+{
+  "close": "Schließen",
+  "title": "Wähl eine Disziplin und ein Starterfeld",
+  "blurb": "Bis zu acht Pokémon oder Formen. Zwei ergeben ein Duell.",
+  "event": "Disziplin",
+  "remove": "{name} entfernen",
+  "addMore": "{n, plural, one {Noch {n} hinzufügen} other {Noch {n} hinzufügen}}",
+  "addUpTo": "Bis zu 8 hinzufügen",
+  "placeholder": "Pokémon hinzufügen …",
+  "search": "Nach einem Pokémon zum Hinzufügen suchen",
+  "fun": "Lustiges Feld",
+  "funLabel": {
+    "giants": "Schwergewichte gegen Federgewichte",
+    "starters": "Voll entwickelte Starter",
+    "legends": "Legendäre",
+    "favourites": "Fan-Lieblinge",
+    "type": "Typ {type}",
+    "random": "Acht zufällige"
+  },
+  "stat": {
+    "spe": "INIT",
+    "atk": "ANG",
+    "def": "VERT",
+    "hp": "KP",
+    "kg": "KG",
+    "height": "GRÖSSE"
+  },
+  "h2h": "Duell",
+  "go": "Los",
+  "nations": "Nationen",
+  "nationsBlurb": "Bis zu acht. Ein Typ schickt seine drei besten Allrounder (keine Legendären); oder stell ein Dreierteam zusammen.",
+  "team": "Team {name}",
+  "typeNations": "Typ-Nationen",
+  "build": "Dreierteam zusammenstellen",
+  "removeOne": "Entfernen",
+  "teamPlaceholder": "Pokémon zum Team hinzufügen …",
+  "teamSearch": "Nach einem Pokémon suchen",
+  "addTeam": "Dieses Team hinzufügen",
+  "open": "Spiele öffnen"
+}

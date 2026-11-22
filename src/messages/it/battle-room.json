@@ -1,0 +1,108 @@
+{
+  "loading": "Caricamento della lotta",
+  "liveBattle": "Lotta dal vivo",
+  "reconnecting": "Connessione persa. Riconnessione…",
+  "vs": "vs",
+  "vsSep": " vs ",
+  "and": " e ",
+  "multiVs": "{a} e {c} vs {b} e {d}",
+  "watching": "Stai guardando {players}",
+  "watchAnother": "Guardane un’altra",
+  "battleYourself": "Lotta anche tu",
+  "chat": {
+    "showAgain": "Mostra di nuovo i messaggi di {name}",
+    "hideTitle": "Nascondi i messaggi di {name} (il /ignore di Showdown)",
+    "unignore": "Non ignorare più {name}",
+    "ignore": "Ignora {name}",
+    "hidden": "({n} nascosti)",
+    "rematchOpen": "C’è una rivincita aperta: premi Rivincita per continuare a chattare lì."
+  },
+  "gone": {
+    "title": "Lotta non trovata",
+    "start": "Inizia una lotta"
+  },
+  "forfeit": {
+    "sure": "Vuoi arrenderti?",
+    "button": "Arrenditi",
+    "keep": "Continua a lottare"
+  },
+  "again": {
+    "error": "Impossibile iniziare la lotta.",
+    "play": "Gioca ancora",
+    "new": "Nuova lotta",
+    "tournament": "Torna al torneo",
+    "requested": "Rivincita richiesta!",
+    "accept": "Accetta la rivincita",
+    "rematch": "Rivincita",
+    "keeps": "La rivincita mantiene gli Allenatori, il formato e le squadre che avete portato.",
+    "startsFour": "Il computer mantiene i suoi posti; inizia quando ogni Allenatore la preme.",
+    "startsTwo": "Inizia quando la premete entrambi."
+  },
+  "lobby": {
+    "gen": "Gen. {gen}",
+    "quickNote": "Set della lotta casuale della Gen. {gen}, verificati con queste regole.",
+    "format": "Formato",
+    "bring": "ognuno porta una squadra, verificata con le regole di Pokémon Showdown.",
+    "timerLabel": "Timer",
+    "timer": "Timer di Showdown: {secs} s",
+    "grace": " più {secs} s di tolleranza",
+    "perTurn": ", +{secs} s a turno",
+    "cap": ", al massimo {secs} s per turno.",
+    "runOutDefault": "Se finisci il tempo in un turno viene scelta una mossa predefinita; se lo finisci del tutto, perdi.",
+    "runOutLose": "Se finisci il tempo, perdi.",
+    "runOutPick": "Se finisci il tempo, il timer sceglie una mossa per te; alla seconda volta di fila perdi.",
+    "timerOffAny": "Spento: prenditi il tuo tempo. Chiunque di voi può avviarlo durante la lotta.",
+    "timerOffEither": "Spento: prenditi il tuo tempo. Uno dei due può avviarlo durante la lotta.",
+    "spectators": "Spettatori",
+    "public": "Elencata in Guarda dal vivo: chiunque può guardare.",
+    "private": "Privata: può guardare solo chi ha il link.",
+    "fairPlay": "Fair play",
+    "fairFour": "Vedi solo la tua squadra e quello che rivelano gli altri. Chi se ne va si arrende dopo {secs} s di assenza.",
+    "fairFourMulti": "Vedi solo la tua squadra e quello che rivelano gli altri. Chi se ne va si arrende dopo {secs} s di assenza (la tua squadra perde, come su Showdown).",
+    "fairFourFfa": "Vedi solo la tua squadra e quello che rivelano gli altri. Chi se ne va si arrende dopo {secs} s di assenza (sei fuori; gli altri continuano).",
+    "fairTwo": "Vedi solo la tua squadra e quello che rivela il tuo avversario. Chi se ne va si arrende dopo {secs} s di assenza.",
+    "ladder": "Classifica",
+    "unrankedMulti": "Non classificata: neanche Showdown classifica le lotte multiple, quindi non cambiano mai il tuo punteggio.",
+    "unrankedFfa": "Non classificata: neanche Showdown classifica i tutti contro tutti, quindi non cambiano mai il tuo punteggio.",
+    "teamFirst": "Prima scegli o incolla una squadra.",
+    "tag": "Lotta dal vivo · {format}",
+    "title": "Lotta <b>Pokémon</b>",
+    "invite": "{host} ti sfida a una lotta {format}. Scegli un nome da Allenatore per partecipare.",
+    "inviteTeam": "{host} ti sfida a una lotta {format}. Scegli un nome da Allenatore e una squadra per partecipare.",
+    "about": "Manda il link a un amico. La lotta inizia quando siete pronti entrambi.",
+    "randomTeams": " Le squadre sono casuali.",
+    "shareHost": "{host} ti sfida a una lotta {format} su PokéIQ!",
+    "shareMe": "Ti sfido a una lotta {format} su PokéIQ!",
+    "noun": "lotta"
+  },
+  "visitor": {
+    "over": "Lotta finita",
+    "inProgress": "Lotta in corso",
+    "two": "Questa lotta è tra altri due Allenatori.",
+    "four": "Questa lotta è tra altri quattro Allenatori.",
+    "start": "Inizia la tua"
+  },
+  "replay": {
+    "instant": "Replay istantaneo",
+    "instantTitle": "Guarda la lotta finora dall’inizio (il replay istantaneo di Showdown)",
+    "download": "Scarica il replay",
+    "downloadTitle": "File di replay di Showdown: si apre in qualsiasi browser e si riproduce nel lettore di Showdown"
+  },
+  "quiet": {
+    "lost": "{names} ha perso la connessione. Se non torna entro un minuto,",
+    "teamForfeits": "la sua squadra si arrende.",
+    "forfeit": "si arrende."
+  },
+  "after": {
+    "share": "Condividi",
+    "updating": "Aggiornamento dei punteggi…",
+    "watchReplay": "Guarda il replay",
+    "analysis": "Analisi",
+    "saving": "Salvataggio del replay…",
+    "save": "Salva il replay",
+    "elo": "Elo",
+    "glicko": "Punteggio Glicko-2",
+    "rating": "Punteggio",
+    "ratingLabel": "{what} {delta}, ora {now}"
+  }
+}

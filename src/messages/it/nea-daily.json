@@ -1,0 +1,7 @@
+{
+  "eyebrow": "Nominali tutti · Sfida del giorno {date}",
+  "fallback": "La categoria di oggi",
+  "lead": "Una categoria al giorno, uguale per tutti. Un tentativo conta per il tuo record: modalità Normale, tempo standard, niente suggerimenti né pause.",
+  "loading": "Caricamento dei Pokémon di oggi…",
+  "failed": "Impossibile caricare i Pokémon. Controlla la connessione e ricarica la pagina."
+}

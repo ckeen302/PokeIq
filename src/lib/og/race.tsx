@@ -1,6 +1,8 @@
 /* eslint-disable jsx-a11y/alt-text, @next/next/no-img-element -- Satori draws plain <img> */
 import "server-only";
 import { ogCard } from "@/lib/og/card";
+import { englishOgT, type OgT } from "@/lib/og/i18n";
+import { speciesName } from "@/lib/names/species";
 import { homeRenderUrl } from "@/lib/pokemon/art";
 import { RACE_ENTRANTS } from "@/lib/race/data";
 import { fieldFor, specFor } from "@/lib/race/lineup";
@@ -19,7 +21,7 @@ import type { Entrant } from "@/lib/race/types";
 const ACCENT = "#ffd84a";
 const W = 470, H = 380;
 
-function Track({ race }: { race: Race }) {
+function Track({ race, t }: { race: Race; t: OgT }) {
   const lanes = race.lanes;
   const n = lanes.length;
   const laneH = Math.min(64, (H - 30) / n);
@@ -43,32 +45,38 @@ function Track({ race }: { race: Race }) {
         );
       })}
       <div style={{ display: "flex", position: "absolute", left: finishX, top: top, width: 5, height: laneH * n, background: "#ffffff" }} />
-      <div style={{ display: "flex", position: "absolute", left: 14, bottom: 8, fontFamily: "Silkscreen", fontSize: 15, color: "#9fd8ff" }}>AS THE WINNER CROSSES THE LINE</div>
+      <div style={{ display: "flex", position: "absolute", left: 14, bottom: 8, fontFamily: "Silkscreen", fontSize: 15, color: "#9fd8ff" }}>{t("race.atTheLine")}</div>
     </div>
   );
 }
 
-function card(race: Race, eyebrow: string, title: string) {
+function card(race: Race, eyebrow: string, title: string, t: OgT) {
   const w = race.order[0];
+  const second = race.order[1];
+  // An entrant's name in the card's language: the species' official name (a form keeps its English one).
+  const name = (e: Entrant) => (t.locale === "en" || e.art !== e.species ? e.name : speciesName(e.species, e.name, t.locale));
   return ogCard({
     eyebrow,
     title: [title],
     titleSize: title.length > 34 ? 42 : title.length > 22 ? 52 : 66,
-    subtitle: `${w.entrant.name} wins in ${formatTime(w.time)} s${race.order[1] ? `, ${formatTime(race.order[1].gap)} s ahead of ${race.order[1].entrant.name}` : ""}.`,
+    subtitle: second
+      ? t("race.subtitleAhead", { winner: name(w.entrant), time: formatTime(w.time), gap: formatTime(second.gap), second: name(second.entrant) })
+      : t("race.subtitle", { winner: name(w.entrant), time: formatTime(w.time) }),
     accent: ACCENT,
-    visual: <Track race={race} />,
-    footer: "Watch the race in 3D →",
+    visual: <Track race={race} t={t} />,
+    footer: t("race.footer"),
+    t,
   });
 }
 
-export function racePresetCard(preset: RacePreset = DEFAULT_PRESET, distance?: Distance | null, seed?: number | null) {
+export function racePresetCard(preset: RacePreset = DEFAULT_PRESET, distance?: Distance | null, seed?: number | null, t: OgT = englishOgT()) {
   const spec = specFor(preset.id, [], distance, seed);
   const f = fieldFor(spec, RACE_ENTRANTS);
-  return card(makeRace(f.entrants, spec.distance), `Pokémon race · ${spec.distance} m`, preset.tournament ? "Every Pokémon, one winner" : preset.label);
+  return card(makeRace(f.entrants, spec.distance), t("race.eyebrow", { distance: spec.distance }), preset.tournament ? t("race.tournament") : preset.label, t);
 }
 
 export function raceVsCard(vs: Entrant[], distance: Distance) {
   const spec = specFor(DEFAULT_PRESET.id, vs.map((e) => e.key), distance);
   const f = fieldFor(spec, RACE_ENTRANTS);
-  return card(makeRace(f.entrants, spec.distance), `Pokémon race · ${spec.distance} m`, f.title);
+  return card(makeRace(f.entrants, spec.distance), `Pokémon race · ${spec.distance} m`, f.title, englishOgT());
 }

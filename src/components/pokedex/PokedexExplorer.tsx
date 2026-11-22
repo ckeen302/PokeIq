@@ -12,6 +12,9 @@ import { TypeBadge } from "./TypeBadge";
 import { cn } from "@/lib/utils";
 import { usePlaceholder } from "@/lib/phone";
 import { matchesDexQuery } from "@/lib/pokemon/dex-search";
+import { useT } from "@/i18n/client";
+import explorerNs from "@/messages/pokedex-explorer";
+import type { DexListLocal, LocalDexMatch } from "@/lib/pokemon/dex-search-local";
 
 export interface DexListItem {
   id: number;
@@ -59,20 +62,7 @@ function fromRow([id, slug, name, genus, types, gen, hp, atk, def, spa, spd, spe
 
 type SortKey = "id" | "name" | "type" | "bst" | "hp" | "atk" | "def" | "spa" | "spd" | "spe" | "height" | "weight";
 
-const SORTS: { key: SortKey; label: string }[] = [
-  { key: "id", label: "Dex number" },
-  { key: "name", label: "Name" },
-  { key: "type", label: "Type" },
-  { key: "bst", label: "Base stat total" },
-  { key: "hp", label: "HP" },
-  { key: "atk", label: "Attack" },
-  { key: "def", label: "Defense" },
-  { key: "spa", label: "Sp. Atk" },
-  { key: "spd", label: "Sp. Def" },
-  { key: "spe", label: "Speed" },
-  { key: "height", label: "Height" },
-  { key: "weight", label: "Weight" },
-];
+const SORTS: SortKey[] = ["id", "name", "type", "bst", "hp", "atk", "def", "spa", "spd", "spe", "height", "weight"];
 
 type DexView = "cards" | "table";
 /** This device's last choice of cards or table. */
@@ -96,16 +86,30 @@ function sortValue(p: DexListItem, key: SortKey): number | string {
   return p.stats[key];
 }
 
-function sortLabel(p: DexListItem, key: SortKey): string | null {
+/** A tenth as a decimal: "1.7" in English as always, with the language's own decimal mark elsewhere. */
+const tenths = (v: number, locale: string) => (locale === "en" ? (v / 10).toFixed(1) : (v / 10).toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }));
+
+function sortLabel(p: DexListItem, key: SortKey, locale: string): string | null {
   if (key === "id" || key === "name" || key === "type") return null;
-  if (key === "height") return `${(p.height / 10).toFixed(1)} m`;
-  if (key === "weight") return `${(p.weight / 10).toFixed(1)} kg`;
+  if (key === "height") return `${tenths(p.height, locale)} m`;
+  if (key === "weight") return `${tenths(p.weight, locale)} kg`;
   return String(sortValue(p, key));
 }
 
-export function PokedexExplorer({ rows }: { rows: DexRow[] }) {
+/**
+ * `local`: on a page in another language, what the server sends besides the rows (whose names and categories are
+ * then in that language): the type and region names, and each row's other names for the search. English pages send
+ * none.
+ */
+export function PokedexExplorer({ rows, local }: { rows: DexRow[]; local?: DexListLocal }) {
+  const t = useT(explorerNs);
   const items = useMemo(() => rows.map(fromRow), [rows]);
-  const searchHint = usePlaceholder("Search name, number or category…  ( / )", "Name, number, category…");
+  const searchHint = usePlaceholder(t("search.hint"), t("search.hintShort"));
+  // Another language's search (its names, English and rōmaji), loaded only on such a page.
+  const [localMatch, setLocalMatch] = useState<LocalDexMatch | null>(null);
+  useEffect(() => {
+    if (local) void import("@/lib/pokemon/dex-search-local").then((m) => setLocalMatch(() => m.matchesLocalDexQuery));
+  }, [local]);
   const [query, setQuery] = useState("");
   const [types, setTypes] = useState<string[]>([]);
   const [gens, setGens] = useState<number[]>([]);
@@ -148,7 +152,7 @@ export function PokedexExplorer({ rows }: { rows: DexRow[] }) {
     if (type && (TYPES as readonly string[]).includes(type)) setTypes([type]);
     const gen = Number(params.get("gen"));
     if (gen >= 1 && gen <= 9) setGens([gen]);
-    const sortKey = SORTS.find((s) => s.key === params.get("sort"))?.key;
+    const sortKey = SORTS.find((s) => s === params.get("sort"));
     if (sortKey) {
       setSort(sortKey);
       setDesc(params.get("dir") === "asc" ? false : params.get("dir") === "desc" || !ASCENDING_FIRST.includes(sortKey));
@@ -170,7 +174,7 @@ export function PokedexExplorer({ rows }: { rows: DexRow[] }) {
 
   const filtered = useMemo(() => {
     const list = items.filter((p) => {
-      if (!matchesDexQuery(p, query)) return false;
+      if (!(localMatch && local ? localMatch(p, query, local.search[p.id]) : matchesDexQuery(p, query))) return false;
       if (types.length && !types.every((t) => p.types.includes(t))) return false;
       if (gens.length && !gens.includes(p.gen)) return false;
       if (legendsOnly && !(p.legendary || p.mythical)) return false;
@@ -184,7 +188,7 @@ export function PokedexExplorer({ rows }: { rows: DexRow[] }) {
       const cmp = typeof va === "string" ? va.localeCompare(vb as string) : (va as number) - (vb as number);
       return cmp * dir || a.id - b.id;
     });
-  }, [items, query, types, gens, legendsOnly, finalOnly, sort, desc]);
+  }, [items, query, types, gens, legendsOnly, finalOnly, sort, desc, local, localMatch]);
 
   // Reset the window whenever the result set changes.
   useEffect(() => setVisible(PAGE), [query, types, gens, legendsOnly, finalOnly, sort, desc]);
@@ -229,18 +233,18 @@ export function PokedexExplorer({ rows }: { rows: DexRow[] }) {
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as SortKey)}
-              aria-label="Sort by"
+              aria-label={t("sortBy")}
               className="h-11 rounded-md border border-input bg-shade/40 px-3 font-display text-sm max-md:min-w-0 max-md:flex-1 lg:w-[150px]"
             >
               {SORTS.map((s) => (
-                <option key={s.key} value={s.key}>{s.label}</option>
+                <option key={s} value={s}>{t(`sort.${s}`)}</option>
               ))}
             </select>
             <button
               type="button"
               onClick={() => setDesc((d) => !d)}
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-input bg-shade/40 hover:border-screen/60"
-              aria-label={desc ? "Sort ascending" : "Sort descending"}
+              aria-label={desc ? t("sortAsc") : t("sortDesc")}
             >
               {desc ? <ArrowDownWideNarrow className="h-4 w-4" /> : <ArrowUpNarrowWide className="h-4 w-4" />}
             </button>
@@ -252,11 +256,11 @@ export function PokedexExplorer({ rows }: { rows: DexRow[] }) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={searchHint}
-              aria-label="Search Pokémon"
+              aria-label={t("search.label")}
               className="h-11 w-full rounded-md border border-input bg-shade/40 pl-9 pr-9 font-display text-sm tracking-wide focus-visible:border-screen/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
             />
             {query && (
-              <button type="button" onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" aria-label="Clear search">
+              <button type="button" onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" aria-label={t("search.clear")}>
                 <X className="h-4 w-4" />
               </button>
             )}
@@ -267,7 +271,7 @@ export function PokedexExplorer({ rows }: { rows: DexRow[] }) {
             aria-expanded={filtersOpen}
             aria-controls="dex-filters"
             className="relative flex h-11 w-11 items-center justify-center rounded-md border border-input bg-shade/40 hover:border-screen/60 aria-expanded:border-screen/60 aria-expanded:text-screen md:hidden"
-            aria-label={filtersOpen ? "Hide filters" : "Show filters"}
+            aria-label={filtersOpen ? t("hideFilters") : t("showFilters")}
           >
             <SlidersHorizontal className="h-4 w-4" />
             {activeFilters > 0 && (
@@ -283,8 +287,8 @@ export function PokedexExplorer({ rows }: { rows: DexRow[] }) {
           <Link
             href="/pokedex/study"
             className="flex h-11 w-11 items-center justify-center rounded-md border border-primary/60 bg-primary/10 text-primary md:hidden"
-            aria-label="Study mode"
-            title="Study mode"
+            aria-label={t("studyMode")}
+            title={t("studyMode")}
           >
             <BookOpenCheck className="h-5 w-5" />
           </Link>
@@ -293,21 +297,21 @@ export function PokedexExplorer({ rows }: { rows: DexRow[] }) {
         <div id="dex-filters" className={cn("space-y-3", !filtersOpen && "hidden md:block")}>
           {/* One row: on a laptop or desktop all 18 fit edge to edge (tighter from lg, so Fairy isn't cut off at 1024); narrower, it scrolls. */}
           <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] lg:gap-1 xl:gap-1.5" data-testid="dex-type-chips">
-            {TYPES.map((t) => {
-              const active = types.includes(t);
+            {TYPES.map((ty) => {
+              const active = types.includes(ty);
               return (
                 <button
-                  key={t}
+                  key={ty}
                   type="button"
-                  onClick={() => setTypes((cur) => toggle(cur, t, 2))}
+                  onClick={() => setTypes((cur) => toggle(cur, ty, 2))}
                   aria-pressed={active}
                   className={cn(
                     "flex-1 whitespace-nowrap rounded-[4px] border px-2.5 py-1 font-display text-[11px] font-bold uppercase tracking-wider transition-all lg:px-1 lg:tracking-wide xl:px-1.5 xl:tracking-wider",
                     active ? "border-transparent text-white" : "border-foreground/10 bg-shade/20 text-muted-foreground hover:text-foreground"
                   )}
-                  style={active ? { background: typeColor(t), boxShadow: "inset 0 1px 0 rgb(255 255 255 / 0.35), inset 0 -2px 0 rgb(0 0 0 / 0.25)" } : { borderColor: `${typeColor(t)}66` }}
+                  style={active ? { background: typeColor(ty), boxShadow: "inset 0 1px 0 rgb(255 255 255 / 0.35), inset 0 -2px 0 rgb(0 0 0 / 0.25)" } : { borderColor: `${typeColor(ty)}66` }}
                 >
-                  {capitalize(t)}
+                  {local?.types[ty] ?? capitalize(ty)}
                 </button>
               );
             })}
@@ -324,14 +328,14 @@ export function PokedexExplorer({ rows }: { rows: DexRow[] }) {
                   "rounded-sm border px-2.5 py-1.5 font-pixel text-[10px] uppercase tracking-wider transition-colors",
                   gens.includes(i + 1) ? "border-primary bg-primary text-primary-foreground" : "border-foreground/10 bg-shade/20 text-muted-foreground hover:text-foreground"
                 )}
-                title={region}
+                title={local?.regions[i] ?? region}
               >
-                Gen {i + 1}
+                {t("gen", { n: i + 1 })}
               </button>
             ))}
             <span className="mx-1 h-4 w-px bg-foreground/10" aria-hidden />
-            <Toggle active={legendsOnly} onClick={() => setLegendsOnly((v) => !v)}>Legendary + Mythical</Toggle>
-            <Toggle active={finalOnly} onClick={() => setFinalOnly((v) => !v)}>Fully evolved</Toggle>
+            <Toggle active={legendsOnly} onClick={() => setLegendsOnly((v) => !v)}>{t("legends")}</Toggle>
+            <Toggle active={finalOnly} onClick={() => setFinalOnly((v) => !v)}>{t("fullyEvolved")}</Toggle>
             {hasFilters ? (
               <button
                 type="button"
@@ -344,7 +348,7 @@ export function PokedexExplorer({ rows }: { rows: DexRow[] }) {
                 }}
                 className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
               >
-                Reset
+                {t("reset")}
               </button>
             ) : null}
           </div>
@@ -353,15 +357,15 @@ export function PokedexExplorer({ rows }: { rows: DexRow[] }) {
 
       {/* Grid */}
       {filtered.length === 0 ? (
-        <div className="py-20 text-center text-muted-foreground">No Pokémon match those filters.</div>
+        <div className="py-20 text-center text-muted-foreground">{t("empty")}</div>
       ) : view === "table" ? (
-        <DexTable list={filtered.slice(0, visible)} sort={sort} desc={desc} onSort={sortBy} />
+        <DexTable list={filtered.slice(0, visible)} sort={sort} desc={desc} onSort={sortBy} typeNames={local?.types} />
       ) : (
         // No layout animations here: measuring up to 1,025 cards on every
         // keystroke is far too slow. Cards are memoised and fade in on mount.
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {filtered.slice(0, visible).map((p, i) => (
-            <DexCard key={p.id} p={p} index={i % PAGE} badge={sortLabel(p, sort)} animate={animateCards} eager={i < EAGER_CARDS} />
+            <DexCard key={p.id} p={p} index={i % PAGE} badge={sortLabel(p, sort, t.locale)} animate={animateCards} eager={i < EAGER_CARDS} typeNames={local?.types} />
           ))}
         </div>
       )}
@@ -371,19 +375,20 @@ export function PokedexExplorer({ rows }: { rows: DexRow[] }) {
         href="/pokedex/study"
         className="fixed bottom-24 right-4 z-40 flex items-center gap-2 max-md:hidden rounded-md bg-primary px-4 py-3 font-display text-sm font-bold uppercase tracking-wider text-primary-foreground shadow-[0_4px_0_hsl(var(--primary-shadow)),0_10px_30px_-8px_hsl(var(--primary)/0.6)] transition active:translate-y-[2px] lg:bottom-8"
       >
-        <BookOpenCheck className="h-5 w-5" /> Study mode
+        <BookOpenCheck className="h-5 w-5" /> {t("studyMode")}
       </Link>
     </div>
   );
 }
 
-const VIEWS: { id: DexView; label: string; Icon: typeof LayoutGrid }[] = [
-  { id: "cards", label: "Cards", Icon: LayoutGrid },
-  { id: "table", label: "Table", Icon: Rows3 },
+const VIEWS: { id: DexView; Icon: typeof LayoutGrid }[] = [
+  { id: "cards", Icon: LayoutGrid },
+  { id: "table", Icon: Rows3 },
 ];
 
 /** Cards or table: a small dropdown (a list to pick from, not an on/off switch). */
 function ViewPicker({ view, onChange }: { view: DexView; onChange: (v: DexView) => void }) {
+  const t = useT(explorerNs);
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
@@ -452,9 +457,9 @@ function ViewPicker({ view, onChange }: { view: DexView; onChange: (v: DexView) 
         className="flex h-11 w-[202px] items-center justify-between max-md:w-full rounded-md border border-input bg-shade/40 px-3 font-display text-sm font-semibold uppercase tracking-[0.08em] hover:border-screen/60 aria-expanded:border-screen/60"
       >
         <span className="flex items-center gap-2.5">
-          <span className="font-pixel text-[9px] font-normal tracking-[0.12em] text-muted-foreground">View</span>
+          <span className="font-pixel text-[9px] font-normal tracking-[0.12em] text-muted-foreground">{t("view.label")}</span>
           <current.Icon className="h-[15px] w-[15px]" strokeWidth={2.2} aria-hidden />
-          {current.label}
+          {t(`view.${current.id}`)}
         </span>
         <ChevronDown className={cn("h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 motion-reduce:transition-none", open && "rotate-180")} strokeWidth={2.6} aria-hidden />
       </button>
@@ -462,7 +467,7 @@ function ViewPicker({ view, onChange }: { view: DexView; onChange: (v: DexView) 
         ref={listRef}
         id="dex-view-list"
         role="listbox"
-        aria-label="View"
+        aria-label={t("view.label")}
         data-testid="dex-view-list"
         onKeyDown={onListKey}
         className={cn(
@@ -470,7 +475,7 @@ function ViewPicker({ view, onChange }: { view: DexView; onChange: (v: DexView) 
           open ? "flex" : "hidden"
         )}
       >
-        {VIEWS.map(({ id, label, Icon }) => {
+        {VIEWS.map(({ id, Icon }) => {
           const on = id === view;
           return (
             <button
@@ -490,7 +495,7 @@ function ViewPicker({ view, onChange }: { view: DexView; onChange: (v: DexView) 
             >
               <span className="flex items-center gap-2.5">
                 <Icon className="h-[15px] w-[15px]" strokeWidth={2.2} aria-hidden />
-                {label}
+                {t(`view.${id}`)}
               </span>
               <Check className={cn("h-3.5 w-3.5 text-primary", !on && "opacity-0")} strokeWidth={3} aria-hidden />
             </button>
@@ -502,21 +507,15 @@ function ViewPicker({ view, onChange }: { view: DexView; onChange: (v: DexView) 
 }
 
 /** Base stats, in the table's column order, with each one's bar colour. */
-const STAT_COLUMNS: { key: Exclude<SortKey, "id" | "name" | "type" | "bst" | "height" | "weight">; label: string; color: string }[] = [
-  { key: "hp", label: "HP", color: "#ff6b6b" },
-  { key: "atk", label: "Attack", color: "#f5a65b" },
-  { key: "def", label: "Defense", color: "#f7d65a" },
-  { key: "spa", label: "Sp. Atk", color: "#7fa8ff" },
-  { key: "spd", label: "Sp. Def", color: "#7fd49b" },
-  { key: "spe", label: "Speed", color: "#f78fb3" },
+const STAT_COLUMNS: { key: Exclude<SortKey, "id" | "name" | "type" | "bst" | "height" | "weight">; color: string }[] = [
+  { key: "hp", color: "#ff6b6b" },
+  { key: "atk", color: "#f5a65b" },
+  { key: "def", color: "#f7d65a" },
+  { key: "spa", color: "#7fa8ff" },
+  { key: "spd", color: "#7fd49b" },
+  { key: "spe", color: "#f78fb3" },
 ];
-const TABLE_COLUMNS: { key: SortKey; label: string }[] = [
-  { key: "id", label: "No." },
-  { key: "name", label: "Pokémon" },
-  { key: "type", label: "Type" },
-  ...STAT_COLUMNS,
-  { key: "bst", label: "Total" },
-];
+const TABLE_COLUMNS: { key: Exclude<SortKey, "height" | "weight"> }[] = [{ key: "id" }, { key: "name" }, { key: "type" }, ...STAT_COLUMNS, { key: "bst" }];
 /**
  * The table's columns. It scrolls sideways (No. and Pokémon pinned) when the
  * screen is narrower than its minimum; phones get tighter fixed columns so the
@@ -528,12 +527,14 @@ const TABLE_GRID =
 const EAGER_ROWS = 10;
 
 /** The same filtered and sorted list as the cards, as rows of base stats. The headers sort it (the toolbar's sort, shared). */
-function DexTable({ list, sort, desc, onSort }: { list: DexListItem[]; sort: SortKey; desc: boolean; onSort: (key: SortKey) => void }) {
+function DexTable({ list, sort, desc, onSort, typeNames }: { list: DexListItem[]; sort: SortKey; desc: boolean; onSort: (key: SortKey) => void; typeNames?: Record<string, string> }) {
+  const t = useT(explorerNs);
   return (
     <div className="overflow-x-auto rounded-lg border bg-background [scrollbar-width:thin]" data-testid="dex-table">
       <div className={cn(TABLE_GRID, "border-b bg-card")}>
-        {TABLE_COLUMNS.map(({ key, label }, i) => {
+        {TABLE_COLUMNS.map(({ key }, i) => {
           const on = key === sort;
+          const label = t(`col.${key}`);
           const Arrow = on ? (desc ? ArrowDown : ArrowUp) : ArrowUpDown;
           return (
             <button
@@ -542,7 +543,7 @@ function DexTable({ list, sort, desc, onSort }: { list: DexListItem[]; sort: Sor
               onClick={() => onSort(key)}
               data-testid={`dex-th-${key}`}
               data-active={on ? "true" : undefined}
-              aria-label={on ? `${label}, sorted ${desc ? "high to low" : "low to high"} (reverse)` : `${label} (sort the table)`}
+              aria-label={on ? (desc ? t("sortedDesc", { label }) : t("sortedAsc", { label })) : t("sortThis", { label })}
               className={cn(
                 "flex h-11 items-center gap-1.5 px-3 font-display text-[11px] font-bold uppercase tracking-[0.12em] transition-colors motion-reduce:transition-none",
                 i === 0 && "sticky left-0 z-[1] md:pl-4",
@@ -557,7 +558,7 @@ function DexTable({ list, sort, desc, onSort }: { list: DexListItem[]; sort: Sor
         })}
       </div>
       {list.map((p, i) => (
-        <DexRowLink key={p.id} p={p} eager={i < EAGER_ROWS} />
+        <DexRowLink key={p.id} p={p} eager={i < EAGER_ROWS} typeNames={typeNames} />
       ))}
     </div>
   );
@@ -565,7 +566,8 @@ function DexTable({ list, sort, desc, onSort }: { list: DexListItem[]; sort: Sor
 
 const statTone = (v: number) => (v >= 100 ? "text-foreground" : v < 50 ? "text-muted-foreground" : "text-foreground/85");
 
-const DexRowLink = memo(function DexRowLink({ p, eager }: { p: DexListItem; eager: boolean }) {
+const DexRowLink = memo(function DexRowLink({ p, eager, typeNames }: { p: DexListItem; eager: boolean; typeNames?: Record<string, string> }) {
+  const t = useT(explorerNs);
   const c1 = typeColor(p.types[0]);
   const c2 = typeColor(p.types[1] ?? p.types[0]);
   return (
@@ -579,7 +581,7 @@ const DexRowLink = memo(function DexRowLink({ p, eager }: { p: DexListItem; eage
           <i className="flex-1" style={{ background: c1 }} />
           <i className="flex-1" style={{ background: c2 }} />
         </span>
-        No.{String(p.id).padStart(4, "0")}
+        {t("no", { n: String(p.id).padStart(4, "0") })}
       </span>
       <span className="sticky left-[72px] z-[1] flex h-full min-w-0 items-center gap-2 self-stretch bg-inherit pr-0.5 md:left-[86px]">
         <span className="screen h-10 w-10 shrink-0 rounded-md md:h-[52px] md:w-[52px]">
@@ -597,8 +599,8 @@ const DexRowLink = memo(function DexRowLink({ p, eager }: { p: DexListItem; eage
         <span className="truncate font-display text-[13px] font-bold uppercase tracking-wide transition-colors group-hover:text-screen md:text-[15px]" title={p.name}>{p.name}</span>
       </span>
       <span className="flex gap-1 px-3">
-        {p.types.map((t) => (
-          <TypeBadge key={t} type={t} size="sm" />
+        {p.types.map((ty) => (
+          <TypeBadge key={ty} type={ty} size="sm" label={typeNames?.[ty]} />
         ))}
       </span>
       {STAT_COLUMNS.map(({ key, color }) => {
@@ -644,6 +646,7 @@ const DexCard = memo(function DexCard({
   badge,
   animate,
   eager,
+  typeNames,
 }: {
   p: DexListItem;
   index: number;
@@ -651,7 +654,9 @@ const DexCard = memo(function DexCard({
   animate: boolean;
   /** One of the first cards on screen: its picture is the page's largest paint, so it loads at once. */
   eager: boolean;
+  typeNames?: Record<string, string>;
 }) {
+  const t = useT(explorerNs);
   const c1 = typeColor(p.types[0]);
   const c2 = typeColor(p.types[1] ?? p.types[0]);
   return (
@@ -670,7 +675,7 @@ const DexCard = memo(function DexCard({
           <span className="flex-1" style={{ background: c2 }} />
         </div>
         <div className="flex items-center justify-between px-3 pt-2">
-          <span className="font-pixel text-[10px] tracking-wider text-muted-foreground">No.{String(p.id).padStart(4, "0")}</span>
+          <span className="font-pixel text-[10px] tracking-wider text-muted-foreground">{t("no", { n: String(p.id).padStart(4, "0") })}</span>
           {badge && <span className="font-pixel text-[10px] tabular-nums text-screen">{badge}</span>}
         </div>
         <div className="screen mx-3 mt-2 aspect-square rounded-md">
@@ -695,8 +700,8 @@ const DexCard = memo(function DexCard({
             {p.name}
           </div>
           <div className="flex gap-1">
-            {p.types.map((t) => (
-              <TypeBadge key={t} type={t} size="sm" />
+            {p.types.map((ty) => (
+              <TypeBadge key={ty} type={ty} size="sm" label={typeNames?.[ty]} />
             ))}
           </div>
         </div>

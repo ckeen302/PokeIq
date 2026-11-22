@@ -1,0 +1,25 @@
+{
+  "ranked": "Ranked",
+  "cpu": "CPU",
+  "multi": "Multi battle · 2 vs 2",
+  "ffa": "Free-for-all · 4 trainers",
+  "vs": "VS",
+  "turn": "Turn {n}",
+  "watching": "{n} watching",
+  "started": "Started {ago}",
+  "watch": "Watch →",
+  "ago": {
+    "now": "just now",
+    "min": "{m} min ago",
+    "hours": "{h} h {m} min ago"
+  },
+  "loadError": "Couldn't load live battles.",
+  "filter": "Filter by format",
+  "all": "All formats",
+  "refreshes": "Refreshes on its own",
+  "loading": "Loading live battles",
+  "noneIn": "No live battles in {format}",
+  "noneNow": "No live battles right now",
+  "noneBlurb": "Matchmade battles show up here as they start. Start one and others can watch you.",
+  "find": "Find an opponent"
+}

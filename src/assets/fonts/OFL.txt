@@ -1,8 +1,13 @@
-Chakra Petch Bold, Inter SemiBold (Latin subset) and Silkscreen, used to draw the link-preview images.
+Chakra Petch Bold, Inter SemiBold (Latin subset), Silkscreen and Noto Sans JP Bold (subset), used to draw the
+link-preview images. NotoSansJP-Bold.ttf (Japanese cards only) is Noto Sans JP Bold from @fontsource/noto-sans-jp
+5.2.9 (npm), its unicode-range files merged and subset with fontTools to ASCII, Latin-1, kana, CJK punctuation and
+full-width forms, the JIS X 0208 level-1 kanji, and every character of src/messages/ja, src/data/i18n/ja and the
+Japanese species names. Its glyphs are unmodified.
 
 Copyright 2018 The Chakra Petch Project Authors (https://github.com/m4rc1e/Chakra-Petch.git)
 Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)
 Copyright 2001 The Silkscreen Project Authors (https://github.com/googlefonts/silkscreen)
+Copyright 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source' (Noto Sans JP)
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:

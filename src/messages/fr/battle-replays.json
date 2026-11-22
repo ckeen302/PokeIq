@@ -1,0 +1,50 @@
+{
+  "lists": {
+    "loadFailed": "Impossible de charger les replays.",
+    "loading": "Chargement des replays",
+    "unavailable": "Les replays ne sont pas encore disponibles sur ce serveur.",
+    "mine": "Mes replays",
+    "mineEmpty": "Pas encore de replays. Les combats classés et publics enregistrent le leur ; après tout autre, appuie sur Enregistrer le replay.",
+    "recent": "Replays récents",
+    "filter": "Filtrer par format",
+    "all": "Tous",
+    "recentEmpty": "Pas encore de replay public dans ce format."
+  },
+  "import": {
+    "log": "Journal de combat",
+    "watch": "Regarder",
+    "open": "Ouvrir un fichier de replay",
+    "tooBig": "Ce fichier est trop lourd pour être un replay de combat.",
+    "hint": "Replays enregistrés par Showdown (.html) et journaux de combat (.log). Lus sur ton appareil, jamais envoyés.",
+    "errors": {
+      "empty": "Colle un journal de combat ou choisis un fichier de replay.",
+      "notLog": "Ça ne ressemble pas à un journal de combat Showdown : aucun joueur ni Pokémon trouvé.",
+      "gameType": "Seuls les combats simples et doubles peuvent être regardés ici."
+    }
+  },
+  "viewer": {
+    "loading": "Chargement du replay",
+    "back": "Reculer d'un tour",
+    "turn": "Tour",
+    "pause": "Pause",
+    "replay": "Revoir",
+    "play": "Lecture",
+    "forward": "Avancer d'un tour",
+    "nextKoTitle": "Aller au prochain tour où un Pokémon est K.O.",
+    "nextKo": "K.O. suivant",
+    "end": "Fin",
+    "start": "Début",
+    "leads": "Têtes",
+    "turnN": "Tour {n}",
+    "seek": "Aller à un tour",
+    "downloadTitle": "Le fichier de replay de Showdown : s'ouvre dans n'importe quel navigateur et se lit dans le lecteur de replays de Showdown",
+    "download": "Télécharger le replay",
+    "logTitle": "Le journal de combat brut (le protocole de Showdown), une ligne par événement",
+    "log": "Journal",
+    "instant": "<b>Replay instantané</b> du combat jusqu'ici. {timed, select, yes {Le combat continue pendant ce temps : ton chrono de tour tourne toujours.} other {Le combat t'attend.}}",
+    "backToBattle": "Retour au combat",
+    "another": "En regarder un autre",
+    "battle": "Combattre",
+    "more": "Plus de replays"
+  }
+}

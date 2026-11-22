@@ -1,0 +1,126 @@
+{
+  "first-run": {
+    "name": "Entrenador novato",
+    "description": "Termina tu primera partida"
+  },
+  "certified": {
+    "name": "Certificado",
+    "description": "Completa el test PokéIQ adaptativo"
+  },
+  "perfect": {
+    "name": "Impecable",
+    "description": "Saca 10/10 en una partida Clásica"
+  },
+  "streak-10": {
+    "name": "Imparable",
+    "description": "Acierta 10 seguidas"
+  },
+  "survivor": {
+    "name": "Superviviente",
+    "description": "Acierta 25 en una partida de Supervivencia"
+  },
+  "blitz": {
+    "name": "Garra Rápida",
+    "description": "Acierta 20 en una Contrarreloj"
+  },
+  "purist": {
+    "name": "Purista de Kanto",
+    "description": "Partida Clásica perfecta solo con la Gen. 1"
+  },
+  "iq-120": {
+    "name": "Cerebro de Líder",
+    "description": "Consigue un PokéIQ de 120 o más"
+  },
+  "iq-140": {
+    "name": "Profesor",
+    "description": "Consigue un PokéIQ de 140 o más"
+  },
+  "all-modes": {
+    "name": "Completista",
+    "description": "Juega todos los modos de juego"
+  },
+  "daily-3": {
+    "name": "Habitual",
+    "description": "Racha de 3 días en el Reto diario"
+  },
+  "daily-7": {
+    "name": "Constante",
+    "description": "Racha de 7 días en el Reto diario"
+  },
+  "daily-30": {
+    "name": "Leyenda",
+    "description": "Racha de 30 días en el Reto diario"
+  },
+  "dle-3": {
+    "name": "Detective",
+    "description": "Resuelve un Pokédle en 3 intentos o menos"
+  },
+  "dle-1": {
+    "name": "Psíquico",
+    "description": "Resuelve un Pokédle a la primera"
+  },
+  "geo-first": {
+    "name": "Explorador",
+    "description": "Termina una partida de PokéGuessr"
+  },
+  "geo-pinpoint": {
+    "name": "En el clavo",
+    "description": "Consigue 5.000 en una ronda de PokéGuessr"
+  },
+  "geo-20k": {
+    "name": "Cartógrafo",
+    "description": "Consigue 20.000 o más en una partida de PokéGuessr"
+  },
+  "geo-streak-10": {
+    "name": "Rastreador",
+    "description": "Acierta 10 lugares seguidos en la Racha de PokéGuessr"
+  },
+  "conn-first": {
+    "name": "Conectado",
+    "description": "Resuelve tu primer PokéConnections"
+  },
+  "conn-streak-7": {
+    "name": "Bien conectado",
+    "description": "Racha de 7 días en PokéConnections"
+  },
+  "conn-streak-30": {
+    "name": "Gran conector",
+    "description": "Racha de 30 días en PokéConnections"
+  },
+  "conn-perfect-10": {
+    "name": "Impecable",
+    "description": "10 PokéConnections perfectos (sin fallos)"
+  },
+  "conn-duel-10": {
+    "name": "A toda pastilla",
+    "description": "Gana 10 duelos de PokéConnections"
+  },
+  "conn-featured": {
+    "name": "Creador destacado",
+    "description": "Un puzle de PokéConnections que creaste fue destacado o se convirtió en el Puzle del día"
+  },
+  "pdk-first": {
+    "name": "Primera cuadrícula",
+    "description": "Resuelve tu primer Pikadoku"
+  },
+  "pdk-perfect": {
+    "name": "Nueve de nueve",
+    "description": "Rellena las 9 casillas de un Pikadoku"
+  },
+  "pdk-rare": {
+    "name": "Cazarrarezas",
+    "description": "Una puntuación de rareza de Pikadoku por debajo de 50"
+  },
+  "pdk-streak-7": {
+    "name": "Fijo en la cuadrícula",
+    "description": "Racha de 7 días en Pikadoku"
+  },
+  "pdk-duel-10": {
+    "name": "Tres en raya",
+    "description": "Gana 10 duelos de Tres en raya de Pikadoku"
+  },
+  "conn-hard": {
+    "name": "A prueba de todo",
+    "description": "Resuelve un PokéConnections Ilimitado en Difícil"
+  }
+}

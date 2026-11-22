@@ -1,0 +1,34 @@
+{
+  "optIn": {
+    "email": "Email",
+    "optional": "(optional)",
+    "box": "Email me when new dailies drop",
+    "confirmFirst": "We'll send a link to confirm your address first. Unsubscribe any time."
+  },
+  "settings": {
+    "sent": "We sent a confirmation link to {email}.",
+    "throttled": "A confirmation link went out a moment ago: check your inbox.",
+    "sendFailed": "We couldn't send the confirmation email. Try Resend in a minute.",
+    "loadFailed": "Couldn't load your email settings.",
+    "saveFailed": "Couldn't save that.",
+    "addFirst": "Add your email address first.",
+    "badEmail": "That doesn't look like an email address.",
+    "daily": "Daily reminder emails",
+    "dailyHint": "An email when new dailies drop.",
+    "on": "On",
+    "off": "Off",
+    "loading": "Loading",
+    "address": "Email address",
+    "save": "Save",
+    "turnOn": "Turn on",
+    "cancel": "Cancel",
+    "sendingTo": "<m>Sending to </m><b>{email}</b>",
+    "confirm": "<m>Confirm </m><b>{email}</b><m> from the link in your inbox.</m>",
+    "resend": "Resend",
+    "change": "Change",
+    "when": "When to send",
+    "whenHint": "Every day, or only when a streak would end at midnight.",
+    "everyDay": "Every day",
+    "atRisk": "Streak at risk"
+  }
+}

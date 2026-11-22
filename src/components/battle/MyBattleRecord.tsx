@@ -6,7 +6,10 @@ import { Loader2 } from "lucide-react";
 import type { BattleProfileResponse } from "@/lib/battle/profile";
 import { battleIdHeaders, ensureBattleId } from "@/lib/battle/replay-client";
 import { useAccount } from "@/lib/account";
-import { BattleProfileView, BattleRecordCard } from "./BattleProfileView";
+import { battleRecordCard, battleRecordView } from "./BattleRecordView";
+import { useT } from "@/i18n/client";
+import battleRecord from "@/messages/battle-record";
+import battleGlicko from "@/messages/battle-glicko";
 
 /** Your battle record on the trainer card (and, signed in, the link to your public battle profile). */
 export function MyBattleRecord() {
@@ -14,6 +17,8 @@ export function MyBattleRecord() {
   const [data, setData] = useState<BattleProfileResponse | null>(null);
   const [now, setNow] = useState(0);
   const user = account.user?.username;
+  const t = useT(battleRecord);
+  const tg = useT(battleGlicko);
 
   useEffect(() => {
     let live = true;
@@ -35,29 +40,39 @@ export function MyBattleRecord() {
   }, [user]);
 
   if (data && !data.available) return null;
-  return (
-    <BattleRecordCard title="Battle record">
-      {!data ? (
-        <Loader2 className="mx-auto h-5 w-5 animate-spin text-screen" aria-label="Loading your battle record" />
-      ) : (
-        <BattleProfileView
-          profile={data}
-          now={now}
-          empty={
-            <>
-              No live battles yet.{" "}
-              <Link href="/battle/play?vs=anyone" className="font-semibold text-foreground underline-offset-2 hover:underline">
-                Find an opponent
-              </Link>
-            </>
-          }
-        />
-      )}
-      {user && (
-        <Link href={`/u/${encodeURIComponent(user)}`} className="hud-label block hover:text-foreground">
-          Your public battle profile →
-        </Link>
-      )}
-    </BattleRecordCard>
+  return battleRecordCard(
+    {
+      title: t("title"),
+      children: (
+        <>
+          {!data ? (
+            <Loader2 className="mx-auto h-5 w-5 animate-spin text-screen" aria-label={t("loading")} />
+          ) : (
+            battleRecordView(
+              {
+                profile: data,
+                now,
+                empty: (
+                  <>
+                    {t("none")}{" "}
+                    <Link href="/battle/play?vs=anyone" className="font-semibold text-foreground underline-offset-2 hover:underline">
+                      {t("find")}
+                    </Link>
+                  </>
+                ),
+              },
+              t,
+              tg
+            )
+          )}
+          {user && (
+            <Link href={`/u/${encodeURIComponent(user)}`} className="hud-label block hover:text-foreground">
+              {t("profile")}
+            </Link>
+          )}
+        </>
+      ),
+    },
+    t
   );
 }

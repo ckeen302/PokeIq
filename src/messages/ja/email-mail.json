@@ -1,0 +1,35 @@
+{
+  "links": {
+    "pokedle": "Pokédle",
+    "geo": "PokéGuessrデイリー",
+    "conn": "Connections",
+    "pdk": "Pikadoku",
+    "daily": "デイリーチャレンジ"
+  },
+  "streak": "{game}の{days}日連続記録が、今夜0時に途切れます。",
+  "daily": {
+    "subject": "今日のPokéIQデイリーが始まりました",
+    "testSubject": "[テスト] {subject}",
+    "kicker": "デイリー #{n}",
+    "heading": "今日のデイリーが始まりました",
+    "imageAlt": "今日のPokéGuessrの画像（ぼかし）",
+    "imageCaption": "ポケモンの世界のどこだろう？ 今日のPokéGuessrはここから。",
+    "why": "PokéIQのトレーナー{name}で、デイリーのお知らせメールをオンにしているため、このメールが届いています。",
+    "unsubscribe": "配信停止",
+    "settings": "メール設定",
+    "preheader": "Pokédle、PokéGuessr、Connections、Pikadoku、デイリーチャレンジが更新されました。",
+    "textTitle": "PokéIQ デイリー #{n}",
+    "textHeading": "今日のデイリーが始まりました。",
+    "textUnsubscribe": "配信停止：{url}",
+    "textSettings": "メール設定：{url}"
+  },
+  "confirm": {
+    "subject": "PokéIQのメールアドレスを確認してください",
+    "heading": "メールアドレスの確認",
+    "body": "トレーナー{name}でPokéIQのデイリーのお知らせメールを受け取るには、このアドレスを確認してください。確認するまでメールは送られません。",
+    "button": "メールアドレスを確認",
+    "note": "リンクの有効期限は7日間です。心当たりがない場合はこのメールを無視してください。これ以上メールは届きません。",
+    "why": "このアドレスがPokéIQのデイリーのお知らせメール用に入力されたため、このメールが届いています。",
+    "preheader": "ワンクリックで完了です。"
+  }
+}

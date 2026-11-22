@@ -1,0 +1,44 @@
+{
+  "prompt": {
+    "silhouette": {
+      "label": "Silhouette",
+      "hint": "Who's that Pokémon?"
+    },
+    "entry": {
+      "label": "Pokédex entry",
+      "hint": "Which Pokémon is this?"
+    },
+    "typing": {
+      "label": "Typing",
+      "hint": "What type is it?"
+    }
+  },
+  "back": "Back to Pokédex",
+  "title": "Study mode",
+  "blurb": "Flip, recall, repeat. Cards you miss come back until you nail them.",
+  "generations": "Generations",
+  "gen": "Gen {n}",
+  "cardFront": "Card front",
+  "deckSize": "Deck size",
+  "all": "All",
+  "skipMastered": "Skip mastered",
+  "mastered": "Mastered in selection",
+  "start": "Start studying",
+  "keys": "Space to flip · → knew it · ← study again · Esc to exit · or swipe the card",
+  "complete": "Deck complete!",
+  "summary": "{known}/{total} on the first try · {missed} needed review",
+  "drill": "Drill the misses",
+  "newDeck": "New deck",
+  "testYourself": "Test yourself →",
+  "exit": "Exit study session",
+  "again": "Study again",
+  "knew": "Knew it",
+  "swipeHint": "Swipe → if you knew it, ← to see it again",
+  "flipHint": "Tap the card or press Space to flip",
+  "mystery": "Mystery silhouette",
+  "quote": "“{entry}”",
+  "genus": "The {genus}",
+  "fullEntry": "Full Pokédex entry →",
+  "knewStamp": "KNEW IT",
+  "againStamp": "AGAIN"
+}

@@ -1,6 +1,8 @@
-import type { Rng } from "@/lib/rng";
 import type { GenerateOptions, ModuleId, Question, QuestionBuilder } from "./types";
-import { isValidQuestion } from "./validate";
+import { isServable, isValidQuestion } from "./validate";
+import { localize } from "./localize";
+import type { QuizLang } from "./i18n";
+import { Rng } from "@/lib/rng";
 import { whosThat } from "./modules/whos-that";
 import { cry } from "./modules/cry";
 import { dex } from "./modules/dex";
@@ -60,4 +62,37 @@ export function buildQuestion(module: ModuleId, rng: Rng, opts: GenerateOptions)
   throw new Error(`Module "${module}" could not produce a valid question`);
 }
 
+/** Swapped-in questions keep close to the rating of the one they replace while they can. */
+const SWAP_CLOSE_ATTEMPTS = 24;
+const SWAP_ATTEMPTS = 60;
+
+/**
+ * Question `q` (built in English by buildQuestion) in another language: the same question re-worded. When it has no
+ * faithful wording there, another question of the same module and difficulty takes its place, drawn from its own
+ * stream (`swapSeed`), so the rest of the run is still the English run's, and the swap is the same on every request.
+ * The swap's Pokémon aren't added to `opts.used` (that would change later questions); it avoids those already used.
+ *
+ * Without a `swapSeed` (duels, where both trainers must face the same question), an unwordable question stays English.
+ */
+export function localizeQuestion(q: Question, L: QuizLang | null, opts: GenerateOptions, swapSeed: string | number | null): Question {
+  if (!L) return q;
+  const own = localize(q, L);
+  if (own && isServable(own)) return own;
+  if (swapSeed === null) return q;
+  const rng = new Rng(swapSeed);
+  const used = new Set(opts.used);
+  const keys = new Set([q.itemKey]);
+  for (let attempt = 0; attempt < SWAP_ATTEMPTS; attempt++) {
+    const r = BUILDERS[q.module](rng, { ...opts, used: new Set(used) });
+    if (!r || keys.has(r.itemKey) || !isServable(r)) continue;
+    keys.add(r.itemKey);
+    if (attempt < SWAP_CLOSE_ATTEMPTS && Math.abs(r.rating - q.rating) > 80) continue;
+    const worded = localize(r, L);
+    if (worded && isServable(worded)) return worded;
+  }
+  return q;
+}
+
+export { localize } from "./localize";
+export { loadQuizLang, quizLang, quizLangIfLoaded, type QuizLang } from "./i18n";
 export * from "./types";

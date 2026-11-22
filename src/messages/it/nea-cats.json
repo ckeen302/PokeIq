@@ -1,0 +1,163 @@
+{
+  "groups": {
+    "all": "Tutti",
+    "gen": "Generazioni",
+    "type": "Tipi",
+    "special": "Leggendari e altro",
+    "forms": "Forme",
+    "dex": "Pokédex regionali"
+  },
+  "all": {
+    "label": "Tutti",
+    "h1": "Nomina tutti i Pokémon",
+    "title": "Quiz: nomina tutti i Pokémon, da Bulbasaur a Pecharunt",
+    "description": "Scrivi il nome di ogni Pokémon, da Bulbasaur a Pecharunt. Ognuno va al suo posto appena lo scrivi giusto. Timer, suggerimenti, sprite cromatici e record personali."
+  },
+  "gen": {
+    "label": "Gen. {n}",
+    "h1": "Nomina tutti i Pokémon della generazione {n}",
+    "title": "Quiz: nomina tutti i Pokémon della generazione {n} ({region})",
+    "description": "Quanti dei Pokémon apparsi per la prima volta nella regione di {region} sai nominare a memoria? Scrivili in qualsiasi ordine e batti il tempo."
+  },
+  "type": {
+    "label": "{type}",
+    "h1": "Nomina tutti i Pokémon di tipo {type}",
+    "title": "Quiz: nomina tutti i Pokémon di tipo {type}",
+    "description": "Nomina tutti i Pokémon di tipo {type}, con uno o due tipi, di tutte le generazioni."
+  },
+  "cats": {
+    "legendary": {
+      "label": "Leggendari",
+      "h1": "Nomina tutti i Pokémon leggendari",
+      "title": "Quiz: nomina tutti i Pokémon leggendari",
+      "description": "Tutti i Pokémon che i giochi considerano leggendari, dagli uccelli di Kanto a Terapagos, semileggendari compresi."
+    },
+    "sub-legendary": {
+      "label": "Semileggendari",
+      "h1": "Nomina tutti i Pokémon semileggendari",
+      "title": "Quiz: nomina tutti i Pokémon semileggendari",
+      "description": "I leggendari che non finiscono in copertina: terzetti, Tapu e molti altri."
+    },
+    "mythical": {
+      "label": "Misteriosi",
+      "h1": "Nomina tutti i Pokémon misteriosi",
+      "title": "Quiz: nomina tutti i Pokémon misteriosi",
+      "description": "Mew, Celebi, Jirachi e tutti gli altri Pokémon misteriosi distribuiti negli eventi, fino a Pecharunt."
+    },
+    "ultra-beasts": {
+      "label": "Ultracreature",
+      "h1": "Nomina tutte le Ultracreature",
+      "title": "Quiz: nomina tutte le Ultracreature",
+      "description": "Le creature arrivate dagli Ultravarchi, da Nihilego a Blacephalon."
+    },
+    "paradox": {
+      "label": "Paradosso",
+      "h1": "Nomina tutti i Pokémon Paradosso",
+      "title": "Quiz: nomina tutti i Pokémon Paradosso",
+      "description": "I Pokémon Paradosso del passato e del futuro di Scarlatto e Violetto e dei loro DLC."
+    },
+    "mega-evolutions": {
+      "label": "Megaevoluzioni",
+      "h1": "Nomina tutte le Megaevoluzioni",
+      "title": "Quiz: nomina tutte le Megaevoluzioni",
+      "description": "Tutte le Megaevoluzioni di X e Y e di Rubino Omega e Zaffiro Alpha. Scrivi «MegaVenusaur» o solo «Venusaur»."
+    },
+    "gigantamax": {
+      "label": "Gigamax",
+      "h1": "Nomina tutti i Pokémon Gigamax",
+      "title": "Quiz: nomina tutti i Pokémon Gigamax",
+      "description": "Tutte le forme Gigamax di Spada e Scudo. Scrivi «Snorlax Gigamax», «Gmax Snorlax» o solo «Snorlax»."
+    },
+    "regional-forms": {
+      "label": "Forme regionali",
+      "h1": "Nomina tutte le forme regionali",
+      "title": "Quiz: nomina tutte le forme regionali (Alola, Galar, Hisui, Paldea)",
+      "description": "Tutte le forme di Alola, Galar, Hisui e Paldea. Scrivi «Vulpix di Alola» o «Vulpix Alola»."
+    }
+  },
+  "dex": {
+    "kanto-dex": {
+      "label": "Pokédex di Kanto",
+      "h1": "Nomina il Pokédex di Kanto",
+      "title": "Quiz: nomina tutti i Pokémon del Pokédex di Kanto",
+      "description": "Tutti i Pokémon del Pokédex regionale di Kanto in Rosso, Blu e Giallo, numerati come nel gioco."
+    },
+    "johto-dex": {
+      "label": "Pokédex di Johto",
+      "h1": "Nomina il Pokédex di Johto",
+      "title": "Quiz: nomina tutti i Pokémon del Pokédex di Johto",
+      "description": "Tutti i Pokémon del Pokédex regionale di Johto in Oro HeartGold e Argento SoulSilver, numerati come nel gioco."
+    },
+    "hoenn-dex": {
+      "label": "Pokédex di Hoenn",
+      "h1": "Nomina il Pokédex di Hoenn",
+      "title": "Quiz: nomina tutti i Pokémon del Pokédex di Hoenn",
+      "description": "Tutti i Pokémon del Pokédex regionale di Hoenn in Rubino Omega e Zaffiro Alpha, numerati come nel gioco."
+    },
+    "sinnoh-dex": {
+      "label": "Pokédex di Sinnoh",
+      "h1": "Nomina il Pokédex di Sinnoh",
+      "title": "Quiz: nomina tutti i Pokémon del Pokédex di Sinnoh",
+      "description": "Tutti i Pokémon del Pokédex regionale di Sinnoh in Platino, numerati come nel gioco."
+    },
+    "unova-dex": {
+      "label": "Pokédex di Unima",
+      "h1": "Nomina il Pokédex di Unima",
+      "title": "Quiz: nomina tutti i Pokémon del Pokédex di Unima",
+      "description": "Tutti i Pokémon del Pokédex regionale di Unima in Nero 2 e Bianco 2, numerati come nel gioco."
+    },
+    "kalos-dex": {
+      "label": "Pokédex di Kalos",
+      "h1": "Nomina il Pokédex di Kalos",
+      "title": "Quiz: nomina tutti i Pokémon del Pokédex di Kalos",
+      "description": "Tutti i Pokémon del Pokédex regionale di Kalos in X e Y (Centro, Costa e Monti), numerati come nel gioco."
+    },
+    "alola-dex": {
+      "label": "Pokédex di Alola",
+      "h1": "Nomina il Pokédex di Alola",
+      "title": "Quiz: nomina tutti i Pokémon del Pokédex di Alola",
+      "description": "Tutti i Pokémon del Pokédex regionale di Alola in Ultrasole e Ultraluna, numerati come nel gioco."
+    },
+    "galar-dex": {
+      "label": "Pokédex di Galar",
+      "h1": "Nomina il Pokédex di Galar",
+      "title": "Quiz: nomina tutti i Pokémon del Pokédex di Galar",
+      "description": "Tutti i Pokémon del Pokédex regionale di Galar in Spada e Scudo, numerati come nel gioco."
+    },
+    "paldea-dex": {
+      "label": "Pokédex di Paldea",
+      "h1": "Nomina il Pokédex di Paldea",
+      "title": "Quiz: nomina tutti i Pokémon del Pokédex di Paldea",
+      "description": "Tutti i Pokémon del Pokédex regionale di Paldea in Scarlatto e Violetto, numerati come nel gioco."
+    }
+  },
+  "form": {
+    "mega": "Mega{name}",
+    "megaVariant": "Mega{name} {variant}",
+    "gmax": "{name} Gigamax",
+    "gmaxStyle": {
+      "single": "{name} Gigamax (Stile Singolo)",
+      "rapid": "{name} Gigamax (Stile Pluricolpo)",
+      "amped": "{name} Gigamax (forma Melodia)",
+      "lowkey": "{name} Gigamax (forma Basso)"
+    },
+    "alola": "{name} di Alola",
+    "galar": "{name} di Galar",
+    "hisui": "{name} di Hisui",
+    "paldea": "{name} di Paldea",
+    "breed": "{name} di Paldea ({breed})",
+    "breeds": {
+      "combat": "razza Combattiva",
+      "blaze": "razza Infuocata",
+      "aqua": "razza Acquatica"
+    },
+    "darmanitan": {
+      "standard": "{name} di Galar (stato Normale)",
+      "zen": "{name} di Galar (stato Zen)"
+    }
+  },
+  "words": {
+    "mega": "Mega",
+    "gmax": "Gigamax"
+  }
+}

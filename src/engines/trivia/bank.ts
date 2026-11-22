@@ -1,4 +1,18 @@
 import type { Difficulty } from "../types";
+import type { QuizLang } from "../i18n";
+import { anyName } from "./words";
+import { must } from "../localize";
+
+/**
+ * A trivia question in another language: its prompt and explanation, and the language's name for each English
+ * option (undefined when it has none). Null when the question can't be faithfully asked in that language.
+ */
+export interface TriviaWording {
+  prompt: string;
+  explanation?: string;
+  option(english: string): string | undefined;
+}
+export type TriviaLoc = (L: QuizLang) => TriviaWording | null;
 
 /**
  * Trivia question banks (Mainline Games, Pokémon Anime).
@@ -24,6 +38,8 @@ export interface TriviaItem {
   explanation?: string;
   /** Generated items: the table row and field the answer comes from. */
   from?: { table: string; index: number; field: string };
+  /** How to ask it in another language (see ../localize.ts). */
+  loc?: TriviaLoc;
 }
 
 export interface HandwrittenRow {
@@ -36,6 +52,17 @@ export interface HandwrittenRow {
   source: string;
   explanation?: string;
   verify?: string[];
+  /** Only makes sense in English (a line from the English dub, an English title): never asked in other languages. */
+  englishOnly?: boolean;
+}
+
+/** A hand-written question in another language (src/data/quiz/<bank>/i18n/<locale>.json). */
+export interface HandwrittenWording {
+  prompt: string;
+  explanation?: string;
+  /** The answer and distractors, in the English order; left out when they're names the language data has. */
+  answer?: string;
+  distractors?: string[];
 }
 
 export const DIFFICULTY_ORDER: Difficulty[] = ["easy", "medium", "hard"];
@@ -65,3 +92,47 @@ export function pool(candidates: Iterable<string | undefined>, answer: string, e
 }
 
 export const ROMAN = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"];
+
+/**
+ * A hand-written question in another language, from its translation (src/data/quiz/<bank>/i18n/<locale>.json). Options
+ * the translation doesn't give are names the language data has (Pokémon, people, items, moves, places, games). A
+ * question marked English-only, or not translated, is never asked in that language.
+ */
+export function handwrittenLoc(bank: "games" | "anime", row: HandwrittenRow): TriviaLoc | undefined {
+  if (row.englishOnly) return undefined;
+  const context = bank === "anime" ? "anime" : "games";
+  return (L) => {
+    const w = L.handwritten(bank, row.id);
+    if (!w) return null;
+    const given = new Map<string, string>();
+    if (w.answer) given.set(row.answer, fillNames(L, w.answer, context));
+    w.distractors?.forEach((d, i) => given.set(row.distractors[i], fillNames(L, d, context)));
+    return {
+      prompt: fillNames(L, w.prompt, context),
+      explanation: w.explanation && fillNames(L, w.explanation, context),
+      option: (o) => given.get(o) ?? anyName(L, o, context),
+    };
+  };
+}
+
+/**
+ * Translations name things by their English names, `[[kind:English]]`, so each language's text carries the official
+ * name from the data: `[[mon:Ralts]]`, `[[loc:Petalburg City]]`, `[[item:Silph Scope]]`, `[[move:Dive]]`,
+ * `[[game:Pokémon Gold and Silver]]`, `[[p:Professor Oak]]` (a person, team or other proper name), `[[type:Fire]]`,
+ * `[[region:Johto]]`. A name the language doesn't have makes the question unaskable there (it throws through must).
+ */
+export function fillNames(L: QuizLang, text: string, context: "games" | "anime" = "games"): string {
+  return text.replace(/\[\[(\w+):([^\]]+)\]\]/g, (_, kind: string, english: string) => {
+    const found =
+      kind === "mon" ? L.pokemonNamed(english)
+      : kind === "loc" ? (L.name("locations", english) ?? L.proper(english, context))
+      : kind === "item" ? (L.name("items", english) ?? L.proper(english, context))
+      : kind === "move" ? L.name("moves", english)
+      : kind === "game" ? L.game(english)
+      : kind === "p" ? L.proper(english, context)
+      : kind === "type" ? L.type(english.toLowerCase())
+      : kind === "region" ? L.name("regions", english)
+      : undefined;
+    return must(found, `${kind}:${english}`);
+  });
+}

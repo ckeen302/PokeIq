@@ -1,0 +1,64 @@
+{
+  "setup": {
+    "changeSettings": "Einstellungen ändern",
+    "format": "Format",
+    "difficulty": "Schwierigkeit",
+    "teamsFrom": "Teams aus",
+    "scope": {
+      "both": "Spiele & Anime",
+      "games": "Spiele",
+      "anime": "Anime"
+    },
+    "selected": "{label} ({n} ausgewählt)",
+    "all": "{label} (alle)",
+    "allChip": "Alle",
+    "start": "{mode} starten"
+  },
+  "filters": {
+    "gen": "Generationen",
+    "chip": "Gen. {n}",
+    "series": "Staffeln",
+    "anime": {
+      "original": "Original",
+      "advanced": "Advanced",
+      "dp": "Diamant & Perl",
+      "bw": "Schwarz & Weiß",
+      "xy": "XY",
+      "sm": "Sonne & Mond",
+      "journeys": "Reisen",
+      "horizons": "Horizonte"
+    },
+    "items": "Eingeführt in",
+    "itemsNote": "Ohne Filter kommen die Fragen aus Gen. 1–7. Wähl Generationen, um jede der neun zu spielen.",
+    "team": "Generation oder Region",
+    "teamChip": "{region}: Spiele der Gen. {n}, Anime in {region}",
+    "teamNote": "Spiele zählen nach Generation (Feuerrot ist Gen. 3), Anime-Teams nach der Region der Staffel."
+  },
+  "regions": {
+    "kanto": "Kanto",
+    "johto": "Johto",
+    "hoenn": "Hoenn",
+    "sinnoh": "Sinnoh",
+    "unova": "Einall",
+    "kalos": "Kalos",
+    "alola": "Alola",
+    "galar": "Galar",
+    "paldea": "Paldea"
+  },
+  "duel": {
+    "heading": "Direktduell · {mode}",
+    "zoomBlurb": "Dieselben {n} Nahaufnahmen für euch beide, je {seconds} Sekunden. Erkannt in Stufe 1 bringt {first} Punkte, bis hinab zu {last} in Stufe {steps}; die meisten Punkte gewinnen. Schick deinem Freund den Link und drück auf Bereit.",
+    "blurb": "Dieselben {n} Fragen für euch beide, je {seconds} Sekunden. Eine richtige Antwort bringt 100 Punkte, plus bis zu 50 fürs Tempo; die meisten Punkte gewinnen. Schick deinem Freund den Link und drück auf Bereit.",
+    "mode": "Modus",
+    "modeLabel": "Duell-Modus",
+    "difficulty": "Schwierigkeit",
+    "difficultyLabel": "Duell-Schwierigkeit"
+  },
+  "grid": {
+    "best": "Rekord {score}",
+    "nameEmAll": "Nenn sie alle",
+    "nameEmAllLine": "Nenn so viele Pokémon, wie du kannst.",
+    "whichPokemon": "Welches Pokémon bist du?",
+    "whichPokemonLine": "Finde das Pokémon, das dir am ähnlichsten ist."
+  }
+}

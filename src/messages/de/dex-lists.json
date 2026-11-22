@@ -1,0 +1,42 @@
+{
+  "search": {
+    "moves": "Attacken suchen…  ( / )",
+    "abilities": "Fähigkeiten suchen…  ( / )",
+    "items": "Items suchen…  ( / )",
+    "places": "Orte suchen…  ( / )"
+  },
+  "searchLabel": {
+    "moves": "Attacken suchen",
+    "abilities": "Fähigkeiten suchen",
+    "items": "Items suchen",
+    "places": "Orte suchen"
+  },
+  "clear": "Suche löschen",
+  "itemCategory": "Item-Kategorie",
+  "allCategories": "Alle Kategorien",
+  "region": "Region",
+  "allRegions": "Alle Regionen",
+  "placeType": "Art des Ortes",
+  "allTypes": "Alle Arten",
+  "cls": {
+    "physical": "physisch",
+    "special": "spezial",
+    "status": "status"
+  },
+  "reset": "Zurücksetzen",
+  "empty": {
+    "moves": "Keine Attacke passt zu diesen Filtern.",
+    "abilities": "Keine Fähigkeit passt zu diesen Filtern.",
+    "items": "Kein Item passt zu diesen Filtern.",
+    "places": "Kein Ort passt zu diesen Filtern."
+  },
+  "col": {
+    "move": "Attacke",
+    "type": "Typ",
+    "cat": "Kat.",
+    "pow": "Stärke",
+    "acc": "Genau.",
+    "pp": "AP"
+  },
+  "holders": "{n} Pokémon"
+}

@@ -1,0 +1,12 @@
+{
+  "card": {
+    "title": "Scheda Allenatore"
+  },
+  "creator": {
+    "title": "Crea il tuo Allenatore",
+    "description": "Crea il tuo Allenatore 3D su PokéIQ: capelli, cappelli, outfit, borse e la tua Poké Ball.",
+    "back": "Torna alla scheda Allenatore",
+    "label": "Editor Allenatore",
+    "heading": "Crea il tuo Allenatore"
+  }
+}

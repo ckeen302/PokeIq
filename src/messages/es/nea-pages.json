@@ -1,0 +1,56 @@
+{
+  "title": "Nómbralos a todos",
+  "ogAlt": "Nómbralos a todos: ¿cuántos Pokémon sabes nombrar de memoria?",
+  "back": "Todas las categorías",
+  "count": "{n} Pokémon",
+  "hub": {
+    "metaTitle": "Nómbralos a todos: ¿sabes el nombre de todos los Pokémon? Quiz de memoria",
+    "metaDescription": "Escribe todos los Pokémon que recuerdes: todos, una generación, un tipo, legendarios, megaevoluciones, formas regionales o una Pokédex regional. Quiz diario, carreras con amigos y récords personales.",
+    "eyebrow": "Quiz de memoria",
+    "lead": "¿Cuántos Pokémon sabes nombrar de memoria? Escríbelos y cada uno aparecerá en su casilla en cuanto lo escribas bien.",
+    "info": {
+      "description": "Un quiz de memoria Pokémon gratis: nombra todos los Pokémon de una categoría contrarreloj.",
+      "intro": "Nómbralos a todos es un quiz de memoria Pokémon: elige una categoría y escribe de memoria todos sus Pokémon. Cada nombre cuenta en cuanto está bien escrito, en cualquier orden.",
+      "steps": {
+        "pick": "Elige una categoría: todos, una generación, un tipo, los legendarios, las megaevoluciones, las formas regionales o una Pokédex regional.",
+        "mode": "Elige modo Normal, Caos u Orden Pokédex, un tiempo y las pistas que quieras.",
+        "type": "Escribe nombres: cada uno ocupa su casilla en cuanto está bien escrito. Las mayúsculas, las tildes y la puntuación no importan, y también vale el nombre en inglés.",
+        "giveUp": "Ríndete cuando quieras para ver los que te faltaron, cada uno enlazado a su página de la Pokédex."
+      },
+      "faq": {
+        "dailyQ": "¿Hay un reto diario?",
+        "dailyA": "Sí: una categoría al día, la misma para todos. Cuenta un intento al día.",
+        "raceQ": "¿Puedo echar una carrera con mis amigos?",
+        "raceA": "Crea una carrera, comparte el enlace y hasta ocho Entrenadores nombrarán la misma categoría a la vez, con barras de progreso en directo.",
+        "bestQ": "¿Dónde están mis mejores partidas?",
+        "bestA": "Inicia sesión y juega en modo Normal sin pistas ni pausas: tu ronda completa más rápida y el máximo que nombres dentro del tiempo estándar aparecen en tu perfil de Entrenador."
+      }
+    }
+  },
+  "category": {
+    "lead": "{count} Pokémon · tiempo estándar {minutes}:00. {description}",
+    "intro": "{h1}: un quiz de memoria gratis. {description}",
+    "steps": {
+      "pick": "Elige un modo, un tiempo y las pistas que quieras.",
+      "type": "Escribe nombres: cada uno ocupa su casilla en cuanto está bien escrito.",
+      "finish": "Nómbralos a todos antes de que se acabe el tiempo, o ríndete para ver los que te faltaron."
+    },
+    "faq": {
+      "spellQ": "¿Tengo que escribir los nombres exactos?",
+      "spellA": "Las mayúsculas, las tildes, los espacios y la puntuación no importan, y también vale el nombre en inglés. Activa el corrector para recibir una sugerencia cuando te equivoques en una o dos letras.",
+      "bestQ": "¿Qué cuenta como récord personal?",
+      "bestA": "Las partidas en modo Normal sin pistas ni pausas: tu ronda completa más rápida y el máximo que nombres en los {minutes} minutos estándar, que aparecen en tu perfil de Entrenador si has iniciado sesión."
+    }
+  },
+  "daily": {
+    "metaTitle": "Nómbralos a todos, reto diario: el quiz de memoria Pokémon de hoy",
+    "metaDescription": "Una categoría Pokémon al día, la misma para todos: nombra todos los que puedas en el tiempo estándar y mira cómo quedas hoy."
+  },
+  "race": {
+    "title": "Una carrera de Nómbralos a todos",
+    "invite": "{name} te invita a una carrera de Nómbralos a todos",
+    "trainer": "Un Entrenador",
+    "about": "Una carrera de Nómbralos a todos: todos nombran los mismos Pokémon y gana el primero en nombrarlos todos.",
+    "aboutIn": "Una carrera de Nómbralos a todos ({label}): todos nombran los mismos Pokémon y gana el primero en nombrarlos todos."
+  }
+}

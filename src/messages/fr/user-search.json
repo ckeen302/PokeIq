@@ -1,0 +1,7 @@
+{
+  "failed": "La recherche ne fonctionne pas pour le moment.",
+  "label": "Nom de Dresseur",
+  "placeholder": "Commence à taper un nom de Dresseur…",
+  "tooShort": "Tape au moins deux lettres, chiffres, _ ou -.",
+  "none": "Aucun nom de Dresseur ne commence par « {query} »."
+}

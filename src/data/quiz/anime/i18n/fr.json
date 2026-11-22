@@ -1,0 +1,582 @@
+{
+ "leagues": {
+  "Orange League": "la Ligue Orange",
+  "Silver Conference": "la Conférence Argentée",
+  "Lily of the Valley Conference": "la Conférence de l'Île du Lys dans la Vallée",
+  "Vertress Conference": "la Conférence de Verteresse",
+  "Manalo Conference": "la Ligue d'Alola"
+ },
+ "questions": {
+  "ash-pikachu": {
+   "prompt": "Quel Pokémon le Professeur Chen donne-t-il à Sacha au début de son voyage ?"
+  },
+  "ash-first-catch": {
+   "prompt": "Quel est le tout premier Pokémon capturé par Sacha ?"
+  },
+  "ash-butterfree": {
+   "prompt": "Quel Pokémon Sacha a-t-il relâché pour qu'il parte avec sa compagne lors de la migration de son espèce ?"
+  },
+  "ash-pidgeot": {
+   "prompt": "Sacha a laissé son [[mon:Pidgeot]] derrière lui pour protéger une nuée de quels Pokémon ?"
+  },
+  "ash-charmander-damian": {
+   "prompt": "Quel Dresseur avait abandonné le [[mon:Charmander]] de Sacha ?",
+   "distractors": [
+    "Régis",
+    "Richie",
+    "A.J."
+   ]
+  },
+  "ash-charizard-valley": {
+   "prompt": "Pendant son voyage à [[region:Johto]], où Sacha a-t-il laissé son [[mon:Charizard]] s'entraîner ?"
+  },
+  "ash-tauros-count": {
+   "prompt": "Combien de [[mon:Tauros]] Sacha a-t-il capturés au [[loc:Safari Zone]] ?",
+   "answer": "30",
+   "distractors": [
+    "10",
+    "20",
+    "50"
+   ]
+  },
+  "ash-lapras": {
+   "prompt": "Quel Pokémon Sacha a-t-il capturé dans l'[[p:Orange Islands]] avant de le relâcher pour qu'il retrouve sa famille ?"
+  },
+  "ash-snorlax": {
+   "prompt": "Quel gros dormeur Sacha a-t-il capturé dans l'[[p:Orange Islands]] ?"
+  },
+  "ash-haunter": {
+   "prompt": "Quel Pokémon de Sacha est resté avec [[p:Sabrina]] à [[loc:Saffron City]] ?"
+  },
+  "ash-primeape": {
+   "prompt": "Pour quelle compétition le [[mon:Primeape]] de Sacha a-t-il quitté l'équipe ?",
+   "answer": "Le Tournoi P1",
+   "distractors": [
+    "La Ligue Pokémon",
+    "La Zone de Combat",
+    "La Ligue Orange"
+   ]
+  },
+  "ash-muk": {
+   "prompt": "Quel Pokémon de Sacha est connu pour étouffer le Professeur Chen sous ses câlins ?"
+  },
+  "ash-bulbasaur-village": {
+   "prompt": "Avant de rejoindre Sacha, le [[mon:Bulbasaur]] protégeait les Pokémon de quel endroit ?",
+   "answer": "Le Village Caché",
+   "distractors": [
+    "La [[loc:Viridian Forest]]",
+    "La [[p:Charicific Valley]]",
+    "La [[loc:Pokémon Tower]]"
+   ]
+  },
+  "ash-raichu-refuse": {
+   "prompt": "Après sa défaite contre [[p:Lt. Surge]], en quel Pokémon le [[mon:Pikachu]] de Sacha a-t-il refusé d'évoluer ?"
+  },
+  "ash-noctowl": {
+   "prompt": "Lequel des Pokémon capturés par Sacha à [[region:Johto]] était chromatique ?"
+  },
+  "ash-phanpy": {
+   "prompt": "Le [[mon:Phanpy]] de Sacha est sorti d'un Œuf. En quel Pokémon a-t-il évolué ensuite ?"
+  },
+  "ash-bayleef": {
+   "prompt": "En quel Pokémon le [[mon:Chikorita]] de Sacha a-t-il évolué ?"
+  },
+  "ash-aipom-trade": {
+   "prompt": "Quel Pokémon Sacha a-t-il échangé contre le [[mon:Buizel]] d'Aurore ?"
+  },
+  "ash-chimchar-paul": {
+   "prompt": "Avant de rejoindre Sacha, à quel rival appartenait son [[mon:Chimchar]] ?",
+   "distractors": [
+    "Régis",
+    "Barry",
+    "Niko"
+   ]
+  },
+  "ash-gible": {
+   "prompt": "Quelle capacité le [[mon:Gible]] de Sacha essayait-il sans cesse de maîtriser ?"
+  },
+  "ash-sceptile": {
+   "prompt": "Quel Pokémon était au départ le [[mon:Sceptile]] de Sacha ?"
+  },
+  "ash-glalie": {
+   "prompt": "En quel Pokémon le [[mon:Snorunt]] de Sacha a-t-il évolué ?"
+  },
+  "ash-corphish": {
+   "prompt": "Quel Pokémon écrevisse de type [[type:Water]] Sacha a-t-il capturé à [[region:Hoenn]] ?"
+  },
+  "ash-torkoal": {
+   "prompt": "Quel Pokémon pleurnichard de type [[type:Fire]] Sacha a-t-il capturé à [[region:Hoenn]] ?"
+  },
+  "ash-staraptor": {
+   "prompt": "Quel Pokémon était au départ le [[mon:Staraptor]] de Sacha ?"
+  },
+  "ash-torterra": {
+   "prompt": "En quel Pokémon le [[mon:Turtwig]] de Sacha a-t-il fini par évoluer ?"
+  },
+  "ash-gliscor": {
+   "prompt": "En quel Pokémon le [[mon:Gligar]] de Sacha a-t-il évolué ?"
+  },
+  "ash-pidove": {
+   "prompt": "Quel est le premier Pokémon capturé par Sacha à [[region:Unova]] ?"
+  },
+  "ash-tepig-shamus": {
+   "prompt": "Quel Dresseur avait abandonné le [[mon:Tepig]] de Sacha ?",
+   "distractors": [
+    "Niko",
+    "Damien",
+    "Paul"
+   ]
+  },
+  "ash-leavanny": {
+   "prompt": "En quel Pokémon le [[mon:Sewaddle]] de Sacha a-t-il fini par évoluer ?"
+  },
+  "ash-krookodile": {
+   "prompt": "Quel Pokémon était au départ le [[mon:Krookodile]] de Sacha ?"
+  },
+  "ash-greninja-form": {
+   "prompt": "Quelle forme spéciale le [[mon:Greninja]] de Sacha pouvait-il prendre ?",
+   "answer": "Amphinobi Sacha",
+   "distractors": [
+    "Méga-Amphinobi",
+    "Amphinobi Gigamax",
+    "Primo-Amphinobi"
+   ]
+  },
+  "ash-greninja-zygarde": {
+   "prompt": "Quel Pokémon légendaire le [[mon:Greninja]] de Sacha est-il resté aider à [[region:Kalos]] ?"
+  },
+  "ash-goodra": {
+   "prompt": "Quel Pokémon était au départ le [[mon:Goodra]] de Sacha ?"
+  },
+  "ash-noibat": {
+   "prompt": "Le [[mon:Noivern]] de Sacha est sorti d'un Œuf. Quel Pokémon était-il alors ?"
+  },
+  "ash-hawlucha": {
+   "prompt": "Quel Pokémon catcheur de types [[type:Fighting]] et [[type:Flying]] Sacha a-t-il capturé à [[region:Kalos]] ?"
+  },
+  "ash-talonflame": {
+   "prompt": "Quel Pokémon était au départ le [[mon:Talonflame]] de Sacha ?"
+  },
+  "ash-rowlet": {
+   "prompt": "Quel Pokémon hibou de type [[type:Grass]] Sacha a-t-il capturé à [[region:Alola]] ?"
+  },
+  "ash-incineroar": {
+   "prompt": "En quel Pokémon le [[mon:Litten]] de Sacha a-t-il fini par évoluer ?"
+  },
+  "ash-lycanroc": {
+   "prompt": "En quelle forme de [[mon:Lycanroc]] le [[mon:Rockruff]] de Sacha a-t-il évolué ?",
+   "answer": "Forme Crépusculaire",
+   "distractors": [
+    "Forme Diurne",
+    "Forme Nocturne",
+    "Forme Aube"
+   ]
+  },
+  "ash-melmetal": {
+   "prompt": "En quel Pokémon fabuleux le [[mon:Meltan]] de Sacha a-t-il évolué ?"
+  },
+  "ash-poipole": {
+   "prompt": "Quel Ultra-Chimère a rejoint l'équipe de Sacha à [[region:Alola]] ?"
+  },
+  "ash-lucario": {
+   "prompt": "En quel Pokémon le [[mon:Riolu]] de Sacha a-t-il évolué ?"
+  },
+  "ash-sirfetchd": {
+   "prompt": "En quel Pokémon le [[mon:Farfetch'd]] de Sacha a-t-il évolué ?"
+  },
+  "ash-gengar": {
+   "prompt": "Quel Pokémon de type [[type:Ghost]] capable de se Gigamaxer Sacha a-t-il capturé lors de ses voyages avec Goh ?"
+  },
+  "ash-dragonite": {
+   "prompt": "Quel Pokémon de type [[type:Dragon]] a rejoint l'équipe de Sacha lors de ses voyages avec Goh ?"
+  },
+  "ash-hometown": {
+   "prompt": "Quelle est la ville natale de Sacha ?"
+  },
+  "ash-mimey": {
+   "prompt": "Comment s'appelle le [[mon:Mr. Mime]] qui aide la mère de Sacha à la maison ?",
+   "answer": "Mimi-Chéri",
+   "distractors": [
+    "Mimi",
+    "Mister",
+    "[[mon:Mime Jr.]]"
+   ]
+  },
+  "comp-misty-bike": {
+   "prompt": "Qu'est-ce que [[mon:Pikachu]] a détruit à Ondine, qui s'est alors mise à suivre Sacha ?",
+   "answer": "Son vélo",
+   "distractors": [
+    "Sa canne à pêche",
+    "Sa Poké Ball",
+    "Son sac à dos"
+   ]
+  },
+  "comp-misty-togepi": {
+   "prompt": "Quel Pokémon est sorti de l'Œuf trouvé par Sacha et considérait Ondine comme sa mère ?"
+  },
+  "comp-misty-psyduck": {
+   "prompt": "Quel Pokémon d'Ondine est connu pour ses maux de tête constants ?"
+  },
+  "comp-brock-gym": {
+   "prompt": "Avant de voyager avec Sacha, de quelle ville Pierre était-il Champion d'Arène ?"
+  },
+  "comp-brock-steelix": {
+   "prompt": "En quel Pokémon le [[mon:Onix]] de Pierre a-t-il fini par évoluer ?"
+  },
+  "comp-brock-doctor": {
+   "prompt": "À la fin du voyage à [[region:Sinnoh]], que décide de devenir Pierre ?",
+   "answer": "Docteur Pokémon",
+   "distractors": [
+    "Professeur Pokémon",
+    "Champion d'Arène",
+    "Pokémon Ranger"
+   ]
+  },
+  "comp-brock-croagunk": {
+   "prompt": "Quel Pokémon de Pierre le frappe chaque fois qu'il drague ?"
+  },
+  "comp-tracey": {
+   "prompt": "Comment Jacky se présente-t-il ?",
+   "answer": "Observateur Pokémon",
+   "distractors": [
+    "Éleveur Pokémon",
+    "Coordinateur Pokémon",
+    "Connaisseur Pokémon"
+   ]
+  },
+  "comp-may-torchic": {
+   "prompt": "Quel était le premier Pokémon de Flora ?"
+  },
+  "comp-may-goal": {
+   "prompt": "Quel type de Dresseuse Flora devient-elle pendant ses voyages avec Sacha ?",
+   "answer": "Coordinatrice Pokémon",
+   "distractors": [
+    "Championne d'Arène",
+    "Artiste Pokémon",
+    "Éleveuse Pokémon"
+   ]
+  },
+  "comp-max": {
+   "prompt": "Comment s'appelle le petit frère de Flora qui voyage avec Sacha ?",
+   "answer": "Max",
+   "distractors": [
+    "Tommy",
+    "Clem",
+    "Jacky"
+   ]
+  },
+  "comp-norman": {
+   "prompt": "Norman, le père de Flora, est Champion d'Arène de quelle ville ?"
+  },
+  "comp-dawn-piplup": {
+   "prompt": "Quel était le premier Pokémon de Aurore ?"
+  },
+  "comp-iris-axew": {
+   "prompt": "Quel Pokémon de type [[type:Dragon]] vit dans les cheveux d'Iris ?"
+  },
+  "comp-cilan": {
+   "prompt": "Comment Rachid se présente-t-il ?",
+   "answer": "Connaisseur Pokémon",
+   "distractors": [
+    "Observateur Pokémon",
+    "Éleveur Pokémon",
+    "Artiste Pokémon"
+   ]
+  },
+  "comp-cilan-gym": {
+   "prompt": "De quelle ville Rachid est-il l'un des Champions d'Arène ?"
+  },
+  "comp-serena-fennekin": {
+   "prompt": "Quel était le premier Pokémon de Serena ?"
+  },
+  "comp-serena-goal": {
+   "prompt": "Que souhaite devenir Serena pendant son voyage à [[region:Kalos]] ?",
+   "answer": "Artiste Pokémon",
+   "distractors": [
+    "Coordinatrice Pokémon",
+    "Championne d'Arène",
+    "Docteure Pokémon"
+   ]
+  },
+  "comp-clemont-gym": {
+   "prompt": "De quelle ville Lem est-il Champion d'Arène ?"
+  },
+  "comp-bonnie-dedenne": {
+   "prompt": "Quel Pokémon se déplace dans le sac de Clem ?"
+  },
+  "comp-lillie-snowy": {
+   "prompt": "Comment s'appelle le [[mon:Vulpix]] d'Alola de Lilie ?",
+   "distractors": [
+    "[[p:Nebby]]",
+    "Frosty",
+    "Cristal"
+   ]
+  },
+  "comp-kiawe": {
+   "prompt": "Quel est le Pokémon partenaire de Kiawe à [[region:Alola]] ?"
+  },
+  "comp-sophocles": {
+   "prompt": "Quel Pokémon de type [[type:Electric]] est le partenaire de Chrys ?"
+  },
+  "comp-lana": {
+   "prompt": "Quel est le Pokémon partenaire de Néphie à [[region:Alola]] ?"
+  },
+  "comp-goh-mew": {
+   "prompt": "Quel Pokémon fabuleux Goh rêve-t-il de capturer ?"
+  },
+  "comp-goh-cinderace": {
+   "prompt": "En quel Pokémon le [[mon:Scorbunny]] de Goh a-t-il fini par évoluer ?"
+  },
+  "comp-cerise-lab": {
+   "prompt": "Dans quel laboratoire Sacha et Goh sont-ils assistants de recherche ?",
+   "distractors": [
+    "Laboratoire du Professeur Chen",
+    "Laboratoire du Professeur Platane",
+    "Laboratoire du Professeur Euphorbe"
+   ]
+  },
+  "comp-cerise-city": {
+   "prompt": "Dans quelle ville se trouve le [[p:Cerise Laboratory]] ?"
+  },
+  "rival-gary": {
+   "prompt": "Qui est le premier rival de Sacha, originaire lui aussi de [[loc:Pallet Town]] ?",
+   "distractors": [
+    "Richie",
+    "Paul",
+    "Niko"
+   ]
+  },
+  "rival-gary-researcher": {
+   "prompt": "Après la Ligue Johto, que décide de devenir Régis ?",
+   "answer": "Chercheur Pokémon",
+   "distractors": [
+    "Éleveur Pokémon",
+    "Champion d'Arène",
+    "Pokémon Ranger"
+   ]
+  },
+  "rival-alain": {
+   "prompt": "Quel rival de [[region:Kalos]] combat avec un Méga-Dracaufeu X ?",
+   "distractors": [
+    "Sawyer",
+    "Tierno",
+    "Trovato"
+   ]
+  },
+  "rival-leon-ace": {
+   "prompt": "Quel est le Pokémon phare de Tarak lors de son dernier combat contre Sacha ?"
+  },
+  "tr-trio": {
+   "prompt": "Avec quel Pokémon qui parle Jessie et James voyagent-ils ?"
+  },
+  "tr-wobbuffet": {
+   "prompt": "Quel Pokémon de Jessie sort souvent de sa Poké Ball sans y être invité, en criant son propre nom ?"
+  },
+  "tr-koffing": {
+   "prompt": "Quel Pokémon était au départ le [[mon:Weezing]] de James ?"
+  },
+  "tr-ekans": {
+   "prompt": "Quel Pokémon était au départ le [[mon:Arbok]] de Jessie ?"
+  },
+  "tr-carnivine": {
+   "prompt": "Pendant le voyage à [[region:Sinnoh]], quel Pokémon de James ne cesse de lui mordre la tête ?"
+  },
+  "tr-mimejr": {
+   "prompt": "Pendant le voyage à [[region:Sinnoh]], quel Pokémon bébé James transporte-t-il partout ?"
+  },
+  "tr-giovanni": {
+   "prompt": "Qui est le chef de la Team Rocket dans le dessin animé ?"
+  },
+  "tr-meowzie": {
+   "prompt": "Pour impressionner quel Pokémon Miaouss a-t-il appris à parler ?",
+   "distractors": [
+    "[[mon:Persian]]",
+    "[[mon:Purrloin]]",
+    "[[mon:Glameow]]"
+   ]
+  },
+  "tr-magikarp": {
+   "prompt": "Quel Pokémon James a-t-il acheté à un vendeur en croyant devenir riche ?"
+  },
+  "tr-mimikyu": {
+   "prompt": "À [[region:Alola]], quel Pokémon Déguisement Jessie a-t-elle capturé ?"
+  },
+  "tr-mareanie": {
+   "prompt": "À [[region:Alola]], quel Pokémon est si attaché à James qu'il le serre à lui faire mal ?"
+  },
+  "tr-bewear": {
+   "prompt": "À [[region:Alola]], quel Pokémon ramène sans cesse la Team Rocket dans sa tanière ?"
+  },
+  "tr-inkay": {
+   "prompt": "Quel Pokémon James a-t-il capturé à [[region:Kalos]] ?"
+  },
+  "tr-pumpkaboo": {
+   "prompt": "À [[region:Kalos]], quel Pokémon Jessie a-t-elle capturé, qui a ensuite évolué en [[mon:Gourgeist]] ?"
+  },
+  "series-frontier-region": {
+   "prompt": "Dans quelle région Sacha affronte-t-il la Zone de Combat ?"
+  },
+  "series-sm-school": {
+   "prompt": "Que fait Sacha pendant qu'il vit à [[region:Alola]] ?",
+   "answer": "Il va à l'École Pokémon",
+   "distractors": [
+    "Il tient un Centre Pokémon",
+    "Il travaille à la Fondation Æther",
+    "Il affronte huit Arènes"
+   ]
+  },
+  "ep-spearow": {
+   "prompt": "Dans le premier épisode, quelle nuée de Pokémon attaque Sacha et Pikachu ?"
+  },
+  "ep-hooh": {
+   "prompt": "À la fin du premier épisode, quel Pokémon légendaire Sacha voit-il voler au-dessus d'un arc-en-ciel ?"
+  },
+  "ep-porygon": {
+   "prompt": "Quel Pokémon était la vedette de l'épisode retiré de la télévision après avoir provoqué des crises au Japon ?"
+  },
+  "ep-pikachu-goodbye": {
+   "prompt": "Avec qui Sacha a-t-il failli laisser son Pikachu lors d'un épisode de la première saison ?",
+   "answer": "Une colonie de Pikachu sauvages",
+   "distractors": [
+    "Le Professeur Chen",
+    "Richie",
+    "Le Raichu du Major Bob"
+   ]
+  },
+  "ep-tower-terror": {
+   "prompt": "Pour battre [[p:Sabrina]], dans quelle ville Sacha part-il à la chasse aux fantômes ?"
+  },
+  "ep-surge": {
+   "prompt": "À quel Champion d'Arène appartenait le Raichu qui a battu le Pikachu de Sacha lors de leur premier combat ?"
+  },
+  "ep-ash-ten": {
+   "prompt": "Quel âge a Sacha quand il commence son voyage ?",
+   "answer": "10",
+   "distractors": [
+    "8",
+    "12",
+    "14"
+   ]
+  },
+  "movie-2000": {
+   "prompt": "Dans le 2e film Pokémon (1999), quel Pokémon légendaire est le « gardien des mers » ?"
+  },
+  "movie-3": {
+   "prompt": "Dans le 3e film Pokémon (2000), quel Pokémon légendaire les [[mon:Unown]] créent-ils pour Molly ?"
+  },
+  "movie-4ever": {
+   "prompt": "Quel Pokémon fabuleux est au cœur du 4e film Pokémon (2001) ?"
+  },
+  "movie-heroes": {
+   "prompt": "Le 5e film Pokémon (2002) se déroule à [[loc:Alto Mare]]. Quel duo de Pokémon en est la vedette ?"
+  },
+  "movie-manaphy": {
+   "prompt": "Quel Pokémon fabuleux sort d'un Œuf dans le 9e film Pokémon (2006) ?"
+  },
+  "movie-darkrai": {
+   "prompt": "Dans le 10e film Pokémon (2007), quels Pokémon légendaires s'affrontent ?"
+  },
+  "movie-shaymin": {
+   "prompt": "Dans le 11e film Pokémon (2008), quel Pokémon fabuleux voyage avec le groupe de Sacha ?"
+  },
+  "movie-zoroark-celebi": {
+   "prompt": "Quel Pokémon fabuleux voyageur du temps apparaît dans le 13e film Pokémon (2010) ?"
+  },
+  "movie-keldeo": {
+   "prompt": "Dans le 15e film Pokémon (2012), quel Pokémon fabuleux veut rejoindre [[mon:Cobalion]], [[mon:Terrakion]] et [[mon:Virizion]] ?"
+  },
+  "movie-genesect-mewtwo": {
+   "prompt": "Dans le 16e film Pokémon (2013), quel Pokémon légendaire affronte les [[mon:Genesect]] ?"
+  },
+  "movie-diancie-yveltal": {
+   "prompt": "Dans le 17e film Pokémon (2014), quel Pokémon légendaire se réveille et menace tout le monde ?"
+  },
+  "movie-magearna": {
+   "prompt": "Quel Pokémon fabuleux apparaît dans le 19e film Pokémon (2016) ?"
+  },
+  "movie-marshadow": {
+   "prompt": "Quel Pokémon fabuleux apparaît dans le 20e film Pokémon (2017) ?"
+  },
+  "movie-zeraora": {
+   "prompt": "Quel Pokémon fabuleux apparaît dans le 21e film Pokémon (2018) ?"
+  },
+  "movie-zarude": {
+   "prompt": "Dans le 23e film Pokémon (2020), quel Pokémon fabuleux élève un petit garçon humain ?"
+  },
+  "movie-iChooseYou-hooh": {
+   "prompt": "Dans le 20e film Pokémon (2017), quel Pokémon légendaire Sacha veut-il aller rencontrer ?"
+  },
+  "hz-liko": {
+   "prompt": "Quel est le Pokémon partenaire de Liko ?"
+  },
+  "hz-roy": {
+   "prompt": "Quel est le Pokémon partenaire de Roy ?",
+   "distractors": [
+    "[[mon:Sprigatito]]",
+    "[[mon:Quaxly]]",
+    "[[mon:Charcadet]]"
+   ]
+  },
+  "hz-dot": {
+   "prompt": "Quel Pokémon devient le partenaire de Dot ?"
+  },
+  "hz-pendant": {
+   "prompt": "Quel Pokémon se révèle être le mystérieux pendentif de Liko ?"
+  },
+  "hz-captain-pikachu": {
+   "prompt": "Qui est le partenaire du Capitaine Pikachu ?",
+   "answer": "Friede",
+   "distractors": [
+    "Roy",
+    "Murdock",
+    "Sacha"
+   ]
+  },
+  "hz-rvt": {
+   "prompt": "Comment s'appelle le groupe d'aventuriers mené par Friede et le Capitaine Pikachu ?",
+   "answer": "Les Électacleurs Volants",
+   "distractors": [
+    "Les Explorateurs",
+    "La Team Star",
+    "Les Pokémon Rangers"
+   ]
+  },
+  "hz-explorers": {
+   "prompt": "Quelle mystérieuse organisation cherche à s'emparer du pendentif de Liko ?",
+   "answer": "Les Explorateurs",
+   "distractors": [
+    "La Team Rocket",
+    "La Team Star",
+    "La Team Flare"
+   ]
+  },
+  "hz-friede-charizard": {
+   "prompt": "En plus du Capitaine Pikachu, quel Pokémon est le partenaire de Friede ?"
+  },
+  "hz-gibeon": {
+   "prompt": "Qui dirige les Explorateurs ?",
+   "distractors": [
+    "Amethio",
+    "Spinel",
+    "Lucius"
+   ]
+  },
+  "hz-amethio": {
+   "prompt": "Quel membre des Explorateurs combat avec un [[mon:Ceruledge]] ?",
+   "distractors": [
+    "Spinel",
+    "Coral",
+    "Gibeon"
+   ]
+  },
+  "hz-no-ash": {
+   "prompt": "Quand la série de Liko et Roy a commencé, quel personnage a cessé d'être le héros du dessin animé ?",
+   "answer": "Sacha Ketchum",
+   "distractors": [
+    "Le Professeur Chen",
+    "Pierre",
+    "La Team Rocket"
+   ]
+  }
+ }
+}

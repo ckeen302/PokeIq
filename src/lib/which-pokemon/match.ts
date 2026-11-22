@@ -124,7 +124,18 @@ export interface Compatibility {
   closest: Axis;
   farthest: Axis;
   label: string;
+  /** The label's band, for a page in another language. */
+  tier: CompatTier;
 }
+
+export type CompatTier = "halves" | "pair" | "routes" | "rivals" | "opposite";
+const COMPAT_LABEL: Record<CompatTier, string> = {
+  halves: "Two halves of one team",
+  pair: "A natural double battle pair",
+  routes: "Different routes, same league",
+  rivals: "Rivals with potential",
+  opposite: "Opposite ends of the Pokédex",
+};
 
 export function compatibility(a: Profile, b: Profile): Compatibility {
   let sum = 0;
@@ -139,8 +150,8 @@ export function compatibility(a: Profile, b: Profile): Compatibility {
     if (gap > Math.abs(a[farthest] - b[farthest])) farthest = i;
   }
   const percent = clampPct(100 - sum / wsum);
-  const label = percent >= 85 ? "Two halves of one team" : percent >= 70 ? "A natural double battle pair" : percent >= 55 ? "Different routes, same league" : percent >= 40 ? "Rivals with potential" : "Opposite ends of the Pokédex";
-  return { percent, closest: AXES[closest], farthest: AXES[farthest], label };
+  const tier: CompatTier = percent >= 85 ? "halves" : percent >= 70 ? "pair" : percent >= 55 ? "routes" : percent >= 40 ? "rivals" : "opposite";
+  return { percent, closest: AXES[closest], farthest: AXES[farthest], label: COMPAT_LABEL[tier], tier };
 }
 
 /** The two axes where the player most resembles a Pokémon's profile (both away from the midpoint, on the same side). */

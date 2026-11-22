@@ -10,15 +10,15 @@
   },
   "title": {
     "practice": "Práctica",
-    "daily": "Reto diario n.º {n}",
-    "dailyStats": "Reto diario n.º {n} · Datos",
-    "archive": "Reto diario n.º {n} · Archivo ({date})",
-    "loading": "Reto diario"
+    "daily": "Diario n.º {n}",
+    "dailyStats": "Diario n.º {n} · Datos",
+    "archive": "Diario n.º {n} · Archivo ({date})",
+    "loading": "Diario"
   },
   "formats": {
     "label": "Formato del reto diario",
-    "classicAria": "Reto diario Clásico",
-    "squirdleAria": "Reto diario Datos",
+    "classicAria": "Diario Clásico",
+    "squirdleAria": "Diario Datos",
     "classicTitle": "El Clásico de hoy",
     "squirdleTitle": "El reto Datos de hoy"
   },
@@ -103,12 +103,12 @@
     "miss": "<b>⬛ ✕ No coincide.</b> La fase va Bebé, 1, 2, 3, y un Bebé nunca está cerca.",
     "formats": "Formatos",
     "classic": "<b>Clásico:</b> las siete pistas de arriba, 8 intentos.",
-    "squirdle": "<b>Datos:</b> Generación, Tipo 1, Tipo 2, Altura y Peso; ✓ acierto, ▲▼ mayor o menor (sin «cerca»), 🟨 el tipo en la otra posición. Los intentos dependen de las generaciones: 5 solo para la gen. 1, hasta 9 para todas (el reto diario).",
+    "squirdle": "<b>Datos:</b> Generación, Tipo 1, Tipo 2, Altura y Peso; ✓ acierto, ▲▼ mayor o menor (sin “cerca”), 🟨 el tipo en la otra posición. Los intentos dependen de las generaciones: 5 solo para la gen. 1, hasta 9 para todas (el reto diario).",
     "custom": "<b>A medida</b> (práctica y duelos): elige 3 o más columnas de pistas.",
-    "dailyFormats": "El reto diario viene en Clásico y en Datos: un reto de cada para todo el mundo, cada uno con sus propias rachas y estadísticas. La práctica y los duelos añaden ajustes avanzados: generaciones, 6, 8 o 10 intentos, ayudas sí o no, estricto (solo ▲▼, sin «cerca»), tiempo de 3 minutos o 60 segundos y solo legendarios.",
+    "dailyFormats": "El reto diario viene en Clásico y en Datos: un reto de cada para todo el mundo, cada uno con sus propias rachas y estadísticas. La práctica y los duelos añaden ajustes avanzados: generaciones, 6, 8 o 10 intentos, ayudas sí o no, estricto (solo ▲▼, sin “cerca”), tiempo de 3 minutos o 60 segundos y solo legendarios.",
     "points": "Puntos y ayudas",
     "pointsBody": "Acertar a la primera da {first} puntos, {cost} menos por cada intento más, nunca menos de {min} ({last} en el último del Clásico), igual que un duelo sin la bonificación por rapidez. Fallar da 0.",
-    "bonus": "Un tablero más difícil da más puntos: +{column} % por cada columna de pistas oculta y +{strict} % sin «cerca», hasta +{max} % (Datos: +{stats} %). Se multiplica con el nivel de Pokédex de abajo.",
+    "bonus": "Un tablero más difícil da más puntos: +{column} % por cada columna de pistas oculta y +{strict} % sin “cerca”, hasta +{max} % (Datos: +{stats} %). Se multiplica con el nivel de Pokédex de abajo.",
     "hintList": "Las ayudas nunca son automáticas. Tras tu primer intento puedes tocar para usar una: {list}. Cada una que uses se marca en tu resultado y al compartirlo.",
     "hintGenus": "categoría",
     "hintSilhouette": "silueta",
@@ -150,7 +150,7 @@
   "community": {
     "label": "Cómo le ha ido hoy a todo el mundo",
     "trainers": "Entrenadores de hoy",
-    "summary": "{players} jugadas · {pct} aciertos",
+    "summary": "{players} han jugado · {pct} lo han acertado",
     "avg": " · media {avg}",
     "top": "Top {n} %",
     "rank": "n.º {n}",

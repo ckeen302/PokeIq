@@ -1,0 +1,56 @@
+{
+  "title": "Nomme-les tous",
+  "ogAlt": "Nomme-les tous : combien de Pokémon peux-tu nommer de mémoire ?",
+  "back": "Toutes les catégories",
+  "count": "{n} Pokémon",
+  "hub": {
+    "metaTitle": "Nomme-les tous : connais-tu le nom de tous les Pokémon ? Quiz de mémoire",
+    "metaDescription": "Tape tous les Pokémon dont tu te souviens : tous, une génération, un type, les légendaires, les Méga-Évolutions, les formes régionales ou un Pokédex régional. Quiz du jour, courses entre amis et records personnels.",
+    "eyebrow": "Quiz de mémoire",
+    "lead": "Combien de Pokémon peux-tu nommer de mémoire ? Tape leurs noms : chacun prend sa case dès qu’il est bien écrit.",
+    "info": {
+      "description": "Un quiz de mémoire Pokémon gratuit : nomme tous les Pokémon d’une catégorie contre la montre.",
+      "intro": "Nomme-les tous est un quiz de mémoire Pokémon : choisis une catégorie et tape de mémoire tous ses Pokémon. Chaque nom compte dès qu’il est bien écrit, dans n’importe quel ordre.",
+      "steps": {
+        "pick": "Choisis une catégorie : tous, une génération, un type, les légendaires, les Méga-Évolutions, les formes régionales ou un Pokédex régional.",
+        "mode": "Choisis le mode Normal, Chaos ou Ordre du Pokédex, un chrono et les indices que tu veux.",
+        "type": "Tape des noms : chacun prend sa case dès qu’il est bien écrit. Majuscules, accents et ponctuation ne comptent pas, et le nom anglais marche aussi.",
+        "giveUp": "Abandonne quand tu veux pour voir ceux qui t’ont échappé, chacun avec un lien vers sa page du Pokédex."
+      },
+      "faq": {
+        "dailyQ": "Y a-t-il un quiz du jour ?",
+        "dailyA": "Oui : une catégorie par jour, la même pour tout le monde. Un essai par jour compte.",
+        "raceQ": "Puis-je faire la course avec mes amis ?",
+        "raceA": "Lance une course, partage le lien, et jusqu’à huit Dresseurs nomment la même catégorie en même temps, avec des barres de progression en direct.",
+        "bestQ": "Où sont mes meilleures parties ?",
+        "bestA": "Connecte-toi et joue en mode Normal sans indices ni pause : ton sans-faute le plus rapide et ton meilleur total dans le temps standard s’affichent sur ton profil de Dresseur."
+      }
+    }
+  },
+  "category": {
+    "lead": "{count} Pokémon · temps standard {minutes}:00. {description}",
+    "intro": "{h1} : un quiz de mémoire gratuit. {description}",
+    "steps": {
+      "pick": "Choisis un mode, un chrono et les indices que tu veux.",
+      "type": "Tape des noms : chacun prend sa case dès qu’il est bien écrit.",
+      "finish": "Nomme-les tous avant la fin du temps, ou abandonne pour voir ceux qui t’ont échappé."
+    },
+    "faq": {
+      "spellQ": "Faut-il écrire les noms exactement ?",
+      "spellA": "Majuscules, accents, espaces et ponctuation ne comptent pas, et le nom anglais marche aussi. Active l’aide à l’orthographe pour avoir une suggestion quand tu te trompes d’une ou deux lettres.",
+      "bestQ": "Qu’est-ce qui compte comme record personnel ?",
+      "bestA": "Les parties en mode Normal sans indices ni pause : ton sans-faute le plus rapide et ton meilleur total dans les {minutes} minutes standard, affichés sur ton profil de Dresseur si tu es connecté."
+    }
+  },
+  "daily": {
+    "metaTitle": "Nomme-les tous, quiz du jour : le quiz de mémoire Pokémon d’aujourd’hui",
+    "metaDescription": "Une catégorie de Pokémon par jour, la même pour tout le monde : nommes-en le plus possible dans le temps standard et vois ton classement du jour."
+  },
+  "race": {
+    "title": "Une course Nomme-les tous",
+    "invite": "{name} t’invite à une course Nomme-les tous",
+    "trainer": "Un Dresseur",
+    "about": "Une course Nomme-les tous : tout le monde nomme les mêmes Pokémon, le premier à tous les nommer gagne.",
+    "aboutIn": "Une course Nomme-les tous ({label}) : tout le monde nomme les mêmes Pokémon, le premier à tous les nommer gagne."
+  }
+}

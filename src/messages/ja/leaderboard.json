@@ -1,0 +1,88 @@
+{
+  "meta": {
+    "title": "ランキング",
+    "description": "PokéIQのトップトレーナー：今日のデイリーチャレンジ、PokéIQ、PokéGuessr、PokéConnections、バトルのランキングをリアルタイムで。",
+    "imageAlt": "PokéIQのランキング"
+  },
+  "heading": "ランキング",
+  "tabs": {
+    "daily": "デイリー",
+    "iq": "PokéIQテスト",
+    "geo": "PokéGuessr",
+    "geoRanked": "PokéGuessrランクマッチ",
+    "connections": "PokéConnections",
+    "battle": "バトルランキング"
+  },
+  "battle": {
+    "intro": "ランクバトルのランキングです。フォーマットごとにElo順の上位を、Pokémon Showdownと同じGXEとGlicko-2つきで表示します。",
+    "full": "すべてのランキング",
+    "soon": "ランクバトルはまもなく始まります。"
+  },
+  "geoRanked": {
+    "intro": "PokéGuessrのランクマッチ対戦です。Elo順の上位を表示します。モンスターボールとスーパーボールはディビジョンのみ、ハイパーボール以上は数値も表示します。",
+    "soon": "PokéGuessrのランクマッチはまもなく始まります。",
+    "empty": "まだ誰もランクインしていません。<link>ランクマッチに挑戦</link>して一番乗りしましょう！"
+  },
+  "col": {
+    "trainer": "トレーナー",
+    "score": "スコア",
+    "time": "タイム",
+    "mistakes": "ミス",
+    "division": "ディビジョン",
+    "wl": "勝–敗",
+    "pokeiq": "PokéIQ",
+    "correct": "正解"
+  },
+  "connections": {
+    "intro": "PokéConnections #{n}・{date}：ミスが少ない順、同じならタイム順です。",
+    "soon": "PokéConnectionsのランキングはまもなく始まります。",
+    "empty": "まだ誰も解いていません。<link>今日のPokéConnectionsをプレイ</link>して一番乗りしましょう！",
+    "perfect": "パーフェクト",
+    "footnote": "すべての記録はサーバーで確認しています。各トレーナーの回答を再現し、サーバーの時計でタイムを計ります。ログインして名前のあるトレーナーのみです。"
+  },
+  "geo": {
+    "streak": "連続記録",
+    "rounds": "{rounds}ラウンド",
+    "eraBoard": "{era}・{board}",
+    "mapBoard": "{map}・{board}",
+    "regionStreak": "地方当て連続記録",
+    "daily": "デイリー #{n}",
+    "weekly": "ウィークリー #{n}・{map}",
+    "lastWeek": "先週・{map}",
+    "themed": "テーマ別マップ",
+    "weeklyTitle": "ウィークリーチャレンジ #{n}・{map}・{week}の週",
+    "inARow": "{score}連続",
+    "outOf": "{score} / {max}"
+  },
+  "seconds": "{s}秒",
+  "notEnabledLine": "ここではランキングが有効になっていません。",
+  "notEnabled": "ここではランキングが有効になっていません",
+  "supabase": "<code>SUPABASE_URL</code>と<code>SUPABASE_SERVICE_ROLE_KEY</code>を設定し、<code>supabase/migrations/</code>のマイグレーションを実行してください。それ以外はなくても動きます。",
+  "noScores": "まだスコアがありません。ランキングに一番乗りしましょう！",
+  "rank": "{place}位",
+  "pts": "{score}点",
+  "iq": "IQ {n}",
+  "dailyIntro": "デイリーチャレンジ #{n}・{date}",
+  "iqIntro": "適応型テストで測ったPokéIQ順",
+  "footnote": "ここのスコアはすべてサーバーで採点しています。送信されるのは署名つきの結果で、数字そのものではありません。",
+  "unavailable": "このランキングは現在利用できません。少ししてからもう一度お試しください。",
+  "invite": {
+    "playDaily": "今日のデイリーをプレイ",
+    "playDailyInstead": "今日のデイリーをプレイする",
+    "playWeekly": "今週のをプレイ",
+    "playWeeklyInstead": "今週のウィークリーをプレイ",
+    "playMap": "このマップでプレイ",
+    "notSaved": "{label}にはスコアが保存されませんでした",
+    "firstDaily": "今日のランキングに一番乗りしよう",
+    "firstWeekly": "今週のランキングに一番乗りしよう",
+    "firstMap": "{label}のランキングに一番乗りしよう",
+    "blurbDaily": "今日は全員が同じ場所に挑みます。最初のプレイがランキングに載ります。",
+    "blurbWeekly": "月曜日まで、今週のマップで全員が同じ場所に挑みます。最初の挑戦がランキングに載ります。",
+    "blurbMap": "このマップでゲームを終えてスコアを保存すると、ここに名前が載ります。",
+    "fewDaily": "今日のランキングにはまだ{count}人だけです。上位を狙えます。",
+    "fewWeekly": "今週のランキングにはまだ{count}人だけです。上位を狙えます。",
+    "fewMap": "このランキングにはまだ{count}人だけです。上位を狙えます。",
+    "pastDaily": "その日のランキングは空のままでした。今日のランキングは受付中です。",
+    "pastWeekly": "その週のランキングは空のままでした。今週のランキングは受付中です。"
+  }
+}

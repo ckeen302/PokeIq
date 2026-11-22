@@ -6,7 +6,7 @@ import type { Ability, Generation, Item, Move, Nature, Specie } from "@pkmn/data
 import { FolderOpen } from "lucide-react";
 import { useT } from "@/i18n/client";
 import battleCalc from "@/messages/battle-calc";
-import { STAT_LABELS } from "@/lib/pokemon/constants";
+import battleTerms from "@/messages/battle-terms";
 import { STATUSES, sideFromSet, type BoostKey, type CalcSide, type StatusId } from "@/lib/battle/calc";
 import { BATTLE_FORMATS } from "@/lib/battle/formats";
 import { MAX_EVS, MAX_IV, MAX_TOTAL_EVS, STATS } from "@/lib/battle/sets";
@@ -16,9 +16,9 @@ import { BattleSprite } from "./BattleSprite";
 import { inputClass, NumberInput, SearchSelect, Toggle } from "./controls";
 import { useSpriteLookup } from "./hooks";
 import { BattleType, CategoryTag, ItemSelect, MoveSelect, NatureSelect, SpeciesSelect, TypeSelect } from "./pickers";
+import { useBattleNames } from "./use-battle-names";
 
 const BOOST_RANGE = [6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6];
-const SHORT: Record<string, string> = { hp: "HP", atk: "Atk", def: "Def", spa: "SpA", spd: "SpD", spe: "Spe" };
 const STAT_GRID = "grid grid-cols-[2.25rem_2rem_minmax(0,1fr)_minmax(0,1.25fr)_minmax(0,1fr)_2.75rem] items-center gap-1";
 /** Phones drop the power and category columns (the move list shows both when it opens). */
 const MOVE_GRID = "grid grid-cols-[minmax(0,1fr)_3.5rem_2.75rem] sm:grid-cols-[minmax(0,1fr)_1.5rem_3.25rem_2.5rem_2rem] items-center gap-1";
@@ -70,6 +70,8 @@ export function CalcPanel({
   onLoad: (team: BattleTeam) => void;
 }) {
   const t = useT(battleCalc);
+  const st = useT(battleTerms);
+  const names = useBattleNames();
   const { gen } = lists;
   const species = gen.species.get(side.species);
   const nature = gen.natures.get(side.nature);
@@ -153,7 +155,7 @@ export function CalcPanel({
               >
                 {forms.map((f) => (
                   <option key={f.id} value={f.name}>
-                    {f.name}
+                    {names.species(f.name)}
                   </option>
                 ))}
               </select>
@@ -178,17 +180,17 @@ export function CalcPanel({
           const boost = k === "hp" ? 0 : side.boosts[k as BoostKey];
           return (
             <div key={k} className={cn(STAT_GRID, "text-[13px]")}>
-              <span className={cn("font-semibold", plus && "text-success", minus && "text-destructive")} title={STAT_LABELS[k]}>
-                {SHORT[k]}
+              <span className={cn("font-semibold", plus && "text-success", minus && "text-destructive")} title={st(`stat.${k}`)}>
+                {st(`short.${k}`)}
               </span>
               <span className="text-right font-mono text-xs tabular-nums text-muted-foreground">{species?.baseStats[k] ?? "—"}</span>
-              <NumberInput label={t("panel.stats.ivLabel", { side: title, stat: STAT_LABELS[k] })} value={side.ivs[k]} min={0} max={MAX_IV} onChange={(v) => update({ ivs: { ...side.ivs, [k]: v } })} className="h-6" />
-              <NumberInput label={t("panel.stats.evLabel", { side: title, stat: STAT_LABELS[k] })} value={side.evs[k]} min={0} max={MAX_EVS} onChange={(v) => update({ evs: { ...side.evs, [k]: v } })} className="h-6" />
+              <NumberInput label={t("panel.stats.ivLabel", { side: title, stat: st(`stat.${k}`) })} value={side.ivs[k]} min={0} max={MAX_IV} onChange={(v) => update({ ivs: { ...side.ivs, [k]: v } })} className="h-6" />
+              <NumberInput label={t("panel.stats.evLabel", { side: title, stat: st(`stat.${k}`) })} value={side.evs[k]} min={0} max={MAX_EVS} onChange={(v) => update({ evs: { ...side.evs, [k]: v } })} className="h-6" />
               {k === "hp" ? (
                 <span />
               ) : (
                 <select
-                  aria-label={t("panel.stats.boostLabel", { side: title, stat: STAT_LABELS[k] })}
+                  aria-label={t("panel.stats.boostLabel", { side: title, stat: st(`stat.${k}`) })}
                   value={boost}
                   onChange={(e) => update({ boosts: { ...side.boosts, [k]: Number(e.target.value) } })}
                   className={cn(inputClass, "h-6 px-1 text-center font-mono text-xs", boost > 0 && "text-success", boost < 0 && "text-destructive")}
@@ -238,8 +240,8 @@ export function CalcPanel({
               options={lists.abilities}
               initial={[...lists.abilities.filter((a) => ownAbilities.includes(a.name)), ...lists.abilities.filter((a) => !ownAbilities.includes(a.name))]}
               getKey={(a) => a.id}
-              getText={(a) => a.name}
-              render={(a) => <span className={cn("block font-display font-semibold", !ownAbilities.includes(a.name) && "text-muted-foreground")}>{a.name}</span>}
+              getText={(a) => (names.locale === "en" ? a.name : `${names.ability(a.name)} ${a.name}`)}
+              render={(a) => <span className={cn("block font-display font-semibold", !ownAbilities.includes(a.name) && "text-muted-foreground")}>{names.ability(a.name)}</span>}
               onSelect={(a) => update({ ability: a.name })}
             />
           </div>
@@ -370,6 +372,7 @@ function HpMeter({ value }: { value: number }) {
 /** Pick a saved team member to fill this side. */
 function LoadFromTeam({ title, onPick }: { title: string; onPick: (team: BattleTeam, index: number) => void }) {
   const t = useT(battleCalc);
+  const names = useBattleNames();
   const teams = useTeams();
   const sprite = useSpriteLookup();
   const [open, setOpen] = useState(false);
@@ -416,7 +419,7 @@ function LoadFromTeam({ title, onPick }: { title: string; onPick: (team: BattleT
                     className="flex flex-col items-center rounded-md border border-transparent px-1 py-1 text-[11px] hover:border-screen/50 hover:bg-screen/10"
                   >
                     <BattleSprite species={sprite?.(set.species)} animated={false} size={36} />
-                    <span className="w-full truncate text-center">{set.name || set.species}</span>
+                    <span className="w-full truncate text-center">{set.name || names.species(set.species)}</span>
                   </button>
                 ))}
               </div>

@@ -341,6 +341,14 @@ export function makePage(o: { lines: string[]; font: string; w?: number; ink?: s
         for (const wd of words) {
           const next = cur ? `${cur} ${wd}` : wd;
           if (g.measureText(next).width > w - 80 && cur) { g.fillText(cur, 40, y); y += 46; cur = wd; } else cur = next;
+          // A run with no spaces wider than the page (Japanese): broken between characters.
+          while (g.measureText(cur).width > w - 80 && cur.length > 1) {
+            let k = cur.length - 1;
+            while (k > 1 && g.measureText(cur.slice(0, k)).width > w - 80) k--;
+            g.fillText(cur.slice(0, k), 40, y);
+            y += 46;
+            cur = cur.slice(k);
+          }
         }
         if (cur) { g.fillText(cur, 40, y); y += 46; }
         y += 10;

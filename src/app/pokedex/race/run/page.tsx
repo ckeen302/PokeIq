@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { RACE_BY_KEY } from "@/lib/race/data";
+import { pageEntrants } from "@/components/race/local";
+import { fieldText } from "@/components/race/words";
+import { serverT } from "@/i18n/server";
+import racePages from "@/messages/race-pages";
+import raceNs from "@/messages/race";
 import { DEFAULT_PRESET, PRESET_BY_ID } from "@/lib/race/presets";
 import { RUN_PATH, parseDistance, parseSeed, parseVs, vsQuery } from "@/lib/race/deeplink";
 import { fieldFor, specFor } from "@/lib/race/lineup";
-import { RACE_ENTRANTS } from "@/lib/race/data";
 import { formatTime, makeRace } from "@/lib/race/race";
 import { RACE_LIVE } from "@/lib/lab";
 import { RacePage } from "@/components/race/RacePage";
@@ -29,7 +33,9 @@ export async function generateMetadata({ searchParams }: { searchParams: Search 
   const sp = await searchParams;
   const { vs, preset, d, seed } = read(sp);
   const spec = specFor(preset.id, vs.map((e) => e.key), d, seed);
-  const field = fieldFor(spec, RACE_ENTRANTS);
+  const t = serverT(racePages);
+  const field0 = fieldFor(spec, pageEntrants());
+  const field = { ...field0, ...fieldText(spec, field0.entrants, serverT(raceNs)) };
   const race = makeRace(field.entrants, spec.distance);
   const w = race.order[0];
   const q = new URLSearchParams();
@@ -39,11 +45,11 @@ export async function generateMetadata({ searchParams }: { searchParams: Search 
   if (seed != null) q.set("seed", String(seed));
   const qs = q.toString().replace(/%2C/g, ",");
   return pageMetadata({
-    title: `${field.title}: ${spec.distance} m race`,
-    description: `${w.entrant.name} wins the ${spec.distance} m in ${formatTime(w.time)} s. ${race.order.map((r) => `${r.entrant.name} ${formatTime(r.time)}`).join(", ")}. Speeds from their base stats, in 3D on PokéIQ.`,
+    title: t("meta.runTitle", { title: field.title, d: spec.distance }),
+    description: t("meta.runDescription", { name: w.entrant.name, d: spec.distance, time: formatTime(w.time), list: race.order.map((r) => `${r.entrant.name} ${formatTime(r.time)}`).join(", ") }),
     path: `${RUN_PATH}?${qs}`,
     noindex: !RACE_LIVE,
-    image: { url: `${RUN_PATH}/og?${qs}`, alt: `${field.title}: a ${spec.distance} m Pokémon race` },
+    image: { url: `${RUN_PATH}/og?${qs}`, alt: t("meta.runImage", { title: field.title, d: spec.distance }) },
   });
 }
 

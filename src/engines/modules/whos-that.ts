@@ -1,4 +1,6 @@
-import type { QuestionBuilder } from "../types";
+import type { Question, QuestionBuilder } from "../types";
+import { localizable, wordOptions } from "../localize";
+import { describeIn } from "../words";
 import { evolutionFamily } from "@/lib/pokemon/pokedex";
 import { lookalikesOf } from "@/lib/pokemon/lookalikes";
 import {
@@ -46,7 +48,7 @@ export const whosThat: QuestionBuilder = (rng, opts) => {
   const distractors = [...lookalikes, ...rest];
   if (distractors.length < 3) return null;
 
-  return {
+  const q: Question = {
     itemKey: `whos-that:${target.id}${zoom ? ":zoom" : ""}:${opts.difficulty}`,
     module: "whos-that",
     prompt: zoom ? "Who's that Pokémon? (Zoomed in!)" : "Who's that Pokémon?",
@@ -57,4 +59,9 @@ export const whosThat: QuestionBuilder = (rng, opts) => {
     explanation: describe(target),
     rating: clampRating(genRating(target) + SIMILARITY_BONUS[similarity] + lookalikes.length * 40 + (zoom ? 220 : 0)),
   };
+  const byName = new Map([target, ...distractors].map((p) => [p.name, p]));
+  return localizable(q, (L) => {
+    const named = wordOptions(q, (name) => L.pokemon(byName.get(name)!));
+    return named && { prompt: L.t(zoom ? "whosThat.zoomed" : "whosThat.prompt"), ...named, explanation: describeIn(L, target) };
+  });
 };

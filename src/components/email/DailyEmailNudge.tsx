@@ -4,6 +4,8 @@ import Link from "@/components/ui/Link";
 import { Mail } from "lucide-react";
 import { useAccount } from "@/lib/account";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import nudge from "@/messages/email-nudge";
 
 /**
  * The end of a daily: "Sign up to get the daily in your inbox" for guests,
@@ -34,6 +36,7 @@ export function DailyEmailNudgeView({
   subscribed: boolean;
   className?: string;
 }) {
+  const t = useT(nudge);
   if (!emailEnabled || (signedIn && subscribed)) return null;
   return (
     <Link
@@ -45,7 +48,7 @@ export function DailyEmailNudgeView({
       data-testid="daily-email-nudge"
     >
       <Mail className="h-4 w-4 shrink-0 text-screen" aria-hidden />
-      <span>{signedIn ? "Get the daily in your inbox" : "Sign up to get the daily in your inbox"}</span>
+      <span>{signedIn ? t("signedIn") : t("guest")}</span>
     </Link>
   );
 }

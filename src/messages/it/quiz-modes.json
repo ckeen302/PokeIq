@@ -1,0 +1,88 @@
+{
+  "modules": {
+    "whos-that": {
+      "title": "Chi è quel Pokémon?",
+      "description": "Indovinalo dalla sagoma."
+    },
+    "cry": {
+      "title": "Quiz dei versi",
+      "description": "Ascolta un verso, indovina il Pokémon."
+    },
+    "dex": {
+      "title": "Detective Pokédex",
+      "description": "Indovinalo dalla voce del Pokédex."
+    },
+    "types": {
+      "title": "Maestro dei tipi",
+      "description": "Metti alla prova la tua conoscenza dei tipi."
+    },
+    "higher-lower": {
+      "title": "Più o meno",
+      "description": "Chi ha la statistica più alta?"
+    },
+    "games": {
+      "title": "Giochi principali",
+      "description": "Capipalestra, rivali e regioni."
+    },
+    "anime": {
+      "title": "Anime Pokémon",
+      "description": "Ash, i suoi amici e il Team Rocket."
+    },
+    "competitive": {
+      "title": "Abilità, mosse e strumenti",
+      "description": "Cosa fa questa mossa o questo strumento?"
+    },
+    "shiny": {
+      "title": "Cromatico vero?",
+      "description": "Scegli il vero cromatico, non un falso."
+    },
+    "zoom-reveal": {
+      "title": "Zoom",
+      "description": "Indovinalo da un primo piano."
+    },
+    "whose-team": {
+      "title": "Di chi è questa squadra?",
+      "description": "Indovina l’Allenatore dalla sua squadra."
+    },
+    "mixed": {
+      "title": "Misto",
+      "description": "Sagome, tipi, statistiche e altro."
+    }
+  },
+  "formats": {
+    "classic": {
+      "title": "Classico",
+      "description": "10 domande · 15 s l’una"
+    },
+    "survival": {
+      "title": "Sopravvivenza",
+      "description": "Senza fine · 3 vite"
+    },
+    "blitz": {
+      "title": "Blitz",
+      "description": "60 secondi · più che puoi"
+    },
+    "adaptive": {
+      "title": "Test PokéIQ",
+      "description": "20 domande adattive · 20 s l’una"
+    }
+  },
+  "levels": {
+    "whose-team-medium": {
+      "label": "Normale",
+      "blurb": "La squadra intera"
+    },
+    "whose-team-hard": {
+      "label": "Difficile",
+      "blurb": "Un Pokémon alla volta, l’asso per ultimo"
+    },
+    "shiny-easy": {
+      "label": "Facile",
+      "blurb": "I falsi sono molto diversi"
+    },
+    "shiny-hard": {
+      "label": "Difficile",
+      "blurb": "I falsi sono quasi identici"
+    }
+  }
+}
