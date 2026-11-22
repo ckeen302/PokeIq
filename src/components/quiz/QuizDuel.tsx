@@ -654,7 +654,7 @@ function Options({
               card || images ? "py-3" : "min-h-[52px] py-2.5",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               onPick && "hover:border-screen/60 hover:bg-screen/[0.06]",
-              mine === option && "border-screen/70 bg-screen/10",
+              mine === option && "border-[color:hsl(var(--screen)/0.7)] bg-screen/10",
               right && "border-success bg-success/15 shadow-[0_0_18px_-6px_hsl(var(--success))]",
               result && !right && pickedBy.length > 0 && "border-destructive bg-destructive/15",
               result && !right && pickedBy.length === 0 && "opacity-50"

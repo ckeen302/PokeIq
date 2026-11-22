@@ -154,7 +154,7 @@ export function AboutMe({ username, initial, names }: { username: string; initia
                       type="button"
                       onClick={() => setOpen(open === s.id ? null : s.id)}
                       aria-expanded={open === s.id}
-                      className={cn("flex flex-col items-center rounded-md border bg-shade/20 p-2 text-center hover:border-screen/60", open === s.id && "border-screen")}
+                      className="flex flex-col items-center rounded-md border bg-shade/20 p-2 text-center hover:border-screen/60 aria-expanded:border-screen"
                       data-testid={`about-slot-${s.id}`}
                     >
                       <span className="text-[11px] text-muted-foreground">{s.label}</span>
@@ -198,7 +198,7 @@ export function AboutMe({ username, initial, names }: { username: string; initia
                       type="button"
                       onClick={() => setOpen(open === s.id ? null : s.id)}
                       aria-expanded={open === s.id}
-                      className={cn("flex flex-col items-center rounded-md border bg-shade/20 p-2 text-center hover:border-screen/60", open === s.id && "border-screen")}
+                      className="flex flex-col items-center rounded-md border bg-shade/20 p-2 text-center hover:border-screen/60 aria-expanded:border-screen"
                       data-testid={`about-slot-${s.id}`}
                     >
                       <span className="text-[11px] text-muted-foreground">{s.label}</span>
