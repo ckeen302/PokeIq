@@ -4,6 +4,8 @@ import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import { forwardRef, type ComponentProps } from "react";
 import { PHONE_QUERY } from "@/lib/phone";
+import { anchorProps, useLocaleProps } from "@/i18n/link-props";
+import { stripLocale } from "@/i18n/paths";
 
 /** Read once, when the page loads in the browser (the server never prefetches, so it needs no answer). */
 const PHONE = typeof window !== "undefined" && window.matchMedia(PHONE_QUERY).matches;
@@ -24,10 +26,15 @@ const PER_REQUEST = /^\/(?:leaderboard|u\/|pokedex\/tcg(?:\?|$)|battle\/(?:ladde
  * one, with its scripts, made a phone's first visit cost several times the
  * requests of the page itself. Wider screens keep Next's usual prefetching.
  */
-const Link = forwardRef<HTMLAnchorElement, ComponentProps<typeof NextLink>>(function Link({ prefetch, onTouchStart, ...props }, ref) {
+const Link = forwardRef<HTMLAnchorElement, ComponentProps<typeof NextLink>>(function Link({ prefetch, onTouchStart, ...rest }, ref) {
   const router = useRouter();
+  // LIVE_LOCALES is a build-time constant, so the hook is called on every render or on none.
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const props = process.env.LIVE_LOCALES ? useLocaleProps(rest) : (rest as ReturnType<typeof useLocaleProps<typeof rest>>);
   const href = typeof props.href === "string" ? props.href : null;
-  if (!PHONE && prefetch === undefined && href && PER_REQUEST.test(href)) {
+  // A link that leaves the page's language (to a page not translated into it) is an ordinary link: a full page load.
+  if (process.env.LIVE_LOCALES && props["data-locale-exit"]) return <a ref={ref} onTouchStart={onTouchStart} {...anchorProps(props)} />;
+  if (!PHONE && prefetch === undefined && href && PER_REQUEST.test(process.env.LIVE_LOCALES ? stripLocale(href) : href)) {
     const warm = () => router.prefetch(href);
     return (
       <NextLink

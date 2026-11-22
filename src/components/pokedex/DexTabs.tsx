@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname } from "@/i18n/navigation";
 import { Check, ChevronDown } from "lucide-react";
 import Link from "@/components/ui/Link";
 import { cn } from "@/lib/utils";

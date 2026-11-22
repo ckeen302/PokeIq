@@ -1,10 +1,11 @@
 import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
+import { languageAlternates } from "@/i18n/metadata";
 
 export const metadata: Metadata = {
   title: "Credits",
   description: "The data, engine, music and textures PokéIQ is built on, and their licences.",
-  alternates: { canonical: "/credits" },
+  alternates: { canonical: "/credits", languages: languageAlternates("/credits") },
 };
 
 const LINK = "underline underline-offset-2 hover:text-foreground";

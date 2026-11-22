@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/PlainLink";
 import { ArrowRight, BookOpen, Clapperboard } from "lucide-react";
 import { HISTORY, CHAPTERS, sourceOf } from "@/lib/world-history/data";
 import { chapterPath, HISTORY_PATH } from "@/lib/world-history/deeplink";

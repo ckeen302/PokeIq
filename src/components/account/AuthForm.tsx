@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Loader2 } from "lucide-react";
 import { recoverAccount, register, signIn, useAccount, type SignupEmail } from "@/lib/account";
 import { Button } from "@/components/ui/button";

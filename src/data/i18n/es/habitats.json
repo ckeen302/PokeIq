@@ -1,0 +1,11 @@
+{
+"cave":"caverna",
+"forest":"bosque",
+"grassland":"pradera",
+"mountain":"montaña",
+"rare":"raro",
+"roughterrain":"campo",
+"sea":"mar",
+"urban":"ciudad",
+"watersedge":"agua salada"
+}

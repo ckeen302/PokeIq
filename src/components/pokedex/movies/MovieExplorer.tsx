@@ -1,5 +1,6 @@
 "use client";
 
+import { localUrl } from "@/i18n/paths";
 import { useEffect, useState } from "react";
 import { MOVIE_ERAS, MOVIES_PATH, parseEra, type MovieEraId } from "@/lib/movies/eras";
 import { cn } from "@/lib/utils";
@@ -24,7 +25,7 @@ export function MovieExplorer({ films }: { films: MovieCardData[] }) {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
     e.preventDefault();
     setEra(next);
-    window.history.replaceState(window.history.state, "", next ? `?era=${next}` : MOVIES_PATH);
+    window.history.replaceState(window.history.state, "", next ? `?era=${next}` : localUrl(MOVIES_PATH));
   };
 
   const chips = [{ id: null, label: "All" }, ...MOVIE_ERAS];

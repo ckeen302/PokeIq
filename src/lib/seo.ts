@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SITE_NAME } from "./site";
+import { languageAlternates } from "@/i18n/metadata";
 
 /** What the site is, in one breath: the default description and the home page's. */
 export const SITE_TAGLINE = "Pokémon games: PokéGuessr, Pokédle, battles & quizzes";
@@ -53,10 +54,12 @@ export function pageMetadata({ title, description, path, socialTitle, socialDesc
           : { url: image.url, alt: image.alt, ...(image.width && image.height && { width: image.width, height: image.height }) },
       ]
     : undefined;
+  // hreflang: every language the page is served in, once there is more than English (never on a noindex page).
+  const languages = path !== undefined && !noindex ? languageAlternates(path) : undefined;
   return {
     title,
     description,
-    ...(path !== undefined && { alternates: { canonical: path } }),
+    ...(path !== undefined && { alternates: { canonical: path, ...(languages && { languages }) } }),
     openGraph: {
       title: shareTitle,
       description: shareDescription,

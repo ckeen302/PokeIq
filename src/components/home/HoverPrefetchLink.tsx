@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Link from "@/components/ui/PlainLink";
+import { useRouter } from "@/i18n/navigation";
 import type { ComponentProps } from "react";
 
 /**

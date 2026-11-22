@@ -1,0 +1,11 @@
+{
+"cave":"grottes",
+"forest":"forêts",
+"grassland":"champs",
+"mountain":"montagnes",
+"rare":"rares",
+"roughterrain":"milieux hostiles",
+"sea":"mers",
+"urban":"urbains",
+"watersedge":"marécages"
+}

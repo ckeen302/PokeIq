@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Check, Loader2, Pencil, Search, Share2, Sparkles, X } from "lucide-react";
 import { useAccount } from "@/lib/account";
 import { artUrl } from "@/lib/pokemon/art";

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "@/components/ui/Link";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Crown, Loader2, RotateCcw, Swords, Trophy, X } from "lucide-react";
 import { DUEL_HP, DUEL_IDLE_ROUNDS, DUEL_ROUND_MS, duelMultiplier, type DuelRoundResult, type DuelView } from "@/lib/duel-types";
