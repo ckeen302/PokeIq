@@ -1,0 +1,212 @@
+{
+  "group": "グループ",
+  "members": "{detail} · {n}種",
+  "beat": "…で倒す相手",
+  "howMany": "何匹…",
+  "pokemonN": "ポケモン{n}",
+  "each": "各",
+  "count": "数",
+  "setOf": "{name}の型",
+  "remove": "{name}を外す",
+  "loadingSets": "型を読み込み中…",
+  "addPokemon": "ポケモン",
+  "addGroup": "グループ",
+  "upTo": "最大{n}行",
+  "formation": "陣形",
+  "spacing": "間隔",
+  "targets": "目標",
+  "stance": "戦い方",
+  "spreadMoves": "範囲わざ",
+  "title": "バトルの設定",
+  "kind": "バトルの種類",
+  "tabAsk": "何匹？",
+  "tabArmy": "軍団 vs 軍団",
+  "shared": "軍団は各行に均等に分けます（グループはその中の全種に分けます）。",
+  "blue": "青軍",
+  "red": "赤軍",
+  "level": "レベル",
+  "arena": "ステージ",
+  "advanced": "詳細設定",
+  "advancedHint": "型、天気とフィールド、各陣営の戦い方、再生",
+  "advancedHintAsk": "型、天気とフィールド、各陣営の戦い方、ソルバー、再生",
+  "setHint": "行の<i></i>を開くと型を設定できます：レベル、わざ、特性、持ち物、性格、努力値と個体値、テラスタイプ。",
+  "setIcon": "型",
+  "field": "戦場",
+  "weather": "天気",
+  "terrain": "フィールド",
+  "time": "時間帯",
+  "heldItems": "持ち物",
+  "none": "なし",
+  "randomItems": "ランダムバトルの持ち物",
+  "rules": "ルール",
+  "pp": "本物のPP",
+  "ff": "味方への攻撃",
+  "rulesHint": "本物のPP：わざはゲームと同じくPPが減り（プレッシャーは2減る）、なくなるとわるあがき。味方への攻撃：じしん、なみのり、だいばくはつは味方にも当たり、ひらいしんとよびみずは味方のわざを引き寄せます。",
+  "theArmy": "軍団（{names}）",
+  "theBoss": "ボス（{names}）",
+  "answer": "答え",
+  "winsNeeded": "必要な勝率",
+  "half": "半分（50%）",
+  "nine": "10回中9回（90%）",
+  "perSize": "1つの数あたりのバトル数",
+  "playback": "再生",
+  "speed": "速度",
+  "camera": "カメラ",
+  "slowmo": "大きな攻撃でスローモーション",
+  "numbers": "ダメージ表示",
+  "hud": "HUD",
+  "find": "調べる",
+  "fight": "バトル！",
+  "presets": "用意されたバトル",
+  "presetsAside": "それぞれ専用のリンク付き",
+  "type": "タイプ",
+  "anyType": "すべてのタイプ",
+  "andType": "さらにタイプ",
+  "generation": "世代",
+  "any": "すべて",
+  "gen": "第{n}世代",
+  "legendaries": "伝説のポケモン",
+  "leaveOut": "除く",
+  "include": "含める",
+  "onlyLeg": "伝説のみ",
+  "onlyMyth": "幻のみ",
+  "both": "伝説と幻",
+  "feOnly": "最終進化のみ",
+  "matches": "{label}：<b>{n}</b>種",
+  "matchesAll": "{label}：<b>{n}</b>種（全{total}種）",
+  "addTheGroup": "グループを追加",
+  "groupLabel": "{name}（{detail}）",
+  "detail": {
+    "legendary": "伝説",
+    "legendaryMythical": "伝説か幻",
+    "mythical": "幻",
+    "fe": "最終進化",
+    "gen": "第{n}世代",
+    "noLeg": "伝説なし",
+    "all": "すべて"
+  },
+  "labels": {
+    "formation": {
+      "line": "横列",
+      "wedge": "くさび形",
+      "swarm": "群れ",
+      "surround": "包囲"
+    },
+    "arena": {
+      "plains": "平原",
+      "volcano": "火山",
+      "snowfield": "雪原",
+      "colosseum": "コロシアム"
+    },
+    "spacing": {
+      "tight": "密集",
+      "normal": "普通",
+      "loose": "散開"
+    },
+    "targeting": {
+      "nearest": "最も近い相手",
+      "weakest": "近くの最も弱い相手",
+      "strongest": "近くの最も強い相手",
+      "boss": "ボスを狙う"
+    },
+    "stance": {
+      "charge": "突撃",
+      "hold": "陣形を守る"
+    },
+    "spread": {
+      "auto": "使う",
+      "never": "使わない"
+    },
+    "weather": {
+      "none": "晴れ",
+      "sun": "ひざしが強い",
+      "rain": "雨",
+      "sand": "すなあらし",
+      "snow": "雪"
+    },
+    "terrain": {
+      "none": "なし",
+      "electric": "エレキフィールド",
+      "grassy": "グラスフィールド",
+      "psychic": "サイコフィールド",
+      "misty": "ミストフィールド"
+    },
+    "time": {
+      "day": "昼",
+      "dusk": "夕方",
+      "night": "夜"
+    },
+    "camera": {
+      "director": "監督",
+      "free": "自由",
+      "boss": "ボスを追う",
+      "top": "真上"
+    },
+    "ev": {
+      "random": "ランダムバトル（努力値85、個体値31）",
+      "offence": "攻撃特化",
+      "bulk": "耐久特化"
+    },
+    "evShort": {
+      "random": "各85",
+      "offence": "攻撃特化",
+      "bulk": "耐久特化"
+    },
+    "itemGroup": {
+      "Damage": "ダメージ",
+      "Type boosts": "タイプ強化",
+      "Defence": "防御",
+      "Recovery": "回復",
+      "Speed and accuracy": "すばやさと命中",
+      "Stat boosts": "能力アップ"
+    }
+  },
+  "picker": {
+    "pick": "ポケモンを選ぶ",
+    "search": "ポケモンを検索",
+    "noAttacks": "攻撃わざなし",
+    "none": "その名前のポケモンはいません",
+    "form": {
+      "mega": "メガ",
+      "alola": "アローラ",
+      "galar": "ガラル",
+      "hisui": "ヒスイ",
+      "paldea": "パルデア"
+    }
+  },
+  "set": {
+    "level": "レベル",
+    "evs": "努力値と個体値",
+    "nature": "性格",
+    "tera": "テラスタイプ",
+    "noTera": "テラスタルなし",
+    "setsTera": "{type}（型のもの）",
+    "ability": "特性",
+    "default": "{name}（初期設定）",
+    "item": "持ち物",
+    "megaStone": "そのメガストーン",
+    "none": "なし",
+    "itsSet": "{name}（型のもの）",
+    "itemEvery": "持ち物（全種共通）",
+    "eachRandom": "それぞれのランダムバトルの持ち物",
+    "moves": "わざ",
+    "movesDefaultSet": "わざ（初期設定：ランダムバトルの型）",
+    "movesDefaultLevel": "わざ（初期設定：レベル{n}までに覚えるわざ）",
+    "defaultMoves": "初期設定のわざ",
+    "move": "わざ{n}",
+    "rbSet": "ランダムバトルの型",
+    "learnt": "レベル{n}までに覚える",
+    "other": "ほかに覚えられるわざ",
+    "loading": "覚えるわざを読み込み中…",
+    "noMoves": "このバトルで使える攻撃わざがありません。1つ選んでください。",
+    "stats": "レベル{level} · HP {hp} · こうげき {atk} · ぼうぎょ {def} · とくこう {spa} · とくぼう {spd} · すばやさ {spe}",
+    "statShort": {
+      "atk": "こうげき",
+      "def": "ぼうぎょ",
+      "spa": "とくこう",
+      "spd": "とくぼう",
+      "spe": "すばやさ"
+    },
+    "teraOf": "テラスタイプ{type}"
+  }
+}

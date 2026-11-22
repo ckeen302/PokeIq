@@ -1,0 +1,212 @@
+{
+  "group": "Groupe",
+  "members": "{detail} · {n} Pokémon",
+  "beat": "…battent",
+  "howMany": "Combien de…",
+  "pokemonN": "Pokémon {n}",
+  "each": "Chacun",
+  "count": "Nombre",
+  "setOf": "Set de {name}",
+  "remove": "Retirer {name}",
+  "loadingSets": "Chargement des sets…",
+  "addPokemon": "Pokémon",
+  "addGroup": "Groupe",
+  "upTo": "Jusqu’à {n} lignes",
+  "formation": "Formation",
+  "spacing": "Espacement",
+  "targets": "Cibles",
+  "stance": "Attitude",
+  "spreadMoves": "Capacités de zone",
+  "title": "Préparer le combat",
+  "kind": "Type de combat",
+  "tabAsk": "Combien ?",
+  "tabArmy": "Armée contre armée",
+  "shared": "L’armée est partagée équitablement entre ses lignes (un groupe la partage entre toutes ses espèces).",
+  "blue": "Armée bleue",
+  "red": "Armée rouge",
+  "level": "Niveau",
+  "arena": "Arène",
+  "advanced": "Avancé",
+  "advancedHint": "Sets, météo et champ, tactique de chaque camp, lecture",
+  "advancedHintAsk": "Sets, météo et champ, tactique de chaque camp, solveur, lecture",
+  "setHint": "Ouvrez l’icône <i></i> d’une ligne pour son set : niveau, capacités, talent, objet, nature, EV et IV, type Téra.",
+  "setIcon": "set",
+  "field": "Terrain",
+  "weather": "Météo",
+  "terrain": "Champ",
+  "time": "Moment de la journée",
+  "heldItems": "Objets tenus",
+  "none": "Aucun",
+  "randomItems": "Objets des combats aléatoires",
+  "rules": "Règles",
+  "pp": "PP réels",
+  "ff": "Tir ami",
+  "rulesHint": "PP réels : les capacités s’épuisent comme dans les jeux (Pression en prend deux), puis Lutte. Tir ami : Séisme, Surf et Explosion touchent aussi les partenaires, et Paratonnerre et Lavabo attirent les capacités d’un partenaire.",
+  "theArmy": "L’armée ({names})",
+  "theBoss": "Le boss ({names})",
+  "answer": "La réponse",
+  "winsNeeded": "Victoires requises",
+  "half": "La moitié (50 %)",
+  "nine": "Neuf sur dix (90 %)",
+  "perSize": "Combats par taille",
+  "playback": "Lecture",
+  "speed": "Vitesse",
+  "camera": "Caméra",
+  "slowmo": "Ralenti sur les gros coups",
+  "numbers": "Chiffres de dégâts",
+  "hud": "Interface",
+  "find": "Découvrir",
+  "fight": "Combat !",
+  "presets": "Combats tout faits",
+  "presetsAside": "Chacun avec son lien",
+  "type": "Type",
+  "anyType": "Tous types",
+  "andType": "Et type",
+  "generation": "Génération",
+  "any": "Toutes",
+  "gen": "Génération {n}",
+  "legendaries": "Légendaires",
+  "leaveOut": "Les exclure",
+  "include": "Les inclure",
+  "onlyLeg": "Légendaires seulement",
+  "onlyMyth": "Fabuleux seulement",
+  "both": "Légendaires et fabuleux",
+  "feOnly": "Dernier stade seulement",
+  "matches": "{label} : <b>{n}</b> Pokémon",
+  "matchesAll": "{label} : <b>{n}</b> Pokémon, {total} au total",
+  "addTheGroup": "Ajouter le groupe",
+  "groupLabel": "{name} ({detail})",
+  "detail": {
+    "legendary": "légendaires",
+    "legendaryMythical": "légendaires ou fabuleux",
+    "mythical": "fabuleux",
+    "fe": "dernier stade",
+    "gen": "génération {n}",
+    "noLeg": "sans légendaires",
+    "all": "tous"
+  },
+  "labels": {
+    "formation": {
+      "line": "Ligne",
+      "wedge": "Coin",
+      "swarm": "Essaim",
+      "surround": "Encerclement"
+    },
+    "arena": {
+      "plains": "Plaine",
+      "volcano": "Volcan",
+      "snowfield": "Neiges",
+      "colosseum": "Colisée"
+    },
+    "spacing": {
+      "tight": "Serré",
+      "normal": "Normal",
+      "loose": "Lâche"
+    },
+    "targeting": {
+      "nearest": "Le plus proche",
+      "weakest": "Le plus faible proche",
+      "strongest": "Le plus fort proche",
+      "boss": "Viser le boss"
+    },
+    "stance": {
+      "charge": "Charger",
+      "hold": "Tenir la ligne"
+    },
+    "spread": {
+      "auto": "Les utiliser",
+      "never": "Les éviter"
+    },
+    "weather": {
+      "none": "Dégagé",
+      "sun": "Soleil ardent",
+      "rain": "Pluie",
+      "sand": "Tempête de Sable",
+      "snow": "Neige"
+    },
+    "terrain": {
+      "none": "Aucun",
+      "electric": "Champ Électrifié",
+      "grassy": "Champ Herbu",
+      "psychic": "Champ Psychique",
+      "misty": "Champ Brumeux"
+    },
+    "time": {
+      "day": "Jour",
+      "dusk": "Crépuscule",
+      "night": "Nuit"
+    },
+    "camera": {
+      "director": "Réalisateur",
+      "free": "Libre",
+      "boss": "Suivre le boss",
+      "top": "Vue du dessus"
+    },
+    "ev": {
+      "random": "Combats aléatoires (85 EV, 31 IV)",
+      "offence": "Attaque max",
+      "bulk": "Résistance max"
+    },
+    "evShort": {
+      "random": "85 partout",
+      "offence": "Attaque max",
+      "bulk": "Résistance max"
+    },
+    "itemGroup": {
+      "Damage": "Dégâts",
+      "Type boosts": "Bonus de type",
+      "Defence": "Défense",
+      "Recovery": "Soin",
+      "Speed and accuracy": "Vitesse et précision",
+      "Stat boosts": "Boosts de stats"
+    }
+  },
+  "picker": {
+    "pick": "Choisir un Pokémon",
+    "search": "Chercher un Pokémon",
+    "noAttacks": "Pas d’attaque",
+    "none": "Aucun Pokémon de ce nom",
+    "form": {
+      "mega": "Méga",
+      "alola": "Alola",
+      "galar": "Galar",
+      "hisui": "Hisui",
+      "paldea": "Paldea"
+    }
+  },
+  "set": {
+    "level": "Niveau",
+    "evs": "EV et IV",
+    "nature": "Nature",
+    "tera": "Type Téra",
+    "noTera": "Pas de Téra",
+    "setsTera": "{type} (du set)",
+    "ability": "Talent",
+    "default": "{name} (par défaut)",
+    "item": "Objet tenu",
+    "megaStone": "Sa Méga-Gemme",
+    "none": "Aucun",
+    "itsSet": "{name} (de son set)",
+    "itemEvery": "Objet tenu (chaque espèce)",
+    "eachRandom": "L’objet de combat aléatoire de chacun",
+    "moves": "Capacités",
+    "movesDefaultSet": "Capacités (par défaut : son set de combat aléatoire)",
+    "movesDefaultLevel": "Capacités (par défaut : apprises jusqu’au niveau {n})",
+    "defaultMoves": "Capacités par défaut",
+    "move": "Capacité {n}",
+    "rbSet": "Set de combat aléatoire",
+    "learnt": "Apprises jusqu’au niveau {n}",
+    "other": "Ses autres capacités légales",
+    "loading": "Chargement de ses capacités…",
+    "noMoves": "Il n’a aucune attaque jouée dans ce combat : choisissez-en une.",
+    "stats": "Niveau {level} · PV {hp} · Atq {atk} · Déf {def} · AtqS {spa} · DéfS {spd} · Vit {spe}",
+    "statShort": {
+      "atk": "Atq",
+      "def": "Déf",
+      "spa": "AtqS",
+      "spd": "DéfS",
+      "spe": "Vit"
+    },
+    "teraOf": "Téra {type}"
+  }
+}

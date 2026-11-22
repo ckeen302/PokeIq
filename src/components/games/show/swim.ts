@@ -1,4 +1,6 @@
-import { eventOf } from "@/lib/games/events";
+import { localNum } from "@/lib/games/events";
+import { translator, type Translator } from "@/i18n/catalog";
+import gamesShow from "@/messages/games-show";
 import { swimAt, swimMark, type SwimRace } from "@/lib/games/swim";
 import { POOL, poolX } from "@/lib/games/venues";
 import { planSwim, swimPose } from "../scene/motions/swim";
@@ -19,11 +21,13 @@ import { Timeline, beatAt, beatClock, beatK, type Burst, type Overlay, type Show
  * the results with reaction times. Pure.
  */
 
-const fmt = (s: number) => (s >= 60 ? `${Math.floor(s / 60)}:${(s % 60).toFixed(2).padStart(5, "0")}` : s.toFixed(2));
+const fmtTime = (s: number) => (s >= 60 ? `${Math.floor(s / 60)}:${(s % 60).toFixed(2).padStart(5, "0")}` : s.toFixed(2));
 
-export function swimShow(race: SwimRace, o: ShowOptions): Show {
+export function swimShow(race: SwimRace, o: ShowOptions, tr: Translator<typeof gamesShow.en> = translator(gamesShow, "en", undefined)): Show {
+  const lc = tr.locale;
+  const fmt = (s: number) => localNum(fmtTime(s), lc);
   const ev = race.event;
-  const name = eventOf(ev).name;
+  const name = tr(`ev.${ev}.name`);
   const plans = race.runs.map(planSwim);
   const athletes = race.runs.map((r) => r.athlete);
   const order = race.order;
@@ -37,7 +41,7 @@ export function swimShow(race: SwimRace, o: ShowOptions): Show {
     tl.add({ kind: "establish", cam: "crane", clock0: -8, rate: 0 }, o.lineup ? (o.video ? 2.6 : 4) : o.video ? 1.3 : 1.8);
     tl.add({ kind: "startlist", cam: "blocks", clock0: -6, rate: 0.2 }, o.lineup ? (o.video ? 2.4 : 3.6) : o.video ? 1.2 : 1.7);
   }
-  tl.add({ kind: "intro", cam: "marks", clock0: o.lineup ? -3 : -1.8, rate: 1, title: "Take your marks" }, o.lineup ? 3 : 1.8);
+  tl.add({ kind: "intro", cam: "marks", clock0: o.lineup ? -3 : -1.8, rate: 1, title: tr("swim.marks") }, o.lineup ? 3 : 1.8);
   tl.cue(tl.t, "beep", 0.8);
   // The race: at full speed, but a long middle (a slow field over 100 m) goes by fast.
   const budget = Math.max(14, o.budget - (o.quick ? 6 : 16));
@@ -307,14 +311,14 @@ export function swimShow(race: SwimRace, o: ShowOptions): Show {
     const beat = beatAt(beats, t);
     const k = beatK(beat, t);
     const rt = beatClock(beat, t);
-    const bug = { title: name, sub: race.rain ? "Final · rain" : "Final" };
+    const bug = { title: name, sub: race.rain ? tr("swim.rainSub") : tr("finalShort") };
     switch (beat.kind) {
       case "establish":
-        return { title: { text: name.toUpperCase(), sub: race.rain ? "Final · the roof open, rain falling: Swift Swim doubles Speed" : `Final · ${race.runs.length} lanes · a 50 m pool`, k } };
+        return { title: { text: name.toUpperCase(), sub: race.rain ? tr("swim.craneRain") : tr("swim.crane", { n: race.runs.length }), k } };
       case "startlist":
-        return { bug, board: { title: "The lanes", rows: [...race.runs].sort((a, b) => a.lane - b.lane).map((r) => ({ place: String(r.lane), name: r.athlete.name, mark: fmt(swimMark(r.athlete, ev, race.rain)), key: r.athlete.key, note: "best", plain: true })), k } };
+        return { bug, board: { title: tr("swim.lanes"), rows: [...race.runs].sort((a, b) => a.lane - b.lane).map((r) => ({ place: String(r.lane), name: r.athlete.name, mark: fmt(swimMark(r.athlete, ev, race.rain)), key: r.athlete.key, note: tr("swim.bestNote"), plain: true })), k } };
       case "intro":
-        return { bug, caption: rt > -2.2 ? "Take your marks" : undefined, tags: athletes.map((a) => a.key), tagText: tagFor(-1) };
+        return { bug, caption: rt > -2.2 ? tr("swim.marks") : undefined, tags: athletes.map((a) => a.key), tagText: tagFor(-1) };
       case "action": {
         const L = leaderAt(rt);
         const ffw = (beat.rate ?? 1) > 1;
@@ -326,16 +330,16 @@ export function swimShow(race: SwimRace, o: ShowOptions): Show {
           tags: rt < 1.5 || rt > winT - 0.2 || L.x > D - 6 ? athletes.map((a) => a.key) : [L.plan.athlete.key],
           tagText: tagFor(rt),
           // (k runs through the time it's up: in with a pop, held, out at the end.)
-          mark: rt >= winT ? { text: fmt(win.time), sub: `${win.athlete.name} wins`, tone: "lead", k: Math.min(1, (rt - winT) / Math.max(2.5, raceEnd - winT)) } : showSplit ? { text: fmt(split[0].trace.split!), sub: `${split[0].athlete.name} at the turn`, tone: "plain", k: Math.min(1, (rt - split[0].trace.split!) / 4) } : undefined,
-          caption: rt > 0.8 && rt < 4 ? (race.rain ? "Rain: Swift Swim doubles Speed" : undefined) : undefined,
+          mark: rt >= winT ? { text: fmt(win.time), sub: tr("wins", { name: win.athlete.name }), tone: "lead", k: Math.min(1, (rt - winT) / Math.max(2.5, raceEnd - winT)) } : showSplit ? { text: fmt(split[0].trace.split!), sub: tr("swim.atTurn", { name: split[0].athlete.name }), tone: "plain", k: Math.min(1, (rt - split[0].trace.split!) / 4) } : undefined,
+          caption: rt > 0.8 && rt < 4 ? (race.rain ? tr("swim.rain") : undefined) : undefined,
         };
       }
       case "result":
-        return { bug, board: { title: `${name} · result`, rows: order.map((r) => ({ place: String(r.place), name: r.athlete.name, mark: fmt(r.time), key: r.athlete.key, hi: r.place === 1, note: `lane ${r.lane}` })), k }, tags: order.slice(0, 3).map((r) => r.athlete.key), tagText: tagFor(rt) };
+        return { bug, board: { title: tr("swim.result", { event: name }), rows: order.map((r) => ({ place: String(r.place), name: r.athlete.name, mark: fmt(r.time), key: r.athlete.key, hi: r.place === 1, note: tr("swim.lane", { n: r.lane }) })), k }, tags: order.slice(0, 3).map((r) => r.athlete.key), tagText: tagFor(rt) };
       case "replay":
-        return { replay: true, lower: { key: win.athlete.key, name: win.athlete.name, line: `${fmt(win.time)} · top speed ${(win.trace.vSwim * 3.6).toFixed(1)} km/h in the water`, tag: "Replay", k } };
+        return { replay: true, lower: { key: win.athlete.key, name: win.athlete.name, line: tr("swim.replay", { time: fmt(win.time), kmh: localNum((win.trace.vSwim * 3.6).toFixed(1), lc) }), tag: tr("replay"), k } };
       default:
-        return { bug, board: { title: `${name} · final`, rows: order.map((r) => ({ place: String(r.place), name: r.athlete.name, mark: fmt(r.time), key: r.athlete.key, hi: r.place === 1, note: `reaction ${r.trace.reaction.toFixed(2)}` })), k } };
+        return { bug, board: { title: tr("final", { event: name }), rows: order.map((r) => ({ place: String(r.place), name: r.athlete.name, mark: fmt(r.time), key: r.athlete.key, hi: r.place === 1, note: tr("swim.reaction", { r: localNum(r.trace.reaction.toFixed(2), lc) }) })), k } };
     }
   };
 
@@ -349,7 +353,7 @@ export function swimShow(race: SwimRace, o: ShowOptions): Show {
     at,
     overlay,
     resultsAt: beats.find((b) => b.kind === "result")?.t0 ?? end,
-    hook: race.rain ? "Swift Swim in the rain: who swims fastest? 🌧️" : "Which Pokémon swims fastest? 🏊",
-    headline: `${win.athlete.name} wins in ${fmt(win.time)}`,
+    hook: tr(race.rain ? "swim.hookRain" : "swim.hook"),
+    headline: tr("swim.winsIn", { name: win.athlete.name, time: fmt(win.time) }),
   };
 }

@@ -1,0 +1,21 @@
+{
+  "joiner": {
+    "vs": "contre",
+    "and": "et"
+  },
+  "title": "{a} {joiner} {b}",
+  "result": {
+    "teamsDrew": "{a} et {b} font match nul",
+    "beat": "{a} a battu {b}",
+    "noWinner": "{players} : pas de vainqueur",
+    "wonFfa": "{name} a remporté un chacun pour soi",
+    "drew": "{a} et {b} font match nul"
+  },
+  "turns": "{n, plural, one {{n} tour} other {{n} tours}}",
+  "ranked": "Classé",
+  "ago": {
+    "now": "à l'instant",
+    "min": "il y a {min} min",
+    "hours": "il y a {h} h {min} min"
+  }
+}

@@ -8,6 +8,8 @@ import { confirmToken, verifyConfirmToken, verifyUnsubscribeToken } from "./toke
 import { deriveSeed } from "../crypto";
 import { claimOnce } from "../replay-guard";
 import type { EmailSettingsView } from "@/lib/email-types";
+import type { Locale } from "@/i18n/config";
+import { localeHref } from "@/i18n/href";
 
 /**
  * Saving an address, the double opt-in and unsubscribing. Saving a new
@@ -68,9 +70,10 @@ export function viewOf(sub: EmailSub | null, suggestion: string | null): EmailSe
   };
 }
 
-export function confirmMessage(to: string, profileId: string, username: string, now = Date.now()): Message {
-  const url = `${emailSiteUrl()}/email/confirm?token=${encodeURIComponent(confirmToken(profileId, to, now))}`;
-  return confirmEmail({ to, username, confirmUrl: url, postalAddress: postalAddress() });
+/** `locale`: the recipient's language (none is stored yet, so callers send English). */
+export function confirmMessage(to: string, profileId: string, username: string, now = Date.now(), locale: Locale = "en"): Message {
+  const url = `${emailSiteUrl()}${localeHref("/email/confirm", locale).href}?token=${encodeURIComponent(confirmToken(profileId, to, now))}`;
+  return confirmEmail({ to, username, confirmUrl: url, postalAddress: postalAddress(), locale });
 }
 
 export interface SaveInput {

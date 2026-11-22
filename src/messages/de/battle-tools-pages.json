@@ -1,0 +1,136 @@
+{
+  "crumb": "Kampf",
+  "calc": {
+    "title": "Pokémon-Schadensrechner: jede Generation, jeder Treffer",
+    "description": "Ein Pokémon-Schadensrechner, der Rechner von Smogon, für die Generationen 3 bis 9: Schadensspannen, K.O.-Chancen und vollständige Beschreibungen mit Statuswerte-Stufen, Statusproblemen, Terakristallisierung, Wetter, Feldern, Schilden und Flächenattacken im Doppelkampf. Lade Sets aus deinen Teams.",
+    "crumb": "Schadensrechner",
+    "heading": "Schadens",
+    "accent": "rechner",
+    "intro": "Ein Pokémon-Schadensrechner: die Schadensspanne, die K.O.-Chance und die Showdown-Beschreibung jeder Attacke, in beide Richtungen. Mit dem Schadensrechner von Smogon."
+  },
+  "teams": {
+    "title": "Pokémon-Team-Builder: Showdown-Formate, Legalität geprüft",
+    "description": "Ein Pokémon-Team-Builder für kompetitive Teams in OU, Ubers, UU, Doppel-OU, VGC und National Dex der 9. Generation, Gen-4-OU und Gen-3-OU. Attacken aus den Erlernlisten jedes Formats, Live-Werte, Showdown-Import und -Export und die Legalitätsprüfung von Pokémon Showdown selbst.",
+    "crumb": "Team-Builder",
+    "heading": "Team-",
+    "accent": "Builder",
+    "intro": "Ein Pokémon-Team-Builder mit sechs Plätzen, den Erlernlisten jedes Formats und den Regeln von Pokémon Showdown selbst. Teams werden beim Bauen auf diesem Gerät gespeichert, bereit für den Kampf."
+  },
+  "lab": {
+    "title": "Kampflabor — Pokémon-Siegchancen-Simulator",
+    "description": "Stelle zwei beliebige Pokémon-Teams auf, Gen 1 bis 9, und lass den Kampf tausende Male auf der Engine von Pokémon Showdown selbst laufen. Sieh die Siegchance jeder Seite mit 95-%-Konfidenzintervall, wie lange Kämpfe dauern, wer die K.O.s erzielt, und schau dir Beispielkämpfe an.",
+    "name": "Kampflabor",
+    "crumb": "Kampflabor",
+    "heading": "Kampf",
+    "accent": "labor",
+    "intro": "Stelle zwei Seiten auf und lass die Engine von Pokémon Showdown den Kampf tausende Male spielen, direkt in deinem Browser. Sieh, wie oft jede Seite gewinnt, wie lange es dauert und was den Ausschlag gibt."
+  },
+  "ladder": {
+    "title": "Pokémon-Kampf-Rangliste — Wertungen nach Format",
+    "description": "Die Rangliste der gewerteten Kämpfe: Elo-, GXE- und Glicko-2-Wertungen wie auf Pokémon Showdown, für Zufallskampf, Zufalls-Doppelkampf, OU, Ubers, UU, RU, NU, PU, LC, Monotype, National Dex und Doppel-OU.",
+    "crumb": "Rangliste",
+    "heading": "Kampf-",
+    "accent": "Rangliste",
+    "rules": "Wertungen pro Format wie auf Pokémon Showdown: Die Rangliste ist nach Elo sortiert (alle starten bei {elo}, fallen nie darunter, und ein Elo über 1400 sinkt an jedem Tag ohne Kampf ein wenig), dazu GXE (deine Chance, einen zufälligen Trainer der Rangliste zu schlagen) und eine Glicko-2-Wertung. Alle starten bei {rating} ± {rd} Glicko-2; eine Wertung ist vorläufig, bis ihre Abweichung unter {shown} fällt. Aufgeben, Zeitablauf oder Verlassen zählt als Niederlage.",
+    "short": "Nach Elo sortiert, mit GXE und Glicko-2, wie auf Pokémon Showdown. Alle starten bei {elo}.",
+    "insights": "Deine Analyse",
+    "play": "Gewertet spielen",
+    "soon": "Gewertete Kämpfe starten bald.",
+    "top": "{format}: Top 100",
+    "how": "So funktionieren die Wertungen"
+  },
+  "insights": {
+    "title": "Team-Analyse",
+    "description": "Deine Kampf-Analyse: Starter, Pokémon, härteste Gegner und deine Wertung im Verlauf.",
+    "crumb": "Team-Analyse",
+    "heading": "Team-",
+    "accent": "Analyse",
+    "intro": "Deine häufigsten Starter, die Siegquote pro Pokémon, die Gegner, die dich am öftesten schlagen, und deine Wertung im Verlauf, aus deinen gespeicherten Kämpfen.",
+    "signIn": "Die Analyse gehört zu deinem Konto: Melde dich an, um deine zu sehen.",
+    "signInButton": "Anmelden"
+  },
+  "playerInsights": {
+    "title": "{name} · Team-Analyse",
+    "description": "Die Kampf-Analyse von {name} auf PokéIQ: häufigste Starter, Siegquote pro Pokémon, härteste Gegner und Wertung im Verlauf.",
+    "heading": "{name}:",
+    "accent": "Analyse",
+    "intro": "Starter, Pokémon, härteste Gegner und Wertung über die gespeicherten Kämpfe von {name}, ermittelt aus den Replays.",
+    "format": "Format",
+    "allFormats": "Alle Formate",
+    "noBattles": "Noch keine Kämpfe zum Auswerten.",
+    "soon": "Die Team-Analyse startet bald.",
+    "empty": "Hier gibt es noch keine gespeicherten Replays zum Auswerten: Die Analyse stammt aus Kämpfen, deren Replay gespeichert wurde (jeder gewertete Kampf speichert eins).",
+    "reading": "{n} weitere Kämpfe werden gerade gelesen; schau gleich noch mal vorbei.",
+    "battlesRead": "Gelesene Kämpfe",
+    "winRate": "Siegquote",
+    "monsUsed": "Eingesetzte Pokémon",
+    "leadsCount": "Verschiedene Starter",
+    "trend": "Wertung im Verlauf",
+    "leads": "Häufigste Starter",
+    "byMon": "Siegquote pro Pokémon",
+    "byMonAside": "Kämpfe, in denen es zum Einsatz kam",
+    "monRecord": "{wins}–{losses} in {games, plural, one {{games} Kampf} other {{games} Kämpfen}}",
+    "threats": "Härteste Gegner",
+    "threatsAside": "Gegner mit einem K.O. oder Sieg gegen {name}: meiste K.O.s, dann meiste Siege",
+    "threatRecord": "{games, plural, one {{games} Kampf} other {{games} Kämpfe}} · {wins, plural, one {{wins} Sieg} other {{wins} Siege}} gegen {name}",
+    "kos": "{n, plural, one {K.O.} other {K.O.s}}",
+    "noThreats": "Bisher hat nichts die Pokémon von {name} besiegt.",
+    "pending": "{n, plural, one {{n} älterer Kampf wird} other {{n} ältere Kämpfe werden}} noch gelesen: Sie zählen beim nächsten Besuch.",
+    "noLeads": "Noch keine Starter gesehen.",
+    "mostUsed": "Am häufigsten",
+    "leadTimes": "{n}× Starter",
+    "leadWon": "{rate} gewonnen",
+    "trendMore": "Spiele {count, select, one {noch einen gewerteten Kampf} other {ein paar gewertete Kämpfe}} in diesem Format, um einen Verlauf zu sehen.",
+    "trendLabel": "Wertung von {from} auf {to} in {n} gewerteten Kämpfen",
+    "trendDelta": "{delta} in {n, plural, one {{n} Kampf} other {{n} Kämpfen}}",
+    "lastGxe": "GXE nach dem letzten Kampf: {gxe} %"
+  },
+  "replays": {
+    "title": "Pokémon-Kampf-Replays",
+    "description": "Sieh dir Pokémon-Kampf-Replays Runde für Runde an, auf der Engine von Pokémon Showdown: deine eigenen Kämpfe und die neuesten gewerteten und öffentlichen.",
+    "crumb": "Replays",
+    "heading": "Kampf-",
+    "accent": "Replays",
+    "intro": "Jeder gewertete und öffentliche Kampf wird als Replay gespeichert; nach allen anderen tippe auf Replay speichern. Replays zeigen, was die Zuschauer sahen, Runde für Runde.",
+    "import": "Showdown-Replay ansehen",
+    "live": "Live-Kämpfe"
+  },
+  "replay": {
+    "fallbackTitle": "Kampf-Replay",
+    "fallbackDescription": "Ein Pokémon-Kampf-Replay auf PokéIQ.",
+    "title": "{title}: {format}-Replay",
+    "description": "{result} in {turns} Runden. Sieh dir das Replay Runde für Runde auf der Engine von Pokémon Showdown an.",
+    "crumb": "Replay",
+    "ranked": "Gewertet · ",
+    "summary": "{format} · {result} in {turns, plural, one {{turns} Runde} other {{turns} Runden}}."
+  },
+  "notFound": {
+    "heading": "Replay nicht gefunden",
+    "body": "Dieses Replay gibt es nicht oder es ist nicht verfügbar: Vielleicht ist der Link falsch, oder der Kampf wurde nie gespeichert.",
+    "browse": "Replays durchsuchen",
+    "live": "Live-Kämpfe",
+    "import": "Log importieren"
+  },
+  "import": {
+    "title": "Showdown-Replay ansehen",
+    "description": "Füge ein Kampf-Log von Pokémon Showdown ein oder öffne eine gespeicherte Replay-Datei und sieh sie dir Runde für Runde an.",
+    "crumb": "Import",
+    "heading": "Ansehen:",
+    "accent": "Showdown-Replay",
+    "intro": "Füge ein Kampf-Log ein oder öffne eine Replay-Datei, die Showdown gespeichert hat, und spiel sie hier ab."
+  },
+  "tournaments": {
+    "title": "Turniere",
+    "description": "Pokémon-Kampfturniere auf PokéIQ: K.-o.-System oder Jeder gegen jeden in jedem Format, dazu jede Stunde ein offizielles Zufallskampf-Turnier.",
+    "crumb": "Turniere",
+    "heading": "Turniere",
+    "accent": "live",
+    "intro": "Tritt einem Turnierbaum bei oder eröffne dein eigenes Turnier in jedem Format. Jede Stunde startet ein offizielles Zufallskampf-Turnier: Die Anmeldung ist in den ersten zehn Minuten offen."
+  },
+  "tournament": {
+    "title": "Turnier",
+    "description": "Ein Pokémon-Kampfturnier auf PokéIQ: der Live-Turnierbaum, Matches und Ergebnisse.",
+    "back": "Zurück zu den Turnieren",
+    "crumb": "Turniere"
+  }
+}

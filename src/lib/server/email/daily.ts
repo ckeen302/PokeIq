@@ -8,6 +8,8 @@ import { RESEND_BATCH_MAX, sendBatch, type SendResult } from "./send";
 import { emailStore, type EmailStore, type EmailSub } from "./store";
 import { dailyEmail, type AtRiskStreak, type Message, type StreakGame } from "./templates";
 import { unsubscribeToken } from "./tokens";
+import type { Locale } from "@/i18n/config";
+import { localeHref } from "@/i18n/href";
 
 /**
  * The daily email job (the Vercel cron at the daily reset): every confirmed,
@@ -114,9 +116,10 @@ export function pickRecipients(candidates: EmailSub[], streaks: Map<string, Stre
   return out;
 }
 
-/** The email for one trainer (also the admin's test email). */
-export function buildDailyEmail(to: string, profileId: string, username: string, date: string, streak: AtRiskStreak | null, test = false): Message {
+/** The email for one trainer (also the admin's test email). `locale`: the trainer's language (none is stored yet: English). */
+export function buildDailyEmail(to: string, profileId: string, username: string, date: string, streak: AtRiskStreak | null, test = false, locale: Locale = "en"): Message {
   const site = emailSiteUrl();
+  const page = (path: string) => localeHref(path, locale).href;
   return dailyEmail({
     to,
     username,
@@ -124,11 +127,12 @@ export function buildDailyEmail(to: string, profileId: string, username: string,
     dailyNumber: dailyNumber(date),
     siteUrl: site,
     imageUrl: `${site}/api/email/daily-image?date=${date}`,
-    unsubscribeUrl: `${site}/email/unsubscribe?token=${encodeURIComponent(unsubscribeToken(profileId))}`,
-    settingsUrl: `${site}/trainer#settings`,
+    unsubscribeUrl: `${site}${page("/email/unsubscribe")}?token=${encodeURIComponent(unsubscribeToken(profileId))}`,
+    settingsUrl: `${site}${page("/trainer")}#settings`,
     postalAddress: postalAddress(),
     streak,
     test,
+    locale,
   });
 }
 

@@ -1,5 +1,7 @@
 import type { Generation, TypeName } from "@pkmn/data";
 import type { TeamSet } from "./sets";
+import { translator, type Translator } from "@/i18n/catalog";
+import teamInsights from "@/messages/battle-team-insights";
 
 /**
  * A team's type chart: for each of the generation's types, how each member
@@ -35,14 +37,23 @@ const SCALE: Record<string, Partial<Record<string, number>>> = {
   fluffy: { Fire: 2 },
 };
 
+/** Names as the page shows them (its language; English by default). */
+export interface CoverageNames {
+  species: (name: string) => string;
+  move: (name: string) => string;
+  ability: (name: string) => string;
+  type: (name: string) => string;
+}
+const AS_IS: CoverageNames = { species: (s) => s, move: (s) => s, ability: (s) => s, type: (s) => s };
+
 /** A one-line note on what an ability does to the chart, or null if nothing. */
-export function abilityNote(ability: string): string | null {
+export function abilityNote(ability: string, t: Translator<typeof teamInsights.en> = translator(teamInsights, "en", undefined), names: CoverageNames = AS_IS): string | null {
   const id = toId(ability);
-  if (id === "wonderguard") return "Wonder Guard: only super-effective hits land";
+  if (id === "wonderguard") return t("notes.wonderGuard", { ability: names.ability("Wonder Guard") });
   const immune = IMMUNE[id];
-  if (immune) return `${ability}: immune to ${immune.join(", ")}`;
+  if (immune) return t("notes.immune", { ability: names.ability(ability), types: immune.map(names.type).join(", ") });
   const scale = SCALE[id];
-  if (scale) return `${ability}: ${Object.entries(scale).map(([t, x]) => `${t} ×${x}`).join(", ")}`;
+  if (scale) return t("notes.scale", { ability: names.ability(ability), scales: Object.entries(scale).map(([type, x]) => `${names.type(type)} ×${x}`).join(", ") });
   return null;
 }
 
@@ -133,15 +144,21 @@ export interface CoverageChart {
 }
 
 /** The team's chart. `tera`: members defend as their Tera type and Tera Blast takes it. */
-export function coverageChart(gen: Generation, sets: readonly TeamSet[], opts: { tera?: boolean } = {}): CoverageChart {
+export function coverageChart(
+  gen: Generation,
+  sets: readonly TeamSet[],
+  opts: { tera?: boolean } = {},
+  tr: Translator<typeof teamInsights.en> = translator(teamInsights, "en", undefined),
+  names: CoverageNames = AS_IS
+): CoverageChart {
   const tera = !!opts.tera && gen.num >= 9;
   const types = chartTypes(gen);
   const typings = sets.map((s) => memberTyping(gen, s, tera));
   const moves = sets.map((s) => attackMoves(gen, s, tera));
   const notes: string[] = [];
   typings.forEach((t) => {
-    const note = t && t.ability ? abilityNote(t.ability) : null;
-    if (t && note) notes.push(`${t.species}: ${note}`);
+    const note = t && t.ability ? abilityNote(t.ability, tr, names) : null;
+    if (t && note) notes.push(tr("notes.member", { member: names.species(t.species), note }));
   });
   const rows = types.map((type): CoverageRow => {
     const taken = typings.map((t) => (t ? defensiveMultiplier(gen, t, type) : null));
@@ -151,7 +168,7 @@ export function coverageChart(gen: Generation, sets: readonly TeamSet[], opts: {
       let best = 0;
       for (const m of moves[i]) {
         const x = offensiveMultiplier(gen, m, type, gen.num >= 3 ? set.ability : "");
-        if (x > 1) hitters.push(`${set.name || set.species}: ${m.name}`);
+        if (x > 1) hitters.push(tr("notes.hitter", { member: set.name || names.species(set.species), move: names.move(m.name) }));
         best = Math.max(best, x);
       }
       dealt.push(best);

@@ -1,3 +1,4 @@
+import type { SceneLabels } from "../labels";
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { ARENA, REF_LIGHTS, dohyoScale, dohyoTop } from "@/lib/games/venues";
@@ -36,7 +37,7 @@ const ROW_D = 0.86;
 const ROW_H = 0.42;
 const FRONT_Y = 1.15;
 
-export function buildArena(o: { renderer: THREE.WebGLRenderer; font: string; occupancy: number; flashes: number; aniso: number }): ArenaWorld {
+export function buildArena(o: { renderer: THREE.WebGLRenderer; font: string; labels: SceneLabels; occupancy: number; flashes: number; aniso: number }): ArenaWorld {
   const group = new THREE.Group();
   const geos: THREE.BufferGeometry[] = [];
   const mats: THREE.Material[] = [];
@@ -94,7 +95,7 @@ export function buildArena(o: { renderer: THREE.WebGLRenderer; font: string; occ
       g.save();
       g.translate(512, 512);
       g.rotate((k * Math.PI) / 2);
-      g.fillText("THE POKÉIQ GAMES", 0, 452);
+      g.fillText(o.labels.games, 0, 452);
       g.restore();
     }
     const t = new THREE.CanvasTexture(c);
@@ -188,12 +189,12 @@ export function buildArena(o: { renderer: THREE.WebGLRenderer; font: string; occ
     const W = 4096, H = 96;
     const [c, g] = canvas(W, H);
     const panels = [
-      { bg: "#0b1a3a", fg: "#ffffff", text: "THE POKÉIQ GAMES" },
+      { bg: "#0b1a3a", fg: "#ffffff", text: o.labels.games },
       { bg: "#ffd23f", fg: "#14213d", text: "POKÉIQ" },
-      { bg: "#d7263d", fg: "#ffffff", text: "STRENGTH NIGHT" },
-      { bg: "#101010", fg: "#3bceac", text: "WEIGHTLIFTING · WRESTLING" },
-      { bg: "#1b4965", fg: "#ffffff", text: "WHO IS STRONGEST?" },
-      { bg: "#6a4c93", fg: "#ffffff", text: "THE POKÉIQ GAMES" },
+      { bg: "#d7263d", fg: "#ffffff", text: o.labels.strengthNight },
+      { bg: "#101010", fg: "#3bceac", text: o.labels.liftAndWrestle },
+      { bg: "#1b4965", fg: "#ffffff", text: o.labels.strongest },
+      { bg: "#6a4c93", fg: "#ffffff", text: o.labels.games },
     ];
     const pw = W / panels.length;
     panels.forEach((p, i) => {
@@ -245,7 +246,7 @@ export function buildArena(o: { renderer: THREE.WebGLRenderer; font: string; occ
     g.textBaseline = "middle";
     g.fillStyle = "#ffffff";
     g.font = `800 92px ${o.font}`;
-    g.fillText("THE POKÉIQ GAMES", 512, 200, 960);
+    g.fillText(o.labels.games, 512, 200, 960);
     g.fillStyle = "#ffd23f";
     g.font = `800 70px ${o.font}`;
     g.fillText(title.toUpperCase(), 512, 330, 960);
@@ -253,7 +254,7 @@ export function buildArena(o: { renderer: THREE.WebGLRenderer; font: string; occ
     for (let x = 0; x < 1024; x += 4) g.fillRect(x, 0, 1, 576);
     boardTex.needsUpdate = true;
   };
-  drawBoard("Weightlifting");
+  drawBoard(o.labels.weightlifting);
   const board = new THREE.Group();
   {
     const shell = new THREE.Mesh(G(new THREE.BoxGeometry(8.4, 4.9, 8.4)), M(new THREE.MeshStandardMaterial({ color: "#101318", roughness: 0.5, metalness: 0.4 })));
@@ -326,7 +327,7 @@ export function buildArena(o: { renderer: THREE.WebGLRenderer; font: string; occ
     const table = new THREE.Mesh(G(new THREE.BoxGeometry(0.8, 0.76, 3.6)), M(new THREE.MeshStandardMaterial({ color: "#0b1a3a", roughness: 0.6 })));
     table.position.set(6.2, 0.38, 0);
     platform.add(table);
-    const skirt = new THREE.Mesh(G(new THREE.PlaneGeometry(3.6, 0.5)), M(new THREE.MeshBasicMaterial({ map: T(signTex("REFEREES", o.font)), color: new THREE.Color(1.2, 1.2, 1.2) })));
+    const skirt = new THREE.Mesh(G(new THREE.PlaneGeometry(3.6, 0.5)), M(new THREE.MeshBasicMaterial({ map: T(signTex(o.labels.referees, o.font)), color: new THREE.Color(1.2, 1.2, 1.2) })));
     skirt.position.set(5.79, 0.42, 0);
     skirt.rotation.y = -Math.PI / 2;
     platform.add(skirt);
@@ -447,9 +448,9 @@ export function buildArena(o: { renderer: THREE.WebGLRenderer; font: string; occ
       const lift = p.kind === "lift", wrestle = p.kind === "wrestle", podium = p.kind === "podium";
       platform.visible = lift;
       dohyo.visible = wrestle;
-      if (lift) drawBoard("Weightlifting");
-      if (wrestle) { drawBoard("Wrestling"); setRing(p.ring); }
-      if (podium) drawBoard("Medal ceremony");
+      if (lift) drawBoard(o.labels.weightlifting);
+      if (wrestle) { drawBoard(o.labels.wrestling); setRing(p.ring); }
+      if (podium) drawBoard(o.labels.ceremony);
       key.target.position.set(0, 0, podium ? -1.5 : 0);
     },
     dispose() {

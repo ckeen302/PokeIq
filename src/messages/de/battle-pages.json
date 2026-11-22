@@ -1,0 +1,128 @@
+{
+  "hub": {
+    "meta": {
+      "title": "Pokémon-Kampfsimulator: PvP, gegen den Computer & Team-Builder",
+      "description": "Kostenloser Pokémon-Kampfsimulator mit der Engine von Pokémon Showdown: live PvP online, kämpfe gegen einen Freund oder den Computer, dazu Team-Builder und Schadensrechner."
+    },
+    "live": {
+      "cpu": {
+        "title": "Gegen den Computer",
+        "blurb": "Kämpfe gegen einen Computer, der auf Sieg spielt.",
+        "p1": "Zufallskampf, Zufalls-Doppel oder dein gespeichertes Team",
+        "p2": "Gegner auf Leicht, Normal und Schwer",
+        "p3": "Die Attacken-Animationen von Showdown, samt Terakristallisierung"
+      },
+      "online": {
+        "title": "Online-Kampf",
+        "blurb": "Finde einen Gegner oder lade einen Freund ein.",
+        "p1": "Matchmaking in jedem Format, mit Zufallsteams oder deinem eigenen",
+        "p2": "Der Zug-Timer von Showdown; jede Seite sieht nur, was sie sehen soll",
+        "p3": "Revanche mit einem Klick"
+      },
+      "teams": {
+        "title": "Team-Builder",
+        "blurb": "Teams bauen, laufend geprüft.",
+        "p1": "Formate von Gen 9 OU bis zurück zu Gen 3 OU",
+        "p2": "EVs, IVs, Wesen und Live-Werte",
+        "p3": "Showdown-Import / -Export, Zufallsteams"
+      },
+      "calc": {
+        "title": "Schadensrechner",
+        "blurb": "Schadensbereiche und K.O.-Chancen.",
+        "p1": "Statuswert-Stufen, Status, Terakristallisierung und aktuelle KP",
+        "p2": "Wetter, Felder, Schilde, Flächenattacken",
+        "p3": "Sets direkt aus deinen Teams laden"
+      },
+      "lab": {
+        "title": "Kampflabor",
+        "blurb": "Spiel jedes Duell tausendfach durch.",
+        "p1": "Jedes Pokémon, jedes Level, Item und jede Attacke, Gen 1 bis 9",
+        "p2": "Schlaues, gieriges, zufälliges oder geskriptetes Spiel je Seite",
+        "p3": "Sieg-% mit 95-%-Konfidenzintervall, K.O.s, Volltreffer, Replays"
+      }
+    },
+    "frontier": {
+      "factory": {
+        "title": "Kampffabrik",
+        "blurb": "Leih dir ein Team und bau eine Siegesserie auf.",
+        "p1": "Factory auf Level 100 oder BSS Factory auf Level 50",
+        "p2": "Tausche nach jedem Sieg gegen ein Pokémon deines Gegners",
+        "p3": "Oder kämpfe live: Beide Trainer leihen sich ein Team"
+      },
+      "tower": {
+        "title": "Duellturm",
+        "blurb": "Dein Team gegen eine Serie von Trainern.",
+        "p1": "Level 50, sechs mitbringen, drei wählen",
+        "p2": "Gespeicherte, gebaute oder Schnellteams, von Showdown geprüft",
+        "p3": "Der Turmherr in jedem siebten Kampf"
+      }
+    },
+    "tools": "Kämpfe und Tools",
+    "liveTag": "Live",
+    "soon": "Bald",
+    "frontierTitle": "Kampfzone",
+    "frontierAside": "Siegesserien gegen den Computer",
+    "formats": "Formate",
+    "formatsAside": "Jeweils mit den Regeln von Pokémon Showdown",
+    "gameType": {
+      "singles": "Einzel",
+      "doubles": "Doppel"
+    },
+    "formatBlurb": {
+      "gen9ou": "Smogons wichtigster Einzel-Tier: alles unterhalb von Ubers.",
+      "gen9ubers": "Cover-Legendäre willkommen. Nur die stärksten sind gebannt.",
+      "gen9uu": "Der Tier unter OU: keine Pokémon aus OU oder UUBL.",
+      "gen9ru": "Der Tier unter UU: keine Pokémon aus UU oder RUBL.",
+      "gen9nu": "Der Tier unter RU: keine Pokémon aus RU oder NUBL.",
+      "gen9pu": "Der Tier unter NU: keine Pokémon aus NU oder PUBL.",
+      "gen9lc": "Little Cup: Pokémon der ersten Stufe, die sich noch entwickeln können, auf Level 5.",
+      "gen9monotype": "Alle Pokémon eines Teams teilen einen Typ. Keine Terakristallisierung.",
+      "gen9doublesou": "Zwei gegen zwei, Smogons Doppel-Tierliste.",
+      "gen9vgc2025regi": "Offizielles Doppel: sechs mitbringen, vier wählen, Level 50, zwei eingeschränkte Legendäre.",
+      "gen9nationaldex": "Karmesin- / Purpur-Mechanik mit allen Pokémon, Mega-Steinen und Z-Kristallen zurück.",
+      "gen4ou": "Diamant / Perl / Platin: Die Trennung in physisch / speziell kommt.",
+      "gen3ou": "Rubin / Saphir / Smaragd: Der Typ einer Attacke entscheidet über physisch oder speziell."
+    },
+    "info": {
+      "name": "Pokémon-Kämpfe",
+      "description": "Ein kostenloser Pokémon-Kampfsimulator mit der Engine von Pokémon Showdown: Kämpfe gegen den Computer, einen Freund oder Fremde, mit Team-Builder, Schadensrechner und Kampflabor.",
+      "intro": "Dieser Pokémon-Kampfsimulator läuft mit der Engine von Pokémon Showdown selbst: Kämpfe gegen den Computer, einen Freund per Link oder einen online gefundenen Gegner.",
+      "step1": "Wähle einen Modus: gegen den Computer, online kämpfen oder die Kampfzone.",
+      "step2": "Nimm ein Zufallsteam oder bau dein eigenes im Team-Builder.",
+      "step3": "Wähle in jeder Runde deine Attacken und gewinne den Kampf.",
+      "step4": "Prüfe Duelle mit dem Schadensrechner oder simuliere tausende Kämpfe im Kampflabor.",
+      "labQ": "Was ist das Kampflabor?",
+      "labA": "Damit stellst du ein beliebiges Duell ein und lässt es von der Engine tausendfach spielen, um die Siegchancen zu schätzen."
+    }
+  },
+  "play": {
+    "meta": {
+      "title": "Pokémon-Kampf: gegen den Computer, online oder mit Freunden",
+      "description": "Echte Pokémon-Kämpfe mit der Engine von Pokémon Showdown: Zufallskampf, Zufalls-Doppel oder dein eigenes OU-Team, gegen den Computer, einen per Matchmaking gefundenen Trainer oder einen Freund per Einladungslink."
+    },
+    "crumb": "Spielen",
+    "title": "Starte einen",
+    "accent": "Kampf",
+    "intro": "Die Kampf-Engine von Pokémon Showdown selbst: Jede Attacke, jede Fähigkeit und jedes Item wirkt wie dort. Wähle einen Gegner, ein Format und los."
+  },
+  "tower": {
+    "meta": {
+      "title": "Duellturm: Siegesserien mit Flat Rules gegen den Computer"
+    },
+    "description": "Der Duellturm mit der Engine von Pokémon Showdown: Bring dein Team unter Flat Rules (Level 50, sechs mitbringen, drei wählen) und bau eine Siegesserie gegen Computer-Trainer auf, mit dem Turmherrn in jedem siebten Kampf.",
+    "name": "Duellturm",
+    "title": "Der",
+    "accent": "Duellturm",
+    "intro": "Dein Team, Flat Rules und eine Serie von Computer-Trainern, die beim Aufstieg immer härter werden. Jeder siebte Kampf ist der Turmherr, mit seinem besten Team."
+  },
+  "factory": {
+    "meta": {
+      "title": "Kampffabrik: Team leihen, Siegesserie aufbauen"
+    },
+    "description": "Die Kampffabrik mit der Engine von Pokémon Showdown: Leih dir sechs Pokémon aus Showdowns Battle-Factory-Sets, gewinne sieben in Folge gegen einen immer stärkeren Computer und tausche nach jedem Sieg gegen ein Pokémon deines Gegners.",
+    "name": "Kampffabrik",
+    "title": "Die",
+    "accent": "Kampffabrik",
+    "intro": "Kein Team nötig: Leih dir sechs Pokémon aus den Battle-Factory-Sets von Pokémon Showdown, gewinne sieben in Folge und tausche nach jedem Sieg eines deiner Pokémon gegen eines deines Gegners. Oder finde über die Kampfvorbereitung einen Gegner, der sich ebenfalls eins leiht."
+  }
+}

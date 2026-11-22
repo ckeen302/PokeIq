@@ -1,0 +1,72 @@
+{
+  "fourCpu": {
+    "freeforall": "Trois Dresseurs de l’ordi, chacun pour soi.",
+    "multi": "Un partenaire de l’ordi à tes côtés contre deux Dresseurs de l’ordi."
+  },
+  "opponents": {
+    "cpu": { "title": "Ordi", "blurb": "Affronte l’ordi, tout de suite." },
+    "match": { "title": "Trouver un adversaire", "blurb": "Sois associé à un Dresseur qui cherche le même format, et combats en direct." },
+    "pvp": { "title": "Un ami", "blurb": "Obtiens un lien d’invitation et combats en direct, avec un chrono." }
+  },
+  "shortGen": "Gen {gen}",
+  "quickNoteCustom": "Sets de combat aléatoire de la Gen {gen}, vérifiés selon tes règles.",
+  "quickNoteFormat": "Sets de combat aléatoire légaux en {format}.",
+  "nameRejected": "Choisis un autre nom.",
+  "startFailed": "Impossible de lancer un combat.",
+  "start": {
+    "cpu": "Lancer le combat",
+    "match": "Trouver un adversaire",
+    "challenge": "Défier {name}",
+    "pvp": "Créer le combat"
+  },
+  "opponent": "Adversaire",
+  "format": "Format",
+  "random": "Aléatoire",
+  "yourTeam": "Ton équipe",
+  "doubles": "Duo. ",
+  "bringTeam": "Amène une équipe : enregistrée, créée ici ou rapide.",
+  "customRules": "Règles perso",
+  "gens": "Gen 1–9",
+  "groupTitle": "Trio et quatre Dresseurs",
+  "groupFour": "Quatre Dresseurs, un Pokémon sur le terrain chacun. Amène une équipe, ou une rapide.",
+  "groupThree": "Trois Pokémon par camp. Amène une équipe, ou une rapide.",
+  "frontier": "Envie d’une série ? Loue une équipe à l’<factory>Usine de Combat</factory> ou grimpe la <tower>Tour de Combat</tower>.",
+  "cpuLevel": "Niveau de l’ordi",
+  "heading": {
+    "cpu": "Affronter l’ordi",
+    "match": "Affronter n’importe qui",
+    "pvp": "Affronter un ami"
+  },
+  "summary": {
+    "cpuFour": "Ordi {level}. {four} {teams, select, random {Équipes aléatoires pour tout le monde.} other {Chacun amène sa propre équipe.}}",
+    "cpu": "Ordi {level}. {teams, select, random {Équipes aléatoires pour vous deux.} other {Il amène sa propre équipe.}}",
+    "matchFour": "Tu seras associé au prochain Dresseur qui cherche {format} ; l’ordi prend les deux autres places.{multi, select, yes { Ton adversaire et toi avez chacun un partenaire de l’ordi.} other {}} Non classé, comme sur Showdown.",
+    "match": "Tu seras associé au prochain Dresseur qui cherche {format}, et le combat commence aussitôt.{teams, select, random { Les équipes sont aléatoires.} other { Chacun amène sa propre équipe.}}",
+    "challenge": "{name} reçoit ton défi aussitôt (et tu reçois aussi le lien). Le combat commence quand vous êtes prêts tous les deux.",
+    "pvpFour": "Tu recevras un lien à envoyer à trois amis au plus ; l’ordi peut prendre les places libres. Non classé, comme sur Showdown.",
+    "pvp": "Tu recevras un lien à envoyer. Le combat commence quand vous êtes prêts tous les deux."
+  },
+  "nameLabel": "Ton nom de Dresseur",
+  "namePlaceholder": "Nom de Dresseur",
+  "ranked": "Classé",
+  "rankedSoon": "Les combats classés arrivent bientôt.",
+  "rankedAccount": "Le classé demande un compte, pour que ton classement te suive.",
+  "rankedHint": "Associé selon ton classement. Abandonner ou partir compte comme une défaite.",
+  "signIn": "<link>Connecte-toi</link> pour jouer en classé.",
+  "unrated": "Non classé : tu commences à 1000 Elo (1500 ± 350 Glicko-2).",
+  "ladder": "Classement",
+  "watch": "Ouvert aux spectateurs",
+  "watchHint": "Affiché dans Regarder en direct. Désactivé : seules les personnes avec le lien peuvent regarder.",
+  "timer": "Chrono",
+  "timerHint": "Désactivé : chacun de vous peut le lancer en cours de combat.",
+  "timeout": "Défaite au temps",
+  "timeoutHint": "Activé, comme sur Showdown : si ton temps s’écoule, tu perds (les formats à chrono VGC jouent une attaque par défaut tant qu’il te reste du temps en réserve). Désactivé : le chrono choisit une attaque pour toi, et un second dépassement d’affilée fait perdre.",
+  "searchingRanked": "Recherche d’un rival classé…",
+  "searching": "Recherche d’un adversaire…",
+  "cancel": "Annuler",
+  "whyName": "Saisis un nom de Dresseur pour commencer.",
+  "whyTeam": "Choisis une équipe, ou une rapide, pour commencer.",
+  "leaving": "Quitter cette page ou fermer l’onglet arrête la recherche.",
+  "playNow": "Jouer · {format}",
+  "custom": "Perso"
+}

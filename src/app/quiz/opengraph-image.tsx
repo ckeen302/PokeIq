@@ -1,3 +1,4 @@
+import { ogT } from "@/lib/og/i18n";
 import { C, OG_CONTENT_TYPE, OG_SIZE, ogCard } from "@/lib/og/card";
 import { sampleQuestion } from "@/lib/og/quiz";
 
@@ -7,14 +8,16 @@ export const alt = "PokéIQ quizzes: Who's That Pokémon, cries, Pokédex entrie
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 
-export default function Image() {
+export default async function Image(props: { params?: unknown }) {
+  const t = await ogT(props);
   return ogCard({
-    eyebrow: "Pokémon quizzes",
-    title: ["How well do", "you know", ["Pokémon?", C.yellow]],
+    eyebrow: t("quiz.eyebrow"),
+    title: [t("quiz.title1"), t("quiz.title2"), [t("quiz.title3"), C.yellow]],
     titleSize: 66,
-    subtitle: "Silhouettes, cries, Pokédex entries, type matchups, the games and the anime.",
+    subtitle: t("quiz.subtitle"),
     accent: C.yellow,
-    visual: sampleQuestion("whos-that", C.yellow),
-    chips: ["Classic", "Survival", "Blitz", "All 1,025 Pokémon"],
+    visual: sampleQuestion("whos-that", C.yellow, t),
+    chips: [t("quiz.chips.classic"), t("quiz.chips.survival"), t("quiz.chips.blitz"), t("quiz.chips.all")],
+    t,
   });
 }

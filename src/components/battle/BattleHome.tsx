@@ -11,14 +11,15 @@ import { saveBattleSeat } from "@/lib/battle/seat";
 import { ensureBattleId } from "@/lib/battle/replay-client";
 import { isLadderFormat } from "@/lib/battle/ladder";
 import { useLadderStanding } from "@/lib/battle/ladder-client";
-import { DEFAULT_CUSTOM_RULES, builderFormatFor, customName, lastCustomRules, type CustomRules } from "@/lib/battle/custom-rules";
+import { DEFAULT_CUSTOM_RULES, builderFormatFor, lastCustomRules, type CustomRules } from "@/lib/battle/custom-rules";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { useProgress } from "@/lib/progress";
 import { useAccount } from "@/lib/account";
 import { openFriends } from "@/lib/friends-client";
 import { unlockAudio } from "@/lib/sound";
 import type { LiveCounts } from "@/lib/community";
-import { GlickoBadge } from "./GlickoBadge";
+import { glickoBadge } from "./GlickoBadge";
+import battleGlicko from "@/messages/battle-glicko";
 import { Button } from "@/components/ui/button";
 import { clock } from "@/components/duel/DuelParts";
 import { useMatchmaking } from "@/components/duel/use-matchmaking";
@@ -26,6 +27,14 @@ import { cn } from "@/lib/utils";
 import { startBattle } from "./start-battle";
 import type { TeamSource } from "./TeamPick";
 import { RulesVerdictNote, useRulesCheck } from "./RulesCheck";
+import { useT } from "@/i18n/client";
+import { formatNumber } from "@/i18n/format";
+import type { Translator } from "@/i18n/catalog";
+import home from "@/messages/battle-home";
+import formats from "@/messages/battle-formats";
+import { formatName, formatShort, playFormatLabel, type FormatsT } from "@/lib/battle/format-labels";
+
+type T = Translator<typeof home.en>;
 
 // A random battle (the default) needs neither: the team picker (with its editor) and Showdown's format catalogue load when a format asks for them.
 const TeamPick = dynamic(() => import("./TeamPick").then((m) => m.TeamPick), { loading: () => <div className="h-24" aria-hidden /> });
@@ -38,37 +47,27 @@ const CustomRulesEditor = dynamic(() => import("./CustomRulesEditor").then((m) =
  * ways in.
  */
 
-type Pick = { id: PlayFormatId; label: string; note?: string } | { href: string; label: string; note: string };
+type ItemKey = keyof typeof home.en.items;
+type NoteKey = keyof typeof home.en.notes;
+/** An item's label is items.<id> (and its note notes.<id>); a link's, items.<label>. */
+type Pick = { id: PlayFormatId & ItemKey; note?: boolean } | { href: string; label: ItemKey & NoteKey; note: true };
 
 /** Formats grouped as on Showdown's format menu. */
-const GROUPS: { title: string; items: Pick[] }[] = [
+const GROUPS: { title: keyof typeof home.en.groups; items: Pick[] }[] = [
   {
-    title: "Random",
-    items: [
-      { id: "gen9randombattle", label: "Random Battle" },
-      { id: "gen9randomdoublesbattle", label: "Random Doubles" },
-      { id: "factory", label: "Battle Factory", note: "rental teams" },
-    ],
+    title: "random",
+    items: [{ id: "gen9randombattle" }, { id: "gen9randomdoublesbattle" }, { id: "factory", note: true }],
   },
   {
-    title: "Singles",
-    items: [
-      { id: "gen9ou", label: "OU" },
-      { id: "gen9uu", label: "UU" },
-      { id: "gen9ubers", label: "Ubers" },
-      { href: "/battle/tower", label: "Battle Tower / BSS", note: "vs computer" },
-    ],
+    title: "singles",
+    items: [{ id: "gen9ou" }, { id: "gen9uu" }, { id: "gen9ubers" }, { href: "/battle/tower", label: "tower", note: true }],
   },
-  { title: "Doubles", items: [{ id: "gen9doublesou", label: "Doubles OU" }] },
+  { title: "doubles", items: [{ id: "gen9doublesou" }] },
   {
-    title: "Triples & four trainers",
-    items: [
-      { id: "gen9triples", label: "Triples" },
-      { id: "gen9freeforallrandombattle", label: "Random Free-For-All", note: "4 trainers" },
-      { id: "gen9multirandombattle", label: "Random Multi", note: "2 vs 2" },
-    ],
+    title: "group",
+    items: [{ id: "gen9triples" }, { id: "gen9freeforallrandombattle", note: true }, { id: "gen9multirandombattle", note: true }],
   },
-  { title: "Custom", items: [{ id: "custom", label: "Custom rules", note: "by invite" }] },
+  { title: "custom", items: [{ id: "custom", note: true }] },
 ];
 
 /**
@@ -79,9 +78,7 @@ const GROUPS: { title: string; items: Pick[] }[] = [
  */
 export const QUEUE_FALLBACK_MS = 20_000;
 
-const formatLabel = (f: PlayFormatId, rules: CustomRules) => (f === "custom" ? customName(rules) : PLAY_FORMAT_INFO[f].name);
-
-function FormatMenu({ value, rules, onChange, disabled }: { value: PlayFormatId; rules: CustomRules; onChange: (f: PlayFormatId) => void; disabled?: boolean }) {
+function FormatMenu({ value, rules, onChange, disabled, t, tf }: { value: PlayFormatId; rules: CustomRules; onChange: (f: PlayFormatId) => void; disabled?: boolean; t: T; tf: FormatsT }) {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -112,23 +109,23 @@ function FormatMenu({ value, rules, onChange, disabled }: { value: PlayFormatId;
         className="flex h-12 w-full items-center justify-between gap-3 rounded-md border-2 border-screen/40 bg-background px-4 text-left transition-colors hover:border-screen disabled:opacity-60"
         data-testid="format-picker"
       >
-        <span className="truncate font-display text-lg font-bold">{formatLabel(value, rules)}</span>
+        <span className="truncate font-display text-lg font-bold">{playFormatLabel(tf, value, rules)}</span>
         <ChevronDown className={cn("h-5 w-5 shrink-0 text-screen transition-transform", open && "rotate-180")} aria-hidden />
       </button>
       {open && (
-        <div role="listbox" aria-label="Format" className="absolute left-0 top-[calc(100%+6px)] z-40 grid max-h-[70vh] w-[min(600px,calc(100vw-2rem))] grid-cols-[1fr_1.2fr] gap-x-4 overflow-y-auto rounded-lg border bg-card p-3 shadow-2xl" data-testid="format-menu">
+        <div role="listbox" aria-label={t("menuLabel")} className="absolute left-0 top-[calc(100%+6px)] z-40 grid max-h-[70vh] w-[min(600px,calc(100vw-2rem))] grid-cols-[1fr_1.2fr] gap-x-4 overflow-y-auto rounded-lg border bg-card p-3 shadow-2xl" data-testid="format-menu">
           <div className="space-y-3">
             {GROUPS.map((g) => (
               <div key={g.title}>
-                <p className="hud-label mb-1 text-screen">{g.title}</p>
+                <p className="hud-label mb-1 text-screen">{t(`groups.${g.title}`)}</p>
                 {g.items.map((it) =>
                   "href" in it ? (
                     <Link key={it.label} href={it.href} className={item(false)}>
-                      {it.label} <span className="text-[11px] text-muted-foreground">{it.note} ↗</span>
+                      {t(`items.${it.label}`)} <span className="text-[11px] text-muted-foreground">{t(`notes.${it.label}`)} ↗</span>
                     </Link>
                   ) : (
                     <button key={it.id} type="button" role="option" aria-selected={value === it.id} className={item(value === it.id)} onClick={() => choose(it.id)}>
-                      {it.label} {it.note && <span className="text-[11px] text-muted-foreground">{it.note}</span>}
+                      {t(`items.${it.id}`)} {it.note && <span className="text-[11px] text-muted-foreground">{t(`notes.${it.id as NoteKey}`)}</span>}
                     </button>
                   )
                 )}
@@ -136,16 +133,16 @@ function FormatMenu({ value, rules, onChange, disabled }: { value: PlayFormatId;
             ))}
           </div>
           <div>
-            <p className="hud-label mb-1 text-screen">Past gens</p>
+            <p className="hud-label mb-1 text-screen">{t("pastGens")}</p>
             <div className="grid grid-cols-[auto_1fr_1fr_1fr] items-center gap-x-1 gap-y-0.5 text-sm">
               {PAST_GENS.map((g) => (
                 <div key={g} className="contents">
                   <span className="pr-1 font-pixel text-[10px] text-muted-foreground">G{g}</span>
-                  {(["randombattle", "ou", "uu"] as const).map((t) => {
-                    const id = `gen${g}${t}` as StandardFormatId;
+                  {(["randombattle", "ou", "uu"] as const).map((tier) => {
+                    const id = `gen${g}${tier}` as StandardFormatId;
                     return (
-                      <button key={id} type="button" role="option" aria-selected={value === id} aria-label={PLAY_FORMAT_INFO[id].name} className={cn(item(value === id), "justify-center")} onClick={() => choose(id)}>
-                        {t === "randombattle" ? "Random" : t.toUpperCase()}
+                      <button key={id} type="button" role="option" aria-selected={value === id} aria-label={formatName(tf, id)} className={cn(item(value === id), "justify-center")} onClick={() => choose(id)}>
+                        {tier === "randombattle" ? t("pastRandom") : tier.toUpperCase()}
                       </button>
                     );
                   })}
@@ -181,17 +178,20 @@ function useLiveCounts(): LiveCounts | null {
   return counts;
 }
 
-const SECONDARY: { href?: string; onClick?: () => void; icon: LucideIcon; label: string; testId: string }[] = [
-  { href: "/battle/teams", icon: Hammer, label: "Team Builder", testId: "home-teambuilder" },
-  { href: "/battle/ladder", icon: Trophy, label: "Ladder", testId: "home-ladder" },
-  { href: "/battle/tournaments", icon: Castle, label: "Tournaments", testId: "home-tournaments" },
-  { href: "/battle/watch", icon: Eye, label: "Watch live", testId: "home-watch" },
-  { href: "/rooms", icon: MessagesSquare, label: "Chat rooms", testId: "home-rooms" },
-  { href: "/users", icon: Search, label: "Find a user", testId: "home-find-user" },
-  { onClick: () => openFriends("friends"), icon: Users, label: "Friends", testId: "home-friends" },
+const SECONDARY: { href?: string; onClick?: () => void; icon: LucideIcon; label: keyof typeof home.en.secondary; testId: string }[] = [
+  { href: "/battle/teams", icon: Hammer, label: "teams", testId: "home-teambuilder" },
+  { href: "/battle/ladder", icon: Trophy, label: "ladder", testId: "home-ladder" },
+  { href: "/battle/tournaments", icon: Castle, label: "tournaments", testId: "home-tournaments" },
+  { href: "/battle/watch", icon: Eye, label: "watch", testId: "home-watch" },
+  { href: "/rooms", icon: MessagesSquare, label: "rooms", testId: "home-rooms" },
+  { href: "/users", icon: Search, label: "users", testId: "home-find-user" },
+  { onClick: () => openFriends("friends"), icon: Users, label: "friends", testId: "home-friends" },
 ];
 
 export function BattleHome() {
+  const t = useT(home);
+  const tf = useT(formats);
+  const tg = useT(battleGlicko);
   const router = useRouter();
   const progress = useProgress();
   const account = useAccount();
@@ -240,10 +240,10 @@ export function BattleHome() {
 
   // Team formats outside the team builder's own (past generations) save no teams; quick teams still work.
   const teamSource = useMemo<TeamSource | undefined>(() => {
-    if (custom) return { name: customName(rules), short: `Gen ${rules.gen}`, saved: builderFormatFor(rules.gen), quick: { rules }, quickNote: `Random-battle sets from Gen ${rules.gen}, checked against your rules.` };
-    if (needsTeam && !(format in BATTLE_FORMATS)) return { name: info.name, short: info.short, saved: null, quick: { format }, quickNote: `Random-battle sets legal in ${info.name}.` };
+    if (custom) return { name: playFormatLabel(tf, "custom", rules), short: t("shortGen", { gen: rules.gen }), saved: builderFormatFor(rules.gen), quick: { rules }, quickNote: t("quickNoteCustom", { gen: rules.gen }) };
+    if (needsTeam && !(format in BATTLE_FORMATS)) return { name: formatName(tf, format), short: formatShort(tf, format), saved: null, quick: { format }, quickNote: t("quickNoteFormat", { format: formatName(tf, format) }) };
     return undefined;
-  }, [custom, rules, needsTeam, format, info.name, info.short]);
+  }, [custom, rules, needsTeam, format, t, tf]);
   const onTeam = useCallback((t: string) => setTeam(t), []);
 
   const trainer = name.trim();
@@ -253,7 +253,7 @@ export function BattleHome() {
   function check(who = trainer): boolean {
     setError(null);
     if (!isCleanName(who)) {
-      setError(NAME_REJECTED);
+      setError(t.locale === "en" ? NAME_REJECTED : t("nameRejected"));
       setEditName(true);
       return false;
     }
@@ -289,7 +289,7 @@ export function BattleHome() {
       if (copyLink) await navigator.clipboard?.writeText(`${window.location.origin}${href}`).catch(() => undefined);
       router.push(href);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't start a battle.");
+      setError(err instanceof Error ? err.message : t("startFailed"));
       setBusy(null);
     }
   }
@@ -309,15 +309,15 @@ export function BattleHome() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="hud-label flex items-center gap-2 text-screen max-md:hidden">
-            <span className="led h-1.5 w-1.5 animate-blink text-screen" /> Battle unit · Pokémon Showdown rules
+            <span className="led h-1.5 w-1.5 animate-blink text-screen" /> {t("unit")}
           </p>
           <h1 className="font-display text-5xl font-bold uppercase leading-none tracking-tight">
-            Battle <span className="text-primary [text-shadow:0_0_30px_hsl(var(--primary)/0.45)]">anyone.</span>
+            {t("title")} <span className="text-primary [text-shadow:0_0_30px_hsl(var(--primary)/0.45)]">{t("accent")}</span>
           </h1>
         </div>
         <div className="flex gap-2" data-testid="live-counts">
-          <Counter value={counts?.online} label="trainers online" tone="success" />
-          <Counter value={counts?.battles} label="active battles" tone="primary" />
+          <Counter value={counts?.online} label={t("online")} tone="success" locale={t.locale} />
+          <Counter value={counts?.battles} label={t("battles")} tone="primary" locale={t.locale} />
         </div>
       </div>
 
@@ -327,8 +327,8 @@ export function BattleHome() {
           <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_260px]">
             <div className="min-w-0 space-y-4">
               <div className="space-y-1.5">
-                <p className="hud-label">Format</p>
-                <FormatMenu value={format} rules={rules} onChange={(f) => (setFormat(f), setTeam(""))} disabled={searching} />
+                <p className="hud-label">{t("format")}</p>
+                <FormatMenu value={format} rules={rules} onChange={(f) => (setFormat(f), setTeam(""))} disabled={searching} t={t} tf={tf} />
               </div>
               {custom && (
                 <div className="space-y-3 rounded-lg border bg-background/60 p-3">
@@ -337,7 +337,7 @@ export function BattleHome() {
                 </div>
               )}
               <div className="space-y-1.5">
-                <p className="hud-label">Team</p>
+                <p className="hud-label">{t("team")}</p>
                 {needsTeam ? (
                   <fieldset disabled={searching} className={cn("rounded-lg border bg-background/60 p-3", searching && "opacity-60")}>
                     <TeamPick
@@ -351,7 +351,7 @@ export function BattleHome() {
                 ) : (
                   <div className="flex items-center gap-3 rounded-lg border border-dashed bg-background/60 px-4 py-3 text-sm" data-testid="random-team">
                     <Shuffle className="h-5 w-5 text-screen" aria-hidden />
-                    <b>{format === "factory" ? "Rental team" : "Random team"}</b>
+                    <b>{format === "factory" ? t("rentalTeam") : t("randomTeam")}</b>
                   </div>
                 )}
               </div>
@@ -359,44 +359,47 @@ export function BattleHome() {
 
             <div className="flex flex-col gap-3">
               <div className="space-y-1">
-                <p className="hud-label">Trainer</p>
+                <p className="hud-label">{t("trainer")}</p>
                 {editName || !trainer ? (
                   <input
-                    aria-label="Your trainer name"
+                    aria-label={t("nameLabel")}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     onBlur={() => trainer && setEditName(false)}
                     maxLength={24}
-                    placeholder="Trainer name"
+                    placeholder={t("namePlaceholder")}
                     disabled={searching}
                     className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 ) : (
                   <button type="button" onClick={() => setEditName(true)} disabled={searching} className="flex w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-left hover:border-screen/60">
                     <span className="truncate font-display font-bold">{trainer}</span>
-                    <span className="text-xs text-muted-foreground">change</span>
+                    <span className="text-xs text-muted-foreground">{t("change")}</span>
                   </button>
                 )}
               </div>
 
               <label className="flex cursor-pointer items-center gap-2 text-sm">
                 <input type="checkbox" checked={hidden} onChange={(e) => setHidden(e.target.checked)} disabled={searching} data-testid="no-spectators" />
-                Don&apos;t allow spectators
+                {t("noSpectators")}
               </label>
 
               {!custom && ladderable && (
                 <label className={cn("flex cursor-pointer items-center gap-2 text-sm", (ladder.status === "off" || needsAccount) && "cursor-not-allowed opacity-50")}>
                   <input type="checkbox" checked={rankedOn} onChange={(e) => setRanked(e.target.checked)} disabled={searching || ladder.status === "off" || needsAccount} data-testid="ranked-toggle" />
-                  Ranked
-                  {rankedOn && ladder.status === "ready" && (ladder.you && ladder.you.games > 0 ? <GlickoBadge rating={ladder.you.rating} rd={ladder.you.rd} gxe={ladder.you.gxe} elo={ladder.you.elo} size="sm" /> : <span className="text-xs text-muted-foreground">starts at 1000 Elo</span>)}
+                  {t("ranked")}
+                  {rankedOn && ladder.status === "ready" && (ladder.you && ladder.you.games > 0 ? glickoBadge({ rating: ladder.you.rating, rd: ladder.you.rd, gxe: ladder.you.gxe, elo: ladder.you.elo, size: "sm" }, tg) : <span className="text-xs text-muted-foreground">{t("startsAt")}</span>)}
                 </label>
               )}
               {!custom && ladderable && needsAccount && ladder.status !== "off" && (
                 <p className="-mt-2 pl-6 text-xs text-muted-foreground" data-testid="ranked-sign-in">
-                  <Link href="/login" className="font-semibold text-primary hover:underline">
-                    Sign in
-                  </Link>{" "}
-                  to play ranked.
+                  {t.rich("signIn", {
+                    link: (chunks) => (
+                      <Link href="/login" className="font-semibold text-primary hover:underline">
+                        {chunks}
+                      </Link>
+                    ),
+                  })}
                 </p>
               )}
 
@@ -409,81 +412,82 @@ export function BattleHome() {
               {searching ? (
                 <div className="space-y-2 rounded-lg border border-screen/40 bg-screen/[0.06] p-3 text-center" role="status" data-testid="battle-searching">
                   <p className="flex items-center justify-center gap-2 font-display text-sm font-semibold uppercase tracking-wider text-screen">
-                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> {rankedOn ? "Searching for a ranked rival…" : "Searching for an opponent…"}
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> {rankedOn ? t("searchingRanked") : t("searching")}
                   </p>
                   <p className="font-pixel text-xs tabular-nums text-muted-foreground">{clock(waited)}</p>
                   {quiet && (
                     <div className="space-y-2 border-t border-screen/30 pt-2" data-testid="queue-fallback">
-                      <p className="text-sm font-semibold">Nobody&apos;s in {formatLabel(format, rules)} right now.</p>
+                      <p className="text-sm font-semibold">{t("nobody", { format: playFormatLabel(tf, format, rules) })}</p>
                       {counts && counts.battles > 0 && (
                         <p className="text-xs text-muted-foreground" data-testid="queue-fallback-counts">
-                          {counts.battles.toLocaleString("en-US")} {counts.battles === 1 ? "battle" : "battles"} in progress. Still searching meanwhile.
+                          {t("inProgress", { n: counts.battles })}
                         </p>
                       )}
                       <div className="grid grid-cols-1 gap-2 min-[400px]:grid-cols-2 md:grid-cols-1">
                         {format === "factory" ? (
                           <Link href="/battle/factory" onClick={finder.cancel} className="flex items-center justify-center gap-1.5 rounded-md bg-primary px-2 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90" data-testid="queue-fallback-cpu">
-                            <Bot className="h-3.5 w-3.5" aria-hidden /> Battle the computer
+                            <Bot className="h-3.5 w-3.5" aria-hidden /> {t("battleCpu")}
                           </Link>
                         ) : (
                           <Button type="button" size="sm" disabled={!!busy} onClick={() => void fallBack("cpu")} data-testid="queue-fallback-cpu">
-                            {busy === "cpu" ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <Bot className="h-3.5 w-3.5" aria-hidden />} Battle the computer
+                            {busy === "cpu" ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <Bot className="h-3.5 w-3.5" aria-hidden />} {t("battleCpu")}
                           </Button>
                         )}
                         <Button type="button" size="sm" variant="outline" disabled={!!busy} onClick={() => void fallBack("pvp")} data-testid="queue-fallback-invite">
-                          {busy === "invite" ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <Link2 className="h-3.5 w-3.5" aria-hidden />} Copy a friend link
+                          {busy === "invite" ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <Link2 className="h-3.5 w-3.5" aria-hidden />} {t("copyLink")}
                         </Button>
                       </div>
                     </div>
                   )}
                   <Button type="button" size="sm" variant="ghost" onClick={finder.cancel}>
-                    <X className="h-3.5 w-3.5" aria-hidden /> Cancel
+                    <X className="h-3.5 w-3.5" aria-hidden /> {t("cancel")}
                   </Button>
                 </div>
               ) : custom ? (
                 <Button size="lg" className="h-16 w-full text-xl" disabled={!ready || !!busy} onClick={() => void open("pvp")} data-testid="battle-invite">
-                  {busy === "invite" ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden /> : <Link2 className="h-5 w-5" aria-hidden />} Invite a friend
+                  {busy === "invite" ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden /> : <Link2 className="h-5 w-5" aria-hidden />} {t("invite")}
                 </Button>
               ) : (
                 <Button size="lg" className="h-16 w-full text-2xl tracking-[0.15em]" disabled={!ready || !!busy} onClick={() => void battle()} data-testid="battle-button">
-                  <Swords className="h-6 w-6" aria-hidden /> Battle!
+                  <Swords className="h-6 w-6" aria-hidden /> {t("battle")}
                 </Button>
               )}
               {!searching && !ready && (
                 <p className="text-center text-xs text-muted-foreground" data-testid="battle-why-disabled">
-                  {!trainer ? "Enter a trainer name to battle." : needsTeam && !team ? "Pick a team to battle." : "Fix the rules above to battle."}
+                  {!trainer ? t("whyName") : needsTeam && !team ? t("whyTeam") : t("whyRules")}
                 </p>
               )}
               {!searching && (
                 <div className="grid grid-cols-2 gap-2">
                   {format === "factory" ? (
                     <Link href="/battle/factory" className="flex items-center justify-center gap-1.5 rounded-md border bg-background px-2 py-2 text-xs font-semibold hover:border-screen/60">
-                      <Bot className="h-3.5 w-3.5" aria-hidden /> vs Computer
+                      <Bot className="h-3.5 w-3.5" aria-hidden /> {t("vsCpu")}
                     </Link>
                   ) : (
                     <button type="button" disabled={!teamReady || !!busy} onClick={() => void open("cpu")} className="flex items-center justify-center gap-1.5 rounded-md border bg-background px-2 py-2 text-xs font-semibold hover:border-screen/60 disabled:opacity-50 max-md:min-h-11" data-testid="home-vs-cpu">
-                      {busy === "cpu" ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <Bot className="h-3.5 w-3.5" aria-hidden />} vs Computer
+                      {busy === "cpu" ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <Bot className="h-3.5 w-3.5" aria-hidden />} {t("vsCpu")}
                     </button>
                   )}
                   {custom ? (
                     <Link href="/battle/play" className="flex items-center justify-center gap-1.5 rounded-md border bg-background px-2 py-2 text-xs font-semibold hover:border-screen/60">
-                      <Swords className="h-3.5 w-3.5" aria-hidden /> More options
+                      <Swords className="h-3.5 w-3.5" aria-hidden /> {t("moreOptions")}
                     </Link>
                   ) : (
                     <button type="button" disabled={!ready || !!busy} onClick={() => void open("pvp")} className="flex items-center justify-center gap-1.5 rounded-md border bg-background px-2 py-2 text-xs font-semibold hover:border-screen/60 disabled:opacity-50 max-md:min-h-11" data-testid="home-invite">
-                      {busy === "invite" ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <Link2 className="h-3.5 w-3.5" aria-hidden />} Invite a friend
+                      {busy === "invite" ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <Link2 className="h-3.5 w-3.5" aria-hidden />} {t("invite")}
                     </button>
                   )}
                 </div>
               )}
-              {searching && <p className="text-center text-xs text-muted-foreground">Leaving this page ends the search.</p>}
+              {searching && <p className="text-center text-xs text-muted-foreground">{t("leaving")}</p>}
             </div>
           </div>
         </div>
 
         <div className="space-y-4">
-          <nav className="grid grid-cols-2 gap-2" aria-label="More battle">
-            {SECONDARY.map(({ href, onClick, icon: Icon, label, testId }) => {
+          <nav className="grid grid-cols-2 gap-2" aria-label={t("moreNav")}>
+            {SECONDARY.map(({ href, onClick, icon: Icon, label: key, testId }) => {
+              const label = t(`secondary.${key}`);
               const cls = "menu-item flex items-center gap-2 rounded-lg border bg-card px-3 py-3 font-display text-sm font-bold uppercase tracking-wide hover:border-screen/60";
               const inner = (
                 <>
@@ -502,7 +506,7 @@ export function BattleHome() {
             })}
           </nav>
           <Link href="/battle/replays" className="flex items-center gap-2 px-1 text-xs text-muted-foreground hover:text-foreground">
-            <Clapperboard className="h-3.5 w-3.5" aria-hidden /> Recent replays
+            <Clapperboard className="h-3.5 w-3.5" aria-hidden /> {t("replays")}
           </Link>
         </div>
       </div>
@@ -510,11 +514,11 @@ export function BattleHome() {
   );
 }
 
-function Counter({ value, label, tone }: { value: number | undefined; label: string; tone: "success" | "primary" }) {
+function Counter({ value, label, tone, locale }: { value: number | undefined; label: string; tone: "success" | "primary"; locale: T["locale"] }) {
   return (
     <div className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2">
       <span className={cn("led h-2 w-2", tone === "success" ? "text-success" : "text-primary")} />
-      <span className="font-display text-xl font-bold tabular-nums">{value === undefined ? "–" : value.toLocaleString("en-US")}</span>
+      <span className="font-display text-xl font-bold tabular-nums">{value === undefined ? "–" : formatNumber(value, locale)}</span>
       <span className="text-xs text-muted-foreground">{label}</span>
     </div>
   );

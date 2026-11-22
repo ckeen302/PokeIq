@@ -1,0 +1,93 @@
+{
+  "meta": {
+    "title": "Batalla masiva Pokémon: ¿cuántos Magikarp vencen a Arceus?",
+    "description": "Miles de Pokémon chocan en un campo de batalla en 3D, con el cálculo de daño real de los juegos en cada golpe. ¿Cuántos Magikarp hacen falta para vencer a Arceus? Pregunta por cualquier enfrentamiento o lanza dos ejércitos uno contra otro, y luego haz un vídeo.",
+    "social": "Batalla masiva Pokémon · PokéIQ",
+    "questionDescription": "{title} Lo decide el cálculo de combate real de los juegos, tras miles de combates, y luego lo ves en 3D.",
+    "battleTitle": "{a} contra {b}",
+    "battleSide": "{n} {name}",
+    "battleDescription": "{title}: una batalla masiva Pokémon en 3D con el cálculo de daño real de los juegos. ¿Quién gana?",
+    "presetDescription": "{blurb} Una batalla masiva Pokémon en 3D con el cálculo de daño real de los juegos.",
+    "presetSocial": "{title} · PokéIQ"
+  },
+  "name": "Batalla masiva Pokémon",
+  "ldName": "{title} · PokéIQ",
+  "lab": "Laboratorio 3D",
+  "kicker": "Batalla masiva",
+  "h1": "<b>Batalla masiva</b> Pokémon",
+  "blurb": "Miles de Pokémon chocan en un campo de batalla en 3D, y cada golpe usa el cálculo de daño real de los juegos. Pregunta cuántos ejemplares de un Pokémon hacen falta para vencer a otro, o lanza dos ejércitos uno contra otro.",
+  "results": "Resultados",
+  "resultsAside": "Calculados de antemano con los mismos combates",
+  "how": "Cómo funciona",
+  "summary": {
+    "pure": " Cálculo de combate puro, con todos al alcance de todos: {answer}.",
+    "pureN": "{n} ({spread})",
+    "pureMore": "más de 2000",
+    "answer": "En el campo de batalla, {answer} para vencer a {boss} ({spread}).{pure}",
+    "left": "{n} en pie tras {s} segundos."
+  },
+  "presets": {
+    "magikarp-vs-arceus": {
+      "title": "¿Cuántos Magikarp vencen a Arceus?",
+      "hook": "¿Cuántos Magikarp hacen falta para vencer a Arceus? 😳",
+      "blurb": "El Pokémon más débil contra el que, según dicen, dio forma al universo. El solucionador busca el ejército más pequeño que gana."
+    },
+    "rattata-vs-mewtwo": {
+      "title": "1000 Rattata contra 1 Mewtwo",
+      "hook": "1000 Rattata contra 1 Mewtwo. ¿Quién gana? 🐀",
+      "blurb": "Mil ejemplares del Pokémon más común de Kanto contra el más poderoso."
+    },
+    "pikachu-vs-snorlax": {
+      "title": "100 Pikachu contra 1 Snorlax",
+      "hook": "100 Pikachu contra 1 Snorlax ⚡",
+      "blurb": "Una oleada de Pikachu contra el muro más pesado de Kanto."
+    },
+    "kanto-starters": {
+      "title": "La guerra de iniciales de Kanto",
+      "hook": "600 iniciales de Kanto contra sus evoluciones finales 🔥💧🌿",
+      "blurb": "Bulbasaur, Charmander y Squirtle a cientos contra unas pocas docenas de Venusaur, Charizard y Blastoise.",
+      "a": "Iniciales",
+      "b": "Evoluciones finales"
+    },
+    "fire-vs-water": {
+      "title": "Fuego contra Agua",
+      "hook": "Todos los tipo Fuego contra todos los tipo Agua 🔥🌊",
+      "blurb": "Todos los tipo Fuego totalmente evolucionados contra todos los tipo Agua totalmente evolucionados: el enfrentamiento más antiguo de Pokémon, a lo grande.",
+      "a": "Tipo Agua",
+      "b": "Tipo Fuego"
+    },
+    "legendaries-vs-everyone": {
+      "title": "Legendarios contra todos",
+      "hook": "Todos los Pokémon legendarios contra un ejército de Kanto 👑",
+      "blurb": "Todos los Pokémon legendarios contra diez ejemplares de cada uno de los demás Pokémon totalmente evolucionados de Kanto.",
+      "a": "Legendarios",
+      "b": "Kanto"
+    },
+    "bug-swarm-vs-charizard": {
+      "title": "Un enjambre de bichos contra un Charizard",
+      "hook": "1000 bichos contra 1 Charizard 🔥🐝",
+      "blurb": "Beedrill, Butterfree, Venomoth y Scyther se lanzan en enjambre contra un Charizard que es superefectivo contra todos ellos.",
+      "a": "Enjambre de bichos",
+      "b": "Charizard"
+    },
+    "eeveelution-civil-war": {
+      "title": "La guerra civil de las eeveevoluciones",
+      "hook": "Guerra civil de las eeveevoluciones: ¿qué mitad gana? 🦊",
+      "blurb": "Vaporeon, Jolteon, Flareon y Espeon contra Umbreon, Leafeon, Glaceon y Sylveon.",
+      "a": "Vaporeon y compañía",
+      "b": "Umbreon y compañía"
+    },
+    "fire-vs-water-sun": {
+      "title": "Fuego contra Agua con sol abrasador",
+      "hook": "Fuego contra Agua… pero con sol ☀️",
+      "blurb": "Los mismos ejércitos que en Fuego contra Agua, con sol abrasador: los movimientos de Fuego golpean 1,5 veces más fuerte y los de Agua la mitad, como en los juegos.",
+      "a": "Tipo Agua",
+      "b": "Tipo Fuego"
+    },
+    "light-ball-pikachu-vs-snorlax": {
+      "title": "¿Cuántos Pikachu con Bola Luminosa vencen a Snorlax?",
+      "hook": "¿Cuántos Pikachu hacen falta para vencer a Snorlax… con Bola Luminosa? ⚡",
+      "blurb": "El objeto propio de Pikachu duplica su Ataque y su Ataque Especial. Cada Pikachu lleva uno; Snorlax no lleva nada."
+    }
+  }
+}

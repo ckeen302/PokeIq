@@ -1,0 +1,35 @@
+{
+  "links": {
+    "pokedle": "Pokédle",
+    "geo": "PokéGuessr-Tagesspiel",
+    "conn": "Connections",
+    "pdk": "Pikadoku",
+    "daily": "Tägliche Herausforderung"
+  },
+  "streak": "Deine {days}-Tage-Serie in {game} endet um Mitternacht.",
+  "daily": {
+    "subject": "Die heutigen PokéIQ-Tagesspiele sind da",
+    "testSubject": "[Test] {subject}",
+    "kicker": "Tag Nr. {n}",
+    "heading": "Die heutigen Tagesspiele sind da",
+    "imageAlt": "Das heutige PokéGuessr-Bild, verschwommen",
+    "imageCaption": "Wo in der Pokémon-Welt ist das? Das heutige PokéGuessr beginnt hier.",
+    "why": "Du bekommst diese E-Mail, weil du für den Trainer {name} auf PokéIQ tägliche Erinnerungs-E-Mails eingeschaltet hast.",
+    "unsubscribe": "Abmelden",
+    "settings": "E-Mail-Einstellungen",
+    "preheader": "Pokédle, PokéGuessr, Connections, Pikadoku und die Tägliche Herausforderung sind da.",
+    "textTitle": "PokéIQ Tag Nr. {n}",
+    "textHeading": "Die heutigen Tagesspiele sind da.",
+    "textUnsubscribe": "Abmelden: {url}",
+    "textSettings": "E-Mail-Einstellungen: {url}"
+  },
+  "confirm": {
+    "subject": "Bestätige deine E-Mail-Adresse für PokéIQ",
+    "heading": "Bestätige deine E-Mail-Adresse",
+    "body": "Bestätige diese Adresse für den Trainer {name}, um die täglichen Erinnerungs-E-Mails von PokéIQ zu bekommen. Bis dahin senden wir nichts.",
+    "button": "E-Mail bestätigen",
+    "note": "Der Link ist 7 Tage gültig. Wenn du das nicht angefordert hast, ignoriere diese E-Mail – dann kommt nichts mehr.",
+    "why": "Du bekommst diese E-Mail, weil diese Adresse für tägliche Erinnerungs-E-Mails auf PokéIQ eingegeben wurde.",
+    "preheader": "Ein Klick und fertig."
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "lists": {
+    "loadFailed": "Couldn't load replays.",
+    "loading": "Loading replays",
+    "unavailable": "Replays aren't available on this server yet.",
+    "mine": "My replays",
+    "mineEmpty": "No replays yet. Ranked and public battles save theirs; after any other, press Save replay.",
+    "recent": "Recent replays",
+    "filter": "Filter by format",
+    "all": "All",
+    "recentEmpty": "No public replays in this format yet."
+  },
+  "import": {
+    "log": "Battle log",
+    "watch": "Watch",
+    "open": "Open a replay file",
+    "tooBig": "That file is too big to be a battle replay.",
+    "hint": "Showdown's saved replays (.html) and battle logs (.log). Read on your device, never uploaded.",
+    "errors": {
+      "empty": "Paste a battle log or choose a replay file.",
+      "notLog": "That doesn't look like a Showdown battle log: no players or Pokémon found.",
+      "gameType": "Only singles and doubles battles can be watched here."
+    }
+  },
+  "viewer": {
+    "loading": "Loading the replay",
+    "back": "Back a turn",
+    "turn": "Turn",
+    "pause": "Pause",
+    "replay": "Replay",
+    "play": "Play",
+    "forward": "Forward a turn",
+    "nextKoTitle": "Jump to the next turn a Pokémon faints",
+    "nextKo": "Next KO",
+    "end": "End",
+    "start": "Start",
+    "leads": "Leads",
+    "turnN": "Turn {n}",
+    "seek": "Jump to a turn",
+    "downloadTitle": "Showdown's replay file: opens in any browser and plays in Showdown's replay player",
+    "download": "Download replay",
+    "logTitle": "The raw battle log (Showdown's protocol), one line per event",
+    "log": "Log",
+    "instant": "<b>Instant replay</b> of this battle so far. {timed, select, yes {The battle goes on meanwhile: your turn timer keeps running.} other {The battle waits for you.}}",
+    "backToBattle": "Back to the battle",
+    "another": "Watch another",
+    "battle": "Battle",
+    "more": "More replays"
+  }
+}

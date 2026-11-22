@@ -1,0 +1,27 @@
+{
+  "question": "Wie viele {challenger} besiegen {boss}?",
+  "answer": "Es braucht {n} {challenger}",
+  "spread": "± {spread} über {runs} Kämpfe",
+  "winRate": "{n}: {wins} von {runs} Kämpfen gewonnen",
+  "noAnswer": "Keine Armee aus {challenger} (bis {cap}) besiegt {boss}",
+  "two": "{a} und {b}",
+  "three": "{a}, {b} und {c}",
+  "more": "{a}, {b} und mehr",
+  "group": {
+    "types": "Typen {types}",
+    "legendariesMythicals": "Legendäre und Mysteriöse",
+    "legendaries": "Legendäre",
+    "mythicals": "Mysteriöse",
+    "gen": "Pokémon der Generation {gen}",
+    "fullyEvolved": "Voll entwickelte Pokémon",
+    "pokemon": "Pokémon"
+  },
+  "draw": "Unentschieden",
+  "winsOne": "{w} gewinnt!",
+  "winsMany": "{w} gewinnen!",
+  "timeUp": "Nach {s} Sekunden ist die Zeit um, beide Seiten stehen noch.",
+  "resultLine": "{n} stehen nach {s} s noch · {loser} besiegte {kos}",
+  "multiKo": "{pos} besiegt mit {move} {n} {target}",
+  "crit": "Volltreffer! {pos} trifft {target} mit {move}",
+  "bossDown": "{pos} besiegt {boss} mit {move}!"
+}

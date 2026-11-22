@@ -1,0 +1,50 @@
+{
+  "lists": {
+    "loadFailed": "Replays konnten nicht geladen werden.",
+    "loading": "Replays werden geladen",
+    "unavailable": "Replays sind auf diesem Server noch nicht verfügbar.",
+    "mine": "Meine Replays",
+    "mineEmpty": "Noch keine Replays. Gewertete und öffentliche Kämpfe speichern ihres; nach allen anderen tippe auf Replay speichern.",
+    "recent": "Neueste Replays",
+    "filter": "Nach Format filtern",
+    "all": "Alle",
+    "recentEmpty": "Noch keine öffentlichen Replays in diesem Format."
+  },
+  "import": {
+    "log": "Kampf-Log",
+    "watch": "Ansehen",
+    "open": "Replay-Datei öffnen",
+    "tooBig": "Diese Datei ist zu groß für ein Kampf-Replay.",
+    "hint": "Gespeicherte Showdown-Replays (.html) und Kampf-Logs (.log). Werden auf deinem Gerät gelesen, nie hochgeladen.",
+    "errors": {
+      "empty": "Füge ein Kampf-Log ein oder wähle eine Replay-Datei.",
+      "notLog": "Das sieht nicht nach einem Showdown-Kampf-Log aus: keine Spieler oder Pokémon gefunden.",
+      "gameType": "Hier lassen sich nur Einzel- und Doppelkämpfe ansehen."
+    }
+  },
+  "viewer": {
+    "loading": "Replay wird geladen",
+    "back": "Eine Runde zurück",
+    "turn": "Runde",
+    "pause": "Pause",
+    "replay": "Nochmal",
+    "play": "Abspielen",
+    "forward": "Eine Runde vor",
+    "nextKoTitle": "Zur nächsten Runde springen, in der ein Pokémon besiegt wird",
+    "nextKo": "Nächster K.O.",
+    "end": "Ende",
+    "start": "Start",
+    "leads": "Starter",
+    "turnN": "Runde {n}",
+    "seek": "Zu einer Runde springen",
+    "downloadTitle": "Die Replay-Datei von Showdown: öffnet in jedem Browser und läuft im Replay-Player von Showdown",
+    "download": "Replay herunterladen",
+    "logTitle": "Das rohe Kampf-Log (Showdowns Protokoll), eine Zeile pro Ereignis",
+    "log": "Log",
+    "instant": "<b>Sofort-Replay</b> des bisherigen Kampfs. {timed, select, yes {Der Kampf läuft inzwischen weiter: Dein Rundentimer läuft.} other {Der Kampf wartet auf dich.}}",
+    "backToBattle": "Zurück zum Kampf",
+    "another": "Ein anderes ansehen",
+    "battle": "Kämpfen",
+    "more": "Weitere Replays"
+  }
+}

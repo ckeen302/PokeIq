@@ -1,0 +1,72 @@
+{
+  "fourCpu": {
+    "freeforall": "Three computer trainers, each on their own.",
+    "multi": "A computer partner beside you against two computer trainers."
+  },
+  "opponents": {
+    "cpu": { "title": "Computer", "blurb": "Battle a computer opponent, right now." },
+    "match": { "title": "Find an opponent", "blurb": "Get paired with a trainer searching for the same format, and battle live." },
+    "pvp": { "title": "A friend", "blurb": "Get an invite link and battle live, with a turn timer." }
+  },
+  "shortGen": "Gen {gen}",
+  "quickNoteCustom": "Random-battle sets from Gen {gen}, checked against your rules.",
+  "quickNoteFormat": "Random-battle sets legal in {format}.",
+  "nameRejected": "Pick a different name.",
+  "startFailed": "Couldn't start a battle.",
+  "start": {
+    "cpu": "Start battle",
+    "match": "Find an opponent",
+    "challenge": "Challenge {name}",
+    "pvp": "Create battle"
+  },
+  "opponent": "Opponent",
+  "format": "Format",
+  "random": "Random",
+  "yourTeam": "Your team",
+  "doubles": "Doubles. ",
+  "bringTeam": "Bring a team: saved, built here, or a quick one.",
+  "customRules": "Custom rules",
+  "gens": "Gen 1–9",
+  "groupTitle": "Triples and four trainers",
+  "groupFour": "Four trainers, one Pokémon out each. Bring a team, or a quick one.",
+  "groupThree": "Three Pokémon out a side. Bring a team, or a quick one.",
+  "frontier": "Looking for a streak? Rent a team in the <factory>Battle Factory</factory> or climb the <tower>Battle Tower</tower>.",
+  "cpuLevel": "Computer level",
+  "heading": {
+    "cpu": "Battle the computer",
+    "match": "Battle anyone",
+    "pvp": "Battle a friend"
+  },
+  "summary": {
+    "cpuFour": "{level} computer. {four} {teams, select, random {Random teams for everyone.} other {Each brings its own team.}}",
+    "cpu": "{level} computer. {teams, select, random {Random teams for both of you.} other {It brings its own team.}}",
+    "matchFour": "You'll be paired with the next trainer searching for {format}; the computer takes the other two seats.{multi, select, yes { You and your opponent each get a computer partner.} other {}} Unranked, as on Showdown.",
+    "match": "You'll be paired with the next trainer searching for {format}, and the battle starts at once.{teams, select, random { Teams are random.} other { You each bring your own team.}}",
+    "challenge": "{name} gets your challenge at once (and you get the link too). The battle starts when you're both ready.",
+    "pvpFour": "You'll get a link to send to up to three friends; any seat nobody takes, the computer can fill. Unranked, as on Showdown.",
+    "pvp": "You'll get a link to send. The battle starts when you're both ready."
+  },
+  "nameLabel": "Your trainer name",
+  "namePlaceholder": "Trainer name",
+  "ranked": "Ranked",
+  "rankedSoon": "Ranked battles open soon.",
+  "rankedAccount": "Ranked needs an account, so your rating follows you.",
+  "rankedHint": "Paired by rating on the ladder. A forfeit or leaving counts as a loss.",
+  "signIn": "<link>Sign in</link> to play ranked.",
+  "unrated": "Unrated: you start at 1000 Elo (1500 ± 350 Glicko-2).",
+  "ladder": "Ladder",
+  "watch": "Let anyone watch",
+  "watchHint": "List it in Watch live. Off: only people with the link can watch.",
+  "timer": "Turn timer",
+  "timerHint": "Off: either of you can start it mid-battle.",
+  "timeout": "Lose on timeout",
+  "timeoutHint": "On, as on Showdown: run out of time and you lose (VGC-timer formats make a default move while you still have time in the bank). Off: the timer picks a move for you, and a second timeout in a row loses.",
+  "searchingRanked": "Searching for a ranked rival…",
+  "searching": "Searching for an opponent…",
+  "cancel": "Cancel",
+  "whyName": "Enter a trainer name to start.",
+  "whyTeam": "Pick a team, or a quick one, to start.",
+  "leaving": "Leaving this page or closing the tab ends the search.",
+  "playNow": "Play now · {format}",
+  "custom": "Custom"
+}

@@ -11,10 +11,15 @@ import { normalize } from "@/lib/battle/search";
 import { cn } from "@/lib/utils";
 import { BattleSprite } from "./BattleSprite";
 import { inputClass, SearchSelect } from "./controls";
+import { useT } from "@/i18n/client";
+import pickersNs from "@/messages/battle-pickers";
+import battleTerms from "@/messages/battle-terms";
+import { useBattleNames } from "./use-battle-names";
 
 /** Pickers for species, items, moves, natures and types, fed by @pkmn/data. */
 
 export function BattleType({ type, size = "sm", className }: { type: string; size?: "sm" | "md"; className?: string }) {
+  const t = useT(pickersNs);
   if (type === "Stellar") {
     return (
       <span
@@ -24,7 +29,7 @@ export function BattleType({ type, size = "sm", className }: { type: string; siz
           className
         )}
       >
-        Stellar
+        {t("stellar")}
       </span>
     );
   }
@@ -38,9 +43,10 @@ const CATEGORY_STYLES: Record<string, string> = {
 };
 
 export function CategoryTag({ category }: { category: string }) {
+  const t = useT(pickersNs);
   return (
     <span className={cn("inline-block rounded-sm px-1.5 py-0.5 font-pixel text-[9px] uppercase leading-none", CATEGORY_STYLES[category])}>
-      {category === "Physical" ? "Phys" : category === "Special" ? "Spec" : "Status"}
+      {category === "Physical" ? t("category.Physical") : category === "Special" ? t("category.Special") : t("category.Status")}
     </span>
   );
 }
@@ -79,9 +85,10 @@ export function useFormatBans(format: string): FormatBans | null {
 }
 
 function BannedTag({ reason }: { reason: string }) {
+  const t = useT(pickersNs);
   return (
     <span className="inline-flex shrink-0 items-center gap-0.5 font-pixel text-[9px] uppercase text-destructive" title={reason}>
-      <Ban className="h-3 w-3" aria-hidden /> Banned
+      <Ban className="h-3 w-3" aria-hidden /> {t("banned")}
     </span>
   );
 }
@@ -107,7 +114,7 @@ export function SpeciesSelect({
   onSelect,
   initial,
   tier,
-  label = "Species",
+  label,
   current,
   shiny,
   filter,
@@ -123,6 +130,8 @@ export function SpeciesSelect({
   shiny?: boolean;
   filter?: SpeciesFilterSource;
 }) {
+  const t = useT(pickersNs);
+  const names = useBattleNames();
   const [type, setType] = useState("");
   const [ability, setAbility] = useState("");
   const [learns, setLearns] = useState("");
@@ -166,36 +175,36 @@ export function SpeciesSelect({
 
   return (
     <SearchSelect
-      label={label}
-      value={value}
-      placeholder="Search Pokémon"
+      label={label ?? t("species")}
+      value={names.species(value)}
+      placeholder={t("searchPokemon")}
       options={species}
       initial={start}
       rank={rank}
       keep={keep}
       rowHeight={40}
       getKey={(s) => s.id}
-      getText={(s) => s.name}
+      getText={(s) => (names.locale === "en" ? s.name : `${names.species(s.name)} ${s.name}`)}
       leading={current && <BattleSprite species={current} shiny={shiny} animated={false} size={36} />}
       filters={
         filter && (
-          <div className="flex flex-wrap items-center gap-1.5" aria-label="Filters">
-            <select aria-label="Filter by type" value={type} onChange={(e) => setType(e.target.value)} className={cn(filterSelect, "w-[6.5rem]")}>
-              <option value="">Any type</option>
-              {filter.types.map((t) => (
-                <option key={t} value={t}>
-                  {t}
+          <div className="flex flex-wrap items-center gap-1.5" aria-label={t("filters")}>
+            <select aria-label={t("filterType")} value={type} onChange={(e) => setType(e.target.value)} className={cn(filterSelect, "w-[6.5rem]")}>
+              <option value="">{t("anyType")}</option>
+              {filter.types.map((ty) => (
+                <option key={ty} value={ty}>
+                  {ty}
                 </option>
               ))}
             </select>
             {filter.abilities && (
               <>
                 <input
-                  aria-label="Filter by ability"
+                  aria-label={t("filterAbility")}
                   list={`${ids}-abilities`}
                   value={ability}
                   onChange={(e) => setAbility(e.target.value)}
-                  placeholder="Ability"
+                  placeholder={t("ability")}
                   className={cn(filterSelect, "w-[7.5rem]")}
                 />
                 <datalist id={`${ids}-abilities`}>
@@ -208,11 +217,11 @@ export function SpeciesSelect({
             {filter.moves && filter.learners && (
               <>
                 <input
-                  aria-label="Filter by move learned"
+                  aria-label={t("filterMove")}
                   list={`${ids}-moves`}
                   value={learns}
                   onChange={(e) => setLearns(e.target.value)}
-                  placeholder="Learns move"
+                  placeholder={t("learns")}
                   className={cn(filterSelect, "w-[7.5rem]", learns && !knownMove && "border-warning/60")}
                 />
                 <datalist id={`${ids}-moves`}>
@@ -225,7 +234,7 @@ export function SpeciesSelect({
             {bans && (
               <label className="flex cursor-pointer items-center gap-1 text-xs text-muted-foreground">
                 <input type="checkbox" checked={legalOnly} onChange={(e) => setLegalOnly(e.target.checked)} className="accent-[hsl(var(--screen))]" />
-                Legal only
+                {t("legalOnly")}
               </label>
             )}
             {active > 0 && (
@@ -238,7 +247,7 @@ export function SpeciesSelect({
                 }}
                 className="hud-label ml-auto hover:text-foreground"
               >
-                Clear
+                {t("clear")}
               </button>
             )}
           </div>
@@ -250,16 +259,16 @@ export function SpeciesSelect({
         return (
           <span className={cn("flex items-center gap-2", banned && "opacity-60")}>
             <BattleSprite species={s} animated={false} size={36} className="shrink-0" />
-            <span className="min-w-0 flex-1 truncate font-display font-semibold">{s.name}</span>
+            <span className="min-w-0 flex-1 truncate font-display font-semibold">{names.species(s.name)}</span>
             {banned && <BannedTag reason={banned} />}
             <span className="hidden gap-1 sm:flex">
-              {s.types.map((t) => (
-                <BattleType key={t} type={t} />
+              {s.types.map((ty) => (
+                <BattleType key={ty} type={ty} />
               ))}
             </span>
             {tier && <span className="hud-label w-12 text-right text-screen">{tier(s)}</span>}
             {usage.size > 0 && <span className="hidden w-11 text-right font-mono text-[11px] tabular-nums text-muted-foreground sm:block">{share ? pct(share) : ""}</span>}
-            <span className="w-8 text-right font-mono text-[11px] tabular-nums text-muted-foreground" title="Base stat total">
+            <span className="w-8 text-right font-mono text-[11px] tabular-nums text-muted-foreground" title={t("bst")}>
               {bst(s)}
             </span>
           </span>
@@ -275,7 +284,7 @@ export function ItemSelect({
   items,
   value,
   onSelect,
-  label = "Item",
+  label,
   usage,
   bans,
 }: {
@@ -287,6 +296,8 @@ export function ItemSelect({
   usage?: readonly (readonly [string, number])[];
   bans?: Record<string, string> | null;
 }) {
+  const t = useT(pickersNs);
+  const names = useBattleNames();
   const used = useMemo(() => usageLookup(usage), [usage]);
   const rank = useMemo(
     () => (used.size || bans ? (i: Item) => (used.get(i.id)?.rank ?? used.size + 1) + (bans?.[i.id] ? 10_000 : 0) : undefined),
@@ -294,21 +305,21 @@ export function ItemSelect({
   );
   return (
     <SearchSelect
-      label={label}
-      value={value}
-      placeholder="No item"
+      label={label ?? t("item")}
+      value={names.item(value)}
+      placeholder={t("noItem")}
       options={items}
       rank={rank}
       rowHeight={40}
       getKey={(i) => i.id}
-      getText={(i) => i.name}
+      getText={(i) => (names.locale === "en" ? i.name : `${names.item(i.name)} ${i.name}`)}
       render={(i) => {
         const share = used.get(i.id)?.share;
         const banned = bans?.[i.id];
         return (
           <span className={cn("flex items-center gap-2", banned && "opacity-60")}>
             <span className="min-w-0 flex-1">
-              <span className="block truncate font-display font-semibold">{i.name}</span>
+              <span className="block truncate font-display font-semibold">{names.item(i.name)}</span>
               <span className="block truncate text-[11px] text-muted-foreground">{i.shortDesc || i.desc}</span>
             </span>
             {banned && <BannedTag reason={banned} />}
@@ -350,6 +361,8 @@ export function MoveSelect({
   /** Shows the type and category filters. */
   types?: readonly string[];
 }) {
+  const t = useT(pickersNs);
+  const names = useBattleNames();
   const [type, setType] = useState("");
   const [category, setCategory] = useState("");
   const used = useMemo(() => usageLookup(usage), [usage]);
@@ -365,22 +378,22 @@ export function MoveSelect({
   return (
     <SearchSelect
       label={label}
-      value={value}
-      placeholder={loading ? "Loading moves…" : "Add a move"}
+      value={names.move(value)}
+      placeholder={loading ? t("loadingMoves") : t("addMove")}
       options={options}
       rank={rank}
       keep={keep}
       rowHeight={32}
       getKey={(m) => m.id}
-      getText={(m) => m.name}
+      getText={(m) => (names.locale === "en" ? m.name : `${names.move(m.name)} ${m.name}`)}
       filters={
         types && (
-          <div className="flex flex-wrap items-center gap-1.5" aria-label="Filters">
-            <select aria-label="Filter moves by type" value={type} onChange={(e) => setType(e.target.value)} className={cn(filterSelect, "w-[6.5rem]")}>
-              <option value="">Any type</option>
-              {types.map((t) => (
-                <option key={t} value={t}>
-                  {t}
+          <div className="flex flex-wrap items-center gap-1.5" aria-label={t("filters")}>
+            <select aria-label={t("filterMoveType")} value={type} onChange={(e) => setType(e.target.value)} className={cn(filterSelect, "w-[6.5rem]")}>
+              <option value="">{t("anyType")}</option>
+              {types.map((ty) => (
+                <option key={ty} value={ty}>
+                  {ty}
                 </option>
               ))}
             </select>
@@ -395,7 +408,7 @@ export function MoveSelect({
                   category === c ? "border-screen/60 bg-screen/15" : "border-foreground/15 text-muted-foreground hover:text-foreground"
                 )}
               >
-                {c}
+                {t(`categoryName.${c}`)}
               </button>
             ))}
           </div>
@@ -403,23 +416,23 @@ export function MoveSelect({
       }
       header={
         <div className={cn(MOVE_GRID, "hud-label")}>
-          <span>Move</span>
-          <span>Type</span>
-          <span>Cat</span>
-          <span className="text-right">Pow</span>
-          <span className="hidden text-right sm:block">Acc</span>
-          <span className="hidden text-right sm:block">PP</span>
-          <span className="hidden text-right sm:block">{used.size ? "Use" : ""}</span>
+          <span>{t("head.move")}</span>
+          <span>{t("head.type")}</span>
+          <span>{t("head.cat")}</span>
+          <span className="text-right">{t("head.pow")}</span>
+          <span className="hidden text-right sm:block">{t("head.acc")}</span>
+          <span className="hidden text-right sm:block">{t("head.pp")}</span>
+          <span className="hidden text-right sm:block">{used.size ? t("head.use") : ""}</span>
         </div>
       }
       render={(m) => {
         const banned = bans?.[m.id];
         const share = used.get(m.id)?.share;
         return (
-          <span className={cn(MOVE_GRID, banned && "opacity-60")} title={banned ? `${m.name} is ${banned}.` : m.shortDesc}>
+          <span className={cn(MOVE_GRID, banned && "opacity-60")} title={banned ? t("isBanned", { move: m.name, reason: banned }) : m.shortDesc}>
             <span className="flex min-w-0 items-center gap-1">
-              <span className="truncate font-display font-semibold">{m.name}</span>
-              {banned && <Ban className="h-3 w-3 shrink-0 text-destructive" aria-label="Banned" />}
+              <span className="truncate font-display font-semibold">{names.move(m.name)}</span>
+              {banned && <Ban className="h-3 w-3 shrink-0 text-destructive" aria-label={t("banned")} />}
             </span>
             <BattleType type={m.type} />
             <CategoryTag category={m.category} />
@@ -446,19 +459,22 @@ export function NatureSelect({
   natures,
   value,
   onChange,
-  label = "Nature",
+  label,
 }: {
   natures: readonly Nature[];
   value: string;
   onChange: (nature: string) => void;
   label?: string;
 }) {
+  const t = useT(pickersNs);
+  const st = useT(battleTerms);
+  const names = useBattleNames();
   return (
-    <select aria-label={label} value={value} onChange={(e) => onChange(e.target.value)} className={inputClass}>
+    <select aria-label={label ?? t("nature")} value={value} onChange={(e) => onChange(e.target.value)} className={inputClass}>
       {!value && <option value="">Serious (neutral)</option>}
       {natures.map((n) => (
         <option key={n.id} value={n.name}>
-          {natureLabel(n)}
+          {names.locale === "en" ? natureLabel(n) : n.plus && n.minus ? `${names.nature(n.name)} (+${st(`stat.${n.plus}`)}, −${st(`stat.${n.minus}`)})` : names.nature(n.name)}
         </option>
       ))}
     </select>
@@ -478,12 +494,13 @@ export function TypeSelect({
   label: string;
   allowNone?: string;
 }) {
+  const names = useBattleNames();
   return (
     <select aria-label={label} value={value} onChange={(e) => onChange(e.target.value)} className={inputClass}>
       {allowNone !== undefined && <option value="">{allowNone}</option>}
       {types.map((t) => (
         <option key={t} value={t}>
-          {t}
+          {names.type(t)}
         </option>
       ))}
     </select>

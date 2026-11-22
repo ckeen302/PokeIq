@@ -3,7 +3,9 @@ import { Mp4Muxer, aacConfig } from "@/lib/sizes/mp4";
 import { CROWD_URL, APPLAUSE_URL, noiseBuffer } from "@/components/race/audio";
 import { gameText } from "@/components/race/graphics";
 import type { Athlete } from "@/lib/games/athlete";
-import { eventOf } from "@/lib/games/events";
+import { translator, type Translator } from "@/i18n/catalog";
+import gamesShow from "@/messages/games-show";
+import { sceneLabels } from "./scene-labels";
 import { createGamesScene, type Quality, type SceneUrls } from "./scene";
 import { ANTHEM_URL, FANFARE_URL, buildMixer, crowdLevels, scheduleCue, type Buffers } from "./audio";
 import { drawOverlay, drawSprint, type Gfx } from "./graphics";
@@ -167,7 +169,7 @@ function wrap(g: CanvasRenderingContext2D, text: string, maxW: number): string[]
 }
 
 /** The hook card, the watermark and the end card over a frame (in video pixels). */
-function drawCards(g: CanvasRenderingContext2D, W: number, H: number, t: number, total: number, end: number, o: Pick<GamesRecordOptions, "hook" | "sub" | "podium" | "versus" | "endTitle" | "link" | "font"> & { logo: HTMLImageElement | null; arts?: (HTMLImageElement | null)[] }) {
+function drawCards(g: CanvasRenderingContext2D, W: number, H: number, t: number, total: number, end: number, o: Pick<GamesRecordOptions, "hook" | "sub" | "podium" | "versus" | "endTitle" | "link" | "font"> & { logo: HTMLImageElement | null; arts?: (HTMLImageElement | null)[] }, tr: Translator<typeof gamesShow.en>) {
   const font = o.font;
   const u = Math.min(W, H * 0.5625);
   // Watermark.
@@ -224,11 +226,11 @@ function drawCards(g: CanvasRenderingContext2D, W: number, H: number, t: number,
     if (o.logo) g.drawImage(o.logo, W / 2 - s / 2, H * at.logo - s / 2, s, s);
     g.textAlign = "center";
     g.textBaseline = "middle";
-    gameText(g, "The PokéIQ Games", W / 2, H * at.title, u * 0.075, font, "#ffffff", "#0d1626", u * 0.015);
+    gameText(g, tr("video.games"), W / 2, H * at.title, u * 0.075, font, "#ffffff", "#0d1626", u * 0.015);
     gameText(g, o.endTitle, W / 2, H * at.sub, u * 0.043, font, "#ffd21f", "#0d1626", u * 0.009);
     const colors = ["#ffd84a", "#d7dde5", "#d58a4a"];
     const top = o.versus ? [] : o.podium.slice(0, 3);
-    if (o.versus) drawVersus(g, W, H, u, H * at.row, o.versus, o.arts ?? [], font);
+    if (o.versus) drawVersus(g, W, H, u, H * at.row, o.versus, o.arts ?? [], font, tr);
     const arts = top.map((_, i) => o.arts?.[i] ?? null);
     if (top.length && arts.every((x) => x)) {
       // Silver, gold, bronze, left to right; the gold a size up.
@@ -278,7 +280,7 @@ function drawCards(g: CanvasRenderingContext2D, W: number, H: number, t: number,
         gameText(g, line, W / 2, y, lpx, font, colors[i] ?? "#ffffff", "#0d1626", lpx * 0.18);
       });
     }
-    gameText(g, o.versus ? "Pick your own head to head" : "Pick your own line-up", W / 2, H * at.cta, u * 0.05, font, "#ffd21f", "#0d1626", u * 0.01);
+    gameText(g, tr(o.versus ? "video.ctaVersus" : "video.ctaLineup"), W / 2, H * at.cta, u * 0.05, font, "#ffd21f", "#0d1626", u * 0.01);
     const link = shortLink(o.link);
     let lpx = u * 0.054;
     g.font = `800 ${lpx}px ${font}`;
@@ -290,7 +292,7 @@ function drawCards(g: CanvasRenderingContext2D, W: number, H: number, t: number,
 }
 
 /** A head to head's result: the two Pokémon side by side (the winner's ring gold), each one's result under it, the margin below. */
-function drawVersus(g: CanvasRenderingContext2D, W: number, H: number, u: number, y: number, v: NonNullable<GamesRecordOptions["versus"]>, arts: (HTMLImageElement | null)[], font: string) {
+function drawVersus(g: CanvasRenderingContext2D, W: number, H: number, u: number, y: number, v: NonNullable<GamesRecordOptions["versus"]>, arts: (HTMLImageElement | null)[], font: string, tr: Translator<typeof gamesShow.en>) {
   const gap = Math.min(W * 0.4, u * 0.46);
   v.sides.slice(0, 2).forEach((p, i) => {
     const cx = W / 2 + (i === 0 ? -gap / 2 : gap / 2);
@@ -328,7 +330,7 @@ function drawVersus(g: CanvasRenderingContext2D, W: number, H: number, u: number
     gameText(g, p.name, cx, y + u * 0.215, npx, font, "#ffffff", "#0d1626", npx * 0.18);
     gameText(g, p.mark, cx, y + u * 0.275, u * 0.046, font, color, "#0d1626", u * 0.009);
   });
-  gameText(g, "VS", W / 2, y, u * 0.06, font, "#ffd21f", "#0d1626", u * 0.012);
+  gameText(g, tr("video.vs"), W / 2, y, u * 0.06, font, "#ffd21f", "#0d1626", u * 0.012);
   let lpx = u * 0.044;
   g.font = `800 ${lpx}px ${font}`;
   const lw = g.measureText(v.line).width;
@@ -341,7 +343,7 @@ export function shortLink(link: string): string {
   return link.split(/[?#]/)[0].replace(/\/run$/, "").replace(/\/$/, "");
 }
 
-export async function recordGames(o: GamesRecordOptions): Promise<GamesRecordResult> {
+export async function recordGames(o: GamesRecordOptions, tr: Translator<typeof gamesShow.en> = translator(gamesShow, "en", undefined)): Promise<GamesRecordResult> {
   const { w: W, h: H } = videoSize(o.format);
   const fps = o.fps ?? VIDEO_FPS;
   const { total, end, offsets } = gamesVideoPlan(o.parts, o.seconds);
@@ -350,11 +352,11 @@ export async function recordGames(o: GamesRecordOptions): Promise<GamesRecordRes
   const i0 = o.range ? Math.max(0, Math.min(N, Math.round(o.range.from * fps))) : 0;
   const i1 = o.range ? Math.max(i0, Math.min(N, Math.round(o.range.to * fps))) : N;
   const aspect = W / H;
-  o.onProgress(0, "Setting the scene");
+  o.onProgress(0, tr("video.setting"));
   const host = document.createElement("div");
   host.style.cssText = `position:fixed;left:-20000px;top:0;width:${W}px;height:${H}px;pointer-events:none;`;
   document.body.appendChild(host);
-  const scene = createGamesScene(host, { quality: o.quality ?? "export", size: { w: W, h: H }, urls: o.urls, font: o.font });
+  const scene = createGamesScene(host, { quality: o.quality ?? "export", size: { w: W, h: H }, urls: o.urls, font: o.font, labels: sceneLabels(tr) });
   // The graphics are laid out on a logical page (a 390 px wide phone for the vertical video, 960 px for the wide one) scaled up.
   const LW = o.format === "9:16" ? 390 : 960;
   const S = W / LW, LH = H / S;
@@ -366,7 +368,7 @@ export async function recordGames(o: GamesRecordOptions): Promise<GamesRecordRes
   const loadPart = async (i: number) => {
     if (i === loaded) return;
     const p = o.parts[i];
-    await scene.load({ athletes: p.athletes, race: p.race, falseRace: p.falseRace ?? null, venue: p.venue }, o.signal, (k) => o.onProgress(0.03 * ((i + k) / o.parts.length), "Athletes warming up"));
+    await scene.load({ athletes: p.athletes, race: p.race, falseRace: p.falseRace ?? null, venue: p.venue }, o.signal, (k) => o.onProgress(0.03 * ((i + k) / o.parts.length), tr("video.warming")));
     stop();
     photo = null;
     // A sprint's photo finish, developed up front.
@@ -403,11 +405,11 @@ export async function recordGames(o: GamesRecordOptions): Promise<GamesRecordRes
         const heads = scene.heads().map((h) => ({ ...h, x: h.x / S, y: h.y / S, by: h.by / S }));
         const part = seq.partAt(p.t);
         const sp = part.show as Show & Partial<SprintExtras>;
-        if (sp.racePlan) drawSprint(g, LW, LH, sp as Show & SprintExtras, p.t - part.t0, heads, photo, { ...gfx, title: `${eventOf(sp.event).name} · final` });
+        if (sp.racePlan) drawSprint(g, LW, LH, sp as Show & SprintExtras, p.t - part.t0, heads, photo, { ...gfx, title: tr("sprint.title", { event: tr(`ev.${sp.event}.name`) }) }, tr);
         else drawOverlay(g, LW, LH, seq.overlay(p.t), heads, o.byKey, gfx);
         g.setTransform(1, 0, 0, 1, 0, 0);
       }
-      drawCards(g, W, H, t, total, end, { ...o, logo, arts });
+      drawCards(g, W, H, t, total, end, { ...o, logo, arts }, tr);
     };
 
     const vcfg = await pickVideoCodec(W, H, fps);
@@ -426,7 +428,7 @@ export async function recordGames(o: GamesRecordOptions): Promise<GamesRecordRes
         error(e) { failure = e; },
       });
       enc.configure(vcfg);
-      o.onProgress(0.03, "Mixing the sound");
+      o.onProgress(0.03, tr("video.mixing"));
       const rate = 48000;
       const acodec = await pickAudioCodec(rate);
       const mix = acodec ? await mixAudio(o.parts, offsets, total, aspect, rate, o.signal) : null;
@@ -470,13 +472,13 @@ export async function recordGames(o: GamesRecordOptions): Promise<GamesRecordRes
         frame.close();
         while (enc.encodeQueueSize > 3) await sleep(2);
         if (i % 2 === 0) await sleep(0);
-        o.onProgress(0.05 + 0.95 * ((k + 1) / Math.max(1, i1 - i0)), "Rendering");
+        o.onProgress(0.05 + 0.95 * ((k + 1) / Math.max(1, i1 - i0)), tr("video.rendering"));
       }
       await enc.flush();
       enc.close();
       if (failure) throw failure;
-      if (!description) throw new Error("The video encoder gave no decoder configuration");
-      o.onProgress(1, "Packing the MP4");
+      if (!description) throw new Error(tr("video.noConfig"));
+      o.onProgress(1, tr("video.packing"));
       const mux = new Mp4Muxer({ width: W, height: H, description }, acodec && audioChunks.length ? { codec: acodec.codec, sampleRate: rate, channels: 2, description: audioDesc ?? (acodec.codec === "aac" ? aacConfig(rate, 2) : undefined) } : undefined);
       for (const c of chunks) mux.addVideo(c.data, c.ts, c.dur, c.key);
       for (const c of audioChunks) mux.addAudio(c.data, c.ts, c.dur);
@@ -485,7 +487,7 @@ export async function recordGames(o: GamesRecordOptions): Promise<GamesRecordRes
     }
 
     // Fallback: MediaRecorder in real time.
-    if (typeof MediaRecorder === "undefined" || !compose.captureStream) throw new Error("This browser can't record video");
+    if (typeof MediaRecorder === "undefined" || !compose.captureStream) throw new Error(tr("video.cantRecord"));
     const mime = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm", "video/mp4;codecs=avc1,mp4a", "video/mp4"].find((m) => MediaRecorder.isTypeSupported(m)) ?? "video/webm";
     const isMp4 = mime.startsWith("video/mp4");
     const stream = compose.captureStream(fps);
@@ -512,7 +514,7 @@ export async function recordGames(o: GamesRecordOptions): Promise<GamesRecordRes
       const t = (performance.now() - t0) / 1000;
       if (t >= total) break;
       await drawAt(Math.floor(t * fps));
-      o.onProgress(t / total, "Recording");
+      o.onProgress(t / total, tr("video.recording"));
       await new Promise((r) => requestAnimationFrame(r));
     }
     rec.stop();

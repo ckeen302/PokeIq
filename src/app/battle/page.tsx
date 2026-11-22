@@ -6,80 +6,62 @@ import { GameInfo } from "@/components/seo/GameInfo";
 import { HudHeading } from "@/components/game/HudHeading";
 import { BATTLE_FORMATS, BATTLE_FORMAT_IDS } from "@/lib/battle/formats";
 import { BattleHome } from "@/components/battle/BattleHome";
+import { ClientMessages } from "@/i18n/ClientMessages";
+import { serverT } from "@/i18n/server";
+import pagesNs from "@/messages/battle-pages";
+import homeNs from "@/messages/battle-home";
+import formatsNs from "@/messages/battle-formats";
+import teamPickNs from "@/messages/battle-team-pick";
+import rulesNs from "@/messages/battle-rules";
+import pickersNs from "@/messages/battle-pickers";
+import battleGlicko from "@/messages/battle-glicko";
+import battleTeams from "@/messages/battle-teams";
+import battleTeamInsights from "@/messages/battle-team-insights";
+import battleTerms from "@/messages/battle-terms";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Pokémon Battle Simulator: PvP, vs Computer & Team Builder",
-  description:
-    "Free Pokémon battle simulator on Pokémon Showdown's engine: live PvP online, battle a friend or the computer, plus a team builder and damage calculator.",
-  path: "/battle",
-});
+export function generateMetadata(): Metadata {
+  const t = serverT(pagesNs);
+  return pageMetadata({
+    title: t("hub.meta.title"),
+    description: t("hub.meta.description"),
+    path: "/battle",
+  });
+}
 
-const LIVE: { href: string; icon: LucideIcon; title: string; blurb: string; points: string[]; wide?: boolean }[] = [
-  {
-    href: "/battle/play",
-    icon: Bot,
-    title: "Battle vs Computer",
-    blurb: "Battle a computer that plays to win.",
-    points: ["Random Battle, Random Doubles or your saved team", "Easy, Normal and Hard opponents", "Showdown's move animations, Tera and all"],
-  },
-  {
-    href: "/battle/play?vs=anyone",
-    icon: UserSearch,
-    title: "Battle Online",
-    blurb: "Find an opponent, or invite a friend.",
-    points: ["Matchmaking in every format, random teams or your own", "Showdown's turn timer; each side sees only what it should", "Rematch with one press"],
-  },
-  {
-    href: "/battle/teams",
-    icon: Users,
-    title: "Team Builder",
-    blurb: "Build teams, checked as you go.",
-    points: ["Formats from Gen 9 OU back to Gen 3 OU", "EVs, IVs, natures and live stats", "Showdown import / export, random teams"],
-  },
-  {
-    href: "/battle/calc",
-    icon: Calculator,
-    title: "Damage Calc",
-    blurb: "Damage ranges and KO chances.",
-    points: ["Boosts, status, Tera and current HP", "Weather, terrain, screens, spread moves", "Load sets straight from your teams"],
-  },
-  {
-    href: "/battle/lab",
-    icon: FlaskConical,
-    title: "Battle Lab",
-    blurb: "Run any matchup thousands of times.",
-    points: ["Any Pokémon, level, item and move, Gen 1 to 9", "Smart, Greedy, Random or Scripted play per side", "Win % with a 95% confidence interval, KOs, crits, replays"],
-    wide: true,
-  },
+type LiveKey = keyof typeof pagesNs.en.hub.live;
+type FrontierKey = keyof typeof pagesNs.en.hub.frontier;
+
+const LIVE: { href: string; icon: LucideIcon; key: LiveKey; wide?: boolean }[] = [
+  { href: "/battle/play", icon: Bot, key: "cpu" },
+  { href: "/battle/play?vs=anyone", icon: UserSearch, key: "online" },
+  { href: "/battle/teams", icon: Users, key: "teams" },
+  { href: "/battle/calc", icon: Calculator, key: "calc" },
+  { href: "/battle/lab", icon: FlaskConical, key: "lab", wide: true },
 ];
 
 /** The Battle Frontier: runs against the computer. `href` null: not open yet. */
-const FRONTIER: { href: string | null; icon: LucideIcon; title: string; blurb: string; points: string[] }[] = [
-  {
-    href: "/battle/factory",
-    icon: Factory,
-    title: "Battle Factory",
-    blurb: "Rent a team and build a streak.",
-    points: ["Level 100 Factory or level 50 BSS Factory", "Trade for your opponent's Pokémon after each win", "Or battle live: both trainers rent a team"],
-  },
-  {
-    href: "/battle/tower",
-    icon: Castle,
-    title: "Battle Tower",
-    blurb: "Your team vs a streak of trainers.",
-    points: ["Level 50, bring six, pick three", "Saved, built or quick teams, checked by Showdown", "The Tower Tycoon every seventh battle"],
-  },
+const FRONTIER: { href: string | null; icon: LucideIcon; key: FrontierKey }[] = [
+  { href: "/battle/factory", icon: Factory, key: "factory" },
+  { href: "/battle/tower", icon: Castle, key: "tower" },
 ];
 
+const POINTS = ["p1", "p2", "p3"] as const;
+
 export default function BattlePage() {
+  const t = serverT(pagesNs);
+  const live = LIVE.map((c) => ({ ...c, title: t(`hub.live.${c.key}.title`), blurb: t(`hub.live.${c.key}.blurb`), points: POINTS.map((p) => t(`hub.live.${c.key}.${p}`)) }));
+  const frontier = FRONTIER.map((c) => ({ ...c, title: t(`hub.frontier.${c.key}.title`), blurb: t(`hub.frontier.${c.key}.blurb`), points: POINTS.map((p) => t(`hub.frontier.${c.key}.${p}`)) }));
   return (
     <div className="mx-auto max-w-6xl space-y-12">
-      <BattleHome />
+      {/* The team picker, custom rules and pickers load with a format that needs them: their words come along. */}
+      <ClientMessages namespaces={[homeNs, formatsNs, teamPickNs, rulesNs, pickersNs, battleGlicko, battleTeams, battleTeamInsights, battleTerms]}>
+        <BattleHome />
+      </ClientMessages>
 
       <section className="space-y-5">
-        <HudHeading index={1} title="Battles and tools" aside={<span className="max-md:hidden">Live</span>} />
+        <HudHeading index={1} title={t("hub.tools")} aside={<span className="max-md:hidden">{t("hub.liveTag")}</span>} />
         <div className="grid gap-4 md:grid-cols-2">
-          {LIVE.map(({ href, icon: Icon, title, blurb, points, wide }) => (
+          {live.map(({ href, icon: Icon, title, blurb, points, wide }) => (
             <Link key={href} href={href} className={`menu-item hud group relative block rounded-lg border bg-card p-6 hover:border-screen/50 max-md:p-4${wide ? " md:col-span-2" : ""}`}>
               <div className="flex items-start gap-4 max-md:gap-3">
                 <span className="screen flex h-14 w-14 shrink-0 items-center justify-center rounded-md text-screen max-md:h-11 max-md:w-11">
@@ -89,7 +71,7 @@ export default function BattlePage() {
                   <div className="flex items-center gap-2 max-md:flex-wrap max-md:gap-y-0.5">
                     <span className="font-display text-xl font-bold uppercase tracking-wide max-md:text-lg max-md:leading-tight">{title}</span>
                     <span className="hud-label flex items-center gap-1.5 text-success max-md:hidden">
-                      <span className="led h-1.5 w-1.5 text-success" /> Live
+                      <span className="led h-1.5 w-1.5 text-success" /> {t("hub.liveTag")}
                     </span>
                   </div>
                   <p className="text-sm text-muted-foreground">{blurb}</p>
@@ -109,9 +91,9 @@ export default function BattlePage() {
       </section>
 
       <section className="space-y-5">
-        <HudHeading index={2} title="Battle Frontier" aside={<span className="max-md:hidden">Streaks against the computer</span>} />
+        <HudHeading index={2} title={t("hub.frontierTitle")} aside={<span className="max-md:hidden">{t("hub.frontierAside")}</span>} />
         <div className="grid gap-4 md:grid-cols-2" data-testid="battle-frontier">
-          {FRONTIER.map(({ href, icon: Icon, title, blurb, points }) =>
+          {frontier.map(({ href, icon: Icon, title, blurb, points }) =>
             href ? (
               <Link key={title} href={href} className="menu-item hud group relative block rounded-lg border bg-card p-6 hover:border-screen/50 max-md:p-4">
                 <div className="flex items-start gap-4 max-md:gap-3">
@@ -134,7 +116,7 @@ export default function BattlePage() {
               </Link>
             ) : (
               <div key={title} className="relative space-y-2 rounded-lg border border-dashed border-foreground/15 bg-card/50 p-5">
-                <span className="hud-label absolute right-3 top-3 rounded-sm border border-warning/40 px-1.5 py-1 text-warning">Soon</span>
+                <span className="hud-label absolute right-3 top-3 rounded-sm border border-warning/40 px-1.5 py-1 text-warning">{t("hub.soon")}</span>
                 <Icon className="h-6 w-6 text-muted-foreground" aria-hidden />
                 <h3 className="font-display text-base font-bold uppercase tracking-wide">{title}</h3>
                 <p className="text-sm text-muted-foreground">{blurb}</p>
@@ -145,7 +127,7 @@ export default function BattlePage() {
       </section>
 
       <section className="space-y-5 max-md:hidden">
-        <HudHeading index={3} title="Formats" aside="Pokémon Showdown's rules for each" />
+        <HudHeading index={3} title={t("hub.formats")} aside={t("hub.formatsAside")} />
         <div className="grid gap-px overflow-hidden rounded-lg border bg-border sm:grid-cols-2 lg:grid-cols-4">
           {BATTLE_FORMAT_IDS.map((id) => {
             const f = BATTLE_FORMATS[id];
@@ -153,9 +135,9 @@ export default function BattlePage() {
               <div key={id} className="space-y-1 bg-card p-4">
                 <div className="flex items-baseline justify-between gap-2">
                   <span className="font-display font-bold uppercase tracking-wide">{f.name}</span>
-                  <span className="hud-label text-screen">{f.gameType}</span>
+                  <span className="hud-label text-screen">{t(`hub.gameType.${f.gameType}`)}</span>
                 </div>
-                <p className="text-xs text-muted-foreground">{f.blurb}</p>
+                <p className="text-xs text-muted-foreground">{t(`hub.formatBlurb.${id}`)}</p>
               </div>
             );
           })}
@@ -164,18 +146,11 @@ export default function BattlePage() {
       <GameInfo
         path="/battle"
         hidden
-        name="Pokémon battles"
-        description="A free Pokémon battle simulator on Pokémon Showdown's engine: battle the computer, a friend or a stranger, with a team builder, damage calculator and Battle Lab."
-        intro="This Pokémon battle simulator runs on Pokémon Showdown's own engine: battle the computer, a friend through a link, or an opponent found online."
-        steps={[
-          "Pick a mode: battle the computer, battle online, or open the Battle Frontier.",
-          "Use a random team or build your own in the team builder.",
-          "Choose your moves each turn and win the battle.",
-          "Check matchups with the damage calculator or simulate thousands of battles in the Battle Lab.",
-        ]}
-        faqs={[
-          { q: "What is the Battle Lab?", a: "It lets you set up any matchup and have the engine play it thousands of times to estimate win odds." },
-        ]}
+        name={t("hub.info.name")}
+        description={t("hub.info.description")}
+        intro={t("hub.info.intro")}
+        steps={(["step1", "step2", "step3", "step4"] as const).map((k) => t(`hub.info.${k}`))}
+        faqs={[{ q: t("hub.info.labQ"), a: t("hub.info.labA") }]}
       />
     </div>
   );

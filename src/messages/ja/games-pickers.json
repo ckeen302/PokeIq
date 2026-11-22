@@ -1,0 +1,40 @@
+{
+  "close": "閉じる",
+  "title": "種目と出場メンバーを選ぼう",
+  "blurb": "ポケモンやすがたを最大8匹まで。2匹なら1対1になります。",
+  "event": "種目",
+  "remove": "{name}を外す",
+  "addMore": "あと{n}匹追加",
+  "addUpTo": "最大8匹まで追加",
+  "placeholder": "ポケモンを追加…",
+  "search": "追加するポケモンを検索",
+  "fun": "おまかせ",
+  "funLabel": {
+    "giants": "超重量級 vs 超軽量級",
+    "starters": "最終進化の御三家",
+    "legends": "伝説のポケモン",
+    "favourites": "人気のポケモン",
+    "type": "{type}タイプ",
+    "random": "ランダムに8匹"
+  },
+  "stat": {
+    "spe": "すばやさ",
+    "atk": "こうげき",
+    "def": "ぼうぎょ",
+    "hp": "HP",
+    "kg": "kg",
+    "height": "たかさ"
+  },
+  "h2h": "1対1",
+  "go": "スタート",
+  "nations": "国",
+  "nationsBlurb": "最大8か国。タイプを選ぶと、そのタイプのオールラウンダー上位3匹が出場（伝説のポケモンは除く）。3匹のチームを自分で組むこともできます。",
+  "team": "チーム{name}",
+  "typeNations": "タイプ別の国",
+  "build": "3匹のチームを組む",
+  "removeOne": "外す",
+  "teamPlaceholder": "チームにポケモンを追加…",
+  "teamSearch": "ポケモンを検索",
+  "addTeam": "このチームを追加",
+  "open": "大会を開く"
+}

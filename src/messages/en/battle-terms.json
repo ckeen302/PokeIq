@@ -1,0 +1,19 @@
+{
+  "stat": {
+    "hp": "HP",
+    "atk": "Attack",
+    "def": "Defense",
+    "spa": "Sp. Atk",
+    "spd": "Sp. Def",
+    "spe": "Speed"
+  },
+  "short": {
+    "hp": "HP",
+    "atk": "Atk",
+    "def": "Def",
+    "spa": "SpA",
+    "spd": "SpD",
+    "spe": "Spe",
+    "spc": "Spc"
+  }
+}

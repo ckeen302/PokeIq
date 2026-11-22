@@ -1,0 +1,19 @@
+{
+  "stat": {
+    "hp": "PS",
+    "atk": "Attacco",
+    "def": "Difesa",
+    "spa": "Attacco Speciale",
+    "spd": "Difesa Speciale",
+    "spe": "Velocità"
+  },
+  "short": {
+    "hp": "PS",
+    "atk": "Att",
+    "def": "Dif",
+    "spa": "AtS",
+    "spd": "DiS",
+    "spe": "Vel",
+    "spc": "Spe"
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "fourCpu": {
+    "freeforall": "Tre Allenatori del computer, ognuno per conto suo.",
+    "multi": "Un compagno del computer al tuo fianco contro due Allenatori del computer."
+  },
+  "opponents": {
+    "cpu": { "title": "Computer", "blurb": "Sfida un avversario del computer, subito." },
+    "match": { "title": "Trova un avversario", "blurb": "Vieni abbinato a un Allenatore che cerca lo stesso formato e lotti dal vivo." },
+    "pvp": { "title": "Un amico", "blurb": "Ottieni un link d’invito e lottate dal vivo, con il timer dei turni." }
+  },
+  "shortGen": "Gen {gen}",
+  "quickNoteCustom": "Set da lotta casuale della Gen {gen}, controllati con le tue regole.",
+  "quickNoteFormat": "Set da lotta casuale validi in {format}.",
+  "nameRejected": "Scegli un altro nome.",
+  "startFailed": "Impossibile iniziare la lotta.",
+  "start": {
+    "cpu": "Inizia la lotta",
+    "match": "Trova un avversario",
+    "challenge": "Sfida {name}",
+    "pvp": "Crea la lotta"
+  },
+  "opponent": "Avversario",
+  "format": "Formato",
+  "random": "Casuale",
+  "yourTeam": "La tua squadra",
+  "doubles": "Doppio. ",
+  "bringTeam": "Porta una squadra: salvata, creata qui o rapida.",
+  "customRules": "Regole personalizzate",
+  "gens": "Gen 1–9",
+  "groupTitle": "Triplo e quattro Allenatori",
+  "groupFour": "Quattro Allenatori, un Pokémon in campo a testa. Porta una squadra o usane una rapida.",
+  "groupThree": "Tre Pokémon per lato. Porta una squadra o usane una rapida.",
+  "frontier": "Cerchi una serie di vittorie? Noleggia una squadra all’<factory>Industria Lotta</factory> o scala la <tower>Torre Lotta</tower>.",
+  "cpuLevel": "Livello del computer",
+  "heading": {
+    "cpu": "Lotta contro il computer",
+    "match": "Lotta contro chiunque",
+    "pvp": "Lotta con un amico"
+  },
+  "summary": {
+    "cpuFour": "Computer {level}. {four} {teams, select, random {Squadre casuali per tutti.} other {Ognuno porta la propria squadra.}}",
+    "cpu": "Computer {level}. {teams, select, random {Squadre casuali per entrambi.} other {Porta la sua squadra.}}",
+    "matchFour": "Verrai abbinato al prossimo Allenatore che cerca {format}; il computer occupa gli altri due posti.{multi, select, yes { Tu e il tuo avversario avrete ciascuno un compagno del computer.} other {}} Non classificata, come su Showdown.",
+    "match": "Verrai abbinato al prossimo Allenatore che cerca {format} e la lotta inizia subito.{teams, select, random { Le squadre sono casuali.} other { Ognuno porta la propria squadra.}}",
+    "challenge": "{name} riceve subito la tua sfida (e anche tu ricevi il link). La lotta inizia quando siete pronti entrambi.",
+    "pvpFour": "Riceverai un link da mandare a un massimo di tre amici; i posti liberi può occuparli il computer. Non classificata, come su Showdown.",
+    "pvp": "Riceverai un link da mandare. La lotta inizia quando siete pronti entrambi."
+  },
+  "nameLabel": "Il tuo nome da Allenatore",
+  "namePlaceholder": "Nome da Allenatore",
+  "ranked": "Classificata",
+  "rankedSoon": "Le lotte classificate arrivano presto.",
+  "rankedAccount": "Le classificate richiedono un account, così il tuo punteggio ti segue.",
+  "rankedHint": "Abbinamento in base al punteggio in classifica. Arrendersi o uscire conta come sconfitta.",
+  "signIn": "<link>Accedi</link> per giocare le classificate.",
+  "unrated": "Senza punteggio: parti da 1000 Elo (1500 ± 350 Glicko-2).",
+  "ladder": "Classifica",
+  "watch": "Chiunque può guardare",
+  "watchHint": "Mostrala in Guarda dal vivo. Disattivato: può guardare solo chi ha il link.",
+  "timer": "Timer dei turni",
+  "timerHint": "Disattivato: chiunque di voi può avviarlo durante la lotta.",
+  "timeout": "Sconfitta allo scadere",
+  "timeoutHint": "Attivo, come su Showdown: se finisci il tempo, perdi (nei formati con timer VGC viene eseguita una mossa predefinita finché hai ancora tempo di riserva). Disattivo: il timer sceglie una mossa per te, e perdi al secondo tempo scaduto di fila.",
+  "searchingRanked": "Ricerca di un rivale in classificata…",
+  "searching": "Ricerca di un avversario…",
+  "cancel": "Annulla",
+  "whyName": "Inserisci un nome da Allenatore per iniziare.",
+  "whyTeam": "Scegli una squadra, o una rapida, per iniziare.",
+  "leaving": "Se lasci questa pagina o chiudi la scheda, la ricerca termina.",
+  "playNow": "Gioca ora · {format}",
+  "custom": "Personalizzate"
+}

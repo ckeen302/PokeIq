@@ -1,5 +1,6 @@
 import { OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og/card";
 import { storyHubCard } from "@/lib/og/pokemon-story";
+import { ogT } from "@/lib/og/i18n";
 
 /** Share card for The Story of Pokémon. */
 
@@ -7,6 +8,6 @@ export const alt = "The Story of Pokémon: the real history of the franchise as 
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 
-export default function Image() {
-  return storyHubCard();
+export default async function Image(props: { params?: unknown }) {
+  return storyHubCard(await ogT(props));
 }

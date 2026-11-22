@@ -1,0 +1,33 @@
+{
+  "close": "Close",
+  "title": "Pick an event and a line-up",
+  "blurb": "Up to eight Pokémon or forms. Two make a head to head.",
+  "event": "Event",
+  "remove": "Remove {name}",
+  "addMore": "Add {n} more",
+  "addUpTo": "Add up to 8",
+  "placeholder": "Add a Pokémon…",
+  "search": "Search for a Pokémon to add",
+  "fun": "Fun line-up",
+  "funLabel": {
+    "giants": "Heavyweights vs featherweights",
+    "starters": "Fully evolved starters",
+    "legends": "Legendaries",
+    "favourites": "Fan favourites",
+    "type": "{type} types",
+    "random": "Eight at random"
+  },
+  "stat": { "spe": "SPE", "atk": "ATK", "def": "DEF", "hp": "HP", "kg": "KG", "height": "HEIGHT" },
+  "h2h": "Head to head",
+  "go": "Go",
+  "nations": "Nations",
+  "nationsBlurb": "Up to eight. A type sends its three best all-rounders (no Legendaries); or build a team of three.",
+  "team": "Team {name}",
+  "typeNations": "Type nations",
+  "build": "Build a team of three",
+  "removeOne": "Remove",
+  "teamPlaceholder": "Add a Pokémon to your team…",
+  "teamSearch": "Search for a Pokémon",
+  "addTeam": "Add this team",
+  "open": "Open the Games"
+}

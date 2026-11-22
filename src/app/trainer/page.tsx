@@ -11,6 +11,8 @@ import avatar from "@/messages/avatar";
 import account from "@/messages/account";
 import email from "@/messages/email";
 import badges from "@/messages/badges";
+import battleGlicko from "@/messages/battle-glicko";
+import battleRecord from "@/messages/battle-record";
 
 export function generateMetadata(): Metadata {
   const t = serverT(trainerPages);
@@ -22,7 +24,7 @@ export default function TrainerPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-4">
       <BackButton href="/" />
-      <ClientMessages namespaces={[trainerCard, coach, avatar, account, email, badges]}>
+      <ClientMessages namespaces={[trainerCard, coach, avatar, account, email, badges, battleRecord, battleGlicko]}>
         <TrainerCard local={trainerLocal(t.locale)} />
       </ClientMessages>
     </div>

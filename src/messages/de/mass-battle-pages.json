@@ -1,0 +1,93 @@
+{
+  "meta": {
+    "title": "Pokémon-Massenschlacht: Wie viele Karpador besiegen Arceus?",
+    "description": "Tausende Pokémon prallen auf einem 3D-Schlachtfeld aufeinander, mit der echten Schadensformel der Spiele für jeden Treffer. Wie viele Karpador braucht es, um Arceus zu besiegen? Frag nach jedem beliebigen Duell oder schick zwei Armeen gegeneinander – und mach dann ein Video daraus.",
+    "social": "Pokémon-Massenschlacht · PokéIQ",
+    "questionDescription": "{title} Die echte Kampfformel der Spiele entscheidet, Tausende Kämpfe tief, dann siehst du es in 3D.",
+    "battleTitle": "{a} gegen {b}",
+    "battleSide": "{n} {name}",
+    "battleDescription": "{title}: eine Pokémon-Massenschlacht in 3D mit der echten Schadensformel der Spiele. Wer gewinnt?",
+    "presetDescription": "{blurb} Eine Pokémon-Massenschlacht in 3D mit der echten Schadensformel der Spiele.",
+    "presetSocial": "{title} · PokéIQ"
+  },
+  "name": "Pokémon-Massenschlacht",
+  "ldName": "{title} · PokéIQ",
+  "lab": "3D-Labor",
+  "kicker": "Massenschlacht",
+  "h1": "Pokémon-<b>Massenschlacht</b>",
+  "blurb": "Tausende Pokémon prallen auf einem 3D-Schlachtfeld aufeinander, und jeder Treffer nutzt die echte Schadensformel der Spiele. Frag, wie viele eines Pokémon es braucht, um ein anderes zu besiegen, oder schick zwei Armeen gegeneinander.",
+  "results": "Ergebnisse",
+  "resultsAside": "Vorab berechnet mit denselben Kämpfen",
+  "how": "So funktioniert’s",
+  "summary": {
+    "pure": " Reine Kampfrechnung, alle in Reichweite aller: {answer}.",
+    "pureN": "{n} ({spread})",
+    "pureMore": "mehr als 2.000",
+    "answer": "Auf dem Schlachtfeld {answer}, um {boss} zu besiegen ({spread}).{pure}",
+    "left": "{n} stehen nach {s} Sekunden noch."
+  },
+  "presets": {
+    "magikarp-vs-arceus": {
+      "title": "Wie viele Karpador besiegen Arceus?",
+      "hook": "Wie viele Karpador braucht es, um Arceus zu besiegen? 😳",
+      "blurb": "Das schwächste Pokémon gegen das, welches das Universum geformt haben soll. Der Löser findet die kleinste Armee, die gewinnt."
+    },
+    "rattata-vs-mewtwo": {
+      "title": "1.000 Rattfratz gegen 1 Mewtu",
+      "hook": "1.000 Rattfratz gegen 1 Mewtu. Wer gewinnt? 🐀",
+      "blurb": "Tausend der häufigsten Pokémon Kantos gegen sein mächtigstes."
+    },
+    "pikachu-vs-snorlax": {
+      "title": "100 Pikachu gegen 1 Relaxo",
+      "hook": "100 Pikachu gegen 1 Relaxo ⚡",
+      "blurb": "Eine Welle aus Pikachu gegen die schwerste Mauer Kantos."
+    },
+    "kanto-starters": {
+      "title": "Krieg der Kanto-Starter",
+      "hook": "600 Kanto-Starter gegen ihre Endentwicklungen 🔥💧🌿",
+      "blurb": "Bisasam, Glumanda und Schiggy zu Hunderten gegen ein paar Dutzend Bisaflor, Glurak und Turtok.",
+      "a": "Starter",
+      "b": "Endentwicklungen"
+    },
+    "fire-vs-water": {
+      "title": "Feuer gegen Wasser",
+      "hook": "Alle Feuer-Pokémon gegen alle Wasser-Pokémon 🔥🌊",
+      "blurb": "Alle voll entwickelten Feuer-Pokémon gegen alle voll entwickelten Wasser-Pokémon: das älteste Duell der Pokémon-Welt, im großen Stil.",
+      "a": "Wasser-Pokémon",
+      "b": "Feuer-Pokémon"
+    },
+    "legendaries-vs-everyone": {
+      "title": "Legendäre gegen alle",
+      "hook": "Alle legendären Pokémon gegen eine Armee aus Kanto 👑",
+      "blurb": "Alle legendären Pokémon gegen je zehn aller anderen voll entwickelten Pokémon aus Kanto.",
+      "a": "Legendäre",
+      "b": "Kanto"
+    },
+    "bug-swarm-vs-charizard": {
+      "title": "Käferschwarm gegen ein Glurak",
+      "hook": "1.000 Käfer gegen 1 Glurak 🔥🐝",
+      "blurb": "Bibor, Smettbo, Omot und Sichlor schwärmen auf ein Glurak zu, das gegen jedes von ihnen sehr effektiv ist.",
+      "a": "Käferschwarm",
+      "b": "Glurak"
+    },
+    "eeveelution-civil-war": {
+      "title": "Bürgerkrieg der Evoli-Entwicklungen",
+      "hook": "Bürgerkrieg der Evoli-Entwicklungen: Welche Hälfte gewinnt? 🦊",
+      "blurb": "Aquana, Blitza, Flamara und Psiana gegen Nachtara, Folipurba, Glaziola und Feelinara.",
+      "a": "Aquana & Co.",
+      "b": "Nachtara & Co."
+    },
+    "fire-vs-water-sun": {
+      "title": "Feuer gegen Wasser bei Sonnenschein",
+      "hook": "Feuer gegen Wasser … aber die Sonne scheint ☀️",
+      "blurb": "Dieselben Armeen wie bei Feuer gegen Wasser, bei grellem Sonnenlicht: Feuer-Attacken treffen 1,5-mal so hart und Wasser-Attacken nur halb so hart, wie in den Spielen.",
+      "a": "Wasser-Pokémon",
+      "b": "Feuer-Pokémon"
+    },
+    "light-ball-pikachu-vs-snorlax": {
+      "title": "Wie viele Pikachu mit Kugelblitz besiegen Relaxo?",
+      "hook": "Wie viele Pikachu braucht es, um Relaxo zu besiegen … mit Kugelblitz? ⚡",
+      "blurb": "Pikachus eigenes Item verdoppelt seinen Angriff und seinen Spezial-Angriff. Jedes Pikachu trägt einen; Relaxo trägt nichts."
+    }
+  }
+}

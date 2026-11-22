@@ -7,6 +7,9 @@ import { expandQuestion, expandSpec, factsOf } from "@/lib/mass-battle/sets";
 import { simpleQuestion } from "@/lib/mass-battle/share";
 import { nameOf, presetById } from "@/lib/mass-battle/page-data";
 import { questionLead, type BattleSpec, type Question } from "@/lib/mass-battle/types";
+import { speciesName } from "@/lib/names/species";
+import { formatNumber } from "@/i18n/format";
+import { englishOgT, type OgT } from "@/lib/og/i18n";
 
 /** The Mass Battle's preview cards, from presets, shared battles and shared questions (groups spelled out). */
 
@@ -14,11 +17,27 @@ const facts = () => buildRoster().species.map(factsOf);
 const total = (spec: BattleSpec, s: 0 | 1) => spec.sides[s].units.reduce((a, u) => a + u.count, 0);
 const ids = (spec: BattleSpec, s: 0 | 1) => [...spec.sides[s].units].sort((a, b) => b.count - a.count).map((u) => u.id);
 
-export function presetCardImage(id: string) {
+export function presetCardImage(id: string, t: OgT = englishOgT()) {
   const p = presetById(id);
   if (!p) return questionCardImage(simpleQuestion(129, 493, 100, "colosseum"));
   if (p.kind === "howmany" && p.question && p.answer) {
     const lead = questionLead(p.question);
+    if (t.locale !== "en") {
+      const name = (id: number) => speciesName(id, nameOf(id), t.locale);
+      const n = (v: number) => formatNumber(v, t.locale);
+      const c = name(lead.challenger), b = name(lead.boss);
+      return massBattleCard({
+        title: [t("massBattle.howMany1", { army: c }), [t("massBattle.howMany2", { boss: b }), "#ff9a2e"]],
+        subtitle: t("massBattle.howManySubtitle", { runs: n(p.answer.runs) }),
+        left: [lead.challenger],
+        right: [lead.boss],
+        leftCount: p.answer.n,
+        rightCount: 1,
+        big: t("massBattle.answer", { n: n(p.answer.n), army: c }),
+        footer: t("massBattle.howManyFooter"),
+        t,
+      });
+    }
     const c = nameOf(lead.challenger), b = nameOf(lead.boss);
     return massBattleCard({
       title: [`How many ${c}`, [`beat ${b}?`, "#ff9a2e"]],
@@ -41,7 +60,8 @@ export function presetCardImage(id: string) {
     right: ids(spec, 1),
     leftCount: total(spec, 0),
     rightCount: total(spec, 1),
-    big: o && o.winner !== 2 ? `${names[o.winner]} ${o.left[o.winner] === 1 && !/ and |&|types|s$/.test(names[o.winner]) ? "wins" : "win"}` : null,
+    big: o && o.winner !== 2 ? (t.locale === "en" ? `${names[o.winner]} ${o.left[o.winner] === 1 && !/ and |&|types|s$/.test(names[o.winner]) ? "wins" : "win"}` : t("massBattle.wins", { side: names[o.winner] })) : null,
+    t,
   });
 }
 

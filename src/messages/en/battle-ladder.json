@@ -1,0 +1,17 @@
+{
+  "tabs": "Ladder format",
+  "nobody": "Nobody is ranked in {format} yet. <link>Queue a ranked battle</link> and be the first!",
+  "trainer": "Trainer",
+  "eloTitle": "Elo: the ladder's rating, as on Pokémon Showdown",
+  "elo": "Elo",
+  "gxeTitle": "GXE (the chance of beating a random trainer here) and the Glicko-2 rating ± deviation",
+  "gxe": "GXE · Glicko",
+  "wl": "W–L",
+  "loading": "Loading your standing",
+  "you": "You · {format}",
+  "of": "of {n, number}",
+  "streak": "streak",
+  "none": "No ranked battles in this format yet.",
+  "start": "Everyone starts at 1000 Elo (and 1500 ± 350 Glicko-2); your first wins pay the most, and a new rating moves a lot. ",
+  "find": "Find a ranked battle"
+}

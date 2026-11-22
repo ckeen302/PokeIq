@@ -1,0 +1,7 @@
+{
+  "title": "{elo, select, none {} other {Elo {elo}. }}GXE {gxe}%: the chance of beating a random trainer on this ladder. Glicko-2 rating {glicko}.",
+  "gxe": "GXE {gxe}%",
+  "deviation": "Glicko-2 rating ± deviation",
+  "provisional": "Prov.",
+  "provisionalTitle": "Provisional until the rating deviation drops below {rd}"
+}

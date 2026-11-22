@@ -2,26 +2,43 @@ import type { Metadata } from "next";
 import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { BattleHeader } from "@/components/battle/BattleHeader";
 import { BattleSetup, type Opponent } from "@/components/battle/BattleSetup";
+import { ClientMessages } from "@/i18n/ClientMessages";
+import { serverT } from "@/i18n/server";
+import pagesNs from "@/messages/battle-pages";
+import setupNs from "@/messages/battle-setup";
+import formatsNs from "@/messages/battle-formats";
+import teamPickNs from "@/messages/battle-team-pick";
+import rulesNs from "@/messages/battle-rules";
+import pickersNs from "@/messages/battle-pickers";
+import battleGlicko from "@/messages/battle-glicko";
+import battleTeams from "@/messages/battle-teams";
+import battleTeamInsights from "@/messages/battle-team-insights";
+import battleTerms from "@/messages/battle-terms";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Pokémon Battle — vs Computer, Online or a Friend",
-  description:
-    "Real Pokémon battles on Pokémon Showdown's engine: Random Battle, Random Doubles or your own OU team, against a computer opponent, a trainer found by matchmaking, or a friend through an invite link.",
-  image: SHARE_IMAGES.battle,
-  path: "/battle/play",
-});
+export function generateMetadata(): Metadata {
+  const t = serverT(pagesNs);
+  return pageMetadata({
+    title: t("play.meta.title"),
+    description: t("play.meta.description"),
+    image: SHARE_IMAGES.battle,
+    path: "/battle/play",
+  });
+}
 
 export default async function BattlePlayPage({ searchParams }: { searchParams: Promise<{ vs?: string; challenge?: string }> }) {
   const { vs, challenge } = await searchParams;
+  const t = serverT(pagesNs);
   // ?vs=anyone opens on "Find an opponent", ?vs=friend on the invite link.
   const friend = challenge && /^[A-Za-z0-9_-]{3,20}$/.test(challenge) ? challenge : undefined;
   const opening: Opponent = friend || vs === "friend" ? "pvp" : vs === "anyone" ? "match" : "cpu";
   return (
     <div className="mx-auto max-w-6xl space-y-8">
-      <BattleHeader crumb="Play" title="Start a" accent="battle">
-        Pokémon Showdown&apos;s own battle engine: every move, ability and item works as it does there. Pick an opponent, a format and go.
+      <BattleHeader crumb={t("play.crumb")} title={t("play.title")} accent={t("play.accent")}>
+        {t("play.intro")}
       </BattleHeader>
-      <BattleSetup initial={opening} challenge={friend} />
+      <ClientMessages namespaces={[setupNs, formatsNs, teamPickNs, rulesNs, pickersNs, battleGlicko, battleTeams, battleTeamInsights, battleTerms]}>
+        <BattleSetup initial={opening} challenge={friend} />
+      </ClientMessages>
     </div>
   );
 }

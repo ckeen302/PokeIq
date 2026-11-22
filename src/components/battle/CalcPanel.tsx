@@ -5,7 +5,6 @@ import Link from "@/components/ui/Link";
 import type { Ability, Generation, Item, Move, Nature, Specie } from "@pkmn/data";
 import { FolderOpen } from "lucide-react";
 import { HpBar } from "@/components/game/HpBar";
-import { STAT_LABELS } from "@/lib/pokemon/constants";
 import { SIDE_FLAGS, STATUSES, sideFromSet, type BoostKey, type CalcSide, type StatusId } from "@/lib/battle/calc";
 import { BATTLE_FORMATS } from "@/lib/battle/formats";
 import { MAX_EVS, MAX_IV, STATS } from "@/lib/battle/sets";
@@ -15,9 +14,12 @@ import { BattleSprite } from "./BattleSprite";
 import { Field, inputClass, NumberInput, SearchSelect, Toggle } from "./controls";
 import { useSpriteLookup } from "./hooks";
 import { BattleType, ItemSelect, MoveSelect, NatureSelect, SpeciesSelect, TypeSelect } from "./pickers";
+import { useT } from "@/i18n/client";
+import battleCalc from "@/messages/battle-calc";
+import battleTerms from "@/messages/battle-terms";
+import { effectName, useBattleNames } from "./use-battle-names";
 
 const BOOST_RANGE = [6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6];
-const SHORT: Record<string, string> = { hp: "HP", atk: "Atk", def: "Def", spa: "SpA", spd: "SpD", spe: "Spe" };
 
 export interface CalcLists {
   gen: Generation;
@@ -45,6 +47,9 @@ export function CalcPanel({
   onLoad: (team: BattleTeam) => void;
 }) {
   const { gen } = lists;
+  const t = useT(battleCalc);
+  const st = useT(battleTerms);
+  const names = useBattleNames();
   const species = gen.species.get(side.species);
   const nature = gen.natures.get(side.nature);
   const update = (patch: Partial<CalcSide>) => onChange({ ...side, ...patch });
@@ -79,14 +84,14 @@ export function CalcPanel({
           <BattleSprite species={species} size={80} className="relative z-[3]" />
         </div>
         <div className="min-w-0 space-y-2">
-          <SpeciesSelect species={lists.species} value={side.species} current={species} onSelect={pickSpecies} label={`${title} species`} />
+          <SpeciesSelect species={lists.species} value={side.species} current={species} onSelect={pickSpecies} label={t("panel.species", { side: title })} />
           <div className="flex flex-wrap items-center gap-1">
             {species?.types.map((t) => <BattleType key={t} type={t} />)}
-            {!species && <span className="text-xs text-destructive">Not in Gen {gen.num}</span>}
+            {!species && <span className="text-xs text-destructive">{t("panel.notInGen", { gen: gen.num })}</span>}
             {/* Phones: Lv and its field wrap together; wider screens lay them out as before (display: contents). */}
             <span className="contents max-md:ml-auto max-md:flex max-md:items-center max-md:gap-1">
-              <span className="hud-label ml-auto">Lv</span>
-              <NumberInput label={`${title} level`} value={side.level} min={1} max={100} onChange={(level) => update({ level })} className="h-7 w-14" />
+              <span className="hud-label ml-auto">{t("panel.level")}</span>
+              <NumberInput label={t("panel.levelLabel", { side: title })} value={side.level} min={1} max={100} onChange={(level) => update({ level })} className="h-7 w-14" />
             </span>
           </div>
         </div>
@@ -94,45 +99,45 @@ export function CalcPanel({
 
       <div className="grid grid-cols-2 gap-3">
         {gen.num >= 3 && (
-          <Field label="Ability">
+          <Field label={t("panel.ability")}>
             <SearchSelect
-              label={`${title} ability`}
+              label={t("panel.abilityLabel", { side: title })}
               value={side.ability}
-              placeholder="No ability"
+              placeholder={t("panel.noAbility")}
               options={lists.abilities}
               initial={[...lists.abilities.filter((a) => ownAbilities.includes(a.name)), ...lists.abilities.filter((a) => !ownAbilities.includes(a.name))]}
               getKey={(a) => a.id}
-              getText={(a) => a.name}
+              getText={(a) => (names.locale === "en" ? a.name : `${names.ability(a.name)} ${a.name}`)}
               render={(a) => (
-                <span className={cn("block font-display font-semibold", !ownAbilities.includes(a.name) && "text-muted-foreground")}>{a.name}</span>
+                <span className={cn("block font-display font-semibold", !ownAbilities.includes(a.name) && "text-muted-foreground")}>{names.ability(a.name)}</span>
               )}
               onSelect={(a) => update({ ability: a.name })}
             />
           </Field>
         )}
-        <Field label="Item">
-          <ItemSelect label={`${title} item`} items={lists.items} value={side.item} onSelect={(item) => update({ item: item?.name ?? "" })} />
+        <Field label={t("panel.item")}>
+          <ItemSelect label={t("panel.itemLabel", { side: title })} items={lists.items} value={side.item} onSelect={(item) => update({ item: item?.name ?? "" })} />
         </Field>
         {gen.num >= 3 && (
-          <Field label="Nature" className="max-sm:col-span-2">
-            <NatureSelect label={`${title} nature`} natures={lists.natures} value={side.nature} onChange={(n) => update({ nature: n })} />
+          <Field label={t("panel.nature")} className="max-sm:col-span-2">
+            <NatureSelect label={t("panel.natureLabel", { side: title })} natures={lists.natures} value={side.nature} onChange={(n) => update({ nature: n })} />
           </Field>
         )}
-        <Field label="Status">
-          <select aria-label={`${title} status`} value={side.status} onChange={(e) => update({ status: e.target.value as StatusId })} className={inputClass}>
+        <Field label={t("panel.status")}>
+          <select aria-label={t("panel.statusLabel", { side: title })} value={side.status} onChange={(e) => update({ status: e.target.value as StatusId })} className={inputClass}>
             {STATUSES.map((s) => (
               <option key={s.id} value={s.id}>
-                {s.label}
+                {t(`panel.statuses.${s.id || "healthy"}`)}
               </option>
             ))}
           </select>
         </Field>
         {gen.num >= 9 && (
-          <Field label="Tera type" className="max-sm:row-span-2">
+          <Field label={t("panel.tera")} className="max-sm:row-span-2">
             <div className="flex gap-1.5 max-md:flex-col">
-              <TypeSelect label={`${title} Tera type`} types={lists.types} value={side.teraType} onChange={(t) => update({ teraType: t })} />
+              <TypeSelect label={t("panel.teraLabel", { side: title })} types={lists.types} value={side.teraType} onChange={(teraType) => update({ teraType })} />
               <Toggle pressed={side.terastallized} onChange={(terastallized) => update({ terastallized })} className="h-9 shrink-0">
-                Tera
+                {t("panel.teraToggle")}
               </Toggle>
             </div>
           </Field>
@@ -140,21 +145,21 @@ export function CalcPanel({
         {gen.num >= 3 && (
           <div className="flex items-end">
             <Toggle pressed={side.abilityOn} onChange={(abilityOn) => update({ abilityOn })} className="h-9 w-full justify-center">
-              Ability active
+              {t("panel.abilityOn")}
             </Toggle>
           </div>
         )}
         {gen.num === 7 && (
           <div className="flex items-end">
             <Toggle pressed={!!side.zMove} onChange={(zMove) => update({ zMove })} className="h-9 w-full justify-center">
-              Z-Move
+              {t("panel.zMove")}
             </Toggle>
           </div>
         )}
         {gen.num === 8 && (
           <div className="flex items-end">
             <Toggle pressed={!!side.dynamaxed} onChange={(dynamaxed) => update({ dynamaxed })} className="h-9 w-full justify-center">
-              Dynamax
+              {t("panel.dynamax")}
             </Toggle>
           </div>
         )}
@@ -163,9 +168,9 @@ export function CalcPanel({
       {/* Current HP */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="hud-label">Current HP</span>
+          <span className="hud-label">{t("panel.hp")}</span>
           <span className="flex items-center gap-1 text-xs">
-            <NumberInput label={`${title} current HP %`} value={side.hpPercent} min={1} max={100} onChange={(hpPercent) => update({ hpPercent })} className="h-7 w-14" />%
+            <NumberInput label={t("panel.hpPercent", { side: title })} value={side.hpPercent} min={1} max={100} onChange={(hpPercent) => update({ hpPercent })} className="h-7 w-14" />%
           </span>
         </div>
         <input
@@ -173,7 +178,7 @@ export function CalcPanel({
           min={1}
           max={100}
           value={side.hpPercent}
-          aria-label={`${title} current HP`}
+          aria-label={t("panel.hpRange", { side: title })}
           onChange={(e) => update({ hpPercent: Number(e.target.value) })}
           className="h-2 w-full cursor-pointer accent-[hsl(var(--success))]"
         />
@@ -183,12 +188,12 @@ export function CalcPanel({
       {/* Stats: EVs, IVs, boosts */}
       <div className="space-y-1.5 rounded-md border bg-shade/20 p-2.5">
         <div className="hud-label grid grid-cols-[34px_30px_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_40px] items-center gap-1.5">
-          <span>Stat</span>
-          <span className="text-right">Base</span>
-          <span className="text-center">EV</span>
-          <span className="text-center">IV</span>
-          <span className="text-center">Boost</span>
-          <span className="text-right">Total</span>
+          <span>{t("panel.stat")}</span>
+          <span className="text-right">{t("panel.base")}</span>
+          <span className="text-center">{t("panel.ev")}</span>
+          <span className="text-center">{t("panel.iv")}</span>
+          <span className="text-center">{t("panel.boost")}</span>
+          <span className="text-right">{t("panel.total")}</span>
         </div>
         {STATS.map((s) => {
           const value = species ? gen.stats.calc(s, species.baseStats[s], side.ivs[s], side.evs[s], side.level, nature) : 0;
@@ -196,18 +201,18 @@ export function CalcPanel({
           const minus = nature?.minus === s;
           return (
             <div key={s} className="grid grid-cols-[34px_30px_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_40px] items-center gap-1.5 text-sm">
-              <span className={cn("font-semibold", plus && "text-success", minus && "text-destructive")} title={STAT_LABELS[s]}>
-                {SHORT[s]}
+              <span className={cn("font-semibold", plus && "text-success", minus && "text-destructive")} title={st(`stat.${s}`)}>
+                {st(`short.${s}`)}
                 {plus ? "+" : minus ? "−" : ""}
               </span>
               <span className="text-right font-mono text-xs tabular-nums text-muted-foreground">{species?.baseStats[s] ?? "—"}</span>
-              <NumberInput label={`${title} ${STAT_LABELS[s]} EVs`} value={side.evs[s]} min={0} max={MAX_EVS} onChange={(v) => update({ evs: { ...side.evs, [s]: v } })} className="h-7" />
-              <NumberInput label={`${title} ${STAT_LABELS[s]} IVs`} value={side.ivs[s]} min={0} max={MAX_IV} onChange={(v) => update({ ivs: { ...side.ivs, [s]: v } })} className="h-7" />
+              <NumberInput label={t("panel.evsLabel", { side: title, stat: st(`stat.${s}`) })} value={side.evs[s]} min={0} max={MAX_EVS} onChange={(v) => update({ evs: { ...side.evs, [s]: v } })} className="h-7" />
+              <NumberInput label={t("panel.ivsLabel", { side: title, stat: st(`stat.${s}`) })} value={side.ivs[s]} min={0} max={MAX_IV} onChange={(v) => update({ ivs: { ...side.ivs, [s]: v } })} className="h-7" />
               {s === "hp" ? (
                 <span />
               ) : (
                 <select
-                  aria-label={`${title} ${STAT_LABELS[s]} boost`}
+                  aria-label={t("panel.boostLabel", { side: title, stat: st(`stat.${s}`) })}
                   value={side.boosts[s as BoostKey]}
                   onChange={(e) => update({ boosts: { ...side.boosts, [s]: Number(e.target.value) } })}
                   className={cn(inputClass, "h-7 px-1 text-center font-mono text-xs", side.boosts[s as BoostKey] > 0 && "text-success", side.boosts[s as BoostKey] < 0 && "text-destructive")}
@@ -227,12 +232,12 @@ export function CalcPanel({
 
       {/* Moves */}
       <div className="space-y-1.5">
-        <span className="hud-label block">Moves</span>
+        <span className="hud-label block">{t("panel.moves")}</span>
         <div className="grid gap-2">
           {[0, 1, 2, 3].map((i) => (
             <MoveSelect
               key={i}
-              label={`${title} move ${i + 1}`}
+              label={t("panel.moveLabel", { side: title, n: i + 1 })}
               moves={lists.moves}
               value={side.moves[i] ?? ""}
               exclude={taken}
@@ -249,17 +254,17 @@ export function CalcPanel({
 
       {/* This side of the field */}
       <div className="space-y-1.5">
-        <span className="hud-label block">{title}&apos;s side</span>
+        <span className="hud-label block">{t("panel.sideOf", { side: title })}</span>
         <div className="flex flex-wrap gap-1.5">
           {SIDE_FLAGS.map(([flag, label]) => (
             <Toggle key={flag} pressed={!!side.flags[flag]} onChange={(on) => update({ flags: { ...side.flags, [flag]: on } })}>
-              {label}
+              {effectName(names, label)}
             </Toggle>
           ))}
           <label className="inline-flex h-8 items-center max-sm:h-10 gap-1.5 rounded-md border border-foreground/10 bg-shade/30 px-2 text-xs font-semibold text-muted-foreground">
-            Spikes
+            {names.move("Spikes")}
             <select
-              aria-label={`${title} Spikes layers`}
+              aria-label={t("panel.spikesLabel", { side: title })}
               value={side.spikes}
               onChange={(e) => update({ spikes: Number(e.target.value) })}
               className="bg-transparent font-mono text-foreground focus:outline-none"
@@ -281,6 +286,8 @@ export function CalcPanel({
 function LoadFromTeam({ title, onPick }: { title: string; onPick: (team: BattleTeam, index: number) => void }) {
   const teams = useTeams();
   const sprite = useSpriteLookup();
+  const t = useT(battleCalc);
+  const names = useBattleNames();
   const [open, setOpen] = useState(false);
   const usable = (teams ?? []).filter((t) => t.sets.length);
   return (
@@ -291,18 +298,20 @@ function LoadFromTeam({ title, onPick }: { title: string; onPick: (team: BattleT
         aria-expanded={open}
         className="inline-flex items-center gap-1.5 rounded-md border border-foreground/10 bg-shade/30 px-2.5 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-screen/50 hover:text-foreground max-sm:min-h-10"
       >
-        <FolderOpen className="h-3.5 w-3.5" aria-hidden /> Load from my team
+        <FolderOpen className="h-3.5 w-3.5" aria-hidden /> {t("panel.load")}
       </button>
-      {open && <button type="button" aria-label="Close" tabIndex={-1} className="fixed inset-0 z-30 cursor-default" onClick={() => setOpen(false)} />}
+      {open && <button type="button" aria-label={t("panel.close")} tabIndex={-1} className="fixed inset-0 z-30 cursor-default" onClick={() => setOpen(false)} />}
       {open && (
-        <div className="absolute right-0 top-full z-40 mt-1 max-h-80 w-72 overflow-y-auto rounded-md border-2 border-foreground/15 bg-card p-2 shadow-2xl" role="menu" aria-label={`Load a team member as ${title}`}>
+        <div className="absolute right-0 top-full z-40 mt-1 max-h-80 w-72 overflow-y-auto rounded-md border-2 border-foreground/15 bg-card p-2 shadow-2xl" role="menu" aria-label={t("panel.loadMenu", { side: title })}>
           {!usable.length && (
             <p className="p-2 text-sm text-muted-foreground">
-              No saved teams yet.{" "}
-              <Link href="/battle/teams" className="text-screen underline-offset-2 hover:underline">
-                Build one
-              </Link>
-              .
+              {t.rich("panel.noTeams", {
+                link: (c) => (
+                  <Link href="/battle/teams" className="text-screen underline-offset-2 hover:underline">
+                    {c}
+                  </Link>
+                ),
+              })}
             </p>
           )}
           {usable.map((team) => (
@@ -323,7 +332,7 @@ function LoadFromTeam({ title, onPick }: { title: string; onPick: (team: BattleT
                     className="flex flex-col items-center rounded-md border border-transparent px-1 py-1 text-[11px] hover:border-screen/50 hover:bg-screen/10"
                   >
                     <BattleSprite species={sprite?.(s.species)} animated={false} size={36} />
-                    <span className="w-full truncate text-center">{s.name || s.species}</span>
+                    <span className="w-full truncate text-center">{s.name || names.species(s.species)}</span>
                   </button>
                 ))}
               </div>

@@ -1,6 +1,7 @@
 import { OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og/card";
 import { storyChapterCard } from "@/lib/og/pokemon-story";
 import { CHAPTERS, chapterById } from "@/lib/pokemon-story/data";
+import { ogT } from "@/lib/og/i18n";
 
 /** Each chapter's share card: a still of its scene, its title and when it happened. */
 
@@ -12,7 +13,7 @@ export function generateStaticParams() {
   return CHAPTERS.map((c) => ({ chapter: c.id }));
 }
 
-export default async function Image({ params }: { params: Promise<{ chapter: string }> }) {
-  const c = chapterById((await params).chapter) ?? CHAPTERS[0];
-  return storyChapterCard(c);
+export default async function Image(props: { params: Promise<{ chapter: string }> }) {
+  const c = chapterById((await props.params).chapter) ?? CHAPTERS[0];
+  return storyChapterCard(c, await ogT(props));
 }

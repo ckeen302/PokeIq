@@ -33,6 +33,8 @@
 
 import type { PlayFormatId } from "./play";
 import type { ReplayData } from "./replay";
+import { translator, type Translator } from "@/i18n/catalog";
+import battleReplays from "@/messages/battle-replays";
 
 export function escapeHTML(text: string): string {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
@@ -149,11 +151,15 @@ function protocolText(input: string): string {
  * Reads a Showdown battle log, replay file or replay .json into a replay
  * (id "imported"). Only public lines are kept: a |split| block keeps its
  * spectator half and |request| lines are dropped, so nothing hidden shows.
- * `formats` is our format table (the screen needs one of ours for its layout).
+ * `formats` is our format table (the screen needs one of ours for its layout). `t`: the errors in the page's language.
  */
-export function parseShowdownReplay(input: string, formats: Partial<Record<PlayFormatId, { name: string }>>): ImportResult {
-  if (!input.trim()) return { ok: false, error: "Paste a battle log or choose a replay file." };
-  if (input.length > IMPORT_MAX_BYTES) return { ok: false, error: "That file is too big to be a battle replay." };
+export function parseShowdownReplay(
+  input: string,
+  formats: Partial<Record<PlayFormatId, { name: string }>>,
+  t: Translator<typeof battleReplays.en> = translator(battleReplays, "en", undefined)
+): ImportResult {
+  if (!input.trim()) return { ok: false, error: t("import.errors.empty") };
+  if (input.length > IMPORT_MAX_BYTES) return { ok: false, error: t("import.tooBig") };
   const raw = protocolText(input)
     .split(/\r?\n/)
     .map((l) => l.trimEnd())
@@ -174,9 +180,9 @@ export function parseShowdownReplay(input: string, formats: Partial<Record<PlayF
     else if (parts[1] === "turn") turns = Math.max(turns, Number(parts[2]) || 0);
   }
   if (!names[0] || !names[1] || !log.some((l) => /^\|(?:switch|drag)\|/.test(l))) {
-    return { ok: false, error: "That doesn't look like a Showdown battle log: no players or Pokémon found." };
+    return { ok: false, error: t("import.errors.notLog") };
   }
-  if (gameType === "other") return { ok: false, error: "Only singles and doubles battles can be watched here." };
+  if (gameType === "other") return { ok: false, error: t("import.errors.gameType") };
   const formatId = toID(tier.replace(/^\[Gen (\d+)\]/i, "gen$1"));
   const format: PlayFormatId = formatId in formats ? (formatId as PlayFormatId) : gameType === "doubles" ? "gen9doublesou" : "custom";
   const winner = winnerName == null ? null : winnerName === names[0] ? 0 : winnerName === names[1] ? 1 : null;

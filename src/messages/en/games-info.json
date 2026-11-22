@@ -1,0 +1,117 @@
+{
+  "common": "The numbers that turn stats into strength, speed and spring are ours, anchored so a 70 kg athlete with base 100 lands an elite human mark; every constant and its source is in the open in lib/games/constants.ts.",
+  "formula": "The formula",
+  "inputs": "Inputs:",
+  "modelled": "Modelled",
+  "not": "Not modelled",
+  "aquatic": "This field's aquatic factors",
+  "swiftSwim": " · Swift Swim in rain: Speed ×2",
+  "parts": {
+    "water": "Water type",
+    "waterEgg": "Water egg group",
+    "sinks": "{types} type: sinks or hates water",
+    "other": "Not a water Pokémon",
+    "fish": "Fish-shaped body",
+    "fin": "Fin (Water 2 egg group)"
+  },
+  "sprint": {
+    "formula": {
+      "0": "The Pokémon Race's model, unchanged: top speed = base Speed ÷ 10 m/s, a Furusawa–Hill sprint start (τ from weight and Attack), a fade after 150 m from HP, integrated with RK4.",
+      "1": "Reaction to the gun: {fast}–{slow} s from Speed, seeded; under {falseStart} s is a false start and a disqualification (World Athletics TR 16).",
+      "2": "A dip at the line: an upright sprinter's torso crosses {dip} × its height ahead of its hips.",
+      "3": "Times to 1/100 s rounded up; a tie split by the photo finish at 1/1000 s."
+    },
+    "inputs100": "Speed, Attack and weight.",
+    "inputs": "Speed, Attack, HP and weight.",
+    "heats": "Heats and a final in the Games (the Race's knockout)",
+    "stagger": "Staggered starts round the bend",
+    "form": "Day-to-day form within ±1.5%",
+    "not": { "0": "Wind", "1": "Lane draw effects" }
+  },
+  "swim": {
+    "formula": {
+      "0": "Water speed = {vRef} m/s × (Speed/100)^{speedExp} × an aquatic factor.",
+      "1": "Aquatic factor: Water types and the Water 1/2/3 egg groups {water}; Fire, Rock and Ground types {sinkers} (they sink or hate water); everyone else {other}; a fish- or fin-shaped body × {fin}.",
+      "2": "Swift Swim doubles Speed (its real effect), only with the rain on.",
+      "3": "The start: a reaction, a dive (speed from Attack), a glide; stamina fades after {fade} m from HP.",
+      "3turn": "The start: a reaction, a dive (speed from Attack), a glide; stamina fades after {fade} m from HP; a flip turn at 50 m and a push-off from Attack."
+    },
+    "inputs": "Speed, Attack, HP, weight, length, types, egg groups, Swift Swim and body shape.",
+    "modelled": { "0": "A 50 m pool, eight lanes", "1": "Big bodies reach further at the start and the turn" },
+    "not": { "0": "Strokes other than freestyle", "1": "Drafting off a neighbour" }
+  },
+  "long-jump": {
+    "formula": {
+      "0": "Run-up: the Pokémon Race's sprint model over {runUp} m, × {boardKeep} at the board (jumpers lose about 5% planting).",
+      "1": "Take-off: vertical speed {v} m/s × √(Attack/100) × (kg/70)^(−1/6) for bodies over 70 kg (heavy bodies get less spring per kg; lighter ones get no extra, Borelli's law).",
+      "2": "Flight: a projectile from the centre of mass at take-off ({comTakeoff} × height) to touchdown ({comLanding} × height), plus a take-off and a landing distance of {share} × height each.",
+      "3": "The board: the toe lands behind the line by a seeded amount (more scatter the faster and bigger you are); over it is a foul, about one jump in ten. Measured from the line, to the centimetre below."
+    },
+    "inputs": "Speed, Attack, HP (stamina), weight, height and body shape.",
+    "modelled": { "0": "The run-up's acceleration", "1": "Projectile flight under g = 9.81", "2": "Fouls and the distance lost behind the board", "3": "Three attempts, best counts, ties on the second best", "4": "Fliers and Levitate jump too: gliding isn't allowed, so the same physics" },
+    "not": { "0": "Air drag (about 1% on a jump)", "1": "Wind" }
+  },
+  "high-jump": {
+    "formula": {
+      "0": "Clearance = centre of mass at take-off ({com} × height) + rise v²/2g + technique.",
+      "1": "v = {v} m/s × √(Attack/100) × (kg/70)^(−1/6) over 70 kg.",
+      "2": "Technique: a Fosbury flop for bipeds (+{bonus} m: the bar can pass above the centre of mass); four legs or a serpent's body {penalty} m.",
+      "3": "The bar rises 5 cm at a time, then 3 cm when three or fewer are left; three failures in a row and you're out; ties by countback (failures at the last height, then in all), a jump-off for first."
+    },
+    "inputs": "Attack, weight, height and body shape.",
+    "modelled": { "0": "Tall Pokémon start high: their centre of mass is already metres up", "1": "Each attempt's day-to-day form", "2": "World Athletics' high jump rules and countback" },
+    "not": { "0": "The approach's curve and speed (they don't change the result here)" }
+  },
+  "shot-put": {
+    "formula": {
+      "0": "Release speed {v} m/s × √(Attack/100) × (kg/70)^(1/6): big bodies get a little extra from leverage.",
+      "1": "Capped by the shot's mass ({mass} kg): Hill's force–velocity relation slows a muscle as the load nears its strength (its best clean & jerk), and no limb swings an implement faster than {cap} m/s.",
+      "2": "Released at {angle}° from {share} × height (at most {releaseCap} m), with air drag on a {diameter} cm sphere.",
+      "3": "No arms (body shape): a head or tail flick at {noArms}% of the speed."
+    },
+    "inputs": "Attack, Defence (through the lift), weight, height and body shape.",
+    "modelled": { "0": "Projectile with drag, integrated in 1/600 s steps", "1": "Too weak to lift the shot: no mark", "2": "Three throws, best counts" },
+    "not": { "0": "Spin vs glide technique", "1": "Fouls in the circle" }
+  },
+  "javelin": {
+    "formula": {
+      "0": "Release speed = {runKeep} × the race model's speed after a {runUp} m run-up + arm speed {arm} m/s × √(Attack/100) × (kg/70)^(1/6), under the same caps as the shot.",
+      "1": "Flight: drag and lift on an {mass} g javelin (Hubbard & Rust, 1984), released at {angle}° from {share} × height.",
+      "2": "No arms: {noArms}% of the speed."
+    },
+    "inputs": "Speed, Attack, weight, height and body shape.",
+    "modelled": { "0": "Aerodynamic lift and drag", "1": "The run-up's speed", "2": "The limb-speed cap: strong throwers bunch near it, height decides" },
+    "not": { "0": "The javelin's pitching (it flies nose along its path)", "1": "Wind" }
+  },
+  "weightlifting": {
+    "formula": {
+      "0": "Best lift = {ref} kg × (kg/70)^(2/3) × (Attack/100) × (Defence/100)^{defExp}: muscle force grows with mass^(2/3), the allometric rule behind the Sinclair coefficients.",
+      "1": "Three attempts in the IWF's rising-bar order: open at {opening}%, then about {second}%, then {third}%; a miss repeats the weight.",
+      "2": "Each lift succeeds with a chance that falls quickly above the day's best (a logistic {width}% wide).",
+      "3": "Real plates in 1 kg steps (IWF colours) on a 20 kg bar with 2.5 kg collars; lighter bars for light lifts."
+    },
+    "inputs": "Attack, Defence and weight.",
+    "modelled": { "0": "A heavy Pokémon is strong but not proportionally stronger", "1": "Pound for pound (lift ÷ bodyweight) as its own award" },
+    "not": { "0": "The snatch", "1": "Technique faults" }
+  },
+  "wrestling": {
+    "formula": {
+      "0": "Push = {push} N × kg^(2/3) × Attack/100; brace = {brace} N × kg^(2/3) × Defence/100 + {friction} × its weight in friction.",
+      "1": "The bout: both charge (momentum from Speed and mass), lock up, and whoever's push beats the other's brace drives the pair back; seeded surges swing it; stamina comes from HP.",
+      "2": "Out of the ring (a sumo dohyō, {ring} m across, or bigger for a giant) loses; after {maxTime} s, the one pushed further back does."
+    },
+    "inputs": "Attack, Defence, Speed, HP and weight.",
+    "modelled": { "0": "A knockout bracket seeded by push + brace", "1": "A bronze bout" },
+    "not": { "0": "Moves, throws or battle damage (that's Mass Battle): pure strength and mass" }
+  },
+  "all-around": {
+    "formula": {
+      "0": "Points per event from World Athletics' combined-events formula: A·(B − T)^C for times, A·(M − B)^C for marks.",
+      "1": "The real decathlon constants for the 100 m, 400 m, long jump, high jump, shot put and javelin; ours, of the same form, for the 200 m, the lift and the swims (1,000 points at an elite mark).",
+      "2": "The best all-rounder is the Champion of the Games."
+    },
+    "inputs": "Every event's mark.",
+    "modelled": { "0": "Ten events with marks (wrestling is head to head)" },
+    "not": { "0": "Event order or fatigue across events" }
+  }
+}

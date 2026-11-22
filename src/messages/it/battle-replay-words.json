@@ -1,0 +1,21 @@
+{
+  "joiner": {
+    "vs": "contro",
+    "and": "e"
+  },
+  "title": "{a} {joiner} {b}",
+  "result": {
+    "teamsDrew": "{a} e {b} hanno pareggiato",
+    "beat": "{a} ha battuto {b}",
+    "noWinner": "{players}: nessun vincitore",
+    "wonFfa": "{name} ha vinto un tutti contro tutti",
+    "drew": "{a} e {b} hanno pareggiato"
+  },
+  "turns": "{n, plural, one {{n} turno} other {{n} turni}}",
+  "ranked": "Classificata",
+  "ago": {
+    "now": "ora",
+    "min": "{min} min fa",
+    "hours": "{h} h {min} min fa"
+  }
+}

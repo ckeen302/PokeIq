@@ -1,6 +1,7 @@
 import { OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og/card";
 import { timelineCard, timelineEntryCard } from "@/lib/og/timeline";
 import { TIMELINE } from "@/lib/timeline/data";
+import { ogT } from "@/lib/og/i18n";
 
 /** Share card for one moment on the Pokémon Timeline. Drawn on first request and cached from then on. */
 
@@ -8,8 +9,9 @@ export const alt = "A moment in Pokémon history on the PokéIQ Timeline";
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 
-export default async function Image({ params }: { params: Promise<{ event: string }> }) {
-  const { event } = await params;
+export default async function Image(props: { params: Promise<{ event: string }> }) {
+  const t = await ogT(props);
+  const { event } = await props.params;
   const entry = TIMELINE.find((e) => e.id === event);
-  return entry ? timelineEntryCard(entry) : timelineCard();
+  return entry ? timelineEntryCard(entry, t) : timelineCard(t);
 }
