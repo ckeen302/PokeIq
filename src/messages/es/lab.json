@@ -24,49 +24,91 @@
       "title": "Cronología Pokémon",
       "kicker": "La historia en 3D",
       "pitch": "Viaja por la historia de Pokémon en un túnel del tiempo, desde Rojo y Verde en 1996 hasta hoy: los juegos, el anime, las películas y el juego de cartas.",
-      "tags": { "0": "Visita guiada", "1": "Cambios de época", "2": "Fechas de Japón y Occidente" }
+      "tags": {
+        "0": "Visita guiada",
+        "1": "Cambios de época",
+        "2": "Fechas de Japón y Occidente"
+      }
     },
     "pokemon-story": {
       "title": "La historia de Pokémon",
       "kicker": "La historia real, en 3D",
       "pitch": "Una película cinematográfica sobre cómo empezó de verdad Pokémon, desde un niño que coleccionaba insectos en Machida hasta treinta años de juegos, cartas y series. Recórrela o pulsa Reproducir; cada frase tiene su fuente.",
-      "tags": { "0": "La historia real", "1": "Cada frase con su fuente", "2": "Haz un vídeo" }
+      "tags": {
+        "0": "La historia real",
+        "1": "Cada frase con su fuente",
+        "2": "Haz un vídeo"
+      }
     },
     "sizes": {
       "title": "Tamaños Pokémon",
       "kicker": "Cada Pokémon a escala",
       "pitch": "Pasa junto a cada Pokémon a su tamaño real en una Ciudad Luminalia en 3D y pulsa Hacer un vídeo para tener una comparativa de tamaños lista para TikTok, Reels y Shorts.",
-      "tags": { "0": "Haz un vídeo", "1": "Compara cualquier Pokémon", "2": "Ciudad Luminalia" }
+      "tags": {
+        "0": "Haz un vídeo",
+        "1": "Compara cualquier Pokémon",
+        "2": "Ciudad Luminalia"
+      }
     },
     "globe": {
       "title": "Globo del mundo",
       "kicker": "El mundo Pokémon",
       "pitch": "Gira un globo holográfico de todo el mundo Pokémon y acércate desde sus regiones hasta cada pueblo, ruta y lugar emblemático.",
-      "tags": { "0": "Generación a generación", "1": "Capturas reales", "2": "De PokéGuessr" }
+      "tags": {
+        "0": "Generación a generación",
+        "1": "Capturas reales",
+        "2": "De PokéGuessr"
+      }
     },
     "race": {
       "title": "Carrera Pokémon",
       "kicker": "¿Quién es el más rápido?",
       "pitch": "Pon en fila a tus Pokémon en un estadio 3D de noche y míralos esprintar, con velocidades sacadas de sus estadísticas base.",
-      "tags": { "0": "Foto finish", "1": "Elige tu carrera", "2": "Haz un vídeo" }
+      "tags": {
+        "0": "Foto finish",
+        "1": "Elige tu carrera",
+        "2": "Haz un vídeo"
+      }
     },
     "mass-battle": {
       "title": "Batalla masiva Pokémon",
       "kicker": "Cálculo de daño real, a lo grande",
       "pitch": "Miles de Pokémon chocan en un campo de batalla 3D con el cálculo de daño de los juegos. ¿Cuántos Magikarp hacen falta para vencer a Arceus? Descúbrelo y haz un vídeo.",
-      "tags": { "0": "¿Cuántos?", "1": "Ejército contra ejército", "2": "Haz un vídeo" }
+      "tags": {
+        "0": "¿Cuántos?",
+        "1": "Ejército contra ejército",
+        "2": "Haz un vídeo"
+      }
     },
     "games": {
       "title": "Los Juegos de PokéIQ",
       "kicker": "Cada Pokémon, deporte real",
       "pitch": "Atletismo, halterofilia, natación y lucha para cada Pokémon, puntuados con sus estadísticas reales y física real, y luego en 3D con repeticiones, medallas y medallero.",
-      "tags": { "0": "Atletismo y más", "1": "Récords de cada Pokémon", "2": "Haz un vídeo" }
+      "tags": {
+        "0": "Atletismo y más",
+        "1": "Récords de cada Pokémon",
+        "2": "Haz un vídeo"
+      }
     },
     "world-history": {
       "title": "La historia del mundo Pokémon",
       "kicker": "La historia, tal como la cuentan los juegos",
       "pitch": "Un museo cinematográfico de la historia del mundo Pokémon dentro de su universo, desde el mito de la creación de Sinnoh hasta la máquina del tiempo de la Área Cero. Recórrelo o pulsa Reproducir; cada frase tiene su fuente en los juegos.",
-      "tags": { "0": "Contada por los juegos", "1": "Cada frase con su fuente", "2": "Haz un vídeo" }
+      "tags": {
+        "0": "Contada por los juegos",
+        "1": "Cada frase con su fuente",
+        "2": "Haz un vídeo"
+      }
+    },
+    "pokedex": {
+      "title": "Laboratorio del Profesor",
+      "kicker": "Una Pokédex en 3D",
+      "pitch": "Gira un anillo de cápsulas del laboratorio y lleva cualquier Pokémon a la mesa holográfica en 3D, con sus características base, sus roles en combate, su entrada de la Pokédex, sus evoluciones y su tabla de tipos.",
+      "tags": {
+        "0": "Todos los Pokémon en 3D",
+        "1": "Roles en combate",
+        "2": "Filtra y ordena"
+      }
     }
   }
 }

@@ -56,12 +56,9 @@
     "weight": "Weight",
     "color": "Color",
     "shape": "Shape",
-    "seeSize": "See its size in 3D",
-    "race": "Race it",
-    "battle": "Battle it",
-    "games": "Games",
     "abilities": "Abilities",
-    "hidden": "Hidden"
+    "hidden": "Hidden",
+    "lab": "View in the 3D Lab"
   },
   "stat": {
     "hp": "HP",

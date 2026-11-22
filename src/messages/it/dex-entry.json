@@ -56,12 +56,9 @@
     "weight": "Peso",
     "color": "Colore",
     "shape": "Forma",
-    "seeSize": "Guarda le sue dimensioni in 3D",
-    "race": "Fallo correre",
-    "battle": "Fallo lottare",
-    "games": "Giochi",
     "abilities": "Abilità",
-    "hidden": "Speciale"
+    "hidden": "Speciale",
+    "lab": "Vedi nel Lab 3D"
   },
   "stat": {
     "hp": "PS",

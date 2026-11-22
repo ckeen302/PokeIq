@@ -3,7 +3,7 @@
  * card, the hub, an event's broadcast from the start to the medal
  * ceremony (the arena and the pool too), the Games to the medal table, the
  * records and a Pokémon's own page, a shared run replaying exactly with
- * its own preview card, the Pokédex entry's and the Race page's links into
+ * its own preview card, the Race page's link into
  * the Games, the phone layout, and "Make a video": a 5-second export (?len=5,
  * at the light test quality and 10 fps) that must be a valid 1080 × 1920
  * MP4 with video and audio. Screenshots at 1440 and 390 px.
@@ -167,10 +167,6 @@ export async function runGames({ browser, BASE, OUT, errors, step }) {
   });
 
   await part(errors, "links in", async () => {
-    await page.goto(`${BASE}/pokemon/pikachu`, { waitUntil: "load" });
-    const link = page.getByTestId("dex-games");
-    if (!(await link.count())) errors.push("games: the Pokédex entry has no Games link");
-    else if ((await link.getAttribute("href")) !== "/lab/games/pokemon/pikachu") errors.push(`games: the Pokédex entry's Games link is ${await link.getAttribute("href")}`);
     await page.goto(`${BASE}/pokedex/race`, { waitUntil: "load" });
     if (!(await page.getByTestId("race-games").count())) errors.push("games: the Race page doesn't link to the Games");
   });

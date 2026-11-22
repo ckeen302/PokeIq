@@ -1,0 +1,120 @@
+{
+  "brand": "Professor's Lab",
+  "loading": "Calibrating the lab…",
+  "noWebgl": "3D isn't available in this browser, so the lab shows its specimen cards instead.",
+  "searchLabel": "Search Pokémon",
+  "searchPlaceholder": "Search Pokémon",
+  "clearSearch": "Clear search",
+  "notInView": "Not in these filters",
+  "showAll": "Show it",
+  "noMatch": "No Pokémon match those filters.",
+  "noSearchMatch": "No Pokémon found",
+  "reset": "Reset",
+  "filters": "Filters",
+  "allTypes": "All types",
+  "types": "Types",
+  "typesHint": "Pick up to two",
+  "gen": "Gen",
+  "genN": "Gen {n}",
+  "legends": "Legendary + Mythical",
+  "final": "Fully evolved",
+  "forms": "Forms",
+  "formsHint": "Mega, regional and Gigantamax forms after each Pokémon",
+  "sortBy": "Sort by",
+  "sortAsc": "Sort ascending",
+  "sortDesc": "Sort descending",
+  "specimen": "Specimen",
+  "scanComplete": "Scan complete",
+  "materialising": "Materialising…",
+  "biometrics": "Biometrics",
+  "height": "Height",
+  "weight": "Weight",
+  "region": "Region",
+  "entry": "Pokédex log",
+  "abilities": "Abilities",
+  "hidden": "Hidden",
+  "evolution": "Lineage",
+  "noEvolution": "Doesn't evolve",
+  "matchups": "Type analysis",
+  "weakTo": "Weak to",
+  "resists": "Resists",
+  "immune": "Immune",
+  "baseStats": "Base stats",
+  "roles": "Roles",
+  "total": "Total",
+  "bestRole": "Best role",
+  "rolesNote": "Each score is ranked against every Pokémon",
+  "rolesNoteForms": "Each score is ranked against every Pokémon and form",
+  "top": "Top {n}%",
+  "bottom": "Bottom {n}%",
+  "openInDex": "Open in Pokédex",
+  "prev": "Previous",
+  "next": "Next",
+  "prevNamed": "Previous: {name}",
+  "nextNamed": "Next: {name}",
+  "hint": "Drag or ← → to choose",
+  "hintTouch": "Swipe to choose",
+  "stage": "The Professor's Lab: a wheel of Pokémon. Use the left and right arrow keys to turn it.",
+  "stageRole": "carousel",
+  "announce": "{name}, number {no}, {types}",
+  "sheetHandle": "Show details",
+  "sheetClose": "Hide details",
+  "close": "Close",
+  "done": "Done",
+  "evoJump": "Show {name}",
+  "stats": {
+    "hp": "HP",
+    "atk": "Attack",
+    "def": "Defense",
+    "spa": "Sp. Atk",
+    "spd": "Sp. Def",
+    "spe": "Speed"
+  },
+  "statsShort": {
+    "hp": "HP",
+    "atk": "ATK",
+    "def": "DEF",
+    "spa": "SPA",
+    "spd": "SPD",
+    "spe": "SPE"
+  },
+  "regions": {
+    "kanto": "Kanto",
+    "johto": "Johto",
+    "hoenn": "Hoenn",
+    "sinnoh": "Sinnoh",
+    "unova": "Unova",
+    "kalos": "Kalos",
+    "alola": "Alola",
+    "galar": "Galar",
+    "paldea": "Paldea",
+    "hisui": "Hisui"
+  },
+  "role": {
+    "physicalSweeper": {
+      "name": "Physical Sweeper",
+      "formula": "Attack + Speed"
+    },
+    "specialSweeper": {
+      "name": "Special Sweeper",
+      "formula": "Sp. Atk + Speed"
+    },
+    "wall": {
+      "name": "Wall",
+      "formula": "HP + Defense + Sp. Def"
+    },
+    "physicalTank": {
+      "name": "Physical Tank",
+      "formula": "Attack + Defense"
+    },
+    "specialTank": {
+      "name": "Special Tank",
+      "formula": "Sp. Atk + Sp. Def"
+    }
+  },
+  "sort": {
+    "id": "Number",
+    "name": "Name",
+    "bst": "Total"
+  }
+}

@@ -56,12 +56,9 @@
     "weight": "重さ",
     "color": "色",
     "shape": "体の形",
-    "seeSize": "3Dで大きさを見る",
-    "race": "かけっこさせる",
-    "battle": "バトルさせる",
-    "games": "ゲーム",
     "abilities": "とくせい",
-    "hidden": "隠れ特性"
+    "hidden": "隠れ特性",
+    "lab": "3Dラボで見る"
   },
   "stat": {
     "hp": "HP",

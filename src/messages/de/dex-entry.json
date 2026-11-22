@@ -56,12 +56,9 @@
     "weight": "Gewicht",
     "color": "Farbe",
     "shape": "Körperform",
-    "seeSize": "Größe in 3D ansehen",
-    "race": "Lass es rennen",
-    "battle": "Lass es kämpfen",
-    "games": "Spiele",
     "abilities": "Fähigkeiten",
-    "hidden": "Versteckt"
+    "hidden": "Versteckt",
+    "lab": "Im 3D-Labor ansehen"
   },
   "stat": {
     "hp": "KP",

@@ -113,6 +113,7 @@ export const NAMESPACES = [
   "iq-test-play",
   "iq-test-results",
   "lab",
+  "lab-dex",
   "leaderboard",
   "mass-battle-copy",
   "mass-battle-how",

@@ -56,12 +56,9 @@
     "weight": "Poids",
     "color": "Couleur",
     "shape": "Forme",
-    "seeSize": "Voir sa taille en 3D",
-    "race": "Fais-le courir",
-    "battle": "Fais-le combattre",
-    "games": "Jeux",
     "abilities": "Talents",
-    "hidden": "Caché"
+    "hidden": "Caché",
+    "lab": "Voir dans le Labo 3D"
   },
   "stat": {
     "hp": "PV",
