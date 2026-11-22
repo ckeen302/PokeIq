@@ -1,0 +1,44 @@
+{
+  "prompt": {
+    "silhouette": {
+      "label": "Sagoma",
+      "hint": "Chi è quel Pokémon?"
+    },
+    "entry": {
+      "label": "Voce del Pokédex",
+      "hint": "Che Pokémon è?"
+    },
+    "typing": {
+      "label": "Tipi",
+      "hint": "Di che tipo è?"
+    }
+  },
+  "back": "Torna al Pokédex",
+  "title": "Modalità studio",
+  "blurb": "Gira, ricorda, ripeti. Le schede che sbagli tornano finché non le sai.",
+  "generations": "Generazioni",
+  "gen": "Gen. {n}",
+  "cardFront": "Fronte della scheda",
+  "deckSize": "Dimensione del mazzo",
+  "all": "Tutte",
+  "skipMastered": "Salta quelle imparate",
+  "mastered": "Imparate nella selezione",
+  "start": "Inizia a studiare",
+  "keys": "Spazio per girare · → la sapevo · ← da rivedere · Esc per uscire · o scorri la scheda",
+  "complete": "Mazzo completato!",
+  "summary": "{known}/{total} al primo colpo · {missed} da rivedere",
+  "drill": "Ripassa gli errori",
+  "newDeck": "Nuovo mazzo",
+  "testYourself": "Mettiti alla prova →",
+  "exit": "Esci dallo studio",
+  "again": "Da rivedere",
+  "knew": "La sapevo",
+  "swipeHint": "Scorri → se la sapevi, ← per rivederla",
+  "flipHint": "Tocca la scheda o premi Spazio per girarla",
+  "mystery": "Sagoma misteriosa",
+  "quote": "«{entry}»",
+  "genus": "{genus}",
+  "fullEntry": "Voce completa del Pokédex →",
+  "knewStamp": "LA SAPEVO",
+  "againStamp": "DI NUOVO"
+}

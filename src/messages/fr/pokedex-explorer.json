@@ -1,0 +1,54 @@
+{
+  "search": {
+    "hint": "Cherche un nom, un numéro ou une catégorie…  ( / )",
+    "hintShort": "Nom, numéro, catégorie…",
+    "label": "Chercher un Pokémon",
+    "clear": "Effacer la recherche"
+  },
+  "sortBy": "Trier par",
+  "sortAsc": "Tri croissant",
+  "sortDesc": "Tri décroissant",
+  "sort": {
+    "id": "N° du Pokédex",
+    "name": "Nom",
+    "type": "Type",
+    "bst": "Total des stats",
+    "hp": "PV",
+    "atk": "Attaque",
+    "def": "Défense",
+    "spa": "Attaque Spéciale",
+    "spd": "Défense Spéciale",
+    "spe": "Vitesse",
+    "height": "Taille",
+    "weight": "Poids"
+  },
+  "showFilters": "Afficher les filtres",
+  "hideFilters": "Masquer les filtres",
+  "studyMode": "Mode révision",
+  "gen": "Gén. {n}",
+  "legends": "Légendaires + fabuleux",
+  "fullyEvolved": "Stade final",
+  "reset": "Réinitialiser",
+  "empty": "Aucun Pokémon ne correspond à ces filtres.",
+  "view": {
+    "label": "Vue",
+    "cards": "Fiches",
+    "table": "Tableau"
+  },
+  "col": {
+    "id": "N°",
+    "name": "Pokémon",
+    "type": "Type",
+    "hp": "PV",
+    "atk": "Attaque",
+    "def": "Défense",
+    "spa": "Atq. Spé.",
+    "spd": "Déf. Spé.",
+    "spe": "Vitesse",
+    "bst": "Total"
+  },
+  "sortedDesc": "{label}, du plus haut au plus bas (inverser)",
+  "sortedAsc": "{label}, du plus bas au plus haut (inverser)",
+  "sortThis": "{label} (trier le tableau)",
+  "no": "N° {n}"
+}

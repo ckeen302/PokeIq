@@ -12,6 +12,8 @@ import { capitalize } from "@/lib/pokemon/type-matrix";
 import { TypeBadge } from "./TypeBadge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import studyNs from "@/messages/pokedex-study";
 
 /**
  * Flashcard study mode. Missed cards are re-queued a few cards later
@@ -31,11 +33,13 @@ export interface StudyCard {
 
 type Prompt = "silhouette" | "entry" | "typing";
 
-const PROMPTS: { id: Prompt; label: string; hint: string }[] = [
-  { id: "silhouette", label: "Silhouette", hint: "Who's that Pokémon?" },
-  { id: "entry", label: "Pokédex entry", hint: "Which Pokémon is this?" },
-  { id: "typing", label: "Typing", hint: "What type is it?" },
-];
+const PROMPTS: Prompt[] = ["silhouette", "entry", "typing"];
+
+/** On a page in another language, the type and region names the server sends with the cards (English sends none). */
+export interface StudyLocal {
+  types: Record<string, string>;
+  regions: string[];
+}
 
 const REGIONS = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola", "Galar", "Paldea"];
 const MASTERY_KEY = "pokeiq:mastery:v1";
@@ -71,7 +75,8 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-export function StudyMode({ cards }: { cards: StudyCard[] }) {
+export function StudyMode({ cards, local }: { cards: StudyCard[]; local?: StudyLocal }) {
+  const t = useT(studyNs);
   const [gens, setGens] = useState<number[]>([1]);
   const [prompt, setPrompt] = useState<Prompt>("silhouette");
   const [deckSize, setDeckSize] = useState<number>(20);
@@ -167,15 +172,15 @@ export function StudyMode({ cards }: { cards: StudyCard[] }) {
   if (!queue) {
     return (
       <div className="mx-auto max-w-2xl space-y-6">
-        <BackButton href="/pokedex" label="Back to Pokédex" />
+        <BackButton href="/pokedex" label={t("back")} />
         <div className="space-y-2 text-center">
           <GraduationCap className="mx-auto h-10 w-10 text-primary" />
-          <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Study mode</h1>
-          <p className="text-muted-foreground">Flip, recall, repeat. Cards you miss come back until you nail them.</p>
+          <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">{t("title")}</h1>
+          <p className="text-muted-foreground">{t("blurb")}</p>
         </div>
         <div className="space-y-5 hud rounded-lg border bg-card p-6">
           <div className="space-y-2">
-            <div className="hud-label">Generations</div>
+            <div className="hud-label">{t("generations")}</div>
             <div className="flex flex-wrap gap-1.5">
               {REGIONS.map((r, i) => {
                 const g = i + 1;
@@ -193,9 +198,9 @@ export function StudyMode({ cards }: { cards: StudyCard[] }) {
                     )}
                   >
                     <span className="absolute inset-y-0 left-0 bg-success/15" style={{ width: `${(done / inGen.length) * 100}%` }} aria-hidden />
-                    <span className="relative block font-semibold">Gen {g}</span>
+                    <span className="relative block font-semibold">{t("gen", { n: g })}</span>
                     <span className="relative block text-[10px] text-muted-foreground">
-                      {r} · {done}/{inGen.length}
+                      {local?.regions[i] ?? r} · {done}/{inGen.length}
                     </span>
                   </button>
                 );
@@ -203,23 +208,23 @@ export function StudyMode({ cards }: { cards: StudyCard[] }) {
             </div>
           </div>
           <div className="space-y-2">
-            <div className="hud-label">Card front</div>
+            <div className="hud-label">{t("cardFront")}</div>
             <div className="grid grid-cols-3 gap-2">
               {PROMPTS.map((p) => (
                 <button
-                  key={p.id}
+                  key={p}
                   type="button"
-                  onClick={() => setPrompt(p.id)}
-                  aria-pressed={prompt === p.id}
-                  className={cn("rounded-lg border px-2 py-2.5 text-sm font-semibold", prompt === p.id ? "border-primary bg-primary/10" : "text-muted-foreground hover:text-foreground")}
+                  onClick={() => setPrompt(p)}
+                  aria-pressed={prompt === p}
+                  className={cn("rounded-lg border px-2 py-2.5 text-sm font-semibold", prompt === p ? "border-primary bg-primary/10" : "text-muted-foreground hover:text-foreground")}
                 >
-                  {p.label}
+                  {t(`prompt.${p}.label`)}
                 </button>
               ))}
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="hud-label">Deck size</span>
+            <span className="hud-label">{t("deckSize")}</span>
             {DECK_SIZES.map((n) => (
               <button
                 key={n}
@@ -227,17 +232,17 @@ export function StudyMode({ cards }: { cards: StudyCard[] }) {
                 onClick={() => setDeckSize(n)}
                 className={cn("rounded-sm border px-3 py-1.5 font-pixel text-[10px] uppercase", deckSize === n ? "border-primary bg-primary text-primary-foreground" : "text-muted-foreground")}
               >
-                {n === Infinity ? "All" : n}
+                {n === Infinity ? t("all") : n}
               </button>
             ))}
             <label className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
               <input type="checkbox" checked={skipMastered} onChange={(e) => setSkipMastered(e.target.checked)} className="accent-[hsl(var(--primary))]" />
-              Skip mastered
+              {t("skipMastered")}
             </label>
           </div>
           <div className="space-y-1">
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Mastered in selection</span>
+              <span>{t("mastered")}</span>
               <span className="tabular-nums">
                 {masteredInPool}/{pool.length}
               </span>
@@ -247,10 +252,10 @@ export function StudyMode({ cards }: { cards: StudyCard[] }) {
             </div>
           </div>
           <Button size="lg" className="w-full text-base" onClick={() => start()} disabled={pool.length === 0}>
-            Start studying
+            {t("start")}
           </Button>
         </div>
-        <p className="text-center text-xs text-muted-foreground">Space to flip · → knew it · ← study again · Esc to exit · or swipe the card</p>
+        <p className="text-center text-xs text-muted-foreground">{t("keys")}</p>
       </div>
     );
   }
@@ -261,9 +266,9 @@ export function StudyMode({ cards }: { cards: StudyCard[] }) {
     return (
       <motion.div className="mx-auto max-w-xl space-y-6 text-center" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
         <div className="text-6xl">🎓</div>
-        <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Deck complete!</h1>
+        <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">{t("complete")}</h1>
         <p className="text-muted-foreground">
-          {knownFirstTry}/{total} on the first try · {missed.size} needed review
+          {t("summary", { known: knownFirstTry, total, missed: missed.size })}
         </p>
         {missedCards.length > 0 && (
           <div className="flex flex-wrap justify-center gap-2">
@@ -277,14 +282,14 @@ export function StudyMode({ cards }: { cards: StudyCard[] }) {
         <div className="flex flex-wrap justify-center gap-2">
           {missedCards.length > 0 && (
             <Button onClick={() => start(missedCards)}>
-              <RotateCcw className="h-4 w-4" /> Drill the misses
+              <RotateCcw className="h-4 w-4" /> {t("drill")}
             </Button>
           )}
           <Button variant="outline" onClick={() => start()}>
-            <Shuffle className="h-4 w-4" /> New deck
+            <Shuffle className="h-4 w-4" /> {t("newDeck")}
           </Button>
           <Link href={`/quiz/gen-${gens[0]}-pokemon-quiz`} className="inline-flex h-10 items-center rounded-md border px-4 text-sm font-medium hover:bg-accent">
-            Test yourself →
+            {t("testYourself")}
           </Link>
         </div>
       </motion.div>
@@ -296,7 +301,7 @@ export function StudyMode({ cards }: { cards: StudyCard[] }) {
   return (
     <div className="mx-auto max-w-md space-y-5">
       <div className="flex items-center gap-3">
-        <button type="button" onClick={() => setQueue(null)} className="text-muted-foreground hover:text-foreground" aria-label="Exit study session">
+        <button type="button" onClick={() => setQueue(null)} className="text-muted-foreground hover:text-foreground" aria-label={t("exit")}>
           <X className="h-5 w-5" />
         </button>
         <div className="flex-1 meter">
@@ -308,18 +313,18 @@ export function StudyMode({ cards }: { cards: StudyCard[] }) {
       </div>
 
       <AnimatePresence mode="popLayout" custom={exitDir}>
-        <FlashCard key={`${current.id}-${queue.length}`} card={current} prompt={prompt} flipped={flipped} onFlip={() => setFlipped((f) => !f)} onGrade={grade} />
+        <FlashCard key={`${current.id}-${queue.length}`} card={current} prompt={prompt} flipped={flipped} onFlip={() => setFlipped((f) => !f)} onGrade={grade} typeNames={local?.types} />
       </AnimatePresence>
 
       <div className="grid grid-cols-2 gap-3">
         <Button size="lg" variant="outline" disabled={!flipped} onClick={() => grade(false)} className="border-destructive/40 text-destructive hover:bg-destructive/10">
-          <RotateCcw className="h-4 w-4" /> Study again
+          <RotateCcw className="h-4 w-4" /> {t("again")}
         </Button>
         <Button size="lg" variant="success" disabled={!flipped} onClick={() => grade(true)}>
-          <Check className="h-4 w-4" /> Knew it
+          <Check className="h-4 w-4" /> {t("knew")}
         </Button>
       </div>
-      <p className="text-center text-xs text-muted-foreground">{flipped ? "Swipe → if you knew it, ← to see it again" : "Tap the card or press Space to flip"}</p>
+      <p className="text-center text-xs text-muted-foreground">{flipped ? t("swipeHint") : t("flipHint")}</p>
     </div>
   );
 }
@@ -330,9 +335,11 @@ interface FlashCardProps {
   flipped: boolean;
   onFlip: () => void;
   onGrade: (knew: boolean) => void;
+  typeNames?: Record<string, string>;
 }
 
-function FlashCard({ card, prompt, flipped, onFlip, onGrade }: FlashCardProps) {
+function FlashCard({ card, prompt, flipped, onFlip, onGrade, typeNames }: FlashCardProps) {
+  const t = useT(studyNs);
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-14, 14]);
   const knewOpacity = useTransform(x, [20, 120], [0, 1]);
@@ -386,20 +393,20 @@ function FlashCard({ card, prompt, flipped, onFlip, onGrade }: FlashCardProps) {
       >
         {/* Front */}
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 rounded-lg border bg-card p-6 text-center shadow-2xl [backface-visibility:hidden]">
-          <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{PROMPTS.find((p) => p.id === prompt)!.hint}</span>
+          <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t(`prompt.${prompt}.hint`)}</span>
           {prompt === "silhouette" && (
             <div className="spotlight flex aspect-square w-full items-center justify-center rounded-lg">
-              <img src={artUrl(card.id, 256)} alt="Mystery silhouette" draggable={false} className="h-[85%] w-[85%] object-contain [filter:brightness(0)]" />
+              <img src={artUrl(card.id, 256)} alt={t("mystery")} draggable={false} className="h-[85%] w-[85%] object-contain [filter:brightness(0)]" />
             </div>
           )}
-          {prompt === "entry" && <p className="font-serif text-lg italic leading-relaxed">“{card.entry}”</p>}
+          {prompt === "entry" && <p className="font-serif text-lg italic leading-relaxed">{t("quote", { entry: card.entry })}</p>}
           {prompt === "typing" && (
             <>
               <img src={artUrl(card.id, 256)} alt={card.name} draggable={false} className="h-48 w-48 object-contain" />
               <span className="text-2xl font-bold">{card.name}</span>
             </>
           )}
-          <span className="text-xs text-muted-foreground">Gen {card.gen}</span>
+          <span className="text-xs text-muted-foreground">{t("gen", { n: card.gen })}</span>
         </div>
 
         {/* Back */}
@@ -411,26 +418,26 @@ function FlashCard({ card, prompt, flipped, onFlip, onGrade }: FlashCardProps) {
           <div>
             <div className="font-mono text-xs text-muted-foreground">#{String(card.id).padStart(4, "0")}</div>
             <div className="text-3xl font-black">{card.name}</div>
-            <div className="text-sm text-muted-foreground">The {card.genus}</div>
+            <div className="text-sm text-muted-foreground">{t("genus", { genus: card.genus })}</div>
           </div>
           <div className="flex gap-1.5">
-            {card.types.map((t) => (
-              <TypeBadge key={t} type={t} />
+            {card.types.map((ty) => (
+              <TypeBadge key={ty} type={ty} label={typeNames?.[ty]} />
             ))}
           </div>
           <Link href={`/pokemon/${card.slug}`} onClick={(e) => e.stopPropagation()} className="text-xs font-semibold text-primary hover:underline">
-            Full Pokédex entry →
+            {t("fullEntry")}
           </Link>
-          <span className="sr-only">{card.types.map(capitalize).join(" / ")}</span>
+          <span className="sr-only">{card.types.map((ty) => typeNames?.[ty] ?? capitalize(ty)).join(" / ")}</span>
         </div>
       </motion.div>
 
       {/* Swipe feedback */}
       <motion.div className="pointer-events-none absolute left-4 top-4 rounded-lg border-2 border-success px-3 py-1 text-lg font-black text-success" style={{ opacity: knewOpacity, rotate: -12 }}>
-        KNEW IT
+        {t("knewStamp")}
       </motion.div>
       <motion.div className="pointer-events-none absolute right-4 top-4 rounded-lg border-2 border-destructive px-3 py-1 text-lg font-black text-destructive" style={{ opacity: againOpacity, rotate: 12 }}>
-        AGAIN
+        {t("againStamp")}
       </motion.div>
     </motion.div>
   );

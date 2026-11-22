@@ -1,0 +1,100 @@
+{
+  "crumbs": {
+    "pokedex": "Pokédex",
+    "types": "Types"
+  },
+  "title": "Poké<accent>dex</accent>",
+  "titleStart": "Poké",
+  "titleAccent": "dex",
+  "hub": {
+    "metaTitle": "Pokédex : tous les Pokémon, de Kanto à Paldea",
+    "metaDescription": "Parcours et cherche tous les Pokémon, de Kanto à Paldea. Filtre par type et génération, trie par statistiques et étudie évolutions, capacités, talents et faiblesses.",
+    "kicker": "Base de données nationale",
+    "blurb": "Statistiques, évolutions, capacités, talents, affinités et toutes les entrées du Pokédex. Révise, puis teste-toi."
+  },
+  "types": {
+    "metaTitle": "Table des types Pokémon : toutes les affinités",
+    "metaDescription": "La table complète des types Pokémon : quels types offensifs sont super efficaces, peu efficaces ou sans effet contre chaque type défensif.",
+    "kicker": "Table des types",
+    "blurb": "Chaque type offensif face à chaque type défensif. Pour un Pokémon à deux types, multiplie les deux colonnes.",
+    "listName": "Types de Pokémon"
+  },
+  "chart": {
+    "super": "super efficace",
+    "notVery": "peu efficace",
+    "none": "aucun effet",
+    "neutral": "neutre",
+    "legend": "Les lignes attaquent, les colonnes défendent.",
+    "caption": "Efficacité des types : type offensif contre type défensif",
+    "defending": "En défense : {type}",
+    "attacking": "En attaque : {type}",
+    "cell": "{a} → {d} : {word}"
+  },
+  "type": {
+    "name": "Type {type}",
+    "metaTitle": "Pokémon de type {type} : faiblesses, forces et capacités",
+    "social": "Type {type} · Pokédex PokéIQ",
+    "descSuper": "Les capacités de type {type} sont super efficaces contre {list}.",
+    "descSuperNone": "Les capacités de type {type} ne sont super efficaces contre aucun type.",
+    "descWeak": "Les Pokémon de type {type} craignent {list}.",
+    "descWeakNone": "Les Pokémon de type {type} n’ont aucune faiblesse.",
+    "descAll": "Les {n} Pokémon de type {type} et les capacités {type} les plus puissantes.",
+    "descEvery": "Tous les Pokémon de type {type} et les capacités {type} les plus puissantes.",
+    "typedPokemon": "Pokémon de type {type}",
+    "back": "Table des types",
+    "kicker": "Type",
+    "attacking": "Capacités {type} en attaque",
+    "defending": "Pokémon {type} en défense",
+    "singleTyped": "Type unique",
+    "moves": "Capacités de type {type}",
+    "superVs": "Super efficace contre",
+    "notVeryVs": "Peu efficace contre",
+    "noEffectOn": "Sans effet sur",
+    "weakTo": "Faible contre",
+    "resists": "Résiste à",
+    "immuneTo": "Immunisé contre",
+    "noType": "Aucun type",
+    "dualNote": "Pour un Pokémon à deux types, multiplie les valeurs des deux types ; voir la <link>table des types complète</link>.",
+    "physical": "Physique",
+    "special": "Spéciale",
+    "status": "Statut",
+    "strongest": "Plus forte puissance de base",
+    "common": "Apprises par le plus de Pokémon",
+    "pwr": "PUI",
+    "mons": "PKMN",
+    "split": "{pure} à type unique · {dual} à double type",
+    "pure": "{type} uniquement · {n}",
+    "part": "En partie {type} · {n}",
+    "others": "Autres types"
+  },
+  "natures": {
+    "metaTitle": "Natures Pokémon : bonus de stats et goûts",
+    "metaDescription": "Toutes les natures Pokémon : la statistique que chacune augmente de 10 % et celle qu’elle baisse, et le goût de Baie qu’un Pokémon aime ou déteste.",
+    "kicker": "Natures",
+    "blurb": "Une nature augmente une statistique de 10 % et en baisse une autre de 10 %. Les natures neutres ne changent rien.",
+    "nature": "Nature",
+    "raises": "Augmente",
+    "lowers": "Baisse",
+    "likes": "Aime",
+    "dislikes": "N’aime pas",
+    "neutral": "Les natures neutres ({list}) ne modifient aucune statistique et n’ont pas de goût préféré.",
+    "stat": {
+      "atk": "Attaque",
+      "def": "Défense",
+      "spa": "Atq. Spé.",
+      "spd": "Déf. Spé.",
+      "spe": "Vitesse"
+    },
+    "flavor": {
+      "atk": "Épicé",
+      "def": "Acide",
+      "spa": "Sec",
+      "spd": "Amer",
+      "spe": "Sucré"
+    }
+  },
+  "study": {
+    "metaTitle": "Mode révision : cartes mémoire Pokémon",
+    "metaDescription": "Apprends tous les Pokémon avec des cartes mémoire : silhouettes, entrées du Pokédex et types. Suis ce que tu maîtrises, génération par génération."
+  }
+}

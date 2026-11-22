@@ -2,8 +2,11 @@ import { capitalize } from "@/lib/pokemon/type-matrix";
 import { typeColor, typeTextColor } from "@/lib/pokemon/type-colors";
 import { cn } from "@/lib/utils";
 
-/** In-game style type plate: solid colour, bevelled edge, uppercase label. */
-export function TypeBadge({ type, size = "md", className }: { type: string; size?: "sm" | "md" | "lg"; className?: string }) {
+/**
+ * In-game style type plate: solid colour, bevelled edge, uppercase label. `label` is the type's name in the page's
+ * language (official names, src/data/i18n); without it the plate shows the English name.
+ */
+export function TypeBadge({ type, size = "md", className, label }: { type: string; size?: "sm" | "md" | "lg"; className?: string; label?: string }) {
   return (
     <span
       className={cn(
@@ -19,7 +22,7 @@ export function TypeBadge({ type, size = "md", className }: { type: string; size
         boxShadow: "inset 0 1px 0 rgb(255 255 255 / 0.35), inset 0 -2px 0 rgb(0 0 0 / 0.25)",
       }}
     >
-      {capitalize(type)}
+      {label ?? capitalize(type)}
     </span>
   );
 }

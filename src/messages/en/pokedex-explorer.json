@@ -1,0 +1,54 @@
+{
+  "search": {
+    "hint": "Search name, number or category…  ( / )",
+    "hintShort": "Name, number, category…",
+    "label": "Search Pokémon",
+    "clear": "Clear search"
+  },
+  "sortBy": "Sort by",
+  "sortAsc": "Sort ascending",
+  "sortDesc": "Sort descending",
+  "sort": {
+    "id": "Dex number",
+    "name": "Name",
+    "type": "Type",
+    "bst": "Base stat total",
+    "hp": "HP",
+    "atk": "Attack",
+    "def": "Defense",
+    "spa": "Sp. Atk",
+    "spd": "Sp. Def",
+    "spe": "Speed",
+    "height": "Height",
+    "weight": "Weight"
+  },
+  "showFilters": "Show filters",
+  "hideFilters": "Hide filters",
+  "studyMode": "Study mode",
+  "gen": "Gen {n}",
+  "legends": "Legendary + Mythical",
+  "fullyEvolved": "Fully evolved",
+  "reset": "Reset",
+  "empty": "No Pokémon match those filters.",
+  "view": {
+    "label": "View",
+    "cards": "Cards",
+    "table": "Table"
+  },
+  "col": {
+    "id": "No.",
+    "name": "Pokémon",
+    "type": "Type",
+    "hp": "HP",
+    "atk": "Attack",
+    "def": "Defense",
+    "spa": "Sp. Atk",
+    "spd": "Sp. Def",
+    "spe": "Speed",
+    "bst": "Total"
+  },
+  "sortedDesc": "{label}, sorted high to low (reverse)",
+  "sortedAsc": "{label}, sorted low to high (reverse)",
+  "sortThis": "{label} (sort the table)",
+  "no": "No.{n}"
+}

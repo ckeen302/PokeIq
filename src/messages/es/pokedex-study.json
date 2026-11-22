@@ -1,0 +1,44 @@
+{
+  "prompt": {
+    "silhouette": {
+      "label": "Silueta",
+      "hint": "¿Quién es ese Pokémon?"
+    },
+    "entry": {
+      "label": "Entrada de la Pokédex",
+      "hint": "¿Qué Pokémon es?"
+    },
+    "typing": {
+      "label": "Tipos",
+      "hint": "¿De qué tipo es?"
+    }
+  },
+  "back": "Volver a la Pokédex",
+  "title": "Modo estudio",
+  "blurb": "Gira, recuerda, repite. Las fichas que falles vuelven hasta que te las sepas.",
+  "generations": "Generaciones",
+  "gen": "Gen. {n}",
+  "cardFront": "Anverso de la ficha",
+  "deckSize": "Tamaño del mazo",
+  "all": "Todas",
+  "skipMastered": "Saltar las dominadas",
+  "mastered": "Dominadas en la selección",
+  "start": "Empezar a estudiar",
+  "keys": "Espacio para girar · → me la sabía · ← repasar · Esc para salir · o desliza la ficha",
+  "complete": "¡Mazo completado!",
+  "summary": "{known}/{total} a la primera · {missed} para repasar",
+  "drill": "Repasar los fallos",
+  "newDeck": "Nuevo mazo",
+  "testYourself": "Ponte a prueba →",
+  "exit": "Salir del estudio",
+  "again": "Repasar",
+  "knew": "Me la sabía",
+  "swipeHint": "Desliza → si te la sabías, ← para verla otra vez",
+  "flipHint": "Toca la ficha o pulsa Espacio para girarla",
+  "mystery": "Silueta misteriosa",
+  "quote": "«{entry}»",
+  "genus": "{genus}",
+  "fullEntry": "Entrada completa de la Pokédex →",
+  "knewStamp": "ME LA SÉ",
+  "againStamp": "OTRA VEZ"
+}
