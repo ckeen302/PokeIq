@@ -1,6 +1,6 @@
 import { LeaderboardView, leaderboardMetadata, type LeaderboardParams } from "./view";
 
-export const metadata = leaderboardMetadata;
+export const generateMetadata = leaderboardMetadata;
 // A board for a given date or format renders per request. A bare board link (/leaderboard,
 // /leaderboard?board=geo) is rewritten to its cached page, /leaderboard/board/<id> (next.config.ts).
 export const dynamic = "force-dynamic";

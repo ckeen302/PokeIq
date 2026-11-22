@@ -1,0 +1,88 @@
+{
+  "meta": {
+    "title": "Classifiche",
+    "description": "I migliori Allenatori di PokéIQ: la Sfida del giorno di oggi, i punteggi PokéIQ, PokéGuessr, PokéConnections e la scala delle lotte, aggiornati in diretta.",
+    "imageAlt": "Classifiche di PokéIQ"
+  },
+  "heading": "Classifica",
+  "tabs": {
+    "daily": "Del giorno",
+    "iq": "Test PokéIQ",
+    "geo": "PokéGuessr",
+    "geoRanked": "PokéGuessr classificata",
+    "connections": "PokéConnections",
+    "battle": "Scala delle lotte"
+  },
+  "battle": {
+    "intro": "La scala delle lotte classificate: i migliori per Elo in ogni formato, con GXE e Glicko-2 come su Pokémon Showdown.",
+    "full": "Scala completa",
+    "soon": "Le lotte classificate arrivano presto."
+  },
+  "geoRanked": {
+    "intro": "Duelli classificati di PokéGuessr: i migliori per Elo. Poké Ball e Mega Ball mostrano solo la divisione; il numero compare da Ultra Ball in su.",
+    "soon": "PokéGuessr classificata arriva presto.",
+    "empty": "Ancora nessuno in classifica. <link>Cerca un duello classificato</link> e sii il primo!"
+  },
+  "col": {
+    "trainer": "Allenatore",
+    "score": "Punti",
+    "time": "Tempo",
+    "mistakes": "Errori",
+    "division": "Divisione",
+    "wl": "V–S",
+    "pokeiq": "PokéIQ",
+    "correct": "Corrette"
+  },
+  "connections": {
+    "intro": "PokéConnections n. {n} · {date}: meno errori, poi il più veloce.",
+    "soon": "La classifica di PokéConnections arriva presto.",
+    "empty": "Ancora nessuno l’ha risolto. <link>Gioca al PokéConnections di oggi</link> e sii il primo!",
+    "perfect": "Perfetto",
+    "footnote": "Ogni voce è stata verificata sul server: rigioca le risposte di ogni Allenatore e cronometra la partita con il suo orologio. Solo Allenatori con accesso e un nome."
+  },
+  "geo": {
+    "streak": "Serie",
+    "rounds": "{rounds} round",
+    "eraBoard": "{board} · {era}",
+    "mapBoard": "{map} · {board}",
+    "regionStreak": "Serie delle regioni",
+    "daily": "Del giorno n. {n}",
+    "weekly": "Settimanale n. {n} · {map}",
+    "lastWeek": "Settimana scorsa · {map}",
+    "themed": "Mappe a tema",
+    "weeklyTitle": "Sfida settimanale n. {n} · {map} · settimana del {week}",
+    "inARow": "{score} di fila",
+    "outOf": "{score} / {max}"
+  },
+  "seconds": "{s} s",
+  "notEnabledLine": "Le classifiche non sono attive qui.",
+  "notEnabled": "Le classifiche non sono attive qui",
+  "supabase": "Imposta <code>SUPABASE_URL</code> e <code>SUPABASE_SERVICE_ROLE_KEY</code> ed esegui la migrazione in <code>supabase/migrations/</code>. Tutto il resto funziona anche senza.",
+  "noScores": "Ancora nessun punteggio: sii il primo in classifica!",
+  "rank": "Posizione {place}",
+  "pts": "{score} pt",
+  "iq": "QI {n}",
+  "dailyIntro": "Sfida del giorno n. {n} · {date}",
+  "iqIntro": "Ordinata per PokéIQ misurato nel test adattivo",
+  "footnote": "Ogni punteggio qui è stato valutato sul server: gli invii contengono un risultato firmato, mai un semplice numero.",
+  "unavailable": "Questa classifica non è disponibile in questo momento. Riprova tra un minuto.",
+  "invite": {
+    "playDaily": "Gioca alla Sfida di oggi",
+    "playDailyInstead": "Gioca invece alla Sfida di oggi",
+    "playWeekly": "Gioca a quella di questa settimana",
+    "playWeeklyInstead": "Gioca alla Sfida settimanale",
+    "playMap": "Gioca su questa mappa",
+    "notSaved": "Nessuno ha salvato un punteggio su {label}",
+    "firstDaily": "Sii il primo nella classifica di oggi",
+    "firstWeekly": "Sii il primo nella classifica di questa settimana",
+    "firstMap": "Sii il primo nella classifica {label}",
+    "blurbDaily": "Gli stessi luoghi per tutti oggi. La tua prima partita entra in classifica.",
+    "blurbWeekly": "Gli stessi luoghi della mappa di questa settimana per tutti fino a lunedì. Il tuo primo tentativo entra in classifica.",
+    "blurbMap": "Finisci una partita su questa mappa e salva il punteggio per mettere qui il tuo nome.",
+    "fewDaily": "{count, plural, one {Solo un Allenatore} other {Solo # Allenatori}} nella classifica di oggi per ora. C’è posto in cima.",
+    "fewWeekly": "{count, plural, one {Solo un Allenatore} other {Solo # Allenatori}} nella classifica di questa settimana per ora. C’è posto in cima.",
+    "fewMap": "{count, plural, one {Solo un Allenatore} other {Solo # Allenatori}} in questa classifica per ora. C’è posto in cima.",
+    "pastDaily": "La classifica di quel giorno è rimasta vuota. Quella di oggi è aperta.",
+    "pastWeekly": "La classifica di quella settimana è rimasta vuota. Quella di questa settimana è aperta."
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "meta": {
+    "title": "Leaderboards",
+    "description": "The top PokéIQ trainers: today's Daily Challenge, PokéIQ ratings, PokéGuessr, PokéConnections and the battle ladder, updated live.",
+    "imageAlt": "PokéIQ leaderboards"
+  },
+  "heading": "Leaderboard",
+  "tabs": {
+    "daily": "Daily",
+    "iq": "PokéIQ Test",
+    "geo": "PokéGuessr",
+    "geoRanked": "PokéGuessr Ranked",
+    "connections": "PokéConnections",
+    "battle": "Battle Ladder"
+  },
+  "battle": {
+    "intro": "The ranked battle ladder: the top 100 by Elo in each format, with GXE and Glicko-2 as on Pokémon Showdown.",
+    "full": "Full ladder",
+    "soon": "Ranked battles open soon."
+  },
+  "geoRanked": {
+    "intro": "Ranked PokéGuessr duels: the top 100 by Elo. Poké Ball and Great Ball show the division only; the number shows from Ultra Ball up.",
+    "soon": "Ranked PokéGuessr opens soon.",
+    "empty": "Nobody is ranked yet. <link>Queue a ranked duel</link> and be the first!"
+  },
+  "col": {
+    "trainer": "Trainer",
+    "score": "Score",
+    "time": "Time",
+    "mistakes": "Mistakes",
+    "division": "Division",
+    "wl": "W–L",
+    "pokeiq": "PokéIQ",
+    "correct": "Correct"
+  },
+  "connections": {
+    "intro": "PokéConnections #{n} · {date}: fewest mistakes, then fastest.",
+    "soon": "The PokéConnections leaderboard opens soon.",
+    "empty": "No solves yet. <link>Play today's PokéConnections</link> and be the first!",
+    "perfect": "Perfect",
+    "footnote": "Every entry was checked on the server: it replays each trainer's guesses and times the game with its own clock. Signed-in and named trainers only."
+  },
+  "geo": {
+    "streak": "Streak",
+    "rounds": "{rounds} rounds",
+    "eraBoard": "{era} {board}",
+    "mapBoard": "{map} {board}",
+    "regionStreak": "Region Streak",
+    "daily": "Daily #{n}",
+    "weekly": "Weekly #{n} · {map}",
+    "lastWeek": "Last week · {map}",
+    "themed": "Themed maps",
+    "weeklyTitle": "Weekly Challenge #{n} · {map} · week of {week}",
+    "inARow": "{score} in a row",
+    "outOf": "{score} / {max}"
+  },
+  "seconds": "{s}s",
+  "notEnabledLine": "Leaderboards aren't enabled here.",
+  "notEnabled": "Leaderboards aren't enabled here",
+  "supabase": "Set <code>SUPABASE_URL</code> and <code>SUPABASE_SERVICE_ROLE_KEY</code> and run the migration in <code>supabase/migrations/</code>. Everything else works without it.",
+  "noScores": "No scores yet — be the first on the board!",
+  "rank": "Rank {place}",
+  "pts": "{score} pts",
+  "iq": "IQ {n}",
+  "dailyIntro": "Daily Challenge #{n} · {date}",
+  "iqIntro": "Ranked by measured PokéIQ from the adaptive test",
+  "footnote": "Every score here was graded on the server — submissions carry a signed result, never a raw number.",
+  "unavailable": "This leaderboard is unavailable right now. Try again in a minute.",
+  "invite": {
+    "playDaily": "Play today's Daily",
+    "playDailyInstead": "Play today's Daily instead",
+    "playWeekly": "Play this week's",
+    "playWeeklyInstead": "Play this week's Weekly",
+    "playMap": "Play this map",
+    "notSaved": "Nobody saved a score on {label}",
+    "firstDaily": "Be the first on today's board",
+    "firstWeekly": "Be the first on this week's board",
+    "firstMap": "Be the first on the {label} board",
+    "blurbDaily": "5 places, the same for everyone today. Your first game goes on the board.",
+    "blurbWeekly": "5 places on this week's map, the same for everyone until Monday. Your first try goes on the board.",
+    "blurbMap": "Finish a game on this map and save your score to put your name here.",
+    "fewDaily": "{count, plural, one {Just one trainer} other {Just # trainers}} on today's board so far. Room at the top.",
+    "fewWeekly": "{count, plural, one {Just one trainer} other {Just # trainers}} on this week's board so far. Room at the top.",
+    "fewMap": "{count, plural, one {Just one trainer} other {Just # trainers}} on this board so far. Room at the top.",
+    "pastDaily": "That day's board stayed empty. Today's is open.",
+    "pastWeekly": "That week's board stayed empty. This week's is open."
+  }
+}

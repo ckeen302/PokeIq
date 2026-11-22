@@ -54,6 +54,7 @@ export const NAMESPACES = [
   "iq-test",
   "iq-test-play",
   "iq-test-results",
+  "leaderboard",
   "nav",
   "nea-api",
   "nea-cats",
