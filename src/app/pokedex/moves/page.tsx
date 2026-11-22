@@ -3,29 +3,41 @@ import { SHARE_IMAGES, jsonLd, pageMetadata } from "@/lib/seo";
 import { breadcrumbList } from "@/lib/structured-data";
 import { MOVES } from "@/lib/dex/data";
 import { DexListExplorer } from "@/components/pokedex/DexListExplorer";
+import { LocalDexList } from "@/components/pokedex/LocalDexList";
 import { DexTabs } from "@/components/pokedex/DexTabs";
 import { ListHeader } from "@/components/pokedex/detail/DetailParts";
+import { ClientMessages } from "@/i18n/ClientMessages";
+import { getLocale, serverT } from "@/i18n/server";
+import dexRef from "@/messages/dex-ref";
+import dexLists from "@/messages/dex-lists";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Pokémon Moves — Power, Accuracy, PP & Who Learns Them",
-  description: "Every Pokémon move with type, category, power, accuracy and PP. Filter by type and category, then see which Pokémon learn each one.",
-  path: "/pokedex/moves",
-  image: SHARE_IMAGES.pokedex,
-});
+export function generateMetadata(): Metadata {
+  const t = serverT(dexRef);
+  return pageMetadata({
+    title: t("moves.metaTitle"),
+    description: t("moves.metaDescription"),
+    path: "/pokedex/moves",
+    image: SHARE_IMAGES.pokedex,
+  });
+}
 
 export default function MovesPage() {
-  const items = MOVES.map((m) => ({ slug: m.slug, name: m.name, type: m.type, cls: m.cls, power: m.power, accuracy: m.accuracy, pp: m.pp }));
+  const t = serverT(dexRef);
+  const english = getLocale() === "en";
+  const items = english ? MOVES.map((m) => ({ slug: m.slug, name: m.name, type: m.type, cls: m.cls, power: m.power, accuracy: m.accuracy, pp: m.pp })) : [];
   return (
     <div className="mx-auto max-w-7xl space-y-4">
       <ListHeader
-        kicker="Move database"
-        title="Poké"
-        accent="dex"
-        blurb="Type, category, power, accuracy, PP and the Pokémon that learn each move."
+        kicker={t("moves.kicker")}
+        title={t("title")}
+        accent={t("accent")}
+        blurb={t("moves.blurb")}
       />
       <DexTabs active="moves" />
-      <DexListExplorer kind="moves" items={items} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbList([{ name: "Pokédex", path: "/pokedex" }, { name: "Moves", path: "/pokedex/moves" }])) }} />
+      <ClientMessages namespaces={[dexLists]}>
+        {english ? <DexListExplorer kind="moves" items={items} /> : <LocalDexList kind="moves" />}
+      </ClientMessages>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbList([{ name: t("crumb.pokedex"), path: "/pokedex" }, { name: t("crumb.moves"), path: "/pokedex/moves" }])) }} />
     </div>
   );
 }
