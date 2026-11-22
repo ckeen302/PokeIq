@@ -16,6 +16,7 @@ import {
   MessagesSquare,
   Moon,
   Search,
+  Sparkles,
   Sun,
   Swords,
   Trophy,
@@ -56,6 +57,7 @@ const MORE_TILES: { href: string; label: NavLabel; icon: LucideIcon; accent: str
   { href: "/quiz", label: "quizzes", icon: Gamepad2, accent: "24 95% 58%" },
   { href: "/pokedex", label: "pokedex", icon: BookOpen, accent: "214 90% 64%" },
   { href: LAB_PATH, label: "lab", icon: Box, accent: "300 75% 68%" },
+  { href: "/tools", label: "tools", icon: Sparkles, accent: "48 96% 62%" },
 ];
 const MORE_LINKS: { href: string; label: NavLabel; icon: LucideIcon; testId: string }[] = [
   { href: "/leaderboard", label: "leaderboard", icon: Trophy, testId: "more-leaderboard" },

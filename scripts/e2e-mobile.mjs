@@ -39,6 +39,8 @@ export const MOBILE_ROUTES = [
   "/pokedex/movies",
   "/pokedex/movies/the-rise-of-darkrai",
   "/atlas",
+  "/tools",
+  "/tools/shiny-maker",
   "/privacy",
 ];
 

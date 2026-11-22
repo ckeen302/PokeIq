@@ -179,6 +179,7 @@ export const NAMESPACES = [
   "timeline",
   "timeline-page",
   "timeline-stage",
+  "tools",
   "trainer-card",
   "trainer-creator",
   "trainer-pages",
