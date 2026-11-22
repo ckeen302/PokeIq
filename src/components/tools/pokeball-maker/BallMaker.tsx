@@ -30,8 +30,9 @@ type Tab = (typeof TABS)[number];
 type Panel = Tab | "match" | "pick-inside" | "export";
 const HISTORY_MAX = 120;
 
-function useMedia(query: string, fallback = false) {
-  const [on, setOn] = useState(fallback);
+function useMedia(query: string) {
+  // The maker only renders in the browser, so the first render can already know.
+  const [on, setOn] = useState(() => window.matchMedia(query).matches);
   useEffect(() => {
     const m = window.matchMedia(query);
     const f = () => setOn(m.matches);
@@ -94,7 +95,7 @@ export default function BallMaker({ initial, linkBroken }: { initial: Design | n
   const [still, setStill] = useState<string | null>(null);
   const [, bump] = useState(0);
   const [stageEl, setStageEl] = useState<HTMLElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null);
   const sceneRef = useRef<BallScene | null>(null);
   const past = useRef<Design[]>([]);
   const future = useRef<Design[]>([]);
@@ -234,7 +235,7 @@ export default function BallMaker({ initial, linkBroken }: { initial: Design | n
 
   // ---- The scene.
   useEffect(() => {
-    const canvas = canvasRef.current;
+    const canvas = canvasEl;
     if (!canvas) return;
     const scene = createBallScene(canvas, { phone, reducedMotion: !motion, font: cssFont("--font-display", "sans-serif") });
     if (!scene) {
@@ -250,9 +251,9 @@ export default function BallMaker({ initial, linkBroken }: { initial: Design | n
       scene.dispose();
       sceneRef.current = null;
     };
-    // The scene is made once; the phone and motion settings it starts with are only its first quality guess.
+    // The scene is made once per canvas; the phone and motion settings it starts with are only its first quality guess.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [driver]);
+  }, [driver, canvasEl]);
 
   useEffect(() => {
     sceneRef.current?.setDesign(design);
@@ -642,7 +643,7 @@ export default function BallMaker({ initial, linkBroken }: { initial: Design | n
   const stage = (
     <section
       ref={setStageEl}
-      className={cn("sm-stage relative touch-none select-none overflow-hidden border border-white/[0.06]", phone ? "h-[min(440px,56svh)] min-h-[340px] rounded-[24px]" : "h-[calc(100dvh-108px)] min-h-[640px] rounded-[28px]", panel === "stickers" && "cursor-crosshair")}
+      className={cn("sm-stage relative select-none overflow-hidden", phone ? "touch-pan-y" : "touch-none", " border border-white/[0.06]", phone ? (panel ? "sticky top-14 z-20 h-[min(300px,36svh)] min-h-[220px] rounded-[24px] shadow-[0_18px_40px_-12px_rgb(0_0_0/0.8)]" : "h-[min(440px,56svh)] min-h-[340px] rounded-[24px]") : "h-[calc(100dvh-108px)] min-h-[640px] rounded-[28px]", panel === "stickers" && "cursor-crosshair")}
       data-testid="pbm-stage"
       onPointerDown={onDown}
       onPointerMove={onMove}
@@ -652,7 +653,7 @@ export default function BallMaker({ initial, linkBroken }: { initial: Design | n
         view.current.dragging = false;
       }}
     >
-      <canvas ref={canvasRef} className={cn("absolute inset-0 h-full w-full", gl === "none" && "hidden")} role="img" aria-label={t("stage")} data-testid="pbm-canvas" />
+      <canvas ref={setCanvasEl} className={cn("absolute inset-0 h-full w-full", gl === "none" && "hidden")} role="img" aria-label={t("stage")} data-testid="pbm-canvas" />
       {gl === "none" && <FlatBall design={design} t={t} />}
       {!phone && (
         <header className="pointer-events-none absolute left-9 top-8 z-10">

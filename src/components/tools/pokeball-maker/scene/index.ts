@@ -62,7 +62,7 @@ export interface BallScene {
   /** A transparent PNG of the ball at rest (no bloom). */
   still(size: number, pose: Pose): Promise<Blob>;
   /** Renders one frame at a size for an export and returns the canvas holding it (valid until the next frame). */
-  exportFrame(pose: Pose, w: number, h: number, now: number): HTMLCanvasElement;
+  exportFrame(pose: Pose, w: number, h: number, now: number, o?: { tight?: boolean; glow?: boolean }): HTMLCanvasElement;
   endExport(): void;
   glb(): Promise<Blob>;
   /** A small ball with a pattern or a finish (a data URL), or null while it's being drawn (`onThumb` says when). */
@@ -207,11 +207,23 @@ export function createBallScene(canvas: HTMLCanvasElement, o: { phone: boolean; 
   const governor = new Governor(tier, tier);
   let spec = TIERS[tier];
   // Below the lightest tier: half resolution, for devices that can't draw even that smoothly (and software GL).
-  let emergency = false;
+  // A software renderer (no GPU) starts there.
+  let emergency = (() => {
+    try {
+      const gl = renderer.getContext();
+      const info = gl.getExtension("WEBGL_debug_renderer_info");
+      const name = String(gl.getParameter(info ? info.UNMASKED_RENDERER_WEBGL : gl.RENDERER));
+      return /swiftshader|llvmpipe|software|basic render/i.test(name);
+    } catch {
+      return false;
+    }
+  })();
   let slowStreak = 0;
   const EMERGENCY: TierSpec = { dpr: 0.5, msaa: 0, bloom: false, particles: 120, glass: false };
-  let W = 1, H = 1, shift = 0, shiftNow = 0;
+  let W = Math.max(2, canvas.clientWidth), H = Math.max(2, canvas.clientHeight), shift = 0, shiftNow = 0;
   let userYaw = 0, userPitch = 0;
+  /** Exports of the ball alone frame it tighter than the stage. */
+  let fitScale = 1;
   let driver: (now: number) => Pose = () => ({}) as Pose;
   let composer: EffectComposer | null = null;
   let bloom: UnrealBloomPass | null = null;
@@ -222,7 +234,7 @@ export function createBallScene(canvas: HTMLCanvasElement, o: { phone: boolean; 
     target?.dispose();
     bloom?.dispose();
     const pr = renderer.getPixelRatio();
-    target = new THREE.WebGLRenderTarget(W * pr, H * pr, { type: THREE.HalfFloatType, samples: spec.msaa });
+    target = new THREE.WebGLRenderTarget(Math.max(2, Math.round(W * pr)), Math.max(2, Math.round(H * pr)), { type: THREE.HalfFloatType, samples: spec.msaa });
     composer = new EffectComposer(renderer, target);
     composer.setPixelRatio(pr);
     composer.setSize(W, H);
@@ -260,8 +272,8 @@ export function createBallScene(canvas: HTMLCanvasElement, o: { phone: boolean; 
     const zoom = pose.zoom ?? 0;
     // Framing: the ball a little below the middle; pulled back and up to fit the Pokémon when it's out.
     const aspect = W / H;
-    const fitH = (o.phone ? 50 : 60) / Math.min(1, aspect * 0.9);
-    const dist = (fitH / Math.tan((camera.fov * Math.PI) / 360)) * (1 + 0.42 * zoom);
+    const fitH = ((o.phone ? 50 : 60) / Math.min(1, aspect * 0.9)) * (live ? Math.max(1, 400 / H) : 1);
+    const dist = (fitH / Math.tan((camera.fov * Math.PI) / 360)) * (1 + 0.42 * zoom) * fitScale;
     const lookY = 4 + 24 * zoom;
     const elev = 0.12 + 0.12 * zoom;
     camera.position.set(0, lookY + Math.sin(elev) * dist, Math.cos(elev) * dist);
@@ -347,9 +359,14 @@ export function createBallScene(canvas: HTMLCanvasElement, o: { phone: boolean; 
     }
     // The governor ignores long frames (a hitch isn't the frame rate); a run of them is, though.
     slowStreak = dt > 0.2 ? slowStreak + 1 : 0;
-    if (slowStreak >= 5) {
+    if (slowStreak >= 4 && !emergency) {
       slowStreak = 0;
-      if (tier > 0) {
+      // Far too slow for any tier: straight to the floor.
+      if (dt > 0.5) {
+        tier = 0;
+        governor.tier = 0;
+        emergency = true;
+      } else if (tier > 0) {
         tier = (tier - 1) as Tier;
         governor.tier = tier;
       } else emergency = true;
@@ -528,6 +545,7 @@ export function createBallScene(canvas: HTMLCanvasElement, o: { phone: boolean; 
       const keep = { bg: bg.visible, shadow: shadow.visible, burst: burst.visible };
       try {
         shiftNow = 0;
+        fitScale = 0.74;
         frame(pose, shared.uTime.value, false);
         bg.visible = false;
         shadow.visible = false;
@@ -567,11 +585,12 @@ export function createBallScene(canvas: HTMLCanvasElement, o: { phone: boolean; 
         out.dispose();
         bg.visible = keep.bg;
         shadow.visible = keep.shadow;
+        fitScale = 1;
         W = pw;
         H = ph;
       }
     },
-    exportFrame(pose, w, h, now) {
+    exportFrame(pose, w, h, now, eo) {
       running = false;
       if (W !== w || H !== h || renderer.getPixelRatio() !== 1) {
         W = w;
@@ -582,8 +601,13 @@ export function createBallScene(canvas: HTMLCanvasElement, o: { phone: boolean; 
       }
       shiftNow = 0;
       shift = 0;
+      fitScale = eo?.tight ? 0.8 : 1;
+      const glow = bgU.uGlowOn.value;
+      if (eo?.glow === false) bgU.uGlowOn.value = 0;
       frame(pose, now, false);
       draw();
+      bgU.uGlowOn.value = glow;
+      fitScale = 1;
       return canvas;
     },
     endExport() {

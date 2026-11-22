@@ -38,7 +38,7 @@ export async function gif(scene: BallScene, d: Design) {
     for (let i = 0; i < N; i++) {
       const k = i / N;
       const pose: Pose = { ...idlePose(0), yaw: k * Math.PI * 2 - 0.42, y: Math.sin(k * Math.PI * 2) * 0.9, tilt: 0.12 };
-      g.drawImage(scene.exportFrame(pose, S, S, k * 2.4), 0, 0, S, S);
+      g.drawImage(scene.exportFrame(pose, S, S, k * 2.4, { tight: true, glow: false }), 0, 0, S, S);
       frames.push(g.getImageData(0, 0, S, S).data);
       if (i % 8 === 7) await new Promise((r) => setTimeout(r, 0));
     }
