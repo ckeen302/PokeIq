@@ -67,7 +67,7 @@ export function MatrixView({ item, ...opts }: OptionProps & { item: MatrixItem }
       {/* Phones: the pattern drawn a size down, so the options sit on the same screen. */}
       <div className="mx-auto grid w-full max-w-[330px] grid-cols-3 gap-1.5 rounded-lg border border-foreground/10 bg-shade/20 p-1.5 max-md:[zoom:0.6]" data-testid="cog-matrix" aria-label={t("matrix")}>
         {item.cells.map((c, i) => (
-          <div key={i} className={cn("flex aspect-square items-center justify-center rounded-md bg-background/60", c.k === "blank" && "border-2 border-dashed border-screen/50")}>
+          <div key={i} className={cn("flex aspect-square items-center justify-center rounded-md bg-background/60", c.k === "blank" && "border-2 border-dashed border-[color:hsl(var(--screen)/0.5)]")}>
             <CellView cell={c} box={88} />
           </div>
         ))}

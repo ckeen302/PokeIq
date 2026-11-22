@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Clasificaciones",
-    "description": "Los mejores entrenadores de PokéIQ: el Reto diario de hoy, las puntuaciones de PokéIQ, PokéGuessr, PokéConnections y la escalera de combates, en directo.",
+    "description": "Los mejores Entrenadores de PokéIQ: el Reto diario de hoy, las puntuaciones de PokéIQ, PokéGuessr, PokéConnections y la clasificación de combates, en directo.",
     "imageAlt": "Clasificaciones de PokéIQ"
   },
   "heading": "Clasificación",
@@ -11,15 +11,15 @@
     "geo": "PokéGuessr",
     "geoRanked": "PokéGuessr clasificatorio",
     "connections": "PokéConnections",
-    "battle": "Escalera de combates"
+    "battle": "Clasificación de combates"
   },
   "battle": {
-    "intro": "La escalera de combates clasificatorios: los mejores por Elo en cada formato, con GXE y Glicko-2 como en Pokémon Showdown.",
-    "full": "Escalera completa",
+    "intro": "La clasificación de combates: los 100 mejores por Elo en cada formato, con GXE y Glicko-2 como en Pokémon Showdown.",
+    "full": "Clasificación completa",
     "soon": "Los combates clasificatorios llegan pronto."
   },
   "geoRanked": {
-    "intro": "Duelos clasificatorios de PokéGuessr: los mejores por Elo. Poké Ball y Super Ball solo muestran la división; el número aparece a partir de Ultra Ball.",
+    "intro": "Duelos clasificatorios de PokéGuessr: los 100 mejores por Elo. Poké Ball y Super Ball solo muestran la división; el número aparece a partir de Ultra Ball.",
     "soon": "PokéGuessr clasificatorio llega pronto.",
     "empty": "Todavía no hay nadie clasificado. <link>Busca un duelo clasificatorio</link> y sé el primero."
   },
@@ -38,7 +38,7 @@
     "soon": "La clasificación de PokéConnections llega pronto.",
     "empty": "Nadie lo ha resuelto todavía. <link>Juega al PokéConnections de hoy</link> y sé el primero.",
     "perfect": "Perfecto",
-    "footnote": "El servidor comprueba cada entrada: repite las respuestas de cada entrenador y cronometra la partida con su propio reloj. Solo entrenadores con sesión iniciada y nombre."
+    "footnote": "El servidor comprueba cada entrada: repite las respuestas de cada Entrenador y cronometra la partida con su propio reloj. Solo Entrenadores con sesión iniciada y nombre."
   },
   "geo": {
     "streak": "Racha",
@@ -46,7 +46,7 @@
     "eraBoard": "{board} · {era}",
     "mapBoard": "{map} · {board}",
     "regionStreak": "Racha de regiones",
-    "daily": "Diario n.º {n}",
+    "daily": "Diaria n.º {n}",
     "weekly": "Semanal n.º {n} · {map}",
     "lastWeek": "Semana pasada · {map}",
     "themed": "Mapas temáticos",
@@ -61,16 +61,16 @@
   "noScores": "Todavía no hay puntuaciones: ¡sé el primero en la clasificación!",
   "rank": "Puesto {place}",
   "pts": "{score} pts",
-  "iq": "CI {n}",
+  "iq": "IQ {n}",
   "dailyIntro": "Reto diario n.º {n} · {date}",
   "iqIntro": "Ordenado por el PokéIQ medido en el test adaptativo",
   "footnote": "El servidor corrige cada puntuación: los envíos llevan un resultado firmado, nunca un número sin más.",
   "unavailable": "Esta clasificación no está disponible ahora mismo. Vuelve a intentarlo en un minuto.",
   "invite": {
-    "playDaily": "Juega al Diario de hoy",
-    "playDailyInstead": "Juega mejor al Diario de hoy",
-    "playWeekly": "Juega al de esta semana",
-    "playWeeklyInstead": "Juega al Semanal de esta semana",
+    "playDaily": "Juega la Diaria de hoy",
+    "playDailyInstead": "Juega la Diaria de hoy en su lugar",
+    "playWeekly": "Juega la de esta semana",
+    "playWeeklyInstead": "Juega el Reto semanal de esta semana",
     "playMap": "Juega en este mapa",
     "notSaved": "Nadie guardó una puntuación en {label}",
     "firstDaily": "Sé el primero en la clasificación de hoy",
@@ -79,9 +79,9 @@
     "blurbDaily": "Los mismos lugares para todos hoy. Tu primera partida entra en la clasificación.",
     "blurbWeekly": "Los mismos lugares del mapa de esta semana para todos hasta el lunes. Tu primer intento entra en la clasificación.",
     "blurbMap": "Termina una partida en este mapa y guarda tu puntuación para poner tu nombre aquí.",
-    "fewDaily": "{count, plural, one {Solo un entrenador} other {Solo # entrenadores}} en la clasificación de hoy por ahora. Hay sitio arriba.",
-    "fewWeekly": "{count, plural, one {Solo un entrenador} other {Solo # entrenadores}} en la clasificación de esta semana por ahora. Hay sitio arriba.",
-    "fewMap": "{count, plural, one {Solo un entrenador} other {Solo # entrenadores}} en esta clasificación por ahora. Hay sitio arriba.",
+    "fewDaily": "{count, plural, one {Solo un Entrenador} other {Solo # Entrenadores}} en la clasificación de hoy por ahora. Hay sitio arriba.",
+    "fewWeekly": "{count, plural, one {Solo un Entrenador} other {Solo # Entrenadores}} en la clasificación de esta semana por ahora. Hay sitio arriba.",
+    "fewMap": "{count, plural, one {Solo un Entrenador} other {Solo # Entrenadores}} en esta clasificación por ahora. Hay sitio arriba.",
     "pastDaily": "La clasificación de ese día se quedó vacía. La de hoy está abierta.",
     "pastWeekly": "La clasificación de esa semana se quedó vacía. La de esta semana está abierta."
   }

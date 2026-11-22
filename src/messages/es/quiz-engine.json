@@ -23,9 +23,9 @@
   },
   "dex": {
     "entryPrompt": "¿Qué Pokémon describe esta entrada de la Pokédex?",
-    "entry": "«{entry}»",
+    "entry": "“{entry}”",
     "entryGenus": "{entry}: el {genus}",
-    "genusPrompt": "¿Qué Pokémon es conocido como «{genus}»?",
+    "genusPrompt": "¿Qué Pokémon es conocido como “{genus}”?",
     "abilityPrompt": "¿Cuál de estas es una habilidad de {name}?",
     "abilityExplanation": "Habilidades de {name}: {abilities}.",
     "hidden": "{ability} (oculta)"
@@ -37,7 +37,7 @@
     "effPrompt": "¿Qué eficacia tiene un movimiento de tipo {type} contra {defender}?",
     "effExplanation": "{calc}.",
     "immune": "0× (inmune)",
-    "fourXPrompt": "¿Qué tipo es superefectivo ×4 contra {defender}?",
+    "fourXPrompt": "¿Qué tipo es muy eficaz (×4) contra {defender}?",
     "fourXExplanation": "El tipo {types} recibe daño ×4 de {weak}.",
     "immunePrompt": "¿Qué tipo de ataque NO afecta a {defender}?",
     "immuneExplanation": "El tipo {types} es inmune a {immune}."
@@ -163,7 +163,7 @@
       "firstPrompt": "¿Cuál de estos juegos salió primero?",
       "firstExplanation": "{title} es de la {gen}, anterior a los demás.",
       "basisPrompt": "¿Qué lugar del mundo real inspiró la región de {region}?",
-      "basisExplanation": "Modelo de la región de {region}: {basis}.",
+      "basisExplanation": "{region} está inspirada en {basis}.",
       "placePrompt": "¿En qué región está {place}?",
       "placeExplanation": "{place} está en la región de {region}."
     },
@@ -174,7 +174,7 @@
       "france": "Francia",
       "hawaii": "Hawái",
       "britain": "Gran Bretaña",
-      "iberia": "La península ibérica"
+      "iberia": "la península ibérica"
     },
     "league": {
       "finalPrompt": "¿A quién venció {ash} en la final de {league}?",
@@ -204,11 +204,11 @@
     "role": {
       "gymLeader": "Líder de Gimnasio",
       "eliteFour": "Alto Mando",
-      "champion": "Combate final de la Liga",
+      "champion": "Campeón",
       "rival": "Combate contra el rival",
       "boss": "Combate contra el jefe",
       "battle": "Combate",
-      "kahuna": "Gran prueba"
+      "kahuna": "Kahuna"
     },
     "rematch": "{role} (revancha)",
     "gameRole": "{game} — {role}{hasPlace, select, yes {, {place}} other {}}",

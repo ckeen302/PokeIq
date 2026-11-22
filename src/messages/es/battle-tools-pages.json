@@ -31,7 +31,7 @@
     "crumb": "Clasificación",
     "heading": "Clasificación",
     "accent": "de combates",
-    "rules": "Puntuaciones por formato como en Pokémon Showdown: la clasificación se ordena por Elo (todo el mundo empieza con {elo}, nunca baja de ahí y un Elo de más de 1400 baja un poco cada día que no juegas), junto con el GXE (tu probabilidad de ganar a un entrenador al azar de la clasificación) y una puntuación Glicko-2. Todo el mundo empieza con {rating} ± {rd} de Glicko-2; una puntuación es provisional hasta que su desviación baja de {shown}. Rendirse, quedarse sin tiempo o salir cuenta como derrota.",
+    "rules": "Puntuaciones por formato como en Pokémon Showdown: la clasificación se ordena por Elo (todo el mundo empieza con {elo}, nunca baja de ahí y un Elo de más de 1400 baja un poco cada día que no juegas), junto con el GXE (tu probabilidad de ganar a un Entrenador al azar de la clasificación) y una puntuación Glicko-2. Todo el mundo empieza con {rating} ± {rd} de Glicko-2; una puntuación es provisional hasta que su desviación baja de {shown}. Rendirse, quedarse sin tiempo o salir cuenta como derrota.",
     "short": "Ordenada por Elo, con GXE y Glicko-2, como en Pokémon Showdown. Todo el mundo empieza con {elo}.",
     "insights": "Tus estadísticas",
     "play": "Jugar clasificatoria",

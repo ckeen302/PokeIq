@@ -50,11 +50,14 @@
     "artwork": "Illustration du Pokémon",
     "revealed": "Le Pokémon révélé",
     "itsName": "C’est {name} !",
-    "noOgg": "Ton navigateur ne peut pas lire les cris de Pokémon (audio Ogg). Essaie Chrome, Firefox ou un Safari récent.",
-    "stop": "Arrêter le cri",
     "play": "Écouter le cri",
     "tap": "Touche pour écouter le cri",
-    "played": "Écouté {n} fois · touche pour réécouter"
+    "played": "Écouté {n} fois · touche pour réécouter",
+    "replay": "Réécouter le cri",
+    "loading": "Chargement du cri…",
+    "playing": "Lecture…",
+    "blocked": "Touche pour entendre le cri",
+    "error": "Le cri n’a pas chargé · touche pour réessayer"
   },
   "team": {
     "shown": "Équipe : {shown} Pokémon sur {total} visibles",

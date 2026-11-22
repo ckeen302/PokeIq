@@ -7,7 +7,7 @@
     "round": "Ronda {round}",
     "damage": "Daño ×{m}",
     "race": "Carrera de puntos",
-    "noPin": "Sin marca",
+    "noPin": "Sin chincheta",
     "super": "¡Es muy eficaz!",
     "points": "{points} pts",
     "you": "Tú",
@@ -34,7 +34,7 @@
   "emotes": {
     "send": "Enviar una reacción",
     "menu": "Reacciones",
-    "sendOne": "Enviar «{label}»",
+    "sendOne": "Enviar “{label}”",
     "pika": "¡Pika!",
     "huh": "¿Eh?",
     "zzz": "Zzz…",

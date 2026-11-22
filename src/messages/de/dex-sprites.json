@@ -1,0 +1,13 @@
+{
+  "title": "Sprites von {name}",
+  "subtitle": "Nach Generation",
+  "nav": "Sprites",
+  "sprite": "Sprite",
+  "gen": "Gen. {gen}",
+  "normal": "Normal",
+  "shiny": "Schillernd",
+  "alt": "{name}, Sprite aus Generation {gen}",
+  "altShiny": "{name}, schillerndes Sprite aus Generation {gen}",
+  "none": "Keins",
+  "note": "Frontsprites aus einem Spiel pro Generation, über PokéAPI. Generation 9 zeigt das Modell aus Pokémon HOME. Ein Strich bedeutet, dass das Spiel keins hat."
+}

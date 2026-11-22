@@ -8,7 +8,7 @@
   "otherTrainers": "los demás Entrenadores",
   "partnerTag": " · compañero",
   "vs": "vs",
-  "cpuComputer": " · ordenador ({level})",
+  "cpuComputer": " · CPU ({level})",
   "rankedDot": "Clasificatorio · ",
   "spectators": "Espectadores ahora mismo",
   "watching": "{n} viendo",
@@ -89,7 +89,7 @@
     "time": "Hora",
     "timeTitle": "Mostrar la hora de cada línea",
     "hidePct": "Ocultar % de PS",
-    "hidePctTitle": "Ocultar las líneas «(perdió el N % de su salud)»",
+    "hidePctTitle": "Ocultar las líneas “(perdió el N % de su salud)”",
     "show": "Mostrar el registro",
     "collapse": "Plegar el registro",
     "latest": "Último"
@@ -97,7 +97,7 @@
   "wait": {
     "sending": "Enviando…",
     "youreOut": "Estás fuera: viendo el resto del todos contra todos…",
-    "cpu": "El ordenador está pensando…",
+    "cpu": "La CPU está pensando…",
     "trainers": "Los Entrenadores están eligiendo…",
     "foe": "Esperando a {name}…"
   },
@@ -310,12 +310,12 @@
     "last5": "Últimos 5 combates",
     "none": "Aún no hay combates",
     "difficulty": "Dificultad",
-    "computer": "Ordenador",
+    "computer": "CPU",
     "battle": "Combate",
     "label": "{you} contra {foe}",
     "title": "¡A combatir!",
     "frontier": "Ronda {round} · combate {battle} de 7",
-    "cpu": "Contra el ordenador · {level}",
+    "cpu": "Contra la CPU · {level}",
     "live": "Combate en directo"
   },
   "victory": {

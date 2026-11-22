@@ -7,6 +7,8 @@ import { dexBreadcrumbs, dexDescription, dexSummary, dexTitle } from "@/lib/poke
 import { POKEDEX, artworkUrl, getPokemonBySlug } from "@/lib/pokemon/pokedex";
 import { getDexEntry } from "@/lib/pokemon/details";
 import { DexEntry } from "@/components/pokedex/entry/DexEntry";
+import { SpritesSection } from "@/components/pokedex/entry/SpritesSection";
+import { dexSpriteColumns } from "@/lib/pokemon/dex-sprites";
 import { PokemonCards } from "@/components/tcg/PokemonCards";
 import { cardLinksForDex } from "@/lib/tcg/card-index";
 import { capitalize } from "@/lib/pokemon/type-matrix";
@@ -15,6 +17,7 @@ import { getLocale, serverT } from "@/i18n/server";
 import pageNs from "@/messages/pokemon-page";
 import dexEntryNs from "@/messages/dex-entry";
 import dexPager from "@/messages/dex-pager";
+import dexSprites from "@/messages/dex-sprites";
 import tcgCards from "@/messages/tcg-cards";
 import { speciesName } from "@/lib/names/species";
 import { dexTexts, typeNames } from "@/lib/pokemon/dex-local";
@@ -54,6 +57,7 @@ export default async function PokemonPage({ params }: PageProps) {
   const cards = await cardLinksForDex(p.id, 6);
   const name = data.core.name;
   const typeName = locale === "en" ? capitalize : (ty: string) => typeNames(locale)[ty];
+  const spriteColumns = dexSpriteColumns(p.id);
 
   const pageLd = {
     "@context": "https://schema.org",
@@ -68,8 +72,8 @@ export default async function PokemonPage({ params }: PageProps) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(pageLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(locale === "en" ? dexBreadcrumbs(p) : localDexBreadcrumbs(p, locale)) }} />
       <BackButton href="/pokedex" label={t("back")} className="mb-4" />
-      <ClientMessages namespaces={[dexEntryNs, dexPager]}>
-        <DexEntry key={p.id} data={data} />
+      <ClientMessages namespaces={[dexEntryNs, dexPager, dexSprites]}>
+        <DexEntry key={p.id} data={data} sprites={spriteColumns.length > 0 && <SpritesSection name={name} columns={spriteColumns} />} />
       </ClientMessages>
       <ClientMessages namespaces={[tcgCards]}>
         <PokemonCards key={`cards-${p.id}`} dex={p.id} name={name} />

@@ -26,14 +26,17 @@ import { DexPager } from "@/components/pokedex/detail/DexPager";
 import { useT } from "@/i18n/client";
 import dexEntryNs from "@/messages/dex-entry";
 import dexPager from "@/messages/dex-pager";
+import dexSprites from "@/messages/dex-sprites";
 
 /**
  * One Pokémon's full study page. Selecting a form (Mega, regional,
  * Gigantamax…) re-derives typing, stats, abilities and matchups live.
+ * `sprites` is the sprites table, rendered on the server by the page.
  */
-export function DexEntry({ data }: { data: DexEntryData }) {
+export function DexEntry({ data, sprites }: { data: DexEntryData; sprites?: React.ReactNode }) {
   const t = useT(dexEntryNs);
   const tp = useT(dexPager);
+  const ts = useT(dexSprites);
   const p = data.core;
   const [form, setForm] = useState<DexForm | null>(null);
 
@@ -63,6 +66,7 @@ export function DexEntry({ data }: { data: DexEntryData }) {
     data.encounters && { id: "encounters", label: t("nav.encounters") },
     data.learnset && { id: "moves", label: t("nav.moves") },
     hasEntries && { id: "pokedex", label: t("nav.pokedex") },
+    sprites && { id: "sprites", label: ts("nav") },
     data.names.length > 0 && { id: "names", label: t("nav.names") },
     { id: "breeding", label: t("nav.breeding") },
   ].filter(Boolean) as { id: string; label: string }[];
@@ -133,6 +137,12 @@ export function DexEntry({ data }: { data: DexEntryData }) {
       {hasEntries && (
         <Section id="pokedex" index={sectionIndex("pokedex")} title={t("sec.entries")} subtitle={t("sec.entriesSub", { n: data.entries.length })}>
           <EntriesSection entries={data.entries} />
+        </Section>
+      )}
+
+      {sprites && (
+        <Section id="sprites" index={sectionIndex("sprites")} title={ts("title", { name: p.name })} subtitle={ts("subtitle")}>
+          {sprites}
         </Section>
       )}
 

@@ -30,10 +30,6 @@
   "toDark": "Passer en mode sombre",
   "soundOnAction": "Activer le son",
   "soundOffAction": "Couper le son",
-  "unmuteKey": "Activer les effets sonores (M)",
-  "muteKey": "Couper les effets sonores (M)",
-  "soundOffKey": "Son coupé (M)",
-  "soundOnKey": "Son activé (M)",
   "settings": {
     "title": "Réglages",
     "theme": "Thème",
@@ -45,5 +41,7 @@
     "soundKeyHint": " Appuie sur M n’importe où pour l’activer ou le couper.",
     "on": "Oui",
     "off": "Non"
-  }
+  },
+  "accountOfWaiting": "Compte et réglages ({name}), amis : {n} en attente",
+  "friendsWaiting": "Amis ({n} en attente)"
 }

@@ -1,15 +1,15 @@
 {
   "meta": {
-    "unavailableTitle": "Perfil de entrenador",
-    "unavailableDescription": "Perfiles de entrenador en PokéIQ.",
+    "unavailableTitle": "Perfil de Entrenador",
+    "unavailableDescription": "Perfiles de Entrenador en PokéIQ.",
     "notFoundTitle": "Entrenador no encontrado",
-    "notFoundDescription": "Ese entrenador no existe en PokéIQ.",
-    "title": "{name} · Perfil de entrenador",
+    "notFoundDescription": "Ese Entrenador no existe en PokéIQ.",
+    "title": "{name} · Perfil de Entrenador",
     "description": "{name} en PokéIQ: puntuaciones de Pokédle, PokéGuessr y combates, récords en quiz, historial de combates y repeticiones recientes."
   },
-  "back": "Volver a entrenadores",
-  "unavailable": "Los perfiles de entrenador no están disponibles ahora mismo. Vuelve a intentarlo en un minuto.",
-  "find": "Buscar un entrenador",
+  "back": "Volver a Entrenadores",
+  "unavailable": "Los perfiles de Entrenador no están disponibles ahora mismo. Vuelve a intentarlo en un minuto.",
+  "find": "Buscar un Entrenador",
   "since": "Entrenador desde {date}",
   "trainerOf": "Entrenador de {name}",
   "ranked": "PokéGuessr clasificatorio",
@@ -43,16 +43,16 @@
     "formats": {
       "classic": "Clásico",
       "survival": "Supervivencia",
-      "blitz": "Relámpago"
+      "blitz": "Contrarreloj"
     },
     "named": "<b>{named}/{total}</b> nombrados",
     "cleared": "completado en <b>{time}</b>"
   },
   "users": {
-    "title": "Buscar un entrenador",
-    "description": "Busca a un entrenador de PokéIQ por su nombre: sus puntuaciones de Pokédle y combates, sus récords y sus repeticiones recientes.",
+    "title": "Buscar un Entrenador",
+    "description": "Busca a un Entrenador de PokéIQ por su nombre: sus puntuaciones de Pokédle y combates, sus récords y sus repeticiones recientes.",
     "label": "Comunidad",
-    "heading": "Busca un <hl>entrenador</hl>",
-    "intro": "Busca por nombre de cuenta para ver el perfil de un entrenador: puntuaciones, récords y repeticiones recientes. Desde ahí puedes añadirlo como amigo."
+    "heading": "Busca un <hl>Entrenador</hl>",
+    "intro": "Busca por nombre de cuenta para ver el perfil de un Entrenador: puntuaciones, récords y repeticiones recientes. Desde ahí puedes añadirlo como amigo."
   }
 }

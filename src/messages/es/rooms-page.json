@@ -1,10 +1,10 @@
 {
   "list": {
     "title": "Salas de chat",
-    "description": "Chatea con otros entrenadores en PokéIQ: el Vestíbulo principal y las salas de Pokédle, Connections, Pikadoku, PokéGuessr, Combate y Quiz.",
+    "description": "Chatea con otros Entrenadores en PokéIQ: el Vestíbulo principal y las salas de Pokédle, Connections, Pikadoku, PokéGuessr, Combate y Quiz.",
     "label": "Comunidad",
     "heading": "Salas de <hl>chat</hl>",
-    "intro": "Habla de Pokémon con otros entrenadores. Cualquiera puede leer; inicia sesión para chatear. Los moderadores mantienen todas las salas en buen ambiente."
+    "intro": "Habla de Pokémon con otros Entrenadores. Cualquiera puede leer; inicia sesión para chatear. Los moderadores mantienen todas las salas en buen ambiente."
   },
   "room": {
     "title": "Sala de chat {name}",
@@ -72,7 +72,7 @@
     },
     "quizzes": {
       "0": "Todos los quiz",
-      "1": "Name 'em All"
+      "1": "Nómbralos a todos"
     }
   }
 }

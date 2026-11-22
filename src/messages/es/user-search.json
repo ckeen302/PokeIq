@@ -1,7 +1,7 @@
 {
   "failed": "La búsqueda no funciona ahora mismo.",
-  "label": "Nombre de entrenador",
-  "placeholder": "Empieza a escribir un nombre de entrenador…",
+  "label": "Nombre de Entrenador",
+  "placeholder": "Empieza a escribir un nombre de Entrenador…",
   "tooShort": "Escribe al menos dos letras, números, _ o -.",
-  "none": "Ningún nombre de entrenador empieza por «{query}»."
+  "none": "Ningún nombre de Entrenador empieza por “{query}”."
 }

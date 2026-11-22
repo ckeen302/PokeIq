@@ -3,11 +3,11 @@
   "themes": {
     "gyms": {
       "name": "Gimnasios",
-      "blurb": "Todos los gimnasios, desde Ciudad Plateada hasta Paldea (y los estadios de Galar)."
+      "blurb": "Todos los gimnasios, desde Ciudad Plateada hasta Pueblo Hozkailu (y los estadios de Galar)."
     },
     "towns": {
       "name": "Pueblos y ciudades",
-      "blurb": "Todos los pueblos y ciudades, desde Pueblo Paleta hasta Paldea."
+      "blurb": "Todos los pueblos y ciudades, desde Pueblo Paleta hasta Ciudad Meseta."
     },
     "routes": {
       "name": "Rutas",
@@ -55,16 +55,16 @@
     "johto": "Johto",
     "hoenn": "Hoenn",
     "sinnoh": "Sinnoh",
-    "unova": "Unova",
+    "unova": "Teselia",
     "kalos": "Kalos",
     "alola": "Alola",
     "galar": "Galar",
     "paldea": "Paldea",
-    "kitakami": "Kitakami",
-    "blueberryacademy": "Blueberry Academy",
-    "seviiislands": "Sevii Islands",
-    "isleofarmor": "Isle of Armor",
-    "crowntundra": "Crown Tundra"
+    "kitakami": "Noroteo",
+    "blueberryacademy": "Academia Arándano",
+    "seviiislands": "Islas Sete",
+    "isleofarmor": "Isla de la Armadura",
+    "crowntundra": "Nieves de la Corona"
   },
   "games": {
     "red": "Rojo",

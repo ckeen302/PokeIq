@@ -1,13 +1,13 @@
 {
   "hub": {
-    "title": "Quiz ¿Quién es ese Pokémon? y más quizzes de Pokémon",
+    "title": "Quiz ¿Quién es ese Pokémon? y más quiz de Pokémon",
     "description": "Juega al quiz ¿Quién es ese Pokémon?, a un quiz de gritos, de entradas de la Pokédex, de tipos y a Más o menos, en los formatos Clásico, Supervivencia y Contrarreloj.",
     "h1": "Quizzes",
     "duel": "Duelo de quiz",
     "duelLine": "Responde las mismas preguntas que un amigo, en directo.",
-    "infoName": "los quizzes de Pokémon",
-    "infoDescription": "Quizzes de Pokémon gratis, como ¿Quién es ese Pokémon?, un quiz de gritos y la tabla de tipos, en los formatos Clásico, Supervivencia y Contrarreloj.",
-    "infoIntro": "Juega a ¿Quién es ese Pokémon? y a nuestros otros quizzes de Pokémon en tres formatos, con todos los Pokémon.",
+    "infoName": "los quiz de Pokémon",
+    "infoDescription": "Quiz de Pokémon gratis, como ¿Quién es ese Pokémon?, un quiz de gritos y la tabla de tipos, en los formatos Clásico, Supervivencia y Contrarreloj.",
+    "infoIntro": "Juega a ¿Quién es ese Pokémon? y a nuestros otros quiz de Pokémon en tres formatos, con todos los Pokémon.",
     "step1": "Elige un modo de quiz y las generaciones que quieras incluir.",
     "step2": "Elige un formato: Clásico, Supervivencia o Contrarreloj.",
     "step3": "Responde antes de que se acabe el tiempo.",
@@ -86,7 +86,7 @@
   },
   "preset": {
     "modeSelect": "Elige modo",
-    "intro": "{name} es uno de nuestros quizzes de Pokémon gratis, como ¿Quién es ese Pokémon?: {description}",
+    "intro": "{name} es uno de nuestros quiz de Pokémon gratis, como ¿Quién es ese Pokémon?: {description}",
     "stepDifficulty": "Elige un formato, la dificultad y las generaciones que quieras incluir.",
     "stepFormat": "Elige un formato y las generaciones que quieras incluir.",
     "step2": "Responde cada pregunta antes de que se acabe el tiempo.",
@@ -112,7 +112,7 @@
     "aTrainer": "Un Entrenador",
     "scored": "{who} ha acertado {correct}/{total} (PokéIQ {iq}). ¿Puedes superarlo?",
     "description": "{run} en PokéIQ. Juega exactamente las mismas preguntas y descubre quién sabe más de Pokémon.",
-    "daily": "Reto diario #{n}",
+    "daily": "Reto diario n.º {n}",
     "run": "{mode} · {format}"
   }
 }

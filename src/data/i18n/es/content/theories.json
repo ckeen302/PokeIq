@@ -4,7 +4,7 @@
   "era": "Gen. I · 1996",
   "summary": "Lo dice la Pokédex, y el fantasma de la Torre Pokémon es una madre Marowak.",
   "claim": "El casco de hueso que Cubone nunca se quita es el cráneo de su madre muerta, y el fantasma que bloquea lo alto de la Torre Pokémon en Rojo y Azul es una madre Marowak asesinada por el Team Rocket.",
-  "origin": "Empieza en Rojo y Verde (1996): los vecinos de Pueblo Lavanda hablan de la madre asesinada de un Cubone, y el Visor Silph desenmascara a su fantasma en la Torre Pokémon. Desde Amarillo, la Pokédex lo dice sin rodeos. Se convirtió en uno de los datos oscuros más conocidos de la saga, fijo en las listas de «las entradas más oscuras de la Pokédex» y en los vídeos de icebergs, y los juegos posteriores siguieron añadiendo detalles.",
+  "origin": "Empieza en Rojo y Verde (1996): los vecinos de Pueblo Lavanda hablan de la madre asesinada de un Cubone, y el Visor Silph desenmascara a su fantasma en la Torre Pokémon. Desde Amarillo, la Pokédex lo dice sin rodeos. Se convirtió en uno de los datos oscuros más conocidos de la saga, fijo en las listas de “las entradas más oscuras de la Pokédex” y en los vídeos de icebergs, y los juegos posteriores siguieron añadiendo detalles.",
   "evidenceFor": [
    {
     "text": "La entrada de la Pokédex de Amarillo lo dice claramente:",
@@ -43,7 +43,7 @@
     "source": "Datamine · pret/pokered"
    },
    {
-    "text": "Las entradas de Marowak continúan la historia: en Rubí y Zafiro es «la forma evolucionada de un Cubone que ha superado la tristeza por la pérdida de su madre», y en Escudo el cráneo de la madre se le fusiona al evolucionar.",
+    "text": "Las entradas de Marowak continúan la historia: en Rubí y Zafiro es “la forma evolucionada de un Cubone que ha superado la tristeza por la pérdida de su madre”, y en Escudo el cráneo de la madre se le fusiona al evolucionar.",
     "source": "Marowak · Pokédex · Rubí, Zafiro y Escudo"
    }
   ],
@@ -238,7 +238,7 @@
     "source": "Fuentes oficiales"
    }
   ],
-  "confirmed": "El Teniente Surge dice que los Pokémon eléctricos le salvaron «durante la guerra». Está en el guion de Rojo y Azul. Qué guerra fue, y todo lo que los fans le han colgado, nunca se dice.",
+  "confirmed": "El Teniente Surge dice que los Pokémon eléctricos le salvaron “durante la guerra”. Está en el guion de Rojo y Azul. Qué guerra fue, y todo lo que los fans le han colgado, nunca se dice.",
   "verdictText": "Confirmada: una guerra forma parte del pasado del Teniente Surge, según el propio guion de Rojo y Azul. Qué guerra fue nunca se explica.",
   "links": [
    "pret/pokered: texto del Gimnasio Carmín"
@@ -316,7 +316,7 @@
   "title": "MissingNo. existe",
   "era": "Gen. I · 1998",
   "summary": "Un Pokémon glitch real en Rojo y Azul, que aparece surfeando por la costa de Isla Canela.",
-  "claim": "En Rojo y Azul se puede encontrar un «Pokémon» roto llamado MissingNo.: deja que el anciano de Ciudad Verde te enseñe a atrapar Pokémon, vuela a Isla Canela y surfea arriba y abajo por su costa este.",
+  "claim": "En Rojo y Azul se puede encontrar un “Pokémon” roto llamado MissingNo.: deja que el anciano de Ciudad Verde te enseñe a atrapar Pokémon, vuela a Isla Canela y surfea arriba y abajo por su costa este.",
   "origin": "Los jugadores lo descubrieron poco después del lanzamiento en inglés. Se difundió de boca en boca y por las primeras webs de fans, ayudado por su efecto secundario: encontrarlo suma 128 al sexto objeto de la mochila, un truco favorito para conseguir Caramelos Raros y Master Balls.",
   "evidenceFor": [
    {
@@ -332,7 +332,7 @@
     "source": "Datamine · pret/pokered"
    },
    {
-    "text": "Sus datos de la Pokédex son provisionales: la especie dice «???» y el texto de la entrada es la nota japonesa コメント作成中, «comentario por escribir».",
+    "text": "Sus datos de la Pokédex son provisionales: la especie dice “???” y el texto de la entrada es la nota japonesa コメント作成中, “comentario por escribir”.",
     "source": "Datamine · pret/pokered"
    },
    {
@@ -455,7 +455,7 @@
   "era": "Internet · 2010",
   "summary": "Una historia de terror de internet sobre la música del pueblo. No hay constancia de que ocurriera nunca.",
   "claim": "Después de que Rojo y Verde salieran en Japón en 1996, la música de Pueblo Lavanda llevó al suicidio a más de cien niños, y el juego se modificó discretamente para taparlo.",
-  "origin": "Una creepypasta publicada por primera vez en Pastebin el 21 de febrero de 2010, y en el tablón paranormal de 4chan a principios de marzo de 2010. Se fue reescribiendo al difundirse, entró en el Creepypasta Index en 2011 y acumuló «pruebas» falsas, como supuestas melodías beta manipuladas en YouTube.",
+  "origin": "Una creepypasta publicada por primera vez en Pastebin el 21 de febrero de 2010, y en el tablón paranormal de 4chan a principios de marzo de 2010. Se fue reescribiendo al difundirse, entró en el Creepypasta Index en 2011 y acumuló “pruebas” falsas, como supuestas melodías beta manipuladas en YouTube.",
   "evidenceFor": [
    {
     "text": "La melodía es realmente inquietante, y Pueblo Lavanda es un pueblo cementerio: su Torre Pokémon está llena de tumbas, fantasmas y Médiums.",
@@ -473,12 +473,12 @@
     "source": "Internet"
    },
    {
-    "text": "Se escribió como ficción: las versiones que circulan incluyen detalles inventados, como un juicio de una «Comisión de Juegos».",
+    "text": "Se escribió como ficción: las versiones que circulan incluyen detalles inventados, como un juicio de una “Comisión de Juegos”.",
     "source": "Internet · Know Your Meme"
    }
   ],
   "confirmed": "La música de Pueblo Lavanda es inquietante a propósito. Nada más de la historia es cierto.",
-  "verdictText": "Desmentida: el «síndrome» se inventó en una creepypasta de 2010. Ninguno de sus casos tiene ningún registro detrás.",
+  "verdictText": "Desmentida: el “síndrome” se inventó en una creepypasta de 2010. Ninguno de sus casos tiene ningún registro detrás.",
   "links": [
    "Know Your Meme: la creepypasta del síndrome de Pueblo Lavanda",
    "pret/pokered: texto de la Torre Pokémon, 5.ª planta (las Médiums)"
@@ -509,7 +509,7 @@
     "source": "Entrevista · Iwata pregunta: Oro HeartGold y Plata SoulSilver"
    },
    {
-    "text": "El propio juego trata a Mew como un extra: el diseñador de juegos de Ciudad Azulona da la Pokédex por completa sin él (el comentario del desensamblado sobre esa comprobación dice «discount Mew», «sin contar a Mew»).",
+    "text": "El propio juego trata a Mew como un extra: el diseñador de juegos de Ciudad Azulona da la Pokédex por completa sin él (el comentario del desensamblado sobre esa comprobación dice “discount Mew”, “sin contar a Mew”).",
     "source": "Datamine · pret/pokered"
    }
   ],
@@ -523,7 +523,7 @@
   "confirmed": "El propio personal de Game Freak dijo que Mew entró después de la depuración, en unos 300 bytes liberados al quitar las funciones de depuración, en contra de las instrucciones.",
   "verdictText": "Confirmada por entrevista con los desarrolladores: Morimoto e Ishihara contaron la historia en Iwata pregunta.",
   "links": [
-   "Iwata pregunta: Oro HeartGold y Plata SoulSilver, «Justo a tiempo para el último tren»",
+   "Iwata pregunta: Oro HeartGold y Plata SoulSilver, “Justo a tiempo para el último tren”",
    "Siliconera: Game Freak revela la historia de Mew",
    "pret/pokered: script de la Mansión Azulona, 3.ª planta",
    "pret/pokered: texto de la Mansión Pokémon, 2.ª planta"
@@ -632,7 +632,7 @@
     "source": "Juegos · Rojo y Azul"
    },
    {
-    "text": "Y el recuento deja fuera a Mew, así que una Pokédex «completa» tiene 150, como si Mew fuera el premio.",
+    "text": "Y el recuento deja fuera a Mew, así que una Pokédex “completa” tiene 150, como si Mew fuera el premio.",
     "source": "Datamine · pret/pokered"
    }
   ],
@@ -747,7 +747,7 @@
    "pret/pokeyellow: equipos de Entrenadores",
    "pret/pokered: texto de la Torre Pokémon, 2.ª planta",
    "pret/pokered: texto del S.S. Anne, 2.ª planta",
-   "LP Archive: «Is Raticate dead???» (donde se difundió)"
+   "LP Archive: “Is Raticate dead???” (donde se difundió)"
   ]
  },
  "red-is-a-ghost-on-mt-silver": {
@@ -755,10 +755,10 @@
   "era": "Gen. II · 1999",
   "summary": "Callado, solo en una cima helada, desaparece tras el combate. Y luego aparece en juegos posteriores.",
   "claim": "Rojo, el protagonista de Rojo y Azul, murió en el Monte Plateado. El Entrenador silencioso contra el que luchas en la cima en Oro, Plata y Cristal es su fantasma.",
-  "origin": "Nació del combate final de Oro y Plata y se difundió por foros, y después en la época de la creepypasta «Lost Silver» y de los vídeos de teorías.",
+  "origin": "Nació del combate final de Oro y Plata y se difundió por foros, y después en la época de la creepypasta “Lost Silver” y de los vídeos de teorías.",
   "evidenceFor": [
    {
-    "text": "No dice nada. Sus únicas frases antes y después del combate son «…».",
+    "text": "No dice nada. Sus únicas frases antes y después del combate son “…”.",
     "source": "Datamine · pret/pokecrystal"
    },
    {
@@ -845,7 +845,7 @@
   "era": "Gen. VII · 2016",
   "summary": "Un fantasma con un disfraz casero de Pikachu. Nunca se muestra lo que hay debajo.",
   "claim": "Bajo su trapo, Mimikyu es el fantasma de un Pikachu que se disfraza del Pokémon que fue.",
-  "origin": "Empezó en cuanto Sol y Luna presentaron a Mimikyu en 2016, en Reddit y Tumblr, junto a una teoría rival según la cual es Porygon escondiéndose desde el episodio del «Pokémon Shock» de 1997.",
+  "origin": "Empezó en cuanto Sol y Luna presentaron a Mimikyu en 2016, en Reddit y Tumblr, junto a una teoría rival según la cual es Porygon escondiéndose desde el episodio del “Pokémon Shock” de 1997.",
   "evidenceFor": [
    {
     "text": "El disfraz es de Pikachu a propósito:",
@@ -902,7 +902,7 @@
   "era": "Anime · 1997",
   "summary": "Porygon cargó con la culpa del episodio de 1997, pero los destellos vinieron de Pikachu.",
   "claim": "El ataque de Porygon en un episodio de 1997 provocó convulsiones a cientos de niños, así que lo vetaron en la serie.",
-  "origin": "El episodio «Dennō Senshi Porygon» se emitió una sola vez en Japón, el 16 de diciembre de 1997. Cientos de espectadores acabaron en el hospital, fue noticia en todo el mundo, y como Porygon era el Pokémon del título y después desapareció de la serie, cargó con la culpa.",
+  "origin": "El episodio “Dennō Senshi Porygon” se emitió una sola vez en Japón, el 16 de diciembre de 1997. Cientos de espectadores acabaron en el hospital, fue noticia en todo el mundo, y como Porygon era el Pokémon del título y después desapareció de la serie, cargó con la culpa.",
   "evidenceFor": [
    {
     "text": "Porygon era el Pokémon del título del episodio, y después Porygon (y más tarde Porygon2 y Porygon-Z) nunca volvió a tener un papel destacado en el anime.",
@@ -934,7 +934,7 @@
   "era": "Anime · 1997",
   "summary": "El pájaro del arcoíris al final del primer episodio era una leyenda de la 2.ª generación, con años de adelanto.",
   "claim": "El pájaro dorado que Ash ve volar sobre un arcoíris al final del primerísimo episodio era Ho-Oh, un Pokémon que los jugadores no pudieron encontrar hasta Oro y Plata.",
-  "origin": "El primer episodio se emitió en Japón el 1 de abril de 1997. Nadie sabía qué pájaro era; cuando Oro y Plata salieron en Japón en noviembre de 1999, los fans lo reconocieron, y «¿qué era aquel pájaro?» se convirtió en una curiosidad del anime.",
+  "origin": "El primer episodio se emitió en Japón el 1 de abril de 1997. Nadie sabía qué pájaro era; cuando Oro y Plata salieron en Japón en noviembre de 1999, los fans lo reconocieron, y “¿qué era aquel pájaro?” se convirtió en una curiosidad del anime.",
   "evidenceFor": [
    {
     "text": "Tras la tormenta, Ash ve un pájaro brillante cruzar un arcoíris volando, y su Pokédex no puede identificarlo.",
@@ -1030,7 +1030,7 @@
   "era": "Internet · años 2010",
   "summary": "Un falso recuerdo compartido. La cola de Pikachu siempre ha terminado en amarillo.",
   "claim": "La cola de Pikachu antes terminaba en negro, y alguien la cambió.",
-  "origin": "Un efecto Mandela, el nombre que se da a un falso recuerdo compartido por mucha gente, acuñado en 2009. Se difundió por Reddit y las redes sociales, con peluches de imitación que circulaban como «prueba».",
+  "origin": "Un efecto Mandela, el nombre que se da a un falso recuerdo compartido por mucha gente, acuñado en 2009. Se difundió por Reddit y las redes sociales, con peluches de imitación que circulaban como “prueba”.",
   "evidenceFor": [
    {
     "text": "Las orejas de Pikachu sí tienen las puntas negras, y la cola de Pichu es negra; las dos cosas son fáciles de confundir.",
@@ -1073,7 +1073,7 @@
     "source": "Almacén Rocket · Rojo Fuego y Verde Hoja"
    },
    {
-    "text": "El Fame Checker de Rojo Fuego y Verde Hoja archiva esa frase en el apartado «¿Familia y amigos?» de Giovanni.",
+    "text": "El Fame Checker de Rojo Fuego y Verde Hoja archiva esa frase en el apartado “¿Familia y amigos?” de Giovanni.",
     "source": "Juegos · Rojo Fuego y Verde Hoja"
    },
    {
@@ -1164,7 +1164,7 @@
    }
   ],
   "confirmed": "La Pokédex dice que Voltorb apareció cuando lo hicieron las Poké Balls, que se vio por primera vez en un fabricante de Poké Balls y que está hecho de componentes no naturales. Nunca dice que una Poké Ball se convirtiera en Voltorb.",
-  "verdictText": "Abierta: las pistas vienen de la propia Pokédex, pero todas las entradas se quedan en «rumor» o «misterio», y Game Freak nunca ha dicho más.",
+  "verdictText": "Abierta: las pistas vienen de la propia Pokédex, pero todas las entradas se quedan en “rumor” o “misterio”, y Game Freak nunca ha dicho más.",
   "links": [
    "Texto de la Pokédex de Voltorb (PokeAPI)",
    "Texto de la Pokédex de Electrode (PokeAPI)"
@@ -1174,7 +1174,7 @@
   "title": "Los PokéDioses",
   "era": "Gen. I–II · 1999",
   "summary": "Superpokémon secretos más allá de los 151. Ninguno estuvo nunca en los juegos.",
-  "claim": "Más allá de los 151 había Pokémon secretos y divinos («PokéDioses») que se desbloqueaban con códigos, rituales o hazañas imposibles.",
+  "claim": "Más allá de los 151 había Pokémon secretos y divinos (“PokéDioses”) que se desbloqueaban con códigos, rituales o hazañas imposibles.",
   "origin": "Se cree que los rumores empezaron con Mew, que al principio nadie entendía, y crecieron a medida que se filtraban los nuevos Pokémon de Oro y Plata. Las primeras webs de fans intercambiaban nombres inventados, y las bromas del Día de los Inocentes de abril de 1999 añadieron más, como que Dragonite evolucionaba a Yoshi y Lickitung a Luigi.",
   "evidenceFor": [
    {
@@ -1192,7 +1192,7 @@
     "source": "Datamine · pret/pokered"
    },
    {
-    "text": "Las «evoluciones» a Yoshi y Luigi eran bromas del 1 de abril (en la revista Expert Gamer y en la web de Nintendo, según Bulbapedia).",
+    "text": "Las “evoluciones” a Yoshi y Luigi eran bromas del 1 de abril (en la revista Expert Gamer y en la web de Nintendo, según Bulbapedia).",
     "source": "Bulbapedia"
    }
   ],
@@ -1303,7 +1303,7 @@
   "era": "Gen. I · 1997",
   "summary": "Fantasma era la respuesta a Psíquico en el anime. En el código de los juegos, no hacía nada.",
   "claim": "En Rojo y Azul, los movimientos de tipo Fantasma eran supereficaces contra los tipos Psíquico, la forma de vencer a Sabrina.",
-  "origin": "El anime mandó a Ash a Pueblo Lavanda a por un tipo Fantasma para vencer a los Pokémon Psíquico de Sabrina («La torre del terror», 1997), y así aprendieron esa relación la mayoría de los niños.",
+  "origin": "El anime mandó a Ash a Pueblo Lavanda a por un tipo Fantasma para vencer a los Pokémon Psíquico de Sabrina (“La torre del terror”, 1997), y así aprendieron esa relación la mayoría de los niños.",
   "evidenceFor": [
    {
     "text": "En el anime, Ash va a la Torre Pokémon de Pueblo Lavanda a buscar un tipo Fantasma para usarlo contra Sabrina.",
@@ -1312,11 +1312,11 @@
   ],
   "evidenceAgainst": [
    {
-    "text": "La tabla de tipos de Rojo y Azul pone Fantasma contra Psíquico como «no afecta».",
+    "text": "La tabla de tipos de Rojo y Azul pone Fantasma contra Psíquico como “no afecta”.",
     "source": "Datamine · pret/pokered"
    },
    {
-    "text": "Oro y Plata lo cambiaron: su tabla hace a Fantasma supereficaz contra Psíquico.",
+    "text": "Oro y Plata lo cambiaron: su tabla hace a Fantasma muy eficaz contra Psíquico.",
     "source": "Datamine · pret/pokecrystal"
    },
    {
@@ -1345,7 +1345,7 @@
     "source": "Datamine · pret/pokered"
    },
    {
-    "text": "Cuando le preguntaron «¿Cuál fue el primer Pokémon que se creó?», Ken Sugimori respondió:",
+    "text": "Cuando le preguntaron “¿Cuál fue el primer Pokémon que se creó?”, Ken Sugimori respondió:",
     "quote": "Rhydon, Clefairy, Lapras, etc. Nuestra idea original era que los Pokémon vivieran junto a los humanos y los ayudaran de formas útiles.",
     "mark": [
      "Rhydon"
@@ -1364,7 +1364,7 @@
    }
   ],
   "confirmed": "Rhydon ocupa el hueco 1 en los datos de Rojo y Azul, y Sugimori lo nombra el primero entre los primeros Pokémon.",
-  "verdictText": "Confirmada por entrevista con el desarrollador y por los datos del juego, con un matiz: Sugimori dice «entre los primeros», no «el primerísimo».",
+  "verdictText": "Confirmada por entrevista con el desarrollador y por los datos del juego, con un matiz: Sugimori dice “entre los primeros”, no “el primerísimo”.",
   "links": [
    "Dr Lava: Sugimori y Masuda sobre la creación de la 1.ª generación",
    "pret/pokered: lista interna de Pokémon"
@@ -1460,7 +1460,7 @@
   "era": "Gen. V · 2011",
   "summary": "Todo el mundo esperaba una tercera versión. Game Freak hizo en su lugar las primeras secuelas directas.",
   "claim": "Como Amarillo, Cristal, Esmeralda y Platino antes que él, Negro y Blanco iba a tener una tercera versión: Pokémon Gris.",
-  "origin": "Todas las generaciones desde Rojo y Azul habían tenido una tercera versión, así que los fans y las webs de rumores daban Gris por hecho. En febrero de 2012, Junichi Masuda pidió a los fans que «vieran el próximo Pokémon Smash», y las especulaciones tocaron techo.",
+  "origin": "Todas las generaciones desde Rojo y Azul habían tenido una tercera versión, así que los fans y las webs de rumores daban Gris por hecho. En febrero de 2012, Junichi Masuda pidió a los fans que “vieran el próximo Pokémon Smash”, y las especulaciones tocaron techo.",
   "evidenceFor": [
    {
     "text": "Cada pareja anterior tuvo una tercera versión: Amarillo, Cristal, Esmeralda y Platino.",
@@ -1473,7 +1473,7 @@
     "source": "Game Informer"
    },
    {
-    "text": "Game Informer, al informar del anuncio: «En lugar de ir en la dirección que la mayoría suponía con Pokémon Gris, Masuda anunció Pokémon Negro 2 y Pokémon Blanco 2».",
+    "text": "Game Informer, al informar del anuncio: “En lugar de ir en la dirección que la mayoría suponía con Pokémon Gris, Masuda anunció Pokémon Negro 2 y Pokémon Blanco 2”.",
     "source": "Game Informer"
    },
    {
@@ -1535,7 +1535,7 @@
     "source": "Wynaut · Pokédex · Rubí"
    },
    {
-    "text": "Ninguna entrada dice nunca que la cola sea el verdadero Wobbuffet; «un secreto» es lo más lejos que llega.",
+    "text": "Ninguna entrada dice nunca que la cola sea el verdadero Wobbuffet; “un secreto” es lo más lejos que llega.",
     "source": "Fuentes oficiales"
    }
   ],

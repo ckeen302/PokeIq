@@ -36,7 +36,7 @@
       "label": "Semilegendarios",
       "h1": "Nombra todos los Pokémon semilegendarios",
       "title": "Quiz: nombra todos los Pokémon semilegendarios",
-      "description": "Los legendarios que no protagonizan la portada: tríos, Tapus y muchos más."
+      "description": "Los legendarios que no protagonizan la portada: tríos, Tapus, Tesoros Funestos, los Tres Leales y más."
     },
     "mythical": {
       "label": "Singulares",
@@ -51,28 +51,28 @@
       "description": "Los visitantes del Ultraespacio, de Nihilego a Blacephalon."
     },
     "paradox": {
-      "label": "Paradójicos",
-      "h1": "Nombra todos los Pokémon paradójicos",
-      "title": "Quiz: nombra todos los Pokémon paradójicos",
-      "description": "Los Pokémon paradójicos del pasado y del futuro de Escarlata y Púrpura y su DLC."
+      "label": "Paradoja",
+      "h1": "Nombra todos los Pokémon paradoja",
+      "title": "Quiz: nombra todos los Pokémon paradoja",
+      "description": "Los Pokémon paradoja del pasado y del futuro de Escarlata y Púrpura y su DLC."
     },
     "mega-evolutions": {
       "label": "Megaevoluciones",
       "h1": "Nombra todas las megaevoluciones",
       "title": "Quiz: nombra todas las megaevoluciones",
-      "description": "Todas las megaevoluciones de X e Y y de Rubí Omega y Zafiro Alfa. Escribe «Mega-Venusaur» o solo «Venusaur»."
+      "description": "Todas las megaevoluciones de X e Y y de Rubí Omega y Zafiro Alfa. Escribe “Mega-Venusaur” o solo “Venusaur”."
     },
     "gigantamax": {
       "label": "Gigamax",
       "h1": "Nombra todos los Pokémon Gigamax",
       "title": "Quiz: nombra todos los Pokémon Gigamax",
-      "description": "Todas las formas Gigamax de Espada y Escudo. Escribe «Snorlax Gigamax», «Gmax Snorlax» o solo «Snorlax»."
+      "description": "Todas las formas Gigamax de Espada y Escudo. Escribe “Snorlax Gigamax”, “Gmax Snorlax” o solo “Snorlax”."
     },
     "regional-forms": {
       "label": "Formas regionales",
       "h1": "Nombra todas las formas regionales",
       "title": "Quiz: nombra todas las formas regionales (Alola, Galar, Hisui, Paldea)",
-      "description": "Todas las formas de Alola, Galar, Hisui y Paldea. Escribe «Vulpix de Alola» o «Vulpix Alola»."
+      "description": "Todas las formas de Alola, Galar, Hisui y Paldea. Escribe “Vulpix de Alola” o “Vulpix Alola”."
     }
   },
   "dex": {

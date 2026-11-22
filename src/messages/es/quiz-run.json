@@ -50,11 +50,14 @@
     "artwork": "Ilustración del Pokémon",
     "revealed": "El Pokémon revelado",
     "itsName": "¡Es {name}!",
-    "noOgg": "Tu navegador no puede reproducir los gritos Pokémon (audio Ogg). Prueba con Chrome, Firefox o un Safari reciente.",
-    "stop": "Parar grito",
     "play": "Reproducir grito",
     "tap": "Toca para oír el grito",
-    "played": "Oído {n} veces · toca para repetir"
+    "played": "Oído {n} veces · toca para repetir",
+    "replay": "Repetir grito",
+    "loading": "Cargando grito…",
+    "playing": "Sonando…",
+    "blocked": "Toca para oír el grito",
+    "error": "El grito no ha cargado · toca para reintentar"
   },
   "team": {
     "shown": "Equipo: {shown} de {total} Pokémon visibles",
@@ -64,7 +67,7 @@
     "revealNext": "Revelar otro ({pct} %)",
     "nameLabel": "Nombre del Entrenador",
     "placeholder": "Escribe el nombre de un Entrenador…",
-    "also": "también «{name}»",
+    "also": "también “{name}”",
     "guess": "Responder",
     "pick": "Elige un Entrenador de la lista.",
     "gotIt": "¡Acertaste!",
@@ -84,7 +87,7 @@
     "stageAlt": "Pokémon misterioso, paso de zoom {step} de {steps}",
     "steps": "Paso de zoom {step} de {steps}",
     "daily": "Zoom diario",
-    "dailyNumber": "Zoom diario #{n}",
+    "dailyNumber": "Zoom diario n.º {n}",
     "dailyLine": "Un Pokémon, el mismo primer plano para todos. Sin reloj.",
     "nextIn": "El próximo en",
     "playToday": "Jugar al de hoy"

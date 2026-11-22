@@ -14,7 +14,7 @@
   "reportTitle": "Denunciar este mensaje",
   "reportLabel": "Denunciar el mensaje de {name}",
   "isMuted": "{name} está silenciado.",
-  "playersOnly": "Solo pueden chatear los entrenadores que juegan.",
+  "playersOnly": "Solo pueden chatear los Entrenadores que juegan.",
   "placeholder": "Di algo bonito…",
   "label": "Mensaje del chat",
   "send": "Enviar"

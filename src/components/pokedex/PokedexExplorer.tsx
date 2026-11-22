@@ -270,10 +270,7 @@ export function PokedexExplorer({ rows, local }: { rows: DexRow[]; local?: DexLi
             onClick={() => setFiltersOpen((o) => !o)}
             aria-expanded={filtersOpen}
             aria-controls="dex-filters"
-            className={cn(
-              "relative flex h-11 w-11 items-center justify-center rounded-md border border-input bg-shade/40 hover:border-screen/60 md:hidden",
-              filtersOpen && "border-screen/60 text-screen"
-            )}
+            className="relative flex h-11 w-11 items-center justify-center rounded-md border border-input bg-shade/40 hover:border-screen/60 aria-expanded:border-screen/60 aria-expanded:text-screen md:hidden"
             aria-label={filtersOpen ? t("hideFilters") : t("showFilters")}
           >
             <SlidersHorizontal className="h-4 w-4" />
@@ -456,10 +453,8 @@ function ViewPicker({ view, onChange }: { view: DexView; onChange: (v: DexView) 
             openList();
           }
         }}
-        className={cn(
-          "flex h-11 w-[202px] items-center justify-between max-md:w-full rounded-md border border-input bg-shade/40 px-3 font-display text-sm font-semibold uppercase tracking-[0.08em] hover:border-screen/60",
-          open && "border-screen/60"
-        )}
+        // The open colour rides on aria-expanded: through cn, tailwind-merge reads a bare border-screen as a width and drops `border`.
+        className="flex h-11 w-[202px] items-center justify-between max-md:w-full rounded-md border border-input bg-shade/40 px-3 font-display text-sm font-semibold uppercase tracking-[0.08em] hover:border-screen/60 aria-expanded:border-screen/60"
       >
         <span className="flex items-center gap-2.5">
           <span className="font-pixel text-[9px] font-normal tracking-[0.12em] text-muted-foreground">{t("view.label")}</span>

@@ -1,0 +1,13 @@
+{
+  "title": "{name}の画像",
+  "subtitle": "世代別",
+  "nav": "画像",
+  "sprite": "画像",
+  "gen": "第{gen}世代",
+  "normal": "通常",
+  "shiny": "色違い",
+  "alt": "{name}の第{gen}世代の画像",
+  "altShiny": "{name}の第{gen}世代の色違いの画像",
+  "none": "なし",
+  "note": "各世代1作品の正面の画像（PokéAPIより）。第9世代はPokémon HOMEのモデルです。「—」はその作品にないことを示します。"
+}

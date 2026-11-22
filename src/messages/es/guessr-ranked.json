@@ -20,7 +20,7 @@
     "leaders": {
       "brock": { "name": "Brock", "full": "Líder de Gimnasio Brock" },
       "misty": { "name": "Misty", "full": "Líder de Gimnasio Misty" },
-      "ltsurge": { "name": "Lt. Surge", "full": "Líder de Gimnasio Lt. Surge" },
+      "ltsurge": { "name": "Teniente Surge", "full": "Líder de Gimnasio Teniente Surge" },
       "erika": { "name": "Erika", "full": "Líder de Gimnasio Erika" },
       "koga": { "name": "Koga", "full": "Líder de Gimnasio Koga" },
       "sabrina": { "name": "Sabrina", "full": "Líder de Gimnasio Sabrina" },
@@ -37,8 +37,8 @@
     }
   },
   "record": {
-    "place": "<b>#{position}</b> de {players}",
-    "ladder": "Clasificación: <b>#{position}</b> de {players}",
+    "place": "<b>n.º {position}</b> de {players}",
+    "ladder": "Clasificación: <b>n.º {position}</b> de {players}",
     "wl": "{wins} V · {losses} D",
     "draws": " · {draws} E",
     "best": "Mejor: {points} pts"
@@ -54,17 +54,17 @@
     "cancel": "Cancelar"
   },
   "card": {
-    "label": "Clasificatoria · Mapa mundial",
+    "label": "Clasificatoria · Mapa del mundo",
     "loading": "Cargando tu rango…",
     "off": "La clasificatoria de PokéGuessr llegará pronto. Los duelos amistosos ya están disponibles: cambia a Amistoso para buscar rival o retar a un amigo.",
     "ladder": "Clasificación",
-    "how1": "Cara a cara en el mapa mundial. Sube de Poké Ball a Ente Ball contra Entrenadores con un Elo parecido al tuyo.",
-    "how2": "Los mismos lugares para los dos y {hp} PS cada uno: en cada ronda, la puntuación más baja pierde la diferencia. Siempre en el mapa mundial. Abandonar cuenta como derrota.",
+    "how1": "Cara a cara en el mapa del mundo. Sube de Poké Ball a Ente Ball contra Entrenadores con un Elo parecido al tuyo.",
+    "how2": "Los mismos lugares para los dos y {hp} PS cada uno: en cada ronda, la puntuación más baja pierde la diferencia. Siempre en el mapa del mundo. Abandonar cuenta como derrota.",
     "how3": "Todo el mundo empieza con {start} de Elo, calculado como en Pokémon Showdown: en Poké Ball y Super Ball solo se muestra tu división; a partir de Ultra Ball también se ve el número. Por encima de {drift}, el Elo baja un poco los días que no juegas.",
     "how4": "Te emparejamos con Entrenadores de Elo parecido, y la diferencia aumenta cuanto más esperas. Si no aparece nadie en {wait}, puedes enfrentarte a un Líder de Gimnasio: un rival controlado por el ordenador, bien identificado, que juega a tu nivel de división y cuenta con la mitad del cambio habitual.",
     "waitSeconds": "{n} segundos",
     "waitWhile": "un rato",
-    "how5": "La clasificatoria va por temporadas de ocho semanas. Tu división más alta de la temporada te da sus recompensas (una insignia de temporada y objetos estéticos de cada división hasta ella) cuando termina. Después, todos los Elo se acercan a medio camino de {start}, bajando como mucho una división, así que vuelves a empezar cerca de donde acabaste.",
+    "how5": "La clasificatoria va por temporadas de ocho semanas. Tu división más alta de la temporada te da sus recompensas (una medalla de temporada y objetos estéticos de cada división hasta ella) cuando termina. Después, todos los Elo se acercan a medio camino de {start}, bajando como mucho una división, así que vuelves a empezar cerca de donde acabaste.",
     "nameLabel": "Nombre de Entrenador para la clasificatoria",
     "namePlaceholder": "Nombre de Entrenador",
     "nameRejected": "Elige otro nombre.",

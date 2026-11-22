@@ -12,6 +12,7 @@ import { QuizDuelCard } from "./QuizDuelCard";
 import { cn } from "@/lib/utils";
 import { getProgress } from "@/lib/progress";
 import { preloadAudio, preloadImage } from "@/lib/preload";
+import { unlockCryAudio } from "@/lib/cry-audio";
 import { createQuizPrefetcher, type QuizPrefetcher } from "@/lib/quiz-prefetch";
 import type { StartResponse } from "@/lib/session-types";
 import { useT } from "@/i18n/client";
@@ -112,6 +113,8 @@ export function QuizSetup({ module, initialFormat, initialDifficulty, initialGen
   latest.current = settings;
 
   const start = () => {
+    // This tap is what lets question 1's cry play by itself (iOS above all).
+    if (module === "cry") unlockCryAudio();
     const req = settings();
     setBegun(prefetcher.current?.take(req) ?? null);
     setRequest(req);
