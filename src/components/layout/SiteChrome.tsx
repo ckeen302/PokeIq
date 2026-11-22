@@ -16,6 +16,9 @@ import errorNs from "@/messages/error";
 import feedback from "@/messages/feedback";
 import copyFallback from "@/messages/copy-fallback";
 import community from "@/messages/community";
+import chat from "@/messages/chat";
+import addFriend from "@/messages/add-friend";
+import emailNudge from "@/messages/email-nudge";
 
 // The same @id as the home page's fuller WebSite node (with its SearchAction), so the two read as one site.
 const websiteJsonLd = (locale: Locale, description: string) => ({
@@ -29,7 +32,8 @@ const websiteJsonLd = (locale: Locale, description: string) => ({
 });
 
 /** The namespaces the header, footer and tab bar read in the browser (a page in another language sends them along). */
-export const CHROME_NAMESPACES = [nav, report, errorNs, feedback, copyFallback, community];
+// Plus the small pieces many game pages show: the chat box, the add-friend prompt, the daily email nudge.
+export const CHROME_NAMESPACES = [nav, report, errorNs, feedback, copyFallback, community, chat, addFriend, emailNudge];
 
 /** What comes before the page's <main>: the site's JSON-LD and the header. */
 export function ChromeBefore({ locale }: { locale: Locale }) {
