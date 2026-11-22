@@ -1,0 +1,108 @@
+{
+  "loading": "Loading the battle",
+  "liveBattle": "Live battle",
+  "reconnecting": "Connection lost. Reconnecting…",
+  "vs": "vs",
+  "vsSep": " vs ",
+  "and": " and ",
+  "multiVs": "{a} & {c} vs {b} & {d}",
+  "watching": "You're watching {players}",
+  "watchAnother": "Watch another",
+  "battleYourself": "Battle yourself",
+  "chat": {
+    "showAgain": "Show {name}'s messages again",
+    "hideTitle": "Hide {name}'s messages (Showdown's /ignore)",
+    "unignore": "Unignore {name}",
+    "ignore": "Ignore {name}",
+    "hidden": "({n} hidden)",
+    "rematchOpen": "A rematch is open: press Rematch to keep chatting there."
+  },
+  "gone": {
+    "title": "Battle not found",
+    "start": "Start a battle"
+  },
+  "forfeit": {
+    "sure": "Forfeit this battle?",
+    "button": "Forfeit",
+    "keep": "Keep battling"
+  },
+  "again": {
+    "error": "Couldn't start a battle.",
+    "play": "Play again",
+    "new": "New battle",
+    "tournament": "Back to the tournament",
+    "requested": "Rematch requested!",
+    "accept": "Accept rematch",
+    "rematch": "Rematch",
+    "keeps": "A rematch keeps the trainers, the format and any teams you brought.",
+    "startsFour": "The computer keeps its seats; it starts when every trainer presses it.",
+    "startsTwo": "It starts when you both press it."
+  },
+  "lobby": {
+    "gen": "Gen {gen}",
+    "quickNote": "Random-battle sets from Gen {gen}, checked against these rules.",
+    "format": "Format",
+    "bring": "each of you brings a team, checked against Pokémon Showdown's rules.",
+    "timerLabel": "Turn timer",
+    "timer": "Showdown's timer: {secs} s",
+    "grace": " plus {secs} s grace",
+    "perTurn": ", +{secs} s a turn",
+    "cap": ", {secs} s at most per turn.",
+    "runOutDefault": "Run out on a turn and a default move is made; run out of time altogether and you lose.",
+    "runOutLose": "Run out and you lose.",
+    "runOutPick": "Run out and the timer picks a move for you; a second time in a row loses.",
+    "timerOffAny": "Off: take your time. Any of you can start it mid-battle.",
+    "timerOffEither": "Off: take your time. Either of you can start it mid-battle.",
+    "spectators": "Spectators",
+    "public": "Listed in Watch live: anyone can watch.",
+    "private": "Private: only people with the link can watch.",
+    "fairPlay": "Fair play",
+    "fairFour": "You see only your own team and what the others reveal. Leaving forfeits after {secs} s away.",
+    "fairFourMulti": "You see only your own team and what the others reveal. Leaving forfeits after {secs} s away (your team loses, as on Showdown).",
+    "fairFourFfa": "You see only your own team and what the others reveal. Leaving forfeits after {secs} s away (you're out; the others battle on).",
+    "fairTwo": "You see only your own team and what your opponent reveals. Leaving forfeits after {secs} s away.",
+    "ladder": "Ladder",
+    "unrankedMulti": "Unranked: Showdown doesn't ladder Multi Battles either, so these never move your rating.",
+    "unrankedFfa": "Unranked: Showdown doesn't ladder Free-For-Alls either, so these never move your rating.",
+    "teamFirst": "Pick or paste a team first.",
+    "tag": "Live battle · {format}",
+    "title": "Pokémon <b>battle</b>",
+    "invite": "{host} challenges you to a {format} battle. Pick a trainer name to join.",
+    "inviteTeam": "{host} challenges you to a {format} battle. Pick a trainer name and a team to join.",
+    "about": "Send the link to a friend. The battle starts when you're both ready.",
+    "randomTeams": " Teams are random.",
+    "shareHost": "{host} challenges you to a {format} battle on PokéIQ!",
+    "shareMe": "I challenge you to a {format} battle on PokéIQ!",
+    "noun": "battle"
+  },
+  "visitor": {
+    "over": "Battle over",
+    "inProgress": "Battle in progress",
+    "two": "This battle is between two other trainers.",
+    "four": "This battle is between four other trainers.",
+    "start": "Start your own"
+  },
+  "replay": {
+    "instant": "Instant replay",
+    "instantTitle": "Watch the battle so far from the start (Showdown's instant replay)",
+    "download": "Download replay",
+    "downloadTitle": "Showdown's replay file: opens in any browser and plays in Showdown's replay player"
+  },
+  "quiet": {
+    "lost": "{names} lost their connection. If they don't come back within a minute,",
+    "teamForfeits": "their team forfeits.",
+    "forfeit": "they forfeit."
+  },
+  "after": {
+    "share": "Share",
+    "updating": "Updating ratings…",
+    "watchReplay": "Watch replay",
+    "analysis": "Analysis",
+    "saving": "Saving the replay…",
+    "save": "Save replay",
+    "elo": "Elo",
+    "glicko": "Glicko-2 rating",
+    "rating": "Rating",
+    "ratingLabel": "{what} {delta}, now {now}"
+  }
+}

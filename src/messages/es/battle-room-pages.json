@@ -1,0 +1,26 @@
+{
+  "header": {
+    "battle": "Combates"
+  },
+  "play": {
+    "title": "Combate contra el ordenador"
+  },
+  "live": {
+    "title": "Un combate Pokémon en directo",
+    "description": "Un combate Pokémon en directo con el motor de Pokémon Showdown. Abre el enlace, elige un nombre y a combatir.",
+    "titleVs": "{host} vs {guest}: un combate Pokémon en directo",
+    "titleHost": "{host} te reta a un combate Pokémon en directo",
+    "aTrainer": "Un Entrenador",
+    "descriptionFormat": "{format}, en directo con el motor de Pokémon Showdown. Abre el enlace, elige un nombre y a combatir."
+  },
+  "watch": {
+    "meta": {
+      "title": "Ver combates Pokémon en directo",
+      "description": "Mira combates Pokémon en directo con el motor de Pokémon Showdown: partidas clasificatorias y combates abiertos entre amigos, en tiempo real."
+    },
+    "crumb": "Ver",
+    "title": "Ver en",
+    "accent": "directo",
+    "intro": "Combates en curso ahora mismo. Los espectadores ven lo mismo que en Showdown: el equipo de cada lado solo se revela a medida que se juega."
+  }
+}

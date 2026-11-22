@@ -1,8 +1,11 @@
 "use client";
 
-import type { MonSnap, SideSnap } from "./model";
+import { VOLATILE_IDS, type MonSnap, type SideSnap } from "./model";
 import { teraColor } from "./player";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import playNs from "@/messages/battle-play";
+import { useBattleNames } from "./local";
 
 /** A Pokémon's status box: name, level, HP bar (drains smoothly), status, Tera and stat stages. */
 
@@ -15,7 +18,7 @@ export const STATUS_STYLE: Record<string, { label: string; className: string }> 
   tox: { label: "TOX", className: "bg-[#7a1f78] text-white" },
 };
 
-const STAT_SHORT: Record<string, string> = { atk: "Atk", def: "Def", spa: "SpA", spd: "SpD", spe: "Spe", accuracy: "Acc", evasion: "Eva" };
+const STAT_SHORT = new Set(["atk", "def", "spa", "spd", "spe", "accuracy", "evasion"]);
 
 export function hpColor(fraction: number) {
   return fraction > 0.5 ? "#34d399" : fraction > 0.2 ? "#facc15" : "#f43f5e";
@@ -50,7 +53,10 @@ const genderMark = (g: string) => (g === "M" ? <span className="text-sky-300">�
  * still. `tag`: whose Pokémon it is, in four-player battles.
  */
 export function Hud({ mon, mine, compact, dense, tag }: { mon: MonSnap; mine: boolean; compact?: boolean; dense?: boolean; tag?: string }) {
+  const t = useT(playNs);
+  const names = useBattleNames();
   const status = STATUS_STYLE[mon.status];
+  const tera = mon.terastallized ? names.type(mon.terastallized) : "";
   const percent = mon.maxhp ? Math.round((mon.hp / mon.maxhp) * 100) : 0;
   const boosts = Object.entries(mon.boosts).filter(([, v]) => v);
   const low = !mon.fainted && mon.maxhp > 0 && mon.hp / mon.maxhp <= 0.2;
@@ -75,22 +81,22 @@ export function Hud({ mon, mine, compact, dense, tag }: { mon: MonSnap; mine: bo
           )}
           data-testid="hud-name"
         >
-          {mon.name} {genderMark(mon.gender)}
+          {names.pokemon(mon.name)} {genderMark(mon.gender)}
         </span>
         {mon.terastallized && (
           <span
             className="battle-chip inline-flex items-center gap-0.5 text-black"
             style={{ background: `linear-gradient(135deg, #fff 0%, ${teraColor(mon.terastallized)} 45%, color-mix(in srgb, ${teraColor(mon.terastallized)} 70%, black) 100%)` }}
-            title={`Terastallized: ${mon.terastallized}`}
+            title={t("hud.tera", { type: tera })}
           >
-            <span aria-hidden>◆</span> {mon.terastallized}
+            <span aria-hidden>◆</span> {tera}
           </span>
         )}
-        {status && <span className={cn("battle-chip", status.className)}>{status.label}</span>}
-        <span className="rounded-sm bg-white/10 px-1 font-pixel text-[9px] leading-4 text-white/80">Lv{mon.level}</span>
+        {status && <span className={cn("battle-chip", status.className)}>{t(`status.${mon.status as "brn"}`)}</span>}
+        <span className="rounded-sm bg-white/10 px-1 font-pixel text-[9px] leading-4 text-white/80">{t("hud.level", { n: mon.level })}</span>
       </div>
       <div className="mt-1 flex items-center gap-1.5">
-        <span className="font-pixel text-[8px] text-warning">HP</span>
+        <span className="font-pixel text-[8px] text-warning">{t("hud.hp")}</span>
         {/* Keyed by the Pokémon: one switching in starts at its own HP, no damage ghost from the last one. */}
         <HpBar key={mon.key} hp={mon.fainted ? 0 : mon.hp} maxhp={mon.maxhp} className={cn("flex-1", dense ? "h-1.5" : compact ? "h-2" : "h-2.5")} />
         <span className={cn("text-right font-pixel tabular-nums", dense ? "w-[3.6rem] text-[9px]" : cn("w-[4.5rem] text-[10px]", !mine && "max-sm:w-[2.75rem]"), low ? "text-[#ff8a9a]" : "text-white/85")}>{mine ? `${mon.fainted ? 0 : mon.hp}/${mon.maxhp}` : `${mon.fainted ? 0 : percent}%`}</span>
@@ -99,12 +105,12 @@ export function Hud({ mon, mine, compact, dense, tag }: { mon: MonSnap; mine: bo
         <div className="mt-1 flex flex-wrap gap-1">
           {boosts.map(([stat, v]) => (
             <span key={stat} className={cn("battle-chip", v > 0 ? "bg-emerald-400/90 text-black" : "bg-sky-400/90 text-black")}>
-              {STAT_SHORT[stat] ?? stat} {v > 0 ? `+${v}` : v}
+              {STAT_SHORT.has(stat) ? t(`stat.${stat as "atk"}`) : stat} {v > 0 ? `+${v}` : v}
             </span>
           ))}
           {mon.volatiles.map((v) => (
             <span key={v} className="battle-chip bg-white/15 text-white/85">
-              {v}
+              {VOLATILE_IDS[v] ? t(`volatile.${VOLATILE_IDS[v] as "substitute"}`) : v}
             </span>
           ))}
         </div>
@@ -117,15 +123,17 @@ export type Ball = Pick<MonSnap, "name" | "fainted" | "status"> | null;
 
 /** Six Poké Balls: healthy, statused, fainted, or not seen yet. `balls` overrides (your own full team). */
 export function TeamBalls({ side, align = "start", balls: given, label }: { side: SideSnap; align?: "start" | "end"; balls?: Ball[]; label?: string }) {
+  const t = useT(playNs);
+  const names = useBattleNames();
   const total = Math.max(side.total, side.team.length);
   const balls = given ?? Array.from({ length: total }, (_, i) => side.team[i] ?? null);
   return (
-    <div className={cn("flex items-center gap-1", align === "end" && "justify-end")} aria-label={`${side.name || label || "A trainer"}'s team`}>
+    <div className={cn("flex items-center gap-1", align === "end" && "justify-end")} aria-label={t("hud.team", { name: side.name || label || t("aTrainer") })}>
       {label && <span className="mr-0.5 max-w-[6rem] truncate font-pixel text-[8px] uppercase text-muted-foreground">{label}</span>}
       {balls.map((mon, i) => (
         <span
           key={i}
-          title={mon ? `${mon.name}${mon.fainted ? " (fainted)" : mon.status ? ` (${STATUS_STYLE[mon.status]?.label ?? mon.status})` : ""}` : "Not seen yet"}
+          title={mon ? `${names.pokemon(mon.name)}${mon.fainted ? t("hud.fainted") : mon.status ? ` (${STATUS_STYLE[mon.status] ? t(`status.${mon.status as "brn"}`) : mon.status})` : ""}` : t("hud.unseen")}
           className={cn("battle-teamball inline-block h-3.5 w-3.5 rounded-full", !mon && "battle-teamball-unseen", mon?.fainted && "battle-teamball-fainted", mon && !mon.fainted && mon.status && "battle-teamball-status")}
         />
       ))}

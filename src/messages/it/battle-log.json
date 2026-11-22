@@ -1,0 +1,1295 @@
+{
+  "_": {
+    "startBattle": "Inizia la lotta tra {TRAINER} e {TRAINER}!",
+    "winBattle": "**{TRAINER}** ha vinto la lotta!",
+    "tieBattle": "Pareggio tra {TRAINER} e {TRAINER}!",
+    "pokemon": "{NICKNAME}",
+    "opposingPokemon": "il {NICKNAME} avversario",
+    "team": "la tua squadra",
+    "opposingTeam": "la squadra avversaria",
+    "party": "i tuoi Pokémon",
+    "opposingParty": "i Pokémon avversari",
+    "turn": "== Turno {NUMBER} ==",
+    "switchIn": "{TRAINER} manda in campo {FULLNAME}!",
+    "switchInOwn": "Vai, {FULLNAME}!",
+    "switchOut": "{TRAINER} richiama {NICKNAME}!",
+    "switchOutOwn": "{NICKNAME}, rientra!",
+    "drag": "{FULLNAME} è stato trascinato in campo!",
+    "faint": "{POKEMON} è esausto!",
+    "swap": "{POKEMON} e {TARGET} si sono scambiati di posto!",
+    "swapCenter": "{POKEMON} si è spostato al centro!",
+    "canDynamax": "  {TRAINER} ora può dynamaxizzare!",
+    "canDynamaxOwn": "  L’energia Dynamax si concentra attorno a {TRAINER}!",
+    "zEffect": "  {POKEMON} scatena tutta la potenza della sua mossa Z!",
+    "move": "{POKEMON} usa **{MOVE}**!",
+    "abilityActivation": "[{ABILITY} di {POKEMON}]",
+    "mega": "  {ITEM} di {POKEMON} reagisce alla Pietrachiave!",
+    "megaNoItem": "  {POKEMON} reagisce alla Pietrachiave di {TRAINER}!",
+    "megaGen6": "  {ITEM} di {POKEMON} reagisce al Megabracciale di {TRAINER}!",
+    "transformMega": "{POKEMON} si è megaevoluto in Mega{SPECIES}!",
+    "primal": "Archeorisveglio di {POKEMON}! È tornato alla sua forma originaria!",
+    "zPower": "  {POKEMON} si è avvolto nel potere Z!",
+    "zBroken": "  {POKEMON} non è riuscito a proteggersi del tutto ed è stato ferito!",
+    "terastallize": "  {POKEMON} si è teracristallizzato nel tipo {TYPE}!",
+    "cant": "{POKEMON} non può usare {MOVE}!",
+    "cantNoMove": "{POKEMON} non può muoversi!",
+    "fail": "  Ma non ha funzionato!",
+    "transform": "{POKEMON} si è trasformato!",
+    "typeChange": "  {POKEMON} è diventato di tipo {TYPE}!",
+    "typeChangeFromEffect": "  {EFFECT} di {POKEMON} lo ha reso di tipo {TYPE}!",
+    "typeAdd": "  Il tipo {TYPE} si è aggiunto a {POKEMON}!",
+    "start": "  ({EFFECT} ha effetto su {POKEMON}!)",
+    "end": "  {POKEMON} si è liberato da {EFFECT}!",
+    "activate": "  ({EFFECT} si è attivato!)",
+    "startTeamEffect": "  ({EFFECT} ha effetto su {TEAM}!)",
+    "endTeamEffect": "  ({EFFECT} non ha più effetto su {TEAM}!)",
+    "startFieldEffect": "  ({EFFECT} è iniziato!)",
+    "endFieldEffect": "  ({EFFECT} è terminato!)",
+    "changeAbility": "  {POKEMON} ha acquisito l’abilità {ABILITY}!",
+    "addItem": "  {POKEMON} ha ottenuto lo strumento {ITEM}.",
+    "takeItem": "  {POKEMON} ha rubato lo strumento {ITEM} a {SOURCE}!",
+    "eatItem": "  ({POKEMON} ha mangiato la sua {ITEM}!)",
+    "useGem": "  Lo strumento {ITEM} potenzia l’attacco di {POKEMON}!",
+    "eatItemWeaken": "  Lo strumento {ITEM} riduce il danno subito da {POKEMON}!",
+    "removeItem": "  {POKEMON} ha perso lo strumento {ITEM}!",
+    "activateItem": "  ({POKEMON} ha usato lo strumento {ITEM}!)",
+    "activateWeaken": "  Lo strumento {ITEM} riduce il danno subito da {POKEMON}!",
+    "damage": "  ({POKEMON} è stato ferito!)",
+    "damagePercentage": "  ({POKEMON} ha perso il {PERCENTAGE} dei PS!)",
+    "damageFromPokemon": "  {POKEMON} è stato ferito dallo strumento {ITEM} di {SOURCE}!",
+    "damageFromItem": "  {POKEMON} è stato ferito dallo strumento {ITEM}!",
+    "damageFromPartialTrapping": "  {POKEMON} subisce danni da {MOVE}!",
+    "heal": "  {POKEMON} ha recuperato PS.",
+    "healFromZEffect": "  {POKEMON} ha recuperato PS grazie al potere Z!",
+    "healFromEffect": "  {POKEMON} ha recuperato PS grazie a {EFFECT}!",
+    "boost": "  {STAT} di {POKEMON} aumenta!",
+    "boost2": "  {STAT} di {POKEMON} aumenta molto!",
+    "boost3": "  {STAT} di {POKEMON} aumenta drasticamente!",
+    "boost0": "  {STAT} di {POKEMON} non può aumentare ulteriormente!",
+    "boostFromItem": "  Lo strumento {ITEM} fa aumentare {STAT} di {POKEMON}!",
+    "boost2FromItem": "  Lo strumento {ITEM} fa aumentare molto {STAT} di {POKEMON}!",
+    "boost3FromItem": "  Lo strumento {ITEM} fa aumentare drasticamente {STAT} di {POKEMON}!",
+    "boostFromZEffect": "  Il potere Z fa aumentare {STAT} di {POKEMON}!",
+    "boost2FromZEffect": "  Il potere Z fa aumentare molto {STAT} di {POKEMON}!",
+    "boost3FromZEffect": "  Il potere Z fa aumentare drasticamente {STAT} di {POKEMON}!",
+    "boostMultipleFromZEffect": "  Il potere Z fa aumentare le statistiche di {POKEMON}!",
+    "unboost": "  {STAT} di {POKEMON} diminuisce!",
+    "unboost2": "  {STAT} di {POKEMON} diminuisce molto!",
+    "unboost3": "  {STAT} di {POKEMON} diminuisce drasticamente!",
+    "unboost0": "  {STAT} di {POKEMON} non può diminuire ulteriormente!",
+    "unboostFromItem": "  Lo strumento {ITEM} fa diminuire {STAT} di {POKEMON}!",
+    "unboost2FromItem": "  Lo strumento {ITEM} fa diminuire molto {STAT} di {POKEMON}!",
+    "unboost3FromItem": "  Lo strumento {ITEM} fa diminuire drasticamente {STAT} di {POKEMON}!",
+    "swapBoost": "  {POKEMON} scambia le modifiche alle statistiche con il bersaglio!",
+    "swapOffensiveBoost": "  {POKEMON} scambia le modifiche ad Attacco e Attacco Speciale con il bersaglio!",
+    "swapDefensiveBoost": "  {POKEMON} scambia le modifiche a Difesa e Difesa Speciale con il bersaglio!",
+    "copyBoost": "  {POKEMON} copia le modifiche alle statistiche di {TARGET}!",
+    "clearBoost": "  Le modifiche alle statistiche di {POKEMON} sono state annullate!",
+    "clearBoostFromZEffect": "  Il potere Z riporta alla normalità le statistiche ridotte di {POKEMON}!",
+    "invertBoost": "  Le modifiche alle statistiche di {POKEMON} sono state invertite!",
+    "clearAllBoost": "  Tutte le modifiche alle statistiche sono state annullate!",
+    "superEffective": "  È superefficace!",
+    "superEffectiveSpread": "  È superefficace su {POKEMON}!",
+    "resisted": "  Non è molto efficace…",
+    "resistedSpread": "  Non è molto efficace su {POKEMON}…",
+    "extremelyEffective": "  È estremamente efficace!",
+    "extremelyEffectiveSpread": "  È estremamente efficace su {POKEMON}!",
+    "mostlyIneffective": "  È quasi inefficace…",
+    "mostlyIneffectiveSpread": "  È quasi inefficace su {POKEMON}…",
+    "crit": "  Brutto colpo!",
+    "critSpread": "  Brutto colpo su {POKEMON}!",
+    "immune": "  Non ha effetto su {POKEMON}…",
+    "immuneNoPokemon": "  Non ha avuto alcun effetto!",
+    "immuneOHKO": "  {POKEMON} non ne è stato colpito!",
+    "miss": "  {POKEMON} evita l’attacco!",
+    "missNoPokemon": "  L’attacco di {SOURCE} fallisce!",
+    "center": "  Spostamento automatico al centro!",
+    "noTarget": "  Ma non c’era alcun bersaglio…",
+    "ohko": "  KO con un colpo!",
+    "combine": "  Le due mosse si sono unite! È una mossa combinata!",
+    "hitCount": "  Il Pokémon è stato colpito {NUMBER} volte!",
+    "hitCountSingular": "  Il Pokémon è stato colpito 1 volta!"
+  },
+  "hp": {
+    "statName": "i PS",
+    "statShortName": "PS"
+  },
+  "atk": {
+    "statName": "l’Attacco",
+    "statShortName": "Att"
+  },
+  "def": {
+    "statName": "la Difesa",
+    "statShortName": "Dif"
+  },
+  "spa": {
+    "statName": "l’Attacco Speciale",
+    "statShortName": "AttSp"
+  },
+  "spd": {
+    "statName": "la Difesa Speciale",
+    "statShortName": "DifSp"
+  },
+  "spe": {
+    "statName": "la Velocità",
+    "statShortName": "Vel"
+  },
+  "accuracy": {
+    "statName": "la precisione"
+  },
+  "evasion": {
+    "statName": "l’elusione"
+  },
+  "spc": {
+    "statName": "lo Speciale",
+    "statShortName": "Spe"
+  },
+  "stats": {
+    "statName": "le statistiche"
+  },
+  "brn": {
+    "start": "  {POKEMON} è stato scottato!",
+    "startFromItem": "  {POKEMON} è stato scottato dallo strumento {ITEM}!",
+    "alreadyStarted": "  {POKEMON} è già scottato!",
+    "end": "  {POKEMON} non è più scottato!",
+    "endFromItem": "  Lo strumento {ITEM} di {POKEMON} cura la scottatura!",
+    "damage": "  {POKEMON} subisce danni dalla scottatura!"
+  },
+  "frz": {
+    "start": "  {POKEMON} è stato congelato!",
+    "alreadyStarted": "  {POKEMON} è già congelato!",
+    "end": "  {POKEMON} si è scongelato!",
+    "endFromItem": "  Lo strumento {ITEM} di {POKEMON} lo scongela!",
+    "endFromMove": "  {MOVE} di {POKEMON} scioglie il ghiaccio!",
+    "cant": "{POKEMON} è congelato!"
+  },
+  "par": {
+    "start": "  {POKEMON} è paralizzato! Potrebbe non riuscire a muoversi!",
+    "alreadyStarted": "  {POKEMON} è già paralizzato!",
+    "end": "  {POKEMON} non è più paralizzato!",
+    "endFromItem": "  Lo strumento {ITEM} di {POKEMON} cura la paralisi!",
+    "cant": "{POKEMON} è paralizzato! Non riesce a muoversi!"
+  },
+  "psn": {
+    "start": "  {POKEMON} è stato avvelenato!",
+    "alreadyStarted": "  {POKEMON} è già avvelenato!",
+    "end": "  {POKEMON} non è più avvelenato!",
+    "endFromItem": "  Lo strumento {ITEM} di {POKEMON} cura l’avvelenamento!",
+    "damage": "  {POKEMON} subisce danni dal veleno!"
+  },
+  "tox": {
+    "start": "  {POKEMON} è stato gravemente avvelenato!",
+    "startFromItem": "  {POKEMON} è stato gravemente avvelenato dallo strumento {ITEM}!"
+  },
+  "slp": {
+    "start": "  {POKEMON} si è addormentato!",
+    "startFromRest": "  {POKEMON} si è addormentato ed è tornato in forma!",
+    "alreadyStarted": "  {POKEMON} sta già dormendo!",
+    "end": "  {POKEMON} si è svegliato!",
+    "endFromItem": "  Lo strumento {ITEM} di {POKEMON} lo sveglia!",
+    "cant": "{POKEMON} dorme profondamente."
+  },
+  "confusion": {
+    "start": "  {POKEMON} è confuso!",
+    "startFromFatigue": "  {POKEMON} è confuso per la stanchezza!",
+    "end": "  {POKEMON} non è più confuso!",
+    "endFromItem": "  Lo strumento {ITEM} di {POKEMON} lo libera dalla confusione!",
+    "alreadyStarted": "  {POKEMON} è già confuso!",
+    "activate": "  {POKEMON} è confuso!",
+    "damage": "È così confuso da colpirsi da solo!"
+  },
+  "drain": {
+    "heal": "  {SOURCE} ha perso energia!"
+  },
+  "flinch": {
+    "cant": "{POKEMON} tentenna e non riesce a muoversi!"
+  },
+  "heal": {
+    "fail": "  I PS di {POKEMON} sono al massimo!"
+  },
+  "healreplacement": {
+    "activate": "  {POKEMON} ripristinerà i PS del Pokémon che entrerà al suo posto grazie al potere Z!"
+  },
+  "nopp": {
+    "cant": "{POKEMON} usa {MOVE}!\n  Ma non ci sono più PP per questa mossa!"
+  },
+  "recharge": {
+    "cant": "{POKEMON} deve ricaricarsi!"
+  },
+  "recoil": {
+    "damage": "  {POKEMON} subisce il contraccolpo!"
+  },
+  "unboost": {
+    "fail": "  Le statistiche di {POKEMON} non sono diminuite!",
+    "failSingular": "  {STAT} di {POKEMON} non è diminuita!"
+  },
+  "struggle": {
+    "activate": "  {POKEMON} non ha più mosse!"
+  },
+  "trapped": {
+    "start": "  {POKEMON} non può più fuggire!"
+  },
+  "dynamax": {
+    "start": "  (Dynamax di {POKEMON}!)",
+    "end": "  ({POKEMON} è tornato normale!)",
+    "block": "  La mossa è stata bloccata dal potere del Dynamax!",
+    "fail": "  {POKEMON} scuote la testa. Sembra che non possa usare questa mossa…"
+  },
+  "sandstorm": {
+    "weatherName": "Sabbia",
+    "start": "  Si è alzata una tempesta di sabbia!",
+    "end": "  La tempesta di sabbia si è placata.",
+    "upkeep": "  (La tempesta di sabbia infuria.)",
+    "damage": "  La tempesta di sabbia colpisce {POKEMON}!"
+  },
+  "sunnyday": {
+    "weatherName": "Sole",
+    "start": "  La luce del sole è intensa!",
+    "end": "  La luce del sole è tornata normale.",
+    "upkeep": "  (La luce del sole è intensa.)"
+  },
+  "raindance": {
+    "weatherName": "Pioggia",
+    "start": "  Ha cominciato a piovere!",
+    "end": "  Ha smesso di piovere.",
+    "upkeep": "  (Continua a piovere.)"
+  },
+  "hail": {
+    "weatherName": "Grandine",
+    "start": "  Ha cominciato a grandinare!",
+    "end": "  Ha smesso di grandinare.",
+    "upkeep": "  (Continua a grandinare.)",
+    "damage": "  La grandine colpisce {POKEMON}!"
+  },
+  "snowscape": {
+    "weatherName": "Neve",
+    "start": "  Ha cominciato a nevicare!",
+    "end": "  Ha smesso di nevicare.",
+    "upkeep": "  (Continua a nevicare.)"
+  },
+  "desolateland": {
+    "weatherName": "Sole estremo",
+    "start": "  La luce del sole è estremamente intensa!",
+    "end": "  La luce del sole è tornata normale.",
+    "block": "  La luce del sole resta estremamente intensa!",
+    "blockMove": "  L’attacco di tipo Acqua è evaporato sotto la luce del sole!"
+  },
+  "primordialsea": {
+    "weatherName": "Diluvio",
+    "start": "  Ha cominciato a diluviare!",
+    "end": "  Il diluvio è cessato!",
+    "block": "  Il diluvio non accenna a smettere!",
+    "blockMove": "  L’attacco di tipo Fuoco si è spento nel diluvio!"
+  },
+  "deltastream": {
+    "weatherName": "Correnti",
+    "start": "  Misteriose correnti d’aria proteggono i Pokémon di tipo Volante!",
+    "end": "  Le misteriose correnti d’aria si sono dissolte!",
+    "activate": "  Le misteriose correnti d’aria indeboliscono l’attacco!",
+    "block": "  Le misteriose correnti d’aria continuano a soffiare!"
+  },
+  "electricterrain": {
+    "start": "  Una corrente elettrica percorre il campo di lotta!",
+    "end": "  La corrente elettrica è sparita dal campo di lotta.",
+    "block": "  {POKEMON} è protetto dal Campo Elettrico!"
+  },
+  "grassyterrain": {
+    "start": "  Il campo di lotta si è ricoperto d’erba!",
+    "end": "  L’erba è sparita dal campo di lotta.",
+    "heal": "  {POKEMON} ha recuperato PS."
+  },
+  "mistyterrain": {
+    "start": "  La nebbia avvolge il campo di lotta!",
+    "end": "  La nebbia è sparita dal campo di lotta.",
+    "block": "  {POKEMON} si avvolge in una nebbia protettiva!"
+  },
+  "psychicterrain": {
+    "start": "  Il campo di lotta è diventato strano!",
+    "end": "  Il campo di lotta è tornato normale!",
+    "block": "  {POKEMON} è protetto dal Campo Psichico!"
+  },
+  "gravity": {
+    "start": "  La gravità è aumentata!",
+    "end": "  La gravità è tornata normale!",
+    "cant": "{POKEMON} non può usare {MOVE} a causa della gravità!",
+    "activate": "{POKEMON} è caduto a terra per la gravità!"
+  },
+  "magicroom": {
+    "start": "  Si è creato uno spazio bizzarro in cui gli strumenti tenuti perdono il loro effetto!",
+    "end": "  Magicozona è svanita e gli strumenti tenuti funzionano di nuovo!"
+  },
+  "mudsport": {
+    "start": "  La potenza dell’elettricità è diminuita!",
+    "end": "  Gli effetti di Fangata sono svaniti."
+  },
+  "trickroom": {
+    "start": "  {POKEMON} ha distorto le dimensioni!",
+    "end": "  Le dimensioni distorte sono tornate normali!"
+  },
+  "watersport": {
+    "start": "  La potenza del fuoco è diminuita!",
+    "end": "  Gli effetti di Docciascudo sono svaniti."
+  },
+  "wonderroom": {
+    "start": "  Si è creato uno spazio bizzarro in cui Difesa e Difesa Speciale si scambiano!",
+    "end": "  Mirabilzona è svanita e Difesa e Difesa Speciale sono tornate normali!"
+  },
+  "crash": {
+    "damage": "  {POKEMON} ha mancato il bersaglio ed è caduto a terra!"
+  },
+  "afteryou": {
+    "activate": "  {TARGET} accetta la gentile offerta!"
+  },
+  "aquaring": {
+    "start": "  {POKEMON} si è circondato di un velo d’acqua!",
+    "heal": "  Un velo d’acqua ripristina i PS di {POKEMON}!"
+  },
+  "aromatherapy": {
+    "activate": "  Un aroma rilassante si diffonde nell’aria!"
+  },
+  "attract": {
+    "start": "  {POKEMON} si è innamorato!",
+    "startFromItem": "  {POKEMON} si è innamorato a causa dello strumento {ITEM}!",
+    "end": "  {POKEMON} non è più innamorato!",
+    "endFromItem": "  Lo strumento {ITEM} di {POKEMON} lo libera dall’infatuazione!",
+    "activate": "  {POKEMON} è innamorato di {TARGET}!",
+    "cant": "{POKEMON} è paralizzato dall’amore!"
+  },
+  "auroraveil": {
+    "start": "  Velaurora rende {TEAM} più resistente alle mosse fisiche e speciali!",
+    "end": "  L’effetto di Velaurora su {TEAM} è svanito!"
+  },
+  "autotomize": {
+    "start": "  {POKEMON} è diventato più agile!"
+  },
+  "beakblast": {
+    "start": "  {POKEMON} sta arroventando il becco!"
+  },
+  "beatup": {
+    "activate": "  Attacco di {NAME}!"
+  },
+  "bellydrum": {
+    "boost": "  {POKEMON} sacrifica PS e massimizza l’Attacco!"
+  },
+  "bestow": {
+    "takeItem": "  {SOURCE} regala lo strumento {ITEM} a {POKEMON}!"
+  },
+  "bide": {
+    "start": "  {POKEMON} sta accumulando energia!",
+    "end": "  {POKEMON} libera l’energia accumulata!",
+    "activate": "  {POKEMON} sta accumulando energia!"
+  },
+  "bind": {
+    "start": "  {SOURCE} stritola {POKEMON}!"
+  },
+  "bounce": {
+    "prepare": "{POKEMON} ha spiccato un balzo!"
+  },
+  "brickbreak": {
+    "activate": "  {POKEMON} ha distrutto le protezioni di {TEAM}!"
+  },
+  "bugbite": {
+    "removeItem": "  {SOURCE} ruba e mangia lo strumento {ITEM} del bersaglio!"
+  },
+  "burnup": {
+    "typeChange": "  Il fuoco di {POKEMON} si è esaurito!"
+  },
+  "celebrate": {
+    "activate": "  Congratulazioni, {TRAINER}!"
+  },
+  "charge": {
+    "start": "  {POKEMON} ha iniziato a caricarsi!"
+  },
+  "chillyreception": {
+    "prepare": "  {POKEMON} si prepara a raccontare una battuta da brividi!"
+  },
+  "clamp": {
+    "start": "  {SOURCE} ha intrappolato {POKEMON}!"
+  },
+  "conversion": {
+    "typeChange": "  Ha assunto il tipo di {SOURCE}!"
+  },
+  "corrosivegas": {
+    "removeItem": "  {SOURCE} ha corroso lo strumento {ITEM} di {POKEMON}!"
+  },
+  "courtchange": {
+    "activate": "  {POKEMON} ha scambiato gli effetti sui due lati del campo!"
+  },
+  "craftyshield": {
+    "start": "  Truccodifesa protegge {TEAM}!",
+    "block": "  Truccodifesa protegge {POKEMON}!"
+  },
+  "curse": {
+    "start": "  {SOURCE} sacrifica PS e lancia una maledizione su {POKEMON}!",
+    "damage": "  {POKEMON} è vittima di una maledizione!"
+  },
+  "darkvoid": {
+    "fail": "Ma {POKEMON} non può usare questa mossa!",
+    "failWrongForme": "Ma {POKEMON} non può usarla nella sua forma attuale!"
+  },
+  "destinybond": {
+    "start": "  {POKEMON} vuole trascinare con sé l’avversario!",
+    "activate": "{POKEMON} ha trascinato con sé il suo avversario!"
+  },
+  "dig": {
+    "prepare": "{POKEMON} si è nascosto sottoterra!"
+  },
+  "disable": {
+    "start": "  {MOVE} di {POKEMON} è stata bloccata!",
+    "end": "  La mossa di {POKEMON} non è più bloccata!",
+    "cant": "{MOVE} di {POKEMON} è bloccata!"
+  },
+  "dive": {
+    "prepare": "{POKEMON} si è nascosto sott’acqua!"
+  },
+  "doomdesire": {
+    "start": "  {POKEMON} ha affidato il suo destino a Obbliderio!",
+    "activate": "  {TARGET} subisce l’attacco di Obbliderio!"
+  },
+  "doubleshock": {
+    "typeChange": "  {POKEMON} ha consumato tutta la sua elettricità!"
+  },
+  "dragonascent": {
+    "megaNoItem": "  Il desiderio ardente di {TRAINER} ha raggiunto {POKEMON}!"
+  },
+  "electrify": {
+    "start": "  Le mosse di {POKEMON} sono state elettrificate!"
+  },
+  "electroshot": {
+    "prepare": "{POKEMON} ha assorbito elettricità!"
+  },
+  "embargo": {
+    "start": "  {POKEMON} non può più usare strumenti!",
+    "end": "  {POKEMON} può di nuovo usare strumenti!"
+  },
+  "encore": {
+    "start": "  {POKEMON} deve ripetere la sua mossa!",
+    "end": "  {POKEMON} non deve più ripetere la sua mossa!"
+  },
+  "endure": {
+    "start": "  {POKEMON} si prepara a resistere!",
+    "activate": "  {POKEMON} ha resistito al colpo!"
+  },
+  "fairylock": {
+    "activate": "  Nessuno potrà fuggire durante il prossimo turno!"
+  },
+  "feint": {
+    "activate": "  {TARGET} è caduto nella finta!"
+  },
+  "ficklebeam": {
+    "activate": "  {POKEMON} mette tutta la sua forza in questo attacco!"
+  },
+  "firepledge": {
+    "start": "  Un mare di fuoco circonda {TEAM}!",
+    "end": "  Il mare di fuoco attorno a {TEAM} è svanito!",
+    "damage": "  {POKEMON} subisce danni dal mare di fuoco!"
+  },
+  "firespin": {
+    "start": "  {POKEMON} è intrappolato in un vortice di fuoco!"
+  },
+  "flameburst": {
+    "damage": "  Le fiamme hanno colpito {POKEMON}!"
+  },
+  "fling": {
+    "removeItem": "  {POKEMON} ha lanciato lo strumento {ITEM}!"
+  },
+  "fly": {
+    "prepare": "{POKEMON} è volato in alto!"
+  },
+  "focusenergy": {
+    "start": "  {POKEMON} si sta caricando!",
+    "startFromItem": "  {POKEMON} usa lo strumento {ITEM} per caricarsi!",
+    "startFromZEffect": "  Il potere Z aumenta la probabilità di brutti colpi di {POKEMON}!"
+  },
+  "focuspunch": {
+    "start": "  {POKEMON} si sta concentrando!",
+    "cant": "{POKEMON} ha perso la concentrazione e non riesce a muoversi!"
+  },
+  "followme": {
+    "start": "  {POKEMON} è al centro dell’attenzione!",
+    "startFromZEffect": "  {POKEMON} è al centro dell’attenzione!"
+  },
+  "foresight": {
+    "start": "  {POKEMON} è stato identificato!"
+  },
+  "freezeshock": {
+    "prepare": "  {POKEMON} è avvolto da una luce gelida!"
+  },
+  "futuresight": {
+    "start": "  {POKEMON} ha previsto un attacco!",
+    "activate": "  {TARGET} subisce l’attacco di Divinazione!"
+  },
+  "gastroacid": {
+    "start": "  L’abilità di {POKEMON} è stata soppressa!"
+  },
+  "geomancy": {
+    "prepare": "{POKEMON} sta assorbendo energia!"
+  },
+  "gmaxcannonade": {
+    "start": "  {PARTY} sono finiti in un vortice d’acqua!",
+    "damage": "  {POKEMON} subisce danni dal vortice di G-Max Cannonata!"
+  },
+  "gmaxdepletion": {
+    "activate": "  I PP di {TARGET} sono diminuiti!"
+  },
+  "gmaxsteelsurge": {
+    "start": "  Schegge d’acciaio appuntite fluttuano attorno a {PARTY}!",
+    "end": "  Le schegge d’acciaio attorno a {PARTY} sono sparite!",
+    "damage": "  Le schegge d’acciaio appuntite colpiscono {POKEMON}!"
+  },
+  "gmaxvinelash": {
+    "start": "  {PARTY} sono intrappolati dalle liane!",
+    "damage": "  {POKEMON} subisce le frustate di G-Max Frustata!"
+  },
+  "gmaxvolcalith": {
+    "start": "  {PARTY} sono circondati dalle rocce!",
+    "damage": "  {POKEMON} subisce danni dalle rocce di G-Max Vulcalito!"
+  },
+  "gmaxwildfire": {
+    "start": "  {PARTY} sono circondati dal fuoco!",
+    "damage": "  {POKEMON} brucia tra le fiamme di G-Max Fiammeggiante!"
+  },
+  "grasspledge": {
+    "start": "  Una palude circonda {TEAM}!",
+    "end": "  La palude attorno a {TEAM} è svanita!"
+  },
+  "grudge": {
+    "activate": "  {MOVE} di {POKEMON} ha perso tutti i PP a causa del rancore!",
+    "start": "{POKEMON} vuole che il suo avversario serbi rancore!"
+  },
+  "guardsplit": {
+    "activate": "  {POKEMON} condivide le sue difese con il bersaglio!"
+  },
+  "happyhour": {
+    "activate": "  Tutti sono contagiati dall’allegria!"
+  },
+  "haze": {
+    "activate": "  Tutte le modifiche alle statistiche sono state annullate!"
+  },
+  "healbell": {
+    "activate": "  Ha suonato una campana!"
+  },
+  "healblock": {
+    "endGen8": "  L’effetto di Anticura su {POKEMON} è svanito!",
+    "cantGen8": "{POKEMON} non può usare {MOVE} a causa di Anticura!",
+    "start": "  {POKEMON} non può più curarsi!",
+    "end": "  {POKEMON} può di nuovo curarsi!",
+    "cant": "{POKEMON} non può curarsi, quindi non può usare {MOVE}!",
+    "fail": "  Ma non ha avuto effetto su {POKEMON}!"
+  },
+  "healingwish": {
+    "heal": "  Il desiderio curativo si è avverato per {POKEMON}!"
+  },
+  "helpinghand": {
+    "start": "  {SOURCE} è pronto ad aiutare {POKEMON}!"
+  },
+  "iceburn": {
+    "prepare": "  {POKEMON} è avvolto da un’aria gelida!"
+  },
+  "imprison": {
+    "start": "  {POKEMON} ha sigillato le mosse che ha in comune con il bersaglio!",
+    "cant": "{POKEMON} non può usare {MOVE} perché è sigillata!"
+  },
+  "incinerate": {
+    "removeItem": "  Lo strumento {ITEM} di {POKEMON} è andato in fumo!"
+  },
+  "infestation": {
+    "start": "  {POKEMON} è vittima dell’assillo di {SOURCE}!"
+  },
+  "ingrain": {
+    "start": "  {POKEMON} ha messo radici!",
+    "block": "  {POKEMON} è ancorato con le sue radici!",
+    "heal": "  {POKEMON} assorbe nutrienti con le radici!"
+  },
+  "instruct": {
+    "activate": "  {TARGET} segue le istruzioni di {POKEMON}!"
+  },
+  "iondeluge": {
+    "activate": "  Una pioggia di ioni si abbatte sul campo di lotta!"
+  },
+  "knockoff": {
+    "removeItem": "  {SOURCE} ha fatto cadere lo strumento {ITEM} di {POKEMON}!"
+  },
+  "laserfocus": {
+    "start": "  {POKEMON} si è concentrato intensamente!"
+  },
+  "leechseed": {
+    "start": "  {POKEMON} è stato infettato!",
+    "end": "  {POKEMON} si è liberato da Parassiseme!",
+    "damage": "  Parassiseme sottrae energia a {POKEMON}!"
+  },
+  "lightscreen": {
+    "startGen1": "  {POKEMON} è protetto dagli attacchi speciali!",
+    "start": "  Schermoluce rende {TEAM} più resistente alle mosse speciali!",
+    "end": "  L’effetto di Schermoluce su {TEAM} è svanito!"
+  },
+  "lockon": {
+    "start": "  {SOURCE} ha preso di mira {POKEMON}!"
+  },
+  "luckychant": {
+    "start": "  Fortuncanto protegge {TEAM} dai brutti colpi!",
+    "end": "  L’effetto di Fortuncanto su {TEAM} è svanito!"
+  },
+  "lunardance": {
+    "heal": "  {POKEMON} è avvolto da una mistica luce lunare!"
+  },
+  "magiccoat": {
+    "start": "  {POKEMON} si è avvolto in Magivelo!",
+    "move": "{POKEMON} ha respinto {MOVE}!"
+  },
+  "magmastorm": {
+    "start": "  {POKEMON} è intrappolato in un vortice di magma!"
+  },
+  "magnetrise": {
+    "start": "  {POKEMON} levita grazie all’elettromagnetismo!",
+    "end": "  L’elettromagnetismo di {POKEMON} è svanito!"
+  },
+  "magnitude": {
+    "activate": "  Magnitudo {NUMBER}!"
+  },
+  "matblock": {
+    "start": "  {POKEMON} si prepara a sollevare un tappeto per bloccare gli attacchi!",
+    "block": "  {MOVE} è stata bloccata dal tappeto!"
+  },
+  "maxguard": {
+    "activate": "  {POKEMON} si protegge!"
+  },
+  "memento": {
+    "heal": "  Il potere Z ripristina i PS di {POKEMON}!"
+  },
+  "meteorbeam": {
+    "prepare": "{POKEMON} trabocca di energia cosmica!"
+  },
+  "metronome": {
+    "move": "Agitando il dito usa {MOVE}!"
+  },
+  "mimic": {
+    "start": "  {POKEMON} ha imparato {MOVE}!"
+  },
+  "mindblown": {
+    "damage": "  ({POKEMON} sacrifica PS per potenziare la sua mossa!)"
+  },
+  "mist": {
+    "startGen2": "  {POKEMON} è avvolto dalla NEBBIA!",
+    "blockGen2": "  {POKEMON} è protetto dalla NEBBIA.",
+    "startGen1": "  {POKEMON} è avvolto dalla nebbia!",
+    "blockGen1": "  Ma non ha funzionato!",
+    "start": "  {TEAM} è avvolta dalla nebbia!",
+    "end": "  {TEAM} non è più protetta dalla nebbia!",
+    "block": "  {POKEMON} è protetto dalla nebbia!"
+  },
+  "naturepower": {
+    "move": "Naturforza si trasforma in {MOVE}!"
+  },
+  "nightmare": {
+    "start": "  {POKEMON} ha cominciato ad avere incubi!",
+    "damage": "  {POKEMON} è prigioniero di un incubo!"
+  },
+  "noretreat": {
+    "start": "  {POKEMON} non può più fuggire perché ha usato Spalle al Muro!"
+  },
+  "octolock": {
+    "start": "  {POKEMON} non può più fuggire a causa di Tentacolock!"
+  },
+  "painsplit": {
+    "activate": "  I lottatori condividono il dolore!"
+  },
+  "payday": {
+    "activate": "  Ci sono monete sparse ovunque!"
+  },
+  "perishsong": {
+    "start": "  Tutti i Pokémon che hanno sentito il canto finiranno KO in tre turni!",
+    "activate": "  Il conto alla rovescia di {POKEMON} è sceso a {NUMBER}."
+  },
+  "poltergeist": {
+    "activate": "  {POKEMON} sta per essere attaccato dal suo strumento {ITEM}!"
+  },
+  "powder": {
+    "start": "  {POKEMON} è ricoperto di polvere!",
+    "activate": "  La polvere sul Pokémon è esplosa a contatto con le fiamme!"
+  },
+  "powersplit": {
+    "activate": "  {POKEMON} condivide la sua forza con il bersaglio!"
+  },
+  "powershift": {
+    "start": "  {POKEMON} scambia le statistiche offensive con quelle difensive!"
+  },
+  "powertrick": {
+    "start": "  {POKEMON} scambia Attacco e Difesa!"
+  },
+  "protect": {
+    "start": "  {POKEMON} si protegge!",
+    "block": "  {POKEMON} si protegge!"
+  },
+  "pursuit": {
+    "activate": "  ({TARGET} sta per essere richiamato…)"
+  },
+  "quash": {
+    "activate": "  La mossa di {TARGET} è stata posticipata!"
+  },
+  "quickguard": {
+    "start": "  Anticipo protegge {TEAM}!",
+    "block": "  Anticipo protegge {POKEMON}!"
+  },
+  "ragingbull": {
+    "activate": "  {POKEMON} ha distrutto le protezioni di {TEAM}!"
+  },
+  "razorwind": {
+    "prepare": "  {POKEMON} ha creato un vortice d’aria!"
+  },
+  "recycle": {
+    "addItem": "  {POKEMON} ha trovato lo strumento {ITEM}!"
+  },
+  "reflect": {
+    "startGen1": "  {POKEMON} si è corazzato!",
+    "start": "  Riflesso rende {TEAM} più resistente alle mosse fisiche!",
+    "end": "  L’effetto di Riflesso su {TEAM} è svanito!"
+  },
+  "reflecttype": {
+    "typeChange": "  {POKEMON} ha assunto lo stesso tipo di {SOURCE}!"
+  },
+  "revivalblessing": {
+    "heal": "  {POKEMON} è tornato in sé ed è pronto a lottare di nuovo!"
+  },
+  "roleplay": {
+    "changeAbility": "  {POKEMON} copia l’abilità {ABILITY} di {SOURCE}!"
+  },
+  "roost": {
+    "start": "  ({POKEMON} perde il tipo Volante per questo turno.)"
+  },
+  "safeguard": {
+    "start": "  {TEAM} si è avvolta in un velo mistico!",
+    "end": "  {TEAM} non è più protetta da Salvaguardia!",
+    "block": "  {POKEMON} è protetto da Salvaguardia!"
+  },
+  "saltcure": {
+    "start": "  {POKEMON} è sotto sale!",
+    "damage": "  {POKEMON} subisce danni da Sotto Sale!"
+  },
+  "sandtomb": {
+    "start": "  {POKEMON} è intrappolato nelle sabbie mobili!"
+  },
+  "shadowforce": {
+    "activate": "  Ha superato la protezione di {TARGET}!",
+    "prepare": "{POKEMON} è sparito all’improvviso!"
+  },
+  "shedtail": {
+    "start": "  {POKEMON} si è staccato la coda per creare un’esca!"
+  },
+  "shelltrap": {
+    "start": "  {POKEMON} ha preparato una trappola col guscio!",
+    "prepare": "  {POKEMON} ha preparato una trappola col guscio!",
+    "cant": "La trappola col guscio di {POKEMON} non è scattata!"
+  },
+  "sketch": {
+    "activate": "  {POKEMON} ha schizzato {MOVE}!"
+  },
+  "skillswap": {
+    "activate": "  {POKEMON} scambia la sua abilità con quella del bersaglio!"
+  },
+  "skullbash": {
+    "prepare": "{POKEMON} ha abbassato la testa!"
+  },
+  "skyattack": {
+    "prepare": "{POKEMON} è avvolto da una luce accecante!"
+  },
+  "skydrop": {
+    "prepare": "{POKEMON} ha portato in cielo {TARGET}!",
+    "end": "  {POKEMON} si è liberato da Cadutalibera!",
+    "failSelect": "Cadutalibera non lascia andare {POKEMON}!",
+    "failTooHeavy": "  {POKEMON} è troppo pesante per essere sollevato!"
+  },
+  "smackdown": {
+    "start": "  {POKEMON} è caduto a terra!"
+  },
+  "snaptrap": {
+    "start": "  {POKEMON} è finito in una tagliola!"
+  },
+  "snatch": {
+    "start": "  {POKEMON} aspetta che il bersaglio faccia una mossa!",
+    "activate": "  {POKEMON} ha rubato la mossa di {TARGET}!"
+  },
+  "solarbeam": {
+    "prepare": "  {POKEMON} ha assorbito la luce!"
+  },
+  "spectralthief": {
+    "clearBoost": "  {SOURCE} ha rubato gli aumenti alle statistiche del bersaglio!"
+  },
+  "speedswap": {
+    "activate": "  {POKEMON} scambia la sua Velocità con quella del bersaglio!"
+  },
+  "spikes": {
+    "start": "  Il terreno attorno a {TEAM} è disseminato di punte!",
+    "end": "  Le punte attorno a {TEAM} sono sparite!",
+    "damage": "  {POKEMON} è stato ferito dalle punte!"
+  },
+  "spite": {
+    "activate": "  I PP di {MOVE} di {TARGET} sono diminuiti di {NUMBER}!"
+  },
+  "splash": {
+    "activate": "  Ma non succede nulla!"
+  },
+  "stealthrock": {
+    "start": "  Rocce aguzze fluttuano attorno a {TEAM}!",
+    "end": "  Le rocce aguzze attorno a {TEAM} sono sparite!",
+    "damage": "  Rocce aguzze colpiscono {POKEMON}!"
+  },
+  "stickyweb": {
+    "start": "  Una rete vischiosa si stende sul terreno attorno a {TEAM}!",
+    "end": "  La rete vischiosa attorno a {TEAM} è sparita!",
+    "activate": "  {POKEMON} è rimasto impigliato in una rete vischiosa!"
+  },
+  "stockpile": {
+    "start": "  {POKEMON} ha accumulato {NUMBER} volte!",
+    "end": "  L’effetto di Accumulo di {POKEMON} è svanito!"
+  },
+  "substitute": {
+    "start": "  {POKEMON} ha creato un sostituto!",
+    "alreadyStarted": "  {POKEMON} ha già un sostituto!",
+    "end": "  Il sostituto di {POKEMON} è svanito!",
+    "fail": "  Ma non ha abbastanza PS per creare un sostituto!",
+    "activate": "  Il sostituto subisce il danno al posto di {POKEMON}!"
+  },
+  "syrupbomb": {
+    "start": "  {POKEMON} è ricoperto di sciroppo appiccicoso!"
+  },
+  "tailwind": {
+    "start": "  Ventoincoda soffia alle spalle di {TEAM}!",
+    "end": "  Ventoincoda alle spalle di {TEAM} si è placato!"
+  },
+  "tarshot": {
+    "start": "  {POKEMON} è diventato più vulnerabile al fuoco!"
+  },
+  "taunt": {
+    "start": "  {POKEMON} cede alla provocazione!",
+    "end": "  {POKEMON} non è più provocato!",
+    "cant": "{POKEMON} non può usare {MOVE} a causa della provocazione!"
+  },
+  "teatime": {
+    "activate": "  È l’ora del tè! Tutti mangiano le loro bacche!",
+    "fail": "  Ma non succede nulla!"
+  },
+  "telekinesis": {
+    "start": "  {POKEMON} è stato sollevato in aria!",
+    "end": "  {POKEMON} si è liberato dalla telecinesi!"
+  },
+  "throatchop": {
+    "cant": "Gli effetti di Colpo Infernale impediscono a {POKEMON} di usare alcune mosse!"
+  },
+  "thundercage": {
+    "start": "  {SOURCE} ha intrappolato {POKEMON}!"
+  },
+  "tidyup": {
+    "activate": "  Riordino completato!"
+  },
+  "torment": {
+    "start": "  {POKEMON} è vittima di Attaccalite!",
+    "end": "  {POKEMON} non è più tormentato!"
+  },
+  "toxicspikes": {
+    "start": "  Il terreno attorno a {TEAM} è disseminato di punte velenose!",
+    "end": "  Le punte velenose attorno a {TEAM} sono sparite!"
+  },
+  "transform": {
+    "transform": "{POKEMON} si è trasformato in {SPECIES}!"
+  },
+  "trick": {
+    "activate": "  {POKEMON} scambia il suo strumento con quello del bersaglio!"
+  },
+  "uproar": {
+    "start": "  {POKEMON} sta facendo baccano!",
+    "end": "  {POKEMON} si è calmato.",
+    "upkeep": "  {POKEMON} continua a fare baccano!",
+    "block": "  Ma il baccano tiene sveglio {POKEMON}!",
+    "blockSelf": "  {POKEMON} non riesce a dormire con questo baccano!"
+  },
+  "uturn": {
+    "switchOut": "{POKEMON} torna da {TRAINER}!"
+  },
+  "waterpledge": {
+    "activate": "  {POKEMON} aspetta la mossa di {TARGET}…",
+    "start": "  Un arcobaleno è apparso nel cielo dal lato di {TEAM}!",
+    "end": "  L’arcobaleno dal lato di {TEAM} è sparito!"
+  },
+  "weatherball": {
+    "move": "Carica Travolgente si trasforma in {MOVE} a causa del tempo atmosferico!"
+  },
+  "whirlpool": {
+    "start": "  {POKEMON} è intrappolato nel vortice!"
+  },
+  "wideguard": {
+    "start": "  Bodyguard protegge {TEAM}!",
+    "block": "  Bodyguard protegge {POKEMON}!"
+  },
+  "wish": {
+    "heal": "  Il desiderio di {NICKNAME} si è avverato!"
+  },
+  "wrap": {
+    "start": "  {SOURCE} ha avvolto {POKEMON}!",
+    "move": "L’attacco di {POKEMON} continua!"
+  },
+  "yawn": {
+    "start": "  {POKEMON} è diventato sonnolento!"
+  },
+  "aftermath": {
+    "damage": "  {POKEMON} è stato ferito!"
+  },
+  "airlock": {
+    "start": "  Gli effetti del tempo atmosferico sono svaniti."
+  },
+  "angerpoint": {
+    "boost": "  {POKEMON} ha massimizzato l’Attacco!"
+  },
+  "anticipation": {
+    "activate": "  {POKEMON} rabbrividisce!"
+  },
+  "aromaveil": {
+    "block": "  {POKEMON} è protetto da un velo aromatico!"
+  },
+  "asone": {
+    "start": "  {POKEMON} ha due abilità!"
+  },
+  "aurabreak": {
+    "start": "  {POKEMON} ha invertito le aure di tutti gli altri Pokémon!"
+  },
+  "baddreams": {
+    "damage": "  {POKEMON} è tormentato!"
+  },
+  "battlebond": {
+    "activate": "  {POKEMON} è carico di energia grazie al legame con il suo Allenatore!",
+    "transform": "{POKEMON} è diventato Greninja-Ash!"
+  },
+  "beadsofruin": {
+    "start": "  Monile Nefasto di {POKEMON} indebolisce la Difesa Speciale di tutti i Pokémon circostanti!"
+  },
+  "comatose": {
+    "start": "  {POKEMON} è nel dormiveglia!"
+  },
+  "commander": {
+    "activate": "  {POKEMON} è stato inghiottito da {TARGET} ed è diventato il comandante di {TARGET}!"
+  },
+  "damp": {
+    "block": "  {SOURCE} non può usare {MOVE}!"
+  },
+  "darkaura": {
+    "start": "  {POKEMON} emana un’aura oscura!"
+  },
+  "disguise": {
+    "block": "  Il travestimento gli ha fatto da esca!",
+    "transform": "Il travestimento di {POKEMON} è stato smascherato!"
+  },
+  "dryskin": {
+    "damage": "  ({POKEMON} subisce danni da Pellearsa.)"
+  },
+  "electromorphosis": {
+    "start": "  Colpito da {MOVE}, {POKEMON} si è caricato di energia!"
+  },
+  "embodyaspectcornerstone": {
+    "boost": "  La Maschera Fondamenta di {POKEMON} brilla intensamente e la Difesa di {POKEMON} aumenta!"
+  },
+  "embodyaspecthearthflame": {
+    "boost": "  La Maschera Focolare di {POKEMON} brilla intensamente e l’Attacco di {POKEMON} aumenta!"
+  },
+  "embodyaspectteal": {
+    "boost": "  La Maschera Turchese di {POKEMON} brilla intensamente e la Velocità di {POKEMON} aumenta!"
+  },
+  "embodyaspectwellspring": {
+    "boost": "  La Maschera Pozzo di {POKEMON} brilla intensamente e la Difesa Speciale di {POKEMON} aumenta!"
+  },
+  "fairyaura": {
+    "start": "  {POKEMON} emana un’aura fatata!"
+  },
+  "flashfire": {
+    "start": "  La potenza delle mosse di tipo Fuoco di {POKEMON} è aumentata!"
+  },
+  "flowerveil": {
+    "block": "  {POKEMON} si è avvolto in un velo di petali!"
+  },
+  "forewarn": {
+    "activate": "  {MOVE} di {TARGET} è stata svelata!",
+    "activateNoTarget": "  Premonizione di {POKEMON} ha svelato {MOVE}!"
+  },
+  "frisk": {
+    "activate": "  {POKEMON} ha perquisito {TARGET} e ha trovato lo strumento {ITEM}!",
+    "activateNoTarget": "  {POKEMON} ha perquisito il bersaglio e ha trovato lo strumento {ITEM}!"
+  },
+  "hadronengine": {
+    "start": "  {POKEMON} crea un Campo Elettrico e mette in moto il suo motore futuristico!",
+    "activate": "  {POKEMON} sfrutta il Campo Elettrico per mettere in moto il suo motore futuristico!"
+  },
+  "harvest": {
+    "addItem": "  {POKEMON} ha raccolto lo strumento {ITEM}!"
+  },
+  "hospitality": {
+    "heal": "  {POKEMON} ha bevuto tutto il tè matcha preparato da {SOURCE}!"
+  },
+  "illusion": {
+    "end": "  L’illusione di {POKEMON} è svanita!"
+  },
+  "lightningrod": {
+    "activate": "  {POKEMON} attira l’attacco!"
+  },
+  "lingeringaroma": {
+    "changeAbility": "  Un odore tenace impregna {TARGET}!"
+  },
+  "liquidooze": {
+    "damage": "  {POKEMON} ha assorbito la melma!"
+  },
+  "mimicry": {
+    "activate": "  {POKEMON} è tornato al suo tipo originale!"
+  },
+  "moldbreaker": {
+    "start": "  {POKEMON} rompe gli schemi!"
+  },
+  "mummy": {
+    "changeAbility": "  L’abilità di {TARGET} è diventata Mummia!"
+  },
+  "naturalcure": {
+    "activate": "  ({POKEMON} è stato curato da Alternacura!)"
+  },
+  "neutralizinggas": {
+    "start": "  Un gas reagente si diffonde nell’area!",
+    "end": "  Gli effetti del gas reagente sono svaniti!"
+  },
+  "orichalcumpulse": {
+    "start": "  {POKEMON} intensifica la luce del sole e fa pulsare il suo ritmo ancestrale!",
+    "activate": "  {POKEMON} si crogiola alla luce del sole e fa pulsare il suo ritmo ancestrale!"
+  },
+  "perishbody": {
+    "start": "  Entrambi i Pokémon finiranno KO in tre turni!"
+  },
+  "powerconstruct": {
+    "activate": "  Si percepisce la presenza di molti!",
+    "transform": "{POKEMON} ha assunto la sua Forma Perfetta!"
+  },
+  "pressure": {
+    "start": "  {POKEMON} esercita pressione!"
+  },
+  "protosynthesis": {
+    "activate": "  La luce del sole intensa attiva Paleoattivazione di {POKEMON}!",
+    "activateFromItem": "  {POKEMON} usa la Capsula energetica per attivare Paleoattivazione!",
+    "start": "  {STAT} di {POKEMON} è stata potenziata!",
+    "end": "  Gli effetti di Paleoattivazione di {POKEMON} sono svaniti!"
+  },
+  "quarkdrive": {
+    "activate": "  Il Campo Elettrico attiva Carica Quark di {POKEMON}!",
+    "activateFromItem": "  {POKEMON} usa la Capsula energetica per attivare Carica Quark!",
+    "start": "  {STAT} di {POKEMON} è stata potenziata!",
+    "end": "  Gli effetti di Carica Quark di {POKEMON} sono svaniti!"
+  },
+  "quickdraw": {
+    "activate": "  Grazie a Colpolesto {POKEMON} agisce più rapidamente!"
+  },
+  "receiver": {
+    "changeAbility": "  L’abilità {ABILITY} di {SOURCE} è stata ereditata!"
+  },
+  "roughskin": {
+    "damage": "  {POKEMON} è stato ferito!"
+  },
+  "schooling": {
+    "transform": "{POKEMON} ha formato un banco!",
+    "transformEnd": "Il banco di {POKEMON} si è disperso!"
+  },
+  "shieldsdown": {
+    "transform": "Scudosoglia si è disattivato!\n({POKEMON} ha abbandonato il guscio.)",
+    "transformEnd": "Scudosoglia si è attivato!\n({POKEMON} si è protetto nel guscio.)"
+  },
+  "slowstart": {
+    "start": "  {POKEMON} non riesce a ingranare!",
+    "end": "  {POKEMON} ha finalmente ingranato!"
+  },
+  "stancechange": {
+    "transform": "Passaggio a Forma Spada!",
+    "transformEnd": "Passaggio a Forma Scudo!"
+  },
+  "stickyhold": {
+    "block": "  Lo strumento di {POKEMON} non può essere rimosso!"
+  },
+  "sturdy": {
+    "activate": "  {POKEMON} ha resistito al colpo!"
+  },
+  "suctioncups": {
+    "block": "  {POKEMON} è ancorato con le sue ventose!"
+  },
+  "supersweetsyrup": {
+    "start": "  Dallo sciroppo che ricopre {POKEMON} emana un aroma dolcissimo!"
+  },
+  "supremeoverlord": {
+    "activate": "  {POKEMON} trae forza dai compagni caduti!"
+  },
+  "sweetveil": {
+    "block": "  Un velo dolce impedisce a {POKEMON} di addormentarsi!"
+  },
+  "swordofruin": {
+    "start": "  Spada Nefasta di {POKEMON} indebolisce la Difesa di tutti i Pokémon circostanti!"
+  },
+  "symbiosis": {
+    "activate": "  {POKEMON} ha condiviso lo strumento {ITEM} con {TARGET}!"
+  },
+  "tabletsofruin": {
+    "start": "  Amuleto Nefasto di {POKEMON} indebolisce l’Attacco di tutti i Pokémon circostanti!"
+  },
+  "telepathy": {
+    "block": "  {POKEMON} non può essere colpito dagli attacchi dei suoi alleati!"
+  },
+  "terashell": {
+    "activate": "  {POKEMON} fa brillare il guscio! Sta alterando l’efficacia dei tipi!"
+  },
+  "terashift": {
+    "transform": "{POKEMON} si è trasformato!"
+  },
+  "teravolt": {
+    "start": "  {POKEMON} emana un’aura crepitante!"
+  },
+  "trace": {
+    "changeAbility": "  {POKEMON} ricalca l’abilità {ABILITY} di {SOURCE}!"
+  },
+  "truant": {
+    "cant": "{POKEMON} sta poltrendo!"
+  },
+  "turboblaze": {
+    "start": "  {POKEMON} emana un’aura ardente!"
+  },
+  "unnerve": {
+    "start": "  {TEAM} è troppo nervosa per mangiare le bacche!"
+  },
+  "vesselofruin": {
+    "start": "  Vaso Nefasto di {POKEMON} indebolisce l’Attacco Speciale di tutti i Pokémon circostanti!"
+  },
+  "zenmode": {
+    "transform": "Stato Zen attivato!",
+    "transformEnd": "Stato Zen disattivato!"
+  },
+  "zerotohero": {
+    "activate": "  {POKEMON} ha subito una trasformazione eroica!"
+  },
+  "persistent": {
+    "activate": "  {POKEMON} prolunga {MOVE} di 2 turni!"
+  },
+  "abilityshield": {
+    "block": "  L’abilità di {POKEMON} è protetta dallo Scudo abilità!"
+  },
+  "airballoon": {
+    "start": "  {POKEMON} fluttua in aria grazie al Palloncino!",
+    "end": "  Il Palloncino di {POKEMON} è scoppiato!"
+  },
+  "blacksludge": {
+    "heal": "  {POKEMON} recupera un po’ di PS grazie al Fangopece!"
+  },
+  "clearamulet": {
+    "block": "  Il Ciondolochiaro di {POKEMON} impedisce che le sue statistiche diminuiscano!"
+  },
+  "custapberry": {
+    "activate": "  Grazie alla Baccacrela, {POKEMON} agisce prima del solito!"
+  },
+  "ejectbutton": {
+    "end": "  Il Pulsantefuga fa rientrare {POKEMON}!"
+  },
+  "ejectpack": {
+    "end": "  Lo Zainofuga fa rientrare {POKEMON}!"
+  },
+  "focusband": {
+    "activate": "  {POKEMON} resiste grazie alla Bandana!"
+  },
+  "focussash": {
+    "end": "  {POKEMON} resiste grazie al Focalnastro!"
+  },
+  "leftovers": {
+    "heal": "  {POKEMON} recupera un po’ di PS grazie agli Avanzi!"
+  },
+  "leppaberry": {
+    "activate": "  {POKEMON} ripristina i PP di {MOVE} grazie alla Baccamela!"
+  },
+  "lifeorb": {
+    "damage": "  {POKEMON} ha perso un po’ di PS!"
+  },
+  "mirrorherb": {
+    "activate": "  {POKEMON} usa l’Erbacopia per copiare le modifiche alle statistiche dell’avversario!"
+  },
+  "powerherb": {
+    "end": "  {POKEMON} è carico di energia grazie alla Vigorerba!"
+  },
+  "protectivepads": {
+    "block": "  {POKEMON} si protegge con lo Smorzaurti!"
+  },
+  "quickclaw": {
+    "activate": "  Grazie al Rapidartigli, {POKEMON} agisce prima del solito!"
+  },
+  "redcard": {
+    "end": "  {POKEMON} mostra il Cartelrosso a {TARGET}!"
+  },
+  "rockyhelmet": {
+    "damage": "  {POKEMON} è stato ferito dal Bitorzolelmo!"
+  },
+  "safetygoggles": {
+    "block": "  {MOVE} non ha effetto su {POKEMON} grazie al Visierantisabbia!"
+  },
+  "shellbell": {
+    "heal": "  {POKEMON} recupera un po’ di PS grazie alla Conchinella!"
+  },
+  "ultranecroziumz": {
+    "transform": "  Una luce accecante sta per sprigionarsi da {POKEMON}!",
+    "activate": "{POKEMON} ha ritrovato il suo vero potere grazie all’Ultraesplosione!"
+  },
+  "whiteherb": {
+    "end": "  {POKEMON} riporta alla normalità le sue statistiche grazie all’Erbachiara!"
+  },
+  "mysteryberry": {
+    "activate": "  {POKEMON} ripristina i PP di {MOVE} grazie alla sua bacca!"
+  },
+  "pokeiq": {
+    "start4": "Inizia la lotta tra {A}, {B}, {C} e {D}!",
+    "startMulti": "Inizia la lotta tra {A} e {C} contro {B} e {D}!",
+    "format": "Formato: **{FORMAT}**",
+    "hp": "{PCT}%",
+    "hpStatus": "{PCT}% · {STATUS}",
+    "switchNote": "{LINE} ({NOTE})",
+    "forfeited": "{NAME} si è arreso.",
+    "secondsLeftTurn": "A {NAME} restano {N} secondi per questo turno.",
+    "secondsLeft": "A {NAME} restano {N} secondi.",
+    "timerOn": "Il timer è ATTIVO: chi resta senza tempo perde automaticamente. (Richiesto da {NAME})",
+    "timerAlso": "Anche {NAME} vuole il timer attivo.",
+    "timerStays": "{NAME} non vuole più il timer, ma resta attivo perché {OTHERS} lo vuole ancora.",
+    "timerOff": "Il timer ora è DISATTIVATO.",
+    "allInactive": "Tutti i giocatori sono inattivi.",
+    "lostInactive": "{NAME} ha perso per inattività.",
+    "sleepClause": "È scattata la clausola del sonno.",
+    "freezeClause": "È scattata la clausola del congelamento.",
+    "endlessBattle": "La lotta non può proseguire. È scattata la clausola della lotta infinita!",
+    "status": {
+      "brn": "SCO",
+      "par": "PAR",
+      "psn": "AVV",
+      "tox": "IPV",
+      "slp": "SON",
+      "frz": "CON"
+    },
+    "rules": {
+      "speciesclause": "Clausola della specie: un solo Pokémon per specie",
+      "itemclause": "Clausola degli strumenti: al massimo {N} di ogni strumento",
+      "hppercentagemod": "PS in percentuale: i PS sono mostrati in percentuale",
+      "exacthpmod": "PS esatti: sono mostrati i PS esatti",
+      "sleepclausemod": "Clausola del sonno: un solo Pokémon avversario addormentato alla volta",
+      "stadiumsleepclause": "Clausola del sonno di Stadium: un solo Pokémon avversario addormentato alla volta",
+      "freezeclausemod": "Clausola del congelamento: un solo Pokémon avversario congelato alla volta",
+      "illusionlevelmod": "Livello di Illusione: Illusione nasconde anche il vero livello del Pokémon",
+      "beatupnicknamesmod": "Picchiaduro senza soprannomi: Picchiaduro non rivela gli altri membri della squadra",
+      "endlessbattleclause": "Clausola della lotta infinita: vietato forzare lotte senza fine",
+      "switchpriorityclausemod": "Priorità di cambio: il Pokémon più veloce cambia per primo",
+      "desyncclausemod": "Clausola di desincronizzazione: le desincronizzazioni si risolvono come nella lotta in link, dal punto di vista del giocatore che agisce.",
+      "ohkoclause": "Clausola del KO in un colpo: vietate le mosse che mettono KO in un colpo",
+      "evasionclause": "Clausola dell’elusione: vietate abilità, strumenti e mosse che aumentano l’elusione",
+      "evasionabilitiesclause": "Clausola delle abilità di elusione: vietate le abilità che aumentano l’elusione",
+      "evasionitemsclause": "Clausola degli strumenti di elusione: vietati gli strumenti che aumentano l’elusione",
+      "evasionmovesclause": "Clausola delle mosse di elusione: vietate le mosse che aumentano l’elusione",
+      "accuracymovesclause": "Clausola della precisione: vietate le mosse che riducono la precisione",
+      "sleepmovesclause": "Clausola delle mosse del sonno: vietate le mosse che fanno addormentare",
+      "onebatonpassclause": "Clausola di Staffetta: un solo Pokémon con Staffetta",
+      "sametypeclause": "Clausola del tipo unico: i Pokémon della squadra devono condividere un tipo",
+      "megarayquazaclause": "Clausola Mega-Rayquaza: Rayquaza non può megaevolversi",
+      "dynamaxclause": "Clausola Dynamax: non si può dynamaxizzare",
+      "terastalclause": "Clausola della teracristallizzazione: non si può teracristallizzare",
+      "teratypepreview": "Anteprima teratipi: i teratipi sono mostrati nell’anteprima della squadra"
+    }
+  }
+}

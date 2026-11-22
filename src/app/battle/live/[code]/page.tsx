@@ -2,11 +2,15 @@ import type { Metadata } from "next";
 import { inviteMetadata } from "@/lib/seo";
 import { cache } from "react";
 import { notFound } from "next/navigation";
-import { redirect } from "@/i18n/server";
+import { redirect, serverT } from "@/i18n/server";
 import { BattleRoom } from "@/components/battle/BattleRoom";
+import { BattleRoomMessages } from "@/components/battle/BattleRoomMessages";
 import { peekBattle } from "@/lib/server/battle-engine/store";
 import { DUEL_CODE_RE } from "@/lib/duel-types";
-import { PLAY_FORMAT_INFO, battleHref } from "@/lib/battle/play";
+import { battleHref } from "@/lib/battle/play";
+import { formatName } from "@/lib/battle/format-labels";
+import pagesNs from "@/messages/battle-room-pages";
+import formatsNs from "@/messages/battle-formats";
 
 interface PageProps {
   params: Promise<{ code: string }>;
@@ -17,12 +21,13 @@ const findBattle = cache(peekBattle);
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { code } = await params;
+  const t = serverT(pagesNs);
   const battle = DUEL_CODE_RE.test(code) ? await findBattle(code) : null;
-  if (!battle) return inviteMetadata("A live Pokémon battle", "A live Pokémon battle on Pokémon Showdown's engine. Open the link, pick a name and battle.");
+  if (!battle) return inviteMetadata(t("live.title"), t("live.description"));
   const [host, guest] = battle.names;
-  const format = PLAY_FORMAT_INFO[battle.format].name;
-  const title = guest ? `${host} vs ${guest}: a live Pokémon battle` : `${host || "A trainer"} challenges you to a live Pokémon battle`;
-  return inviteMetadata(title, `${format}, live on Pokémon Showdown's engine. Open the link, pick a name and battle.`);
+  const format = formatName(serverT(formatsNs), battle.format);
+  const title = guest ? t("live.titleVs", { host, guest }) : t("live.titleHost", { host: host || t("live.aTrainer") });
+  return inviteMetadata(title, t("live.descriptionFormat", { format }));
 }
 
 export default async function LiveBattlePage({ params }: PageProps) {
@@ -34,7 +39,9 @@ export default async function LiveBattlePage({ params }: PageProps) {
   if (battle && battle.kind !== "pvp") redirect(battleHref(battle.kind, code));
   return (
     <div className="mx-auto max-w-7xl">
-      <BattleRoom key={code} code={code} />
+      <BattleRoomMessages>
+        <BattleRoom key={code} code={code} />
+      </BattleRoomMessages>
     </div>
   );
 }

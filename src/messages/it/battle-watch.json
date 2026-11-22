@@ -1,0 +1,25 @@
+{
+  "ranked": "Classificata",
+  "cpu": "CPU",
+  "multi": "Lotta multipla · 2 contro 2",
+  "ffa": "Tutti contro tutti · 4 Allenatori",
+  "vs": "VS",
+  "turn": "Turno {n}",
+  "watching": "{n} spettatori",
+  "started": "Iniziata {ago}",
+  "watch": "Guarda →",
+  "ago": {
+    "now": "proprio ora",
+    "min": "{m} min fa",
+    "hours": "{h} h {m} min fa"
+  },
+  "loadError": "Impossibile caricare le lotte dal vivo.",
+  "filter": "Filtra per formato",
+  "all": "Tutti i formati",
+  "refreshes": "Si aggiorna da sola",
+  "loading": "Caricamento delle lotte dal vivo",
+  "noneIn": "Nessuna lotta dal vivo in {format}",
+  "noneNow": "Nessuna lotta dal vivo in questo momento",
+  "noneBlurb": "Le lotte trovate con la ricerca avversario compaiono qui appena iniziano. Iniziane una e gli altri potranno guardarti.",
+  "find": "Trova un avversario"
+}

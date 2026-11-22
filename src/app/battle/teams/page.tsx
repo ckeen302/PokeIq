@@ -9,6 +9,7 @@ import battleTeams from "@/messages/battle-teams";
 import battleTeamInsights from "@/messages/battle-team-insights";
 import battleTerms from "@/messages/battle-terms";
 import battlePickers from "@/messages/battle-pickers";
+import battleInputs from "@/messages/battle-inputs";
 
 export function generateMetadata(): Metadata {
   const t = serverT(battlePages);
@@ -27,7 +28,7 @@ export default function TeamsPage() {
       <BattleHeader crumb={t("teams.crumb")} title={t("teams.heading")} accent={t("teams.accent")}>
         {t("teams.intro")}
       </BattleHeader>
-      <ClientMessages namespaces={[battleTeams, battleTeamInsights, battleTerms, battlePickers]}>
+      <ClientMessages namespaces={[battleTeams, battleTeamInsights, battleTerms, battlePickers, battleInputs]}>
         <TeamBuilder />
       </ClientMessages>
     </div>

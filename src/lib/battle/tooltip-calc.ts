@@ -185,6 +185,8 @@ export interface MoveDamage extends CalcLine {
    * neutral nature), and this says so.
    */
   spreadNote?: string;
+  /** With `spreadNote`: whether the bulky end maxes Sp. Def (a special move) rather than Defense (for the note in another language). */
+  spreadSpecial?: boolean;
 }
 
 /**
@@ -218,6 +220,7 @@ export function moveDamage(
     ko: bulky.ko === frail.ko ? frail.ko : [bulky.ko || "no KO", frail.ko].join(" to "),
     desc: `${bulky.desc} · ${frail.desc}`,
     rolls: [],
+    spreadSpecial: special,
     spreadNote: `Spread unknown: max ${special ? "Sp. Def" : "Def"} (252 HP / 252+ ${special ? "SpD" : "Def"}) to no investment`,
   };
 }

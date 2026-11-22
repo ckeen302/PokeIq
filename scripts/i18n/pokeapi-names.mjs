@@ -107,6 +107,9 @@ const SUPPLEMENT = {
   es: { regions: { alola: "Alola", galar: "Galar", hisui: "Hisui", hoenn: "Hoenn", johto: "Johto", kalos: "Kalos", kanto: "Kanto", paldea: "Paldea", sinnoh: "Sinnoh", unova: "Teselia" } },
 };
 for (const [l, kinds] of Object.entries(SUPPLEMENT)) for (const [kind, names] of Object.entries(kinds)) for (const [k, v] of Object.entries(names)) out[l][kind][k] ??= v;
+/** Where PokéAPI's name is wrong (checked against the games): Italian Mirror Herb is Erbacopia, not Charcoal's "Foglia carbone". */
+const CORRECTIONS = { it: { items: { mirrorherb: "Erbacopia" } } };
+for (const [l, kinds] of Object.entries(CORRECTIONS)) for (const [kind, names] of Object.entries(kinds)) for (const [k, v] of Object.entries(names)) out[l][kind][k] = v;
 for (const l of LOCALES) {
   mkdirSync(join(OUT, l), { recursive: true });
   for (const [kind, names] of Object.entries(out[l])) {

@@ -1,0 +1,25 @@
+{
+  "ranked": "Gewertet",
+  "cpu": "CPU",
+  "multi": "Multi-Kampf · 2 gegen 2",
+  "ffa": "Jeder gegen jeden · 4 Trainer",
+  "vs": "VS",
+  "turn": "Runde {n}",
+  "watching": "{n} schauen zu",
+  "started": "Gestartet {ago}",
+  "watch": "Zuschauen →",
+  "ago": {
+    "now": "gerade eben",
+    "min": "vor {m} Min.",
+    "hours": "vor {h} Std. {m} Min."
+  },
+  "loadError": "Live-Kämpfe konnten nicht geladen werden.",
+  "filter": "Nach Format filtern",
+  "all": "Alle Formate",
+  "refreshes": "Aktualisiert sich selbst",
+  "loading": "Live-Kämpfe werden geladen",
+  "noneIn": "Keine Live-Kämpfe in {format}",
+  "noneNow": "Gerade keine Live-Kämpfe",
+  "noneBlurb": "Kämpfe aus der Gegnersuche erscheinen hier, sobald sie starten. Starte einen, dann können andere dir zuschauen.",
+  "find": "Gegner finden"
+}

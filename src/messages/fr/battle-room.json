@@ -1,0 +1,108 @@
+{
+  "loading": "Chargement du combat",
+  "liveBattle": "Combat en direct",
+  "reconnecting": "Connexion perdue. Reconnexion…",
+  "vs": "vs",
+  "vsSep": " vs ",
+  "and": " et ",
+  "multiVs": "{a} et {c} vs {b} et {d}",
+  "watching": "Tu regardes {players}",
+  "watchAnother": "En regarder un autre",
+  "battleYourself": "Combattre toi-même",
+  "chat": {
+    "showAgain": "Afficher à nouveau les messages de {name}",
+    "hideTitle": "Masquer les messages de {name} (le /ignore de Showdown)",
+    "unignore": "Ne plus ignorer {name}",
+    "ignore": "Ignorer {name}",
+    "hidden": "({n} masqués)",
+    "rematchOpen": "Une revanche est ouverte : appuie sur Revanche pour continuer à discuter là-bas."
+  },
+  "gone": {
+    "title": "Combat introuvable",
+    "start": "Lancer un combat"
+  },
+  "forfeit": {
+    "sure": "Déclarer forfait ?",
+    "button": "Forfait",
+    "keep": "Continuer le combat"
+  },
+  "again": {
+    "error": "Impossible de lancer un combat.",
+    "play": "Rejouer",
+    "new": "Nouveau combat",
+    "tournament": "Retour au tournoi",
+    "requested": "Revanche demandée !",
+    "accept": "Accepter la revanche",
+    "rematch": "Revanche",
+    "keeps": "Une revanche garde les Dresseurs, le format et les équipes que vous avez apportées.",
+    "startsFour": "L’ordinateur garde ses places ; elle commence quand chaque Dresseur a appuyé.",
+    "startsTwo": "Elle commence quand vous avez appuyé tous les deux."
+  },
+  "lobby": {
+    "gen": "Gen {gen}",
+    "quickNote": "Sets de combat aléatoire de la Gen {gen}, vérifiés selon ces règles.",
+    "format": "Format",
+    "bring": "chacun apporte une équipe, vérifiée selon les règles de Pokémon Showdown.",
+    "timerLabel": "Chrono",
+    "timer": "Chrono de Showdown : {secs} s",
+    "grace": " plus {secs} s de grâce",
+    "perTurn": ", +{secs} s par tour",
+    "cap": ", {secs} s au maximum par tour.",
+    "runOutDefault": "Si le temps s’écoule pendant un tour, une capacité est choisie pour toi ; s’il s’écoule entièrement, tu perds.",
+    "runOutLose": "Si le temps s’écoule, tu perds.",
+    "runOutPick": "Si le temps s’écoule, le chrono choisit une capacité pour toi ; une deuxième fois de suite et tu perds.",
+    "timerOffAny": "Désactivé : prends ton temps. N’importe qui peut le lancer en plein combat.",
+    "timerOffEither": "Désactivé : prends ton temps. L’un ou l’autre peut le lancer en plein combat.",
+    "spectators": "Spectateurs",
+    "public": "Affiché dans En direct : tout le monde peut regarder.",
+    "private": "Privé : seuls ceux qui ont le lien peuvent regarder.",
+    "fairPlay": "Fair-play",
+    "fairFour": "Tu ne vois que ton équipe et ce que les autres révèlent. Partir vaut forfait après {secs} s d’absence.",
+    "fairFourMulti": "Tu ne vois que ton équipe et ce que les autres révèlent. Partir vaut forfait après {secs} s d’absence (ton équipe perd, comme sur Showdown).",
+    "fairFourFfa": "Tu ne vois que ton équipe et ce que les autres révèlent. Partir vaut forfait après {secs} s d’absence (tu es éliminé ; les autres continuent).",
+    "fairTwo": "Tu ne vois que ton équipe et ce que ton adversaire révèle. Partir vaut forfait après {secs} s d’absence.",
+    "ladder": "Classement",
+    "unrankedMulti": "Non classé : Showdown ne classe pas non plus les combats multi, ils ne changent donc jamais ton classement.",
+    "unrankedFfa": "Non classé : Showdown ne classe pas non plus les chacun pour soi, ils ne changent donc jamais ton classement.",
+    "teamFirst": "Choisis ou colle d’abord une équipe.",
+    "tag": "Combat en direct · {format}",
+    "title": "Combat <b>Pokémon</b>",
+    "invite": "{host} te défie à un combat {format}. Choisis un nom de Dresseur pour participer.",
+    "inviteTeam": "{host} te défie à un combat {format}. Choisis un nom de Dresseur et une équipe pour participer.",
+    "about": "Envoie le lien à un ami. Le combat commence quand vous êtes prêts tous les deux.",
+    "randomTeams": " Les équipes sont aléatoires.",
+    "shareHost": "{host} te défie à un combat {format} sur PokéIQ !",
+    "shareMe": "Je te défie à un combat {format} sur PokéIQ !",
+    "noun": "combat"
+  },
+  "visitor": {
+    "over": "Combat terminé",
+    "inProgress": "Combat en cours",
+    "two": "Ce combat oppose deux autres Dresseurs.",
+    "four": "Ce combat oppose quatre autres Dresseurs.",
+    "start": "Lance le tien"
+  },
+  "replay": {
+    "instant": "Revoir le combat",
+    "instantTitle": "Revoir le combat depuis le début (le replay instantané de Showdown)",
+    "download": "Télécharger le replay",
+    "downloadTitle": "Fichier de replay de Showdown : s’ouvre dans n’importe quel navigateur et se lit dans le lecteur de Showdown"
+  },
+  "quiet": {
+    "lost": "{names} a perdu la connexion. Sans retour d’ici une minute,",
+    "teamForfeits": "son équipe déclare forfait.",
+    "forfeit": "c’est forfait."
+  },
+  "after": {
+    "share": "Partager",
+    "updating": "Mise à jour du classement…",
+    "watchReplay": "Voir le replay",
+    "analysis": "Analyse",
+    "saving": "Sauvegarde du replay…",
+    "save": "Sauver le replay",
+    "elo": "Elo",
+    "glicko": "Classement Glicko-2",
+    "rating": "Classement",
+    "ratingLabel": "{what} {delta}, désormais {now}"
+  }
+}

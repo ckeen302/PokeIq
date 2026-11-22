@@ -1,0 +1,26 @@
+{
+  "header": {
+    "battle": "バトル"
+  },
+  "play": {
+    "title": "コンピューターとバトル"
+  },
+  "live": {
+    "title": "ポケモンのライブバトル",
+    "description": "Pokémon Showdownのエンジンで遊ぶポケモンのライブバトル。リンクを開いて名前を決めたら、バトル開始！",
+    "titleVs": "{host} vs {guest}：ポケモンのライブバトル",
+    "titleHost": "{host}からポケモンのライブバトルの挑戦状",
+    "aTrainer": "トレーナー",
+    "descriptionFormat": "{format}、Pokémon Showdownのエンジンでライブ対戦。リンクを開いて名前を決めたら、バトル開始！"
+  },
+  "watch": {
+    "meta": {
+      "title": "ポケモンバトルをライブ観戦",
+      "description": "Pokémon Showdownのエンジンで行われているポケモンバトルをライブで観戦。ランキング戦も、公開されたフレンドバトルも、リアルタイムで。"
+    },
+    "crumb": "観戦",
+    "title": "ライブ",
+    "accent": "観戦",
+    "intro": "いま行われているバトルです。観戦者に見えるのはShowdownの観戦者と同じ：それぞれのチームはバトルの中で明かされたぶんだけです。"
+  }
+}

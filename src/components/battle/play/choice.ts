@@ -1,4 +1,7 @@
 import type { BattleRequest, BattleRequestPokemon } from "@/lib/battle/play";
+import { translator, type Translator } from "@/i18n/catalog";
+import playNs from "@/messages/battle-play";
+import type { BattleNames } from "@/lib/battle/log/names";
 
 /**
  * Building a choice one slot at a time (doubles has one per active
@@ -94,19 +97,22 @@ export function teamOrder(picked: readonly number[], size: number, bringAll: boo
  * way ("Garchomp will use Earthquake."): only what the trainer chose, never
  * a guess at how the turn goes. Nothing for team preview.
  */
-export function choiceLine(request: BattleRequest, choice: string): string {
+export function choiceLine(request: BattleRequest, choice: string, t: Translator<typeof playNs.en> = translator(playNs, "en", undefined), names?: BattleNames): string {
   if (request.teamPreview) return "";
-  const nameOf = (i: number) => request.side.pokemon[i]?.ident.split(": ")[1] ?? "";
+  const nameOf = (i: number) => {
+    const name = request.side.pokemon[i]?.ident.split(": ")[1] ?? "";
+    return names && name ? names.pokemon(name) : name;
+  };
   const lines: string[] = [];
   choice.split(",").forEach((part, slot) => {
     const [kind, n] = part.trim().split(" ");
     const who = nameOf(slot);
     if (kind === "move") {
       const move = request.active?.[slot]?.moves[Number(n) - 1]?.move;
-      if (who && move) lines.push(`${who} will use ${move}.`);
+      if (who && move) lines.push(t("choice.use", { who, move: names ? names.move(move) : move }));
     } else if (kind === "switch") {
       const next = nameOf(Number(n) - 1);
-      if (next) lines.push(request.forceSwitch ? `${next} is on the way.` : `${who} will switch out for ${next}.`);
+      if (next) lines.push(request.forceSwitch ? t("choice.onTheWay", { name: next }) : t("choice.switch", { who, next }));
     }
   });
   return lines.join(" ");

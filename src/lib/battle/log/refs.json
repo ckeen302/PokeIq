@@ -1,0 +1,149 @@
+{
+  "tox": {
+    "end": "#psn",
+    "endFromItem": "#psn",
+    "alreadyStarted": "#psn",
+    "damage": "#psn"
+  },
+  "axekick": {
+    "damage": "#crash"
+  },
+  "bind": {
+    "move": "#wrap"
+  },
+  "clamp": {
+    "move": "#wrap"
+  },
+  "corrosivegas": {
+    "fail": "#healblock"
+  },
+  "dragoncheer": {
+    "start": "#focusenergy"
+  },
+  "eeriespell": {
+    "activate": "#spite"
+  },
+  "firepledge": {
+    "activate": "#waterpledge"
+  },
+  "firespin": {
+    "move": "#wrap"
+  },
+  "flipturn": {
+    "switchOut": "#uturn"
+  },
+  "gmaxchistrike": {
+    "start": "#focusenergy"
+  },
+  "grasspledge": {
+    "activate": "#waterpledge"
+  },
+  "highjumpkick": {
+    "damage": "#crash"
+  },
+  "hyperspacefury": {
+    "activate": "#shadowforce",
+    "fail": "#darkvoid"
+  },
+  "hyperspacehole": {
+    "activate": "#shadowforce"
+  },
+  "jumpkick": {
+    "damage": "#crash"
+  },
+  "makeitrain": {
+    "activate": "#payday"
+  },
+  "mindreader": {
+    "start": "#lockon"
+  },
+  "miracleeye": {
+    "start": "#foresight"
+  },
+  "partingshot": {
+    "heal": "#memento",
+    "switchOut": "#uturn"
+  },
+  "phantomforce": {
+    "prepare": "#shadowforce",
+    "activate": "#shadowforce"
+  },
+  "pluck": {
+    "removeItem": "#bugbite"
+  },
+  "powershift": {
+    "end": "#.start"
+  },
+  "powertrick": {
+    "end": "#.start"
+  },
+  "ragepowder": {
+    "start": "#followme",
+    "startFromZEffect": "#followme"
+  },
+  "shedtail": {
+    "alreadyStarted": "#substitute",
+    "fail": "#substitute"
+  },
+  "solarblade": {
+    "prepare": "#solarbeam"
+  },
+  "spikyshield": {
+    "damage": "#roughskin"
+  },
+  "spotlight": {
+    "start": "#followme",
+    "startFromZEffect": "#followme"
+  },
+  "steelbeam": {
+    "damage": "#mindblown"
+  },
+  "supercellslam": {
+    "damage": "#crash"
+  },
+  "switcheroo": {
+    "activate": "#trick"
+  },
+  "voltswitch": {
+    "switchOut": "#uturn"
+  },
+  "armortail": {
+    "block": "#damp"
+  },
+  "cloudnine": {
+    "start": "#airlock"
+  },
+  "dazzling": {
+    "block": "#damp"
+  },
+  "innardsout": {
+    "damage": "#aftermath"
+  },
+  "ironbarbs": {
+    "damage": "#roughskin"
+  },
+  "magicbounce": {
+    "move": "#magiccoat"
+  },
+  "pickup": {
+    "addItem": "#recycle"
+  },
+  "powerofalchemy": {
+    "changeAbility": "#receiver"
+  },
+  "queenlymajesty": {
+    "block": "#damp"
+  },
+  "stormdrain": {
+    "activate": "#lightningrod"
+  },
+  "wanderingspirit": {
+    "activate": "#skillswap"
+  },
+  "windpower": {
+    "start": "#electromorphosis"
+  },
+  "rebound": {
+    "move": "#magiccoat"
+  }
+}

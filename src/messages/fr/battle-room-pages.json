@@ -1,0 +1,26 @@
+{
+  "header": {
+    "battle": "Combat"
+  },
+  "play": {
+    "title": "Combat contre l’ordinateur"
+  },
+  "live": {
+    "title": "Un combat Pokémon en direct",
+    "description": "Un combat Pokémon en direct sur le moteur de Pokémon Showdown. Ouvre le lien, choisis un nom et combats.",
+    "titleVs": "{host} vs {guest} : un combat Pokémon en direct",
+    "titleHost": "{host} te défie à un combat Pokémon en direct",
+    "aTrainer": "Un Dresseur",
+    "descriptionFormat": "{format}, en direct sur le moteur de Pokémon Showdown. Ouvre le lien, choisis un nom et combats."
+  },
+  "watch": {
+    "meta": {
+      "title": "Regarder des combats Pokémon en direct",
+      "description": "Regarde des combats Pokémon en direct sur le moteur de Pokémon Showdown : matchs classés et combats ouverts entre amis, en temps réel."
+    },
+    "crumb": "En direct",
+    "title": "En",
+    "accent": "direct",
+    "intro": "Les combats en cours. Les spectateurs voient ce que voient ceux de Showdown : l’équipe de chaque camp n’est révélée qu’au fil du combat."
+  }
+}

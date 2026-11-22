@@ -1,0 +1,108 @@
+{
+  "loading": "Kampf wird geladen",
+  "liveBattle": "Live-Kampf",
+  "reconnecting": "Verbindung verloren. Verbinde neu …",
+  "vs": "vs.",
+  "vsSep": " vs. ",
+  "and": " und ",
+  "multiVs": "{a} & {c} vs. {b} & {d}",
+  "watching": "Du schaust zu: {players}",
+  "watchAnother": "Einen anderen ansehen",
+  "battleYourself": "Selbst kämpfen",
+  "chat": {
+    "showAgain": "Nachrichten von {name} wieder zeigen",
+    "hideTitle": "Nachrichten von {name} ausblenden (Showdowns /ignore)",
+    "unignore": "{name} nicht mehr ignorieren",
+    "ignore": "{name} ignorieren",
+    "hidden": "({n} ausgeblendet)",
+    "rematchOpen": "Eine Revanche ist offen: Drück auf Revanche, um dort weiterzuchatten."
+  },
+  "gone": {
+    "title": "Kampf nicht gefunden",
+    "start": "Kampf starten"
+  },
+  "forfeit": {
+    "sure": "Diesen Kampf aufgeben?",
+    "button": "Aufgeben",
+    "keep": "Weiterkämpfen"
+  },
+  "again": {
+    "error": "Kampf konnte nicht gestartet werden.",
+    "play": "Noch mal",
+    "new": "Neuer Kampf",
+    "tournament": "Zurück zum Turnier",
+    "requested": "Revanche gefordert!",
+    "accept": "Revanche annehmen",
+    "rematch": "Revanche",
+    "keeps": "Eine Revanche behält die Trainer, das Format und eure mitgebrachten Teams.",
+    "startsFour": "Der Computer behält seine Plätze; sie startet, wenn jeder Trainer gedrückt hat.",
+    "startsTwo": "Sie startet, wenn ihr beide drückt."
+  },
+  "lobby": {
+    "gen": "Gen. {gen}",
+    "quickNote": "Zufallskampf-Sets aus Gen. {gen}, geprüft nach diesen Regeln.",
+    "format": "Format",
+    "bring": "Jeder bringt ein Team mit, geprüft nach den Regeln von Pokémon Showdown.",
+    "timerLabel": "Zug-Timer",
+    "timer": "Showdowns Timer: {secs} s",
+    "grace": " plus {secs} s Puffer",
+    "perTurn": ", +{secs} s pro Runde",
+    "cap": ", höchstens {secs} s pro Runde.",
+    "runOutDefault": "Läuft die Zeit in einer Runde ab, wird eine Standardattacke gewählt; ist die Zeit ganz aufgebraucht, verlierst du.",
+    "runOutLose": "Läuft die Zeit ab, verlierst du.",
+    "runOutPick": "Läuft die Zeit ab, wählt der Timer eine Attacke für dich; beim zweiten Mal in Folge verlierst du.",
+    "timerOffAny": "Aus: Lass dir Zeit. Jeder von euch kann ihn mitten im Kampf starten.",
+    "timerOffEither": "Aus: Lass dir Zeit. Jeder von euch beiden kann ihn mitten im Kampf starten.",
+    "spectators": "Zuschauer",
+    "public": "In „Live zuschauen“ gelistet: Jeder kann zuschauen.",
+    "private": "Privat: Nur wer den Link hat, kann zuschauen.",
+    "fairPlay": "Fairplay",
+    "fairFour": "Du siehst nur dein eigenes Team und was die anderen zeigen. Wer geht, gibt nach {secs} s Abwesenheit auf.",
+    "fairFourMulti": "Du siehst nur dein eigenes Team und was die anderen zeigen. Wer geht, gibt nach {secs} s Abwesenheit auf (dein Team verliert, wie bei Showdown).",
+    "fairFourFfa": "Du siehst nur dein eigenes Team und was die anderen zeigen. Wer geht, gibt nach {secs} s Abwesenheit auf (du bist raus; die anderen kämpfen weiter).",
+    "fairTwo": "Du siehst nur dein eigenes Team und was dein Gegner zeigt. Wer geht, gibt nach {secs} s Abwesenheit auf.",
+    "ladder": "Rangliste",
+    "unrankedMulti": "Ohne Wertung: Showdown wertet Multi-Kämpfe auch nicht, sie ändern deine Wertung also nie.",
+    "unrankedFfa": "Ohne Wertung: Showdown wertet Jeder-gegen-jeden auch nicht, sie ändern deine Wertung also nie.",
+    "teamFirst": "Wähle oder füge zuerst ein Team ein.",
+    "tag": "Live-Kampf · {format}",
+    "title": "Pokémon-<b>Kampf</b>",
+    "invite": "{host} fordert dich zu einem {format}-Kampf heraus. Wähle einen Trainernamen, um mitzumachen.",
+    "inviteTeam": "{host} fordert dich zu einem {format}-Kampf heraus. Wähle einen Trainernamen und ein Team, um mitzumachen.",
+    "about": "Schick den Link einem Freund. Der Kampf beginnt, wenn ihr beide bereit seid.",
+    "randomTeams": " Die Teams sind zufällig.",
+    "shareHost": "{host} fordert dich auf PokéIQ zu einem {format}-Kampf heraus!",
+    "shareMe": "Ich fordere dich auf PokéIQ zu einem {format}-Kampf heraus!",
+    "noun": "Kampf"
+  },
+  "visitor": {
+    "over": "Kampf vorbei",
+    "inProgress": "Kampf läuft",
+    "two": "In diesem Kampf treten zwei andere Trainer an.",
+    "four": "In diesem Kampf treten vier andere Trainer an.",
+    "start": "Starte deinen eigenen"
+  },
+  "replay": {
+    "instant": "Sofort-Replay",
+    "instantTitle": "Den bisherigen Kampf von Anfang an ansehen (Showdowns Sofort-Replay)",
+    "download": "Replay herunterladen",
+    "downloadTitle": "Showdowns Replay-Datei: öffnet sich in jedem Browser und läuft in Showdowns Replay-Player"
+  },
+  "quiet": {
+    "lost": "{names} hat die Verbindung verloren. Kommt keine Rückkehr innerhalb einer Minute,",
+    "teamForfeits": "gibt das Team auf.",
+    "forfeit": "gilt das als Aufgabe."
+  },
+  "after": {
+    "share": "Teilen",
+    "updating": "Wertungen werden aktualisiert …",
+    "watchReplay": "Replay ansehen",
+    "analysis": "Analyse",
+    "saving": "Replay wird gespeichert …",
+    "save": "Replay speichern",
+    "elo": "Elo",
+    "glicko": "Glicko-2-Wertung",
+    "rating": "Wertung",
+    "ratingLabel": "{what} {delta}, jetzt {now}"
+  }
+}

@@ -1,0 +1,1295 @@
+{
+  "_": {
+    "startBattle": "{TRAINER}と{TRAINER}のバトルが始まった！",
+    "winBattle": "**{TRAINER}**の勝ち！",
+    "tieBattle": "{TRAINER}と{TRAINER}は引き分けた！",
+    "pokemon": "{NICKNAME}",
+    "opposingPokemon": "相手の{NICKNAME}",
+    "team": "味方",
+    "opposingTeam": "相手",
+    "party": "味方のポケモン",
+    "opposingParty": "相手のポケモン",
+    "turn": "== ターン{NUMBER} ==",
+    "switchIn": "{TRAINER}は{FULLNAME}を繰り出した！",
+    "switchInOwn": "ゆけっ！{FULLNAME}！",
+    "switchOut": "{TRAINER}は{NICKNAME}を引っ込めた！",
+    "switchOutOwn": "{NICKNAME}、戻れ！",
+    "drag": "{FULLNAME}が引きずり出された！",
+    "faint": "{POKEMON}は倒れた！",
+    "swap": "{POKEMON}と{TARGET}の場所が入れ替わった！",
+    "swapCenter": "{POKEMON}は真ん中に移動した！",
+    "canDynamax": "  {TRAINER}はダイマックスできるようになった！",
+    "canDynamaxOwn": "  {TRAINER}のもとにダイマックスエネルギーが集まっていく！",
+    "zEffect": "  {POKEMON}は全力のZワザを解き放つ！",
+    "move": "{POKEMON}の**{MOVE}**！",
+    "abilityActivation": "[{POKEMON}の{ABILITY}]",
+    "mega": "  {POKEMON}の{ITEM}とキーストーンが反応した！",
+    "megaNoItem": "  {POKEMON}は{TRAINER}のキーストーンに反応した！",
+    "megaGen6": "  {POKEMON}の{ITEM}と{TRAINER}のメガバングルが反応した！",
+    "transformMega": "{POKEMON}はメガ{SPECIES}にメガシンカした！",
+    "primal": "{POKEMON}のゲンシカイキ！原始の姿を取り戻した！",
+    "zPower": "  {POKEMON}はZパワーを身にまとった！",
+    "zBroken": "  {POKEMON}は守りきれずにダメージを受けた！",
+    "terastallize": "  {POKEMON}は{TYPE}タイプにテラスタルした！",
+    "cant": "{POKEMON}は{MOVE}を出せない！",
+    "cantNoMove": "{POKEMON}は動けない！",
+    "fail": "  しかしうまく決まらなかった！",
+    "transform": "{POKEMON}は姿を変えた！",
+    "typeChange": "  {POKEMON}は{TYPE}タイプになった！",
+    "typeChangeFromEffect": "  {POKEMON}は{EFFECT}で{TYPE}タイプになった！",
+    "typeAdd": "  {POKEMON}に{TYPE}タイプが追加された！",
+    "start": "  （{POKEMON}に{EFFECT}の効果が始まった！）",
+    "end": "  {POKEMON}の{EFFECT}が解けた！",
+    "activate": "  （{EFFECT}の効果が発動した！）",
+    "startTeamEffect": "  （{TEAM}に{EFFECT}の効果が始まった！）",
+    "endTeamEffect": "  （{TEAM}の{EFFECT}の効果が切れた！）",
+    "startFieldEffect": "  （{EFFECT}の効果が始まった！）",
+    "endFieldEffect": "  （{EFFECT}の効果が切れた！）",
+    "changeAbility": "  {POKEMON}は{ABILITY}を身につけた！",
+    "addItem": "  {POKEMON}は{ITEM}を手に入れた。",
+    "takeItem": "  {POKEMON}は{SOURCE}の{ITEM}を奪い取った！",
+    "eatItem": "  （{POKEMON}は{ITEM}を食べた！）",
+    "useGem": "  {ITEM}で{POKEMON}の技の威力が上がった！",
+    "eatItemWeaken": "  {ITEM}が{POKEMON}へのダメージを弱めた！",
+    "removeItem": "  {POKEMON}の{ITEM}が失われた！",
+    "activateItem": "  （{POKEMON}は{ITEM}を使った！）",
+    "activateWeaken": "  {ITEM}が{POKEMON}へのダメージを弱めた！",
+    "damage": "  （{POKEMON}はダメージを受けた！）",
+    "damagePercentage": "  （{POKEMON}は{PERCENTAGE}のダメージを受けた！）",
+    "damageFromPokemon": "  {POKEMON}は{SOURCE}の{ITEM}でダメージを受けた！",
+    "damageFromItem": "  {POKEMON}は{ITEM}でダメージを受けた！",
+    "damageFromPartialTrapping": "  {POKEMON}は{MOVE}のダメージを受けている！",
+    "heal": "  {POKEMON}の体力が回復した。",
+    "healFromZEffect": "  {POKEMON}はZパワーで体力を回復した！",
+    "healFromEffect": "  {POKEMON}は{EFFECT}で体力を回復した！",
+    "boost": "  {POKEMON}の{STAT}が上がった！",
+    "boost2": "  {POKEMON}の{STAT}がぐーんと上がった！",
+    "boost3": "  {POKEMON}の{STAT}がぐぐーんと上がった！",
+    "boost0": "  {POKEMON}の{STAT}はもう上がらない！",
+    "boostFromItem": "  {ITEM}で{POKEMON}の{STAT}が上がった！",
+    "boost2FromItem": "  {ITEM}で{POKEMON}の{STAT}がぐーんと上がった！",
+    "boost3FromItem": "  {ITEM}で{POKEMON}の{STAT}がぐぐーんと上がった！",
+    "boostFromZEffect": "  {POKEMON}はZパワーで{STAT}が上がった！",
+    "boost2FromZEffect": "  {POKEMON}はZパワーで{STAT}がぐーんと上がった！",
+    "boost3FromZEffect": "  {POKEMON}はZパワーで{STAT}がぐぐーんと上がった！",
+    "boostMultipleFromZEffect": "  {POKEMON}はZパワーで能力が上がった！",
+    "unboost": "  {POKEMON}の{STAT}が下がった！",
+    "unboost2": "  {POKEMON}の{STAT}ががくっと下がった！",
+    "unboost3": "  {POKEMON}の{STAT}ががくーんと下がった！",
+    "unboost0": "  {POKEMON}の{STAT}はもう下がらない！",
+    "unboostFromItem": "  {ITEM}で{POKEMON}の{STAT}が下がった！",
+    "unboost2FromItem": "  {ITEM}で{POKEMON}の{STAT}ががくっと下がった！",
+    "unboost3FromItem": "  {ITEM}で{POKEMON}の{STAT}ががくーんと下がった！",
+    "swapBoost": "  {POKEMON}は相手と能力変化を入れ替えた！",
+    "swapOffensiveBoost": "  {POKEMON}は相手と攻撃と特攻の能力変化を入れ替えた！",
+    "swapDefensiveBoost": "  {POKEMON}は相手と防御と特防の能力変化を入れ替えた！",
+    "copyBoost": "  {POKEMON}は{TARGET}の能力変化をコピーした！",
+    "clearBoost": "  {POKEMON}の能力変化が元に戻った！",
+    "clearBoostFromZEffect": "  {POKEMON}はZパワーで下がった能力を元に戻した！",
+    "invertBoost": "  {POKEMON}の能力変化がひっくり返った！",
+    "clearAllBoost": "  全ての能力変化が元に戻った！",
+    "superEffective": "  効果は抜群だ！",
+    "superEffectiveSpread": "  {POKEMON}に効果は抜群だ！",
+    "resisted": "  効果は今ひとつのようだ……",
+    "resistedSpread": "  {POKEMON}に効果は今ひとつのようだ……",
+    "extremelyEffective": "  効果は超抜群だ！",
+    "extremelyEffectiveSpread": "  {POKEMON}に効果は超抜群だ！",
+    "mostlyIneffective": "  効果はほとんどないようだ……",
+    "mostlyIneffectiveSpread": "  {POKEMON}に効果はほとんどないようだ……",
+    "crit": "  急所に当たった！",
+    "critSpread": "  {POKEMON}の急所に当たった！",
+    "immune": "  {POKEMON}には効果がないようだ……",
+    "immuneNoPokemon": "  効果がなかった！",
+    "immuneOHKO": "  {POKEMON}には全く効いていない！",
+    "miss": "  {POKEMON}には当たらなかった！",
+    "missNoPokemon": "  {SOURCE}の攻撃は外れた！",
+    "center": "  自動で真ん中に移動した！",
+    "noTarget": "  しかし相手がいなかった……",
+    "ohko": "  一撃必殺！",
+    "combine": "  2つの技が合体した！合体技だ！",
+    "hitCount": "  {NUMBER}回当たった！",
+    "hitCountSingular": "  1回当たった！"
+  },
+  "hp": {
+    "statName": "HP",
+    "statShortName": "HP"
+  },
+  "atk": {
+    "statName": "攻撃",
+    "statShortName": "攻撃"
+  },
+  "def": {
+    "statName": "防御",
+    "statShortName": "防御"
+  },
+  "spa": {
+    "statName": "特攻",
+    "statShortName": "特攻"
+  },
+  "spd": {
+    "statName": "特防",
+    "statShortName": "特防"
+  },
+  "spe": {
+    "statName": "素早さ",
+    "statShortName": "素早さ"
+  },
+  "accuracy": {
+    "statName": "命中率"
+  },
+  "evasion": {
+    "statName": "回避率"
+  },
+  "spc": {
+    "statName": "特殊",
+    "statShortName": "特殊"
+  },
+  "stats": {
+    "statName": "能力"
+  },
+  "brn": {
+    "start": "  {POKEMON}はやけどを負った！",
+    "startFromItem": "  {POKEMON}は{ITEM}でやけどを負った！",
+    "alreadyStarted": "  {POKEMON}はすでにやけどを負っている！",
+    "end": "  {POKEMON}のやけどが治った！",
+    "endFromItem": "  {POKEMON}は{ITEM}でやけどが治った！",
+    "damage": "  {POKEMON}はやけどのダメージを受けている！"
+  },
+  "frz": {
+    "start": "  {POKEMON}は凍りついた！",
+    "alreadyStarted": "  {POKEMON}はすでに凍っている！",
+    "end": "  {POKEMON}の氷が溶けた！",
+    "endFromItem": "  {POKEMON}は{ITEM}で氷が溶けた！",
+    "endFromMove": "  {POKEMON}の{MOVE}で氷が溶けた！",
+    "cant": "{POKEMON}は凍ってしまって動けない！"
+  },
+  "par": {
+    "start": "  {POKEMON}はまひして技が出にくくなった！",
+    "alreadyStarted": "  {POKEMON}はすでにまひしている！",
+    "end": "  {POKEMON}のまひが治った！",
+    "endFromItem": "  {POKEMON}は{ITEM}でまひが治った！",
+    "cant": "{POKEMON}は体がしびれて動けない！"
+  },
+  "psn": {
+    "start": "  {POKEMON}は毒を浴びた！",
+    "alreadyStarted": "  {POKEMON}はすでに毒を浴びている！",
+    "end": "  {POKEMON}の毒が消えた！",
+    "endFromItem": "  {POKEMON}は{ITEM}で毒が消えた！",
+    "damage": "  {POKEMON}は毒のダメージを受けている！"
+  },
+  "tox": {
+    "start": "  {POKEMON}は猛毒を浴びた！",
+    "startFromItem": "  {POKEMON}は{ITEM}で猛毒を浴びた！"
+  },
+  "slp": {
+    "start": "  {POKEMON}は眠ってしまった！",
+    "startFromRest": "  {POKEMON}は眠って元気になった！",
+    "alreadyStarted": "  {POKEMON}はすでに眠っている！",
+    "end": "  {POKEMON}は目を覚ました！",
+    "endFromItem": "  {POKEMON}は{ITEM}で目を覚ました！",
+    "cant": "{POKEMON}はぐうぐう眠っている。"
+  },
+  "confusion": {
+    "start": "  {POKEMON}は混乱した！",
+    "startFromFatigue": "  {POKEMON}は疲れ果てて混乱した！",
+    "end": "  {POKEMON}の混乱が解けた！",
+    "endFromItem": "  {POKEMON}は{ITEM}で混乱が解けた！",
+    "alreadyStarted": "  {POKEMON}はすでに混乱している！",
+    "activate": "  {POKEMON}は混乱している！",
+    "damage": "わけもわからず自分を攻撃した！"
+  },
+  "drain": {
+    "heal": "  {SOURCE}から体力を吸い取った！"
+  },
+  "flinch": {
+    "cant": "{POKEMON}はひるんで技が出せない！"
+  },
+  "heal": {
+    "fail": "  {POKEMON}の体力は満タンだ！"
+  },
+  "healreplacement": {
+    "activate": "  {POKEMON}はZパワーで交代先の体力を回復する！"
+  },
+  "nopp": {
+    "cant": "{POKEMON}の{MOVE}！\n  しかし技のPPがなかった！"
+  },
+  "recharge": {
+    "cant": "{POKEMON}は攻撃の反動で動けない！"
+  },
+  "recoil": {
+    "damage": "  {POKEMON}は反動によるダメージを受けた！"
+  },
+  "unboost": {
+    "fail": "  {POKEMON}の能力は下がらなかった！",
+    "failSingular": "  {POKEMON}の{STAT}は下がらなかった！"
+  },
+  "struggle": {
+    "activate": "  {POKEMON}は出せる技がない！"
+  },
+  "trapped": {
+    "start": "  {POKEMON}はもう逃げられない！"
+  },
+  "dynamax": {
+    "start": "  （{POKEMON}のダイマックス！）",
+    "end": "  （{POKEMON}は元に戻った！）",
+    "block": "  ダイマックスの力で技が防がれた！",
+    "fail": "  {POKEMON}は首を横に振った。この技は使えないようだ……"
+  },
+  "sandstorm": {
+    "weatherName": "砂あらし",
+    "start": "  砂あらしが吹き始めた！",
+    "end": "  砂あらしが収まった。",
+    "upkeep": "  （砂あらしが吹き荒れる。）",
+    "damage": "  {POKEMON}は砂あらしにおそわれる！"
+  },
+  "sunnyday": {
+    "weatherName": "日差し",
+    "start": "  日差しが強くなった！",
+    "end": "  日差しが元に戻った。",
+    "upkeep": "  （日差しが強い。）"
+  },
+  "raindance": {
+    "weatherName": "雨",
+    "start": "  雨が降り始めた！",
+    "end": "  雨が止んだ。",
+    "upkeep": "  （雨が降り続いている。）"
+  },
+  "hail": {
+    "weatherName": "あられ",
+    "start": "  あられが降り始めた！",
+    "end": "  あられが止んだ。",
+    "upkeep": "  （あられが降り続いている。）",
+    "damage": "  {POKEMON}はあられにおそわれる！"
+  },
+  "snowscape": {
+    "weatherName": "雪",
+    "start": "  雪が降り始めた！",
+    "end": "  雪が止んだ。",
+    "upkeep": "  （雪が降り続いている。）"
+  },
+  "desolateland": {
+    "weatherName": "大日照り",
+    "start": "  日差しがとても強くなった！",
+    "end": "  日差しが元に戻った！",
+    "block": "  強い日差しの勢いは衰えない！",
+    "blockMove": "  強い日差しで水タイプの攻撃が蒸発した！"
+  },
+  "primordialsea": {
+    "weatherName": "大雨",
+    "start": "  強い雨が降り始めた！",
+    "end": "  強い雨が止んだ！",
+    "block": "  強い雨の勢いは衰えない！",
+    "blockMove": "  強い雨で炎タイプの攻撃が消滅した！"
+  },
+  "deltastream": {
+    "weatherName": "乱気流",
+    "start": "  謎の乱気流が飛行タイプのポケモンを守る！",
+    "end": "  謎の乱気流が収まった！",
+    "activate": "  謎の乱気流が攻撃を弱めた！",
+    "block": "  謎の乱気流の勢いは止まらない！"
+  },
+  "electricterrain": {
+    "start": "  足下に電気が駆けめぐる！",
+    "end": "  足下の電気が消え去った！",
+    "block": "  {POKEMON}はエレキフィールドに守られている！"
+  },
+  "grassyterrain": {
+    "start": "  足下に草が生い茂った！",
+    "end": "  足下の草が消え去った！",
+    "heal": "  {POKEMON}の体力が回復した。"
+  },
+  "mistyterrain": {
+    "start": "  足下に霧が立ち込めた！",
+    "end": "  足下の霧が消え去った！",
+    "block": "  {POKEMON}は霧に包まれている！"
+  },
+  "psychicterrain": {
+    "start": "  足下が不思議な感じになった！",
+    "end": "  足下の不思議な感じが消え去った！",
+    "block": "  {POKEMON}はサイコフィールドに守られている！"
+  },
+  "gravity": {
+    "start": "  重力が強くなった！",
+    "end": "  重力が元に戻った！",
+    "cant": "{POKEMON}は重力が強くて{MOVE}が出せない！",
+    "activate": "{POKEMON}は重力に負けて落ちてきた！"
+  },
+  "magicroom": {
+    "start": "  ポケモンの持ち物の効果が消える不思議な空間を作り出した！",
+    "end": "  マジックルームが解除され、持ち物の効果が元に戻った！"
+  },
+  "mudsport": {
+    "start": "  電気の威力が弱まった！",
+    "end": "  どろあそびの効果が消えた。"
+  },
+  "trickroom": {
+    "start": "  {POKEMON}は時空を歪めた！",
+    "end": "  歪んだ時空が元に戻った！"
+  },
+  "watersport": {
+    "start": "  炎の威力が弱まった！",
+    "end": "  みずあそびの効果が消えた。"
+  },
+  "wonderroom": {
+    "start": "  防御と特防が入れ替わる不思議な空間を作り出した！",
+    "end": "  ワンダールームが解除され、防御と特防が元に戻った！"
+  },
+  "crash": {
+    "damage": "  {POKEMON}は勢い余って地面にぶつかった！"
+  },
+  "afteryou": {
+    "activate": "  {TARGET}は好意に甘えることにした！"
+  },
+  "aquaring": {
+    "start": "  {POKEMON}は水のリングをまとった！",
+    "heal": "  水のリングが{POKEMON}の体力を回復した！"
+  },
+  "aromatherapy": {
+    "activate": "  心地よい香りが広がった！"
+  },
+  "attract": {
+    "start": "  {POKEMON}はメロメロになった！",
+    "startFromItem": "  {POKEMON}は{ITEM}でメロメロになった！",
+    "end": "  {POKEMON}のメロメロが解けた！",
+    "endFromItem": "  {POKEMON}は{ITEM}でメロメロが解けた！",
+    "activate": "  {POKEMON}は{TARGET}にメロメロだ！",
+    "cant": "{POKEMON}はメロメロで技が出せなかった！"
+  },
+  "auroraveil": {
+    "start": "  オーロラベールで{TEAM}は物理と特殊に強くなった！",
+    "end": "  {TEAM}のオーロラベールが消えた！"
+  },
+  "autotomize": {
+    "start": "  {POKEMON}は身軽になった！"
+  },
+  "beakblast": {
+    "start": "  {POKEMON}はクチバシを加熱し始めた！"
+  },
+  "beatup": {
+    "activate": "  {NAME}の攻撃！"
+  },
+  "bellydrum": {
+    "boost": "  {POKEMON}は体力を削って攻撃を最大まで上げた！"
+  },
+  "bestow": {
+    "takeItem": "  {SOURCE}は{POKEMON}に{ITEM}をプレゼントした！"
+  },
+  "bide": {
+    "start": "  {POKEMON}は我慢をしている！",
+    "end": "  {POKEMON}の我慢が解かれた！",
+    "activate": "  {POKEMON}は我慢をしている！"
+  },
+  "bind": {
+    "start": "  {POKEMON}は{SOURCE}に締め付けられた！"
+  },
+  "bounce": {
+    "prepare": "{POKEMON}は高く飛び跳ねた！"
+  },
+  "brickbreak": {
+    "activate": "  {POKEMON}は{TEAM}の守りを打ち破った！"
+  },
+  "bugbite": {
+    "removeItem": "  {SOURCE}は相手の{ITEM}を奪って食べた！"
+  },
+  "burnup": {
+    "typeChange": "  {POKEMON}は燃え尽きた！"
+  },
+  "celebrate": {
+    "activate": "  おめでとう！{TRAINER}！"
+  },
+  "charge": {
+    "start": "  {POKEMON}は充電を始めた！"
+  },
+  "chillyreception": {
+    "prepare": "  {POKEMON}は寒いギャグをかまそうとしている！"
+  },
+  "clamp": {
+    "start": "  {POKEMON}は{SOURCE}の殻に挟まれた！"
+  },
+  "conversion": {
+    "typeChange": "  {SOURCE}と同じタイプになった！"
+  },
+  "corrosivegas": {
+    "removeItem": "  {SOURCE}は{POKEMON}の{ITEM}を溶かした！"
+  },
+  "courtchange": {
+    "activate": "  {POKEMON}はお互いの場の効果を入れ替えた！"
+  },
+  "craftyshield": {
+    "start": "  {TEAM}はトリックガードに守られた！",
+    "block": "  {POKEMON}はトリックガードに守られた！"
+  },
+  "curse": {
+    "start": "  {SOURCE}は自分の体力を削って{POKEMON}に呪いをかけた！",
+    "damage": "  {POKEMON}は呪われている！"
+  },
+  "darkvoid": {
+    "fail": "しかし{POKEMON}は技を使うことができなかった！",
+    "failWrongForme": "しかし{POKEMON}は今の姿では技を使えなかった！"
+  },
+  "destinybond": {
+    "start": "  {POKEMON}は相手を道連れにしようとしている！",
+    "activate": "{POKEMON}は相手を道連れにした！"
+  },
+  "dig": {
+    "prepare": "{POKEMON}は地面に潜った！"
+  },
+  "disable": {
+    "start": "  {POKEMON}の{MOVE}を封じた！",
+    "end": "  {POKEMON}のかなしばりが解けた！",
+    "cant": "{POKEMON}は{MOVE}を封じられている！"
+  },
+  "dive": {
+    "prepare": "{POKEMON}は水中に身を潜めた！"
+  },
+  "doomdesire": {
+    "start": "  {POKEMON}は破滅の願いを未来に託した！",
+    "activate": "  {TARGET}は破滅の願いの攻撃を受けた！"
+  },
+  "doubleshock": {
+    "typeChange": "  {POKEMON}は電気を使い果たした！"
+  },
+  "dragonascent": {
+    "megaNoItem": "  {TRAINER}の切なる願いが{POKEMON}に届いた！"
+  },
+  "electrify": {
+    "start": "  {POKEMON}の技が電気を帯びた！"
+  },
+  "electroshot": {
+    "prepare": "{POKEMON}は電気を蓄えた！"
+  },
+  "embargo": {
+    "start": "  {POKEMON}は道具が使えなくなった！",
+    "end": "  {POKEMON}は道具が使えるようになった！"
+  },
+  "encore": {
+    "start": "  {POKEMON}はアンコールを受けた！",
+    "end": "  {POKEMON}のアンコール状態が解けた！"
+  },
+  "endure": {
+    "start": "  {POKEMON}はこらえる体勢に入った！",
+    "activate": "  {POKEMON}は攻撃をこらえた！"
+  },
+  "fairylock": {
+    "activate": "  次のターンは誰も逃げられなくなった！"
+  },
+  "feint": {
+    "activate": "  {TARGET}はフェイントにかかった！"
+  },
+  "ficklebeam": {
+    "activate": "  {POKEMON}は全力で攻撃をしかけた！"
+  },
+  "firepledge": {
+    "start": "  {TEAM}の周りが火の海になった！",
+    "end": "  {TEAM}の周りの火の海が消えた！",
+    "damage": "  {POKEMON}は火の海のダメージを受けた！"
+  },
+  "firespin": {
+    "start": "  {POKEMON}は炎の渦に閉じ込められた！"
+  },
+  "flameburst": {
+    "damage": "  弾けた炎が{POKEMON}に当たった！"
+  },
+  "fling": {
+    "removeItem": "  {POKEMON}は{ITEM}を投げつけた！"
+  },
+  "fly": {
+    "prepare": "{POKEMON}は空高く飛び上がった！"
+  },
+  "focusenergy": {
+    "start": "  {POKEMON}は張り切っている！",
+    "startFromItem": "  {POKEMON}は{ITEM}を使って張り切っている！",
+    "startFromZEffect": "  {POKEMON}はZパワーで技が急所に当たりやすくなった！"
+  },
+  "focuspunch": {
+    "start": "  {POKEMON}は集中力を高めている！",
+    "cant": "{POKEMON}は集中が途切れて技が出せない！"
+  },
+  "followme": {
+    "start": "  {POKEMON}は注目の的になった！",
+    "startFromZEffect": "  {POKEMON}は注目の的になった！"
+  },
+  "foresight": {
+    "start": "  {POKEMON}の正体を見破った！"
+  },
+  "freezeshock": {
+    "prepare": "  {POKEMON}は冷たい光に包まれた！"
+  },
+  "futuresight": {
+    "start": "  {POKEMON}は未来に攻撃を予知した！",
+    "activate": "  {TARGET}は未来予知の攻撃を受けた！"
+  },
+  "gastroacid": {
+    "start": "  {POKEMON}の特性が消された！"
+  },
+  "geomancy": {
+    "prepare": "{POKEMON}はパワーを溜め込んでいる！"
+  },
+  "gmaxcannonade": {
+    "start": "  {PARTY}は激しい渦に巻き込まれた！",
+    "damage": "  {POKEMON}はキョダイホウゲキの渦に巻き込まれている！"
+  },
+  "gmaxdepletion": {
+    "activate": "  {TARGET}のPPが減った！"
+  },
+  "gmaxsteelsurge": {
+    "start": "  {PARTY}の周りに尖った鋼が漂い始めた！",
+    "end": "  {PARTY}の周りの鋼が消え去った！",
+    "damage": "  尖った鋼が{POKEMON}に食い込んだ！"
+  },
+  "gmaxvinelash": {
+    "start": "  {PARTY}はツタに捕らえられた！",
+    "damage": "  {POKEMON}はキョダイベンタツの激しい攻撃を受けている！"
+  },
+  "gmaxvolcalith": {
+    "start": "  {PARTY}は岩に囲まれた！",
+    "damage": "  {POKEMON}はキョダイフンセキの噴石でダメージを受けている！"
+  },
+  "gmaxwildfire": {
+    "start": "  {PARTY}は炎に包まれた！",
+    "damage": "  {POKEMON}はキョダイゴクエンの炎で燃えている！"
+  },
+  "grasspledge": {
+    "start": "  {TEAM}の周りが湿原になった！",
+    "end": "  {TEAM}の周りの湿原が消えた！"
+  },
+  "grudge": {
+    "activate": "  {POKEMON}の{MOVE}は怨念でPPがなくなった！",
+    "start": "{POKEMON}は相手に怨念をかけようとしている！"
+  },
+  "guardsplit": {
+    "activate": "  {POKEMON}はお互いの守りを分かち合った！"
+  },
+  "happyhour": {
+    "activate": "  みんながハッピーな気分に包まれた！"
+  },
+  "haze": {
+    "activate": "  全ての能力変化が元に戻った！"
+  },
+  "healbell": {
+    "activate": "  鈴の音が響き渡った！"
+  },
+  "healblock": {
+    "endGen8": "  {POKEMON}のかいふくふうじが解けた！",
+    "cantGen8": "{POKEMON}はかいふくふうじで{MOVE}が出せない！",
+    "start": "  {POKEMON}は回復を封じられた！",
+    "end": "  {POKEMON}は回復できるようになった！",
+    "cant": "{POKEMON}は回復を封じられているので{MOVE}が出せない！",
+    "fail": "  しかし{POKEMON}には効かなかった！"
+  },
+  "healingwish": {
+    "heal": "  癒しの願いが{POKEMON}に届いた！"
+  },
+  "helpinghand": {
+    "start": "  {SOURCE}は{POKEMON}を手助けする体勢に入った！"
+  },
+  "iceburn": {
+    "prepare": "  {POKEMON}は凍える空気に包まれた！"
+  },
+  "imprison": {
+    "start": "  {POKEMON}は相手と同じ技を封印した！",
+    "cant": "{POKEMON}は封印されている{MOVE}を出せない！"
+  },
+  "incinerate": {
+    "removeItem": "  {POKEMON}の{ITEM}が焼けてなくなった！"
+  },
+  "infestation": {
+    "start": "  {POKEMON}は{SOURCE}にまとわりつかれた！"
+  },
+  "ingrain": {
+    "start": "  {POKEMON}は根を張った！",
+    "block": "  {POKEMON}は根を張っているので動かない！",
+    "heal": "  {POKEMON}は根から養分を吸い取った！"
+  },
+  "instruct": {
+    "activate": "  {TARGET}は{POKEMON}の指示に従った！"
+  },
+  "iondeluge": {
+    "activate": "  プラズマが降り注いだ！"
+  },
+  "knockoff": {
+    "removeItem": "  {SOURCE}は{POKEMON}の{ITEM}をはたき落とした！"
+  },
+  "laserfocus": {
+    "start": "  {POKEMON}は神経を研ぎ澄ました！"
+  },
+  "leechseed": {
+    "start": "  {POKEMON}に種を植え付けた！",
+    "end": "  {POKEMON}はやどりぎのタネから解放された！",
+    "damage": "  やどりぎが{POKEMON}の体力を奪う！"
+  },
+  "lightscreen": {
+    "startGen1": "  {POKEMON}は特殊攻撃に強くなった！",
+    "start": "  ひかりのかべで{TEAM}は特殊攻撃に強くなった！",
+    "end": "  {TEAM}のひかりのかべが消えた！"
+  },
+  "lockon": {
+    "start": "  {SOURCE}は{POKEMON}に狙いを定めた！"
+  },
+  "luckychant": {
+    "start": "  おまじないで{TEAM}は急所に当たらなくなった！",
+    "end": "  {TEAM}のおまじないが解けた！"
+  },
+  "lunardance": {
+    "heal": "  {POKEMON}は神秘的な月の光に包まれた！"
+  },
+  "magiccoat": {
+    "start": "  {POKEMON}はマジックコートで身を包んだ！",
+    "move": "{POKEMON}は{MOVE}を跳ね返した！"
+  },
+  "magmastorm": {
+    "start": "  {POKEMON}はマグマの渦に閉じ込められた！"
+  },
+  "magnetrise": {
+    "start": "  {POKEMON}は電磁力で浮かび上がった！",
+    "end": "  {POKEMON}の電磁力がなくなった！"
+  },
+  "magnitude": {
+    "activate": "  マグニチュード{NUMBER}！"
+  },
+  "matblock": {
+    "start": "  {POKEMON}は畳を返して攻撃を防ぐ構え！",
+    "block": "  {MOVE}は返された畳に防がれた！"
+  },
+  "maxguard": {
+    "activate": "  {POKEMON}は攻撃から身を守った！"
+  },
+  "memento": {
+    "heal": "  Zパワーで{POKEMON}の体力が回復した！"
+  },
+  "meteorbeam": {
+    "prepare": "{POKEMON}に宇宙の力があふれ出す！"
+  },
+  "metronome": {
+    "move": "指を振って{MOVE}が出た！"
+  },
+  "mimic": {
+    "start": "  {POKEMON}は{MOVE}を覚えた！"
+  },
+  "mindblown": {
+    "damage": "  （{POKEMON}は自分の体力を削って技の威力を上げた！）"
+  },
+  "mist": {
+    "startGen2": "  {POKEMON}は白い霧に包まれた！",
+    "blockGen2": "  {POKEMON}は白い霧に守られている。",
+    "startGen1": "  {POKEMON}は霧に包まれた！",
+    "blockGen1": "  しかしうまく決まらなかった！",
+    "start": "  {TEAM}は白い霧に包まれた！",
+    "end": "  {TEAM}の白い霧が消えた！",
+    "block": "  {POKEMON}は白い霧に守られている！"
+  },
+  "naturepower": {
+    "move": "しぜんのちからは{MOVE}になった！"
+  },
+  "nightmare": {
+    "start": "  {POKEMON}は悪夢を見始めた！",
+    "damage": "  {POKEMON}は悪夢にうなされている！"
+  },
+  "noretreat": {
+    "start": "  {POKEMON}ははいすいのじんで逃げられなくなった！"
+  },
+  "octolock": {
+    "start": "  {POKEMON}はたこがためで逃げられなくなった！"
+  },
+  "painsplit": {
+    "activate": "  お互いの体力を分かち合った！"
+  },
+  "payday": {
+    "activate": "  小判が辺りに散らばった！"
+  },
+  "perishsong": {
+    "start": "  ほろびのうたを聴いたポケモンは3ターン後に滅びてしまう！",
+    "activate": "  {POKEMON}の滅びのカウントが{NUMBER}になった！"
+  },
+  "poltergeist": {
+    "activate": "  {POKEMON}に{ITEM}が襲いかかる！"
+  },
+  "powder": {
+    "start": "  {POKEMON}は粉まみれになった！",
+    "activate": "  ポケモンに付いた粉に炎が引火して爆発した！"
+  },
+  "powersplit": {
+    "activate": "  {POKEMON}はお互いのパワーを分かち合った！"
+  },
+  "powershift": {
+    "start": "  {POKEMON}は攻撃の能力と防御の能力を入れ替えた！"
+  },
+  "powertrick": {
+    "start": "  {POKEMON}は攻撃と防御を入れ替えた！"
+  },
+  "protect": {
+    "start": "  {POKEMON}は守りの体勢に入った！",
+    "block": "  {POKEMON}は攻撃から身を守った！"
+  },
+  "pursuit": {
+    "activate": "  （{TARGET}が引っ込もうとしている……）"
+  },
+  "quash": {
+    "activate": "  {TARGET}の行動が後回しになった！"
+  },
+  "quickguard": {
+    "start": "  ファストガードが{TEAM}を守った！",
+    "block": "  ファストガードが{POKEMON}を守った！"
+  },
+  "ragingbull": {
+    "activate": "  {POKEMON}は{TEAM}の守りを打ち破った！"
+  },
+  "razorwind": {
+    "prepare": "  {POKEMON}の周りで空気が渦を巻く！"
+  },
+  "recycle": {
+    "addItem": "  {POKEMON}は{ITEM}を拾ってきた！"
+  },
+  "reflect": {
+    "startGen1": "  {POKEMON}は物理攻撃に強くなった！",
+    "start": "  リフレクターで{TEAM}は物理攻撃に強くなった！",
+    "end": "  {TEAM}のリフレクターが消えた！"
+  },
+  "reflecttype": {
+    "typeChange": "  {POKEMON}は{SOURCE}と同じタイプになった！"
+  },
+  "revivalblessing": {
+    "heal": "  {POKEMON}は復活して戦えるようになった！"
+  },
+  "roleplay": {
+    "changeAbility": "  {POKEMON}は{SOURCE}の{ABILITY}をコピーした！"
+  },
+  "roost": {
+    "start": "  （{POKEMON}はこのターン飛行タイプを失う。）"
+  },
+  "safeguard": {
+    "start": "  {TEAM}は神秘のベールに包まれた！",
+    "end": "  {TEAM}のしんぴのまもりが消えた！",
+    "block": "  {POKEMON}はしんぴのまもりに守られている！"
+  },
+  "saltcure": {
+    "start": "  {POKEMON}はしおづけになった！",
+    "damage": "  {POKEMON}はしおづけのダメージを受けている！"
+  },
+  "sandtomb": {
+    "start": "  {POKEMON}は流砂の地獄に捕らえられた！"
+  },
+  "shadowforce": {
+    "activate": "  {TARGET}の守りを打ち破った！",
+    "prepare": "{POKEMON}の姿が一瞬にして消えた！"
+  },
+  "shedtail": {
+    "start": "  {POKEMON}はしっぽを切って身代わりにした！"
+  },
+  "shelltrap": {
+    "start": "  {POKEMON}はトラップシェルを仕掛けた！",
+    "prepare": "  {POKEMON}はトラップシェルを仕掛けた！",
+    "cant": "{POKEMON}のトラップシェルは不発に終わった！"
+  },
+  "sketch": {
+    "activate": "  {POKEMON}は{MOVE}をスケッチした！"
+  },
+  "skillswap": {
+    "activate": "  {POKEMON}はお互いの特性を入れ替えた！"
+  },
+  "skullbash": {
+    "prepare": "{POKEMON}は首を引っ込めた！"
+  },
+  "skyattack": {
+    "prepare": "{POKEMON}は激しい光に包まれた！"
+  },
+  "skydrop": {
+    "prepare": "{POKEMON}は{TARGET}を上空に連れ去った！",
+    "end": "  {POKEMON}はフリーフォールから解放された！",
+    "failSelect": "フリーフォールで{POKEMON}は動けない！",
+    "failTooHeavy": "  {POKEMON}は重すぎて持ち上げられない！"
+  },
+  "smackdown": {
+    "start": "  {POKEMON}は撃ち落とされて地面に落ちた！"
+  },
+  "snaptrap": {
+    "start": "  {POKEMON}はトラバサミに捕まった！"
+  },
+  "snatch": {
+    "start": "  {POKEMON}は相手の出方をうかがっている！",
+    "activate": "  {POKEMON}は{TARGET}の技を横取りした！"
+  },
+  "solarbeam": {
+    "prepare": "  {POKEMON}は光を吸収した！"
+  },
+  "spectralthief": {
+    "clearBoost": "  {SOURCE}は相手の能力変化を奪い取った！"
+  },
+  "speedswap": {
+    "activate": "  {POKEMON}は相手と素早さを入れ替えた！"
+  },
+  "spikes": {
+    "start": "  {TEAM}の足下にまきびしが散らばった！",
+    "end": "  {TEAM}の足下のまきびしが消え去った！",
+    "damage": "  {POKEMON}はまきびしのダメージを受けた！"
+  },
+  "spite": {
+    "activate": "  {TARGET}の{MOVE}を{NUMBER}削った！"
+  },
+  "splash": {
+    "activate": "  しかし何も起こらない！"
+  },
+  "stealthrock": {
+    "start": "  {TEAM}の周りに尖った岩が漂い始めた！",
+    "end": "  {TEAM}の周りの尖った岩が消え去った！",
+    "damage": "  尖った岩が{POKEMON}に食い込んだ！"
+  },
+  "stickyweb": {
+    "start": "  {TEAM}の足下にねばねばネットが広がった！",
+    "end": "  {TEAM}の足下のねばねばネットが消え去った！",
+    "activate": "  {POKEMON}はねばねばネットに引っかかった！"
+  },
+  "stockpile": {
+    "start": "  {POKEMON}は{NUMBER}つたくわえた！",
+    "end": "  {POKEMON}のたくわえた効果が消えた！"
+  },
+  "substitute": {
+    "start": "  {POKEMON}の身代わりが現れた！",
+    "alreadyStarted": "  {POKEMON}の身代わりはすでに出ている！",
+    "end": "  {POKEMON}の身代わりは消えてしまった……",
+    "fail": "  しかし身代わりを出すには体力が足りなかった！",
+    "activate": "  {POKEMON}に代わって身代わりが攻撃を受けた！"
+  },
+  "syrupbomb": {
+    "start": "  {POKEMON}はねばねばの水あめまみれになった！"
+  },
+  "tailwind": {
+    "start": "  {TEAM}の背中を追い風が吹き始めた！",
+    "end": "  {TEAM}の追い風が止んだ！"
+  },
+  "tarshot": {
+    "start": "  {POKEMON}は炎に弱くなった！"
+  },
+  "taunt": {
+    "start": "  {POKEMON}は挑発に乗ってしまった！",
+    "end": "  {POKEMON}の挑発の効果が解けた！",
+    "cant": "{POKEMON}は挑発されて{MOVE}が出せない！"
+  },
+  "teatime": {
+    "activate": "  お茶会だ！みんなきのみを食べた！",
+    "fail": "  しかし何も起こらない！"
+  },
+  "telekinesis": {
+    "start": "  {POKEMON}は宙に浮かされた！",
+    "end": "  {POKEMON}はテレキネシスから解放された！"
+  },
+  "throatchop": {
+    "cant": "じごくづきの効果で{POKEMON}は一部の技が出せない！"
+  },
+  "thundercage": {
+    "start": "  {SOURCE}は{POKEMON}を閉じ込めた！"
+  },
+  "tidyup": {
+    "activate": "  お片付けが完了した！"
+  },
+  "torment": {
+    "start": "  {POKEMON}はいちゃもんをつけられた！",
+    "end": "  {POKEMON}はいちゃもんから解放された！"
+  },
+  "toxicspikes": {
+    "start": "  {TEAM}の足下にどくびしが散らばった！",
+    "end": "  {TEAM}の足下のどくびしが消え去った！"
+  },
+  "transform": {
+    "transform": "{POKEMON}は{SPECIES}に変身した！"
+  },
+  "trick": {
+    "activate": "  {POKEMON}は相手と道具を交換した！"
+  },
+  "uproar": {
+    "start": "  {POKEMON}は騒ぎ始めた！",
+    "end": "  {POKEMON}は落ち着いた。",
+    "upkeep": "  {POKEMON}は騒いでいる！",
+    "block": "  しかし騒ぐ声で{POKEMON}は目を覚ました！",
+    "blockSelf": "  {POKEMON}は騒いでいて眠れない！"
+  },
+  "uturn": {
+    "switchOut": "{POKEMON}は{TRAINER}のもとへ戻っていく！"
+  },
+  "waterpledge": {
+    "activate": "  {POKEMON}は{TARGET}の技を待っている……",
+    "start": "  {TEAM}の空に虹がかかった！",
+    "end": "  {TEAM}の空の虹が消えた！"
+  },
+  "weatherball": {
+    "move": "ウルトラダッシュアタックは天気で{MOVE}になった！"
+  },
+  "whirlpool": {
+    "start": "  {POKEMON}は渦の中に閉じ込められた！"
+  },
+  "wideguard": {
+    "start": "  ワイドガードが{TEAM}を守った！",
+    "block": "  ワイドガードが{POKEMON}を守った！"
+  },
+  "wish": {
+    "heal": "  {NICKNAME}の願い事が叶った！"
+  },
+  "wrap": {
+    "start": "  {POKEMON}は{SOURCE}に巻き付かれた！",
+    "move": "{POKEMON}の攻撃は続いている！"
+  },
+  "yawn": {
+    "start": "  {POKEMON}の眠気を誘った！"
+  },
+  "aftermath": {
+    "damage": "  {POKEMON}はダメージを受けた！"
+  },
+  "airlock": {
+    "start": "  天気の影響がなくなった。"
+  },
+  "angerpoint": {
+    "boost": "  {POKEMON}は攻撃が最大まで上がった！"
+  },
+  "anticipation": {
+    "activate": "  {POKEMON}は身震いした！"
+  },
+  "aromaveil": {
+    "block": "  {POKEMON}はアロマベールで守られている！"
+  },
+  "asone": {
+    "start": "  {POKEMON}は2つの特性を持っている！"
+  },
+  "aurabreak": {
+    "start": "  {POKEMON}は全てのオーラを制圧する！"
+  },
+  "baddreams": {
+    "damage": "  {POKEMON}はうなされている！"
+  },
+  "battlebond": {
+    "activate": "  {POKEMON}はトレーナーとの絆で力がみなぎった！",
+    "transform": "{POKEMON}はサトシゲッコウガになった！"
+  },
+  "beadsofruin": {
+    "start": "  {POKEMON}のわざわいのたまで周りの特防が弱まった！"
+  },
+  "comatose": {
+    "start": "  {POKEMON}はうとうとしている！"
+  },
+  "commander": {
+    "activate": "  {POKEMON}は{TARGET}の口の中に入り、{TARGET}の司令塔になった！"
+  },
+  "damp": {
+    "block": "  {SOURCE}は{MOVE}を使えない！"
+  },
+  "darkaura": {
+    "start": "  {POKEMON}はダークオーラを放っている！"
+  },
+  "disguise": {
+    "block": "  ばけのかわが身代わりになった！",
+    "transform": "{POKEMON}のばけのかわが剥がれた！"
+  },
+  "dryskin": {
+    "damage": "  （{POKEMON}はかんそうはだでダメージを受けた。）"
+  },
+  "electromorphosis": {
+    "start": "  {POKEMON}は{MOVE}を受けて充電した！"
+  },
+  "embodyaspectcornerstone": {
+    "boost": "  {POKEMON}のいしずえのめんが輝き、{POKEMON}の防御が上がった！"
+  },
+  "embodyaspecthearthflame": {
+    "boost": "  {POKEMON}のかまどのめんが輝き、{POKEMON}の攻撃が上がった！"
+  },
+  "embodyaspectteal": {
+    "boost": "  {POKEMON}のみどりのめんが輝き、{POKEMON}の素早さが上がった！"
+  },
+  "embodyaspectwellspring": {
+    "boost": "  {POKEMON}のいどのめんが輝き、{POKEMON}の特防が上がった！"
+  },
+  "fairyaura": {
+    "start": "  {POKEMON}はフェアリーオーラを放っている！"
+  },
+  "flashfire": {
+    "start": "  {POKEMON}の炎タイプの技の威力が上がった！"
+  },
+  "flowerveil": {
+    "block": "  {POKEMON}は花のベールに包まれた！"
+  },
+  "forewarn": {
+    "activate": "  {TARGET}の{MOVE}を見破った！",
+    "activateNoTarget": "  {POKEMON}のよちむで{MOVE}を見破った！"
+  },
+  "frisk": {
+    "activate": "  {POKEMON}は{TARGET}の{ITEM}をお見通しだ！",
+    "activateNoTarget": "  {POKEMON}は相手の{ITEM}をお見通しだ！"
+  },
+  "hadronengine": {
+    "start": "  {POKEMON}はエレキフィールドを張り、未来の機関を駆動させた！",
+    "activate": "  {POKEMON}はエレキフィールドで未来の機関を駆動させた！"
+  },
+  "harvest": {
+    "addItem": "  {POKEMON}は{ITEM}を収穫した！"
+  },
+  "hospitality": {
+    "heal": "  {POKEMON}は{SOURCE}がたてた抹茶を飲み干した！"
+  },
+  "illusion": {
+    "end": "  {POKEMON}のイリュージョンが解けた！"
+  },
+  "lightningrod": {
+    "activate": "  {POKEMON}が攻撃を受け止めた！"
+  },
+  "lingeringaroma": {
+    "changeAbility": "  {TARGET}に香りが染み付いた！"
+  },
+  "liquidooze": {
+    "damage": "  {POKEMON}はヘドロ液を吸い取った！"
+  },
+  "mimicry": {
+    "activate": "  {POKEMON}は元のタイプに戻った！"
+  },
+  "moldbreaker": {
+    "start": "  {POKEMON}はかたやぶりだ！"
+  },
+  "mummy": {
+    "changeAbility": "  {TARGET}の特性がミイラになった！"
+  },
+  "naturalcure": {
+    "activate": "  （{POKEMON}はしぜんかいふくで治った！）"
+  },
+  "neutralizinggas": {
+    "start": "  かがくへんかガスが辺りに充満した！",
+    "end": "  かがくへんかガスの効果が消えた！"
+  },
+  "orichalcumpulse": {
+    "start": "  {POKEMON}は日差しを強め、古代の鼓動を高鳴らせた！",
+    "activate": "  {POKEMON}は日差しを受けて古代の鼓動を高鳴らせた！"
+  },
+  "perishbody": {
+    "start": "  お互いのポケモンは3ターン後に滅びてしまう！"
+  },
+  "powerconstruct": {
+    "activate": "  たくさんの気配を感じる！",
+    "transform": "{POKEMON}はパーフェクトフォルムに変化した！"
+  },
+  "pressure": {
+    "start": "  {POKEMON}はプレッシャーを放っている！"
+  },
+  "protosynthesis": {
+    "activate": "  {POKEMON}は日差しを受けてこだいかっせいを発動した！",
+    "activateFromItem": "  {POKEMON}はブーストエナジーでこだいかっせいを発動した！",
+    "start": "  {POKEMON}の{STAT}が高まった状態になった！",
+    "end": "  {POKEMON}のこだいかっせいの効果が切れた！"
+  },
+  "quarkdrive": {
+    "activate": "  {POKEMON}はエレキフィールドでクォークチャージを発動した！",
+    "activateFromItem": "  {POKEMON}はブーストエナジーでクォークチャージを発動した！",
+    "start": "  {POKEMON}の{STAT}が高まった状態になった！",
+    "end": "  {POKEMON}のクォークチャージの効果が切れた！"
+  },
+  "quickdraw": {
+    "activate": "  {POKEMON}はクイックドロウで行動が早くなった！"
+  },
+  "receiver": {
+    "changeAbility": "  {SOURCE}の{ABILITY}を引き継いだ！"
+  },
+  "roughskin": {
+    "damage": "  {POKEMON}はダメージを受けた！"
+  },
+  "schooling": {
+    "transform": "{POKEMON}は群れを作った！",
+    "transformEnd": "{POKEMON}の群れが散り散りになった！"
+  },
+  "shieldsdown": {
+    "transform": "リミットシールドが解除された！\n（{POKEMON}は殻を脱ぎ捨てた。）",
+    "transformEnd": "リミットシールドが発動した！\n（{POKEMON}は殻をまとった。）"
+  },
+  "slowstart": {
+    "start": "  {POKEMON}は調子が上がらない！",
+    "end": "  {POKEMON}は調子を取り戻した！"
+  },
+  "stancechange": {
+    "transform": "ブレードフォルムにチェンジ！",
+    "transformEnd": "シールドフォルムにチェンジ！"
+  },
+  "stickyhold": {
+    "block": "  {POKEMON}の道具は奪えない！"
+  },
+  "sturdy": {
+    "activate": "  {POKEMON}は攻撃をこらえた！"
+  },
+  "suctioncups": {
+    "block": "  {POKEMON}は吸盤で吸い付いている！"
+  },
+  "supersweetsyrup": {
+    "start": "  {POKEMON}の体を覆う水あめから甘い香りが漂う！"
+  },
+  "supremeoverlord": {
+    "activate": "  {POKEMON}は倒れた仲間から力を受け取った！"
+  },
+  "sweetveil": {
+    "block": "  {POKEMON}はスイートベールで眠らない！"
+  },
+  "swordofruin": {
+    "start": "  {POKEMON}のわざわいのつるぎで周りの防御が弱まった！"
+  },
+  "symbiosis": {
+    "activate": "  {POKEMON}は{ITEM}を{TARGET}に渡した！"
+  },
+  "tabletsofruin": {
+    "start": "  {POKEMON}のわざわいのおふだで周りの攻撃が弱まった！"
+  },
+  "telepathy": {
+    "block": "  {POKEMON}は味方からの攻撃を受けない！"
+  },
+  "terashell": {
+    "activate": "  {POKEMON}が甲羅を輝かせた！タイプ相性を歪めている！"
+  },
+  "terashift": {
+    "transform": "{POKEMON}は姿を変えた！"
+  },
+  "teravolt": {
+    "start": "  {POKEMON}は弾けるオーラを放っている！"
+  },
+  "trace": {
+    "changeAbility": "  {POKEMON}は{SOURCE}の{ABILITY}をトレースした！"
+  },
+  "truant": {
+    "cant": "{POKEMON}は怠けている！"
+  },
+  "turboblaze": {
+    "start": "  {POKEMON}は燃え盛るオーラを放っている！"
+  },
+  "unnerve": {
+    "start": "  {TEAM}は緊張してきのみが食べられなくなった！"
+  },
+  "vesselofruin": {
+    "start": "  {POKEMON}のわざわいのうつわで周りの特攻が弱まった！"
+  },
+  "zenmode": {
+    "transform": "ダルマモード発動！",
+    "transformEnd": "ダルマモード解除！"
+  },
+  "zerotohero": {
+    "activate": "  {POKEMON}はヒーローに変身した！"
+  },
+  "persistent": {
+    "activate": "  {POKEMON}は{MOVE}を2ターン延ばした！"
+  },
+  "abilityshield": {
+    "block": "  {POKEMON}の特性はとくせいガードで守られている！"
+  },
+  "airballoon": {
+    "start": "  {POKEMON}はふうせんで浮いている！",
+    "end": "  {POKEMON}のふうせんが割れた！"
+  },
+  "blacksludge": {
+    "heal": "  {POKEMON}はくろいヘドロで少し体力を回復した！"
+  },
+  "clearamulet": {
+    "block": "  {POKEMON}はクリアチャームの効果で能力が下がらない！"
+  },
+  "custapberry": {
+    "activate": "  {POKEMON}はイバンのみで行動が早くなった！"
+  },
+  "ejectbutton": {
+    "end": "  {POKEMON}はだっしゅつボタンで戻っていく！"
+  },
+  "ejectpack": {
+    "end": "  {POKEMON}はだっしゅつパックで戻っていく！"
+  },
+  "focusband": {
+    "activate": "  {POKEMON}はきあいのハチマキで持ちこたえた！"
+  },
+  "focussash": {
+    "end": "  {POKEMON}はきあいのタスキで持ちこたえた！"
+  },
+  "leftovers": {
+    "heal": "  {POKEMON}はたべのこしで少し体力を回復した！"
+  },
+  "leppaberry": {
+    "activate": "  {POKEMON}はヒメリのみで{MOVE}のPPを回復した！"
+  },
+  "lifeorb": {
+    "damage": "  {POKEMON}は命が少し削られた！"
+  },
+  "mirrorherb": {
+    "activate": "  {POKEMON}はものまねハーブで相手の能力変化をまねした！"
+  },
+  "powerherb": {
+    "end": "  {POKEMON}はパワフルハーブで力がみなぎった！"
+  },
+  "protectivepads": {
+    "block": "  {POKEMON}はぼうごパットで身を守った！"
+  },
+  "quickclaw": {
+    "activate": "  {POKEMON}はせんせいのツメで行動が早くなった！"
+  },
+  "redcard": {
+    "end": "  {POKEMON}は{TARGET}にレッドカードを突きつけた！"
+  },
+  "rockyhelmet": {
+    "damage": "  {POKEMON}はゴツゴツメットでダメージを受けた！"
+  },
+  "safetygoggles": {
+    "block": "  {POKEMON}はぼうじんゴーグルで{MOVE}を受けない！"
+  },
+  "shellbell": {
+    "heal": "  {POKEMON}はかいがらのすずで少し体力を回復した！"
+  },
+  "ultranecroziumz": {
+    "transform": "  {POKEMON}から強い光があふれ出す！",
+    "activate": "{POKEMON}はウルトラバーストで本来の姿を取り戻した！"
+  },
+  "whiteherb": {
+    "end": "  {POKEMON}はしろいハーブで能力を元に戻した！"
+  },
+  "mysteryberry": {
+    "activate": "  {POKEMON}はふしぎなきのみで{MOVE}のPPを回復した！"
+  },
+  "pokeiq": {
+    "start4": "{A}、{B}、{C}、{D}のバトルが始まった！",
+    "startMulti": "{A}＆{C}と{B}＆{D}のバトルが始まった！",
+    "format": "ルール：**{FORMAT}**",
+    "hp": "{PCT}%",
+    "hpStatus": "{PCT}%・{STATUS}",
+    "switchNote": "{LINE}（{NOTE}）",
+    "forfeited": "{NAME}は降参した。",
+    "secondsLeftTurn": "{NAME}はこのターン残り{N}秒です。",
+    "secondsLeft": "{NAME}は残り{N}秒です。",
+    "timerOn": "バトルタイマーがONになりました：時間切れになったプレイヤーは負けになります。（{NAME}がリクエスト）",
+    "timerAlso": "{NAME}もタイマーをONにしたいようです。",
+    "timerStays": "{NAME}はタイマーをOFFにしたいようですが、{OTHERS}がONを望んでいるためタイマーは続きます。",
+    "timerOff": "バトルタイマーがOFFになりました。",
+    "allInactive": "全てのプレイヤーが操作していません。",
+    "lostInactive": "{NAME}は操作がなかったため負けになりました。",
+    "sleepClause": "スリープクローズが発動した。",
+    "freezeClause": "フリーズクローズが発動した。",
+    "endlessBattle": "これ以上バトルが進みません。エンドレスバトルクローズが発動しました！",
+    "status": {
+      "brn": "やけど",
+      "par": "まひ",
+      "psn": "どく",
+      "tox": "もうどく",
+      "slp": "ねむり",
+      "frz": "こおり"
+    },
+    "rules": {
+      "speciesclause": "種族条項：同じポケモンは1匹まで",
+      "itemclause": "道具条項：同じ道具は{N}個まで",
+      "hppercentagemod": "HP割合表示：HPは割合で表示されます",
+      "exacthpmod": "HP実数表示：正確なHPが表示されます",
+      "sleepclausemod": "ねむり条項：眠らせられる相手は1匹まで",
+      "stadiumsleepclause": "スタジアムねむり条項：眠らせられる相手は1匹まで",
+      "freezeclausemod": "こおり条項：凍らせられる相手は1匹まで",
+      "illusionlevelmod": "イリュージョンのレベル補正：イリュージョンは本当のレベルも隠します",
+      "beatupnicknamesmod": "ふくろだたきの補正：ふくろだたきで手持ちのポケモンは明かされません",
+      "endlessbattleclause": "無限バトル条項：終わらないバトルにすることは禁止です",
+      "switchpriorityclausemod": "交代順条項：素早いポケモンから先に交代します",
+      "desyncclausemod": "非同期の補正：非同期は行動したプレイヤー側から見た通信対戦の動きになります。",
+      "ohkoclause": "一撃必殺条項：一撃必殺技は禁止です",
+      "evasionclause": "回避条項：回避率を上げる特性・道具・技は禁止です",
+      "evasionabilitiesclause": "回避特性条項：回避率を上げる特性は禁止です",
+      "evasionitemsclause": "回避道具条項：回避率を上げる道具は禁止です",
+      "evasionmovesclause": "回避技条項：回避率を上げる技は禁止です",
+      "accuracymovesclause": "命中率条項：命中率を下げる技は禁止です",
+      "sleepmovesclause": "ねむり技条項：眠らせる技は禁止です",
+      "onebatonpassclause": "バトンタッチ条項：バトンタッチを使うポケモンは1匹まで",
+      "sametypeclause": "同タイプ条項：チームのポケモンは共通のタイプを持ちます",
+      "megarayquazaclause": "メガレックウザ条項：レックウザはメガシンカできません",
+      "dynamaxclause": "ダイマックス条項：ダイマックスはできません",
+      "terastalclause": "テラスタル条項：テラスタルはできません",
+      "teratypepreview": "テラスタイプ公開：チーム選択でテラスタイプが表示されます"
+    }
+  }
+}

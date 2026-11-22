@@ -46,10 +46,20 @@ export interface StageHandle {
 
 export type PopupTone = "good" | "bad" | "info" | "crit" | "super" | "weak";
 
+/**
+ * What a popup over a Pokémon says, for the stage to write in the page's language: a critical hit, how effective a
+ * hit was, a miss, a new status ("brn"), a stat change ("atk" and how many stages), a Tera type.
+ */
+export type PopupLabel =
+  | { k: "crit" | "super" | "weak" | "immune" | "miss" }
+  | { k: "status"; status: string }
+  | { k: "stat"; stat: string; up: boolean; amount: number }
+  | { k: "tera"; type: string };
+
 export interface PlayDeps {
   stage: StageHandle;
   commit(snap: Snap): void;
-  popup(ref: SlotRef | undefined, text: string, tone: PopupTone): void;
+  popup(ref: SlotRef | undefined, label: PopupLabel, tone: PopupTone): void;
   speed: number;
   signal: AbortSignal;
   reducedMotion: boolean;
@@ -144,8 +154,6 @@ function otherAnim(deps: PlayDeps, who: SlotRef | undefined, id: string) {
   return runScene(deps, (scene, t) => t.BattleOtherAnims[id]?.anim(scene, [proxy(scene, s), proxy(scene, s)]));
 }
 
-const STATUS_LABEL: Record<string, string> = { brn: "Burned", par: "Paralyzed", slp: "Asleep", frz: "Frozen", psn: "Poisoned", tox: "Badly poisoned" };
-const STAT_LABEL: Record<string, string> = { atk: "Atk", def: "Def", spa: "Sp. Atk", spd: "Sp. Def", spe: "Speed", accuracy: "Accuracy", evasion: "Evasion" };
 const SHAKE: Keyframe[] = [
   { transform: "translateX(0)" },
   { transform: "translateX(-7px)" },
@@ -382,7 +390,7 @@ export async function playStep(step: Step, deps: PlayDeps): Promise<void> {
     }
     case "-crit": {
       // A freeze-frame: a white flash and a punch-in that holds, then the shake, the splash and the crowd.
-      popup(who, "Critical hit!", "crit");
+      popup(who, { k: "crit" }, "crit");
       stage.cheer?.(1);
       if (sprite) impact(deps, sprite, true);
       void spark(deps, "battle-crit-flash", { inset: "0", zIndex: "8" }, [{ opacity: 0.85 }, { opacity: 0.35, offset: 0.4 }, { opacity: 0 }], 240);
@@ -402,23 +410,23 @@ export async function playStep(step: Step, deps: PlayDeps): Promise<void> {
       return;
     }
     case "-supereffective":
-      popup(who, "Super effective!", "super");
+      popup(who, { k: "super" }, "super");
       stage.cheer?.(0.45);
       commit(snap);
       await wait(450);
       return;
     case "-resisted":
-      popup(who, "Not very effective…", "weak");
+      popup(who, { k: "weak" }, "weak");
       commit(snap);
       await wait(400);
       return;
     case "-immune":
-      popup(who, "No effect", "weak");
+      popup(who, { k: "immune" }, "weak");
       commit(snap);
       await wait(450);
       return;
     case "-miss":
-      popup(typeof step.args[2] === "string" ? undefined : who, "Missed!", "info");
+      popup(typeof step.args[2] === "string" ? undefined : who, { k: "miss" }, "info");
       commit(snap);
       await wait(400);
       return;
@@ -426,7 +434,7 @@ export async function playStep(step: Step, deps: PlayDeps): Promise<void> {
       const status = step.args[2] ?? "";
       await statusAnim(deps, who, status === "tox" ? "psn" : status);
       commit(snap);
-      popup(who, STATUS_LABEL[status] ?? status, "bad");
+      popup(who, { k: "status", status }, "bad");
       await wait(450);
       return;
     }
@@ -443,14 +451,14 @@ export async function playStep(step: Step, deps: PlayDeps): Promise<void> {
       const amount = Number(step.args[3] ?? 1);
       commit(snap);
       if (amount) {
-        popup(who, `${STAT_LABEL[step.args[2] ?? ""] ?? step.args[2]} ${up ? "↑" : "↓"}${amount > 1 ? (up ? "↑" : "↓") : ""}${amount > 2 ? (up ? "↑" : "↓") : ""}`, up ? "good" : "bad");
+        popup(who, { k: "stat", stat: step.args[2] ?? "", up, amount }, up ? "good" : "bad");
         await overlay(deps, sprite, `battle-boost ${up ? "battle-boost-up" : "battle-boost-down"}`, 600);
       }
       return;
     }
     case "-terastallize": {
       commit(snap);
-      popup(who, `Tera ${step.args[2] ?? ""}!`, "super");
+      popup(who, { k: "tera", type: step.args[2] ?? "" }, "super");
       await overlay(deps, sprite, "battle-tera", 900, teraColor(step.args[2] ?? ""));
       return;
     }

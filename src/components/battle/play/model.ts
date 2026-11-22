@@ -3,6 +3,7 @@ import { Generations } from "@pkmn/data";
 import { Dex } from "@pkmn/dex";
 import { Protocol } from "@pkmn/protocol";
 import { LogFormatter } from "@pkmn/view";
+import type { LogLocal } from "@/lib/battle/log/local";
 
 /**
  * The battle as one player sees it, rebuilt line by line from their own
@@ -105,6 +106,8 @@ export interface Step {
   snap?: Snap;
   /** When it happened (the simulator's |t:| seconds), if known. */
   at?: number;
+  /** Another language's "(… lost N% of its health!)" line (English's are found by their words). */
+  pct?: boolean;
 }
 
 /** "p2a: Name" → p2, slot 0 ("p3b: Name" → p3, slot 1: a four-player half's second spot). */
@@ -166,6 +169,9 @@ const VOLATILES: Record<string, string> = {
   quarkdrivespd: "Quark Drive SpD",
   quarkdrivespe: "Quark Drive Spe",
 };
+
+/** A volatile's id by the label MonSnap carries ("Confused" → "confusion"), for the screen to show it in the page's language. */
+export const VOLATILE_IDS: Record<string, string> = Object.fromEntries(Object.entries(VOLATILES).map(([id, label]) => [label, id]));
 
 function monSnap(p: Pokemon): MonSnap {
   const species = p.species;
@@ -263,13 +269,16 @@ export class BattleModel {
   readonly battle: Battle;
   readonly me: SideId;
   private readonly formatter: LogFormatter;
+  /** Another language's log (src/lib/battle/log/local.ts); English writes Showdown's own text. */
+  private readonly local: LogLocal | undefined;
   /** The simulator's last |t:| timestamp (seconds), for the log's timestamps. */
   private time: number | undefined;
 
-  constructor(me: SideId) {
+  constructor(me: SideId, local?: LogLocal) {
     this.me = me;
     this.battle = new Battle(gens);
-    this.formatter = new LogFormatter(me, this.battle);
+    this.local = local;
+    this.formatter = local ? local.formatter(me, this.battle) : new LogFormatter(me, this.battle);
   }
 
   /** Feeds one protocol line; returns its step (null for lines that show nothing). */
@@ -290,22 +299,29 @@ export class BattleModel {
     } catch {
       text = "";
     }
+    const local = this.local;
     // Showdown's timer messages ("Battle timer is ON…", "Red has 20 seconds left.") are plain text.
-    if (cmd === "inactive" || cmd === "inactiveoff") text = args[1] ?? "";
+    if (cmd === "inactive" || cmd === "inactiveoff") text = local ? local.server(args[1] ?? "") : (args[1] ?? "");
+    // The server's own messages ("Red forfeited."), in the page's language where we know them.
+    if (local && (cmd === "-message" || cmd === "message") && args[1]) text = text.replace(args[1], () => local.server(args[1] ?? ""));
     // Four trainers: Showdown's "Battle started between" names them all (a Multi Battle's by team).
     if (cmd === "start" && this.battle.sides.length === 4) {
       const n = this.battle.sides.map((s) => s.name || "?");
-      text = this.battle.gameType === "multi" ? `Battle started between ${n[0]} & ${n[2]} and ${n[1]} & ${n[3]}!` : `Battle started between ${n[0]}, ${n[1]}, ${n[2]} and ${n[3]}!`;
+      if (local) text = local.note(this.battle.gameType === "multi" ? "startMulti" : "start4", { A: n[0], B: n[1], C: n[2], D: n[3] });
+      else text = this.battle.gameType === "multi" ? `Battle started between ${n[0]} & ${n[2]} and ${n[1]} & ${n[3]}!` : `Battle started between ${n[0]}, ${n[1]}, ${n[2]} and ${n[3]}!`;
     }
     // The battle's header, as Showdown's log opens: the format, then its rules.
-    if (cmd === "tier" && args[1]) text = `Format: **${args[1]}**`;
-    if (cmd === "rule" && args[1]) text = args[1];
+    if (cmd === "tier" && args[1]) text = local ? local.note("format", { FORMAT: args[1] }) : `Format: **${args[1]}**`;
+    if (cmd === "rule" && args[1]) text = local ? local.rule(args[1]) : args[1];
     // A Pokémon coming in hurt or statused: its HP and status, as competitive players read the log for them.
     if ((cmd === "switch" || cmd === "drag" || cmd === "replace") && text.trim()) {
-      const note = hpNote(args[3]);
-      if (note) text = text.replace(/!(\n*)$/, `! (${note})$1`);
+      const note = hpNote(args[3], local);
+      if (note && local) text = text.replace(/^([\s\S]*?)(\n*)$/, (_m, line: string, nl: string) => local.note("switchNote", { LINE: line, NOTE: note }) + nl);
+      else if (note) text = text.replace(/!(\n*)$/, `! (${note})$1`);
     }
     const step: Step = { cmd, args, kw: kwArgs, text };
+    // "Hide HP %" finds English's lines by their words; another language's are marked.
+    if (local && cmd === "-damage" && !kwArgs.from && text.includes("%")) step.pct = true;
     if (this.time) step.at = this.time;
     const who = slotOf(args[1]);
     if (who) step.who = who;
@@ -348,22 +364,24 @@ export function benchOrder(pokemon: { active?: boolean }[]): number[] {
 }
 
 /** Showdown's log says how a battle ended early ("Red forfeited.") before naming the winner. */
-export function endNote(view: { end?: { winner: number | null; reason?: string } | null; players: { name: string }[] }): string | null {
+export function endNote(view: { end?: { winner: number | null; reason?: string } | null; players: { name: string }[] }, local?: Pick<LogLocal, "note">): string | null {
   const end = view.end;
   // Four trainers: the log's own lines say who forfeited.
   if (!end || end.winner === null || end.reason !== "forfeit" || view.players.length !== 2) return null;
   const loser = view.players[1 - end.winner]?.name;
+  if (loser && local) return local.note("forfeited", { NAME: loser });
   return loser ? `${loser} forfeited.` : null;
 }
 
 /** "54/100 par" → "54% · PAR"; nothing for a Pokémon at full health with no status. */
-export function hpNote(hpStatus: string | undefined): string {
+export function hpNote(hpStatus: string | undefined, local?: Pick<LogLocal, "note" | "status">): string {
   const m = /^(\d+)\/(\d+)(?:\s+(\w+))?/.exec(hpStatus ?? "");
   if (!m) return "";
   const [hp, max] = [Number(m[1]), Number(m[2])];
   const status = m[3] && m[3] !== "fnt" ? m[3].toUpperCase() : "";
   if (hp >= max && !status) return "";
   const pct = max ? Math.max(hp > 0 ? 1 : 0, Math.round((hp / max) * 100)) : 0;
+  if (local) return status ? local.note("hpStatus", { PCT: pct, STATUS: local.status(m[3]) }) : local.note("hp", { PCT: pct });
   return status ? `${pct}% · ${status}` : `${pct}%`;
 }
 

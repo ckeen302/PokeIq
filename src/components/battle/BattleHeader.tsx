@@ -1,15 +1,18 @@
 import Link from "@/components/ui/Link";
 import { ChevronRight } from "lucide-react";
 import { BackButton } from "@/components/ui/BackButton";
+import { serverT } from "@/i18n/server";
+import pagesNs from "@/messages/battle-room-pages";
 
 /** Title block for the Battle pages: "Battle › Team Builder" crumb, title, blurb. */
 export function BattleHeader({ crumb, title, accent, back = "/battle", children }: { back?: string; crumb: string; title: string; accent: string; children: React.ReactNode }) {
+  const t = serverT(pagesNs);
   return (
     <div className="space-y-2">
       <BackButton href={back} className="mb-1" />
       <nav aria-label="Breadcrumb" className="hud-label flex items-center gap-1.5">
         <Link href="/battle" className="tap text-screen hover:text-foreground max-sm:-my-3 max-sm:py-3">
-          Battle
+          {t("header.battle")}
         </Link>
         <ChevronRight className="h-3 w-3" aria-hidden />
         <span>{crumb}</span>

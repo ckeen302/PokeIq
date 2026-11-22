@@ -1,0 +1,25 @@
+{
+  "ranked": "Classé",
+  "cpu": "CPU",
+  "multi": "Combat multi · 2 contre 2",
+  "ffa": "Chacun pour soi · 4 Dresseurs",
+  "vs": "VS",
+  "turn": "Tour {n}",
+  "watching": "{n} spectateurs",
+  "started": "Commencé {ago}",
+  "watch": "Regarder →",
+  "ago": {
+    "now": "à l’instant",
+    "min": "il y a {m} min",
+    "hours": "il y a {h} h {m} min"
+  },
+  "loadError": "Impossible de charger les combats en direct.",
+  "filter": "Filtrer par format",
+  "all": "Tous les formats",
+  "refreshes": "Mise à jour automatique",
+  "loading": "Chargement des combats en direct",
+  "noneIn": "Aucun combat en direct en {format}",
+  "noneNow": "Aucun combat en direct pour l’instant",
+  "noneBlurb": "Les combats trouvés par matchmaking s’affichent ici dès qu’ils commencent. Lances-en un et les autres pourront te regarder.",
+  "find": "Trouver un adversaire"
+}

@@ -13,6 +13,7 @@ import pickersNs from "@/messages/battle-pickers";
 import battleTeams from "@/messages/battle-teams";
 import battleTeamInsights from "@/messages/battle-team-insights";
 import battleTerms from "@/messages/battle-terms";
+import battleInputs from "@/messages/battle-inputs";
 
 export function generateMetadata(): Metadata {
   const t = serverT(pagesNs);
@@ -32,7 +33,7 @@ export default function BattleTowerLayout({ children }: { children: React.ReactN
         {t("tower.intro")}
       </BattleHeader>
       {/* The page is a client component (its start panel is a render prop): its words come from here. */}
-      <ClientMessages namespaces={[frontierNs, formatsNs, teamPickNs, pickersNs, battleTeams, battleTeamInsights, battleTerms]}>
+      <ClientMessages namespaces={[frontierNs, formatsNs, teamPickNs, pickersNs, battleTeams, battleTeamInsights, battleTerms, battleInputs]}>
         <RouteSlot>{children}</RouteSlot>
       </ClientMessages>
     </div>
