@@ -64,7 +64,7 @@ export function ColourPanel({
   const swatchHex = hex(partSwatch(sp, design, part));
   const [hexText, setHexText] = useState(swatchHex);
   useEffect(() => setHexText(swatchHex), [swatchHex]);
-  const name = sp.parts[part]?.n ?? "";
+  const name = sp.parts[part]?.l ?? sp.parts[part]?.n ?? "";
 
   const fromTone = (tn: Tone): PartColour => quantise({ l: tn.l, h: tn.h, c: tn.x * maxChroma(tn.l, tn.h), k: current.k });
   const swatches = curatedFor(ref.l);

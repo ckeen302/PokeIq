@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useT } from "@/i18n/client";
 import tools from "@/messages/tools";
 import type { Design } from "@/lib/shiny-maker/design";
+import { ShinyLocalContext, type ShinyLocal } from "./local";
 
 /**
  * The maker loads in the browser only (it measures the screen and draws on canvases); until then, a skeleton with
@@ -53,6 +54,12 @@ function Glow() {
 
 const ShinyMaker = dynamic(() => import("./ShinyMaker"), { ssr: false, loading: Skeleton });
 
-export function MakerShell({ initial, linkBroken }: { initial: Design | null; linkBroken: boolean }) {
-  return <ShinyMaker initial={initial} linkBroken={linkBroken} />;
+/** `local`: a page in another language's names (English pages send none). */
+export function MakerShell({ initial, linkBroken, local }: { initial: Design | null; linkBroken: boolean; local?: ShinyLocal }) {
+  if (!local) return <ShinyMaker initial={initial} linkBroken={linkBroken} />;
+  return (
+    <ShinyLocalContext.Provider value={local}>
+      <ShinyMaker initial={initial} linkBroken={linkBroken} />
+    </ShinyLocalContext.Provider>
+  );
 }
