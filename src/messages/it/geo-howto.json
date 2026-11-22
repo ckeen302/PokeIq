@@ -17,9 +17,23 @@
     "body": "Sfida un amico in diretta. Lotta a PS: partite entrambi con {hp} PS e la puntina più vicina infligge danni all'altra. Gara a punti: vince il totale migliore su tutti i round."
   },
   "demo": {
-    "label": "Demo: appare uno screenshot Pokémon, un cursore va sulla mappa, ingrandisce e mette una puntina, preme Indovina, una linea mostra il luogo vero e il round vale {score} su {max}",
-    "where": "Dove si trova?",
-    "guess": "Indovina",
-    "squares": "a {d} caselle della mappa"
+    "labelDesktop": "Demo di un round: uno screenshot Pokémon riempie lo schermo, la mappa nell’angolo si allarga, si piazza una puntina e si preme Indovina; il risultato traccia una linea fino al punto reale e vale {score} su {max}",
+    "labelPhone": "Demo di un round: uno screenshot Pokémon riempie lo schermo, si apre la mappa, si piazza una puntina e si preme Indovina; il risultato traccia una linea fino al punto reale e vale {score} su {max}",
+    "round": "Round {n}",
+    "score": "Punti",
+    "tapMove": "Tocca di nuovo per spostare la puntina",
+    "tapPlace": "Tocca la mappa per mettere la puntina",
+    "spotOn": "In pieno!",
+    "close": "Ci sei quasi!",
+    "notBad": "Niente male!",
+    "near": "Da quelle parti.",
+    "wayOff": "Lontanissimo…",
+    "pts": "pt",
+    "squares": "A {d} caselle sulla mappa",
+    "game": "Pokémon {game}",
+    "atlas": "Atlante",
+    "next": "Round successivo ▶",
+    "space": "Spazio",
+    "report": "Segnala questo screenshot"
   }
 }

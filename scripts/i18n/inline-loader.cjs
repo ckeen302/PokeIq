@@ -8,6 +8,7 @@
 // translator stored or passed where it can't be followed) keeps the whole namespace: correct, just not trimmed.
 // Which helpers are safe to hand a translator to is worked out once per build over all of src (see `registry`).
 "use strict";
+/* eslint-disable @typescript-eslint/no-require-imports -- a webpack loader, run by Node as CommonJS */
 
 const fs = require("node:fs");
 const path = require("node:path");
