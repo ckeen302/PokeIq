@@ -3605,10 +3605,16 @@ if (me.enabled) {
   }
   // A refocused tab sends its heartbeat at once (at most every 20 s) instead of waiting out the minute.
   const nudge = (p) => p.evaluate(() => window.dispatchEvent(new Event("focus")));
+  // Friends is an entry in the avatar's account menu.
+  const openFriendsPanel = async (p) => {
+    await p.getByTestId("account-menu-button").click();
+    await p.getByTestId("account-menu-friends").click();
+    await p.getByTestId("friends-panel").waitFor();
+  };
   const friendsOn = (await (await fa.request.get(`${BASE}/api/friends`)).json()).available;
   if (!friendsOn) console.log("  friends are off on this server (migration 0019): skipped");
   else {
-    await fa.getByTestId("friends-button").click();
+    await openFriendsPanel(fa);
     await fa.getByRole("tab", { name: /Add/ }).click();
     await fa.getByLabel("Trainer name").fill(nameB);
     await fa.getByRole("button", { name: /Send/ }).click();
@@ -3616,15 +3622,18 @@ if (me.enabled) {
     await fa.keyboard.press("Escape");
     await fb.reload({ waitUntil: "load" });
   await fb.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => {});
-    await fb.getByTestId("friends-badge").waitFor({ timeout: 15_000 });
-    await fb.getByTestId("friends-button").click();
+    // The request shows on the avatar and on the menu's Friends.
+    await fb.getByTestId("account-menu-badge").waitFor({ timeout: 15_000 });
+    await fb.getByTestId("account-menu-button").click();
+    await fb.getByTestId("account-menu-friends-badge").waitFor();
+    await fb.getByTestId("account-menu-friends").click();
     await fb.getByTestId("incoming-request").filter({ hasText: nameA }).getByRole("button", { name: /Accept/ }).click();
     await fb.getByRole("tab", { name: /Friends/ }).click();
     await fb.getByTestId("friend-row").filter({ hasText: nameA }).waitFor();
     await fb.keyboard.press("Escape");
     await fa.reload({ waitUntil: "load" });
   await fa.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => {});
-    await fa.getByTestId("friends-button").click();
+    await openFriendsPanel(fa);
     const row = fa.getByTestId("friend-row").filter({ hasText: nameB });
     await row.waitFor();
     if ((await row.getAttribute("data-online")) !== "true") errors.push("a friend with a tab open shows offline");
@@ -4384,7 +4393,7 @@ async function phoneNavStep() {
     if (b.width < 44 || b.height < 44) errors.push(`phone nav: a tab is ${Math.round(b.width)}×${Math.round(b.height)}, under 44px`);
   }
   // The header: the logo and the avatar, nothing else.
-  const extras = await m.locator('header a[href="/rooms"], header [data-testid=friends-button], header [data-testid=nav-leaderboard], header button[aria-label*="mode"], header button[aria-label*="sound"]').evaluateAll((els) => els.filter((e) => e.getBoundingClientRect().width > 0).length);
+  const extras = await m.locator('header a[href="/rooms"], header [data-testid=nav-leaderboard], header [data-testid=account-menu-button], header button[aria-label*="mode"], header button[aria-label*="sound"]').evaluateAll((els) => els.filter((e) => e.getBoundingClientRect().width > 0).length);
   if (extras) errors.push(`phone nav: ${extras} icons still in the phone header`);
   // --tabbar-h is the bar's height.
   const heights = await m.evaluate(() => {
@@ -4464,20 +4473,21 @@ async function phoneNavStep() {
 }
 
 /**
- * The desktop header: logo, tabs, then Chat, Friends, Leaderboard, Sound and the avatar menu (no theme button).
- * The avatar opens an account and settings menu: the trainer card, Theme (Dark / Light) and Sound, sign in;
- * Escape, a click outside and a new page close it. The trainer card has the same Settings.
+ * The desktop header: logo, tabs, then Chat, Leaderboard and the avatar menu (no theme, sound or friends button).
+ * The avatar opens an account and settings menu: the trainer card, Friends, Theme (Dark / Light) and Sound, sign in;
+ * Escape, a click outside and a new page close it. M toggles the sound. The trainer card has the same Settings.
  */
 async function desktopNavStep() {
-  step("desktop nav: Chat, Friends, Leaderboard, Sound, avatar menu (theme switch, Escape, outside click, new page), trainer Settings");
+  step("desktop nav: Chat, Leaderboard, avatar menu (Friends, theme and sound switches, M, Escape, outside click, new page), trainer Settings");
+  const ok = (p) => p.then(() => true, () => false);
   for (const width of [1024, 1440]) {
     const d = await newPage({ width, height: 900 });
     await gotoSettled(d, BASE);
     const header = d.locator("body > header");
-    const icons = await header.locator('a[href="/rooms"], [data-testid=friends-button], [data-testid=nav-leaderboard], button[aria-label*="sound"], [data-testid=account-menu-button]').evaluateAll((els) =>
+    const icons = await header.locator('a[href="/rooms"], [data-testid=nav-leaderboard], button[aria-label*="riends"], button[aria-label*="sound"], [data-testid=account-menu-button]').evaluateAll((els) =>
       els.filter((e) => e.getBoundingClientRect().width > 0).map((e) => e.getAttribute("data-testid") ?? e.getAttribute("aria-label") ?? e.getAttribute("href")),
     );
-    const want = ["chat rooms", "friends-button", "nav-leaderboard", "sound", "account-menu-button"];
+    const want = ["chat rooms", "nav-leaderboard", "account-menu-button"];
     if (icons.length !== want.length || !want.every((w, i) => icons[i].toLowerCase().includes(w))) errors.push(`desktop nav ${width}: the header's icons read ${icons.join(", ")}`);
     if (await header.locator('button[aria-label*="mode"]').count()) errors.push(`desktop nav ${width}: the header still has a theme button`);
     const over = await d.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
@@ -4499,11 +4509,22 @@ async function desktopNavStep() {
     if (width === 1440) await d.screenshot({ path: `${OUT}/desktop-account-menu-light.png` });
     await theme.getByRole("button", { name: "Dark" }).click();
     if (await d.evaluate(() => document.documentElement.classList.contains("light"))) errors.push(`desktop nav ${width}: the menu's Dark didn't turn the light theme off`);
-    // The menu's Sound row and the header's sound button show the same state.
+    // The menu's Sound row is the site's sound switch (the header has no sound button); M toggles it too.
     const sound = menu.getByTestId("account-menu-sound");
+    const muted = () => d.evaluate(() => localStorage.getItem("pokeiq-muted"));
+    const pressed = (name) => ok(sound.getByRole("button", { name, pressed: true }).waitFor({ timeout: 3_000 }));
     await sound.getByRole("button", { name: "Off" }).click();
-    if (!/Unmute/.test((await header.locator('button[aria-label*="sound"]').getAttribute("aria-label")) ?? "")) errors.push(`desktop nav ${width}: the header's sound button didn't follow the menu's Sound off`);
+    if ((await muted()) !== "1") errors.push(`desktop nav ${width}: the menu's Sound off didn't turn the sound off`);
+    if (!(await pressed("Off"))) errors.push(`desktop nav ${width}: Sound off isn't marked pressed`);
     await sound.getByRole("button", { name: "On" }).click();
+    if ((await muted()) !== "0") errors.push(`desktop nav ${width}: the menu's Sound on didn't turn the sound on`);
+    if (!(await pressed("On"))) errors.push(`desktop nav ${width}: Sound on isn't marked pressed`);
+    await d.keyboard.press("m");
+    if ((await muted()) !== "1") errors.push(`desktop nav ${width}: M didn't turn the sound off`);
+    if (!(await pressed("Off"))) errors.push(`desktop nav ${width}: the menu's Sound row didn't follow M`);
+    await d.keyboard.press("m");
+    if ((await muted()) !== "0") errors.push(`desktop nav ${width}: M didn't turn the sound back on`);
+    if (!(await pressed("On"))) errors.push(`desktop nav ${width}: the menu's Sound row didn't follow M back on`);
     await d.keyboard.press("Escape");
     await menu.waitFor({ state: "detached" }).catch(() => errors.push(`desktop nav ${width}: Escape didn't close the menu`));
     if (!(await button.evaluate((b) => b === document.activeElement))) errors.push(`desktop nav ${width}: Escape didn't return focus to the avatar`);
@@ -4519,6 +4540,18 @@ async function desktopNavStep() {
     });
     await d.mouse.click(blank.x, blank.y);
     await menu.waitFor({ state: "detached" }).catch(() => errors.push(`desktop nav ${width}: a click outside didn't close the menu`));
+    // Friends: the menu's entry closes the menu and opens the friends panel (signed out, it asks to sign in).
+    await button.click();
+    const friends = menu.getByTestId("account-menu-friends");
+    if ((await friends.innerText()).trim() !== "Friends") errors.push(`desktop nav ${width}: the menu's Friends entry reads ${await friends.innerText()}`);
+    await friends.click();
+    await menu.waitFor({ state: "detached" }).catch(() => errors.push(`desktop nav ${width}: Friends didn't close the menu`));
+    const panel = d.getByTestId("friends-panel");
+    if (!(await ok(panel.waitFor({ timeout: 5_000 })))) errors.push(`desktop nav ${width}: the menu's Friends didn't open the friends panel`);
+    else if (!(await ok(panel.getByRole("link", { name: /Sign in/ }).waitFor({ timeout: 5_000 })))) errors.push(`desktop nav ${width}: the friends panel doesn't ask a signed-out visitor to sign in`);
+    if (width === 1440) await d.screenshot({ path: `${OUT}/desktop-friends-from-menu.png` });
+    await d.keyboard.press("Escape");
+    await panel.waitFor({ state: "detached" }).catch(() => errors.push(`desktop nav ${width}: Escape didn't close the friends panel`));
     await button.click();
     await menu.getByTestId("account-menu-trainer").click();
     await d.waitForURL(/\/trainer$/);

@@ -3,18 +3,21 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { usePathname } from "@/i18n/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown, ChevronRight, LogIn, LogOut } from "lucide-react";
+import { ChevronDown, ChevronRight, LogIn, LogOut, Users } from "lucide-react";
 import Link from "@/components/ui/Link";
 import { Avatar } from "@/components/avatar/Avatar";
 import { SettingsControls } from "@/components/settings/SiteSettings";
 import { signOut, useAccount } from "@/lib/account";
+import { openFriends, useCommunity } from "@/lib/friends-client";
 import { useProgress } from "@/lib/progress";
 import { applyThemeColor, getTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
 /**
  * The header's avatar on desktop and tablet: opens a small panel with the
- * trainer card link, the site settings (theme, sound) and sign in / out.
+ * trainer card link, friends, the site settings (theme, sound) and sign in /
+ * out. A badge on the avatar and on Friends counts the friend requests and
+ * challenges waiting.
  * A disclosure, not an ARIA menu, since it holds switches: Escape, a click
  * outside, tabbing out or a new page closes it.
  */
@@ -22,6 +25,8 @@ export function AccountMenu({ className }: { className?: string }) {
   const pathname = usePathname();
   const account = useAccount();
   const progress = useProgress();
+  const community = useCommunity();
+  const waiting = community.requests + community.challenges.length;
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -70,7 +75,7 @@ export function AccountMenu({ className }: { className?: string }) {
         type="button"
         aria-expanded={open}
         aria-controls={panelId}
-        aria-label={`Account and settings (${name})`}
+        aria-label={`Account and settings (${name})${waiting ? `, friends: ${waiting} waiting` : ""}`}
         title="Account and settings"
         onClick={() => setOpen((v) => !v)}
         data-testid="account-menu-button"
@@ -79,7 +84,14 @@ export function AccountMenu({ className }: { className?: string }) {
           (open || onTrainer) && "border-screen/60 text-foreground"
         )}
       >
-        <Avatar avatar={account.user?.avatar} size={22} />
+        <span className="relative flex">
+          <Avatar avatar={account.user?.avatar} size={22} />
+          {waiting > 0 && (
+            <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 font-pixel text-[9px] text-primary-foreground" aria-hidden data-testid="account-menu-badge">
+              {waiting > 9 ? "9+" : waiting}
+            </span>
+          )}
+        </span>
         <span className="hidden max-w-[9rem] truncate font-display font-semibold md:inline lg:hidden 2xl:inline">{name}</span>
         <ChevronDown className={cn("h-3.5 w-3.5 transition-transform motion-reduce:transition-none", open && "rotate-180")} aria-hidden />
       </button>
@@ -112,6 +124,27 @@ export function AccountMenu({ className }: { className?: string }) {
               </span>
               <ChevronRight className="h-4 w-4 text-muted-foreground/60 transition-transform group-hover:translate-x-0.5" aria-hidden />
             </Link>
+
+            <div className="border-t border-foreground/[0.07] p-1.5">
+              <button
+                type="button"
+                className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm font-medium transition-colors hover:bg-foreground/[0.05] focus-visible:bg-foreground/[0.05] focus-visible:outline-none"
+                onClick={() => {
+                  setOpen(false);
+                  trigger.current?.focus();
+                  openFriends(community.requests > 0 && community.challenges.length === 0 ? "requests" : "friends");
+                }}
+                aria-label={waiting ? `Friends (${waiting} waiting)` : "Friends"}
+                data-testid="account-menu-friends"
+              >
+                <Users className="h-4 w-4 text-muted-foreground" aria-hidden /> Friends
+                {waiting > 0 && (
+                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-foreground" data-testid="account-menu-friends-badge">
+                    {waiting > 9 ? "9+" : waiting}
+                  </span>
+                )}
+              </button>
+            </div>
 
             <div className="border-t border-foreground/[0.07] px-4 py-3">
               <div className="hud-label mb-3">Settings</div>
