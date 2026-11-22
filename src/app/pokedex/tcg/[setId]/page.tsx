@@ -60,6 +60,8 @@ export default async function SetPage({ params }: PageProps) {
     .sort((a, b) => b.p!.value - a.p!.value)[0];
   const date = formatApiDate(set.releaseDate, intl);
   const pager = pagerFor(tcgSetOrder(sets ?? []), (s) => s.id === set.id, (s) => ({ href: `/pokedex/tcg/${s.id}`, label: s.name }));
+  const kinds = kindNames(tiles);
+  const localKinds = kinds ? { kindNames: kinds } : {};
   const note = getLocale() === "en" ? tilePriceNote(tiles) : localPriceNote(tiles, serverT(tcgCards));
 
   const crumbs = breadcrumbList([
@@ -104,7 +106,7 @@ export default async function SetPage({ params }: PageProps) {
         <TcgUnavailable what="setCards" />
       ) : (
         <ClientMessages namespaces={[tcgCards]}>
-          <SetGallery tiles={tiles} kindNames={kindNames(tiles)} />
+          <SetGallery tiles={tiles} {...localKinds} />
         </ClientMessages>
       )}
       <p className="text-center text-xs text-muted-foreground" data-testid="tcg-price-note">

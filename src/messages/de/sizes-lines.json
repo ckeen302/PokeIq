@@ -1,0 +1,283 @@
+{
+  "order": {
+    "height": {
+      "label": "Größe",
+      "short": "Größe",
+      "by": "Größe",
+      "byHigh": "Größe, die größten zuerst",
+      "lowFirst": "Kleinste zuerst",
+      "highFirst": "Größte zuerst",
+      "top": "der Größte",
+      "bottom": "der Kleinste",
+      "more": "größer als",
+      "none": "keine gelistete Größe",
+      "leftOut": "Formen ohne gelistete Größe fehlen.",
+      "closeTo": "Pokémon mit ähnlicher Größe wie {name}",
+      "badge": "Größe"
+    },
+    "weight": {
+      "label": "Gewicht",
+      "short": "Gewicht",
+      "by": "Gewicht",
+      "byHigh": "Gewicht, die schwersten zuerst",
+      "lowFirst": "Leichteste zuerst",
+      "highFirst": "Schwerste zuerst",
+      "top": "der Schwerste",
+      "bottom": "der Leichteste",
+      "more": "schwerer als",
+      "none": "kein gelistetes Gewicht",
+      "leftOut": "Formen ohne gelistetes Gewicht fehlen.",
+      "closeTo": "Pokémon mit ähnlichem Gewicht wie {name}",
+      "badge": "kg Gewicht"
+    },
+    "hp": {
+      "label": "KP",
+      "short": "KP",
+      "by": "KP",
+      "byHigh": "KP, die höchsten zuerst",
+      "lowFirst": "Niedrigste zuerst",
+      "highFirst": "Höchste zuerst",
+      "top": "der höchste Wert",
+      "bottom": "der niedrigste Wert",
+      "more": "höher als",
+      "none": "keine gelisteten Basiswerte",
+      "leftOut": "Formen ohne gelistete Basiswerte fehlen.",
+      "closeTo": "Pokémon mit ähnlichem KP-Basiswert wie {name}",
+      "badge": "KP"
+    },
+    "atk": {
+      "label": "Angriff",
+      "short": "Angriff",
+      "by": "Angriff",
+      "byHigh": "Angriff, die höchsten zuerst",
+      "lowFirst": "Niedrigste zuerst",
+      "highFirst": "Höchste zuerst",
+      "top": "der höchste Wert",
+      "bottom": "der niedrigste Wert",
+      "more": "höher als",
+      "none": "keine gelisteten Basiswerte",
+      "leftOut": "Formen ohne gelistete Basiswerte fehlen.",
+      "closeTo": "Pokémon mit ähnlichem Angriffs-Basiswert wie {name}",
+      "badge": "Angriff"
+    },
+    "def": {
+      "label": "Verteidigung",
+      "short": "Vert.",
+      "by": "Verteidigung",
+      "byHigh": "Verteidigung, die höchsten zuerst",
+      "lowFirst": "Niedrigste zuerst",
+      "highFirst": "Höchste zuerst",
+      "top": "der höchste Wert",
+      "bottom": "der niedrigste Wert",
+      "more": "höher als",
+      "none": "keine gelisteten Basiswerte",
+      "leftOut": "Formen ohne gelistete Basiswerte fehlen.",
+      "closeTo": "Pokémon mit ähnlichem Verteidigungs-Basiswert wie {name}",
+      "badge": "Vert."
+    },
+    "spa": {
+      "label": "Spezialangriff",
+      "short": "Sp.-Angr.",
+      "by": "Spezialangriff",
+      "byHigh": "Spezialangriff, die höchsten zuerst",
+      "lowFirst": "Niedrigste zuerst",
+      "highFirst": "Höchste zuerst",
+      "top": "der höchste Wert",
+      "bottom": "der niedrigste Wert",
+      "more": "höher als",
+      "none": "keine gelisteten Basiswerte",
+      "leftOut": "Formen ohne gelistete Basiswerte fehlen.",
+      "closeTo": "Pokémon mit ähnlichem Spezialangriffs-Basiswert wie {name}",
+      "badge": "Sp.-Angr."
+    },
+    "spd": {
+      "label": "Spezialverteidigung",
+      "short": "Sp.-Vert.",
+      "by": "Spezialverteidigung",
+      "byHigh": "Spezialverteidigung, die höchsten zuerst",
+      "lowFirst": "Niedrigste zuerst",
+      "highFirst": "Höchste zuerst",
+      "top": "der höchste Wert",
+      "bottom": "der niedrigste Wert",
+      "more": "höher als",
+      "none": "keine gelisteten Basiswerte",
+      "leftOut": "Formen ohne gelistete Basiswerte fehlen.",
+      "closeTo": "Pokémon mit ähnlichem Spezialverteidigungs-Basiswert wie {name}",
+      "badge": "Sp.-Vert."
+    },
+    "spe": {
+      "label": "Initiative",
+      "short": "Init.",
+      "by": "Initiative",
+      "byHigh": "Initiative, die schnellsten zuerst",
+      "lowFirst": "Langsamste zuerst",
+      "highFirst": "Schnellste zuerst",
+      "top": "der Schnellste",
+      "bottom": "der Langsamste",
+      "more": "schneller als",
+      "none": "keine gelisteten Basiswerte",
+      "leftOut": "Formen ohne gelistete Basiswerte fehlen.",
+      "closeTo": "Pokémon mit ähnlichem Initiative-Basiswert wie {name}",
+      "badge": "Initiative"
+    },
+    "bst": {
+      "label": "Basiswertsumme",
+      "short": "Summe",
+      "by": "Basiswertsumme",
+      "byHigh": "Basiswertsumme, die höchsten zuerst",
+      "lowFirst": "Niedrigste zuerst",
+      "highFirst": "Höchste zuerst",
+      "top": "der höchste Wert",
+      "bottom": "der niedrigste Wert",
+      "more": "höher als",
+      "none": "keine gelisteten Basiswerte",
+      "leftOut": "Formen ohne gelistete Basiswerte fehlen.",
+      "closeTo": "Pokémon mit ähnlicher Basiswertsumme wie {name}",
+      "badge": "Summe"
+    }
+  },
+  "presets": {
+    "every-pokemon": {
+      "label": "Alle Pokémon",
+      "title": "Alle Pokémon nach Größe",
+      "titleBy": "Alle Pokémon nach {by}",
+      "hook": "Alle Pokémon nach Größe 😳",
+      "hookBy": "Alle Pokémon nach {by} 😳"
+    },
+    "legendaries": {
+      "label": "Legendäre & Mysteriöse",
+      "title": "Alle legendären und mysteriösen Pokémon nach Größe",
+      "titleBy": "Alle legendären und mysteriösen Pokémon nach {by}",
+      "hook": "Legendäre & Mysteriöse nach Größe 😳",
+      "hookBy": "Legendäre & Mysteriöse nach {by} 😳"
+    },
+    "starters": {
+      "label": "Starter",
+      "title": "Alle Starter-Pokémon nach Größe",
+      "titleBy": "Alle Starter-Pokémon nach {by}",
+      "hook": "Alle Starter nach Größe 🔥💧🌿",
+      "hookBy": "Alle Starter nach {by} 🔥💧🌿"
+    },
+    "eeveelutions": {
+      "label": "Evoli-Entwicklungen",
+      "title": "Evoli und alle Entwicklungen nach Größe",
+      "titleBy": "Evoli und alle Entwicklungen nach {by}",
+      "hook": "Alle Evoli-Entwicklungen nach Größe ✨",
+      "hookBy": "Alle Evoli-Entwicklungen nach {by} ✨"
+    },
+    "gen-1": {
+      "label": "Gen. 1",
+      "title": "Die Pokémon der 1. Generation nach Größe",
+      "titleBy": "Die Pokémon der 1. Generation nach {by}",
+      "hook": "Die Pokémon der 1. Generation nach Größe 😳",
+      "hookBy": "Die Pokémon der 1. Generation nach {by} 😳"
+    },
+    "gigantamax": {
+      "label": "Gigadynamax",
+      "title": "Alle Gigadynamax-Pokémon nach Größe",
+      "titleBy": "Alle Gigadynamax-Pokémon nach {by}",
+      "hook": "Alle Gigadynamax-Pokémon nach Größe 😳",
+      "hookBy": "Alle Gigadynamax-Pokémon nach {by} 😳"
+    },
+    "bigger-than-a-house": {
+      "label": "Größer als ein Haus",
+      "title": "Pokémon, die größer sind als ein Haus",
+      "titleBy": "Pokémon, die größer sind als ein Haus, nach {by}",
+      "hook": "Größer als ein Haus 🏠",
+      "hookBy": "Größer als ein Haus, nach {by} 🏠"
+    },
+    "smaller-than-your-phone": {
+      "label": "Kleiner als dein Handy",
+      "title": "Pokémon, die kleiner sind als dein Handy",
+      "titleBy": "Pokémon, die kleiner sind als dein Handy, nach {by}",
+      "hook": "Kleiner als dein Handy 📱",
+      "hookBy": "Kleiner als dein Handy, nach {by} 📱"
+    }
+  },
+  "compare": {
+    "sep": " vs. ",
+    "caption": "{names} nach Größe",
+    "captionBy": "{names} nach {by}",
+    "hook": "{names} 😳",
+    "hookBy": "{names}, nach {by} 😳",
+    "empty": "Pokémon nach Größe 😳",
+    "emptyBy": "Pokémon nach {by} 😳"
+  },
+  "kind": {
+    "pokemon": "Pokémon",
+    "mega": "Mega-Entwicklung",
+    "gmax": "Gigadynamax",
+    "regional": "Regionalform",
+    "eternamax": "Unendynamax",
+    "ref": "Echte Größe"
+  },
+  "tag": "{label} {value}",
+  "range": {
+    "height": "{a} bis {b}",
+    "other": "{label} {a} bis {b}"
+  },
+  "note": {
+    "refs": "Echte Größen stehen nur in der Reihenfolge nach Größe."
+  },
+  "list": {
+    "orderBy": "Sortieren nach",
+    "direction": "Richtung",
+    "show": "Anzeigen",
+    "pokemon": "Pokémon",
+    "size": "Größe",
+    "weight": "Gewicht",
+    "dex": "Nr.",
+    "refSize": "echte Größe",
+    "length": " · Länge",
+    "lengthAlone": "Länge"
+  },
+  "unit": {
+    "height": "Größe",
+    "length": "Länge",
+    "times": "{k}-mal"
+  },
+  "badge": {
+    "meterHeight": "m Größe",
+    "meterLength": "m Länge",
+    "lengthTag": "(LÄNGE)",
+    "baseStat": "Basiswert",
+    "baseStats": "Basiswerte"
+  },
+  "fact": {
+    "refSize": {
+      "car": "{name} ist{min, select, yes { mindestens} other {}} {k} so groß wie ein Auto",
+      "bus": "{name} ist{min, select, yes { mindestens} other {}} {k} so groß wie ein Schulbus",
+      "house": "{name} ist{min, select, yes { mindestens} other {}} {k} so groß wie ein zweistöckiges Haus",
+      "building": "{name} ist{min, select, yes { mindestens} other {}} {k} so groß wie ein zehnstöckiges Gebäude",
+      "human": "{name} ist{min, select, yes { mindestens} other {}} {k} so groß wie ein erwachsener Mensch"
+    },
+    "tallerThanHuman": "{name} ist{min, select, yes { mindestens} other {}} {k} so groß wie ein erwachsener Mensch",
+    "longerThanHuman": "{name} ist{min, select, yes { mindestens} other {}} {k} so lang wie ein erwachsener Mensch",
+    "youAre": "Du bist {k} so groß wie {name}",
+    "weighs": "{name} wiegt {weight}",
+    "isTall": "{name} ist {size} groß",
+    "isLong": "{name} ist {size} lang",
+    "span": "{big} ist {k} so groß wie {small}",
+    "stat": {
+      "hp": "{name} hat einen KP-Basiswert von {v}",
+      "atk": "{name} hat einen Angriffs-Basiswert von {v}",
+      "def": "{name} hat einen Verteidigungs-Basiswert von {v}",
+      "spa": "{name} hat einen Spezialangriffs-Basiswert von {v}",
+      "spd": "{name} hat einen Spezialverteidigungs-Basiswert von {v}",
+      "spe": "{name} hat einen Initiative-Basiswert von {v}",
+      "bst": "{name} hat eine Basiswertsumme von {v}"
+    },
+    "rank": "{what}: {joint, select, yes {gemeinsam } other {}}{sup} in dieser Reihe",
+    "more": "{what}: {more} {pct} % dieser Reihe",
+    "spanWeight": "{hi} ist {k} so schwer wie {lo}",
+    "spanStat": {
+      "hp": "Der KP-Basiswert von {hi} ist {k} so hoch wie der von {lo}",
+      "atk": "Der Angriffs-Basiswert von {hi} ist {k} so hoch wie der von {lo}",
+      "def": "Der Verteidigungs-Basiswert von {hi} ist {k} so hoch wie der von {lo}",
+      "spa": "Der Spezialangriffs-Basiswert von {hi} ist {k} so hoch wie der von {lo}",
+      "spd": "Der Spezialverteidigungs-Basiswert von {hi} ist {k} so hoch wie der von {lo}",
+      "spe": "Der Initiative-Basiswert von {hi} ist {k} so hoch wie der von {lo}",
+      "bst": "Die Basiswertsumme von {hi} ist {k} so hoch wie die von {lo}"
+    }
+  }
+}

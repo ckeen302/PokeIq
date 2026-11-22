@@ -1,0 +1,283 @@
+{
+  "order": {
+    "height": {
+      "label": "Height",
+      "short": "Height",
+      "by": "size",
+      "byHigh": "size, largest first",
+      "lowFirst": "Smallest first",
+      "highFirst": "Largest first",
+      "top": "largest",
+      "bottom": "smallest",
+      "more": "bigger than",
+      "none": "listed height",
+      "leftOut": "Forms without a listed height are left out.",
+      "closeTo": "Pokémon close to {name}'s size",
+      "badge": "height"
+    },
+    "weight": {
+      "label": "Weight",
+      "short": "Weight",
+      "by": "Weight",
+      "byHigh": "Weight, heaviest first",
+      "lowFirst": "Lightest first",
+      "highFirst": "Heaviest first",
+      "top": "heaviest",
+      "bottom": "lightest",
+      "more": "heavier than",
+      "none": "listed weight",
+      "leftOut": "Forms without a listed weight are left out.",
+      "closeTo": "Pokémon close to {name}'s Weight",
+      "badge": "kg weight"
+    },
+    "hp": {
+      "label": "HP",
+      "short": "HP",
+      "by": "HP",
+      "byHigh": "HP, highest first",
+      "lowFirst": "Lowest first",
+      "highFirst": "Highest first",
+      "top": "highest",
+      "bottom": "lowest",
+      "more": "higher than",
+      "none": "listed base stats",
+      "leftOut": "Forms without listed base stats are left out.",
+      "closeTo": "Pokémon close to {name}'s HP",
+      "badge": "hp"
+    },
+    "atk": {
+      "label": "Attack",
+      "short": "Attack",
+      "by": "Attack",
+      "byHigh": "Attack, highest first",
+      "lowFirst": "Lowest first",
+      "highFirst": "Highest first",
+      "top": "highest",
+      "bottom": "lowest",
+      "more": "higher than",
+      "none": "listed base stats",
+      "leftOut": "Forms without listed base stats are left out.",
+      "closeTo": "Pokémon close to {name}'s Attack",
+      "badge": "attack"
+    },
+    "def": {
+      "label": "Defense",
+      "short": "Defense",
+      "by": "Defense",
+      "byHigh": "Defense, highest first",
+      "lowFirst": "Lowest first",
+      "highFirst": "Highest first",
+      "top": "highest",
+      "bottom": "lowest",
+      "more": "higher than",
+      "none": "listed base stats",
+      "leftOut": "Forms without listed base stats are left out.",
+      "closeTo": "Pokémon close to {name}'s Defense",
+      "badge": "defense"
+    },
+    "spa": {
+      "label": "Sp. Atk",
+      "short": "Sp. Atk",
+      "by": "Sp. Atk",
+      "byHigh": "Sp. Atk, highest first",
+      "lowFirst": "Lowest first",
+      "highFirst": "Highest first",
+      "top": "highest",
+      "bottom": "lowest",
+      "more": "higher than",
+      "none": "listed base stats",
+      "leftOut": "Forms without listed base stats are left out.",
+      "closeTo": "Pokémon close to {name}'s Sp. Atk",
+      "badge": "sp. atk"
+    },
+    "spd": {
+      "label": "Sp. Def",
+      "short": "Sp. Def",
+      "by": "Sp. Def",
+      "byHigh": "Sp. Def, highest first",
+      "lowFirst": "Lowest first",
+      "highFirst": "Highest first",
+      "top": "highest",
+      "bottom": "lowest",
+      "more": "higher than",
+      "none": "listed base stats",
+      "leftOut": "Forms without listed base stats are left out.",
+      "closeTo": "Pokémon close to {name}'s Sp. Def",
+      "badge": "sp. def"
+    },
+    "spe": {
+      "label": "Speed",
+      "short": "Speed",
+      "by": "Speed",
+      "byHigh": "Speed, fastest first",
+      "lowFirst": "Slowest first",
+      "highFirst": "Fastest first",
+      "top": "fastest",
+      "bottom": "slowest",
+      "more": "faster than",
+      "none": "listed base stats",
+      "leftOut": "Forms without listed base stats are left out.",
+      "closeTo": "Pokémon close to {name}'s Speed",
+      "badge": "speed"
+    },
+    "bst": {
+      "label": "Base stat total",
+      "short": "Stat total",
+      "by": "Base Stat Total",
+      "byHigh": "Base Stat Total, highest first",
+      "lowFirst": "Lowest first",
+      "highFirst": "Highest first",
+      "top": "highest",
+      "bottom": "lowest",
+      "more": "higher than",
+      "none": "listed base stats",
+      "leftOut": "Forms without listed base stats are left out.",
+      "closeTo": "Pokémon close to {name}'s Base stat total",
+      "badge": "base total"
+    }
+  },
+  "presets": {
+    "every-pokemon": {
+      "label": "Every Pokémon",
+      "title": "Every Pokémon by size",
+      "titleBy": "Every Pokémon by {by}",
+      "hook": "Every Pokémon by size 😳",
+      "hookBy": "Every Pokémon by {by} 😳"
+    },
+    "legendaries": {
+      "label": "Legendaries & Mythicals",
+      "title": "Every Legendary and Mythical Pokémon by size",
+      "titleBy": "Every Legendary and Mythical Pokémon by {by}",
+      "hook": "Every Legendary & Mythical Pokémon by size 😳",
+      "hookBy": "Every Legendary & Mythical Pokémon by {by} 😳"
+    },
+    "starters": {
+      "label": "Starters",
+      "title": "Every starter Pokémon by size",
+      "titleBy": "Every starter Pokémon by {by}",
+      "hook": "Every starter Pokémon by size 🔥💧🌿",
+      "hookBy": "Every starter Pokémon by {by} 🔥💧🌿"
+    },
+    "eeveelutions": {
+      "label": "Eeveelutions",
+      "title": "Eevee and every Eeveelution by size",
+      "titleBy": "Eevee and every Eeveelution by {by}",
+      "hook": "Every Eeveelution by size ✨",
+      "hookBy": "Every Eeveelution by {by} ✨"
+    },
+    "gen-1": {
+      "label": "Gen 1",
+      "title": "Every Generation I Pokémon by size",
+      "titleBy": "Every Generation I Pokémon by {by}",
+      "hook": "All 151 Gen 1 Pokémon by size 😳",
+      "hookBy": "All 151 Gen 1 Pokémon by {by} 😳"
+    },
+    "gigantamax": {
+      "label": "Gigantamax",
+      "title": "Every Gigantamax Pokémon by size",
+      "titleBy": "Every Gigantamax Pokémon by {by}",
+      "hook": "Every Gigantamax Pokémon by size 😳",
+      "hookBy": "Every Gigantamax Pokémon by {by} 😳"
+    },
+    "bigger-than-a-house": {
+      "label": "Bigger than a house",
+      "title": "Pokémon bigger than a house",
+      "titleBy": "Pokémon bigger than a house, by {by}",
+      "hook": "Pokémon bigger than a house 🏠",
+      "hookBy": "Pokémon bigger than a house, by {by} 🏠"
+    },
+    "smaller-than-your-phone": {
+      "label": "Smaller than your phone",
+      "title": "Pokémon smaller than your phone",
+      "titleBy": "Pokémon smaller than your phone, by {by}",
+      "hook": "Pokémon smaller than your phone 📱",
+      "hookBy": "Pokémon smaller than your phone, by {by} 📱"
+    }
+  },
+  "compare": {
+    "sep": " vs ",
+    "caption": "{names} by size",
+    "captionBy": "{names} by {by}",
+    "hook": "{names} 😳",
+    "hookBy": "{names}, by {by} 😳",
+    "empty": "Pokémon by size 😳",
+    "emptyBy": "Pokémon by {by} 😳"
+  },
+  "kind": {
+    "pokemon": "Pokémon",
+    "mega": "Mega Evolution",
+    "gmax": "Gigantamax",
+    "regional": "Regional form",
+    "eternamax": "Eternamax",
+    "ref": "Real-world size"
+  },
+  "tag": "{label} {value}",
+  "range": {
+    "height": "{a} to {b}",
+    "other": "{label} {a} to {b}"
+  },
+  "note": {
+    "refs": "Real-world sizes stand in the Height order only."
+  },
+  "list": {
+    "orderBy": "Order by",
+    "direction": "Direction",
+    "show": "Show",
+    "pokemon": "Pokémon",
+    "size": "Size",
+    "weight": "Weight",
+    "dex": "Dex",
+    "refSize": "real-world size",
+    "length": " · length",
+    "lengthAlone": "length"
+  },
+  "unit": {
+    "height": "Height",
+    "length": "Length",
+    "times": "{k}×"
+  },
+  "badge": {
+    "meterHeight": "meter height",
+    "meterLength": "meter length",
+    "lengthTag": "(LENGTH)",
+    "baseStat": "base stat",
+    "baseStats": "base stats"
+  },
+  "fact": {
+    "refSize": {
+      "car": "{name} is{min, select, yes { at least} other {}} {k} the size of a car",
+      "bus": "{name} is{min, select, yes { at least} other {}} {k} the size of a school bus",
+      "house": "{name} is{min, select, yes { at least} other {}} {k} the size of a two-storey house",
+      "building": "{name} is{min, select, yes { at least} other {}} {k} the size of a 10-storey building",
+      "human": "{name} is{min, select, yes { at least} other {}} {k} the size of a adult human"
+    },
+    "tallerThanHuman": "{name} is{min, select, yes { at least} other {}} {k} as tall as an adult human",
+    "longerThanHuman": "{name} is{min, select, yes { at least} other {}} {k} as long as an adult human",
+    "youAre": "You are {k} as tall as {name}",
+    "weighs": "{name} weighs {weight}",
+    "isTall": "{name} is {size} tall",
+    "isLong": "{name} is {size} long",
+    "span": "{big} is {k} the size of {small}",
+    "stat": {
+      "hp": "{name}'s base HP is {v}",
+      "atk": "{name}'s base Attack is {v}",
+      "def": "{name}'s base Defense is {v}",
+      "spa": "{name}'s base Sp. Atk is {v}",
+      "spd": "{name}'s base Sp. Def is {v}",
+      "spe": "{name}'s base Speed is {v}",
+      "bst": "{name}'s base stat total is {v}"
+    },
+    "rank": "{what}: the {joint, select, yes {joint } other {}}{sup} in this line",
+    "more": "{what}: {more} {pct}% of this line",
+    "spanWeight": "{hi} is {k} as heavy as {lo}",
+    "spanStat": {
+      "hp": "{hi}'s base HP is {k} {lo}'s",
+      "atk": "{hi}'s base Attack is {k} {lo}'s",
+      "def": "{hi}'s base Defense is {k} {lo}'s",
+      "spa": "{hi}'s base Sp. Atk is {k} {lo}'s",
+      "spd": "{hi}'s base Sp. Def is {k} {lo}'s",
+      "spe": "{hi}'s base Speed is {k} {lo}'s",
+      "bst": "{hi}'s base stat total is {k} {lo}'s"
+    }
+  }
+}

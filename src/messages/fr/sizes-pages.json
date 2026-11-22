@@ -1,0 +1,62 @@
+{
+  "meta": {
+    "mainTitle": "Comparaison de tailles Pokémon : tous les Pokémon à l’échelle en 3D",
+    "mainDescription": "Tous les Pokémon côte à côte à leur taille réelle, de 0,1 m à Éthernatos Infinimax et ses 100 m, dans une Illumis en 3D. Lance le survol, compare n’importe quel Pokémon et crée ta propre vidéo de comparaison pour TikTok, Reels et Shorts.",
+    "mainSocial": "Tous les Pokémon à l’échelle, en 3D · PokéIQ",
+    "orderTitle": "{title} (tous les Pokémon à l’échelle en 3D)",
+    "orderDescription": "Tous les Pokémon alignés par {label}, chacun à sa taille réelle, dans une Illumis en 3D. Lance le survol, compare n’importe quel Pokémon ou crée une vidéo.",
+    "social": "{title} · PokéIQ",
+    "presetTitle": "{title} (comparaison de tailles en 3D)",
+    "presetDescription": "{blurb} Vois-les à l’échelle en 3D, compare-en deux ou crée une vidéo de comparaison de tailles.",
+    "itemTitle": "Quelle taille fait {name} ? {size} de {measure}",
+    "itemTall": "{name} mesure {size} de haut{weighs}. Vois-le à l’échelle à côté de tous les autres Pokémon et d’un humain adulte en 3D.",
+    "itemLong": "{name} mesure {size} de long{weighs}. Vois-le à l’échelle à côté de tous les autres Pokémon et d’un humain adulte en 3D.",
+    "itemWeighs": " et pèse {kg} kg",
+    "itemSocial": "Quelle taille fait {name} ? · PokéIQ",
+    "compareTitle": "Compare la taille des Pokémon en 3D",
+    "compareDescription": "Place de 2 à 6 Pokémon côte à côte à leur taille réelle en 3D, puis partage la comparaison ou fais-en une vidéo.",
+    "compareImage": "Tous les Pokémon à l’échelle, en 3D",
+    "pairTitle": "{names} : comparaison de tailles",
+    "pairTitleBy": "{names} : comparaison de tailles, par {by}",
+    "pairDescription": "{list}. Côte à côte à leur taille réelle en 3D sur PokéIQ.",
+    "pairImage": "{names}, côte à côte à leur taille réelle"
+  },
+  "main": {
+    "kicker": "Pokémon à l’échelle",
+    "title": "Tailles des ",
+    "accent": "Pokémon",
+    "blurb": "Tous les Pokémon côte à côte à leur taille réelle, du plus petit à 0,1 m jusqu’à Éthernatos Infinimax et ses 100 m, dans une Illumis ensoleillée. Classe-les par taille, poids ou n’importe quelle stat de base, lance le survol, explore, compare ceux que tu veux ou crée ta propre vidéo de tailles."
+  },
+  "preset": {
+    "kicker": "Tailles des Pokémon",
+    "title": "{label} ",
+    "accent": "par taille"
+  },
+  "blurbs": {
+    "every-pokemon": "Tous les Pokémon dans une seule file, de 0,1 m à Éthernatos Infinimax et ses 100 m.",
+    "legendaries": "Tous les Pokémon légendaires et fabuleux côte à côte, avec Éthernatos Infinimax pour finir.",
+    "starters": "Toutes les lignées de starters, de Bulbizarre à Palmaval, du premier stade à l’évolution finale.",
+    "eeveelutions": "Évoli et ses évolutions, d’Aquali à Nymphali.",
+    "gen-1": "Les originaux de Kanto, de Taupiqueur à Onix.",
+    "gigantamax": "Toutes les formes Gigamax à leur taille du Pokédex (toujours un minimum), avec Éthernatos Infinimax pour finir.",
+    "bigger-than-a-house": "Tous les Pokémon de plus de 6,2 m, la hauteur d’une maison à deux niveaux.",
+    "smaller-than-your-phone": "Tous les Pokémon plus petits qu’un smartphone (un iPhone 16 mesure 147,6 mm)."
+  },
+  "nav": {
+    "lineups": "Files",
+    "compare": "Comparer"
+  },
+  "footer": "Tailles et poids issus du Pokédex (PokéAPI) ; les tailles Gigamax sont le minimum indiqué par le Pokédex. Les Pokémon allongés, comme les serpents et les poissons, sont mesurés en longueur. Stats de base issues du Pokédex, et celles de chaque Méga-Évolution, forme régionale et forme Gigamax issues des données de Pokémon Showdown. Les tailles réelles sont des chiffres documentés, chacun avec sa source.",
+  "focus": {
+    "back": "Toutes les tailles des Pokémon",
+    "sizes": "Tailles des Pokémon",
+    "title": "Quelle taille fait {name} ?",
+    "height": "de haut",
+    "length": "de long",
+    "kg": " · {kg} kg",
+    "entry": "{name} dans le Pokédex"
+  },
+  "compare": {
+    "kicker": "Comparaison de tailles Pokémon"
+  }
+}
