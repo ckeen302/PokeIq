@@ -457,7 +457,7 @@ export default function ShinyMaker({ initial, linkBroken }: { initial: Design | 
             value={style}
             onChange={(st) => { if (design.style !== st) commit({ ...design, style: st }); setSel(-1); }}
             testId="sm-style"
-            items={STYLES.map((st) => ({ v: st, label: t(`styles.${st}`), disabled: !canStyle(st), title: canStyle(st) ? undefined : (st === "hd" || st === "art") && !gl2 ? t("extras.hdNoGl") : t("styles.unavailable") }))}
+            items={STYLES.map((st) => ({ v: st, label: t(`styles.${st}`), disabled: !canStyle(st), title: canStyle(st) ? undefined : (st === "hd" || st === "art") && !gl2 ? t("extras.hdNoGl") : sp && failed.has(`${st}:${sp.id}`) ? t("styles.loadFailed") : t("styles.unavailable") }))}
           />
         </div>
       )}

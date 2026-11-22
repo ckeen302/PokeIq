@@ -62,7 +62,8 @@
     "sd": "Animated",
     "hd": "3D",
     "art": "Artwork",
-    "unavailable": "Not ready for this Pokémon yet"
+    "unavailable": "Not ready for this Pokémon yet",
+    "loadFailed": "Couldn't load for this Pokémon, so it's showing in Pixel"
   },
   "extras": {
     "title": "More options",
