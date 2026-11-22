@@ -65,7 +65,7 @@ import { roundViewsOf } from "@/lib/geo-look";
 import { DifficultyPicker, GeoSettingsButton, RoundsPicker } from "./GeoSettings";
 import { DEFAULT_GEO_SETTINGS, GEO_ZOOM, readGeoSettings, rememberGeoSettings, secondsLeft, visibleViews, zoomOrigin, type GeoPlaySettings } from "@/lib/geo-settings";
 import { GameFilter, GameGuessPicker, type FilterChoice, filterPlaces, gameGuessOptions } from "./GameFilter";
-import { GEO_GAME_BONUS, type GeoEra, type GeoFamilyId } from "@/lib/geo-families";
+import { GEO_GAME_BONUS, geoFamily, type GeoEra, type GeoFamilyId } from "@/lib/geo-families";
 import { cn } from "@/lib/utils";
 import { preloadImage } from "@/lib/preload";
 import { readSeenShots, rememberSeenShot } from "@/lib/geo-seen";
@@ -1306,7 +1306,7 @@ function RoundReveal({
                 {graded.gameGuess.correct
                   ? t("reveal.rightGame", { bonus: fmt(graded.gameGuess.bonus) })
                   : graded.gameGuess.guessed
-                    ? t("reveal.wrongGame", { game: names.family(graded.gameGuess.guessed) })
+                    ? t("reveal.wrongGame", { game: names.game(geoFamily(graded.gameGuess.guessed).name) })
                     : t("reveal.noGame", { bonus: fmt(GEO_GAME_BONUS) })}
               </p>
             )}

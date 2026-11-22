@@ -232,6 +232,7 @@ function analyze(file, source, compile, registry, src, addDependency) {
   if (!translators.size) return result;
 
   const used = new Set();
+  const tables = new Map(); // a key expression's messages ("({…})") -> the module-level const holding them
   const en = (ns, key) => {
     const text = leaf(ns.tree, key);
     return text === undefined ? undefined : englishMessage(text, compile, `${ns.name}.${key}`, used, H);
@@ -250,8 +251,22 @@ function analyze(file, source, compile, registry, src, addDependency) {
       if (ts.isStringLiteral(e) || ts.isNoSubstitutionTemplateLiteral(e)) return patterns.push(new RegExp(`^${esc(e.text)}$`)), true;
       if (ts.isConditionalExpression(e)) return collect(e.whenTrue) && collect(e.whenFalse);
       if (ts.isTemplateExpression(e)) {
+        // A part that can only be some strings ("help" or "helpStrict") narrows the keys to those.
+        const options = (x0) => {
+          const x = unwrap(x0);
+          if (ts.isStringLiteral(x) || ts.isNoSubstitutionTemplateLiteral(x)) return [x.text];
+          if (ts.isConditionalExpression(x)) {
+            const a = options(x.whenTrue);
+            const b = a && options(x.whenFalse);
+            return b ? [...a, ...b] : null;
+          }
+          return null;
+        };
         let re = esc(e.head.text);
-        for (const span of e.templateSpans) re += `[^.]+${esc(span.literal.text)}`;
+        for (const span of e.templateSpans) {
+          const opts = options(span.expression);
+          re += `${opts ? `(?:${opts.map(esc).join("|")})` : "[^.]+"}${esc(span.literal.text)}`;
+        }
         return patterns.push(new RegExp(`^${re}$`)), true;
       }
       return false;
@@ -261,7 +276,11 @@ function analyze(file, source, compile, registry, src, addDependency) {
     const entries = [];
     for (const [key] of leaves(ns.tree)) if (patterns.some((re) => re.test(key))) entries.push(`${JSON.stringify(key)}:${en(ns, key)}`);
     if (!entries.length) return undefined;
-    return { map: `({${entries.join(",")}})` };
+    if (debug && entries.length > 6) console.log(`[i18n-inline] ${path.relative(process.cwd(), file)}:${sf.getLineAndCharacterOfPosition(keyNode.getStart(sf)).line + 1} inlines ${entries.length} messages for ${keyNode.getText(sf).slice(0, 70)}`);
+    // One table per distinct set of messages, shared by every call in the file that picks from it.
+    const text = `({${entries.join(",")}})`;
+    if (!tables.has(text)) tables.set(text, `__i18nMap${tables.size}`);
+    return { map: tables.get(text) };
   };
 
   const aliases = [];
@@ -363,9 +382,10 @@ function analyze(file, source, compile, registry, src, addDependency) {
     if (readsLocale || inDeps || tested) return;
     if (localArg) return void aliases.push([localArg, tr]);
     if (argIndex >= 0 && importedSafe(p, argIndex, tr.ns)) return;
+    const has = ts.isPropertyAccessExpression(p) && p.expression === n && p.name.text === "has" && ts.isCallExpression(p.parent) && p.parent.expression === p;
+    // Only another language's page gets here: its own messages answer, so no English rides along.
+    if ((has || call) && otherLanguageOnly(n)) return;
     if (english === undefined) {
-      const has = ts.isPropertyAccessExpression(p) && p.expression === n && p.name.text === "has" && ts.isCallExpression(p.parent) && p.parent.expression === p;
-      if ((has || call) && otherLanguageOnly(n)) return;
       tr.escapes = true;
       if (debug) console.log(`[i18n-inline] ${path.relative(process.cwd(), file)}:${sf.getLineAndCharacterOfPosition(n.getStart(sf)).line + 1} keeps ${tr.ns.name}: ${(call ?? p).getText(sf).slice(0, 90)}`);
       return;
@@ -428,7 +448,10 @@ function analyze(file, source, compile, registry, src, addDependency) {
   }
   if (!edits.length) return result;
   const lastImport = [...sf.statements].filter(ts.isImportDeclaration).pop();
-  const head = `\n${helperCode(used, H)}${[...stubs].map(([id, name]) => `const ${id}={name:${JSON.stringify(name)},en:{}};`).join("")}\n`;
+  // Only the tables some kept edit names (a translator that escapes keeps its namespace and drops its edits).
+  const kept = edits.map((e) => e[2]).join("\n");
+  const tableCode = [...tables].filter(([, id]) => kept.includes(id)).map(([text, id]) => `const ${id}=${text};`).join("");
+  const head = `\n${helperCode(used, H)}${[...stubs].map(([id, name]) => `const ${id}={name:${JSON.stringify(name)},en:{}};`).join("")}${tableCode}\n`;
   const at = lastImport ? lastImport.getEnd() : 0;
   if (head.trim()) edits.push([at, at, head]);
   edits.sort((a, b) => b[0] - a[0] || b[1] - a[1]);

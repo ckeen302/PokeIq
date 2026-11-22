@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { HAS_OTHER_LOCALES } from "@/i18n/config";
 import { useT } from "@/i18n/client";
 import { useLocale } from "@/i18n/locale-context";
 import board from "@/messages/pokedle-board";
@@ -31,13 +30,14 @@ export function DleLexiconProvider({ names, labels, children }: { names: readonl
 /** Categories ("Mouse Pokémon") by English key, in the page's language: loaded once, only when one is shown. */
 let genusLoad: Promise<Record<string, string>> | null = null;
 function loadGenus(locale: string): Promise<Record<string, string>> {
-  // An English-only build never has another language: no chunk, no request.
-  if (!HAS_OTHER_LOCALES) return Promise.resolve({});
-  genusLoad ??= import(`@/data/i18n/${locale}/genus.json`).then((m: { default: Record<string, string> }) => m.default).catch(() => {
-    genusLoad = null;
-    return {};
-  });
-  return genusLoad;
+  // An English-only build never has another language: no chunk, no request (the test reads the build's inlined
+  // LIVE_LOCALES itself, so the bundler drops the import and its list of the languages' files).
+  return process.env.LIVE_LOCALES
+    ? (genusLoad ??= import(`@/data/i18n/${locale}/genus.json`).then((m: { default: Record<string, string> }) => m.default).catch(() => {
+        genusLoad = null;
+        return {};
+      }))
+    : Promise.resolve({});
 }
 
 export interface DleWords {

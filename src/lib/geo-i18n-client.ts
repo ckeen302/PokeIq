@@ -4,10 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { DEFAULT_LOCALE, type Locale, type OtherLocale } from "@/i18n/config";
 import { useT } from "@/i18n/client";
 import geoNamesNs from "@/messages/geo-names";
-import type { GeoEra, GeoFamilyId } from "./geo-families";
+import type { GeoEra } from "./geo-families";
 import type { GeoDifficulty } from "./geo-difficulty";
 import { placeLabel, type PlaceLocal } from "./geo-names";
-import { localDifficulty, localEra, localFamily, localGame, localMap, localPlace, localRegion } from "./geo-i18n";
+import { localDifficulty, localEra, localGame, localMap, localPlace, localRegion } from "./geo-i18n";
 
 /**
  * PokéGuessr's names in the browser, in the page's language (see geo-i18n.ts). Place names come from that language's
@@ -58,7 +58,6 @@ export interface GeoLocal extends PlaceLocal {
   region: (name: string) => string;
   map: (map: { id: string; name: string }) => string;
   game: (label: string) => string;
-  family: (id: GeoFamilyId) => string;
   era: (era: GeoEra | "all") => string;
   difficulty: (d: GeoDifficulty) => string;
   /** "Silph Co. · Saffron City", plus the region when the map doesn't make it obvious. */
@@ -74,7 +73,6 @@ export function useGeoNames(): GeoLocal {
       region: (name) => localRegion(t, name),
       map: (map) => localMap(t, map),
       game: (label) => localGame(t, label),
-      family: (id) => localFamily(t, id),
       era: (era) => localEra(t, era),
       difficulty: (d) => localDifficulty(t, d),
       place: (name) => localPlace(t, places, name),

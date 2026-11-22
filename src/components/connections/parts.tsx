@@ -12,11 +12,11 @@ import { useT } from "@/i18n/client";
 import type { Translator } from "@/i18n/catalog";
 import board from "@/messages/connections-board";
 import { useTileName } from "./names";
+import { levelName } from "./level";
 
 export type BoardT = Translator<typeof board.en>;
 
-/** A level's colour name ("Yellow"), in the page's language. */
-export const levelName = (t: BoardT, level: ConnLevel) => t(`level.${level}`);
+export { levelName } from "./level";
 
 /** The group colour as a CSS colour, and dark text that reads on it in either theme. */
 export const levelStyle = (level: ConnLevel) => ({ background: CONN_LEVELS[level].hex, color: "#17142b" });

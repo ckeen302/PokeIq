@@ -333,7 +333,7 @@ export function battleOpponent(r: Pick<BattleShareResult, "cpu" | "ranked">, t: 
 export function battleShareText(r: BattleShareResult, url?: string, formatName?: string, t: ShareT = translator(share, "en", undefined)): string {
   return composeShare({
     title: t("battle.title"),
-    score: t(`battle.${r.outcome}`),
+    score: t(r.outcome === "win" ? "battle.win" : r.outcome === "loss" ? "battle.loss" : "battle.tie"),
     lines: [`${formatName ?? PLAY_FORMAT_INFO[r.format].name} · ${battleOpponent(r, t)} · ${t("battle.turns", { n: r.turns })}`],
     url,
   });

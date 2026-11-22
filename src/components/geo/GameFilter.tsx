@@ -4,6 +4,7 @@ import { GEO_FILTER_MIN_PLACES, type GeoRegionInfo } from "@/lib/geo-types";
 import {
   GEO_GAME_BONUS,
   allowedFamilies,
+  geoFamily,
   placesFor,
   type GeoEra,
   type GeoFamilyId,
@@ -134,7 +135,7 @@ export function GameGuessPicker({ options, value, onChange }: { options: GeoFami
         <option value="">{t("filter.which", { bonus: formatNumber(GEO_GAME_BONUS, t.locale) })}</option>
         {options.map((id) => (
           <option key={id} value={id}>
-            {names.family(id)}
+            {names.game(geoFamily(id).name)}
           </option>
         ))}
       </select>

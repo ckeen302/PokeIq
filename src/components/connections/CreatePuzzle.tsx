@@ -14,8 +14,8 @@ import { useT } from "@/i18n/client";
 import { localizePath } from "@/i18n/paths";
 import create from "@/messages/connections-create";
 import board from "@/messages/connections-board";
-import { suggest as searchNames, type NameEntry } from "@/components/pokedle/search";
-import { levelName } from "./parts";
+import type { NameEntry } from "@/components/pokedle/search";
+import { levelName } from "./level";
 import { useTileName } from "./names";
 
 /**
@@ -89,8 +89,14 @@ export function CreatePuzzle({ names }: { names?: readonly NameEntry[] } = {}) {
       return;
     }
     if (names) {
-      setResults(searchNames(names, query, new Set(), 8).entries.map(([id, name]) => ({ id, name })));
-      return;
+      // Another language's page searches its names here (the search is loaded only then: English pages never need it).
+      let live = true;
+      void import("@/components/pokedle/search").then(({ suggest }) => {
+        if (live) setResults(suggest(names, query, new Set(), 8).entries.map(([id, name]) => ({ id, name })));
+      }, () => live && setResults([]));
+      return () => {
+        live = false;
+      };
     }
     const timer = window.setTimeout(() => {
       fetch(`/api/connections/custom?q=${encodeURIComponent(query.trim())}`)
