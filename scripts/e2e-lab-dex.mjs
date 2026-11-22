@@ -30,7 +30,7 @@ async function settled(page, timeout = 240_000) {
     .waitForFunction(
       () => {
         const d = window.__labDex?.();
-        if (!d || !d.ready || d.settled === null) return false;
+        if (!d || !d.ready || d.settled === null || d.shown !== d.settled || d.wheel.target !== d.wheel.p) return false;
         if (d.mode === "2d") return true;
         return d.stats && d.stats.heroShown && d.stats.heroId === d.settled && d.stats.blankPods === 0;
       },
@@ -265,6 +265,7 @@ export async function runLabDex({ browser, BASE, OUT, errors, step }) {
     await p.getByTestId("lab-fallback").waitFor({ timeout: 30_000 });
     await settled(p);
     await p.keyboard.press("ArrowRight");
+    await p.waitForURL(/pick=134/, { timeout: 60_000 }).catch(() => undefined);
     await settled(p);
     if (pickOf(p) !== 134) errors.push(`lab-dex: the 2D wheel's → landed on ${pickOf(p)}`);
     await c.close();

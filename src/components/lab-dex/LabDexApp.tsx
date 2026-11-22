@@ -104,6 +104,8 @@ export function LabDexApp({ rows }: { rows: LabRow[] }) {
   const tierRef = useRef<Tier | null>(null);
   const frames = useRef(0);
   const reducedMotion = useRef(false);
+  /** What the frame loop last told React (reset when the sequence changes, so a slot number from the old sequence is never read against the new one). */
+  const loopMarks = useRef<{ shown: number | null; settled: number | null }>({ shown: null, settled: null });
 
   const len = seq.length;
   const monAt = useCallback((pos: number): LabMon => all[seqRef.current[mod(pos, seqRef.current.length)]], [all]);
@@ -150,6 +152,8 @@ export function LabDexApp({ rows }: { rows: LabRow[] }) {
     wheel.set(pos >= 0 ? pos : 0);
     version.current++;
     sceneRef.current?.setSequence(seq.length, (i) => all[seq[i]], version.current);
+    loopMarks.current = { shown: null, settled: null };
+    setSettled(null);
     setShown(seq.length ? wheel.p : null);
   }, [booted, seq, inSeq, all, wheel, currentMonId]);
 
@@ -159,8 +163,6 @@ export function LabDexApp({ rows }: { rows: LabRow[] }) {
     let raf = 0;
     let last = performance.now();
     const t0 = last;
-    let lastShown: number | null = null;
-    let lastSettled: number | null = null;
     let clock = 0;
     const q = new URLSearchParams(location.search).get("q");
     const nav = navigator as Navigator & { deviceMemory?: number };
@@ -178,9 +180,9 @@ export function LabDexApp({ rows }: { rows: LabRow[] }) {
       wheel.update(dt);
       const n = seqRef.current.length;
       const s = n === 0 ? null : wheel.target !== null && !wheel.dragging && Math.abs(wheel.p - wheel.target) < 0.5 ? wheel.target : Math.round(wheel.p);
-      if (s !== lastShown) { lastShown = s; setShown(s); }
+      if (s !== loopMarks.current.shown) { loopMarks.current.shown = s; setShown(s); }
       const st = n > 0 && wheel.settled() ? wheel.target : null;
-      if (st !== lastSettled) { lastSettled = st; setSettled(st); }
+      if (st !== loopMarks.current.settled) { loopMarks.current.settled = st; setSettled(st); }
       const scene = sceneRef.current;
       if (scene) {
         clock += dt;
@@ -279,6 +281,8 @@ export function LabDexApp({ rows }: { rows: LabRow[] }) {
       version.current++;
       sceneRef.current?.setSequence(n, (i) => all[seqRef.current[i]], version.current);
     }
+    // Already there: nothing moves, nothing to add to history.
+    if (target === wheel.rest() && wheel.settled()) return;
     wheel.goTo(target);
     if (push) pushNext.current = true;
   }, [all, wheel]);
@@ -333,6 +337,7 @@ export function LabDexApp({ rows }: { rows: LabRow[] }) {
     const v = viewRef.current;
     const next = { ...v, ...part };
     if (sameView(v, next)) return;
+    pushNext.current = false;
     window.history.pushState(null, "", `${location.pathname}?${viewToParams(next, pendingPick.current ?? currentMonId()).toString()}`);
     viewRef.current = next;
     setView(next);
