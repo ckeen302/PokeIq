@@ -1,0 +1,121 @@
+{
+  "brand": "Laboratorio del Professore",
+  "loading": "Calibrazione del laboratorio…",
+  "noWebgl": "Il 3D non è disponibile in questo browser, quindi il laboratorio mostra le schede degli esemplari.",
+  "searchLabel": "Cerca Pokémon",
+  "searchPlaceholder": "Cerca Pokémon",
+  "clearSearch": "Cancella ricerca",
+  "notInView": "Non rientra in questi filtri",
+  "showAll": "Mostralo",
+  "noMatch": "Nessun Pokémon corrisponde a questi filtri.",
+  "noSearchMatch": "Nessun Pokémon trovato",
+  "reset": "Azzera",
+  "filters": "Filtri",
+  "allTypes": "Tutti i tipi",
+  "types": "Tipi",
+  "typesHint": "Scegline fino a due",
+  "gen": "Gen.",
+  "genN": "Gen. {n}",
+  "legends": "Leggendari + misteriosi",
+  "final": "Ultimo stadio",
+  "forms": "Forme",
+  "formsHint": "Megaevoluzioni, forme regionali e Gigamax dopo ogni Pokémon",
+  "sortBy": "Ordina per",
+  "sortAsc": "Ordine crescente",
+  "sortDesc": "Ordine decrescente",
+  "specimen": "Esemplare",
+  "scanComplete": "Scansione completata",
+  "materialising": "Materializzazione…",
+  "biometrics": "Biometria",
+  "height": "Altezza",
+  "weight": "Peso",
+  "region": "Regione",
+  "entry": "Voce del Pokédex",
+  "abilities": "Abilità",
+  "hidden": "Nascosta",
+  "evolution": "Linea evolutiva",
+  "noEvolution": "Non si evolve",
+  "matchups": "Analisi dei tipi",
+  "weakTo": "Debole a",
+  "resists": "Resiste a",
+  "immune": "Immune",
+  "baseStats": "Statistiche base",
+  "roles": "Ruoli",
+  "total": "Totale",
+  "bestRole": "Ruolo migliore",
+  "rolesNote": "Ogni punteggio è confrontato con tutti i Pokémon",
+  "rolesNoteForms": "Ogni punteggio è confrontato con tutti i Pokémon e le loro forme",
+  "top": "Top {n}%",
+  "bottom": "Ultimo {n}%",
+  "openInDex": "Apri nel Pokédex",
+  "prev": "Precedente",
+  "next": "Successivo",
+  "prevNamed": "Precedente: {name}",
+  "nextNamed": "Successivo: {name}",
+  "hint": "Trascina o usa ← → per scegliere",
+  "hintTouch": "Scorri per scegliere",
+  "stage": "Il Laboratorio del Professore: una ruota di Pokémon. Usa le frecce sinistra e destra per girarla.",
+  "stageRole": "carosello",
+  "announce": "{name}, numero {no}, {types}",
+  "sheetHandle": "Mostra dettagli",
+  "sheetClose": "Nascondi dettagli",
+  "close": "Chiudi",
+  "done": "Fatto",
+  "evoJump": "Mostra {name}",
+  "captionIdle": "Laboratorio del Professore · Proiettore di esemplari",
+  "stats": {
+    "hp": "PS",
+    "atk": "Attacco",
+    "def": "Difesa",
+    "spa": "Att. Sp.",
+    "spd": "Dif. Sp.",
+    "spe": "Velocità"
+  },
+  "statsShort": {
+    "hp": "PS",
+    "atk": "ATT",
+    "def": "DIF",
+    "spa": "ATS",
+    "spd": "DIS",
+    "spe": "VEL"
+  },
+  "regions": {
+    "kanto": "Kanto",
+    "johto": "Johto",
+    "hoenn": "Hoenn",
+    "sinnoh": "Sinnoh",
+    "unova": "Unima",
+    "kalos": "Kalos",
+    "alola": "Alola",
+    "galar": "Galar",
+    "paldea": "Paldea",
+    "hisui": "Hisui"
+  },
+  "role": {
+    "physicalSweeper": {
+      "name": "Attaccante fisico",
+      "formula": "Attacco + Velocità"
+    },
+    "specialSweeper": {
+      "name": "Attaccante speciale",
+      "formula": "Att. Sp. + Velocità"
+    },
+    "wall": {
+      "name": "Muro",
+      "formula": "PS + Difesa + Dif. Sp."
+    },
+    "physicalTank": {
+      "name": "Tank fisico",
+      "formula": "Attacco + Difesa"
+    },
+    "specialTank": {
+      "name": "Tank speciale",
+      "formula": "Att. Sp. + Dif. Sp."
+    }
+  },
+  "sort": {
+    "id": "Numero",
+    "name": "Nome",
+    "bst": "Totale"
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "brand": "Labor des Professors",
+  "loading": "Labor wird kalibriert …",
+  "noWebgl": "3D ist in diesem Browser nicht verfügbar, darum zeigt das Labor seine Exemplar-Karten.",
+  "searchLabel": "Pokémon suchen",
+  "searchPlaceholder": "Pokémon suchen",
+  "clearSearch": "Suche löschen",
+  "notInView": "Nicht in diesen Filtern",
+  "showAll": "Trotzdem zeigen",
+  "noMatch": "Kein Pokémon passt zu diesen Filtern.",
+  "noSearchMatch": "Kein Pokémon gefunden",
+  "reset": "Zurücksetzen",
+  "filters": "Filter",
+  "allTypes": "Alle Typen",
+  "types": "Typen",
+  "typesHint": "Bis zu zwei wählen",
+  "gen": "Gen.",
+  "genN": "Gen. {n}",
+  "legends": "Legendär + mysteriös",
+  "final": "Voll entwickelt",
+  "forms": "Formen",
+  "formsHint": "Mega-Entwicklungen, Regional- und Gigadynamax-Formen nach jedem Pokémon",
+  "sortBy": "Sortieren nach",
+  "sortAsc": "Aufsteigend sortieren",
+  "sortDesc": "Absteigend sortieren",
+  "specimen": "Exemplar",
+  "scanComplete": "Scan abgeschlossen",
+  "materialising": "Materialisiert …",
+  "biometrics": "Biometrie",
+  "height": "Größe",
+  "weight": "Gewicht",
+  "region": "Region",
+  "entry": "Pokédex-Eintrag",
+  "abilities": "Fähigkeiten",
+  "hidden": "Versteckt",
+  "evolution": "Entwicklung",
+  "noEvolution": "Entwickelt sich nicht",
+  "matchups": "Typ-Analyse",
+  "weakTo": "Schwach gegen",
+  "resists": "Resistent",
+  "immune": "Immun",
+  "baseStats": "Basiswerte",
+  "roles": "Rollen",
+  "total": "Gesamt",
+  "bestRole": "Beste Rolle",
+  "rolesNote": "Jeder Wert im Vergleich mit allen Pokémon",
+  "rolesNoteForms": "Jeder Wert im Vergleich mit allen Pokémon und Formen",
+  "top": "Top {n} %",
+  "bottom": "Unterste {n} %",
+  "openInDex": "Im Pokédex öffnen",
+  "prev": "Zurück",
+  "next": "Weiter",
+  "prevNamed": "Zurück: {name}",
+  "nextNamed": "Weiter: {name}",
+  "hint": "Ziehen oder ← → zum Wählen",
+  "hintTouch": "Wischen zum Wählen",
+  "stage": "Das Labor des Professors: ein Rad aus Pokémon. Dreh es mit den Pfeiltasten links und rechts.",
+  "stageRole": "Karussell",
+  "announce": "{name}, Nummer {no}, {types}",
+  "sheetHandle": "Details zeigen",
+  "sheetClose": "Details ausblenden",
+  "close": "Schließen",
+  "done": "Fertig",
+  "evoJump": "{name} zeigen",
+  "captionIdle": "Labor des Professors · Exemplar-Projektor",
+  "stats": {
+    "hp": "KP",
+    "atk": "Angriff",
+    "def": "Vert.",
+    "spa": "Sp.-Angr.",
+    "spd": "Sp.-Vert.",
+    "spe": "Initiative"
+  },
+  "statsShort": {
+    "hp": "KP",
+    "atk": "ANG",
+    "def": "VER",
+    "spa": "SAN",
+    "spd": "SVE",
+    "spe": "INI"
+  },
+  "regions": {
+    "kanto": "Kanto",
+    "johto": "Johto",
+    "hoenn": "Hoenn",
+    "sinnoh": "Sinnoh",
+    "unova": "Einall",
+    "kalos": "Kalos",
+    "alola": "Alola",
+    "galar": "Galar",
+    "paldea": "Paldea",
+    "hisui": "Hisui"
+  },
+  "role": {
+    "physicalSweeper": {
+      "name": "Physischer Angreifer",
+      "formula": "Angriff + Initiative"
+    },
+    "specialSweeper": {
+      "name": "Spezieller Angreifer",
+      "formula": "Sp.-Angr. + Initiative"
+    },
+    "wall": {
+      "name": "Mauer",
+      "formula": "KP + Verteidigung + Sp.-Vert."
+    },
+    "physicalTank": {
+      "name": "Physischer Tank",
+      "formula": "Angriff + Verteidigung"
+    },
+    "specialTank": {
+      "name": "Spezieller Tank",
+      "formula": "Sp.-Angr. + Sp.-Vert."
+    }
+  },
+  "sort": {
+    "id": "Nummer",
+    "name": "Name",
+    "bst": "Gesamt"
+  }
+}

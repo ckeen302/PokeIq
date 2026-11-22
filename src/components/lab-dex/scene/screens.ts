@@ -1,3 +1,4 @@
+import type { LabWords } from "../strings";
 import * as THREE from "three";
 import { TYPE_COLORS } from "@/lib/pokemon/type-colors";
 import type { LabMon } from "@/lib/lab-dex/types";
@@ -13,6 +14,8 @@ export interface LabFonts {
   display: string;
   pixel: string;
   body: string;
+  /** A page in another language's words for the holo-table's caption (English pages: none, the caption's own). */
+  words?: LabWords;
 }
 
 const CYAN = "#7ee8ff";
@@ -359,9 +362,14 @@ export function captionBand(c: HTMLCanvasElement, e: LabMon | null, fonts: LabFo
   const g0 = c.getContext("2d")!;
   const font = `400 34px ${fonts.pixel}`;
   g0.font = font;
-  const text = e
-    ? `No.${String(e.species).padStart(4, "0")}  ·  ${e.name.toUpperCase()}  ·  ${e.types.map((ty) => ty.toUpperCase()).join(" / ")}  ·  ${e.genus.toUpperCase()}  ·  BST ${e.bst}  ·  `
-    : "PROFESSOR'S LAB  ·  SPECIMEN PROJECTOR  ·  ";
+  const w8 = fonts.words;
+  const text = w8
+    ? e
+      ? `No.${String(e.species).padStart(4, "0")}  ·  ${e.name.toUpperCase()}  ·  ${e.types.map((ty) => w8.type(ty).toUpperCase()).join(" / ")}  ·  ${e.genus.toUpperCase()}  ·  ${w8.total.toUpperCase()} ${e.bst}  ·  `
+      : `${w8.idle.toUpperCase().split(" · ").join("  ·  ")}  ·  `
+    : e
+      ? `No.${String(e.species).padStart(4, "0")}  ·  ${e.name.toUpperCase()}  ·  ${e.types.map((ty) => ty.toUpperCase()).join(" / ")}  ·  ${e.genus.toUpperCase()}  ·  BST ${e.bst}  ·  `
+      : "PROFESSOR'S LAB  ·  SPECIMEN PROJECTOR  ·  ";
   const w = g0.measureText(text).width;
   // A whole number of repeats round the ring, so the seam doesn't show (a fixed width, so the texture's size never changes).
   const W = 4096;

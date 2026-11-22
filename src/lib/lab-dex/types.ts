@@ -18,13 +18,21 @@ export type FormKind = "" | "mega" | "regional" | "gmax" | "eternamax";
  *  height (dm), weight (hg, -1 unknown), flags (1 legendary, 2 mythical, 4 fully evolved, 8 form),
  *  species number, evolution chain, evolves from (0 none), form kind,
  *  HOME render box x, y, w, h (of a 512 px render)]
+ * and, on a page in another language only, its English name and its other names for the search (folded, space separated).
  */
 export type LabRow = [
   number, string, string, string, string, number,
   number, number, number, number, number, number,
   number, number, number, number, number, number, FormKind,
   number, number, number, number,
+  string?, string?,
 ];
+
+/** What a page in another language sends the lab besides its rows (English pages send none). */
+export interface LabLocal {
+  /** Type id → the type's official name. */
+  types: Record<string, string>;
+}
 
 export interface LabMon {
   /** The art / figure id: the species number, or 10001+ for a form. Also the `pick` in the URL. */
@@ -51,10 +59,13 @@ export interface LabMon {
   evolvesFrom: number;
   /** The HOME render's visible box [x, y, w, h, image size]. */
   box: [number, number, number, number, number];
+  /** Another language's page only: the English name, and the other names the search takes (folded, space separated). */
+  english?: string;
+  alt?: string;
 }
 
 export function fromRow(r: LabRow): LabMon {
-  const [id, slug, name, genus, types, gen, hp, atk, def, spa, spd, spe, height, weight, flags, species, chain, evolvesFrom, formKind, bx, by, bw, bh] = r;
+  const [id, slug, name, genus, types, gen, hp, atk, def, spa, spd, spe, height, weight, flags, species, chain, evolvesFrom, formKind, bx, by, bw, bh, english, alt] = r;
   return {
     id,
     slug,
@@ -75,6 +86,7 @@ export function fromRow(r: LabRow): LabMon {
     chain,
     evolvesFrom,
     box: [bx, by, bw, bh, 512],
+    ...(english !== undefined && { english, alt }),
   };
 }
 

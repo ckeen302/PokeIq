@@ -62,6 +62,7 @@
   "close": "Close",
   "done": "Done",
   "evoJump": "Show {name}",
+  "captionIdle": "Professor's Lab · Specimen projector",
   "stats": {
     "hp": "HP",
     "atk": "Attack",

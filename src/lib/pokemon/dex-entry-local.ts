@@ -33,8 +33,7 @@ const EGG_GROUPS: Record<string, string> = { plant: "grass", ground: "field", no
 const DLC: Record<string, string> = { isleofarmor: "swordtheisleofarmor", crowntundra: "swordthecrowntundra", tealmask: "scarletthetealmask", indigodisk: "scarlettheindigodisk" };
 
 /** The words and names of one language, for one render. */
-function context(locale: OtherLocale) {
-  const t = serverT(dataNs);
+function context(locale: OtherLocale, t: Translator<typeof dataNs.en> = serverT(dataNs)) {
   const has = (key: string) => t.has(key);
   const say = (key: string, values?: Record<string, string | number>) => t(key as DataKey, values);
   const types = typeNames(locale);
@@ -134,6 +133,15 @@ function evolution(c: Ctx, english: string): string {
     rest = rest.slice(x![0].length);
   }
   return parts.join(say("evo.sep"));
+}
+
+/**
+ * Evolution methods ("Level 36", "Use Water Stone") in a language, for callers outside a page render (an API route
+ * passes the pokemon-data translator it loaded with getT).
+ */
+export function evolutionIn(locale: OtherLocale, t?: Translator<typeof dataNs.en>): (english: string) => string {
+  const c = context(locale, t);
+  return (english) => evolution(c, english);
 }
 
 function evolutionTree(c: Ctx, node: EvolutionNode): EvolutionNode {

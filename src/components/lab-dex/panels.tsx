@@ -37,7 +37,7 @@ export const dexNo = (n: number) => `No.${String(n).padStart(4, "0")}`;
 /** Where a Pokémon is from: a regional form's region, else its species' debut region. */
 export function regionOf(m: LabMon, S: LabStrings): string {
   if (m.formKind === "regional") {
-    const r = S.regionByName[m.name.split(" ")[0]];
+    const r = S.regionByName[(m.english ?? m.name).split(" ")[0]];
     if (r) return r;
   }
   return S.regions[m.gen - 1] ?? "";
@@ -71,7 +71,7 @@ export function Heading({ mon, scanning, sort, phone = false }: { mon: LabMon; s
       </h1>
       <p className="mt-2 text-[15px] font-medium text-white/75 [text-shadow:0_1px_12px_rgba(0,0,0,0.8)]">{mon.genus}</p>
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        {mon.types.map((t) => <TypeBadge key={t} type={t} size={phone ? "md" : "lg"} />)}
+        {mon.types.map((t) => <TypeBadge key={t} type={t} size={phone ? "md" : "lg"} label={S.typeName(t)} />)}
         {badge !== null && (
           <span className="ml-1 rounded-md border border-white/15 bg-black/40 px-2 py-1 font-display text-[12px] font-semibold uppercase tracking-wider text-white/85" data-testid="lab-sort-value">
             {S.sorts[sort]} <b className="ml-1 tabular-nums text-white">{badge}</b>
@@ -127,11 +127,11 @@ export function InfoCard({ mon, details, inView, onPick }: { mon: LabMon; detail
       <span className="lx-spine absolute bottom-1 left-[6px] top-2 w-px" aria-hidden />
       <Channel n={++n} label={S.biometrics} delay={d()}>
         <div className="grid grid-cols-[auto_auto_1fr] gap-x-6">
-          <Reading label={S.height} value={mon.heightM.toFixed(1)} unit="m" />
-          <Reading label={S.weight} value={mon.weightKg == null ? "—" : mon.weightKg.toFixed(1)} unit={mon.weightKg == null ? undefined : "kg"} />
+          <Reading label={S.height} value={S.dec(mon.heightM)} unit="m" />
+          <Reading label={S.weight} value={mon.weightKg == null ? "—" : S.dec(mon.weightKg)} unit={mon.weightKg == null ? undefined : "kg"} />
           <div className="min-w-0">
             <p className="truncate font-display text-[15px] font-semibold uppercase leading-[24px] tracking-wide text-white">{regionOf(mon, S)}</p>
-            <p className="mt-1.5 font-pixel text-[8px] uppercase tracking-[0.2em] text-white/45">{S.region} · Gen {GEN_NUMERALS[mon.gen - 1]}</p>
+            <p className="mt-1.5 font-pixel text-[8px] uppercase tracking-[0.2em] text-white/45">{S.region} · {S.gen} {GEN_NUMERALS[mon.gen - 1]}</p>
           </div>
         </div>
       </Channel>
@@ -260,7 +260,7 @@ export function Matchups({ types }: { types: string[] }) {
                   className="inline-flex h-[22px] items-center gap-1.5 border-l-2 bg-white/[0.04] pl-1.5 pr-2 font-display text-[10px] font-semibold uppercase tracking-[0.08em] text-white/85"
                   style={{ borderColor: typeColor(t), background: `linear-gradient(90deg, ${typeColor(t)}33, ${typeColor(t)}08)` }}
                 >
-                  {t}
+                  {S.typeName(t) ?? t}
                   <span className={cn("font-pixel text-[8px]", v > 1 ? "text-[#ff9b8a]" : "text-cyan-200/70")}>{MULT[v]}</span>
                 </span>
               ))}
