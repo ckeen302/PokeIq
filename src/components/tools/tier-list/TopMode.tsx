@@ -75,7 +75,7 @@ export function TopMode({ top, byKey, art, shiny, moving, onTileDown, onRemove, 
                     onBlur={onCaptionDone}
                     placeholder={t("top.caption")}
                     aria-label={t("top.captionLabel", { n: i + 1 })}
-                    className="h-7 w-full min-w-0 truncate rounded-lg bg-transparent px-1 text-center text-[13px] text-muted-foreground outline-none placeholder:text-muted-foreground/50 focus:bg-foreground/[0.05] focus:text-foreground max-sm:text-[12px]"
+                    className="h-7 w-full min-w-0 truncate rounded-lg bg-transparent px-1 text-center text-[13px] text-muted-foreground outline-none placeholder:text-muted-foreground/50 focus:bg-foreground/[0.05] focus:text-foreground max-md:text-base"
                     maxLength={80}
                     data-testid="top-caption"
                   />
@@ -111,7 +111,7 @@ export function TopMode({ top, byKey, art, shiny, moving, onTileDown, onRemove, 
                     onBlur={onCaptionDone}
                         placeholder={t("top.caption")}
                         aria-label={t("top.captionLabel", { n: i + 1 })}
-                        className="h-8 w-full min-w-0 bg-transparent text-sm text-muted-foreground outline-none placeholder:text-muted-foreground/60 focus:text-foreground"
+                        className="h-8 w-full min-w-0 bg-transparent text-sm text-muted-foreground max-md:text-base outline-none placeholder:text-muted-foreground/60 focus:text-foreground"
                         maxLength={80}
                       />
                     </div>

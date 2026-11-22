@@ -203,7 +203,7 @@ function Result(p: Props) {
             onChange={(e) => setName(e.target.value.slice(0, 24))}
             placeholder={t("blind.yourName")}
             aria-label={t("blind.yourName")}
-            className="h-11 min-w-0 flex-1 rounded-xl bg-foreground/[0.06] px-4 text-[15px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="h-11 min-w-0 flex-1 rounded-xl bg-foreground/[0.06] px-4 text-base outline-none focus-visible:ring-2 focus-visible:ring-ring"
             maxLength={24}
             data-testid="blind-name-input"
           />

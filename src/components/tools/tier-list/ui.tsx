@@ -39,7 +39,7 @@ export function Segmented<T extends string | number>({
             data-testid={o.testId}
             className={cn(
               "flex-1 whitespace-nowrap rounded-full font-semibold transition-[background-color,color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-35 motion-reduce:transition-none",
-              size === "sm" ? "h-8 px-3 text-[13px]" : "h-9 px-4 text-sm max-md:h-10",
+              size === "sm" ? "h-8 px-3 text-[13px] max-md:h-10" : "h-9 px-4 text-sm max-md:h-10",
               on ? "bg-card text-foreground shadow-[0_1px_3px_hsl(var(--shade)/0.35),0_0_0_1px_hsl(var(--foreground)/0.06)]" : "text-muted-foreground hover:text-foreground"
             )}
           >

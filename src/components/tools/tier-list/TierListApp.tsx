@@ -459,7 +459,7 @@ export default function TierListApp({ roster, template, shared }: AppProps) {
                     data-testid="tile-size"
                   />
                 </label>
-                <button type="button" aria-pressed={names} onClick={() => setNames((v) => !v)} className={cn("flex h-9 items-center gap-1.5 rounded-full px-3 text-[13px] font-medium text-muted-foreground hover:text-foreground", names && "bg-foreground/[0.07] text-foreground")}>
+                <button type="button" aria-pressed={names} onClick={() => setNames((v) => !v)} className={cn("flex h-9 items-center gap-1.5 rounded-full px-3 text-[13px] font-medium max-md:h-10 text-muted-foreground hover:text-foreground", names && "bg-foreground/[0.07] text-foreground")}>
                   <Type className="h-3.5 w-3.5" aria-hidden /> {t("bar.names")}
                 </button>
               </div>
@@ -667,7 +667,7 @@ function ShareDialog({ url, onClose, copy, title }: { url: string; onClose(): vo
   return (
     <Modal title={t("share.title")} onClose={onClose} closeLabel={t("close")} testId="share-dialog">
       <p className="text-sm text-muted-foreground">{t("share.hint")}</p>
-      <input readOnly value={url} onFocus={(e) => e.currentTarget.select()} className="mt-4 h-11 w-full rounded-xl bg-foreground/[0.06] px-3 font-mono text-[13px] text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={t("share.title")} data-testid="share-url" />
+      <input readOnly value={url} onFocus={(e) => e.currentTarget.select()} className="mt-4 h-11 w-full rounded-xl bg-foreground/[0.06] px-3 font-mono text-[13px] text-muted-foreground outline-none max-md:text-base focus-visible:ring-2 focus-visible:ring-ring" aria-label={t("share.title")} data-testid="share-url" />
       <div className="mt-4 flex gap-2">
         <PillButton
           primary

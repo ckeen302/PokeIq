@@ -70,7 +70,7 @@ export const Pool = forwardRef<PoolHandle, Props>(function Pool(
               onChange={(e) => set("q", e.target.value)}
               onKeyDown={(e) => e.key === "Escape" && (set("q", ""), e.currentTarget.blur())}
               placeholder={t("pool.search")}
-              className="h-full w-full min-w-0 bg-transparent pl-9 pr-9 text-[15px] outline-none placeholder:text-muted-foreground/80 [&::-webkit-search-cancel-button]:hidden"
+              className="h-full w-full min-w-0 bg-transparent pl-9 pr-9 text-[15px] max-md:text-base outline-none placeholder:text-muted-foreground/80 [&::-webkit-search-cancel-button]:hidden"
               data-testid={testId ? `${testId}-search` : undefined}
               enterKeyHint="search"
               autoComplete="off"
@@ -142,7 +142,7 @@ function Select({ label, value, onChange, options }: { label: string; value: str
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-10 w-full appearance-none rounded-xl bg-foreground/[0.05] px-3 pr-8 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="h-10 w-full appearance-none rounded-xl bg-foreground/[0.05] px-3 pr-8 text-sm max-md:text-base text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
         aria-label={label}
       >
         {options.map(([v, l]) => (
