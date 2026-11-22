@@ -3,7 +3,7 @@
     "battle": "Combates"
   },
   "play": {
-    "title": "Combate contra el ordenador"
+    "title": "Combate contra la CPU"
   },
   "live": {
     "title": "Un combate Pokémon en directo",
