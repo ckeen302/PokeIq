@@ -1,4 +1,4 @@
-import { KIND_LABEL, type GameKind } from "@/lib/dex/video-games-types";
+import type { GameKind } from "@/lib/dex/video-games-types";
 import { cn } from "@/lib/utils";
 
 /** Mainline / Remake / Spin-off / Mobile, each in one of the site's accent colours. */
@@ -9,13 +9,14 @@ const KIND_CLASS: Record<GameKind, string> = {
   mobile: "border-warning/50 bg-warning/15 text-warning",
 };
 
-export function KindTag({ kind, className }: { kind: GameKind; className?: string }) {
+/** `label`: the kind's name in the page's language. */
+export function KindTag({ kind, label, className }: { kind: GameKind; label: string; className?: string }) {
   return (
     <span
       className={cn("inline-flex items-center rounded-[4px] border px-1.5 py-[3px] font-display text-[11px] font-bold uppercase leading-none tracking-[0.08em]", KIND_CLASS[kind], className)}
       data-testid="games-kind-tag"
     >
-      {KIND_LABEL[kind]}
+      {label}
     </span>
   );
 }

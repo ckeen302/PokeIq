@@ -1,0 +1,81 @@
+{
+  "meta": {
+    "title": "Pokémon-Filme – alle Filme in der Reihenfolge ihres Erscheinens",
+    "description": "Alle Pokémon-Filme in der Reihenfolge ihres Erscheinens, von Pokémon – Der Film bis Geheimnisse des Dschungels, dem Realfilm Meisterdetektiv Pikachu und Pokémon: Wild Card: Plakate, die Pokémon im Mittelpunkt, Schauplätze und Figuren."
+  },
+  "header": {
+    "kicker": "Filmarchiv",
+    "title": "Poké",
+    "accent": "dex",
+    "blurb": "Alle Pokémon-Filme, von Pokémon – Der Film bis zum Realfilm Meisterdetektiv Pikachu und dem, was noch kommt: die Plakate, die Pokémon im Mittelpunkt und wer wer ist."
+  },
+  "credit": "Erscheinungsjahre, Schauplätze und Figuren sind mit <bulba>Bulbapedia</bulba> abgeglichen. Das Jahr unter jedem Plakat ist das der ersten Veröffentlichung.",
+  "ld": {
+    "pokedex": "Pokédex",
+    "movies": "Filme",
+    "list": "Pokémon-Filme"
+  },
+  "era": {
+    "original": "Originalserie",
+    "advanced": "Advanced Generation",
+    "dp": "Diamant & Perl",
+    "bw": "Best Wishes",
+    "xy": "XY",
+    "modern": "Ab 2017",
+    "live-action": "Realfilm",
+    "coming-soon": "Demnächst"
+  },
+  "eraOf": {
+    "original": "Ära der Originalserie",
+    "advanced": "Ära Advanced Generation",
+    "dp": "Ära Diamant & Perl",
+    "bw": "Ära Best Wishes",
+    "xy": "Ära XY",
+    "modern": "Ab 2017",
+    "live-action": "Ära der Realfilme",
+    "coming-soon": "Demnächst"
+  },
+  "kicker": "Film {n} · {era}",
+  "years": {
+    "japan": "Japan {year}",
+    "us": "USA {year}",
+    "join": "{a} · {b}",
+    "coming": "Erscheint {year}"
+  },
+  "related": {
+    "trilogy": "Trilogie: {trilogy}",
+    "other": "Verwandte Filme",
+    "modern": "Mehr ab 2017",
+    "era": {
+      "original": "Mehr aus der Ära der Originalserie",
+      "advanced": "Mehr aus der Ära Advanced Generation",
+      "dp": "Mehr aus der Ära Diamant & Perl",
+      "bw": "Mehr aus der Ära Best Wishes",
+      "xy": "Mehr aus der Ära XY",
+      "modern": "Mehr ab 2017",
+      "live-action": "Mehr aus der Ära der Realfilme",
+      "coming-soon": "Mehr demnächst"
+    }
+  },
+  "film": {
+    "metaTitle": "{title} ({year}) – Pokémon-Film",
+    "metaTitleSoon": "{title} (erscheint {year}) – Pokémon-Film",
+    "description": "{summary} Die Pokémon im Mittelpunkt, die Figuren und ihre Partner.",
+    "descriptionSetting": "{summary} Die Pokémon im Mittelpunkt, die Figuren und ihre Partner und wo der Film spielt.",
+    "socialTitle": "{title} · PokéIQ-Pokédex",
+    "allMovies": "Alle Filme",
+    "poster": "Filmplakat: {title}",
+    "soon": "Demnächst",
+    "featured": "Pokémon im Film",
+    "featuredSub": "Tippe auf eins für den Pokédex-Eintrag",
+    "characters": "Figuren",
+    "charactersSub": "Helden, Gäste und Schurken",
+    "role": {
+      "hero": "Held",
+      "guest": "Gast",
+      "villain": "Schurke"
+    },
+    "with": "mit {name}",
+    "related": "Verwandt"
+  }
+}

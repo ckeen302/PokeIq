@@ -1,0 +1,67 @@
+{
+  "meta": {
+    "title": "Alle Pokémon-Spiele: Hauptreihe, Remakes, Spin-offs & Mobile",
+    "description": "Alle Pokémon-Videospiele von Rot und Grün bis Pokémon-Legenden: Z-A, mit Cover: die Hauptreihe, Remakes, Spin-offs wie Snap, Mystery Dungeon und Stadium und Mobile-Spiele wie Pokémon GO. Filtere nach Generation und Art.",
+    "socialTitle": "Alle Pokémon-Spiele · PokéIQ-Pokédex"
+  },
+  "header": {
+    "kicker": "Spieledatenbank",
+    "title": "Poké",
+    "accent": "dex",
+    "blurb": "Alle Pokémon-Spiele, von Rot und Grün auf dem Game Boy bis heute: die Hauptreihe und ihre Remakes, die Spin-offs und die Mobile-Spiele, jeweils mit Cover."
+  },
+  "credit": "Erscheinungsdaten, Plattformen und Entwickler von <wiki>Wikipedia</wiki>; Cover, Editions-exklusive und Legendäre Pokémon von <serebii>Serebii</serebii>. Das Jahr ist die Erstveröffentlichung eines Spiels; die Generation ist die, zu der es gehört, bei einem Spin-off die damals aktuelle.",
+  "ld": {
+    "pokedex": "Pokédex",
+    "games": "Spiele",
+    "list": "Pokémon-Videospiele"
+  },
+  "kind": {
+    "mainline": "Hauptreihe",
+    "remake": "Remake",
+    "spinoff": "Spin-off",
+    "mobile": "Mobile"
+  },
+  "game": {
+    "metaTitle": "{name} ({year}) – Pokémon-Spiel · {kind}",
+    "describe": "{name} ({year}, {platforms}): {summary}",
+    "socialTitle": "{name} · PokéIQ-Pokédex",
+    "allGames": "Alle Spiele",
+    "kicker": "Generation {gen} · {kind}",
+    "list": "{a}, {b}",
+    "releasedNote": "{date} ({note})",
+    "facts": {
+      "released": "Erschienen",
+      "platform": "Plattform",
+      "region": "Region",
+      "developer": "Entwickler"
+    },
+    "placesLink": "{region} in Orte",
+    "trainersLink": "Trainer-Teams",
+    "whatsNew": "Neuerungen",
+    "starter": "Starter",
+    "starters": "Starter",
+    "starterSub": "Dein erster Partner",
+    "startersSub": "Wähle deinen ersten Partner",
+    "legendaries": "Legendäre & Mysteriöse Pokémon",
+    "legendariesSub": "Im Spiel zu finden",
+    "legendariesDlcSub": "Im Spiel und im DLC zu finden",
+    "exclusives": "Editions-exklusive Pokémon",
+    "exclusivesSub": "Nur in einer Edition zu finden",
+    "onlyIn": "Nur in {version}",
+    "dlc": "DLC & Erweiterungen",
+    "related": "Verwandte Spiele",
+    "why": {
+      "previous": "Vorgänger",
+      "next": "Nachfolger",
+      "region": "Auch in {region}",
+      "series": "Gleiche Reihe",
+      "platform": "Auch für {platform}"
+    },
+    "credit": "Erscheinungsdaten aus Wikipedias <wiki>Liste der Pokémon-Videospiele</wiki>. Cover und Logos gehören ihren Publishern.",
+    "creditSerebii": "Erscheinungsdaten aus Wikipedias <wiki>Liste der Pokémon-Videospiele</wiki>; Editions-exklusive und Legendäre Pokémon von Serebii, abgeglichen mit den Begegnungsdaten des Pokédex. Cover und Logos gehören ihren Publishern."
+  },
+  "cover": {
+    "tileAlt": "{name} auf einer Kachel statt eines Covers"
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "meta": {
+    "title": "Pokémon Theories — Fan Theories, Urban Legends & Beta Myths, Checked",
+    "description": "Pokémon fan theories, urban legends and beta myths as case files: Gengar and Clefable, Mew under the truck, MissingNo., Lavender Town Syndrome and more, each with its evidence, its sources and a verdict: confirmed, fan theory or debunked.",
+    "socialTitle": "The case files · PokéIQ Pokédex"
+  },
+  "header": {
+    "kicker": "Theories & conspiracies",
+    "title": "Poké",
+    "accent": "dex",
+    "blurb": "Pokémon theories, urban legends and beta myths, each with its evidence and a verdict."
+  },
+  "list": {
+    "eyebrow": "Pokémon theories & conspiracies",
+    "title": "The case <b>files</b>",
+    "lead": "Fan theories, conspiracies, rumors and real glitches. Every one checked against the games."
+  },
+  "ld": {
+    "pokedex": "Pokédex",
+    "theories": "Theories"
+  },
+  "verdict": {
+    "confirmed": "Confirmed",
+    "fan": "Fan theory",
+    "debunked": "Debunked"
+  },
+  "source": {
+    "games": "Games",
+    "anime": "Anime",
+    "pokedex": "Pokédex",
+    "internet": "Internet",
+    "manga": "Manga"
+  },
+  "sourceList": "{a}, {b}",
+  "caseNumber": "CASE {n}",
+  "case": {
+    "metaTitle": {
+      "confirmed": "{title} — Pokémon theory, confirmed",
+      "fan": "{title} — Pokémon fan theory",
+      "debunked": "{title} — Pokémon myth, debunked"
+    },
+    "metaDescription": {
+      "confirmed": "Confirmed. {claim} The evidence for and against, what's actually confirmed, and the sources.",
+      "fan": "Unconfirmed fan theory. {claim} The evidence for and against, what's actually confirmed, and the sources.",
+      "debunked": "Debunked. {claim} The evidence for and against, what's actually confirmed, and the sources."
+    },
+    "socialTitle": "{case}: {title} · PokéIQ",
+    "back": "All case files",
+    "filed": "{case} · {era} · Filed under {sources}",
+    "theory": "The theory",
+    "claim": "The claim",
+    "glitchPokemon": "Glitch Pokémon",
+    "pair": "{a} and {b}",
+    "exhibitA": "EXHIBIT A",
+    "silhouette": "{name}'s silhouette",
+    "overlaid": "OVERLAID",
+    "origin": "Origin & spread",
+    "evidenceFor": "Evidence for",
+    "evidenceAgainst": "Evidence against",
+    "confirmed": "What's actually confirmed",
+    "verdict": "The verdict",
+    "sources": "Sources",
+    "related": "Related cases",
+    "footer": {
+      "confirmed": "Filed as confirmed. Quotes are word for word from the games, their Pokédex and the interviews listed; Reddit and YouTube are only ever where a theory spread, never proof.",
+      "fan": "Filed as fan theory. Quotes are word for word from the games, their Pokédex and the interviews listed; Reddit and YouTube are only ever where a theory spread, never proof.",
+      "debunked": "Filed as debunked. Quotes are word for word from the games, their Pokédex and the interviews listed; Reddit and YouTube are only ever where a theory spread, never proof."
+    }
+  },
+  "board": {
+    "label": "Case of the week",
+    "brand": "POKÉIQ / CASE BOARD",
+    "file": "FILE {no} · {state}",
+    "fileNo": "FILE {no}",
+    "status": "STATUS: {status}",
+    "press": "PRESS A CASE TO OPEN ITS FILE",
+    "state": {
+      "open": "STILL OPEN",
+      "closed": "CLOSED"
+    },
+    "verdictStatus": {
+      "confirmed": "PROVEN",
+      "fan": "UNPROVEN",
+      "debunked": "DISPROVEN"
+    },
+    "caseOfTheWeek": "Case of the week",
+    "keyEvidence": "Key evidence",
+    "open": "Open the case",
+    "noteFiled": "Filed: {era}",
+    "noteFrom": "From: {sources}",
+    "noteLead": "Lead: {caption}"
+  }
+}

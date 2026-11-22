@@ -1,0 +1,93 @@
+{
+  "meta": {
+    "title": "Théories Pokémon : théories de fans, légendes urbaines et mythes des bêtas, vérifiés",
+    "description": "Théories de fans, légendes urbaines et mythes des bêtas de Pokémon sous forme de dossiers : Ectoplasma et Mélodelfe, Mew sous le camion, MissingNo., le syndrome de Lavanville et d’autres, chacun avec ses preuves, ses sources et un verdict : confirmée, théorie de fans ou démentie.",
+    "socialTitle": "Les dossiers · Pokédex PokéIQ"
+  },
+  "header": {
+    "kicker": "Théories et complots",
+    "title": "Poké",
+    "accent": "dex",
+    "blurb": "Théories, légendes urbaines et mythes des bêtas de Pokémon, chacun avec ses preuves et un verdict."
+  },
+  "list": {
+    "eyebrow": "Théories et complots Pokémon",
+    "title": "Les <b>dossiers</b>",
+    "lead": "Théories de fans, complots, rumeurs et vrais bugs. Tous vérifiés dans les jeux."
+  },
+  "ld": {
+    "pokedex": "Pokédex",
+    "theories": "Théories"
+  },
+  "verdict": {
+    "confirmed": "Confirmée",
+    "fan": "Théorie de fans",
+    "debunked": "Démentie"
+  },
+  "source": {
+    "games": "Jeux",
+    "anime": "Anime",
+    "pokedex": "Pokédex",
+    "internet": "Internet",
+    "manga": "Manga"
+  },
+  "sourceList": "{a}, {b}",
+  "caseNumber": "DOSSIER {n}",
+  "case": {
+    "metaTitle": {
+      "confirmed": "{title} — Théorie Pokémon confirmée",
+      "fan": "{title} — Théorie de fans Pokémon",
+      "debunked": "{title} — Mythe Pokémon démenti"
+    },
+    "metaDescription": {
+      "confirmed": "Confirmée. {claim} Les preuves pour et contre, ce qui est vraiment confirmé, et les sources.",
+      "fan": "Théorie de fans non confirmée. {claim} Les preuves pour et contre, ce qui est vraiment confirmé, et les sources.",
+      "debunked": "Démentie. {claim} Les preuves pour et contre, ce qui est vraiment confirmé, et les sources."
+    },
+    "socialTitle": "{case} : {title} · PokéIQ",
+    "back": "Tous les dossiers",
+    "filed": "{case} · {era} · Classé dans {sources}",
+    "theory": "La théorie",
+    "claim": "L’affirmation",
+    "glitchPokemon": "Pokémon bug",
+    "pair": "{a} et {b}",
+    "exhibitA": "PIÈCE A",
+    "silhouette": "Silhouette de {name}",
+    "overlaid": "SUPERPOSÉES",
+    "origin": "Origine et diffusion",
+    "evidenceFor": "Preuves pour",
+    "evidenceAgainst": "Preuves contre",
+    "confirmed": "Ce qui est vraiment confirmé",
+    "verdict": "Le verdict",
+    "sources": "Sources",
+    "related": "Dossiers liés",
+    "footer": {
+      "confirmed": "Classée confirmée. Les citations du Pokédex reprennent le texte officiel français quand nous l’avons ; les autres sont traduites des versions anglaises des jeux, de leur Pokédex et des interviews citées. Reddit et YouTube ne sont jamais que l’endroit où une théorie s’est répandue, jamais une preuve.",
+      "fan": "Classée théorie de fans. Les citations du Pokédex reprennent le texte officiel français quand nous l’avons ; les autres sont traduites des versions anglaises des jeux, de leur Pokédex et des interviews citées. Reddit et YouTube ne sont jamais que l’endroit où une théorie s’est répandue, jamais une preuve.",
+      "debunked": "Classée démentie. Les citations du Pokédex reprennent le texte officiel français quand nous l’avons ; les autres sont traduites des versions anglaises des jeux, de leur Pokédex et des interviews citées. Reddit et YouTube ne sont jamais que l’endroit où une théorie s’est répandue, jamais une preuve."
+    }
+  },
+  "board": {
+    "label": "Dossier de la semaine",
+    "brand": "POKÉIQ / TABLEAU DES DOSSIERS",
+    "file": "DOSSIER {no} · {state}",
+    "fileNo": "DOSSIER {no}",
+    "status": "STATUT : {status}",
+    "press": "TOUCHE UN DOSSIER POUR L’OUVRIR",
+    "state": {
+      "open": "TOUJOURS OUVERT",
+      "closed": "CLASSÉ"
+    },
+    "verdictStatus": {
+      "confirmed": "PROUVÉ",
+      "fan": "NON PROUVÉ",
+      "debunked": "RÉFUTÉ"
+    },
+    "caseOfTheWeek": "Dossier de la semaine",
+    "keyEvidence": "Preuves clés",
+    "open": "Ouvrir le dossier",
+    "noteFiled": "Classé : {era}",
+    "noteFrom": "Source : {sources}",
+    "noteLead": "Piste : {caption}"
+  }
+}

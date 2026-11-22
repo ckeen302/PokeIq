@@ -1,0 +1,27 @@
+{
+  "nav": "Film-Epochen",
+  "all": "Alle",
+  "era": {
+    "original": "Originalserie",
+    "advanced": "Advanced Generation",
+    "dp": "Diamant & Perl",
+    "bw": "Best Wishes",
+    "xy": "XY",
+    "modern": "Ab 2017",
+    "live-action": "Realfilm",
+    "coming-soon": "Demnächst"
+  },
+  "showing": {
+    "all": "Alle Filme werden angezeigt",
+    "original": "Angezeigt: Originalserie",
+    "advanced": "Angezeigt: Advanced Generation",
+    "dp": "Angezeigt: Diamant & Perl",
+    "bw": "Angezeigt: Best Wishes",
+    "xy": "Angezeigt: XY",
+    "modern": "Angezeigt: Ab 2017",
+    "live-action": "Angezeigt: Realfilm",
+    "coming-soon": "Angezeigt: Demnächst"
+  },
+  "poster": "Filmplakat: {title}",
+  "soon": "Demnächst"
+}

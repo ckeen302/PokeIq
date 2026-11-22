@@ -1,0 +1,67 @@
+{
+  "meta": {
+    "title": "Tutti i giochi Pokémon: serie principale, remake, spin-off e mobile",
+    "description": "Tutti i videogiochi Pokémon, da Rosso e Verde a Leggende Pokémon: Z-A, con le copertine: la serie principale, i remake, gli spin-off come Snap, Mystery Dungeon e Stadium, e i giochi per dispositivi mobili come Pokémon GO. Filtra per generazione e tipo.",
+    "socialTitle": "Tutti i giochi Pokémon · Pokédex di PokéIQ"
+  },
+  "header": {
+    "kicker": "Database dei giochi",
+    "title": "Poké",
+    "accent": "dex",
+    "blurb": "Tutti i giochi Pokémon, da Rosso e Verde su Game Boy a oggi: la serie principale e i suoi remake, gli spin-off e i giochi per dispositivi mobili, ognuno con la sua copertina."
+  },
+  "credit": "Date di uscita, piattaforme e sviluppatori da <wiki>Wikipedia</wiki>; copertine, esclusive di versione e Pokémon leggendari da <serebii>Serebii</serebii>. L’anno è quello della prima uscita di ogni gioco; la generazione è quella a cui appartiene o, per uno spin-off, quella in corso all’epoca.",
+  "ld": {
+    "pokedex": "Pokédex",
+    "games": "Giochi",
+    "list": "Videogiochi Pokémon"
+  },
+  "kind": {
+    "mainline": "Principale",
+    "remake": "Remake",
+    "spinoff": "Spin-off",
+    "mobile": "Mobile"
+  },
+  "game": {
+    "metaTitle": "{name} ({year}) — Gioco Pokémon · {kind}",
+    "describe": "{name} ({year}, {platforms}): {summary}",
+    "socialTitle": "{name} · Pokédex di PokéIQ",
+    "allGames": "Tutti i giochi",
+    "kicker": "Generazione {gen} · {kind}",
+    "list": "{a}, {b}",
+    "releasedNote": "{date} ({note})",
+    "facts": {
+      "released": "Uscita",
+      "platform": "Piattaforma",
+      "region": "Regione",
+      "developer": "Sviluppatore"
+    },
+    "placesLink": "{region} in Luoghi",
+    "trainersLink": "Squadre degli Allenatori",
+    "whatsNew": "Novità",
+    "starter": "Pokémon iniziale",
+    "starters": "Pokémon iniziali",
+    "starterSub": "Il tuo primo compagno",
+    "startersSub": "Scegli il tuo primo compagno",
+    "legendaries": "Pokémon leggendari e misteriosi",
+    "legendariesSub": "Si trovano nel gioco",
+    "legendariesDlcSub": "Si trovano nel gioco e nel DLC",
+    "exclusives": "Esclusive di versione",
+    "exclusivesSub": "Si trovano in una sola versione",
+    "onlyIn": "Solo in {version}",
+    "dlc": "DLC ed espansioni",
+    "related": "Giochi correlati",
+    "why": {
+      "previous": "Precedente",
+      "next": "Successivo",
+      "region": "Anche a {region}",
+      "series": "Stessa serie",
+      "platform": "Anche su {platform}"
+    },
+    "credit": "Dati di uscita dalla <wiki>lista dei videogiochi Pokémon</wiki> di Wikipedia. Copertine e loghi appartengono ai rispettivi editori.",
+    "creditSerebii": "Dati di uscita dalla <wiki>lista dei videogiochi Pokémon</wiki> di Wikipedia; esclusive di versione e Pokémon leggendari da Serebii, verificati con i dati di incontro del Pokédex stesso. Copertine e loghi appartengono ai rispettivi editori."
+  },
+  "cover": {
+    "tileAlt": "{name}, su un riquadro al posto della copertina"
+  }
+}

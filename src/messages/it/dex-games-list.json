@@ -1,0 +1,27 @@
+{
+  "kindGroup": "Tipo di gioco",
+  "filter": {
+    "all": "Tutti",
+    "mainline": "Principali",
+    "remake": "Remake",
+    "spinoff": "Spin-off",
+    "mobile": "Mobile"
+  },
+  "kind": {
+    "mainline": "Principale",
+    "remake": "Remake",
+    "spinoff": "Spin-off",
+    "mobile": "Mobile"
+  },
+  "generation": "Generazione",
+  "everyGeneration": "Tutte le generazioni",
+  "gen": "Gen. {gen}",
+  "sortLabel": "Ordina",
+  "sort": {
+    "newest": "Più recenti",
+    "oldest": "Meno recenti"
+  },
+  "none": "Nessun gioco corrisponde.",
+  "showAll": "Mostra tutti i giochi",
+  "tileAlt": "{name}, su un riquadro al posto della copertina"
+}
