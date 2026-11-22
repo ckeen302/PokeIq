@@ -26,6 +26,8 @@ const DESKTOP_LINKS: { href: string; label: string; wideOnly?: boolean }[] = [
   // Only on wide screens, where the leaderboard link was: the row is full at 1024px (the footer links it too).
   // The leaderboard is the trophy among the header's icons.
   { href: LAB_PATH, label: "3D Lab", wideOnly: true },
+  // MOCK (Shiny Studio): the new Tools tab.
+  { href: "/tools", label: "Tools", wideOnly: true },
 ];
 
 function isActive(pathname: string, href: string) {

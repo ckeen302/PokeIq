@@ -1,0 +1,218 @@
+{
+ "ramps": {
+  "body": {
+   "normal": [
+    "#ee8329",
+    "#cd5241",
+    "#833118"
+   ],
+   "yours": [
+    "#4b506c",
+    "#2c2b45",
+    "#05020e"
+   ],
+   "official": [
+    "#837b94",
+    "#5a5a6a",
+    "#313941"
+   ]
+  },
+  "belly": {
+   "normal": [
+    "#eede7b",
+    "#eeb45a"
+   ],
+   "yours": [
+    "#fa7a2c",
+    "#da510f"
+   ],
+   "official": [
+    "#dedeac",
+    "#bdbdac"
+   ]
+  },
+  "wings": {
+   "normal": [
+    "#207394",
+    "#084152"
+   ],
+   "yours": [
+    "#ffe29a",
+    "#cb912b"
+   ],
+   "official": [
+    "#bd2041",
+    "#831029"
+   ]
+  },
+  "flame": {
+   "normal": [
+    "#ffd510",
+    "#f6a410",
+    "#e64110"
+   ],
+   "yours": [
+    "#ffffff",
+    "#73ebf9",
+    "#00a4cd"
+   ],
+   "official": [
+    "#e6e610",
+    "#e6b410",
+    "#d55210"
+   ]
+  },
+  "eyes": {
+   "normal": [
+    "#eeb45a",
+    "#207394"
+   ],
+   "yours": [
+    "#00e3f5",
+    "#00828d"
+   ],
+   "official": [
+    "#bdbdac",
+    "#bd2041"
+   ]
+  },
+  "mouth": {
+   "normal": [
+    "#e64110"
+   ],
+   "yours": [
+    "#0096af"
+   ],
+   "official": [
+    "#d55210"
+   ]
+  },
+  "claws": {
+   "normal": [
+    "#ffffff",
+    "#cdcdcd",
+    "#eeb45a",
+    "#626262"
+   ],
+   "yours": [
+    "#ffffff",
+    "#cdcdcd",
+    "#eeb45a",
+    "#626262"
+   ],
+   "official": [
+    "#ffffff",
+    "#cdcdcd",
+    "#bdbdac",
+    "#626262"
+   ]
+  },
+  "outline": {
+   "normal": [
+    "#000000"
+   ],
+   "yours": [
+    "#000000"
+   ],
+   "official": [
+    "#000000"
+   ]
+  }
+ },
+ "presetSwatches": {
+  "gold": [
+   "#ecc353",
+   "#985c23",
+   "#f6e8b4",
+   "#cbaa00"
+  ],
+  "silver": [
+   "#cfd5df",
+   "#3d5a6b",
+   "#e9f0f5",
+   "#70b7d8"
+  ],
+  "obsidian": [
+   "#464659",
+   "#36294b",
+   "#707083",
+   "#a13bc6"
+  ],
+  "pastel": [
+   "#ffcbe2",
+   "#8ec0bc",
+   "#fff5da",
+   "#b8a3de"
+  ],
+  "neon": [
+   "#97ff9b",
+   "#bc2cb6",
+   "#fafc5a",
+   "#00c4cc"
+  ],
+  "inverted": [
+   "#004461",
+   "#ca9c89",
+   "#100044",
+   "#006576"
+  ],
+  "water": [
+   "#41acee",
+   "#2aa8b4",
+   "#baf5f8",
+   "#0cb5da"
+  ],
+  "gengar": [
+   "#8465b7",
+   "#312855",
+   "#dca1d6",
+   "#c0004c"
+  ]
+ },
+ "notice": {
+  "official": 0.16383061177054872,
+  "yours": 0.30186155368978634,
+  "hdYours": 0.38492192302496003,
+  "hdOfficial": 0.2044536086503052
+ },
+ "yours": {
+  "body": {
+   "h": 283,
+   "c": 0.045,
+   "l": 0.33,
+   "contrast": 1.15,
+   "shift": -14
+  },
+  "belly": {
+   "h": 45,
+   "c": 0.18,
+   "l": 0.68,
+   "contrast": 1.2,
+   "shift": 16
+  },
+  "wings": {
+   "h": 80,
+   "c": 0.15,
+   "l": 0.76,
+   "contrast": 1.3,
+   "shift": 14
+  },
+  "flame": {
+   "h": 212,
+   "c": 0.13,
+   "l": 0.8,
+   "contrast": 1.25,
+   "shift": -22
+  },
+  "eyes": {
+   "h": 205,
+   "c": 0.14,
+   "l": 0.78
+  },
+  "mouth": {
+   "h": 215,
+   "c": 0.13,
+   "l": 0.62
+  }
+ }
+}
