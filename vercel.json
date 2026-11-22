@@ -15,6 +15,7 @@
   "git": {
     "deploymentEnabled": {
       "main": true,
+      "feat/tier-list": true,
       "**": false
     }
   }
