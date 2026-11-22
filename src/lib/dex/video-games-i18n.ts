@@ -32,7 +32,7 @@ export interface GameTexts {
 
 const loaded = new Map<Locale, Promise<GameTexts>>();
 
-/** A language's game texts (null for English). */
+/** A language’s game texts (null for English): its content/games.json, read once. */
 export function gameTexts(locale: Locale): Promise<GameTexts | null> {
   if (locale === "en") return Promise.resolve(null);
   let p = loaded.get(locale);

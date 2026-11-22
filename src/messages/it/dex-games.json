@@ -36,7 +36,7 @@
       "region": "Regione",
       "developer": "Sviluppatore"
     },
-    "placesLink": "{region} in Luoghi",
+    "placesLink": "Luoghi di {region}",
     "trainersLink": "Squadre degli Allenatori",
     "whatsNew": "Novità",
     "starter": "Pokémon iniziale",

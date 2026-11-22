@@ -36,7 +36,7 @@
       "region": "Región",
       "developer": "Desarrolladora"
     },
-    "placesLink": "{region} en Lugares",
+    "placesLink": "Lugares de {region}",
     "trainersLink": "Equipos de Entrenadores",
     "whatsNew": "Novedades",
     "starter": "Inicial",
