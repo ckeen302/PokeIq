@@ -288,7 +288,7 @@ export function Toolbar({ view, set, all, seq, onJump, onShowAnyway, searchRef }
           aria-expanded={typesOpen}
           aria-haspopup="true"
           data-testid="lab-types"
-          className={cn(chip, "flex h-9 items-center gap-2 px-3 font-display text-[11px] font-semibold uppercase tracking-wider", view.types.length ? "text-white" : "text-white/70")}
+          className={cn(chip, "flex h-9 items-center gap-2 whitespace-nowrap px-3 font-display text-[11px] font-semibold uppercase tracking-wider", view.types.length ? "text-white" : "text-white/70")}
         >
           {view.types.length ? view.types.map((t) => <span key={t} className="flex items-center gap-1.5"><TypeDot t={t} />{t}</span>) : S.allTypes}
           <ChevronDown className="h-3.5 w-3.5 text-white/50" aria-hidden />

@@ -201,7 +201,7 @@ export async function runLabDex({ browser, BASE, OUT, errors, step }) {
     if (pickOf(page) !== s1.settled) errors.push(`lab-dex: after the spins the URL (pick=${pickOf(page)}) doesn't match the table (${s1.settled})`);
     // Filters, sorts, searches, the Forms toggle, over and over.
     const types = ["water", "dragon", "grass", "ghost"];
-    const sorts = ["bst", "physical-sweeper", "name", "wall", "spe", "id"];
+    const sorts = ["bst", "physicalSweeper", "name", "wall", "spe", "id"];
     for (let r = 0; r < ROUNDS; r++) {
       await page.getByTestId("lab-types").click();
       await page.getByTestId(`lab-type-${types[r % types.length]}`).click();

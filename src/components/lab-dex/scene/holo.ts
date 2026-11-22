@@ -214,11 +214,11 @@ export function holoScan(m: THREE.Material, scan: HoloScan, time: LabTime) {
         `#include <emissivemap_fragment>
         {
           float hy = vLabW.y - uFeetY;
-          float base = 1.0 - smoothstep(0.0, 0.42, hy);
+          float base = 1.0 - smoothstep(0.0, 0.16, hy);
           float lines = 0.5 + 0.5 * sin((vLabW.y * 34.0 - uLabTime * 0.8) * 6.2831853);
           float band = exp(-pow((vLabW.y - uScanY) / 0.016, 2.0)) * 1.6 + 0.4 * exp(-pow((vLabW.y - uScanY) / 0.07, 2.0));
           float faint = 0.0;
-          totalEmissiveRadiance += uScanCol * uHoloAmt * (base * base * (0.45 + 0.55 * lines) * 0.8 + band * 1.6 * uBandAmt + faint);
+          totalEmissiveRadiance += uScanCol * uHoloAmt * (base * base * (0.7 + 0.3 * lines) * 0.6 + band * 1.6 * uBandAmt + faint);
           // Still materialising (the wheel mid-turn): above the scan line the figure is only light, in scanlines.
           if (uBandAmt > 0.0 && vLabW.y > uScanY) {
             float l2 = smoothstep(0.6, 0.95, 0.5 + 0.5 * sin(vLabW.y * 6.2831853 * 34.0));
