@@ -1,0 +1,17 @@
+{
+  "title": "Cronologia Pokémon: tutta la storia in 3D",
+  "description": "Vola attraverso la storia dei Pokémon da Rossa e Verde nel 1996 a oggi: ogni gioco principale, remake e DLC, ogni stagione dell'anime e ogni film, le ere del GCC, gli spin-off chiave e le tappe fondamentali, con le date di uscita giapponesi e occidentali.",
+  "kicker": "Storia dei Pokémon",
+  "titleLead": "Cronologia ",
+  "titleAccent": "Pokémon",
+  "blurb": "Da Rossa e Verde nel 1996 a oggi: i giochi principali, l'anime, i film, il gioco di carte, gli spin-off chiave e le tappe intermedie, con le date di uscita giapponesi e occidentali tenute separate.",
+  "toHistory": "Questa è la cronologia reale di giochi, anime e film. Per la storia all'interno del mondo Pokémon, vedi <a>La storia del mondo Pokémon</a>.",
+  "ldName": "Cronologia della storia dei Pokémon",
+  "timelineLink": "Cronologia Pokémon",
+  "platform": "Piattaforma",
+  "eventTitle": "{title} ({year}) — Cronologia Pokémon",
+  "eventWhen": "{title} ({lane}, {platform}): {when}.",
+  "eventFly": "Raggiungilo in volo sulla Cronologia Pokémon in 3D.",
+  "dateRow": "{label}: {date}",
+  "dateJoin": "; "
+}

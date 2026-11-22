@@ -1,0 +1,54 @@
+{
+  "lanes": {
+    "events": "Meilensteine",
+    "tcg": "Karten",
+    "games": "Hauptspiele",
+    "anime": "Anime",
+    "movies": "Filme",
+    "spinoffs": "Spin-offs"
+  },
+  "eras": {
+    "gb": {
+      "label": "Generation I",
+      "device": "Game Boy"
+    },
+    "gbc": {
+      "label": "Generation II",
+      "device": "Game Boy Color"
+    },
+    "gba": {
+      "label": "Generation III",
+      "device": "Game Boy Advance"
+    },
+    "ds": {
+      "label": "Generation IV",
+      "device": "Nintendo DS"
+    },
+    "ds2": {
+      "label": "Generation V",
+      "device": "Nintendo DS"
+    },
+    "3ds": {
+      "label": "Generationen VI–VII",
+      "device": "Nintendo 3DS"
+    },
+    "switch": {
+      "label": "Generationen VIII–IX",
+      "device": "Nintendo Switch"
+    }
+  },
+  "dates": {
+    "Worldwide": "Weltweit",
+    "Japan": "Japan",
+    "North America": "Nordamerika",
+    "Europe": "Europa"
+  },
+  "today": "heute",
+  "region": "Region",
+  "starters": "Starter",
+  "boxLegendaries": "Cover-Legendäre",
+  "genPokemon": "Pokémon der Generation {gen} →",
+  "browseCards": "Karten der Erweiterung ansehen →",
+  "sources": "Quellen:",
+  "cards": "Karten →"
+}

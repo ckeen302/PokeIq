@@ -1,0 +1,17 @@
+{
+  "title": "Pokémon Timeline — the complete history in 3D",
+  "description": "Fly through Pokémon history from Red and Green in 1996 to today: every main-series game, remake and DLC, every anime season and film, TCG eras, key spin-offs and milestones, with Japanese and Western release dates.",
+  "kicker": "Pokémon history",
+  "titleLead": "Pokémon ",
+  "titleAccent": "Timeline",
+  "blurb": "From Red and Green in 1996 to today: the main-series games, the anime, the films, the card game, key spin-offs and the milestones in between, with Japanese and Western release dates kept apart.",
+  "toHistory": "This is the real-world timeline of the games, anime and films. For the history inside the Pokémon world, see <a>The History of the Pokémon World</a>.",
+  "ldName": "Pokémon history timeline",
+  "timelineLink": "Pokémon Timeline",
+  "platform": "Platform",
+  "eventTitle": "{title} ({year}) — Pokémon Timeline",
+  "eventWhen": "{title} ({lane}, {platform}): {when}.",
+  "eventFly": "Fly to it on the 3D Pokémon Timeline.",
+  "dateRow": "{label} {date}",
+  "dateJoin": ", "
+}

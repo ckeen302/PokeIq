@@ -1,0 +1,17 @@
+{
+  "title": "Pokémon-Zeitleiste – die ganze Geschichte in 3D",
+  "description": "Flieg durch die Pokémon-Geschichte von Rot und Grün 1996 bis heute: alle Hauptspiele, Remakes und DLCs, alle Anime-Staffeln und Filme, die Ären des Sammelkartenspiels, wichtige Spin-offs und Meilensteine – mit japanischen und westlichen Erscheinungsdaten.",
+  "kicker": "Pokémon-Geschichte",
+  "titleLead": "Pokémon-",
+  "titleAccent": "Zeitleiste",
+  "blurb": "Von Rot und Grün 1996 bis heute: die Hauptspiele, der Anime, die Filme, das Sammelkartenspiel, wichtige Spin-offs und die Meilensteine dazwischen – mit getrennten Erscheinungsdaten für Japan und den Westen.",
+  "toHistory": "Das ist die reale Zeitleiste der Spiele, des Animes und der Filme. Die Geschichte innerhalb der Pokémon-Welt findest du unter <a>Die Geschichte der Pokémon-Welt</a>.",
+  "ldName": "Zeitleiste der Pokémon-Geschichte",
+  "timelineLink": "Pokémon-Zeitleiste",
+  "platform": "Plattform",
+  "eventTitle": "{title} ({year}) – Pokémon-Zeitleiste",
+  "eventWhen": "{title} ({lane}, {platform}): {when}.",
+  "eventFly": "Flieg auf der 3D-Pokémon-Zeitleiste dorthin.",
+  "dateRow": "{label}: {date}",
+  "dateJoin": "; "
+}
