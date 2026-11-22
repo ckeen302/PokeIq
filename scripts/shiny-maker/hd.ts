@@ -6,7 +6,11 @@
  * Every pixel of the HOME render is given to the Pixel part whose (normal, official shiny) colour pair is nearest
  * in OKLab (both colours count: the shiny tells apart parts that look alike in the normal colours), then the labels
  * are cleaned: a majority filter, and connected components too small to be a part join their neighbours.
- * A species ships HD only if the fit is good (see `quality`); scripts/shiny-maker/hd-report.json lists the scores.
+ * The hand-reviewed species (`hdAllowed`) keep exactly the masks they were reviewed with. Every other species is built
+ * with `buildHdAuto` (dark unchanged colours kept as rendered, the palette refined to the render, region voting,
+ * the best of a few settings), or with the setting or one-piece fallback its review chose (hd-review.ts).
+ * Review sheets: hd-sheet.ts (as shipped) and hd-variants.ts (every setting side by side).
+ * .cache/shiny-maker/hd-report/{shard}.json lists each species' fit and how it was built.
  *
  *   npx tsx scripts/shiny-maker/hd.ts [ids…]          (--shard i/n to split the work across processes)
  */
@@ -14,8 +18,9 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node
 import { join } from "node:path";
 import sharp from "sharp";
 import { labDist, rgbToOklab } from "../../src/lib/shiny-maker/color";
-import type { HdRef, SpeciesFile } from "../../src/lib/shiny-maker/data";
+import { b64decode, rleDecode, type HdRef, type SpeciesFile } from "../../src/lib/shiny-maker/data";
 import { CURATED } from "./curated";
+import { HD_FIXES } from "./hd-review";
 
 const CACHE = ".cache/shiny-maker";
 const OUT = "public/shiny-maker";
@@ -40,7 +45,57 @@ function refOf(labs: Lab[]): [number, number, number] {
   return [+(L / n).toFixed(4), +(C / n).toFixed(4), +h.toFixed(1)];
 }
 
-export async function buildHd(id: number) {
+/**
+ * `keep`: also offer the outline's (dark, unchanged in the shiny) colours as candidates; pixels that match them best
+ * (pupils, dark markings that the shiny leaves alone) get no part and are drawn as rendered. The reviewed species
+ * were built without it and keep their masks.
+ */
+function segmentVote(label: Int16Array, nd: Buffer, sd: Buffer, nLabels: number, k: number) {
+  const lab = new Float32Array(N * N * 6);
+  for (let i = 0; i < N * N; i++) {
+    if (label[i] < 0) continue;
+    const a = rgbToOklab(nd[i * 4], nd[i * 4 + 1], nd[i * 4 + 2]);
+    const b = sd[i * 4 + 3] >= 128 ? rgbToOklab(sd[i * 4], sd[i * 4 + 1], sd[i * 4 + 2]) : a;
+    lab.set([...a, ...b], i * 6);
+  }
+  const w = (i: number, j: number) => {
+    let dn = 0, ds = 0;
+    for (let t = 0; t < 3; t++) { dn += (lab[i * 6 + t] - lab[j * 6 + t]) ** 2; ds += (lab[i * 6 + 3 + t] - lab[j * 6 + 3 + t]) ** 2; }
+    return Math.sqrt(Math.max(dn, ds));
+  };
+  const ea: number[] = [], eb: number[] = [], ew: number[] = [];
+  for (let y = 0; y < N; y++)
+    for (let x = 0; x < N; x++) {
+      const i = y * N + x;
+      if (label[i] < 0) continue;
+      if (x + 1 < N && label[i + 1] >= 0) { ea.push(i); eb.push(i + 1); ew.push(w(i, i + 1)); }
+      if (y + 1 < N && label[i + N] >= 0) { ea.push(i); eb.push(i + N); ew.push(w(i, i + N)); }
+    }
+  const order = Array.from(ew.keys()).sort((p, q) => ew[p] - ew[q]);
+  const parent = new Int32Array(N * N).map((_, i) => i), size = new Int32Array(N * N).fill(1), inner = new Float32Array(N * N);
+  const find = (i: number): number => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; };
+  for (const e of order) {
+    const a = find(ea[e]), b = find(eb[e]);
+    if (a === b) continue;
+    if (ew[e] <= Math.min(inner[a] + k / size[a], inner[b] + k / size[b])) {
+      const [big, small] = size[a] >= size[b] ? [a, b] : [b, a];
+      parent[small] = big; size[big] += size[small]; inner[big] = ew[e];
+    }
+  }
+  const votes = new Map<number, Int32Array>();
+  for (let i = 0; i < N * N; i++) {
+    if (label[i] < 0) continue;
+    const r = find(i);
+    let v = votes.get(r);
+    if (!v) votes.set(r, (v = new Int32Array(nLabels)));
+    v[label[i]]++;
+  }
+  const win = new Map<number, number>();
+  for (const [r, v] of votes) { let b = 0; for (let t = 1; t < nLabels; t++) if (v[t] > v[b]) b = t; win.set(r, b); }
+  for (let i = 0; i < N * N; i++) if (label[i] >= 0) label[i] = win.get(find(i))!;
+}
+
+export async function buildHd(id: number, opts: { keep?: boolean; k?: number; wl?: number } = {}) {
   const pxFile = join(OUT, "px", `${id}.json`);
   const nf = join("public/sizes/art/512", `${id}.webp`), sf = join(CACHE, "home-shiny", `${id}.png`);
   if (!existsSync(pxFile) || !existsSync(nf) || !existsSync(sf)) return null;
@@ -48,34 +103,77 @@ export async function buildHd(id: number) {
   const [nd, sd] = await Promise.all([raw(nf), raw(sf)]);
   // Candidate slots (not the outline: HOME renders have no drawn outline).
   const cand: { n: Lab; s: Lab; part: number }[] = [];
-  f.parts.forEach((p, pi) => { if (!p.o) for (const s of p.s) { const [a, b] = f.slots[s].split(":"); cand.push({ n: labOfHex(a), s: labOfHex(b), part: pi }); } });
-  if (!cand.length) return null;
+  const P = f.parts.length, KEEP = P;
+  f.parts.forEach((p, pi) => { if (!p.o || opts.keep) for (const s of p.s) { const [a, b] = f.slots[s].split(":"); cand.push({ n: labOfHex(a), s: labOfHex(b), part: p.o ? KEEP : pi }); } });
+  if (!cand.some((c) => c.part !== KEEP)) return null;
   const label = new Int16Array(N * N).fill(-1);
   const dists: number[] = [];
-  const memo = new Map<number, [number, number]>();
+  // The render's distinct (normal, shiny) colour pairs, quantised, with their pixel counts.
+  const keyOf = new Int32Array(N * N).fill(-1);
+  const uniq = new Map<number, number>();
+  const un: Lab[] = [], us: Lab[] = [], uw: number[] = [];
   for (let i = 0; i < N * N; i++) {
     if (nd[i * 4 + 3] < 128) continue;
     const key = ((nd[i * 4] >> 2) << 18 | (nd[i * 4 + 1] >> 2) << 12 | (nd[i * 4 + 2] >> 2) << 6) * 4096 + ((sd[i * 4] >> 3) << 10 | (sd[i * 4 + 1] >> 3) << 5 | (sd[i * 4 + 2] >> 3));
-    let m = memo.get(key);
-    if (!m) {
+    let u = uniq.get(key);
+    if (u === undefined) {
+      u = un.length;
+      uniq.set(key, u);
       const n = rgbToOklab(nd[i * 4], nd[i * 4 + 1], nd[i * 4 + 2]) as Lab;
-      const s = sd[i * 4 + 3] >= 128 ? (rgbToOklab(sd[i * 4], sd[i * 4 + 1], sd[i * 4 + 2]) as Lab) : n;
-      let best = Infinity, bp = 0;
-      for (const c of cand) {
-        const d = Math.max(labDist(n, c.n, 0.5), labDist(s, c.s, 0.5));
-        if (d < best) { best = d; bp = c.part; }
-      }
-      m = [bp, best];
-      memo.set(key, m);
+      un.push(n);
+      us.push(sd[i * 4 + 3] >= 128 ? (rgbToOklab(sd[i * 4], sd[i * 4 + 1], sd[i * 4 + 2]) as Lab) : n);
+      uw.push(0);
     }
-    label[i] = m[0];
-    dists.push(m[1]);
+    uw[u]++;
+    keyOf[i] = u;
   }
+  const wl = opts.wl ?? 0.5;
+  const assign = () => {
+    const ci = new Int32Array(un.length), cd = new Float64Array(un.length);
+    for (let u = 0; u < un.length; u++) {
+      let best = Infinity, bc = 0;
+      for (let c = 0; c < cand.length; c++) {
+        const d = Math.max(labDist(un[u], cand[c].n, wl), labDist(us[u], cand[c].s, wl));
+        if (d < best) { best = d; bc = c; }
+      }
+      ci[u] = bc; cd[u] = best;
+    }
+    return { ci, cd };
+  };
+  let a = assign();
+  const fit = a.cd;
+  // Refinement (built with `keep`): each candidate pair moves halfway to the mean of the render's colours it won,
+  // so the sprite's palette adapts to the render's lighting; the outline's colours stay put.
+  if (opts.keep)
+    for (let it = 0; it < 6; it++) {
+      const acc = cand.map(() => ({ n: [0, 0, 0], s: [0, 0, 0], w: 0 }));
+      for (let u = 0; u < un.length; u++) {
+        const t = acc[a.ci[u]], w = uw[u];
+        for (let k = 0; k < 3; k++) { t.n[k] += un[u][k] * w; t.s[k] += us[u][k] * w; }
+        t.w += w;
+      }
+      cand.forEach((c, k) => {
+        const t = acc[k];
+        if (c.part === KEEP || t.w < 20) return;
+        c.n = c.n.map((v, j) => (v + t.n[j] / t.w) / 2) as Lab;
+        c.s = c.s.map((v, j) => (v + t.s[j] / t.w) / 2) as Lab;
+      });
+      a = assign();
+    }
+  for (let i = 0; i < N * N; i++) {
+    const u = keyOf[i];
+    if (u < 0) continue;
+    label[i] = cand[a.ci[u]].part;
+    dists.push(fit[u]);
+  }
+  // Regions (built with `keep`): a render's shading changes gradually while parts meet at sharp edges, so the
+  // figure is cut into regions of smoothly changing colour (graph-based segmentation, Felzenszwalb & Huttenlocher
+  // 2004, on both renders) and each region takes the part most of its pixels matched.
+  if (opts.keep) segmentVote(label, nd, sd, P + 1, opts.k ?? 0.6);
   // Majority filter (5 × 5), twice.
-  const P = f.parts.length;
   for (let pass = 0; pass < 2; pass++) {
     const next = label.slice();
-    const cnt = new Int32Array(P);
+    const cnt = new Int32Array(P + 1);
     for (let y = 0; y < N; y++)
       for (let x = 0; x < N; x++) {
         const i = y * N + x;
@@ -88,7 +186,7 @@ export async function buildHd(id: number) {
           if (v >= 0) cnt[v]++;
         }
         let bv = label[i];
-        for (let k = 0; k < P; k++) if (cnt[k] > cnt[bv]) bv = k;
+        for (let k = 0; k <= P; k++) if (cnt[k] > cnt[bv]) bv = k;
         next[i] = bv;
       }
     label.set(next);
@@ -118,7 +216,7 @@ export async function buildHd(id: number) {
       }
     }
     nc++;
-    if (members.length < minSize && touch.size) {
+    if (members.length < (label[i] === KEEP ? minSize / 4 : minSize) && touch.size) {
       const to = [...touch.entries()].sort((a, b) => b[1] - a[1])[0][0];
       for (const j of members) label[j] = to;
     }
@@ -137,7 +235,7 @@ export async function buildHd(id: number) {
   // Reference colours per part, and the fit.
   const nl: Lab[][] = f.parts.map(() => []), sl: Lab[][] = f.parts.map(() => []);
   for (let i = 0; i < N * N; i++) {
-    if (label[i] < 0 || nd[i * 4 + 3] < 200) continue;
+    if (label[i] < 0 || label[i] === KEEP || nd[i * 4 + 3] < 200) continue;
     if ((i & 3) !== 0) continue; // a quarter of the pixels is plenty for the averages
     nl[label[i]].push(rgbToOklab(nd[i * 4], nd[i * 4 + 1], nd[i * 4 + 2]) as Lab);
     sl[label[i]].push(sd[i * 4 + 3] >= 128 ? (rgbToOklab(sd[i * 4], sd[i * 4 + 1], sd[i * 4 + 2]) as Lab) : nl[label[i]][nl[label[i]].length - 1]);
@@ -146,19 +244,81 @@ export async function buildHd(id: number) {
   dists.sort((a, b) => a - b);
   const quality = { median: +dists[dists.length >> 1].toFixed(3), p90: +dists[Math.floor(dists.length * 0.9)].toFixed(3), far: +(dists.filter((d) => d > 0.12).length / dists.length).toFixed(3) };
   const png = Buffer.alloc(N * N);
-  for (let i = 0; i < N * N; i++) png[i] = label[i] < 0 ? 0 : label[i] + 1;
+  for (let i = 0; i < N * N; i++) png[i] = label[i] < 0 || label[i] === KEEP ? 0 : label[i] + 1;
   return { f, hd, png, quality };
 }
 
+/** Each Pixel part's share of the sprite's figure (outline left out): what the HD parts should roughly reproduce. */
+export function spriteShares(f: SpeciesFile): number[] {
+  const idx = rleDecode(b64decode(f.px), f.w * f.h);
+  const partOf = new Int16Array(f.slots.length).fill(-1);
+  f.parts.forEach((p, i) => { if (!p.o) p.s.forEach((s) => (partOf[s] = i)); });
+  const c = new Array(f.parts.length).fill(0);
+  let t = 0;
+  for (const v of idx) if (v >= 0 && partOf[v] >= 0) { c[partOf[v]]++; t++; }
+  return c.map((x) => x / Math.max(1, t));
+}
+
+/** Each part's share of an HD mask's labelled pixels. */
+export function maskShares(png: Uint8Array, parts: number): number[] {
+  const c = new Array(parts).fill(0);
+  let t = 0;
+  for (const v of png) if (v) { c[v - 1]++; t++; }
+  return c.map((x) => x / Math.max(1, t));
+}
+
+/** How far the HD parts' shares are from the sprite's (L1, 0 = the same, 2 = nothing in common). */
+export const shareGap = (a: number[], b: number[]) => +a.reduce((s, x, i) => s + Math.abs(x - b[i]), 0).toFixed(3);
+
+export const VARIANTS = [0.5, 0.25, 0.1].flatMap((wl) => [0.6, 1].map((k) => ({ wl, k })));
+
 /**
- * Quality over coverage: HD ships only for hand-curated species whose masks were reviewed on contact sheets
- * (.cache/shiny-maker hd sheets), less those whose parts came out muddled in review. Everything else is Pixel only.
+ * The automatic HD build for species without a reviewed mask: `keep`, refinement and regions at a few lightness
+ * weights (how much a pixel's lightness counts against its colour; the render's lighting is not the sprite's) and
+ * region sizes, keeping the one whose parts cover the figure most like the Pixel parts do, so a part is the same
+ * part in both styles.
+ */
+export async function buildHdAuto(id: number) {
+  let best: (NonNullable<Awaited<ReturnType<typeof buildHd>>> & { gap: number; variant: { wl: number; k: number } }) | null = null;
+  for (const v of VARIANTS) {
+    const r = await buildHd(id, { keep: true, ...v });
+    if (!r) return null;
+    const gap = shareGap(maskShares(r.png, r.f.parts.length), spriteShares(r.f));
+    if (!best || gap < best.gap) best = { ...r, gap, variant: v };
+  }
+  return best;
+}
+
+/**
+ * The first HD release: hand-curated species whose masks were reviewed on contact sheets, less those whose parts came
+ * out muddled with the original method (they now take the automatic build like every other species).
  */
 export const HD_REJECTED = new Set([9, 59, 155, 156, 256, 390, 635, 652, 785, 911, 913, 914, 1008]);
 export const hdAllowed = (id: number) => id in CURATED && !HD_REJECTED.has(id);
 
 /** Good enough to ship: most pixels found a close colour pair. */
 export const passes = (q: { median: number; p90: number; far: number }) => q.median < 0.06 && q.p90 < 0.12 && q.far < 0.1;
+
+/** One piece: every pixel of the figure is the species' largest part (the safe fallback, see hd-review.ts). */
+export async function buildHdOnePiece(id: number) {
+  const r = await buildHd(id, { keep: true });
+  if (!r) return null;
+  const shares = spriteShares(r.f);
+  const main = shares.indexOf(Math.max(...shares));
+  for (let i = 0; i < r.png.length; i++) if (r.png[i]) r.png[i] = main + 1;
+  // The pixels drawn as rendered stay so (pupils); everything else recolours with the main part.
+  const nd = await raw(join("public/sizes/art/512", `${id}.webp`));
+  const sd = await raw(join(CACHE, "home-shiny", `${id}.png`));
+  const labs: Lab[] = [], labsS: Lab[] = [];
+  for (let i = 0; i < N * N; i += 4) {
+    if (r.png[i] !== main + 1 || nd[i * 4 + 3] < 200) continue;
+    const n = rgbToOklab(nd[i * 4], nd[i * 4 + 1], nd[i * 4 + 2]) as Lab;
+    labs.push(n);
+    labsS.push(sd[i * 4 + 3] >= 128 ? (rgbToOklab(sd[i * 4], sd[i * 4 + 1], sd[i * 4 + 2]) as Lab) : n);
+  }
+  r.hd[main] = [...refOf(labs), ...refOf(labsS)] as HdRef;
+  return { ...r, gap: 0, variant: null };
+}
 
 async function main() {
   const args = process.argv.slice(2);
@@ -170,11 +330,22 @@ async function main() {
   mkdirSync(join(CACHE, "hd-report"), { recursive: true });
   const report: Record<number, unknown> = {};
   for (const id of all.filter((_, i) => i % sn === si)) {
-    const r = await buildHd(id);
-    if (!r) continue;
-    const ok = passes(r.quality) && hdAllowed(id);
-    report[id] = { ...r.quality, ok };
     const file = join(OUT, "hd", `${id}.png`);
+    let r, ok: boolean, how: string;
+    const reviewed = hdAllowed(id) ? await buildHd(id) : null;
+    if (reviewed && passes(reviewed.quality)) {
+      // Reviewed with the original method: built exactly as they were.
+      r = reviewed;
+      ok = true;
+      how = "reviewed";
+    } else {
+      const fix = HD_FIXES[id];
+      r = fix === "one-piece" ? await buildHdOnePiece(id) : fix ? await buildHd(id, { keep: true, ...fix }) : await buildHdAuto(id);
+      if (!r) continue;
+      ok = true;
+      how = fix === "one-piece" ? "one-piece" : fix ? `fixed ${JSON.stringify(fix)}` : `auto ${JSON.stringify((r as unknown as { variant: unknown }).variant)}`;
+    }
+    report[id] = { ...r.quality, ok, how, gap: shareGap(maskShares(r.png, r.f.parts.length), spriteShares(r.f)) };
     if (ok) {
       await sharp(r.png, { raw: { width: N, height: N, channels: 1 } }).png({ compressionLevel: 9, palette: false }).toFile(file);
       r.f.hd = r.hd;
