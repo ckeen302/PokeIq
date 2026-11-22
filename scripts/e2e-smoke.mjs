@@ -14,6 +14,7 @@ import { execFileSync } from "child_process";
 import { runIqTest } from "./e2e-iq-test.mjs";
 import { runSizes } from "./e2e-sizes.mjs";
 import { runShinyMaker } from "./e2e-shiny-maker.mjs";
+import { runTierList } from "./e2e-tier-list.mjs";
 import { runCalc } from "./e2e-calc.mjs";
 import { runVideoGames } from "./e2e-video-games.mjs";
 import { runMovies } from "./e2e-movies.mjs";
@@ -169,6 +170,11 @@ if (process.env.E2E_ONLY === "calc") {
 // E2E_ONLY=shiny-maker runs just the Tools tab and the Shiny Pokémon Maker, then exits.
 if (process.env.E2E_ONLY === "shiny-maker") {
   await runShinyMaker({ browser, BASE, OUT, errors, step });
+  await finish();
+}
+// E2E_ONLY=tier-list runs just the Pokémon Tier List Maker (its card on /tools, every mode), then exits.
+if (process.env.E2E_ONLY === "tier-list") {
+  await runTierList({ browser, BASE, OUT, errors, step });
   await finish();
 }
 // E2E_ONLY=which-pokemon runs just that step (no Supabase, no second browser), then exits.
@@ -2651,6 +2657,7 @@ step("pokédex Timeline: an entry's own link opens its panel, share copies it, t
 
 await runSizes({ browser, BASE, OUT, errors, step });
 await runShinyMaker({ browser, BASE, OUT, errors, step });
+await runTierList({ browser, BASE, OUT, errors, step });
 
 await runVideoGames({ browser, BASE, errors, step });
 await runMovies({ browser, BASE, errors, step });
