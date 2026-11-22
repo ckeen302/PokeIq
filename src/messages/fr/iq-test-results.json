@@ -1,0 +1,29 @@
+{
+  "complete": "Test PokéIQ terminé",
+  "bands": {
+    "exceptional": "Exceptionnel",
+    "superior": "Supérieur",
+    "highAverage": "Moyenne haute",
+    "average": "Dans la moyenne",
+    "lowAverage": "Moyenne basse",
+    "below": "Sous la moyenne"
+  },
+  "cognitive": "PokéIQ cognitif",
+  "percentile": "{p, selectordinal, one {{p}er} other {{p}e}} centile des Dresseurs",
+  "summary": "PokéIQ cognitif {score} · {p, selectordinal, one {{p}er} other {{p}e}} centile des Dresseurs. Mesure le raisonnement, la mémoire, la vitesse et la perception spatiale avec des Pokémon, par rapport aux autres Dresseurs ; ce n'est pas un test de QI clinique.",
+  "bar": "{title} : {scaled}, {p, selectordinal, one {{p}er} other {{p}e}} centile",
+  "scale": "Chaque barre suit la même échelle de moyenne 100. Les quatre premières forment le score cognitif ; les connaissances correspondent au PokéIQ de l'épreuve de quiz et sont notées à part.",
+  "scaleKnowledge": "Chaque barre suit la même échelle de moyenne 100. Les quatre premières forment le score cognitif ; les connaissances correspondent au PokéIQ de l'épreuve de quiz ({iq}, {title}) et sont notées à part.",
+  "even": "Un profil homogène : aucune épreuve ne se détache nettement au-dessus ou en dessous des autres.",
+  "strengths": "<b>Points forts :</b> {list}.",
+  "weaknesses": "<b>Plus difficile pour toi :</b> {list}.",
+  "sep": " ; ",
+  "words": {
+    "fluid": { "strength": "repérer la règle derrière un motif", "weakness": "trouver la règle derrière un motif" },
+    "memory": { "strength": "garder une séquence ou un calcul en tête", "weakness": "garder plusieurs choses en tête à la fois" },
+    "speed": { "strength": "balayer vite et avec précision", "weakness": "balayer vite sans te tromper" },
+    "spatial": { "strength": "faire tourner les choses et tracer des trajets dans ta tête", "weakness": "imaginer des objets tournés ou empilés" }
+  },
+  "retake": "Recommencer avec de nouveaux exercices",
+  "card": "Le voir sur ta carte de Dresseur"
+}

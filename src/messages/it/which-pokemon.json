@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "title": "Che Pokémon sei? Test della personalità",
+    "description": "Scopri che Pokémon sei: poche domande veloci misurano i cinque grandi tratti della personalità più competitività e indipendenza, e ti confrontano con profili basati sul Pokédex, su Mystery Dungeon e sull'anime. Con scheda da condividere e link per confrontarti con un amico.",
+    "socialTitle": "Che Pokémon sei?",
+    "socialDescription": "Rispondi con sincerità e incontra il tuo Pokémon: ogni profilo si basa sul Pokédex. Gratis, senza registrazione.",
+    "ldName": "Che Pokémon sei?",
+    "ldDescription": "Un test della personalità Pokémon con un modello a sette tratti e risultati documentati."
+  },
+  "page": {
+    "kicker": "Test della personalità",
+    "title": "Che Pokémon sei?",
+    "lead": "Sette tratti, Pokémon dalla personalità documentata e un risultato che ti somiglia davvero.",
+    "samples": "Esempi di risultati",
+    "sample": "Mi è uscito {name}"
+  },
+  "result": {
+    "metaTitle": "Mi è uscito {name}! Che Pokémon sei?",
+    "metaDescription": "{name}, {title}: {first} Fai il test della personalità Pokémon e scopri il tuo.",
+    "socialTitle": "Sono {name}! E tu che Pokémon sei?",
+    "socialDescription": "{title}. {first}",
+    "ldName": "Mi è uscito {name}: Che Pokémon sei?",
+    "back": "Che Pokémon sei?",
+    "kicker": "Che Pokémon sei?",
+    "youAre": "Sei <c>{name}</c>",
+    "dexLine": "#{num} · {gen}ª gen. · <link>Voce del Pokédex</link>",
+    "why": "<b>Perché {name}:</b> {why}",
+    "profile": "Profilo di {name}",
+    "partner": "Partner ideale di {name}",
+    "rival": "Rivale di {name}"
+  },
+  "compare": {
+    "title": "Confronto: Che Pokémon sei?",
+    "description": "I risultati di due Allenatori al test della personalità Pokémon, fianco a fianco, con la loro compatibilità. Fai il test e confrontati con un amico.",
+    "socialTitle": "Che Pokémon sei? Confrontati con me",
+    "imageAlt": "Che Pokémon sei? Un test della personalità",
+    "kicker": "Confrontati con un amico",
+    "title2": "Due Allenatori, due Pokémon"
+  }
+}

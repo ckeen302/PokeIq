@@ -1,0 +1,29 @@
+{
+  "complete": "PokéIQ-Test abgeschlossen",
+  "bands": {
+    "exceptional": "Außergewöhnlich",
+    "superior": "Weit überdurchschnittlich",
+    "highAverage": "Hoher Durchschnitt",
+    "average": "Durchschnitt",
+    "lowAverage": "Niedriger Durchschnitt",
+    "below": "Unterdurchschnittlich"
+  },
+  "cognitive": "Kognitiver PokéIQ",
+  "percentile": "{p}. Perzentil der Trainer",
+  "summary": "Kognitiver PokéIQ {score} · {p}. Perzentil der Trainer. Misst logisches Denken, Gedächtnis, Tempo und räumliches Denken mit Pokémon, gewertet im Vergleich mit anderen Trainern; kein klinischer IQ-Test.",
+  "bar": "{title}: {scaled}, {p}. Perzentil",
+  "scale": "Alle Balken nutzen dieselbe Skala mit Mittelwert 100. Die ersten vier bilden den kognitiven Wert; Wissen ist das PokéIQ-Rating aus dem Quiz-Abschnitt und wird getrennt gewertet.",
+  "scaleKnowledge": "Alle Balken nutzen dieselbe Skala mit Mittelwert 100. Die ersten vier bilden den kognitiven Wert; Wissen ist das PokéIQ-Rating aus dem Quiz-Abschnitt ({iq}, {title}) und wird getrennt gewertet.",
+  "even": "Ein ausgeglichenes Profil: Kein Abschnitt lag deutlich über oder unter den anderen.",
+  "strengths": "<b>Stärken:</b> {list}.",
+  "weaknesses": "<b>Fällt dir schwerer:</b> {list}.",
+  "sep": "; ",
+  "words": {
+    "fluid": { "strength": "die Regel hinter einem Muster erkennen", "weakness": "die Regel hinter einem Muster finden" },
+    "memory": { "strength": "eine Reihenfolge oder Rechnung im Kopf behalten", "weakness": "mehrere Dinge gleichzeitig im Kopf behalten" },
+    "speed": { "strength": "schnelles, genaues Absuchen", "weakness": "schnell absuchen, ohne Fehler zu machen" },
+    "spatial": { "strength": "Dinge im Kopf drehen und Wege planen", "weakness": "sich gedrehte oder gestapelte Dinge vorstellen" }
+  },
+  "retake": "Neu starten mit neuen Aufgaben",
+  "card": "Auf deinem Trainerpass ansehen"
+}

@@ -1,0 +1,29 @@
+{
+  "complete": "Test PokéIQ completado",
+  "bands": {
+    "exceptional": "Excepcional",
+    "superior": "Superior",
+    "highAverage": "Medio-alto",
+    "average": "Medio",
+    "lowAverage": "Medio-bajo",
+    "below": "Por debajo de la media"
+  },
+  "cognitive": "PokéIQ cognitivo",
+  "percentile": "Percentil {p} de los Entrenadores",
+  "summary": "PokéIQ cognitivo {score} · percentil {p} de los Entrenadores. Mide razonamiento, memoria, velocidad y visión espacial con Pokémon, puntuado frente a otros Entrenadores; no es un test de CI clínico.",
+  "bar": "{title}: {scaled}, percentil {p}",
+  "scale": "Todas las barras usan la misma escala de media 100. Las cuatro primeras forman la puntuación cognitiva; el conocimiento es el PokéIQ de la sección de preguntas y se puntúa aparte.",
+  "scaleKnowledge": "Todas las barras usan la misma escala de media 100. Las cuatro primeras forman la puntuación cognitiva; el conocimiento es el PokéIQ de la sección de preguntas ({iq}, {title}) y se puntúa aparte.",
+  "even": "Un perfil equilibrado: ninguna sección destacó claramente por encima ni por debajo de las demás.",
+  "strengths": "<b>Puntos fuertes:</b> {list}.",
+  "weaknesses": "<b>Te cuesta más:</b> {list}.",
+  "sep": "; ",
+  "words": {
+    "fluid": { "strength": "descubrir la regla que hay detrás de un patrón", "weakness": "encontrar la regla que hay detrás de un patrón" },
+    "memory": { "strength": "retener una secuencia o una cuenta en la cabeza", "weakness": "retener varias cosas en la cabeza a la vez" },
+    "speed": { "strength": "rastrear con rapidez y precisión", "weakness": "rastrear rápido sin equivocarte" },
+    "spatial": { "strength": "girar cosas y trazar rutas con la imaginación", "weakness": "imaginar cosas giradas o apiladas" }
+  },
+  "retake": "Repetir con preguntas nuevas",
+  "card": "Verlo en tu tarjeta de Entrenador"
+}
