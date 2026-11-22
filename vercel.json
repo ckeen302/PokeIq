@@ -15,7 +15,6 @@
   "git": {
     "deploymentEnabled": {
       "main": true,
-      "feat/calc-compact": true,
       "**": false
     }
   }
