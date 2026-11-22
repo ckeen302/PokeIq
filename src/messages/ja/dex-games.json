@@ -2,7 +2,7 @@
   "meta": {
     "title": "ポケモンのゲーム一覧 — 本編・リメイク・外伝・スマホアプリ",
     "description": "『ポケットモンスター 赤・緑』から『Pokémon LEGENDS Z-A』まで、ポケモンのゲームをパッケージ画像つきで紹介。本編、リメイク、『ポケモンスナップ』『ポケモン不思議のダンジョン』『ポケモンスタジアム』などの外伝作品、『Pokémon GO』などのスマホアプリまで、世代や種類で絞り込めます。",
-    "socialTitle": "ポケモンのゲーム一覧 · PokéIQ ポケモン図鑑"
+    "socialTitle": "ポケモンのゲーム一覧 · PokéIQポケモン図鑑"
   },
   "header": {
     "kicker": "ゲームデータベース",
@@ -25,7 +25,7 @@
   "game": {
     "metaTitle": "{name}（{year}年）— ポケモンのゲーム・{kind}",
     "describe": "{name}（{year}年、{platforms}）：{summary}",
-    "socialTitle": "{name} · PokéIQ ポケモン図鑑",
+    "socialTitle": "{name} · PokéIQポケモン図鑑",
     "allGames": "ゲーム一覧",
     "kicker": "第{gen}世代 · {kind}",
     "list": "{a}、{b}",

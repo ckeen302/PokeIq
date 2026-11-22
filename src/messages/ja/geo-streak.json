@@ -39,7 +39,7 @@
   },
   "summary": {
     "saveFailed": "保存できませんでした。",
-    "shareTitle": "PokéGuessr 地方連続",
+    "shareTitle": "PokéGuessr地方連続",
     "shareCount": "{n, plural, other {{n}地方連続}}",
     "newBest": "自己ベスト",
     "best": "ベスト {n}連続",

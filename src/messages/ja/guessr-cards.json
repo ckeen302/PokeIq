@@ -27,8 +27,8 @@
     "modeLabel": "対戦モード",
     "raceRounds": "レースのラウンド数",
     "partySettings": "パーティー設定",
-    "turboOn": "ターボ オン",
-    "turboOff": "ターボ オフ"
+    "turboOn": "ターボオン",
+    "turboOff": "ターボオフ"
   },
   "party": {
     "royaleBlurb": "最大{max}人のトレーナーが同じ場所で勝負。各ラウンドでスコアがいちばん低い人がライフを1失い（ライフは各{lives}）、最後まで勝ち残った人の勝ちです。",

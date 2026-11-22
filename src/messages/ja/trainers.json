@@ -4,7 +4,7 @@
     "description": "『赤・緑』から『スカーレット・バイオレット』まで、すべてのトレーナーがいる場所と手持ちのポケモン、レベル、わざ、持ち物を掲載。ジムリーダーや四天王からライバル、再戦まで。",
     "gameTitle": "『ポケモン {game}』のすべてのトレーナー — 場所別の手持ち",
     "gameDescription": "『ポケモン {game}』のトレーナーの手持ちを道路ごとに掲載。ジムリーダー、四天王、ライバル、一般トレーナーのポケモン、レベル、わざ、持ち物。",
-    "gameSocial": "{game}のトレーナー · PokéIQ ポケモン図鑑",
+    "gameSocial": "{game}のトレーナー · PokéIQポケモン図鑑",
     "areaTitle": "{area}のトレーナー — 『ポケモン {game}』",
     "areaDescription": "『ポケモン {game}』の{area}にいるトレーナー{n}人の手持ちのポケモン、レベル、わざ、持ち物、再戦時の手持ち。",
     "areaSocial": "{area} · {game}のトレーナー",
@@ -12,7 +12,7 @@
     "notableTitleType": "{name}（{role}・{type}タイプ）の手持ちと場所",
     "notableDescription": "{lead}。{games}で{name}が使うすべての手持ちと、レベル、わざ、持ち物、戦える場所。",
     "notableDescriptionLocal": "{games}で{name}が使うすべての手持ちと、レベル、わざ、持ち物、戦える場所。",
-    "notableSocial": "{name} · PokéIQ トレーナー"
+    "notableSocial": "{name} · PokéIQトレーナー"
   },
   "list": {
     "kicker": "トレーナーデータベース",
@@ -87,7 +87,7 @@
     "postGame": "クリア後",
     "firstVisit": "初めて訪れたとき",
     "rolePage": "{role}のページ",
-    "notInList": "道具リストにありません",
+    "notInList": "どうぐリストにありません",
     "lv": "Lv.{lv}",
     "lvRange": "Lv.{lo}〜{hi}",
     "tera": "テラス",
@@ -98,7 +98,7 @@
     "size": "{n}匹",
     "sizeDouble": "{n}匹 · ダブルバトル",
     "only": "{version}のみ",
-    "uses": "使う道具"
+    "uses": "使うどうぐ"
   },
   "forms": {
     "sandyCloak": "すなちのミノ",

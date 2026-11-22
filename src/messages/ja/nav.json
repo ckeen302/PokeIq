@@ -17,7 +17,7 @@
   "primary": "メイン",
   "more": "その他",
   "moreWaiting": "その他（{n}件の通知）",
-  "logoHome": "PokéIQ ホーム",
+  "logoHome": "PokéIQホーム",
   "yourProfile": "あなたのトレーナープロフィール",
   "signIn": "ログイン",
   "signOut": "ログアウト",
@@ -38,7 +38,7 @@
     "light": "ライト",
     "sound": "サウンド",
     "soundHint": "効果音と音楽。",
-    "soundKeyHint": "どこでも M キーで切り替えられます。",
+    "soundKeyHint": "どこでもMキーで切り替えられます。",
     "on": "オン",
     "off": "オフ"
   },

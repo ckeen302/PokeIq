@@ -99,7 +99,7 @@
     "video": "動画",
     "makeVideo": "動画を作る",
     "copied": "リンクをコピーしました",
-    "shareTitle": "PokéIQ レース",
+    "shareTitle": "PokéIQレース",
     "shareText": "{title}：{name}が{time}秒で勝利",
     "custom": "カスタムレース",
     "raceLabel": "{d} m・{label}"
@@ -184,7 +184,7 @@
       "recording": "録画中"
     },
     "hookLine": "{d} M・種族値をもとに",
-    "endTitle": "PokéIQ レース",
+    "endTitle": "PokéIQレース",
     "endSub": "{d} m・結果",
     "endCta": "どのポケモンでも走らせよう",
     "results": "結果・{d} m",

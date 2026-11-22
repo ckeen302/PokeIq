@@ -26,21 +26,21 @@
     "entry": "「{entry}」",
     "entryGenus": "{entry}（{genus}）",
     "genusPrompt": "「{genus}」と呼ばれるポケモンはどれ？",
-    "abilityPrompt": "{name}の特性はどれ？",
-    "abilityExplanation": "{name}の特性：{abilities}。",
+    "abilityPrompt": "{name}のとくせいはどれ？",
+    "abilityExplanation": "{name}のとくせい：{abilities}。",
     "hidden": "{ability}（隠れ特性）"
   },
   "types": {
     "typingPrompt": "{name}のタイプは？",
     "typingExplanation": "{name}は{types}タイプです。",
     "defender": "{name}（{types}）",
-    "effPrompt": "{type}タイプの技は{defender}にどれくらい効く？",
+    "effPrompt": "{type}タイプのわざは{defender}にどれくらい効く？",
     "effExplanation": "{calc}",
     "immune": "0×（効果なし）",
     "fourXPrompt": "{defender}に4倍で効くタイプは？",
-    "fourXExplanation": "{types}は{weak}の技を4倍で受けます。",
-    "immunePrompt": "{defender}に効果がない技のタイプは？",
-    "immuneExplanation": "{types}には{immune}の技は効果がありません。"
+    "fourXExplanation": "{types}は{weak}のわざを4倍で受けます。",
+    "immunePrompt": "{defender}に効果がないわざのタイプは？",
+    "immuneExplanation": "{types}には{immune}のわざは効果がありません。"
   },
   "hl": {
     "higher": {
@@ -72,20 +72,20 @@
     "explanation": "{a}：{va}・{b}：{vb}"
   },
   "comp": {
-    "holderPrompt": "特性「{ability}」を持つことがあるポケモンはどれ？",
-    "holderExplanation": "{name}は特性「{ability}」を持つことがあります。",
-    "moveTypePrompt": "技「{move}」のタイプは？",
-    "moveTypeExplanation": "「{move}」は{type}タイプの技です。",
+    "holderPrompt": "とくせい「{ability}」を持つことがあるポケモンはどれ？",
+    "holderExplanation": "{name}はとくせい「{ability}」を持つことがあります。",
+    "moveTypePrompt": "わざ「{move}」のタイプは？",
+    "moveTypeExplanation": "「{move}」は{type}タイプのわざです。",
     "current": "最新作での情報です",
-    "categoryPrompt": "技「{move}」の分類は{physical}・{special}・{status}のどれ？",
-    "categoryExplanation": "「{move}」は{category}技です。",
+    "categoryPrompt": "わざ「{move}」の分類は{physical}・{special}・{status}のどれ？",
+    "categoryExplanation": "「{move}」は{category}わざです。",
     "category": {
       "physical": "ぶつり",
       "special": "とくしゅ",
       "status": "へんか"
     },
-    "itemPrompt": "道具「{name}」の効果は？",
-    "abilityPrompt": "特性「{name}」の効果は？",
+    "itemPrompt": "どうぐ「{name}」の効果は？",
+    "abilityPrompt": "とくせい「{name}」の効果は？",
     "descExplanation": "{name}：{desc}"
   },
   "trivia": {
@@ -137,7 +137,7 @@
       "genExplanation": "{name}は{games}（{gen}）で初めて登場しました。",
       "gamesPrompt": "{name}が初めて登場したゲームは？",
       "gamesExplanation": "{name}は{games}で初めて登場しました。",
-      "abilities": "特性",
+      "abilities": "とくせい",
       "natures": "せいかく",
       "doubles": "ダブルバトル",
       "contests": "ポケモンコンテスト",
@@ -145,7 +145,7 @@
       "breeding": "育て屋とタマゴ",
       "shiny": "色違いのポケモン",
       "steelDark": "はがねタイプとあくタイプ",
-      "split": "技ごとの物理・特殊の分類",
+      "split": "わざごとの物理・特殊の分類",
       "gts": "GTS（グローバルトレードステーション）",
       "hiddenAbilities": "隠れ特性",
       "triples": "トリプルバトル",

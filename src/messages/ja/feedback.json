@@ -7,17 +7,17 @@
     "other": "その他"
   },
   "prompts": {
-    "idea": "PokéIQ をもっと良くするには？",
+    "idea": "PokéIQをもっと良くするには？",
     "bug": "何をしたか、何を期待したか、実際に何が起きたか。",
     "other": "なんでも教えてください。"
   },
   "part": "対象",
-  "partLabel": "PokéIQ のどの部分か",
+  "partLabel": "PokéIQのどの部分か",
   "modes": {
     "general": "サイト全体",
     "daily": "デイリーチャレンジ",
     "quiz": "クイズ",
-    "iqtest": "PokéIQ テスト",
+    "iqtest": "PokéIQテスト",
     "pokedle": "Pokédle",
     "guessr": "PokéGuessr",
     "pokedex": "図鑑",

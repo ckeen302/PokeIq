@@ -46,7 +46,7 @@
   "toastLineup": "このラインには{what}がありません：高さ順にします",
   "toastPick": "{name}には{what}がありません：高さ順にします",
   "copied": "リンクをコピーしました",
-  "shareTitle": "PokéIQ ポケモン大きさ比べ",
+  "shareTitle": "PokéIQポケモン大きさ比べ",
   "shareCompare": "{hook} 実際の大きさで3D比較",
   "shareFocus": "{name}の大きさは？ {size}",
   "shareLine": "{hook}（3D）",

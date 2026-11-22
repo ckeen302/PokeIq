@@ -18,7 +18,7 @@
     "unsubscribe": "配信停止",
     "settings": "メール設定",
     "preheader": "Pokédle、PokéGuessr、Connections、Pikadoku、デイリーチャレンジが更新されました。",
-    "textTitle": "PokéIQ デイリー #{n}",
+    "textTitle": "PokéIQデイリー #{n}",
     "textHeading": "今日のデイリーが始まりました。",
     "textUnsubscribe": "配信停止：{url}",
     "textSettings": "メール設定：{url}"

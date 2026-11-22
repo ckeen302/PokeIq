@@ -1,10 +1,10 @@
 {
   "hub": {
-    "title": "PokéGuessr：ポケモン版 GeoGuessr",
-    "description": "PokéGuessr はポケモン版の GeoGuessr。カントーからパルデアまでのどこかに飛ばされます。ゲーム画面を見てマップにピンを立て、最高25,000点を目指そう。デイリーゲームは毎日更新。",
+    "title": "PokéGuessr：ポケモン版GeoGuessr",
+    "description": "PokéGuessrはポケモン版のGeoGuessr。カントーからパルデアまでのどこかに飛ばされます。ゲーム画面を見てマップにピンを立て、最高25,000点を目指そう。デイリーゲームは毎日更新。",
     "info": {
-      "description": "PokéGuessr は無料のポケモン版 GeoGuessr。ゲーム画面を見て、ポケモンの世界のマップにピンを立て、最高25,000点を目指そう。",
-      "intro": "PokéGuessr はポケモン版の GeoGuessr。カントーからパルデアまで、ポケモンの世界のどこかに飛ばされ、そこがどこかを推理します。",
+      "description": "PokéGuessrは無料のポケモン版GeoGuessr。ゲーム画面を見て、ポケモンの世界のマップにピンを立て、最高25,000点を目指そう。",
+      "intro": "PokéGuessrはポケモン版のGeoGuessr。カントーからパルデアまで、ポケモンの世界のどこかに飛ばされ、そこがどこかを推理します。",
       "steps": {
         "look": "表示されたゲーム画面を見る。",
         "pin": "ここだと思う場所のマップにピンを立てる。",
@@ -18,41 +18,41 @@
     }
   },
   "streak": {
-    "title": "PokéGuessr 地方連続：スクリーンショット1枚から地方を当てよう",
-    "description": "地方連続は PokéGuessr の連続モード。ゲーム画面1枚を見て、カントーからパルデアまでの地方を選ぼう。正解なら次へ、間違えたら終わり。どこまで続けられる？"
+    "title": "PokéGuessr地方連続：スクリーンショット1枚から地方を当てよう",
+    "description": "地方連続はPokéGuessrの連続モード。ゲーム画面1枚を見て、カントーからパルデアまでの地方を選ぼう。正解なら次へ、間違えたら終わり。どこまで続けられる？"
   },
   "globe": {
-    "title": "ポケモン ワールドグローブ：ポケモンの世界全体を3Dで回そう",
+    "title": "ポケモンワールドグローブ：ポケモンの世界全体を3Dで回そう",
     "description": "ポケモンの世界のホログラム3Dグローブ。回して、地方からすべての町、道路、名所までズームし、世代ごとに広がる世界を眺め、実際のゲーム画面で各町を見よう。"
   },
   "history": {
-    "title": "PokéGuessr 対戦履歴",
-    "description": "カジュアルもランク戦も、PokéGuessr のデュエルを1ラウンドずつリプレイ。",
-    "back": "PokéGuessr に戻る",
+    "title": "PokéGuessr対戦履歴",
+    "description": "カジュアルもランクマッチも、PokéGuessrの対戦を1ラウンドずつリプレイ。",
+    "back": "PokéGuessrに戻る",
     "h1": "対戦履歴",
-    "intro": "この端末で、またはログイン中はアカウントで終えたすべてのデュエル。開くと1ラウンドずつリプレイできます。",
+    "intro": "この端末で、またはログイン中はアカウントで終えたすべての対戦。開くと1ラウンドずつリプレイできます。",
     "worldMap": "ワールドマップ"
   },
   "replay": {
-    "title": "PokéGuessr デュエルのリプレイ",
-    "description": "PokéGuessr のデュエルを1ラウンドずつ：スクリーンショット、2人のピンと正解の場所、スコア、ダメージ、HP。"
+    "title": "PokéGuessr対戦のリプレイ",
+    "description": "PokéGuessrの対戦を1ラウンドずつ：スクリーンショット、2人のピンと正解の場所、スコア、ダメージ、HP。"
   },
   "challenge": {
-    "fallback": "PokéGuessr チャレンジ",
+    "fallback": "PokéGuessrチャレンジ",
     "aTrainer": "あるトレーナー",
-    "title": "{who}が PokéGuessr で{score}点。勝てるかな？",
-    "world": "{n, plural, other {ポケモンの世界の同じ{n}か所でピンを立てて、スコアを超えよう。ポケモン版 GeoGuessr、無料。}}",
-    "region": "{n, plural, other {{map}の同じ{n}か所でピンを立てて、スコアを超えよう。ポケモン版 GeoGuessr、無料。}}"
+    "title": "{who}がPokéGuessrで{score}点。勝てるかな？",
+    "world": "{n, plural, other {ポケモンの世界の同じ{n}か所でピンを立てて、スコアを超えよう。ポケモン版GeoGuessr、無料。}}",
+    "region": "{n, plural, other {{map}の同じ{n}か所でピンを立てて、スコアを超えよう。ポケモン版GeoGuessr、無料。}}"
   },
   "result": {
-    "fallback": "PokéGuessr の結果",
+    "fallback": "PokéGuessrの結果",
     "mapAlt": "{map}のマップ",
     "shared": "トレーナーが結果をシェアしました",
     "hp": "{hp} HP",
     "inARow": "{n}連続",
     "rounds": "{n}ラウンド",
     "beat": "勝てるかな？無料・登録不要、ブラウザですぐ遊べます。",
-    "allModes": "PokéGuessr のすべてのモード",
+    "allModes": "PokéGuessrのすべてのモード",
     "socialTitle": "{title} · PokéIQ",
     "streak": {
       "eyebrow": "{map}連続",
@@ -66,17 +66,17 @@
     },
     "regionStreak": {
       "detail": "{n, plural, other {スクリーンショット1枚ずつで{n}地方連続正解、そのあとはずれ。}}",
-      "title": "PokéGuessr 地方連続で{n}連続"
+      "title": "PokéGuessr地方連続で{n}連続"
     },
     "duel": {
       "race": "ポイントレース",
-      "duel": "デュエル",
+      "duel": "対戦",
       "draw": "引き分け",
       "wins": "{name}の勝ち",
       "drew": "{a}と{b}は{n}ラウンドで引き分け。",
       "beatRace": "{winner}が{loser}に{mine}対{theirs}で勝利（{n}ラウンド）。",
       "beatHp": "{winner}が{loser}に勝利。{n}ラウンド後の残りHPは{max}中{hp}。",
-      "title": "{headline}：{map}での PokéGuessr デュエル"
+      "title": "{headline}：{map}でのPokéGuessr対戦"
     },
     "daily": "デイリー#{n}",
     "weekly": "ウィークリー#{n}",
@@ -84,16 +84,16 @@
     "chips": {
       "streak": "連続",
       "race": "ポイントレース",
-      "hpDuel": "HPデュエル",
+      "hpDuel": "HP対戦",
       "turbo": "ターボ",
-      "ranked": "ランク戦",
+      "ranked": "ランクマッチ",
       "regionStreak": "地方連続"
     },
     "play": {
-      "game": "PokéGuessr で遊ぶ",
+      "game": "PokéGuessrで遊ぶ",
       "daily": "今日のデイリーで遊ぶ",
       "weekly": "今週のチャレンジで遊ぶ",
-      "duel": "デュエルを始める",
+      "duel": "対戦を始める",
       "regionStreak": "地方連続で遊ぶ"
     }
   }

@@ -1,13 +1,13 @@
 {
-  "socialTitle": "PokéIQ：ポケモン版の GeoGuessr、Wordle、Showdown",
-  "socialDescription": "全地方の実際のゲーム画面を使った PokéGuessr、リアルタイム対戦ができる毎日の Pokédle、Showdown 準拠のバトル、数千戦をシミュレートするバトルラボ。無料・登録不要。",
+  "socialTitle": "PokéIQ：ポケモン版のGeoGuessr、Wordle、Showdown",
+  "socialDescription": "全地方の実際のゲーム画面を使ったPokéGuessr、リアルタイム対戦ができる毎日のPokédle、Showdown準拠のバトル、数千戦をシミュレートするバトルラボ。無料・登録不要。",
   "h1": "PokéIQ：ポケモンのゲーム、クイズ、バトル",
   "free": "無料・登録不要",
-  "pitch": "毎日のポケモンパズル、実際のゲーム画面で遊ぶポケモン版 GeoGuessr、Showdown のバトル、そして3Dのポケモン。",
+  "pitch": "毎日のポケモンパズル、実際のゲーム画面で遊ぶポケモン版GeoGuessr、Showdownのバトル、そして3Dのポケモン。",
   "play": "今日のゲームをプレイ",
   "coffee": "コーヒーをおごる",
-  "socials": "PokéIQ の SNS",
-  "socialOn": "{name} の PokéIQ",
+  "socials": "PokéIQの SNS",
+  "socialOn": "{name} のPokéIQ",
   "today": {
     "title": "今日",
     "allDone": "今日はすべてクリア",

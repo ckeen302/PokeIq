@@ -131,7 +131,7 @@
     },
     "games": {
       "question": "第3世代で登場したのは？",
-      "a0": "特性",
+      "a0": "とくせい",
       "a1": "Zワザ",
       "a2": "ダイマックス",
       "a3": "テラスタル"
@@ -256,7 +256,7 @@
     "title1": "全{n}匹の",
     "titleAll": "すべての",
     "title2": "ポケモン",
-    "subtitle": "能力、進化、覚えるわざ、特性、相性、すべての図鑑説明。覚えるためのフラッシュカードも。",
+    "subtitle": "能力、進化、覚えるわざ、とくせい、相性、すべての図鑑説明。覚えるためのフラッシュカードも。",
     "footer": "検索・絞り込み・学習 →"
   },
   "battle": {
@@ -418,13 +418,13 @@
     "wins": "{side}の勝ち"
   },
   "games": {
-    "eventEyebrow": "PokéIQゲームズ・{event}",
-    "h2hEyebrow": "PokéIQゲームズ・{event}・一騎打ち",
+    "eventEyebrow": "PokéIQ競技大会・{event}",
+    "h2hEyebrow": "PokéIQ競技大会・{event}・一騎打ち",
     "h2hSubtitle": "{line}。本物の能力と物理で。",
     "winsWith": "{name}が{mark}で優勝。本物の能力と物理で。",
     "winsBracket": "{name}がトーナメントで優勝。本物の能力と物理で。",
     "realStats": "本物の能力、本物の物理を3Dで。",
-    "recordsEyebrow": "PokéIQゲームズ・{event}の記録",
+    "recordsEyebrow": "PokéIQ競技大会・{event}の記録",
     "recordHolder": "全ポケモンの中で、{name}が{mark}で記録保持者。",
     "recordsFooter": "トップ10を見る →",
     "wins": "勝ち",

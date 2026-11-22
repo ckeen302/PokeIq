@@ -14,7 +14,7 @@
   },
   "hub": {
     "fieldSurvey": "フィールド調査・{map}",
-    "tagline": "ポケモンの世界で遊ぶ GeoGuessr。",
+    "tagline": "ポケモンの世界で遊ぶGeoGuessr。",
     "best": "ベスト {score}",
     "bestRow": "ベスト {n}連続",
     "played": "プレイ済み",
@@ -80,13 +80,13 @@
       "eyebrow": "対戦",
       "title": "マルチプレイ",
       "duelsLabel": "カジュアル・{map}",
-      "duels": "デュエル",
+      "duels": "対戦",
       "duelsBlurb": "HPバトルかポイントレース。どのマップでも。",
-      "openDuels": "デュエルを開く",
+      "openDuels": "対戦を開く",
       "rankedLabel": "レート戦・ワールドマップ",
-      "ranked": "ランク戦",
+      "ranked": "ランクマッチ",
       "rankedBlurb": "モンスターボールからウルトラボールまで駆け上がろう。",
-      "openRanked": "ランク戦を開く",
+      "openRanked": "ランクマッチを開く",
       "partyLabel": "友だち・最大16人",
       "party": "パーティー",
       "new": "NEW",
@@ -133,9 +133,9 @@
     "space": "スペース"
   },
   "summary": {
-    "shareDaily": "今日の PokéGuessr（デイリー#{n}）で{score}点でした。今日は全員同じ{places}か所。勝てるかな？",
-    "shareWeekly": "今週の PokéGuessr ウィークリーチャレンジで{score}点でした。全員同じ{places}か所。勝てるかな？",
-    "shareGame": "PokéGuessr で{score}点でした。同じ{places}か所で勝てるかな？",
+    "shareDaily": "今日のPokéGuessr（デイリー#{n}）で{score}点でした。今日は全員同じ{places}か所。勝てるかな？",
+    "shareWeekly": "今週のPokéGuessrウィークリーチャレンジで{score}点でした。全員同じ{places}か所。勝てるかな？",
+    "shareGame": "PokéGuessrで{score}点でした。同じ{places}か所で勝てるかな？",
     "saveFailed": "保存できませんでした。",
     "bonus": "ゲームボーナス+{bonus}・ボーナス込みで{total}（ランキングはマップのスコアで集計）",
     "newBest": "自己ベスト",
@@ -181,7 +181,7 @@
   },
   "settings": {
     "button": "設定",
-    "popover": "PokéGuessr の設定",
+    "popover": "PokéGuessrの設定",
     "title": "プレイ設定",
     "close": "設定を閉じる",
     "zoomed": "ズーム",
@@ -219,10 +219,10 @@
     "profile": "プロフィール",
     "signIn": "ログイン",
     "history": "対戦履歴",
-    "historyBlurb": "これまでのデュエルとランク戦を1ラウンドずつ。",
+    "historyBlurb": "これまでの対戦とランクマッチを1ラウンドずつ。",
     "boardsLabel": "デイリー・ウィークリー・マップ",
     "boards": "ランキング",
-    "boardsBlurb": "デイリー、ウィークリーチャレンジ、各マップのランキング、ランク戦のランキング。"
+    "boardsBlurb": "デイリー、ウィークリーチャレンジ、各マップのランキング、ランクマッチのランキング。"
   },
   "regionStreak": {
     "label": "地方連続",
@@ -232,7 +232,7 @@
     "play": "地方連続をプレイ"
   },
   "crowd": {
-    "shareText": "今日の PokéGuessr デイリーで、みんながピンを立てた場所",
+    "shareText": "今日のPokéGuessrデイリーで、みんながピンを立てた場所",
     "title": "みんなのピン",
     "count": "ラウンド{round}に{n}人がピンを立てました",
     "round": "ラウンド",

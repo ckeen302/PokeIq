@@ -69,8 +69,8 @@
     "whyHolding": "{from}に{item}を持たせて通信交換で進化",
     "whyFor": "{from}を{pokemon}と通信交換して進化",
     "lureInto": "通信交換で{into}に進化するが、自身は通信交換で進化していない",
-    "lureHeld": "道具（{item}）を持たせて進化するが、通信交換ではなくレベルアップ",
-    "lureHeldTime": "道具（{item}、{time}）を持たせて進化するが、通信交換ではなくレベルアップ"
+    "lureHeld": "どうぐ（{item}）を持たせて進化するが、通信交換ではなくレベルアップ",
+    "lureHeldTime": "どうぐ（{item}、{time}）を持たせて進化するが、通信交換ではなくレベルアップ"
   },
   "time": {
     "day": "昼",

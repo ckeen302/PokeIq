@@ -28,7 +28,7 @@
     "expert": "{region}で{rounds}ラウンド以上、平均{avg}点以上。",
     "streak": "連続モード（ピン連続か地方連続）で{n}か所連続正解。",
     "daily": "デイリーを{n}日連続で遊ぶ。",
-    "ranked": "ランク戦で{ball}に到達する。",
+    "ranked": "ランクマッチで{ball}に到達する。",
     "weekly-podium": "ウィークリーチャレンジで3位以内に入る（登録した名前で）。",
     "weekly-champion": "ウィークリーチャレンジで1位になる。"
   },
@@ -54,7 +54,7 @@
     "row": "{total}か所中{n}か所で{score}点以上"
   },
   "profile": {
-    "title": "PokéGuessr の記録",
+    "title": "PokéGuessrの記録",
     "play": "プレイ →",
     "games": "ゲーム",
     "rounds": "ラウンド",
@@ -68,7 +68,7 @@
     "picks": "地方連続 {hits}/{picks}",
     "bestRound": "ベスト {score}",
     "runs": "{n, plural, other {地方連続{runs}回、最高{best}連続。}}",
-    "empty": "PokéGuessr の記録はまだありません。ログイン中に遊んだゲームがここに記録されます。"
+    "empty": "PokéGuessrの記録はまだありません。ログイン中に遊んだゲームがここに記録されます。"
   },
   "rewards": {
     "emote:season-gg": "シーズンGGエモート",
@@ -97,7 +97,7 @@
     "now": "現在",
     "unranked": "ランクなし",
     "peakTitle": "シーズン最高",
-    "playRanked": "ランク戦で遊ぼう",
+    "playRanked": "ランクマッチで遊ぼう",
     "history": "対戦履歴",
     "record": "{n, plural, other {{games}戦 {record}}}",
     "peak": "最高"

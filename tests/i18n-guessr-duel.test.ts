@@ -40,7 +40,7 @@ describe("PokéGuessr duel names", () => {
     const ja = translator(ranked, "ja", (await import("@/messages/ja/guessr-ranked.json")).default);
     expect(gymLeaderLabel(en, "Gym Leader Brock")).toBe("Gym Leader Brock");
     expect(gymLeaderLabel(de, "Gym Leader Misty")).toBe("Arenaleiterin Misty");
-    expect(gymLeaderLabel(ja, "Gym Leader Lt. Surge")).toBe("ジムリーダー マチス");
+    expect(gymLeaderLabel(ja, "Gym Leader Lt. Surge")).toBe("ジムリーダーのマチス");
     expect(gymLeaderLabel(ja, "Gym Leader Brock", "name")).toBe("タケシ");
     expect(gymLeaderLabel(de, "Red")).toBe("Red");
     expect(divisionName(en, "beast")).toBe("Beast Ball");

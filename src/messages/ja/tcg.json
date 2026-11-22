@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "ポケモンカードゲーム：全エキスパンション・全カードと相場",
-    "description": "ポケモンカードゲームの英語版エキスパンションを初代の基本セットから最新弾まで、シリーズ別にすべて掲載。カード、レアリティ、イラストレーター、TCGplayer と Cardmarket の最近の相場もわかります。",
+    "description": "ポケモンカードゲームの英語版エキスパンションを初代の基本セットから最新弾まで、シリーズ別にすべて掲載。カード、レアリティ、イラストレーター、TCGplayerとCardmarketの最近の相場もわかります。",
     "setFallback": "ポケモンカードゲームのエキスパンション",
     "setTitle": "{name}：ポケモンカードのカードリストと相場",
     "setDescription": "ポケモンカードゲーム「{name}」（{series} シリーズ{released}{cards}）の全カード。番号、レアリティ、現在の相場で並べ替えできます。",
@@ -11,7 +11,7 @@
     "cardFallback": "ポケモンカード",
     "cardTitle": "{name}（{where}）・ポケモンカードの相場",
     "cardTitleBare": "{name}・ポケモンカードの相場",
-    "cardDescription": "エキスパンション「{set}」の {name}{rarity}{artist}。{price}TCGplayer と Cardmarket の相場。",
+    "cardDescription": "エキスパンション「{set}」の {name}{rarity}{artist}。{price}TCGplayerとCardmarketの相場。",
     "cardSetFallback": "ポケモンカードゲーム",
     "cardRarity": "（{rarity}）",
     "cardArtist": "、イラスト：{artist}",
@@ -27,7 +27,7 @@
     "kicker": "ポケモンカードゲーム",
     "title": "Poké",
     "accent": "dex",
-    "blurb": "これまでに発売されたポケモンカードゲームの英語版エキスパンションと収録カードすべて、そして TCGplayer と Cardmarket の最近の相場。",
+    "blurb": "これまでに発売されたポケモンカードゲームの英語版エキスパンションと収録カードすべて、そしてTCGplayerとCardmarketの最近の相場。",
     "searchLabel": "カード名で検索",
     "searchPlaceholder": "英語のカード名で検索（例：Charizard）",
     "search": "検索",
@@ -40,13 +40,13 @@
     "otherSeries": "その他",
     "logo": "{name} のロゴ",
     "cards": "{n}枚",
-    "credits": "カードのデータと画像は<api>Pokémon TCG API</api>から。相場は同 API、または <csv>TCGCSV</csv> 経由の TCGplayer と <dex>TCGdex</dex> 経由の Cardmarket から。株式会社ポケモンとは関係ありません。"
+    "credits": "カードのデータと画像は<api>Pokémon TCG API</api>から。相場は同API、または <csv>TCGCSV</csv> 経由のTCGplayerと <dex>TCGdex</dex> 経由のCardmarketから。株式会社ポケモンとは関係ありません。"
   },
   "unavailable": {
-    "cards": "Pokémon TCG API のカードデータを現在取得できません。数分後にもう一度お試しください。",
-    "sets": "Pokémon TCG API のエキスパンション一覧を現在取得できません。数分後にもう一度お試しください。",
-    "set": "Pokémon TCG API のこのエキスパンションを現在取得できません。数分後にもう一度お試しください。",
-    "setCards": "Pokémon TCG API のこのエキスパンションのカードを現在取得できません。数分後にもう一度お試しください。"
+    "cards": "Pokémon TCG APIのカードデータを現在取得できません。数分後にもう一度お試しください。",
+    "sets": "Pokémon TCG APIのエキスパンション一覧を現在取得できません。数分後にもう一度お試しください。",
+    "set": "Pokémon TCG APIのこのエキスパンションを現在取得できません。数分後にもう一度お試しください。",
+    "setCards": "Pokémon TCG APIのこのエキスパンションのカードを現在取得できません。数分後にもう一度お試しください。"
   },
   "set": {
     "allSets": "全エキスパンション",
@@ -82,16 +82,16 @@
     "mid": "中間",
     "high": "最高",
     "directLow": "Direct 最安",
-    "findOnCardmarket": "Cardmarket で探す",
+    "findOnCardmarket": "Cardmarketで探す",
     "attacks": "ワザ",
     "cardText": "カードの効果",
-    "ability": "特性",
+    "ability": "とくせい",
     "weakness": "弱点",
     "resistance": "抵抗力",
     "retreat": "にげる",
-    "footer": "カードのデータと画像は Pokémon TCG API から。",
-    "tcgplayerCourtesy": "TCGplayer の相場は<a>{source}</a>の提供です。",
-    "cardmarketCourtesy": "Cardmarket の相場は<a>{source}</a>の提供です。",
+    "footer": "カードのデータと画像はPokémon TCG APIから。",
+    "tcgplayerCourtesy": "TCGplayerの相場は<a>{source}</a>の提供です。",
+    "cardmarketCourtesy": "Cardmarketの相場は<a>{source}</a>の提供です。",
     "footerEnd": "相場は毎日変わります。購入前にマーケットで確認してください。"
   },
   "source": {

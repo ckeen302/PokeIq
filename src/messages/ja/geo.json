@@ -3,7 +3,7 @@
     "fullscreen": "全画面",
     "exitFullscreen": "全画面を終了",
     "withEsc": "{label}（Esc）",
-    "back": "PokéGuessr に戻る",
+    "back": "PokéGuessrに戻る",
     "secondsLeft": "残り{s}秒"
   },
   "dock": {
@@ -71,7 +71,7 @@
     "thanks": "ありがとうございます。このスクリーンショットを確認します。"
   },
   "share": {
-    "text": "私の PokéGuessr の結果",
+    "text": "私のPokéGuessrの結果",
     "copy": "結果のリンクをコピー",
     "copied": "リンクをコピーしました！"
   },

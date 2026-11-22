@@ -5,7 +5,7 @@
     "placeTitle": "{name}（{region}の{type}）｜ポケモン",
     "placeDescription": "{region}の{name}：各ゲームで出会える野生のポケモン。",
     "placeDescriptionGame": "{region}の{name}：各ゲームで出会える野生のポケモンと、『{game}』での様子。",
-    "socialTitle": "{name} · PokéIQ ポケモン図鑑"
+    "socialTitle": "{name} · PokéIQポケモン図鑑"
   },
   "crumbs": {
     "pokedex": "ポケモン図鑑",

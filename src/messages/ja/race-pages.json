@@ -6,7 +6,7 @@
     "presetTitle": "{title}（3Dポケモンレース）",
     "presetDescription": "{blurb}スピードは種族値から、夜の3Dスタジアムで。観戦も、自分でレースを選ぶのも、動画にするのも自由です。",
     "runTitle": "{title}：{d} m走",
-    "runDescription": "{name}が{d} mを{time}秒で制覇。{list}。スピードは種族値から、PokéIQ の3Dで。",
+    "runDescription": "{name}が{d} mを{time}秒で制覇。{list}。スピードは種族値から、PokéIQの3Dで。",
     "runImage": "{title}：{d} mのポケモンレース"
   },
   "titles": {
@@ -76,7 +76,7 @@
   },
   "how": "レースのしくみ",
   "games": {
-    "title": "短距離走だけじゃない：PokéIQ ゲームズ",
+    "title": "短距離走だけじゃない：PokéIQ競技大会",
     "body": "同じ選手たちが100・200・400 mに加えて、走り幅跳び、走り高跳び、砲丸投げ、やり投げ、重量挙げ、水泳、レスリングに挑戦。メダルとメダル表つき。",
     "open": "ゲームズを開く",
     "records": "100 mの記録"

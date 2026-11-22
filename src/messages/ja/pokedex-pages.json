@@ -33,7 +33,7 @@
   "type": {
     "name": "{type}タイプ",
     "metaTitle": "{type}タイプのポケモン：弱点・得意な相手・わざ",
-    "social": "{type}タイプ · PokéIQ ポケモン図鑑",
+    "social": "{type}タイプ · PokéIQポケモン図鑑",
     "descSuper": "{type}タイプのわざは{list}にこうかばつぐんです。",
     "descSuperNone": "{type}タイプのわざがこうかばつぐんになるタイプはありません。",
     "descWeak": "{type}タイプのポケモンの弱点は{list}です。",

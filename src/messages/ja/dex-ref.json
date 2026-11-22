@@ -25,7 +25,7 @@
     "kicker": "どうぐデータベース",
     "blurb": "本編のどうぐの効果、野生で持っているポケモン、それぞれのわざマシンで覚えられるわざ。"
   },
-  "social": "{name} · PokéIQ ポケモン図鑑",
+  "social": "{name} · PokéIQポケモン図鑑",
   "ability": {
     "metaTitle": "{name} — ポケモンのとくせい",
     "metaDescription": "{effect}{name}を通常のとくせい・隠れ特性として持つポケモンをすべて確認できます。",

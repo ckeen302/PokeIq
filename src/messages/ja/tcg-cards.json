@@ -2,7 +2,7 @@
   "grid": {
     "alt": "{name} のカード",
     "noImage": "画像なし",
-    "titleUsd": "{label}（TCGplayer 市場価格）",
+    "titleUsd": "{label}（TCGplayer市場価格）",
     "titleEur": "{label}（Cardmarket）"
   },
   "gallery": {
@@ -23,9 +23,9 @@
     "newest": "{name}の最新のポケモンカード。{note}"
   },
   "note": {
-    "usd": "TCGplayer 市場価格（USD）",
-    "eur": "Cardmarket トレンド（EUR）",
-    "cmTrend": "Cardmarket トレンド",
+    "usd": "TCGplayer市場価格（USD）",
+    "eur": "Cardmarketトレンド（EUR）",
+    "cmTrend": "Cardmarketトレンド",
     "via": "{market}（{source} 経由）",
     "asOf": "{what}、{date}時点",
     "sep": "／",

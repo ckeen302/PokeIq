@@ -12,7 +12,7 @@
   "find": "トレーナーを探す",
   "since": "{date}からのトレーナー",
   "trainerOf": "{name}のトレーナー",
-  "ranked": "ランクマッチ PokéGuessr",
+  "ranked": "ランクマッチPokéGuessr",
   "rankedDuels": "ランクマッチ{n}戦で{record}",
   "position": "・{players}人中{position}位",
   "bestScore": "・最高{score}点",

@@ -36,7 +36,7 @@
   "daily": "デイリー {correct}/{total}",
   "dayStreak": "・{n}日連続",
   "dleIn": "Pokédle {n}回で正解",
-  "dleMissed": "Pokédle 不正解",
+  "dleMissed": "Pokédle不正解",
   "watch": "観戦",
   "challenge": "挑戦",
   "moreFor": "{name}のその他の操作",

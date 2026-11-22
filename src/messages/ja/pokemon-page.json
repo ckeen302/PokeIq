@@ -1,7 +1,7 @@
 {
   "title": "{name}の弱点・種族値・とくせい・覚えるわざ",
-  "social": "{name}（No.{id}） · PokéIQ ポケモン図鑑",
-  "ldName": "{name} — PokéIQ ポケモン図鑑",
+  "social": "{name}（No.{id}） · PokéIQポケモン図鑑",
+  "ldName": "{name} — PokéIQポケモン図鑑",
   "pokedex": "ポケモン図鑑",
   "typesSep": "・",
   "desc": "{name}（No.{id}）は{types}タイプのポケモンで、種族値合計は{bst}です。",

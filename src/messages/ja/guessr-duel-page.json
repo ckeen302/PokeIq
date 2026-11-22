@@ -6,7 +6,7 @@
     "titleChallenge": "{host}がPokéGuessrの対戦を申し込んでいます",
     "aTrainer": "トレーナー",
     "raceDescription": "{where}でのポイントレース。2人とも同じ{rounds}か所が出題され、合計ポイントが多いほうの勝ち。",
-    "hpDescription": "{where}で1対1の勝負。2人とも同じ場所が出題され、HPはそれぞれ{hp}。GeoGuessrのデュエルと同じルールです。"
+    "hpDescription": "{where}で1対1の勝負。2人とも同じ場所が出題され、HPはそれぞれ{hp}。GeoGuessrの対戦と同じルールです。"
   },
   "party": {
     "fallbackTitle": "PokéGuessrのパーティー",

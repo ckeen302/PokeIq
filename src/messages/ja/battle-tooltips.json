@@ -24,13 +24,13 @@
   "none": "なし",
   "row": {
     "hp": "HP",
-    "ability": "特性",
+    "ability": "とくせい",
     "item": "持ち物",
     "effects": "状態",
     "stats": "能力値",
     "statsLikely": "能力値（推定）",
     "statRange": "能力値の範囲",
-    "moves": "技"
+    "moves": "わざ"
   },
   "status": {
     "brn": "やけど",
@@ -90,15 +90,15 @@
     "slowstart": "スロースタート",
     "glaiverush": "きょけんとつげき",
     "syrupbomb": "みずあめボム",
-    "protosynthesisatk": "こだいかっせい 攻撃",
-    "protosynthesisdef": "こだいかっせい 防御",
-    "protosynthesisspa": "こだいかっせい 特攻",
-    "protosynthesisspd": "こだいかっせい 特防",
-    "protosynthesisspe": "こだいかっせい 素早さ",
-    "quarkdriveatk": "クォークチャージ 攻撃",
-    "quarkdrivedef": "クォークチャージ 防御",
-    "quarkdrivespa": "クォークチャージ 特攻",
-    "quarkdrivespd": "クォークチャージ 特防",
-    "quarkdrivespe": "クォークチャージ 素早さ"
+    "protosynthesisatk": "こだいかっせい（攻撃）",
+    "protosynthesisdef": "こだいかっせい（防御）",
+    "protosynthesisspa": "こだいかっせい（特攻）",
+    "protosynthesisspd": "こだいかっせい（特防）",
+    "protosynthesisspe": "こだいかっせい（素早さ）",
+    "quarkdriveatk": "クォークチャージ（攻撃）",
+    "quarkdrivedef": "クォークチャージ（防御）",
+    "quarkdrivespa": "クォークチャージ（特攻）",
+    "quarkdrivespd": "クォークチャージ（特防）",
+    "quarkdrivespe": "クォークチャージ（素早さ）"
   }
 }
