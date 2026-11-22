@@ -190,6 +190,31 @@
       "top4": "Semifinales",
       "runnerUp": "Subcampeón",
       "winner": "Campeón"
-    }
+    },
+    "hm": "MO{n} {move}"
+  },
+  "team": {
+    "prompt": "¿De quién es este equipo?",
+    "form": {
+      "alolan": "{name} de Alola",
+      "galarian": "{name} de Galar",
+      "midnight": "{name} (forma Nocturna)",
+      "lowKey": "{name} (forma Grave)"
+    },
+    "role": {
+      "gymLeader": "Líder de Gimnasio",
+      "eliteFour": "Alto Mando",
+      "champion": "Combate final de la Liga",
+      "rival": "Combate contra el rival",
+      "boss": "Combate contra el jefe",
+      "battle": "Combate",
+      "kahuna": "Gran prueba"
+    },
+    "rematch": "{role} (revancha)",
+    "gameRole": "{game} — {role}{hasPlace, select, yes {, {place}} other {}}",
+    "anime": "Anime",
+    "animeIn": "Anime ({region})",
+    "sep": " · ",
+    "chose": "si eliges a {name}"
   }
 }

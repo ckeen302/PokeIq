@@ -190,6 +190,31 @@
       "top4": "Top 4",
       "runnerUp": "Runner-up",
       "winner": "Winner"
-    }
+    },
+    "hm": "HM{n} {move}"
+  },
+  "team": {
+    "prompt": "Whose team is this?",
+    "form": {
+      "alolan": "{name} (Alolan)",
+      "galarian": "{name} (Galarian)",
+      "midnight": "{name} (Midnight)",
+      "lowKey": "{name} (Low Key)"
+    },
+    "role": {
+      "gymLeader": "Gym Leader",
+      "eliteFour": "Elite Four",
+      "champion": "Champion",
+      "rival": "Rival battle",
+      "boss": "Boss battle",
+      "battle": "Battle",
+      "kahuna": "Kahuna"
+    },
+    "rematch": "{role}, rematch",
+    "gameRole": "{game} — {role}{hasPlace, select, yes {, {place}} other {}}",
+    "anime": "Anime",
+    "animeIn": "Anime ({region})",
+    "sep": " · ",
+    "chose": "Player chose {name}"
   }
 }

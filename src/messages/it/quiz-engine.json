@@ -190,6 +190,31 @@
       "top4": "Semifinale",
       "runnerUp": "Secondo posto",
       "winner": "Vincitore"
-    }
+    },
+    "hm": "MN{n} {move}"
+  },
+  "team": {
+    "prompt": "Di chi è questa squadra?",
+    "form": {
+      "alolan": "{name} di Alola",
+      "galarian": "{name} di Galar",
+      "midnight": "{name} (Forma Notte)",
+      "lowKey": "{name} (Forma Basso)"
+    },
+    "role": {
+      "gymLeader": "Capopalestra",
+      "eliteFour": "Superquattro",
+      "champion": "Sfida finale della Lega",
+      "rival": "Lotta contro il rivale",
+      "boss": "Lotta contro il boss",
+      "battle": "Lotta",
+      "kahuna": "Grande Prova"
+    },
+    "rematch": "{role} (rivincita)",
+    "gameRole": "{game} — {role}{hasPlace, select, yes {, {place}} other {}}",
+    "anime": "Anime",
+    "animeIn": "Anime ({region})",
+    "sep": " · ",
+    "chose": "se scegli {name}"
   }
 }

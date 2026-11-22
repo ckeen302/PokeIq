@@ -190,6 +190,31 @@
       "top4": "ベスト4",
       "runnerUp": "準優勝",
       "winner": "優勝"
-    }
+    },
+    "hm": "ひでんマシン{n} {move}"
+  },
+  "team": {
+    "prompt": "これはだれのチーム？",
+    "form": {
+      "alolan": "{name}（アローラのすがた）",
+      "galarian": "{name}（ガラルのすがた）",
+      "midnight": "{name}（まよなかのすがた）",
+      "lowKey": "{name}（ローなすがた）"
+    },
+    "role": {
+      "gymLeader": "ジムリーダー",
+      "eliteFour": "四天王",
+      "champion": "チャンピオン",
+      "rival": "ライバル戦",
+      "boss": "ボス戦",
+      "battle": "バトル",
+      "kahuna": "大試練"
+    },
+    "rematch": "{role}（再戦）",
+    "gameRole": "{game}・{role}{hasPlace, select, yes {（{place}）} other {}}",
+    "anime": "アニメ",
+    "animeIn": "アニメ（{region}地方）",
+    "sep": "・",
+    "chose": "最初のパートナーに{name}を選んだ場合"
   }
 }

@@ -190,6 +190,31 @@
       "top4": "Halbfinale",
       "runnerUp": "Zweiter Platz",
       "winner": "Sieg"
-    }
+    },
+    "hm": "VM{n} {move}"
+  },
+  "team": {
+    "prompt": "Wessen Team ist das?",
+    "form": {
+      "alolan": "Alola-{name}",
+      "galarian": "Galar-{name}",
+      "midnight": "{name} (Nachtform)",
+      "lowKey": "{name} (Tiefform)"
+    },
+    "role": {
+      "gymLeader": "Arenaleitung",
+      "eliteFour": "Top Vier",
+      "champion": "Kampf um den Champ-Titel",
+      "rival": "Rivalenkampf",
+      "boss": "Bosskampf",
+      "battle": "Kampf",
+      "kahuna": "Große Prüfung"
+    },
+    "rematch": "{role} (Revanche)",
+    "gameRole": "{game} – {role}{hasPlace, select, yes {, {place}} other {}}",
+    "anime": "Anime",
+    "animeIn": "Anime ({region})",
+    "sep": " · ",
+    "chose": "wenn du {name} wählst"
   }
 }

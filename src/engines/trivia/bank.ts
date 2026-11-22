@@ -1,6 +1,7 @@
 import type { Difficulty } from "../types";
 import type { QuizLang } from "../i18n";
 import { anyName } from "./words";
+import { must } from "../localize";
 
 /**
  * A trivia question in another language: its prompt and explanation, and the language's name for each English
@@ -99,12 +100,39 @@ export const ROMAN = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"
  */
 export function handwrittenLoc(bank: "games" | "anime", row: HandwrittenRow): TriviaLoc | undefined {
   if (row.englishOnly) return undefined;
+  const context = bank === "anime" ? "anime" : "games";
   return (L) => {
     const w = L.handwritten(bank, row.id);
     if (!w) return null;
     const given = new Map<string, string>();
-    if (w.answer) given.set(row.answer, w.answer);
-    w.distractors?.forEach((d, i) => given.set(row.distractors[i], d));
-    return { prompt: w.prompt, explanation: w.explanation, option: (o) => given.get(o) ?? anyName(L, o, bank === "anime" ? "anime" : "games") };
+    if (w.answer) given.set(row.answer, fillNames(L, w.answer, context));
+    w.distractors?.forEach((d, i) => given.set(row.distractors[i], fillNames(L, d, context)));
+    return {
+      prompt: fillNames(L, w.prompt, context),
+      explanation: w.explanation && fillNames(L, w.explanation, context),
+      option: (o) => given.get(o) ?? anyName(L, o, context),
+    };
   };
+}
+
+/**
+ * Translations name things by their English names, `[[kind:English]]`, so each language's text carries the official
+ * name from the data: `[[mon:Ralts]]`, `[[loc:Petalburg City]]`, `[[item:Silph Scope]]`, `[[move:Dive]]`,
+ * `[[game:Pokémon Gold and Silver]]`, `[[p:Professor Oak]]` (a person, team or other proper name), `[[type:Fire]]`,
+ * `[[region:Johto]]`. A name the language doesn't have makes the question unaskable there (it throws through must).
+ */
+export function fillNames(L: QuizLang, text: string, context: "games" | "anime" = "games"): string {
+  return text.replace(/\[\[(\w+):([^\]]+)\]\]/g, (_, kind: string, english: string) => {
+    const found =
+      kind === "mon" ? L.pokemonNamed(english)
+      : kind === "loc" ? (L.name("locations", english) ?? L.proper(english, context))
+      : kind === "item" ? (L.name("items", english) ?? L.proper(english, context))
+      : kind === "move" ? L.name("moves", english)
+      : kind === "game" ? L.game(english)
+      : kind === "p" ? L.proper(english, context)
+      : kind === "type" ? L.type(english.toLowerCase())
+      : kind === "region" ? L.name("regions", english)
+      : undefined;
+    return must(found, `${kind}:${english}`);
+  });
 }

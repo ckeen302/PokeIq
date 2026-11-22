@@ -112,7 +112,7 @@ function gymItems(): TriviaItem[] {
         from: { table: "gyms", index, field: "place" },
         loc: (L) => {
           const v = { game: gameIn(L, r.game), place: placeIn(L, r.place), leader: personIn(L, r.leader) };
-          return { prompt: L.t("trivia.gym.placePrompt", v), explanation: L.t("trivia.gym.explanation", v), option: (o) => L.name("locations", o) };
+          return { prompt: L.t("trivia.gym.placePrompt", v), explanation: L.t("trivia.gym.explanation", v), option: (o) => L.name("locations", o) ?? L.proper(o) };
         },
       });
     }
@@ -257,8 +257,8 @@ function boxArtItems(): TriviaItem[] {
       source: r.source,
       from: { table: "box-art", index, field: "pokemon" },
       loc: (L) => {
-        const v = { game: gameIn(L, r.game), pokemon: must(L.pokemonNamed(r.pokemon), r.pokemon) };
-        return { prompt: L.t("trivia.boxArt.prompt", v), explanation: L.t("trivia.boxArt.explanation", v), option: (o) => L.pokemonNamed(o) };
+        const v = { game: gameIn(L, r.game), pokemon: must(L.pokemonNamed(r.pokemon) ?? L.proper(r.pokemon), r.pokemon) };
+        return { prompt: L.t("trivia.boxArt.prompt", v), explanation: L.t("trivia.boxArt.explanation", v), option: (o) => L.pokemonNamed(o) ?? L.proper(o) };
       },
     } as TriviaItem;
   });

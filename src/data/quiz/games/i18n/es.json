@@ -1,0 +1,237 @@
+{
+ "questions": {
+  "rival-rb-grandfather": {
+   "prompt": "En [[game:Pokémon Red and Blue]], ¿de quién es nieto el rival del jugador?"
+  },
+  "rival-gs-lab": {
+   "prompt": "En [[game:Pokémon Gold and Silver]], ¿del laboratorio de quién roba el rival un Pokémon?"
+  },
+  "rival-rse-wally": {
+   "prompt": "En [[game:Pokémon Ruby, Sapphire and Emerald]], ¿qué chico atrapa un [[mon:Ralts]] con ayuda del jugador cerca de [[loc:Petalburg City]]?"
+  },
+  "rival-pt-barry": {
+   "prompt": "En [[game:Pokémon Platinum]], ¿cómo se llama el impaciente amigo de la infancia y rival del jugador?"
+  },
+  "rival-bw-friends": {
+   "prompt": "En [[game:Pokémon Black and White]], ¿qué dos amigos de la infancia emprenden el viaje junto al jugador?"
+  },
+  "rival-b2w2-hugh": {
+   "prompt": "En [[game:Pokémon Black 2 and White 2]], ¿quién es el rival del jugador que viene de [[loc:Aspertia City]]?"
+  },
+  "rival-sm-hau": {
+   "prompt": "En [[game:Pokémon Sun and Moon]], ¿qué rival es nieto del kahuna [[p:Hala]]?"
+  },
+  "rival-sm-gladion": {
+   "prompt": "En [[game:Pokémon Sun and Moon]], ¿qué matón del [[p:Team Skull]] resulta ser el hermano mayor de [[p:Lillie]]?"
+  },
+  "rival-swsh-hop": {
+   "prompt": "En [[game:Pokémon Sword and Shield]], ¿de qué Campeón es hermano pequeño [[p:Hop]], el rival del jugador?"
+  },
+  "rival-sv-nemona": {
+   "prompt": "En [[game:Pokémon Scarlet and Violet]], ¿qué estudiante con rango de Campeón se convierte en rival del jugador?"
+  },
+  "rival-swsh-marnie": {
+   "prompt": "En [[game:Pokémon Sword and Shield]], ¿de qué Líder de Gimnasio es hermana pequeña [[p:Marnie]]?"
+  },
+  "villain-galactic-legends": {
+   "prompt": "En [[game:Pokémon Diamond and Pearl]], ¿en torno a qué Pokémon legendarios gira el plan del [[p:Team Galactic]]?"
+  },
+  "villain-plasma-king": {
+   "prompt": "En [[game:Pokémon Black and White]], ¿quién es el rey del [[p:Team Plasma]]?"
+  },
+  "villain-plasma-goal": {
+   "prompt": "En [[game:Pokémon Black and White]], ¿qué dice querer públicamente el [[p:Team Plasma]]?",
+   "answer": "Liberar a los Pokémon de las personas",
+   "distractors": [
+    "Expandir el mar",
+    "Crear un nuevo universo",
+    "Controlar la energía del mundo"
+   ]
+  },
+  "villain-flare-weapon": {
+   "prompt": "En [[game:Pokémon X and Y]], ¿quién construyó hace 3000 años el arma definitiva que el [[p:Team Flare]] intenta usar?"
+  },
+  "villain-swsh-eternatus": {
+   "prompt": "En [[game:Pokémon Sword and Shield]], ¿qué Pokémon legendario provoca la [[p:Darkest Day]]?"
+  },
+  "villain-pla-volo": {
+   "prompt": "En [[game:Pokémon Legends: Arceus]], ¿qué personaje resulta ser el antagonista final?"
+  },
+  "villain-hgss-archer": {
+   "prompt": "En [[game:Pokémon HeartGold and SoulSilver]], ¿qué ejecutivo dirige el [[p:Team Rocket]] en [[region:Johto]] mientras [[p:Giovanni]] no está?"
+  },
+  "villain-magma-goal": {
+   "prompt": "En [[game:Pokémon Ruby, Sapphire and Emerald]], ¿qué organización quiere expandir la tierra?"
+  },
+  "villain-aqua-goal": {
+   "prompt": "En [[game:Pokémon Ruby, Sapphire and Emerald]], ¿qué organización quiere expandir el mar?"
+  },
+  "villain-magma-groudon": {
+   "prompt": "En [[game:Pokémon Ruby, Sapphire and Emerald]], ¿qué Pokémon legendario quiere despertar el [[p:Team Magma]]?"
+  },
+  "item-rb-silph-scope": {
+   "prompt": "En [[game:Pokémon Red and Blue]], ¿qué objeto permite ver la verdadera forma de los fantasmas de la [[loc:Pokémon Tower]]?"
+  },
+  "item-rb-poke-flute": {
+   "prompt": "En [[game:Pokémon Red and Blue]], ¿qué objeto despierta al [[mon:Snorlax]] que bloquea el camino?"
+  },
+  "item-rb-ss-ticket": {
+   "prompt": "En [[game:Pokémon Red and Blue]], ¿quién le da al jugador el [[item:S.S. Ticket]]?"
+  },
+  "item-rb-card-key": {
+   "prompt": "En [[game:Pokémon Red and Blue]], ¿qué objeto abre las puertas cerradas de [[p:Silph Co.]]?"
+  },
+  "item-rb-gold-teeth": {
+   "prompt": "En [[game:Pokémon Red and Blue]], ¿qué te da el guarda de la [[loc:Safari Zone]] por devolverle su [[item:Gold Teeth]]?"
+  },
+  "item-gs-squirtbottle": {
+   "prompt": "En [[game:Pokémon Gold and Silver]], ¿qué objeto hace que se mueva el árbol extraño de la [[loc:Route 36]]?"
+  },
+  "item-gs-secretpotion": {
+   "prompt": "En [[game:Pokémon Gold and Silver]], ¿qué objeto cura al [[mon:Ampharos]] enfermo del faro de [[loc:Olivine City]]?"
+  },
+  "item-rse-devon-scope": {
+   "prompt": "En [[game:Pokémon Ruby, Sapphire and Emerald]], ¿qué objeto revela a los [[mon:Kecleon]] invisibles?"
+  },
+  "item-rse-go-goggles": {
+   "prompt": "En [[game:Pokémon Ruby, Sapphire and Emerald]], ¿qué objeto te permite atravesar la tormenta de arena del desierto de la [[loc:Route 111]]?"
+  },
+  "hm-rs-dive": {
+   "prompt": "¿Qué MO, introducida en [[game:Pokémon Ruby and Sapphire]], permite explorar bajo el agua?"
+  },
+  "hm-gs-whirlpool": {
+   "prompt": "¿Qué MO se introdujo en [[game:Pokémon Gold and Silver]] para cruzar los remolinos del mar?"
+  },
+  "hm-dp-defog": {
+   "prompt": "En [[game:Pokémon Diamond and Pearl]], ¿qué MO despeja la niebla espesa fuera de los combates?"
+  },
+  "hm-dp-rock-climb": {
+   "prompt": "¿Qué MO, introducida en [[game:Pokémon Diamond and Pearl]], permite escalar paredes rocosas?"
+  },
+  "hm-sm-ride": {
+   "prompt": "¿Qué juegos sustituyeron las MO por la [[p:Poké Ride]]?"
+  },
+  "item-hgss-pokewalker": {
+   "prompt": "¿Qué accesorio podómetro venía incluido con [[game:Pokémon HeartGold and SoulSilver]]?"
+  },
+  "item-lgpe-pokeball-plus": {
+   "prompt": "¿Qué accesorio se vendió junto a [[game:Pokémon: Let's Go, Pikachu! and Let's Go, Eevee!]] como mando?"
+  },
+  "legend-rb-mewtwo": {
+   "prompt": "En [[game:Pokémon Red and Blue]], ¿dónde se encuentra [[mon:Mewtwo]]?"
+  },
+  "legend-rb-zapdos": {
+   "prompt": "En [[game:Pokémon Red and Blue]], ¿dónde se encuentra [[mon:Zapdos]]?"
+  },
+  "legend-rb-articuno": {
+   "prompt": "En [[game:Pokémon Red and Blue]], ¿dónde se encuentra [[mon:Articuno]]?"
+  },
+  "legend-rb-moltres": {
+   "prompt": "En [[game:Pokémon Red and Blue]], ¿dónde se encuentra [[mon:Moltres]]?"
+  },
+  "legend-gs-lugia": {
+   "prompt": "En [[game:Pokémon Gold and Silver]], ¿dónde se encuentra [[mon:Lugia]]?"
+  },
+  "legend-gs-hooh": {
+   "prompt": "En [[game:Pokémon Gold and Silver]], ¿dónde se encuentra [[mon:Ho-Oh]]?"
+  },
+  "legend-gs-beasts": {
+   "prompt": "En [[game:Pokémon Gold and Silver]], ¿dónde despiertan [[mon:Raikou]], [[mon:Entei]] y [[mon:Suicune]]?"
+  },
+  "legend-gs-red-gyarados": {
+   "prompt": "En [[game:Pokémon Gold and Silver]], ¿qué Pokémon de color rojo causa estragos en el [[loc:Lake of Rage]]?"
+  },
+  "legend-rse-rayquaza": {
+   "prompt": "En [[game:Pokémon Ruby, Sapphire and Emerald]], ¿dónde se puede atrapar a [[mon:Rayquaza]]?"
+  },
+  "legend-dp-spear-pillar": {
+   "prompt": "En [[game:Pokémon Diamond and Pearl]], ¿dónde te enfrentas a [[mon:Dialga]] o [[mon:Palkia]] en la cima del [[loc:Mt. Coronet]]?"
+  },
+  "legend-pt-distortion": {
+   "prompt": "En [[game:Pokémon Platinum]], ¿qué Pokémon legendario reina en el [[p:Distortion World]]?"
+  },
+  "legend-dp-azelf": {
+   "prompt": "En los juegos de [[region:Sinnoh]], ¿en qué lago vive [[mon:Azelf]]?"
+  },
+  "legend-dp-uxie": {
+   "prompt": "En los juegos de [[region:Sinnoh]], ¿en qué lago vive [[mon:Uxie]]?"
+  },
+  "legend-bw-ns-castle": {
+   "prompt": "En [[game:Pokémon Black and White]], ¿dónde se lucha contra [[mon:Reshiram]] o [[mon:Zekrom]] para atraparlo?"
+  },
+  "legend-pla-noble-first": {
+   "prompt": "En [[game:Pokémon Legends: Arceus]], ¿cuál es el primer [[p:Noble Pokémon]] al que calma el jugador?"
+  },
+  "npc-rb-marowak": {
+   "prompt": "En [[game:Pokémon Red and Blue]], ¿de qué Pokémon es el espíritu del fantasma que ronda la [[loc:Pokémon Tower]]?"
+  },
+  "npc-rb-dojo": {
+   "prompt": "En [[game:Pokémon Red and Blue]], ¿qué Pokémon puedes elegir en el [[p:Fighting Dojo]] de [[loc:Saffron City]]?"
+  },
+  "npc-gs-red": {
+   "prompt": "En [[game:Pokémon Gold and Silver]], ¿quién es el silencioso rival final en la cima del [[loc:Mt. Silver]]?"
+  },
+  "npc-gs-whitney": {
+   "prompt": "En [[game:Pokémon Gold and Silver]], ¿qué Líder de Gimnasio tiene un [[mon:Miltank]] famoso por su [[move:Rollout]]?"
+  },
+  "npc-gs-jasmine": {
+   "prompt": "En [[game:Pokémon Gold and Silver]], ¿qué Líder de Gimnasio no vuelve a su Gimnasio hasta que se cure su [[mon:Ampharos]] enfermo?"
+  },
+  "npc-gs-kurt": {
+   "prompt": "En [[game:Pokémon Gold and Silver]], ¿qué fabrica [[p:Kurt]] en [[loc:Azalea Town]] con los Bonguris?",
+   "answer": "Poké Balls",
+   "distractors": [
+    "Bayas",
+    "Piedras evolutivas",
+    "Pociones"
+   ]
+  },
+  "npc-rse-steven": {
+   "prompt": "En [[game:Pokémon Ruby and Sapphire]], ¿qué personaje es el hijo del presidente de [[p:Devon Corporation]]?"
+  },
+  "npc-sm-nebby": {
+   "prompt": "En [[game:Pokémon Sun and Moon]], ¿qué apodo le pone [[p:Lillie]] a su [[mon:Cosmog]]?",
+   "distractors": [
+    "[[p:Snowy]]",
+    "Polvo de estrellas",
+    "Cosmo"
+   ]
+  },
+  "npc-swsh-leon-ace": {
+   "prompt": "En [[game:Pokémon Sword and Shield]], ¿cuál es el Pokémon estrella del Campeón [[p:Leon]]?"
+  },
+  "npc-sv-herba": {
+   "prompt": "En [[game:Pokémon Scarlet and Violet]], ¿qué ingredientes raros busca [[p:Arven]]?",
+   "answer": "Especias Ocultas",
+   "distractors": [
+    "Teralitos",
+    "Trozos Deseo",
+    "Ramas de Galanuez"
+   ]
+  },
+  "npc-pla-clans": {
+   "prompt": "En [[game:Pokémon Legends: Arceus]], ¿quién lidera el [[p:Diamond Clan]]?"
+  },
+  "npc-pla-kamado": {
+   "prompt": "En [[game:Pokémon Legends: Arceus]], ¿quién es el comandante del [[p:Galaxy Expedition Team]]?"
+  },
+  "za-lumiose": {
+   "prompt": "¿En qué ciudad transcurre [[game:Pokémon Legends: Z-A]]?"
+  },
+  "za-mega": {
+   "prompt": "¿Qué mecánica de combate vuelve en [[game:Pokémon Legends: Z-A]]?",
+   "answer": "Megaevolución",
+   "distractors": [
+    "Movimientos Z",
+    "Dinamax",
+    "Teracristalización"
+   ]
+  },
+  "frlg-sevii": {
+   "prompt": "¿Qué archipiélago se añadió a [[region:Kanto]] en [[game:Pokémon FireRed and LeafGreen]]?"
+  },
+  "yellow-starter": {
+   "prompt": "En [[game:Pokémon Yellow]], ¿qué Pokémon te da el [[p:Professor Oak]] como primer compañero?"
+  }
+ }
+}

@@ -23,13 +23,27 @@ export const genOption = (L: QuizLang, label: string) => {
 
 /** Any proper name an option may be: a Pokémon, a person or team, an item, a move, a place, a region, a game. */
 export function anyName(L: QuizLang, english: string, context: "games" | "anime" = "games"): string | undefined {
-  return (
+  const found =
     L.pokemonNamed(english) ??
     L.proper(english, context) ??
     L.name("items", english) ??
     L.name("moves", english) ??
     L.name("locations", english) ??
     L.name("regions", english) ??
-    L.game(english)
-  );
+    L.game(english);
+  if (found) return found;
+  // "HM04 Strength": the machine and its move.
+  const hm = /^HM(\d\d) (.+)$/.exec(english);
+  if (hm) {
+    const move = L.name("moves", hm[2]);
+    return move && L.t("trivia.hm", { n: hm[1], move });
+  }
+  // "Cheren and Bianca", "Hitmonlee or Hitmonchan": both names, joined as the language does.
+  const pair = /^(.+) (and|or) (.+)$/.exec(english);
+  if (pair) {
+    const a = anyName(L, pair[1], context);
+    const b = anyName(L, pair[3], context);
+    return a && b ? (pair[2] === "and" ? L.and([a, b]) : L.or([a, b])) : undefined;
+  }
+  return undefined;
 }

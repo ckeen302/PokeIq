@@ -190,6 +190,31 @@
       "top4": "Demi-finales",
       "runnerUp": "Finaliste",
       "winner": "Vainqueur"
-    }
+    },
+    "hm": "CS{n} {move}"
+  },
+  "team": {
+    "prompt": "À qui appartient cette équipe ?",
+    "form": {
+      "alolan": "{name} d'Alola",
+      "galarian": "{name} de Galar",
+      "midnight": "{name} (Forme Nocturne)",
+      "lowKey": "{name} (Forme Basse)"
+    },
+    "role": {
+      "gymLeader": "Champion d'Arène",
+      "eliteFour": "Conseil 4",
+      "champion": "Combat final de la Ligue",
+      "rival": "Combat contre le rival",
+      "boss": "Combat contre le boss",
+      "battle": "Combat",
+      "kahuna": "Grande Épreuve"
+    },
+    "rematch": "{role} (revanche)",
+    "gameRole": "{game} — {role}{hasPlace, select, yes {, {place}} other {}}",
+    "anime": "Dessin animé",
+    "animeIn": "Dessin animé ({region})",
+    "sep": " · ",
+    "chose": "si tu choisis {name}"
   }
 }
