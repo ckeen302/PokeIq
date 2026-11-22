@@ -15,17 +15,17 @@
     "hard": "Modo difícil",
     "assist": "Pokédex: {level}",
     "assists": {
-      "off": "Sin ayuda",
+      "off": "Ninguna",
       "notebook": "Libreta",
       "field": "Guía de campo",
       "full": "Pokédex completa"
     },
     "formats": {
       "classic": "Clásico",
-      "squirdle": "Estadísticas",
-      "custom": "Personalizado"
+      "squirdle": "Datos",
+      "custom": "A medida"
     },
-    "hints": "{n, plural, one {{n} pista} other {{n} pistas}}",
+    "hints": "{n, plural, one {{n} ayuda} other {{n} ayudas}}",
     "top": "Top {top} % de {players}",
     "solved": "Resuelto en {n} de {max} intentos",
     "notSolved": "Sin resolver en {max} intentos",
@@ -55,7 +55,7 @@
     "playDaily": "Haz el Reto diario de hoy",
     "playTest": "Haz el Test PokéIQ",
     "play": "Jugar a los quiz",
-    "dailyDescription": "Las mismas preguntas de Pokémon para todos los Entrenadores, cada día. Mantén tu racha en PokéIQ.",
+    "dailyDescription": "Diez preguntas de Pokémon, las mismas para todos los Entrenadores, cada día. Mantén tu racha en PokéIQ.",
     "description": "¿Cuánto sabes de Pokémon? Quiz gratis de todos los Pokémon, sin registro. ¿Puedes superar esta puntuación?"
   },
   "cognitive": {
@@ -80,7 +80,7 @@
     "hint": "Pista usada",
     "play": "Jugar a PokéConnections",
     "playDaily": "Jugar al PokéConnections de hoy",
-    "description": "{size, select, five {Pokémon repartidos en grupos ocultos.} other {Pokémon repartidos en grupos ocultos.}} Descubre qué los une en un puzle nuevo cada día en PokéIQ. ¿Puedes hacerlo mejor?"
+    "description": "{size, select, five {Veinticinco Pokémon, cinco grupos ocultos.} other {Dieciséis Pokémon, cuatro grupos ocultos.}} Descubre qué los une en un puzle nuevo cada día en PokéIQ. ¿Puedes hacerlo mejor?"
   },
   "pikadoku": {
     "full": "Completó toda la cuadrícula",
