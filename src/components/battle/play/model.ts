@@ -170,6 +170,9 @@ const VOLATILES: Record<string, string> = {
   quarkdrivespe: "Quark Drive Spe",
 };
 
+/** A volatile's id by the label MonSnap carries ("Confused" → "confusion"), for the screen to show it in the page's language. */
+export const VOLATILE_IDS: Record<string, string> = Object.fromEntries(Object.entries(VOLATILES).map(([id, label]) => [label, id]));
+
 function monSnap(p: Pokemon): MonSnap {
   const species = p.species;
   const volatiles = Object.keys(p.volatiles)
