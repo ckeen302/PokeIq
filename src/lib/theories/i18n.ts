@@ -30,7 +30,7 @@ export interface CaseText {
 
 const loaded = new Map<Locale, Promise<Record<string, CaseText>>>();
 
-/** A language's case texts (null for English). */
+/** A language’s case texts (null for English): its content/theories.json, read once. */
 export function theoryTexts(locale: Locale): Promise<Record<string, CaseText> | null> {
   if (locale === "en") return Promise.resolve(null);
   let p = loaded.get(locale);
