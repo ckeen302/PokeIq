@@ -11,12 +11,12 @@ import { localizeStory, type StoryContent } from "./content";
 import type { Story } from "./types";
 
 /** The Story of Pokémon in the page's language (server only: an English page gets the English data untouched). */
-const CONTENT: Partial<Record<OtherLocale, StoryContent>> = { ja, es, fr, de, it };
+const CONTENT: Record<OtherLocale, StoryContent> = { ja, es, fr, de, it };
 const cache = new Map<Locale, Story>();
 
 export function localStory(locale: Locale): Story {
-  const content = locale === "en" ? undefined : CONTENT[locale];
-  if (!content) return STORY;
+  if (locale === "en") return STORY;
+  const content = CONTENT[locale];
   let s = cache.get(locale);
   if (!s) {
     s = localizeStory(STORY, content, (dex, english) => speciesName(dex, english, locale));
