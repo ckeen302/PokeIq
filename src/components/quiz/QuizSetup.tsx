@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Play, Settings2 } from "lucide-react";
 import type { Difficulty, ModuleId, QuizFormat, QuizScope } from "@/engines/types";
-import { FORMAT_INFO, MODULE_INFO, PLAYABLE_FORMATS, difficultiesFor, filterFor, playDifficulty } from "@/lib/modes";
+import { MODULE_INFO, PLAYABLE_FORMATS, difficultiesFor, filterFor, levelKey, playDifficulty, type QuizFilter } from "@/lib/modes";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { QuizController, type StartRequest } from "./QuizController";
@@ -14,6 +14,11 @@ import { getProgress } from "@/lib/progress";
 import { preloadAudio, preloadImage } from "@/lib/preload";
 import { createQuizPrefetcher, type QuizPrefetcher } from "@/lib/quiz-prefetch";
 import type { StartResponse } from "@/lib/session-types";
+import { useT } from "@/i18n/client";
+import type { Translator } from "@/i18n/catalog";
+import type { Locale } from "@/i18n/config";
+import modesNs from "@/messages/quiz-modes";
+import setupNs from "@/messages/quiz-setup";
 
 /**
  * Pre-game setup: format and generation filter, plus the difficulty for the
@@ -30,11 +35,12 @@ import type { StartResponse } from "@/lib/session-types";
 /** Wait after a setting changes before getting that run ready (the player may still be choosing). */
 const SETTLE_MS = 700;
 
-async function postSession(body: object): Promise<unknown> {
+async function postSession(body: object, lang: Locale): Promise<unknown> {
   const res = await fetch("/api/session", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    // A page in another language asks for its questions in that language.
+    body: JSON.stringify(lang === "en" ? body : { ...body, lang }),
   });
   const reply = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(reply.error ?? `Request failed (${res.status})`);
@@ -54,7 +60,32 @@ interface QuizSetupProps {
   initialGens?: number[];
 }
 
+type SetupT = Translator<typeof setupNs.en>;
+
+const REGION_KEYS = ["kanto", "johto", "hoenn", "sinnoh", "unova", "kalos", "alola", "galar", "paldea"] as const;
+const SERIES_KEYS = ["original", "advanced", "dp", "bw", "xy", "sm", "journeys", "horizons"] as const;
+
+/** The filter's heading. */
+function filterLabel(filter: QuizFilter, t: SetupT): string {
+  return filter.kind === "anime" ? t("filters.series") : filter.kind === "items" ? t("filters.items") : filter.kind === "team" ? t("filters.team") : t("filters.gen");
+}
+
+/** A chip's label and hover title: value i + 1 of the filter. */
+function chipText(filter: QuizFilter, i: number, t: SetupT): { label: string; title?: string } {
+  if (filter.kind === "anime") return { label: t(`filters.anime.${SERIES_KEYS[i]}`) };
+  const region = t(`regions.${REGION_KEYS[i]}`);
+  return { label: t("filters.chip", { n: i + 1 }), title: filter.kind === "team" ? t("filters.teamChip", { region, n: i + 1 }) : region };
+}
+
+/** The note shown while nothing is picked, if the filter has one. */
+function filterNote(filter: QuizFilter, t: SetupT): string | undefined {
+  return filter.kind === "items" ? t("filters.itemsNote") : filter.kind === "team" ? t("filters.teamNote") : undefined;
+}
+
 export function QuizSetup({ module, initialFormat, initialDifficulty, initialGens = [] }: QuizSetupProps) {
+  const t = useT(setupNs);
+  const mt = useT(modesNs);
+  const lang = t.locale;
   const info = MODULE_INFO[module];
   const filter = filterFor(module);
   const [format, setFormat] = useState<QuizFormat>(initialFormat ?? info.defaultFormat);
@@ -73,7 +104,7 @@ export function QuizSetup({ module, initialFormat, initialDifficulty, initialGen
   // One per page view: it keeps the run held for the settings on screen.
   const prefetcher = useRef<QuizPrefetcher | null>(null);
   const warm = (req: StartRequest) => {
-    prefetcher.current ??= createQuizPrefetcher({ post: postSession, preload: preloadHeld });
+    prefetcher.current ??= createQuizPrefetcher({ post: (body) => postSession(body, lang), preload: preloadHeld });
     prefetcher.current.prefetch(req, getProgress().name || undefined);
   };
   const latest = useRef(settings);
@@ -146,7 +177,7 @@ export function QuizSetup({ module, initialFormat, initialDifficulty, initialGen
               onClick={() => setRequest(null)}
               className="tap inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
             >
-              <Settings2 className="h-4 w-4" /> Change settings
+              <Settings2 className="h-4 w-4" /> {t("setup.changeSettings")}
             </button>
           </div>
         </motion.div>
@@ -154,24 +185,24 @@ export function QuizSetup({ module, initialFormat, initialDifficulty, initialGen
         <motion.div key="setup" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10, transition: { duration: 0.12 } }}>
           <Card className="mx-auto max-w-2xl">
             <CardContent className="space-y-6 p-6">
-              <Field label="Format">
+              <Field label={t("setup.format")}>
                 <div className="grid grid-cols-3 gap-2">
                   {PLAYABLE_FORMATS.map((f) => (
                     <Choice key={f} active={format === f} onClick={() => setFormat(f)}>
-                      <span className="font-display font-bold uppercase tracking-wider">{FORMAT_INFO[f].title}</span>
-                      <span className="text-[11px] text-muted-foreground">{FORMAT_INFO[f].description}</span>
+                      <span className="font-display font-bold uppercase tracking-wider">{mt(`formats.${f}.title`)}</span>
+                      <span className="text-[11px] text-muted-foreground">{mt(`formats.${f}.description`)}</span>
                     </Choice>
                   ))}
                 </div>
               </Field>
 
               {choices.length > 0 && (
-                <Field label="Difficulty">
+                <Field label={t("setup.difficulty")}>
                   <div className="grid grid-cols-2 gap-2" data-testid="quiz-difficulty">
                     {choices.map((d) => (
                       <Choice key={d.id} active={difficulty === d.id} onClick={() => setDifficulty(d.id)}>
-                        <span className="font-display font-bold uppercase tracking-wider">{d.label}</span>
-                        <span className="text-[11px] text-muted-foreground">{d.blurb}</span>
+                        <span className="font-display font-bold uppercase tracking-wider">{mt(`levels.${levelKey(module, d.id)!}.label`)}</span>
+                        <span className="text-[11px] text-muted-foreground">{mt(`levels.${levelKey(module, d.id)!}.blurb`)}</span>
                       </Choice>
                     ))}
                   </div>
@@ -179,31 +210,34 @@ export function QuizSetup({ module, initialFormat, initialDifficulty, initialGen
               )}
 
               {hasScope && (
-                <Field label="Teams from">
+                <Field label={t("setup.teamsFrom")}>
                   <div className="flex flex-wrap gap-2">
                     {([
-                      [null, "Games & anime"],
-                      ["games", "Games"],
-                      ["anime", "Anime"],
+                      [null, "both"],
+                      ["games", "games"],
+                      ["anime", "anime"],
                     ] as const).map(([value, label]) => (
                       <Chip key={label} active={scope === value} onClick={() => setScope(value)}>
-                        {label}
+                        {t(`setup.scope.${label}`)}
                       </Chip>
                     ))}
                   </div>
                 </Field>
               )}
 
-              <Field label={gens.length ? `${filter.label} (${gens.length} selected)` : `${filter.label} (all)`}>
+              <Field label={gens.length ? t("setup.selected", { label: filterLabel(filter, t), n: gens.length }) : t("setup.all", { label: filterLabel(filter, t) })}>
                 <div className="flex flex-wrap gap-2">
-                  <Chip active={gens.length === 0} onClick={() => setGens([])}>All</Chip>
-                  {filter.chips.map((chip, i) => (
-                    <Chip key={chip.label} active={gens.includes(i + 1)} onClick={() => toggleGen(i + 1)} title={chip.title}>
-                      {chip.label}
-                    </Chip>
-                  ))}
+                  <Chip active={gens.length === 0} onClick={() => setGens([])}>{t("setup.allChip")}</Chip>
+                  {filter.chips.map((chip, i) => {
+                    const text = chipText(filter, i, t);
+                    return (
+                      <Chip key={chip.label} active={gens.includes(i + 1)} onClick={() => toggleGen(i + 1)} title={text.title}>
+                        {text.label}
+                      </Chip>
+                    );
+                  })}
                 </div>
-                {gens.length === 0 && filter.note && <p className="text-xs text-muted-foreground">{filter.note}</p>}
+                {gens.length === 0 && filterNote(filter, t) && <p className="text-xs text-muted-foreground">{filterNote(filter, t)}</p>}
               </Field>
 
               <Button
@@ -214,7 +248,7 @@ export function QuizSetup({ module, initialFormat, initialDifficulty, initialGen
                 onPointerEnter={(e) => e.pointerType === "mouse" && warm(settings())}
                 onFocus={(e) => e.currentTarget.matches(":focus-visible") && warm(settings())}
               >
-                <Play className="h-4 w-4 fill-current" /> Start {info.title}
+                <Play className="h-4 w-4 fill-current" /> {t("setup.start", { mode: mt(`modules.${module}.title`) })}
               </Button>
             </CardContent>
           </Card>

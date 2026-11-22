@@ -1,0 +1,28 @@
+{
+  "modules": {
+    "whos-that": { "title": "Who's That Pokémon?", "description": "Name it from its silhouette." },
+    "cry": { "title": "Cry Quiz", "description": "Hear a cry, name the Pokémon." },
+    "dex": { "title": "Dex Detective", "description": "Name it from its Pokédex entry." },
+    "types": { "title": "Type Master", "description": "Test your type chart knowledge." },
+    "higher-lower": { "title": "Higher or Lower", "description": "Which one has the higher stat?" },
+    "games": { "title": "Mainline Games", "description": "Gym Leaders, rivals and regions." },
+    "anime": { "title": "Pokémon Anime", "description": "Ash, his friends and Team Rocket." },
+    "competitive": { "title": "Abilities, Moves & Items", "description": "What does this move or item do?" },
+    "shiny": { "title": "Real Shiny?", "description": "Pick the real shiny, not a fake." },
+    "zoom-reveal": { "title": "Zoom Reveal", "description": "Name it from a close-up." },
+    "whose-team": { "title": "Whose Team Is This?", "description": "Name the trainer from their team." },
+    "mixed": { "title": "Mixed Bag", "description": "Silhouettes, types, stats and more." }
+  },
+  "formats": {
+    "classic": { "title": "Classic", "description": "10 questions · 15s each" },
+    "survival": { "title": "Survival", "description": "Endless · 3 lives" },
+    "blitz": { "title": "Blitz", "description": "60 seconds · as many as you can" },
+    "adaptive": { "title": "PokéIQ Test", "description": "20 adaptive questions · 20s each" }
+  },
+  "levels": {
+    "whose-team-medium": { "label": "Normal", "blurb": "The whole team" },
+    "whose-team-hard": { "label": "Hard", "blurb": "One Pokémon at a time, ace last" },
+    "shiny-easy": { "label": "Easy", "blurb": "The fakes are far off" },
+    "shiny-hard": { "label": "Hard", "blurb": "The fakes are barely different" }
+  }
+}

@@ -24,7 +24,12 @@ import { isPhone } from "@/lib/phone";
 import { preloadAssets, preloadImage, questionAssets } from "@/lib/preload";
 import { ZOOM_SKIP, ZOOM_STEPS } from "@/lib/zoom-reveal";
 import type { NameEntry } from "@/components/pokedle/parts";
-import { ZoomPlay } from "./zoom/ZoomPlay";
+import { ZoomPlay, zoomGuess } from "./zoom/ZoomPlay";
+import { useT } from "@/i18n/client";
+import { formatNumber, type Translator } from "@/i18n/catalog";
+import runNs from "@/messages/quiz-run";
+
+type RunT = Translator<typeof runNs.en>;
 
 /**
  * <QuizController /> — the one quiz runtime behind every mode and format.
@@ -80,6 +85,7 @@ function isOtherControl(target: EventTarget | null): boolean {
 }
 
 export function QuizController({ request, challenger, onRestart, onAnswered, onComplete, begun }: QuizControllerProps) {
+  const t = useT(runNs);
   const [phase, setPhase] = useState<Phase>("loading");
   const [error, setError] = useState<string | null>(null);
   const [rules, setRules] = useState<StartResponse["rules"] | null>(null);
@@ -125,7 +131,7 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
       try {
         // The run got ready ahead (first attempt only); otherwise, or if it couldn't begin, start one now.
         const ready = attempt === 0 && begunRef.current ? await begunRef.current : null;
-        const start = ready ?? (await startRun(req));
+        const start = ready ?? (await startRun(req, t));
         if (cancelled) return;
         tokenRef.current = start.token;
         setRules(start.rules);
@@ -153,7 +159,7 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
         track("quiz_start", { kind: "daily" in req ? "daily" : "zoomDaily" in req ? "zoom-daily" : "challenge" in req ? "challenge" : req.module });
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Couldn't start the quiz.");
+          setError(err instanceof Error ? err.message : t("errors.start"));
           setPhase("error");
         }
       }
@@ -161,6 +167,8 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
     return () => {
       cancelled = true;
     };
+    // The page's language never changes under a run.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [requestKey, attempt]);
 
   // ---- answering ---------------------------------------------------------
@@ -185,11 +193,11 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
             setPhase("expired");
             return;
           }
-          throw new Error(body.error ?? `Request failed (${res.status})`);
+          throw new Error(body.error ?? t("errors.request", { status: res.status }));
         }
         result = body as AnswerResponse;
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Couldn't grade that answer.");
+        setError(err instanceof Error ? err.message : t("errors.grade"));
         setPhase("error");
         return;
       } finally {
@@ -249,7 +257,7 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
         }
       }
     },
-    [isBlitz, onAnswered]
+    [isBlitz, onAnswered, t]
   );
 
   // Whose Team on Hard: one more Pokémon (the new token counts it, so a right answer scores less).
@@ -332,18 +340,18 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
         body: JSON.stringify({ token: tokenRef.current }),
       });
       const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(body.error ?? `Request failed (${res.status})`);
+      if (!res.ok) throw new Error(body.error ?? t("errors.request", { status: res.status }));
       const next = body as NextResponse;
       tokenRef.current = next.token;
       showQuestion(next.question);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't load the next question.");
+      setError(err instanceof Error ? err.message : t("errors.next"));
       setPhase("error");
     } finally {
       advancingRef.current = false;
       setAdvancing(false);
     }
-  }, [graded, showQuestion]);
+  }, [graded, showQuestion, t]);
 
   // Blitz never pauses on a reveal: flash the result, move on.
   useEffect(() => {
@@ -414,12 +422,12 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
     return (
       <Card className="mx-auto w-full max-w-2xl border-destructive/50">
         <CardHeader>
-          <CardTitle className="text-lg text-destructive">Something went wrong</CardTitle>
+          <CardTitle className="text-lg text-destructive">{t("errors.title")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">{error}</p>
           <Button onClick={() => setAttempt((a) => a + 1)}>
-            <RotateCcw className="h-4 w-4" aria-hidden /> Start a new run
+            <RotateCcw className="h-4 w-4" aria-hidden /> {t("errors.newRun")}
           </Button>
         </CardContent>
       </Card>
@@ -430,15 +438,14 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
     return (
       <Card className="mx-auto w-full max-w-2xl">
         <CardHeader>
-          <CardTitle className="font-display text-2xl uppercase">Time&apos;s up!</CardTitle>
+          <CardTitle className="font-display text-2xl uppercase">{t("expired.title")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-muted-foreground">
-            The run clock ran out while you were away. You scored{" "}
-            <b className="text-foreground">{score.toLocaleString("en-US")}</b> pts with {answered} answered.
+            {t.rich("expired.body", { score: formatNumber(score, t.locale), answered, b: (c) => <b className="text-foreground">{c}</b> })}
           </p>
           <Button onClick={onRestart ?? (() => setAttempt((a) => a + 1))}>
-            <RotateCcw className="h-4 w-4" aria-hidden /> Play again
+            <RotateCcw className="h-4 w-4" aria-hidden /> {t("expired.again")}
           </Button>
         </CardContent>
       </Card>
@@ -449,7 +456,7 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
     return (
       <Card className="mx-auto w-full max-w-2xl">
         <CardContent className="p-6 text-center">
-          <span className="hud-label animate-pulse text-muted-foreground">Section complete…</span>
+          <span className="hud-label animate-pulse text-muted-foreground">{t("sectionDone")}</span>
         </CardContent>
       </Card>
     );
@@ -480,25 +487,25 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
 
   // Picture questions grade by a card id, which means nothing to read out.
   const isPicture = isCards || !!question.images;
-  const answerText = graded ? (isPicture ? "the one marked in green" : graded.answer) : "";
+  const answerText = graded ? (isPicture ? t("verdict.markedGreen") : graded.answer) : "";
   const isZoom = !!question.zoom;
   const zoomVerdict = graded
     ? graded.correct
-      ? `Correct! It's ${graded.answer}, on step ${graded.step ?? 1} of ${ZOOM_STEPS}${streak >= 3 ? ` (${streak} in a row!)` : ""}.`
-      : `Not this time… it was ${graded.answer}.`
+      ? t(streak >= 3 ? "verdict.zoomCorrectStreak" : "verdict.zoomCorrect", { answer: graded.answer, step: graded.step ?? 1, steps: ZOOM_STEPS, streak })
+      : t("verdict.zoomMissed", { answer: graded.answer })
     : "";
   const verdict = isZoom
     ? zoomVerdict
     : graded
     ? graded.correct && isPicture
-      ? streak >= 3 ? `Correct! That's ${streak} in a row!` : "Correct! That's the one!"
+      ? streak >= 3 ? t("verdict.streak", { streak }) : t("verdict.theOne")
       : graded.correct
       ? streak >= 3
-        ? `Correct! That's ${streak} in a row!`
-        : `Correct! It's ${answerText}!`
+        ? t("verdict.streak", { streak })
+        : t("verdict.correct", { answer: answerText })
       : selected === null
-        ? `Time's up! It was ${answerText}.`
-        : `Not quite… it was ${answerText}.`
+        ? t("verdict.timeUp", { answer: answerText })
+        : t("verdict.wrong", { answer: answerText })
     : "";
 
   return (
@@ -512,18 +519,17 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
         <div className="flex items-center gap-4">
           <span className="font-pixel text-xs tracking-wider text-muted-foreground">
             {rules.total ? (
-              <>
-                Q <span className="text-foreground">{String(Math.min(answered + (revealed ? 0 : 1), rules.total)).padStart(2, "0")}</span>/
-                {String(rules.total).padStart(2, "0")}
-              </>
+              t.rich("hud.question", {
+                n: String(Math.min(answered + (revealed ? 0 : 1), rules.total)).padStart(2, "0"),
+                total: String(rules.total).padStart(2, "0"),
+                v: (c) => <span className="text-foreground">{c}</span>,
+              })
             ) : (
-              <>
-                No.<span className="text-foreground">{String(question.index + 1).padStart(3, "0")}</span>
-              </>
+              t.rich("hud.number", { n: String(question.index + 1).padStart(3, "0"), v: (c) => <span className="text-foreground">{c}</span> })
             )}
           </span>
           {lives !== null && (
-            <span className="flex items-center gap-1" aria-label={`${lives} lives left`}>
+            <span className="flex items-center gap-1" aria-label={t("hud.lives", { n: lives })}>
               {Array.from({ length: rules.lives ?? 0 }).map((_, i) => (
                 <motion.span key={i} animate={{ scale: i < lives ? 1 : 0.75, opacity: i < lives ? 1 : 0.25 }}>
                   <Heart className={cn("h-4 w-4", i < lives ? "fill-primary text-primary" : "text-muted-foreground")} />
@@ -545,7 +551,7 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
           </AnimatePresence>
         </div>
         <div className="relative text-right">
-          <div className="hud-label">Score</div>
+          <div className="hud-label">{t("hud.score")}</div>
           <div className="font-pixel text-base tabular-nums tracking-wider text-screen">{String(score).padStart(6, "0")}</div>
           <AnimatePresence>
             {revealed && graded && graded.gained > 0 && (
@@ -565,7 +571,7 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
 
       {timeFraction !== null && (
         <div className="flex items-center gap-3 px-4 pt-4 sm:px-6">
-          <HpBar value={timeFraction} label={runMsLeft !== null ? "RUN" : "TIME"} className="flex-1" />
+          <HpBar value={timeFraction} label={runMsLeft !== null ? t("hud.run") : t("hud.time")} className="flex-1" />
           <span className={cn("w-8 text-right font-pixel text-xs tabular-nums", timeFraction < 0.25 && "animate-blink text-destructive")}>
             {secondsLeft}
           </span>
@@ -575,7 +581,7 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
       <CardContent className="relative p-4 pt-4 sm:p-6 sm:pt-5">
         {preparing && (
           <div className="absolute inset-0 z-10 flex items-start justify-center pt-16" role="status">
-            <span className="hud-label animate-pulse text-muted-foreground">Loading next question…</span>
+            <span className="hud-label animate-pulse text-muted-foreground">{t("loadingNext")}</span>
           </div>
         )}
         <AnimatePresence mode="wait">
@@ -593,7 +599,7 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
             {question.detail &&
               (isEntry ? (
                 <div className="screen rounded-md p-4">
-                  <div className="hud-label relative z-[3] mb-2 text-screen">Pokédex entry</div>
+                  <div className="hud-label relative z-[3] mb-2 text-screen">{t("entry")}</div>
                   <p className="relative z-[3] text-[15px] leading-relaxed text-foreground/90">{question.detail}</p>
                 </div>
               ) : (
@@ -612,13 +618,13 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
                 }
                 onGuess={(entry) => {
                   guessRef.current = entry;
-                  void submit(entry[1]);
+                  void submit(zoomGuess(entry));
                 }}
                 onSkip={() => {
                   guessRef.current = null;
                   void submit(ZOOM_SKIP);
                 }}
-                shareTitle={"zoomDaily" in request ? `PokéIQ Zoom Reveal · ${request.zoomDaily}` : undefined}
+                shareTitle={"zoomDaily" in request ? t("zoom.shareDaily", { date: request.zoomDaily }) : undefined}
               />
             )}
 
@@ -662,7 +668,7 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
                   <AnswerTile key={option} index={i} option={option} phase={phase} selected={selected} graded={graded} onPick={submit} card>
                     <div className="screen relative mx-auto aspect-square w-full max-w-[200px] rounded-md">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={question.images![i]} alt={`Option ${i + 1}`} width={384} height={384} fetchPriority={question.index === 0 ? "high" : undefined} draggable={false} className="relative z-[1] h-full w-full object-contain p-1 [image-rendering:pixelated]" />
+                      <img src={question.images![i]} alt={t("option", { n: i + 1 })} width={384} height={384} fetchPriority={question.index === 0 ? "high" : undefined} draggable={false} className="relative z-[1] h-full w-full object-contain p-1 [image-rendering:pixelated]" />
                     </div>
                   </AnswerTile>
                 ))}
@@ -707,7 +713,7 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
                         <>
                           {" "}
                           <Link href={graded.learnHref} target="_blank" className="font-medium text-screen hover:underline">
-                            Study it in the Pokédex →
+                            {t("study")}
                           </Link>
                         </>
                       )}
@@ -716,7 +722,7 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
                   )}
                 </DialogBox>
                 <Button className="w-full max-md:sticky max-md:bottom-[calc(var(--tabbar-h)+0.75rem)] max-md:z-10" size="lg" onClick={() => void advance()} disabled={advancing}>
-                  {graded.done ? "See results" : advancing ? "Loading…" : "Next question"} ▶
+                  {graded.done ? t("seeResults") : advancing ? t("loadingButton") : t("nextQuestion")} ▶
                 </Button>
               </motion.div>
             )}
@@ -740,6 +746,7 @@ interface AnswerTileProps {
 
 /** Battle-menu option: ▶ cursor on hover, key hint, green/red on reveal. */
 function AnswerTile({ index, option, phase, selected, graded, onPick, card, children }: AnswerTileProps) {
+  const t = useT(runNs);
   const locked = phase !== "active";
   const isAnswer = graded?.answer === option;
   const isPicked = selected === option;
@@ -773,9 +780,9 @@ function AnswerTile({ index, option, phase, selected, graded, onPick, card, chil
       <span className="flex items-center justify-between gap-2">
         <span className="flex-1">{children}</span>
         {graded && isAnswer ? (
-          <CheckCircle2 className="h-4 w-4 shrink-0 text-success" aria-label="Correct answer" />
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-success" aria-label={t("correctAnswer")} />
         ) : wrongPick ? (
-          <XCircle className="h-4 w-4 shrink-0 text-destructive" aria-label="Your answer" />
+          <XCircle className="h-4 w-4 shrink-0 text-destructive" aria-label={t("yourAnswer")} />
         ) : (
           <kbd className="hidden font-pixel text-[10px] text-muted-foreground sm:inline" aria-hidden>
             [{index + 1}]
@@ -786,23 +793,26 @@ function AnswerTile({ index, option, phase, selected, graded, onPick, card, chil
   );
 }
 
-async function startRun(req: StartRequest): Promise<StartResponse> {
+async function startRun(req: StartRequest, t: RunT): Promise<StartResponse> {
+  const lang = t.locale;
   const res = await fetch("/api/session", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...req, name: getProgress().name || undefined }),
+    // A page in another language asks for its questions in that language.
+    body: JSON.stringify(lang === "en" ? { ...req, name: getProgress().name || undefined } : { ...req, name: getProgress().name || undefined, lang }),
   });
   const body = await res.json();
-  if (!res.ok) throw new Error(body.error ?? `Request failed (${res.status})`);
+  if (!res.ok) throw new Error(body.error ?? t("errors.request", { status: res.status }));
   return body as StartResponse;
 }
 
 function LoadingCard() {
+  const t = useT(runNs);
   return (
     <Card className="mx-auto w-full max-w-2xl overflow-hidden">
       <div className="flex items-center gap-3 border-b border-foreground/[0.07] bg-shade/30 px-6 py-3">
         <span className="led animate-blink text-screen" />
-        <span className="hud-label text-screen">Accessing Pokédex…</span>
+        <span className="hud-label text-screen">{t("loading")}</span>
       </div>
       <CardContent className="space-y-4 p-6">
         <Skeleton className="h-16 w-full" />

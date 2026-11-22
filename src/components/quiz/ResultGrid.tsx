@@ -2,15 +2,18 @@
 
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import runNs from "@/messages/quiz-run";
 
 /** Animated answer grid — the visual twin of the shared emoji grid. */
 export function ResultGrid({ grid, className }: { grid: string; className?: string }) {
+  const t = useT(runNs);
   if (!grid) return null;
   return (
     <div
       className={cn("flex flex-wrap justify-center gap-1.5", className)}
       role="img"
-      aria-label={`${[...grid].filter((c) => c === "1").length} of ${grid.length} correct: ${[...grid].map((c) => (c === "1" ? "right" : "wrong")).join(", ")}`}
+      aria-label={t("grid.label", { n: [...grid].filter((c) => c === "1").length, total: grid.length, list: [...grid].map((c) => (c === "1" ? t("grid.right") : t("grid.wrong"))).join(t("grid.separator")) })}
     >
       {[...grid].map((c, i) => (
         <motion.span

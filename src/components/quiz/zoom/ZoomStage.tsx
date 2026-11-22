@@ -6,6 +6,8 @@ import { motion, useReducedMotion } from "framer-motion";
 import { preloadImage } from "@/lib/preload";
 import type { ZoomView, ZoomWindow } from "@/lib/zoom-reveal";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import runNs from "@/messages/quiz-run";
 
 /**
  * The Zoom Reveal picture. Each step is its own server-cut crop; when the
@@ -36,6 +38,7 @@ export function ZoomStage({
   label?: string;
   className?: string;
 }) {
+  const t = useT(runNs);
   const reduce = useReducedMotion();
   const [layer, setLayer] = useState<Layer>({ url: view.url, n: 0 });
   const shown = useRef(layer.url);
@@ -76,7 +79,7 @@ export function ZoomStage({
           <img
             src={layer.url}
             fetchPriority={layer.n === 0 ? "high" : undefined}
-            alt={revealed && label ? label : `Mystery Pokémon, zoom step ${view.step} of ${view.steps}`}
+            alt={revealed && label ? label : t("zoom.stageAlt", { step: view.step, steps: view.steps })}
             draggable={false}
             className="absolute inset-0 h-full w-full select-none object-contain"
           />
@@ -101,7 +104,7 @@ export function ZoomStage({
             transition={{ delay: 0.4 }}
             className="absolute inset-x-0 bottom-0 z-[3] bg-black/75 py-1.5 text-center font-pixel text-[11px] tracking-wider text-white"
           >
-            It&apos;s {label}!
+            {t("media.itsName", { name: label })}
           </motion.div>
         )}
       </div>
@@ -111,8 +114,9 @@ export function ZoomStage({
 
 /** Six pips: steps used (the current one lit), and the points the current step is worth. */
 export function ZoomSteps({ step, steps, done }: { step: number; steps: number; done?: "solved" | "missed" }) {
+  const t = useT(runNs);
   return (
-    <div className="flex items-center justify-center gap-1.5" aria-label={`Zoom step ${step} of ${steps}`} role="img">
+    <div className="flex items-center justify-center gap-1.5" aria-label={t("zoom.steps", { step, steps })} role="img">
       {Array.from({ length: steps }, (_, i) => {
         const n = i + 1;
         return (

@@ -5,55 +5,60 @@ import { Swords } from "lucide-react";
 import { ModeGrid } from "@/components/home/ModeGrid";
 import { QuizDuelCard } from "@/components/quiz/QuizDuelCard";
 import { GameInfo } from "@/components/seo/GameInfo";
+import { ClientMessages } from "@/i18n/ClientMessages";
+import { serverT } from "@/i18n/server";
+import pages from "@/messages/quiz-pages";
+import modes from "@/messages/quiz-modes";
+import setup from "@/messages/quiz-setup";
+import duelShared from "@/messages/duel";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Who's That Pokémon Quiz and More Pokémon Quiz Modes",
-  description: "Play the Who's That Pokémon quiz, a cry quiz, Pokédex entries, type matchups, higher or lower — in Classic, Survival and Blitz formats.",
-  path: "/quiz",
-});
+export function generateMetadata(): Metadata {
+  const t = serverT(pages);
+  return pageMetadata({ title: t("hub.title"), description: t("hub.description"), path: "/quiz" });
+}
 
 /** Daily, the PokéIQ test and the Atlas left the top bar; they live here too. */
 const MORE = [
-  { href: "/daily", label: "Daily Challenge" },
-  { href: "/iq-test", label: "PokéIQ Test" },
-];
+  { href: "/daily", label: "daily" },
+  { href: "/iq-test", label: "test" },
+] as const;
 
 export default function PlayPage() {
+  const t = serverT(pages);
   return (
     <div className="mx-auto max-w-5xl space-y-10">
       <div className="space-y-2 text-center">
-        <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Quizzes</h1>
+        <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">{t("hub.h1")}</h1>
       </div>
-      <ModeGrid />
-      <nav aria-label="More to play" className="flex flex-wrap justify-center gap-3">
+      <ClientMessages namespaces={[modes, setup, duelShared]}>
+        <ModeGrid />
+      </ClientMessages>
+      <nav aria-label={t("hub.more")} className="flex flex-wrap justify-center gap-3">
         {MORE.map(({ href, label }) => (
           <Link key={href} href={href} className="rounded-md border bg-card px-4 py-2 text-sm font-semibold transition hover:border-primary/50">
-            {label}
+            {t(`hub.${label}`)}
           </Link>
         ))}
       </nav>
       <section className="space-y-3" aria-labelledby="duels">
         <h2 id="duels" className="flex items-center gap-2 text-xl font-bold">
-          <Swords className="h-5 w-5 text-primary" aria-hidden /> Quiz duel
+          <Swords className="h-5 w-5 text-primary" aria-hidden /> {t("hub.duel")}
         </h2>
-        <p className="text-sm text-muted-foreground">Answer the same questions as a friend, live.</p>
-        <QuizDuelCard />
+        <p className="text-sm text-muted-foreground">{t("hub.duelLine")}</p>
+        <ClientMessages namespaces={[modes, setup, duelShared]}>
+          <QuizDuelCard />
+        </ClientMessages>
       </section>
       <GameInfo
         hidden
         path="/quiz"
-        name={`the Pokémon quizzes`}
-        description={`Free Pokémon quizzes including the Who's That Pokémon quiz, a cry quiz and type matchups, in Classic, Survival and Blitz formats.`}
-        intro={`Play the Who's That Pokémon quiz and our other Pokémon quizzes in three formats, covering all 1,025 Pokémon.`}
-        steps={[
-          "Pick a quiz mode and the generations to include.",
-          "Choose a format: Classic, Survival or Blitz.",
-          "Answer before the clock runs out.",
-          "Your PokéIQ weighs each right answer by how tricky that question is.",
-        ]}
+        name={t("hub.infoName")}
+        description={t("hub.infoDescription")}
+        intro={t("hub.infoIntro")}
+        steps={[t("hub.step1"), t("hub.step2"), t("hub.step3"), t("hub.step4")]}
         faqs={[
-          { q: `What formats are there?`, a: `Classic is 10 questions with 15 seconds each, Survival is endless with 3 lives and Blitz gives you 60 seconds to answer as many as you can.` },
-          { q: `Can I choose which generations to play?`, a: `Yes, pick a mode, then choose the generations to include.` },
+          { q: t("hub.faqFormatsQ"), a: t("hub.faqFormatsA") },
+          { q: t("hub.faqGensQ"), a: t("hub.faqGensA") },
         ]}
       />
     </div>

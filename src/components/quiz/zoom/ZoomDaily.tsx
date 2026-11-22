@@ -12,6 +12,9 @@ import { ShareButton } from "@/components/share/ShareButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useT } from "@/i18n/client";
+import { localeHref } from "@/i18n/href";
+import runNs from "@/messages/quiz-run";
 
 /**
  * The daily Zoom Reveal: one Pokémon a day, the same close-up for every
@@ -47,6 +50,7 @@ function saveResult(date: string, result: DayResult) {
 }
 
 export function ZoomDaily() {
+  const t = useT(runNs);
   const today = useToday();
   const [playDate, setPlayDate] = useState<string | null>(null);
   const [results, setResults] = useState<Record<string, DayResult> | null>(null);
@@ -55,7 +59,7 @@ export function ZoomDaily() {
   const date = playDate ?? today;
   const number = date ? dailyNumber(date) : null;
   const done = date && results ? results[date] : undefined;
-  const title = `Daily Zoom Reveal${number ? ` #${number}` : ""}`;
+  const title = number ? t("zoom.dailyNumber", { n: number }) : t("zoom.daily");
 
   if (playDate && !done) {
     return (
@@ -91,19 +95,19 @@ export function ZoomDaily() {
               {zoomShareLine(done.step, done.solved)}
             </motion.p>
           ) : (
-            <p className="text-sm text-muted-foreground">One Pokémon, the same close-up for everyone. No clock.</p>
+            <p className="text-sm text-muted-foreground">{t("zoom.dailyLine")}</p>
           )}
-          {done && <NextDailyCountdown label="Next one in" />}
+          {done && <NextDailyCountdown label={t("zoom.nextIn")} />}
         </div>
         {done && date ? (
           <ShareButton
             kind="zoom-daily"
             className="w-full sm:w-auto"
-            getText={() => [`PokéIQ ${title}`, zoomShareLine(done.step, done.solved), `${window.location.origin}/quiz/pokemon-zoom-quiz`].join("\n")}
+            getText={() => [`PokéIQ ${title}`, zoomShareLine(done.step, done.solved), `${window.location.origin}${localeHref("/quiz/pokemon-zoom-quiz", t.locale).href}`].join("\n")}
           />
         ) : (
           <Button className="w-full sm:w-auto" disabled={!date || !results} onClick={() => date && setPlayDate(date)} data-testid="zoom-daily-start">
-            <Play className="h-4 w-4 fill-current" aria-hidden /> Play today&apos;s
+            <Play className="h-4 w-4 fill-current" aria-hidden /> {t("zoom.playToday")}
           </Button>
         )}
       </CardContent>

@@ -10,12 +10,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ZOOM_STEPS, zoomPoints, zoomShareLine, type ZoomView, type ZoomWindow } from "@/lib/zoom-reveal";
 import { useDexNames } from "./use-dex-names";
 import { ZoomStage, ZoomSteps } from "./ZoomStage";
+import { useT } from "@/i18n/client";
+import { localeHref } from "@/i18n/href";
+import runNs from "@/messages/quiz-run";
 
 /**
  * One Zoom Reveal round, shared by solo runs, the daily and duels: the
  * picture, the six step pips, the name box with Skip, the names already
  * tried and, once it's over, the round's share line.
  */
+
+/**
+ * What a guess sends the server: the name as picked, or on a page in another language (whose names come with
+ * the English one first among the names they answer to, src/lib/quiz-names.ts), the English name.
+ */
+export const zoomGuess = (entry: NameEntry): string => entry[3]?.[0] ?? entry[1];
 
 export interface ZoomOutcome {
   step: number;
@@ -51,6 +60,7 @@ export function ZoomPlay({
   /** Shown instead of the guess box once this trainer is done but the round isn't (duels). */
   waiting?: string;
 }) {
+  const t = useT(runNs);
   const names = useDexNames();
   const exclude = useMemo(() => new Set(wrong.map((w) => w[0])), [wrong]);
   const line = outcome ? zoomShareLine(outcome.step, outcome.solved) : null;
@@ -75,13 +85,13 @@ export function ZoomPlay({
         <ZoomSteps step={step} steps={view.steps} done={outcome ? (outcome.solved ? "solved" : "missed") : undefined} />
         {!outcome && (
           <p className="text-center font-pixel text-[10px] uppercase tracking-wider text-muted-foreground" aria-live="polite">
-            Step {view.step}/{view.steps} · <span className="text-screen">{zoomPoints(view.step)} pts</span>
+            {t.rich("zoom.step", { step: view.step, steps: view.steps, points: zoomPoints(view.step), pts: (c) => <span className="text-screen">{c}</span> })}
           </p>
         )}
       </div>
 
       {wrong.length > 0 && (
-        <ul className="flex flex-wrap justify-center gap-1.5" aria-label="Names tried">
+        <ul className="flex flex-wrap justify-center gap-1.5" aria-label={t("zoom.tried")}>
           {wrong.map(([id, name]) => (
             <motion.li
               key={id}
@@ -98,15 +108,15 @@ export function ZoomPlay({
 
       {outcome && line ? (
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center gap-3">
-          <p className="font-display text-2xl tracking-wide" data-testid="zoom-share-line" aria-label={outcome.solved ? `Named on step ${outcome.step} of ${ZOOM_STEPS}` : "Not named in six steps"}>
+          <p className="font-display text-2xl tracking-wide" data-testid="zoom-share-line" aria-label={outcome.solved ? t("zoom.named", { step: outcome.step, steps: ZOOM_STEPS }) : t("zoom.notNamed")}>
             {line}
           </p>
           <ShareButton
             size="sm"
             variant="outline"
-            label="Share"
+            label={t("zoom.share")}
             kind="zoom-reveal"
-            getText={() => [shareTitle ?? "PokéIQ Zoom Reveal", line, shareUrl ?? `${window.location.origin}/quiz/pokemon-zoom-quiz`].join("\n")}
+            getText={() => [shareTitle ?? t("zoom.shareTitle"), line, shareUrl ?? `${window.location.origin}${localeHref("/quiz/pokemon-zoom-quiz", t.locale).href}`].join("\n")}
           />
         </motion.div>
       ) : waiting ? (
@@ -116,11 +126,11 @@ export function ZoomPlay({
       ) : names ? (
         <div className="flex items-start gap-2 sm:flex-col sm:items-stretch">
           <div className="min-w-0 flex-1 sm:flex-none">
-            <GuessInput names={names} exclude={exclude} disabled={locked} placeholder="Type a Pokémon…" onGuess={(entry) => (locked ? false : (onGuess(entry), true))} />
+            <GuessInput names={names} exclude={exclude} disabled={locked} placeholder={t("zoom.placeholder")} onGuess={(entry) => (locked ? false : (onGuess(entry), true))} />
           </div>
           <Button type="button" variant="outline" className="h-12 shrink-0 px-3 sm:h-10 sm:px-4" disabled={locked} onClick={onSkip} data-testid="zoom-skip">
             <FastForward className="h-4 w-4" aria-hidden />
-            {last ? "Give up" : "Skip"}
+            {last ? t("zoom.giveUp") : t("zoom.skip")}
           </Button>
         </div>
       ) : (

@@ -2,12 +2,15 @@
 
 import { motion } from "framer-motion";
 import { ratingToIQ } from "@/lib/rating";
+import { useT } from "@/i18n/client";
+import runNs from "@/messages/quiz-run";
 
 /**
  * How the adaptive test homed in: the PokéIQ estimate after each answer,
  * with its 90% credible band narrowing as evidence accumulates.
  */
 export function IqConvergence({ trajectory, grid }: { trajectory: [number, number][]; grid: string }) {
+  const t = useT(runNs);
   const W = 560;
   const H = 180;
   const pad = { l: 34, r: 12, t: 12, b: 22 };
@@ -34,10 +37,10 @@ export function IqConvergence({ trajectory, grid }: { trajectory: [number, numbe
   return (
     <div className="rounded-md border bg-muted/30 p-3">
       <div className="mb-1 flex items-baseline justify-between text-xs text-muted-foreground">
-        <span className="font-semibold text-foreground">How your PokéIQ was measured</span>
-        <span>Each question was picked to be as informative as possible for you</span>
+        <span className="font-semibold text-foreground">{t("iq.measured")}</span>
+        <span>{t("iq.picked")}</span>
       </div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={`PokéIQ estimate converged to ${final.iq}`}>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={t("iq.converged", { iq: final.iq })}>
         {[80, 100, 120, 140].filter((v) => v > minY && v < maxY).map((v) => (
           <g key={v}>
             <line x1={pad.l} x2={W - pad.r} y1={y(v)} y2={y(v)} stroke="currentColor" className="text-foreground/10" strokeDasharray="3 4" />
@@ -69,9 +72,9 @@ export function IqConvergence({ trajectory, grid }: { trajectory: [number, numbe
             transition={{ delay: 0.1 + p.i * 0.065 }}
           />
         ))}
-        <text x={pad.l} y={H - 4} className="fill-muted-foreground text-[10px]">Q1</text>
+        <text x={pad.l} y={H - 4} className="fill-muted-foreground text-[10px]">{t("iq.q", { n: 1 })}</text>
         <text x={W - pad.r} y={H - 4} textAnchor="end" className="fill-muted-foreground text-[10px]">
-          Q{points.length}
+          {t("iq.q", { n: points.length })}
         </text>
       </svg>
     </div>

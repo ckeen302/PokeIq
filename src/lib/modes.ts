@@ -16,6 +16,8 @@ export interface ModuleInfo {
 }
 
 export interface QuizFilter {
+  /** Which of the setup screen's filter texts it shows (the "quiz-setup" namespace's filters.<kind>). */
+  kind: "gen" | "anime" | "items" | "team";
   label: string;
   /** Chip labels for values 1..n, with an optional hover title. */
   chips: { label: string; title?: string }[];
@@ -26,6 +28,7 @@ export interface QuizFilter {
 const REGION_TITLES = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola", "Galar", "Paldea"];
 
 export const GEN_FILTER: QuizFilter = {
+  kind: "gen",
   label: "Generations",
   chips: REGION_TITLES.map((title, i) => ({ label: `Gen ${i + 1}`, title })),
 };
@@ -39,12 +42,13 @@ export function defaultGens(module: ModuleId): number[] | undefined {
 }
 
 /** Real Shiny? draws from all 1,025 Pokémon without a filter, so its filter needs no note. */
-const SHINY_FILTER: QuizFilter = { label: GEN_FILTER.label, chips: GEN_FILTER.chips };
+const SHINY_FILTER: QuizFilter = { kind: "gen", label: GEN_FILTER.label, chips: GEN_FILTER.chips };
 
 /** Same nine values: a game's generation, remakes included (FireRed is Gen 3). */
-const GAMES_FILTER: QuizFilter = { label: GEN_FILTER.label, chips: GEN_FILTER.chips };
+const GAMES_FILTER: QuizFilter = { kind: "gen", label: GEN_FILTER.label, chips: GEN_FILTER.chips };
 
 const ANIME_FILTER: QuizFilter = {
+  kind: "anime",
   label: "Series",
   chips: ["Original", "Advanced", "Diamond & Pearl", "Black & White", "XY", "Sun & Moon", "Journeys", "Horizons"].map((label) => ({ label })),
 };
@@ -52,12 +56,14 @@ const ANIME_FILTER: QuizFilter = {
 /** Same nine values: the generation an ability, move or item was introduced in. */
 const ITEM_FILTER: QuizFilter = {
   ...GEN_FILTER,
+  kind: "items",
   label: "Introduced in",
   note: "Without a filter, questions cover Gens 1–7. Pick generations to play any of the nine.",
 };
 
 /** Whose Team Is This?: a game's generation, or the anime series' region (the same nine values). */
 const TEAM_FILTER: QuizFilter = {
+  kind: "team",
   label: "Generation or region",
   chips: REGION_TITLES.map((title, i) => ({ label: `Gen ${i + 1}`, title: `${title}: games of Gen ${i + 1}, anime set in ${title}` })),
   note: "Games count by generation (FireRed is Gen 3); anime teams by the region of the series.",
@@ -117,6 +123,12 @@ export function difficultyLabel(module: ModuleId, difficulty: Difficulty): strin
   if (!choices) return null;
   // An old run's level the mode no longer offers (Real Shiny's Medium) isn't named either.
   return choices.find((d) => d.id === difficulty)?.label ?? null;
+}
+
+/** A difficulty choice's key in the "quiz-modes" namespace (levels.<key>), or null for a mode without a choice. */
+export type LevelKey = "whose-team-medium" | "whose-team-hard" | "shiny-easy" | "shiny-hard";
+export function levelKey(module: ModuleId, difficulty: Difficulty): LevelKey | null {
+  return difficultyLabel(module, difficulty) === null ? null : (`${module}-${difficulty}` as LevelKey);
 }
 
 export function filterFor(module: ModuleId): QuizFilter {

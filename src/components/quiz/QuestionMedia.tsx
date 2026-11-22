@@ -5,6 +5,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ImageOff, Pause, Play, RotateCcw, Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { preloadedImage } from "@/lib/preload";
+import { useT } from "@/i18n/client";
+import runNs from "@/messages/quiz-run";
 
 /**
  * Question media. Silhouettes sit on the classic "Who's That Pokémon?"
@@ -23,6 +25,7 @@ interface ImageMediaProps {
 }
 
 export function ImageMedia({ src, revealSrc, silhouette, revealed, label, priority }: ImageMediaProps) {
+  const t = useT(runNs);
   // Already downloaded and decoded (a run's first picture, got ready ahead): shown without a fade-in.
   const [loaded, setLoaded] = useState(() => preloadedImage(src) !== null);
   const [failed, setFailed] = useState(false);
@@ -38,7 +41,7 @@ export function ImageMedia({ src, revealSrc, silhouette, revealed, label, priori
         {failed && (
           <div className="absolute inset-0 z-[3] flex flex-col items-center justify-center gap-2 bg-black/60 text-center text-white">
             <ImageOff className="h-6 w-6" aria-hidden />
-            <span className="font-pixel text-[10px] tracking-wider">Image didn&apos;t load</span>
+            <span className="font-pixel text-[10px] tracking-wider">{t("media.failed")}</span>
             <button
               type="button"
               onClick={() => {
@@ -47,14 +50,14 @@ export function ImageMedia({ src, revealSrc, silhouette, revealed, label, priori
               }}
               className="flex items-center gap-1 rounded-sm border border-white/30 px-2 py-1 font-pixel text-[10px] hover:bg-white/10"
             >
-              <RotateCcw className="h-3 w-3" aria-hidden /> Retry
+              <RotateCcw className="h-3 w-3" aria-hidden /> {t("media.retry")}
             </button>
           </div>
         )}
         <motion.img
           key={imgSrc}
           src={imgSrc}
-          alt={silhouette ? "Mystery Pokémon silhouette" : label ?? "Pokémon artwork"}
+          alt={silhouette ? t("media.silhouette") : label ?? t("media.artwork")}
           draggable={false}
           fetchPriority={priority ? "high" : undefined}
           onLoad={() => setLoaded(true)}
@@ -66,7 +69,7 @@ export function ImageMedia({ src, revealSrc, silhouette, revealed, label, priori
         {revealSrc && revealed && (
           <motion.img
             src={revealSrc}
-            alt={label ?? "Revealed Pokémon"}
+            alt={label ?? t("media.revealed")}
             draggable={false}
             onLoad={() => setRevealLoaded(true)}
             className="absolute inset-0 z-[1] h-full w-full select-none object-contain p-4"
@@ -83,7 +86,7 @@ export function ImageMedia({ src, revealSrc, silhouette, revealed, label, priori
               exit={{ opacity: 0 }}
               className="absolute inset-x-0 bottom-0 z-[3] bg-black/75 py-1.5 text-center font-pixel text-[11px] tracking-wider text-white"
             >
-              It&apos;s {label}!
+              {t("media.itsName", { name: label })}
             </motion.div>
           )}
         </AnimatePresence>
@@ -93,6 +96,7 @@ export function ImageMedia({ src, revealSrc, silhouette, revealed, label, priori
 }
 
 export function CryPlayer({ src }: { src: string }) {
+  const t = useT(runNs);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
   const [unsupported, setUnsupported] = useState(false);
@@ -142,7 +146,7 @@ export function CryPlayer({ src }: { src: string }) {
   if (unsupported) {
     return (
       <p className="rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-center text-sm">
-        Your browser can&apos;t play Pokémon cries (Ogg audio). Try Chrome, Firefox or a recent Safari.
+        {t("media.noOgg")}
       </p>
     );
   }
@@ -153,7 +157,7 @@ export function CryPlayer({ src }: { src: string }) {
         type="button"
         onClick={toggle}
         className="relative z-[3] flex h-16 w-16 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-[0_4px_0_hsl(var(--primary-shadow))] transition active:translate-y-[2px] active:shadow-[0_2px_0_hsl(var(--primary-shadow))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        aria-label={playing ? "Stop cry" : "Play cry"}
+        aria-label={playing ? t("media.stop") : t("media.play")}
       >
         {playing ? <Pause className="h-7 w-7" /> : <Play className="ml-0.5 h-7 w-7 fill-current" />}
       </button>
@@ -171,7 +175,7 @@ export function CryPlayer({ src }: { src: string }) {
         </div>
         <div className="flex items-center gap-1.5 font-pixel text-[10px] uppercase tracking-wider text-screen/80">
           <Volume2 className="h-3 w-3" aria-hidden />
-          {plays === 0 ? "Tap to play cry" : `Played ${plays}x · tap to replay`}
+          {plays === 0 ? t("media.tap") : t("media.played", { n: plays })}
         </div>
       </div>
     </div>

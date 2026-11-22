@@ -1,0 +1,126 @@
+{
+  "first-run": {
+    "name": "New Trainer",
+    "description": "Finish your first run"
+  },
+  "certified": {
+    "name": "Certified",
+    "description": "Complete the adaptive PokéIQ Test"
+  },
+  "perfect": {
+    "name": "Flawless",
+    "description": "Go 10/10 in a Classic run"
+  },
+  "streak-10": {
+    "name": "On Fire",
+    "description": "Answer 10 in a row"
+  },
+  "survivor": {
+    "name": "Survivor",
+    "description": "Get 25 right in one Survival run"
+  },
+  "blitz": {
+    "name": "Quick Claw",
+    "description": "Get 20 right in one Blitz"
+  },
+  "purist": {
+    "name": "Kanto Purist",
+    "description": "Perfect Gen 1-only Classic run"
+  },
+  "iq-120": {
+    "name": "Gym Leader Brain",
+    "description": "Score a PokéIQ of 120+"
+  },
+  "iq-140": {
+    "name": "Professor",
+    "description": "Score a PokéIQ of 140+"
+  },
+  "all-modes": {
+    "name": "Completionist",
+    "description": "Play every game mode"
+  },
+  "daily-3": {
+    "name": "Regular",
+    "description": "3-day Daily Challenge streak"
+  },
+  "daily-7": {
+    "name": "Dedicated",
+    "description": "7-day Daily Challenge streak"
+  },
+  "daily-30": {
+    "name": "Legend",
+    "description": "30-day Daily Challenge streak"
+  },
+  "dle-3": {
+    "name": "Detective",
+    "description": "Solve a Pokédle in 3 guesses or fewer"
+  },
+  "dle-1": {
+    "name": "Psychic",
+    "description": "Solve a Pokédle in one guess"
+  },
+  "geo-first": {
+    "name": "Explorer",
+    "description": "Finish a PokéGuessr game"
+  },
+  "geo-pinpoint": {
+    "name": "Pinpoint",
+    "description": "Score 5,000 in a PokéGuessr round"
+  },
+  "geo-20k": {
+    "name": "Cartographer",
+    "description": "Score 20,000+ in a PokéGuessr game"
+  },
+  "geo-streak-10": {
+    "name": "Pathfinder",
+    "description": "Name 10 places in a row in PokéGuessr Streak"
+  },
+  "conn-first": {
+    "name": "Connected",
+    "description": "Solve your first PokéConnections"
+  },
+  "conn-streak-7": {
+    "name": "Linked Up",
+    "description": "7-day PokéConnections streak"
+  },
+  "conn-streak-30": {
+    "name": "Grand Linker",
+    "description": "30-day PokéConnections streak"
+  },
+  "conn-perfect-10": {
+    "name": "Flawless",
+    "description": "10 perfect PokéConnections solves (no mistakes)"
+  },
+  "conn-duel-10": {
+    "name": "Speed Racer",
+    "description": "Win 10 PokéConnections duels"
+  },
+  "conn-featured": {
+    "name": "Featured creator",
+    "description": "A PokéConnections puzzle you made was featured or became the Puzzle of the Day"
+  },
+  "pdk-first": {
+    "name": "Grid Starter",
+    "description": "Solve your first Pikadoku"
+  },
+  "pdk-perfect": {
+    "name": "Nine for Nine",
+    "description": "Fill all 9 cells of a Pikadoku"
+  },
+  "pdk-rare": {
+    "name": "Rare Finder",
+    "description": "A Pikadoku rarity score under 50"
+  },
+  "pdk-streak-7": {
+    "name": "Grid Regular",
+    "description": "7-day Pikadoku streak"
+  },
+  "pdk-duel-10": {
+    "name": "Three in a Row",
+    "description": "Win 10 Pikadoku Tic Tac Toe duels"
+  },
+  "conn-hard": {
+    "name": "Hard Wired",
+    "description": "Solve an Unlimited PokéConnections on Hard"
+  }
+}

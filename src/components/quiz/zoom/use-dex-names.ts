@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { createContext, createElement, useContext, useEffect, useState, type ReactNode } from "react";
 import type { NameEntry } from "@/components/pokedle/search";
 
 /** Every Pokémon's [id, name, gen] for the guess box, fetched once per page-life. */
@@ -16,9 +16,21 @@ function load(): Promise<NameEntry[]> {
   return names;
 }
 
+/**
+ * A page in another language hands the guess box its names from the server instead (src/lib/dle-lexicon.ts
+ * dleNames): each Pokémon in that language, with the other names it answers to. English pages render none.
+ */
+const Provided = createContext<NameEntry[] | null>(null);
+
+export function DexNamesProvider({ names: list, children }: { names: NameEntry[]; children: ReactNode }) {
+  return createElement(Provided.Provider, { value: list }, children);
+}
+
 export function useDexNames(): NameEntry[] | null {
+  const provided = useContext(Provided);
   const [list, setList] = useState<NameEntry[] | null>(null);
   useEffect(() => {
+    if (provided) return;
     let live = true;
     const get = (attempt: number) =>
       load().then(
@@ -29,6 +41,6 @@ export function useDexNames(): NameEntry[] | null {
     return () => {
       live = false;
     };
-  }, []);
-  return list;
+  }, [provided]);
+  return provided ?? list;
 }
