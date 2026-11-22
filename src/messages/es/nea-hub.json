@@ -1,0 +1,24 @@
+{
+  "daily": {
+    "eyebrow": "Diario",
+    "today": "Hoy: <cat>{label}</cat>",
+    "lead": "{count} Pokémon en {minutes} minutos. La misma categoría para todos, con su propia clasificación.",
+    "loading": "Cargando la categoría de hoy…",
+    "seeBoard": "Ver la clasificación de hoy",
+    "play": "Jugar el de hoy",
+    "you": "Tú: {named}/{total} en {time}"
+  },
+  "race": {
+    "eyebrow": "Carrera",
+    "title": "Echa una carrera con hasta {max} amigos",
+    "category": "Categoría",
+    "categoryLabel": "Categoría de la carrera",
+    "length": "Duración",
+    "lengthLabel": "Duración de la carrera",
+    "option": "{label} ({total})",
+    "minutes": "{m} minutos",
+    "name": "Tu nombre de Entrenador",
+    "start": "Crear carrera",
+    "failed": "No se ha podido crear la carrera."
+  }
+}

@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { closestName, couldGrow, normalizeName, type NeaMatcher } from "@/lib/name-em-all/match";
-import type { NeaTarget } from "@/lib/name-em-all/types";
+import type { NeaOutsider, NeaTarget } from "@/lib/name-em-all/types";
+import { useT } from "@/i18n/client";
+import neaGame from "@/messages/nea-game";
 
 /**
  * The name box. A name counts the moment it's spelled right, no Enter
@@ -41,6 +43,7 @@ function dropNormalized(raw: string, n: number): string {
 }
 
 export function useNameInput({ matcher, targets, outsiders, label, isNamed, allowed, spelling, onAccept }: Options) {
+  const t = useT(neaGame);
   const [text, setText] = useState("");
   const [feedback, setFeedback] = useState<NeaFeedback | null>(null);
   const [suggestion, setSuggestion] = useState<number | null>(null);
@@ -75,7 +78,7 @@ export function useNameInput({ matcher, targets, outsiders, label, isNamed, allo
         }
         setText(raw);
         setSuggestion(null);
-        if (!couldGrow(matcher, raw, open)) flash("wrong", `Not this one: that's ${targets[slot].name}.`);
+        if (!couldGrow(matcher, raw, open)) flash("wrong", t("feedback.wrong", { name: targets[slot].name }));
         return;
       }
       // Typed on past a name kept for a longer one that it isn't becoming: keep only the new letters.
@@ -86,12 +89,12 @@ export function useNameInput({ matcher, targets, outsiders, label, isNamed, allo
       }
       setText(raw);
       const growing = couldGrow(matcher, raw, open);
-      if (!growing && slot !== undefined && named(slot) && carry.current !== key) flash("dup", `${targets[slot].name} is already named.`);
-      else if (!growing && outsiders.has(key)) flash("out", `${outsiders.get(key)} isn't in ${label}.`);
+      if (!growing && slot !== undefined && named(slot) && carry.current !== key) flash("dup", t("feedback.dup", { name: targets[slot].name }));
+      else if (!growing && outsiders.has(key)) flash("out", t("feedback.out", { name: outsiders.get(key)!, label }));
       const near = helper ? closestName(matcher, raw, (s) => !named(s) && ok(s)) : undefined;
       setSuggestion(near ?? null);
     },
-    [matcher, targets, outsiders, label, flash, open]
+    [matcher, targets, outsiders, label, flash, open, t]
   );
 
   const onChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => process(e.target.value), [process]);
@@ -128,7 +131,12 @@ export function useNameInput({ matcher, targets, outsiders, label, isNamed, allo
   return useMemo(() => ({ text, onChange, onKeyDown, feedback, suggestion, acceptSuggestion, reset }), [text, onChange, onKeyDown, feedback, suggestion, acceptSuggestion, reset]);
 }
 
-/** Outsider names keyed by their normalized spelling. */
-export function outsiderMap(names: readonly string[]): Map<string, string> {
-  return new Map(names.map((n) => [normalizeName(n), n]));
+/** Outsider names keyed by their normalized spelling (in another language, every name each answers to, keyed to the one shown). */
+export function outsiderMap(names: readonly NeaOutsider[]): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const n of names) {
+    if (typeof n === "string") out.set(normalizeName(n), n);
+    else for (const a of n) if (!out.has(normalizeName(a))) out.set(normalizeName(a), n[0]);
+  }
+  return out;
 }

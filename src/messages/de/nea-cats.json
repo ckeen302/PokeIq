@@ -1,0 +1,163 @@
+{
+  "groups": {
+    "all": "Alle",
+    "gen": "Generationen",
+    "type": "Typen",
+    "special": "Legendäre & mehr",
+    "forms": "Formen",
+    "dex": "Regionale Pokédexe"
+  },
+  "all": {
+    "label": "Alle",
+    "h1": "Nenne alle Pokémon",
+    "title": "Quiz: Alle Pokémon nennen, von Bisasam bis Infamomo",
+    "description": "Tippe den Namen jedes Pokémon von Bisasam bis Infamomo. Jedes landet in seinem Feld, sobald es richtig geschrieben ist. Timer, Hinweise, schillernde Sprites und persönliche Bestleistungen."
+  },
+  "gen": {
+    "label": "Gen. {n}",
+    "h1": "Nenne alle Pokémon der Generation {n}",
+    "title": "Quiz: Alle Pokémon der Generation {n} nennen ({region})",
+    "description": "Wie viele der Pokémon, die in {region} ihr Debüt hatten, kannst du aus dem Gedächtnis nennen? Tippe sie in beliebiger Reihenfolge und schlag die Uhr."
+  },
+  "type": {
+    "label": "{type}",
+    "h1": "Nenne alle Pokémon vom Typ {type}",
+    "title": "Quiz: Alle Pokémon vom Typ {type} nennen",
+    "description": "Nenne alle Pokémon mit dem Typ {type}, ob ein- oder zweitypig, aus allen Generationen."
+  },
+  "cats": {
+    "legendary": {
+      "label": "Legendär",
+      "h1": "Nenne alle legendären Pokémon",
+      "title": "Quiz: Alle legendären Pokémon nennen",
+      "description": "Alle Pokémon, die die Spiele als legendär einstufen, von den Kanto-Vögeln bis Terapagos, Sub-Legendäre inklusive."
+    },
+    "sub-legendary": {
+      "label": "Sub-Legendär",
+      "h1": "Nenne alle sub-legendären Pokémon",
+      "title": "Quiz: Alle sub-legendären Pokémon nennen",
+      "description": "Die Legendären, die nicht auf dem Cover stehen: Trios, Kapu-Pokémon und viele mehr."
+    },
+    "mythical": {
+      "label": "Mysteriös",
+      "h1": "Nenne alle mysteriösen Pokémon",
+      "title": "Quiz: Alle mysteriösen Pokémon nennen",
+      "description": "Mew, Celebi, Jirachi und alle anderen mysteriösen Pokémon aus Events, bis hin zu Infamomo."
+    },
+    "ultra-beasts": {
+      "label": "Ultrabestien",
+      "h1": "Nenne alle Ultrabestien",
+      "title": "Quiz: Alle Ultrabestien nennen",
+      "description": "Die Besucher aus dem Ultraraum, von Anego bis Kopplosio."
+    },
+    "paradox": {
+      "label": "Paradox",
+      "h1": "Nenne alle Paradox-Pokémon",
+      "title": "Quiz: Alle Paradox-Pokémon nennen",
+      "description": "Die Paradox-Pokémon aus Vergangenheit und Zukunft aus Karmesin und Purpur und ihrem DLC."
+    },
+    "mega-evolutions": {
+      "label": "Mega-Entwicklungen",
+      "h1": "Nenne alle Mega-Entwicklungen",
+      "title": "Quiz: Alle Mega-Entwicklungen nennen",
+      "description": "Alle Mega-Entwicklungen aus X und Y sowie Omega Rubin und Alpha Saphir. Tippe „Mega-Bisaflor“ oder einfach „Bisaflor“."
+    },
+    "gigantamax": {
+      "label": "Gigadynamax",
+      "h1": "Nenne alle Gigadynamax-Pokémon",
+      "title": "Quiz: Alle Gigadynamax-Pokémon nennen",
+      "description": "Alle Gigadynamax-Formen aus Schwert und Schild. Tippe „Gigadynamax-Relaxo“, „Gmax Relaxo“ oder einfach „Relaxo“."
+    },
+    "regional-forms": {
+      "label": "Regionalformen",
+      "h1": "Nenne alle Regionalformen",
+      "title": "Quiz: Alle Regionalformen nennen (Alola, Galar, Hisui, Paldea)",
+      "description": "Alle Alola-, Galar-, Hisui- und Paldea-Formen. Tippe „Alola-Vulpix“ oder „Vulpix Alola“."
+    }
+  },
+  "dex": {
+    "kanto-dex": {
+      "label": "Kanto-Dex",
+      "h1": "Nenne den Kanto-Pokédex",
+      "title": "Quiz: Alle Pokémon im Kanto-Pokédex nennen",
+      "description": "Alle Pokémon im regionalen Kanto-Pokédex aus Rot, Blau und Gelb, nummeriert wie im Spiel."
+    },
+    "johto-dex": {
+      "label": "Johto-Dex",
+      "h1": "Nenne den Johto-Pokédex",
+      "title": "Quiz: Alle Pokémon im Johto-Pokédex nennen",
+      "description": "Alle Pokémon im regionalen Johto-Pokédex aus HeartGold und SoulSilver, nummeriert wie im Spiel."
+    },
+    "hoenn-dex": {
+      "label": "Hoenn-Dex",
+      "h1": "Nenne den Hoenn-Pokédex",
+      "title": "Quiz: Alle Pokémon im Hoenn-Pokédex nennen",
+      "description": "Alle Pokémon im regionalen Hoenn-Pokédex aus Omega Rubin und Alpha Saphir, nummeriert wie im Spiel."
+    },
+    "sinnoh-dex": {
+      "label": "Sinnoh-Dex",
+      "h1": "Nenne den Sinnoh-Pokédex",
+      "title": "Quiz: Alle Pokémon im Sinnoh-Pokédex nennen",
+      "description": "Alle Pokémon im regionalen Sinnoh-Pokédex aus Platin, nummeriert wie im Spiel."
+    },
+    "unova-dex": {
+      "label": "Einall-Dex",
+      "h1": "Nenne den Einall-Pokédex",
+      "title": "Quiz: Alle Pokémon im Einall-Pokédex nennen",
+      "description": "Alle Pokémon im regionalen Einall-Pokédex aus Schwarz 2 und Weiß 2, nummeriert wie im Spiel."
+    },
+    "kalos-dex": {
+      "label": "Kalos-Dex",
+      "h1": "Nenne den Kalos-Pokédex",
+      "title": "Quiz: Alle Pokémon im Kalos-Pokédex nennen",
+      "description": "Alle Pokémon im regionalen Kalos-Pokédex aus X und Y (Zentral, Küste und Berge), nummeriert wie im Spiel."
+    },
+    "alola-dex": {
+      "label": "Alola-Dex",
+      "h1": "Nenne den Alola-Pokédex",
+      "title": "Quiz: Alle Pokémon im Alola-Pokédex nennen",
+      "description": "Alle Pokémon im regionalen Alola-Pokédex aus Ultrasonne und Ultramond, nummeriert wie im Spiel."
+    },
+    "galar-dex": {
+      "label": "Galar-Dex",
+      "h1": "Nenne den Galar-Pokédex",
+      "title": "Quiz: Alle Pokémon im Galar-Pokédex nennen",
+      "description": "Alle Pokémon im regionalen Galar-Pokédex aus Schwert und Schild, nummeriert wie im Spiel."
+    },
+    "paldea-dex": {
+      "label": "Paldea-Dex",
+      "h1": "Nenne den Paldea-Pokédex",
+      "title": "Quiz: Alle Pokémon im Paldea-Pokédex nennen",
+      "description": "Alle Pokémon im regionalen Paldea-Pokédex aus Karmesin und Purpur, nummeriert wie im Spiel."
+    }
+  },
+  "form": {
+    "mega": "Mega-{name}",
+    "megaVariant": "Mega-{name} {variant}",
+    "gmax": "Gigadynamax-{name}",
+    "gmaxStyle": {
+      "single": "Gigadynamax-{name} (Fokussierter Stil)",
+      "rapid": "Gigadynamax-{name} (Fließender Stil)",
+      "amped": "Gigadynamax-{name} (Hoch-Form)",
+      "lowkey": "Gigadynamax-{name} (Tief-Form)"
+    },
+    "alola": "Alola-{name}",
+    "galar": "Galar-{name}",
+    "hisui": "Hisui-{name}",
+    "paldea": "Paldea-{name}",
+    "breed": "Paldea-{name} ({breed})",
+    "breeds": {
+      "combat": "Gefechtsrasse",
+      "blaze": "Flammenrasse",
+      "aqua": "Flutenrasse"
+    },
+    "darmanitan": {
+      "standard": "Galar-{name} (Normalmodus)",
+      "zen": "Galar-{name} (Trance-Modus)"
+    }
+  },
+  "words": {
+    "mega": "Mega",
+    "gmax": "Gigadynamax"
+  }
+}

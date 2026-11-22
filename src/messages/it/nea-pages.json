@@ -1,0 +1,56 @@
+{
+  "title": "Nominali tutti",
+  "ogAlt": "Nominali tutti: quanti Pokémon sai nominare a memoria?",
+  "back": "Tutte le categorie",
+  "count": "{n} Pokémon",
+  "hub": {
+    "metaTitle": "Nominali tutti: conosci il nome di ogni Pokémon? Quiz di memoria",
+    "metaDescription": "Scrivi tutti i Pokémon che ricordi: tutti, una generazione, un tipo, i leggendari, le Megaevoluzioni, le forme regionali o un Pokédex regionale. Quiz giornaliero, gare con gli amici e record personali.",
+    "eyebrow": "Quiz di memoria",
+    "lead": "Quanti Pokémon sai nominare a memoria? Scrivili e ognuno andrà al suo posto appena lo scrivi giusto.",
+    "info": {
+      "description": "Un quiz di memoria Pokémon gratuito: nomina tutti i Pokémon di una categoria contro il tempo.",
+      "intro": "Nominali tutti è un quiz di memoria Pokémon: scegli una categoria e scrivi a memoria tutti i suoi Pokémon. I nomi contano appena sono scritti giusti, in qualsiasi ordine.",
+      "steps": {
+        "pick": "Scegli una categoria: tutti, una generazione, un tipo, i leggendari, le Megaevoluzioni, le forme regionali o un Pokédex regionale.",
+        "mode": "Scegli la modalità Normale, Caos o Ordine Pokédex, un timer e i suggerimenti che vuoi.",
+        "type": "Scrivi i nomi: ognuno va al suo posto appena è scritto giusto. Maiuscole, accenti e punteggiatura non contano, e vale anche il nome inglese.",
+        "giveUp": "Arrenditi quando vuoi per vedere quelli che ti sono sfuggiti, ognuno con il link alla sua pagina del Pokédex."
+      },
+      "faq": {
+        "dailyQ": "C’è una sfida giornaliera?",
+        "dailyA": "Sì: una categoria al giorno, uguale per tutti. Conta un tentativo al giorno.",
+        "raceQ": "Posso sfidare i miei amici?",
+        "raceA": "Crea una gara, condividi il link e fino a otto Allenatori nominano la stessa categoria insieme, con barre di avanzamento in diretta.",
+        "bestQ": "Dove trovo le mie partite migliori?",
+        "bestA": "Accedi e gioca in modalità Normale senza suggerimenti né pause: il tuo percorso completo più veloce e il massimo che nomini nel tempo standard compaiono sul tuo profilo Allenatore."
+      }
+    }
+  },
+  "category": {
+    "lead": "{count} Pokémon · tempo standard {minutes}:00. {description}",
+    "intro": "{h1}: un quiz di memoria gratuito. {description}",
+    "steps": {
+      "pick": "Scegli una modalità, un timer e i suggerimenti che vuoi.",
+      "type": "Scrivi i nomi: ognuno va al suo posto appena è scritto giusto.",
+      "finish": "Nominali tutti prima che scada il tempo, o arrenditi per vedere quelli che ti sono sfuggiti."
+    },
+    "faq": {
+      "spellQ": "Devo scrivere i nomi in modo esatto?",
+      "spellA": "Maiuscole, accenti, spazi e punteggiatura non contano, e vale anche il nome inglese. Attiva l’aiuto ortografico per ricevere un suggerimento quando sbagli di una o due lettere.",
+      "bestQ": "Cosa conta come record personale?",
+      "bestA": "Le partite in modalità Normale senza suggerimenti né pause: il tuo percorso completo più veloce e il massimo che nomini nei {minutes} minuti standard, mostrati sul tuo profilo Allenatore se hai effettuato l’accesso."
+    }
+  },
+  "daily": {
+    "metaTitle": "Nominali tutti, sfida del giorno: il quiz di memoria Pokémon di oggi",
+    "metaDescription": "Una categoria di Pokémon al giorno, uguale per tutti: nominane il più possibile nel tempo standard e scopri come ti piazzi oggi."
+  },
+  "race": {
+    "title": "Una gara di Nominali tutti",
+    "invite": "{name} ti invita a una gara di Nominali tutti",
+    "trainer": "Un Allenatore",
+    "about": "Una gara di Nominali tutti: tutti nominano gli stessi Pokémon, vince chi li nomina tutti per primo.",
+    "aboutIn": "Una gara di Nominali tutti ({label}): tutti nominano gli stessi Pokémon, vince chi li nomina tutti per primo."
+  }
+}

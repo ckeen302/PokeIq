@@ -1,0 +1,56 @@
+{
+  "title": "Nenn sie alle",
+  "ogAlt": "Nenn sie alle: Wie viele Pokémon kennst du auswendig?",
+  "back": "Alle Kategorien",
+  "count": "{n} Pokémon",
+  "hub": {
+    "metaTitle": "Nenn sie alle: Kennst du jedes Pokémon? Gedächtnis-Quiz",
+    "metaDescription": "Tippe alle Pokémon, an die du dich erinnerst: alle, eine Generation, einen Typ, Legendäre, Mega-Entwicklungen, Regionalformen oder einen regionalen Pokédex. Tägliches Quiz, Rennen mit Freunden und Bestleistungen.",
+    "eyebrow": "Gedächtnis-Quiz",
+    "lead": "Wie viele Pokémon kannst du aus dem Gedächtnis nennen? Tippe sie ein, und jedes springt in sein Feld, sobald es richtig geschrieben ist.",
+    "info": {
+      "description": "Ein kostenloses Pokémon-Gedächtnis-Quiz: Nenne alle Pokémon einer Kategorie gegen die Uhr.",
+      "intro": "Nenn sie alle ist ein Pokémon-Gedächtnis-Quiz: Wähle eine Kategorie und tippe alle ihre Pokémon aus dem Kopf. Namen zählen, sobald sie richtig geschrieben sind, in beliebiger Reihenfolge.",
+      "steps": {
+        "pick": "Wähle eine Kategorie: alle, eine Generation, einen Typ, die Legendären, Mega-Entwicklungen, Regionalformen oder einen regionalen Pokédex.",
+        "mode": "Wähle Normal, Chaos oder Pokédex-Reihenfolge, einen Timer und die Hinweise, die du möchtest.",
+        "type": "Tippe Namen: Jeder füllt sein Feld, sobald er richtig geschrieben ist. Groß- und Kleinschreibung, Akzente und Satzzeichen sind egal, und der englische Name zählt auch.",
+        "giveUp": "Gib jederzeit auf, um die fehlenden zu sehen, jeweils mit Link zu ihrer Pokédex-Seite."
+      },
+      "faq": {
+        "dailyQ": "Gibt es ein tägliches Quiz?",
+        "dailyA": "Ja: eine Kategorie pro Tag, für alle dieselbe. Ein Versuch pro Tag zählt.",
+        "raceQ": "Kann ich gegen Freunde antreten?",
+        "raceA": "Starte ein Rennen, teile den Link, und bis zu acht Trainer nennen gleichzeitig dieselbe Kategorie, mit Fortschrittsbalken in Echtzeit.",
+        "bestQ": "Wo sehe ich meine besten Runden?",
+        "bestA": "Melde dich an und spiele im Modus Normal ohne Hinweise und Pausen: Deine schnellste komplette Runde und die meisten Namen in der Standardzeit erscheinen auf deinem Trainerprofil."
+      }
+    }
+  },
+  "category": {
+    "lead": "{count} Pokémon · Standardzeit {minutes}:00. {description}",
+    "intro": "{h1}: ein kostenloses Gedächtnis-Quiz. {description}",
+    "steps": {
+      "pick": "Wähle einen Modus, einen Timer und die Hinweise, die du möchtest.",
+      "type": "Tippe Namen: Jeder füllt sein Feld, sobald er richtig geschrieben ist.",
+      "finish": "Nenne alle, bevor die Zeit abläuft, oder gib auf, um die fehlenden zu sehen."
+    },
+    "faq": {
+      "spellQ": "Muss ich die Namen genau schreiben?",
+      "spellA": "Groß- und Kleinschreibung, Akzente, Leerzeichen und Satzzeichen sind egal, und der englische Name zählt auch. Schalte die Rechtschreibhilfe ein, um einen Vorschlag zu bekommen, wenn du ein oder zwei Buchstaben danebenliegst.",
+      "bestQ": "Was zählt als Bestleistung?",
+      "bestA": "Runden im Modus Normal ohne Hinweise und Pausen: Deine schnellste komplette Runde und die meisten Namen in den {minutes} Standardminuten, angezeigt auf deinem Trainerprofil, wenn du angemeldet bist."
+    }
+  },
+  "daily": {
+    "metaTitle": "Nenn sie alle – Tagesquiz: das heutige Pokémon-Gedächtnis-Quiz",
+    "metaDescription": "Eine Pokémon-Kategorie pro Tag, für alle dieselbe: Nenne in der Standardzeit so viele wie möglich und sieh, wo du heute stehst."
+  },
+  "race": {
+    "title": "Ein Nenn-sie-alle-Rennen",
+    "invite": "{name} lädt dich zu einem Nenn-sie-alle-Rennen ein",
+    "trainer": "Ein Trainer",
+    "about": "Ein Nenn-sie-alle-Rennen: Alle nennen dieselben Pokémon, wer zuerst alle nennt, gewinnt.",
+    "aboutIn": "Ein Nenn-sie-alle-Rennen ({label}): Alle nennen dieselben Pokémon, wer zuerst alle nennt, gewinnt."
+  }
+}

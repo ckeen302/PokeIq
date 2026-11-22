@@ -1,0 +1,119 @@
+{
+  "title": "Nenn sie alle",
+  "share": {
+    "daily": "Nenn sie alle – Tagesquiz {date}",
+    "score": "{named}/{total} in {time}",
+    "copied": "Kopiert!",
+    "shared": "Geteilt!",
+    "button": "Ergebnis teilen"
+  },
+  "modes": {
+    "regular": {
+      "label": "Normal",
+      "blurb": "In beliebiger Reihenfolge."
+    },
+    "chaos": {
+      "label": "Chaos",
+      "blurb": "Nenne das, auf das wir zeigen, in zufälliger Reihenfolge."
+    },
+    "dex": {
+      "label": "Dex-Folge",
+      "blurb": "Eins nach dem anderen, in Pokédex-Reihenfolge."
+    }
+  },
+  "hud": {
+    "resume": "Weiter",
+    "pause": "Pause",
+    "silhouetteAnother": "Silhouetten-Hinweis: eine andere zeigen",
+    "silhouette": "Silhouetten-Hinweis",
+    "showAnother": "Eine andere zeigen",
+    "askDex": "Als Nächstes: Nr. {num}",
+    "askChaos": "Nenne Nr. {num}",
+    "paused": "Pausiert",
+    "whoThis": "Wer ist das?",
+    "typeName": "Tippe den Namen eines Pokémon…",
+    "nameLabel": "Nenne ein Pokémon",
+    "skipLabel": "Dieses überspringen",
+    "skip": "Überspringen",
+    "reveal": "Auflösen?",
+    "giveUp": "Aufgeben",
+    "didYouMean": "Meintest du {name}? Tippen oder Enter drücken",
+    "giveUpConfirm": "Aufgeben und die fehlenden sehen?",
+    "keepGoing": "Weiterspielen",
+    "regularLong": "Beliebige Reihenfolge. Namen zählen, sobald sie richtig geschrieben sind.",
+    "regularShort": "Beliebige Reihenfolge. Richtig geschrieben zählt.",
+    "chaos": "Nenne das, auf das wir zeigen, oder überspringe es.",
+    "dex": "In Pokédex-Reihenfolge. Überspringe eins, um später zurückzukommen.",
+    "pausedNote": "Die Uhr steht. Pausierte Runden zählen nicht als Bestleistung.",
+    "left": "Noch {time}",
+    "played": "{time} gespielt"
+  },
+  "setup": {
+    "resumeTitle": "Da weitermachen, wo du aufgehört hast?",
+    "resumeText": "{named}/{total} genannt in {time} ({mode}). Fortgesetzte Runden zählen nicht als Bestleistung.",
+    "mode": "Modus",
+    "timer": "Timer",
+    "minutes": "{m, plural, one {{m} Minute} other {{m} Minuten}}",
+    "minutesStandard": "{m, plural, one {{m} Minute (Standard)} other {{m} Minuten (Standard)}}",
+    "noLimit": "Ohne Limit (∞)",
+    "hints": "Hinweise",
+    "silhouette": "Silhouette",
+    "silhouetteHint": "Der Schatten eines noch nicht genannten",
+    "autoCycle": "Auto-Wechsel",
+    "autoCycleHint": "Alle 20 s eine neue Silhouette",
+    "spelling": "Rechtschreibhilfe",
+    "spellingHint": "Schlägt den ähnlichsten Namen vor",
+    "options": "Optionen",
+    "shiny": "Schillernde Sprites",
+    "cycle": "Sprites wechseln",
+    "cycleHint": "Pixel ↔ Artwork",
+    "sound": "Ton",
+    "save": "Fortschritt speichern",
+    "saveHint": "Auf diesem Gerät",
+    "startOver": "Neu starten",
+    "start": "Start",
+    "dailyNote": "Ein Versuch pro Tag für deine Bestleistung: ohne Hinweise, ohne Pause.",
+    "bestsNote": "Bestleistungen: Modus Normal, ohne Hinweise, ohne Pause. Die Standardzeit ist {standard}:00.",
+    "best": "Deine Bestleistung: {named}/{total} in {time}"
+  },
+  "results": {
+    "clear": "Du hast alle genannt!",
+    "time": "Zeit abgelaufen!",
+    "gaveUp": "Das hat dir gefehlt",
+    "score": "<final>{named}/{total}</final> in <b>{time}</b>",
+    "missed": "{n, plural, one {{n} fehlt, unten rot markiert (tippe es an für seine Pokédex-Seite)} other {{n} fehlen, unten rot markiert (tippe eins an für seine Pokédex-Seite)}}",
+    "newBest": "Neue Bestleistung!",
+    "again": "Nochmal spielen",
+    "other": "Andere Kategorien",
+    "practice": "Übungsrunde: Nur Runden im Modus Normal ohne Hinweise, Pausen oder Fortsetzen zählen als Bestleistung.",
+    "checking": "Deine Runde wird geprüft…",
+    "signIn": "<link>Melde dich an</link>, um deine Bestleistung auf deinem Trainerprofil zu behalten.",
+    "improved": "Neue Bestleistung in deinem Profil gespeichert.",
+    "stands": "Geprüft. Deine Bestleistung im Profil bleibt bestehen.",
+    "seeIt": "Ansehen",
+    "notSaved": "Nicht gespeichert.",
+    "postFailed": "Das Ergebnis konnte nicht gesendet werden.",
+    "noClock": "Der Server war nicht erreichbar, um diese Runde zu stoppen."
+  },
+  "feedback": {
+    "wrong": "Nicht dieses: Das ist {name}.",
+    "dup": "{name} ist schon genannt.",
+    "out": "{name} gehört nicht zu „{label}“."
+  },
+  "grid": {
+    "gen": "Gen. {n} · {region}",
+    "pokemon": "Pokémon",
+    "open": "{name}: Pokédex-Seite öffnen"
+  },
+  "regions": {
+    "kanto": "Kanto",
+    "johto": "Johto",
+    "hoenn": "Hoenn",
+    "sinnoh": "Sinnoh",
+    "unova": "Einall",
+    "kalos": "Kalos",
+    "alola": "Alola",
+    "galar": "Galar",
+    "paldea": "Paldea"
+  }
+}

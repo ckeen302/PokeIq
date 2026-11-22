@@ -1,0 +1,24 @@
+{
+  "daily": {
+    "eyebrow": "Daily",
+    "today": "Today: <cat>{label}</cat>",
+    "lead": "{count} Pokémon in {minutes} minutes. The same category for everyone, with its own board.",
+    "loading": "Loading today's category…",
+    "seeBoard": "See today's board",
+    "play": "Play today's",
+    "you": "You: {named}/{total} in {time}"
+  },
+  "race": {
+    "eyebrow": "Race",
+    "title": "Race up to {max} friends",
+    "category": "Category",
+    "categoryLabel": "Race category",
+    "length": "Length",
+    "lengthLabel": "Race length",
+    "option": "{label} ({total})",
+    "minutes": "{m} minutes",
+    "name": "Your trainer name",
+    "start": "Start a race",
+    "failed": "Couldn't open a race."
+  }
+}

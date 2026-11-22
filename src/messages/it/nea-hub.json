@@ -1,0 +1,24 @@
+{
+  "daily": {
+    "eyebrow": "Giornaliero",
+    "today": "Oggi: <cat>{label}</cat>",
+    "lead": "{count} Pokémon in {minutes} minuti. La stessa categoria per tutti, con la sua classifica.",
+    "loading": "Caricamento della categoria di oggi…",
+    "seeBoard": "Vedi la classifica di oggi",
+    "play": "Gioca la sfida di oggi",
+    "you": "Tu: {named}/{total} in {time}"
+  },
+  "race": {
+    "eyebrow": "Gara",
+    "title": "Sfida fino a {max} amici",
+    "category": "Categoria",
+    "categoryLabel": "Categoria della gara",
+    "length": "Durata",
+    "lengthLabel": "Durata della gara",
+    "option": "{label} ({total})",
+    "minutes": "{m} minuti",
+    "name": "Il tuo nome da Allenatore",
+    "start": "Crea una gara",
+    "failed": "Impossibile creare la gara."
+  }
+}

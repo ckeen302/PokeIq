@@ -3,9 +3,11 @@
 import { memo, useState } from "react";
 import Link from "@/components/ui/Link";
 import { artUrl } from "@/lib/pokemon/art";
-import { NEA_GEN_REGIONS } from "@/lib/name-em-all/categories";
 import type { NeaTarget } from "@/lib/name-em-all/types";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import { translator, type Translator } from "@/i18n/catalog";
+import neaGame from "@/messages/nea-game";
 
 /** Pixel sprites from the games, or the official artwork thumbnails. */
 export type SpriteStyle = "pixel" | "art";
@@ -44,6 +46,7 @@ const pad = (n: number, total: number) => String(n).padStart(total > 999 ? 4 : 3
 
 /** One slot of the grid: its number until named, then its sprite and name. After the end, missed ones show in red and link to the Pokédex. */
 export const Slot = memo(function Slot({ target, state, style, shiny, digits, fresh }: { target: NeaTarget; state: SlotState; style: SpriteStyle; shiny: boolean; digits: number; fresh: boolean }) {
+  const t = useT(neaGame);
   const shown = state === "named" || state === "missed";
   const body = (
     <>
@@ -64,7 +67,7 @@ export const Slot = memo(function Slot({ target, state, style, shiny, digits, fr
   );
   if (state === "missed") {
     return (
-      <Link href={`/pokemon/${target.slug}`} target="_blank" className={cls} title={`${target.name}: open its Pokédex page`} data-testid="nea-missed">
+      <Link href={`/pokemon/${target.slug}`} target="_blank" className={cls} title={t("grid.open", { name: target.name })} data-testid="nea-missed">
         {body}
       </Link>
     );
@@ -82,8 +85,10 @@ export interface SlotGroup {
   slots: number[];
 }
 
-/** Big categories are grouped by generation so the grid reads like a dex; small ones are one block. */
-export function groupSlots(targets: readonly NeaTarget[]): SlotGroup[] {
+const REGION_KEYS = ["kanto", "johto", "hoenn", "sinnoh", "unova", "kalos", "alola", "galar", "paldea"] as const;
+
+/** Big categories are grouped by generation so the grid reads like a dex; small ones are one block. `t`: the labels in the page's language. */
+export function groupSlots(targets: readonly NeaTarget[], t: Translator<typeof neaGame.en> = translator(neaGame, "en", undefined)): SlotGroup[] {
   const gens = new Set(targets.map((t) => t.gen));
   const grouped = targets.length > 60 && gens.size > 1 && !targets.some((t) => t.num !== t.species);
   if (!grouped) return [{ key: "all", label: null, slots: targets.map((_, i) => i) }];
@@ -93,7 +98,7 @@ export function groupSlots(targets: readonly NeaTarget[]): SlotGroup[] {
     list.push(i);
     out.set(t.gen, list);
   });
-  return [...out].sort((a, b) => a[0] - b[0]).map(([gen, slots]) => ({ key: `gen-${gen}`, label: `Gen ${gen} · ${NEA_GEN_REGIONS[gen - 1]}`, slots }));
+  return [...out].sort((a, b) => a[0] - b[0]).map(([gen, slots]) => ({ key: `gen-${gen}`, label: t("grid.gen", { n: gen, region: t(`regions.${REGION_KEYS[gen - 1]}`) }), slots }));
 }
 
 export function SlotGrid({
@@ -111,7 +116,8 @@ export function SlotGrid({
   shiny: boolean;
   fresh: number | null;
 }) {
-  const digits = Math.max(...targets.map((t) => t.num)) > 999 ? 4 : 3;
+  const t = useT(neaGame);
+  const digits = Math.max(...targets.map((x) => x.num)) > 999 ? 4 : 3;
   return (
     <div className="space-y-5" data-testid="nea-grid">
       {groups.map((g) => {
@@ -120,7 +126,7 @@ export function SlotGrid({
           return st === "named";
         }).length;
         return (
-          <section key={g.key} aria-label={g.label ?? "Pokémon"} className="[content-visibility:auto] [contain-intrinsic-size:auto_600px]">
+          <section key={g.key} aria-label={g.label ?? t("grid.pokemon")} className="[content-visibility:auto] [contain-intrinsic-size:auto_600px]">
             {g.label && (
               <h2 className="mb-2 flex items-baseline justify-between gap-3 border-b border-border/60 pb-1">
                 <span className="font-display text-sm font-bold uppercase tracking-wider">{g.label}</span>

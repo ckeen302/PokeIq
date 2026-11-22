@@ -7,7 +7,7 @@ import { buildMatcher } from "@/lib/name-em-all/match";
 import { NEA_PATH, standardMinutes } from "@/lib/name-em-all/categories";
 import { DEFAULT_SETTINGS, loadBests, loadSave, loadSettings, recordBest, storeSave, storeSettings, type NeaSave, type NeaSettings } from "@/lib/name-em-all/local";
 import { neaClock, neaShareText } from "@/lib/name-em-all/share";
-import { NEA_MODES, type NeaMode, type NeaResultResponse, type NeaTarget } from "@/lib/name-em-all/types";
+import { NEA_MODES, type NeaMode, type NeaOutsider, type NeaResultResponse, type NeaTarget } from "@/lib/name-em-all/types";
 import { dlePlayerId } from "@/lib/dle-player";
 import { useAccount } from "@/lib/account";
 import { play, unlockAudio } from "@/lib/sound";
@@ -16,6 +16,9 @@ import { NeaShareButton } from "./NeaShare";
 import { SlotGrid, Sprite, Toggle, groupSlots, type SlotState, type SpriteStyle } from "./parts";
 import { outsiderMap, useNameInput } from "./use-name-input";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
+import neaGame from "@/messages/nea-game";
+import { localizePath } from "@/i18n/paths";
 
 /**
  * Name 'em All: type the name of every Pokémon in a category. Each one
@@ -28,7 +31,7 @@ import { cn } from "@/lib/utils";
 export interface NameEmAllProps {
   category: { id: string; label: string };
   targets: NeaTarget[];
-  outsiders: string[];
+  outsiders: NeaOutsider[];
   /** The daily's date: settings are fixed and the day has its own board. */
   daily?: string;
 }
@@ -50,12 +53,13 @@ function shuffle<T>(list: T[]): T[] {
 }
 
 export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProps) {
+  const t = useT(neaGame);
   const total = targets.length;
   const scope = daily ? `daily:${daily}` : category.id;
   const standard = standardMinutes(total);
   const matcher = useMemo(() => buildMatcher(targets), [targets]);
   const outsidersMap = useMemo(() => outsiderMap(outsiders), [outsiders]);
-  const groups = useMemo(() => groupSlots(targets), [targets]);
+  const groups = useMemo(() => groupSlots(targets, t), [targets, t]);
   const account = useAccount();
 
   // ---- settings ---------------------------------------------------------------------
@@ -262,15 +266,15 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
     async (body: Record<string, unknown>) => {
       setPost({ state: "posting" });
       try {
-        const res = await fetch("/api/name-em-all/result", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ player: dlePlayerId(), ...body }) });
+        const res = await fetch(t.locale === "en" ? "/api/name-em-all/result" : `/api/name-em-all/result?lang=${t.locale}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ player: dlePlayerId(), ...body }) });
         const data = (await res.json().catch(() => ({}))) as NeaResultResponse & { error?: string };
-        if (!res.ok) throw new Error(data.error ?? "Couldn't post the result.");
+        if (!res.ok) throw new Error(data.error ?? t("results.postFailed"));
         setPost({ state: "done", res: data });
       } catch (err) {
-        setPost({ state: "error", error: err instanceof Error ? err.message : "Couldn't post the result." });
+        setPost({ state: "error", error: err instanceof Error ? err.message : t("results.postFailed") });
       }
     },
-    []
+    [t]
   );
 
   useEffect(() => {
@@ -279,10 +283,10 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
     if (!account.user) return setPost({ state: "done", res: { saved: false, signIn: true, counted: 0 } });
     void (async () => {
       const token = await startToken.current;
-      if (!token) return setPost({ state: "done", res: { saved: false, reason: "Couldn't reach the server to time this run.", counted: 0 } });
+      if (!token) return setPost({ state: "done", res: { saved: false, reason: t("results.noClock"), counted: 0 } });
       await submit({ scope, token, named, times, ms: Math.round(finalMs) });
     })();
-  }, [phase, ranked, post.state, submit, scope, named, times, finalMs, account.user]);
+  }, [phase, ranked, post.state, submit, scope, named, times, finalMs, account.user, t]);
 
   // ---- the grid ---------------------------------------------------------------------------
   const nameSet = useMemo(() => new Set(named), [named]);
@@ -319,7 +323,7 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
 
   const count = named.length;
   const pct = total ? (count / total) * 100 : 0;
-  const shareText = neaShareText({ label: category.label, named: count, total, ms: overReason === "clear" ? finalMs : finalMs, mode: settings.mode, daily, url: typeof window === "undefined" ? undefined : `${window.location.origin}${daily ? `${NEA_PATH}/daily` : `${NEA_PATH}/${category.id}`}` });
+  const shareText = neaShareText({ label: category.label, named: count, total, ms: overReason === "clear" ? finalMs : finalMs, mode: settings.mode, daily, url: typeof window === "undefined" ? undefined : `${window.location.origin}${localizePath(daily ? `${NEA_PATH}/daily` : `${NEA_PATH}/${category.id}`, t.locale)}` }, t);
 
   // ---- render -------------------------------------------------------------------------------
   if (phase === "setup") {
@@ -363,7 +367,7 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
             </span>
           )}
           {!over && (
-            <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={phase === "paused" ? resume : pause} aria-label={phase === "paused" ? "Resume" : "Pause"} data-testid="nea-pause">
+            <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={phase === "paused" ? resume : pause} aria-label={phase === "paused" ? t("hud.resume") : t("hud.pause")} data-testid="nea-pause">
               {phase === "paused" ? <Play className="h-4 w-4" aria-hidden /> : <Pause className="h-4 w-4" aria-hidden />}
             </Button>
           )}
@@ -376,8 +380,8 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
                 type="button"
                 onClick={current === null ? pickSilhouette : undefined}
                 className="screen flex h-11 w-11 shrink-0 items-center justify-center rounded-md sm:h-12 sm:w-12"
-                aria-label={current === null ? "Silhouette hint: show another" : "Silhouette hint"}
-                title={current === null ? "Show another" : undefined}
+                aria-label={current === null ? t("hud.silhouetteAnother") : t("hud.silhouette")}
+                title={current === null ? t("hud.showAnother") : undefined}
                 data-testid="nea-silhouette"
               >
                 {silhouette !== null && <Sprite id={targets[silhouette].id} style="pixel" shiny={false} size={44} silhouette className="relative z-[3]" />}
@@ -386,7 +390,7 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
             <div className="relative min-w-0 flex-1">
               {current !== null && (
                 <span className="hud-label pointer-events-none absolute -top-1.5 left-2 z-10 bg-background px-1 text-screen">
-                  {settings.mode === "dex" ? "Next up" : "Name"} No. {String(targets[current].num).padStart(3, "0")}
+                  {t(settings.mode === "dex" ? "hud.askDex" : "hud.askChaos", { num: String(targets[current].num).padStart(3, "0") })}
                 </span>
               )}
               <input
@@ -395,8 +399,8 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
                 onChange={input.onChange}
                 onKeyDown={input.onKeyDown}
                 disabled={phase !== "playing"}
-                placeholder={phase === "paused" ? "Paused" : current !== null ? "Who's this one?" : "Type a Pokémon's name…"}
-                aria-label="Name a Pokémon"
+                placeholder={phase === "paused" ? t("hud.paused") : current !== null ? t("hud.whoThis") : t("hud.typeName")}
+                aria-label={t("hud.nameLabel")}
                 autoComplete="off"
                 autoCorrect="off"
                 autoCapitalize="none"
@@ -407,17 +411,17 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
               />
             </div>
             {current !== null && (
-              <Button variant="outline" className="h-11 shrink-0 px-3 sm:h-12" onClick={skip} disabled={phase !== "playing"} aria-label="Skip this one" data-testid="nea-skip">
-                <SkipForward className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">Skip</span>
+              <Button variant="outline" className="h-11 shrink-0 px-3 sm:h-12" onClick={skip} disabled={phase !== "playing"} aria-label={t("hud.skipLabel")} data-testid="nea-skip">
+                <SkipForward className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">{t("hud.skip")}</span>
               </Button>
             )}
             {confirmGiveUp ? (
               <Button variant="destructive" className="h-11 shrink-0 px-3 sm:h-12" onClick={() => finish("gaveup")} data-testid="nea-giveup-confirm">
-                Reveal?
+                {t("hud.reveal")}
               </Button>
             ) : (
-              <Button variant="ghost" className="h-11 shrink-0 px-2.5 sm:h-12" onClick={() => setConfirmGiveUp(true)} aria-label="Give up" data-testid="nea-giveup">
-                <Flag className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">Give up</span>
+              <Button variant="ghost" className="h-11 shrink-0 px-2.5 sm:h-12" onClick={() => setConfirmGiveUp(true)} aria-label={t("hud.giveUp")} data-testid="nea-giveup">
+                <Flag className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">{t("hud.giveUp")}</span>
               </Button>
             )}
           </div>
@@ -427,7 +431,7 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
           <div className="mt-1.5 flex h-5 items-center gap-2 overflow-hidden text-xs" aria-live="polite">
             {input.suggestion !== null ? (
               <button type="button" onClick={input.acceptSuggestion} className="truncate font-semibold text-warning underline-offset-2 hover:underline" data-testid="nea-suggestion">
-                Did you mean {targets[input.suggestion].name}? Tap or press Enter
+                {t("hud.didYouMean", { name: targets[input.suggestion].name })}
               </button>
             ) : input.feedback ? (
               <span key={input.feedback.n} className={cn("truncate font-semibold animate-in fade-in", input.feedback.kind === "dup" ? "text-muted-foreground" : "text-destructive")}>
@@ -435,9 +439,9 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
               </span>
             ) : confirmGiveUp ? (
               <span className="truncate text-muted-foreground">
-                Give up and see the ones you missed?{" "}
+                {t("hud.giveUpConfirm")}{" "}
                 <button className="underline" onClick={() => setConfirmGiveUp(false)}>
-                  Keep going
+                  {t("hud.keepGoing")}
                 </button>
               </span>
             ) : (
@@ -445,13 +449,13 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
                 {/* One line of fixed height: a phone gets the shorter wording, so it isn't cut off. */}
                 {settings.mode === "regular" ? (
                   <>
-                    <span className="max-sm:hidden">Any order. Names count as soon as they&apos;re spelled right.</span>
-                    <span className="sm:hidden">Any order. A name counts once it&apos;s spelled right.</span>
+                    <span className="max-sm:hidden">{t("hud.regularLong")}</span>
+                    <span className="sm:hidden">{t("hud.regularShort")}</span>
                   </>
                 ) : settings.mode === "chaos" ? (
-                  "Name the one we point at, or skip it."
+                  t("hud.chaos")
                 ) : (
-                  "In Pokédex order. Skip one to come back to it."
+                  t("hud.dex")
                 )}
               </span>
             )}
@@ -487,10 +491,10 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
         {phase === "paused" && (
           <div className="absolute inset-0 z-20 flex items-start justify-center rounded-lg bg-background/80 pt-16 backdrop-blur-md" data-testid="nea-paused">
             <div className="space-y-3 text-center">
-              <p className="font-display text-3xl font-bold uppercase">Paused</p>
-              <p className="text-sm text-muted-foreground">The clock is stopped. Paused runs don&apos;t count as personal bests.</p>
+              <p className="font-display text-3xl font-bold uppercase">{t("hud.paused")}</p>
+              <p className="text-sm text-muted-foreground">{t("hud.pausedNote")}</p>
               <Button size="lg" onClick={resume} data-testid="nea-resume">
-                <Play className="h-4 w-4" aria-hidden /> Resume
+                <Play className="h-4 w-4" aria-hidden /> {t("hud.resume")}
               </Button>
             </div>
           </div>
@@ -510,6 +514,7 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
 
 /** Ticks on its own so the grid doesn't re-render four times a second. */
 function Clock({ elapsed, limitMs, running, onTimeUp }: { elapsed: () => number; limitMs: number | null; running: boolean; onTimeUp: () => void }) {
+  const t = useT(neaGame);
   const [, tick] = useState(0);
   const up = useRef(onTimeUp);
   up.current = onTimeUp;
@@ -529,7 +534,7 @@ function Clock({ elapsed, limitMs, running, onTimeUp }: { elapsed: () => number;
   const left = limitMs !== null ? Math.max(0, limitMs - ms) : null;
   const low = left !== null && left <= 30_000;
   return (
-    <span className={cn("flex shrink-0 items-center gap-1 font-display text-lg font-bold tabular-nums sm:text-xl", low && "text-destructive")} aria-label={left !== null ? `${neaClock(left)} left` : `${neaClock(ms)} played`} data-testid="nea-clock">
+    <span className={cn("flex shrink-0 items-center gap-1 font-display text-lg font-bold tabular-nums sm:text-xl", low && "text-destructive")} aria-label={left !== null ? t("hud.left", { time: neaClock(left) }) : t("hud.played", { time: neaClock(ms) })} data-testid="nea-clock">
       <Timer className="h-4 w-4 text-muted-foreground" aria-hidden />
       {left !== null ? neaClock(left + 999) : neaClock(ms)}
     </span>
@@ -561,26 +566,27 @@ function Setup({
   onStart: () => void;
   onResume: () => void;
 }) {
+  const t = useT(neaGame);
   const choices = [...new Set([...TIMER_CHOICES, standard])].sort((a, b) => a - b);
   return (
     <div className="mx-auto max-w-3xl space-y-4" data-testid="nea-setup">
       {saved && (
         <div className="flex flex-col gap-3 rounded-lg border border-screen/50 bg-screen/[0.06] p-4 sm:flex-row sm:items-center" data-testid="nea-resume-card">
           <div className="min-w-0 flex-1">
-            <p className="font-display text-lg font-bold uppercase">Pick up where you left off?</p>
+            <p className="font-display text-lg font-bold uppercase">{t("setup.resumeTitle")}</p>
             <p className="text-sm text-muted-foreground">
-              {saved.named.length}/{total} named in {neaClock(saved.elapsed)} ({NEA_MODES.find((m) => m.id === saved.settings.mode)?.label}). Resumed runs don&apos;t count as personal bests.
+              {t("setup.resumeText", { named: saved.named.length, total, time: neaClock(saved.elapsed), mode: t(`modes.${saved.settings.mode}.label`) })}
             </p>
           </div>
           <Button size="lg" variant="success" onClick={onResume} data-testid="nea-resume-saved">
-            <RotateCcw className="h-4 w-4" aria-hidden /> Resume
+            <RotateCcw className="h-4 w-4" aria-hidden /> {t("hud.resume")}
           </Button>
         </div>
       )}
 
       <div className="space-y-5 rounded-lg border bg-card p-4 sm:p-6">
         <fieldset className="space-y-2">
-          <legend className="hud-label mb-2">Mode</legend>
+          <legend className="hud-label mb-2">{t("setup.mode")}</legend>
           <div className="grid grid-cols-3 gap-2">
             {NEA_MODES.map((m) => (
               <button
@@ -595,8 +601,8 @@ function Setup({
                 )}
                 data-testid={`nea-mode-${m.id}`}
               >
-                <span className="block font-display text-sm font-bold uppercase tracking-wide">{m.label}</span>
-                <span className="hidden text-xs sm:block text-muted-foreground">{m.blurb}</span>
+                <span className="block font-display text-sm font-bold uppercase tracking-wide">{t(`modes.${m.id}.label`)}</span>
+                <span className="hidden text-xs sm:block text-muted-foreground">{t(`modes.${m.id}.blurb`)}</span>
               </button>
             ))}
           </div>
@@ -604,7 +610,7 @@ function Setup({
 
         <div className="grid gap-4 sm:grid-cols-[12rem_1fr] sm:items-center">
           <label htmlFor="nea-timer" className="hud-label">
-            Timer
+            {t("setup.timer")}
           </label>
           <select
             id="nea-timer"
@@ -616,44 +622,43 @@ function Setup({
           >
             {choices.map((m) => (
               <option key={m} value={m}>
-                {m} minute{m === 1 ? "" : "s"}
-                {m === standard ? " (standard)" : ""}
+                {t(m === standard ? "setup.minutesStandard" : "setup.minutes", { m })}
               </option>
             ))}
-            <option value="none">No limit (∞)</option>
+            <option value="none">{t("setup.noLimit")}</option>
           </select>
         </div>
 
         <fieldset className="space-y-2">
-          <legend className="hud-label mb-2">Hints</legend>
+          <legend className="hud-label mb-2">{t("setup.hints")}</legend>
           <div className="grid gap-2 sm:grid-cols-3">
-            <Toggle label="Silhouette" hint="A shadow of one you haven't named" checked={settings.silhouette} onChange={(v) => set("silhouette", v)} testId="nea-opt-silhouette" />
-            <Toggle label="Auto-cycle" hint="A new silhouette every 20s" checked={settings.autoCycle} disabled={!settings.silhouette} onChange={(v) => set("autoCycle", v)} />
-            <Toggle label="Spelling helper" hint="Suggests the closest name" checked={settings.spelling} onChange={(v) => set("spelling", v)} testId="nea-opt-spelling" />
+            <Toggle label={t("setup.silhouette")} hint={t("setup.silhouetteHint")} checked={settings.silhouette} onChange={(v) => set("silhouette", v)} testId="nea-opt-silhouette" />
+            <Toggle label={t("setup.autoCycle")} hint={t("setup.autoCycleHint")} checked={settings.autoCycle} disabled={!settings.silhouette} onChange={(v) => set("autoCycle", v)} />
+            <Toggle label={t("setup.spelling")} hint={t("setup.spellingHint")} checked={settings.spelling} onChange={(v) => set("spelling", v)} testId="nea-opt-spelling" />
           </div>
         </fieldset>
 
         <fieldset className="space-y-2">
-          <legend className="hud-label mb-2">Options</legend>
+          <legend className="hud-label mb-2">{t("setup.options")}</legend>
           <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-            <Toggle label="Shiny sprites" checked={settings.shiny} onChange={(v) => set("shiny", v)} />
-            <Toggle label="Cycle sprites" hint="Pixel ↔ artwork" checked={settings.cycleSprites} onChange={(v) => set("cycleSprites", v)} />
-            <Toggle label="Sound" checked={settings.sound} onChange={(v) => set("sound", v)} />
-            <Toggle label="Save progress" hint="On this device" checked={settings.save} onChange={(v) => set("save", v)} />
+            <Toggle label={t("setup.shiny")} checked={settings.shiny} onChange={(v) => set("shiny", v)} />
+            <Toggle label={t("setup.cycle")} hint={t("setup.cycleHint")} checked={settings.cycleSprites} onChange={(v) => set("cycleSprites", v)} />
+            <Toggle label={t("setup.sound")} checked={settings.sound} onChange={(v) => set("sound", v)} />
+            <Toggle label={t("setup.save")} hint={t("setup.saveHint")} checked={settings.save} onChange={(v) => set("save", v)} />
           </div>
         </fieldset>
 
         <div className="flex flex-col items-center gap-2 pt-1 text-center">
           <Button size="lg" className="min-w-48" onClick={onStart} data-testid="nea-start">
-            <Play className="h-4 w-4" aria-hidden /> {saved ? "Start over" : "Start"}
+            <Play className="h-4 w-4" aria-hidden /> {saved ? t("setup.startOver") : t("setup.start")}
           </Button>
           <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Trophy className="h-3.5 w-3.5 text-warning" aria-hidden />
-            {daily ? "One try a day for your best: no hints, no pausing." : `Personal bests: Regular mode, no hints, no pausing. The standard time is ${standard}:00.`}
+            {daily ? t("setup.dailyNote") : t("setup.bestsNote", { standard })}
           </p>
           {best && (
             <p className="hud-label" data-testid="nea-best">
-              Your best: {best.named}/{total} in {neaClock(best.ms)}
+              {t("setup.best", { named: best.named, total, time: neaClock(best.ms) })}
             </p>
           )}
         </div>
@@ -693,8 +698,9 @@ function Results({
   username: string | null;
   onAgain: () => void;
 }) {
+  const t = useT(neaGame);
   const missed = total - count;
-  const headline = reason === "clear" ? "You named them all!" : reason === "time" ? "Time's up!" : "Here's what you missed";
+  const headline = reason === "clear" ? t("results.clear") : reason === "time" ? t("results.time") : t("results.gaveUp");
   return (
     <section className="space-y-4 rounded-lg border bg-card p-4 text-center sm:p-6" data-testid="nea-results">
       <div className="space-y-1">
@@ -704,54 +710,64 @@ function Results({
           {headline}
         </h2>
         <p className="text-muted-foreground">
-          <b className="text-foreground" data-testid="nea-final">
-            {count}/{total}
-          </b>{" "}
-          in <b className="text-foreground">{neaClock(ms)}</b>
-          {mode !== "regular" && <> · {mode === "chaos" ? "Chaos" : "Dex order"}</>}
-          {missed > 0 && <> · {missed} missed, shown in red below (tap one for its Pokédex page)</>}
+          {t.rich("results.score", {
+            named: count,
+            total,
+            time: neaClock(ms),
+            final: (c) => (
+              <b className="text-foreground" data-testid="nea-final">
+                {c}
+              </b>
+            ),
+            b: (c) => <b className="text-foreground">{c}</b>,
+          })}
+          {mode !== "regular" && <> · {t(`modes.${mode}.label`)}</>}
+          {missed > 0 && <> · {t("results.missed", { n: missed })}</>}
         </p>
-        {newBest && <p className="hud-label text-success">New personal best!</p>}
+        {newBest && <p className="hud-label text-success">{t("results.newBest")}</p>}
       </div>
       <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:items-start">
         <NeaShareButton text={shareText} />
         <Button size="lg" variant="outline" onClick={onAgain} data-testid="nea-again">
-          <RotateCcw className="h-4 w-4" aria-hidden /> Play again
+          <RotateCcw className="h-4 w-4" aria-hidden /> {t("results.again")}
         </Button>
         <Link href={NEA_PATH} className="inline-flex h-12 items-center rounded-md px-4 font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground">
-          Other categories
+          {t("results.other")}
         </Link>
       </div>
       <div className="mx-auto max-w-md text-sm" data-testid="nea-ranked">
         {!ranked ? (
           <p className="text-muted-foreground">
             <Eye className="mr-1 inline h-3.5 w-3.5" aria-hidden />
-            Practice run: only Regular runs with no hints, pauses or resumes count as personal bests.
+            {t("results.practice")}
           </p>
         ) : post.state === "posting" || post.state === "idle" ? (
           <p className="flex items-center justify-center gap-2 text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Checking your run…
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> {t("results.checking")}
           </p>
         ) : post.state === "error" ? (
           <p className="text-destructive">{post.error}</p>
         ) : post.res?.signIn ? (
           <p className="text-muted-foreground" data-testid="nea-sign-in">
-            <Link href="/login" className="font-semibold text-screen hover:underline">
-              Sign in
-            </Link>{" "}
-            to keep your best on your trainer profile.
+            {t.rich("results.signIn", {
+              link: (c) => (
+                <Link href="/login" className="font-semibold text-screen hover:underline">
+                  {c}
+                </Link>
+              ),
+            })}
           </p>
         ) : post.res?.saved ? (
           <p className="text-success" data-testid="nea-saved">
-            {post.res.improved ? "New best saved to your profile." : "Checked. Your best on your profile still stands."}{" "}
+            {post.res.improved ? t("results.improved") : t("results.stands")}{" "}
             {username && (
               <Link href={`/u/${encodeURIComponent(username)}#quiz-bests`} className="font-semibold text-screen hover:underline">
-                See it
+                {t("results.seeIt")}
               </Link>
             )}
           </p>
         ) : (
-          <p className="text-muted-foreground">{post.res?.reason ?? "Not saved."}</p>
+          <p className="text-muted-foreground">{post.res?.reason ?? t("results.notSaved")}</p>
         )}
       </div>
     </section>

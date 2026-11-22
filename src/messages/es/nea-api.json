@@ -1,0 +1,12 @@
+{
+  "notKept": "Este servidor no guarda récords personales.",
+  "nameOne": "Nombra al menos un Pokémon en el tiempo estándar para tener un récord.",
+  "unavailable": "Los récords personales no están disponibles ahora mismo.",
+  "off": "Los récords personales están desactivados en este servidor.",
+  "signIn": "Inicia sesión para guardar tu récord en tu perfil.",
+  "noStart": "Esta partida no tiene hora de inicio de nuestro servidor.",
+  "addUp": "Esta partida no cuadra.",
+  "tooLong": "Esta partida ha durado más de lo que lleva en marcha.",
+  "paused": "Las partidas pausadas no cuentan como récord personal.",
+  "tooFast": "Eso es más rápido de lo que nadie escribe."
+}

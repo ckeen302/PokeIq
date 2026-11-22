@@ -19,6 +19,10 @@ import { outsiderMap, useNameInput } from "./use-name-input";
 import { useNeaTargets } from "./NeaDaily";
 import { NeaShareButton } from "./NeaShare";
 import { cn } from "@/lib/utils";
+import type { NeaOutsider, NeaTarget } from "@/lib/name-em-all/types";
+import { useT } from "@/i18n/client";
+import neaRace from "@/messages/nea-race";
+import neaGame from "@/messages/nea-game";
 
 /**
  * A Name 'em All race: the lobby (share link, ready-up), a short count-in,
@@ -26,11 +30,12 @@ import { cn } from "@/lib/utils";
  * the final standings with the ones you missed revealed.
  */
 
-const ordinal = (n: number) => `${n}${["th", "st", "nd", "rd"][n % 100 > 10 && n % 100 < 14 ? 0 : Math.min(n % 10, 4) % 4] ?? "th"}`;
 const FLUSH_MS = 600;
 const BAR_COLORS = ["#e2306f", "#38bdf8", "#f59e0b", "#22c55e", "#a855f7", "#f97316", "#14b8a6", "#eab308"];
 
-export function NeaRace({ code }: { code: string }) {
+/** `label`: another language's name of the race's category, from the server (English pages use categories.ts'). */
+export function NeaRace({ code, label }: { code: string; label?: string }) {
+  const t = useT(neaRace);
   const router = useRouter();
   const progress = useProgress();
   const { view, now, gone, offline, error, setError, busy, act, send, join } = useDuel<NeaRaceView>(`/api/name-em-all/race/${code}`, code);
@@ -40,8 +45,9 @@ export function NeaRace({ code }: { code: string }) {
     if (progress?.name && !name) setName(progress.name);
   }, [progress?.name, name]);
 
-  const cat = view ? neaCategory(view.category) : undefined;
-  const { data } = useNeaTargets(view?.category ?? null);
+  const found = view ? neaCategory(view.category) : undefined;
+  const cat = found && (t.locale === "en" ? found : { ...found, label: label ?? found.label });
+  const { data } = useNeaTargets(view?.category ?? null, t.locale);
   const me = view?.you ?? null;
 
   async function copyLink() {
@@ -50,21 +56,21 @@ export function NeaRace({ code }: { code: string }) {
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1800);
     } catch {
-      setError("Couldn't copy: copy the address from your browser instead.");
+      setError(t("copyFailed"));
     }
   }
 
-  if (gone) return <DuelGone message={gone} href={NEA_PATH} label="Back to Name 'em All" />;
+  if (gone) return <DuelGone message={gone} href={NEA_PATH} label={t("back")} />;
   if (!view || !cat) return <DuelLoading />;
   const notice = <DuelNotice error={error} offline={offline} />;
   const title = (
     <div className="space-y-1 text-center">
-      <p className="hud-label text-screen">Name &apos;em All · Race</p>
+      <p className="hud-label text-screen">{t("eyebrow")}</p>
       <h1 className="font-display text-3xl font-bold uppercase tracking-tight sm:text-4xl">
-        {cat.label} <span className="text-primary">race</span>
+        {t.rich("title", { label: cat.label, hl: (c) => <span className="text-primary">{c}</span> })}
       </h1>
       <p className="text-sm text-muted-foreground">
-        {view.total} Pokémon · {view.minutes} minutes · first to name them all wins
+        {t("info", { total: view.total, minutes: view.minutes })}
       </p>
     </div>
   );
@@ -84,27 +90,27 @@ export function NeaRace({ code }: { code: string }) {
               {link}
             </code>
             <Button variant="outline" onClick={() => void copyLink()}>
-              {copied ? <Check className="h-4 w-4" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />} {copied ? "Copied" : "Copy link"}
+              {copied ? <Check className="h-4 w-4" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />} {copied ? t("copied") : t("copy")}
             </Button>
           </div>
-          <ul className="divide-y rounded-md border" aria-label="Players">
+          <ul className="divide-y rounded-md border" aria-label={t("players")}>
             {view.players.map((p, seat) => (
               <li key={seat} className="flex items-center gap-3 px-3 py-2 text-sm" data-testid="nea-race-player">
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: BAR_COLORS[seat % BAR_COLORS.length] }} aria-hidden />
                 <span className="font-semibold">{p.name}</span>
-                {seat === me && <span className="hud-label">You</span>}
+                {seat === me && <span className="hud-label">{t("you")}</span>}
                 {p.host && (
                   <span className="hud-label flex items-center gap-1 text-warning">
-                    <Crown className="h-3 w-3" aria-hidden /> Host
+                    <Crown className="h-3 w-3" aria-hidden /> {t("host")}
                   </span>
                 )}
-                <span className={cn("ml-auto text-xs font-semibold uppercase", p.ready ? "text-success" : "text-muted-foreground")}>{p.away ? "Away" : p.ready ? "Ready" : "Not ready"}</span>
+                <span className={cn("ml-auto text-xs font-semibold uppercase", p.ready ? "text-success" : "text-muted-foreground")}>{p.away ? t("away") : p.ready ? t("ready") : t("notReady")}</span>
               </li>
             ))}
           </ul>
           {me === null ? (
             view.players.length >= view.max ? (
-              <p className="text-center text-sm text-muted-foreground">This race is full.</p>
+              <p className="text-center text-sm text-muted-foreground">{t("full")}</p>
             ) : (
               <form
                 className="flex flex-wrap items-center gap-2"
@@ -114,34 +120,34 @@ export function NeaRace({ code }: { code: string }) {
                   void join(name.trim());
                 }}
               >
-                <input aria-label="Your trainer name" value={name} maxLength={24} onChange={(e) => setName(e.target.value)} placeholder="Trainer name" className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm" />
+                <input aria-label={t("nameLabel")} value={name} maxLength={24} onChange={(e) => setName(e.target.value)} placeholder={t("namePlaceholder")} className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm" />
                 <Button type="submit" disabled={busy || !name.trim()} data-testid="nea-race-join">
-                  Join the race
+                  {t("join")}
                 </Button>
               </form>
             )
           ) : isHost ? (
             <div className="space-y-2 text-center">
               <Button size="lg" disabled={busy || view.players.length < RACE_MIN || waiting.length > 0} onClick={() => void act({ action: "start" })} data-testid="nea-race-begin">
-                Start the race
+                {t("start")}
               </Button>
               <p className="text-xs text-muted-foreground">
-                {view.players.length < RACE_MIN ? `Share the link: waiting for at least ${RACE_MIN} players.` : waiting.length ? `Waiting for ${waiting.map((p) => p.name).join(", ")} to ready up.` : "Everyone is ready."}
+                {view.players.length < RACE_MIN ? t("waitingPlayers", { min: RACE_MIN }) : waiting.length ? t("waitingFor", { names: waiting.map((p) => p.name).join(", ") }) : t("allReady")}
               </p>
             </div>
           ) : (
             <div className="text-center">
               <Button size="lg" variant={view.players[me].ready ? "outline" : "default"} disabled={busy} onClick={() => void act({ action: "ready", ready: !view.players[me].ready })} data-testid="nea-race-ready">
-                {view.players[me].ready ? "Not ready" : "Ready!"}
+                {view.players[me].ready ? t("notReady") : t("readyUp")}
               </Button>
             </div>
           )}
         </div>
-        <p className="text-center text-xs text-muted-foreground">Everyone sees each other&apos;s counts as bars, never which Pokémon. Names count the moment they&apos;re spelled right.</p>
+        <p className="text-center text-xs text-muted-foreground">{t("note")}</p>
         {me !== null && (
           <div className="text-center">
             <Button variant="ghost" size="sm" disabled={busy} onClick={() => void act({ action: "leave" }).then((ok) => ok && router.push(NEA_PATH))}>
-              Leave the race
+              {t("leave")}
             </Button>
           </div>
         )}
@@ -156,11 +162,11 @@ export function NeaRace({ code }: { code: string }) {
       <div className="mx-auto max-w-2xl space-y-4">
         {notice}
         {title}
-        <p className="text-center text-sm text-muted-foreground">{view.status === "finished" ? "This race is over. Here are the final standings." : "This race is under way. Here's how it stands."}</p>
+        <p className="text-center text-sm text-muted-foreground">{view.status === "finished" ? t("overVisitor") : t("onVisitor")}</p>
         {bars}
         <div className="text-center">
           <Link href={NEA_PATH} className="text-sm underline underline-offset-2">
-            Start your own race
+            {t("own")}
           </Link>
         </div>
       </div>
@@ -175,7 +181,7 @@ export function NeaRace({ code }: { code: string }) {
         {notice}
         {title}
         <div className="rounded-lg border bg-card p-10 text-center">
-          <p className="hud-label text-screen">Get ready</p>
+          <p className="hud-label text-screen">{t("getReady")}</p>
           <p className="font-display text-7xl font-bold tabular-nums">{Math.max(1, seconds(view.round.startsAt - now))}</p>
         </div>
       </div>
@@ -198,17 +204,19 @@ function RaceBoard({
 }: {
   view: NeaRaceView;
   now: number;
-  targets: import("@/lib/name-em-all/types").NeaTarget[];
-  outsiders: string[];
+  targets: NeaTarget[];
+  outsiders: NeaOutsider[];
   label: string;
   bars: React.ReactNode;
   notice: React.ReactNode;
   send: (body: Record<string, unknown>) => Promise<string | null>;
   onLeave: () => void;
 }) {
+  const t = useT(neaRace);
+  const tg = useT(neaGame);
   const matcher = useMemo(() => buildMatcher(targets), [targets]);
   const outsidersMap = useMemo(() => outsiderMap(outsiders), [outsiders]);
-  const groups = useMemo(() => groupSlots(targets), [targets]);
+  const groups = useMemo(() => groupSlots(targets, tg), [targets, tg]);
   const [named, setNamed] = useState<number[]>(() => view.mine ?? []);
   const namedSet = useRef(new Set<number>(view.mine ?? []));
   const pending = useRef<number[]>([]);
@@ -235,6 +243,16 @@ function RaceBoard({
   const sendRef = useRef(send);
   sendRef.current = send;
   const sending = useRef(false);
+  // Another language: the same passing errors as the page shows them (translated on the way in, see ApiErrors).
+  const transient = useRef(new Set<string>());
+  useEffect(() => {
+    if (t.locale === "en") return;
+    import(`@/messages/${t.locale}/api-errors.json`)
+      .then((m: { default: Record<string, string> }) => {
+        for (const k of ["slow-down-trainer", "the-race-server-hiccupped-try-again", "the-duel-is-busy-try-again"]) if (m.default[k]) transient.current.add(m.default[k]);
+      })
+      .catch(() => {});
+  }, [t.locale]);
   const flush = useCallback(async () => {
     if (!pending.current.length || sending.current) return;
     sending.current = true;
@@ -246,7 +264,7 @@ function RaceBoard({
       sending.current = false;
     }
     if (err) {
-      if (/faster|Slow down|busy|hiccup/i.test(err)) pending.current.unshift(...slots);
+      if (/faster|Slow down|busy|hiccup/i.test(err) || transient.current.has(err)) pending.current.unshift(...slots);
       setWarn(err);
     } else setWarn(null);
   }, []);
@@ -279,19 +297,19 @@ function RaceBoard({
 
   if (over) {
     const winner = view.end?.winner;
-    const share = `Name 'em All race · ${label} · ${mine ? `${ordinal(mine.place)} of ${view.standings.length} · ${mine.named}/${view.total}` : ""}${mine?.done ? " 🏆" : ""}`;
+    const share = `${t("shareHead", { label })} · ${mine ? t("sharePlace", { place: t("place", { n: mine.place }), count: view.standings.length, named: mine.named, total: view.total }) : ""}${mine?.done ? " 🏆" : ""}`;
     return (
       <div className="space-y-5" data-testid="nea-race-result">
         {notice}
         <div className="space-y-2 text-center">
-          <p className="hud-label text-screen">Race over · {label}</p>
+          <p className="hud-label text-screen">{t("over", { label })}</p>
           <p className="flex items-center justify-center gap-3 font-display text-4xl font-bold uppercase sm:text-5xl">
             <Crown className="h-9 w-9 text-warning" aria-hidden />
-            {winner === null || winner === undefined ? "No winner" : `${view.players[winner]?.name} wins!`}
+            {winner === null || winner === undefined ? t("noWinner") : t("wins", { name: view.players[winner]?.name ?? "" })}
           </p>
           {mine && (
             <p className="text-muted-foreground">
-              You finished {ordinal(mine.place)} of {view.standings.length} with {mine.named}/{view.total}.
+              {t("finished", { place: t("place", { n: mine.place }), count: view.standings.length, named: mine.named, total: view.total })}
             </p>
           )}
         </div>
@@ -299,7 +317,7 @@ function RaceBoard({
         <div className="flex flex-wrap justify-center gap-2">
           <NeaShareButton text={share} testId="nea-race-share" />
           <Link href={NEA_PATH} className="inline-flex h-12 items-center rounded-md border bg-card px-4 font-display text-sm font-semibold uppercase tracking-wider">
-            New race
+            {t("newRace")}
           </Link>
         </div>
         {grid}
@@ -320,7 +338,7 @@ function RaceBoard({
             <div className="meter min-w-0 flex-1" aria-hidden>
               <div className="h-full bg-success transition-[width] duration-300" style={{ width: `${(named.length / targets.length) * 100}%` }} />
             </div>
-            {mine && <span className="hud-label shrink-0 text-screen">{ordinal(mine.place)}</span>}
+            {mine && <span className="hud-label shrink-0 text-screen">{t("place", { n: mine.place })}</span>}
             <span className={cn("flex shrink-0 items-center gap-1 font-display text-lg font-bold tabular-nums", left <= 30_000 && "text-destructive")}>
               <Timer className="h-4 w-4 text-muted-foreground" aria-hidden />
               {neaClock(left + 999)}
@@ -332,8 +350,8 @@ function RaceBoard({
               onChange={input.onChange}
               onKeyDown={input.onKeyDown}
               autoFocus
-              placeholder="Type a Pokémon's name…"
-              aria-label="Name a Pokémon"
+              placeholder={tg("hud.typeName")}
+              aria-label={tg("hud.nameLabel")}
               autoComplete="off"
               autoCorrect="off"
               autoCapitalize="none"
@@ -344,18 +362,18 @@ function RaceBoard({
             />
           </div>
           <p className="mt-1.5 h-5 truncate text-xs" aria-live="polite">
-            {warn ? <span className="text-destructive">{warn}</span> : input.feedback ? <span className={input.feedback.kind === "dup" ? "text-muted-foreground" : "text-destructive"}>{input.feedback.text}</span> : <span className="text-muted-foreground">Any order. First to name all {targets.length} wins.</span>}
+            {warn ? <span className="text-destructive">{warn}</span> : input.feedback ? <span className={input.feedback.kind === "dup" ? "text-muted-foreground" : "text-destructive"}>{input.feedback.text}</span> : <span className="text-muted-foreground">{t("hint", { total: targets.length })}</span>}
           </p>
         </div>
         <div className="lg:hidden">{bars}</div>
         {grid}
         <div className="text-center">
           <Button variant="ghost" size="sm" onClick={onLeave}>
-            Leave the race
+            {t("leave")}
           </Button>
         </div>
       </div>
-      <aside className="hidden lg:block" aria-label="Standings">
+      <aside className="hidden lg:block" aria-label={t("standings")}>
         <div className="sticky top-20">{bars}</div>
       </aside>
     </div>
@@ -364,6 +382,7 @@ function RaceBoard({
 
 /** Everyone's progress as bars, best first. Counts only, never which Pokémon. */
 function RaceBars({ standings, total, you }: { standings: NeaRaceStanding[]; total: number; you: number | null }) {
+  const t = useT(neaRace);
   return (
     <ol className="space-y-2 rounded-lg border bg-card p-3" data-testid="nea-race-bars">
       {standings.map((s) => (
@@ -372,9 +391,9 @@ function RaceBars({ standings, total, you }: { standings: NeaRaceStanding[]; tot
             <span className="w-5 font-display font-bold tabular-nums text-muted-foreground">{s.place}</span>
             <span className="min-w-0 flex-1 truncate font-semibold">
               {s.name}
-              {s.seat === you && <span className="hud-label ml-1.5">You</span>}
+              {s.seat === you && <span className="hud-label ml-1.5">{t("you")}</span>}
             </span>
-            {s.out && <XCircle className="h-3.5 w-3.5 text-muted-foreground" aria-label="Away" />}
+            {s.out && <XCircle className="h-3.5 w-3.5 text-muted-foreground" aria-label={t("away")} />}
             <span className="tabular-nums text-muted-foreground">
               {s.named}/{total}
               {s.done && s.ms !== undefined && <b className="ml-1.5 text-success">{neaClock(s.ms)}</b>}
@@ -387,7 +406,7 @@ function RaceBars({ standings, total, you }: { standings: NeaRaceStanding[]; tot
       ))}
       {standings.length === 0 && (
         <li className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Waiting…
+          <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> {t("waiting")}
         </li>
       )}
     </ol>

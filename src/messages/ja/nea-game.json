@@ -1,0 +1,119 @@
+{
+  "title": "ポケモン全部言えるかな？",
+  "share": {
+    "daily": "ポケモン全部言えるかな？ デイリー {date}",
+    "score": "{named}/{total}（{time}）",
+    "copied": "コピーしました！",
+    "shared": "シェアしました！",
+    "button": "結果をシェア"
+  },
+  "modes": {
+    "regular": {
+      "label": "フリー",
+      "blurb": "好きな順番で答えます。"
+    },
+    "chaos": {
+      "label": "カオス",
+      "blurb": "指定されたポケモンを、ランダムな順番で答えます。"
+    },
+    "dex": {
+      "label": "図鑑順",
+      "blurb": "図鑑の順番に1匹ずつ答えます。"
+    }
+  },
+  "hud": {
+    "resume": "再開",
+    "pause": "一時停止",
+    "silhouetteAnother": "シルエットのヒント：別のポケモンを表示",
+    "silhouette": "シルエットのヒント",
+    "showAnother": "別のポケモンを表示",
+    "askDex": "次はNo.{num}",
+    "askChaos": "No.{num}を答えて",
+    "paused": "一時停止中",
+    "whoThis": "このポケモンは？",
+    "typeName": "ポケモンの名前を入力…",
+    "nameLabel": "ポケモンの名前を答える",
+    "skipLabel": "このポケモンをスキップ",
+    "skip": "スキップ",
+    "reveal": "答えを見る？",
+    "giveUp": "ギブアップ",
+    "didYouMean": "もしかして{name}？ タップかEnterで決定",
+    "giveUpConfirm": "ギブアップして答えを見ますか？",
+    "keepGoing": "続ける",
+    "regularLong": "順番は自由。正しく入力した瞬間にカウントされます。",
+    "regularShort": "順番は自由。正しく入力するとカウント。",
+    "chaos": "指定されたポケモンを答えるか、スキップしましょう。",
+    "dex": "図鑑順に答えます。スキップすると後で戻ってきます。",
+    "pausedNote": "タイマーは止まっています。一時停止した記録は自己ベストになりません。",
+    "left": "残り{time}",
+    "played": "経過{time}"
+  },
+  "setup": {
+    "resumeTitle": "続きから遊びますか？",
+    "resumeText": "{named}/{total}匹（{time}・{mode}）。再開した記録は自己ベストになりません。",
+    "mode": "モード",
+    "timer": "タイマー",
+    "minutes": "{m}分",
+    "minutesStandard": "{m}分（標準）",
+    "noLimit": "制限なし（∞）",
+    "hints": "ヒント",
+    "silhouette": "シルエット",
+    "silhouetteHint": "まだ答えていないポケモンの影",
+    "autoCycle": "自動切り替え",
+    "autoCycleHint": "20秒ごとに新しいシルエット",
+    "spelling": "スペル補助",
+    "spellingHint": "近い名前を提案します",
+    "options": "オプション",
+    "shiny": "色違い",
+    "cycle": "画像の切り替え",
+    "cycleHint": "ドット絵 ↔ イラスト",
+    "sound": "サウンド",
+    "save": "進行を保存",
+    "saveHint": "この端末に保存",
+    "startOver": "最初から",
+    "start": "スタート",
+    "dailyNote": "自己ベストになるのは1日1回：ヒントなし・一時停止なし。",
+    "bestsNote": "自己ベストの条件：フリーモード、ヒントなし、一時停止なし。標準時間は{standard}:00です。",
+    "best": "自己ベスト：{named}/{total}（{time}）"
+  },
+  "results": {
+    "clear": "全部言えました！",
+    "time": "時間切れ！",
+    "gaveUp": "答えられなかったポケモン",
+    "score": "<final>{named}/{total}</final>・<b>{time}</b>",
+    "missed": "答えられなかった{n}匹は下に赤で表示（タップで図鑑ページへ）",
+    "newBest": "自己ベスト更新！",
+    "again": "もう一度",
+    "other": "ほかのカテゴリ",
+    "practice": "練習プレイ：ヒント・一時停止・再開なしのフリーモードだけが自己ベストになります。",
+    "checking": "記録を確認中…",
+    "signIn": "<link>ログイン</link>すると、自己ベストをトレーナープロフィールに残せます。",
+    "improved": "自己ベストをプロフィールに保存しました。",
+    "stands": "確認しました。プロフィールの自己ベストはそのままです。",
+    "seeIt": "見る",
+    "notSaved": "保存されませんでした。",
+    "postFailed": "結果を送信できませんでした。",
+    "noClock": "サーバーに接続できず、この記録を計測できませんでした。"
+  },
+  "feedback": {
+    "wrong": "このポケモンではありません：それは{name}です。",
+    "dup": "{name}はもう答えています。",
+    "out": "{name}は{label}に入っていません。"
+  },
+  "grid": {
+    "gen": "第{n}世代・{region}",
+    "pokemon": "ポケモン",
+    "open": "{name}：図鑑ページを開く"
+  },
+  "regions": {
+    "kanto": "カントー",
+    "johto": "ジョウト",
+    "hoenn": "ホウエン",
+    "sinnoh": "シンオウ",
+    "unova": "イッシュ",
+    "kalos": "カロス",
+    "alola": "アローラ",
+    "galar": "ガラル",
+    "paldea": "パルデア"
+  }
+}

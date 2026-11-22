@@ -1,0 +1,56 @@
+{
+  "title": "Name 'em All",
+  "ogAlt": "Name 'em All: how many Pokémon can you name from memory?",
+  "back": "All categories",
+  "count": "{n} Pokémon",
+  "hub": {
+    "metaTitle": "Name 'em All: Can You Name Every Pokémon? Recall Quiz",
+    "metaDescription": "Type every Pokémon you can remember: all of them, a generation, a type, Legendaries, Megas, regional forms or a regional Pokédex. Daily quiz, races with friends and personal bests.",
+    "eyebrow": "Recall quiz",
+    "lead": "How many Pokémon can you name from memory? Type them in, and each one pops into its slot the moment it's spelled right.",
+    "info": {
+      "description": "A free Pokémon recall quiz: name every Pokémon in a category against the clock.",
+      "intro": "Name 'em All is a Pokémon recall quiz: pick a category and type every Pokémon in it from memory. Names count the instant they're spelled right, in any order.",
+      "steps": {
+        "pick": "Pick a category: everything, a generation, a type, the Legendaries, Megas, regional forms or a regional Pokédex.",
+        "mode": "Choose Regular, Chaos or Dex order, a timer and any hints.",
+        "type": "Type names: each fills its slot as soon as it's spelled right. Capitals, accents and punctuation don't matter.",
+        "giveUp": "Give up any time to see the ones you missed, each linked to its Pokédex page."
+      },
+      "faq": {
+        "dailyQ": "Is there a daily?",
+        "dailyA": "Yes: one category a day, the same for everyone. One try a day counts.",
+        "raceQ": "Can I race my friends?",
+        "raceA": "Start a race, share the link, and up to eight trainers name the same category at once with live progress bars.",
+        "bestQ": "Where are my best runs?",
+        "bestA": "Sign in and play in Regular mode without hints or pausing: your fastest full clear and the most you named inside the standard time show on your trainer profile."
+      }
+    }
+  },
+  "category": {
+    "lead": "{count} Pokémon · standard time {minutes}:00. {description}",
+    "intro": "{h1}: a free recall quiz. {description}",
+    "steps": {
+      "pick": "Pick a mode, a timer and any hints.",
+      "type": "Type names: each one fills its slot as soon as it's spelled right.",
+      "finish": "Name them all before time runs out, or give up to see the ones you missed."
+    },
+    "faq": {
+      "spellQ": "Do I need to spell names exactly?",
+      "spellA": "Capitals, accents, spaces and punctuation don't matter. Turn on the spelling helper to get a suggestion when you're one or two letters off.",
+      "bestQ": "What counts as a personal best?",
+      "bestA": "Regular runs without hints or pauses: your fastest full clear and the most you named inside the standard {minutes} minutes, shown on your trainer profile when you're signed in."
+    }
+  },
+  "daily": {
+    "metaTitle": "Name 'em All Daily: Today's Pokémon Recall Quiz",
+    "metaDescription": "One Pokémon category a day, the same for everyone: name as many as you can in the standard time and see where you rank today."
+  },
+  "race": {
+    "title": "A Name 'em All race",
+    "invite": "{name} invites you to a Name 'em All race",
+    "trainer": "A trainer",
+    "about": "A Name 'em All race: everyone names the same Pokémon, first to name them all wins.",
+    "aboutIn": "A Name 'em All race ({label}): everyone names the same Pokémon, first to name them all wins."
+  }
+}

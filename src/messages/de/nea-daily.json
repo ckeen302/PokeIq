@@ -1,0 +1,7 @@
+{
+  "eyebrow": "Nenn sie alle · Tagesquiz {date}",
+  "fallback": "Heutige Kategorie",
+  "lead": "Eine Kategorie pro Tag, für alle dieselbe. Ein Versuch zählt für deine Bestleistung: Modus Normal, Standardzeit, ohne Hinweise und Pausen.",
+  "loading": "Heutige Pokémon werden geladen…",
+  "failed": "Die Pokémon konnten nicht geladen werden. Prüfe deine Verbindung und lade die Seite neu."
+}

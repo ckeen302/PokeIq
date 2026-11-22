@@ -14,7 +14,10 @@ export interface NeaTarget {
   num: number;
   /** National dex number of the species (its Pokédex page and its generation). */
   species: number;
+  /** The name shown, in the page's language. */
   name: string;
+  /** Another language only: other names the slot answers to (the English one, and for Japanese rōmaji). */
+  aliases?: string[];
   /** Pokédex page slug of the species. */
   slug: string;
   gen: number;
@@ -28,8 +31,15 @@ export interface NeaTarget {
     qualifier?: string;
     /** The default of several same-kind forms of one species (Standard Darmanitan, Amped Toxtricity, Combat Breed Tauros). */
     primary?: boolean;
+    /** Another language only: the species' names there (official, rōmaji), written with or without the prefix. */
+    bases?: string[];
+    /** Another language only: that language's words for the prefix ("Méga", "メガ", "Alola"). */
+    prefixes?: string[];
   };
 }
+
+/** A species outside a category, as the "not in this one" message names it: its name, or (another language) its name and the other names it answers to. */
+export type NeaOutsider = string | string[];
 
 export type NeaMode = "regular" | "chaos" | "dex";
 

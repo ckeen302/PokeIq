@@ -1,0 +1,119 @@
+{
+  "title": "Name 'em All",
+  "share": {
+    "daily": "Name 'em All Daily {date}",
+    "score": "{named}/{total} in {time}",
+    "copied": "Copied!",
+    "shared": "Shared!",
+    "button": "Share result"
+  },
+  "modes": {
+    "regular": {
+      "label": "Regular",
+      "blurb": "Any order you like."
+    },
+    "chaos": {
+      "label": "Chaos",
+      "blurb": "Name the one we point at, in random order."
+    },
+    "dex": {
+      "label": "Dex order",
+      "blurb": "One after another, in Pokédex order."
+    }
+  },
+  "hud": {
+    "resume": "Resume",
+    "pause": "Pause",
+    "silhouetteAnother": "Silhouette hint: show another",
+    "silhouette": "Silhouette hint",
+    "showAnother": "Show another",
+    "askDex": "Next up No. {num}",
+    "askChaos": "Name No. {num}",
+    "paused": "Paused",
+    "whoThis": "Who's this one?",
+    "typeName": "Type a Pokémon's name…",
+    "nameLabel": "Name a Pokémon",
+    "skipLabel": "Skip this one",
+    "skip": "Skip",
+    "reveal": "Reveal?",
+    "giveUp": "Give up",
+    "didYouMean": "Did you mean {name}? Tap or press Enter",
+    "giveUpConfirm": "Give up and see the ones you missed?",
+    "keepGoing": "Keep going",
+    "regularLong": "Any order. Names count as soon as they're spelled right.",
+    "regularShort": "Any order. A name counts once it's spelled right.",
+    "chaos": "Name the one we point at, or skip it.",
+    "dex": "In Pokédex order. Skip one to come back to it.",
+    "pausedNote": "The clock is stopped. Paused runs don't count as personal bests.",
+    "left": "{time} left",
+    "played": "{time} played"
+  },
+  "setup": {
+    "resumeTitle": "Pick up where you left off?",
+    "resumeText": "{named}/{total} named in {time} ({mode}). Resumed runs don't count as personal bests.",
+    "mode": "Mode",
+    "timer": "Timer",
+    "minutes": "{m, plural, one {{m} minute} other {{m} minutes}}",
+    "minutesStandard": "{m, plural, one {{m} minute (standard)} other {{m} minutes (standard)}}",
+    "noLimit": "No limit (∞)",
+    "hints": "Hints",
+    "silhouette": "Silhouette",
+    "silhouetteHint": "A shadow of one you haven't named",
+    "autoCycle": "Auto-cycle",
+    "autoCycleHint": "A new silhouette every 20s",
+    "spelling": "Spelling helper",
+    "spellingHint": "Suggests the closest name",
+    "options": "Options",
+    "shiny": "Shiny sprites",
+    "cycle": "Cycle sprites",
+    "cycleHint": "Pixel ↔ artwork",
+    "sound": "Sound",
+    "save": "Save progress",
+    "saveHint": "On this device",
+    "startOver": "Start over",
+    "start": "Start",
+    "dailyNote": "One try a day for your best: no hints, no pausing.",
+    "bestsNote": "Personal bests: Regular mode, no hints, no pausing. The standard time is {standard}:00.",
+    "best": "Your best: {named}/{total} in {time}"
+  },
+  "results": {
+    "clear": "You named them all!",
+    "time": "Time's up!",
+    "gaveUp": "Here's what you missed",
+    "score": "<final>{named}/{total}</final> in <b>{time}</b>",
+    "missed": "{n, plural, one {{n} missed, shown in red below (tap one for its Pokédex page)} other {{n} missed, shown in red below (tap one for its Pokédex page)}}",
+    "newBest": "New personal best!",
+    "again": "Play again",
+    "other": "Other categories",
+    "practice": "Practice run: only Regular runs with no hints, pauses or resumes count as personal bests.",
+    "checking": "Checking your run…",
+    "signIn": "<link>Sign in</link> to keep your best on your trainer profile.",
+    "improved": "New best saved to your profile.",
+    "stands": "Checked. Your best on your profile still stands.",
+    "seeIt": "See it",
+    "notSaved": "Not saved.",
+    "postFailed": "Couldn't post the result.",
+    "noClock": "Couldn't reach the server to time this run."
+  },
+  "feedback": {
+    "wrong": "Not this one: that's {name}.",
+    "dup": "{name} is already named.",
+    "out": "{name} isn't in {label}."
+  },
+  "grid": {
+    "gen": "Gen {n} · {region}",
+    "pokemon": "Pokémon",
+    "open": "{name}: open its Pokédex page"
+  },
+  "regions": {
+    "kanto": "Kanto",
+    "johto": "Johto",
+    "hoenn": "Hoenn",
+    "sinnoh": "Sinnoh",
+    "unova": "Unova",
+    "kalos": "Kalos",
+    "alola": "Alola",
+    "galar": "Galar",
+    "paldea": "Paldea"
+  }
+}
