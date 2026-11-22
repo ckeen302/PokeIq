@@ -363,7 +363,7 @@ function Density({ density, toScreen, cell, id }: { density: NonNullable<Props["
  * The guess marker: a teardrop pin (GeoGuessr's) with the trainer's avatar
  * inside, or a Poké Ball for a guest, dropping in. The tip is the guess.
  */
-function GuessPin({ x, y, label, color = "#3a8dde", image, delay = 0 }: { x: number; y: number; label?: string; color?: string; image?: string; delay?: number }) {
+export function GuessPin({ x, y, label, color = "#3a8dde", image, delay = 0 }: { x: number; y: number; label?: string; color?: string; image?: string; delay?: number }) {
   const r = 11;
   const id = useId();
   return (
@@ -398,7 +398,7 @@ function GuessPin({ x, y, label, color = "#3a8dde", image, delay = 0 }: { x: num
 }
 
 /** The true location: a black disc with a white ring and a yellow flag, popping in after the line draws. */
-function Flag({ x, y }: { x: number; y: number }) {
+export function Flag({ x, y }: { x: number; y: number }) {
   return (
     <g transform={`translate(${x} ${y})`}>
       <g className="geo-flag">
