@@ -6,6 +6,7 @@ import { hashString } from "@/lib/rng";
 import { ZOOM_PADDING, pickZoomWindow } from "@/lib/server/zoom";
 import { zoomStepWindow } from "@/lib/server/zoom-reveal";
 import type { MediaKind } from "@/engines/types";
+import { CRY_CONTENT_TYPE, cryFormat, vorbisToWav } from "@/lib/server/cry-audio";
 
 /**
  * GET /api/media/:token — opaque question media.
@@ -15,6 +16,10 @@ import type { MediaKind } from "@/engines/types";
  * the CDN serves repeat views without running this function. Silhouettes are rendered here with sharp (alpha channel kept,
  * colour discarded), meaning the full artwork never reaches the browser
  * before the answer is graded — no "open image in new tab" cheating.
+ *
+ * Cries go out as the file really is (Ogg Vorbis, or MP3 for the few PokeAPI
+ * stores under an .ogg name). `?format=wav` is for browsers without Ogg
+ * Vorbis (Safari): the cry is decoded here and sent as a WAV.
  */
 
 export const runtime = "nodejs";
@@ -99,11 +104,16 @@ async function zoomStep(id: number, step: number, crop: number): Promise<Rendere
   return { body, type: "image/webp" };
 }
 
-async function render(kind: MediaKind, id: number, step = 1, crop = 0): Promise<Rendered> {
+async function cry(id: number, wav: boolean): Promise<Rendered> {
+  const body = await fetchUpstream(cryUrl(id));
+  const format = cryFormat(body);
+  if (wav && format === "ogg") return { body: await vorbisToWav(body), type: CRY_CONTENT_TYPE.wav };
+  return { body, type: CRY_CONTENT_TYPE[format] };
+}
+
+async function render(kind: MediaKind, id: number, step = 1, crop = 0, wav = false): Promise<Rendered> {
   if (kind === "zoom-reveal") return zoomStep(id, step, crop);
-  if (kind === "cry") {
-    return { body: await fetchUpstream(cryUrl(id)), type: "audio/ogg" };
-  }
+  if (kind === "cry") return cry(id, wav);
   const art = await fetchUpstream(artworkUrl(id));
   if (kind === "artwork") {
     return { body: await sharp(art).resize(400).webp({ quality: 82 }).toBuffer(), type: "image/webp" };
@@ -126,7 +136,7 @@ async function render(kind: MediaKind, id: number, step = 1, crop = 0): Promise<
   return { body: await img.resize(400, 400, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } }).webp({ quality: 85 }).toBuffer(), type: "image/webp" };
 }
 
-export async function GET(_request: NextRequest, context: { params: Promise<{ token: string }> }) {
+export async function GET(request: NextRequest, context: { params: Promise<{ token: string }> }) {
   const { token } = await context.params;
   const media = readMediaToken(token);
   if (media === "expired") return NextResponse.json({ error: "Expired" }, { status: 410, headers: { "Cache-Control": "no-store" } });
@@ -134,14 +144,16 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ to
 
   const step = Math.min(6, Math.max(1, Math.round(media.step)));
   const crop = Math.max(0, Math.round(media.crop));
-  const key = media.kind === "zoom-reveal" ? `${media.kind}:${media.id}:${crop}:${step}` : `${media.kind}:${media.id}`;
+  const wav = media.kind === "cry" && request.nextUrl.searchParams.get("format") === "wav";
+  const key =
+    media.kind === "zoom-reveal" ? `${media.kind}:${media.id}:${crop}:${step}` : `${media.kind}:${media.id}${wav ? ":wav" : ""}`;
   try {
     let rendered = cache.get(key);
     if (!rendered) {
       // Players on the same question at once (a daily, a popular quiz) share one render.
       let pending = rendering.get(key);
       if (!pending) {
-        pending = render(media.kind, media.id, step, crop).finally(() => rendering.delete(key));
+        pending = render(media.kind, media.id, step, crop, wav).finally(() => rendering.delete(key));
         rendering.set(key, pending);
       }
       rendered = await pending;

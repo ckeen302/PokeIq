@@ -23,6 +23,7 @@ import { runHydration } from "./e2e-hydration.mjs";
 import { runI18n } from "./e2e-i18n.mjs";
 import { runMassBattle } from "./e2e-mass-battle.mjs";
 import { runRace } from "./e2e-race.mjs";
+import { runCry } from "./e2e-cry.mjs";
 import { runGames } from "./e2e-games.mjs";
 import { runWorldHistory } from "./e2e-world-history.mjs";
 import { runPokemonStory } from "./e2e-pokemon-story.mjs";
@@ -283,7 +284,7 @@ if (shareToken) {
   else fs.writeFileSync(`${OUT}/challenge-og.png`, await og.body());
 }
 
-for (const slug of ["pokemon-higher-or-lower", "pokemon-type-quiz", "pokedex-entry-quiz", "pokemon-cry-quiz"]) {
+for (const slug of ["pokemon-higher-or-lower", "pokemon-type-quiz", "pokedex-entry-quiz"]) {
   step(slug);
   await gotoSettled(page, `${BASE}/quiz/${slug}`);
   await page.getByRole("button", { name: /^Start/ }).click();
@@ -291,6 +292,9 @@ for (const slug of ["pokemon-higher-or-lower", "pokemon-type-quiz", "pokedex-ent
   await page.waitForTimeout(900);
   await page.screenshot({ path: `${OUT}/quiz-${slug}.png` });
 }
+
+// Cry Quiz: each question's cry plays by itself, Play replays it, Safari gets a WAV.
+await runCry({ browser, BASE, OUT, errors, step });
 
 // The trivia quizzes: a full Classic run each. Questions never carry the answer
 // or its source; each reveal links the Bulbapedia page it was checked against.

@@ -93,7 +93,9 @@ const nextConfig: NextConfig = {
     /Googlebot|[\w-]+-Google|Google-[\w-]+|Chrome-Lighthouse|Slurp|DuckDuckBot|baiduspider|yandex|sogou|bitlybot|tumblr|vkShare|quora link preview|redditbot|ia_archiver|Bingbot|BingPreview|applebot|facebookexternalhit|facebookcatalog|Twitterbot|LinkedInBot|Slackbot|Discordbot|WhatsApp|SkypeUriPreview|Yeti|googleweblight/i,
   // The battle simulator runs as plain Node modules: bundled and minified,
   // its state serializer (which records constructor names) breaks.
-  serverExternalPackages: ["pokemon-showdown", "@pkmn/sim"],
+  // The cry decoder (Safari's WAV cries) carries a Web Worker shim that
+  // requires by computed path: loaded from node_modules, not bundled.
+  serverExternalPackages: ["pokemon-showdown", "@pkmn/sim", "@wasm-audio-decoders/ogg-vorbis"],
   // Showdown loads its data, formats and random-team generators with
   // computed require() paths, which file tracing can't follow.
   // Link-preview cards drawn on request (invites, Pokémon pages) read their

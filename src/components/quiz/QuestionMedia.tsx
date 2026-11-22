@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ImageOff, Pause, Play, RotateCcw, Volume2 } from "lucide-react";
+import { ImageOff, Play, RotateCcw, Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { preloadedImage } from "@/lib/preload";
+import { cryElement, markCryUnlocked, playableCryUrl, wavCryUrl } from "@/lib/cry-audio";
 
 /**
  * Question media. Silhouettes sit on the classic "Who's That Pokémon?"
@@ -92,70 +93,115 @@ export function ImageMedia({ src, revealSrc, silhouette, revealed, label, priori
   );
 }
 
+type CryState = "loading" | "playing" | "ready" | "blocked" | "error";
+
+const CRY_LABEL: Record<CryState, string> = {
+  loading: "Loading cry…",
+  playing: "Playing…",
+  ready: "Tap to play cry",
+  blocked: "Tap to hear the cry",
+  error: "Cry didn't load · tap to retry",
+};
+
+/**
+ * A question's cry: it plays by itself as the question appears, and the
+ * button plays it again from the start as often as the player likes. Every
+ * cry goes through one shared <audio> element (lib/cry-audio.ts), so a new
+ * question's cry replaces the last one, and the tap on Start lets it play on
+ * iOS. If the browser still refuses to start it alone, the button says
+ * "Tap to hear the cry" instead of staying silent. Key it by `src`.
+ */
 export function CryPlayer({ src }: { src: string }) {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [playing, setPlaying] = useState(false);
-  const [unsupported, setUnsupported] = useState(false);
+  const [state, setState] = useState<CryState>("loading");
   const [plays, setPlays] = useState(0);
+  const controls = useRef<{ play: () => void; reload: () => void } | null>(null);
 
   useEffect(() => {
-    const audio = new Audio();
-    if (!audio.canPlayType("audio/ogg")) {
-      setUnsupported(true);
-      return;
-    }
-    audio.src = src;
-    audio.volume = 0.6;
-    audioRef.current = audio;
-    const onEnd = () => setPlaying(false);
-    audio.addEventListener("ended", onEnd);
-    // Autoplay works after the player's first click on the page.
-    audio
-      .play()
-      .then(() => {
-        setPlaying(true);
-        setPlays(1);
-      })
-      .catch(() => setPlaying(false));
-    return () => {
+    const audio = cryElement();
+    if (!audio) return;
+    let live = true;
+    let url = playableCryUrl(src);
+    const ours = () => live && audio.src === new URL(url, window.location.href).href;
+
+    const play = () => {
+      try {
+        audio.currentTime = 0;
+      } catch {
+        // not seekable yet: it starts from the beginning anyway
+      }
+      audio.play().then(
+        () => {
+          if (!live) return;
+          markCryUnlocked();
+          setPlays((n) => n + 1);
+        },
+        (err: unknown) => {
+          if (!ours()) return;
+          const name = err instanceof Error ? err.name : "";
+          // AbortError: a newer load or a pause replaced this play. NotSupportedError: the error event handles it.
+          if (name === "AbortError" || name === "NotSupportedError") return;
+          setState(name === "NotAllowedError" ? "blocked" : "error");
+        }
+      );
+    };
+    const load = (next: string) => {
+      url = next;
       audio.pause();
-      audio.removeEventListener("ended", onEnd);
+      audio.src = url;
+      play();
+    };
+    const onPlaying = () => ours() && setState("playing");
+    const onStopped = () => ours() && setState((s) => (s === "playing" ? "ready" : s));
+    const onError = () => {
+      if (!ours()) return;
+      // A browser that claimed Ogg Vorbis but can't play this file: the WAV plays everywhere.
+      if (url !== wavCryUrl(src)) load(wavCryUrl(src));
+      else setState("error");
+    };
+    audio.addEventListener("playing", onPlaying);
+    audio.addEventListener("pause", onStopped);
+    audio.addEventListener("ended", onStopped);
+    audio.addEventListener("error", onError);
+    controls.current = { play, reload: () => load(url) };
+    load(url);
+    return () => {
+      const mine = ours();
+      live = false;
+      controls.current = null;
+      audio.removeEventListener("playing", onPlaying);
+      audio.removeEventListener("pause", onStopped);
+      audio.removeEventListener("ended", onStopped);
+      audio.removeEventListener("error", onError);
+      // Moving on (or leaving) stops this cry; the next question's cry takes the element over.
+      if (mine) audio.pause();
     };
   }, [src]);
 
-  function toggle() {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (playing) {
-      audio.pause();
-      audio.currentTime = 0;
-      setPlaying(false);
-    } else {
-      audio.currentTime = 0;
-      void audio.play().then(() => {
-        setPlaying(true);
-        setPlays((p) => p + 1);
-      });
-    }
+  /** Play from the start, even mid-cry. A tap, so it also unlocks autoplay for the next questions. */
+  function replay() {
+    const c = controls.current;
+    if (!c) return;
+    if (state === "error") {
+      setState("loading");
+      c.reload();
+    } else c.play();
   }
 
-  if (unsupported) {
-    return (
-      <p className="rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-center text-sm">
-        Your browser can&apos;t play Pokémon cries (Ogg audio). Try Chrome, Firefox or a recent Safari.
-      </p>
-    );
-  }
+  const playing = state === "playing";
+  const label = state === "ready" && plays > 0 ? `Played ${plays}x · tap to replay` : CRY_LABEL[state];
 
   return (
-    <div className="screen mx-auto flex w-full max-w-sm items-center gap-4 rounded-lg p-4">
+    <div className="screen mx-auto flex w-full max-w-sm items-center gap-4 rounded-lg p-4" data-testid="cry-player" data-state={state} data-plays={plays}>
       <button
         type="button"
-        onClick={toggle}
-        className="relative z-[3] flex h-16 w-16 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-[0_4px_0_hsl(var(--primary-shadow))] transition active:translate-y-[2px] active:shadow-[0_2px_0_hsl(var(--primary-shadow))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        aria-label={playing ? "Stop cry" : "Play cry"}
+        onClick={replay}
+        className={cn(
+          "relative z-[3] flex h-16 w-16 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-[0_4px_0_hsl(var(--primary-shadow))] transition active:translate-y-[2px] active:shadow-[0_2px_0_hsl(var(--primary-shadow))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          state === "blocked" && "animate-pulse ring-4 ring-screen/70"
+        )}
+        aria-label={playing ? "Replay cry" : "Play cry"}
       >
-        {playing ? <Pause className="h-7 w-7" /> : <Play className="ml-0.5 h-7 w-7 fill-current" />}
+        {playing ? <RotateCcw className="h-7 w-7" /> : <Play className="ml-0.5 h-7 w-7 fill-current" />}
       </button>
       <div className="relative z-[3] min-w-0 flex-1 space-y-2">
         <div className="flex h-10 items-end gap-[3px]" aria-hidden>
@@ -171,7 +217,7 @@ export function CryPlayer({ src }: { src: string }) {
         </div>
         <div className="flex items-center gap-1.5 font-pixel text-[10px] uppercase tracking-wider text-screen/80">
           <Volume2 className="h-3 w-3" aria-hidden />
-          {plays === 0 ? "Tap to play cry" : `Played ${plays}x · tap to replay`}
+          <span aria-live="polite">{label}</span>
         </div>
       </div>
     </div>

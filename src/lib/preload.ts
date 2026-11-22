@@ -1,13 +1,15 @@
 /**
  * Asset preloading for timed games: a question's countdown only starts once
- * every image it shows is downloaded *and decoded* (and its cry, if any, can
- * play), so slow connections are never charged for loading time.
+ * every image it shows is downloaded *and decoded* (and its cry, if any, is
+ * downloaded), so slow connections are never charged for loading time.
  *
  * Results are memoised per URL, so preloading the same asset again (e.g. the
  * rendered <img> mounting after a warm-up) resolves immediately. Failures
  * resolve too: a broken image must not freeze the game, it shows its own
  * retry state instead.
  */
+
+import { playableCryUrl } from "./cry-audio";
 
 const cache = new Map<string, Promise<void>>();
 const MAX_CACHE = 300;
@@ -51,21 +53,30 @@ export function preloadImage(url: string, opts: { priority?: "high" } = {}): Pro
   return remember(url, p);
 }
 
+/**
+ * A cry, downloaded into the HTTP cache in the format this browser plays (so
+ * the <audio> element starts it at once). A plain fetch rather than an audio
+ * element: iOS doesn't load media for an element that hasn't been tapped, so
+ * waiting for its "canplaythrough" would hold every question's clock for the
+ * whole cap.
+ */
 export function preloadAudio(url: string): Promise<void> {
   if (typeof window === "undefined" || !url) return Promise.resolve();
-  const key = `audio:${url}`;
+  const src = playableCryUrl(url);
+  const key = `audio:${src}`;
   const hit = cache.get(key);
   if (hit) return hit;
-  const audio = new Audio();
-  if (!audio.canPlayType("audio/ogg")) return Promise.resolve();
-  const p = new Promise<void>((resolve) => {
-    const done = () => resolve();
-    audio.addEventListener("canplaythrough", done, { once: true });
-    audio.addEventListener("error", done, { once: true });
-  });
-  audio.preload = "auto";
-  audio.src = url;
-  audio.load();
+  const p = fetch(src)
+    .then((res) => {
+      if (!res.ok) throw new Error(`cry ${res.status}`);
+      return res.arrayBuffer();
+    })
+    .then(
+      () => undefined,
+      () => {
+        cache.delete(key); // allow a later retry; the player shows its own retry state
+      }
+    );
   return remember(key, p);
 }
 
