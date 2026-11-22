@@ -5,16 +5,12 @@ import { useEffect, useState } from "react";
 import { ChevronRight, ExternalLink, Layers, MapPin } from "lucide-react";
 import { spriteUrl } from "@/lib/pokemon/art";
 import { ERA_BY_ID, LANE_BY_ID, ROMAN, dateRows, formatDate, type TimelineEntry, type TimelineSpecies } from "@/lib/timeline/types";
+import { useT } from "@/i18n/client";
+import timelineNs from "@/messages/timeline";
+import stageNs from "@/messages/timeline-stage";
 
-const KIND: Record<string, string> = {
-  opener: "New generation",
-  enhanced: "Enhanced version",
-  remake: "Remake",
-  sequel: "Sequel",
-  legends: "Legends",
-  dlc: "DLC",
-  rerelease: "Re-release",
-};
+/** A generation as the language numbers it: Roman numerals, Japanese digits (第1世代). */
+const genOf = (gen: number, locale: string) => (locale === "ja" ? String(gen) : ROMAN[gen]);
 
 const host = (u: string) => new URL(u).hostname.replace(/^www\./, "");
 
@@ -36,19 +32,21 @@ function SpeciesChips({ list, testId }: { list: TimelineSpecies[]; testId: strin
 
 /** Every species a generation introduced, as a sprite strip (fetched when the panel opens). */
 function GenerationStrip({ gen }: { gen: number }) {
+  const t = useT(stageNs);
   const [list, setList] = useState<TimelineSpecies[] | null>(null);
   const [failed, setFailed] = useState(false);
   useEffect(() => {
     let alive = true;
     setList(null);
     setFailed(false);
-    fetch(`/pokedex/timeline/species/${gen}`)
+    // Other languages: the same list with the language's official names.
+    fetch(`/pokedex/timeline/species/${t.locale === "en" ? gen : `${gen}-${t.locale}`}`)
       .then((r) => (r.ok ? (r.json() as Promise<TimelineSpecies[]>) : Promise.reject(new Error(String(r.status)))))
       .then((l) => alive && setList(l))
       .catch(() => alive && setFailed(true));
     return () => { alive = false; };
-  }, [gen]);
-  if (failed) return <Link href={`/pokedex?gen=${gen}`} className="text-sm text-[hsl(var(--lane))] hover:underline">Generation {ROMAN[gen]} Pokémon in the Pokédex →</Link>;
+  }, [gen, t.locale]);
+  if (failed) return <Link href={`/pokedex?gen=${gen}`} className="text-sm text-[hsl(var(--lane))] hover:underline">{t("genInDex", { gen: genOf(gen, t.locale) })}</Link>;
   if (!list) return <div className="h-24 animate-pulse rounded-md bg-shade/30" />;
   return (
     <div className="space-y-2">
@@ -62,12 +60,14 @@ function GenerationStrip({ gen }: { gen: number }) {
           </li>
         ))}
       </ul>
-      <Link href={`/pokedex?gen=${gen}`} className="inline-block text-xs text-muted-foreground hover:text-foreground">Open Generation {ROMAN[gen]} in the Pokédex →</Link>
+      <Link href={`/pokedex?gen=${gen}`} className="inline-block text-xs text-muted-foreground hover:text-foreground">{t("openGenInDex", { gen: genOf(gen, t.locale) })}</Link>
     </div>
   );
 }
 
 export function TimelineDetail({ entry }: { entry: TimelineEntry }) {
+  const t = useT(stageNs);
+  const tl = useT(timelineNs);
   const lane = LANE_BY_ID[entry.lane];
   const era = ERA_BY_ID[entry.era];
   const rows = dateRows(entry);
@@ -76,30 +76,30 @@ export function TimelineDetail({ entry }: { entry: TimelineEntry }) {
     <div className="space-y-5 p-4 sm:p-5">
       <header className="space-y-2">
         <p className="flex flex-wrap items-center gap-2 font-pixel text-[9px] uppercase tracking-[0.16em]">
-          <span className="rounded-sm px-1.5 py-0.5" style={{ background: `hsl(${lane.color} / 0.16)`, color: `hsl(${lane.color})` }}>{lane.label}</span>
-          {entry.kind && <span className="text-muted-foreground">{KIND[entry.kind]}</span>}
-          {entry.setHref && entry.featured && <span className="text-foreground/80">Landmark set</span>}
-          <span className="text-muted-foreground" style={{ color: era.a }}>{era.device}</span>
+          <span className="rounded-sm px-1.5 py-0.5" style={{ background: `hsl(${lane.color} / 0.16)`, color: `hsl(${lane.color})` }}>{tl(`lanes.${entry.lane}`)}</span>
+          {entry.kind && <span className="text-muted-foreground">{t(`kinds.${entry.kind}`)}</span>}
+          {entry.setHref && entry.featured && <span className="text-foreground/80">{t("landmarkSet")}</span>}
+          <span className="text-muted-foreground" style={{ color: era.a }}>{tl(`eras.${entry.era}.device`)}</span>
         </p>
         <h2 className="font-display text-2xl font-bold uppercase leading-tight tracking-wide" data-testid="timeline-detail-title">{entry.title}</h2>
-        {entry.series && <p className="text-sm text-muted-foreground">Japanese series: {entry.series}</p>}
+        {entry.series && <p className="text-sm text-muted-foreground">{t("japaneseSeries", { series: entry.series })}</p>}
         {entry.note && <p className="text-sm text-foreground/85">{entry.note}</p>}
       </header>
 
       <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border bg-border text-sm">
         {rows.map((r) => (
           <div key={r.label} className="bg-card p-3" data-testid={`timeline-date-${r.label.toLowerCase().replace(/ /g, "-")}`}>
-            <dt className={label}>{r.label === "Worldwide" ? "Released worldwide" : r.label}</dt>
-            <dd className="font-display text-base font-semibold tabular-nums">{formatDate(r.date)}</dd>
+            <dt className={label}>{r.label === "Worldwide" ? t("releasedWorldwide") : tl(`dates.${r.label}`)}</dt>
+            <dd className="font-display text-base font-semibold tabular-nums">{formatDate(r.date, t.locale)}</dd>
           </div>
         ))}
         <div className={!entry.region && (rows.length + 1) % 2 ? "col-span-2 bg-card p-3" : "bg-card p-3"}>
-          <dt className={label}>Platform</dt>
+          <dt className={label}>{t("platform")}</dt>
           <dd className="font-semibold">{entry.platform}</dd>
         </div>
         {entry.region && (
           <div className={(rows.length + 2) % 2 ? "col-span-2 bg-card p-3" : "bg-card p-3"}>
-            <dt className={label}>Region</dt>
+            <dt className={label}>{tl("region")}</dt>
             <dd className="font-semibold">
               {entry.regionHref ? (
                 <Link href={entry.regionHref} className="inline-flex items-center gap-1 hover:text-[hsl(var(--lane))]" data-testid="timeline-region-link">
@@ -120,7 +120,7 @@ export function TimelineDetail({ entry }: { entry: TimelineEntry }) {
           data-testid="timeline-set-link"
         >
           <span className="inline-flex items-center gap-2">
-            <Layers className="h-4 w-4 text-[hsl(var(--lane))]" aria-hidden /> Browse the set&apos;s cards
+            <Layers className="h-4 w-4 text-[hsl(var(--lane))]" aria-hidden /> {t("browseSetCards")}
           </span>
           <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden />
         </Link>
@@ -128,25 +128,25 @@ export function TimelineDetail({ entry }: { entry: TimelineEntry }) {
 
       {entry.starters.length > 0 && (
         <section>
-          <h3 className={label}>Starters</h3>
+          <h3 className={label}>{tl("starters")}</h3>
           <SpeciesChips list={entry.starters} testId="timeline-starters" />
         </section>
       )}
       {entry.legendaries.length > 0 && (
         <section>
-          <h3 className={label}>Box legendaries</h3>
+          <h3 className={label}>{tl("boxLegendaries")}</h3>
           <SpeciesChips list={entry.legendaries} testId="timeline-legendaries" />
         </section>
       )}
       {entry.introduces && (
         <section>
-          <h3 className={label}>New Pokémon in Generation {ROMAN[entry.introduces]}</h3>
+          <h3 className={label}>{t("newPokemon", { gen: genOf(entry.introduces, t.locale) })}</h3>
           <GenerationStrip gen={entry.introduces} />
         </section>
       )}
 
       <section>
-        <h3 className={label}>Sources</h3>
+        <h3 className={label}>{t("sources")}</h3>
         <ul className="space-y-1 text-xs">
           {entry.sources.map((s) => (
             <li key={s}>

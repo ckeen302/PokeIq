@@ -1,0 +1,33 @@
+{
+  "lanes": {
+    "events": "Milestones",
+    "tcg": "TCG",
+    "games": "Main games",
+    "anime": "Anime",
+    "movies": "Movies",
+    "spinoffs": "Spin-offs"
+  },
+  "eras": {
+    "gb": { "label": "Generation I", "device": "Game Boy" },
+    "gbc": { "label": "Generation II", "device": "Game Boy Color" },
+    "gba": { "label": "Generation III", "device": "Game Boy Advance" },
+    "ds": { "label": "Generation IV", "device": "Nintendo DS" },
+    "ds2": { "label": "Generation V", "device": "Nintendo DS" },
+    "3ds": { "label": "Generations VI–VII", "device": "Nintendo 3DS" },
+    "switch": { "label": "Generations VIII–IX", "device": "Nintendo Switch" }
+  },
+  "dates": {
+    "Worldwide": "Worldwide",
+    "Japan": "Japan",
+    "North America": "North America",
+    "Europe": "Europe"
+  },
+  "today": "today",
+  "region": "Region",
+  "starters": "Starters",
+  "boxLegendaries": "Box legendaries",
+  "genPokemon": "Generation {gen} Pokémon →",
+  "browseCards": "Browse the set's cards →",
+  "sources": "Sources:",
+  "cards": "Cards →"
+}

@@ -2,9 +2,13 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { pageMetadata } from "@/lib/seo";
 import { TIMELINE } from "@/lib/timeline/data";
+import { localTimeline } from "@/lib/timeline/localize";
 import { entryPath } from "@/lib/timeline/deeplink";
-import { LANE_BY_ID, dateRows, firstRelease, formatDate, isCompact } from "@/lib/timeline/types";
+import { dateRows, firstRelease, formatDate, isCompact } from "@/lib/timeline/types";
 import { TimelinePage } from "@/components/timeline/TimelinePage";
+import { getLocale, serverT } from "@/i18n/server";
+import timelineNs from "@/messages/timeline";
+import pageNs from "@/messages/timeline-page";
 
 /**
  * One moment's own page, /pokedex/timeline/<id>: the share link for an
@@ -23,19 +27,24 @@ export function generateStaticParams() {
   return TIMELINE.filter((e) => !isCompact(e)).map((e) => ({ event: e.id }));
 }
 
+/** The entry in the page's language. */
 async function find(params: Promise<{ event: string }>) {
   const { event } = await params;
-  return TIMELINE.find((e) => e.id === event);
+  return localTimeline(getLocale()).find((e) => e.id === event);
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ event: string }> }): Promise<Metadata> {
   const e = await find(params);
   if (!e) return {};
+  const t = serverT(pageNs);
+  const tl = serverT(timelineNs);
   const first = firstRelease(e);
-  const when = dateRows(e).map((r) => `${r.label} ${formatDate(r.date)}`).join(", ");
-  const description = `${e.title} (${LANE_BY_ID[e.lane].label}, ${e.platform}): ${when}.${e.note ? ` ${e.note}` : ""} Fly to it on the 3D Pokémon Timeline.`;
+  const when = dateRows(e).map((r) => t("dateRow", { label: tl(`dates.${r.label}`), date: formatDate(r.date, t.locale) })).join(t("dateJoin"));
+  // Japanese runs its sentences together.
+  const gap = t.locale === "ja" ? "" : " ";
+  const description = `${t("eventWhen", { title: e.title, lane: tl(`lanes.${e.lane}`), platform: e.platform, when })}${e.note ? `${gap}${e.note}` : ""}${gap}${t("eventFly")}`;
   return pageMetadata({
-    title: `${e.title} (${first.date.slice(0, 4)}) — Pokémon Timeline`,
+    title: t("eventTitle", { title: e.title, year: first.date.slice(0, 4) }),
     description: description.length > 300 ? `${description.slice(0, 297)}…` : description,
     path: entryPath(e.id),
   });

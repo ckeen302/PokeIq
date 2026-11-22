@@ -16,6 +16,9 @@ import { TIMELINE_CSS } from "./timeline-css";
 import { cn } from "@/lib/utils";
 import { LAB_PATH, WORLD_HISTORY_LIVE } from "@/lib/lab";
 import { HISTORY_PATH } from "@/lib/world-history/deeplink";
+import { useT } from "@/i18n/client";
+import timelineNs from "@/messages/timeline";
+import stageNs from "@/messages/timeline-stage";
 
 // The intro and the era transitions load only when they are about to play.
 const TimelineIntro = lazy(() => import("./TimelineIntro"));
@@ -60,6 +63,8 @@ const INTRO_FLIGHT_S = 2.1;
  * page) opens with that entry in view and its panel open.
  */
 export function TimelineExperience({ entries, eraStarts, initialId = null, children }: { entries: TimelineEntry[]; eraStarts: EraStart[]; initialId?: string | null; children: React.ReactNode }) {
+  const t = useT(stageNs);
+  const tl = useT(timelineNs);
   const [mode, setMode] = useState<Mode>("boot");
   const [ready, setReady] = useState(false);
   /** Bumped to build the scene again (after its WebGL context was lost); it picks up where the camera was. */
@@ -97,8 +102,8 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
   const span = tEnd - T_START;
   const pct = (t: number) => `${(((t - T_START) / span) * 100).toFixed(3)}%`;
   const sceneEras: SceneEra[] = useMemo(
-    () => eraStarts.map((s) => { const e = ERAS.find((x) => x.id === s.id)!; return { start: s.start, a: e.a, b: e.b, deep: e.deep, label: e.label, device: e.device, year: s.year }; }),
-    [eraStarts]
+    () => eraStarts.map((s) => { const e = ERAS.find((x) => x.id === s.id)!; return { start: s.start, a: e.a, b: e.b, deep: e.deep, label: tl(`eras.${e.id}.label`), device: tl(`eras.${e.id}.device`), year: s.year }; }),
+    [eraStarts, tl]
   );
   // Each generation's stretch runs from its opener to the next one's.
   const regions: SceneRegion[] = useMemo(() => {
@@ -201,9 +206,9 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
             lane: e.lane,
             t: e.t,
             title: e.title,
-            date: formatDate(firstRelease(e).date),
+            date: formatDate(firstRelease(e).date, t.locale),
             meta: metaOf(e),
-            laneLabel: LANE_BY_ID[e.lane].label,
+            laneLabel: tl(`lanes.${e.lane}`),
             compact: isCompact(e),
             featured: e.featured,
             mons: e.lane === "games" ? [...e.legendaries.map((s) => ({ id: s.id, name: s.name, legend: true })), ...e.starters.map((s) => ({ id: s.id, name: s.name, legend: false }))] : undefined,
@@ -406,14 +411,14 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
             ref={hostRef}
             className="tl-host absolute inset-0 isolate z-0 cursor-grab touch-none select-none active:cursor-grabbing"
             data-testid="timeline-scene"
-            aria-label="3D timeline of Pokémon history. Scroll, drag or use the arrow keys to travel through time; select a card to open it."
+            aria-label={t("sceneLabel")}
             role="application"
           />
           <div className="tl-fx" aria-hidden />
 
           {!ready && !intro && (
             <div className="absolute inset-0 flex items-center justify-center" aria-hidden>
-              <div className="tl-boot font-pixel text-[10px] uppercase tracking-[0.3em] text-[color:var(--era-a)]">Booting timeline…</div>
+              <div className="tl-boot font-pixel text-[10px] uppercase tracking-[0.3em] text-[color:var(--era-a)]">{t("booting")}</div>
             </div>
           )}
 
@@ -448,8 +453,8 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
                 transition={{ duration: 0.55, delay: flash.forward && flash.n > 1 ? 0.25 : 0, ease: [0.2, 0.8, 0.2, 1] }}
                 data-testid="timeline-era-flash"
               >
-                <span className="tl-flash-k font-pixel text-[10px] uppercase tracking-[0.4em] sm:text-xs">{eraStarts[flash.i].year} · {ERAS.find((e) => e.id === eraStarts[flash.i].id)!.device}</span>
-                <span className="tl-flash-t mt-2 font-display text-3xl font-bold uppercase tracking-[0.18em] sm:text-6xl">{ERAS.find((e) => e.id === eraStarts[flash.i].id)!.label}</span>
+                <span className="tl-flash-k font-pixel text-[10px] uppercase tracking-[0.4em] sm:text-xs">{eraStarts[flash.i].year} · {tl(`eras.${eraStarts[flash.i].id}.device`)}</span>
+                <span className="tl-flash-t mt-2 font-display text-3xl font-bold uppercase tracking-[0.18em] sm:text-6xl">{tl(`eras.${eraStarts[flash.i].id}.label`)}</span>
               </motion.div>
             )}
           </AnimatePresence>
@@ -459,15 +464,15 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
             <div className="min-w-0 space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <Link href={LAB_PATH} className={chip + " text-muted-foreground hover:text-foreground"} data-testid="timeline-back">
-                  <ArrowLeft className="h-3.5 w-3.5" aria-hidden /> 3D Lab
+                  <ArrowLeft className="h-3.5 w-3.5" aria-hidden /> {t("back")}
                 </Link>
                 {WORLD_HISTORY_LIVE && (
                   <Link href={HISTORY_PATH} className={chip + " text-muted-foreground hover:text-foreground"} data-testid="timeline-world-history">
-                    In-universe history
+                    {t("inUniverse")}
                   </Link>
                 )}
                 <button type="button" className={chip + " text-muted-foreground hover:text-foreground"} onClick={() => setMode("list")} data-testid="timeline-list-view">
-                  <List className="h-3.5 w-3.5" aria-hidden /> List
+                  <List className="h-3.5 w-3.5" aria-hidden /> {t("list")}
                 </button>
                 <button
                   type="button"
@@ -479,27 +484,27 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
                   data-testid="timeline-tour"
                 >
                   {touring ? <Square className="h-3 w-3 fill-current" aria-hidden /> : <Play className="h-3.5 w-3.5 fill-current" aria-hidden />}
-                  {touring ? "Stop tour" : "Tour"}
+                  {touring ? t("stopTour") : t("tour")}
                   {touring && <span ref={tourBarRef} className="tl-tour-bar absolute inset-x-0 bottom-0 h-[2px] origin-left" style={{ transform: "scaleX(0)" }} aria-hidden />}
                 </button>
               </div>
               <div className="tl-ui">
                 {/* The page's own heading is its h1: this is the stage's title card. */}
                 <p className="tl-title font-display text-xl font-bold uppercase leading-none tracking-[0.14em] sm:text-3xl">
-                  Pokémon <span className="tl-accent">Timeline</span>
+                  {t("titleLead")}<span className="tl-accent">{t("titleAccent")}</span>
                 </p>
                 <p className="mt-1.5 font-pixel text-[9px] uppercase tracking-[0.16em] text-muted-foreground sm:text-[10px]">
-                  {era.label} · {era.device}
+                  {tl(`eras.${era.id}.label`)} · {tl(`eras.${era.id}.device`)}
                 </p>
               </div>
             </div>
             <div className="flex flex-col items-end gap-2">
               <div className="tl-year-readout tl-ui text-right" aria-live="off">
-                <span className="block font-pixel text-[9px] uppercase tracking-[0.3em] text-muted-foreground">Year</span>
+                <span className="block font-pixel text-[9px] uppercase tracking-[0.3em] text-muted-foreground">{t("year")}</span>
                 <span ref={yearRef} className="font-display text-3xl font-bold tabular-nums leading-none sm:text-5xl" data-testid="timeline-year">{T_START}</span>
               </div>
               <button type="button" className={chip + " lg:hidden"} aria-expanded={filtersOpen} onClick={() => setFiltersOpen((v) => !v)} data-testid="timeline-filters-toggle">
-                <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden /> Tracks
+                <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden /> {t("tracks")}
               </button>
             </div>
           </div>
@@ -510,7 +515,7 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
               filtersOpen ? "flex" : "hidden"
             )}
             role="group"
-            aria-label="Tracks"
+            aria-label={t("tracks")}
             data-testid="timeline-filters"
           >
             {LANES.map((l) => {
@@ -525,7 +530,7 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
                   className={cn(chip, "justify-between lg:justify-end", on ? "text-foreground" : "text-muted-foreground/60 line-through decoration-1")}
                   style={on ? { borderColor: `hsl(${l.color} / 0.55)`, boxShadow: `0 0 14px hsl(${l.color} / 0.18)` } : undefined}
                 >
-                  {l.label}
+                  {tl(`lanes.${l.id}`)}
                   <span className="h-2 w-2 rounded-full" style={{ background: on ? `hsl(${l.color})` : "transparent", boxShadow: on ? `0 0 8px hsl(${l.color})` : "none", border: `1px solid hsl(${l.color})` }} aria-hidden />
                 </button>
               );
@@ -546,7 +551,7 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
               >
                 <div className="tl-tour-cap max-w-full rounded-lg border bg-card/80 px-4 py-2 text-center backdrop-blur-md" style={{ "--lane": LANE_BY_ID[stopEntry.lane].color } as React.CSSProperties}>
                   <p className="font-pixel text-[9px] uppercase tracking-[0.2em]" style={{ color: `hsl(${LANE_BY_ID[stopEntry.lane].color})` }}>
-                    {LANE_BY_ID[stopEntry.lane].label} · {formatDate(firstRelease(stopEntry).date)}
+                    {tl(`lanes.${stopEntry.lane}`)} · {formatDate(firstRelease(stopEntry).date, t.locale)}
                   </p>
                   <p className="truncate font-display text-base font-bold uppercase tracking-wide sm:text-lg">{stopEntry.title}</p>
                 </div>
@@ -557,7 +562,7 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
           {/* Bottom: the year scrubber. */}
           <div className="tl-ui pointer-events-none absolute inset-x-0 bottom-0 z-10 px-3 pb-3 sm:px-6 sm:pb-5">
             <div className="mb-2 hidden items-center justify-between font-pixel text-[9px] uppercase tracking-[0.16em] text-muted-foreground sm:flex">
-              <span>Scroll, drag or ← → to travel · PgUp / PgDn jumps an era · select a card to open it</span>
+              <span>{t("hint")}</span>
               {currentId && byId.get(currentId) && <span className="max-w-[40%] truncate text-foreground/80">{byId.get(currentId)!.title}</span>}
             </div>
             <div
@@ -565,7 +570,7 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
               onPointerDown={onScrubDown}
               onPointerMove={onScrubMove}
               role="slider"
-              aria-label="Year"
+              aria-label={t("year")}
               aria-valuemin={T_START}
               aria-valuemax={Math.floor(tEnd)}
               aria-valuenow={Number(yearRef.current?.textContent ?? T_START)}
@@ -614,8 +619,8 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
                 <div className="sticky top-0 z-10 border-b border-foreground/[0.06] bg-card/95 backdrop-blur-xl">
                   <div className="flex items-center justify-between gap-2 px-4 py-2.5">
                     <div className="flex gap-1">
-                      <button type="button" onClick={() => stepOpen(-1)} className="rounded-md border p-1.5 text-muted-foreground hover:text-foreground" aria-label="Previous entry"><ChevronLeft className="h-4 w-4" /></button>
-                      <button type="button" onClick={() => stepOpen(1)} className="rounded-md border p-1.5 text-muted-foreground hover:text-foreground" aria-label="Next entry" data-testid="timeline-detail-next"><ChevronRight className="h-4 w-4" /></button>
+                      <button type="button" onClick={() => stepOpen(-1)} className="rounded-md border p-1.5 text-muted-foreground hover:text-foreground" aria-label={t("previous")}><ChevronLeft className="h-4 w-4" /></button>
+                      <button type="button" onClick={() => stepOpen(1)} className="rounded-md border p-1.5 text-muted-foreground hover:text-foreground" aria-label={t("next")} data-testid="timeline-detail-next"><ChevronRight className="h-4 w-4" /></button>
                     </div>
                     <div className="flex gap-1">
                       <button
@@ -625,9 +630,9 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
                         className={cn("inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors", shareOpen ? "border-[hsl(var(--lane)/0.7)] text-foreground" : "text-muted-foreground hover:text-foreground")}
                         data-testid="timeline-share"
                       >
-                        <Share2 className="h-3.5 w-3.5" aria-hidden /> Share
+                        <Share2 className="h-3.5 w-3.5" aria-hidden /> {t("share")}
                       </button>
-                      <button type="button" onClick={() => open(null)} className="rounded-md border p-1.5 text-muted-foreground hover:text-foreground" aria-label="Close" data-testid="timeline-detail-close"><X className="h-4 w-4" /></button>
+                      <button type="button" onClick={() => open(null)} className="rounded-md border p-1.5 text-muted-foreground hover:text-foreground" aria-label={t("close")} data-testid="timeline-detail-close"><X className="h-4 w-4" /></button>
                     </div>
                   </div>
                   <AnimatePresence initial={false}>
@@ -658,7 +663,7 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
       // Phones: on the back button's row, at its right, instead of a row of its own.
           <div className="mb-4 flex justify-end max-md:relative max-md:z-10 max-md:mb-0 max-md:h-0">
         <button type="button" onClick={() => setMode("3d")} className="rounded-md border bg-card px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:border-screen/60 hover:text-foreground max-md:h-9 max-md:py-0" data-testid="timeline-3d-view">
-          Open the 3D timeline
+          {t("open3d")}
         </button>
       </div>
     );

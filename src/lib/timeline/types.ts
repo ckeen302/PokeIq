@@ -1,3 +1,5 @@
+import { HAS_OTHER_LOCALES, type Locale } from "@/i18n/config";
+
 /**
  * The Pokémon history timeline (src/data/pokemon-timeline.json): lanes, eras
  * and date helpers. Client-safe: no Pokédex import here.
@@ -89,6 +91,8 @@ export interface TimelineEntry {
   setHref: string | null;
   featured: boolean;
   sources: string[];
+  /** Other languages only: the platform as a compact (TCG set) row shows it, without the card game's name. */
+  platformShort?: string;
 }
 
 export type EraId = "gb" | "gbc" | "gba" | "ds" | "ds2" | "3ds" | "switch";
@@ -138,9 +142,15 @@ export function yearFrac(s: string): number {
 }
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-/** "27 Feb 1996", or "Oct 1999" for a month-only date. */
-export function formatDate(s: string): string {
+const INTL: Record<Exclude<Locale, "en">, string> = { ja: "ja-JP", es: "es-ES", fr: "fr-FR", de: "de-DE", it: "it-IT" };
+
+/** "27 Feb 1996", or "Oct 1999" for a month-only date; other languages write it their own way ("1996年2月27日"). */
+export function formatDate(s: string, locale?: Locale): string {
   const m = DATE_RE.exec(s)!;
+  if (HAS_OTHER_LOCALES && locale && locale !== "en") {
+    const opts: Intl.DateTimeFormatOptions = { year: "numeric", month: "short", timeZone: "UTC", ...(m[3] && { day: "numeric" }) };
+    return new Intl.DateTimeFormat(INTL[locale], opts).format(Date.UTC(Number(m[1]), Number(m[2]) - 1, m[3] ? Number(m[3]) : 1));
+  }
   const mon = MONTHS[Number(m[2]) - 1];
   return m[3] ? `${Number(m[3])} ${mon} ${m[1]}` : `${mon} ${m[1]}`;
 }
@@ -151,10 +161,16 @@ export function firstDate(e: Pick<TimelineRaw, "date_jp" | "date_na" | "date_eu"
   return ds.reduce((a, b) => (yearFrac(b) < yearFrac(a) ? b : a));
 }
 
+export interface DateRow {
+  /** English; a key of the timeline namespace's `dates`. */
+  label: "Worldwide" | "Japan" | "North America" | "Europe";
+  date: string;
+}
+
 /** The labelled dates an entry shows, JP first. A same-day worldwide release is one line. */
-export function dateRows(e: Pick<TimelineEntry, "date_jp" | "date_na" | "date_eu" | "worldwide">): { label: string; date: string }[] {
+export function dateRows(e: Pick<TimelineEntry, "date_jp" | "date_na" | "date_eu" | "worldwide">): DateRow[] {
   if (e.worldwide && e.date_jp) return [{ label: "Worldwide", date: e.date_jp }];
-  const rows: { label: string; date: string }[] = [];
+  const rows: DateRow[] = [];
   if (e.date_jp) rows.push({ label: "Japan", date: e.date_jp });
   if (e.date_na) rows.push({ label: "North America", date: e.date_na });
   if (e.date_eu) rows.push({ label: "Europe", date: e.date_eu });
@@ -165,7 +181,7 @@ export function dateRows(e: Pick<TimelineEntry, "date_jp" | "date_na" | "date_eu
  * The earliest release (the date an entry sits at on the timeline and shows on
  * its card), with the region it was in. A tie keeps the first listed (Japan).
  */
-export function firstRelease(e: Pick<TimelineEntry, "date_jp" | "date_na" | "date_eu" | "worldwide">): { label: string; date: string } {
+export function firstRelease(e: Pick<TimelineEntry, "date_jp" | "date_na" | "date_eu" | "worldwide">): DateRow {
   return dateRows(e).reduce((a, b) => (yearFrac(b.date) < yearFrac(a.date) ? b : a));
 }
 

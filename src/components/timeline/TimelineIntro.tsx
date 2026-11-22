@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useT } from "@/i18n/client";
+import stageNs from "@/messages/timeline-stage";
 
 /**
  * The timeline's opening, once per browser: a dark handheld-style LCD powers
@@ -61,6 +63,7 @@ const CSS = `
 type Phase = "screen" | "fly" | "out";
 
 export default function TimelineIntro({ ready, flyAt, onFly, onSkip, onDone }: { ready: boolean; flyAt: number; onFly(): void; onSkip(): void; onDone(): void }) {
+  const t = useT(stageNs);
   const [phase, setPhase] = useState<Phase>("screen");
   const [shown, setShown] = useState(false);
   const t0 = useRef(0);
@@ -123,10 +126,10 @@ export default function TimelineIntro({ ready, flyAt, onFly, onSkip, onDone }: {
         <div className="tl-intro-glow" aria-hidden>
           <div className="tl-intro-year">1996</div>
         </div>
-        <div className="tl-intro-title">Pokémon Timeline</div>
-        <div className="tl-intro-sub" aria-hidden>Thirty years in one flight</div>
+        <div className="tl-intro-title">{t("introTitle")}</div>
+        <div className="tl-intro-sub" aria-hidden>{t("introSub")}</div>
       </div>
-      <p className="tl-intro-skip">Click, scroll or press any key to skip</p>
+      <p className="tl-intro-skip">{t("introSkip")}</p>
     </div>
   );
 }

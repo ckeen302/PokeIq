@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
+import { serverT } from "@/i18n/server";
+import pageNs from "@/messages/timeline-page";
 import { TimelinePage } from "@/components/timeline/TimelinePage";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Pokémon Timeline — the complete history in 3D",
-  description:
-    "Fly through Pokémon history from Red and Green in 1996 to today: every main-series game, remake and DLC, every anime season and film, TCG eras, key spin-offs and milestones, with Japanese and Western release dates.",
-  path: "/pokedex/timeline",
-});
+export function generateMetadata(): Metadata {
+  const t = serverT(pageNs);
+  return pageMetadata({
+    title: t("title"),
+    description: t("description"),
+    path: "/pokedex/timeline",
+  });
+}
 
 export default function Page() {
   return <TimelinePage />;
