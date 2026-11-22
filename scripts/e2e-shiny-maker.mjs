@@ -1,8 +1,8 @@
 /**
  * The Tools tab and the Shiny Pokémon Maker, end to end in the browser: /tools and its card, the maker's first
  * design, picking a Pokémon by search, recolouring a part from its chip and by clicking the sprite, Randomise,
- * the Normal / Official / Yours switch, undo, a share link that reopens with the same pixels, a PNG download, HD
- * (where the browser has WebGL 2), the preview card, and the phone layout (no sideways scroll, controls at least
+ * the Normal / Official / Yours switch, undo, a share link that reopens with the same pixels, a PNG download, the
+ * styles (Animated plays; 3D and Artwork draw where the browser has WebGL 2), Compare, the preview card, and the phone layout (no sideways scroll, controls at least
  * 40 px, labels at least 12 px, the colour sheet above the tab bar). Each part records a failure instead of
  * stopping the rest. Screenshots are best effort (CI runners sometimes can't capture one).
  *
@@ -192,21 +192,32 @@ export async function runShinyMaker({ browser, BASE, OUT = "e2e-screenshots", er
     if (!/\.png$/.test(download.suggestedFilename())) fail(`download name ${download.suggestedFilename()}`);
     await page.getByTestId("sm-drawer-close").click();
 
-    // HD, where WebGL 2 is available (Charizard has HD).
+    // The styles, on the stage: Animated plays the B/W animation, and (where WebGL 2 is available) 3D and Artwork
+    // draw Charizard; Compare shows Normal, Official and Yours together.
+    await page.getByTestId("sm-pokemon").click();
+    await page.getByTestId("sm-picker-search").fill("charizard");
+    await page.getByTestId("sm-pick-6").click();
+    await page.getByTestId("sm-pokemon").filter({ hasText: "Charizard" }).waitFor({ timeout: 15_000 });
+    await page.locator('[data-testid="sm-style"] [data-value="sd"]').click();
+    const f1 = await changedFrom(page, "x", 15_000);
+    await page.waitForTimeout(700);
+    if (!f1 || (await figureHash(page)) === f1) fail("Animated doesn't play the animation");
+    await shot(page, `${OUT}/shiny-maker-animated.png`, errors);
     const gl2 = await page.evaluate(() => !!document.createElement("canvas").getContext("webgl2"));
     if (gl2) {
-      await page.getByTestId("sm-pokemon").click();
-      await page.getByTestId("sm-picker-search").fill("charizard");
-      await page.getByTestId("sm-pick-6").click();
-      await page.getByTestId("sm-pokemon").filter({ hasText: "Charizard" }).waitFor({ timeout: 15_000 });
-      await page.getByTestId("sm-more").click();
-      await page.locator('[data-testid="sm-style"] [data-value="hd"]').click();
-      await page.getByTestId("sm-drawer-close").click();
-      if (!(await page.getByTestId("sm-hd-canvas").waitFor({ timeout: 30_000 }).then(() => true, () => false))) fail("HD didn't draw for Charizard");
-      else {
-        await page.waitForTimeout(2_000);
-        await shot(page, `${OUT}/shiny-maker-hd.png`, errors);
+      for (const st of ["hd", "art"]) {
+        await page.locator(`[data-testid="sm-style"] [data-value="${st}"]`).click();
+        if (!(await page.getByTestId("sm-hd-canvas").waitFor({ timeout: 30_000 }).then(() => true, () => false))) fail(`${st === "hd" ? "3D" : "Artwork"} didn't draw for Charizard`);
+        else {
+          await page.waitForTimeout(2_500);
+          await shot(page, `${OUT}/shiny-maker-${st}.png`, errors);
+        }
       }
+      await page.locator('[data-testid="sm-view"] [data-value="compare"]').click();
+      if ((await page.locator('[data-testid="sm-compare"] [data-testid="sm-hd-canvas"]').count()) !== 3) fail("Compare doesn't show three figures");
+      await page.waitForTimeout(2_500);
+      await shot(page, `${OUT}/shiny-maker-compare.png`, errors);
+      await page.locator('[data-testid="sm-view"] [data-value="yours"]').click();
     }
 
     // The preview card.

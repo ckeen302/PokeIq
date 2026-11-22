@@ -13,7 +13,7 @@ import { boardArtUrl } from "@/lib/pokemon/art";
 import { isCleanName } from "@/lib/name-filter";
 import { hex, type RGB } from "@/lib/shiny-maker/color";
 import { loadSpecies, type Species } from "@/lib/shiny-maker/data";
-import { cleanName, encodeDesign, fitsSpecies, newDesign, type Design, type PartColour } from "@/lib/shiny-maker/design";
+import { cleanName, encodeDesign, fitsSpecies, newDesign, STYLES, type Design, type PartColour, type Style } from "@/lib/shiny-maker/design";
 import { borrowParts, DEFAULT_ID, firstDesign, presetParts, randomParts, TYPE_GLOW, type Preset, type TypeName } from "@/lib/shiny-maker/presets";
 import { partSwatch, type View } from "@/lib/shiny-maker/recolor";
 import { loadFrames } from "@/lib/shiny-maker/frames";
@@ -22,7 +22,7 @@ import { canvasBlob, encodeInWorker, fileName, gifFrames, pixelCanvas, saveBlob 
 import { Dot } from "./ColourControls";
 import { ColourPanel } from "./ColourPanel";
 import { ExtrasPanel, Seg, type ColourBlind } from "./ExtrasPanel";
-import { HdFigure, HD_SIZE, hasWebGL2 } from "./HdFigure";
+import { HdFigure, hasWebGL2 } from "./HdFigure";
 import { Picker } from "./Picker";
 import { PixelFigure, type FigureHandle } from "./PixelFigure";
 
@@ -71,7 +71,8 @@ export default function ShinyMaker({ initial, linkBroken }: { initial: Design | 
   const [design, setDesign] = useState<Design | null>(initial);
   const [sp, setSp] = useState<Species | null>(null);
   const [loadError, setLoadError] = useState(false);
-  const [view, setView] = useState<View>("yours");
+  // What the stage shows: one view, or all three side by side.
+  const [view, setView] = useState<View | "compare">("yours");
   const [peek, setPeek] = useState(false);
   const [sel, setSel] = useState(-1);
   const [hover, setHover] = useState(-1);
@@ -82,7 +83,7 @@ export default function ShinyMaker({ initial, linkBroken }: { initial: Design | 
   const [toast, setToast] = useState<string | null>(linkBroken ? t("maker.badLink") : null);
   const [frames, setFrames] = useState<GifFrames | null>(null);
   const [gl2, setGl2] = useState(true);
-  const [hdFailed, setHdFailed] = useState<Set<number>>(new Set());
+  const [failed, setFailed] = useState<Set<string>>(new Set());
   const [gifBusy, setGifBusy] = useState(false);
   const [, bump] = useState(0);
   const past = useRef<Design[]>([]);
@@ -159,14 +160,19 @@ export default function ShinyMaker({ initial, linkBroken }: { initial: Design | 
 
   const ready = !!sp && !!design && sp.id === design.id && fitsSpecies(design, sp.parts.length, sp.slots.length);
 
+  const failStyle = useCallback((st: Style, id: number) => setFailed((f) => new Set(f).add(`${st}:${id}`)), []);
   // Animated sprite, fetched only when asked for.
   useEffect(() => {
     setFrames(null);
-    if (!ready || !design?.anim || design.style !== "px" || !sp?.anim) return;
+    if (!ready || design?.style !== "sd" || !sp?.anim) return;
     let live = true;
-    loadFrames(sp).then((f) => live && setFrames(f));
+    loadFrames(sp).then((f) => {
+      if (!live) return;
+      if (!f) failStyle("sd", sp.id);
+      setFrames(f);
+    });
     return () => { live = false; };
-  }, [ready, sp, design?.anim, design?.style]);
+  }, [ready, sp, design?.style, failStyle]);
 
   // The address carries the design (so a reload or a copied address keeps it).
   useEffect(() => {
@@ -179,8 +185,12 @@ export default function ShinyMaker({ initial, linkBroken }: { initial: Design | 
     return () => clearTimeout(id);
   }, [ready, design]);
 
-  const hdOk = !!sp?.hd && gl2 && !hdFailed.has(sp.id);
-  const style = design?.style === "hd" && hdOk ? "hd" : "px";
+  // Which styles this Pokémon has (and this browser can draw).
+  const canStyle = useCallback(
+    (st: Style) => !!sp && (st === "px" || (!failed.has(`${st}:${sp.id}`) && (st === "sd" ? sp.anim : gl2 && !!(st === "hd" ? sp.hd : sp.art)))),
+    [sp, failed, gl2]
+  );
+  const style: Style = design && canStyle(design.style) ? design.style : "px";
 
   const visibleParts = useMemo(() => (sp ? sp.parts.map((p, i) => ({ p, i })).filter(({ p }) => expert || !p.o) : []), [sp, expert]);
 
@@ -213,7 +223,7 @@ export default function ShinyMaker({ initial, linkBroken }: { initial: Design | 
     loadSpecies(id).then((s) => {
       const d = designRef.current;
       if (!d) return;
-      const next = { ...newDesign(id, s.parts.length, 1), style: d.style, finish: d.finish, sparkle: d.sparkle, glow: d.glow, bg: d.bg, anim: d.anim };
+      const next = { ...newDesign(id, s.parts.length, 1), style: d.style, finish: d.finish, sparkle: d.sparkle, glow: d.glow, bg: d.bg };
       setLocked(new Set());
       commit(next);
       setView("yours");
@@ -255,18 +265,19 @@ export default function ShinyMaker({ initial, linkBroken }: { initial: Design | 
     if (!sp || !design) return;
     try {
       let blob: Blob;
-      if (style === "hd") {
+      if (style === "hd" || style === "art") {
         const c = document.querySelector<HTMLCanvasElement>("[data-testid=sm-hd-canvas]");
         if (!c) return;
         const out = document.createElement("canvas");
-        out.width = HD_SIZE;
-        out.height = HD_SIZE;
+        out.width = c.width;
+        out.height = c.height;
         const ctx = out.getContext("2d")!;
         if (design.bg !== "none") {
           ctx.fillStyle = "#0e0c1d";
-          ctx.fillRect(0, 0, HD_SIZE, HD_SIZE);
+          ctx.fillRect(0, 0, out.width, out.height);
         }
-        ctx.drawImage(c, 0, 0);
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(c, 0, 0, out.width, out.height);
         blob = await canvasBlob(out);
       } else blob = await canvasBlob(pixelCanvas(sp, design, scale));
       saveBlob(blob, fileName(sp, design, "png"));
@@ -280,7 +291,7 @@ export default function ShinyMaker({ initial, linkBroken }: { initial: Design | 
     if (!sp || !design || gifBusy) return;
     setGifBusy(true);
     try {
-      const f = design.anim ? await loadFrames(sp) : null;
+      const f = style === "sd" ? await loadFrames(sp) : null;
       const blob = await encodeInWorker(gifFrames(sp, design, f));
       saveBlob(blob, fileName(sp, design, "gif"));
       say(t("toast.downloaded"));
@@ -288,6 +299,7 @@ export default function ShinyMaker({ initial, linkBroken }: { initial: Design | 
       setGifBusy(false);
     }
   };
+
 
   // Keys: Space randomises, ⌘Z / ⇧⌘Z (Ctrl+Z / Ctrl+Y) undo and redo, Escape closes.
   useEffect(() => {
@@ -356,7 +368,8 @@ export default function ShinyMaker({ initial, linkBroken }: { initial: Design | 
     } else if (sel >= 0) setSel(-1);
   };
 
-  const shownView: View = peek ? "normal" : view;
+  const compare = view === "compare";
+  const shownView: View = peek ? "normal" : view === "compare" ? "yours" : view;
   const glowHsl = TYPE_GLOW[sp?.types[0] ?? "fire"] ?? TYPE_GLOW.normal;
   const mainColour = sp && design && ready ? hex(partSwatch(sp, design, visibleParts[0]?.i ?? 0)) : "#ffffff";
 
@@ -366,28 +379,36 @@ export default function ShinyMaker({ initial, linkBroken }: { initial: Design | 
   const geo = useMemo(() => {
     const W = stage.w, H = stage.h;
     if (!W || !H || !sp) return null;
-    const restTop = phone ? 56 : 104, restBottom = phone ? 18 : 116;
+    const restTop = phone ? 56 : 104, restBottom = phone ? 64 : 116;
     // On a phone the sheet (about 310 px above the tab bar) covers the stage's lower part.
     const stageTop = stageBox.current?.getBoundingClientRect().top ?? 150;
     const openTop = phone ? 52 : 26, openBottom = phone ? Math.max(18, H - (window.innerHeight - 56 - 310 - Math.max(0, stageTop))) : 352;
-    const baseW = Math.max(sp.w, 64), baseH = Math.max(sp.h, 64);
+    const painted = style === "hd" || style === "art";
+    // The animated sprite's frames are a little bigger than the still sprite.
+    const anim = style === "sd" && frames;
+    const baseW = Math.max(anim ? frames.width : sp.w, 64), baseH = Math.max(anim ? frames.height : sp.h, 64);
     const fit = (top: number, bottom: number) => {
       const ah = Math.max(60, H - top - bottom), aw = W - (phone ? 24 : 96);
-      if (style === "hd") return { s: 1, size: Math.min(560, aw, ah * 1.08), cy: top + ah / 2 };
+      if (painted) return { s: 1, size: Math.min(560, aw, ah * 1.08), cy: top + ah / 2 };
       const s = Math.max(1, Math.min(10, Math.floor(Math.min(aw / baseW, ah / baseH))));
       return { s, size: 0, cy: top + ah / 2 };
     };
     const rest = fit(restTop, restBottom);
+    // Side by side: a third of the width each, the same kind of scale.
+    const third = (W - (phone ? 24 : 96)) / 3 - (phone ? 6 : 24);
+    const cmp = painted
+      ? { s: 1, size: Math.max(60, Math.min(rest.size, third)) }
+      : { s: Math.max(1, Math.min(rest.s, Math.floor(third / baseW))), size: 0 };
     const open = fit(openTop, openBottom);
     // A drawer takes 444 px of one side: the figure fits the rest.
     const sideW = W - 444;
-    const side = style === "hd" ? { s: 1, size: Math.min(rest.size, sideW - 48, H - 140), cy: rest.cy } : { s: Math.max(1, Math.min(rest.s, Math.floor((sideW - 48) / baseW))), size: 0, cy: rest.cy };
-    return { rest, open, side, sideShift: 222 };
-  }, [stage.w, stage.h, sp, phone, style]);
+    const side = painted ? { s: 1, size: Math.min(rest.size, sideW - 48, H - 140), cy: rest.cy } : { s: Math.max(1, Math.min(rest.s, Math.floor((sideW - 48) / baseW))), size: 0, cy: rest.cy };
+    return { rest, open, side, sideShift: 222, cmp };
+  }, [stage.w, stage.h, sp, phone, style, frames]);
   const drawer = !phone && panel !== null;
   const moved = popOpen || sheetOpen || drawer;
   const target = geo ? (drawer ? geo.side : geo.open) : null;
-  const k = geo && target ? (style === "hd" ? target.size / geo.rest.size : target.s / geo.rest.s) : 1;
+  const k = geo && target ? (style === "hd" || style === "art" ? target.size / geo.rest.size : target.s / geo.rest.s) : 1;
   const dy = geo && target ? target.cy - geo.rest.cy : 0;
   const dx = drawer && geo ? (panel === "extras" ? -geo.sideShift : geo.sideShift) : 0;
 
@@ -415,7 +436,7 @@ export default function ShinyMaker({ initial, linkBroken }: { initial: Design | 
         </header>
       )}
       <div className={cn("absolute z-10", phone ? "left-1/2 top-3 -translate-x-1/2" : "right-8 top-8")}>
-        <Seg<View>
+        <Seg<View | "compare">
           label={t("view.label")}
           value={view}
           onChange={(v) => { setView(v); setSel(-1); }}
@@ -424,11 +445,39 @@ export default function ShinyMaker({ initial, linkBroken }: { initial: Design | 
             { v: "normal", label: t("view.normal") },
             { v: "official", label: t("view.official") },
             { v: "yours", label: t("view.yours") },
+            { v: "compare", label: t("view.compare") },
           ]}
         />
       </div>
 
-      {ready && sp && design && geo ? (
+      {sp && design && (
+        <div className={cn("absolute z-10", phone ? "bottom-3 left-1/2 -translate-x-1/2" : "xl:left-1/2 xl:top-8 xl:-translate-x-1/2 max-xl:right-8 max-xl:top-[84px]")}>
+          <Seg<Style>
+            label={t("styles.label")}
+            value={style}
+            onChange={(st) => { if (design.style !== st) commit({ ...design, style: st }); setSel(-1); }}
+            testId="sm-style"
+            items={STYLES.map((st) => ({ v: st, label: t(`styles.${st}`), disabled: !canStyle(st), title: canStyle(st) ? undefined : (st === "hd" || st === "art") && !gl2 ? t("extras.hdNoGl") : t("styles.unavailable") }))}
+          />
+        </div>
+      )}
+
+      {ready && sp && design && geo && compare ? (
+        <div className="sm-fade absolute inset-x-0 flex items-end justify-center" style={{ top: geo.rest.cy, transform: "translateY(-50%)", gap: phone ? 6 : 24 }} data-testid="sm-compare">
+          {(["normal", "official", "yours"] as const).map((v) => (
+            <figure key={v} className="flex flex-col items-center gap-3">
+              <div style={{ filter: v === "yours" ? filter : cbFilter || undefined }}>
+                {style === "hd" || style === "art" ? (
+                  <HdFigure kind={style} sp={sp} design={design} view={v} size={geo.cmp.size} hover={-1} motion={motion} label={`${t(`view.${v}`)} · ${sp.name}`} onFail={() => failStyle(style, sp.id)} />
+                ) : (
+                  <PixelFigure sp={sp} design={design} view={v} animate={style === "sd"} scale={geo.cmp.s} hover={-1} selected={-1} motion={motion} frames={frames} label={`${t(`view.${v}`)} · ${sp.name}`} />
+                )}
+              </div>
+              <figcaption className={cn("text-[13px] font-medium", v === "yours" ? "text-foreground" : "text-muted-foreground")}>{t(`view.${v}`)}</figcaption>
+            </figure>
+          ))}
+        </div>
+      ) : ready && sp && design && geo ? (
         <div
           className="sm-figure absolute left-1/2 top-0 sm-fade"
           style={{ transform: `translate(-50%, calc(${geo.rest.cy}px - 50%)) translate(${moved ? dx : 0}px, ${moved ? dy : 0}px) scale(${moved ? k : 1})`, filter }}
@@ -440,11 +489,12 @@ export default function ShinyMaker({ initial, linkBroken }: { initial: Design | 
           onContextMenu={(e) => e.preventDefault()}
           title={t("view.peek")}
           data-testid="sm-figure"
-          data-scale={style === "px" ? geo.rest.s : undefined}
+          data-scale={style === "px" || style === "sd" ? geo.rest.s : undefined}
         >
-          {style === "hd" ? (
+          {style === "hd" || style === "art" ? (
             <HdFigure
               ref={figure}
+              kind={style}
               sp={sp}
               design={design}
               view={shownView}
@@ -452,10 +502,10 @@ export default function ShinyMaker({ initial, linkBroken }: { initial: Design | 
               hover={hover >= 0 ? hover : sel}
               motion={motion}
               label={label}
-              onFail={() => setHdFailed((s) => new Set(s).add(sp.id))}
+              onFail={() => failStyle(style, sp.id)}
             />
           ) : (
-            <PixelFigure ref={figure} sp={sp} design={design} view={shownView} scale={geo.rest.s} hover={hover >= 0 ? hover : sel} selected={sel} motion={motion} frames={frames} label={label} />
+            <PixelFigure ref={figure} sp={sp} design={design} view={shownView} animate={style === "sd"} scale={geo.rest.s} hover={hover >= 0 ? hover : sel} selected={sel} motion={motion} frames={frames} label={label} />
           )}
           {design.sparkle && shownView === "yours" && <Sparkles />}
         </div>
@@ -514,20 +564,16 @@ export default function ShinyMaker({ initial, linkBroken }: { initial: Design | 
 
   function extrasPanel() {
     if (!sp || !design) return null;
-    const hdReason = !gl2 ? t("extras.hdNoGl") : !sp.hd || hdFailed.has(sp.id) ? t("extras.hdSoon") : null;
     return (
       <ExtrasPanel
         design={design}
-        hdAvailable={hdOk}
-        hdReason={hdReason}
-        canAnimate={sp.anim && style === "px"}
-        canGif={style === "px" && ((sp.anim && design.anim) || design.finish === "holo" || design.finish === "galaxy")}
+        canGif={style === "sd" || (style === "px" && (design.finish === "holo" || design.finish === "galaxy"))}
+        style={style}
         gifBusy={gifBusy}
         cb={cb}
         expert={expert}
         canUndo={past.current.length > 0}
         canRedo={future.current.length > 0}
-        onStyle={(s) => commit({ ...design, style: s })}
         onPreset={choosePreset}
         onBorrow={() => setPanel("borrow")}
         onFinish={(f) => commit({ ...design, finish: f })}

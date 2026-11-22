@@ -9,6 +9,13 @@ import { homeRenderUrl } from "@/lib/pokemon/art";
 import type { FigureHandle } from "./PixelFigure";
 
 export const HD_SIZE = 512;
+export type PaintedKind = "hd" | "art";
+const ART_RAW = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork";
+/** Where each painted style's pictures come from, and its size (the masks were built at this size). */
+export const PAINTED: Record<PaintedKind, { size: number; normal: (id: number) => string; shiny: (id: number) => string; normalCors: boolean; mask: (id: number) => string }> = {
+  hd: { size: HD_SIZE, normal: (id) => `/sizes/art/512/${id}.webp`, shiny: (id) => homeRenderUrl(id, true), normalCors: false, mask: (id) => `${DATA_BASE}/hd/${id}.png` },
+  art: { size: 475, normal: (id) => `${ART_RAW}/${id}.png`, shiny: (id) => `${ART_RAW}/shiny/${id}.png`, normalCors: true, mask: (id) => `${DATA_BASE}/art/${id}.png` },
+};
 const MAX_PARTS = 8;
 
 const VERT = `#version 300 es
@@ -21,6 +28,7 @@ precision highp float;
 in vec2 uv; out vec4 o;
 uniform sampler2D uN, uS, uL;
 uniform int uView, uFinish, uHover, uHasShiny;
+uniform vec2 uPx;
 uniform float uTime;
 uniform vec3 uRefN[${MAX_PARTS}], uRefS[${MAX_PARTS}];
 uniform vec4 uTgt[${MAX_PARTS}];
@@ -121,7 +129,7 @@ void main() {
       rgb = lch2rgb(c);
     }
     if (lab == uHover) {
-      vec2 px = vec2(2.0 / ${HD_SIZE}.0);
+      vec2 px = uPx;
       bool edge = labelAt(uv + vec2(px.x, 0.0)) != lab || labelAt(uv - vec2(px.x, 0.0)) != lab || labelAt(uv + vec2(0.0, px.y)) != lab || labelAt(uv - vec2(0.0, px.y)) != lab;
       if (edge) { rgb = vec3(1.0); a = 1.0; }
     }
@@ -137,36 +145,38 @@ function compile(gl: WebGL2RenderingContext, type: number, src: string) {
   return sh;
 }
 
-async function bitmap(url: string, cors: boolean): Promise<ImageBitmap> {
+async function bitmap(url: string, cors: boolean, N: number): Promise<ImageBitmap> {
   const res = await fetch(url, cors ? { mode: "cors" } : undefined);
   if (!res.ok) throw new Error(`${url}: ${res.status}`);
   const blob = await res.blob();
-  return createImageBitmap(blob, { premultiplyAlpha: "none", colorSpaceConversion: "none", resizeWidth: HD_SIZE, resizeHeight: HD_SIZE, resizeQuality: "high" });
+  return createImageBitmap(blob, { premultiplyAlpha: "none", colorSpaceConversion: "none", resizeWidth: N, resizeHeight: N, resizeQuality: "high" });
 }
 
-interface HdAssets { normal: ImageBitmap; shiny: ImageBitmap | null; labels: ImageBitmap; labelData: Uint8Array }
-const assets = new Map<number, Promise<HdAssets>>();
-export function loadHd(id: number): Promise<HdAssets> {
-  let p = assets.get(id);
+interface HdAssets { normal: ImageBitmap; shiny: ImageBitmap | null; labels: ImageBitmap; labelData: Uint8Array; size: number }
+const assets = new Map<string, Promise<HdAssets>>();
+export function loadHd(id: number, kind: PaintedKind = "hd"): Promise<HdAssets> {
+  const key = `${kind}:${id}`;
+  const cfg = PAINTED[kind], N = cfg.size;
+  let p = assets.get(key);
   if (!p) {
     p = (async () => {
       const [normal, shiny, labels] = await Promise.all([
-        bitmap(`/sizes/art/512/${id}.webp`, false),
-        bitmap(homeRenderUrl(id, true), true).catch(() => null),
-        fetch(`${DATA_BASE}/hd/${id}.png`).then((r) => { if (!r.ok) throw new Error("mask"); return r.blob(); }).then((b) => createImageBitmap(b, { premultiplyAlpha: "none", colorSpaceConversion: "none" })),
+        bitmap(cfg.normal(id), cfg.normalCors, N),
+        bitmap(cfg.shiny(id), true, N).catch(() => null),
+        fetch(cfg.mask(id)).then((r) => { if (!r.ok) throw new Error("mask"); return r.blob(); }).then((b) => createImageBitmap(b, { premultiplyAlpha: "none", colorSpaceConversion: "none" })),
       ]);
       // The labels on the CPU too, for picking a part under the pointer.
       const c = document.createElement("canvas");
-      c.width = HD_SIZE; c.height = HD_SIZE;
+      c.width = N; c.height = N;
       const ctx = c.getContext("2d", { willReadFrequently: true })!;
       ctx.drawImage(labels, 0, 0);
-      const data = ctx.getImageData(0, 0, HD_SIZE, HD_SIZE).data;
-      const labelData = new Uint8Array(HD_SIZE * HD_SIZE);
+      const data = ctx.getImageData(0, 0, N, N).data;
+      const labelData = new Uint8Array(N * N);
       for (let i = 0; i < labelData.length; i++) labelData[i] = data[i * 4];
-      return { normal, shiny, labels, labelData };
+      return { normal, shiny, labels, labelData, size: N };
     })();
-    p.catch(() => assets.delete(id));
-    assets.set(id, p);
+    p.catch(() => assets.delete(key));
+    assets.set(key, p);
   }
   return p;
 }
@@ -179,8 +189,9 @@ export function hasWebGL2(): boolean {
   }
 }
 
-/** The Pokémon in HD: its HOME render recoloured per part in a WebGL 2 shader. */
+/** The Pokémon painted (its HOME render, or its official artwork), recoloured per part in a WebGL 2 shader. */
 export const HdFigure = forwardRef<FigureHandle, {
+  kind: PaintedKind;
   sp: Species;
   design: Design;
   view: View;
@@ -190,7 +201,7 @@ export const HdFigure = forwardRef<FigureHandle, {
   label: string;
   onReady?: () => void;
   onFail: () => void;
-}>(function HdFigure({ sp, design, view, size, hover, motion, label, onReady, onFail }, ref) {
+}>(function HdFigure({ kind, sp, design, view, size, hover, motion, label, onReady, onFail }, ref) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [data, setData] = useState<HdAssets | null>(null);
   const gl = useRef<{ gl: WebGL2RenderingContext; prog: WebGLProgram; tex: WebGLTexture[]; u: Record<string, WebGLUniformLocation | null> } | null>(null);
@@ -204,18 +215,19 @@ export const HdFigure = forwardRef<FigureHandle, {
       const el = canvas.current;
       if (!el || !data) return -1;
       const r = el.getBoundingClientRect();
-      const x = Math.floor(((cx - r.left) / r.width) * HD_SIZE), y = Math.floor(((cy - r.top) / r.height) * HD_SIZE);
-      if (x < 0 || y < 0 || x >= HD_SIZE || y >= HD_SIZE) return -1;
-      return data.labelData[y * HD_SIZE + x] - 1;
+      const N = data.size;
+      const x = Math.floor(((cx - r.left) / r.width) * N), y = Math.floor(((cy - r.top) / r.height) * N);
+      if (x < 0 || y < 0 || x >= N || y >= N) return -1;
+      return data.labelData[y * N + x] - 1;
     },
   }), [data]);
 
   useEffect(() => {
     let live = true;
     setData(null);
-    loadHd(sp.id).then((d) => live && setData(d), () => live && failRef.current());
+    loadHd(sp.id, kind).then((d) => live && setData(d), () => live && failRef.current());
     return () => { live = false; };
-  }, [sp.id]);
+  }, [sp.id, kind]);
 
   // Set up WebGL once the pictures are in.
   useEffect(() => {
@@ -250,7 +262,7 @@ export const HdFigure = forwardRef<FigureHandle, {
         g.texImage2D(g.TEXTURE_2D, 0, g.RGBA, g.RGBA, g.UNSIGNED_BYTE, img);
         return t;
       });
-      const names = ["uN", "uS", "uL", "uView", "uFinish", "uHover", "uHasShiny", "uTime", "uRefN", "uRefS", "uTgt", "uCustom", "uSrc", "uOutline"];
+      const names = ["uPx", "uN", "uS", "uL", "uView", "uFinish", "uHover", "uHasShiny", "uTime", "uRefN", "uRefS", "uTgt", "uCustom", "uSrc", "uOutline"];
       const u = Object.fromEntries(names.map((n) => [n, g.getUniformLocation(prog, n)]));
       g.uniform1i(u.uN, 0); g.uniform1i(u.uS, 1); g.uniform1i(u.uL, 2);
       gl.current = { gl: g, prog, tex, u };
@@ -271,7 +283,7 @@ export const HdFigure = forwardRef<FigureHandle, {
     const cur = gl.current;
     if (!cur || !data) return;
     const { gl: g, u } = cur;
-    const refs = sp.hd ?? [];
+    const refs = (kind === "art" ? sp.art : sp.hd) ?? [];
     const n = Math.min(MAX_PARTS, design.parts.length);
     const refN = new Float32Array(MAX_PARTS * 3), refS = new Float32Array(MAX_PARTS * 3), tgt = new Float32Array(MAX_PARTS * 4);
     const custom = new Int32Array(MAX_PARTS), src = new Int32Array(MAX_PARTS), outline = new Int32Array(MAX_PARTS);
@@ -298,7 +310,8 @@ export const HdFigure = forwardRef<FigureHandle, {
     g.uniform1i(u.uFinish, view === "yours" ? FINISHES.indexOf(design.finish) : 0);
     g.uniform1i(u.uHover, view === "yours" ? hover : -1);
     g.uniform1i(u.uHasShiny, data.shiny ? 1 : 0);
-    g.viewport(0, 0, HD_SIZE, HD_SIZE);
+    g.uniform2f(u.uPx, 2 / data.size, 2 / data.size);
+    g.viewport(0, 0, data.size, data.size);
     const shimmer = motion && view === "yours" && (design.finish === "holo" || design.finish === "galaxy");
     const draw = (t: number) => { g.uniform1f(u.uTime, t); g.drawArrays(g.TRIANGLE_STRIP, 0, 4); };
     if (!shimmer) { draw(0.6); return; }
@@ -307,13 +320,13 @@ export const HdFigure = forwardRef<FigureHandle, {
     const loop = (now: number) => { draw(0.6 + (now - t0) / 1000); raf = requestAnimationFrame(loop); };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [data, sp, design, view, hover, motion]);
+  }, [data, sp, design, view, hover, motion, kind]);
 
   return (
     <canvas
       ref={canvas}
-      width={HD_SIZE}
-      height={HD_SIZE}
+      width={data?.size ?? PAINTED[kind].size}
+      height={data?.size ?? PAINTED[kind].size}
       role="img"
       aria-label={label}
       className="block transition-opacity duration-300"

@@ -37,8 +37,10 @@ export interface SpeciesFile {
   exact: boolean;
   /** Has an animated B/W sprite. */
   anim?: 1;
-  /** HD label mask (public/shiny-maker/hd/{id}.png) and its per-part reference colours. */
+  /** 3D: HOME-render label mask (public/shiny-maker/hd/{id}.png) and its per-part reference colours. */
   hd?: HdRef[];
+  /** Artwork: official-artwork label mask (public/shiny-maker/art/{id}.png) and its reference colours. */
+  art?: HdRef[];
 }
 
 export interface Slot {
@@ -64,6 +66,7 @@ export interface Species {
   exact: boolean;
   anim: boolean;
   hd: HdRef[] | null;
+  art: HdRef[] | null;
 }
 
 const B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -149,6 +152,7 @@ export function decodeSpecies(f: SpeciesFile): Species {
     exact: !!f.exact,
     anim: !!f.anim,
     hd: f.hd && f.hd.length === f.parts.length ? f.hd : null,
+    art: f.art && f.art.length === f.parts.length ? f.art : null,
   };
 }
 

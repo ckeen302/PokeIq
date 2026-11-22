@@ -232,8 +232,11 @@ async function main() {
       parts,
       exact: sp.exact,
       ...(anim.has(p.id) && { anim: 1 as const }),
-      // HD masks are built by hd.ts against these parts; keep them only while the parts are unchanged.
-      ...(prev?.hd && JSON.stringify(prev.parts) === JSON.stringify(parts) && { hd: prev.hd }),
+      // The painted styles' data is built by hd.ts against these parts; keep it only while the parts are unchanged.
+      ...(prev && JSON.stringify(prev.parts) === JSON.stringify(parts) && {
+        ...(prev.hd && { hd: prev.hd }),
+        ...(prev.art && { art: prev.art }),
+      }),
     };
     const json = JSON.stringify(out);
     writeFileSync(file, json);

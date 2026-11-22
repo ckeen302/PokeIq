@@ -110,7 +110,7 @@ const nextConfig: NextConfig = {
     "/pokedex/sizes/compare/og": ["./src/assets/fonts/*.ttf"],
     "/lab/mass-battle/og": ["./src/assets/fonts/*.ttf"],
     // A Shiny Pokémon Maker design's card recolours the sprite from its data file.
-    "/tools/shiny-maker/og": ["./src/assets/fonts/*.ttf", "./public/shiny-maker/px/*.json"],
+    "/tools/shiny-maker/og": ["./src/assets/fonts/*.ttf", "./public/shiny-maker/px/*.json", "./public/shiny-maker/hd/*.png", "./public/shiny-maker/art/*.png"],
     // A shared PokéGuessr result's card draws the map that was played, by a computed path.
     "/pokeguessr/r/**": ["./public/geo/maps/*.webp"],
     "/[locale]/pokeguessr/r/**": ["./public/geo/maps/*.webp"],
