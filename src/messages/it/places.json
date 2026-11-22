@@ -1,0 +1,132 @@
+{
+  "meta": {
+    "title": "Luoghi Pokémon: città, percorsi, grotte e palestre",
+    "description": "Tutte le città, i percorsi, le grotte e le palestre di ogni regione della serie principale Pokémon: i Pokémon selvatici di ogni gioco, screenshot e Capipalestra.",
+    "placeTitle": "{name} ({region}) — {type} Pokémon",
+    "placeDescription": "{name}, a {region}: i Pokémon selvatici che ci trovi in ogni gioco.",
+    "placeDescriptionGame": "{name}, a {region}: i Pokémon selvatici che ci trovi in ogni gioco e il suo aspetto in {game}.",
+    "socialTitle": "{name} · Pokédex di PokéIQ"
+  },
+  "crumbs": {
+    "pokedex": "Pokédex",
+    "places": "Luoghi"
+  },
+  "list": {
+    "kicker": "Database dei luoghi",
+    "blurb": "Città, percorsi, grotte ed edifici di tutte le regioni della serie principale: i Pokémon selvatici di ogni gioco, più lo screenshot dell’Atlante mondiale e i Capipalestra dove ci sono."
+  },
+  "back": "Torna a tutti i luoghi",
+  "kicker": "Luogo · {type} · {region}",
+  "inside": "Dentro <link>{name}</link>",
+  "atlas": "Vedi nell’Atlante mondiale",
+  "noAtlas": "Non è ancora nell’Atlante mondiale, quindi niente segnaposto né screenshot.",
+  "shot": {
+    "title": "Screenshot",
+    "alt": "{place} in Pokémon {game}",
+    "caption": "{place} in {game} · da PokéGuessr"
+  },
+  "games": {
+    "title": "Giochi",
+    "subtitle": "Giochi in cui compare",
+    "generation": "Giochi della generazione {gen}"
+  },
+  "areas": {
+    "title": "Zone",
+    "subtitle": "{n, plural, one {{n} piano e zone} other {{n} piani e zone}}"
+  },
+  "gym": {
+    "title": "Palestra",
+    "subtitle": "{n, plural, one {{n} Capopalestra} other {{n} Capipalestra}}",
+    "source": "fonte"
+  },
+  "wild": {
+    "title": "Pokémon selvatici",
+    "subtitle": "Per gioco",
+    "pokemon": "Pokémon",
+    "method": "Metodo",
+    "levels": "Livelli",
+    "morning": "Mattina",
+    "day": "Giorno",
+    "night": "Notte",
+    "rate": "Prob."
+  },
+  "insidePlaces": {
+    "title": "All’interno",
+    "subtitle": "{n, plural, one {{n} luogo all’interno} other {{n} luoghi all’interno}}"
+  },
+  "types": {
+    "City": "Città",
+    "Town": "Paese",
+    "Route": "Percorso",
+    "Gym": "Palestra",
+    "Forest": "Bosco",
+    "Cave": "Grotta",
+    "Mountain": "Monte",
+    "Island": "Isola",
+    "Lake": "Lago",
+    "Tower": "Torre",
+    "Ruins": "Rovine",
+    "League": "Lega",
+    "Building": "Edificio",
+    "Other": "Altro"
+  },
+  "methods": {
+    "wild": "Selvatico",
+    "grass": "Erba",
+    "grassrandom": "Erba (casuale)",
+    "grassrarespawns": "Erba (rari)",
+    "tallgrass": "Erba alta",
+    "darkgrass": "Erba scura",
+    "rustlinggrass": "Erba che si muove",
+    "cave": "Grotta",
+    "water": "Acqua",
+    "waterrarespawns": "Acqua (rari)",
+    "fishing": "Pesca",
+    "fishingspot": "Punto di pesca",
+    "ripplingwater": "Acqua increspata",
+    "bubblingspot": "Bolle in superficie",
+    "headbutthigh": "Bottintesta (frequente)",
+    "headbuttlow": "Bottintesta (raro)",
+    "shakingtree": "Albero che si muove",
+    "gift": "Regalo",
+    "giftegg": "Regalo (Uovo)",
+    "trade": "Scambio",
+    "static": "Fisso",
+    "interact": "Interazione",
+    "specialencounter": "Incontro speciale",
+    "swarm": "Comparsa di massa",
+    "swarmfish": "Comparsa di massa (pesca)",
+    "swarmsurf": "Comparsa di massa (Surf)",
+    "horde": "Orda",
+    "soscall": "Richiesta d’aiuto",
+    "sosbubblingspot": "Richiesta d’aiuto (bolle)",
+    "teraraid": "Raid Teracristal",
+    "maxraid": "Raid Dynamax",
+    "overworld": "Visibile sulla mappa",
+    "wandering": "A spasso",
+    "wanderingsurf": "A spasso (Surf)",
+    "flying": "In volo",
+    "inthesky": "In cielo",
+    "intheskyrarespawns": "In cielo (rari)",
+    "roaming": "Vagante",
+    "roamingwater": "Vagante (acqua)",
+    "massivemassoutbreak": "Comparsa di massa enorme",
+    "hiddengrotto": "Radura Nascosta",
+    "honeytree": "Albero di miele",
+    "honeytreerare": "Albero di miele (raro)",
+    "honeytreeveryrare": "Albero di miele (rarissimo)",
+    "berrytree": "Pianta di bacche",
+    "berrypile": "Mucchio di bacche",
+    "dustcloud": "Nuvola di polvere",
+    "roughterrain": "Terreno accidentato",
+    "yellowflowers": "Fiori gialli",
+    "purpleflowers": "Fiori viola",
+    "redflowers": "Fiori rossi",
+    "ceilingambush": "Agguato dal soffitto",
+    "groundambush": "Agguato dal terreno",
+    "skyambush": "Agguato dal cielo",
+    "curry": "Curry",
+    "islandscan": "Scansione isola",
+    "underground": "Grandi Sotterranei"
+  }
+}

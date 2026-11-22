@@ -17,6 +17,7 @@ import { dexNames } from "@/lib/dex/local-names";
 import { serverT } from "@/i18n/server";
 import { ClientMessages } from "@/i18n/ClientMessages";
 import trainersNs from "@/messages/trainers";
+import dexRef from "@/messages/dex-ref";
 import explorerNs from "@/messages/trainers-explorer";
 
 export function generateMetadata(): Metadata {
@@ -44,7 +45,7 @@ export default function TrainersPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-4">
-      <ListHeader kicker={t("list.kicker")} title="Poké" accent="dex" blurb={t("list.blurb")} />
+      <ListHeader kicker={t("list.kicker")} title={serverT(dexRef)("title")} accent={serverT(dexRef)("accent")} blurb={t("list.blurb")} />
       <DexTabs active="trainers" />
       <ClientMessages namespaces={[explorerNs]}>
       <TrainerExplorer
