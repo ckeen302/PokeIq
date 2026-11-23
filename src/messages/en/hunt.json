@@ -100,7 +100,11 @@
       "near": "Warm, getting warmer.",
       "far": "It got away this time."
     },
-    "method": "{game} · {method}"
+    "close": {
+      "spotOn": "Right on the trail!",
+      "near": "Close to a real spot",
+      "far": "Too far from any spot"
+    }
   },
   "results": {
     "title": "Hunt complete",

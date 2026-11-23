@@ -100,7 +100,11 @@
       "near": "Warm, wärmer …",
       "far": "Diesmal ist es entwischt."
     },
-    "method": "{game} · {method}"
+    "close": {
+      "spotOn": "Genau auf der Spur!",
+      "near": "Nah an einem echten Fundort",
+      "far": "Zu weit von jedem Fundort"
+    }
   },
   "results": {
     "title": "Jagd beendet",

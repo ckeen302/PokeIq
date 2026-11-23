@@ -100,7 +100,11 @@
       "near": "Caliente, caliente…",
       "far": "Esta vez se ha escapado."
     },
-    "method": "{game} · {method}"
+    "close": {
+      "spotOn": "¡Justo en el rastro!",
+      "near": "Cerca de un sitio real",
+      "far": "Demasiado lejos de cualquier sitio"
+    }
   },
   "results": {
     "title": "Caza completada",

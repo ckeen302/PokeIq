@@ -100,7 +100,11 @@
       "near": "Tu chauffes…",
       "far": "Il t'a échappé cette fois."
     },
-    "method": "{game} · {method}"
+    "close": {
+      "spotOn": "Pile sur la piste !",
+      "near": "Près d'un vrai lieu",
+      "far": "Trop loin de tout vrai lieu"
+    }
   },
   "results": {
     "title": "Chasse terminée",

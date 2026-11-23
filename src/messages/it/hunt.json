@@ -100,7 +100,11 @@
       "near": "Fuochino…",
       "far": "Stavolta ti è sfuggito."
     },
-    "method": "{game} · {method}"
+    "close": {
+      "spotOn": "Proprio sulla pista!",
+      "near": "Vicino a un luogo reale",
+      "far": "Troppo lontano da ogni luogo"
+    }
   },
   "results": {
     "title": "Caccia completata",
