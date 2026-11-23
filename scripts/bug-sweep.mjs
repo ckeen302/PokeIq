@@ -259,7 +259,9 @@ function inspect() {
       range.selectNodeContents(n);
       for (const r of range.getClientRects()) {
         const c = clipRect(el);
-        const box = { l: Math.max(r.left, c.l), t: Math.max(r.top, c.t), r: Math.min(r.right, c.r), b: Math.min(r.bottom, c.b) };
+        // A run's box is the font's full ascent to descent: inset it to the glyphs' middle so tight line heights don't count.
+        const inset = r.height * 0.22;
+        const box = { l: Math.max(r.left, c.l), t: Math.max(r.top + inset, c.t), r: Math.min(r.right, c.r), b: Math.min(r.bottom - inset, c.b) };
         if (box.r - box.l < 2 || box.b - box.t < 2) continue;
         runs.push({ el, box, text: n.textContent.trim().slice(0, 30) });
       }
@@ -401,6 +403,7 @@ async function newContext(browser, c) {
     isMobile: phone,
     hasTouch: phone,
     deviceScaleFactor: 1,
+    ignoreHTTPSErrors: !!PROXY,
     colorScheme: c.scheme,
     userAgent: phone ? "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1 PokeIQ-bug-sweep" : undefined,
   });
@@ -573,7 +576,12 @@ const configs = process.env.SWEEP_CONFIGS
       { width: 1440, scheme: "light", signedIn: true, routes: ["/", "/trainer", "/trainer/avatar", "/leaderboard", "/battle", "/pokedle", "/daily", "/users", "/rooms"] },
     ];
 
-const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
+// Behind an HTTPS proxy (a sandbox), the browser goes through it too, so third-party images load as they would for a visitor.
+const PROXY = process.env.HTTPS_PROXY || process.env.https_proxy;
+const browser = await chromium.launch({
+  ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}),
+  ...(PROXY ? { proxy: { server: PROXY, bypass: "localhost,127.0.0.1" } } : {}),
+});
 const results = [];
 const allLinks = new Map(); // path -> first page linking it
 for (const c of configs) {
