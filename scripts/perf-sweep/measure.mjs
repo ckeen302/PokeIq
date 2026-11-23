@@ -36,6 +36,8 @@ const ONLY = flag("only", "")
   .filter(Boolean);
 const OUT = flag("out", path.join(HERE, "results", `${PROFILE}-${new Date().toISOString().replace(/[:.]/g, "-")}.json`));
 const SKIP_INTERACT = argv.includes("--no-interact");
+// --insecure: accept the local HTTP/2 proxy's self-signed certificate (h2-proxy.mjs).
+const INSECURE = argv.includes("--insecure");
 // --shard=1/2: every second route, starting with the first (to run two browsers side by side).
 const [SHARD, SHARDS] = flag("shard", "1/1").split("/").map(Number);
 
@@ -142,6 +144,7 @@ const p75 = (xs) => {
 
 async function measureRoute(browser, route, label, prof) {
   const ctx = await browser.newContext({
+    ignoreHTTPSErrors: INSECURE,
     viewport: prof.viewport,
     deviceScaleFactor: prof.deviceScaleFactor,
     isMobile: prof.isMobile,

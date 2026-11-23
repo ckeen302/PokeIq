@@ -14,6 +14,9 @@ node scripts/perf-sweep/summary.mjs --compare results/before.json results/after.
 node scripts/perf-sweep/heavy.mjs http://localhost:3000 --minutes=5                         # memory and frame rate
 node scripts/perf-sweep/profile.mjs /lab/pokedex --profile=phone                            # where a page's long tasks go
 node scripts/perf-sweep/shifts.mjs http://localhost:3000/battle/teams                       # every layout shift, and what moved
+node scripts/perf-sweep/offscreen.mjs http://localhost:3000/tools/pokeball-maker --phone     # does a canvas stop drawing when scrolled away?
+node scripts/perf-sweep/typing.mjs http://localhost:3000/pokedex/trainers "[data-testid=trainers-search]"  # typing latency
+node scripts/perf-sweep/h2-proxy.mjs key.pem cert.pem 3443 http://localhost:3000            # HTTP/2 in front (then --insecure)
 ```
 
 - **Profiles** (measure.mjs): `desktop` is 1440 × 900 unthrottled; `phone` is 390 × 844 with touch, a 4× CPU
@@ -26,7 +29,7 @@ node scripts/perf-sweep/shifts.mjs http://localhost:3000/battle/teams           
   remounts it), and records the JS heap after a forced garbage collection, DOM nodes, listeners and the frame rate.
 
 Caveats of this machine: `next start` serves HTTP/1.1 from localhost (Vercel serves HTTP/2 and 3 from a CDN), so
-first-load numbers are pessimistic about request contention and optimistic about TTFB; and headless Chromium draws
+first-load numbers are pessimistic about request contention and optimistic about TTFB (h2-proxy.mjs puts HTTP/2 in front: over it the phone FCP is a steady ~2.0 s instead of 1.8–2.6 s); and headless Chromium draws
 WebGL in software (SwiftShader), so the 3D pages' frame rates and their shader-compile and draw time are far worse
 than on any GPU. Compare before and after on the same machine rather than reading these as field numbers.
 
