@@ -210,8 +210,8 @@ function updateSources(locations: Location[], curation: Curation) {
       else missing++;
     }
   }
-  const sorted = Object.fromEntries(Object.entries(sources).sort(([a], [b]) => a.localeCompare(b)));
-  writeFileSync(SOURCES, JSON.stringify(sorted, null, 1) + "\n");
+  // The file's own order, new ids after it (a re-sort depends on the machine's locale and rewrites every line).
+  writeFileSync(SOURCES, JSON.stringify(sources, null, 1) + "\n");
   if (missing) console.log(`  ${missing} shots have no known source`);
 }
 

@@ -7,6 +7,7 @@
  *
  *   npx tsx scripts/geo/audit-shots.ts            # every shot not audited yet
  *   npx tsx scripts/geo/audit-shots.ts --all      # re-measure every shot
+ *   GEO_SHOT_DIRS=.data/harvest/Alola/prepared npx tsx scripts/geo/audit-shots.ts   # new shots from local files
  *
  * Per shot: [width, height, flags, difficulty × 10]. Flags (bits):
  *   1 small  · the picture is under 480 × 270
@@ -26,6 +27,12 @@ import { SHOT_FLAG, heuristicDifficulty, type ShotMetaFile } from "../../src/lib
 const DATA = path.join(process.cwd(), "src/data/geo.json");
 const OUT = path.join(process.cwd(), "src/data/geo-shot-meta.json");
 const CONCURRENCY = 8;
+/**
+ * Folders holding shots that aren't in storage yet, as they will be uploaded
+ * (GEO_SHOT_DIRS=dir1:dir2, e.g. harvest.ts prepare's .data/harvest/<Region>/prepared):
+ * a batch's shots are audited before the owner uploads them.
+ */
+const LOCAL_DIRS = (process.env.GEO_SHOT_DIRS ?? "").split(":").filter(Boolean);
 
 interface StoredShot {
   id: string;
@@ -94,9 +101,15 @@ async function main() {
       const family = (isGeoFamily(s.family) ? s.family : familyOfGame(s.game)) as GeoFamilyId | null;
       if (!family) continue;
       try {
-        const res = await fetch(`${geo.storageBase}/${s.id}.webp`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const m = await measure(Buffer.from(await res.arrayBuffer()), familyEra(family));
+        const local = LOCAL_DIRS.map((d) => path.join(d, `${s.id}.webp`)).find((f) => existsSync(f));
+        let buf: Buffer;
+        if (local) buf = readFileSync(local);
+        else {
+          const res = await fetch(`${geo.storageBase}/${s.id}.webp`);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          buf = Buffer.from(await res.arrayBuffer());
+        }
+        const m = await measure(buf, familyEra(family));
         const d = heuristicDifficulty({
           name: l.name,
           parent: l.parent,
