@@ -8,11 +8,11 @@ import { useT } from "@/i18n/client";
 import dexEntryNs from "@/messages/dex-entry";
 
 const GROUPS = [
-  { label: "x4", values: [4], tone: "text-red-400" },
-  { label: "x2", values: [2], tone: "text-orange-400" },
-  { label: "half", values: [0.5], tone: "text-emerald-400" },
-  { label: "quarter", values: [0.25], tone: "text-teal-300" },
-  { label: "immune", values: [0], tone: "text-sky-300" },
+  { label: "x4", values: [4], tone: "text-red-400 [.light_&]:text-red-600" },
+  { label: "x2", values: [2], tone: "text-orange-400 [.light_&]:text-orange-600" },
+  { label: "half", values: [0.5], tone: "text-emerald-400 [.light_&]:text-emerald-700" },
+  { label: "quarter", values: [0.25], tone: "text-teal-300 [.light_&]:text-teal-700" },
+  { label: "immune", values: [0], tone: "text-sky-300 [.light_&]:text-sky-700" },
 ] as const;
 
 function cellTone(m: number): string {

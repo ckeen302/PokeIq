@@ -27,13 +27,14 @@ interface PageProps {
 const findDuel = cache(pvpStore.peek);
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const url = `/pokeconnections/duel/${encodeURIComponent((await params).code)}`;
   const t = serverT(pages);
   const about = t("meta.duelAbout");
   const duel = await findDuel((await params).code);
-  if (!duel || duel.kind !== "connections") return inviteMetadata(t("meta.duel"), about);
+  if (!duel || duel.kind !== "connections") return inviteMetadata(t("meta.duel"), about, url);
   const [host, guest] = duel.players.map((p) => p.name);
   const title = guest ? t("meta.duelVs", { host, guest }) : t("meta.duelChallenge", { host: host || t("meta.aTrainer") });
-  return inviteMetadata(title, about);
+  return inviteMetadata(title, about, url);
 }
 
 export default async function ConnectionsDuelPage({ params }: PageProps) {

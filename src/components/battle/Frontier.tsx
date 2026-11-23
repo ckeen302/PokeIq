@@ -267,8 +267,13 @@ export function FrontierHub({ mode, startPanel }: { mode: FrontierMode; startPan
           </div>
         )}
 
-        {/* Until the saved run is read, hold about the start panel's height so the page doesn't jump when it appears. */}
-        {!loaded ? <div className="min-h-[26rem]" aria-hidden /> : run ? (
+        {/* Until the saved run is read, hold about the start panel's height so the page doesn't jump when it appears.
+            The rules are in it, unseen, so the page's HTML has them for crawlers (the panel itself needs the saved run). */}
+        {!loaded ? (
+          <div className="invisible min-h-[26rem]" aria-hidden>
+            <p>{mode === "factory" ? t("rentHelp", { blurb: info.blurb, open: style === "open" ? "yes" : "no" }) : t("tower.rules")}</p>
+          </div>
+        ) : run ? (
           <Card>
             <CardContent className="space-y-4 p-5">
               <StreakBar run={run} best={best} t={t} />

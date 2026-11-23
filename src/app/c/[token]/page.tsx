@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { readShareCard } from "@/lib/server/share-card";
 import { dailyNumber } from "@/lib/daily";
 import { ChallengeLanding } from "@/components/challenge/ChallengeLanding";
@@ -40,13 +41,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!card) return { title: t("challenge.title") };
   const who = card.n || t("challenge.aTrainer");
   const title = t("challenge.scored", { who, correct: card.c, total: card.t, iq: card.q });
-  return {
-    title,
-    description: t("challenge.description", { run: describeRun(card) }),
-    openGraph: { title, type: "website" },
-    twitter: { card: "summary_large_image", title },
-    robots: { index: false },
-  };
+  // The preview's every field (site name, description, the link itself) from the one helper; its picture is this
+  // segment's opengraph-image.
+  return pageMetadata({ title, description: t("challenge.description", { run: describeRun(card) }), socialTitle: title, noindex: true, url: `/c/${encodeURIComponent((await params).token)}` });
 }
 
 export default async function ChallengePage({ params }: PageProps) {

@@ -3,6 +3,7 @@ import { createHash, randomBytes, randomUUID, scrypt, timingSafeEqual } from "no
 import { promisify } from "node:util";
 import type { NextRequest, NextResponse } from "next/server";
 import { getSessionUser, type PublicUser } from "./accounts";
+import { SIGNED_IN_HINT_COOKIE } from "@/lib/account-hint";
 
 /**
  * Authentication primitives on plain Node crypto.
@@ -18,6 +19,7 @@ import { getSessionUser, type PublicUser } from "./accounts";
 const scryptAsync = promisify(scrypt) as (password: string, salt: string, keylen: number) => Promise<Buffer>;
 
 export const SESSION_COOKIE = "pokeiq_session";
+export { SIGNED_IN_HINT_COOKIE };
 export const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const KEYLEN = 32;
 
@@ -121,10 +123,33 @@ export function setSessionCookie(response: NextResponse, token: string): void {
     maxAge: SESSION_TTL_MS / 1000,
     path: "/",
   });
+  setSignedInHint(response);
 }
 
 export function clearSessionCookie(response: NextResponse): void {
   response.cookies.set(SESSION_COOKIE, "", { maxAge: 0, path: "/" });
+  clearSignedInHint(response);
+}
+
+/**
+ * A cookie the page's script can read, holding nothing but "1": this browser
+ * has a session. Set and cleared with the session cookie (and by
+ * /api/auth/me, for sessions from before it existed or that ended), so a
+ * visitor who has never signed in doesn't ask the server who they are on
+ * every page load (src/lib/account.ts). It proves nothing: the session cookie
+ * is still what signs a request in.
+ */
+export function setSignedInHint(response: NextResponse): void {
+  response.cookies.set(SIGNED_IN_HINT_COOKIE, "1", {
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: SESSION_TTL_MS / 1000,
+    path: "/",
+  });
+}
+
+export function clearSignedInHint(response: NextResponse): void {
+  response.cookies.set(SIGNED_IN_HINT_COOKIE, "", { maxAge: 0, path: "/" });
 }
 
 /**
