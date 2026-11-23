@@ -297,5 +297,18 @@
   },
   "id": "Wj8VYSFSPFKG",
   "uploaded": false
+ },
+ {
+  "url": "https://images.wikidexcdn.net/mwuploads/wikidex/2/2c/latest/20201115123356/Hombre_de_s%C3%ADmbolo_de_autorizaci%C3%B3n_de_combate_EpEc.jpg",
+  "sha256": "83239498971864a5f720deb59b93aecae3c34fbc7dfbc2e43af6aa1a0d925c2f",
+  "game": "Sword / Shield",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 1280,
+   "height": 641
+  },
+  "id": "XNp70dfvf7fS",
+  "uploaded": false
  }
 ]
