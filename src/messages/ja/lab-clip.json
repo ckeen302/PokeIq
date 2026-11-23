@@ -1,0 +1,21 @@
+{
+  "title": "動画を作る",
+  "intro": "この画面の短い縦型動画を、ブラウザの中で作ります。",
+  "record": "動画を作る",
+  "rendering": "レンダリング中",
+  "cancel": "キャンセル",
+  "download": "ダウンロード",
+  "share": "共有",
+  "noShare": "このブラウザはファイルを共有できません。ダウンロードしてください。",
+  "close": "閉じる",
+  "failed": "このブラウザでは動画を作れませんでした。",
+  "noVideo": "このブラウザでは動画を作れません。",
+  "shareLink": "リンクを共有",
+  "video": "動画",
+  "labShare": "PokéIQの博士の研究所で3Dの{name}",
+  "labSubject": "ホロテーブルの上の{name}",
+  "labTitle": "3Dの{name}",
+  "globeShare": "PokéIQのワールドグローブで見る{region}",
+  "globeSubject": "{region}をぐるりと一周",
+  "globeTitle": "ワールドグローブの{region}"
+}

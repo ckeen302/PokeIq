@@ -82,6 +82,13 @@ export interface LabScene {
   pick(x: number, y: number): number | null;
   resize(w: number, h: number): void;
   setTier(t: Tier): void;
+  /**
+   * Draws at a fixed size (device pixels) for a video, or back at the stage's size (null). The
+   * canvas is read straight after each `frame` while it's on.
+   */
+  exportSize(size: { w: number; h: number } | null): void;
+  /** The figure on the table is scanned in again (a video's opening). */
+  rescan(): void;
   stats(): LabSceneStats;
   dispose(): void;
 }
@@ -326,6 +333,8 @@ export function createLabScene(host: HTMLElement, opts: LabSceneOptions): LabSce
   // ---- Quality-dependent parts: shadows, the floor's mirror, the post chain.
   let mirror: Mirror | null = null;
   let post: Post | null = null;
+  /** While a video is made: the stage's size to go back to. */
+  let exporting: { w: number; h: number } | null = null;
   const applyTier = () => {
     spec = TIERS[tier];
     pr = Math.min(window.devicePixelRatio || 1, spec.dpr);
@@ -744,6 +753,10 @@ export function createLabScene(host: HTMLElement, opts: LabSceneOptions): LabSce
       return best?.slot ?? null;
     },
     resize(w, h) {
+      if (exporting) {
+        exporting = { w: Math.max(1, w), h: Math.max(1, h) };
+        return;
+      }
       W = Math.max(1, w);
       H = Math.max(1, h);
       renderer.setSize(W, H, false);
@@ -757,6 +770,33 @@ export function createLabScene(host: HTMLElement, opts: LabSceneOptions): LabSce
       if (t === tier) return;
       tier = t;
       applyTier();
+    },
+    exportSize(size) {
+      if (size) {
+        // At the pixel ratio in use (the post chain's targets were made for it): the drawing buffer comes out at `size`.
+        if (!exporting) exporting = { w: W, h: H };
+        W = size.w / pr;
+        H = size.h / pr;
+      } else {
+        if (!exporting) return;
+        W = exporting.w;
+        H = exporting.h;
+        exporting = null;
+      }
+      // Only the drawing size changes (no shader is rebuilt).
+      renderer.setSize(W, H, false);
+      post?.setSize(W, H);
+      mirror?.setSize(Math.max(2, Math.round(W * pr * spec.mirror)), Math.max(2, Math.round(H * pr * spec.mirror)));
+      camera.aspect = W / H;
+      camera.updateProjectionMatrix();
+      sizeScales();
+    },
+    rescan() {
+      for (const h of heroes) {
+        if (h.phase === "out") continue;
+        h.phase = "in";
+        h.t = 0;
+      }
     },
     stats() {
       const w = lastWheel;

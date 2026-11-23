@@ -1,0 +1,21 @@
+{
+  "title": "Make a video",
+  "intro": "A short vertical video of this view, made right here in your browser.",
+  "record": "Make the video",
+  "rendering": "Rendering",
+  "cancel": "Cancel",
+  "download": "Download",
+  "share": "Share",
+  "noShare": "This browser can't share files: download it instead.",
+  "close": "Close",
+  "failed": "The video couldn't be made in this browser.",
+  "noVideo": "This browser can't make videos.",
+  "shareLink": "Share link",
+  "video": "Video",
+  "labShare": "{name} in 3D in the Professor's Lab on PokéIQ",
+  "labSubject": "{name} on the holo-table",
+  "labTitle": "{name} in 3D",
+  "globeShare": "{region} on PokéIQ's World Globe",
+  "globeSubject": "A spin round {region}",
+  "globeTitle": "{region} on the World Globe"
+}

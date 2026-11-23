@@ -1,0 +1,21 @@
+{
+  "title": "Créer une vidéo",
+  "intro": "Une courte vidéo verticale de cette vue, créée directement dans ton navigateur.",
+  "record": "Créer la vidéo",
+  "rendering": "Rendu en cours",
+  "cancel": "Annuler",
+  "download": "Télécharger",
+  "share": "Partager",
+  "noShare": "Ce navigateur ne peut pas partager de fichiers : télécharge-la plutôt.",
+  "close": "Fermer",
+  "failed": "La vidéo n'a pas pu être créée dans ce navigateur.",
+  "noVideo": "Ce navigateur ne peut pas créer de vidéos.",
+  "shareLink": "Partager le lien",
+  "video": "Vidéo",
+  "labShare": "{name} en 3D dans le Labo du Professeur de PokéIQ",
+  "labSubject": "{name} sur la table holographique",
+  "labTitle": "{name} en 3D",
+  "globeShare": "{region} sur le Globe du monde de PokéIQ",
+  "globeSubject": "Un tour de {region}",
+  "globeTitle": "{region} sur le Globe du monde"
+}
