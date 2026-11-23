@@ -32,7 +32,8 @@
  *   large   8    a city with several districts, or an open area at least twice its
  *                region's typical size
  *   big     12   a big city, or an open area at least four times its region's typical size
- *   huge    20   the two metropolises, Lumiose City and Castelia City
+ *   huge    20   the two metropolises, Lumiose City and Castelia City, and an open area at least
+ *                six times its region's typical size (or a world of its own, as Area Zero)
  *
  * An open area's size is its mask (its grid points on the world map) against the median
  * mask of its region's places, so each region is measured on its own map's scale. A town's
@@ -331,7 +332,7 @@ export const OPEN_SIZE: Record<string, PlaceSize> = {
   "Crown Tundra|Ballimere Lake": "large",
   "Crown Tundra|Frigid Sea": "large",
   // Open areas whose mask undersells them: Area Zero is a whole world below the crater's rim.
-  "Paldea|Great Crater of Paldea": "big",
+  "Paldea|Great Crater of Paldea": "huge",
 };
 
 /** A region's typical place size: the median mask of its towns, routes and landmarks (buildings have none). */
@@ -360,7 +361,7 @@ export function placeSize(place: { region: string; name: string; parent?: string
   // A region whose masks are points (median under 5) can't be measured: OPEN_SIZE covers it.
   if (median < 5 || !cells) return "small";
   const ratio = cells / median;
-  return ratio >= 4 ? "big" : ratio >= 2 ? "large" : "small";
+  return ratio >= 6 ? "huge" : ratio >= 4 ? "big" : ratio >= 2 ? "large" : "small";
 }
 
 /** The most shots a place (a town and its buildings together) gets in one game family. */

@@ -102,5 +102,187 @@
   },
   "id": "Ltb8zkKf7Dkj",
   "uploaded": false
+ },
+ {
+  "url": "https://www.pokepedia.fr/images/6/61/Lac_Asrol_EV.png",
+  "sha256": "386a1b9c86cd9c3756b94d3be21c1fd3477131727b5578b92fa344778dad2cc0",
+  "game": "Scarlet / Violet",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 1280,
+   "height": 720
+  },
+  "id": "jH4ORrkPnWr-",
+  "uploaded": false
+ },
+ {
+  "url": "https://www.pokepedia.fr/images/0/09/Zone_Est_n%C2%B0_3_EV.png",
+  "sha256": "768df5a8b206685e4d1972b4506e0519976d0051f9ac6355355a8ae60606a516",
+  "game": "Scarlet / Violet",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 1280,
+   "height": 720
+  },
+  "id": "Gm6cDyOQjynj",
+  "uploaded": false
+ },
+ {
+  "url": "https://www.pokepedia.fr/images/f/f7/Mont_Napp%C3%A9_EV.png",
+  "sha256": "e42a680743e0e8b0f396f674607be1c3c99f0995c3c5729fc9e8ab18701cbaa9",
+  "game": "Scarlet / Violet",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 1280,
+   "height": 720
+  },
+  "id": "c5HBZCaEKuJX",
+  "uploaded": false
+ },
+ {
+  "url": "https://www.pokepedia.fr/images/f/f0/Ab%C3%AEme_Z%C3%A9ro_EV.png",
+  "sha256": "d5bf052703f72c4f9b2fe18fc35a51715aaa17d88feab96ece45c98da18746a8",
+  "game": "Scarlet / Violet",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 1280,
+   "height": 720
+  },
+  "id": "9I-TRUDNfEaX",
+  "uploaded": false
+ },
+ {
+  "url": "https://www.pokewiki.de/images/8/81/KAPU_Labor_Null.png",
+  "sha256": "41137f983c581b41c6e0ba6ddcfa0792eaa28a0ef0f396fdfd39cafb40dad314",
+  "game": "Scarlet / Violet",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 1280,
+   "height": 720
+  },
+  "id": "DxFATHfYxHQD",
+  "uploaded": false
+ },
+ {
+  "url": "https://images.wikidexcdn.net/mwuploads/wikidex/f/f0/latest/20220810230147/Boutique_de_ciudad_Meseta_EP.jpg",
+  "sha256": "335c405357cbf1d04bffca37aa009443fdc21f0404e98e2e3ebd7415d115920e",
+  "game": "Scarlet / Violet",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 1920,
+   "height": 1080
+  },
+  "id": "LFzETVT-PHQC",
+  "uploaded": false
+ },
+ {
+  "url": "https://www.pokepedia.fr/images/5/52/Mesaledo_Coque_Pok%C3%A9montre_EV.png",
+  "sha256": "04b1c215e22ab5813cecc75683c7ec31363efee002987e2d7a5bf3685c06abb0",
+  "game": "Scarlet / Violet",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 1280,
+   "height": 720
+  },
+  "id": "r-ExRF8FOjin",
+  "uploaded": false
+ },
+ {
+  "url": "https://www.pokepedia.fr/images/3/36/Acad%C3%A9mie_de_Paldea_Bonbon_Exp._S_EV.png",
+  "sha256": "360317522c0bac22106b639871aac5aded691c6eb6b244229c12e2217f26dfea",
+  "game": "Scarlet / Violet",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 1280,
+   "height": 720
+  },
+  "id": "V9U-CcwvfsQD",
+  "uploaded": false
+ },
+ {
+  "url": "https://www.pokepedia.fr/images/f/f5/Acad%C3%A9mie_de_Paldea_Hyper_Ball_EV.png",
+  "sha256": "8e55af8274d818e6688120dd7ce0afa9c5021038311af632cd187f16d201ab52",
+  "game": "Scarlet / Violet",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 1280,
+   "height": 720
+  },
+  "id": "wCO2Yuztbz8k",
+  "uploaded": false
+ },
+ {
+  "url": "https://images.wikidexcdn.net/mwuploads/wikidex/2/2f/latest/20230119214501/Aula_inaccesible_EP.jpg",
+  "sha256": "a233c78f37a664add78d21e57a121ee72923856425ac5143e6c8d5e43332fa6d",
+  "game": "Scarlet / Violet",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 1050,
+   "height": 720
+  },
+  "id": "2ma8BCkwaodH",
+  "uploaded": false
+ },
+ {
+  "url": "https://images.wikidexcdn.net/mwuploads/wikidex/2/24/latest/20221201030553/Sala_del_Alto_Mando_EP.jpg",
+  "sha256": "68de6c7ef8f233510a1d61428b6a26c015a900bed766e8e475ed75c032fac1de",
+  "game": "Scarlet / Violet",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 1050,
+   "height": 720
+  },
+  "id": "PzXuijL6vYq7",
+  "uploaded": false
+ },
+ {
+  "url": "https://www.pokepedia.fr/images/e/ee/Zone_Sud_n%C2%B0_4_EV.png",
+  "sha256": "ccac6469c9ada73fb94ea3c73f1c99b7fff1c6f1bf6c43f4576e7b9414ed7680",
+  "game": "Scarlet / Violet",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 1280,
+   "height": 720
+  },
+  "id": "dQDjK3mDIb5H",
+  "uploaded": false
+ },
+ {
+  "url": "https://www.pokepedia.fr/images/2/26/Zone_Sud_n%C2%B0_2_EV.png",
+  "sha256": "ea7d0a51b36d4511612253eb09b76bd3eab35a9beb395d4b3f8b33d01c439b52",
+  "game": "Scarlet / Violet",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 1280,
+   "height": 720
+  },
+  "id": "0Sr0mft83GMK",
+  "uploaded": false
+ },
+ {
+  "url": "https://www.pokepedia.fr/images/c/c2/Zone_Ouest_n%C2%B0_3_EV.png",
+  "sha256": "e22b5ca6e696a7575e2350870e076175c3acb9767e8ddaa9ef10674b93163b2e",
+  "game": "Scarlet / Violet",
+  "crop": {
+   "left": 0,
+   "top": 0,
+   "width": 1280,
+   "height": 720
+  },
+  "id": "xVBJqaA79NTd",
+  "uploaded": false
  }
 ]
