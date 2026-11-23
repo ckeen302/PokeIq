@@ -84,6 +84,8 @@ const shotLoaded = (p) =>
 /** Drops a pin `at` of the way across the map's own area (along its middle) and presses Guess: through the dock, or the phone's sheet. */
 async function pinAndGuess(p, phone, at, shots) {
   if (phone) {
+    // Where the page sits under the round as it starts (it mustn't move while the round is played).
+    await p.evaluate(() => (window.__roundScrollY = window.scrollY));
     // The big map button in the bottom bar opens the map card; its check stays dim until a pin is down.
     await p.getByTestId("geo-map-pill").click({ timeout: 15_000 }).catch(async (e) => {
       await p.screenshot({ path: `${OUT}/fail-minimap.png` });
@@ -150,7 +152,8 @@ async function phoneMapGuess(p) {
     header: getComputedStyle(document.querySelector("body > header") ?? document.body).display,
     tabbar: document.querySelector('[data-testid="tabbar"]') ? getComputedStyle(document.querySelector('[data-testid="tabbar"]')).display : "none",
   }));
-  if (page.y !== 0) errors.push(`phone: the page scrolled behind the game (${page.y})`);
+  // The hub stays where it was under the game (nothing shifts when a game starts), and doesn't move during the round.
+  if (page.y !== (await p.evaluate(() => window.__roundScrollY ?? window.scrollY))) errors.push(`phone: the page scrolled behind the game (${page.y})`);
   if (page.header !== "none" || page.tabbar !== "none") errors.push(`phone: the site header or tab bar is still up in a round (${page.header}, ${page.tabbar})`);
   await p.screenshot({ path: `${OUT}/guessr-round-pinned-${vp.width}.png` });
   // The map opens again with the pin kept, and the check guesses.
@@ -270,7 +273,7 @@ async function solo(width, height) {
   // The tracker's first slot holds the round's score (desktop: it fills during the reveal).
   const first = Number((await page.getByTestId("geo-round-score").innerText()).replace(/\D/g, ""));
   if (!phone) {
-    const slot = Number((await page.getByTestId("geo-score-slot-1").innerText()).split("\n").pop().replace(/\D/g, ""));
+    const slot = Number((await page.getByTestId("geo-reveal").getByTestId("geo-score-slot-1").innerText()).split("\n").pop().replace(/\D/g, ""));
     if (slot !== first) errors.push(`the score tracker's first slot reads ${slot}, the round scored ${first}`);
   }
   // Space goes on.

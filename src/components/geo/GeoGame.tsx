@@ -345,6 +345,8 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   /** The picture that has loaded and decoded (the clock waits for it), and the tries at the round's picture so far. */
   const [readyShot, setReadyShot] = useState<string | null>(null);
   const [shotTry, setShotTry] = useState<{ shot: string; n: number; failed?: boolean }>({ shot: "", n: 0 });
+  /** The hub as it was when the game started (kept as is under the game). */
+  const hubUnderGame = useRef<React.ReactElement | null>(null);
   /** "Leave this game?" is up. */
   const [confirmExit, setConfirmExit] = useState(false);
   /** A guess on its way, kept so a reload can send it again. */
@@ -851,16 +853,23 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   }, [clock]);
   // The clock is worked out from timestamps (the round's start and now), never by counting ticks, so a
   // hidden tab's slowed timers can't make it drift: it keeps running there, and is right the moment the tab is back.
-  const msLeft = timer && shotReady && roundStartedAt && (phase === "guessing" || phase === "submitting") ? Math.max(0, roundStartedAt + timer * 1000 - (now || roundStartedAt)) : null;
+  const msLeft = timer && shotReady && roundStartedAt && (phase === "guessing" || phase === "submitting") ? Math.max(0, roundStartedAt + timer * 1000 - Math.max(now, roundStartedAt)) : null;
   const timeLeft = msLeft === null ? null : Math.ceil(msLeft / 1000);
   useEffect(() => {
     if (!timer || !shotReady || phase !== "guessing") return;
-    const tick = () => setNow(Date.now());
+    // A tick as each second turns over (not four a second), so the round re-renders only when the clock's text changes.
+    let id = 0;
+    const tick = () => {
+      const t = Date.now();
+      setNow(t);
+      const left = roundStartedAt + timer * 1000 - t;
+      window.clearTimeout(id);
+      id = window.setTimeout(tick, left > 0 ? (left % 1000 || 1000) + 15 : 1000);
+    };
     tick();
-    const id = window.setInterval(tick, 250);
     document.addEventListener("visibilitychange", tick);
     return () => {
-      window.clearInterval(id);
+      window.clearTimeout(id);
       document.removeEventListener("visibilitychange", tick);
     };
   }, [timer, shotReady, phase, roundStartedAt]);
@@ -1417,7 +1426,9 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   );
   };
 
-  const hubView = renderHub(inGame);
+  // Under a game the hub doesn't change: it's built once as the game starts, so the round's ticks never re-render it.
+  const hubView = inGame && hubUnderGame.current ? hubUnderGame.current : renderHub(inGame);
+  hubUnderGame.current = inGame ? hubView : null;
   if (!inGame) return hubView;
   const guessView = game ? guessViewOf(game) : null;
   const roundNow = played.length;
@@ -1481,7 +1492,9 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   );
 }
 
-/** Mounts its children once they're near the screen (or straight away when `eager`), holding their room until then. */
+/** A part below the fold mounts this long after the page has loaded, if nobody has scrolled to it first. */
+const IDLE_MOUNT_MS = 3000;
+/** Mounts its children once they're near the screen, or once the page is idle after loading (or straight away when `eager`), holding their room until then. */
 function WhenNear({ children, minHeight, eager = false }: { children: React.ReactNode; minHeight: number; eager?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const [show, setShow] = useState(eager);
@@ -1494,7 +1507,23 @@ function WhenNear({ children, minHeight, eager = false }: { children: React.Reac
     if (/^#(duels|ranked)$/.test(window.location.hash) || typeof IntersectionObserver === "undefined") return setShow(true);
     const io = new IntersectionObserver(([e]) => e?.isIntersecting && setShow(true), { rootMargin: "800px 0px" });
     if (ref.current) io.observe(ref.current);
-    return () => io.disconnect();
+    // Or once the page has loaded and gone quiet, so it's ready before anyone scrolls down.
+    let timer = 0;
+    let idle = 0;
+    const later = () => {
+      timer = window.setTimeout(() => {
+        if (typeof window.requestIdleCallback === "function") idle = window.requestIdleCallback(() => setShow(true), { timeout: 2000 });
+        else setShow(true);
+      }, IDLE_MOUNT_MS);
+    };
+    if (document.readyState === "complete") later();
+    else window.addEventListener("load", later, { once: true });
+    return () => {
+      io.disconnect();
+      window.removeEventListener("load", later);
+      window.clearTimeout(timer);
+      if (idle && typeof window.cancelIdleCallback === "function") window.cancelIdleCallback(idle);
+    };
   }, [show]);
   return (
     <div ref={ref} style={show ? undefined : { minHeight }}>

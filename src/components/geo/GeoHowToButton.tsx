@@ -1,5 +1,7 @@
 "use client";
 
+import { preloadImage } from "@/lib/preload";
+import { GUESSR_DEMO_MAP, GUESSR_DEMO_SHOT } from "@/components/howto/guessr-demo-assets";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { CircleHelp } from "lucide-react";
@@ -48,31 +50,26 @@ export function HowToHelpButton({ className }: { className?: string }) {
 /**
  * Mounts the pop-up once it's wanted: on a first visit (until "Don't show
  * again") or on the `pokeiq:howto` event. A first visit's opens once the page
- * has loaded and painted, so the page itself comes first.
+ * has painted (two frames on), so the page itself comes first.
  */
 export function GeoHowToLoader() {
   const [wanted, setWanted] = useState<"auto" | "asked" | null>(null);
   useEffect(() => {
     let raf = 0;
-    let idle = 0;
-    const auto = () => {
+    let off = false;
+    // Its pictures are fetched and decoded first, so they're drawn in the sheet's first frame, below the screen as it rises.
+    if (!seenDemo())
       raf = requestAnimationFrame(() => {
-        const open = () => setWanted((w) => w ?? "auto");
-        if (typeof window.requestIdleCallback === "function") idle = window.requestIdleCallback(open, { timeout: 400 });
-        else open();
+        raf = requestAnimationFrame(() => {
+          void Promise.all([preloadImage(GUESSR_DEMO_SHOT), preloadImage(GUESSR_DEMO_MAP)]).then(() => !off && setWanted((w) => w ?? "auto"));
+        });
       });
-    };
-    if (!seenDemo()) {
-      if (document.readyState === "complete") auto();
-      else window.addEventListener("load", auto, { once: true });
-    }
     const ask = () => setWanted((w) => w ?? "asked");
     window.addEventListener("pokeiq:howto", ask);
     return () => {
-      window.removeEventListener("load", auto);
+      off = true;
       window.removeEventListener("pokeiq:howto", ask);
       cancelAnimationFrame(raf);
-      if (idle && typeof window.cancelIdleCallback === "function") window.cancelIdleCallback(idle);
     };
   }, []);
   return wanted ? <GeoHowTo defaultOpen /> : null;

@@ -74,6 +74,8 @@ export interface AtlasOptions {
   home?: { box: Box; cover?: boolean };
   /** A page in another language: the names the map writes, English → that language's (names not in it stay English). */
   names?: Record<string, string>;
+  /** Called once, after the first frame drawn with as much of the map's detail as the view needs. */
+  onSharp?: () => void;
   /**
    * The guess map: each town and city dot shows only once there's room for
    * it (see dotSpacing), fading in, and none on the whole world zoomed out.
@@ -96,6 +98,8 @@ export interface AtlasEngine {
 }
 
 const SEA = "#165c96";
+/** A moving map is redrawn at full quality this long (ms) after it stops. */
+const MOTION_SETTLE_MS = 120;
 /** Spaced dots: a dot shows once its nearest neighbour is at least this many CSS px away on screen. */
 export const DOT_SPACING_PX = 16;
 /** Spaced dots fade in (and out) over this long. */
@@ -226,6 +230,15 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
   const nearest = opts.spacedDots ? nearestDistances(atlas.markers) : null;
   const dotAlpha = new Float32Array(atlas.markers.length);
   let lastDraw = 0;
+  /** When the view last moved (a glide, a zoom step, a drag or a pinch): frames in motion scale the map more cheaply. */
+  let lastMove = 0;
+  let settle = 0;
+  /** The view is moving: cheap frames now, and one full-quality frame once it has stopped. */
+  function moving() {
+    lastMove = performance.now();
+    window.clearTimeout(settle);
+    settle = window.setTimeout(() => alive && requestDraw(), MOTION_SETTLE_MS);
+  }
   /** A fit asked for before the canvas had a size. */
   let pending: (() => void) | null = null;
   /** The canvas has been sized (the ResizeObserver's first call): until then input has nowhere to land. */
@@ -242,6 +255,7 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
 
   /** Fetches a copy (once), and draws again when it's in. */
   const asked = new Set<number>();
+  let sharp = false;
   function want(i: number) {
     if (asked.has(i)) return;
     asked.add(i);
@@ -337,7 +351,7 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     ctx.fillRect(0, 0, W, H);
     ctx.setTransform(dpr * s, 0, 0, dpr * s, dpr * tx, dpr * ty);
     ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
+    ctx.imageSmoothingQuality = performance.now() - lastMove < MOTION_SETTLE_MS ? "low" : "high";
     // The smallest copy with enough detail for this zoom (a bigger one is fetched once it's needed).
     const need = (s * dpr) / 1.5;
     const ideal = copies.findIndex((c) => (c.width ? c.width / atlas.W : 1) >= need);
@@ -345,6 +359,12 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     if (levels.length) {
       const lvl = levels.find((l) => l.scale >= need) ?? levels[levels.length - 1];
       ctx.drawImage(lvl.img, 0, 0, atlas.W, atlas.H);
+      // Sharp enough for this view (or the biggest copy there is): tell the page once.
+      const biggest = copies[copies.length - 1].width ? copies[copies.length - 1].width / atlas.W : 1;
+      if (!sharp && sized() && (lvl.scale >= need || lvl.scale >= biggest)) {
+        sharp = true;
+        if (opts.onSharp) requestAnimationFrame(() => alive && opts.onSharp?.());
+      }
     }
 
     const f = s / REF_SCALE;
@@ -533,6 +553,7 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     }
   }
   function scaleAbout(s2: number, cx: number, cy: number) {
+    moving();
     const r = s2 / view.s;
     view.tx = cx - (cx - view.tx) * r;
     view.ty = cy - (cy - view.ty) * r;
@@ -575,6 +596,7 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
         if (!alive) return done();
         const t = Math.min(1, (now - t0) / dur);
         const e = easeOut ? 1 - Math.pow(1 - t, 3) : t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        moving();
         view.s = Math.exp(Math.log(from.s) + (Math.log(s2) - Math.log(from.s)) * e);
         view.tx = W / 2 - (fx + (wx - fx) * e) * view.s;
         view.ty = H / 2 - (fy + (wy - fy) * e) * view.s;
@@ -665,6 +687,7 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
       view.tx = cx - (pinch.cx - pinch.tx) * k;
       view.ty = cy - (pinch.cy - pinch.ty) * k;
       moved = touched = true;
+      moving();
       clamp();
       requestDraw();
     } else if (drag) {
@@ -673,6 +696,7 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
       if (!moved && Math.abs(dx) + Math.abs(dy) <= 4) return;
       moved = touched = true;
       canvas.style.cursor = "grabbing";
+      moving();
       view.tx = drag.tx + dx;
       view.ty = drag.ty + dy;
       clamp();
@@ -735,6 +759,7 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     destroy: () => {
       alive = false;
       cancelAnimationFrame(anim);
+      window.clearTimeout(settle);
       ro.disconnect();
       // Hand the canvas's pixels back now, rather than whenever the element is collected.
       canvas.width = 0;

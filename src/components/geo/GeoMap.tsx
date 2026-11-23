@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Loader2, Maximize2, Minus, Plus } from "lucide-react";
 import { WORLD_REGION, type GeoRegionInfo } from "@/lib/geo-types";
-import { createAtlas, loadAtlas, mapReady, type AtlasData, type AtlasEngine, type AtlasView, type Box } from "@/components/atlas/atlas-engine";
+import { createAtlas, loadAtlas, type AtlasData, type AtlasEngine, type AtlasView, type Box } from "@/components/atlas/atlas-engine";
 import { preloadImage } from "@/lib/preload";
 import { cn } from "@/lib/utils";
 import { crowdColor, type GeoCrowdRound } from "@/lib/geo-crowd";
@@ -141,6 +141,8 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
   const crop = locked ? region.map.src : WORLD_THUMB;
   const [cover, setCover] = useState<"shown" | "fading" | "gone">(() => (worldMapReady ? "gone" : "shown"));
   const [cropPainted, setCropPainted] = useState(worldMapReady);
+  /** What to do once the engine has drawn the map sharp (set by the engine's effect). */
+  const sharpRef = useRef<() => void>(() => undefined);
 
   useEffect(() => {
     pickRef.current = onPick;
@@ -184,24 +186,19 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
       onView: setView,
       // The guess map stays readable small: dots come in as you zoom, once there's room for them.
       spacedDots: true,
+      // The first paint's crop fades out once the map is drawn as sharp as the view needs.
+      onSharp: () => sharpRef.current(),
     });
     engine.current = e;
-    // The engine is loading the world map now; once it's decoded and drawn, the crop fades out over it.
+    // The engine is loading the world map now (off the main thread, the copy this view needs); once it's drawn, the crop fades out over it.
     let off = false;
     let fade = 0;
-    if (!worldMapReady) {
-      // Its smallest copy, decoded off the main thread (the engine fetches bigger ones as you zoom in).
-      void mapReady(WORLD_MAP).then(() => {
-        worldMapReady = true;
-        requestAnimationFrame(() =>
-          requestAnimationFrame(() => {
-            if (off) return;
-            setCover("fading");
-            fade = window.setTimeout(() => !off && setCover("gone"), 350);
-          })
-        );
-      });
-    }
+    sharpRef.current = () => {
+      if (off || worldMapReady) return;
+      worldMapReady = true;
+      setCover("fading");
+      fade = window.setTimeout(() => !off && setCover("gone"), 350);
+    };
     return () => {
       off = true;
       window.clearTimeout(fade);
