@@ -118,6 +118,7 @@ const nextConfig: NextConfig = {
     "/pokedex/sizes/compare/og": ["./src/assets/fonts/*.ttf"],
     "/lab/mass-battle/og": ["./src/assets/fonts/*.ttf"],
     // A Shiny Pokémon Maker design's card recolours the sprite from its data file.
+    "/tools/pokeball-maker/og": ["./src/assets/fonts/*.ttf"],
     "/tools/shiny-maker/og": ["./src/assets/fonts/*.ttf", "./public/shiny-maker/px/*.json", "./public/shiny-maker/hd/*.png", "./public/shiny-maker/art/*.png"],
     // The Tier List Maker's cards draw the template's or the shared result's Pokémon, from the roster (Showdown's data).
     "/tools/tier-list/[template]/og": ["./src/assets/fonts/*.ttf", "./public/sizes/art/256/*.webp", "./node_modules/pokemon-showdown/dist/{config,data,lib,sim}/**/*.{js,json}"],

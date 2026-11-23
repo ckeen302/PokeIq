@@ -1,0 +1,23 @@
+{
+  "title": "Créateur de Poké Balls",
+  "metaTitle": "Créateur de Poké Balls : crée ta propre Poké Ball",
+  "metaDescription": "Crée ta propre Poké Ball en 3D. Pars d'une Poké Ball officielle, d'un type ou de n'importe quel Pokémon, puis choisis couleurs, motifs, finitions, autocollants et effet d'ouverture. Partage-la ou télécharge-la en PNG, GIF, vidéo, modèle 3D ou STL à imprimer en 3D. Gratuit.",
+  "metaDesignTitle": "{name} : une Poké Ball perso",
+  "metaDesignDescription": "Une Poké Ball perso créée avec le Créateur de Poké Balls de PokéIQ. Ouvre-la pour la faire tourner en 3D et la voir s'ouvrir, ou crée la tienne.",
+  "ogAlt": "Une Poké Ball perso créée sur PokéIQ",
+  "cardTitle": "Créateur de Poké Balls",
+  "cardSubtitle": "Crée ta propre Poké Ball en 3D.",
+  "howto": {
+    "title": "Comment ça marche",
+    "s1t": "Pars d'une Poké Ball",
+    "s1": "Choisis une Poké Ball officielle, un thème de type ou une Poké Ball vierge, tire-en une au hasard, ou choisis n'importe quel Pokémon pour une Poké Ball à ses couleurs et à ses types.",
+    "s2t": "Personnalise-la",
+    "s2": "Colorie chaque partie, ajoute des motifs sur l'une ou l'autre moitié, choisis une finition pour chaque partie (brillant, métal, verre, bois et plus), change la forme et le bouton, et clique sur la Poké Ball pour y coller des autocollants.",
+    "s3t": "Regarde-la s'ouvrir",
+    "s3": "Choisis un effet qui jaillit et un Pokémon qui en sort, puis appuie sur Ouvrir, ou sur Capturer pour la voir bouger trois fois avant le clic.",
+    "s4t": "Partage et télécharge",
+    "s4": "Ta création tient dans son lien : tout le monde peut l'ouvrir. Télécharge un PNG transparent, un GIF, une vidéo verticale, un modèle GLB ou un STL à imprimer en 3D.",
+    "printTitle": "L'imprimer",
+    "print": "Le STL est en millimètres : une Poké Ball de 60 mm dont les moitiés s'impriment à plat sur leur bord sans supports, un anneau qui les assemble avec 0,25 mm de jeu, et le bouton en deux petites pièces. Peins-la à tes couleurs."
+  }
+}

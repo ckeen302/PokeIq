@@ -54,15 +54,24 @@ function markings(id: BallId): string[] {
 /** The band and button colour (gold on a Luxury Ball, red on a Premier). */
 const bandOf = (id: BallId) => (id === "premier" ? "#d8262f" : id === "luxury" ? "#e0b33a" : "#1b1b1f");
 
+/**
+ * A CSS ball from its colours: the highlight, the button (`button` inside a `ring`), the markings (CSS backgrounds
+ * sized to the top half), and the halves with the band between them. The Poké Ball Maker draws custom balls with it.
+ */
+export function ballLayers(o: { top: string; bottom: string; band: string; ring?: string; button?: string; marks?: string[]; bottomMarks?: string[] }): string {
+  return [
+    "radial-gradient(circle at 34% 28%, rgb(255 255 255 / 0.85) 0 7%, rgb(255 255 255 / 0) 22%)",
+    `radial-gradient(circle at 50% 50%, ${o.button ?? "#fff"} 0 9%, ${o.ring ?? o.band} 9% 15%, transparent 15%)`,
+    ...(o.marks ?? []).map((m) => `${m} top / 100% 45% no-repeat`),
+    ...(o.bottomMarks ?? []).map((m) => `${m} bottom / 100% 45% no-repeat`),
+    `linear-gradient(180deg, ${o.top} 0 45%, ${o.band} 45% 55%, ${o.bottom} 55%)`,
+  ].join(", ");
+}
+
 /** The full CSS background of a ball (top half, band, bottom half, markings and a highlight). */
 export function ballBackground(look: BallLook): string {
   const band = bandOf(look.id);
-  return [
-    "radial-gradient(circle at 34% 28%, rgb(255 255 255 / 0.85) 0 7%, rgb(255 255 255 / 0) 22%)",
-    `radial-gradient(circle at 50% 50%, #fff 0 9%, ${band} 9% 15%, transparent 15%)`,
-    ...markings(look.id).map((m) => `${m} top / 100% 45% no-repeat`),
-    `linear-gradient(180deg, ${look.top} 0 45%, ${band} 45% 55%, ${look.bottom} 55%)`,
-  ].join(", ");
+  return ballLayers({ top: look.top, bottom: look.bottom, band, marks: markings(look.id) });
 }
 
 /** A small ball (team balls; `dim` for a fainted Pokémon). */
