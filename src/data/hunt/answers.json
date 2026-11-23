@@ -1,0 +1,2380 @@
+{
+ "version": 1,
+ "sample": true,
+ "generatedAt": "2026-11-23",
+ "entries": [
+  {
+   "id": "143",
+   "dex": 143,
+   "form": null,
+   "name": "Snorlax",
+   "art": 143,
+   "slug": "snorlax",
+   "regions": [
+    "kanto",
+    "kalos",
+    "alola",
+    "galar",
+    "kitakami"
+   ],
+   "places": [
+    {
+     "region": "kanto",
+     "geoRegion": "Kanto",
+     "name": "Cerulean Cave",
+     "pin": [
+      0.72137,
+      0.46394
+     ],
+     "methods": [
+      {
+       "versions": [
+        "lets-go-pikachu",
+        "lets-go-eevee"
+       ],
+       "games": "Let's Go, Pikachu! / Let's Go, Eevee!",
+       "method": "Grass - Rare Spawns"
+      }
+     ]
+    },
+    {
+     "region": "kanto",
+     "geoRegion": "Kanto",
+     "name": "Route 11",
+     "pin": [
+      0.73504,
+      0.52788
+     ],
+     "methods": [
+      {
+       "versions": [
+        "heartgold",
+        "soulsilver"
+       ],
+       "games": "HeartGold / SoulSilver",
+       "method": "Poké Flute"
+      },
+      {
+       "versions": [
+        "heartgold",
+        "soulsilver"
+       ],
+       "games": "HeartGold / SoulSilver",
+       "method": "Fixed encounter"
+      }
+     ]
+    },
+    {
+     "region": "kanto",
+     "geoRegion": "Kanto",
+     "name": "Route 12",
+     "pin": [
+      0.73983,
+      0.52943
+     ],
+     "methods": [
+      {
+       "versions": [
+        "red",
+        "blue",
+        "yellow",
+        "firered",
+        "leafgreen"
+       ],
+       "games": "Red / Blue / Yellow / FireRed / LeafGreen",
+       "method": "Poké Flute"
+      },
+      {
+       "versions": [
+        "red",
+        "blue",
+        "yellow",
+        "firered",
+        "leafgreen"
+       ],
+       "games": "Red / Blue / Yellow / FireRed / LeafGreen",
+       "method": "Fixed encounter"
+      }
+     ]
+    },
+    {
+     "region": "kanto",
+     "geoRegion": "Kanto",
+     "name": "Route 16",
+     "pin": [
+      0.69915,
+      0.51852
+     ],
+     "methods": [
+      {
+       "versions": [
+        "red",
+        "blue",
+        "yellow",
+        "firered",
+        "leafgreen"
+       ],
+       "games": "Red / Blue / Yellow / FireRed / LeafGreen",
+       "method": "Poké Flute"
+      },
+      {
+       "versions": [
+        "red",
+        "blue",
+        "yellow",
+        "firered",
+        "leafgreen"
+       ],
+       "games": "Red / Blue / Yellow / FireRed / LeafGreen",
+       "method": "Fixed encounter"
+      }
+     ]
+    },
+    {
+     "region": "kanto",
+     "geoRegion": "Kanto",
+     "name": "Vermilion City",
+     "pin": [
+      0.72376,
+      0.53489
+     ],
+     "methods": [
+      {
+       "versions": [
+        "gold",
+        "silver",
+        "crystal"
+       ],
+       "games": "Gold / Silver / Crystal",
+       "method": "Poké Flute"
+      },
+      {
+       "versions": [
+        "gold",
+        "silver",
+        "crystal"
+       ],
+       "games": "Gold / Silver / Crystal",
+       "method": "Fixed encounter"
+      }
+     ]
+    },
+    {
+     "region": "kalos",
+     "geoRegion": "Kalos",
+     "name": "Route 7",
+     "pin": [
+      0.36376,
+      0.26628
+     ],
+     "methods": [
+      {
+       "versions": [
+        "x",
+        "y"
+       ],
+       "games": "X / Y",
+       "method": "Fixed encounter"
+      }
+     ]
+    },
+    {
+     "region": "alola",
+     "geoRegion": "Alola",
+     "name": "Route 1",
+     "pin": [
+      0.83436,
+      0.74542
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sun",
+        "moon",
+        "ultra-sun",
+        "ultra-moon"
+       ],
+       "games": "Sun / Moon / Ultra Sun / Ultra Moon",
+       "method": "SOS call"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Ballimere Lake",
+     "pin": [
+      0.2494,
+      0.57817
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      },
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Wild"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Frostpoint Field",
+     "pin": [
+      0.24479,
+      0.53684
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Wandering"
+      },
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Wild"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Giant's Bed",
+     "pin": [
+      0.25231,
+      0.54308
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      },
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Wild"
+      },
+      {
+       "versions": [
+        "shield"
+       ],
+       "games": "Shield",
+       "method": "Wandering"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Giant's Foot",
+     "pin": [
+      0.26239,
+      0.54503
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      },
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Wild"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Galar",
+     "name": "Motostoke Riverbank",
+     "pin": [
+      0.26051,
+      0.32554
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Wandering"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Slippery Slope",
+     "pin": [
+      0.24256,
+      0.52164
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      },
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Wandering"
+      },
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Wild"
+      }
+     ]
+    },
+    {
+     "region": "kitakami",
+     "geoRegion": "Kitakami",
+     "name": "Timeless Woods",
+     "pin": [
+      0.71214,
+      0.33684
+     ],
+     "methods": [
+      {
+       "versions": [
+        "scarlet",
+        "violet"
+       ],
+       "games": "Scarlet / Violet",
+       "method": "Fixed encounter"
+      }
+     ]
+    }
+   ],
+   "difficulty": 0.5,
+   "regionDifficulty": {
+    "kanto": 0.5,
+    "kalos": 0.5,
+    "alola": 0.5,
+    "galar": 0.5
+   },
+   "famous": true
+  },
+  {
+   "id": "885",
+   "dex": 885,
+   "form": null,
+   "name": "Dreepy",
+   "art": 885,
+   "slug": "dreepy",
+   "regions": [
+    "galar",
+    "paldea"
+   ],
+   "places": [
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Ballimere Lake",
+     "pin": [
+      0.2494,
+      0.57817
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Frigid Sea",
+     "pin": [
+      0.2747,
+      0.52554
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Giant's Foot",
+     "pin": [
+      0.26239,
+      0.54503
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Galar",
+     "name": "Lake of Outrage",
+     "pin": [
+      0.24889,
+      0.27212
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Grass"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Old Cemetery",
+     "pin": [
+      0.25043,
+      0.55595
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Slippery Slope",
+     "pin": [
+      0.24256,
+      0.52164
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      }
+     ]
+    },
+    {
+     "region": "paldea",
+     "geoRegion": "Paldea",
+     "name": "East Province (Area Three)",
+     "pin": [
+      0.40718,
+      0.5154
+     ],
+     "methods": [
+      {
+       "versions": [
+        "violet"
+       ],
+       "games": "Violet",
+       "method": "Wild"
+      }
+     ]
+    },
+    {
+     "region": "paldea",
+     "geoRegion": "Paldea",
+     "name": "East Province (Area Two)",
+     "pin": [
+      0.40974,
+      0.53957
+     ],
+     "methods": [
+      {
+       "versions": [
+        "violet"
+       ],
+       "games": "Violet",
+       "method": "Wild"
+      }
+     ]
+    },
+    {
+     "region": "paldea",
+     "geoRegion": "Paldea",
+     "name": "Glaseado Mountain",
+     "pin": [
+      0.38427,
+      0.47135
+     ],
+     "methods": [
+      {
+       "versions": [
+        "violet"
+       ],
+       "games": "Violet",
+       "method": "Wild"
+      }
+     ]
+    },
+    {
+     "region": "paldea",
+     "geoRegion": "Paldea",
+     "name": "South Province (Area Five)",
+     "pin": [
+      0.39556,
+      0.59532
+     ],
+     "methods": [
+      {
+       "versions": [
+        "violet"
+       ],
+       "games": "Violet",
+       "method": "Wild"
+      }
+     ]
+    },
+    {
+     "region": "paldea",
+     "geoRegion": "Paldea",
+     "name": "South Province (Area Four)",
+     "pin": [
+      0.36496,
+      0.60351
+     ],
+     "methods": [
+      {
+       "versions": [
+        "violet"
+       ],
+       "games": "Violet",
+       "method": "Wild"
+      }
+     ]
+    },
+    {
+     "region": "paldea",
+     "geoRegion": "Paldea",
+     "name": "South Province (Area One)",
+     "pin": [
+      0.38171,
+      0.60351
+     ],
+     "methods": [
+      {
+       "versions": [
+        "violet"
+       ],
+       "games": "Violet",
+       "method": "Wild"
+      }
+     ]
+    },
+    {
+     "region": "paldea",
+     "geoRegion": "Paldea",
+     "name": "South Province (Area Six)",
+     "pin": [
+      0.34701,
+      0.60507
+     ],
+     "methods": [
+      {
+       "versions": [
+        "violet"
+       ],
+       "games": "Violet",
+       "method": "Wild"
+      }
+     ]
+    },
+    {
+     "region": "paldea",
+     "geoRegion": "Paldea",
+     "name": "West Province (Area Three)",
+     "pin": [
+      0.36974,
+      0.49981
+     ],
+     "methods": [
+      {
+       "versions": [
+        "violet"
+       ],
+       "games": "Violet",
+       "method": "Wild"
+      }
+     ]
+    },
+    {
+     "region": "paldea",
+     "geoRegion": "Paldea",
+     "name": "West Province (Area Two)",
+     "pin": [
+      0.34701,
+      0.50604
+     ],
+     "methods": [
+      {
+       "versions": [
+        "violet"
+       ],
+       "games": "Violet",
+       "method": "Wild"
+      }
+     ]
+    }
+   ],
+   "difficulty": 0.5,
+   "regionDifficulty": {
+    "galar": 0.5,
+    "paldea": 0.5
+   }
+  },
+  {
+   "id": "138",
+   "dex": 138,
+   "form": null,
+   "name": "Omanyte",
+   "art": 138,
+   "slug": "omanyte",
+   "regions": [
+    "galar"
+   ],
+   "places": [
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Ballimere Lake",
+     "pin": [
+      0.2494,
+      0.57817
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword"
+       ],
+       "games": "Sword",
+       "method": "Max Raid"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Frigid Sea",
+     "pin": [
+      0.2747,
+      0.52554
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword"
+       ],
+       "games": "Sword",
+       "method": "Max Raid"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Giant's Bed",
+     "pin": [
+      0.25231,
+      0.54308
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword"
+       ],
+       "games": "Sword",
+       "method": "Max Raid"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Giant's Foot",
+     "pin": [
+      0.26239,
+      0.54503
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword"
+       ],
+       "games": "Sword",
+       "method": "Max Raid"
+      },
+      {
+       "versions": [
+        "sword"
+       ],
+       "games": "Sword",
+       "method": "Surf"
+      },
+      {
+       "versions": [
+        "sword"
+       ],
+       "games": "Sword",
+       "method": "Wandering Surf"
+      },
+      {
+       "versions": [
+        "sword"
+       ],
+       "games": "Sword",
+       "method": "Wild"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Roaring-Sea Caves",
+     "pin": [
+      0.26359,
+      0.52904
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword"
+       ],
+       "games": "Sword",
+       "method": "Surf"
+      },
+      {
+       "versions": [
+        "sword"
+       ],
+       "games": "Sword",
+       "method": "Wild"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Snowslide Slope",
+     "pin": [
+      0.25487,
+      0.5193
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword"
+       ],
+       "games": "Sword",
+       "method": "Max Raid"
+      }
+     ]
+    }
+   ],
+   "difficulty": 0.5,
+   "regionDifficulty": {
+    "galar": 0.5
+   }
+  },
+  {
+   "id": "140",
+   "dex": 140,
+   "form": null,
+   "name": "Kabuto",
+   "art": 140,
+   "slug": "kabuto",
+   "regions": [
+    "galar"
+   ],
+   "places": [
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Ballimere Lake",
+     "pin": [
+      0.2494,
+      0.57817
+     ],
+     "methods": [
+      {
+       "versions": [
+        "shield"
+       ],
+       "games": "Shield",
+       "method": "Max Raid"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Frigid Sea",
+     "pin": [
+      0.2747,
+      0.52554
+     ],
+     "methods": [
+      {
+       "versions": [
+        "shield"
+       ],
+       "games": "Shield",
+       "method": "Max Raid"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Giant's Bed",
+     "pin": [
+      0.25231,
+      0.54308
+     ],
+     "methods": [
+      {
+       "versions": [
+        "shield"
+       ],
+       "games": "Shield",
+       "method": "Max Raid"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Giant's Foot",
+     "pin": [
+      0.26239,
+      0.54503
+     ],
+     "methods": [
+      {
+       "versions": [
+        "shield"
+       ],
+       "games": "Shield",
+       "method": "Max Raid"
+      },
+      {
+       "versions": [
+        "shield"
+       ],
+       "games": "Shield",
+       "method": "Surf"
+      },
+      {
+       "versions": [
+        "shield"
+       ],
+       "games": "Shield",
+       "method": "Wandering Surf"
+      },
+      {
+       "versions": [
+        "shield"
+       ],
+       "games": "Shield",
+       "method": "Wild"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Roaring-Sea Caves",
+     "pin": [
+      0.26359,
+      0.52904
+     ],
+     "methods": [
+      {
+       "versions": [
+        "shield"
+       ],
+       "games": "Shield",
+       "method": "Surf"
+      },
+      {
+       "versions": [
+        "shield"
+       ],
+       "games": "Shield",
+       "method": "Wild"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Snowslide Slope",
+     "pin": [
+      0.25487,
+      0.5193
+     ],
+     "methods": [
+      {
+       "versions": [
+        "shield"
+       ],
+       "games": "Shield",
+       "method": "Max Raid"
+      }
+     ]
+    }
+   ],
+   "difficulty": 0.5,
+   "regionDifficulty": {
+    "galar": 0.5
+   }
+  },
+  {
+   "id": "142",
+   "dex": 142,
+   "form": null,
+   "name": "Aerodactyl",
+   "art": 142,
+   "slug": "aerodactyl",
+   "regions": [
+    "galar"
+   ],
+   "places": [
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Ballimere Lake",
+     "pin": [
+      0.2494,
+      0.57817
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Dyna Tree Hill",
+     "pin": [
+      0.25419,
+      0.57778
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Frigid Sea",
+     "pin": [
+      0.2747,
+      0.52554
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Frostpoint Field",
+     "pin": [
+      0.24479,
+      0.53684
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Giant's Bed",
+     "pin": [
+      0.25231,
+      0.54308
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      },
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Wandering"
+      },
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Wild"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Snowslide Slope",
+     "pin": [
+      0.25487,
+      0.5193
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      }
+     ]
+    }
+   ],
+   "difficulty": 0.5,
+   "regionDifficulty": {
+    "galar": 0.5
+   },
+   "famous": true
+  },
+  {
+   "id": "241",
+   "dex": 241,
+   "form": null,
+   "name": "Miltank",
+   "art": 241,
+   "slug": "miltank",
+   "regions": [
+    "johto",
+    "hoenn",
+    "sinnoh",
+    "kalos",
+    "alola",
+    "galar"
+   ],
+   "places": [
+    {
+     "region": "johto",
+     "geoRegion": "Johto",
+     "name": "Route 38",
+     "pin": [
+      0.5747,
+      0.48577
+     ],
+     "methods": [
+      {
+       "versions": [
+        "gold",
+        "silver",
+        "crystal",
+        "heartgold",
+        "soulsilver"
+       ],
+       "games": "Gold / Silver / Crystal / HeartGold / SoulSilver",
+       "method": "Grass"
+      }
+     ]
+    },
+    {
+     "region": "johto",
+     "geoRegion": "Johto",
+     "name": "Route 39",
+     "pin": [
+      0.56821,
+      0.48967
+     ],
+     "methods": [
+      {
+       "versions": [
+        "gold",
+        "silver",
+        "crystal",
+        "heartgold",
+        "soulsilver"
+       ],
+       "games": "Gold / Silver / Crystal / HeartGold / SoulSilver",
+       "method": "Grass"
+      }
+     ]
+    },
+    {
+     "region": "johto",
+     "geoRegion": "Johto",
+     "name": "Route 47",
+     "pin": [
+      0.54359,
+      0.55673
+     ],
+     "methods": [
+      {
+       "versions": [
+        "heartgold",
+        "soulsilver"
+       ],
+       "games": "HeartGold / SoulSilver",
+       "method": "Grass"
+      }
+     ]
+    },
+    {
+     "region": "hoenn",
+     "geoRegion": "Hoenn",
+     "name": "Safari Zone",
+     "pin": [
+      0.53726,
+      0.70136
+     ],
+     "methods": [
+      {
+       "versions": [
+        "emerald"
+       ],
+       "games": "Emerald",
+       "method": "Grass"
+      }
+     ]
+    },
+    {
+     "region": "sinnoh",
+     "geoRegion": "Sinnoh",
+     "name": "Route 209",
+     "pin": [
+      0.68701,
+      0.22651
+     ],
+     "methods": [
+      {
+       "versions": [
+        "diamond",
+        "pearl"
+       ],
+       "games": "Diamond / Pearl",
+       "method": "Grass"
+      },
+      {
+       "versions": [
+        "brilliant-diamond",
+        "shining-pearl"
+       ],
+       "games": "Brilliant Diamond / Shining Pearl",
+       "method": "PokeRadar"
+      }
+     ]
+    },
+    {
+     "region": "sinnoh",
+     "geoRegion": "Sinnoh",
+     "name": "Route 210",
+     "pin": [
+      0.68701,
+      0.17739
+     ],
+     "methods": [
+      {
+       "versions": [
+        "diamond",
+        "pearl",
+        "platinum"
+       ],
+       "games": "Diamond / Pearl / Platinum",
+       "method": "Grass"
+      },
+      {
+       "versions": [
+        "brilliant-diamond",
+        "shining-pearl"
+       ],
+       "games": "Brilliant Diamond / Shining Pearl",
+       "method": "PokeRadar"
+      }
+     ]
+    },
+    {
+     "region": "kalos",
+     "geoRegion": "Kalos",
+     "name": "Route 12",
+     "pin": [
+      0.35316,
+      0.20624
+     ],
+     "methods": [
+      {
+       "versions": [
+        "x",
+        "y"
+       ],
+       "games": "X / Y",
+       "method": "Grass"
+      },
+      {
+       "versions": [
+        "x",
+        "y"
+       ],
+       "games": "X / Y",
+       "method": "Horde"
+      },
+      {
+       "versions": [
+        "x",
+        "y"
+       ],
+       "games": "X / Y",
+       "method": "Yellow flowers"
+      },
+      {
+       "versions": [
+        "x",
+        "y"
+       ],
+       "games": "X / Y",
+       "method": "Yellow Flowers"
+      }
+     ]
+    },
+    {
+     "region": "alola",
+     "geoRegion": "Alola",
+     "name": "Paniola Ranch",
+     "pin": [
+      0.8894,
+      0.73957
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sun",
+        "moon",
+        "ultra-sun",
+        "ultra-moon"
+       ],
+       "games": "Sun / Moon / Ultra Sun / Ultra Moon",
+       "method": "Grass"
+      },
+      {
+       "versions": [
+        "sun",
+        "moon",
+        "ultra-sun",
+        "ultra-moon"
+       ],
+       "games": "Sun / Moon / Ultra Sun / Ultra Moon",
+       "method": "SOS call"
+      }
+     ]
+    },
+    {
+     "region": "alola",
+     "geoRegion": "Alola",
+     "name": "Poni Plains",
+     "pin": [
+      0.78547,
+      0.81481
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sun",
+        "moon",
+        "ultra-sun",
+        "ultra-moon"
+       ],
+       "games": "Sun / Moon / Ultra Sun / Ultra Moon",
+       "method": "Grass"
+      },
+      {
+       "versions": [
+        "sun",
+        "moon",
+        "ultra-sun",
+        "ultra-moon"
+       ],
+       "games": "Sun / Moon / Ultra Sun / Ultra Moon",
+       "method": "SOS call"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Isle of Armor",
+     "name": "Courageous Cavern",
+     "pin": [
+      0.2,
+      0.27836
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Isle of Armor",
+     "name": "Soothing Wetlands",
+     "pin": [
+      0.20342,
+      0.27602
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Isle of Armor",
+     "name": "Training Lowlands",
+     "pin": [
+      0.20444,
+      0.26121
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      },
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Overworld"
+      },
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Wandering"
+      },
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Wild"
+      }
+     ]
+    }
+   ],
+   "difficulty": 0.5,
+   "regionDifficulty": {
+    "johto": 0.5,
+    "hoenn": 0.5,
+    "sinnoh": 0.5,
+    "kalos": 0.5,
+    "alola": 0.5,
+    "galar": 0.5
+   }
+  },
+  {
+   "id": "345",
+   "dex": 345,
+   "form": null,
+   "name": "Lileep",
+   "art": 345,
+   "slug": "lileep",
+   "regions": [
+    "galar"
+   ],
+   "places": [
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Ballimere Lake",
+     "pin": [
+      0.2494,
+      0.57817
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Crown Shrine",
+     "pin": [
+      0.25402,
+      0.49006
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Giant's Bed",
+     "pin": [
+      0.25231,
+      0.54308
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Fishing"
+      },
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      },
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Wild"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Giant's Foot",
+     "pin": [
+      0.26239,
+      0.54503
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Fishing"
+      },
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      },
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Wild"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Slippery Slope",
+     "pin": [
+      0.24256,
+      0.52164
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Snowslide Slope",
+     "pin": [
+      0.25487,
+      0.5193
+     ],
+     "methods": [
+      {
+       "versions": [
+        "shield"
+       ],
+       "games": "Shield",
+       "method": "Max Raid"
+      }
+     ]
+    }
+   ],
+   "difficulty": 0.5,
+   "regionDifficulty": {
+    "galar": 0.5
+   }
+  },
+  {
+   "id": "347",
+   "dex": 347,
+   "form": null,
+   "name": "Anorith",
+   "art": 347,
+   "slug": "anorith",
+   "regions": [
+    "galar"
+   ],
+   "places": [
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Ballimere Lake",
+     "pin": [
+      0.2494,
+      0.57817
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      },
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Surf"
+      },
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Wandering Surf"
+      },
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Wild"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Crown Shrine",
+     "pin": [
+      0.25402,
+      0.49006
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Giant's Bed",
+     "pin": [
+      0.25231,
+      0.54308
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Giant's Foot",
+     "pin": [
+      0.26239,
+      0.54503
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Slippery Slope",
+     "pin": [
+      0.24256,
+      0.52164
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword",
+        "shield"
+       ],
+       "games": "Sword / Shield",
+       "method": "Max Raid"
+      }
+     ]
+    },
+    {
+     "region": "galar",
+     "geoRegion": "Crown Tundra",
+     "name": "Snowslide Slope",
+     "pin": [
+      0.25487,
+      0.5193
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sword"
+       ],
+       "games": "Sword",
+       "method": "Max Raid"
+      }
+     ]
+    }
+   ],
+   "difficulty": 0.5,
+   "regionDifficulty": {
+    "galar": 0.5
+   }
+  },
+  {
+   "id": "433",
+   "dex": 433,
+   "form": null,
+   "name": "Chingling",
+   "art": 433,
+   "slug": "chingling",
+   "regions": [
+    "johto",
+    "sinnoh",
+    "kalos",
+    "kitakami"
+   ],
+   "places": [
+    {
+     "region": "johto",
+     "geoRegion": "Johto",
+     "name": "Safari Zone",
+     "pin": [
+      0.5412,
+      0.52398
+     ],
+     "methods": [
+      {
+       "versions": [
+        "heartgold",
+        "soulsilver"
+       ],
+       "games": "HeartGold / SoulSilver",
+       "method": "Grass"
+      }
+     ]
+    },
+    {
+     "region": "sinnoh",
+     "geoRegion": "Sinnoh",
+     "name": "Lake Acuity",
+     "pin": [
+      0.65436,
+      0.06901
+     ],
+     "methods": [
+      {
+       "versions": [
+        "diamond",
+        "pearl",
+        "brilliant-diamond",
+        "shining-pearl"
+       ],
+       "games": "Diamond / Pearl / Brilliant Diamond / Shining Pearl",
+       "method": "Grass"
+      }
+     ]
+    },
+    {
+     "region": "sinnoh",
+     "geoRegion": "Sinnoh",
+     "name": "Lake Valor",
+     "pin": [
+      0.70906,
+      0.246
+     ],
+     "methods": [
+      {
+       "versions": [
+        "diamond",
+        "pearl",
+        "brilliant-diamond",
+        "shining-pearl"
+       ],
+       "games": "Diamond / Pearl / Brilliant Diamond / Shining Pearl",
+       "method": "Grass"
+      }
+     ]
+    },
+    {
+     "region": "sinnoh",
+     "geoRegion": "Sinnoh",
+     "name": "Mt. Coronet",
+     "pin": [
+      0.6641,
+      0.18051
+     ],
+     "methods": [
+      {
+       "versions": [
+        "diamond",
+        "pearl",
+        "platinum"
+       ],
+       "games": "Diamond / Pearl / Platinum",
+       "method": "Cave"
+      },
+      {
+       "versions": [
+        "brilliant-diamond",
+        "shining-pearl"
+       ],
+       "games": "Brilliant Diamond / Shining Pearl",
+       "method": "Grass"
+      }
+     ]
+    },
+    {
+     "region": "sinnoh",
+     "geoRegion": "Sinnoh",
+     "name": "Route 211",
+     "pin": [
+      0.66991,
+      0.16842
+     ],
+     "methods": [
+      {
+       "versions": [
+        "diamond",
+        "pearl",
+        "platinum",
+        "brilliant-diamond",
+        "shining-pearl"
+       ],
+       "games": "Diamond / Pearl / Platinum / Brilliant Diamond / Shining Pearl",
+       "method": "Grass"
+      }
+     ]
+    },
+    {
+     "region": "sinnoh",
+     "geoRegion": "Sinnoh",
+     "name": "Sendoff Spring",
+     "pin": [
+      0.71829,
+      0.22495
+     ],
+     "methods": [
+      {
+       "versions": [
+        "platinum"
+       ],
+       "games": "Platinum",
+       "method": "Grass"
+      }
+     ]
+    },
+    {
+     "region": "sinnoh",
+     "geoRegion": "Sinnoh",
+     "name": "Turnback Cave",
+     "pin": [
+      0.71607,
+      0.23002
+     ],
+     "methods": [
+      {
+       "versions": [
+        "platinum"
+       ],
+       "games": "Platinum",
+       "method": "Cave"
+      }
+     ]
+    },
+    {
+     "region": "kalos",
+     "geoRegion": "Kalos",
+     "name": "Reflection Cave",
+     "pin": [
+      0.33282,
+      0.22534
+     ],
+     "methods": [
+      {
+       "versions": [
+        "x",
+        "y"
+       ],
+       "games": "X / Y",
+       "method": "Cave"
+      }
+     ]
+    },
+    {
+     "region": "kalos",
+     "geoRegion": "Kalos",
+     "name": "Route 11",
+     "pin": [
+      0.3306,
+      0.23197
+     ],
+     "methods": [
+      {
+       "versions": [
+        "x",
+        "y"
+       ],
+       "games": "X / Y",
+       "method": "Grass"
+      }
+     ]
+    },
+    {
+     "region": "kitakami",
+     "geoRegion": "Kitakami",
+     "name": "Chilling Waterhead",
+     "pin": [
+      0.70684,
+      0.36023
+     ],
+     "methods": [
+      {
+       "versions": [
+        "scarlet",
+        "violet"
+       ],
+       "games": "Scarlet / Violet",
+       "method": "Wild"
+      }
+     ]
+    },
+    {
+     "region": "kitakami",
+     "geoRegion": "Kitakami",
+     "name": "Crystal Pool",
+     "pin": [
+      0.70051,
+      0.36413
+     ],
+     "methods": [
+      {
+       "versions": [
+        "scarlet",
+        "violet"
+       ],
+       "games": "Scarlet / Violet",
+       "method": "Wild"
+      }
+     ]
+    },
+    {
+     "region": "kitakami",
+     "geoRegion": "Kitakami",
+     "name": "Infernal Pass",
+     "pin": [
+      0.69897,
+      0.35945
+     ],
+     "methods": [
+      {
+       "versions": [
+        "scarlet",
+        "violet"
+       ],
+       "games": "Scarlet / Violet",
+       "method": "Fixed encounter"
+      },
+      {
+       "versions": [
+        "scarlet",
+        "violet"
+       ],
+       "games": "Scarlet / Violet",
+       "method": "Wild"
+      }
+     ]
+    },
+    {
+     "region": "kitakami",
+     "geoRegion": "Kitakami",
+     "name": "Oni Mountain",
+     "pin": [
+      0.69983,
+      0.36296
+     ],
+     "methods": [
+      {
+       "versions": [
+        "scarlet",
+        "violet"
+       ],
+       "games": "Scarlet / Violet",
+       "method": "Wild"
+      }
+     ]
+    }
+   ],
+   "difficulty": 0.5,
+   "regionDifficulty": {
+    "johto": 0.5,
+    "sinnoh": 0.5,
+    "kalos": 0.5
+   }
+  },
+  {
+   "id": "441",
+   "dex": 441,
+   "form": null,
+   "name": "Chatot",
+   "art": 441,
+   "slug": "chatot",
+   "regions": [
+    "sinnoh",
+    "unova",
+    "kalos"
+   ],
+   "places": [
+    {
+     "region": "sinnoh",
+     "geoRegion": "Sinnoh",
+     "name": "Route 213",
+     "pin": [
+      0.70718,
+      0.26823
+     ],
+     "methods": [
+      {
+       "versions": [
+        "platinum"
+       ],
+       "games": "Platinum",
+       "method": "Grass"
+      }
+     ]
+    },
+    {
+     "region": "sinnoh",
+     "geoRegion": "Sinnoh",
+     "name": "Route 218",
+     "pin": [
+      0.62239,
+      0.24133
+     ],
+     "methods": [
+      {
+       "versions": [
+        "platinum"
+       ],
+       "games": "Platinum",
+       "method": "Grass"
+      }
+     ]
+    },
+    {
+     "region": "sinnoh",
+     "geoRegion": "Sinnoh",
+     "name": "Route 222",
+     "pin": [
+      0.72017,
+      0.25029
+     ],
+     "methods": [
+      {
+       "versions": [
+        "diamond",
+        "pearl",
+        "platinum",
+        "brilliant-diamond",
+        "shining-pearl"
+       ],
+       "games": "Diamond / Pearl / Platinum / Brilliant Diamond / Shining Pearl",
+       "method": "Grass"
+      }
+     ]
+    },
+    {
+     "region": "sinnoh",
+     "geoRegion": "Sinnoh",
+     "name": "Route 224",
+     "pin": [
+      0.73641,
+      0.16842
+     ],
+     "methods": [
+      {
+       "versions": [
+        "diamond",
+        "pearl",
+        "brilliant-diamond",
+        "shining-pearl"
+       ],
+       "games": "Diamond / Pearl / Brilliant Diamond / Shining Pearl",
+       "method": "Grass"
+      }
+     ]
+    },
+    {
+     "region": "unova",
+     "geoRegion": "Unova",
+     "name": "Route 18",
+     "pin": [
+      0.13282,
+      0.6152
+     ],
+     "methods": [
+      {
+       "versions": [
+        "black-2",
+        "white-2"
+       ],
+       "games": "Black 2 / White 2",
+       "method": "Hidden Grotto"
+      }
+     ]
+    },
+    {
+     "region": "kalos",
+     "geoRegion": "Kalos",
+     "name": "Azure Bay",
+     "pin": [
+      0.35829,
+      0.18791
+     ],
+     "methods": [
+      {
+       "versions": [
+        "x",
+        "y"
+       ],
+       "games": "X / Y",
+       "method": "Grass"
+      }
+     ]
+    },
+    {
+     "region": "kalos",
+     "geoRegion": "Kalos",
+     "name": "Route 12",
+     "pin": [
+      0.35316,
+      0.20624
+     ],
+     "methods": [
+      {
+       "versions": [
+        "x",
+        "y"
+       ],
+       "games": "X / Y",
+       "method": "Grass"
+      },
+      {
+       "versions": [
+        "x",
+        "y"
+       ],
+       "games": "X / Y",
+       "method": "Yellow flowers"
+      },
+      {
+       "versions": [
+        "x",
+        "y"
+       ],
+       "games": "X / Y",
+       "method": "Yellow Flowers"
+      }
+     ]
+    }
+   ],
+   "difficulty": 0.5,
+   "regionDifficulty": {
+    "sinnoh": 0.5,
+    "unova": 0.5,
+    "kalos": 0.5
+   }
+  },
+  {
+   "id": "52-alola",
+   "dex": 52,
+   "form": "alola",
+   "name": "Alolan Meowth",
+   "art": 10107,
+   "slug": "meowth",
+   "regions": [
+    "alola"
+   ],
+   "places": [
+    {
+     "region": "alola",
+     "geoRegion": "Alola",
+     "name": "Hau'oli City",
+     "pin": [
+      0.81282,
+      0.75088
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sun",
+        "moon",
+        "ultra-sun",
+        "ultra-moon"
+       ],
+       "games": "Sun / Moon / Ultra Sun / Ultra Moon",
+       "method": "Grass"
+      }
+     ]
+    },
+    {
+     "region": "alola",
+     "geoRegion": "Alola",
+     "name": "Malie Garden",
+     "pin": [
+      0.95675,
+      0.86667
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sun",
+        "moon",
+        "ultra-sun",
+        "ultra-moon"
+       ],
+       "games": "Sun / Moon / Ultra Sun / Ultra Moon",
+       "method": "Grass"
+      }
+     ]
+    },
+    {
+     "region": "alola",
+     "geoRegion": "Alola",
+     "name": "Route 1",
+     "pin": [
+      0.83436,
+      0.74542
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sun",
+        "moon",
+        "ultra-sun",
+        "ultra-moon"
+       ],
+       "games": "Sun / Moon / Ultra Sun / Ultra Moon",
+       "method": "Grass"
+      }
+     ]
+    },
+    {
+     "region": "alola",
+     "geoRegion": "Alola",
+     "name": "Route 2",
+     "pin": [
+      0.8053,
+      0.71384
+     ],
+     "methods": [
+      {
+       "versions": [
+        "sun",
+        "moon",
+        "ultra-sun",
+        "ultra-moon"
+       ],
+       "games": "Sun / Moon / Ultra Sun / Ultra Moon",
+       "method": "Grass"
+      }
+     ]
+    }
+   ],
+   "difficulty": 0.5,
+   "regionDifficulty": {
+    "alola": 0.5
+   }
+  }
+ ]
+}
