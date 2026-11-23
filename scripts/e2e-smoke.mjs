@@ -16,6 +16,7 @@ import { runSizes } from "./e2e-sizes.mjs";
 import { runShinyMaker } from "./e2e-shiny-maker.mjs";
 import { runTierList } from "./e2e-tier-list.mjs";
 import { runPokeballMaker } from "./e2e-pokeball-maker.mjs";
+import { runFavoritePicker } from "./e2e-favorite-picker.mjs";
 import { runCalc } from "./e2e-calc.mjs";
 import { runVideoGames } from "./e2e-video-games.mjs";
 import { runMovies } from "./e2e-movies.mjs";
@@ -181,6 +182,12 @@ if (process.env.E2E_ONLY === "tier-list") {
 // E2E_ONLY=pokeball-maker runs just the Poké Ball Maker (its card on /tools, editing, opening, sharing, a PNG), then exits.
 if (process.env.E2E_ONLY === "pokeball-maker") {
   await runPokeballMaker({ browser, BASE, OUT, errors, step });
+await runFavoritePicker({ browser, BASE, OUT, errors, step });
+  await finish();
+}
+// E2E_ONLY=favorite-picker runs just the Favorite Pokémon Picker (its card on /tools, a run to the end, the type chart, PNGs, a share link), then exits.
+if (process.env.E2E_ONLY === "favorite-picker") {
+  await runFavoritePicker({ browser, BASE, OUT, errors, step });
   await finish();
 }
 // E2E_ONLY=which-pokemon runs just that step (no Supabase, no second browser), then exits.

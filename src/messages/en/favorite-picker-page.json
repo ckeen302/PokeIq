@@ -1,0 +1,39 @@
+{
+  "title": "Favorite Pokémon Picker",
+  "subtitle": "Find your favorite Pokémon in quick rounds, then fill a chart with your favorite of every type.",
+  "metaTitle": "Favorite Pokémon Picker: find your favorite Pokémon",
+  "metaDescription": "Find your favorite Pokémon: keep the ones you like from quick screens, then the last ones go head to head. Get your top 10, make a chart of your favorite Pokémon of every type, see them shiny, and share or download it. Free.",
+  "metaSharedTitle": "{name} is my favorite Pokémon",
+  "metaSharedChartTitle": "My favorite Pokémon of every type",
+  "metaSharedDescription": "Picked with the Favorite Pokémon Picker on PokéIQ. Open it to see the whole list, or find your own favorite.",
+  "ogAlt": "A favorite Pokémon and a top 10 made with the Favorite Pokémon Picker",
+  "ogChartAlt": "A chart of favorite Pokémon of every type made with the Favorite Pokémon Picker",
+  "ogFavorite": "My favorite Pokémon",
+  "ogChart": "Favorite of every type",
+  "ogTitle": {
+    "a": "Favorite",
+    "b": "Pokémon Picker"
+  },
+  "ogChips": {
+    "duel": "Head to head",
+    "top": "Top 10",
+    "types": "Every type",
+    "shiny": "Shiny"
+  },
+  "cardTitle": "Favorite Pokémon Picker",
+  "cardSubtitle": "Find your favorite Pokémon, and your favorite of every type.",
+  "howto": {
+    "title": "How it works",
+    "s1t": "Choose your pool",
+    "s1": "Every Pokémon, or just some generations, types, starters or legendaries. Regional forms, Megas and other forms can join in.",
+    "s2t": "Keep the ones you like",
+    "s2": "Each screen shows a handful of Pokémon: keep up to {keep} and move on, and the rest drop out. A big pool takes a couple of quick rounds, and your progress is saved on this device.",
+    "s3t": "Go head to head",
+    "s3": "When {max} or fewer are left, they meet two at a time in a bracket until one is left: your favorite. Changed your mind? Undo any pick.",
+    "s4t": "Share your top 10",
+    "s4": "Your favorite shows big with your top 10 under it, in the order the bracket gave. Switch any of them to shiny, open one in the Shiny Pokémon Maker, download a square or tall picture, or copy a link.",
+    "chartTitle": "Your favorite Pokémon of every type",
+    "chart": "The type chart has a slot for every type. Search for a Pokémon to fill one, or run the picker on just that type. Everything you make stays in your browser and in the links you share."
+  },
+  "credit": "Pictures: Pokémon HOME renders and sprites from PokéAPI. Pokémon is © Nintendo, Game Freak and Creatures."
+}

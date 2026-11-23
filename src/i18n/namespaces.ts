@@ -79,6 +79,8 @@ export const NAMESPACES = [
   "email-nudge",
   "email-pages",
   "error",
+  "favorite-picker",
+  "favorite-picker-page",
   "feedback",
   "film-video",
   "friends",
