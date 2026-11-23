@@ -1086,9 +1086,9 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
       {/* GeoGuessr-style mini-map (the atlas): docked bottom-right, grows on hover; a bottom sheet on phones. */}
       <MapDock aspect={mapAspect(game.region)}
         hasPin={!!pick}
-        map={({ fill }) => (
+        map={({ fill, land }) => (
           <GeoMap
-            land={fill}
+            land={land}
             region={game.region}
             pick={pick}
             pinImage={pinImage}

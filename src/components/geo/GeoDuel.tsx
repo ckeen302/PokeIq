@@ -363,9 +363,9 @@ export function GeoDuel({ code, regions, names }: GeoDuelProps) {
                 {emoteButton}
                 <MapDock aspect={mapAspect(map)}
                   hasPin={!!pick && !locked}
-                  map={({ fill }) => (
+                  map={({ fill, land }) => (
                     <GeoMap
-                      land={fill}
+                      land={land}
                       region={namedMap(map, names)}
                       pick={locked ?? pick}
                       pinImage={seatImage(view, me)}
