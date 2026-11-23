@@ -4,7 +4,7 @@
  *   npx tsx scripts/hunt/build.ts
  *
  * Reads src/data/encounters/*.json, src/data/geo.json, src/data/about-forms.json,
- * src/data/pokedex.json and scripts/hunt/evidence/forms.json. Writes
+ * src/data/pokedex.json, scripts/hunt/evidence/forms.json and scripts/hunt/evidence/dens.json. Writes
  * src/data/hunt/answers.json (the table) and src/data/hunt/review.json (everything left
  * out as uncertain, with the reason, and the real places the map is missing).
  */
@@ -28,13 +28,16 @@ export function loadInputs(): Inputs {
     aboutForms: read("src/data/about-forms.json"),
     encounters,
     evidence: read("scripts/hunt/evidence/forms.json"),
+    dens: fs.existsSync(path.join(ROOT, "scripts/hunt/evidence/dens.json")) ? read<{ dens: Inputs["dens"] }>("scripts/hunt/evidence/dens.json").dens : {},
   };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(__filename)) {
   const out = buildAnswers(loadInputs());
   const date = new Date().toISOString().slice(0, 10);
-  fs.writeFileSync(path.join(ROOT, "src/data/hunt/answers.json"), JSON.stringify({ version: 1, generatedAt: date, entries: out.entries }, null, 1) + "\n");
-  fs.writeFileSync(path.join(ROOT, "src/data/hunt/review.json"), JSON.stringify({ generatedAt: date, stats: out.stats, missingPlaces: out.missingPlaces, review: out.review }, null, 1) + "\n");
+  // One entry per line: small diffs, still one JSON document.
+  const lines = (key: string, list: unknown[]) => `"${key}":[\n${list.map((x) => JSON.stringify(x)).join(",\n")}\n]`;
+  fs.writeFileSync(path.join(ROOT, "src/data/hunt/answers.json"), `{"version":1,"generatedAt":"${date}",\n${lines("entries", out.entries)}}\n`);
+  fs.writeFileSync(path.join(ROOT, "src/data/hunt/review.json"), `{"generatedAt":"${date}","stats":${JSON.stringify(out.stats)},\n${lines("missingPlaces", out.missingPlaces)},\n${lines("review", out.review)}}\n`);
   console.log(out.stats);
 }

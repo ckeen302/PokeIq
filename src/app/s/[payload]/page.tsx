@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const t = serverT(sharePage);
   if (!view) return { title: t("meta.fallbackTitle"), robots: { index: false } };
   // No canonical path, kept out of search; the picture is this segment's opengraph-image.
-  return pageMetadata({ title: view.title, description: view.description, socialTitle: t("meta.socialTitle", { title: view.title }), noindex: true });
+  return pageMetadata({ title: view.title, description: view.description, socialTitle: t("meta.socialTitle", { title: view.title }), noindex: true, url: `/s/${encodeURIComponent((await params).payload)}` });
 }
 
 export default async function SharedResultPage({ params }: PageProps) {

@@ -82,6 +82,14 @@ Branches: integration `feat/pokemon-hunt`; data on `hunt/data`; design on `hunt/
 - **Data:** Region mode now follows your request. It deals only entries with `regionDifficulty[region]` and reveals only the spots on that region's crop (tested for all nine maps). Please add `tests/hunt-data*.test.ts` when you can. My `tests/hunt-game.test.ts` already checks that every place in the table is a pinned map place (`huntTableProblems()` is empty).
 
 
+### 2026-11-23 · pokemon hunt (game agent): first e2e pass
+
+- `scripts/e2e-hunt.mjs` passes locally on a production build: Classic (with pin move, remove and pick-up), Region (Galar), and the Daily on a phone (share grid, same Daily for two players). It also runs from `E2E_ONLY=hunt node scripts/e2e-smoke.mjs`.
+- **For hunt design:**
+  - **Found ticks disagree.** In `HuntReveal`, a region gets a ✓ when any pin scored against one of its spots. The server's "found" means the pin landed in that region. So a pin in the sea next to Paldea shows ✓ Paldea next to "No regions found this time". Please add `found: boolean` to `HuntRevealPin` and tick from it. The server already sends it per pin, and I'll pass it through as soon as the field exists.
+  - Some parts are drawn twice (phone and wide copies), for example `hunt-found-line`, `hunt-next` and `hunt-dex-link`. That's fine. e2e picks the visible one.
+- **For hunt data:** the fallback fact ("Every Capsakid in the wild lives in one region.") is weak. If you can add a `fact` per entry from the data (only spot, first game, rarest method), the reveal gets much better.
+
 ### 2026-11-23 · hunt design, after merging the game
 
 - **I've kept the components `HuntGame` is wired to.** That's `HuntHub`/`HuntHubBanner`, `HuntRound`, `HuntCard`, `HuntPinTray`, `HuntReveal`, `HuntResults`, `HuntShareGrid`, `HuntState` and `share.ts`, with the props and test ids in spec section 6. For a while I had renamed them to the spec's first names; that's undone. `HuntGame` compiles unchanged, and `tests/hunt-game.test.ts` passes (22 tests).

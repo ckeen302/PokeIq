@@ -100,6 +100,35 @@ function titleEms(text: string): number {
   return n;
 }
 
+/**
+ * A name someone typed (a design's, up to about 24 letters) as title lines that fit the column: one line at the biggest
+ * of `sizes` it fits at, else two lines split at the space that balances them best, so a long name never wraps on its
+ * own and leaves one word (or one letter) dangling.
+ */
+export function fitTitle(text: string, width = 600, sizes: readonly number[] = [70, 58, 46, 40]): { lines: string[]; size: number } {
+  const fits = (line: string, size: number) => titleEms(line) * size <= width;
+  const words = text.split(/\s+/).filter(Boolean);
+  const splits = words.slice(1).map((_, i) => [words.slice(0, i + 1).join(" "), words.slice(i + 1).join(" ")]);
+  splits.sort((a, b) => Math.max(titleEms(a[0]), titleEms(a[1])) - Math.max(titleEms(b[0]), titleEms(b[1])));
+  for (const size of sizes) {
+    if (fits(text, size)) return { lines: [text], size };
+    const two = splits.find(([a, b]) => fits(a, size) && fits(b, size));
+    if (two) return { lines: two, size };
+  }
+  // One unbroken word too long for the smallest size: shrink it to fit.
+  const smallest = sizes[sizes.length - 1];
+  return { lines: splits[0] ?? [text], size: Math.min(smallest, Math.floor(width / Math.max(1, ...(splits[0] ?? [text]).map(titleEms)))) };
+}
+
+/**
+ * The eyebrow's size: Silkscreen's capitals average about 0.68 em plus the 2 px letter spacing, so a longer label steps
+ * down (to 20 px at least) rather than wrap onto a second line or run into the picture beside it.
+ */
+function eyebrowSize(text: string, width: number): number {
+  const perLetter = width / Math.max(1, visualLength(text));
+  return Math.max(20, Math.min(24, Math.floor((perLetter - 2) / 0.68)));
+}
+
 /** Any title line can be [text, colour]. */
 export type TitleLine = string | [string, string];
 
@@ -161,7 +190,7 @@ function Card({ eyebrow, title, titleSize, subtitle, accent, visual, footer, chi
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", flexDirection: "column", maxWidth: visual ? 600 : 1080 }}>
-            <div style={{ display: "flex", alignItems: "center", fontFamily: "Silkscreen", fontSize: 24, color: accent, letterSpacing: 2, textTransform: "uppercase" }}>
+            <div style={{ display: "flex", alignItems: "center", fontFamily: "Silkscreen", fontSize: eyebrowSize(eyebrow, visual ? 540 : 1040), color: accent, letterSpacing: 2, textTransform: "uppercase" }}>
               <div style={{ display: "flex", width: 14, height: 14, borderRadius: 7, background: accent, boxShadow: `0 0 12px ${accent}`, marginRight: 14 }} />
               {eyebrow}
             </div>

@@ -41,7 +41,7 @@ async function read(params: PageProps["params"]) {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const view = await read(params);
   if (!view) return { title: serverT(pokeguessr)("result.fallback"), robots: { index: false } };
-  return pageMetadata({ title: view.title, description: view.detail, socialTitle: serverT(pokeguessr)("result.socialTitle", { title: view.title }), noindex: true });
+  return pageMetadata({ title: view.title, description: view.detail, socialTitle: serverT(pokeguessr)("result.socialTitle", { title: view.title }), noindex: true, url: `/pokeguessr/r/${encodeURIComponent((await params).token)}` });
 }
 
 export default async function GeoResultPage({ params }: PageProps) {

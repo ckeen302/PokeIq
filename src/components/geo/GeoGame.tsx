@@ -993,8 +993,8 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
 
         {/* ---- Play ---- */}
         <HubSection id="play" eyebrow={t("hub.play.eyebrow")} title={t("hub.play.title")}>
-          {/* Pokémon Hunt's way in (English only until its translations land). */}
-          {t.locale === "en" && <HuntHubBanner href="/pokeguessr/hunt" className="mb-4" />}
+          {/* Pokémon Hunt's way in. */}
+          <HuntHubBanner href="/pokeguessr/hunt" className="mb-4" />
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <HubTile
               testId="geo-solo-card"

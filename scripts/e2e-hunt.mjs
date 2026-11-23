@@ -46,6 +46,9 @@ function watchApi(page, fail) {
   });
 }
 
+/** The copy of a part that's on screen (some are drawn twice: one for phones, one for wider screens). */
+const shown = (page, id) => page.locator(`[data-testid="${id}"]:visible`).first();
+
 async function tapMap(page, fx, fy) {
   const { map, area } = await guessMapReady(page);
   await map.click({ position: spotIn(area, fx, fy) });
@@ -67,7 +70,8 @@ async function playRound(page, { phone, fail, label, shot, edit = false }) {
   const max = await pinMax(page);
   for (let i = 0; i < max; i++) await tapMap(page, ...SPOTS[i % SPOTS.length]);
   if ((await pinCount(page)) !== max) fail(`${label}: ${max} taps placed ${await pinCount(page)} pins`);
-  if (edit) {
+  const edited = edit && max > 1;
+  if (edited) {
     // A tap past the round's pins moves the nearest one (never a pin too many).
     await tapMap(page, 0.55, 0.45);
     if ((await pinCount(page)) !== max) fail(`${label}: a tap with every pin down changed the count`);
@@ -75,11 +79,9 @@ async function playRound(page, { phone, fail, label, shot, edit = false }) {
     await page.getByTestId("hunt-pin-remove-1").click();
     if ((await pinCount(page)) !== max - 1) fail(`${label}: removing a pin didn't drop the count`);
     await tapMap(page, ...SPOTS[0]);
-    if (max > 1) {
-      // Pick a pin up and move it: the count stays.
-      await page.getByTestId(`hunt-pin-chip-${max}`).click();
-      await tapMap(page, 0.45, 0.55);
-    }
+    // Pick a pin up and move it: the count stays.
+    await page.getByTestId(`hunt-pin-chip-${max}`).click();
+    await tapMap(page, 0.45, 0.55);
     if ((await pinCount(page)) !== max) fail(`${label}: after remove and move there are ${await pinCount(page)} of ${max} pins`);
   }
   if (shot) await page.screenshot({ path: shot.replace(".png", "-pins.png") });
@@ -92,21 +94,27 @@ async function playRound(page, { phone, fail, label, shot, edit = false }) {
   await page.getByTestId("hunt-skip").click().catch(() => {});
   const spots = await page.getByTestId("hunt-spot").count();
   if (!spots) fail(`${label}: the reveal lists no spots for ${name}`);
-  const found = await page.getByTestId("hunt-found-line").innerText();
+  const found = await shown(page, "hunt-found-line").innerText();
   if (!/found/i.test(found) && !/regions/i.test(found)) fail(`${label}: the reveal says "${found}"`);
-  const dex = await page.getByTestId("hunt-dex-link").getAttribute("href");
+  const dex = await shown(page, "hunt-dex-link").getAttribute("href");
   if (!/\/pokemon\/[a-z0-9-]+#encounters$/.test(dex ?? "")) fail(`${label}: the Pokédex link is ${dex}`);
   if (shot) {
     await page.waitForTimeout(1600);
     await page.screenshot({ path: shot });
   }
-  await page.getByTestId("hunt-next").click();
+  await shown(page, "hunt-next").click();
+  return edited;
 }
 
 async function playGame(page, opts) {
-  for (let r = 0; r < 5; r++) await playRound(page, { ...opts, label: `${opts.label} round ${r + 1}`, edit: opts.edit && r === 0, shot: r === 0 ? opts.shot : undefined });
+  // Pin editing (move, remove, pick up) runs on the first round that takes more than one pin.
+  let edit = !!opts.edit;
+  for (let r = 0; r < 5; r++) {
+    if (await playRound(page, { ...opts, label: `${opts.label} round ${r + 1}`, edit, shot: r === 0 ? opts.shot : undefined })) edit = false;
+  }
+  if (edit) opts.fail(`${opts.label}: no round took more than one pin, so pin editing went untested`);
   await page.getByTestId("hunt-results").waitFor();
-  const total = await page.getByTestId("hunt-results-total").innerText();
+  const total = await shown(page, "hunt-results-total").innerText();
   if (!/\d/.test(total)) fail(opts, `the results say "${total}"`);
 }
 const fail = (opts, msg) => opts.fail(`${opts.label}: ${msg}`);

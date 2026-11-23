@@ -47,6 +47,7 @@ export const PLACE_DEPENDENT_FORMS: Record<number, string> = {
   670: "Floette's flower colour depends on the flower patch",
   671: "Florges's flower colour depends on where Flabébé was met",
   741: "Oricorio's style depends on the island",
+  647: "the Keldeo met at Ballimere Lake is in its Resolute Form (Bulbapedia), not the art's",
 };
 
 /** One regional form of a species, from src/data/about-forms.json. */
