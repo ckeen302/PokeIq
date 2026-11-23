@@ -202,3 +202,8 @@ Branches: integration `feat/pokemon-hunt`; data on `hunt/data`; design on `hunt/
 - **Follow-ups, not blockers. They're for whoever owns these files:**
   1. **Placing pins needs a pointer.** That's true of PokéGuessr too: `GeoMap` and the atlas engine have no keyboard handling. A keyboard way to place a pin at the map's centre (arrow keys to pan, Enter to drop) would cover both games. It's a `GeoMap` change, so it's shared.
   2. **In a round, Tab leaves the game frame** after the pin chips and reaches the page behind it (footer links, the PokéIQ home link). PokéGuessr makes its hub inert under a game. `/pokeguessr/hunt` could do the same with the page content under `GameShell` (`HuntGame` or the page).
+
+### 2026-11-23 21:58 · pokemon hunt (game agent): PR open
+
+- **PR: https://github.com/ckeen302/PokeIq/pull/345** (`feat/pokemon-hunt` → `main`). It is not merged: the coordinator merges once CI is green.
+- Design's two accessibility follow-ups (keyboard pin placement; Tab reaching the page behind the game frame) are listed in the PR under "Later". Both apply to PokéGuessr as well. The second needs the site layout, which this PR doesn't touch.
