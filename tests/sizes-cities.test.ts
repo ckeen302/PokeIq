@@ -32,6 +32,9 @@ describe("cities", () => {
     expect(setCityInUrl("https://playpokeiq.com/pokedex/sizes?by=speed", "nimbasa")).toBe("https://playpokeiq.com/pokedex/sizes?by=speed&city=nimbasa");
     expect(setCityInUrl("https://playpokeiq.com/pokedex/sizes?city=nimbasa&by=speed", "lumiose")).toBe("https://playpokeiq.com/pokedex/sizes?by=speed");
     expect(setCityInUrl("/ja/pokedex/sizes/pikachu?city=nimbasa", "nimbasa")).toBe("/ja/pokedex/sizes/pikachu?city=nimbasa");
+    // A comparison's list stays as written.
+    expect(setCityInUrl("http://localhost:3100/pokedex/sizes/compare?vs=pikachu,snorlax&q=draft", "nimbasa")).toBe("http://localhost:3100/pokedex/sizes/compare?vs=pikachu,snorlax&q=draft&city=nimbasa");
+    expect(setCityInUrl("/pokedex/sizes/compare?city=nimbasa&vs=pikachu,snorlax#x", "lumiose")).toBe("/pokedex/sizes/compare?vs=pikachu,snorlax#x");
   });
 
   it("names videos made outside Lumiose by their city", () => {

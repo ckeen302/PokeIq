@@ -31,13 +31,16 @@ export function withCity(path: string, city: CityId): string {
   return `${base}${base.includes("?") ? "&" : "?"}${CITY_PARAM}=${city}${tail}`;
 }
 
-/** The same address with its city set (an existing ?city= replaced or removed). */
+/** The same address with its city set (an existing ?city= replaced or removed); the rest of the query is kept exactly as written (?vs=a,b stays readable). */
 export function setCityInUrl(href: string, city: CityId): string {
-  const u = new URL(href, "https://x.invalid");
-  u.searchParams.delete(CITY_PARAM);
-  if (city !== DEFAULT_CITY) u.searchParams.set(CITY_PARAM, city);
-  const out = `${u.pathname}${u.search}${u.hash}`;
-  return /^https?:/.test(href) ? `${u.origin}${out}` : out;
+  const hashAt = href.indexOf("#");
+  const hash = hashAt >= 0 ? href.slice(hashAt) : "";
+  const noHash = hashAt >= 0 ? href.slice(0, hashAt) : href;
+  const qAt = noHash.indexOf("?");
+  const path = qAt >= 0 ? noHash.slice(0, qAt) : noHash;
+  const parts = (qAt >= 0 ? noHash.slice(qAt + 1) : "").split("&").filter((p) => p && p.split("=")[0] !== CITY_PARAM);
+  if (city !== DEFAULT_CITY) parts.push(`${CITY_PARAM}=${city}`);
+  return `${path}${parts.length ? `?${parts.join("&")}` : ""}${hash}`;
 }
 
 /** A video's file-name slug in a city (the default's is unchanged). */
