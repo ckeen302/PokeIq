@@ -120,3 +120,38 @@ Branches: integration `feat/pokemon-hunt`; data on `hunt/data`; design on `hunt/
   - **data:** finish the blind verification (`docs/hunt/verification.md`), facts per entry if you can, and tell me here when the table is final.
   - **design:** any last polish, and mocks in `docs/hunt/mocks/` for the coordinator.
   - **me:** merge main again, take final screenshots for the PR, and open it once you've both written "done" here.
+### 2026-11-23 · hunt data (accuracy), second pass
+
+- **The data is merged through `hunt/data` as before. Rebuild with `npx tsx scripts/hunt/build.ts`.** New decisions:
+  - **Max Raid dens:** the encounter data has no base-game Galar dens at all, and Bulbapedia and Serebii disagree on many Isle of Armor and Crown Tundra ones. A den now counts only when both sources list it for that Pokémon and version (`scripts/hunt/evidence/dens.json`, from `make-dens.ts`). Gigantamax dens are left out, because the art isn't the Gigantamax form.
+  - **Event-only encounters are left out** (`rules.ts` `EVENT_ONLY`): Darkrai, Shaymin and Arceus; Victini in Black / White; Magearna in USUM; the Eon Ticket Latias / Latios; Navel Rock and Birth Island; Faraway Island; Spiky-eared Pichu; and Altering Cave's Mystery Gift Pokémon.
+  - **Swarms and mass outbreaks are left out.** They're random, short-lived events, not standing spots.
+  - **Keldeo is left out:** the Keldeo at Ballimere Lake is in its Resolute Form, not the art's.
+  - **Omega Ruby / Alpha Sapphire's Mirage spots** don't match the map's Mirage Island, which is the Gen 3 one.
+  - **Sword / Shield expansion "Wild" rows** are Serebii summary lists with no method (Cosmog's "Wild" in Freezington is really a gift). They're dropped when a detailed row repeats them, and never counted on their own.
+  - **A sub-area named in a row's note can be its own map place:** Alola Route 1's "Trainers School" is the map's Trainers' School.
+  - **Bulbapedia + Serebii agreement** (`make-agreed.ts`): for each game where both sources list places, a map place both list that the data lacks is added. Its label is the method a source names, or "Wild" if neither does. A place of ours that neither source lists in that game is dropped (listed under `dropped` in `review.json`). This fixed real gaps such as Snorlax on Route 12 in Let's Go and the legendary birds' sky spawns in Let's Go.
+- **For pokemon hunt:** "Wild" is now a possible `methods[].method` label.
+
+### 2026-11-23 · hunt data (accuracy), verified
+
+- **The table is complete and verified:** 568 entries for 559 species, 15 of them regional forms. Details in `docs/hunt/verification.md`.
+  - The last fresh automated round of 160 entries came back with zero errors.
+  - The last fresh hand-checked round of 40 also came back with zero errors.
+  - Between the rounds, 560 of the 568 entries have been checked.
+- **The Bulbapedia + Serebii agreement step has now run.** It added 310 places the data was missing and dropped 20 that neither source lists. It filled the gaps the earlier note mentioned: Snorlax is back in the table with Route 12 in Let's Go, and Articuno and Moltres have their extra Let's Go sky-spawn routes.
+- **Famous entries in the table:** Snorlax, Articuno, Moltres, Dratini, Mewtwo, Sudowoodo, Lugia, Ho-Oh, Rayquaza, Spiritomb, Heatran and Zygarde.
+  - Out of the table: Lapras, Zapdos, Gyarados, Kyogre, Groudon, Dialga, Palkia, Giratina, the Tao trio and Unown. For each, some real spot isn't on the map yet, or a row's form is unclear. `review.json` has the reason.
+- **`everywhere`:** 79 entries.
+- **For pokemon hunt:**
+  - `methods[].method` can be "Wild": a place both sources list without naming the method.
+  - `npx tsx scripts/hunt/build.ts` rebuilds the table from the checked-in evidence (`scripts/hunt/evidence/`), with no network. `tests/hunt-data.test.ts` fails if the committed table and the build ever differ.
+- **For whoever owns the map:** adding the places at the top of `review.json` `missingPlaces` would bring the most Pokémon in. They include Torchlit Labyrinth, Alfornada Cavern, the Paldean seas, Brawlers' Cave, Chargestone Cavern, Mirage Mountain and Alola's Poni Wilds.
+
+### 2026-11-23 · hunt data (accuracy): done
+
+- **Every entry now has a `fact`,** taken from its own answers with no counts and nothing invented. The fact is, in order of preference:
+  - its only spot ("Every game puts it in the same place: Cerulean Cave.");
+  - its only way of being met ("You can only fish it up.", "You only meet it in Max Raid dens.");
+  - its earliest spot on the map ("Its earliest spot on the map is from Ruby, at Petalburg Woods.").
+- **Done:** the table is final and verified (`docs/hunt/verification.md`), and `hunt/data` is merged up to date with `feat/pokemon-hunt`.

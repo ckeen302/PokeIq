@@ -17,7 +17,7 @@ import { loadInputs } from "../scripts/hunt/build";
 import { FAMOUS } from "../scripts/hunt/famous";
 import { FORMS_IN_GAME, ORIGINAL_ONLY, PLACE_DEPENDENT_FORMS } from "../scripts/hunt/forms";
 import { buildPlaceIndex, classifyMethod, matchPlace, type GeoPlace } from "../scripts/hunt/match";
-import { METHODS, VERSION_REGIONS } from "../scripts/hunt/rules";
+import { AGREED_LABEL, METHODS, VERSION_REGIONS } from "../scripts/hunt/rules";
 
 const table = answers as unknown as HuntAnswerFile;
 const entries: HuntEntry[] = table.entries;
@@ -25,7 +25,7 @@ const locations = (geo as unknown as { world: { locations: GeoPlace[] } }).world
 const pinned = new Map(locations.filter((l) => l.pin && l.mask && !l.parent).map((l) => [`${l.region}|${l.name}`, l]));
 const forms = aboutForms as unknown as [number, number, string, string, string][];
 const dex = new Map((pokedex as { id: number; slug: string; name: string }[]).map((p) => [p.id, p]));
-const COUNTED_LABELS = new Set(Object.values(METHODS).filter((v): v is string => !!v));
+const COUNTED_LABELS = new Set([...Object.values(METHODS).filter((v): v is string => !!v), AGREED_LABEL]);
 
 describe("hunt answer table: shape", () => {
   it("is the full table, not the sample", () => {
