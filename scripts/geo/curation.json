@@ -31285,6 +31285,70 @@
    "game": "Platinum",
    "source": "https://www.pokepedia.fr/Fichier:Route_221_Carbone_Pt.png",
    "checked": "shown on Poképédia's page \"Route 221\"; Pt in its name or category; cropped (bottom 26%); reviewed on a contact sheet"
+  },
+  {
+   "id": "kkYet5pujDE0",
+   "region": "Kitakami",
+   "name": "Apple Hills",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Coteau_Pommes_EV.png",
+   "checked": "shown on Poképédia's page \"Coteau Pommes\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "XbX09o8DUr_o",
+   "region": "Kitakami",
+   "name": "Crystal Pool",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Lac_Cristallin_EV.png",
+   "checked": "shown on Poképédia's page \"Lac Cristallin (Septentria)\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Pn0NACa7lcI6",
+   "region": "Kitakami",
+   "name": "Fellhorn Gorge",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Gorge_de_la_Corne_EV.png",
+   "checked": "shown on Poképédia's page \"Gorge de la Corne\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "dhOjZgQIFssP",
+   "region": "Kitakami",
+   "name": "Infernal Pass",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Paso_del_Averno_EP.jpg",
+   "checked": "shown on WikiDex's page \"Paso Infernal/Paso del Averno\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "JWamyDbI-YEX",
+   "region": "Kitakami",
+   "name": "Kitakami Road",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Route_de_Septentria_EV.png",
+   "checked": "shown on Poképédia's page \"Route de Septentria\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "xcGe42mIn3mM",
+   "region": "Kitakami",
+   "name": "Oni Mountain",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Mont_Strueux_EV.png",
+   "checked": "shown on Poképédia's page \"Mont Strueux\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "EFvzEgA6Ix3k",
+   "region": "Kitakami",
+   "name": "Reveler's Road",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Sentier_de_la_Liesse_EV.png",
+   "checked": "shown on Poképédia's page \"Sentier de la Liesse\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Ltb8zkKf7Dkj",
+   "region": "Kitakami",
+   "name": "Wistful Fields",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Plaine_des_Glycines_EV.png",
+   "checked": "shown on Poképédia's page \"Plaine des Glycines\"; SV in its name or category; reviewed on a contact sheet"
   }
  ]
 }
