@@ -49,11 +49,73 @@ export interface AtlasData {
 /** World pixels: left, top, right, bottom. */
 export type Box = [number, number, number, number];
 
-/** The view: screen x = world x · s + tx. */
+/** The view: screen x = world x · s + tx, screen y = world y · s · k + ty. */
 export interface AtlasView {
   s: number;
   tx: number;
   ty: number;
+  /** How much taller than wide the map is drawn: 1, except on the guess map's open dock showing the whole world (see Stretch). */
+  k?: number;
+}
+
+/**
+ * The guess map's open dock draws the whole world taller than it is, so it
+ * fills GeoGuessr's box with no empty sea above and below: the stretch box's
+ * width fills the canvas at scale s0, and its height fills it too at that
+ * zoom (k = e^L times taller). Zooming in, the stretch eases off smoothly and
+ * is gone by e^X times s0 (2 at least), so up close the towns are their own
+ * shape. Only the drawing changes: a click still lands on the world point
+ * drawn under it.
+ */
+export interface Stretch {
+  s0: number;
+  L: number;
+  X: number;
+}
+/** Beyond this the box is too tall for the world to fill it gracefully: it shows the world as it is instead. */
+export const MAX_STRETCH = 1.9;
+
+/** The stretch that makes `box` fill a W×H canvas, or null where it would be under 1 or over MAX_STRETCH. */
+export function stretchFor(W: number, H: number, box: Box): Stretch | null {
+  if (!(W > 0 && H > 0)) return null;
+  const s0 = W / (box[2] - box[0]);
+  const k = H / (box[3] - box[1]) / s0;
+  if (!(k >= 1 && k <= MAX_STRETCH)) return null;
+  const L = Math.log(k);
+  // Gone by twice the whole world's zoom, or later for a bigger stretch, so the map never gets shorter as you zoom in.
+  return { s0, L, X: Math.max(Math.LN2, 2 * L) };
+}
+
+/** A map's stretch: only a dock (home.stretch) while it's open; every other map is drawn as it is. */
+export function stretchOf(home: AtlasOptions["home"], W: number, H: number): Stretch | null {
+  return home?.stretch && home.open?.(W, H) ? stretchFor(W, H, home.stretch) : null;
+}
+
+/**
+ * The vertical scale (CSS px per world px down the map) at horizontal scale s.
+ * In log terms it runs from the full stretch at s0 to plain s at X along a
+ * curve that meets s with no kink and never falls as s grows.
+ */
+export function verticalScale(s: number, st: Stretch | null): number {
+  if (!st) return s;
+  const x = Math.log(s / st.s0);
+  if (x >= st.X) return s;
+  if (x <= 0) return s * Math.exp(st.L);
+  const a = st.L / (st.X * st.X);
+  const c = 1 - (2 * st.L) / st.X;
+  return st.s0 * Math.exp(st.L + c * x + a * x * x);
+}
+
+/** World pixels → CSS px on the canvas. */
+export const screenOf = (v: AtlasView, wx: number, wy: number): [number, number] => [wx * v.s + v.tx, wy * v.s * (v.k ?? 1) + v.ty];
+/** CSS px on the canvas → the world pixel drawn there. */
+export const worldOf = (v: AtlasView, px: number, py: number): [number, number] => [(px - v.tx) / v.s, (py - v.ty) / (v.s * (v.k ?? 1))];
+/** The canvas transform the map is drawn with (before the device pixel ratio): world pixels to CSS px. */
+export const drawMatrix = (v: AtlasView): [number, number, number, number, number, number] => [v.s, 0, 0, v.s * (v.k ?? 1), v.tx, v.ty];
+/** The view zoomed to scale s2 about screen point (cx, cy): the world point there stays there, the stretch changing with the zoom. */
+export function zoomedAbout(v: AtlasView, s2: number, cx: number, cy: number, st: Stretch | null): AtlasView {
+  const k = verticalScale(s2, st) / s2;
+  return { s: s2, tx: cx - (cx - v.tx) * (s2 / v.s), ty: cy - (cy - v.ty) * ((s2 * k) / verticalScale(v.s, st)), k };
 }
 
 export interface AtlasOptions {
@@ -77,8 +139,10 @@ export interface AtlasOptions {
    * pans off it. `open`: while it says the canvas is open (the dock hovered),
    * the view starts on the whole floor box instead (the whole world, as large
    * as the box allows) and goes back to `scale` once it's closed.
+   * `stretch`: while open, the whole world shown is this box, drawn taller to fill the canvas (see Stretch);
+   * where the canvas's shape needs too much (or too little) stretch, `floor` as it is instead.
    */
-  home?: { box: Box; cover?: boolean; scale?: () => number; at?: [number, number]; floor?: Box; floorZoom?: number; open?: (W: number, H: number) => boolean };
+  home?: { box: Box; cover?: boolean; scale?: () => number; at?: [number, number]; floor?: Box; floorZoom?: number; open?: (W: number, H: number) => boolean; stretch?: Box };
   /** The guess map: small, thin region names (GeoGuessr's), so they label a region without covering it. */
   quietLabels?: boolean;
   /** A page in another language: the names the map writes, English → that language's (names not in it stay English). */
@@ -230,6 +294,13 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
   let H = 0;
   let dpr = 1;
   let minS = 0.1;
+  /** The dock is open (hovered or pinned), and its stretch while it shows the whole world (null: drawn as it is). */
+  let open = false;
+  let stretch: Stretch | null = null;
+  /** The vertical scale at scale s (s itself without a stretch). */
+  const vsc = (s: number) => verticalScale(s, stretch);
+  /** The box the view stays on: the stretch box while stretched, else the dock's floor. */
+  const floorBox = (): Box | undefined => (stretch ? opts.home?.stretch : opts.home?.floor);
   let selected: AtlasPlace | null = null;
   let anim = 0;
   let touched = false;
@@ -295,9 +366,21 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
 
   /** The view that shows a box of the world (with a little room around it). */
   const fitTo = ([x0, y0, x1, y1]: Box, room = 1): AtlasView => {
-    const s = Math.min(W / ((x1 - x0) * room), H / ((y1 - y0) * room));
-    return { s, tx: W / 2 - ((x0 + x1) / 2) * s, ty: H / 2 - ((y0 + y1) / 2) * s };
+    const s = Math.min(W / ((x1 - x0) * room), fitHeight(H / ((y1 - y0) * room)));
+    return { s, tx: W / 2 - ((x0 + x1) / 2) * s, ty: H / 2 - ((y0 + y1) / 2) * vsc(s) };
   };
+  /** The scale whose vertical scale is v: v itself without a stretch (the stretch is at most MAX_STRETCH, and never falls). */
+  function fitHeight(v: number) {
+    if (!stretch) return v;
+    let lo = v / MAX_STRETCH;
+    let hi = v;
+    for (let i = 0; i < 40; i++) {
+      const mid = Math.sqrt(lo * hi);
+      if (vsc(mid) > v) hi = mid;
+      else lo = mid;
+    }
+    return lo;
+  }
   const fitWorld = () => fitTo([0, 0, atlas.W, atlas.H]);
   const whole = () => fitTo(bounds, locked ? 1.04 : 1);
   /** Region names in the order they claim room: the map's own first (a locked region's), then main regions, side areas, islands. */
@@ -309,51 +392,57 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     if (framing === "whole" || !opts.home) return whole();
     const [x0, y0, x1, y1] = opts.home.box;
     if (opts.home.scale) {
-      if (opts.home.floor && opts.home.open?.(W, H)) {
-        const [fx0, fy0, fx1, fy1] = opts.home.floor;
-        return { s: minS, tx: W / 2 - ((fx0 + fx1) / 2) * minS, ty: H / 2 - ((fy0 + fy1) / 2) * minS };
+      const floor = floorBox();
+      if (floor && open) {
+        const [fx0, fy0, fx1, fy1] = floor;
+        return { s: minS, tx: W / 2 - ((fx0 + fx1) / 2) * minS, ty: H / 2 - ((fy0 + fy1) / 2) * vsc(minS) };
       }
       const s = Math.max(minS, opts.home.scale());
       const [cx, cy] = opts.home.at ?? [(x0 + x1) / 2, (y0 + y1) / 2];
-      return { s, tx: W / 2 - cx * s, ty: H / 2 - cy * s };
+      return { s, tx: W / 2 - cx * s, ty: H / 2 - cy * vsc(s) };
     }
     if (!opts.home.cover) return fitTo(opts.home.box);
     const s = Math.max(W / (x1 - x0), H / (y1 - y0));
-    return { s, tx: W / 2 - ((x0 + x1) / 2) * s, ty: H / 2 - ((y0 + y1) / 2) * s };
+    return { s, tx: W / 2 - ((x0 + x1) / 2) * s, ty: H / 2 - ((y0 + y1) / 2) * vsc(s) };
   };
 
   /** Zoom within limits, and never pan off the world. */
   function clamp() {
     view.s = Math.min(MAX_SCALE, Math.max(minS, view.s));
+    const vs = vsc(view.s);
     let cx = Math.min(atlas.W, Math.max(0, (W / 2 - view.tx) / view.s));
-    let cy = Math.min(atlas.H, Math.max(0, (H / 2 - view.ty) / view.s));
+    let cy = Math.min(atlas.H, Math.max(0, (H / 2 - view.ty) / vs));
     // With a floor (the guess map's dock), the view stays on that box: centred on it where the view is wider or taller than it
     // (zoomed right out, the whole world sits in the middle), never panned past its edges otherwise.
-    if (opts.home?.floor) {
-      const [fx0, fy0, fx1, fy1] = opts.home.floor;
+    const floor = floorBox();
+    if (floor) {
+      const [fx0, fy0, fx1, fy1] = floor;
       const hw = W / 2 / view.s;
-      const hh = H / 2 / view.s;
+      const hh = H / 2 / vs;
       cx = fx1 - fx0 <= 2 * hw ? (fx0 + fx1) / 2 : Math.min(fx1 - hw, Math.max(fx0 + hw, cx));
       cy = fy1 - fy0 <= 2 * hh ? (fy0 + fy1) / 2 : Math.min(fy1 - hh, Math.max(fy0 + hh, cy));
     }
     view.tx = W / 2 - cx * view.s;
-    view.ty = H / 2 - cy * view.s;
+    view.ty = H / 2 - cy * vs;
   }
 
   function resize() {
     const r = stage.getBoundingClientRect();
     // The world point in the middle stays there when the map grows or shrinks.
     const cx = W ? (W / 2 - view.tx) / view.s : 0;
-    const cy = H ? (H / 2 - view.ty) / view.s : 0;
+    const cy = H ? (H / 2 - view.ty) / vsc(view.s) : 0;
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     W = r.width;
     H = r.height;
     canvas.width = Math.round(W * dpr);
     canvas.height = Math.round(H * dpr);
-    minS = opts.home?.floor ? fitTo(opts.home.floor).s * (opts.home.floorZoom ?? 1) : fitWorld().s * 0.8;
+    open = !!opts.home?.open?.(W, H);
+    stretch = stretchOf(opts.home, W, H);
+    // Zoomed right out: the stretched whole world fills the canvas; else the floor box fits it (or a little past the whole map).
+    minS = stretch ? stretch.s0 : opts.home?.floor ? fitTo(opts.home.floor).s * (opts.home.floorZoom ?? 1) : fitWorld().s * 0.8;
     // Keep the whole map framed until the viewer starts exploring.
     if (!touched) Object.assign(view, home());
-    else Object.assign(view, { tx: W / 2 - cx * view.s, ty: H / 2 - cy * view.s });
+    else Object.assign(view, { tx: W / 2 - cx * view.s, ty: H / 2 - cy * vsc(view.s) });
     clamp();
     draw();
     if (pending && W && H) {
@@ -375,14 +464,15 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
 
   function draw() {
     const { s, tx, ty } = view;
+    const vs = vsc(s);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.fillStyle = SEA;
     ctx.fillRect(0, 0, W, H);
-    ctx.setTransform(dpr * s, 0, 0, dpr * s, dpr * tx, dpr * ty);
+    ctx.setTransform(dpr * s, 0, 0, dpr * vs, dpr * tx, dpr * ty);
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = performance.now() - lastMove < MOTION_SETTLE_MS ? "low" : "high";
-    // The smallest copy with enough detail for this zoom (a bigger one is fetched once it's needed).
-    const need = (s * dpr) / 1.5;
+    // The smallest copy with enough detail for this zoom, along its more zoomed axis (a bigger one is fetched once it's needed).
+    const need = (vs * dpr) / 1.5;
     const ideal = copies.findIndex((c) => (c.width ? c.width / atlas.W : 1) >= need);
     want(ideal < 0 ? copies.length - 1 : ideal);
     if (levels.length) {
@@ -403,6 +493,8 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     // A map of the whole world shows no dots zoomed out (just the region names); a region's map shows those that have room.
     const dotsAllowed = locked || (opts.home?.scale ? s >= opts.home.scale() * DOCK_DOTS_FROM : s >= fitWorld().s * WORLD_DOTS_FROM);
     let fading = false;
+    // Spaced dots are drawn in CSS px, so they stay round on a stretched map.
+    if (nearest) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     for (let i = 0; i < atlas.markers.length; i++) {
       const m = atlas.markers[i];
       const city = m.kind === "city";
@@ -413,15 +505,17 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
         if (alpha !== goal) fading = true;
         if (alpha <= 0) continue;
         // A round dot with a dark rim: 3 px in radius when it first shows, 5 px zoomed in.
-        const r = dotRadius(s) / s;
+        const r = dotRadius(s);
+        const px = m.x * s + tx;
+        const py = m.y * vs + ty;
         ctx.globalAlpha = alpha;
         ctx.fillStyle = city ? "#6e1626" : "#1d3878";
         ctx.beginPath();
-        ctx.arc(m.x, m.y, r, 0, Math.PI * 2);
+        ctx.arc(px, py, r, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = city ? "#e2475b" : "#4d7ee8";
         ctx.beginPath();
-        ctx.arc(m.x, m.y, r - 1.25 / s, 0, Math.PI * 2);
+        ctx.arc(px, py, r - 1.25, 0, Math.PI * 2);
         ctx.fill();
         continue;
       }
@@ -445,10 +539,11 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     // How many dots are up, for the browser checks.
     if (nearest) canvas.dataset.dots = String(dotAlpha.reduce((n, a) => n + (a > 0 ? 1 : 0), 0));
     if (selected) {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.strokeStyle = "#fff";
-      ctx.lineWidth = 3 / s;
+      ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.arc(selected.x, selected.y, 22 / s + 6, 0, Math.PI * 2);
+      ctx.arc(selected.x * s + tx, selected.y * vs + ty, 22 + 6 * s, 0, Math.PI * 2);
       ctx.stroke();
     }
     drawLabels(f);
@@ -459,17 +554,18 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
       ctx.fillStyle = "rgba(6, 14, 28, 0.6)";
       ctx.beginPath();
       ctx.rect(0, 0, W, H);
-      ctx.rect(x0 * s + tx, y0 * s + ty, (x1 - x0) * s, (y1 - y0) * s);
+      ctx.rect(x0 * s + tx, y0 * vs + ty, (x1 - x0) * s, (y1 - y0) * vs);
       ctx.fill("evenodd");
     }
     opts.onZoom?.(s < fitWorld().s * 2.2 ? "World" : s < 0.9 ? "Region" : s < 1.6 ? "Towns + routes" : "Close up");
     // Before the first sizing the view is a placeholder: overlays wait for the real one.
-    if (sized()) opts.onView?.({ ...view });
+    if (sized()) opts.onView?.({ ...view, k: vs / s });
   }
 
   const widths = new Map<string, number>();
   function drawLabels(f: number) {
     const { s, tx, ty } = view;
+    const vs = vsc(s);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const boxes: { x: number; y: number; w: number; h: number }[] = [];
     const fits = (x: number, y: number, w: number, h: number) => {
@@ -482,7 +578,7 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     // `keepIn`: a region's name whose point is on screen slides in from the edge rather than being cut off by it.
     const label = (text: string, wx: number, wy: number, font: string, size: number, dy: number, color: string, track = 0, dx = 0, keepIn = false, quiet = false): boolean => {
       let x = wx * s + tx + dx;
-      const y = wy * s + ty + dy;
+      const y = wy * vs + ty + dy;
       // A quiet name whose place is off the map isn't drawn, rather than showing a sliver of it at the edge.
       if (quiet && (x < 0 || x > W || y < 0 || y > H)) return false;
       ctx.font = font.replace("SIZE", `${size}px`);
@@ -500,8 +596,9 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
         w = Math.max(w, lw);
       }
       // Room around each label, so two never run together into one ("JOHTO KANTO"): the later (lower-priority) one waits for more zoom.
-      // Quiet names are small enough to sit level with a close neighbour (Johto beside Kanto), so they need less room.
-      const padX = quiet ? 2 : Math.max(3, size * 0.4);
+      // Quiet names are small enough to sit level with a close neighbour (Johto beside Kanto), so they need less room; the open
+      // dock's whole world, a size smaller, keeps a little more, so Johto still steps aside from Kanto instead of reading as one.
+      const padX = quiet ? (open ? Math.max(2, size * 0.4) : 2) : Math.max(3, size * 0.4);
       const padY = Math.max(1, size * 0.15);
       if (keepIn && x >= 0 && x <= W && w + 2 * padX < W) x = Math.min(W - w / 2 - padX, Math.max(w / 2 + padX, x));
       // A quiet name (capitals, no descenders) claims only its own height, so a neighbour can sit just above or below it.
@@ -529,12 +626,14 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     if (f < 4.5) {
       for (const r of regionOrder) {
         const quiet = opts.quietLabels;
-        // Quiet names scale with the map's width (9 px on a 300 px map, up to 12 on a wide one) and grow a little zoomed in;
-        // the atlas's are display-sized.
-        const quietBase = Math.min(12, Math.max(9, W / 32)) - (r.tier === 1 ? 0 : 1);
+        // Quiet names scale with the map's width (9 px on a 300 px map, up to 12 on a wide one) and grow a little zoomed in, up to
+        // 3 px more; the open dock's whole world starts them 1 px smaller (8 px hovered in a 1000×578 window), with the same cap.
+        // The atlas's are display-sized.
+        const quietCap = Math.min(12, Math.max(9, W / 32)) - (r.tier === 1 ? 0 : 1) + 3;
+        const quietBase = quietCap - 3 - (open ? 1 : 0);
         const baseSize = quiet ? quietBase : r.tier === 1 ? 20 : r.tier === 2 ? 14 : 12;
         const size = quiet
-          ? Math.round(Math.min(quietBase + 3, baseSize * Math.max(1, Math.pow(f, 0.35))))
+          ? Math.round(Math.min(quietCap, baseSize * Math.max(1, Math.pow(f, 0.35))))
           : Math.round(Math.max(baseSize * 0.7, Math.min(baseSize * 1.7, baseSize * Math.pow(f, 0.35))));
         // Small maps keep to the main regions: DLC areas and islands come in as you zoom.
         if ((r.tier === 3 && f < 1.4) || (r.tier === 2 && f < TIER2_FROM)) continue;
@@ -599,9 +698,9 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
   }
   function scaleAbout(s2: number, cx: number, cy: number) {
     moving();
-    const r = s2 / view.s;
-    view.tx = cx - (cx - view.tx) * r;
-    view.ty = cy - (cy - view.ty) * r;
+    const z = zoomedAbout(view, s2, cx, cy, stretch);
+    view.tx = z.tx;
+    view.ty = z.ty;
     view.s = s2;
     clamp();
   }
@@ -628,7 +727,7 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
       if (reduceMotion || !W) {
         view.s = s2;
         view.tx = W / 2 - wx * s2;
-        view.ty = H / 2 - wy * s2;
+        view.ty = H / 2 - wy * vsc(s2);
         clamp();
         draw();
         done();
@@ -636,7 +735,7 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
       }
       const t0 = performance.now();
       const fx = (W / 2 - from.tx) / from.s;
-      const fy = (H / 2 - from.ty) / from.s;
+      const fy = (H / 2 - from.ty) / vsc(from.s);
       const step = (now: number) => {
         if (!alive) return done();
         const t = Math.min(1, (now - t0) / dur);
@@ -644,7 +743,7 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
         moving();
         view.s = Math.exp(Math.log(from.s) + (Math.log(s2) - Math.log(from.s)) * e);
         view.tx = W / 2 - (fx + (wx - fx) * e) * view.s;
-        view.ty = H / 2 - (fy + (wy - fy) * e) * view.s;
+        view.ty = H / 2 - (fy + (wy - fy) * e) * vsc(view.s);
         clamp();
         draw();
         if (t < 1) anim = requestAnimationFrame(step);
@@ -676,8 +775,8 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
   }
 
   function pick(sx: number, sy: number) {
-    const wx = (sx - view.tx) / view.s;
-    const wy = (sy - view.ty) / view.s;
+    // The world point drawn under the click, as the map is drawn now (stretched or not).
+    const [wx, wy] = worldOf({ ...view, k: vsc(view.s) / view.s }, sx, sy);
     if (opts.onTap) return opts.onTap(wx, wy);
     if (!opts.onPick) return;
     const f = view.s / REF_SCALE;
@@ -725,12 +824,13 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     if (pointers.size === 2 && pinch) {
       const [a, b] = [...pointers.values()];
       const s2 = Math.min(MAX_SCALE, Math.max(minS, (pinch.s * Math.hypot(a.x - b.x, a.y - b.y)) / pinch.d));
-      const k = s2 / pinch.s;
       const cx = (a.x + b.x) / 2;
       const cy = (a.y + b.y) / 2;
+      // Zoomed about where the fingers started, then moved with them.
+      const z = zoomedAbout(pinch, s2, pinch.cx, pinch.cy, stretch);
       view.s = s2;
-      view.tx = cx - (pinch.cx - pinch.tx) * k;
-      view.ty = cy - (pinch.cy - pinch.ty) * k;
+      view.tx = z.tx + cx - pinch.cx;
+      view.ty = z.ty + cy - pinch.cy;
       moved = touched = true;
       moving();
       clamp();
@@ -784,7 +884,7 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
       touched = false;
       framing = "whole";
       const h = home();
-      void glide((W / 2 - h.tx) / h.s, (H / 2 - h.ty) / h.s, h.s);
+      void glide((W / 2 - h.tx) / h.s, (H / 2 - h.ty) / vsc(h.s), h.s);
     },
     recenter: () => {
       cancelAnimationFrame(anim);
