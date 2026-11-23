@@ -1,0 +1,131 @@
+{
+  "name": "Chasse aux Pokémon",
+  "tile": {
+    "label": "Nouveau mode",
+    "new": "Nouveau",
+    "title": "Chasse aux Pokémon",
+    "blurb": "Regarde un Pokémon. Place un repère là où tu l'attraperais.",
+    "play": "Partir en chasse"
+  },
+  "hub": {
+    "back": "PokéGuessr",
+    "eyebrow": "PokéGuessr · nouveau mode",
+    "title": "<b>Chasse</b> aux Pokémon",
+    "tagline": "On te montre un Pokémon. Tu places un repère là où il vit à l'état sauvage.",
+    "modes": "Choisis une chasse",
+    "daily": {
+      "label": "Chasse du jour nº {n} · Monde",
+      "title": "Chasse du jour",
+      "blurb": "Les cinq Pokémon du jour, les mêmes pour tout le monde.",
+      "scored": "Ton score du jour : {score}.",
+      "played": "Jouée",
+      "play": "Jouer celle du jour",
+      "again": "Rejouer (entraînement)",
+      "resume": "Reprendre"
+    },
+    "classic": {
+      "label": "Solo · Monde",
+      "title": "Classique",
+      "blurb": "Cinq Pokémon venus de toute la carte du monde.",
+      "play": "Commencer la chasse"
+    },
+    "region": {
+      "label": "Solo · une région",
+      "title": "Chasse régionale",
+      "blurb": "Cinq Pokémon, une région, un repère chacun.",
+      "pick": "Choisis une région",
+      "play": "Chasser à {region}"
+    },
+    "how": {
+      "title": "Comment jouer",
+      "see": "Découvre le Pokémon : son illustration, son nom et sa forme exacte.",
+      "pin": "Place un repère dans chaque région où tu peux le trouver à l'état sauvage.",
+      "score": "Chaque repère marque selon le vrai lieu le plus proche, jusqu'à 5 000 par manche."
+    },
+    "best": "Record : {score}"
+  },
+  "forms": {
+    "alola": "Forme d'Alola",
+    "galar": "Forme de Galar",
+    "hisui": "Forme de Hisui",
+    "paldea": "Forme de Paldea",
+    "paldea-combat": "Forme de Paldea · Race Combative",
+    "paldea-blaze": "Forme de Paldea · Race Flamboyante",
+    "paldea-aqua": "Forme de Paldea · Race Aquatique"
+  },
+  "card": {
+    "artAlt": "Illustration officielle de {name}",
+    "found": "{n, plural, one {Présent dans # région} other {Présent dans # régions}}",
+    "foundIn": "Présent à {map}",
+    "dropOne": "Place un repère là où tu le trouverais",
+    "dropEach": "Place un repère dans chaque région",
+    "dropUpTo": "Place jusqu'à {max} repères"
+  },
+  "pins": {
+    "label": "Tes repères",
+    "count": "{placed} repère(s) sur {max}",
+    "select": "Déplacer le repère {n}",
+    "empty": "Repère {n} : pas encore placé",
+    "remove": "Retirer le repère {n}",
+    "hintPlace": "Touche la carte pour placer le repère {n}",
+    "hintMove": "Touche la carte pour déplacer le repère {n}",
+    "hintDone": "Tous les repères sont placés ! Touche la carte pour déplacer le repère {n}, ou valide",
+    "hintOne": "Touche la carte là où tu le trouverais",
+    "hintMoveOne": "Touche à nouveau pour déplacer ton repère"
+  },
+  "hud": {
+    "daily": "Chasse du jour nº {n}",
+    "world": "Monde",
+    "mode": "Chasse aux Pokémon"
+  },
+  "reveal": {
+    "found": "Tu as trouvé {found} région(s) sur {total}",
+    "foundAll": "{total, plural, one {Tu l'as trouvé !} other {Tu as trouvé les {total} régions !}}",
+    "foundNone": "Aucune région trouvée cette fois",
+    "timeUp": "Temps écoulé !",
+    "spots": "Là où il vit vraiment",
+    "moreLabels": "{label} +{n}",
+    "pin": "Repère {n}",
+    "pinScore": "Repère {n} : {score}",
+    "dex": "Où le trouver dans le Pokédex",
+    "skip": "Passer",
+    "next": "Pokémon suivant",
+    "summary": "Voir les résultats",
+    "space": "Espace",
+    "pts": "pts",
+    "verdict": {
+      "perfect": "Pisteur expert !",
+      "great": "Belle chasse !",
+      "good": "Sur la bonne piste.",
+      "near": "Tu chauffes…",
+      "far": "Il t'a échappé cette fois."
+    },
+    "method": "{game} · {method}"
+  },
+  "results": {
+    "title": "Chasse terminée",
+    "total": "Ton total",
+    "outOf": "sur {max}",
+    "rounds": "Tes manches",
+    "regions": "{found} {total, plural, one {région trouvée sur #} other {région(s) trouvée(s) sur #}}",
+    "best": "Meilleure",
+    "worst": "Pire",
+    "again": "Rechasser",
+    "hub": "Toutes les chasses",
+    "show": "Voir la manche {n} sur la carte"
+  },
+  "share": {
+    "daily": "Chasse aux Pokémon nº {n}",
+    "legend": "Une case par repère : 🟩 presque tous ses points, 🟨 la plupart, 🟧 quelques-uns, 🟥 aucun",
+    "copy": "Partager",
+    "grid": "Ta chasse, case par case"
+  },
+  "state": {
+    "loading": "Recherche d'un Pokémon…",
+    "error": "La piste s'est refroidie. Cette chasse n'a pas pu se charger.",
+    "empty": "Rien à chasser ici pour l'instant. Essaie une autre région.",
+    "retry": "Réessayer",
+    "back": "Retour aux chasses",
+    "artFailed": "L'image ne s'est pas chargée, mais le nom est bien là."
+  }
+}

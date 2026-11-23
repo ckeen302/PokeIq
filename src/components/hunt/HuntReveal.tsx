@@ -11,13 +11,18 @@ import type { Translator } from "@/i18n/catalog";
 import { formatNumber } from "@/i18n/format";
 import geoNs from "@/messages/geo";
 import huntNs from "@/messages/hunt";
-import { ExitButton, Notch, ScoreTracker } from "@/components/geo/GameShell";
+import { ExitButton, Notch, ScoreTracker, usePhone } from "@/components/geo/GameShell";
 import { GeoMap, type HuntMapLink, type HuntMapSpot, type MapPin } from "@/components/geo/GeoMap";
-import type { HuntPokemonView } from "./HuntCard";
 import { huntPinColor } from "./map-marks";
+import { HUNT_ROUND_MAX, verdictOf } from "./hunt-ui";
+import { useFormTag, type HuntPokemonView } from "./HuntCard";
 
-/** The most a round scores. */
-export const HUNT_MAX_ROUND = 5000;
+/** Seconds between one region's spots popping in and the next's. */
+const REGION_STEP = 0.34;
+/** The first region's spots wait this long for the camera. */
+const FIRST_POP = 0.35;
+/** The score counts up over this long (ms). */
+const COUNT_MS = 800;
 
 /** A real spot, as the reveal shows it (all in the page's language). */
 export interface HuntRevealSpot extends MapPin {
@@ -25,34 +30,38 @@ export interface HuntRevealSpot extends MapPin {
   region: string;
   /** The place ("Route 12"). */
   place: string;
-  /** "Red/Blue". */
+  /** "Red / Blue". */
   game: string;
-  /** "Super Rod", "Walking in tall grass", "Static encounter". */
+  /** "Super Rod", "Grass". */
   method: string;
+  /** Every "game · method" line, when there are several (the list shows each; the map tags the first). */
+  labels?: string[];
+  /** The place's area, shaded on the map. */
+  mask?: [number, number][];
 }
 
 /** A pin as scored: where it was, the spot it scored against, and its points. */
 export interface HuntRevealPin {
   pin: MapPin;
-  /** Index into `spots` of the nearest real spot. */
+  /** Index into `spots` of the spot it scored against. */
   spot: number;
   score: number;
+  /** It landed in that spot's region (the server's `found`); without it, any pin with a spot counts as found. */
+  found?: boolean;
 }
 
 export interface HuntRevealProps {
   region: GeoRegionInfo;
   pokemon: HuntPokemonView;
   spots: HuntRevealSpot[];
-  /** The player's pins in order (pin 1 first); an empty list when time ran out with none down. */
+  /** The player's pins in order (pin 1 first); empty when time ran out with none down. */
   pins: HuntRevealPin[];
-  /** The round's score (the pins' points together). */
   score: number;
   /** Regions it's found in, and how many of them a pin found. */
   regionsTotal: number;
   regionsFound: number;
-  /** The most pins the round took (3 on the world for a Pokémon in more regions). */
+  /** The most pins the round took. */
   maxPins: number;
-  /** One line of trivia, shown after the reveal. */
   fact?: string;
   /** The Pokémon's "where to find" section in the Pokédex. */
   dexHref: string;
@@ -68,36 +77,35 @@ export interface HuntRevealProps {
   onExit: () => void;
 }
 
-/** Seconds between one region's spots popping in and the next's. */
-const REGION_STEP = 0.34;
-/** The first region's spots wait this long for the camera. */
-const FIRST_POP = 0.35;
-
 /**
- * The reveal, PokéGuessr's round result for a Pokémon: the map frames every
- * real spot and they pop in region by region, each flag tagged with its game
- * and method; then each pin's dashed line draws to the spot it scored
- * against and the score counts up. About two seconds; a tap on the map,
- * Skip or Space shows it all at once (Space again is Next), and reduced
+ * The reveal, PokéGuessr's round result for a Pokémon. The map frames every
+ * real spot and they pop in region by region, each flag tagged with its
+ * game and method; then each pin's dashed line draws to the spot it scored
+ * against and the score counts up, about two seconds in all. A tap on the
+ * map, Skip, or Space shows it all at once (Space again is Next); reduced
  * motion shows it all straight away. Beside the map (under it on a phone):
- * where it really is, region by region, with which pins found what.
+ * the Pokémon and where it really is, region by region, with which pin
+ * found what. The bottom bar: the score, "You found 2 of 3 regions", the
+ * fact, the Pokédex link and Next.
  */
 export function HuntReveal(p: HuntRevealProps) {
   const t = useT(huntNs);
   const g = useT(geoNs);
   const fmt = (n: number) => formatNumber(n, t.locale);
   const reduced = useReducedMotion();
+  const phone = usePhone();
   const [skipped, setSkipped] = useState(false);
-  const instant = reduced || skipped;
+  const instant = !!reduced || skipped;
 
   // The regions in the order their spots come in, and when each pops.
   const order = useMemo(() => [...new Set(p.spots.map((s) => s.region))], [p.spots]);
-  const foundSpots = useMemo(() => new Set(p.pins.map((x) => x.spot)), [p.pins]);
-  const foundRegions = useMemo(() => new Set(p.pins.map((x) => p.spots[x.spot]?.region)), [p.pins, p.spots]);
+  const isFound = (x: HuntRevealPin) => x.found ?? true;
+  const foundSpots = useMemo(() => new Set(p.pins.filter((x) => x.found ?? true).map((x) => x.spot)), [p.pins]);
+  const foundRegions = useMemo(() => new Set(p.pins.filter((x) => x.found ?? true).map((x) => p.spots[x.spot]?.region)), [p.pins, p.spots]);
   const regionDelay = (r: string) => (instant ? 0 : FIRST_POP + order.indexOf(r) * REGION_STEP);
   const linksAt = instant ? 0 : FIRST_POP + order.length * REGION_STEP + 0.1;
   const countAt = instant ? 0 : linksAt + 0.55;
-  const totalMs = (countAt + 0.8) * 1000;
+  const totalMs = countAt * 1000 + COUNT_MS;
 
   const [running, setRunning] = useState(!reduced);
   useEffect(() => {
@@ -109,8 +117,16 @@ export function HuntReveal(p: HuntRevealProps) {
     setSkipped(true);
     setRunning(false);
   };
+  // Once it's all shown, Next has the focus (Space and Enter then press it), unless the player is already somewhere else.
+  const rootRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (running) return;
+    const a = document.activeElement;
+    if (a && a !== document.body && !rootRef.current?.contains(a)) return;
+    rootRef.current?.querySelector<HTMLElement>('[data-testid="hunt-next"]')?.focus({ preventScroll: true });
+  }, [running]);
 
-  // Space (or Enter on the page) skips the sequence, then moves on.
+  // Space or Enter: skip the sequence, then move on.
   const live = useRef({ running, onNext: p.onNext });
   useEffect(() => {
     live.current = { running, onNext: p.onNext };
@@ -129,69 +145,46 @@ export function HuntReveal(p: HuntRevealProps) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const spots: HuntMapSpot[] = p.spots.map((s, i) => ({ x: s.x, y: s.y, tag: t("reveal.method", { game: s.game, method: s.method }), delay: regionDelay(s.region) + (instant ? 0 : (i % 4) * 0.04), found: foundSpots.has(i) }));
+  // The map tags the spots the pins scored against, and the first spot of each region nobody found (the list has them all).
+  const tagged = new Set<number>(p.pins.map((x) => x.spot));
+  for (const r of order) if (!p.pins.some((x) => p.spots[x.spot]?.region === r)) tagged.add(p.spots.findIndex((s) => s.region === r));
+  const spots: HuntMapSpot[] = p.spots.map((s, i) => ({ x: s.x, y: s.y, mask: s.mask, tag: tagged.has(i) ? shortLabel(labelsOf(s), t) : undefined, delay: regionDelay(s.region) + (instant ? 0 : (i % 4) * 0.04), found: foundSpots.has(i) }));
   const links: HuntMapLink[] = p.pins.map((x, i) => ({ pin: x.pin, spot: x.spot, n: i + 1, delay: linksAt + i * 0.12 }));
-  const shown = useCount(p.score, instant ? 0 : 800, countAt * 1000);
+  const shown = useCount(p.score, instant ? 0 : COUNT_MS, countAt * 1000);
   const prev = p.scores.slice(0, -1);
-  const found = p.regionsFound;
   const possible = Math.min(p.regionsTotal, p.maxPins);
-  const headline = p.timedOut && !p.pins.length ? t("reveal.timeUp") : found === 0 ? t("reveal.foundNone") : found >= p.regionsTotal ? t("reveal.foundAll", { total: p.regionsTotal }) : p.regionsTotal > p.maxPins && found >= possible ? t("reveal.foundCapped", { found, max: possible }) : t("reveal.found", { found, total: p.regionsTotal });
+  const headline =
+    p.timedOut && !p.pins.length
+      ? t("reveal.timeUp")
+      : p.regionsFound === 0
+        ? t("reveal.foundNone")
+        : p.regionsFound >= p.regionsTotal
+          ? t("reveal.foundAll", { total: p.regionsTotal })
+          : t("reveal.found", { found: p.regionsFound, total: possible });
   const after = (s: number) => ({ initial: instant ? false : { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3, delay: instant ? 0 : s, ease: [0.2, 0.8, 0.2, 1] as const } });
-
+  const bar = <RevealBar {...p} shown={shown} headline={headline} after={after} countAt={countAt} instant={instant} t={t} fmt={fmt} />;
+  const formTag = useFormTag(p.pokemon);
   return (
-    <div className="relative flex h-full flex-col bg-[#0f0d1f] md:flex-row" data-testid="hunt-reveal" data-running={running ? "true" : undefined}>
-      {/* Where it really is: region by region (beside the map; under it on a phone). */}
-      <aside className="order-2 flex min-h-0 flex-col border-[#a99cff] bg-[#1e1a3f] text-white max-md:max-h-[34vh] max-md:border-t-4 md:order-none md:w-[clamp(15rem,22vw,20rem)] md:border-r-4" data-testid="hunt-spots">
-        <div className="flex items-center gap-3 border-b border-white/10 p-3 md:p-4">
+    <div ref={rootRef} className={cn("relative flex h-full bg-[#0f0d1f]", phone ? "flex-col" : "flex-row")} data-testid="hunt-reveal" data-running={running ? "true" : undefined}>
+      {/* The Pokémon and where it really is (beside the map; under it on a phone). */}
+      <aside className={cn("flex min-h-0 flex-col border-[#a99cff] bg-[#1e1a3f] text-white", phone ? "order-3 max-h-[32vh] flex-1 border-t" : "w-[clamp(15rem,22vw,20rem)] border-r-4")}>
+        <div className={cn("flex items-center gap-3 border-b border-white/10 p-4", phone && "hidden")}>
           {/* eslint-disable-next-line @next/next/no-img-element -- the round's art, already loaded */}
-          <img src={p.pokemon.art} alt="" className="h-12 w-12 shrink-0 object-contain md:h-14 md:w-14" />
+          <img src={p.pokemon.art} alt="" className="h-14 w-14 shrink-0 object-contain" />
           <div className="min-w-0">
             <p className="truncate font-display text-lg font-bold uppercase italic leading-tight">{p.pokemon.name}</p>
-            {p.pokemon.form && <p className="truncate font-display text-[11px] font-bold uppercase tracking-[0.14em] text-[#ff8ab3]">{p.pokemon.form}</p>}
+            {formTag && <p className="truncate font-display text-[11px] font-bold uppercase tracking-[0.14em] text-[#ff8ab3]">{formTag}</p>}
           </div>
         </div>
-        <p className="hud-label px-3 pt-3 !text-[#c8bfff] md:px-4">{t("reveal.spots")}</p>
-        <ol className="min-h-0 flex-1 space-y-2 overflow-y-auto px-3 pb-3 pt-2 md:px-4">
-          {order.map((r) => {
-            const hit = foundRegions.has(r);
-            return (
-              <motion.li key={r} {...after(regionDelay(r))} className={cn("rounded-md border px-2.5 py-2", hit ? "border-[#4cbb17]/60 bg-[#4cbb17]/10" : "border-white/10 bg-black/20")} data-testid="hunt-spot-region" data-found={hit ? "true" : undefined}>
-                <p className="flex items-center gap-1.5 font-display text-sm font-bold uppercase tracking-wide">
-                  {hit ? <Check className="h-4 w-4 text-[#9be15d]" aria-hidden /> : <X className="h-4 w-4 text-white/40" aria-hidden />}
-                  {t("reveal.spotsIn", { region: r })}
-                  <span className="sr-only">{hit ? g("results.correct") : g("results.missed")}</span>
-                </p>
-                <ul className="mt-1 space-y-1">
-                  {p.spots.map((s, i) =>
-                    s.region !== r ? null : (
-                      <li key={i} className="flex items-start gap-2 text-xs leading-snug">
-                        <span className="min-w-0 flex-1">
-                          <span className="font-semibold text-white">{s.place}</span>
-                          <span className="block text-white/65">{t("reveal.method", { game: s.game, method: s.method })}</span>
-                        </span>
-                        {p.pins.map((x, k) =>
-                          x.spot === i ? (
-                            <span key={k} className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full font-display text-[11px] font-bold text-white ring-1 ring-black/40" style={{ background: huntPinColor(k) }} title={t("reveal.pin", { n: k + 1 })}>
-                              {k + 1}
-                            </span>
-                          ) : null
-                        )}
-                      </li>
-                    )
-                  )}
-                </ul>
-              </motion.li>
-            );
-          })}
-        </ol>
+        <SpotList spots={p.spots} pins={p.pins} {...{ order, foundRegions, regionDelay, after, isFound, t, g }} className="flex-1" />
       </aside>
 
       {/* The map: every spot, every pin, every line. A tap skips the sequence. */}
-      <div className="relative order-1 min-h-0 flex-1 md:order-none" onPointerDown={running ? skip : undefined}>
-        <div className="absolute inset-0 md:bottom-[6.75rem]">
-          <GeoMap region={p.region} spots={spots} links={links} fill controls={!running} fit={{ delay: 0, duration: instant ? 0 : 700 }} />
+      <div className={cn("relative min-h-0 flex-1", phone && "order-1")} onPointerDown={running ? skip : undefined}>
+        <div className="absolute inset-0" style={phone ? undefined : { bottom: "6.75rem" }}>
+          <GeoMap region={p.region} spots={spots} links={links} fill controls={false} fit={{ delay: 0, duration: instant ? 0 : 700 }} />
         </div>
-        <div className="geo-safe-tl absolute left-3 top-3 z-20 flex items-center gap-2">
+        <div className="geo-safe-tl absolute left-3 top-3 z-20">
           <ExitButton onClick={p.onExit} />
         </div>
         <div className="geo-safe-tr absolute right-3 top-3 z-20 hidden lg:block">
@@ -199,55 +192,124 @@ export function HuntReveal(p: HuntRevealProps) {
         </div>
         <Notch>
           <div className="text-center">
-            <div className="font-display text-xl font-bold uppercase italic leading-none tracking-wide sm:text-2xl">
+            <div className="whitespace-nowrap font-display text-xl font-bold uppercase italic leading-none tracking-wide sm:text-2xl">
               {g("round")} {p.roundIndex + 1}
             </div>
-            <div className="mt-0.5 font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c8bfff]">{p.modeLine}</div>
+            <div className="mt-0.5 whitespace-nowrap font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c8bfff]">{p.modeLine}</div>
           </div>
         </Notch>
         {running && (
-          <button type="button" onClick={skip} className="absolute bottom-3 right-3 z-20 inline-flex h-9 items-center gap-1.5 rounded-md bg-black/60 px-3 font-display text-xs font-bold uppercase tracking-wider text-white backdrop-blur transition-colors hover:bg-black/80 md:bottom-[7.5rem]" data-testid="hunt-skip">
+          <button type="button" onClick={skip} className={cn("absolute right-3 z-20 inline-flex h-10 items-center gap-1.5 rounded-md bg-black/60 px-3.5 font-display text-xs font-bold uppercase tracking-wider text-white backdrop-blur transition-colors hover:bg-black/80", phone ? "bottom-3" : "bottom-[7.5rem]")} data-testid="hunt-skip">
             {t("reveal.skip")}
-            <ChevronsRight className="h-4 w-4" aria-hidden />
+            <ChevronsRight className="h-4 w-4 shrink-0" aria-hidden />
           </button>
         )}
-
-        {/* The bottom bar (desktop), PokéGuessr's: the score, the regions found and Next. */}
-        <div className="absolute inset-x-0 bottom-0 z-20 hidden border-t-4 border-[#a99cff] bg-[#1e1a3f]/95 text-white shadow-[0_-12px_40px_rgba(0,0,0,0.5)] backdrop-blur md:block">
-          <RevealBar {...p} shown={shown} headline={headline} after={after} countAt={countAt} instant={instant} t={t} fmt={fmt} />
-        </div>
+        {/* The bottom bar (computers), PokéGuessr's: the score, the regions found and Next. */}
+        {!phone && <div className="absolute inset-x-0 bottom-0 z-20 border-t-4 border-[#a99cff] bg-[#1e1a3f]/95 text-white shadow-[0_-12px_40px_rgba(0,0,0,0.5)] backdrop-blur">{bar}</div>}
       </div>
 
-      {/* Phone: the bar under the map, above the spots. */}
-      <div className="order-1 shrink-0 border-t-4 border-[#a99cff] bg-[#1e1a3f] text-white md:hidden">
-        <RevealBar {...p} shown={shown} headline={headline} after={after} countAt={countAt} instant={instant} t={t} fmt={fmt} />
-      </div>
+      {/* Phones: the bar under the map, the spots under it. */}
+      {phone && <div className="order-2 shrink-0 border-t-4 border-[#a99cff] bg-[#1e1a3f] text-white">{bar}</div>}
     </div>
   );
 }
 
 type HuntT = Translator<(typeof huntNs)["en"]>;
 
+/**
+ * A spot's tag on the map, kept short: its first label with the games cut to
+ * the first two ("Red / Blue +3 · Poké Flute"), and "+1" when it has more labels.
+ */
+export function shortLabel(labels: string[], t: HuntT): string {
+  const first = labels[0] ?? "";
+  const cut = first.lastIndexOf(" · ");
+  const games = cut < 0 ? [] : first.slice(0, cut).split(" / ");
+  const method = cut < 0 ? first : first.slice(cut + 3);
+  const head = games.length > 2 ? `${games.slice(0, 2).join(" / ")} +${games.length - 2}` : games.join(" / ");
+  const label = head ? `${head} · ${method}` : method;
+  return labels.length > 1 ? t("reveal.moreLabels", { label, n: labels.length - 1 }) : label;
+}
+type GeoT = Translator<(typeof geoNs)["en"]>;
+
+/** A spot's "game · method" lines. */
+const labelsOf = (s: HuntRevealSpot) => s.labels ?? [`${s.game} · ${s.method}`];
+
+/** Where it really lives: a box per region (green where a pin found it), each place with its games and methods, and the pins that scored there. */
+function SpotList({ spots, pins, order, foundRegions, regionDelay, after, isFound, t, g, className }: {
+  spots: HuntRevealSpot[];
+  pins: HuntRevealPin[];
+  order: string[];
+  foundRegions: Set<string | undefined>;
+  regionDelay: (r: string) => number;
+  after: (s: number) => object;
+  isFound: (x: HuntRevealPin) => boolean;
+  t: HuntT;
+  g: GeoT;
+  className?: string;
+}) {
+  return (
+    <div className={cn("flex min-h-0 flex-col", className)}>
+      <p className="hud-label px-3 pt-3 !text-[#c8bfff] md:px-4">{t("reveal.spots")}</p>
+      <ol className="min-h-0 flex-1 space-y-2 overflow-y-auto px-3 pb-3 pt-2 md:px-4">
+        {order.map((r) => {
+          const hit = foundRegions.has(r);
+          return (
+            <motion.li key={r} {...after(regionDelay(r))} className={cn("rounded-md border px-2.5 py-2", hit ? "border-[#4cbb17]/60 bg-[#4cbb17]/10" : "border-white/10 bg-black/20")} data-testid="hunt-spot-region" data-found={hit ? "true" : undefined}>
+              <p className="flex items-center gap-1.5 font-display text-sm font-bold uppercase tracking-wide">
+                {hit ? <Check className="h-4 w-4 shrink-0 text-[#9be15d]" aria-hidden /> : <X className="h-4 w-4 shrink-0 text-white/40" aria-hidden />}
+                {r}
+                <span className="sr-only">{hit ? g("results.correct") : g("results.missed")}</span>
+              </p>
+              <ul className="mt-1 space-y-1.5">
+                {spots.map((s, i) =>
+                  s.region !== r ? null : (
+                    <li key={i} className="flex items-start gap-2 text-xs leading-snug" data-testid="hunt-spot">
+                      <span className="min-w-0 flex-1">
+                        <span className="font-semibold text-white">{s.place}</span>
+                        {labelsOf(s).map((l) => (
+                          <span key={l} className="block text-white/70">
+                            {l}
+                          </span>
+                        ))}
+                      </span>
+                      {pins.map((x, k) =>
+                        x.spot === i ? (
+                          <span key={k} className={cn("mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full font-display text-[11px] font-bold text-white ring-1 ring-black/40", !isFound(x) && "opacity-50")} style={{ background: huntPinColor(k) }} title={t("reveal.pin", { n: k + 1 })}>
+                            {k + 1}
+                          </span>
+                        ) : null
+                      )}
+                    </li>
+                  )
+                )}
+              </ul>
+            </motion.li>
+          );
+        })}
+      </ol>
+    </div>
+  );
+}
+
 function RevealBar(p: HuntRevealProps & { shown: number; headline: string; after: (s: number) => object; countAt: number; instant: boolean; t: HuntT; fmt: (n: number) => string }) {
   const { t, fmt } = p;
-  const verdict = p.score >= 4500 ? "perfect" : p.score >= 3500 ? "great" : p.score >= 2000 ? "good" : p.score > 0 ? "near" : "far";
   return (
-    <div className="mx-auto grid max-w-6xl items-center gap-3 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 sm:gap-6 sm:px-6 md:grid-cols-[1fr_auto_1fr] md:pb-3">
+    <div className="mx-auto grid max-w-6xl items-center gap-2.5 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 sm:gap-6 sm:px-6 md:grid-cols-[1fr_auto_1fr] md:pb-3">
       <div className="min-w-0 text-center md:text-left">
-        <p className="hud-label !text-[#c8bfff]">{t(`reveal.verdict.${verdict}`)}</p>
+        <p className="hud-label !text-[#c8bfff]">{t(`reveal.verdict.${verdictOf(p.score)}`)}</p>
         <p className="geo-glow font-display text-4xl font-bold italic tabular-nums sm:text-5xl" data-testid="hunt-round-score">
           {fmt(p.shown)} <span className="text-lg not-italic text-white/60">{t("reveal.pts")}</span>
         </p>
         <div className="mt-1.5 flex items-center gap-2">
           <div className="meter h-2 flex-1 !bg-black/40">
-            <motion.div className="h-full bg-[#9be15d]" initial={{ width: 0 }} animate={{ width: `${(p.score / HUNT_MAX_ROUND) * 100}%` }} transition={{ duration: p.instant ? 0 : 0.8, delay: p.countAt, ease: "easeOut" }} />
+            <motion.div className="h-full bg-[#9be15d]" initial={{ width: 0 }} animate={{ width: `${(p.score / HUNT_ROUND_MAX) * 100}%` }} transition={{ duration: p.instant ? 0 : COUNT_MS / 1000, delay: p.countAt, ease: "easeOut" }} />
           </div>
-          <span className="font-pixel text-[9px] text-white/50">{fmt(HUNT_MAX_ROUND)}</span>
+          <span className="font-pixel text-[9px] text-white/50">{fmt(HUNT_ROUND_MAX)}</span>
         </div>
       </div>
 
       <motion.div {...p.after(p.countAt)} className="flex min-w-0 flex-col items-center gap-1.5">
-        <span className={cn("inline-flex items-center gap-2 rounded-full border-2 border-[#a99cff] px-4 py-1.5 font-display text-sm font-bold uppercase italic tracking-wide text-white shadow-lg", p.regionsFound > 0 ? "bg-[#4cbb17]" : "bg-[#4a3f9e]")} data-testid="hunt-found-line">
+        <span className={cn("inline-flex items-center gap-2 rounded-full border-2 border-[#a99cff] px-4 py-1.5 text-center font-display text-sm font-bold uppercase italic tracking-wide text-white shadow-lg", p.regionsFound > 0 ? "bg-[#4cbb17]" : "bg-[#4a3f9e]")} data-testid="hunt-found-line" role="status">
           {p.headline}
         </span>
         {p.pins.length > 1 && (
@@ -276,7 +338,7 @@ function RevealBar(p: HuntRevealProps & { shown: number; headline: string; after
           type="button"
           onClick={p.onNext}
           data-testid="hunt-next"
-          className="flex h-12 w-full max-w-xs items-center justify-center gap-2 rounded-md bg-[#4cbb17] px-6 font-display text-base font-bold uppercase tracking-wider text-white shadow-lg transition-[background-color,transform] hover:bg-[#58d01c] active:scale-[0.98]"
+          className="flex h-12 w-full max-w-xs items-center justify-center gap-2 whitespace-nowrap rounded-md bg-[#4cbb17] px-4 font-display text-base font-bold uppercase tracking-wider text-white shadow-lg transition-[background-color,transform] hover:bg-[#58d01c] active:scale-[0.98]"
         >
           {p.done ? t("reveal.summary") : t("reveal.next")} ▶
           <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline [@media(pointer:coarse)]:!hidden">{t("reveal.space")}</kbd>

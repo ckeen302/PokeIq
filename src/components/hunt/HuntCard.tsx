@@ -1,16 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MapPinned } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
+import type { Translator } from "@/i18n/catalog";
 import huntNs from "@/messages/hunt";
+import { formKey } from "./hunt-ui";
 
 /** What a round shows of its Pokémon (never where it lives). */
 export interface HuntPokemonView {
-  /** Its name in the page's language, form included as the games write it ("Alolan Vulpix"), or the plain name with `form` beside it. */
+  /** Its name in the page's language, form included as the games write it ("Alolan Meowth"). */
   name: string;
-  /** The form, when it isn't the default ("Alolan Form", "Paldean Form (Blaze Breed)"); shown as a tag so the form is never in doubt. */
+  /** The entry's key ("52-alola"): its form tag comes from it. */
+  id?: string;
+  /** A form label to show as given, instead of the one worked out from `id`. */
   form?: string;
   /** National Pokédex number, shown small. */
   dex?: number;
@@ -18,13 +22,27 @@ export interface HuntPokemonView {
   art: string;
 }
 
+/** The form's tag ("Alolan Form"), from `form` or the entry's key; null for a base form. */
+export function useFormTag(p: Pick<HuntPokemonView, "id" | "form">): string | null {
+  return formTagOf(useT(huntNs), p);
+}
+
+/** The same, with the translator in hand (for lists). */
+export function formTagOf(t: Translator<(typeof huntNs)["en"]>, p: Pick<HuntPokemonView, "id" | "form">): string | null {
+  if (p.form) return p.form;
+  const f = p.id ? formKey(p.id) : null;
+  return f && t.has(`forms.${f}`) ? t(`forms.${f}` as "forms.alola") : null;
+}
+
 /**
  * The round's picture, where PokéGuessr shows its screenshot: the Pokémon's
- * official art big in the middle of a tracking-radar backdrop, its name, its
- * form tag and how many regions it lives in. It fills the space the HUD
- * leaves (between the notch and the dock or the phone's bottom bar).
+ * official art big in the middle of a tracking-radar backdrop, its name, a
+ * tag for its form (so a regional form is never in doubt) and how many
+ * regions it lives in, with how many pins to drop. It fills the space the
+ * HUD leaves: between the notch and the corner dock on a computer, between
+ * the dials and the bottom bar on a phone.
  */
-export function HuntCard({ pokemon, regions, maxPins, priority, className }: {
+export function HuntCard({ pokemon, regions, maxPins, priority, mapName, className }: {
   pokemon: HuntPokemonView;
   /** How many regions it's found in. */
   regions: number;
@@ -32,28 +50,42 @@ export function HuntCard({ pokemon, regions, maxPins, priority, className }: {
   maxPins: number;
   /** The game's first card: its art is fetched first. */
   priority?: boolean;
+  /** Region mode: the map's name ("Found in Kanto"). */
+  mapName?: string;
   className?: string;
 }) {
   const t = useT(huntNs);
   const [art, setArt] = useState<"loading" | "ready" | "failed">("loading");
-  useEffect(() => setArt("loading"), [pokemon.art]);
-  const found = t("card.found", { n: regions });
-  const instruction = maxPins <= 1 ? t("card.dropOne") : regions > maxPins ? t("card.foundMany", { n: regions, max: maxPins }) : t("card.dropEach", { n: regions });
+  // The art can finish loading before the page is interactive (its onLoad never runs): read where it got to.
+  const imgRef = useRef<HTMLImageElement>(null);
+  useEffect(() => {
+    const img = imgRef.current;
+    setArt(img?.complete ? (img.naturalWidth ? "ready" : "failed") : "loading");
+  }, [pokemon.art]);
+  const formTag = useFormTag(pokemon);
+  const found = mapName ? t("card.foundIn", { map: mapName }) : t("card.found", { n: regions });
+  const instruction = maxPins <= 1 ? t("card.dropOne") : regions > maxPins ? t("card.dropUpTo", { max: maxPins }) : t("card.dropEach");
   return (
-    <div className={cn("hunt-stage relative flex h-full w-full flex-col items-center justify-center overflow-hidden", className)} data-testid="hunt-card">
+    <div className={cn("relative flex h-full w-full flex-col items-center justify-center overflow-hidden", className)} data-testid="hunt-card">
       <Radar />
-      <div className="relative z-[1] flex min-h-0 w-full flex-1 flex-col items-center justify-center px-4 pb-2 pt-[calc(env(safe-area-inset-top)+5.5rem)] md:pb-[3vh] md:pt-[13vh] md:[padding-right:calc(16vw+3vw)] md:[padding-left:calc(16vw+3vw)]">
+      <div className="relative z-[1] flex min-h-0 w-full flex-1 flex-col items-center justify-center px-4 pb-3 pt-[calc(env(safe-area-inset-top)+5.75rem)] md:px-[19vw] md:pb-[3vh] md:pt-[14vh]">
         {/* The art: a soft glow under it, a gentle float once it's in. */}
-        <div className="relative flex aspect-square h-[min(40vh,82vw)] max-h-full min-h-[9rem] items-center justify-center md:h-[min(48vh,40vw)]">
+        <div className="relative flex aspect-square h-[min(38vh,78vw)] max-h-full min-h-[8rem] shrink items-center justify-center md:h-[min(46vh,38vw)]">
           <div className="absolute inset-[12%] rounded-full bg-[#6c5ce7]/35 blur-3xl" aria-hidden />
           {art !== "ready" && (
-            <div className={cn("absolute inset-[18%] rounded-full", art === "loading" ? "animate-pulse bg-white/10" : "bg-white/5")} aria-hidden data-testid="hunt-art-placeholder">
-              {art === "failed" && <PokeBallMark className="h-full w-full p-[18%] text-white/20" />}
+            <div className={cn("absolute inset-[18%] rounded-full", art === "loading" ? "animate-pulse bg-white/10" : "bg-white/5")} data-testid="hunt-art-placeholder">
+              {art === "failed" && (
+                <>
+                  <PokeBallMark className="h-full w-full p-[18%] text-white/20" />
+                  <span className="sr-only">{t("state.artFailed")}</span>
+                </>
+              )}
             </div>
           )}
-          {/* eslint-disable-next-line @next/next/no-img-element -- official art, served sized by /api/art or the static board art */}
+          {/* eslint-disable-next-line @next/next/no-img-element -- official art, served sized by /api/art */}
           <img
             key={pokemon.art}
+            ref={imgRef}
             src={pokemon.art}
             alt={t("card.artAlt", { name: pokemon.name })}
             draggable={false}
@@ -65,18 +97,22 @@ export function HuntCard({ pokemon, regions, maxPins, priority, className }: {
           />
         </div>
 
-        <div className="mt-[1.5vh] flex max-w-full flex-col items-center text-center">
-          {pokemon.dex !== undefined && <p className="font-pixel text-[10px] tracking-wider text-[#c8bfff]/80">#{String(pokemon.dex).padStart(4, "0")}</p>}
+        <div className="mt-[1.4vh] flex max-w-full flex-col items-center text-center">
+          {pokemon.dex !== undefined && (
+            <p className="font-pixel text-[10px] tracking-wider text-[#c8bfff]/80" aria-hidden>
+              #{String(pokemon.dex).padStart(4, "0")}
+            </p>
+          )}
           <h2 className="mt-1 max-w-full font-display text-[clamp(1.75rem,5.4vh,3.75rem)] font-bold uppercase italic leading-[0.95] tracking-tight text-white [overflow-wrap:anywhere] [text-shadow:0_3px_0_rgba(0,0,0,0.45)]" data-testid="hunt-name">
             {pokemon.name}
           </h2>
-          {pokemon.form && (
+          {formTag && (
             <span className="mt-2 inline-flex max-w-full items-center rounded-full bg-[#e2306f] px-3 py-1 font-display text-xs font-bold uppercase tracking-[0.14em] text-white shadow-lg ring-2 ring-white/20 sm:text-sm" data-testid="hunt-form">
-              <span className="truncate">{pokemon.form}</span>
+              <span className="truncate">{formTag}</span>
             </span>
           )}
-          <p className="mt-[1.6vh] inline-flex items-center gap-2 rounded-full bg-[#1e1a3f]/90 py-1.5 pl-2 pr-4 font-display text-base font-bold uppercase italic tracking-wide text-white shadow-lg ring-2 ring-[#a99cff]/70 sm:text-lg" data-testid="hunt-found">
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#4cbb17]" aria-hidden>
+          <p className="mt-[1.5vh] inline-flex items-center gap-2 rounded-full bg-[#1e1a3f]/90 py-1.5 pl-2 pr-4 font-display text-base font-bold uppercase italic tracking-wide text-white shadow-lg ring-2 ring-[#a99cff]/70 sm:text-lg" data-testid="hunt-found-in">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#4cbb17]" aria-hidden>
               <MapPinned className="h-4 w-4" />
             </span>
             {found}
