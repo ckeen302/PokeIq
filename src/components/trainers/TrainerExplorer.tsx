@@ -103,7 +103,10 @@ export function TrainerExplorer({
     setVisible(PAGE);
   }, [q, game, region, cls, notableOnly]);
 
-  const searching = Boolean(q.trim() || game || region || cls || notableOnly);
+  // The box shows each key at once; what it filters (swapping the directory for the results, a scan of the whole
+  // index) follows at a lower priority, so a key never waits on it.
+  const shownQ = useDeferredValue(q);
+  const searching = Boolean(shownQ.trim() || game || region || cls || notableOnly);
   // The notable directory needs no download; everything else searches the full index.
   const needIndex = Boolean(q.trim() || cls || ((game || region) && !notableOnly));
   useEffect(() => {
@@ -129,8 +132,7 @@ export function TrainerExplorer({
   }, []);
 
   const gameIdx = game ? games.findIndex((g) => g.key === game) : -1;
-  // The box shows each key at once; the results (a scan of the whole index) follow at a lower priority.
-  const nq = normalize(useDeferredValue(q));
+  const nq = normalize(shownQ);
 
   const notableHits = useMemo(
     () =>

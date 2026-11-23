@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useDeferredValue, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "@/components/ui/Link";
 import { ChevronDown, CircleDot, Search, Sparkle, Swords } from "lucide-react";
@@ -32,15 +32,17 @@ export function MovesSection({ moves, game, typeNames }: { moves: DexMove[]; gam
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
 
+  // The box shows each key at once; the table follows at a lower priority.
+  const shownQuery = useDeferredValue(query);
   const rows = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = shownQuery.trim().toLowerCase();
     return moves
       .filter((m) => m.method === tab)
       .filter((m) => !q || m.name.toLowerCase().includes(q) || m.type.includes(q) || (typeNames?.[m.type]?.toLowerCase().includes(q) ?? false))
       .sort((a, b) =>
         tab === "L" ? a.level - b.level || a.name.localeCompare(b.name) : tab === "M" ? (a.tm ?? "ZZ").localeCompare(b.tm ?? "ZZ", undefined, { numeric: true }) : a.name.localeCompare(b.name)
       );
-  }, [moves, tab, query, typeNames]);
+  }, [moves, tab, shownQuery, typeNames]);
 
   return (
     <div className="space-y-3 hud rounded-lg border bg-card p-4">
