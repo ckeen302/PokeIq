@@ -191,6 +191,9 @@
     "off": "No",
     "timerBlurb": "Allo scadere del tempo, la tua puntina vale dove si trova; senza puntina fai 0. Il tempo continua a scorrere se cambi scheda. La Giornaliera e la Settimanale sono sempre da 1:30, e le serie non hanno tempo.",
     "harder": "Rendono solo la partita più difficile, quindi i tuoi punteggi contano comunque in classifica.",
+    "music": "Musica",
+    "musicBlurb": "Musica di sottofondo rilassante mentre giochi. Se disattivi l'audio del sito, si spegne anche lei.",
+    "musicVolume": "Volume della musica",
     "rounds": "Round",
     "difficulty": "Difficoltà",
     "practice": "Allenamento: solo Normale vale per le classifiche."

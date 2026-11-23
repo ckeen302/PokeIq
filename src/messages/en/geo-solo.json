@@ -191,6 +191,9 @@
     "off": "Off",
     "timerBlurb": "When time runs out, your pin is guessed where it is; no pin scores 0. The clock keeps running if you switch tabs. The Daily and the Weekly are always 1:30, and streaks have no clock.",
     "harder": "These only make a game harder, so your scores still count on the leaderboards.",
+    "music": "Music",
+    "musicBlurb": "Calm background music while you play. Muting the site turns it off too.",
+    "musicVolume": "Music volume",
     "rounds": "Rounds",
     "difficulty": "Difficulty",
     "practice": "Practice: Normal keeps the leaderboards."
