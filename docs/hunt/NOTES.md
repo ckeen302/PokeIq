@@ -41,3 +41,30 @@ Branches: integration `feat/pokemon-hunt`; data on `hunt/data`; design on `hunt/
   Please also **don't bind Space or Enter during the reveal.** The panel does that itself: the first press skips the animation, the next one goes to the next round.
 - The round itself is GameShell + `HuntRoundCard` as the picture + `MapDock` with `HuntPinBar` as `extra`, as the spec says. Please copy PokéGuessr's round layout from `GeoGame.tsx`'s `guessViewOf`. It covers desktop (notch, CountdownPill, ScoreTracker / RoundReadout) and phone (HudDials, RoundBadge, bottom-bar tools).
 - `HuntPinBar` handles keys 1–3 (pick a pin) and Delete/Backspace (remove the picked one) itself. Pins are numbered by slot. With the spec's `placed: number` props, removing a middle pin shifts the later ones down. That works fine.
+
+### 2026-11-23 · hunt data (accuracy)
+
+- **First full table is on `hunt/data`** (`src/data/hunt/answers.json`, built by `npx tsx scripts/hunt/build.ts`). Verification against Bulbapedia and Serebii is in progress; results will go in `docs/hunt/verification.md`. Everything left out, with the reason, is in `src/data/hunt/review.json`.
+- **How a row becomes an answer** (code in `scripts/hunt/`):
+  - Versions decide the regions (`rules.ts` `VERSION_REGIONS`, same as `VERSIONS[].regions`). I don't trust the stored `a` field: it was built against an older map. I re-match every row by name inside the version's regions. Steps: exact name, then the name without a "(sub-area)", then a short hand-checked alias table, then without "Sea " ("Sea Route 41"), then without a region prefix ("Johto Safari Zone"). Two hits at any step = uncertain, so the Pokémon is left out.
+  - A building (a place with `parent`) counts as its parent's pinned place (Kitakami Hall → Mossui Town, White Forest → Black City / White Forest, Ramanas Park → Route 221), so every answer is a pinned place.
+  - Legends: Z-A: every place outside Hyperspace is Lumiose City. Legends: Arceus: left out.
+- **Method decisions** (`rules.ts` `METHODS`):
+  - Counted: Poké Radar (grass on that route), Hidden Grotto (a fixed spot), "Rare Spawns" (LGPE grass and sky spawns), DexNav (grass), Swarms, Berry trees (like Headbutt), the XY and SwSh ambushes (Overworld), Poké Flute, Devon Scope, Squirt Bottle and Wailmer Pail (all "Fixed encounter").
+  - Left out: Island Scan (a once-a-day scan, not a spot), the Gen 4 dual-slot rows, roamers (a whole region, no one spot), Ultra Space, Pal Park.
+  - Max Raid counts only in Sword / Shield.
+  - An unknown method label makes the row uncertain.
+- **Mewtwo:** X/Y's Unknown Dungeon is a cave inside Pokémon Village, so it counts as Pokémon Village. I'm checking this against Bulbapedia during verification and will drop it if it doesn't hold.
+- **Forms** (`forms.ts`):
+  - Gens 1–6, Let's Go and BDSP only have the original form in the wild.
+  - A species whose regional forms all came out after the game is its original form there (Wooper in Sword / Shield).
+  - Otherwise the row's note decides, or Bulbapedia's form tag at that place in that game (kept in `scripts/hunt/evidence/forms.json`).
+  - No tag, or a note that disagrees with Bulbapedia, makes the row uncertain, and that Pokémon's forms are left out.
+  - Paldean Tauros is three entries: `128-paldea-combat`, `128-paldea-blaze`, `128-paldea-aqua`.
+  - Left out because the form depends on the spot in a way the data doesn't record: Burmy, Wormadam, Shellos, Gastrodon, Vivillon, the Flabébé line, Oricorio.
+- **Difficulty** (`difficulty.ts`): "land" is every 28 px map square within two squares of any place's area. For each region r of an entry, s_r = the share of land within 60% scoring distance of one of its spots in r. World difficulty = 1 − the mean of the p largest s_r, with p = `huntPinsFor`, because each pin has to find its own region. Region difficulty = 1 − s on that region's crop, with one pin. Values cluster around 0.89–0.97 because one spot covers a small part of the world, so deal by rank (thirds), not by fixed cut-offs.
+- **`everywhere`:** 6+ regions, or 4+ regions with difficulty under 0.91.
+- **For pokemon hunt (game):**
+  - The Kanto crop holds only `Kanto`, so Sevii Islands spots aren't on the Kanto region map. The Unova crop also leaves out Blueberry Academy. `regionDifficulty` only has a region when the entry has a spot on that crop. Please deal Region mode only from entries that have `regionDifficulty[region]`, and draw only spots inside the crop.
+  - Rule 4 is strict, and the map is missing real places: Torchlit Labyrinth, Alfornada Cavern, the Paldean seas, Brawlers' Cave, Alola Routes 4, 6 and 17, Kalos Routes 2, 3 and 22, and Hoenn's sea Routes 107, 129 and 131. Each one keeps Pokémon out of the table. The ranked list is `missingPlaces` in `review.json`, for whoever owns the map.
+  - Rows the data folded into "Most fishable water" (Gen 1–7 fishing in many places) can't be mapped, so those fishing Pokémon are left out for now.
