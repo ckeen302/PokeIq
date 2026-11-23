@@ -74,6 +74,12 @@ export interface AtlasOptions {
   home?: { box: Box; cover?: boolean };
   /** A page in another language: the names the map writes, English → that language's (names not in it stay English). */
   names?: Record<string, string>;
+  /**
+   * The guess map: each town and city dot shows only once there's room for
+   * it (see dotSpacing), fading in, and none on the whole world zoomed out.
+   * Without it (the atlas page) every dot always shows.
+   */
+  spacedDots?: boolean;
 }
 
 export interface AtlasEngine {
@@ -88,6 +94,38 @@ export interface AtlasEngine {
 }
 
 const SEA = "#165c96";
+/** Spaced dots: a dot shows once its nearest neighbour is at least this many CSS px away on screen. */
+export const DOT_SPACING_PX = 16;
+/** Spaced dots fade in (and out) over this long. */
+const DOT_FADE_MS = 150;
+/** Spaced dots on a map of the whole world: none until it's zoomed in this far past the whole world. */
+const WORLD_DOTS_FROM = 2;
+
+const nearestCache = new WeakMap<AtlasMarker[], Float64Array>();
+/**
+ * Each marker's distance to its nearest neighbour, in world pixels: worked
+ * out once per atlas. A dot shows when that distance times the zoom reaches
+ * DOT_SPACING_PX, so a dense area's dots come in later than a sparse one's
+ * and they never smear together.
+ */
+export function nearestDistances(markers: AtlasMarker[]): Float64Array {
+  let out = nearestCache.get(markers);
+  if (out) return out;
+  out = new Float64Array(markers.length).fill(Infinity);
+  for (let i = 0; i < markers.length; i++)
+    for (let j = i + 1; j < markers.length; j++) {
+      const d = Math.hypot(markers[i].x - markers[j].x, markers[i].y - markers[j].y);
+      if (d < out[i]) out[i] = d;
+      if (d < out[j]) out[j] = d;
+    }
+  nearestCache.set(markers, out);
+  return out;
+}
+
+/** Whether a spaced dot shows at scale `s` (CSS px per world px). */
+export const dotShows = (nearest: number, s: number) => nearest * s >= DOT_SPACING_PX;
+/** A spaced dot's radius in CSS px: 3 on a whole-world or region view, growing gently to 5 as you zoom in (by 8× from REF_SCALE). */
+export const dotRadius = (s: number) => Math.min(5, Math.max(3, 3 + (2 * Math.log2(Math.max(1, s / REF_SCALE))) / 3));
 const MAX_SCALE = 9;
 /** Scale of the whole world on a desktop-sized atlas; labels and markers grow from here. */
 const REF_SCALE = 0.2;
@@ -156,6 +194,10 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
   let touched = false;
   let alive = true;
   let levels: Levels = [];
+  /** Spaced dots: each one's nearest neighbour, and how far it has faded in (0–1). */
+  const nearest = opts.spacedDots ? nearestDistances(atlas.markers) : null;
+  const dotAlpha = new Float32Array(atlas.markers.length);
+  let lastDraw = 0;
   /** A fit asked for before the canvas had a size. */
   let pending: (() => void) | null = null;
   /** The canvas has been sized (the ResizeObserver's first call): until then input has nowhere to land. */
@@ -181,7 +223,10 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     queued = true;
     requestAnimationFrame(() => {
       queued = false;
-      if (alive) draw();
+      if (!alive) return;
+      // Already drawn this frame (a glide or a zoom step draws each frame): look again next frame instead.
+      if (performance.now() - lastDraw < 4) requestDraw();
+      else draw();
     });
   }
 
@@ -263,8 +308,34 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     }
 
     const f = s / REF_SCALE;
-    for (const m of atlas.markers) {
+    const now = performance.now();
+    const dt = lastDraw ? now - lastDraw : DOT_FADE_MS;
+    lastDraw = now;
+    // A map of the whole world shows no dots zoomed out (just the region names); a region's map shows those that have room.
+    const dotsAllowed = locked || s >= fitWorld().s * WORLD_DOTS_FROM;
+    let fading = false;
+    for (let i = 0; i < atlas.markers.length; i++) {
+      const m = atlas.markers[i];
       const city = m.kind === "city";
+      if (nearest) {
+        const goal = dotsAllowed && dotShows(nearest[i], s) ? 1 : 0;
+        const step = reduceMotion ? 1 : dt / DOT_FADE_MS;
+        const alpha = (dotAlpha[i] = goal > dotAlpha[i] ? Math.min(goal, dotAlpha[i] + step) : Math.max(goal, dotAlpha[i] - step));
+        if (alpha !== goal) fading = true;
+        if (alpha <= 0) continue;
+        // A round dot with a dark rim: 3 px in radius when it first shows, 5 px zoomed in.
+        const r = dotRadius(s) / s;
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = city ? "#6e1626" : "#1d3878";
+        ctx.beginPath();
+        ctx.arc(m.x, m.y, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = city ? "#e2475b" : "#4d7ee8";
+        ctx.beginPath();
+        ctx.arc(m.x, m.y, r - 1.25 / s, 0, Math.PI * 2);
+        ctx.fill();
+        continue;
+      }
       // Small dots from afar, full-size buildings up close.
       const px = f < 1.6 ? (city ? 5 : 4) : f < 3 ? (city ? 8 : 6) : city ? 10 : 8;
       const w = Math.max(m.w, px / s);
@@ -279,6 +350,11 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
       ctx.fillStyle = "rgba(255,255,255,.35)";
       ctx.fillRect(m.x - w / 2, m.y - h / 2, w, h * 0.32);
     }
+    ctx.globalAlpha = 1;
+    // A dot still fading in or out draws again next frame.
+    if (fading) requestDraw();
+    // How many dots are up, for the browser checks.
+    if (nearest) canvas.dataset.dots = String(dotAlpha.reduce((n, a) => n + (a > 0 ? 1 : 0), 0));
     if (selected) {
       ctx.strokeStyle = "#fff";
       ctx.lineWidth = 3 / s;

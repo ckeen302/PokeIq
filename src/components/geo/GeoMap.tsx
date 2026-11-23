@@ -178,6 +178,8 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
         if (x >= 0 && x <= 1 && y >= 0 && y <= 1) pickRef.current?.({ x, y });
       },
       onView: setView,
+      // The guess map stays readable small: dots come in as you zoom, once there's room for them.
+      spacedDots: true,
     });
     engine.current = e;
     // The engine is loading the world map now; once it's decoded and drawn, the crop fades out over it.
