@@ -2955,365 +2955,363 @@
   {
    "id": "144",
    "name": "Articuno",
-   "places": 26,
-   "games": [
-    {
-     "version": "blue",
-     "ours": [
-      "Kanto|Seafoam Islands"
-     ],
-     "bulbapedia": [
-      "Kanto|Seafoam Islands"
-     ],
-     "serebii": [
-      "Kanto|Seafoam Islands"
-     ],
-     "errorsExtra": [],
-     "errorsMissing": [],
-     "disputed": []
-    },
-    {
-     "version": "firered",
-     "ours": [
-      "Kanto|Seafoam Islands"
-     ],
-     "bulbapedia": [
-      "Kanto|Seafoam Islands"
-     ],
-     "serebii": [
-      "Kanto|Seafoam Islands"
-     ],
-     "errorsExtra": [],
-     "errorsMissing": [],
-     "disputed": []
-    },
-    {
-     "version": "heartgold",
-     "ours": [
-      "Kanto|Seafoam Islands"
-     ],
-     "bulbapedia": [
-      "Kanto|Seafoam Islands"
-     ],
-     "serebii": [
-      "Kanto|Seafoam Islands"
-     ],
-     "errorsExtra": [],
-     "errorsMissing": [],
-     "disputed": []
-    },
-    {
-     "version": "leafgreen",
-     "ours": [
-      "Kanto|Seafoam Islands"
-     ],
-     "bulbapedia": [
-      "Kanto|Seafoam Islands"
-     ],
-     "serebii": [
-      "Kanto|Seafoam Islands"
-     ],
-     "errorsExtra": [],
-     "errorsMissing": [],
-     "disputed": []
-    },
-    {
-     "version": "lets-go-eevee",
-     "ours": [
-      "Kanto|Route 1",
-      "Kanto|Route 10",
-      "Kanto|Route 12",
-      "Kanto|Route 13",
-      "Kanto|Route 14",
-      "Kanto|Route 15",
-      "Kanto|Route 16",
-      "Kanto|Route 17",
-      "Kanto|Route 18",
-      "Kanto|Route 19",
-      "Kanto|Route 2",
-      "Kanto|Route 20",
-      "Kanto|Route 21",
-      "Kanto|Route 23",
-      "Kanto|Route 24",
-      "Kanto|Route 25",
-      "Kanto|Route 3",
-      "Kanto|Route 4",
-      "Kanto|Route 6",
-      "Kanto|Route 7",
-      "Kanto|Route 8",
-      "Kanto|Route 9",
-      "Kanto|Seafoam Islands"
-     ],
-     "bulbapedia": [
-      "Kanto|Route 1",
-      "Kanto|Route 10",
-      "Kanto|Route 11",
-      "Kanto|Route 12",
-      "Kanto|Route 13",
-      "Kanto|Route 14",
-      "Kanto|Route 15",
-      "Kanto|Route 16",
-      "Kanto|Route 17",
-      "Kanto|Route 18",
-      "Kanto|Route 19",
-      "Kanto|Route 2",
-      "Kanto|Route 21",
-      "Kanto|Route 22",
-      "Kanto|Route 23",
-      "Kanto|Route 24",
-      "Kanto|Route 25",
-      "Kanto|Route 3",
-      "Kanto|Route 4",
-      "Kanto|Route 6",
-      "Kanto|Route 7",
-      "Kanto|Route 8",
-      "Kanto|Route 9",
-      "Kanto|Seafoam Islands"
-     ],
-     "serebii": [
-      "Kanto|Route 1",
-      "Kanto|Route 10",
-      "Kanto|Route 11",
-      "Kanto|Route 12",
-      "Kanto|Route 13",
-      "Kanto|Route 14",
-      "Kanto|Route 15",
-      "Kanto|Route 16",
-      "Kanto|Route 17",
-      "Kanto|Route 18",
-      "Kanto|Route 19",
-      "Kanto|Route 2",
-      "Kanto|Route 20",
-      "Kanto|Route 21",
-      "Kanto|Route 22",
-      "Kanto|Route 23",
-      "Kanto|Route 24",
-      "Kanto|Route 25",
-      "Kanto|Route 3",
-      "Kanto|Route 4",
-      "Kanto|Route 6",
-      "Kanto|Route 7",
-      "Kanto|Route 8",
-      "Kanto|Route 9",
-      "Kanto|Seafoam Islands"
-     ],
-     "errorsExtra": [],
-     "errorsMissing": [
-      "Kanto|Route 11",
-      "Kanto|Route 22"
-     ],
-     "disputed": []
-    },
-    {
-     "version": "lets-go-pikachu",
-     "ours": [
-      "Kanto|Route 1",
-      "Kanto|Route 10",
-      "Kanto|Route 12",
-      "Kanto|Route 13",
-      "Kanto|Route 14",
-      "Kanto|Route 15",
-      "Kanto|Route 16",
-      "Kanto|Route 17",
-      "Kanto|Route 18",
-      "Kanto|Route 19",
-      "Kanto|Route 2",
-      "Kanto|Route 20",
-      "Kanto|Route 21",
-      "Kanto|Route 23",
-      "Kanto|Route 24",
-      "Kanto|Route 25",
-      "Kanto|Route 3",
-      "Kanto|Route 4",
-      "Kanto|Route 6",
-      "Kanto|Route 7",
-      "Kanto|Route 8",
-      "Kanto|Route 9",
-      "Kanto|Seafoam Islands"
-     ],
-     "bulbapedia": [
-      "Kanto|Route 1",
-      "Kanto|Route 10",
-      "Kanto|Route 11",
-      "Kanto|Route 12",
-      "Kanto|Route 13",
-      "Kanto|Route 14",
-      "Kanto|Route 15",
-      "Kanto|Route 16",
-      "Kanto|Route 17",
-      "Kanto|Route 18",
-      "Kanto|Route 19",
-      "Kanto|Route 2",
-      "Kanto|Route 21",
-      "Kanto|Route 22",
-      "Kanto|Route 23",
-      "Kanto|Route 24",
-      "Kanto|Route 25",
-      "Kanto|Route 3",
-      "Kanto|Route 4",
-      "Kanto|Route 6",
-      "Kanto|Route 7",
-      "Kanto|Route 8",
-      "Kanto|Route 9",
-      "Kanto|Seafoam Islands"
-     ],
-     "serebii": [
-      "Kanto|Route 1",
-      "Kanto|Route 10",
-      "Kanto|Route 11",
-      "Kanto|Route 12",
-      "Kanto|Route 13",
-      "Kanto|Route 14",
-      "Kanto|Route 15",
-      "Kanto|Route 16",
-      "Kanto|Route 17",
-      "Kanto|Route 18",
-      "Kanto|Route 19",
-      "Kanto|Route 2",
-      "Kanto|Route 20",
-      "Kanto|Route 21",
-      "Kanto|Route 22",
-      "Kanto|Route 23",
-      "Kanto|Route 24",
-      "Kanto|Route 25",
-      "Kanto|Route 3",
-      "Kanto|Route 4",
-      "Kanto|Route 6",
-      "Kanto|Route 7",
-      "Kanto|Route 8",
-      "Kanto|Route 9",
-      "Kanto|Seafoam Islands"
-     ],
-     "errorsExtra": [],
-     "errorsMissing": [
-      "Kanto|Route 11",
-      "Kanto|Route 22"
-     ],
-     "disputed": []
-    },
-    {
-     "version": "red",
-     "ours": [
-      "Kanto|Seafoam Islands"
-     ],
-     "bulbapedia": [
-      "Kanto|Seafoam Islands"
-     ],
-     "serebii": [
-      "Kanto|Seafoam Islands"
-     ],
-     "errorsExtra": [],
-     "errorsMissing": [],
-     "disputed": []
-    },
-    {
-     "version": "scarlet",
-     "ours": [
-      "Paldea|Glaseado Mountain"
-     ],
-     "bulbapedia": [
-      "Paldea|Glaseado Mountain"
-     ],
-     "serebii": [],
-     "errorsExtra": [],
-     "errorsMissing": [],
-     "disputed": []
-    },
-    {
-     "version": "shining-pearl",
-     "ours": [
-      "Sinnoh|Route 221"
-     ],
-     "bulbapedia": [
-      "Sinnoh|Route 221"
-     ],
-     "serebii": [
-      "Sinnoh|Route 221"
-     ],
-     "errorsExtra": [],
-     "errorsMissing": [],
-     "disputed": []
-    },
-    {
-     "version": "soulsilver",
-     "ours": [
-      "Kanto|Seafoam Islands"
-     ],
-     "bulbapedia": [
-      "Kanto|Seafoam Islands"
-     ],
-     "serebii": [
-      "Kanto|Seafoam Islands"
-     ],
-     "errorsExtra": [],
-     "errorsMissing": [],
-     "disputed": []
-    },
-    {
-     "version": "violet",
-     "ours": [
-      "Paldea|Glaseado Mountain"
-     ],
-     "bulbapedia": [
-      "Paldea|Glaseado Mountain"
-     ],
-     "serebii": [],
-     "errorsExtra": [],
-     "errorsMissing": [],
-     "disputed": []
-    },
-    {
-     "version": "x",
-     "ours": [
-      "Kalos|Sea Spirit's Den"
-     ],
-     "bulbapedia": [
-      "Kalos|Sea Spirit's Den"
-     ],
-     "serebii": [],
-     "errorsExtra": [],
-     "errorsMissing": [],
-     "disputed": []
-    },
-    {
-     "version": "y",
-     "ours": [
-      "Kalos|Sea Spirit's Den"
-     ],
-     "bulbapedia": [
-      "Kalos|Sea Spirit's Den"
-     ],
-     "serebii": [],
-     "errorsExtra": [],
-     "errorsMissing": [],
-     "disputed": []
-    },
-    {
-     "version": "yellow",
-     "ours": [
-      "Kanto|Seafoam Islands"
-     ],
-     "bulbapedia": [
-      "Kanto|Seafoam Islands"
-     ],
-     "serebii": [
-      "Kanto|Seafoam Islands"
-     ],
-     "errorsExtra": [],
-     "errorsMissing": [],
-     "disputed": []
-    }
-   ],
-   "ok": false
-  },
-  {
-   "id": "146",
-   "name": "Moltres",
    "places": 28,
    "games": [
     {
      "version": "blue",
      "ours": [
+      "Kanto|Seafoam Islands"
+     ],
+     "bulbapedia": [
+      "Kanto|Seafoam Islands"
+     ],
+     "serebii": [
+      "Kanto|Seafoam Islands"
+     ],
+     "errorsExtra": [],
+     "errorsMissing": [],
+     "disputed": []
+    },
+    {
+     "version": "firered",
+     "ours": [
+      "Kanto|Seafoam Islands"
+     ],
+     "bulbapedia": [
+      "Kanto|Seafoam Islands"
+     ],
+     "serebii": [
+      "Kanto|Seafoam Islands"
+     ],
+     "errorsExtra": [],
+     "errorsMissing": [],
+     "disputed": []
+    },
+    {
+     "version": "heartgold",
+     "ours": [
+      "Kanto|Seafoam Islands"
+     ],
+     "bulbapedia": [
+      "Kanto|Seafoam Islands"
+     ],
+     "serebii": [
+      "Kanto|Seafoam Islands"
+     ],
+     "errorsExtra": [],
+     "errorsMissing": [],
+     "disputed": []
+    },
+    {
+     "version": "leafgreen",
+     "ours": [
+      "Kanto|Seafoam Islands"
+     ],
+     "bulbapedia": [
+      "Kanto|Seafoam Islands"
+     ],
+     "serebii": [
+      "Kanto|Seafoam Islands"
+     ],
+     "errorsExtra": [],
+     "errorsMissing": [],
+     "disputed": []
+    },
+    {
+     "version": "lets-go-eevee",
+     "ours": [
+      "Kanto|Route 1",
+      "Kanto|Route 10",
+      "Kanto|Route 11",
+      "Kanto|Route 12",
+      "Kanto|Route 13",
+      "Kanto|Route 14",
+      "Kanto|Route 15",
+      "Kanto|Route 16",
+      "Kanto|Route 17",
+      "Kanto|Route 18",
+      "Kanto|Route 19",
+      "Kanto|Route 2",
+      "Kanto|Route 20",
+      "Kanto|Route 21",
+      "Kanto|Route 22",
+      "Kanto|Route 23",
+      "Kanto|Route 24",
+      "Kanto|Route 25",
+      "Kanto|Route 3",
+      "Kanto|Route 4",
+      "Kanto|Route 6",
+      "Kanto|Route 7",
+      "Kanto|Route 8",
+      "Kanto|Route 9",
+      "Kanto|Seafoam Islands"
+     ],
+     "bulbapedia": [
+      "Kanto|Route 1",
+      "Kanto|Route 10",
+      "Kanto|Route 11",
+      "Kanto|Route 12",
+      "Kanto|Route 13",
+      "Kanto|Route 14",
+      "Kanto|Route 15",
+      "Kanto|Route 16",
+      "Kanto|Route 17",
+      "Kanto|Route 18",
+      "Kanto|Route 19",
+      "Kanto|Route 2",
+      "Kanto|Route 21",
+      "Kanto|Route 22",
+      "Kanto|Route 23",
+      "Kanto|Route 24",
+      "Kanto|Route 25",
+      "Kanto|Route 3",
+      "Kanto|Route 4",
+      "Kanto|Route 6",
+      "Kanto|Route 7",
+      "Kanto|Route 8",
+      "Kanto|Route 9",
+      "Kanto|Seafoam Islands"
+     ],
+     "serebii": [
+      "Kanto|Route 1",
+      "Kanto|Route 10",
+      "Kanto|Route 11",
+      "Kanto|Route 12",
+      "Kanto|Route 13",
+      "Kanto|Route 14",
+      "Kanto|Route 15",
+      "Kanto|Route 16",
+      "Kanto|Route 17",
+      "Kanto|Route 18",
+      "Kanto|Route 19",
+      "Kanto|Route 2",
+      "Kanto|Route 20",
+      "Kanto|Route 21",
+      "Kanto|Route 22",
+      "Kanto|Route 23",
+      "Kanto|Route 24",
+      "Kanto|Route 25",
+      "Kanto|Route 3",
+      "Kanto|Route 4",
+      "Kanto|Route 6",
+      "Kanto|Route 7",
+      "Kanto|Route 8",
+      "Kanto|Route 9",
+      "Kanto|Seafoam Islands"
+     ],
+     "errorsExtra": [],
+     "errorsMissing": [],
+     "disputed": []
+    },
+    {
+     "version": "lets-go-pikachu",
+     "ours": [
+      "Kanto|Route 1",
+      "Kanto|Route 10",
+      "Kanto|Route 11",
+      "Kanto|Route 12",
+      "Kanto|Route 13",
+      "Kanto|Route 14",
+      "Kanto|Route 15",
+      "Kanto|Route 16",
+      "Kanto|Route 17",
+      "Kanto|Route 18",
+      "Kanto|Route 19",
+      "Kanto|Route 2",
+      "Kanto|Route 20",
+      "Kanto|Route 21",
+      "Kanto|Route 22",
+      "Kanto|Route 23",
+      "Kanto|Route 24",
+      "Kanto|Route 25",
+      "Kanto|Route 3",
+      "Kanto|Route 4",
+      "Kanto|Route 6",
+      "Kanto|Route 7",
+      "Kanto|Route 8",
+      "Kanto|Route 9",
+      "Kanto|Seafoam Islands"
+     ],
+     "bulbapedia": [
+      "Kanto|Route 1",
+      "Kanto|Route 10",
+      "Kanto|Route 11",
+      "Kanto|Route 12",
+      "Kanto|Route 13",
+      "Kanto|Route 14",
+      "Kanto|Route 15",
+      "Kanto|Route 16",
+      "Kanto|Route 17",
+      "Kanto|Route 18",
+      "Kanto|Route 19",
+      "Kanto|Route 2",
+      "Kanto|Route 21",
+      "Kanto|Route 22",
+      "Kanto|Route 23",
+      "Kanto|Route 24",
+      "Kanto|Route 25",
+      "Kanto|Route 3",
+      "Kanto|Route 4",
+      "Kanto|Route 6",
+      "Kanto|Route 7",
+      "Kanto|Route 8",
+      "Kanto|Route 9",
+      "Kanto|Seafoam Islands"
+     ],
+     "serebii": [
+      "Kanto|Route 1",
+      "Kanto|Route 10",
+      "Kanto|Route 11",
+      "Kanto|Route 12",
+      "Kanto|Route 13",
+      "Kanto|Route 14",
+      "Kanto|Route 15",
+      "Kanto|Route 16",
+      "Kanto|Route 17",
+      "Kanto|Route 18",
+      "Kanto|Route 19",
+      "Kanto|Route 2",
+      "Kanto|Route 20",
+      "Kanto|Route 21",
+      "Kanto|Route 22",
+      "Kanto|Route 23",
+      "Kanto|Route 24",
+      "Kanto|Route 25",
+      "Kanto|Route 3",
+      "Kanto|Route 4",
+      "Kanto|Route 6",
+      "Kanto|Route 7",
+      "Kanto|Route 8",
+      "Kanto|Route 9",
+      "Kanto|Seafoam Islands"
+     ],
+     "errorsExtra": [],
+     "errorsMissing": [],
+     "disputed": []
+    },
+    {
+     "version": "red",
+     "ours": [
+      "Kanto|Seafoam Islands"
+     ],
+     "bulbapedia": [
+      "Kanto|Seafoam Islands"
+     ],
+     "serebii": [
+      "Kanto|Seafoam Islands"
+     ],
+     "errorsExtra": [],
+     "errorsMissing": [],
+     "disputed": []
+    },
+    {
+     "version": "scarlet",
+     "ours": [
+      "Paldea|Glaseado Mountain"
+     ],
+     "bulbapedia": [
+      "Paldea|Glaseado Mountain"
+     ],
+     "serebii": [],
+     "errorsExtra": [],
+     "errorsMissing": [],
+     "disputed": []
+    },
+    {
+     "version": "shining-pearl",
+     "ours": [
+      "Sinnoh|Route 221"
+     ],
+     "bulbapedia": [
+      "Sinnoh|Route 221"
+     ],
+     "serebii": [
+      "Sinnoh|Route 221"
+     ],
+     "errorsExtra": [],
+     "errorsMissing": [],
+     "disputed": []
+    },
+    {
+     "version": "soulsilver",
+     "ours": [
+      "Kanto|Seafoam Islands"
+     ],
+     "bulbapedia": [
+      "Kanto|Seafoam Islands"
+     ],
+     "serebii": [
+      "Kanto|Seafoam Islands"
+     ],
+     "errorsExtra": [],
+     "errorsMissing": [],
+     "disputed": []
+    },
+    {
+     "version": "violet",
+     "ours": [
+      "Paldea|Glaseado Mountain"
+     ],
+     "bulbapedia": [
+      "Paldea|Glaseado Mountain"
+     ],
+     "serebii": [],
+     "errorsExtra": [],
+     "errorsMissing": [],
+     "disputed": []
+    },
+    {
+     "version": "x",
+     "ours": [
+      "Kalos|Sea Spirit's Den"
+     ],
+     "bulbapedia": [
+      "Kalos|Sea Spirit's Den"
+     ],
+     "serebii": [],
+     "errorsExtra": [],
+     "errorsMissing": [],
+     "disputed": []
+    },
+    {
+     "version": "y",
+     "ours": [
+      "Kalos|Sea Spirit's Den"
+     ],
+     "bulbapedia": [
+      "Kalos|Sea Spirit's Den"
+     ],
+     "serebii": [],
+     "errorsExtra": [],
+     "errorsMissing": [],
+     "disputed": []
+    },
+    {
+     "version": "yellow",
+     "ours": [
+      "Kanto|Seafoam Islands"
+     ],
+     "bulbapedia": [
+      "Kanto|Seafoam Islands"
+     ],
+     "serebii": [
+      "Kanto|Seafoam Islands"
+     ],
+     "errorsExtra": [],
+     "errorsMissing": [],
+     "disputed": []
+    }
+   ],
+   "ok": true
+  },
+  {
+   "id": "146",
+   "name": "Moltres",
+   "places": 30,
+   "games": [
+    {
+     "version": "blue",
+     "ours": [
       "Kanto|Victory Road"
      ],
      "bulbapedia": [
@@ -3376,6 +3374,7 @@
      "ours": [
       "Kanto|Route 1",
       "Kanto|Route 10",
+      "Kanto|Route 11",
       "Kanto|Route 12",
       "Kanto|Route 13",
       "Kanto|Route 14",
@@ -3387,9 +3386,11 @@
       "Kanto|Route 2",
       "Kanto|Route 20",
       "Kanto|Route 21",
+      "Kanto|Route 22",
       "Kanto|Route 23",
       "Kanto|Route 24",
       "Kanto|Route 25",
+      "Kanto|Route 3",
       "Kanto|Route 4",
       "Kanto|Route 6",
       "Kanto|Route 7",
@@ -3451,11 +3452,7 @@
       "Kanto|Victory Road"
      ],
      "errorsExtra": [],
-     "errorsMissing": [
-      "Kanto|Route 3",
-      "Kanto|Route 11",
-      "Kanto|Route 22"
-     ],
+     "errorsMissing": [],
      "disputed": []
     },
     {
@@ -3463,6 +3460,7 @@
      "ours": [
       "Kanto|Route 1",
       "Kanto|Route 10",
+      "Kanto|Route 11",
       "Kanto|Route 12",
       "Kanto|Route 13",
       "Kanto|Route 14",
@@ -3474,6 +3472,7 @@
       "Kanto|Route 2",
       "Kanto|Route 20",
       "Kanto|Route 21",
+      "Kanto|Route 22",
       "Kanto|Route 23",
       "Kanto|Route 24",
       "Kanto|Route 25",
@@ -3539,10 +3538,7 @@
       "Kanto|Victory Road"
      ],
      "errorsExtra": [],
-     "errorsMissing": [
-      "Kanto|Route 11",
-      "Kanto|Route 22"
-     ],
+     "errorsMissing": [],
      "disputed": []
     },
     {
@@ -3658,7 +3654,7 @@
      "disputed": []
     }
    ],
-   "ok": false
+   "ok": true
   },
   {
    "id": "155",
@@ -4459,7 +4455,9 @@
      "bulbapedia": [
       "Johto|Bell Tower"
      ],
-     "serebii": [],
+     "serebii": [
+      "Johto|Bell Tower"
+     ],
      "errorsExtra": [],
      "errorsMissing": [],
      "disputed": []
@@ -4485,7 +4483,9 @@
      "bulbapedia": [
       "Johto|Bell Tower"
      ],
-     "serebii": [],
+     "serebii": [
+      "Johto|Bell Tower"
+     ],
      "errorsExtra": [],
      "errorsMissing": [],
      "disputed": []
@@ -4556,7 +4556,9 @@
      "bulbapedia": [
       "Johto|Bell Tower"
      ],
-     "serebii": [],
+     "serebii": [
+      "Johto|Bell Tower"
+     ],
      "errorsExtra": [],
      "errorsMissing": [],
      "disputed": []
@@ -6073,7 +6075,7 @@
   {
    "id": "390",
    "name": "Chimchar",
-   "places": 2,
+   "places": 1,
    "games": [
     {
      "version": "alpha-sapphire",
@@ -6104,8 +6106,7 @@
     {
      "version": "scarlet",
      "ours": [
-      "Blueberry Academy|Polar Biome",
-      "Kitakami|Reveler's Road"
+      "Blueberry Academy|Polar Biome"
      ],
      "bulbapedia": [
       "Blueberry Academy|Polar Biome"
@@ -6113,17 +6114,14 @@
      "serebii": [
       "Blueberry Academy|Polar Biome"
      ],
-     "errorsExtra": [
-      "Kitakami|Reveler's Road"
-     ],
+     "errorsExtra": [],
      "errorsMissing": [],
      "disputed": []
     },
     {
      "version": "violet",
      "ours": [
-      "Blueberry Academy|Polar Biome",
-      "Kitakami|Reveler's Road"
+      "Blueberry Academy|Polar Biome"
      ],
      "bulbapedia": [
       "Blueberry Academy|Polar Biome"
@@ -6131,19 +6129,17 @@
      "serebii": [
       "Blueberry Academy|Polar Biome"
      ],
-     "errorsExtra": [
-      "Kitakami|Reveler's Road"
-     ],
+     "errorsExtra": [],
      "errorsMissing": [],
      "disputed": []
     }
    ],
-   "ok": false
+   "ok": true
   },
   {
    "id": "393",
    "name": "Piplup",
-   "places": 2,
+   "places": 1,
    "games": [
     {
      "version": "alpha-sapphire",
@@ -6174,8 +6170,7 @@
     {
      "version": "scarlet",
      "ours": [
-      "Blueberry Academy|Polar Biome",
-      "Kitakami|Reveler's Road"
+      "Blueberry Academy|Polar Biome"
      ],
      "bulbapedia": [
       "Blueberry Academy|Polar Biome"
@@ -6183,17 +6178,14 @@
      "serebii": [
       "Blueberry Academy|Polar Biome"
      ],
-     "errorsExtra": [
-      "Kitakami|Reveler's Road"
-     ],
+     "errorsExtra": [],
      "errorsMissing": [],
      "disputed": []
     },
     {
      "version": "violet",
      "ours": [
-      "Blueberry Academy|Polar Biome",
-      "Kitakami|Reveler's Road"
+      "Blueberry Academy|Polar Biome"
      ],
      "bulbapedia": [
       "Blueberry Academy|Polar Biome"
@@ -6201,14 +6193,12 @@
      "serebii": [
       "Blueberry Academy|Polar Biome"
      ],
-     "errorsExtra": [
-      "Kitakami|Reveler's Road"
-     ],
+     "errorsExtra": [],
      "errorsMissing": [],
      "disputed": []
     }
    ],
-   "ok": false
+   "ok": true
   },
   {
    "id": "398",
@@ -11888,6 +11878,7 @@
       "Galar|Glimwood Tangle",
       "Galar|Hammerlocke Hills",
       "Galar|Lake of Outrage",
+      "Galar|Motostoke Outskirts",
       "Galar|Rolling Fields",
       "Galar|Stony Wilderness"
      ],
@@ -11926,9 +11917,7 @@
       "Galar|Stony Wilderness"
      ],
      "errorsExtra": [],
-     "errorsMissing": [
-      "Galar|Motostoke Outskirts"
-     ],
+     "errorsMissing": [],
      "disputed": []
     },
     {
@@ -11953,7 +11942,7 @@
      "disputed": []
     }
    ],
-   "ok": false
+   "ok": true
   },
   {
    "id": "869",
@@ -11967,9 +11956,6 @@
       "Galar|Lake of Outrage"
      ],
      "bulbapedia": [
-      "Crown Tundra|Ballimere Lake",
-      "Crown Tundra|Giant's Bed",
-      "Crown Tundra|Old Cemetery",
       "Galar|Bridge Field",
       "Galar|Lake of Outrage"
      ],
@@ -11977,31 +11963,6 @@
       "Crown Tundra|Ballimere Lake",
       "Crown Tundra|Giant's Bed",
       "Crown Tundra|Old Cemetery",
-      "Galar|Bridge Field",
-      "Galar|Lake of Outrage"
-     ],
-     "errorsExtra": [],
-     "errorsMissing": [
-      "Crown Tundra|Giant's Bed",
-      "Crown Tundra|Old Cemetery",
-      "Crown Tundra|Ballimere Lake"
-     ],
-     "disputed": []
-    },
-    {
-     "version": "sword",
-     "ours": [
-      "Galar|Bridge Field",
-      "Galar|Lake of Outrage"
-     ],
-     "bulbapedia": [
-      "Crown Tundra|Ballimere Lake",
-      "Crown Tundra|Giant's Bed",
-      "Crown Tundra|Old Cemetery",
-      "Galar|Bridge Field",
-      "Galar|Lake of Outrage"
-     ],
-     "serebii": [
       "Galar|Bridge Field",
       "Galar|Lake of Outrage"
      ],
@@ -12012,9 +11973,27 @@
       "Crown Tundra|Old Cemetery",
       "Crown Tundra|Ballimere Lake"
      ]
+    },
+    {
+     "version": "sword",
+     "ours": [
+      "Galar|Bridge Field",
+      "Galar|Lake of Outrage"
+     ],
+     "bulbapedia": [
+      "Galar|Bridge Field",
+      "Galar|Lake of Outrage"
+     ],
+     "serebii": [
+      "Galar|Bridge Field",
+      "Galar|Lake of Outrage"
+     ],
+     "errorsExtra": [],
+     "errorsMissing": [],
+     "disputed": []
     }
    ],
-   "ok": false
+   "ok": true
   },
   {
    "id": "877",

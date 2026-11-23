@@ -1,7 +1,7 @@
 /**
  * Compare a hand-checked sample with the table.
  *
- *   npx tsx scripts/hunt/verify-manual.ts <sample.json> <sources.json>
+ *   npx tsx scripts/hunt/verify-manual.ts <sample.json> <sources.json> [serebii-detail.json]
  *
  * <sources.json> is what someone read on Bulbapedia and Serebii for each sampled Pokémon,
  * without seeing the table: { "<name>": { "<game>": { "bulbapedia": [...], "serebii": [...] } } }.
@@ -14,7 +14,9 @@ import geo from "../../src/data/geo.json";
 import { buildPlaceIndex, isOffMap, matchPlace } from "./match";
 const idx = buildPlaceIndex((geo as any).world.locations);
 const G: Record<string, string[]> = { "Red": ["red"], "Blue": ["blue"], "Yellow": ["yellow"], "Gold": ["gold"], "Silver": ["silver"], "Crystal": ["crystal"], "Ruby": ["ruby"], "Sapphire": ["sapphire"], "Emerald": ["emerald"], "FireRed": ["firered"], "LeafGreen": ["leafgreen"], "Diamond": ["diamond"], "Pearl": ["pearl"], "Platinum": ["platinum"], "HeartGold": ["heartgold"], "SoulSilver": ["soulsilver"], "Black": ["black"], "White": ["white"], "Black 2": ["black-2"], "White 2": ["white-2"], "X": ["x"], "Y": ["y"], "Omega Ruby": ["omega-ruby"], "Alpha Sapphire": ["alpha-sapphire"], "Sun": ["sun"], "Moon": ["moon"], "Ultra Sun": ["ultra-sun"], "Ultra Moon": ["ultra-moon"], "Let's Go Pikachu": ["lets-go-pikachu"], "Let's Go, Pikachu!": ["lets-go-pikachu"], "Let's Go Eevee": ["lets-go-eevee"], "Let's Go, Eevee!": ["lets-go-eevee"], "Sword": ["sword"], "Shield": ["shield"], "Brilliant Diamond": ["brilliant-diamond"], "Shining Pearl": ["shining-pearl"], "Scarlet": ["scarlet"], "Violet": ["violet"], "Legends: Z-A": ["legends-za"] };
-const [sampleFile, sourcesFile] = process.argv.slice(2);
+const [sampleFile, sourcesFile, detailFile] = process.argv.slice(2);
+/** Optional: Serebii's detailed location pages (scripts/hunt/serebii-detail.ts), which list spots its summary pages leave out. */
+const detail: Record<string, Record<string, string[]>> = detailFile ? JSON.parse(fs.readFileSync(detailFile, "utf8")) : {};
 const man: Record<string, any> = JSON.parse(fs.readFileSync(sourcesFile, "utf8"));
 const ids = JSON.parse(fs.readFileSync(sampleFile, "utf8"));
 const A = new Map((answers as any).entries.map((e: any) => [e.id, e]));
@@ -40,6 +42,13 @@ for (const id of ids) {
           const pm = matchPlace(idx, n, v);
           if (pm.kind === "place") (t as any)[k].add(pm.key); else t.un.push(`${k}:${raw}`);
         }
+    }
+  }
+  for (const [v, names] of Object.entries(detail[String(e.dex)] ?? {})) {
+    if (e.form || !theirs.has(v)) continue;
+    for (const n of names) {
+      const pm = matchPlace(idx, n, v);
+      if (pm.kind === "place") theirs.get(v)!.s.add(pm.key);
     }
   }
   const lines: string[] = [];

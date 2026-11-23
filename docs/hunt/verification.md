@@ -45,9 +45,9 @@ A place only one source lists is "disputed": it's recorded, not counted as an er
 | 2 | Automated (`sample-2`) | 160 | 3 (1.9%) | Registeel in White 2 (needs Black 2's Iron Key); Coalossal and Hatterene: Gigantamax-only dens counted by my checker |
 | 3 | Automated (`sample-3`), after all fixes | 160 | **0** | – |
 | 1 again | By hand, after all fixes | 40 | **0** | – |
-| 2 | By hand (`sample-manual-2`), fresh | 40 | see below | – |
+| 2 | By hand (`sample-manual-2`), fresh, after all fixes | 40 | **0** | 4 flags, none an error. Dragonite on Let's Go's Route 20, and Wobbuffet and Vanillish in Giant's Mirror, are on Serebii's detailed location pages, which the helpers didn't read (they read the summary page). Gastly's Gold / Silver / Crystal "Tin Tower" is the map's Bell Tower under its old name (alias added) |
 
-Rounds 1 and 2 were re-run after the fixes, and both now come back with zero errors too. Between the rounds, 560 of the 568 entries have been checked at least once.
+Rounds 1 and 2 were re-run after the fixes, and both now come back with zero errors too. The hand comparison also reads Serebii's detailed location pages (`verify-manual.ts <sample> <sources> <serebii-detail.json>`). Between the rounds, 560 of the 568 entries have been checked at least once.
 
 ## Root causes and fixes
 

@@ -9886,22 +9886,9 @@
      "errorsExtra": [],
      "errorsMissing": [],
      "disputed": []
-    },
-    {
-     "version": "white-2",
-     "ours": [
-      "Unova|Clay Tunnel"
-     ],
-     "bulbapedia": [],
-     "serebii": [],
-     "errorsExtra": [
-      "Unova|Clay Tunnel"
-     ],
-     "errorsMissing": [],
-     "disputed": []
     }
    ],
-   "ok": false
+   "ok": true
   },
   {
    "id": "380",
@@ -19476,12 +19463,8 @@
      ],
      "bulbapedia": [
       "Crown Tundra|Ballimere Lake",
-      "Crown Tundra|Frigid Sea",
       "Crown Tundra|Frostpoint Field",
-      "Crown Tundra|Giant's Bed",
       "Crown Tundra|Lakeside Cave",
-      "Crown Tundra|Slippery Slope",
-      "Crown Tundra|Snowslide Slope",
       "Galar|Dusty Bowl",
       "Galar|Giant's Cap",
       "Galar|Giant's Seat",
@@ -19505,13 +19488,13 @@
       "Galar|Stony Wilderness"
      ],
      "errorsExtra": [],
-     "errorsMissing": [
+     "errorsMissing": [],
+     "disputed": [
       "Crown Tundra|Slippery Slope",
       "Crown Tundra|Giant's Bed",
       "Crown Tundra|Snowslide Slope",
       "Crown Tundra|Frigid Sea"
-     ],
-     "disputed": []
+     ]
     },
     {
      "version": "sword",
@@ -19528,12 +19511,8 @@
      ],
      "bulbapedia": [
       "Crown Tundra|Ballimere Lake",
-      "Crown Tundra|Frigid Sea",
       "Crown Tundra|Frostpoint Field",
-      "Crown Tundra|Giant's Bed",
       "Crown Tundra|Lakeside Cave",
-      "Crown Tundra|Slippery Slope",
-      "Crown Tundra|Snowslide Slope",
       "Galar|Dusty Bowl",
       "Galar|Giant's Cap",
       "Galar|Giant's Seat",
@@ -19557,16 +19536,16 @@
       "Galar|Stony Wilderness"
      ],
      "errorsExtra": [],
-     "errorsMissing": [
+     "errorsMissing": [],
+     "disputed": [
       "Crown Tundra|Slippery Slope",
       "Crown Tundra|Giant's Bed",
       "Crown Tundra|Snowslide Slope",
       "Crown Tundra|Frigid Sea"
-     ],
-     "disputed": []
+     ]
     }
    ],
-   "ok": false
+   "ok": true
   },
   {
    "id": "857",
@@ -19789,7 +19768,6 @@
       "Crown Tundra|Frigid Sea",
       "Crown Tundra|Frostpoint Field",
       "Crown Tundra|Giant's Bed",
-      "Crown Tundra|Snowslide Slope",
       "Galar|Bridge Field",
       "Galar|Hammerlocke Hills",
       "Galar|Lake of Outrage",
@@ -19811,10 +19789,10 @@
       "Galar|Watchtower Ruins"
      ],
      "errorsExtra": [],
-     "errorsMissing": [
+     "errorsMissing": [],
+     "disputed": [
       "Crown Tundra|Snowslide Slope"
-     ],
-     "disputed": []
+     ]
     },
     {
      "version": "sword",
@@ -19835,7 +19813,6 @@
       "Crown Tundra|Frigid Sea",
       "Crown Tundra|Frostpoint Field",
       "Crown Tundra|Giant's Bed",
-      "Crown Tundra|Snowslide Slope",
       "Galar|Bridge Field",
       "Galar|Hammerlocke Hills",
       "Galar|Lake of Outrage",
@@ -19857,10 +19834,10 @@
       "Galar|Watchtower Ruins"
      ],
      "errorsExtra": [],
-     "errorsMissing": [
+     "errorsMissing": [],
+     "disputed": [
       "Crown Tundra|Snowslide Slope"
-     ],
-     "disputed": []
+     ]
     },
     {
      "version": "violet",
@@ -19878,7 +19855,7 @@
      "disputed": []
     }
    ],
-   "ok": false
+   "ok": true
   },
   {
    "id": "860",
