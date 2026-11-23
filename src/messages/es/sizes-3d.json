@@ -2,6 +2,12 @@
   "open3d": "Abrir la vista 3D",
   "lining": "Poniéndolos en fila…",
   "building": "Construyendo Ciudad Luminalia…",
+  "buildingNimbasa": "Construyendo Ciudad Mayólica…",
+  "city": "Ciudad",
+  "cities": {
+    "lumiose": "Ciudad Luminalia",
+    "nimbasa": "Ciudad Mayólica"
+  },
   "back": "Volver a la Pokédex",
   "orderBy": "Ordenar por",
   "direction": "Dirección",
@@ -78,6 +84,7 @@
       "recording": "Grabando"
     },
     "subtitle": "COMPARATIVA DE TAMAÑOS · CIUDAD LUMINALIA",
+    "subtitleNimbasa": "COMPARATIVA DE TAMAÑOS · CIUDAD MAYÓLICA",
     "endLine": "Crea tu propio vídeo de tamaños"
   }
 }

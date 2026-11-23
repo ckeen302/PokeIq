@@ -17,6 +17,7 @@ import { Crowd, type CrowdInstance } from "./crowd";
 import { sharedUniforms } from "./shaders";
 import { SKY, createSky } from "./sky";
 import { createTrace, traceBare, type Drawn, type TraceFigure } from "./trace";
+import type { CityKit, CityWorld } from "./kit";
 
 /**
  * The 3D scene behind /pokedex/sizes and its videos: a sunny Lumiose City
@@ -90,6 +91,8 @@ export interface SceneOptions {
   far?: FarManifest;
   /** The WebGL context was lost and the scene must be built again (see watchContext). */
   onContextGone?: () => void;
+  /** Another city (its kit, loaded on its own): Lumiose City, the scene's own, when none is given. */
+  city?: CityKit;
 }
 
 export interface Placed {
@@ -211,6 +214,8 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   let Q = QUALITY[quality];
   const Q0 = Q;
   const exporting = opts.quality === "export";
+  const kit = opts.city;
+  const look = kit?.look;
   const canvas = document.createElement("canvas");
   canvas.style.display = "block";
   canvas.style.width = "100%";
@@ -219,7 +224,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   const ctxWatch = watchContext(canvas, opts.onContextGone);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: "high-performance", stencil: false });
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 0.97;
+  renderer.toneMappingExposure = look?.exposure ?? 0.97;
   renderer.shadowMap.enabled = opts.quality !== "draft";
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   // Shadow maps are redrawn when the camera or the figures change, and only every few frames while all is still (see render).
@@ -242,11 +247,12 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   // faces and the facades behind them are lit, shadows fall back and to the right. The line only ever turns
   // away from the camera (round the tower), so the sun stays in front of every figure.
   const az = yawToCam - Math.PI * 0.25;
-  const sunDir = new THREE.Vector3(Math.sin(az) * Math.cos(SUN_ELEVATION), Math.sin(SUN_ELEVATION), Math.cos(az) * Math.cos(SUN_ELEVATION)).normalize();
-  const sky = createSky(sunDir);
+  const sunEl = look?.sunElevation ?? SUN_ELEVATION;
+  const sunDir = new THREE.Vector3(Math.sin(az) * Math.cos(sunEl), Math.sin(sunEl), Math.cos(az) * Math.cos(sunEl)).normalize();
+  const sky = kit ? kit.createSky(sunDir) : createSky(sunDir);
   scene.add(sky.mesh);
-  scene.fog = new THREE.FogExp2(SKY.haze.clone().convertSRGBToLinear(), 0.0003);
-  const hemi = new THREE.HemisphereLight(0xdcE8ff, 0xc2ab88, 0.38);
+  scene.fog = new THREE.FogExp2(look ? new THREE.Color(look.fog.color).convertSRGBToLinear() : SKY.haze.clone().convertSRGBToLinear(), look?.fog.density ?? 0.0003);
+  const hemi = look ? new THREE.HemisphereLight(look.hemi.sky, look.hemi.ground, look.hemi.intensity) : new THREE.HemisphereLight(0xdcE8ff, 0xc2ab88, 0.38);
   scene.add(hemi);
 
   // Camera state (read by the shadow cascades' split callback).
@@ -261,7 +267,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     mode: "custom",
     shadowMapSize: Q.shadow,
     lightDirection: sunDir.clone().negate(),
-    lightIntensity: 3.75,
+    lightIntensity: look?.sunIntensity ?? 3.75,
     lightNear: 1,
     lightFar: 6000,
     lightMargin: 120,
@@ -275,7 +281,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   });
   csm.fade = true;
   // Warm late-morning sun.
-  for (const l of csm.lights) l.color.set("#fff0d9");
+  for (const l of csm.lights) l.color.set(look?.sunColor ?? "#fff0d9");
   const csmMaterials = new Set<THREE.Material>();
   const setupMat = (m: THREE.Material) => {
     if (csmMaterials.has(m) || !(m as THREE.MeshStandardMaterial).isMeshStandardMaterial) return;
@@ -297,7 +303,13 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   const rest = staged ? new Promise<void>((r) => { releaseRest = r; setTimeout(r, 7000); }) : Promise.resolve();
   let envEase = 0;
   let gone = false;
-  const envReady = rest.then(() => (gone ? Promise.reject(new Error("disposed")) : new RGBELoader().loadAsync(opts.urls.hdr))).then((hdr) => {
+  // Another city makes its own environment on the spot (no sky map to fetch).
+  if (kit) {
+    envTex = kit.environment(renderer, pmrem, sunDir);
+    scene.environment = envTex;
+    scene.environmentIntensity = look!.envIntensity;
+  }
+  const envReady = kit ? Promise.resolve() : rest.then(() => (gone ? Promise.reject(new Error("disposed")) : new RGBELoader().loadAsync(opts.urls.hdr))).then((hdr) => {
     // Find the HDRI's sun (brightest texel) to turn the map so it agrees with ours.
     const img = hdr.image as unknown as { data: Uint16Array | Float32Array; width: number; height: number };
     let best = 0, bi = 0;
@@ -363,7 +375,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   // ---- World.
   const worldGroup = new THREE.Group();
   scene.add(worldGroup);
-  let city: City | null = null, props: Props | null = null, tower: Tower | null = null;
+  let city: City | null = null, props: Props | null = null, tower: Tower | null = null, world: CityWorld | null = null;
   let plan: WorldPlan = planWorld([]);
   const halo = (() => {
     const c = document.createElement("canvas");
@@ -434,7 +446,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     if (companion) dropSlot(companion);
     companion = null;
     const placed = layoutLine(items.map((i) => ({ m: i.m, length: i.length, bw: i.box[2], bh: i.box[3] })));
-    plan = planWorld(placed, opts.ring);
+    plan = planWorld(placed, opts.ring, kit?.landmark);
     // The ten-storey building stands a step off the giants' ring on the camera's side (on the paving short of the parterres): on the ring itself it would hide Prism Tower's legs and the giant after it.
     const aside = (item: SceneItem, i: number) => (item.ref === "building" && plan.ring && placed[i].x > plan.ring.s0 ? -Math.min(22, placed[i].w * 1.6) : 0);
     slots = items.map((item, i) => newSlot({ ...item, w: placed[i].w, h: placed[i].h }, i, placed[i].x, placed[i].w, placed[i].h, aside(item, i)));
@@ -466,7 +478,16 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     city?.dispose();
     props?.dispose();
     tower?.dispose();
+    world?.dispose();
+    city = props = tower = world = null;
     worldGroup.clear();
+    if (kit) {
+      world = kit.build(plan, shared, { pbr }, { facadeScale: Q.facadeScale, anisotropy: maxAniso, blocks: Q.blocks, trees: Q.trees, coverage: Q.msaa > 0 });
+      worldGroup.add(world.group);
+      setupTree(worldGroup);
+      if (traceBare()) worldGroup.visible = false;
+      return;
+    }
     city = buildCity(plan, shared, { pbr }, { facadeScale: Q.facadeScale, anisotropy: maxAniso, blocks: Q.blocks });
     props = buildProps(plan, shared, { bark: pbr("bark_brown_02", 1.5) }, { trees: Q.trees, coverage: Q.msaa > 0 });
     tower = buildTower(plan.tower.x, plan.tower.z);
@@ -595,6 +616,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     // Above the rooftops (the giants, the finale) nothing is in the way: cutting would only punch holes in the roofs.
     shared.uniforms.uCutR.value = view.rise > 0.25 || camera.position.y > ROOF_Y + 2 ? 0 : Math.max(0.25, Math.max(view.h, 0.6 * view.d * 0.6) * 0.55);
     city?.update(camera.position, csm.maxFar * 1.3);
+    world?.update(camera.position, csm.maxFar * 1.3);
   }
 
   // ---- What is on screen, and how big.
@@ -882,7 +904,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   }
 
   // ---- Post.
-  const postFor = (q: QualitySpec) => { const p = createPost(renderer, scene, camera, W, H, { msaa: q.msaa, ao: q.ao, aoSamples: q.aoSamples, dof: q.dof, dofSamples: q.dofSamples, bloom: q.bloom }); p.setSize(W, H); return p; };
+  const postFor = (q: QualitySpec) => { const p = createPost(renderer, scene, camera, W, H, { msaa: q.msaa, ao: q.ao, aoSamples: q.aoSamples, dof: q.dof, dofSamples: q.dofSamples, bloom: q.bloom, look: look?.post }); p.setSize(W, H); return p; };
   let post: Post = postFor(Q);
 
   function setQuality(next: Quality) {
@@ -897,6 +919,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     relief.setCoverage(coverage);
     crowd.setCoverage(coverage);
     props?.setCoverage(coverage);
+    world?.setCoverage(coverage);
     shadowsDirty = true;
     if (warmed && (warmed.mat as THREE.MeshStandardMaterial).alphaToCoverage !== coverage) {
       // The figures' other shader variant, compiled now rather than when the next one streams in.
@@ -949,6 +972,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
       s.update?.(t, dt);
     }
     if (tower) tower.tick(t);
+    world?.tick(t);
     // A gentle depth of field: macro-like for the smallest, the city still readable behind.
     const aperture = Math.min(7, 3.6 * Math.pow(1.6 / Math.max(0.15, focusD), 0.45)) * (H / 900);
     post.frame(camera, focusD, Math.max(1.2, aperture), Math.min(4, Math.max(0.03, focusD * 0.09)));
@@ -1055,6 +1079,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
       city?.dispose();
       props?.dispose();
       tower?.dispose();
+      world?.dispose();
       sky.dispose();
       post.dispose();
       csm.dispose();

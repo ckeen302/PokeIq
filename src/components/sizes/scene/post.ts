@@ -26,6 +26,8 @@ export interface PostSettings {
   dof: boolean;
   dofSamples: 16 | 32;
   bloom: boolean;
+  /** A city's own finish (Lumiose's by default): bloom strength, radius and threshold, and the grade. */
+  look?: { bloom: [number, number, number]; saturation: number; warmth: number; vignette: number };
 }
 
 const POISSON_32 = [
@@ -172,6 +174,11 @@ class FinishPass extends Pass {
     this.half?.setSize(Math.max(1, Math.ceil(w / 2)), Math.max(1, Math.ceil(h / 2)));
     this.gather?.uniforms.resolution.value.set(w, h);
   }
+  grade(saturation: number, warmth: number, vignette: number) {
+    this.finish.uniforms.saturation.value = saturation;
+    this.finish.uniforms.warmth.value = warmth;
+    this.finish.uniforms.vignette.value = vignette;
+  }
   lens(near: number, far: number, focus: number, aperture: number, maxBlur: number) {
     for (const m of this.gather ? [this.gather, this.finish] : [this.finish]) {
       m.uniforms.cameraNear.value = near;
@@ -258,11 +265,13 @@ export function createPost(renderer: THREE.WebGLRenderer, scene: THREE.Scene, ca
     composer.addPass(gtao);
   }
   const finish = new FinishPass(depth, s.dof, s.dofSamples);
+  if (s.look) finish.grade(s.look.saturation, s.look.warmth, s.look.vignette);
   composer.addPass(finish);
   let bloom: UnrealBloomPass | null = null;
   if (s.bloom) {
     // The pass already works from half size down; giving it half the frame puts its first level at a quarter of the pixels.
-    bloom = new UnrealBloomPass(new THREE.Vector2(Math.max(1, w / 2), Math.max(1, h / 2)), 0.32, 0.55, 1.15);
+    const [strength, radius, threshold] = s.look?.bloom ?? [0.32, 0.55, 1.15];
+    bloom = new UnrealBloomPass(new THREE.Vector2(Math.max(1, w / 2), Math.max(1, h / 2)), strength, radius, threshold);
     scrubBloom(bloom);
     const sizeBloom = bloom.setSize.bind(bloom);
     bloom.setSize = (bw: number, bh: number) => sizeBloom(Math.max(2, Math.round(bw / 2)), Math.max(2, Math.round(bh / 2)));

@@ -2,6 +2,12 @@
   "open3d": "Ouvrir la vue 3D",
   "lining": "Mise en file…",
   "building": "Construction d’Illumis…",
+  "buildingNimbasa": "Construction de Méanville…",
+  "city": "Ville",
+  "cities": {
+    "lumiose": "Illumis",
+    "nimbasa": "Méanville"
+  },
   "back": "Retour au Pokédex",
   "orderBy": "Trier par",
   "direction": "Sens",
@@ -78,6 +84,7 @@
       "recording": "Enregistrement"
     },
     "subtitle": "COMPARAISON DE TAILLES · ILLUMIS",
+    "subtitleNimbasa": "COMPARAISON DE TAILLES · MÉANVILLE",
     "endLine": "Crée ta propre vidéo de tailles"
   }
 }

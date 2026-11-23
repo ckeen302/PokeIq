@@ -7,6 +7,7 @@ import { Clapperboard, Download, Loader2, Share2, X } from "lucide-react";
 import { DEFAULT_LENGTH, MIN_SECONDS, VIDEO_H, VIDEO_LENGTHS, VIDEO_W } from "@/lib/sizes/export";
 import { PRESETS, presetLineup } from "@/lib/sizes/presets";
 import { isDefaultOrder, orderSegment, type Order } from "@/lib/sizes/order";
+import { DEFAULT_CITY, citySlug, type CityId } from "@/lib/sizes/cities";
 import type { SizeItem } from "@/lib/sizes/types";
 import type { Quality } from "./scene";
 import type { RecordStage } from "./record";
@@ -72,7 +73,7 @@ function qualityFromUrl(): Quality | undefined {
  * is smooth however slow the device; progress shows and it can be
  * cancelled. Then download it, or share the file straight to an app.
  */
-export default function MakeVideo({ items, line, order, hook, slug, lineLabel, trainer, onRecording, onClose }: {
+export default function MakeVideo({ items, line, order, hook, slug, lineLabel, trainer, city = DEFAULT_CITY, onRecording, onClose }: {
   items: SizeItem[];
   line: SizeItem[];
   /** The page's order: the line (and any preset picked here) stands in it. */
@@ -81,6 +82,8 @@ export default function MakeVideo({ items, line, order, hook, slug, lineLabel, t
   slug: string;
   lineLabel: string;
   trainer: TrainerConfig | null;
+  /** The city the page stands its line in: the video is made there too. */
+  city?: CityId;
   onRecording(on: boolean): void;
   onClose(): void;
 }) {
@@ -121,7 +124,7 @@ export default function MakeVideo({ items, line, order, hook, slug, lineLabel, t
     setPhase({ kind: "recording", p: 0, label: "scene" });
     onRecording(true);
     try {
-      const { recordVideo } = await import("./record");
+      const [{ recordVideo }, kit] = await Promise.all([import("./record"), city === "nimbasa" ? import("./scene/nimbasa").then((m) => m.NIMBASA) : Promise.resolve(undefined)]);
       const font = getComputedStyle(document.documentElement).getPropertyValue("--font-display").trim() || "sans-serif";
       await document.fonts?.load(`700 40px ${font}`).catch(() => undefined);
       const res = await recordVideo({
@@ -129,8 +132,10 @@ export default function MakeVideo({ items, line, order, hook, slug, lineLabel, t
         order,
         seconds,
         hook: chosen.hook,
-        slug: chosen.slug,
+        slug: citySlug(chosen.slug, city),
         urls: SCENE_URLS,
+        city: kit,
+        ...(kit ? { subtitle: t("v.subtitleNimbasa") } : {}),
         trainer: trainerFigure(trainer),
         font,
         music: MUSIC_URL,
@@ -150,7 +155,7 @@ export default function MakeVideo({ items, line, order, hook, slug, lineLabel, t
         },
       });
       setPhase({ kind: "done", url: URL.createObjectURL(res.blob), blob: res.blob, name: res.name, type: res.type, seconds });
-      track("sizes_video", { lineup: chosen.slug, seconds, format: res.type });
+      track("sizes_video", { lineup: chosen.slug, seconds, format: res.type, city });
     } catch (e) {
       if ((e as Error)?.name === "AbortError") setPhase({ kind: "idle" });
       else setPhase({ kind: "error", message: e instanceof Error && t.locale === "en" ? e.message : t("v.failed") });

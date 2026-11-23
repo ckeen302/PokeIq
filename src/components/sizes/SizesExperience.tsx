@@ -17,6 +17,7 @@ import { FRICTION, RATE, ORBIT_PER_PX, TILT_PER_PX, ZOOM_MAX, ZOOM_MIN, ZOOM_STE
 import { stopCaption } from "@/lib/sizes/facts";
 import { HEIGHT_ORDER, ORDERS, framingFor, inOrder, isDefaultOrder, orderInfo, orderRange, orderTag, ringRuleFor, sameOrder, withOrder, type Order, type OrderDir, type OrderKey } from "@/lib/sizes/order";
 import { markIntroSeen, shouldAutoPlay } from "@/lib/sizes/intro";
+import { CITY_IDS, CITY_PARAM, DEFAULT_CITY, parseCity, setCityInUrl, withCity, type CityId } from "@/lib/sizes/cities";
 import type { View } from "@/lib/sizes/camera";
 import { badgeName, dexTag } from "@/lib/sizes/badges";
 import type { FutureView, Quality, SizesScene } from "./scene";
@@ -136,6 +137,10 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
   /** The other names each figure answers to in the search (English, rōmaji), in another language. */
   const altRef = useRef<Map<string, string[]> | undefined>(undefined);
   const [mode, setMode] = useState<Mode>("boot");
+  /** The city the line stands in (?city=nimbasa; Lumiose by default). */
+  const [city, setCity] = useState<CityId>(DEFAULT_CITY);
+  const cityRef = useRef(city);
+  cityRef.current = city;
   const [canGl, setCanGl] = useState(false);
   const [items, setItems] = useState<SizeItem[] | null>(null);
   const [ready, setReady] = useState(false);
@@ -246,6 +251,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
     const gl = webglOk();
     setCanGl(gl);
     const next: Mode = forced === "list" || (forced !== "3d" && reduce) || !gl ? "list" : "3d";
+    setCity(parseCity(params.get(CITY_PARAM)));
     setMode(next);
     setMutedState(isMuted());
     // ?vs= on any page opens that comparison.
@@ -458,14 +464,15 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
     if (mode !== "3d" || !items || !hostRef.current) return;
     let alive = true;
     const host = hostRef.current;
-    import("./scene").then(async ({ createSizesScene }) => {
+    // Another city's kit is its own chunk, fetched with the scene.
+    Promise.all([import("./scene"), city === "nimbasa" ? import("./scene/nimbasa").then((m) => m.NIMBASA) : Promise.resolve(undefined)]).then(async ([{ createSizesScene }, kit]) => {
       if (!alive) return;
       try {
         const pinned = qualityParam();
         qualityPinnedRef.current = pinned !== null;
         const q = pinned ?? initialQuality();
         // The human is built when it first comes near the camera: by then the player's own trainer has usually loaded.
-        const scene = createSizesScene(host, { quality: q, urls: SCENE_URLS, trainer: () => trainerFigure(trainerRef.current)(), onContextGone: () => alive && setSceneGen((g) => g + 1) });
+        const scene = createSizesScene(host, { quality: q, urls: SCENE_URLS, city: kit, trainer: () => trainerFigure(trainerRef.current)(), onContextGone: () => alive && setSceneGen((g) => g + 1) });
         sceneRef.current = scene;
         setQualityState(q);
         await scene.ready;
@@ -481,7 +488,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
       sceneRef.current = null;
       setReady(false);
     };
-  }, [mode, items, sceneGen]);
+  }, [mode, items, sceneGen, city]);
 
   // ---- The line: rebuilt when the lineup changes.
   useEffect(() => {
@@ -1057,7 +1064,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
   // ---- Lineups, comparisons and search.
   /** The address for a page of the line: it carries the order (?by=speed&dir=desc), so a shared link opens the same line. */
   const replaceUrl = (path: string, o: Order = orderRef.current) => {
-    try { history.replaceState(history.state, "", localUrl(withOrder(path, o))); } catch { /* ignore */ }
+    try { history.replaceState(history.state, "", localUrl(withCity(withOrder(path, o), cityRef.current))); } catch { /* ignore */ }
   };
 
   /** Order by: the same figures (those with a value in it), at their real sizes, in another order. The camera stays on the figure it frames when that one is in the new line. */
@@ -1080,6 +1087,15 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
     } catch { /* ignore */ }
   }, []);
   const orderCtx = useMemo(() => ({ order, setOrder }), [order, setOrder]);
+
+  /** Another city: the scene is built again there, the camera back on the figure it framed. The address carries it (?city=). */
+  const chooseCity = (next: CityId) => {
+    setPresetMenu(false);
+    if (next === cityRef.current) return;
+    pendingRef.current = focusKey ? { focus: focusKey } : null;
+    setCity(next);
+    try { history.replaceState(history.state, "", setCityInUrl(window.location.href, next)); } catch { /* ignore */ }
+  };
 
   const choosePreset = (id: string) => {
     setPresetMenu(false);
@@ -1258,6 +1274,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
           data-count={line.length}
           data-order={`${order.by}-${order.dir}`}
           data-recording={recording ? "1" : "0"}
+          data-city={city}
         >
           <div
             ref={hostRef}
@@ -1273,7 +1290,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
           {(!ready || (!shown && !hook)) && (
             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 text-white" aria-hidden data-testid="sizes-loading">
               <Scale className="h-8 w-8 animate-pulse text-[#ffd84a]" />
-              <div className="font-pixel text-[10px] uppercase tracking-[0.3em]">{ready ? t("lining") : t("building")}</div>
+              <div className="font-pixel text-[10px] uppercase tracking-[0.3em]">{ready ? t("lining") : city === "nimbasa" ? t("buildingNimbasa") : t("building")}</div>
             </div>
           )}
 
@@ -1333,6 +1350,24 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
                 </button>
                 {presetMenu && (
                   <div className="pointer-events-auto absolute left-0 top-11 max-h-[calc(100dvh-12rem)] w-72 max-w-[calc(100vw-4.5rem)] overflow-y-auto rounded-lg border border-white/15 bg-[#0b1226]/95 p-1 shadow-2xl backdrop-blur-xl" role="menu" data-testid="sizes-presets" data-sz-scroll>
+                    <div role="group" aria-label={t("city")} className="mb-1 border-b border-white/10 p-1 pb-2" data-testid="sizes-city-picker">
+                      <p className="px-2 pb-1.5 pt-1 font-pixel text-[9px] uppercase tracking-[0.18em] text-white/55">{t("city")}</p>
+                      <div className="grid grid-cols-2 gap-1 rounded-md bg-white/5 p-1">
+                        {CITY_IDS.map((c) => (
+                          <button
+                            key={c}
+                            type="button"
+                            role="menuitemradio"
+                            aria-checked={city === c}
+                            onClick={() => chooseCity(c)}
+                            className={cn("inline-flex h-9 items-center justify-center rounded px-1.5 font-display text-[11px] font-semibold uppercase tracking-wide text-white/75 hover:text-white", city === c && "bg-[#ffd84a] text-[#1a1205] hover:text-[#1a1205]")}
+                            data-testid={`sizes-city-${c}`}
+                          >
+                            {t(`cities.${c}`)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                     {PRESETS.map((p) => (
                       <button
                         key={p.id}
@@ -1533,6 +1568,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
                 slug={`${comparing ? spec.vs.join("-vs-") : spec.preset}${isDefaultOrder(order) ? "" : `-by-${orderInfo(order).param}${order.dir === "desc" ? "-desc" : ""}`}`}
                 lineLabel={lineTitle}
                 trainer={myTrainer}
+                city={city}
                 onRecording={setRecording}
                 onClose={() => setVideoOpen(false)}
               />
