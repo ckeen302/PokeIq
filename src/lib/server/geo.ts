@@ -22,6 +22,7 @@ import { shotBlur } from "./geo-blur";
 import { isValidDailyDate } from "@/lib/daily";
 import { geoWeekOf, geoWeeklyEndsAt, geoWeeklyMap, isGeoWeek } from "@/lib/geo-weekly";
 import { publicName } from "@/lib/name-filter";
+import { GEO_DEFAULT_TIMER } from "@/lib/geo-settings";
 import { decryptJson, deriveSeed, encryptJson, hmac, randomId, signToken, verifyToken } from "./crypto";
 import {
   GEO_FILTER_MIN_PLACES,
@@ -105,10 +106,15 @@ const DATA = data as unknown as { storageBase?: string; world: WorldData };
 const STATE_TTL_MS = 3 * 60 * 60 * 1000;
 /**
  * The Timer setting is kept on the server too: a guess this long after the
- * round's clock has run out scores nothing. The grace covers the picture
- * loading (the browser's clock starts once it's decoded) and the network.
+ * round's clock has run out scores nothing. The server's clock for a round
+ * starts when it's dealt (the start, or the last guess), and the browser's
+ * only once the next picture is on screen: the grace covers the round result
+ * the player reads in between (the next picture is fetched during it, so
+ * Next shows it at once), a game got ready ahead of its Play click, the
+ * picture loading and the network. Generous on purpose, so a player who
+ * lingers on a result is never marked late; it still bounds a round.
  */
-export const GEO_TIMER_GRACE_MS = 10_000;
+export const GEO_TIMER_GRACE_MS = 3 * 60_000;
 /** GeoGuessr's curve: 5000 · e^(−10 · d / D), with D the map diagonal. */
 const FALLOFF = GEO_FALLOFF;
 /** Streak mode on a region's map: a pin this close to the place keeps the streak alive. */
@@ -985,7 +991,9 @@ export function startGeo(
   const plan = given ? opts.plan : seal(spec.kind === "game" ? rounds : rounds.slice(0, 1));
   const now = Date.now();
   const state: GeoState = { v: 4, sid: randomId(), spec, seed, startedAt: now, name: opts.name, log: [], plan, roundAt: now };
-  if (opts.timer && opts.timer > 0) state.timer = opts.timer;
+  // A streak is never timed; the Daily and the Weekly always play GeoGuessr's 1:30.
+  const timer = streak ? 0 : spec.daily || spec.weekly ? GEO_DEFAULT_TIMER : (opts.timer ?? 0);
+  if (timer > 0) state.timer = timer;
   if (streak && seen) state.seen = packSeen(seen);
   // With a timer, the next picture isn't given out early (it could be studied while the clock runs).
   return { token: signToken("geo", state), round: publicRound(spec, 0, rounds[0], state.timer ? undefined : rounds[1]) };

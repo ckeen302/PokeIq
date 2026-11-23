@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import { Settings, X } from "lucide-react";
 import { Popover } from "@/components/ui/popover";
 import { GEO_ROUND_OPTIONS, type GeoRounds } from "@/lib/geo-types";
-import { GEO_TIMERS, type GeoPlaySettings } from "@/lib/geo-settings";
+import { GEO_TIMERS, timerLabel, type GeoPlaySettings, type GeoTimer } from "@/lib/geo-settings";
 import { GEO_DIFFICULTIES, type GeoDifficulty } from "@/lib/geo-difficulty";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
@@ -14,16 +14,15 @@ import { setGuessrMusicPrefs } from "@/lib/guessr-music-prefs";
 import { useGuessrMusicPrefs } from "@/lib/use-guessr-music";
 
 /**
- * PokéGuessr's play settings (No move, Zoomed, a round timer), in a popover
+ * PokéGuessr's play settings (No move, Zoomed; the round timer has its own picker), in a popover
  * from a Settings button, as on Pokédle. They only make a game harder.
  */
 export function GeoSettingsButton({ value, onChange }: { value: GeoPlaySettings; onChange: (next: GeoPlaySettings) => void }) {
   const t = useT(geoSolo);
   const [open, setOpen] = useState(false);
   const close = useCallback(() => setOpen(false), []);
-  // As geoSettingsBadge writes it ("Zoomed · 30s"), in the page's language.
-  const parts = [value.zoomed && t("settings.zoomed"), value.timer > 0 && t("settings.seconds", { n: value.timer })].filter(Boolean);
-  const badge = parts.length ? parts.join(" · ") : null;
+  // As geoSettingsBadge writes it ("Zoomed"), in the page's language. The timer has its own picker in the setup.
+  const badge = value.zoomed ? t("settings.zoomed") : null;
   const set = (patch: Partial<GeoPlaySettings>) => onChange({ ...value, ...patch });
   return (
     <div className="relative flex items-center gap-2">
@@ -60,28 +59,6 @@ export function GeoSettingsButton({ value, onChange }: { value: GeoPlaySettings;
           onChange={() => set({ zoomed: !value.zoomed })}
           testId="geo-zoomed"
         />
-        <div className="space-y-1.5 border-t pt-3">
-          <p className="text-sm font-semibold">{t("settings.timer")}</p>
-          <div className="flex gap-1.5" role="radiogroup" aria-label={t("settings.timer")}>
-            {GEO_TIMERS.map((s) => (
-              <button
-                key={s}
-                type="button"
-                role="radio"
-                aria-checked={value.timer === s}
-                onClick={() => set({ timer: s })}
-                data-testid={`geo-timer-${s}`}
-                className={cn(
-                  "flex-1 rounded-md border px-2 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-colors",
-                  value.timer === s ? "border-screen bg-screen/15 text-foreground" : "bg-card text-muted-foreground hover:border-screen/50 hover:text-foreground"
-                )}
-              >
-                {s ? t("settings.seconds", { n: s }) : t("settings.off")}
-              </button>
-            ))}
-          </div>
-          <p className="text-xs text-muted-foreground">{t("settings.timerBlurb")}</p>
-        </div>
         <p className="border-t pt-3 text-xs text-muted-foreground">{t("settings.harder")}</p>
         <MusicSettings />
       </Popover>
@@ -182,6 +159,38 @@ export function RoundsPicker({
           </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+/**
+ * The round timer for a practice game: Off, 1:00, 1:30 (GeoGuessr's, the
+ * default) or 3:00. The Daily and the Weekly always play 1:30.
+ */
+export function TimerPicker({ value, onChange }: { value: GeoTimer; onChange: (next: GeoTimer) => void }) {
+  const t = useT(geoSolo);
+  return (
+    <div className="space-y-1.5">
+      <p className="hud-label">{t("settings.timer")}</p>
+      <div className="flex gap-1.5" role="radiogroup" aria-label={t("settings.timer")}>
+        {GEO_TIMERS.map((s) => (
+          <button
+            key={s}
+            type="button"
+            role="radio"
+            aria-checked={value === s}
+            onClick={() => onChange(s)}
+            data-testid={`geo-timer-${s}`}
+            className={cn(
+              "min-w-12 rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider tabular-nums transition-colors",
+              value === s ? "border-screen bg-screen/15 text-foreground" : "bg-card text-muted-foreground hover:border-screen/50 hover:text-foreground"
+            )}
+          >
+            {s ? timerLabel(s) : t("settings.off")}
+          </button>
+        ))}
+      </div>
+      <p className="max-w-xs text-xs text-muted-foreground" data-testid="geo-timer-blurb">{t("settings.timerBlurb")}</p>
     </div>
   );
 }
