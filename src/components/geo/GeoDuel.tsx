@@ -10,6 +10,7 @@ import type { DuelEmote } from "@/lib/pvp-types";
 import { DUEL_COUNTDOWN_FLASH_MS, countdownAfterGuess } from "@/lib/geo-duel-rules";
 import type { GeoRegionInfo } from "@/lib/geo-types";
 import { play, unlockAudio } from "@/lib/sound";
+import { useGuessrMusic } from "@/lib/use-guessr-music";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { useDuel } from "@/components/duel/use-duel";
 import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, MatchedNote, SEAT_COLORS, SeatDot, seconds } from "@/components/duel/DuelParts";
@@ -61,6 +62,7 @@ export interface GeoDuelProps {
 }
 
 export function GeoDuel({ code, regions, names }: GeoDuelProps) {
+  useGuessrMusic();
   const router = useRouter();
   const t = useT(duelNs);
   const fmt = fmtIn(t.locale);

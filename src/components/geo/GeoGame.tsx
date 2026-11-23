@@ -10,6 +10,7 @@ import { dailyNumber } from "@/lib/daily";
 import { useToday } from "@/lib/use-today";
 import { recordGeoGame, useProgress, type BadgeDef } from "@/lib/progress";
 import { play, unlockAudio } from "@/lib/sound";
+import { useGuessrMusic } from "@/lib/use-guessr-music";
 import { guessrSquare } from "@/lib/share";
 import type { GeoDifficulty } from "@/lib/geo-difficulty";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -235,6 +236,7 @@ export interface GeoGameProps {
 const tileImage = (src: string) => (src === WORLD_MAP_SRC ? WORLD_THUMB : src);
 
 export function GeoGame(props: GeoGameProps) {
+  useGuessrMusic();
   // The player's achievements and mastery (the hub's You section), read again after each game for the toasts.
   const { progress, fresh, refresh, dismiss } = useGeoProgress();
   return (

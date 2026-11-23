@@ -191,6 +191,9 @@
     "off": "No",
     "timerBlurb": "Cuando se acaba el tiempo, tu chincheta cuenta donde esté. Sin chincheta, 0 puntos (y se acaba la racha).",
     "harder": "Solo hacen la partida más difícil, así que tus puntuaciones siguen contando en las clasificaciones.",
+    "music": "Música",
+    "musicBlurb": "Música de fondo tranquila mientras juegas. Si silencias el sitio, también se apaga.",
+    "musicVolume": "Volumen de la música",
     "rounds": "Rondas",
     "difficulty": "Dificultad",
     "practice": "Práctica: Normal mantiene las clasificaciones."

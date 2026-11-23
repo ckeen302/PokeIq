@@ -191,6 +191,9 @@
     "off": "Off",
     "timerBlurb": "When time runs out, your pin is guessed where it is. No pin scores 0 (and ends a streak).",
     "harder": "These only make a game harder, so your scores still count on the leaderboards.",
+    "music": "Music",
+    "musicBlurb": "Calm background music while you play. Muting the site turns it off too.",
+    "musicVolume": "Music volume",
     "rounds": "Rounds",
     "difficulty": "Difficulty",
     "practice": "Practice: Normal keeps the leaderboards."

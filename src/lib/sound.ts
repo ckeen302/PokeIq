@@ -95,6 +95,35 @@ export function unlockAudio(): void {
   }
 }
 
+/**
+ * The site's shared AudioContext for players that schedule their own nodes
+ * (PokéGuessr's music). Null while muted, on the server, or before the page
+ * has had a user gesture: a context made without one starts suspended and the
+ * browser warns about it. Call it from inside a tap or key handler on iOS.
+ */
+export function liveAudio(): AudioContext | null {
+  if (isMuted()) return null;
+  if (typeof navigator !== "undefined") {
+    const activation = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation;
+    if (activation && !activation.hasBeenActive) return null;
+  }
+  try {
+    return context();
+  } catch {
+    return null;
+  }
+}
+
+const effectListeners = new Set<(kind: SoundKind) => void>();
+
+/** Calls `listener` as each sound effect plays (PokéGuessr's music ducks under them). */
+export function onEffect(listener: (kind: SoundKind) => void): () => void {
+  effectListeners.add(listener);
+  return () => {
+    effectListeners.delete(listener);
+  };
+}
+
 function tone(
   audio: AudioContext,
   frequency: number,
@@ -161,6 +190,7 @@ function playUnsafe(kind: SoundKind): void {
   if (isMuted()) return;
   const audio = context();
   if (!audio) return;
+  effectListeners.forEach((l) => l(kind));
   const now = audio.currentTime;
   switch (kind) {
     case "correct":

@@ -191,6 +191,9 @@
     "off": "Non",
     "timerBlurb": "À la fin du temps, ton repère est validé là où il est. Sans repère, 0 point (et la série s'arrête).",
     "harder": "Ils ne font que rendre la partie plus difficile : tes scores comptent toujours pour les classements.",
+    "music": "Musique",
+    "musicBlurb": "Une musique de fond calme pendant que tu joues. Couper le son du site l'arrête aussi.",
+    "musicVolume": "Volume de la musique",
     "rounds": "Manches",
     "difficulty": "Difficulté",
     "practice": "Entraînement : seul Normal compte pour les classements."
