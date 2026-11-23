@@ -12,7 +12,7 @@ import type { Translator } from "@/i18n/catalog";
 import { formatNumber } from "@/i18n/format";
 import geoNs from "@/messages/geo";
 import huntNs from "@/messages/hunt";
-import { ExitButton, Notch, ScoreTracker } from "@/components/geo/GameShell";
+import { ExitButton, Notch, ScoreTracker, usePhone } from "@/components/geo/GameShell";
 import { GeoMap, type HuntMapLink, type HuntMapSpot } from "@/components/geo/GeoMap";
 import { huntPinColor } from "./map-marks";
 import { HUNT_ROUND_MAX, formKey, useHuntRegionName, verdictOf } from "./hunt-ui";
@@ -63,6 +63,7 @@ export function HuntRevealPanel(p: HuntRevealPanelProps) {
   const regionName = useHuntRegionName();
   const fmt = (n: number) => formatNumber(n, t.locale);
   const reduced = useReducedMotion();
+  const phone = usePhone();
   const [skipped, setSkipped] = useState(false);
   const instant = !!reduced || skipped;
   const { reveal } = p;
@@ -86,6 +87,14 @@ export function HuntRevealPanel(p: HuntRevealPanelProps) {
     setSkipped(true);
     setRunning(false);
   };
+  // Once it's all shown, Next has the focus (Space and Enter then press it), unless the player is already somewhere else.
+  const rootRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (running) return;
+    const a = document.activeElement;
+    if (a && a !== document.body && !rootRef.current?.contains(a)) return;
+    rootRef.current?.querySelector<HTMLElement>('[data-testid="hunt-next"]')?.focus({ preventScroll: true });
+  }, [running]);
 
   // Space or Enter: skip the sequence, then move on.
   const live = useRef({ running, onNext: p.onNext });
@@ -122,7 +131,7 @@ export function HuntRevealPanel(p: HuntRevealPanelProps) {
   // Without the map: the bar alone (HuntGame draws the rest).
   if (!p.region) {
     return (
-      <div className="border-t-4 border-[#a99cff] bg-[#1e1a3f]/95 text-white" data-testid="hunt-reveal">
+      <div ref={rootRef} className="border-t-4 border-[#a99cff] bg-[#1e1a3f]/95 text-white" data-testid="hunt-reveal">
         {bar}
         <SpotList {...{ reveal, order, foundRegions, regionDelay, after, regionName, t, g }} className="max-h-[30vh]" />
       </div>
@@ -132,11 +141,11 @@ export function HuntRevealPanel(p: HuntRevealPanelProps) {
   const form = p.round ? formKey(p.round.id) : null;
   const formTag = form && t.has(`forms.${form}`) ? t(`forms.${form}` as "forms.alola") : null;
   return (
-    <div className="relative flex h-full flex-col bg-[#0f0d1f] md:flex-row" data-testid="hunt-reveal" data-running={running ? "true" : undefined}>
+    <div ref={rootRef} className={cn("relative flex h-full bg-[#0f0d1f]", phone ? "flex-col" : "flex-row")} data-testid="hunt-reveal" data-running={running ? "true" : undefined}>
       {/* The Pokémon and where it really is (beside the map; under it on a phone). */}
-      <aside className="order-3 flex min-h-0 flex-col border-[#a99cff] bg-[#1e1a3f] text-white max-md:max-h-[32vh] max-md:flex-1 max-md:border-t md:order-none md:w-[clamp(15rem,22vw,20rem)] md:border-r-4">
+      <aside className={cn("flex min-h-0 flex-col border-[#a99cff] bg-[#1e1a3f] text-white", phone ? "order-3 max-h-[32vh] flex-1 border-t" : "w-[clamp(15rem,22vw,20rem)] border-r-4")}>
         {p.round && (
-          <div className="flex items-center gap-3 border-b border-white/10 p-3 max-md:hidden md:p-4">
+          <div className={cn("flex items-center gap-3 border-b border-white/10 p-4", phone && "hidden")}>
             {/* eslint-disable-next-line @next/next/no-img-element -- the round's art, already loaded */}
             <img src={p.round.art} alt="" className="h-14 w-14 shrink-0 object-contain" />
             <div className="min-w-0">
@@ -149,8 +158,8 @@ export function HuntRevealPanel(p: HuntRevealPanelProps) {
       </aside>
 
       {/* The map: every spot, every pin, every line. A tap skips the sequence. */}
-      <div className="relative order-1 min-h-0 flex-1 md:order-none" onPointerDown={running ? skip : undefined}>
-        <div className="absolute inset-0 md:bottom-[6.75rem]">
+      <div className={cn("relative min-h-0 flex-1", phone && "order-1")} onPointerDown={running ? skip : undefined}>
+        <div className="absolute inset-0" style={phone ? undefined : { bottom: "6.75rem" }}>
           <GeoMap region={p.region} spots={spots} links={links} fill controls={false} fit={{ delay: 0, duration: instant ? 0 : 700 }} />
         </div>
         {p.onExit && (
@@ -170,17 +179,17 @@ export function HuntRevealPanel(p: HuntRevealPanelProps) {
           </div>
         </Notch>
         {running && (
-          <button type="button" onClick={skip} className="absolute bottom-3 right-3 z-20 inline-flex h-10 items-center gap-1.5 rounded-md bg-black/60 px-3.5 font-display text-xs font-bold uppercase tracking-wider text-white backdrop-blur transition-colors hover:bg-black/80 md:bottom-[7.5rem]" data-testid="hunt-skip">
+          <button type="button" onClick={skip} className={cn("absolute right-3 z-20 inline-flex h-10 items-center gap-1.5 rounded-md bg-black/60 px-3.5 font-display text-xs font-bold uppercase tracking-wider text-white backdrop-blur transition-colors hover:bg-black/80", phone ? "bottom-3" : "bottom-[7.5rem]")} data-testid="hunt-skip">
             {t("reveal.skip")}
             <ChevronsRight className="h-4 w-4" aria-hidden />
           </button>
         )}
         {/* The bottom bar (computers), PokéGuessr's: the score, the regions found and Next. */}
-        <div className="absolute inset-x-0 bottom-0 z-20 hidden border-t-4 border-[#a99cff] bg-[#1e1a3f]/95 text-white shadow-[0_-12px_40px_rgba(0,0,0,0.5)] backdrop-blur md:block">{bar}</div>
+        {!phone && <div className="absolute inset-x-0 bottom-0 z-20 border-t-4 border-[#a99cff] bg-[#1e1a3f]/95 text-white shadow-[0_-12px_40px_rgba(0,0,0,0.5)] backdrop-blur">{bar}</div>}
       </div>
 
       {/* Phones: the bar under the map, the spots under it. */}
-      <div className="order-2 shrink-0 border-t-4 border-[#a99cff] bg-[#1e1a3f] text-white md:hidden">{bar}</div>
+      {phone && <div className="order-2 shrink-0 border-t-4 border-[#a99cff] bg-[#1e1a3f] text-white">{bar}</div>}
     </div>
   );
 }
@@ -276,7 +285,7 @@ function RevealBar(p: HuntRevealPanelProps & { shown: number; headline: string; 
       </div>
 
       <motion.div {...p.after(p.countAt)} className="flex min-w-0 flex-col items-center gap-1.5">
-        <span className={cn("inline-flex items-center gap-2 rounded-full border-2 border-[#a99cff] px-4 py-1.5 text-center font-display text-sm font-bold uppercase italic tracking-wide text-white shadow-lg", reveal.found > 0 ? "bg-[#4cbb17]" : "bg-[#4a3f9e]")} data-testid="hunt-found">
+        <span className={cn("inline-flex items-center gap-2 rounded-full border-2 border-[#a99cff] px-4 py-1.5 text-center font-display text-sm font-bold uppercase italic tracking-wide text-white shadow-lg", reveal.found > 0 ? "bg-[#4cbb17]" : "bg-[#4a3f9e]")} data-testid="hunt-found" role="status">
           {p.headline}
         </span>
         {reveal.pins.length > 1 && (
