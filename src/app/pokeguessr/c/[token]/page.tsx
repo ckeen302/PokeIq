@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const title = t("challenge.title", { who, score: formatNumber(challenge.score, t.locale) });
   const description = !map || map.id === WORLD_REGION ? t("challenge.world", { n }) : t("challenge.region", { n, map: localMap(serverT(geoNamesNs), map) });
   // A challenge link is an invite: kept out of search, its card the segment's challenge picture.
-  return inviteMetadata(title, description);
+  return inviteMetadata(title, description, `/pokeguessr/c/${encodeURIComponent((await params).token)}`);
 }
 
 export default async function GeoChallengePage({ params }: PageProps) {

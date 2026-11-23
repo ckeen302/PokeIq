@@ -32,6 +32,12 @@ describe("share payload and card", () => {
     expect(decodeShare(path)).toEqual(result);
     expect(path).not.toMatch(/[A-Z]/); // no names, no Pokémon
   });
+  it("keeps every level apart (Easy and Expert both start with e)", () => {
+    for (const difficulty of ["easy", "normal", "expert"] as const) expect(decodeShare(encodeShare({ ...result, difficulty }))).toEqual({ ...result, difficulty });
+    expect(encodeShare({ ...result, difficulty: "expert" })).toBe("pdk.n4.fx.gpbgyxypbx.q1834.k3");
+    // A link made before Expert had its own letter still opens (as Easy).
+    expect(decodeShare("pdk.n4.fe.gpbgyxypbx.q1834.k3")).toEqual({ ...result, difficulty: "easy" });
+  });
   it("rejects forged or malformed payloads", () => {
     for (const bad of ["pdk.fn.gpbgyxypb", "pdk.fn.gpbgyxypbxx", "pdk.fn.gpbgyxypbq", "pdk.fq.gpbgyxypbx", "pdk.n4.z2.fn.gpbgyxypbx", "pdk.fn"]) expect(decodeShare(bad)).toBeNull();
   });

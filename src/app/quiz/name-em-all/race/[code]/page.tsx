@@ -27,12 +27,13 @@ function raceLabel(category: string | undefined): string | undefined {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const url = `/quiz/name-em-all/race/${encodeURIComponent((await params).code)}`;
   const race = await findRace((await params).code);
   const t = serverT(neaPages);
   const label = raceLabel(race?.category);
   const about = label ? t("race.aboutIn", { label }) : t("race.about");
-  if (!race) return inviteMetadata(t("race.title"), about);
-  return inviteMetadata(t("race.invite", { name: race.players[0]?.name || t("race.trainer") }), about);
+  if (!race) return inviteMetadata(t("race.title"), about, url);
+  return inviteMetadata(t("race.invite", { name: race.players[0]?.name || t("race.trainer") }), about, url);
 }
 
 export default async function NameEmAllRacePage({ params }: PageProps) {
