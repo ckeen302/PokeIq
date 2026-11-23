@@ -27,7 +27,7 @@ export const NIMBASA: CityKit = {
     sunElevation: (36 * Math.PI) / 180,
     sunColor: "#e6e2ff",
     sunIntensity: 2.9,
-    hemi: { sky: "#7a6fd0", ground: "#6a4560", intensity: 0.62 },
+    hemi: { sky: "#7a6fd0", ground: "#7a5570", intensity: 0.85 },
     fog: { color: "#3a2a5e", density: 0.00036 },
     exposure: 1.02,
     envIntensity: 0.75,

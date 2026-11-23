@@ -15,8 +15,8 @@ import type { SkyHandle } from "../kit";
 export const NIGHT = {
   zenith: new THREE.Color("#0a0d2b"),
   mid: new THREE.Color("#251d5c"),
-  horizon: new THREE.Color("#a8457a"),
-  glow: new THREE.Color("#ff9a62"),
+  horizon: new THREE.Color("#7a4a92"),
+  glow: new THREE.Color("#e07a8a"),
   haze: new THREE.Color("#3a2a5e"),
   moon: new THREE.Color("#fdf3dc"),
 };
@@ -31,7 +31,7 @@ const SKY_GLSL = /* glsl */ `
     // City glow: strongest just over the horizon, warm at the very bottom.
     vec3 col = mix(horizon, mid, smoothstep(0.0, 0.22, h));
     col = mix(col, zenith, smoothstep(0.18, 0.75, h));
-    col = mix(col, glow, (1.0 - smoothstep(-0.01, 0.07, h)) * 0.55);
+    col = mix(col, glow, (1.0 - smoothstep(-0.01, 0.09, h)) * 0.4);
     col = mix(col, haze, smoothstep(0.02, -0.06, h));
     return col;
   }

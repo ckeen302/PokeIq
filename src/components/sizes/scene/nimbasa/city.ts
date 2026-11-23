@@ -349,8 +349,8 @@ export function buildNimbasaCity(plan: WorldPlan, shared: Shared, tex: CityTex, 
   const atlas = facadeAtlas(quality.facadeScale, quality.anisotropy);
   const towers = towerTexture(quality.anisotropy);
   own.push(atlas, towers);
-  const facade = new THREE.MeshStandardMaterial({ map: atlas.map, emissiveMap: atlas.emissive, emissive: "#ffffff", emissiveIntensity: 1.25, vertexColors: true, roughness: 0.72, metalness: 0.05 });
-  const tower = new THREE.MeshStandardMaterial({ map: towers.map, emissiveMap: towers.emissive, emissive: "#ffffff", emissiveIntensity: 1.1, vertexColors: true, roughness: 0.6, metalness: 0.1 });
+  const facade = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.5, 0.48, 0.58), map: atlas.map, emissiveMap: atlas.emissive, emissive: "#ffffff", emissiveIntensity: 1.25, vertexColors: true, roughness: 0.72, metalness: 0.05 });
+  const tower = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.3, 0.29, 0.38), map: towers.map, emissiveMap: towers.emissive, emissive: "#ffffff", emissiveIntensity: 0.95, vertexColors: true, roughness: 0.6, metalness: 0.1 });
   const roof = new THREE.MeshStandardMaterial({ color: "#3b3d4a", roughness: 0.9 });
   const trim = new THREE.MeshStandardMaterial({ color: "#e8e8ee", vertexColors: true, roughness: 0.6, metalness: 0.15 });
   const neon = new THREE.MeshBasicMaterial({ color: new THREE.Color(1, 1, 1).multiplyScalar(3.2), vertexColors: true, toneMapped: true });
@@ -401,6 +401,17 @@ export function buildNimbasaCity(plan: WorldPlan, shared: Shared, tex: CityTex, 
       if (Math.abs(z) < STREET.facade && x < C.x) continue;
       lamps.push({ x, z, h: 8 });
     }
+    // Inside the giants' ring (behind them from the camera, which stands outside it) and round the wheel's apron.
+    const rr = plan.ring?.r ?? Math.max(60, R - 120);
+    for (const lr of rr - 24 > 75 ? [rr - 24, 60] : [60]) {
+      const m = Math.round((Math.PI * 2 * lr) / 28);
+      for (let k = 0; k < m; k++) {
+        const a = (k / m) * Math.PI * 2;
+        const x = C.x + Math.cos(a) * lr, z = C.z + Math.sin(a) * lr;
+        if (Math.abs(z) < STREET.facade && x < C.x) continue;
+        lamps.push({ x, z, h: 8 });
+      }
+    }
     const postGeo = new THREE.CylinderGeometry(0.09, 0.13, 1, 6).translate(0, 0.5, 0);
     const armGeo = new THREE.BoxGeometry(1.4, 0.1, 0.1).translate(0.55, 0, 0);
     const headGeo = new THREE.SphereGeometry(0.34, 8, 6);
@@ -419,7 +430,7 @@ export function buildNimbasaCity(plan: WorldPlan, shared: Shared, tex: CityTex, 
       arms.setMatrixAt(i, m4.compose(p.set(l.x, l.h - 0.1, l.z), q.setFromAxisAngle(up, yaw), s.set(1, 1, 1)));
       const hx = l.x + Math.cos(yaw) * 1.2, hz = l.z - Math.sin(yaw) * 1.2;
       heads.setMatrixAt(i, m4.compose(p.set(hx, l.h - 0.35, hz), q.identity(), s.set(1, 1, 1)));
-      X.pools.push({ x: hx, z: hz, r: 7, color: new THREE.Color("#ffe0b0") });
+      X.pools.push({ x: hx, z: hz, r: 9, color: new THREE.Color("#ffe0b0") });
     });
     posts.castShadow = arms.castShadow = true;
     for (const m of [posts, arms, heads]) { m.computeBoundingSphere(); out.push(m); }
@@ -444,7 +455,7 @@ export function buildNimbasaCity(plan: WorldPlan, shared: Shared, tex: CityTex, 
   // ---- Pools of light (additive, on the ground).
   {
     const pt = poolTexture();
-    const pm = new THREE.MeshBasicMaterial({ map: pt, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.32, toneMapped: true });
+    const pm = new THREE.MeshBasicMaterial({ map: pt, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.38, toneMapped: true });
     pm.polygonOffset = true;
     pm.polygonOffsetFactor = -3;
     const pg = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
@@ -569,7 +580,7 @@ function buildGround(plan: WorldPlan, shared: Shared, tex: CityTex, quality: Cit
   const arc = (r0: number, r1: number, a0: number, a1: number, segs: number) => new THREE.RingGeometry(r0, r1, segs, 1, -a1, a1 - a0);
   // The plaza: patterned paving with neon-coloured inlays round its rim.
   flat(new THREE.CircleGeometry(R + STREET.facade - 10, 160), walk, -0.035, 3);
-  const plazaStone = mk("granite_tile", 2.3, { color: "#ece6f2", bright: 1.3 });
+  const plazaStone = mk("granite_tile", 2.3, { color: "#f2ecf6", bright: 1.6 });
   plazaPattern(plazaStone, new THREE.Vector2(cx, cz), R - 4, { entry: plan.districts[0]?.a0 ?? 0, colors: NEON.slice(0, 5).map((c) => new THREE.Color(c)) });
   flat(new THREE.CircleGeometry(R - 4, 160), plazaStone, -0.022, 2.3);
   flat(new THREE.RingGeometry(R - 1, R + 8.2, 240, 1), asphalt, -0.03, 3);
