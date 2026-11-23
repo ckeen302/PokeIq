@@ -288,7 +288,11 @@ function inspect() {
   }
 
   // Invisible text: a text colour too close to the solid background behind it (light mode on a dark-only colour, say).
-  const rgb = (s) => (s.match(/[\d.]+/g) ?? []).map(Number);
+  // "rgb(1, 2, 3)" or "color(srgb 0.1 0.2 0.3 / 0.5)" (what color-mix() and relative colours compute to) → [r, g, b, a] in 0..255.
+  const rgb = (s) => {
+    const n = (s.match(/[\d.]+/g) ?? []).map(Number);
+    return s.startsWith("color(srgb") ? [n[0] * 255, n[1] * 255, n[2] * 255, n[3] ?? 1] : n;
+  };
   const lum = ([r, g, b]) => {
     const f = (v) => ((v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
     return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
@@ -343,6 +347,8 @@ function inspect() {
       if (b.hasAttribute("popovertarget") || b.hasAttribute("commandfor")) continue;
       if (b.tagName === "BUTTON" && b.type !== "button" && b.form) continue;
       if (b.closest("summary,label")) continue;
+      if (document.getElementById(b.getAttribute("aria-describedby") ?? "")?.getAttribute("role") === "tooltip") continue; // shows a tooltip on hover and focus, by CSS
+      if (!reactProps(b)) continue; // built outside React (a 3D scene's cards, say): its listeners can't be seen from here
       let ok = false;
       for (let a = b, i = 0; a && i < 6; a = a.parentElement, i++) if (hasHandler(a)) { ok = true; break; }
       if (!ok && out.deadButtons.length < 12) out.deadButtons.push(desc(b));
@@ -429,13 +435,15 @@ async function visit(ctx, c, route, action) {
   p.on("console", (m) => {
     const t = m.text();
     if (IGNORE_CONSOLE.some((re) => re.test(t))) return;
+    // A failed load is listed with its URL under failed requests: the console's copy says less.
+    if (/^Failed to load resource/.test(t)) return;
     if (m.type() === "error" || (m.type() === "warning" && /hydrat|did not match|key prop|unique "key"/i.test(t))) f.console.push(`${m.type()}: ${t.slice(0, 300)}`);
   });
   p.on("pageerror", (e) => f.console.push(`pageerror: ${String(e.message ?? e).slice(0, 300)}`));
   p.on("response", (r) => {
     if (r.status() < 400) return;
     const u = r.url();
-    (u.startsWith(BASE) ? f.failed : f.external).push(`${r.status()} ${r.request().resourceType()} ${u.replace(BASE, "")}`);
+    (u.startsWith(BASE) ? f.failed : f.external).push(`${r.status()} ${r.request().resourceType()} ${u.replace(BASE, "").replace(/[?&]_rsc=[^&]*/, "")}`);
   });
   p.on("requestfailed", (r) => {
     const why = r.failure()?.errorText ?? "";
@@ -542,8 +550,9 @@ const STATES = [
     route: "/battle/play",
     name: "vs-computer",
     async run(p) {
-      await p.getByRole("button", { name: /Battle the computer|vs computer|Play the computer/i }).first().click({ timeout: 8_000 }).catch(() => {});
-      await p.waitForTimeout(6000);
+      await p.getByRole("button", { name: /^Play now/i }).first().click({ timeout: 10_000 });
+      await p.waitForURL(/\/battle\/play\/./, { timeout: 20_000 }).catch(() => {});
+      await p.waitForTimeout(8000);
     },
   },
 ];
