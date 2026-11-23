@@ -921,6 +921,8 @@ function frameOf(code: string, w: number, h: number) {
 
 const stagedPath = (region: string, c: Candidate) => path.join(DIR, region, "staged", `${createHash("sha1").update(candKey(c)).digest("hex").slice(0, 16)}.webp`);
 
+const SKIP_HOSTS = new Set((process.env.GEO_SKIP_HOSTS ?? "").split(",").map((h) => h.trim()).filter(Boolean));
+
 async function fetchRegion(region: string) {
   const file = path.join(DIR, region, "list.json");
   const cands = readJson<Candidate[]>(file, []);
@@ -942,6 +944,11 @@ async function fetchRegion(region: string) {
     const restaged = !!(c.staged && existsSync(c.staged) && c.hash);
     if (restaged && c.drop) continue;
     if (!restaged) delete c.drop;
+    // A host this machine can't reach (GEO_SKIP_HOSTS=archives.bulbagarden.net when its bot check refuses the downloads): left for a run that can.
+    if (!restaged && SKIP_HOSTS.has(new URL(c.url).host)) {
+      c.drop = `fetch failed: ${new URL(c.url).host} skipped on this run`;
+      continue;
+    }
     if (!restaged) try {
       const raw = await httpGet(c.url);
       const meta = await sharp(raw).metadata();
