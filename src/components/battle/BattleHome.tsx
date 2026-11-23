@@ -21,7 +21,7 @@ import type { LiveCounts } from "@/lib/community";
 import { glickoBadge } from "./GlickoBadge";
 import battleGlicko from "@/messages/battle-glicko";
 import { Button } from "@/components/ui/button";
-import { clock } from "@/components/duel/DuelParts";
+import { clock } from "@/components/duel/clock";
 import { useMatchmaking } from "@/components/duel/use-matchmaking";
 import { cn } from "@/lib/utils";
 import { startBattle } from "./start-battle";

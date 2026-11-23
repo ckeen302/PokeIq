@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element -- pre-sized art */
 import { useEffect, useMemo, useState } from "react";
 import Link from "@/components/ui/Link";
-import { motion } from "framer-motion";
+import { LazyMotion, m } from "framer-motion";
 import { BookOpenCheck, Gamepad2 } from "lucide-react";
 import type { DexEntryData, DexForm } from "@/lib/pokemon/dex-types";
 import { TYPES, defensiveProfile, effectiveness, type PokemonType } from "@/lib/pokemon/type-matrix";
@@ -33,7 +33,18 @@ import dexSprites from "@/messages/dex-sprites";
  * Gigantamax…) re-derives typing, stats, abilities and matchups live.
  * `sprites` is the sprites table, rendered on the server by the page.
  */
-export function DexEntry({ data, sprites }: { data: DexEntryData; sprites?: React.ReactNode }) {
+export function DexEntry(props: { data: DexEntryData; sprites?: React.ReactNode }) {
+  return (
+    <LazyMotion features={loadMotionFeatures}>
+      <DexEntryBody {...props} />
+    </LazyMotion>
+  );
+}
+
+/** The page's animations are framer-motion's, with its animation code loaded after the page starts (`m` components). */
+const loadMotionFeatures = () => import("@/lib/motion-features").then((mod) => mod.default);
+
+function DexEntryBody({ data, sprites }: { data: DexEntryData; sprites?: React.ReactNode }) {
   const t = useT(dexEntryNs);
   const tp = useT(dexPager);
   const ts = useT(dexSprites);
@@ -70,7 +81,6 @@ export function DexEntry({ data, sprites }: { data: DexEntryData; sprites?: Reac
     data.names.length > 0 && { id: "names", label: t("nav.names") },
     { id: "breeding", label: t("nav.breeding") },
   ].filter(Boolean) as { id: string; label: string }[];
-  const active = useScrollSpy(sections.map((s) => s.id));
   const sectionIndex = (id: string) => sections.findIndex((s) => s.id === id) + 1;
 
   return (
@@ -85,22 +95,7 @@ export function DexEntry({ data, sprites }: { data: DexEntryData; sprites?: Reac
       <Hero data={data} form={form} onFormChange={setForm} types={types} abilities={abilities} />
 
       {/* Sticky section nav with scroll-spy */}
-      <div className="sticky top-14 z-30 -mx-4 border-b border-foreground/5 bg-background/80 px-4 py-2 backdrop-blur-xl sm:-mx-8 sm:px-8">
-        <div className="flex gap-1 overflow-x-auto [scrollbar-width:none]" data-hscroll>
-          {sections.map((s) => (
-            <a
-              key={s.id}
-              href={`#${s.id}`}
-              className={cn("relative shrink-0 rounded-sm px-3 py-1.5 font-pixel text-[10px] uppercase tracking-wider transition-colors", active === s.id ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
-            >
-              {active === s.id && (
-                <motion.span layoutId="dex-section-pill" className="absolute inset-0 rounded-sm bg-primary" transition={{ type: "spring", stiffness: 400, damping: 32 }} />
-              )}
-              <span className="relative">{s.label}</span>
-            </a>
-          ))}
-        </div>
-      </div>
+      <SectionNav sections={sections} />
 
       <Section id="stats" index={sectionIndex("stats")} title={t("sec.stats")} subtitle={form ? form.name : undefined}>
         <StatsSection stats={stats} percentiles={data.percentiles} accent={accent} isShedinja={p.slug === "shedinja"} showPercentiles={!form} />
@@ -157,7 +152,7 @@ export function DexEntry({ data, sprites }: { data: DexEntryData; sprites?: Reac
       </Section>
 
       {/* Study CTA */}
-      <motion.div
+      <m.div
         className="hud relative overflow-hidden rounded-lg border p-6 sm:p-8"
         style={{ background: `linear-gradient(135deg, ${accent}30, hsl(var(--card)) 70%)` }}
         initial={{ opacity: 0, y: 20 }}
@@ -175,7 +170,7 @@ export function DexEntry({ data, sprites }: { data: DexEntryData; sprites?: Reac
             <Gamepad2 className="h-4 w-4" /> {t("cta.quiz", { n: p.gen })}
           </Link>
         </div>
-      </motion.div>
+      </m.div>
 
       <div className="grid grid-cols-2 gap-3">
         {[data.prev, data.next].map((n, i) =>
@@ -197,6 +192,32 @@ export function DexEntry({ data, sprites }: { data: DexEntryData; sprites?: Reac
         )}
       </div>
     </article>
+  );
+}
+
+/**
+ * The sticky section nav. It follows the scroll on its own (useScrollSpy is here, not in the page), so crossing into
+ * the next section re-renders these links, not the whole Pokémon page.
+ */
+function SectionNav({ sections }: { sections: { id: string; label: string }[] }) {
+  const active = useScrollSpy(sections.map((s) => s.id));
+  return (
+    <div className="sticky top-14 z-30 -mx-4 border-b border-foreground/5 bg-background/80 px-4 py-2 backdrop-blur-xl sm:-mx-8 sm:px-8">
+      <div className="flex gap-1 overflow-x-auto [scrollbar-width:none]" data-hscroll>
+        {sections.map((s) => (
+          <a
+            key={s.id}
+            href={`#${s.id}`}
+            className={cn("relative shrink-0 rounded-sm px-3 py-1.5 font-pixel text-[10px] uppercase tracking-wider transition-colors", active === s.id ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+          >
+            {active === s.id && (
+              <m.span layoutId="dex-section-pill" className="absolute inset-0 rounded-sm bg-primary" transition={{ type: "spring", stiffness: 400, damping: 32 }} />
+            )}
+            <span className="relative">{s.label}</span>
+          </a>
+        ))}
+      </div>
+    </div>
   );
 }
 

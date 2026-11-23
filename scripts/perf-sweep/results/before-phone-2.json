@@ -1,0 +1,3159 @@
+{
+ "profile": "phone",
+ "base": "http://localhost:3000",
+ "runs": 1,
+ "at": "2026-11-23T06:57:42.121Z",
+ "results": [
+  {
+   "route": "/daily",
+   "label": "daily",
+   "navError": null,
+   "ttfb": 5.2000000001862645,
+   "fcp": 1776,
+   "lcp": 1776,
+   "lcpEl": "h1.font-display.text-4xl.font-bold.uppercase \"TODAY'S POKÉIQ TEST\"",
+   "lcpUrl": null,
+   "cls": 0.00032087277741014184,
+   "clsSources": [
+    "0.0003 #text \"Daily Challenge #38\" [16,79,358,16]→[16,79,358,16]"
+   ],
+   "clsWithScroll": 0.00032087277741014184,
+   "clsScrollSources": [],
+   "tbt": 42,
+   "longTasks": 2,
+   "longestTask": 87,
+   "longestAfterLoad": 0,
+   "longAfterLoad": [],
+   "inp": null,
+   "inpEvent": null,
+   "interactNote": null,
+   "load": 5229.90000000014,
+   "htmlKB": 13.9,
+   "jsBeforeLoadKB": 299,
+   "jsAfterLoadKB": 7.8,
+   "prefetchKB": 10.7,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 1.4,
+   "fontKB": 86.9,
+   "totalKB": 466.8,
+   "topJs": [
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "17KB 52755-75d5a95717d2df64.js",
+    "12KB 11618-d77d32279be6920d.js",
+    "10KB 43028-7017d8b2f98bd7db.js",
+    "9KB 82053-f20f041de2764d29.js"
+   ],
+   "bigImages": [
+    "1KB /logo.svg"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [],
+   "heapMB": 5,
+   "domNodes": 561,
+   "run": 0
+  },
+  {
+   "route": "/pikadoku",
+   "label": "pikadoku",
+   "navError": null,
+   "ttfb": 7.399999999906868,
+   "fcp": 1768,
+   "lcp": 1888,
+   "lcpEl": "h2.font-display.text-lg.font-bold.uppercase \"TODAY'S BOARD · NORMAL\" in pdk-board",
+   "lcpUrl": null,
+   "cls": 0.0000954854286928266,
+   "clsSources": [
+    "0.0000 #text \"|\" [154,224,14,17]→[154,224,25,17]",
+    "0.0000 #text \"|\" [154,224,25,17]→[154,224,33,17]",
+    "0.0000 #text \"|\" [154,224,33,17]→[154,224,45,17]",
+    "0.0000 #text \"|\" [154,224,45,17]→[154,224,54,17]"
+   ],
+   "clsWithScroll": 0.0000954854286928266,
+   "clsScrollSources": [],
+   "tbt": 129,
+   "longTasks": 3,
+   "longestTask": 121,
+   "longestAfterLoad": 82,
+   "longAfterLoad": [
+    [
+     5482,
+     82
+    ]
+   ],
+   "inp": null,
+   "inpEvent": null,
+   "interactNote": null,
+   "load": 5419.899999999907,
+   "htmlKB": 21.8,
+   "jsBeforeLoadKB": 320.8,
+   "jsAfterLoadKB": 7.8,
+   "prefetchKB": 10.7,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 4.1,
+   "fontKB": 86.9,
+   "totalKB": 532.7,
+   "topJs": [
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "19KB page-8f5a684cb6d82aa5.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "15KB 59049-3780cae689a8afa0.js",
+    "12KB 50566-7f878944d86a10e6.js",
+    "10KB 43028-7017d8b2f98bd7db.js"
+   ],
+   "bigImages": [
+    "1KB https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/157.png",
+    "1KB /logo.svg",
+    "1KB https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/260.png"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me",
+    "Fetch no-store /api/pikadoku?date=2026-11-23&difficulty=normal"
+   ],
+   "console": [],
+   "heapMB": 11,
+   "domNodes": 1507,
+   "run": 0
+  },
+  {
+   "route": "/quiz",
+   "label": "quiz hub",
+   "navError": null,
+   "ttfb": 8.299999999813735,
+   "fcp": 1800,
+   "lcp": 1800,
+   "lcpEl": "span.mt-3.block.text-sm.text-muted-foreground \"Reasoning, memory, speed, spatial and Pokémon know\" in quiz-featured-iq",
+   "lcpUrl": null,
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0,
+   "clsScrollSources": [],
+   "tbt": 64,
+   "longTasks": 2,
+   "longestTask": 97,
+   "longestAfterLoad": 0,
+   "longAfterLoad": [],
+   "inp": null,
+   "inpEvent": null,
+   "interactNote": "no tabs",
+   "load": 4840.59999999986,
+   "htmlKB": 17.9,
+   "jsBeforeLoadKB": 321.7,
+   "jsAfterLoadKB": 7.8,
+   "prefetchKB": 10.7,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 1.4,
+   "fontKB": 86.9,
+   "totalKB": 493.5,
+   "topJs": [
+    "64KB 57863-7542b6d6d0ff3bab.js",
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "10KB 43028-7017d8b2f98bd7db.js",
+    "10KB page-e1d7df48e3282cc1.js",
+    "9KB 82053-f20f041de2764d29.js"
+   ],
+   "bigImages": [
+    "1KB /logo.svg"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [],
+   "heapMB": 6,
+   "domNodes": 1080,
+   "run": 0
+  },
+  {
+   "route": "/quiz/name-em-all",
+   "label": "name em all",
+   "navError": null,
+   "ttfb": 6.800000000046566,
+   "fcp": 1788,
+   "lcp": 1788,
+   "lcpEl": "p.text-muted-foreground \"How many Pokémon can you name from memory? Type th\"",
+   "lcpUrl": null,
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0,
+   "clsScrollSources": [],
+   "tbt": 78,
+   "longTasks": 3,
+   "longestTask": 101,
+   "longestAfterLoad": 64,
+   "longAfterLoad": [
+    [
+     4159,
+     64
+    ]
+   ],
+   "inp": 48,
+   "inpEvent": "pointerdown 48ms input#_R_jav5ubslb_.h-10.w-full.min-w-0.rounded-md in nea-race-card",
+   "interactNote": "typed \"char\"",
+   "load": 4089.6999999999534,
+   "htmlKB": 20.3,
+   "jsBeforeLoadKB": 230.2,
+   "jsAfterLoadKB": 9.4,
+   "prefetchKB": 10.7,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 1.4,
+   "fontKB": 86.9,
+   "totalKB": 406,
+   "topJs": [
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "9KB 82053-f20f041de2764d29.js",
+    "8KB page-d000e4b4b589b26d.js",
+    "7KB 24909-5d554e214db07606.js",
+    "7KB webpack-8044b7ca34f81b60.js"
+   ],
+   "bigImages": [
+    "1KB /logo.svg"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [],
+   "heapMB": 5,
+   "domNodes": 1507,
+   "run": 0
+  },
+  {
+   "route": "/iq-test",
+   "label": "iq test",
+   "navError": null,
+   "ttfb": 6.199999999953434,
+   "fcp": 1804,
+   "lcp": 1804,
+   "lcpEl": "p.text-muted-foreground \"Five timed sections, about 20 minutes: reasoning, \"",
+   "lcpUrl": null,
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0,
+   "clsScrollSources": [],
+   "tbt": 103,
+   "longTasks": 2,
+   "longestTask": 143,
+   "longestAfterLoad": 0,
+   "longAfterLoad": [],
+   "inp": null,
+   "inpEvent": null,
+   "interactNote": "no text box",
+   "load": 5343.800000000047,
+   "htmlKB": 13.9,
+   "jsBeforeLoadKB": 316.5,
+   "jsAfterLoadKB": 7.8,
+   "prefetchKB": 10.7,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 1.4,
+   "fontKB": 86.9,
+   "totalKB": 484.3,
+   "topJs": [
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "22KB page-3b5dfde8fc83dafa.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "17KB 52755-75d5a95717d2df64.js",
+    "12KB 11618-d77d32279be6920d.js",
+    "10KB 43028-7017d8b2f98bd7db.js"
+   ],
+   "bigImages": [
+    "1KB /logo.svg"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [],
+   "heapMB": 5,
+   "domNodes": 558,
+   "run": 0
+  },
+  {
+   "route": "/battle/play",
+   "label": "play vs computer",
+   "navError": null,
+   "ttfb": 39.300000000046566,
+   "fcp": 2484,
+   "lcp": 2484,
+   "lcpEl": "h1.font-display.text-4xl.font-bold.uppercase \"START A BATTLE\"",
+   "lcpUrl": null,
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0.009231598571460659,
+   "clsScrollSources": [
+    "0.0092 footer.mb-[calc(4rem+env(safe-area-inset-bottom))].border-t.border-foreground/[0.06].py-8 \"PRIVACY CREDITS REPORT A PROBLEM PokéIQ is a free,\" [0,755,390,89]→[0,707,390,137]"
+   ],
+   "tbt": 166,
+   "longTasks": 5,
+   "longestTask": 119,
+   "longestAfterLoad": 119,
+   "longAfterLoad": [
+    [
+     6199,
+     78
+    ],
+    [
+     7850,
+     119
+    ]
+   ],
+   "inp": 48,
+   "inpEvent": "pointerdown 48ms input#_R_2av5ubslb_-name.h-10.w-full.rounded-md.border",
+   "interactNote": "typed \"char\"",
+   "load": 6188.699999999953,
+   "htmlKB": 20.1,
+   "jsBeforeLoadKB": 355.1,
+   "jsAfterLoadKB": 180.1,
+   "prefetchKB": 10.7,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 1.4,
+   "fontKB": 86.9,
+   "totalKB": 704.1,
+   "topJs": [
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "26KB 59705-4613549714daf453.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "16KB 25383-0f818480588700de.js",
+    "14KB 78007-de0055649ddd9440.js",
+    "12KB 65709-ed084da9fec68ced.js"
+   ],
+   "bigImages": [
+    "1KB /logo.svg"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/battle/id",
+    "Fetch no-store /api/auth/me",
+    "Fetch no-store /api/battle",
+    "Fetch no-store /api/battle/warm-up"
+   ],
+   "console": [],
+   "heapMB": 7,
+   "domNodes": 844,
+   "run": 0
+  },
+  {
+   "route": "/battle/calc",
+   "label": "damage calc",
+   "navError": null,
+   "ttfb": 5.899999999906868,
+   "fcp": 1752,
+   "lcp": 1752,
+   "lcpEl": "h1.font-display.text-3xl.font-bold.uppercase \"DAMAGE CALC\"",
+   "lcpUrl": null,
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0,
+   "clsScrollSources": [],
+   "tbt": 706,
+   "longTasks": 5,
+   "longestTask": 326,
+   "longestAfterLoad": 326,
+   "longAfterLoad": [
+    [
+     7408,
+     316
+    ],
+    [
+     7726,
+     326
+    ],
+    [
+     13888,
+     79
+    ],
+    [
+     14005,
+     76
+    ]
+   ],
+   "inp": 192,
+   "inpEvent": "click 192ms input.h-9.w-full.min-w-0.max-sm:h-10 in calc-side-1",
+   "interactNote": "typed \"garch\"",
+   "load": 4518.899999999907,
+   "htmlKB": 13.7,
+   "jsBeforeLoadKB": 283.8,
+   "jsAfterLoadKB": 395.5,
+   "prefetchKB": 10.7,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 301.7,
+   "fontKB": 86.9,
+   "totalKB": 1139.3,
+   "topJs": [
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "26KB 59705-4613549714daf453.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "12KB page-722023db2d8db396.js",
+    "10KB 2637-bd3b0157fa90e4ce.js",
+    "9KB 82053-f20f041de2764d29.js"
+   ],
+   "bigImages": [
+    "123KB https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/485.gif",
+    "106KB https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/445.gif",
+    "4KB https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/59.png",
+    "4KB https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/934.png",
+    "2KB https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10196.png"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [],
+   "heapMB": 20,
+   "domNodes": 3303,
+   "run": 0
+  },
+  {
+   "route": "/battle/tournaments",
+   "label": "tournaments",
+   "navError": null,
+   "ttfb": 14.899999999906868,
+   "fcp": 2344,
+   "lcp": 2344,
+   "lcpEl": "h1.font-display.text-4xl.font-bold.uppercase \"TOURNAMENTS LIVE\"",
+   "lcpUrl": null,
+   "cls": 0.20835337348364558,
+   "clsSources": [
+    "0.2084 footer.mb-[calc(4rem+env(safe-area-inset-bottom))].border-t.border-foreground/[0.06].py-8 \"PRIVACY CREDITS REPORT A PROBLEM PokéIQ is a free,\" [0,0,0,0]→[0,627,390,217]",
+    "0.2084 aside \"OPEN A TOURNAMENT Tournaments are for trainer acco\" [0,0,0,0]→[16,463,358,115]"
+   ],
+   "clsWithScroll": 0.20835337348364558,
+   "clsScrollSources": [],
+   "tbt": 57,
+   "longTasks": 2,
+   "longestTask": 102,
+   "longestAfterLoad": 0,
+   "longAfterLoad": [],
+   "inp": null,
+   "inpEvent": null,
+   "interactNote": "no text box",
+   "load": 4583.699999999953,
+   "htmlKB": 13.5,
+   "jsBeforeLoadKB": 228.9,
+   "jsAfterLoadKB": 9.4,
+   "prefetchKB": 10.7,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 1.4,
+   "fontKB": 86.9,
+   "totalKB": 398.8,
+   "topJs": [
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "12KB 24954-3d1a3c2644e94f32.js",
+    "9KB 82053-f20f041de2764d29.js",
+    "7KB 24909-5d554e214db07606.js",
+    "7KB webpack-8044b7ca34f81b60.js"
+   ],
+   "bigImages": [
+    "1KB /logo.svg"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/tournaments",
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [],
+   "heapMB": 19,
+   "domNodes": 746,
+   "run": 0
+  },
+  {
+   "route": "/battle/tower",
+   "label": "tower",
+   "navError": null,
+   "ttfb": 16,
+   "fcp": 2372,
+   "lcp": 5844,
+   "lcpEl": "p.text-sm.text-muted-foreground \"Flat Rules, as Pokémon Showdown plays them: every \" in frontier-tower",
+   "lcpUrl": null,
+   "cls": 0.03192182130342984,
+   "clsSources": [
+    "0.0319 div.hud.relative.rounded-lg.border \"BATTLE TOWER YOUR TRAINER NAME Best streak: 0. Sig\" in frontier-tower [0,769,390,75]→[0,0,0,0]"
+   ],
+   "clsWithScroll": 0.03192182130342984,
+   "clsScrollSources": [],
+   "tbt": 379,
+   "longTasks": 5,
+   "longestTask": 264,
+   "longestAfterLoad": 264,
+   "longAfterLoad": [
+    [
+     5719,
+     79
+    ],
+    [
+     8350,
+     264
+    ]
+   ],
+   "inp": 56,
+   "inpEvent": "click 56ms input#frontier-name.h-10.w-full.rounded-md.border in frontier-tower",
+   "interactNote": "typed \"char\"",
+   "load": 5672.5,
+   "htmlKB": 14.5,
+   "jsBeforeLoadKB": 316.2,
+   "jsAfterLoadKB": 352.5,
+   "prefetchKB": 10.7,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 24.9,
+   "fontKB": 86.9,
+   "totalKB": 856,
+   "topJs": [
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "26KB 59705-4613549714daf453.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "16KB 25383-0f818480588700de.js",
+    "10KB 2637-bd3b0157fa90e4ce.js",
+    "9KB page-dabceaa19bcd7a96.js"
+   ],
+   "bigImages": [
+    "8KB https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/991.png",
+    "4KB https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1001.png",
+    "4KB https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10272.png",
+    "3KB https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10274.png",
+    "3KB https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/987.png"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/battle/frontier",
+    "Fetch no-store /api/auth/me",
+    "Fetch no-store /api/battle/quick"
+   ],
+   "console": [],
+   "heapMB": 12,
+   "domNodes": 666,
+   "run": 0
+  },
+  {
+   "route": "/pokemon/pikachu",
+   "label": "pikachu",
+   "navError": null,
+   "ttfb": 13.599999999860302,
+   "fcp": 1868,
+   "lcp": 2284,
+   "lcpEl": "img.absolute.inset-0.m-auto.object-contain src=http://localhost:3000/api/art/25?s=400 in overview",
+   "lcpUrl": "http://localhost:3000/api/art/25?s=400",
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0,
+   "clsScrollSources": [],
+   "tbt": 125,
+   "longTasks": 3,
+   "longestTask": 121,
+   "longestAfterLoad": 127,
+   "longAfterLoad": [
+    [
+     5101,
+     121
+    ],
+    [
+     12376,
+     127
+    ],
+    [
+     13524,
+     77
+    ],
+    [
+     16095,
+     59
+    ]
+   ],
+   "inp": 176,
+   "inpEvent": "pointerup 176ms input.h-9.w-48.rounded-full.border in moves",
+   "interactNote": "typed \"char\"",
+   "load": 4865.199999999953,
+   "htmlKB": 37.3,
+   "jsBeforeLoadKB": 249.4,
+   "jsAfterLoadKB": 9.4,
+   "prefetchKB": 10.7,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 260.2,
+   "fontKB": 86.9,
+   "totalKB": 701,
+   "topJs": [
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "16KB page-ec4b3e3549655727.js",
+    "9KB 82053-f20f041de2764d29.js",
+    "7KB 24909-5d554e214db07606.js",
+    "7KB webpack-8044b7ca34f81b60.js"
+   ],
+   "bigImages": [
+    "73KB https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-vii/ultra-sun-ultra-moon/25",
+    "68KB https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-vii/ultra-sun-ultra-moon/sh",
+    "20KB /api/art/25?s=400",
+    "10KB /_next/image?url=https%3A%2F%2Fraw.githubusercontent.com%2FPokeAPI%2Fsprites%2Fmaster%2Fsprites%2Fpokemon%2Fother%2Fhome",
+    "10KB /_next/image?url=https%3A%2F%2Fraw.githubusercontent.com%2FPokeAPI%2Fsprites%2Fmaster%2Fsprites%2Fpokemon%2Fother%2Fhome"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [],
+   "heapMB": 14,
+   "domNodes": 2908,
+   "run": 0
+  },
+  {
+   "route": "/pokedex/moves",
+   "label": "moves",
+   "navError": null,
+   "ttfb": 19.5,
+   "fcp": 1872,
+   "lcp": 1872,
+   "lcpEl": "p.mx-auto.max-w-2xl.text-muted-foreground \"Type, category, power, accuracy, PP and the Pokémo\"",
+   "lcpUrl": null,
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0,
+   "clsScrollSources": [],
+   "tbt": 78,
+   "longTasks": 2,
+   "longestTask": 112,
+   "longestAfterLoad": 89,
+   "longAfterLoad": [
+    [
+     11538,
+     54
+    ],
+    [
+     13312,
+     89
+    ],
+    [
+     14863,
+     60
+    ]
+   ],
+   "inp": 136,
+   "inpEvent": "keydown 136ms input.h-11.w-full.rounded-md.border",
+   "interactNote": "typed \"thun\"",
+   "load": 4117,
+   "htmlKB": 33.7,
+   "jsBeforeLoadKB": 227.2,
+   "jsAfterLoadKB": 9.4,
+   "prefetchKB": 10.7,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 1.4,
+   "fontKB": 86.9,
+   "totalKB": 416.4,
+   "topJs": [
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "9KB 82053-f20f041de2764d29.js",
+    "7KB 24909-5d554e214db07606.js",
+    "7KB webpack-8044b7ca34f81b60.js",
+    "7KB 96049-db7f682a09ef02e7.js"
+   ],
+   "bigImages": [
+    "1KB /logo.svg"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 500 swap",
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [],
+   "heapMB": 24,
+   "domNodes": 1953,
+   "run": 0
+  },
+  {
+   "route": "/pokedex/abilities",
+   "label": "abilities",
+   "navError": null,
+   "ttfb": 10.800000000046566,
+   "fcp": 1796,
+   "lcp": 1796,
+   "lcpEl": "p.mx-auto.max-w-2xl.text-muted-foreground \"What each ability does and every Pokémon that has \"",
+   "lcpUrl": null,
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0,
+   "clsScrollSources": [],
+   "tbt": 93,
+   "longTasks": 2,
+   "longestTask": 121,
+   "longestAfterLoad": 67,
+   "longAfterLoad": [
+    [
+     13332,
+     50
+    ],
+    [
+     13506,
+     67
+    ]
+   ],
+   "inp": 80,
+   "inpEvent": "keydown 80ms input.h-11.w-full.rounded-md.border",
+   "interactNote": "typed \"leve\"",
+   "load": 4093.9000000001397,
+   "htmlKB": 27.4,
+   "jsBeforeLoadKB": 227.2,
+   "jsAfterLoadKB": 9.4,
+   "prefetchKB": 10.7,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 1.4,
+   "fontKB": 86.9,
+   "totalKB": 410.1,
+   "topJs": [
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "9KB 82053-f20f041de2764d29.js",
+    "7KB 24909-5d554e214db07606.js",
+    "7KB webpack-8044b7ca34f81b60.js",
+    "7KB 96049-db7f682a09ef02e7.js"
+   ],
+   "bigImages": [
+    "1KB /logo.svg"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 500 swap",
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [],
+   "heapMB": 22,
+   "domNodes": 1231,
+   "run": 0
+  },
+  {
+   "route": "/pokedex/places",
+   "label": "places",
+   "navError": null,
+   "ttfb": 19.699999999953434,
+   "fcp": 1804,
+   "lcp": 1804,
+   "lcpEl": "p.mx-auto.max-w-2xl.text-muted-foreground \"Towns, routes, caves and buildings from every main\"",
+   "lcpUrl": null,
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0,
+   "clsScrollSources": [],
+   "tbt": 49,
+   "longTasks": 2,
+   "longestTask": 82,
+   "longestAfterLoad": 0,
+   "longAfterLoad": [],
+   "inp": 72,
+   "inpEvent": "keydown 72ms input.h-11.w-full.rounded-md.border",
+   "interactNote": "typed \"char\"",
+   "load": 4104.59999999986,
+   "htmlKB": 32.9,
+   "jsBeforeLoadKB": 227.1,
+   "jsAfterLoadKB": 9.4,
+   "prefetchKB": 10.7,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 1.4,
+   "fontKB": 86.9,
+   "totalKB": 415.6,
+   "topJs": [
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "9KB 82053-f20f041de2764d29.js",
+    "7KB 24909-5d554e214db07606.js",
+    "7KB webpack-8044b7ca34f81b60.js",
+    "7KB 96049-db7f682a09ef02e7.js"
+   ],
+   "bigImages": [
+    "1KB /logo.svg"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 500 swap",
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [],
+   "heapMB": 23,
+   "domNodes": 1499,
+   "run": 0
+  },
+  {
+   "route": "/pokedex/types/fire",
+   "label": "type page",
+   "navError": null,
+   "ttfb": 19.699999999953434,
+   "fcp": 2500,
+   "lcp": 2500,
+   "lcpEl": "p.max-w-2xl.text-foreground/90 \"Fire moves are super effective against Grass, Ice,\"",
+   "lcpUrl": null,
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0,
+   "clsScrollSources": [],
+   "tbt": 60,
+   "longTasks": 3,
+   "longestTask": 97,
+   "longestAfterLoad": 55,
+   "longAfterLoad": [
+    [
+     4594,
+     55
+    ]
+   ],
+   "inp": null,
+   "inpEvent": null,
+   "interactNote": "no text box",
+   "load": 4519.299999999814,
+   "htmlKB": 29,
+   "jsBeforeLoadKB": 219,
+   "jsAfterLoadKB": 9.4,
+   "prefetchKB": 10.7,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 403.6,
+   "fontKB": 86.9,
+   "totalKB": 805.8,
+   "topJs": [
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "9KB 82053-f20f041de2764d29.js",
+    "7KB 24909-5d554e214db07606.js",
+    "7KB webpack-8044b7ca34f81b60.js",
+    "7KB 89083-161c7597a1ab7b3a.js"
+   ],
+   "bigImages": [
+    "12KB /art/160/78.webp",
+    "11KB /art/160/392.webp",
+    "11KB /art/160/514.webp",
+    "11KB /art/160/59.webp",
+    "10KB /art/160/467.webp"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [],
+   "heapMB": 16,
+   "domNodes": 2596,
+   "run": 0
+  },
+  {
+   "route": "/pokedex/trainers",
+   "label": "trainers",
+   "navError": null,
+   "ttfb": 29.800000000046566,
+   "fcp": 1836,
+   "lcp": 1836,
+   "lcpEl": "p.mx-auto.max-w-2xl.text-muted-foreground \"Every trainer from Generation I to IX: where to fi\"",
+   "lcpUrl": null,
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0,
+   "clsScrollSources": [],
+   "tbt": 97,
+   "longTasks": 3,
+   "longestTask": 111,
+   "longestAfterLoad": 189,
+   "longAfterLoad": [
+    [
+     4717,
+     67
+    ],
+    [
+     13306,
+     88
+    ],
+    [
+     14951,
+     189
+    ],
+    [
+     15141,
+     51
+    ]
+   ],
+   "inp": 272,
+   "inpEvent": "keydown 272ms input[data-testid=trainers-search].h-11.w-full.rounded-md.border in trainers-filters",
+   "interactNote": "typed \"char\"",
+   "load": 3970,
+   "htmlKB": 45.6,
+   "jsBeforeLoadKB": 224.9,
+   "jsAfterLoadKB": 9.4,
+   "prefetchKB": 10.7,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 1.4,
+   "fontKB": 86.9,
+   "totalKB": 426,
+   "topJs": [
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "9KB page-461724351cf3c383.js",
+    "9KB 82053-f20f041de2764d29.js",
+    "7KB 24909-5d554e214db07606.js",
+    "7KB webpack-8044b7ca34f81b60.js"
+   ],
+   "bigImages": [
+    "1KB /logo.svg"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 500 swap",
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [],
+   "heapMB": 6,
+   "domNodes": 7069,
+   "run": 0
+  },
+  {
+   "route": "/pokedex/timeline",
+   "label": "timeline",
+   "navError": null,
+   "ttfb": 30.700000000186265,
+   "fcp": 1760,
+   "lcp": 1760,
+   "lcpEl": "p.mx-auto.max-w-2xl.text-muted-foreground \"From Red and Green in 1996 to today: the main-seri\"",
+   "lcpUrl": null,
+   "cls": 0.32080251144926436,
+   "clsSources": [
+    "0.0000 ::before in timeline-intro [43,292,304,3]→[43,292,304,7]",
+    "0.0000 ::before in timeline-intro [43,290,304,7]→[43,290,304,11]",
+    "0.0001 ::before in timeline-intro [43,289,304,11]→[43,289,304,14]",
+    "0.0001 ::before in timeline-intro [43,288,304,15]→[43,288,304,18]",
+    "0.0001 ::before in timeline-intro [43,287,304,18]→[43,287,304,22]",
+    "0.0001 ::before in timeline-intro [43,286,304,22]→[43,286,304,26]",
+    "0.0001 ::before in timeline-intro [43,286,304,26]→[43,286,304,30]",
+    "0.0001 ::before in timeline-intro [43,285,304,30]→[43,285,304,33]"
+   ],
+   "clsWithScroll": 0.32080251144926436,
+   "clsScrollSources": [],
+   "tbt": 4009,
+   "longTasks": 16,
+   "longestTask": 615,
+   "longestAfterLoad": 615,
+   "longAfterLoad": [
+    [
+     4522,
+     82
+    ],
+    [
+     5147,
+     50
+    ],
+    [
+     6727,
+     547
+    ],
+    [
+     7276,
+     507
+    ],
+    [
+     7845,
+     178
+    ],
+    [
+     8122,
+     208
+    ],
+    [
+     8341,
+     172
+    ],
+    [
+     8515,
+     290
+    ],
+    [
+     8863,
+     365
+    ],
+    [
+     9268,
+     422
+    ],
+    [
+     9790,
+     615
+    ],
+    [
+     10461,
+     476
+    ],
+    [
+     11011,
+     268
+    ],
+    [
+     11309,
+     413
+    ],
+    [
+     11740,
+     433
+    ],
+    [
+     12278,
+     455
+    ],
+    [
+     12797,
+     272
+    ],
+    [
+     13093,
+     456
+    ],
+    [
+     13602,
+     438
+    ],
+    [
+     14144,
+     435
+    ],
+    [
+     14579,
+     302
+    ],
+    [
+     14906,
+     277
+    ],
+    [
+     15196,
+     279
+    ],
+    [
+     15495,
+     342
+    ],
+    [
+     15838,
+     277
+    ],
+    [
+     16116,
+     305
+    ],
+    [
+     16426,
+     337
+    ],
+    [
+     16764,
+     306
+    ],
+    [
+     17076,
+     321
+    ],
+    [
+     17401,
+     446
+    ],
+    [
+     17857,
+     297
+    ],
+    [
+     18169,
+     305
+    ],
+    [
+     18476,
+     445
+    ],
+    [
+     18975,
+     273
+    ],
+    [
+     19249,
+     278
+    ],
+    [
+     19593,
+     367
+    ],
+    [
+     19964,
+     343
+    ],
+    [
+     20378,
+     211
+    ],
+    [
+     20589,
+     207
+    ],
+    [
+     20797,
+     178
+    ]
+   ],
+   "inp": null,
+   "inpEvent": null,
+   "interactNote": "no text box",
+   "load": 4366.800000000047,
+   "htmlKB": 69.9,
+   "jsBeforeLoadKB": 253.2,
+   "jsAfterLoadKB": 252,
+   "prefetchKB": 139.9,
+   "prefetchCount": 7,
+   "prefetchRoutes": [
+    "/pokedex/places",
+    "/pokemon/bulbasaur",
+    "/pokemon/charmander",
+    "/pokemon/squirtle",
+    "/pokedex",
+    "/lab",
+    "/lab/world-history"
+   ],
+   "imageKB": 723.4,
+   "fontKB": 163.5,
+   "totalKB": 1650.4,
+   "topJs": [
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "16KB 86636-2e51dc3829b9a3ed.js",
+    "16KB 87020-057b8fd31a01b999.js",
+    "9KB 82053-f20f041de2764d29.js",
+    "7KB 24909-5d554e214db07606.js"
+   ],
+   "bigImages": [
+    "71KB /geo/maps/unova.webp",
+    "71KB /geo/maps/kalos.webp",
+    "68KB /geo/maps/alola.webp",
+    "59KB /geo/maps/sinnoh.webp",
+    "56KB /geo/maps/johto.webp"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2",
+     "38KB 7b89a4fd5e90ede0-s.p.woff2",
+     "39KB e18f83c737786aa7-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2",
+     "7b89a4fd5e90ede0-s.p.woff2",
+     "e18f83c737786aa7-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap",
+     "pixel 400 swap",
+     "pixel 700 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [
+    "warning: [.WebGL-0x267400917c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x267400917c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x267400917c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x267400917c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)",
+    "warning: The resource http://localhost:3000/_next/static/css/3ae1977bcf0b7433.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "warning: The resource http://localhost:3000/_next/static/media/e18f83c737786aa7-s.p.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "warning: The resource http://localhost:3000/_next/static/media/7b89a4fd5e90ede0-s.p.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "warning: The resource http://localhost:3000/_next/static/css/3ae1977bcf0b7433.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "warning: The resource http://localhost:3000/_next/static/media/e18f83c737786aa7-s.p.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "warning: The resource http://localhost:3000/_next/static/media/7b89a4fd5e90ede0-s.p.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+   ],
+   "heapMB": 12,
+   "domNodes": 11614,
+   "run": 0
+  },
+  {
+   "route": "/pokedex/movies",
+   "label": "movies",
+   "navError": null,
+   "ttfb": 8.300000000046566,
+   "fcp": 2788,
+   "lcp": 2788,
+   "lcpEl": "p.mx-auto.max-w-2xl.text-muted-foreground \"Every Pokémon film, from Mewtwo Strikes Back to th\"",
+   "lcpUrl": null,
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0,
+   "clsScrollSources": [],
+   "tbt": 123,
+   "longTasks": 2,
+   "longestTask": 146,
+   "longestAfterLoad": 0,
+   "longAfterLoad": [],
+   "inp": null,
+   "inpEvent": null,
+   "interactNote": "no text box",
+   "load": 6746.199999999953,
+   "htmlKB": 19.7,
+   "jsBeforeLoadKB": 222.4,
+   "jsAfterLoadKB": 9.4,
+   "prefetchKB": 10.7,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 1018.2,
+   "fontKB": 86.9,
+   "totalKB": 1414.4,
+   "topJs": [
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "9KB 82053-f20f041de2764d29.js",
+    "7KB 24909-5d554e214db07606.js",
+    "7KB webpack-8044b7ca34f81b60.js",
+    "7KB 89083-161c7597a1ab7b3a.js"
+   ],
+   "bigImages": [
+    "36KB /movies/volcanion-and-the-mechanical-marvel.webp",
+    "36KB /movies/hoopa-and-the-clash-of-ages.webp",
+    "35KB /movies/secrets-of-the-jungle.webp",
+    "35KB /movies/the-power-of-us.webp",
+    "34KB /movies/mewtwo-strikes-back.webp"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Image public, max-age=0 /movies/mewtwo-strikes-back.webp",
+    "Image public, max-age=0 /movies/the-movie-2000.webp",
+    "Image public, max-age=0 /movies/spell-of-the-unown.webp",
+    "Image public, max-age=0 /movies/pokemon-4ever.webp",
+    "Image public, max-age=0 /movies/pokemon-heroes.webp",
+    "Image public, max-age=0 /movies/jirachi-wish-maker.webp",
+    "Image public, max-age=0 /movies/destiny-deoxys.webp",
+    "Image public, max-age=0 /movies/lucario-and-the-mystery-of-mew.webp",
+    "Image public, max-age=0 /movies/pokemon-ranger-and-the-temple-of-the-sea.webp",
+    "Image public, max-age=0 /movies/the-rise-of-darkrai.webp",
+    "Image public, max-age=0 /movies/giratina-and-the-sky-warrior.webp",
+    "Image public, max-age=0 /movies/arceus-and-the-jewel-of-life.webp"
+   ],
+   "console": [],
+   "heapMB": 13,
+   "domNodes": 1472,
+   "run": 0
+  },
+  {
+   "route": "/lab",
+   "label": "lab",
+   "navError": null,
+   "ttfb": 6.100000000093132,
+   "fcp": 1812,
+   "lcp": 2576,
+   "lcpEl": "img.lab-kb.object-cover src=http://localhost:3000/lab/phone/pokemon-story.webp in lab-card-pokemon-story",
+   "lcpUrl": "http://localhost:3000/lab/phone/pokemon-story.webp",
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0,
+   "clsScrollSources": [],
+   "tbt": 73,
+   "longTasks": 2,
+   "longestTask": 120,
+   "longestAfterLoad": 0,
+   "longAfterLoad": [],
+   "inp": null,
+   "inpEvent": null,
+   "interactNote": null,
+   "load": 4998.300000000047,
+   "htmlKB": 22.5,
+   "jsBeforeLoadKB": 223.8,
+   "jsAfterLoadKB": 9.4,
+   "prefetchKB": 10.7,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 226.3,
+   "fontKB": 86.9,
+   "totalKB": 626.7,
+   "topJs": [
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "9KB 82053-f20f041de2764d29.js",
+    "7KB 24909-5d554e214db07606.js",
+    "7KB webpack-8044b7ca34f81b60.js",
+    "7KB 89083-161c7597a1ab7b3a.js"
+   ],
+   "bigImages": [
+    "68KB /lab/phone/mass-battle.webp",
+    "58KB /lab/phone/sizes.webp",
+    "35KB /lab/phone/pokemon-story.webp",
+    "28KB /lab/phone/pokedex.webp",
+    "19KB /lab/phone/globe.webp"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Image public, max-age=0 /lab/phone/pokemon-story.webp",
+    "Image public, max-age=0 /lab/phone/sizes.webp",
+    "Image public, max-age=0 /lab/phone/globe.webp",
+    "Image public, max-age=0 /lab/phone/mass-battle.webp",
+    "Image public, max-age=0 /lab/phone/world-history.webp",
+    "Image public, max-age=0 /lab/phone/pokedex.webp",
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [],
+   "heapMB": 5,
+   "domNodes": 812,
+   "run": 0
+  },
+  {
+   "route": "/pokedex/sizes",
+   "label": "sizes",
+   "navError": null,
+   "ttfb": 10.900000000139698,
+   "fcp": 2156,
+   "lcp": 2156,
+   "lcpEl": "p.mx-auto.max-w-2xl.text-muted-foreground \"Every Pokémon side by side at its real size, from \"",
+   "lcpUrl": null,
+   "cls": 0.06761675129973237,
+   "clsSources": [
+    "0.0675 main.container.flex-1.pb-28.pt-8 \"BACK POKÉMON TO SCALE POKÉMON SIZES Every Pokémon \" [0,57,390,787]→[0,0,390,844]",
+    "0.0001 svg in sizes-loading [179,406,32,32]→[179,391,32,32]"
+   ],
+   "clsWithScroll": 0.06761675129973237,
+   "clsScrollSources": [],
+   "tbt": 3906,
+   "longTasks": 13,
+   "longestTask": 2855,
+   "longestAfterLoad": 2855,
+   "longAfterLoad": [
+    [
+     4814,
+     132
+    ],
+    [
+     5187,
+     286
+    ],
+    [
+     7073,
+     50
+    ],
+    [
+     8873,
+     247
+    ],
+    [
+     9155,
+     2855
+    ],
+    [
+     12061,
+     118
+    ],
+    [
+     12211,
+     95
+    ],
+    [
+     12325,
+     103
+    ],
+    [
+     12524,
+     119
+    ],
+    [
+     12657,
+     113
+    ],
+    [
+     12819,
+     100
+    ],
+    [
+     13006,
+     55
+    ],
+    [
+     13065,
+     95
+    ],
+    [
+     13425,
+     59
+    ],
+    [
+     13611,
+     55
+    ],
+    [
+     13669,
+     97
+    ],
+    [
+     14333,
+     64
+    ],
+    [
+     14688,
+     51
+    ],
+    [
+     15149,
+     108
+    ],
+    [
+     15276,
+     50
+    ],
+    [
+     15335,
+     83
+    ],
+    [
+     15426,
+     61
+    ],
+    [
+     15536,
+     71
+    ],
+    [
+     15614,
+     151
+    ],
+    [
+     15817,
+     85
+    ],
+    [
+     15903,
+     104
+    ],
+    [
+     16242,
+     57
+    ],
+    [
+     16347,
+     64
+    ],
+    [
+     16503,
+     60
+    ]
+   ],
+   "inp": null,
+   "inpEvent": null,
+   "interactNote": "no text box",
+   "load": 4710.700000000186,
+   "htmlKB": 89.7,
+   "jsBeforeLoadKB": 278.2,
+   "jsAfterLoadKB": 226.2,
+   "prefetchKB": 36.2,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/pokedex"
+   ],
+   "imageKB": 584.1,
+   "fontKB": 86.9,
+   "totalKB": 1590.7,
+   "topJs": [
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "37KB 38856-02cdcfc2e81df354.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "10KB 43028-7017d8b2f98bd7db.js",
+    "10KB 50316-1b26a7994e7b6254.js",
+    "9KB 82053-f20f041de2764d29.js"
+   ],
+   "bigImages": [
+    "123KB /sizes/tex/patterned_cobblestone_diff.webp",
+    "106KB /sizes/tex/large_grey_tiles_diff.webp",
+    "88KB /sizes/tex/granite_tile_diff.webp",
+    "82KB /sizes/tex/roof_slates_03_diff.webp",
+    "74KB /sizes/tex/asphalt_02_diff.webp"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap",
+     "pixel 400 swap",
+     "pixel 700 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed."
+   ],
+   "heapMB": 73,
+   "domNodes": 21957,
+   "run": 0
+  },
+  {
+   "route": "/lab/pokemon-story/cable",
+   "label": "story chapter",
+   "navError": null,
+   "ttfb": 7.300000000279397,
+   "fcp": null,
+   "lcp": null,
+   "lcpEl": null,
+   "lcpUrl": null,
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0,
+   "clsScrollSources": [],
+   "tbt": 0,
+   "longTasks": 5,
+   "longestTask": 106220,
+   "longestAfterLoad": 106220,
+   "longAfterLoad": [
+    [
+     5516,
+     106220
+    ],
+    [
+     113600,
+     711
+    ],
+    [
+     116006,
+     1338
+    ],
+    [
+     117349,
+     227
+    ]
+   ],
+   "inp": null,
+   "inpEvent": null,
+   "interactNote": "no text box",
+   "load": 5411.800000000279,
+   "htmlKB": 29.1,
+   "jsBeforeLoadKB": 278.9,
+   "jsAfterLoadKB": 247.2,
+   "prefetchKB": 10.9,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/lab"
+   ],
+   "imageKB": 1.4,
+   "fontKB": 163.5,
+   "totalKB": 779.4,
+   "topJs": [
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "20KB 95672-0ad5bc7d6df6549f.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "16KB 87020-057b8fd31a01b999.js",
+    "12KB 14063-9efd6f4a309b3f49.js",
+    "10KB 43028-7017d8b2f98bd7db.js"
+   ],
+   "bigImages": [
+    "1KB /logo.svg"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2",
+     "38KB 7b89a4fd5e90ede0-s.p.woff2",
+     "39KB e18f83c737786aa7-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2",
+     "7b89a4fd5e90ede0-s.p.woff2",
+     "e18f83c737786aa7-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap",
+     "pixel 400 swap",
+     "historySerif 500 700 swap",
+     "historySerif 500 700 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed."
+   ],
+   "heapMB": 26,
+   "domNodes": 1564,
+   "run": 0
+  },
+  {
+   "route": "/lab/world-history/alola",
+   "label": "history chapter",
+   "navError": null,
+   "ttfb": 8.600000000093132,
+   "fcp": 2756,
+   "lcp": 10084,
+   "lcpEl": "p[data-testid=wh-loading].wh-title-k.text-[10px].uppercase.text-white/80 \"OPENING ALOLA…\" in wh-stage",
+   "lcpUrl": null,
+   "cls": 0.00009661738064837164,
+   "clsSources": [
+    "0.0001 p[data-testid=wh-loading].wh-title-k.text-[10px].uppercase.text-white/80 \"OPENING ALOLA…\" in wh-stage [96,444,197,18]→[104,444,182,18]"
+   ],
+   "clsWithScroll": 0.07281676062981514,
+   "clsScrollSources": [
+    "0.0265 div[data-testid=wh-caption-area].pointer-events-none.absolute.inset-x-0.bottom-[4.9rem] \"“...causing it to run wild and steal all the light\" in wh-stage [0,621,390,145]→[0,538,390,228]",
+    "0.0463 div[data-testid=wh-caption-area].pointer-events-none.absolute.inset-x-0.bottom-[4.9rem] in wh-stage [0,538,390,228]→[0,683,390,83]"
+   ],
+   "tbt": 2940,
+   "longTasks": 11,
+   "longestTask": 1105,
+   "longestAfterLoad": 1105,
+   "longAfterLoad": [
+    [
+     5466,
+     72
+    ],
+    [
+     7283,
+     676
+    ],
+    [
+     10077,
+     1105
+    ],
+    [
+     11222,
+     435
+    ],
+    [
+     11665,
+     160
+    ],
+    [
+     11842,
+     204
+    ],
+    [
+     12057,
+     202
+    ],
+    [
+     12265,
+     239
+    ],
+    [
+     12524,
+     224
+    ],
+    [
+     12758,
+     251
+    ],
+    [
+     13018,
+     205
+    ],
+    [
+     13240,
+     211
+    ],
+    [
+     13457,
+     187
+    ],
+    [
+     13647,
+     202
+    ],
+    [
+     13857,
+     216
+    ],
+    [
+     14099,
+     238
+    ],
+    [
+     14349,
+     220
+    ],
+    [
+     14575,
+     325
+    ],
+    [
+     14913,
+     223
+    ],
+    [
+     15137,
+     313
+    ],
+    [
+     15479,
+     65
+    ],
+    [
+     15544,
+     425
+    ],
+    [
+     15971,
+     274
+    ],
+    [
+     16247,
+     555
+    ],
+    [
+     16804,
+     134
+    ],
+    [
+     16958,
+     121
+    ],
+    [
+     17080,
+     173
+    ],
+    [
+     17297,
+     883
+    ],
+    [
+     18224,
+     185
+    ],
+    [
+     18411,
+     77
+    ],
+    [
+     18499,
+     271
+    ],
+    [
+     18793,
+     219
+    ],
+    [
+     19015,
+     233
+    ],
+    [
+     19250,
+     230
+    ],
+    [
+     19491,
+     183
+    ],
+    [
+     19678,
+     226
+    ],
+    [
+     19913,
+     167
+    ]
+   ],
+   "inp": null,
+   "inpEvent": null,
+   "interactNote": "no text box",
+   "load": 5380.600000000093,
+   "htmlKB": 29,
+   "jsBeforeLoadKB": 269.7,
+   "jsAfterLoadKB": 235.5,
+   "prefetchKB": 10.9,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/lab"
+   ],
+   "imageKB": 259.7,
+   "fontKB": 163.5,
+   "totalKB": 1224.4,
+   "topJs": [
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "16KB 87020-057b8fd31a01b999.js",
+    "12KB 14063-9efd6f4a309b3f49.js",
+    "11KB 32198-350af2b16d9990e8.js",
+    "10KB 43028-7017d8b2f98bd7db.js"
+   ],
+   "bigImages": [
+    "38KB /lab/world-history/kanto.webp",
+    "29KB /lab/world-history/paldea.webp",
+    "29KB /lab/world-history/creation.webp",
+    "25KB /lab/world-history/alola.webp",
+    "22KB /lab/world-history/giants.webp"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2",
+     "38KB 7b89a4fd5e90ede0-s.p.woff2",
+     "39KB e18f83c737786aa7-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2",
+     "7b89a4fd5e90ede0-s.p.woff2",
+     "e18f83c737786aa7-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap",
+     "pixel 400 swap",
+     "historySerif 500 700 swap",
+     "historySerif 500 700 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me",
+    "Image public, max-age=0 /lab/world-history/creation.webp",
+    "Image public, max-age=0 /lab/world-history/giants.webp",
+    "Image public, max-age=0 /lab/world-history/hoenn.webp",
+    "Image public, max-age=0 /lab/world-history/kalos.webp",
+    "Image public, max-age=0 /lab/world-history/galar.webp",
+    "Image public, max-age=0 /lab/world-history/unova.webp",
+    "Image public, max-age=0 /lab/world-history/kitakami.webp",
+    "Image public, max-age=0 /lab/world-history/johto.webp",
+    "Image public, max-age=0 /lab/world-history/hisui.webp",
+    "Image public, max-age=0 /lab/world-history/alola.webp",
+    "Image public, max-age=0 /lab/world-history/kanto.webp"
+   ],
+   "console": [],
+   "heapMB": 35,
+   "domNodes": 1448,
+   "run": 0
+  },
+  {
+   "route": "/tools",
+   "label": "tools",
+   "navError": null,
+   "ttfb": 11.600000000093132,
+   "fcp": 1844,
+   "lcp": 3240,
+   "lcpEl": "img.relative.h-[340px].w-[340px].transition-transform src=http://localhost:3000/pokeball-maker/hub.webp in tool-card-pokeball-maker",
+   "lcpUrl": "http://localhost:3000/pokeball-maker/hub.webp",
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0,
+   "clsScrollSources": [],
+   "tbt": 85,
+   "longTasks": 2,
+   "longestTask": 114,
+   "longestAfterLoad": 0,
+   "longAfterLoad": [],
+   "inp": null,
+   "inpEvent": null,
+   "interactNote": null,
+   "load": 4605.199999999721,
+   "htmlKB": 15.1,
+   "jsBeforeLoadKB": 217.9,
+   "jsAfterLoadKB": 7.8,
+   "prefetchKB": 10.7,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 153,
+   "fontKB": 86.9,
+   "totalKB": 538.6,
+   "topJs": [
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "9KB 82053-f20f041de2764d29.js",
+    "7KB 24909-5d554e214db07606.js",
+    "7KB webpack-8044b7ca34f81b60.js",
+    "7KB 89083-161c7597a1ab7b3a.js"
+   ],
+   "bigImages": [
+    "34KB /pokeball-maker/hub.webp",
+    "18KB /sizes/art/256/6.webp",
+    "14KB /sizes/art/256/149.webp",
+    "14KB /sizes/art/256/1000.webp",
+    "12KB /sizes/art/256/448.webp"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Image public, max-age=0 /shiny-maker/hub.png",
+    "Image public, max-age=0 /pokeball-maker/hub.webp",
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [],
+   "heapMB": 22,
+   "domNodes": 743,
+   "run": 0
+  },
+  {
+   "route": "/tools/tier-list",
+   "label": "tier list",
+   "navError": null,
+   "ttfb": 6.5,
+   "fcp": 1812,
+   "lcp": 1812,
+   "lcpEl": "h1.font-display.text-5xl.font-bold.tracking-tight \"Pokémon Tier List Maker\" in tier-list-home",
+   "lcpUrl": null,
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0,
+   "clsScrollSources": [],
+   "tbt": 103,
+   "longTasks": 2,
+   "longestTask": 129,
+   "longestAfterLoad": 0,
+   "longAfterLoad": [],
+   "inp": null,
+   "inpEvent": null,
+   "interactNote": "no text box",
+   "load": 5658.5,
+   "htmlKB": 15.5,
+   "jsBeforeLoadKB": 224,
+   "jsAfterLoadKB": 7.8,
+   "prefetchKB": 10.7,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 471.7,
+   "fontKB": 86.9,
+   "totalKB": 863.8,
+   "topJs": [
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "9KB 82053-f20f041de2764d29.js",
+    "7KB 24909-5d554e214db07606.js",
+    "7KB webpack-8044b7ca34f81b60.js",
+    "7KB 89083-161c7597a1ab7b3a.js"
+   ],
+   "bigImages": [
+    "22KB /sizes/art/256/1007.webp",
+    "19KB /sizes/art/256/144.webp",
+    "18KB /sizes/art/256/1017.webp",
+    "18KB /sizes/art/256/6.webp",
+    "17KB /sizes/art/256/384.webp"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [],
+   "heapMB": 5,
+   "domNodes": 848,
+   "run": 0
+  },
+  {
+   "route": "/tools/pokeball-maker",
+   "label": "pokeball maker",
+   "navError": null,
+   "ttfb": 27.299999999813735,
+   "fcp": 2488,
+   "lcp": 2488,
+   "lcpEl": "p.mt-4.px-1.text-center.text-[12px] \"Pokémon and Poké Ball names are trademarks of Nint\" in pokeball-maker-skeleton",
+   "lcpUrl": null,
+   "cls": 0.004536032837283933,
+   "clsSources": [
+    "0.0045 section.mx-auto.mt-16.max-w-5xl.max-sm:mt-12 \"How it works 1 Start from a ball Pick an official \" in pokeball-maker-page [16,789,358,56]→[0,0,0,0]"
+   ],
+   "clsWithScroll": 0.004536032837283933,
+   "clsScrollSources": [],
+   "tbt": 3418,
+   "longTasks": 37,
+   "longestTask": 1860,
+   "longestAfterLoad": 1860,
+   "longAfterLoad": [
+    [
+     4698,
+     64
+    ],
+    [
+     6631,
+     133
+    ],
+    [
+     6802,
+     375
+    ],
+    [
+     7198,
+     1860
+    ],
+    [
+     9086,
+     121
+    ],
+    [
+     9229,
+     87
+    ],
+    [
+     9336,
+     69
+    ],
+    [
+     9410,
+     96
+    ],
+    [
+     9508,
+     78
+    ],
+    [
+     9587,
+     85
+    ],
+    [
+     9673,
+     95
+    ],
+    [
+     9769,
+     108
+    ],
+    [
+     9878,
+     86
+    ],
+    [
+     9966,
+     103
+    ],
+    [
+     10070,
+     77
+    ],
+    [
+     10153,
+     99
+    ],
+    [
+     10255,
+     102
+    ],
+    [
+     10358,
+     84
+    ],
+    [
+     10444,
+     88
+    ],
+    [
+     10537,
+     87
+    ],
+    [
+     10625,
+     89
+    ],
+    [
+     10715,
+     77
+    ],
+    [
+     10793,
+     79
+    ],
+    [
+     10872,
+     85
+    ],
+    [
+     10959,
+     95
+    ],
+    [
+     11055,
+     92
+    ],
+    [
+     11148,
+     81
+    ],
+    [
+     11230,
+     78
+    ],
+    [
+     11309,
+     90
+    ],
+    [
+     11402,
+     84
+    ],
+    [
+     11487,
+     78
+    ],
+    [
+     11566,
+     90
+    ],
+    [
+     11657,
+     79
+    ],
+    [
+     11740,
+     77
+    ],
+    [
+     11823,
+     82
+    ],
+    [
+     11918,
+     97
+    ],
+    [
+     12025,
+     108
+    ],
+    [
+     12134,
+     82
+    ],
+    [
+     12216,
+     86
+    ],
+    [
+     12303,
+     80
+    ],
+    [
+     12386,
+     77
+    ],
+    [
+     12463,
+     75
+    ],
+    [
+     12539,
+     93
+    ],
+    [
+     12633,
+     100
+    ],
+    [
+     12734,
+     88
+    ],
+    [
+     12824,
+     84
+    ],
+    [
+     12909,
+     71
+    ],
+    [
+     12980,
+     70
+    ],
+    [
+     13051,
+     67
+    ],
+    [
+     13118,
+     70
+    ],
+    [
+     13189,
+     63
+    ],
+    [
+     13253,
+     84
+    ],
+    [
+     13337,
+     90
+    ],
+    [
+     13428,
+     78
+    ],
+    [
+     13507,
+     78
+    ],
+    [
+     13586,
+     69
+    ],
+    [
+     13656,
+     70
+    ],
+    [
+     13726,
+     70
+    ],
+    [
+     13797,
+     70
+    ],
+    [
+     13867,
+     76
+    ],
+    [
+     13945,
+     79
+    ],
+    [
+     14025,
+     71
+    ],
+    [
+     14098,
+     71
+    ],
+    [
+     14169,
+     84
+    ],
+    [
+     14254,
+     81
+    ],
+    [
+     14336,
+     71
+    ],
+    [
+     14408,
+     67
+    ],
+    [
+     14475,
+     71
+    ],
+    [
+     14547,
+     85
+    ],
+    [
+     14634,
+     72
+    ],
+    [
+     14742,
+     72
+    ],
+    [
+     14816,
+     58
+    ],
+    [
+     14895,
+     74
+    ],
+    [
+     14971,
+     75
+    ],
+    [
+     15047,
+     71
+    ],
+    [
+     15119,
+     73
+    ],
+    [
+     15192,
+     70
+    ],
+    [
+     15262,
+     79
+    ],
+    [
+     15343,
+     81
+    ],
+    [
+     15425,
+     73
+    ],
+    [
+     15499,
+     61
+    ],
+    [
+     15561,
+     82
+    ],
+    [
+     15643,
+     73
+    ],
+    [
+     15717,
+     73
+    ],
+    [
+     15791,
+     63
+    ],
+    [
+     15854,
+     77
+    ],
+    [
+     15933,
+     79
+    ],
+    [
+     16013,
+     72
+    ],
+    [
+     16086,
+     71
+    ],
+    [
+     16157,
+     81
+    ],
+    [
+     16239,
+     66
+    ],
+    [
+     16306,
+     70
+    ]
+   ],
+   "inp": null,
+   "inpEvent": null,
+   "interactNote": "no text box",
+   "load": 4686.200000000186,
+   "htmlKB": 19.1,
+   "jsBeforeLoadKB": 221.1,
+   "jsAfterLoadKB": 231.6,
+   "prefetchKB": 10.7,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 79.2,
+   "fontKB": 86.9,
+   "totalKB": 707.5,
+   "topJs": [
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "9KB 82053-f20f041de2764d29.js",
+    "7KB 24909-5d554e214db07606.js",
+    "7KB webpack-8044b7ca34f81b60.js",
+    "7KB 89083-161c7597a1ab7b3a.js"
+   ],
+   "bigImages": [
+    "78KB https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/25.png",
+    "1KB /logo.svg"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me",
+    "Fetch public, max-age=0 /shiny-maker/species.json"
+   ],
+   "console": [],
+   "heapMB": 17,
+   "domNodes": 989,
+   "run": 0
+  },
+  {
+   "route": "/leaderboard",
+   "label": "leaderboard",
+   "navError": null,
+   "ttfb": 23.200000000186265,
+   "fcp": 1776,
+   "lcp": 1776,
+   "lcpEl": "p.mx-auto.max-w-3xl.pt-2.text-[11px] \"PokéIQ is a free, unofficial fan project and is no\"",
+   "lcpUrl": null,
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0,
+   "clsScrollSources": [],
+   "tbt": 71,
+   "longTasks": 4,
+   "longestTask": 110,
+   "longestAfterLoad": 0,
+   "longAfterLoad": [],
+   "inp": null,
+   "inpEvent": null,
+   "interactNote": "no text box",
+   "load": 4770.700000000186,
+   "htmlKB": 14.6,
+   "jsBeforeLoadKB": 268.8,
+   "jsAfterLoadKB": 9.4,
+   "prefetchKB": 10.7,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 1.4,
+   "fontKB": 86.9,
+   "totalKB": 438.9,
+   "topJs": [
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "11KB 24782-901e86d58e01c628.js",
+    "10KB 43028-7017d8b2f98bd7db.js",
+    "9KB 82053-f20f041de2764d29.js",
+    "7KB 24909-5d554e214db07606.js"
+   ],
+   "bigImages": [
+    "1KB /logo.svg"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [],
+   "heapMB": 20,
+   "domNodes": 814,
+   "run": 0
+  },
+  {
+   "route": "/u/red",
+   "label": "public profile",
+   "navError": null,
+   "ttfb": 27.399999999906868,
+   "fcp": 5896,
+   "lcp": 5896,
+   "lcpEl": "p.mx-auto.max-w-3xl.pt-2.text-[11px] \"PokéIQ is a free, unofficial fan project and is no\"",
+   "lcpUrl": null,
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0,
+   "clsScrollSources": [],
+   "tbt": 0,
+   "longTasks": 4,
+   "longestTask": 129,
+   "longestAfterLoad": 0,
+   "longAfterLoad": [],
+   "inp": null,
+   "inpEvent": null,
+   "interactNote": "no text box",
+   "load": 6211.600000000093,
+   "htmlKB": 9.6,
+   "jsBeforeLoadKB": 290.6,
+   "jsAfterLoadKB": 9.4,
+   "prefetchKB": 10.7,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 7.1,
+   "fontKB": 86.9,
+   "totalKB": 462.1,
+   "topJs": [
+    "54KB 4bd1b696-bad92808725a934a.js",
+    "46KB 31255-b53e551bc16f43b0.js",
+    "43KB 97856-5e38d6277a902735.js",
+    "18KB layout-93162812bb5c8fce.js",
+    "14KB page-d03ea967e32bc5db.js",
+    "11KB 24782-901e86d58e01c628.js",
+    "10KB 43028-7017d8b2f98bd7db.js",
+    "9KB 82053-f20f041de2764d29.js"
+   ],
+   "bigImages": [
+    "6KB /art/160/201.webp",
+    "1KB /logo.svg"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "4KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "48KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [
+    "404 /u/red"
+   ],
+   "noCache": [
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [
+    "error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "heapMB": 9,
+   "domNodes": 8738,
+   "run": 0
+  }
+ ]
+}

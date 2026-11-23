@@ -21,7 +21,7 @@ export function RegionStreakCard() {
     <HubTile
       testId="region-streak-card"
       tone="warning"
-      image={art.src}
+      image={art}
       icon={<Flame className="h-5 w-5" />}
       label={t("regionStreak.label")}
       title={t("regionStreak.title")}

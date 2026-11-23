@@ -9,7 +9,7 @@ import { unlockAudio } from "@/lib/sound";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { clock } from "./DuelParts";
+import { clock } from "./clock";
 import { useMatchmaking } from "./use-matchmaking";
 import { HowItWorks } from "./HowItWorks";
 import { useT } from "@/i18n/client";

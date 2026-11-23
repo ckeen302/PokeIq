@@ -82,7 +82,8 @@ export default async function ToolsPage() {
             alt=""
             width={340}
             height={340}
-            loading="lazy"
+            // On the first screen of a phone and a desktop, and the page's largest picture there: fetched with the HTML, not after layout.
+            fetchPriority="high"
             className="relative h-[340px] w-[340px] transition-transform duration-500 group-hover:scale-[1.03] max-sm:h-[250px] max-sm:w-[250px] motion-reduce:transition-none"
           />
         </div>

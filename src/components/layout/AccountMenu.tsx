@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { usePathname } from "@/i18n/navigation";
-import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronRight, LogIn, LogOut, Users } from "lucide-react";
 import Link from "@/components/ui/Link";
 import { Avatar } from "@/components/avatar/Avatar";
@@ -14,6 +13,7 @@ import { applyThemeColor, getTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
 import nav from "@/messages/nav";
+import { springEasing } from "@/lib/spring";
 
 /**
  * The header's avatar on desktop and tablet: opens a small panel with the
@@ -23,6 +23,11 @@ import nav from "@/messages/nav";
  * A disclosure, not an ARIA menu, since it holds switches: Escape, a click
  * outside, tabbing out or a new page closes it.
  */
+const PANEL_SPRING = { stiffness: 520, damping: 36 };
+const PANEL_FROM = { opacity: 0, transform: "translateY(-6px) scale(0.98)" };
+const PANEL_AT = { opacity: 1, transform: "none" };
+const PANEL_OUT = { opacity: 0, transform: "translateY(-4px) scale(0.98)" };
+
 export function AccountMenu({ className }: { className?: string }) {
   const pathname = usePathname();
   const account = useAccount();
@@ -34,6 +39,26 @@ export function AccountMenu({ className }: { className?: string }) {
   const trigger = useRef<HTMLButtonElement>(null);
   const panelId = useId();
   const t = useT(nav);
+  // The panel stays on screen while it fades out after closing (what framer-motion's AnimatePresence did).
+  const [shown, setShown] = useState(false);
+  const panel = useRef<HTMLDivElement>(null);
+  if (open && !shown) setShown(true);
+  useLayoutEffect(() => {
+    const el = panel.current;
+    if (!shown || !el || typeof el.animate !== "function") {
+      if (!open && shown) setShown(false);
+      return;
+    }
+    if (open) {
+      const { easing, duration } = springEasing(PANEL_SPRING);
+      const a = el.animate([PANEL_FROM, PANEL_AT], { duration, easing });
+      return () => a.cancel();
+    }
+    const from = getComputedStyle(el);
+    const a = el.animate([{ opacity: from.opacity, transform: from.transform === "none" ? PANEL_AT.transform : from.transform }, PANEL_OUT], { duration: 120, easing: "cubic-bezier(0, 0, 0.58, 1)", fill: "forwards" });
+    a.onfinish = () => setShown(false);
+    return () => a.cancel();
+  }, [open, shown]);
 
   const name = account.user?.username ?? (progress?.name || t("trainer"));
   const signIn = account.status === "ready" && account.enabled && !account.user;
@@ -99,16 +124,12 @@ export function AccountMenu({ className }: { className?: string }) {
         <ChevronDown className={cn("h-3.5 w-3.5 transition-transform motion-reduce:transition-none", open && "rotate-180")} aria-hidden />
       </button>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
+      {shown && (
+          <div
+            ref={panel}
             id={panelId}
             role="region"
             aria-label={t("account")}
-            initial={{ opacity: 0, y: -6, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -4, scale: 0.98, transition: { duration: 0.12 } }}
-            transition={{ type: "spring", stiffness: 520, damping: 36 }}
             style={{ transformOrigin: "top right" }}
             className="absolute right-0 top-full z-50 mt-2 w-72 overflow-hidden rounded-xl border border-foreground/10 bg-card text-card-foreground shadow-[0_20px_50px_-12px_hsl(var(--shade)/0.7)]"
             data-testid="account-menu"
@@ -182,9 +203,8 @@ export function AccountMenu({ className }: { className?: string }) {
                 )}
               </div>
             )}
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
     </div>
   );
 }

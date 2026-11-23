@@ -182,7 +182,7 @@
  "/lab/games/records/[event]/opengraph-image": "route ssg:fallback",
  "/lab/games/run": "page dynamic",
  "/lab/games/run/og": "route dynamic",
- "/lab/mass-battle": "page dynamic",
+ "/lab/mass-battle": "page static",
  "/lab/mass-battle/[preset]": "page ssg",
  "/lab/mass-battle/[preset]/opengraph-image": "route ssg:fallback",
  "/lab/mass-battle/og": "route dynamic",

@@ -1,5 +1,6 @@
 "use client";
 
+import { GUESSR_DEMO_MAP, GUESSR_DEMO_SHOT } from "./guessr-demo-assets";
 import { useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Expand, Flag as FlagIcon, Maximize2, MapPin as MapPinIcon, MapPinned, Minus, MousePointer2, Pin, Plus, Shrink, X } from "lucide-react";
@@ -26,9 +27,10 @@ import { useGeoNames, type GeoLocal } from "@/lib/geo-i18n-client";
  * but the round's screenshot and that crop. No place is named before the result.
  */
 
-const SHOT = "/api/geo/preview/demo";
+/** The round's screenshot: a small static copy (the pop-up shows it about 380 px wide), not the 1280 px original. */
+const SHOT = GUESSR_DEMO_SHOT;
 /** Paldea's map: the world map's crop (world pixels, 1:1). Its places below are in the crop's pixels. */
-const MAP = { src: "/geo/maps/paldea.webp", w: 614, h: 564, squarePx: 28 };
+const MAP = { src: GUESSR_DEMO_MAP, w: 614, h: 564, squarePx: 28 };
 /** The map's width over its height, as the game sizes its dock (mapAspect). */
 const ASPECT = MAP.w / MAP.h;
 /** Levincia: its pin (where the flag stands) and its area, from the game's data. */

@@ -1,4 +1,5 @@
 /** PokéGuessr types shared by the server and the client. */
+import type { GeoLearn } from "./geo-learn-types";
 import type { FamilyCombos, GeoEra, GeoFamilyId } from "./geo-families";
 
 export const GEO_ROUNDS = 5;
@@ -177,4 +178,6 @@ export interface GeoGuessResponse {
   resultToken?: string;
   /** Standard games: a link token so friends can play the same five places. */
   challengeToken?: string;
+  /** The learn card's fact about the place, sent with the answer (null: nothing on file). */
+  learn?: GeoLearn | null;
 }

@@ -1,0 +1,754 @@
+{
+ "profile": "phone",
+ "base": "https://localhost:3443",
+ "runs": 4,
+ "at": "2026-11-23T11:46:59.299Z",
+ "results": [
+  {
+   "route": "/pokemon/pikachu",
+   "label": "pikachu",
+   "navError": null,
+   "ttfb": 31.899999998509884,
+   "fcp": 2276,
+   "lcp": 2276,
+   "lcpEl": "img.absolute.inset-0.m-auto.object-contain src=https://localhost:3443/api/art/25?s=400 in overview",
+   "lcpUrl": "https://localhost:3443/api/art/25?s=400",
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0,
+   "clsScrollSources": [],
+   "tbt": 414,
+   "longTasks": 5,
+   "longestTask": 314,
+   "longestAfterLoad": 121,
+   "longAfterLoad": [
+    [
+     5070,
+     121
+    ],
+    [
+     5930,
+     81
+    ],
+    [
+     6064,
+     53
+    ],
+    [
+     12759,
+     51
+    ],
+    [
+     13597,
+     55
+    ],
+    [
+     13873,
+     51
+    ]
+   ],
+   "inp": 128,
+   "inpEvent": "click 128ms input.h-9.w-48.rounded-full.border in moves",
+   "interactNote": "typed \"char\"",
+   "load": 4168.599999997765,
+   "htmlKB": 37.3,
+   "jsBeforeLoadKB": 213.4,
+   "jsAfterLoadKB": 31.7,
+   "prefetchKB": 9.9,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 252.6,
+   "fontKB": 83.5,
+   "totalKB": 672.8,
+   "topJs": [
+    "53KB 4bd1b696-bad92808725a934a.js",
+    "45KB 31255-b53e551bc16f43b0.js",
+    "21KB 35508-a58ec2d72457630d.js",
+    "18KB page-d85ea470b11d07cc.js",
+    "18KB layout-47c83546dde3d417.js",
+    "7KB 24909-5d554e214db07606.js",
+    "6KB webpack-ed1f945a7c1655db.js",
+    "6KB 71701-f81d7f10d3cf610d.js"
+   ],
+   "bigImages": [
+    "73KB https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-vii/ultra-sun-ultra-moon/25",
+    "68KB https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-vii/ultra-sun-ultra-moon/sh",
+    "20KB /api/art/25?s=400",
+    "9KB /_next/image?url=https%3A%2F%2Fraw.githubusercontent.com%2FPokeAPI%2Fsprites%2Fmaster%2Fsprites%2Fpokemon%2Fother%2Fhome",
+    "9KB /_next/image?url=https%3A%2F%2Fraw.githubusercontent.com%2FPokeAPI%2Fsprites%2Fmaster%2Fsprites%2Fpokemon%2Fother%2Fhome"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "3KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "47KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [],
+   "heapMB": 9,
+   "domNodes": 2946,
+   "run": 0
+  },
+  {
+   "route": "/pokemon/pikachu",
+   "label": "pikachu",
+   "navError": null,
+   "ttfb": 14.699999999254942,
+   "fcp": 2216,
+   "lcp": 2216,
+   "lcpEl": "img.absolute.inset-0.m-auto.object-contain src=https://localhost:3443/api/art/25?s=400 in overview",
+   "lcpUrl": "https://localhost:3443/api/art/25?s=400",
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0,
+   "clsScrollSources": [],
+   "tbt": 220,
+   "longTasks": 4,
+   "longestTask": 194,
+   "longestAfterLoad": 101,
+   "longAfterLoad": [
+    [
+     4386,
+     101
+    ],
+    [
+     5208,
+     51
+    ]
+   ],
+   "inp": 96,
+   "inpEvent": "pointerdown 96ms input.h-9.w-48.rounded-full.border in moves",
+   "interactNote": "typed \"char\"",
+   "load": 4012.099999997765,
+   "htmlKB": 37.3,
+   "jsBeforeLoadKB": 213.4,
+   "jsAfterLoadKB": 31.7,
+   "prefetchKB": 9.9,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 252.5,
+   "fontKB": 83.5,
+   "totalKB": 672.7,
+   "topJs": [
+    "53KB 4bd1b696-bad92808725a934a.js",
+    "45KB 31255-b53e551bc16f43b0.js",
+    "21KB 35508-a58ec2d72457630d.js",
+    "18KB page-d85ea470b11d07cc.js",
+    "18KB layout-47c83546dde3d417.js",
+    "7KB 24909-5d554e214db07606.js",
+    "6KB webpack-ed1f945a7c1655db.js",
+    "6KB 71701-f81d7f10d3cf610d.js"
+   ],
+   "bigImages": [
+    "74KB https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-vii/ultra-sun-ultra-moon/25",
+    "69KB https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-vii/ultra-sun-ultra-moon/sh",
+    "20KB /api/art/25?s=400",
+    "9KB /_next/image?url=https%3A%2F%2Fraw.githubusercontent.com%2FPokeAPI%2Fsprites%2Fmaster%2Fsprites%2Fpokemon%2Fother%2Fhome",
+    "9KB /_next/image?url=https%3A%2F%2Fraw.githubusercontent.com%2FPokeAPI%2Fsprites%2Fmaster%2Fsprites%2Fpokemon%2Fother%2Fhome"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "3KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "47KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [],
+   "heapMB": 9,
+   "domNodes": 2946,
+   "run": 1
+  },
+  {
+   "route": "/pokemon/pikachu",
+   "label": "pikachu",
+   "navError": null,
+   "ttfb": 17.699999999254942,
+   "fcp": 2196,
+   "lcp": 2196,
+   "lcpEl": "img.absolute.inset-0.m-auto.object-contain src=https://localhost:3443/api/art/25?s=400 in overview",
+   "lcpUrl": "https://localhost:3443/api/art/25?s=400",
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0,
+   "clsScrollSources": [],
+   "tbt": 351,
+   "longTasks": 2,
+   "longestTask": 346,
+   "longestAfterLoad": 105,
+   "longAfterLoad": [
+    [
+     4768,
+     105
+    ]
+   ],
+   "inp": 120,
+   "inpEvent": "click 120ms input.h-9.w-48.rounded-full.border in moves",
+   "interactNote": "typed \"char\"",
+   "load": 4230,
+   "htmlKB": 37.3,
+   "jsBeforeLoadKB": 213.4,
+   "jsAfterLoadKB": 31.7,
+   "prefetchKB": 9.9,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 252.6,
+   "fontKB": 83.5,
+   "totalKB": 672.8,
+   "topJs": [
+    "53KB 4bd1b696-bad92808725a934a.js",
+    "45KB 31255-b53e551bc16f43b0.js",
+    "21KB 35508-a58ec2d72457630d.js",
+    "18KB page-d85ea470b11d07cc.js",
+    "18KB layout-47c83546dde3d417.js",
+    "7KB 24909-5d554e214db07606.js",
+    "6KB webpack-ed1f945a7c1655db.js",
+    "6KB 71701-f81d7f10d3cf610d.js"
+   ],
+   "bigImages": [
+    "74KB https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-vii/ultra-sun-ultra-moon/25",
+    "69KB https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-vii/ultra-sun-ultra-moon/sh",
+    "20KB /api/art/25?s=400",
+    "9KB /_next/image?url=https%3A%2F%2Fraw.githubusercontent.com%2FPokeAPI%2Fsprites%2Fmaster%2Fsprites%2Fpokemon%2Fother%2Fhome",
+    "9KB /_next/image?url=https%3A%2F%2Fraw.githubusercontent.com%2FPokeAPI%2Fsprites%2Fmaster%2Fsprites%2Fpokemon%2Fother%2Fhome"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "3KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "47KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [],
+   "heapMB": 8,
+   "domNodes": 2828,
+   "run": 2
+  },
+  {
+   "route": "/pokemon/pikachu",
+   "label": "pikachu",
+   "navError": null,
+   "ttfb": 13.600000001490116,
+   "fcp": 2188,
+   "lcp": 2188,
+   "lcpEl": "img.absolute.inset-0.m-auto.object-contain src=https://localhost:3443/api/art/25?s=400 in overview",
+   "lcpUrl": "https://localhost:3443/api/art/25?s=400",
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0.32913172925021267,
+   "clsScrollSources": [
+    "0.3291 section#pokedex.scroll-mt-32.space-y-4 \"08 // POKÉDEX ENTRIES 21 unique entries Pokédex en\" [16,666,358,178]→[0,0,0,0]",
+    "0.3291 tr.cursor-pointer.border-b.border-foreground/5.transition-colors \"32 Discharge PAGE → ELECTRIC 80\" in moves [33,519,324,59]→[0,0,0,0]",
+    "0.3291 td.p-2 \"FAIRY\" in moves [150,460,91,59]→[165,460,91,59]",
+    "0.3291 p.text-[11px].text-muted-foreground \"Learnset from Scarlet & Violet. Tap a move for its\" in moves [33,591,324,18]→[0,0,0,0]",
+    "0.3291 th.p-2 \"TYPE\" in moves [150,424,91,37]→[165,424,91,37]"
+   ],
+   "tbt": 271,
+   "longTasks": 2,
+   "longestTask": 256,
+   "longestAfterLoad": 115,
+   "longAfterLoad": [
+    [
+     4656,
+     115
+    ]
+   ],
+   "inp": 112,
+   "inpEvent": "click 112ms input.h-9.w-48.rounded-full.border in moves",
+   "interactNote": "typed \"char\"",
+   "load": 4074.60000000149,
+   "htmlKB": 37.3,
+   "jsBeforeLoadKB": 213.4,
+   "jsAfterLoadKB": 31.7,
+   "prefetchKB": 9.9,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 252.6,
+   "fontKB": 83.5,
+   "totalKB": 672.7,
+   "topJs": [
+    "53KB 4bd1b696-bad92808725a934a.js",
+    "45KB 31255-b53e551bc16f43b0.js",
+    "21KB 35508-a58ec2d72457630d.js",
+    "18KB page-d85ea470b11d07cc.js",
+    "18KB layout-47c83546dde3d417.js",
+    "7KB 24909-5d554e214db07606.js",
+    "6KB webpack-ed1f945a7c1655db.js",
+    "6KB 71701-f81d7f10d3cf610d.js"
+   ],
+   "bigImages": [
+    "73KB https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-vii/ultra-sun-ultra-moon/25",
+    "68KB https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-vii/ultra-sun-ultra-moon/sh",
+    "20KB /api/art/25?s=400",
+    "9KB /_next/image?url=https%3A%2F%2Fraw.githubusercontent.com%2FPokeAPI%2Fsprites%2Fmaster%2Fsprites%2Fpokemon%2Fother%2Fhome",
+    "9KB /_next/image?url=https%3A%2F%2Fraw.githubusercontent.com%2FPokeAPI%2Fsprites%2Fmaster%2Fsprites%2Fpokemon%2Fother%2Fhome"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "3KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "47KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [],
+   "heapMB": 9,
+   "domNodes": 2943,
+   "run": 3
+  },
+  {
+   "route": "/pokemon/charizard",
+   "label": "charizard",
+   "navError": null,
+   "ttfb": 11.299999997019768,
+   "fcp": 2544,
+   "lcp": 2544,
+   "lcpEl": "img.absolute.inset-0.m-auto.object-contain src=https://localhost:3443/api/art/6?s=400 in overview",
+   "lcpUrl": "https://localhost:3443/api/art/6?s=400",
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0,
+   "clsScrollSources": [],
+   "tbt": 390,
+   "longTasks": 2,
+   "longestTask": 387,
+   "longestAfterLoad": 103,
+   "longAfterLoad": [
+    [
+     4962,
+     103
+    ],
+    [
+     12200,
+     58
+    ],
+    [
+     12259,
+     50
+    ]
+   ],
+   "inp": 96,
+   "inpEvent": "click 96ms input.h-9.w-48.rounded-full.border in moves",
+   "interactNote": "typed \"char\"",
+   "load": 4275.599999997765,
+   "htmlKB": 36,
+   "jsBeforeLoadKB": 213.4,
+   "jsAfterLoadKB": 31.7,
+   "prefetchKB": 9.9,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 152.8,
+   "fontKB": 83.5,
+   "totalKB": 571.7,
+   "topJs": [
+    "53KB 4bd1b696-bad92808725a934a.js",
+    "45KB 31255-b53e551bc16f43b0.js",
+    "21KB 35508-a58ec2d72457630d.js",
+    "18KB page-d85ea470b11d07cc.js",
+    "18KB layout-47c83546dde3d417.js",
+    "7KB 24909-5d554e214db07606.js",
+    "6KB webpack-ed1f945a7c1655db.js",
+    "6KB 71701-f81d7f10d3cf610d.js"
+   ],
+   "bigImages": [
+    "29KB /api/art/6?s=400",
+    "15KB /_next/image?url=https%3A%2F%2Fraw.githubusercontent.com%2FPokeAPI%2Fsprites%2Fmaster%2Fsprites%2Fpokemon%2Fother%2Fhome",
+    "14KB /_next/image?url=https%3A%2F%2Fraw.githubusercontent.com%2FPokeAPI%2Fsprites%2Fmaster%2Fsprites%2Fpokemon%2Fother%2Fhome",
+    "10KB /art/160/6.webp",
+    "10KB /art/160/445.webp"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "3KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "47KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [],
+   "heapMB": 9,
+   "domNodes": 2587,
+   "run": 0
+  },
+  {
+   "route": "/pokemon/charizard",
+   "label": "charizard",
+   "navError": null,
+   "ttfb": 17,
+   "fcp": 2284,
+   "lcp": 2284,
+   "lcpEl": "img.absolute.inset-0.m-auto.object-contain src=https://localhost:3443/api/art/6?s=400 in overview",
+   "lcpUrl": "https://localhost:3443/api/art/6?s=400",
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0,
+   "clsScrollSources": [],
+   "tbt": 247,
+   "longTasks": 2,
+   "longestTask": 251,
+   "longestAfterLoad": 96,
+   "longAfterLoad": [
+    [
+     4641,
+     96
+    ]
+   ],
+   "inp": 128,
+   "inpEvent": "click 128ms input.h-9.w-48.rounded-full.border in moves",
+   "interactNote": "typed \"char\"",
+   "load": 4136,
+   "htmlKB": 36,
+   "jsBeforeLoadKB": 213.4,
+   "jsAfterLoadKB": 31.7,
+   "prefetchKB": 9.9,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 152.6,
+   "fontKB": 83.5,
+   "totalKB": 571.5,
+   "topJs": [
+    "53KB 4bd1b696-bad92808725a934a.js",
+    "45KB 31255-b53e551bc16f43b0.js",
+    "21KB 35508-a58ec2d72457630d.js",
+    "18KB page-d85ea470b11d07cc.js",
+    "18KB layout-47c83546dde3d417.js",
+    "7KB 24909-5d554e214db07606.js",
+    "6KB webpack-ed1f945a7c1655db.js",
+    "6KB 71701-f81d7f10d3cf610d.js"
+   ],
+   "bigImages": [
+    "29KB /api/art/6?s=400",
+    "15KB /_next/image?url=https%3A%2F%2Fraw.githubusercontent.com%2FPokeAPI%2Fsprites%2Fmaster%2Fsprites%2Fpokemon%2Fother%2Fhome",
+    "14KB /_next/image?url=https%3A%2F%2Fraw.githubusercontent.com%2FPokeAPI%2Fsprites%2Fmaster%2Fsprites%2Fpokemon%2Fother%2Fhome",
+    "10KB /art/160/6.webp",
+    "10KB /art/160/445.webp"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "3KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "47KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [],
+   "heapMB": 9,
+   "domNodes": 2584,
+   "run": 1
+  },
+  {
+   "route": "/pokemon/charizard",
+   "label": "charizard",
+   "navError": null,
+   "ttfb": 13,
+   "fcp": 2284,
+   "lcp": 2284,
+   "lcpEl": "img.absolute.inset-0.m-auto.object-contain src=https://localhost:3443/api/art/6?s=400 in overview",
+   "lcpUrl": "https://localhost:3443/api/art/6?s=400",
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0,
+   "clsScrollSources": [],
+   "tbt": 154,
+   "longTasks": 2,
+   "longestTask": 156,
+   "longestAfterLoad": 98,
+   "longAfterLoad": [
+    [
+     4386,
+     98
+    ]
+   ],
+   "inp": 112,
+   "inpEvent": "click 112ms input.h-9.w-48.rounded-full.border in moves",
+   "interactNote": "typed \"char\"",
+   "load": 4013.199999999255,
+   "htmlKB": 36,
+   "jsBeforeLoadKB": 213.4,
+   "jsAfterLoadKB": 31.7,
+   "prefetchKB": 9.9,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 152.9,
+   "fontKB": 83.5,
+   "totalKB": 571.9,
+   "topJs": [
+    "53KB 4bd1b696-bad92808725a934a.js",
+    "45KB 31255-b53e551bc16f43b0.js",
+    "21KB 35508-a58ec2d72457630d.js",
+    "18KB page-d85ea470b11d07cc.js",
+    "18KB layout-47c83546dde3d417.js",
+    "7KB 24909-5d554e214db07606.js",
+    "6KB webpack-ed1f945a7c1655db.js",
+    "6KB 71701-f81d7f10d3cf610d.js"
+   ],
+   "bigImages": [
+    "29KB /api/art/6?s=400",
+    "15KB /_next/image?url=https%3A%2F%2Fraw.githubusercontent.com%2FPokeAPI%2Fsprites%2Fmaster%2Fsprites%2Fpokemon%2Fother%2Fhome",
+    "14KB /_next/image?url=https%3A%2F%2Fraw.githubusercontent.com%2FPokeAPI%2Fsprites%2Fmaster%2Fsprites%2Fpokemon%2Fother%2Fhome",
+    "10KB /art/160/6.webp",
+    "10KB /art/160/445.webp"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "3KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "47KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [],
+   "heapMB": 9,
+   "domNodes": 2581,
+   "run": 2
+  },
+  {
+   "route": "/pokemon/charizard",
+   "label": "charizard",
+   "navError": null,
+   "ttfb": 16.400000002235174,
+   "fcp": 2236,
+   "lcp": 2236,
+   "lcpEl": "img.absolute.inset-0.m-auto.object-contain src=https://localhost:3443/api/art/6?s=400 in overview",
+   "lcpUrl": "https://localhost:3443/api/art/6?s=400",
+   "cls": 0,
+   "clsSources": [],
+   "clsWithScroll": 0,
+   "clsScrollSources": [],
+   "tbt": 133,
+   "longTasks": 2,
+   "longestTask": 164,
+   "longestAfterLoad": 69,
+   "longAfterLoad": [
+    [
+     4428,
+     69
+    ],
+    [
+     13549,
+     55
+    ]
+   ],
+   "inp": 96,
+   "inpEvent": "click 96ms input.h-9.w-48.rounded-full.border in moves",
+   "interactNote": "typed \"char\"",
+   "load": 4013.5,
+   "htmlKB": 36,
+   "jsBeforeLoadKB": 213.4,
+   "jsAfterLoadKB": 31.7,
+   "prefetchKB": 9.9,
+   "prefetchCount": 1,
+   "prefetchRoutes": [
+    "/"
+   ],
+   "imageKB": 152.9,
+   "fontKB": 83.5,
+   "totalKB": 571.9,
+   "topJs": [
+    "53KB 4bd1b696-bad92808725a934a.js",
+    "45KB 31255-b53e551bc16f43b0.js",
+    "21KB 35508-a58ec2d72457630d.js",
+    "18KB page-d85ea470b11d07cc.js",
+    "18KB layout-47c83546dde3d417.js",
+    "7KB 24909-5d554e214db07606.js",
+    "6KB webpack-ed1f945a7c1655db.js",
+    "6KB 71701-f81d7f10d3cf610d.js"
+   ],
+   "bigImages": [
+    "29KB /api/art/6?s=400",
+    "15KB /_next/image?url=https%3A%2F%2Fraw.githubusercontent.com%2FPokeAPI%2Fsprites%2Fmaster%2Fsprites%2Fpokemon%2Fother%2Fhome",
+    "14KB /_next/image?url=https%3A%2F%2Fraw.githubusercontent.com%2FPokeAPI%2Fsprites%2Fmaster%2Fsprites%2Fpokemon%2Fother%2Fhome",
+    "10KB /art/160/6.webp",
+    "10KB /art/160/445.webp"
+   ],
+   "fonts": {
+    "files": [
+     "10KB 4c7c43bdd7a35c63-s.p.woff2",
+     "10KB 6681946d7a6ccbb7-s.p.woff2",
+     "10KB 84f090e3b62fb9e3-s.p.woff2",
+     "3KB 966913bad25267a8-s.p.woff2",
+     "4KB cd21efaca8026c00-s.p.woff2",
+     "47KB e4af272ccee01ff0-s.p.woff2"
+    ],
+    "preloaded": [
+     "4c7c43bdd7a35c63-s.p.woff2",
+     "6681946d7a6ccbb7-s.p.woff2",
+     "84f090e3b62fb9e3-s.p.woff2",
+     "966913bad25267a8-s.p.woff2",
+     "cd21efaca8026c00-s.p.woff2",
+     "e4af272ccee01ff0-s.p.woff2"
+    ],
+    "faces": [
+     "display 600 swap",
+     "display 700 swap",
+     "body 100 900 swap"
+    ]
+   },
+   "failed": [],
+   "badStatus": [],
+   "noCache": [
+    "Fetch no-store /api/auth/me"
+   ],
+   "console": [],
+   "heapMB": 9,
+   "domNodes": 2587,
+   "run": 3
+  }
+ ]
+}

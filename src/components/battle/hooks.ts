@@ -8,6 +8,7 @@ import { isUsageFormat, loadUsage, type UsageFile } from "@/lib/battle/usage";
 import type { BattleFormatId } from "@/lib/battle/formats";
 import type { TeamCheck, TeamSet } from "@/lib/battle/sets";
 import type { SpriteSpecies } from "@/lib/battle/sprites";
+import { loadQuickSpriteLookup } from "@/lib/battle/sprite-lookup";
 
 /** The format's Pokédex data, loaded on demand (null until it arrives). */
 export function useFormatDex(format: BattleFormatId): { dex: FormatDex | null; error: boolean } {
@@ -47,9 +48,32 @@ export function useSpriteLookup(): SpriteLookup | null {
   const [lookup, setLookup] = useState<{ fn: SpriteLookup } | null>(null);
   useEffect(() => {
     let live = true;
-    loadSpriteLookup().then(
-      (fn) => live && setLookup({ fn }),
-      () => undefined
+    let full = false;
+    // The full dex (1.8 MB of data, a few hundred ms to run on a phone) only for a name the species index doesn't know.
+    const loadFull = () => {
+      if (full) return;
+      full = true;
+      loadSpriteLookup().then(
+        (fn) => live && setLookup({ fn }),
+        () => undefined
+      );
+    };
+    loadQuickSpriteLookup().then(
+      (quick) =>
+        live &&
+        setLookup((was) =>
+          was ??
+          {
+            fn: (name) => {
+              const s = quick(name);
+              if (s !== undefined) return s;
+              // Asked while rendering: the full lookup takes over once it has loaded (a state update, not now).
+              queueMicrotask(loadFull);
+              return null;
+            },
+          }
+        ),
+      loadFull
     );
     return () => {
       live = false;

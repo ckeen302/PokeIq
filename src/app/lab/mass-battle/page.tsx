@@ -1,49 +1,14 @@
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/seo";
-import { MASS_BATTLE_LIVE } from "@/lib/lab";
-import { encodeBattle, encodeQuestion, MASS_BATTLE_PATH } from "@/lib/mass-battle/share";
-import { linkBattle, linkPlayback, linkQuestion, nameOf, slugIndex } from "@/lib/mass-battle/page-data";
-import { fmt, questionText, sideName } from "@/lib/mass-battle/copy";
-import { buildRoster } from "@/lib/mass-battle/roster-data";
-import { expandSpec, factsOf } from "@/lib/mass-battle/sets";
-import { MassBattlePage } from "@/components/mass-battle/MassBattlePage";
-import { mbNameOf } from "@/lib/mass-battle/i18n";
-import { typeName } from "@/lib/games/names";
-import { serverT } from "@/i18n/server";
-import mbCopy from "@/messages/mass-battle-copy";
-import mbPages from "@/messages/mass-battle-pages";
+import { MassBattleView, massBattleMetadata } from "./view";
 
-type Search = { searchParams: Promise<{ b?: string | string[]; ask?: string | string[]; v?: string | string[] }> };
-
-export async function generateMetadata({ searchParams }: Search): Promise<Metadata> {
-  const sp = await searchParams;
-  const q = linkQuestion(sp.ask);
-  const b = q ? null : linkBattle(sp.b);
-  const slugs = slugIndex();
-  const t = serverT(mbPages);
-  const c = serverT(mbCopy);
-  const lc = t.locale;
-  const name = mbNameOf(lc, nameOf);
-  const ty = lc === "en" ? undefined : (x: string) => typeName(x.toLowerCase(), lc);
-  const side = (s: Parameters<typeof sideName>[0]) => sideName(s, name, undefined, c, ty);
-  if (q) {
-    const title = questionText(side(q.army), side(q.boss), c);
-    const code = encodeQuestion(q, slugs);
-    return pageMetadata({ title, description: t("meta.questionDescription", { title }), path: `${MASS_BATTLE_PATH}?ask=${code}`, image: { url: `${MASS_BATTLE_PATH}/og?ask=${code}`, alt: title }, noindex: true });
-  }
-  if (b) {
-    const x = expandSpec(b, buildRoster().species.map(factsOf));
-    const army = (s: 0 | 1) => t("meta.battleSide", { n: fmt(x.sides[s].units.reduce((a, u) => a + u.count, 0), lc), name: side(b.sides[s]) });
-    const title = t("meta.battleTitle", { a: army(0), b: army(1) });
-    const code = encodeBattle(b, slugs);
-    return pageMetadata({ title, description: t("meta.battleDescription", { title }), path: `${MASS_BATTLE_PATH}?b=${code}`, image: { url: `${MASS_BATTLE_PATH}/og?b=${code}`, alt: title }, noindex: true });
-  }
-  return pageMetadata({ title: t("meta.title"), description: t("meta.description"), path: MASS_BATTLE_PATH, socialTitle: t("meta.social"), noindex: !MASS_BATTLE_LIVE });
+/**
+ * The Mass Battle Lab. Its HTML is the same for everyone, so it's built once and served from the CDN; a link to a
+ * battle, a question or a playback (?b=, ?ask=, ?v=) is rewritten to ./shared (next.config), which reads the query.
+ */
+export function generateMetadata(): Metadata {
+  return massBattleMetadata({});
 }
 
-export default async function Page({ searchParams }: Search) {
-  const sp = await searchParams;
-  const question = linkQuestion(sp.ask);
-  const battle = question ? null : linkBattle(sp.b);
-  return <MassBattlePage question={question} battle={battle} playback={linkPlayback(sp.v)} />;
+export default function Page() {
+  return <MassBattleView sp={{}} />;
 }

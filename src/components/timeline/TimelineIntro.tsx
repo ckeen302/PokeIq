@@ -52,8 +52,9 @@ const CSS = `
 @keyframes tl-fade-in { to { opacity: 1; } }
 .tl-intro-scan { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; overflow: hidden; }
 .tl-intro-scan::before { content: ""; position: absolute; left: 0; right: 0; height: 30%; top: -30%;
-  background: linear-gradient(180deg, transparent, rgb(200 230 60 / .10), transparent); animation: tl-scan 1.6s linear .4s infinite; }
-@keyframes tl-scan { to { top: 100%; } }
+  background: linear-gradient(180deg, transparent, rgb(200 230 60 / .10), transparent); animation: tl-scan 1.6s linear .4s infinite; will-change: transform; }
+/* From top -30% to top 100% of the screen, as a transform (130% of the screen is 433.3% of the band's own 30%): moving top re-laid it out every frame. */
+@keyframes tl-scan { to { transform: translateY(433.3333%); } }
 .tl-intro-skip { position: absolute; bottom: max(16px, 4%); left: 0; right: 0; text-align: center; font-family: var(--font-pixel); font-size: 9px;
   letter-spacing: .3em; text-transform: uppercase; color: rgb(184 216 42 / .55); animation: tl-blink-s 1.1s steps(2) infinite; }
 .tl-intro[data-phase="fly"] .tl-intro-skip, .tl-intro[data-phase="out"] .tl-intro-skip { opacity: 0; transition: opacity .3s; }

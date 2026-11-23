@@ -5,19 +5,24 @@
  *
  * Results are memoised per URL, so preloading the same asset again (e.g. the
  * rendered <img> mounting after a warm-up) resolves immediately. Failures
- * resolve too: a broken image must not freeze the game, it shows its own
- * retry state instead.
+ * resolve too (a broken image must not freeze a quiz), but with `false`, and
+ * aren't remembered, so a game can tell and try again.
  */
 
 import { playableCryUrl } from "./cry-audio";
 
-const cache = new Map<string, Promise<void>>();
+const cache = new Map<string, Promise<boolean>>();
 const MAX_CACHE = 300;
-/** The decoded images themselves, kept alive so the browser still has them when they're rendered. */
+/**
+ * The decoded images themselves, kept alive so the browser still has them
+ * when they're rendered: only the last few (a round's picture and the next
+ * one's, a quiz question's), since each holds its whole decoded bitmap.
+ */
 const images = new Map<string, HTMLImageElement>();
+const MAX_IMAGES = 8;
 
-function remember(key: string, p: Promise<void>): Promise<void> {
-  cache.set(key, p);
+function remember<T extends boolean | void>(key: string, p: Promise<T>): Promise<T> {
+  cache.set(key, p as Promise<boolean>);
   if (cache.size > MAX_CACHE) cache.delete(cache.keys().next().value!);
   return p;
 }
@@ -28,25 +33,26 @@ export function preloadedImage(url: string): HTMLImageElement | null {
   return img && img.complete && img.naturalWidth > 0 ? img : null;
 }
 
-/** `priority: "high"`: fetched ahead of the page's other images (a game's first picture). */
-export function preloadImage(url: string, opts: { priority?: "high" } = {}): Promise<void> {
-  if (typeof window === "undefined" || !url) return Promise.resolve();
+/** `priority: "high"`: fetched ahead of the page's other images (a game's first picture). Resolves true once decoded, false if it failed. */
+export function preloadImage(url: string, opts: { priority?: "high" } = {}): Promise<boolean> {
+  if (typeof window === "undefined" || !url) return Promise.resolve(false);
   const hit = cache.get(url);
   if (hit) return hit;
   const img = new window.Image();
   img.decoding = "async";
   if (opts.priority) img.fetchPriority = opts.priority;
-  const p = new Promise<void>((resolve) => {
+  const p = new Promise<boolean>((resolve) => {
     img.onload = () => {
+      images.delete(url);
       images.set(url, img);
-      if (images.size > MAX_CACHE) images.delete(images.keys().next().value!);
+      if (images.size > MAX_IMAGES) images.delete(images.keys().next().value!);
       // decode() guarantees the first paint won't stall on decoding.
-      if (typeof img.decode === "function") img.decode().then(resolve, () => resolve());
-      else resolve();
+      if (typeof img.decode === "function") img.decode().then(() => resolve(true), () => resolve(true));
+      else resolve(true);
     };
     img.onerror = () => {
       cache.delete(url); // allow a later retry
-      resolve();
+      resolve(false);
     };
   });
   img.src = url;
@@ -65,7 +71,7 @@ export function preloadAudio(url: string): Promise<void> {
   const src = playableCryUrl(url);
   const key = `audio:${src}`;
   const hit = cache.get(key);
-  if (hit) return hit;
+  if (hit) return hit.then(() => undefined);
   const p = fetch(src)
     .then((res) => {
       if (!res.ok) throw new Error(`cry ${res.status}`);

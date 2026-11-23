@@ -63,6 +63,10 @@ interface Props {
   land?: boolean | "fit";
   /** The Daily's crowd map: where everyone pinned this round, as a heat cloud under the pins. */
   density?: Pick<GeoCrowdRound, "cells" | "cw" | "ch" | "max"> | null;
+  /** Hold the map's pictures back (a phone's first round loads its screenshot first). */
+  defer?: boolean;
+  /** The round: the guess map stays mounted from round to round, and a new one starts it where it started. */
+  round?: number;
 }
 
 export const WORLD_MAP = "/geo/maps/world.webp";
@@ -110,7 +114,7 @@ export function mapAspect(region: Pick<GeoRegionInfo, "map">): number {
  * round draws a dashed line from the guess to the answer, then zooms to fit
  * them both.
  */
-export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, controls = true, className, fill, others = [], land = false, density }: Props) {
+export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, controls = true, className, fill, others = [], land = false, density, defer = false, round }: Props) {
   const t = useT(geoNs);
   const geoNames = useT(geoNamesNs);
   const mapName = localMap(geoNames, region);
@@ -137,6 +141,8 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
   const crop = locked ? region.map.src : WORLD_THUMB;
   const [cover, setCover] = useState<"shown" | "fading" | "gone">(() => (worldMapReady ? "gone" : "shown"));
   const [cropPainted, setCropPainted] = useState(worldMapReady);
+  /** What to do once the engine has drawn the map sharp (set by the engine's effect). */
+  const sharpRef = useRef<() => void>(() => undefined);
 
   useEffect(() => {
     pickRef.current = onPick;
@@ -149,7 +155,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
   }, []);
 
   useEffect(() => {
-    if (worldMapReady) return;
+    if (worldMapReady || defer) return;
     let off = false;
     // The crop is decoded and given a frame to paint before the world map is asked for.
     const painted = preloadImage(crop).then(() => new Promise<void>((r) => requestAnimationFrame(() => r())));
@@ -159,7 +165,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
     return () => {
       off = true;
     };
-  }, [crop]);
+  }, [crop, defer]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -178,23 +184,21 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
         if (x >= 0 && x <= 1 && y >= 0 && y <= 1) pickRef.current?.({ x, y });
       },
       onView: setView,
+      // The guess map stays readable small: dots come in as you zoom, once there's room for them.
+      spacedDots: true,
+      // The first paint's crop fades out once the map is drawn as sharp as the view needs.
+      onSharp: () => sharpRef.current(),
     });
     engine.current = e;
-    // The engine is loading the world map now; once it's decoded and drawn, the crop fades out over it.
+    // The engine is loading the world map now (off the main thread, the copy this view needs); once it's drawn, the crop fades out over it.
     let off = false;
     let fade = 0;
-    if (!worldMapReady) {
-      void preloadImage(WORLD_MAP).then(() => {
-        worldMapReady = true;
-        requestAnimationFrame(() =>
-          requestAnimationFrame(() => {
-            if (off) return;
-            setCover("fading");
-            fade = window.setTimeout(() => !off && setCover("gone"), 350);
-          })
-        );
-      });
-    }
+    sharpRef.current = () => {
+      if (off || worldMapReady) return;
+      worldMapReady = true;
+      setCover("fading");
+      fade = window.setTimeout(() => !off && setCover("gone"), 350);
+    };
     return () => {
       off = true;
       window.clearTimeout(fade);
@@ -202,6 +206,14 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
       engine.current = null;
     };
   }, [atlas, cropPainted, region.id, x0, y0, x1, y1, land]);
+
+  // A new round on the same map: back to where it started.
+  const firstRound = useRef(round);
+  useEffect(() => {
+    if (round === firstRound.current) return;
+    firstRound.current = round;
+    engine.current?.recenter();
+  }, [round]);
 
   // A revealed round zooms to show the guess and the answer together, once the line has drawn.
   const revealKey = revealed.map((r) => `${r.guess?.x},${r.guess?.y},${flagAt(r.answer)}`).join("|");
@@ -258,7 +270,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
       data-pick-area={pickArea}
     >
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
-      {cover !== "gone" && (
+      {cover !== "gone" && !defer && (
         // Before the engine reports a view, the crop sits where the engine will frame the region (centred, with its room around it).
         <div
           className={cn("pointer-events-none absolute transition-opacity duration-300", cover === "fading" ? "opacity-0" : "opacity-100")}

@@ -1,9 +1,8 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element -- thumbnails are pre-sized static files (public/art/160) */
-import { memo, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import { memo, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import Link from "@/components/ui/Link";
-import { motion } from "framer-motion";
 import { ArrowDown, ArrowDownWideNarrow, ArrowUp, ArrowUpDown, ArrowUpNarrowWide, BookOpenCheck, Check, ChevronDown, LayoutGrid, Rows3, Search, SlidersHorizontal, X } from "lucide-react";
 import { TYPES, capitalize } from "@/lib/pokemon/type-matrix";
 import { typeColor } from "@/lib/pokemon/type-colors";
@@ -172,9 +171,11 @@ export function PokedexExplorer({ rows, local }: { rows: DexRow[]; local?: DexLi
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const searchRef = useRef<HTMLInputElement | null>(null);
 
+  // The box shows each key at once; the cards follow at a lower priority, so typing never waits on a re-render of the grid.
+  const shownQuery = useDeferredValue(query);
   const filtered = useMemo(() => {
     const list = items.filter((p) => {
-      if (!(localMatch && local ? localMatch(p, query, local.search[p.id]) : matchesDexQuery(p, query))) return false;
+      if (!(localMatch && local ? localMatch(p, shownQuery, local.search[p.id]) : matchesDexQuery(p, shownQuery))) return false;
       if (types.length && !types.every((t) => p.types.includes(t))) return false;
       if (gens.length && !gens.includes(p.gen)) return false;
       if (legendsOnly && !(p.legendary || p.mythical)) return false;
@@ -188,10 +189,10 @@ export function PokedexExplorer({ rows, local }: { rows: DexRow[]; local?: DexLi
       const cmp = typeof va === "string" ? va.localeCompare(vb as string) : (va as number) - (vb as number);
       return cmp * dir || a.id - b.id;
     });
-  }, [items, query, types, gens, legendsOnly, finalOnly, sort, desc, local, localMatch]);
+  }, [items, shownQuery, types, gens, legendsOnly, finalOnly, sort, desc, local, localMatch]);
 
   // Reset the window whenever the result set changes.
-  useEffect(() => setVisible(PAGE), [query, types, gens, legendsOnly, finalOnly, sort, desc]);
+  useEffect(() => setVisible(PAGE), [shownQuery, types, gens, legendsOnly, finalOnly, sort, desc]);
 
   // Infinite scroll.
   useEffect(() => {
@@ -659,12 +660,27 @@ const DexCard = memo(function DexCard({
   const t = useT(explorerNs);
   const c1 = typeColor(p.types[0]);
   const c2 = typeColor(p.types[1] ?? p.types[0]);
+  const ref = useRef<HTMLDivElement>(null);
+  // A card added after the page started (scrolling on, a new filter) fades and rises in, once, staggered by its place,
+  // eased out over 0.3 s (what framer-motion did with these values, measured side by side).
+  const enter = useRef(animate);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!enter.current || !el || typeof el.animate !== "function") return;
+    const timing = { duration: 300, delay: Math.min(index, 24) * 20, fill: "backwards" as const };
+    const anim = el.animate(
+      [
+        { opacity: 0, transform: "translateY(18px) scale(0.96)" },
+        { opacity: 1, transform: "none" },
+      ],
+      { ...timing, easing: "cubic-bezier(0, 0, 0.58, 1)" }
+    );
+    return () => anim.cancel();
+    // On mount only, like framer-motion's `initial`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
-    <motion.div
-      initial={animate ? { opacity: 0, y: 18, scale: 0.96 } : false}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.3, delay: Math.min(index, 24) * 0.02 }}
-    >
+    <div ref={ref}>
       <Link
         href={`/pokemon/${p.slug}`}
         className="group relative block overflow-hidden rounded-lg border bg-card transition-colors duration-200 hover:border-screen/60"
@@ -706,6 +722,6 @@ const DexCard = memo(function DexCard({
           </div>
         </div>
       </Link>
-    </motion.div>
+    </div>
   );
 });

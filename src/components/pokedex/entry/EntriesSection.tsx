@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Quote } from "lucide-react";
 import { useT } from "@/i18n/client";
 import dexEntryNs from "@/messages/dex-entry";
@@ -29,7 +29,7 @@ export function EntriesSection({ entries }: { entries: { text: string; games: st
     <div className="space-y-3">
       <div className="columns-1 gap-3 md:columns-2 [&>*]:mb-3">
         {shown.map((e, i) => (
-          <motion.figure
+          <m.figure
             key={e.text}
             className="break-inside-avoid hud rounded-lg border bg-card p-4"
             initial={{ opacity: 0, y: 14 }}
@@ -56,7 +56,7 @@ export function EntriesSection({ entries }: { entries: { text: string; games: st
                 ))}
               </figcaption>
             )}
-          </motion.figure>
+          </m.figure>
         ))}
       </div>
       {entries.length > 6 && (

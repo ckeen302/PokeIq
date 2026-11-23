@@ -35,20 +35,22 @@ function learnOf(answer: Pick<GeoAnswer, "name" | "region" | "parent">): Promise
  * it on the World Atlas and in the Pokédex. Rendered only once the round is
  * graded, so nothing here can leak an answer.
  */
-export function LearnCard({ answer, shot, map, className }: { answer: GeoAnswer; shot?: string; map?: { name: string }; className?: string }) {
+export function LearnCard({ answer, shot, map, className, learn: given }: { answer: GeoAnswer; shot?: string; map?: { name: string }; className?: string; /** The fact, when it came with the guess's answer (no request then). */ learn?: GeoLearn | null }) {
   const t = useT(geoNs);
   const names = useGeoNames();
   const gn = useT(geoNamesNs);
   const en = t.locale === "en";
-  const [learn, setLearn] = useState<GeoLearn | null>(null);
+  const [asked, setLearn] = useState<GeoLearn | null>(null);
+  const learn = given !== undefined ? given : asked;
   useEffect(() => {
+    if (given !== undefined) return;
     let off = false;
     setLearn(null);
     void learnOf(answer).then((l) => !off && setLearn(l));
     return () => {
       off = true;
     };
-  }, [answer]);
+  }, [answer, given]);
   return (
     <div className={cn("flex min-w-0 items-start gap-3", className)} data-testid="geo-learn-card">
       {shot && (
