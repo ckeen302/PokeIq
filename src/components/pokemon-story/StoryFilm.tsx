@@ -1,5 +1,7 @@
 "use client";
 
+import { STAGE_POSTERS, StagePoster } from "@/components/lab/StagePoster";
+import { lightStart } from "@/lib/gl/device-tier";
 import Link from "@/components/ui/PlainLink";
 import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
@@ -44,6 +46,8 @@ function webglOk() {
 
 /** Phones start on the light render, everything else on the middle one; the frame-time monitor adapts both ways. */
 function initialQuality(): Quality {
+  // Weak devices (a software renderer, an old GPU, a slow CPU, little memory) start light whatever their screen.
+  if (lightStart()) return "low";
   const nav = navigator as Navigator & { deviceMemory?: number };
   const coarse = window.matchMedia("(pointer: coarse)").matches;
   const short = Math.min(window.screen.width, window.screen.height);
@@ -787,6 +791,8 @@ export function StoryFilm({ initialChapter, story, children }: { initialChapter:
           data-recording={recording ? "1" : "0"}
         >
           <div ref={hostRef} className="absolute inset-0 cursor-grab select-none active:cursor-grabbing" data-testid="ps-scene" role="application" aria-label={t("sceneLabel")} />
+          {/* Phones: a still of the opening view until the film's first frame (a chapter's link opens elsewhere: no still). */}
+          {initialChapter === null && <StagePoster src={STAGE_POSTERS.story} gone={ready} />}
           <div ref={dipRef} className="wh-dip" aria-hidden />
           <div className="wh-shade-top" aria-hidden />
           <div className="wh-shade-bottom" aria-hidden />

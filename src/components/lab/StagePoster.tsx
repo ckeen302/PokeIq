@@ -25,4 +25,10 @@ export const STAGE_POSTERS = {
   games: "/lab/posters/games.webp",
   race: "/lab/posters/race.webp",
   massBattle: "/lab/posters/mass-battle.webp",
+  labDex: "/lab/posters/pokedex.webp",
+  story: "/lab/posters/pokemon-story.webp",
+  history: "/lab/posters/world-history.webp",
+  timeline: "/lab/posters/timeline.webp",
+  sizes: "/lab/posters/sizes.webp",
+  globe: "/lab/posters/globe.webp",
 } as const;
