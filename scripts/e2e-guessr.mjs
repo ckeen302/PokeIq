@@ -194,6 +194,38 @@ async function checkRoundHud(p, phone, round, total) {
     const shown = Number((await p.getByTestId("geo-score-chip").getByTestId("geo-score-total").innerText()).replace(/\D/g, ""));
     if (shown !== total) errors.push(`the tracker's total reads ${shown}, not ${total}`);
   }
+ }
+
+/**
+ * The guess map's location dots: none on the whole world (the resting corner
+ * map, or hovered), then fading in as it's zoomed, once there's room for them
+ * (the engine counts the dots it draws on the canvas's data-dots).
+ */
+async function checkDots(p, tag) {
+  const dots = () => p.locator("[data-testid=geo-dock] canvas").evaluate((c) => Number(c.dataset.dots ?? -1));
+  await p.locator("[data-testid=geo-dock] [role=application][data-ready]").waitFor({ timeout: 30_000 });
+  await p.waitForTimeout(300);
+  if ((await dots()) !== 0) errors.push(`dots: the resting world map shows ${await dots()} dots`);
+  const dock = await p.getByTestId("geo-dock").boundingBox();
+  await p.mouse.move(dock.x + dock.width / 2, dock.y + dock.height / 2, { steps: 4 });
+  await p.locator("[data-testid=geo-dock][data-open=true]").waitFor();
+  await p.waitForTimeout(500);
+  if ((await dots()) !== 0) errors.push(`dots: the whole world, hovered, shows ${await dots()} dots`);
+  const zoomIn = p.getByTestId("geo-dock").getByRole("button", { name: "Zoom in" });
+  const counts = [];
+  for (let i = 0; i < 4; i++) {
+    await zoomIn.click();
+    await p.waitForTimeout(450);
+    counts.push(await dots());
+  }
+  if (!(counts[3] > 0 && counts[3] >= counts[1])) errors.push(`dots: zooming in doesn't bring dots in (${counts.join(", ")})`);
+  await p.screenshot({ path: `${OUT}/guessr-dots-${tag}.png` });
+  // Back to the whole map, and the dots go again.
+  await p.getByTestId("geo-dock").getByRole("button", { name: "Show the whole map" }).click().catch(() => {});
+  await p.waitForTimeout(900);
+  if ((await dots()) !== 0) errors.push(`dots: back on the whole world, ${await dots()} dots stay`);
+  await p.mouse.move(120, 320);
+  await p.waitForTimeout(800);
 }
 
 async function solo(width, height) {
@@ -223,6 +255,7 @@ async function solo(width, height) {
   if (!phone && !(await page.getByRole("button", { name: /Place your pin/ }).isDisabled().catch(() => true))) errors.push("Guess is enabled before a pin");
   await page.waitForTimeout(400);
   await page.screenshot({ path: `${OUT}/guessr-round-${tag}.png` });
+  if (!phone) await checkDots(page, tag);
   await pinAndGuess(page, phone, 0.5, `guessr-round-${tag}`);
   await page.getByTestId("geo-reveal").waitFor();
   await page.getByTestId("geo-next").waitFor();

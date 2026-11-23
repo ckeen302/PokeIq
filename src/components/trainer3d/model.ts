@@ -1,9 +1,9 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
-import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { BALLS, HAIR_BANGS, colorHex, eyeHex, hairHex, skinHex, type TrainerConfig, type TrainerFacing, type TrainerPose } from "@/lib/trainer/config";
 import { drawEmblem, faceTexture } from "./faces";
 import { MOVES } from "./moves";
+import { roomEnvironment } from "@/lib/gl/room-env";
 import type { TauntId } from "@/lib/trainer/taunts";
 
 /**
@@ -43,34 +43,6 @@ type V3 = [number, number, number];
 // ---------------------------------------------------------------------------
 // The stage: soft warm key with shadows, cool fill, rim, and a room-like environment
 // ---------------------------------------------------------------------------
-
-/** The room-light environment map, made once per renderer (trainers sharing a WebGL context share it too). */
-const rooms = new WeakMap<THREE.WebGLRenderer, { texture: THREE.Texture; users: number }>();
-
-function roomEnvironment(renderer: THREE.WebGLRenderer): { texture: THREE.Texture; release(): void } {
-  let room = rooms.get(renderer);
-  if (!room) {
-    const pmrem = new THREE.PMREMGenerator(renderer);
-    const scene = new RoomEnvironment();
-    room = { texture: pmrem.fromScene(scene, 0.04).texture, users: 0 };
-    scene.dispose();
-    pmrem.dispose();
-    rooms.set(renderer, room);
-  }
-  room.users++;
-  const r = room;
-  let released = false;
-  return {
-    texture: r.texture,
-    release() {
-      if (released) return;
-      released = true;
-      if (--r.users > 0) return;
-      r.texture.dispose();
-      if (rooms.get(renderer) === r) rooms.delete(renderer);
-    },
-  };
-}
 
 /**
  * Lights a trainer's scene and sets up the renderer for it. Returns what

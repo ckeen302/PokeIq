@@ -1,0 +1,23 @@
+{
+  "title": "Creador de Poké Balls",
+  "metaTitle": "Creador de Poké Balls: diseña tu propia Poké Ball",
+  "metaDescription": "Diseña tu propia Poké Ball en 3D. Empieza con una Poké Ball oficial, un tipo o cualquier Pokémon y elige colores, motivos, acabados, pegatinas y un efecto al abrirse. Compártela o descárgala en PNG, GIF, vídeo, modelo 3D o STL para impresión 3D. Gratis.",
+  "metaDesignTitle": "{name}: una Poké Ball personalizada",
+  "metaDesignDescription": "Una Poké Ball personalizada hecha con el Creador de Poké Balls de PokéIQ. Ábrela para girarla en 3D y verla abrirse, o diseña la tuya.",
+  "ogAlt": "Una Poké Ball personalizada hecha en PokéIQ",
+  "cardTitle": "Creador de Poké Balls",
+  "cardSubtitle": "Diseña tu propia Poké Ball en 3D.",
+  "howto": {
+    "title": "Cómo funciona",
+    "s1t": "Empieza con una Poké Ball",
+    "s1": "Elige una Poké Ball oficial, un tema de tipo o una en blanco, crea una al azar o escoge cualquier Pokémon para tener una Poké Ball con sus colores y tipos.",
+    "s2t": "Hazla tuya",
+    "s2": "Colorea cada parte, pon motivos en cualquiera de las mitades, elige un acabado para cada parte (brillante, metal, cristal, madera y más), cambia la forma y el botón, y haz clic en la Poké Ball para ponerle pegatinas.",
+    "s3t": "Mírala abrirse",
+    "s3": "Elige un efecto que salga disparado y un Pokémon que aparezca, y pulsa Abrir, o Capturar para verla moverse tres veces y hacer clic.",
+    "s4t": "Comparte y descarga",
+    "s4": "Tu diseño va en su enlace, así que cualquiera puede abrirlo. Descarga un PNG transparente, un GIF, un vídeo vertical, un modelo GLB o un STL para imprimir en 3D.",
+    "printTitle": "Imprimirla",
+    "print": "El STL está en milímetros: una Poké Ball de 60 mm cuyas mitades se imprimen planas sobre su borde sin soportes, un aro que las une con 0,25 mm de holgura y el botón en dos piezas pequeñas. Píntala con tus colores."
+  }
+}
