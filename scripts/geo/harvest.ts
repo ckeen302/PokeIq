@@ -5,6 +5,7 @@
  *   npx tsx scripts/geo/harvest.ts pages                 # each place's page on Bulbapedia, Poképédia, PokéWiki and the Pokémon Wiki
  *   npx tsx scripts/geo/harvest.ts list Paldea Kitakami  # the screenshots those pages and the wikis' per-game categories have of them
  *   npx tsx scripts/geo/harvest.ts fetch Paldea          # downloads what passes the bar, encodes it, drops near-copies of any shot
+ *   npx tsx scripts/geo/harvest.ts fetch Hoenn --thin 2  # the same for the places with two shots or fewer only
  *   npx tsx scripts/geo/harvest.ts sheets Paldea         # contact sheets of what's left, for review
  *   SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… npx tsx scripts/geo/harvest.ts accept Paldea review.json
  *                                                         # uploads the kept ones (new random ids, upsert off) into curation.json's `added`
@@ -923,7 +924,13 @@ const stagedPath = (region: string, c: Candidate) => path.join(DIR, region, "sta
 
 const SKIP_HOSTS = new Set((process.env.GEO_SKIP_HOSTS ?? "").split(",").map((h) => h.trim()).filter(Boolean));
 
-async function fetchRegion(region: string) {
+/**
+ * Downloads, measures and stages a region's candidates. Only as many per place
+ * and family as a review can use: twice the room its size cap leaves (none for
+ * a place at its cap). With `thin`, only places with that many shots or fewer
+ * in all. What's passed over is left as it is, for a later run.
+ */
+async function fetchRegion(region: string, thin?: number) {
   const file = path.join(DIR, region, "list.json");
   const cands = readJson<Candidate[]>(file, []);
   const { hashes, shots } = await existingHashes(familiesOf(region));
@@ -935,11 +942,24 @@ async function fetchRegion(region: string) {
   for (const s of shots) have.set(`${s.area}|${s.family}`, (have.get(`${s.area}|${s.family}`) ?? 0) + 1);
   const rank = (c: Candidate) => (have.get(`${areaKey(c)}|${famOf(c.code)}`) ?? 0) * 10 + (c.via === "page" ? 0 : 1);
   cands.sort((a, b) => plainness(a) - plainness(b) || rank(a) - rank(b) || areaKey(a).localeCompare(areaKey(b)) || a.file.length - b.file.length);
+  const geoNow = loadGeo() as Location[];
+  const total = new Map<string, number>();
+  for (const s of shots) total.set(s.area, (total.get(s.area) ?? 0) + 1);
+  const room = (c: Candidate) => 2 * Math.max(0, shotCap(c, geoNow) - (have.get(`${areaKey(c)}|${famOf(c.code)}`) ?? 0));
+  const stagedFor = new Map<string, number>();
+  for (const c of cands) if (!c.drop && c.staged && existsSync(c.staged)) stagedFor.set(`${areaKey(c)}|${famOf(c.code)}`, (stagedFor.get(`${areaKey(c)}|${famOf(c.code)}`) ?? 0) + 1);
   const kept: Candidate[] = [];
   let n = 0;
   for (const c of cands) {
     n++;
     if (c.drop && !c.drop.startsWith("fetch failed")) continue;
+    const pair = `${areaKey(c)}|${famOf(c.code)}`;
+    const counted = !(c.staged && existsSync(c.staged));
+    if (counted) {
+      if (thin !== undefined && (total.get(areaKey(c)) ?? 0) > thin) continue;
+      if ((stagedFor.get(pair) ?? 0) >= room(c)) continue;
+      stagedFor.set(pair, (stagedFor.get(pair) ?? 0) + 1);
+    }
     // Staged by an earlier run: no download again, but checked again against the shots in the data now.
     const restaged = !!(c.staged && existsSync(c.staged) && c.hash);
     if (restaged && c.drop) continue;
@@ -1008,6 +1028,8 @@ async function fetchRegion(region: string) {
       delete c.staged;
     }
     if (!c.drop) kept.push(c);
+    // A dropped one leaves its place's room for the next.
+    else if (counted) stagedFor.set(pair, (stagedFor.get(pair) ?? 1) - 1);
     if (n % 25 === 0) {
       writeJson(file, cands);
       console.log(`  ${n}/${cands.length} fetched, ${kept.length} kept`);
@@ -1379,7 +1401,10 @@ async function main() {
   const regions = args.filter((a) => REGIONS[a]);
   if (cmd === "pages") await findPages();
   else if (cmd === "list") await list(regions.length ? regions : Object.keys(REGIONS));
-  else if (cmd === "fetch") for (const r of regions) await fetchRegion(r);
+  else if (cmd === "fetch") {
+    const at = args.indexOf("--thin");
+    for (const r of regions) await fetchRegion(r, at >= 0 ? Number(args[at + 1]) : undefined);
+  }
   else if (cmd === "crops") for (const r of regions) await cropCandidates(r, Number(args.find((a) => /^\d+$/.test(a)) ?? 3));
   else if (cmd === "sheets") for (const r of regions) await sheets(r, args.some((a) => /^\d+$/.test(a)) ? Number(args.find((a) => /^\d+$/.test(a))) : undefined);
   else if (cmd === "accept") await accept(args[0], args[1]);
