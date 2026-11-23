@@ -176,8 +176,24 @@ const SIZE_HEIGHT: Record<MapSize, number> = { s: 200, m: 300, l: 430, xl: 0 };
 /** The dock's width for a size step and the map's aspect ratio: S 280×200 on a 1.4 map, wider for the world; XL is a share of the window. */
 export const dockWidth = (size: MapSize, aspect: number): string =>
   size === "xl" ? `min(60vw, calc(49vh * ${aspect}), calc(100% - 2rem))` : `min(${Math.round(SIZE_HEIGHT[size] * aspect)}px, calc(100% - 2rem))`;
-const SIZE_KEY = "pokeiq:geo-map-size";
-const STICKY_KEY = "pokeiq:geo-map-sticky";
+/*
+ * Desktop: GeoGuessr's guess map, measured off GeoGuessr itself: 16% of the
+ * window's width by 17% of its height until the pointer reaches it, then 30%
+ * by 36.4% (the default step). The bigger/smaller buttons step the hovered
+ * size only, like GeoGuessr's; the resting size never changes.
+ */
+const REST = { w: "16vw", h: "17vh" };
+const OPEN: Record<MapSize, { w: string; h: string }> = {
+  s: { w: "30vw", h: "36.4vh" },
+  m: { w: "40vw", h: "48.5vh" },
+  l: { w: "50vw", h: "60.6vh" },
+  xl: { w: "60vw", h: "72.7vh" },
+};
+const boxWidth = (w: string) => `min(max(${w}, 200px), calc(100vw - 4rem))`;
+const boxHeight = (h: string) => `min(max(${h}, 120px), calc(100vh - 9rem))`;
+/* v2: everyone starts again at GeoGuessr's size (an older remembered XL no longer carries over). */
+const SIZE_KEY = "pokeiq:geo-map-size-v2";
+const STICKY_KEY = "pokeiq:geo-map-sticky-v2";
 /** The map shrinks back this long after the pointer leaves (unless pinned). */
 const COLLAPSE_MS = 600;
 
@@ -219,9 +235,9 @@ export function usePhone(): boolean {
 }
 
 /**
- * The guess map's dock. Desktop: bottom-right over the picture, half
- * transparent until the pointer (or focus) reaches it, when it grows a size
- * step in 250 ms; S/M/L/XL steps and a pin that keeps it open are remembered.
+ * The guess map's dock. Desktop: GeoGuessr's corner map, solid and small
+ * until the pointer (or focus) reaches it, when it grows in 250 ms; the
+ * S/M/L/XL steps (the hovered size) and a pin that keeps it open are remembered.
  * The Guess button sits full width under the map. Phone: a "Guess" pill
  * opens the map as a full-width bottom sheet, dragged to resize or close,
  * with the Guess bar pinned to its foot.
@@ -231,13 +247,12 @@ export function MapDock({
   button,
   extra,
   hasPin,
-  aspect = 1.4,
   tools,
   testId = "geo-dock",
 }: {
-  /** The map; `fill` asks it to fill the phone sheet instead of keeping its aspect. */
-  map: (o: { fill: boolean }) => React.ReactNode;
-  /** The map's width over its height: each size step keeps its height, so wide maps get a wider dock. */
+  /** The map; `fill` asks it to fill its box instead of keeping its aspect; `land` (the phone card) opens it on the land rather than the whole map. */
+  map: (o: { fill: boolean; land: boolean | "fit" }) => React.ReactNode;
+  /** The map's width over its height (unused on desktop now: the dock is GeoGuessr's size and the map fills it). */
   aspect?: number;
   /** The Guess button (full width). */
   button: React.ReactNode;
@@ -283,26 +298,29 @@ export function MapDock({
   if (phone) return <PhoneMap map={map} button={button} extra={extra} hasPin={hasPin} tools={tools} testId={testId} />;
 
   const open = hot || sticky;
-  // Open: one step up from the chosen size (XL is the top: it stays, so the button under it never flickers).
-  const shown: MapSize = open ? MAP_SIZES[Math.min(MAP_SIZES.length - 1, MAP_SIZES.indexOf(size) + 1)] : size;
+  // Resting: GeoGuessr's small corner map. Open (hovered, focused or pinned): the chosen step's size.
+  const box = open ? OPEN[size] : REST;
   const idx = MAP_SIZES.indexOf(size);
   const control = "tap flex h-7 w-7 items-center justify-center rounded bg-black/55 text-white backdrop-blur transition-colors hover:bg-black/75 disabled:opacity-35 disabled:hover:bg-black/55";
   return (
     <div
       data-testid={testId}
-      data-size={shown}
+      data-size={open ? size : "rest"}
       data-open={open ? "true" : undefined}
       data-sticky={sticky ? "true" : undefined}
-      className={cn("geo-dock absolute bottom-4 right-4 z-10 flex flex-col gap-2 transition-[width,opacity] duration-[250ms] ease-out", open ? "opacity-100" : "opacity-50 hover:opacity-100")}
-      style={{ width: dockWidth(shown, aspect) }}
+      className="geo-dock absolute bottom-4 right-8 z-10 flex flex-col gap-3.5 transition-[width] duration-[250ms] ease-out [&_[data-testid=geo-guess]]:h-[38px]"
+      style={{ width: boxWidth(box.w) }}
       onPointerOver={warm}
       onPointerLeave={cool}
       onFocusCapture={warm}
       onBlurCapture={cool}
     >
-      <div className="relative rounded-md shadow-2xl">
-        {map({ fill: false })}
-        <div className="absolute left-1.5 top-1.5 z-[2] flex flex-col gap-1" role="group" aria-label={t("dock.size")}>
+      <div className="relative transition-[height] duration-[250ms] ease-out" style={{ height: boxHeight(box.h) }}>
+        {/* GeoGuessr's corner map: + and − top left; the "whole map" button only once it's open. */}
+        <div className={cn("h-full overflow-hidden rounded-md border-2 border-foreground/20 shadow-2xl [&_[data-map-controls]]:left-1.5 [&_[data-map-controls]]:right-auto", !open && "[&_[data-map-controls]>button:nth-child(3)]:hidden")}>
+          {map({ fill: true, land: "fit" })}
+        </div>
+        <div className={cn("absolute bottom-full left-0 z-[2] mb-2 flex gap-1 transition-opacity duration-200", open ? "opacity-100" : "pointer-events-none opacity-0")} role="group" aria-label={t("dock.size")}>
           <button type="button" className={control} onClick={() => chooseSize(MAP_SIZES[Math.min(MAP_SIZES.length - 1, idx + 1)])} disabled={idx >= MAP_SIZES.length - 1} aria-label={t("dock.bigger")} title={t("dock.bigger")} data-testid="geo-map-grow">
             <Expand className="h-3.5 w-3.5" />
           </button>
@@ -333,7 +351,7 @@ export const BAR_BTN =
  * its close button or Escape puts it away. The map stays mounted, so the pin
  * and the zoom carry over.
  */
-function PhoneMap({ map, button, extra, hasPin, tools, testId }: { map: (o: { fill: boolean }) => React.ReactNode; button: React.ReactNode; extra?: React.ReactNode; hasPin: boolean; tools?: React.ReactNode; testId: string }) {
+function PhoneMap({ map, button, extra, hasPin, tools, testId }: { map: (o: { fill: boolean; land: boolean | "fit" }) => React.ReactNode; button: React.ReactNode; extra?: React.ReactNode; hasPin: boolean; tools?: React.ReactNode; testId: string }) {
   const t = useT(geoNs);
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -366,7 +384,7 @@ function PhoneMap({ map, button, extra, hasPin, tools, testId }: { map: (o: { fi
         aria-hidden={!open}
       >
         <div className="relative h-full overflow-hidden rounded-[1.75rem] bg-[#165c96] shadow-[0_12px_40px_rgba(0,0,0,0.55)] ring-4 ring-[#a99cff]/80">
-          {map({ fill: true })}
+          {map({ fill: true, land: true })}
           <button type="button" onClick={() => setOpen(false)} data-testid="geo-map-collapse" className="absolute left-2.5 top-2.5 z-[3] flex h-9 w-9 items-center justify-center rounded-full bg-[#1e1a3f]/90 text-white shadow-lg ring-1 ring-white/20" aria-label={t("dock.backToPicture")}>
             <X className="h-4 w-4" />
           </button>

@@ -55,11 +55,12 @@ interface Props {
   /** Other trainers' pins shown live (a team duel's teammates): their colour, avatar and name. */
   others?: (MapPin & { color?: string; image?: string; label?: string })[];
   /**
-   * The phone's map card: open on the land rather than the whole map. A
-   * map of the whole world (the world, a themed map) starts with its regions
-   * filling the card, the rest a drag away; a region's map is that region.
+   * Open on the land rather than the whole map. A map of the whole world
+   * (the world, a themed map) starts with its regions filling the card (true,
+   * the phone card), or all of them in view as large as the box allows
+   * ("fit", the desktop dock); a region's map is that region.
    */
-  land?: boolean;
+  land?: boolean | "fit";
   /** The Daily's crowd map: where everyone pinned this round, as a heat cloud under the pins. */
   density?: Pick<GeoCrowdRound, "cells" | "cw" | "ch" | "max"> | null;
 }
@@ -169,7 +170,8 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
     const wholeWorld = x0 <= 0 && y0 <= 0 && x1 >= atlas.W && y1 >= atlas.H;
     const e = createAtlas(canvas, stage, atlas, WORLD_MAP, {
       bounds: region.id === WORLD_REGION ? undefined : box,
-      home: land && wholeWorld ? { box: landBox(atlas), cover: true } : undefined,
+      // "fit" (the desktop dock): every region in view, as large as the box allows; true (the phone card): the land fills the card.
+      home: land && wholeWorld ? { box: landBox(atlas), cover: land !== "fit" } : undefined,
       onTap: (wx, wy) => {
         const x = (wx - x0) / (x1 - x0);
         const y = (wy - y0) / (y1 - y0);
