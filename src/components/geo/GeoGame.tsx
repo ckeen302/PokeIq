@@ -833,6 +833,12 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
         else retry = window.setTimeout(() => setShotTry({ shot: roundShot, n: tries.n + 1 }), SHOT_RETRIES[tries.n]);
         return;
       }
+      // The <img> itself already failed on this address (the preload had it from before): ask again, afresh.
+      if (imgFailed.current === shotSrc) {
+        if (tries.n >= SHOT_RETRIES.length) setShotTry({ shot: roundShot, n: tries.n, failed: true });
+        else retry = window.setTimeout(() => setShotTry({ shot: roundShot, n: tries.n + 1 }), SHOT_RETRIES[tries.n]);
+        return;
+      }
       setReadyShot(shotSrc);
       // The clock starts now, unless this round's had already started (a game picked up after a reload).
       setClock((c) => (c?.shot === roundShot ? c : { shot: roundShot, at: Date.now() }));
@@ -844,9 +850,13 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
       window.clearTimeout(retry);
     };
   }, [roundShot, shotSrc, nextShot, tries.n, tries.failed]);
-  /** The <img> itself failed though the picture had loaded (the loop above handles every other failure): ask again. */
+  /** The address the round's <img> last failed on. */
+  const imgFailed = useRef<string | null>(null);
+  /** The <img> itself failed: if the picture had loaded, ask again afresh (before that, the loop above sees it). */
   const onShotError = () => {
-    if (!roundShot || !shotReady) return;
+    if (!roundShot) return;
+    imgFailed.current = shotSrc;
+    if (!shotReady) return;
     setReadyShot(null);
     setShotTry((t) => (t.shot === roundShot && (t.failed || t.n > tries.n) ? t : { shot: roundShot, n: Math.min(SHOT_RETRIES.length, tries.n + 1) }));
   };
