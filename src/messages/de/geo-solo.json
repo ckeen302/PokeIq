@@ -53,7 +53,8 @@
       "scored": "Heute hast du {score} Punkte.",
       "blurb": "Die Orte von heute, für alle gleich.",
       "again": "Nochmal spielen",
-      "play": "Heutiges spielen"
+      "play": "Heutiges spielen",
+      "resume": "Tagesspiel {num} fortsetzen"
     },
     "weekly": {
       "numbered": "Woche #{n}",

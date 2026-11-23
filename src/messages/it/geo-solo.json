@@ -53,7 +53,8 @@
       "scored": "Oggi hai fatto {score}.",
       "blurb": "I luoghi di oggi, uguali per tutti.",
       "again": "Gioca ancora",
-      "play": "Gioca quella di oggi"
+      "play": "Gioca quella di oggi",
+      "resume": "Riprendi Giornaliera {num}"
     },
     "weekly": {
       "numbered": "Settimanale #{n}",

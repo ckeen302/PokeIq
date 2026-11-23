@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Loader2, Maximize2, Minus, Plus } from "lucide-react";
 import { WORLD_REGION, type GeoRegionInfo } from "@/lib/geo-types";
-import { createAtlas, loadAtlas, type AtlasData, type AtlasEngine, type AtlasView, type Box } from "@/components/atlas/atlas-engine";
+import { createAtlas, loadAtlas, mapReady, type AtlasData, type AtlasEngine, type AtlasView, type Box } from "@/components/atlas/atlas-engine";
 import { preloadImage } from "@/lib/preload";
 import { cn } from "@/lib/utils";
 import { crowdColor, type GeoCrowdRound } from "@/lib/geo-crowd";
@@ -63,6 +63,10 @@ interface Props {
   land?: boolean | "fit";
   /** The Daily's crowd map: where everyone pinned this round, as a heat cloud under the pins. */
   density?: Pick<GeoCrowdRound, "cells" | "cw" | "ch" | "max"> | null;
+  /** Hold the map's pictures back (a phone's first round loads its screenshot first). */
+  defer?: boolean;
+  /** The round: the guess map stays mounted from round to round, and a new one starts it where it started. */
+  round?: number;
 }
 
 export const WORLD_MAP = "/geo/maps/world.webp";
@@ -110,7 +114,7 @@ export function mapAspect(region: Pick<GeoRegionInfo, "map">): number {
  * round draws a dashed line from the guess to the answer, then zooms to fit
  * them both.
  */
-export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, controls = true, className, fill, others = [], land = false, density }: Props) {
+export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, controls = true, className, fill, others = [], land = false, density, defer = false, round }: Props) {
   const t = useT(geoNs);
   const geoNames = useT(geoNamesNs);
   const mapName = localMap(geoNames, region);
@@ -149,7 +153,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
   }, []);
 
   useEffect(() => {
-    if (worldMapReady) return;
+    if (worldMapReady || defer) return;
     let off = false;
     // The crop is decoded and given a frame to paint before the world map is asked for.
     const painted = preloadImage(crop).then(() => new Promise<void>((r) => requestAnimationFrame(() => r())));
@@ -159,7 +163,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
     return () => {
       off = true;
     };
-  }, [crop]);
+  }, [crop, defer]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -186,7 +190,8 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
     let off = false;
     let fade = 0;
     if (!worldMapReady) {
-      void preloadImage(WORLD_MAP).then(() => {
+      // Its smallest copy, decoded off the main thread (the engine fetches bigger ones as you zoom in).
+      void mapReady(WORLD_MAP).then(() => {
         worldMapReady = true;
         requestAnimationFrame(() =>
           requestAnimationFrame(() => {
@@ -204,6 +209,14 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
       engine.current = null;
     };
   }, [atlas, cropPainted, region.id, x0, y0, x1, y1, land]);
+
+  // A new round on the same map: back to where it started.
+  const firstRound = useRef(round);
+  useEffect(() => {
+    if (round === firstRound.current) return;
+    firstRound.current = round;
+    engine.current?.recenter();
+  }, [round]);
 
   // A revealed round zooms to show the guess and the answer together, once the line has drawn.
   const revealKey = revealed.map((r) => `${r.guess?.x},${r.guess?.y},${flagAt(r.answer)}`).join("|");
@@ -260,7 +273,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
       data-pick-area={pickArea}
     >
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
-      {cover !== "gone" && (
+      {cover !== "gone" && !defer && (
         // Before the engine reports a view, the crop sits where the engine will frame the region (centred, with its room around it).
         <div
           className={cn("pointer-events-none absolute transition-opacity duration-300", cover === "fading" ? "opacity-0" : "opacity-100")}

@@ -88,6 +88,8 @@ export interface AtlasEngine {
   fitBox: (box: Box, min?: number, duration?: number) => Promise<void>;
   /** Back to the whole map (the world, or the region's box). */
   reset: () => void;
+  /** Back to where the map started, at once (a new round on the same map). */
+  recenter: () => void;
   zoomBy: (factor: number) => void;
   setSelected: (place: AtlasPlace | null) => void;
   destroy: () => void;
@@ -140,45 +142,69 @@ export function loadAtlas(): Promise<AtlasData> {
   return atlasData;
 }
 
-type Levels = { img: CanvasImageSource; scale: number }[];
-const levelCache = new Map<string, Promise<Levels>>();
-/** The map image plus halved copies, largest first: made once per image, reused by every map. */
-function mapLevels(src: string): Promise<Levels> {
-  let levels = levelCache.get(src);
-  if (!levels) {
-    levels = new Promise((resolve, reject) => {
-      const base = new Image();
-      base.decoding = "async";
-      base.onerror = () => {
-        levelCache.delete(src);
-        reject(new Error(`map ${src}`));
-      };
-      base.onload = () => {
-        const out: Levels = [{ img: base, scale: 1 }];
-        let from: CanvasImageSource = base;
-        let w = base.width;
-        let h = base.height;
-        let scale = 1;
-        while (w > 600) {
-          w = Math.round(w / 2);
-          h = Math.round(h / 2);
-          scale /= 2;
-          const c = document.createElement("canvas");
-          c.width = w;
-          c.height = h;
-          const g = c.getContext("2d")!;
-          g.imageSmoothingQuality = "high";
-          g.drawImage(from, 0, 0, w, h);
-          out.push({ img: c, scale });
-          from = c;
-        }
-        resolve(out);
-      };
-      base.src = src;
-    });
-    levelCache.set(src, levels);
+/** A copy of a map image: drawn at `scale` of the map's own size. */
+type Level = { img: CanvasImageSource; scale: number };
+
+/**
+ * Maps that come with pre-shrunk copies (scripts/geo/world-map-copies.mjs),
+ * smallest first: the quarter copy draws the whole world, and each bigger
+ * one is fetched only once the view is zoomed in far enough to need it, so a
+ * phone never decodes the 15-megapixel original just to show the world.
+ */
+export const MAP_COPIES: Record<string, { src: string; width: number }[]> = {
+  "/geo/maps/world.webp": [
+    { src: "/geo/maps/world-1463.webp", width: 1463 },
+    { src: "/geo/maps/world-2925.webp", width: 2925 },
+    { src: "/geo/maps/world.webp", width: 5850 },
+  ],
+};
+const copiesOf = (src: string) => MAP_COPIES[src] ?? [{ src, width: 0 }];
+
+/**
+ * A picture fetched and decoded off the main thread (createImageBitmap, or
+ * an image's decode() where that's missing), so no frame waits on it.
+ */
+async function decodeOffThread(src: string): Promise<CanvasImageSource> {
+  if (typeof createImageBitmap === "function") {
+    const res = await fetch(src);
+    if (!res.ok) throw new Error(`map ${src} ${res.status}`);
+    return createImageBitmap(await res.blob());
   }
-  return levels;
+  const img = new Image();
+  img.decoding = "async";
+  img.src = src;
+  await img.decode();
+  return img;
+}
+
+const levelCache = new Map<string, Promise<Level[]>>();
+/**
+ * One copy of a map, decoded once and shared by every map on the page. The
+ * smallest copy also gets a halved one, for the most zoomed-out views.
+ */
+function loadLevel(copy: { src: string; width: number }, smallest: boolean, mapWidth: number): Promise<Level[]> {
+  let p = levelCache.get(copy.src);
+  if (!p) {
+    p = decodeOffThread(copy.src).then(async (img) => {
+      const w = copy.width || (img as ImageBitmap).width;
+      const scale = w / mapWidth;
+      const out: Level[] = [{ img, scale }];
+      if (smallest && typeof createImageBitmap === "function" && img instanceof ImageBitmap && img.width > 900) {
+        const half = await createImageBitmap(img, { resizeWidth: Math.round(img.width / 2), resizeHeight: Math.round(img.height / 2), resizeQuality: "high" }).catch(() => null);
+        if (half) out.push({ img: half, scale: scale / 2 });
+      }
+      return out;
+    });
+    p.catch(() => levelCache.delete(copy.src));
+    levelCache.set(copy.src, p);
+  }
+  return p;
+}
+
+/** The map's smallest copy, fetched and decoded: once it resolves, a map drawing `src` shows at once. */
+export function mapReady(src: string, mapWidth = 5850): Promise<void> {
+  const [first] = copiesOf(src);
+  return loadLevel(first, true, mapWidth).then(() => undefined);
 }
 
 export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas: AtlasData, src: string, opts: AtlasOptions = {}): AtlasEngine {
@@ -193,7 +219,9 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
   let anim = 0;
   let touched = false;
   let alive = true;
-  let levels: Levels = [];
+  /** The copies decoded so far, by scale (smallest first). */
+  let levels: Level[] = [];
+  const copies = copiesOf(src);
   /** Spaced dots: each one's nearest neighbour, and how far it has faded in (0–1). */
   const nearest = opts.spacedDots ? nearestDistances(atlas.markers) : null;
   const dotAlpha = new Float32Array(atlas.markers.length);
@@ -212,10 +240,20 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     pixel: css.getPropertyValue("--font-pixel").trim() || "Silkscreen",
   };
 
-  void mapLevels(src).then((l) => {
-    levels = l;
-    if (alive) requestDraw();
-  });
+  /** Fetches a copy (once), and draws again when it's in. */
+  const asked = new Set<number>();
+  function want(i: number) {
+    if (asked.has(i)) return;
+    asked.add(i);
+    void loadLevel(copies[i], i === 0, atlas.W).then(
+      (got) => {
+        levels = [...levels, ...got].sort((a, b) => a.scale - b.scale);
+        if (alive) requestDraw();
+      },
+      () => asked.delete(i)
+    );
+  }
+  want(0);
 
   let queued = false;
   function requestDraw() {
@@ -300,10 +338,12 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     ctx.setTransform(dpr * s, 0, 0, dpr * s, dpr * tx, dpr * ty);
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
+    // The smallest copy with enough detail for this zoom (a bigger one is fetched once it's needed).
+    const need = (s * dpr) / 1.5;
+    const ideal = copies.findIndex((c) => (c.width ? c.width / atlas.W : 1) >= need);
+    want(ideal < 0 ? copies.length - 1 : ideal);
     if (levels.length) {
-      // The smallest copy that still has enough detail for this zoom.
-      const need = s * dpr;
-      const lvl = levels.find((l) => l.scale <= need * 1.5) ?? levels[0];
+      const lvl = levels.find((l) => l.scale >= need) ?? levels[levels.length - 1];
       ctx.drawImage(lvl.img, 0, 0, atlas.W, atlas.H);
     }
 
@@ -677,6 +717,16 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
       const h = home();
       void glide((W / 2 - h.tx) / h.s, (H / 2 - h.ty) / h.s, h.s);
     },
+    recenter: () => {
+      cancelAnimationFrame(anim);
+      zoomGoal = null;
+      touched = false;
+      framing = opts.home ? "start" : "whole";
+      if (!sized()) return;
+      Object.assign(view, home());
+      clamp();
+      requestDraw();
+    },
     zoomBy: (factor) => zoomAt(factor, W / 2, H / 2),
     setSelected: (place) => {
       selected = place;
@@ -686,6 +736,9 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
       alive = false;
       cancelAnimationFrame(anim);
       ro.disconnect();
+      // Hand the canvas's pixels back now, rather than whenever the element is collected.
+      canvas.width = 0;
+      canvas.height = 0;
       canvas.removeEventListener("pointerdown", onDown);
       canvas.removeEventListener("pointermove", onMove);
       canvas.removeEventListener("pointerup", onUp);

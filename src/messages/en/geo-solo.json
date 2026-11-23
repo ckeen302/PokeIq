@@ -53,7 +53,8 @@
       "scored": "You scored {score} today.",
       "blurb": "Today's places, the same for everyone.",
       "again": "Play again",
-      "play": "Play today's"
+      "play": "Play today's",
+      "resume": "Resume Daily {num}"
     },
     "weekly": {
       "numbered": "Weekly #{n}",
