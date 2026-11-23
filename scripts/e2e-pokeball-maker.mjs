@@ -165,8 +165,7 @@ export async function runPokeballMaker({ browser, BASE, OUT = "e2e-screenshots",
     }
     // A broken link opens a fresh ball and says so.
     await p2.goto(`${BASE}/tools/pokeball-maker?d=AQ_broken`, { waitUntil: "load" });
-    await ready(p2);
-    if (!(await p2.getByTestId("pbm-toast").count())) fail("a broken link didn't say so");
+    await p2.getByTestId("pbm-toast").waitFor({ timeout: 30_000 }).catch(() => fail("a broken link didn't say so"));
     await p2.close();
   } catch (e) {
     fail(`share link: stopped: ${e.message.split("\n")[0]}`);

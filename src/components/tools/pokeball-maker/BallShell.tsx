@@ -13,18 +13,18 @@ function Skeleton() {
   const t = useT(msgs);
   const tabs = [62, 70, 74, 60, 58, 70, 58, 58, 48];
   return (
-    <div className="dark-scope" data-testid="pokeball-maker-skeleton">
+    <div data-testid="pokeball-maker-skeleton">
       <div className="space-y-4 lg:hidden">
         <header className="px-1" aria-hidden>
           <p className="font-display text-[22px] font-semibold leading-tight tracking-tight">{t("title")}</p>
           <p className="mt-0.5 text-sm text-muted-foreground">{t("subtitle")}</p>
         </header>
-        <section className="pbm-skel relative h-[min(440px,56svh)] min-h-[340px] overflow-hidden rounded-[24px] border border-white/[0.06]">
+        <section className="dark-scope pbm-skel relative h-[min(440px,56svh)] min-h-[340px] overflow-hidden rounded-[24px] border border-white/[0.06]">
           <Ball />
         </section>
-        <div className="flex gap-2 overflow-hidden">{tabs.map((w, i) => <span key={i} className="h-11 shrink-0 rounded-full bg-white/[0.04]" style={{ width: w + 16 }} />)}</div>
+        <div className="flex gap-2 overflow-hidden">{tabs.map((w, i) => <span key={i} className="h-11 shrink-0 rounded-full bg-foreground/[0.05]" style={{ width: w + 16 }} />)}</div>
       </div>
-      <section className="pbm-skel relative h-[calc(100dvh-108px)] min-h-[640px] overflow-hidden rounded-[28px] border border-white/[0.06] max-lg:hidden">
+      <section className="dark-scope pbm-skel relative h-[calc(100dvh-108px)] min-h-[640px] overflow-hidden rounded-[28px] border border-white/[0.06] max-lg:hidden">
         <header className="absolute left-9 top-8">
           <h1 className="font-display text-[26px] font-semibold leading-tight tracking-tight">{t("title")}</h1>
           <p className="mt-1 text-[15px] text-muted-foreground">{t("subtitle")}</p>

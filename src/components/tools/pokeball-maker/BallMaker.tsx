@@ -95,6 +95,15 @@ export default function BallMaker({ initial, linkBroken }: { initial: Design | n
   const [still, setStill] = useState<string | null>(null);
   const [, bump] = useState(0);
   const [stageEl, setStageEl] = useState<HTMLElement | null>(null);
+  // The page's own background (light or dark theme), for the phone's sticky stage backing; the maker itself is dark.
+  const [pageBg, setPageBg] = useState("transparent");
+  useEffect(() => {
+    const read = () => setPageBg(getComputedStyle(document.body).backgroundColor);
+    read();
+    const mo = new MutationObserver(read);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => mo.disconnect();
+  }, []);
   const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null);
   const sceneRef = useRef<BallScene | null>(null);
   const past = useRef<Design[]>([]);
@@ -108,7 +117,7 @@ export default function BallMaker({ initial, linkBroken }: { initial: Design | n
     toastTimer.current = setTimeout(() => setToast(null), 2400);
   }, []);
   useEffect(() => {
-    if (linkBroken) toastTimer.current = setTimeout(() => setToast(null), 3600);
+    if (linkBroken) toastTimer.current = setTimeout(() => setToast(null), 5000);
   }, [linkBroken]);
 
   // ---- History: a gesture pushes the design it started from once; its moves replace the present.
@@ -138,14 +147,21 @@ export default function BallMaker({ initial, linkBroken }: { initial: Design | n
     bump((n) => n + 1);
   }, []);
 
-  // ---- The address carries the design.
+  // ---- The address carries the design (and gets it back if a router update drops it).
   useEffect(() => {
-    const id = setTimeout(() => {
+    const sync = () => {
+      const want = encodeDesign(designRef.current);
       const url = new URL(window.location.href);
-      url.searchParams.set("d", encodeDesign(design));
+      if (url.searchParams.get("d") === want) return;
+      url.searchParams.set("d", want);
       window.history.replaceState(window.history.state, "", url.pathname + url.search);
-    }, 250);
-    return () => clearTimeout(id);
+    };
+    const id = setTimeout(sync, 250);
+    const every = setInterval(sync, 1000);
+    return () => {
+      clearTimeout(id);
+      clearInterval(every);
+    };
   }, [design]);
 
   // ---- The clock: idle time (paused while dragging or placing stickers), and the action playing.
@@ -228,6 +244,7 @@ export default function BallMaker({ initial, linkBroken }: { initial: Design | n
         pinned.current = null;
       },
       tier: () => sceneRef.current?.tier() ?? -1,
+      lockTier: (n: 0 | 1 | 2 | 3) => sceneRef.current?.lockTier(n),
       design: () => encodeDesign(designRef.current),
     };
     return () => void delete w.__pokeballMaker;
@@ -643,7 +660,7 @@ export default function BallMaker({ initial, linkBroken }: { initial: Design | n
   const stage = (
     <section
       ref={setStageEl}
-      className={cn("sm-stage relative select-none overflow-hidden", phone ? "touch-pan-y" : "touch-none", " border border-white/[0.06]", phone ? (panel ? "sticky top-14 z-20 h-[min(300px,36svh)] min-h-[220px] rounded-[24px] shadow-[0_18px_40px_-12px_rgb(0_0_0/0.8)]" : "h-[min(440px,56svh)] min-h-[340px] rounded-[24px]") : "h-[calc(100dvh-108px)] min-h-[640px] rounded-[28px]", panel === "stickers" && "cursor-crosshair")}
+      className={cn("dark-scope sm-stage relative select-none overflow-hidden", phone ? "touch-pan-y" : "touch-none", " border border-white/[0.06]", phone ? (panel ? "h-[min(300px,36svh)] min-h-[220px] rounded-[24px] shadow-[0_18px_40px_-12px_rgb(0_0_0/0.8)]" : "h-[min(440px,56svh)] min-h-[340px] rounded-[24px]") : "h-[calc(100dvh-108px)] min-h-[640px] rounded-[28px]", panel === "stickers" && "cursor-crosshair")}
       data-testid="pbm-stage"
       onPointerDown={onDown}
       onPointerMove={onMove}
@@ -699,23 +716,24 @@ export default function BallMaker({ initial, linkBroken }: { initial: Design | n
   );
 
   return (
-    <div className="dark-scope relative" data-testid="pokeball-maker" data-gl={gl}>
+    <div className="relative" data-testid="pokeball-maker" data-gl={gl}>
       {phone ? (
         <div className="space-y-4">
           <header className="px-1">
             <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight">{t("title")}</h1>
             <p className="mt-0.5 text-sm text-muted-foreground">{t("subtitle")}</p>
           </header>
-          {stage}
+          {/* While a panel is open the stage sticks under the header, on a backing so nothing shows round its corners. */}
+          <div className={cn(panel && "sticky top-14 z-20 -mx-4 px-4 pb-1 pt-2")} style={panel ? { background: pageBg } : undefined}>{stage}</div>
           <div className="sm-noscroll -mx-4 flex gap-2 overflow-x-auto px-4" role="tablist" aria-label={t("tabs.label")} data-testid="pbm-tabs">
             {TABS.map((tab) => (
-              <button key={tab} type="button" role="tab" aria-selected={panel === tab} onClick={() => togglePanel(tab)} className={cn("flex h-11 shrink-0 items-center rounded-full border px-4 text-[14px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70", panel === tab ? "border-white/20 bg-white/[0.1] text-foreground" : "border-white/[0.07] text-foreground/70")} data-testid={`pbm-tab-${tab}`}>
+              <button key={tab} type="button" role="tab" aria-selected={panel === tab} onClick={() => togglePanel(tab)} className={cn("flex h-11 shrink-0 items-center rounded-full border px-4 text-[14px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70", panel === tab ? "border-foreground/20 bg-foreground/[0.08] text-foreground" : "border-border text-foreground/70")} data-testid={`pbm-tab-${tab}`}>
                 {t(`tabs.${tab}`)}
               </button>
             ))}
           </div>
           {panel && (
-            <section className="sm-pop rounded-[24px] p-4" aria-label={panelTitle(panel)} data-testid={`pbm-drawer-${panel}`}>
+            <section className="dark-scope sm-pop rounded-[24px] p-4" aria-label={panelTitle(panel)} data-testid={`pbm-drawer-${panel}`}>
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="text-[15px] font-semibold">{panelTitle(panel)}</h2>
                 <button type="button" onClick={() => setPanel(null)} aria-label={t("actions.close")} className="-mr-1 flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground active:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70">
@@ -728,7 +746,7 @@ export default function BallMaker({ initial, linkBroken }: { initial: Design | n
           <div className="grid grid-cols-[auto_auto_1fr_1fr] gap-2">
             <IconButton label={t("actions.undo")} onClick={undo} disabled={!past.current.length} big testId="pbm-undo"><Undo2 className="h-5 w-5" aria-hidden /></IconButton>
             <IconButton label={t("actions.redo")} onClick={redo} disabled={!future.current.length} big testId="pbm-redo"><Redo2 className="h-5 w-5" aria-hidden /></IconButton>
-            <button type="button" onClick={randomise} className="flex h-12 items-center justify-center gap-2 rounded-full border border-white/[0.1] text-[15px] font-medium text-foreground/85 transition-colors active:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70" data-testid="pbm-randomise">
+            <button type="button" onClick={randomise} className="flex h-12 items-center justify-center gap-2 rounded-full border border-border text-[15px] font-medium text-foreground/85 transition-colors active:bg-foreground/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70" data-testid="pbm-randomise">
               <Dices className="h-[18px] w-[18px]" aria-hidden /> {t("actions.randomise")}
             </button>
             <button type="button" onClick={() => togglePanel("export")} className="flex h-12 items-center justify-center gap-2 rounded-full bg-primary font-display text-sm font-semibold uppercase tracking-wider text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80" data-testid="pbm-share">
@@ -746,7 +764,7 @@ export default function BallMaker({ initial, linkBroken }: { initial: Design | n
 
 function IconButton({ label, onClick, disabled, children, big, testId }: { label: string; onClick: () => void; disabled?: boolean; children: ReactNode; big?: boolean; testId?: string }) {
   return (
-    <button type="button" onClick={onClick} disabled={disabled} aria-label={label} title={label} className={cn("flex items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 disabled:opacity-35 disabled:hover:bg-transparent", big ? "h-12 w-12 border border-white/[0.1]" : "h-10 w-10")} data-testid={testId}>
+    <button type="button" onClick={onClick} disabled={disabled} aria-label={label} title={label} className={cn("flex items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/[0.08] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-35 disabled:hover:bg-transparent", big ? "h-12 w-12 border border-border" : "h-10 w-10")} data-testid={testId}>
       {children}
     </button>
   );

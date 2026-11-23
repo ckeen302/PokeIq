@@ -69,6 +69,8 @@ export interface BallScene {
   thumb(o: ThumbSpec): string | null;
   onThumb(f: () => void): void;
   tier(): Tier;
+  /** Locks a quality tier (debugging and screenshots): no more stepping up or down. */
+  lockTier(t: Tier): void;
   dispose(): void;
 }
 
@@ -219,6 +221,7 @@ export function createBallScene(canvas: HTMLCanvasElement, o: { phone: boolean; 
     }
   })();
   let slowStreak = 0;
+  let locked = false;
   const EMERGENCY: TierSpec = { dpr: 0.5, msaa: 0, bloom: false, particles: 120, glass: false };
   let W = Math.max(2, canvas.clientWidth), H = Math.max(2, canvas.clientHeight), shift = 0, shiftNow = 0;
   let userYaw = 0, userPitch = 0;
@@ -352,13 +355,13 @@ export function createBallScene(canvas: HTMLCanvasElement, o: { phone: boolean; 
     const t = performance.now();
     const dt = (t - last) / 1000;
     last = t;
-    const next = governor.frame(dt);
+    const next = locked ? null : governor.frame(dt);
     if (next !== null && next !== tier) {
       tier = next;
       applyTier();
     }
     // The governor ignores long frames (a hitch isn't the frame rate); a run of them is, though.
-    slowStreak = dt > 0.2 ? slowStreak + 1 : 0;
+    slowStreak = !locked && dt > 0.2 ? slowStreak + 1 : 0;
     if (slowStreak >= 4 && !emergency) {
       slowStreak = 0;
       // Far too slow for any tier: straight to the floor.
@@ -700,6 +703,12 @@ export function createBallScene(canvas: HTMLCanvasElement, o: { phone: boolean; 
       onThumb = f;
     },
     tier: () => (emergency ? 0 : tier),
+    lockTier(t) {
+      locked = true;
+      emergency = false;
+      tier = t;
+      applyTier();
+    },
     dispose() {
       cancelAnimationFrame(raf);
       document.removeEventListener("visibilitychange", onVis);
