@@ -1,0 +1,771 @@
+{
+ "profile": "phone",
+ "minutes": 3,
+ "at": "2026-11-23T09:17:01.519Z",
+ "results": [
+  {
+   "label": "lab-dex",
+   "route": "/lab/pokedex",
+   "first": {
+    "heapMB": 13.9,
+    "nodes": 913,
+    "listeners": 361,
+    "docs": 2
+   },
+   "cycles": [
+    {
+     "t": 82,
+     "heapMB": 16,
+     "nodes": 852,
+     "listeners": 394,
+     "docs": 2,
+     "fps": 1.4,
+     "p95Frame": 1033,
+     "worst": 1033
+    },
+    {
+     "t": 171,
+     "heapMB": 16.5,
+     "nodes": 852,
+     "listeners": 394,
+     "docs": 2,
+     "fps": 1.6,
+     "p95Frame": 950,
+     "worst": 950
+    },
+    {
+     "t": 259,
+     "heapMB": 16.3,
+     "nodes": 852,
+     "listeners": 394,
+     "docs": 2,
+     "fps": 1.4,
+     "p95Frame": 1000,
+     "worst": 1000
+    }
+   ],
+   "heapGrowthMB": 0.1,
+   "fpsMedian": 1.4,
+   "console": [
+    "warning: [.WebGL-0x360c00186800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x360c00186800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+   ]
+  },
+  {
+   "label": "sizes",
+   "route": "/pokedex/sizes",
+   "first": {
+    "heapMB": 24.1,
+    "nodes": 21906,
+    "listeners": 2718,
+    "docs": 2
+   },
+   "cycles": [
+    {
+     "t": 295,
+     "heapMB": 24.9,
+     "nodes": 21774,
+     "listeners": 2757,
+     "docs": 2,
+     "fps": 0.1,
+     "p95Frame": 103379,
+     "worst": 103379
+    }
+   ],
+   "heapGrowthMB": 0,
+   "fpsMedian": 0.1,
+   "console": [
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed."
+   ]
+  },
+  {
+   "label": "story",
+   "route": "/lab/pokemon-story/cable",
+   "first": {
+    "heapMB": 11.6,
+    "nodes": 1471,
+    "listeners": 403,
+    "docs": 2
+   },
+   "cycles": [
+    {
+     "t": 31,
+     "heapMB": 14.7,
+     "nodes": 1360,
+     "listeners": 444,
+     "docs": 2,
+     "fps": 2.9,
+     "p95Frame": 650,
+     "worst": 650
+    },
+    {
+     "t": 61,
+     "heapMB": 16,
+     "nodes": 1390,
+     "listeners": 444,
+     "docs": 2,
+     "fps": 2.9,
+     "p95Frame": 450,
+     "worst": 450
+    },
+    {
+     "t": 89,
+     "heapMB": 15.6,
+     "nodes": 1362,
+     "listeners": 444,
+     "docs": 2,
+     "fps": 2.9,
+     "p95Frame": 567,
+     "worst": 567
+    },
+    {
+     "t": 118,
+     "heapMB": 15.9,
+     "nodes": 1363,
+     "listeners": 444,
+     "docs": 2,
+     "fps": 2.8,
+     "p95Frame": 500,
+     "worst": 500
+    },
+    {
+     "t": 146,
+     "heapMB": 16.2,
+     "nodes": 1364,
+     "listeners": 444,
+     "docs": 2,
+     "fps": 2.7,
+     "p95Frame": 617,
+     "worst": 617
+    },
+    {
+     "t": 175,
+     "heapMB": 16.6,
+     "nodes": 1365,
+     "listeners": 444,
+     "docs": 2,
+     "fps": 2.8,
+     "p95Frame": 567,
+     "worst": 567
+    },
+    {
+     "t": 204,
+     "heapMB": 16.5,
+     "nodes": 1366,
+     "listeners": 444,
+     "docs": 2,
+     "fps": 2.9,
+     "p95Frame": 567,
+     "worst": 567
+    }
+   ],
+   "heapGrowthMB": 1.2,
+   "fpsMedian": 2.9,
+   "console": [
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed."
+   ]
+  },
+  {
+   "label": "history",
+   "route": "/lab/world-history/alola",
+   "first": {
+    "heapMB": 8.9,
+    "nodes": 1389,
+    "listeners": 421,
+    "docs": 2
+   },
+   "cycles": [
+    {
+     "t": 45,
+     "heapMB": 11.7,
+     "nodes": 1316,
+     "listeners": 485,
+     "docs": 2,
+     "fps": 2.1,
+     "p95Frame": 717,
+     "worst": 717
+    },
+    {
+     "t": 87,
+     "heapMB": 12.3,
+     "nodes": 1317,
+     "listeners": 485,
+     "docs": 2,
+     "fps": 1.8,
+     "p95Frame": 1350,
+     "worst": 1350
+    },
+    {
+     "t": 128,
+     "heapMB": 12.6,
+     "nodes": 1318,
+     "listeners": 485,
+     "docs": 2,
+     "fps": 1.7,
+     "p95Frame": 1317,
+     "worst": 1317
+    },
+    {
+     "t": 170,
+     "heapMB": 13,
+     "nodes": 1319,
+     "listeners": 461,
+     "docs": 2,
+     "fps": 1.8,
+     "p95Frame": 1250,
+     "worst": 1250
+    },
+    {
+     "t": 211,
+     "heapMB": 13.3,
+     "nodes": 1320,
+     "listeners": 485,
+     "docs": 2,
+     "fps": 1.8,
+     "p95Frame": 1250,
+     "worst": 1250
+    }
+   ],
+   "heapGrowthMB": 1.2,
+   "fpsMedian": 1.8,
+   "console": []
+  },
+  {
+   "label": "mass-battle",
+   "route": "/lab/mass-battle/fire-vs-water",
+   "first": {
+    "heapMB": 9.2,
+    "nodes": 1170,
+    "listeners": 389,
+    "docs": 2
+   },
+   "cycles": [
+    {
+     "t": 53,
+     "heapMB": 1.1,
+     "nodes": 4,
+     "listeners": 0,
+     "docs": 1,
+     "fps": 6.6,
+     "p95Frame": 200,
+     "worst": 200
+    },
+    {
+     "t": 92,
+     "heapMB": 1.8,
+     "nodes": 4,
+     "listeners": 13,
+     "docs": 1,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    },
+    {
+     "t": 130,
+     "heapMB": 1.8,
+     "nodes": 4,
+     "listeners": 13,
+     "docs": 1,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    },
+    {
+     "t": 169,
+     "heapMB": 1.8,
+     "nodes": 4,
+     "listeners": 13,
+     "docs": 1,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    },
+    {
+     "t": 208,
+     "heapMB": 1.8,
+     "nodes": 4,
+     "listeners": 13,
+     "docs": 1,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    }
+   ],
+   "heapGrowthMB": 0.3,
+   "fpsMedian": 60,
+   "console": [
+    "warning: THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  {
+   "label": "battle-play",
+   "route": "/battle/play",
+   "first": {
+    "heapMB": 5.7,
+    "nodes": 831,
+    "listeners": 376,
+    "docs": 2
+   },
+   "cycles": [
+    {
+     "t": 28,
+     "heapMB": 18.2,
+     "nodes": 1112,
+     "listeners": 593,
+     "docs": 2,
+     "fps": 51,
+     "p95Frame": 17,
+     "worst": 283
+    },
+    {
+     "t": 56,
+     "heapMB": 19,
+     "nodes": 1002,
+     "listeners": 582,
+     "docs": 2,
+     "fps": 52.5,
+     "p95Frame": 33,
+     "worst": 50
+    },
+    {
+     "t": 81,
+     "heapMB": 19.3,
+     "nodes": 1003,
+     "listeners": 582,
+     "docs": 2,
+     "fps": 44.8,
+     "p95Frame": 33,
+     "worst": 50
+    },
+    {
+     "t": 106,
+     "heapMB": 19.5,
+     "nodes": 1004,
+     "listeners": 582,
+     "docs": 2,
+     "fps": 36.1,
+     "p95Frame": 50,
+     "worst": 50
+    },
+    {
+     "t": 131,
+     "heapMB": 19.6,
+     "nodes": 1005,
+     "listeners": 582,
+     "docs": 2,
+     "fps": 40.9,
+     "p95Frame": 33,
+     "worst": 50
+    },
+    {
+     "t": 156,
+     "heapMB": 19.7,
+     "nodes": 1006,
+     "listeners": 582,
+     "docs": 2,
+     "fps": 36,
+     "p95Frame": 33,
+     "worst": 50
+    },
+    {
+     "t": 181,
+     "heapMB": 19.8,
+     "nodes": 1007,
+     "listeners": 582,
+     "docs": 2,
+     "fps": 35.7,
+     "p95Frame": 50,
+     "worst": 67
+    }
+   ],
+   "heapGrowthMB": 1.1,
+   "fpsMedian": 40.9,
+   "console": []
+  },
+  {
+   "label": "tier-list",
+   "route": "/tools/tier-list/starters",
+   "first": {
+    "heapMB": 4.6,
+    "nodes": 1075,
+    "listeners": 597,
+    "docs": 2
+   },
+   "cycles": [
+    {
+     "t": 96,
+     "heapMB": 6.2,
+     "nodes": 1074,
+     "listeners": 652,
+     "docs": 2,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    },
+    {
+     "t": 191,
+     "heapMB": 6.4,
+     "nodes": 1074,
+     "listeners": 652,
+     "docs": 2,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    }
+   ],
+   "heapGrowthMB": 0,
+   "fpsMedian": 60,
+   "console": []
+  },
+  {
+   "label": "shiny-maker",
+   "route": "/tools/shiny-maker",
+   "first": {
+    "heapMB": 3.9,
+    "nodes": 597,
+    "listeners": 370,
+    "docs": 2
+   },
+   "cycles": [
+    {
+     "t": 9,
+     "heapMB": 5.4,
+     "nodes": 596,
+     "listeners": 410,
+     "docs": 2,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    },
+    {
+     "t": 17,
+     "heapMB": 5.5,
+     "nodes": 596,
+     "listeners": 410,
+     "docs": 2,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    },
+    {
+     "t": 26,
+     "heapMB": 5.6,
+     "nodes": 596,
+     "listeners": 410,
+     "docs": 2,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    },
+    {
+     "t": 35,
+     "heapMB": 5.7,
+     "nodes": 596,
+     "listeners": 410,
+     "docs": 2,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    },
+    {
+     "t": 43,
+     "heapMB": 5.8,
+     "nodes": 596,
+     "listeners": 410,
+     "docs": 2,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    },
+    {
+     "t": 52,
+     "heapMB": 5.8,
+     "nodes": 596,
+     "listeners": 410,
+     "docs": 2,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    },
+    {
+     "t": 60,
+     "heapMB": 5.9,
+     "nodes": 596,
+     "listeners": 410,
+     "docs": 2,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    },
+    {
+     "t": 69,
+     "heapMB": 5.9,
+     "nodes": 596,
+     "listeners": 410,
+     "docs": 2,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    },
+    {
+     "t": 78,
+     "heapMB": 6,
+     "nodes": 596,
+     "listeners": 410,
+     "docs": 2,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    },
+    {
+     "t": 86,
+     "heapMB": 6,
+     "nodes": 596,
+     "listeners": 410,
+     "docs": 2,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    },
+    {
+     "t": 95,
+     "heapMB": 6.1,
+     "nodes": 596,
+     "listeners": 410,
+     "docs": 2,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    },
+    {
+     "t": 104,
+     "heapMB": 6.1,
+     "nodes": 596,
+     "listeners": 410,
+     "docs": 2,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    },
+    {
+     "t": 112,
+     "heapMB": 6.1,
+     "nodes": 596,
+     "listeners": 410,
+     "docs": 2,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    },
+    {
+     "t": 121,
+     "heapMB": 6.1,
+     "nodes": 596,
+     "listeners": 410,
+     "docs": 2,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    },
+    {
+     "t": 129,
+     "heapMB": 6.1,
+     "nodes": 596,
+     "listeners": 410,
+     "docs": 2,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    },
+    {
+     "t": 138,
+     "heapMB": 6.1,
+     "nodes": 596,
+     "listeners": 410,
+     "docs": 2,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    },
+    {
+     "t": 147,
+     "heapMB": 6.1,
+     "nodes": 596,
+     "listeners": 410,
+     "docs": 2,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    },
+    {
+     "t": 155,
+     "heapMB": 6.1,
+     "nodes": 596,
+     "listeners": 410,
+     "docs": 2,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    },
+    {
+     "t": 164,
+     "heapMB": 6.2,
+     "nodes": 596,
+     "listeners": 410,
+     "docs": 2,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    },
+    {
+     "t": 173,
+     "heapMB": 6.2,
+     "nodes": 596,
+     "listeners": 410,
+     "docs": 2,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    },
+    {
+     "t": 181,
+     "heapMB": 6.2,
+     "nodes": 596,
+     "listeners": 410,
+     "docs": 2,
+     "fps": 60,
+     "p95Frame": 17,
+     "worst": 17
+    }
+   ],
+   "heapGrowthMB": 0.8,
+   "fpsMedian": 60,
+   "console": []
+  },
+  {
+   "label": "pokeball-maker",
+   "route": "/tools/pokeball-maker",
+   "first": {
+    "heapMB": 6.7,
+    "nodes": 628,
+    "listeners": 373,
+    "docs": 2
+   },
+   "cycles": [
+    {
+     "t": 17,
+     "heapMB": 8.7,
+     "nodes": 627,
+     "listeners": 426,
+     "docs": 2,
+     "fps": 17.6,
+     "p95Frame": 67,
+     "worst": 100
+    },
+    {
+     "t": 34,
+     "heapMB": 9,
+     "nodes": 627,
+     "listeners": 426,
+     "docs": 2,
+     "fps": 18.2,
+     "p95Frame": 67,
+     "worst": 67
+    },
+    {
+     "t": 51,
+     "heapMB": 9.2,
+     "nodes": 627,
+     "listeners": 426,
+     "docs": 2,
+     "fps": 18.2,
+     "p95Frame": 67,
+     "worst": 83
+    },
+    {
+     "t": 68,
+     "heapMB": 9.4,
+     "nodes": 627,
+     "listeners": 426,
+     "docs": 2,
+     "fps": 18,
+     "p95Frame": 67,
+     "worst": 67
+    },
+    {
+     "t": 85,
+     "heapMB": 9.6,
+     "nodes": 627,
+     "listeners": 426,
+     "docs": 2,
+     "fps": 18.4,
+     "p95Frame": 67,
+     "worst": 67
+    },
+    {
+     "t": 102,
+     "heapMB": 9.6,
+     "nodes": 627,
+     "listeners": 426,
+     "docs": 2,
+     "fps": 17.9,
+     "p95Frame": 67,
+     "worst": 83
+    },
+    {
+     "t": 118,
+     "heapMB": 9.7,
+     "nodes": 627,
+     "listeners": 426,
+     "docs": 2,
+     "fps": 18.1,
+     "p95Frame": 67,
+     "worst": 67
+    },
+    {
+     "t": 135,
+     "heapMB": 9.9,
+     "nodes": 627,
+     "listeners": 426,
+     "docs": 2,
+     "fps": 19.3,
+     "p95Frame": 67,
+     "worst": 67
+    },
+    {
+     "t": 152,
+     "heapMB": 10,
+     "nodes": 627,
+     "listeners": 426,
+     "docs": 2,
+     "fps": 18,
+     "p95Frame": 67,
+     "worst": 83
+    },
+    {
+     "t": 170,
+     "heapMB": 10,
+     "nodes": 627,
+     "listeners": 426,
+     "docs": 2,
+     "fps": 17.2,
+     "p95Frame": 67,
+     "worst": 67
+    },
+    {
+     "t": 187,
+     "heapMB": 10.1,
+     "nodes": 627,
+     "listeners": 426,
+     "docs": 2,
+     "fps": 18.2,
+     "p95Frame": 67,
+     "worst": 67
+    }
+   ],
+   "heapGrowthMB": 1.2,
+   "fpsMedian": 18.1,
+   "console": []
+  }
+ ]
+}
