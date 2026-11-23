@@ -349,10 +349,24 @@ export function createBallScene(canvas: HTMLCanvasElement, o: { phone: boolean; 
   let raf = 0;
   let last = performance.now();
   let running = true;
+  // Scrolled out of view (the how-to below the maker, a phone's controls under it): the ball goes on moving but isn't
+  // drawn, so the page scrolls without the GPU redrawing a picture nobody sees. Back in view, it draws from where it is.
+  let onScreen = true;
+  const io = typeof IntersectionObserver === "function" ? new IntersectionObserver((es) => {
+    const was = onScreen;
+    onScreen = es[es.length - 1].isIntersecting;
+    if (onScreen && !was) last = performance.now();
+  }) : null;
+  io?.observe(canvas);
   const loop = () => {
     raf = requestAnimationFrame(loop);
     if (!running) return;
     const t = performance.now();
+    if (!onScreen) {
+      frame(driver(t / 1000), t / 1000, true);
+      pumpThumbs();
+      return;
+    }
     const dt = (t - last) / 1000;
     last = t;
     const next = locked ? null : governor.frame(dt);
@@ -712,6 +726,7 @@ export function createBallScene(canvas: HTMLCanvasElement, o: { phone: boolean; 
     dispose() {
       cancelAnimationFrame(raf);
       document.removeEventListener("visibilitychange", onVis);
+      io?.disconnect();
       model?.dispose();
       particles.dispose();
       atlas.dispose();
