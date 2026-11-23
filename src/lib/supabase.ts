@@ -24,6 +24,8 @@ const FAILURES_TO_BACK_OFF = 3;
 const BACKOFF_MS = 10000;
 let failures = 0;
 let downUntil = 0;
+/** Every call that found the database in trouble (down, timing out, 5xx, or over its plan's quota), ever: see databaseTroubleCount. */
+let trouble = 0;
 let warnedDown = 0;
 /** While the database is down, the one request finding out whether it's back (others keep failing fast meanwhile). */
 let probing = false;
@@ -40,6 +42,7 @@ class DatabaseUnavailable extends Error {
 
 function failed(reason: string): never {
   failures += 1;
+  trouble += 1;
   if (failures >= FAILURES_TO_BACK_OFF) {
     downUntil = Date.now() + BACKOFF_MS;
     if (Date.now() - warnedDown > 60000) {
@@ -62,9 +65,13 @@ function failed(reason: string): never {
  * 502, which supabase-js doesn't retry either.
  */
 export const resilientFetch: typeof fetch = async (input, init) => {
-  if (Date.now() < downUntil) throw new DatabaseUnavailable("database unavailable (backing off)");
+  if (Date.now() < downUntil) {
+    trouble += 1;
+    throw new DatabaseUnavailable("database unavailable (backing off)");
+  }
   const probe = failures >= FAILURES_TO_BACK_OFF;
   if (probe) {
+    trouble += 1;
     if (probing) throw new DatabaseUnavailable("database unavailable (checking whether it's back)");
     probing = true;
   }
@@ -88,8 +95,20 @@ async function attempt(input: Parameters<typeof fetch>[0], init: Parameters<type
     return failed(err instanceof Error ? (err.name === "TimeoutError" ? "timed out" : err.message) : String(err));
   }
   failures = 0;
+  // 402: the free plan's quota is used up (Supabase answers every API call so until the next cycle).
+  if (res.status >= 500 || res.status === 402) trouble += 1;
   if (res.status === 503 || res.status === 520) return new Response(res.body, { status: 502, statusText: `Upstream ${res.status}`, headers: res.headers });
   return res;
+}
+
+/**
+ * How many database calls on this instance have found it in trouble so far.
+ * A cached page compares it before and after rendering: if it went up, the
+ * page was drawn without its data, and it throws instead, so Next keeps
+ * serving the last good copy (see src/app/leaderboard/board/[board]).
+ */
+export function databaseTroubleCount(): number {
+  return trouble;
 }
 
 /** Tests: forget any outage, as on a fresh instance. */
