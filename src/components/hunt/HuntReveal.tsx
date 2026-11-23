@@ -309,7 +309,7 @@ function RevealBar(p: HuntRevealProps & { regionMap?: boolean; shown: number; he
     <div className="mx-auto grid max-w-6xl items-center gap-2.5 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 sm:gap-6 sm:px-6 md:grid-cols-[1fr_auto_1fr] md:pb-3">
       <div className="min-w-0 text-center md:text-left">
         <p className="hud-label !text-[#c8bfff]">{t(`reveal.verdict.${verdictOf(p.score)}`)}</p>
-        <p className="geo-glow font-display text-4xl font-bold italic tabular-nums sm:text-5xl" data-testid="hunt-round-score">
+        <p className="geo-glow whitespace-nowrap font-display text-4xl font-bold italic tabular-nums sm:text-5xl" data-testid="hunt-round-score">
           {fmt(p.shown)} <span className="text-lg not-italic text-white/60">{t("reveal.pts")}</span>
         </p>
         <div className="mt-1.5 flex items-center gap-2">
