@@ -2,27 +2,33 @@
   "name": "Pokémon Hunt",
   "tile": {
     "label": "New mode",
+    "new": "New",
     "title": "Pokémon Hunt",
     "blurb": "See a Pokémon. Pin where you'd catch it.",
-    "play": "Go hunting",
-    "new": "New"
+    "play": "Go hunting"
   },
   "hub": {
+    "back": "PokéGuessr",
     "eyebrow": "PokéGuessr · new mode",
     "title": "Pokémon <b>Hunt</b>",
     "tagline": "We show you a Pokémon. You pin where it lives in the wild.",
-    "back": "PokéGuessr",
+    "modesEyebrow": "Single player",
     "modes": "Pick a hunt",
-    "how": {
-      "title": "How it works",
-      "see": "Meet the Pokémon: its art, its name and its exact form.",
-      "pin": "Drop a pin in each region where you can find it.",
-      "score": "Every pin scores against the nearest real spot. Up to 5,000 a round."
+    "daily": {
+      "label": "Daily Hunt #{n} · World",
+      "title": "Daily Hunt",
+      "blurb": "Today's five Pokémon, the same for everyone.",
+      "more": "Five Pokémon on the world map, one try a day, and a grid to share.",
+      "scored": "You scored {score} today.",
+      "played": "Played",
+      "play": "Play today's",
+      "again": "Play again (practice)"
     },
     "classic": {
       "label": "Solo · World",
       "title": "Classic",
-      "blurb": "Five Pokémon from across the whole world map.",
+      "blurb": "Five Pokémon from all over the world map.",
+      "more": "Five Pokémon on the world map: a pin for each region it lives in.",
       "play": "Start hunting"
     },
     "region": {
@@ -32,69 +38,60 @@
       "pick": "Pick a region",
       "play": "Hunt in {region}"
     },
-    "daily": {
-      "label": "Daily Hunt #{n}",
-      "title": "Daily Hunt",
-      "blurb": "Today's five Pokémon, the same for everyone.",
-      "play": "Play today's",
-      "again": "Play again (practice)",
-      "resume": "Carry on",
-      "scored": "You scored {score} today.",
-      "played": "Played"
-    },
-    "legendary": {
-      "label": "Coming later",
-      "title": "Legendary Hunt",
-      "blurb": "The rarest encounters in the series."
-    },
-    "best": "Best: {score}"
+    "how": {
+      "title": "How it works",
+      "see": "Meet the Pokémon: its art, its name and its exact form.",
+      "pin": "Drop a pin in each region where you can find it in the wild.",
+      "score": "Each pin scores against the nearest real spot, up to 5,000 a round."
+    }
+  },
+  "forms": {
+    "alola": "Alolan Form",
+    "galar": "Galarian Form",
+    "hisui": "Hisuian Form",
+    "paldea": "Paldean Form",
+    "paldea-combat": "Paldean Form · Combat Breed",
+    "paldea-blaze": "Paldean Form · Blaze Breed",
+    "paldea-aqua": "Paldean Form · Aqua Breed"
   },
   "card": {
-    "found": "{n, plural, one {Found in # region} other {Found in # regions}}",
-    "foundMany": "Found in {n} regions: drop up to {max} pins",
-    "dropOne": "Drop one pin",
-    "dropEach": "{n, plural, one {Drop one pin} other {Drop a pin in each region}}",
-    "form": "{form}",
     "artAlt": "Official art of {name}",
-    "where": "Where would you find it?"
+    "found": "{n, plural, one {Found in # region} other {Found in # regions}}",
+    "foundIn": "Found in {map}",
+    "dropOne": "Drop one pin where you'd find it",
+    "dropEach": "Drop a pin in each region",
+    "dropUpTo": "Drop up to {max} pins"
   },
   "pins": {
     "label": "Your pins",
     "count": "{placed} of {max} pins",
-    "pin": "Pin {n}",
-    "empty": "Pin {n}: not placed",
     "select": "Move pin {n}",
+    "empty": "Pin {n}: not dropped yet",
     "remove": "Remove pin {n}",
     "hintPlace": "Tap the map to drop pin {n}",
     "hintMove": "Tap the map to move pin {n}",
-    "hintDone": "All pins down. Guess when you're ready",
+    "hintDone": "All pins down. Guess when you're ready!",
     "hintOne": "Tap the map where you'd find it",
-    "keys": "1–{max} picks a pin · Delete removes it"
+    "hintMoveOne": "Tap again to move your pin"
   },
   "hud": {
-    "mode": "Pokémon Hunt",
-    "daily": "Daily Hunt #{n}",
-    "world": "World"
+    "daily": "Daily Hunt #{n}"
   },
   "reveal": {
     "found": "You found {found} of {total} regions",
-    "foundAll": "{total, plural, one {You found it!} other {You found every region!}}",
+    "foundAll": "{total, plural, one {You found it!} other {You found all {total} regions!}}",
     "foundNone": "No regions found this time",
-    "foundCapped": "You found {found} of the {max} you could pin",
-    "spots": "Where it really is",
-    "spotsIn": "{region}",
-    "method": "{game} · {method}",
-    "fact": "Did you know?",
+    "timeUp": "Time's up!",
+    "spots": "Where it really lives",
+    "moreLabels": "{label} +{n}",
+    "pin": "Pin {n}",
+    "pinScore": "Pin {n}: {score}",
     "dex": "Where to find it in the Pokédex",
+    "skip": "Skip",
     "next": "Next Pokémon",
     "summary": "See results",
     "space": "Space",
-    "skip": "Skip",
-    "pin": "Pin {n}",
-    "pinScore": "Pin {n}: {score}",
-    "nearest": "Nearest: {region}",
     "pts": "pts",
-    "timeUp": "Time's up!",
     "verdict": {
       "perfect": "Expert tracker!",
       "great": "Great hunting!",
@@ -108,28 +105,26 @@
     "total": "Your total",
     "outOf": "out of {max}",
     "rounds": "Your rounds",
-    "regions": "{found} of {total} regions",
-    "again": "Hunt again",
-    "hub": "All hunts",
-    "show": "Show round {n} on the map",
+    "regions": "{found} of {total, plural, one {# region} other {# regions}} found",
     "best": "Best",
-    "worst": "Worst"
+    "worst": "Worst",
+    "again": "Hunt again",
+    "practice": "Practice hunt",
+    "hub": "All hunts"
   },
   "share": {
-    "title": "Pokémon Hunt",
     "daily": "Pokémon Hunt #{n}",
+    "roundLabel": "Round {n}: {score}",
+    "legend": "🟩 4,000+ · 🟨 2,000+ · 🟧 500+ · 🟥 under 500",
     "copy": "Share",
-    "copied": "Copied!",
-    "grid": "Your hunt, square by square",
-    "legend": "One square per pin: 🟩 spot on, 🟨 close, 🟧 far, 🟥 missed",
-    "next": "A new hunt tomorrow"
+    "next": "A new hunt every day"
   },
   "state": {
     "loading": "Tracking down a Pokémon…",
-    "error": "The trail went cold. We couldn't load this hunt.",
+    "error": "The trail went cold. This hunt didn't load.",
+    "empty": "Nothing to hunt here yet. Try another region.",
     "retry": "Try again",
     "back": "Back to the hunts",
-    "empty": "No Pokémon to hunt here yet. Try another region.",
     "artFailed": "The picture didn't load, but the name's right there."
   }
 }

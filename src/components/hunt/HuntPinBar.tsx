@@ -8,18 +8,34 @@ import huntNs from "@/messages/hunt";
 import { huntPinColor } from "./map-marks";
 
 /**
- * The pin tray, between the map and the Guess button (inside the map card
- * on a phone): a numbered chip per pin the round takes. A placed pin's chip
- * is filled in its colour with a × to remove it; the pin a tap on the map
- * moves is ringed in yellow; tapping a chip makes it that pin. Keys 1–3 pick
- * a pin and Delete or Backspace removes the picked one, while the round is up.
- * One line under the chips says what a tap on the map will do.
+ * What a tap on the map will do now: "Tap the map to drop pin 2", "Tap the
+ * map to move pin 1", "All pins down…". The phone's map card shows it as its
+ * label (MapDock's `hint`); a computer shows it under the chips.
  */
-export function HuntPinTray({ pins, active, onSelect, onRemove, keys = true, className }: {
-  /** One slot per pin the round takes: placed (true) or not. */
-  pins: boolean[];
-  /** The pin a tap on the map places or moves. */
-  active: number;
+export function useHuntPinHint(placed: number, max: number, selected: number | null): string {
+  const t = useT(huntNs);
+  const active = selected ?? (placed < max ? placed : -1);
+  if (max < 2) return placed ? t("pins.hintMoveOne") : t("pins.hintOne");
+  if (active < 0) return t("pins.hintDone");
+  return active < placed ? t("pins.hintMove", { n: active + 1 }) : t("pins.hintPlace", { n: active + 1 });
+}
+
+/**
+ * The pin bar, between the map and the Guess button (inside the map card on
+ * a phone): "2 of 3 pins" and a numbered chip per pin the round takes. A
+ * placed pin's chip is filled in its colour with a × to remove it; the pin a
+ * tap on the map moves wears a yellow ring (with none picked, a tap drops the
+ * next pin, whose empty chip is ringed instead). Tapping a chip picks that
+ * pin. Keys 1–3 pick a pin, Delete or Backspace removes the picked one. One
+ * line under the chips says what a tap on the map will do.
+ */
+export function HuntPinBar({ placed, max, selected, onSelect, onRemove, keys = true, className }: {
+  /** Pins down (pins 1 to `placed`). */
+  placed: number;
+  /** Pins the round takes. */
+  max: number;
+  /** The pin a tap on the map moves; null: a tap drops the next one. */
+  selected: number | null;
   onSelect: (i: number) => void;
   onRemove: (i: number) => void;
   /** Listen for 1–3 and Delete (off while something else has the keyboard). */
@@ -27,8 +43,9 @@ export function HuntPinTray({ pins, active, onSelect, onRemove, keys = true, cla
   className?: string;
 }) {
   const t = useT(huntNs);
-  const max = pins.length;
-  const placed = pins.filter(Boolean).length;
+  const pins = Array.from({ length: max }, (_, i) => i < placed);
+  // The ringed chip: the picked pin, else the next one to drop (none once they're all down).
+  const active = selected ?? (placed < max ? placed : -1);
 
   useEffect(() => {
     if (!keys || max < 2) return;
@@ -40,16 +57,16 @@ export function HuntPinTray({ pins, active, onSelect, onRemove, keys = true, cla
       if (Number.isInteger(n) && n >= 1 && n <= max) {
         e.preventDefault();
         onSelect(n - 1);
-      } else if ((e.key === "Delete" || e.key === "Backspace") && pins[active]) {
+      } else if ((e.key === "Delete" || e.key === "Backspace") && selected !== null && selected < placed) {
         e.preventDefault();
-        onRemove(active);
+        onRemove(selected);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [keys, max, pins, active, onSelect, onRemove]);
+  }, [keys, max, placed, selected, onSelect, onRemove]);
 
-  const hint = max < 2 ? t("pins.hintOne") : placed === max && pins[active] ? t("pins.hintDone") : pins[active] ? t("pins.hintMove", { n: active + 1 }) : t("pins.hintPlace", { n: active + 1 });
+  const hint = useHuntPinHint(placed, max, selected);
 
   return (
     <div className={cn("rounded-md bg-[#1e1a3f]/92 px-[1.1vh] py-[0.9vh] text-white shadow-lg ring-1 ring-white/15 backdrop-blur max-md:px-2.5 max-md:py-2", className)} data-testid="hunt-pin-tray">
@@ -99,7 +116,7 @@ export function HuntPinTray({ pins, active, onSelect, onRemove, keys = true, cla
           </ol>
         </div>
       )}
-      <p className={cn("text-[max(11px,1.3vh)] font-medium leading-snug text-white/80 max-md:text-xs", max > 1 && "mt-[0.6vh] max-md:mt-1.5")} data-testid="hunt-pin-hint">
+      <p className={cn("text-[max(11px,1.3vh)] font-medium leading-snug text-white/80 max-md:hidden", max > 1 && "mt-[0.6vh]")} data-testid="hunt-pin-hint">
         {hint}
       </p>
     </div>

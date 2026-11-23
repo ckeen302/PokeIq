@@ -109,6 +109,7 @@ export const NAMESPACES = [
   "guessr-ranked",
   "home",
   "howto",
+  "hunt",
   "iq-test",
   "iq-test-play",
   "iq-test-results",
