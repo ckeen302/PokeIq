@@ -45,13 +45,12 @@
  *   }
  */
 import { randomBytes, randomInt } from "node:crypto";
-import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import { createClient } from "@supabase/supabase-js";
 import { BUCKET, encodeShot } from "./bulbapedia";
-import type { Addition, Curation } from "./curate";
+import { applyCuration, type Addition, type Curation, type Location } from "./curate";
 import { measure } from "./shot-measure";
 import { type Box, fetchSource, sha256, sourceWithCut } from "./shot-source";
 import { familyEra, familyOfGame } from "../../src/lib/geo-families";
@@ -76,6 +75,7 @@ const CURATION = path.join(ROOT, "scripts/geo/curation.json");
 const DATA = path.join(ROOT, "src/data/geo.json");
 const META = path.join(ROOT, "src/data/geo-shot-meta.json");
 const SPOTS = path.join(ROOT, "src/data/geo-shot-spots.json");
+const SOURCES = path.join(ROOT, "scripts/geo/shot-sources.json");
 const PROTECTED = path.join(ROOT, "tests/fixtures/geo-shot-ids-protected.json");
 /** Where a run keeps each uploaded file until the data is written (outside git: .data is ignored). */
 const WORK = path.join(ROOT, ".data/geo-upload");
@@ -143,6 +143,18 @@ function folderStore(dir: string): Store {
   };
 }
 
+/** A WebP file's chunk names (RIFF): an encoded shot must be the picture alone, with no EXIF, XMP or ICC profile. */
+export function webpChunks(buf: Buffer): string[] {
+  if (buf.toString("latin1", 0, 4) !== "RIFF" || buf.toString("latin1", 8, 12) !== "WEBP") throw new Error("not a WebP file");
+  const out: string[] = [];
+  for (let i = 12; i + 8 <= buf.length; ) {
+    const size = buf.readUInt32LE(i + 4);
+    out.push(buf.toString("latin1", i, i + 4));
+    i += 8 + size + (size & 1);
+  }
+  return out;
+}
+
 /** Fetches, checks and encodes one pending shot. */
 export async function prepare(p: Pending): Promise<{ webp: Buffer; source: string; crop: Box; size: { width: number; height: number }; hash: string }> {
   const { bytes, cut, page } = await fetchSource(p.source, p.image);
@@ -156,6 +168,8 @@ export async function prepare(p: Pending): Promise<{ webp: Buffer; source: strin
     throw new Error(`crop ${JSON.stringify(crop)} is outside the ${size.width}×${size.height} file`);
   }
   const webp = await encodeShot(bytes, p.game, crop);
+  const extra = webpChunks(webp).filter((c) => !["VP8 ", "VP8L", "VP8X", "ALPH"].includes(c));
+  if (extra.length) throw new Error(`the encoded file carries metadata (${extra.join(", ")})`);
   return { webp, source: sourceWithCut(page, crop, size), crop, size, hash };
 }
 
@@ -175,15 +189,49 @@ export function validate(pending: Pending[], taken: Set<string>): string[] {
   return problems;
 }
 
+/**
+ * Puts the new shots into geo.json with curate.ts's own rules (a building
+ * that isn't there yet is made, an atlas place with no shots yet gets its pin
+ * and area), touching nothing else: a full curate.ts run also tidies up
+ * unrelated things, which don't belong in an upload's commit.
+ */
+function placeShots(additions: Addition[]) {
+  const data = readJson<{ world: { locations: Location[] } }>(DATA);
+  const locations = data.world.locations;
+  const copy: Location[] = JSON.parse(JSON.stringify(locations));
+  applyCuration(copy, { audit: [], added: additions });
+  const key = (l: Pick<Location, "region" | "name" | "parent">) => `${l.region}|${l.name}|${l.parent ?? ""}`;
+  for (const a of additions) {
+    if (locations.some((l) => l.shots.some((s) => s.id === a.id))) continue;
+    const there = copy.find((l) => l.shots.some((s) => s.id === a.id));
+    if (!there) throw new Error(`${a.id}: no place ${a.region} | ${a.name}`);
+    const shot = there.shots.find((s) => s.id === a.id)!;
+    const dest = locations.find((l) => key(l) === key(there));
+    if (dest) dest.shots.push(shot);
+    else locations.push({ ...there, shots: [shot] });
+  }
+  writeFileSync(DATA, JSON.stringify(data));
+  // shot-sources.json: the new sources slotted in, every existing line left where it is.
+  const sources = readJson<Record<string, string>>(SOURCES);
+  const entries = Object.entries(sources);
+  for (const a of additions) {
+    if (sources[a.id]) continue;
+    const at = entries.findIndex(([k]) => k.localeCompare(a.id) > 0);
+    entries.splice(at < 0 ? entries.length : at, 0, [a.id, a.source]);
+    sources[a.id] = a.source;
+  }
+  writeFileSync(SOURCES, JSON.stringify(Object.fromEntries(entries), null, 1) + "\n");
+}
+
 /** Writes everything that follows from the ids: geo.json, sources, the protected fixture, meta, spots. */
-function writeData(log: Record<string, Uploaded>, meta: ShotMetaFile) {
+function writeData(log: Record<string, Uploaded>, meta: ShotMetaFile, curation: Curation) {
   const uploaded = Object.values(log);
-  // geo.json and shot-sources.json, exactly as any curation change is applied.
-  execFileSync("npx", ["tsx", "scripts/geo/curate.ts"], { stdio: "inherit", cwd: ROOT });
-  const geo = readJson<{ world: { locations: { name: string; region: string; parent?: string; shots: { id: string }[] }[] } }>(DATA);
+  const ids = new Set(uploaded.map((u) => u.id));
+  placeShots(curation.added.filter((a) => ids.has(a.id)));
+  const geo = readJson<{ world: { locations: Location[] } }>(DATA);
   const live = new Set(geo.world.locations.flatMap((l) => l.shots.map((s) => s.id)));
   const missing = uploaded.filter((u) => !live.has(u.id));
-  if (missing.length) throw new Error(`curate.ts didn't place ${missing.map((m) => m.id).join(", ")}`);
+  if (missing.length) throw new Error(`not placed in geo.json: ${missing.map((m) => m.id).join(", ")}`);
   // Every shot in the data is in the "only ever added" fixture (tests/geo-shots-kept.test.ts).
   const protectedIds = readJson<string[]>(PROTECTED);
   const known = new Set(protectedIds);
@@ -264,7 +312,7 @@ async function main() {
     return;
   }
   const total = Object.keys(log).length;
-  if (total) writeData(log, meta);
+  if (total) writeData(log, meta, curation);
   if (failed.length) {
     console.log(`\n${uploaded} uploaded; ${failed.length} failed and are still pending:\n  ${failed.join("\n  ")}`);
     console.log("Run the same command again to retry them (nothing already uploaded goes up twice).");

@@ -53,9 +53,10 @@ export function filePage(page: string): { api: string; title: string } | null {
   }
   const api = APIS[url.host];
   if (!api) return null;
-  const fromPath = url.pathname.match(/^\/wiki\/(.+)$/);
+  // "/wiki/File:…" on most wikis, "/Datei:…" and "/Fichier:…" on PokéWiki and Poképédia.
+  const fromPath = url.pathname.match(/^\/(?:wiki\/)?([^/]+:.+)$/);
   const title = fromPath ? decodeURIComponent(fromPath[1]) : url.searchParams.get("title");
-  if (!title || !/^(File|Fichier|Datei|Archivo|Archivo|Image):/i.test(title)) return null;
+  if (!title || !/^(File|Fichier|Datei|Archivo|Image):/i.test(title)) return null;
   return { api, title };
 }
 
