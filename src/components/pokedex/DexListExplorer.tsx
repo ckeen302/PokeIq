@@ -158,7 +158,7 @@ export function DexListExplorer({
 
   return (
     <div className="space-y-6">
-      <div className="sticky top-14 z-30 -mx-4 space-y-3 border-b border-foreground/5 bg-background/80 px-4 py-3 backdrop-blur-xl sm:-mx-8 sm:px-8">
+      <div className="sticky top-14 z-30 -mx-4 space-y-3 border-b border-foreground/5 bg-background/80 px-4 py-3 backdrop-blur-xl min-[1264px]:-mx-8 min-[1264px]:px-8">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative min-w-[180px] flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

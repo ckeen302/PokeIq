@@ -227,7 +227,7 @@ export function PokedexExplorer({ rows, local }: { rows: DexRow[]; local?: DexLi
   return (
     <div className="space-y-6">
       {/* Controls */}
-      <div className="sticky top-14 z-30 -mx-4 space-y-3 border-b border-foreground/5 bg-background/80 px-4 py-3 backdrop-blur-xl sm:-mx-8 sm:px-8">
+      <div className="sticky top-14 z-30 -mx-4 space-y-3 border-b border-foreground/5 bg-background/80 px-4 py-3 backdrop-blur-xl min-[1264px]:-mx-8 min-[1264px]:px-8">
         {/* Desktop: sort | search (centred, under the section button and as wide) | view. */}
         <div className="flex flex-wrap gap-2 lg:grid lg:grid-cols-[minmax(max-content,1fr)_minmax(0,576px)_minmax(max-content,1fr)] lg:items-center">
           <div className={cn("order-last gap-2 max-md:w-full md:order-none lg:justify-end", filtersOpen ? "flex" : "hidden md:flex")}>
