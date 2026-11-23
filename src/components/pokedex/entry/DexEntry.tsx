@@ -81,7 +81,6 @@ function DexEntryBody({ data, sprites }: { data: DexEntryData; sprites?: React.R
     data.names.length > 0 && { id: "names", label: t("nav.names") },
     { id: "breeding", label: t("nav.breeding") },
   ].filter(Boolean) as { id: string; label: string }[];
-  const active = useScrollSpy(sections.map((s) => s.id));
   const sectionIndex = (id: string) => sections.findIndex((s) => s.id === id) + 1;
 
   return (
@@ -96,22 +95,7 @@ function DexEntryBody({ data, sprites }: { data: DexEntryData; sprites?: React.R
       <Hero data={data} form={form} onFormChange={setForm} types={types} abilities={abilities} />
 
       {/* Sticky section nav with scroll-spy */}
-      <div className="sticky top-14 z-30 -mx-4 border-b border-foreground/5 bg-background/80 px-4 py-2 backdrop-blur-xl sm:-mx-8 sm:px-8">
-        <div className="flex gap-1 overflow-x-auto [scrollbar-width:none]" data-hscroll>
-          {sections.map((s) => (
-            <a
-              key={s.id}
-              href={`#${s.id}`}
-              className={cn("relative shrink-0 rounded-sm px-3 py-1.5 font-pixel text-[10px] uppercase tracking-wider transition-colors", active === s.id ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
-            >
-              {active === s.id && (
-                <m.span layoutId="dex-section-pill" className="absolute inset-0 rounded-sm bg-primary" transition={{ type: "spring", stiffness: 400, damping: 32 }} />
-              )}
-              <span className="relative">{s.label}</span>
-            </a>
-          ))}
-        </div>
-      </div>
+      <SectionNav sections={sections} />
 
       <Section id="stats" index={sectionIndex("stats")} title={t("sec.stats")} subtitle={form ? form.name : undefined}>
         <StatsSection stats={stats} percentiles={data.percentiles} accent={accent} isShedinja={p.slug === "shedinja"} showPercentiles={!form} />
@@ -208,6 +192,32 @@ function DexEntryBody({ data, sprites }: { data: DexEntryData; sprites?: React.R
         )}
       </div>
     </article>
+  );
+}
+
+/**
+ * The sticky section nav. It follows the scroll on its own (useScrollSpy is here, not in the page), so crossing into
+ * the next section re-renders these links, not the whole Pokémon page.
+ */
+function SectionNav({ sections }: { sections: { id: string; label: string }[] }) {
+  const active = useScrollSpy(sections.map((s) => s.id));
+  return (
+    <div className="sticky top-14 z-30 -mx-4 border-b border-foreground/5 bg-background/80 px-4 py-2 backdrop-blur-xl sm:-mx-8 sm:px-8">
+      <div className="flex gap-1 overflow-x-auto [scrollbar-width:none]" data-hscroll>
+        {sections.map((s) => (
+          <a
+            key={s.id}
+            href={`#${s.id}`}
+            className={cn("relative shrink-0 rounded-sm px-3 py-1.5 font-pixel text-[10px] uppercase tracking-wider transition-colors", active === s.id ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+          >
+            {active === s.id && (
+              <m.span layoutId="dex-section-pill" className="absolute inset-0 rounded-sm bg-primary" transition={{ type: "spring", stiffness: 400, damping: 32 }} />
+            )}
+            <span className="relative">{s.label}</span>
+          </a>
+        ))}
+      </div>
+    </div>
   );
 }
 
