@@ -151,25 +151,34 @@ export function buildLandmarks(cp: CasteliaPlan, quality: { detail: number }): L
     // The Liberty Garden ferry at the long pier.
     const pier = cp.piers.find((p) => !p.sheds) ?? cp.piers[0];
     const hullShape = new THREE.Shape();
-    hullShape.moveTo(-24, -5);
-    hullShape.lineTo(18, -5);
-    hullShape.quadraticCurveTo(30, -3, 32, 0);
-    hullShape.quadraticCurveTo(30, 3, 18, 5);
-    hullShape.lineTo(-24, 5);
-    hullShape.lineTo(-24, -5);
-    const hull = new THREE.ExtrudeGeometry(hullShape, { depth: 5, bevelEnabled: false });
+    hullShape.moveTo(-60, -11);
+    hullShape.lineTo(40, -11);
+    hullShape.quadraticCurveTo(64, -7, 70, 0);
+    hullShape.quadraticCurveTo(64, 7, 40, 11);
+    hullShape.lineTo(-60, 11);
+    hullShape.lineTo(-60, -11);
+    const hull = new THREE.ExtrudeGeometry(hullShape, { depth: 9, bevelEnabled: false });
     hull.rotateX(-Math.PI / 2);
     hull.translate(0, -2.2, 0);
     // Moored along the long pier, bow out to sea.
-    const fx = pier.len * 0.55, fz = pier.w / 2 + 8;
+    const fx = pier.len * 0.5, fz = pier.w / 2 + 14;
     hull.translate(fx, 0, fz);
     const hullM = mat(new THREE.MeshStandardMaterial({ color: "#e9edf2", roughness: 0.5 }));
     mesh(place(hull, pier), hullM);
-    mesh(place(merged([box(30, 4.2, 8, fx + 2, 2.8, fz), box(18, 3.4, 7, fx + 4, 7, fz)]), pier), white);
-    // Its lit windows: a band on each deck.
-    mesh(place(merged([box(28, 1.2, 8.15, fx + 2, 4.3, fz), box(16, 1.1, 7.15, fx + 4, 8.2, fz)]), pier), lamp, false);
+    // Decks stepping back, a funnel, and rows of lit windows on every deck.
+    const decks = [[100, 6.8, 18, -6], [84, 3.4, 16, -8], [62, 3.4, 14, -10], [34, 3.2, 11, -14]] as const;
+    const parts: THREE.BufferGeometry[] = [], windows: THREE.BufferGeometry[] = [];
+    let dy = 6.8;
+    for (const [l, h, w, off] of decks) {
+      parts.push(box(l, h, w, fx + off, dy, fz));
+      windows.push(box(l - 4, 0.9, w + 0.15, fx + off, dy + h * 0.45, fz));
+      dy += h;
+    }
+    parts.push(box(8, 7, 6, fx - 26, dy, fz));
+    mesh(place(merged(parts), pier), white);
+    mesh(place(merged(windows), pier), lamp, false);
     const stripe = mat(new THREE.MeshStandardMaterial({ color: "#1d5fa8", roughness: 0.5 }));
-    mesh(place(box(52, 0.8, 10.1, fx - 2, 1.2, fz), pier), stripe, false);
+    mesh(place(merged([box(128, 1.2, 22.2, fx + 2, 3.6, fz), box(8.2, 2, 6.2, fx - 26, dy + 5, fz)]), pier), stripe, false);
   }
 
   // ---- Liberty Garden: a wooded island with its lighthouse.
@@ -218,17 +227,23 @@ export function buildLandmarks(cp: CasteliaPlan, quality: { detail: number }): L
     const lantern = new THREE.CylinderGeometry(3.4, 3.4, 4, 16);
     lantern.translate(lx, 1 + H + 2.8, lz);
     mesh(lantern, mat(new THREE.MeshStandardMaterial({ color: "#000000", emissive: new THREE.Color("#fff1c8"), emissiveIntensity: 4 })), false);
-    const beamM = mat(new THREE.MeshBasicMaterial({ color: new THREE.Color("#fff3d0"), transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
-    const beamG = new THREE.ConeGeometry(28, 420, 24, 1, true);
-    beamG.translate(0, -210, 0);
+    // The beam: a soft cone that fades along its length (alpha in its vertex colours), sweeping round.
+    const beamG = new THREE.ConeGeometry(9, 160, 20, 6, true);
+    beamG.translate(0, -80, 0);
     beamG.rotateZ(Math.PI / 2);
+    {
+      const pos = beamG.attributes.position as THREE.BufferAttribute;
+      const col = new Float32Array(pos.count * 4);
+      for (let i = 0; i < pos.count; i++) { const f = Math.min(1, Math.max(0, pos.getX(i) / 160)); col.set([1, 0.95, 0.82, Math.pow(1 - f, 1.6) * 0.5], i * 4); }
+      beamG.setAttribute("color", new THREE.BufferAttribute(col, 4));
+    }
     geos.push(beamG);
+    const beamM = mat(new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
     const beamPivot = new THREE.Group();
     beamPivot.position.set(lx, 1 + H + 2.8, lz);
     for (const s of [0, Math.PI]) {
       const b = new THREE.Mesh(beamG, beamM);
       b.rotation.y = s;
-      b.rotation.z = -0.02;
       beamPivot.add(b);
     }
     group.add(beamPivot);

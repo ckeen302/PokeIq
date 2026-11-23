@@ -21,8 +21,8 @@ export { CASTELIA_HAZE, CASTELIA_MOOD, createDuskSky, duskEnvironment } from "./
 export interface Castelia {
   group: THREE.Group;
   plan: CasteliaPlan;
-  /** The camera and the point it frames, and the tangent of half its horizontal field of view. */
-  update(camera: THREE.Vector3, aim: THREE.Vector3, tanH: number): void;
+  /** The camera, the framed figure's feet, the tangent of half the horizontal field of view and half the width to keep clear round the figure. */
+  update(camera: THREE.Vector3, aim: THREE.Vector3, tanH: number, figHalf: number): void;
   tick(t: number): void;
   stats(): { towers: number; tris: number };
   dispose(): void;
@@ -49,7 +49,8 @@ export function buildCastelia(plan: WorldPlan, shared: Shared, tex: GroundTextur
   return {
     group,
     plan: cp,
-    update(camera, aim, tanH) {
+    update(camera, aim, tanH, figHalf) {
+      uni.uFig.value = figHalf;
       uni.uCam.value.copy(camera);
       uni.uAim.value.copy(aim);
       uni.uTanH.value = tanH;

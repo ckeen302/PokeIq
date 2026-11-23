@@ -620,7 +620,9 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     if (castelia) {
       // Towers sink out of the sight line to the framed figure's feet (not the aim, which the finale lifts above it).
       const at = plan.path.at(view.x);
-      castelia.update(camera.position, tmpAim.set(at.x, 0, at.z), Math.tan((camera.fov * Math.PI) / 360) * camera.aspect);
+      const tanH = Math.tan((camera.fov * Math.PI) / 360) * camera.aspect;
+      // Round the figure: about the width it fills at its own framing (the glide's distance), a little more.
+      castelia.update(camera.position, tmpAim.set(at.x, 0, at.z), tanH, Math.max(view.h * 0.6, view.d * tanH * 0.55) + 4);
     }
   }
 

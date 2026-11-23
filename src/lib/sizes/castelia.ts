@@ -270,12 +270,25 @@ export function planCastelia(plan: WorldPlan, detail = 1): CasteliaPlan {
   ringTowers(edge, 40, "plaza", 60, 170, [], 0);
   // Inside the giants' ring, round the fountain: the tallest of the skyline (open on four walks from the ring to the fountain).
   const walks = [0, 1, 2, 3].map((k) => entry + Math.PI / 4 + (k * Math.PI) / 2);
-  for (let r0 = inner.r0, k = 0; inner.r1 - r0 >= 24; r0 += 50 + GRID.street, k++) ringTowers(r0, Math.min(50, inner.r1 - r0), "inner", Math.max(70, 160 - k * 22), Math.max(120, 310 - k * 40), walks, 10);
+  // First, round the fountain, four slender landmark towers between the walks (the city's tallest: seen from the finale behind the giants, as a landmark is in Lumiose); a bigger ring has rings of towers out from them.
+  {
+    const rm = Math.min(inner.r0 + 22, (inner.r0 + inner.r1) / 2);
+    const side = Math.min(34, (inner.r1 - inner.r0) * 0.9);
+    if (inner.r1 - inner.r0 >= 24) {
+      for (let k = 0; k < 4; k++) {
+        const a = entry + (k * Math.PI) / 2;
+        const rr = rng(seed++ * 6151 + 11);
+        const crowns: Crown[] = ["spire", "lit", "spire", "stepped"];
+        towers.push({ x: C.x + Math.cos(a) * rm, z: C.z + Math.sin(a) * rm, w: side, d: side, yaw: Math.PI / 2 - a, h: 230 + rr() * 90, podium: 0, tiers: 3, round: k % 2 === 1, kind: ([0, 3, 4, 0] as FacadeKind[])[k], crown: crowns[k], seed: seed * 17 + 5, role: "inner" });
+      }
+    }
+  }
+  for (let r0 = inner.r0 + 34 + GRID.street, k = 1; inner.r1 - r0 >= 24; r0 += 50 + GRID.street, k++) ringTowers(r0, Math.min(50, inner.r1 - r0), "inner", Math.max(70, 160 - k * 22), Math.max(120, 300 - k * 40), walks, 10);
 
   // ---- Waterfront: five piers into the bay, the island and the bridge.
   // The piers line the north shore between the waterfront and the bridge, out into the bay where the finale looks; Liberty Garden lies offshore from them.
-  const piers: CasteliaPlan["piers"] = [0, 1, 2, 3, 4].map((k) => ({ x: shoreW + 70 + k * 72, z: zN - 2, dir: Math.PI / 2, len: k === 2 ? 250 : 190, w: k === 2 ? 30 : 24, sheds: k !== 2 }));
-  const island = { x: shoreW + 210, z: zN + 680, r: 92 };
+  const piers: CasteliaPlan["piers"] = [0, 1, 2, 3, 4].map((k) => ({ x: C.x - 460 + k * 78, z: zN - 2, dir: Math.PI / 2, len: k === 2 ? 290 : 220, w: k === 2 ? 32 : 26, sheds: k !== 2 }));
+  const island = { x: C.x - 260, z: zN + 620, r: 92 };
   const bAng = (45 * Math.PI) / 180;
   const bLen = 1900;
   const bridge = { x0: bx0, z0: bz0, x1: bx0 + Math.cos(bAng) * bLen, z1: bz0 + Math.sin(bAng) * bLen, deck: 46, width: 30, pylons: [0.34, 0.68] };

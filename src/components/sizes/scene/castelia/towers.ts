@@ -242,6 +242,8 @@ function beacon(g: TowerGeo, p: THREE.Vector3, tw: number[]) {
 }
 
 export interface FacadeUniforms {
+  /** Half the width to keep clear round the framed figure (m). */
+  uFig: { value: number };
   uCam: { value: THREE.Vector3 };
   uAim: { value: THREE.Vector3 };
   uTanH: { value: number };
@@ -249,7 +251,7 @@ export interface FacadeUniforms {
 }
 
 export function facadeUniforms(): FacadeUniforms {
-  return { uCam: { value: new THREE.Vector3() }, uAim: { value: new THREE.Vector3(0, 0, 1) }, uTanH: { value: 0.6 }, uClamp: { value: 1 } };
+  return { uFig: { value: 10 }, uCam: { value: new THREE.Vector3() }, uAim: { value: new THREE.Vector3(0, 0, 1) }, uTanH: { value: 0.6 }, uClamp: { value: 1 } };
 }
 
 /** The towers' one material: the windows, the lit crowns, the sinking. */
@@ -270,6 +272,7 @@ export function facadeMaterial(u: FacadeUniforms): THREE.MeshStandardMaterial {
         uniform vec3 uAim;
         uniform float uTanH;
         uniform float uClamp;
+        uniform float uFig;
         varying vec4 vStyle;
         varying vec3 vFac;`
       )
@@ -286,12 +289,21 @@ export function facadeMaterial(u: FacadeUniforms): THREE.MeshStandardMaterial {
           float t = dot(rel, dir);
           float lat = abs(dot(rel, vec2(-dir.y, dir.x)));
           if (t > -aTower.z && t < L) {
-            float halfW = max(t, 0.0) * uTanH * 1.2 + aTower.z + 8.0;
-            float k = 1.0 - smoothstep(halfW, halfW + 40.0, lat);
+            // Low (the glide) the whole frame must see the line; high (the finale) only the way to the framed figure.
             float tt = clamp(t / L, 0.0, 1.0);
+            float high = smoothstep(40.0, 140.0, uCam.y);
+            float halfW = mix(max(t, 0.0) * uTanH * 1.2, tt * uFig, high) + aTower.z + 6.0;
+            float k = 1.0 - smoothstep(halfW, halfW + mix(40.0, 18.0, high), lat);
             float line = max(0.6, uCam.y * (1.0 - tt) - 3.0);
             float maxH = line + (1.0 - k) * 600.0;
             transformed.y = min(transformed.y, maxH);
+          }
+          // High over the city (the finale), towers close round the camera drop under the bottom of the frame: no wall beside the lens, no roof just under it.
+          float dc = length(rel);
+          float near = smoothstep(L * 0.55, L * 0.3, dc) * smoothstep(40.0, 140.0, uCam.y);
+          if (near > 0.0) {
+            float below = uCam.y - (dc + aTower.z) * 0.62 - 6.0;
+            transformed.y = min(transformed.y, max(0.6, below) + (1.0 - near) * 600.0);
           }
         }
         vStyle = aStyle;
