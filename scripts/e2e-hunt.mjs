@@ -49,6 +49,15 @@ function watchApi(page, fail) {
 /** The copy of a part that's on screen (some are drawn twice: one for phones, one for wider screens). */
 const shown = (page, id) => page.locator(`[data-testid="${id}"]:visible`).first();
 
+/** PokéGuessr's how-to opens by itself on a first visit: "Don't show again", as e2e-guessr does. */
+async function closeHowTo(page) {
+  const sheet = page.locator('[data-testid="howto-sheet"]').first();
+  if (await sheet.waitFor({ state: "visible", timeout: 2500 }).then(() => true, () => false)) {
+    await page.getByTestId("howto-never").click();
+    await sheet.waitFor({ state: "hidden" });
+  }
+}
+
 async function tapMap(page, fx, fy) {
   const { map, area } = await guessMapReady(page);
   await map.click({ position: spotIn(area, fx, fy) });
@@ -95,7 +104,7 @@ async function playRound(page, { phone, fail, label, shot, edit = false }) {
   const spots = await page.getByTestId("hunt-spot").count();
   if (!spots) fail(`${label}: the reveal lists no spots for ${name}`);
   const found = await shown(page, "hunt-found-line").innerText();
-  if (!/found/i.test(found) && !/regions/i.test(found)) fail(`${label}: the reveal says "${found}"`);
+  if (!found.trim()) fail(`${label}: the reveal says "${found}"`);
   const dex = await shown(page, "hunt-dex-link").getAttribute("href");
   if (!/\/pokemon\/[a-z0-9-]+#encounters$/.test(dex ?? "")) fail(`${label}: the Pokédex link is ${dex}`);
   if (shot) {
@@ -131,6 +140,7 @@ export async function runHunt({ browser, BASE, OUT, errors, step }) {
     try {
       await page.goto(`${BASE}/pokeguessr`, { waitUntil: "load" });
       await page.getByTestId("hunt-hub-entry").waitFor();
+      await closeHowTo(page);
       await page.getByTestId("hunt-hub-entry").scrollIntoViewIfNeeded();
       await page.screenshot({ path: `${OUT}/hunt-hub-entry.png` });
       await page.getByTestId("hunt-hub-entry").click();

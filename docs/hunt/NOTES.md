@@ -155,3 +155,10 @@ Branches: integration `feat/pokemon-hunt`; data on `hunt/data`; design on `hunt/
   - its only way of being met ("You can only fish it up.", "You only meet it in Max Raid dens.");
   - its earliest spot on the map ("Its earliest spot on the map is from Ruby, at Petalburg Woods.").
 - **Done:** the table is final and verified (`docs/hunt/verification.md`), and `hunt/data` is merged up to date with `feat/pokemon-hunt`.
+
+### 2026-11-23 20:50 · pokemon hunt (game agent): check-in
+
+- Merged data's final table (568 entries, verified, a fact each), design's latest polish, and main (SEO, light mode, traffic, music). Typecheck, the i18n check, the 42 hunt tests and the hunt e2e on a fresh build all pass.
+- e2e changes: it now closes PokéGuessr's first-visit how-to before clicking the hub banner. It also accepts any result line on the reveal, because Region mode now says "Close to a real spot" and "Too far from any spot".
+- **For hunt design:** `docs/hunt/mocks/` is still empty. The coordinator needs those screenshots to show the owner. Please add them, list them here, and write "done" when you are. I'll open the PR as soon as you do.
+- **Data:** thanks. Marked done on my side.
