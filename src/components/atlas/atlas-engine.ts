@@ -70,8 +70,15 @@ export interface AtlasOptions {
    * Where the view starts (and stays until the viewer moves it): this box,
    * filling the canvas (`cover`: the box's shorter side fits, the rest is a
    * drag away) instead of the whole map. "Show the whole map" still shows it all.
+   * `scale`: a fixed zoom centred on the box (or `at`) instead (the guess map's dock: the
+   * same zoom when the box grows, so a bigger box shows more); `floor`: zooming
+   * out stops once this box fills the canvas (times `floorZoom`: a little closer,
+   * so less empty sea shows above and below a wide world), and the view never
+   * pans off it.
    */
-  home?: { box: Box; cover?: boolean };
+  home?: { box: Box; cover?: boolean; scale?: () => number; at?: [number, number]; floor?: Box; floorZoom?: number };
+  /** The guess map: small, thin region names (GeoGuessr's), so they label a region without covering it. */
+  quietLabels?: boolean;
   /** A page in another language: the names the map writes, English → that language's (names not in it stay English). */
   names?: Record<string, string>;
   /** Called once, after the first frame drawn with as much of the map's detail as the view needs. */
@@ -106,6 +113,8 @@ export const DOT_SPACING_PX = 16;
 const DOT_FADE_MS = 150;
 /** Spaced dots on a map of the whole world: none until it's zoomed in this far past the whole world. */
 const WORLD_DOTS_FROM = 2;
+/** A dock zoomed in from the start (home.scale): dots come in once zoomed past that by this much (one zoom click is 1.6). */
+const DOCK_DOTS_FROM = 1.5;
 
 const nearestCache = new WeakMap<AtlasMarker[], Float64Array>();
 /**
@@ -297,6 +306,11 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
   const home = (): AtlasView => {
     if (framing === "whole" || !opts.home) return whole();
     const [x0, y0, x1, y1] = opts.home.box;
+    if (opts.home.scale) {
+      const s = Math.max(minS, opts.home.scale());
+      const [cx, cy] = opts.home.at ?? [(x0 + x1) / 2, (y0 + y1) / 2];
+      return { s, tx: W / 2 - cx * s, ty: H / 2 - cy * s };
+    }
     if (!opts.home.cover) return fitTo(opts.home.box);
     const s = Math.max(W / (x1 - x0), H / (y1 - y0));
     return { s, tx: W / 2 - ((x0 + x1) / 2) * s, ty: H / 2 - ((y0 + y1) / 2) * s };
@@ -305,8 +319,17 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
   /** Zoom within limits, and never pan off the world. */
   function clamp() {
     view.s = Math.min(MAX_SCALE, Math.max(minS, view.s));
-    const cx = Math.min(atlas.W, Math.max(0, (W / 2 - view.tx) / view.s));
-    const cy = Math.min(atlas.H, Math.max(0, (H / 2 - view.ty) / view.s));
+    let cx = Math.min(atlas.W, Math.max(0, (W / 2 - view.tx) / view.s));
+    let cy = Math.min(atlas.H, Math.max(0, (H / 2 - view.ty) / view.s));
+    // With a floor (the guess map's dock), the view stays on that box: centred on it where the view is wider or taller than it
+    // (zoomed right out, the whole world sits in the middle), never panned past its edges otherwise.
+    if (opts.home?.floor) {
+      const [fx0, fy0, fx1, fy1] = opts.home.floor;
+      const hw = W / 2 / view.s;
+      const hh = H / 2 / view.s;
+      cx = fx1 - fx0 <= 2 * hw ? (fx0 + fx1) / 2 : Math.min(fx1 - hw, Math.max(fx0 + hw, cx));
+      cy = fy1 - fy0 <= 2 * hh ? (fy0 + fy1) / 2 : Math.min(fy1 - hh, Math.max(fy0 + hh, cy));
+    }
     view.tx = W / 2 - cx * view.s;
     view.ty = H / 2 - cy * view.s;
   }
@@ -321,7 +344,7 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     H = r.height;
     canvas.width = Math.round(W * dpr);
     canvas.height = Math.round(H * dpr);
-    minS = fitWorld().s * 0.8;
+    minS = opts.home?.floor ? fitTo(opts.home.floor).s * (opts.home.floorZoom ?? 1) : fitWorld().s * 0.8;
     // Keep the whole map framed until the viewer starts exploring.
     if (!touched) Object.assign(view, home());
     else Object.assign(view, { tx: W / 2 - cx * view.s, ty: H / 2 - cy * view.s });
@@ -372,7 +395,7 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     const dt = lastDraw ? now - lastDraw : DOT_FADE_MS;
     lastDraw = now;
     // A map of the whole world shows no dots zoomed out (just the region names); a region's map shows those that have room.
-    const dotsAllowed = locked || s >= fitWorld().s * WORLD_DOTS_FROM;
+    const dotsAllowed = locked || (opts.home?.scale ? s >= opts.home.scale() * DOCK_DOTS_FROM : s >= fitWorld().s * WORLD_DOTS_FROM);
     let fading = false;
     for (let i = 0; i < atlas.markers.length; i++) {
       const m = atlas.markers[i];
@@ -451,9 +474,11 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     };
     // A label of one or more lines ("\n"), centred on its point; skipped if it would overlap one already drawn.
     // `keepIn`: a region's name whose point is on screen slides in from the edge rather than being cut off by it.
-    const label = (text: string, wx: number, wy: number, font: string, size: number, dy: number, color: string, track = 0, dx = 0, keepIn = false): boolean => {
+    const label = (text: string, wx: number, wy: number, font: string, size: number, dy: number, color: string, track = 0, dx = 0, keepIn = false, quiet = false): boolean => {
       let x = wx * s + tx + dx;
       const y = wy * s + ty + dy;
+      // A quiet name whose place is off the map isn't drawn, rather than showing a sliver of it at the edge.
+      if (quiet && (x < 0 || x > W || y < 0 || y > H)) return false;
       ctx.font = font.replace("SIZE", `${size}px`);
       ctx.letterSpacing = `${track}px`;
       const lines = text.split("\n");
@@ -469,11 +494,13 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
         w = Math.max(w, lw);
       }
       // Room around each label, so two never run together into one ("JOHTO KANTO"): the later (lower-priority) one waits for more zoom.
-      const padX = Math.max(3, size * 0.4);
+      // Quiet names are small enough to sit level with a close neighbour (Johto beside Kanto), so they need less room.
+      const padX = quiet ? 2 : Math.max(3, size * 0.4);
       const padY = Math.max(1, size * 0.15);
       if (keepIn && x >= 0 && x <= W && w + 2 * padX < W) x = Math.min(W - w / 2 - padX, Math.max(w / 2 + padX, x));
-      if (!fits(x - w / 2 - padX, y - size - padY, w + 2 * padX, size + 6 + (lines.length - 1) * lineH + 2 * padY)) return false;
-      ctx.lineWidth = Math.max(3, size / 4);
+      // A quiet name (capitals, no descenders) claims only its own height, so a neighbour can sit just above or below it.
+      if (!fits(x - w / 2 - padX, y - size - padY, w + 2 * padX, size + (quiet ? 2 : 6) + (lines.length - 1) * lineH + 2 * padY)) return false;
+      ctx.lineWidth = quiet ? 2 : Math.max(3, size / 4);
       ctx.strokeStyle = "rgba(8,18,32,.88)";
       ctx.lineJoin = "round";
       ctx.textAlign = "center";
@@ -495,24 +522,32 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     if (selected) label(nm(selected.name), selected.x, selected.y, `700 SIZE ${sans}, system-ui`, 15, -20, "#ffe08a");
     if (f < 4.5) {
       for (const r of regionOrder) {
-        const baseSize = r.tier === 1 ? 20 : r.tier === 2 ? 14 : 12;
-        const size = Math.round(Math.max(baseSize * 0.7, Math.min(baseSize * 1.7, baseSize * Math.pow(f, 0.35))));
+        const quiet = opts.quietLabels;
+        const baseSize = quiet ? 8 : r.tier === 1 ? 20 : r.tier === 2 ? 14 : 12;
+        // Quiet names stay small (8 px, growing a little zoomed in, to 12); the atlas's are display-sized.
+        const size = quiet
+          ? Math.round(Math.min(12, baseSize * Math.max(1, Math.pow(f, 0.35))))
+          : Math.round(Math.max(baseSize * 0.7, Math.min(baseSize * 1.7, baseSize * Math.pow(f, 0.35))));
         // Small maps keep to the main regions: DLC areas and islands come in as you zoom.
         if ((r.tier === 3 && f < 1.4) || (r.tier === 2 && f < TIER2_FROM)) continue;
         // A main region's name never drops out: if its spot is taken (Johto beside Kanto), it tries just above, below, then to either side.
-        const spots: [number, number][] = r.tier === 1 ? [[0, 0], [0, -size * 1.25], [0, size * 1.35], [-size * 2.6, 0], [size * 2.6, 0]] : [[0, 0]];
+        // Quiet names step a full line up or down, so a crowded one (Johto beside Kanto) stays over its own land rather than drifting sideways.
+        const up = quiet ? size * 1.6 : size * 1.25;
+        const down = quiet ? size * 1.6 : size * 1.35;
+        const spots: [number, number][] = r.tier === 1 ? [[0, 0], [0, -up], [0, down], [-size * 2.6, 0], [size * 2.6, 0]] : [[0, 0]];
         spots.some(([dx, dy]) =>
           label(
             r.tier === 1 ? nm(r.name).toUpperCase() : nm(r.name),
             r.x,
             r.y,
-            `${r.tier === 1 ? 700 : 600} SIZE ${display}, ${sans}, sans-serif`,
+            `${quiet ? 500 : r.tier === 1 ? 700 : 600} SIZE ${display}, ${sans}, sans-serif`,
             size,
             size / 3 + dy,
             r.tier === 1 ? "#ffffff" : "#d7e6f7",
-            r.tier === 1 ? 2 : 0.5,
+            quiet ? (r.tier === 1 ? 0.5 : 0.2) : r.tier === 1 ? 2 : 0.5,
             dx,
-            true
+            true,
+            quiet
           )
         );
       }
