@@ -252,13 +252,13 @@ await gotoSettled(page, `${BASE}/pokemon/starly`);
 {
   const sec = page.locator("#encounters");
   await sec.waitFor();
-  const open = await sec.locator("table tbody tr").count();
+  const open = await sec.locator("table tbody tr:visible").count();
   if (open === 0) errors.push("dex entry: Where to find it has no rows in the newest generation");
   const collapsed = sec.locator("button[aria-expanded=false]").first();
   if ((await collapsed.count()) === 0) errors.push("dex entry: older generations are not collapsible");
   else {
     await collapsed.click();
-    if ((await sec.locator("table tbody tr").count()) <= open) errors.push("dex entry: expanding a generation added no rows");
+    if ((await sec.locator("table tbody tr:visible").count()) <= open) errors.push("dex entry: expanding a generation added no rows");
   }
   await sec.screenshot({ path: `${OUT}/dex-encounters.png` });
 }
