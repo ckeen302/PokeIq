@@ -1,7 +1,8 @@
 "use client";
 
 import { Fragment, useDeferredValue, useEffect, useMemo, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+// `m` as `motion`: the rows below are `m` (a move). The light components draw once DexEntry's LazyMotion has its features.
+import { AnimatePresence, m as motion } from "framer-motion";
 import Link from "@/components/ui/Link";
 import { ChevronDown, CircleDot, Search, Sparkle, Swords } from "lucide-react";
 import type { DexMove } from "@/lib/pokemon/dex-types";

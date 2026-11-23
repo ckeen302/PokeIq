@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element -- pre-sized art */
 import Link from "@/components/ui/Link";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { ArrowDown, ArrowRight } from "lucide-react";
 import type { EvolutionNode } from "@/lib/pokemon/dex-types";
 import { typeColor } from "@/lib/pokemon/type-colors";
@@ -46,7 +46,7 @@ function Branch({ node, currentId, depth, names }: { node: EvolutionNode; curren
 function EvoCard({ node, current, delay, names }: { node: EvolutionNode; current: boolean; delay: number; names: Names }) {
   const c = typeColor(node.types[0]);
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, scale: 0.7 }}
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
@@ -70,14 +70,14 @@ function EvoCard({ node, current, delay, names }: { node: EvolutionNode; current
           ))}
         </div>
       </Link>
-    </motion.div>
+    </m.div>
   );
 }
 
 function Condition({ conditions, vertical, delay }: { conditions: string[]; vertical: boolean; delay: number }) {
   const t = useT(dexEntryNs);
   return (
-    <motion.div
+    <m.div
       className={cn("flex max-w-[11rem] items-center gap-1 text-center text-[11px] text-muted-foreground", vertical ? "flex-col" : "flex-col md:flex-row")}
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
@@ -95,6 +95,6 @@ function Condition({ conditions, vertical, delay }: { conditions: string[]; vert
           <ArrowRight className="hidden h-4 w-4 shrink-0 text-primary md:block" />
         </>
       )}
-    </motion.div>
+    </m.div>
   );
 }

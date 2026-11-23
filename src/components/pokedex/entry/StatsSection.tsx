@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import type { StatKey } from "@/lib/pokemon/constants";
 import { statRange } from "@/lib/pokemon/stat-calc";
 import { cn } from "@/lib/utils";
@@ -64,7 +64,7 @@ export function StatsSection({ stats, percentiles, accent, isShedinja, showPerce
               <span className="text-muted-foreground">{t(`stat.${k}`)}</span>
               <span className="text-right font-mono font-bold tabular-nums">{stats[k]}</span>
               <div className="meter">
-                <motion.div
+                <m.div
                   className="h-full rounded-full"
                   style={{ background: `linear-gradient(90deg, ${barColor(stats[k])}aa, ${barColor(stats[k])})`, boxShadow: `0 0 12px ${barColor(stats[k])}66` }}
                   initial={{ width: 0 }}
@@ -134,7 +134,7 @@ function Radar({ stats, accent }: { stats: Record<StatKey, number>; accent: stri
         const [x, y] = point(i, 1);
         return <line key={i} x1={c} y1={c} x2={x} y2={y} stroke="currentColor" className="text-foreground/10" />;
       })}
-      <motion.path
+      <m.path
         d={path(target)}
         initial={{ d: path(Array(6).fill(0.02)), opacity: 0 }}
         animate={{ d: path(target), opacity: 1 }}
