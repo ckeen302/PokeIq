@@ -65,19 +65,6 @@
   "uploaded": false
  },
  {
-  "url": "https://www.pokepedia.fr/images/6/68/La_Frescale_moulin_XY.png",
-  "sha256": "a6ab15fad35a1e1cb38e5fa56b8447f77de49395d53056b8abecfd5205c99ea8",
-  "game": "X / Y",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 400,
-   "height": 240
-  },
-  "id": "qrMIdEqXpkJM",
-  "uploaded": false
- },
- {
   "url": "https://images.wikidexcdn.net/mwuploads/wikidex/d/d9/latest/20180819182847/Menhires.png",
   "sha256": "3452c424e2d091e321a680a60321a14e98f59d4c9cf43797942c0d281bf19525",
   "game": "X / Y",
@@ -169,19 +156,6 @@
   "uploaded": false
  },
  {
-  "url": "https://www.pokepedia.fr/images/7/76/Village_Pok%C3%A9mon_fleurs_XY.png",
-  "sha256": "7d37e9672deff1c981042214a8a2616a3037864e2024adb4b40620e9c945f256",
-  "game": "X / Y",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 400,
-   "height": 240
-  },
-  "id": "LwET9p6zmjPG",
-  "uploaded": false
- },
- {
   "url": "https://www.pokepedia.fr/images/4/40/Village_Pok%C3%A9mon_Miel_XY.png",
   "sha256": "5739a4691f9ca00459430d75a44dff017cf68ffe0a26637b41b2b7731eaa5968",
   "game": "X / Y",
@@ -205,97 +179,6 @@
    "height": 240
   },
   "id": "0L-3hiUoXJTw",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokewiki.de/images/2/2f/Kalos-Kraftwerk.jpg",
-  "sha256": "109768f3952a522225bb15d5ad43dc67cd579c69bf14400329e1de1397ef1df9",
-  "game": "X / Y",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 400,
-   "height": 240
-  },
-  "id": "JveCxdY5klMV",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokepedia.fr/images/c/c9/Route_1_XY.png",
-  "sha256": "a5a083e2a1a545da867233b5595c62864b218ab987d6349741b1f2e8b6abbdda",
-  "game": "X / Y",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 400,
-   "height": 240
-  },
-  "id": "tnd2q6YWTdcn",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokepedia.fr/images/6/6f/Route_11_Hyper_Potion_XY.png",
-  "sha256": "1d74f890ac74463f23e640a1ace59692a44a1f623bd3b961cef2cc9b011014a7",
-  "game": "X / Y",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 400,
-   "height": 240
-  },
-  "id": "ZZ7F4Mp2MBsx",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokepedia.fr/images/b/bd/Route_15_PP_Plus_XY.png",
-  "sha256": "a77fabfb5ea174c727ee855c3a6294e63f944426218aae66b1437aaee17807c7",
-  "game": "X / Y",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 400,
-   "height": 240
-  },
-  "id": "j3HYRUmtR-Wi",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokepedia.fr/images/b/b9/Route_16_XY.png",
-  "sha256": "f780dcf599dd9475b553a6d32144dcb2322d4912fb034603e201d036c4834c90",
-  "game": "X / Y",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 400,
-   "height": 240
-  },
-  "id": "FuDmJlCNDCwo",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokepedia.fr/images/b/b3/Route_17_XY.png",
-  "sha256": "c4f6e3eaa187694905a85aef4f262a77bc3d4bbbab651de719933b7606f2ec7f",
-  "game": "X / Y",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 400,
-   "height": 240
-  },
-  "id": "Uqh5Wtr0Ub0S",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokepedia.fr/images/a/a1/Route_20_Bis_Ball_XY.png",
-  "sha256": "dba8b0c72fd81447ebce098cf00684ef8a9042c0f405ebc64c5ad7bff629635d",
-  "game": "X / Y",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 400,
-   "height": 240
-  },
-  "id": "KyfPRjnIlQP7",
   "uploaded": false
  },
  {
@@ -325,45 +208,6 @@
   "uploaded": false
  },
  {
-  "url": "https://www.pokepedia.fr/images/d/da/Route_9_Superepousse_XY.png",
-  "sha256": "de4e66b000a519d442e7472c6115ab0464a428c1e542ffed979ae6d7c772ace1",
-  "game": "X / Y",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 400,
-   "height": 240
-  },
-  "id": "lumED02JQXlv",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokepedia.fr/images/4/41/Route_9_XY.png",
-  "sha256": "756d1528bec30afe21b5f19cfacb90b528616f12450d5ef8ce28122b2a135c7b",
-  "game": "X / Y",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 400,
-   "height": 240
-  },
-  "id": "o2aeq_6Gymkw",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokepedia.fr/images/0/09/For%C3%AAt_de_Neuvartault_Antidote_XY.png",
-  "sha256": "0521bb561686086988d012d2268354db2feb688d07cf2907c8ee9ceed3e39e8d",
-  "game": "X / Y",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 400,
-   "height": 240
-  },
-  "id": "3pTZKQfhMHg4",
-  "uploaded": false
- },
- {
   "url": "https://www.pokepedia.fr/images/c/cc/For%C3%AAt_de_Neuvartault_Potion_Entr%C3%A9e_XY.png",
   "sha256": "b9f076bfe35c17d04bca37e817e0db641e0fc38a91415b44f50563d83ffa3d3c",
   "game": "X / Y",
@@ -387,19 +231,6 @@
    "height": 240
   },
   "id": "yJtkpW4pUvXb",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokepedia.fr/images/9/9f/Auffrac-les-Cong%C3%A8res_Sp%C3%A9cial_%2B_XY.png",
-  "sha256": "486c592d87aeeb9205110fe76c1bcd0f8816a96d8fbf893ffda71df7de46b72c",
-  "game": "X / Y",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 400,
-   "height": 240
-  },
-  "id": "LBET8R50rXvv",
   "uploaded": false
  },
  {

@@ -653,6 +653,15 @@ function oneScreen(code: string, w: number, h: number): boolean {
   return false;
 }
 
+const SOURCES = path.join(ROOT, "scripts/geo/shot-sources.json");
+/** A source page's file as a candidate's key ("pokepedia:Name.png"; Bulbapedia's bare), or null. */
+function sourceKey(url: string): string | null {
+  const m = url.replace(/ \(view cut at [^)]*\)$/, "").match(/(?:File|Fichier|Datei|Archivo):(.+)$/);
+  if (!m) return null;
+  const prefix = url.includes("pokepedia") ? "pokepedia:" : url.includes("pokewiki") ? "pokewiki:" : url.includes("fandom") ? "fandom:" : url.includes("wikidex") ? "wikidex:" : "";
+  return prefix + decodeURIComponent(m[1]).replace(/ /g, "_");
+}
+
 /** Files already used, or dropped from the data after a review, by their cache key without variants (trims, encoding). */
 function usedFiles() {
   const geo = loadGeo();
@@ -670,6 +679,14 @@ function usedFiles() {
     tried.add(b);
     if (live.has(id)) used.add(b);
     if (removed.has(id)) dropped.add(b);
+  }
+  // Every live shot's source file (shot-sources.json), so a file whose live copy was cropped when it went up still counts as used:
+  // the upload cache isn't on every machine, and a hash of the whole file doesn't match its cropped copy.
+  const sources = readJson<Record<string, string>>(SOURCES, {});
+  for (const [id, url] of Object.entries(sources)) {
+    if (!live.has(id)) continue;
+    const key = sourceKey(url);
+    if (key) used.add(key);
   }
   // Hand-added shots' sources.
   for (const a of curation.added) {
