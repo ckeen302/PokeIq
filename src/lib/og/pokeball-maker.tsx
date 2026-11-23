@@ -1,5 +1,5 @@
 import "server-only";
-import { ogCard } from "@/lib/og/card";
+import { fitTitle, ogCard } from "@/lib/og/card";
 import { rgbToLch } from "@/lib/shiny-maker/color";
 import { hexOf, type Design } from "@/lib/pokeball-maker/design";
 import { PATTERNS } from "@/lib/pokeball-maker/patterns";
@@ -86,11 +86,12 @@ export async function pokeballMakerCard(d: Design | null) {
     return ogCard({ eyebrow: "PokéIQ tools", title: ["Poké Ball", ["Maker", accent]], subtitle: "Design your own Poké Ball in 3D.", accent, visual, footer: "Design your own →" });
   }
   const title = d.name || "Custom Ball";
+  const fitted = fitTitle(title, 580);
   return ogCard(
     {
       eyebrow: "Poké Ball Maker",
-      title: [title],
-      titleSize: title.length > 18 ? 46 : title.length > 12 ? 58 : 70,
+      title: fitted.lines,
+      titleSize: fitted.size,
       subtitle: d.desc ? (d.desc.length > 110 ? `${d.desc.slice(0, 108)}…` : d.desc) : "A custom Poké Ball, made on PokéIQ.",
       accent,
       visual,

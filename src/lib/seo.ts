@@ -36,6 +36,11 @@ interface PageMetadata {
   image?: { url: string; alt: string; width?: number; height?: number };
   /** Keep the page out of search results (it can still be shared). */
   noindex?: boolean;
+  /**
+   * The link's own address (og:url) on a page with no canonical path: a shared result or an invite. Its preview then
+   * names the link that was shared, without the page claiming a canonical address.
+   */
+  url?: string;
 }
 
 /**
@@ -43,7 +48,7 @@ interface PageMetadata {
  * and X card) in one place. A page that sets `openGraph` replaces the
  * layout's whole object, so every field a preview needs is repeated here.
  */
-export function pageMetadata({ title, description, path, socialTitle, socialDescription, image, noindex }: PageMetadata): Metadata {
+export function pageMetadata({ title, description, path, socialTitle, socialDescription, image, noindex, url }: PageMetadata): Metadata {
   const shareTitle = socialTitle ?? `${title} · ${SITE_NAME}`;
   const shareDescription = socialDescription ?? description;
   // Site cards are 1200x630 PNGs; an external image (a card scan, a set logo) carries its own size, if known.
@@ -66,7 +71,7 @@ export function pageMetadata({ title, description, path, socialTitle, socialDesc
       siteName: SITE_NAME,
       type: "website",
       locale: "en_US",
-      ...(path !== undefined && { url: path }),
+      ...((path ?? url) !== undefined && { url: path ?? url }),
       ...(images && { images }),
     },
     twitter: {
@@ -84,8 +89,8 @@ export function pageMetadata({ title, description, path, socialTitle, socialDesc
  * URL. The title may name the trainers but never the game's contents; the
  * picture is the segment's generic challenge card.
  */
-export function inviteMetadata(title: string, description: string): Metadata {
-  return pageMetadata({ title, description, socialTitle: title, noindex: true });
+export function inviteMetadata(title: string, description: string, url?: string): Metadata {
+  return pageMetadata({ title, description, socialTitle: title, noindex: true, url });
 }
 
 /** JSON for a `<script type="application/ld+json">`, safe to inline in HTML. */
