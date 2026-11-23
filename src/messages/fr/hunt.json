@@ -12,23 +12,21 @@
     "eyebrow": "PokéGuessr · nouveau mode",
     "title": "<b>Chasse</b> aux Pokémon",
     "tagline": "On te montre un Pokémon. Tu places un repère là où il vit à l'état sauvage.",
-    "modesEyebrow": "Solo",
     "modes": "Choisis une chasse",
     "daily": {
       "label": "Chasse du jour nº {n} · Monde",
       "title": "Chasse du jour",
       "blurb": "Les cinq Pokémon du jour, les mêmes pour tout le monde.",
-      "more": "Cinq Pokémon sur la carte du monde, un essai par jour et une grille à partager.",
       "scored": "Ton score du jour : {score}.",
       "played": "Jouée",
       "play": "Jouer celle du jour",
-      "again": "Rejouer (entraînement)"
+      "again": "Rejouer (entraînement)",
+      "resume": "Reprendre"
     },
     "classic": {
       "label": "Solo · Monde",
       "title": "Classique",
       "blurb": "Cinq Pokémon venus de toute la carte du monde.",
-      "more": "Cinq Pokémon sur la carte du monde : un repère par région où il vit.",
       "play": "Commencer la chasse"
     },
     "region": {
@@ -43,7 +41,8 @@
       "see": "Découvre le Pokémon : son illustration, son nom et sa forme exacte.",
       "pin": "Place un repère dans chaque région où tu peux le trouver à l'état sauvage.",
       "score": "Chaque repère marque selon le vrai lieu le plus proche, jusqu'à 5 000 par manche."
-    }
+    },
+    "best": "Record : {score}"
   },
   "forms": {
     "alola": "Forme d'Alola",
@@ -70,12 +69,14 @@
     "remove": "Retirer le repère {n}",
     "hintPlace": "Touche la carte pour placer le repère {n}",
     "hintMove": "Touche la carte pour déplacer le repère {n}",
-    "hintDone": "Tous les repères sont placés. Valide quand tu veux !",
+    "hintDone": "Tous les repères sont placés ! Touche la carte pour déplacer le repère {n}, ou valide",
     "hintOne": "Touche la carte là où tu le trouverais",
     "hintMoveOne": "Touche à nouveau pour déplacer ton repère"
   },
   "hud": {
-    "daily": "Chasse du jour nº {n}"
+    "daily": "Chasse du jour nº {n}",
+    "world": "Monde",
+    "mode": "Chasse aux Pokémon"
   },
   "reveal": {
     "found": "Tu as trouvé {found} région(s) sur {total}",
@@ -98,7 +99,8 @@
       "good": "Sur la bonne piste.",
       "near": "Tu chauffes…",
       "far": "Il t'a échappé cette fois."
-    }
+    },
+    "method": "{game} · {method}"
   },
   "results": {
     "title": "Chasse terminée",
@@ -109,15 +111,14 @@
     "best": "Meilleure",
     "worst": "Pire",
     "again": "Rechasser",
-    "practice": "Chasse d'entraînement",
-    "hub": "Toutes les chasses"
+    "hub": "Toutes les chasses",
+    "show": "Voir la manche {n} sur la carte"
   },
   "share": {
     "daily": "Chasse aux Pokémon nº {n}",
-    "roundLabel": "Manche {n} : {score}",
-    "legend": "🟩 4 000+ · 🟨 2 000+ · 🟧 500+ · 🟥 moins de 500",
+    "legend": "Une case par repère : 🟩 presque tous ses points, 🟨 la plupart, 🟧 quelques-uns, 🟥 aucun",
     "copy": "Partager",
-    "next": "Une nouvelle chasse chaque jour"
+    "grid": "Ta chasse, case par case"
   },
   "state": {
     "loading": "Recherche d'un Pokémon…",

@@ -3,7 +3,7 @@
 import { RotateCcw } from "lucide-react";
 import { useT } from "@/i18n/client";
 import huntNs from "@/messages/hunt";
-import { PokeBallMark } from "./HuntRoundCard";
+import { PokeBallMark } from "./HuntCard";
 
 /**
  * The hunt's in-game states, on the game frame's navy: loading (a Poké Ball

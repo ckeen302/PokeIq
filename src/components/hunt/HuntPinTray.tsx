@@ -12,30 +12,27 @@ import { huntPinColor } from "./map-marks";
  * map to move pin 1", "All pins down…". The phone's map card shows it as its
  * label (MapDock's `hint`); a computer shows it under the chips.
  */
-export function useHuntPinHint(placed: number, max: number, selected: number | null): string {
+export function useHuntPinHint(pins: boolean[], active: number): string {
   const t = useT(huntNs);
-  const active = selected ?? (placed < max ? placed : -1);
-  if (max < 2) return placed ? t("pins.hintMoveOne") : t("pins.hintOne");
-  if (active < 0) return t("pins.hintDone");
-  return active < placed ? t("pins.hintMove", { n: active + 1 }) : t("pins.hintPlace", { n: active + 1 });
+  const placed = pins.filter(Boolean).length;
+  if (pins.length < 2) return placed ? t("pins.hintMoveOne") : t("pins.hintOne");
+  if (placed === pins.length) return t("pins.hintDone", { n: active + 1 });
+  return pins[active] ? t("pins.hintMove", { n: active + 1 }) : t("pins.hintPlace", { n: active + 1 });
 }
 
 /**
- * The pin bar, between the map and the Guess button (inside the map card on
- * a phone): "2 of 3 pins" and a numbered chip per pin the round takes. A
- * placed pin's chip is filled in its colour with a × to remove it; the pin a
- * tap on the map moves wears a yellow ring (with none picked, a tap drops the
- * next pin, whose empty chip is ringed instead). Tapping a chip picks that
- * pin. Keys 1–3 pick a pin, Delete or Backspace removes the picked one. One
- * line under the chips says what a tap on the map will do.
+ * The pin tray, between the map and the Guess button (inside the map card
+ * on a phone): a numbered chip per pin the round takes. A placed pin's chip
+ * is filled in its colour with a × to remove it; the pin a tap on the map
+ * moves is ringed in yellow; tapping a chip makes it that pin. Keys 1–3 pick
+ * a pin and Delete or Backspace removes the picked one, while the round is up.
+ * One line under the chips says what a tap on the map will do.
  */
-export function HuntPinBar({ placed, max, selected, onSelect, onRemove, keys = true, className }: {
-  /** Pins down (pins 1 to `placed`). */
-  placed: number;
-  /** Pins the round takes. */
-  max: number;
-  /** The pin a tap on the map moves; null: a tap drops the next one. */
-  selected: number | null;
+export function HuntPinTray({ pins, active, onSelect, onRemove, keys = true, className }: {
+  /** One slot per pin the round takes: placed (true) or not. */
+  pins: boolean[];
+  /** The pin a tap on the map places or moves. */
+  active: number;
   onSelect: (i: number) => void;
   onRemove: (i: number) => void;
   /** Listen for 1–3 and Delete (off while something else has the keyboard). */
@@ -43,9 +40,8 @@ export function HuntPinBar({ placed, max, selected, onSelect, onRemove, keys = t
   className?: string;
 }) {
   const t = useT(huntNs);
-  const pins = Array.from({ length: max }, (_, i) => i < placed);
-  // The ringed chip: the picked pin, else the next one to drop (none once they're all down).
-  const active = selected ?? (placed < max ? placed : -1);
+  const max = pins.length;
+  const placed = pins.filter(Boolean).length;
 
   useEffect(() => {
     if (!keys || max < 2) return;
@@ -57,16 +53,16 @@ export function HuntPinBar({ placed, max, selected, onSelect, onRemove, keys = t
       if (Number.isInteger(n) && n >= 1 && n <= max) {
         e.preventDefault();
         onSelect(n - 1);
-      } else if ((e.key === "Delete" || e.key === "Backspace") && selected !== null && selected < placed) {
+      } else if ((e.key === "Delete" || e.key === "Backspace") && pins[active]) {
         e.preventDefault();
-        onRemove(selected);
+        onRemove(active);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [keys, max, placed, selected, onSelect, onRemove]);
+  }, [keys, max, pins, active, onSelect, onRemove]);
 
-  const hint = useHuntPinHint(placed, max, selected);
+  const hint = useHuntPinHint(pins, active);
 
   return (
     <div className={cn("rounded-md bg-[#1e1a3f]/92 px-[1.1vh] py-[0.9vh] text-white shadow-lg ring-1 ring-white/15 backdrop-blur max-md:px-2.5 max-md:py-2", className)} data-testid="hunt-pin-tray">

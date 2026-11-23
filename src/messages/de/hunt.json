@@ -12,23 +12,21 @@
     "eyebrow": "PokéGuessr · neuer Modus",
     "title": "Pokémon-<b>Jagd</b>",
     "tagline": "Wir zeigen dir ein Pokémon. Du setzt eine Nadel, wo es in freier Wildbahn lebt.",
-    "modesEyebrow": "Einzelspieler",
     "modes": "Wähle eine Jagd",
     "daily": {
       "label": "Tagesjagd Nr. {n} · Welt",
       "title": "Tagesjagd",
       "blurb": "Die fünf Pokémon von heute, für alle gleich.",
-      "more": "Fünf Pokémon auf der Weltkarte, ein Versuch pro Tag und ein Raster zum Teilen.",
       "scored": "Heute hast du {score} erreicht.",
       "played": "Gespielt",
       "play": "Heutige spielen",
-      "again": "Nochmal spielen (Übung)"
+      "again": "Nochmal spielen (Übung)",
+      "resume": "Weiterspielen"
     },
     "classic": {
       "label": "Solo · Welt",
       "title": "Klassisch",
       "blurb": "Fünf Pokémon von der ganzen Weltkarte.",
-      "more": "Fünf Pokémon auf der Weltkarte: eine Nadel für jede Region, in der es lebt.",
       "play": "Jagd starten"
     },
     "region": {
@@ -43,7 +41,8 @@
       "see": "Lern das Pokémon kennen: sein Artwork, seinen Namen und seine genaue Form.",
       "pin": "Setz eine Nadel in jede Region, in der du es in freier Wildbahn findest.",
       "score": "Jede Nadel zählt zum nächsten echten Fundort, bis zu 5.000 pro Runde."
-    }
+    },
+    "best": "Bestwert: {score}"
   },
   "forms": {
     "alola": "Alola-Form",
@@ -70,12 +69,14 @@
     "remove": "Nadel {n} entfernen",
     "hintPlace": "Tippe auf die Karte, um Nadel {n} zu setzen",
     "hintMove": "Tippe auf die Karte, um Nadel {n} zu versetzen",
-    "hintDone": "Alle Nadeln gesetzt. Tippe, wenn du so weit bist!",
+    "hintDone": "Alle Nadeln gesetzt! Tippe auf die Karte, um Nadel {n} zu versetzen, oder tippe ab",
     "hintOne": "Tippe auf die Karte, wo du es finden würdest",
     "hintMoveOne": "Tippe erneut, um deine Nadel zu versetzen"
   },
   "hud": {
-    "daily": "Tagesjagd Nr. {n}"
+    "daily": "Tagesjagd Nr. {n}",
+    "world": "Welt",
+    "mode": "Pokémon-Jagd"
   },
   "reveal": {
     "found": "Du hast {found} von {total} Regionen gefunden",
@@ -98,7 +99,8 @@
       "good": "Auf der richtigen Spur.",
       "near": "Warm, wärmer …",
       "far": "Diesmal ist es entwischt."
-    }
+    },
+    "method": "{game} · {method}"
   },
   "results": {
     "title": "Jagd beendet",
@@ -109,15 +111,14 @@
     "best": "Beste",
     "worst": "Schwächste",
     "again": "Nochmal jagen",
-    "practice": "Übungsjagd",
-    "hub": "Alle Jagden"
+    "hub": "Alle Jagden",
+    "show": "Runde {n} auf der Karte zeigen"
   },
   "share": {
     "daily": "Pokémon-Jagd Nr. {n}",
-    "roundLabel": "Runde {n}: {score}",
-    "legend": "🟩 4.000+ · 🟨 2.000+ · 🟧 500+ · 🟥 unter 500",
+    "legend": "Ein Feld pro Nadel: 🟩 fast alle Punkte, 🟨 die meisten, 🟧 einige, 🟥 keine",
     "copy": "Teilen",
-    "next": "Jeden Tag eine neue Jagd"
+    "grid": "Deine Jagd, Feld für Feld"
   },
   "state": {
     "loading": "Ein Pokémon wird aufgespürt …",

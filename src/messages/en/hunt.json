@@ -12,23 +12,21 @@
     "eyebrow": "PokéGuessr · new mode",
     "title": "Pokémon <b>Hunt</b>",
     "tagline": "We show you a Pokémon. You pin where it lives in the wild.",
-    "modesEyebrow": "Single player",
     "modes": "Pick a hunt",
     "daily": {
       "label": "Daily Hunt #{n} · World",
       "title": "Daily Hunt",
       "blurb": "Today's five Pokémon, the same for everyone.",
-      "more": "Five Pokémon on the world map, one try a day, and a grid to share.",
       "scored": "You scored {score} today.",
       "played": "Played",
       "play": "Play today's",
-      "again": "Play again (practice)"
+      "again": "Play again (practice)",
+      "resume": "Carry on"
     },
     "classic": {
       "label": "Solo · World",
       "title": "Classic",
       "blurb": "Five Pokémon from all over the world map.",
-      "more": "Five Pokémon on the world map: a pin for each region it lives in.",
       "play": "Start hunting"
     },
     "region": {
@@ -43,7 +41,8 @@
       "see": "Meet the Pokémon: its art, its name and its exact form.",
       "pin": "Drop a pin in each region where you can find it in the wild.",
       "score": "Each pin scores against the nearest real spot, up to 5,000 a round."
-    }
+    },
+    "best": "Best: {score}"
   },
   "forms": {
     "alola": "Alolan Form",
@@ -70,12 +69,14 @@
     "remove": "Remove pin {n}",
     "hintPlace": "Tap the map to drop pin {n}",
     "hintMove": "Tap the map to move pin {n}",
-    "hintDone": "All pins down. Guess when you're ready!",
+    "hintDone": "All pins down! Tap the map to move pin {n}, or guess",
     "hintOne": "Tap the map where you'd find it",
     "hintMoveOne": "Tap again to move your pin"
   },
   "hud": {
-    "daily": "Daily Hunt #{n}"
+    "daily": "Daily Hunt #{n}",
+    "world": "World",
+    "mode": "Pokémon Hunt"
   },
   "reveal": {
     "found": "You found {found} of {total} regions",
@@ -98,7 +99,8 @@
       "good": "On the trail.",
       "near": "Warm, getting warmer.",
       "far": "It got away this time."
-    }
+    },
+    "method": "{game} · {method}"
   },
   "results": {
     "title": "Hunt complete",
@@ -109,15 +111,14 @@
     "best": "Best",
     "worst": "Worst",
     "again": "Hunt again",
-    "practice": "Practice hunt",
-    "hub": "All hunts"
+    "hub": "All hunts",
+    "show": "Show round {n} on the map"
   },
   "share": {
     "daily": "Pokémon Hunt #{n}",
-    "roundLabel": "Round {n}: {score}",
-    "legend": "🟩 4,000+ · 🟨 2,000+ · 🟧 500+ · 🟥 under 500",
+    "legend": "One square per pin: 🟩 nearly all its points, 🟨 most, 🟧 some, 🟥 none",
     "copy": "Share",
-    "next": "A new hunt every day"
+    "grid": "Your hunt, square by square"
   },
   "state": {
     "loading": "Tracking down a Pokémon…",

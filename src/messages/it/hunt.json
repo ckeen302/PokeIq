@@ -12,23 +12,21 @@
     "eyebrow": "PokéGuessr · nuova modalità",
     "title": "<b>Caccia</b> ai Pokémon",
     "tagline": "Ti mostriamo un Pokémon. Tu metti la puntina dove vive allo stato selvatico.",
-    "modesEyebrow": "Giocatore singolo",
     "modes": "Scegli una caccia",
     "daily": {
       "label": "Caccia del giorno n. {n} · Mondo",
       "title": "Caccia del giorno",
       "blurb": "I cinque Pokémon di oggi, uguali per tutti.",
-      "more": "Cinque Pokémon sulla mappa del mondo, un tentativo al giorno e una griglia da condividere.",
       "scored": "Oggi hai fatto {score}.",
       "played": "Giocata",
       "play": "Gioca quella di oggi",
-      "again": "Gioca di nuovo (allenamento)"
+      "again": "Gioca di nuovo (allenamento)",
+      "resume": "Continua"
     },
     "classic": {
       "label": "Solo · Mondo",
       "title": "Classica",
       "blurb": "Cinque Pokémon da tutta la mappa del mondo.",
-      "more": "Cinque Pokémon sulla mappa del mondo: una puntina per ogni regione in cui vive.",
       "play": "Inizia la caccia"
     },
     "region": {
@@ -43,7 +41,8 @@
       "see": "Scopri il Pokémon: il disegno, il nome e la forma esatta.",
       "pin": "Metti una puntina in ogni regione dove puoi trovarlo allo stato selvatico.",
       "score": "Ogni puntina conta rispetto al luogo reale più vicino, fino a 5.000 per round."
-    }
+    },
+    "best": "Record: {score}"
   },
   "forms": {
     "alola": "Forma di Alola",
@@ -70,12 +69,14 @@
     "remove": "Togli la puntina {n}",
     "hintPlace": "Tocca la mappa per mettere la puntina {n}",
     "hintMove": "Tocca la mappa per spostare la puntina {n}",
-    "hintDone": "Tutte le puntine sono a posto. Indovina quando vuoi!",
+    "hintDone": "Tutte le puntine a posto! Tocca la mappa per spostare la puntina {n}, o indovina",
     "hintOne": "Tocca la mappa dove lo troveresti",
     "hintMoveOne": "Tocca di nuovo per spostare la puntina"
   },
   "hud": {
-    "daily": "Caccia del giorno n. {n}"
+    "daily": "Caccia del giorno n. {n}",
+    "world": "Mondo",
+    "mode": "Caccia ai Pokémon"
   },
   "reveal": {
     "found": "Hai trovato {found} regioni su {total}",
@@ -98,7 +99,8 @@
       "good": "Sei sulla pista giusta.",
       "near": "Fuochino…",
       "far": "Stavolta ti è sfuggito."
-    }
+    },
+    "method": "{game} · {method}"
   },
   "results": {
     "title": "Caccia completata",
@@ -109,15 +111,14 @@
     "best": "Migliore",
     "worst": "Peggiore",
     "again": "Caccia di nuovo",
-    "practice": "Caccia di allenamento",
-    "hub": "Tutte le cacce"
+    "hub": "Tutte le cacce",
+    "show": "Mostra il round {n} sulla mappa"
   },
   "share": {
     "daily": "Caccia ai Pokémon n. {n}",
-    "roundLabel": "Round {n}: {score}",
-    "legend": "🟩 4.000+ · 🟨 2.000+ · 🟧 500+ · 🟥 sotto 500",
+    "legend": "Una casella per puntina: 🟩 quasi tutti i punti, 🟨 la maggior parte, 🟧 alcuni, 🟥 nessuno",
     "copy": "Condividi",
-    "next": "Una nuova caccia ogni giorno"
+    "grid": "La tua caccia, casella per casella"
   },
   "state": {
     "loading": "A caccia di un Pokémon…",
