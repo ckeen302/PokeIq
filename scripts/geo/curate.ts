@@ -38,7 +38,8 @@
  * An open area's size is its mask (its grid points on the world map) against the median
  * mask of its region's places, so each region is measured on its own map's scale. A town's
  * mask is its icon, not its size, so towns and cities are sized by hand (CITY_SIZE), as are
- * Galar, the Isle of Armor and the Crown Tundra, whose masks are single points (OPEN_SIZE).
+ * Galar, the Isle of Armor and the Crown Tundra, whose masks are single points, and the
+ * Terarium's biomes, which are all one size (OPEN_SIZE).
  * Applying flags an addition that takes a place past its cap, and --report lists every place
  * over its cap (most of them from before this rule, which only bounds what's added).
  *
@@ -331,6 +332,11 @@ export const OPEN_SIZE: Record<string, PlaceSize> = {
   "Crown Tundra|Giant's Foot": "large",
   "Crown Tundra|Ballimere Lake": "large",
   "Crown Tundra|Frigid Sea": "large",
+  // The Terarium's four biomes: each an open world of its own, which their region's own median can't show (they're all one size).
+  "Blueberry Academy|Savanna Biome": "big",
+  "Blueberry Academy|Coastal Biome": "big",
+  "Blueberry Academy|Canyon Biome": "big",
+  "Blueberry Academy|Polar Biome": "big",
   // Open areas whose mask undersells them: Area Zero is a whole world below the crater's rim.
   "Paldea|Great Crater of Paldea": "huge",
 };

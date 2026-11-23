@@ -32258,6 +32258,87 @@
    "game": "Ultra Sun / Ultra Moon",
    "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_37_USUL.png",
    "checked": "shown on WikiDex's page \"Área Volcánica del Wela\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "jCfkFGmubbJA",
+   "region": "Blueberry Academy",
+   "name": "Canyon Biome",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Aula_exterior_del_Área_Escarpada_EP.jpg",
+   "checked": "shown on WikiDex's page \"Área Escarpada\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "0TFmsCH85aiM",
+   "region": "Blueberry Academy",
+   "name": "Canyon Biome",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Zone_Canyon_EV.png",
+   "checked": "shown on Poképédia's page \"Zone Canyon\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "JdI0q3YYJAU1",
+   "region": "Blueberry Academy",
+   "name": "Coastal Biome",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Aula_exterior_del_Área_Costera_EP.jpg",
+   "checked": "shown on WikiDex's page \"Área Costera\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "aFW_61m-lZoE",
+   "region": "Blueberry Academy",
+   "name": "Coastal Biome",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Zona_de_descanso_del_Área_Costera_EP.jpg",
+   "checked": "shown on WikiDex's page \"Área Costera\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "o8qBa6hzo4js",
+   "region": "Blueberry Academy",
+   "name": "Coastal Biome",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Zone_Côtière_EV.png",
+   "checked": "shown on Poképédia's page \"Zone Côtière\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "cYxPi-J2IBs4",
+   "region": "Blueberry Academy",
+   "name": "Polar Biome",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Aula_exterior_1_del_Área_Polar_EP.jpg",
+   "checked": "shown on WikiDex's page \"Área Polar\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "zQNavVPxvVRf",
+   "region": "Blueberry Academy",
+   "name": "Savanna Biome",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Aula_exterior_del_Área_Árida_EP.jpg",
+   "checked": "shown on WikiDex's page \"Área Árida\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "ibawQSn8zwk7",
+   "region": "Blueberry Academy",
+   "name": "Savanna Biome",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Zona_de_descanso_2_del_Área_Árida_EP.jpg",
+   "checked": "shown on WikiDex's page \"Área Árida\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "pmeNGyGOddaG",
+   "region": "Blueberry Academy",
+   "name": "Savanna Biome",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Zone_Savane_EV.png",
+   "checked": "shown on Poképédia's page \"Zone Savane\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "SCLDCBr17HGa",
+   "region": "Blueberry Academy",
+   "name": "Savanna Plaza",
+   "parent": "Savanna Biome",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Plaza_Árida_EP.jpg",
+   "checked": "shown on WikiDex's page \"Plaza Árida\"; SV in its name or category; reviewed on a contact sheet"
   }
  ]
 }
