@@ -8,6 +8,9 @@
  *   npx tsx scripts/geo/harvest.ts sheets Paldea         # contact sheets of what's left, for review
  *   SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… npx tsx scripts/geo/harvest.ts accept Paldea review.json
  *                                                         # uploads the kept ones (new random ids, upsert off) into curation.json's `added`
+ *   npx tsx scripts/geo/harvest.ts prepare Paldea review.json scripts/geo/upload-plans/batch.json
+ *                                                         # the same without uploading: ids given now, the owner uploads the plan
+ *                                                         # with upload-additions.ts before the batch's data is merged
  *   npx tsx scripts/geo/curate.ts                        # then writes them into src/data/geo.json and shot-sources.json
  *
  * A file is a candidate only when it can be checked (the same rule as the rest
@@ -47,7 +50,7 @@ import {
 import { httpGet, wikiApi } from "./http";
 import { AREA_PER_VIEW, AREA_PER_VIEW_THIN, genericTiles, nativePixels, pickViews, tileFamily, tileGrid, type Box, type TileGrid } from "./map-crops";
 import { familyOfGame, familyEra, type GeoFamilyId } from "../../src/lib/geo-families";
-import type { Addition, Curation } from "./curate";
+import { shotCap, type Addition, type Curation, type Location } from "./curate";
 
 const ROOT = process.cwd();
 const DATA = path.join(ROOT, "src/data/geo.json");
@@ -629,8 +632,16 @@ const isThreeD = (code: string) => familyEra(famOf(code)!) === "3d";
 /** A candidate's key in the upload cache (a view cut from a map: its map and box, as ingest-world.ts's --crops keys them). */
 const candKey = (c: Candidate) => (c.box ? `crop:${c.file}#${c.box.left},${c.box.top},${c.box.width},${c.box.height}` : WIKIS[c.wiki].key + c.file);
 
-/** A 3D shot fills a 16:9 frame: at least 960 × 540, from 4:3 to 2.1:1. */
-const fits3d = (w: number, h: number) => w >= 960 && h >= 540 && w / h >= 4 / 3 - 0.01 && w / h <= 2.1;
+/**
+ * A 3D shot fills a 16:9 frame: at least 960 × 540, from 4:3 to 2.1:1. A 3DS
+ * game's capture (X / Y, Omega Ruby / Alpha Sapphire, Sun / Moon and the Ultra
+ * games) may be the console's own 400 × 240 top screen, as most of those games'
+ * shots in the data are: encodeShot doubles it smoothly.
+ */
+const THREE_DS = ["xy", "oras", "sm"];
+const fits3d = (w: number, h: number, code?: string) =>
+  (code && THREE_DS.includes(famOf(code) ?? "") && w >= 400 && h >= 240 && Math.abs(w / h - 5 / 3) <= 0.03) ||
+  (w >= 960 && h >= 540 && w / h >= 4 / 3 - 0.01 && w / h <= 2.1);
 /** Native screens of the sprite games (a capture is these, or a whole multiple). */
 const SCREENS: Record<string, [number, number]> = { gb: [160, 144], gba: [240, 160], ds: [256, 192] };
 const screenOfFam = (f: GeoFamilyId) => (f === "rby" || f === "gsc" ? SCREENS.gb : f === "rse" || f === "frlg" ? SCREENS.gba : SCREENS.ds);
@@ -742,7 +753,7 @@ async function list(regions: string[]) {
         loc = named;
       }
       const three = isThreeD(code);
-      if (three ? !fits3d(meta.width, meta.height) : !oneScreen(code, meta.width, meta.height)) return skip(three ? "too small or not 16:9-ish" : "not one screen");
+      if (three ? !fits3d(meta.width, meta.height, code) : !oneScreen(code, meta.width, meta.height)) return skip(three ? "too small or not 16:9-ish" : "not one screen");
       // A 3DS game's capture is the 5:3 top screen; its big images of other shapes are renders and stitched overhead maps.
       if (["xy", "oras", "sm"].includes(famOf(code)!) && Math.abs(meta.width / meta.height - 5 / 3) > 0.03) return skip("3DS image that isn't a 5:3 screen");
       found.set(key, {
@@ -824,11 +835,17 @@ async function list(regions: string[]) {
 // Fetching: download, measure, encode, drop near-copies
 // ---------------------------------------------------------------------------
 
+/** The families a region is played in. */
+const familiesOf = (region: string) => new Set(REGIONS[region].games.map((g) => famOf(g)).filter((f): f is GeoFamilyId => !!f));
+
 /** The data's shots by area, with their hashes (fetched from storage when missing). */
-async function existingHashes(): Promise<{ hashes: Record<string, string | null>; shots: { id: string; area: string; family: string }[] }> {
+async function existingHashes(families?: Set<string>): Promise<{ hashes: Record<string, string | null>; shots: { id: string; area: string; family: string }[] }> {
   const geo = JSON.parse(readFileSync(DATA, "utf8")) as { storageBase: string; world: { locations: StoredLocation[] } };
   const hashes = readJson<Record<string, string | null>>(SHOT_HASHES, {});
-  const shots = geo.world.locations.flatMap((l) => l.shots.map((s) => ({ id: s.id, area: `${l.region}|${l.parent ?? l.name}`, family: s.family ?? familyOfGame(s.game) ?? "" })));
+  // Only the families the candidates are in, when given: a near-copy is a picture of the same game, and every other shot would be a download.
+  const shots = geo.world.locations
+    .flatMap((l) => l.shots.map((s) => ({ id: s.id, area: `${l.region}|${l.parent ?? l.name}`, family: s.family ?? familyOfGame(s.game) ?? "" })))
+    .filter((s) => !families || families.has(s.family));
   let fetched = 0;
   for (const s of shots) {
     if (hashes[s.id]) continue;
@@ -904,10 +921,12 @@ function frameOf(code: string, w: number, h: number) {
 
 const stagedPath = (region: string, c: Candidate) => path.join(DIR, region, "staged", `${createHash("sha1").update(candKey(c)).digest("hex").slice(0, 16)}.webp`);
 
+const SKIP_HOSTS = new Set((process.env.GEO_SKIP_HOSTS ?? "").split(",").map((h) => h.trim()).filter(Boolean));
+
 async function fetchRegion(region: string) {
   const file = path.join(DIR, region, "list.json");
   const cands = readJson<Candidate[]>(file, []);
-  const { hashes, shots } = await existingHashes();
+  const { hashes, shots } = await existingHashes(familiesOf(region));
   const retired = await retiredHashes();
   const staged = path.join(DIR, region, "staged");
   mkdirSync(staged, { recursive: true });
@@ -925,12 +944,17 @@ async function fetchRegion(region: string) {
     const restaged = !!(c.staged && existsSync(c.staged) && c.hash);
     if (restaged && c.drop) continue;
     if (!restaged) delete c.drop;
+    // A host this machine can't reach (GEO_SKIP_HOSTS=archives.bulbagarden.net when its bot check refuses the downloads): left for a run that can.
+    if (!restaged && SKIP_HOSTS.has(new URL(c.url).host)) {
+      c.drop = `fetch failed: ${new URL(c.url).host} skipped on this run`;
+      continue;
+    }
     if (!restaged) try {
       const raw = await httpGet(c.url);
       const meta = await sharp(raw).metadata();
       let [w, h] = [meta.width ?? 0, meta.height ?? 0];
       const three = isThreeD(c.code);
-      if (three && !fits3d(w, h)) c.drop = `too small or not 16:9-ish (${w}×${h})`;
+      if (three && !fits3d(w, h, c.code)) c.drop = `too small or not 16:9-ish (${w}×${h})`;
       let frame = frameOf(c.code, w, h);
       if (!three && !c.drop) {
         const k = await pixelScale(raw);
@@ -1119,10 +1143,12 @@ function plainness(c: Candidate): number {
 
 /**
  * Contact sheets of the staged candidates, by place. Each place and game gets
- * at most `cap` shots in all (its shots in the data count): the plainest views
- * first, each wiki in turn, so a place's sheet isn't thirty hidden items.
+ * at most `cap` shots in all (its shots in the data count; by default half as
+ * many again as its size cap, curate.ts's shotCap, so there's a choice): the
+ * plainest views first, each wiki in turn, so a place's sheet isn't thirty
+ * hidden items.
  */
-async function sheets(region: string, cap = 15) {
+async function sheets(region: string, cap?: number) {
   const listFile = path.join(DIR, region, "list.json");
   const decided = readJson<Record<string, unknown>>(path.join(DIR, region, "decisions.json"), {});
   const staged = readJson<Candidate[]>(listFile, []).filter((c) => !c.drop && c.staged && existsSync(c.staged) && !decided[candKey(c)]);
@@ -1133,7 +1159,8 @@ async function sheets(region: string, cap = 15) {
   for (const c of staged) groups.set(`${areaKey(c)}|${famOf(c.code)}`, [...(groups.get(`${areaKey(c)}|${famOf(c.code)}`) ?? []), c]);
   const cands: Candidate[] = [];
   for (const [pair, list] of groups) {
-    const room = Math.max(0, cap - (have.get(pair) ?? 0));
+    const [first] = list;
+    const room = Math.max(0, (cap ?? Math.ceil(shotCap(first, geo as Location[]) * 1.5)) - (have.get(pair) ?? 0));
     const byWiki = new Map<string, Candidate[]>();
     for (const c of [...list].sort((a, b) => plainness(a) - plainness(b) || a.file.length - b.file.length)) byWiki.set(c.wiki, [...(byWiki.get(c.wiki) ?? []), c]);
     const queues = [...byWiki.values()];
@@ -1172,7 +1199,7 @@ async function sheets(region: string, cap = 15) {
       .toFile(path.join(outDir, `${String(s).padStart(3, "0")}.png`));
   }
   writeJson(path.join(outDir, "index.json"), index);
-  console.log(`${region}: ${cands.length} of ${staged.length} staged candidates (at most ${cap} shots per place and game) on ${Math.ceil(cands.length / per)} sheets in ${outDir}`);
+  console.log(`${region}: ${cands.length} of ${staged.length} staged candidates (at most ${cap ?? "1.5 × the size cap of"} shots per place and game) on ${Math.ceil(cands.length / per)} sheets in ${outDir}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -1182,19 +1209,41 @@ async function sheets(region: string, cap = 15) {
 /**
  * review.json: { "sheets": [0, 1, …] (the sheets looked at), "reject": { "3.7": "reason", … },
  * "crop": { "2.4": { "top"?: share, "bottom"?: share, "left"?: share, "right"?: share } } }.
- * Every tile on a reviewed sheet that isn't rejected is kept (after its crop).
+ * Every tile on a reviewed sheet that isn't rejected is kept (after its crop), except the
+ * tiles in "defer": [ "4.2", … ], left undecided for a later batch.
  */
 interface Review {
   sheets: number[];
   reject: Record<string, string>;
+  /** Tiles left for a later batch: neither kept nor rejected. */
+  defer?: string[];
   crop?: Record<string, { top?: number; bottom?: number; left?: number; right?: number }>;
 }
 
-async function accept(region: string, reviewFile: string) {
+/** An upload-additions.ts plan item: the reviewed file, where it is, and the id the data already gives it. */
+interface PlanItem {
+  url: string;
+  sha256: string;
+  game: string;
+  crop: { left: number; top: number; width: number; height: number };
+  id: string;
+  uploaded: false;
+}
+
+/**
+ * Accepts a region's reviewed tiles. With `planFile` (prepare) nothing is
+ * uploaded: each kept tile gets its random id now, goes into curation.json's
+ * `added` under that id, and into the plan for upload-additions.ts, which the
+ * owner runs with the storage key (the plan holds the file's URL and sha256,
+ * so the exact reviewed file is what goes up).
+ */
+async function accept(region: string, reviewFile: string, planFile?: string) {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error("Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY");
-  const bucket = createClient(url, key, { auth: { persistSession: false } }).storage.from(BUCKET);
+  if (!planFile && (!url || !key)) throw new Error("Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY");
+  const bucket = planFile ? null : createClient(url!, key!, { auth: { persistSession: false } }).storage.from(BUCKET);
+  const plan = planFile ? readJson<PlanItem[]>(planFile, []) : [];
+  const geoNow = loadGeo();
   const review = JSON.parse(readFileSync(reviewFile, "utf8")) as Review;
   const listFile = path.join(DIR, region, "list.json");
   const cands = readJson<Candidate[]>(listFile, []);
@@ -1205,7 +1254,7 @@ async function accept(region: string, reviewFile: string) {
   const hashes = readJson<Record<string, string | null>>(SHOT_HASHES, {});
   const ledgerFile = path.join(DIR, region, "decisions.json");
   const ledger = readJson<Record<string, { decision: string; id?: string; reason?: string }>>(ledgerFile, {});
-  const { hashes: liveHashes, shots } = await existingHashes();
+  const { hashes: liveHashes, shots } = await existingHashes(familiesOf(region));
   const retired = await retiredHashes();
   let added = 0;
   for (const { sheet, tile, key: k } of index) {
@@ -1213,12 +1262,13 @@ async function accept(region: string, reviewFile: string) {
     const c = byKey.get(k);
     if (!c || ledger[k]?.id) continue;
     const tag = `${sheet}.${tile}`;
+    if (review.defer?.includes(tag)) continue;
     if (review.reject[tag]) {
       ledger[k] = { decision: "rejected", reason: review.reject[tag] };
       continue;
     }
     // A truncated download fails to decode: fetch it once more, then leave it for the next run.
-    let raw = await httpGet(c.url);
+    let raw = await httpGet(c.url).catch(() => Buffer.alloc(0));
     if (!(await sharp(raw).stats().then(() => true, () => false))) raw = await httpGet(c.url);
     if (!(await sharp(raw).stats().then(() => true, () => false))) {
       console.log(`  ! ${k}: can't decode the download`);
@@ -1244,7 +1294,7 @@ async function accept(region: string, reviewFile: string) {
         box = { ...box, left: box.left + Math.floor((box.width - nw) / 2), width: nw };
       }
     }
-    if (three ? !fits3d(box.width, box.height) : box.width < box.height * (4 / 3) - 1 || box.width / box.height > 2.1) {
+    if (three ? !fits3d(box.width, box.height, c.code) : box.width < box.height * (4 / 3) - 1 || box.width / box.height > 2.1) {
       ledger[k] = { decision: "rejected", reason: `too small after its crop (${box.width}×${box.height})` };
       continue;
     }
@@ -1268,10 +1318,22 @@ async function accept(region: string, reviewFile: string) {
       continue;
     }
     const id = randomBytes(9).toString("base64url");
-    const { error } = await bucket.upload(`${id}.webp`, webp, { contentType: "image/webp", cacheControl: "31536000", upsert: false });
-    if (error) {
-      console.log(`  ! ${k}: ${error.message}`);
-      continue;
+    if (bucket) {
+      const { error } = await bucket.upload(`${id}.webp`, webp, { contentType: "image/webp", cacheControl: "31536000", upsert: false });
+      if (error) {
+        console.log(`  ! ${k}: ${error.message}`);
+        continue;
+      }
+    } else {
+      plan.push({ url: c.url, sha256: createHash("sha256").update(raw).digest("hex"), game: c.game, crop: box, id, uploaded: false });
+      // The encoded file as it will go up, for the contact sheet and the storage estimate (kept out of git, in .data).
+      mkdirSync(path.join(DIR, region, "prepared"), { recursive: true });
+      writeFileSync(path.join(DIR, region, "prepared", `${id}.webp`), webp);
+    }
+    // A part of a town with no entry of its own in the data (a tower, a café, a district) is a view of the town.
+    if (c.parent && !geoNow.some((l) => l.region === c.region && l.parent === c.parent && l.name === c.name)) {
+      c.name = c.parent;
+      delete c.parent;
     }
     const where = c.box
       ? `a view cut at native pixels from the place's own area map (the map ${c.page ? `Bulbapedia's page "${c.page}" shows` : "one of its shots was made from"})`
@@ -1288,6 +1350,7 @@ async function accept(region: string, reviewFile: string) {
       checked: `${where}; ${c.code} in its name or category${cut ? `; cropped (${Object.entries(cut).map(([s, v]) => `${s} ${Math.round(v * 100)}%`).join(", ")})` : ""}; reviewed on a contact sheet`,
     };
     curation.added.push(addition);
+    if (planFile) writeJson(planFile, plan);
     cache[`${candKey(c)}${cut ? `#crop${Object.entries(cut).map(([s, v]) => `${s}${v}`).join("")}` : ""}@${ENCODING}`] = id;
     hashes[id] = hash;
     shots.push({ id, area, family: fam });
@@ -1298,7 +1361,7 @@ async function accept(region: string, reviewFile: string) {
     writeFileSync(SHOT_CACHE, JSON.stringify(cache));
     writeFileSync(SHOT_HASHES, JSON.stringify(hashes));
     writeJson(ledgerFile, ledger);
-    if (added % 20 === 0) console.log(`  ${added} uploaded`);
+    if (added % 20 === 0) console.log(`  ${added} ${planFile ? "prepared" : "uploaded"}`);
   }
   writeJson(ledgerFile, ledger);
   const rejected = Object.values(ledger).filter((d) => d.decision === "rejected").length;
@@ -1318,8 +1381,9 @@ async function main() {
   else if (cmd === "list") await list(regions.length ? regions : Object.keys(REGIONS));
   else if (cmd === "fetch") for (const r of regions) await fetchRegion(r);
   else if (cmd === "crops") for (const r of regions) await cropCandidates(r, Number(args.find((a) => /^\d+$/.test(a)) ?? 3));
-  else if (cmd === "sheets") for (const r of regions) await sheets(r, Number(args.find((a) => /^\d+$/.test(a)) ?? 15));
+  else if (cmd === "sheets") for (const r of regions) await sheets(r, args.some((a) => /^\d+$/.test(a)) ? Number(args.find((a) => /^\d+$/.test(a))) : undefined);
   else if (cmd === "accept") await accept(args[0], args[1]);
+  else if (cmd === "prepare") await accept(args[0], args[1], args[2]);
   else if (cmd === "clean") for (const r of regions) clean(r);
   else if (cmd === "dirs") console.log(readdirSync(DIR).join("\n"));
   else throw new Error("usage: harvest.ts pages | list <Region…> | fetch <Region…> | sheets <Region…> | accept <Region> review.json | clean <Region…>");
