@@ -60,10 +60,10 @@ const PREFETCH_TTL_MS = 60_000;
 /** The likeliest game is started ahead this long after the page has loaded, clear of its first paints. */
 const WARM_AFTER_LOAD_MS = 2000;
 import { ShotCarousel, shotFit } from "./ShotCarousel";
-import { BAR_BTN, CountdownPill, ExitButton, FullscreenButton, GameShell, GuessButton, HudDials, MapDock, Notch, RoundBadge, TimerDial, ValueDial, usePhone } from "./GameShell";
+import { BAR_BTN, CountdownPill, ExitButton, FullscreenButton, GameShell, GuessButton, HudDials, MapDock, Notch, RoundBadge, RoundReadout, ScoreTracker, TimerDial, usePhone } from "./GameShell";
 import { roundViewsOf } from "@/lib/geo-look";
-import { DifficultyPicker, GeoSettingsButton, RoundsPicker } from "./GeoSettings";
-import { DEFAULT_GEO_SETTINGS, GEO_ZOOM, readGeoSettings, rememberGeoSettings, secondsLeft, visibleViews, zoomOrigin, type GeoPlaySettings } from "@/lib/geo-settings";
+import { DifficultyPicker, GeoSettingsButton, RoundsPicker, TimerPicker } from "./GeoSettings";
+import { DEFAULT_GEO_SETTINGS, GEO_DEFAULT_TIMER, GEO_ZOOM, readGeoSettings, rememberGeoSettings, visibleViews, zoomOrigin, type GeoPlaySettings, type GeoTimer } from "@/lib/geo-settings";
 import { GameFilter, GameGuessPicker, type FilterChoice, filterPlaces, gameGuessOptions } from "./GameFilter";
 import { GEO_GAME_BONUS, geoFamily, type GeoEra, type GeoFamilyId } from "@/lib/geo-families";
 import { cn } from "@/lib/utils";
@@ -375,6 +375,8 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   const streak = played.filter((p) => p.graded.hit).length;
 
   type StartOpts = { kind: GeoKind; daily?: string; challenge?: string; weekly?: boolean };
+  /** A round's clock: GeoGuessr's 1:30 for the Daily and the Weekly, none for a streak, else the practice game's choice. */
+  const roundTimer = (opts: StartOpts): GeoTimer => (opts.kind === "streak" ? 0 : opts.daily || opts.weekly ? GEO_DEFAULT_TIMER : settings.timer);
   function startBody(opts: StartOpts) {
     const bonus: { guessGame?: boolean } = {};
     const picked = { era: filter.era, families: filter.families.length ? filter.families : undefined };
@@ -397,24 +399,25 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
             seen: readSeenShots(),
             ...bonus,
           };
-    // The Timer setting goes to the server too, so a late pin scores nothing there as well.
-    return { mode, bonus, body: { ...body, ...(settings.timer ? { timer: settings.timer } : {}) } };
+    // The Timer goes to the server too, so a late pin scores nothing there as well.
+    const timer = roundTimer(opts);
+    return { mode, bonus, timer, body: { ...body, ...(timer ? { timer } : {}) } };
   }
 
   /**
    * Hovering or focusing a Play button gets the game ready: the code and the
    * world map the round needs, and (for free play and challenges) the game
    * itself and round 1's picture, so the click shows the round at once. The
-   * Daily isn't started ahead (starting it is what counts it as played), nor a
-   * timed game (its clock is the server's). A ready game is used only if the
-   * click asks for exactly the same game, within a minute.
+   * Daily and the Weekly aren't started ahead (starting them is what counts them
+   * as played). A timed game can be: the server's clock allows for it. A ready
+   * game is used only if the click asks for exactly the same game, within a minute.
    */
   const ahead = useRef<{ key: string; at: number; res: Promise<GeoStartResponse> } | null>(null);
   function prefetch(opts: StartOpts, withMap = true) {
     if (phase !== "setup") return;
     preloadAfterRound();
     if (withMap) void preloadImage(WORLD_MAP_SRC);
-    if (opts.daily || opts.weekly || settings.timer) return;
+    if (opts.daily || opts.weekly) return;
     const { body } = startBody(opts);
     const key = JSON.stringify(body);
     if (ahead.current?.key === key && Date.now() - ahead.current.at < PREFETCH_TTL_MS) return;
@@ -471,7 +474,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     setError(null);
     preloadAfterRound();
     try {
-      const { mode, bonus, body } = startBody(opts);
+      const { mode, bonus, body, timer } = startBody(opts);
       const key = JSON.stringify(body);
       const ready = ahead.current?.key === key && Date.now() - ahead.current.at < PREFETCH_TTL_MS ? ahead.current.res : null;
       ahead.current = null;
@@ -494,7 +497,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
         filter: played,
         guessGame: !!bonus.guessGame,
         ...(mode ? { difficulty: mode } : {}),
-        settings,
+        settings: { ...settings, timer },
         token: res.token,
         round: res.round,
       });
@@ -584,17 +587,26 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
       off = true;
     };
   }, [roundShot, nextShot]);
-  const timeLeft = timer && shotReady && (phase === "guessing" || phase === "submitting") ? secondsLeft(roundStartedAt, now || roundStartedAt, timer) : null;
+  // The clock is worked out from timestamps (the round's start and now), never by counting ticks, so a
+  // hidden tab's slowed timers can't make it drift: it keeps running there, and is right the moment the tab is back.
+  const msLeft = timer && shotReady && (phase === "guessing" || phase === "submitting") ? Math.max(0, roundStartedAt + timer * 1000 - (now || roundStartedAt)) : null;
+  const timeLeft = msLeft === null ? null : Math.ceil(msLeft / 1000);
   useEffect(() => {
     if (!timer || !shotReady || phase !== "guessing") return;
-    setNow(Date.now());
-    const id = window.setInterval(() => setNow(Date.now()), 250);
-    return () => window.clearInterval(id);
+    const tick = () => setNow(Date.now());
+    tick();
+    const id = window.setInterval(tick, 250);
+    document.addEventListener("visibilitychange", tick);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener("visibilitychange", tick);
+    };
   }, [timer, shotReady, phase, roundStartedAt]);
   useEffect(() => {
     if (timeLeft === 0 && phase === "guessing") void guess(true);
-    else if (timeLeft !== null && timeLeft <= 5 && phase === "guessing") play("countdown");
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- fires once, when the clock hits zero
+    // The last ten seconds tick (the sound respects mute).
+    else if (timeLeft !== null && timeLeft <= 10 && phase === "guessing") play("countdown");
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fires once a second, and once when the clock hits zero
   }, [timeLeft, phase]);
 
   // GeoGuessr's shortcuts: Space / Enter to guess, then for the next round. Esc closes the zoomed view.
@@ -833,9 +845,12 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
                   </p>
                 )}
 
-                <div className="grid gap-4 sm:grid-cols-[auto_1fr] sm:gap-8">
+                <div className="grid gap-4 sm:grid-cols-[auto_1fr] sm:gap-x-8 lg:grid-cols-[auto_auto_1fr]">
                   <RoundsPicker value={playRounds} onChange={setRounds} max={places} label={t("hub.solo.rounds")} />
-                  <DifficultyPicker value={difficulty} onChange={setDifficulty} />
+                  <TimerPicker value={settings.timer} onChange={(timer) => chooseSettings({ ...settings, timer })} />
+                  <div className="sm:col-span-2 lg:col-span-1">
+                    <DifficultyPicker value={difficulty} onChange={setDifficulty} />
+                  </div>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -1009,7 +1024,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   /** The top-centre notch: the round (or the streak), the map and mode; the countdown pill hangs under it. */
   const notch = (
     <Notch
-      below={timeLeft !== null ? <CountdownPill ms={timeLeft * 1000} totalMs={timer * 1000} urgentMs={10_000} testId="geo-time-left" /> : undefined}
+      below={msLeft !== null ? <CountdownPill ms={msLeft} totalMs={timer * 1000} urgentMs={10_000} testId="geo-time-left" clock /> : undefined}
     >
       <div className="min-w-0 text-center">
         <div className="font-display text-xl font-bold uppercase italic leading-none tracking-wide sm:text-2xl" data-testid="geo-round">
@@ -1028,15 +1043,12 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
       </div>
     </Notch>
   );
-  /** Top-right: the score so far (or the streak), and the help button. */
+  /** Top-right: GeoGuessr's score tracker (a streak shows its count in the notch), and the help button. */
   const chips = (
-    <div className="geo-safe-tr absolute right-3 top-3 z-20 flex items-center gap-2">
-      {!isStreak && (
-        <div className="flex h-9 items-center gap-2 rounded-md bg-black/55 px-3 backdrop-blur" data-testid="geo-score-chip">
-          <span className="hud-label hidden !text-white/60 sm:inline">{t("hud.score")}</span>
-          <span className="font-display text-base font-bold tabular-nums text-[#9be15d]">{fmt(total)}</span>
-        </div>
-      )}
+    <div className="geo-safe-tr absolute right-3 top-3 z-20 flex items-start gap-2">
+      {/* Beside the notch it needs a laptop's width; a narrower window gets the compact readout. */}
+      {!isStreak && <ScoreTracker className="max-lg:hidden" rounds={game.rounds} scores={played.map((p) => p.graded.score)} current={Math.min(roundNumber, game.rounds) - 1} total={fmt(total)} />}
+      {!isStreak && <RoundReadout className="!h-9 lg:hidden" testId="geo-score-compact" round={Math.min(roundNumber, game.rounds)} rounds={game.rounds} total={fmt(total)} />}
       <HowToHelpButton className="hud-btn !hidden !p-0 !text-white hover:!bg-black/75 hover:!text-white sm:!flex" />
     </div>
   );
@@ -1045,7 +1057,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   if (phase === "revealed" && current) {
     return (
       <GameShell onExit={() => setPhase("setup")}>
-        {() => <RoundReveal game={game} current={current} round={roundNumber} streak={streak} pinImage={pinImage} onNext={next} onExit={() => setPhase("setup")} t={t} names={names} />}
+        {() => <RoundReveal game={game} current={current} scores={played.map((p) => p.graded.score)} round={roundNumber} streak={streak} pinImage={pinImage} onNext={next} onExit={() => setPhase("setup")} t={t} names={names} />}
       </GameShell>
     );
   }
@@ -1064,10 +1076,10 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
       {phone ? (
         <>
           {/* Phone, GeoGuessr's layout: the dials top-left, the round badge top-right, the tools in the bottom bar. */}
-          {(timeLeft !== null || !isStreak) && (
+          {(msLeft !== null || !isStreak) && (
             <HudDials>
-              {timeLeft !== null && <TimerDial ms={timeLeft * 1000} totalMs={timer * 1000} urgentMs={10_000} testId="geo-time-left" />}
-              {!isStreak && <ValueDial value={fmt(total)} unit={t("hud.pts")} testId="geo-score-chip" />}
+              {msLeft !== null && <TimerDial ms={msLeft} totalMs={timer * 1000} urgentMs={10_000} testId="geo-time-left" clock />}
+              {!isStreak && <RoundReadout round={Math.min(roundNumber, game.rounds)} rounds={game.rounds} total={fmt(total)} />}
             </HudDials>
           )}
           <RoundBadge testId="geo-round" label={isStreak ? t("hud.streakWord") : g("round")} value={isStreak ? streak : Math.min(roundNumber, game.rounds)} of={isStreak ? undefined : game.rounds} mode={modeLine} />
@@ -1227,6 +1239,7 @@ const SCORE_COUNT_MS = 1000;
 function RoundReveal({
   game,
   current,
+  scores,
   round,
   streak,
   pinImage,
@@ -1237,6 +1250,8 @@ function RoundReveal({
 }: {
   game: Game;
   current: Played;
+  /** Every round's score so far, this one last. */
+  scores: number[];
   round: number;
   streak: number;
   pinImage?: string;
@@ -1266,6 +1281,17 @@ function RoundReveal({
       <div className="geo-safe-tl absolute left-3 top-3 z-20">
         <ExitButton onClick={onExit} />
       </div>
+      {/* The score tracker: this round's slot fills as its score counts up, and the total with it. */}
+      {!isStreak && (
+        <div className="geo-safe-tr absolute right-3 top-3 z-20 hidden lg:block">
+          <ScoreTracker
+            rounds={game.rounds}
+            scores={[...scores.slice(0, -1), shown]}
+            current={scores.length - 1}
+            total={fmt(scores.slice(0, -1).reduce((a, b) => a + b, 0) + shown)}
+          />
+        </div>
+      )}
       <Notch>
         <div className="text-center">
           <div className="font-display text-xl font-bold uppercase italic leading-none tracking-wide sm:text-2xl">{isStreak ? t("hud.streak", { n: streak }) : t("hud.round", { n: roundNumber })}</div>

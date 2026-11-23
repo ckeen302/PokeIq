@@ -99,5 +99,7 @@
     "missed": "Raté",
     "again": "Rejouer",
     "shareAndBoard": "Partage et classement"
-  }
+  },
+  "scoreTotal": "Total",
+  "roundOf": "Manche {n}/{of}"
 }

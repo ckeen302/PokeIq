@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_GEO_SETTINGS,
   GEO_TIMERS,
+  clockText,
   geoSettingsBadge,
+  timerLabel,
   parseGeoSettings,
   secondsLeft,
   visibleViews,
@@ -22,7 +24,19 @@ describe("play settings", () => {
   it("sums the settings up for the button, or nothing when all are off", () => {
     expect(geoSettingsBadge(DEFAULT_GEO_SETTINGS)).toBeNull();
     expect(geoSettingsBadge({ noMove: false, zoomed: true, timer: 0 })).toBe("Zoomed");
-    expect(geoSettingsBadge({ noMove: false, zoomed: true, timer: 30 })).toBe("Zoomed · 30s");
+    // The timer has its own picker in the setup, so it isn't summed up on the button.
+    expect(geoSettingsBadge({ noMove: false, zoomed: false, timer: 180 })).toBeNull();
+  });
+
+  it("defaults to GeoGuessr's 1:30 and writes clocks as 01:30", () => {
+    expect(DEFAULT_GEO_SETTINGS.timer).toBe(90);
+    expect(GEO_TIMERS).toEqual([0, 60, 90, 180]);
+    expect(parseGeoSettings({}).timer).toBe(90);
+    expect(clockText(90)).toBe("01:30");
+    expect(clockText(9.2)).toBe("00:10");
+    expect(clockText(180)).toBe("03:00");
+    expect(clockText(-3)).toBe("00:00");
+    expect(GEO_TIMERS.filter(Boolean).map(timerLabel)).toEqual(["1:00", "1:30", "3:00"]);
   });
 
   it("No move shows only the dealt screenshot", () => {
@@ -77,6 +91,14 @@ describe("the timer running out", () => {
     const inTime = gradeGeo(readGeo(startGeo(spec, { seed: "timer-out" }).token)!, { x, y });
     expect(inTime.ok && inTime.body.score).toBeGreaterThan(0);
     expect(inTime.ok && inTime.body.timedOut).toBeUndefined();
+  });
+
+  it("the Daily and the Weekly always play 1:30 a round; a streak is never timed", () => {
+    expect(readGeo(startGeo({ region: "kanto", kind: "game", daily: "2026-10-20" }).token)!.timer).toBe(90);
+    expect(readGeo(startGeo({ region: "kanto", kind: "game", daily: "2026-10-20" }, { timer: 180 }).token)!.timer).toBe(90);
+    expect(readGeo(startGeo({ region: "kanto", kind: "streak" }, { timer: 60 }).token)!.timer).toBeUndefined();
+    expect(readGeo(startGeo({ region: "kanto", kind: "game" }, { timer: 180 }).token)!.timer).toBe(180);
+    expect(readGeo(startGeo({ region: "kanto", kind: "game" }).token)!.timer).toBeUndefined();
   });
 
   it("ends a streak", () => {

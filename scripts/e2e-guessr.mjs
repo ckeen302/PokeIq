@@ -164,6 +164,38 @@ async function phoneMapGuess(p) {
 // Solo
 // ---------------------------------------------------------------------------
 
+/**
+ * The round's HUD, GeoGuessr's: a 01:30 countdown pill centred under the notch
+ * (a dial in the phone's top-left capsule), and the score tracker top right
+ * (round slots, the current one lit, and the total), or on a phone the
+ * compact "Round 2/5 · 3,412" readout, clear of the round badge and the bar.
+ */
+async function checkRoundHud(p, phone, round, total) {
+  const clock = await p.getByTestId("geo-time-left").innerText().catch(() => "");
+  const [, m, s] = clock.match(/^(\d\d):(\d\d)$/) ?? [];
+  const left = Number(m) * 60 + Number(s);
+  if (!(left > 75 && left <= 90)) errors.push(`round ${round}: the timer reads "${clock}", not about 01:30`);
+  const box = (id) => p.getByTestId(id).first().boundingBox();
+  const overlap = (a, b) => a && b && a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+  const timer = await p.locator("[role=timer]").first().boundingBox();
+  const vp = p.viewportSize();
+  if (phone) {
+    const readout = await p.getByTestId("geo-score-chip").innerText();
+    if (!new RegExp(`Round ${round}/5\\s*·\\s*${total.toLocaleString("en-US")}`).test(readout.replace(/\n/g, " "))) errors.push(`phone: the readout says "${readout}"`);
+    const [chip, badge, bar] = await Promise.all([box("geo-score-chip"), box("geo-round"), box("geo-bar")]);
+    if (overlap(chip, badge) || overlap(chip, bar) || chip.x + chip.width > vp.width) errors.push(`phone: the readout runs into the round badge or the bar (${JSON.stringify({ chip, badge })})`);
+  } else {
+    const notch = await box("geo-notch");
+    if (!timer || Math.abs(timer.x + timer.width / 2 - (notch.x + notch.width / 2)) > 2 || timer.y < notch.y + notch.height - 1) errors.push(`the timer pill isn't centred under the notch (${JSON.stringify({ timer, notch })})`);
+    const tracker = await box("geo-score-chip");
+    if (overlap(tracker, notch) || tracker.x + tracker.width > vp.width - 8) errors.push(`the score tracker runs into the notch or off screen (${JSON.stringify({ tracker, notch })})`);
+    if ((await p.locator("[data-testid^=geo-score-slot-]").count()) !== 5) errors.push("the score tracker has no slot for each of 5 rounds");
+    if ((await p.getByTestId(`geo-score-slot-${round}`).getAttribute("data-current")) !== "true") errors.push(`the tracker doesn't light round ${round}`);
+    const shown = Number((await p.getByTestId("geo-score-chip").getByTestId("geo-score-total").innerText()).replace(/\D/g, ""));
+    if (shown !== total) errors.push(`the tracker's total reads ${shown}, not ${total}`);
+  }
+}
+
 async function solo(width, height) {
   const phone = width < 768;
   const tag = `${width}`;
@@ -186,7 +218,9 @@ async function solo(width, height) {
   }
   await page.getByTestId(phone ? "geo-round" : "geo-notch").waitFor();
   if (!/round\s*1/i.test(await page.getByTestId("geo-round").innerText())) errors.push("the round badge doesn't say Round 1");
-  if (!(await page.getByRole("button", { name: /Place your pin/ }).isDisabled().catch(() => true)) && !phone) errors.push("Guess is enabled before a pin");
+  await checkRoundHud(page, phone, 1, 0);
+  // (A phone has no Guess button until its map is open.)
+  if (!phone && !(await page.getByRole("button", { name: /Place your pin/ }).isDisabled().catch(() => true))) errors.push("Guess is enabled before a pin");
   await page.waitForTimeout(400);
   await page.screenshot({ path: `${OUT}/guessr-round-${tag}.png` });
   await pinAndGuess(page, phone, 0.5, `guessr-round-${tag}`);
@@ -200,9 +234,16 @@ async function solo(width, height) {
   if (!(await page.getByTestId("geo-answer-place").innerText()).trim()) errors.push("the reveal names no place");
   if (!/Pokémon /.test(await page.getByTestId("geo-answer-game").innerText())) errors.push("the reveal names no game");
   await page.screenshot({ path: `${OUT}/guessr-result-${tag}.png` });
+  // The tracker's first slot holds the round's score (desktop: it fills during the reveal).
+  const first = Number((await page.getByTestId("geo-round-score").innerText()).replace(/\D/g, ""));
+  if (!phone) {
+    const slot = Number((await page.getByTestId("geo-score-slot-1").innerText()).split("\n").pop().replace(/\D/g, ""));
+    if (slot !== first) errors.push(`the score tracker's first slot reads ${slot}, the round scored ${first}`);
+  }
   // Space goes on.
   await page.keyboard.press("Space");
   await shotLoaded(page);
+  await checkRoundHud(page, phone, 2, first);
   for (let i = 1; i < 5; i++) {
     await shotLoaded(page);
     await pinAndGuess(page, phone, 0.3 + i * 0.1);

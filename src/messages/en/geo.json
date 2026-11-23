@@ -24,7 +24,9 @@
     "placeFirst": "Place your pin on the map first",
     "place": "Place your pin on the map"
   },
-  "key": { "space": "Space" },
+  "key": {
+    "space": "Space"
+  },
   "round": "Round",
   "inARow": "{n} in a row",
   "map": {
@@ -97,5 +99,7 @@
     "missed": "Missed",
     "again": "Play again",
     "shareAndBoard": "Share & leaderboard"
-  }
+  },
+  "scoreTotal": "Total",
+  "roundOf": "Round {n}/{of}"
 }

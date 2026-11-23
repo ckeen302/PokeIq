@@ -189,7 +189,7 @@
     "timer": "Rundentimer",
     "seconds": "{n} s",
     "off": "Aus",
-    "timerBlurb": "Wenn die Zeit abläuft, zählt deine Nadel dort, wo sie ist. Ohne Nadel gibt es 0 Punkte (und die Serie endet).",
+    "timerBlurb": "Wenn die Zeit abläuft, zählt deine Nadel dort, wo sie ist; ohne Nadel gibt es 0 Punkte. Die Uhr läuft weiter, wenn du den Tab wechselst. Tagesspiel und Wochenspiel haben immer 1:30, Serien haben keine Uhr.",
     "harder": "Sie machen ein Spiel nur schwerer, deine Punkte zählen also weiter für die Bestenlisten.",
     "rounds": "Runden",
     "difficulty": "Schwierigkeit",

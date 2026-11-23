@@ -950,14 +950,16 @@ for (let i = 0; i < 5; i++) {
   await next.click();
 }
 
-step("pokéguessr: zoomed, 30s timer (time runs out with no pin)");
+step("pokéguessr: zoomed, 1:00 timer (time runs out with no pin)");
 await gotoSettled(page, `${BASE}/pokeguessr`);
 await openGeoSetup(page);
+// Practice games default to GeoGuessr's 1:30.
+if ((await page.getByTestId("geo-timer-90").getAttribute("aria-checked")) !== "true") throw new Error("1:30 should be the default round timer");
 await page.getByTestId("geo-settings").click();
 await page.getByTestId("geo-zoomed").click();
-await page.getByTestId("geo-timer-30").click();
-await page.getByTestId("geo-settings-badge").filter({ hasText: "Zoomed · 30s" }).waitFor();
+await page.getByTestId("geo-settings-badge").filter({ hasText: "Zoomed" }).waitFor();
 await page.keyboard.press("Escape");
+await page.getByTestId("geo-timer-60").click();
 await page.getByRole("button", { name: /5-round game/ }).click();
 await page.waitForFunction(() => {
   const img = document.querySelector("img[data-testid='geo-shot']");
@@ -965,22 +967,25 @@ await page.waitForFunction(() => {
 });
 if ((await page.getByTestId("geo-shot").getAttribute("data-zoomed")) !== "true") throw new Error("the screenshot isn't zoomed");
 {
-  // The countdown pill reads m:ss.
-  const [, m, s] = (await page.getByTestId("geo-time-left").innerText()).match(/(\d+):(\d\d)/) ?? [];
+  // The countdown pill reads GeoGuessr's mm:ss.
+  const [, m, s] = (await page.getByTestId("geo-time-left").innerText()).match(/^(\d\d):(\d\d)$/) ?? [];
   const left = Number(m) * 60 + Number(s);
-  if (!(left > 20 && left <= 30)) throw new Error(`timer shows ${left}`);
+  if (!(left > 50 && left <= 60)) throw new Error(`timer shows ${left}`);
 }
 await page.screenshot({ path: `${OUT}/geo-mode-zoom-timer.png` });
-await page.getByTestId("geo-distance").filter({ hasText: "Time's up" }).waitFor({ timeout: 40_000 });
+// The last ten seconds: the pill turns red.
+await page.locator("[role=timer][data-urgent=true]").waitFor({ timeout: 65_000 });
+await page.getByTestId("geo-distance").filter({ hasText: "Time's up" }).waitFor({ timeout: 20_000 });
 await page.screenshot({ path: `${OUT}/geo-mode-timer-up.png` });
-// Back to the defaults, so the steps after this play the usual way.
+// Back to the defaults (1:30, not zoomed), so the steps after this play the usual way.
 await gotoSettled(page, `${BASE}/pokeguessr`);
 await openGeoSetup(page);
+if ((await page.getByTestId("geo-timer-60").getAttribute("aria-checked")) !== "true") throw new Error("the timer choice wasn't remembered");
 await page.getByTestId("geo-settings").click();
 await page.getByTestId("geo-zoomed").click();
-await page.getByTestId("geo-timer-0").click();
 if (await page.getByTestId("geo-settings-badge").count()) throw new Error("settings didn't switch off");
 await page.keyboard.press("Escape");
+await page.getByTestId("geo-timer-90").click();
 
 step("pokéguessr: friend accepts the challenge");
 await gotoSettled(page, `${BASE}/pokeguessr/c/${encodeURIComponent(geoChallenge)}`);

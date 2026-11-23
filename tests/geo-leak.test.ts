@@ -71,8 +71,9 @@ describe("PokéGuessr answer leak", () => {
       expect(start.round.preload).toMatch(/^\/api\/geo\/shot\/[A-Za-z0-9_-]{8,24}$/);
       expect(start.round.preload).not.toBe(start.round.shot);
       expect(round).not.toMatch(/pin|mask|name|region|Route|City|Town/);
-      // Not with a round timer, where it could be studied while the clock runs.
-      expect(startGeo(spec, { timer: 30 }).round.preload).toBeUndefined();
+      // Not with a round timer, where it could be studied while the clock runs (a streak is never timed).
+      if (spec.kind === "game") expect(startGeo(spec, { timer: 90 }).round.preload).toBeUndefined();
+      else expect(startGeo(spec, { timer: 90 }).round.preload).toBeDefined();
       const state = readGeo(start.token)!;
       const answer = answerFor(spec, planRounds(spec, state.seed, 1)[0]);
       // The token is signed, and the plan inside it is sealed: no place name anywhere in it.

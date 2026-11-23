@@ -81,7 +81,7 @@ describe("PokéGuessr guess rules", () => {
     // "Guess the game too": no bonus on a late pin either.
     const bonus = startGeo({ ...kanto, guessGame: true }, { timer: 30 });
     const b = firstPin({ ...kanto, guessGame: true }, bonus.token);
-    const lateBonus = gradeGeo(b.state, { x: b.pin[0], y: b.pin[1], family: answerFor(kanto, b.round).family }, b.state.roundAt! + 60_000);
+    const lateBonus = gradeGeo(b.state, { x: b.pin[0], y: b.pin[1], family: answerFor(kanto, b.round).family }, b.state.roundAt! + 30_000 + GEO_TIMER_GRACE_MS + 1);
     if (!lateBonus.ok) throw new Error(lateBonus.error);
     expect(lateBonus.body.gameGuess?.bonus).toBe(0);
   });
