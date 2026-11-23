@@ -330,9 +330,6 @@ function Lab({ rows }: { rows: LabRow[] }) {
       else window.history.replaceState(window.history.state, "", url);
     }
     pushNext.current = false;
-    // The tab's title (and a bookmark's, or a shared tab's) names the Pokémon on the table.
-    baseTitle.current ??= document.title;
-    document.title = `${tc("labTitle", { name: m.name })} · ${baseTitle.current}`;
     setAnnounce(S.announce(m.name, String(m.species), m.types.map((ty) => S.typeName(ty) ?? ty).join(", ")));
     if (interacted.current && !isMuted()) {
       try {
@@ -346,7 +343,14 @@ function Lab({ rows }: { rows: LabRow[] }) {
         // No audio: fine.
       }
     }
-  }, [settled, view, monAt, tc]);
+  }, [settled, view, monAt]);
+
+  // The tab's title (and a bookmark's) names the Pokémon on the table: once the lab is up, so the page's own title is in place first.
+  useEffect(() => {
+    if (!ready || settled === null || !seqRef.current.length) return;
+    baseTitle.current ??= document.title;
+    document.title = `${tc("labTitle", { name: monAt(settled).name })} · ${baseTitle.current}`;
+  }, [ready, settled, monAt, tc]);
 
   // Details: a few hundred bytes per Pokémon, fetched once it's on the table (and kept).
   const detailId = settled !== null && len ? monAt(settled).id : null;

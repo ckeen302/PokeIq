@@ -336,10 +336,11 @@ export function WorldGlobe({ regions, eras, local }: { regions: GlobeRegionCard[
     if (state !== "ready") return;
     const url = new URL(window.location.href);
     const want = card ? card.toLowerCase() : null;
-    if ((url.searchParams.get("region") ?? null) === want) return;
-    if (want) url.searchParams.set("region", want);
-    else url.searchParams.delete("region");
-    window.history.replaceState(window.history.state, "", url);
+    if ((url.searchParams.get("region") ?? null) !== want) {
+      if (want) url.searchParams.set("region", want);
+      else url.searchParams.delete("region");
+      window.history.replaceState(window.history.state, "", url);
+    }
     baseTitle.current ??= document.title;
     const base = baseTitle.current;
     document.title = card ? `${tc("globeTitle", { region: local?.names[card] ?? card })} · ${base}` : base;
