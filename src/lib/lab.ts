@@ -64,7 +64,7 @@ export interface LabExperience {
   live: boolean;
 }
 
-/** The Pokémon Timeline's card: first on /lab until The Story of Pokémon takes its place. */
+/** The Pokémon Timeline's card, in the films' slot on /lab until The Story of Pokémon takes its place. */
 const TIMELINE_CARD: LabExperience = {
   id: "timeline",
   href: "/pokedex/timeline",
@@ -90,8 +90,12 @@ const STORY_CARD: LabExperience = {
   live: POKEMON_STORY_LIVE,
 };
 
+/**
+ * The hub's order: the experiences that impress most, run best on phones and
+ * are easiest to share lead (docs/lab-audit.md): Sizes, Mass Battle, the
+ * World Globe. The films and the Professor's Lab follow.
+ */
 export const LAB_EXPERIENCES: LabExperience[] = [
-  POKEMON_STORY_LIVE ? STORY_CARD : TIMELINE_CARD,
   {
     id: "sizes",
     href: "/pokedex/sizes",
@@ -102,28 +106,6 @@ export const LAB_EXPERIENCES: LabExperience[] = [
     image: "/lab/sizes.webp",
     accent: "45 100% 64%",
     live: true,
-  },
-  {
-    id: "globe",
-    href: "/pokeguessr/globe",
-    title: "World Globe",
-    kicker: "The Pokémon world",
-    pitch: "Spin a holographic globe of the whole Pokémon world and zoom from its regions down to every town, route and landmark.",
-    tags: ["Generation by generation", "Real screenshots", "From PokéGuessr"],
-    image: "/lab/globe.webp",
-    accent: "195 92% 64%",
-    live: true,
-  },
-  {
-    id: "race",
-    href: "/pokedex/race",
-    title: "Pokémon Race",
-    kicker: "Who is fastest?",
-    pitch: "Line Pokémon up in a 3D stadium at night and watch them sprint, with speeds from their base stats.",
-    tags: ["Photo finish", "Pick your own race", "Make a video"],
-    image: "/lab/race.webp",
-    accent: "340 86% 60%",
-    live: RACE_LIVE,
   },
   {
     id: "mass-battle",
@@ -137,15 +119,27 @@ export const LAB_EXPERIENCES: LabExperience[] = [
     live: MASS_BATTLE_LIVE,
   },
   {
-    id: "games",
-    href: "/lab/games",
-    title: "The PokéIQ Games",
-    kicker: "Every Pokémon, real sport",
-    pitch: "Track and field, weightlifting, swimming and wrestling for every Pokémon, scored from their real stats with real physics, then played out in 3D with replays, medals and a medal table.",
-    tags: ["12 events", "Records for all 1,025", "Make a video"],
-    image: "/lab/games.webp",
-    accent: "48 100% 60%",
-    live: GAMES_LIVE,
+    id: "globe",
+    href: "/pokeguessr/globe",
+    title: "World Globe",
+    kicker: "The Pokémon world",
+    pitch: "Spin a holographic globe of the whole Pokémon world and zoom from its regions down to every town, route and landmark.",
+    tags: ["Generation by generation", "Real screenshots", "From PokéGuessr"],
+    image: "/lab/globe.webp",
+    accent: "195 92% 64%",
+    live: true,
+  },
+  POKEMON_STORY_LIVE ? STORY_CARD : TIMELINE_CARD,
+  {
+    id: "pokedex",
+    href: "/lab/pokedex",
+    title: "Professor's Lab",
+    kicker: "A 3D Pokédex",
+    pitch: "Spin a ring of lab capsules and bring any Pokémon onto the holo-table in 3D, with its base stats, battle roles, Pokédex entry, evolutions and type matchups.",
+    tags: ["Every Pokémon in 3D", "Battle roles", "Filter and sort"],
+    image: "/lab/pokedex.webp",
+    accent: "190 95% 62%",
+    live: LAB_DEX_LIVE,
   },
   {
     id: "world-history",
@@ -159,15 +153,26 @@ export const LAB_EXPERIENCES: LabExperience[] = [
     live: WORLD_HISTORY_LIVE,
   },
   {
-    id: "pokedex",
-    href: "/lab/pokedex",
-    title: "Professor's Lab",
-    kicker: "A 3D Pokédex",
-    pitch: "Spin a ring of lab capsules and bring any Pokémon onto the holo-table in 3D, with its base stats, battle roles, Pokédex entry, evolutions and type matchups.",
-    tags: ["Every Pokémon in 3D", "Battle roles", "Filter and sort"],
-    image: "/lab/pokedex.webp",
-    accent: "190 95% 62%",
-    live: LAB_DEX_LIVE,
+    id: "race",
+    href: "/pokedex/race",
+    title: "Pokémon Race",
+    kicker: "Who is fastest?",
+    pitch: "Line Pokémon up in a 3D stadium at night and watch them sprint, with speeds from their base stats.",
+    tags: ["Photo finish", "Pick your own race", "Make a video"],
+    image: "/lab/race.webp",
+    accent: "340 86% 60%",
+    live: RACE_LIVE,
+  },
+  {
+    id: "games",
+    href: "/lab/games",
+    title: "The PokéIQ Games",
+    kicker: "Every Pokémon, real sport",
+    pitch: "Track and field, weightlifting, swimming and wrestling for every Pokémon, scored from their real stats with real physics, then played out in 3D with replays, medals and a medal table.",
+    tags: ["12 events", "Records for all 1,025", "Make a video"],
+    image: "/lab/games.webp",
+    accent: "48 100% 60%",
+    live: GAMES_LIVE,
   },
 ];
 
