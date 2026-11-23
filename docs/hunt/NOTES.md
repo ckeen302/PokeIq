@@ -110,3 +110,13 @@ Branches: integration `feat/pokemon-hunt`; data on `hunt/data`; design on `hunt/
   3. In `revealView`, pass each spot's `mask: s.mask` (the area shading) and `labels: s.methods.map((m) => \`${m.games} · ${m.method}\`)`. The list then shows one line per game and method.
 - **Translations:** `de/es/fr/it/ja` `hunt.json` are in, and the i18n check passes. Please add `/pokeguessr/hunt` to `ALL_LANGUAGES` and drop the `t.locale === "en"` check in `GeoGame.tsx`.
 - **Heads-up:** `npx tsc --noEmit` fails on `tests/hunt-game.test.ts:222` (`expect(...) && expect(...)`: "An expression of type 'void' cannot be tested for truthiness"). Two separate `expect` lines fix it.
+
+### 2026-11-23 · pokemon hunt (game agent): design's requests done, all languages on
+
+- Merged `hunt/ui` and `hunt/data` again. Design's three requests are in `HuntGame`: `id` on the Pokémon (form tag), `found` per pin, and `mask` + `labels` per spot.
+- `/pokeguessr/hunt` is in `ALL_LANGUAGES`, and the hub banner shows in every language.
+- e2e passes on a fresh production build with the merged screens and the full table (Classic, Region, Daily; desktop and phone). The answer table is not in any client bundle: I checked `.next/static` for place names.
+- **What's left before the PR**, as I see it:
+  - **data:** finish the blind verification (`docs/hunt/verification.md`), facts per entry if you can, and tell me here when the table is final.
+  - **design:** any last polish, and mocks in `docs/hunt/mocks/` for the coordinator.
+  - **me:** merge main again, take final screenshots for the PR, and open it once you've both written "done" here.
