@@ -17,6 +17,11 @@ import { GenPicker, SearchBox, SortPicker, Toolbar, TogglesList, TypePicker, act
 import { LabLocalContext, useLabStrings } from "./strings";
 import type { LabScene } from "./scene";
 import { Governor, startTier, type Tier } from "./scene/quality";
+import { ShareRow } from "./ShareRow";
+import { useT } from "@/i18n/client";
+import labClip from "@/messages/lab-clip";
+import { lazy, Suspense } from "react";
+const MakeClip = lazy(() => import("@/components/lab/MakeClip"));
 
 /**
  * The Professor's Lab (/lab/pokedex): every Pokémon on an endless wheel of
@@ -99,6 +104,10 @@ function Lab({ rows }: { rows: LabRow[] }) {
   const [sheet, setSheet] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [announce, setAnnounce] = useState("");
+  const [clipOpen, setClipOpen] = useState(false);
+  const recording = useRef(false);
+  const baseTitle = useRef<string | null>(null);
+  const tc = useT(labClip);
   const [, setDetailsTick] = useState(0);
 
   const wheel = useRef(new Wheel()).current;
@@ -187,6 +196,11 @@ function Lab({ rows }: { rows: LabRow[] }) {
     const fixedStep = new URLSearchParams(location.search).get("rec") === "1" ? 1 / 30 : 0;
     const tick = (now: number) => {
       raf = requestAnimationFrame(tick);
+      // A video is being made from the scene: it draws the frames itself.
+      if (recording.current) {
+        last = now;
+        return;
+      }
       const dt = fixedStep || Math.min(0.1, Math.max(0, (now - last) / 1000));
       last = now;
       frames.current++;
@@ -316,6 +330,9 @@ function Lab({ rows }: { rows: LabRow[] }) {
       else window.history.replaceState(window.history.state, "", url);
     }
     pushNext.current = false;
+    // The tab's title (and a bookmark's, or a shared tab's) names the Pokémon on the table.
+    baseTitle.current ??= document.title;
+    document.title = `${tc("labTitle", { name: m.name })} · ${baseTitle.current}`;
     setAnnounce(S.announce(m.name, String(m.species), m.types.map((ty) => S.typeName(ty) ?? ty).join(", ")));
     if (interacted.current && !isMuted()) {
       try {
@@ -329,7 +346,7 @@ function Lab({ rows }: { rows: LabRow[] }) {
         // No audio: fine.
       }
     }
-  }, [settled, view, monAt]);
+  }, [settled, view, monAt, tc]);
 
   // Details: a few hundred bytes per Pokémon, fetched once it's on the table (and kept).
   const detailId = settled !== null && len ? monAt(settled).id : null;
@@ -562,6 +579,7 @@ function Lab({ rows }: { rows: LabRow[] }) {
                   <StatsTabs tab={tab} onTab={setTab} idBase="d" />
                   <div className="lab-scroll mt-3 min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">{statsBody}</div>
                   <OpenInDex mon={mon} className="mt-4 shrink-0" />
+                  <ShareRow mon={mon} canVideo={mode === "3d" && ready} onVideo={() => setClipOpen(true)} className="mt-2 shrink-0" />
                 </div>
                 <div className="pointer-events-auto absolute bottom-6 left-1/2 flex -translate-x-1/2 items-center gap-4">
                   <button type="button" onClick={() => step(-1)} className="group flex items-center gap-3 rounded-full border border-white/12 bg-[#050a17]/70 py-1.5 pl-1.5 pr-4 backdrop-blur-md transition-colors hover:border-white/25" aria-label={prev ? S.prevNamed(prev.name) : S.prev} data-testid="lab-prev">
@@ -632,6 +650,7 @@ function Lab({ rows }: { rows: LabRow[] }) {
                   <InfoCard mon={mon} details={det} inView={inView} onPick={pickId} />
                 </div>
                 <OpenInDex mon={mon} className="mt-4" />
+                <ShareRow mon={mon} canVideo={mode === "3d" && ready} onVideo={() => setClipOpen(true)} className="mt-2" />
               </PhoneSheet>
             )}
             {filtersOpen && (
@@ -665,6 +684,40 @@ function Lab({ rows }: { rows: LabRow[] }) {
         )}
 
         <div aria-live="polite" aria-atomic="true" className="sr-only" data-testid="lab-announce">{announce}</div>
+        {clipOpen && mon && (
+          <Suspense fallback={null}>
+            <MakeClip
+              subject={tc("labSubject", { name: mon.name })}
+              file={`${mon.slug}${mon.isForm ? `-${mon.id}` : ""}-3d`}
+              kind="lab-dex"
+              onClose={() => setClipOpen(false)}
+              make={async (signal, onProgress) => {
+                const scene = sceneRef.current;
+                if (!scene) throw new Error("The 3D lab isn't ready");
+                const { makeLabClip } = await import("./clip");
+                recording.current = true;
+                try {
+                  return await makeLabClip({
+                    scene,
+                    slot: wheel.rest(),
+                    signal,
+                    onProgress,
+                    text: {
+                      no: dexNo(mon.species),
+                      name: mon.name,
+                      types: mon.types.map((ty) => S.typeName(ty) ?? ty.charAt(0).toUpperCase() + ty.slice(1)).join(" · "),
+                      color: typeColor(mon.types[0]),
+                      display: cssFont("--font-display", "sans-serif"),
+                      pixel: cssFont("--font-pixel", "monospace"),
+                    },
+                  });
+                } finally {
+                  recording.current = false;
+                }
+              }}
+            />
+          </Suspense>
+        )}
       </div>
     </>
   );

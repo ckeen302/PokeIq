@@ -17,6 +17,24 @@ import type { HoverInfo, SceneApi } from "./scene";
 import type { GlobeAudio } from "./audio";
 import { useT } from "@/i18n/client";
 import globeNs from "@/messages/globe";
+import { lazy, Suspense } from "react";
+import { Clapperboard, Share2 } from "lucide-react";
+import { track } from "@vercel/analytics";
+import { shareOrCopy } from "@/lib/share";
+import { localUrl } from "@/i18n/paths";
+import labClip from "@/messages/lab-clip";
+import shareNs from "@/messages/share";
+const MakeClip = lazy(() => import("@/components/lab/MakeClip"));
+
+/** A region named in the address (?region=kanto), as the globe names it. */
+function regionFromUrl(regions: GlobeRegionCard[]): string | null {
+  try {
+    const q = new URLSearchParams(window.location.search).get("region")?.trim().toLowerCase();
+    return (q && regions.find((r) => r.name.toLowerCase() === q)?.name) || null;
+  } catch {
+    return null;
+  }
+}
 
 const CSS = `
 .gl-lb{position:absolute;left:0;top:0;white-space:nowrap;will-change:transform;transition:color .15s}
@@ -133,7 +151,8 @@ export function WorldGlobe({ regions, eras, local }: { regions: GlobeRegionCard[
       if (introDecision.current) markGlobeIntroSeen(localStore());
     }
     // A scene built again after a lost WebGL context doesn't replay the intro.
-    const playIntro = introDecision.current && !sceneGen;
+    // A shared region's link opens straight on it: no fly-in.
+    const playIntro = introDecision.current && !sceneGen && !regionFromUrl(regions);
     setIntro(playIntro);
     setEraState(startEra);
     setMutedState(isMuted());
@@ -147,7 +166,12 @@ export function WorldGlobe({ regions, eras, local }: { regions: GlobeRegionCard[
         host,
         layer,
         {
-          ready() { setState("ready"); },
+          ready() {
+            setState("ready");
+            // A shared link (?region=kanto): straight to that region and its card.
+            const r = regionFromUrl(regions);
+            if (r) window.setTimeout(() => api.current?.flyToRegion(r), 0);
+          },
           failed() { setIntro(false); setState("failed"); },
           stats(s) { setStats(s); },
           hover(h, pinned) {
@@ -304,6 +328,22 @@ export function WorldGlobe({ regions, eras, local }: { regions: GlobeRegionCard[
   }, [playing]);
 
   const regionCard = regions.find((r) => r.name === card) ?? null;
+  const [clipOpen, setClipOpen] = useState(false);
+  const tc = useT(labClip);
+  const baseTitle = useRef<string | null>(null);
+  // The open region's card is in the address (?region=), so the address is its link.
+  useEffect(() => {
+    if (state !== "ready") return;
+    const url = new URL(window.location.href);
+    const want = card ? card.toLowerCase() : null;
+    if ((url.searchParams.get("region") ?? null) === want) return;
+    if (want) url.searchParams.set("region", want);
+    else url.searchParams.delete("region");
+    window.history.replaceState(window.history.state, "", url);
+    baseTitle.current ??= document.title;
+    const base = baseTitle.current;
+    document.title = card ? `${tc("globeTitle", { region: local?.names[card] ?? card })} · ${base}` : base;
+  }, [card, state, local, tc]);
   const shotList = popup ? shotIndex?.[popup.info.key] ?? [] : [];
   const shot = shotList.length ? shotList[popup!.i % shotList.length] : null;
   const eraInfo = eras.find((e) => e.gen === era);
@@ -424,7 +464,31 @@ export function WorldGlobe({ regions, eras, local }: { regions: GlobeRegionCard[
           narrow={narrow}
           local={local}
           onClose={() => { audio.current?.close(); setCard(null); }}
+          onVideo={() => setClipOpen(true)}
         />
+      )}
+      {clipOpen && regionCard && (
+        <Suspense fallback={null}>
+          <MakeClip
+            subject={tc("globeSubject", { region: local?.names[regionCard.name] ?? regionCard.name })}
+            file={`${regionCard.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-globe`}
+            kind="globe"
+            onClose={() => setClipOpen(false)}
+            make={async (signal, onProgress) => {
+              const s = api.current;
+              if (!s) throw new Error("The globe isn't ready");
+              const { makeGlobeClip } = await import("./clip");
+              return makeGlobeClip({
+                api: s,
+                region: regionCard.name,
+                name: local?.names[regionCard.name] ?? regionCard.name,
+                kicker: `${t("generation", { gen: t.locale === "ja" ? String(regionCard.gen) : ROMAN[regionCard.gen] })}${regionCard.year ? ` · ${regionCard.year}` : ""}`,
+                signal,
+                onProgress,
+              });
+            }}
+          />
+        </Suspense>
       )}
 
       {/* Intro */}
@@ -526,9 +590,21 @@ function EraControl({ eras, era, playing, onEra, onPlay, caption, local }: { era
   );
 }
 
-function RegionCard({ card, narrow, local, onClose }: { card: GlobeRegionCard; narrow: boolean; local?: GlobeLocal; onClose(): void }) {
+function RegionCard({ card, narrow, local, onClose, onVideo }: { card: GlobeRegionCard; narrow: boolean; local?: GlobeLocal; onClose(): void; onVideo(): void }) {
   const t = useT(globeNs);
+  const tc = useT(labClip);
+  const ts = useT(shareNs);
   const name = local?.names[card.name] ?? card.name;
+  const [copied, setCopied] = useState(false);
+  async function share() {
+    const link = `${window.location.origin}${localUrl(`/pokeguessr/globe?region=${encodeURIComponent(card.name.toLowerCase())}`)}`;
+    const outcome = await shareOrCopy(tc("globeShare", { region: name }), link);
+    if (outcome === "copied" || outcome === "shared") track("share", { kind: "globe", via: outcome });
+    if (outcome === "copied") {
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2200);
+    }
+  }
   return (
     <aside
       data-testid="globe-region-card"
@@ -591,6 +667,14 @@ function RegionCard({ card, narrow, local, onClose }: { card: GlobeRegionCard; n
             {t("dex")}
           </Link>
         )}
+      </div>
+      <div className="mt-2 grid grid-cols-2 gap-2">
+        <button type="button" onClick={() => void share()} data-testid="globe-region-share" className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-border bg-card/60 px-3 font-display text-[11px] font-semibold uppercase tracking-wider hover:border-screen/60">
+          <Share2 className="h-3.5 w-3.5" aria-hidden /> {copied ? ts("button.copied") : tc("shareLink")}
+        </button>
+        <button type="button" onClick={onVideo} data-testid="globe-region-video" className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-border bg-card/60 px-3 font-display text-[11px] font-semibold uppercase tracking-wider hover:border-screen/60">
+          <Clapperboard className="h-3.5 w-3.5" aria-hidden /> {tc("video")}
+        </button>
       </div>
     </aside>
   );
