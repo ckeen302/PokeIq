@@ -301,11 +301,37 @@ export function buildAnswers(inp: Inputs, opts: { difficulty?: boolean } = {}): 
   return { entries, review, dropped, excludedAt: [...excludedAt].sort(), missingPlaces, stats };
 }
 
-/** A one-line fact from the data, only when it's plainly true: a single spot. */
+/** Only one way to meet it, everywhere: the fact says so. */
+const ONLY_METHOD: [RegExp, string][] = [
+  [/^(Old Rod|Good Rod|Super Rod|Fishing)$/, "You can only fish it up."],
+  [/^(Surf|Dive)$/, "It's only ever found out on the water."],
+  [/^Headbutt$/, "It's only ever found by headbutting trees."],
+  [/^Rock Smash$/, "It only turns up by smashing rocks."],
+  [/^Honey tree$/, "It only comes to honey trees."],
+  [/^Max Raid$/, "You only meet it in Max Raid dens."],
+  [/^SOS call$/, "It only turns up when another Pokémon calls for help."],
+  [/^Horde$/, "It only turns up in hordes."],
+  [/^Fixed encounter$/, "It's never a random encounter: every spot is a one-off meeting."],
+];
+
+/**
+ * A one-line fact taken straight from the entry's own answers, never invented and never a count:
+ * its only spot; else its only way of being met; else the earliest game with a spot for it on the map.
+ */
 function factOf(e: HuntEntry): string | undefined {
-  if (e.places.length !== 1) return undefined;
-  const p = e.places[0];
-  const games = [...new Set(p.methods.flatMap((m) => m.versions))];
-  if (games.length === 1) return `Its one spot on the map is ${p.name}, in ${VERSION_BY_KEY[games[0]].name}.`;
-  return `Every game puts it in the same place: ${p.name}.`;
+  const methods = e.places.flatMap((p) => p.methods);
+  const versions = [...new Set(methods.flatMap((m) => m.versions))].sort((a, b) => versionOrder(a) - versionOrder(b));
+  if (e.places.length === 1) {
+    const p = e.places[0];
+    if (versions.length === 1) return `Its one spot on the map is ${p.name}, in ${VERSION_BY_KEY[versions[0]].name}.`;
+    return `Every game puts it in the same place: ${p.name}.`;
+  }
+  const labels = new Set(methods.map((m) => m.method));
+  for (const [re, text] of ONLY_METHOD) if ([...labels].every((l) => re.test(l))) return text;
+  const first = versions[0];
+  if (!first) return undefined;
+  const at = e.places.filter((p) => p.methods.some((m) => m.versions.includes(first)));
+  const game = VERSION_BY_KEY[first].name;
+  // Scoped to the table: games and places off the map (Legends: Arceus, gifts…) aren't in it.
+  return at.length === 1 ? `Its earliest spot on the map is from ${game}, at ${at[0].name}.` : `Its earliest spots on the map are from ${game}.`;
 }

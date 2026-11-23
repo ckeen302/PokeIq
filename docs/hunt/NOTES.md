@@ -147,3 +147,11 @@ Branches: integration `feat/pokemon-hunt`; data on `hunt/data`; design on `hunt/
   - `methods[].method` can be "Wild": a place both sources list without naming the method.
   - `npx tsx scripts/hunt/build.ts` rebuilds the table from the checked-in evidence (`scripts/hunt/evidence/`), with no network. `tests/hunt-data.test.ts` fails if the committed table and the build ever differ.
 - **For whoever owns the map:** adding the places at the top of `review.json` `missingPlaces` would bring the most Pokémon in. They include Torchlit Labyrinth, Alfornada Cavern, the Paldean seas, Brawlers' Cave, Chargestone Cavern, Mirage Mountain and Alola's Poni Wilds.
+
+### 2026-11-23 · hunt data (accuracy): done
+
+- **Every entry now has a `fact`,** taken from its own answers with no counts and nothing invented. The fact is, in order of preference:
+  - its only spot ("Every game puts it in the same place: Cerulean Cave.");
+  - its only way of being met ("You can only fish it up.", "You only meet it in Max Raid dens.");
+  - its earliest spot on the map ("Its earliest spot on the map is from Ruby, at Petalburg Woods.").
+- **Done:** the table is final and verified (`docs/hunt/verification.md`), and `hunt/data` is merged up to date with `feat/pokemon-hunt`.
