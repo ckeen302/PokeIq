@@ -8,7 +8,7 @@ import { VERSION_BY_KEY, versionOrder } from "../../src/lib/pokemon/encounter-ty
 import { buildGrid, goodShare, round3, worldDifficulty, type MapGrid, type Pt } from "./difficulty";
 import { FAMOUS } from "./famous";
 import { PLACE_DEPENDENT_FORMS, regionalForms, resolveForms, type EvidenceEntry, type FormInfo } from "./forms";
-import { ALTERING_CAVE, EVENT_ONLY, VERSION_REGIONS } from "./rules";
+import { AGREED_LABEL, ALTERING_CAVE, EVENT_ONLY, VERSION_REGIONS } from "./rules";
 import { normPlace } from "../../src/lib/pokemon/encounter-transform";
 
 /** Rows that need an event (rules.ts EVENT_ONLY, Altering Cave): left out like any event. */
@@ -37,6 +37,8 @@ export interface Inputs {
   encounters: Map<number, { g: number; rows: EncRow[] }[]>;
   /** dex → Bulbapedia's location lines (only needed for species with regional forms). */
   evidence: Record<string, EvidenceEntry[]>;
+  /** dex → form ("" for the original) → version → what Bulbapedia and Serebii agree on (scripts/hunt/make-agreed.ts). */
+  agreed?: Record<string, Record<string, Record<string, { both: [string, string | null][]; any: string[] }>>>;
   /** dex → form ("" for the original) → version → Max Raid den places both sources list. */
   dens?: Record<string, Record<string, Record<string, string[]>>>;
 }
@@ -54,6 +56,8 @@ export interface ReviewItem {
 export interface BuildResult {
   entries: HuntEntry[];
   review: ReviewItem[];
+  /** Places dropped from an entry because neither Bulbapedia nor Serebii lists them in that game. */
+  dropped: ReviewItem[];
   /** Real places missing from the map, with the entries each one keeps out. */
   missingPlaces: { place: string; versions: string[]; entries: string[] }[];
   stats: Record<string, number>;
@@ -84,7 +88,8 @@ export function buildAnswers(inp: Inputs, opts: { difficulty?: boolean } = {}): 
   const accs = new Map<string, Acc>();
   const review: ReviewItem[] = [];
   const missing = new Map<string, { versions: Set<string>; entries: Set<string> }>();
-  const stats: Record<string, number> = { rows: 0, counted: 0, excludedMethod: 0, offMap: 0, excludedGame: 0, dataDenRows: 0, summaryRows: 0 };
+  const excludedAt = new Set<string>();
+  const stats: Record<string, number> = { rows: 0, counted: 0, excludedMethod: 0, offMap: 0, excludedGame: 0, dataDenRows: 0, summaryRows: 0, summaryOnly: 0, addedByAgreement: 0, droppedUnconfirmed: 0 };
 
   const nameOf = (dex: number, form: string | null) => (form ? formsBy.get(dex)!.find((f) => f.key === form)!.name : dexBy.get(dex)!.name);
   const acc = (dex: number, form: string | null): Acc => {
@@ -123,6 +128,9 @@ export function buildAnswers(inp: Inputs, opts: { difficulty?: boolean } = {}): 
           const mc = eventOnly(dex, v, r.loc) ?? classifyMethod(r.m, [v], r.n);
           if (mc.kind === "excluded") {
             stats.excludedMethod++;
+            // Remember where: the sources' agreed list must not add back what a rule left out.
+            const at = matchPlace(idx, r.loc, v);
+            if (at.kind === "place") excludedAt.add(`${dex}|${v}|${at.key}`);
             continue;
           }
           if (isOffMap(r.loc)) {
@@ -130,13 +138,14 @@ export function buildAnswers(inp: Inputs, opts: { difficulty?: boolean } = {}): 
             continue;
           }
           // Sword / Shield's expansion "Wild" rows are Serebii's summary lists (no method, no level):
-          // they repeat a detailed row, or they're something else entirely (Cosmog in Freezington is a gift).
+          // they repeat a detailed row, or they may be something else entirely (Cosmog in Freezington is a gift).
           if (r.m === "Wild" && !r.lv && (v === "sword" || v === "shield")) {
             if (rows.some((o) => o !== r && o.loc === r.loc && o.m !== "Wild" && o.m !== "Max Raid" && o.v.includes(v))) {
               stats.summaryRows++;
               continue;
             }
-            for (const f of allForms) acc(dex, f).uncertain.push({ id: entryId(dex, f), name: nameOf(dex, f), version: v, loc: r.loc, method: r.m, why: "only a summary row with no method (Sword / Shield expansion list)" });
+            // Not counted on its own: where Bulbapedia and Serebii both list the place, the agreement step adds it.
+            stats.summaryOnly++;
             continue;
           }
           const sub = subAreaPlace(idx, r.n, v);
@@ -174,6 +183,40 @@ export function buildAnswers(inp: Inputs, opts: { difficulty?: boolean } = {}): 
             byLabel.set(mc.label, set);
           }
         }
+      }
+    }
+  }
+
+  // Bulbapedia and Serebii together (scripts/hunt/make-agreed.ts): add the places both list that the
+  // data lacks, and drop the ones neither lists, for every game both sources have a list for.
+  const dropped: ReviewItem[] = [];
+  for (const a of accs.values()) {
+    const games = inp.agreed?.[String(a.dex)]?.[a.form ?? ""];
+    if (!games) continue;
+    for (const [v, g] of Object.entries(games)) {
+      if (v === "legends-arceus" || !VERSION_BY_KEY[v]) continue;
+      const ours = new Set([...a.places].filter(([, byLabel]) => [...byLabel.values()].some((vs) => vs.has(v))).map(([k]) => k));
+      for (const [key, hint] of g.both) {
+        if (ours.has(key) || hint === "Max Raid" || excludedAt.has(`${a.dex}|${v}|${key}`) || !idx.pinned.has(key)) continue;
+        const byLabel = a.places.get(key) ?? new Map<string, Set<string>>();
+        a.places.set(key, byLabel);
+        const label = hint ?? AGREED_LABEL;
+        (byLabel.get(label) ?? byLabel.set(label, new Set()).get(label)!).add(v);
+        stats.addedByAgreement++;
+      }
+      const any = new Set(g.any);
+      for (const key of ours) {
+        if (any.has(key)) continue;
+        const byLabel = a.places.get(key)!;
+        for (const [label, vs] of byLabel) {
+          if (label === "Max Raid") continue;
+          if (vs.delete(v)) {
+            stats.droppedUnconfirmed++;
+            dropped.push({ id: entryId(a.dex, a.form), name: nameOf(a.dex, a.form), version: v, loc: idx.pinned.get(key)!.name, method: label, why: "dropped: neither Bulbapedia nor Serebii lists it in this game" });
+          }
+          if (!vs.size) byLabel.delete(label);
+        }
+        if (!byLabel.size) a.places.delete(key);
       }
     }
   }
@@ -247,7 +290,7 @@ export function buildAnswers(inp: Inputs, opts: { difficulty?: boolean } = {}): 
   stats.entries = entries.length;
   stats.reviewItems = review.length;
   stats.species = new Set(entries.map((e) => e.dex)).size;
-  return { entries, review, missingPlaces, stats };
+  return { entries, review, dropped, missingPlaces, stats };
 }
 
 /** A one-line fact from the data, only when it's plainly true: a single spot. */

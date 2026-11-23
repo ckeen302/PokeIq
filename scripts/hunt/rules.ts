@@ -79,6 +79,9 @@ export const METHODS: Record<string, string | null> = {
   "Colosseum bonus disc jpn": null, "Colosseum bonus disc us": null, "Pokemon channel pal": null, "Pokemon ranger": null,
 };
 
+/** The label for a place added because Bulbapedia and Serebii both list it, when neither names the method. */
+export const AGREED_LABEL = "Wild";
+
 /** Max Raid dens only count in Sword and Shield (Galar's dens). */
 export const MAX_RAID_VERSIONS = new Set(["sword", "shield"]);
 

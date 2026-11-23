@@ -76,6 +76,21 @@ def places_of(seg):
     return seen
 
 
+METHOD_HINTS = [
+    (r"Super Rod", "Super Rod"), (r"Good Rod", "Good Rod"), (r"Old Rod", "Old Rod"), (r"\bFishing\b|\bfishing\b", "Fishing"),
+    (r"Headbutt", "Headbutt"), (r"Rock Smash", "Rock Smash"), (r"Honey", "Honey tree"), (r"Horde", "Horde"),
+    (r"SOS", "SOS call"), (r"Wanderer", "Wandering"), (r"Only (one|two)", "Fixed encounter"), (r"Poké Radar", "Poké Radar"),
+    (r"Hidden Grotto", "Hidden Grotto"), (r"\bSurf", "Surf"), (r"Max Raid Battle", "Max Raid"),
+]
+
+
+def method_of(seg):
+    for pat, label in METHOD_HINTS:
+        if re.search(pat, seg):
+            return label
+    return None
+
+
 def forms_of(seg):
     return [f.strip() for f in re.findall(r"'''\s*\(?([^']*?(?:Form|Breed|Breeds|Forme|Style|Sea)[^']*?)\)?\s*'''", seg)]
 
@@ -126,7 +141,7 @@ def parse(text):
                 if not seg:
                     continue
                 kind = "other" if OTHER.search(seg) else ("raid" if MAX_RAID.search(seg) else "wild")
-                segs.append({"places": places_of(seg), "forms": forms_of(seg), "kind": kind, "text": strip_tags(seg)[:400]})
+                segs.append({"places": places_of(seg), "forms": forms_of(seg), "kind": kind, "method": method_of(seg), "text": strip_tags(seg)[:400]})
         entries.append({"versions": versions, "segments": segs, "none": none})
     return entries
 
