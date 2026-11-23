@@ -58,7 +58,8 @@
     "shape": "Shape",
     "abilities": "Abilities",
     "hidden": "Hidden",
-    "lab": "View in the 3D Lab"
+    "lab": "See it in 3D",
+    "size": "See its real size"
   },
   "stat": {
     "hp": "HP",

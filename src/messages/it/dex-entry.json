@@ -58,7 +58,8 @@
     "shape": "Forma",
     "abilities": "Abilità",
     "hidden": "Speciale",
-    "lab": "Vedi nel Lab 3D"
+    "lab": "Vedilo in 3D",
+    "size": "Vedi le sue dimensioni reali"
   },
   "stat": {
     "hp": "PS",

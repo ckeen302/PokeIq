@@ -58,7 +58,8 @@
     "shape": "Körperform",
     "abilities": "Fähigkeiten",
     "hidden": "Versteckt",
-    "lab": "Im 3D-Labor ansehen"
+    "lab": "In 3D ansehen",
+    "size": "Echte Größe ansehen"
   },
   "stat": {
     "hp": "KP",
