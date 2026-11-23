@@ -1,0 +1,39 @@
+{
+  "title": "Lieblings-Pokémon-Finder",
+  "subtitle": "Finde dein Lieblings-Pokémon in schnellen Runden und füll eine Tabelle mit deinem Liebling jedes Typs.",
+  "metaTitle": "Lieblings-Pokémon-Finder: Finde dein Lieblings-Pokémon",
+  "metaDescription": "Finde dein Lieblings-Pokémon: Behalte auf schnellen Bildern die, die du magst, und am Ende treten die letzten direkt gegeneinander an. Hol dir deine Top 10, erstelle eine Tabelle mit deinem Lieblings-Pokémon jedes Typs, sieh sie dir schillernd an und teile sie oder lade sie herunter. Kostenlos.",
+  "metaSharedTitle": "Mein Lieblings-Pokémon ist {name}",
+  "metaSharedChartTitle": "Mein Lieblings-Pokémon jedes Typs",
+  "metaSharedDescription": "Ausgewählt mit dem Lieblings-Pokémon-Finder auf PokéIQ. Öffne ihn, um die ganze Liste zu sehen, oder finde dein eigenes Lieblings-Pokémon.",
+  "ogAlt": "Ein Lieblings-Pokémon und Top 10, erstellt mit dem Lieblings-Pokémon-Finder",
+  "ogChartAlt": "Eine Tabelle mit dem Lieblings-Pokémon jedes Typs, erstellt mit dem Lieblings-Pokémon-Finder",
+  "ogFavorite": "Mein Lieblings-Pokémon",
+  "ogChart": "Liebling jedes Typs",
+  "ogTitle": {
+    "a": "Lieblings-Pokémon",
+    "b": "Finder"
+  },
+  "ogChips": {
+    "duel": "Direkter Vergleich",
+    "top": "Top 10",
+    "types": "Jeder Typ",
+    "shiny": "Schillernd"
+  },
+  "cardTitle": "Lieblings-Pokémon-Finder",
+  "cardSubtitle": "Finde dein Lieblings-Pokémon und deinen Liebling jedes Typs.",
+  "howto": {
+    "title": "So funktioniert’s",
+    "s1t": "Wähl deine Pokémon",
+    "s1": "Alle Pokémon oder nur bestimmte Generationen, Typen, Starter oder Legendäre. Regionalformen, Megas und andere Formen können auch mitmachen.",
+    "s2t": "Behalte die, die du magst",
+    "s2": "Jedes Bild zeigt eine Handvoll Pokémon: Behalte bis zu {keep} und mach weiter, der Rest fliegt raus. Bei vielen Pokémon gibt es ein paar schnelle Runden, und dein Fortschritt wird auf diesem Gerät gespeichert.",
+    "s3t": "Direkt gegeneinander",
+    "s3": "Wenn noch {max} oder weniger übrig sind, treten sie im Turnierbaum zu zweit gegeneinander an, bis nur noch eins übrig ist: dein Liebling. Meinung geändert? Mach jede Wahl rückgängig.",
+    "s4t": "Teile deine Top 10",
+    "s4": "Dein Liebling erscheint groß, darunter deine Top 10 in der Reihenfolge des Turnierbaums. Schalte sie auf schillernd, öffne eins im Schillernde-Pokémon-Designer, lade ein quadratisches Bild oder eins im Hochformat herunter oder kopier einen Link.",
+    "chartTitle": "Dein Lieblings-Pokémon jedes Typs",
+    "chart": "Die Typ-Tabelle hat ein Feld für jeden Typ. Such ein Pokémon, um eins zu füllen, oder lass den Finder nur über diesen Typ laufen. Alles, was du erstellst, bleibt in deinem Browser und in den Links, die du teilst."
+  },
+  "credit": "Bilder: Renderings aus Pokémon HOME und Sprites von PokéAPI. Pokémon ist © Nintendo, Game Freak und Creatures."
+}

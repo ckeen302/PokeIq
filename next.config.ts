@@ -123,6 +123,13 @@ const nextConfig: NextConfig = {
     // The Tier List Maker's cards draw the template's or the shared result's Pokémon, from the roster (Showdown's data).
     "/tools/tier-list/[template]/og": ["./src/assets/fonts/*.ttf", "./public/sizes/art/256/*.webp", "./node_modules/pokemon-showdown/dist/{config,data,lib,sim}/**/*.{js,json}"],
     "/tools/tier-list/og": ["./src/assets/fonts/*.ttf", "./public/sizes/art/256/*.webp"],
+    // The Favorite Pokémon Picker's shared links name their Pokémon (title) and draw them (card) from the roster.
+    ...Object.fromEntries(
+      ["/tools/favorite-pokemon-picker/og", "/tools/favorite-pokemon-picker/shared", "/[locale]/tools/favorite-pokemon-picker/shared"].map((route) => [
+        route,
+        ["./src/assets/fonts/*.ttf", "./public/sizes/art/256/*.webp", "./node_modules/pokemon-showdown/dist/{config,data,lib,sim}/**/*.{js,json}"],
+      ])
+    ),
     // A shared PokéGuessr result's card draws the map that was played, by a computed path.
     "/pokeguessr/r/**": ["./public/geo/maps/*.webp"],
     "/[locale]/pokeguessr/r/**": ["./public/geo/maps/*.webp"],
@@ -157,6 +164,8 @@ const nextConfig: NextConfig = {
         // The same for a Shiny Pokémon Maker or Poké Ball Maker design (?d=…), and a Mass Battle link (?b=, ?ask=, ?v=).
         { source: "/tools/shiny-maker", has: [{ type: "query" as const, key: "d" }], destination: "/tools/shiny-maker/shared" },
         { source: "/tools/pokeball-maker", has: [{ type: "query" as const, key: "d" }], destination: "/tools/pokeball-maker/shared" },
+        // A Favorite Pokémon Picker result (?d=…).
+        { source: "/tools/favorite-pokemon-picker", has: [{ type: "query" as const, key: "d" }], destination: "/tools/favorite-pokemon-picker/shared" },
         ...["b", "ask", "v"].map((key) => ({ source: "/lab/mass-battle", has: [{ type: "query" as const, key }], destination: "/lab/mass-battle/shared" })),
       ].flatMap(withLocales),
       afterFiles: [],

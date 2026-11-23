@@ -57,6 +57,7 @@ export async function englishSitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/tools/shiny-maker`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${SITE_URL}/tools/pokeball-maker`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${SITE_URL}/tools/tier-list`, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${SITE_URL}/tools/favorite-pokemon-picker`, changeFrequency: "monthly", priority: 0.8 },
     ...TEMPLATES.map((t) => ({ url: `${SITE_URL}/tools/tier-list/${t.slug}`, changeFrequency: "monthly" as const, priority: t.group === "custom" ? 0.4 : 0.7 })),
     { url: `${SITE_URL}/quiz`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${SITE_URL}/pokedex`, changeFrequency: "monthly", priority: 0.8 },

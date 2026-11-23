@@ -1,0 +1,13 @@
+/* The Favorite Pokémon Picker. Colours come from the site's tokens, so light and dark both follow the theme. */
+
+.fp-grid { grid-template-columns: repeat(var(--fp-cols), minmax(0, 1fr)); }
+@media (min-width: 640px) {
+  .fp-grid { grid-template-columns: repeat(var(--fp-cols-wide), minmax(0, 1fr)); }
+}
+
+.fp-crown-glow {
+  background: radial-gradient(closest-side, hsl(var(--warning) / 0.28), hsl(var(--warning) / 0.08) 55%, transparent);
+  filter: blur(6px);
+}
+
+.fp-slot-art { content-visibility: auto; }
