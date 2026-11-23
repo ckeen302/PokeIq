@@ -18,6 +18,7 @@ import { LabLocalContext, useLabStrings } from "./strings";
 import type { LabScene } from "./scene";
 import { Governor, startTier, type Tier } from "./scene/quality";
 import { ShareRow } from "./ShareRow";
+import { useTabTitle } from "@/lib/use-tab-title";
 import { useT } from "@/i18n/client";
 import labClip from "@/messages/lab-clip";
 import { lazy, Suspense } from "react";
@@ -106,7 +107,6 @@ function Lab({ rows }: { rows: LabRow[] }) {
   const [announce, setAnnounce] = useState("");
   const [clipOpen, setClipOpen] = useState(false);
   const recording = useRef(false);
-  const baseTitle = useRef<string | null>(null);
   const tc = useT(labClip);
   const [, setDetailsTick] = useState(0);
 
@@ -345,12 +345,8 @@ function Lab({ rows }: { rows: LabRow[] }) {
     }
   }, [settled, view, monAt]);
 
-  // The tab's title (and a bookmark's) names the Pokémon on the table: once the lab is up, so the page's own title is in place first.
-  useEffect(() => {
-    if (!ready || settled === null || !seqRef.current.length) return;
-    baseTitle.current ??= document.title;
-    document.title = `${tc("labTitle", { name: monAt(settled).name })} · ${baseTitle.current}`;
-  }, [ready, settled, monAt, tc]);
+  // The tab's title (and a bookmark's) names the Pokémon on the table.
+  useTabTitle(ready && settled !== null && len > 0 ? tc("labTitle", { name: monAt(settled).name }) : null);
 
   // Details: a few hundred bytes per Pokémon, fetched once it's on the table (and kept).
   const detailId = settled !== null && len ? monAt(settled).id : null;

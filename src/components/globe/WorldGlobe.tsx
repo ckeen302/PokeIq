@@ -23,6 +23,7 @@ import { track } from "@vercel/analytics";
 import { shareOrCopy } from "@/lib/share";
 import { localUrl } from "@/i18n/paths";
 import labClip from "@/messages/lab-clip";
+import { useTabTitle } from "@/lib/use-tab-title";
 import shareNs from "@/messages/share";
 const MakeClip = lazy(() => import("@/components/lab/MakeClip"));
 
@@ -330,7 +331,6 @@ export function WorldGlobe({ regions, eras, local }: { regions: GlobeRegionCard[
   const regionCard = regions.find((r) => r.name === card) ?? null;
   const [clipOpen, setClipOpen] = useState(false);
   const tc = useT(labClip);
-  const baseTitle = useRef<string | null>(null);
   // The open region's card is in the address (?region=), so the address is its link.
   useEffect(() => {
     if (state !== "ready") return;
@@ -341,10 +341,8 @@ export function WorldGlobe({ regions, eras, local }: { regions: GlobeRegionCard[
       else url.searchParams.delete("region");
       window.history.replaceState(window.history.state, "", url);
     }
-    baseTitle.current ??= document.title;
-    const base = baseTitle.current;
-    document.title = card ? `${tc("globeTitle", { region: local?.names[card] ?? card })} · ${base}` : base;
-  }, [card, state, local, tc]);
+  }, [card, state]);
+  useTabTitle(state === "ready" && card ? tc("globeTitle", { region: local?.names[card] ?? card }) : null);
   const shotList = popup ? shotIndex?.[popup.info.key] ?? [] : [];
   const shot = shotList.length ? shotList[popup!.i % shotList.length] : null;
   const eraInfo = eras.find((e) => e.gen === era);
