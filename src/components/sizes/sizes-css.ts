@@ -2,6 +2,7 @@
 export const SIZES_CSS = `
 html.sz-locked, html.sz-locked body { overflow: hidden; overscroll-behavior: none; }
 .sz-stage { background: linear-gradient(180deg, #7fb2e6 0%, #c9def0 55%, #b8b2a4 100%); }
+.sz-stage[data-city="nimbasa"] { background: linear-gradient(180deg, #0a0d2b 0%, #251d5c 55%, #7a4a92 82%, #3a2a5e 100%); }
 @media (prefers-reduced-motion: reduce) { .sz-stage[data-ready="0"] { display: none; } }
 .sz-host canvas { display: block; }
 .sz-overlay { position: absolute; inset: 0; pointer-events: none; }

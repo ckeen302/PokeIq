@@ -5,6 +5,7 @@ import { planPlay, playAt } from "@/lib/sizes/play";
 import { cardAlpha, frameCount, videoFileName, videoSettings, videoTimeline, type VideoSettings } from "@/lib/sizes/export";
 import { Mp4Muxer, aacConfig } from "@/lib/sizes/mp4";
 import { createSizesScene, type Quality, type SceneUrls } from "./scene";
+import type { CityKit } from "./scene/kit";
 import type { RefBuilders } from "./scene/figures";
 import { toSceneItem } from "./scene-item";
 import { drawBadges } from "./overlay";
@@ -33,6 +34,9 @@ export interface RecordOptions {
   logo: string;
   /** Render quality (the export's own by default; tests can ask for a lighter one). */
   quality?: Quality;
+  /** Another city than Lumiose (its kit), and the hook card's line naming it. */
+  city?: CityKit;
+  subtitle?: string;
   /** Frame rate (30 by default; tests can ask for fewer frames). */
   fps?: number;
   /** What it is doing (the dialog words it). */
@@ -250,7 +254,7 @@ export async function recordVideo(o: RecordOptions): Promise<RecordResult> {
   const host = document.createElement("div");
   host.style.cssText = `position:fixed;left:-20000px;top:0;width:${W}px;height:${H}px;pointer-events:none;`;
   document.body.appendChild(host);
-  const scene = createSizesScene(host, { quality: o.quality ?? "export", size: { w: W, h: H }, urls: o.urls, trainer: o.trainer });
+  const scene = createSizesScene(host, { quality: o.quality ?? "export", size: { w: W, h: H }, urls: o.urls, trainer: o.trainer, city: o.city });
   try {
     await scene.ready;
     const order = o.order ?? HEIGHT_ORDER;
@@ -266,7 +270,7 @@ export async function recordVideo(o: RecordOptions): Promise<RecordResult> {
     compose.height = H;
     const g = compose.getContext("2d")!;
     const logo = await loadImage(o.logo);
-    const layers: VideoOverlay = { hook: o.hook, font: o.font, logo, link: v.endLink, watermark: v.watermark, ...(o.words && { subtitle: o.words.subtitle, endLine: o.words.endLine }) };
+    const layers: VideoOverlay = { hook: o.hook, font: o.font, logo, link: v.endLink, watermark: v.watermark, ...(o.subtitle && { subtitle: o.subtitle }), ...(o.words && { subtitle: o.subtitle ?? o.words.subtitle, endLine: o.words.endLine }) };
     const drawFrame = async (i: number) => {
       const t = i / fps;
       const pf = playAt(plan, t, scene.heightAt);

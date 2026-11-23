@@ -23,7 +23,7 @@ export const SKY = {
  * five octaves): the sky then reads two texels a pixel instead of working
  * the noise out for every pixel of every frame.
  */
-function cloudNoise(size = 256): THREE.DataTexture {
+export function cloudNoise(size = 256): THREE.DataTexture {
   const data = new Uint8Array(size * size);
   const hash = (x: number, y: number, p: number) => {
     const xx = ((x % p) + p) % p, yy = ((y % p) + p) % p;

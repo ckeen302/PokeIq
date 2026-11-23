@@ -9,7 +9,9 @@
  * staying off when the site is muted, and "Make a video": a 5-second
  * export (?len=5, at the light test quality and 10 fps so it runs in CI
  * without a GPU) that must be a valid 1080 × 1920 MP4 with video and audio
- * tracks, plus cancelling a recording. Screenshots at 1440 and 390 px.
+ * tracks, plus cancelling a recording; Nimbasa City (a shared link opens
+ * there, the lineup menu's city picker switches city and address).
+ * Screenshots at 1440 and 390 px.
  *
  * CI has no GPU: software WebGL draws a frame every few seconds, and real
  * input events then wait behind those frames. So the scene runs at its light
@@ -280,6 +282,27 @@ export async function runSizes({ browser, BASE, OUT, errors, step }) {
     // The Pokédex entry links into the 3D Lab.
     await page.goto(`${BASE}/pokemon/pikachu`, { waitUntil: "domcontentloaded" });
     if ((await page.getByTestId("dex-lab").getAttribute("href")) !== "/lab/pokedex?pick=25") errors.push("sizes: Pikachu's Pokédex entry has no 'View in the 3D Lab' link");
+  });
+
+  await part(errors, "nimbasa", async () => {
+    // A shared Nimbasa link opens in Nimbasa (the comparison too), and the lineup menu's city picker switches city and address.
+    await page.goto(`${BASE}/pokedex/sizes/compare?vs=pikachu,snorlax&city=nimbasa&q=draft`, { waitUntil: "load" });
+    if (!(await ready())) throw new Error("the 3D scene never became ready in Nimbasa");
+    if ((await attr("city")) !== "nimbasa") errors.push(`sizes: ?city=nimbasa opened ${await attr("city")}`);
+    await stageIs("count", "3", 60_000).catch(() => errors.push("sizes: a Nimbasa comparison link didn't open the comparison"));
+    await page.screenshot({ path: `${OUT}/sizes-nimbasa.png` });
+    await press(page, "sizes-lineup");
+    if ((await page.getByTestId("sizes-city-nimbasa").getAttribute("aria-checked")) !== "true") errors.push("sizes: the city picker doesn't show Nimbasa chosen");
+    await press(page, "sizes-city-lumiose");
+    await stageIs("city", "lumiose", 60_000).catch(() => errors.push("sizes: choosing Lumiose didn't switch city"));
+    if (/city=/.test(page.url())) errors.push(`sizes: Lumiose's address still names a city (${page.url()})`);
+    if (!/vs=pikachu,snorlax/.test(page.url())) errors.push(`sizes: switching city lost the comparison (${page.url()})`);
+    if (!(await ready())) errors.push("sizes: the scene never became ready again in Lumiose");
+    await press(page, "sizes-lineup");
+    await press(page, "sizes-city-nimbasa");
+    await stageIs("city", "nimbasa", 60_000).catch(() => errors.push("sizes: choosing Nimbasa didn't switch city"));
+    if (!/city=nimbasa/.test(page.url())) errors.push(`sizes: Nimbasa's address doesn't carry the city (${page.url()})`);
+    if (!(await ready())) errors.push("sizes: the scene never became ready again in Nimbasa");
   });
 
   step("pokédex Sizes: make a 5 s video (a valid 1080 × 1920 MP4 with music), cancel a recording, phone layout");

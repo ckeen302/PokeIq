@@ -2,6 +2,12 @@
   "open3d": "3Dで見る",
   "lining": "並べています…",
   "building": "ミアレシティを作っています…",
+  "buildingNimbasa": "ライモンシティを作っています…",
+  "city": "街",
+  "cities": {
+    "lumiose": "ミアレシティ",
+    "nimbasa": "ライモンシティ"
+  },
   "back": "図鑑に戻る",
   "orderBy": "並べ替え",
   "direction": "順番",
@@ -78,6 +84,7 @@
       "recording": "録画中"
     },
     "subtitle": "大きさ比べ・ミアレシティ",
+    "subtitleNimbasa": "大きさ比べ・ライモンシティ",
     "endLine": "自分だけの大きさ比べ動画を作ろう"
   }
 }

@@ -2,6 +2,12 @@
   "open3d": "Open the 3D view",
   "lining": "Lining them up…",
   "building": "Building Lumiose City…",
+  "buildingNimbasa": "Building Nimbasa City…",
+  "city": "City",
+  "cities": {
+    "lumiose": "Lumiose City",
+    "nimbasa": "Nimbasa City"
+  },
   "back": "Back to the Pokédex",
   "orderBy": "Order by",
   "direction": "Direction",
@@ -78,6 +84,7 @@
       "recording": "Recording"
     },
     "subtitle": "SIZE COMPARISON · LUMIOSE CITY",
+    "subtitleNimbasa": "SIZE COMPARISON · NIMBASA CITY",
     "endLine": "Make your own size video"
   }
 }

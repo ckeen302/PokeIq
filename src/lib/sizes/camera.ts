@@ -1,5 +1,5 @@
 import { FILL_W, FILL_W_PORTRAIT } from "./glide";
-import { PLAZA_MARGIN, ROOF_Y, STRAIGHT, TOWER_H, type LinePath, type PathPoint, type Ring } from "./world";
+import { PLAZA_MARGIN, PRISM_TOWER, ROOF_Y, STRAIGHT, type LinePath, type PathPoint, type Ring } from "./world";
 
 /**
  * The camera rig of /pokedex/sizes, as plain math (unit-tested): from where
@@ -103,8 +103,6 @@ const LANDSCAPE: Frame = { vfov: 35, aspect: 16 / 9 };
  */
 export const FINALE_MARGIN = { top: 0.12, bottom: 0.17, bottomTall: 0.3, side: 0.05 } as const;
 
-/** Half-width of Prism Tower that must stay in the frame (m): its shaft, prism and the upper legs. */
-const TOWER_HALF = 30;
 
 /** The plaza's buildings face the tower this far out from the ring (m: world.ts PLAZA_MARGIN, then the ring road), and how much higher than their roofs a sight line must pass (chimneys). */
 const RING_WALL = PLAZA_MARGIN + 12;
@@ -132,6 +130,8 @@ function exitShare(fx: number, fz: number, cx: number, cz: number, ox: number, o
 function towerFinale(v: View, path: LinePath, ring: Ring, lens: Frame): Pose {
   const at = path.at(v.x);
   const big = smooth01((v.h - 4) / 30);
+  // The landmark's top and the half-width of it that must stay in the frame (Prism Tower's: its shaft, prism and the upper legs).
+  const towerH = path.tower?.h ?? PRISM_TOWER.h, towerHalf = path.tower?.half ?? PRISM_TOWER.half;
   // The camera's bearing in the world: the side pose's yaw turned towards the tower, on the line's heading.
   const az = BASE_YAW + FINALE_YAW - cameraHeading(path, v.x, v.d);
   const sa = Math.sin(az), ca = Math.cos(az);
@@ -156,10 +156,10 @@ function towerFinale(v: View, path: LinePath, ring: Ring, lens: Frame): Pose {
     const y = Math.max(my + D * Math.sin(q), floorY, wall ? ROOF_CLEAR / wall : 0);
     const dg = Math.max(1e-3, Math.hypot(at.x - hx, at.z - hz)), dt = Math.max(1e-3, Math.hypot(ring.cx - hx, ring.cz - hz));
     // Vertically: from the giant's feet to the tip of the spire (or the giant's head, if it stood taller in the frame).
-    const hi = Math.max(Math.atan2(TOWER_H + 4 - y, dt), Math.atan2(v.h - y, dg)), lo = Math.atan2(-y, dg);
+    const hi = Math.max(Math.atan2(towerH + 4 - y, dt), Math.atan2(v.h - y, dg)), lo = Math.atan2(-y, dg);
     // Across: the giant and the tower, each with its width.
     const ag = Math.atan2(at.x - hx, at.z - hz), at2 = Math.atan2(ring.cx - hx, ring.cz - hz);
-    const wg = Math.atan2(halfW, dg), wt = Math.atan2(TOWER_HALF, dt);
+    const wg = Math.atan2(halfW, dg), wt = Math.atan2(towerHalf, dt);
     const rel = (a: number) => Math.atan2(Math.sin(a - ag), Math.cos(a - ag));
     const left = Math.min(-wg, rel(at2) - wt), right = Math.max(wg, rel(at2) + wt);
     pos = [hx, y, hz];

@@ -37,6 +37,14 @@ export const ROOF_Y = CORNICE_Y + 4.7;
 export const TOWER_H = 232;
 export const PRISM_Y = 190;
 
+/** A landmark's size, for the finale's framing: its top (m) and the half-width that must stay in the frame (m). */
+export interface Landmark {
+  h: number;
+  half: number;
+}
+/** Prism Tower's (the default). */
+export const PRISM_TOWER: Landmark = { h: TOWER_H, half: 30 };
+
 /** Figures at least this big (height or width, m) are too big for the boulevard: they stand in the plaza. */
 export const GIANT_M = 18;
 /** Figures at least this big (height or width, m) stand on the ring round Prism Tower. */
@@ -74,8 +82,8 @@ export interface Ring {
 export interface LinePath {
   at(s: number): PathPoint;
   ring: Ring | null;
-  /** Where Prism Tower stands (a plan's path knows; the bare straight line doesn't). */
-  tower?: { x: number; z: number };
+  /** Where the city's landmark (Prism Tower, Nimbasa's Ferris wheel) stands, and its size for the finale's framing (a plan's path knows; the bare straight line doesn't). */
+  tower?: { x: number; z: number } & Partial<Landmark>;
 }
 
 export function linePath(ring: Ring | null): LinePath {
@@ -159,8 +167,8 @@ function bigTail(placed: PlacedFigure[]): number {
   return at;
 }
 
-/** The boulevard and plaza for a line of placed figures (x is the distance along the line). */
-export function planWorld(placed: PlacedFigure[], rule: RingRule = "first-big"): WorldPlan {
+/** The boulevard and plaza for a line of placed figures (x is the distance along the line); every city shares the plan, each with its own landmark at the centre. */
+export function planWorld(placed: PlacedFigure[], rule: RingRule = "first-big", landmark: Landmark = PRISM_TOWER): WorldPlan {
   const lineStart = placed.length ? placed[0].x - placed[0].w / 2 : 0;
   const lineEnd = placed.length ? placed[placed.length - 1].x + placed[placed.length - 1].w / 2 : 1;
   const first = rule === "tail" ? bigTail(placed) : placed.findIndex((p) => Math.max(p.h, p.w) >= RING_M);
@@ -198,7 +206,7 @@ export function planWorld(placed: PlacedFigure[], rule: RingRule = "first-big"):
   const onStreet = placed.filter((p) => !ring || p.x < ring.s0).map((p) => Math.max(p.h, p.w));
   const biggest = onStreet.length ? Math.max(...onStreet) : 0;
   const open = rule === "tail" && biggest >= OPEN_M ? Math.min(1500, Math.max(160, biggest * 4)) : 0;
-  return { x0, x1, plaza: { cx, cz, r }, tower: { x: cx, z: cz }, lineStart, lineEnd, path: { ...linePath(ring), tower: { x: cx, z: cz } }, ring, avenues, districts, open };
+  return { x0, x1, plaza: { cx, cz, r }, tower: { x: cx, z: cz }, lineStart, lineEnd, path: { ...linePath(ring), tower: { x: cx, z: cz, ...landmark } }, ring, avenues, districts, open };
 }
 
 /** An angle in (-π, π]. */

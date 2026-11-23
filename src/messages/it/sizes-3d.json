@@ -2,6 +2,12 @@
   "open3d": "Apri la vista 3D",
   "lining": "Li mettiamo in fila…",
   "building": "Costruiamo Luminopoli…",
+  "buildingNimbasa": "Costruiamo Sciroccopoli…",
+  "city": "Città",
+  "cities": {
+    "lumiose": "Luminopoli",
+    "nimbasa": "Sciroccopoli"
+  },
   "back": "Torna al Pokédex",
   "orderBy": "Ordina per",
   "direction": "Verso",
@@ -78,6 +84,7 @@
       "recording": "Registrazione"
     },
     "subtitle": "CONFRONTO DI GRANDEZZE · LUMINOPOLI",
+    "subtitleNimbasa": "CONFRONTO DI GRANDEZZE · SCIROCCOPOLI",
     "endLine": "Crea il tuo video sulle grandezze"
   }
 }
