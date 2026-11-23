@@ -99,5 +99,7 @@
     "missed": "Verfehlt",
     "again": "Nochmal spielen",
     "shareAndBoard": "Teilen & Bestenliste"
-  }
+  },
+  "scoreTotal": "Gesamt",
+  "roundOf": "Runde {n}/{of}"
 }

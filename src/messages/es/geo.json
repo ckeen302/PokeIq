@@ -99,5 +99,7 @@
     "missed": "Fallado",
     "again": "Jugar otra vez",
     "shareAndBoard": "Compartir y clasificación"
-  }
+  },
+  "scoreTotal": "Total",
+  "roundOf": "Ronda {n}/{of}"
 }
