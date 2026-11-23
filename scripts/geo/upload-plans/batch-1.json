@@ -1,148 +1,5 @@
 [
  {
-  "url": "https://www.pokepedia.fr/images/1/11/Coteau_Pommes_EV.png",
-  "sha256": "50c393722a14105e923edfe30944af54e1cfd76e41c3e1449f87563c9e0e48a4",
-  "game": "Scarlet / Violet",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 1280,
-   "height": 720
-  },
-  "id": "kkYet5pujDE0",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokepedia.fr/images/f/f0/Lac_Cristallin_EV.png",
-  "sha256": "27841b2feeec691d5e930c7143740f9142fa62bd823bba25248f66d7f84f9206",
-  "game": "Scarlet / Violet",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 1280,
-   "height": 720
-  },
-  "id": "XbX09o8DUr_o",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokepedia.fr/images/4/43/Gorge_de_la_Corne_EV.png",
-  "sha256": "09c0fef8f47e28359391455a90290eb904c8f70762125557706b500242b71cfc",
-  "game": "Scarlet / Violet",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 1280,
-   "height": 720
-  },
-  "id": "Pn0NACa7lcI6",
-  "uploaded": false
- },
- {
-  "url": "https://images.wikidexcdn.net/mwuploads/wikidex/2/28/latest/20231206200607/Paso_del_Averno_EP.jpg",
-  "sha256": "d5b57f91b09ab41f5db7e54d6988232ac0c61269e1d507cd149e9d91401ee84f",
-  "game": "Scarlet / Violet",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 1280,
-   "height": 720
-  },
-  "id": "dhOjZgQIFssP",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokepedia.fr/images/a/aa/Route_de_Septentria_EV.png",
-  "sha256": "f131a252fd359f0b4d04df9be5373735c18fc5f2259fa13ea5982b694327f9df",
-  "game": "Scarlet / Violet",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 1280,
-   "height": 720
-  },
-  "id": "JWamyDbI-YEX",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokepedia.fr/images/e/e9/Mont_Strueux_EV.png",
-  "sha256": "879e091a0ba5c1765b9937ce8b5b75019eb8e0e0658f96050d251c687fcbc7f4",
-  "game": "Scarlet / Violet",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 1280,
-   "height": 720
-  },
-  "id": "xcGe42mIn3mM",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokepedia.fr/images/c/c0/Sentier_de_la_Liesse_EV.png",
-  "sha256": "898cad875363658a96ab776d7d4ab2d7ae5735881c61923eb0c1634a8a3ad693",
-  "game": "Scarlet / Violet",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 1280,
-   "height": 720
-  },
-  "id": "EFvzEgA6Ix3k",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokepedia.fr/images/8/89/Plaine_des_Glycines_EV.png",
-  "sha256": "e5841115db5e91b451706f47c0eb321a8be2026456ba615b468bb0a504e11f6d",
-  "game": "Scarlet / Violet",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 1280,
-   "height": 720
-  },
-  "id": "Ltb8zkKf7Dkj",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokepedia.fr/images/6/61/Lac_Asrol_EV.png",
-  "sha256": "386a1b9c86cd9c3756b94d3be21c1fd3477131727b5578b92fa344778dad2cc0",
-  "game": "Scarlet / Violet",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 1280,
-   "height": 720
-  },
-  "id": "jH4ORrkPnWr-",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokepedia.fr/images/0/09/Zone_Est_n%C2%B0_3_EV.png",
-  "sha256": "768df5a8b206685e4d1972b4506e0519976d0051f9ac6355355a8ae60606a516",
-  "game": "Scarlet / Violet",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 1280,
-   "height": 720
-  },
-  "id": "Gm6cDyOQjynj",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokepedia.fr/images/f/f7/Mont_Napp%C3%A9_EV.png",
-  "sha256": "e42a680743e0e8b0f396f674607be1c3c99f0995c3c5729fc9e8ab18701cbaa9",
-  "game": "Scarlet / Violet",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 1280,
-   "height": 720
-  },
-  "id": "c5HBZCaEKuJX",
-  "uploaded": false
- },
- {
   "url": "https://www.pokepedia.fr/images/f/f0/Ab%C3%AEme_Z%C3%A9ro_EV.png",
   "sha256": "d5bf052703f72c4f9b2fe18fc35a51715aaa17d88feab96ece45c98da18746a8",
   "game": "Scarlet / Violet",
@@ -218,71 +75,6 @@
    "height": 720
   },
   "id": "wCO2Yuztbz8k",
-  "uploaded": false
- },
- {
-  "url": "https://images.wikidexcdn.net/mwuploads/wikidex/2/2f/latest/20230119214501/Aula_inaccesible_EP.jpg",
-  "sha256": "a233c78f37a664add78d21e57a121ee72923856425ac5143e6c8d5e43332fa6d",
-  "game": "Scarlet / Violet",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 1050,
-   "height": 720
-  },
-  "id": "2ma8BCkwaodH",
-  "uploaded": false
- },
- {
-  "url": "https://images.wikidexcdn.net/mwuploads/wikidex/2/24/latest/20221201030553/Sala_del_Alto_Mando_EP.jpg",
-  "sha256": "68de6c7ef8f233510a1d61428b6a26c015a900bed766e8e475ed75c032fac1de",
-  "game": "Scarlet / Violet",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 1050,
-   "height": 720
-  },
-  "id": "PzXuijL6vYq7",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokepedia.fr/images/e/ee/Zone_Sud_n%C2%B0_4_EV.png",
-  "sha256": "ccac6469c9ada73fb94ea3c73f1c99b7fff1c6f1bf6c43f4576e7b9414ed7680",
-  "game": "Scarlet / Violet",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 1280,
-   "height": 720
-  },
-  "id": "dQDjK3mDIb5H",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokepedia.fr/images/2/26/Zone_Sud_n%C2%B0_2_EV.png",
-  "sha256": "ea7d0a51b36d4511612253eb09b76bd3eab35a9beb395d4b3f8b33d01c439b52",
-  "game": "Scarlet / Violet",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 1280,
-   "height": 720
-  },
-  "id": "0Sr0mft83GMK",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokepedia.fr/images/c/c2/Zone_Ouest_n%C2%B0_3_EV.png",
-  "sha256": "e22b5ca6e696a7575e2350870e076175c3acb9767e8ddaa9ef10674b93163b2e",
-  "game": "Scarlet / Violet",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 1280,
-   "height": 720
-  },
-  "id": "xVBJqaA79NTd",
   "uploaded": false
  },
  {
@@ -442,19 +234,6 @@
   "uploaded": false
  },
  {
-  "url": "https://www.pokepedia.fr/images/5/56/Tunnel_Perce-Mont_USUL.png",
-  "sha256": "23a8824c4e5ac4a5cb8d73025be1759ce3e9650ce93d6792bf246b8404eb2323",
-  "game": "Ultra Sun / Ultra Moon",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 400,
-   "height": 240
-  },
-  "id": "shmjJZxAbBZg",
-  "uploaded": false
- },
- {
   "url": "https://images.wikidexcdn.net/mwuploads/wikidex/c/ce/latest/20180105013605/Dominsignia_47_USUL.png",
   "sha256": "cdddbd82639019de1865d72998fcacd9903402dc5110e20fbf0fa93f319b9c7f",
   "game": "Ultra Sun / Ultra Moon",
@@ -572,19 +351,6 @@
   "uploaded": false
  },
  {
-  "url": "https://www.pokepedia.fr/images/3/3d/Ekaeka_SL.png",
-  "sha256": "0fc66c60eab202f47b561b1a24ef8b3bb98dd00f81e457ac158e3a09039d51eb",
-  "game": "Ultra Sun / Ultra Moon",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 1465,
-   "height": 865
-  },
-  "id": "gPUbe4OkU_QK",
-  "uploaded": false
- },
- {
   "url": "https://images.wikidexcdn.net/mwuploads/wikidex/d/de/latest/20180505151008/Playa_de_Kantai.png",
   "sha256": "382692b83fcd2e1fb62dd5bf0ed2c4fae3c138c07f68c47bdf1a43888dd4d0dc",
   "game": "Ultra Sun / Ultra Moon",
@@ -676,19 +442,6 @@
   "uploaded": false
  },
  {
-  "url": "https://www.pokepedia.fr/images/4/40/Lili%27i_SL.png",
-  "sha256": "eeb5449da7462a48fbed704e47c2df5b1db01adb861ef9b852c923368c3a3aed",
-  "game": "Sun / Moon",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 400,
-   "height": 240
-  },
-  "id": "JuHO3rq4RRes",
-  "uploaded": false
- },
- {
   "url": "https://www.pokewiki.de/images/2/2f/SoMo_Kala%E2%80%99e-Bucht.jpg",
   "sha256": "3d1846a562e23296d06bdfebb64bed6af51284dc109e9f5eb832507ebbf3f1cf",
   "game": "Sun / Moon",
@@ -738,19 +491,6 @@
    "height": 240
   },
   "id": "NiX97ZEZenFi",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokepedia.fr/images/7/72/Lac_du_Halo_Solaire_%28Couloir%29_SL.png",
-  "sha256": "1beb774a056ba15c2fbeed0ad9c73229bed5e72efd2819b03db8484493e4d314",
-  "game": "Sun / Moon",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 400,
-   "height": 240
-  },
-  "id": "7Vsnp_v6E6r1",
   "uploaded": false
  },
  {
@@ -985,19 +725,6 @@
    "height": 240
   },
   "id": "tCTtzFclAUli",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokepedia.fr/images/1/13/Plaine_des_Pikachu.png",
-  "sha256": "cbf7ad0e58e83b3dcb5be91b624962927cddda82c593a5cbd925dd30f18e29ee",
-  "game": "Ultra Sun / Ultra Moon",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 400,
-   "height": 240
-  },
-  "id": "6Z-zAwGt-a2R",
   "uploaded": false
  },
  {
@@ -1313,19 +1040,6 @@
   "uploaded": false
  },
  {
-  "url": "https://www.pokepedia.fr/images/3/3d/Rue_du_D%C3%B4me_Royal.png",
-  "sha256": "33efe47e503c2f915acb223dd8447045ca426f2463afd2f798c8a713d7b3cbe4",
-  "game": "Sun / Moon",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 400,
-   "height": 240
-  },
-  "id": "OeO_lXmfpDrr",
-  "uploaded": false
- },
- {
   "url": "https://www.pokewiki.de/images/c/c2/SoMo_Schn%C3%A4ppchenparadies_Zusatzmission.jpg",
   "sha256": "0743d3bc10e12f3a9f95d921c19b7f991aa817e50d17b2d3f694039270890f52",
   "game": "Sun / Moon",
@@ -1456,32 +1170,6 @@
   "uploaded": false
  },
  {
-  "url": "https://images.wikidexcdn.net/mwuploads/wikidex/d/d8/latest/20180218043915/Mansi%C3%B3n_misteriosa.png",
-  "sha256": "40dcedc63f1bad117271363ace7afda54ad16bb7f690f4c437f9e3e5b70671b8",
-  "game": "Sun / Moon",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 1280,
-   "height": 763
-  },
-  "id": "7N98G6J8IIJu",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokewiki.de/images/2/25/SoMo_Lottervilla.jpg",
-  "sha256": "ad18bd3b3509ac8c66e165f7fa6991f5614e9ad93f4fc5cee08dc04a48e16de2",
-  "game": "Sun / Moon",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 400,
-   "height": 240
-  },
-  "id": "2ZMRVZsCBSS6",
-  "uploaded": false
- },
- {
   "url": "https://images.wikidexcdn.net/mwuploads/wikidex/f/f1/latest/20180107191748/Aldea_Tapu_Ruinas_SL.png",
   "sha256": "792ebfca9c3b9495dc7bb33f2133e77df87ef32fb9cf396a0752de16f2e7b032",
   "game": "Sun / Moon",
@@ -1547,19 +1235,6 @@
   "uploaded": false
  },
  {
-  "url": "https://www.pokepedia.fr/images/f/f5/Grotte_Verdoyante_SL.png",
-  "sha256": "87ab8318c9de87c1bb3f0ffb4a564d9d42994ad8b141204c04e826fcdae49def",
-  "game": "Sun / Moon",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 400,
-   "height": 240
-  },
-  "id": "uEusxP7QssmN",
-  "uploaded": false
- },
- {
   "url": "https://images.wikidexcdn.net/mwuploads/wikidex/6/65/latest/20180107023439/Dominsignia_37_USUL.png",
   "sha256": "58019f7cdbeb2f1dcf19179965472115d46dd15aa1053b5244c1f5a6ef421f8f",
   "game": "Ultra Sun / Ultra Moon",
@@ -1586,19 +1261,6 @@
   "uploaded": false
  },
  {
-  "url": "https://www.pokepedia.fr/images/c/c5/Zone_Canyon_EV.png",
-  "sha256": "12bbf37cd8bec91639d5ac63873ed0ebc8908ad54dfae189789763ae578e5666",
-  "game": "Scarlet / Violet",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 1280,
-   "height": 720
-  },
-  "id": "0TFmsCH85aiM",
-  "uploaded": false
- },
- {
   "url": "https://images.wikidexcdn.net/mwuploads/wikidex/f/f4/latest/20241031061226/Aula_exterior_del_%C3%81rea_Costera_EP.jpg",
   "sha256": "9c25e0c43f411fc261b8b1fb10b881a549a2dd9f1ecabc03c9ac27a2b22fc448",
   "game": "Scarlet / Violet",
@@ -1622,19 +1284,6 @@
    "height": 720
   },
   "id": "aFW_61m-lZoE",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokepedia.fr/images/e/ef/Zone_C%C3%B4ti%C3%A8re_EV.png",
-  "sha256": "ac895a77491e1632f694da0f8fc395839f8cffefd0fd38e3b336f2331ca2658c",
-  "game": "Scarlet / Violet",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 1280,
-   "height": 720
-  },
-  "id": "o8qBa6hzo4js",
   "uploaded": false
  },
  {
@@ -1674,19 +1323,6 @@
    "height": 720
   },
   "id": "ibawQSn8zwk7",
-  "uploaded": false
- },
- {
-  "url": "https://www.pokepedia.fr/images/9/9a/Zone_Savane_EV.png",
-  "sha256": "a0d7dc079423b4969a89c64796a72e57d7106deb0b1b31c4ffe9b990ec82d56f",
-  "game": "Scarlet / Violet",
-  "crop": {
-   "left": 0,
-   "top": 0,
-   "width": 1280,
-   "height": 720
-  },
-  "id": "pmeNGyGOddaG",
   "uploaded": false
  },
  {
