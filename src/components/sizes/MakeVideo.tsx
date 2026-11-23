@@ -19,6 +19,7 @@ import { SCENE_URLS } from "./scene-item";
 import { trainerFigure } from "./trainer-figure";
 import type { TrainerConfig } from "@/lib/trainer/config";
 import { cn } from "@/lib/utils";
+import type { CityId } from "@/lib/sizes/city";
 
 type Phase =
   | { kind: "idle" }
@@ -72,8 +73,10 @@ function qualityFromUrl(): Quality | undefined {
  * is smooth however slow the device; progress shows and it can be
  * cancelled. Then download it, or share the file straight to an app.
  */
-export default function MakeVideo({ items, line, order, hook, slug, lineLabel, trainer, onRecording, onClose }: {
+export default function MakeVideo({ items, line, order, hook, slug, lineLabel, trainer, city, onRecording, onClose }: {
   items: SizeItem[];
+  /** The city the page stands its line in: the video is made there too. */
+  city?: CityId;
   line: SizeItem[];
   /** The page's order: the line (and any preset picked here) stands in it. */
   order: Order;
@@ -136,11 +139,12 @@ export default function MakeVideo({ items, line, order, hook, slug, lineLabel, t
         music: MUSIC_URL,
         logo: "/logo.svg",
         quality: qualityFromUrl(),
+        city,
         fps: fpsFromUrl(),
         signal: ac.signal,
         // Another language: the video's captions and its own two lines in it (English pages: record's own English).
         ...(process.env.LIVE_LOCALES && tl.locale !== "en"
-          ? { words: { caption: (item: SizeItem | undefined, all: SizeItem[], o: Order, finale: boolean) => stopCaptionText(item, all, o, finale, tl), subtitle: t("v.subtitle"), endLine: t("v.endLine") } }
+          ? { words: { caption: (item: SizeItem | undefined, all: SizeItem[], o: Order, finale: boolean) => stopCaptionText(item, all, o, finale, tl), subtitle: city === "castelia" ? t("v.subtitleCastelia") : t("v.subtitle"), endLine: t("v.endLine") } }
           : {}),
         onProgress(p, label) {
           const now = performance.now();

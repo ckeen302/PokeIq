@@ -1,0 +1,39 @@
+{
+  "title": "Sélecteur de Pokémon préféré",
+  "subtitle": "Trouve ton Pokémon préféré en quelques tours rapides, puis remplis un tableau avec ton préféré de chaque type.",
+  "metaTitle": "Sélecteur de Pokémon préféré : trouve ton Pokémon préféré",
+  "metaDescription": "Trouve ton Pokémon préféré : garde ceux que tu aimes sur des écrans rapides, puis les derniers s’affrontent en duel. Obtiens ton top 10, crée un tableau de ton Pokémon préféré de chaque type, vois-les en chromatique, et partage-le ou télécharge-le. Gratuit.",
+  "metaSharedTitle": "Mon Pokémon préféré, c’est {name}",
+  "metaSharedChartTitle": "Mon Pokémon préféré de chaque type",
+  "metaSharedDescription": "Choisi avec le Sélecteur de Pokémon préféré sur PokéIQ. Ouvre-le pour voir toute la liste, ou trouve ton propre préféré.",
+  "ogAlt": "Un Pokémon préféré et un top 10 faits avec le Sélecteur de Pokémon préféré",
+  "ogChartAlt": "Un tableau du Pokémon préféré de chaque type fait avec le Sélecteur de Pokémon préféré",
+  "ogFavorite": "Mon Pokémon préféré",
+  "ogChart": "Préféré de chaque type",
+  "ogTitle": {
+    "a": "Sélecteur de",
+    "b": "Pokémon préféré"
+  },
+  "ogChips": {
+    "duel": "Duels",
+    "top": "Top 10",
+    "types": "Chaque type",
+    "shiny": "Chromatique"
+  },
+  "cardTitle": "Sélecteur de Pokémon préféré",
+  "cardSubtitle": "Trouve ton Pokémon préféré, et ton préféré de chaque type.",
+  "howto": {
+    "title": "Comment ça marche",
+    "s1t": "Choisis tes Pokémon",
+    "s1": "Tous les Pokémon, ou seulement certaines générations, certains types, les starters ou les légendaires. Les formes régionales, les Méga et d’autres formes peuvent aussi entrer.",
+    "s2t": "Garde ceux que tu aimes",
+    "s2": "Chaque écran montre une poignée de Pokémon : gardes-en jusqu’à {keep} et passe à la suite, les autres sont éliminés. Avec beaucoup de Pokémon, il y a quelques tours rapides, et ta progression est enregistrée sur cet appareil.",
+    "s3t": "Place aux duels",
+    "s3": "Quand il en reste {max} ou moins, ils s’affrontent deux par deux dans un tableau jusqu’à ce qu’il n’en reste qu’un : ton préféré. Tu as changé d’avis ? Annule n’importe quel choix.",
+    "s4t": "Partage ton top 10",
+    "s4": "Ton préféré s’affiche en grand avec ton top 10 en dessous, dans l’ordre donné par le tableau. Passe-les en chromatique, ouvre-en un dans le Créateur de Pokémon chromatiques, télécharge une image carrée ou verticale, ou copie un lien.",
+    "chartTitle": "Ton Pokémon préféré de chaque type",
+    "chart": "Le tableau par type a une case pour chaque type. Cherche un Pokémon pour la remplir, ou lance le sélecteur sur ce type seulement. Tout ce que tu crées reste dans ton navigateur et dans les liens que tu partages."
+  },
+  "credit": "Images : rendus de Pokémon HOME et sprites de PokéAPI. Pokémon est © Nintendo, Game Freak et Creatures."
+}

@@ -16,6 +16,7 @@ import { runSizes } from "./e2e-sizes.mjs";
 import { runShinyMaker } from "./e2e-shiny-maker.mjs";
 import { runTierList } from "./e2e-tier-list.mjs";
 import { runPokeballMaker } from "./e2e-pokeball-maker.mjs";
+import { runFavoritePicker } from "./e2e-favorite-picker.mjs";
 import { runCalc } from "./e2e-calc.mjs";
 import { runVideoGames } from "./e2e-video-games.mjs";
 import { runMovies } from "./e2e-movies.mjs";
@@ -33,6 +34,7 @@ import { runWorldHistory } from "./e2e-world-history.mjs";
 import { runPokemonStory } from "./e2e-pokemon-story.mjs";
 import { runLabDex } from "./e2e-lab-dex.mjs";
 import { runLabPhone } from "./e2e-lab-phone.mjs";
+import { runLabShare } from "./e2e-lab-share.mjs";
 import { runGroupBattles } from "./e2e-battle-group.mjs";
 import { runEmptyQueue } from "./e2e-battle-queue.mjs";
 import { runEmail } from "./e2e-email.mjs";
@@ -146,6 +148,12 @@ if (process.env.E2E_ONLY === "lab-phone") {
   await finish();
 }
 
+// E2E_ONLY=lab-share runs just the 3D Lab's share links and short videos (Professor's Lab, World Globe), then exits.
+if (process.env.E2E_ONLY === "lab-share") {
+  await runLabShare({ browser, BASE, errors, step });
+  await finish();
+}
+
 // E2E_ONLY=lab-dex runs just the Professor's Lab (/lab/pokedex) and its stress test, then exits.
 if (process.env.E2E_ONLY === "lab-dex") {
   await runLabDex({ browser, BASE, OUT, errors, step });
@@ -188,6 +196,12 @@ if (process.env.E2E_ONLY === "tier-list") {
 // E2E_ONLY=pokeball-maker runs just the Poké Ball Maker (its card on /tools, editing, opening, sharing, a PNG), then exits.
 if (process.env.E2E_ONLY === "pokeball-maker") {
   await runPokeballMaker({ browser, BASE, OUT, errors, step });
+await runFavoritePicker({ browser, BASE, OUT, errors, step });
+  await finish();
+}
+// E2E_ONLY=favorite-picker runs just the Favorite Pokémon Picker (its card on /tools, a run to the end, the type chart, PNGs, a share link), then exits.
+if (process.env.E2E_ONLY === "favorite-picker") {
+  await runFavoritePicker({ browser, BASE, OUT, errors, step });
   await finish();
 }
 // E2E_ONLY=which-pokemon runs just that step (no Supabase, no second browser), then exits.
@@ -259,13 +273,13 @@ await gotoSettled(page, `${BASE}/pokemon/starly`);
 {
   const sec = page.locator("#encounters");
   await sec.waitFor();
-  const open = await sec.locator("table tbody tr").count();
+  const open = await sec.locator("table tbody tr:visible").count();
   if (open === 0) errors.push("dex entry: Where to find it has no rows in the newest generation");
   const collapsed = sec.locator("button[aria-expanded=false]").first();
   if ((await collapsed.count()) === 0) errors.push("dex entry: older generations are not collapsible");
   else {
     await collapsed.click();
-    if ((await sec.locator("table tbody tr").count()) <= open) errors.push("dex entry: expanding a generation added no rows");
+    if ((await sec.locator("table tbody tr:visible").count()) <= open) errors.push("dex entry: expanding a generation added no rows");
   }
   await sec.screenshot({ path: `${OUT}/dex-encounters.png` });
 }
@@ -2689,6 +2703,7 @@ await runWorldHistory({ browser, BASE, OUT, errors, step });
 await runPokemonStory({ browser, BASE, OUT, errors, step });
 await runLabDex({ browser, BASE, OUT, errors, step });
 await runLabPhone({ browser, BASE, errors, step });
+await runLabShare({ browser, BASE, errors, step });
 
 step("trainer, leaderboard, pokémon page");
 // Quiz modes are off the leaderboard: an old quiz board link lands on the Daily, with no quiz tabs.

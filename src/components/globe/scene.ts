@@ -73,6 +73,11 @@ export interface SceneApi {
   pin(key: string): void;
   unpin(): void;
   skipIntro(): void;
+  /**
+   * A clip of a region: the live view stops and the world draws at `w` × `h` (device pixels) for `frame`, which
+   * turns slowly past the region as `k` goes from 0 to 1, then `end` puts the live view back as it was.
+   */
+  clip(name: string, w: number, h: number): { frame(k: number, seconds: number): HTMLCanvasElement; end(): void } | null;
   dispose(): void;
 }
 
@@ -788,7 +793,49 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
   const clock = new THREE.Clock();
   const qInv = new THREE.Quaternion(), S = new THREE.Vector3(), up = new THREE.Vector3();
   let hudT = 0, t = 0;
+  /** Places the camera and the world for the current pose, then draws it (the live loop and a clip's frames). */
+  function drawPose(dt: number): number {
+    globe.rotation.set(rotX, rotY, 0); globe.updateMatrixWorld();
+    // The camera tilts towards the horizon as it nears the ground, so mountains stand up.
+    const z = zoomOf();
+    const tilt = (intro ? 0 : 1) * smooth(1.5, 4.2, z) * 0.62;
+    S.set(0, 0, R);
+    camera.position.set(0, -Math.sin(tilt) * (dist - R), R + Math.cos(tilt) * (dist - R));
+    up.set(0, 1, 0);
+    camera.up.copy(up);
+    camera.lookAt(S.x, S.y + Math.sin(tilt) * 0.02, tilt > 0.001 ? S.z : 0);
+    camera.updateMatrixWorld();
+
+    // The sun: fixed in space, up and to the right, swinging slowly so the day/night line moves over the land.
+    // Reduced motion: everything ambient (sun, clouds, orbits, twinkle) holds still.
+    const tm = reduce ? 12 : t;
+    const az = 1.3 + Math.sin(tm * 0.021) * 0.32, el = 0.32;
+    sunWorld.set(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el));
+    qInv.copy(globe.quaternion).invert();
+    sunObj.copy(sunWorld).applyQuaternion(qInv);
+    camObj.copy(camera.position).applyQuaternion(qInv);
+    haloU.uSunV.value.copy(sunWorld).transformDirection(camera.matrixWorldInverse);
+    U.time.value = tm;
+    // Clouds drift on their own, a little faster than the world turns.
+    clouds.rotation.y = tm * 0.006;
+    cloudU.uSun.value.copy(sunObj).applyAxisAngle(up, -clouds.rotation.y);
+    cloudU.uTime.value = tm;
+    cloudU.uFade.value = 1 - smooth(2.2, 4.5, z);
+    lightMat.uniforms.uTime.value = tm;
+    lightMat.uniforms.uPx.value = renderer.getPixelRatio() * (0.85 + Math.min(z, 4) * 0.15);
+    starU.uTime.value = tm;
+    starU.uPx.value = renderer.getPixelRatio();
+    starU.uFade.value = 1;
+    stars.rotation.set(rotX * 0.3, rotY * 0.3, 0);
+
+    updatePeaks(dt, era);
+    renderer.render(scene, camera);
+    return z;
+  }
+  /** A clip is being drawn: the live loop stays off (a tab switch mustn't restart it). */
+  let clipping = false;
   function frame() {
+    if (clipping) return;
     raf = requestAnimationFrame(frame);
     if (ctxWatch.lost) return;
     const now = performance.now();
@@ -825,41 +872,7 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
     if (Math.abs(shiftX) + Math.abs(shiftY) < 0.5 && !shiftTX && !shiftTY) { if (camera.view?.enabled) camera.clearViewOffset(); }
     else camera.setViewOffset(host.clientWidth, host.clientHeight, -shiftX, -shiftY, host.clientWidth, host.clientHeight);
 
-    globe.rotation.set(rotX, rotY, 0); globe.updateMatrixWorld();
-    // The camera tilts towards the horizon as it nears the ground, so mountains stand up.
-    const z = zoomOf();
-    const tilt = (intro ? 0 : 1) * smooth(1.5, 4.2, z) * 0.62;
-    S.set(0, 0, R);
-    camera.position.set(0, -Math.sin(tilt) * (dist - R), R + Math.cos(tilt) * (dist - R));
-    up.set(0, 1, 0);
-    camera.up.copy(up);
-    camera.lookAt(S.x, S.y + Math.sin(tilt) * 0.02, tilt > 0.001 ? S.z : 0);
-    camera.updateMatrixWorld();
-
-    // The sun: fixed in space, up and to the right, swinging slowly so the day/night line moves over the land.
-    // Reduced motion: everything ambient (sun, clouds, orbits, twinkle) holds still.
-    const tm = reduce ? 12 : t;
-    const az = 1.3 + Math.sin(tm * 0.021) * 0.32, el = 0.32;
-    sunWorld.set(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el));
-    qInv.copy(globe.quaternion).invert();
-    sunObj.copy(sunWorld).applyQuaternion(qInv);
-    camObj.copy(camera.position).applyQuaternion(qInv);
-    haloU.uSunV.value.copy(sunWorld).transformDirection(camera.matrixWorldInverse);
-    U.time.value = tm;
-    // Clouds drift on their own, a little faster than the world turns.
-    clouds.rotation.y = tm * 0.006;
-    cloudU.uSun.value.copy(sunObj).applyAxisAngle(up, -clouds.rotation.y);
-    cloudU.uTime.value = tm;
-    cloudU.uFade.value = 1 - smooth(2.2, 4.5, z);
-    lightMat.uniforms.uTime.value = tm;
-    lightMat.uniforms.uPx.value = renderer.getPixelRatio() * (0.85 + Math.min(z, 4) * 0.15);
-    starU.uTime.value = tm;
-    starU.uPx.value = renderer.getPixelRatio();
-    starU.uFade.value = 1;
-    stars.rotation.set(rotX * 0.3, rotY * 0.3, 0);
-
-    updatePeaks(dt, era);
-    renderer.render(scene, camera);
+    const z = drawPose(dt);
     layoutLabels(z, era);
     // Keeps the popup on its label while the globe turns.
     if (hoverKey) {
@@ -955,6 +968,48 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
     pin(key) { const it = kept.find((l) => l.key === key); if (it) setHover(it, true); },
     unpin() { setHover(null, false); },
     skipIntro,
+    clip(name, w, h) {
+      const r = regionList.find((x) => x[0] === name);
+      if (!r || dead) return null;
+      const kept = { rotX, rotY, dist, autoSpin, fly, intro, shiftTX, shiftTY, t };
+      clipping = true;
+      cancelAnimationFrame(raf);
+      fly = null;
+      intro = null;
+      shiftX = shiftY = shiftTX = shiftTY = 0;
+      camera.clearViewOffset();
+      renderer.setPixelRatio(1);
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      // The whole world fits across the frame at the start, as on a phone.
+      const home = Math.max(3.4, 1.13 / (Math.tan((20 * Math.PI) / 180) * Math.min(w / h, 1)));
+      const face = Math.PI / 2 - ((r[1] + 180) * Math.PI) / 180;
+      const lat = Math.max(-1.2, Math.min(1.2, (r[2] * Math.PI) / 180));
+      const t0 = t;
+      let ended = false;
+      return {
+        frame(k, seconds) {
+          const e = easeInOut(Math.max(0, Math.min(1, k)));
+          // From a little behind the region, turning past it while closing in.
+          rotY = face - 0.55 + 0.9 * e;
+          rotX = 0.35 + (lat - 0.35) * Math.min(1, e * 1.6);
+          dist = R + (home - R) / (1.05 + 1.35 * e);
+          t = t0 + seconds;
+          drawPose(1 / 30);
+          return canvas;
+        },
+        end() {
+          if (ended) return;
+          ended = true;
+          clipping = false;
+          ({ rotX, rotY, dist, autoSpin, fly, intro, shiftTX, shiftTY, t } = kept);
+          resize();
+          applyPixelRatio();
+          if (!dead && !document.hidden) { clock.getDelta(); frame(); }
+        },
+      };
+    },
     dispose() {
       dead = true;
       ctxWatch.dispose();

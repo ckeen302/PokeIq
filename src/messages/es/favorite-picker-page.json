@@ -1,0 +1,39 @@
+{
+  "title": "Selector de Pokémon favorito",
+  "subtitle": "Encuentra tu Pokémon favorito en rondas rápidas y completa una tabla con tu favorito de cada tipo.",
+  "metaTitle": "Selector de Pokémon favorito: descubre tu Pokémon favorito",
+  "metaDescription": "Descubre tu Pokémon favorito: quédate con los que te gustan en pantallas rápidas y luego los últimos se enfrentan cara a cara. Consigue tu top 10, crea una tabla con tu Pokémon favorito de cada tipo, míralos variocolor y compártelo o descárgalo. Gratis.",
+  "metaSharedTitle": "Mi Pokémon favorito es {name}",
+  "metaSharedChartTitle": "Mi Pokémon favorito de cada tipo",
+  "metaSharedDescription": "Elegido con el Selector de Pokémon favorito de PokéIQ. Ábrelo para ver la lista completa o descubre tu propio favorito.",
+  "ogAlt": "Un Pokémon favorito y un top 10 hechos con el Selector de Pokémon favorito",
+  "ogChartAlt": "Una tabla con el Pokémon favorito de cada tipo hecha con el Selector de Pokémon favorito",
+  "ogFavorite": "Mi Pokémon favorito",
+  "ogChart": "Favorito de cada tipo",
+  "ogTitle": {
+    "a": "Selector de",
+    "b": "Pokémon favorito"
+  },
+  "ogChips": {
+    "duel": "Cara a cara",
+    "top": "Top 10",
+    "types": "Cada tipo",
+    "shiny": "Variocolor"
+  },
+  "cardTitle": "Selector de Pokémon favorito",
+  "cardSubtitle": "Descubre tu Pokémon favorito y tu favorito de cada tipo.",
+  "howto": {
+    "title": "Cómo funciona",
+    "s1t": "Elige tus Pokémon",
+    "s1": "Todos los Pokémon, o solo algunas generaciones, tipos, iniciales o legendarios. También pueden entrar formas regionales, megas y otras formas.",
+    "s2t": "Quédate con los que te gustan",
+    "s2": "Cada pantalla muestra unos cuantos Pokémon: quédate con hasta {keep} y sigue, y el resto queda fuera. Con muchos Pokémon hay un par de rondas rápidas, y tu progreso se guarda en este dispositivo.",
+    "s3t": "Cara a cara",
+    "s3": "Cuando quedan {max} o menos, se enfrentan de dos en dos en un torneo hasta que solo queda uno: tu favorito. ¿Has cambiado de idea? Deshaz cualquier elección.",
+    "s4t": "Comparte tu top 10",
+    "s4": "Tu favorito aparece en grande con tu top 10 debajo, en el orden que marcó el torneo. Ponlos en variocolor, abre uno en el Creador de Pokémon variocolor, descarga una imagen cuadrada o vertical, o copia un enlace.",
+    "chartTitle": "Tu Pokémon favorito de cada tipo",
+    "chart": "La tabla por tipo tiene una casilla para cada tipo. Busca un Pokémon para rellenarla o usa el selector solo con ese tipo. Todo lo que hagas se queda en tu navegador y en los enlaces que compartas."
+  },
+  "credit": "Imágenes: renders de Pokémon HOME y sprites de PokéAPI. Pokémon es © Nintendo, Game Freak y Creatures."
+}
