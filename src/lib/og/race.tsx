@@ -24,8 +24,10 @@ const W = 470, H = 380;
 function Track({ race, t }: { race: Race; t: OgT }) {
   const lanes = race.lanes;
   const n = lanes.length;
-  const laneH = Math.min(64, (H - 30) / n);
-  const top = (H - laneH * n) / 2;
+  // The lanes sit above a strip kept for the caption (it used to print over the last lane and its runner).
+  const CAPTION = 30;
+  const laneH = Math.min(64, (H - CAPTION - 8) / n);
+  const top = (H - CAPTION - laneH * n) / 2;
   const finishX = W - 46;
   return (
     <div style={{ display: "flex", position: "relative", width: W, height: H, borderRadius: 16, overflow: "hidden", background: "#0b1226", border: "3px solid #2a2745" }}>

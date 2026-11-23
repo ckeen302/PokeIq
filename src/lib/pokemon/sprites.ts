@@ -14,7 +14,7 @@ export type SpriteLook =
   | { kind: "pixel"; size: number }
   /** A 3D render cut to its own size: drawn as is, shrunk to fit if it's bigger than the cell. */
   | { kind: "render" }
-  /** Pokémon HOME's 512 px model, resized by the image optimizer. */
+  /** Pokémon HOME's 512 px model, shown scaled down (the site's own 256 px copy where it has one). */
   | { kind: "home" };
 
 export interface SpriteSource {
@@ -44,14 +44,6 @@ export const SPRITE_SOURCES: readonly SpriteSource[] = [
   { gen: 8, game: "Sword & Shield", normal: "versions/generation-viii/sword-shield/icons", shiny: null, ext: "png", look: { kind: "pixel", size: 102 } },
   { gen: 9, game: "Pokémon HOME", normal: "other/home", shiny: "other/home/shiny", ext: "png", look: { kind: "home" } },
 ];
-
-/**
- * A remote picture through Next's image optimizer, as WebP at one of its sizes (next.config allows PokéAPI's
- * sprite host). Built by hand rather than with next/image, whose import would add its client script to the page.
- */
-export function optimizedImageUrl(src: string, width: 96 | 256): string {
-  return `/_next/image?url=${encodeURIComponent(src)}&w=${width}&q=75`;
-}
 
 export const LAST_SPRITE_GEN = SPRITE_SOURCES[SPRITE_SOURCES.length - 1].gen;
 

@@ -81,7 +81,7 @@ export function StatsSection({ stats, percentiles, accent, isShedinja, showPerce
         })}
         <div className="grid grid-cols-[72px_40px_minmax(0,1fr)_90px] items-center gap-x-3 border-t border-foreground/5 pt-3 text-sm">
           <span className="font-semibold">{t("stats.total")}</span>
-          <span className="text-right font-mono font-black tabular-nums" style={{ color: accent }}>
+          <span className="accent-ink text-right font-mono font-black tabular-nums" style={{ "--ink": accent } as React.CSSProperties}>
             {bst}
           </span>
           <span className="text-xs text-muted-foreground">

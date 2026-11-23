@@ -202,7 +202,7 @@ function DexEntryBody({ data, sprites }: { data: DexEntryData; sprites?: React.R
 function SectionNav({ sections }: { sections: { id: string; label: string }[] }) {
   const active = useScrollSpy(sections.map((s) => s.id));
   return (
-    <div className="sticky top-14 z-30 -mx-4 border-b border-foreground/5 bg-background/80 px-4 py-2 backdrop-blur-xl sm:-mx-8 sm:px-8">
+    <div className="sticky top-14 z-30 -mx-4 border-b border-foreground/5 bg-background/80 px-4 py-2 backdrop-blur-xl min-[1264px]:-mx-8 min-[1264px]:px-8">
       <div className="flex gap-1 overflow-x-auto [scrollbar-width:none]" data-hscroll>
         {sections.map((s) => (
           <a

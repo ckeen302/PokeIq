@@ -5,6 +5,7 @@ import { getProgress, onProgressChange, replaceProgress, resetProgress, type Pro
 import { mergeProgress, normalizeProgress } from "./progress-merge";
 import type { PublicAvatar } from "./avatar";
 import type { OAuthProvider, OwnIdentity } from "./oauth";
+import { SITE_FLAGS_KEY, freshSiteFlags, hasSignedInHint } from "./account-hint";
 
 /**
  * Client side of trainer accounts. Progress stays local-first (play without
@@ -89,13 +90,40 @@ async function startSync(user: AccountUser, remoteRaw: unknown) {
   stopSync = onProgressChange(schedulePush);
 }
 
-/** Loads the signed-in trainer once per page load (called from the root layout). */
+function readSiteFlags() {
+  try {
+    return freshSiteFlags(localStorage.getItem(SITE_FLAGS_KEY), Date.now());
+  } catch {
+    return null;
+  }
+}
+
+function keepSiteFlags(enabled: boolean, emailEnabled: boolean) {
+  try {
+    localStorage.setItem(SITE_FLAGS_KEY, JSON.stringify({ enabled, emailEnabled, at: Date.now() }));
+  } catch {
+    // Private mode or storage off: the next page asks the server again, as before.
+  }
+}
+
+/**
+ * Loads the signed-in trainer once per page load (called from the root layout).
+ * A browser without a session (no signed-in hint cookie) that has asked
+ * recently doesn't ask again: see src/lib/account-hint.ts.
+ */
 export async function initAccount(): Promise<void> {
   if (started) return;
   started = true;
+  const flags = hasSignedInHint(document.cookie) ? null : readSiteFlags();
+  if (flags) {
+    set({ status: "ready", enabled: flags.enabled, user: null, emailEnabled: flags.emailEnabled, dailyEmail: false });
+    return;
+  }
   try {
     const me = await api<{ enabled: boolean; user: AccountUser | null; progress: unknown; emailEnabled?: boolean; dailyEmail?: boolean }>("/api/auth/me");
     set({ status: "ready", enabled: me.enabled, user: me.user, emailEnabled: !!me.emailEnabled, dailyEmail: !!me.dailyEmail });
+    // An answer with an error (accounts unreachable) isn't kept: the next page asks again.
+    if (!(me as { error?: string }).error) keepSiteFlags(me.enabled, !!me.emailEnabled);
     if (me.user) await startSync(me.user, me.progress);
   } catch {
     set({ status: "ready", user: null });
