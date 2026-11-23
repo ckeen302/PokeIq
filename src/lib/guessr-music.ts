@@ -86,6 +86,8 @@ interface Deck {
   track: GuessrTrack | null;
   /** Bumped on every start or stop, so a stale timer or promise leaves the deck alone. */
   generation: number;
+  /** Fading out to pause (playing it again cancels that). */
+  stopping: boolean;
   unlocked: boolean;
 }
 
@@ -190,6 +192,8 @@ export class GuessrMusicPlayer {
     // A touch's pointerdown isn't an activation; the browser counts its pointerup / touchend / click.
     if (activation && !activation.hasBeenActive) return;
     this.sync(true);
+    // Playing, and the context runs (iOS can leave it suspended after a call or the lock screen): no more taps needed.
+    if (this.state === "playing" && this.audio?.state === "running") this.disarm();
   };
 
   /** Builds the graph and the two decks, once, on the first gesture with sound on. */
@@ -198,6 +202,10 @@ export class GuessrMusicPlayer {
     if (!audio) return null;
     if (this.audio === audio && this.master) return audio;
     this.audio = audio;
+    // Suspended or interrupted under the music (iOS, after a call or the lock screen): the next tap resumes it.
+    audio.addEventListener("statechange", () => {
+      if (audio.state !== "running" && this.wanted) this.arm();
+    });
     this.duck = audio.createGain();
     this.duck.connect(audio.destination);
     this.master = audio.createGain();
@@ -210,7 +218,7 @@ export class GuessrMusicPlayer {
       const gain = audio.createGain();
       gain.gain.value = 0;
       audio.createMediaElementSource(el).connect(gain).connect(this.master!);
-      const deck: Deck = { el, gain, track: null, generation: 0, unlocked: false };
+      const deck: Deck = { el, gain, track: null, generation: 0, stopping: false, unlocked: false };
       el.addEventListener("timeupdate", () => this.onTime(deck));
       el.addEventListener("ended", () => {
         if (this.current === deck) this.advance(FADE_IN_S);
@@ -242,7 +250,7 @@ export class GuessrMusicPlayer {
       this.advance(FADE_IN_S);
       return;
     }
-    if (deck.el.paused) this.play(deck, FADE_IN_S);
+    if (deck.el.paused || deck.stopping) this.play(deck, FADE_IN_S);
   }
 
   /** iOS lets an element play outside a gesture only once it has played inside one: unlocks the deck the next crossfade uses. */
@@ -295,6 +303,7 @@ export class GuessrMusicPlayer {
   private play(deck: Deck, fade: number) {
     const audio = this.audio!;
     const generation = ++deck.generation;
+    deck.stopping = false;
     hold(deck.gain.gain, audio.currentTime);
     deck.gain.gain.setValueAtTime(deck.el.paused ? 0 : deck.gain.gain.value, audio.currentTime);
     if (deck.el.paused) this.setState("loading");
@@ -322,13 +331,20 @@ export class GuessrMusicPlayer {
     const audio = this.audio;
     const generation = ++deck.generation;
     if (!audio || seconds <= 0) {
-      deck.gain.gain.value = 0;
+      if (audio) {
+        deck.gain.gain.cancelScheduledValues(audio.currentTime);
+        deck.gain.gain.setValueAtTime(0, audio.currentTime);
+      }
+      deck.stopping = false;
       deck.el.pause();
       return;
     }
+    deck.stopping = true;
     rampTo(audio, deck.gain.gain, 0, seconds);
     setTimeout(() => {
-      if (deck.generation === generation) deck.el.pause();
+      if (deck.generation !== generation) return;
+      deck.stopping = false;
+      deck.el.pause();
     }, seconds * 1000 + 60);
   }
 

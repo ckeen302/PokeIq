@@ -143,7 +143,8 @@ def music_box(rng, midi: int, vel: float, hold: float) -> np.ndarray:
     out *= 1 - np.exp(-t / 0.0015)
     m = min(n, int(0.006 * SR))
     click = rng.standard_normal(m) * np.exp(-np.arange(m) / (0.0012 * SR))
-    out[:m] += 0.05 * click
+    click = np.convolve(click, np.ones(6) / 6, mode="same")  # a soft tick, not a crackle
+    out[:m] += 0.03 * click
     return out * (vel**1.3) * 0.045
 
 
@@ -381,14 +382,15 @@ class Composer:
         cands = [c for c in self.scale_notes if c % 12 in allowed]
         if not cands:
             return m
-        if prev is not None and step > 0:
+        if prev is not None and step != 0:
             up = [c for c in cands if c > prev]
-            if up:
-                return min(up, key=lambda c: abs(c - m))
-        if prev is not None and step < 0:
             down = [c for c in cands if c < prev]
-            if down:
-                return min(down, key=lambda c: abs(c - m))
+            # At the edge of the range the line turns round rather than repeating a note.
+            ahead, behind = (up, down) if step > 0 else (down, up)
+            if ahead:
+                return min(ahead, key=lambda c: abs(c - m))
+            if behind:
+                return max(behind, key=lambda c: -abs(c - prev))
         return min(cands, key=lambda c: (abs(c - m), c))
 
     def phrase(self, at: float, chord: Chord, rhythm, contour, start: int, vel: float, inst: str) -> int:

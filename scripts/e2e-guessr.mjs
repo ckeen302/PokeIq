@@ -2,7 +2,8 @@
  * PokéGuessr's in-game UI, end to end against a running build: a solo round
  * (map docked and hovered), its result and summary, then a duel (versus intro,
  * round, the reveal with its damage sequence, Turbo, an emote, the end screen
- * and its post-game dances),
+ * and its post-game dances), and the background music (gesture, mute, Music
+ * off, carrying on between rounds),
  * at a desktop and a phone size, with a screenshot of each screen. Fails on
  * any console or page error.
  *
@@ -700,9 +701,147 @@ async function crowd(width, height) {
   await page.context().close();
 }
 
-/** E2E_ONLY=solo1440,weekly1440,duel1440,solo390,weekly390,duel390,royale1440,team1440,royale390,team390,crowd390,crowd1440 runs a subset. */
-const only = (process.env.E2E_ONLY ?? "solo1440,weekly1440,duel1440,solo390,weekly390,duel390,royale1440,team1440,royale390,team390,crowd390").split(",");
+// ---------------------------------------------------------------------------
+// Music
+// ---------------------------------------------------------------------------
+
+/** Records the page's media elements and audio contexts, so the test can see what is really playing. */
+async function watchAudio(context) {
+  await context.addInitScript(() => {
+    window.__media = [];
+    const play = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function (...args) {
+      if (!window.__media.includes(this)) window.__media.push(this);
+      return play.apply(this, args);
+    };
+    const Ctor = window.AudioContext;
+    if (Ctor) {
+      window.__contexts = [];
+      window.AudioContext = class extends Ctor {
+        constructor(...args) {
+          super(...args);
+          window.__contexts.push(this);
+        }
+      };
+    }
+  });
+}
+
+/** What the music is doing: the player's state, and each guessr track element's file, time and whether it's paused. */
+const musicNow = (p) =>
+  p.evaluate(() => ({
+    state: document.documentElement.dataset.guessrMusic ?? "none",
+    track: document.documentElement.dataset.guessrTrack ?? null,
+    playing: (window.__media ?? []).filter((el) => /\/audio\/guessr\//.test(el.currentSrc || el.src) && !el.paused).map((el) => ({ src: (el.currentSrc || el.src).replace(/^.*\/audio\/guessr\//, ""), at: el.currentTime })),
+    context: (window.__contexts ?? []).map((c) => c.state),
+  }));
+
+/**
+ * Background music: nothing is fetched or played before a gesture; the first
+ * tap starts a track (the element plays, the context runs); it carries on into
+ * a game without restarting; it pauses while the tab is hidden; Music off in
+ * the settings stops it and on brings it back. With the site muted, no music
+ * is ever requested.
+ */
+async function music(width, height) {
+  const phone = width < 768;
+  step(`music at ${width}`);
+  const page = await newPage({ width, height });
+  await watchAudio(page.context());
+  const requests = [];
+  page.on("request", (r) => {
+    if (/\/audio\/guessr\//.test(r.url())) requests.push(r.url());
+  });
+  await page.goto(`${BASE}/pokeguessr`, { waitUntil: "networkidle" });
+  await page.waitForTimeout(2500); // the player loads once the page is idle
+  if (requests.length) errors.push(`music: a track was requested before any gesture (${requests[0]})`);
+  if ((await musicNow(page)).playing.length) errors.push("music: playing before any gesture");
+  await closeHowTo(page);
+  await openGeoSetup(page);
+  const started = await page.waitForFunction(() => document.documentElement.dataset.guessrMusic === "playing", null, { timeout: 20_000 }).then(() => true, () => false);
+  if (!started) throw new Error(`music: didn't start after the first tap (${JSON.stringify(await musicNow(page))})`);
+  if (!requests.some((u) => /\/audio\/guessr\/[a-z-]+\.(ogg|mp3)$/.test(u))) errors.push("music: playing, but no track was requested");
+  await page.waitForTimeout(1500);
+  const first = await musicNow(page);
+  if (first.playing.length !== 1 || first.playing[0].at < 0.5) errors.push(`music: no track element is playing (${JSON.stringify(first)})`);
+  if (!first.context.includes("running")) errors.push(`music: the audio context isn't running (${first.context})`);
+
+  // The settings: Music is on at a low volume.
+  await page.getByTestId("geo-settings").click();
+  await page.getByTestId("geo-music").waitFor();
+  if ((await page.getByTestId("geo-music").getAttribute("aria-checked")) !== "true") errors.push("music: the Music switch isn't on by default");
+  const volume = Number(await page.getByTestId("geo-music-volume").inputValue());
+  if (volume !== 35) errors.push(`music: the default volume is ${volume}, not 35`);
+  await page.screenshot({ path: `${OUT}/guessr-music-settings-${width}.png` });
+  // Off: it stops (a short fade) and stays off.
+  await page.getByTestId("geo-music").click();
+  await page.waitForTimeout(1500);
+  const off = await musicNow(page);
+  if (off.state !== "off" || off.playing.length) errors.push(`music: Music off didn't stop it (${JSON.stringify(off)})`);
+  if ((await page.evaluate(() => localStorage.getItem("pokeiq-guessr-music"))) !== JSON.stringify({ on: false, volume: 0.35 })) errors.push("music: Music off isn't remembered");
+  // On again: the same track carries on from where it paused.
+  await page.getByTestId("geo-music").click();
+  await page.waitForFunction(() => document.documentElement.dataset.guessrMusic === "playing", null, { timeout: 10_000 }).catch(() => errors.push("music: Music on didn't bring it back"));
+  await page.keyboard.press("Escape");
+
+  // Into a game: the music carries on, not restarted.
+  await page.waitForTimeout(500);
+  const before = await musicNow(page);
+  await page.getByRole("button", { name: /5-round game/ }).click();
+  await shotLoaded(page);
+  await page.waitForTimeout(1000);
+  const during = await musicNow(page);
+  if (!during.playing.length || during.playing[0].src !== before.playing[0]?.src || during.playing[0].at < before.playing[0].at) errors.push(`music: the track restarted when the game began (${JSON.stringify(before.playing)} → ${JSON.stringify(during.playing)})`);
+  // A round and the next: still the same track, still going.
+  await pinAndGuess(page, phone, 0.5, null);
+  await page.getByTestId("geo-next").waitFor();
+  await page.waitForTimeout(1200);
+  await page.getByTestId("geo-next").click();
+  await shotLoaded(page);
+  const round2 = await musicNow(page);
+  if (!round2.playing.length || round2.playing[0].src !== during.playing[0]?.src || round2.playing[0].at < during.playing[0].at) errors.push(`music: the track restarted on the next round (${JSON.stringify(during.playing)} → ${JSON.stringify(round2.playing)})`);
+
+  // A hidden tab: paused at once; visible again: back.
+  await page.evaluate(() => {
+    Object.defineProperty(document, "visibilityState", { value: "hidden", configurable: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  await page.waitForTimeout(300);
+  const hidden = await musicNow(page);
+  if (hidden.playing.length) errors.push(`music: still playing in a hidden tab (${JSON.stringify(hidden)})`);
+  await page.evaluate(() => {
+    Object.defineProperty(document, "visibilityState", { value: "visible", configurable: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  await page.waitForFunction(() => document.documentElement.dataset.guessrMusic === "playing", null, { timeout: 10_000 }).catch(() => errors.push("music: didn't come back when the tab did"));
+  await page.context().close();
+
+  // Muted: no music is ever requested, whatever the player taps.
+  step(`music muted at ${width}`);
+  const muted = await newPage({ width, height });
+  await watchAudio(muted.context());
+  await muted.context().addInitScript(() => localStorage.setItem("pokeiq-muted", "1"));
+  const mutedRequests = [];
+  muted.on("request", (r) => {
+    if (/\/audio\/guessr\//.test(r.url())) mutedRequests.push(r.url());
+  });
+  await muted.goto(`${BASE}/pokeguessr`, { waitUntil: "networkidle" });
+  await closeHowTo(muted);
+  await openGeoSetup(muted);
+  await muted.getByRole("button", { name: /5-round game/ }).click();
+  await shotLoaded(muted);
+  await muted.waitForTimeout(3000);
+  const quiet = await musicNow(muted);
+  if (mutedRequests.length) errors.push(`music: requested while muted (${mutedRequests[0]})`);
+  if (quiet.playing.length || quiet.state === "playing") errors.push(`music: playing while muted (${JSON.stringify(quiet)})`);
+  await muted.context().close();
+}
+
+/** E2E_ONLY=music1440,music390,solo1440,weekly1440,duel1440,solo390,weekly390,duel390,royale1440,team1440,royale390,team390,crowd390,crowd1440 runs a subset. */
+const only = (process.env.E2E_ONLY ?? "music1440,music390,solo1440,weekly1440,duel1440,solo390,weekly390,duel390,royale1440,team1440,royale390,team390,crowd390").split(",");
 try {
+  if (only.includes("music1440")) await music(1440, 900);
+  if (only.includes("music390")) await music(390, 844);
   if (only.includes("solo1440")) await solo(1440, 900);
   if (only.includes("weekly1440")) await weekly(1440, 900);
   if (only.includes("weekly390")) await weekly(390, 844);
