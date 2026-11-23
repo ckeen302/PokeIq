@@ -550,7 +550,8 @@ const STATES = [
     route: "/battle/play",
     name: "vs-computer",
     async run(p) {
-      await p.getByRole("button", { name: /^Play now/i }).first().click({ timeout: 10_000 });
+      // The setup's submit button: the phone's sticky "Play now", or the desktop's own.
+      await p.locator("main form button[type='submit']").filter({ visible: true }).last().click({ timeout: 10_000 });
       await p.waitForURL(/\/battle\/play\/./, { timeout: 20_000 }).catch(() => {});
       await p.waitForTimeout(8000);
     },
