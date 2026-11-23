@@ -15,6 +15,9 @@
  */
 import type { RGB } from "./color";
 import { LAST_ID } from "./data";
+import { cleanText, fromB64Url, toB64Url } from "@/lib/share/link-bytes";
+
+export { fromB64Url, toB64Url };
 
 export const DESIGN_VERSION = 2;
 export const FINISHES = ["flat", "metallic", "pastel", "gradient", "holo", "galaxy"] as const;
@@ -81,16 +84,12 @@ export function newDesign(id: number, partCount: number, src: 0 | 1 = 1): Design
   };
 }
 
-/** Control characters, zero-width and direction marks, line separators. */
-// eslint-disable-next-line no-control-regex
-const INVISIBLE = new RegExp("[\\u0000-\\u001f\\u007f-\\u009f\\u200b-\\u200f\\u2028-\\u202e\\u2060-\\u206f\\ufeff]", "g");
 const enc = new TextEncoder();
 const dec = new TextDecoder("utf-8", { fatal: true });
 
 /** Trims a design name to the allowed length and characters (no control characters, single spaces). */
 export function cleanName(s: string): string {
-  const t = s.replace(INVISIBLE, "").replace(/\s+/g, " ").trim();
-  return Array.from(t).slice(0, NAME_MAX).join("").trim();
+  return cleanText(s, NAME_MAX);
 }
 
 export function encodeDesign(d: Design): string {
@@ -201,34 +200,4 @@ export function decodeDesign(s: string | null | undefined): Design | null {
 /** Whether a decoded design fits a species' data (part and shade counts). */
 export function fitsSpecies(d: Design, partCount: number, slotCount: number): boolean {
   return d.parts.length === partCount && Object.keys(d.shades).every((k) => Number(k) < slotCount);
-}
-
-const A = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-export function toB64Url(bytes: Uint8Array): string {
-  let s = "";
-  for (let i = 0; i < bytes.length; i += 3) {
-    const n = (bytes[i] << 16) | ((bytes[i + 1] ?? 0) << 8) | (bytes[i + 2] ?? 0);
-    s += A[(n >> 18) & 63] + A[(n >> 12) & 63];
-    if (i + 1 < bytes.length) s += A[(n >> 6) & 63];
-    if (i + 2 < bytes.length) s += A[n & 63];
-  }
-  return s;
-}
-export function fromB64Url(s: string): Uint8Array | null {
-  if (s.length % 4 === 1) return null;
-  const out: number[] = [];
-  let buf = 0, bits = 0;
-  for (const ch of s) {
-    const v = A.indexOf(ch);
-    if (v < 0) return null;
-    buf = ((buf << 6) | v) & 0xffffff;
-    bits += 6;
-    if (bits >= 8) {
-      bits -= 8;
-      out.push((buf >> bits) & 255);
-    }
-  }
-  // Leftover bits must be zero (one canonical spelling per design).
-  if (bits && (buf & ((1 << bits) - 1))) return null;
-  return Uint8Array.from(out);
 }

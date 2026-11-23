@@ -1,0 +1,23 @@
+{
+  "title": "Poké Ball Maker",
+  "metaTitle": "Poké Ball Maker: design your own Poké Ball",
+  "metaDescription": "Design your own Poké Ball in 3D. Start from an official ball, a type or any Pokémon, then choose colours, patterns, finishes, stickers and an opening effect. Share it or download a PNG, GIF, video, 3D model or 3D-printable STL. Free.",
+  "metaDesignTitle": "{name}: a custom Poké Ball",
+  "metaDesignDescription": "A custom Poké Ball made with the Poké Ball Maker on PokéIQ. Open it to turn it in 3D and watch it open, or design your own.",
+  "ogAlt": "A custom Poké Ball made on PokéIQ",
+  "cardTitle": "Poké Ball Maker",
+  "cardSubtitle": "Design your own Poké Ball in 3D.",
+  "howto": {
+    "title": "How it works",
+    "s1t": "Start from a ball",
+    "s1": "Pick an official ball, a type theme or a blank ball, roll a random one, or choose any Pokémon to get a ball in its colours and types.",
+    "s2t": "Make it yours",
+    "s2": "Colour each part, lay patterns over either half, choose a finish for every part (gloss, metal, glass, wood and more), change the shape and the button, and click stickers onto the ball.",
+    "s3t": "Watch it open",
+    "s3": "Choose an effect that bursts out and a Pokémon to pop out, then press Open, or Catch to see it wobble three times and click.",
+    "s4t": "Share and download",
+    "s4": "Your design lives in its link, so anyone can open it. Download a transparent PNG, a GIF, a vertical video, a GLB model or an STL to 3D print.",
+    "printTitle": "Printing it",
+    "print": "The STL is in millimetres: a 60 mm ball whose halves print flat on their rims without supports, a ring that joins them with 0.25 mm of clearance, and the button in two small pieces. Paint it in your colours."
+  }
+}
