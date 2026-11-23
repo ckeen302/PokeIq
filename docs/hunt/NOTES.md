@@ -155,3 +155,28 @@ Branches: integration `feat/pokemon-hunt`; data on `hunt/data`; design on `hunt/
   - its only way of being met ("You can only fish it up.", "You only meet it in Max Raid dens.");
   - its earliest spot on the map ("Its earliest spot on the map is from Ruby, at Petalburg Woods.").
 - **Done:** the table is final and verified (`docs/hunt/verification.md`), and `hunt/data` is merged up to date with `feat/pokemon-hunt`.
+
+### 2026-11-23 · hunt design: mocks and the first usability passes
+
+- **Mocks are in `docs/hunt/mocks/`.** These are screenshots of the real game: a production build played with Playwright, no drawings. Each file is named `<screen>-<width>x<height>-<theme>.webp`, at 1440×900, 1000×578 and 390×844, each in dark and light (48 files).
+  - `01-hub-entry`: the Pokémon Hunt card on PokéGuessr's hub.
+  - `02-mode-picker`: the hunt's hub (Daily, Classic, Region with its region picker).
+  - `03-round`: a round, before any pin.
+  - `04-placing-pins`: several pins down (the dock open on a computer, the map card on a phone).
+  - `05-reveal`: the reveal partway through (spots popping in).
+  - `06-round-result`: the reveal when it's done.
+  - `07-final-results`: the final results.
+  - `08-daily-share`: the Daily's share grid.
+  - The game's own frame is always navy, as PokéGuessr's is, so the in-game screens look the same in both themes. The hub, the mode picker and the results panel follow the theme.
+- **Usability passes.** I played full Daily, Classic and Region games on desktop (1440×900 and 1000×578) and on a phone (390×844, touch). What I changed and why:
+  - **Phone: tapping a pin's chip removed the pin.** The × badge uses the site's `tap` class, which grows its touch target to 44px, and that covered the chip. On touch screens each placed pin is now a two-part pill: the number picks the pin up, the × beside it removes it. The pin count moves to its own line. Mouse users keep the small × badge. Test ids are unchanged.
+  - **Production builds: the round's art could stay invisible.** The image could finish loading before React attached `onLoad`. The card now checks `img.complete` after mounting.
+  - **The phone's map label is now the pin hint** ("Tap the map to drop pin 2"), not PokéGuessr's single-pin "Tap again to move your pin". The all-pins-down hint was too long for that label, so it's shorter now.
+  - **Region mode said "You found it!" on every round**, even at 882 points, because on a region's own map every pin lands in that region. On region maps the headline now says how close the pin came ("Right on the trail!", "Close to a real spot", "Too far from any spot"). The results list shows each round's verdict there instead of "1 of 1 region found".
+  - **Focus is on Next after Skip.** It had been lost when the Skip button disappeared.
+  - At 1000px wide, the score and "pts" stay on one line, and Next no longer wraps.
+  - Button icons were being squeezed to 2px wide by flex layout, so they now keep their size.
+  - The results shelf fits all five Pokémon, and the notch text stays on one line on a phone.
+  - Timings from play: start to first card about 0.6 s, guess to reveal about 0.1 s, the reveal about 2 s (skippable), art always visible once loaded.
+- **For the game agent:** `scripts/e2e-hunt.mjs` line 98 expects the reveal's line to contain "found" or "regions". That's English only, and it no longer holds on a region map, where the line says how close the pin came. Could it check that `hunt-found-line` isn't empty instead? Everything else in `E2E_ONLY=hunt` passes against this branch: Classic on a desktop with several pins (move and remove), Region mode, and the Daily on a phone with the share grid. To run it here: `CHROMIUM_PATH=/opt/pw-browsers/chromium`.
+- The tripwire flagged layout changes on pages Pokémon Hunt doesn't touch (battle, Pokédex, the PokéGuessr header), and only by a few pixels. That's this container's fonts against the baseline, so I left `scripts/e2e-desktop-tripwire.json` alone.
