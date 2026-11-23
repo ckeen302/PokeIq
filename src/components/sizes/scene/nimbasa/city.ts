@@ -527,7 +527,8 @@ function buildGround(plan: WorldPlan, shared: Shared, tex: CityTex, quality: Cit
   const ring = plan.ring;
   const lineIn = ring ? ring.s0 : x1;
   const far = 7000;
-  strip("ground-base", asphalt, Math.min(x0, cx - R) - far, cx + R + far, cz - R - far, cz + R + far, -0.05, 3);
+  // Layers far enough apart that the depth buffer keeps them apart from the finale's height (a few centimetres would fight there).
+  strip("ground-base", asphalt, Math.min(x0, cx - R) - far, cx + R + far, cz - R - far, cz + R + far, -0.5, 3);
   strip("promenade", prom, x0, lineIn + 6, -STREET.promenade, STREET.promenade, -0.006, 2.3);
   strip("band", band, x0, lineIn + (ring ? 0.5 : 4), -STREET.promenade + 1.4, STREET.promenade - 1.4, 0, 1.6);
   if (plan.open) strip("esplanade", walk, x0 - 40, boulevardEnd(plan, -STREET.facade), -plan.open, -STREET.facade - 0.6, 0.06, 3);
@@ -579,16 +580,16 @@ function buildGround(plan: WorldPlan, shared: Shared, tex: CityTex, quality: Cit
   };
   const arc = (r0: number, r1: number, a0: number, a1: number, segs: number) => new THREE.RingGeometry(r0, r1, segs, 1, -a1, a1 - a0);
   // The plaza: patterned paving with neon-coloured inlays round its rim.
-  flat(new THREE.CircleGeometry(R + STREET.facade - 10, 160), walk, -0.035, 3);
+  flat(new THREE.CircleGeometry(R + STREET.facade - 10, 160), walk, -0.3, 3);
   const plazaStone = mk("granite_tile", 2.3, { color: "#f2ecf6", bright: 1.6 });
   plazaPattern(plazaStone, new THREE.Vector2(cx, cz), R - 4, { entry: plan.districts[0]?.a0 ?? 0, colors: NEON.slice(0, 5).map((c) => new THREE.Color(c)) });
-  flat(new THREE.CircleGeometry(R - 4, 160), plazaStone, -0.022, 2.3);
-  flat(new THREE.RingGeometry(R - 1, R + 8.2, 240, 1), asphalt, -0.03, 3);
+  flat(new THREE.CircleGeometry(R - 4, 160), plazaStone, -0.12, 2.3);
+  flat(new THREE.RingGeometry(R - 1, R + 8.2, 240, 1), asphalt, -0.2, 3);
   const rr = ring?.r ?? Math.max(60, R - 120);
   if (ring) {
     const span = (plan.lineEnd - ring.s0) / ring.r;
     const a0 = -Math.PI / 2 - 0.08, a1 = -Math.PI / 2 + span + 0.25;
-    flat(arc(rr - 17, rr + 17, a0 - 0.05, a1 + 0.05, 160), prom, -0.012, 2.3);
+    flat(arc(rr - 17, rr + 17, a0 - 0.05, a1 + 0.05, 160), prom, -0.05, 2.3);
     const bandArc = flat(arc(rr - 9.6, rr + 9.6, -Math.PI / 2, a1, 160), band, 0, 1.6);
     bandArc.name = "ring-band";
     for (const off of [-9.75, 9.75]) {

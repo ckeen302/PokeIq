@@ -50,10 +50,11 @@ function rect(p: Pen, x: number, y: number, w: number, h: number, col: string, g
 }
 
 /** A window: glass with a lit room (warm, cool or a colour), or dark; a frame round it. */
-function windowPane(p: Pen, x: number, y: number, w: number, h: number, r: () => number, frame = "#d9dce6") {
+function windowPane(p: Pen, x: number, y: number, w: number, h: number, r: () => number, frame = "#d9dce6", sparse = false) {
   rect(p, x - 2, y - 2, w + 4, h + 4, frame);
   const k = r();
-  const lit = k < 0.36 ? "#ffcf86" : k < 0.46 ? "#bfe2ff" : k < 0.5 ? NEON[Math.floor(r() * NEON.length)] : null;
+  // Towers seen from afar: fewer lit rooms, no coloured ones (a calm grid, not confetti).
+  const lit = sparse ? (k < 0.22 ? "#ffcf86" : k < 0.28 ? "#cfe6ff" : null) : k < 0.36 ? "#ffcf86" : k < 0.46 ? "#bfe2ff" : k < 0.5 ? NEON[Math.floor(r() * NEON.length)] : null;
   if (lit) {
     const dim = 0.55 + r() * 0.45;
     p.col.fillStyle = lit;
@@ -181,7 +182,7 @@ function shopfront(p: Pen, ox: number, oy: number, i: number, r: () => number) {
 /** A tower's window grid: one 3.6 m bay by one 3.6 m floor per tile. */
 function towerTile(p: Pen, ox: number, oy: number, r: () => number) {
   rect(p, ox, oy, 128, 128, "#c9cddb");
-  windowPane(p, ox + 10, oy + 14, 108, 96, r, "#aeb4c6");
+  windowPane(p, ox + 10, oy + 14, 108, 96, r, "#aeb4c6", true);
   rect(p, ox, oy + 120, 128, 8, "#b5bacb");
 }
 
