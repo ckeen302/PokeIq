@@ -204,6 +204,8 @@ export interface HuntSpot {
   mask: [number, number][];
   /** "Red / Blue · Super Rod", one per game and method. */
   labels: string[];
+  /** The same, as game and method apart. */
+  methods: { games: string; method: string }[];
 }
 
 /** How one pin did: the region it was matched to, its nearest spot there, its points. */

@@ -123,11 +123,3 @@ export function matchPins(map: ScoreMap, pins: readonly Point[], spots: readonly
   );
   return { pins: out, total };
 }
-
-/** A round's share-grid square: 🟩 4,000+, 🟨 2,000+, 🟧 500+, 🟥 below. */
-export function huntSquare(score: number): string {
-  if (score >= 4000) return "🟩";
-  if (score >= 2000) return "🟨";
-  if (score >= 500) return "🟧";
-  return "🟥";
-}

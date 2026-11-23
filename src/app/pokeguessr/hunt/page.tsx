@@ -12,8 +12,8 @@ import { GEO_HUNT_NAMESPACES } from "@/lib/geo-namespaces";
 export function generateMetadata(): Metadata {
   const t = serverT(hunt);
   return pageMetadata({
-    title: t("meta.title"),
-    description: t("meta.description"),
+    title: t("name"),
+    description: t("hub.tagline"),
     path: "/pokeguessr/hunt",
     image: SHARE_IMAGES.guessr,
   });

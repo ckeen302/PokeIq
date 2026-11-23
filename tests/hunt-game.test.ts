@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { areaDistance, curveScore, huntSquare, matchPins, type Point, type ScoreSpot } from "@/lib/hunt/score";
+import { areaDistance, curveScore, matchPins, type Point, type ScoreSpot } from "@/lib/hunt/score";
 import { dealHunt, eligible } from "@/lib/hunt/deal";
 import { HUNT_REGIONS, HUNT_ROUNDS, huntPinsFor, type HuntEntry } from "@/lib/hunt/types";
 import { gradeHunt, huntEntries, huntRegionAt, huntTableProblems, readHunt, startHunt } from "@/lib/server/hunt";
@@ -70,9 +70,6 @@ describe("Pokémon Hunt scoring", () => {
     expect(huntPinsFor(7, "region")).toBe(1);
   });
 
-  it("has share squares", () => {
-    expect([5000, 4000, 3999, 2000, 600, 10].map(huntSquare).join("")).toBe("🟩🟩🟨🟨🟧🟥");
-  });
 });
 
 const entry = (id: string, dex: number, difficulty: number, extra: Partial<HuntEntry> = {}): HuntEntry => ({
@@ -157,8 +154,6 @@ describe("Pokémon Hunt on the server", () => {
     if (!start.ok) throw new Error(start.error);
     let token = start.body.token;
     let round = start.body.round;
-    const W = 5850;
-    const H = 2565;
     for (let i = 0; i < HUNT_ROUNDS; i++) {
       const e = huntEntries().find((x) => x.id === round.id)!;
       // A pin on the first place of each of its regions.
@@ -179,8 +174,6 @@ describe("Pokémon Hunt on the server", () => {
         expect(g.body.done).toBe(true);
         expect(g.body.result?.rounds).toHaveLength(HUNT_ROUNDS);
       }
-      void W;
-      void H;
     }
   });
 

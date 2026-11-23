@@ -19,7 +19,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { mapReady } from "@/components/atlas/atlas-engine";
 import { GeoMap, LINE_DRAW_MS, WORLD_MAP as WORLD_MAP_SRC, WORLD_THUMB, mapAspect, type MapPin } from "./GeoMap";
 import { RegionStreakCard } from "./RegionStreakCard";
-import { HuntCard } from "@/components/hunt/HuntCard";
+import { HuntHubBanner } from "@/components/hunt/HuntHub";
 import { useAccount } from "@/lib/account";
 import { avatarSrc } from "@/lib/avatar";
 import { GlobePreview } from "@/components/globe/GlobePreview";
@@ -993,6 +993,8 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
 
         {/* ---- Play ---- */}
         <HubSection id="play" eyebrow={t("hub.play.eyebrow")} title={t("hub.play.title")}>
+          {/* Pokémon Hunt's way in (English only until its translations land). */}
+          {t.locale === "en" && <HuntHubBanner href="/pokeguessr/hunt" className="mb-4" />}
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <HubTile
               testId="geo-solo-card"
@@ -1067,7 +1069,6 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
               }
             />
             <RegionStreakCard />
-            <HuntCard />
           </div>
 
           {soloOpen && (

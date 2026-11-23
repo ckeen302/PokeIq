@@ -79,6 +79,7 @@ interface LoadedSpot extends ScoreSpot {
   name: string;
   geoRegion: string;
   labels: string[];
+  methods: { games: string; method: string }[];
 }
 interface Loaded {
   entry: HuntEntry;
@@ -97,7 +98,7 @@ function load(file: HuntAnswerFile): { entries: HuntEntry[]; byId: Map<string, L
         continue;
       }
       if (HUNT_REGION_OF_GEO[p.geoRegion] !== p.region) problems.push(`${entry.id}: ${p.name} is in ${p.geoRegion}, not ${p.region}`);
-      spots.push({ region: p.region, area: place.area, name: p.name, geoRegion: p.geoRegion, labels: p.methods.map((m) => `${m.games} · ${m.method}`) });
+      spots.push({ region: p.region, area: place.area, name: p.name, geoRegion: p.geoRegion, labels: p.methods.map((m) => `${m.games} · ${m.method}`), methods: p.methods.map((m) => ({ games: m.games, method: m.method })) });
     }
     // Rule 4: a Pokémon with any place off the map is never dealt.
     if (spots.length !== entry.places.length || !spots.length) continue;
@@ -263,6 +264,7 @@ export function gradeHunt(state: HuntState, guess: { pins: HuntPin[]; timeout?: 
     pin: pxToMap(map.box, PLACES.get(`${s.geoRegion}|${s.name}`)!.at),
     mask: s.area.map((p) => pxToMap(map.box, p)),
     labels: s.labels,
+    methods: s.methods,
   }));
   const reveal: HuntReveal = {
     id: loaded.entry.id,

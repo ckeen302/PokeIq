@@ -1,59 +1,44 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { X } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useT } from "@/i18n/client";
-import geoNs from "@/messages/geo";
-import geoNamesNs from "@/messages/geo-names";
 import huntNs from "@/messages/hunt";
 import { localDateString } from "@/lib/daily";
-import { formatNumber } from "@/i18n/format";
 import { play, unlockAudio } from "@/lib/sound";
+import { useGeoNames } from "@/lib/geo-i18n-client";
 import { WORLD_REGION, type GeoRegionInfo } from "@/lib/geo-types";
-import { GeoMap, LINE_DRAW_MS, type MapPin, type RevealedRound } from "@/components/geo/GeoMap";
-import {
-  BAR_BTN,
-  ConfirmExit,
-  CountdownPill,
-  ExitButton,
-  FullscreenButton,
-  GameShell,
-  GuessButton,
-  HudDials,
-  MapDock,
-  Notch,
-  RoundBadge,
-  RoundReadout,
-  ScoreTracker,
-  TimerDial,
-  usePhone,
-} from "@/components/geo/GameShell";
-import { huntShareText } from "@/lib/hunt/share";
+import type { MapPin } from "@/components/geo/GeoMap";
+import { ConfirmExit, GameShell } from "@/components/geo/GameShell";
 import {
   HUNT_DAILY_FROM,
-  HUNT_REGIONS,
+  HUNT_MAX_ROUND_SCORE,
+  isHuntMapRegion,
   type HuntGuessResponse,
   type HuntMapRegionId,
   type HuntMode,
-  type HuntResult,
+  type HuntReveal as HuntRevealData,
   type HuntRoundPublic,
   type HuntStartResponse,
 } from "@/lib/hunt/types";
-import { HuntSetup } from "./HuntSetup";
-import { HuntRoundCard } from "./HuntRoundCard";
-import { HuntPinBar } from "./HuntPinBar";
-import { HuntRevealPanel } from "./HuntRevealPanel";
-import { HuntResults } from "./HuntResults";
+import { HuntHub } from "./HuntHub";
+import { HuntRound } from "./HuntRound";
+import { HuntReveal, type HuntRevealPin, type HuntRevealSpot } from "./HuntReveal";
+import { HuntResults, type HuntResultRound } from "./HuntResults";
+import { HuntShareGrid } from "./HuntShareGrid";
+import { HuntState } from "./HuntState";
+import type { HuntPokemonView } from "./HuntCard";
+import type { HuntShareRound } from "./share";
 
 /**
  * Pokémon Hunt's game: the state machine, the pins, the clock and the API
- * calls. The screens it shows are hunt design's presentation components; the
- * frame, the map dock, the timer and the score tracker are PokéGuessr's.
+ * calls. The screens are hunt design's components (HuntHub, HuntRound,
+ * HuntReveal, HuntResults); the frame, map dock, timer and score tracker
+ * inside them are PokéGuessr's.
  *
- * setup → starting → playing → grading → reveal → (playing …) → results
+ *   hub → starting → playing → grading → reveal → (playing …) → results
  */
 
-type Phase = "setup" | "starting" | "playing" | "grading" | "reveal" | "results";
+type Phase = "hub" | "starting" | "playing" | "grading" | "reveal" | "results";
 
 interface Game {
   token: string;
@@ -65,12 +50,16 @@ interface Game {
   round: HuntRoundPublic;
 }
 
+/** A graded round, kept for the results screen and the share grid. */
+interface Played {
+  round: HuntRoundPublic;
+  body: HuntGuessResponse;
+}
+
 const RECENT_KEY = "pokeiq:hunt-recent";
 const DAILY_KEY = "pokeiq:hunt-daily";
+const BEST_KEY = "pokeiq:hunt-best";
 const RECENT_MAX = 60;
-/** Each region's spots pop in this long after the one before. */
-const REGION_STEP_S = 0.45;
-const FIT_MS = 900;
 
 const read = <T,>(key: string, fallback: T): T => {
   try {
@@ -101,67 +90,83 @@ const dailyNumberOf = (date: string) => Math.round((Date.parse(`${date}T00:00:00
 interface DailyRecord {
   date: string;
   score: number;
-  rounds: number[];
+  share: HuntShareRound[];
+}
+
+const pokemonOf = (r: HuntRoundPublic): HuntPokemonView => ({ name: r.name, dex: r.dex, art: r.art });
+
+/** The reveal's spots and pins as the design's components draw them (names in the page's language). */
+function revealView(reveal: HuntRevealData, region: (name: string) => string): { spots: HuntRevealSpot[]; pins: HuntRevealPin[] } {
+  const spots = reveal.spots.map((s) => {
+    const games = [...new Set(s.methods.map((m) => m.games))];
+    const methods = [...new Set(s.methods.map((m) => m.method))];
+    return { x: s.pin[0], y: s.pin[1], region: region(s.region), place: s.name, game: games.join(" / "), method: methods.join(", ") };
+  });
+  const pins = reveal.pins.flatMap((p) => (p.spot === null ? [] : [{ pin: p.pin, spot: p.spot, score: p.score }]));
+  return { spots, pins };
 }
 
 export function HuntGame({ maps }: { maps: GeoRegionInfo[] }) {
   const t = useT(huntNs);
-  const g = useT(geoNs);
-  const names = useT(geoNamesNs);
-  const phone = usePhone();
-  const fmt = (n: number) => formatNumber(n, t.locale);
+  const names = useGeoNames();
+  const regionName = useCallback((id: string) => names.region(id[0].toUpperCase() + id.slice(1)), [names]);
 
-  const [phase, setPhase] = useState<Phase>("setup");
+  const [phase, setPhase] = useState<Phase>("hub");
+  const [busyMode, setBusyMode] = useState<HuntMode | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [game, setGame] = useState<Game | null>(null);
-  const [pins, setPins] = useState<MapPin[]>([]);
-  const [selected, setSelected] = useState<number | null>(null);
-  const [scores, setScores] = useState<number[]>([]);
-  const [graded, setGraded] = useState<{ body: HuntGuessResponse; pins: MapPin[] } | null>(null);
-  const [result, setResult] = useState<HuntResult | null>(null);
+  const [pins, setPins] = useState<(MapPin | null)[]>([null]);
+  const [active, setActive] = useState(0);
+  const [played, setPlayed] = useState<Played[]>([]);
   const [deadline, setDeadline] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const [confirmExit, setConfirmExit] = useState(false);
+  const [region, setRegion] = useState<HuntMapRegionId>("kanto");
   const [today, setToday] = useState<string>(HUNT_DAILY_FROM);
   const [daily, setDaily] = useState<DailyRecord | null>(null);
-  const lastSpec = useRef<{ mode: HuntMode; region?: HuntMapRegionId } | null>(null);
+  const [best, setBest] = useState<Partial<Record<HuntMode, number>>>({});
+  const lastMode = useRef<HuntMode>("classic");
 
-  // The player's date (dailies follow the local day, like every daily on the site), and whether today's is played.
+  // The player's date (dailies follow the local day, like every daily on the site), today's Daily if played, best totals.
   useEffect(() => {
     const date = localDateString();
     setToday(date < HUNT_DAILY_FROM ? HUNT_DAILY_FROM : date);
     const rec = read<DailyRecord | null>(DAILY_KEY, null);
     setDaily(rec?.date === date ? rec : null);
+    setBest(read(BEST_KEY, {}));
   }, []);
 
   const mapOf = useCallback((id: string) => maps.find((m) => m.id === id) ?? maps.find((m) => m.id === WORLD_REGION)!, [maps]);
+  const regionMaps = maps.filter((m) => isHuntMapRegion(m.id));
 
-  const start = async (spec: { mode: HuntMode; region?: HuntMapRegionId }) => {
+  const beginRound = (round: HuntRoundPublic, timer: number) => {
+    setPins(Array.from({ length: round.pins }, () => null));
+    setActive(0);
+    setDeadline(Date.now() + timer * 1000);
+  };
+
+  const start = async (mode: HuntMode) => {
     unlockAudio();
-    lastSpec.current = spec;
+    lastMode.current = mode;
+    setBusyMode(mode);
     setPhase("starting");
     setError(null);
     try {
       const body = await post<HuntStartResponse>("/api/geo/hunt", {
-        ...spec,
-        ...(spec.mode === "daily" ? { date: localDateString() } : { recent: read<string[]>(RECENT_KEY, []) }),
+        mode,
+        ...(mode === "region" ? { region } : {}),
+        ...(mode === "daily" ? { date: localDateString() } : { recent: read<string[]>(RECENT_KEY, []) }),
       });
       setGame({ token: body.token, mode: body.mode, map: mapOf(body.map), rounds: body.rounds, timer: body.timer, daily: body.daily, round: body.round });
-      setScores([]);
-      setResult(null);
-      beginRound(body.timer);
+      setPlayed([]);
+      beginRound(body.round, body.timer);
       setPhase("playing");
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("errors.start"));
-      setPhase("setup");
+      setError(e instanceof Error ? e.message : t("state.error"));
+      setPhase("hub");
+    } finally {
+      setBusyMode(null);
     }
-  };
-
-  const beginRound = (timer: number) => {
-    setPins([]);
-    setSelected(null);
-    setGraded(null);
-    setDeadline(Date.now() + timer * 1000);
   };
 
   // The clock.
@@ -178,18 +183,23 @@ export function HuntGame({ maps }: { maps: GeoRegionInfo[] }) {
       if (!game || submitting.current) return;
       submitting.current = true;
       setPhase("grading");
-      const sent = pins;
+      const sent = pins.filter((p): p is MapPin => !!p);
       try {
         const body = await post<HuntGuessResponse>("/api/geo/hunt/guess", { token: game.token, pins: sent, ...(timeout ? { timeout: true } : {}) });
-        setGraded({ body, pins: sent });
-        setScores((s) => [...s, body.score]);
+        const all = [...played, { round: game.round, body }];
+        setPlayed(all);
         setGame((cur) => (cur ? { ...cur, token: body.token } : cur));
         const recent = read<string[]>(RECENT_KEY, []);
         write(RECENT_KEY, [body.reveal.id, ...recent.filter((id) => id !== body.reveal.id)].slice(0, RECENT_MAX));
         if (body.done && body.result) {
-          setResult(body.result);
+          const prev = read<Partial<Record<HuntMode, number>>>(BEST_KEY, {});
+          if (body.result.score > (prev[game.mode] ?? 0)) {
+            const next = { ...prev, [game.mode]: body.result.score };
+            write(BEST_KEY, next);
+            setBest(next);
+          }
           if (game.daily) {
-            const rec: DailyRecord = { date: game.daily.date, score: body.result.score, rounds: body.result.rounds.map((r) => r.score) };
+            const rec: DailyRecord = { date: game.daily.date, score: body.result.score, share: shareRounds(all) };
             write(DAILY_KEY, rec);
             setDaily(rec);
           }
@@ -197,13 +207,13 @@ export function HuntGame({ maps }: { maps: GeoRegionInfo[] }) {
         play(body.score >= 4000 ? "correct" : "pin");
         setPhase("reveal");
       } catch (e) {
-        setError(e instanceof Error ? e.message : t("errors.grade"));
+        setError(e instanceof Error ? e.message : t("state.error"));
         setPhase("playing");
       } finally {
         submitting.current = false;
       }
     },
-    [game, pins, t]
+    [game, pins, played, t]
   );
 
   // Time's up: whatever pins are down go in.
@@ -211,175 +221,149 @@ export function HuntGame({ maps }: { maps: GeoRegionInfo[] }) {
     if (msLeft === 0 && phase === "playing") void submit(true);
   }, [msLeft, phase, submit]);
 
-  // Space hunts once a pin is down (as PokéGuessr's Guess).
+  // Space hunts once a pin is down, as PokéGuessr's Guess (the reveal binds its own keys).
+  const anyPin = pins.some(Boolean);
   useEffect(() => {
     if (phase !== "playing") return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.code !== "Space" || !pins.length) return;
-      if ((e.target as HTMLElement | null)?.closest("input, textarea, select, button")) return;
+      if (e.code !== "Space" || !anyPin) return;
+      if ((e.target as HTMLElement | null)?.closest("input, textarea, select, button, a")) return;
+      if (document.querySelector('[role="dialog"]:not([aria-hidden="true"])')) return;
       e.preventDefault();
       void submit();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [phase, pins.length, submit]);
+  }, [phase, anyPin, submit]);
 
   const next = () => {
-    if (!graded || !game) return;
-    if (graded.body.done || !graded.body.next) {
+    const last = played[played.length - 1];
+    if (!game || !last) return;
+    if (last.body.done || !last.body.next) {
       setPhase("results");
       return;
     }
-    setGame({ ...game, round: graded.body.next });
-    beginRound(game.timer);
+    setGame({ ...game, round: last.body.next });
+    beginRound(last.body.next, game.timer);
     setPhase("playing");
   };
 
   const leave = () => {
     setConfirmExit(false);
     setGame(null);
-    setPhase("setup");
+    setPhase("hub");
   };
   const requestExit = () => (phase === "playing" || phase === "grading" || phase === "reveal" ? setConfirmExit(true) : leave());
 
-  // ---- pins -------------------------------------------------------------------------
-  const max = game?.round.pins ?? 1;
-  const onPick = (p: MapPin) => {
+  // ---- pins: one slot per pin the round takes ---------------------------------------------
+  const place = (p: MapPin) => {
     play("pin");
     setPins((cur) => {
-      if (selected !== null && selected < cur.length) return cur.map((q, i) => (i === selected ? p : q));
-      if (cur.length < max) return [...cur, p];
-      // Every pin is down: the nearest one moves.
-      let near = 0;
-      cur.forEach((q, i) => {
-        if (Math.hypot(q.x - p.x, q.y - p.y) < Math.hypot(cur[near].x - p.x, cur[near].y - p.y)) near = i;
-      });
-      return cur.map((q, i) => (i === near ? p : q));
+      const nextPins = cur.map((q, i) => (i === active ? p : q));
+      // On to the next empty slot; with every pin down, the active one stays (the next tap moves it again).
+      const empty = nextPins.findIndex((q) => !q);
+      if (empty >= 0) setActive(empty);
+      return nextPins;
     });
-    setSelected(null);
   };
-  const pinMarkers = pins.map((p, i) => ({ ...p, label: String(i + 1), color: selected === i ? "#ffd23c" : "#3a8dde" }));
+  const remove = (i: number) => {
+    setPins((cur) => cur.map((q, k) => (k === i ? null : q)));
+    setActive(i);
+  };
 
-  // ---- the reveal on the map ----------------------------------------------------------------
-  const revealed = useMemo((): RevealedRound[] => {
-    if (!graded) return [];
-    const { reveal } = graded.body;
-    const order = HUNT_REGIONS.filter((r) => reveal.spots.some((s) => s.region === r));
-    const base = LINE_DRAW_MS / 1000;
-    const spots: RevealedRound[] = reveal.spots.map((s) => ({
-      guess: null,
-      answer: { pin: s.pin, mask: s.mask },
-      delay: base + order.indexOf(s.region) * REGION_STEP_S,
-      caption: s.labels.length > 1 ? `${s.labels[0]} +${s.labels.length - 1}` : s.labels[0],
-    }));
-    const lines: RevealedRound[] = reveal.pins.flatMap((p, i) => {
-      if (p.spot === null) return [];
-      const s = reveal.spots[p.spot];
-      return [{ guess: p.pin, answer: { pin: s.pin, mask: [] }, label: String(i + 1), color: p.found ? "#4cbb17" : "#3a8dde" }];
-    });
-    return [...spots, ...lines];
-  }, [graded]);
-
-  // ---- render -------------------------------------------------------------------------
-  if (phase === "setup" || phase === "starting") {
-    return <HuntSetup onStart={(spec) => void start(spec)} busy={phase === "starting"} error={error} daily={{ number: dailyNumberOf(today), played: daily ? { score: daily.score } : null }} />;
-  }
-  if (phase === "results" && result && game) {
-    const share = game.daily ? huntShareText(game.daily.number, result.score, result.rounds.map((r) => r.score)) : null;
-    return <HuntResults result={result} share={share} onAgain={() => (lastSpec.current && lastSpec.current.mode !== "daily" ? void start(lastSpec.current) : leave())} daily={game.daily ? { number: game.daily.number } : undefined} />;
+  // ---- render ---------------------------------------------------------------------------
+  if (phase === "hub" || (phase === "starting" && !game)) {
+    return (
+      <HuntHub
+        regions={regionMaps}
+        region={region}
+        onRegion={(id) => isHuntMapRegion(id) && setRegion(id)}
+        onPlay={(m) => void start(m)}
+        busy={busyMode}
+        daily={{ n: dailyNumberOf(today), ...(daily ? { score: daily.score } : {}) }}
+        best={best}
+        error={error}
+      />
+    );
   }
   if (!game) return null;
 
-  const roundNo = Math.min(game.rounds, scores.length + (phase === "reveal" ? 0 : 1));
-  const total = scores.reduce((a, b) => a + b, 0);
-  const mapName = game.mode === "region" ? names(`regions.${game.map.id as HuntMapRegionId}`) : undefined;
-  const modeLine = game.daily ? t("round.daily", { n: game.daily.number }) : mapName ? `${t("round.mode")} · ${mapName}` : `${t("round.mode")} · ${t("round.classic")}`;
-  const pinBar = <HuntPinBar placed={pins.length} max={max} selected={selected} onSelect={(i) => setSelected((s) => (s === i ? null : i))} onRemove={(i) => {
-    setPins((cur) => cur.filter((_, k) => k !== i));
-    setSelected(null);
-  }} />;
+  const mapLabel = game.mode === "region" ? regionName(game.map.id) : t("hud.world");
+  const modeLine = `${game.daily ? t("hud.daily", { n: game.daily.number }) : t("hud.mode")} · ${mapLabel}`;
+  const scores = played.map((p) => p.body.score);
 
+  if (phase === "results") {
+    const rounds: HuntResultRound[] = played.map((p) => ({
+      pokemon: pokemonOf(p.round),
+      score: p.body.score,
+      regionsFound: p.body.reveal.found,
+      regionsTotal: p.body.reveal.regions.length,
+      ...revealView(p.body.reveal, regionName),
+    }));
+    return (
+      <HuntResults region={game.map} rounds={rounds} modeLine={modeLine} onAgain={() => (lastMode.current === "daily" ? leave() : void start(lastMode.current))} onHub={leave}>
+        {game.daily && <HuntShareGrid title={t("share.daily", { n: game.daily.number })} rounds={shareRounds(played)} url="/pokeguessr/hunt" />}
+      </HuntResults>
+    );
+  }
+
+  const last = played[played.length - 1];
   return (
     <GameShell onExit={requestExit}>
       {({ fs, toggle }) => (
         <>
-          {phase === "reveal" && graded ? (
-            <div className="relative flex h-full flex-col md:block" data-testid="hunt-reveal-view">
-              <div className="relative min-h-0 flex-1 md:absolute md:inset-x-0 md:top-0 md:bottom-[11rem]">
-                <GeoMap region={game.map} revealed={revealed} fit={{ delay: LINE_DRAW_MS, duration: FIT_MS }} fill controls={false} />
-              </div>
-              <div className="geo-safe-tl absolute left-3 top-3 z-20">
-                <ExitButton onClick={requestExit} />
-              </div>
-              <div className="geo-safe-tr absolute right-3 top-3 z-20 hidden lg:block">
-                <ScoreTracker rounds={game.rounds} scores={scores} current={scores.length - 1} total={fmt(total)} />
-              </div>
-              <Notch>
-                <div className="text-center">
-                  <div className="font-display text-xl font-bold uppercase italic leading-none tracking-wide sm:text-2xl">{graded.body.reveal.name}</div>
-                  <div className="mt-0.5 font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c8bfff]">{graded.body.timedOut ? t("reveal.timedOut") : modeLine}</div>
-                </div>
-              </Notch>
-              <div className="relative z-20 shrink-0 border-t-4 border-[#a99cff] bg-[#1e1a3f]/95 text-white shadow-[0_-12px_40px_rgba(0,0,0,0.5)] backdrop-blur md:absolute md:inset-x-0 md:bottom-0">
-                <HuntRevealPanel reveal={graded.body.reveal} score={graded.body.score} index={scores.length - 1} rounds={game.rounds} onNext={next} last={graded.body.done} />
-              </div>
-            </div>
+          {phase === "reveal" && last ? (
+            <HuntReveal
+              region={game.map}
+              pokemon={pokemonOf(last.round)}
+              {...revealView(last.body.reveal, regionName)}
+              score={last.body.score}
+              regionsTotal={last.body.reveal.regions.length}
+              regionsFound={last.body.reveal.found}
+              maxPins={last.round.pins}
+              fact={last.body.reveal.fact}
+              dexHref={last.body.reveal.dex}
+              timedOut={last.body.timedOut}
+              roundIndex={played.length - 1}
+              rounds={game.rounds}
+              scores={scores}
+              modeLine={modeLine}
+              done={last.body.done}
+              onNext={next}
+              onExit={requestExit}
+            />
           ) : (
-            <div className="relative h-full" data-testid="hunt-play-view">
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,#2d2766_0%,#0f0d1f_70%)]" style={{ bottom: "var(--geo-bar)" }}>
-                <HuntRoundCard round={game.round} mode={game.mode} mapName={mapName} />
-              </div>
-              {phone ? (
-                <>
-                  <HudDials>
-                    {msLeft !== null && <TimerDial ms={msLeft} totalMs={game.timer * 1000} urgentMs={10_000} testId="hunt-time-left" clock />}
-                    <RoundReadout round={roundNo} rounds={game.rounds} total={fmt(total)} />
-                  </HudDials>
-                  <RoundBadge testId="geo-round" label={g("round")} value={roundNo} of={game.rounds} mode={modeLine} />
-                </>
-              ) : (
-                <>
-                  <div className="geo-safe-tl absolute left-3 top-3 z-20 flex items-center gap-2">
-                    <ExitButton onClick={requestExit} />
-                    <FullscreenButton fs={fs} onClick={toggle} />
-                  </div>
-                  <Notch below={msLeft !== null ? <CountdownPill ms={msLeft} totalMs={game.timer * 1000} urgentMs={10_000} testId="hunt-time-left" clock /> : undefined}>
-                    <div className="min-w-0 text-center">
-                      <div className="font-display text-xl font-bold uppercase italic leading-none tracking-wide sm:text-2xl" data-testid="geo-round">
-                        {g("round")} {roundNo}
-                        <span className="text-white/50">/{game.rounds}</span>
-                      </div>
-                      <div className="mt-0.5 truncate font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c8bfff]">{modeLine}</div>
-                    </div>
-                  </Notch>
-                  <div className="geo-safe-tr absolute right-3 top-3 z-20 flex items-start gap-2">
-                    <ScoreTracker className="max-lg:hidden" rounds={game.rounds} scores={scores} current={roundNo - 1} total={fmt(total)} />
-                    <RoundReadout className="!h-9 lg:hidden" testId="geo-score-compact" round={roundNo} rounds={game.rounds} total={fmt(total)} />
-                  </div>
-                </>
-              )}
-              {error && (
-                <p className="absolute left-1/2 top-24 z-30 -translate-x-1/2 rounded-md bg-destructive px-3 py-2 text-sm" role="alert">
-                  {error}
-                </p>
-              )}
-              <MapDock
-                resetKey={game.round.index}
-                hasPin={pins.length > 0}
-                map={({ fill, land }) => <GeoMap land={land} round={game.round.index} region={game.map} others={pinMarkers} fill={fill} onPick={onPick} />}
-                tools={
-                  <button type="button" onClick={requestExit} className={BAR_BTN} aria-label={g("shell.back")} title={g("shell.back")} data-testid="geo-exit" data-keep>
-                    <X className="h-5 w-5" />
-                  </button>
-                }
-                extra={pinBar}
-                button={<GuessButton hasPin={pins.length > 0} busy={phase === "grading"} disabled={phase === "grading"} onClick={() => void submit()} />}
-              />
-            </div>
+            <HuntRound
+              region={game.map}
+              pokemon={pokemonOf(game.round)}
+              regions={game.round.regions}
+              pins={pins}
+              activePin={active}
+              onPlace={place}
+              onSelectPin={setActive}
+              onRemovePin={remove}
+              onGuess={() => void submit()}
+              busy={phase === "grading"}
+              roundIndex={game.round.index}
+              rounds={game.rounds}
+              scores={scores}
+              modeLine={modeLine}
+              msLeft={msLeft}
+              totalMs={game.timer * 1000}
+              onExit={requestExit}
+              fs={fs}
+              onFullscreen={toggle}
+            />
           )}
+          {error && phase === "playing" && <HuntState kind="error" message={error} onRetry={() => setError(null)} onBack={leave} />}
           {confirmExit && <ConfirmExit daily={!!game.daily} onLeave={leave} onStay={() => setConfirmExit(false)} />}
         </>
       )}
     </GameShell>
   );
+}
+
+/** Each round's pins' points, for the share grid (no Pokémon, no places). */
+function shareRounds(played: Played[]): HuntShareRound[] {
+  return played.map((p) => ({ pins: p.body.reveal.pins.map((x) => x.score), pinMax: HUNT_MAX_ROUND_SCORE / Math.max(1, p.round.pins), score: p.body.score }));
 }
