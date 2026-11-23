@@ -1497,7 +1497,8 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
                 {focusItem && (
                   <>
                     {focusItem.kind !== "ref" && <span className="mr-2 font-pixel text-[10px] text-white/55">{dexTag(focusItem.species)}</span>}
-                    {focusItem.name} <span className={focusTag ? "text-white/70" : "text-[#ffd84a]"}>{sizeOf(focusItem)}</span>
+                    {/* A Pokémon's name leads to its Pokédex page. */}
+                    {focusItem.kind === "pokemon" ? <Link href={`/pokemon/${focusItem.key}`} prefetch={false} className="underline-offset-4 hover:underline" data-testid="sizes-focus-dex">{focusItem.name}</Link> : focusItem.name} <span className={focusTag ? "text-white/70" : "text-[#ffd84a]"}>{sizeOf(focusItem)}</span>
                     {focusItem.length && <span className="ml-1 text-white/55">{t("length")}</span>}
                     {focusTag && <span className="ml-2 text-[#ffd84a]" data-testid="sizes-focus-value">{focusTag}</span>}
                   </>
