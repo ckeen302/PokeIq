@@ -394,8 +394,6 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   // ---- kept through a reload, Back and Exit ------------------------------------------
   /** The game as last saved: each step patches it. */
   const snap = useRef<SavedGame | null>(null);
-  /** The pin of a guess that was on its way when the page reloaded. */
-  const savedPick = useRef<MapPin | null>(null);
   function save(patch: Partial<Omit<SavedGame, "game">> & { game?: Game }) {
     if (!snap.current) return;
     const { game: g, ...rest } = patch;
@@ -416,6 +414,8 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
    * (which takes it off) puts it back and asks "Leave this game?" instead.
    */
   const inHistory = useRef(false);
+  /** Each start (and each exit) gets a new number: a start that comes back after its game was left is dropped. */
+  const startRun = useRef(0);
   const ignorePop = useRef(false);
   function enterGameHistory() {
     if (inHistory.current) return;
@@ -452,6 +452,8 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     else exitGame();
   }
   function exitGame() {
+    // A game still starting is called off.
+    startRun.current++;
     setConfirmExit(false);
     // The Daily stays saved for the day (its card offers to resume it); any other game is let go.
     writeSaved(null, false);
@@ -476,7 +478,6 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     setGame({ ...saved.game, region: map });
     setPlayed(saved.played);
     setPick(saved.pick);
-    savedPick.current = saved.pick;
     setClock(saved.clock);
     setIsChallenge(saved.challenge);
     setReward(null);
@@ -698,12 +699,14 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     setConfirmExit(false);
     enterGameHistory();
     preloadAfterRound();
+    const run = ++startRun.current;
     try {
       const { mode, bonus, body, timer } = startBody(opts);
       const key = JSON.stringify(body);
       const ready = ahead.current?.key === key && Date.now() - ahead.current.at < PREFETCH_TTL_MS ? ahead.current.res : null;
       ahead.current = null;
       const res = (ready ? await ready.catch(() => null) : null) ?? (await post<GeoStartResponse>("/api/geo", body));
+      if (run !== startRun.current) return;
       const map = byId(res.region) ?? allRegions.find((r) => r.id === res.region);
       if (!map) throw new Error(t("errors.noMap"));
       // A friend's challenge plays on their filter, the daily on every game.
@@ -737,8 +740,10 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
       setClock(null);
       setPhase("guessing");
     } catch (err) {
+      if (run !== startRun.current) return;
       setError(err instanceof Error ? err.message : t("errors.start"));
       setGame(null);
+      leaveGameHistory();
       setPhase("error");
     }
   }
@@ -756,7 +761,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
       save({ pending: body });
       const graded = await postRetrying<GeoGuessResponse>("/api/geo/guess", body);
       pendingGuess.current = null;
-      const nextPlayed = [...played, { guess: resend ? savedPick.current : pick, graded, shot: game.round.shot }];
+      const nextPlayed = [...played, { guess: pick, graded, shot: game.round.shot }];
       setPlayed(nextPlayed);
       setGame({ ...game, token: graded.token });
       rememberArea(graded.answer);
