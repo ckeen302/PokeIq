@@ -48,11 +48,10 @@ export function EncountersSection({ gens, name, local }: { gens: EncGen[]; name:
               </span>
               <ChevronDown className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform", isOpen && "rotate-180")} aria-hidden />
             </button>
-            {isOpen && (
-              <div id={`enc-gen-${gen.g}`} className="overflow-x-auto" data-hscroll>
-                <GenTable rows={gen.rows} versions={local?.versions} />
-              </div>
-            )}
+            {/* Closed generations stay in the HTML (hidden), so the page's text has every game's places. */}
+            <div id={`enc-gen-${gen.g}`} className="overflow-x-auto" data-hscroll hidden={!isOpen}>
+              <GenTable rows={gen.rows} versions={local?.versions} />
+            </div>
           </div>
         );
       })}

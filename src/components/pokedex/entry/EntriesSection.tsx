@@ -25,6 +25,8 @@ export function EntriesSection({ entries }: { entries: { text: string; games: st
   const t = useT(dexEntryNs);
   const [expanded, setExpanded] = useState(false);
   const shown = expanded ? entries : entries.slice(-6).reverse();
+  // The older entries "Show all" opens are in the HTML too (hidden), so the page's text has every game's entry.
+  const rest = expanded ? [] : entries.slice(0, -6);
   return (
     <div className="space-y-3">
       <div className="columns-1 gap-3 md:columns-2 [&>*]:mb-3">
@@ -57,6 +59,12 @@ export function EntriesSection({ entries }: { entries: { text: string; games: st
               </figcaption>
             )}
           </m.figure>
+        ))}
+        {rest.map((e) => (
+          <figure key={e.text} hidden>
+            <blockquote>{e.text}</blockquote>
+            {e.games.length > 0 && <figcaption>{e.games.map((g, k) => e.labels?.[k] ?? g).join(", ")}</figcaption>}
+          </figure>
         ))}
       </div>
       {entries.length > 6 && (
