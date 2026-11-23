@@ -133,6 +133,8 @@ export const EVENT_ONLY: { dex: number; versions?: string[]; loc?: string; why: 
   { dex: 250, loc: "Navel Rock", why: "Mystic Ticket event" },
   { dex: 380, versions: ["ruby", "sapphire", "emerald"], loc: "Southern Island", why: "Eon Ticket event" },
   { dex: 381, versions: ["ruby", "sapphire", "emerald"], loc: "Southern Island", why: "Eon Ticket event" },
+  { dex: 380, versions: ["omega-ruby"], loc: "Southern Island", why: "Eon Ticket event (the other game gives it as a gift)" },
+  { dex: 381, versions: ["alpha-sapphire"], loc: "Southern Island", why: "Eon Ticket event (the other game gives it as a gift)" },
   { dex: 380, versions: ["heartgold", "soulsilver"], loc: "Pewter City", why: "Enigma Stone event" },
   { dex: 381, versions: ["heartgold", "soulsilver"], loc: "Pewter City", why: "Enigma Stone event" },
   { dex: 386, loc: "Birth Island", why: "Aurora Ticket event" },

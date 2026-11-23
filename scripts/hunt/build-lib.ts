@@ -18,10 +18,11 @@ function eventOnly(dex: number, v: string, loc: string): { kind: "excluded"; why
   if (ALTERING_CAVE.versions.includes(v) && normPlace(loc) === normPlace(ALTERING_CAVE.loc) && !ALTERING_CAVE.normal.includes(dex)) return { kind: "excluded", why: "Altering Cave Mystery Gift event" };
   return undefined;
 }
-import { buildPlaceIndex, classifyMethod, isOffMap, matchPlace, placeKey, type GeoPlace, type PinnedPlace, type PlaceIndex } from "./match";
+import { buildPlaceIndex, classifyMethod, isOffMap, matchPlace, subAreaPlace, placeKey, type GeoPlace, type PinnedPlace, type PlaceIndex } from "./match";
 
 export interface EncRow {
   v: string[];
+  lv?: string;
   loc?: string;
   a?: string;
   m?: string;
@@ -83,7 +84,7 @@ export function buildAnswers(inp: Inputs, opts: { difficulty?: boolean } = {}): 
   const accs = new Map<string, Acc>();
   const review: ReviewItem[] = [];
   const missing = new Map<string, { versions: Set<string>; entries: Set<string> }>();
-  const stats: Record<string, number> = { rows: 0, counted: 0, excludedMethod: 0, offMap: 0, excludedGame: 0, dataDenRows: 0 };
+  const stats: Record<string, number> = { rows: 0, counted: 0, excludedMethod: 0, offMap: 0, excludedGame: 0, dataDenRows: 0, summaryRows: 0 };
 
   const nameOf = (dex: number, form: string | null) => (form ? formsBy.get(dex)!.find((f) => f.key === form)!.name : dexBy.get(dex)!.name);
   const acc = (dex: number, form: string | null): Acc => {
@@ -128,7 +129,18 @@ export function buildAnswers(inp: Inputs, opts: { difficulty?: boolean } = {}): 
             stats.offMap++;
             continue;
           }
-          const pm = matchPlace(idx, r.loc, v);
+          // Sword / Shield's expansion "Wild" rows are Serebii's summary lists (no method, no level):
+          // they repeat a detailed row, or they're something else entirely (Cosmog in Freezington is a gift).
+          if (r.m === "Wild" && !r.lv && (v === "sword" || v === "shield")) {
+            if (rows.some((o) => o !== r && o.loc === r.loc && o.m !== "Wild" && o.m !== "Max Raid" && o.v.includes(v))) {
+              stats.summaryRows++;
+              continue;
+            }
+            for (const f of allForms) acc(dex, f).uncertain.push({ id: entryId(dex, f), name: nameOf(dex, f), version: v, loc: r.loc, method: r.m, why: "only a summary row with no method (Sword / Shield expansion list)" });
+            continue;
+          }
+          const sub = subAreaPlace(idx, r.n, v);
+          const pm: ReturnType<typeof matchPlace> = sub ? { kind: "place", key: sub, via: "the sub-area in the note" } : matchPlace(idx, r.loc, v);
           const names = [r.loc, ...(pm.kind === "place" ? [idx.pinned.get(pm.key)!.name] : [])];
           const fr: ReturnType<typeof resolveForms> = r.forms ? { kind: "forms", forms: r.forms, via: "den table" } : resolveForms({ dex, version: v, note: r.n, names, forms, evidence: inp.evidence[String(dex)] });
           const rowForms = fr.kind === "forms" ? fr.forms : allForms;

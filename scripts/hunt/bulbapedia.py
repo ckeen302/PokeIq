@@ -39,7 +39,7 @@ VERSION_KEYS = {
 # Lines that aren't a wild spot: trades, raids, gifts, transfers, breeding, events, swarms...
 OTHER = re.compile(
     r"Trade|Tera Raid|\{\{g\|HOME\}\}|Pokémon HOME|Pokémon Bank|Poké Transporter|Event|Gift|[Rr]eceived|\|breeding\||Breed \{\{p\||[Ee]volve|Evolution|"
-    r"Union Circle|Dynamax Adventure|Unobtainable|Island Scan|Reward|Fossil|Revive|First partner|Professor|"
+    r"Union Circle|Dynamax Adventure|Unobtainable|Island Scan|Reward|Fossil|Revive|First partner Pokémon\]\] from|from \[\[Professor|"
     r"Dual-slot|Mass outbreak|Swarm|Roaming|[Rr]oams|Pokéwalker|Dream World|Pal Park|Hoenn Sound|Sinnoh Sound|Poké Radar chain"
 )
 # A place followed by one of these in brackets isn't a wild spot there ("Celadon City (Rocket Game Corner)").
@@ -55,6 +55,8 @@ def places_of(seg):
     found = []
     for m in re.finditer(r"\{\{(rt|rtn)\|(\d+)\|([^}|]+)[^}]*\}\}", seg):
         found.append((m.start(), m.end(), "Route " + m.group(2)))
+    for m in re.finditer(r"\{\{FB\|[^}|]+\|([^}|]+)[^}]*\}\}", seg):
+        found.append((m.start(), m.end(), m.group(1)))
     for m in re.finditer(r"\{\{safari\|([^}|]+)[^}]*\}\}", seg):
         found.append((m.start(), m.end(), m.group(1) + " Safari Zone"))
     for m in re.finditer(r"\{\{(?:al|gdis|ka|OBP|si|ho|kal|pal|ga|gal|jo|un|Safari)\|([^}|]+)(?:\|[^}]*)?\}\}", seg):
@@ -110,7 +112,7 @@ def parse(text):
         return []
     a = m.start()
     b = text.find("In side games", a)
-    block = text[a:b if b > 0 else len(text)]
+    block = re.sub(r"<!--.*?-->", "", text[a:b if b > 0 else len(text)], flags=re.S)
     entries = []
     for line in block.split("\n"):
         e = split_entry(line.strip())

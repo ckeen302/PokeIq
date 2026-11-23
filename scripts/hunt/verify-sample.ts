@@ -1,8 +1,8 @@
 /**
  * Blind verification of a sample of the answer table against Bulbapedia and Serebii.
  *
- *   npx tsx scripts/hunt/verify-sample.ts pick <seed> <size>                   # prints the sample's dex numbers (for fetching)
- *   npx tsx scripts/hunt/verify-sample.ts check <seed> <size> <bulbapedia.json> <serebii.json>… [--out file]
+ *   npx tsx scripts/hunt/verify-sample.ts pick <seed> <size> <sample.json> [--exclude earlier.json…]   # draws and saves the sample, prints its dex numbers
+ *   npx tsx scripts/hunt/verify-sample.ts check <sample.json> <bulbapedia.json> <serebii.json>… [--out file]
  *
  * The sample is drawn from the table with a seeded generator, weighted to rare entries
  * (weight 1 / number of places, so a one-spot legendary is far likelier than a route regular)
@@ -19,7 +19,6 @@ import answers from "../../src/data/hunt/answers.json";
 import geo from "../../src/data/geo.json";
 import aboutForms from "../../src/data/about-forms.json";
 import type { HuntAnswerFile, HuntEntry } from "../../src/lib/hunt/types";
-import { normPlace } from "../../src/lib/pokemon/encounter-transform";
 import { FORMS_IN_GAME, ORIGINAL_ONLY, formsInLabel, regionalForms, type EvidenceEntry, type FormInfo } from "./forms";
 import { buildPlaceIndex, isOffMap, matchPlace, type GeoPlace, type PlaceIndex } from "./match";
 
@@ -173,25 +172,33 @@ export function check(sample: HuntEntry[], bulba: Record<string, EvidenceEntry[]
 }
 
 if (process.argv[1]?.endsWith("verify-sample.ts")) {
-  const [cmd, seed, sizeS, ...rest] = process.argv.slice(2);
-  const outAt = rest.indexOf("--out");
-  const out = outAt >= 0 ? rest[outAt + 1] : undefined;
-  const excludeAt = rest.indexOf("--exclude");
-  const exclude = new Set<string>(excludeAt >= 0 ? (JSON.parse(fs.readFileSync(rest[excludeAt + 1], "utf8")) as string[]) : []);
-  const files = rest.filter((x, i) => !x.startsWith("--") && i !== outAt + 1 && i !== excludeAt + 1);
-  const sample = pickSample(seed, Number(sizeS), exclude);
+  const [cmd, ...args] = process.argv.slice(2);
+  const flag = (name: string) => {
+    const i = args.indexOf(name);
+    return i >= 0 ? args.splice(i, 2)[1] : undefined;
+  };
   if (cmd === "pick") {
+    const exclude = new Set<string>();
+    for (let f = flag("--exclude"); f; f = flag("--exclude")) for (const id of JSON.parse(fs.readFileSync(f, "utf8")) as string[]) exclude.add(id);
+    const [seed, size, file] = args;
+    const sample = pickSample(seed, Number(size), exclude);
+    fs.writeFileSync(file, JSON.stringify(sample.map((e) => e.id)));
     console.log([...new Set(sample.map((e) => e.dex))].join(" "));
   } else {
-    const bulba = JSON.parse(fs.readFileSync(files[0], "utf8")) as Record<string, EvidenceEntry[]>;
+    const out = flag("--out");
+    const [file, bulbaFile, ...serebiiFiles] = args;
+    const ids = JSON.parse(fs.readFileSync(file, "utf8")) as string[];
+    const byId = new Map(table.entries.map((e) => [e.id, e]));
+    const gone = ids.filter((id) => !byId.has(id));
+    const sample = ids.flatMap((id) => byId.get(id) ?? []);
+    const bulba = JSON.parse(fs.readFileSync(bulbaFile, "utf8")) as Record<string, EvidenceEntry[]>;
     const serebii: Record<string, SerebiiRow[]> = {};
-    for (const f of files.slice(1)) Object.assign(serebii, JSON.parse(fs.readFileSync(f, "utf8")));
+    for (const f of serebiiFiles) Object.assign(serebii, JSON.parse(fs.readFileSync(f, "utf8")));
     const res = check(sample, bulba, serebii);
-    if (out) fs.writeFileSync(out, JSON.stringify(res, null, 1));
+    if (out) fs.writeFileSync(out, JSON.stringify({ sample: ids, leftOutSince: gone, results: res }, null, 1));
     const bad = res.filter((r) => !r.ok);
-    console.log(`${res.length} entries checked, ${bad.length} with an error (${((100 * bad.length) / res.length).toFixed(1)}%)`);
-    for (const r of bad.slice(0, 60))
+    console.log(`${ids.length} sampled, ${gone.length} since left out of the table, ${res.length} checked, ${bad.length} with an error (${((100 * bad.length) / Math.max(1, res.length)).toFixed(1)}%)`);
+    for (const r of bad)
       for (const g of r.games.filter((x) => x.errorsExtra.length || x.errorsMissing.length)) console.log(`  ${r.id} ${r.name} ${g.version}: extra ${g.errorsExtra.join(", ") || "-"} | missing ${g.errorsMissing.join(", ") || "-"}`);
   }
-  void normPlace;
 }

@@ -123,3 +123,21 @@ export function matchPlace(idx: PlaceIndex, loc: string, version: string): Place
   }
   return { kind: "none", why: `"${loc}" isn't on the map in ${regions.join(" / ")}` };
 }
+
+/**
+ * A row's note can name a sub-area that is its own place on the map: Alola Route 1's
+ * "Trainers School" is the map's Trainers' School. Exactly one note part must name a
+ * place in the version's regions by its own name.
+ */
+export function subAreaPlace(idx: PlaceIndex, note: string | undefined, version: string): string | undefined {
+  const regions = VERSION_REGIONS[version];
+  if (!note || !regions?.length || version === "legends-za") return undefined;
+  const hits = new Set<string>();
+  for (const part of note.split(/ · |, /)) {
+    const name = part.trim();
+    if (!name || REGION_NAMES.includes(name) || /^(Isle of Armor|Crown Tundra|The Teal Mask|The Indigo Disk)$/.test(name)) continue;
+    for (const t of lookup(idx, regions, name)) hits.add(t);
+    if (!hits.size && /s /.test(name)) for (const t of lookup(idx, regions, name.replace(/(\w)s /, "$1s' "))) hits.add(t);
+  }
+  return hits.size === 1 ? [...hits][0] : undefined;
+}
