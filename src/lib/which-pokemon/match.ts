@@ -1,5 +1,6 @@
 import { AXES, AXIS_INFO, type Axis, type PooledPokemon, type Profile } from "./types";
 import { DEEP_CUTS, POOL, speciesInfo, type SpeciesInfo } from "./pool";
+import { QUIZ_PATH } from "./path";
 
 /**
  * Matching, Open-Source Psychometrics style: the player is a point in the
@@ -196,7 +197,7 @@ export function decodeScores(raw: unknown): Profile | null {
   return out as unknown as Profile;
 }
 
-export const QUIZ_PATH = "/quiz/which-pokemon";
+export { QUIZ_PATH };
 
 /** The result page for a match, with the player's scores in the fragment (static page, personal result). */
 export const resultPath = (slug: string, scores: Profile) => `${QUIZ_PATH}/${slug}#r=${encodeScores(scores)}`;
