@@ -201,7 +201,8 @@ export function planCastelia(plan: WorldPlan, detail = 1): CasteliaPlan {
         const distPlaza = Math.max(0, rectDistance(r, C.x, C.z) - edge);
         // The skyline rises from the waterfront to Central Plaza and falls away behind the main street: from the finale's height the city steps down to the bay.
         const rise = clamp((Math.min(a, C.x) - firstX) / Math.max(200, C.x - R - firstX), 0, 1);
-        const core = Math.pow(rise, 0.9) * Math.exp(-ri / 2.6) * 0.75 + Math.exp(-distPlaza / 420) * 0.5;
+        // North of the plaza the city stays lower (the finales look that way, over it to the bay).
+        const core = Math.pow(rise, 0.9) * Math.exp(-ri / 2.6) * 0.75 + Math.exp(-distPlaza / 420) * 0.5 * (z0 > C.z + R * 0.3 ? 0.4 : 1);
         // Far blocks thin out on lighter qualities (the haze takes them anyway).
         const far = ri >= 2 && distPlaza > 300;
         if (far && detail < 1) {
@@ -262,7 +263,9 @@ export function planCastelia(plan: WorldPlan, detail = 1): CasteliaPlan {
       // Clear of the main street where it comes into the plaza (it may meet the ring at a slant).
       if (x < plan.x1 + 80 && Math.abs(z) - Math.hypot(span, depth) / 2 < S.facade + 2) continue;
       if (z - depth / 2 < openZ + 10 && openZ > -Infinity && z < 0) continue;
-      const h = hMin + (hMax - hMin) * Math.pow(rr(), 1.1);
+      // The plaza's far side from where the finales look (north round to west) is lower, so the bay shows over it.
+      const far = role === "plaza" ? 1 - smoothstep(70, 100, Math.abs((((a * 180) / Math.PI - 125 + 540) % 360) - 180)) : 0;
+      const h = (hMin * (1 - 0.4 * far)) + (hMax * (1 - 0.55 * far) - hMin * (1 - 0.4 * far)) * Math.pow(rr(), 1.1);
       const crowns: Crown[] = ["spire", "lit", "stepped", "slant", "lit", "flat"];
       towers.push({ x, z, w: span - 7, d: depth, yaw: Math.PI / 2 - a, h, podium: rr() < 0.5 ? 12 + rr() * 10 : 0, tiers: 2 + Math.floor(rr() * 2), round: rr() < 0.18, kind: Math.floor(rr() * 5) as FacadeKind, crown: crowns[Math.floor(rr() * crowns.length)], seed: seed * 17 + 3, role });
     }
@@ -317,6 +320,11 @@ export function rng(seed: number) {
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
+}
+
+function smoothstep(a: number, b: number, x: number): number {
+  const k = clamp((x - a) / (b - a), 0, 1);
+  return k * k * (3 - 2 * k);
 }
 
 function norm(a: number): number {

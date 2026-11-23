@@ -18,7 +18,8 @@ import { sharedUniforms } from "./shaders";
 import { SKY, createSky } from "./sky";
 import { createTrace, traceBare, type Drawn, type TraceFigure } from "./trace";
 import type { CityId } from "@/lib/sizes/city";
-import { CASTELIA_HAZE, CASTELIA_MOOD, buildCastelia, createDuskSky, duskEnvironment, type Castelia } from "./castelia";
+import { CASTELIA_HAZE, CASTELIA_MOOD, createDuskSky, duskEnvironment } from "./castelia/sky";
+import type { Castelia } from "./castelia";
 
 /**
  * The 3D scene behind /pokedex/sizes and its videos: a sunny Lumiose City
@@ -310,7 +311,10 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     scene.environment = envTex;
     scene.environmentIntensity = CASTELIA_MOOD.envIntensity;
   }
-  const envReady = dusk ? Promise.resolve() : rest.then(() => (gone ? Promise.reject(new Error("disposed")) : new RGBELoader().loadAsync(opts.urls.hdr))).then((hdr) => {
+  // Castelia's buildings are their own chunk, fetched only when it is chosen (Lumiose's page loads none of it).
+  let casteliaKit: typeof import("./castelia") | null = null;
+  const casteliaReady: Promise<void> = dusk ? import("./castelia").then((m) => { casteliaKit = m; }) : Promise.resolve();
+  const envReady = dusk ? casteliaReady : rest.then(() => (gone ? Promise.reject(new Error("disposed")) : new RGBELoader().loadAsync(opts.urls.hdr))).then((hdr) => {
     // Find the HDRI's sun (brightest texel) to turn the map so it agrees with ours.
     const img = hdr.image as unknown as { data: Uint16Array | Float32Array; width: number; height: number };
     let best = 0, bi = 0;
@@ -423,7 +427,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   blobs.frustumCulled = false;
   blobs.renderOrder = 1;
   figureGroup.add(blobs);
-  const ready = staged ? Promise.resolve() : Promise.all([envReady, Promise.race([crowd.ready, new Promise((r) => setTimeout(r, 12000))])]).then(() => undefined);
+  const ready = staged ? casteliaReady : Promise.all([envReady, Promise.race([crowd.ready, new Promise((r) => setTimeout(r, 12000))])]).then(() => undefined);
   // Built figures wait here for their turn on the GPU: a few per frame, each compiled before it's shown.
   const toUpload: { s: Slot; lod: 0 | 1; h: FigureHandle }[] = [];
   let compiling = 0;
@@ -483,7 +487,9 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     city = props = tower = castelia = null;
     worldGroup.clear();
     if (dusk) {
-      castelia = buildCastelia(plan, shared, { pbr }, { detail: Q.blocks, trees: Q.trees });
+      // (ready waits for the chunk; a line set before it lands is built when it does.)
+      if (!casteliaKit) { void casteliaReady.then(() => { if (!gone && !castelia) rebuildWorld(); }); return; }
+      castelia = casteliaKit.buildCastelia(plan, shared, { pbr }, { detail: Q.blocks, trees: Q.trees });
       worldGroup.add(castelia.group);
       setupTree(worldGroup);
       if (traceBare()) worldGroup.visible = false;

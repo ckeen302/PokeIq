@@ -140,8 +140,12 @@ export function buildLandmarks(cp: CasteliaPlan, quality: { detail: number }): L
       for (let x = 8; x < len - 4; x += 26) for (const s of [-1, 1]) {
         const zz = s * (p.w / 2 - 0.8);
         poles.push(place(box(0.22, 6, 0.22, x, 0.2, zz), p));
-        lamps.push(place(box(0.6, 0.4, 0.6, x, 6.1, zz), p));
+        lamps.push(place(box(0.9, 0.5, 0.9, x, 6.1, zz), p));
       }
+      // A line of light along each edge and round the end: from across the bay the piers read as lit fingers into the water.
+      for (const s of [-1, 1]) lamps.push(place(box(len, 0.35, 0.35, len / 2, 0.25, s * (p.w / 2 - 0.2)), p));
+      lamps.push(place(box(0.35, 0.35, p.w, len - 0.2, 0.25, 0), p));
+      if (p.sheds) lamps.push(place(box(Math.min(110, len * 0.55) + 0.2, 1.4, p.w - 6.8, len * 0.45, 5.2, 0), p));
     }
     mesh(merged(deck), concrete);
     mesh(merged(piles), concrete, false);
