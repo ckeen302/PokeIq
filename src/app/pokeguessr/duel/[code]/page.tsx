@@ -28,9 +28,10 @@ interface PageProps {
 const findDuel = cache(peekDuel);
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const url = `/pokeguessr/duel/${encodeURIComponent((await params).code)}`;
   const t = serverT(page);
   const duel = await findDuel((await params).code);
-  if (!duel) return inviteMetadata(t("duel.fallbackTitle"), t("duel.fallbackDescription"));
+  if (!duel) return inviteMetadata(t("duel.fallbackTitle"), t("duel.fallbackDescription"), url);
   const [host, guest] = duel.players.map((p) => p.name);
   const regions = geoRegions();
   const map = regions.find((r) => r.id === duel.region);
@@ -40,7 +41,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     duel.mode === "race"
       ? t("duel.raceDescription", { where, rounds: duel.maxRounds })
       : t("duel.hpDescription", { where, hp: formatNumber(DUEL_HP, t.locale) });
-  return inviteMetadata(title, description);
+  return inviteMetadata(title, description, url);
 }
 
 export default async function GeoDuelPage({ params }: PageProps) {

@@ -20,14 +20,15 @@ interface PageProps {
 const findBattle = cache(peekBattle);
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const url = `/battle/live/${encodeURIComponent((await params).code)}`;
   const { code } = await params;
   const t = serverT(pagesNs);
   const battle = DUEL_CODE_RE.test(code) ? await findBattle(code) : null;
-  if (!battle) return inviteMetadata(t("live.title"), t("live.description"));
+  if (!battle) return inviteMetadata(t("live.title"), t("live.description"), url);
   const [host, guest] = battle.names;
   const format = formatName(serverT(formatsNs), battle.format);
   const title = guest ? t("live.titleVs", { host, guest }) : t("live.titleHost", { host: host || t("live.aTrainer") });
-  return inviteMetadata(title, t("live.descriptionFormat", { format }));
+  return inviteMetadata(title, t("live.descriptionFormat", { format }), url);
 }
 
 export default async function LiveBattlePage({ params }: PageProps) {
