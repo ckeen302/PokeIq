@@ -103,15 +103,16 @@ function landBox(atlas: AtlasData): Box {
 }
 
 /** Where a whole-world guess map starts: the dock zoomed in on the land's middle (GeoGuessr's), the phone card filled with the land. */
-function dockHome(box: Box, worldW: number, dock: boolean) {
+function dockHome(box: Box, dock: boolean) {
   if (!dock) return { box, cover: true };
   // A little left of and below the land's middle: the resting map has Paldea, Johto and Hoenn in it (GeoGuessr's shows three
   // continents), and once open, Galar's name sits clear of the zoom buttons.
   const at: [number, number] = [box[0] + (box[2] - box[0]) * 0.465, box[1] + (box[3] - box[1]) * 0.56];
-  // Zoomed right out, the world nearly fills the box's width, a little closer than all of it so there's less empty sea above
-  // and below (Unova's and Alola's outer edges are a drag away); the view stays on the world.
-  const floor: Box = [0, box[1], worldW, box[3]];
-  return { box, at, floor, floorZoom: DOCK_FLOOR_ZOOM, scale: () => (DOCK_ZOOM * restWidth()) / (box[2] - box[0]) };
+  // Zoomed right out, the land (with a little sea round it) fills the box's width, and the view stays on it. Hovered or pinned
+  // open, the map shows that whole world at once; at rest it's zoomed in like GeoGuessr's.
+  const floor: Box = box;
+  const open = (W: number) => W > restWidth() * 1.25;
+  return { box, at, floor, floorZoom: DOCK_FLOOR_ZOOM, open, scale: () => (DOCK_ZOOM * restWidth()) / (box[2] - box[0]) };
 }
 
 /** A map's width over its height as drawn (very tall or wide maps sit in a box of sensible proportions). */
@@ -191,7 +192,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
       bounds: region.id === WORLD_REGION ? undefined : box,
       // "fit" (the desktop dock): zoomed in like GeoGuessr's, the same zoom when the box grows, and never further out than the land
       // filling the box; true (the phone card): the land fills the card.
-      home: land && wholeWorld ? dockHome(landBox(atlas), atlas.W, land === "fit") : undefined,
+      home: land && wholeWorld ? dockHome(landBox(atlas), land === "fit") : undefined,
       // GeoGuessr's small, thin names: they label a region without covering it.
       quietLabels: true,
       onTap: (wx, wy) => {

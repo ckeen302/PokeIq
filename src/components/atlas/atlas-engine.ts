@@ -74,9 +74,11 @@ export interface AtlasOptions {
    * same zoom when the box grows, so a bigger box shows more); `floor`: zooming
    * out stops once this box fills the canvas (times `floorZoom`: a little closer,
    * so less empty sea shows above and below a wide world), and the view never
-   * pans off it.
+   * pans off it. `open`: while it says the canvas is open (the dock hovered),
+   * the view starts on the whole floor box instead (the whole world, as large
+   * as the box allows) and goes back to `scale` once it's closed.
    */
-  home?: { box: Box; cover?: boolean; scale?: () => number; at?: [number, number]; floor?: Box; floorZoom?: number };
+  home?: { box: Box; cover?: boolean; scale?: () => number; at?: [number, number]; floor?: Box; floorZoom?: number; open?: (W: number, H: number) => boolean };
   /** The guess map: small, thin region names (GeoGuessr's), so they label a region without covering it. */
   quietLabels?: boolean;
   /** A page in another language: the names the map writes, English → that language's (names not in it stay English). */
@@ -307,6 +309,10 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     if (framing === "whole" || !opts.home) return whole();
     const [x0, y0, x1, y1] = opts.home.box;
     if (opts.home.scale) {
+      if (opts.home.floor && opts.home.open?.(W, H)) {
+        const [fx0, fy0, fx1, fy1] = opts.home.floor;
+        return { s: minS, tx: W / 2 - ((fx0 + fx1) / 2) * minS, ty: H / 2 - ((fy0 + fy1) / 2) * minS };
+      }
       const s = Math.max(minS, opts.home.scale());
       const [cx, cy] = opts.home.at ?? [(x0 + x1) / 2, (y0 + y1) / 2];
       return { s, tx: W / 2 - cx * s, ty: H / 2 - cy * s };
@@ -523,18 +529,22 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     if (f < 4.5) {
       for (const r of regionOrder) {
         const quiet = opts.quietLabels;
-        const baseSize = quiet ? 8 : r.tier === 1 ? 20 : r.tier === 2 ? 14 : 12;
-        // Quiet names stay small (8 px, growing a little zoomed in, to 12); the atlas's are display-sized.
+        // Quiet names scale with the map's width (9 px on a 300 px map, up to 12 on a wide one) and grow a little zoomed in;
+        // the atlas's are display-sized.
+        const quietBase = Math.min(12, Math.max(9, W / 32)) - (r.tier === 1 ? 0 : 1);
+        const baseSize = quiet ? quietBase : r.tier === 1 ? 20 : r.tier === 2 ? 14 : 12;
         const size = quiet
-          ? Math.round(Math.min(12, baseSize * Math.max(1, Math.pow(f, 0.35))))
+          ? Math.round(Math.min(quietBase + 3, baseSize * Math.max(1, Math.pow(f, 0.35))))
           : Math.round(Math.max(baseSize * 0.7, Math.min(baseSize * 1.7, baseSize * Math.pow(f, 0.35))));
         // Small maps keep to the main regions: DLC areas and islands come in as you zoom.
         if ((r.tier === 3 && f < 1.4) || (r.tier === 2 && f < TIER2_FROM)) continue;
         // A main region's name never drops out: if its spot is taken (Johto beside Kanto), it tries just above, below, then to either side.
-        // Quiet names step a full line up or down, so a crowded one (Johto beside Kanto) stays over its own land rather than drifting sideways.
+        // Quiet names first nudge a little to either side, so a crowded one (Johto beside Kanto) stays level and over its own land,
+        // then step a full line up or down.
         const up = quiet ? size * 1.6 : size * 1.25;
         const down = quiet ? size * 1.6 : size * 1.35;
-        const spots: [number, number][] = r.tier === 1 ? [[0, 0], [0, -up], [0, down], [-size * 2.6, 0], [size * 2.6, 0]] : [[0, 0]];
+        const nudge: [number, number][] = quiet ? [[-size * 0.7, 0], [size * 0.7, 0]] : [];
+        const spots: [number, number][] = r.tier === 1 ? [[0, 0], ...nudge, [0, -up], [0, down], [-size * 2.6, 0], [size * 2.6, 0]] : [[0, 0]];
         spots.some(([dx, dy]) =>
           label(
             r.tier === 1 ? nm(r.name).toUpperCase() : nm(r.name),
