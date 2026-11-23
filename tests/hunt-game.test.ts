@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { areaDistance, curveScore, matchPins, type Point, type ScoreSpot } from "@/lib/hunt/score";
 import { dealHunt, eligible } from "@/lib/hunt/deal";
-import { HUNT_REGIONS, HUNT_ROUNDS, huntPinsFor, type HuntEntry } from "@/lib/hunt/types";
+import { HUNT_MAP_REGIONS, HUNT_REGIONS, HUNT_ROUNDS, huntPinsFor, type HuntEntry } from "@/lib/hunt/types";
 import { gradeHunt, huntEntries, huntRegionAt, huntTableProblems, readHunt, startHunt } from "@/lib/server/hunt";
 import geo from "@/data/geo.json";
 
@@ -205,6 +205,22 @@ describe("Pokémon Hunt on the server", () => {
     if (!a.ok || !b.ok) throw new Error("daily failed");
     expect(a.body.round.id).toBe(b.body.round.id);
     expect(a.body.daily?.number).toBeGreaterThanOrEqual(1);
+  });
+
+  it("plays every region map, with only that map's own spots in the reveal", () => {
+    const crops = (geo as unknown as { world: { crops: Record<string, { regions: string[] }> } }).world.crops;
+    for (const region of HUNT_MAP_REGIONS) {
+      const start = startHunt({ mode: "region", region });
+      if (!start.ok) throw new Error(`${region}: ${start.error}`);
+      expect(start.body.round.pins).toBe(1);
+      const g = gradeHunt(readHunt(start.body.token)!, { pins: [{ x: 0.5, y: 0.5 }] });
+      if (!g.ok) throw new Error(g.error);
+      const e = huntEntries().find((x) => x.id === start.body.round.id)!;
+      const own = e.places.filter((p) => p.region === region && crops[region].regions.includes(p.geoRegion)).map((p) => p.name);
+      expect(own.length).toBeGreaterThan(0);
+      expect(g.body.reveal.spots.map((s) => s.name).sort()).toEqual(own.sort());
+      for (const s of g.body.reveal.spots) for (const v of s.pin) expect(v).toBeGreaterThanOrEqual(0) && expect(v).toBeLessThanOrEqual(1);
+    }
   });
 
   it("refuses an unknown region", () => {

@@ -28,7 +28,9 @@ export function difficultyFor(entry: HuntEntry, mode: HuntMode, region?: HuntMap
 
 /** The entries a mode can deal at all. */
 export function eligible(entries: readonly HuntEntry[], mode: HuntMode, region?: HuntMapRegionId): HuntEntry[] {
-  if (mode === "region") return region ? entries.filter((e) => e.regions.includes(region)) : [];
+  // A region's map only shows its own crop (the Sevii Islands and Blueberry Academy sit outside theirs): hunt data rates an entry on a
+  // region only when it has a spot on that crop.
+  if (mode === "region") return region ? entries.filter((e) => e.regions.includes(region) && e.regionDifficulty[region] !== undefined) : [];
   return entries.filter((e) => !e.everywhere);
 }
 

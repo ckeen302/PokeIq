@@ -39,7 +39,7 @@ import {
 type Box = [number, number, number, number];
 interface WorldFile {
   map: { width: number; height: number; squarePx: number };
-  crops: Record<string, { name: string; box: Box }>;
+  crops: Record<string, { name: string; box: Box; regions: string[] }>;
   locations: { name: string; region?: string; parent?: string; pin?: [number, number]; mask?: [number, number][] }[];
 }
 const WORLD = (geo as unknown as { world: WorldFile }).world;
@@ -131,7 +131,10 @@ const round5 = (v: number) => Math.round(v * 100000) / 100000;
 
 /** A spec's spots: every spot on the world map; only the region's own on a region's map. */
 function spotsFor(spec: HuntSpec, loaded: Loaded): LoadedSpot[] {
-  return spec.mode === "region" && spec.region ? loaded.spots.filter((s) => s.region === spec.region) : loaded.spots;
+  if (spec.mode !== "region" || !spec.region) return loaded.spots;
+  // Only the spots on the region's own map (its crop's places: Kanto's has no Sevii Islands).
+  const on = WORLD.crops[spec.region]?.regions ?? [];
+  return loaded.spots.filter((s) => s.region === spec.region && on.includes(s.geoRegion));
 }
 
 // ---------------------------------------------------------------------------

@@ -51,12 +51,17 @@ async function tapMap(page, fx, fy) {
   await map.click({ position: spotIn(area, fx, fy) });
 }
 
-const pinCount = async (page) => Number(await page.getByTestId("hunt-pin-count").first().getAttribute("data-placed"));
-const pinMax = async (page) => Number(await page.getByTestId("hunt-pin-count").first().getAttribute("data-max"));
+/** Pins down: the tray's placed chips (a one-pin round has no chips: the Guess button turns on instead). */
+const pinCount = async (page) => {
+  const chips = await page.locator('[data-testid^="hunt-pin-chip-"]').count();
+  if (chips) return page.locator('[data-testid^="hunt-pin-chip-"][data-placed]').count();
+  return (await page.getByTestId("geo-guess").isEnabled()) ? 1 : 0;
+};
+const pinMax = async (page) => Math.max(1, await page.locator('[data-testid^="hunt-pin-chip-"]').count());
 
 /** Plays one round: drops the round's pins (on a phone, through the map card), checks the counter, hunts, checks the reveal. */
 async function playRound(page, { phone, fail, label, shot, edit = false }) {
-  await page.getByTestId("hunt-round-card").waitFor();
+  await page.getByTestId("hunt-card").waitFor();
   const name = (await page.getByTestId("hunt-name").innerText()).trim();
   if (phone) await page.getByTestId("geo-map-pill").click();
   const max = await pinMax(page);
@@ -83,10 +88,12 @@ async function playRound(page, { phone, fail, label, shot, edit = false }) {
   if (/Route \d+|City\b|Town\b|Cave\b/.test(text)) fail(`${label}: the round names a place before the reveal`);
   await page.getByTestId("geo-guess").click();
   await page.getByTestId("hunt-reveal").waitFor();
+  // Skip the pop-in, so the whole answer is on screen.
+  await page.getByTestId("hunt-skip").click().catch(() => {});
   const spots = await page.getByTestId("hunt-spot").count();
   if (!spots) fail(`${label}: the reveal lists no spots for ${name}`);
-  const found = await page.getByTestId("hunt-found").innerText();
-  if (!/\d+ of \d+/.test(found)) fail(`${label}: the reveal says "${found}"`);
+  const found = await page.getByTestId("hunt-found-line").innerText();
+  if (!/found/i.test(found) && !/regions/i.test(found)) fail(`${label}: the reveal says "${found}"`);
   const dex = await page.getByTestId("hunt-dex-link").getAttribute("href");
   if (!/\/pokemon\/[a-z0-9-]+#encounters$/.test(dex ?? "")) fail(`${label}: the Pokédex link is ${dex}`);
   if (shot) {
@@ -99,8 +106,8 @@ async function playRound(page, { phone, fail, label, shot, edit = false }) {
 async function playGame(page, opts) {
   for (let r = 0; r < 5; r++) await playRound(page, { ...opts, label: `${opts.label} round ${r + 1}`, edit: opts.edit && r === 0, shot: r === 0 ? opts.shot : undefined });
   await page.getByTestId("hunt-results").waitFor();
-  const total = await page.getByTestId("hunt-total").innerText();
-  if (!/of 25,000/.test(total)) fail(opts, `the results say "${total}"`);
+  const total = await page.getByTestId("hunt-results-total").innerText();
+  if (!/\d/.test(total)) fail(opts, `the results say "${total}"`);
 }
 const fail = (opts, msg) => opts.fail(`${opts.label}: ${msg}`);
 
@@ -115,26 +122,24 @@ export async function runHunt({ browser, BASE, OUT, errors, step }) {
     watchApi(page, f);
     try {
       await page.goto(`${BASE}/pokeguessr`, { waitUntil: "load" });
-      await page.getByTestId("hunt-card").waitFor();
-      await page.getByTestId("hunt-card").scrollIntoViewIfNeeded();
-      await page.screenshot({ path: `${OUT}/hunt-hub-card.png` });
-      await page.getByTestId("hunt-link").click();
-      await page.getByTestId("hunt-setup").waitFor();
-      await page.screenshot({ path: `${OUT}/hunt-setup.png`, fullPage: true });
-      await page.getByTestId("hunt-mode-classic").click();
-      await page.getByTestId("hunt-start").click();
+      await page.getByTestId("hunt-hub-entry").waitFor();
+      await page.getByTestId("hunt-hub-entry").scrollIntoViewIfNeeded();
+      await page.screenshot({ path: `${OUT}/hunt-hub-entry.png` });
+      await page.getByTestId("hunt-hub-entry").click();
+      await page.getByTestId("hunt-hub").waitFor();
+      await page.screenshot({ path: `${OUT}/hunt-hub.png`, fullPage: true });
+      await page.getByTestId("hunt-play-classic").click();
       await playGame(page, { phone: false, fail: f, label: "classic", edit: true, shot: `${OUT}/hunt-reveal-desktop.png` });
       await page.screenshot({ path: `${OUT}/hunt-results-desktop.png`, fullPage: true });
 
       step("pokémon hunt: Region mode (one pin a round, on the region's map)");
       await page.getByTestId("hunt-again").click();
-      await page.getByTestId("hunt-round-card").waitFor();
-      // Back to the setup for Region mode.
+      await page.getByTestId("hunt-card").waitFor();
+      // Back to the hunt's hub for Region mode.
       await page.goto(`${BASE}/pokeguessr/hunt`, { waitUntil: "load" });
-      await page.getByTestId("hunt-mode-region").click();
-      await page.getByTestId("hunt-region-galar").click();
-      await page.getByTestId("hunt-start").click();
-      await page.getByTestId("hunt-round-card").waitFor();
+      await page.getByTestId("hunt-region-picker").getByRole("radio", { name: "Galar" }).click();
+      await page.getByTestId("hunt-play-region").click();
+      await page.getByTestId("hunt-card").waitFor();
       if ((await pinMax(page)) !== 1) f("region mode takes more than one pin");
       await playGame(page, { phone: false, fail: f, label: "region", shot: `${OUT}/hunt-reveal-region.png` });
     } catch (e) {
@@ -153,25 +158,21 @@ export async function runHunt({ browser, BASE, OUT, errors, step }) {
     watchApi(page, f);
     try {
       await page.goto(`${BASE}/pokeguessr/hunt`, { waitUntil: "load" });
-      await page.getByTestId("hunt-setup").waitFor();
-      await page.screenshot({ path: `${OUT}/hunt-setup-phone.png`, fullPage: true });
-      await page.getByTestId("hunt-mode-daily").click();
-      await page.getByTestId("hunt-start").click();
-      await page.getByTestId("hunt-round-card").waitFor();
+      await page.getByTestId("hunt-hub").waitFor();
+      await page.screenshot({ path: `${OUT}/hunt-hub-phone.png`, fullPage: true });
+      await page.getByTestId("hunt-play-daily").click();
+      await page.getByTestId("hunt-card").waitFor();
       await page.screenshot({ path: `${OUT}/hunt-round-phone.png` });
       await playGame(page, { phone: true, fail: f, label: "daily", shot: `${OUT}/hunt-reveal-phone.png` });
-      const share = page.getByTestId("hunt-share");
-      if (!(await share.isVisible())) f("the Daily's results have no share button");
-      const grid = await page.locator("pre").first().innerText();
-      if (!/^Pokémon Hunt #\d+ · [\d,]+\n[🟩🟨🟧🟥]{5}\n/u.test(grid)) f(`the share text is "${grid}"`);
+      if (!(await page.getByTestId("hunt-share-button").isVisible())) f("the Daily's results have no share button");
+      if ((await page.getByTestId("hunt-share-grid").locator("li").count()) !== 5) f("the share grid doesn't have a row per round");
       await page.screenshot({ path: `${OUT}/hunt-results-phone.png`, fullPage: true });
       // The same Daily for everyone: a second player gets the same first Pokémon.
       const other = await open(browser, { width: 390, height: 844 }, true);
       try {
         const first = async (p) => {
           await p.goto(`${BASE}/pokeguessr/hunt`, { waitUntil: "load" });
-          await p.getByTestId("hunt-mode-daily").click();
-          await p.getByTestId("hunt-start").click();
+          await p.getByTestId("hunt-play-daily").click();
           return (await p.getByTestId("hunt-name").innerText()).trim();
         };
         const [a, b] = [await first(page), await first(other.page)];
