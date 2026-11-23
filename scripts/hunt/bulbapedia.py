@@ -36,12 +36,14 @@ VERSION_KEYS = {
     "Legends: Z-A": ["legends-za"], "Mega Dimension": ["legends-za"],
 }
 
-# Segments that aren't a wild spot: trades, raids, gifts, transfers, breeding, events...
+# Lines that aren't a wild spot: trades, raids, gifts, transfers, breeding, events, swarms...
 OTHER = re.compile(
     r"Trade|Tera Raid|\{\{g\|HOME\}\}|Pokémon HOME|Pokémon Bank|Poké Transporter|Event|Gift|[Rr]eceived|\|breeding\||Breed \{\{p\||[Ee]volve|Evolution|"
-    r"Union Circle|Dynamax Adventure|Max Lair|Unobtainable|Pal Park|Pokéwalker|Dream World|Friend Safari|Hyperspace|"
-    r"Grand Underground|Ultra Space|Ultra Wormhole|Mass Outbreak|Roaming|[Rr]oams|Island Scan|Reward|Fossil|Revive"
+    r"Union Circle|Dynamax Adventure|Unobtainable|Island Scan|Reward|Fossil|Revive|First partner|Professor|"
+    r"Dual-slot|Mass outbreak|Swarm|Roaming|[Rr]oams|Pokéwalker|Dream World|Pal Park|Hoenn Sound|Sinnoh Sound|Poké Radar chain"
 )
+# A place followed by one of these in brackets isn't a wild spot there ("Celadon City (Rocket Game Corner)").
+PLACE_NOTE_OTHER = re.compile(r"Game Corner|Prize|Trade|Gift|Dual-slot|Swarm|Mass outbreak|Received|Event")
 MAX_RAID = re.compile(r"Max Raid Battle")
 
 
@@ -50,19 +52,25 @@ def strip_tags(s):
 
 
 def places_of(seg):
-    out = []
+    found = []
     for m in re.finditer(r"\{\{(rt|rtn)\|(\d+)\|([^}|]+)[^}]*\}\}", seg):
-        out.append("Route " + m.group(2))
-    for m in re.finditer(r"\{\{(?:al|gdis|ka|DL)\|([^}|]+)(?:\|[^}]*)?\}\}", seg):
-        out.append(m.group(1))
+        found.append((m.start(), m.end(), "Route " + m.group(2)))
+    for m in re.finditer(r"\{\{safari\|([^}|]+)[^}]*\}\}", seg):
+        found.append((m.start(), m.end(), m.group(1) + " Safari Zone"))
+    for m in re.finditer(r"\{\{(?:al|gdis|ka|OBP|si|ho|kal|pal|ga|gal|jo|un|Safari)\|([^}|]+)(?:\|[^}]*)?\}\}", seg):
+        found.append((m.start(), m.end(), m.group(1)))
     for m in re.finditer(r"\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|[^\]]*)?\]\]", seg):
-        t = m.group(1).strip()
-        t = re.sub(r"/(Dens|Raid Dens)$", "", t)
-        out.append(t)
+        t = re.sub(r"/(Dens|Raid Dens)$", "", m.group(1).strip())
+        found.append((m.start(), m.end(), t))
+    found.sort()
     seen = []
-    for p in out:
-        if p not in seen:
-            seen.append(p)
+    for start, end, name in found:
+        after = seg[end:end + 120]
+        note = re.match(r"\s*\(([^()]*(?:\([^()]*\)[^()]*)*)\)", after)
+        if note and PLACE_NOTE_OTHER.search(note.group(1)) or PLACE_NOTE_OTHER.search(name):
+            continue
+        if name not in seen:
+            seen.append(name)
     return seen
 
 

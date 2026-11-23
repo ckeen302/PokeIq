@@ -8,7 +8,16 @@ import { VERSION_BY_KEY, versionOrder } from "../../src/lib/pokemon/encounter-ty
 import { buildGrid, goodShare, round3, worldDifficulty, type MapGrid, type Pt } from "./difficulty";
 import { FAMOUS } from "./famous";
 import { PLACE_DEPENDENT_FORMS, regionalForms, resolveForms, type EvidenceEntry, type FormInfo } from "./forms";
-import { VERSION_REGIONS } from "./rules";
+import { ALTERING_CAVE, EVENT_ONLY, VERSION_REGIONS } from "./rules";
+import { normPlace } from "../../src/lib/pokemon/encounter-transform";
+
+/** Rows that need an event (rules.ts EVENT_ONLY, Altering Cave): left out like any event. */
+function eventOnly(dex: number, v: string, loc: string): { kind: "excluded"; why: string } | undefined {
+  const e = EVENT_ONLY.find((x) => x.dex === dex && (!x.versions || x.versions.includes(v)) && (!x.loc || normPlace(x.loc) === normPlace(loc)));
+  if (e) return { kind: "excluded", why: e.why };
+  if (ALTERING_CAVE.versions.includes(v) && normPlace(loc) === normPlace(ALTERING_CAVE.loc) && !ALTERING_CAVE.normal.includes(dex)) return { kind: "excluded", why: "Altering Cave Mystery Gift event" };
+  return undefined;
+}
 import { buildPlaceIndex, classifyMethod, isOffMap, matchPlace, placeKey, type GeoPlace, type PinnedPlace, type PlaceIndex } from "./match";
 
 export interface EncRow {
@@ -27,6 +36,8 @@ export interface Inputs {
   encounters: Map<number, { g: number; rows: EncRow[] }[]>;
   /** dex → Bulbapedia's location lines (only needed for species with regional forms). */
   evidence: Record<string, EvidenceEntry[]>;
+  /** dex → form ("" for the original) → version → Max Raid den places both sources list. */
+  dens?: Record<string, Record<string, Record<string, string[]>>>;
 }
 
 /** Something the build couldn't place with certainty; the entry it belongs to is left out. */
@@ -63,14 +74,16 @@ interface Acc {
   uncertain: ReviewItem[];
 }
 
-export function buildAnswers(inp: Inputs): BuildResult {
+/** `difficulty: false` skips the measure (zeros), for quick checks of the matching alone. */
+export function buildAnswers(inp: Inputs, opts: { difficulty?: boolean } = {}): BuildResult {
+  const measure = opts.difficulty !== false;
   const idx = buildPlaceIndex(inp.geo.world.locations);
   const formsBy = regionalForms(inp.aboutForms);
   const dexBy = new Map(inp.pokedex.map((p) => [p.id, p]));
   const accs = new Map<string, Acc>();
   const review: ReviewItem[] = [];
   const missing = new Map<string, { versions: Set<string>; entries: Set<string> }>();
-  const stats: Record<string, number> = { rows: 0, counted: 0, excludedMethod: 0, offMap: 0, excludedGame: 0 };
+  const stats: Record<string, number> = { rows: 0, counted: 0, excludedMethod: 0, offMap: 0, excludedGame: 0, dataDenRows: 0 };
 
   const nameOf = (dex: number, form: string | null) => (form ? formsBy.get(dex)!.find((f) => f.key === form)!.name : dexBy.get(dex)!.name);
   const acc = (dex: number, form: string | null): Acc => {
@@ -88,8 +101,13 @@ export function buildAnswers(inp: Inputs): BuildResult {
       review.push({ id: String(dex), name: mon.name, why: PLACE_DEPENDENT_FORMS[dex] });
       continue;
     }
-    for (const g of inp.encounters.get(dex) ?? []) {
-      for (const r of g.rows) {
+    // Max Raid dens come from the agreed den table (scripts/hunt/make-dens.ts), not the data's partial rows.
+    const rows: (EncRow & { forms?: (string | null)[] })[] = [];
+    for (const g of inp.encounters.get(dex) ?? []) for (const r of g.rows) r.m === "Max Raid" ? stats.dataDenRows++ : rows.push(r);
+    for (const [form, byVersion] of Object.entries(inp.dens?.[String(dex)] ?? {}))
+      for (const [v, places] of Object.entries(byVersion)) for (const loc of places) rows.push({ v: [v], loc, m: "Max Raid", forms: [form || null] });
+    {
+      for (const r of rows) {
         if (!r.loc) continue;
         for (const v of r.v) {
           stats.rows++;
@@ -101,7 +119,7 @@ export function buildAnswers(inp: Inputs): BuildResult {
             stats.excludedGame++;
             continue;
           }
-          const mc = classifyMethod(r.m, [v]);
+          const mc = eventOnly(dex, v, r.loc) ?? classifyMethod(r.m, [v], r.n);
           if (mc.kind === "excluded") {
             stats.excludedMethod++;
             continue;
@@ -112,7 +130,7 @@ export function buildAnswers(inp: Inputs): BuildResult {
           }
           const pm = matchPlace(idx, r.loc, v);
           const names = [r.loc, ...(pm.kind === "place" ? [idx.pinned.get(pm.key)!.name] : [])];
-          const fr = resolveForms({ dex, version: v, note: r.n, names, forms, evidence: inp.evidence[String(dex)] });
+          const fr: ReturnType<typeof resolveForms> = r.forms ? { kind: "forms", forms: r.forms, via: "den table" } : resolveForms({ dex, version: v, note: r.n, names, forms, evidence: inp.evidence[String(dex)] });
           const rowForms = fr.kind === "forms" ? fr.forms : allForms;
           const fail = (why: string) => {
             for (const f of rowForms) acc(dex, f).uncertain.push({ id: entryId(dex, f), name: nameOf(dex, f), version: v, loc: r.loc, method: r.m, why });
@@ -152,9 +170,9 @@ export function buildAnswers(inp: Inputs): BuildResult {
   const { width: W, height: H, squarePx } = inp.geo.world.map;
   const world = (p: Pt): Pt => [p[0] * W, p[1] * H];
   const pinned = [...idx.pinned.values()];
-  const worldGrid = buildGrid([0, 0, W, H], squarePx, pinned.map((p) => p.mask.map(world)));
+  const worldGrid = !measure ? null : buildGrid([0, 0, W, H], squarePx, pinned.map((p) => p.mask.map(world)));
   const regionGrids = new Map<HuntMapRegionId, { grid: MapGrid; regions: string[] }>();
-  for (const id of HUNT_MAP_REGIONS) {
+  for (const id of measure ? HUNT_MAP_REGIONS : []) {
     const crop = inp.geo.world.crops[id];
     if (!crop) continue;
     regionGrids.set(id, { grid: buildGrid(crop.box, squarePx, pinned.filter((p) => crop.regions.includes(p.region)).map((p) => p.mask.map(world))), regions: crop.regions });
@@ -182,8 +200,8 @@ export function buildAnswers(inp: Inputs): BuildResult {
     places.sort((x, y) => regionOrder(x.region) - regionOrder(y.region) || x.geoRegion.localeCompare(y.geoRegion) || x.name.localeCompare(y.name));
     const regions = HUNT_REGIONS.filter((r) => places.some((p) => p.region === r));
     const spotsOf = (filter: (p: PinnedPlace) => boolean) => places.map((p) => idx.pinned.get(placeKey(p.geoRegion, p.name))!).filter(filter).map((p) => p.mask.map(world));
-    const shares = regions.map((r) => goodShare(worldGrid, spotsOf((p) => HUNT_REGION_OF_GEO[p.region] === r)));
-    const difficulty = worldDifficulty(shares, huntPinsFor(regions.length, "classic"));
+    const shares = regions.map((r) => (!worldGrid ? 0 : goodShare(worldGrid, spotsOf((p) => HUNT_REGION_OF_GEO[p.region] === r))));
+    const difficulty = !measure ? 0 : worldDifficulty(shares, huntPinsFor(regions.length, "classic"));
     const regionDifficulty: Partial<Record<HuntMapRegionId, number>> = {};
     for (const [rid, { grid, regions: geoRegions }] of regionGrids) {
       const spots = spotsOf((p) => geoRegions.includes(p.region));

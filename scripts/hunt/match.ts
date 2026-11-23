@@ -7,7 +7,7 @@
  * the row is uncertain and the Pokémon is left out (rules 2, 4 and 5).
  */
 import { normPlace } from "../../src/lib/pokemon/encounter-transform";
-import { METHODS, MAX_RAID_VERSIONS, OFF_MAP_PLACES, PLACE_ALIASES, VERSION_REGIONS, ZA_PLACE } from "./rules";
+import { METHODS, MAX_RAID_VERSIONS, NOT_THE_SAME, OFF_MAP_PLACES, PLACE_ALIASES, VERSION_REGIONS, ZA_PLACE } from "./rules";
 
 export interface GeoPlace {
   name: string;
@@ -61,8 +61,9 @@ export function buildPlaceIndex(locations: GeoPlace[]): PlaceIndex {
 
 export type MethodClass = { kind: "counted"; label: string } | { kind: "excluded"; why: string } | { kind: "unknown"; why: string };
 
-export function classifyMethod(m: string | undefined, versions: string[]): MethodClass {
+export function classifyMethod(m: string | undefined, versions: string[], note?: string): MethodClass {
   if (!m) return { kind: "unknown", why: "no method" };
+  if ((note ?? "").split(" · ").includes("Swarm")) return { kind: "excluded", why: "swarm" };
   if (!(m in METHODS)) return { kind: "unknown", why: `method "${m}" isn't in the rules` };
   const label = METHODS[m];
   if (label === null) return { kind: "excluded", why: `method ${m}` };
@@ -94,41 +95,31 @@ export function matchPlace(idx: PlaceIndex, loc: string, version: string): Place
   const regions = VERSION_REGIONS[version];
   if (!regions) return { kind: "none", why: `unknown version ${version}` };
   if (!regions.length) return { kind: "none", why: `${version} isn't on the map` };
+  const other = NOT_THE_SAME.find((n) => n.versions.includes(version) && normPlace(n.loc) === normPlace(loc));
+  if (other) return { kind: "none", why: other.why };
+  const alias = (name: string, within: string[]) => {
+    const hits = new Set<string>();
+    for (const a of PLACE_ALIASES)
+      if (within.includes(a.region) && normPlace(a.from) === normPlace(name) && (!a.versions || a.versions.includes(version))) for (const t of lookup(idx, [a.region], a.to)) hits.add(t);
+    return hits;
+  };
+  // The name as written, then forms of it, each tried only when the one before found nothing.
+  const variants: [string, string, string[]][] = [["name", loc, regions]];
   const base = loc.replace(/ \([^()]*\)$/, "");
-  const steps: [string, () => Set<string>][] = [
-    ["name", () => lookup(idx, regions, loc)],
-    ["name without its sub-area", () => (base !== loc ? lookup(idx, regions, base) : new Set())],
-    [
-      "alias",
-      () => {
-        const hits = new Set<string>();
-        for (const a of PLACE_ALIASES)
-          if (regions.includes(a.region) && normPlace(a.from) === normPlace(loc) && (!a.versions || a.versions.includes(version))) for (const t of lookup(idx, [a.region], a.to)) hits.add(t);
-        return hits;
-      },
-    ],
-    [
-      // A few Pearl rows glue the sub-area on: "Route 210South", "Lost Tower1F", "Mt. CoronetRoute 211 Entrance".
-      "without a glued-on sub-area",
-      () => {
-        const m = /^(.+?(?:[a-z](?=[A-Z0-9])|[0-9](?=[A-Z])))/.exec(loc);
-        return m && m[1] !== loc ? lookup(idx, regions, m[1]) : new Set();
-      },
-    ],
-    ["without 'Sea'", () => (/^Sea /.test(loc) ? lookup(idx, regions, loc.slice(4)) : new Set())],
-    [
-      "without the region prefix",
-      () => {
-        const m = /^(\S+) (.+)$/.exec(loc);
-        const r = m && regions.find((x) => x.toLowerCase() === m[1].toLowerCase());
-        return m && r ? lookup(idx, [r], m[2]) : new Set();
-      },
-    ],
-  ];
-  for (const [via, run] of steps) {
-    const hits = run();
-    if (hits.size === 1) return { kind: "place", key: [...hits][0], via };
-    if (hits.size > 1) return { kind: "none", why: `"${loc}" names ${hits.size} places in ${regions.join(" / ")}: ${[...hits].join(", ")}` };
+  if (base !== loc) variants.push(["name without its sub-area", base, regions]);
+  // A few Pearl rows glue the sub-area on: "Route 210South", "Lost Tower1F", "Mt. CoronetRoute 211 Entrance".
+  const glued = /^(.+?(?:[a-z](?=[A-Z0-9])|[0-9](?=[A-Z])))/.exec(loc);
+  if (glued && glued[1] !== loc) variants.push(["without a glued-on sub-area", glued[1], regions]);
+  if (/^Sea /.test(loc)) variants.push(["without 'Sea'", loc.slice(4), regions]);
+  if (/^Mount /.test(loc)) variants.push(["Mount as Mt.", loc.replace(/^Mount /, "Mt. "), regions]);
+  const pre = /^(\S+) (.+)$/.exec(loc);
+  const preRegion = pre && regions.find((x) => x.toLowerCase() === pre[1].toLowerCase());
+  if (pre && preRegion) variants.push(["without the region prefix", pre[2], [preRegion]]);
+  for (const [via, name, within] of variants) {
+    for (const [how, hits] of [["", lookup(idx, within, name)], [" (alias)", alias(name, within)]] as const) {
+      if (hits.size === 1) return { kind: "place", key: [...hits][0], via: via + how };
+      if (hits.size > 1) return { kind: "none", why: `"${loc}" names ${hits.size} places in ${regions.join(" / ")}: ${[...hits].join(", ")}` };
+    }
   }
   return { kind: "none", why: `"${loc}" isn't on the map in ${regions.join(" / ")}` };
 }

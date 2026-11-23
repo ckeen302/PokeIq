@@ -43,13 +43,13 @@ export const METHODS: Record<string, string | null> = {
   Grass: "Grass", "Tall grass": "Grass", "Grass (random)": "Grass", "Dark grass": "Grass", "Rustling grass": "Grass",
   "Yellow Flowers": "Grass", "Yellow flowers": "Grass", "Purple Flowers": "Grass", "Purple flowers": "Grass",
   "Red Flowers": "Grass", "Red flowers": "Grass", "Rough terrain": "Grass", Swamp: "Grass",
-  "Grass - Rare Spawns": "Grass", DexNav: "Grass", Swarm: "Swarm", PokeRadar: "Poké Radar",
+  "Grass - Rare Spawns": "Grass", DexNav: "Grass", PokeRadar: "Poké Radar",
   Cave: "Cave", "Dust cloud": "Cave",
   // Water.
   Surf: "Surf", "Rippling water": "Surf", Water: "Surf", "Surf Details": "Surf", "Surf - Blocks Details": "Surf",
-  "Water - Rare Spawns": "Surf", "Swarm - Surf": "Surf", Dive: "Dive",
+  "Water - Rare Spawns": "Surf", Dive: "Dive",
   "Old Rod": "Old Rod", "Good Rod": "Good Rod", "Super Rod": "Super Rod",
-  Fishing: "Fishing", "Fishing spot": "Fishing", "Bubbling spot": "Fishing", "Feebas tile": "Fishing", "Swarm - Fish": "Fishing",
+  Fishing: "Fishing", "Fishing spot": "Fishing", "Bubbling spot": "Fishing", "Feebas tile": "Fishing",
   // Trees and rocks.
   Headbutt: "Headbutt", "Headbutt (low)": "Headbutt", "Headbutt (high)": "Headbutt",
   "Berry Tree": "Berry tree", "Berry tree": "Berry tree", "Berry pile": "Berry tree", "Shaking tree": "Shaking tree",
@@ -70,6 +70,8 @@ export const METHODS: Record<string, string | null> = {
   // Left out (rule 1).
   Gift: null, "Gift (Egg)": null, Trade: null, Curry: null, "Tera Raid": null, Hyperspace: null, Underground: null,
   "Massive mass outbreak": null, Roaming: null, "Roaming (water)": null,
+  /** Swarms and mass outbreaks: a random, short-lived event, not a standing spot (rows with a "Swarm" note are left out too). */
+  Swarm: null, "Swarm - Fish": null, "Swarm - Surf": null,
   /** Sun/Moon's Island Scan: a once-a-day scan feature, not a normal wild spot. */
   "Island Scan": null,
   /** Gen 4 dual-slot: only with a Game Boy Advance cartridge in the second slot. */
@@ -106,5 +108,40 @@ export const PLACE_ALIASES: { region: string; from: string; to: string; versions
   { region: "Hoenn", from: "Team Magma Hideout", to: "Magma Hideout (Jagged Pass)", why: "the same hideout; the map files it under Jagged Pass" },
   { region: "Hoenn", from: "Aqua Hideout", to: "Team Aqua Hideout", why: "the same hideout" },
   { region: "Sinnoh", from: "Trophy Garden", to: "Pokémon Mansion", why: "the Trophy Garden is the Pokémon Mansion's back garden on Route 212 (Bulbapedia)" },
+  { region: "Johto", from: "Mt. Silver Cave", to: "Mt. Silver", why: "the cave inside Mt. Silver" },
   { region: "Kalos", from: "Unknown Dungeon", to: "Pokémon Village", versions: ["x", "y"], why: "the Unknown Dungeon is a cave inside Pokémon Village (Bulbapedia: 'Unknown Dungeon is a cave in Pokémon Village')" },
 ];
+
+/**
+ * Places a name matches on the map that are a different place in these games: no match.
+ * Omega Ruby / Alpha Sapphire's Mirage spots appear in many places around Hoenn, not where
+ * Ruby / Sapphire / Emerald's Mirage Island (the map's) is.
+ */
+export const NOT_THE_SAME: { versions: string[]; loc: string; why: string }[] = [
+  { versions: ["omega-ruby", "alpha-sapphire"], loc: "Mirage Island", why: "Omega Ruby / Alpha Sapphire's Mirage Islands move around Hoenn; the map's Mirage Island is Ruby / Sapphire / Emerald's" },
+];
+
+/**
+ * Encounters that need an event (a ticket, a pass, a QR code, another game's save data),
+ * left out by rule 1. `loc` and `versions` narrow a row; leaving one out means every row.
+ * Each is from Bulbapedia's location table for that Pokémon.
+ */
+export const EVENT_ONLY: { dex: number; versions?: string[]; loc?: string; why: string }[] = [
+  { dex: 151, loc: "Faraway Island", why: "Old Sea Map event" },
+  { dex: 172, versions: ["heartgold", "soulsilver"], loc: "Ilex Forest", why: "Spiky-eared Pichu event" },
+  { dex: 249, loc: "Navel Rock", why: "Mystic Ticket event" },
+  { dex: 250, loc: "Navel Rock", why: "Mystic Ticket event" },
+  { dex: 380, versions: ["ruby", "sapphire", "emerald"], loc: "Southern Island", why: "Eon Ticket event" },
+  { dex: 381, versions: ["ruby", "sapphire", "emerald"], loc: "Southern Island", why: "Eon Ticket event" },
+  { dex: 380, versions: ["heartgold", "soulsilver"], loc: "Pewter City", why: "Enigma Stone event" },
+  { dex: 381, versions: ["heartgold", "soulsilver"], loc: "Pewter City", why: "Enigma Stone event" },
+  { dex: 386, loc: "Birth Island", why: "Aurora Ticket event" },
+  { dex: 491, why: "Member Card event (or another game's save data in Brilliant Diamond / Shining Pearl)" },
+  { dex: 492, why: "Oak's Letter event (or another game's save data in Brilliant Diamond / Shining Pearl)" },
+  { dex: 493, why: "Azure Flute event (or another game's save data in Brilliant Diamond / Shining Pearl)" },
+  { dex: 494, versions: ["black", "white"], loc: "Liberty Garden", why: "Liberty Pass event" },
+  { dex: 801, versions: ["ultra-sun", "ultra-moon"], why: "QR Scanner event" },
+];
+
+/** FireRed / LeafGreen and Emerald's Altering Cave only has Zubat without a Mystery Gift event. */
+export const ALTERING_CAVE = { versions: ["firered", "leafgreen", "emerald"], loc: "Altering Cave", normal: [41] };
