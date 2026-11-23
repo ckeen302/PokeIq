@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MapPinned } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
@@ -19,7 +19,12 @@ import { formKey } from "./hunt-ui";
 export function HuntRoundCard({ round, mode, mapName, className }: { round: HuntRoundPublic; mode: HuntMode; /** Region mode: the map's name. */ mapName?: string; className?: string }) {
   const t = useT(huntNs);
   const [art, setArt] = useState<"loading" | "ready" | "failed">("loading");
-  useEffect(() => setArt("loading"), [round.art]);
+  // The art can finish loading before the page is interactive (its onLoad never runs): read where it got to.
+  const imgRef = useRef<HTMLImageElement>(null);
+  useEffect(() => {
+    const img = imgRef.current;
+    setArt(img?.complete ? (img.naturalWidth ? "ready" : "failed") : "loading");
+  }, [round.art]);
   const form = formKey(round.id);
   const formTag = form && t.has(`forms.${form}`) ? t(`forms.${form}` as "forms.alola") : null;
   const found = mode === "region" && mapName ? t("card.foundIn", { map: mapName }) : t("card.found", { n: round.regions });
@@ -44,6 +49,7 @@ export function HuntRoundCard({ round, mode, mapName, className }: { round: Hunt
           {/* eslint-disable-next-line @next/next/no-img-element -- official art, served sized by /api/art */}
           <img
             key={round.art}
+            ref={imgRef}
             src={round.art}
             alt={t("card.artAlt", { name: round.name })}
             draggable={false}

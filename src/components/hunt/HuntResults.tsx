@@ -60,14 +60,14 @@ export function HuntResults({ result, share, onAgain, daily, onHub }: {
                 <div className="mt-0.5 whitespace-nowrap font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c8bfff]">{modeLine}</div>
               </div>
             </Notch>
-            <ol className="relative z-[1] mx-auto flex min-h-0 w-full max-w-5xl flex-1 items-center justify-center gap-[1.5vw] overflow-x-auto px-4 pb-[4vh] pt-[5.5rem] max-md:justify-start max-md:pb-3 max-md:pt-[4.5rem] md:pt-[10vh]" aria-hidden>
+            <ol className="relative z-[1] mx-auto flex min-h-0 w-full max-w-5xl flex-1 items-center justify-center gap-[1.5vw] px-4 pb-[4vh] pt-[5.5rem] max-md:pb-3 max-md:pt-[4.5rem] md:pt-[10vh]" aria-hidden>
               {result.rounds.map((r, i) => (
                 <motion.li
                   key={r.id + i}
                   initial={reduced ? false : { opacity: 0, y: 24, scale: 0.9 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ duration: 0.4, delay: reduced ? 0 : 0.15 + i * 0.09, ease: [0.2, 0.8, 0.2, 1] }}
-                  className="flex w-[min(17vw,11rem)] shrink-0 flex-col items-center text-center text-white max-md:w-[17vw]"
+                  className="flex min-w-0 max-w-[11rem] flex-1 flex-col items-center text-center text-white"
                 >
                   <div className="relative flex aspect-square w-full items-center justify-center">
                     <div className={cn("absolute inset-[14%] rounded-full blur-2xl", i === best ? "bg-[#4cbb17]/40" : "bg-[#6c5ce7]/30")} />
@@ -132,11 +132,11 @@ export function HuntResults({ result, share, onAgain, daily, onHub }: {
 
               <div className="grid gap-2 sm:grid-cols-2">
                 <Button size="lg" variant="success" onClick={onAgain} data-testid="hunt-again">
-                  <RotateCcw className="h-4 w-4" aria-hidden />
+                  <RotateCcw className="h-4 w-4 shrink-0" aria-hidden />
                   {daily ? t("results.practice") : t("results.again")}
                 </Button>
                 <Button size="lg" variant="outline" onClick={hub} data-testid="hunt-hub">
-                  <LayoutGrid className="h-4 w-4" aria-hidden />
+                  <LayoutGrid className="h-4 w-4 shrink-0" aria-hidden />
                   {t("results.hub")}
                 </Button>
               </div>

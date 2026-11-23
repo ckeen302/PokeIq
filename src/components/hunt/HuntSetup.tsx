@@ -60,7 +60,7 @@ export function HuntSetup({ onStart, busy, error, daily }: {
     <div className="mx-auto max-w-6xl space-y-10" data-testid="hunt-setup">
       <div className="relative space-y-3 text-center">
         <Link href="/pokeguessr" className="tap inline-flex items-center gap-1.5 rounded-md px-2 py-1 font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground md:absolute md:left-0 md:top-0" data-testid="hunt-back">
-          <ArrowLeft className="h-4 w-4" aria-hidden />
+          <ArrowLeft className="h-4 w-4 shrink-0" aria-hidden />
           {t("hub.back")}
         </Link>
         <p className="hud-label text-screen max-md:hidden">{t("hub.eyebrow")}</p>
@@ -156,7 +156,7 @@ export function HuntSetup({ onStart, busy, error, daily }: {
               )}
             </div>
             <Button size="lg" variant={mode === "region" ? "success" : "default"} className="w-full shrink-0 md:w-auto md:min-w-[14rem]" disabled={busy} onClick={() => onStart(mode === "region" ? { mode, region } : { mode })} data-testid="hunt-start">
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Play className="h-4 w-4" aria-hidden />}
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Play className="h-4 w-4 shrink-0" aria-hidden />}
               {startLabel}
             </Button>
           </CardContent>

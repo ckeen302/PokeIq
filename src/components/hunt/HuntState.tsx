@@ -28,7 +28,7 @@ export function HuntState({ kind, message, onRetry, onBack }: { kind: "loading" 
           <div className="mt-5 flex justify-center gap-2">
             {onRetry && (
               <button type="button" onClick={onRetry} className="inline-flex h-11 items-center gap-2 rounded-md bg-[#4cbb17] px-5 font-display text-sm font-bold uppercase tracking-wider text-white transition-colors hover:bg-[#58d01c]" data-testid="hunt-retry">
-                <RotateCcw className="h-4 w-4" aria-hidden />
+                <RotateCcw className="h-4 w-4 shrink-0" aria-hidden />
                 {t("state.retry")}
               </button>
             )}

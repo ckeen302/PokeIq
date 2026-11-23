@@ -181,7 +181,7 @@ export function HuntRevealPanel(p: HuntRevealPanelProps) {
         {running && (
           <button type="button" onClick={skip} className={cn("absolute right-3 z-20 inline-flex h-10 items-center gap-1.5 rounded-md bg-black/60 px-3.5 font-display text-xs font-bold uppercase tracking-wider text-white backdrop-blur transition-colors hover:bg-black/80", phone ? "bottom-3" : "bottom-[7.5rem]")} data-testid="hunt-skip">
             {t("reveal.skip")}
-            <ChevronsRight className="h-4 w-4" aria-hidden />
+            <ChevronsRight className="h-4 w-4 shrink-0" aria-hidden />
           </button>
         )}
         {/* The bottom bar (computers), PokéGuessr's: the score, the regions found and Next. */}
@@ -314,7 +314,7 @@ function RevealBar(p: HuntRevealPanelProps & { shown: number; headline: string; 
           type="button"
           onClick={p.onNext}
           data-testid="hunt-next"
-          className="flex h-12 w-full max-w-xs items-center justify-center gap-2 rounded-md bg-[#4cbb17] px-6 font-display text-base font-bold uppercase tracking-wider text-white shadow-lg transition-[background-color,transform] hover:bg-[#58d01c] active:scale-[0.98]"
+          className="flex h-12 w-full max-w-xs items-center justify-center gap-2 whitespace-nowrap rounded-md bg-[#4cbb17] px-4 font-display text-base font-bold uppercase tracking-wider text-white shadow-lg transition-[background-color,transform] hover:bg-[#58d01c] active:scale-[0.98]"
         >
           {p.last ? t("reveal.summary") : t("reveal.next")} ▶
           <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline [@media(pointer:coarse)]:!hidden">{t("reveal.space")}</kbd>
