@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
 import geoNs from "@/messages/geo";
 import { formatNumber } from "@/i18n/format";
+import { MIN_H, MIN_W, REST } from "./dock-size";
 
 export interface FullscreenApi {
   /** Browser full screen (the game already fills the window). */
@@ -281,20 +282,17 @@ const SIZE_HEIGHT: Record<MapSize, number> = { s: 200, m: 300, l: 430, xl: 0 };
 export const dockWidth = (size: MapSize, aspect: number): string =>
   size === "xl" ? `min(60vw, calc(49vh * ${aspect}), calc(100% - 2rem))` : `min(${Math.round(SIZE_HEIGHT[size] * aspect)}px, calc(100% - 2rem))`;
 /*
- * Desktop: GeoGuessr's guess map, measured off GeoGuessr itself: 16% of the
- * window's width by 17% of its height until the pointer reaches it, then 30%
- * by 36.4% (the default step). The bigger/smaller buttons step the hovered
- * size only, like GeoGuessr's; the resting size never changes.
+ * Desktop: GeoGuessr's guess map (see dock-size). The bigger/smaller buttons
+ * step the hovered size only, like GeoGuessr's; the resting size never changes.
  */
-const REST = { w: "16vw", h: "17vh" };
 const OPEN: Record<MapSize, { w: string; h: string }> = {
   s: { w: "30vw", h: "36.4vh" },
   m: { w: "40vw", h: "48.5vh" },
   l: { w: "50vw", h: "60.6vh" },
   xl: { w: "60vw", h: "72.7vh" },
 };
-const boxWidth = (w: string) => `min(max(${w}, 200px), calc(100vw - 4rem))`;
-const boxHeight = (h: string) => `min(max(${h}, 120px), calc(100vh - 9rem))`;
+const boxWidth = (w: string) => `min(max(${w}, ${MIN_W}px), calc(100vw - 4rem))`;
+const boxHeight = (h: string) => `min(max(${h}, ${MIN_H}px), calc(100vh - 9rem))`;
 /* v2: everyone starts again at GeoGuessr's size (an older remembered XL no longer carries over). */
 const SIZE_KEY = "pokeiq:geo-map-size-v2";
 const STICKY_KEY = "pokeiq:geo-map-sticky-v2";
@@ -408,26 +406,28 @@ export function MapDock({
   // Resting: GeoGuessr's small corner map. Open (hovered, focused or pinned): the chosen step's size.
   const box = open ? OPEN[size] : REST;
   const idx = MAP_SIZES.indexOf(size);
-  const control = "tap flex h-7 w-7 items-center justify-center rounded bg-black/55 text-white backdrop-blur transition-colors hover:bg-black/75 disabled:opacity-35 disabled:hover:bg-black/55";
+  // Every size in the corner scales with the window, as GeoGuessr's does (measured at 1710×987 and 1000×578): 28 px buttons at 987 tall.
+  const control = "tap flex h-[2.84vh] w-[2.84vh] items-center justify-center rounded bg-black/55 [&>svg]:h-[1.42vh] [&>svg]:w-[1.42vh] text-white backdrop-blur transition-colors hover:bg-black/75 disabled:opacity-35 disabled:hover:bg-black/55";
   return (
     <div
       data-testid={testId}
       data-size={open ? size : "rest"}
       data-open={open ? "true" : undefined}
       data-sticky={sticky ? "true" : undefined}
-      className="geo-dock absolute bottom-4 right-8 z-10 flex flex-col gap-3.5 transition-[width] duration-[250ms] ease-out [&_[data-testid=geo-guess]]:h-[38px]"
-      style={{ width: boxWidth(box.w) }}
+      // Its margins, the gap and the guess button scale with the window like GeoGuessr's (32, 16, 14 and 38 px in a 1710×987 window).
+      className="geo-dock absolute z-10 flex flex-col transition-[width] duration-[250ms] ease-out [&_[data-testid=geo-guess]]:h-[3.85vh] [&_[data-testid=geo-guess]]:whitespace-nowrap [&_[data-testid=geo-guess]]:text-[1.62vh]"
+      style={{ width: boxWidth(box.w), right: "1.87vw", bottom: "1.62vh", gap: "1.42vh" }}
       onPointerOver={warm}
       onPointerLeave={cool}
       onFocusCapture={warm}
       onBlurCapture={cool}
     >
       <div className="relative transition-[height] duration-[250ms] ease-out" style={{ height: boxHeight(box.h) }}>
-        {/* GeoGuessr's corner map: + and − top left; the "whole map" button only once it's open. */}
-        <div className={cn("h-full overflow-hidden rounded-md border-2 border-foreground/20 shadow-2xl [&_[data-map-controls]]:left-1.5 [&_[data-map-controls]]:right-auto", !open && "[&_[data-map-controls]>button:nth-child(3)]:hidden")}>
+        {/* The corner map's zoom buttons (small, top left) show once it's open: at rest they'd cover the names, and hovering opens it anyway. */}
+        <div className={cn("h-full overflow-hidden rounded-md border-2 border-foreground/20 shadow-2xl [&_[data-map-controls]]:left-[0.6vh] [&_[data-map-controls]]:right-auto [&_[data-map-controls]]:top-[0.6vh] [&_[data-map-controls]]:gap-[0.4vh]", open ? "[&_[data-map-controls]>button]:h-[2.25vh] [&_[data-map-controls]>button]:w-[2.25vh] [&_[data-map-controls]_svg]:h-[1.2vh] [&_[data-map-controls]_svg]:w-[1.2vh]" : "[&_[data-map-controls]]:hidden")}>
           {map({ fill: true, land: "fit" })}
         </div>
-        <div className={cn("absolute bottom-full left-0 z-[2] mb-2 flex gap-1 transition-opacity duration-200", open ? "opacity-100" : "pointer-events-none opacity-0")} role="group" aria-label={t("dock.size")}>
+        <div className={cn("absolute bottom-full left-0 z-[2] mb-[0.81vh] flex gap-[0.4vh] transition-opacity duration-200", open ? "opacity-100" : "pointer-events-none opacity-0")} role="group" aria-label={t("dock.size")}>
           <button type="button" className={control} onClick={() => chooseSize(MAP_SIZES[Math.min(MAP_SIZES.length - 1, idx + 1)])} disabled={idx >= MAP_SIZES.length - 1} aria-label={t("dock.bigger")} title={t("dock.bigger")} data-testid="geo-map-grow">
             <Expand className="h-3.5 w-3.5" />
           </button>

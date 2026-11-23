@@ -11,6 +11,7 @@ import { useT } from "@/i18n/client";
 import geoNs from "@/messages/geo";
 import geoNamesNs from "@/messages/geo-names";
 import { localMap } from "@/lib/geo-i18n";
+import { DOCK_FLOOR_ZOOM, DOCK_ZOOM, restWidth } from "./dock-size";
 
 export interface MapPin {
   x: number;
@@ -101,6 +102,18 @@ function landBox(atlas: AtlasData): Box {
   return [Math.max(0, x0 - LAND_MARGIN), Math.max(0, y0 - LAND_MARGIN), Math.min(atlas.W, x1 + LAND_MARGIN), Math.min(atlas.H, y1 + LAND_MARGIN)];
 }
 
+/** Where a whole-world guess map starts: the dock zoomed in on the land's middle (GeoGuessr's), the phone card filled with the land. */
+function dockHome(box: Box, worldW: number, dock: boolean) {
+  if (!dock) return { box, cover: true };
+  // A little left of and below the land's middle: the resting map has Paldea, Johto and Hoenn in it (GeoGuessr's shows three
+  // continents), and once open, Galar's name sits clear of the zoom buttons.
+  const at: [number, number] = [box[0] + (box[2] - box[0]) * 0.465, box[1] + (box[3] - box[1]) * 0.56];
+  // Zoomed right out, the world nearly fills the box's width, a little closer than all of it so there's less empty sea above
+  // and below (Unova's and Alola's outer edges are a drag away); the view stays on the world.
+  const floor: Box = [0, box[1], worldW, box[3]];
+  return { box, at, floor, floorZoom: DOCK_FLOOR_ZOOM, scale: () => (DOCK_ZOOM * restWidth()) / (box[2] - box[0]) };
+}
+
 /** A map's width over its height as drawn (very tall or wide maps sit in a box of sensible proportions). */
 export function mapAspect(region: Pick<GeoRegionInfo, "map">): number {
   const [x0, y0, x1, y1] = region.map.box;
@@ -176,8 +189,11 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
     const wholeWorld = x0 <= 0 && y0 <= 0 && x1 >= atlas.W && y1 >= atlas.H;
     const e = createAtlas(canvas, stage, atlas, WORLD_MAP, {
       bounds: region.id === WORLD_REGION ? undefined : box,
-      // "fit" (the desktop dock): every region in view, as large as the box allows; true (the phone card): the land fills the card.
-      home: land && wholeWorld ? { box: landBox(atlas), cover: land !== "fit" } : undefined,
+      // "fit" (the desktop dock): zoomed in like GeoGuessr's, the same zoom when the box grows, and never further out than the land
+      // filling the box; true (the phone card): the land fills the card.
+      home: land && wholeWorld ? dockHome(landBox(atlas), atlas.W, land === "fit") : undefined,
+      // GeoGuessr's small, thin names: they label a region without covering it.
+      quietLabels: true,
       onTap: (wx, wy) => {
         const x = (wx - x0) / (x1 - x0);
         const y = (wy - y0) / (y1 - y0);
