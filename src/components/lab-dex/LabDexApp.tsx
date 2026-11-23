@@ -49,8 +49,10 @@ declare global {
 
 function webglOk() {
   try {
-    const c = document.createElement("canvas");
-    return !!c.getContext("webgl2");
+    const gl = document.createElement("canvas").getContext("webgl2");
+    // Give the probe's context back at once: browsers cap live contexts and drop the oldest.
+    gl?.getExtension("WEBGL_lose_context")?.loseContext();
+    return !!gl;
   } catch {
     return false;
   }

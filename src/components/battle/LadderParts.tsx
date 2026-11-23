@@ -2,7 +2,7 @@
 
 import Link from "@/components/ui/Link";
 import { Flame, Loader2, Medal, Trophy } from "lucide-react";
-import type { RankedLeaderRow } from "@/lib/ranked";
+import type { RankedLeaderRow, RankedStanding } from "@/lib/ranked";
 import { PLAY_FORMAT_INFO, type StandardFormatId } from "@/lib/battle/play";
 import { LADDER_FORMATS } from "@/lib/battle/ladder";
 import { useLadderStanding } from "@/lib/battle/ladder-client";
@@ -110,13 +110,27 @@ export function LadderTable({ rows, format, avatars }: { rows: RankedLeaderRow[]
 export function YourBattleStanding({ format }: { format: StandardFormatId }) {
   const state = useLadderStanding(format);
   const t = useT(battleLadder);
-  const tg = useT(battleGlicko);
-  if (state.status === "loading") return <Loader2 className="mx-auto h-5 w-5 animate-spin text-screen" aria-label={t("loading")} />;
   if (state.status === "off") return null;
-  const you = state.you;
+  // While it loads, the card a newcomer gets holds its place (unseen, the spinner on it), so the ladder under it
+  // doesn't jump down when the standing arrives.
+  if (state.status === "loading")
+    return (
+      <div className="relative">
+        <div className="invisible" aria-hidden inert>
+          <StandingCard format={format} you={null} placeholder />
+        </div>
+        <Loader2 className="absolute inset-0 m-auto h-5 w-5 animate-spin text-screen" aria-label={t("loading")} />
+      </div>
+    );
+  return <StandingCard format={format} you={state.you} />;
+}
+
+function StandingCard({ format, you, placeholder }: { format: StandardFormatId; you: RankedStanding | null; placeholder?: boolean }) {
+  const t = useT(battleLadder);
+  const tg = useT(battleGlicko);
   return (
     <Card className="border-primary/40">
-      <CardContent className="space-y-3 p-5" data-testid="your-standing">
+      <CardContent className="space-y-3 p-5" data-testid={placeholder ? undefined : "your-standing"}>
         <p className="hud-label flex items-center gap-1.5 text-primary">
           <Trophy className="h-3.5 w-3.5" aria-hidden /> {t("you", { format: PLAY_FORMAT_INFO[format].name })}
         </p>

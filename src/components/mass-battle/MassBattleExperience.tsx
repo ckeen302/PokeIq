@@ -41,6 +41,7 @@ import mbCopy from "@/messages/mass-battle-copy";
 import mbHow from "@/messages/mass-battle-how";
 import mbUi from "@/messages/mass-battle-ui";
 import { useMbNames } from "./names";
+import { webglProbe } from "@/lib/gl/probe";
 
 const MakeBattleVideo = lazy(() => import("./MakeBattleVideo"));
 
@@ -814,14 +815,7 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
   useEffect(() => {
     if (booted.current) return;
     booted.current = true;
-    const canGl = (() => {
-      try {
-        const c = document.createElement("canvas");
-        return !!(c.getContext("webgl2") || c.getContext("webgl"));
-      } catch {
-        return false;
-      }
-    })();
+    const canGl = webglProbe(["webgl2", "webgl"]);
     if (!canGl) {
       setGlOk(false);
       return;

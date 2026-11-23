@@ -33,6 +33,7 @@ import { fieldText, presetLabel } from "./words";
 import { RacePicker } from "./RacePicker";
 import { RaceBracket } from "./RaceBracket";
 import { cn } from "@/lib/utils";
+import { webglProbe } from "@/lib/gl/probe";
 
 const MakeRaceVideo = lazy(() => import("./MakeRaceVideo"));
 
@@ -59,13 +60,7 @@ export function loadEntrants(): Promise<Entrant[]> {
   return rowsPromise;
 }
 
-function webglOk() {
-  try {
-    return !!document.createElement("canvas").getContext("webgl2");
-  } catch {
-    return false;
-  }
-}
+const webglOk = () => webglProbe();
 
 /** Phones start on the light render, everything else on the middle one; the frame-time monitor adapts both ways. */
 function initialQuality(): Quality {

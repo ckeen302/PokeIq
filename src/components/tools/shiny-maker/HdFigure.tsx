@@ -7,6 +7,7 @@ import { FINISHES, type Design } from "@/lib/shiny-maker/design";
 import type { View } from "@/lib/shiny-maker/recolor";
 import { homeRenderUrl } from "@/lib/pokemon/art";
 import type { FigureHandle } from "./PixelFigure";
+import { webglProbe } from "@/lib/gl/probe";
 
 export const HD_SIZE = 512;
 export type PaintedKind = "hd" | "art";
@@ -182,11 +183,7 @@ export function loadHd(id: number, kind: PaintedKind = "hd"): Promise<HdAssets> 
 }
 
 export function hasWebGL2(): boolean {
-  try {
-    return !!document.createElement("canvas").getContext("webgl2");
-  } catch {
-    return false;
-  }
+  return webglProbe();
 }
 
 /** The Pokémon painted (its HOME render, or its official artwork), recoloured per part in a WebGL 2 shader. */

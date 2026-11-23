@@ -1,7 +1,7 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element -- thumbnails are pre-sized static files (public/art/160) */
-import { memo, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import { memo, useDeferredValue, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import Link from "@/components/ui/Link";
 import { motion } from "framer-motion";
 import { ArrowDown, ArrowDownWideNarrow, ArrowUp, ArrowUpDown, ArrowUpNarrowWide, BookOpenCheck, Check, ChevronDown, LayoutGrid, Rows3, Search, SlidersHorizontal, X } from "lucide-react";
@@ -172,9 +172,11 @@ export function PokedexExplorer({ rows, local }: { rows: DexRow[]; local?: DexLi
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const searchRef = useRef<HTMLInputElement | null>(null);
 
+  // The box shows each key at once; the cards follow at a lower priority, so typing never waits on a re-render of the grid.
+  const shownQuery = useDeferredValue(query);
   const filtered = useMemo(() => {
     const list = items.filter((p) => {
-      if (!(localMatch && local ? localMatch(p, query, local.search[p.id]) : matchesDexQuery(p, query))) return false;
+      if (!(localMatch && local ? localMatch(p, shownQuery, local.search[p.id]) : matchesDexQuery(p, shownQuery))) return false;
       if (types.length && !types.every((t) => p.types.includes(t))) return false;
       if (gens.length && !gens.includes(p.gen)) return false;
       if (legendsOnly && !(p.legendary || p.mythical)) return false;
@@ -188,10 +190,10 @@ export function PokedexExplorer({ rows, local }: { rows: DexRow[]; local?: DexLi
       const cmp = typeof va === "string" ? va.localeCompare(vb as string) : (va as number) - (vb as number);
       return cmp * dir || a.id - b.id;
     });
-  }, [items, query, types, gens, legendsOnly, finalOnly, sort, desc, local, localMatch]);
+  }, [items, shownQuery, types, gens, legendsOnly, finalOnly, sort, desc, local, localMatch]);
 
   // Reset the window whenever the result set changes.
-  useEffect(() => setVisible(PAGE), [query, types, gens, legendsOnly, finalOnly, sort, desc]);
+  useEffect(() => setVisible(PAGE), [shownQuery, types, gens, legendsOnly, finalOnly, sort, desc]);
 
   // Infinite scroll.
   useEffect(() => {
