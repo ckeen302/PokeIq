@@ -4,12 +4,13 @@ import { localUrl } from "@/i18n/paths";
 import Link from "@/components/ui/PlainLink";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowDown, ArrowLeft, ArrowUp, ArrowUpDown, ChevronDown, Clapperboard, List, Play, Plus, RotateCcw, Scale, Search, Share2, Square, Volume2, VolumeX, X, ZoomIn, ZoomOut } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowUp, ArrowUpDown, Building2, ChevronDown, Clapperboard, List, Play, Plus, RotateCcw, Scale, Search, Share2, Square, Volume2, VolumeX, X, ZoomIn, ZoomOut } from "lucide-react";
 import { isMuted, onMuteChange, setMuted } from "@/lib/sound";
 import { copyText } from "@/lib/share";
 import { formatFeet, formatMetres, type SizeItem } from "@/lib/sizes/types";
 import { DEFAULT_PRESET, PRESETS, PRESET_BY_ID } from "@/lib/sizes/presets";
 import { COMPARE_MAX, COMPARE_MIN, comparePath, compareOk, itemPath, parseVs, presetPath } from "@/lib/sizes/deeplink";
+import { CITIES, DEFAULT_CITY, cityFromUrl, withCity, type CityId } from "@/lib/sizes/city";
 import { lineFor, pushCompare, searchItems, type LineSpec } from "@/lib/sizes/lineup";
 import { framer, viewWidth, type Framer, type Lens } from "@/lib/sizes/glide";
 import { nearestIndex, planPlay, playAt, type PlayPlan } from "@/lib/sizes/play";
@@ -161,6 +162,10 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
   const [muted, setMutedState] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
   const [quality, setQualityState] = useState<Quality>("high");
+  /** The city the line stands in (?city=castelia; Lumiose by default). */
+  const [city, setCityState] = useState<CityId>(DEFAULT_CITY);
+  const cityRef = useRef<CityId>(DEFAULT_CITY);
+  const [cityMenu, setCityMenu] = useState(false);
   /** The first view is built and showing (the scene stays hidden behind the loading card until then). */
   const [shown, setShown] = useState(false);
   const shownRef = useRef(false);
@@ -453,6 +458,13 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
     audioRef.current?.whoosh(1);
   }, [startBlend]);
 
+  // ---- The city from the address (a shared Castelia link opens in Castelia).
+  useEffect(() => {
+    const c = cityFromUrl(window.location.href);
+    cityRef.current = c;
+    setCityState(c);
+  }, []);
+
   // ---- The scene: three.js loads only here.
   useEffect(() => {
     if (mode !== "3d" || !items || !hostRef.current) return;
@@ -465,7 +477,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
         qualityPinnedRef.current = pinned !== null;
         const q = pinned ?? initialQuality();
         // The human is built when it first comes near the camera: by then the player's own trainer has usually loaded.
-        const scene = createSizesScene(host, { quality: q, urls: SCENE_URLS, trainer: () => trainerFigure(trainerRef.current)(), onContextGone: () => alive && setSceneGen((g) => g + 1) });
+        const scene = createSizesScene(host, { quality: q, urls: SCENE_URLS, city, trainer: () => trainerFigure(trainerRef.current)(), onContextGone: () => alive && setSceneGen((g) => g + 1) });
         sceneRef.current = scene;
         setQualityState(q);
         await scene.ready;
@@ -481,7 +493,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
       sceneRef.current = null;
       setReady(false);
     };
-  }, [mode, items, sceneGen]);
+  }, [mode, items, sceneGen, city]);
 
   // ---- The line: rebuilt when the lineup changes.
   useEffect(() => {
@@ -844,6 +856,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
       if (e.pointerType === "mouse" && e.button !== 0 && e.button !== 2) return;
       setPresetMenu(false);
       setOrderMenu(false);
+      setCityMenu(false);
       toExplore();
       const c = ctl.current;
       c.flight = null;
@@ -1040,6 +1053,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
         setSearchOpen(false);
         setPresetMenu(false);
         setOrderMenu(false);
+        setCityMenu(false);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -1057,7 +1071,22 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
   // ---- Lineups, comparisons and search.
   /** The address for a page of the line: it carries the order (?by=speed&dir=desc), so a shared link opens the same line. */
   const replaceUrl = (path: string, o: Order = orderRef.current) => {
-    try { history.replaceState(history.state, "", localUrl(withOrder(path, o))); } catch { /* ignore */ }
+    try { history.replaceState(history.state, "", localUrl(withCity(withOrder(path, o), cityRef.current))); } catch { /* ignore */ }
+  };
+
+  /** Another city: the scene is built again round the same line, the camera back where it was (or the glide again, if it was playing). */
+  const chooseCity = (next: CityId) => {
+    setCityMenu(false);
+    setPresetMenu(false);
+    if (next === cityRef.current) return;
+    const c = ctl.current;
+    pendingRef.current = c.kind === "play" ? { play: true } : c.kind === "overview" && compareOk(spec.vs.length) ? { overview: true } : focusKey ? { focus: focusKey } : null;
+    cityRef.current = next;
+    setCityState(next);
+    try {
+      const u = new URL(window.location.href);
+      history.replaceState(history.state, "", withCity(`${u.pathname}${u.search}${u.hash}`, next));
+    } catch { /* ignore */ }
   };
 
   /** Order by: the same figures (those with a value in it), at their real sizes, in another order. The camera stays on the figure it frames when that one is in the new line. */
@@ -1229,6 +1258,28 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
     </div>
   );
 
+  /** The city picker: Lumiose or Castelia (its own menu on wide screens, in the lineup menu on phones). */
+  const cityPicker = (where: "menu" | "lineup") => (
+    <div className="p-1" data-testid={`sizes-city-picker-${where}`}>
+      <p className="px-2 pb-1.5 pt-1 font-pixel text-[9px] uppercase tracking-[0.18em] text-white/55">{t("city")}</p>
+      <div className="grid grid-cols-2 gap-1 rounded-md bg-white/5 p-1" role="radiogroup" aria-label={t("city")}>
+        {CITIES.map((c) => (
+          <button
+            key={c}
+            type="button"
+            role="radio"
+            aria-checked={city === c}
+            onClick={() => chooseCity(c)}
+            className={cn("inline-flex h-9 items-center justify-center rounded px-1.5 font-display text-[11px] font-semibold uppercase tracking-wide text-white/75 hover:text-white", city === c && "bg-[#ffd84a] text-[#1a1205] hover:text-[#1a1205]")}
+            data-testid={`sizes-city-${c}`}
+          >
+            {t(`cities.${c}`)}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <>
       <style>{SIZES_CSS}</style>
@@ -1273,7 +1324,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
           {(!ready || (!shown && !hook)) && (
             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 text-white" aria-hidden data-testid="sizes-loading">
               <Scale className="h-8 w-8 animate-pulse text-[#ffd84a]" />
-              <div className="font-pixel text-[10px] uppercase tracking-[0.3em]">{ready ? t("lining") : t("building")}</div>
+              <div className="font-pixel text-[10px] uppercase tracking-[0.3em]">{ready ? t("lining") : city === "castelia" ? t("buildingCastelia") : t("building")}</div>
             </div>
           )}
 
@@ -1320,7 +1371,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
                 <ArrowLeft className="h-4 w-4" aria-hidden />
               </Link>
               <div className="relative min-w-0">
-                <button type="button" className={cn(chip, "max-w-[calc(100vw-13rem)] sm:max-w-none")} onClick={() => { setPresetMenu((v) => !v); setOrderMenu(false); setSearchOpen(false); }} aria-expanded={presetMenu} aria-haspopup="menu" data-testid="sizes-lineup">
+                <button type="button" className={cn(chip, "max-w-[calc(100vw-13rem)] sm:max-w-none")} onClick={() => { setPresetMenu((v) => !v); setOrderMenu(false); setCityMenu(false); setSearchOpen(false); }} aria-expanded={presetMenu} aria-haspopup="menu" data-testid="sizes-lineup">
                   <span className="truncate">{lineTitle}</span>
                   {/* Phones: the order rides on the lineup chip (its picker is in the lineup menu). */}
                   {!isDefaultOrder(order) && (
@@ -1347,12 +1398,13 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
                       </button>
                     ))}
                     <div className="mt-1 border-t border-white/10 pt-1 sm:hidden">{orderPicker("lineup")}</div>
+                    <div className="mt-1 border-t border-white/10 pt-1 sm:hidden">{cityPicker("lineup")}</div>
                   </div>
                 )}
               </div>
               {/* Order by (wide screens): its own chip and menu. */}
               <div className="relative hidden shrink-0 sm:block">
-                <button type="button" className={cn(chip, !isDefaultOrder(order) && "border-[#ffd84a]/60")} onClick={() => { setOrderMenu((v) => !v); setPresetMenu(false); setSearchOpen(false); }} aria-expanded={orderMenu} aria-haspopup="menu" aria-label={t("orderAria", { label: orderLabel(order.by, tl), dir: lowerIn(dirText(order.by, order.dir, tl), tl) })} data-testid="sizes-order">
+                <button type="button" className={cn(chip, !isDefaultOrder(order) && "border-[#ffd84a]/60")} onClick={() => { setOrderMenu((v) => !v); setPresetMenu(false); setCityMenu(false); setSearchOpen(false); }} aria-expanded={orderMenu} aria-haspopup="menu" aria-label={t("orderAria", { label: orderLabel(order.by, tl), dir: lowerIn(dirText(order.by, order.dir, tl), tl) })} data-testid="sizes-order">
                   <ArrowUpDown className="h-3.5 w-3.5 text-white/60" aria-hidden />
                   <span className="text-white/55">{t("order")}</span>
                   <span className={cn(!isDefaultOrder(order) && "text-[#ffd84a]")}>{orderLabel(order.by, tl)}</span>
@@ -1365,9 +1417,22 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
                   </div>
                 )}
               </div>
+              {/* The city (wide screens): its own chip and menu. */}
+              <div className="relative hidden shrink-0 sm:block">
+                <button type="button" className={cn(chip, city !== DEFAULT_CITY && "border-[#ffd84a]/60")} onClick={() => { setCityMenu((v) => !v); setOrderMenu(false); setPresetMenu(false); setSearchOpen(false); }} aria-expanded={cityMenu} aria-haspopup="menu" aria-label={t("cityAria", { name: t(`cities.${city}`) })} data-testid="sizes-city">
+                  <Building2 className="h-3.5 w-3.5 text-white/60" aria-hidden />
+                  <span className={cn(city !== DEFAULT_CITY && "text-[#ffd84a]")}>{t(`cities.${city}`)}</span>
+                  <ChevronDown className="h-3.5 w-3.5" aria-hidden />
+                </button>
+                {cityMenu && (
+                  <div className="pointer-events-auto absolute left-0 top-11 w-72 rounded-lg border border-white/15 bg-[#0b1226]/95 p-1 shadow-2xl backdrop-blur-xl" role="menu" data-testid="sizes-city-menu">
+                    {cityPicker("menu")}
+                  </div>
+                )}
+              </div>
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              <button type="button" className={cn(chip, "px-2.5")} onClick={() => { setSearchOpen((v) => !v); setPresetMenu(false); setOrderMenu(false); }} aria-label={t("search")} aria-expanded={searchOpen} data-testid="sizes-search-toggle">
+              <button type="button" className={cn(chip, "px-2.5")} onClick={() => { setSearchOpen((v) => !v); setPresetMenu(false); setOrderMenu(false); setCityMenu(false); }} aria-label={t("search")} aria-expanded={searchOpen} data-testid="sizes-search-toggle">
                 <Search className="h-4 w-4" aria-hidden />
               </button>
               <button type="button" className={cn(chip, "px-2.5")} onClick={toggleMute} aria-label={muted ? t("musicOn") : t("musicOff")} data-testid="sizes-mute">
@@ -1532,6 +1597,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
                 hook={hookText}
                 slug={`${comparing ? spec.vs.join("-vs-") : spec.preset}${isDefaultOrder(order) ? "" : `-by-${orderInfo(order).param}${order.dir === "desc" ? "-desc" : ""}`}`}
                 lineLabel={lineTitle}
+                city={city}
                 trainer={myTrainer}
                 onRecording={setRecording}
                 onClose={() => setVideoOpen(false)}
