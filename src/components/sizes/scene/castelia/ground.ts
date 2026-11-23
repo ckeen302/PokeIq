@@ -109,17 +109,19 @@ export function buildGround(plan: WorldPlan, cp: CasteliaPlan, shared: Shared, t
     out.push(mesh);
     geos.push(g);
   };
-  const mk = (name: string, tile: number, opts?: { color?: string; normalScale?: number; bright?: number }) => {
+  const mk = (name: string, tile: number, opts?: { color?: string; normalScale?: number; bright?: number; glow?: number }) => {
     const m = new THREE.MeshStandardMaterial(tex.pbr(name, tile, opts));
     if (opts?.bright) m.color.multiplyScalar(opts.bright);
+    // The streetlights' warm wash on the ground, evenly (the lamps themselves cast no light).
+    m.emissive.set("#ffb070").multiplyScalar(opts?.glow ?? 0.035);
     groundVariation(m);
     own.push(m);
     return m;
   };
   const asphalt = mk("asphalt_02", 3, { color: "#6e6c72" });
   const walk = mk("large_grey_tiles", 3, { color: "#b9b4ad" });
-  const granite = mk("granite_tile", 2.3, { color: "#e9e3da", bright: 1.25 });
-  const plazaStone = mk("granite_tile", 2.3, { color: "#efe8dc", bright: 1.3 });
+  const granite = mk("granite_tile", 2.3, { color: "#e9e3da", bright: 1.25, glow: 0.06 });
+  const plazaStone = mk("granite_tile", 2.3, { color: "#efe8dc", bright: 1.3, glow: 0.08 });
   plazaPattern(plazaStone, new THREE.Vector2(cp.centre.x, cp.centre.z), plan.plaza.r);
   const quay = mk("sandstone_blocks_08", 3, { color: "#9c968e" });
   const water = waterMaterial(shared);

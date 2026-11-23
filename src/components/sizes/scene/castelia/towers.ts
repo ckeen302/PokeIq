@@ -274,7 +274,8 @@ export function facadeMaterial(u: FacadeUniforms): THREE.MeshStandardMaterial {
         uniform float uClamp;
         uniform float uFig;
         varying vec4 vStyle;
-        varying vec3 vFac;`
+        varying vec3 vFac;
+        varying vec2 vRoofXZ;`
       )
       .replace(
         "#include <begin_vertex>",
@@ -307,7 +308,8 @@ export function facadeMaterial(u: FacadeUniforms): THREE.MeshStandardMaterial {
           }
         }
         vStyle = aStyle;
-        vFac = vec3(uv.x, transformed.y, aTower.w);`
+        vFac = vec3(uv.x, transformed.y, aTower.w);
+        vRoofXZ = transformed.xz;`
       );
     s.fragmentShader = s.fragmentShader
       .replace(
@@ -315,6 +317,7 @@ export function facadeMaterial(u: FacadeUniforms): THREE.MeshStandardMaterial {
         `#include <common>
         varying vec4 vStyle;
         varying vec3 vFac;
+        varying vec2 vRoofXZ;
         float cHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
         // A soft box from a to b along x (antialiased by w).
         float cBand(float x, float a, float b, float w) { return smoothstep(a - w, a + w, x) * (1.0 - smoothstep(b - w, b + w, x)); }`
@@ -329,8 +332,17 @@ export function facadeMaterial(u: FacadeUniforms): THREE.MeshStandardMaterial {
         vec3 fEmit = vec3(0.0);
         vec3 wall = diffuseColor.rgb;
         if (kind > 7.5) {
-          // Roofs: dark gravel and plant.
-          fRough = 0.95;
+          // Roofs: pale membrane in panels, with the odd small light (seen from the finale, not black slabs).
+          vec2 rp = vRoofXZ / 6.0;
+          vec2 rf = fract(rp);
+          vec2 rw = fwidth(rp);
+          float seam = 1.0 - cBand(rf.x, 0.04, 0.96, rw.x) * cBand(rf.y, 0.04, 0.96, rw.y);
+          float far = smoothstep(0.3, 0.8, max(rw.x, rw.y));
+          float tone = cHash(floor(rp) + vStyle.w);
+          diffuseColor.rgb = vec3(0.42, 0.42, 0.45) * (0.85 + 0.25 * tone) * (1.0 - 0.25 * seam * (1.0 - far));
+          float spot = step(0.985, cHash(floor(vRoofXZ / 9.0) + vStyle.w * 3.1)) * (1.0 - smoothstep(0.08, 0.2, length(fract(vRoofXZ / 9.0) - 0.5))) * (1.0 - far);
+          fEmit = vec3(1.0, 0.75, 0.45) * spot * 1.5;
+          fRough = 0.9;
         } else if (kind > 6.5) {
           // An aviation light.
           fEmit = vColor * (3.0 + 2.0 * step(0.5, fract(vStyle.w + 0.0)));
