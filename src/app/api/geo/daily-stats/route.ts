@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { unstable_cache } from "next/cache";
 import { getServiceSupabase } from "@/lib/supabase";
 import { crowdRateLimit } from "@/lib/server/rate-limit";
 import { COMPARE_MAX, dailyStats } from "@/lib/geo-compare";
@@ -9,33 +10,40 @@ import { COMPARE_MAX, dailyStats } from "@/lib/geo-compare";
  * Supabase (or with no games yet) it says there were 0 players, and the
  * summary screen shows no comparison.
  *
- * Every player asks with their own score, so the CDN can't share one answer:
- * the day's scores are read once per SCORES_TTL_MS per server instance
- * (concurrent requests wait on the same read) and every score is placed
- * against that list.
+ * Every player asks with their own score, so the CDN can't share one answer.
+ * The day's scores are read from the database at most once per SCORES_TTL_S
+ * for every server instance together (Next's data cache, shared across
+ * instances), and an instance keeps its copy for INSTANCE_TTL_MS so busy
+ * instances don't ask the data cache on every request either (concurrent
+ * requests wait on the same read). Every score is placed against that list.
+ * On a launch day a busy Daily's list is the biggest read the site makes, so
+ * it can't be re-read by each instance every few seconds.
  */
 
-const SCORES_TTL_MS = 30_000;
+const SCORES_TTL_S = 60;
+const INSTANCE_TTL_MS = 30_000;
 const recent = new Map<string, { at: number; scores: Promise<number[]> }>();
+
+async function readScores(date: string): Promise<number[]> {
+  const supabase = getServiceSupabase();
+  if (!supabase) return [];
+  const { data, error } = await supabase.from("geo_runs").select("score").eq("daily_date", date).limit(20_000);
+  // Thrown, so a failed read isn't kept in the shared cache.
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as { score: number }[]).map((r) => r.score);
+}
+
+const sharedScores = unstable_cache(readScores, ["geo-daily-scores"], { revalidate: SCORES_TTL_S });
 
 function dayScores(date: string): Promise<number[]> {
   const now = Date.now();
   const hit = recent.get(date);
-  if (hit && now - hit.at < SCORES_TTL_MS) return hit.scores;
-  const supabase = getServiceSupabase();
-  if (!supabase) return Promise.resolve([]);
+  if (hit && now - hit.at < INSTANCE_TTL_MS) return hit.scores;
+  if (!getServiceSupabase()) return Promise.resolve([]);
   if (recent.size > 20) recent.clear();
-  const scores = (async () => {
-    const { data, error } = await supabase.from("geo_runs").select("score").eq("daily_date", date).limit(20_000);
-    if (error) {
-      console.error("[geo-daily-stats] read failed:", error.message);
-      // A failed read isn't kept: the next request tries again.
-      recent.delete(date);
-      return [];
-    }
-    return ((data ?? []) as { score: number }[]).map((r) => r.score);
-  })().catch((err) => {
-    console.error("[geo-daily-stats] read failed:", err);
+  const scores = sharedScores(date).catch((err) => {
+    console.error("[geo-daily-stats] read failed:", err instanceof Error ? err.message : err);
+    // A failed read isn't kept: the next request tries again.
     recent.delete(date);
     return [] as number[];
   });
