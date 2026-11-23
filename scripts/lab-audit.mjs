@@ -78,7 +78,7 @@ async function heap(cdp) {
   return { heapMB: +(get("JSHeapUsedSize") / 1048576).toFixed(1), nodes: get("Nodes"), listeners: get("JSEventListeners") };
 }
 
-async function useIt(page, e, vp, seconds) {
+async function exercise(page, e, vp, seconds) {
   const box = { x: vp.viewport.width / 2, y: vp.viewport.height / 2 };
   const end = Date.now() + seconds * 1000;
   let i = 0;
@@ -137,7 +137,7 @@ async function run(browser, e, size) {
   const tUse = await page.evaluate(() => performance.now());
   if (e.click) await page.locator(e.click).first().click({ timeout: 10_000 }).catch(() => {});
   else await page.mouse.click(vp.viewport.width / 2, vp.viewport.height / 2).catch(() => {});
-  await useIt(page, e, vp, 20);
+  await exercise(page, e, vp, 20);
   const tEnd = await page.evaluate(() => performance.now());
   const u = await page.evaluate(([a, b]) => {
     const m = window.__audit;
@@ -161,7 +161,7 @@ async function run(browser, e, size) {
   const samples = [res.heapAtReady];
   const minutes = size === "1710" ? Math.min(1, MINUTES) : MINUTES;
   for (let s = 0; s < minutes * 2; s++) {
-    await useIt(page, e, vp, 3);
+    await exercise(page, e, vp, 3);
     await page.waitForTimeout(27_000);
     samples.push(await heap(cdp));
   }
