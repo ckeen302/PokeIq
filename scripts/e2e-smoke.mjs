@@ -17,6 +17,7 @@ import { runShinyMaker } from "./e2e-shiny-maker.mjs";
 import { runTierList } from "./e2e-tier-list.mjs";
 import { runPokeballMaker } from "./e2e-pokeball-maker.mjs";
 import { runCalc } from "./e2e-calc.mjs";
+import { runHunt } from "./e2e-hunt.mjs";
 import { runVideoGames } from "./e2e-video-games.mjs";
 import { runMovies } from "./e2e-movies.mjs";
 import { runMobile } from "./e2e-mobile.mjs";
@@ -166,6 +167,11 @@ page.on("request", (r) => /\/audio\/battle\/.+\.(ogg|mp3)$/.test(r.url()) && mus
 // E2E_ONLY=calc runs just the damage calculator's layout checks, then exits.
 if (process.env.E2E_ONLY === "calc") {
   await runCalc({ browser, BASE, OUT, errors, step });
+  await finish();
+}
+// E2E_ONLY=hunt runs just Pokémon Hunt (Classic, Region and the Daily, desktop and phone), then exits.
+if (process.env.E2E_ONLY === "hunt") {
+  await runHunt({ browser, BASE, OUT, errors, step });
   await finish();
 }
 // E2E_ONLY=shiny-maker runs just the Tools tab and the Shiny Pokémon Maker, then exits.
@@ -2674,6 +2680,7 @@ await runPokeballMaker({ browser, BASE, OUT, errors, step });
 await runVideoGames({ browser, BASE, errors, step });
 await runMovies({ browser, BASE, errors, step });
 await runCalc({ browser, BASE, OUT, errors, step });
+await runHunt({ browser, BASE, OUT, errors, step });
 await runMobile({ browser, BASE, OUT, errors, step });
 await runMassBattle({ browser, BASE, OUT, errors, step });
 await runRace({ browser, BASE, OUT, errors, step });

@@ -68,3 +68,16 @@ Branches: integration `feat/pokemon-hunt`; data on `hunt/data`; design on `hunt/
   - The Kanto crop holds only `Kanto`, so Sevii Islands spots aren't on the Kanto region map. The Unova crop also leaves out Blueberry Academy. `regionDifficulty` only has a region when the entry has a spot on that crop. Please deal Region mode only from entries that have `regionDifficulty[region]`, and draw only spots inside the crop.
   - Rule 4 is strict, and the map is missing real places: Torchlit Labyrinth, Alfornada Cavern, the Paldean seas, Brawlers' Cave, Alola Routes 4, 6 and 17, Kalos Routes 2, 3 and 22, and Hoenn's sea Routes 107, 129 and 131. Each one keeps Pokémon out of the table. The ranked list is `missingPlaces` in `review.json`, for whoever owns the map.
   - Rows the data folded into "Most fishable water" (Gen 1–7 fishing in many places) can't be mapped, so those fishing Pokémon are left out for now.
+
+### 2026-11-23 · pokemon hunt (game agent), after the first merges
+
+- Merged `hunt/ui` and `hunt/data` into `feat/pokemon-hunt`.
+- **Design:** I took your components as they are and deleted my seeds (`HuntSetup`, `HuntRoundCard`, `HuntPinBar`, `HuntRevealPanel`, my `src/lib/hunt/share.ts`). I also dropped my `delay`/`caption` additions to `GeoMap` in favour of your `picks`/`spots`/`links`.
+  - Your requested `HuntReveal` props are all wired (region, round art, scores, modeLine, onExit). I don't bind Space/Enter during the reveal. Space hunts during a round, as PokéGuessr's Guess does.
+  - Spec section 6 now lists your real component names and test ids. `scripts/e2e-hunt.mjs` uses them, so please keep these stable: `hunt-hub-entry`, `hunt-play-*`, the region radios inside `hunt-region-picker`, `hunt-card`, `hunt-pin-chip-<n>` with `data-placed`, `hunt-skip`, `hunt-spot`, `hunt-found-line`, `hunt-next`, `hunt-results-total`, `hunt-share-grid`, `hunt-share-button`.
+  - The server now sends each spot's `methods: { games, method }[]` alongside `labels`. `HuntGame` turns a spot into one `HuntRevealSpot`, with its games joined by " / " and its methods by ", ". If you'd rather have one row per game and method, tell me and I'll pass the list through.
+  - **Translations:** your `en/hunt.json` replaced my keys, so I removed my five translations (they no longer matched). The page is English-only (not in `ALL_LANGUAGES`), and the hub banner only shows on English pages until you add `de/es/fr/it/ja` hunt.json. Then add `/pokeguessr/hunt` to `ALL_LANGUAGES` and drop the `t.locale === "en"` check in `GeoGame.tsx`, or ask me to.
+  - The page title and description use `name` and `hub.tagline`. Add `meta.title`/`meta.description` if you want different ones, and I'll switch.
+  - A form tag: `HuntRoundPublic` has no separate form label. The name already carries the form ("Alolan Meowth"). If you want `form` for the tag, I can add the entry's form to the round.
+- **Data:** Region mode now follows your request. It deals only entries with `regionDifficulty[region]` and reveals only the spots on that region's crop (tested for all nine maps). Please add `tests/hunt-data*.test.ts` when you can. My `tests/hunt-game.test.ts` already checks that every place in the table is a pinned map place (`huntTableProblems()` is empty).
+

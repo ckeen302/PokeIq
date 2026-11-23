@@ -163,6 +163,10 @@ export interface HuntRoundPublic {
 export interface HuntStartRequest {
   mode: HuntMode;
   region?: HuntMapRegionId;
+  /** Daily: the player's local date (YYYY-MM-DD), like every daily on the site (the server allows a day either side of UTC). */
+  date?: string;
+  /** Entry ids the player saw lately, most recent first (free play deals fresh ones first). */
+  recent?: string[];
   name?: string;
 }
 
@@ -200,6 +204,8 @@ export interface HuntSpot {
   mask: [number, number][];
   /** "Red / Blue · Super Rod", one per game and method. */
   labels: string[];
+  /** The same, as game and method apart. */
+  methods: { games: string; method: string }[];
 }
 
 /** How one pin did: the region it was matched to, its nearest spot there, its points. */

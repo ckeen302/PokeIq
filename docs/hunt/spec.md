@@ -93,7 +93,7 @@ Until the full table lands, `answers.json` holds the game agent's hand-checked s
 ### Dealing (difficulty mix)
 - Classic and the Daily never deal `everywhere` entries.
 - 5 rounds: 1 famous (or easiest third), 2 from the middle, 1 hard, 1 any; then ordered easy → hard. No species twice in a game.
-- Region mode deals entries with a place in that region, by `regionDifficulty`, the same mix.
+- Region mode deals only entries that have `regionDifficulty[region]` (a spot on that region's own map), the same mix, and its reveal shows only the spots on that map (Kanto's map has no Sevii Islands, Unova's no Blueberry Academy).
 - Free play avoids the player's recent Pokémon (sent from local storage, as PokéGuessr does).
 
 ### Secrecy
@@ -108,32 +108,26 @@ Until the full table lands, `answers.json` holds the game agent's hand-checked s
 
 ### Results
 - Total out of 25,000, each round's Pokémon and score, Play again, back to PokéGuessr.
-- Daily: the share grid (see `src/lib/hunt/share.ts`):
-  ```
-  Pokémon Hunt #1 · 17,420
-  🟩🟩🟨🟥🟩
-  playpokeiq.com/pokeguessr/hunt
-  ```
-  One square per round: 🟩 ≥ 4,000, 🟨 ≥ 2,000, 🟧 ≥ 500, 🟥 below.
+- Daily: the share grid (`HuntShareGrid`, text from `src/components/hunt/share.ts`): the title and total, then a row per round with one square per pin (🟩 80%+ of the pin's share, 🟨 40%+, 🟧 some, 🟥 none), then the link. Never a Pokémon or a place.
 
 ## 6. Screens and states (presentation components, owned by hunt design)
 
-`HuntGame` (game agent) holds the state machine: `setup → starting → playing → grading → reveal → (playing …) → results`, plus `error`. It renders these presentation components, whose props are the contract:
+`HuntGame` (game agent) holds the state machine: `hub → starting → playing → grading → reveal → (playing …) → results`, the pins, the clock, local storage and the API calls. It renders hunt design's components, whose props are the contract (see each file's props interface):
 
-| Component | File | Props |
+| Screen | Component | Notes |
 | --- | --- | --- |
-| `HuntCard` | `src/components/hunt/HuntCard.tsx` | none (links to `/pokeguessr/hunt`) |
-| `HuntSetup` | `src/components/hunt/HuntSetup.tsx` | `{ onStart(spec: { mode: HuntMode; region?: HuntMapRegionId }): void; busy: boolean; error?: string | null; daily: { number: number; played: { score: number } | null } }` |
-| `HuntRoundCard` | `src/components/hunt/HuntRoundCard.tsx` | `{ round: HuntRoundPublic; mode: HuntMode; mapName?: string }` |
-| `HuntPinBar` | `src/components/hunt/HuntPinBar.tsx` | `{ placed: number; max: number; selected: number | null; onSelect(i: number): void; onRemove(i: number): void }` |
-| `HuntRevealPanel` | `src/components/hunt/HuntRevealPanel.tsx` | `{ reveal: HuntReveal; score: number; index: number; rounds: number; onNext(): void; last: boolean }` |
-| `HuntResults` | `src/components/hunt/HuntResults.tsx` | `{ result: HuntResult; share: string | null; onAgain(): void; daily?: { number: number } }` |
+| Hub entry | `HuntHubBanner` (`HuntHub.tsx`) | A wide banner over PokéGuessr's Play tiles. English only until the `hunt` messages are translated. |
+| The hunt's hub | `HuntHub` | Daily, Classic, Region (with its region picker), best scores. |
+| A round | `HuntRound` | The whole round screen: `HuntCard` (the Pokémon) as the picture, PokéGuessr's HUD, the `MapDock` with `HuntPinTray`. Pins are slots: `(MapPin | null)[]`, one per pin the round takes; a tap places or moves the active slot. |
+| The reveal | `HuntReveal` | The whole reveal screen, map included (its pop-in clock and Skip). It binds Space and Enter itself. |
+| Results | `HuntResults` | Its own `GameShell`; the Daily passes `HuntShareGrid` as children. |
+| Loading, error, empty | `HuntState` | |
 
-The map, the dock, the timer, the score tracker and the frame are PokéGuessr's (`GeoMap`, `MapDock`, `TimerDial`/`CountdownPill`, `ScoreTracker`, `GameShell`), driven by `HuntGame`.
+The share text is `src/components/hunt/share.ts` (one square per pin, coloured by its share of the round).
 
-Test ids the e2e script relies on (keep them): `hunt-card`, `hunt-link`, `hunt-setup`, `hunt-mode-classic`, `hunt-mode-region`, `hunt-mode-daily`, `hunt-region-<id>`, `hunt-start`, `hunt-round-card`, `hunt-pin-count`, `hunt-pin-chip-<n>`, `hunt-pin-remove-<n>`, `hunt-reveal`, `hunt-found`, `hunt-spot` (one per spot in the reveal list), `hunt-dex-link`, `hunt-next`, `hunt-results`, `hunt-total`, `hunt-share`, `hunt-again`. Plus PokéGuessr's `geo-map`, `geo-guess`, `geo-dock`, `geo-map-pill`.
+Test ids the e2e script relies on: `hunt-hub-entry`, `hunt-hub`, `hunt-play-classic`, `hunt-play-region`, `hunt-play-daily`, `hunt-region-picker` (radios named by region), `hunt-card`, `hunt-name`, `hunt-pin-chip-<n>` (with `data-placed`), `hunt-pin-remove-<n>`, `hunt-reveal`, `hunt-skip`, `hunt-spot`, `hunt-found-line`, `hunt-dex-link`, `hunt-next`, `hunt-results`, `hunt-results-total`, `hunt-again`, `hunt-share-grid`, `hunt-share-button`. Plus PokéGuessr's `geo-shell`, `geo-map`, `geo-guess`, `geo-dock`, `geo-map-pill`.
 
-Messages: one namespace, `hunt` (`src/messages/hunt.ts`, `src/messages/<locale>/hunt.json`).
+Messages: one namespace, `hunt` (`src/messages/hunt.ts`, `src/messages/<locale>/hunt.json`). `/pokeguessr/hunt` joins `ALL_LANGUAGES` in `src/i18n/routes.ts` once all five translations exist.
 
 ## 7. API
 
