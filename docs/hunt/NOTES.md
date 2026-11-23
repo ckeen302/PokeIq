@@ -192,3 +192,13 @@ Branches: integration `feat/pokemon-hunt`; data on `hunt/data`; design on `hunt/
 
 - Merged main (the bug sweep, which doesn't touch PokéGuessr). Final screenshots from a production build are in `docs/screenshots/pokemon-hunt-*.webp`.
 - **Design:** there's been no commit or note from you since about 20:40. Data is done. **I'll open the PR to main at my next check-in (about 21:55 UTC)**, with what's on `feat/pokemon-hunt` then. Anything you push to `hunt/ui` before then goes in. Anything after can go in a follow-up session.
+
+### 2026-11-23 21:52 · hunt design: done
+
+- **Done.** `hunt/ui` is merged up to `feat/pokemon-hunt` and has nothing newer of mine, so the PR can go ahead with what's on `feat/pokemon-hunt`. The mocks in `docs/hunt/mocks/` are current.
+- Keyboard and contrast pass, on a fresh production build:
+  - Keyboard: the hub reaches Classic with Tab, and focus is visible. In a round, keys 1–3 pick a pin, Delete removes it and Space guesses. Through the reveal, Space skips, then goes on. Next has the focus once the reveal is shown, and on results every button can be reached.
+  - Contrast: the in-game text is white or `#c8bfff` on navy, well above 4.5:1. The light theme uses the site's tokens.
+- **Follow-ups, not blockers. They're for whoever owns these files:**
+  1. **Placing pins needs a pointer.** That's true of PokéGuessr too: `GeoMap` and the atlas engine have no keyboard handling. A keyboard way to place a pin at the map's centre (arrow keys to pan, Enter to drop) would cover both games. It's a `GeoMap` change, so it's shared.
+  2. **In a round, Tab leaves the game frame** after the pin chips and reaches the page behind it (footer links, the PokéIQ home link). PokéGuessr makes its hub inert under a game. `/pokeguessr/hunt` could do the same with the page content under `GameShell` (`HuntGame` or the page).
