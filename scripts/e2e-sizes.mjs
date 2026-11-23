@@ -6,7 +6,8 @@
  * wheel, the + and − buttons, reset) and turning the view, a two-Pokémon
  * comparison and its share link and
  * preview card, a Pokémon's own size page, the list fallback, the sound
- * staying off when the site is muted, and "Make a video": a 5-second
+ * staying off when the site is muted, Castelia City (a ?city= link opens
+ * there and the city chooser switches both ways), and "Make a video": a 5-second
  * export (?len=5, at the light test quality and 10 fps so it runs in CI
  * without a GPU) that must be a valid 1080 × 1920 MP4 with video and audio
  * tracks, plus cancelling a recording. Screenshots at 1440 and 390 px.
@@ -280,6 +281,26 @@ export async function runSizes({ browser, BASE, OUT, errors, step }) {
     // The Pokédex entry links into the 3D Lab.
     await page.goto(`${BASE}/pokemon/pikachu`, { waitUntil: "domcontentloaded" });
     if ((await page.getByTestId("dex-lab").getAttribute("href")) !== "/lab/pokedex?pick=25") errors.push("sizes: Pikachu's Pokédex entry has no 'View in the 3D Lab' link");
+  });
+
+  await part(errors, "city", async () => {
+    // Castelia City: a shared link opens there; the city chooser goes back to Lumiose and the address follows each way.
+    await page.goto(`${BASE}/pokedex/sizes/compare?vs=pikachu,snorlax&city=castelia&q=draft`, { waitUntil: "load" });
+    if (!(await ready())) throw new Error("the Castelia scene never became ready");
+    if ((await attr("city")) !== "castelia") errors.push(`sizes: a ?city=castelia link opened in ${await attr("city")}`);
+    await stageIs("count", "3", 60_000).catch(() => errors.push("sizes: the Castelia link didn't open the comparison"));
+    await page.screenshot({ path: `${OUT}/sizes-castelia-1440.png` });
+    const city = (c) => page.waitForFunction((v) => { const s = document.querySelector('[data-testid="sizes-stage"]'); return s?.dataset.city === v && s?.dataset.ready === "1"; }, c, { timeout: 180_000 });
+    await press(page, "sizes-city");
+    await press(page, "sizes-city-lumiose");
+    await city("lumiose").catch(() => errors.push("sizes: choosing Lumiose didn't rebuild the scene there"));
+    if (new URL(page.url()).searchParams.has("city")) errors.push(`sizes: Lumiose's address still names a city: ${page.url()}`);
+    await stageIs("count", "3", 60_000).catch(() => errors.push("sizes: switching city lost the comparison"));
+    await press(page, "sizes-city");
+    await press(page, "sizes-city-castelia");
+    await city("castelia").catch(() => errors.push("sizes: choosing Castelia didn't rebuild the scene there"));
+    const u = new URL(page.url());
+    if (u.searchParams.get("city") !== "castelia" || u.searchParams.get("vs") !== "pikachu,snorlax") errors.push(`sizes: Castelia's share link is ${page.url()}`);
   });
 
   step("pokédex Sizes: make a 5 s video (a valid 1080 × 1920 MP4 with music), cancel a recording, phone layout");

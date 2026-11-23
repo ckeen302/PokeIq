@@ -1303,6 +1303,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
           className="sz-stage fixed left-0 !mt-0 w-screen bottom-[calc(3.5rem+env(safe-area-inset-bottom))] top-14 z-40 overflow-hidden lg:bottom-0"
           data-testid="sizes-stage"
           data-ready={ready ? "1" : "0"}
+          data-city={city}
           data-shown={shown ? "1" : "0"}
           data-kind={kind}
           data-focus={focusKey ?? ""}
