@@ -2,6 +2,13 @@
   "open3d": "Open the 3D view",
   "lining": "Lining them up…",
   "building": "Building Lumiose City…",
+  "buildingCastelia": "Building Castelia City…",
+  "city": "City",
+  "cityAria": "City: {name}",
+  "cities": {
+    "lumiose": "Lumiose City",
+    "castelia": "Castelia City"
+  },
   "back": "Back to the Pokédex",
   "orderBy": "Order by",
   "direction": "Direction",
@@ -78,6 +85,7 @@
       "recording": "Recording"
     },
     "subtitle": "SIZE COMPARISON · LUMIOSE CITY",
+    "subtitleCastelia": "SIZE COMPARISON · CASTELIA CITY",
     "endLine": "Make your own size video"
   }
 }

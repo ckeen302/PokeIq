@@ -17,6 +17,9 @@ import { Crowd, type CrowdInstance } from "./crowd";
 import { sharedUniforms } from "./shaders";
 import { SKY, createSky } from "./sky";
 import { createTrace, traceBare, type Drawn, type TraceFigure } from "./trace";
+import type { CityId } from "@/lib/sizes/city";
+import { CASTELIA_HAZE, CASTELIA_MOOD, createDuskSky, duskEnvironment } from "./castelia/sky";
+import type { Castelia } from "./castelia";
 
 /**
  * The 3D scene behind /pokedex/sizes and its videos: a sunny Lumiose City
@@ -90,6 +93,8 @@ export interface SceneOptions {
   far?: FarManifest;
   /** The WebGL context was lost and the scene must be built again (see watchContext). */
   onContextGone?: () => void;
+  /** Which city the line stands in (Lumiose by default). */
+  city?: CityId;
 }
 
 export interface Placed {
@@ -211,6 +216,8 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   let Q = QUALITY[quality];
   const Q0 = Q;
   const exporting = opts.quality === "export";
+  /** Castelia City at dusk instead of sunny Lumiose (its own buildings, sky and light: ./castelia). */
+  const dusk = opts.city === "castelia";
   const canvas = document.createElement("canvas");
   canvas.style.display = "block";
   canvas.style.width = "100%";
@@ -219,7 +226,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   const ctxWatch = watchContext(canvas, opts.onContextGone);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: "high-performance", stencil: false });
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 0.97;
+  renderer.toneMappingExposure = dusk ? CASTELIA_MOOD.exposure : 0.97;
   renderer.shadowMap.enabled = opts.quality !== "draft";
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   // Shadow maps are redrawn when the camera or the figures change, and only every few frames while all is still (see render).
@@ -242,11 +249,12 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   // faces and the facades behind them are lit, shadows fall back and to the right. The line only ever turns
   // away from the camera (round the tower), so the sun stays in front of every figure.
   const az = yawToCam - Math.PI * 0.25;
-  const sunDir = new THREE.Vector3(Math.sin(az) * Math.cos(SUN_ELEVATION), Math.sin(SUN_ELEVATION), Math.cos(az) * Math.cos(SUN_ELEVATION)).normalize();
-  const sky = createSky(sunDir);
+  const elevation = dusk ? (CASTELIA_MOOD.sunElevation * Math.PI) / 180 : SUN_ELEVATION;
+  const sunDir = new THREE.Vector3(Math.sin(az) * Math.cos(elevation), Math.sin(elevation), Math.cos(az) * Math.cos(elevation)).normalize();
+  const sky = dusk ? createDuskSky(sunDir) : createSky(sunDir);
   scene.add(sky.mesh);
-  scene.fog = new THREE.FogExp2(SKY.haze.clone().convertSRGBToLinear(), 0.0003);
-  const hemi = new THREE.HemisphereLight(0xdcE8ff, 0xc2ab88, 0.38);
+  scene.fog = dusk ? new THREE.FogExp2(new THREE.Color(CASTELIA_HAZE).convertSRGBToLinear(), CASTELIA_MOOD.fogDensity) : new THREE.FogExp2(SKY.haze.clone().convertSRGBToLinear(), 0.0003);
+  const hemi = dusk ? new THREE.HemisphereLight(CASTELIA_MOOD.hemiSky, CASTELIA_MOOD.hemiGround, CASTELIA_MOOD.hemiIntensity) : new THREE.HemisphereLight(0xdcE8ff, 0xc2ab88, 0.38);
   scene.add(hemi);
 
   // Camera state (read by the shadow cascades' split callback).
@@ -261,7 +269,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     mode: "custom",
     shadowMapSize: Q.shadow,
     lightDirection: sunDir.clone().negate(),
-    lightIntensity: 3.75,
+    lightIntensity: dusk ? CASTELIA_MOOD.sunIntensity : 3.75,
     lightNear: 1,
     lightFar: 6000,
     lightMargin: 120,
@@ -275,7 +283,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   });
   csm.fade = true;
   // Warm late-morning sun.
-  for (const l of csm.lights) l.color.set("#fff0d9");
+  for (const l of csm.lights) l.color.set(dusk ? CASTELIA_MOOD.sunColor : "#fff0d9");
   const csmMaterials = new Set<THREE.Material>();
   const setupMat = (m: THREE.Material) => {
     if (csmMaterials.has(m) || !(m as THREE.MeshStandardMaterial).isMeshStandardMaterial) return;
@@ -297,7 +305,16 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   const rest = staged ? new Promise<void>((r) => { releaseRest = r; setTimeout(r, 7000); }) : Promise.resolve();
   let envEase = 0;
   let gone = false;
-  const envReady = rest.then(() => (gone ? Promise.reject(new Error("disposed")) : new RGBELoader().loadAsync(opts.urls.hdr))).then((hdr) => {
+  if (dusk) {
+    // Castelia's reflections come from its own evening sky: nothing to download.
+    envTex = duskEnvironment(renderer, sunDir);
+    scene.environment = envTex;
+    scene.environmentIntensity = CASTELIA_MOOD.envIntensity;
+  }
+  // Castelia's buildings are their own chunk, fetched only when it is chosen (Lumiose's page loads none of it).
+  let casteliaKit: typeof import("./castelia") | null = null;
+  const casteliaReady: Promise<void> = dusk ? import("./castelia").then((m) => { casteliaKit = m; }) : Promise.resolve();
+  const envReady = dusk ? casteliaReady : rest.then(() => (gone ? Promise.reject(new Error("disposed")) : new RGBELoader().loadAsync(opts.urls.hdr))).then((hdr) => {
     // Find the HDRI's sun (brightest texel) to turn the map so it agrees with ours.
     const img = hdr.image as unknown as { data: Uint16Array | Float32Array; width: number; height: number };
     let best = 0, bi = 0;
@@ -363,7 +380,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   // ---- World.
   const worldGroup = new THREE.Group();
   scene.add(worldGroup);
-  let city: City | null = null, props: Props | null = null, tower: Tower | null = null;
+  let city: City | null = null, props: Props | null = null, tower: Tower | null = null, castelia: Castelia | null = null;
   let plan: WorldPlan = planWorld([]);
   const halo = (() => {
     const c = document.createElement("canvas");
@@ -410,7 +427,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   blobs.frustumCulled = false;
   blobs.renderOrder = 1;
   figureGroup.add(blobs);
-  const ready = staged ? Promise.resolve() : Promise.all([envReady, Promise.race([crowd.ready, new Promise((r) => setTimeout(r, 12000))])]).then(() => undefined);
+  const ready = staged ? casteliaReady : Promise.all([envReady, Promise.race([crowd.ready, new Promise((r) => setTimeout(r, 12000))])]).then(() => undefined);
   // Built figures wait here for their turn on the GPU: a few per frame, each compiled before it's shown.
   const toUpload: { s: Slot; lod: 0 | 1; h: FigureHandle }[] = [];
   let compiling = 0;
@@ -466,7 +483,18 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     city?.dispose();
     props?.dispose();
     tower?.dispose();
+    castelia?.dispose();
+    city = props = tower = castelia = null;
     worldGroup.clear();
+    if (dusk) {
+      // (ready waits for the chunk; a line set before it lands is built when it does.)
+      if (!casteliaKit) { void casteliaReady.then(() => { if (!gone && !castelia) rebuildWorld(); }); return; }
+      castelia = casteliaKit.buildCastelia(plan, shared, { pbr }, { detail: Q.blocks, trees: Q.trees });
+      worldGroup.add(castelia.group);
+      setupTree(worldGroup);
+      if (traceBare()) worldGroup.visible = false;
+      return;
+    }
     city = buildCity(plan, shared, { pbr }, { facadeScale: Q.facadeScale, anisotropy: maxAniso, blocks: Q.blocks });
     props = buildProps(plan, shared, { bark: pbr("bark_brown_02", 1.5) }, { trees: Q.trees, coverage: Q.msaa > 0 });
     tower = buildTower(plan.tower.x, plan.tower.z);
@@ -595,7 +623,16 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     // Above the rooftops (the giants, the finale) nothing is in the way: cutting would only punch holes in the roofs.
     shared.uniforms.uCutR.value = view.rise > 0.25 || camera.position.y > ROOF_Y + 2 ? 0 : Math.max(0.25, Math.max(view.h, 0.6 * view.d * 0.6) * 0.55);
     city?.update(camera.position, csm.maxFar * 1.3);
+    if (castelia) {
+      // Towers sink out of the sight line to the framed figure's feet (not the aim, which the finale lifts above it).
+      const at = plan.path.at(view.x);
+      const tanH = Math.tan((camera.fov * Math.PI) / 360) * camera.aspect;
+      // Round the figure: about the width it fills at its own framing (the glide's distance), a little more.
+      castelia.update(camera.position, tmpAim.set(at.x, 0, at.z), tanH, Math.max(view.h * 0.6, view.d * tanH * 0.55) + 4);
+    }
   }
+
+  const tmpAim = new THREE.Vector3();
 
   // ---- What is on screen, and how big.
   const tmpV = new THREE.Vector3();
@@ -949,6 +986,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
       s.update?.(t, dt);
     }
     if (tower) tower.tick(t);
+    castelia?.tick(t);
     // A gentle depth of field: macro-like for the smallest, the city still readable behind.
     const aperture = Math.min(7, 3.6 * Math.pow(1.6 / Math.max(0.15, focusD), 0.45)) * (H / 900);
     post.frame(camera, focusD, Math.max(1.2, aperture), Math.min(4, Math.max(0.03, focusD * 0.09)));
@@ -1055,6 +1093,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
       city?.dispose();
       props?.dispose();
       tower?.dispose();
+      castelia?.dispose();
       sky.dispose();
       post.dispose();
       csm.dispose();
