@@ -1,0 +1,67 @@
+{
+  "card": {
+    "label": "New in PokéGuessr",
+    "title": "Pokémon Hunt",
+    "blurb": "See a Pokémon, then pin where you'd find it in the wild. One pin for each region it lives in.",
+    "play": "Start hunting"
+  },
+  "meta": {
+    "title": "Pokémon Hunt: where do you find it?",
+    "description": "See a Pokémon and pin where it lives in the wild, on a map of every region. Classic, Region and a Daily Hunt."
+  },
+  "setup": {
+    "eyebrow": "PokéGuessr",
+    "title": "Pokémon <b>Hunt</b>",
+    "intro": "Each round shows a Pokémon. Pin where you'd find it in the wild: one pin for each region it lives in.",
+    "classic": "Classic",
+    "classicBlurb": "The whole world map, five Pokémon.",
+    "region": "Region",
+    "regionBlurb": "One region's map, one pin a round.",
+    "daily": "Daily Hunt #{n}",
+    "dailyBlurb": "The same five Pokémon for everyone today.",
+    "dailyPlayed": "Today's score: {score}",
+    "pickRegion": "Pick a region",
+    "start": "Start",
+    "back": "Back to PokéGuessr"
+  },
+  "round": {
+    "found": "{n, plural, one {Found in # region} other {Found in # regions}}",
+    "drop": "{n, plural, one {Drop a pin} other {Drop # pins}}",
+    "dropUpTo": "Found in {n} regions: drop up to {max} pins",
+    "inRegion": "Found in {region}",
+    "where": "Where do you find it?",
+    "pins": "{placed}/{max} pins",
+    "pin": "Pin {n}",
+    "move": "Move pin {n}",
+    "remove": "Remove pin {n}",
+    "hunt": "Hunt",
+    "daily": "Daily Hunt #{n}",
+    "classic": "Classic",
+    "mode": "Pokémon Hunt"
+  },
+  "reveal": {
+    "found": "You found {found} of {of} regions",
+    "foundOne": "{found, select, 0 {Not quite} other {You found it}}",
+    "points": "{score} points",
+    "spots": "Where it lives",
+    "dex": "Where to find it in the Pokédex",
+    "next": "Next Pokémon",
+    "results": "See results",
+    "timedOut": "Time's up"
+  },
+  "results": {
+    "title": "Hunt complete",
+    "total": "{score} of {max}",
+    "again": "Hunt again",
+    "share": "Share",
+    "copied": "Copied!",
+    "back": "Back to PokéGuessr"
+  },
+  "errors": {
+    "start": "Couldn't start a hunt.",
+    "grade": "Couldn't check those pins.",
+    "title": "Something went wrong",
+    "retry": "Try again"
+  },
+  "exit": "Leave"
+}

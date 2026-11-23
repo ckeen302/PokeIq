@@ -1,0 +1,67 @@
+{
+  "card": {
+    "label": "Novità in PokéGuessr",
+    "title": "Caccia ai Pokémon",
+    "blurb": "Guarda un Pokémon, poi segna dove trovarlo allo stato selvatico. Un segnaposto per ogni regione in cui vive.",
+    "play": "Inizia la caccia"
+  },
+  "meta": {
+    "title": "Caccia ai Pokémon: dove si trova?",
+    "description": "Guarda un Pokémon e segna dove vive allo stato selvatico, su una mappa di tutte le regioni. Classica, Regione e una Caccia del giorno."
+  },
+  "setup": {
+    "eyebrow": "PokéGuessr",
+    "title": "Caccia ai <b>Pokémon</b>",
+    "intro": "Ogni round mostra un Pokémon. Segna dove trovarlo allo stato selvatico: un segnaposto per ogni regione in cui vive.",
+    "classic": "Classica",
+    "classicBlurb": "Tutta la mappa del mondo, cinque Pokémon.",
+    "region": "Regione",
+    "regionBlurb": "La mappa di una regione, un segnaposto a round.",
+    "daily": "Caccia del giorno n. {n}",
+    "dailyBlurb": "Gli stessi cinque Pokémon per tutti oggi.",
+    "dailyPlayed": "Punteggio di oggi: {score}",
+    "pickRegion": "Scegli una regione",
+    "start": "Inizia",
+    "back": "Torna a PokéGuessr"
+  },
+  "round": {
+    "found": "{n, plural, one {Si trova in # regione} other {Si trova in # regioni}}",
+    "drop": "{n, plural, one {Metti un segnaposto} other {Metti # segnaposto}}",
+    "dropUpTo": "Si trova in {n} regioni: metti fino a {max} segnaposto",
+    "inRegion": "Si trova a {region}",
+    "where": "Dove si trova?",
+    "pins": "{placed}/{max} segnaposto",
+    "pin": "Segnaposto {n}",
+    "move": "Sposta il segnaposto {n}",
+    "remove": "Togli il segnaposto {n}",
+    "hunt": "Caccia",
+    "daily": "Caccia del giorno n. {n}",
+    "classic": "Classica",
+    "mode": "Caccia ai Pokémon"
+  },
+  "reveal": {
+    "found": "Hai trovato {found} regioni su {of}",
+    "foundOne": "{found, select, 0 {Non proprio} other {Trovato}}",
+    "points": "{score} punti",
+    "spots": "Dove vive",
+    "dex": "Dove trovarlo nel Pokédex",
+    "next": "Prossimo Pokémon",
+    "results": "Vedi i risultati",
+    "timedOut": "Tempo scaduto"
+  },
+  "results": {
+    "title": "Caccia finita",
+    "total": "{score} su {max}",
+    "again": "Caccia ancora",
+    "share": "Condividi",
+    "copied": "Copiato!",
+    "back": "Torna a PokéGuessr"
+  },
+  "errors": {
+    "start": "Impossibile iniziare la caccia.",
+    "grade": "Impossibile controllare quei segnaposto.",
+    "title": "Qualcosa è andato storto",
+    "retry": "Riprova"
+  },
+  "exit": "Esci"
+}

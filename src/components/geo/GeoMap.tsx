@@ -28,6 +28,10 @@ export interface RevealedRound {
   color?: string;
   /** The trainer's avatar, shown inside the pin. */
   image?: string;
+  /** Seconds before this round's area and flag pop in (Pokémon Hunt reveals its spots region by region). */
+  delay?: number;
+  /** A small line under the flag (Pokémon Hunt: the spot's game and method). */
+  caption?: string;
 }
 
 export interface FitTiming {
@@ -314,7 +318,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
             const mask = `${maskId}-${i}`;
             return (
               <g key={i}>
-                <g className="geo-area" display={again ? "none" : undefined}>
+                <g className="geo-area" display={again ? "none" : undefined} style={r.delay ? { animationDelay: `${r.delay}s` } : undefined}>
                   {/* Faded as one layer, so overlapping dots read as one even patch. */}
                   <g opacity={0.5}>
                     {r.answer.mask.map(([x, y], k) => {
@@ -332,7 +336,12 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
                     <line mask={`url(#${mask})`} x1={g[0]} y1={g[1]} x2={ax} y2={ay} strokeWidth={2.5} strokeDasharray="5 5" strokeLinecap="round" stroke={r.color ?? "#120f24"} data-testid="geo-reveal-line" />
                   </>
                 )}
-                <Flag x={ax} y={ay} />
+                <Flag x={ax} y={ay} delay={r.delay} />
+                {r.caption && (
+                  <text x={ax} y={ay + 24} textAnchor="middle" fontSize={11} fontWeight={700} fill="#fff" stroke="#120f24" strokeWidth={3} paintOrder="stroke" className="geo-flag" style={r.delay ? { animationDelay: `${r.delay}s` } : undefined} data-testid="geo-flag-caption">
+                    {r.caption}
+                  </text>
+                )}
                 {g && <GuessPin x={g[0]} y={g[1]} label={r.label} color={r.color} image={r.image} delay={0.12 * i} />}
               </g>
             );
@@ -435,10 +444,10 @@ export function GuessPin({ x, y, label, color = "#3a8dde", image, delay = 0 }: {
 }
 
 /** The true location: a black disc with a white ring and a yellow flag, popping in after the line draws. */
-export function Flag({ x, y }: { x: number; y: number }) {
+export function Flag({ x, y, delay }: { x: number; y: number; delay?: number }) {
   return (
     <g transform={`translate(${x} ${y})`}>
-      <g className="geo-flag">
+      <g className="geo-flag" style={delay ? { animationDelay: `${delay}s` } : undefined}>
         <circle r={13} fill="#120f24" stroke="#fff" strokeWidth={2} />
         <path d="M-4 7V-7" stroke="#fff" strokeWidth={2} strokeLinecap="round" />
         <path d="M-3 -7h10l-2.5 3.2L7 -0.6h-10z" fill="#ffd23c" />
