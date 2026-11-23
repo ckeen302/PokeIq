@@ -2,6 +2,13 @@
   "open3d": "3Dで見る",
   "lining": "並べています…",
   "building": "ミアレシティを作っています…",
+  "buildingCastelia": "ヒウンシティを作っています…",
+  "city": "街",
+  "cityAria": "街：{name}",
+  "cities": {
+    "lumiose": "ミアレシティ",
+    "castelia": "ヒウンシティ"
+  },
   "back": "図鑑に戻る",
   "orderBy": "並べ替え",
   "direction": "順番",
@@ -78,6 +85,7 @@
       "recording": "録画中"
     },
     "subtitle": "大きさ比べ・ミアレシティ",
+    "subtitleCastelia": "大きさ比べ・ヒウンシティ",
     "endLine": "自分だけの大きさ比べ動画を作ろう"
   }
 }

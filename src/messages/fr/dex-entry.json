@@ -58,7 +58,8 @@
     "shape": "Forme",
     "abilities": "Talents",
     "hidden": "Caché",
-    "lab": "Voir dans le Labo 3D"
+    "lab": "Le voir en 3D",
+    "size": "Voir sa vraie taille"
   },
   "stat": {
     "hp": "PV",

@@ -2,6 +2,13 @@
   "open3d": "3D-Ansicht öffnen",
   "lining": "Stelle sie auf…",
   "building": "Baue Illumina City…",
+  "buildingCastelia": "Baue Stratos City…",
+  "city": "Stadt",
+  "cityAria": "Stadt: {name}",
+  "cities": {
+    "lumiose": "Illumina City",
+    "castelia": "Stratos City"
+  },
   "back": "Zurück zum Pokédex",
   "orderBy": "Sortieren nach",
   "direction": "Richtung",
@@ -78,6 +85,7 @@
       "recording": "Wird aufgenommen"
     },
     "subtitle": "GRÖSSENVERGLEICH · ILLUMINA CITY",
+    "subtitleCastelia": "GRÖSSENVERGLEICH · STRATOS CITY",
     "endLine": "Erstell dein eigenes Größenvideo"
   }
 }

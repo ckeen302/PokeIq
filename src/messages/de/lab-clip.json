@@ -1,0 +1,21 @@
+{
+  "title": "Video erstellen",
+  "intro": "Ein kurzes Hochformat-Video dieser Ansicht, direkt in deinem Browser erstellt.",
+  "record": "Video erstellen",
+  "rendering": "Wird gerendert",
+  "cancel": "Abbrechen",
+  "download": "Herunterladen",
+  "share": "Teilen",
+  "noShare": "Dieser Browser kann keine Dateien teilen: Lade es stattdessen herunter.",
+  "close": "Schließen",
+  "failed": "Das Video konnte in diesem Browser nicht erstellt werden.",
+  "noVideo": "Dieser Browser kann keine Videos erstellen.",
+  "shareLink": "Link teilen",
+  "video": "Video",
+  "labShare": "{name} in 3D im Professor-Labor von PokéIQ",
+  "labSubject": "{name} auf dem Holotisch",
+  "labTitle": "{name} in 3D",
+  "globeShare": "{region} auf dem Weltglobus von PokéIQ",
+  "globeSubject": "Eine Runde um {region}",
+  "globeTitle": "{region} auf dem Weltglobus"
+}

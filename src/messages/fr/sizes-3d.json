@@ -2,6 +2,13 @@
   "open3d": "Ouvrir la vue 3D",
   "lining": "Mise en file…",
   "building": "Construction d’Illumis…",
+  "buildingCastelia": "Construction de Volucité…",
+  "city": "Ville",
+  "cityAria": "Ville : {name}",
+  "cities": {
+    "lumiose": "Illumis",
+    "castelia": "Volucité"
+  },
   "back": "Retour au Pokédex",
   "orderBy": "Trier par",
   "direction": "Sens",
@@ -78,6 +85,7 @@
       "recording": "Enregistrement"
     },
     "subtitle": "COMPARAISON DE TAILLES · ILLUMIS",
+    "subtitleCastelia": "COMPARAISON DE TAILLES · VOLUCITÉ",
     "endLine": "Crée ta propre vidéo de tailles"
   }
 }

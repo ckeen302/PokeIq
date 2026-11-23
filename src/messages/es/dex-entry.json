@@ -58,7 +58,8 @@
     "shape": "Forma",
     "abilities": "Habilidades",
     "hidden": "Oculta",
-    "lab": "Ver en el Lab 3D"
+    "lab": "Verlo en 3D",
+    "size": "Ver su tamaño real"
   },
   "stat": {
     "hp": "PS",
