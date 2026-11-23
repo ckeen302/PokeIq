@@ -3,7 +3,7 @@
 import Link from "@/components/ui/Link";
 import { ChevronRight, Fingerprint, ListChecks } from "lucide-react";
 import type { ReactNode } from "react";
-import { QUIZ_PATH } from "@/lib/which-pokemon/match";
+import { QUIZ_PATH } from "@/lib/which-pokemon/path";
 import { MODULE_INFO, PLAY_MODULES, moduleHref } from "@/lib/modes";
 import { useT } from "@/i18n/client";
 import { num } from "@/components/quiz/num";

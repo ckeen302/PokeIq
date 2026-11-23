@@ -15,17 +15,14 @@ import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { Avatar } from "@/components/avatar/Avatar";
 import { useT } from "@/i18n/client";
 import duel from "@/messages/duel";
+import { clock, seconds } from "./clock";
 
 /** Pieces every duel screen shares: seats, the lobby, leaving, notices. */
 
 /** Each seat's colour, for names, pins and boards. */
 export const SEAT_COLORS = ["#e2306f", "#38bdf8"];
 
-export const seconds = (ms: number) => Math.max(0, Math.ceil(ms / 1000));
-export const clock = (ms: number) => {
-  const s = seconds(ms);
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-};
+export { clock, seconds };
 
 export function SeatDot({ seat }: { seat: number }) {
   return <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: SEAT_COLORS[seat] }} aria-hidden />;

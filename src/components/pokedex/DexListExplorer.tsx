@@ -1,7 +1,7 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element -- item sprites are tiny remote PNGs */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import Link from "@/components/ui/Link";
 import { Search, Swords, Sparkle, CircleDot, X } from "lucide-react";
 import { TYPES, capitalize } from "@/lib/pokemon/type-matrix";
@@ -103,8 +103,10 @@ export function DexListExplorer({
   const regions = useMemo(() => (kind === "places" ? [...new Set((items as PlaceListItem[]).map((i) => i.region))].sort() : []), [kind, items]);
   const placeTypes = useMemo(() => (kind === "places" ? [...new Set((items as PlaceListItem[]).map((i) => i.type))].sort() : []), [kind, items]);
 
+  // The box shows each key at once; the list follows at a lower priority.
+  const shownQuery = useDeferredValue(query);
   const filtered = useMemo(() => {
-    const q = normalize(query);
+    const q = normalize(shownQuery);
     return items.filter((it) => {
       if (q && !normalize(it.name).includes(q) && !it.aliases?.some((a) => normalize(a).includes(q)) && !(kind === "abilities" && normalize((it as AbilityListItem).effect).includes(q))) return false;
       if (kind === "moves") {
@@ -117,9 +119,9 @@ export function DexListExplorer({
       if (kind === "places" && placeType && (it as PlaceListItem).type !== placeType) return false;
       return true;
     });
-  }, [items, kind, query, type, cls, category, region, placeType]);
+  }, [items, kind, shownQuery, type, cls, category, region, placeType]);
 
-  useEffect(() => setVisible(PAGE), [query, type, cls, category, region, placeType]);
+  useEffect(() => setVisible(PAGE), [shownQuery, type, cls, category, region, placeType]);
 
   useEffect(() => {
     const el = sentinelRef.current;

@@ -198,9 +198,11 @@ const nextConfig: NextConfig = {
         source,
         headers: staticAssetCache,
       })),
+      // The same for the pictures, sprite data and music in these folders. Matched by file type, since /lab is also a page.
+      { source: `/:dir(games|movies|lab|shiny-maker|pokeball-maker|audio|splash)/:file(.+\\.(?:webp|png|jpg|svg|json|ogg|mp3|m4a))`, headers: staticAssetCache },
       { source: "/art/:path*", headers: artCache },
       // The size comparison's and the race's figures, relief maps and far atlas never change for a Pokémon either (the atlas's names are hashed).
-      ...["/race/art/:path*", "/sizes/art/:path*", "/sizes/depth/:path*", "/sizes/far/:path*", "/sizes/tex/:path*", "/sizes/env/:path*"].map((source) => ({ source, headers: artCache })),
+      ...["/race/art/:path*", "/race/depth/:path*", "/race/tex/:path*", "/sizes/art/:path*", "/sizes/depth/:path*", "/sizes/far/:path*", "/sizes/tex/:path*", "/sizes/env/:path*"].map((source) => ({ source, headers: artCache })),
       ...["/pokemon/:slug/opengraph-image", "/pokedex/sizes/:slug/opengraph-image", "/pokedex/timeline/:event/opengraph-image", "/quiz/which-pokemon/:slug/opengraph-image"]
         .map((source) => ({ source, headers: ogCdnCache }))
         .flatMap(withLocales),

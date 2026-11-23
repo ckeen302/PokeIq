@@ -17,7 +17,7 @@ import { useAccount } from "@/lib/account";
 import { unlockAudio } from "@/lib/sound";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { clock } from "@/components/duel/DuelParts";
+import { clock } from "@/components/duel/clock";
 import { useMatchmaking } from "@/components/duel/use-matchmaking";
 import { cn } from "@/lib/utils";
 import { preloadAvatar3D } from "@/components/trainer3d/Avatar3D";
