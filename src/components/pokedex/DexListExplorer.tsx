@@ -8,6 +8,7 @@ import { TYPES, capitalize } from "@/lib/pokemon/type-matrix";
 import { typeColor } from "@/lib/pokemon/type-colors";
 import { itemSpriteUrl } from "@/lib/dex/build";
 import { TypeBadge } from "./TypeBadge";
+import { CrawlLinks } from "./CrawlLinks";
 import { cn } from "@/lib/utils";
 import { usePlaceholder } from "@/lib/phone";
 import { NOT_LETTER, foldLetters } from "@/lib/names/fold";
@@ -122,6 +123,11 @@ export function DexListExplorer({
   }, [items, kind, shownQuery, type, cls, category, region, placeType]);
 
   useEffect(() => setVisible(PAGE), [shownQuery, type, cls, category, region, placeType]);
+  // Every entry the list isn't showing, as links in the HTML for crawlers (the list itself grows as you scroll).
+  const crawlLinks = useMemo(() => {
+    const shown = new Set(filtered.slice(0, visible));
+    return items.filter((it) => !shown.has(it)).map((it) => ({ href: `/pokedex/${kind}/${it.slug}`, name: it.name }));
+  }, [items, filtered, visible, kind]);
 
   useEffect(() => {
     const el = sentinelRef.current;
@@ -327,6 +333,7 @@ export function DexListExplorer({
         </div>
       )}
       <div ref={sentinelRef} aria-hidden className="h-4" />
+      <CrawlLinks links={crawlLinks} />
     </div>
   );
 }
