@@ -31463,6 +31463,801 @@
    "game": "Scarlet / Violet",
    "source": "https://www.pokepedia.fr/Fichier:Zone_Ouest_n°_3_EV.png",
    "checked": "shown on Poképédia's page \"Zone Ouest n° 3\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "mPwyEVb5wlb6",
+   "region": "Alola",
+   "name": "Aether Paradise",
+   "game": "Sun / Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Labortorio_de_Samina.jpg",
+   "checked": "shown on WikiDex's page \"Paraíso Æther\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "NhFqBy3nlYb5",
+   "region": "Alola",
+   "name": "Team Rocket's Castle",
+   "parent": "Aether Paradise",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.pokepedia.fr/Fichier:Chateau_Rocket_-_Chambre.jpg",
+   "checked": "shown on Poképédia's page \"Château Rocket\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "qsdWfNg96CK_",
+   "region": "Alola",
+   "name": "Team Rocket's Castle",
+   "parent": "Aether Paradise",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.pokepedia.fr/Fichier:Château_Rocket_USUL.png",
+   "checked": "shown on Poképédia's page \"Château Rocket\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "pYybEVonGITC",
+   "region": "Alola",
+   "name": "Ancient Poni Path",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_95_USUL.png",
+   "checked": "shown on WikiDex's page \"Antiguo Sendero de Poni/Antiguo Paso de Poni\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "fqcBg7Q1xI60",
+   "region": "Alola",
+   "name": "Ancient Poni Path",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_99_USUL.png",
+   "checked": "shown on WikiDex's page \"Antiguo Sendero de Poni/Antiguo Paso de Poni\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "f_czSl2enDTM",
+   "region": "Alola",
+   "name": "Battle Tree",
+   "game": "Sun / Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Árbol_de_Combate_Pokémon_SL.png",
+   "checked": "in wikidex's category \"Capturas de Pokémon Sol y Pokémon Luna\", named after the place; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "MLk9q3UxyOke",
+   "region": "Alola",
+   "name": "Battle Tree",
+   "game": "Sun / Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Rojo_y_Azul_Árbol_de_Combate_Pokémon_SL.png",
+   "checked": "in wikidex's category \"Capturas de Pokémon Sol y Pokémon Luna\", named after the place; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "n2HGA6Gitw3O",
+   "region": "Alola",
+   "name": "Big Wave Beach",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.pokepedia.fr/Fichier:Plage_Big_Wave_USUL.png",
+   "checked": "shown on Poképédia's page \"Plage Big Wave\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "GLV-NJvlOVJE",
+   "region": "Alola",
+   "name": "Blush Mountain",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_66_USUL.png",
+   "checked": "shown on WikiDex's page \"Monte Rubor\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "rXKCGx5h42jJ",
+   "region": "Alola",
+   "name": "Blush Mountain",
+   "game": "Sun / Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Pokévisor_Monte_Rubor_SL.png",
+   "checked": "in wikidex's category \"Capturas de Pokémon Sol y Pokémon Luna\", named after the place; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "6e-tLdOzAFpg",
+   "region": "Alola",
+   "name": "Blush Mountain",
+   "game": "Sun / Moon",
+   "source": "https://www.pokewiki.de/Datei:SoMo_Zygarde-Zelle_Glühberg_(Ula-Ula)_14.png",
+   "checked": "shown on PokéWiki's page \"Glühberg\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "y1F8OTAKnY8N",
+   "region": "Alola",
+   "name": "Diglett's Tunnel",
+   "game": "Sun / Moon",
+   "source": "https://www.pokewiki.de/Datei:SoMo_Digda-Tunnel.jpg",
+   "checked": "shown on PokéWiki's page \"Digda-Tunnel\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "shmjJZxAbBZg",
+   "region": "Alola",
+   "name": "Dividing Peak Tunnel",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.pokepedia.fr/Fichier:Tunnel_Perce-Mont_USUL.png",
+   "checked": "shown on Poképédia's page \"Tunnel Perce-Mont\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "by7nYK4sAmLH",
+   "region": "Alola",
+   "name": "Hano Beach",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_47_USUL.png",
+   "checked": "shown on WikiDex's page \"Playa de Hanohano\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "f8YIVwCxpARf",
+   "region": "Alola",
+   "name": "Hano Grand Resort",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_48_USUL.png",
+   "checked": "shown on WikiDex's page \"Resort Hanohano\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "pdn4z4uYtDHF",
+   "region": "Alola",
+   "name": "Hano Grand Resort",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_49_USUL.png",
+   "checked": "shown on WikiDex's page \"Resort Hanohano\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "P0C4LkF4m674",
+   "region": "Alola",
+   "name": "Hano Grand Resort",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_50_USUL.png",
+   "checked": "shown on WikiDex's page \"Resort Hanohano\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "5eJZ8bT21Qte",
+   "region": "Alola",
+   "name": "Hau'oli Cemetery",
+   "game": "Sun / Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Pokévisor_Cementerio_de_Hauoli_SL.png",
+   "checked": "shown on WikiDex's page \"Cementerio de Hauoli\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "bL_c7RVtFAn5",
+   "region": "Alola",
+   "name": "Hau'oli City",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_11_USUL.png",
+   "checked": "shown on WikiDex's page \"Ciudad Hauoli\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "cwmdZT07br1f",
+   "region": "Alola",
+   "name": "Hau'oli City",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_12_USUL.png",
+   "checked": "shown on WikiDex's page \"Ciudad Hauoli\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "_nhfq-M_h_aY",
+   "region": "Alola",
+   "name": "Hau'oli City",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_3_USUL.png",
+   "checked": "shown on WikiDex's page \"Ciudad Hauoli\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "qogB4ZT3J5EO",
+   "region": "Alola",
+   "name": "Hau'oli City",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_5_USUL.png",
+   "checked": "shown on WikiDex's page \"Ciudad Hauoli\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "gPUbe4OkU_QK",
+   "region": "Alola",
+   "name": "Hau'oli City",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.pokepedia.fr/Fichier:Ekaeka_USUL.png",
+   "checked": "shown on Poképédia's page \"Ekaeka\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "M51tbjdo9Cmi",
+   "region": "Alola",
+   "name": "Heahea Beach",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Playa_de_Kantai.png",
+   "checked": "shown on WikiDex's page \"Playa de Kantai\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "3Ai9WlMyI7Hd",
+   "region": "Alola",
+   "name": "Heahea City",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_18_USUL.png",
+   "checked": "shown on WikiDex's page \"Ciudad Kantai\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "IJs7zHqxmRpE",
+   "region": "Alola",
+   "name": "Heahea City",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_19_USUL.png",
+   "checked": "shown on WikiDex's page \"Ciudad Kantai\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "ptkA2LaTCgiw",
+   "region": "Alola",
+   "name": "Heahea City",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_20_USUL.png",
+   "checked": "shown on WikiDex's page \"Ciudad Kantai\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "xpvO32HBGKpo",
+   "region": "Alola",
+   "name": "Heahea City",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_24_USUL.png",
+   "checked": "shown on WikiDex's page \"Ciudad Kantai\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "yE473_aGMFnT",
+   "region": "Alola",
+   "name": "Hokulani Observatory",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_63_USUL.png",
+   "checked": "shown on WikiDex's page \"Observatorio de Hokulani\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "dgaEkQeJ2LRr",
+   "region": "Alola",
+   "name": "Hokulani Observatory",
+   "game": "Sun / Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Observatorio_de_Hokulani.png",
+   "checked": "shown on WikiDex's page \"Observatorio de Hokulani\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "JuHO3rq4RRes",
+   "region": "Alola",
+   "name": "Iki Town",
+   "game": "Sun / Moon",
+   "source": "https://www.pokepedia.fr/Fichier:Lili'i_SL.png",
+   "checked": "shown on Poképédia's page \"Lili'i\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "bSMRopEyyVnW",
+   "region": "Alola",
+   "name": "Kala'e Bay",
+   "game": "Sun / Moon",
+   "source": "https://www.pokewiki.de/Datei:SoMo_Kala’e-Bucht.jpg",
+   "checked": "shown on PokéWiki's page \"Kala’e-Bucht\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "DU880cEdZLbQ",
+   "region": "Alola",
+   "name": "Konikoni City",
+   "game": "Sun / Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Ciudad_Konikoni_SL.png",
+   "checked": "shown on WikiDex's page \"Ciudad Konikoni\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "M3lGeuS3jqJq",
+   "region": "Alola",
+   "name": "Konikoni City",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_44_USUL.png",
+   "checked": "shown on WikiDex's page \"Ciudad Konikoni\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "NiX97ZEZenFi",
+   "region": "Alola",
+   "name": "Konikoni City",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_45_USUL.png",
+   "checked": "shown on WikiDex's page \"Ciudad Konikoni\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "7Vsnp_v6E6r1",
+   "region": "Alola",
+   "name": "Lake of the Sunne / Moone",
+   "game": "Sun / Moon",
+   "source": "https://www.pokepedia.fr/Fichier:Lac_du_Halo_Solaire_(Couloir)_SL.png",
+   "checked": "shown on Poképédia's page \"Lac du Halo Solaire\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "HXuqz7rxHHZH",
+   "region": "Alola",
+   "name": "Lake of the Sunne / Moone",
+   "game": "Sun / Moon",
+   "source": "https://www.pokepedia.fr/Fichier:Lac_du_Halo_Solaire_(Extérieur)_SL.png",
+   "checked": "shown on Poképédia's page \"Lac du Halo Solaire\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Zu5TqagZGr_m",
+   "region": "Alola",
+   "name": "Lake of the Sunne / Moone",
+   "game": "Sun / Moon",
+   "source": "https://www.pokewiki.de/Datei:SoMo_Mondscheiben-See.jpg",
+   "checked": "shown on PokéWiki's page \"Mondscheiben-See\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "QaQlN50h67kZ",
+   "region": "Alola",
+   "name": "Lush Jungle",
+   "game": "Sun / Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Pokévisor_Jungla_Umbría_SL.png",
+   "checked": "in wikidex's category \"Capturas de Pokémon Sol y Pokémon Luna\", named after the place; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "w7pBu-NY8VSr",
+   "region": "Alola",
+   "name": "Mahalo Trail",
+   "game": "Sun / Moon",
+   "source": "https://www.pokepedia.fr/Fichier:Sentier_de_Mahalo_démo_SL.png",
+   "checked": "shown on Poképédia's page \"Sentier de Mahalo\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "r6G9gH9Sdza8",
+   "region": "Alola",
+   "name": "Malie City",
+   "game": "Sun / Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Ciudad_Malíe_SL_(2).jpg",
+   "checked": "shown on WikiDex's page \"Ciudad Malíe\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "lZ5JNBJtfF-p",
+   "region": "Alola",
+   "name": "Malie City",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_52_USUL.png",
+   "checked": "shown on WikiDex's page \"Ciudad Malíe\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "C4h6twqJi2vD",
+   "region": "Alola",
+   "name": "Malie City",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_53_USUL.png",
+   "checked": "shown on WikiDex's page \"Ciudad Malíe\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "H8_logFazQOJ",
+   "region": "Alola",
+   "name": "Malie City",
+   "game": "Sun / Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Sushi_de_ciudad_malie.jpg",
+   "checked": "shown on WikiDex's page \"Ciudad Malíe\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "GirDwirFNA_a",
+   "region": "Alola",
+   "name": "Kantonian Gym",
+   "parent": "Malie City",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Gimnasio_de_Kanto_USUL.png",
+   "checked": "shown on WikiDex's page \"Gimnasio de Kanto\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "QWsZ_J6AynDc",
+   "region": "Alola",
+   "name": "Malie Garden",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_58_USUL.png",
+   "checked": "shown on WikiDex's page \"Parque de Malíe\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "bdEAQy8yvK2j",
+   "region": "Alola",
+   "name": "Malie Garden",
+   "game": "Sun / Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Parque_de_Malie_GeneralSL.png",
+   "checked": "shown on WikiDex's page \"Parque de Malíe\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "y4SJmdxs_Tt2",
+   "region": "Alola",
+   "name": "Malie Garden",
+   "game": "Sun / Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Torre_parque_de_Malie_SL.png",
+   "checked": "shown on WikiDex's page \"Parque de Malíe\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "nBKUaeR2B-1E",
+   "region": "Alola",
+   "name": "Melemele Meadow",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.pokepedia.fr/Fichier:Accès_à_la_Grotte_Verlamer_depuis_le_Jardin_de_Mele-Mele_USUL.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Ultra-Soleil et Ultra-Lune\", named after the place; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "h3McKQkzTVNE",
+   "region": "Alola",
+   "name": "Mount Lanakila",
+   "game": "Sun / Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Pokévisor_Monte_Lanakila_SL.png",
+   "checked": "shown on WikiDex's page \"Monte Lanakila\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "tnG9DrPu--U0",
+   "region": "Alola",
+   "name": "Paniola Ranch",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_33_USUL.png",
+   "checked": "shown on WikiDex's page \"Rancho Ohana\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "ev-cZEmi53ym",
+   "region": "Alola",
+   "name": "Paniola Ranch",
+   "game": "Sun / Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Pokévisor_Rancho_Ohana_SL.png",
+   "checked": "in wikidex's category \"Capturas de Pokémon Sol y Pokémon Luna\", named after the place; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "N8a93P_VQb9r",
+   "region": "Alola",
+   "name": "Paniola Town",
+   "game": "Sun / Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Calles_de_Pueblo_Ohana_SL.jpg",
+   "checked": "shown on WikiDex's page \"Pueblo Ohana\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "tCTtzFclAUli",
+   "region": "Alola",
+   "name": "Paniola Town",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_29_USUL.png",
+   "checked": "shown on WikiDex's page \"Pueblo Ohana\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "6Z-zAwGt-a2R",
+   "region": "Alola",
+   "name": "Pikachu Valley",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.pokepedia.fr/Fichier:Plaine_des_Pikachu.png",
+   "checked": "shown on Poképédia's page \"Plaine des Pikachu\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "WZ4MTGH3ZEPE",
+   "region": "Alola",
+   "name": "Pikachu Valley",
+   "game": "Sun / Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Pokévisor_Valle_de_los_Pikachu.png",
+   "checked": "in wikidex's category \"Capturas de Pokémon Sol y Pokémon Luna\", named after the place; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "FEnbzjDyH4gC",
+   "region": "Alola",
+   "name": "Po Town",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_76_USUL.png",
+   "checked": "shown on WikiDex's page \"Pueblo Po\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Q4vToRrpVxxa",
+   "region": "Alola",
+   "name": "Po Town",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_77_USUL.png",
+   "checked": "shown on WikiDex's page \"Pueblo Po\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "X9FZmjzmG1CA",
+   "region": "Alola",
+   "name": "Po Town",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_78_USUL.png",
+   "checked": "shown on WikiDex's page \"Pueblo Po\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "TE7PJdmmxycb",
+   "region": "Alola",
+   "name": "Po Town",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_79_USUL.png",
+   "checked": "shown on WikiDex's page \"Pueblo Po\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "uHE-uaUKP0dH",
+   "region": "Alola",
+   "name": "Po Town",
+   "game": "Sun / Moon",
+   "source": "https://www.pokewiki.de/Datei:SoMo_Zygarde-Zelle_Po’u_(Ula-Ula)_23.png",
+   "checked": "shown on PokéWiki's page \"Po’u\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Sg9YJTlNgn0T",
+   "region": "Alola",
+   "name": "Poni Beach",
+   "game": "Sun / Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Playa_de_Poni.png",
+   "checked": "shown on WikiDex's page \"Playa de Poni\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "9L0SRXGGp3qG",
+   "region": "Alola",
+   "name": "Poni Breaker Coast",
+   "game": "Sun / Moon",
+   "source": "https://www.pokepedia.fr/Fichier:Récif_de_Poni_SL.png",
+   "checked": "shown on Poképédia's page \"Récif de Poni\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "e7xZThbEQtVf",
+   "region": "Alola",
+   "name": "Poni Coast",
+   "game": "Sun / Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Costa_de_Poni_Pokémon_SL.jpg",
+   "checked": "in wikidex's category \"Capturas de Pokémon Sol y Pokémon Luna\", named after the place; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "lI1LW_NqpWBD",
+   "region": "Alola",
+   "name": "Poni Gauntlet",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_100_USUL.png",
+   "checked": "shown on WikiDex's page \"Camino de Poni/Pendiente de Poni\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "fW6E1JPVkFS9",
+   "region": "Alola",
+   "name": "Poni Gauntlet",
+   "game": "Sun / Moon",
+   "source": "https://www.pokewiki.de/Datei:SoMo_Zygarde-Zelle_Beschwerlicher_Pfad_(Poni)_9.png",
+   "checked": "shown on PokéWiki's page \"Beschwerlicher Pfad\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "ibCi4alAisx2",
+   "region": "Alola",
+   "name": "Poni Grove",
+   "game": "Sun / Moon",
+   "source": "https://www.pokepedia.fr/Fichier:Forêt_de_Poni_SL.png",
+   "checked": "shown on Poképédia's page \"Forêt de Poni\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "DUMvr35XGuf7",
+   "region": "Alola",
+   "name": "Poni Plains",
+   "game": "Sun / Moon",
+   "source": "https://www.pokewiki.de/Datei:SoMo_Zygarde-Zelle_Ebene_von_Poni_(Poni)_13.png",
+   "checked": "shown on PokéWiki's page \"Ebene von Poni\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "yTSHlCw5kSU8",
+   "region": "Alola",
+   "name": "Poni Wilds",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_93_USUL.png",
+   "checked": "shown on WikiDex's page \"Campos de Poni/Prado de Poni\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Xvx7qt9gRsm6",
+   "region": "Alola",
+   "name": "Poni Wilds",
+   "game": "Sun / Moon",
+   "source": "https://www.pokepedia.fr/Fichier:Prairie_de_Poni_SL.png",
+   "checked": "shown on Poképédia's page \"Prairie de Poni\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "E0eHoeyDvis_",
+   "region": "Alola",
+   "name": "Route 12",
+   "game": "Sun / Moon",
+   "source": "https://www.pokewiki.de/Datei:SoMo_Zygarde-Zelle_Route_12_(Ula-Ula)_3.png",
+   "checked": "shown on PokéWiki's page \"Route 12 (Alola)\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "K3jCwwsgXSK5",
+   "region": "Alola",
+   "name": "Route 13",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_65_USUL.png",
+   "checked": "shown on WikiDex's page \"Ruta 13 (Alola)\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "FEEIbznxR85l",
+   "region": "Alola",
+   "name": "Route 17",
+   "game": "Sun / Moon",
+   "source": "https://www.pokepedia.fr/Fichier:Route_17_SL.png",
+   "checked": "shown on Poképédia's page \"Route 17 (Alola)\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "xKVgL73VqzI8",
+   "region": "Alola",
+   "name": "Route 17",
+   "game": "Sun / Moon",
+   "source": "https://www.pokewiki.de/Datei:SoMo_Route_17_Polizeiwache.png",
+   "checked": "shown on PokéWiki's page \"Route 17 (Alola)\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "jfvWFOMv7Jvr",
+   "region": "Alola",
+   "name": "Route 4",
+   "game": "Sun / Moon",
+   "source": "https://www.pokepedia.fr/Fichier:Route_4_SL.png",
+   "checked": "shown on Poképédia's page \"Route 4 (Alola)\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "bvsztFzfxyHi",
+   "region": "Alola",
+   "name": "Route 6",
+   "game": "Sun / Moon",
+   "source": "https://www.pokepedia.fr/Fichier:Route_6_SL.png",
+   "checked": "shown on Poképédia's page \"Route 6 (Alola)\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "iDJoGh_jZDWt",
+   "region": "Alola",
+   "name": "Route 8",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_36_USUL.png",
+   "checked": "shown on WikiDex's page \"Ruta 8 (Alola)\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "k7Hojg8gNr33",
+   "region": "Alola",
+   "name": "Route 8",
+   "game": "Sun / Moon",
+   "source": "https://www.pokewiki.de/Datei:SoMo_Fossilienlabor_Route_8.jpg",
+   "checked": "shown on PokéWiki's page \"Route 8 (Alola)\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "dSw14tUjr_y_",
+   "region": "Alola",
+   "name": "Royal Avenue",
+   "game": "Sun / Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Pokévisor_Avenida_Royale_SL.png",
+   "checked": "in wikidex's category \"Capturas de Pokémon Sol y Pokémon Luna\", named after the place; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "OeO_lXmfpDrr",
+   "region": "Alola",
+   "name": "Royal Avenue",
+   "game": "Sun / Moon",
+   "source": "https://www.pokepedia.fr/Fichier:Rue_du_Dôme_Royal.png",
+   "checked": "shown on Poképédia's page \"Rue du Dôme Royal\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "6RYtn9hiV-bZ",
+   "region": "Alola",
+   "name": "Royal Avenue",
+   "game": "Sun / Moon",
+   "source": "https://www.pokewiki.de/Datei:SoMo_Schnäppchenparadies_Zusatzmission.jpg",
+   "checked": "shown on PokéWiki's page \"Avenue Royale\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "KcNZUD5GiR1p",
+   "region": "Alola",
+   "name": "Ruins of Abundance",
+   "game": "Sun / Moon",
+   "source": "https://www.pokepedia.fr/Fichier:Ruines_de_l'Essor_(Extérieur)_SL.png",
+   "checked": "shown on Poképédia's page \"Ruines de l'Essor\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "3myqvet92uZL",
+   "region": "Alola",
+   "name": "Ruins of Abundance",
+   "game": "Sun / Moon",
+   "source": "https://www.pokewiki.de/Datei:SoMo_Ruinen_des_Gedeihens.jpg",
+   "checked": "shown on PokéWiki's page \"Ruinen des Gedeihens\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "O_tuHJh-6ifM",
+   "region": "Alola",
+   "name": "Ruins of Conflict",
+   "game": "Sun / Moon",
+   "source": "https://www.pokewiki.de/Datei:SoMo_Zygarde-Zelle_Ruinen_des_Krieges_(Mele-Mele)_13.png",
+   "checked": "shown on PokéWiki's page \"Ruinen des Krieges\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "jXw1SBTXdePR",
+   "region": "Alola",
+   "name": "Ruins of Hope",
+   "game": "Sun / Moon",
+   "source": "https://www.pokepedia.fr/Fichier:Ruines_de_l'Au-Delà_(Autel)_SL.png",
+   "checked": "shown on Poképédia's page \"Ruines de l'Au-Delà\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "uF3-0QQg9Qv3",
+   "region": "Alola",
+   "name": "Ruins of Hope",
+   "game": "Sun / Moon",
+   "source": "https://www.pokepedia.fr/Fichier:Ruines_de_l'Au-Delà_(Extérieur)_SL.png",
+   "checked": "shown on Poképédia's page \"Ruines de l'Au-Delà\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "27wZ5m33lEd_",
+   "region": "Alola",
+   "name": "Ruins of Life",
+   "game": "Sun / Moon",
+   "source": "https://www.pokepedia.fr/Fichier:Ruines_de_l'Éveil_(Extérieur)_SL.png",
+   "checked": "shown on Poképédia's page \"Ruines de l'Éveil\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "1f3Itrvy4joU",
+   "region": "Alola",
+   "name": "Seafolk Village",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_85_USUL.png",
+   "checked": "shown on WikiDex's page \"Aldea Delmar/Aldea Marina\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "PHoXy1HvEWMr",
+   "region": "Alola",
+   "name": "Seafolk Village",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_87_USUL.png",
+   "checked": "shown on WikiDex's page \"Aldea Delmar/Aldea Marina\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "_byYxeNoB-De",
+   "region": "Alola",
+   "name": "Shady House",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_83_USUL.png",
+   "checked": "shown on WikiDex's page \"Mansión Misteriosa\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "7N98G6J8IIJu",
+   "region": "Alola",
+   "name": "Shady House",
+   "game": "Sun / Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Mansión_misteriosa.png",
+   "checked": "shown on WikiDex's page \"Mansión Misteriosa\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "2ZMRVZsCBSS6",
+   "region": "Alola",
+   "name": "Shady House",
+   "game": "Sun / Moon",
+   "source": "https://www.pokewiki.de/Datei:SoMo_Lottervilla.jpg",
+   "checked": "shown on PokéWiki's page \"Lottervilla\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "QQ0gcza3vXWR",
+   "region": "Alola",
+   "name": "Tapu Village",
+   "game": "Sun / Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Aldea_Tapu_Ruinas_SL.png",
+   "checked": "shown on WikiDex's page \"Aldea Tapu\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "tJidv3gTl2ln",
+   "region": "Alola",
+   "name": "Trainers' School",
+   "game": "Sun / Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Escuela_de_entrenadores_SL.png",
+   "checked": "in wikidex's category \"Capturas de Pokémon Sol y Pokémon Luna\", named after the place; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "XRZqjNKNLd1m",
+   "region": "Alola",
+   "name": "Ula'ula Beach",
+   "game": "Sun / Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Playa_de_Ula-Ula.png",
+   "checked": "shown on WikiDex's page \"Playa de Ula-Ula\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "GyBPK7189Hw7",
+   "region": "Alola",
+   "name": "Ula'ula Meadow",
+   "game": "Sun / Moon",
+   "source": "https://www.pokewiki.de/Datei:SoMo_Zygarde-Zelle_Ula-Ula-Blumenmeer_(Ula-Ula)_29.png",
+   "checked": "shown on PokéWiki's page \"Ula-Ula-Blumenmeer\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "doFAYgCUYqGk",
+   "region": "Alola",
+   "name": "Vast Poni Canyon",
+   "game": "Sun / Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Cañón_de_Poni_SL.png",
+   "checked": "in wikidex's category \"Capturas de Pokémon Sol y Pokémon Luna\", named after the place; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "uEusxP7QssmN",
+   "region": "Alola",
+   "name": "Verdant Cavern",
+   "game": "Sun / Moon",
+   "source": "https://www.pokepedia.fr/Fichier:Grotte_Verdoyante_SL.png",
+   "checked": "shown on Poképédia's page \"Grotte Verdoyante\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "XxBPt8CBGyPL",
+   "region": "Alola",
+   "name": "Wela Volcano Park",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.wikidex.net/wiki/Archivo:Dominsignia_37_USUL.png",
+   "checked": "shown on WikiDex's page \"Área Volcánica del Wela\"; USUM in its name or category; reviewed on a contact sheet"
   }
  ]
 }

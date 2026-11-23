@@ -1357,7 +1357,7 @@ async function accept(region: string, reviewFile: string, planFile?: string) {
     writeFileSync(SHOT_CACHE, JSON.stringify(cache));
     writeFileSync(SHOT_HASHES, JSON.stringify(hashes));
     writeJson(ledgerFile, ledger);
-    if (added % 20 === 0) console.log(`  ${added} uploaded`);
+    if (added % 20 === 0) console.log(`  ${added} ${planFile ? "prepared" : "uploaded"}`);
   }
   writeJson(ledgerFile, ledger);
   const rejected = Object.values(ledger).filter((d) => d.decision === "rejected").length;
