@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element -- animated GIFs and pre-sized art */
 
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { AnimatePresence, m, useMotionValue, useSpring, useTransform } from "framer-motion";
 import Link from "@/components/ui/Link";
 import { slugify } from "@/lib/dex/build";
 import { Box, Sparkles, Volume2 } from "lucide-react";
@@ -100,9 +100,9 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
             <PokeballWatermark />
             <span className="hud-label absolute left-3 top-3 z-[3] text-screen">{view === "3d" ? t("hero.model") : view === "animated" ? t("hero.live") : t("hero.visual")}</span>
             {shiny && <span className="hud-label absolute right-3 top-3 z-[3] text-warning">{t("hero.shiny")}</span>}
-            <motion.div className="relative z-[1] h-full w-full" style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}>
+            <m.div className="relative z-[1] h-full w-full" style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}>
               <AnimatePresence mode="wait" initial={false}>
-                <motion.img
+                <m.img
                   key={srcKey}
                   src={failed[srcKey] ? fallback : src}
                   alt={shiny ? t("hero.shinyAlt", { name: form?.name ?? p.name }) : (form?.name ?? p.name)}
@@ -128,7 +128,7 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
               <AnimatePresence>
                 {burst > 0 && <SparkleBurst key={burst} />}
               </AnimatePresence>
-            </motion.div>
+            </m.div>
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-2">
@@ -141,7 +141,7 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
                   className={cn("relative rounded-sm px-3 py-1.5 font-pixel text-[10px] uppercase tracking-wider transition-colors", view === v ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
                   aria-pressed={view === v}
                 >
-                  {view === v && <motion.span layoutId="hero-view-pill" className="absolute inset-0 rounded-sm bg-primary" transition={{ type: "spring", stiffness: 400, damping: 30 }} />}
+                  {view === v && <m.span layoutId="hero-view-pill" className="absolute inset-0 rounded-sm bg-primary" transition={{ type: "spring", stiffness: 400, damping: 30 }} />}
                   <span className="relative">{v === "art" ? t("hero.art") : v === "animated" ? t("hero.animated") : t("hero.threeD")}</span>
                 </button>
               ))}
@@ -166,24 +166,24 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
 
         {/* Identity */}
         <div className="space-y-5">
-          <motion.div initial={hydrated ? { opacity: 0, y: 16 } : false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <m.div initial={hydrated ? { opacity: 0, y: 16 } : false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <p className="hud-label text-screen">
               {t("no", { n: String(p.id).padStart(4, "0") })} · {p.genus}
             </p>
             <h1 className="font-display text-5xl font-bold uppercase tracking-tight sm:text-6xl">{form?.name ?? p.name}</h1>
             {(local ? local.english : p.names.ja) && <p className="mt-1 text-base text-muted-foreground">{local ? local.english : p.names.ja}</p>}
-          </motion.div>
+          </m.div>
 
-          <motion.div className="flex flex-wrap gap-2" initial={hydrated ? "hidden" : false} animate="show" variants={{ show: { transition: { staggerChildren: 0.08, delayChildren: 0.2 } } }}>
+          <m.div className="flex flex-wrap gap-2" initial={hydrated ? "hidden" : false} animate="show" variants={{ show: { transition: { staggerChildren: 0.08, delayChildren: 0.2 } } }}>
             {types.map((ty) => (
-              <motion.span key={`${form?.id}-${ty}`} variants={{ hidden: { opacity: 0, scale: 0.5 }, show: { opacity: 1, scale: 1 } }}>
+              <m.span key={`${form?.id}-${ty}`} variants={{ hidden: { opacity: 0, scale: 0.5 }, show: { opacity: 1, scale: 1 } }}>
                 <TypeBadge type={ty} size="lg" label={local?.types[ty]} />
-              </motion.span>
+              </m.span>
             ))}
             {p.legendary && <Tag>{t("hero.legendary")}</Tag>}
             {p.mythical && <Tag>{t("hero.mythical")}</Tag>}
             {data.isBaby && <Tag>{t("hero.baby")}</Tag>}
-          </motion.div>
+          </m.div>
 
           {data.forms.length > 0 && (
             <div className="space-y-2">
@@ -222,7 +222,7 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
             <div className="hud-label">{t("hero.abilities")}</div>
             <div className="grid gap-2">
               {abilities.map((a, i) => (
-                <motion.div
+                <m.div
                   key={`${form?.id}-${a.name}`}
                   initial={hydrated ? { opacity: 0, x: -12 } : false}
                   animate={{ opacity: 1, x: 0 }}
@@ -234,7 +234,7 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
                     {a.hidden && <span className="rounded-sm border border-primary/50 px-1.5 py-1 font-pixel text-[9px] uppercase leading-none text-primary">{t("hero.hidden")}</span>}
                   </div>
                   {a.effect && <p className="mt-0.5 text-xs text-muted-foreground">{a.effect}</p>}
-                </motion.div>
+                </m.div>
               ))}
             </div>
           </div>
@@ -315,7 +315,7 @@ function CryButton({ id }: { id: number }) {
       {t("hero.cry")}
       <span className="flex h-3 items-end gap-[2px]" aria-hidden>
         {[0, 1, 2, 3].map((i) => (
-          <motion.span
+          <m.span
             key={i}
             className="w-[2px] rounded-full bg-current"
             animate={playing ? { height: ["20%", "100%", "40%", "80%", "20%"] } : { height: "20%" }}
@@ -333,7 +333,7 @@ function SparkleBurst() {
       {Array.from({ length: 10 }).map((_, i) => {
         const angle = (i / 10) * Math.PI * 2;
         return (
-          <motion.span
+          <m.span
             key={i}
             className="absolute left-1/2 top-1/2 text-xl text-yellow-300"
             initial={{ x: 0, y: 0, opacity: 1, scale: 0.4 }}
@@ -342,7 +342,7 @@ function SparkleBurst() {
             transition={{ duration: 0.9, ease: "easeOut" }}
           >
             ✦
-          </motion.span>
+          </m.span>
         );
       })}
     </div>
@@ -351,7 +351,7 @@ function SparkleBurst() {
 
 function PokeballWatermark() {
   return (
-    <motion.svg
+    <m.svg
       viewBox="0 0 100 100"
       className="absolute inset-0 m-auto h-[92%] w-[92%] text-foreground/[0.05]"
       animate={{ rotate: 360 }}
@@ -361,6 +361,6 @@ function PokeballWatermark() {
       <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" strokeWidth="4" />
       <path d="M4 50h30M66 50h30" stroke="currentColor" strokeWidth="4" />
       <circle cx="50" cy="50" r="14" fill="none" stroke="currentColor" strokeWidth="4" />
-    </motion.svg>
+    </m.svg>
   );
 }

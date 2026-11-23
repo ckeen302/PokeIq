@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element -- pre-sized art */
 import { useState } from "react";
 import Link from "@/components/ui/Link";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import type { DexEntryData } from "@/lib/pokemon/dex-types";
 import { artUrl } from "@/lib/pokemon/art";
 import { typeColor } from "@/lib/pokemon/type-colors";
@@ -39,7 +39,7 @@ export function LookalikesSection({ self, lookalikes }: { self: { id: number; na
         {lookalikes.map((l, i) => {
           const shown = revealed.has(l.id);
           return (
-            <motion.div
+            <m.div
               key={l.id}
               className="flex flex-col items-center gap-1.5"
               initial={{ opacity: 0, y: 10 }}
@@ -72,7 +72,7 @@ export function LookalikesSection({ self, lookalikes }: { self: { id: number; na
                 <span className="text-xs text-muted-foreground">???</span>
               )}
               <span className="text-[10px] tabular-nums text-muted-foreground">{t("look.match", { n: Math.round(l.similarity * 100) })}</span>
-            </motion.div>
+            </m.div>
           );
         })}
       </div>

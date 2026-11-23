@@ -21,6 +21,12 @@ const page = await ctx.newPage();
 if (prof.cpu > 1) await (await ctx.newCDPSession(page)).send("Emulation.setCPUThrottlingRate", { rate: prof.cpu });
 await page.goto(url, { waitUntil: "load" });
 await page.waitForTimeout(wait);
+// A game's first-visit how-to covers the board: "Don't show again", as the e2e does.
+const never = page.getByTestId("howto-never");
+if (await never.isVisible().catch(() => false)) {
+  await never.click();
+  await page.waitForTimeout(800);
+}
 const t0 = await page.evaluate(() => performance.now());
 await page.locator(selector).first().click();
 await page.keyboard.type(text, { delay: 250 });

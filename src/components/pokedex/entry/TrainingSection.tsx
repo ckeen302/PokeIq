@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import type { DexEntryData } from "@/lib/pokemon/dex-types";
 import type { StatKey } from "@/lib/pokemon/constants";
 import { catchChance } from "@/lib/pokemon/stat-calc";
@@ -44,8 +44,8 @@ export function TrainingSection({ data }: { data: DexEntryData }) {
           </div>
           {femalePct !== null && (
             <div className="flex meter">
-              <motion.div className="h-full bg-sky-400" initial={{ width: 0 }} whileInView={{ width: `${100 - femalePct}%` }} viewport={{ once: true }} transition={{ duration: 0.8 }} />
-              <motion.div className="h-full bg-pink-400" initial={{ width: 0 }} whileInView={{ width: `${femalePct}%` }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.2 }} />
+              <m.div className="h-full bg-sky-400" initial={{ width: 0 }} whileInView={{ width: `${100 - femalePct}%` }} viewport={{ once: true }} transition={{ duration: 0.8 }} />
+              <m.div className="h-full bg-pink-400" initial={{ width: 0 }} whileInView={{ width: `${femalePct}%` }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.2 }} />
             </div>
           )}
         </div>

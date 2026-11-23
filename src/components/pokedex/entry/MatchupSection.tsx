@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { formatMultiplier } from "@/lib/pokemon/type-matrix";
 import { TypeBadge } from "../TypeBadge";
 import { cn } from "@/lib/utils";
@@ -37,9 +37,9 @@ export function MatchupSection({ defenses, stab, typeNames }: { defenses: { type
               <div className={cn("mb-2 text-sm font-semibold", g.tone)}>{t(`matchup.${g.label}`)}</div>
               <div className="flex flex-wrap gap-1.5">
                 {list.map((d, i) => (
-                  <motion.span key={d.type} initial={{ opacity: 0, scale: 0.6 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.04 }}>
+                  <m.span key={d.type} initial={{ opacity: 0, scale: 0.6 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.04 }}>
                     <TypeBadge type={d.type} label={typeNames?.[d.type]} />
-                  </motion.span>
+                  </m.span>
                 ))}
               </div>
             </div>
@@ -51,7 +51,7 @@ export function MatchupSection({ defenses, stab, typeNames }: { defenses: { type
         <div className="mb-3 text-sm font-semibold">{t("matchup.every")}</div>
         <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-6 lg:grid-cols-9">
           {defenses.map((d, i) => (
-            <motion.div
+            <m.div
               key={d.type}
               initial={{ opacity: 0, y: 8 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -63,7 +63,7 @@ export function MatchupSection({ defenses, stab, typeNames }: { defenses: { type
               <span className={cn("w-full rounded-md py-0.5 text-center text-xs font-bold", cellTone(d.multiplier))}>
                 {d.multiplier === 1 ? "1×" : formatMultiplier(d.multiplier).replace(" (immune)", "")}
               </span>
-            </motion.div>
+            </m.div>
           ))}
         </div>
       </div>
