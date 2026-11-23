@@ -28,6 +28,7 @@ export function loadInputs(): Inputs {
     aboutForms: read("src/data/about-forms.json"),
     encounters,
     evidence: read("scripts/hunt/evidence/forms.json"),
+    agreed: fs.existsSync(path.join(ROOT, "scripts/hunt/evidence/agreed.json")) ? read<{ agreed: Inputs["agreed"] }>("scripts/hunt/evidence/agreed.json").agreed : {},
     dens: fs.existsSync(path.join(ROOT, "scripts/hunt/evidence/dens.json")) ? read<{ dens: Inputs["dens"] }>("scripts/hunt/evidence/dens.json").dens : {},
   };
 }
@@ -38,6 +39,6 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(__filename
   // One entry per line: small diffs, still one JSON document.
   const lines = (key: string, list: unknown[]) => `"${key}":[\n${list.map((x) => JSON.stringify(x)).join(",\n")}\n]`;
   fs.writeFileSync(path.join(ROOT, "src/data/hunt/answers.json"), `{"version":1,"generatedAt":"${date}",\n${lines("entries", out.entries)}}\n`);
-  fs.writeFileSync(path.join(ROOT, "src/data/hunt/review.json"), `{"generatedAt":"${date}","stats":${JSON.stringify(out.stats)},\n${lines("missingPlaces", out.missingPlaces)},\n${lines("review", out.review)}}\n`);
+  fs.writeFileSync(path.join(ROOT, "src/data/hunt/review.json"), `{"generatedAt":"${date}","stats":${JSON.stringify(out.stats)},\n${lines("missingPlaces", out.missingPlaces)},\n${lines("dropped", out.dropped)},\n"excludedAt":${JSON.stringify(out.excludedAt)},\n${lines("review", out.review)}}\n`);
   console.log(out.stats);
 }

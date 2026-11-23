@@ -30,9 +30,11 @@ VERSION_KEYS = {
     "Sun": ["sun"], "Moon": ["moon"], "Ultra Sun": ["ultra-sun"], "Ultra Moon": ["ultra-moon"],
     "Let's Go Pikachu": ["lets-go-pikachu"], "Let's Go Eevee": ["lets-go-eevee"],
     "Sword": ["sword"], "Shield": ["shield"], "Expansion Pass": ["sword", "shield"],
+    "Sword Expansion Pass": ["sword"], "Shield Expansion Pass": ["shield"],
     "Brilliant Diamond": ["brilliant-diamond"], "Shining Pearl": ["shining-pearl"],
     "Legends: Arceus": ["legends-arceus"],
     "Scarlet": ["scarlet"], "Violet": ["violet"], "The Hidden Treasure of Area Zero": ["scarlet", "violet"],
+    "The Hidden Treasure of Area Zero (Scarlet)": ["scarlet"], "The Hidden Treasure of Area Zero (Violet)": ["violet"],
     "Legends: Z-A": ["legends-za"], "Mega Dimension": ["legends-za"],
 }
 
@@ -74,6 +76,21 @@ def places_of(seg):
         if name not in seen:
             seen.append(name)
     return seen
+
+
+METHOD_HINTS = [
+    (r"Super Rod", "Super Rod"), (r"Good Rod", "Good Rod"), (r"Old Rod", "Old Rod"), (r"\bFishing\b|\bfishing\b", "Fishing"),
+    (r"Headbutt", "Headbutt"), (r"Rock Smash", "Rock Smash"), (r"Honey", "Honey tree"), (r"Horde", "Horde"),
+    (r"SOS", "SOS call"), (r"Wanderer", "Wandering"), (r"Only (one|two)", "Fixed encounter"), (r"Poké Radar", "Poké Radar"),
+    (r"Hidden Grotto", "Hidden Grotto"), (r"\bSurf", "Surf"), (r"Max Raid Battle", "Max Raid"),
+]
+
+
+def method_of(seg):
+    for pat, label in METHOD_HINTS:
+        if re.search(pat, seg):
+            return label
+    return None
 
 
 def forms_of(seg):
@@ -126,7 +143,7 @@ def parse(text):
                 if not seg:
                     continue
                 kind = "other" if OTHER.search(seg) else ("raid" if MAX_RAID.search(seg) else "wild")
-                segs.append({"places": places_of(seg), "forms": forms_of(seg), "kind": kind, "text": strip_tags(seg)[:400]})
+                segs.append({"places": places_of(seg), "forms": forms_of(seg), "kind": kind, "method": method_of(seg), "text": strip_tags(seg)[:400]})
         entries.append({"versions": versions, "segments": segs, "none": none})
     return entries
 

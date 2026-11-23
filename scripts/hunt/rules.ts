@@ -79,6 +79,9 @@ export const METHODS: Record<string, string | null> = {
   "Colosseum bonus disc jpn": null, "Colosseum bonus disc us": null, "Pokemon channel pal": null, "Pokemon ranger": null,
 };
 
+/** The label for a place added because Bulbapedia and Serebii both list it, when neither names the method. */
+export const AGREED_LABEL = "Wild";
+
 /** Max Raid dens only count in Sword and Shield (Galar's dens). */
 export const MAX_RAID_VERSIONS = new Set(["sword", "shield"]);
 
@@ -107,9 +110,10 @@ export const PLACE_ALIASES: { region: string; from: string; to: string; versions
   { region: "Unova", from: "Black City", to: "Black City / White Forest", why: "one map place for both" },
   { region: "Hoenn", from: "Team Magma Hideout", to: "Magma Hideout (Jagged Pass)", why: "the same hideout; the map files it under Jagged Pass" },
   { region: "Hoenn", from: "Aqua Hideout", to: "Team Aqua Hideout", why: "the same hideout" },
-  { region: "Sinnoh", from: "Trophy Garden", to: "Pokémon Mansion", why: "the Trophy Garden is the Pokémon Mansion's back garden on Route 212 (Bulbapedia)" },
+  { region: "Sinnoh", from: "Trophy Garden", to: "Pokémon Mansion", why: "Bulbapedia: the Trophy Garden is part of the Pokémon Mansion, behind it on Route 212" },
+  { region: "Johto", from: "Tin Tower", to: "Bell Tower", why: "Gold / Silver / Crystal's name for the Bell Tower" },
   { region: "Johto", from: "Mt. Silver Cave", to: "Mt. Silver", why: "the cave inside Mt. Silver" },
-  { region: "Kalos", from: "Unknown Dungeon", to: "Pokémon Village", versions: ["x", "y"], why: "the Unknown Dungeon is a cave inside Pokémon Village (Bulbapedia: 'Unknown Dungeon is a cave in Pokémon Village')" },
+  { region: "Kalos", from: "Unknown Dungeon", to: "Pokémon Village", versions: ["x", "y"], why: "Bulbapedia gives the Unknown Dungeon's location as Pokémon Village: a small cave reached from the village" },
 ];
 
 /**
@@ -122,7 +126,7 @@ export const NOT_THE_SAME: { versions: string[]; loc: string; why: string }[] = 
 ];
 
 /**
- * Encounters that need an event (a ticket, a pass, a QR code, another game's save data),
+ * Encounters that need an event (a ticket, a pass, a QR code, another game's save data or key),
  * left out by rule 1. `loc` and `versions` narrow a row; leaving one out means every row.
  * Each is from Bulbapedia's location table for that Pokémon.
  */
@@ -143,6 +147,8 @@ export const EVENT_ONLY: { dex: number; versions?: string[]; loc?: string; why: 
   { dex: 493, why: "Azure Flute event (or another game's save data in Brilliant Diamond / Shining Pearl)" },
   { dex: 494, versions: ["black", "white"], loc: "Liberty Garden", why: "Liberty Pass event" },
   { dex: 801, versions: ["ultra-sun", "ultra-moon"], why: "QR Scanner event" },
+  { dex: 378, versions: ["black-2"], loc: "Underground Ruins", why: "needs the Iceberg Key, which only White 2 unlocks (another game's Key System)" },
+  { dex: 379, versions: ["white-2"], loc: "Underground Ruins", why: "needs the Iron Key, which only Black 2 unlocks (another game's Key System)" },
 ];
 
 /** FireRed / LeafGreen and Emerald's Altering Cave only has Zubat without a Mystery Gift event. */

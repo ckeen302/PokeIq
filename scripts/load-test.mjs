@@ -33,12 +33,15 @@
  *
  * --one-ip sends every player from the same address, as a carrier's NAT or
  * a school network would. --pid samples that process's resident memory every
- * 5 s (Linux /proc) and prints its start, peak and end.
+ * 5 s (Linux /proc) and prints its start, peak and end, and the CPU time it
+ * (and its child processes) used, per request on average.
  *
  * Prints p50/p95/p99 latency, throughput and the error rate (non-2xx/3xx/4xx
  * that isn't an expected 4xx, plus timeouts) per endpoint and overall, per
  * step. A step "breaks" when its error rate passes 1% or its p95 passes 2 s.
  */
+
+import { readFileSync, readdirSync } from "node:fs";
 
 const args = process.argv.slice(2);
 const BASE = (args.find((a) => !a.startsWith("--")) ?? "http://localhost:3000").replace(/\/$/, "");
@@ -253,6 +256,7 @@ async function runStep(players) {
   };
   const stopAt = Date.now() + DURATION_S * 1000;
   const memory = PID ? sampleMemory(stopAt) : null;
+  const cpuStart = PID ? serverCpuSeconds() : 0;
   async function player(id) {
     const ip = ONE_IP ? "100.64.0.1" : `10.${(id >> 16) & 255}.${(id >> 8) & 255}.${id & 255}`;
     // Spread the starts over the first second.
@@ -305,12 +309,37 @@ async function runStep(players) {
   }
   all.lat.sort((a, b) => a - b);
   const total = { name: "ALL", n: all.lat.length, p50: pct(all.lat, 50), p95: pct(all.lat, 95), p99: pct(all.lat, 99), errPct: (100 * all.errors) / Math.max(1, all.lat.length), statuses: all.statuses, rps: all.lat.length / secs };
-  return { players, secs, rows, total, memory: memory ? await memory : null };
+  const cpu = PID ? { seconds: serverCpuSeconds() - cpuStart } : null;
+  if (cpu) cpu.perRequestMs = (1000 * cpu.seconds) / Math.max(1, total.n);
+  return { players, secs, rows, total, memory: memory ? await memory : null, cpu };
+}
+
+/**
+ * CPU time (user + system, seconds) the server process and its children have
+ * used so far (Linux /proc): the step's difference, divided by its requests,
+ * is the average CPU a request costs, what Vercel's Active CPU quota counts.
+ */
+function serverCpuSeconds() {
+  const ticks = (pid) => {
+    try {
+      const f = readFileSync(`/proc/${pid}/stat`, "utf8").split(") ")[1].split(" ");
+      return { ppid: Number(f[1]), cpu: Number(f[11]) + Number(f[12]) };
+    } catch {
+      return null;
+    }
+  };
+  const procs = readdirSync("/proc").filter((d) => /^\d+$/.test(d)).map((d) => [Number(d), ticks(d)]).filter(([, t]) => t);
+  const parent = new Map(procs.map(([pid, t]) => [pid, t.ppid]));
+  const inTree = (pid) => {
+    for (let p = pid, hops = 0; p && hops < 10; p = parent.get(p), hops++) if (p === PID) return true;
+    return false;
+  };
+  // 100 clock ticks a second on Linux.
+  return procs.filter(([pid]) => inTree(pid)).reduce((n, [, t]) => n + t.cpu, 0) / 100;
 }
 
 /** The server's resident memory (MB) every 5 s until `stopAt`: { start, peak, end, samples }. */
 async function sampleMemory(stopAt) {
-  const { readFileSync } = await import("node:fs");
   const rss = () => {
     try {
       return Number(/VmRSS:\s+(\d+)/.exec(readFileSync(`/proc/${PID}/status`, "utf8"))?.[1] ?? 0) / 1024;
@@ -333,6 +362,7 @@ function print(step) {
   for (const r of [...step.rows, step.total]) {
     console.log(`${r.name.padEnd(28)} ${String(r.n).padStart(6)}  ${fmt(r.p50)}  ${fmt(r.p95)}  ${fmt(r.p99)}  ${r.errPct.toFixed(1).padStart(5)}  ${Object.entries(r.statuses).map(([k, v]) => `${k}:${v}`).join(" ")}`);
   }
+  if (step.cpu) console.log(`server CPU: ${step.cpu.seconds.toFixed(1)} s for ${step.total.n} requests, ${step.cpu.perRequestMs.toFixed(1)} ms a request`);
   if (step.memory) console.log(`server memory (RSS, MB): start ${Math.round(step.memory.start)}, peak ${Math.round(step.memory.peak)}, end ${Math.round(step.memory.end)}  [${step.memory.samples.join(" ")}]`);
 }
 

@@ -1,5 +1,5 @@
 import "server-only";
-import { unstable_cache } from "next/cache";
+import { revalidateTag, unstable_cache } from "next/cache";
 import { getServiceSupabase, type LeaderboardRow } from "@/lib/supabase";
 import { publicName } from "@/lib/name-filter";
 import type { PracticeReason, RunResult } from "@/lib/session-types";
@@ -12,8 +12,23 @@ export type BoardFilter = { kind: "daily"; date: string } | { kind: "iq" };
  * a few seconds across requests: the leaderboard page is hit far more often
  * than runs are saved, and a fresh score shows up within BOARD_TTL_S.
  */
-const BOARD_TTL_S = 15;
+const BOARD_TTL_S = 30;
 export const LEADERBOARD_TAG = "leaderboard";
+
+/**
+ * A saved score clears the boards' cache so it shows soon, but at most this
+ * often per server instance: on a busy day scores arrive every second, and
+ * clearing on each one would rebuild the board pages (database reads and an
+ * ISR write) on nearly every view.
+ */
+export const BOARD_REFRESH_MS = 30_000;
+let lastRefresh = 0;
+export function refreshBoards(now = Date.now()): boolean {
+  if (now - lastRefresh < BOARD_REFRESH_MS) return false;
+  lastRefresh = now;
+  revalidateTag(LEADERBOARD_TAG);
+  return true;
+}
 export async function fetchBoard(filter: BoardFilter, limit = 25): Promise<LeaderboardRow[] | null> {
   const rows = await fetchBoardOrUnavailable(filter, limit);
   return rows === "unavailable" ? [] : rows;
