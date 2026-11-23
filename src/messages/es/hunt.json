@@ -69,7 +69,7 @@
     "remove": "Quitar la chincheta {n}",
     "hintPlace": "Toca el mapa para poner la chincheta {n}",
     "hintMove": "Toca el mapa para mover la chincheta {n}",
-    "hintDone": "¡Todas puestas! Toca el mapa para mover la chincheta {n}, o adivina",
+    "hintDone": "¡Todas puestas! Toca para mover la {n}",
     "hintOne": "Toca el mapa donde lo encontrarías",
     "hintMoveOne": "Toca otra vez para mover tu chincheta"
   },

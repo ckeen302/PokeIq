@@ -69,7 +69,7 @@
     "remove": "Togli la puntina {n}",
     "hintPlace": "Tocca la mappa per mettere la puntina {n}",
     "hintMove": "Tocca la mappa per spostare la puntina {n}",
-    "hintDone": "Tutte le puntine a posto! Tocca la mappa per spostare la puntina {n}, o indovina",
+    "hintDone": "Tutte a posto! Tocca per spostare la {n}",
     "hintOne": "Tocca la mappa dove lo troveresti",
     "hintMoveOne": "Tocca di nuovo per spostare la puntina"
   },

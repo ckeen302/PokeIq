@@ -67,16 +67,18 @@ export function HuntPinTray({ pins, active, onSelect, onRemove, keys = true, cla
   return (
     <div className={cn("rounded-md bg-[#1e1a3f]/92 px-[1.1vh] py-[0.9vh] text-white shadow-lg ring-1 ring-white/15 backdrop-blur max-md:px-2.5 max-md:py-2", className)} data-testid="hunt-pin-tray">
       {max > 1 && (
-        <div className="flex items-center gap-[0.9vh] max-md:gap-2">
-          <span className="font-display text-[max(10px,1.2vh)] font-bold uppercase tracking-[0.16em] text-[#c8bfff] max-md:text-[11px]" aria-live="polite" data-testid="hunt-pin-count">
+        // Touch screens: the count on its own line, then each placed pin as a two-part pill (its number picks it up, its ×
+        // removes it), side by side so a thumb never lands on the wrong one. A mouse: chips in a row with a small × badge.
+        <div className="flex items-center gap-[0.9vh] [@media(pointer:coarse)]:flex-wrap [@media(pointer:coarse)]:gap-1.5">
+          <span className="font-display text-[max(10px,1.2vh)] font-bold uppercase tracking-[0.16em] text-[#c8bfff] [@media(pointer:coarse)]:w-full [@media(pointer:coarse)]:text-[11px]" aria-live="polite" data-testid="hunt-pin-count">
             {t("pins.count", { placed, max })}
           </span>
-          <ol className="ml-auto flex items-center gap-[0.8vh] max-md:gap-2" aria-label={t("pins.label")}>
+          <ol className="ml-auto flex items-center gap-[0.8vh] [@media(pointer:coarse)]:ml-0 [@media(pointer:coarse)]:gap-2" aria-label={t("pins.label")}>
             {pins.map((on, i) => {
               const color = huntPinColor(i);
               const isActive = i === active;
               return (
-                <li key={i} className="relative">
+                <li key={i} className={cn("relative flex items-center rounded-full", isActive && "ring-[3px] ring-[#ffd23c] ring-offset-2 ring-offset-[#1e1a3f]")}>
                   <button
                     type="button"
                     onClick={() => onSelect(i)}
@@ -86,9 +88,8 @@ export function HuntPinTray({ pins, active, onSelect, onRemove, keys = true, cla
                     data-testid={`hunt-pin-chip-${i + 1}`}
                     data-placed={on ? "true" : undefined}
                     className={cn(
-                      "tap flex h-[max(28px,3.4vh)] w-[max(28px,3.4vh)] items-center justify-center rounded-full font-display text-[max(13px,1.6vh)] font-bold transition-[transform,box-shadow,background-color] duration-150 [-webkit-tap-highlight-color:transparent] active:scale-95 max-md:h-10 max-md:w-10 max-md:text-base",
-                      on ? "text-white shadow-[inset_0_-2px_0_rgba(0,0,0,0.25)]" : "border-2 border-dashed border-white/40 text-white/60",
-                      isActive && "ring-[3px] ring-[#ffd23c] ring-offset-2 ring-offset-[#1e1a3f]"
+                      "flex h-[max(28px,3.4vh)] w-[max(28px,3.4vh)] items-center justify-center rounded-full font-display text-[max(13px,1.6vh)] font-bold transition-[transform,background-color] duration-150 [-webkit-tap-highlight-color:transparent] active:scale-95 [@media(pointer:coarse)]:h-10 [@media(pointer:coarse)]:w-10 [@media(pointer:coarse)]:text-base",
+                      on ? "text-white shadow-[inset_0_-2px_0_rgba(0,0,0,0.25)] [@media(pointer:coarse)]:rounded-r-none" : "border-2 border-dashed border-white/40 text-white/60"
                     )}
                     style={on ? { background: color } : undefined}
                   >
@@ -101,9 +102,9 @@ export function HuntPinTray({ pins, active, onSelect, onRemove, keys = true, cla
                       aria-label={t("pins.remove", { n: i + 1 })}
                       title={t("pins.remove", { n: i + 1 })}
                       data-testid={`hunt-pin-remove-${i + 1}`}
-                      className="tap absolute -right-1.5 -top-1.5 flex h-[max(16px,1.9vh)] w-[max(16px,1.9vh)] items-center justify-center rounded-full bg-[#120f24] text-white ring-1 ring-white/50 transition-colors hover:bg-[#ff5a5a] max-md:h-5 max-md:w-5"
+                      className="absolute -right-1.5 -top-1.5 flex h-[max(16px,1.9vh)] w-[max(16px,1.9vh)] items-center justify-center rounded-full bg-[#120f24] text-white ring-1 ring-white/50 transition-colors hover:bg-[#ff5a5a] [-webkit-tap-highlight-color:transparent] [@media(pointer:coarse)]:static [@media(pointer:coarse)]:h-10 [@media(pointer:coarse)]:w-8 [@media(pointer:coarse)]:rounded-l-none [@media(pointer:coarse)]:rounded-r-full [@media(pointer:coarse)]:bg-black/45 [@media(pointer:coarse)]:ring-0 [@media(pointer:coarse)]:active:bg-[#ff5a5a]"
                     >
-                      <X className="h-[70%] w-[70%]" strokeWidth={3} aria-hidden />
+                      <X className="h-[70%] w-[70%] [@media(pointer:coarse)]:h-4 [@media(pointer:coarse)]:w-4" strokeWidth={3} aria-hidden />
                     </button>
                   )}
                 </li>

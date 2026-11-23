@@ -69,7 +69,7 @@
     "remove": "Remove pin {n}",
     "hintPlace": "Tap the map to drop pin {n}",
     "hintMove": "Tap the map to move pin {n}",
-    "hintDone": "All pins down! Tap the map to move pin {n}, or guess",
+    "hintDone": "All pins down! Tap to move pin {n}",
     "hintOne": "Tap the map where you'd find it",
     "hintMoveOne": "Tap again to move your pin"
   },

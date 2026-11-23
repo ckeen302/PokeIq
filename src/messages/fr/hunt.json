@@ -69,7 +69,7 @@
     "remove": "Retirer le repère {n}",
     "hintPlace": "Touche la carte pour placer le repère {n}",
     "hintMove": "Touche la carte pour déplacer le repère {n}",
-    "hintDone": "Tous les repères sont placés ! Touche la carte pour déplacer le repère {n}, ou valide",
+    "hintDone": "Tout est placé ! Touche pour déplacer le {n}",
     "hintOne": "Touche la carte là où tu le trouverais",
     "hintMoveOne": "Touche à nouveau pour déplacer ton repère"
   },
