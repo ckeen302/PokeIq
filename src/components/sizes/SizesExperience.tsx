@@ -1272,7 +1272,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
           />
           <canvas ref={overlayRef} className="sz-overlay h-full w-full" aria-hidden />
           {/* Phones: a still of the city until the first view is showing (only the page's own first view; links to a Pokémon, a comparison or another order open elsewhere). */}
-          {preset === DEFAULT_PRESET.id && !focus && !vs.length && !compare && isDefaultOrder(initialOrder) && <StagePoster src={STAGE_POSTERS.sizes} gone={shown} />}
+          {preset === DEFAULT_PRESET.id && !focus && !vs.length && !compare && isDefaultOrder(initialOrder) && <StagePoster src={STAGE_POSTERS.sizes} gone={shown} fullScreen />}
           <div className="sz-shade-top" aria-hidden />
           <div className="sz-shade-bottom" aria-hidden />
 

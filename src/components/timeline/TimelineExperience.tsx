@@ -410,7 +410,7 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
             role="application"
           />
           {/* Phones: a still of the opening view until the tunnel's first frame (an event's link opens elsewhere: no still). */}
-          {initialId === null && <StagePoster src={STAGE_POSTERS.timeline} gone={ready} />}
+          {initialId === null && <StagePoster src={STAGE_POSTERS.timeline} gone={ready} fullScreen />}
           <div className="tl-fx" aria-hidden />
 
           {!ready && !intro && (

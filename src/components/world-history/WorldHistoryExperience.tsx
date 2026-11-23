@@ -780,7 +780,7 @@ export function WorldHistoryExperience({ initialChapter, localized, children }: 
         >
           <div ref={hostRef} className="absolute inset-0 cursor-grab select-none active:cursor-grabbing" data-testid="wh-scene" role="application" aria-label={t("sceneLabel")} />
           {/* Phones: a still of the opening view until the film's first frame (a chapter's link opens elsewhere: no still). */}
-          {initialChapter === null && <StagePoster src={STAGE_POSTERS.history} gone={ready} />}
+          {initialChapter === null && <StagePoster src={STAGE_POSTERS.history} gone={ready} fullScreen />}
           <div ref={dipRef} className="wh-dip" aria-hidden />
           <div className="wh-shade-top" aria-hidden />
           <div className="wh-shade-bottom" aria-hidden />

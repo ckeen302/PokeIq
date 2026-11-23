@@ -322,7 +322,7 @@ export function WorldGlobe({ regions, eras, local }: { regions: GlobeRegionCard[
       <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(ellipse at 50% 55%, hsl(var(--screen) / 0.10), transparent 60%)" }} />
       <div ref={layerRef} className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden />
       {/* Phones: a still of the world until the scene has drawn it (over the canvas, which goes in before the labels). */}
-      <StagePoster src={STAGE_POSTERS.globe} gone={state !== "loading"} />
+      <StagePoster src={STAGE_POSTERS.globe} gone={state !== "loading"} fullScreen />
       {/* Soft scrims keep the HUD readable over a bright, zoomed-in world. */}
       <div aria-hidden className={"pointer-events-none absolute inset-x-0 top-0 h-40 transition-opacity duration-700 " + (hudOn ? "opacity-100" : "opacity-0")} style={{ background: "linear-gradient(hsl(var(--background) / .72), transparent)" }} />
       <div aria-hidden className={"pointer-events-none absolute inset-x-0 bottom-0 h-56 transition-opacity duration-700 " + (hudOn ? "opacity-100" : "opacity-0")} style={{ background: "linear-gradient(transparent, hsl(var(--background) / .78))" }} />

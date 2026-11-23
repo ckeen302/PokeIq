@@ -11,7 +11,7 @@ const WorldGlobe = dynamic(() => import("./WorldGlobe").then((m) => m.WorldGlobe
   // The page's own HTML: on a phone, a still of the world (the largest paint) until the globe's code has arrived.
   loading: () => (
     <div className="fixed inset-0 z-[60] bg-background">
-      <StagePoster src={STAGE_POSTERS.globe} gone={false} />
+      <StagePoster src={STAGE_POSTERS.globe} gone={false} fullScreen />
     </div>
   ),
 });

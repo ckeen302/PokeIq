@@ -792,7 +792,7 @@ export function StoryFilm({ initialChapter, story, children }: { initialChapter:
         >
           <div ref={hostRef} className="absolute inset-0 cursor-grab select-none active:cursor-grabbing" data-testid="ps-scene" role="application" aria-label={t("sceneLabel")} />
           {/* Phones: a still of the opening view until the film's first frame (a chapter's link opens elsewhere: no still). */}
-          {initialChapter === null && <StagePoster src={STAGE_POSTERS.story} gone={ready} />}
+          {initialChapter === null && <StagePoster src={STAGE_POSTERS.story} gone={ready} fullScreen />}
           <div ref={dipRef} className="wh-dip" aria-hidden />
           <div className="wh-shade-top" aria-hidden />
           <div className="wh-shade-bottom" aria-hidden />
