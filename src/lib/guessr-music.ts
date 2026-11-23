@@ -1,6 +1,6 @@
 /**
- * PokéGuessr's background music: calm, original ambient pieces
- * (public/audio/guessr/CREDITS.md) shuffled with long crossfades, carrying on
+ * PokéGuessr's background music: four calm, free-licensed tracks (8-bit lo-fi,
+ * lo-fi hip hop and deep house; public/audio/guessr/CREDITS.md) shuffled with long crossfades, carrying on
  * from round to round and page to page while any PokéGuessr screen is open.
  *
  * - Streams from two <audio> elements (no multi-megabyte decoded buffers on
@@ -19,7 +19,7 @@ import { isMuted, liveAudio, onEffect, onMuteChange, type SoundKind } from "./so
 import { ShufflePlaylist } from "./guessr-playlist";
 import { guessrMusicPrefs, musicGain, subscribeGuessrMusicPrefs } from "./guessr-music-prefs";
 
-export const GUESSR_TRACKS = ["first-light", "tide-pools", "long-grass", "harbour-lights"] as const;
+export const GUESSR_TRACKS = ["riverside-town", "kodama", "deep-house-sunset", "lazy-afternoon"] as const;
 export type GuessrTrack = (typeof GUESSR_TRACKS)[number];
 
 /** Seconds two tracks overlap. */
