@@ -24,14 +24,15 @@ interface PageProps {
 const findParty = cache(peekParty);
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const url = `/pokeguessr/party/${encodeURIComponent((await params).code)}`;
   const t = serverT(page);
   const found = await findParty((await params).code);
-  if (!found) return inviteMetadata(t("party.fallbackTitle"), t("party.fallbackDescription"));
+  if (!found) return inviteMetadata(t("party.fallbackTitle"), t("party.fallbackDescription"), url);
   const host = found.players.find((p) => p.id === found.hostId)?.name ?? t("party.aTrainer");
   const regions = geoRegions();
   const map = regions.find((r) => r.id === found.settings.region);
   const where = !map || map.id === WORLD_REGION ? t("where") : mapName(map, guessrDuelNames(regions));
-  return inviteMetadata(t("party.title", { host }), t("party.description", { mode: t(`party.modes.${found.settings.mode}`), where, n: found.players.length }));
+  return inviteMetadata(t("party.title", { host }), t("party.description", { mode: t(`party.modes.${found.settings.mode}`), where, n: found.players.length }), url);
 }
 
 export default async function GeoPartyPage({ params }: PageProps) {

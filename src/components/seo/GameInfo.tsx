@@ -42,10 +42,20 @@ export function GameInfo({ path, name, intro, steps, faqs, description, howToBut
     <section className="mx-auto max-w-3xl space-y-6" aria-label={t("about", { name })}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(app) }} />
       {!noFaq && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(faq) }} />}
-      {/* With the button (the rules are in its pop-up) it's the button alone; otherwise a heading, the intro and the steps. */}
+      {/* With the button (the rules are in its pop-up) it's the button on screen, and the heading, intro and steps in
+          the HTML for screen readers and crawlers (the pop-up is drawn by the game's scripts); otherwise all of them. */}
       {howToButton ? (
         <div className="flex justify-center">
           <HowToButton name={name} label={t("howTo", { name })} />
+          <div className="sr-only">
+            <h2>{t("howTo", { name })}</h2>
+            <p>{intro}</p>
+            <ol>
+              {steps.map((s) => (
+                <li key={s}>{s}</li>
+              ))}
+            </ol>
+          </div>
         </div>
       ) : (
         <div className="space-y-3 text-sm text-muted-foreground">

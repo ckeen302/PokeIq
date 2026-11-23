@@ -38,7 +38,7 @@ export function TimelineList({ entries, eraStarts }: { entries: TimelineEntry[];
                     <span className="absolute -left-[21px] top-4 h-2 w-2 rounded-full sm:-left-[29px]" style={{ background: `hsl(${lane.color})` }} aria-hidden />
                     <article className="rounded-lg border bg-card p-3 sm:p-4">
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                        <span className="font-pixel text-[9px] uppercase tracking-[0.14em]" style={{ color: `hsl(${lane.color})` }}>{t(`lanes.${e.lane}`)}</span>
+                        <span className="accent-ink font-pixel text-[9px] uppercase tracking-[0.14em]" style={{ "--ink": `hsl(${lane.color})` } as React.CSSProperties}>{t(`lanes.${e.lane}`)}</span>
                         <span className="text-xs text-muted-foreground">{e.platform}</span>
                       </div>
                       <h3 className="mt-1 font-display text-lg font-bold uppercase leading-tight tracking-wide">{e.title}</h3>
@@ -117,7 +117,7 @@ function CompactItem({ entry: e }: { entry: TimelineEntry }) {
     <li id={e.id} className="relative scroll-mt-28">
       <span className="absolute -left-[20px] top-3.5 h-1.5 w-1.5 rounded-full sm:-left-[28px]" style={{ background: `hsl(${lane.color})` }} aria-hidden />
       <article className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 rounded-lg border bg-card/70 px-3 py-2 sm:px-4">
-        <span className="font-pixel text-[9px] uppercase tracking-[0.14em]" style={{ color: `hsl(${lane.color})` }}>{t(`lanes.${e.lane}`)}</span>
+        <span className="accent-ink font-pixel text-[9px] uppercase tracking-[0.14em]" style={{ "--ink": `hsl(${lane.color})` } as React.CSSProperties}>{t(`lanes.${e.lane}`)}</span>
         <h3 className="font-display text-base font-bold uppercase leading-tight tracking-wide">{e.title}</h3>
         {dateRows(e).map((r) => (
           <span key={r.label} className="text-sm text-muted-foreground">

@@ -70,16 +70,19 @@ const isTyping = (el: EventTarget | null) => {
   return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || e.isContentEditable;
 };
 
-/** `local`: a page in another language's type names (English pages send none). */
-export function LabDexApp({ rows, local }: { rows: LabRow[]; local?: LabLocal }) {
+/**
+ * `local`: a page in another language's type names (English pages send none). `intro`: the lab's heading and what it
+ * is, unseen (screen readers and crawlers), in the page's HTML until the lab starts; then each Pokémon's name heads it.
+ */
+export function LabDexApp({ rows, local, intro }: { rows: LabRow[]; local?: LabLocal; intro?: React.ReactNode }) {
   return (
     <LabLocalContext.Provider value={local}>
-      <Lab rows={rows} />
+      <Lab rows={rows} intro={intro} />
     </LabLocalContext.Provider>
   );
 }
 
-function Lab({ rows }: { rows: LabRow[] }) {
+function Lab({ rows, intro }: { rows: LabRow[]; intro?: React.ReactNode }) {
   const S = useLabStrings();
   const lang = S.locale;
   const all = useMemo(() => rows.map(fromRow), [rows]);
@@ -523,6 +526,7 @@ function Lab({ rows }: { rows: LabRow[] }) {
         >
           <div ref={host} className="absolute inset-0" />
           {mode === "2d" && <Fallback2D ref={fbRef} len={len} monAt={monAt} phone={phone} />}
+          {!booted && intro}
           {(mode === "boot" || (mode === "3d" && !ready)) && (
             <div className="pointer-events-none absolute inset-0 grid place-items-center">
               <div className="flex flex-col items-center gap-3">

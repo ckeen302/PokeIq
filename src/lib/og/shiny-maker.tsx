@@ -3,7 +3,7 @@ import "server-only";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import sharp from "sharp";
-import { C, hslHex, ogCard } from "@/lib/og/card";
+import { C, fitTitle, hslHex, ogCard } from "@/lib/og/card";
 import { hex, lchToRgb, rgbToLch } from "@/lib/shiny-maker/color";
 import { homeRenderUrl } from "@/lib/pokemon/art";
 import type { Species } from "@/lib/shiny-maker/data";
@@ -108,6 +108,8 @@ export async function shinyMakerCard(sp: Species | null, design: Design | null) 
   const [yours, normal, official] = await Promise.all([pick("yours", 300), pick("normal", 112), pick("official", 112)]);
   const glow = hslHex(TYPE_GLOW[sp.types[0]] ?? TYPE_GLOW.normal);
   const title = d.name || `Shiny ${sp.name}`;
+  // The picture beside it is 500 px wide.
+  const fitted = fitTitle(title, 560);
   const visual = (
     <div style={{ display: "flex", width: 500, height: 400, alignItems: "center", justifyContent: "space-between" }}>
       <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: 22, width: 130 }}>
@@ -130,8 +132,8 @@ export async function shinyMakerCard(sp: Species | null, design: Design | null) 
   return ogCard(
     {
       eyebrow: "Shiny Pokémon Maker",
-      title: [title],
-      titleSize: title.length > 18 ? 46 : title.length > 12 ? 58 : 70,
+      title: fitted.lines,
+      titleSize: fitted.size,
       subtitle: d.name ? `A custom shiny ${sp.name}.` : "A custom shiny, made on PokéIQ.",
       accent,
       visual,
