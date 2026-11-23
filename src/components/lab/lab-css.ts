@@ -30,6 +30,7 @@ export const LAB_CSS = `
 .lab-glow{box-shadow:0 0 0 1px hsl(var(--lab-accent) / .0),0 0 0 hsl(var(--lab-accent) / 0);transition:box-shadow .25s,border-color .25s}
 .lab-card:hover .lab-glow{border-color:hsl(var(--lab-accent) / .6);box-shadow:0 0 0 1px hsl(var(--lab-accent) / .35),0 0 40px hsl(var(--lab-accent) / .18)}
 .lab-accent{color:hsl(var(--lab-accent))}
+.light .lab-accent{color:color-mix(in oklab,hsl(var(--lab-accent)) 55%,black)}
 .lab-led{color:hsl(var(--lab-accent))}
 
 /* A night race track: lanes running into the distance, runners streaking to the line. */
