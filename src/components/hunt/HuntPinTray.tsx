@@ -8,6 +8,19 @@ import huntNs from "@/messages/hunt";
 import { huntPinColor } from "./map-marks";
 
 /**
+ * What a tap on the map will do now: "Tap the map to drop pin 2", "Tap the
+ * map to move pin 1", "All pins down…". The phone's map card shows it as its
+ * label (MapDock's `hint`); a computer shows it under the chips.
+ */
+export function useHuntPinHint(pins: boolean[], active: number): string {
+  const t = useT(huntNs);
+  const placed = pins.filter(Boolean).length;
+  if (pins.length < 2) return placed ? t("pins.hintMoveOne") : t("pins.hintOne");
+  if (placed === pins.length) return t("pins.hintDone", { n: active + 1 });
+  return pins[active] ? t("pins.hintMove", { n: active + 1 }) : t("pins.hintPlace", { n: active + 1 });
+}
+
+/**
  * The pin tray, between the map and the Guess button (inside the map card
  * on a phone): a numbered chip per pin the round takes. A placed pin's chip
  * is filled in its colour with a × to remove it; the pin a tap on the map
@@ -49,7 +62,7 @@ export function HuntPinTray({ pins, active, onSelect, onRemove, keys = true, cla
     return () => window.removeEventListener("keydown", onKey);
   }, [keys, max, pins, active, onSelect, onRemove]);
 
-  const hint = max < 2 ? t("pins.hintOne") : placed === max && pins[active] ? t("pins.hintDone") : pins[active] ? t("pins.hintMove", { n: active + 1 }) : t("pins.hintPlace", { n: active + 1 });
+  const hint = useHuntPinHint(pins, active);
 
   return (
     <div className={cn("rounded-md bg-[#1e1a3f]/92 px-[1.1vh] py-[0.9vh] text-white shadow-lg ring-1 ring-white/15 backdrop-blur max-md:px-2.5 max-md:py-2", className)} data-testid="hunt-pin-tray">
@@ -99,7 +112,7 @@ export function HuntPinTray({ pins, active, onSelect, onRemove, keys = true, cla
           </ol>
         </div>
       )}
-      <p className={cn("text-[max(11px,1.3vh)] font-medium leading-snug text-white/80 max-md:text-xs", max > 1 && "mt-[0.6vh] max-md:mt-1.5")} data-testid="hunt-pin-hint">
+      <p className={cn("text-[max(11px,1.3vh)] font-medium leading-snug text-white/80 max-md:hidden", max > 1 && "mt-[0.6vh]")} data-testid="hunt-pin-hint">
         {hint}
       </p>
     </div>

@@ -17,9 +17,10 @@ export default async function Image(props: { params?: unknown }) {
     subtitle: t("whichPokemon.subtitle"),
     accent: C.violet,
     visual: (
-      <div style={{ display: "flex", alignItems: "flex-end" }}>
+      // 160 + 210 + 160 less two 25 px overlaps: 480 px, what the title column leaves (at 540 Snorlax ran off the card).
+      <div style={{ display: "flex", alignItems: "flex-end", flexShrink: 0 }}>
         {[25, 94, 143].map((id, i) => (
-          <img key={id} src={artworkUrl(id)} width={i === 1 ? 240 : 180} height={i === 1 ? 240 : 180} style={{ marginLeft: i ? -30 : 0 }} />
+          <img key={id} src={artworkUrl(id)} width={i === 1 ? 210 : 160} height={i === 1 ? 210 : 160} style={{ marginLeft: i ? -25 : 0 }} />
         ))}
       </div>
     ),

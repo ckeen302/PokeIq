@@ -13,7 +13,9 @@ import huntNs from "@/messages/hunt";
 import { ExitButton, GameShell, Notch } from "@/components/geo/GameShell";
 import { GeoMap } from "@/components/geo/GeoMap";
 import type { HuntPokemonView } from "./HuntCard";
-import { HUNT_MAX_ROUND, type HuntRevealPin, type HuntRevealSpot } from "./HuntReveal";
+import { shortLabel, type HuntRevealPin, type HuntRevealSpot } from "./HuntReveal";
+import { HUNT_ROUND_MAX } from "./hunt-ui";
+import { formTagOf } from "./HuntCard";
 
 export interface HuntResultRound {
   pokemon: HuntPokemonView;
@@ -43,7 +45,7 @@ export function HuntResults({ region, rounds, modeLine, onAgain, onHub, children
   const fmt = (n: number) => formatNumber(n, t.locale);
   const scores = rounds.map((r) => r.score);
   const total = scores.reduce((a, b) => a + b, 0);
-  const max = rounds.length * HUNT_MAX_ROUND;
+  const max = rounds.length * HUNT_ROUND_MAX;
   const { best, worst } = bestAndWorst(scores);
   const [focus, setFocus] = useState(best ?? 0);
   const headline = useCountUp(total);
@@ -58,7 +60,7 @@ export function HuntResults({ region, rounds, modeLine, onAgain, onHub, children
                 key={focus}
                 region={region}
                 fill
-                spots={r.spots.map((s, i) => ({ x: s.x, y: s.y, found: r.pins.some((p) => p.spot === i), tag: t("reveal.method", { game: s.game, method: s.method }) }))}
+                spots={r.spots.map((s, i) => ({ x: s.x, y: s.y, mask: s.mask, found: r.pins.some((p) => p.spot === i && (p.found ?? true)), tag: tagged(r).has(i) ? shortLabel(s.labels ?? [`${s.game} · ${s.method}`], t) : undefined }))}
                 links={r.pins.map((p, i) => ({ pin: p.pin, spot: p.spot, n: i + 1 }))}
                 fit={{ duration: 700 }}
               />
@@ -85,7 +87,7 @@ export function HuntResults({ region, rounds, modeLine, onAgain, onHub, children
             <div className="space-y-4 p-4 sm:p-5">
               <div className="text-center">
                 <p className="hud-label text-screen">{t("results.total")}</p>
-                <div className="geo-glow mt-1 font-display text-5xl font-bold italic tabular-nums text-white sm:text-6xl" data-testid="hunt-results-total">
+                <div className="geo-glow mt-1 font-display text-5xl font-bold italic tabular-nums text-foreground sm:text-6xl" data-testid="hunt-results-total">
                   {fmt(headline)}
                 </div>
                 <div className="text-sm text-muted-foreground">{t("results.outOf", { max: fmt(max) })}</div>
@@ -120,7 +122,7 @@ export function HuntResults({ region, rounds, modeLine, onAgain, onHub, children
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-sm font-semibold">{x.pokemon.name}</span>
                           <span className="block truncate text-xs text-muted-foreground">
-                            {x.pokemon.form ? `${x.pokemon.form} · ` : ""}
+                            {formTagOf(t, x.pokemon) ? `${formTagOf(t, x.pokemon)} · ` : ""}
                             {t("results.regions", { found: x.regionsFound, total: x.regionsTotal })}
                           </span>
                         </span>
@@ -141,11 +143,11 @@ export function HuntResults({ region, rounds, modeLine, onAgain, onHub, children
 
               <div className="grid gap-2 sm:grid-cols-2">
                 <Button size="lg" variant="success" onClick={onAgain} data-testid="hunt-again">
-                  <RotateCcw className="h-4 w-4" aria-hidden />
+                  <RotateCcw className="h-4 w-4 shrink-0" aria-hidden />
                   {t("results.again")}
                 </Button>
                 <Button size="lg" variant="outline" onClick={onHub} data-testid="hunt-hub">
-                  <LayoutGrid className="h-4 w-4" aria-hidden />
+                  <LayoutGrid className="h-4 w-4 shrink-0" aria-hidden />
                   {t("results.hub")}
                 </Button>
               </div>
@@ -157,6 +159,13 @@ export function HuntResults({ region, rounds, modeLine, onAgain, onHub, children
       )}
     </GameShell>
   );
+}
+
+/** The spots the map tags: those the pins scored against, and the first of each region nobody found. */
+function tagged(r: HuntResultRound): Set<number> {
+  const out = new Set(r.pins.map((p) => p.spot));
+  for (const region of new Set(r.spots.map((s) => s.region))) if (!r.pins.some((p) => r.spots[p.spot]?.region === region)) out.add(r.spots.findIndex((s) => s.region === region));
+  return out;
 }
 
 function useCountUp(value: number, ms = 1100): number {

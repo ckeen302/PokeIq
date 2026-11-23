@@ -28,9 +28,10 @@ interface PageProps {
 const findDuel = cache(pvpStore.peek);
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const url = `/quiz/duel/${encodeURIComponent((await params).code)}`;
   const duel = await findDuel((await params).code);
   const t = serverT(pages);
-  if (!duel || duel.kind !== "quiz") return inviteMetadata(t("duel.title"), t("duel.description"));
+  if (!duel || duel.kind !== "quiz") return inviteMetadata(t("duel.title"), t("duel.description"), url);
   const mt = serverT(modes);
   const mode = mt(`modules.${duel.module}.title`);
   // Trainer names are theirs: never translated.
@@ -38,7 +39,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const title = guest ? t("duel.versus", { host, guest, mode }) : t("duel.challenge", { host: host || t("duel.aTrainer"), mode });
   const key = levelKey(duel.module, duel.difficulty);
   const description = key ? t("duel.inviteLevel", { mode, level: mt(`levels.${key}.label`), n: QUIZ_DUEL_QUESTIONS }) : t("duel.invite", { mode, n: QUIZ_DUEL_QUESTIONS });
-  return inviteMetadata(title, description);
+  return inviteMetadata(title, description, url);
 }
 
 export default async function QuizDuelPage({ params }: PageProps) {

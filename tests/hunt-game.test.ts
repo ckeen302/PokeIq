@@ -219,7 +219,12 @@ describe("Pokémon Hunt on the server", () => {
       const own = e.places.filter((p) => p.region === region && crops[region].regions.includes(p.geoRegion)).map((p) => p.name);
       expect(own.length).toBeGreaterThan(0);
       expect(g.body.reveal.spots.map((s) => s.name).sort()).toEqual(own.sort());
-      for (const s of g.body.reveal.spots) for (const v of s.pin) expect(v).toBeGreaterThanOrEqual(0) && expect(v).toBeLessThanOrEqual(1);
+      for (const s of g.body.reveal.spots) {
+        for (const v of s.pin) {
+          expect(v).toBeGreaterThanOrEqual(0);
+          expect(v).toBeLessThanOrEqual(1);
+        }
+      }
     }
   });
 

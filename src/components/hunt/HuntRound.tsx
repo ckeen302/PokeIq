@@ -1,7 +1,8 @@
 "use client";
 
 import { X } from "lucide-react";
-import type { GeoRegionInfo } from "@/lib/geo-types";
+import { WORLD_REGION, type GeoRegionInfo } from "@/lib/geo-types";
+import { useGeoNames } from "@/lib/geo-i18n-client";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
 import { formatNumber } from "@/i18n/format";
@@ -9,7 +10,7 @@ import geoNs from "@/messages/geo";
 import { BAR_BTN, CountdownPill, ExitButton, FullscreenButton, GuessButton, HudDials, MapDock, Notch, RoundBadge, RoundReadout, ScoreTracker, TimerDial, usePhone } from "@/components/geo/GameShell";
 import { GeoMap, mapAspect, type MapPin } from "@/components/geo/GeoMap";
 import { HuntCard, type HuntPokemonView } from "./HuntCard";
-import { HuntPinTray } from "./HuntPinTray";
+import { HuntPinTray, useHuntPinHint } from "./HuntPinTray";
 
 export interface HuntRoundProps {
   /** The map the pins go on: the world, or the region being hunted. */
@@ -54,11 +55,13 @@ export interface HuntRoundProps {
 export function HuntRound(p: HuntRoundProps) {
   const t = useT(geoNs);
   const phone = usePhone();
+  const names = useGeoNames();
   const fmt = (n: number) => formatNumber(n, t.locale);
   const total = p.scores.reduce((a, b) => a + b, 0);
   const round = Math.min(p.roundIndex + 1, p.rounds);
   const placed = p.pins.filter(Boolean).length;
   const multi = p.pins.length > 1;
+  const hint = useHuntPinHint(p.pins.map(Boolean), p.activePin);
   const map = ({ fill, land }: { fill: boolean; land: boolean | "fit" }) => (
     <GeoMap
       land={land}
@@ -74,7 +77,7 @@ export function HuntRound(p: HuntRoundProps) {
   return (
     <div className="relative h-full" data-testid="hunt-round">
       <div className="absolute inset-0" style={{ bottom: "var(--geo-bar)" }}>
-        <HuntCard pokemon={p.pokemon} regions={p.regions} maxPins={p.pins.length} priority={p.roundIndex === 0} />
+        <HuntCard pokemon={p.pokemon} regions={p.regions} maxPins={p.pins.length} priority={p.roundIndex === 0} mapName={p.region.id === WORLD_REGION ? undefined : names.map(p.region)} />
       </div>
 
       {phone ? (
@@ -111,8 +114,9 @@ export function HuntRound(p: HuntRoundProps) {
         aspect={mapAspect(p.region)}
         resetKey={p.roundIndex}
         hasPin={placed > 0}
+        hint={hint}
         map={map}
-        extra={<HuntPinTray pins={p.pins.map(Boolean)} active={p.activePin} onSelect={p.onSelectPin} onRemove={p.onRemovePin} className={cn(!multi && "md:hidden")} />}
+        extra={<HuntPinTray pins={p.pins.map(Boolean)} active={p.activePin} onSelect={p.onSelectPin} onRemove={p.onRemovePin} className={cn(!multi && "hidden")} />}
         tools={
           <>
             <button type="button" onClick={p.onExit} className={BAR_BTN} aria-label={t("shell.back")} title={t("shell.back")} data-testid="geo-exit" data-keep>

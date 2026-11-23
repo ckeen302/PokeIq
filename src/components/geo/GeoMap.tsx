@@ -83,6 +83,8 @@ interface Props {
 
 export interface HuntMapSpot extends MapPin {
   tag?: string;
+  /** The place's area (the map's 0–1 coordinates), shaded under the flag. */
+  mask?: [number, number][];
   delay?: number;
   found?: boolean;
 }
@@ -397,12 +399,12 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
           })}
           {/* Pokémon Hunt's reveal: the lines first, then the spots, then the pins on top. */}
           {spots && (
-            <HuntSpots spots={spots} links={links ?? []} toScreen={toScreen} width={stageRef.current?.clientWidth ?? 0} maskId={maskId} />
+            <HuntSpots spots={spots} links={links ?? []} toScreen={toScreen} width={stageRef.current?.clientWidth ?? 0} maskId={maskId} areaR={areaR} />
           )}
           {picks?.map((p, i) => {
             if (!p) return null;
             const [px, py] = toScreen(p.x, p.y);
-            return <HuntPinMark key={`${i}:${p.x},${p.y}`} x={px} y={py} n={i + 1} active={i === activePick && picks.length > 1} />;
+            return <HuntPinMark key={`${i}:${p.x},${p.y}`} x={px} y={py} n={i + 1} active={i === activePick} />;
           })}
           {/* Keyed by position so every new pin replays the drop. */}
           {pick && !picks && <GuessPin key={`${pick.x},${pick.y}`} x={toScreen(pick.x, pick.y)[0]} y={toScreen(pick.x, pick.y)[1]} image={pinImage} />}
@@ -433,11 +435,24 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
 }
 
 /** Pokémon Hunt's reveal layer: each pin's line to its spot drawing itself, the spots' flags and tags, and the numbered pins. */
-function HuntSpots({ spots, links, toScreen, width, maskId }: { spots: HuntMapSpot[]; links: HuntMapLink[]; toScreen: (x: number, y: number) => [number, number]; width: number; maskId: string }) {
+function HuntSpots({ spots, links, toScreen, width, maskId, areaR }: { spots: HuntMapSpot[]; links: HuntMapLink[]; toScreen: (x: number, y: number) => [number, number]; width: number; maskId: string; areaR: number }) {
   const at = spots.map((p) => toScreen(p.x, p.y));
   const tags = spotTagPlacement(spots.map((p, i) => ({ x: at[i][0], y: at[i][1], tag: p.tag, found: p.found })), width);
   return (
     <g data-testid="hunt-reveal-layer">
+      {/* Each place's area, faint (green where a pin found it), fading in with its flag. */}
+      {spots.map((p, i) =>
+        p.mask?.length ? (
+          <g key={`a${i}`} className="geo-area" style={{ animationDelay: `${p.delay ?? 0}s` }}>
+            <g opacity={p.found ? 0.45 : 0.25}>
+              {p.mask.map(([x, y], k) => {
+                const [mx, my] = toScreen(x, y);
+                return <circle key={k} cx={mx} cy={my} r={areaR} className={p.found ? "fill-success" : "fill-white"} />;
+              })}
+            </g>
+          </g>
+        ) : null
+      )}
       {links.map((l, i) => {
         const s = at[l.spot];
         if (!s) return null;

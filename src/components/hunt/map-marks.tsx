@@ -60,6 +60,8 @@ export function spotTagPlacement(spots: { x: number; y: number; tag?: string; fo
     const w = tagWidth(s.tag);
     for (const left of width && s.x + 16 + w > width - 4 ? [true, false] : [false, true]) {
       const box: [number, number, number, number] = left ? [s.x - 16 - w, s.y - 10, s.x - 12, s.y + 10] : [s.x + 12, s.y - 10, s.x + 16 + w, s.y + 10];
+      // Never off the map's edge.
+      if (width && (box[0] < 2 || box[2] > width - 2)) continue;
       if (placed.some((b) => box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1])) continue;
       // Flags count as taken room too.
       if (spots.some((o, k) => k !== i && o.x > box[0] - 11 && o.x < box[2] + 11 && o.y > box[1] - 11 && o.y < box[3] + 11)) continue;
@@ -93,7 +95,7 @@ export interface HuntSpotMarkProps {
 export function HuntSpotMark({ x, y, tag, delay = 0, found, showTag = true, tagLeft }: HuntSpotMarkProps) {
   const w = tag ? tagWidth(tag) : 0;
   return (
-    <g transform={`translate(${x} ${y})`} data-testid="hunt-spot" data-found={found ? "true" : undefined}>
+    <g transform={`translate(${x} ${y})`} data-testid="hunt-map-spot" data-found={found ? "true" : undefined}>
       <g className="hunt-pop" style={{ animationDelay: `${delay}s` }}>
         {found && <circle r={15} fill="none" stroke="#9be15d" strokeWidth={3} />}
         <circle r={11} fill="#120f24" stroke="#fff" strokeWidth={2} />

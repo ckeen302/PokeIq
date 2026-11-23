@@ -24,13 +24,14 @@ interface PageProps {
 const findDuel = cache(pvpStore.peek);
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const url = `/pikadoku/duel/${encodeURIComponent((await params).code)}`;
   const duel = await findDuel((await params).code);
   const t = serverT(page);
   const about = t("duel.about");
-  if (!duel || duel.kind !== "pikadoku") return inviteMetadata(t("duel.invite"), about);
+  if (!duel || duel.kind !== "pikadoku") return inviteMetadata(t("duel.invite"), about, url);
   const [host, guest] = duel.players.map((p) => p.name);
   const title = guest ? t("duel.vs", { host, guest }) : t("duel.challenges", { host: host || t("duel.trainer") });
-  return inviteMetadata(title, about);
+  return inviteMetadata(title, about, url);
 }
 
 export default async function PikadokuDuelPage({ params }: PageProps) {

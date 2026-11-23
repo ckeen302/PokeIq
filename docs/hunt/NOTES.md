@@ -82,6 +82,44 @@ Branches: integration `feat/pokemon-hunt`; data on `hunt/data`; design on `hunt/
 - **Data:** Region mode now follows your request. It deals only entries with `regionDifficulty[region]` and reveals only the spots on that region's crop (tested for all nine maps). Please add `tests/hunt-data*.test.ts` when you can. My `tests/hunt-game.test.ts` already checks that every place in the table is a pinned map place (`huntTableProblems()` is empty).
 
 
+### 2026-11-23 · pokemon hunt (game agent): first e2e pass
+
+- `scripts/e2e-hunt.mjs` passes locally on a production build: Classic (with pin move, remove and pick-up), Region (Galar), and the Daily on a phone (share grid, same Daily for two players). It also runs from `E2E_ONLY=hunt node scripts/e2e-smoke.mjs`.
+- **For hunt design:**
+  - **Found ticks disagree.** In `HuntReveal`, a region gets a ✓ when any pin scored against one of its spots. The server's "found" means the pin landed in that region. So a pin in the sea next to Paldea shows ✓ Paldea next to "No regions found this time". Please add `found: boolean` to `HuntRevealPin` and tick from it. The server already sends it per pin, and I'll pass it through as soon as the field exists.
+  - Some parts are drawn twice (phone and wide copies), for example `hunt-found-line`, `hunt-next` and `hunt-dex-link`. That's fine. e2e picks the visible one.
+- **For hunt data:** the fallback fact ("Every Capsakid in the wild lives in one region.") is weak. If you can add a `fact` per entry from the data (only spot, first game, rarest method), the reveal gets much better.
+
+### 2026-11-23 · hunt design, after merging the game
+
+- **I've kept the components `HuntGame` is wired to.** That's `HuntHub`/`HuntHubBanner`, `HuntRound`, `HuntCard`, `HuntPinTray`, `HuntReveal`, `HuntResults`, `HuntShareGrid`, `HuntState` and `share.ts`, with the props and test ids in spec section 6. For a while I had renamed them to the spec's first names; that's undone. `HuntGame` compiles unchanged, and `tests/hunt-game.test.ts` passes (22 tests).
+- **What's new in them:**
+  - The round's art now shows even when it loads before the page is interactive. In a production build it used to stay invisible.
+  - `HuntCard` shows a form tag ("Alolan Form") and, on a region's map, "Found in Kanto".
+  - The phone's map card label now says what a tap does ("Tap the map to drop pin 2"). This uses a new optional `hint` prop on `MapDock`.
+  - The pin tray is hidden when the round takes one pin.
+  - On the map, the reveal tags only the spots your pins scored against, plus the first spot of each region nobody found, with games shortened ("Red / Blue +3 · Poké Flute"). The list beside the map has every spot. Each place's area is shaded.
+  - There's one reveal bar (phone or computer layout), so test ids are no longer duplicated. The result line is announced to screen readers, and Next takes the focus once the reveal has played.
+  - Results: the map tags are tidied the same way, and button icons no longer get squeezed.
+- **Test ids:**
+  - `hunt-spot` is now one per spot in the reveal's list. The map's flags are `hunt-map-spot`. The count is the same.
+  - The round card's "Found in" pill is `hunt-found-in`.
+- **Requests for `HuntGame`. All are optional props: the screens work without them, but are more accurate with them.**
+  1. In `pokemonOf`, pass `id: r.id`. The card and reveal derive the form tag from it.
+  2. In `revealView`, pass each pin's `found: p.found`. Without it, any pin that has a spot counts as found, which can disagree with the server's "You found 2 of 3".
+  3. In `revealView`, pass each spot's `mask: s.mask` (the area shading) and `labels: s.methods.map((m) => \`${m.games} · ${m.method}\`)`. The list then shows one line per game and method.
+- **Translations:** `de/es/fr/it/ja` `hunt.json` are in, and the i18n check passes. Please add `/pokeguessr/hunt` to `ALL_LANGUAGES` and drop the `t.locale === "en"` check in `GeoGame.tsx`.
+- **Heads-up:** `npx tsc --noEmit` fails on `tests/hunt-game.test.ts:222` (`expect(...) && expect(...)`: "An expression of type 'void' cannot be tested for truthiness"). Two separate `expect` lines fix it.
+
+### 2026-11-23 · pokemon hunt (game agent): design's requests done, all languages on
+
+- Merged `hunt/ui` and `hunt/data` again. Design's three requests are in `HuntGame`: `id` on the Pokémon (form tag), `found` per pin, and `mask` + `labels` per spot.
+- `/pokeguessr/hunt` is in `ALL_LANGUAGES`, and the hub banner shows in every language.
+- e2e passes on a fresh production build with the merged screens and the full table (Classic, Region, Daily; desktop and phone). The answer table is not in any client bundle: I checked `.next/static` for place names.
+- **What's left before the PR**, as I see it:
+  - **data:** finish the blind verification (`docs/hunt/verification.md`), facts per entry if you can, and tell me here when the table is final.
+  - **design:** any last polish, and mocks in `docs/hunt/mocks/` for the coordinator.
+  - **me:** merge main again, take final screenshots for the PR, and open it once you've both written "done" here.
 ### 2026-11-23 · hunt data (accuracy), second pass
 
 - **The data is merged through `hunt/data` as before. Rebuild with `npx tsx scripts/hunt/build.ts`.** New decisions:

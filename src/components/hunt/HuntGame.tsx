@@ -93,16 +93,16 @@ interface DailyRecord {
   share: HuntShareRound[];
 }
 
-const pokemonOf = (r: HuntRoundPublic): HuntPokemonView => ({ name: r.name, dex: r.dex, art: r.art });
+const pokemonOf = (r: HuntRoundPublic): HuntPokemonView => ({ id: r.id, name: r.name, dex: r.dex, art: r.art });
 
 /** The reveal's spots and pins as the design's components draw them (names in the page's language). */
 function revealView(reveal: HuntRevealData, region: (name: string) => string): { spots: HuntRevealSpot[]; pins: HuntRevealPin[] } {
   const spots = reveal.spots.map((s) => {
     const games = [...new Set(s.methods.map((m) => m.games))];
     const methods = [...new Set(s.methods.map((m) => m.method))];
-    return { x: s.pin[0], y: s.pin[1], region: region(s.region), place: s.name, game: games.join(" / "), method: methods.join(", ") };
+    return { x: s.pin[0], y: s.pin[1], region: region(s.region), place: s.name, game: games.join(" / "), method: methods.join(", "), mask: s.mask, labels: s.methods.map((m) => `${m.games} · ${m.method}`) };
   });
-  const pins = reveal.pins.flatMap((p) => (p.spot === null ? [] : [{ pin: p.pin, spot: p.spot, score: p.score }]));
+  const pins = reveal.pins.flatMap((p) => (p.spot === null ? [] : [{ pin: p.pin, spot: p.spot, score: p.score, found: p.found }]));
   return { spots, pins };
 }
 
