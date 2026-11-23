@@ -235,7 +235,7 @@ export function encodeShare(result: ShareResult): string {
         ["n", result.daily],
         ["z", result.weekly],
         ["a", result.archive],
-        ["f", result.difficulty[0]],
+        ["f", PDK_LETTER[result.difficulty]],
         ["g", result.grid],
         ["q", result.score === undefined ? undefined : Math.round(result.score * 10)],
         ["k", result.streak || undefined]
@@ -327,8 +327,14 @@ function decodeCognitive(f: Record<string, string>): CognitiveShareResult | null
   return { game: "cognitive", score, percentile, fluid, memory, speed, spatial, ...(knowledge !== undefined && { knowledge }) };
 }
 
+/**
+ * Pikadoku's level in a link: one letter each. Easy and Expert both start with "e", so Expert is "x" (links made before
+ * this carried "e" for both, and still open as Easy: which one it was is lost).
+ */
+const PDK_LETTER: Record<PikadokuShareResult["difficulty"], string> = { easy: "e", normal: "n", expert: "x" };
+
 function decodePikadoku(f: Record<string, string>): PikadokuShareResult | null {
-  const difficulty = PDK_DIFFICULTIES.find((d) => d[0] === f.f);
+  const difficulty = PDK_DIFFICULTIES.find((d) => PDK_LETTER[d] === f.f);
   if (!difficulty || !f.g || !new RegExp(`^[${RARITY_LETTERS}]{9}$`).test(f.g)) return null;
   const daily = num(f.n, 1, DAILY_MAX);
   const weekly = num(f.z, 1, 10_000);

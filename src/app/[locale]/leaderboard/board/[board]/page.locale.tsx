@@ -5,7 +5,7 @@ import { mirrorPage } from "@/i18n/mirror";
 
 const m = mirrorPage("/leaderboard/board/[board]", Source);
 
-export const revalidate = 15;
+export const revalidate = 60;
 export const dynamicParams = false;
 export const generateStaticParams = m.generateStaticParams;
 export const generateMetadata = m.generateMetadata;

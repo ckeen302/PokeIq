@@ -23,13 +23,14 @@ interface PageProps {
 const findDuel = cache(pvpStore.peek);
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const url = `/pokedle/duel/${encodeURIComponent((await params).code)}`;
   const duel = await findDuel((await params).code);
   const t = serverT(pokedle);
-  if (!duel || duel.kind !== "pokedle") return inviteMetadata(t("duel.title"), t("duel.description"));
+  if (!duel || duel.kind !== "pokedle") return inviteMetadata(t("duel.title"), t("duel.description"), url);
   // Trainer names are theirs: never translated.
   const [host, guest] = duel.players.map((p) => p.name);
   const title = guest ? t("duel.versus", { host, guest }) : t("duel.challenge", { host: host || t("duel.aTrainer") });
-  return inviteMetadata(title, t("duel.inviteDescription"));
+  return inviteMetadata(title, t("duel.inviteDescription"), url);
 }
 
 export default async function PokedleDuelPage({ params }: PageProps) {

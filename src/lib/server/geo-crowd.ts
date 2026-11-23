@@ -1,4 +1,5 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
 import { aggregateCrowd, crowdAllowed, firstPinPerPlayer, type GeoCrowd, type GeoCrowdRound } from "@/lib/geo-crowd";
 import { geoRoundsOf, type GeoAnswer, type GeoResult } from "@/lib/geo-types";
 import { verifyToken } from "./crypto";
@@ -8,12 +9,15 @@ import { RoundScoresUnavailable, roundScoreStore, type RoundScoreStore } from ".
 /**
  * The Daily's crowd map on the server: the day's logged pins (migration 0050)
  * on its five screenshots, one per trainer, moved onto the Daily's map and
- * counted into a coarse grid (src/lib/geo-crowd.ts). Read at most once per
- * CROWD_TTL_MS per day per server instance, like the daily stats. Fails
- * closed to an empty map: no store, no pin columns yet, or a read error.
+ * counted into a coarse grid (src/lib/geo-crowd.ts). The pins are read from
+ * the database at most once per CROWD_SHARED_TTL_S per day for every server
+ * instance together (Next's data cache keeps the counted map, which is small),
+ * and each instance keeps its copy for CROWD_TTL_MS, like the daily stats.
+ * Fails closed to an empty map: no store, no pin columns yet, or a read error.
  */
 
 const CROWD_TTL_MS = 30_000;
+const CROWD_SHARED_TTL_S = 60;
 const DAY_MS = 86_400_000;
 const recent = new Map<string, { at: number; crowd: Promise<GeoCrowd> }>();
 let warned = 0;
@@ -58,13 +62,16 @@ async function readCrowd(date: string, store: RoundScoreStore | null): Promise<G
   return { date, rounds };
 }
 
-/** A day's crowd map (cached): call only after crowdAccess said yes. */
-export function dailyCrowd(date: string, store = roundScoreStore()): Promise<GeoCrowd> {
+/** The counted map, shared by every instance (a failed read throws, so it isn't kept). */
+const sharedCrowd = unstable_cache((date: string) => readCrowd(date, roundScoreStore()), ["geo-daily-crowd"], { revalidate: CROWD_SHARED_TTL_S });
+
+/** A day's crowd map (cached): call only after crowdAccess said yes. A given `store` (tests) is read directly. */
+export function dailyCrowd(date: string, store?: RoundScoreStore | null): Promise<GeoCrowd> {
   const now = Date.now();
   const hit = recent.get(date);
   if (hit && now - hit.at < CROWD_TTL_MS) return hit.crowd;
   if (recent.size > 20) recent.clear();
-  const crowd = readCrowd(date, store).catch((err) => {
+  const crowd = (store === undefined ? sharedCrowd(date) : readCrowd(date, store)).catch((err) => {
     if (!(err instanceof RoundScoresUnavailable)) console.error("[geo-crowd] read failed:", err);
     else if (Date.now() - warned > 10 * 60_000) {
       warned = Date.now();

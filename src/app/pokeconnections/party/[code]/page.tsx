@@ -21,11 +21,12 @@ interface PageProps {
 const findParty = cache(partyStore.peek);
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const url = `/pokeconnections/party/${encodeURIComponent((await params).code)}`;
   const t = serverT(pages);
   const about = t("meta.partyAbout");
   const found = await findParty((await params).code);
-  if (!found) return inviteMetadata(t("meta.party"), about);
-  return inviteMetadata(t("meta.partyInvite", { host: found.players[0]?.name || t("meta.aTrainer") }), about);
+  if (!found) return inviteMetadata(t("meta.party"), about, url);
+  return inviteMetadata(t("meta.partyInvite", { host: found.players[0]?.name || t("meta.aTrainer") }), about, url);
 }
 
 export default async function ConnectionsPartyPage({ params }: PageProps) {
